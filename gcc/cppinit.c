@@ -22,6 +22,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include "hashtab.h"
+#include "splay-tree.h"
 #include "cpplib.h"
 #include "cpphash.h"
 #include "output.h"
@@ -551,7 +552,7 @@ cpp_reader_init (pfile)
     (struct cpp_pending *) xcalloc (1, sizeof (struct cpp_pending));
 
   _cpp_init_macro_hash (pfile);
-  _cpp_init_include_hash (pfile);
+  _cpp_init_include_table (pfile);
 }
 
 /* Initialize a cpp_printer structure.  As a side effect, open the
@@ -605,7 +606,7 @@ cpp_cleanup (pfile)
     deps_free (pfile->deps);
 
   htab_delete (pfile->hashtab);
-  htab_delete (pfile->all_include_files);
+  splay_tree_delete (pfile->all_include_files);
 }
 
 

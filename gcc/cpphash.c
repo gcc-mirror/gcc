@@ -1148,7 +1148,7 @@ special_symbol (pfile, hp)
     case T_STDC:
 #ifdef STDC_0_IN_SYSTEM_HEADERS
       ip = cpp_file_buffer (pfile);
-      if (ip && ip->system_header_p
+      if (ip && ip->inc->sysp
 	  && !cpp_defined (pfile, DSC("__STRICT_ANSI__")))
 	{
 	  CPP_PUTC (pfile, '0');

@@ -214,7 +214,7 @@ _cpp_handle_directive (pfile)
 	return 0;
 
       if (CPP_PEDANTIC (pfile)
-	  && CPP_BUFFER (pfile)->ihash
+	  && CPP_BUFFER (pfile)->inc
 	  && ! CPP_OPTION (pfile, preprocessed))
 	cpp_pedwarn (pfile, "# followed by integer");
       i = T_LINE;
@@ -463,7 +463,7 @@ do_import (pfile)
   U_CHAR *token;
 
   if (CPP_OPTION (pfile, warn_import)
-      && !CPP_BUFFER (pfile)->system_header_p && !pfile->import_warning)
+      && !CPP_IN_SYSTEM_HEADER (pfile) && !pfile->import_warning)
     {
       pfile->import_warning = 1;
       cpp_warning (pfile,
@@ -508,8 +508,8 @@ do_include_next (pfile)
      file like any other included source, but generate a warning.  */
   if (CPP_PREV_BUFFER (CPP_BUFFER (pfile)))
     {
-      if (CPP_BUFFER (pfile)->ihash->foundhere != ABSOLUTE_PATH)
-	search_start = CPP_BUFFER (pfile)->ihash->foundhere->next;
+      if (CPP_BUFFER (pfile)->inc->foundhere)
+	search_start = CPP_BUFFER (pfile)->inc->foundhere->next;
     }
   else
     cpp_warning (pfile, "#include_next in primary source file");
@@ -603,23 +603,23 @@ do_line (pfile)
 	  if (action_number == 1)
 	    {
 	      pfile->buffer_stack_depth++;
-	      ip->system_header_p = 0;
+	      ip->inc->sysp = 0;
 	      read_line_number (pfile, &action_number);
 	    }
 	  else if (action_number == 2)
 	    {
 	      pfile->buffer_stack_depth--;
-	      ip->system_header_p = 0;
+	      ip->inc->sysp = 0;
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 3)
 	    {
-	      ip->system_header_p = 1;
+	      ip->inc->sysp = 1;
 	      read_line_number (pfile, &action_number);
 	    }
 	  if (action_number == 4)
 	    {
-	      ip->system_header_p = 2;
+	      ip->inc->sysp = 2;
 	      read_line_number (pfile, &action_number);
 	    }
 	}
@@ -628,10 +628,10 @@ do_line (pfile)
       
       if (strcmp ((const char *)fname, ip->nominal_fname))
 	{
-	  if (!strcmp ((const char *)fname, ip->ihash->name))
-	    ip->nominal_fname = ip->ihash->name;
+	  if (!strcmp ((const char *)fname, ip->inc->name))
+	    ip->nominal_fname = ip->inc->name;
 	  else
-	    ip->nominal_fname = _cpp_fake_ihash (pfile, (const char *)fname);
+	    ip->nominal_fname = _cpp_fake_include (pfile, (const char *)fname);
 	}
     }
   else if (token != CPP_VSPACE && token != CPP_EOF)
@@ -868,13 +868,13 @@ do_pragma_once (pfile)
 
   /* Allow #pragma once in system headers, since that's not the user's
      fault.  */
-  if (!ip->system_header_p)
+  if (!CPP_IN_SYSTEM_HEADER (pfile))
     cpp_warning (pfile, "#pragma once is obsolete");
       
   if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "#pragma once outside include file");
   else
-    ip->ihash->cmacro = NEVER_REINCLUDE;
+    ip->inc->cmacro = NEVER_REREAD;
 
   return 1;
 }
@@ -978,7 +978,7 @@ do_pragma_system_header (pfile)
   if (CPP_PREV_BUFFER (ip) == NULL)
     cpp_warning (pfile, "#pragma system_header outside include file");
   else
-    ip->system_header_p = 1;
+    ip->inc->sysp = 1;
 
   return 1;
 }

@@ -233,9 +233,9 @@ struct cpp_buffer
   /* Actual directory of this file, used only for "" includes */
   struct file_name_list *actual_dir;
 
-  /* Pointer into the include hash table.  Used for include_next and
+  /* Pointer into the include table.  Used for include_next and
      to record control macros. */
-  struct ihash *ihash;
+  struct include_file *inc;
 
   /* If the buffer is the expansion of a macro, this points to the
      macro's hash table entry.  */
@@ -247,9 +247,6 @@ struct cpp_buffer
 
   /* Line number at line_base (above). */
   unsigned int lineno;
-
-  /* True if this is a header file included using <FILENAME>.  */
-  char system_header_p;
 
   /* True if buffer contains escape sequences.
      Currently there are two kinds:
@@ -499,7 +496,7 @@ struct cpp_reader
   struct htab *hashtab;
 
   /* Hash table of other included files.  See cppfiles.c */
-  struct htab *all_include_files;
+  struct splay_tree_s *all_include_files;
 
   /* Chain of `actual directory' file_name_list entries,
      for "" inclusion. */
