@@ -2431,10 +2431,22 @@
 	&& REGNO (operands[1]) == 0)
       have_dep_anti = 1;
   if (! have_dep_anti)
-    if (GENERATE_BRANCHLIKELY)
-      return \"%(beql\\t%0,%1,.+8\\n\\tbreak\\t%2%)\";
-    else
-      return \"%(bne\\t%0,%1,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
+    {
+      if (GENERATE_BRANCHLIKELY)
+	{
+          if (GET_CODE (operands[1]) == CONST_INT)
+	    return \"%(beql\\t%0,$0,.+8\\n\\tbreak\\t%2%)\";
+	  else
+	    return \"%(beql\\t%0,%1,.+8\\n\\tbreak\\t%2%)\";
+	}
+      else
+	{
+          if (GET_CODE (operands[1]) == CONST_INT)
+	    return \"%(bne\\t%0,$0,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
+	  else
+	    return \"%(bne\\t%0,%1,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
+	}
+    }
   return \"\";
 }"
   [(set_attr "type" "unknown")
