@@ -5329,8 +5329,8 @@ sh5_schedule_saves (HARD_REG_SET *live_regs_mask, save_schedule *schedule,
 	  && ! (cfun->static_chain_decl != NULL && i == STATIC_CHAIN_REGNUM)
 	  && ! (current_function_calls_eh_return
 		&& (i == EH_RETURN_STACKADJ_REGNO
-		    || ((unsigned) i <= EH_RETURN_DATA_REGNO (0)
-			&& (unsigned) i >= EH_RETURN_DATA_REGNO (3)))))
+		    || ((unsigned) i >= EH_RETURN_DATA_REGNO (0)
+			&& (unsigned) i <= EH_RETURN_DATA_REGNO (3)))))
 	schedule->temps[tmpx++] = i;
   entry->reg = -1;
   entry->mode = VOIDmode;

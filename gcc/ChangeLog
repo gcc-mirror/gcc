@@ -1,3 +1,7 @@
+2004-10-19  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/sh.c (sh5_schedule_saves): Fix typo.
+
 2004-10-18  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* configure.ac (powerpc-*-darwin*): Require assembler to support
