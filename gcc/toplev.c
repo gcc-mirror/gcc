@@ -4143,6 +4143,7 @@ main (argc, argv, envp)
 		      if (*p && (*p < '0' || *p > '9'))
 			continue;
 		      q = p;
+		      len = p - str;
 		      while (*q && (*q >= '0' && *q <= '9'))
 			q++;
 		      if (*p)

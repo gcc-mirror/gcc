@@ -1034,7 +1034,7 @@
     }
 
   operands[0] = gen_lowpart (DImode, operands[0]);
-  operands[1] = gen_lowpart (DImode, force_reg (HImode, operands[1]));
+  operands[1] = gen_lowpart (DImode, force_reg (QImode, operands[1]));
   operands[2] = gen_reg_rtx (DImode);
 }")
 
