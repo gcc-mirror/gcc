@@ -1,3 +1,8 @@
+2004-11-28  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* timevar.def (TV_TREE_REDPHI): New timevar.
+	* tree-ssa.c (pass_redundant_phi): Use TV_TREE_REDPHI for the tv id.
+
 2004-11-28  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR preprocessor/17651
