@@ -1,5 +1,11 @@
 2004-10-04  Ed Schonberg  <schonberg@gnat.com>
 
+	* exp_ch6.adb (Expand_N_Function_Call): If stack checking is enabled,
+	do not generate a declaration for a temporary if the call is part of a
+	library-level instantiation.
+
+2004-10-04  Ed Schonberg  <schonberg@gnat.com>
+
 	* sem_util.adb (Explain_Limited_Type): Ignore internal components when
 	searching for a limited component to flag.
 

@@ -2934,6 +2934,12 @@ package body Exp_Ch6 is
       --  this because otherwise gigi may generate a large temporary on the
       --  fly and this can cause trouble with stack checking.
 
+      --  This is unecessary if the call is the expression in an object
+      --  declaration, or if it appears outside of any library unit. This
+      --  can only happen if it appears as an actual in a library-level
+      --  instance, in which case a temporary will be generated for it once
+      --  the instance itself is installed.
+
       if May_Generate_Large_Temp (Typ)
         and then Nkind (Parent (N)) /= N_Assignment_Statement
         and then
@@ -2943,6 +2949,7 @@ package body Exp_Ch6 is
           (Nkind (Parent (N)) /= N_Object_Declaration
              or else Expression (Parent (N)) /= N)
         and then not Returned_By_Reference
+        and then Current_Scope /= Standard_Standard
       then
          if Stack_Checking_Enabled then
 
