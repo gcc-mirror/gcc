@@ -261,6 +261,7 @@ const char * const reg_note_name[] = { "", "REG_DEAD", "REG_INC", "REG_EQUIV", "
 
 static void dump_and_abort	PROTO((int, int, FILE *)) ATTRIBUTE_NORETURN;
 static void read_name		PROTO((char *, FILE *));
+static const char *trim_filename PROTO((const char *));
 
 /* Allocate an rtx vector of N elements.
    Store the length, and initialize all elements to zero.  */

@@ -4052,6 +4052,7 @@ expand_decl_cleanup (decl, cleanup)
 /* Like expand_decl_cleanup, but suppress generating an exception handler
    to perform the cleanup.  */
 
+#if 0
 int
 expand_decl_cleanup_no_eh (decl, cleanup)
      tree decl, cleanup;
@@ -4065,6 +4066,7 @@ expand_decl_cleanup_no_eh (decl, cleanup)
 
   return result;
 }
+#endif
 
 /* Arrange for the top element of the dynamic cleanup chain to be
    popped if we exit the current binding contour.  DECL is the
@@ -5235,7 +5237,7 @@ void
 expand_end_case (orig_index)
      tree orig_index;
 {
-  tree minval = NULL_TREE, maxval = NULL_TREE, range, orig_minval;
+  tree minval = NULL_TREE, maxval = NULL_TREE, range = NULL_TREE, orig_minval;
   rtx default_label = 0;
   register struct case_node *n;
   unsigned int count;
@@ -6065,7 +6067,6 @@ emit_case_nodes (index, node, default_label, index_type)
 {
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
   int unsignedp = TREE_UNSIGNED (index_type);
-  typedef rtx rtx_fn ();
   enum machine_mode mode = GET_MODE (index);
 
   /* See if our parents have already tested everything for us.

@@ -191,6 +191,7 @@ static void asm_output_aligned_bss	PROTO((FILE *, tree, char *, int, int));
 static void mark_pool_constant          PROTO((struct pool_constant *));
 static void mark_pool_sym_hash_table	PROTO((struct pool_sym **));
 static void mark_const_hash_entry	PROTO((void *));
+static void asm_emit_uninitialised	PROTO((tree, char *, int, int));
 
 static enum in_section { no_section, in_text, in_data, in_named
 #ifdef BSS_SECTION_ASM_OP
@@ -1240,7 +1241,7 @@ asm_emit_uninitialised (decl, name, size, rounded)
      tree decl;
      char * name;
      int size;
-     int rounded;
+     int rounded ATTRIBUTE_UNUSED;
 {
   enum {
     asm_dest_common,
@@ -1317,7 +1318,7 @@ void
 assemble_variable (decl, top_level, at_end, dont_output_data)
      tree decl;
      int top_level ATTRIBUTE_UNUSED;
-     int at_end;
+     int at_end ATTRIBUTE_UNUSED;
      int dont_output_data;
 {
   register char *name;

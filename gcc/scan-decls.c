@@ -22,6 +22,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "scan.h"
 
+static void skip_to_closing_brace PARAMS ((cpp_reader *));
+
 int brace_nesting = 0;
 
 /* The first extern_C_braces_length elements of extern_C_braces
