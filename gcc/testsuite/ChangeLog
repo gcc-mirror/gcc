@@ -1,3 +1,8 @@
+2001-05-20  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* g++.old-deja/g++.warn/compare1.C: New test.
+	* gcc.dg/compare4.c: New test.
+
 2001-05-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/optimize1.C: New test.

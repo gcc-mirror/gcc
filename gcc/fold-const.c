@@ -7351,11 +7351,24 @@ tree_expr_nonnegative_p (t)
 {
   switch (TREE_CODE (t))
     {
+    case ABS_EXPR:
+    case FFS_EXPR:
+      return 1;
     case INTEGER_CST:
       return tree_int_cst_sgn (t) >= 0;
     case COND_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1))
 	&& tree_expr_nonnegative_p (TREE_OPERAND (t, 2));
+    case COMPOUND_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case MIN_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+        && tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case MAX_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 0))
+        || tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
+    case MODIFY_EXPR:
+      return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
     case BIND_EXPR:
       return tree_expr_nonnegative_p (TREE_OPERAND (t, 1));
     case RTL_EXPR:
