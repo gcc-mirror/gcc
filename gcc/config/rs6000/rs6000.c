@@ -674,7 +674,7 @@ reg_or_arith_cint_operand (op, mode)
 	     || (GET_CODE (op) == CONST_INT
 #if HOST_BITS_PER_WIDE_INT != 32
 		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
-		     < 0x100000000u)
+		     < (unsigned HOST_WIDE_INT) 0x100000000ll)
 #endif
 		 ));
 }
@@ -1023,7 +1023,7 @@ logical_operand (op, mode)
     return 0;
 
   /* This must really be SImode, not MODE.  */
-  if (opl != trunc_int_for_mode (opl, SImode))
+  if (opl != (unsigned HOST_WIDE_INT) trunc_int_for_mode (opl, SImode))
     return 0;
 
   return ((opl & 0xffff) == 0
@@ -1795,10 +1795,10 @@ rs6000_emit_move (dest, source, mode)
 	  /* Darwin uses a special PIC legitimizer.  */
 	  if (DEFAULT_ABI == ABI_DARWIN && flag_pic)
 	    {
+#if TARGET_MACHO
 	      rtx temp_reg = ((reload_in_progress || reload_completed)
 			      ? operands[0] : NULL);
 
-#if TARGET_MACHO
 	      operands[1] =
 		rs6000_machopic_legitimize_pic_address (operands[1], mode,
 								    temp_reg);
@@ -2451,8 +2451,15 @@ rs6000_va_start (stdarg_p, valist, nextarg)
   n_fpr = current_function_args_info.fregno - FP_ARG_MIN_REG;
 
   if (TARGET_DEBUG_ARG)
-    fprintf (stderr, "va_start: words = %d, n_gpr = %d, n_fpr = %d\n",
-	     words, n_gpr, n_fpr);
+    {
+      fputs ("va_start: words = ", stderr);
+      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, words);
+      fputs (", n_gpr = ", stderr);
+      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, n_gpr);
+      fputs (", n_fpr = ", stderr);
+      fprintf (stderr, HOST_WIDE_INT_PRINT_DEC, n_fpr);
+      putc ('\n', stderr);
+    }
 
   t = build (MODIFY_EXPR, TREE_TYPE (gpr), gpr, build_int_2 (n_gpr, 0));
   TREE_SIDE_EFFECTS (t) = 1;
@@ -5866,7 +5873,8 @@ rs6000_emit_prologue ()
      easiest way to get the frame unwind information emitted.  */
   if (current_function_calls_eh_return)
     {
-      int i, regno;
+      unsigned int i, regno;
+
       for (i = 0; ; ++i)
 	{
 	  rtx addr, reg, mem;
@@ -5877,7 +5885,8 @@ rs6000_emit_prologue ()
 
 	  reg = gen_rtx_REG (reg_mode, regno);
 	  addr = plus_constant (frame_reg_rtx,
-				info->ehrd_offset + sp_offset + reg_size * i);
+				info->ehrd_offset + sp_offset
+				+ reg_size * (int) i);
 	  mem = gen_rtx_MEM (reg_mode, addr);
 	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
 
@@ -6123,7 +6132,8 @@ rs6000_emit_epilogue (sibcall)
   /* Load exception handler data registers, if needed.  */
   if (current_function_calls_eh_return)
     {
-      int i, regno;
+      unsigned int i, regno;
+
       for (i = 0; ; ++i)
 	{
 	  rtx addr, mem;
@@ -6133,7 +6143,8 @@ rs6000_emit_epilogue (sibcall)
 	    break;
 
 	  addr = plus_constant (frame_reg_rtx,
-				info->ehrd_offset + sp_offset + reg_size * i);
+				info->ehrd_offset + sp_offset
+				+ reg_size * (int) i);
 	  mem = gen_rtx_MEM (reg_mode, addr);
 	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
 
