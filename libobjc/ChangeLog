@@ -1,5 +1,8 @@
 2004-04-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.ac: Remove (unused) glibcpp_prefixdir.
+	* configure: Regenerate.
+
 	* configure.in: Rename to configure.ac.
 	* Makefile.in: Update to match.
 

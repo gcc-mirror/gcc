@@ -149,9 +149,6 @@ case ${version_specific_libs} in
 esac
 AC_SUBST(toolexeclibdir)
 
-glibcpp_prefixdir=${prefix}
-AC_SUBST(glibcpp_prefixdir)
-
 # --------
 # Programs
 # --------
