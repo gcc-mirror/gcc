@@ -63,6 +63,13 @@ fi
 # know that we are building the simulator.
 host_tools="texinfo byacc flex bison binutils ld gas gcc sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find emacs emacs19 uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils snavigator libtool gettext zip fastjar"
 
+# libgcj represents the runtime libraries only used by gcj.
+libgcj="target-libffi \
+	target-boehm-gc \
+	target-zlib \
+	target-qthreads \
+	target-libjava"
+
 # these libraries are built for the target environment, and are built after
 # the host libraries and the host tools (which may be a cross compiler)
 #
@@ -74,11 +81,7 @@ target_libs="target-libiberty \
 		target-libg++ \
 		target-libf2c \
 		target-libchill \
-		target-libffi \
-		target-libjava \
-		target-zlib \
-		target-boehm-gc \
-		target-qthreads \
+		${libgcj}
 		target-libobjc"
 
 # these tools are built using the target libs, and are intended to run only
@@ -549,7 +552,7 @@ esac
 # target this usually means that a port of the program doesn't
 # exist yet.
 
-noconfigdirs="target-libjava"
+noconfigdirs=""
 
 case "${host}" in
   hppa*64*-*-*)
@@ -582,25 +585,24 @@ case "${host}" in
     ;;
 esac
 
-
 case "${target}" in
   *-*-netware)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-newlib target-libiberty target-libgloss ${libgcj}"
     ;;
   *-*-rtems*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   *-*-vxworks*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   alpha*-dec-osf*)
     # ld works, but does not support shared libraries.  emacs doesn't
     # work.  newlib is not 64 bit ready.  I'm not sure about fileutils.
     # gas doesn't generate exception information.
-    noconfigdirs="$noconfigdirs gas ld emacs fileutils target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs gas ld emacs fileutils target-newlib target-libgloss ${libgcj}"
     ;;
   alpha*-*-*vms*)
-    noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss ${libgcj}"
     ;;
   alpha*-*-linux*)
     # newlib is not 64 bit ready
@@ -610,11 +612,11 @@ case "${target}" in
     ;;
   alpha*-*-*)
     # newlib is not 64 bit ready
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
-    noconfigdirs="$noconfigdirs target-libjava target-libffi target-zlib"
-    noconfigdirs="$noconfigdirs target-boehm-gc target-qthreads target-examples"
+    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs target-examples"
     noconfigdirs="$noconfigdirs target-libiberty texinfo send-pr"
     noconfigdirs="$noconfigdirs tcl tix tk itcl libgui sim"
     noconfigdirs="$noconfigdirs expect dejagnu"
@@ -628,89 +630,92 @@ case "${target}" in
     esac
     ;;
   arc-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   arm-*-pe*)
-    noconfigdirs="$noconfigdirs target-libgloss"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   arm-*-coff*)
-    noconfigdirs="$noconfigdirs target-libgloss"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   arm-*-elf*)
-    noconfigdirs="$noconfigdirs target-libgloss"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   arm-*-oabi*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   c4x-*-*)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
   c54x*-*-* | tic54x-*-*)
-    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss target-libffi gcc gdb newlib"
+    noconfigdirs="$noconfigdirs ${libstdcxx_version} target-libgloss ${libgcj} gcc gdb newlib"
     ;;
   thumb-*-coff)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   thumb-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   thumb-*-oabi)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   strongarm-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   strongarm-*-coff)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   xscale-*-elf)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   xscale-*-coff)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   thumb-*-pe)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   arm-*-riscix*)
-    noconfigdirs="$noconfigdirs ld target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
   d10v-*-*)
-    noconfigdirs="$noconfigdirs target-librx target-libg++ ${libstdcxx_version} target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-librx target-libg++ ${libstdcxx_version} target-libgloss ${libgcj}"
     ;;
   d30v-*-*)
+    noconfigdirs="${libgcj}"
     ;;
   fr30-*-elf*)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
   h8300*-*-* | \
   h8500-*-*)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
   hppa*-*-*elf* | \
   hppa*-*-linux* | \
   hppa*-*-lites* | \
   hppa*64*-*-*)
+    noconfigdirs="${libgcj}"
     # Do configure ld/binutils/gas for this case.
     ;;
   hppa*-*-*)
@@ -721,28 +726,34 @@ case "${target}" in
 	"" | cc*) noconfigdirs="$noconfigdirs emacs emacs19" ;;
         *) ;;
     esac
-    noconfigdirs="$noconfigdirs ld shellutils"
+    noconfigdirs="$noconfigdirs ld shellutils ${libgcj}"
     ;;
   ia64*-*-elf*)
     # No gdb support yet.
     noconfigdirs="$noconfigdirs tix readline mmalloc libgui itcl gdb"
     ;;
   i[3456]86-*-coff | i[3456]86-*-elf)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
          target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
     ;;
   i[3456]86-*-go32* | i[3456]-*-msdosdjgpp*)
     # but don't build gdb
-    noconfigdirs="$noconfigdirs gdb target-libg++ ${libstdcxx_version} target-librx target-libffi"
+    noconfigdirs="$noconfigdirs gdb target-libg++ ${libstdcxx_version} target-librx ${libgcj}"
+    ;;
+  i[3456]86-*-linux*)
+    # linux has rx in libc
+    skipdirs="$skipdirs target-librx"
     ;;
   *-*-linux*)
+    noconfigdirs="${libgcj}"
     # linux has rx in libc
     skipdirs="$skipdirs target-librx"
     ;;
   i[3456]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
-    noconfigdirs="$noconfigdirs expect target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
 
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
@@ -753,7 +764,7 @@ case "${target}" in
     ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
-    noconfigdirs="$noconfigdirs target-gperf target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
 
@@ -765,18 +776,18 @@ case "${target}" in
     esac
     ;;    
   i[3456]86-*-pe)
-    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libg++ ${libstdcxx_version} target-librx target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
     # and is not configured to handle mixed ELF and COFF.
-    noconfigdirs="$noconfigdirs ld target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs ld target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-sco*)
-    noconfigdirs="$noconfigdirs gprof target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-solaris2*)
-    noconfigdirs="$noconfigdirs target-libgloss"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-sysv4*)
     # The SYSV4 C compiler doesn't handle Emacs correctly
@@ -785,29 +796,31 @@ case "${target}" in
         *) ;;
     esac
     # but that's okay since emacs doesn't work anyway
-    noconfigdirs="$noconfigdirs emacs emacs19 target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs emacs emacs19 target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-beos*)
-     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
+     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
      ;;
   m68k-*-elf*)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   m68k-*-coff*)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-cygmon"
     fi
     ;;
   mn10200-*-*)
-    noconfigdirs="$noconfigdirs target-libffi"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
     ;;
   mn10300-*-*)
-    noconfigdirs="$noconfigdirs target-libffi"
+    noconfigdirs="$noconfigdirs ${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
@@ -818,70 +831,71 @@ case "${target}" in
     # GNU ld is known to be broken for AIX 4.2 and 4.3 (at least)
     # The symptom is that GDBtk 4.18 fails at startup with a segfault
     # if linked by GNU ld, but not if linked by the native ld.
-    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss target-libffi ld"
+    noconfigdirs="$noconfigdirs gprof cvssrc target-libgloss ${libgcj} ld"
     use_gnu_ld=no
     ;;
   powerpc*-*-winnt* | powerpc*-*-pe* | ppc*-*-pe)
     target_configdirs="$target_configdirs target-winsup"
-    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix db snavigator gnuserv target-libffi"
+    noconfigdirs="$noconfigdirs gdb tcl tk make expect target-libgloss itcl tix db snavigator gnuserv ${libgcj}"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
     ;;
     # This is temporary until we can link against shared libraries
   powerpcle-*-solaris*)
-    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix db snavigator gnuserv target-libffi"
+    noconfigdirs="$noconfigdirs gdb sim make tcl tk expect itcl tix db snavigator gnuserv ${libgcj}"
     ;;
   powerpc-*-beos*)
-    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   powerpc-*-eabi)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
     ;;
   rs6000-*-lynxos*)
     # The CVS server code doesn't work on the RS/6000
-    noconfigdirs="$noconfigdirs target-newlib gprof cvssrc target-libffi"
+    noconfigdirs="$noconfigdirs target-newlib gprof cvssrc ${libgcj}"
     ;;
   rs6000-*-aix*)
     # The configure and build of ld are currently disabled because
     # GNU ld is known to be broken for AIX 4.2 and 4.3 (at least)
     # The symptom is that GDBtk 4.18 fails at startup with a segfault
     # if linked by GNU ld, but not if linked by the native ld.
-    noconfigdirs="$noconfigdirs gprof target-libffi ld"
+    noconfigdirs="$noconfigdirs gprof ld ${libgcj}"
     use_gnu_ld=no
     ;;
   rs6000-*-*)
-    noconfigdirs="$noconfigdirs gprof target-libffi"
+    noconfigdirs="$noconfigdirs gprof ${libgcj}"
     ;;
   m68k-apollo-*)
-    noconfigdirs="$noconfigdirs ld binutils gprof target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs ld binutils gprof target-libgloss ${libgcj}"
     ;;
   mips*-*-irix5*)
     # The GNU linker does not support shared libraries.
     # emacs is emacs 18, which does not work on Irix 5 (emacs19 does work)
-    noconfigdirs="$noconfigdirs ld gprof emacs target-libgloss"
+    noconfigdirs="$noconfigdirs ld gprof emacs target-libgloss ${libgcj}"
     ;;
   mips*-*-irix6*)
     # The GNU assembler does not support IRIX 6.
     # emacs is emacs 18, which does not work on Irix 5 (emacs19 does work)
-    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss"
+    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss ${libgcj}"
     ;;
   mips*-dec-bsd*)
-    noconfigdirs="$noconfigdirs gprof target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
   mips*-*-bsd*)
-    noconfigdirs="$noconfigdirs gprof target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
     ;;
   mipstx39-*-*)
-    noconfigdirs="$noconfigdirs gprof target-libffi"   # same as generic mips
+    noconfigdirs="$noconfigdirs gprof ${libgcj}"   # same as generic mips
     target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
    ;;
   mips*-*-*)
-    noconfigdirs="$noconfigdirs gprof target-libffi"
+    noconfigdirs="$noconfigdirs gprof ${libgcj}"
     ;;
   romp-*-*)
-    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes target-libgloss ${libgcj}"
     ;;
   sh-*-*)
     case "${host}" in
@@ -890,9 +904,10 @@ case "${target}" in
       i[3456]86-*-msdosdjgpp*) ;; # don't add gprof back in
       *) skipdirs=`echo " ${skipdirs} " | sed -e 's/ gprof / /'` ;;
     esac
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   sparc-*-elf*)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
@@ -901,15 +916,16 @@ case "${target}" in
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-libstub target-cygmon"
     fi
-    noconfigdirs="target-libffi"
+    noconfigdirs="${libgcj}"
     ;;
   sparclite-*-*)
     if [ x${is_cross_compiler} != xno ] ; then
 	   target_configdirs="${target_configdirs} target-bsp target-libstub target-cygmon"
     fi
-    noconfigdirs="target-libffi"
+    noconfigdirs="${libgcj}"
     ;;
   sparc-*-sunos4*)
+    noconfigdirs="${libgcj}"
     if [ x${is_cross_compiler} != xno ] ; then
            noconfigdirs="$noconfigdirs gdb gdbtest target-newlib target-libgloss"
     else
@@ -917,31 +933,31 @@ case "${target}" in
     fi
     ;;
   v810-*-*)
-    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libg++ ${libstdcxx_version} opcodes target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs bfd binutils gas gcc gdb ld target-libg++ ${libstdcxx_version} opcodes target-libgloss ${libgcj}"
     ;;
   v850-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   v850e-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   v850ea-*-*)
-    noconfigdirs="$noconfigdirs target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   vax-*-vms)
-    noconfigdirs="$noconfigdirs bfd binutils gdb ld target-newlib opcodes target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs bfd binutils gdb ld target-newlib opcodes target-libgloss ${libgcj}"
     ;;
   vax-*-*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   *-*-lynxos*)
-    noconfigdirs="$noconfigdirs target-newlib target-libgloss target-libffi"
+    noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;; 
   *-*-macos* | \
   *-*-mpw*)
     # Macs want a resource compiler.
     configdirs="$configdirs grez"
-    noconfigdirs="target-libffi"
+    noconfigdirs="${libgcj}"
     ;;    
 esac
 
