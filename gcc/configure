@@ -731,7 +731,10 @@ if test x$local_prefix = x; then
 	local_prefix=/usr/local
 fi
 
-gxx_include_dir=
+# Don't set gcc_gxx_include_dir to gxx_include_dir since that's only
+# passed in by the toplevel make and thus we'd get different behavior
+# depending on where we built the sources.
+gcc_gxx_include_dir=
 # Specify the g++ header file directory
 # Check whether --with-gxx-include-dir or --without-gxx-include-dir was given.
 if test "${with_gxx_include_dir+set}" = set; then
@@ -739,17 +742,17 @@ if test "${with_gxx_include_dir+set}" = set; then
   case "${withval}" in
 yes)	{ echo "configure: error: bad value ${withval} given for g++ include directory" 1>&2; exit 1; } ;;
 no)	;;
-*)	gxx_include_dir=$with_gxx_include_dir ;;
+*)	gcc_gxx_include_dir=$with_gxx_include_dir ;;
 esac
 fi
 
 
-if test x${gxx_include_dir} = x; then
+if test x${gcc_gxx_include_dir} = x; then
   if test x${enable_version_specific_runtime_libs} = xyes; then
-    gxx_include_dir='${libsubdir}/include/g++'
+    gcc_gxx_include_dir='${libsubdir}/include/g++'
   else
     topsrcdir=${srcdir}/.. . ${srcdir}/../config.if
-    gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/g++"-${libstdcxx_interface}
+    gcc_gxx_include_dir="\$(libsubdir)/\$(unlibsubdir)/..\`echo \$(exec_prefix) | sed -e 's|^\$(prefix)||' -e 's|/[^/]*|/..|g'\`/include/g++"-${libstdcxx_interface}
   fi
 fi
 
@@ -8338,16 +8341,39 @@ if test x$enable_haifa != x; then
     done
 fi
 
-# if $(exec_prefix) is not the same as $(prefix), then do not use a relative
-# directory to get to $gcc_tooldir.  Also handle the case where the user did
-# not specify a value for exec_prefix.
+# If $(exec_prefix) exists and is not the same as $(prefix), then compute an
+# absolute path for gcc_tooldir based on inserting the number of up-directory
+# movements required to get from $(exec_prefix) to $(prefix) into the basic
+# $(libsubdir)/@(unlibsubdir) based path.
 # Don't set gcc_tooldir to tooldir since that's only passed in by the toplevel
 # make and thus we'd get different behavior depending on where we built the
 # sources.
 if test x$exec_prefix = xNONE -o x$exec_prefix = x$prefix; then
     gcc_tooldir='$(libsubdir)/$(unlibsubdir)/../$(target_alias)'
 else
-    gcc_tooldir='$(exec_prefix)'/${target_alias}
+# An explanation of the sed strings:
+#  -e 's|^\$(prefix)||'   matches and eliminates 'prefix' from 'exec_prefix'
+#  -e 's|/$||'            match a trailing forward slash and eliminates it
+#  -e 's|^[^/]|/|'        forces the string to start with a forward slash (*)
+#  -e 's|/[^/]*|../|g'    replaces each occurance of /<directory> with ../
+#
+# (*) Note this pattern overwrites the first character of the string
+# with a forward slash if one is not already present.  This is not a
+# problem because the exact names of the sub-directories concerned is
+# unimportant, just the number of them matters.
+#
+# The practical upshot of these patterns is like this:
+#
+#  prefix     exec_prefix        result
+#  ------     -----------        ------
+#   /foo        /foo/bar          ../
+#   /foo/       /foo/bar          ../
+#   /foo        /foo/bar/         ../
+#   /foo/       /foo/bar/         ../
+#   /foo        /foo/bar/ugg      ../../
+#
+    gcc_tooldir="$(libsubdir)/$(unlibsubdir)/\`echo \$(exec_prefix) |
+sed -e 's|^\$(prefix)||' -e 's|/$||' -e 's|^[^/]|/|' -e 's|/[^/]*|../|g'\`$(target_alias)"
 fi
 
 
@@ -8699,7 +8725,7 @@ s%@JAVAGC@%$JAVAGC%g
 s%@gcc_version@%$gcc_version%g
 s%@gcc_version_trigger@%$gcc_version_trigger%g
 s%@local_prefix@%$local_prefix%g
-s%@gxx_include_dir@%$gxx_include_dir%g
+s%@gcc_gxx_include_dir@%$gcc_gxx_include_dir%g
 s%@fixincludes@%$fixincludes%g
 s%@build_install_headers_dir@%$build_install_headers_dir%g
 s%@build_exeext@%$build_exeext%g
