@@ -525,11 +525,12 @@ loop_optimize (f, dumpfile, unroll_p, bct_p)
      but moving this call to init_alias_analysis is more efficient.  */
   init_alias_analysis ();
 
-  /* See if we went too far.  */
+  /* See if we went too far.  Note that get_max_uid already returns
+     one more that the maximum uid of all insn.  */
   if (get_max_uid () > max_uid_for_loop)
     abort ();
   /* Now reset it to the actual size we need.  See above.  */
-  max_uid_for_loop = get_max_uid () + 1;
+  max_uid_for_loop = get_max_uid ();
 
   /* find_and_verify_loops has already called compute_luids, but it might
      have rearranged code afterwards, so we need to recompute the luids now.  */

@@ -1,3 +1,8 @@
+Tue Feb  2 20:24:11 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* loop.c (loop_optimize): Fix value max_uid_for_loop is reset
+	to after find_and_verify_loops call.
+
 Tue Feb  2 19:48:29 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* (recombine_givs): Don't use a giv that's likely to be dead to
