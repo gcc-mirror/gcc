@@ -1,3 +1,10 @@
+2001-08-01  Mark Kettenis  <kettenis@gnu.org>
+
+	* unwind-pe.h (base_of_encoded_value, read_encoded_value): Define
+	only if NO_BASE_OF_ENCODED_VALUE isn't defined.
+	* unwind-dw2-fde.c (NO_BASE_OF_ENCODED_VALUE): Define before
+	including "unwind-pe.h".
+
 Wed Aug  1 20:15:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_output_main_function_alignment_hack): Declare.
@@ -69,7 +76,7 @@ Thu Jul 26 22:01:30 2001  Denis Chertykov  <denisc@overta.ru>
 
 2001-07-26  Andrew MacLeod  <amacleod@redhat.com>
 
-	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to 
+	* params.def (PARAM_MAX_PENDING_LIST_LENGTH): Add parameter to
 	limit length of dependancy flush list.
 	* params.h (MAX_PENDING_LIST_LENGTH): Define.
 	* sched-int.h  (struct deps): Add pending_flush_length field.
@@ -111,7 +118,7 @@ Thu Jul 26 22:01:30 2001  Denis Chertykov  <denisc@overta.ru>
 	-Acpu and -Amachine.h.
 	* config/sparc/rtemself.h (CPP_PREDEFINES): Likewise.
 	Corrected header to say ELF not a.out.
-	* config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT 
+	* config/sparc/sparc.h (CPP_CPU_SPEC): Define _SOFT_FLOAT
 	when given -msoft-float.
 
 2001-07-24  Joel Sherrill <joel@OARcorp.com>
@@ -175,7 +182,7 @@ Thu Jul 26 22:01:30 2001  Denis Chertykov  <denisc@overta.ru>
 	("*addhi3"): Fix constraint to avoid reloading in a soft register.
 	("*subhi3_sp): Likewise.
 	("*subhi3"): Likewise.
-	("extendhisi2"): Accept D, X and Y as source operand to avoid 
+	("extendhisi2"): Accept D, X and Y as source operand to avoid
 	reload problems.
 
 2001-07-20  Bruce Korb  <bkorb@gnu.org>
@@ -192,7 +199,7 @@ Thu Jul 26 22:01:30 2001  Denis Chertykov  <denisc@overta.ru>
 2001-07-20  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md ("movdi", "movdi_internal"): Use an
-	expand to emit the pattern; put a REG_INC note for push/pop 
+	expand to emit the pattern; put a REG_INC note for push/pop
 	instructions.
 	("movdf", "movdf_internal"): Likewise.
 	("movsi", "movsi_internal"): Likewise.
@@ -275,9 +282,9 @@ Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 	pthread_mutex_trylock because it returns a positive number on
 	error, while we must return -1 on error.
 	(__gthread_objc_mutex_lock, __gthread_objc_mutex_unlock): Similar
-	fixes.  
+	fixes.
 	Reported by Stephen Brandon <stephen@brandonitconsulting.co.uk>.
-	
+
 2001-07-17  H.J. Lu <hjl@gnu.org>
 	    Rainer Orth <ro@TechFak.Uni-Bielefeld.DE>
 
@@ -338,7 +345,7 @@ Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-07-11  Mark Mitchell  <mark@codesourcery.com>
 
-	* stmt.c (parse_output_constraint): New function, split out 
+	* stmt.c (parse_output_constraint): New function, split out
 	from ...
 	(expand_asm_operands): ... here.  Use parse_output_constraint.
 	* tree.h (parse_output_constraint): Declare it.
@@ -385,8 +392,8 @@ Wed Jul 18 12:05:29 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 2001-07-04  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
-	* config/m68hc11/m68hc11.md ("*ashlsi3"): Operand 1 can be a memory 
-	reference using the stack pointer, adjust it since we push Y 
+	* config/m68hc11/m68hc11.md ("*ashlsi3"): Operand 1 can be a memory
+	reference using the stack pointer, adjust it since we push Y
 	temporarily.
 	("*ashrsi3"): Likewise.
 	("*lshrsi3"): Likewise.
