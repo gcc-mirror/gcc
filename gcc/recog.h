@@ -38,7 +38,7 @@ struct operand_alternative
   const char *constraint;
 
   /* The register class valid for this alternative (possibly NO_REGS).  */
-  enum reg_class class;
+  enum reg_class cl;
 
   /* "Badness" of this alternative, computed from number of '?' and '!'
      characters in the constraint string.  */

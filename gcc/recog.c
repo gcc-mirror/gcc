@@ -2096,7 +2096,7 @@ preprocess_constraints (void)
 
       for (j = 0; j < recog_data.n_alternatives; j++)
 	{
-	  op_alt[j].class = NO_REGS;
+	  op_alt[j].cl = NO_REGS;
 	  op_alt[j].constraint = p;
 	  op_alt[j].matches = -1;
 	  op_alt[j].matched = -1;
@@ -2171,12 +2171,14 @@ preprocess_constraints (void)
 
 		case 'p':
 		  op_alt[j].is_address = 1;
-		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class]
+		  op_alt[j].cl = reg_class_subunion[(int) op_alt[j].cl]
 		    [(int) MODE_BASE_REG_CLASS (VOIDmode)];
 		  break;
 
-		case 'g': case 'r':
-		  op_alt[j].class = reg_class_subunion[(int) op_alt[j].class][(int) GENERAL_REGS];
+		case 'g':
+		case 'r':
+		  op_alt[j].cl =
+		   reg_class_subunion[(int) op_alt[j].cl][(int) GENERAL_REGS];
 		  break;
 
 		default:
@@ -2188,16 +2190,16 @@ preprocess_constraints (void)
 		  if (EXTRA_ADDRESS_CONSTRAINT (c, p))
 		    {
 		      op_alt[j].is_address = 1;
-		      op_alt[j].class
+		      op_alt[j].cl
 			= (reg_class_subunion
-			   [(int) op_alt[j].class]
+			   [(int) op_alt[j].cl]
 			   [(int) MODE_BASE_REG_CLASS (VOIDmode)]);
 		      break;
 		    }
 
-		  op_alt[j].class
+		  op_alt[j].cl
 		    = (reg_class_subunion
-		       [(int) op_alt[j].class]
+		       [(int) op_alt[j].cl]
 		       [(int) REG_CLASS_FROM_CONSTRAINT ((unsigned char) c, p)]);
 		  break;
 		}
@@ -2518,11 +2520,11 @@ constrain_operands (int strict)
 
 	      default:
 		{
-		  enum reg_class class;
+		  enum reg_class cl;
 
-		  class = (c == 'r'
+		  cl = (c == 'r'
 			   ? GENERAL_REGS : REG_CLASS_FROM_CONSTRAINT (c, p));
-		  if (class != NO_REGS)
+		  if (cl != NO_REGS)
 		    {
 		      if (strict < 0
 			  || (strict == 0
@@ -2530,7 +2532,7 @@ constrain_operands (int strict)
 			      && REGNO (op) >= FIRST_PSEUDO_REGISTER)
 			  || (strict == 0 && GET_CODE (op) == SCRATCH)
 			  || (REG_P (op)
-			      && reg_fits_class_p (op, class, offset, mode)))
+			      && reg_fits_class_p (op, cl, offset, mode)))
 		        win = 1;
 		    }
 #ifdef EXTRA_CONSTRAINT_STR
@@ -2623,19 +2625,19 @@ constrain_operands (int strict)
    If REG occupies multiple hard regs, all of them must be in CLASS.  */
 
 int
-reg_fits_class_p (rtx operand, enum reg_class class, int offset,
+reg_fits_class_p (rtx operand, enum reg_class cl, int offset,
 		  enum machine_mode mode)
 {
   int regno = REGNO (operand);
   if (regno < FIRST_PSEUDO_REGISTER
-      && TEST_HARD_REG_BIT (reg_class_contents[(int) class],
+      && TEST_HARD_REG_BIT (reg_class_contents[(int) cl],
 			    regno + offset))
     {
       int sr;
       regno += offset;
       for (sr = hard_regno_nregs[regno][mode] - 1;
 	   sr > 0; sr--)
-	if (! TEST_HARD_REG_BIT (reg_class_contents[(int) class],
+	if (! TEST_HARD_REG_BIT (reg_class_contents[(int) cl],
 				 regno + sr))
 	  break;
       return sr == 0;
@@ -2898,7 +2900,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 			  enum machine_mode mode, HARD_REG_SET *reg_set)
 {
   static int search_ofs;
-  enum reg_class class;
+  enum reg_class cl;
   HARD_REG_SET live;
   int i;
 
@@ -2928,7 +2930,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
       IOR_HARD_REG_SET (live, this_live);
     }
 
-  class = (class_str[0] == 'r' ? GENERAL_REGS
+  cl = (class_str[0] == 'r' ? GENERAL_REGS
 	   : REG_CLASS_FROM_CONSTRAINT (class_str[0], class_str));
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
@@ -2949,7 +2951,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
       if (fixed_regs[regno])
 	continue;
       /* Make sure the register is of the right class.  */
-      if (! TEST_HARD_REG_BIT (reg_class_contents[class], regno))
+      if (! TEST_HARD_REG_BIT (reg_class_contents[cl], regno))
 	continue;
       /* And can support the mode we need.  */
       if (! HARD_REGNO_MODE_OK (regno, mode))

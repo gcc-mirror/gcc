@@ -3140,7 +3140,7 @@ extern int integer_pow2p (tree);
 
 extern int integer_nonzerop (tree);
 
-/* staticp (tree x) is nonzero if X is a reference to data allocated
+/* staticp (tree x) is true if X is a reference to data allocated
    at a fixed address in memory.  */
 
 extern bool staticp (tree);

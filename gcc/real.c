@@ -138,7 +138,7 @@ static inline void
 get_canonical_qnan (REAL_VALUE_TYPE *r, int sign)
 {
   memset (r, 0, sizeof (*r));
-  r->class = rvc_nan;
+  r->cl = rvc_nan;
   r->sign = sign;
   r->canonical = 1;
 }
@@ -147,7 +147,7 @@ static inline void
 get_canonical_snan (REAL_VALUE_TYPE *r, int sign)
 {
   memset (r, 0, sizeof (*r));
-  r->class = rvc_nan;
+  r->cl = rvc_nan;
   r->sign = sign;
   r->signalling = 1;
   r->canonical = 1;
@@ -157,7 +157,7 @@ static inline void
 get_inf (REAL_VALUE_TYPE *r, int sign)
 {
   memset (r, 0, sizeof (*r));
-  r->class = rvc_inf;
+  r->cl = rvc_inf;
   r->sign = sign;
 }
 
@@ -490,7 +490,7 @@ normalize (REAL_VALUE_TYPE *r)
   /* Zero significand flushes to zero.  */
   if (i < 0)
     {
-      r->class = rvc_zero;
+      r->cl = rvc_zero;
       SET_REAL_EXP (r, 0);
       return;
     }
@@ -531,7 +531,7 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
   sign = a->sign;
   subtract_p = (sign ^ b->sign) ^ subtract_p;
 
-  switch (CLASS2 (a->class, b->class))
+  switch (CLASS2 (a->cl, b->cl))
     {
     case CLASS2 (rvc_zero, rvc_zero):
       /* -0 + -0 = -0, -0 - +0 = -0; all other cases yield +0.  */
@@ -637,7 +637,7 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
 	}
     }
 
-  r->class = rvc_normal;
+  r->cl = rvc_normal;
   r->sign = sign;
   SET_REAL_EXP (r, exp);
 
@@ -646,7 +646,7 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
 
   /* Special case: if the subtraction results in zero, the result
      is positive.  */
-  if (r->class == rvc_zero)
+  if (r->cl == rvc_zero)
     r->sign = 0;
   else
     r->sig[0] |= inexact;
@@ -665,7 +665,7 @@ do_multiply (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
   int sign = a->sign ^ b->sign;
   bool inexact = false;
 
-  switch (CLASS2 (a->class, b->class))
+  switch (CLASS2 (a->cl, b->cl))
     {
     case CLASS2 (rvc_zero, rvc_zero):
     case CLASS2 (rvc_zero, rvc_normal):
@@ -764,7 +764,7 @@ do_multiply (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
 	    }
 
 	  memset (&u, 0, sizeof (u));
-	  u.class = rvc_normal;
+	  u.cl = rvc_normal;
 	  SET_REAL_EXP (&u, exp);
 
 	  for (k = j; k < SIGSZ * 2; k += 2)
@@ -800,7 +800,7 @@ do_divide (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
   REAL_VALUE_TYPE t, *rr;
   bool inexact;
 
-  switch (CLASS2 (a->class, b->class))
+  switch (CLASS2 (a->cl, b->cl))
     {
     case CLASS2 (rvc_zero, rvc_zero):
       /* 0 / 0 = NaN.  */
@@ -860,7 +860,7 @@ do_divide (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
 
   /* Make sure all fields in the result are initialized.  */
   get_zero (rr, 0);
-  rr->class = rvc_normal;
+  rr->cl = rvc_normal;
   rr->sign = sign;
 
   exp = REAL_EXP (a) - REAL_EXP (b) + 1;
@@ -897,7 +897,7 @@ do_compare (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b,
 {
   int ret;
 
-  switch (CLASS2 (a->class, b->class))
+  switch (CLASS2 (a->cl, b->cl))
     {
     case CLASS2 (rvc_zero, rvc_zero):
       /* Sign of zero doesn't matter for compares.  */
@@ -952,7 +952,7 @@ do_fix_trunc (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a)
 {
   *r = *a;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
     case rvc_inf:
@@ -999,7 +999,7 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
       break;
 
     case MIN_EXPR:
-      if (op1->class == rvc_nan)
+      if (op1->cl == rvc_nan)
 	*r = *op1;
       else if (do_compare (op0, op1, -1) < 0)
 	*r = *op0;
@@ -1008,7 +1008,7 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
       break;
 
     case MAX_EXPR:
-      if (op1->class == rvc_nan)
+      if (op1->cl == rvc_nan)
 	*r = *op1;
       else if (do_compare (op0, op1, 1) < 0)
 	*r = *op1;
@@ -1067,9 +1067,9 @@ real_compare (int icode, const REAL_VALUE_TYPE *op0,
     case NE_EXPR:
       return do_compare (op0, op1, -1) != 0;
     case UNORDERED_EXPR:
-      return op0->class == rvc_nan || op1->class == rvc_nan;
+      return op0->cl == rvc_nan || op1->cl == rvc_nan;
     case ORDERED_EXPR:
-      return op0->class != rvc_nan && op1->class != rvc_nan;
+      return op0->cl != rvc_nan && op1->cl != rvc_nan;
     case UNLT_EXPR:
       return do_compare (op0, op1, -1) < 0;
     case UNLE_EXPR:
@@ -1093,7 +1093,7 @@ real_compare (int icode, const REAL_VALUE_TYPE *op0,
 int
 real_exponent (const REAL_VALUE_TYPE *r)
 {
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       return 0;
@@ -1113,7 +1113,7 @@ void
 real_ldexp (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *op0, int exp)
 {
   *r = *op0;
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
     case rvc_inf:
@@ -1140,7 +1140,7 @@ real_ldexp (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *op0, int exp)
 bool
 real_isinf (const REAL_VALUE_TYPE *r)
 {
-  return (r->class == rvc_inf);
+  return (r->cl == rvc_inf);
 }
 
 /* Determine whether a floating-point value X is a NaN.  */
@@ -1148,7 +1148,7 @@ real_isinf (const REAL_VALUE_TYPE *r)
 bool
 real_isnan (const REAL_VALUE_TYPE *r)
 {
-  return (r->class == rvc_nan);
+  return (r->cl == rvc_nan);
 }
 
 /* Determine whether a floating-point value X is negative.  */
@@ -1164,7 +1164,7 @@ real_isneg (const REAL_VALUE_TYPE *r)
 bool
 real_isnegzero (const REAL_VALUE_TYPE *r)
 {
-  return r->sign && r->class == rvc_zero;
+  return r->sign && r->cl == rvc_zero;
 }
 
 /* Compare two floating-point objects for bitwise identity.  */
@@ -1174,12 +1174,12 @@ real_identical (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b)
 {
   int i;
 
-  if (a->class != b->class)
+  if (a->cl != b->cl)
     return false;
   if (a->sign != b->sign)
     return false;
 
-  switch (a->class)
+  switch (a->cl)
     {
     case rvc_zero:
     case rvc_inf:
@@ -1219,7 +1219,7 @@ exact_real_inverse (enum machine_mode mode, REAL_VALUE_TYPE *r)
   REAL_VALUE_TYPE u;
   int i;
 
-  if (r->class != rvc_normal)
+  if (r->cl != rvc_normal)
     return false;
 
   /* Check for a power of two: all significand bits zero except the MSB.  */
@@ -1234,7 +1234,7 @@ exact_real_inverse (enum machine_mode mode, REAL_VALUE_TYPE *r)
   real_convert (&u, mode, &u);
 
   /* The rounding may have overflowed.  */
-  if (u.class != rvc_normal)
+  if (u.cl != rvc_normal)
     return false;
   for (i = 0; i < SIGSZ-1; ++i)
     if (u.sig[i] != 0)
@@ -1253,7 +1253,7 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 {
   unsigned HOST_WIDE_INT i;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
     underflow:
@@ -1309,7 +1309,7 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
   HOST_WIDE_INT low, high;
   int exp;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
     underflow:
@@ -1431,7 +1431,7 @@ real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig, size_t buf_size,
   bool sign;
 
   r = *r_orig;
-  switch (r.class)
+  switch (r.cl)
     {
     case rvc_zero:
       strcpy (str, (r.sign ? "-0.0" : "0.0"));
@@ -1698,7 +1698,7 @@ real_to_hexadecimal (char *str, const REAL_VALUE_TYPE *r, size_t buf_size,
   char exp_buf[16];
   size_t max_digits;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       exp = 0;
@@ -1851,7 +1851,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
 	  exp += d;
 	}
 
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       SET_REAL_EXP (r, exp);
 
       normalize (r);
@@ -1874,7 +1874,7 @@ real_from_string (REAL_VALUE_TYPE *r, const char *str)
       if (*str == '.')
 	{
 	  str++;
-	  if (r->class == rvc_zero)
+	  if (r->cl == rvc_zero)
 	    {
 	      while (*str == '0')
 		str++, exp--;
@@ -1963,7 +1963,7 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
     get_zero (r, 0);
   else
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = high < 0 && !unsigned_p;
       SET_REAL_EXP (r, 2 * HOST_BITS_PER_WIDE_INT);
 
@@ -2011,7 +2011,7 @@ ten_to_ptwo (int n)
   if (n < 0 || n >= EXP_BITS)
     abort ();
 
-  if (tens[n].class == rvc_zero)
+  if (tens[n].cl == rvc_zero)
     {
       if (n < (HOST_BITS_PER_WIDE_INT == 64 ? 5 : 4))
 	{
@@ -2043,7 +2043,7 @@ ten_to_mptwo (int n)
   if (n < 0 || n >= EXP_BITS)
     abort ();
 
-  if (tens[n].class == rvc_zero)
+  if (tens[n].cl == rvc_zero)
     do_divide (&tens[n], real_digit (1), ten_to_ptwo (n));
 
   return &tens[n];
@@ -2059,7 +2059,7 @@ real_digit (int n)
   if (n < 0 || n > 9)
     abort ();
 
-  if (n > 0 && num[n].class == rvc_zero)
+  if (n > 0 && num[n].cl == rvc_zero)
     real_from_integer (&num[n], VOIDmode, n, 0, 1);
 
   return &num[n];
@@ -2127,7 +2127,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
       bool neg = false;
 
       memset (r, 0, sizeof (*r));
-      r->class = rvc_nan;
+      r->cl = rvc_nan;
 
       /* Parse akin to strtol into the significand of R.  */
 
@@ -2204,7 +2204,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
   if (fmt == NULL)
     abort ();
 
-  r->class = rvc_normal;
+  r->cl = rvc_normal;
   r->sign = sign;
   r->signalling = 0;
   r->canonical = 0;
@@ -2224,12 +2224,12 @@ real_2expN (REAL_VALUE_TYPE *r, int n)
 
   n++;
   if (n > MAX_EXP)
-    r->class = rvc_inf;
+    r->cl = rvc_inf;
   else if (n < -MAX_EXP)
     ;
   else
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       SET_REAL_EXP (r, n);
       r->sig[SIGSZ-1] = SIG_MSB;
     }
@@ -2249,7 +2249,7 @@ round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
   emax2 = fmt->emax * fmt->log2_b;
 
   np2 = SIGNIFICAND_BITS - p2;
-  switch (r->class)
+  switch (r->cl)
     {
     underflow:
       get_zero (r, r->sign);
@@ -2382,7 +2382,7 @@ real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
   round_for_format (fmt, r);
 
   /* round_for_format de-normalizes denormals.  Undo just that part.  */
-  if (r->class == rvc_normal)
+  if (r->cl == rvc_normal)
     normalize (r);
 }
 
@@ -2493,8 +2493,8 @@ real_hash (const REAL_VALUE_TYPE *r)
   unsigned int h;
   size_t i;
 
-  h = r->class | (r->sign << 2);
-  switch (r->class)
+  h = r->cl | (r->sign << 2);
+  switch (r->cl)
     {
     case rvc_zero:
     case rvc_inf:
@@ -2546,7 +2546,7 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
   image = sign << 31;
   sig = (r->sig[SIGSZ-1] >> (HOST_BITS_PER_LONG - 24)) & 0x7fffff;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       break;
@@ -2618,7 +2618,7 @@ decode_ieee_single (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if (image && fmt->has_denorm)
 	{
-	  r->class = rvc_normal;
+	  r->cl = rvc_normal;
 	  r->sign = sign;
 	  SET_REAL_EXP (r, -126);
 	  r->sig[SIGSZ-1] = image << 1;
@@ -2631,7 +2631,7 @@ decode_ieee_single (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if (image)
 	{
-	  r->class = rvc_nan;
+	  r->cl = rvc_nan;
 	  r->sign = sign;
 	  r->signalling = (((image >> (HOST_BITS_PER_LONG - 2)) & 1)
 			   ^ fmt->qnan_msb_set);
@@ -2639,13 +2639,13 @@ decode_ieee_single (const struct real_format *fmt, REAL_VALUE_TYPE *r,
 	}
       else
 	{
-	  r->class = rvc_inf;
+	  r->cl = rvc_inf;
 	  r->sign = sign;
 	}
     }
   else
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = sign;
       SET_REAL_EXP (r, exp - 127 + 1);
       r->sig[SIGSZ-1] = image | SIG_MSB;
@@ -2720,7 +2720,7 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
       sig_hi = (sig_hi >> 11) & 0xfffff;
     }
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       break;
@@ -2819,7 +2819,7 @@ decode_ieee_double (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if ((image_hi || image_lo) && fmt->has_denorm)
 	{
-	  r->class = rvc_normal;
+	  r->cl = rvc_normal;
 	  r->sign = sign;
 	  SET_REAL_EXP (r, -1022);
 	  if (HOST_BITS_PER_LONG == 32)
@@ -2843,7 +2843,7 @@ decode_ieee_double (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if (image_hi || image_lo)
 	{
-	  r->class = rvc_nan;
+	  r->cl = rvc_nan;
 	  r->sign = sign;
 	  r->signalling = ((image_hi >> 30) & 1) ^ fmt->qnan_msb_set;
 	  if (HOST_BITS_PER_LONG == 32)
@@ -2856,13 +2856,13 @@ decode_ieee_double (const struct real_format *fmt, REAL_VALUE_TYPE *r,
 	}
       else
 	{
-	  r->class = rvc_inf;
+	  r->cl = rvc_inf;
 	  r->sign = sign;
 	}
     }
   else
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = sign;
       SET_REAL_EXP (r, exp - 1023 + 1);
       if (HOST_BITS_PER_LONG == 32)
@@ -2930,7 +2930,7 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
   image_hi = r->sign << 15;
   sig_hi = sig_lo = 0;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       break;
@@ -3108,7 +3108,7 @@ decode_ieee_extended (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if ((sig_hi || sig_lo) && fmt->has_denorm)
 	{
-	  r->class = rvc_normal;
+	  r->cl = rvc_normal;
 	  r->sign = sign;
 
 	  /* When the IEEE format contains a hidden bit, we know that
@@ -3139,7 +3139,7 @@ decode_ieee_extended (const struct real_format *fmt, REAL_VALUE_TYPE *r,
 
       if (sig_hi || sig_lo)
 	{
-	  r->class = rvc_nan;
+	  r->cl = rvc_nan;
 	  r->sign = sign;
 	  r->signalling = ((sig_hi >> 30) & 1) ^ fmt->qnan_msb_set;
 	  if (HOST_BITS_PER_LONG == 32)
@@ -3152,13 +3152,13 @@ decode_ieee_extended (const struct real_format *fmt, REAL_VALUE_TYPE *r,
 	}
       else
 	{
-	  r->class = rvc_inf;
+	  r->cl = rvc_inf;
 	  r->sign = sign;
 	}
     }
   else
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = sign;
       SET_REAL_EXP (r, exp - 16383 + 1);
       if (HOST_BITS_PER_LONG == 32)
@@ -3322,7 +3322,7 @@ encode_ibm_extended (const struct real_format *fmt, long *buf,
 
   /* Renormlize R before doing any arithmetic on it.  */
   normr = *r;
-  if (normr.class == rvc_normal)
+  if (normr.cl == rvc_normal)
     normalize (&normr);
 
   /* u = IEEE double precision portion of significand.  */
@@ -3330,7 +3330,7 @@ encode_ibm_extended (const struct real_format *fmt, long *buf,
   round_for_format (base_fmt, &u);
   encode_ieee_double (base_fmt, &buf[0], &u);
 
-  if (u.class == rvc_normal)
+  if (u.cl == rvc_normal)
     {
       do_add (&v, &normr, &u, 1);
       /* Call round_for_format since we might need to denormalize.  */
@@ -3356,7 +3356,7 @@ decode_ibm_extended (const struct real_format *fmt ATTRIBUTE_UNUSED, REAL_VALUE_
   base_fmt = fmt->qnan_msb_set ? &ieee_double_format : &mips_double_format;
   decode_ieee_double (base_fmt, &u, &buf[0]);
 
-  if (u.class != rvc_zero && u.class != rvc_inf && u.class != rvc_nan)
+  if (u.cl != rvc_zero && u.cl != rvc_inf && u.cl != rvc_nan)
     {
       decode_ieee_double (base_fmt, &v, &buf[2]);
       do_add (r, &u, &v, 0);
@@ -3424,7 +3424,7 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
 
   rshift_significand (&u, r, SIGNIFICAND_BITS - 113);
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       break;
@@ -3576,7 +3576,7 @@ decode_ieee_quad (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if ((image3 | image2 | image1 | image0) && fmt->has_denorm)
 	{
-	  r->class = rvc_normal;
+	  r->cl = rvc_normal;
 	  r->sign = sign;
 
 	  SET_REAL_EXP (r, -16382 + (SIGNIFICAND_BITS - 112));
@@ -3602,7 +3602,7 @@ decode_ieee_quad (const struct real_format *fmt, REAL_VALUE_TYPE *r,
     {
       if (image3 | image2 | image1 | image0)
 	{
-	  r->class = rvc_nan;
+	  r->cl = rvc_nan;
 	  r->sign = sign;
 	  r->signalling = ((image3 >> 15) & 1) ^ fmt->qnan_msb_set;
 
@@ -3622,13 +3622,13 @@ decode_ieee_quad (const struct real_format *fmt, REAL_VALUE_TYPE *r,
 	}
       else
 	{
-	  r->class = rvc_inf;
+	  r->cl = rvc_inf;
 	  r->sign = sign;
 	}
     }
   else
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = sign;
       SET_REAL_EXP (r, exp - 16383 + 1);
 
@@ -3716,7 +3716,7 @@ encode_vax_f (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
 
   sign = r->sign << 15;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       image = 0;
@@ -3755,7 +3755,7 @@ decode_vax_f (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp != 0)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = (image >> 15) & 1;
       SET_REAL_EXP (r, exp - 128);
 
@@ -3770,7 +3770,7 @@ encode_vax_d (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
 {
   unsigned long image0, image1, sign = r->sign << 15;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       image0 = image1 = 0;
@@ -3838,7 +3838,7 @@ decode_vax_d (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp != 0)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = (image0 >> 15) & 1;
       SET_REAL_EXP (r, exp - 128);
 
@@ -3870,7 +3870,7 @@ encode_vax_g (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
 {
   unsigned long image0, image1, sign = r->sign << 15;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       image0 = image1 = 0;
@@ -3938,7 +3938,7 @@ decode_vax_g (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp != 0)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = (image0 >> 15) & 1;
       SET_REAL_EXP (r, exp - 1024);
 
@@ -4042,7 +4042,7 @@ encode_i370_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   sign = r->sign << 31;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       image = 0;
@@ -4081,7 +4081,7 @@ decode_i370_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp || sig)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = sign;
       SET_REAL_EXP (r, (exp - 64) * 4);
       r->sig[SIGSZ-1] = sig << (HOST_BITS_PER_LONG - 24);
@@ -4097,7 +4097,7 @@ encode_i370_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   sign = r->sign << 31;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       image_hi = image_lo = 0;
@@ -4159,7 +4159,7 @@ decode_i370_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp || image_hi || image_lo)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
       r->sign = sign;
       SET_REAL_EXP (r, (exp - 64) * 4 + (SIGNIFICAND_BITS - 56));
 
@@ -4245,7 +4245,7 @@ encode_c4x_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
 {
   unsigned long image, exp, sig;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       exp = -128;
@@ -4294,7 +4294,7 @@ decode_c4x_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp != -128)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
 
       sig = sf & 0x7fffff;
       if (sf < 0)
@@ -4318,7 +4318,7 @@ encode_c4x_extended (const struct real_format *fmt ATTRIBUTE_UNUSED,
 {
   unsigned long exp, sig;
 
-  switch (r->class)
+  switch (r->cl)
     {
     case rvc_zero:
       exp = -128;
@@ -4381,7 +4381,7 @@ decode_c4x_extended (const struct real_format *fmt ATTRIBUTE_UNUSED,
 
   if (exp != -128)
     {
-      r->class = rvc_normal;
+      r->cl = rvc_normal;
 
       sig = sf & 0x7fffffff;
       if (sf < 0)

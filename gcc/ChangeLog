@@ -1,3 +1,17 @@
+2004-07-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* c-common.c: Rename all identifiers named `class' to `cl'.
+	* c-common.h: Likewise.
+	* c-parse.in: Likewise.
+	* c-typeck.c: Likewise.
+	* genmodes.c: Likewise.
+	* real.c: Likewise.
+	* real.h: Likewise.
+	* recog.c: Likewise.
+	* recog.h: Likewise.
+	* regrename.c: Likewise.
+	* tree.h: Likewise.
+
 2004-07-25  Daniel Jacobowitz  <dan@debian.org>
 
 	* regmove.c (optimize_reg_copy_1): Don't try to replace call-used
