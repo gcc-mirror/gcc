@@ -650,8 +650,24 @@ reg_or_cint_operand (op, mode)
     register rtx op;
     enum machine_mode mode;
 {
-     return (GET_CODE (op) == CONST_INT
-	     || gpc_reg_operand (op, mode));
+     return (GET_CODE (op) == CONST_INT || gpc_reg_operand (op, mode));
+}
+
+/* Return 1 is the operand is either a non-special register or ANY
+   32-bit signed constant integer.  */
+
+int
+reg_or_arith_cint_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode;
+{
+     return (gpc_reg_operand (op, mode)
+	     || (GET_CODE (op) == CONST_INT
+#if HOST_BITS_PER_WIDE_INT != 32
+		 && ((unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80000000)
+		     < 0x100000000u)
+#endif
+		 ));
 }
 
 /* Return 1 is the operand is either a non-special register or ANY
@@ -729,7 +745,7 @@ num_insns_constant_wide (value)
 #if HOST_BITS_PER_WIDE_INT == 64
   else if (TARGET_POWERPC64)
     {
-      HOST_WIDE_INT low  = value & 0xffffffff;
+      unsigned HOST_WIDE_INT low  = value & 0xffffffffu;
       HOST_WIDE_INT high = value >> 32;
 
       if (high == 0 && (low & 0x80000000u) == 0)

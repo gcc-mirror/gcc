@@ -31,8 +31,6 @@ Boston, MA 02111-1307, USA.  */
    "Compile for 64-bit pointers" },					\
   {"aix32",		- (MASK_64BIT | MASK_POWERPC64),		\
    "Compile for 32-bit pointers" },					\
-  {"threads",		0,						\
-   "Use the thread library and reentrant C library" },			\
   {"pe",		0,						\
    "Support message passing with the Parallel Environment" },
 
@@ -112,7 +110,7 @@ do {									\
    %{ansi: -D_ANSI_C_SOURCE}\
    %{maix64: -D__64BIT__ -D_ARCH_PPC}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
-   %{mthreads: -D_THREAD_SAFE}\
+   %{pthread: -D_THREAD_SAFE}\
    %(cpp_cpu)"
 
 /* Common CPP definitions used by CPP_SPEC among the various targets
@@ -172,8 +170,8 @@ do {									\
    %{p:-L/lib/profiled -L/usr/lib/profiled}\
    %{!maix64:%{!shared:%{g*:-lg}}}\
    %{mpe:-L/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
-   %{mthreads:-L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
-   %{!mthreads:-lc}"
+   %{pthread:-L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
+   %{!pthread:-lc}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
@@ -188,8 +186,8 @@ do {									\
    %{!mpe:\
      %{maix64:%{pg:gcrt0_64%O%s}%{!pg:%{p:mcrt0_64%O%s}%{!p:crt0_64%O%s}}}\
      %{!maix64:\
-       %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
-       %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}}"
+       %{pthread:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
+       %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}}"
 
 /* AIX 4.3 typedefs ptrdiff_t as "long" while earlier releases used "int".  */
 
