@@ -1,3 +1,10 @@
+2004-06-26  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkMainThread.c
+	(init_dpi_conversion_factor): Check for int_dpi < 0 in case gtk-xft-dpi
+	can not calculate the right value.
+	(dpi_changed_cb): Likewise. Mark *pspec as unused.
+
 2004-06-24  Bryce McKinlay  <mckinlay@redhat.com>
 
 	* testsuite/libjava.jacks/jacks.xfail: Remove

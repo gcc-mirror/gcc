@@ -231,9 +231,15 @@ init_dpi_conversion_factor ()
     {
       int int_dpi;
       g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
-      dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
+      /* If int_dpi == -1 gtk-xft-dpi returns the default value. So we
+	 have to do approximate calculation here.  */
+      if (int_dpi < 0)
+	dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
+      else
+	dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
+
       g_signal_connect (settings, "notify::gtk-xft-dpi",
-                        G_CALLBACK (dpi_changed_cb), NULL);
+			G_CALLBACK (dpi_changed_cb), NULL);
     }
   else
     /* Approximate. */
@@ -242,9 +248,12 @@ init_dpi_conversion_factor ()
 
 static void
 dpi_changed_cb (GtkSettings  *settings,
-                GParamSpec   *pspec)
+		GParamSpec *pspec __attribute__((unused)))
 {
   int int_dpi;
   g_object_get (settings, "gtk-xft-dpi", &int_dpi, NULL);
-  dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
+  if (int_dpi < 0)
+    dpi_conversion_factor = PANGO_SCALE * 72.0 / 96.;
+  else
+    dpi_conversion_factor = PANGO_SCALE * 72.0 / (int_dpi / PANGO_SCALE);
 }
