@@ -1,3 +1,7 @@
+Thu May 28 12:57:05 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload.c (find_reloads): Do not force a reloads of match_operators.
+	
 Thu May 28 10:22:22 EDT 1998  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* except.h (remove_handler): Add new prototype.
