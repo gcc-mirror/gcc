@@ -151,18 +151,22 @@ set_source_filename (JCF *jcf, int index)
       char *dot = strrchr (class_name, '.');
       if (dot != NULL)
 	{
-	  int i = dot - class_name + 1;
+	  /* Length of prefix, not counting final dot. */
+	  int i = dot - class_name;
 	  /* Concatenate current package prefix with new sfname. */
-	  char *buf = xmalloc (i+new_len+3);
-	  memcpy (buf, class_name, i);
-	  strcpy (buf + i, sfname);
-	  /* Replace '.' by DIR_SEPARATOR. */
+	  char *buf = xmalloc (i + new_len + 2); /* Space for '.' and '\0'. */
+	  strcpy (buf + i + 1, sfname);
+	  /* Copy package from class_name, replacing '.' by DIR_SEPARATOR.
+	     Note we start at the end with the final package dot. */
 	  for (; i >= 0;  i--)
 	    {
-	      if (buf[i] == '.')
-		buf[i] = DIR_SEPARATOR;
+	      char c = class_name[i];
+	      if (c == '.')
+		c = DIR_SEPARATOR;
+	      buf[i] = c;
 	    }
 	  sfname_id = get_identifier (buf);
+	  free (buf);
 	  sfname = IDENTIFIER_POINTER (sfname_id);
 	}
     }

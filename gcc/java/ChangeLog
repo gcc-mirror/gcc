@@ -1,5 +1,12 @@
 2004-11-27  Per Bothner  <per@bothner.com>
 
+	* jcf-parse.c (set_source_filename):  Improvement to Andrew's fix:
+	Fix fencepost error in 'i', which got executed one too many times.
+	Also, fold memcpy into explicit loop, as originally intended.
+	Also, free temporary 'buf' which otherwise leaks.
+
+2004-11-27  Per Bothner  <per@bothner.com>
+
 	* expr.c (build_expr_wfl): Only declare last_file and last_filenode
 	local static variables if not USE_MAPPED_LOCATION.
 
