@@ -2477,8 +2477,6 @@ build_chill_function_call (function, expr)
 	    }
 	  else
 	    {
-	      actual = chill_convert_for_assignment (TREE_TYPE (type),
-						     actual, place);
 	      sprintf (place, "parameter_%d", parmno);
 	      actual = decl_temp1 (get_identifier (place),
 				   TREE_TYPE (type), 0, actual, 0, 0);
