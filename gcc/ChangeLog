@@ -4257,6 +4257,11 @@ Mon Mar 24 20:03:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(sordered, sungt, sunle, sunge, sunlt): Likewise.
 	(eh_epilogue, tablejump): Likewise.
 
+2003-03-09  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* tree.c (substitute_in_expr, case 'e'): Only make recursive call
+	on operands if it has a PLACEHOLDER_EXPR.
+
 2003-03-09  David Edelsohn  <edelsohn@gnu.org>
 	    Mostafa Hagog
 
