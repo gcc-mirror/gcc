@@ -1,3 +1,9 @@
+2001-04-06  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/backward/backward_warning.h: Temporarily disable until
+	g++ testsuite changes go in.
+	* tests_flags.in (CROSS_LIB_PATH): Add.
+
 2001-04-05  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Warn when using backward headers.

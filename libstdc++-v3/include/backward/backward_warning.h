@@ -28,7 +28,8 @@
 #ifndef _CPP_BACKWARD_BACKWARD_WARNING_H
 #define _CPP_BACKWARD_BACKWARD_WARNING_H 1
 
-#ifdef __DEPRECATED
+//#ifdef __DEPRECATED
+#if 0
 # warning "This file includes at least one deprecated or antiquated header."
 # warning "Please use the <X> file instead of <X.h> file for "C++" includes"
 # warning "and use the <cX> file instead of <X.h> file for "C" includes."
