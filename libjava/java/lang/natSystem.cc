@@ -441,6 +441,7 @@ java::lang::System::init_properties (void)
 #endif /* HAVE_SETLOCALE */
     {
       SET ("user.language", "en");
+      SET ("user.region", "US");
     }  
 
   // Set the "user.timezone" property.
