@@ -76,6 +76,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define STACK_ALIGNMENT_NEEDED 1
 #endif
 
+#define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
+
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
    give the same symbol without quotes for an alternative entry point.  You
@@ -4339,6 +4341,7 @@ assign_parms (tree fndecl)
       int last_named = 0, named_arg;
       int in_regs;
       int partial = 0;
+      int pretend_bytes = 0;
 
       /* Set LAST_NAMED if this is last named arg before last
 	 anonymous args.  */
@@ -4453,10 +4456,17 @@ assign_parms (tree fndecl)
 	 Also, indicate when RTL generation is to be suppressed.  */
       if (last_named && !varargs_setup)
 	{
+	  int varargs_pretend_bytes = 0;
 	  targetm.calls.setup_incoming_varargs (&args_so_far, promoted_mode,
-						  passed_type,
-						  &current_function_pretend_args_size, 0);
+						passed_type,
+						&varargs_pretend_bytes, 0);
 	  varargs_setup = 1;
+
+	  /* If the back-end has requested extra stack space, record how
+	     much is needed.  Do not change pretend_args_size otherwise
+	     since it may be nonzero from an earlier partial argument.  */
+	  if (varargs_pretend_bytes > 0)
+	    current_function_pretend_args_size = varargs_pretend_bytes;
 	}
 
       /* Determine parm's home in the stack,
@@ -4500,8 +4510,43 @@ assign_parms (tree fndecl)
 
 #ifdef FUNCTION_ARG_PARTIAL_NREGS
       if (entry_parm)
-	partial = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
-					      passed_type, named_arg);
+	{
+	  partial = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
+						passed_type, named_arg);
+	  if (partial
+#ifndef MAYBE_REG_PARM_STACK_SPACE
+	      /* The caller might already have allocated stack space
+		 for the register parameters.  */
+	      && reg_parm_stack_space == 0
+#endif
+	      )
+	    {
+	      /* Part of this argument is passed in registers and part
+		 is passed on the stack.  Ask the prologue code to extend
+		 the stack part so that we can recreate the full value.
+
+		 PRETEND_BYTES is the size of the registers we need to store.
+		 CURRENT_FUNCTION_PRETEND_ARGS_SIZE is the amount of extra
+		 stack space that the prologue should allocate.
+
+		 Internally, gcc assumes that the argument pointer is
+		 aligned to STACK_BOUNDARY bits.  This is used both for
+		 alignment optimisations (see init_emit) and to locate
+		 arguments that are aligned to more than PARM_BOUNDARY
+		 bits.  We must preserve this invariant by rounding
+		 CURRENT_FUNCTION_PRETEND_ARGS_SIZE up to a stack
+		 boundary.  */
+	      pretend_bytes = partial * UNITS_PER_WORD;
+	      current_function_pretend_args_size
+		= CEIL_ROUND (pretend_bytes, STACK_BYTES);
+
+	      /* If PRETEND_BYTES != CURRENT_FUNCTION_PRETEND_ARGS_SIZE,
+		 insert the padding before the start of the first pretend
+		 argument.  */
+	      stack_args_size.constant
+		= (current_function_pretend_args_size - pretend_bytes);
+	    }
+	}
 #endif
 
       memset (&locate, 0, sizeof (locate));
@@ -4546,17 +4591,6 @@ assign_parms (tree fndecl)
 
       if (partial)
 	{
-#ifndef MAYBE_REG_PARM_STACK_SPACE
-	  /* When REG_PARM_STACK_SPACE is nonzero, stack space for
-	     split parameters was allocated by our caller, so we
-	     won't be pushing it in the prolog.  */
-	  if (reg_parm_stack_space == 0)
-#endif
-	  current_function_pretend_args_size
-	    = (((partial * UNITS_PER_WORD) + (PARM_BOUNDARY / BITS_PER_UNIT) - 1)
-	       / (PARM_BOUNDARY / BITS_PER_UNIT)
-	       * (PARM_BOUNDARY / BITS_PER_UNIT));
-
 	  /* Handle calls that pass values in multiple non-contiguous
 	     locations.  The Irix 6 ABI has examples of this.  */
 	  if (GET_CODE (entry_parm) == PARALLEL)
@@ -4600,10 +4634,7 @@ assign_parms (tree fndecl)
 #endif
 	  )
 	{
-	  stack_args_size.constant += locate.size.constant;
-	  /* locate.size doesn't include the part in regs.  */
-	  if (partial)
-	    stack_args_size.constant += current_function_pretend_args_size;
+	  stack_args_size.constant += pretend_bytes + locate.size.constant;
 	  if (locate.size.var)
 	    ADD_PARM_SIZE (stack_args_size, locate.size.var);
 	}
@@ -5174,8 +5205,6 @@ assign_parms (tree fndecl)
 				    REG_PARM_STACK_SPACE (fndecl));
 #endif
 #endif
-
-#define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
 
   current_function_args_size
     = ((current_function_args_size + STACK_BYTES - 1)
