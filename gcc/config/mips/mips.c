@@ -3793,7 +3793,10 @@ mips_output_external (file, decl, name)
   if (TREE_CODE (decl) == FUNCTION_DECL
       /* ??? Don't include alloca, since gcc will always expand it
 	 inline.  If we don't do this, libg++ fails to build.  */
-      && strcmp (name, "alloca"))
+      && strcmp (name, "alloca")
+      /* ??? Don't include __builtin_next_arg, because then gcc will not
+	 bootstrap under Irix 5.1.  */
+      && strcmp (name, "__builtin_next_arg"))
     {
       p = (struct extern_list *)permalloc ((long) sizeof (struct extern_list));
       p->next = extern_head;
