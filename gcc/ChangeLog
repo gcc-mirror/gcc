@@ -1,3 +1,8 @@
+2004-04-19  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, mips-sgi-irix5): Fix IRIX 5.3 IDO
+	download URL.
+
 2004-04-19  Daniel Jacobowitz  <drow@mvista.com>
 
 	* stor-layout.c (layout_decl): Check DECL_PACKED before calling
