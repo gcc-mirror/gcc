@@ -1,3 +1,8 @@
+2003-01-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* configure.in: Make --disable-checking the default.
+	* configure: Regenerate.
+	
 2003-01-22  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390-protos.h (preferred_la_operand_p):
