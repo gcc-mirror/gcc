@@ -63,15 +63,7 @@ cpp_print_containing_files (pfile)
 	    fprintf (stderr, ",\n                ");
 	}
 
-/* start-sanitize-mpw */
-#ifdef MPW
-      fprintf (stderr, " File \"%s\"; Line %d  # ", ip->nominal_fname, line);
-#else
-/* end-sanitize-mpw */
       fprintf (stderr, " from %s:%d", ip->nominal_fname, line);
-/* start-sanitize-mpw */
-#endif /* MPW */
-/* end-sanitize-mpw */
     }
   if (! first)
     fprintf (stderr, ":\n");
