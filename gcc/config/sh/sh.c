@@ -5515,3 +5515,40 @@ static rtx mark_constant_pool_use (x)
 
   return lab;
 }
+
+/* Return true if it's possible to redirect BRANCH1 to the destination
+   of an unconditional jump BRANCH2.  We only want to do this if the
+   resulting branch will have a short displacement.  */
+int 
+sh_can_redirect_branch (branch1, branch2)
+     rtx branch1;
+     rtx branch2;
+{
+  if (flag_expensive_optimizations && simplejump_p (branch2))
+    {
+      rtx dest = XEXP (SET_SRC (single_set (branch2)), 0);
+      rtx insn;
+      int distance;
+      
+      for (distance = 0, insn = NEXT_INSN (branch1); 
+	   insn && distance < 256; 
+	   insn = PREV_INSN (insn))
+	{
+	  if (insn == dest)    
+	    return 1;
+	  else
+	    distance += get_attr_length (insn);
+	}
+      for (distance = 0, insn = NEXT_INSN (branch1); 
+	   insn && distance < 256; 
+	   insn = NEXT_INSN (insn))
+	{
+	  if (insn == dest)    
+	    return 1;
+	  else
+	    distance += get_attr_length (insn);
+	}
+    }
+  return 0;
+}
+
