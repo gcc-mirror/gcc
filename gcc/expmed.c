@@ -3727,9 +3727,6 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
   rtx last = 0;
   rtx pattern, comparison;
 
-  if (mode == VOIDmode)
-    mode = GET_MODE (op0);
-
   /* If one operand is constant, make it the second one.  Only do this
      if the other operand is not constant as well.  */
 
@@ -3741,6 +3738,9 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
       op1 = tem;
       code = swap_condition (code);
     }
+
+  if (mode == VOIDmode)
+    mode = GET_MODE (op0);
 
   /* For some comparisons with 1 and -1, we can convert this to 
      comparisons with zero.  This will often produce more opportunities for
