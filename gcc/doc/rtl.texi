@@ -3283,12 +3283,6 @@ are stored in the @code{REG_NOTES} field of an insn as an
 @code{expr_list}.
 
 @table @code
-@findex REG_EXEC_COUNT
-@item REG_EXEC_COUNT
-This is used to indicate the number of times a basic block was executed
-according to the profile data.  The note is attached to the first insn in
-the basic block.
-
 @findex REG_BR_PROB
 @item REG_BR_PROB
 This is used to specify the ratio of branches to non-branches of a
