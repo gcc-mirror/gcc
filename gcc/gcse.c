@@ -1912,7 +1912,7 @@ hash_scan_set (pat, insn, set_p)
 	{
 	  /* An expression is not anticipatable if its operands are
 	     modified before this insn.  */
-	  int antic_p = ! optimize_size && oprs_anticipatable_p (src, insn);
+	  int antic_p = oprs_anticipatable_p (src, insn);
 	  /* An expression is not available if its operands are
 	     subsequently modified, including this insn.  */
 	  int avail_p = oprs_available_p (src, insn);
