@@ -1,3 +1,11 @@
+2000-01-04  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* i386.md (ashlsi3_cmpno): Don't accept variables shifts.
+	(ashlhi3_cmpno, ashlqi3_cmpno, ashrsi3_cmpno, ashrhi3_cmpno,
+	ashrqi3_cmpno, lshrsi3_cmpno, lshrhi3_cmpno, lshrqi3_cmpno): Likewise.
+	(rotlsi3_cmpno, rotlhi3_cmpno, rotlqi3_cmpno, rotrsi3_cmpno,
+	rotrhi3_cmpno, rotrqi3_cmpno): Likewise.
+
 2000-01-04  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
 	* ginclude/stdbool.h:  Support compilation as C++.
