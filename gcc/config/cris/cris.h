@@ -1507,36 +1507,6 @@ struct cum_args {int regs;};
 
 /* Node: Data Output */
 
-/* We must use REAL_VALUE_TO_TARGET_SINGLE and
-   REAL_VALUE_TO_TARGET_LONG_DOUBLE.  It seems real.h cannot support when
-   target-double is target-single is 32bit-single.  */
-#define ASM_OUTPUT_LONG_DOUBLE(FILE, VALUE)		\
-  do							\
-    {							\
-      long l[2];					\
-      REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);	\
-      fprintf (FILE, "\t.dword 0x%lx\n", l[0]);		\
-      fprintf (FILE, "\t.dword 0x%lx\n", l[1]);		\
-    }							\
-  while (0)
-
-/* FIXME: The manual says "array of long:s", but
-   REAL_VALUE_TO_TARGET_SINGLE actually writes a long.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)		\
-  do						\
-    {						\
-      long l;					\
-      REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-      fprintf (FILE, "\t.dword 0x%lx\n", l);	\
-    }						\
-  while (0)
-
-/* This is what is used by gcc for 64-bit floats,
-   not the "long double" one.  */
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE) \
- ASM_OUTPUT_LONG_DOUBLE (FILE, VALUE)
-
-
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) (C) == '@'
 
 /* Node: Uninitialized Data */

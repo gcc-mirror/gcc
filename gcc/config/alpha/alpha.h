@@ -1947,37 +1947,6 @@ do {						\
 #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \
   ((OVERFLOW) = check_float_value (MODE, &D, OVERFLOW))
 
-/* This is how to output an assembler line defining a `long double'
-   constant.  */
-
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-  do {									\
-    long t[4];								\
-    REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), t);			\
-    fprintf (FILE, "\t.quad 0x%lx%08lx,0x%lx%08lx\n",			\
-	     t[1] & 0xffffffff, t[0] & 0xffffffff,			\
-	     t[3] & 0xffffffff, t[2] & 0xffffffff);			\
-  } while (0)
-
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  do {									\
-    long t[2];								\
-    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);				\
-    fprintf (FILE, "\t.quad 0x%lx%08lx\n",				\
-	     t[1] & 0xffffffff, t[0] & 0xffffffff);			\
-  } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)				\
-  do {								\
-    long t;							\
-    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);			\
-    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);		\
-  } while (0)
-  
 /* We use the default ASCII-output routine, except that we don't write more
    than 50 characters since the assembler doesn't support very long lines.  */
 

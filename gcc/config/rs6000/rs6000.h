@@ -2669,25 +2669,6 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
    the loader.  This depends on the AIX version.  */
 #define RS6000_CALL_GLUE "cror 31,31,31"
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
-  {							\
-    long t[2];						\
-    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
-    fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",	\
-	     t[0] & 0xffffffff, t[1] & 0xffffffff);	\
-  }
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
-  {							\
-    long t;						\
-    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);	\
-  }
-
 /* This is how to output an element of a case-vector that is relative.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \

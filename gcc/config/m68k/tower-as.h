@@ -258,27 +258,6 @@ Boston, MA 02111-1307, USA.  */
   fprintf (FILE, "\tswbeg &%d\n%s%%%d:\n",				\
            XVECLEN (PATTERN (TABLE), 1), (PREFIX), (NUM));		\
 
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { long l[2];						\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\tlong 0x%lx,0x%lx\n", l[0], l[1]); \
-   } while (0)
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
-do { long l[3];								\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
-   } while (0)
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { long l;					\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\tlong 0x%lx\n", l);	\
-   } while (0)
-
 #undef ASM_OUTPUT_ADDR_VEC_ELT
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)  \
   fprintf (FILE, "\tlong L%%%d\n", (VALUE))

@@ -111,9 +111,8 @@ extern const char *const sectname[4];
 /* Type to use for `size_t'. If undefined, uses `long unsigned int'.  */
 #define SIZE_TYPE           "int"
 
-/* 1750a preliminary
-   #define TARGET_FLOAT_FORMAT UNKNOWN_FLOAT_FORMAT
-*/
+/* 1750a preliminary.  Ought to properly define the format in real.c.  */
+#define TARGET_FLOAT_FORMAT UNKNOWN_FLOAT_FORMAT
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
 #define POINTER_BOUNDARY     16
@@ -1069,32 +1068,6 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 
 #define JUMP_TABLES_IN_TEXT_SECTION 1
 
-/* This is how to output an assembler line defining a 1750A `float'
-   constant.  */
-
-#define ASM_OUTPUT_SHORT_FLOAT(FILE,VALUE) 			\
-  do {								\
-      if (label_pending) {					\
-	 label_pending = 0;					\
-         sprintf (datalbl[datalbl_ndx].value, "%f", (double) VALUE); \
-      }								\
-      datalbl[datalbl_ndx].size += 2;				\
-      fprintf (FILE, "\tdataf\t%f\n",VALUE);			\
-  } while(0)
-
-/* This is how to output an assembler line defining a 1750A `double'
-    constant.  */
-
-#define ASM_OUTPUT_THREE_QUARTER_FLOAT(FILE,VALUE)		\
-  do {								\
-      if (label_pending) {					\
-	 label_pending = 0;					\
-         sprintf (datalbl[datalbl_ndx].value, "%f", VALUE);	\
-      }								\
-      datalbl[datalbl_ndx].size += 3;				\
-      fprintf(FILE,"\tdataef\t%f\n",VALUE);			\
-  } while (0)
-
 /* This is how to output an assembler line defining a string constant.  */
 
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN)  do {		\
@@ -1190,7 +1163,13 @@ enum reg_class { NO_REGS, R2, R0_1, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLA
 	'Q': print a 1750 Base-Register-with-offset instruction's operands
  */
 
-/* 1750A: see file aux-output.c */
 #define PRINT_OPERAND(FILE, X, CODE)  print_operand(FILE,X,CODE)
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  print_operand_address(FILE,ADDR)
 
+/* Convert a REAL_VALUE_TYPE to the target 1750a float format.  */
+#define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) \
+  ((OUT) = real_value_to_target_single(IN))
+
+/* Convert a REAL_VALUE_TYPE to the target 1750a extended float format.  */
+#define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) \
+  real_value_to_target_double((IN), (OUT))

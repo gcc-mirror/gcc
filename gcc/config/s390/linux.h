@@ -93,30 +93,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LABEL(FILE, NAME)     \
   (assemble_name (FILE, NAME), fputs (":\n", FILE))
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
-  {							\
-    long t[2];						\
-    REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
-    fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n",	\
-	     t[0] & 0xffffffff, t[1] & 0xffffffff);	\
-  }
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
-  {							\
-    long t;						\
-    REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-    fprintf (FILE, "\t.long 0x%lx\n", t & 0xffffffff);	\
-  }
-
 /* Store in OUTPUT a string (made with alloca) containing
    an assembler-name for a local static variable named NAME.
    LABELNO is an integer which is different for each call.  */

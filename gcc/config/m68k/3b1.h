@@ -101,8 +101,6 @@ output_file_directive ((FILE), main_input_filename)
 
 #undef TARGET_VERSION
 #undef ASM_FORMAT_PRIVATE_NAME
-#undef ASM_OUTPUT_DOUBLE
-#undef ASM_OUTPUT_FLOAT
 #undef ASM_OUTPUT_ALIGN
 #undef ASM_OUTPUT_SOURCE_FILENAME
 #undef ASM_OUTPUT_SOURCE_LINE
@@ -126,29 +124,6 @@ output_file_directive ((FILE), main_input_filename)
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 12),	\
   sprintf ((OUTPUT), "%s_%%%d", (NAME), (LABELNO)))
-
-/* The unixpc doesn't know about double's and float's */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { long l[2];						\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\tlong 0x%lx,0x%lx\n", l[0], l[1]); \
-   } while (0)
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
-do { long l[3];								\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\tlong 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
-   } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { long l;					\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);	\
-     fprintf ((FILE), "\tlong 0x%lx\n", l);	\
-   } while (0)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
 do {					\

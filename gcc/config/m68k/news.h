@@ -102,7 +102,6 @@ Boston, MA 02111-1307, USA.  */
 #undef REGISTER_NAMES
 #undef ASM_OUTPUT_REG_PUSH
 #undef ASM_OUTPUT_REG_POP
-#undef ASM_OUTPUT_DOUBLE
 #undef ASM_OUTPUT_SKIP
 #undef ASM_FORMAT_PRIVATE_NAME
 #endif  
@@ -160,12 +159,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_REG_POP(FILE,REGNO)  \
   fprintf (FILE, "\tmove.l (sp)+,%s\n", reg_names[REGNO])
   
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf (FILE, "\t.double 0d%s\n", dstr);		\
-   } while (0)
-
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
   fprintf (FILE, "\t.space %u\n", (SIZE))
 

@@ -99,36 +99,6 @@ Boston, MA 02111-1307, USA.  */
 
 #endif /* defined SUPPORT_SUN_FPA */
 
-/* This is how to output an assembler line defining an `int' constant.  */
-/* The SGS assembler doesn't understand ".word".  */
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  			\
-do { long l[3];							\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);		\
-     fprintf ((FILE), "%s0x%lx,0x%lx,0x%lx\n",			\
-	      integer_asm_op (4, TRUE), l[0], l[1], l[2]);	\
-   } while (0)
-
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-do { long l[2];						\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf ((FILE), "%s0x%lx,0x%lx\n",		\
-	      integer_asm_op (4, TRUE), l[0], l[1]);	\
-   } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-do { long l;						\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     assemble_aligned_integer (4, GEN_INT (l));		\
-   } while (0)
-
 /* This is how to output an assembler line that says to advance the
    location counter to a multiple of 2**LOG bytes.  */
 

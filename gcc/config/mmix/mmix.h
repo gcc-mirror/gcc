@@ -966,15 +966,8 @@ const_section ()						\
 
 /* Node: Data Output */
 
-#define ASM_OUTPUT_DOUBLE(STREAM, VALUE) \
- mmix_asm_output_double (STREAM, &VALUE)
-
-#define ASM_OUTPUT_FLOAT(STREAM, VALUE) \
- mmix_asm_output_float (STREAM, &VALUE)
-
 #define ASM_OUTPUT_ASCII(STREAM, PTR, LEN) \
  mmix_asm_output_ascii (STREAM, PTR, LEN)
-
 
 /* Node: Uninitialized Data */
 

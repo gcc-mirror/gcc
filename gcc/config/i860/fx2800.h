@@ -266,15 +266,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START "//"
 
-/* Use definitions of ASM_OUTPUT_{DOUBLE,FLOAT} as given in i860.h */
-
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE) \
-  fprintf(FILE, "\t.double %.20e\n", (VALUE))
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE) \
-  fprintf(FILE, "\t.float %.12e\n", (VALUE))
-
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)
 #undef ASM_OUTPUT_FUNCTION_PREFIX

@@ -4384,18 +4384,6 @@ do {							\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
   sprintf ((LABEL), "*%s%s%ld", (LOCAL_LABEL_PREFIX), (PREFIX), (long)(NUM))
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(STREAM,VALUE)					\
-  mips_output_double (STREAM, VALUE)
-
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(STREAM,VALUE)					\
-  mips_output_float (STREAM, VALUE)
-
-
 /* This is how to output an element of a case-vector that is absolute.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM, VALUE)				\

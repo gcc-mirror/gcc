@@ -1245,27 +1245,6 @@ extern long mcore_current_compilation_timestamp;
 
 /* Output various types of constants.  */
 
-/* This is how to output an assembler line defining a `double'.  */
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-  do							\
-    {							\
-      char dstr[30];					\
-      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-      fprintf (FILE, "\t.double %s\n", dstr);		\
-    }							\
-  while (0)
-
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-  do							\
-    {							\
-      char dstr[30];					\
-      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-      fprintf (FILE, "\t.float %s\n", dstr);		\
-    }							\
-  while (0)
-
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 #undef  ASM_OUTPUT_SKIP

@@ -413,51 +413,6 @@ ssib_section ()			\
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,TABLEINSN)	\
   ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#undef ASM_OUTPUT_DOUBLE
-#ifdef REAL_ARITHMETIC
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-  do { long t[2];					\
-       REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);	\
-       fprintf (FILE, "\t.quad ^X%lx%08lx\n",		\
-		t[0] & 0xffffffff, t[1] & 0xffffffff);	\
-  } while (0)
-#else
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-  do { long t[2];					\
-       REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);	\
-       fprintf (FILE, "\t.quad ^X%lx\n", t[0]);		\
-  } while(0)
-#endif
- 
-
-/* This is how to output an assembler line defining a `long double'
-   constant. `long double'  and `double' are the same on the Cray T3E.  */
- 
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)		\
-  ASM_OUTPUT_DOUBLE (FILE,VALUE)
-
-/* This is how to output an assembler line defining a `float' constant.
-   ??? Somehow, REAL_VALUE_TO_TARGET_SINGLE gets confused and returns the
-   value in the upper bits of the int.  */
-
-#undef ASM_OUTPUT_FLOAT
-#ifdef REAL_ARITHMETIC
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-  do { long t;						\
-       REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);	\
-       fprintf (FILE, "\t.long ^X%lx\n", t & 0xffffffff);\
-  } while (0)
-#else
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-  do { long t;						\
-       REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);	\
-       fprintf (FILE, "\t.long ^X%lx\n", (t >> 32) & 0xffffffff);\
-  } while(0)
-#endif
-
 /* CAM has some restrictions with respect to string literals. It won't
    accept lines with more that 256 characters which means that we have
    to split long strings. Moreover, it only accepts escape sequences of

@@ -81,41 +81,6 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "//\t.ident \"%s\"\n", NAME);
 
-/*
- *	the assembler doesn't grok .double INF and the like
- *	but does understand .long with hex numbers, so special
- *	case the "symbolic" IEEE numbers.
- */
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)				\
-  {								\
-    if (REAL_VALUE_ISINF (VALUE)				\
-        || REAL_VALUE_ISNAN (VALUE)				\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))			\
-      {								\
-	long t[2];						\
-	REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), t);		\
-	fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", t[0], t[1]); \
-      }								\
-    else							\
-      fprintf (FILE, "\t.double %.20e\n", VALUE);		\
-  }
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)				\
-  {								\
-    if (REAL_VALUE_ISINF (VALUE)				\
-        || REAL_VALUE_ISNAN (VALUE)				\
-	|| REAL_VALUE_MINUS_ZERO (VALUE))			\
-      {								\
-	long t;							\
-	REAL_VALUE_TO_TARGET_SINGLE ((VALUE), t);		\
-	fprintf (FILE, "\t.long 0x%lx\n", t);			\
-      }								\
-    else							\
-      fprintf (FILE, "\t.float %.12e\n", VALUE);		\
-  }
-
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, STR, LENGTH)			\
   do								\

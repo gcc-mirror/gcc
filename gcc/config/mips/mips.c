@@ -6289,43 +6289,6 @@ mips_declare_object (stream, name, init_string, final_string, size)
     }
 }
 
-/* Output a double precision value to the assembler.  If both the
-   host and target are IEEE, emit the values in hex.  */
-
-void
-mips_output_double (stream, value)
-     FILE *stream;
-     REAL_VALUE_TYPE value;
-{
-#ifdef REAL_VALUE_TO_TARGET_DOUBLE
-  long value_long[2];
-  REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
-
-  fprintf (stream, "\t.word\t0x%08lx\t\t# %.20g\n\t.word\t0x%08lx\n",
-	   value_long[0], value, value_long[1]);
-#else
-  fprintf (stream, "\t.double\t%.20g\n", value);
-#endif
-}
-
-/* Output a single precision value to the assembler.  If both the
-   host and target are IEEE, emit the values in hex.  */
-
-void
-mips_output_float (stream, value)
-     FILE *stream;
-     REAL_VALUE_TYPE value;
-{
-#ifdef REAL_VALUE_TO_TARGET_SINGLE
-  long value_long;
-  REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
-
-  fprintf (stream, "\t.word\t0x%08lx\t\t# %.12g (float)\n", value_long, value);
-#else
-  fprintf (stream, "\t.float\t%.12g\n", value);
-#endif
-}
-
 /* Return the bytes needed to compute the frame pointer from the current
    stack pointer.
 

@@ -269,43 +269,6 @@ Boston, MA 02111-1307, USA.  */
     }                                                   \
 }
 
-/* This is how to output a `long double' extended real constant.  */
-#undef ASM_OUTPUT_LONG_DOUBLE 
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
-do { long l[3];								\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (FILE, "\tdc.l $%x,$%x,$%x\n", (int)l[0], (int)l[1], (int)l[2]); \
-     else								\
-       fprintf (FILE, "\tdc.l $%lx,$%lx,$%lx\n", l[0], l[1], l[2]);	\
-   } while (0)
-
-#undef ASM_OUTPUT_DOUBLE
-#if 0
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  do { char dstr[30];						\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);		\
-       fprintf (FILE, "\tdc.d %s\n", dstr);	        	\
-     } while (0)
-#endif
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { long l[2];								\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);			        \
-     fprintf (FILE, "\tdc.l $%lx,$%lx\n", l[0], l[1]);            	\
-   } while (0)
-
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-do { long l;						\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     if (sizeof (int) == sizeof (long))			\
-       fprintf (FILE, "\tdc.l $%x\n", (int) l);		\
-     else						\
-       fprintf (FILE, "\tdc.l $%lx\n", l);		\
-   } while (0)
-
 /* This is how to output an element of a case-vector that is absolute.
    (The 68000 does not use such vectors,
    but we must define this macro anyway.)  */

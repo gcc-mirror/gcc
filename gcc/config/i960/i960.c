@@ -2447,54 +2447,6 @@ i960_function_arg (cum, mode, type, named)
   return ret;
 }
 
-/* Floating-point support.  */
-
-void
-i960_output_long_double (file, value)
-     FILE *file;
-     REAL_VALUE_TYPE value;
-{
-  long value_long[3];
-  char dstr[30];
-
-  REAL_VALUE_TO_TARGET_LONG_DOUBLE (value, value_long);
-  REAL_VALUE_TO_DECIMAL (value, "%.20g", dstr);
-
-  fprintf (file,
-	   "\t.word\t0x%08lx\t\t# %s\n\t.word\t0x%08lx\n\t.word\t0x%08lx\n",
-	   value_long[0], dstr, value_long[1], value_long[2]);
-  fprintf (file, "\t.word\t0x0\n");
-}
-
-void
-i960_output_double (file, value)
-     FILE *file;
-     REAL_VALUE_TYPE value;
-{
-  long value_long[2];
-  char dstr[30];
-
-  REAL_VALUE_TO_TARGET_DOUBLE (value, value_long);
-  REAL_VALUE_TO_DECIMAL (value, "%.20g", dstr);
-
-  fprintf (file, "\t.word\t0x%08lx\t\t# %s\n\t.word\t0x%08lx\n",
-	   value_long[0], dstr, value_long[1]);
-}
-  
-void
-i960_output_float (file, value)
-     FILE *file;
-     REAL_VALUE_TYPE value;
-{
-  long value_long;
-  char dstr[30];
-
-  REAL_VALUE_TO_TARGET_SINGLE (value, value_long);
-  REAL_VALUE_TO_DECIMAL (value, "%.12g", dstr);
-
-  fprintf (file, "\t.word\t0x%08lx\t\t# %s (float)\n", value_long, dstr);
-}
-
 /* Return the number of bits that an object of size N bytes is aligned to.  */
 
 int

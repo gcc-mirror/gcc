@@ -1890,39 +1890,6 @@ mmix_asm_output_source_line  (stream, lineno)
   fprintf (stream, "\n");
 }
 
-/* ASM_OUTPUT_DOUBLE.  */
-
-void
-mmix_asm_output_double (stream, valuep)
-     FILE * stream;
-     REAL_VALUE_TYPE * valuep;
-{
-  unsigned long bits[2];
-  HOST_WIDEST_INT value;
-
-  REAL_VALUE_TO_TARGET_DOUBLE (*valuep, (long *) bits);
-  value
-    = (((HOST_WIDEST_INT) bits[0]) << 32) | (HOST_WIDEST_INT) bits[1];
-  mmix_output_octa (stream, value, 1);
-}
-
-/* ASM_OUTPUT_FLOAT.  */
-
-void
-mmix_asm_output_float (stream, valuep)
-     FILE * stream;
-     REAL_VALUE_TYPE * valuep;
-{
-  unsigned long bits;
-
-  REAL_VALUE_TO_TARGET_SINGLE (*valuep, bits);
-
-  fprintf (stream, "\tTETRA #%lx\n",
-	   (unsigned long) (bits
-			    & (((unsigned HOST_WIDEST_INT) (1 << 31) - 1) * 2
-			       + 1)));
-}
-
 /* Target hook for assembling integer objects.  Use mmix_print_operand
    for WYDE and TETRA.  Use mmix_output_octa to output 8-byte
    CONST_DOUBLEs.  */

@@ -140,7 +140,6 @@ static HOST_WIDE_INT const_alias_set;
 
 static const char *strip_reg_name	PARAMS ((const char *));
 static int contains_pointers_p		PARAMS ((tree));
-static void assemble_real_1		PARAMS ((PTR));
 static void decode_addr_const		PARAMS ((tree, struct addr_const *));
 static int const_hash			PARAMS ((tree));
 static int compare_constant		PARAMS ((tree,
@@ -2038,86 +2037,85 @@ assemble_integer (x, size, align, force)
   return false;
 }
 
-/* Assemble the floating-point constant D into an object of size MODE.  */
-struct assemble_real_args
-{
-  REAL_VALUE_TYPE *d;
-  enum machine_mode mode;
-};
-
-static void
-assemble_real_1 (p)
-     PTR p;
-{
-  struct assemble_real_args *args = (struct assemble_real_args *) p;
-  REAL_VALUE_TYPE *d = args->d;
-  enum machine_mode mode = args->mode;
-
-  switch (mode)
-    {
-#ifdef ASM_OUTPUT_BYTE_FLOAT
-    case QFmode:
-      ASM_OUTPUT_BYTE_FLOAT (asm_out_file, *d);
-      break;
-#endif
-#ifdef ASM_OUTPUT_SHORT_FLOAT
-    case HFmode:
-      ASM_OUTPUT_SHORT_FLOAT (asm_out_file, *d);
-      break;
-#endif
-#ifdef ASM_OUTPUT_THREE_QUARTER_FLOAT
-    case TQFmode:
-      ASM_OUTPUT_THREE_QUARTER_FLOAT (asm_out_file, *d);
-      break;
-#endif
-#ifdef ASM_OUTPUT_FLOAT
-    case SFmode:
-      ASM_OUTPUT_FLOAT (asm_out_file, *d);
-      break;
-#endif
-
-#ifdef ASM_OUTPUT_DOUBLE
-    case DFmode:
-      ASM_OUTPUT_DOUBLE (asm_out_file, *d);
-      break;
-#endif
-
-#ifdef ASM_OUTPUT_LONG_DOUBLE
-    case XFmode:
-    case TFmode:
-      ASM_OUTPUT_LONG_DOUBLE (asm_out_file, *d);
-      break;
-#endif
-
-    default:
-      abort ();
-    }
-}
-
 void
 assemble_real (d, mode, align)
      REAL_VALUE_TYPE d;
      enum machine_mode mode;
      unsigned int align;
 {
-  struct assemble_real_args args;
-  args.d = &d;
-  args.mode = mode;
+  long data[4];
+  long l;
+  unsigned int nalign = min_align (align, 32);
 
-  /* We cannot emit unaligned floating point constants.  This is slightly
-     complicated in that we don't know what "unaligned" means exactly.  */
-#ifdef BIGGEST_FIELD_ALIGNMENT
-  if (align >= BIGGEST_FIELD_ALIGNMENT)
-    ;
-  else
-#endif
-  if (align < GET_MODE_ALIGNMENT (mode))
-    abort ();
+  switch (BITS_PER_UNIT)
+    {
+    case 8:
+      switch (mode)
+	{
+	case SFmode:
+	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  assemble_integer (GEN_INT (l), 4, align, 1);
+	  break;
+	case DFmode:
+	  REAL_VALUE_TO_TARGET_DOUBLE (d, data);
+	  assemble_integer (GEN_INT (data[0]), 4, align, 1);
+	  assemble_integer (GEN_INT (data[1]), 4, nalign, 1);
+	  break;
+	case XFmode:
+	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (d, data);
+	  assemble_integer (GEN_INT (data[0]), 4, align, 1);
+	  assemble_integer (GEN_INT (data[1]), 4, nalign, 1);
+	  assemble_integer (GEN_INT (data[2]), 4, nalign, 1);
+	  break;
+	case TFmode:
+	  REAL_VALUE_TO_TARGET_LONG_DOUBLE (d, data);
+	  assemble_integer (GEN_INT (data[0]), 4, align, 1);
+	  assemble_integer (GEN_INT (data[1]), 4, nalign, 1);
+	  assemble_integer (GEN_INT (data[2]), 4, nalign, 1);
+	  assemble_integer (GEN_INT (data[3]), 4, nalign, 1);
+	  break;
+	default:
+	  abort ();
+	}
+      break;
 
-  if (do_float_handler (assemble_real_1, (PTR) &args))
-    return;
+    case 16:
+      switch (mode)
+	{
+	case HFmode:
+	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  assemble_integer (GEN_INT (l), 2, align, 1);
+	  break;
+	case TQFmode:
+	  REAL_VALUE_TO_TARGET_DOUBLE (d, data);
+	  assemble_integer (GEN_INT (data[0]), 2, align, 1);
+	  assemble_integer (GEN_INT (data[1]), 1, nalign, 1);
+	  break;
+	default:
+	  abort ();
+	}
+      break;
 
-  internal_error ("floating point trap outputting a constant");
+    case 32:
+      switch (mode)
+	{
+	case QFmode:
+	  REAL_VALUE_TO_TARGET_SINGLE (d, l);
+	  assemble_integer (GEN_INT (l), 1, align, 1);
+	  break;
+	case HFmode:
+	  REAL_VALUE_TO_TARGET_DOUBLE (d, data);
+	  assemble_integer (GEN_INT (data[0]), 1, align, 1);
+	  assemble_integer (GEN_INT (data[1]), 1, nalign, 1);
+	  break;
+	default:
+	  abort ();
+	}
+      break;
+
+    default:
+      abort ();
+    }
 }
 
 /* Here we combine duplicate floating constants to make

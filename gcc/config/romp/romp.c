@@ -1965,10 +1965,8 @@ output_fpops (file)
 		  union real_extract u;
 
 		  memcpy (&u, &CONST_DOUBLE_LOW (immed[i]), sizeof u);
-		  if (GET_MODE (immed[i]) == DFmode)
-		    ASM_OUTPUT_DOUBLE (file, u.d);
-		  else
-		    ASM_OUTPUT_FLOAT (file, u.d);
+		  assemble_real (u.d, GET_MODE (immed[i]),
+				 GET_MODE_ALIGNMENT (GET_MODE (immed[i])));
 		}
 	      else
 		abort ();

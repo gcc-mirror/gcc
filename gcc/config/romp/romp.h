@@ -1384,26 +1384,6 @@ struct rt_cargs {int gregs, fregs; };
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)		\
-  fprintf (FILE, "\t.double 0d%.20e\n", (VALUE))
-
-/* This is how to output an assembler line defining a `float' constant.
-
-   WARNING:  Believe it or not, the ROMP assembler has a bug in its
-   handling of single-precision floating-point values making it impossible
-   to output such values in the expected way.  Therefore, it must be output
-   in hex.  THIS WILL NOT WORK IF CROSS-COMPILING FROM A MACHINE THAT DOES
-   NOT USE IEEE-FORMAT FLOATING-POINT, but there is nothing that can be done
-   about it short of fixing the assembler.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)		\
-  do { union { int i; float f; } u_i_f;		\
-       u_i_f.f = (VALUE);			\
-       fprintf (FILE, "\t.long 0x%x\n", u_i_f.i);\
-     } while (0)
-
 /* This is how to output code to push a register on the stack.
    It need not be very fast code.  */
 

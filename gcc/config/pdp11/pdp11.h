@@ -1089,16 +1089,6 @@ fprintf (FILE, "$help$: . = .+8 ; space for tmp moves!\n")	\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s_%d", PREFIX, NUM)
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-  fprintf (FILE, "\tdouble %.20e\n", (VALUE))
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)  \
-  fprintf (FILE, "\tfloat %.12e\n", (VALUE))
-
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \
   output_ascii (FILE, P, SIZE)
 

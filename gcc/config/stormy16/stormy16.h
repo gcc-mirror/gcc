@@ -3547,31 +3547,6 @@ do {							\
 /* Output of Data.  */
 
 /* A C statement to output to the stdio stream STREAM an assembler instruction
-   to assemble a floating-point constant of `TFmode', `DFmode', `SFmode',
-   `TQFmode', `HFmode', or `QFmode', respectively, whose value is VALUE.  VALUE
-   will be a C expression of type `REAL_VALUE_TYPE'.  Macros such as
-   `REAL_VALUE_TO_TARGET_DOUBLE' are useful for writing these definitions.  */
-
-/* This is how to output an assembler line defining a `double'.  */
-#define ASM_OUTPUT_DOUBLE(STREAM,VALUE)                   \
-do { char dstr[30];                                     \
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);    \
-     fprintf ((STREAM), "\t.double %s\n", dstr);          \
-   } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(STREAM,VALUE)                    \
-do { char dstr[30];                                     \
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);    \
-     fprintf ((STREAM), "\t.float %s\n", dstr);           \
-   } while (0)
-
-/* #define ASM_OUTPUT_LONG_DOUBLE(STREAM, VALUE) */
-/* #define ASM_OUTPUT_THREE_QUARTER_FLOAT(STREAM, VALUE) */
-/* #define ASM_OUTPUT_SHORT_FLOAT(STREAM, VALUE) */
-/* #define ASM_OUTPUT_BYTE_FLOAT(STREAM, VALUE) */
-
-/* A C statement to output to the stdio stream STREAM an assembler instruction
    to assemble a string constant containing the LEN bytes at PTR.  PTR will be
    a C expression of type `char *' and LEN a C expression of type `int'.
 

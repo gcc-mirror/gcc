@@ -1988,61 +1988,6 @@ do {									 \
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)			\
   sprintf (LABEL, TARGET_SVR4 ? "*.%s%ld" : "*@%s%ld", PREFIX, (long)(NUM))
 
-/* Internal macro to get a single precision floating point value into
-   an int, so we can print its value in hex.  */
-#define FLOAT_TO_INT_INTERNAL( FVALUE, IVALUE )				\
-  { union {								\
-      REAL_VALUE_TYPE d;						\
-      struct {								\
-	unsigned sign      :  1;					\
-	unsigned exponent1 :  1;					\
-	unsigned exponent2 :  3;					\
-	unsigned exponent3 :  7;					\
-	unsigned mantissa1 : 20;					\
-	unsigned mantissa2 :  3;					\
-	unsigned mantissa3 : 29;					\
-      } s;								\
-    } _u;								\
-									\
-    union {								\
-      int i;								\
-      struct {								\
-        unsigned sign      :  1;					\
-	unsigned exponent1 :  1;					\
-	unsigned exponent3 :  7;					\
-        unsigned mantissa1 : 20;					\
-        unsigned mantissa2 :  3;					\
-      } s;								\
-    } _u2;								\
-									\
-    _u.d = REAL_VALUE_TRUNCATE (SFmode, FVALUE);			\
-    _u2.s.sign = _u.s.sign;						\
-    _u2.s.exponent1 = _u.s.exponent1;					\
-    _u2.s.exponent3 = _u.s.exponent3;					\
-    _u2.s.mantissa1 = _u.s.mantissa1;					\
-    _u2.s.mantissa2 = _u.s.mantissa2;					\
-    IVALUE = _u2.i;							\
-  }
-
-/* This is how to output an assembler line defining a `double' constant.
-   Use "word" pseudos to avoid printing NaNs, infinity, etc.  */
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  do {									\
-    union { REAL_VALUE_TYPE d; long l[2]; } x;				\
-    x.d = (VALUE);							\
-    fprintf (FILE, "%s0x%.8lx, 0x%.8lx\n",				\
-	     integer_asm_op (4, TRUE),					\
-	     (long) x.l[0], (long) x.l[1]);				\
-  } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  do {									\
-    int i;								\
-    FLOAT_TO_INT_INTERNAL (VALUE, i);					\
-    assemble_aligned_integer (4, GEN_INT (i));				\
-  } while (0)
-
 /* The single-byte pseudo-op is the default.  Override svr[34].h.  */
 #undef	ASM_OUTPUT_ASCII
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)  \

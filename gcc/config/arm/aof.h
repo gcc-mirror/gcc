@@ -183,29 +183,6 @@ do					\
 
 #define ASM_APP_OFF ""
 
-#define ASM_OUTPUT_LONG_DOUBLE(STREAM,VALUE) \
-  ASM_OUTPUT_DOUBLE((STREAM),(VALUE))
-
-#define ASM_OUTPUT_DOUBLE(STREAM,VALUE)				\
-do {								\
-  char dstr[30];						\
-  long l[2];							\
-  REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), l);			\
-  REAL_VALUE_TO_DECIMAL ((VALUE), "%.14g", dstr);		\
-  fprintf ((STREAM), "\tDCD &%lx, &%lx\t%s double %s\n",	\
-	   l[0], l[1], ASM_COMMENT_START, dstr);		\
-} while (0)
-
-#define ASM_OUTPUT_FLOAT(STREAM,VALUE)			\
-do {							\
-  char dstr[30];					\
-  long l;						\
-  REAL_VALUE_TO_TARGET_SINGLE ((VALUE), l);		\
-  REAL_VALUE_TO_DECIMAL ((VALUE), "%.7g", dstr);	\
-  fprintf ((STREAM), "\tDCD &%lx\t%s double %s\n",	\
-	   l, ASM_COMMENT_START, dstr);			\
-} while (0)
-
 #define ASM_OUTPUT_ASCII(STREAM,PTR,LEN)		\
 {							\
   int i;						\

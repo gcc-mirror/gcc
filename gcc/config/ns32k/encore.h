@@ -39,7 +39,6 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_ADDR_DIFF_ELT
 #undef ASM_OUTPUT_ALIGN
 #undef ASM_OUTPUT_ASCII
-#undef ASM_OUTPUT_DOUBLE
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #undef ASM_OUTPUT_LOCAL
 #undef CPP_PREDEFINES
@@ -104,9 +103,6 @@ do {									\
   fprintf (STREAM, "\n");						\
 } while (0)
 
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)				\
- fprintf (FILE, "\t.long 0f%.20e\n", (VALUE))
 
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)		\
 ( fputs ("\t.bss ", (FILE)),					\

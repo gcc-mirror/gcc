@@ -42,50 +42,6 @@ Boston, MA 02111-1307, USA.  */
   ((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode	\
    ? FIRST_FLOAT_REG : 0)
 
-#ifdef REAL_VALUE_TO_TARGET_LONG_DOUBLE
-#undef	ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-  do {									\
-    long hex[3];							\
-    REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, hex);			\
-    if (sizeof (int) == sizeof (long))					\
-      fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n\t.long 0x%x\n",	\
-		(int) hex[0], (int) hex[1], (int) hex[2]);		\
-    else								\
-      fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n\t.long 0x%lx\n",	\
-		hex[0], hex[1], hex[2]);				\
-  } while (0)
-#endif
-
-#ifdef REAL_VALUE_TO_TARGET_DOUBLE
-#undef	ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-  do {									\
-    long hex[2];							\
-    REAL_VALUE_TO_TARGET_DOUBLE (VALUE, hex);				\
-    if (sizeof (int) == sizeof (long))					\
-      fprintf (FILE, "\t.long 0x%x\n\t.long 0x%x\n",			\
-        (int) hex[0], (int) hex[1]);					\
-    else								\
-      fprintf (FILE, "\t.long 0x%lx\n\t.long 0x%lx\n", hex[0], hex[1]);	\
-  } while (0)
-#endif
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#ifdef REAL_VALUE_TO_TARGET_SINGLE
-#undef	ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-  do {									\
-    long hex;								\
-    REAL_VALUE_TO_TARGET_SINGLE (VALUE, hex);				\
-    if (sizeof (int) == sizeof (long))					\
-      fprintf (FILE, "\t.long 0x%x\n", (int) hex);			\
-    else								\
-      fprintf (FILE, "\t.long 0x%lx\n", hex);				\
-  } while (0)
-#endif
-
 /* A C statement or statements which output an assembler instruction
    opcode to the stdio stream STREAM.  The macro-operand PTR is a
    variable of type `char *' which points to the opcode name in its

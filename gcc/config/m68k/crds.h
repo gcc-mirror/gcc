@@ -155,15 +155,6 @@ Boston, MA 02111-1307, USA.  */
 #undef IMMEDIATE_PREFIX
 #define IMMEDIATE_PREFIX "$"
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#undef ASM_OUTPUT_DOUBLE   
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)  \
-do { long l[2];						\
-     REAL_VALUE_TO_TARGET_DOUBLE (VALUE, l);		\
-     fprintf (FILE, "\t.long 0x%lx, 0x%lx\n", l[0], l[1]);	\
-   } while (0)
-
 /*unos has no .skip :-( */
 #undef ASM_OUTPUT_SKIP
 #define ASM_OUTPUT_SKIP(FILE,SIZE)	 	\

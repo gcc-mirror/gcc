@@ -2072,21 +2072,6 @@ extern char fp_reg_names[][5];
 
 /* Output various types of constants.  */
 
-/* This is how to output an assembler line defining a `double'.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf ((FILE), "\t.double %s\n", dstr);		\
-   } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf ((FILE), "\t.float %s\n", dstr);		\
-   } while (0)
-
 /* Loop alignment is now done in machine_dependent_reorg, so that
    branch shortening can know about it.  */
 

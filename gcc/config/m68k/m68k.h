@@ -1802,30 +1802,6 @@ __transfer_from_trampoline ()					\
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
   sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
 
-/* This is how to output a `long double' extended real constant.  */
-  
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)  				\
-do { long l[3];								\
-     REAL_VALUE_TO_TARGET_LONG_DOUBLE (VALUE, l);			\
-     fprintf (FILE, "\t.long 0x%lx,0x%lx,0x%lx\n", l[0], l[1], l[2]);	\
-   } while (0)
-  
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)				\
-  do { char dstr[30];						\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.20g", dstr);		\
-       fprintf (FILE, "\t.double 0r%s\n", dstr);		\
-     } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
-do { long l;						\
-     REAL_VALUE_TO_TARGET_SINGLE (VALUE, l);		\
-     fprintf (FILE, "\t.long 0x%lx\n", l);		\
-   } while (0)
-
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
 

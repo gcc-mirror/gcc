@@ -2009,22 +2009,6 @@ progmem_section (void)							      \
    Objective C program.  */
 
 
-
-#define ASM_OUTPUT_DOUBLE(STREAM, VALUE) fprintf (STREAM, "no double float %.20e\n", VALUE)
-#define ASM_OUTPUT_FLOAT(STREAM, VALUE) asm_output_float (STREAM, VALUE)
-/* `ASM_OUTPUT_LONG_DOUBLE (STREAM, VALUE)'
-   `ASM_OUTPUT_THREE_QUARTER_FLOAT (STREAM, VALUE)'
-   `ASM_OUTPUT_SHORT_FLOAT (STREAM, VALUE)'
-   `ASM_OUTPUT_BYTE_FLOAT (STREAM, VALUE)'
-   A C statement to output to the stdio stream STREAM an assembler
-   instruction to assemble a floating-point constant of `TFmode',
-   `DFmode', `SFmode', `TQFmode', `HFmode', or `QFmode',
-   respectively, whose value is VALUE.  VALUE will be a C expression
-   of type `REAL_VALUE_TYPE'.  Macros such as
-   `REAL_VALUE_TO_TARGET_DOUBLE' are useful for writing these
-   definitions.  */
-
-
 #define ASM_OUTPUT_ASCII(FILE, P, SIZE)	 gas_output_ascii (FILE,P,SIZE)
 /* `ASM_OUTPUT_ASCII (STREAM, PTR, LEN)'
    output_ascii (FILE, P, SIZE)

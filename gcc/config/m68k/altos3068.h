@@ -78,24 +78,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define USE_GAS
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)			\
-  do { char dstr[30];					\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
-       fprintf (FILE, "\t.double 0r%s\n", dstr);	\
-     } while (0)
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)                    \
-  do { char dstr[30];					\
-       REAL_VALUE_TO_DECIMAL (VALUE, "%.20e", dstr);	\
-       fprintf (FILE, "\t.single 0r%s\n", dstr);	\
-     } while (0)
-
 #undef ASM_OUTPUT_FLOAT_OPERAND
 #define ASM_OUTPUT_FLOAT_OPERAND(CODE,FILE,VALUE)		\
  do {								\

@@ -5852,23 +5852,6 @@ when the relevant string is @code{NULL}.
 @end deftypefn
 
 @table @code
-@findex ASM_OUTPUT_LONG_DOUBLE
-@findex ASM_OUTPUT_DOUBLE
-@findex ASM_OUTPUT_FLOAT
-@item ASM_OUTPUT_LONG_DOUBLE (@var{stream}, @var{value})
-@itemx ASM_OUTPUT_DOUBLE (@var{stream}, @var{value})
-@itemx ASM_OUTPUT_FLOAT (@var{stream}, @var{value})
-@itemx ASM_OUTPUT_THREE_QUARTER_FLOAT (@var{stream}, @var{value})
-@itemx ASM_OUTPUT_SHORT_FLOAT (@var{stream}, @var{value})
-@itemx ASM_OUTPUT_BYTE_FLOAT (@var{stream}, @var{value})
-A C statement to output to the stdio stream @var{stream} an assembler
-instruction to assemble a floating-point constant of @code{TFmode},
-@code{DFmode}, @code{SFmode}, @code{TQFmode}, @code{HFmode}, or
-@code{QFmode}, respectively, whose value is @var{value}.  @var{value}
-will be a C expression of type @code{REAL_VALUE_TYPE}.  Macros such as
-@code{REAL_VALUE_TO_TARGET_DOUBLE} are useful for writing these
-definitions.
-
 @findex OUTPUT_ADDR_CONST_EXTRA
 @item OUTPUT_ADDR_CONST_EXTRA (@var{stream}, @var{x}, @var{fail})
 A C statement to recognize @var{rtx} patterns that

@@ -2264,30 +2264,6 @@ asm_output_local(file, name, size, rounded)
 	fprintf (file, "int\n");
 }
 
-void
-asm_output_float (file, fp_const)
-     FILE *file;
-     double fp_const;
-{
-#if HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-  REAL_VALUE_TYPE d = fp_const;
-  long value;
-
-  REAL_VALUE_TO_TARGET_SINGLE (d, value);
-  fputs ("\tint ", file);
-#ifdef WORDS_BIG_ENDIAN
-  fprintf (file, "0x%-4.4lx, 0x%-4.4lx", (value >> 16) & 0xffff,
-	   value & 0xffff);
-#else
-  fprintf (file, "0x%-4.4lx, 0x%-4.4lx", value & 0xffff,
-	   (value >> 16) & 0xffff);
-#endif
-  fputs ("\n", file);
-#else
-  fatal_error ("inline float constants not supported on this host");
-#endif
-}
-
 int
 dsp16xx_address_cost (addr)
      rtx addr;

@@ -1258,23 +1258,6 @@ do {									\
   else							\
     goto FAIL;
 
-/* This is how to output an assembler line defining a `double' constant.
-   It is .double or .float, depending.  */
-
-#define ASM_OUTPUT_DOUBLE(FILE, VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf (FILE, "\t.double %s\n", dstr);		\
-   } while (0)
-
-
-/* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE, VALUE)			\
-do { char dstr[30];					\
-     REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
-     fprintf (FILE, "\t.float %s\n", dstr);		\
-   } while (0)
-
 /* This says how to output the assembler to define a global
    uninitialized but not common symbol.  */
 

@@ -2209,20 +2209,21 @@ print_operand (file, op, letter)
   else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == SFmode)
     {
       REAL_VALUE_TYPE r;
+      long l;
+
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      ASM_OUTPUT_FLOAT_OPERAND (letter, file, r);
+      REAL_VALUE_TO_TARGET_SINGLE (r, l);
+      asm_fprintf (file, "%I0x%lx", l);
     }
-  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == XFmode)
+  else if (GET_CODE (op) == CONST_DOUBLE
+	   && (GET_MODE (op) == DFmode || GET_MODE (op) == XFmode))
     {
       REAL_VALUE_TYPE r;
+      char dstr[30];
+
       REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      ASM_OUTPUT_LONG_DOUBLE_OPERAND (file, r);
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE && GET_MODE (op) == DFmode)
-    {
-      REAL_VALUE_TYPE r;
-      REAL_VALUE_FROM_CONST_DOUBLE (r, op);
-      ASM_OUTPUT_DOUBLE_OPERAND (file, r);
+      REAL_VALUE_TO_DECIMAL (r, "%.20g", dstr);
+      asm_fprintf (file, "%I0r%s", dstr);
     }
   else
     {

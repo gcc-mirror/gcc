@@ -870,4 +870,145 @@ which_bit (x)
   return b;
 }
 
+
+/* Convert a REAL_VALUE_TYPE to the target float format:
 
+        MSB                             LSB MSB            LSB
+        ------------------------------------------------------
+        |S|                 Mantissa       |  Exponent       |
+        ------------------------------------------------------
+         0 1                             23 24             31
+
+*/
+
+long
+real_value_to_target_single(in)
+     REAL_VALUE_TYPE in;
+{
+  union {
+    double d;
+    struct {
+#if HOST_WORDS_BIG_ENDIAN
+        unsigned int negative:1;
+        unsigned int exponent:11;
+        unsigned int mantissa0:20;
+        unsigned int mantissa1:32;
+#else
+        unsigned int mantissa1:32;
+        unsigned int mantissa0:20;
+        unsigned int exponent:11;
+        unsigned int negative:1;
+#endif
+    } s;
+  } ieee;
+
+  unsigned int mant;
+  int exp;
+
+  if (HOST_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
+    abort ();
+
+  ieee.d = in;
+
+  /* Don't bother with NaN, Inf, 0 special cases, since they'll be handled
+     by the over/underflow code below.  */
+  exp = ieee.s.exponent - 0x3ff;
+  mant = 1 << 23 | ieee.s.mantissa0 << 3 | ieee.s.mantissa1 >> 29;
+
+  /* The sign is actually part of the mantessa.  Since we're comming from
+     IEEE we know that either bit 23 is set or we have a zero.  */
+  if (! ieee.s.negative)
+    {
+      mant >>= 1;
+      exp += 1;
+    }
+
+  /* Check for overflow.  Crop to FLT_MAX.  */
+  if (exp > 127)
+    {
+      exp = 127;
+      mant = (ieee.s.negative ? 0xffffff : 0x7fffff);
+    }
+  /* Underflow to zero.  */
+  else if (exp < -128)
+    {
+      exp = 0;
+      mant = 0;
+    }
+
+  return mant << 8 | (exp & 0xff);
+}
+
+/* Convert a REAL_VALUE_TYPE to the target 1750a extended float format:
+
+        ----------------------------------------------------
+        | |      Mantissa       |        |   Mantissa      |
+        |S|         MS          |Exponent|      LS         |
+        ----------------------------------------------------
+         0 1                  23 24    31 32             47
+
+*/
+
+void
+real_value_to_target_double(in, out)
+     REAL_VALUE_TYPE in;
+     long out[];
+{
+  union {
+    double d;
+    struct {
+#if HOST_WORDS_BIG_ENDIAN
+        unsigned int negative:1;
+        unsigned int exponent:11;
+        unsigned int mantissa0:20;
+        unsigned int mantissa1:32;
+#else
+        unsigned int mantissa1:32;
+        unsigned int mantissa0:20;
+        unsigned int exponent:11;
+        unsigned int negative:1;
+#endif
+    } s;
+  } ieee;
+
+  unsigned int mant_h24, mant_l16;
+  int exp;
+
+  if (HOST_FLOAT_FORMAT != IEEE_FLOAT_FORMAT)
+    abort ();
+
+  ieee.d = in;
+
+  /* Don't bother with NaN, Inf, 0 special cases, since they'll be handled
+     by the over/underflow code below.  */
+  exp = ieee.s.exponent - 0x3ff;
+  mant_h24 = 1 << 23 | ieee.s.mantissa0 << 3 | ieee.s.mantissa1 >> 29;
+  mant_l16 = (ieee.s.mantissa1 >> 13) & 0xffff;
+
+  /* The sign is actually part of the mantessa.  Since we're comming from
+     IEEE we know that either bit 23 is set or we have a zero.  */
+  if (! ieee.s.negative)
+    {
+      mant_l16 = mant_l16 >> 1 | (mant_h24 & 1) << 15;
+      mant_h24 >>= 1;
+      exp += 1;
+    }
+
+  /* Check for overflow.  Crop to DBL_MAX.  */
+  if (exp > 127)
+    {
+      exp = 127;
+      mant_h24 = (ieee.s.negative ? 0xffffff : 0x7fffff);
+      mant_l16 = 0xffff;
+    }
+  /* Underflow to zero.  */
+  else if (exp < -128)
+    {
+      exp = 0;
+      mant_h24 = 0;
+      mant_l16 = 0;
+    }
+
+  out[0] = mant_h24 << 8 | (exp & 0xff);
+  out[1] = mant_l16;
+}

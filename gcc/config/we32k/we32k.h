@@ -755,37 +755,6 @@ enum reg_class { NO_REGS, GENERAL_REGS,
     ASM_OUTPUT_INTERNAL_LABEL (FILE, PREFIX, NUM);	\
   } while (0)
 
-/* This is how to output an assembler line defining a `double' constant.  */
-
-/* This is how to output an assembler line defining a `float' constant.  */
-
-/* AT&T's assembler can't handle floating constants written as floating.
-   However, when cross-compiling, always use that in case format differs.  */
-
-#ifdef CROSS_COMPILE
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)	\
-  fprintf (FILE, "\t.double 0r%.20g\n", (VALUE))
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)	\
-  fprintf (FILE, "\t.float 0r%.10g\n", (VALUE))
-
-#else
-
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)	\
-do { union { double d; long l[2];} tem;				\
-     tem.d = (VALUE);						\
-     fprintf (FILE, "\t.word 0x%lx, 0x%lx\n", tem.l[0], tem.l[1]);\
-   } while (0)
-
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)	\
-do { union { float f; long l;} tem;				\
-     tem.f = (VALUE);						\
-     fprintf (FILE, "\t.word 0x%lx\n", tem.l);			\
-   } while (0)
-
-#endif /* not CROSS_COMPILE */
-
 #define ASM_OUTPUT_ASCII(FILE,PTR,LEN)  \
 do {							\
   const unsigned char *s;				\
