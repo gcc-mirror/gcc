@@ -1,3 +1,7 @@
+2004-04-08  Paul Brook  <paul@codesourcery.com>
+
+	* gcc.dg/spill-1.c: New test.
+
 2004-04-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/torture/builtin-ctype-2.c: New test.
