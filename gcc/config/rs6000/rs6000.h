@@ -3257,7 +3257,6 @@ extern int add_operand ();
 extern int non_add_cint_operand ();
 extern int non_logical_cint_operand ();
 extern int logical_operand ();
-extern int mask_constant ();
 extern int mask_operand ();
 extern int mask64_operand ();
 extern int and64_operand ();
