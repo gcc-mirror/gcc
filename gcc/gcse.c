@@ -4541,12 +4541,13 @@ bypass_conditional_jumps ()
 	       insn = NEXT_INSN (insn))
 	    if (GET_CODE (insn) == INSN)
 	      {
+		rtx set = single_set (insn);
 		if (setcc)
 		  break;
 		if (!single_set (insn))
 		  break;
 
-		dest = SET_DEST (PATTERN (insn));
+		dest = SET_DEST (set);
 		if (GET_MODE_CLASS (GET_MODE (dest)) == MODE_CC)
 		  setcc = insn;
 #ifdef HAVE_cc0

@@ -1,3 +1,7 @@
+Sun Jun  2 12:11:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* gcse.c (bypass_conditional_jumps): Use single set to obtain set.
+
 2002-06-02  Richard Henderson  <rth@redhat.com>
 
 	* rtlanal.c (volatile_refs_p): Not automatically true for CALL.
