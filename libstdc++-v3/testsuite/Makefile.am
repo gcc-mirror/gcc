@@ -37,10 +37,11 @@ AM_RUNTESTFLAGS =
 RUNTESTFLAGS =
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
-## Do the same thing as `testsuite_hooks --build-cxx`
+## Do the same thing as `testsuite_flags --build-cxx`
 CXX_fake = @glibcpp_CXX@ 
 CXX=`echo $(CXX_fake) | sed 's/xgcc/g++/g'`
 CXXLINK = \
+	LD_RUN_PATH=${LD_RUN_PATH:+$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
