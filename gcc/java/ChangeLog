@@ -1,3 +1,9 @@
+2005-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* jcf-io.c (caching_stat): Use __extension__ to avoid pedantic
+	warning.
+	* Make-lang.in: Don't elide warnings in jcf-io.c.
+
 2005-03-10  Tom Tromey  <tromey@redhat.com>
 
 	* gcj.texi (Invoking gcj-dbtool): Document 'gcj-dbtool -p'.
