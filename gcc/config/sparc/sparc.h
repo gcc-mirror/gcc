@@ -1711,6 +1711,13 @@ extern char leaf_reg_remap[];
 #define OUTGOING_REGNO(IN) \
  ((TARGET_FLAT || (IN) < 24 || (IN) > 31) ? (IN) : (IN) - 16)
 
+/* Define this macro if the target machine has register windows.  This
+   C expression returns true if the register is call-saved but is in the
+   register window.  */
+
+#define LOCAL_REGNO(REGNO) \
+  (TARGET_FLAT ? 0 : (REGNO) >= 16 && (REGNO) <= 31)
+
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
    If the precise function being called is known, FUNC is its FUNCTION_DECL;

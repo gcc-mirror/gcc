@@ -1,3 +1,13 @@
+2000-08-08  Richard Henderson  <rth@cygnus.com>
+
+	* tm.texi (LOCAL_REGNO): Document.
+	* flow.c (LOCAL_REGNO, EPILOGUE_USES): Provide default.
+	(mark_regs_live_at_end): Don't mark LOCAL_REGNO registers.
+	* reload1.c (reload): Likewise when considering nonlocal labels.
+
+	* config/ia64/ia64.h (LOCAL_REGNO): New.
+	* config/sparc/sparc.h (LOCAL_REGNO): New.
+
 2000-08-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-lex.c (yylex): Don't allow integer suffixes 'LUL', 'Ll', 'lL'.

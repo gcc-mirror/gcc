@@ -163,6 +163,13 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_sibcall_epilogue 0
 #endif
 
+#ifndef LOCAL_REGNO
+#define LOCAL_REGNO(REGNO)  0
+#endif
+#ifndef EPILOGUE_USES
+#define EPILOGUE_USES(REGNO)  0
+#endif
+
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.
    For top-level functions, this is temporary_obstack.
@@ -3051,8 +3058,9 @@ mark_regs_live_at_end (set)
     {
       SET_REGNO_REG_SET (set, FRAME_POINTER_REGNUM);
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      /* If they are different, also mark the hard frame pointer as live */
-      SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
+      /* If they are different, also mark the hard frame pointer as live.  */
+      if (! LOCAL_REGNO (HARD_FRAME_POINTER_REGNUM))
+        SET_REGNO_REG_SET (set, HARD_FRAME_POINTER_REGNUM);
 #endif      
     }
 
@@ -3070,18 +3078,14 @@ mark_regs_live_at_end (set)
      as being live at the end of the function since they may be
      referenced by our caller.  */
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (global_regs[i]
-#ifdef EPILOGUE_USES
-	|| EPILOGUE_USES (i)
-#endif
-	)
+    if (global_regs[i] || EPILOGUE_USES (i))
       SET_REGNO_REG_SET (set, i);
 
   /* Mark all call-saved registers that we actaully used.  */
   if (HAVE_epilogue && reload_completed)
     {
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (! call_used_regs[i] && regs_ever_live[i])
+	if (regs_ever_live[i] && ! call_used_regs[i] && ! LOCAL_REGNO (i))
 	  SET_REGNO_REG_SET (set, i);
     }
 

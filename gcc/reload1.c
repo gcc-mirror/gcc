@@ -85,6 +85,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2
 #endif
+
+#ifndef LOCAL_REGNO
+#define LOCAL_REGNO(REGNO)  0
+#endif
 
 /* During reload_as_needed, element N contains a REG rtx for the hard reg
    into which reg N has been reloaded (perhaps for a previous insn).  */
@@ -654,10 +658,8 @@ reload (first, global, dumpfile)
      registers.  */
   if (current_function_has_nonlocal_label)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-      {
-	if (! call_used_regs[i] && ! fixed_regs[i])
-	  regs_ever_live[i] = 1;
-      }
+      if (! call_used_regs[i] && ! fixed_regs[i] && ! LOCAL_REGNO (i))
+	regs_ever_live[i] = 1;
 
   /* Find all the pseudo registers that didn't get hard regs
      but do have known equivalent constants or memory slots.
