@@ -1,3 +1,7 @@
+2002-05-09  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sol2.h (ASM_CPU_SPEC): Handle -mcpu=v9.
+
 2002-05-07  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (TARGET_BUGGY_QP_LIB): Define to zero.
