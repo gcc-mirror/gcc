@@ -1,3 +1,9 @@
+1999-11-02  Scott Snyder  <snyder@fnal.gov>
+
+        * decl2.c (build_expr_from_tree): Handle REALPART_EXPR and
+        IMAGPART_EXPR.
+	* pt.c (tsubst_copy): Likewise.
+
 1999-11-01  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (maybe_make_one_only): Always make things comdat on

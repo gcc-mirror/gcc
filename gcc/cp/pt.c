@@ -6897,6 +6897,8 @@ tsubst_copy (t, args, complain, in_decl)
     case ARROW_EXPR:
     case THROW_EXPR:
     case TYPEID_EXPR:
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
       return build1
 	(code, tsubst (TREE_TYPE (t), args, complain, in_decl),
 	 tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl));

@@ -3744,6 +3744,8 @@ build_expr_from_tree (t)
     case TRUTH_NOT_EXPR:
     case ADDR_EXPR:
     case CONVERT_EXPR:      /* Unary + */
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
       if (TREE_TYPE (t))
 	return t;
       return build_x_unary_op (TREE_CODE (t),
