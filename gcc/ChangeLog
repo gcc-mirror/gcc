@@ -1,3 +1,11 @@
+2002-11-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (print_operand): Update the use of
+	h8300_tiny_constant_address_p.
+	(h8300_adjust_insn_length): Likewise.
+	(h8300_tiny_constant_address_p): Check if the given rtx is a
+	variable declared with __attribute__ ((tiny_data)).
+
 2002-11-22  Dale Johannesen  <dalej@apple.com>
 
         * toplev.c (rest_of_compilation):  Fix comments.

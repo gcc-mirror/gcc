@@ -1440,9 +1440,6 @@ print_operand (file, x, code)
 	case MEM:
 	  {
 	    rtx addr = XEXP (x, 0);
-	    int tiny_ok = ((GET_CODE (addr) == SYMBOL_REF
-			    && TINY_DATA_NAME_P (XSTR (addr, 0)))
-			   || h8300_tiny_constant_address_p (addr));
 
 	    fprintf (file, "@");
 	    output_address (addr);
@@ -1467,7 +1464,7 @@ print_operand (file, x, code)
 	      case 'T':
 	      case 'S':
 		/* Used for mov.w and mov.l.  */
-		if (tiny_ok)
+		if (h8300_tiny_constant_address_p (addr))
 		  fprintf (file, ":16");
 		break;
 	      default:
@@ -3763,9 +3760,7 @@ h8300_adjust_insn_length (insn, length)
 	    return -6;
 
 	  /* @aa:16 is 4 bytes shorter than the longest.  */
-	  if ((GET_CODE (addr) == SYMBOL_REF
-	       && TINY_DATA_NAME_P (XSTR (addr, 0)))
-	      || h8300_tiny_constant_address_p (addr))
+	  if (h8300_tiny_constant_address_p (addr))
 	    return -4;
 
 	  /* @aa:24 is 2 bytes shorter than the longest.  */
@@ -3924,6 +3919,10 @@ h8300_tiny_constant_address_p (x)
   const unsigned HOST_WIDE_INT s4 = trunc_int_for_mode (0xffffffff, SImode);
 
   unsigned HOST_WIDE_INT addr;
+
+  /* We accept symbols declared with tiny_data.  */
+  if (GET_CODE (x) == SYMBOL_REF && TINY_DATA_NAME_P (XSTR (x, 0)))
+    return 1;
 
   if (GET_CODE (x) != CONST_INT)
     return 0;
