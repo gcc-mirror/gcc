@@ -3,6 +3,11 @@
 	* regrename.c (build_def_use): Mark contents of REG_INC notes as
 	needing replacement.
 
+	* config/ia64/ia64.md (extendsfdf2, extendsftf2, extenddftf2): Emit
+	a no-op move if regs are equal.
+	* toplev.c (rest_of_compilation): Do the noop moves elimination pass
+	when calling jump after post-reload splitting. 
+
 2000-11-09  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
         * c-tree.texi: Fix typos.
