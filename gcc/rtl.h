@@ -358,6 +358,15 @@ enum reg_note { REG_DEAD = 1, REG_INC = 2, REG_EQUIV = 3, REG_WAS_0 = 4,
 extern char *reg_note_name[];
 #define GET_REG_NOTE_NAME(MODE) (reg_note_name[(int)(MODE)])
 
+/* This field is only present on CALL_INSNs.  It holds a chain of EXPR_LIST of
+   USE and CLOBBER expressions.
+     USE expressions list the registers filled with arguments that
+   are passed to the function.
+     CLOBBER expressions document the registers explicitly clobbered
+   by this CALL_INSN.
+     Pseudo registers can not be mentioned in this list.  */
+#define CALL_INSN_FUNCTION_USAGE(INSN)	((INSN)->fld[7].rtx)
+
 /* The label-number of a code-label.  The assembler label
    is made from `L' and the label-number printed in decimal.
    Label numbers are unique in a compilation.  */
@@ -693,6 +702,8 @@ extern rtx rtx_alloc			PROTO((RTX_CODE));
 extern rtvec rtvec_alloc		PROTO((int));
 extern rtx find_reg_note		PROTO((rtx, enum reg_note, rtx));
 extern rtx find_regno_note		PROTO((rtx, enum reg_note, int));
+extern int find_reg_fusage		PROTO((rtx, enum rtx_code, rtx));
+extern int find_regno_fusage		PROTO((rtx, enum rtx_code, int));
 extern HOST_WIDE_INT get_integer_term	PROTO((rtx));
 extern rtx get_related_value		PROTO((rtx));
 extern rtx single_set			PROTO((rtx));
