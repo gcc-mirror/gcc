@@ -109,7 +109,9 @@ static htab_t def_blocks;
 
      A NULL node at the top entry is used to mark the last node associated
      with the current block.  */
-static varray_type block_defs_stack;
+static VEC(tree_on_heap) *block_defs_stack;
+
+/* FIXME: The other stacks should also be VEC(tree_on_heap).  */
 
 /* Global data to attach to the main dominator walk structure.  */
 struct mark_def_sites_global_data
@@ -678,7 +680,7 @@ rewrite_initialize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
     fprintf (dump_file, "\n\nRenaming block #%d\n\n", bb->index);
 
   /* Mark the unwind point for this block.  */
-  VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
+  VEC_safe_push (tree_on_heap, block_defs_stack, NULL_TREE);
 
   /* Step 1.  Register new definitions for every PHI node in the block.
      Conceptually, all the PHI nodes are executed in parallel and each PHI
@@ -716,8 +718,8 @@ ssa_register_new_def (tree var, tree def)
      later used by the dominator tree callbacks to restore the reaching
      definitions for all the variables defined in the block after a recursive
      visit to all its immediately dominated blocks.  */
-  VARRAY_PUSH_TREE (block_defs_stack, currdef);
-  VARRAY_PUSH_TREE (block_defs_stack, var);
+  VEC_safe_push (tree_on_heap, block_defs_stack, currdef);
+  VEC_safe_push (tree_on_heap, block_defs_stack, var);
 
   /* Set the current reaching definition for VAR to be DEF.  */
   set_current_def (var, def);
@@ -738,7 +740,7 @@ ssa_rewrite_initialize_block (struct dom_walk_data *walk_data, basic_block bb)
     fprintf (dump_file, "\n\nRenaming block #%d\n\n", bb->index);
 
   /* Mark the unwind point for this block.  */
-  VARRAY_PUSH_TREE (block_defs_stack, NULL_TREE);
+  VEC_safe_push (tree_on_heap, block_defs_stack, NULL_TREE);
 
   FOR_EACH_EDGE (e, ei, bb->preds)
     if (e->flags & EDGE_ABNORMAL)
@@ -876,12 +878,10 @@ rewrite_finalize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 			basic_block bb ATTRIBUTE_UNUSED)
 {
   /* Restore CURRDEFS to its original state.  */
-  while (VARRAY_ACTIVE_SIZE (block_defs_stack) > 0)
+  while (VEC_length (tree_on_heap, block_defs_stack) > 0)
     {
-      tree tmp = VARRAY_TOP_TREE (block_defs_stack);
+      tree tmp = VEC_pop (tree_on_heap, block_defs_stack);
       tree saved_def, var;
-
-      VARRAY_POP (block_defs_stack);
 
       if (tmp == NULL_TREE)
 	break;
@@ -914,18 +914,15 @@ ssa_rewrite_finalize_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 
   /* Step 5.  Restore the current reaching definition for each variable
      referenced in the block (in reverse order).  */
-  while (VARRAY_ACTIVE_SIZE (block_defs_stack) > 0)
+  while (VEC_length (tree_on_heap, block_defs_stack) > 0)
     {
-      tree var = VARRAY_TOP_TREE (block_defs_stack);
+      tree var = VEC_pop (tree_on_heap, block_defs_stack);
       tree saved_def;
-
-      VARRAY_POP (block_defs_stack);
       
       if (var == NULL)
 	break;
 
-      saved_def = VARRAY_TOP_TREE (block_defs_stack);
-      VARRAY_POP (block_defs_stack);
+      saved_def = VEC_pop (tree_on_heap, block_defs_stack);
 
       set_current_def (var, saved_def);
     }
@@ -1190,7 +1187,7 @@ rewrite_operand (use_operand_p op_p)
    into the stack pointed by BLOCK_DEFS_P.  */
 
 void
-register_new_def (tree def, varray_type *block_defs_p)
+register_new_def (tree def, VEC (tree_on_heap) **block_defs_p)
 {
   tree var = SSA_NAME_VAR (def);
   tree currdef;
@@ -1216,7 +1213,7 @@ register_new_def (tree def, varray_type *block_defs_p)
      definitions for all the variables defined in the block after a recursive
      visit to all its immediately dominated blocks.  If there is no current
      reaching definition, then just record the underlying _DECL node.  */
-  VARRAY_PUSH_TREE (*block_defs_p, currdef ? currdef : var);
+  VEC_safe_push (tree_on_heap, *block_defs_p, currdef ? currdef : var);
 
   /* Set the current reaching definition for VAR to be DEF.  */
   set_current_def (var, def);
@@ -1437,7 +1434,7 @@ rewrite_blocks (bool fix_virtual_phis)
   walk_data.global_data = NULL;
   walk_data.block_local_data_size = 0;
 
-  VARRAY_TREE_INIT (block_defs_stack, 10, "Block DEFS Stack");
+  block_defs_stack = VEC_alloc (tree_on_heap, 10);
 
   /* Initialize the dominator walker.  */
   init_walk_dominator_tree (&walk_data);
@@ -1450,6 +1447,9 @@ rewrite_blocks (bool fix_virtual_phis)
   fini_walk_dominator_tree (&walk_data);
 
   htab_delete (def_blocks);
+  
+  VEC_free (tree_on_heap, block_defs_stack);
+  block_defs_stack = NULL;
 
   timevar_pop (TV_TREE_SSA_REWRITE_BLOCKS);
 }
@@ -1670,7 +1670,7 @@ rewrite_ssa_into_ssa (void)
   mark_def_sites_global_data.names_to_rename = snames_to_rename;
   walk_data.global_data = &mark_def_sites_global_data;
 
-  VARRAY_TREE_INIT (block_defs_stack, 10, "Block DEFS Stack");
+  block_defs_stack = VEC_alloc (tree_on_heap, 10);
 
   /* We do not have any local data.  */
   walk_data.block_local_data_size = 0;
@@ -1756,6 +1756,9 @@ rewrite_ssa_into_ssa (void)
     }
 
   BITMAP_XFREE (to_rename);
+  
+  VEC_free (tree_on_heap, block_defs_stack);
+  block_defs_stack = NULL;
   timevar_pop (TV_TREE_SSA_OTHER);
 }
 
