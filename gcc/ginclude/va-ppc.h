@@ -41,6 +41,8 @@ typedef __va_list __gnuc_va_list;
 #if defined (_STDARG_H) || defined (_VARARGS_H)
 
 /* Register save area located below the frame pointer */
+#ifndef __VA_PPC_H__
+#define __VA_PPC_H__
 typedef struct {
   long   __gp_save[8];		/* save area for GP registers */
   double __fp_save[8];		/* save area for FP registers */
@@ -168,6 +170,7 @@ __extension__ (*({							\
 
 #define va_end(AP)	((void)0)
 
+#endif /* __VA_PPC_H__ */
 #endif /* defined (_STDARG_H) || defined (_VARARGS_H) */
 
 
