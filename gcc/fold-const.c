@@ -3622,7 +3622,8 @@ fold (expr)
 				TREE_OPERAND (arg0, 1)));
 	}
       /* In IEEE floating point, x+0 may not equal x.  */
-      else if (TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+      else if ((TARGET_FLOAT_FORMAT != IEEE_FLOAT_FORMAT
+		|| flag_fast_math)
 	       && real_zerop (arg1))
 	return non_lvalue (convert (type, arg0));
     associate:
