@@ -52,7 +52,7 @@ SUBDIR_INCLUDES = -I. -I.. -I$(srcdir) -I$(srcdir)/config
 all:
 	cd ..; $(MAKE) sublibobjc.a
 
-OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o \
+OBJC_O = hash.o sarray.o class.o sendmsg.o init.o archive.o encoding.o \
          selector.o objects.o misc.o Object.o Protocol.o
 
 libobjc.a: $(OBJC_O)
@@ -62,8 +62,7 @@ libobjc.a: $(OBJC_O)
 
 OBJC_H = hash.h list.h sarray.h objc.h \
          objc-api.h \
-	 Object.h Protocol.h mutex.h \
-	 typedstream.h
+	 Object.h Protocol.h encoding.h typedstream.h
 
 # copy objc headers to installation include directory
 copy-headers: 
@@ -74,19 +73,6 @@ copy-headers:
 	  cp $$realfile $(incinstalldir)/objc; \
 	  chmod a+r $(incinstalldir)/objc/$$file; \
 	done
-
-sendmsg.o: sendmsg.c fflags
-	$(GCC_FOR_TARGET) `cat fflags` -c  $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/sendmsg.c
-
-## Next to are for heuristics on forwarding mechanism... 
-xforward: xforward.c
-	-$(GCC_FOR_TARGET) -c $(GCC_CFLAGS) $(SUBDIR_INCLUDES) $(srcdir)/objc/xforward.c
-	-$(GCC_FOR_TARGET) ./xforward.o -o xforward
-	if [ ! -f ./xforward ]; then touch ./xforward; else true; fi	
-
-fflags: xforward
-	-rm -f fflags
-	-if [ -s ./xforward ]; then ./xforward > fflags; else touch fflags; fi
 
 mostlyclean:
 	-rm -f *.o libobjc.a xforward fflags
