@@ -1,5 +1,14 @@
 2003-07-13  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/11503
+	* cp-tree.h (DECL_SELF_REFERENCE_P): New macro.
+	(SET_DECL_SELF_REFERENCE_P): Likewise.
+	* class.c (build_self_reference): Use SET_DECL_SELF_REFERENCE_P.
+	* pt.c (tsubst_decl): Copy it.
+	* search.c (lookup_base): Use DECL_SELF_REFERENCE_P.
+
+	* pt.c (reregister_specialization): Fix thinko in previous change.
+	
 	* cp-tree.h (cp_id_kind): New type.
 	(unqualified_name_lookup_error): Change prototype.
 	(unqualified_fn_lookup_error): New function.
