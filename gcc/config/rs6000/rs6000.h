@@ -2600,7 +2600,6 @@ do {									\
   {"gpc_reg0_operand", {SUBREG, REG}},				\
   {"gpc_reg3_operand", {SUBREG, REG}},				\
   {"gpc_reg4_operand", {SUBREG, REG}},				\
-  {"gpc_reg34_operand", {SUBREG, REG}},				\
   {"cc_reg0_operand", {SUBREG, REG}},				\
   {"cc_reg1_operand", {SUBREG, REG}},				\
   {"cc_reg_operand", {SUBREG, REG}},				\
@@ -2656,7 +2655,6 @@ extern int non_short_cint_operand ();
 extern int gpc_reg0_operand ();
 extern int gpc_reg3_operand ();
 extern int gpc_reg4_operand ();
-extern int gpc_reg34_operand ();
 extern int gpc_reg_operand ();
 extern int cc_reg0_operand ();
 extern int cc_reg1_operand ();

@@ -467,8 +467,10 @@ gpc_reg3_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG || REGNO (op) == 3 || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+  if (GET_CODE (op) != REG || mode != GET_MODE (op))
+    return 0;			/* do not allow SUBREG's */
+
+  return (REGNO (op) == 3 || REGNO (op) >= FIRST_PSEUDO_REGISTER);
 }
 
 /* Returns 1 if OP is register 4 or is a pseudo register.  */
@@ -478,20 +480,10 @@ gpc_reg4_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG || REGNO (op) == 4 || REGNO (op) >= FIRST_PSEUDO_REGISTER));
-}
+  if (GET_CODE (op) != REG || mode != GET_MODE (op))
+    return 0;			/* do not allow SUBREG's */
 
-/* Returns 1 if OP is register 3 or 4 or is a pseudo register.  */
-
-int
-gpc_reg34_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  return (register_operand (op, mode)
-	  && (GET_CODE (op) != REG || REGNO (op) == 3 || REGNO (op) == 4
-	      || REGNO (op) >= FIRST_PSEUDO_REGISTER));
+  return (REGNO (op) == 4 || REGNO (op) >= FIRST_PSEUDO_REGISTER);
 }
 
 /* Returns 1 if OP is either a pseudo-register or CR1.  */
