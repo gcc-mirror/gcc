@@ -184,7 +184,7 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 ../jcf-dump$(exeext): jcf-dump.o jcf-io.o jcf-depend.o jcf-path.o \
 		zextract.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ jcf-dump.o jcf-io.o \
-	  jcf-depend.o jcf-path.o zextract.o $(LIBS) ../errors.o
+	  jcf-depend.o jcf-path.o zextract.o ../errors.o $(LIBS)
 
 # Dependencies here must be kept in sync with dependencies in Make-lang.in.
 ../jvgenmain$(exeext):  jvgenmain.o mangle.o $(LIBDEPS)
@@ -193,7 +193,7 @@ compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 ../gcjh$(exeext): gjavah.o jcf-io.o jcf-depend.o jcf-path.o \
 		zextract.o $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gjavah.o jcf-io.o \
-	  jcf-depend.o jcf-path.o zextract.o $(LIBS) ../errors.o
+	  jcf-depend.o jcf-path.o zextract.o ../errors.o $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status

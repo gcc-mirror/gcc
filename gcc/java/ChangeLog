@@ -1,3 +1,7 @@
+2000-01-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (jcf-dump, gcjh): Move ../errors.o before $(LIBS).
+
 Thu Jan  6 16:31:28 2000  Anthony Green  <green@cygnus.com>
 
 	* expr.c (java_lang_expand_expr): Switch to permanent obstack
