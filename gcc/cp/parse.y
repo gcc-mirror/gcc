@@ -2404,6 +2404,13 @@ named_complex_class_head_sans_basetype:
 		  push_scope (CP_DECL_CONTEXT ($$.t));
 		  $$.new_type_flag = 1;
 		}
+	| aggr global_scope nested_name_specifier apparent_template_type
+		{ 
+		  current_aggr = $1; 
+		  $$.t = $4;
+		  push_scope (CP_DECL_CONTEXT ($$.t));
+		  $$.new_type_flag = 1;
+		}
 	;
 
 named_class_head:
