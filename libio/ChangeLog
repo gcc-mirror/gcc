@@ -1,3 +1,9 @@
+1997-09-17 04:08  Ulrich Drepper  <drepper@cygnus.com>
+
+	* iostream.cc: Add forward declaration for __cvt_double.
+	* libio.h: Define _IO_USE_DTOA is _G_HAVE_PRINTF_FP is not defined.
+	* strops.c (_IO_str_count): Correct last change.
+
 1997-09-17 02:50  Ulrich Drepper  <drepper@cygnus.com>
 
 	* libioP.h: Define __set_errno if not already defined.

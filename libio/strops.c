@@ -200,8 +200,8 @@ _IO_ssize_t
 _IO_str_count (fp)
      _IO_FILE *fp;
 {
-  return ((fp->_IO_write_end > fp->_IO_read_end
-	   ? fp->_IO_write_end : fp->_IO_read_end)
+  return ((fp->_IO_write_ptr > fp->_IO_read_end
+	   ? fp->_IO_write_ptr : fp->_IO_read_end)
 	  - fp->_IO_read_base);
 }
 
