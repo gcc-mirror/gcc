@@ -1,3 +1,7 @@
+2004-02-12  Gunther Nikl  <gni@gecko.de>
+
+	* config.gcc: Restore support for m68k-openbsd.
+
 2004-02-12  Jan Hubicka  <jh@suse.cz>
 
 	* tree-optimize.c (tree_rest_of_compilation): Do not release
