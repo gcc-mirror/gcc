@@ -251,7 +251,7 @@
 
 ;; Can the instruction be put into a delay slot?
 (define_attr "can_delay" "no,yes"
-  (if_then_else (and (eq_attr "type" "!branch,call,jump,multi")
+  (if_then_else (and (eq_attr "type" "!branch,call,jump")
 		     (and (eq_attr "hazard" "none")
 			  (eq_attr "single_insn" "yes")))
 		(const_string "yes")
