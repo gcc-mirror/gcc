@@ -1318,7 +1318,7 @@ output_prolog (file, size)
       if (frame_size > 4096)
 	{
 	  int probed = 4096;
-	  int regnum = 1;
+	  int regnum = 2;	/* $1 is static chain, so start with $2.  */
 
 	  fprintf (file, "\tldq $%d,-%d($30)\n", regnum++, probed);
 
