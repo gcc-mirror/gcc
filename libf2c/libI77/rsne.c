@@ -530,10 +530,10 @@ x_rsne(cilist *a)
 					no1 = (ivae - iva)/size;
 					if (no1 > f__lcount)
 						no1 = f__lcount;
-					iva += no1 * dn0->delta;
 					if (k = l_read(&no1, vaddr + iva,
 							size, type))
 						return k;
+					iva += no1 * dn0->delta;
 					}
 				}
  mustend:

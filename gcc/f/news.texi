@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-06-18
+@set last-update-news 1999-06-28
 
 @include root.texi
 
@@ -161,7 +161,15 @@ if the system has no @code{ttyname} implementation available.
 
 @ifclear USERVISONLY
 @item
-Upgrade to @code{libf2c} as of 1999-06-18.
+Upgrade to @code{libf2c} as of 1999-06-28.
+
+This fixes a bug whereby
+input to a @code{NAMELIST} read involving a repeat count,
+such as @samp{K(5)=10*3},
+was not properly handled by @code{libf2c}.
+The first item was written to @samp{K(5)},
+but the remaining nine were written elsewhere (still within the array),
+not necessarily starting at @samp{K(6)}.
 @end ifclear
 @end itemize
 

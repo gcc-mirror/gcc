@@ -719,6 +719,12 @@ Fri Jun 18 02:33:08 EDT 1999
 -- b->ufd may change in t_runc().  (For now, it's still backspace.c
 in the libi77 bundle.)
 
+Sun Jun 27 22:05:47 EDT 1999
+  libf2c.zip, libi77: rsne.c: fix bug in namelist input: a misplaced
+increment could cause wrong array elements to be assigned; e.g.,
+"&input k(5)=10*1 &end" assigned k(5) and k(15 .. 23).
+
+
 Current timestamps of files in "all from f2c/src", sorted by time,
 appear below (mm/dd/year hh:mm:ss).  To bring your source up to date,
 obtain source files with a timestamp later than the time shown in your
