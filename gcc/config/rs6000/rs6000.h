@@ -2391,12 +2391,16 @@ do {									     \
         return COSTS_N_INSNS (4);					\
       case PROCESSOR_PPC620:						\
       case PROCESSOR_PPC630:						\
-      case PROCESSOR_POWER4:						\
         return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
 		? GET_MODE (XEXP (X, 1)) != DImode			\
 		? COSTS_N_INSNS (5) : COSTS_N_INSNS (7)			\
 		: INTVAL (XEXP (X, 1)) >= -256 && INTVAL (XEXP (X, 1)) <= 255 \
 		? COSTS_N_INSNS (3) : COSTS_N_INSNS (4));		\
+      case PROCESSOR_POWER4:						\
+        return (GET_CODE (XEXP (X, 1)) != CONST_INT			\
+		? GET_MODE (XEXP (X, 1)) != DImode			\
+		? COSTS_N_INSNS (3) : COSTS_N_INSNS (4)			\
+		: COSTS_N_INSNS (2));					\
       }									\
   case DIV:								\
   case MOD:								\

@@ -1,3 +1,8 @@
+2003-04-05  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.h (RTX_COSTS): Halve Power multiply costs.
+	* config/rs6000/rs6000.md: Correct Power4 multiply latency.
+
 2003-04-05  Zack Weinberg  <zack@codesourcery.com>
 
 	PR optimization/10024
