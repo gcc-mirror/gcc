@@ -8377,8 +8377,8 @@ ix86_split_long_move (operands)
      here we simplify i386.md splitters.  */
   if (GET_MODE_SIZE (GET_MODE (operands[0])) == 8 && TARGET_64BIT)
     {
-      /* Optimize constant pool reference to immediates.  This is used by fp moves,
-	 that force all constants to memory to allow combining.  */
+      /* Optimize constant pool reference to immediates.  This is used by
+	 fp moves, that force all constants to memory to allow combining.  */
 
       if (GET_CODE (operands[1]) == MEM
 	  && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
