@@ -2338,6 +2338,18 @@ make_insn_raw (pattern)
   LOG_LINKS (insn) = NULL;
   REG_NOTES (insn) = NULL;
 
+#ifdef ENABLE_RTL_CHECKING
+  if (insn
+      && GET_RTX_CLASS (GET_CODE (insn)) == 'i'
+      && (returnjump_p (insn)
+	  || (GET_CODE (insn) == SET
+	      && SET_DEST (insn) == pc_rtx)))
+    {
+      warning ("ICE: emit_insn used where emit_jump_insn needed:\n");
+      debug_rtx (insn);
+    }
+#endif
+  
   return insn;
 }
 
@@ -2997,18 +3009,6 @@ emit_insn (pattern)
       add_insn (insn);
     }
 
-#ifdef ENABLE_RTL_CHECKING
-  if (insn
-      && GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-      && (returnjump_p (insn)
-	  || (GET_CODE (insn) == SET
-	      && SET_DEST (insn) == pc_rtx)))
-    {
-      warning ("ICE: emit_insn used where emit_jump_insn needed:\n");
-      debug_rtx (insn);
-    }
-#endif
-      
   return insn;
 }
 
