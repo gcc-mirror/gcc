@@ -292,26 +292,55 @@ enum reg_class {
 
 /* Macros to check register numbers against specific register classes.  */
 
+/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
+   and check its validity for a certain class.
+   We have two alternate definitions for each of them.
+   The usual definition accepts all pseudo regs; the other rejects
+   them unless they have been allocated suitable hard regs.
+   The symbol REG_OK_STRICT causes the latter definition to be used.
+
+   Most source files want to accept pseudo regs in the hope that
+   they will get allocated to the class that the insn wants them to be in.
+   Source files for reload pass need to be strict.
+   After reload, it makes no difference, since pseudo regs have
+   been eliminated by then.  */
+
 /* These assume that REGNO is a hard or pseudo reg number.
    They give nonzero only if REGNO is a hard reg of the suitable class
    or a pseudo reg currently allocated to a suitable hard reg.
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
- 
+
+#ifndef REG_OK_STRICT
+# define REGNO_IN_RANGE_P(regno,min,max) \
+  (((regno) >= (min) && (regno) <= (max)) || (regno) >= FIRST_PSEUDO_REGISTER)
+#else
+# define REGNO_IN_RANGE_P(regno,min,max) \
+  (((regno) >= (min) && (regno) <= (max)) \
+   || (reg_renumber \
+       && reg_renumber[(regno)] >= (min) && reg_renumber[(regno)] <= (max)))
+#endif
+
+#define REGNO_DATA_P(regno) REGNO_IN_RANGE_P ((regno), 0, 3)
+#define REGNO_ADDRESS_P(regno) REGNO_IN_RANGE_P ((regno), 4, 8)
+#define REGNO_SP_P(regno) REGNO_IN_RANGE_P ((regno), 9, 9)
+#define REGNO_EXTENDED_P(regno) REGNO_IN_RANGE_P ((regno), 10, 17)
+#define REGNO_AM33_P(regno) \
+  (REGNO_DATA_P ((regno)) || REGNO_ADDRESS_P ((regno)) \
+   || REGNO_EXTENDED_P ((regno)))
+
 #define REGNO_OK_FOR_BASE_P(regno) \
-  (((regno) > 3 && regno < FIRST_PSEUDO_REGISTER)	\
-   || (reg_renumber[regno] > 3 && reg_renumber[regno] < FIRST_PSEUDO_REGISTER))
+  (REGNO_SP_P ((regno)) \
+   || REGNO_ADDRESS_P ((regno)) || REGNO_EXTENDED_P ((regno)))
+#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
 #define REGNO_OK_FOR_BIT_BASE_P(regno) \
-  (((regno) > 3 && regno < 10)	\
-   || (reg_renumber[regno] > 3 && reg_renumber[regno] < 10))
+  (REGNO_SP_P ((regno)) || REGNO_ADDRESS_P ((regno)))
+#define REG_OK_FOR_BIT_BASE_P(X) REGNO_OK_FOR_BIT_BASE_P (REGNO (X))
 
 #define REGNO_OK_FOR_INDEX_P(regno) \
-  (((regno) >= 0 && regno < 4)	\
-   || ((regno) >= 10 && regno < 18)	\
-   || (reg_renumber[regno] >= 10 && reg_renumber[regno] < 18) \
-   || (reg_renumber[regno] >= 0 && reg_renumber[regno] < 4))
-
+  (REGNO_DATA_P ((regno)) || REGNO_EXTENDED_P ((regno)))
+#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -645,39 +674,6 @@ struct cum_arg {int nbytes; };
 /* Maximum number of registers that can appear in a valid memory address.  */
 
 #define MAX_REGS_PER_ADDRESS 2
-
-/* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
-   and check its validity for a certain class.
-   We have two alternate definitions for each of them.
-   The usual definition accepts all pseudo regs; the other rejects
-   them unless they have been allocated suitable hard regs.
-   The symbol REG_OK_STRICT causes the latter definition to be used.
-
-   Most source files want to accept pseudo regs in the hope that
-   they will get allocated to the class that the insn wants them to be in.
-   Source files for reload pass need to be strict.
-   After reload, it makes no difference, since pseudo regs have
-   been eliminated by then.  */
-
-#ifndef REG_OK_STRICT
-/* Nonzero if X is a hard reg that can be used as an index
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_INDEX_P(X)  \
-  ((REGNO (X) >= 0 && REGNO(X) <= 3) || REGNO (X) >= 10)
-/* Nonzero if X is a hard reg that can be used as a base reg
-   or if it is a pseudo reg.  */
-#define REG_OK_FOR_BASE_P(X) \
-  ((REGNO (X) >= 4 && REGNO(X) <= 9) || REGNO (X) >= 10)
-#define REG_OK_FOR_BIT_BASE_P(X) \
-  ((REGNO (X) >= 4 && REGNO(X) <= 9))
-#else
-/* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
-/* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BIT_BASE_P(X) REGNO_OK_FOR_BIT_BASE_P (REGNO (X))
-#endif
 
 
 #define HAVE_POST_INCREMENT (TARGET_AM33)

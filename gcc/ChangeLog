@@ -1,3 +1,13 @@
+Sun Apr 23 18:37:53 2000  Alexandre Oliva  <aoliva@cygnus.com>
+
+	* config/mn10300/mn10300.h (REGNO_IN_RANGE_P): New macro.
+	(REGNO_DATA_P, REGNO_ADDRESS_P, REGNO_SP_P): New macros.
+	(REGNO_EXTENDED_P, REGNO_AM33_P): New macros.
+	(REGNO_OK_FOR_BASE_P): Define in terms of them.
+	(REGNO_OK_FOR_BIT_BASE_P, REGNO_OK_FOR_INDEX_P): Likewise.
+	(REG_OK_FOR_BASE_P): Define in terms of the REGNO macro.
+	(REG_OK_FOR_BIT_BASE_P, REG_OK_FOR_INDEX_P): Likewise.
+
 Sun Apr 23 22:23:08 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* loop.c (simplify_giv_expr):  Be more agressive on simplifying
