@@ -201,9 +201,9 @@ TOKEN_LEN (token)
 #define IS_ARG_CONTEXT(c) ((c)->flags & CONTEXT_ARG)
 #define CURRENT_CONTEXT(pfile) ((pfile)->contexts + (pfile)->cur_context)
 #define ON_REST_ARG(c) \
- (((c)->flags & VAR_ARGS) \
-  && ((c)-1)->u.list->tokens[((c)-1)->posn - 1].val.aux \
-      == (unsigned int) (((c)-1)->u.list->paramc - 1))
+ (((c)->u.list->flags & VAR_ARGS) \
+  && (c)->u.list->tokens[(c)->posn - 1].val.aux \
+      == (unsigned int) ((c)->u.list->paramc - 1))
 
 #define ASSIGN_FLAGS_AND_POS(d, s) \
   do {(d)->flags = (s)->flags & (PREV_WHITE | BOL | PASTE_LEFT); \
@@ -2787,14 +2787,17 @@ maybe_paste_with_next (pfile, token)
 		     the special extended semantics (see above).  */
 		  if (token->type == CPP_COMMA
 		      && IS_ARG_CONTEXT (CURRENT_CONTEXT (pfile))
-		      && ON_REST_ARG (CURRENT_CONTEXT (pfile)))
+		      && ON_REST_ARG (CURRENT_CONTEXT (pfile) - 1))
 		    /* no warning */;
 		  else
 		    cpp_warning (pfile,
 			"pasting would not give a valid preprocessing token");
 		}
 	      _cpp_push_token (pfile, second);
-	      return token;
+	      /* A short term hack to safely clear the PASTE_LEFT flag.  */
+	      pasted = duplicate_token (pfile, token);
+	      pasted->flags &= ~PASTE_LEFT;
+	      return pasted;
 	    }
 
 	  if (type == CPP_NAME || type == CPP_NUMBER)

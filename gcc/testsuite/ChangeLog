@@ -1,3 +1,7 @@
+Fri 15-Sep-2000 06:50:11 BST  Neil Booth  <NeilB@earthling.net>
+
+	* gcc.dg/cpp/paste10.c: Testcase for PASTE_LEFT buglet.
+
 Thu Sep 14 16:48:49 2000  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20000914-1.c: New test.

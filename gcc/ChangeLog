@@ -1,3 +1,10 @@
+Fri 15-Sep-2000 06:49:07 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c (ON_REST_ARG): Correct the test.
+	(maybe_paste_with_next): Duplicate a token that fail pasting,
+	and clear its PASTE_LEFT flag, so that nested pasting attempts
+	do not occur.
+
 2000-09-14  Richard Henderson  <rth@cygnus.com>
 
 	* calls.c (precompute_register_parameters): Use COSTS_N_INSNS, not 2.
