@@ -73,6 +73,7 @@ endif # CANADIAN
 
 GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -L$(here) $(JC1FLAGS) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
+LIBLINK = $(LIBTOOL) --mode=link $(CC) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
 JAVAC = $(GCJ) -C
 
@@ -132,7 +133,8 @@ libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
-libgcj_la_LINK = $(GCJLINK)
+libgcj_la_LINK = $(LIBLINK)
+
 
 libgcjawt_la_SOURCES = ## Nothing
 EXTRA_libgcjawt_la_SOURCES = $(awt_java_source_files)
@@ -141,7 +143,7 @@ libgcjawt_la_LIBADD = $(awto_files)
 libgcjawt_la_LDFLAGS = -rpath $(toolexeclibdir) \
 ## The mysterious backslash is consumed by make.
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
-libgcjawt_la_LINK = $(GCJLINK)
+libgcjawt_la_LINK = $(LIBLINK)
 
 ## Make the .class files depend on the .zip file.  This seems
 ## backwards, but is right.  This doesn't catch all the .class files,
