@@ -1,3 +1,9 @@
+2003-08-29  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR bootstrap/12100
+	* aclocal.m4 (AC_LANG_FUNC_LINK_TRY): Define.
+	* configure: Rebuilt.
+
 2003-08-27  Daniel Jacobowitz  <drow@mvista.com>
 
 	* aclocal.m4: Include acx.m4 and no-executables.m4.
