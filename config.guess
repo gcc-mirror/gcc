@@ -857,6 +857,8 @@ EOF
 	  rm -f $dummy.c $dummy
 	elif test "${UNAME_MACHINE}" = "s390"; then
 	  echo s390-ibm-linux && exit 0
+	elif test "${UNAME_MACHINE}" = "s390x"; then
+	  echo s390x-ibm-linux && exit 0
 	elif test "${UNAME_MACHINE}" = "x86_64"; then
 	  echo x86_64-unknown-linux-gnu && exit 0
 	else

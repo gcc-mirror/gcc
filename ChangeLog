@@ -1,3 +1,8 @@
+2001-02-09  Martin Schwidefsky  <schwidefsky@de.ibm.com>
+
+	* config.guess: Add linux target for S/390.
+	* config.sub: Likewise.
+
 2001-02-08  Chandrakala Chavva <cchavva@redhat.com>
 
 	* configure.in: for *-chorusos, don't config target-newlib and
