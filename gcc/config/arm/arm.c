@@ -66,6 +66,7 @@ static char *shift_op PROTO ((rtx, HOST_WIDE_INT *));
 static int pattern_really_clobbers_lr PROTO ((rtx));
 static int function_really_clobbers_lr PROTO ((rtx));
 static void emit_multi_reg_push PROTO ((int));
+static void emit_sfm PROTO ((int, int));
 static enum arm_cond_code get_arm_condition_code PROTO ((rtx));
 
 /*  Define the information needed to generate branch insns.  This is
@@ -77,20 +78,26 @@ int arm_compare_fp;
 /* What type of cpu are we compiling for? */
 enum processor_type arm_cpu;
 
-/* What type of floating point are we compiling for? */
+/* What type of floating point are we tuning for? */
 enum floating_point_type arm_fpu;
+
+/* What type of floating point instructions are available? */
+enum floating_point_type arm_fpu_arch;
 
 /* What program mode is the cpu running in? 26-bit mode or 32-bit mode */
 enum prog_mode_type arm_prgmode;
 
-char *target_cpu_name = ARM_CPU_NAME;
-char *target_fpe_name = NULL;
+/* Set by the -mfp=... option */
+char *target_fp_name = NULL;
 
 /* Nonzero if this is an "M" variant of the processor.  */
 int arm_fast_multiply = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions */
 int arm_arch4 = 0;
+
+/* Set to the features we should tune the code for (multiply speed etc). */
+int tune_flags = 0;
 
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
    must report the mode of the memory reference from PRINT_OPERAND to
@@ -135,11 +142,12 @@ static enum arm_cond_code get_arm_condition_code ();
 
 /* Initialization code */
 
-struct arm_cpu_select arm_select[3] =
+struct arm_cpu_select arm_select[4] =
 {
   /* switch	name,		tune	arch */
   { (char *)0,	"--with-cpu=",	1,	1 },
   { (char *)0,	"-mcpu=",	1,	1 },
+  { (char *)0,	"-march=",	0,	1 },
   { (char *)0,	"-mtune=",	1,	0 },
 };
 
@@ -192,6 +200,17 @@ static struct processors all_procs[] =
 				  | FL_ARCH4)},
   {"strongarm110", PROCESSOR_STARM, (FL_FAST_MULT | FL_MODE32 | FL_MODE26
 				     | FL_ARCH4)},
+  {"armv2",	PROCESSOR_NONE, FL_CO_PROC | FL_MODE26},
+  {"armv2a",	PROCESSOR_NONE, FL_CO_PROC | FL_MODE26},
+  {"armv3",	PROCESSOR_NONE, FL_CO_PROC | FL_MODE32 | FL_MODE26},
+  {"armv3m",	PROCESSOR_NONE, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
+				 | FL_MODE26)},
+  {"armv4",	PROCESSOR_NONE, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
+				 | FL_MODE26 | FL_ARCH4)},
+  /* Strictly, FL_MODE26 is a permitted option for v4t, but there are no
+     implementations that support it, so we will leave it out for now.  */
+  {"armv4t",	PROCESSOR_NONE, (FL_CO_PROC | FL_FAST_MULT | FL_MODE32
+				 | FL_ARCH4)},
   {NULL, 0, 0}
 };
 
@@ -240,11 +259,21 @@ arm_override_options ()
           for (sel = all_procs; sel->name != NULL; sel++)
             if (! strcmp (ptr->string, sel->name))
               {
+		/* -march= is the only flag that can take an architecture
+		   type, so if we match when the tune bit is set, the
+		   option was invalid.  */
                 if (ptr->set_tune_p)
-                  arm_cpu = sel->type;
+		  {
+		    if (sel->type == PROCESSOR_NONE)
+		      continue; /* Its an architecture, not a cpu */
+
+                    arm_cpu = sel->type;
+		    tune_flags = sel->flags;
+		  }
 
                 if (ptr->set_arch_p)
 		  flags = sel->flags;
+
                 break;
               }
 
@@ -292,29 +321,33 @@ arm_override_options ()
       target_flags |= ARM_FLAG_APCS_FRAME;
     }
 
+  /* Default is to tune for an FPA */
   arm_fpu = FP_HARD;
 
   /* Default value for floating point code... if no co-processor
      bus, then schedule for emulated floating point.  Otherwise,
-     assume the user has an FPA, unless overridden with -mfpe-...  */
-  if (flags & FL_CO_PROC == 0)
+     assume the user has an FPA.
+     Note: this does not prevent use of floating point instructions,
+     -msoft-float does that.  */
+  if (tune_flags & FL_CO_PROC == 0)
     arm_fpu = FP_SOFT3;
-  else
-    arm_fpu = FP_HARD;
+
   arm_fast_multiply = (flags & FL_FAST_MULT) != 0;
   arm_arch4 = (flags & FL_ARCH4) != 0;
   arm_thumb_aware = (flags & FL_THUMB) != 0;
 
-  if (target_fpe_name)
+  if (target_fp_name)
     {
-      if (strcmp (target_fpe_name, "2") == 0)
-	arm_fpu = FP_SOFT2;
-      else if (strcmp (target_fpe_name, "3") == 0)
-	arm_fpu = FP_SOFT3;
+      if (strcmp (target_fp_name, "2") == 0)
+	arm_fpu_arch = FP_SOFT2;
+      else if (strcmp (target_fp_name, "3") == 0)
+	arm_fpu_arch = FP_HARD;
       else
-	fatal ("Invalid floating point emulation option: -mfpe-%s",
-	       target_fpe_name);
+	fatal ("Invalid floating point emulation option: -mfpe=%s",
+	       target_fp_name);
     }
+  else
+    arm_fpu_arch = FP_DEFAULT;
 
   if (TARGET_THUMB_INTERWORK && ! arm_thumb_aware)
     {
@@ -346,10 +379,17 @@ use_return_insn ()
       || (get_frame_size () && !(TARGET_APCS || frame_pointer_needed)))
     return 0;
 
+  /* Can't be done if interworking with Thumb, and any registers have been
+     stacked */
+  if (TARGET_THUMB_INTERWORK)
+    for (regno = 0; regno < 16; regno++)
+      if (regs_ever_live[regno] && ! call_used_regs[regno])
+	return 0;
+      
   /* Can't be done if any of the FPU regs are pushed, since this also
      requires an insn */
-  for (regno = 20; regno < 24; regno++)
-    if (regs_ever_live[regno])
+  for (regno = 16; regno < 24; regno++)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
       return 0;
 
   /* If a function is naked, don't use the "return" insn.  */
@@ -1427,6 +1467,8 @@ arm_rtx_costs (x, code, outer_code)
       return 8;
 
     case MULT:
+      /* There is no point basing this on the tuning, since it is always the
+	 fast variant if it exists at all */
       if (arm_fast_multiply && mode == DImode
 	  && (GET_CODE (XEXP (x, 0)) == GET_CODE (XEXP (x, 1)))
 	  && (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
@@ -1443,7 +1485,8 @@ arm_rtx_costs (x, code, outer_code)
 				      & (unsigned HOST_WIDE_INT) 0xffffffff);
 	  int add_cost = const_ok_for_arm (i) ? 4 : 8;
 	  int j;
-	  int booth_unit_size = (arm_fast_multiply ? 8 : 2);
+	  /* Tune as appropriate */ 
+	  int booth_unit_size = ((tune_flags & FL_FAST_MULT) ? 8 : 2);
 
 	  for (j = 0; i && j < 32; j += booth_unit_size)
 	    {
@@ -1454,7 +1497,7 @@ arm_rtx_costs (x, code, outer_code)
 	  return add_cost;
 	}
 
-      return ((arm_fast_multiply ? 8 : 30)
+      return (((tune_flags & FL_FAST_MULT) ? 8 : 30)
 	      + (REG_OR_SUBREG_REG (XEXP (x, 0)) ? 0 : 4)
 	      + (REG_OR_SUBREG_REG (XEXP (x, 1)) ? 0 : 4));
 
@@ -1773,6 +1816,26 @@ alignable_memory_operand (op, mode)
 		   || (GET_CODE (XEXP (op, 0)) == SUBREG
 		       && GET_CODE (reg = SUBREG_REG (XEXP (op, 0))) == REG))))
 	  && REGNO_POINTER_ALIGN (REGNO (reg)) >= 4);
+}
+
+/* Similar to s_register_operand, but does not allow hard integer 
+   registers.  */
+int
+f_register_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode && mode != VOIDmode)
+    return 0;
+
+  if (GET_CODE (op) == SUBREG)
+    op = SUBREG_REG (op);
+
+  /* We don't consider registers whose class is NO_REGS
+     to be a register operand.  */
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) >= FIRST_PSEUDO_REGISTER
+	      || REGNO_REG_CLASS (REGNO (op)) == FPU_REGS));
 }
 
 /* Return TRUE for valid operands for the rhs of an FPU instruction.  */
@@ -4578,8 +4641,11 @@ output_return_instruction (operand, really_return, reverse)
     }
   else if (really_return)
     {
-      sprintf (instr, "mov%%?%%%s0%s\t%%|pc, %%|lr",
-	       reverse ? "D" : "d", TARGET_APCS_32 ? "" : "s");
+      if (TARGET_THUMB_INTERWORK)
+	sprintf (instr, "bx%%?%%%s\t%%|lr", reverse ? "D" : "d");
+      else
+	sprintf (instr, "mov%%?%%%s0%s\t%%|pc, %%|lr",
+		 reverse ? "D" : "d", TARGET_APCS_32 ? "" : "s");
       output_asm_insn (instr, &operand);
     }
 
@@ -4687,9 +4753,9 @@ output_func_epilogue (f, frame_size)
      FILE *f;
      int frame_size;
 {
-  int reg, live_regs_mask = 0, code_size = 0;
-  /* If we need this then it will always be at lesat this much */
-  int floats_offset = 24;
+  int reg, live_regs_mask = 0;
+  /* If we need this then it will always be at least this much */
+  int floats_offset = 12;
   rtx operands[3];
   int volatile_func = (optimize > 0
 		       && TREE_THIS_VOLATILE (current_function_decl));
@@ -4713,7 +4779,6 @@ output_func_epilogue (f, frame_size)
       rtx op = gen_rtx (SYMBOL_REF, Pmode, "abort");
       assemble_external_libcall (op);
       output_asm_insn ("bl\t%a0", &op);
-      code_size = 4;
       goto epilogue_done;
     }
 
@@ -4726,19 +4791,64 @@ output_func_epilogue (f, frame_size)
 
   if (frame_pointer_needed)
     {
-      for (reg = 23; reg > 15; reg--)
-	if (regs_ever_live[reg] && ! call_used_regs[reg])
-	  {
-	    fprintf (f, "\tldfe\t%s%s, [%sfp, #-%d]\n", REGISTER_PREFIX,
-		     reg_names[reg], REGISTER_PREFIX, floats_offset);
-	    floats_offset += 12;
-	    code_size += 4;
-	  }
+      if (arm_fpu_arch == FP_SOFT2)
+	{
+	  for (reg = 23; reg > 15; reg--)
+	    if (regs_ever_live[reg] && ! call_used_regs[reg])
+	      {
+		floats_offset += 12;
+		fprintf (f, "\tldfe\t%s%s, [%sfp, #-%d]\n", REGISTER_PREFIX,
+			 reg_names[reg], REGISTER_PREFIX, floats_offset);
+	      }
+	}
+      else
+	{
+	  int start_reg = 23;
 
-      live_regs_mask |= 0xA800;
-      print_multi_reg (f, "ldmea\t%sfp", live_regs_mask,
-		       TARGET_APCS_32 ? FALSE : TRUE);
-      code_size += 4;
+	  for (reg = 23; reg > 15; reg--)
+	    {
+	      if (regs_ever_live[reg] && ! call_used_regs[reg])
+		{
+		  floats_offset += 12;
+		  /* We can't unstack more than four registers at once */
+		  if (start_reg - reg == 3)
+		    {
+		      fprintf (f, "\tlfm\t%s%s, 4, [%sfp, #-%d]\n",
+			       REGISTER_PREFIX, reg_names[reg],
+			       REGISTER_PREFIX, floats_offset);
+		      start_reg = reg - 1;
+		    }
+		}
+	      else
+		{
+		  if (reg != start_reg)
+		    fprintf (f, "\tlfm\t%s%s, %d, [%sfp, #-%d]\n",
+			     REGISTER_PREFIX, reg_names[reg + 1],
+			     start_reg - reg, REGISTER_PREFIX, floats_offset);
+
+		  start_reg = reg - 1;
+		}
+	    }
+
+	  /* Just in case the last register checked also needs unstacking.  */
+	  if (reg != start_reg)
+	    fprintf (f, "\tlfm\t%s%s, %d, [%sfp, #-%d]\n",
+		     REGISTER_PREFIX, reg_names[reg + 1],
+		     start_reg - reg, REGISTER_PREFIX, floats_offset);
+	}
+
+      if (TARGET_THUMB_INTERWORK)
+	{
+	  live_regs_mask |= 0x6800;
+	  print_multi_reg (f, "ldmea\t%sfp", live_regs_mask, FALSE);
+	  fprintf (f, "\tbx\t%slr\n", REGISTER_PREFIX);
+	}
+      else
+	{
+	  live_regs_mask |= 0xA800;
+	  print_multi_reg (f, "ldmea\t%sfp", live_regs_mask,
+			   TARGET_APCS_32 ? FALSE : TRUE);
+	}
     }
   else
     {
@@ -4750,23 +4860,64 @@ output_func_epilogue (f, frame_size)
 	  output_add_immediate (operands);
 	}
 
-      for (reg = 16; reg < 24; reg++)
-	if (regs_ever_live[reg] && ! call_used_regs[reg])
-	  {
-	    fprintf (f, "\tldfe\t%s%s, [%ssp], #12\n", REGISTER_PREFIX,
-		     reg_names[reg], REGISTER_PREFIX);
-	    code_size += 4;
-	  }
+      if (arm_fpu_arch == FP_SOFT2)
+	{
+	  for (reg = 16; reg < 24; reg++)
+	    if (regs_ever_live[reg] && ! call_used_regs[reg])
+	      fprintf (f, "\tldfe\t%s%s, [%ssp], #12\n", REGISTER_PREFIX,
+		       reg_names[reg], REGISTER_PREFIX);
+	}
+      else
+	{
+	  int start_reg = 16;
+
+	  for (reg = 16; reg < 24; reg++)
+	    {
+	      if (regs_ever_live[reg] && ! call_used_regs[reg])
+		{
+		  if (reg - start_reg == 3)
+		    {
+		      fprintf (f, "\tlfmfd\t%s%s, 4, [%ssp]!\n",
+			       REGISTER_PREFIX, reg_names[start_reg],
+			       REGISTER_PREFIX);
+		      start_reg = reg + 1;
+		    }
+		}
+	      else
+		{
+		  if (reg != start_reg)
+		    fprintf (f, "\tlfmfd\t%s%s, %d, [%ssp]!\n",
+			     REGISTER_PREFIX, reg_names[start_reg],
+			     reg - start_reg, REGISTER_PREFIX);
+
+		  start_reg = reg + 1;
+		}
+	    }
+
+	  /* Just in case the last register checked also needs unstacking.  */
+	  if (reg != start_reg)
+	    fprintf (f, "\tlfmfd\t%s%s, %d, [%ssp]!\n",
+		     REGISTER_PREFIX, reg_names[start_reg],
+		     reg - start_reg, REGISTER_PREFIX);
+	}
+
       if (current_function_pretend_args_size == 0 && regs_ever_live[14])
 	{
-	  if (lr_save_eliminated)
+	  if (TARGET_THUMB_INTERWORK)
+	    {
+	      if (! lr_save_eliminated)
+		print_multi_reg(f, "ldmfd\t%ssp!", live_regs_mask | 0x4000,
+				FALSE);
+
+	      fprintf (f, "\tbx\t%slr\n", REGISTER_PREFIX);
+	    }
+	  else if (lr_save_eliminated)
 	    fprintf (f, (TARGET_APCS_32 ? "\tmov\t%spc, %slr\n"
 			 : "\tmovs\t%spc, %slr\n"),
 		     REGISTER_PREFIX, REGISTER_PREFIX, f);
 	  else
 	    print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask | 0x8000,
 			     TARGET_APCS_32 ? FALSE : TRUE);
-	  code_size += 4;
 	}
       else
 	{
@@ -4777,11 +4928,9 @@ output_func_epilogue (f, frame_size)
 		live_regs_mask |= 0x4000;
 
 	      if (live_regs_mask != 0)
-	      {
 		print_multi_reg (f, "ldmfd\t%ssp!", live_regs_mask, FALSE);
-		code_size += 4;
-	      }
 	    }
+
 	  if (current_function_pretend_args_size)
 	    {
 	      /* Unwind the pre-pushed regs */
@@ -4791,10 +4940,12 @@ output_func_epilogue (f, frame_size)
 	      output_add_immediate (operands);
 	    }
 	  /* And finally, go home */
-	  fprintf (f, (TARGET_APCS_32 ? "\tmov\t%spc, %slr\n"
-		       : "\tmovs\t%spc, %slr\n"),
-		   REGISTER_PREFIX, REGISTER_PREFIX, f);
-	  code_size += 4;
+	  if (TARGET_THUMB_INTERWORK)
+	    fprintf (f, "\tbx\t%slr\n", REGISTER_PREFIX);
+	  else
+	    fprintf (f, (TARGET_APCS_32 ? "\tmov\t%spc, %slr\n"
+			 : "\tmovs\t%spc, %slr\n"),
+		     REGISTER_PREFIX, REGISTER_PREFIX, f);
 	}
     }
 
@@ -4844,6 +4995,32 @@ emit_multi_reg_push (mask)
 	  j++;
 	}
     }
+
+  emit_insn (par);
+}
+
+static void
+emit_sfm (base_reg, count)
+     int base_reg;
+     int count;
+{
+  rtx par;
+  int i;
+
+  par = gen_rtx (PARALLEL, VOIDmode, rtvec_alloc (count));
+
+  XVECEXP (par, 0, 0) = gen_rtx (SET, VOIDmode, 
+				 gen_rtx (MEM, BLKmode,
+					  gen_rtx (PRE_DEC, BLKmode,
+						   stack_pointer_rtx)),
+				 gen_rtx (UNSPEC, BLKmode,
+					  gen_rtvec (1, gen_rtx (REG, XFmode, 
+								 base_reg++)),
+					  2));
+  for (i = 1; i < count; i++)
+    XVECEXP (par, 0, i) = gen_rtx (USE, VOIDmode, 
+				   gen_rtx (REG, XFmode, base_reg++));
+
   emit_insn (par);
 }
 
@@ -4902,13 +5079,43 @@ arm_expand_prologue ()
   /* For now the integer regs are still pushed in output_func_epilogue ().  */
 
   if (! volatile_func)
-    for (reg = 23; reg > 15; reg--)
-      if (regs_ever_live[reg] && ! call_used_regs[reg])
-	emit_insn (gen_rtx (SET, VOIDmode, 
-			    gen_rtx (MEM, XFmode, 
-				     gen_rtx (PRE_DEC, XFmode,
-					      stack_pointer_rtx)),
-			    gen_rtx (REG, XFmode, reg)));
+    {
+      if (arm_fpu_arch == FP_SOFT2)
+	{
+	  for (reg = 23; reg > 15; reg--)
+	    if (regs_ever_live[reg] && ! call_used_regs[reg])
+	      emit_insn (gen_rtx (SET, VOIDmode, 
+				  gen_rtx (MEM, XFmode, 
+					   gen_rtx (PRE_DEC, XFmode,
+						    stack_pointer_rtx)),
+				  gen_rtx (REG, XFmode, reg)));
+	}
+      else
+	{
+	  int start_reg = 23;
+
+	  for (reg = 23; reg > 15; reg--)
+	    {
+	      if (regs_ever_live[reg] && ! call_used_regs[reg])
+		{
+		  if (start_reg - reg == 3)
+		    {
+		      emit_sfm (reg, 4);
+		      start_reg = reg - 1;
+		    }
+		}
+	      else
+		{
+		  if (start_reg != reg)
+		    emit_sfm (reg + 1, start_reg - reg);
+		  start_reg = reg - 1;
+		}
+	    }
+
+	  if (start_reg != reg)
+	    emit_sfm (reg + 1, start_reg - reg);
+	}
+    }
 
   if (frame_pointer_needed)
     emit_insn (gen_addsi3 (hard_frame_pointer_rtx, gen_rtx (REG, SImode, 12),
