@@ -1,5 +1,7 @@
 2003-09-25  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config.gcc (widely ported systems section): Mostly alphabetize
+	by system.  Comment the case where we can't.
 	* config.gcc (widely ported systems section): Reindent and clean up.
 
 	* config.gcc: Remove some unnecessary uses of 'x' in case statements.
