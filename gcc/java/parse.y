@@ -11198,6 +11198,10 @@ java_complete_lhs (node)
     case TRY_FINALLY_EXPR:
       COMPLETE_CHECK_OP_0 (node);
       COMPLETE_CHECK_OP_1 (node);
+      if (TREE_OPERAND (node, 0) == empty_stmt_node)
+	return TREE_OPERAND (node, 1);
+      if (TREE_OPERAND (node, 1) == empty_stmt_node)
+	return TREE_OPERAND (node, 0);
       CAN_COMPLETE_NORMALLY (node)
 	= (CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 0))
 	   && CAN_COMPLETE_NORMALLY (TREE_OPERAND (node, 1)));

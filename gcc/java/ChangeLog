@@ -1,3 +1,19 @@
+2001-03-23  Per Bothner  <per@bothner.com>
+
+	* verify.c (verify_jvm_instructions):  Replace 3 pop_type by POP_TYPE
+	macro for better error pin-pointing.
+	* java-tree.h:  Fix typo in comment.
+
+	* jcf-write.c (generate_bytecode_insns):  Changes to TRY_FINALLY_EXPR.
+	Don't include jsr/goto in exception range.
+	Check if start and end of exception range are the same (also TRY_EXPR).
+	Don't emit jsr after try_block if CAN_COMPLETE_NORMALLY is false.
+	However, do emit the following goto even if try_block is empty.
+	Defer freeing exception_decl until after the finalizer, to make
+	sure the local isn't reused in the finalizer.  Fixes PR java/1208.
+	* parse.y (java_complete_lhs):  If the try-clause is empty, just
+	return the finally-clause and vice versa.
+
 2001-03-23  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* gcj.texi (Input Options): documented the check for attribute

@@ -740,7 +740,7 @@ struct lang_identifier
 #define LABEL_RETURN_TYPE_STATE(NODE) LABEL_TYPE_STATE (LABEL_RETURN_LABEL (NODE))
 
 /* In a TREE_VEC for a LABEL_RETURN_TYPE_STATE, notes that
-   TREE_VEC_LENGTH has been adjust to the correct stack size. */
+   TREE_VEC_LENGTH has been adjusted to the correct stack size. */
 #define RETURN_MAP_ADJUSTED(NODE) TREE_LANG_FLAG_2(NODE)
 
 /* In the label of a sub-routine, a chain of the return location labels. */
