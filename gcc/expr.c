@@ -2964,8 +2964,39 @@ emit_move_insn_1 (x, y)
 	 X with a reference to the stack pointer.  */
       if (push_operand (x, GET_MODE (x)))
 	{
-	  anti_adjust_stack (GEN_INT (GET_MODE_SIZE (GET_MODE (x))));
-	  x = change_address (x, VOIDmode, stack_pointer_rtx);
+	  rtx temp;
+	  enum rtx_code code;
+	  
+	  /* Do not use anti_adjust_stack, since we don't want to update
+	     stack_pointer_delta.  */
+	  temp = expand_binop (Pmode,
+#ifdef STACK_GROWS_DOWNWARD
+			       sub_optab,
+#else
+			       add_optab,
+#endif
+			       stack_pointer_rtx,
+			       GEN_INT
+				 (PUSH_ROUNDING (GET_MODE_SIZE (GET_MODE (x)))),
+			       stack_pointer_rtx,
+			       0,
+			       OPTAB_LIB_WIDEN);
+          if (temp != stack_pointer_rtx)
+            emit_move_insn (stack_pointer_rtx, temp);
+
+	  code = GET_CODE (XEXP (x, 0));
+	  /* Just hope that small offsets off SP are OK.  */
+	  if (code == POST_INC)
+	    temp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, 
+				GEN_INT (-(HOST_WIDE_INT)
+					   GET_MODE_SIZE (GET_MODE (x))));
+	  else if (code == POST_DEC)
+	    temp = gen_rtx_PLUS (Pmode, stack_pointer_rtx, 
+				GEN_INT (GET_MODE_SIZE (GET_MODE (x))));
+	  else
+	    temp = stack_pointer_rtx;
+
+	  x = change_address (x, VOIDmode, temp);
 	}
 #endif
 
@@ -3133,7 +3164,7 @@ emit_single_push_insn (mode, x, type)
 {
 #ifdef PUSH_ROUNDING
   rtx dest_addr;
-  int rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
+  unsigned rounded_size = PUSH_ROUNDING (GET_MODE_SIZE (mode));
   rtx dest;
 
   if (GET_MODE_SIZE (mode) == rounded_size)
@@ -3142,7 +3173,7 @@ emit_single_push_insn (mode, x, type)
     {
 #ifdef STACK_GROWS_DOWNWARD
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				GEN_INT (-rounded_size));
+				GEN_INT (-(HOST_WIDE_INT)rounded_size));
 #else
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
 				GEN_INT (rounded_size));

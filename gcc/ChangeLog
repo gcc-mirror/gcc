@@ -1,3 +1,17 @@
+2001-07-02  Geoffrey Keating  <geoffk@redhat.com>
+
+	* doc/tm.texi (Frame Layout): Document STACK_PUSH_CODE.
+
+	* expr.c (emit_move_insn_1): Deal with non-default
+	STACK_PUSH_CODE.
+
+	* expr.c (emit_single_push_insn): Fix warning.
+
+2001-07-02  Toshiyasu Morita  <toshiyasu.morita@hsa.hitachi.com>
+
+	* expr.c (emit_move_insn_1): Avoid modifying
+	cfun->expr->x_stack_pointer when PUSH_ROUNDING is defined.
+
 Mon Jul  2 15:33:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* emit-rtl.c (adjust_address): New function.
