@@ -7317,10 +7317,11 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
   if (DECL_CONV_FN_P (fn))
     {
       /* This is a template conversion operator.  Use the return types
-         as well as the argument types.  */
+         as well as the argument types.  We use it instead of 'this', since
+         we could be comparing conversions from different classes.  */
       parms = scratch_tree_cons (NULL_TREE, TREE_TYPE (fntype),
-				 parms);
-      args = scratch_tree_cons (NULL_TREE, return_type, args);
+				 TREE_CHAIN (parms));
+      args = scratch_tree_cons (NULL_TREE, return_type, TREE_CHAIN (args));
     }
 
   /* We allow incomplete unification without an error message here
