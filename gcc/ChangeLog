@@ -1,3 +1,20 @@
+Fri Sep  3 15:13:34 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (propagate_block): Use XEXP not SET_DEST for a USE.
+	(recompute_reg_usage): Likewise.
+	* rtlanal.c (find_regno_fusage): Likewise.
+
+	* rtl.c (rtl_check_failed_code1): New function.
+	(rtl_check_failed_code2): New.
+	* rtl.h (RTL_CHECK1, RTL_CHECK2, RTVEC_ELT): Parenthesize args.
+	(RTL_CHECKC1, RTL_CHECKC2): New.
+	(XC*): New accessor macros.
+	(NOTE_*, LABEL_NAME, LABEL_NUSES, ADDRESSOF_REGNO): Use them.
+	(ADDRESSOF_DECL, JUMP_LABEL, LABEL_REFS, LABEL_NEXTREF): Likewise.
+	(CONTAINING_INSN, REGNO, INTVAL, SUBREG_REG, SUBREG_WORD): Likewise.
+	(ASM_OPERANDS_*, MEM_ALIAS_SET, SET_SRC, SET_DEST): Likewise.
+	(TRAP_*, RANGE_INFO_*): Likewise.
+
 Fri Sep  3 15:10:20 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (tlink.o): Don't depend on toplev.h.

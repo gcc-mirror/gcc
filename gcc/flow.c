@@ -2845,7 +2845,7 @@ propagate_block (old, first, last, final, significant, bnum, remove_dead_code)
 		       note;
 		       note = XEXP (note, 1))
 		    if (GET_CODE (XEXP (note, 0)) == USE)
-		      mark_used_regs (old, live, SET_DEST (XEXP (note, 0)),
+		      mark_used_regs (old, live, XEXP (XEXP (note, 0), 0),
 				      final, insn);
 
 		  /* Each call clobbers all call-clobbered regs that are not
@@ -5048,7 +5048,7 @@ recompute_reg_usage (f, loop_step)
 		   note;
 		   note = XEXP (note, 1))
 		if (GET_CODE (XEXP (note, 0)) == USE)
-		  count_reg_references (SET_DEST (XEXP (note, 0)));
+		  count_reg_references (XEXP (XEXP (note, 0), 0));
 	    }
 	}
     }
