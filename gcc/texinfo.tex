@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.257 1998/08/13 17:31:41 karl Exp $
+% $Id: texinfo.tex,v 2.257 1998/08/13 17:31:41 karl Exp karl $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -27,7 +27,7 @@
 % reports; you can get the latest version from:
 %   ftp://ftp.gnu.org/pub/gnu/texinfo.tex
 %   /home/gd/gnu/doc/texinfo.tex on the GNU machines.
-%   (and all GNU mirrors, see ftp://ftp.gnu.org/pub/gnu/GNUinfo/FTP)
+%   (and all GNU mirrors, see http://www.gnu.org/order/ftp.html)
 %   ftp://tug.org/tex/texinfo.tex
 %   ftp://ctan.org/macros/texinfo/texinfo.tex
 %   (and all CTAN mirrors, finger ctan@ctan.org for a list).
@@ -343,11 +343,11 @@
 %% Call \inENV within environments (after a \begingroup)
 \newif\ifENV \ENVfalse \def\inENV{\ifENV\relax\else\ENVtrue\fi}
 \def\ENVcheck{%
-\ifENV\errmessage{Still within an environment.  Type Return to continue.}
+\ifENV\errmessage{Still within an environment; press RETURN to continue}
 \endgroup\fi} % This is not perfect, but it should reduce lossage
 
 % @begin foo  is the same as @foo, for now.
-\newhelp\EMsimple{Type <Return> to continue.}
+\newhelp\EMsimple{Press RETURN to continue.}
 
 \outer\def\begin{\parsearg\beginxxx}
 
@@ -3997,20 +3997,18 @@ width0pt\relax} \fi
 % outside the @def...
 \dimen2=\leftskip
 \advance\dimen2 by -\defbodyindent
-\dimen3=\rightskip
-\advance\dimen3 by -\defbodyindent
-\noindent        %
+\noindent
 \setbox0=\hbox{\hskip \deflastargmargin{\rm #2}\hskip \deftypemargin}%
 \dimen0=\hsize \advance \dimen0 by -\wd0 % compute size for first line
 \dimen1=\hsize \advance \dimen1 by -\defargsindent %size for continuations
-\parshape 2 0in \dimen0 \defargsindent \dimen1     %
+\parshape 2 0in \dimen0 \defargsindent \dimen1
 % Now output arg 2 ("Function" or some such)
 % ending at \deftypemargin from the right margin,
 % but stuck inside a box of width 0 so it does not interfere with linebreaking
 {% Adjust \hsize to exclude the ambient margins,
 % so that \rightline will obey them.
-\advance \hsize by -\dimen2 \advance \hsize by -\dimen3
-\rlap{\rightline{{\rm #2}\hskip \deftypemargin}}}%
+\advance \hsize by -\dimen2
+\rlap{\rightline{{\rm #2}\hskip -1.25pc }}}%
 % Make all lines underfull and no complaints:
 \tolerance=10000 \hbadness=10000
 \advance\leftskip by -\defbodyindent
@@ -4031,7 +4029,7 @@ width0pt\relax} \fi
 \def#1{\endgraf\endgroup\medbreak}%
 \def#2{\begingroup\obeylines\activeparens\spacesplit#3}%
 \parindent=0in
-\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\advance\leftskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup %
 \catcode 61=\active % 61 is `='
@@ -4049,7 +4047,7 @@ width0pt\relax} \fi
 \def#1{\endgraf\endgroup\medbreak}%
 \def#2##1 {\begingroup\obeylines\activeparens\spacesplit{#3{##1}}}%
 \parindent=0in
-\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\advance\leftskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup\obeylines\activeparens\spacesplit{#3{#4}}}
 
@@ -4067,7 +4065,7 @@ width0pt\relax} \fi
 \def#1{\endgraf\endgroup\medbreak}%
 \def#2##1 ##2 {\begingroup\obeylines\activeparens\spacesplit{#3{##1}{##2}}}%
 \parindent=0in
-\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\advance\leftskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup\obeylines\activeparens\spacesplit{#3{#4}{#5}}}
 
@@ -4079,7 +4077,7 @@ width0pt\relax} \fi
 \def#2##1 ##2 {\def#4{##1}%
 \begingroup\obeylines\activeparens\spacesplit{#3{##2}}}%
 \parindent=0in
-\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\advance\leftskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup\obeylines\activeparens\spacesplit{#3{#5}}}
 
@@ -4094,7 +4092,7 @@ width0pt\relax} \fi
 \def#1{\endgraf\endgroup\medbreak}%
 \def#2{\begingroup\obeylines\spacesplit#3}%
 \parindent=0in
-\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\advance\leftskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup %
 \catcode 61=\active %
@@ -4111,7 +4109,7 @@ width0pt\relax} \fi
   \def#1{\endgraf\endgroup\medbreak}%
   \def#2##1 {\begingroup\obeylines\spacesplit{#3{##1}}}%
   \parindent=0in
-  \advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+  \advance\leftskip by \defbodyindent
   \exdentamount=\defbodyindent
   \begingroup\obeylines
 }
@@ -4156,7 +4154,7 @@ width0pt\relax} \fi
 \def#2##1 ##2 {\def#4{##1}%
 \begingroup\obeylines\spacesplit{#3{##2}}}%
 \parindent=0in
-\advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
+\advance\leftskip by \defbodyindent
 \exdentamount=\defbodyindent
 \begingroup\obeylines\spacesplit{#3{#5}}}
 
