@@ -25,7 +25,9 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "hconfig.j"
 #include "system.j"
 #include "assert.j"
+#if HAVE_STDDEF_H
 #include <stddef.h>
+#endif
 
 typedef enum
   {

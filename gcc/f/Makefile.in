@@ -461,7 +461,7 @@ fini: fini.o proj-h.o
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o fini fini.o proj-h.o
 
 fini.o:
-	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	$(HOST_CC) -c -DUSE_HCONFIG $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
 	      `echo $(srcdir)/fini.c | sed 's,^\./,,'` -o $@
 
 proj-h.o: proj.o
