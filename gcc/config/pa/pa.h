@@ -191,7 +191,7 @@ extern int target_flags;
 #define MAX_PARM_BOUNDARY 64
 
 /* Boundary (in *bits*) on which stack pointer should be aligned.  */
-#define STACK_BOUNDARY (TARGET_SNAKE ? 512 : 64)
+#define STACK_BOUNDARY 512
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
