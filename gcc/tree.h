@@ -248,8 +248,6 @@ struct tree_common
 
        TREE_UNSIGNED in
            INTEGER_TYPE, ENUMERAL_TYPE, FIELD_DECL
-       CONSTRUCTOR_TARGET_CLEARED_P in
-           CONSTRUCTOR
        DECL_BUILT_IN_NONANSI in
            FUNCTION_DECL
        TREE_PARMLIST in
@@ -613,7 +611,6 @@ struct tree_vec
 
 /* In a CONSTRUCTOR node.  */
 #define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (NODE, 1)
-#define CONSTRUCTOR_TARGET_CLEARED_P(NODE) ((NODE)->common.unsigned_flag)
 
 /* In ordinary expression nodes.  */
 #define TREE_OPERAND(NODE, I) ((NODE)->exp.operands[I])
