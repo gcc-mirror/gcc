@@ -1,3 +1,7 @@
+Wed Apr 28 11:42:22 1999  Andreas Schwab  <schwab@issan.cs.uni-dortmund.de>
+
+	* search.c (binfo_for_vtable): Initialize bfvi.var.
+
 1999-04-27  Nathan Sidwell  <nathan@acm.org>
 
 	* rtti.c (build_x_typeid): Check rtti is enabled.

@@ -3211,6 +3211,7 @@ binfo_for_vtable (var)
 
   type = DECL_CONTEXT (var);
   bfvi.vbases = CLASSTYPE_VBASECLASSES (type);
+  bfvi.var = var;
   return dfs_walk_real (TYPE_BINFO (type),
 			0, dfs_bfv_helper, dfs_bfv_queue_p, &bfvi);
 }
