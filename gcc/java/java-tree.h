@@ -321,6 +321,7 @@ enum java_tree_index
 
   JTI_END_PARAMS_NODE,
 
+  JTI_THROW_NODE,
   JTI_ALLOC_OBJECT_NODE,
   JTI_SOFT_INSTANCEOF_NODE,
   JTI_SOFT_CHECKCAST_NODE,
@@ -544,6 +545,8 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_END_PARAMS_NODE]
 
 /* References to internal libjava functions we use. */
+#define throw_node \
+  java_global_trees[JTI_THROW_NODE]
 #define alloc_object_node \
   java_global_trees[JTI_ALLOC_OBJECT_NODE]
 #define soft_instanceof_node \
@@ -562,7 +565,6 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_SOFT_BADARRAYINDEX_NODE]
 #define soft_nullpointer_node \
   java_global_trees[JTI_SOFT_NULLPOINTER_NODE]
-extern tree throw_node[];
 #define soft_checkarraystore_node \
   java_global_trees[JTI_SOFT_CHECKARRAYSTORE_NODE]
 #define soft_monitorenter_node \
