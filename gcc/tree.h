@@ -3157,16 +3157,6 @@ extern const char *dump_flag_name	PARAMS ((enum tree_dump_index));
 /* Assign the RTX to declaration.  */
 
 extern void set_decl_rtl		PARAMS ((tree, rtx));
-
-/* In callgraph.c  */
-void cgraph_finalize_function		PARAMS ((tree, tree));
-void cgraph_finalize_compilation_unit	PARAMS ((void));
-void cgraph_create_edges		PARAMS ((tree, tree));
-void dump_cgraph			PARAMS ((FILE *));
-void cgraph_optimize			PARAMS ((void));
-void cgraph_remove_call			PARAMS ((tree, tree));
-bool cgraph_calls_p			PARAMS ((tree, tree));
-
 
 /* Redefine abort to report an internal error w/o coredump, and
    reporting the location of the error in the source file.  This logic

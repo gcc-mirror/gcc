@@ -2955,14 +2955,20 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   int size;
   rtx insn, set;
   optab optab1, optab2;
-  int op1_is_constant, op1_is_pow2;
+  int op1_is_constant, op1_is_pow2 = 0;
   int max_cost, extra_cost;
   static HOST_WIDE_INT last_div_const = 0;
+  static HOST_WIDE_INT ext_op1;
 
   op1_is_constant = GET_CODE (op1) == CONST_INT;
-  op1_is_pow2 = (op1_is_constant
-		 && ((EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
-		      || (! unsignedp && EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1))))));
+  if (op1_is_constant)
+    {
+      ext_op1 = INTVAL (op1);
+      if (unsignedp)
+	ext_op1 &= GET_MODE_MASK (mode);
+      op1_is_pow2 = ((EXACT_POWER_OF_2_OR_ZERO_P (ext_op1)
+		     || (! unsignedp && EXACT_POWER_OF_2_OR_ZERO_P (-ext_op1))));
+    }
 
   /*
      This is the structure of expand_divmod:
@@ -3142,7 +3148,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		unsigned HOST_WIDE_INT mh, ml;
 		int pre_shift, post_shift;
 		int dummy;
-		unsigned HOST_WIDE_INT d = INTVAL (op1);
+		unsigned HOST_WIDE_INT d = (INTVAL (op1)
+					    & GET_MODE_MASK (compute_mode));
 
 		if (EXACT_POWER_OF_2_OR_ZERO_P (d))
 		  {

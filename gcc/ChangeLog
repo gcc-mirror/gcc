@@ -1,3 +1,29 @@
+Sat Feb 22 03:13:36 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* expmed.c (expand_divmod): Undo sign extensions for unsigned operands
+
+	* cfgcleanup.c (try_forward_edges):  Don't check loop structures
+	when not optimizing.
+	(cleanup_cfg): Do not iterate trought delete_trivially_dead_insns
+	when not expensive.
+	* toplev.c (rest_of_compilation):  Duplicate loop headers only when
+	optimizing;  Delete trivially dead insns early; fix optimize check.
+
+	* Makefile.in (c-decl.o, c-objc-common.o, cgraph.o, tree-inline.o): Add
+	dependency on cgraph.h
+	* c-decl.c: Include cgraph.h
+	(finish_function): Update call of tree_inlinable_function_p.
+	* c-objc-common.c: Include cgraph.h
+	* cgraph.h: New file.
+	* cgraphunit.c: New file.
+	* cgraph.c (cgraph_node, cgraph_edge): Move into cgraph.h
+	(cgraph_nodes, cgraph_n_nodes): Globalize.
+	(cgraph_finalize_function, cgraph_finalize_compilation_unit
+	cgraph_create_edges, cgraph_optimize, cgraph_mark_needed_node):
+	Move into cgraphunit.c
+	* tree-inline.c: Include cgraph.h
+	* tree-inline.c: Include cgraph.h
+
 2003-02-22  Josef Zlomek  <zlomekj@suse.cz>
 
 	* config/i386/i386.md: Use gen_lowpart instead of gen_rtx_REG

@@ -502,7 +502,7 @@ try_forward_edges (mode, b)
 	     For fallthru forwarders, the LOOP_BEG note must appear between
 	     the header of block and CODE_LABEL of the loop, for non forwarders
 	     it must appear before the JUMP_INSN.  */
-	  if (mode & CLEANUP_PRE_LOOP)
+	  if ((mode & CLEANUP_PRE_LOOP) && optimize)
 	    {
 	      rtx insn = (target->succ->flags & EDGE_FALLTHRU
 			  ? target->head : prev_nonnote_insn (target->end));
@@ -1795,6 +1795,7 @@ cleanup_cfg (mode)
 	    break;
 	}
       else if (!(mode & (CLEANUP_NO_INSN_DEL | CLEANUP_PRE_SIBCALL))
+	       && (mode & CLEANUP_EXPENSIVE)
 	       && !reload_completed)
 	{
 	  if (!delete_trivially_dead_insns (get_insns(), max_reg_num ()))

@@ -32,67 +32,22 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "debug.h"
 #include "target.h"
-
-/* The cgraph data strutcture.
-   Each function decl has assigned cgraph_node listing calees and callers.  */
-
-struct cgraph_node
-{
-  tree decl;
-  struct cgraph_edge *callees;
-  struct cgraph_edge *callers;
-  struct cgraph_node *next;
-  /* For nested functions points to function the node is nested in.  */
-  struct cgraph_node *origin;
-  /* Points to first nested function, if any.  */
-  struct cgraph_node *nested;
-  /* Pointer to the next function with same origin, if any.  */
-  struct cgraph_node *next_nested;
-  void *aux;
-
-  /* Set when function must be output - it is externally visible
-     or it's address is taken.  */
-  bool needed;
-  /* Set when function is reachable by call from other function
-     that is eighter reachable or needed.  */
-  bool reachable;
-  /* Set when the frontend has been asked to lower representation of this
-     function into trees.  Callees lists are not available when lowered
-     is not set.  */
-  bool lowered;
-  /* Set when function is scheduled to be assembled.  */
-  bool output;
-};
-
-struct cgraph_edge
-{
-  struct cgraph_node *caller, *callee;
-  struct cgraph_edge *next_caller;
-  struct cgraph_edge *next_callee;
-};
+#include "cgraph.h"
 
 /* Hash table used to convert declarations into nodes.  */
 static htab_t cgraph_hash = 0;
 
 /* The linked list of cgraph nodes.  */
-static struct cgraph_node *cgraph_nodes;
+struct cgraph_node *cgraph_nodes;
 
 /* Number of nodes in existence.  */
-static int cgraph_n_nodes;
+int cgraph_n_nodes;
 
-static struct cgraph_node *cgraph_node PARAMS ((tree decl));
 static struct cgraph_edge *create_edge PARAMS ((struct cgraph_node *,
 						struct cgraph_node *));
 static void remove_edge PARAMS ((struct cgraph_node *, struct cgraph_node *));
-static struct cgraph_edge *record_call PARAMS ((tree, tree));
-static tree record_call_1 PARAMS ((tree *, int *, void *));
 static hashval_t hash_node PARAMS ((const PTR));
 static int eq_node PARAMS ((const PTR, const PTR));
-static struct cgraph_node *cgraph_node PARAMS ((tree));
-static void cgraph_expand_functions PARAMS ((void));
-static void cgraph_mark_functions_to_output PARAMS ((void));
-static void cgraph_expand_function PARAMS ((struct cgraph_node *));
-static void cgraph_mark_needed_node PARAMS ((struct cgraph_node *, int));
 
 /* Returns a hash code for P.  */
 
@@ -117,7 +72,7 @@ eq_node (p1, p2)
 }
 
 /* Return cgraph node assigned to DECL.  Create new one when needed.  */
-static struct cgraph_node *
+struct cgraph_node *
 cgraph_node (decl)
      tree decl;
 {
@@ -190,8 +145,8 @@ remove_edge (caller, callee)
 
 /* Record call from CALLER to CALLEE  */
 
-static struct cgraph_edge *
-record_call (caller, callee)
+struct cgraph_edge *
+cgraph_record_call (caller, callee)
      tree caller, callee;
 {
   return create_edge (cgraph_node (caller), cgraph_node (callee));
@@ -218,66 +173,6 @@ cgraph_calls_p (caller_decl, callee_decl)
        edge = (edge->next_caller))
     continue;
   return edge != NULL;
-}
-
-/* Walk tree and record all calls.  Called via walk_tree.  */
-static tree
-record_call_1 (tp, walk_subtrees, data)
-     tree *tp;
-     int *walk_subtrees;
-     void *data;
-{
-  /* Record dereferences to the functions.  This makes the functions
-     reachable unconditionally.  */
-  if (TREE_CODE (*tp) == ADDR_EXPR)
-    {
-      tree decl = TREE_OPERAND (*tp, 0);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-        cgraph_mark_needed_node (cgraph_node (decl), 1);
-    }
-  else if (TREE_CODE (*tp) == CALL_EXPR)
-    {
-      tree decl = TREE_OPERAND (*tp, 0);
-      if (TREE_CODE (decl) == ADDR_EXPR)
-	decl = TREE_OPERAND (decl, 0);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  if (DECL_BUILT_IN (decl))
-	    return NULL;
-	  record_call (data, decl);
-	  walk_tree (&TREE_OPERAND (*tp, 1), record_call_1, data, NULL);
-	  *walk_subtrees = 0;
-	}
-    }
-  return NULL;
-}
-
-/* Create cgraph edges for function calles via BODY.  */
-
-void
-cgraph_create_edges (decl, body)
-     tree decl;
-     tree body;
-{
-  walk_tree (&body, record_call_1, decl, NULL);
-}
-
-/* Analyze function once it is parsed.  Set up the local information
-   available - create cgraph edges for function calles via BODY.  */
-
-void
-cgraph_finalize_function (decl, body)
-     tree decl;
-     tree body ATTRIBUTE_UNUSED;
-{
-  struct cgraph_node *node = cgraph_node (decl);
-
-  node->decl = decl;
-
-  /* Set TREE_UNINLINABLE flag.  */
-  tree_inlinable_function_p (decl);
-
-  (*debug_hooks->deferred_inline_function) (decl);
 }
 
 /* Dump the callgraph.  */
@@ -314,264 +209,4 @@ dump_cgraph (f)
 		 IDENTIFIER_POINTER (DECL_NAME (edge->callee->decl)));
       fprintf (f, "\n");
     }
-}
-
-static struct cgraph_node *queue = NULL;
-
-/* Notify finalize_compilation_unit that given node is reachable
-   or needed.  */
-static void
-cgraph_mark_needed_node (node, needed)
-     struct cgraph_node *node;
-     int needed;
-{
-  if (needed)
-    {
-      if (DECL_SAVED_TREE (node->decl))
-        announce_function (node->decl);
-      node->needed = 1;
-    }
-  if (!node->reachable)
-    {
-      node->reachable = 1;
-      if (DECL_SAVED_TREE (node->decl))
-	{
-	  node->aux = queue;
-	  queue = node;
-        }
-    }
-}
-
-/* Analyze the whole compilation unit once it is parsed completely.  */
-
-void
-cgraph_finalize_compilation_unit ()
-{
-  struct cgraph_node *node;
-  struct cgraph_edge *edge;
-
-  /* Collect entry points to the unit.  */
-
-  if (!quiet_flag)
-    fprintf (stderr, "\n\nUnit entry points:");
-
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      tree decl = node->decl;
-
-      if (!DECL_SAVED_TREE (decl))
-	continue;
-      if ((TREE_PUBLIC (decl) && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
-	  || (DECL_ASSEMBLER_NAME_SET_P (decl)
-	      && TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))))
-	{
-          cgraph_mark_needed_node (node, 1);
-	}
-    }
-
-  /*  Propagate reachability flag and lower representation of all reachable
-      functions.  In the future, lowering will introduce new functions and
-      new entry points on the way (by template instantiation and virtual
-      method table generation for instance).  */
-  while (queue)
-    {
-      tree decl = queue->decl;
-
-      node = queue;
-      queue = queue->aux;
-      if (node->lowered || !node->reachable || !DECL_SAVED_TREE (decl))
-	abort ();
-
-      /* At the moment frontend automatically emits all nested functions.  */
-      if (node->nested)
-	{
-	  struct cgraph_node *node2;
-
-	  for (node2 = node->nested; node2; node2 = node2->next_nested)
-	    if (!node2->reachable)
-	      cgraph_mark_needed_node (node2, 0);
-	}
-
-      if (lang_hooks.callgraph.lower_function)
-	(*lang_hooks.callgraph.lower_function) (decl);
-      /* First kill forward declaration so reverse inling works properly.  */
-      cgraph_create_edges (decl, DECL_SAVED_TREE (decl));
-
-      for (edge = node->callees; edge; edge = edge->next_callee)
-	{
-	  if (!edge->callee->reachable)
-            cgraph_mark_needed_node (edge->callee, 0);
-	}
-      node->lowered = true;
-    }
-  if (!quiet_flag)
-    fprintf (stderr, "\n\nReclaiming functions:");
-
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      tree decl = node->decl;
-
-      if (!node->reachable && DECL_SAVED_TREE (decl))
-	{
-	  DECL_SAVED_TREE (decl) = NULL;
-	  announce_function (decl);
-	}
-    }
-  ggc_collect ();
-}
-
-/* Figure out what functions we want to assemble.  */
-
-static void
-cgraph_mark_functions_to_output ()
-{
-  struct cgraph_node *node;
-
-  /* Figure out functions we want to assemble.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    {
-      tree decl = node->decl;
-
-      if (DECL_SAVED_TREE (decl)
-	  && (node->needed
-	      || (DECL_UNINLINABLE (decl) && node->reachable)
-	      || TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)))
-	  && !TREE_ASM_WRITTEN (decl) && !node->origin
-	  && !DECL_EXTERNAL (decl))
-	node->output = 1;
-    }
-}
-
-/* Expand function specified by NODE.  */
-static void
-cgraph_expand_function (node)
-     struct cgraph_node *node;
-{
-  tree decl = node->decl;
-
-  announce_function (decl);
-  if (flag_inline_trees)
-    optimize_inline_calls (decl);
-  (*lang_hooks.callgraph.expand_function) (decl);
-  if (DECL_UNINLINABLE (decl))
-    DECL_SAVED_TREE (decl) = NULL;
-  current_function_decl = NULL;
-}
-
-
-/* Expand all functions that must be output. 
-  
-   Attempt to topologically sort the nodes so function is output when
-   all called functions are already assembled to allow data to be propagated
-   accross the callgraph.  Use stack to get smaller distance between function
-   and it's callees (later we may use more sophisticated algorithm for
-   function reordering, we will likely want to use subsections to make output
-   functions to appear in top-down order, not bottom-up they are assembled).  */
-
-static void
-cgraph_expand_functions ()
-{
-  struct cgraph_node *node, *node2;
-  struct cgraph_node **stack =
-    xcalloc (sizeof (struct cgraph_node *), cgraph_n_nodes);
-  struct cgraph_node **order =
-    xcalloc (sizeof (struct cgraph_node *), cgraph_n_nodes);
-  int stack_size = 0;
-  int order_pos = 0;
-  struct cgraph_edge *edge, last;
-  int i;
-
-  cgraph_mark_functions_to_output ();
-
-  /*  We have to deal with cycles nicely, so use depth first traversal
-      algorithm.  Ignore the fact that some functions won't need to be output
-      and put them into order as well, so we get dependencies right trought inlined
-      functions.  */
-  for (node = cgraph_nodes; node; node = node->next)
-    node->aux = NULL;
-  for (node = cgraph_nodes; node; node = node->next)
-    if (node->output && !node->aux)
-      {
-	node2 = node;
-	if (!node->callers)
-	  node->aux = &last;
-	else
-	  node->aux = node->callers;
-	while (node2)
-	  {
-	    while (node2->aux != &last)
-	      {
-		edge = node2->aux;
-		if (edge->next_caller)
-		  node2->aux = edge->next_caller;
-		else
-		  node2->aux = &last;
-		if (!edge->caller->aux)
-		  {
-		    if (!edge->caller->callers)
-		      edge->caller->aux = &last;
-		    else
-		      edge->caller->aux = edge->caller->callers;
-		    stack[stack_size++] = node2;
-		    node2 = edge->caller;
-		    break;
-		  }
-	      }
-	    if (node2->aux == &last)
-	      {
-		order[order_pos++] = node2;
-		if (stack_size)
-		  node2 = stack[--stack_size];
-		else
-		  node2 = NULL;
-	      }
-	  }
-      }
-  for (i = order_pos - 1; i >=0; i--)
-    {
-      node = order[i];
-      if (node->output)
-	{
-	  if (!node->reachable)
-	    abort ();
-	  node->output = 0;
-	  cgraph_expand_function (node);
-	}
-    }
-  free (stack);
-  free (order);
-}
-
-/* Perform simple optimizations based on callgraph.  */
-
-void
-cgraph_optimize ()
-{
-  struct cgraph_node *node;
-  bool changed = true;
-  struct cgraph_edge *edge;
-
-  if (!quiet_flag)
-    fprintf (stderr, "\n\nAssembling functions:");
-
-  /* Output everything.  
-     ??? Our inline heuristic may decide to not inline functions previously
-     marked as inlinable thus adding new function bodies that must be output.
-     Later we should move all inlining decisions to callgraph code to make
-     this impossible.  */
-  cgraph_expand_functions ();
-  while (changed)
-    {
-      changed = false;
-      for (node = cgraph_nodes; node; node = node->next)
-	{
-	  if (!node->needed)
-	    continue;
-
-	  for (edge = node->callees; edge; edge = edge->next_callee)
-	    if (!edge->callee->needed)
-	      changed = edge->callee->needed = true;
-	}
-    }
-  cgraph_expand_functions ();
 }
