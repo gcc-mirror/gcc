@@ -416,6 +416,7 @@ namespace std
     _Words  		_M_word_zero;    
 
     // Guaranteed storage.
+    // The first 5 iword and pword slots are reserved for internal use.
     static const int 	_S_local_word_size = 8;
     _Words  		_M_local_word[_S_local_word_size];  
 
