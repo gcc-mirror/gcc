@@ -1,3 +1,19 @@
+2004-06-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mn10300/mn10300-protos.h (legitimate_address_p): Declare.
+	* config/mn10300/mn10300.c (legitimate_address_p): New.  Test that
+	index is legitimate, compared with code moved from...
+	* config/mn10300/mn10300.h (GO_IF_LEGITIMATE_ADDRESS): here.
+	(REG_STRICT): Define, according to REG_OK_STRICT.
+	(REGNO_IN_RANGE_P, REGNO_DATA_P, REGNO_ADDRESS_P, REGNO_SP_P,
+	REGNO_EXTENDED_P, REGNO_AM33_P, REGNO_FP_P): Introduce strict
+	argument.
+	(REGNO_STRICT_OK_FOR_BASE_P, REGNO_STRICT_OK_FOR_BIT_BASE_P,
+	REGNO_STRICT_OK_FOR_INDEX_P): New.
+	(REGNO_OK_FOR_BASE_P, REG_OK_FOR_BASE_P, REGNO_OK_FOR_BIT_BASE_P,
+	REG_OK_FOR_BIT_BASE_P, REGNO_OK_FOR_INDEX_P, REG_OK_FOR_INDEX_P,
+	RTX_OK_FOR_BASE_P): Use them.
+
 2004-06-28  Ben Elliston  <bje@au.ibm.com>
 
 	* doc/cfg.texi (Basic Blocks): Define dominators.

@@ -1864,6 +1864,56 @@ legitimate_pic_operand_p (rtx x)
   return 1;
 }
 
+/* Return TRUE if the address X, taken from a (MEM:MODE X) rtx, is
+   legitimate, and FALSE otherwise.  */
+bool
+legitimate_address_p (enum machine_mode mode, rtx x, int strict)
+{
+  if (CONSTANT_ADDRESS_P (x)
+      && (! flag_pic || legitimate_pic_operand_p (x)))
+    return TRUE;
+
+  if (RTX_OK_FOR_BASE_P (x, strict))
+    return TRUE;
+
+  if (TARGET_AM33
+      && GET_CODE (x) == POST_INC
+      && RTX_OK_FOR_BASE_P (XEXP (x, 0), strict)
+      && (mode == SImode || mode == SFmode || mode == HImode))
+    return TRUE;
+
+  if (GET_CODE (x) == PLUS)
+    {
+      rtx base = 0, index = 0;
+
+      if (REG_P (XEXP (x, 0))
+	  && REGNO_STRICT_OK_FOR_BASE_P (REGNO (XEXP (x, 0)), strict))
+	{
+	  base = XEXP (x, 0);
+	  index = XEXP (x, 1);
+	}
+
+      if (REG_P (XEXP (x, 1))
+	  && REGNO_STRICT_OK_FOR_BASE_P (REGNO (XEXP (x, 1)), strict))
+	{
+	  base = XEXP (x, 1);
+	  index = XEXP (x, 0);
+	}
+
+      if (base != 0 && index != 0)
+	{
+	  if (GET_CODE (index) == CONST_INT)
+	    return TRUE;
+	  if (GET_CODE (index) == CONST
+	      && (! flag_pic
+ 		  || legitimate_pic_operand_p (index)))
+	    return TRUE;
+	}
+    }
+
+  return FALSE;
+}
+
 static int
 mn10300_address_cost_1 (rtx x, int *unsig)
 {
