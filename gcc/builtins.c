@@ -2363,10 +2363,6 @@ expand_builtin_fputs (arglist, ignore)
 	       build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0),
 	       newarglist);
   
-#ifdef TEST_STDIO_OPTS
-  warning ("Converted fputs(one-char-string, FILE*) -> fputc(char, FILE*)");
-#endif
-
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
   call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
 		     call_expr, newarglist, NULL_TREE);
