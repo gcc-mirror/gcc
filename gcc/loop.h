@@ -104,6 +104,10 @@ struct induction
 				   is split, and a constant is eliminated from
 				   the address, the -constant is stored here
 				   for later use. */
+  struct induction *same_insn;	/* If there are multiple identical givs in
+				   the same insn, then all but one have this
+				   field set, and they all point to the giv
+				   that doesn't have this field set.  */
 };
 
 /* A `struct iv_class' is created for each biv.  */
