@@ -52,10 +52,10 @@ Boston, MA 02111-1307, USA.  */
 #define CONDITIONAL_REGISTER_USAGE				\
   /* Hitachi saves and restores mac registers on call.  */	\
   if (TARGET_HITACHI)						\
-   {								\
-     call_used_regs[MACH_REG] = 0;				\
-     call_used_regs[MACL_REG] = 0;				\
-  }
+    {								\
+      call_used_regs[MACH_REG] = 0;				\
+      call_used_regs[MACL_REG] = 0;				\
+    }
 
 /* ??? Need to write documentation for all SH options and add it to the
    invoke.texi file.  */
@@ -800,9 +800,6 @@ extern int current_function_anonymous_args;
    them unless they have been allocated suitable hard regs.
    The symbol REG_OK_STRICT causes the latter definition to be used.  */
 
-#define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64) && (!(INTVAL(X) &3)))
-#define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60) && (!(INTVAL(X) &3)))
-
 #ifndef REG_OK_STRICT
 
 /* Nonzero if X is a hard reg that can be used as a base reg
@@ -855,6 +852,9 @@ extern int current_function_anonymous_args;
    that wants to use this address.
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS.  */
+
+#define MODE_DISP_OK_4(X,MODE) ((GET_MODE_SIZE(MODE)==4) && ((unsigned)INTVAL(X)<64) && (!(INTVAL(X) &3)))
+#define MODE_DISP_OK_8(X,MODE) ((GET_MODE_SIZE(MODE)==8) && ((unsigned)INTVAL(X)<60) && (!(INTVAL(X) &3)))
 
 #define BASE_REGISTER_RTX_P(X)				\
   ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))	\
