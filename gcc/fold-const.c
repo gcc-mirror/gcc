@@ -987,7 +987,7 @@ real_hex_to_f (s, mode)
    REAL_VALUE_TYPE ip;
    char *p = s;
    unsigned HOST_WIDE_INT low, high;
-   int expon, shcount, nrmcount, k;
+   int shcount, nrmcount, k;
    int sign, expsign, isfloat;
    int lost = 0;/* Nonzero low order bits shifted out and discarded.  */
    int frexpon = 0;  /* Bits after the decimal point.  */
