@@ -20,8 +20,13 @@
 ;; along with GNU CC; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-
 ;;- See file "rtl.def" for documentation on define_insn, match_*, et. al.
+
+;; The upper 32 fp regs on the v9 can't hold SFmode values.  To deal with this
+;; a second register class, EXTRA_FP_REGS, exists for the v9 chip.  The name
+;; is a bit of a misnomer as it covers all 64 fp regs.  The corresponding
+;; constraint letter is 'e'.  To avoid any confusion, 'e' is used instead of
+;; 'f' for all DF/TFmode values, including those that are specific to the v8.
 
 ;; Architecture type.  Arch32bit includes v7, sparclite, v8.
 
@@ -701,16 +706,16 @@
 
 (define_insn ""
   [(set (reg:CCFPE 0)
-	(compare:CCFPE (match_operand:DF 0 "register_operand" "f")
-		       (match_operand:DF 1 "register_operand" "f")))]
+	(compare:CCFPE (match_operand:DF 0 "register_operand" "e")
+		       (match_operand:DF 1 "register_operand" "e")))]
   "! TARGET_V9 && TARGET_FPU"
   "fcmped %0,%1"
   [(set_attr "type" "fpcmp")])
 
 (define_insn ""
   [(set (reg:CCFPE 0)
-	(compare:CCFPE (match_operand:TF 0 "register_operand" "f")
-		       (match_operand:TF 1 "register_operand" "f")))]
+	(compare:CCFPE (match_operand:TF 0 "register_operand" "e")
+		       (match_operand:TF 1 "register_operand" "e")))]
   "! TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fcmpeq %0,%1"
   [(set_attr "type" "fpcmp")])
@@ -725,16 +730,16 @@
 
 (define_insn ""
   [(set (reg:CCFP 0)
-	(compare:CCFP (match_operand:DF 0 "register_operand" "f")
-		      (match_operand:DF 1 "register_operand" "f")))]
+	(compare:CCFP (match_operand:DF 0 "register_operand" "e")
+		      (match_operand:DF 1 "register_operand" "e")))]
   "! TARGET_V9 && TARGET_FPU"
   "fcmpd %0,%1"
   [(set_attr "type" "fpcmp")])
 
 (define_insn ""
   [(set (reg:CCFP 0)
-	(compare:CCFP (match_operand:TF 0 "register_operand" "f")
-		      (match_operand:TF 1 "register_operand" "f")))]
+	(compare:CCFP (match_operand:TF 0 "register_operand" "e")
+		      (match_operand:TF 1 "register_operand" "e")))]
   "! TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fcmpq %0,%1"
   [(set_attr "type" "fpcmp")])
@@ -757,16 +762,16 @@
 
 (define_insn ""
   [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
-	(compare:CCFPE (match_operand:DF 1 "register_operand" "f")
-		       (match_operand:DF 2 "register_operand" "f")))]
+	(compare:CCFPE (match_operand:DF 1 "register_operand" "e")
+		       (match_operand:DF 2 "register_operand" "e")))]
   "TARGET_V9 && TARGET_FPU"
   "fcmped %0,%1,%2"
   [(set_attr "type" "fpcmp")])
 
 (define_insn ""
   [(set (match_operand:CCFPE 0 "ccfp_reg_operand" "=c")
-	(compare:CCFPE (match_operand:TF 1 "register_operand" "f")
-		       (match_operand:TF 2 "register_operand" "f")))]
+	(compare:CCFPE (match_operand:TF 1 "register_operand" "e")
+		       (match_operand:TF 2 "register_operand" "e")))]
   "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fcmpeq %0,%1,%2"
   [(set_attr "type" "fpcmp")])
@@ -781,16 +786,16 @@
 
 (define_insn ""
   [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
-	(compare:CCFP (match_operand:DF 1 "register_operand" "f")
-		      (match_operand:DF 2 "register_operand" "f")))]
+	(compare:CCFP (match_operand:DF 1 "register_operand" "e")
+		      (match_operand:DF 2 "register_operand" "e")))]
   "TARGET_V9 && TARGET_FPU"
   "fcmpd %0,%1,%2"
   [(set_attr "type" "fpcmp")])
 
 (define_insn ""
   [(set (match_operand:CCFP 0 "ccfp_reg_operand" "=c")
-	(compare:CCFP (match_operand:TF 1 "register_operand" "f")
-		      (match_operand:TF 2 "register_operand" "f")))]
+	(compare:CCFP (match_operand:TF 1 "register_operand" "e")
+		      (match_operand:TF 2 "register_operand" "e")))]
   "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fcmpq %0,%1,%2"
   [(set_attr "type" "fpcmp")])
@@ -1969,7 +1974,7 @@
 ;; It must come before the more general movdf pattern.
 
 (define_insn ""
-  [(set (match_operand:DF 0 "general_operand" "=?r,f,o")
+  [(set (match_operand:DF 0 "general_operand" "=?r,e,o")
 	(match_operand:DF 1 "" "?E,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
@@ -2006,8 +2011,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,f,r,Q,Q,f,r")
-	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,f,r,f,r,Q,Q"))]
+  [(set (match_operand:DF 0 "reg_or_nonsymb_mem_operand" "=T,U,e,r,Q,Q,e,r")
+	(match_operand:DF 1 "reg_or_nonsymb_mem_operand" "U,T,e,r,e,r,Q,Q"))]
   "TARGET_FPU
    && (register_operand (operands[0], DFmode)
        || register_operand (operands[1], DFmode))"
@@ -2020,8 +2025,8 @@
   [(set_attr "type" "fpstore,fpload,fp,move,fpstore,store,fpload,load")
    (set_attr "length" "1,1,2,2,3,3,3,3")])
 
-;; Exactly the same as above, except that all `f' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `f' reg
+;; Exactly the same as above, except that all `e' cases are deleted.
+;; This is necessary to prevent reload from ever trying to use a `e' reg
 ;; when -mno-fpu.
 
 (define_insn ""
@@ -2049,7 +2054,7 @@
 
 (define_insn ""
   [(set (mem:DF (match_operand:SI 0 "symbolic_operand" "i,i"))
-	(match_operand:DF 1 "reg_or_0_operand" "rf,G"))
+	(match_operand:DF 1 "reg_or_0_operand" "re,G"))
    (clobber (match_scratch:SI 2 "=&r,&r"))]
   "(reload_completed || reload_in_progress) && ! TARGET_PTR64"
   "*
@@ -2067,7 +2072,7 @@
 ;; to be reloaded by putting the constant into memory.
 ;; It must come before the more general movtf pattern.
 (define_insn ""
-  [(set (match_operand:TF 0 "general_operand" "=?r,f,o")
+  [(set (match_operand:TF 0 "general_operand" "=?r,e,o")
 	(match_operand:TF 1 "" "?E,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
@@ -2108,8 +2113,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=f,r,Q,Q,f,&r")
-	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "f,r,f,r,Q,Q"))]
+  [(set (match_operand:TF 0 "reg_or_nonsymb_mem_operand" "=e,r,Q,Q,e,&r")
+	(match_operand:TF 1 "reg_or_nonsymb_mem_operand" "e,r,e,r,Q,Q"))]
   "TARGET_FPU
    && (register_operand (operands[0], TFmode)
        || register_operand (operands[1], TFmode))"
@@ -2122,8 +2127,8 @@
   [(set_attr "type" "fp,move,fpstore,store,fpload,load")
    (set_attr "length" "4,4,5,5,5,5")])
 
-;; Exactly the same as above, except that all `f' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `f' reg
+;; Exactly the same as above, except that all `e' cases are deleted.
+;; This is necessary to prevent reload from ever trying to use a `e' reg
 ;; when -mno-fpu.
 
 (define_insn ""
@@ -2143,7 +2148,7 @@
 
 (define_insn ""
   [(set (mem:TF (match_operand:SI 0 "symbolic_operand" "i,i"))
-	(match_operand:TF 1 "reg_or_0_operand" "rf,G"))
+	(match_operand:TF 1 "reg_or_0_operand" "re,G"))
    (clobber (match_scratch:SI 2 "=&r,&r"))]
   "(reload_completed || reload_in_progress) && ! TARGET_PTR64"
   "*
@@ -2282,22 +2287,22 @@
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-		      (match_operand:DF 3 "register_operand" "f")
+		      (match_operand:DF 3 "register_operand" "e")
 		      (match_operand:DF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovrd%D1 %2,%r3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "v9_regcmp_op"
 				[(match_operand:DI 2 "register_operand" "r")
 				 (const_int 0)])
-		      (match_operand:TF 3 "register_operand" "f")
+		      (match_operand:TF 3 "register_operand" "e")
 		      (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovrq%D1 %2,%r3,%0"
@@ -2326,44 +2331,44 @@
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				[(match_operand:CCFP 2 "ccfp_reg_operand" "c")
 				 (const_int 0)])
-		      (match_operand:DF 3 "register_operand" "f")
+		      (match_operand:DF 3 "register_operand" "e")
 		      (match_operand:DF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovd%C1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				[(match_operand:CCFPE 2 "ccfp_reg_operand" "c")
 				 (const_int 0)])
-		      (match_operand:DF 3 "register_operand" "f")
+		      (match_operand:DF 3 "register_operand" "e")
 		      (match_operand:DF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovd%C1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				[(match_operand:CCFP 2 "ccfp_reg_operand" "c")
 				 (const_int 0)])
-		      (match_operand:TF 3 "register_operand" "f")
+		      (match_operand:TF 3 "register_operand" "e")
 		      (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovq%C1 %2,%3,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				[(match_operand:CCFPE 2 "ccfp_reg_operand" "c")
 				 (const_int 0)])
-		      (match_operand:TF 3 "register_operand" "f")
+		      (match_operand:TF 3 "register_operand" "e")
 		      (match_operand:TF 4 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovq%C1 %2,%3,%0"
@@ -2380,20 +2385,20 @@
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				      [(reg:CC 0) (const_int 0)])
-		      (match_operand:DF 2 "register_operand" "f")
+		      (match_operand:DF 2 "register_operand" "e")
 		      (match_operand:DF 3 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovd%C1 %%icc,%2,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				      [(reg:CC 0) (const_int 0)])
-		      (match_operand:TF 2 "register_operand" "f")
+		      (match_operand:TF 2 "register_operand" "e")
 		      (match_operand:TF 3 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovq%C1 %%icc,%2,%0"
@@ -2410,20 +2415,20 @@
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				      [(reg:CCX 0) (const_int 0)])
-		      (match_operand:DF 2 "register_operand" "f")
+		      (match_operand:DF 2 "register_operand" "e")
 		      (match_operand:DF 3 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovd%C1 %%xcc,%2,%0"
   [(set_attr "type" "cmove")])
 
 (define_insn ""
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(if_then_else (match_operator 1 "comparison_operator"
 				      [(reg:CCX 0) (const_int 0)])
-		      (match_operand:TF 2 "register_operand" "f")
+		      (match_operand:TF 2 "register_operand" "e")
 		      (match_operand:TF 3 "register_operand" "0")))]
   "TARGET_V9 && TARGET_FPU"
   "fmovq%C1 %%xcc,%2,%0"
@@ -2822,7 +2827,7 @@
 ;; Conversions between float, double and long double.
 
 (define_insn "extendsfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(float_extend:DF
 	 (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_FPU"
@@ -2830,7 +2835,7 @@
   [(set_attr "type" "fp")])
 
 (define_insn "extendsftf2"
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(float_extend:TF
 	 (match_operand:SF 1 "register_operand" "f")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
@@ -2838,9 +2843,9 @@
   [(set_attr "type" "fp")])
 
 (define_insn "extenddftf2"
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(float_extend:TF
-	 (match_operand:DF 1 "register_operand" "f")))]
+	 (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fdtoq %1,%0"
   [(set_attr "type" "fp")])
@@ -2848,7 +2853,7 @@
 (define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF
-	 (match_operand:DF 1 "register_operand" "f")))]
+	 (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU"
   "fdtos %1,%0"
   [(set_attr "type" "fp")])
@@ -2856,15 +2861,15 @@
 (define_insn "trunctfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(float_truncate:SF
-	 (match_operand:TF 1 "register_operand" "f")))]
+	 (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtos %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "trunctfdf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(float_truncate:DF
-	 (match_operand:TF 1 "register_operand" "f")))]
+	 (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtod %1,%0"
   [(set_attr "type" "fp")])
@@ -2879,14 +2884,14 @@
   [(set_attr "type" "fp")])
 
 (define_insn "floatsidf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(float:DF (match_operand:SI 1 "register_operand" "f")))]
   "TARGET_FPU"
   "fitod %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "floatsitf2"
-  [(set (match_operand:TF 0 "register_operand" "=f")
+  [(set (match_operand:TF 0 "register_operand" "=e")
 	(float:TF (match_operand:SI 1 "register_operand" "f")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fitoq %1,%0"
@@ -2934,7 +2939,7 @@
 (define_insn ""
   [(parallel [(set (match_operand:SF 0 "register_operand" "=f")
 		   (float:SF (match_operand:DI 1 "general_operand" "rm")))
-	      (clobber (match_operand:DF 2 "register_operand" "=&f"))
+	      (clobber (match_operand:DF 2 "register_operand" "=&e"))
 	      (clobber (match_operand:DI 3 "memory_operand" "m"))])]
   "TARGET_V9 && TARGET_FPU"
   "*
@@ -2949,9 +2954,9 @@
    (set_attr "length" "3")])
 
 (define_insn ""
-  [(parallel [(set (match_operand:DF 0 "register_operand" "=f")
+  [(parallel [(set (match_operand:DF 0 "register_operand" "=e")
 		   (float:DF (match_operand:DI 1 "general_operand" "rm")))
-	      (clobber (match_operand:DF 2 "register_operand" "=&f"))
+	      (clobber (match_operand:DF 2 "register_operand" "=&e"))
 	      (clobber (match_operand:DI 3 "memory_operand" "m"))])]
   "TARGET_V9 && TARGET_FPU"
   "*
@@ -2966,9 +2971,9 @@
    (set_attr "length" "3")])
 
 (define_insn ""
-  [(parallel [(set (match_operand:TF 0 "register_operand" "=f")
+  [(parallel [(set (match_operand:TF 0 "register_operand" "=e")
 		   (float:TF (match_operand:DI 1 "general_operand" "rm")))
-	      (clobber (match_operand:DF 2 "register_operand" "=&f"))
+	      (clobber (match_operand:DF 2 "register_operand" "=&e"))
 	      (clobber (match_operand:DI 3 "memory_operand" "m"))])]
   "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "*
@@ -2986,21 +2991,21 @@
 
 (define_insn "floatdisf2_v9"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(float:SF (match_operand:DI 1 "register_operand" "f")))]
+	(float:SF (match_operand:DI 1 "register_operand" "e")))]
   "0 && TARGET_V9 && TARGET_FPU"
   "fxtos %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "floatdidf2_v9"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(float:DF (match_operand:DI 1 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(float:DF (match_operand:DI 1 "register_operand" "e")))]
   "0 && TARGET_V9 && TARGET_FPU"
   "fxtod %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "floatditf2_v9"
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(float:TF (match_operand:DI 1 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(float:TF (match_operand:DI 1 "register_operand" "e")))]
   "0 && TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fxtoq %1,%0"
   [(set_attr "type" "fp")])
@@ -3017,14 +3022,14 @@
 
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "register_operand" "=f")
-	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
+	(fix:SI (fix:DF (match_operand:DF 1 "register_operand" "e"))))]
   "TARGET_FPU"
   "fdtoi %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "fix_trunctfsi2"
   [(set (match_operand:SI 0 "register_operand" "=f")
-	(fix:SI (fix:TF (match_operand:TF 1 "register_operand" "f"))))]
+	(fix:SI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fqtoi %1,%0"
   [(set_attr "type" "fp")])
@@ -3076,7 +3081,7 @@
 (define_insn ""
   [(parallel [(set (match_operand:DI 0 "general_operand" "=rm")
 		   (fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))
-	      (clobber (match_operand:DF 2 "register_operand" "=&f"))
+	      (clobber (match_operand:DF 2 "register_operand" "=&e"))
 	      (clobber (match_operand:DI 3 "memory_operand" "m"))])]
   "TARGET_V9 && TARGET_FPU"
   "*
@@ -3092,8 +3097,8 @@
 
 (define_insn ""
   [(parallel [(set (match_operand:DI 0 "general_operand" "=rm")
-		   (fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))
-	      (clobber (match_operand:DF 2 "register_operand" "=&f"))
+		   (fix:DI (fix:DF (match_operand:DF 1 "register_operand" "e"))))
+	      (clobber (match_operand:DF 2 "register_operand" "=&e"))
 	      (clobber (match_operand:DI 3 "memory_operand" "m"))])]
   "TARGET_V9 && TARGET_FPU"
   "*
@@ -3109,8 +3114,8 @@
 
 (define_insn ""
   [(parallel [(set (match_operand:DI 0 "general_operand" "=rm")
-		   (fix:DI (fix:TF (match_operand:TF 1 "register_operand" "f"))))
-	      (clobber (match_operand:DF 2 "register_operand" "=&f"))
+		   (fix:DI (fix:TF (match_operand:TF 1 "register_operand" "e"))))
+	      (clobber (match_operand:DF 2 "register_operand" "=&e"))
 	      (clobber (match_operand:DI 3 "memory_operand" "m"))])]
   "TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "*
@@ -3127,22 +3132,22 @@
 ;; ??? Ideally, these are what we would like to use.
 
 (define_insn "fix_truncsfdi2_v9"
-  [(set (match_operand:DI 0 "register_operand" "=f")
+  [(set (match_operand:DI 0 "register_operand" "=e")
 	(fix:DI (fix:SF (match_operand:SF 1 "register_operand" "f"))))]
   "0 && TARGET_V9 && TARGET_FPU"
   "fstox %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "fix_truncdfdi2_v9"
-  [(set (match_operand:DI 0 "register_operand" "=f")
-	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "f"))))]
+  [(set (match_operand:DI 0 "register_operand" "=e")
+	(fix:DI (fix:DF (match_operand:DF 1 "register_operand" "e"))))]
   "0 && TARGET_V9 && TARGET_FPU"
   "fdtox %1,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "fix_trunctfdi2_v9"
-  [(set (match_operand:DI 0 "register_operand" "=f")
-	(fix:DI (fix:TF (match_operand:TF 1 "register_operand" "f"))))]
+  [(set (match_operand:DI 0 "register_operand" "=e")
+	(fix:DI (fix:TF (match_operand:TF 1 "register_operand" "e"))))]
   "0 && TARGET_V9 && TARGET_FPU && TARGET_HARD_QUAD"
   "fqtox %1,%0"
   [(set_attr "type" "fp")])
@@ -4179,17 +4184,17 @@
 ;; Floating point arithmetic instructions.
 
 (define_insn "addtf3"
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(plus:TF (match_operand:TF 1 "register_operand" "f")
-		 (match_operand:TF 2 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(plus:TF (match_operand:TF 1 "register_operand" "e")
+		 (match_operand:TF 2 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "faddq %1,%2,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "adddf3"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(plus:DF (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(plus:DF (match_operand:DF 1 "register_operand" "e")
+		 (match_operand:DF 2 "register_operand" "e")))]
   "TARGET_FPU"
   "faddd %1,%2,%0"
   [(set_attr "type" "fp")])
@@ -4203,17 +4208,17 @@
   [(set_attr "type" "fp")])
 
 (define_insn "subtf3"
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(minus:TF (match_operand:TF 1 "register_operand" "f")
-		  (match_operand:TF 2 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(minus:TF (match_operand:TF 1 "register_operand" "e")
+		  (match_operand:TF 2 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fsubq %1,%2,%0"
   [(set_attr "type" "fp")])
 
 (define_insn "subdf3"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(minus:DF (match_operand:DF 1 "register_operand" "f")
-		  (match_operand:DF 2 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(minus:DF (match_operand:DF 1 "register_operand" "e")
+		  (match_operand:DF 2 "register_operand" "e")))]
   "TARGET_FPU"
   "fsubd %1,%2,%0"
   [(set_attr "type" "fp")])
@@ -4227,17 +4232,17 @@
   [(set_attr "type" "fp")])
 
 (define_insn "multf3"
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(mult:TF (match_operand:TF 1 "register_operand" "f")
-		 (match_operand:TF 2 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(mult:TF (match_operand:TF 1 "register_operand" "e")
+		 (match_operand:TF 2 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fmulq %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 (define_insn "muldf3"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(mult:DF (match_operand:DF 1 "register_operand" "f")
-		 (match_operand:DF 2 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(mult:DF (match_operand:DF 1 "register_operand" "e")
+		 (match_operand:DF 2 "register_operand" "e")))]
   "TARGET_FPU"
   "fmuld %1,%2,%0"
   [(set_attr "type" "fpmul")])
@@ -4251,7 +4256,7 @@
   [(set_attr "type" "fpmul")])
 
 (define_insn ""
-  [(set (match_operand:DF 0 "register_operand" "=f")
+  [(set (match_operand:DF 0 "register_operand" "=e")
 	(mult:DF (float_extend:DF (match_operand:SF 1 "register_operand" "f"))
 		 (float_extend:DF (match_operand:SF 2 "register_operand" "f"))))]
   "(TARGET_V8 || TARGET_V9) && TARGET_FPU"
@@ -4259,26 +4264,26 @@
   [(set_attr "type" "fpmul")])
 
 (define_insn ""
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(mult:TF (float_extend:TF (match_operand:DF 1 "register_operand" "f"))
-		 (float_extend:TF (match_operand:DF 2 "register_operand" "f"))))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(mult:TF (float_extend:TF (match_operand:DF 1 "register_operand" "e"))
+		 (float_extend:TF (match_operand:DF 2 "register_operand" "e"))))]
   "(TARGET_V8 || TARGET_V9) && TARGET_FPU"
   "fdmulq %1,%2,%0"
   [(set_attr "type" "fpmul")])
 
 ;; don't have timing for quad-prec. divide.
 (define_insn "divtf3"
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(div:TF (match_operand:TF 1 "register_operand" "f")
-		(match_operand:TF 2 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(div:TF (match_operand:TF 1 "register_operand" "e")
+		(match_operand:TF 2 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fdivq %1,%2,%0"
   [(set_attr "type" "fpdivd")])
 
 (define_insn "divdf3"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(div:DF (match_operand:DF 1 "register_operand" "f")
-		(match_operand:DF 2 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(div:DF (match_operand:DF 1 "register_operand" "e")
+		(match_operand:DF 2 "register_operand" "e")))]
   "TARGET_FPU"
   "fdivd %1,%2,%0"
   [(set_attr "type" "fpdivd")])
@@ -4292,8 +4297,8 @@
   [(set_attr "type" "fpdivs")])
 
 (define_insn "negtf2"
-  [(set (match_operand:TF 0 "register_operand" "=f,f")
-	(neg:TF (match_operand:TF 1 "register_operand" "0,f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(neg:TF (match_operand:TF 1 "register_operand" "0,e")))]
   "TARGET_FPU"
   "*
 {
@@ -4310,8 +4315,8 @@
       (if_then_else (eq_attr "arch" "arch32bit") (const_int 4) (const_int 1))])])
 
 (define_insn "negdf2"
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(neg:DF (match_operand:DF 1 "register_operand" "0,f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e,e")
+	(neg:DF (match_operand:DF 1 "register_operand" "0,e")))]
   "TARGET_FPU"
   "*
 {
@@ -4335,8 +4340,8 @@
   [(set_attr "type" "fp")])
 
 (define_insn "abstf2"
-  [(set (match_operand:TF 0 "register_operand" "=f,f")
-	(abs:TF (match_operand:TF 1 "register_operand" "0,f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e,e")
+	(abs:TF (match_operand:TF 1 "register_operand" "0,e")))]
   "TARGET_FPU"
   "*
 {
@@ -4353,8 +4358,8 @@
       (if_then_else (eq_attr "arch" "arch32bit") (const_int 4) (const_int 1))])])
 
 (define_insn "absdf2"
-  [(set (match_operand:DF 0 "register_operand" "=f,f")
-	(abs:DF (match_operand:DF 1 "register_operand" "0,f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e,e")
+	(abs:DF (match_operand:DF 1 "register_operand" "0,e")))]
   "TARGET_FPU"
   "*
 {
@@ -4378,15 +4383,15 @@
   [(set_attr "type" "fp")])
 
 (define_insn "sqrttf2"
-  [(set (match_operand:TF 0 "register_operand" "=f")
-	(sqrt:TF (match_operand:TF 1 "register_operand" "f")))]
+  [(set (match_operand:TF 0 "register_operand" "=e")
+	(sqrt:TF (match_operand:TF 1 "register_operand" "e")))]
   "TARGET_FPU && TARGET_HARD_QUAD"
   "fsqrtq %1,%0"
   [(set_attr "type" "fpsqrt")])
 
 (define_insn "sqrtdf2"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(sqrt:DF (match_operand:DF 1 "register_operand" "f")))]
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(sqrt:DF (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU"
   "fsqrtd %1,%0"
   [(set_attr "type" "fpsqrt")])
@@ -5010,7 +5015,7 @@
   ""
   "
 {
-  /* Trap instruction to flush all the registers window.  */
+  /* Trap instruction to flush all the register windows.  */
   emit_insn (gen_flush_register_windows ());
   /* Load the fp value for the containing fn into %fp.
      This is needed because operands[2] refers to %fp.
@@ -5478,7 +5483,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(lo_sum:SI (match_dup 0)
 		   (match_operand:SI 1 "immediate_operand" "i")))
-   (set (match_operand:DF 2 "register_operand" "=fr")
+   (set (match_operand:DF 2 "register_operand" "=er")
 	(mem:DF (match_dup 0)))]
   "RTX_UNCHANGING_P (operands[1]) && reg_unused_after (operands[0], insn)"
   "*
