@@ -3334,7 +3334,7 @@ const_uint32_operand (op, mode)
   return (GET_CODE (op) == CONST_INT
 	  && (INTVAL (op) >= 0 && INTVAL (op) <= 0xffffffffL));
 #else
-  return ((GET_CODE (op) == CONST_INT && INTVAL (op) >= 0)
+  return (GET_CODE (op) == CONST_INT
 	  || (GET_CODE (op) == CONST_DOUBLE && CONST_DOUBLE_HIGH (op) == 0));
 #endif
 }
