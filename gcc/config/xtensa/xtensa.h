@@ -60,10 +60,9 @@ extern unsigned xtensa_current_frame_size;
 #define MASK_HARD_FLOAT_SQRT	0x00002000	/* floating-point sqrt */
 #define MASK_HARD_FLOAT_RSQRT	0x00004000	/* floating-point recip sqrt */
 #define MASK_NO_FUSED_MADD	0x00008000	/* avoid f-p mul/add */
-#define MASK_SERIALIZE_VOLATILE 0x00010000	/* serialize volatile refs */
-#define MASK_CONST16		0x00020000	/* use CONST16 instruction */
-#define MASK_ABS		0x00040000	/* use ABS instruction */
-#define MASK_ADDX		0x00080000	/* use ADDX* and SUBX* */
+#define MASK_CONST16		0x00010000	/* use CONST16 instruction */
+#define MASK_ABS		0x00020000	/* use ABS instruction */
+#define MASK_ADDX		0x00040000	/* use ADDX* and SUBX* */
 
 /* Macros used in the machine description to test the flags.  */
 
@@ -83,7 +82,6 @@ extern unsigned xtensa_current_frame_size;
 #define TARGET_HARD_FLOAT_SQRT	(target_flags & MASK_HARD_FLOAT_SQRT)
 #define TARGET_HARD_FLOAT_RSQRT	(target_flags & MASK_HARD_FLOAT_RSQRT)
 #define TARGET_NO_FUSED_MADD	(target_flags & MASK_NO_FUSED_MADD)
-#define TARGET_SERIALIZE_VOLATILE (target_flags & MASK_SERIALIZE_VOLATILE)
 #define TARGET_CONST16		(target_flags & MASK_CONST16)
 #define TARGET_ABS		(target_flags & MASK_ABS)
 #define TARGET_ADDX		(target_flags & MASK_ADDX)
@@ -108,8 +106,7 @@ extern unsigned xtensa_current_frame_size;
   (XCHAL_HAVE_FP_DIV	? MASK_HARD_FLOAT_DIV : 0) |			\
   (XCHAL_HAVE_FP_RECIP	? MASK_HARD_FLOAT_RECIP : 0) |			\
   (XCHAL_HAVE_FP_SQRT	? MASK_HARD_FLOAT_SQRT : 0) |			\
-  (XCHAL_HAVE_FP_RSQRT	? MASK_HARD_FLOAT_RSQRT : 0) |			\
-  MASK_SERIALIZE_VOLATILE)
+  (XCHAL_HAVE_FP_RSQRT	? MASK_HARD_FLOAT_RSQRT : 0))
 
 /* Macro to define tables used to set the flags.  */
 
@@ -191,10 +188,6 @@ extern unsigned xtensa_current_frame_size;
     N_("Disable fused multiply/add and multiply/subtract FP instructions")}, \
   {"fused-madd",		-MASK_NO_FUSED_MADD,			\
     N_("Enable fused multiply/add and multiply/subtract FP instructions")}, \
-  {"serialize-volatile",	MASK_SERIALIZE_VOLATILE,		\
-    N_("Serialize volatile memory references with MEMW instructions")},	\
-  {"no-serialize-volatile",	-MASK_SERIALIZE_VOLATILE,		\
-    N_("Do not serialize volatile memory references with MEMW instructions")},\
   {"text-section-literals",	0,					\
     N_("Intersperse literal pools with code in the text section")},	\
   {"no-text-section-literals",	0,					\

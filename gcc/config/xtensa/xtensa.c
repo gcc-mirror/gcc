@@ -1938,7 +1938,7 @@ print_operand (file, x, letter)
 	{
 	  /* For a volatile memory reference, emit a MEMW before the
 	     load or store.  */
-	  if (MEM_VOLATILE_P (x) && TARGET_SERIALIZE_VOLATILE)
+	  if (MEM_VOLATILE_P (x))
 	    fprintf (file, "memw\n\t");
 	}
       else

@@ -1,3 +1,17 @@
+2003-05-21  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.h (MASK_SERIALIZE_VOLATILE,
+	TARGET_SERIALIZE_VOLATILE): Delete.
+	(MASK_CONST16, MASK_ABS, MASK_ADDX): Renumber flag bits.
+	(TARGET_DEFAULT): Remove MASK_SERIALIZE_VOLATILE.
+	(TARGET_SWITCHES): Remove "-mserialize-volatile" and
+	"-mno-serialize-volatile".
+	* config/xtensa/xtensa.c (print_operand): Remove checks of
+	TARGET_SERIALIZE_VOLATILE.
+	* config/xtensa/xtensa.md (*lsiu, *ssiu): Likewise.
+	* doc/invoke.texi (Option Summary, Xtensa Options): Remove
+	"-mserialize-volatile" and "-mno-serialize-volatile" options.
+
 2003-05-21  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-parse.in (fndef): Set DECL_SOURCE_LINE and FILE earlier.
