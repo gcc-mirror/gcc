@@ -28,7 +28,15 @@ GLIBCPP_3.2 {
     # All but the last are terminated with a semicolon.
     extern "C++"
     {
-      std::[A-Za-b]*;
+      std::[A-Za]*;
+      std::ba[a-r]*;
+      std::basic_[a-r]*;
+      std::basic_streambuf*;
+      std::basic_stringbuf*;
+      std::basic_stringstream*;
+      std::basic_[t-z]*;
+      std::ba[t-z]*;
+      std::b[b-z]*;
       std::c[a-n]*;
       std::co[a-c]*;
       std::codecvt_byname*;
@@ -56,12 +64,38 @@ GLIBCPP_3.2 {
       std::__timepunct*;
       std::__numeric_limits_base*;
       std::_S_bit_count;
-      std::_S_first_one;
-      std::__default_alloc_template*;
-      std::__malloc_alloc_template*
+      std::_S_first_one
     };
 
     # Names not in an 'extern' block are mangled names.
+
+    # std::string minus binary operator plus
+    _ZNKSs*;
+    _ZNKSb*;
+    _ZNSs[A-Za-z]*;
+    _ZNSs[0-9][A-Za-z]*;
+    _ZNSs[0-9][0-9][A-Za-z]*;
+    _ZNSs[0-9]_[A-Ra-z]*;
+    _ZNSs[0-9][0-9]_[A-Ra-z]*;
+    _ZNSs12_S_empty_repEv;
+    _ZNSs20_S_empty_rep_storageE;
+    _ZNSbIwSt11char_traitsIwESaIwEE20_S_empty_rep_storageE;
+    _ZNSs12_S_constructEjcRKSaIcE;
+    _ZNSs13_S_copy_chars*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9][A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9]_[A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE[0-9][0-9]_[A-Ra-z]*;
+    _ZNSbIwSt11char_traitsIwESaIwEE13_S_copy_chars*;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_constructEjwRKS1_;
+    _ZNSbIwSt11char_traitsIwESaIwEE12_S_empty_repEv;
+    _ZSt24__uninitialized_copy_auxIN9*;
+    _ZSt26__uninitialized_fill_n_aux*;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_EPKS3_RKS6_;
+    _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ES3_RKS6_;
+    _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_EPKS3_RKS6_;
+    _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ES3_RKS6_;
 
     # std::locale destructors
     _ZNSt6localeD*;
@@ -96,6 +130,23 @@ GLIBCPP_3.2 {
 
     # std::has_facet*
     _ZSt9has_facet*;
+
+    # std::__default_alloc_template
+    _ZNSt24__default_alloc_templateILb1ELi0EE10deallocate*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE8allocate*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE12_S_free_listE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE22_S_node_allocator_lockE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE9_S_refillE*;
+
+    # std::__default_alloc_template to be removed in the future
+    _ZNSt24__default_alloc_templateILb1ELi0EE10reallocateEPv*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE11_S_round_upE*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE14_S_chunk_allocE*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE17_S_freelist_indexE*;
+    _ZNSt24__default_alloc_templateILb1ELi0EE11_S_end_freeE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE12_S_heap_sizeE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE13_S_start_freeE;
+    _ZNSt24__default_alloc_templateILb1ELi0EE5_Lock*;
 
     # operator new(unsigned)
     _Znwj;
@@ -155,6 +206,11 @@ GLIBCPP_3.2.1 {
   _ZNSt7codecvtIcc11__mbstate_tEC2EP15__locale_structj;
   _ZNSt7codecvtIwc11__mbstate_tEC1EP15__locale_structj;
   _ZNSt7codecvtIwc11__mbstate_tEC2EP15__locale_structj;
+
+  _ZStplIcSt11char_traitsIcESaIcEESbIT_T0_T1_ERKS6_S8_;
+  _ZStplIwSt11char_traitsIwESaIwEESbIT_T0_T1_ERKS6_S8_;
+
+  _ZNSt24__default_alloc_templateILb1ELi0EE12_S_force_newE;
 
   # stub functions from libmath
   sinf;
