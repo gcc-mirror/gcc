@@ -1,3 +1,8 @@
+2004-08-02  Ben Elliston  <bje@au.ibm.com>
+
+	PR target/16155
+	* gcc.dg/pr16155.c: New test.
+
 2004-07-31  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/redecl-2.c: New test.
