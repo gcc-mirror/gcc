@@ -148,7 +148,7 @@ original English.
 @sp 1
 @c The version number appears twice more in this file.
 
-@center for egcs-1.0.1
+@center for egcs-1.0.2
 @page
 @vskip 0pt plus 1filll
 Copyright @copyright{} 1988, 89, 92, 93, 94, 95, 96 Free Software Foundation, Inc.
