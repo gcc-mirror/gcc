@@ -50,37 +50,41 @@ extern int target_flags;
 /* Macros used in the machine description to test the flags.  */
 
 /* Compile for a 68020 (not a 68000 or 68010).  */
-#define TARGET_68020 (target_flags & 1)
+#define MASK_68020	1
+#define TARGET_68020 (target_flags & MASK_68020)
 
 /* Compile 68881 insns for floating point (not library calls).  */
-#define TARGET_68881 (target_flags & 2)
+#define MASK_68881	2
+#define TARGET_68881 (target_flags & MASK_68881)
 
 /* Compile using 68020 bitfield insns.  */
-#define TARGET_BITFIELD (target_flags & 4)
+#define MASK_BITFIELD	4
+#define TARGET_BITFIELD (target_flags & MASK_BITFIELD)
 
 /* Compile using rtd insn calling sequence.
    This will not work unless you use prototypes at least
    for all functions that can take varying numbers of args.  */
-#define TARGET_RTD (target_flags & 8)
+#define MASK_RTD	8
+#define TARGET_RTD (target_flags & MASK_RTD)
 
 /* Compile passing first two args in regs 0 and 1.
    This exists only to test compiler features that will
    be needed for RISC chips.  It is not usable
    and is not intended to be usable on this cpu.  */
-#define TARGET_REGPARM (target_flags & 020)
+#define MASK_REGPARM	16
+#define TARGET_REGPARM (target_flags & MASK_REGPARM)
 
 /* Compile with 16-bit `int'.  */
-#define TARGET_SHORT (target_flags & 040)
+#define MASK_SHORT	32
+#define TARGET_SHORT (target_flags & MASK_SHORT)
 
 /* Compile with special insns for Sun FPA.  */
-#ifdef SUPPORT_SUN_FPA
-#define TARGET_FPA (target_flags & 0100)
-#else
-#define TARGET_FPA 0
-#endif
+#define MASK_FPA	64
+#define TARGET_FPA (target_flags & MASK_FPA)
 
 /* Compile (actually, link) for Sun SKY board.  */
-#define TARGET_SKY (target_flags & 0200)
+#define MASK_SKY	128
+#define TARGET_SKY (target_flags & MASK_SKY)
 
 /* Optimize for 68040, but still allow execution on 68020
    (-m68020-40 or -m68040).
@@ -88,10 +92,12 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2. */
-#define TARGET_68040 (target_flags & 01400)
+#define MASK_68040	(256|512)
+#define TARGET_68040 (target_flags & MASK_68040)
 
 /* Use the 68040-only fp instructions (-m68040 or -m68060).  */
-#define TARGET_68040_ONLY (target_flags & 01000)
+#define MASK_68040_ONLY	512
+#define TARGET_68040_ONLY (target_flags & MASK_68040_ONLY)
 
 /* Optimize for 68060, but still allow execution on 68020
    (-m68060).
@@ -99,7 +105,8 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68060 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2. */
-#define TARGET_68060 (target_flags & 02000)
+#define MASK_68060	1024
+#define TARGET_68060 (target_flags & MASK_68060)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -108,36 +115,37 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES  \
-  { { "68020", -03400},				\
-    { "c68020", -03400},			\
-    { "68020", 5},				\
-    { "c68020", 5},				\
-    { "68881", 2},				\
-    { "bitfield", 4},				\
-    { "68000", -03405},				\
-    { "c68000", -03405},			\
-    { "soft-float", -03102},			\
-    { "nobitfield", -4},			\
-    { "rtd", 8},				\
-    { "nortd", -8},				\
-    { "short", 040},				\
-    { "noshort", -040},				\
-    { "fpa", 0100},				\
-    { "nofpa", -0100},				\
-    { "sky", 0200},				\
-    { "nosky", -0200},				\
-    { "68020-40", 0407},			\
-    { "68030", -03400},				\
-    { "68030", 5},				\
-    { "68040", 01007},				\
-    { "68060", 03007},				\
-    { "68851", 0},	/* Affects *_SPEC and/or GAS.  */	\
-    { "no-68851", 0},	/* Affects *_SPEC and/or GAS.  */	\
-    { "68302", 0},	/* Affects *_SPEC and/or GAS.  */	\
-    { "no-68302", 0},	/* Affects *_SPEC and/or GAS.  */	\
-    { "68332", 0},	/* Affects *_SPEC and/or GAS.  */	\
-    { "no-68332", 0},	/* Affects *_SPEC and/or GAS.  */	\
-    SUBTARGET_SWITCHES				\
+  { { "68020", - (MASK_68060|MASK_68040)},				\
+    { "c68020", - (MASK_68060|MASK_68040)},				\
+    { "68020", (MASK_68020|MASK_BITFIELD)},				\
+    { "c68020", (MASK_68020|MASK_BITFIELD)},				\
+    { "68881", MASK_68881},						\
+    { "bitfield", MASK_BITFIELD},					\
+    { "68000", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
+    { "c68000", - (MASK_68020|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
+    { "soft-float", - (MASK_68060|MASK_68040_ONLY|MASK_68881)},		\
+    { "nobitfield", - MASK_BITFIELD},					\
+    { "rtd", MASK_RTD},							\
+    { "nortd", - MASK_RTD},						\
+    { "short", MASK_SHORT},						\
+    { "noshort", - MASK_SHORT},						\
+    { "fpa", MASK_FPA},							\
+    { "nofpa", - MASK_FPA},						\
+    { "sky", MASK_SKY},							\
+    { "nosky", - MASK_SKY},						\
+    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020)},		\
+    { "68030", - (MASK_68040|MASK_68060)},				\
+    { "68030", (MASK_68020|MASK_BITFIELD)},				\
+    { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD|MASK_68040_ONLY)},	\
+    { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
+		|MASK_68040_ONLY|MASK_68060)},				\
+    { "68851", 0},							\
+    { "no-68851", 0},							\
+    { "68302", 0},							\
+    { "no-68302", 0},							\
+    { "68332", - (MASK_68060|MASK_68040|MASK_68020|MASK_BITFIELD)},	\
+    { "no-68332", 0},							\
+    SUBTARGET_SWITCHES							\
     { "", TARGET_DEFAULT}}
 /* TARGET_DEFAULT is defined in sun*.h and isi.h, etc.  */
 
@@ -149,7 +157,7 @@ extern int target_flags;
    any bits in TARGET_SWITCHES above) */
 #define OVERRIDE_OPTIONS		\
 {					\
-  if (TARGET_FPA) target_flags &= ~2;	\
+  if (TARGET_FPA) target_flags &= ~ MASK_68881;	\
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
   SUBTARGET_OVERRIDE_OPTIONS;		\
