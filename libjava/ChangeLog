@@ -1,3 +1,27 @@
+2002-01-23  Tom Tromey  <tromey@redhat.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added new files.
+	* java/awt/image/AreaAveragingScaleFilter.java: New file from
+	Classpath.
+	* java/awt/image/CropImageFilter.java: New file from Classpath.
+	* java/awt/image/FilteredImageSource.java: New file from
+	Classpath.
+	* java/awt/image/ImageFilter.java: New file from Classpath.
+	* java/awt/image/MemoryImageSource.java: New file from Classpath.
+	* java/awt/image/PixelGrabber.java: New file from Classpath.
+	* java/awt/image/RGBImageFilter.java: New file from Classpath.
+	* java/awt/image/ReplicateScaleFilter.java: New file from
+	Classpath.
+	* java/awt/image/ImageProducer.java: Replaced with Classpath
+	version.
+	* java/awt/image/ImageObserver.java: Replaced with Classpath
+	version.
+	* java/awt/image/ImageConsumer.java: Replaced with Classpath
+	version.
+	* java/awt/GridBagConstraints.java (clone): Catch
+	CloneNotSupportedException.
+
 2002-01-23  Per Bothner  <per@bothner.com>
 
 	* java/lang/reflect/natField.cc (setAddr):  New function.
