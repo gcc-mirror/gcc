@@ -234,7 +234,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define FFETARGET_f2cTYLOGICAL2 13
 #define FFETARGET_f2cTYQUAD 14
 
-#if !defined(__alpha__) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__))) && (!defined(__ia64__) || !defined(__LP64__))
+#if !defined(__alpha__) && (!defined (_ARCH_PPC) || !defined (__64BIT__)) && (!defined(__sparc__) || (!defined(__sparcv9) && !defined(__arch64__))) && (!defined(__ia64__) || !defined(__LP64__))
 #define FFETARGET_32bit_longs
 #endif
 
