@@ -709,7 +709,8 @@ build_java_array_length_access (node)
     return build_int_2 (length, 0);
   node = build1 (INDIRECT_REF, int_type_node,
 		 fold (build (PLUS_EXPR, ptr_type_node,
-			      java_check_reference (node, 1), 
+			      java_check_reference (node, 
+						    flag_check_references), 
 			      JAVA_ARRAY_LENGTH_OFFSET(node))));
   IS_ARRAY_LENGTH_ACCESS (node) = 1;
   return fold (node);
