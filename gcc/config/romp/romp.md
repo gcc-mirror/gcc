@@ -1,5 +1,5 @@
 ;;- Machine description for ROMP chip for GNU C compiler
-;;   Copyright (C) 1988, 1991 Free Software Foundation, Inc.
+;;   Copyright (C) 1988, 1991, 1993 Free Software Foundation, Inc.
 ;;   Contributed by Richard Kenner (kenner@nyu.edu)
 
 ;; This file is part of GNU CC.
@@ -335,6 +335,10 @@
   "loadha %0,%1"
   [(set_attr "type" "load")])
 
+
+;; use cal16 instead of cal for constant source because combine requires
+;; the high bits of the register to be 0 after a HImode load of a constant
+
 (define_insn ""
   [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,b,Q")
 	(match_operand:HI 1 "romp_operand" "r,I,n,s,Q,m,r"))]
@@ -343,7 +347,7 @@
   "@
    cas %0,%1,r0
    lis %0,%1
-   cal %0,%L1(r0)
+   cal16 %0,%L1(r0)
    get %0,$%1
    lh%N1 %0,%1
    loadh %0,%1
