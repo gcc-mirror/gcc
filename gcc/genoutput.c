@@ -165,6 +165,11 @@ struct data *end_of_insn_data;
    for this machine description.  */
 
 int have_constraints;
+
+/* Nonzero if some error has occurred.  We will make all errors fatal, but
+   might as well continue until we see all of them.  */
+
+static int have_error;
 
 static void
 output_prologue ()
@@ -919,6 +924,8 @@ error (s, a1, a2)
   fprintf (stderr, "genoutput: ");
   fprintf (stderr, s, a1, a2);
   fprintf (stderr, "\n");
+
+  have_error = 1;
 }
 
 int
@@ -973,7 +980,9 @@ main (argc, argv)
   output_epilogue ();
 
   fflush (stdout);
-  exit (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  exit (ferror (stdout) != 0 || have_error
+	? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+
   /* NOTREACHED */
   return 0;
 }
