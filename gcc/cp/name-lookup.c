@@ -4464,10 +4464,8 @@ arg_assoc (struct arg_lookup *k, tree n)
 	if (arg_assoc_template_arg (k, TREE_VEC_ELT (args, ix)) == 1)
 	  return true;
     }
-  else
+  else if (TREE_CODE (n) == OVERLOAD)
     {
-      my_friendly_assert (TREE_CODE (n) == OVERLOAD, 980715);
-      
       for (; n; n = OVL_CHAIN (n))
 	if (arg_assoc_type (k, TREE_TYPE (OVL_FUNCTION (n))))
 	  return true;
