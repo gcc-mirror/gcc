@@ -1,3 +1,10 @@
+2001-11-29  Corey Minyard <minyard@acm.org>
+
+	* recog.c (validate_replace_rtx_1): Use simplify_gen_binary
+	instead of plus_constant.
+	* simplify-rtx.c (neg_const_int): New.
+	(simplify_gen_binary, simplify_plus_minus): Use it.
+
 2001-12-12  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_memset, expand_builtin_memcpy,
