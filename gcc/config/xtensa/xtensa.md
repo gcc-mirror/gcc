@@ -1999,7 +1999,8 @@
   ""
 {
   rtx addr = XEXP (operands[0], 0);
-  if (flag_pic && GET_CODE (addr) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (addr))
+  if (flag_pic && GET_CODE (addr) == SYMBOL_REF
+      && (!SYMBOL_REF_LOCAL_P (addr) || SYMBOL_REF_EXTERNAL_P (addr)))
     addr = gen_sym_PLT (addr);
   if (!call_insn_operand (addr, VOIDmode))
     XEXP (operands[0], 0) = copy_to_mode_reg (Pmode, addr);
@@ -2023,7 +2024,8 @@
   ""
 {
   rtx addr = XEXP (operands[1], 0);
-  if (flag_pic && GET_CODE (addr) == SYMBOL_REF && !SYMBOL_REF_LOCAL_P (addr))
+  if (flag_pic && GET_CODE (addr) == SYMBOL_REF
+      && (!SYMBOL_REF_LOCAL_P (addr) || SYMBOL_REF_EXTERNAL_P (addr)))
     addr = gen_sym_PLT (addr);
   if (!call_insn_operand (addr, VOIDmode))
     XEXP (operands[1], 0) = copy_to_mode_reg (Pmode, addr);
