@@ -110,8 +110,8 @@ public:
   typedef const charT* const_pointer;
   typedef pointer iterator;
   typedef const_pointer const_iterator;
-  typedef reverse_iterator<iterator> reverse_iterator;
-  typedef reverse_iterator<const_iterator> const_reverse_iterator;
+  typedef ::reverse_iterator<iterator> reverse_iterator;
+  typedef ::reverse_iterator<const_iterator> const_reverse_iterator;
   static const size_type npos = static_cast<size_type>(-1);
 
 private:

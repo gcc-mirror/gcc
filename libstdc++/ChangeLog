@@ -1,3 +1,8 @@
+Thu Sep 11 15:03:20 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* std/bastring.h (class basic_string): Add global scope to
+	use of reverse_iterator.
+
 Tue Sep  9 19:47:07 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h: Adjust use of reverse_iterator template.
