@@ -1,3 +1,8 @@
+Tue Aug 17 22:06:11 1999  Jan Hubicka  <hubicka@freesoft.cz>
+
+	* haifa-sched.c (insn_unit): Fix typo on out of range test.
+	* sched.c (insn_unit): Likewise.
+
 Tue Aug 17 21:57:23 1999  Andreas Schwab  <schwab@suse.de>
 
 	* combine.c (distribute_notes): Handle REG_EH_RETHROW.
