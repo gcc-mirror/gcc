@@ -2110,7 +2110,6 @@ expand_call (exp, target, ignore)
 	 Deal with them explicitly by copying from the return registers
 	 into the target MEM locations.  */
       int bytes = int_size_in_bytes (TREE_TYPE (exp));
-      int i;
       rtx src, dst;
       int bitsize = MIN (TYPE_ALIGN (TREE_TYPE (exp)), BITS_PER_WORD);
       int bitpos, xbitpos, big_endian_correction = 0;
@@ -2696,7 +2695,6 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
-      register enum machine_mode mode = argvec[argnum].mode;
       register rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;
@@ -3272,7 +3270,6 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
      are to be pushed.  */
   for (count = 0; count < nargs; count++, argnum += inc)
     {
-      register enum machine_mode mode = argvec[argnum].mode;
       register rtx val = argvec[argnum].value;
       rtx reg = argvec[argnum].reg;
       int partial = argvec[argnum].partial;

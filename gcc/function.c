@@ -1849,7 +1849,6 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 	    {
 	      enum machine_mode wanted_mode = VOIDmode;
 	      enum machine_mode is_mode = GET_MODE (tem);
-	      int width = INTVAL (XEXP (x, 1));
 	      int pos = INTVAL (XEXP (x, 2));
 
 #ifdef HAVE_extzv
@@ -1998,7 +1997,9 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
       {
 	rtx dest = SET_DEST (x);
 	rtx src = SET_SRC (x);
+#ifdef HAVE_insv
 	rtx outerdest = dest;
+#endif
 
 	while (GET_CODE (dest) == SUBREG || GET_CODE (dest) == STRICT_LOW_PART
 	       || GET_CODE (dest) == SIGN_EXTRACT
@@ -2268,7 +2269,7 @@ fixup_memory_subreg (x, insn, uncritical)
   int offset = SUBREG_WORD (x) * UNITS_PER_WORD;
   rtx addr = XEXP (SUBREG_REG (x), 0);
   enum machine_mode mode = GET_MODE (x);
-  rtx saved, result;
+  rtx result;
 
   /* Paradoxical SUBREGs are usually invalid during RTL generation.  */
   if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
@@ -4483,14 +4484,14 @@ locate_and_pad_parm (passed_mode, type, in_regs, fndecl,
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
   enum direction where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
   int boundary = FUNCTION_ARG_BOUNDARY (passed_mode, type);
-  int boundary_in_bytes = boundary / BITS_PER_UNIT;
-  int reg_parm_stack_space = 0;
 
 #ifdef REG_PARM_STACK_SPACE
   /* If we have found a stack parm before we reach the end of the
      area reserved for registers, skip that area.  */
   if (! in_regs)
     {
+      int reg_parm_stack_space = 0;
+
 #ifdef MAYBE_REG_PARM_STACK_SPACE
       reg_parm_stack_space = MAYBE_REG_PARM_STACK_SPACE;
 #else
@@ -4732,7 +4733,7 @@ setjmp_protect (block)
 void
 setjmp_protect_args ()
 {
-  register tree decl, sub;
+  register tree decl;
   for (decl = DECL_ARGUMENTS (current_function_decl);
        decl; decl = TREE_CHAIN (decl))
     if ((TREE_CODE (decl) == VAR_DECL
@@ -5893,7 +5894,7 @@ thread_prologue_and_epilogue_insns (f)
 #ifdef HAVE_prologue
   if (HAVE_prologue)
     {
-      rtx head, seq, insn;
+      rtx head, seq;
 
       /* The first insn (a NOTE_INSN_DELETED) is followed by zero or more
 	 prologue insns and a NOTE_INSN_PROLOGUE_END.  */

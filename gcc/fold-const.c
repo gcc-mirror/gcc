@@ -3664,7 +3664,6 @@ strip_compound_expr (t, s)
      tree t;
      tree s;
 {
-  tree type = TREE_TYPE (t);
   enum tree_code code = TREE_CODE (t);
 
   /* See if this is the COMPOUND_EXPR we want to eliminate.  */

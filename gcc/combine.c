@@ -1198,7 +1198,11 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
       rtx set = expand_field_assignment (x);
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
-      rtx inner_dest = dest, inner_src = src;
+      rtx inner_dest = dest;
+ 
+#if 0
+      rtx inner_src = src;
+#endif
 
       SUBST (*loc, set);
 

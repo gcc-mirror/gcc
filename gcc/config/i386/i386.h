@@ -1670,7 +1670,6 @@ do {						\
 
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				\
 {									\
-  rtx orig_x = (X);							\
   (X) = legitimize_address (X, OLDX, MODE);				\
   if (memory_address_p (MODE, X))					\
     goto WIN;								\

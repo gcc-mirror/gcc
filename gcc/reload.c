@@ -4256,7 +4256,9 @@ make_memloc (ad, regno)
      rtx ad;
      int regno;
 {
+#if 0
   register int i;
+#endif
   /* We must rerun eliminate_regs, in case the elimination
      offsets have changed.  */
   rtx tem = XEXP (eliminate_regs (reg_equiv_memory_loc[regno], 0, NULL_RTX), 0);
@@ -4968,7 +4970,9 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	       || !(context ? REGNO_OK_FOR_INDEX_P (regno)
 		    : REGNO_MODE_OK_FOR_BASE_P (regno, mode))))
 	    {
+#ifdef AUTO_INC_DEC
 	      register rtx link;
+#endif
 	      int reloadnum;
 
 	      /* If we can output the register afterwards, do so, this

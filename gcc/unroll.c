@@ -1,5 +1,5 @@
 /* Try to unroll loops, and split induction variables.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-95, 1997, 1998 Free Software Foundation, Inc.
    Contributed by James E. Wilson, Cygnus Support/UC Berkeley.
 
 This file is part of GNU CC.
@@ -235,7 +235,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
   int i, j, temp;
   int unroll_number = 1;
   rtx copy_start, copy_end;
-  rtx insn, copy, sequence, pattern, tem;
+  rtx insn, sequence, pattern, tem;
   int max_labelno, max_insnno;
   rtx insert_before;
   struct inline_remap *map;
@@ -2309,7 +2309,9 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
      rtx loop_start, loop_end;
 {
   struct iv_class *bl;
-  struct induction *v, *b;
+#if 0
+  struct induction *v;
+#endif
 
   /* Clear the result values, in case no answer can be found.  */
   *initial_value = 0;

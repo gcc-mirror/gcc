@@ -1073,7 +1073,6 @@ assemble_string (p, size)
      char *p;
      int size;
 {
-  register int i;
   int pos = 0;
   int maximum = 2000;
 
@@ -3536,6 +3535,10 @@ output_constant_pool (fnname, fndecl)
 	}
 
     }
+
+#ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
+    done: ;
+#endif
 
 #ifdef ASM_OUTPUT_POOL_EPILOGUE
   ASM_OUTPUT_POOL_EPILOGUE (asm_out_file, fnname, fndecl, pool_offset);

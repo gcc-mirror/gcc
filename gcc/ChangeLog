@@ -1,3 +1,40 @@
+Sat Feb 14 02:02:41 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* varasm.c (output_constant_pool): Bring back 'done' label inside
+	an appropriate #ifdef.
+
+	* bitmap.c (bitmap_element_allocate): Wrap variable 'i' in an 
+	appropriate #ifdef.
+	(bitmap_copy, bitmap_operation): Likewise.
+	* combine.c (combinable_i3pat): Similarly for 'src'.
+	* function.c (fixup_var_refs_1): Similarly for 'outerdest'.
+	(locate_and_pad_parm): Similarly for 'reg_parm_stack_space'.
+	* regclass.c (copy_cost): Similarly for 'secondary_class'.
+	* reload.c (make_memloc): Simliarly for 'i'.
+	(find_reloads_address_1): Similarly for 'link'.
+	* reload1.c (reload): Similarly for 'previous_frame_pointer_needed'.
+	(emit_reload_insns): Similarly for 'second_reloadreg'.
+	* unroll.c (iteration_info): Similarly for 'v'.
+
+	* caller-save.c (insert_save_restore): Remove unused variable 'i'.
+	* calls.c (expand_call): Similarly for 'i'.
+	(emit_library_call, emit_library_call_value): Similarly for 'mode'.
+	* fold-const.c (strip_compund_expr): Similarly for 'type'.
+	* function.c (fixup_var_refs_1): Similarly  for 'width'.
+	(fixup_memory_subreg): Similarly for 'saved'.
+	(locate_and_pad_parm): Similarly for 'boundary_in_bytes.'
+	(setjmp_protect): Similarly for 'sub'.
+	(thread_prologue_and_epilogue_insns): Similarly for 'insn'.
+	* loop.c (record_giv): Similarly for 'p'.
+	(combine_givs): Similarly for 'temp_iv'.
+	(indirect_jump_in_function_p): Similarly for 'is_indirect_jump'.
+	* recog.c (validate_replace_rtx_1): Similarly for 'width'.
+	* tree.c (get_set_constructor_bytes): Similarly for 'vals'.
+	* unroll.c (unroll_loop): Similarly for 'copy'.
+	(iteration_info): Similarly for 'b'.
+	* varasm.c (assemble_string): Similarly for 'i'.
+	* i386.h (LEGITIMIZE_ADDRESS): Similarly for 'orig_x'.
+
 Fri Feb 13 14:38:34 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* dwarf2out.c (decl_scope_node): New type.

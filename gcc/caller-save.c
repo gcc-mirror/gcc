@@ -1,5 +1,5 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989, 1992, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 94-95, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -642,7 +642,7 @@ insert_save_restore (insn, save_p, regno, insn_mode, maxrestore)
 {
   rtx pat;
   enum insn_code code;
-  int i, numregs;
+  int numregs;
 
   /* A common failure mode if register status is not correct in the RTL
      is for this routine to be called with a REGNO we didn't expect to

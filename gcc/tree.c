@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -4796,7 +4796,6 @@ get_set_constructor_bytes (init, buffer, wd_size)
      int wd_size;
 {
   int i;
-  tree vals = TREE_OPERAND (init, 1);
   int set_word_size = BITS_PER_UNIT;
   int bit_size = wd_size * set_word_size;
   int bit_pos = 0;
