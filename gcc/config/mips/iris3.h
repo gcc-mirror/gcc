@@ -96,4 +96,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Plain char is unsigned in the SGI compiler.  */
 #define DEFAULT_SIGNED_CHAR 0
 
-#include "mips.h"
+#include "mips/mips.h"

@@ -27,4 +27,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{shared} %{non_shared} %{call_shared} %{no_archive} %{exact_version} \
 	%{!shared: %{!non_shared: %{!call_shared: -non_shared}}}}"
 
-#include "mips.h"
+#include "mips/mips.h"

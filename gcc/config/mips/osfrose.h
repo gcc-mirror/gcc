@@ -172,4 +172,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_IDENTIFY_GCC(STREAM)
 
-#include "mips.h"
+#include "mips/mips.h"
