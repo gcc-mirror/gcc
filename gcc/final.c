@@ -2636,8 +2636,7 @@ alter_subreg (rtx *xp)
       else
 	{
 	  /* Simplify_subreg can't handle some REG cases, but we have to.  */
-	  unsigned int regno = subreg_hard_regno (x, 1);
-	  
+	  unsigned int regno = subreg_regno (x);
 	  gcc_assert (REG_P (y));
 	  *xp = gen_rtx_REG_offset (y, GET_MODE (x), regno, SUBREG_BYTE (x));
 	}
