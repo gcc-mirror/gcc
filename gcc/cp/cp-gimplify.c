@@ -116,6 +116,8 @@ cp_gimplify_init_expr (tree *expr_p, tree *pre_p, tree *post_p)
      case, I guess we'll need to replace references somehow.  */
   if (TREE_CODE (from) == TARGET_EXPR)
     from = TARGET_EXPR_INITIAL (from);
+  if (TREE_CODE (from) == CLEANUP_POINT_EXPR)
+    from = TREE_OPERAND (from, 0);
 
   /* Look through any COMPOUND_EXPRs.  */
   sub = expr_last (from);
