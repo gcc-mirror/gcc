@@ -2524,6 +2524,7 @@ extern tree get_set_constructor_bytes		PARAMS ((tree,
 						       unsigned char *, int));
 extern tree get_callee_fndecl                   PARAMS ((tree));
 extern void set_decl_assembler_name             PARAMS ((tree));
+extern int type_num_arguments                   PARAMS ((tree));
 
 /* In stmt.c */
 
