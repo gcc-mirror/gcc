@@ -1,18 +1,5 @@
 2003-03-31  Michael Koch  <konqueror@gmx.de>
 
-	* java/rmi/dgc/VMID.java,
-	java/rmi/registry/RegistryHandler.java,
-	java/rmi/server/LoaderHandler.java,
-	java/rmi/server/LogStream.java,
-	java/rmi/server/Operation.java,
-	java/rmi/server/RemoteCall.java,
-	java/rmi/server/RemoteRef.java,
-	java/rmi/server/RemoteStub.java,
-	java/rmi/server/Skeleton.java:
-	New version from libgcj.
-
-2003-03-31  Michael Koch  <konqueror@gmx.de>
-
 	* java/rmi/dgc/VMID.java
 	(isUnique): Deprecated.
 
