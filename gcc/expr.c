@@ -1802,20 +1802,22 @@ emit_move_insn_1 (x, y)
 	 the mode, not to change the address.  */
       if (stack)
 	{
+	  /* Note that the real part always precedes the imag part in memory
+	     regardless of machine's endianness.  */
 #ifdef STACK_GROWS_DOWNWARD
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
-		      gen_highpart (submode, y)));
+		      gen_imagpart (submode, y)));
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
-		      gen_lowpart (submode, y)));
+		      gen_realpart (submode, y)));
 #else
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
-		      gen_lowpart (submode, y)));
+		      gen_realpart (submode, y)));
 	  emit_insn (GEN_FCN (mov_optab->handlers[(int) submode].insn_code)
 		     (gen_rtx (MEM, submode, (XEXP (x, 0))),
-		      gen_highpart (submode, y)));
+		      gen_imagpart (submode, y)));
 #endif
 	}
       else
