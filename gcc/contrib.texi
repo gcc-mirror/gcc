@@ -22,6 +22,9 @@ Alasdair Baird for various bugfixes.
 Gerald Baumgartner added the signature extension to the C++ front-end.
 
 @item
+Neil Booth for various work on cpplib.
+
+@item
 Per Bothner for various improvements to our infrastructure for
 supporting new languages.  Chill and Java.
 
