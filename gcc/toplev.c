@@ -4141,10 +4141,16 @@ print_switch_values (file, pos, max, indent, sep, term)
   pos = print_single_switch (file, pos, max, indent, *indent ? " " : "", term,
 			     "options passed: ", "");
 
-  for (p = &save_argv[1]; *p != (char *)0; p++)
+  for (p = &save_argv[1]; *p != NULL; p++)
     if (**p == '-')
       {
 	/* Ignore these.  */
+	if (strcmp (*p, "-o") == 0)
+	  {
+	    if (p[1] != NULL)
+	      p++;
+	    continue;
+	  }
 	if (strcmp (*p, "-quiet") == 0)
 	  continue;
 	if (strcmp (*p, "-version") == 0)
