@@ -352,26 +352,26 @@ determine_explicit_specialization (template_id, type, targs_out,
   int overloaded;
   tree fns;
   tree matching_fns = NULL_TREE;
-  tree name = NULL_TREE;
   tree result;
   tree fn;
 
-  my_friendly_assert (TREE_CODE (template_id) == TEMPLATE_ID_EXPR,
-		      0); 
+  my_friendly_assert (TREE_CODE (template_id) == TEMPLATE_ID_EXPR
+		      && TREE_OPERAND (template_id, 0), 0); 
 		      
   fns = TREE_OPERAND (template_id, 0);
 
-  overloaded = fns != NULL_TREE && really_overloaded_fn (fns);
+  if (is_overloaded_fn (fns))
+    fn = get_first_fn (fns);
+  else
+    fn = NULL_TREE;
 
-  for (fn = (fns != NULL_TREE) ? get_first_fn (fns) : NULL_TREE; 
-       fn != NULL_TREE; 
+  overloaded = really_overloaded_fn (fns);
+
+  for (; fn != NULL_TREE; 
        fn = overloaded ? DECL_CHAIN (fn) : NULL_TREE)
     {
       int dummy = 0;
       tree targs;
-
-      if (name == NULL_TREE)
-	name = DECL_NAME (fn);
 
       if (TREE_CODE (fn) != TEMPLATE_DECL
 	  || (need_member_template && !is_member_template (fn)))
@@ -424,8 +424,9 @@ determine_explicit_specialization (template_id, type, targs_out,
   if (matching_fns == NULL_TREE)
     {
       if (complain)
-	cp_error ("Specialization of `%s' does not match any template declaration.",
-		  IDENTIFIER_POINTER (name));
+	cp_error ("`%D' does not match any template declaration.",
+		  template_id);
+
       *targs_out = NULL_TREE;
       return NULL_TREE;
     }
@@ -496,8 +497,8 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 	  && !processing_explicit_specialization (template_count)
 	  && !is_friend)
 	{
-	  if (!have_def && ! template_header_count)
-	    /* This is not an explicit specialization.  It must be
+	  if (! have_def && ! template_header_count && ! ctype)
+	    /* This is not an explict specialization.  It must be
 	       an explicit instantiation.  */
 	    return 2;
 	  else if (template_header_count > template_count
@@ -507,7 +508,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 			declarator);
 	      return 0;
 	    }
-	  else if (pedantic)
+	  else if (pedantic || uses_template_parms (decl))
 	    pedwarn ("explicit specialization not preceeded by `template <>'");
 	}
 

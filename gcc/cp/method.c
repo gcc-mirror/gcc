@@ -641,6 +641,14 @@ build_overload_value (type, value, in_template)
 	  build_overload_identifier (DECL_ASSEMBLER_NAME (value));
 	  return;
 	}
+      else if (TREE_CODE (value) == SCOPE_REF)
+	{
+	  OB_PUTC2 ('Q', '1');
+	  numeric_output_need_bar = 0;
+	  build_overload_name (TREE_OPERAND (value, 0), 0, 0);
+	  build_overload_identifier (TREE_OPERAND (value, 1));
+	  return;
+	}
       else
 	my_friendly_abort (71);
       break; /* not really needed */

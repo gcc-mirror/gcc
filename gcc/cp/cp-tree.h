@@ -2425,6 +2425,7 @@ extern tree min_tree_cons			PROTO((tree, tree, tree));
 extern int lvalue_p				PROTO((tree));
 extern int lvalue_or_else			PROTO((tree, char *));
 extern tree build_cplus_new			PROTO((tree, tree));
+extern tree get_target_expr			PROTO((tree));
 extern tree break_out_cleanups			PROTO((tree));
 extern tree break_out_calls			PROTO((tree));
 extern tree build_cplus_method_type		PROTO((tree, tree, tree));

@@ -248,11 +248,31 @@ build_cplus_new (type, init)
     return init;
 
   slot = build (VAR_DECL, type);
+  DECL_ARTIFICIAL (slot) = 1;
   layout_decl (slot, 0);
   rval = build (NEW_EXPR, type,
 		TREE_OPERAND (init, 0), TREE_OPERAND (init, 1), slot);
   TREE_SIDE_EFFECTS (rval) = 1;
   rval = build (TARGET_EXPR, type, slot, rval, NULL_TREE, NULL_TREE);
+  TREE_SIDE_EFFECTS (rval) = 1;
+
+  return rval;
+}
+
+/* Encapsulate the expression INIT in a TARGET_EXPR.  */
+
+tree
+get_target_expr (init)
+     tree init;
+{
+  tree slot;
+  tree rval;
+
+  slot = build (VAR_DECL, TREE_TYPE (init));
+  DECL_ARTIFICIAL (slot) = 1;
+  layout_decl (slot, 0);
+  rval = build (TARGET_EXPR, TREE_TYPE (init), slot, init,
+		NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (rval) = 1;
 
   return rval;
@@ -1273,15 +1293,14 @@ int
 is_overloaded_fn (x)
      tree x;
 {
-  if (TREE_CODE (x) == FUNCTION_DECL)
-    return 1;
-
-  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
+  if (TREE_CODE (x) == FUNCTION_DECL
+      || TREE_CODE (x) == TEMPLATE_ID_EXPR
+      || DECL_FUNCTION_TEMPLATE_P (x))
     return 1;
 
   if (TREE_CODE (x) == TREE_LIST
       && (TREE_CODE (TREE_VALUE (x)) == FUNCTION_DECL
-	  || TREE_CODE (TREE_VALUE (x)) == TEMPLATE_DECL))
+	  || DECL_FUNCTION_TEMPLATE_P (TREE_VALUE (x))))
     return 1;
 
   return 0;
@@ -1291,7 +1310,8 @@ int
 really_overloaded_fn (x)
      tree x;
 {     
-  if (TREE_CODE (x) == TEMPLATE_ID_EXPR)
+  if (TREE_CODE (x) == TEMPLATE_ID_EXPR
+      || DECL_FUNCTION_TEMPLATE_P (x))
     return 1;
 
   if (TREE_CODE (x) == TREE_LIST

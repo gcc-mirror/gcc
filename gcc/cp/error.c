@@ -779,7 +779,10 @@ dump_decl (t, v)
     case TEMPLATE_ID_EXPR:
       {
 	tree args;
-	dump_type (TREE_OPERAND (t, 0), v);
+	tree name = TREE_OPERAND (t, 0);
+	if (is_overloaded_fn (name))
+	  name = DECL_NAME (get_first_fn (name));
+	dump_decl (name, v);
 	OB_PUTC ('<');
 	for (args = TREE_OPERAND (t, 1); args; args = TREE_CHAIN (args))
 	  {

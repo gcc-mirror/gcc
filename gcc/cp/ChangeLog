@@ -1,3 +1,20 @@
+Wed Dec  3 11:44:52 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* tree.c (is_overloaded_fn): Handle getting a fn template.
+	(really_overloaded_fn): Likewise.
+	* error.c (dump_decl): Handle TEMPLATE_ID_EXPRs better.
+	* pt.c (check_explicit_specialization): Tweak.
+	(determine_explicit_specialization): Tweak.
+
+	* tree.c, cp-tree.h (get_target_expr): New fn.
+
+1997-12-02  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (determine_explicit_specialization): Avoid an internal
+	error for bad specializations.
+
+	* method.c (build_overload_value): Handle SCOPE_REF.
+
 Tue Dec  2 19:18:50 1997  Mike Stump  <mrs@wrs.com>
 
 	* class.c (prepare_fresh_vtable): Enable even more complex MI
