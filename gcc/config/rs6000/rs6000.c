@@ -2851,16 +2851,15 @@ rs6000_emit_move (dest, source, mode)
 	}
     }
 
-  /* Handle the case where reload calls us with an invalid address;
-     and the case of CONSTANT_P_RTX.  */
-  if (!ALTIVEC_VECTOR_MODE (mode)
+  /* Handle the case where reload calls us with an invalid address.  */
+  if (reload_in_progress && mode == Pmode
       && (! general_operand (operands[1], mode)
-	  || ! nonimmediate_operand (operands[0], mode)
-	  || GET_CODE (operands[1]) == CONSTANT_P_RTX))
-    {
-      emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
-      return;
-    }
+	  || ! nonimmediate_operand (operands[0], mode)))
+    goto emit_set;
+
+  /* Handle the case of CONSTANT_P_RTX.  */
+  if (GET_CODE (operands[1]) == CONSTANT_P_RTX)
+    goto emit_set;
   
   /* FIXME:  In the long term, this switch statement should go away
      and be replaced by a sequence of tests based on things like
@@ -3088,13 +3087,11 @@ rs6000_emit_move (dest, source, mode)
   /* Above, we may have called force_const_mem which may have returned
      an invalid address.  If we can, fix this up; otherwise, reload will
      have to deal with it.  */
-  if (GET_CODE (operands[1]) == MEM
-      && ! memory_address_p (mode, XEXP (operands[1], 0))
-      && ! reload_in_progress)
-    operands[1] = adjust_address (operands[1], mode, 0);
+  if (GET_CODE (operands[1]) == MEM && ! reload_in_progress)
+    operands[1] = validize_mem (operands[1]);
 
+ emit_set:
   emit_insn (gen_rtx_SET (VOIDmode, operands[0], operands[1]));
-  return;
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS

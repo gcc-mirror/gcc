@@ -1,3 +1,9 @@
+2003-04-25  Richard  Henderson  <rth@redhat.com>
+
+        PR opt/10315 
+        * config/rs6000/rs6000.c (rs6000_emit_move): Only elide proper
+        checks during reload; use validize_mem instead of adjust_address.
+
 2003-04-26  Ben Elliston  <bje@wasabisystems.com>
 
 	* config/arm/arm.c (arm_adjust_cost): Correct logic that tests the
