@@ -59,4 +59,6 @@ extern void set_float_handler PROTO((jmp_buf));
 extern void output_quoted_string	PROTO ((FILE *, char *));
 #endif
 
+extern void fancy_abort			PROTO ((void));
+
 #endif /* __GCC_TOPLEV_H */

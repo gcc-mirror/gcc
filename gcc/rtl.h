@@ -1142,11 +1142,6 @@ extern rtx gen_rtx_REG PROTO((enum machine_mode, int));
 extern rtx find_next_ref		PROTO((rtx, rtx));
 extern rtx *find_single_use		PROTO((rtx, rtx, rtx *));
 
-/* It is hard to write the prototype for expand_expr, since it needs
-   expr.h to be included for the enumeration.  */
-
-extern rtx expand_expr ();
-
 extern rtx output_constant_def		PROTO((union tree_node *));
 extern rtx immed_real_const		PROTO((union tree_node *));
 extern union tree_node *make_tree	PROTO((union tree_node *, rtx));
@@ -1535,5 +1530,4 @@ extern void init_alias_analysis		PROTO ((void));
 extern void end_alias_analysis		PROTO ((void));
 
 extern void record_base_value		PROTO ((int, rtx, int));
-
 #endif /* _RTL_H */
