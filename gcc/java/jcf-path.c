@@ -371,6 +371,8 @@ jcf_path_extdirs_arg (const char *cp)
 			add_entry (&extensions, name, 0);
 		      }
 		  }
+		if (dirp)
+		  closedir (dirp);
 	      }
 
 	      if (! *endp)
