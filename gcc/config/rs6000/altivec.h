@@ -4613,7 +4613,7 @@ vec_vspltb (vector unsigned char a1, const int a2)
 /* vec_splat_s8 */
 
 inline vector signed char
-vec_splat_s8 (const signed char a1)
+vec_splat_s8 (const int a1)
 {
   return (vector signed char) __builtin_altivec_vspltisb (a1);
 }
@@ -4621,7 +4621,7 @@ vec_splat_s8 (const signed char a1)
 /* vec_splat_s16 */
 
 inline vector signed short
-vec_splat_s16 (const signed char a1)
+vec_splat_s16 (const int a1)
 {
   return (vector signed short) __builtin_altivec_vspltish (a1);
 }
@@ -4629,7 +4629,7 @@ vec_splat_s16 (const signed char a1)
 /* vec_splat_s32 */
 
 inline vector signed int
-vec_splat_s32 (const signed char a1)
+vec_splat_s32 (const int a1)
 {
   return (vector signed int) __builtin_altivec_vspltisw (a1);
 }
@@ -4637,7 +4637,7 @@ vec_splat_s32 (const signed char a1)
 /* vec_splat_u8 */
 
 inline vector unsigned char
-vec_splat_u8 (const signed char a1)
+vec_splat_u8 (const int a1)
 {
   return (vector unsigned char) __builtin_altivec_vspltisb (a1);
 }
@@ -4645,7 +4645,7 @@ vec_splat_u8 (const signed char a1)
 /* vec_splat_u16 */
 
 inline vector unsigned short
-vec_splat_u16 (const signed char a1)
+vec_splat_u16 (const int a1)
 {
   return (vector unsigned short) __builtin_altivec_vspltish (a1);
 }
@@ -4653,7 +4653,7 @@ vec_splat_u16 (const signed char a1)
 /* vec_splat_u32 */
 
 inline vector unsigned int
-vec_splat_u32 (const signed char a1)
+vec_splat_u32 (const int a1)
 {
   return (vector unsigned int) __builtin_altivec_vspltisw (a1);
 }

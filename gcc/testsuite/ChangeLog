@@ -1,3 +1,9 @@
+2004-03-04  Ziemowit Laski  <zlaski@apple.com>
+
+	PR c++/14425, c++/14426
+	* g++.dg/ext/altivec-4.C: New test.
+	* g++.dg/ext/altivec-5.C: New test.
+
 2004-03-04  Geoffrey Keating  <geoffk@apple.com>
 
 	* g++.old-deja/g++.other/linkage1.C: Expect errors about
