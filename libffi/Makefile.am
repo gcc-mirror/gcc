@@ -135,6 +135,26 @@ libffi_la_LDFLAGS = -release $(VERSION)
 
 INCLUDES = -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 
+# Override these rules so that object files get put in the correct 
+# subdirectories. 
+.c.o:
+	$(LTCOMPILE) -c -o $@ $<
+
+.s.o:
+	$(LTCOMPILE) -c -o $@ $<
+
+.S.o:
+	$(LTCOMPILE) -c -o $@ $<
+
+.c.lo:
+	$(LTCOMPILE) -c -o $@ $<
+
+.s.lo:
+	$(LTCOMPILE) -c -o $@ $<
+
+.S.lo:
+	$(LTCOMPILE) -c -o $@ $<
+
 # Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
 	maintainer-clean-multi
