@@ -1,5 +1,5 @@
 /* Provide a version of _doprnt in terms of fprintf.
-   Copyright (C) 1998, 1999, 2000, 2001   Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002   Free Software Foundation, Inc.
    Contributed by Kaveh Ghazi  (ghazi@caip.rutgers.edu)  3/29/98
 
 This program is free software; you can redistribute it and/or modify it
@@ -29,8 +29,15 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifdef HAVE_STRING_H
 #include <string.h>
 #endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 #undef _doprnt
+
+#ifdef HAVE__DOPRNT
+#define TEST
+#endif
 
 #ifdef TEST /* Make sure to use the internal one.  */
 #define _doprnt my_doprnt

@@ -1,3 +1,22 @@
+2002-01-18  DJ Delorie  <dj@redhat.com>
+
+	* Makefile.in (TESTLIB): New.  This library is for future
+	testsuites.
+	(CFILES, REQUIRED_OFILES, CONFIGURED_OFILES): Re-alphabetize,
+	break down by letter.
+	(REQUIRED_OFILES): List long-to-compile files first.
+	(maint-deps): New, target for updating dependencies.
+	(dependencies): Update.
+	* maint-tool: Add dependency-generating option.
+	* configure.in: Check for _doprnt even if we're not providing it.
+	* configure: Regenerate.
+
+	* _doprnt.c: Modifications to allow compiling on any platform.
+	* copysign.c: Likewise.
+	* putenv.c: Likewise.
+	* setenv.c: Likewise.
+	* vsprintf.c: Likewise.
+
 2002-01-15  Douglas B Rupp  <rupp@gnat.com>
 
 	* mkstemps.c (mkstemps): On VMS, open temp file with option
