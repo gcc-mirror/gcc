@@ -20,7 +20,6 @@ import java.applet.Applet;
 import java.util.Hashtable;
 import javax.naming.spi.NamingManager;
 
-
 public class InitialContext implements Context
 {
   protected Context defaultInitCtx;
@@ -194,4 +193,141 @@ public class InitialContext implements Context
     {
       getURLOrDefaultInitCtx (name).bind (name, obj);
     }
+
+  public Object lookup (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Object lookup (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void rebind (Name name, Object obj) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void rebind (String name, Object obj) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void unbind (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void unbind (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void rename (Name oldName, Name newName) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void rename (String oldName, String newName) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public NamingEnumeration list (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public NamingEnumeration list (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public NamingEnumeration listBindings (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public NamingEnumeration listBindings (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void destroySubcontext (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void destroySubcontext (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Context createSubcontext (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Context createSubcontext (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Object lookupLink (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Object lookupLink (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public NameParser getNameParser (Name name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public NameParser getNameParser (String name) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Name composeName (Name name, Name prefix) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public String composeName (String name, 
+			     String prefix) throws NamingException;
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Object addToEnvironment (String propName, 
+				  Object propVal) throws NamingException;
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Object removeFromEnvironment (String propName) throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public Hashtable getEnvironment () throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public void close () throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
+
+  public String getNameInNamespace () throws NamingException
+  {
+    throw new OperationNotSupportedException ();
+  }
 }

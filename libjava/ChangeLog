@@ -1,3 +1,77 @@
+Sun Nov 26 21:30:25 2000  Anthony Green  <green@redhat.com>
+
+	* javax/naming/AuthenticationException.java,
+	javax/naming/AuthenticationNotSupportedException.java,
+	javax/naming/CannotProceedException.java,
+	javax/naming/CommunicationException.java,
+	javax/naming/ConfigurationException.java,
+	javax/naming/ContextNotEmptyException.java,
+	javax/naming/InsufficientResourcesException.java,
+	javax/naming/InterruptedNamingException.java,
+	javax/naming/InvalidNameException.java,
+	javax/naming/LimitExceededException.java,
+	javax/naming/LinkException.java,
+	javax/naming/LinkLoopException.java,
+	javax/naming/MalformedLinkException.java,
+	javax/naming/NameAlreadyBoundException.java,
+	javax/naming/NameNotFoundException.java,
+	javax/naming/NamingSecurityException.java,
+	javax/naming/NoPermissionException.java,
+	javax/naming/NotContextException.java,
+	javax/naming/PartialResultException.java,
+	javax/naming/ReferralException.java,
+	javax/naming/ServiceUnavailableException.java,
+	javax/naming/SizeLimitExceededException.java,
+	javax/naming/TimeLimitExceededException.java: New files.
+
+	* javax/naming/Name.java (clone): New method.
+	(compareTo): New method.
+	(isEmpty): New method.
+	(getAll): New method.
+	(getPrefix): New method.
+	(getSuffix): New method.
+	(startsWith): New method.
+	(endsWith): New method.
+	(addAll): New method.
+	(addAll): New method.
+	(add): New method.
+	(add): New method.
+	(remove): New method.
+
+	* javax/naming/Context.java (lookup): New method.
+	(rebind): New method.
+	(unbind): New method.
+	(rename): New method.
+	(list): New method.
+	(listBindings): New method.
+	(destroySubcontext): New method.
+	(createSubcontext): New method.
+	(lookupLink): New method.
+	(getNameParser): New method.
+	(composeName): New method.
+	(addToEnvironment): New method.
+	(removeFromEnvironment): New method.
+	(getEnvironment): New method.
+	(close): New method.
+	(getNameInNamespace): New method.
+
+	* javax/naming/InitialContext.java (lookup): New method.
+	(rebind): New method.
+	(unbind): New method.
+	(rename): New method.
+	(list): New method.
+	(listBindings): New method.
+	(destroySubcontext): New method.
+	(createSubcontext): New method.
+	(lookupLink): New method.
+	(getNameParser): New method.
+	(composeName): New method.
+	(addToEnvironment): New method.
+	(removeFromEnvironment): New method.
+	(getEnvironment): New method.
+	(close): New method.
+	(getNameInNamespace): New method.
+
 2000-11-26  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.in: Rebuilt.
