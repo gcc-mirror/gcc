@@ -170,8 +170,8 @@ JAVA_OBJS = parse.o class.o decl.o expr.o constants.o lang.o typeck.o \
 JAVA_OBJS_LITE = parse-scan.o jv-scan.o
 
 # Language-independent object files.
-OBJS = `cat ../stamp-objlist`
-OBJDEPS = ../stamp-objlist
+OBJS = `cat ../stamp-objlist` ../ggc-callbacks.o
+OBJDEPS = ../stamp-objlist ../ggc-callbacks.o
 
 compiler: ../jc1$(exeext) ../jv-scan$(exeext)
 ../jc1$(exeext): $(P) $(JAVA_OBJS) $(OBJDEPS) $(LIBDEPS)

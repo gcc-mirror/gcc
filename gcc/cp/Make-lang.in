@@ -122,7 +122,7 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
 
 cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o \
         c-pragma.o $(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def \
-	$(srcdir)/cp/gxx.gperf hash.o $(GGC)
+	$(srcdir)/cp/gxx.gperf hash.o
 	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
 #
 # Build hooks:
