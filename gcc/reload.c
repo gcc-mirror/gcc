@@ -1,6 +1,6 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2661,7 +2661,15 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	      if (i == noperands - 1)
 		abort ();
 
-	      commutative = i;
+	      /* We currently only support one commutative pair of
+		 operands.  Some existing asm code currently uses more
+		 than one pair.  Previously, that would usually work,
+		 but sometimes it would crash the compiler.  We
+		 continue supporting that case as well as we can by
+		 silently ignoring all but the first pair.  In the
+		 future we may handle it correctly.  */
+	      if (commutative < 0)
+		commutative = i;
 	    }
 	  else if (ISDIGIT (c))
 	    {
@@ -3025,9 +3033,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		break;
 
 	      case '%':
-		/* The last operand should not be marked commutative.  */
-		if (i != noperands - 1)
-		  commutative = i;
+		/* We only support one commutative marker, the first
+		   one.  We already set commutative above.  */
 		break;
 
 	      case '?':
