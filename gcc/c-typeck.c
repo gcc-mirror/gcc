@@ -2347,12 +2347,17 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	{
 	  if (TREE_CODE (op1) == INTEGER_CST)
 	    {
-	      if (TREE_INT_CST_LOW (op1) > 0)
-		short_shift = 1;
-	      else if (TREE_INT_CST_LOW (op1) < 0)
+	      if (tree_int_cst_lt (op1, integer_zero_node))
 		warning ("shift count is negative");
-	      if (TREE_INT_CST_LOW (op1) >= TYPE_PRECISION (type0))
-		warning ("shift count >= width of type");
+	      else
+		{
+		  if (TREE_INT_CST_LOW (op1) | TREE_INT_CST_HIGH (op1))
+		    short_shift = 1;
+		  if (TREE_INT_CST_HIGH (op1) != 0
+		      || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
+			  >= TYPE_PRECISION (type0)))
+		    warning ("shift count >= width of type");
+		}
 	    }
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
@@ -2372,12 +2377,15 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case LSHIFT_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  if (TREE_CODE (op1) == INTEGER_CST
-	      && TREE_INT_CST_LOW (op1) < 0)
-	    warning ("shift count is negative");
-	  if (TREE_CODE (op1) == INTEGER_CST
-	      && TREE_INT_CST_LOW (op1) >= TYPE_PRECISION (type0))
-	    warning ("shift count >= width of type");
+	  if (TREE_CODE (op1) == INTEGER_CST)
+	    {
+	      if (tree_int_cst_lt (op1, integer_zero_node))
+		warning ("shift count is negative");
+	      else if (TREE_INT_CST_HIGH (op1) != 0
+		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
+			   >= TYPE_PRECISION (type0)))
+		warning ("shift count >= width of type");
+	    }
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
 	  result_type = type0;
@@ -2397,12 +2405,15 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
     case LROTATE_EXPR:
       if (code0 == INTEGER_TYPE && code1 == INTEGER_TYPE)
 	{
-	  if (TREE_CODE (op1) == INTEGER_CST
-	      && TREE_INT_CST_LOW (op1) < 0)
-	    warning ("shift count is negative");
-	  if (TREE_CODE (op1) == INTEGER_CST
-	      && TREE_INT_CST_LOW (op1) >= TYPE_PRECISION (type0))
-	    warning ("shift count >= width of type");
+	  if (TREE_CODE (op1) == INTEGER_CST)
+	    {
+	      if (tree_int_cst_lt (op1, integer_zero_node))
+		warning ("shift count is negative");
+	      else if (TREE_INT_CST_HIGH (op1) != 0
+		       || ((unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (op1)
+			   >= TYPE_PRECISION (type0)))
+		warning ("shift count >= width of type");
+	    }
 	  /* Use the type of the value to be shifted.
 	     This is what most traditional C compilers do.  */
 	  result_type = type0;
