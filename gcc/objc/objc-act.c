@@ -217,7 +217,7 @@ static void really_start_method			PARAMS ((tree, tree));
 static int comp_method_with_proto		PARAMS ((tree, tree));
 static int comp_proto_with_proto		PARAMS ((tree, tree));
 static tree get_arg_type_list			PARAMS ((tree, int, int));
-static tree expr_last				PARAMS ((tree));
+static tree objc_expr_last			PARAMS ((tree));
 
 /* Utilities for debugging and error diagnostics.  */
 
@@ -6998,7 +6998,7 @@ encode_field_decl (field_decl, curtype, format)
 }
 
 static tree
-expr_last (complex_expr)
+objc_expr_last (complex_expr)
      tree complex_expr;
 {
   tree next;
@@ -7059,7 +7059,7 @@ start_method_def (method)
 
 	  if (arg_decl)
 	    {
-	      tree last_expr = expr_last (arg_decl);
+	      tree last_expr = objc_expr_last (arg_decl);
 
 	      /* Unite the abstract decl with its name.  */
 	      TREE_OPERAND (last_expr, 0) = KEYWORD_ARG_NAME (arglist);
@@ -7195,7 +7195,7 @@ really_start_method (method, parmlist)
     {
       /* Unite the complex decl (specified in the abstract decl) with the
 	 function decl just synthesized..(int *), (int (*)()), (int (*)[]).  */
-      tree save_expr = expr_last (ret_decl);
+      tree save_expr = objc_expr_last (ret_decl);
 
       TREE_OPERAND (save_expr, 0) = method_decl;
       method_decl = ret_decl;

@@ -1,3 +1,9 @@
+2003-05-20  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (expr_last): New fn.
+	* tree.h: Declare it.
+	* objc/objc-act (expr_last): Rename to objc_expr_last.
+
 2003-05-20  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.c (sh_register_move_cost): Add clase for moving between
