@@ -1,3 +1,12 @@
+2002-05-30  Eric Botcazou  <ebotcazou@multimania.com>
+
+	* expmed.c (const_mult_add_overflow_p): New.
+	* expr.h: Declare it.
+	* loop.c (maybe_eliminate_biv_1) [COMPARE]: Use it.
+	Don't eliminate the biv if the giv has a constant multiplier and
+	the rhs argument of the comparison does satisfy the predicate.
+	Use expand_mult_add to compute the replacement constant.
+
 2002-05-30  Osku Salerma  <osku@iki.fi>
 
 	* c-common.c (c_common_attribute_table): Add "may_alias" entry.

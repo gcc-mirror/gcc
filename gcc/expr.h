@@ -758,6 +758,7 @@ extern rtx extract_bit_field PARAMS ((rtx, unsigned HOST_WIDE_INT,
 				      enum machine_mode, enum machine_mode,
 				      HOST_WIDE_INT));
 extern rtx expand_mult PARAMS ((enum machine_mode, rtx, rtx, rtx, int));
+extern bool const_mult_add_overflow_p PARAMS ((rtx, rtx, rtx, enum machine_mode, int));
 extern rtx expand_mult_add PARAMS ((rtx, rtx, rtx, rtx,enum machine_mode, int));
 extern rtx expand_mult_highpart_adjust PARAMS ((enum machine_mode, rtx, rtx, rtx, rtx, int));
 
