@@ -3747,7 +3747,8 @@ ALL_LINGUAS="en_UK"
 
 # NLS support is still experimental, so disable it by default for now.
 AC_ARG_ENABLE(nls,
-  [  --enable-nls            use Native Language Support (disabled by default)],
+[  --enable-nls            use Native Language Support (disabled by default).
+                          EXPERIMENTAL, see ABOUT-GCC-NLS.],
   , enable_nls=no)
 
 AM_GNU_GETTEXT

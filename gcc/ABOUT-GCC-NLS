@@ -1,10 +1,26 @@
 Notes on GCC's Native Language Support
 
 GCC's Native Language Support (NLS) is relatively new and
-experimental, so NLS is currently disabled by default.  Use
-configure's --enable-nls option to enable it.  Eventually, NLS will be
-enabled by default, and you'll need --disable-nls to disable it.  You
-must enable NLS in order to make a GCC distribution.
+experimental, so NLS is currently disabled by default.
+
+The main reason for it being buggy is, that GCC does not set the
+locale categories correctly.  Currently only LC_MESSAGES is set if the
+system supports it and else nothing.  To work correctly, GCC would have
+to also set the character set used by the terminal by either setting
+LC_CTYPE together with LC_MESSAGES or LC_ALL if LC_MESSAGES is
+not supported.
+
+This would change the behaviour of GCC in quite a few places because
+a number of standard C functions and macros change their behaviour
+depending on the locale.  These necessary changes have been done in the
+development version, but these changes are beyond the scope
+of a maintenance release such as this.  It is therefore recommended that
+you leave it disabled.
+
+If you still want to enable the feature, use configure's --enable-nls
+option to enable it.  Eventually, NLS will be enabled by default, and
+you'll need --disable-nls to disable it.  You must enable NLS in order
+to make a GCC distribution.
 
 By and large, only diagnostic messages have been internationalized.
 Some work remains in other areas; for example, GCC does not yet allow

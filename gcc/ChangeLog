@@ -1,3 +1,10 @@
+2001-01-01  Philipp Thomas <pthomas@suse.de>
+
+	* configure.in: Make the help for --enable-nls make it
+	clear that this is an experimental feature.
+	* configure: Regenerate.
+	* ABOUT-GCC-NLS: Explain why NLS support is buggy.
+
 2000-12-29  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* version.c: Bump.
