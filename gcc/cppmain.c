@@ -88,7 +88,8 @@ main (argc, argv)
 
 /* Store the program name, and set the locale.  */
 static void
-general_init (const char *argv0)
+general_init (argv0)
+     const char *argv0;
 {
   progname = argv0 + strlen (argv0);
 

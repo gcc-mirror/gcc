@@ -1,3 +1,7 @@
+2001-01-16  Alan Modra <alan@linuxcare.com.au>
+
+        * cppmain.c (general_init): Don't use ANSI prototype.
+
 2001-01-16  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.c (cpp_options): Added `*' to specs for -MF, -MQ, and -MT.
