@@ -2563,6 +2563,7 @@ compare_constant_1 (exp, p)
 
     case PLUS_EXPR:
     case MINUS_EXPR:
+    case RANGE_EXPR:
       p = compare_constant_1 (TREE_OPERAND (exp, 0), p);
       if (p == 0)
 	return 0;
@@ -2739,6 +2740,7 @@ record_constant_1 (exp)
 
     case PLUS_EXPR:
     case MINUS_EXPR:
+    case RANGE_EXPR:
       record_constant_1 (TREE_OPERAND (exp, 0));
       record_constant_1 (TREE_OPERAND (exp, 1));
       return;

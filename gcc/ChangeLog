@@ -1,3 +1,8 @@
+Mon Aug 31 15:42:18 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* varasm.c (compare_constant_1): Handle RANGE_EXPR.
+	(record_constant_1): Handle RANGE_EXPR.
+
 Mon Aug 31 10:54:03 1998  Richard Henderson  <rth@cygnus.com>
 
 	* print-rtl.c (print_rtx): NOTE_INSN_LIVE has an rtx not a bitmap.
