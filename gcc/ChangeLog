@@ -1,5 +1,10 @@
 2005-01-08  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/t-iris6 (MULTILIB_DIRNAMES): Use -mabi argument values.
+	(MULTILIB_OSDIRNAMES): Use the standard lib, lib32 and lib64.
+
+2005-01-08  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/t-slibgcc-irix (SHLIB_LINK): Install a copy of the
 	library as @multilib_dir@/$(SHLIB_SONAME).
 
