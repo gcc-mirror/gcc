@@ -3279,18 +3279,15 @@ peephole2_optimize (dump_file)
 /* Common predicates for use with define_bypass.  */
 
 /* True if the dependency between OUT_INSN and IN_INSN is on the store
-   data not the address operand(s) of the store.  Both OUT_INSN and IN_INSN
-   must be single_set.  */
+   data not the address operand(s) of the store.  IN_INSN must be
+   single_set.  OUT_INSN must be either a single_set or a PARALLEL with
+   SETs inside.  */
 
 int
 store_data_bypass_p (out_insn, in_insn)
      rtx out_insn, in_insn;
 {
   rtx out_set, in_set;
-
-  out_set = single_set (out_insn);
-  if (! out_set)
-    abort ();
 
   in_set = single_set (in_insn);
   if (! in_set)
@@ -3299,8 +3296,32 @@ store_data_bypass_p (out_insn, in_insn)
   if (GET_CODE (SET_DEST (in_set)) != MEM)
     return false;
 
-  if (reg_mentioned_p (SET_DEST (out_set), SET_DEST (in_set)))
-    return false;
+  out_set = single_set (out_insn);
+  if (out_set)
+    {
+      if (reg_mentioned_p (SET_DEST (out_set), SET_DEST (in_set)))
+	return false;
+    }
+  else
+    {
+      rtx out_pat;
+      int i;
+
+      out_pat = PATTERN (out_insn);
+      if (GET_CODE (out_pat) != PARALLEL)
+	abort ();
+
+      for (i = 0; i < XVECLEN (out_pat, 0); i++)
+	{
+	  rtx exp = XVECEXP (out_pat, 0, i);
+
+	  if (GET_CODE (exp) != SET)
+	    abort ();
+
+	  if (reg_mentioned_p (SET_DEST (exp), SET_DEST (in_set)))
+	    return false;
+	}
+    }
 
   return true;
 }
