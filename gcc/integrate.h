@@ -1,5 +1,6 @@
 /* Function integration definitions for GCC
-   Copyright (C) 1990, 1995, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1990, 1995, 1998, 1999, 2000, 2001, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -112,7 +113,7 @@ struct inline_remap
       rtx dest;
       rtx equiv;
     }  equiv_sets[MAX_RECOG_OPERANDS];
-  /* Record the last thing assigned to pc.  This is used for folded 
+  /* Record the last thing assigned to pc.  This is used for folded
      conditional branch insns.  */
   rtx last_pc_value;
 #ifdef HAVE_cc0
@@ -127,41 +128,41 @@ struct inline_remap
 
 /* Return a copy of an rtx (as needed), substituting pseudo-register,
    labels, and frame-pointer offsets as necessary.  */
-extern rtx copy_rtx_and_substitute PARAMS ((rtx, struct inline_remap *, int));
+extern rtx copy_rtx_and_substitute (rtx, struct inline_remap *, int);
 
 /* Return a pseudo that corresponds to the value in the specified hard
    reg as of the start of the function (for inlined functions, the
    value at the start of the parent function).  */
-extern rtx get_hard_reg_initial_val		PARAMS ((enum machine_mode, int));
+extern rtx get_hard_reg_initial_val (enum machine_mode, int);
 /* Likewise, but for a different than the current function, or
    arbitrary expression.  */
-extern rtx get_func_hard_reg_initial_val	PARAMS ((struct function *, rtx));
+extern rtx get_func_hard_reg_initial_val (struct function *, rtx);
 /* Likewise, but iff someone else has caused it to become allocated.  */
-extern rtx has_func_hard_reg_initial_val	PARAMS ((struct function *, rtx));
+extern rtx has_func_hard_reg_initial_val (struct function *, rtx);
 /* Likewise, but for common cases.  */
-extern rtx has_hard_reg_initial_val		PARAMS ((enum machine_mode, int));
+extern rtx has_hard_reg_initial_val (enum machine_mode, int);
 /* If a pseudo represents an initial hard reg (or expression), return
    it, else return NULL_RTX.  */
-extern rtx get_hard_reg_initial_reg		PARAMS ((struct function *, rtx));
+extern rtx get_hard_reg_initial_reg (struct function *, rtx);
 /* Called from rest_of_compilation.  */
-extern void emit_initial_value_sets		PARAMS ((void));
-extern void allocate_initial_values		PARAMS ((rtx *));
+extern void emit_initial_value_sets (void);
+extern void allocate_initial_values (rtx *);
 
 /* Copy a declaration when one function is substituted inline into
    another.  */
-extern union tree_node *copy_decl_for_inlining PARAMS ((union tree_node *,
-						      union tree_node *,
-						      union tree_node *));
+extern union tree_node *copy_decl_for_inlining (union tree_node *,
+						union tree_node *,
+						union tree_node *);
 
 /* Check whether there's any attribute in a function declaration that
    makes the function uninlinable.  Returns false if it finds any,
    true otherwise.  */
-extern bool function_attribute_inlinable_p PARAMS ((union tree_node *));
+extern bool function_attribute_inlinable_p (union tree_node *);
 
-extern void try_constants PARAMS ((rtx, struct inline_remap *));
+extern void try_constants (rtx, struct inline_remap *);
 
 /* Return the label indicated.  */
-extern rtx get_label_from_map PARAMS ((struct inline_remap *, int));
+extern rtx get_label_from_map (struct inline_remap *, int);
 
 /* Set the label indicated.  */
 #define set_label_in_map(MAP, I, X) ((MAP)->label_map[I] = (X))

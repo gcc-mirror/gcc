@@ -219,8 +219,7 @@ extern void ggc_splay_dont_free (void *, void *);
 /* Allocate a gc-able string, and fill it with LENGTH bytes from CONTENTS.
    If LENGTH is -1, then CONTENTS is assumed to be a
    null-terminated string and the memory sized accordingly.  */
-extern const char *ggc_alloc_string	PARAMS ((const char *contents,
-						 int length));
+extern const char *ggc_alloc_string (const char *contents, int length);
 
 /* Make a copy of S, in GC-able memory.  */
 #define ggc_strdup(S) ggc_alloc_string((S), -1)

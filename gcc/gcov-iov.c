@@ -1,8 +1,8 @@
 /* Generate gcov version string from version.c. See gcov-io.h for
    description of how the version string is generated.
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
    Contributed by Nathan Sidwell <nathan@codesourcery.com>
-   
+
 This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify it under
@@ -26,12 +26,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "tm.h"
 #include "version.c" /* We want the actual string.  */
 
-int main PARAMS ((int, char **));
+int main (int, char **);
 
 int
-main (argc, argv)
-     int argc ATTRIBUTE_UNUSED;
-     char **argv;
+main (int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED)
 {
   unsigned version = 0;
   unsigned char v[4];
@@ -56,7 +54,7 @@ main (argc, argv)
   v[1] = (minor / 10) + '0';
   v[2] = (minor % 10) + '0';
   v[3] = s ? s : '*';
-    
+
   for (ix = 0; ix != 4; ix++)
     version = (version << 8) | v[ix];
 
@@ -65,6 +63,6 @@ main (argc, argv)
   printf ("\n");
   printf ("#define GCOV_VERSION ((unsigned)%#08x)  /* %.4s */\n",
 	  version, v);
-  
+
   return 0;
 }
