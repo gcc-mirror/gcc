@@ -5802,7 +5802,15 @@ expand_compound_operation (x)
 	       == 0)))
     {
       rtx temp = gen_rtx_ZERO_EXTEND (GET_MODE (x), XEXP (x, 0));
-      return expand_compound_operation (temp);
+      rtx temp2 = expand_compound_operation (temp);
+
+      /* Make sure this is a profitable operation.  */
+      if (rtx_cost (x, SET) > rtx_cost (temp2, SET))
+       return temp2;
+      else if (rtx_cost (x, SET) > rtx_cost (temp, SET))
+       return temp;
+      else
+       return x;
     }
 
   /* We can optimize some special cases of ZERO_EXTEND.  */
