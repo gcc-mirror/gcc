@@ -20,8 +20,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 
-#define MOTOROLA       /* Use Motorola syntax rather than MIT.  */
-
 /* Target OS builtins.  */
 #undef TARGET_OS_CPP_BUILTINS	/* Defined in m68kemb.h.  */
 #define TARGET_OS_CPP_BUILTINS()		\
