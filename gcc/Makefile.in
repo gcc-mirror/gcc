@@ -1191,9 +1191,9 @@ COLLECT2_OBJS = collect2.o tlink.o hash.o intl.o underscore.o version.o
 COLLECT2_LIBS = @COLLECT2_LIBS@
 collect2$(exeext): $(COLLECT2_OBJS) $(LIBDEPS)
 # Don't try modifying collect2 (aka ld) in place--it might be linking this.
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@T \
+	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o T$@ \
 		$(COLLECT2_OBJS) $(LIBS) $(COLLECT2_LIBS)
-	mv -f $@T $@
+	mv -f T$@ $@
 
 collect2.o : collect2.c $(CONFIG_H) $(SYSTEM_H) gstab.h intl.h \
 	$(OBSTACK_H) $(DEMANGLE_H) collect2.h version.h

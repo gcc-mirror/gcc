@@ -3746,7 +3746,7 @@
 
 (define_expand "GOTaddr2picreg"
   [(set (reg:SI R0_REG)
-	(unspec [(const (unspec [(match_dup 1)] UNSPEC_PIC))]
+	(unspec [(const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC))]
 		UNSPEC_MOVA))
    (set (match_dup 0) (const:SI (unspec:SI [(match_dup 1)] UNSPEC_PIC)))
    (set (match_dup 0) (plus:SI (match_dup 0) (reg:SI R0_REG)))]
