@@ -1,5 +1,7 @@
 1999-04-26  Tom Tromey  <tromey@cygnus.com>
 
+	* natCollator.cc: New file.
+
 	* java/util/GregorianCalendar.java (setDefaultTime): New method.
 	(GregorianCalendar): Use it in all constructors.
 	* java/util/Calendar.java (Calendar): Changed argument name to
