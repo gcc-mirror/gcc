@@ -1,3 +1,11 @@
+2000-11-23  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* include/bits/ios_base.h (ios_base::failure::~failure,
+	ios_base::failure::what): Move defintion to ...
+
+	* src/ios.cc (ios_base::failure::~failure): ... here.
+	src/ios.cc (ios::failure::what): Likewise.
+
 2000-11-22  Richard Henderson  <rth@redhat.com>
 
 	* config/os/bsd/bits/ctype_inline.h (is): Fix order of expressions.
