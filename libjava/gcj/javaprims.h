@@ -120,6 +120,7 @@ extern "Java"
       class SyncFailedException;
       class UTFDataFormatException;
       class UnsupportedEncodingException;
+      class VMObjectStreamClass;
       class ValidatorAndPriority;
       class WriteAbortedException;
       class Writer;

@@ -1692,6 +1692,7 @@ java/io/StringWriter.java \
 java/io/SyncFailedException.java \
 java/io/UTFDataFormatException.java \
 java/io/UnsupportedEncodingException.java \
+java/io/VMObjectStreamClass.java \
 java/io/WriteAbortedException.java \
 java/io/Writer.java \
 java/util/AbstractCollection.java \
@@ -2333,6 +2334,7 @@ java/io/natFile.cc \
 java/io/natFileDescriptor.cc \
 java/io/natObjectInputStream.cc \
 java/io/natObjectOutputStream.cc \
+java/io/natVMObjectStreamClass.cc \
 java/lang/natCharacter.cc \
 java/lang/natClass.cc \
 java/lang/natClassLoader.cc \
