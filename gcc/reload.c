@@ -901,6 +901,11 @@ push_reload (in, out, inloc, outloc, class,
 		  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (in)),
 				       GET_MODE (SUBREG_REG (in)))))))
     {
+      /* This relies on the fact that emit_reload_insns outputs the
+	 instructions for input reloads of type RELOAD_OTHER in the same
+	 order as the reloads.  Thus if the outer reload is also of type
+	 RELOAD_OTHER, we are guaranteed that this inner reload will be
+	 output before the outer reload.  */
       push_reload (SUBREG_REG (in), NULL_RTX, &SUBREG_REG (in), NULL_PTR,
 		   GENERAL_REGS, VOIDmode, VOIDmode, 0, 0, opnum, type);
       dont_remove_subreg = 1;
@@ -984,15 +989,16 @@ push_reload (in, out, inloc, outloc, class,
 		  != HARD_REGNO_NREGS (REGNO (SUBREG_REG (out)),
 				       GET_MODE (SUBREG_REG (out)))))))
     {
-      if (type == RELOAD_OTHER)
-	abort ();
-
+      /* This relies on the fact that emit_reload_insns outputs the
+	 instructions for output reloads of type RELOAD_OTHER in reverse
+	 order of the reloads.  Thus if the outer reload is also of type
+	 RELOAD_OTHER, we are guaranteed that this inner reload will be
+	 output after the outer reload.  */
       dont_remove_subreg = 1;
       push_reload (SUBREG_REG (out), SUBREG_REG (out), &SUBREG_REG (out),
 		   &SUBREG_REG (out), ALL_REGS, VOIDmode, VOIDmode, 0, 0,
 		   opnum, RELOAD_OTHER);
     }
-
 
   /* If IN appears in OUT, we can't share any input-only reload for IN.  */
   if (in != 0 && out != 0 && GET_CODE (out) == MEM
