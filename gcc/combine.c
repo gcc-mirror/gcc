@@ -11277,9 +11277,6 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   op1 = make_compound_operation (op1, SET);
 
   if (GET_CODE (op0) == SUBREG && subreg_lowpart_p (op0)
-      /* Case 3 above, to sometimes allow (subreg (mem x)), isn't
-	 implemented.  */
-      && GET_CODE (SUBREG_REG (op0)) == REG
       && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT
       && GET_MODE_CLASS (GET_MODE (SUBREG_REG (op0))) == MODE_INT
       && (code == NE || code == EQ))
@@ -11287,8 +11284,13 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
       if (GET_MODE_SIZE (GET_MODE (op0))
 	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0))))
 	{
-	  op0 = SUBREG_REG (op0);
-	  op1 = gen_lowpart_for_combine (GET_MODE (op0), op1);
+	  /* For paradoxical subregs, allow case 1 as above.  Case 3 isn't
+	     implemented.  */
+          if (GET_CODE (SUBREG_REG (op0)) == REG)
+	    {
+	      op0 = SUBREG_REG (op0);
+	      op1 = gen_lowpart_for_combine (GET_MODE (op0), op1);
+	    }
 	}
       else if ((GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
 		<= HOST_BITS_PER_WIDE_INT)

@@ -1,5 +1,10 @@
 2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* combine.c (simplify_comparison): Re-enable widening of comparisons
+	with non-paradoxical subregs of non-REG expressions.
+
+2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* combine.c (distribute_notes): Handle REG_ALWAYS_RETURN.
 
 2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
