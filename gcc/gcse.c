@@ -7696,7 +7696,7 @@ replace_store_insn (reg, del, bb)
 {
   rtx insn;
 
-  insn = gen_move_insn (reg, SET_SRC (PATTERN (del)));
+  insn = gen_move_insn (reg, SET_SRC (single_set (del)));
   insn = emit_insn_after (insn, del);
 
   if (gcse_file)

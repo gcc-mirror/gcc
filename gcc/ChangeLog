@@ -1,3 +1,7 @@
+2003-04-07  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* gcse.c (replace_store_insn): Use single_set.
+
 2003-04-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	Change gcov file interface to single file at a time.
