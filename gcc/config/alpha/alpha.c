@@ -2012,38 +2012,22 @@ split_small_symbolic_operand (rtx x)
    Technically we could copy them if we could set up a mapping from one
    sequence number to another, across the set of insns to be duplicated.
    This seems overly complicated and error-prone since interblock motion
-   from sched-ebb could move one of the pair of insns to a different block.  */
+   from sched-ebb could move one of the pair of insns to a different block.
+
+   Also cannot allow jsr insns to be duplicated.  If they throw exceptions,
+   then they'll be in a different block from their ldgp.  Which could lead
+   the bb reorder code to think that it would be ok to copy just the block
+   containing the call and branch to the block containing the ldgp.  */
 
 static bool
 alpha_cannot_copy_insn_p (rtx insn)
 {
-  rtx pat;
-
   if (!reload_completed || !TARGET_EXPLICIT_RELOCS)
     return false;
-
-  if (GET_CODE (insn) != INSN)
+  if (recog_memoized (insn) >= 0)
+    return get_attr_cannot_copy (insn);
+  else
     return false;
-  if (asm_noperands (insn) >= 0)
-    return false;
-
-  pat = PATTERN (insn);
-  if (GET_CODE (pat) != SET)
-    return false;
-  pat = SET_SRC (pat);
-  if (GET_CODE (pat) == UNSPEC_VOLATILE)
-    {
-      if (XINT (pat, 1) == UNSPECV_LDGP1
-	  || XINT (pat, 1) == UNSPECV_PLDGP2)
-	return true;
-    }
-  else if (GET_CODE (pat) == UNSPEC)
-    {
-      if (XINT (pat, 1) == UNSPEC_LDGP2)
-	return true;
-    }
-
-  return false;
 }
 
   
