@@ -11546,7 +11546,7 @@ ix86_expand_sse_comi (d, arglist, target)
 					  gen_rtx_REG (CCmode, FLAGS_REG),
 					  const0_rtx)));
 
-  return target;
+  return SUBREG_REG (target);
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -11612,7 +11612,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 	{
 	  /* @@@ better error message */
 	  error ("selector must be an immediate");
-	  return const0_rtx;
+	  return gen_reg_rtx (tmode);
 	}
       if (target == 0
 	  || GET_MODE (target) != tmode
@@ -11813,7 +11813,7 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
 	{
 	  /* @@@ better error message */
 	  error ("mask must be an immediate");
-	  return const0_rtx;
+	  return gen_reg_rtx (tmode);
 	}
       if (target == 0
 	  || GET_MODE (target) != tmode
