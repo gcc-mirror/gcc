@@ -8606,7 +8606,7 @@ resolve_field_access (qual_wfl, field_decl, field_type)
 	  && JPRIMITIVE_TYPE_P (TREE_TYPE (decl))
 	  && DECL_INITIAL (decl))
 	{
-	  field_ref = DECL_INITIAL (decl);
+	  field_ref = java_complete_tree (DECL_INITIAL (decl));
 	  static_final_found = 1;
 	}
       else

@@ -1,3 +1,8 @@
+2000-05-31  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_field_access): Complete the DECL_INITIAL tree
+	before using it as the accessed field.
+
 2000-05-31  Tom Tromey  <tromey@cygnus.com>
 
 	* java-tree.h (boolean_array_vtable, byte_array_vtable,
