@@ -307,11 +307,11 @@ c_cpp_builtins (pfile)
 	cpp_define (pfile, "__GXX_WEAK__=1");
       else
 	cpp_define (pfile, "__GXX_WEAK__=0");
-      if (flag_exceptions)
-	cpp_define (pfile, "__EXCEPTIONS");
       if (warn_deprecated)
 	cpp_define (pfile, "__DEPRECATED");
     }
+  if (flag_exceptions)
+    cpp_define (pfile, "__EXCEPTIONS");
 
   /* represents the C++ ABI version, always defined so it can be used while
      preprocessing C and assembler.  */
