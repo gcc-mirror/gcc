@@ -7875,6 +7875,15 @@ recog_for_combine (pnewpat, insn, pnotes)
   int i;
   rtx notes = 0;
 
+  /* If PAT is a PARALLEL, check to see if it contains the CLOBBER
+     we use to indicate that something didn't match.  If we find such a
+     thing, force rejection.  */
+  if (GET_CODE (pat) == CLOBBER)
+    for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
+      if (GET_CODE (XVECEXP (pat, i, 0)) == CLOBBER
+	  && XEXP (XVECEXP (pat, i, 0), 0) == const0_rtx)
+	return -1;
+
   /* Is the result of combination a valid instruction?  */
   insn_code_number = recog (pat, insn, &num_clobbers_to_add);
 
