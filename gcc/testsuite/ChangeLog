@@ -5,6 +5,8 @@
  	PR fortran/13575
  	PR fortran/15978
 	* gfortran.fortran-torture/compile/implicit_2.f90: New test.
+
+	* gfortran.dg/implicit_1.f90: New test.
 	
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
