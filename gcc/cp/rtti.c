@@ -435,6 +435,7 @@ get_tinfo_decl (type)
       pushdecl_top_level (d);
       /* Remember the type it is for.  */
       TREE_TYPE (name) = type;
+      TREE_USED (name) = 1;
     }
   return d;
 }
@@ -1933,16 +1934,11 @@ emit_tinfo_decl (decl_ptr, data)
   tinfo_type = TREE_TYPE (DECL_NAME (tinfo_decl));
   my_friendly_assert (tinfo_type != NULL_TREE, 20000120);
   
+  if (!DECL_NEEDED_P (tinfo_decl))
+    return 0;
   /* Say we've dealt with it.  */
   TREE_TYPE (DECL_NAME (tinfo_decl)) = NULL_TREE;
   
-  if (!DECL_NEEDED_P (tinfo_decl))
-    return 0;
-  if (TREE_CODE (tinfo_type) == RECORD_TYPE && TYPE_POLYMORPHIC_P (tinfo_type)
-      && !CLASSTYPE_VTABLE_NEEDS_WRITING (tinfo_type))
-    /* A polymorphic type only needs its type_info emitted when the vtable
-       is.  */
-    return 0;
   create_tinfo_types ();
   decl = synthesize_tinfo_var (tinfo_type, DECL_ASSEMBLER_NAME (tinfo_decl));
   
