@@ -1,3 +1,8 @@
+Thu Feb 25 14:32:40 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cse.c (dump_class): Revert last change and make the prototype
+	extern.
+
 Thu Feb 25 19:13:42 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* rtl.h (insn_first_p): Don't declare.

@@ -663,13 +663,13 @@ static void cse_check_loop_start PROTO((rtx, rtx));
 static void cse_set_around_loop	PROTO((rtx, rtx, rtx));
 static rtx cse_basic_block	PROTO((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PROTO((rtx, int *, rtx, int));
-static void dump_class          PROTO((struct table_elt*));
+extern void dump_class          PROTO((struct table_elt*));
 
 extern int rtx_equal_function_value_matters;
 
 /* Dump the expressions in the equivalence class indicated by CLASSP.
    This function is used only for debugging.  */
-static void
+void
 dump_class (classp)
      struct table_elt *classp;
 {
