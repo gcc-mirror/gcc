@@ -26,7 +26,7 @@ void test01()
   using namespace std;
   bool test __attribute__((unused)) = true;
 
-  const char* name = "tmp_12077";
+  const char* name = "12077_tmp";
 
   locale loc = __gnu_test::try_named_locale("is_IS.UTF-8");
   locale::global(loc);
