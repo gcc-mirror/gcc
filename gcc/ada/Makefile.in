@@ -2416,20 +2416,30 @@ b_gnatdll.c : $(GNATDLL_OBJS)
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatdll.c gnatdll.ali
 b_gnatdll.o : b_gnatdll.c
 
-$(srcdir)/treeprs.ads : treeprs.adt sinfo.ads xtreeprs.spt
-	(cd $(srcdir); xtreeprs)
+treeprs.ads : treeprs.adt sinfo.ads xtreeprs.adb
+	-$(MKDIR) bldtools
+	$(CP) $^ bldtools
+	(cd bldtools; gnatmake -q xtreeprs ; ./xtreeprs ../treeprs.ads )
 
-$(srcdir)/einfo.h : einfo.ads einfo.adb xeinfo.spt
-	(cd $(srcdir); xeinfo einfo.h)
+einfo.h : einfo.ads einfo.adb xeinfo.adb
+	-$(MKDIR) bldtools
+	$(CP) $^ bldtools
+	(cd bldtools; gnatmake -q xeinfo ; ./xeinfo ../einfo.h )
 
-$(srcdir)/sinfo.h : sinfo.ads xsinfo.spt
-	(cd $(srcdir); xsinfo sinfo.h)
+sinfo.h : sinfo.ads xsinfo.adb
+	-$(MKDIR) bldtools
+	$(CP) $^ bldtools
+	(cd bldtools; gnatmake -q xsinfo ; ./xsinfo ../sinfo.h )
 
-$(srcdir)/nmake.adb : nmake.adt sinfo.ads xnmake.spt
-	(cd $(srcdir); xnmake)
+nmake.adb : sinfo.ads nmake.adt xnmake.adb
+	-$(MKDIR) bldtools
+	$(CP) $^ bldtools
+	(cd bldtools; gnatmake -q xnmake ; ./xnmake -b ../nmake.adb )
 
-$(srcdir)/nmake.ads :  nmake.adt sinfo.ads xnmake.spt
-	(cd $(srcdir); xnmake)
+nmake.ads :  sinfo.ads nmake.adt xnmake.adb
+	-$(MKDIR) bldtools
+	$(CP) $^ bldtools
+	(cd bldtools; gnatmake -q xnmake ; ./xnmake -s ../nmake.ads )
 
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
 ADA_RTL_OBJ_DIR = $(libsubdir)/adalib
