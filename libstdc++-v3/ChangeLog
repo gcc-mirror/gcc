@@ -1,5 +1,12 @@
 2004-01-31  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/stl_algo.h: Wrap overlong lines, constify
+	a few variables, reformat according to the coding standards.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/stl_heap.h: Likewise.
+
+2004-01-31  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (_Rep::operator[]): Remove, unused.
 
 	* include/bits/basic_string.h: Fix two comments.
