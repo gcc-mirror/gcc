@@ -96,6 +96,11 @@ static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
 static void clear_text_info PARAMS ((output_buffer *));
 static void clear_diagnostic_info PARAMS ((output_buffer *));
 
+static void default_diagnostic_starter PARAMS ((output_buffer *,
+                                                diagnostic_context *));
+static void default_diagnostic_finalizer PARAMS ((output_buffer *,
+                                                  diagnostic_context *));
+
 static void error_recursion PARAMS ((void)) ATTRIBUTE_NORETURN;
 static const char *trim_filename PARAMS ((const char *));
 
@@ -912,11 +917,12 @@ diagnostic_for_asm (insn, msg, args_ptr, warn)
      va_list *args_ptr;
      int warn;
 {
-  const char *file;
-  int line;
+  diagnostic_context dc;
 
-  file_and_line_for_asm (insn, &file, &line);
-  report_diagnostic (msg, args_ptr, file, line, warn);
+  set_diagnostic_context (&dc, msg, args_ptr, NULL, 0, warn);
+  file_and_line_for_asm (insn, &diagnostic_file_location (&dc),
+                         &diagnostic_line_location (&dc));
+  report_diagnostic (&dc);
 }
 
 /* Report a diagnostic MESSAGE at the declaration DECL.
@@ -1032,6 +1038,7 @@ pedwarn VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1039,8 +1046,9 @@ pedwarn VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, &ap, input_filename, lineno,
-                     !flag_pedantic_errors);
+  set_diagnostic_context
+    (&dc, msgid, &ap, input_filename, lineno, !flag_pedantic_errors);
+  report_diagnostic (&dc);
   va_end (ap);
 }
 
@@ -1084,6 +1092,7 @@ pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1093,7 +1102,8 @@ pedwarn_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, &ap, file, line, !flag_pedantic_errors);
+  set_diagnostic_context (&dc, msgid, &ap, file, line, !flag_pedantic_errors);
+  report_diagnostic (&dc);
   va_end (ap);
 }
 
@@ -1225,6 +1235,7 @@ error_with_file_and_line VPARAMS ((const char *file, int line,
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1234,7 +1245,8 @@ error_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, &ap, file, line, /* warn = */ 0);
+  set_diagnostic_context (&dc, msgid, &ap, file, line, /* warn = */ 0);
+  report_diagnostic (&dc);
   va_end (ap);
 }
 
@@ -1285,6 +1297,7 @@ error VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1292,7 +1305,9 @@ error VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, &ap, input_filename, lineno, /* warn = */ 0);
+  set_diagnostic_context
+    (&dc, msgid, &ap, input_filename, lineno, /* warn = */ 0);
+  report_diagnostic (&dc);
   va_end (ap);
 }
 
@@ -1317,6 +1332,7 @@ fatal VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1324,10 +1340,12 @@ fatal VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-   if (fatal_function != 0)
-     (*fatal_function) (_(msgid), &ap);
-
-  report_diagnostic (msgid, &ap, input_filename, lineno, 0);
+  if (fatal_function != 0)
+    (*fatal_function) (_(msgid), &ap);
+  
+  set_diagnostic_context
+    (&dc, msgid, &ap, input_filename, lineno, /* warn = */0);
+  report_diagnostic (&dc);
   va_end (ap);
   exit (FATAL_EXIT_CODE);
 }
@@ -1369,6 +1387,7 @@ warning_with_file_and_line VPARAMS ((const char *file, int line,
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1378,7 +1397,8 @@ warning_with_file_and_line VPARAMS ((const char *file, int line,
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, &ap, file, line, /* warn = */ 1);
+  set_diagnostic_context (&dc, msgid, &ap, file, line, /* warn = */ 1);
+  report_diagnostic (&dc);
   va_end (ap);
 }
 
@@ -1429,6 +1449,7 @@ warning VPARAMS ((const char *msgid, ...))
   const char *msgid;
 #endif
   va_list ap;
+  diagnostic_context dc;
 
   VA_START (ap, msgid);
 
@@ -1436,7 +1457,9 @@ warning VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, &ap, input_filename, lineno, /* warn = */ 1);
+  set_diagnostic_context
+    (&dc, msgid, &ap, input_filename, lineno, /* warn = */ 1);
+  report_diagnostic (&dc);
   va_end (ap);
 }
 
@@ -1507,36 +1530,29 @@ verbatim VPARAMS ((const char *msg, ...))
   va_end (ap);
 }
 
-/* Report a diagnostic MESSAGE (an error or a WARNING) involving
-   entities in ARGUMENTS.  FILE and LINE indicate where the diagnostic
-   occurs.  This function is *the* subroutine in terms of which front-ends
-   should implement their specific diagnostic handling modules.
-   The front-end independent format specifiers are exactly those described
+/* Report a diagnostic message (an error or a warning) as specified by
+   DC.  This function is *the* subroutine in terms of which front-ends
+   should implement their specific diagnostic handling modules.  The
+   front-end independent format specifiers are exactly those described
    in the documentation of output_format.  */
 void
-report_diagnostic (msg, args_ptr, file, line, warn)
-     const char *msg;
-     va_list *args_ptr;
-     const char *file;
-     int line;
-     int warn;
+report_diagnostic (dc)
+     diagnostic_context *dc;
 {
   output_state os;
 
   if (diagnostic_lock++)
     error_recursion ();
 
-  if (count_error (warn))
+  if (count_error (diagnostic_is_warning (dc)))
     {
       os = diagnostic_buffer->state;
-      diagnostic_msg = msg;
-      diagnostic_args = args_ptr;
-      report_error_function (file);
-      output_set_prefix
-	(diagnostic_buffer, context_as_prefix (file, line, warn));
+      diagnostic_msg = diagnostic_message (dc);
+      diagnostic_args = diagnostic_argument_list (dc);
+      (*diagnostic_starter (dc)) (diagnostic_buffer, dc);
       output_format (diagnostic_buffer);
+      (*diagnostic_finalizer (dc)) (diagnostic_buffer, dc);
       finish_diagnostic ();
-      output_destroy_prefix (diagnostic_buffer);
       diagnostic_buffer->state = os;
     }
 
@@ -1596,4 +1612,47 @@ fancy_abort (file, line, function)
 Please submit a full bug report.\n\
 See %s for instructions.",
 	 function, trim_filename (file), line, GCCBUGURL);
+}
+
+/* Setup DC for reporting a diagnostic MESSAGE (an error of a WARNING),
+   using arguments pointed to by ARGS_PTR, issued at a location specified
+   by FILE and LINE.  Front-ends may override the defaut diagnostic pager
+   and finalizer *after* this subroutine completes.  */
+void
+set_diagnostic_context (dc, message, args_ptr, file, line, warn)
+     diagnostic_context *dc;
+     const char *message;
+     va_list *args_ptr;
+     const char *file;
+     int line;
+     int warn;
+{
+  bzero (dc, sizeof (diagnostic_context));
+  diagnostic_message (dc) = message;
+  diagnostic_argument_list (dc) = args_ptr;
+  diagnostic_file_location (dc) = file;
+  diagnostic_line_location (dc) = line;
+  diagnostic_is_warning (dc) = warn;
+  diagnostic_starter (dc) = default_diagnostic_starter;
+  diagnostic_finalizer (dc) = default_diagnostic_finalizer;
+}
+
+static void
+default_diagnostic_starter (buffer, dc)
+     output_buffer *buffer;
+     diagnostic_context *dc;
+{
+  report_error_function (diagnostic_file_location (dc));
+  output_set_prefix (buffer,
+                     context_as_prefix (diagnostic_file_location (dc),
+                                        diagnostic_line_location (dc),
+                                        diagnostic_is_warning (dc)));
+}
+
+static void
+default_diagnostic_finalizer (buffer, dc)
+     output_buffer *buffer;
+     diagnostic_context *dc __attribute__((__unused__));
+{
+  output_destroy_prefix (buffer);
 }
