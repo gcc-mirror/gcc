@@ -244,7 +244,9 @@ do {				 				\
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
 
-#define MULTIBYTE_CHARS
+/* This causes trouble, because it requires the host machine
+   to support ANSI C.  */
+/* #define MULTIBYTE_CHARS */
 
 #undef ASM_BYTE_OP
 #define ASM_BYTE_OP	"\t.byte"
