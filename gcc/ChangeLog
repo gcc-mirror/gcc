@@ -1,3 +1,8 @@
+Mon Sep 29 10:51:53 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* flow.c (find_basic_blocks): Mark calls as potentially jumping
+	to the EH labels.
+
 Mon Sep 29 09:58:06 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Substitute for "install" too.
