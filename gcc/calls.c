@@ -232,6 +232,9 @@ calls_function_1 (exp, which)
 
     case RTL_EXPR:
       return 0;
+      
+    default:
+      break;
     }
 
   for (i = 0; i < length; i++)
