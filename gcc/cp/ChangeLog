@@ -1,3 +1,10 @@
+1999-08-06  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* pt.c (tsubst): Use build_index_type to build in-template array
+	index type.  Fixes g++.oliva/dwarf1.C.
+	* decl.c (grokdeclarator): Likewise, just for consistency, as it
+	doesn't seem to trigger the bug without it.
+
 Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 
         * typeck2.c: Update URLs and mail addresses.

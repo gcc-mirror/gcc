@@ -6136,11 +6136,8 @@ tsubst (t, args, complain, in_decl)
 	       not PROCESSING_TEMPLATE_DECL.  */
 	    || TREE_CODE (max) != INTEGER_CST)
 	  {
-	    tree itype = make_node (INTEGER_TYPE);
-	    TYPE_MIN_VALUE (itype) = size_zero_node;
-	    TYPE_MAX_VALUE (itype) = build_min (MINUS_EXPR, sizetype, max,
-						integer_one_node);
-	    return itype;
+	    return build_index_type (build_min
+	      (MINUS_EXPR, sizetype, max, integer_one_node));
 	  }
 
 	if (integer_zerop (omax))

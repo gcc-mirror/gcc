@@ -10387,10 +10387,8 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			  size = t;
 		      }
 
-		    itype = make_node (INTEGER_TYPE);
-		    TYPE_MIN_VALUE (itype) = size_zero_node;
-		    TYPE_MAX_VALUE (itype) = build_min
-		      (MINUS_EXPR, sizetype, size, integer_one_node);
+		    itype = build_index_type (build_min
+		      (MINUS_EXPR, sizetype, size, integer_one_node));
 		    goto dont_grok_size;
 		  }
 
