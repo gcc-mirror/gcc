@@ -107,6 +107,14 @@ Sun Jul 19 00:46:53 CEST 1998  Marc Lehmann <pcg@goof.com>
 
 	* INSTALL/README: Fix typo.
 
+Fri Jul 17 13:30:18 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+        * ylwrap: Change absolute path checks to check for DOS style path
+        names.
+
+        * ylwrap: Don't use a full path name if the source file is in the
+        same directory.  From hjl@lucon.org (H.J. Lu).
+
 Sat Jun 27 22:46:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (BASE_FLAGS_TO_PASS): Add TARGET_SUBDIR.
