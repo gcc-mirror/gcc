@@ -932,11 +932,6 @@ struct pj_args
 
 #define SHORT_IMMEDIATES_SIGN_EXTEND
 
-/* Define this if zero-extension is slow (more than one real
-   instruction).  */
-
-/* #define SLOW_ZERO_EXTEND  */
-
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
 

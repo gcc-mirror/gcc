@@ -1031,9 +1031,6 @@ do {									\
    than accessing full words.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Define this if zero-extension is slow (more than one real instruction).  */
-#define SLOW_ZERO_EXTEND 
-
 /* According expr.c, a value of around 6 should minimize code size, and
    for the V850 series, that's our primary concern.  */
 #define MOVE_RATIO 6

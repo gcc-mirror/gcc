@@ -3432,17 +3432,6 @@ extern const char *d30v_branch_cost_string;
    same word of the structure, but to different bytes.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Define this macro if zero-extension (of a `char' or `short' to an `int') can
-   be done faster if the destination is a register that is known to be zero.
-
-   If you define this macro, you must have instruction patterns that recognize
-   RTL structures like this:
-
-        (set (strict_low_part (subreg:QI (reg:SI ...) 0)) ...)
-
-   and likewise for `HImode'.  */
-#define SLOW_ZERO_EXTEND 0
-
 /* Define this macro to be the value 1 if unaligned accesses have a cost many
    times greater than aligned accesses, for example if they are emulated in a
    trap handler.

@@ -1,3 +1,32 @@
+2002-01-15  Kazu Hirata  <kazu@hxi.com>
+
+	* expmed.c (extract_fixed_bit_field): Remove unused code.
+	* system.h: Poison SLOW_ZERO_EXTEND.
+	* doc/tm.texi: Remove.
+	* config/1750a/1750a.h (SLOW_ZERO_EXTEND): Remove.
+	* config/arm/arm.h: Likewise.
+	* config/avr/avr.h: Likewise.
+	* config/clipper/clipper.h: Likewise.
+	* config/convex/convex.h: Likewise.
+	* config/d30v/d30v.h: Likewise.
+	* config/dsp16xx/dsp16xx.h: Likewise.
+	* config/elxsi/elxsi.h: Likewise.
+	* config/fr30/fr30.h: Likewise.
+	* config/h8300/h8300.h: Likewise.
+	* config/i370/i370.h: Likewise.
+	* config/i386/i386.h: Likewise.
+	* config/m68k/m68k.h: Likewise.
+	* config/mips/mips.h: Likewise.
+	* config/ns32k/ns32k.h: Likewise.
+	* config/pdp11/pdp11.h: Likewise.
+	* config/pj/pj.h: Likewise.
+	* config/s390/s390.h: Likewise.
+	* config/sh/sh.h: Likewise.
+	* config/stormy16/stormy16.h: Likewise.
+	* config/v850/v850.h: Likewise.
+	* config/vax/vax.h: Likewise.
+	* config/we32k/we32k.h: Likewise.
+
 2002-01-15  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.md (altivec_stvx): Add parallels to stvx.
