@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "intl.h"
 #include "cppdefault.h"
 #include "c-incpath.h"
+#include "debug.h"		/* For debug_hooks.  */
 
 #ifndef TARGET_SYSTEM_ROOT
 # define TARGET_SYSTEM_ROOT NULL
@@ -78,8 +79,14 @@ static bool std_cxx_inc = true;
 /* If the quote chain has been split by -I-.  */
 static bool quote_chain_split;
 
+/* If -Wunused-macros.  */
+static bool warn_unused_macros;
+
 /* Number of deferred options, deferred options array size.  */
 static size_t deferred_count, deferred_size;
+
+/* Number of deferred options scanned for -include.  */
+static size_t include_cursor;
 
 static void missing_arg PARAMS ((size_t));
 static size_t find_opt PARAMS ((const char *, int));
@@ -95,6 +102,8 @@ static void check_deps_environment_vars PARAMS ((void));
 static void handle_deferred_opts PARAMS ((void));
 static void sanitize_cpp_opts PARAMS ((void));
 static void add_prefixed_path PARAMS ((const char *, size_t));
+static void push_command_line_include PARAMS ((void));
+static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
 
 #ifndef STDC_0_IN_SYSTEM_HEADERS
 #define STDC_0_IN_SYSTEM_HEADERS 0
@@ -288,6 +297,7 @@ static void add_prefixed_path PARAMS ((const char *, size_t));
   OPT("fxref",			CL_CXX,   OPT_fxref)			     \
   OPT("gen-decls",		CL_OBJC,  OPT_gen_decls)		     \
   OPT("idirafter",              CL_ALL | CL_ARG, OPT_idirafter)              \
+  OPT("include",                CL_ALL | CL_ARG, OPT_include)		     \
   OPT("iprefix",		CL_ALL | CL_ARG, OPT_iprefix)		     \
   OPT("isysroot",               CL_ALL | CL_ARG, OPT_isysroot)               \
   OPT("isystem",                CL_ALL | CL_ARG, OPT_isystem)                \
@@ -1040,7 +1050,7 @@ c_common_decode_option (argc, argv)
       break;
 
     case OPT_Wunused_macros:
-      cpp_opts->warn_unused_macros = on;
+      warn_unused_macros = on;
       break;
 
     case OPT_Wwrite_strings:
@@ -1323,6 +1333,10 @@ c_common_decode_option (argc, argv)
       add_path (xstrdup (arg), AFTER, 0);
       break;
 
+    case OPT_include:
+      defer_opt (code, arg);
+      break;
+
     case OPT_iprefix:
       iprefix = arg;
       break;
@@ -1521,6 +1535,8 @@ c_common_post_options (pfilename)
       lineno = 0;
     }
 
+  cpp_get_callbacks (parse_in)->file_change = cb_file_change;
+
   /* NOTE: we use in_fname here, not the one supplied.  */
   *pfilename = cpp_read_main_file (parse_in, in_fname, ident_hash);
 
@@ -1550,8 +1566,9 @@ c_common_init ()
 
   if (flag_preprocess_only)
     {
-      if (main_input_filename)
-	preprocess_file (parse_in);
+      cpp_finish_options (parse_in);
+      push_command_line_include ();
+      preprocess_file (parse_in);
       return false;
     }
 
@@ -1559,6 +1576,28 @@ c_common_init ()
   init_pragma ();
 
   return true;
+}
+
+/* A thin wrapper around the real parser that initializes the 
+   integrated preprocessor after debug output has been initialized.
+   Also, make sure the start_source_file debug hook gets called for
+   the primary source file.  */
+void
+c_common_parse_file (set_yydebug)
+     int set_yydebug ATTRIBUTE_UNUSED;
+{
+#if YYDEBUG != 0
+  yydebug = set_yydebug;
+#else
+  warning ("YYDEBUG not defined");
+#endif
+
+  (*debug_hooks->start_source_file) (lineno, input_filename);
+  cpp_finish_options (parse_in);
+  push_command_line_include ();
+  pch_init();
+  yyparse ();
+  free_parser_stacks ();
 }
 
 /* Common finish hook for the C, ObjC and C++ front ends.  */
@@ -1654,12 +1693,13 @@ handle_deferred_opts ()
 	  cpp_add_dependency_target (parse_in, opt->arg, opt->code == OPT_MQ);
 	  break;
 
+	case OPT_include:
+	  break;
+
 	default:
 	  abort ();
 	}
     }
-
-  free (deferred_opts);
 }
 
 /* These settings are appropriate for GCC, but not necessarily so for
@@ -1715,6 +1755,46 @@ add_prefixed_path (suffix, chain)
   path[prefix_len + suffix_len] = '\0';
 
   add_path (path, chain, 0);
+}
+
+/* Give CPP the next file given by -include, if any.  */
+static void
+push_command_line_include ()
+{
+  if (cpp_opts->preprocessed)
+    return;
+    
+  while (include_cursor < deferred_count)
+    {
+      struct deferred_opt *opt = &deferred_opts[include_cursor++];
+      
+      if (opt->code == OPT_include && cpp_push_include (parse_in, opt->arg))
+	return;
+    }
+
+  if (include_cursor == deferred_count)
+    {
+      /* Restore the line map from <command line>.  */
+      cpp_rename_file (parse_in, main_input_filename);
+      /* -Wunused-macros should only warn about macros defined hereafter.  */
+      cpp_opts->warn_unused_macros = warn_unused_macros;
+      include_cursor++;
+    }
+}
+
+/* File change callback.  Has to handle -include files.  */
+static void
+cb_file_change (pfile, new_map)
+     cpp_reader *pfile ATTRIBUTE_UNUSED;
+     const struct line_map *new_map;
+{
+  if (flag_preprocess_only)
+    pp_file_change (new_map);
+  else
+    fe_file_change (new_map);
+
+  if (new_map->reason == LC_LEAVE && MAIN_FILE_P (new_map))
+    push_command_line_include ();
 }
 
 /* Set the C 89 standard (with 1994 amendments if C94, without GNU

@@ -332,11 +332,6 @@ struct cpp_reader
   /* If in_directive, the directive if known.  */
   const struct directive *directive;
 
-  /* The next -include-d file; NULL if they all are done.  If it
-     points to NULL, the last one is in progress, and
-     _cpp_maybe_push_include_file has yet to restore the line map.  */
-  struct pending_option **next_include_file;
-
   /* Search paths for include files.  */
   struct cpp_path *quote_include;	/* "" */
   struct cpp_path *bracket_include;	/* <> */
@@ -367,9 +362,6 @@ struct cpp_reader
   /* Current maximum length of directory names in the search path
      for include files.  (Altered as we get more of them.)  */
   unsigned int max_include_len;
-
-  /* Macros on or after this line are warned about if unused.  */
-  unsigned int first_unused_line;
 
   /* Date and time text.  Calculated together if either is requested.  */
   const uchar *date;

@@ -58,7 +58,6 @@ static void cb_include	PARAMS ((cpp_reader *, unsigned int,
 				 const unsigned char *, const cpp_token *));
 static void cb_ident	  PARAMS ((cpp_reader *, unsigned int,
 				   const cpp_string *));
-static void cb_file_change PARAMS ((cpp_reader *, const struct line_map *));
 static void cb_def_pragma PARAMS ((cpp_reader *, unsigned int));
 
 /* Preprocess and output.  */
@@ -66,8 +65,6 @@ void
 preprocess_file (pfile)
      cpp_reader *pfile;
 {
-  cpp_finish_options (pfile);
-
   /* A successful cpp_read_main_file guarantees that we can call
      cpp_scan_nooutput or cpp_get_token next.  */
   if (flag_no_output)
@@ -110,8 +107,6 @@ init_pp_output (out_stream)
 	  cb->ident      = cb_ident;
 	  cb->def_pragma = cb_def_pragma;
 	}
-      if (!flag_no_line_commands)
-	cb->file_change = cb_file_change;
     }
 
   if (flag_dump_includes)
@@ -368,18 +363,20 @@ cb_include (pfile, line, dir, header)
    described in MAP.  From this point on, the old print.map might be
    pointing to freed memory, and so must not be dereferenced.  */
 
-static void
-cb_file_change (pfile, map)
-     cpp_reader *pfile;
+void
+pp_file_change (map)
      const struct line_map *map;
 {
   const char *flags = "";
+
+  if (flag_no_line_commands || flag_no_output)
+    return;
 
   /* First time?  */
   if (print.map == NULL)
     {
       /* Avoid printing foo.i when the main file is foo.c.  */
-      if (!CPP_OPTION (pfile, preprocessed))
+      if (!cpp_get_options (parse_in)->preprocessed)
 	print_line (map, map->from_line, flags);
     }
   else

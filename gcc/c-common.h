@@ -1,6 +1,6 @@
 /* Definitions for c-common.c.
    Copyright (C) 1987, 1993, 1994, 1995, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1295,9 +1295,11 @@ extern void c_common_write_pch			PARAMS ((void));
 extern void builtin_define_with_value		PARAMS ((const char *,
 							 const char *, int));
 extern void c_stddef_cpp_builtins		PARAMS ((void));
+extern void fe_file_change		PARAMS ((const struct line_map *));
 
 /* In c-ppoutput.c  */
 extern void init_pp_output			PARAMS ((FILE *));
 extern void preprocess_file			PARAMS ((cpp_reader *));
+extern void pp_file_change		PARAMS ((const struct line_map *));
 
 #endif /* ! GCC_C_COMMON_H */

@@ -1,6 +1,6 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -2072,14 +2072,7 @@ _cpp_pop_buffer (pfile)
 
       /* Don't generate a callback for popping the main file.  */
       if (pfile->buffer)
-	{
-	  _cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
-
-	  /* If this is the main file, there may be some -include
-	     files left to push.  */
-	  if (!pfile->buffer->prev)
-	    _cpp_maybe_push_include_file (pfile);
-	}
+	_cpp_do_file_change (pfile, LC_LEAVE, 0, 0, 0);
     }
 }
 

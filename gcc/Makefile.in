@@ -1308,9 +1308,9 @@ c-common.o : c-common.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 c-pretty-print.o : c-pretty-print.c c-pretty-print.h pretty-print.h \
 	$(C_COMMON_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) real.h
 
-c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(C_COMMON_H) \
+c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
         c-pragma.h flags.h toplev.h langhooks.h tree-inline.h diagnostic.h \
-	intl.h
+	intl.h debug.h $(C_COMMON_H)
 
 c-cppbuiltin.o : c-cppbuiltin.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 	$(TREE_H) $(C_COMMON_H) c-pragma.h flags.h toplev.h langhooks.h \

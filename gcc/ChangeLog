@@ -1,3 +1,36 @@
+2003-03-14  Neil Booth  <neil@daikokuya.co.uk>
+
+	* Makefile.in: Update.
+	* c-common.h (fe_file_change, pp_file_change): New.
+	* c-lex.c (init_c_lex): Don't set cb_file_change.
+	(c_common_parse_file): Move to c-opts.c.
+	(cb_file_change): Rename fe_file_change.
+	* c-opts.c: Include debug.h.
+	(warn_unused_macros, include_cursor): New.
+	(push_command_line_include, cb_file_change): New.
+	(COMMAND_LINE_OPTIONS): Handle -include.
+	(c_common_decode_option): Use local warn_unused_macros.
+	Handle OPT_include.
+	(c_common_post_options): Set file change callback.
+	(handle_deferred_opts): Skip -include.  Don't free the array.
+	(c_common_init): Call cpp_finish_options here, and push an
+	initial -include file.
+	* c-ppoutput.c (cb_file_change): Rename pp_file_change.
+	(preprocess_file): Don't call cpp_finish_options.
+	(init_pp_output): Don't set the file change callback.
+	(pp_file_change): Return if no line commands or no output.
+	* cpphash.h (next_include_file, first_unused_line): Remove.
+	* cppinit.c (include_head, include_tail): Remove.
+	(cpp_destroy): Don't free -include chain.
+	(cpp_finish_options): Don't handle -include, or worry about
+	-Wunused-macros.
+	(_cpp_maybe_push_include_file): Remove.
+	(COMMAND_LINE_OPTIONS, cpp_handle_option): Don't handle -include.
+	* cpplib.c (_cpp_pop_buffer): Don't handle -include.
+	* cppmacro.c (_cpp_warn_if_unused_macro, _cpp_create_definition):
+	Used flag is set based upon the state of the warn_unused_macros
+	flag, and so use of first_unused_line is unnecessary.
+
 Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* cselib.c (clear_table): Do not take argument; always clear just
