@@ -33,17 +33,12 @@ import java.io.Serializable;
  * while another thread is simultaneously modifying it, the results are
  * undefined.
  *
- * @specnote There is some confusion as to whether or not this class should
- *           be synchronized. JDK 1.1 javadocs explicitly state that the 
- *           class is NOT synchronized, however the code listed in the JDK 1.3
- *           javadoc for the hashCode() method implies that it is. It is not
- *           stated elsewhere in the 1.2 javadoc that the class is 
- *           synchronized, unlike Hashtable and Vector. From an efficiency 
- *           perspective, it is very undesirable to synchronize this class
- *           because multiple locks and explicit lock ordering are required
- *           to safely synchronize some methods. For this reason we're going
- *           with the unsynchronized implementation unless the specs are 
- *           changed to explicitly say otherwise.
+ * @specnote Historically, there has been some confusion as to whether or not 
+ *           this class should be synchronized. From an efficiency perspective,
+ *           it is very undesirable to synchronize it because multiple locks 
+ *           and explicit lock ordering are required to safely synchronize some
+ *           methods. The JCL 1.2 supplement book specifies that as of JDK 
+ *           1.2, the class is no longer synchronized.
  *
  * @author Jochen Hoenicke
  * @author Tom Tromey <tromey@cygnus.com>
