@@ -1,3 +1,15 @@
+2001-05-23  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.c (read_escape, read_ucs): Delete.
+	(lex_string): Use cpp_parse_escape.
+	* cpplex.c (read_ucs): Rename maybe_read_ucs.  Do nothing
+	if not C++ or not C99.  Warn if traditional.
+	(parse_escape): Rename cpp_parse_escape.  Make the bitmask
+	unsigned.  Warn for out-of-range escape sequences here.
+	Update to use maybe_read_ucs.
+	(cpp_interpret_charconst):  Don't warn here.
+	* cpplib.h (cpp_parse_escape): New exported function.
+
 2001-05-23  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* extend.texi (Attribute Syntax): Clarify application of

@@ -601,6 +601,10 @@ extern int cpp_ideq			PARAMS ((const cpp_token *,
 extern void cpp_output_line		PARAMS ((cpp_reader *, FILE *));
 extern void cpp_output_token		PARAMS ((const cpp_token *, FILE *));
 extern const char *cpp_type2name	PARAMS ((enum cpp_ttype));
+extern unsigned int cpp_parse_escape	PARAMS ((cpp_reader *,
+						 const unsigned char **,
+						 const unsigned char *,
+						 unsigned HOST_WIDE_INT, int));
 
 /* In cpphash.c */
 
