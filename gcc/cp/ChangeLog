@@ -8,6 +8,9 @@
 	PR c++/6331
 	* method.c (do_build_copy_constructor): Use cp_build_qualified_type.
 	* typeck.c (build_modify_expr): Allow arrays to differ in cv-quals.
+	The pedwarn for array assignment is now unconditional.
+	* tree.c (build_cplus_array_type_1): Still process simple array types
+	normally in templates.
 
 	PR c++/6395
 	* decl.c (make_rtl_for_nonlocal_decl): Don't mess with #pragma i/i

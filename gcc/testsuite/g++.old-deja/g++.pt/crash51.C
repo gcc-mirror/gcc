@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options: -fno-const-strings
+// Special g++ Options: -fpermissive -w
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 char foo[26];

@@ -1,7 +1,6 @@
 // 981203 bkoz
 // g++/14664 - test
 // Build don't link: 
-// Special g++ Options: -fconst-strings
 
 char foo[26];
 
