@@ -1,3 +1,10 @@
+2003-12-31  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/include/texinfo.tex: Update to version 2003-12-21.10.
+	* doc/gcc.texi, doc/gccint.texi: Don't set font for
+	@def... commands.
+	* doc/invoke.texi: Don't use empty @opindex.
+
 2003-12-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (c_expand_expr): Remove code to return a value

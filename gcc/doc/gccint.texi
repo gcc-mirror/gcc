@@ -40,12 +40,6 @@
 @c \global\normaloffset =0.75in
 @c @end tex
 
-@c Change the font used for @def... commands, since the default
-@c proportional one used is bad for names starting __.
-@tex
-\global\setfont\defbf\ttbshape{10}{\magstep1}
-@end tex
-
 @copying
 Copyright @copyright{} 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.

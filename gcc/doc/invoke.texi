@@ -6907,41 +6907,41 @@ Makes the M32R specific code in the compiler display some statistics
 that might help in debugging programs.
 
 @item -malign-loops
-@opindex
+@opindex malign-loops
 Align all loops to a 32-byte boundary.
 
 @item -mno-align-loops
-@opindex
+@opindex mno-align-loops
 Do not enforce a 32-byte alignment for loops.  This is the default.
 
 @item -missue-rate=@var{number}
-@opindex
+@opindex missue-rate=@var{number}
 Issue @var{number} instructions per cycle.  @var{number} can only be 1
 or 2.
 
 @item -mbranch-cost=@var{number}
-@opindex
+@opindex mbranch-cost=@var{number}
 @var{number} can only be 1 or 2.  If it is 1 then branches will be
 prefered over conditional code, if it is 2, then the opposite will
 apply.
 
 @item -mflush-trap=@var{number}
-@opindex
+@opindex mflush-trap=@var{number}
 Specifies the trap number to use to flush the cache.  The default is
 12.  Valid numbers are between 0 and 15 inclusive.
 
 @item -mno-flush-trap
-@opindex
+@opindex mno-flush-trap
 Specifies that the cache cannot be flushed by using a trap.
 
 @item -mflush-func=@var{name}
-@opindex
+@opindex mflush-func=@var{name}
 Specifies the name of the operating system function to call to flush
 the cache.  The default is @emph{_flush_cache}, but a function call
 will only be used if a trap is not available.
 
 @item -mno-flush-func
-@opindex
+@opindex mno-flush-func
 Indicates that there is no OS function for flushing the cache.
 
 @end table
