@@ -3750,7 +3750,7 @@ main (argc, argv)
     }
 
   if (n_infiles == 0)
-    fatal ("No input files specified.");
+    fatal ("No input files");
 
   /* Make a place to record the compiler output file names
      that correspond to the input files.  */
