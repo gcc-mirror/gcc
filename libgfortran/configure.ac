@@ -146,7 +146,7 @@ AC_TYPE_OFF_T
 
 # check header files
 AC_STDC_HEADERS
-AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h)
+AC_HAVE_HEADERS(stdlib.h stdio.h string.h stddef.h math.h unistd.h signal.h)
 AC_CHECK_HEADERS(time.h sys/params.h sys/time.h sys/times.h sys/resource.h)
 AC_CHECK_HEADERS(sys/mman.h sys/types.h sys/stat.h ieeefp.h)
 AC_CHECK_HEADER([complex.h],[AC_DEFINE([HAVE_COMPLEX_H], [1], [complex.h exists])])
@@ -160,6 +160,8 @@ AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
 
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times mkstemp strtof snprintf)
+AC_CHECK_FUNCS(chdir strerror getlogin gethostname kill link symlink perror)
+AC_CHECK_FUNCS(sleep time)
 
 # Check libc for getgid, getpid, getuid
 AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])

@@ -1,3 +1,17 @@
+2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* Makefile.am: Added new files.
+	* Makefile.in: Regenerate.
+	* configure.ac: add checks for signal.h headers file, as well as
+	following functions: chdir, strerror, getlogin, gethostname, kill,
+	link, symlink, perror, sleep, time.
+	* configure: Regenerate.
+	* intrinsics/chdir.c, intrinsics/gerror.c, intrinsics/getlog.c,
+	intrinsics/hostnm.c, intrinsics/ierrno.c, intrinsics/kill.c,
+	intrinsics/link.c, intrinsics/perror.c, intrinsics/rename.c,
+	intrinsics/sleep.c, intrinsics/symlnk.c, intrinsics/time.c: Newly
+	implementend g77 intrinsics.
+
 2005-03-16  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
 
 	PR libfortran/20257

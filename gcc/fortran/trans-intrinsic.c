@@ -2977,6 +2977,7 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
       gfc_conv_intrinsic_bound (se, expr, 1);
       break;
 
+    case GFC_ISYM_CHDIR:
     case GFC_ISYM_DOT_PRODUCT:
     case GFC_ISYM_ETIME:
     case GFC_ISYM_FNUM:
@@ -2985,12 +2986,20 @@ gfc_conv_intrinsic_function (gfc_se * se, gfc_expr * expr)
     case GFC_ISYM_GETGID:
     case GFC_ISYM_GETPID:
     case GFC_ISYM_GETUID:
+    case GFC_ISYM_HOSTNM:
+    case GFC_ISYM_KILL:
+    case GFC_ISYM_IERRNO:
     case GFC_ISYM_IRAND:
+    case GFC_ISYM_LINK:
     case GFC_ISYM_MATMUL:
     case GFC_ISYM_RAND:
+    case GFC_ISYM_RENAME:
     case GFC_ISYM_SECOND:
     case GFC_ISYM_STAT:
+    case GFC_ISYM_SYMLNK:
     case GFC_ISYM_SYSTEM:
+    case GFC_ISYM_TIME:
+    case GFC_ISYM_TIME8:
     case GFC_ISYM_UMASK:
     case GFC_ISYM_UNLINK:
       gfc_conv_intrinsic_funcall (se, expr);

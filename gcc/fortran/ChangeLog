@@ -1,3 +1,28 @@
+2005-03-22  Francois-Xavier Coudert  <coudert@clipper.ens.fr>
+
+	* check.c (gfc_check_chdir, gfc_check_chdir_sub, gfc_check_kill,
+	gfc_check_kill_sub, gfc_check_link, gfc_check_link_sub,
+	gfc_check_symlnk, gfc_check_symlnk_sub, gfc_check_rename,
+	gfc_check_rename_sub, gfc_check_sleep_sub, gfc_check_gerror,
+	gfc_check_getlog, gfc_check_hostnm, gfc_check_hostnm_sub,
+	gfc_check_perror): new functions to check newly implemented
+	g77 intrinsics.
+	* gfortran.h: adding symbols for new intrinsics.
+	* intrinsic.c (add_functions): adding new intrinsics.
+	(add_subroutines): adding new intrinsics.
+	* intrinsic.h: prototype for all checking and resolving
+	functions.
+	* iresolve.c (gfc_resolve_chdir, gfc_resolve_chdir_sub,
+	gfc_resolve_hostnm, gfc_resolve_ierrno, gfc_resolve_kill,
+	gfc_resolve_link, gfc_resolve_rename, gfc_resolve_symlnk,
+	gfc_resolve_time, gfc_resolve_time8, gfc_resolve_rename_sub,
+	gfc_resolve_kill_sub, gfc_resolve_link_sub,
+	gfc_resolve_symlnk_sub, gfc_resolve_sleep_sub,
+	gfc_resolve_gerror, gfc_resolve_getlog, gfc_resolve_hostnm_sub,
+	gfc_resolve_perror): new functions to resolve intrinsics.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): add case
+	for new symbols.
+
 2005-03-19  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* dump-parse-tree.c (gfc_show_expr): Dump name of namespace
