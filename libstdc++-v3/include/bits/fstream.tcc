@@ -277,7 +277,6 @@ namespace std
 
 	  if (__testinit || __testget)
 	    {
-	      typedef codecvt<char_type, char, __state_type> __codecvt_type;
 	      const locale __loc = this->getloc();
 	      const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc); 
 
@@ -431,7 +430,6 @@ namespace std
     _M_convert_to_external(_CharT* __ibuf, streamsize __ilen,
 			   streamsize& __elen, streamsize& __plen)
     {
-      typedef codecvt<char_type, char, __state_type> __codecvt_type;
       const locale __loc = this->getloc();
       const __codecvt_type& __cvt = use_facet<__codecvt_type>(__loc);
       

@@ -529,12 +529,6 @@ namespace std
   template<typename _CharT>
     locale::id numpunct<_CharT>::id;
 
-  // NB: Cannot be made generic. 
-  template<typename _CharT>
-    void
-    numpunct<_CharT>::_M_initialize_numpunct(__c_locale)
-    { }
-
   template<> 
     void
     numpunct<char>::_M_initialize_numpunct(__c_locale __cloc);
@@ -1144,18 +1138,6 @@ namespace std
   template<typename _CharT>
     const _CharT* __timepunct<_CharT>::_S_timezones[14];
 
-  // NB: Cannot be made generic. 
-  template<typename _CharT>
-    void
-    __timepunct<_CharT>::_M_initialize_timepunct(__c_locale)
-    { }
-
-  // NB: Cannot be made generic.
-  template<typename _CharT>
-    void
-    __timepunct<_CharT>::_M_put_helper(_CharT*, size_t, const _CharT*, 
-				       const tm*) const
-    { }
 
   template<typename _CharT, typename _InIter>
     class time_get : public locale::facet, public time_base
@@ -1455,12 +1437,6 @@ namespace std
 
   template<typename _CharT, bool _Intl>
     const bool moneypunct<_CharT, _Intl>::intl;
-
-  // NB: Cannot be made generic. 
-  template<typename _CharT, bool _Intl>
-    void
-    moneypunct<_CharT, _Intl>::_M_initialize_moneypunct(__c_locale)
-    { }
 
   template<> 
     void
