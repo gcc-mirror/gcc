@@ -1,3 +1,19 @@
+2002-07-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ra-build.c (check_conflict_numbers): Hide unused function.
+	(livethrough_conflicts_bb): Avoid automatic aggregate
+	initialization.
+	(parts_to_webs_1): Avoid `U' integer constant modifier.
+	(conflicts_between_webs): Wrap a variable in the macro controlling
+	its usage.
+	* ra-debug.c (ra_debug_msg): Use VA_OPEN/VA_CLOSE.
+	(dump_igraph, dump_graph_cost): Avoid string concatenation
+	(dump_static_insn_cost): Avoid automatic aggregate
+	initialization.
+	* ra-rewrite.c (insert_stores): Avoid automatic aggregate
+	initialization.
+	(dump_cost): Avoid string concatenation
+
 2002-07-21  Richard Henderson  <rth@redhat.com>
 
 	* expr.c (expand_expr) [TRY_FINALLY_EXPR]: Don't use

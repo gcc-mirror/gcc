@@ -47,22 +47,12 @@ static const char *const reg_class_names[] = REG_CLASS_NAMES;
 void
 ra_debug_msg VPARAMS ((unsigned int level, const char *format, ...))
 {
-#ifndef ANSI_PROTOTYPES
-  int level;
-  const char *format;
-#endif
-  va_list ap;
+  VA_OPEN (ap, format);
+  VA_FIXEDARG (ap, unsigned int, level);
+  VA_FIXEDARG (ap, const char *, format);
   if ((debug_new_regalloc & level) != 0 && rtl_dump_file != NULL)
-    {
-      VA_START (ap, format);
-
-#ifndef ANSI_PROTOTYPES
-      format = va_arg (ap, const char *);
-#endif
-
-      vfprintf (rtl_dump_file, format, ap);
-      va_end (ap);
-    }
+    vfprintf (rtl_dump_file, format, ap);
+  VA_CLOSE (ap);
 }
 
 
@@ -720,10 +710,10 @@ dump_igraph (df)
 	  ra_debug_msg (DUMP_WEBS, " sub %d", SUBREG_BYTE (web->orig_x));
 	  ra_debug_msg (DUMP_WEBS, " par %d", find_web_for_subweb (web)->id);
 	}
-      ra_debug_msg (DUMP_WEBS, " +%d (span %d, cost "
-		 HOST_WIDE_INT_PRINT_DEC ") (%s)",
-	         web->add_hardregs, web->span_deaths, web->spill_cost,
-	         reg_class_names[web->regclass]);
+      ra_debug_msg (DUMP_WEBS, " +%d (span %d, cost ",
+		    web->add_hardregs, web->span_deaths);
+      ra_debug_msg (DUMP_WEBS, HOST_WIDE_INT_PRINT_DEC, web->spill_cost);
+      ra_debug_msg (DUMP_WEBS, ") (%s)", reg_class_names[web->regclass]);
       if (web->spill_temp == 1)
 	ra_debug_msg (DUMP_WEBS, " (spilltemp)");
       else if (web->spill_temp == 2)
@@ -866,7 +856,6 @@ dump_graph_cost (level, msg)
 {
   unsigned int i;
   unsigned HOST_WIDE_INT cost;
-#define LU HOST_WIDE_INT_PRINT_UNSIGNED
   if (!rtl_dump_file || (debug_new_regalloc & level) == 0)
     return;
 
@@ -877,9 +866,9 @@ dump_graph_cost (level, msg)
       if (alias (web)->type == SPILLED)
 	cost += web->orig_spill_cost;
     }
-  ra_debug_msg (level, " spill cost of graph (%s) = " LU "\n",
-	     msg ? msg : "", cost);
-#undef LU
+  ra_debug_msg (level, " spill cost of graph (%s) = ", msg ? msg : "");
+  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, cost);
+  ra_debug_msg (level, "\n");
 }
 
 /* Dump the color assignment per web, the coalesced and spilled webs.  */
@@ -930,12 +919,13 @@ dump_static_insn_cost (file, message, prefix)
       unsigned HOST_WIDE_INT cost;
       unsigned int count;
     };
-  struct cost load = {0, 0};
-  struct cost store = {0, 0};
-  struct cost regcopy = {0, 0};
-  struct cost selfcopy = {0, 0};
-  struct cost overall = {0, 0};
   basic_block bb;
+  struct cost load, store, regcopy, selfcopy, overall;
+  memset (&load, 0, sizeof(load));
+  memset (&store, 0, sizeof(store));
+  memset (&regcopy, 0, sizeof(regcopy));
+  memset (&selfcopy, 0, sizeof(selfcopy));
+  memset (&overall, 0, sizeof(overall));
 
   if (!file)
     return;

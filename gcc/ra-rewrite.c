@@ -666,9 +666,11 @@ insert_stores (new_deaths)
       if (uid < insn_df_max_uid)
 	{
 	  unsigned int n;
-	  struct ra_insn_info info = insn_df[uid];
 	  rtx following = NEXT_INSN (insn);
 	  basic_block bb = BLOCK_FOR_INSN (insn);
+	  struct ra_insn_info info;
+
+	  info = insn_df[uid];
 	  for (n = 0; n < info.num_defs; n++)
 	    {
 	      struct web *web = def2web[DF_REF_ID (info.defs[n])];
@@ -1949,20 +1951,18 @@ void
 dump_cost (level)
      unsigned int level;
 {
-#define LU HOST_WIDE_INT_PRINT_UNSIGNED
   ra_debug_msg (level, "Instructions for spilling\n added:\n");
-  ra_debug_msg (level, "  loads =%d cost=" LU "\n", emitted_spill_loads,
-	     spill_load_cost);
-  ra_debug_msg (level, "  stores=%d cost=" LU "\n", emitted_spill_stores,
-	     spill_store_cost);
-  ra_debug_msg (level, "  remat =%d cost=" LU "\n", emitted_remat,
-	     spill_remat_cost);
-  ra_debug_msg (level, " removed:\n");
-  ra_debug_msg (level, "  moves =%d cost=" LU "\n", deleted_move_insns,
-	     deleted_move_cost);
-  ra_debug_msg (level, "  others=%d cost=" LU "\n", deleted_def_insns,
-	     deleted_def_cost);
-#undef LU
+  ra_debug_msg (level, "  loads =%d cost=", emitted_spill_loads);
+  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, spill_load_cost);
+  ra_debug_msg (level, "\n  stores=%d cost=", emitted_spill_stores);
+  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, spill_store_cost);
+  ra_debug_msg (level, "\n  remat =%d cost=", emitted_remat);
+  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, spill_remat_cost);
+  ra_debug_msg (level, "\n removed:\n  moves =%d cost=", deleted_move_insns);
+  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, deleted_move_cost);
+  ra_debug_msg (level, "\n  others=%d cost=", deleted_def_insns);
+  ra_debug_msg (level, HOST_WIDE_INT_PRINT_UNSIGNED, deleted_def_cost);
+  ra_debug_msg (level, "\n");
 }
 
 /* Initialization of the rewrite phase.  */
