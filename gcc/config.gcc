@@ -2864,7 +2864,7 @@ powerpc*-*-* | rs6000-*-*)
 			fi
 			;;
 	esac
-	out_file = rs6000/rs6000.c
+	out_file=rs6000/rs6000.c
 	c_target_objs="${c_target_objs} rs6000-c.o"
 	cxx_target_objs="${cxx_target_objs} rs6000-c.o"
 	tmake_file="rs6000/t-rs6000 ${tmake_file}"
