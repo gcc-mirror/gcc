@@ -1,3 +1,8 @@
+2001-09-30  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/lang/natClass.cc (_Jv_IsAssignableFrom): Handle the case of
+	an uninitialized target class.
+
 2001-09-28  Per Bothner  <per@bothner.com>
 
 	* gnu/gcj/runtime/SharedLibLoader.java:  New class.

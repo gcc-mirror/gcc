@@ -956,8 +956,9 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
         return false;
       return true;
     }
-  else if (source->ancestors != NULL 
-           && source->depth >= target->depth
+  else if (source->ancestors != NULL
+	   && target->ancestors != NULL
+	   && source->depth >= target->depth
 	   && source->ancestors[source->depth - target->depth] == target)
     return true;
       
