@@ -1,3 +1,8 @@
+2002-03-09  Adam Megacz  <adam@xwt.org>
+
+        * java/io/natFileDescriptorWin32.cc (read): Return -1 if zero
+	bytes read and no failure code returned.
+
 2002-03-09  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	Hashtable synchronization for PowerPC.

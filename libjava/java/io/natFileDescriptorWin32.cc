@@ -252,6 +252,7 @@ java::io::FileDescriptor::read(jbyteArray buffer, jint offset, jint count)
   if (! ReadFile((HANDLE)fd, bytes, count, &read, NULL))
     throw new IOException (JvNewStringLatin1 (winerr ()));
 
+  if (read == 0) return -1;
   return (jint)read;
 }
 
