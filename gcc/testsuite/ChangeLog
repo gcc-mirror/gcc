@@ -1,5 +1,8 @@
 2004-01-16  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13574
+	* g++.dg/ext/array1.C: New test.
+
 	PR c++/13178
 	* g++.dg/conversion/op1.C: New test.
 
