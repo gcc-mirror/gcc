@@ -461,7 +461,8 @@ comptypes (type1, type2)
       }
 
     case RECORD_TYPE:
-      return maybe_objc_comptypes (t1, t2, 0);
+      if (maybe_objc_comptypes (t1, t2, 0) == 1)
+	return 1;
     }
   return 0;
 }
@@ -473,29 +474,14 @@ static int
 comp_target_types (ttl, ttr)
      tree ttl, ttr;
 {
-  int val = 0;
+  int val;
 
-  if (doing_objc_thang)
-    {
-      /* Give maybe_objc_comptypes a crack at letting these types through.  */
-      val = maybe_objc_comptypes (ttl, ttr, 1);
+  /* Give maybe_objc_comptypes a crack at letting these types through.  */
+  if (val = maybe_objc_comptypes (ttl, ttr, 1) >= 0)
+    return val;
 
-      if (val != 1 && !pedantic)
-	{
-	  /* Ignore pointer qualifiers recursively.  This way char **
-	     and const char ** are compatible.  */
-	  if (TREE_CODE (ttl) == POINTER_TYPE
-	      && TREE_CODE (ttr) == POINTER_TYPE)
-	    return comp_target_types (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
-				      TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
-	  else
-	    return comptypes (ttl, ttr);
-	}
-    }
-
-  if (val != 1)
-    val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
-		     TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
+  val = comptypes (TYPE_MAIN_VARIANT (TREE_TYPE (ttl)),
+		   TYPE_MAIN_VARIANT (TREE_TYPE (ttr)));
 
   if (val == 2 && pedantic)
     pedwarn ("types are not quite compatible");
