@@ -1,3 +1,7 @@
+Wed Nov 17 16:08:43 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* MAINTAINERS: Add new Java maintainer.
+
 1999-10-25  Andreas Schwab  <schwab@suse.de>
 
 	* configure: Fix quoting inside arguments of eval.

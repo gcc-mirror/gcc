@@ -46,6 +46,7 @@ c++                     Mark Mitchell		mark@codesourcery.com
 chill			Dave Brolley		brolley@cygnus.com
 chill			Per Bothner		per@bothner.com
 java			Per Bothner		per@bothner.com
+java			Alexandre Petit-Bianco	apbianco@cygnus.com
 objective-c		Ovidiu Predescu		ovidiu@cup.hp.com
 cpplib			Dave Brolley		brolley@cygnus.com
 cpplib			Per Bothner		per@bothner.com
