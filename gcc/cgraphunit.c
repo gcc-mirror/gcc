@@ -105,7 +105,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	mark_referenced call in assemble_variable functions referenced by
 	static variables are noticed too.
 
-	The intra-procedural information is produced and it's existence
+	The intra-procedural information is produced and its existence
 	indicated by global_info_ready.  Once this flag is set it is impossible
 	to change function from !reachable to reachable and thus
 	assemble_variable no longer call mark_referenced.
@@ -483,8 +483,8 @@ cgraph_create_edges (struct cgraph_node *node, tree body)
 
 static bool error_found;
 
-/* Callbrack of verify_cgraph_node.  Check that all call_exprs have cgraph
-   nodes.  */
+/* Callback of verify_cgraph_node.  Check that all call_exprs have
+   cgraph nodes.  */
 
 static tree
 verify_cgraph_node_1 (tree *tp, int *walk_subtrees, void *data)

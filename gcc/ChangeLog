@@ -1,5 +1,9 @@
 2004-11-18  Ben Elliston  <bje@au.ibm.com>
 
+	* cgraphunit.c: Replace "it's" with "its" and fix a typo.
+
+2004-11-18  Ben Elliston  <bje@au.ibm.com>
+
 	* cgraph.h: Replace "it's" with "its" throughout.
 
 2004-11-18  Ben Elliston  <bje@au.ibm.com>
