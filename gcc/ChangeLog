@@ -1,3 +1,7 @@
+Tue Feb 13 20:59:22 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (fixsfsi2, fixdfdi2): Fix previous patch.
+
 Tue Feb 13 16:32:20 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (fixsfsi2, fixdfdi2): Force operand to register
