@@ -96,6 +96,15 @@ package body MLib.Tgt is
       return "ranlib";
    end Archive_Indexer;
 
+   -----------------------------
+   -- Archive_Indexer_Options --
+   -----------------------------
+
+   function Archive_Indexer_Options return String_List_Access is
+   begin
+      return new String_List (1 .. 0);
+   end Archive_Indexer_Options;
+
    ---------------------------
    -- Build_Dynamic_Library --
    ---------------------------
