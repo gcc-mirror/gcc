@@ -1,3 +1,14 @@
+2003-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (x86_output_mi_thunk): Don't pass MEM to %P0,
+	just SYMBOL_REF.
+	* config/s390/s390.c (s390_output_mi_thunk): Avoid .plt in -m31
+	mode, as it requires pic register loaded.
+
+	* varasm.c (resolve_unique_section): Remove prototype.  No longer
+	static.
+	* tree.h (resolve_unique_section): New prototype.
+
 2003-06-23  Andreas Schwab  <schwab@suse.de>
 
 	PR debug/9905

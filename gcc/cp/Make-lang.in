@@ -103,7 +103,7 @@ $(srcdir)/cp/cfns.h: $(srcdir)/cp/cfns.gperf
 		$(srcdir)/cp/cfns.gperf > $(srcdir)/cp/cfns.h
 
 gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true
-gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h : s-gtype; @true
+gt-cp-pt.h gt-cp-repo.h gt-cp-parser.h gt-cp-method.h : s-gtype; @true
 gt-cp-tree.h gt-cp-mangle.h gt-cp-name-lookup.h: s-gtype; @true
 
 #
@@ -253,7 +253,7 @@ cp/friend.o: cp/friend.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) toplev.h $(EXPR_
 cp/init.o: cp/init.c $(CXX_TREE_H) $(TM_H) flags.h $(RTL_H) $(EXPR_H) toplev.h \
   except.h
 cp/method.o: cp/method.c $(CXX_TREE_H) $(TM_H) toplev.h $(RTL_H) $(EXPR_H) \
-  $(TM_P_H) $(TARGET_H)
+  $(TM_P_H) $(TARGET_H) gt-cp-method.h
 cp/cvt.o: cp/cvt.c $(CXX_TREE_H) $(TM_H) cp/decl.h flags.h toplev.h convert.h
 cp/search.o: cp/search.c $(CXX_TREE_H) $(TM_H) stack.h flags.h toplev.h $(RTL_H)
 cp/tree.o: cp/tree.c $(CXX_TREE_H) $(TM_H) flags.h toplev.h $(RTL_H) \

@@ -1,3 +1,14 @@
+2003-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* method.c (thunk_labelno): New variable.
+	(make_alias_for_thunk): New function.
+	(use_thunk): Use it if defined ASM_OUTPUT_DEF.  Put the thunk
+	into the same section as the function it is calling.
+	Include gt-cp-method.h.
+	* Make-lang.in (gt-cp-method.h): Depend on s-gtype.
+	(cp/method.o): Depend on gt-cp-method.h.
+	* config-lang.in (gtfiles): Add $(srcdir)/cp/method.c.
+
 Mon Jun 23 19:41:27 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* decl.c (register_dtor_fn): Mark cleanup as used.
