@@ -112,7 +112,8 @@ do { long value[3];							\
   } while (0)
 
 #undef DBX_REGISTER_NUMBER
-#define DBX_REGISTER_NUMBER(n)  svr4_dbx_register_map[n]
+#define DBX_REGISTER_NUMBER(n) \
+  (TARGET_64BIT ? dbx64_register_map[n] : svr4_dbx_register_map[n])
 
 /* The routine used to output sequences of byte values.  We use a special
    version of this for most svr4 targets because doing so makes the

@@ -353,6 +353,18 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
 };
 
+/* The "default" register map used in 64bit mode.  */
+int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
+{
+  0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
+  33, 34, 35, 36, 37, 38, 39, 40	/* fp regs */
+  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, dir, frame */
+  17, 18, 19, 20, 21, 22, 23, 24,	/* SSE */
+  41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
+  8,9,10,11,12,13,14,15,		/* extended integer registers */
+  25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
+};
+
 /* Define the register numbers to be used in Dwarf debugging information.
    The SVR4 reference port C compiler uses the following register numbers
    in its Dwarf output code:

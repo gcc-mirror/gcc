@@ -1,3 +1,15 @@
+Sat Mar 10 14:34:59 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (DBX_REGISTER_NUMBER): Return proper values for 64bits.
+	(dbx64_register_map): Declare.
+	(RETURN_ADDR_RTX): Fix for 64bit.
+	(DWARF_FRAME_RETURN_COLUMN): Set to 16 for 64bit.
+	(INCOMING_FRAME_SP_OFFSET): Set to 8.
+	* i386.c (dbx64_register_map): New global array.
+	* beos-elf.h, freebsd.h, i386-interix.h, i386elf.h,
+	linux.h (DBX_REGISTER_REGNUMBER): Use dbx64_register_map
+	for 64bits.
+
 2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cppfiles.c (search_from): Use lbasename.
