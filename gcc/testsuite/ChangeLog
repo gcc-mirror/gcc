@@ -1,3 +1,7 @@
+2003-03-10  Segher Boessenkool  <segher@koffie.nl>
+
+        * gcc.dg/altivec-9.c: New file.
+
 2003-03-10  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* gcc.dg/ppc-sdata-1.c: New test.
