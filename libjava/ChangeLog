@@ -1,3 +1,10 @@
+2000-06-24  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natDouble.cc (parseDouble): Renamed from
+	doubleValueOf.
+	* java/lang/Double.java (parseDouble): Renamed from
+	doubleValueOf.  Now public.
+
 2000-06-23  Andrew Haley  <aph@cygnus.com>
 
 	* java/lang/ieeefp.h: Handle ia64, fr30, mcore.
