@@ -147,6 +147,7 @@ z_cos.lo: z_cos.c
 z_div.lo: z_div.c
 z_exp.lo: z_exp.c
 z_log.lo: z_log.c
+	@LIBTOOL@ --mode=compile $(CC) -c -DSkip_f2c_Undefs $(ALL_CFLAGS) -ffloat-store $<
 z_sin.lo: z_sin.c
 z_sqrt.lo: z_sqrt.c
 r_abs.lo: r_abs.c
