@@ -1,3 +1,7 @@
+Wed Dec  2 00:47:31 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.md (trap_if): Use "$0" for the value zero.
+
 Tue Dec  1 20:49:49 1998  Ulrich Drepper  <drepper@cygnus.com>
 			  Stephen L Moshier  <moshier@world.std.com>
 			  Richard Henderson  <rth@cygnus.com>
