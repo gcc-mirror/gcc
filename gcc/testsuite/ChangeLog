@@ -1,3 +1,8 @@
+2003-07-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/init/init-ref4.C: xfail on targets without 
+	weak symbols.
+
 2003-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/11087
