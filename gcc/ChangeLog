@@ -1,3 +1,7 @@
+2001-05-23  Mark Mitchell  <mark@codesourcery.com>
+
+	* jump.c (mark_jump_label): Fix thinko in 2001-05-19 change.
+
 2001-05-22  Richard Henderson  <rth@redhat.com>
 
 	* config/mips/iris6.h (EH_FRAME_SECTION_ASM_OP): Give the
