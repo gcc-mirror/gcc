@@ -3078,9 +3078,6 @@ Dump after global register allocation, to @file{@var{file}.24.greg}.
 @item h
 @opindex dh
 Dump after finalization of EH handling code, to @file{@var{file}.02.eh}.
-@item k
-@opindex dk
-Dump after reg-to-stack conversion, to @file{@var{file}.31.stack}.
 @item o
 @opindex do
 Dump after post-reload optimizations, to @file{@var{file}.25.postreload}.

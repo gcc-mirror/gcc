@@ -1,5 +1,9 @@
 2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* doc/invoke.texi: Remove a duplicate -dk.
+
+2003-06-22  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* doc/rtl.texi: Fix the @findex for pre_modify.
 
 Sat Jun 21 13:37:52 CEST 2003  Jan Hubicka  <jh@suse.cz>
