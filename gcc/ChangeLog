@@ -1,3 +1,7 @@
+2002-11-26  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/t-libc-ok: Fix typo.
+
 2002-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in: Move AC_CANONICAL_SYSTEM and AC_ARG_PROGRAM back
