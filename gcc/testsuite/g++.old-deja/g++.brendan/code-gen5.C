@@ -1,4 +1,4 @@
-// Special g++ Options: -fthis-is-variable
+// Special g++ Options: -Wno-deprecated -fthis-is-variable
 // GROUPS passed code-generation
 // Check that the "this" pointer is zero when a method is
 // called for an object pointed to by a null pointer.
