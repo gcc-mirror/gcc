@@ -1,3 +1,8 @@
+Thu Jan 28 09:17:51 1999  Hans-Peter Nilsson  <hp@axis.se>
+
+	* java/Makefile.in: Add missing dependencies for jcf-dump.o,
+	gjavah.o, check-init.o, jv-scan.o
+
 Mon Feb  1 09:50:48 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (gjavah.o): Depend on $(CONFIG_H) and system.h.
