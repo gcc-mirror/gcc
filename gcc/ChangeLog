@@ -1,3 +1,8 @@
+Mon Nov  1 13:22:30 1999  Richard Henderson  <rth@cygnus.com>
+
+	* toplev.c (rest_of_compilation): Don't optimize the CFG
+	when rebuilding, just before dbr.
+
 Mon Nov  1 14:35:50 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* output.h (assemble_end_function, assemble_destructor,
@@ -20,12 +25,12 @@ Mon Nov  1 08:03:15 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 Sun Oct 31 15:48:49 1999  Philippe De Muyter  <phdm@macqel.be>
 
-        * fixinc/fixtests.c, fixinc/fixfixes.c : Keep `#' in first column for
-        old cpp's.
-        * fixinc/fixincl.c (fcntl.h) : Do not include this file twice.
-        (sys/mman.h): Include this file only if #HAVE_MMAP.
-        (run_compiles): Initialize `esac_fmt' with one old KR string, not
-        with automatically concatenated ANSI strings.
+	* fixinc/fixtests.c, fixinc/fixfixes.c : Keep `#' in first column for
+	old cpp's.
+	* fixinc/fixincl.c (fcntl.h) : Do not include this file twice.
+	(sys/mman.h): Include this file only if #HAVE_MMAP.
+	(run_compiles): Initialize `esac_fmt' with one old KR string, not
+	with automatically concatenated ANSI strings.
 
 Sun Oct 31 23:57:07 1999  Mark Mitchell  <mark@codesourcery.com>
 
@@ -54,8 +59,8 @@ Sun Oct 31 23:03:25 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (calculate_global_regs_live): Fix thinko.
 
-        * integrate.c (expand_inline_function): Fix bugs in previous
-        change from Oct 28, 1999.
+	* integrate.c (expand_inline_function): Fix bugs in previous
+	change from Oct 28, 1999.
 
 Sun Oct 31 20:27:45 1999  Mark Mitchell  <mark@codesourcery.com>
 
@@ -99,9 +104,9 @@ Sun Oct 31 20:42:17 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 Sun Oct 31 13:32:15 CET 1999  Marc Lehmann <pcg@goof.com>
 
 	* toplev.c (rest_of_compilation): Seperate the setjmp/vfork clobber
-        warning from -Wuninitialized and put it under -W.
-        * function.c (uninitialized_vars_warning): Warn only when the
-        corresponding flag is set.
+	warning from -Wuninitialized and put it under -W.
+	* function.c (uninitialized_vars_warning): Warn only when the
+	corresponding flag is set.
 
 Sun Oct 31 01:53:30 1999  Jeffrey A Law  (law@cygnus.com)
 
@@ -262,8 +267,8 @@ Fri Oct 29 09:05:34 1999  Catherine Moore  <clm@cygnus.com>
 
 Fri Oct 29 16:30:04 1999  Andrew Haley  <aph@cygnus.com>
 
-        * config/mips/elf.h: remove NAME__MAIN and SYMBOL__MAIN.
-        * config/mips/elf64.h: ditto.
+	* config/mips/elf.h: remove NAME__MAIN and SYMBOL__MAIN.
+	* config/mips/elf64.h: ditto.
 
 Fri Oct 29 08:03:57 1999  Catherine Moore  <clm@cygnus.com>
 
