@@ -1448,7 +1448,7 @@ check_case_value (tree value)
    bound of the case label, and CASE_HIGH_P is the upper bound or NULL
    if the case is not a case range.
    The caller has to make sure that we are not called with NULL for
-   CASE_LOW_P (ie. the defualt case).
+   CASE_LOW_P (ie. the default case).
    Returns true if the case label is in range of ORIG_TYPE (satured or
    untouched) or false if the label is out of range.  */
 

@@ -34,9 +34,9 @@ Boston, MA 02111-1307, USA.  */
 #include "timevar.h"
 
 
-/* This file contains the code required to mnage the operands cache of the 
+/* This file contains the code required to manage the operands cache of the 
    SSA optimizer.  For every stmt, we maintain an operand cache in the stmt 
-   annotation.  This cache contains operands that will be of interets to 
+   annotation.  This cache contains operands that will be of interest to 
    optimizers and other passes wishing to manipulate the IL. 
 
    The operand type are broken up into REAL and VIRTUAL operands.  The real 
@@ -795,7 +795,7 @@ append_v_must_def (tree var)
    will be destroyed.  It is appropriate to call free_stmt_operands() on 
    the value returned in old_ops.
 
-   The rationale for this: Certain optimizations wish to exmaine the difference
+   The rationale for this: Certain optimizations wish to examine the difference
    between new_ops and old_ops after processing.  If a set of operands don't
    change, new_ops will simply assume the pointer in old_ops, and the old_ops
    pointer will be set to NULL, indicating no memory needs to be cleared.  
@@ -1187,7 +1187,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
 }
 
 
-/* Scan operands in the ASM_EXPR stmt refered to in INFO.  */
+/* Scan operands in the ASM_EXPR stmt referred to in INFO.  */
 
 static void
 get_asm_expr_operands (tree stmt)

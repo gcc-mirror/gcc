@@ -52,7 +52,7 @@ typedef struct _stmt_vec_info {
   /* The stmt to which this info struct refers to.  */
   tree stmt;
 
-  /* The loop with resprct to which STMT is vectorized.  */
+  /* The loop with respect to which STMT is vectorized.  */
   struct loop *loop;
 
   /* Not all stmts in the loop need to be vectorized. e.g, the incrementation

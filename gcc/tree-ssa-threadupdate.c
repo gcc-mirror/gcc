@@ -204,7 +204,7 @@ create_block_for_threading (basic_block bb, struct redirection_data *rd)
    and may expose new optimization opportunities.  Note that we have
    to update dominator tree and SSA graph after such changes.
 
-   The key to keeping the SSA graph update managable is to duplicate
+   The key to keeping the SSA graph update manageable is to duplicate
    the side effects occurring in BB so that those side effects still
    occur on the paths which bypass BB after redirecting edges.
 
