@@ -948,12 +948,7 @@ ssa_ccp_df_delete_unreachable_insns ()
 
 	  /* Include any jump table following the basic block.  */
 	  end = b->end;
-	  if (GET_CODE (end) == JUMP_INSN
-	      && (tmp = JUMP_LABEL (end)) != NULL_RTX
-	      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-	      && GET_CODE (tmp) == JUMP_INSN
-	      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-	          || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+	  if (tablejump_p (end, NULL, &tmp))
 	    end = tmp;
 
 	  while (1)

@@ -656,12 +656,7 @@ label_is_jump_target_p (label, jump_insn)
   if (label == tmp)
     return true;
 
-  if (tmp != NULL_RTX
-      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-      && GET_CODE (tmp) == JUMP_INSN
-      && (tmp = PATTERN (tmp),
-	  GET_CODE (tmp) == ADDR_VEC
-	  || GET_CODE (tmp) == ADDR_DIFF_VEC))
+  if (tablejump_p (jump_insn, NULL, &tmp))
     {
       rtvec vec = XVEC (tmp, GET_CODE (tmp) == ADDR_DIFF_VEC);
       int i, veclen = GET_NUM_ELEM (vec);

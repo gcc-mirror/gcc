@@ -383,12 +383,7 @@ flow_delete_block_noexpunge (b)
 
   /* Include any jump table following the basic block.  */
   end = b->end;
-  if (GET_CODE (end) == JUMP_INSN
-      && (tmp = JUMP_LABEL (end)) != NULL_RTX
-      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-      && GET_CODE (tmp) == JUMP_INSN
-      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-	  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+  if (tablejump_p (end, NULL, &tmp))
     end = tmp;
 
   /* Include any barrier that may follow the basic block.  */
@@ -674,7 +669,7 @@ try_redirect_by_replacing_jump (e, target)
   basic_block src = e->src;
   rtx insn = src->end, kill_from;
   edge tmp;
-  rtx set, table;
+  rtx set;
   int fallthru = 0;
 
   /* Verify that all targets will be TARGET.  */
@@ -684,11 +679,7 @@ try_redirect_by_replacing_jump (e, target)
 
   if (tmp || !onlyjump_p (insn))
     return false;
-  if (flow2_completed && JUMP_LABEL (insn)
-      && (table = NEXT_INSN (JUMP_LABEL (insn))) != NULL_RTX
-      && GET_CODE (table) == JUMP_INSN
-      && (GET_CODE (PATTERN (table)) == ADDR_VEC
-	  || GET_CODE (PATTERN (table)) == ADDR_DIFF_VEC))
+  if ((!optimize || flow2_completed) && tablejump_p (insn, NULL, NULL))
     return false;
 
   /* Avoid removing branch with side effects.  */
@@ -739,7 +730,7 @@ try_redirect_by_replacing_jump (e, target)
   else
     {
       rtx target_label = block_label (target);
-      rtx barrier, tmp;
+      rtx barrier, label, table;
 
       emit_jump_insn_after (gen_jump (target_label), insn);
       JUMP_LABEL (src->end) = target_label;
@@ -754,14 +745,8 @@ try_redirect_by_replacing_jump (e, target)
       /* Recognize a tablejump that we are converting to a
 	 simple jump and remove its associated CODE_LABEL
 	 and ADDR_VEC or ADDR_DIFF_VEC.  */
-      if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
-	  && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-	  && GET_CODE (tmp) == JUMP_INSN
-	  && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-	      || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
-	{
-	  delete_insn_chain (JUMP_LABEL (insn), tmp);
-	}
+      if (tablejump_p (insn, &label, &table))
+	delete_insn_chain (label, table);
 
       barrier = next_nonnote_insn (src->end);
       if (!barrier || GET_CODE (barrier) != BARRIER)
@@ -854,11 +839,7 @@ redirect_edge_and_branch (e, target)
     return false;
 
   /* Recognize a tablejump and adjust all matching cases.  */
-  if ((tmp = JUMP_LABEL (insn)) != NULL_RTX
-      && (tmp = NEXT_INSN (tmp)) != NULL_RTX
-      && GET_CODE (tmp) == JUMP_INSN
-      && (GET_CODE (PATTERN (tmp)) == ADDR_VEC
-	  || GET_CODE (PATTERN (tmp)) == ADDR_DIFF_VEC))
+  if (tablejump_p (insn, NULL, &tmp))
     {
       rtvec vec;
       int j;
