@@ -2252,15 +2252,20 @@ do { tree _node = (NODE); \
 	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (node, 0))) == ARRAY_TYPE)
 	{
 	  UPDATE_TITCSE (TREE_OPERAND (node, 1));
-	  UPDATE_TITCSE (array_ref_low_bound (node));
-	  UPDATE_TITCSE (array_ref_element_size (node));
+	  if (TREE_OPERAND (node, 2))
+	    UPDATE_TITCSE (TREE_OPERAND (node, 2));
+	  if (TREE_OPERAND (node, 3))
+	    UPDATE_TITCSE (TREE_OPERAND (node, 3));
 	}
       /* Likewise, just because this is a COMPONENT_REF doesn't mean we have a
 	 FIELD_DECL, apparently.  The G++ front end can put something else
 	 there, at least temporarily.  */
       else if (TREE_CODE (node) == COMPONENT_REF
 	       && TREE_CODE (TREE_OPERAND (node, 1)) == FIELD_DECL)
-	UPDATE_TITCSE (component_ref_field_offset (node));
+	{
+	  if (TREE_OPERAND (node, 2))
+	    UPDATE_TITCSE (TREE_OPERAND (node, 2));
+	}
       else if (TREE_CODE (node) == BIT_FIELD_REF)
 	UPDATE_TITCSE (TREE_OPERAND (node, 2));
     }

@@ -1,3 +1,12 @@
+2004-08-30  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (array_ref_element_size): Force aligned_size back to
+	sizetype.
+	(component_ref_field_offset): Similarly for aligned_offset.
+	* tree.c (recompute_tree_invarant_for_addr_expr): Mark raw
+	low-bound, element-size, field-offset fields rather than
+	computed values.
+
 2004-08-30  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-parse.in (parmlist_or_identifiers_1): Remove unreachable and

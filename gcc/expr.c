@@ -5481,8 +5481,14 @@ array_ref_element_size (tree exp)
   /* If a size was specified in the ARRAY_REF, it's the size measured
      in alignment units of the element type.  So multiply by that value.  */
   if (aligned_size)
-    return size_binop (MULT_EXPR, aligned_size,
-		       size_int (TYPE_ALIGN (elmt_type) / BITS_PER_UNIT));
+    {
+      /* ??? tree_ssa_useless_type_conversion will eliminate casts to
+	 sizetype from another type of the same width and signedness.  */
+      if (TREE_TYPE (aligned_size) != sizetype)
+	aligned_size = fold_convert (sizetype, aligned_size);
+      return size_binop (MULT_EXPR, aligned_size,
+		         size_int (TYPE_ALIGN (elmt_type) / BITS_PER_UNIT));
+    }
 
   /* Otherwise, take the size from that of the element type.  Substitute
      any PLACEHOLDER_EXPR that we have.  */
@@ -5541,8 +5547,14 @@ component_ref_field_offset (tree exp)
      in units of DECL_OFFSET_ALIGN / BITS_PER_UNIT.  So multiply by that
      value.  */
   if (aligned_offset)
-    return size_binop (MULT_EXPR, aligned_offset,
-		       size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT));
+    {
+      /* ??? tree_ssa_useless_type_conversion will eliminate casts to
+	 sizetype from another type of the same width and signedness.  */
+      if (TREE_TYPE (aligned_offset) != sizetype)
+	aligned_offset = fold_convert (sizetype, aligned_offset);
+      return size_binop (MULT_EXPR, aligned_offset,
+		         size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT));
+    }
 
   /* Otherwise, take the offset from that of the field.  Substitute
      any PLACEHOLDER_EXPR that we have.  */
