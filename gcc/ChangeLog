@@ -1,3 +1,9 @@
+2003-12-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR optimization/10592
+	* caller-save.c (mark_referenced_regs): Don't short-circuit a reg
+	or subreg in SET_DEST if it isn't a hard register.
+
 2003-12-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* collect2.c (main): Add -fno-profile-arcs -fno-test-coverage
