@@ -117,6 +117,10 @@
 /* Define if global `timezone' exists.  */
 #undef HAVE_TIMEZONE
 
+/* Define if if the synchronization code should try to avoid pthread_self 
+   calls by caching thread IDs in a hashtable.  */
+#undef SLOW_PTHREAD_SELF
+
 /* Define if you have the appropriate function.  */
 #undef HAVE_ACCESS
 #undef HAVE_STAT
@@ -409,6 +413,9 @@
 
 /* The number of bytes in type void * */
 #undef SIZEOF_VOID_P
+
+/* Short GCJ version ID */
+#undef GCJVERSION
 
 /* Define if <inttypes.h> is available */
 #undef HAVE_INTTYPES_H
