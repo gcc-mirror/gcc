@@ -7663,7 +7663,6 @@ reload_cse_mem_conflict_p (mem_base, mem_offset, mem_mode, val)
     {
       /* Get rid of a few simple cases quickly. */
     case REG:
-    case SUBREG:
     case PC:
     case CC0:
     case SCRATCH:
