@@ -1043,7 +1043,12 @@ expand_member_init (exp, name, init)
 
   type = TYPE_MAIN_VARIANT (TREE_TYPE (exp));
 
-  if (name && TREE_CODE (name) == TYPE_DECL)
+  if (name && TYPE_P (name))
+    {
+      basetype = name;
+      name = TYPE_IDENTIFIER (name);
+    }
+  else if (name && TREE_CODE (name) == TYPE_DECL)
     {
       basetype = TYPE_MAIN_VARIANT (TREE_TYPE (name));
       name = DECL_NAME (name);

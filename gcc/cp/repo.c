@@ -97,13 +97,36 @@ repo_get_id (t)
 {
   if (TYPE_P (t))
     {
+      tree vtable;
+
       /* If we're not done setting up the class, we may not have set up
 	 the vtable, so going ahead would give the wrong answer.
          See g++.pt/instantiate4.C.  */
       if (!COMPLETE_TYPE_P (t) || TYPE_BEING_DEFINED (t))
 	my_friendly_abort (981113);
 
-      t = get_vtbl_decl_for_binfo (TYPE_BINFO (t));
+      vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (t));
+
+      /* If we don't have a primary vtable, try looking for a secondary
+	 vtable.  */
+      if (vtable == NULL_TREE && !flag_new_abi
+	  && TYPE_USES_VIRTUAL_BASECLASSES (t))
+	{
+	  tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
+	  int i, n_baselinks = binfos ? TREE_VEC_LENGTH (binfos) : 0;
+	  for (i = 0; i < n_baselinks; ++i)
+	    {
+	      tree base_binfo = TREE_VEC_ELT (binfos, i);
+	      if (TREE_VIA_VIRTUAL (base_binfo))
+		{
+		  vtable = get_vtbl_decl_for_binfo (base_binfo);
+		  if (vtable)
+		    break;
+		}
+	    }
+	}
+
+      t = vtable;
       if (t == NULL_TREE)
 	return t;
     }

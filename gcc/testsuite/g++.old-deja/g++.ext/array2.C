@@ -1,5 +1,5 @@
 // This testcase used to cause a crash on the Alpha.
-// Special g++ Options: 
+// Special g++ Options: -w
 // Build don't link:
 
 struct A {

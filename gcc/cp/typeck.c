@@ -6750,29 +6750,23 @@ check_return_expr (retval)
     warning ("function declared `noreturn' has a `return' statement");
 
   /* Check for various simple errors.  */
-  if (retval == error_mark_node)
-    {
-      /* If an error occurred, there's nothing to do.  */
-      current_function_returns_null = 1;
-      return error_mark_node;
-    }
-  else if (dtor_label)
+  if (dtor_label)
     {
       if (retval)
 	error ("returning a value from a destructor");
       return NULL_TREE;
     }
-  else if (in_function_try_handler
-	   && DECL_CONSTRUCTOR_P (current_function_decl))
+  else if (DECL_CONSTRUCTOR_P (current_function_decl))
     {
-      /* If a return statement appears in a handler of the
-         function-try-block of a constructor, the program is ill-formed. */
-      error ("cannot return from a handler of a function-try-block of a constructor");
-      return error_mark_node;
+      if (in_function_try_handler)
+	/* If a return statement appears in a handler of the
+	   function-try-block of a constructor, the program is ill-formed. */
+	error ("cannot return from a handler of a function-try-block of a constructor");
+      else if (retval)
+	/* You can't return a value from a constructor.  */
+	error ("returning a value from a constructor");
+      return NULL_TREE;
     }
-  else if (retval && DECL_CONSTRUCTOR_P (current_function_decl))
-    /* You can't return a value from a constructor.  */
-    error ("returning a value from a constructor");
 
   /* Under the old ABI, constructors actually always return `this',
      even though in C++ you can't return a value from a constructor.  */
@@ -6819,6 +6813,9 @@ check_return_expr (retval)
     /* Remember that this function can sometimes return without a
        value.  */
     current_function_returns_null = 1;
+  else
+    /* Remember that this function did return a value.  */
+    current_function_returns_value = 1;
 
   /* Only operator new(...) throw(), can return NULL [expr.new/13].  */
   if ((DECL_OVERLOADED_OPERATOR_P (current_function_decl) == NEW_EXPR
@@ -6836,8 +6833,8 @@ check_return_expr (retval)
 
   /* We don't need to do any conversions when there's nothing being
      returned.  */
-  if (!retval)
-    return NULL_TREE;
+  if (!retval || retval == error_mark_node)
+    return retval;
 
   /* Do any required conversions.  */
   if (retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
@@ -6858,7 +6855,7 @@ check_return_expr (retval)
 
       /* If the conversion failed, treat this just like `return;'.  */
       if (retval == error_mark_node)
-	return NULL_TREE;
+	return retval;
       /* We can't initialize a register from a AGGR_INIT_EXPR.  */
       else if (! current_function_returns_struct
 	       && TREE_CODE (retval) == TARGET_EXPR
@@ -6873,8 +6870,6 @@ check_return_expr (retval)
   if (retval && retval != result)
     retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
 
-  /* All done.  Remember that this function did return a value.  */
-  current_function_returns_value = 1;
   return retval;
 }
 

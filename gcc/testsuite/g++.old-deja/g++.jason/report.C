@@ -29,7 +29,7 @@ char ***spp = &sp;
 int foo (int a = (**bar) (s))
 {
    return doowop<foo>::bar; // ERROR - not a member
-} // ERROR - non-void
+}
 
 int foo2 (int (*a)(int) = &foo)
 {

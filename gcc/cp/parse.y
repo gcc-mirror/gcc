@@ -930,12 +930,9 @@ member_init:
 		{ $$ = expand_member_init (current_class_ref, $1,
 					   void_type_node); }
 	| typename_sub '(' nonnull_exprlist ')'
-		{ $$ = expand_member_init (current_class_ref,
-					   TYPE_MAIN_DECL ($1),
-					   $3); }
+		{ $$ = expand_member_init (current_class_ref, $1, $3); }
 	| typename_sub LEFT_RIGHT
-		{ $$ = expand_member_init (current_class_ref,
-					   TYPE_MAIN_DECL ($1),
+		{ $$ = expand_member_init (current_class_ref, $1,
 					   void_type_node); }
         | error
                 { $$ = NULL_TREE }

@@ -23,4 +23,4 @@ bool operator==(const MyInt& a, const MyInt& b)
 bool f()
 {
   return 3 == MyInt();                          // ERROR - ambiguous
-}                                               // ERROR - no return value
+}

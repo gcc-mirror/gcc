@@ -8,7 +8,7 @@ struct ostream {
 
 template <class T> class foo;
 
-template <class T> ostream& operator<< (ostream& ios, foo<T>&obj) { };
+template <class T> ostream& operator<< (ostream& ios, foo<T>&obj) {return ios;}
 
 template <class T> class foo {
   friend ostream& operator<<<>(ostream&, foo<T>&);
