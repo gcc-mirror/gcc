@@ -1,6 +1,6 @@
 /* Xtensa/Elf configuration.
    Derived from the configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -41,17 +41,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef TARGET_VERSION
 #define TARGET_VERSION fputs (" (Xtensa/ELF)", stderr);
 
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
 #undef WCHAR_TYPE
-#define WCHAR_TYPE "int"
+#define WCHAR_TYPE "short unsigned int"
 
 #undef WCHAR_TYPE_SIZE
-#define WCHAR_TYPE_SIZE BITS_PER_WORD
+#define WCHAR_TYPE_SIZE 16
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{v} %{mno-density:--no-density} \
@@ -81,29 +75,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       %{rdynamic:-export-dynamic} \
     %{static:-static}}}"
 
-/* Local compiler-generated symbols must have a prefix that the assembler
-   understands.   By default, this is $, although some targets (e.g.,
-   NetBSD-ELF) need to override this. */
-
-#ifndef LOCAL_LABEL_PREFIX
+#undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
-#endif
 
-/* By default, external symbols do not have an underscore prepended. */
-
-#ifndef USER_LABEL_PREFIX
-#define USER_LABEL_PREFIX	""
-#endif
-
-/* Define this macro if the assembler does not accept the character
-   "." in label names.  By default constructors and destructors in G++
-   have names that use ".".  If this macro is defined, these names
-   are rewritten to avoid ".". */
-#define NO_DOT_IN_LABEL
-
-/* Define NO_DOLLAR_IN_LABEL in your favorite tm file if your assembler
-   doesn't allow $ in symbol names.  */
+/* Avoid dots for compatibility with VxWorks.  */
 #undef NO_DOLLAR_IN_LABEL
+#define NO_DOT_IN_LABEL
 
 /* Do not force "-fpic" for this target.  */
 #define XTENSA_ALWAYS_PIC 0

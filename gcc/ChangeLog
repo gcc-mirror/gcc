@@ -1,3 +1,13 @@
+2003-04-29  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/elf.h (SIZE_TYPE, PTRDIFF_TYPE, USER_LABEL_PREFIX):
+	Remove redundant macros.
+	(WCHAR_TYPE, WCHAR_TYPE_SIZE): Change to "short unsigned int".
+	(LOCAL_LABEL_PREFIX): Define unconditionally.
+	(NO_DOT_IN_LABEL): Clarify comment.
+	* config/xtensa/linux.h (WCHAR_TYPE, WCHAR_TYPE_SIZE): Add explicit
+	definition to "long int".
+
 2003-04-29  Alexander Kabaev  <kan@FreeBSD.ORG>
 
 	bootstrap/10452
