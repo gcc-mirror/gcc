@@ -3935,6 +3935,17 @@ pushdecl (x)
 	    set_identifier_type_value_with_scope (name, NULL_TREE,
 						  current_binding_level);
 
+	  if (oldlocal)
+	    {
+	      tree d = oldlocal;
+	      while (oldlocal && DECL_DEAD_FOR_LOCAL (oldlocal))
+		{
+		  oldlocal = DECL_SHADOWED_FOR_VAR (oldlocal);
+		}
+	      if (oldlocal == NULL_TREE)
+		oldlocal = IDENTIFIER_NAMESPACE_VALUE (DECL_NAME (d));
+	    }
+
 	  /* If this is an extern function declaration, see if we
 	     have a global definition or declaration for the function.  */
 	  if (oldlocal == NULL_TREE
@@ -3961,15 +3972,14 @@ pushdecl (x)
 	      && TREE_PUBLIC (x))
 	    TREE_PUBLIC (name) = 1;
 
-	  if (DECL_FROM_INLINE (x))
-	    /* Inline decls shadow nothing.  */;
-
 	  /* Warn if shadowing an argument at the top level of the body.  */
-	  else if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
-		   && TREE_CODE (oldlocal) == PARM_DECL
-		   /* Don't complain if it's from an enclosing function.  */
-		   && DECL_CONTEXT (oldlocal) == current_function_decl
-		   && TREE_CODE (x) != PARM_DECL)
+	  if (oldlocal != NULL_TREE && !DECL_EXTERNAL (x)
+	      /* Inline decls shadow nothing.  */
+	      && !DECL_FROM_INLINE (x)
+	      && TREE_CODE (oldlocal) == PARM_DECL
+	      /* Don't complain if it's from an enclosing function.  */
+	      && DECL_CONTEXT (oldlocal) == current_function_decl
+	      && TREE_CODE (x) != PARM_DECL)
 	    {
 	      /* Go to where the parms should be and see if we
 		 find them there.  */
@@ -3982,20 +3992,15 @@ pushdecl (x)
 	      if (b->parm_flag == 1)
 		cp_error ("declaration of `%#D' shadows a parameter", name);
 	    }
-	  else if (warn_shadow && oldlocal != NULL_TREE
-		   && current_binding_level->is_for_scope
-		   && !DECL_DEAD_FOR_LOCAL (oldlocal))
-	    {
-	      warning ("variable `%s' shadows local",
-		       IDENTIFIER_POINTER (name));
-	      cp_warning_at ("  this is the shadowed declaration", oldlocal);
-	    }
+
 	  /* Maybe warn if shadowing something else.  */
-	  else if (warn_shadow && !DECL_EXTERNAL (x)
-		   /* No shadow warnings for internally generated vars.  */
-		   && ! DECL_ARTIFICIAL (x)
-		   /* No shadow warnings for vars made for inlining.  */
-		   && ! DECL_FROM_INLINE (x))
+	  if (warn_shadow && !DECL_EXTERNAL (x)
+	      /* Inline decls shadow nothing.  */
+	      && !DECL_FROM_INLINE (x)
+	      /* No shadow warnings for internally generated vars.  */
+	      && ! DECL_ARTIFICIAL (x)
+	      /* No shadow warnings for vars made for inlining.  */
+	      && ! DECL_FROM_INLINE (x))
 	    {
 	      if (oldlocal != NULL_TREE && TREE_CODE (oldlocal) == PARM_DECL)
 		warning ("declaration of `%s' shadows a parameter",
