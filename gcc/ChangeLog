@@ -1,6 +1,11 @@
-2003-11-10  Fariborz Jahanian <fjahanian@apple.com>
-	* config/rs6000/rs6000.h (STACK_SIZE_MODE): Add definition.
+2003-11-10  David Edelsohn  <edelsohn@gnu.org>
 
+	* config/rs6000/rs6000.c (legitimate_lo_sum_address_p): Remove
+	accidental commit in previous change.
+
+2003-11-10  Fariborz Jahanian <fjahanian@apple.com>
+
+	* config/rs6000/rs6000.h (STACK_SIZE_MODE): Add definition.
 	* config/rs6000/rs6000.c (reg_or_mem_operand): Add macho-style
 	address recognition.
 	(macho_lo_sum_memory_operand): Routine to recognize macho-style
