@@ -240,10 +240,10 @@ nearest_common_dominator_of_uses (tree stmt)
 	  basic_block useblock;
 	  if (TREE_CODE (usestmt) == PHI_NODE)
 	    {
-	      int j;
-	      for (j = 0; j < PHI_NUM_ARGS (usestmt); j++)
+	      int idx = PHI_ARG_INDEX_FROM_USE (use_p);
+	      if (PHI_ARG_DEF (usestmt, idx) == var)
 		{
-		  useblock = PHI_ARG_EDGE (usestmt, j)->src;
+		  useblock = PHI_ARG_EDGE (usestmt, idx)->src;
 		  /* Short circuit. Nothing dominates the entry block.  */
 		  if (useblock == ENTRY_BLOCK_PTR)
 		    {

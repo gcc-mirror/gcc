@@ -1,3 +1,8 @@
+2005-04-06  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* tree-ssa-sink.c (nearest_common_dominator_of_uses): Look at
+	a PHI argument where a use occurs instead of all PHI arguments.
+
 2005-04-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-decl.c (finish_decl): Apply pending #pragma weak regardless of
