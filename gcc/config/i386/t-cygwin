@@ -7,7 +7,7 @@ LIB1ASMFUNCS = _chkstk
 # the build, it may not be installed yet.
 LIMITS_H_TEST = true
 
-T_CPPFLAGS=-DCYGWIN_CROSS_DIR=\"$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`\"
+T_CPPFLAGS=-DCYGWIN_CROSS_DIR=\"$(build_tooldir)\"
 
 # If we are building next to winsup, this will let us find the real
 # limits.h when building libgcc2.  Otherwise, winsup must be installed
