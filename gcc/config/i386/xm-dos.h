@@ -15,6 +15,3 @@
 #define MKTEMP_EACH_FILE 1
 
 #define NO_PRECOMPILES 1
-
-/* sys_errlist proto in cccp.c doesn't match djgpp */
-#define HAVE_STRERROR

@@ -23,5 +23,4 @@ Boston, MA 02111-1307, USA.  */
    instead $xm_file should be CPU/xm-netbsd.h, which should include both
    CPU/xm-CPU.h and this file xm-netbsd.h.  */
    
-#define HAVE_STRERROR
 #define HAVE_VPRINTF

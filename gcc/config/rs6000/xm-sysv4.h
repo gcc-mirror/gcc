@@ -56,9 +56,6 @@ extern char *alloca ();
 #define ONLY_INT_FIELDS
 #endif
 
-/* We have STRERROR */
-#define HAVE_STRERROR
-
 #ifdef __PPC__
 #ifndef __STDC__
 extern char *malloc (), *realloc (), *calloc ();

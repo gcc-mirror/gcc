@@ -22,6 +22,3 @@ Boston, MA 02111-1307, USA.  */
    running FreeBSD.  This file should not be specified as $xm_file itself;
    instead $xm_file should be CPU/xm-freebsd.h, which should include both
    CPU/xm-CPU.h and this file xm-freebsd.h.  */
-   
-/* FreeBSD has strerror.  */
-#define HAVE_STRERROR

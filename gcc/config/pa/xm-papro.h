@@ -50,9 +50,6 @@ extern int errno;
 /* Don't try to use sys_siglist.  */
 #define NO_SYS_SIGLIST
 
-/* We have strerror, don't try to use sys_errlist.  */
-#define HAVE_STRERROR
-
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
 
