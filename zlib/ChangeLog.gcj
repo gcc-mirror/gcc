@@ -1,3 +1,11 @@
+Sun Sep  3 12:37:12 2000  Anthony Green  <green@redhat.com>
+
+	* configure.in: Add TARGET_LIBRARY conditional.
+	* configure: Rebuilt.
+	* Makefile.am: If we're building a build host library, call the
+	library libz.a and don't use libtool.
+	* Makefile.in: Rebuilt.
+
 1999-10-04  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
