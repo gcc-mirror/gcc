@@ -125,6 +125,12 @@ struct _Jv_OffsetTable
   jint offsets[];
 };
 
+struct _Jv_AddressTable
+{
+  jint state;
+  void *addresses[];
+};
+
 #define JV_PRIMITIVE_VTABLE ((_Jv_VTable *) -1)
 
 #define JV_CLASS(Obj) ((jclass) (*(_Jv_VTable **) Obj)->clas)
@@ -324,7 +330,7 @@ private:
   friend jstring _Jv_GetMethodString(jclass, _Jv_Utf8Const *);
   friend jshort _Jv_AppendPartialITable (jclass, jclass, void **, jshort);
   friend jshort _Jv_FindIIndex (jclass *, jshort *, jshort);
-  friend void _Jv_LinkOffsetTable (jclass);
+  friend void _Jv_LinkSymbolTable (jclass);
   friend void _Jv_LayoutVTableMethods (jclass klass);
   friend void _Jv_SetVTableEntries (jclass, _Jv_VTable *, jboolean *);
   friend void _Jv_MakeVTable (jclass);
@@ -404,6 +410,8 @@ private:
   _Jv_OffsetTable *otable;
   // Offset table symbols.
   _Jv_MethodSymbol *otable_syms;
+  _Jv_AddressTable *atable;
+  _Jv_MethodSymbol *atable_syms;
   // Interfaces implemented by this class.
   jclass *interfaces;
   // The class loader for this class.

@@ -1,3 +1,17 @@
+2003-10-01  Andrew Haley  <aph@redhat.com>
+
+	* java/lang/natClass.cc (initializeClass): Check for otable and
+	atable.
+	(_Jv_LinkOffsetTable): Check for existence of atable.  Rewrite
+	loops using for().  Search superinterfaces.  Check for fields as
+	well as methods.  Initialize atable as well as otable: check for
+	static methods as well as virtual methods.
+	* java/lang/Class.h (struct _Jv_AddressTable): New.
+	(atable): New.
+	(atable_syms): New.
+	* include/jvm.h (_Jv_equalUtf8Consts): constify.
+	* prims.cc (_Jv_equalUtf8Consts): constify.
+
 2003-09-29  Tom Tromey  <tromey@redhat.com>
 
 	PR libgcj/10596:

@@ -59,7 +59,7 @@ static void add_interface_do (tree, tree, int);
 static tree maybe_layout_super_class (tree, tree);
 static void add_miranda_methods (tree, tree);
 static int assume_compiled (const char *);
-static tree build_method_symbols_entry (tree);
+static tree build_symbol_entry (tree);
 
 static GTY(()) rtx registerClass_libfunc;
 
@@ -925,7 +925,8 @@ build_static_field_ref (tree fdecl)
      However, currently sometimes gcj is too eager and will end up
      returning the field itself, leading to an incorrect external
      reference being generated.  */
-  if (is_compiled
+  if ((is_compiled 
+       && (! flag_indirect_dispatch || current_class == fclass))
       || (FIELD_FINAL (fdecl) && DECL_INITIAL (fdecl) != NULL_TREE
 	  && (JSTRING_TYPE_P (TREE_TYPE (fdecl))
 	      || JNUMERIC_TYPE_P (TREE_TYPE (fdecl)))
@@ -939,7 +940,18 @@ build_static_field_ref (tree fdecl)
 	}
       return fdecl;
     }
-  else
+
+  if (flag_indirect_dispatch)
+    {
+      tree table_index 
+	= build_int_2 (get_symbol_table_index (fdecl, &atable_methods), 0);
+      tree field_address
+	= build (ARRAY_REF, build_pointer_type (TREE_TYPE (fdecl)), 
+		 atable_decl, table_index);
+      return fold (build1 (INDIRECT_REF, TREE_TYPE (fdecl), 
+			   field_address));
+    }
+  else  
     {
       /* Compile as:
        * *(FTYPE*)build_class_ref(FCLASS)->fields[INDEX].info.addr */
@@ -1500,7 +1512,6 @@ make_class_data (tree type)
 		      : build (PLUS_EXPR, dtable_ptr_type,
 			       build1 (ADDR_EXPR, dtable_ptr_type, dtable_decl),
 			       dtable_start_offset));
-  
   if (otable_methods == NULL_TREE)
     {
       PUSH_FIELD_VALUE (cons, "otable", null_pointer_node);
@@ -1511,9 +1522,25 @@ make_class_data (tree type)
       PUSH_FIELD_VALUE (cons, "otable",
 			build1 (ADDR_EXPR, otable_ptr_type, otable_decl));
       PUSH_FIELD_VALUE (cons, "otable_syms",
-			build1 (ADDR_EXPR, method_symbols_array_ptr_type,
+			build1 (ADDR_EXPR, symbols_array_ptr_type,
 				otable_syms_decl));
+      TREE_CONSTANT (otable_decl) = 1;
     }
+  if (atable_methods == NULL_TREE)
+    {
+      PUSH_FIELD_VALUE (cons, "atable", null_pointer_node);
+      PUSH_FIELD_VALUE (cons, "atable_syms", null_pointer_node);
+    }
+  else
+    {
+      PUSH_FIELD_VALUE (cons, "atable",
+			build1 (ADDR_EXPR, atable_ptr_type, atable_decl));
+      PUSH_FIELD_VALUE (cons, "atable_syms",
+			build1 (ADDR_EXPR, symbols_array_ptr_type,
+				atable_syms_decl));
+      TREE_CONSTANT (atable_decl) = 1;
+    }
+
   PUSH_FIELD_VALUE (cons, "interfaces", interfaces);
   PUSH_FIELD_VALUE (cons, "loader", null_pointer_node);
   PUSH_FIELD_VALUE (cons, "interface_count", build_int_2 (interface_len, 0));
@@ -2098,58 +2125,59 @@ emit_register_classes (void)
     }
 }
 
-/* Make a method_symbol_type (_Jv_MethodSymbol) node for METHOD. */
+/* Make a symbol_type (_Jv_MethodSymbol) node for DECL. */
 
 static tree
-build_method_symbols_entry (tree method)
+build_symbol_entry (tree decl)
 {
-  tree clname, name, signature, method_symbol;
+  tree clname, name, signature, sym;
   
-  clname = build_utf8_ref (DECL_NAME (TYPE_NAME (DECL_CONTEXT (method))));
-  name = build_utf8_ref (DECL_NAME (method));
-  signature = build_java_signature (TREE_TYPE (method));
+  clname = build_utf8_ref (DECL_NAME (TYPE_NAME (DECL_CONTEXT (decl))));
+  name = build_utf8_ref (DECL_NAME (decl));
+  signature = build_java_signature (TREE_TYPE (decl));
   signature = build_utf8_ref (unmangle_classname 
 			      (IDENTIFIER_POINTER (signature),
 			       IDENTIFIER_LENGTH (signature)));
 
-  START_RECORD_CONSTRUCTOR (method_symbol, method_symbol_type);
-  PUSH_FIELD_VALUE (method_symbol, "clname", clname);
-  PUSH_FIELD_VALUE (method_symbol, "name", name);
-  PUSH_FIELD_VALUE (method_symbol, "signature", signature);
-  FINISH_RECORD_CONSTRUCTOR (method_symbol);
-  TREE_CONSTANT (method_symbol) = 1;
+  START_RECORD_CONSTRUCTOR (sym, symbol_type);
+  PUSH_FIELD_VALUE (sym, "clname", clname);
+  PUSH_FIELD_VALUE (sym, "name", name);
+  PUSH_FIELD_VALUE (sym, "signature", signature);
+  FINISH_RECORD_CONSTRUCTOR (sym);
+  TREE_CONSTANT (sym) = 1;
 
-  return method_symbol;
+  return sym;
 } 
 
-/* Emit the offset symbols table for indirect virtual dispatch. */
+/* Emit a symbol table: used by -findirect-dispatch.  */
 
-void
-emit_offset_symbol_table (void)
+tree
+emit_symbol_table (tree name, tree the_table, tree decl_list, tree the_syms_decl, 
+			  tree the_array_element_type)
 {
   tree method_list, method, table, list, null_symbol;
-  tree otable_bound, otable_array_type;
+  tree table_size, the_array_type;
   int index;
   
-  /* Only emit an offset table if this translation unit actually made virtual 
-     calls. */
-  if (otable_methods == NULL_TREE)
-    return;
+  /* Only emit a table if this translation unit actually made any
+     references via it. */
+  if (decl_list == NULL_TREE)
+    return the_table;
 
   /* Build a list of _Jv_MethodSymbols for each entry in otable_methods. */
   index = 0;
-  method_list = otable_methods;
+  method_list = decl_list;
   list = NULL_TREE;  
   while (method_list != NULL_TREE)
     {
       method = TREE_VALUE (method_list);
-      list = tree_cons (NULL_TREE, build_method_symbols_entry (method), list);
+      list = tree_cons (NULL_TREE, build_symbol_entry (method), list);
       method_list = TREE_CHAIN (method_list);
       index++;
     }
 
   /* Terminate the list with a "null" entry. */
-  START_RECORD_CONSTRUCTOR (null_symbol, method_symbol_type);
+  START_RECORD_CONSTRUCTOR (null_symbol, symbol_type);
   PUSH_FIELD_VALUE (null_symbol, "clname", null_pointer_node);
   PUSH_FIELD_VALUE (null_symbol, "name", null_pointer_node);
   PUSH_FIELD_VALUE (null_symbol, "signature", null_pointer_node);
@@ -2159,24 +2187,26 @@ emit_offset_symbol_table (void)
 
   /* Put the list in the right order and make it a constructor. */
   list = nreverse (list);
-  table = build_constructor (method_symbols_array_type, list);  
+  table = build_constructor (symbols_array_type, list);  
 
   /* Make it the initial value for otable_syms and emit the decl. */
-  DECL_INITIAL (otable_syms_decl) = table;
-  DECL_ARTIFICIAL (otable_syms_decl) = 1;
-  DECL_IGNORED_P (otable_syms_decl) = 1;
-  rest_of_decl_compilation (otable_syms_decl, NULL, 1, 0);
+  DECL_INITIAL (the_syms_decl) = table;
+  DECL_ARTIFICIAL (the_syms_decl) = 1;
+  DECL_IGNORED_P (the_syms_decl) = 1;
+  rest_of_decl_compilation (the_syms_decl, NULL, 1, 0);
   
-  /* Now that its size is known, redefine otable as an uninitialized static 
-     array of INDEX + 1 integers. The extra entry is used by the runtime 
-     to track whether the otable has been initialized. */
-  otable_bound = build_index_type (build_int_2 (index, 0));
-  otable_array_type = build_array_type (integer_type_node, otable_bound);
-  otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), 
-			    otable_array_type);
-  TREE_STATIC (otable_decl) = 1;
-  TREE_READONLY (otable_decl) = 1;  
-  rest_of_decl_compilation (otable_decl, NULL, 1, 0);
+  /* Now that its size is known, redefine the table as an
+     uninitialized static array of INDEX + 1 elements. The extra entry
+     is used by the runtime to track whether the table has been
+     initialized. */
+  table_size = build_index_type (build_int_2 (index, 0));
+  the_array_type = build_array_type (the_array_element_type, table_size);
+  the_table = build_decl (VAR_DECL, name, the_array_type);
+  TREE_STATIC (the_table) = 1;
+  TREE_READONLY (the_table) = 1;  
+  rest_of_decl_compilation (the_table, NULL, 1, 0);
+
+  return the_table;
 }
 
 void

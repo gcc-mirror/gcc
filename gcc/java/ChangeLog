@@ -1,3 +1,29 @@
+2003-10-01  Andrew Haley  <aph@redhat.com>
+
+	* jcf-parse.c (java_parse_file): Write otable and atable.
+	* java-tree.h (atable_methods): New.
+	(atable_decl): New.
+	(atable_syms_decl): New.
+	(enum java_tree_index): Add JTI_ATABLE_METHODS, JTI_ATABLE_DECL,
+	JTI_ATABLE_SYMS_DECL.  Rename JTI_METHOD_SYMBOL* to JTI_SYMBOL*.
+	(symbol_*type): Rename method_symbol* to symbol*type.	
+	(emit_offset_symbol_table): Delete.
+	(emit_symbol_table): New.
+	(get_symbol_table_index): New.
+	(atable_type): New.
+	* expr.c (build_field_ref): Handle flag_indirect_dispatch.
+	(build_known_method_ref): Likewise.
+	(get_symbol_table_index): Rename from get_offset_table_index.
+	Parameterize to allow re-use by differing types of symbol table.
+	(build_invokevirtual): Pass table to get_offset_table_index.
+	* decl.c (java_init_decl_processing): Push types and decls for
+	atable and atable_syyms.
+	* class.c (build_static_field_ref): Handle flag_indirect_dispatch.
+	(make_class_data): Add new fields atable and atable_syms.
+	(emit_symbol_table): Rename from emit_offset_symbol_table.
+	Parameterize to allow re-use by different types of symbol table.
+	(build_symbol_entry): Renamed from build_method_symbols_entry.
+	
 2003-09-30  Roger Sayle  <roger@eyesopen.com>
 
 	* jcf-write.c (generate_bytecode_insns): Implement evaluate-once

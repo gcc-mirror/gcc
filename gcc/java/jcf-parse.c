@@ -1127,7 +1127,16 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       /* Emit the .jcf section.  */
       emit_register_classes ();
       if (flag_indirect_dispatch)
-	emit_offset_symbol_table ();
+	{
+	  otable_decl 
+	    = emit_symbol_table 
+	    (get_identifier ("otable"), 
+	     otable_decl, otable_methods, otable_syms_decl, integer_type_node);
+	  atable_decl 
+	    = emit_symbol_table 
+	    (get_identifier ("atable"), 
+	     atable_decl, atable_methods, atable_syms_decl, ptr_type_node);
+	}
     }
 
   write_resource_constructor ();
