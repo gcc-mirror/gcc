@@ -1,3 +1,7 @@
+2002-06-02  Roger Sayle  <roger@eyesopen.com>
+
+	* config/alpha/alpha.h [ASM_OUTPUT_LABELREF]: Fix typo.
+
 Sun Jun  2 12:11:52 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (bypass_conditional_jumps): Use single set to obtain set.
