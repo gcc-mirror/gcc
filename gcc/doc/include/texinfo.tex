@@ -3,7 +3,7 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2004-10-31.06}
+\def\texinfoversion{2004-11-25.16}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
 % 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software
@@ -89,10 +89,11 @@
 \let\ptexhat=^
 \let\ptexi=\i
 \let\ptexindent=\indent
-\let\ptexnoindent=\noindent
 \let\ptexinsert=\insert
 \let\ptexlbrace=\{
 \let\ptexless=<
+\let\ptexnewwrite\newwrite
+\let\ptexnoindent=\noindent
 \let\ptexplus=+
 \let\ptexrbrace=\}
 \let\ptexslash=\/
@@ -1242,13 +1243,13 @@ where each line of input produces a line of output.}
       % Read toc silently, to get counts of subentries for \pdfoutline.
       \def\numchapentry##1##2##3##4{%
 	\def\thischapnum{##2}%
-	\let\thissecnum\empty
-	\let\thissubsecnum\empty
+	\def\thissecnum{0}%
+	\def\thissubsecnum{0}%
       }%
       \def\numsecentry##1##2##3##4{%
 	\advancenumber{chap\thischapnum}%
 	\def\thissecnum{##2}%
-	\let\thissubsecnum\empty
+	\def\thissubsecnum{0}%
       }%
       \def\numsubsecentry##1##2##3##4{%
 	\advancenumber{sec\thissecnum}%
@@ -1257,9 +1258,9 @@ where each line of input produces a line of output.}
       \def\numsubsubsecentry##1##2##3##4{%
 	\advancenumber{subsec\thissubsecnum}%
       }%
-      \let\thischapnum\empty
-      \let\thissecnum\empty
-      \let\thissubsecnum\empty
+      \def\thischapnum{0}%
+      \def\thissecnum{0}%
+      \def\thissubsecnum{0}%
       %
       % use \def rather than \let here because we redefine \chapentry et
       % al. a second time, below.
@@ -1406,7 +1407,7 @@ where each line of input produces a line of output.}
 \def\rm{\fam=0 \setfontstyle{rm}}
 \def\it{\fam=\itfam \setfontstyle{it}}
 \def\sl{\fam=\slfam \setfontstyle{sl}}
-\def\bf{\fam=\bffam \setfontstyle{bf}}
+\def\bf{\fam=\bffam \setfontstyle{bf}}\def\bfstylename{bf}
 \def\tt{\fam=\ttfam \setfontstyle{tt}}
 
 % Texinfo sort of supports the sans serif font style, which plain TeX does not.
@@ -1468,17 +1469,10 @@ where each line of input produces a line of output.}
 \def\scbshape{csc}
 
 % Text fonts (11.2pt, magstep1).
-\newcount\mainmagstep
-\ifx\bigger\relax
-  % not really supported.
-  \mainmagstep=\magstep1
-  \setfont\textrm\rmshape{12}{1000}
-  \setfont\texttt\ttshape{12}{1000}
-\else
-  \mainmagstep=\magstephalf
-  \setfont\textrm\rmshape{10}{\mainmagstep}
-  \setfont\texttt\ttshape{10}{\mainmagstep}
-\fi
+\def\textnominalsize{11pt}
+\edef\mainmagstep{\magstephalf}
+\setfont\textrm\rmshape{10}{\mainmagstep}
+\setfont\texttt\ttshape{10}{\mainmagstep}
 \setfont\textbf\bfshape{10}{\mainmagstep}
 \setfont\textit\itshape{10}{\mainmagstep}
 \setfont\textsl\slshape{10}{\mainmagstep}
@@ -1495,6 +1489,7 @@ where each line of input produces a line of output.}
 \def\df{\let\tentt=\deftt \let\tenbf = \defbf \let\tenttsl=\defttsl \bf}
 
 % Fonts for indices, footnotes, small examples (9pt).
+\def\smallnominalsize{9pt}
 \setfont\smallrm\rmshape{9}{1000}
 \setfont\smalltt\ttshape{9}{1000}
 \setfont\smallbf\bfshape{10}{900}
@@ -1507,6 +1502,7 @@ where each line of input produces a line of output.}
 \font\smallsy=cmsy9
 
 % Fonts for small examples (8pt).
+\def\smallernominalsize{8pt}
 \setfont\smallerrm\rmshape{8}{1000}
 \setfont\smallertt\ttshape{8}{1000}
 \setfont\smallerbf\bfshape{10}{800}
@@ -1519,6 +1515,7 @@ where each line of input produces a line of output.}
 \font\smallersy=cmsy8
 
 % Fonts for title page (20.4pt):
+\def\titlenominalsize{20pt}
 \setfont\titlerm\rmbshape{12}{\magstep3}
 \setfont\titleit\itbshape{10}{\magstep4}
 \setfont\titlesl\slbshape{10}{\magstep4}
@@ -1533,6 +1530,7 @@ where each line of input produces a line of output.}
 \def\authortt{\sectt}
 
 % Chapter (and unnumbered) fonts (17.28pt).
+\def\chapnominalsize{17pt}
 \setfont\chaprm\rmbshape{12}{\magstep2}
 \setfont\chapit\itbshape{10}{\magstep3}
 \setfont\chapsl\slbshape{10}{\magstep3}
@@ -1545,6 +1543,7 @@ where each line of input produces a line of output.}
 \font\chapsy=cmsy10 scaled \magstep3
 
 % Section fonts (14.4pt).
+\def\secnominalsize{14pt}
 \setfont\secrm\rmbshape{12}{\magstep1}
 \setfont\secit\itbshape{10}{\magstep2}
 \setfont\secsl\slbshape{10}{\magstep2}
@@ -1557,6 +1556,7 @@ where each line of input produces a line of output.}
 \font\secsy=cmsy10 scaled \magstep2
 
 % Subsection fonts (13.15pt).
+\def\ssecnominalsize{13pt}
 \setfont\ssecrm\rmbshape{12}{\magstephalf}
 \setfont\ssecit\itbshape{10}{1315}
 \setfont\ssecsl\slbshape{10}{1315}
@@ -1569,6 +1569,7 @@ where each line of input produces a line of output.}
 \font\ssecsy=cmsy10 scaled 1315
 
 % Reduced fonts for @acro in text (10pt).
+\def\reducednominalsize{10pt}
 \setfont\reducedrm\rmshape{10}{1000}
 \setfont\reducedtt\ttshape{10}{1000}
 \setfont\reducedbf\bfshape{10}{1000}
@@ -1608,6 +1609,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\textbf \let\tentt=\texttt \let\smallcaps=\textsc
   \let\tensf=\textsf \let\teni=\texti \let\tensy=\textsy
   \let\tenttsl=\textttsl
+  \def\curfontsize{text}%
   \def\lsize{reduced}\def\lllsize{smaller}%
   \resetmathfonts \setleading{\textleading}}
 \def\titlefonts{%
@@ -1615,13 +1617,16 @@ where each line of input produces a line of output.}
   \let\tenbf=\titlebf \let\tentt=\titlett \let\smallcaps=\titlesc
   \let\tensf=\titlesf \let\teni=\titlei \let\tensy=\titlesy
   \let\tenttsl=\titlettsl
+  \def\curfontsize{title}%
   \def\lsize{chap}\def\lllsize{subsec}%
   \resetmathfonts \setleading{25pt}}
 \def\titlefont#1{{\titlefonts\rm #1}}
 \def\chapfonts{%
   \let\tenrm=\chaprm \let\tenit=\chapit \let\tensl=\chapsl
   \let\tenbf=\chapbf \let\tentt=\chaptt \let\smallcaps=\chapsc
-  \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy \let\tenttsl=\chapttsl
+  \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy
+  \let\tenttsl=\chapttsl
+  \def\curfontsize{chap}%
   \def\lsize{sec}\def\lllsize{text}%
   \resetmathfonts \setleading{19pt}}
 \def\secfonts{%
@@ -1629,6 +1634,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\secbf \let\tentt=\sectt \let\smallcaps=\secsc
   \let\tensf=\secsf \let\teni=\seci \let\tensy=\secsy
   \let\tenttsl=\secttsl
+  \def\curfontsize{sec}%
   \def\lsize{subsec}\def\lllsize{reduced}%
   \resetmathfonts \setleading{16pt}}
 \def\subsecfonts{%
@@ -1636,6 +1642,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\ssecbf \let\tentt=\ssectt \let\smallcaps=\ssecsc
   \let\tensf=\ssecsf \let\teni=\sseci \let\tensy=\ssecsy
   \let\tenttsl=\ssecttsl
+  \def\curfontsize{ssec}%
   \def\lsize{text}\def\lllsize{small}%
   \resetmathfonts \setleading{15pt}}
 \let\subsubsecfonts = \subsecfonts
@@ -1644,6 +1651,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\reducedbf \let\tentt=\reducedtt \let\reducedcaps=\reducedsc
   \let\tensf=\reducedsf \let\teni=\reducedi \let\tensy=\reducedsy
   \let\tenttsl=\reducedttsl
+  \def\curfontsize{reduced}%
   \def\lsize{small}\def\lllsize{smaller}%
   \resetmathfonts \setleading{10.5pt}}
 \def\smallfonts{%
@@ -1651,6 +1659,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallbf \let\tentt=\smalltt \let\smallcaps=\smallsc
   \let\tensf=\smallsf \let\teni=\smalli \let\tensy=\smallsy
   \let\tenttsl=\smallttsl
+  \def\curfontsize{small}%
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{10.5pt}}
 \def\smallerfonts{%
@@ -1658,6 +1667,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallerbf \let\tentt=\smallertt \let\smallcaps=\smallersc
   \let\tensf=\smallersf \let\teni=\smalleri \let\tensy=\smallersy
   \let\tenttsl=\smallerttsl
+  \def\curfontsize{smaller}%
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{9.5pt}}
 
@@ -1720,8 +1730,12 @@ where each line of input produces a line of output.}
 \let\dfn=\smartslanted
 \let\emph=\smartitalic
 
+% @b, explicit bold.
 \def\b#1{{\bf #1}}
 \let\strong=\b
+
+% @sansserif, explicit sans.
+\def\sansserif#1{{\sf #1}}
 
 % We can't just use \exhyphenpenalty, because that only has effect at
 % the end of a paragraph.  Restore normal hyphenation at the end of the
@@ -1958,6 +1972,54 @@ where each line of input produces a line of output.}
 % @pounds{} is a sterling sign, which Knuth put in the CM italic font.
 %
 \def\pounds{{\it\$}}
+
+% @euro{} comes from a separate font, depending on the current style.
+% We use the free feym* fonts from the eurosym package by Henrik
+% Theiling, which support regular, slanted, bold and bold slanted (and
+% "outlined" (blackboard board, sort of) versions, which we don't need).
+% It is available from http://www.ctan.org/tex-archive/fonts/eurosym.
+% 
+% Although only regular is the truly official Euro symbol, we ignore
+% that.  The Euro is designed to be slightly taller than the regular
+% font height.
+% 
+% feymr - regular
+% feymo - slanted
+% feybr - bold
+% feybo - bold slanted
+% 
+% There is no good (free) typewriter version, to my knowledge.
+% A feymr10 euro is ~7.3pt wide, while a normal cmtt10 char is ~5.25pt wide.
+% Hmm.
+% 
+% Also doesn't work in math.  Do we need to do math with euro symbols?
+% Hope not.
+% 
+% 
+\def\euro{{\eurofont e}}
+\def\eurofont{%
+  % We set the font at each command, rather than predefining it in
+  % \textfonts and the other font-switching commands, so that
+  % installations which never need the symbold don't have to have the
+  % font installed.
+  % 
+  % There is only one designed size (nominal 10pt), so we always scale
+  % that to the current nominal size.
+  % 
+  % By the way, simply using "at 1em" works for cmr10 and the like, but
+  % does not work for cmbx10 and other extended/shrunken fonts.
+  % 
+  \def\eurosize{\csname\curfontsize nominalsize\endcsname}%
+  %
+  \ifx\curfontstyle\bfstylename 
+    % bold:
+    \font\thiseurofont = \ifusingit{feybo10}{feybr10} at \eurosize
+  \else 
+    % regular:
+    \font\thiseurofont = \ifusingit{feymo10}{feymr10} at \eurosize
+  \fi
+  \thiseurofont
+}
 
 % @registeredsymbol - R in a circle.  The font for the R should really
 % be smaller yet, but lllsize is the best we can do for now.
@@ -2972,9 +3034,8 @@ where each line of input produces a line of output.}
 % Index generation facilities
 
 % Define \newwrite to be identical to plain tex's \newwrite
-% except not \outer, so it can be used within \newindex.
-{\catcode`\@=11
-\gdef\newwrite{\alloc@7\write\chardef\sixt@@n}}
+% except not \outer, so it can be used within macros and \if's.
+\edef\newwrite{\makecsname{ptexnewwrite}}
 
 % \newindex {foo} defines an index named foo.
 % It automatically defines \fooindex such that
@@ -3166,6 +3227,7 @@ where each line of input produces a line of output.}
   \definedummyword{enddots}%
   \definedummyword{equiv}%
   \definedummyword{error}%
+  \definedummyword{euro}%
   \definedummyword{expansion}%
   \definedummyword{minus}%
   \definedummyword{pounds}%
@@ -3304,6 +3366,7 @@ where each line of input produces a line of output.}
   \def\enddots{...}%
   \def\equiv{==}%
   \def\error{error}%
+  \def\euro{euro}%
   \def\expansion{==>}%
   \def\minus{-}%
   \def\pounds{pounds}%
