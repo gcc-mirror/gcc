@@ -3797,6 +3797,10 @@ fold (expr)
       return t;
     }
   
+#ifdef MAX_INTEGER_COMPUTATION_MODE
+  check_max_integer_computation_mode (expr);
+#endif
+
   kind = TREE_CODE_CLASS (code);
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
     {

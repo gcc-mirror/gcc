@@ -2123,6 +2123,7 @@ extern void do_pending_stack_adjust		PROTO ((void));
 extern struct rtx_def *expand_assignment	PROTO ((tree, tree, int, int));
 extern struct rtx_def *store_expr		PROTO ((tree, struct rtx_def *,
 							int));
+extern void check_max_integer_computation_mode	PROTO ((tree));
 
 /* In emit-rtl.c */
 extern void start_sequence_for_rtl_expr		PROTO ((tree));

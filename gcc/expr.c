@@ -4919,6 +4919,52 @@ var_rtx (exp)
       return 0;
     }
 }
+
+#ifdef MAX_INTEGER_COMPUTATION_MODE
+void
+check_max_integer_computation_mode (exp)
+    tree exp;
+{
+  enum tree_code code = TREE_CODE (exp);
+  enum machine_mode mode;
+
+  /* First check the type of the overall operation.   We need only look at
+     unary, binary and relational operations.  */
+  if (TREE_CODE_CLASS (code) == '1'
+      || TREE_CODE_CLASS (code) == '2'
+      || TREE_CODE_CLASS (code) == '<')
+    {
+      mode = TYPE_MODE (TREE_TYPE (exp));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && mode > MAX_INTEGER_COMPUTATION_MODE)
+	fatal ("unsupported wide integer operation");
+    }
+
+  /* Check operand of a unary op.  */
+  if (TREE_CODE_CLASS (code) == '1')
+    {
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && mode > MAX_INTEGER_COMPUTATION_MODE)
+	fatal ("unsupported wide integer operation");
+    }
+	
+  /* Check operands of a binary/comparison op.  */
+  if (TREE_CODE_CLASS (code) == '2' || TREE_CODE_CLASS (code) == '<')
+    {
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && mode > MAX_INTEGER_COMPUTATION_MODE)
+	fatal ("unsupported wide integer operation");
+
+      mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 1)));
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && mode > MAX_INTEGER_COMPUTATION_MODE)
+	fatal ("unsupported wide integer operation");
+    }
+}
+#endif
+
 
 /* expand_expr: generate code for computing expression EXP.
    An rtx for the computed value is returned.  The value is never null.
@@ -5040,6 +5086,23 @@ expand_expr (exp, target, tmode, modifier)
 
       target = 0;
     }
+
+#ifdef MAX_INTEGER_COMPUTATION_MODE
+  if (target)
+    {
+      enum machine_mode mode = GET_MODE (target);
+
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && mode > MAX_INTEGER_COMPUTATION_MODE)
+	fatal ("unsupported wide integer operation");
+    }
+
+  if (GET_MODE_CLASS (tmode) == MODE_INT
+      && tmode > MAX_INTEGER_COMPUTATION_MODE)
+    fatal ("unsupported wide integer operation");
+
+  check_max_integer_computation_mode (exp);
+#endif
 
   /* If will do cse, generate all results into pseudo registers
      since 1) that allows cse to find more things
@@ -9815,6 +9878,10 @@ do_jump (exp, if_false_label, if_true_label)
   int i;
   tree type;
   enum machine_mode mode;
+
+#ifdef MAX_INTEGER_COMPUTATION_MODE
+  check_max_integer_computation_mode (exp);
+#endif
 
   emit_queue ();
 
