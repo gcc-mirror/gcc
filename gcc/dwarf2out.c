@@ -11924,13 +11924,6 @@ dwarf2out_define (lineno, buffer)
      unsigned lineno ATTRIBUTE_UNUSED;
      const char *buffer ATTRIBUTE_UNUSED;
 {
-  static int initialized = 0;
-  if (!initialized)
-    {
-      dwarf2out_start_source_file (0, primary_filename);
-      initialized = 1;
-    }
-
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
       named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
