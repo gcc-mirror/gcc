@@ -1,3 +1,7 @@
+2000-03-20  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Hand edit for java_raw_api.lo.
+
 2000-03-08  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* config.guess, config.sub: Update from the gcc tree.
