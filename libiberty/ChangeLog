@@ -1,3 +1,8 @@
+1998-10-26  Mark Mitchell  <mark@markmitchell.com>
+
+	* splay-tree.c: Tweak include directives to make sure declarations of
+	xmalloc and free are available.
+
 1998-10-25  Mark Mitchell  <mark@markmitchell.com>
 
 	* cplus-dem.c (gnu_special): Fix handling of virtual tables in
