@@ -92,6 +92,7 @@ extern int target_flags;
    of them must be emulated in software by the OS.  When TARGET_68040 is
    turned on, these instructions won't be used.  This code will still
    run on a 68030 and 68881/2. */
+#define MASK_68040_ALSO (256)
 #define MASK_68040	(256|512)
 #define TARGET_68040 (target_flags & MASK_68040)
 
@@ -140,7 +141,7 @@ extern int target_flags;
     { "68881" - (MASK_FPA|MASK_SKY)},					\
     { "68881", MASK_68881},						\
     { "soft-float", - (MASK_FPA|MASK_SKY|MASK_68040_ONLY|MASK_68881)},	\
-    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020)},		\
+    { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040_ALSO)}, \
     { "68030", - (MASK_68040|MASK_68060)},				\
     { "68030", (MASK_68020|MASK_BITFIELD)},				\
     { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD|MASK_68040_ONLY)},	\
