@@ -1,3 +1,15 @@
+2001-04-04  Per Bothner  <per@bothner.com>
+
+	* java-tree.h (CONSTANT_VALUE_P):  New macro.
+	* jcf-write.c (generate_classfile):  Use CONSTANT_VALUE_P.
+	* parse.y (maybe_build_class_init_for_field):  New static function.
+	(resolve_expression_name, resolve_field_access):  Use
+	maybe_build_class_init_for_field instead of build_class_init 
+	This does not do the init if the field is compile-time-constant.
+	(resolve_field_access):  Simplify.
+
+	* parse.y (fold_constant_for_init):  Merge test into switch.
+
 2001-03-30  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse-scan.y (array_type:): Rewritten.
