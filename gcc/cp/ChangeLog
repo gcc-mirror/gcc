@@ -1,3 +1,14 @@
+2003-12-18  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/9154
+	* parser.c (cp_parser_template_argument): A type-id followed by '>>'
+	is just an user typo, and should be accepted as last resort if any
+	other parsing fails.
+	(cp_parser_enclosed_template_argument_list): If the argument list is
+	parsed correctly, but the next token is '>>', emit a diagnostic.
+	(cp_parser_next_token_ends_template_argument): Accept '>>' as 
+	delimiter of template argument, it will be later detected as a typo.
+
 2003-12-17  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace cp/g++.1 with $(docobjdir)/g++.1.
