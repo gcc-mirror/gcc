@@ -1,3 +1,7 @@
+Mon 25-Sep-2000 19:46:09 BST  Neil Booth  <neilb@earthling.net>
+
+	* MAINTAINERS: Add self as cpplib co-maintainer.
+
 2000-09-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	* MAINTAINERS: Add self to Write After Approval list.
