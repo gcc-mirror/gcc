@@ -493,7 +493,10 @@ use_return_insn ()
   for (regno = 0 ; regno < FIRST_PSEUDO_REGISTER ; regno++)
     if (regs_ever_live[regno] && ! call_used_regs[regno])
       return 0;
-  
+
+  if (flag_pic && current_function_uses_pic_offset_table)
+    return 0;
+
   return 1;
 }
 
