@@ -1,3 +1,7 @@
+Sat Oct 10 17:01:42 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* regmove.c (optimize_reg_copy_3): Honor TRULY_NOOP_TRUNCATION.
+
 Fri Oct  9 22:08:05 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fp-bit.c (SFtype): Don't implicitly use int in declaration.
