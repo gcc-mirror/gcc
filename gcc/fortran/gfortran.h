@@ -1573,32 +1573,33 @@ void gfc_get_component_attr (symbol_attribute *, gfc_component *);
 void gfc_set_sym_referenced (gfc_symbol * sym);
 
 try gfc_add_allocatable (symbol_attribute *, locus *);
-try gfc_add_dimension (symbol_attribute *, locus *);
+try gfc_add_dimension (symbol_attribute *, const char *, locus *);
 try gfc_add_external (symbol_attribute *, locus *);
 try gfc_add_intrinsic (symbol_attribute *, locus *);
 try gfc_add_optional (symbol_attribute *, locus *);
 try gfc_add_pointer (symbol_attribute *, locus *);
-try gfc_add_result (symbol_attribute *, locus *);
-try gfc_add_save (symbol_attribute *, locus *);
+try gfc_add_result (symbol_attribute *, const char *, locus *);
+try gfc_add_save (symbol_attribute *, const char *, locus *);
 try gfc_add_saved_common (symbol_attribute *, locus *);
 try gfc_add_target (symbol_attribute *, locus *);
-try gfc_add_dummy (symbol_attribute *, locus *);
-try gfc_add_generic (symbol_attribute *, locus *);
+try gfc_add_dummy (symbol_attribute *, const char *, locus *);
+try gfc_add_generic (symbol_attribute *, const char *, locus *);
 try gfc_add_common (symbol_attribute *, locus *);
-try gfc_add_in_common (symbol_attribute *, locus *);
-try gfc_add_data (symbol_attribute *, locus *);
-try gfc_add_in_namelist (symbol_attribute *, locus *);
-try gfc_add_sequence (symbol_attribute *, locus *);
+try gfc_add_in_common (symbol_attribute *, const char *, locus *);
+try gfc_add_data (symbol_attribute *, const char *, locus *);
+try gfc_add_in_namelist (symbol_attribute *, const char *, locus *);
+try gfc_add_sequence (symbol_attribute *, const char *, locus *);
 try gfc_add_elemental (symbol_attribute *, locus *);
 try gfc_add_pure (symbol_attribute *, locus *);
 try gfc_add_recursive (symbol_attribute *, locus *);
-try gfc_add_function (symbol_attribute *, locus *);
-try gfc_add_subroutine (symbol_attribute *, locus *);
+try gfc_add_function (symbol_attribute *, const char *, locus *);
+try gfc_add_subroutine (symbol_attribute *, const char *, locus *);
 
-try gfc_add_access (symbol_attribute *, gfc_access, locus *);
-try gfc_add_flavor (symbol_attribute *, sym_flavor, locus *);
-try gfc_add_entry (symbol_attribute *, locus *);
-try gfc_add_procedure (symbol_attribute *, procedure_type, locus *);
+try gfc_add_access (symbol_attribute *, gfc_access, const char *, locus *);
+try gfc_add_flavor (symbol_attribute *, sym_flavor, const char *, locus *);
+try gfc_add_entry (symbol_attribute *, const char *, locus *);
+try gfc_add_procedure (symbol_attribute *, procedure_type,
+		       const char *, locus *);
 try gfc_add_intent (symbol_attribute *, sym_intent, locus *);
 try gfc_add_explicit_interface (gfc_symbol *, ifsrc,
 				gfc_formal_arglist *, locus *);

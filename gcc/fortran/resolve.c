@@ -151,7 +151,7 @@ resolve_formal_arglist (gfc_symbol * proc)
          A procedure specification would have already set the type.  */
 
       if (sym->attr.flavor == FL_UNKNOWN)
-	gfc_add_flavor (&sym->attr, FL_VARIABLE, &sym->declared_at);
+	gfc_add_flavor (&sym->attr, FL_VARIABLE, sym->name, &sym->declared_at);
 
       if (gfc_pure (proc))
 	{
@@ -364,12 +364,12 @@ resolve_entries (gfc_namespace * ns)
   gfc_get_ha_symbol (name, &proc);
   gcc_assert (proc != NULL);
 
-  gfc_add_procedure (&proc->attr, PROC_INTERNAL, NULL);
+  gfc_add_procedure (&proc->attr, PROC_INTERNAL, proc->name, NULL);
   if (ns->proc_name->attr.subroutine)
-    gfc_add_subroutine (&proc->attr, NULL);
+    gfc_add_subroutine (&proc->attr, proc->name, NULL);
   else
     {
-      gfc_add_function (&proc->attr, NULL);
+      gfc_add_function (&proc->attr, proc->name, NULL);
       gfc_internal_error ("TODO: Functions with alternate entry points");
     }
   proc->attr.access = ACCESS_PRIVATE;

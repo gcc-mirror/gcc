@@ -1877,7 +1877,7 @@ gfc_match_rvalue (gfc_expr ** result)
 	e->rank = sym->as->rank;
 
       if (!sym->attr.function
-	  && gfc_add_function (&sym->attr, NULL) == FAILURE)
+	  && gfc_add_function (&sym->attr, sym->name, NULL) == FAILURE)
 	{
 	  m = MATCH_ERROR;
 	  break;
@@ -1905,7 +1905,8 @@ gfc_match_rvalue (gfc_expr ** result)
 
       if (sym->attr.dimension)
 	{
-	  if (gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
+	  if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
+			      sym->name, NULL) == FAILURE)
 	    {
 	      m = MATCH_ERROR;
 	      break;
@@ -1930,7 +1931,8 @@ gfc_match_rvalue (gfc_expr ** result)
 	  e->symtree = symtree;
 	  e->expr_type = EXPR_VARIABLE;
 
-	  if (gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
+	  if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
+			      sym->name, NULL) == FAILURE)
 	    {
 	      m = MATCH_ERROR;
 	      break;
@@ -1964,7 +1966,8 @@ gfc_match_rvalue (gfc_expr ** result)
 	      e->expr_type = EXPR_VARIABLE;
 
 	      if (sym->attr.flavor != FL_VARIABLE
-		  && gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
+		  && gfc_add_flavor (&sym->attr, FL_VARIABLE,
+				     sym->name, NULL) == FAILURE)
 		{
 		  m = MATCH_ERROR;
 		  break;
@@ -1990,7 +1993,7 @@ gfc_match_rvalue (gfc_expr ** result)
       e->expr_type = EXPR_FUNCTION;
 
       if (!sym->attr.function
-	  && gfc_add_function (&sym->attr, NULL) == FAILURE)
+	  && gfc_add_function (&sym->attr, sym->name, NULL) == FAILURE)
 	{
 	  m = MATCH_ERROR;
 	  break;
@@ -2072,7 +2075,8 @@ gfc_match_variable (gfc_expr ** result, int equiv_flag)
       break;
 
     case FL_UNKNOWN:
-      if (gfc_add_flavor (&sym->attr, FL_VARIABLE, NULL) == FAILURE)
+      if (gfc_add_flavor (&sym->attr, FL_VARIABLE,
+			  sym->name, NULL) == FAILURE)
 	return MATCH_ERROR;
       break;
 

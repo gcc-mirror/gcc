@@ -1,3 +1,40 @@
+2005-02-07  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.h (gfc_add_dimension, gfc_add_result, gfc_add_save,
+	gfc_add_dummy, gfc_add_generic, gfc_add_in_common, gfc_add_data,
+	gfc_add_in_namelist, gfc_add_sequence, gfc_add_function,
+	gfc_add_subroutine, gfc_add_access, gfc_add_flavor, gfc_add_entry,
+	gfc_add_procedure): Add argument.
+	* array.c (gfc_set_array_spec), decl.c (var_element, get_proc_name,
+	gfc_match_null, match_type_spec, match_attr_spec,
+	gfc_match_formal_arglist, match_result, gfc_match_function_decl):
+	Update callers to match.
+	(gfc_match_entry) : Likewise, fix comment typo.
+	(gfc_match_subroutine, attr_decl1, gfc_add_dimension,
+	access_attr_decl, do_parm, gfc_match_save, gfc_match_modproc,
+	gfc_match_derived_decl): Update callers.
+	* interface.c (gfc_match_interface): Likewise.
+	* match.c (gfc_match_label, gfc_add_flavor,
+	gfc_match_call, gfc_match_common, gfc_match_block_data,
+	gfc_match_namelist, gfc_match_module, gfc_match_st_function):
+	Likewise.
+	* parse.c (parse_derived, parse_interface, parse_contained),
+	primary.c (gfc_match_rvalue, gfc_match_variable): Likewise.
+	* resolve.c (resolve_formal_arglist, resolve_entries): Update callers.
+	* symbol.c (check_conflict, check_used): Add new 'name' argument,
+	use when printing error message.
+	(gfc_add_dimension, gfc_add_result, gfc_add_save, gfc_add_dummy,
+	gfc_add_generic, gfc_add_in_common, gfc_add_data,
+	gfc_add_in_namelist, gfc_add_sequence, gfc_add_function,
+	gfc_add_subroutine, gfc_add_access, gfc_add_flavor, gfc_add_entry,
+	gfc_add_procedure): Add new 'name' argument.  Pass along to
+	check_conflict and check_used.
+	(gfc_add_allocatable, gfc_add_external, gfc_add_intrinsic,
+	gfc_add_optional, gfc_add_pointer, gfc_add_target, gfc_add_elemental,
+	gfc_add_pure, gfc_add_recursive, gfc_add_intent,
+	gfc_add_explicit_interface, gfc_copy_attr): Pass NULL for new
+	argument in calls to any of the modified functions.
+
 2005-02-06  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* gfortran.texi: Don't give last update date.
