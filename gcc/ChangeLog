@@ -1,3 +1,8 @@
+Fri Jul 31 10:23:55 1998  Doug Evans  <devans@canuck.cygnus.com>
+
+	* m32r/m32r.h (ASM_OUTPUT_SOURCE_LINE): Always output line number
+	labels with .debugsym if no parallel insns.
+
 Thu Jul 30 19:15:53 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (fp cmp): Replicate patterns for ALPHA_TP_INSN.
