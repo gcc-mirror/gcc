@@ -8344,7 +8344,7 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
    CHECK is 1 if we must find this method in CTYPE, 0 if we should
    not look, and -1 if we should not call `grokclassfn' at all.  
 
-   Returns `error_mark_node' if something goes wrong, after issuing
+   Returns `NULL_TREE' if something goes wrong, after issuing
    applicable error messages.  */
 
 static tree
@@ -8496,7 +8496,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	      /* Something like `template <class T> friend void f<T>()'.  */
 	      cp_error ("template-id `%D' in declaration of primary template", 
 			orig_declarator);
-	      return error_mark_node;
+	      return NULL_TREE;
 	    }
 
 	  /* A friend declaration of the form friend void f<>().  Record
@@ -8544,7 +8544,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
       if (decl == error_mark_node)
-	return error_mark_node;
+	return NULL_TREE;
 
       if ((! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
 	  && check)
@@ -8560,7 +8560,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	    return tmp;
 	}
       if (! grok_ctor_properties (ctype, decl))
-	return error_mark_node;
+	return NULL_TREE;
     }
   else
     {
@@ -8577,7 +8577,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 					    2 * (funcdef_flag != 0) + 
 					    4 * (friendp != 0));
       if (decl == error_mark_node)
-	return error_mark_node;
+	return NULL_TREE;
 
       if (ctype != NULL_TREE
 	  && (! TYPE_FOR_JAVA (ctype) || check_java_method (decl))
@@ -10931,7 +10931,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			       virtualp, flags, quals, raises, attrlist,
 			       friendp ? -1 : 0, friendp, publicp, inlinep,
 			       funcdef_flag, template_count, in_namespace);
-	    if (decl == NULL_TREE || decl == error_mark_node)
+	    if (decl == NULL_TREE)
 	      return decl;
 #if 0
 	    /* This clobbers the attrs stored in `decl' from `attrlist'.  */
@@ -11177,11 +11177,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			   template_count, in_namespace);
 	if (decl == NULL_TREE)
 	  return NULL_TREE;
-
-	/* Among other times, could occur from check_explicit_specialization
-	   returning an error_mark_node.  */
-	if (decl == error_mark_node)
-	  return error_mark_node;
 
 	if (staticp == 1)
 	  {
