@@ -29,7 +29,7 @@ else
 cond_x_ltlibrary =
 endif
 
-toolexeclib_LTLIBRARIES = libgcj.la $(cond_x_ltlibrary)
+toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
 
 jardir = $(datadir)/java
@@ -147,6 +147,63 @@ libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) $(THREADLDFLAGS) $(THREADLIBS) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgcj_la_LINK = $(LIBLINK)
 
+lib_org_w3c_dom_la_SOURCES = org/w3c/dom/Attr.java \
+org/w3c/dom/CDATASection.java \
+org/w3c/dom/CharacterData.java \
+org/w3c/dom/Comment.java \
+org/w3c/dom/DOMException.java \
+org/w3c/dom/DOMImplementation.java \
+org/w3c/dom/Document.java \
+org/w3c/dom/DocumentFragment.java \
+org/w3c/dom/DocumentType.java \
+org/w3c/dom/Element.java \
+org/w3c/dom/Entity.java \
+org/w3c/dom/EntityReference.java \
+org/w3c/dom/NamedNodeMap.java \
+org/w3c/dom/Node.java \
+org/w3c/dom/NodeList.java \
+org/w3c/dom/Notation.java \
+org/w3c/dom/ProcessingInstruction.java \
+org/w3c/dom/Text.java \
+org/w3c/dom/ranges/DocumentRange.java \
+org/w3c/dom/ranges/Range.java \
+org/w3c/dom/ranges/RangeException.java \
+org/w3c/dom/traversal/DocumentTraversal.java \
+org/w3c/dom/traversal/NodeFilter.java \
+org/w3c/dom/traversal/NodeIterator.java \
+org/w3c/dom/traversal/TreeWalker.java
+
+lib_org_xml_sax_la_SOURCES = org/xml/sax/ext/DeclHandler.java \
+org/xml/sax/ext/LexicalHandler.java \
+org/xml/sax/helpers/AttributeListImpl.java \
+org/xml/sax/helpers/AttributesImpl.java \
+org/xml/sax/helpers/DefaultHandler.java \
+org/xml/sax/helpers/LocatorImpl.java \
+org/xml/sax/helpers/NamespaceSupport.java \
+org/xml/sax/helpers/NewInstance.java \
+org/xml/sax/helpers/ParserAdapter.java \
+org/xml/sax/helpers/ParserFactory.java \
+org/xml/sax/helpers/XMLFilterImpl.java \
+org/xml/sax/helpers/XMLReaderAdapter.java \
+org/xml/sax/helpers/XMLReaderFactory.java \
+org/xml/sax/AttributeList.java \
+org/xml/sax/Attributes.java \
+org/xml/sax/ContentHandler.java \
+org/xml/sax/DTDHandler.java \
+org/xml/sax/DocumentHandler.java \
+org/xml/sax/EntityResolver.java \
+org/xml/sax/ErrorHandler.java \
+org/xml/sax/HandlerBase.java \
+org/xml/sax/InputSource.java \
+org/xml/sax/Locator.java \
+org/xml/sax/Parser.java \
+org/xml/sax/SAXException.java \
+org/xml/sax/SAXNotRecognizedException.java \
+org/xml/sax/SAXNotSupportedException.java \
+org/xml/sax/SAXParseException.java \
+org/xml/sax/XMLFilter.java \
+org/xml/sax/XMLReader.java
+
 libgcjx_la_SOURCES = $(x_nat_source_files)
 EXTRA_libgcjx_la_SOURCES = $(x_java_source_files)
 libgcjx_la_DEPENDENCIES = libgcj-@gcc_version@.jar $(x_javao_files)
@@ -168,6 +225,8 @@ install-exec-hook:
 all_java_source_files = \
     $(java_source_files) \
     $(built_java_source_files) \
+    $(lib_org_xml_sax_la_SOURCES) \
+    $(lib_org_w3c_dom_la_SOURCES) \
     $(x_java_source_files)
 
 all_java_class_files = $(all_java_source_files:.java=.class)
@@ -218,7 +277,7 @@ $(c_files): %.lo: %.c
 $(c_files): java/lang/fdlibm.h java/lang/ieeefp.h java/lang/mprec.h
 
 ## FIXME: GNU make.
-$(javao_files) $(x_javao_files): %.lo: %.java
+$(javao_files) $(x_javao_files) $(lib_org_w3c_dom_la_OBJECTS) $(lib_org_xml_sax_la_OBJECTS): %.lo: %.java
 	$(GCJCOMPILE) -o $@ $<
 
 ## Pass the list of object files to libtool in a temporary file to 
@@ -2220,61 +2279,6 @@ java/util/zip/ZipException.java	\
 java/util/zip/ZipFile.java \
 java/util/zip/ZipInputStream.java \
 java/util/zip/ZipOutputStream.java \
-org/w3c/dom/Attr.java \
-org/w3c/dom/CDATASection.java \
-org/w3c/dom/CharacterData.java \
-org/w3c/dom/Comment.java \
-org/w3c/dom/DOMException.java \
-org/w3c/dom/DOMImplementation.java \
-org/w3c/dom/Document.java \
-org/w3c/dom/DocumentFragment.java \
-org/w3c/dom/DocumentType.java \
-org/w3c/dom/Element.java \
-org/w3c/dom/Entity.java \
-org/w3c/dom/EntityReference.java \
-org/w3c/dom/NamedNodeMap.java \
-org/w3c/dom/Node.java \
-org/w3c/dom/NodeList.java \
-org/w3c/dom/Notation.java \
-org/w3c/dom/ProcessingInstruction.java \
-org/w3c/dom/Text.java \
-org/w3c/dom/ranges/DocumentRange.java \
-org/w3c/dom/ranges/Range.java \
-org/w3c/dom/ranges/RangeException.java \
-org/w3c/dom/traversal/DocumentTraversal.java \
-org/w3c/dom/traversal/NodeFilter.java \
-org/w3c/dom/traversal/NodeIterator.java \
-org/w3c/dom/traversal/TreeWalker.java \
-org/xml/sax/ext/DeclHandler.java \
-org/xml/sax/ext/LexicalHandler.java \
-org/xml/sax/helpers/AttributeListImpl.java \
-org/xml/sax/helpers/AttributesImpl.java \
-org/xml/sax/helpers/DefaultHandler.java \
-org/xml/sax/helpers/LocatorImpl.java \
-org/xml/sax/helpers/NamespaceSupport.java \
-org/xml/sax/helpers/NewInstance.java \
-org/xml/sax/helpers/ParserAdapter.java \
-org/xml/sax/helpers/ParserFactory.java \
-org/xml/sax/helpers/XMLFilterImpl.java \
-org/xml/sax/helpers/XMLReaderAdapter.java \
-org/xml/sax/helpers/XMLReaderFactory.java \
-org/xml/sax/AttributeList.java \
-org/xml/sax/Attributes.java \
-org/xml/sax/ContentHandler.java \
-org/xml/sax/DTDHandler.java \
-org/xml/sax/DocumentHandler.java \
-org/xml/sax/EntityResolver.java \
-org/xml/sax/ErrorHandler.java \
-org/xml/sax/HandlerBase.java \
-org/xml/sax/InputSource.java \
-org/xml/sax/Locator.java \
-org/xml/sax/Parser.java \
-org/xml/sax/SAXException.java \
-org/xml/sax/SAXNotRecognizedException.java \
-org/xml/sax/SAXNotSupportedException.java \
-org/xml/sax/SAXParseException.java \
-org/xml/sax/XMLFilter.java \
-org/xml/sax/XMLReader.java \
 $(rmi_java_source_files) \
 $(awt_java_source_files) \
 $(convert_source_files) \
