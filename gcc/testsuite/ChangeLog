@@ -1,5 +1,9 @@
 2004-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* gcc.dg/torture/builtin-ctype-1.c: New test.
+
+2004-03-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
 	* gcc.dg/torture/builtin-explog-1.c: Add new cases.
 	* gcc.dg/torture/builtin-math-1.c: Likewise.
 	* builtin-power-1.c: New test.
