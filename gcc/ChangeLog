@@ -1,3 +1,10 @@
+2001-11-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.md (casesi): Swap arguments in "(plus:SI (pc) (mult))". Reformat.
+	(casesi1): Likewise.  Define new pattern which arises by simplification
+	when operand 1 is a constant int.  Correct pattern which arises by
+	simplification when operand 1 is zero.
+
 2001-11-16  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (arm*-*-rtems*, arm-*-coff*, armel-*-coff*,
