@@ -1,3 +1,27 @@
+Fri Mar 13 07:10:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips/bsd-4.h, mips/iris3.h, mips/news{4,5}.h: Don't include mips.h.
+	* mips/news5.h, mips/osfrose.h, mips/svr{3,4}-4.h: Likewise.
+	* mips/ultrix.h: Likewise.
+	* mips/cross64.h: Don't include iris6.h.
+	* mips/ecoff.h: Don't include mips.h or gofast.h.
+	* mips/elforion.h: Don't include elf64.h.
+	* mips/iris4.h: Don't include iris3.h.
+	* mips/iris4loser.h: Don't include iris4.h.
+	* mips/iris5gas.h: Don't include iris5.h.
+	* mips/elflorion.h, mips/nws3250v4.h, mips/xm-iris{3,4}.h: Deleted.
+	* mips/xm-nws3250v4.h, mips/xm-sysv.h: Deleted.
+	* mips/rtems64.h: Don't include elflorion.h.
+	* mips/sni-gas.h: Don't include sni-svr4.h.
+	* mips/svr4-t.h: Don't include svr4-5.h.
+	* mips/dec-osf1.h: Also include mips.h.
+	* mips/ecoffl.h, mips/elf.h: Also include mips.h and gofast.h.
+	* mips/iris5.h: Also include iris3.h and mips.h.
+	* xm-usg.h: New file.
+	* mips/xm-iris5.h: Don't include xm-mips.h; don't define USG.
+	* mips/xm-news.h, mips/xm-sysv4.h: Don't include xm-sysv.h.
+	* configure.in: Reflect above changes.
+
 Thu Mar 12 07:18:48 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.h (STRICT_ARGUMENT_NAMING): Provide default value of 0.
