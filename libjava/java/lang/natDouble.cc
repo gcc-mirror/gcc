@@ -47,6 +47,13 @@ java::lang::Double::doubleToLongBits(jdouble value)
 {
   union u u;
   u.d = value;
+  
+  jlong e = u.l & 0x7ff0000000000000LL;
+  jlong f = u.l & 0x000fffffffffffffLL;
+
+  if (e == 0x7ff0000000000000LL && f != 0L)
+    u.l = 0x7ff8000000000000LL;
+
   return u.l;
 }
 

@@ -1,3 +1,10 @@
+1999-04-14  Andrew Haley  <aph@cygnus.com>
+
+ 	* java/lang/natDouble.java (doubleToLongBits): ensure that all
+ 	NaNs are always converted to the same long value.  
+ 	* java/lang/natFloat.java (floatToIntBits): ditto, but for float
+ 	converted to int.
+
 1999-04-13  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natSystem.cc (arraycopy): Don't always use jbyteArray;
