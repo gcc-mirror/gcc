@@ -1377,7 +1377,11 @@ mark_reg_gr_used_mask (reg, data)
 {
   unsigned int regno = REGNO (reg);
   if (regno < 32)
-    current_frame_info.gr_used_mask |= 1 << regno;
+    {
+      unsigned int i, n = HARD_REGNO_NREGS (regno, GET_MODE (reg));
+      for (i = 0; i < n; ++i)
+	current_frame_info.gr_used_mask |= 1 << (regno + i);
+    }
 }
 
 /* Returns the number of bytes offset between the frame pointer and the stack
