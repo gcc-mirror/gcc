@@ -1,3 +1,39 @@
+2004-05-31  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.c (pp_cxx_colon_colon): Expor.
+	(pp_cxx_begin_template_argument_list): Turn into a function.
+	(pp_cxx_end_template_argument_list): Likewise.
+	(pp_cxx_separate_with): Define.
+	(pp_cxx_unqualified_id): Tidy.
+	(pp_cxx_primary_expression): Likewise.
+	(pp_cxx_postfix_expression): Likewise.
+	(pp_cxx_expression): Likewise.
+	(pp_cxx_simple_type_specifier): Likewise.
+	(pp_cxx_type_specifier_seq): Likewise.
+	(pp_cxx_parameter_declaration_clause): Likewise.
+	(pp_cxx_exception_specification): Likewise.
+	(pp_cxx_direct_declarator): Likewise.
+	(pp_cxx_type_id): Likewise.
+	* cxx-pretty-print.h (pp_cxx_whitespace): Export from
+	cxx-pretty-print.c.
+	(pp_cxx_left_paren): Likewise.
+	(pp_cxx_right_paren): Likewise.
+	(pp_cxx_left_brace): Likewise.
+	(pp_cxx_right_brace): Likewise.
+	(pp_cxx_left_bracket): Likewise.
+	(pp_cxx_right_bracket): Likewise.
+	(pp_cxx_dot): Likewise.
+	(pp_cxx_identifier): Likewise.
+	(pp_cxx_tree_identifier): Likewise.
+	(pp_cxx_ampersand): New macro.
+	(pp_cxx_star): Likewise.
+	(pp_cxx_arrow): Likewise.
+	(pp_cxx_semicolon): Likewise.
+	(pp_cxx_complement): Likewise.
+	(pp_cxx_begin_template_argument_list): Declaree.
+	(pp_cxx_end_template_argument_list): Likewise.
+	(pp_cxx_colon_colon): likewise.
+
 2004-05-31  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* parser.c (cp_parser_simple_type_specifier): Explicitly test
