@@ -247,27 +247,12 @@ enum reg_class reg_class_from_letter[256];
 /* Cached value of frv_stack_info.  */
 static frv_stack_t *frv_stack_cache = (frv_stack_t *)0;
 
-/* -mbranch-cost= support */
-const char *frv_branch_cost_string;
-int frv_branch_cost_int = DEFAULT_BRANCH_COST;
-
 /* -mcpu= support */
-const char *frv_cpu_string;		/* -mcpu= option */
 frv_cpu_t frv_cpu_type = CPU_TYPE;	/* value of -mcpu= */
 
-/* -mcond-exec-insns= support */
-const char *frv_condexec_insns_str;		 /* -mcond-exec-insns= option */
-int frv_condexec_insns = DEFAULT_CONDEXEC_INSNS; /* value of -mcond-exec-insns*/
-
-/* -mcond-exec-temps= support */
-const char *frv_condexec_temps_str;		 /* -mcond-exec-temps= option */
-int frv_condexec_temps = DEFAULT_CONDEXEC_TEMPS; /* value of -mcond-exec-temps*/
-
-/* -msched-lookahead=n */
-const char *frv_sched_lookahead_str;	 /* -msched-lookahead=n */
-int frv_sched_lookahead = 4;		 /* -msched-lookahead=n */
-
 /* Forward references */
+
+static bool frv_handle_option			(size_t, const char *, int);
 static int frv_default_flags_for_cpu		(void);
 static int frv_string_begins_with		(tree, const char *);
 static FRV_INLINE bool frv_small_data_reloc_p	(rtx, int);
@@ -380,6 +365,13 @@ static bool frv_must_pass_in_stack (enum machine_mode mode, tree type);
 static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 				  tree, bool);
 
+/* Allow us to easily change the default for -malloc-cc.  */
+#ifndef DEFAULT_NO_ALLOC_CC
+#define MASK_DEFAULT_ALLOC_CC	MASK_ALLOC_CC
+#else
+#define MASK_DEFAULT_ALLOC_CC	0
+#endif
+
 /* Initialize the GCC target structure.  */
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE frv_function_prologue
@@ -387,6 +379,17 @@ static int frv_arg_partial_bytes (CUMULATIVE_ARGS *, enum machine_mode,
 #define TARGET_ASM_FUNCTION_EPILOGUE frv_function_epilogue
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER frv_assemble_integer
+#undef TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS		\
+  (MASK_DEFAULT_ALLOC_CC			\
+   | MASK_COND_MOVE				\
+   | MASK_SCC					\
+   | MASK_COND_EXEC				\
+   | MASK_VLIW_BRANCH				\
+   | MASK_MULTI_CE				\
+   | MASK_NESTED_CE)
+#undef TARGET_HANDLE_OPTION
+#define TARGET_HANDLE_OPTION frv_handle_option
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS frv_init_builtins
 #undef TARGET_EXPAND_BUILTIN
@@ -519,6 +522,41 @@ frv_cannot_force_const_mem (rtx x ATTRIBUTE_UNUSED)
   return TARGET_FDPIC;
 }
 
+/* Implement TARGET_HANDLE_OPTION.  */
+
+static bool
+frv_handle_option (size_t code, const char *arg, int value ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case OPT_mcpu_:
+      if (strcmp (arg, "simple") == 0)
+	frv_cpu_type = FRV_CPU_SIMPLE;
+      else if (strcmp (arg, "tomcat") == 0)
+	frv_cpu_type = FRV_CPU_TOMCAT;
+      else if (strcmp (arg, "fr550") == 0)
+	frv_cpu_type = FRV_CPU_FR550;
+      else if (strcmp (arg, "fr500") == 0)
+	frv_cpu_type = FRV_CPU_FR500;
+      else if (strcmp (arg, "fr450") == 0)
+	frv_cpu_type = FRV_CPU_FR450;
+      else if (strcmp (arg, "fr405") == 0)
+	frv_cpu_type = FRV_CPU_FR405;
+      else if (strcmp (arg, "fr400") == 0)
+	frv_cpu_type = FRV_CPU_FR400;
+      else if (strcmp (arg, "fr300") == 0)
+	frv_cpu_type = FRV_CPU_FR300;
+      else if (strcmp (arg, "frv") == 0)
+	frv_cpu_type = FRV_CPU_GENERIC;
+      else
+	return false;
+      return true;
+
+    default:
+      return true;
+    }
+}
+
 static int
 frv_default_flags_for_cpu (void)
 {
@@ -563,47 +601,6 @@ frv_override_options (void)
   int regno;
   unsigned int i;
 
-  /* Set the cpu type.  */
-  if (frv_cpu_string)
-    {
-      if (strcmp (frv_cpu_string, "simple") == 0)
-	frv_cpu_type = FRV_CPU_SIMPLE;
-
-      else if (strcmp (frv_cpu_string, "tomcat") == 0)
-	frv_cpu_type = FRV_CPU_TOMCAT;
-
-      else if (strncmp (frv_cpu_string, "fr", sizeof ("fr")-1) != 0)
-	error ("Unknown cpu: -mcpu=%s", frv_cpu_string);
-
-      else
-	{
-	  const char *p = frv_cpu_string + sizeof ("fr") - 1;
-	  if (strcmp (p, "550") == 0)
-	    frv_cpu_type = FRV_CPU_FR550;
-
-	  else if (strcmp (p, "500") == 0)
-	    frv_cpu_type = FRV_CPU_FR500;
-
-	  else if (strcmp (p, "450") == 0)
-	    frv_cpu_type = FRV_CPU_FR450;
-
-	  else if (strcmp (p, "405") == 0)
-	    frv_cpu_type = FRV_CPU_FR405;
-
-	  else if (strcmp (p, "400") == 0)
-	    frv_cpu_type = FRV_CPU_FR400;
-
-	  else if (strcmp (p, "300") == 0)
-	    frv_cpu_type = FRV_CPU_FR300;
-
-	  else if (strcmp (p, "v") == 0)
-	    frv_cpu_type = FRV_CPU_GENERIC;
-
-	  else
-	    error ("Unknown cpu: -mcpu=%s", frv_cpu_string);
-	}
-    }
-
   target_flags |= (frv_default_flags_for_cpu () & ~target_flags_explicit);
 
   /* -mlibrary-pic sets -fPIC and -G0 and also suppresses warnings from the
@@ -619,22 +616,6 @@ frv_override_options (void)
 	  g_switch_value = 0;
 	}
     }
-
-  /* Change the branch cost value.  */
-  if (frv_branch_cost_string)
-    frv_branch_cost_int = atoi (frv_branch_cost_string);
-
-  /* Change the # of insns to be converted to conditional execution.  */
-  if (frv_condexec_insns_str)
-    frv_condexec_insns = atoi (frv_condexec_insns_str);
-
-  /* Change # of temporary registers used to hold integer constants.  */
-  if (frv_condexec_temps_str)
-    frv_condexec_temps = atoi (frv_condexec_temps_str);
-
-  /* Change scheduling look ahead.  */
-  if (frv_sched_lookahead_str)
-    frv_sched_lookahead = atoi (frv_sched_lookahead_str);
 
   /* A C expression whose value is a register class containing hard
      register REGNO.  In general there is more than one such class;
@@ -6793,8 +6774,8 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
   /* Make sure we are only dealing with hard registers.  Also honor the
      -mno-cond-exec switch, and -mno-nested-cond-exec switches if
      applicable.  */
-  if (!reload_completed || TARGET_NO_COND_EXEC
-      || (TARGET_NO_NESTED_CE && ce_info->pass > 1))
+  if (!reload_completed || !TARGET_COND_EXEC
+      || (!TARGET_NESTED_CE && ce_info->pass > 1))
     goto fail;
 
   /* Figure out which registers we can allocate for our own purposes.  Only
@@ -7153,7 +7134,7 @@ frv_ifcvt_modify_multiple_tests (ce_if_block_t *ce_info,
       debug_rtx (*p_false);
     }
 
-  if (TARGET_NO_MULTI_CE)
+  if (!TARGET_MULTI_CE)
     goto fail;
 
   if (GET_CODE (cr) != REG)
@@ -8920,7 +8901,7 @@ frv_for_each_packet (void (*handle_packet) (void))
   /* Early exit if we don't want to pack insns.  */
   if (!optimize
       || !flag_schedule_insns_after_reload
-      || TARGET_NO_VLIW_BRANCH
+      || !TARGET_VLIW_BRANCH
       || frv_packet.issue_rate == 1)
     return false;
 

@@ -20,25 +20,6 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Define the information needed to generate branch and scc insns.  This is
-   stored from the compare operation.  Note that we can't use "rtx" here
-   since it hasn't been defined!  */
-
-/* Define global data defined in frv.c.  */
-extern const char *frv_branch_cost_string;	/* -mbranch-cost option */
-extern int frv_branch_cost_int;			/* value of -mbranch_cost */
-
-extern const char *frv_cpu_string;		/* -mcpu= option */
-
-extern const char *frv_condexec_insns_str;	/* -mcond-exec-insns= option */
-extern int frv_condexec_insns;			/* value of -mcond-exec-insns */
-
-extern const char *frv_condexec_temps_str;	/* -mcond-exec-temps= option */
-extern int frv_condexec_temps;			/* value of -mcond-exec-temps */
-
-extern const char *frv_sched_lookahead_str;	/* -msched-lookahead= option */
-extern int frv_sched_lookahead;			/* value -msched-lookahead= */
-
 /* CPU type.  This must be identical to the cpu enumeration in frv.md.  */
 typedef enum frv_cpu
 {

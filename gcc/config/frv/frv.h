@@ -212,13 +212,6 @@
 #define CPU_TYPE		FRV_CPU_FR500
 #endif
 
-/* Allow us to easily change the default for -malloc-cc.  */
-#ifndef	DEFAULT_NO_ALLOC_CC
-#define MASK_DEFAULT_ALLOC_CC	MASK_ALLOC_CC
-#else
-#define MASK_DEFAULT_ALLOC_CC	0
-#endif
-
 /* Run-time target specifications */
 
 #define TARGET_CPU_CPP_BUILTINS()					\
@@ -275,104 +268,6 @@
   while (0)
 
 
-/* This declaration should be present.  */
-extern int target_flags;
-
-/* This series of macros is to allow compiler command arguments to enable or
-   disable the use of optional features of the target machine.  For example,
-   one machine description serves both the 68000 and the 68020; a command
-   argument tells the compiler whether it should use 68020-only instructions or
-   not.  This command argument works by means of a macro `TARGET_68020' that
-   tests a bit in `target_flags'.
-
-   Define a macro `TARGET_FEATURENAME' for each such option.  Its definition
-   should test a bit in `target_flags'; for example:
-
-        #define TARGET_68020 (target_flags & 1)
-
-   One place where these macros are used is in the condition-expressions of
-   instruction patterns.  Note how `TARGET_68020' appears frequently in the
-   68000 machine description file, `m68k.md'.  Another place they are used is
-   in the definitions of the other macros in the `MACHINE.h' file.  */
-
-#define MASK_GPR_32	     0x00000001	/* Limit gprs to 32 registers */
-#define MASK_FPR_32	     0x00000002	/* Limit fprs to 32 registers */
-#define MASK_SOFT_FLOAT	     0x00000004	/* Use software floating point */
-#define MASK_ALLOC_CC	     0x00000008	/* Dynamically allocate icc/fcc's */
-#define MASK_DWORD	     0x00000010	/* Change ABi to allow dbl word insns*/
-#define MASK_DOUBLE	     0x00000020	/* Use double precision instructions */
-#define MASK_MEDIA	     0x00000040	/* Use media instructions */
-#define MASK_MULADD	     0x00000080	/* Use multiply add/subtract insns */
-#define MASK_LIBPIC	     0x00000100	/* -fpic that can be linked w/o pic */
-#define MASK_ACC_4	     0x00000200	/* Only use four media accumulators */
-#define MASK_PACK	     0x00000400 /* Set to enable packed output */
-#define MASK_LONG_CALLS	     0x00000800 /* Use indirect calls */
-#define MASK_ALIGN_LABELS    0x00001000 /* Optimize label alignments */
-#define MASK_LINKED_FP	     0x00002000 /* Follow ABI linkage requirements.  */
-#define MASK_BIG_TLS         0x00008000 /* Assume a big TLS segment */
-
-			 		/* put debug masks up high */
-#define MASK_DEBUG_ARG	     0x40000000	/* debug argument handling */
-#define MASK_DEBUG_ADDR	     0x20000000	/* debug go_if_legitimate_address */
-#define MASK_DEBUG_STACK     0x10000000	/* debug stack frame */
-#define MASK_DEBUG	     0x08000000	/* general debugging switch */
-#define MASK_DEBUG_LOC	     0x04000000	/* optimize line # table */
-#define MASK_DEBUG_COND_EXEC 0x02000000	/* debug cond exec code */
-#define MASK_NO_COND_MOVE    0x01000000	/* disable conditional moves */
-#define MASK_NO_SCC	     0x00800000	/* disable set conditional codes */
-#define MASK_NO_COND_EXEC    0x00400000	/* disable conditional execution */
-#define MASK_NO_VLIW_BRANCH  0x00200000	/* disable repacking branches */
-#define MASK_NO_MULTI_CE     0x00100000	/* disable multi-level cond exec */
-#define MASK_NO_NESTED_CE    0x00080000	/* disable nested cond exec */
-#define MASK_FDPIC           0x00040000	/* Follow the new uClinux ABI.  */
-#define MASK_INLINE_PLT      0x00020000 /* Inline FDPIC PLTs.  */
-#define MASK_GPREL_RO	     0x00010000 /* Use GPREL for read-only data.  */
-
-#define MASK_DEFAULT		MASK_DEFAULT_ALLOC_CC
-
-#define TARGET_GPR_32		((target_flags & MASK_GPR_32) != 0)
-#define TARGET_FPR_32		((target_flags & MASK_FPR_32) != 0)
-#define TARGET_SOFT_FLOAT	((target_flags & MASK_SOFT_FLOAT) != 0)
-#define TARGET_ALLOC_CC		((target_flags & MASK_ALLOC_CC) != 0)
-#define TARGET_DWORD		((target_flags & MASK_DWORD) != 0)
-#define TARGET_DOUBLE		((target_flags & MASK_DOUBLE) != 0)
-#define TARGET_MEDIA		((target_flags & MASK_MEDIA) != 0)
-#define TARGET_MULADD		((target_flags & MASK_MULADD) != 0)
-#define TARGET_LIBPIC		((target_flags & MASK_LIBPIC) != 0)
-#define TARGET_ACC_4		((target_flags & MASK_ACC_4) != 0)
-#define TARGET_DEBUG_ARG	((target_flags & MASK_DEBUG_ARG) != 0)
-#define TARGET_DEBUG_ADDR	((target_flags & MASK_DEBUG_ADDR) != 0)
-#define TARGET_DEBUG_STACK	((target_flags & MASK_DEBUG_STACK) != 0)
-#define TARGET_DEBUG		((target_flags & MASK_DEBUG) != 0)
-#define TARGET_DEBUG_LOC	((target_flags & MASK_DEBUG_LOC) != 0)
-#define TARGET_DEBUG_COND_EXEC	((target_flags & MASK_DEBUG_COND_EXEC) != 0)
-#define TARGET_NO_COND_MOVE	((target_flags & MASK_NO_COND_MOVE) != 0)
-#define TARGET_NO_SCC		((target_flags & MASK_NO_SCC) != 0)
-#define TARGET_NO_COND_EXEC	((target_flags & MASK_NO_COND_EXEC) != 0)
-#define TARGET_NO_VLIW_BRANCH	((target_flags & MASK_NO_VLIW_BRANCH) != 0)
-#define TARGET_NO_MULTI_CE	((target_flags & MASK_NO_MULTI_CE) != 0)
-#define TARGET_NO_NESTED_CE	((target_flags & MASK_NO_NESTED_CE) != 0)
-#define TARGET_FDPIC	        ((target_flags & MASK_FDPIC) != 0)
-#define TARGET_INLINE_PLT	((target_flags & MASK_INLINE_PLT) != 0)
-#define TARGET_BIG_TLS		((target_flags & MASK_BIG_TLS) != 0)
-#define TARGET_GPREL_RO		((target_flags & MASK_GPREL_RO) != 0)
-#define TARGET_PACK		((target_flags & MASK_PACK) != 0)
-#define TARGET_LONG_CALLS	((target_flags & MASK_LONG_CALLS) != 0)
-#define TARGET_ALIGN_LABELS	((target_flags & MASK_ALIGN_LABELS) != 0)
-#define TARGET_LINKED_FP	((target_flags & MASK_LINKED_FP) != 0)
-
-#define TARGET_GPR_64		(! TARGET_GPR_32)
-#define TARGET_FPR_64		(! TARGET_FPR_32)
-#define TARGET_HARD_FLOAT	(! TARGET_SOFT_FLOAT)
-#define TARGET_FIXED_CC		(! TARGET_ALLOC_CC)
-#define TARGET_COND_MOVE	(! TARGET_NO_COND_MOVE)
-#define TARGET_SCC		(! TARGET_NO_SCC)
-#define TARGET_COND_EXEC	(! TARGET_NO_COND_EXEC)
-#define TARGET_VLIW_BRANCH	(! TARGET_NO_VLIW_BRANCH)
-#define TARGET_MULTI_CE		(! TARGET_NO_MULTI_CE)
-#define TARGET_NESTED_CE	(! TARGET_NO_NESTED_CE)
-#define TARGET_ACC_8		(! TARGET_ACC_4)
-
 #define TARGET_HAS_FPRS		(TARGET_HARD_FLOAT || TARGET_MEDIA)
 
 #define NUM_GPRS		(TARGET_GPR_32? 32 : 64)
@@ -419,122 +314,6 @@ extern int target_flags;
 #ifndef HAVE_AS_TLS
 #define HAVE_AS_TLS 0
 #endif
-
-/* This macro defines names of command options to set and clear bits in
-   `target_flags'.  Its definition is an initializer with a subgrouping for
-   each command option.
-
-   Each subgrouping contains a string constant, that defines the option name,
-   a number, which contains the bits to set in `target_flags', and an optional
-   second string which is the textual description that will be displayed when
-   the user passes --help on the command line.  If the number entry is negative
-   then the specified bits will be cleared instead of being set.  If the second
-   string entry is present but empty, then no help information will be displayed
-   for that option, but it will not count as an undocumented option.  The actual
-   option name, asseen on the command line is made by appending `-m' to the
-   specified name.
-
-   One of the subgroupings should have a null string.  The number in this
-   grouping is the default value for `target_flags'.  Any target options act
-   starting with that value.
-
-   Here is an example which defines `-m68000' and `-m68020' with opposite
-   meanings, and picks the latter as the default:
-
-        #define TARGET_SWITCHES \
-          { { "68020",  1, ""},      \
-            { "68000", -1, "Compile for the m68000"},     \
-            { "",       1, }}
-
-   This declaration must be present.  */
-
-#define TARGET_SWITCHES							    \
-{{ "gpr-32",		  MASK_GPR_32,		"Only use 32 gprs"},	    \
- { "gpr-64",		 -MASK_GPR_32,		"Use 64 gprs"},		    \
- { "fpr-32",		  MASK_FPR_32,		"Only use 32 fprs"},	    \
- { "fpr-64",		 -MASK_FPR_32,		"Use 64 fprs"},		    \
- { "hard-float",	 -MASK_SOFT_FLOAT,	"Use hardware floating point" },\
- { "soft-float",	  MASK_SOFT_FLOAT,	"Use software floating point" },\
- { "alloc-cc",		  MASK_ALLOC_CC,	"Dynamically allocate cc's" }, \
- { "fixed-cc",		 -MASK_ALLOC_CC,	"Just use icc0/fcc0" },	    \
- { "dword",		  MASK_DWORD,		"Change ABI to allow double word insns" }, \
- { "no-dword",		 -MASK_DWORD,		"Do not use double word insns" }, \
- { "double",		  MASK_DOUBLE,		"Use fp double instructions" }, \
- { "no-double",		 -MASK_DOUBLE,		"Do not use fp double insns" }, \
- { "media",		  MASK_MEDIA,		"Use media instructions" }, \
- { "no-media",		 -MASK_MEDIA,		"Do not use media insns" }, \
- { "muladd",		  MASK_MULADD,		"Use multiply add/subtract instructions" }, \
- { "no-muladd",		 -MASK_MULADD,		"Do not use multiply add/subtract insns" }, \
- { "ultilib-library-pic", 0,			"Link with the library-pic libraries" }, \
- { "library-pic",	  MASK_LIBPIC,		"PIC support for building libraries" }, \
- { "acc-4",		  MASK_ACC_4,		"Use 4 media accumulators" }, \
- { "acc-8",		 -MASK_ACC_4,		"Use 8 media accumulators" }, \
- { "pack",		  MASK_PACK,		"Pack VLIW instructions" }, \
- { "no-pack",		 -MASK_PACK,		"Do not pack VLIW instructions" }, \
- { "no-eflags",		  0,			"Do not mark ABI switches in e_flags" }, \
- { "debug-arg",		  MASK_DEBUG_ARG,	"Internal debug switch" },  \
- { "debug-addr",	  MASK_DEBUG_ADDR,	"Internal debug switch" },  \
- { "debug-stack",	  MASK_DEBUG_STACK,	"Internal debug switch" },  \
- { "debug",		  MASK_DEBUG,		"Internal debug switch" },  \
- { "debug-cond-exec",	  MASK_DEBUG_COND_EXEC,	"Internal debug switch" },  \
- { "debug-loc",		  MASK_DEBUG_LOC,	"Internal debug switch" },  \
- { "align-labels",	  MASK_ALIGN_LABELS,	"Enable label alignment optimizations" }, \
- { "no-align-labels",	 -MASK_ALIGN_LABELS,	"Disable label alignment optimizations" }, \
- { "cond-move",		 -MASK_NO_COND_MOVE,	"Enable conditional moves" },  \
- { "no-cond-move",	  MASK_NO_COND_MOVE,	"Disable conditional moves" },  \
- { "scc",		 -MASK_NO_SCC,		"Enable setting gprs to the result of comparisons" },  \
- { "no-scc",		  MASK_NO_SCC,		"Disable setting gprs to the result of comparisons" },  \
- { "cond-exec",		 -MASK_NO_COND_EXEC,	"Enable conditional execution other than moves/scc" }, \
- { "no-cond-exec",	  MASK_NO_COND_EXEC,	"Disable conditional execution other than moves/scc" }, \
- { "vliw-branch",	 -MASK_NO_VLIW_BRANCH,	"Run pass to pack branches into VLIW insns" }, \
- { "no-vliw-branch",	  MASK_NO_VLIW_BRANCH,	"Do not run pass to pack branches into VLIW insns" }, \
- { "multi-cond-exec",	 -MASK_NO_MULTI_CE,	"Disable optimizing &&/|| in conditional execution" }, \
- { "no-multi-cond-exec",  MASK_NO_MULTI_CE,	"Enable optimizing &&/|| in conditional execution" }, \
- { "nested-cond-exec",	 -MASK_NO_NESTED_CE,	"Enable nested conditional execution optimizations" }, \
- { "no-nested-cond-exec" ,MASK_NO_NESTED_CE,	"Disable nested conditional execution optimizations" }, \
- { "long-calls",	  MASK_LONG_CALLS,	"Disallow direct calls to global functions" }, \
- { "no-long-calls",	 -MASK_LONG_CALLS,	"Allow direct calls to global functions" }, \
- { "linked-fp",		  MASK_LINKED_FP,	"Follow the EABI linkage requirements" }, \
- { "no-linked-fp",	 -MASK_LINKED_FP,	"Don't follow the EABI linkage requirements" }, \
- { "fdpic",	          MASK_FDPIC,		"Enable file descriptor PIC mode" }, \
- { "no-fdpic",	         -MASK_FDPIC,		"Disable file descriptor PIC mode" }, \
- { "inline-plt",	  MASK_INLINE_PLT,	"Enable inlining of PLT in function calls" }, \
- { "no-inline-plt",	 -MASK_INLINE_PLT,	"Disable inlining of PLT in function calls" }, \
- { "TLS",		  MASK_BIG_TLS,         "Assume a large TLS segment" }, \
- { "tls",                -MASK_BIG_TLS,		"Do not assume a large TLS segment" }, \
- { "gprel-ro",		  MASK_GPREL_RO,	"Enable use of GPREL for read-only data in FDPIC" }, \
- { "no-gprel-ro",	 -MASK_GPREL_RO,	"Disable use of GPREL for read-only data in FDPIC" }, \
- { "tomcat-stats",	  0, 			"Cause gas to print tomcat statistics" }, \
- { "",			  MASK_DEFAULT,		"" }}			    \
-
-/* This macro is similar to `TARGET_SWITCHES' but defines names of command
-   options that have values.  Its definition is an initializer with a
-   subgrouping for each command option.
-
-   Each subgrouping contains a string constant, that defines the fixed part of
-   the option name, the address of a variable, and an optional description string.
-   The variable, of type `char *', is set to the text following the fixed part of
-   the option as it is specified on the command line.  The actual option name is
-   made by appending `-m' to the specified name.
-
-   Here is an example which defines `-mshort-data-NUMBER'.  If the given option
-   is `-mshort-data-512', the variable `m88k_short_data' will be set to the
-   string `"512"'.
-
-        extern char *m88k_short_data;
-        #define TARGET_OPTIONS \
-         { { "short-data-", & m88k_short_data, \
-	 "Specify the size of the short data section"  } }
-
-   This declaration is optional.  */
-#define TARGET_OPTIONS							      \
-{									      \
-  { "cpu=",		&frv_cpu_string,	 "Set cpu type", 0},	      \
-  { "branch-cost=",	&frv_branch_cost_string, "Internal debug switch", 0}, \
-  { "cond-exec-insns=", &frv_condexec_insns_str, "Internal debug switch", 0}, \
-  { "cond-exec-temps=", &frv_condexec_temps_str, "Internal debug switch", 0}, \
-  { "sched-lookahead=", &frv_sched_lookahead_str,"Internal debug switch", 0}, \
-}
 
 /* This macro is a C statement to print on `stderr' a string describing the
    particular machine description choice.  Every machine description should
@@ -819,7 +598,6 @@ extern int target_flags;
 #define FPR_FIRST       64			/* First FP reg */
 #define FPR_LAST        127			/* Last  FP reg */
 
-#define DEFAULT_CONDEXEC_TEMPS 4		/* reserve 4 regs by default */
 #define GPR_TEMP_NUM	frv_condexec_temps	/* # gprs to reserve for temps */
 
 /* We reserve the last CR and CCR in each category to be used as a reload
@@ -2444,18 +2222,6 @@ do {							\
 
 /* A C expression for the cost of a branch instruction.  A value of 1 is the
    default; other values are interpreted relative to that.  */
-
-/* Here are additional macros which do not specify precise relative costs, but
-   only that certain actions are more expensive than GCC would ordinarily
-   expect.  */
-
-/* We used to default the branch cost to 2, but I changed it to 1, to avoid
-   generating SCC instructions and or/and-ing them together, and then doing the
-   branch on the result, which collectively generate much worse code.  */
-#ifndef DEFAULT_BRANCH_COST
-#define DEFAULT_BRANCH_COST 1
-#endif
-
 #define BRANCH_COST frv_branch_cost_int
 
 /* Define this macro as a C expression which is nonzero if accessing less than
@@ -3160,9 +2926,6 @@ do {                                                                    \
    BRANCH_COST+1 is the default if the machine does not use
    cc0, and 1 if it does use cc0.  */
 #define MAX_CONDITIONAL_EXECUTE frv_condexec_insns
-
-/* Default value of MAX_CONDITIONAL_EXECUTE if no -mcond-exec-insns= */
-#define DEFAULT_CONDEXEC_INSNS 8
 
 /* A C expression to modify the code described by the conditional if
    information CE_INFO, possibly updating the tests in TRUE_EXPR, and
