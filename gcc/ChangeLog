@@ -1,3 +1,10 @@
+Tue Mar  2 10:39:43 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* cccp.c (struct default_include): Add 'included' field.
+	(main): Set 'included' field when a default include directory
+	is added to the chain.  If -v is specified list all default
+	include directories which do not get appended to the chain.
+
 Tue Mar  2 09:24:10 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* configure.in (gxx_include_dir): Rename to
