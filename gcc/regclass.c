@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 /* Indexed by hard register number, contains 1 for registers
    that are fixed use (stack pointer, pc, frame pointer, etc.).
    These are the registers that cannot be used to allocate
-   a pseudo reg whose life does not cross calls.  */
+   a pseudo reg for general use.  */
 
 char fixed_regs[FIRST_PSEUDO_REGISTER];
 
@@ -71,7 +71,8 @@ static char initial_fixed_regs[] = FIXED_REGISTERS;
 /* Indexed by hard register number, contains 1 for registers
    that are fixed use or are clobbered by function calls.
    These are the registers that cannot be used to allocate
-   a pseudo reg whose life crosses calls.  */
+   a pseudo reg whose life crosses calls unless we are able
+   to save/restore them across the calls.  */
 
 char call_used_regs[FIRST_PSEUDO_REGISTER];
 
@@ -87,10 +88,9 @@ HARD_REG_SET losing_caller_save_reg_set;
 static char initial_call_used_regs[] = CALL_USED_REGISTERS;
   
 /* Indexed by hard register number, contains 1 for registers that are
-   fixed use -- i.e. in fixed_regs -- or a function value return register
-   or STRUCT_VALUE_REGNUM or STATIC_CHAIN_REGNUM.  These are the
-   registers that cannot hold quantities across calls even if we are
-   willing to save and restore them.  */
+   fixed use or call used registers that cannot hold quantities across
+   calls even if we are willing to save and restore them.  call fixed
+   registers are a subset of call used registers.  */
 
 char call_fixed_regs[FIRST_PSEUDO_REGISTER];
 

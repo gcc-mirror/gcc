@@ -1597,7 +1597,7 @@ final_start_function (first, file, optimize)
       int i;
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (!call_used_regs[i] && !call_fixed_regs[i])
+	if (!call_used_regs[i])
 	  regs_ever_live[i] = 1;
     }
 #endif
