@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -36,6 +36,8 @@ Boston, MA 02111-1307, USA.  */
 #include "expr.h"
 #include "function.h"
 #include "obstack.h"
+#include "toplev.h"
+#include "tm_p.h"
 
 /* The size of the callee register save area.  Right now we save everything
    on entry since it costs us nothing in code size.  It does cost us from a
@@ -168,6 +170,8 @@ print_operand (file, x, code)
 		      print_operand_address (file,
 					     GEN_INT (CONST_DOUBLE_LOW (x)));
 		      break;
+		    default:
+		      break;
 		  }
 		break;
 	      }
@@ -219,6 +223,8 @@ print_operand (file, x, code)
 		    case DImode:
 		      print_operand_address (file, 
 					     GEN_INT (CONST_DOUBLE_HIGH (x)));
+		      break;
+		    default:
 		      break;
 		  }
 		break;
@@ -549,7 +555,7 @@ notice_update_cc (body, insn)
 int
 call_address_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
 }
@@ -564,8 +570,6 @@ secondary_reload_class (class, mode, in)
      enum machine_mode mode;
      rtx in;
 {
-  int regno;
-
   /* Memory loads less than a full word wide can't have an
      address or stack pointer destination.  They must use
      a data register as an intermediate register.  */
@@ -742,7 +746,7 @@ function_arg (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   rtx result = 0;
   int size, align;
@@ -795,7 +799,7 @@ function_arg_partial_nregs (cum, mode, type, named)
      CUMULATIVE_ARGS *cum;
      enum machine_mode mode;
      tree type;
-     int named;
+     int named ATTRIBUTE_UNUSED;
 {
   int size, align;
 
@@ -924,11 +928,8 @@ output_tst (operand, insn)
 int
 impossible_plus_operand (op, mode)
      rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  extern rtx *reg_equiv_mem;
-  rtx reg1, reg2;
-  
   if (GET_CODE (op) != PLUS)
     return 0;
 
@@ -945,7 +946,7 @@ impossible_plus_operand (op, mode)
 int
 const_8bit_operand (op, mode)
     register rtx op;
-    enum machine_mode mode;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT
 	  && INTVAL (op) >= 0
@@ -981,7 +982,7 @@ mask_ok_for_mem_btst (len, bit)
 int
 symbolic_operand (op, mode)
      register rtx op;
-     enum machine_mode mode;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   switch (GET_CODE (op))
     {
@@ -1016,8 +1017,8 @@ symbolic_operand (op, mode)
 rtx
 legitimize_address (x, oldx, mode)
      rtx x;
-     rtx oldx;
-     enum machine_mode mode;
+     rtx oldx ATTRIBUTE_UNUSED;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   /* Uh-oh.  We might have an address for x[n-100000].  This needs
      special handling to avoid creating an indexed memory address
@@ -1029,7 +1030,7 @@ legitimize_address (x, oldx, mode)
          by the index expression is computed first, then added to x to form
          the entire address.  */
 
-      rtx regx1, regx2, regy1, regy2, y;
+      rtx regx1, regy1, regy2, y;
 
       /* Strip off any CONST.  */
       y = XEXP (x, 1);
