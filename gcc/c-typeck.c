@@ -6570,9 +6570,6 @@ c_finish_if_stmt (int stmt_count)
 {
   if_elt *elt = &if_stack[--if_stack_pointer];
 
-  if (COND_EXPR_ELSE (elt->if_stmt) == NULL)
-    COND_EXPR_ELSE (elt->if_stmt) = build_empty_stmt ();
-
   if (elt->needs_warning)
     warning ("%Hsuggest explicit braces to avoid ambiguous `else'",
 	     EXPR_LOCUS (elt->if_stmt));

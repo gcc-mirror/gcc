@@ -1288,7 +1288,7 @@ build_and_jump (tree *label_p)
 {
   if (label_p == NULL)
     /* If there's nowhere to jump, just fall through.  */
-    return alloc_stmt_list ();
+    return NULL_TREE;
 
   if (*label_p == NULL_TREE)
     {
@@ -1310,7 +1310,7 @@ gimplify_exit_expr (tree *expr_p)
   tree expr;
 
   expr = build_and_jump (&gimplify_ctxp->exit_label);
-  expr = build (COND_EXPR, void_type_node, cond, expr, alloc_stmt_list ());
+  expr = build (COND_EXPR, void_type_node, cond, expr, NULL_TREE);
   *expr_p = expr;
 
   return GS_OK;
@@ -1403,7 +1403,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	       TU-local symbol, we must invoke the lhd version now.  */
 	    lhd_set_decl_assembler_name (object);
 
-	    *expr_p = alloc_stmt_list ();
+	    *expr_p = NULL_TREE;
 	    break;
 	  }
 
@@ -1524,7 +1524,7 @@ gimplify_init_constructor (tree *expr_p, tree *pre_p,
 	    append_to_statement_list (init, pre_p);
 	  }
 
-	*expr_p = alloc_stmt_list ();
+	*expr_p = NULL_TREE;
       }
       break;
 
@@ -2321,9 +2321,11 @@ shortcut_cond_expr (tree expr)
   tree *true_label_p;
   tree *false_label_p;
   bool emit_end, emit_false;
+  bool then_se = then_ && TREE_SIDE_EFFECTS (then_);
+  bool else_se = else_ && TREE_SIDE_EFFECTS (else_);
 
   /* First do simple transformations.  */
-  if (!TREE_SIDE_EFFECTS (else_))
+  if (!else_se)
     {
       /* If there is no 'else', turn (a && b) into if (a) if (b).  */
       while (TREE_CODE (pred) == TRUTH_ANDIF_EXPR)
@@ -2331,11 +2333,10 @@ shortcut_cond_expr (tree expr)
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  then_ = shortcut_cond_expr (expr);
 	  pred = TREE_OPERAND (pred, 0);
-	  expr = build (COND_EXPR, void_type_node, pred, then_,
-			alloc_stmt_list ());
+	  expr = build (COND_EXPR, void_type_node, pred, then_, NULL_TREE);
 	}
     }
-  if (!TREE_SIDE_EFFECTS (then_))
+  if (!then_se)
     {
       /* If there is no 'then', turn
 	   if (a || b); else d
@@ -2346,8 +2347,7 @@ shortcut_cond_expr (tree expr)
 	  TREE_OPERAND (expr, 0) = TREE_OPERAND (pred, 1);
 	  else_ = shortcut_cond_expr (expr);
 	  pred = TREE_OPERAND (pred, 0);
-	  expr = build (COND_EXPR, void_type_node, pred,
-			alloc_stmt_list (), else_);
+	  expr = build (COND_EXPR, void_type_node, pred, NULL_TREE, else_);
 	}
     }
 
@@ -2369,18 +2369,22 @@ shortcut_cond_expr (tree expr)
   /* If our arms just jump somewhere, hijack those labels so we don't
      generate jumps to jumps.  */
 
-  if (TREE_CODE (then_) == GOTO_EXPR
+  if (then_
+      && TREE_CODE (then_) == GOTO_EXPR
       && TREE_CODE (GOTO_DESTINATION (then_)) == LABEL_DECL)
     {
       true_label = GOTO_DESTINATION (then_);
-      then_ = alloc_stmt_list ();
+      then_ = NULL;
+      then_se = false;
     }
 
-  if (TREE_CODE (else_) == GOTO_EXPR
+  if (else_
+      && TREE_CODE (else_) == GOTO_EXPR
       && TREE_CODE (GOTO_DESTINATION (else_)) == LABEL_DECL)
     {
       false_label = GOTO_DESTINATION (else_);
-      else_ = alloc_stmt_list ();
+      else_ = NULL;
+      else_se = false;
     }
 
   /* If we aren't hijacking a label for the 'then' branch, it falls through.  */
@@ -2390,21 +2394,23 @@ shortcut_cond_expr (tree expr)
     true_label_p = NULL;
 
   /* The 'else' branch also needs a label if it contains interesting code.  */
-  if (false_label || TREE_SIDE_EFFECTS (else_))
+  if (false_label || else_se)
     false_label_p = &false_label;
   else
     false_label_p = NULL;
 
   /* If there was nothing else in our arms, just forward the label(s).  */
-  if (!TREE_SIDE_EFFECTS (then_) && !TREE_SIDE_EFFECTS (else_))
+  if (!then_se && !else_se)
     return shortcut_cond_r (pred, true_label_p, false_label_p);
 
   /* If our last subexpression already has a terminal label, reuse it.  */
-  if (TREE_SIDE_EFFECTS (else_))
+  if (else_se)
     expr = expr_last (else_);
-  else
+  else if (then_se)
     expr = expr_last (then_);
-  if (TREE_CODE (expr) == LABEL_EXPR)
+  else
+    expr = NULL;
+  if (expr && TREE_CODE (expr) == LABEL_EXPR)
     end_label = LABEL_EXPR_LABEL (expr);
 
   /* If we don't care about jumping to the 'else' branch, jump to the end
@@ -2422,7 +2428,7 @@ shortcut_cond_expr (tree expr)
   append_to_statement_list (pred, &expr);
 
   append_to_statement_list (then_, &expr);
-  if (TREE_SIDE_EFFECTS (else_))
+  if (else_se)
     {
       t = build_and_jump (&end_label);
       append_to_statement_list (t, &expr);
@@ -2897,7 +2903,9 @@ gimplify_statement_list (tree *expr_p)
       gimplify_stmt (tsi_stmt_ptr (i));
 
       t = tsi_stmt (i);
-      if (TREE_CODE (t) == STATEMENT_LIST)
+      if (t == NULL)
+	tsi_delink (&i);
+      else if (TREE_CODE (t) == STATEMENT_LIST)
 	{
 	  tsi_link_before (&i, t, TSI_SAME_STMT);
 	  tsi_delink (&i);
@@ -2941,7 +2949,7 @@ gimplify_save_expr (tree *expr_p, tree *pre_p, tree *post_p)
       tree body = TREE_OPERAND (*expr_p, 0);
       ret = gimplify_expr (& body, pre_p, post_p, is_gimple_stmt, fb_none);
       append_to_statement_list (body, pre_p);
-      *expr_p = alloc_stmt_list ();
+      *expr_p = NULL;
     }
   else
     *expr_p = TREE_OPERAND (*expr_p, 0)
@@ -3243,8 +3251,7 @@ gimple_push_cleanup (tree var, tree cleanup, tree *pre_p)
 			   boolean_false_node);
       tree ftrue = build (MODIFY_EXPR, void_type_node, flag,
 			  boolean_true_node);
-      cleanup = build (COND_EXPR, void_type_node, flag, cleanup,
-		       alloc_stmt_list ());
+      cleanup = build (COND_EXPR, void_type_node, flag, cleanup, NULL);
       wce = build (WITH_CLEANUP_EXPR, void_type_node, NULL_TREE,
 		   cleanup, NULL_TREE);
       append_to_statement_list (ffalse, &gimplify_ctxp->conditional_cleanups);
@@ -3331,8 +3338,6 @@ void
 gimplify_stmt (tree *stmt_p)
 {
   gimplify_expr (stmt_p, NULL, NULL, is_gimple_stmt, fb_none);
-  if (!*stmt_p)
-    *stmt_p = alloc_stmt_list ();
 }
 
 /* Similarly, but force the result to be a STATEMENT_LIST.  */
@@ -3341,7 +3346,9 @@ void
 gimplify_to_stmt_list (tree *stmt_p)
 {
   gimplify_stmt (stmt_p);
-  if (TREE_CODE (*stmt_p) != STATEMENT_LIST)
+  if (!*stmt_p)
+    *stmt_p = alloc_stmt_list ();
+  else if (TREE_CODE (*stmt_p) != STATEMENT_LIST)
     {
       tree t = *stmt_p;
       *stmt_p = alloc_stmt_list ();
@@ -3427,7 +3434,8 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 
       /* Die, die, die, my darling.  */
       if (save_expr == error_mark_node
-	  || TREE_TYPE (save_expr) == error_mark_node)
+	  || (TREE_TYPE (save_expr)
+	      && TREE_TYPE (save_expr) == error_mark_node))
 	{
 	  ret = GS_ERROR;
 	  break;
@@ -3814,7 +3822,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
   if (ret == GS_ERROR)
     {
       if (is_statement)
-	*expr_p = alloc_stmt_list ();
+	*expr_p = NULL;
       goto out;
     }
 
@@ -3825,14 +3833,12 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
     abort ();
 #endif
 
-  if (!*expr_p)
-    *expr_p = alloc_stmt_list ();
-  if (fallback == fb_none && !is_gimple_stmt (*expr_p))
+  if (fallback == fb_none && *expr_p && !is_gimple_stmt (*expr_p))
     {
       /* We aren't looking for a value, and we don't have a valid
 	 statement.  If it doesn't have side-effects, throw it away.  */
       if (!TREE_SIDE_EFFECTS (*expr_p))
-	*expr_p = alloc_stmt_list ();
+	*expr_p = NULL;
       else if (!TREE_THIS_VOLATILE (*expr_p))
 	{
 	  /* This is probably a _REF that contains something nested that
@@ -3855,7 +3861,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	       must be converted to a valid statement before we get here.  */
 	    abort ();
 
-	  *expr_p = alloc_stmt_list ();
+	  *expr_p = NULL;
 	}
       else if (COMPLETE_TYPE_P (TREE_TYPE (*expr_p)))
 	{
@@ -3867,7 +3873,7 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
       else
 	/* We can't do anything useful with a volatile reference to
 	   incomplete type, so just throw it away.  */
-	*expr_p = alloc_stmt_list ();
+	*expr_p = NULL;
     }
 
   /* If we are gimplifying at the statement level, we're done.  Tack
@@ -3882,6 +3888,8 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  annotate_all_with_locus (&internal_pre, input_location);
 	  *expr_p = internal_pre;
 	}
+      else if (!*expr_p)
+	;
       else if (TREE_CODE (*expr_p) == STATEMENT_LIST)
 	annotate_all_with_locus (expr_p, input_location);
       else
@@ -3966,32 +3974,30 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 }
 
 /* Look through TYPE for variable-sized objects and gimplify each such
-   size that we find.  Return a STATEMENT_LIST containing the result.  */
+   size that we find.  Add to LIST_P any statements generated.  */
 
-tree
-gimplify_type_sizes (tree type)
+void
+gimplify_type_sizes (tree type, tree *list_p)
 {
-  tree stmts = NULL_TREE;
   tree field;
 
   switch (TREE_CODE (type))
     {
     case ERROR_MARK:
-      return alloc_stmt_list ();
+      return;
 
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
     case BOOLEAN_TYPE:
     case CHAR_TYPE:
     case REAL_TYPE:
-      gimplify_one_sizepos (&TYPE_MIN_VALUE (type), &stmts);
-      gimplify_one_sizepos (&TYPE_MAX_VALUE (type), &stmts);
+      gimplify_one_sizepos (&TYPE_MIN_VALUE (type), list_p);
+      gimplify_one_sizepos (&TYPE_MAX_VALUE (type), list_p);
       break;
 
     case ARRAY_TYPE:
       /* These anonymous types don't have declarations, so handle them here. */
-      append_to_statement_list (gimplify_type_sizes (TYPE_DOMAIN (type)),
-				&stmts);
+      gimplify_type_sizes (TYPE_DOMAIN (type), list_p);
       break;
 
     case RECORD_TYPE:
@@ -3999,20 +4005,15 @@ gimplify_type_sizes (tree type)
     case QUAL_UNION_TYPE:
       for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
-	  gimplify_one_sizepos (&DECL_FIELD_OFFSET (field), &stmts);
+	  gimplify_one_sizepos (&DECL_FIELD_OFFSET (field), list_p);
       break;
 
     default:
       break;
     }
 
-  gimplify_one_sizepos (&TYPE_SIZE (type), &stmts);
-  gimplify_one_sizepos (&TYPE_SIZE_UNIT (type), &stmts);
-
-  if (!stmts)
-    stmts = alloc_stmt_list ();
-
-  return stmts;
+  gimplify_one_sizepos (&TYPE_SIZE (type), list_p);
+  gimplify_one_sizepos (&TYPE_SIZE_UNIT (type), list_p);
 }
 
 /* Subroutine of the above to gimplify one size or position, *EXPR_P.
@@ -4021,20 +4022,13 @@ gimplify_type_sizes (tree type)
 void
 gimplify_one_sizepos (tree *expr_p, tree *stmt_p)
 {
-  tree pre = NULL_TREE, post = NULL_TREE;
-
   /* We don't do anything if the value isn't there, is constant, or contains
      A PLACEHOLDER_EXPR.  */
   if (*expr_p == NULL_TREE || TREE_CONSTANT (*expr_p)
       || CONTAINS_PLACEHOLDER_P (*expr_p))
     return;
 
-  gimplify_expr (expr_p, &pre, &post, is_gimple_val, fb_rvalue);
-
-  if (pre)
-    append_to_statement_list (pre, stmt_p);
-  if (post)
-    append_to_statement_list (post, stmt_p);
+  gimplify_expr (expr_p, stmt_p, NULL, is_gimple_val, fb_rvalue);
 }
 
 #ifdef ENABLE_CHECKING
