@@ -1,3 +1,24 @@
+2004-09-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (enum c_typespec_keyword): New.
+	(struct c_declspecs): Adjust description of "type".  Remove
+	specbits, explicit_int_p and explicit_char_p.  Rename
+	typedef_signed_p to explicit_signed_p.  Add default_int_p, long_p,
+	short_p, signed_p, unsigned_p and complex_p.
+	(finish_declspecs): New.
+	* c-parse.in (datadef, datadecl, setspecs, decl, component_decl,
+	typename): Call finish_declspecs.
+	* c-decl.c (finish_declspecs): New.
+	(declspecs_add_type): Check for combinations which cannot occur in
+	valid specifier lists.  Update comments.
+	(shadow_tag_warned): Remove checks done in finish_declspecs.
+	Don't report useless type name if type defaulted to int.
+	(grokdeclarator): Remove checks and actions done in
+	finish_declspecs.  Don't allow for type being NULL.  Update for
+	datastructures changes.  Initialize decl_attr.
+	(build_null_declspecs, quals_from_declspecs): Update for
+	datastructures changes.
+
 2004-09-17  Sylvain Pion  <Sylvain.Pion@sophia.inria.fr>
 
         * doc/extend.texi: Fix duplicated word.

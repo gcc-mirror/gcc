@@ -1,3 +1,9 @@
+2004-09-17  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/declspec-4.c, gcc.dg/declspec-5.c, gcc.dg/declspec-6.c:
+	Update expected messages.
+	* gcc.dg/declspec-13.c: New test.
+
 2004-09-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* gcc.dg/darwin-longlong.c: XFAIL on AIX and SPE.

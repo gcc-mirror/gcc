@@ -141,10 +141,24 @@ enum c_storage_class {
   csc_typedef
 };
 
+/* A type specifier keyword "void", "_Bool", "char", "int", "float",
+   "double", or none of these.  */
+enum c_typespec_keyword {
+  cts_none,
+  cts_void,
+  cts_bool,
+  cts_char,
+  cts_int,
+  cts_float,
+  cts_double
+};
+
 /* A sequence of declaration specifiers in C.  */
 struct c_declspecs {
-  /* The type specified, not reflecting modifiers such as "short" and
-     "unsigned", or NULL_TREE if none.  */
+  /* The type specified, if a single type specifier such as a struct,
+     union or enum specifier, typedef name or typeof specifies the
+     whole type, or NULL_TREE if none or a keyword such as "void" or
+     "char" is used.  Does not include qualifiers.  */
   tree type;
   /* The attributes from a typedef decl.  */
   tree decl_attr;
@@ -152,8 +166,9 @@ struct c_declspecs {
      NULL; attributes (possibly from multiple lists) will be passed
      separately.  */
   tree attrs;
-  /* The modifier bits present.  */
-  int specbits;
+  /* Any type specifier keyword used such as "int", not reflecting
+     modifiers such as "short", or cts_none if none.  */
+  enum c_typespec_keyword typespec_word;
   /* The storage class specifier, or csc_none if none.  */
   enum c_storage_class storage_class;
   /* Whether something other than a storage class specifier or
@@ -165,17 +180,26 @@ struct c_declspecs {
   BOOL_BITFIELD non_sc_seen_p : 1;
   /* Whether the type is specified by a typedef.  */
   BOOL_BITFIELD typedef_p : 1;
-  /* Whether the type is specified by a typedef whose type is
-     explicitly "signed".  */
-  BOOL_BITFIELD typedef_signed_p : 1;
+  /* Whether the type is explicitly "signed" or specified by a typedef
+     whose type is explicitly "signed".  */
+  BOOL_BITFIELD explicit_signed_p : 1;
   /* Whether the specifiers include a deprecated typedef.  */
   BOOL_BITFIELD deprecated_p : 1;
-  /* Whether "int" was explicitly specified.  */
-  BOOL_BITFIELD explicit_int_p : 1;
-  /* Whether "char" was explicitly specified.  */
-  BOOL_BITFIELD explicit_char_p : 1;
+  /* Whether the type defaulted to "int" because there were no type
+     specifiers.  */
+  BOOL_BITFIELD default_int_p;
+  /* Whether "long" was specified.  */
+  BOOL_BITFIELD long_p : 1;
   /* Whether "long" was specified more than once.  */
   BOOL_BITFIELD long_long_p : 1;
+  /* Whether "short" was specified.  */
+  BOOL_BITFIELD short_p : 1;
+  /* Whether "signed" was specified.  */
+  BOOL_BITFIELD signed_p : 1;
+  /* Whether "unsigned" was specified.  */
+  BOOL_BITFIELD unsigned_p : 1;
+  /* Whether "complex" was specified.  */
+  BOOL_BITFIELD complex_p : 1;
   /* Whether "inline" was specified.  */
   BOOL_BITFIELD inline_p : 1;
   /* Whether "__thread" was specified.  */
@@ -362,6 +386,7 @@ extern struct c_declspecs *declspecs_add_qual (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_type (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_scspec (struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_attrs (struct c_declspecs *, tree);
+extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 
 /* in c-objc-common.c */
 extern int c_disregard_inline_limits (tree);

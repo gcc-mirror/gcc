@@ -420,7 +420,7 @@ datadef:
 	| declspecs_ts setspecs initdecls ';'
 		{ POP_DECLSPEC_STACK; }
 	| declspecs ';'
-	  { shadow_tag ($1); }
+	  { shadow_tag (finish_declspecs ($1)); }
 	| error ';'
 	| error '}'
 	| ';'
@@ -835,7 +835,7 @@ datadecl:
 	| declspecs_nots_nosa setspecs notype_initdecls ';'
 		{ POP_DECLSPEC_STACK; }
 	| declspecs_ts_nosa ';'
-		{ shadow_tag_warned ($1, 1);
+		{ shadow_tag_warned (finish_declspecs ($1), 1);
 		  pedwarn ("empty declaration"); }
 	| declspecs_nots_nosa ';'
 		{ pedwarn ("empty declaration"); }
@@ -868,6 +868,7 @@ setspecs: /* empty */
 		      prefix_attributes = NULL_TREE;
 		      current_declspecs = build_null_declspecs ();
 		    }
+		  current_declspecs = finish_declspecs (current_declspecs);
 		  all_prefix_attributes = prefix_attributes; }
 	;
 
@@ -888,7 +889,7 @@ decl:
 	| declspecs_nots setspecs notype_nested_function
 		{ POP_DECLSPEC_STACK; }
 	| declspecs ';'
-		{ shadow_tag ($1); }
+		{ shadow_tag (finish_declspecs ($1)); }
 	| extension decl
 		{ RESTORE_EXT_FLAGS ($1); }
 	;
@@ -1745,7 +1746,7 @@ component_decl:
 	| declspecs_nosc_nots
 		{ if (pedantic)
 		    pedwarn ("ISO C forbids member declarations with no members");
-		  shadow_tag_warned ($1, pedantic);
+		  shadow_tag_warned (finish_declspecs ($1), pedantic);
 		  $$ = NULL_TREE; }
 	| error
 		{ $$ = NULL_TREE; }
@@ -1823,7 +1824,7 @@ enumerator:
 typename:
 	  declspecs_nosc
 		{ pending_xref_error ();
-		  $<dsptype>$ = $1; }
+		  $<dsptype>$ = finish_declspecs ($1); }
 	  absdcl
 		{ $$ = XOBNEW (&parser_obstack, struct c_type_name);
 		  $$->specs = $<dsptype>2;
