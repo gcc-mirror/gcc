@@ -1,3 +1,8 @@
+2005-02-03  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR driver/19117
+	* gcc.c (main): Include the target in -v output.
+
 2005-02-03  Alexandre Oliva  <aoliva@redhat.com>
 
 	* combine.c (simplify_comparison, case SIGN_EXTEND, ZERO_EXTEND):
