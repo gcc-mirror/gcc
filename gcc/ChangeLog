@@ -1,3 +1,15 @@
+2000-11-08  Neil Booth  <neilb@earthling.net>
+
+        Move directive handling into the lexer itself.
+	  
+        * cpplex.c (_cpp_lex_token): Handle directives directly.
+        In the case of a directive interrupting a function-like
+        macro invocation, use extra_char since read_ahead is
+        used to store the '#'.  Return a CPP_EOF in this case.
+        * cppmacro.c (parse_arg): No need to handle CPP_DHASH any more.
+        (cpp_get_token): Don't handle directives here.
+        * cpplib.h: Remove CPP_DHASH token type.
+
 Wed Nov  8 21:53:41 MET 2000  Jan Hubicka  <jh@suse.cz>
 
 	* regmove.c (combine_stack_adjustments_for_blocks): Recognize pushes
