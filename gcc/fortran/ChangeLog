@@ -1,3 +1,31 @@
+2004-09-07  Per Bothner  <per@bothner.com>
+	Paul Brook  <paul@codesourcery.com>
+
+	* error.c (show_locus): Handle mapped locations.
+	* f95-lang.c (gfc_be_parse_file): Initialize mapped locations.
+	* gfortran.h: Include input.h.
+	(struct gfc_linebuf): Use source_location.
+	* scanner.c (get_file): Initialize linemap.
+	(preprocessor_line): Pass extra argument to get_file.
+	(load_file): Ditto.  Setup linemap.
+	(gfc_new_file): Handle mapped locations.
+	* trans-common.c (build_field, build_equiv_decl, build_common_decl):
+	Set decl source locations.
+	(gfc_trans_common): Set blank common block location.
+	* trans-decl.c (gfc_set_decl_location): New function.
+	(gfc_get_label_decl, gfc_get_symbol_decl): Use it.
+	(trans_function_start): Move call to gfc_set_backend_locus..
+	(build_function_decl): ... to here.
+	(build_entry_thunks): Set and restore the backend locus.
+	(gfc_generate_constructors): Remove excess arguments to
+	init_function_start.
+	(gfc_generate_block_data): Add comments.  Set the decl locus.
+	* trans-io.c (set_error_locus): Handle mapped locations.
+	* trans.c (gfc_get_backend_locus, gfc_get_backend_locus): Ditto.
+	(gfc_trans_code): Use SET_EXPR_LOCATION.
+	(gfc_generate_code): Override the location of the new symbol.
+	* trans.h (gfc_set_decl_location): Add prototype.
+
 2004-08-31  Paul Brook  <paul@codesourcery.com>
 
 	* trans-types.c (gfc_type_for_mode): Return NULL for unknown modes.

@@ -801,7 +801,7 @@ load_line (FILE * input, char **pbuf, char *filename, int linenum)
    the file stack.  */
 
 static gfc_file *
-get_file (char *name)
+get_file (char *name, enum lc_reason reason)
 {
   gfc_file *f;
 
@@ -816,6 +816,10 @@ get_file (char *name)
   f->included_by = current_file;
   if (current_file != NULL)
     f->inclusion_line = current_file->line;
+
+#ifdef USE_MAPPED_LOCATION
+  linemap_add (&line_table, reason, false, f->filename, 1);
+#endif
 
   return f;
 }
@@ -874,7 +878,7 @@ preprocessor_line (char *c)
   
   if (flag[1] || flag[3]) /* Starting new file.  */
     {
-      f = get_file (filename);
+      f = get_file (filename, LC_RENAME);
       f->up = current_file;
       current_file = f;
     }
@@ -999,7 +1003,7 @@ load_file (char *filename, bool initial)
 
   /* Load the file.  */
 
-  f = get_file (filename);
+  f = get_file (filename, initial ? LC_RENAME : LC_ENTER);
   f->up = current_file;
   current_file = f;
   current_file->line = 1;
@@ -1032,7 +1036,12 @@ load_file (char *filename, bool initial)
 
       b = gfc_getmem (sizeof (gfc_linebuf) + len + 1);
 
+#ifdef USE_MAPPED_LOCATION
+      b->location
+	= linemap_line_start (&line_table, current_file->line++, 120);
+#else
       b->linenum = current_file->line++;
+#endif
       b->file = current_file;
       strcpy (b->line, line);
 
@@ -1050,6 +1059,9 @@ load_file (char *filename, bool initial)
   fclose (input);
 
   current_file = current_file->up;
+#ifdef USE_MAPPED_LOCATION
+  linemap_add (&line_table, LC_LEAVE, 0, NULL, 0);
+#endif
   return SUCCESS;
 }
 
@@ -1167,7 +1179,12 @@ gfc_new_file (const char *filename, gfc_source_form form)
 #if 0 /* Debugging aid.  */
   for (; line_head; line_head = line_head->next)
     gfc_status ("%s:%3d %s\n", line_head->file->filename, 
-		line_head->linenum, line_head->line);
+#ifdef USE_MAPPED_LOCATION
+		LOCATION_LINE (line_head->location),
+#else
+		line_head->linenum,
+#endif
+		line_head->line);
 
   exit (0);
 #endif

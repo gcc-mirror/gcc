@@ -442,7 +442,11 @@ void
 gfc_get_backend_locus (locus * loc)
 {
   loc->lb = gfc_getmem (sizeof (gfc_linebuf));    
+#ifdef USE_MAPPED_LOCATION
+  loc->lb->location = input_location; // FIXME adjust??
+#else
   loc->lb->linenum = input_line - 1;
+#endif
   loc->lb->file = gfc_current_backend_file;
 }
 
@@ -452,9 +456,13 @@ gfc_get_backend_locus (locus * loc)
 void
 gfc_set_backend_locus (locus * loc)
 {
-  input_line = loc->lb->linenum;
   gfc_current_backend_file = loc->lb->file;
+#ifdef USE_MAPPED_LOCATION
+  input_location = loc->lb->location;
+#else
+  input_line = loc->lb->linenum;
   input_filename = loc->lb->file->filename;
+#endif
 }
 
 
@@ -626,7 +634,7 @@ gfc_trans_code (gfc_code * code)
 	  if (TREE_CODE (res) == STATEMENT_LIST)
 	    annotate_all_with_locus (&res, input_location);
 	  else
-	    annotate_with_locus (res, input_location);
+	    SET_EXPR_LOCATION (res, input_location);
 
 	  /* Add the new statemment to the block.  */
 	  gfc_add_expr_to_block (&block, res);
@@ -665,6 +673,9 @@ gfc_generate_code (gfc_namespace * ns)
       attr.subroutine = 1;
       attr.access = ACCESS_PUBLIC;
       main_program->attr = attr;
+      /* Set the location to the first line of code.  */
+      if (ns->code)
+	main_program->declared_at = ns->code->loc;
       ns->proc_name = main_program;
       gfc_commit_symbols ();
     }

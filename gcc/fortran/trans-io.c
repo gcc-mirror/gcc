@@ -524,7 +524,11 @@ set_error_locus (stmtblock_t * block, locus * where)
   tmp = gfc_build_addr_expr (pchar_type_node, tmp);
   gfc_add_modify_expr (block, locus_file, tmp);
 
+#ifdef USE_MAPPED_LOCATION
+  line = LOCATION_LINE (where->lb->location);
+#else
   line = where->lb->linenum;
+#endif
   gfc_add_modify_expr (block, locus_line, build_int_cst (NULL_TREE, line));
 }
 
