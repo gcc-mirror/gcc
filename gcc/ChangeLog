@@ -1,3 +1,10 @@
+1999-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (hard_32bit_mode_classes): Mark registers
+	suitable for holding OFmode values so that gcc works with complex
+	quad long doubles.
+	(hard_64bit_mode_classes): Likewise.
+
 Tue Dec  7 19:22:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* loop.h (struct induction): Add multi_insn_incr.

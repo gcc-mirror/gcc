@@ -2731,6 +2731,9 @@ enum sparc_mode_class {
 /* Modes for quad-word and smaller quantities.  */
 #define T_MODES (D_MODES | (1 << (int) T_MODE) | (1 << (int) TF_MODE))
 
+/* Modes for 8-word and smaller quantities.  */
+#define O_MODES (T_MODES | (1 << (int) O_MODE) | (1 << (int) OF_MODE))
+
 /* Modes for single-float quantities.  We must allow any single word or
    smaller quantity.  This is because the fix/float conversion instructions
    take integer inputs/outputs from the float registers.  */
@@ -2739,13 +2742,8 @@ enum sparc_mode_class {
 /* Modes for double-float and smaller quantities.  */
 #define DF_MODES (S_MODES | D_MODES)
 
-#define DF_MODES64 DF_MODES
-
 /* Modes for double-float only quantities.  */
-#define DF_ONLY_MODES ((1 << (int) DF_MODE) | (1 << (int) D_MODE))
-
-/* Modes for double-float and larger quantities.  */
-#define DF_UP_MODES (DF_ONLY_MODES | TF_ONLY_MODES)
+#define DF_MODES_NO_S (D_MODES)
 
 /* Modes for quad-float only quantities.  */
 #define TF_ONLY_MODES (1 << (int) TF_MODE)
@@ -2753,7 +2751,16 @@ enum sparc_mode_class {
 /* Modes for quad-float and smaller quantities.  */
 #define TF_MODES (DF_MODES | TF_ONLY_MODES)
 
-#define TF_MODES64 (DF_MODES64 | TF_ONLY_MODES)
+/* Modes for quad-float and double-float quantities.  */
+#define TF_MODES_NO_S (DF_MODES_NO_S | TF_ONLY_MODES)
+
+/* Modes for quad-float pair only quantities.  */
+#define OF_ONLY_MODES (1 << (int) OF_MODE)
+
+/* Modes for quad-float pairs and smaller quantities.  */
+#define OF_MODES (TF_MODES | OF_ONLY_MODES)
+
+#define OF_MODES_NO_S (TF_MODES_NO_S | OF_ONLY_MODES)
 
 /* Modes for condition codes.  */
 #define CC_MODES (1 << (int) CC_MODE)
@@ -2774,17 +2781,17 @@ static int hard_32bit_mode_classes[] = {
   T_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
   T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES, D_MODES, S_MODES,
 
-  TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
-  TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
-  TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
-  TF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, OF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, OF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, OF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
 
   /* FP regs f32 to f63.  Only the even numbered registers actually exist,
      and none can hold SFmode/SImode values.  */
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, OF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, OF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, OF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, TF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
 
   /* %fcc[0123] */
   CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
@@ -2795,21 +2802,21 @@ static int hard_32bit_mode_classes[] = {
 
 static int hard_64bit_mode_classes[] = {
   D_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+  O_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
   T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
-  T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
-  T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
+  O_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES, T_MODES, D_MODES,
 
-  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
-  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
-  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
-  TF_MODES64, SF_MODES, DF_MODES64, SF_MODES, TF_MODES64, SF_MODES, DF_MODES64, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, OF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, OF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, OF_MODES, SF_MODES, DF_MODES, SF_MODES,
+  OF_MODES, SF_MODES, DF_MODES, SF_MODES, TF_MODES, SF_MODES, DF_MODES, SF_MODES,
 
   /* FP regs f32 to f63.  Only the even numbered registers actually exist,
      and none can hold SFmode/SImode values.  */
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
-  DF_UP_MODES, 0, DF_ONLY_MODES, 0, DF_UP_MODES, 0, DF_ONLY_MODES, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, OF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, OF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, OF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
+  OF_MODES_NO_S, 0, DF_MODES_NO_S, 0, TF_MODES_NO_S, 0, DF_MODES_NO_S, 0,
 
   /* %fcc[0123] */
   CCFP_MODES, CCFP_MODES, CCFP_MODES, CCFP_MODES,
