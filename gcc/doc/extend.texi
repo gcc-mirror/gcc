@@ -3562,6 +3562,20 @@ asm ("cmoveq %1,%2,%[result]"
      : "r" (test), "r"(new), "[result]"(old));
 @end smallexample
 
+Sometimes you need to make an @code{asm} operand be a specific register,
+but there's no matching constraint letter for that register @emph{by
+itself}.  To force the operand into that register, use a local variable
+for the operand and specify the register in the variable declaration.
+@xref{Explicit Reg Vars}.  Then for the @code{asm} operand, use any
+register constraint letter that matches the register:
+
+@smallexample
+register int *p1 asm ("r0") = @dots{};
+register int *p2 asm ("r1") = @dots{};
+register int *result asm ("r0");
+asm ("sysint" : "=r" (result) : "0" (p1), "r" (p2));
+@end smallexample
+
 Some instructions clobber specific hard registers.  To describe this,
 write a third colon after the input operands, followed by the names of
 the clobbered hard registers (given as strings).  Here is a realistic
@@ -3955,7 +3969,9 @@ very often.
 
 @item
 Local register variables in specific registers do not reserve the
-registers.  The compiler's data flow analysis is capable of determining
+registers, except at the point where they are used as input or output
+operands in an @code{asm} statement and the @code{asm} statement itself is
+not deleted.  The compiler's data flow analysis is capable of determining
 where the specified registers contain live values, and where they are
 available for other uses.  Stores into local register variables may be deleted
 when they appear to be dead according to dataflow analysis.  References
@@ -4104,8 +4120,11 @@ the variable's value is not live.
 
 This option does not guarantee that GCC will generate code that has
 this variable in the register you specify at all times.  You may not
-code an explicit reference to this register in an @code{asm} statement
-and assume it will always refer to this variable.
+code an explicit reference to this register in the @emph{assembler
+instruction template} part of an @code{asm} statement and assume it will
+always refer to this variable.  However, using the variable as an
+@code{asm} @emph{operand} guarantees that the specified register is used
+for the operand.
 
 Stores into local register variables may be deleted when they appear to be dead
 according to dataflow analysis.  References to local register variables may

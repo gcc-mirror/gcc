@@ -1,3 +1,10 @@
+2004-09-29  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* doc/extend.texi (Extended Asm): Add blurb about using Explicit
+	Reg Vars to enforce register allocation with general constraints.
+	(Explicit Reg Vars): Clarify relation to asm statements.
+	(Local Reg Vars): Similar.
+
 2004-09-28  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* sched-rgn.c (haifa_edge, edge_table, NEXT_IN, NEXT_OUT, FROM_BLOCK,
