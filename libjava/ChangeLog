@@ -1,3 +1,12 @@
+2002-01-23  Per Bothner  <per@bothner.com>
+
+	* java/lang/reflect/natField.cc (setAddr):  New function.
+	Calls getAddr and then checks that the field isn't final.
+	(setBoolean. setChar, setByte, setShort, setInt, setLong, setFloat,
+	setDouble, set):  Use setAddr instead of getAddr, to check for FINAL.
+	(set):  Call setAddr before check that new value has right type,
+	to better match specified semantics.
+
 2002-01-22  Tom Tromey  <tromey@redhat.com>
 
 	* java/awt/TextField.java: Replaced with Classpath version.
