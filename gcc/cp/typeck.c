@@ -5844,14 +5844,6 @@ build_modify_expr (lhs, modifycode, rhs)
     {
       if (! IS_AGGR_TYPE (lhstype))
 	/* Do the default thing */;
-      else if (! TYPE_HAS_CONSTRUCTOR (lhstype))
-	{
-	  cp_error ("`%T' has no constructors", lhstype);
-	  return error_mark_node;
-	}
-      else if (TYPE_HAS_TRIVIAL_INIT_REF (lhstype)
-	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
-	/* Do the default thing */;
       else
 	{
 	  result = build_method_call (lhs, ctor_identifier,
@@ -5867,19 +5859,6 @@ build_modify_expr (lhs, modifycode, rhs)
       /* `operator=' is not an inheritable operator.  */
       if (! IS_AGGR_TYPE (lhstype))
 	/* Do the default thing */;
-      else if (! TYPE_HAS_ASSIGNMENT (lhstype))
-	{
-	  cp_error ("`%T' does not define operator=", lhstype);
-	  return error_mark_node;
-	}
-      else if (TYPE_HAS_TRIVIAL_ASSIGN_REF (lhstype)
-	       && TYPE_MAIN_VARIANT (lhstype) == TYPE_MAIN_VARIANT (TREE_TYPE (newrhs)))
-	{
-	  build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,
-			  lhs, rhs, make_node (NOP_EXPR));
-
-	  /* Do the default thing */;
-	}
       else
 	{
 	  result = build_opfncall (MODIFY_EXPR, LOOKUP_NORMAL,

@@ -29,6 +29,7 @@
 
 #include "typeinfo"
 #include "exception"
+#include <stddef.h>
 
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
@@ -108,13 +109,37 @@ __cp_exception_info (void)
   return *__get_eh_info ();
 }
 
+/* Allocate a buffer for a cp_eh_info and an exception object of size SIZE,
+   and return a pointer to the beginning of the object's space.  */
+
+extern "C" void * malloc (size_t);
+extern "C" void *
+__eh_alloc (size_t size)
+{
+  void *p = malloc (size);
+  if (p == 0)
+    terminate ();
+  return p;
+}
+
+/* Free the memory for an cp_eh_info and associated exception, given
+   a pointer to the cp_eh_info.  */
+
+extern "C" void free (void *);
+extern "C" void
+__eh_free (void *p)
+{
+  free (p);
+}
+
 /* Compiler hook to push a new exception onto the stack.
    Used by expand_throw().  */
 
 extern "C" void
 __cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
 {
-  cp_eh_info *p = new cp_eh_info;
+  cp_eh_info *p = (cp_eh_info *) __eh_alloc (sizeof (cp_eh_info));
+
   p->value = value;
   p->type = type;
   p->cleanup = cleanup;
@@ -155,23 +180,22 @@ __cp_pop_exception (cp_eh_info *p)
   *q = p->next;
 
   if (p->cleanup)
-    /* 3 is a magic value for destructors; see build_delete().  */
-    p->cleanup (p->value, 3);
-  else if (__is_pointer (p->type))
-    /* do nothing; pointers are passed directly in p->value.  */;
-  else
-    delete p->value;
+    /* 2 is a magic value for destructors; see build_delete().  */
+    p->cleanup (p->value, 2);
 
-  delete p;
+  if (! __is_pointer (p->type))
+    __eh_free (p->value);
+
+  __eh_free (p);
 }
 
 extern "C" void
 __uncatch_exception (void)
 {
   cp_eh_info *p = __cp_exception_info ();
-  if (p)
-    p->caught = false;
-  /* otherwise __throw will call terminate(); don't crash here.  */
+  if (p == 0)
+    terminate ();
+  p->caught = false;
 }
 
 /* As per [except.unexpected]:

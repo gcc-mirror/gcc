@@ -477,6 +477,18 @@ push_eh_cleanup ()
   resume_momentary (yes);
 }
 
+/* Build up a call to terminate on the function obstack, for use as an
+   exception handler.  */
+
+tree
+build_terminate_handler ()
+{
+  int yes = suspend_momentary ();
+  tree term = build_function_call (Terminate, NULL_TREE);
+  resume_momentary (yes);
+  return term;
+}
+
 /* call this to start a catch block. Typename is the typename, and identifier
    is the variable to place the object in or NULL if the variable doesn't
    matter.  If typename is NULL, that means its a "catch (...)" or catch
@@ -582,15 +594,12 @@ expand_start_catch_block (declspecs, declarator)
          must call terminate.  See eh23.C.  */
       if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
 	{
-	  int yes = suspend_momentary ();
-	  tree term = build_function_call (Terminate, NULL_TREE);
-	  resume_momentary (yes);
-
 	  /* Generate the copy constructor call directly so we can wrap it.
 	     See also expand_default_init.  */
 	  init = ocp_convert (TREE_TYPE (decl), init,
 			      CONV_IMPLICIT|CONV_FORCE_TEMP, 0);
-	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init, term);
+	  init = build (TRY_CATCH_EXPR, TREE_TYPE (init), init,
+			build_terminate_handler ());
 	}
 
       /* Let `cp_finish_decl' know that this initializer is ok.  */
@@ -854,7 +863,7 @@ expand_exception_blocks ()
       catch_clauses = NULL_RTX;
 
       if (exceptions_via_longjmp == 0)
-	expand_eh_region_end (build_function_call (Terminate, NULL_TREE));
+	expand_eh_region_end (build_terminate_handler ());
 
       expand_leftover_cleanups ();
 
@@ -914,6 +923,41 @@ end_anon_func ()
   pop_cp_function_context (NULL_TREE);
 }
 
+/* Return a pointer to a buffer for an exception object of type TYPE.  */
+
+tree
+alloc_eh_object (type)
+     tree type;
+{
+  tree fn, exp;
+
+  fn = get_identifier ("__eh_alloc");
+  if (IDENTIFIER_GLOBAL_VALUE (fn))
+    fn = IDENTIFIER_GLOBAL_VALUE (fn);
+  else
+    {
+      /* Declare __eh_alloc (size_t), as defined in exception.cc.  */
+      tree tmp;
+      push_obstacks_nochange ();
+      end_temporary_allocation ();
+      tmp = tree_cons (NULL_TREE, sizetype, void_list_node);
+      fn = build_lang_decl (FUNCTION_DECL, fn,
+			    build_function_type (ptr_type_node, tmp));
+      DECL_EXTERNAL (fn) = 1;
+      TREE_PUBLIC (fn) = 1;
+      DECL_ARTIFICIAL (fn) = 1;
+      pushdecl_top_level (fn);
+      make_function_rtl (fn);
+      assemble_external (fn);
+      pop_obstacks ();
+    }
+
+  exp = build_function_call (fn, expr_tree_cons
+			     (NULL_TREE, size_in_bytes (type), NULL_TREE));
+  exp = build1 (NOP_EXPR, build_pointer_type (type), exp);
+  return exp;
+}
+
 /* Expand a throw statement.  This follows the following
    algorithm:
 
@@ -965,17 +1009,61 @@ expand_throw (exp)
 	}
       else
 	{
-	  tree object;
+	  tree object, ptr;
 
-	  /* Make a copy of the thrown object.  WP 15.1.5  */
-	  exp = build_new (NULL_TREE, TREE_TYPE (exp),
-			   build_expr_list (NULL_TREE, exp),
-			   0);
+	  /* OK, this is kind of wacky.  The WP says that we call
+	     terminate
+
+	     when the exception handling mechanism, after completing
+	     evaluation of the expression to be thrown but before the
+	     exception is caught (_except.throw_), calls a user function
+	     that exits via an uncaught exception.
+
+	     So we have to protect the actual initialization of the
+	     exception object with terminate(), but evaluate the expression
+	     first.  We also expand the call to __eh_alloc
+	     first.  Since there could be temps in the expression, we need
+	     to handle that, too.  */
+
+	  expand_start_target_temps ();
+
+#if 0
+	  /* Unfortunately, this doesn't work.  */
+	  preexpand_calls (exp);
+#else
+	  /* Store the throw expression into a temp.  This can be less
+	     efficient than storing it into the allocated space directly, but
+	     oh well.  To do this efficiently we would need to insinuate
+	     ourselves into expand_call.  */
+	  if (TREE_SIDE_EFFECTS (exp))
+	    {
+	      tree temp = build (VAR_DECL, TREE_TYPE (exp));
+	      DECL_ARTIFICIAL (temp) = 1;
+	      layout_decl (temp, 0);
+	      DECL_RTL (temp) = assign_temp (TREE_TYPE (exp), 2, 0, 1);
+	      expand_expr (build (INIT_EXPR, TREE_TYPE (exp), temp, exp),
+			   NULL_RTX, VOIDmode, 0);
+	      expand_decl_cleanup (NULL_TREE, maybe_build_cleanup (temp));
+	      exp = temp;
+	    }
+#endif
+
+	  /* Allocate the space for the exception.  */
+	  ptr = save_expr (alloc_eh_object (TREE_TYPE (exp)));
+	  expand_expr (ptr, const0_rtx, VOIDmode, 0);
+
+	  expand_eh_region_start ();
+
+	  object = build_indirect_ref (ptr, NULL_PTR);
+	  exp = build_modify_expr (object, INIT_EXPR, exp);
 
 	  if (exp == error_mark_node)
 	    error ("  in thrown expression");
 
-	  object = build_indirect_ref (exp, NULL_PTR);
+	  expand_expr (exp, const0_rtx, VOIDmode, 0);
+	  expand_eh_region_end (build_terminate_handler ());
+	  expand_end_target_temps ();
+
 	  throw_type = build_eh_type (object);
 
 	  if (TYPE_HAS_DESTRUCTOR (TREE_TYPE (object)))
@@ -988,6 +1076,8 @@ expand_throw (exp)
 	      /* Pretend it's a normal function.  */
 	      cleanup = build1 (ADDR_EXPR, cleanup_type, cleanup);
 	    }
+
+	  exp = ptr;
 	}
 
       if (cleanup == NULL_TREE)
@@ -1021,8 +1111,6 @@ expand_throw (exp)
 	  pop_obstacks ();
 	}
 
-      /* The throw expression is a full-expression.  */
-      exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
       e = expr_tree_cons (NULL_TREE, exp, expr_tree_cons
 			  (NULL_TREE, throw_type, expr_tree_cons
 			   (NULL_TREE, cleanup, NULL_TREE)));
