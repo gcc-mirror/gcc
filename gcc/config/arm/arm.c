@@ -151,7 +151,7 @@ int    arm_structure_size_boundary = DEFAULT_STRUCTURE_SIZE_BOUNDARY;
 #define FL_THUMB      (1 << 6)        /* Thumb aware */
 #define FL_LDSCHED    (1 << 7)	      /* Load scheduling necessary */
 #define FL_STRONG     (1 << 8)	      /* StrongARM */
-#define FL_ARCH5E     (1 << 9)        /* El Segundo extenstions to v5 */
+#define FL_ARCH5E     (1 << 9)        /* DSP extenstions to v5 */
 #define FL_XSCALE     (1 << 10)	      /* XScale */
 
 /* The bits in this mask specify which instructions we are
@@ -175,6 +175,9 @@ int arm_arch4 = 0;
 
 /* Nonzero if this chip supports the ARM Architecture 5 extensions.  */
 int arm_arch5 = 0;
+
+/* Nonzero if this chip supports the ARM Architecture 5E extensions.  */
+int arm_arch5e = 0;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 int arm_ld_sched = 0;
@@ -279,7 +282,7 @@ static struct processors all_cores[] =
   {"strongarm",	             FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm110",           FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
   {"strongarm1100",          FL_MODE26 | FL_MODE32 | FL_FAST_MULT | FL_ARCH4 |            FL_LDSCHED | FL_STRONG },
-  {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_ARCH5 },
+  {"xscale",                             FL_MODE32 | FL_FAST_MULT | FL_ARCH4 | FL_THUMB | FL_LDSCHED | FL_STRONG | FL_XSCALE | FL_ARCH5 | FL_ARCH5E },
   
   {NULL, 0}
 };
@@ -586,6 +589,7 @@ arm_override_options ()
   arm_fast_multiply = (insn_flags & FL_FAST_MULT) != 0;
   arm_arch4         = (insn_flags & FL_ARCH4) != 0;
   arm_arch5         = (insn_flags & FL_ARCH5) != 0;
+  arm_arch5e        = (insn_flags & FL_ARCH5E) != 0;
   arm_is_xscale     = (insn_flags & FL_XSCALE) != 0;
 
   arm_ld_sched      = (tune_flags & FL_LDSCHED) != 0;
@@ -4054,7 +4058,7 @@ multi_register_push (op, mode)
   if (GET_CODE (op) != PARALLEL
       || (GET_CODE (XVECEXP (op, 0, 0)) != SET)
       || (GET_CODE (SET_SRC (XVECEXP (op, 0, 0))) != UNSPEC)
-      || (XINT (SET_SRC (XVECEXP (op, 0, 0)), 1) != 2))
+      || (XINT (SET_SRC (XVECEXP (op, 0, 0)), 1) != UNSPEC_PUSH_MULT))
     return 0;
 
   return 1;
@@ -5888,7 +5892,7 @@ note_invalid_constants (insn, address)
 	     this shouldn't be needed any more.  */
 #ifndef AOF_ASSEMBLER
 	  /* XXX Is this still needed?  */
-	  else if (GET_CODE (op) == UNSPEC && XINT (op, 1) == 3)
+	  else if (GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_PIC_SYM)
 	    push_minipool_fix (insn, address, recog_data.operand_loc[opno],
 			       recog_data.operand_mode[opno],
 			       XVECEXP (op, 0, 0));
@@ -7593,7 +7597,8 @@ emit_multi_reg_push (mask)
      something like this:
 
        (parallel [ 
-           (set (mem:BLK (pre_dec:BLK (reg:SI sp))) (unspec:BLK [(reg:SI r4)] 2))
+           (set (mem:BLK (pre_dec:BLK (reg:SI sp)))
+	        (unspec:BLK [(reg:SI r4)] UNSPEC_PUSH_MULT))
            (use (reg:SI 11 fp))
            (use (reg:SI 12 ip))
            (use (reg:SI 14 lr))
@@ -7708,7 +7713,7 @@ emit_sfm (base_reg, count)
 				gen_rtx_PRE_DEC (BLKmode, stack_pointer_rtx)),
 		   gen_rtx_UNSPEC (BLKmode,
 				   gen_rtvec (1, reg),
-				   2));
+				   UNSPEC_PUSH_MULT));
   tmp
     = gen_rtx_SET (VOIDmode, 
 		   gen_rtx_MEM (XFmode,
@@ -7941,7 +7946,8 @@ arm_expand_prologue ()
 	{
 	  rtx unspec = gen_rtx_UNSPEC (SImode,
 				       gen_rtvec (2, stack_pointer_rtx,
-						  hard_frame_pointer_rtx), 4);
+						  hard_frame_pointer_rtx),
+				       UNSPEC_PRLG_STK);
 
 	  insn = emit_insn (gen_rtx_CLOBBER (VOIDmode,
 				      gen_rtx_MEM (BLKmode, unspec)));
@@ -8801,6 +8807,11 @@ arm_init_builtins ()
   if (arm_arch5)
     {
       def_builtin ("__builtin_clz", int_ftype_int, ARM_BUILTIN_CLZ);
+    }
+
+  /* Initialize arm V5E builtins.  */
+  if (arm_arch5e)
+    {
       def_builtin ("__builtin_prefetch", void_ftype_pchar,
 		   ARM_BUILTIN_PREFETCH);
     }
