@@ -54,13 +54,13 @@ namespace std
     istreambuf_iterator<C>
     money_get<C, istreambuf_iterator<C> >::
     _M_extract<true>(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		     ios_base&, ios_base::iostate&, string_type&) const;
+		     ios_base&, ios_base::iostate&, string&) const;
 
   template
     istreambuf_iterator<C>
     money_get<C, istreambuf_iterator<C> >::
     _M_extract<false>(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		      ios_base&, ios_base::iostate&, string_type&) const;
+		      ios_base&, ios_base::iostate&, string&) const;
 
   template
     ostreambuf_iterator<C>

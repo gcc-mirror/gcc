@@ -1163,8 +1163,9 @@ namespace std
       _InIter
       money_get<_CharT, _InIter>::
       _M_extract(iter_type __beg, iter_type __end, ios_base& __io,
-		 ios_base::iostate& __err, string_type& __units) const
+		 ios_base::iostate& __err, string& __units) const
       {
+	typedef char_traits<_CharT>			  __traits_type;
 	typedef typename string_type::size_type	          size_type;	
 	typedef money_base::part			  part;
 	typedef moneypunct<_CharT, _Intl>		  __moneypunct_type;
@@ -1193,12 +1194,13 @@ namespace std
 	bool __testdecfound = false;
 
 	// The tentative returned string is stored here.
-	string_type __res;
-	__res.reserve(20);
+	string __res;
+	__res.reserve(32);
 
+	const char_type* __lit_zero = __lit + _S_zero;
+	const char_type* __q;
 	for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
 	  {
-	    char_type __c;
 	    const part __which = static_cast<part>(__p.field[__i]);
 	    switch (__which)
 	      {
@@ -1257,12 +1259,12 @@ namespace std
 		// Extract digits, remove and stash away the
 		// grouping of found thousands separators.
 		for (; __beg != __end; ++__beg)
-		  if (__ctype.is(ctype_base::digit, __c = *__beg))
+		  if (__q = __traits_type::find(__lit_zero, 10, *__beg))
 		    {
-		      __res += __c;
+		      __res += _S_atoms[__q - __lit];
 		      ++__sep_pos;
 		    }
-		  else if (__c == __lc->_M_decimal_point && !__testdecfound)
+		  else if (*__beg == __lc->_M_decimal_point && !__testdecfound)
 		    {
 		      // If no grouping chars are seen, no grouping check
 		      // is applied. Therefore __grouping_tmp is adjusted
@@ -1272,7 +1274,7 @@ namespace std
 		      __sep_pos = 0;
 		      __testdecfound = true;
 		    }
-		  else if (__c == __lc->_M_thousands_sep && !__testdecfound)
+		  else if (*__beg == __lc->_M_thousands_sep && !__testdecfound)
 		    {
 		      if (__lc->_M_grouping_size)
 			{
@@ -1358,7 +1360,7 @@ namespace std
 	if (!__testvalid)
 	  __err |= ios_base::failbit;
 	else
-	  __units.assign(__res.data(), __res.size());
+	  __units.swap(__res);
 	
 	return __beg;
       }
@@ -1369,19 +1371,15 @@ namespace std
     do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
 	   ios_base::iostate& __err, long double& __units) const
     {
-      string_type __str;
+      string __str;
       if (__intl)
 	__beg = _M_extract<true>(__beg, __end, __io, __err, __str);
       else
 	__beg = _M_extract<false>(__beg, __end, __io, __err, __str);
 
-      const int __cs_size = __str.size() + 1;
-      char* __cs = static_cast<char*>(__builtin_alloca(__cs_size));
-      const locale __loc = __io.getloc();
-      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
-      const _CharT* __wcs = __str.c_str();
-      __ctype.narrow(__wcs, __wcs + __cs_size, char(), __cs);
-      std::__convert_to_v(__cs, __units, __err, _S_get_c_locale());
+      if (__str.size())
+	std::__convert_to_v(__str.c_str(), __units, __err, _S_get_c_locale());
+
       return __beg;
     }
 
@@ -1390,8 +1388,28 @@ namespace std
     money_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
 	   ios_base::iostate& __err, string_type& __units) const
-    { return __intl ? _M_extract<true>(__beg, __end, __io, __err, __units)
-	            : _M_extract<false>(__beg, __end, __io, __err, __units); }
+    {
+      typedef typename string_type::size_type             size_type;
+
+      const locale& __loc = __io._M_getloc();
+      const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
+
+      string __str;
+      const iter_type __ret = __intl ? _M_extract<true>(__beg, __end, __io,
+							__err, __str)
+	                             : _M_extract<false>(__beg, __end, __io,
+							 __err, __str);
+      const size_type __len = __str.size();
+      if (__len)
+	{
+	  _CharT* __ws = static_cast<_CharT*>(__builtin_alloca(sizeof(_CharT)
+							       * __len));
+	  __ctype.widen(__str.data(), __str.data() + __len, __ws);
+	  __units.assign(__ws, __len);
+	}
+
+      return __ret;
+    }
 
   template<typename _CharT, typename _OutIter>
     template<bool _Intl>

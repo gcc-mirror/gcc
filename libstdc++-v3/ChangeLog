@@ -1,3 +1,16 @@
+2004-02-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.h (money_get<>::_M_extract):
+	Change signature: now takes a plain string&.
+	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
+	Update consistently the definition; use the moneypunct cache
+	to parse the value; use swap to change __units.
+	(money_get<>::do_get(long double&)): Update call of _M_extract,
+	avoid ctype::narrow, not correct wrt the standard.
+	(money_get<>::do_get(string_type&)): Likewise, update call
+	of _M_extract, use ctype::widen.
+	* src/locale-inst.cc: Tweak instantiations of _M_extract.
+
 2004-02-26  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* testsuite/demangle/abi_examples/01.cc: Expect error -2.
