@@ -1,3 +1,8 @@
+2003-02-13  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/ostream.tcc (sentry::sentry): Improve
+	performance-wise the fix for libstdc++/9563.
+
 2003-02-12  Phil Edwards  <pme@gcc.gnu.org>
 
 	* config/cpu/generic/atomicity.h (_Atomic_add_mutex):  Fix declaration.
