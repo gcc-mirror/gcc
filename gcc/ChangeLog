@@ -1,3 +1,9 @@
+2003-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386-modes.def: Fix comment typos.
+	* config/i386/i386.c: Likewise.
+	* config/i386/i386.md: Likewise.
+
 2003-01-26  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	* config/avr/avr.h, config/cris/aout.h, config/elfos.h,

@@ -27,11 +27,11 @@ Boston, MA 02111-1307, USA.  */
    Overflow flag to be unset.  Sign bit test is used instead and
    thus can be used to form "a&b>0" type of tests.
 
-   Add CCGC to indicate comparisons agains zero that allows
+   Add CCGC to indicate comparisons against zero that allows
    unspecified garbage in the Carry flag.  This mode is used
    by inc/dec instructions.
 
-   Add CCGOC to indicate comparisons agains zero that allows
+   Add CCGOC to indicate comparisons against zero that allows
    unspecified garbage in the Carry and Overflow flag. This
    mode is used to simulate comparisons of (a-b) and (a+b)
    against zero using sub/cmp/add operations.
