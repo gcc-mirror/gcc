@@ -1,5 +1,16 @@
 2004-10-21  Michael Koch  <konqueror@gmx.de>
 
+	* javax/net/ssl/HandshakeCompletedEvent.java,
+	javax/net/ssl/KeyManagerFactory.java,
+	javax/net/ssl/SSLContext.java,
+	javax/net/ssl/SSLServerSocketFactory.java,
+	javax/net/ssl/SSLSession.java,
+	javax/net/ssl/SSLSocketFactory.java,
+	javax/net/ssl/TrustManagerFactory.java:
+	Import cleanup.
+
+2004-10-21  Michael Koch  <konqueror@gmx.de>
+
 	* javax/naming/directory/BasicAttribute.java,
 	javax/naming/directory/BasicAttributes.java,
 	javax/naming/directory/InitialDirContext.java,

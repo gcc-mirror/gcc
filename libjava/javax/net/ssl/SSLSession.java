@@ -39,6 +39,7 @@ exception statement from your version. */
 package javax.net.ssl;
 
 import java.security.cert.Certificate;
+
 import javax.security.cert.X509Certificate;
 
 /**
@@ -47,7 +48,6 @@ import javax.security.cert.X509Certificate;
  */
 public interface SSLSession
 {
-
   /**
    * Returns this session's cihper suite.
    *

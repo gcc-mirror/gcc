@@ -40,6 +40,7 @@ package javax.net.ssl;
 
 import java.security.KeyStore;
 import java.security.Security;
+
 import javax.net.ServerSocketFactory;
 
 /**
@@ -48,7 +49,6 @@ import javax.net.ServerSocketFactory;
  */
 public abstract class SSLServerSocketFactory extends ServerSocketFactory
 {
-
   // Field.
   // -------------------------------------------------------------------------
 

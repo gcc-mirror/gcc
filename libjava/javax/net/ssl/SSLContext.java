@@ -38,16 +38,15 @@ exception statement from your version. */
 
 package javax.net.ssl;
 
-import java.lang.reflect.InvocationTargetException;
+import gnu.java.security.Engine;
 
+import java.lang.reflect.InvocationTargetException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.Provider;
 import java.security.SecureRandom;
 import java.security.Security;
-
-import gnu.java.security.Engine;
 
 /**
  * A "meta-factory" for protocol-specific socket and server socket
@@ -59,7 +58,6 @@ import gnu.java.security.Engine;
  */
 public class SSLContext
 {
-
   // Constants and fields.
   // ------------------------------------------------------------------
 

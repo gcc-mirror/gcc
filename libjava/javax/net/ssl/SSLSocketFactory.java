@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.security.KeyStore;
 import java.security.Security;
+
 import javax.net.SocketFactory;
 
 /**
@@ -50,7 +51,6 @@ import javax.net.SocketFactory;
  */
 public abstract class SSLSocketFactory extends SocketFactory
 {
-
   // Constants.
   // -------------------------------------------------------------------------
 
