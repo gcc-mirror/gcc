@@ -1,7 +1,5 @@
-/* Definitions of target machine for GNU compiler.
-   NetBSD/vax a.out version.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
-   Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.  BSD version.
+   Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -24,21 +22,11 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
     {						\
-      NETBSD_OS_CPP_BUILTINS_AOUT();		\
+      builtin_define_std ("unix");		\
+      builtin_assert ("system=bsd");		\
+						\
+      builtin_define_std ("vax");		\
+      if (TARGET_G_FLOAT)			\
+	builtin_define_std ("GFLOAT");		\
     }						\
   while (0)
-
-#undef CPP_SPEC
-#define CPP_SPEC NETBSD_CPP_SPEC
-
-/* Make gcc agree with <machine/ansi.h> */
-
-#undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
-
-#undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
-
-/* Until they use ELF or something that handles dwarf2 unwinds
-   and initialization stuff better.  */
-#undef DWARF2_UNWIND_INFO

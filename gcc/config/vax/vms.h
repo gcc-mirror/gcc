@@ -35,17 +35,23 @@ Boston, MA 02111-1307, USA.  */
 #define VMS_TARGET 1
 
 #undef LIB_SPEC
-#undef CPP_PREDEFINES
 #undef TARGET_NAME
 #undef TARGET_DEFAULT
 #undef CALL_USED_REGISTERS
 #undef STARTING_FRAME_OFFSET
 
-/* Predefine this in CPP because VMS limits the size of command options
-   and GNU CPP is not used on VMS except with GNU C.  */
-#define CPP_PREDEFINES \
-"-Dvax -Dvms -DVMS -D__vax__ -D__vms__ -D__VMS__\
- -D__GNUC__=2 -D__GNUC_MINOR__=7 -Asystem=vms -Acpu=vax -Amachine=vax"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define_std ("vms");		\
+      builtin_define_std ("VMS");		\
+      builtin_assert ("system=vms");		\
+						\
+      builtin_define_std ("vax");		\
+      if (TARGET_G_FLOAT)			\
+	builtin_define_std ("GFLOAT");		\
+    }						\
+  while (0)
 
 /* These match the definitions used in VAXCRTL, the VMS C run-time library */
 

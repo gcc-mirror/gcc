@@ -1,5 +1,5 @@
 /* Configuration fragment for a VAX OpenBSD target.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,8 +20,15 @@ Boston, MA 02111-1307, USA.  */
 
 /* Amend common OpenBSD definitions for VAX target.  */
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__unix__ -D__vax__ -D__OpenBSD__ -Asystem=unix -Asystem=OpenBSD -Acpu=vax -Amachine=vax"
+#define TARGET_OS_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__unix__");		\
+      builtin_define ("__OpenBSD__");		\
+      builtin_assert ("system=unix");		\
+      builtin_assert ("system=OpenBSD");	\
+    }						\
+  while (0)
 
 /* Layout of source language data types.  */
 

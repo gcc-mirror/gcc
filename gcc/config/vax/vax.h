@@ -19,19 +19,27 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+
+/* Target CPU builtins.  */
+#define TARGET_CPU_CPP_BUILTINS()		\
+  do						\
+    {						\
+      builtin_define ("__vax__");		\
+      builtin_assert ("cpu=vax");		\
+      builtin_assert ("machine=vax");		\
+      if (TARGET_G_FLOAT)			\
+	{					\
+	  builtin_define ("__GFLOAT");		\
+	  builtin_define ("__GFLOAT__");	\
+	}					\
+    }						\
+  while (0)
+
 #define VMS_TARGET 0
-
-/* Names to predefine in the preprocessor for this target machine.  */
-
-#define CPP_PREDEFINES "-Dvax -D__vax__ -Dunix -Asystem=unix -Asystem=bsd -Acpu=vax -Amachine=vax"
 
 /* Use -J option for long branch support with Unix assembler.  */
 
 #define ASM_SPEC "-J"
-
-/* If using g-format floating point, alter math.h.  */
-
-#define	CPP_SPEC "%{mg:%{!ansi:-DGFLOAT} -D__GFLOAT}"
 
 /* Choose proper libraries depending on float format.
    Note that there are no profiling libraries for g-format.
