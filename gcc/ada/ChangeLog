@@ -1,3 +1,8 @@
+2001-10-30  Robert Dewar <dewar@gnat.com>
+
+	* gnatdll.adb: Minor reformatting throughout. Many ??? added for 
+	undocumented declarations.
+
 2001-10-30  Pascal Obry <obry@gnat.com>
 
 	* gnatdll.adb (Parse_Command_Line): handle -g option to be passed 
