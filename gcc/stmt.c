@@ -5756,7 +5756,7 @@ do_jump_if_equal (op1, op2, label, unsignedp)
 {
   if (GET_CODE (op1) == CONST_INT && GET_CODE (op2) == CONST_INT)
     {
-      if (INTVAL (op1) == INTVAL (op2))
+      if (op1 == op2)
 	emit_jump (label);
     }
   else
