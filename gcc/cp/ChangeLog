@@ -1,5 +1,9 @@
 2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (tsubst_expr, DECL_STMT): Instantiate decl's type.
+
+2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (PARMLIST_ELLIPSIS_P): New macro.
 	* decl.c (grokdeclarator): Don't reject void parms here.
 	(require_complete_types_for_parms): Simplify, use
