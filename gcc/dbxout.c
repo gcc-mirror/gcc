@@ -1057,10 +1057,20 @@ dbxout_type (type, full, show_arg_types)
      by assuming `int'.  */
   if (type == error_mark_node)
     type = integer_type_node;
-  else if (!(TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	     && DECL_ORIGINAL_TYPE (TYPE_NAME (type))))
+  else
     {
-      type = TYPE_MAIN_VARIANT (type);
+      /* Try to find the "main variant" with the same name but not const
+	 or volatile.  (Since stabs does not distinguish const and volatile,
+	 there is no need to make them separate types.  But types with
+	 different names are usefully distinguished.) */
+	 
+      for (tem = TYPE_MAIN_VARIANT (type); tem; tem = TYPE_NEXT_VARIANT (tem))
+	if (!TYPE_READONLY (tem) && !TYPE_VOLATILE (tem)
+	    && TYPE_NAME (tem) == TYPE_NAME (type))
+	  {
+	    type = tem;
+	    break;
+	  }
       if (TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 	  && TYPE_DECL_SUPPRESS_DEBUG (TYPE_NAME (type)))
