@@ -316,6 +316,10 @@ struct cse_reg_info
      reg_tick value, such expressions existing in the hash table are
      invalid.  */
   int reg_in_table;
+
+  /* The SUBREG that was set when REG_TICK was last incremented.  Set
+     to -1 if the last store was to the whole register, not a subreg.  */
+  int subreg_ticked;
 };
 
 /* A free list of cse_reg_info entries.  */
@@ -513,6 +517,11 @@ struct table_elt
 /* Get the point at which REG was recorded in the table.  */
 
 #define REG_IN_TABLE(N) ((GET_CSE_REG_INFO (N))->reg_in_table)
+
+/* Get the SUBREG set at the last increment to REG_TICK (-1 if not a
+   SUBREG).  */
+
+#define SUBREG_TICKED(N) ((GET_CSE_REG_INFO (N))->subreg_ticked)
 
 /* Get the quantity number for REG.  */
 
@@ -957,6 +966,7 @@ get_cse_reg_info (regno)
       /* Initialize it.  */
       p->reg_tick = 1;
       p->reg_in_table = -1;
+      p->subreg_ticked = -1;
       p->reg_qty = regno;
       p->regno = regno;
       p->next = cse_reg_info_used_list;
@@ -1191,6 +1201,7 @@ mention_regs (x)
 	    remove_invalid_refs (i);
 
 	  REG_IN_TABLE (i) = REG_TICK (i);
+	  SUBREG_TICKED (i) = -1;
 	}
 
       return 0;
@@ -1206,17 +1217,20 @@ mention_regs (x)
 
       if (REG_IN_TABLE (i) >= 0 && REG_IN_TABLE (i) != REG_TICK (i))
 	{
-	  /* If reg_tick has been incremented more than once since
-	     reg_in_table was last set, that means that the entire
-	     register has been set before, so discard anything memorized
-	     for the entire register, including all SUBREG expressions.  */
-	  if (REG_IN_TABLE (i) != REG_TICK (i) - 1)
+	  /* If REG_IN_TABLE (i) differs from REG_TICK (i) by one, and
+	     the last store to this register really stored into this
+	     subreg, then remove the memory of this subreg.
+	     Otherwise, remove any memory of the entire register and
+	     all its subregs from the table.  */
+	  if (REG_TICK (i) - REG_IN_TABLE (i) > 1
+	      || SUBREG_TICKED (i) != SUBREG_REG (x))
 	    remove_invalid_refs (i);
 	  else
 	    remove_invalid_subreg_refs (i, SUBREG_BYTE (x), GET_MODE (x));
 	}
 
       REG_IN_TABLE (i) = REG_TICK (i);
+      SUBREG_TICKED (i) = SUBREG_REG (x);
       return 0;
     }
 
@@ -1861,6 +1875,7 @@ invalidate (x, full_mode)
 
 	delete_reg_equiv (regno);
 	REG_TICK (regno)++;
+	SUBREG_TICKED (regno) = -1;
 
 	if (regno >= FIRST_PSEUDO_REGISTER)
 	  {
@@ -1888,6 +1903,7 @@ invalidate (x, full_mode)
 		CLEAR_HARD_REG_BIT (hard_regs_in_table, rn);
 		delete_reg_equiv (rn);
 		REG_TICK (rn)++;
+		SUBREG_TICKED (rn) = -1;
 	      }
 
 	    if (in_table)
@@ -2093,7 +2109,10 @@ invalidate_for_call ()
       {
 	delete_reg_equiv (regno);
 	if (REG_TICK (regno) >= 0)
-	  REG_TICK (regno)++;
+	  {
+	    REG_TICK (regno)++;
+	    SUBREG_TICKED (regno) = -1;
+	  }
 
 	in_table |= (TEST_HARD_REG_BIT (hard_regs_in_table, regno) != 0);
       }
@@ -6407,7 +6426,11 @@ addr_affects_sp_p (addr)
       && REGNO (XEXP (addr, 0)) == STACK_POINTER_REGNUM)
     {
       if (REG_TICK (STACK_POINTER_REGNUM) >= 0)
-	REG_TICK (STACK_POINTER_REGNUM)++;
+	{
+	  REG_TICK (STACK_POINTER_REGNUM)++;
+	  /* Is it possible to use a subreg of SP?  */
+	  SUBREG_TICKED (STACK_POINTER_REGNUM) = -1;
+	}
 
       /* This should be *very* rare.  */
       if (TEST_HARD_REG_BIT (hard_regs_in_table, STACK_POINTER_REGNUM))
