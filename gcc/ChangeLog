@@ -1,3 +1,29 @@
+2005-01-27  Richard Henderson  <rth@redhat.com>
+
+	* builtins.c (expand_builtin_copysign): New.
+	(expand_builtin): Call it.
+	* genopinit.c (optabs): Add copysign_optab.
+	* optabs.c (init_optabs): Initialize it.
+	(expand_copysign): New.
+	* optabs.h (OTI_copysign, copysign_optab): New.
+	(expand_copysign): Declare.
+
+	* config/alpha/alpha.md (UNSPEC_COPYSIGN): New.
+	(copysignsf3, ncopysignsf3, copysigndf3, ncopysigndf3): New.
+
+	* config/i386/i386.c (ix86_build_signbit_mask): Split from ...
+	(ix86_expand_fp_absneg_operator): ... here.
+	(ix86_split_copysign): New.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.md (UNSPEC_COPYSIGN): New.
+	(copysignsf3, copysigndf3): New.
+
+	* config/ia64/ia64.md (UNSPEC_COPYSIGN): New.
+	(copysignsf3, ncopysignsf3): New.
+	(copysigndf3, ncopysigndf3): New.
+	(copysignxf3, ncopysignxf3): New.
+	* config/ia64/ia64.c (rtx_needs_barrier): Handle UNSPEC_COPYSIGN.
+
 2005-01-27  Arend Bayer  <arend.bayer@web.de>
 	    Kazu Hirata  <kazu@cs.umass.edu>
 

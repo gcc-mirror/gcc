@@ -4436,6 +4436,29 @@ expand_builtin_fabs (tree arglist, rtx target, rtx subtarget)
   return expand_abs (mode, op0, target, 0, safe_from_p (target, arg, 1));
 }
 
+/* Expand a call to copysign, copysignf, or copysignl with arguments ARGLIST.
+   Return NULL is a normal call should be emitted rather than expanding the
+   function inline.  If convenient, the result should be placed in TARGET.
+   SUBTARGET may be used as the target for computing the operand.  */
+
+static rtx
+expand_builtin_copysign (tree arglist, rtx target, rtx subtarget)
+{
+  rtx op0, op1;
+  tree arg;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return 0;
+
+  arg = TREE_VALUE (arglist);
+  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+
+  arg = TREE_VALUE (TREE_CHAIN (arglist));
+  op1 = expand_expr (arg, NULL, VOIDmode, 0);
+
+  return expand_copysign (op0, op1, target);
+}
+
 /* Create a new constant string literal and return a char* pointer to it.
    The STRING_CST value is the LEN characters at STR.  */
 static tree
@@ -5063,6 +5086,14 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       target = expand_builtin_fabs (arglist, target, subtarget);
       if (target)
         return target;
+      break;
+
+    case BUILT_IN_COPYSIGN:
+    case BUILT_IN_COPYSIGNF:
+    case BUILT_IN_COPYSIGNL:
+      target = expand_builtin_copysign (arglist, target, subtarget);
+      if (target)
+	return target;
       break;
 
       /* Just do a normal library call if we were unable to fold

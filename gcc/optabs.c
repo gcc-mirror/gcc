@@ -2631,6 +2631,90 @@ expand_abs (enum machine_mode mode, rtx op0, rtx target,
   OK_DEFER_POP;
   return target;
 }
+
+/* Expand the C99 copysign operation.  OP0 and OP1 must be the same 
+   scalar floating point mode.  Return NULL if we do not know how to
+   expand the operation inline.  */
+
+rtx
+expand_copysign (rtx op0, rtx op1, rtx target)
+{
+  enum machine_mode mode = GET_MODE (op0);
+  const struct real_format *fmt;
+  enum machine_mode imode;
+  int bitpos;
+  HOST_WIDE_INT hi, lo;
+  rtx last, temp;
+
+  gcc_assert (SCALAR_FLOAT_MODE_P (mode));
+  gcc_assert (GET_MODE (op1) == mode);
+
+  /* First try to do it with a special instruction.  */
+  temp = expand_binop (mode, copysign_optab, op0, op1,
+		       target, 0, OPTAB_DIRECT);
+  if (temp)
+    return temp;
+
+  /* Otherwise, use bit operations to move the sign from one to the other.  */
+  if (GET_MODE_BITSIZE (mode) > 2 * HOST_BITS_PER_WIDE_INT)
+    return NULL_RTX;
+
+  imode = int_mode_for_mode (mode);
+  if (imode == BLKmode)
+    return NULL_RTX;
+
+  fmt = REAL_MODE_FORMAT (mode);
+  bitpos = (fmt != 0) ? fmt->signbit : -1;
+  if (bitpos < 0)
+    return NULL_RTX;
+
+  last = get_last_insn ();
+
+  /* Handle targets with different FP word orders.  */
+  if (FLOAT_WORDS_BIG_ENDIAN != WORDS_BIG_ENDIAN)
+    {
+      int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+      int word = nwords - (bitpos / BITS_PER_WORD) - 1;
+      bitpos = word * BITS_PER_WORD + bitpos % BITS_PER_WORD;
+    }
+
+  if (bitpos < HOST_BITS_PER_WIDE_INT)
+    {
+      hi = 0;
+      lo = (HOST_WIDE_INT) 1 << bitpos;
+    }
+  else
+    {
+      hi = (HOST_WIDE_INT) 1 << (bitpos - HOST_BITS_PER_WIDE_INT);
+      lo = 0;
+    }
+
+  op0 = expand_binop (imode, and_optab,
+		      gen_lowpart (imode, op0),
+		      immed_double_const (~lo, ~hi, imode),
+		      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  op1 = expand_binop (imode, and_optab,
+		      gen_lowpart (imode, op1),
+		      immed_double_const (lo, hi, imode),
+		      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  if (op0 && op1)
+    {
+      target = expand_binop (imode, ior_optab, op0, op1, NULL,
+			     1, OPTAB_LIB_WIDEN);
+      if (target)
+	{
+	  target = force_reg (imode, target);
+	  target = gen_lowpart (mode, target);
+	}
+    }
+  else
+    target = NULL_RTX;
+
+  if (!target)
+    delete_insns_since (last);
+
+  return target;
+}
 
 /* Generate an instruction whose insn-code is INSN_CODE,
    with two operands: an output TARGET and an input OP0.
@@ -4776,6 +4860,8 @@ init_optabs (void)
   log1p_optab = init_optab (UNKNOWN);
   tan_optab = init_optab (UNKNOWN);
   atan_optab = init_optab (UNKNOWN);
+  copysign_optab = init_optab (UNKNOWN);
+
   strlen_optab = init_optab (UNKNOWN);
   cbranch_optab = init_optab (UNKNOWN);
   cmov_optab = init_optab (UNKNOWN);

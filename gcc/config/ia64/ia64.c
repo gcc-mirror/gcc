@@ -5350,6 +5350,7 @@ rtx_needs_barrier (rtx x, struct reg_flags flags, int pred)
 
 	case UNSPEC_FR_RECIP_APPROX:
 	case UNSPEC_SHRP:
+	case UNSPEC_COPYSIGN:
 	  need_barrier = rtx_needs_barrier (XVECEXP (x, 0, 0), flags, pred);
 	  need_barrier |= rtx_needs_barrier (XVECEXP (x, 0, 1), flags, pred);
 	  break;

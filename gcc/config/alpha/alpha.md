@@ -58,6 +58,7 @@
    (UNSPEC_PERR		26)
    (UNSPEC_CTLZ		27)
    (UNSPEC_CTPOP	28)
+   (UNSPEC_COPYSIGN     29)
   ])
 
 ;; UNSPEC_VOLATILE:
@@ -2230,6 +2231,42 @@
   "&& reload_completed"
   [(const_int 0)]
   "alpha_split_tfmode_frobsign (operands, gen_xordi3); DONE;")
+
+(define_insn "copysignsf3"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(unspec:SF [(match_operand:SF 1 "reg_or_0_operand" "fG")
+		    (match_operand:SF 2 "reg_or_0_operand" "fG")]
+		   UNSPEC_COPYSIGN))]
+  "TARGET_FP"
+  "cpys %R2,%R1,%0"
+  [(set_attr "type" "fadd")])
+
+(define_insn "*ncopysignsf3"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(neg:SF (unspec:SF [(match_operand:SF 1 "reg_or_0_operand" "fG")
+			    (match_operand:SF 2 "reg_or_0_operand" "fG")]
+			   UNSPEC_COPYSIGN)))]
+  "TARGET_FP"
+  "cpysn %R2,%R1,%0"
+  [(set_attr "type" "fadd")])
+
+(define_insn "copysigndf3"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(unspec:DF [(match_operand:DF 1 "reg_or_0_operand" "fG")
+		    (match_operand:DF 2 "reg_or_0_operand" "fG")]
+		   UNSPEC_COPYSIGN))]
+  "TARGET_FP"
+  "cpys %R2,%R1,%0"
+  [(set_attr "type" "fadd")])
+
+(define_insn "*ncopysigndf3"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(neg:DF (unspec:DF [(match_operand:DF 1 "reg_or_0_operand" "fG")
+			    (match_operand:DF 2 "reg_or_0_operand" "fG")]
+			   UNSPEC_COPYSIGN)))]
+  "TARGET_FP"
+  "cpysn %R2,%R1,%0"
+  [(set_attr "type" "fadd")])
 
 (define_insn "*addsf_ieee"
   [(set (match_operand:SF 0 "register_operand" "=&f")
