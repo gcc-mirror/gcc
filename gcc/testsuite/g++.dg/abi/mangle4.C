@@ -18,7 +18,7 @@ int main()
   C<static_cast<const A*>(&b)> c; // { dg-error "" }
   D<&b> d;
   E<const_cast<B*>(&b)> e; // { dg-error "" }
-  f(d, c); // { dg-error "" }
-  g(d, e); // { dg-error "" }
+  f(d, c);
+  g(d, e);
 }
 

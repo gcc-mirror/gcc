@@ -3551,28 +3551,7 @@ init_reswords (void)
 static void
 yyerror (const char *msgid)
 {
-  const char *string = _(msgid);
-
-  if (last_token == CPP_EOF)
-    error ("%s at end of input", string);
-  else if (last_token == CPP_CHAR || last_token == CPP_WCHAR)
-    {
-      unsigned int val = TREE_INT_CST_LOW (yylval.ttype);
-      const char *const ell = (last_token == CPP_CHAR) ? "" : "L";
-      if (val <= UCHAR_MAX && ISGRAPH (val))
-	error ("%s before %s'%c'", string, ell, val);
-      else
-	error ("%s before %s'\\x%x'", string, ell, val);
-    }
-  else if (last_token == CPP_STRING
-	   || last_token == CPP_WSTRING)
-    error ("%s before string constant", string);
-  else if (last_token == CPP_NUMBER)
-    error ("%s before numeric constant", string);
-  else if (last_token == CPP_NAME)
-    error ("%s before \"%s\"", string, IDENTIFIER_POINTER (yylval.ttype));
-  else
-    error ("%s before '%s' token", string, NAME(last_token));
+  c_parse_error (msgid, last_token, yylval.ttype);
 }
 
 static int

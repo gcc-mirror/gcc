@@ -23,4 +23,4 @@ class List { };
 // This next line should just do a lookup of 'class List', and then
 // get a type/value mismatch. Instead we try and push 'class List'
 // into the global namespace and get a redeclaration error.
-vector<class List > data;	// { dg-error "invalid|required|expected" "" }
+vector<class List > data;	// { dg-error "invalid|required|declaration" "" }
