@@ -1,3 +1,10 @@
+2004-09-01  J"orn Rennecke <joern.rennecke@superh.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/sh/sh.md ("length"): Increase branch length when
+	SH1 pic code to 18: 12 bytes of instructions, 4 byte for the
+	constant, 2 byte for aligning the constant.
+
 2004-09-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm/arm-cores.def (ARM_CORE): Add new field for the real name of the
