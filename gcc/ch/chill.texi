@@ -742,7 +742,7 @@ The optional PRIORITY specification need not be a constant.
 
 @item 6.17 Delay Case Action@*
 The optional SET branch and the, also optional, PRIORITY branch must be
-seperated by `;'.
+separated by `;'.
 
 @item 6.18 Send Action@*
 The send action must define a destination instance (via the TO branch),

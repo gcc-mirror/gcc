@@ -28,7 +28,7 @@ DEFINE_LANG_NAME ("Chill")
      
   { "-lang-chill", "" },
   { "-flocal-loop-counter", "" },
-  { "-fno-local-loop-counter", "Do not make seperate scopes for every 'for' loop"},
+  { "-fno-local-loop-counter", "Do not make separate scopes for every 'for' loop"},
   { "-fgrant-only", "Stop after successfully generating a grant file" },
   { "-fchill-grant-only", "" },
   { "-fold-strings", "Implement the 1984 Chill string semantics" },

@@ -786,7 +786,7 @@ Thu Jan 29 15:34:18 1998  Dave Brolley  <brolley@cygnus.com>
 
 Tue Nov 25 10:44:19 1997  Nick Clifton  <nickc@cygnus.com>
 
-	* Make-lang.in (mostlyclean): Use && to seperate commands, so that 
+	* Make-lang.in (mostlyclean): Use && to separate commands, so that 
 	if the directory change fails, the rule will not loop.
 
 Mon Mar  3 12:08:19 1997  Fred Fish  <fnf@cygnus.com>
