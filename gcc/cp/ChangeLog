@@ -1,3 +1,10 @@
+1998-08-17  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* init.c (build_offset_ref): Don't mess with error_mark_node.
+	* lex.c (do_scoped_id): Use cp_error.
+
+	* rtti.c (get_tinfo_fn): Don't mess with the context for now.
+
 1998-08-17  Benjamin Kosnik  <bkoz@loony.cygnus.com>
 
 	* decl.c (grokdeclarator): Allow anonymous types to be cv-qualified.

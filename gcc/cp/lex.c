@@ -3048,8 +3048,7 @@ do_scoped_id (token, parsing)
       else
 	{
 	  if (IDENTIFIER_NAMESPACE_VALUE (token) != error_mark_node)
-	    error ("undeclared variable `%s' (first use here)",
-		   IDENTIFIER_POINTER (token));
+	    cp_error ("`::%D' undeclared (first use here)", token);
 	  id = error_mark_node;
 	  /* Prevent repeated error messages.  */
 	  SET_IDENTIFIER_NAMESPACE_VALUE (token, error_mark_node);
