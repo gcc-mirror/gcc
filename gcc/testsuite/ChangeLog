@@ -1,3 +1,8 @@
+2003-04-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/10347
+	g++.dg/template/dependent-name1.C: New test.
+
 2003-04-17  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* gcc.dg/warn-1.c (tourist_guide): New array,

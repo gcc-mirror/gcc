@@ -11562,7 +11562,20 @@ type_dependent_expression_p (expression)
      by the expression.  */
   else if (TREE_CODE (expression) == NEW_EXPR
 	   || TREE_CODE (expression) == VEC_NEW_EXPR)
-    return dependent_type_p (TREE_OPERAND (expression, 1));
+    {
+      /* For NEW_EXPR tree nodes created inside a template, either
+	 the object type itself or a TREE_LIST may appear as the
+	 operand 1.  */
+      tree type = TREE_OPERAND (expression, 1);
+      if (TREE_CODE (type) == TREE_LIST)
+	/* This is an array type.  We need to check array dimensions
+	   as well.  */
+	return dependent_type_p (TREE_VALUE (TREE_PURPOSE (type)))
+	       || value_dependent_expression_p
+		    (TREE_OPERAND (TREE_VALUE (type), 1));
+      else
+	return dependent_type_p (type);
+    }
 
   if (TREE_CODE (expression) == FUNCTION_DECL
       && DECL_LANG_SPECIFIC (expression)
