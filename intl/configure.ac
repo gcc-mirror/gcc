@@ -2,6 +2,7 @@ AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR(gettext.c)
 AC_CONFIG_HEADER(config.h)
+AC_CONFIG_MACRO_DIR(../config)
 AM_GNU_GETTEXT_VERSION(0.12.1)
 AM_GNU_GETTEXT
 
@@ -15,6 +16,21 @@ AC_DEFINE(set_relocation_prefix, libintl_set_relocation_prefix,
 [Define this entry point correctly.])
 AC_DEFINE(relocate, libintl_relocate,
 [Define this entry point correctly.])
+
+MISSING=`cd $ac_aux_dir && ${PWDCMD-pwd}`/missing
+AC_CHECK_PROGS([ACLOCAL], [aclocal], [$MISSING aclocal])
+AC_CHECK_PROGS([AUTOCONF], [autoconf], [$MISSING autoconf])
+AC_CHECK_PROGS([AUTOHEADER], [autoheader], [$MISSING autoheader])
+
+AC_ARG_ENABLE(maintainer-mode,
+[  --enable-maintainer-mode enable rules only needed by maintainers],,
+enable_maintainer_mode=no)
+if test "x$enable_maintainer_mode" = xno; then
+  MAINT='#'
+else
+  MAINT=
+fi
+AC_SUBST(MAINT)
 
 # Additional info for config.intl.
 AC_SUBST(LIBINTL_DEP)

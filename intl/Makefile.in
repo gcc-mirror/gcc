@@ -21,10 +21,7 @@
 # we do not need nor want), the ability to build a shared library
 # (likewise), and a large number of heinous kludges.
 
-PACKAGE = @PACKAGE@
-VERSION = @VERSION@
-
-SHELL = /bin/sh
+SHELL = @SHELL@
 
 srcdir = @srcdir@
 VPATH = $(srcdir)
@@ -39,6 +36,9 @@ localedir = $(datadir)/locale
 aliaspath = $(localedir)
 
 AR = ar
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOHEADER = @AUTOHEADER@
 CC = @CC@
 RANLIB = @RANLIB@
 YACC = @INTLBISON@ -y -d
@@ -191,19 +191,43 @@ maintainer-clean: distclean
 dist:
 distdir:
 
-Makefile: Makefile.in config.status
-	CONFIG_HEADERS= CONFIG_FILES=Makefile $(SHELL) ./config.status
+# Rules to rebuild the configuration
+
+Makefile: $(srcdir)/Makefile.in config.status
+	$(SHELL) ./config.status Makefile
 
 config.intl: config.intl.in config.status
-	CONFIG_HEADERS= CONFIG_FILES=config.intl $(SHELL) ./config.status
+	$(SHELL) ./config.status config.intl
+	
+config.status: $(srcdir)/configure
+	$(SHELL) ./config.status --recheck
 
-config.h: cstamp-h; @:
-cstamp-h: config.h.in config.status
-	CONFIG_HEADERS=config.h CONFIG_FILES= $(SHELL) config.status
-	echo timestamp > cstamp-h
+$(srcdir)/configure: @MAINT@ $(srcdir)/aclocal.m4 $(srcdir)/configure.ac
+	cd $(srcdir) && $(AUTOCONF)
 
-config.status: configure
-	$(SHELL) config.status --recheck
+$(srcdir)/aclocal.m4: @MAINT@ $(srcdir)/configure.ac \
+	$(srcdir)/../config/codeset.m4 $(srcdir)/../config/gettext.m4 \
+	$(srcdir)/../config/glibc21.m4 $(srcdir)/../config/iconv.m4 \
+	$(srcdir)/../config/intdiv0.m4 $(srcdir)/../config/inttypes-pri.m4 \
+	$(srcdir)/../config/inttypes.m4 $(srcdir)/../config/inttypes_h.m4 \
+	$(srcdir)/../config/lcmessage.m4 $(srcdir)/../config/lib-ld.m4 \
+	$(srcdir)/../config/lib-link.m4 $(srcdir)/../config/lib-prefix.m4 \
+	$(srcdir)/../config/nls.m4 $(srcdir)/../config/po.m4 \
+	$(srcdir)/../config/progtest.m4 $(srcdir)/../config/stdint_h.m4 \
+	$(srcdir)/../config/uintmax_t.m4 $(srcdir)/../config/ulonglong.m4
+	cd $(srcdir) && $(ACLOCAL) -I ../config
+
+config.h: stamp-h1
+	test -f config.h || (rm -f stamp-h1 && $(MAKE) stamp-h1)
+
+stamp-h1: $(srcdir)/config.in config.status
+	-rm -f stamp-h1
+	$(SHELL) ./config.status config.h
+
+$(srcdir)/config.in: @MAINT@ $(srcdir)/configure
+	cd $(srcdir) && $(AUTOHEADER)
+	-rm -f stamp-h1
+	
 
 # Tell versions [3.59,3.63) of GNU make not to export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

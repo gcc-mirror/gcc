@@ -1,3 +1,7 @@
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* aclocal.m4: Update for rename of gettext-sister.m4.
+
 2004-09-22  Daniel Berlin <dberlin@dberlin.org>
 
 	Fix PR tree-optimization/17587

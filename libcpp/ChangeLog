@@ -1,3 +1,9 @@
+2004-09-22  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (aclocal.m4): Update dependencies.
+	* configure.ac (AC_CONFIG_MACRO_DIR): New.
+	* aclocal.m4, configure: Regenerate.
+
 2004-09-17  Zack Weinberg  <zack@codesourcery.com>
 
 	* charset.c (_cpp_destroy_iconv, emit_numeric_escape)
