@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.87 2001/06/08 03:53:32 ljrittle Exp $
+## $Id: Makefile.am,v 1.88 2001/06/25 20:57:51 pme Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -76,7 +76,8 @@ base_headers = \
 	bits/ios_base.h bits/fpos.h bits/basic_ios.h bits/basic_ios.tcc \
 	bits/std_ios.h bits/std_iosfwd.h bits/std_iostream.h \
 	bits/std_istream.h bits/istream.tcc bits/std_locale.h \
-	bits/fstream.tcc bits/ostream.tcc bits/sbuf_iter.h bits/sstream.tcc \
+	bits/fstream.tcc bits/ostream.tcc bits/sstream.tcc \
+	bits/stream_iterator.h bits/streambuf_iterator.h \
 	bits/std_ostream.h bits/std_sstream.h bits/std_streambuf.h \
 	bits/streambuf.tcc bits/basic_file.h \
 	bits/locale_facets.h bits/locale_facets.tcc bits/localefwd.h \

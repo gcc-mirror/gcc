@@ -47,6 +47,9 @@ void test01()
   typedef test_iterator::ostream_type ostream_type;
 }
 
+// Instantiate
+template class std::ostream_iterator<char>;
+
 int main() 
 { 
   test01();

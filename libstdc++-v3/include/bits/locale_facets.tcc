@@ -37,7 +37,7 @@
 #include <bits/std_cstdlib.h>   // For strof, strtold
 #include <bits/std_limits.h>    // For numeric_limits
 #include <bits/std_memory.h>    // For auto_ptr
-#include <bits/sbuf_iter.h>     // For streambuf_iterators
+#include <bits/streambuf_iterator.h>     // For streambuf_iterators
 #include <bits/std_cctype.h>    // For isspace
 #include <typeinfo> 		// For bad_cast
 #include <bits/std_vector.h>	

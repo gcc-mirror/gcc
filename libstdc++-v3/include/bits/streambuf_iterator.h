@@ -29,8 +29,8 @@
 
 // XXX Should specialize copy, find algorithms for streambuf iterators.
 
-#ifndef _CPP_BITS_SBUF_ITER_H
-#define _CPP_BITS_SBUF_ITER_H 1
+#ifndef _CPP_BITS_STREAMBUF_ITERATOR_H
+#define _CPP_BITS_STREAMBUF_ITERATOR_H 1
 
 #pragma GCC system_header
 

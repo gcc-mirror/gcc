@@ -39,10 +39,10 @@
 #include <bits/c++config.h>
 #include <bits/stringfwd.h>
 #include <bits/char_traits.h>
-#include <bits/std_iterator.h>
 #include <bits/std_memory.h> 	// For allocator.
 #include <bits/type_traits.h>
 #include <bits/std_iosfwd.h> 	// For operators >>, <<, and getline decls.
+#include <bits/stl_iterator.h>
 #include <bits/basic_string.h>
 
 #ifdef _GLIBCPP_NO_TEMPLATE_EXPORT

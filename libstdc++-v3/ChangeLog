@@ -1,3 +1,23 @@
+2001-06-26  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/sbuf_iter.h: Change to..
+	* include/bits/streambuf_iterator.h: This.
+	* include/bits/stl_iterator.h: Take out of here...
+	* include/bits/stream_iterator.h: Add.
+	* src/Makefile.am (base_headers): Add streambuf_iterator,
+	stream_iterator.h
+	* src/Makefile.in: Regenerate.
+	* include/bits/std_string.h: Adjust includes.
+	* include/bits/basic_ios.h: Same.
+	* include/bits/locale_facets.tcc: Same.
+	* include/bits/std_iosfwd.h: Same.	
+	
+	* include/bits/std_iterator.h: Add istream, ostream includes.
+	* include/bits/stl_iterator.h: Tweak.
+	* testsuite/24_iterators/ostream_iterator.cc: Add test.
+	* testsuite/24_iterators/istream_iterator.cc: Same.
+	* testsuite/23_containers/multiset.cc: Add iterator include.
+
 2001-06-26  Phil Edwards  <pme@sources.redhat.com>
 
 	* acinclude.m4:  Clean extraneous tabs, rewrap 'test' lines.
