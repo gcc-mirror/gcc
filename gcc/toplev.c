@@ -4556,6 +4556,7 @@ main (argc, argv)
       flag_regmove = 1;
       flag_strict_aliasing = 1;
       flag_delete_null_pointer_checks = 1;
+      flag_reorder_blocks = 1;
     }
 
   if (optimize >= 3)
