@@ -1158,26 +1158,36 @@ mask_operand (op, mode)
      register rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  HOST_WIDE_INT c;
-  int i;
-  int last_bit_value;
-  int transitions = 0;
+  unsigned HOST_WIDE_INT c, lsb;
 
   if (GET_CODE (op) != CONST_INT)
     return 0;
 
   c = INTVAL (op);
 
-  if (c == 0 || c == ~0)
+  /* We don't change the number of transitions by inverting,
+     so make sure we start with the LS bit zero.  */
+  if (c & 1)
+    c = ~c;
+
+  /* Reject all zeros or all ones.  */
+  if (c == 0)
     return 0;
 
-  last_bit_value = c & 1;
+  /* Find the first transition.  */
+  lsb = c & -c;
 
-  for (i = 1; i < 32; i++)
-    if (((c >>= 1) & 1) != last_bit_value)
-      last_bit_value ^= 1, transitions++;
+  /* Invert to look for a second transition.  */
+  c = ~c;
 
-  return transitions <= 2;
+  /* Erase first transition.  */
+  c &= -lsb;
+
+  /* Find the second transition (if any).  */
+  lsb = c & -c;
+
+  /* Match if all the bits above are 1's (or c is zero).  */
+  return c == -lsb;
 }
 
 /* Return 1 if the operand is a constant that is a PowerPC64 mask.
@@ -1192,133 +1202,49 @@ mask64_operand (op, mode)
 {
   if (GET_CODE (op) == CONST_INT)
     {
-      HOST_WIDE_INT c = INTVAL (op);
-      int i;
-      int last_bit_value;
-      int transitions = 0;
+      unsigned HOST_WIDE_INT c, lsb;
 
-      if (c == 0 || c == ~0)
+      /* We don't change the number of transitions by inverting,
+	 so make sure we start with the LS bit zero.  */
+      c = INTVAL (op);
+      if (c & 1)
+	c = ~c;
+
+      /* Reject all zeros or all ones.  */
+      if (c == 0)
 	return 0;
 
-      last_bit_value = c & 1;
-
-      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	if (((c >>= 1) & 1) != last_bit_value)
-	  last_bit_value ^= 1, transitions++;
-
-      return transitions <= 1;
+      /* Find the transition, and check that all bits above are 1's.  */
+      lsb = c & -c;
+      return c == -lsb;
     }
   else if (GET_CODE (op) == CONST_DOUBLE
 	   && (mode == VOIDmode || mode == DImode))
     {
-      HOST_WIDE_INT low = CONST_DOUBLE_LOW (op);
-#if HOST_BITS_PER_WIDE_INT == 32
-      HOST_WIDE_INT high = CONST_DOUBLE_HIGH (op);
-#endif
-      int i;
-      int last_bit_value;
-      int transitions = 0;
+      unsigned HOST_WIDE_INT low, high, lsb;
 
-      if ((low == 0
-#if HOST_BITS_PER_WIDE_INT == 32
-	  && high == 0
-#endif
-	   )
-	  || (low == ~0
-#if HOST_BITS_PER_WIDE_INT == 32
-	      && high == ~0
-#endif
-	      ))
-	return 0;
+      if (HOST_BITS_PER_WIDE_INT < 64)
+	high = CONST_DOUBLE_HIGH (op);
 
-      last_bit_value = low & 1;
+      low = CONST_DOUBLE_LOW (op);
+      if (low & 1)
+	{
+	  if (HOST_BITS_PER_WIDE_INT < 64)
+	    high = ~high;
+	  low = ~low;
+	}
 
-      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	if (((low >>= 1) & 1) != last_bit_value)
-	  last_bit_value ^= 1, transitions++;
+      if (low == 0)
+	{
+	  if (HOST_BITS_PER_WIDE_INT >= 64 || high == 0)
+	    return 0;
 
-#if HOST_BITS_PER_WIDE_INT == 32
-      if ((high & 1) != last_bit_value)
-	last_bit_value ^= 1, transitions++;
+	  lsb = high & -high;
+	  return high == -lsb;
+	}
 
-      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	if (((high >>= 1) & 1) != last_bit_value)
-	  last_bit_value ^= 1, transitions++;
-#endif
-
-      return transitions <= 1;
-    }
-  else
-    return 0;
-}
-
-/* Return 1 if the operand is a constant that is a PowerPC64 mask.
-   It is if there are no more than two 1->0 or 0->1 transitions.
-   Reject all ones and all zeros, since these should have been optimized
-   away and confuse the making of MB and ME.  */
-
-int
-rldic_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == CONST_INT)
-    {
-      HOST_WIDE_INT c = INTVAL (op);
-      int i;
-      int last_bit_value;
-      int transitions = 0;
-
-      if (c == 0 || c == ~0)
-	return 0;
-
-      last_bit_value = c & 1;
-
-      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	if (((c >>= 1) & 1) != last_bit_value)
-	  last_bit_value ^= 1, transitions++;
-
-      return transitions <= 2;
-    }
-  else if (GET_CODE (op) == CONST_DOUBLE
-	   && (mode == VOIDmode || mode == DImode))
-    {
-      HOST_WIDE_INT low = CONST_DOUBLE_LOW (op);
-#if HOST_BITS_PER_WIDE_INT == 32
-      HOST_WIDE_INT high = CONST_DOUBLE_HIGH (op);
-#endif
-      int i;
-      int last_bit_value;
-      int transitions = 0;
-
-      if ((low == 0
-#if HOST_BITS_PER_WIDE_INT == 32
-	  && high == 0
-#endif
-	   )
-	  || (low == ~0
-#if HOST_BITS_PER_WIDE_INT == 32
-	      && high == ~0
-#endif
-	      ))
-	return 0;
-
-      last_bit_value = low & 1;
-
-      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	if (((low >>= 1) & 1) != last_bit_value)
-	  last_bit_value ^= 1, transitions++;
-
-#if HOST_BITS_PER_WIDE_INT == 32
-      if ((high & 1) != last_bit_value)
-	last_bit_value ^= 1, transitions++;
-
-      for (i = 1; i < HOST_BITS_PER_WIDE_INT; i++)
-	if (((high >>= 1) & 1) != last_bit_value)
-	  last_bit_value ^= 1, transitions++;
-#endif
-
-      return transitions <= 2;
+      lsb = low & -low;
+      return low == -lsb && (HOST_BITS_PER_WIDE_INT >= 64 || high == ~0);
     }
   else
     return 0;
@@ -3705,36 +3631,174 @@ includes_rshift_p (shiftop, andop)
   return (INTVAL (andop) & ~shift_mask) == 0;
 }
 
-/* Return 1 if ANDOP is a mask that has no bits on that are not in the
-   mask required to convert the result of a rotate insn into a shift
-   left insn of SHIFTOP bits.  */
+/* Return 1 if ANDOP is a mask suitable for use with an rldic insn
+   to perform a left shift.  It must have exactly SHIFTOP least
+   signifigant 0's, then one or more 1's, then zero or more 0's.  */
 
 int
-includes_lshift64_p (shiftop, andop)
+includes_rldic_lshift_p (shiftop, andop)
      register rtx shiftop;
      register rtx andop;
 {
-#if HOST_BITS_PER_WIDE_INT == 64
-  unsigned HOST_WIDE_INT shift_mask = ~(unsigned HOST_WIDE_INT) 0;
-
-  shift_mask <<= INTVAL (shiftop);
-
-  return (INTVAL (andop) & ~shift_mask) == 0;
-#else
-  unsigned HOST_WIDE_INT shift_mask_low = ~(unsigned HOST_WIDE_INT) 0;
-  unsigned HOST_WIDE_INT shift_mask_high = ~(unsigned HOST_WIDE_INT) 0;
-
-  shift_mask_low <<= INTVAL (shiftop);
-
-  if (INTVAL (shiftop) > 32)
-    shift_mask_high <<= (INTVAL (shiftop) - 32);
-
   if (GET_CODE (andop) == CONST_INT)
-    return (INTVAL (andop) & ~shift_mask_low) == 0;
+    {
+      unsigned HOST_WIDE_INT c, lsb, shift_mask;
+
+      c = INTVAL (andop);
+      if (c == 0 || c == ~(unsigned HOST_WIDE_INT) 0)
+	return 0;
+
+      shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask <<= INTVAL (shiftop);
+
+      /* Find the least signifigant one bit.  */
+      lsb = c & -c;
+
+      /* It must coincide with the LSB of the shift mask.  */
+      if (-lsb != shift_mask)
+	return 0;
+
+      /* Invert to look for the next transition (if any).  */
+      c = ~c;
+
+      /* Remove the low group of ones (originally low group of zeros).  */
+      c &= -lsb;
+
+      /* Again find the lsb, and check we have all 1's above.  */
+      lsb = c & -c;
+      return c == -lsb;
+    }
+  else if (GET_CODE (andop) == CONST_DOUBLE
+	   && (GET_MODE (andop) == VOIDmode || GET_MODE (andop) == DImode))
+    {
+      unsigned HOST_WIDE_INT low, high, lsb;
+      unsigned HOST_WIDE_INT shift_mask_low, shift_mask_high;
+
+      low = CONST_DOUBLE_LOW (andop);
+      if (HOST_BITS_PER_WIDE_INT < 64)
+	high = CONST_DOUBLE_HIGH (andop);
+
+      if ((low == 0 && (HOST_BITS_PER_WIDE_INT >= 64 || high == 0))
+	  || (low == ~(unsigned HOST_WIDE_INT) 0
+	      && (HOST_BITS_PER_WIDE_INT >= 64
+		  || high == ~(unsigned HOST_WIDE_INT) 0)))
+	return 0;
+
+      if (HOST_BITS_PER_WIDE_INT < 64 && low == 0)
+	{
+	  shift_mask_high = ~(unsigned HOST_WIDE_INT) 0;
+	  if (INTVAL (shiftop) > 32)
+	    shift_mask_high <<= INTVAL (shiftop) - 32;
+
+	  lsb = high & -high;
+
+	  if (-lsb != shift_mask_high || INTVAL (shiftop) < 32)
+	    return 0;
+
+	  high = ~high;
+	  high &= -lsb;
+
+	  lsb = high & -high;
+	  return high == -lsb;
+	}
+
+      shift_mask_low = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask_low <<= INTVAL (shiftop);
+
+      lsb = low & -low;
+
+      if (-lsb != shift_mask_low)
+	return 0;
+
+      if (HOST_BITS_PER_WIDE_INT < 64)
+	high = ~high;
+      low = ~low;
+      low &= -lsb;
+
+      if (HOST_BITS_PER_WIDE_INT < 64 && low == 0)
+	{
+	  lsb = high & -high;
+	  return high == -lsb;
+	}
+
+      lsb = low & -low;
+      return low == -lsb && (HOST_BITS_PER_WIDE_INT >= 64 || high == ~0);
+    }
   else
-    return ((CONST_DOUBLE_HIGH (andop) & ~shift_mask_high) == 0
-	    && (CONST_DOUBLE_LOW (andop) & ~shift_mask_low) == 0);
-#endif
+    return 0;
+}
+
+/* Return 1 if ANDOP is a mask suitable for use with an rldicr insn
+   to perform a left shift.  It must have SHIFTOP or more least
+   signifigant 0's, with the remainder of the word 1's.  */
+
+int
+includes_rldicr_lshift_p (shiftop, andop)
+     register rtx shiftop;
+     register rtx andop;
+{
+  if (GET_CODE (andop) == CONST_INT)
+    {
+      unsigned HOST_WIDE_INT c, lsb;
+      unsigned HOST_WIDE_INT shift_mask;
+
+      shift_mask = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask <<= INTVAL (shiftop);
+      c = INTVAL (andop);
+
+      /* Find the least signifigant one bit.  */
+      lsb = c & -c;
+
+      /* It must be covered by the shift mask.
+	 This test also rejects c == 0. */
+      if ((lsb & shift_mask) == 0)
+	return 0;
+
+      /* Check we have all 1's above the transition, and reject all 1's.  */
+      return c == -lsb && lsb != 1;
+    }
+  else if (GET_CODE (andop) == CONST_DOUBLE
+	   && (GET_MODE (andop) == VOIDmode || GET_MODE (andop) == DImode))
+    {
+      unsigned HOST_WIDE_INT low, lsb, shift_mask_low;
+
+      low = CONST_DOUBLE_LOW (andop);
+
+      if (HOST_BITS_PER_WIDE_INT < 64)
+	{
+	  unsigned HOST_WIDE_INT high, shift_mask_high;
+
+	  high = CONST_DOUBLE_HIGH (andop);
+
+	  if (low == 0)
+	    {
+	      shift_mask_high = ~(unsigned HOST_WIDE_INT) 0;
+	      if (INTVAL (shiftop) > 32)
+		shift_mask_high <<= INTVAL (shiftop) - 32;
+
+	      lsb = high & -high;
+
+	      if ((lsb & shift_mask_high) == 0)
+		return 0;
+
+	      return high == -lsb;
+	    }
+	  if (high != ~0)
+	    return 0;
+	}
+
+      shift_mask_low = ~(unsigned HOST_WIDE_INT) 0;
+      shift_mask_low <<= INTVAL (shiftop);
+
+      lsb = low & -low;
+
+      if ((lsb & shift_mask_low) == 0)
+	return 0;
+
+      return low == -lsb && lsb != 1;
+    }
+  else
+    return 0;
 }
 
 /* Return 1 if REGNO (reg1) == REGNO (reg2) - 1 making them candidates
@@ -4537,9 +4601,6 @@ print_operand (file, x, code)
 
     case 'W':
       /* MB value for a PowerPC64 rldic operand.  */
-      if (! rldic_operand (x, VOIDmode))
-	output_operand_lossage ("invalid %%W value");
-
       val = (GET_CODE (x) == CONST_INT
 	     ? INTVAL (x) : CONST_DOUBLE_HIGH (x));
 
