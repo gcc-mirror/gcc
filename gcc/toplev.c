@@ -3267,6 +3267,9 @@ rest_of_compilation (decl)
 
   reload_completed = 0;
 
+  /* Clear out the insn_length contents now that they are no longer valid.  */
+  init_insn_lengths ();
+
   /* Clear out the real_constant_chain before some of the rtx's
      it runs through become garbage.  */
 
