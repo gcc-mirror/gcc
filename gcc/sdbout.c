@@ -531,10 +531,14 @@ plain_type_1 (type, level)
 	  {
 	    char *name = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
 
+	    if (!strcmp (name, "char"))
+	      return T_CHAR;
 	    if (!strcmp (name, "unsigned char"))
 	      return T_UCHAR;
 	    if (!strcmp (name, "signed char"))
 	      return T_CHAR;
+	    if (!strcmp (name, "int"))
+	      return T_INT;
 	    if (!strcmp (name, "unsigned int"))
 	      return T_UINT;
 	    if (!strcmp (name, "short int"))
@@ -547,12 +551,12 @@ plain_type_1 (type, level)
 	      return T_ULONG;
 	  }
 
+	if (size == INT_TYPE_SIZE)
+	  return (TREE_UNSIGNED (type) ? T_UINT : T_INT);
 	if (size == CHAR_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? T_UCHAR : T_CHAR);
 	if (size == SHORT_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? T_USHORT : T_SHORT);
-	if (size == INT_TYPE_SIZE)
-	  return (TREE_UNSIGNED (type) ? T_UINT : T_INT);
 	if (size == LONG_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? T_ULONG : T_LONG);
 	if (size == LONG_LONG_TYPE_SIZE)	/* better than nothing */

@@ -1241,7 +1241,7 @@ main (argc, argv)
     rlim.rlim_cur = rlim.rlim_max;
     setrlimit (RLIMIT_STACK, &rlim);
   }
-#endif /* RLIMIT_STACK defined */
+#endif
 
 #ifdef SIGPIPE
   signal (SIGPIPE, pipe_closed);

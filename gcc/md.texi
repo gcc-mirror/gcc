@@ -2465,6 +2465,15 @@ will not normally need to define this pattern.  A typical reason why you
 might need this pattern is if some value, such as a pointer to a global
 table, must be restored after control flow is branched to the handler of
 an exception.  There are no arguments.
+
+@cindex @code{builtin_setjmp_receiver} instruction pattern
+@item @samp{builtin_setjmp_receiver}
+This pattern, if defined, contains code needed at the site of an
+builtin setjmp that isn't needed at the site of a nonlocal goto.  You
+will not normally need to define this pattern.  A typical reason why you
+might need this pattern is if some value, such as a pointer to a global
+table, must be restored.  This pattern is called immediate after the
+call to @code{__dummy} has been emitted.  There are no arguments.
 @end table
 
 @node Pattern Ordering
