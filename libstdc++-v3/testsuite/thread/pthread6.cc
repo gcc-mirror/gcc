@@ -1,7 +1,7 @@
 // 2002-01-23  Loren J. Rittle <rittle@labs.mot.com> <ljrittle@acm.org>
 // Adpated from libstdc++/5444 submitted by markus.breuer@materna.de
 //
-// Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,11 +69,6 @@ thread_main (void*)
 
   return 0;
 }
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<std::_Rb_tree_node<std::pair<unsigned int const, std::string> > >;
-#endif
 
 int
 main (void)

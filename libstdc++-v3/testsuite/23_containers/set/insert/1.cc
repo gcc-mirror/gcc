@@ -85,11 +85,6 @@ void test01()
   VERIFY( s0 == s1 );
 }
 
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<std::_Rb_tree_node<int> >;
-#endif
-
 int main ()
 {
   test01();

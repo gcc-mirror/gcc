@@ -1,6 +1,6 @@
 // 2003-05-03  Loren J. Rittle <rittle@labs.mot.com> <ljrittle@acm.org>
 //
-// Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,14 +52,6 @@ void* thread_main(void *)
   VERIFY( !std::strcmp (data4, "barbazbonglehellohellohello") );
   return 0;
 }
-
-#if !__GXX_WEAK__ && _MT_ALLOCATOR_H
-// Explicitly instantiate for systems with no COMDAT or weak support.
-template class __gnu_cxx::__mt_alloc<__gnu_cxx::_Rope_RopeLeaf<char, std::allocator<char> > >;
-template class __gnu_cxx::__mt_alloc<__gnu_cxx::_Rope_RopeFunction<char, std::allocator<char> > >;
-template class __gnu_cxx::__mt_alloc<__gnu_cxx::_Rope_RopeSubstring<char, std::allocator<char> > >;
-template class __gnu_cxx::__mt_alloc<__gnu_cxx::_Rope_RopeConcatenation<char, std::allocator<char> > >;
-#endif                                                                
 
 int
 main()
