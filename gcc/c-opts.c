@@ -203,6 +203,7 @@ static void finish_options PARAMS ((void));
   OPT("Wimplicit-function-declaration",	CL_C, OPT_Wimplicit_function_decl)   \
   OPT("Wimplicit-int",		CL_C,	  OPT_Wimplicit_int)		     \
   OPT("Wimport",                CL_ALL,   OPT_Wimport)			     \
+  OPT("Winvalid-offsetof",      CL_CXX,   OPT_Winvalid_offsetof)             \
   OPT("Winvalid-pch",           CL_ALL,   OPT_Winvalid_pch)		     \
   OPT("Wlong-long",		CL_ALL,   OPT_Wlong_long)		     \
   OPT("Wmain",			CL_C,     OPT_Wmain)			     \
@@ -940,6 +941,10 @@ c_common_decode_option (argc, argv)
 
     case OPT_Wimport:
       cpp_opts->warn_import = on;
+      break;
+
+    case OPT_Winvalid_offsetof:
+      warn_invalid_offsetof = on;
       break;
 
     case OPT_Winvalid_pch:

@@ -777,6 +777,10 @@ extern int flag_abi_version;
 
 extern int warn_abi;
 
+/* Nonzero means warn about invalid uses of offsetof. */
+ 
+extern int warn_invalid_offsetof;
+
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;

@@ -1,3 +1,9 @@
+2003-05-19  Matt Austern  <austern@apple.com>
+
+	* lang-options.h: Document -Wno-invalid-offsetof
+	* typeck.c (build_class_member_access_expr): Don't complain about
+	(Foo *)p->x for non-POD Foo if warn_invalid_offset is zero.
+	
 2003-05-18 Andrew Pinski <pinskia@physics.uc.edu>
 
 	* name-lookup.c (free_binding_entry): fix where the GTY markers are.
