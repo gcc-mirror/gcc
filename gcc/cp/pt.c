@@ -2000,17 +2000,19 @@ end_template_parm_list (parms)
      tree parms;
 {
   int nparms;
-  tree parm;
+  tree parm, next;
   tree saved_parmlist = make_tree_vec (list_length (parms));
 
   current_template_parms
     = tree_cons (size_int (processing_template_decl),
 		 saved_parmlist, current_template_parms);
 
-  for (parm = parms, nparms = 0; 
-       parm; 
-       parm = TREE_CHAIN (parm), nparms++)
-    TREE_VEC_ELT (saved_parmlist, nparms) = parm;
+  for (parm = parms, nparms = 0; parm; parm = next, nparms++)
+    {
+      next = TREE_CHAIN (parm);
+      TREE_VEC_ELT (saved_parmlist, nparms) = parm;
+      TREE_CHAIN (parm) = NULL_TREE;
+    }
 
   --processing_template_parmlist;
 
@@ -9188,7 +9190,7 @@ get_bindings_overload (fn, decl, explicit_args)
 
 /* Return the innermost template arguments that, when applied to a
    template specialization whose innermost template parameters are
-   TPARMS, and whose specialization arguments are ARGS, yield the
+   TPARMS, and whose specialization arguments are PARMS, yield the
    ARGS.  
 
    For example, suppose we have:
