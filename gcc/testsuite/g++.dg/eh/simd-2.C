@@ -5,7 +5,7 @@
 // { dg-options "-O -w -maltivec" { target powerpc64-*-linux* } }
 // { dg-do run { xfail "powerpc64-*-linux*"}  }
 
-typedef int __attribute__((mode(V4SI))) vecint;
+typedef int __attribute__((vector_size (16))) vecint;
 
 vecint vecfunc (vecint beachbum)
 {

@@ -4,10 +4,10 @@
 /* Origin: Aldy Hernandez <aldyh@redhat.com>.  */
 /* Purpose: Program to test generic SIMD support.  */
 
-typedef int __attribute__((mode(V4SI))) v4si;
-typedef int __attribute__((mode(V8HI))) v8hi;
-typedef int __attribute__((mode(V2SI))) v2si;
-typedef unsigned int __attribute__((mode(V4SI))) uv4si;
+typedef int __attribute__((vector_size (16))) v4si;
+typedef short __attribute__((vector_size (16))) v8hi;
+typedef int __attribute__((vector_size (8))) v2si;
+typedef unsigned int __attribute__((vector_size (16))) uv4si;
 
 v4si a, b;
 v2si c, d;
@@ -16,7 +16,7 @@ uv4si f;
 
 int foo __attribute__((mode(DI)));
 int foo1 __attribute__((mode(SI)));
-int foo2 __attribute__((mode(V4HI)));
+short foo2 __attribute__((vector_size (8)));
 
 void
 hanneke ()
@@ -32,7 +32,7 @@ hanneke ()
   e = (typeof (e)) a;
 
   /* Different signed SIMD assignment.  */
-  f = a; /* { dg-error "incompatible types in assignment" } */
+  f = a;
 
   /* Casted different signed SIMD assignment.  */
   f = (uv4si) a;

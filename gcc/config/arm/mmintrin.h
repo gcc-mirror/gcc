@@ -31,9 +31,9 @@
 typedef unsigned long long __m64, __int64;
 
 /* Internal data types for implementing the intrinsics.  */
-typedef int __v2si __attribute__ ((__mode__ (__V2SI__)));
-typedef int __v4hi __attribute__ ((__mode__ (__V4HI__)));
-typedef int __v8qi __attribute__ ((__mode__ (__V8QI__)));
+typedef int __v2si __attribute__ ((vector_size (8)));
+typedef short __v4hi __attribute__ ((vector_size (8)));
+typedef char __v8qi __attribute__ ((vector_size (8)));
 
 /* "Convert" __m64 and __int64 into each other.  */
 static __inline __m64 

@@ -1,3 +1,3 @@
-typedef int __attribute__((mode(V2SI))) vec;
+typedef int __attribute__((vector_size (8))) vec;
 
 vec a[] = {(vec) {1, 2}, {3, 4}};

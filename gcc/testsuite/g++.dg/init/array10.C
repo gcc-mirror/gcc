@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "" }
 
-typedef int __attribute__((mode(V2SI))) vec;
+typedef int __attribute__((vector_size (8))) vec;
 
 vec foo[] = { (vec) {1, 2} };

@@ -3,7 +3,7 @@
 
 #define vector __attribute__((vector_size(16)))
 
-static int __attribute__((mode(V4SI))) x, y;
+static int vector x, y;
 
 static vector signed int i,j;
 static vector signed short s,t;

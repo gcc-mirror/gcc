@@ -6,7 +6,7 @@
 
 #include "altivec_check.h"
 
-#define vector __attribute__((mode(V4SI)))
+#define vector __attribute__((vector_size (16)))
 
 const vector unsigned int v1 = {10,11,12,13};
 const vector unsigned int v2 = {20,21,22,23};

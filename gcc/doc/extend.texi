@@ -4631,30 +4631,24 @@ The first step in using these extensions is to provide the necessary data
 types.  This should be done using an appropriate @code{typedef}:
 
 @smallexample
-typedef int v4si __attribute__ ((mode(V4SI)));
+typedef int v4si __attribute__ ((vector_size (16)));
 @end smallexample
 
-The base type @code{int} is effectively ignored by the compiler, the
-actual properties of the new type @code{v4si} are defined by the
-@code{__attribute__}.  It defines the machine mode to be used; for vector
-types these have the form @code{V@var{n}@var{B}}; @var{n} should be the
-number of elements in the vector, and @var{B} should be the base mode of the
-individual elements.  The following can be used as base modes:
+The @code{int} type specifies the base type, while the attribute specifies
+the vector size for the variable, measured in bytes.  For example, the
+declaration above causes the compiler to set the mode for the @code{v4si}
+type to be 16 bytes wide and divided into @code{int} sized units.  For
+a 32-bit @code{int} this means a vector of 4 units of 4 bytes, and the
+corresponding mode of @code{foo} will be @acronym{V4SI}.
 
-@table @code
-@item QI
-An integer that is as wide as the smallest addressable unit, usually 8 bits.
-@item HI
-An integer, twice as wide as a QI mode integer, usually 16 bits.
-@item SI
-An integer, four times as wide as a QI mode integer, usually 32 bits.
-@item DI
-An integer, eight times as wide as a QI mode integer, usually 64 bits.
-@item SF
-A floating point value, as wide as a SI mode integer, usually 32 bits.
-@item DF
-A floating point value, as wide as a DI mode integer, usually 64 bits.
-@end table
+The @code{vector_size} attribute is only applicable to integral and
+float scalars, although arrays, pointers, and function return values
+are allowed in conjunction with this construct.
+
+All the basic integer types can be used as base types, both as signed
+and as unsigned: @code{char}, @code{short}, @code{int}, @code{long},
+@code{long long}.  In addition, @code{float} and @code{double} can be
+used to build floating-point vector types.
 
 Specifying a combination that is not valid for the current architecture
 will cause GCC to synthesize the instructions using a narrower mode.
@@ -4673,7 +4667,7 @@ added to the corresponding 4 elements in @var{b} and the resulting
 vector will be stored in @var{c}.
 
 @smallexample
-typedef int v4si __attribute__ ((mode(V4SI)));
+typedef int v4si __attribute__ ((vector_size (16)));
 
 v4si a, b, c;
 

@@ -34,11 +34,11 @@
 #include <xmmintrin.h>
 
 /* SSE2 */
-typedef int __v2df __attribute__ ((mode (V2DF)));
-typedef int __v2di __attribute__ ((mode (V2DI)));
-typedef int __v4si __attribute__ ((mode (V4SI)));
-typedef int __v8hi __attribute__ ((mode (V8HI)));
-typedef int __v16qi __attribute__ ((mode (V16QI)));
+typedef double __v2df __attribute__ ((vector_size (16)));
+typedef long long __v2di __attribute__ ((vector_size (16)));
+typedef int __v4si __attribute__ ((vector_size (16)));
+typedef short __v8hi __attribute__ ((vector_size (16)));
+typedef char __v16qi __attribute__ ((vector_size (16)));
 
 /* Create a selector for use with the SHUFPD instruction.  */
 #define _MM_SHUFFLE2(fp1,fp0) \

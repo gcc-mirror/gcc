@@ -1,3 +1,29 @@
+2004-03-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* g++.dg/eh/simd-1.C: Use vector_size attribute, not mode.
+	* g++.dg/eh/simd-2.C: Likewise.
+	* g++.dg/init/array10.C: Likewise.
+	* gcc.c-torture/compile/simd-1.c: Likewise.
+	* gcc.c-torture/compile/simd-2.c: Likewise.
+	* gcc.c-torture/compile/simd-3.c: Likewise.
+	* gcc.c-torture/compile/simd-4.c: Likewise.
+	* gcc.c-torture/compile/simd-6.c: Likewise.
+	* gcc.c-torture/execute/simd-1.c: Likewise.
+	* gcc.c-torture/execute/simd-2.c: Likewise.
+	* gcc.dg/compat/vector-defs.h: Likewise.
+	* gcc.dg/20020531-1.c: Likewise.
+	* gcc.dg/altivec-3.c: Likewise.
+	* gcc.dg/altivec-4.c: Likewise.
+	* gcc.dg/altivec-varargs-1.c: Likewise.
+	* testsuite/gcc.dg/compat/vector-defs.h: Likewise.
+	* gcc.dg/i386-mmx-3.c: Likewise.
+	* gcc.dg/i386-sse-4.c: Likewise.
+	* gcc.dg/i386-sse-5.c: Likewise.
+	* gcc.dg/i386-sse-8.c: Likewise.
+	* gcc.dg/simd-1.c: Likewise.
+	* gcc.dg/20030218-1.c: Likewise.  Plus, do not declare
+	__ev64_opaque__ since the machine description provides it.
+
 2004-03-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* lib/compat.exp (skip_list): New global variable.

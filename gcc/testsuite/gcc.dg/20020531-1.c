@@ -4,7 +4,7 @@
 /* { dg-do compile { target i?86-*-* } } */
 /* { dg-options "-O2 -mmmx" } */
 
-typedef int __v8qi __attribute__ ((__mode__ (__V8QI__)));
+typedef unsigned char __v8qi __attribute__ ((vector_size (8)));
 extern void abort (void);
 extern void exit (int);
 
