@@ -1,5 +1,9 @@
 2000-12-04  Neil Booth  <neilb@earthling.net>
 
+        * cppinternals.texi: New file.
+
+2000-12-04  Neil Booth  <neilb@earthling.net>
+
         * cppfiles.c (cpp_make_system_header): Take 2 booleans,
         and operate on current buffer.
         (cpp_read_file): Rename _cpp_read_file.  
