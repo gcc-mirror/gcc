@@ -1,3 +1,9 @@
+Tue Jul 14 14:15:30 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* gcc.c: Remove ANSI-C ism from --help code.
+
+	* toplev.c: Support --help with USE_CPPLIB.
+
 Tue Jul 14 14:46:08 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.md (movsi, movsf, movdi, movdf): Remove "x" from I -> a
