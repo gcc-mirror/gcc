@@ -1855,6 +1855,11 @@ build_allocator (type, init, result_type, gnat_proc, gnat_pool)
 	  && contains_placeholder_p (size))
 	size = build (WITH_RECORD_EXPR, sizetype, size, init);
 
+      /* If the size overflows, pass -1 so the allocator will raise
+	 storage error.  */
+      if (TREE_CODE (size) == INTEGER_CST && TREE_OVERFLOW (size))
+	size = ssize_int (-1);
+
       storage = build_call_alloc_dealloc (NULL_TREE, size,
 					  TYPE_ALIGN (storage_type),
 					  gnat_proc, gnat_pool);
