@@ -4485,9 +4485,10 @@ h8300_tiny_constant_address_p (x)
   addr = INTVAL (x);
 
   return (0
-	  || ((TARGET_H8300H && !TARGET_NORMAL_MODE)
+	  || TARGET_NORMAL_MODE
+	  || (TARGET_H8300H
 	      && (IN_RANGE (addr, h1, h2) || IN_RANGE (addr, h3, h4)))
-	  || ((TARGET_H8300S && !TARGET_NORMAL_MODE)
+	  || (TARGET_H8300S
 	      && (IN_RANGE (addr, s1, s2) || IN_RANGE (addr, s3, s4))));
 }
 
