@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.249 1998/06/27 19:04:37 karl Exp $
+% $Id: texinfo.tex,v 2.250 1998/06/27 23:16:34 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.249 $
+\deftexinfoversion$Revision: 2.250 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -3433,7 +3433,7 @@ width0pt\relax} \fi
 
 
 % Normal (long) toc.
-\outer\def\contents{%
+\def\contents{%
    \startcontents{\putwordTableofContents}%
       \input \jobname.toc
    \endgroup
@@ -3441,7 +3441,7 @@ width0pt\relax} \fi
 }
 
 % And just the chapters.
-\outer\def\summarycontents{%
+\def\summarycontents{%
    \startcontents{\putwordShortContents}%
       %
       \let\chapentry = \shortchapentry
