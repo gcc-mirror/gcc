@@ -142,7 +142,7 @@ do {									\
 
 #undef  RS6000_OUTPUT_BASENAME
 #define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-    assemble_name (FILE, NAME);
+    assemble_name (FILE, NAME)
 
 /* Globalizing directive for a label.  */
 #undef GLOBAL_ASM_OP
