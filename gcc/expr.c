@@ -5450,22 +5450,6 @@ expand_expr (exp, target, tmode, modifier)
 	return target;
       }
 
-    case OFFSET_REF:
-      {
-	tree base = build1 (ADDR_EXPR, type, TREE_OPERAND (exp, 0));
-	tree addr = build (PLUS_EXPR, type, base, TREE_OPERAND (exp, 1));
-	op0 = expand_expr (addr, NULL_RTX, VOIDmode, EXPAND_SUM);
-	temp = gen_rtx (MEM, mode, memory_address (mode, op0));
-	MEM_IN_STRUCT_P (temp) = 1;
-	MEM_VOLATILE_P (temp) = TREE_THIS_VOLATILE (exp);
-#if 0 /* It is incorrect to set RTX_UNCHANGING_P here, because the fact that
-	 a location is accessed through a pointer to const does not mean
-	 that the value there can never change.  */
-	RTX_UNCHANGING_P (temp) = TREE_READONLY (exp);
-#endif
-	return temp;
-      }
-
       /* Intended for a reference to a buffer of a file-object in Pascal.
 	 But it's not certain that a special tree code will really be
 	 necessary for these.  INDIRECT_REF might work for them.  */
