@@ -1,3 +1,8 @@
+2000-04-18  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpplib.c (do_pragma_poison):  Strings in the token buffer are
+	not nul-terminated.
+
 Tue Apr 18 16:04:12 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/sysv4.h (SELECT_SECTION): Use data_section if
