@@ -482,9 +482,9 @@ record_alias_subset (superset, subset)
       superset_entry->alias_set = superset;
       superset_entry->children 
 	= splay_tree_new (splay_tree_compare_ints, 0, 0);
+      superset_entry->has_zero_child = 0;
       splay_tree_insert (alias_sets, (splay_tree_key) superset,
 			 (splay_tree_value) superset_entry);
-
     }
 
   if (subset == 0)
