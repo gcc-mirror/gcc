@@ -452,8 +452,7 @@ extern char *rs6000_cpu_string;
    a cost, but it is probably not worthwhile to track it.  */
 
 #define ADJUST_COST(INSN,LINK,DEP_INSN,COST)				\
-  if (REG_NOTE_KIND (LINK) != 0)					\
-    (COST) = 0; /* Anti or output dependence.  */
+  (COST) = ppc_adjust_cost (INSN,LINK,DEP_INSN,COST)
 
 /* Define this macro to change register usage conditional on target flags.
    Set MQ register fixed (already call_used) if not POWER architecture
