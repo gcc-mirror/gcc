@@ -2616,6 +2616,7 @@ scan_libraries (prog_name)
 	  char *impmem = implib + strlen (implib) + 1;
 	  char *soname = NULL;
 	  char *trial;
+	  int pathlen;
 	  LDFILE *libptr = NULL;
 	  struct prefix_list *pl;
 	  ARCHDR ah;
@@ -2627,12 +2628,15 @@ scan_libraries (prog_name)
 	  if (*impath == '/' && *(impath+1) == '\0'
 	      && strcmp (implib, "unix") == 0)
 	    continue;
-          trial = alloca (MAX (strlen (impath), libpath.max_len)
+	  pathlen = strlen (impath);
+          trial = alloca (MAX (pathlen + 1, libpath.max_len)
 			  + strlen (implib) + 1);
 	  if (*impath)
 	    {
 	      strcpy (trial, impath);
-	      strcat (trial, implib);
+	      if (impath[pathlen - 1] != '/')
+		trial[pathlen++] = '/';
+	      strcpy (trial + pathlen, implib);
 	      if (access (trial, R_OK) == 0)
 		soname = trial;
 	    }
