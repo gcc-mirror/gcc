@@ -7955,7 +7955,7 @@ apply_distributive_law (rtx x)
   tem = gen_binary (code, GET_MODE (x), lhs, rhs);
 
   /* There is one exception to the general way of distributing:
-     (a ^ b) | (a ^ c) -> (~a) & (b ^ c)  */
+     (a | c) ^ (b | c) -> (a ^ b) & ~c  */
   if (code == XOR && inner_code == IOR)
     {
       inner_code = AND;
