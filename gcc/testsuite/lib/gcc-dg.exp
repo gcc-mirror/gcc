@@ -445,6 +445,12 @@ proc dg-prune-output { args } {
 # Like check_conditional_xfail, but callable from a dg test.
 
 proc dg-xfail-if { args } {
+    # Don't change anything if we're already skipping the test.
+    upvar dg-do-what dg-do-what
+    if { [lindex ${dg-do-what} 1] == "N" } {
+      return
+    }
+
     set args [lreplace $args 0 0]
     set selector "target [join [lindex $args 1]]"
     if { [dg-process-target $selector] == "S" } {
