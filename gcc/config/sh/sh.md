@@ -92,52 +92,52 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(eq:SI (reg:SI 18)
 	       (const_int 1)))]
   ""
   "movt	%0 !movt1")
   
 (define_insn ""
-  [(set (reg:SI 18) (gt (match_operand:SI 0 "register_operand" "r")
+  [(set (reg:SI 18) (gt (match_operand:SI 0 "arith_reg_operand" "r")
 		  (const_int 0)))]
   ""
   "cmp/pl	%0")
 
 (define_insn ""
-  [(set (reg:SI 18) (ge (match_operand:SI 0 "register_operand" "r")
+  [(set (reg:SI 18) (ge (match_operand:SI 0 "arith_reg_operand" "r")
 		  (const_int 0)))]
   ""
   "cmp/pz	%0")
 
 (define_insn "cmpeqsi_t"
-  [(set (reg:SI 18) (eq (match_operand:SI 0 "register_operand" "r,z")
+  [(set (reg:SI 18) (eq (match_operand:SI 0 "arith_reg_operand" "r,z")
 		  (match_operand:SI 1 "arith_operand" "r,I")))]
   ""
   "cmp/eq	%1,%0")
 
 
 (define_insn "cmpgtsi_t"
-  [(set (reg:SI 18) (gt (match_operand:SI 0 "register_operand" "r")
-		  (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (gt (match_operand:SI 0 "arith_reg_operand" "r")
+		  (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/gt	%1,%0")
 
 (define_insn "cmpgesi_t"
-  [(set (reg:SI 18) (ge (match_operand:SI 0 "register_operand" "r")
-		  (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (ge (match_operand:SI 0 "arith_reg_operand" "r")
+		  (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/ge	%1,%0")
 
 (define_insn "cmpltsi_t"
-  [(set (reg:SI 18) (lt (match_operand:SI 0 "register_operand" "r")
-		  (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (lt (match_operand:SI 0 "arith_reg_operand" "r")
+		  (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/gt	%0,%1")
 
 (define_insn "cmplesi_t"
-  [(set (reg:SI 18) (le (match_operand:SI 0 "register_operand" "r")
-		  (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (le (match_operand:SI 0 "arith_reg_operand" "r")
+		  (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/ge	%0,%1")
 
@@ -147,26 +147,26 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "cmpgeusi_t"
-  [(set (reg:SI 18) (geu (match_operand:SI 0 "register_operand" "r")
-		   (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (geu (match_operand:SI 0 "arith_reg_operand" "r")
+		   (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/hs	%1,%0")
 
 (define_insn "cmpgtusi_t"
-  [(set (reg:SI 18) (gtu (match_operand:SI 0 "register_operand" "r")
-		   (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (gtu (match_operand:SI 0 "arith_reg_operand" "r")
+		   (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/hi	%1,%0")
 
 (define_insn "cmpleusi_t"
-  [(set (reg:SI 18) (leu (match_operand:SI 0 "register_operand" "r")
-		   (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (leu (match_operand:SI 0 "arith_reg_operand" "r")
+		   (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/hs	%0,%1")
 
 (define_insn "cmpltusi_t"
-  [(set (reg:SI 18) (ltu (match_operand:SI 0 "register_operand" "r")
-		   (match_operand:SI 1 "register_operand" "r")))]
+  [(set (reg:SI 18) (ltu (match_operand:SI 0 "arith_reg_operand" "r")
+		   (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "cmp/hi	%0,%1")
 
@@ -174,8 +174,8 @@
 ;; we generate the branch.
 
 (define_expand "cmpsi"
-  [(set (reg:SI 18) (compare (match_operand:SI 0 "register_operand" "")
-			     (match_operand:SI 1 "register_operand" "")))]
+  [(set (reg:SI 18) (compare (match_operand:SI 0 "arith_reg_operand" "")
+			     (match_operand:SI 1 "arith_reg_operand" "")))]
   ""
   "
 { sh_compare_op0 = operands[0];
@@ -189,9 +189,9 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "adddi3"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(plus:DI (match_operand:DI 1 "register_operand" "%0")
-		 (match_operand:DI 2 "register_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_operand" "=&r")
+	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
+		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI 18))]
   ""
   "clrt\;addc	%R2,%R0\;addc	%2,%0"
@@ -201,8 +201,8 @@
 
 
 (define_insn "addsi3_i"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand" "%0")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   ""
   "add	%2,%0"
@@ -210,8 +210,8 @@
    (set_attr "type" "arith")])
 
 (define_expand "addsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(plus:SI (match_operand:SI 1 "register_operand" "%0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(plus:SI (match_operand:SI 1 "arith_reg_operand" "%0")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   ""
   "")
@@ -222,9 +222,9 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "subdi3"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(minus:DI (match_operand:DI 1 "register_operand" "0")
-		  (match_operand:DI 2 "register_operand" "r")))
+  [(set (match_operand:DI 0 "arith_reg_operand" "=&r")
+	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
+		  (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI 18))]
   ""
   "clrt\;subc	%R2,%R0\;subc	%2,%0"
@@ -233,9 +233,9 @@
    (set_attr "type" "arith")])
 
 (define_insn "subsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(minus:SI (match_operand:SI 1 "register_operand" "0")
-		  (match_operand:SI 2 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		  (match_operand:SI 2 "arith_reg_operand" "r")))]
   ""
   "sub	%2,%0"
   [(set_attr "type" "arith")])
@@ -249,28 +249,28 @@
 (define_insn ""
   [(set (reg:SI 21)
 	(mult:SI (zero_extend:SI
-		  (match_operand:HI 1 "register_operand" "r"))
+		  (match_operand:HI 1 "arith_reg_operand" "r"))
 		 (zero_extend:SI
-		  (match_operand:HI 2 "register_operand" "r"))))]
+		  (match_operand:HI 2 "arith_reg_operand" "r"))))]
   ""
   "mulu	%2,%1")
 
 (define_insn ""
   [(set (reg:SI 21)
 	(mult:SI (sign_extend:SI
-		  (match_operand:HI 1 "register_operand" "r"))
+		  (match_operand:HI 1 "arith_reg_operand" "r"))
 		 (sign_extend:SI
-		  (match_operand:HI 2 "register_operand" "r"))))]
+		  (match_operand:HI 2 "arith_reg_operand" "r"))))]
   ""
   "muls	%2,%1")
 
 (define_expand "mulhisi3"
   [(set (reg:SI 21)
 	(mult:SI (sign_extend:SI
-		  (match_operand:HI 1 "register_operand" "r"))
+		  (match_operand:HI 1 "arith_reg_operand" "r"))
 		 (sign_extend:SI
-		  (match_operand:HI 2 "register_operand" "r"))))
-   (set (match_operand:SI 0 "register_operand" "=r")
+		  (match_operand:HI 2 "arith_reg_operand" "r"))))
+   (set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(reg:SI 21))]
   ""
   "")
@@ -278,26 +278,26 @@
 (define_expand "umulhisi3"
   [(set (reg:SI 21)
 	(mult:SI (zero_extend:SI
-		  (match_operand:HI 1 "register_operand" "r"))
+		  (match_operand:HI 1 "arith_reg_operand" "r"))
 		 (zero_extend:SI
-		  (match_operand:HI 2 "register_operand" "r"))))
-   (set (match_operand:SI 0 "register_operand" "=r")
+		  (match_operand:HI 2 "arith_reg_operand" "r"))))
+   (set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(reg:SI 21))]
   ""
   "")
 
 (define_insn ""
   [(set (reg:SI 21)
-	(mult:SI (match_operand:SI 1 "register_operand" "r")
-		  (match_operand:SI 2 "register_operand" "r")))]
+	(mult:SI (match_operand:SI 1 "arith_reg_operand" "r")
+		  (match_operand:SI 2 "arith_reg_operand" "r")))]
   "TARGET_HAS_MULSI3"
   "muls.l	%2,%1")
 
 (define_expand "mulsi3"
   [(set (reg:SI 21)
-	(mult:SI  (match_operand:SI 1 "register_operand" "r")
-		  (match_operand:SI 2 "register_operand" "r")))
-   (set (match_operand:SI 0 "register_operand" "=r")
+	(mult:SI  (match_operand:SI 1 "arith_reg_operand" "r")
+		  (match_operand:SI 2 "arith_reg_operand" "r")))
+   (set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(reg:SI 20))]
   "TARGET_HAS_MULSI3"
   "")
@@ -305,19 +305,19 @@
 (define_insn ""
   [(set (reg:DI 20)
 	(mult:DI (sign_extend:DI
-		  (match_operand:SI 1 "register_operand" "r"))
+		  (match_operand:SI 1 "arith_reg_operand" "r"))
 		 (sign_extend:DI
-		  (match_operand:SI 2 "register_operand" "r"))))]
+		  (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_HAS_MULSI3"
   "dmuls.l	%2,%1")
 
 (define_expand "mulsidi3"
   [(set (reg:DI 20)
 	(mult:DI (sign_extend:DI
-		  (match_operand:SI 1 "register_operand" "r"))
+		  (match_operand:SI 1 "arith_reg_operand" "r"))
 		 (sign_extend:DI
-		  (match_operand:SI 2 "register_operand" "r"))))
-   (set (match_operand:DI 0 "register_operand" "=r")
+		  (match_operand:SI 2 "arith_reg_operand" "r"))))
+   (set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(reg:DI 20))]
   "TARGET_HAS_MULSI3"
   "")
@@ -325,19 +325,19 @@
 (define_insn ""
   [(set (reg:DI 20)
 	(mult:DI (zero_extend:DI
-		  (match_operand:SI 1 "register_operand" "r"))
+		  (match_operand:SI 1 "arith_reg_operand" "r"))
 		 (zero_extend:DI
-		  (match_operand:SI 2 "register_operand" "r"))))]
+		  (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_HAS_MULSI3"
   "dmulu.l	%2,%1")
 
 (define_expand "umulsidi3"
   [(set (reg:DI 20)
 	(mult:DI (zero_extend:DI
-		  (match_operand:SI 1 "register_operand" "r"))
+		  (match_operand:SI 1 "arith_reg_operand" "r"))
 		 (zero_extend:DI
-		  (match_operand:SI 2 "register_operand" "r"))))
-   (set (match_operand:DI 0 "register_operand" "=r")
+		  (match_operand:SI 2 "arith_reg_operand" "r"))))
+   (set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(reg:DI 20))]
   "TARGET_HAS_MULSI3"
   "")
@@ -347,23 +347,23 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "andsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,z")
-	(and:SI (match_operand:SI 1 "register_operand" "%0,0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,z")
+	(and:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   ""
   "and	%2,%0"
   [(set_attr "type" "arith")])
 
 (define_insn "iorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,z")
-	(ior:SI (match_operand:SI 1 "register_operand" "%0,0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,z")
+	(ior:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   ""
   "or	%2,%0")
 
 (define_insn "xorsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r,z")
-	(xor:SI (match_operand:SI 1 "register_operand" "%0,0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,z")
+	(xor:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   ""
   "xor	%2,%0"
@@ -375,8 +375,8 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "ashlsi3_k"
-  [(set (match_operand:SI 0 "register_operand" "=r,r")
-	(ashift:SI (match_operand:SI 1 "register_operand" "0,0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0,0")
 		   (match_operand:SI 2 "immediate_operand" "L,n")))]
   ""
   "*return output_shift(\"shll\", operands[0], operands[2]);"
@@ -385,23 +385,23 @@
    (set_attr "type" "arith")])
 
 (define_expand "ashlsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ashift:SI (match_operand:SI 1 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "")
 		   (match_operand:SI 2 "immediate_operand" "")))]
   ""
   "if (!ok_shift_value(operands[2])) FAIL;")
 
 (define_insn "ashrsi3_k"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (const_int 1)))]
   ""
   "shar	%0"
   [(set_attr "type" "arith")])
 
 (define_expand "ashrsi3"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(ashiftrt:SI (match_operand:SI 1 "register_operand" "r")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
 		     (match_operand:SI 2 "nonmemory_operand" "M")))]
   ""
   "
@@ -412,8 +412,8 @@
 ")
 
 (define_insn "lshrsi3_k"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "0")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (match_operand:SI 2 "immediate_operand" "L")))]
   ""
   "* return output_shift (\"shlr\", operands[0], operands[2]);"
@@ -422,15 +422,15 @@
    (set_attr "type" "arith")])
 
 (define_expand "lshrsi3"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(lshiftrt:SI (match_operand:SI 1 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "")
 		     (match_operand:SI 2 "nonmemory_operand" "")))]
   ""
   "if (!ok_shift_value (operands[2])) FAIL; ")
 
 (define_insn "ashldi3_k"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashift:DI (match_operand:DI 1 "register_operand" "0")
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(ashift:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		   (match_operand:DI 2 "immediate_operand" "I")))
    (clobber (reg:SI 18))]
   ""
@@ -438,8 +438,8 @@
   [(set_attr "length" "4")])
 
 (define_expand "ashldi3"
-  [(parallel[(set (match_operand:DI 0 "register_operand" "")
-		  (ashift:DI (match_operand:DI 1 "register_operand" "")
+  [(parallel[(set (match_operand:DI 0 "arith_reg_operand" "")
+		  (ashift:DI (match_operand:DI 1 "arith_reg_operand" "")
 			     (match_operand:DI 2 "immediate_operand" "")))
 	     (clobber (reg:SI 18))])]
 	    
@@ -448,8 +448,8 @@
 	|| INTVAL (operands[2]) != 1) FAIL;} ")
 
 (define_insn "lshrdi3_k"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-		   (lshiftrt:DI (match_operand:DI 1 "register_operand" "0")
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+		   (lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
 			      (match_operand:DI 2 "immediate_operand" "I")))
       (clobber (reg:SI 18))]
   ""
@@ -457,8 +457,8 @@
   [(set_attr "length" "4")])
 
 (define_expand "lshrdi3"
-  [(parallel[(set (match_operand:DI 0 "register_operand" "")
-		  (lshiftrt:DI (match_operand:DI 1 "register_operand" "")
+  [(parallel[(set (match_operand:DI 0 "arith_reg_operand" "")
+		  (lshiftrt:DI (match_operand:DI 1 "arith_reg_operand" "")
 			       (match_operand:DI 2 "immediate_operand" "")))
 	     (clobber (reg:SI 18))])]
   ""
@@ -466,8 +466,8 @@
 	|| INTVAL (operands[2]) != 1) FAIL;} ")
 
 (define_insn "ashrdi3_k"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ashiftrt:DI (match_operand:DI 1 "register_operand" "0")
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(ashiftrt:DI (match_operand:DI 1 "arith_reg_operand" "0")
 		     (match_operand:DI 2 "immediate_operand" "")))
    (clobber (reg:SI 18))]
   ""
@@ -475,8 +475,8 @@
   [(set_attr "length" "4")])
 
 (define_expand "ashrdi3"
-  [(parallel[(set (match_operand:DI 0 "register_operand" "")
-		  (ashiftrt:DI (match_operand:DI 1 "register_operand" "")
+  [(parallel[(set (match_operand:DI 0 "arith_reg_operand" "")
+		  (ashiftrt:DI (match_operand:DI 1 "arith_reg_operand" "")
 			       (match_operand:DI 2 "immediate_operand" "")))
 	     (clobber (reg:SI 18))])]
   ""
@@ -490,8 +490,8 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "negdi2"
-  [(set (match_operand:DI 0 "register_operand" "=&r")
-	(neg:DI (match_operand:DI 1 "register_operand" "0")))
+  [(set (match_operand:DI 0 "arith_reg_operand" "=&r")
+	(neg:DI (match_operand:DI 1 "arith_reg_operand" "0")))
    (clobber (reg:SI 18))]
   ""
   "clrt\;negc	%R1,%R0\;negc	%1,%0"
@@ -499,15 +499,15 @@
    (set_attr "type" "arith")])
 
 (define_insn "negsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(neg:SI (match_operand:SI 1 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(neg:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "neg	%1,%0"
   [(set_attr "type" "arith")])
 
 (define_insn "one_cmplsi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(not:SI (match_operand:SI 1 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(not:SI (match_operand:SI 1 "arith_reg_operand" "r")))]
   ""
   "not	%1,%0"
 [  (set_attr "type" "arith")])
@@ -518,22 +518,22 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "zero_extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(zero_extend:SI (match_operand:HI 1 "arith_reg_operand" "r")))]
   ""
   "extu.w	%1,%0"
   [(set_attr "type" "arith")])
 
 (define_insn "zero_extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(zero_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(zero_extend:SI (match_operand:QI 1 "arith_reg_operand" "r")))]
   ""
   "extu.b	%1,%0"
   [(set_attr "type" "arith")]) 
 
 (define_insn "zero_extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(zero_extend:HI (match_operand:QI 1 "register_operand" "r")))]
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(zero_extend:HI (match_operand:QI 1 "arith_reg_operand" "r")))]
   ""
   "extu.b	%1,%0"
   [(set_attr "type" "arith")]) 
@@ -544,27 +544,27 @@
 ;; -------------------------------------------------------------------------
 
 (define_insn "extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(sign_extend:DI (match_operand:SI 1 "register_operand" "0")))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "0")))]
   ""
   "mov	%1,%0\;shll	%0\;subc	%0,%0"
   [(set_attr "length" "6")]) 
 
 (define_insn "extendhisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(sign_extend:SI (match_operand:HI 1 "arith_reg_operand" "r")))]
   ""
   "exts.w	%1,%0")
 
 (define_insn "extendqisi2"
-  [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(sign_extend:SI (match_operand:QI 1 "arith_reg_operand" "r")))]
   ""
   "exts.b	%1,%0")
 
 (define_insn "extendqihi2"
-  [(set (match_operand:HI 0 "register_operand" "=r")
-	(sign_extend:HI (match_operand:QI 1 "register_operand" "r")))]
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
+	(sign_extend:HI (match_operand:QI 1 "arith_reg_operand" "r")))]
   ""
   "exts.b	%1,%0")
 
@@ -575,12 +575,12 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "push_operand" "=<")
-	(match_operand:SI 1 "register_operand" "r"))]
+	(match_operand:SI 1 "arith_reg_operand" "r"))]
    ""
    "mov.l	%1,%0")
 
 (define_insn "movsi_pcrel"
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(match_operand:SI 1 "hard_immediate_operand" "i"))]
   ""
   "* return output_movepcrel (insn, operands, SImode);"
@@ -633,7 +633,7 @@
   "prepare_move_operands(operands, QImode);")
   
 (define_insn "movhi_pcrel"
-  [(set (match_operand:HI 0 "register_operand" "=r")
+  [(set (match_operand:HI 0 "arith_reg_operand" "=r")
 	(match_operand:HI 1 "hard_immediate_operand" "i"))]
   ""
   "* return output_movepcrel (insn, operands, SImode);"
@@ -664,13 +664,13 @@
   
 (define_insn ""
   [(set (match_operand:DI 0 "push_operand" "=<")
-	(match_operand:DI 1 "register_operand" "r"))]
+	(match_operand:DI 1 "arith_reg_operand" "r"))]
    ""
    "mov.l	%R1,%0\;mov.l	%1,%0"
    [(set_attr "length" "4")])
 
 (define_insn "movdi_pcrel"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
 	(match_operand:DI 1 "hard_immediate_operand" "i"))]
   ""
   "* return output_movepcrel (insn, operands, DImode);"
@@ -696,13 +696,13 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "push_operand" "=<")
-	(match_operand:DF 1 "register_operand" "r"))]
+	(match_operand:DF 1 "arith_reg_operand" "r"))]
    ""
    "mov.l	%R1,%0\;mov.l	%1,%0"
    [(set_attr "length" "4")])
 
 (define_insn "movdf_pcrel"
-  [(set (match_operand:DF 0 "register_operand" "=r")
+  [(set (match_operand:DF 0 "arith_reg_operand" "=r")
 	(match_operand:DF 1 "hard_immediate_operand" "i"))]
   ""
   "* return output_movepcrel  (insn, operands, DFmode);"
@@ -728,12 +728,12 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "push_operand" "=<")
-	(match_operand:SF 1 "register_operand" "r"))]
+	(match_operand:SF 1 "arith_reg_operand" "r"))]
    ""
    "mov.l	%1,%0")
 
 (define_insn "movsf_pcrel"
-  [(set (match_operand:SF 0 "register_operand" "=r")
+  [(set (match_operand:SF 0 "arith_reg_operand" "=r")
 	(match_operand:SF 1 "hard_immediate_operand" "i"))]
   ""
   "* return output_movepcrel (insn, operands, SFmode);"
@@ -980,7 +980,7 @@
 ")
 
 (define_insn "calli"
-  [(call (mem:SI (match_operand:SI 0 "register_operand" "r"))
+  [(call (mem:SI (match_operand:SI 0 "arith_reg_operand" "r"))
 	 (match_operand 1 "" ""))
    (clobber (reg:SI 17))]
   ""
@@ -991,7 +991,7 @@
 
 (define_insn "call_valuei"
   [(set (match_operand 0 "" "=rf")
-	(call (mem:SI (match_operand:SI 1 "register_operand" "r"))
+	(call (mem:SI (match_operand:SI 1 "arith_reg_operand" "r"))
 	      (match_operand 2 "" "")))
    (clobber (reg:SI 17))]
   ""
@@ -1001,7 +1001,7 @@
    (set_attr "length" "4")])
 
 (define_expand "call"
-  [(parallel[(call (match_operand 0 "register_operand" "o")
+  [(parallel[(call (match_operand 0 "arith_reg_operand" "o")
 		   (match_operand 1 "" ""))
 	     (clobber (reg:SI 17))])]
   ""
@@ -1018,7 +1018,7 @@
 
 (define_expand "call_value"
   [(parallel[(set (match_operand 0 "" "=rf")
-		  (call (match_operand 1 "register_operand" "o")
+		  (call (match_operand 1 "arith_reg_operand" "o")
 			(match_operand 2 "" "")))
 	     (clobber (reg:SI 17))])]
   ""
@@ -1035,7 +1035,7 @@
 
 (define_insn "indirect_jump"
   [(set (pc)
-	(match_operand:SI 0 "register_operand" "r"))]
+	(match_operand:SI 0 "arith_reg_operand" "r"))]
   ""
   "jmp	@%0"
   [(set_attr "needs_delay_slot" "yes")
@@ -1056,10 +1056,10 @@
 
 (define_insn "tablejump"
   [(set (pc)
-	(match_operand:SI 0 "register_operand" "r"))
+	(match_operand:SI 0 "arith_reg_operand" "r"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "!table jump\;jmp	@%0\;or	r0,r0\;.align	4\;%!"
+  "!table jump\;jmp	@%0\;or	r0,r0\;%!"
   [(set_attr "needs_delay_slot" "no")
    (set_attr "in_delay_slot" "no")
    (set_attr "type" "jump")
@@ -1070,92 +1070,92 @@
 ;; ------------------------------------------------------------------------
 
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(eq (reg:SI 18) (const_int 1)))]
   ""
   "movt	%0 ! ")
 
 (define_expand "seq"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (EQ);")
 
 (define_expand "slt"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (LT);")
 
 (define_expand "sle"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (LE);")
 
 (define_expand "sgt"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (GT);")
 
 (define_expand "sge"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (GE);")
 
 (define_expand "sgtu"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (GTU);")
 
 (define_expand "sltu"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (LTU);")
 
 (define_expand "sleu"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (LEU);")
 
 (define_expand "sgeu"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))]
   ""
   "operands[1] = prepare_scc_operands (GEU);")
 
 (define_expand "sne"
-  [(set (match_operand:SI 0 "register_operand" "")
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
 	(match_dup 1))
    (set (match_dup 0) (xor:SI (match_dup 0) (const_int 1)))]
   ""
   "operands[1] = prepare_scc_operands (EQ);")
 
 (define_insn "anddi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(and:DI (match_operand:DI 1 "register_operand" "%0")
-		(match_operand:DI 2 "register_operand" "r")))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(and:DI (match_operand:DI 1 "arith_reg_operand" "%0")
+		(match_operand:DI 2 "arith_reg_operand" "r")))]
   ""
   "and	%2,%0\;and	%R2,%R0"
   [(set_attr "length" "4")])
 
 (define_insn "iordi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (match_operand:DI 1 "register_operand" "%0")
-		(match_operand:DI 2 "register_operand" "r")))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(ior:DI (match_operand:DI 1 "arith_reg_operand" "%0")
+		(match_operand:DI 2 "arith_reg_operand" "r")))]
   ""
   "or	%2,%0\;or	%R2,%R0"
   [(set_attr "length" "4")])
 
 (define_insn "xordi3"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(xor:DI (match_operand:DI 1 "register_operand" "%0")
-		(match_operand:DI 2 "register_operand" "r")))]
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(xor:DI (match_operand:DI 1 "arith_reg_operand" "%0")
+		(match_operand:DI 2 "arith_reg_operand" "r")))]
   ""
   "xor	%2,%0\;xor	%R2,%R0"
   [(set_attr "length" "4")])
@@ -1241,22 +1241,24 @@
 
 
 (define_peephole 
-  [(set (match_operand:QI 0 "register_operand" "")
-	(mem:QI (match_operand:SI 1 "register_operand" "")))
+  [(set (match_operand:QI 0 "arith_reg_operand" "")
+	(mem:QI (match_operand:SI 1 "arith_reg_operand" "")))
    (set (match_dup 1) (plus:SI (match_dup 1) (const_int 1)))]
   "REGNO(operands[1]) != REGNO(operands[0])"
   "mov.b	@%1+,%0")
 
 (define_peephole 
-  [(set (match_operand:HI 0 "register_operand" "")
-	(mem:HI (match_operand:SI 1 "register_operand" "")))
+  [(set (match_operand:HI 0 "arith_reg_operand" "")
+	(mem:HI (match_operand:SI 1 "arith_reg_operand" "")))
    (set (match_dup 1) (plus:SI (match_dup 1) (const_int 2)))]
   "REGNO(operands[1]) != REGNO(operands[0])"
   "mov.w	@%1+,%0")
 
 (define_peephole 
-  [(set (match_operand:SI 0 "register_operand" "")
-	(mem:SI (match_operand:SI 1 "register_operand" "")))
+  [(set (match_operand:SI 0 "arith_reg_operand" "")
+	(mem:SI (match_operand:SI 1 "arith_reg_operand" "")))
    (set (match_dup 1) (plus:SI (match_dup 1) (const_int 4)))]
   "REGNO(operands[1]) != REGNO(operands[0])"
   "mov.l	@%1+,%0")
+
+
