@@ -2289,7 +2289,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_FFS:
-      target = expand_builtin_ffs (exp, target, subtarget);
+      target = expand_builtin_ffs (arglist, target, subtarget);
       if (target)
 	return target;
       break;
