@@ -1,3 +1,7 @@
+2000-05-05  Bruce Korb  <bkorb@gnu.org>
+
+	* fixinc/genfixes: Improve the matching for make target names
+
 2000-05-05  Catherine Moore  <clm@cygnus.com>
 
 	* c-common.c (decl_attributes):  For TYPE_DECLs attach the

@@ -70,7 +70,7 @@ AG="autogen $AG"
 set -e
 
 case "$1" in
-inclhack.sh )
+inclhack.sh | */inclhack.sh )
   if (autogen --help > /dev/null 2>&1)
   then
     echo AutoGen-ing inclhack.sh
@@ -83,7 +83,7 @@ inclhack.sh )
   fi
   ;;
 
-fixincl.x )
+fixincl.x | */fixincl.x )
   if (autogen --help > /dev/null 2>&1)
   then
     echo AutoGen-ing fixincl.x
@@ -96,7 +96,7 @@ fixincl.x )
   fi
   ;;
 
-fixincl.sh )
+fixincl.sh | */fixincl.sh )
   if (autogen --help > /dev/null 2>&1)
   then
     echo AutoGen-ing fixincl.sh
@@ -109,7 +109,7 @@ fixincl.sh )
   fi
   ;;
 
-machname.h )
+machname.h | */machname.h )
   # This script extracts from the specs file all the predefined macros
   # that are not in the C89 reserved namespace (the reserved namespace
   # is all identifiers beginnning with two underscores or one underscore
