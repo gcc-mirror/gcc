@@ -2063,6 +2063,11 @@ struct lang_decl GTY(())
    of a namespace, to record the transitive closure of using namespace.  */
 #define DECL_NAMESPACE_USERS(NODE) DECL_INITIAL (NAMESPACE_DECL_CHECK (NODE))
 
+/* In a NAMESPACE_DECL, the list of namespaces which have associated
+   themselves with this one.  */
+#define DECL_NAMESPACE_ASSOCIATIONS(NODE) \
+  (NAMESPACE_DECL_CHECK (NODE)->decl.saved_tree)
+
 /* In a NAMESPACE_DECL, points to the original namespace if this is
    a namespace alias.  */
 #define DECL_NAMESPACE_ALIAS(NODE) \

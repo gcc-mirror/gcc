@@ -9078,6 +9078,7 @@ static void
 cp_parser_using_directive (cp_parser* parser)
 {
   tree namespace_decl;
+  tree attribs;
 
   /* Look for the `using' keyword.  */
   cp_parser_require_keyword (parser, RID_USING, "`using'");
@@ -9092,8 +9093,10 @@ cp_parser_using_directive (cp_parser* parser)
 				       /*type_p=*/false);
   /* Get the namespace being used.  */
   namespace_decl = cp_parser_namespace_name (parser);
+  /* And any specified attributes.  */
+  attribs = cp_parser_attributes_opt (parser);
   /* Update the symbol table.  */
-  do_using_directive (namespace_decl);
+  parse_using_directive (namespace_decl, attribs);
   /* Look for the final `;'.  */
   cp_parser_require (parser, CPP_SEMICOLON, "`;'");
 }

@@ -3286,6 +3286,33 @@ do_using_directive (tree namespace)
     add_using_namespace (current_namespace, namespace, 0);
 }
 
+/* Deal with a using-directive seen by the parser.  Currently we only
+   handle attributes here, since they cannot appear inside a template.  */
+
+void
+parse_using_directive (tree namespace, tree attribs)
+{
+  tree a;
+
+  do_using_directive (namespace);
+
+  for (a = attribs; a; a = TREE_CHAIN (a))
+    {
+      tree name = TREE_PURPOSE (a);
+      if (is_attribute_p ("strong", name))
+	{
+	  if (!toplevel_bindings_p ())
+	    error ("strong using only meaningful at namespace scope");
+	  else
+	    DECL_NAMESPACE_ASSOCIATIONS (namespace)
+	      = tree_cons (current_namespace, 0,
+			   DECL_NAMESPACE_ASSOCIATIONS (namespace));
+	}
+      else
+	warning ("`%D' attribute directive ignored", name);
+    }
+}
+
 /* Like pushdecl, only it places X in the global scope if appropriate.
    Calls cp_finish_decl to register the variable, initializing it with
    *INIT, if INIT is non-NULL.  */
@@ -4011,6 +4038,34 @@ add_function (struct arg_lookup *k, tree fn)
   return false;
 }
 
+/* Returns true iff CURRENT has declared itself to be an associated
+   namespace of SCOPE via a strong using-directive (or transitive chain
+   thereof).  Both are namespaces.  */
+
+bool
+is_associated_namespace (tree current, tree scope)
+{
+  tree seen = NULL_TREE;
+  tree todo = NULL_TREE;
+  tree t;
+  while (1)
+    {
+      if (scope == current)
+	return true;
+      seen = tree_cons (scope, NULL_TREE, seen);
+      for (t = DECL_NAMESPACE_ASSOCIATIONS (scope); t; t = TREE_CHAIN (t))
+	if (!purpose_member (TREE_PURPOSE (t), seen))
+	  todo = tree_cons (TREE_PURPOSE (t), NULL_TREE, todo);
+      if (todo)
+	{
+	  scope = TREE_PURPOSE (todo);
+	  todo = TREE_CHAIN (todo);
+	}
+      else
+	return false;
+    }
+}
+
 /* Add functions of a namespace to the lookup structure.
    Returns true on error.  */
 
@@ -4022,6 +4077,12 @@ arg_assoc_namespace (struct arg_lookup *k, tree scope)
   if (purpose_member (scope, k->namespaces))
     return 0;
   k->namespaces = tree_cons (scope, NULL_TREE, k->namespaces);
+
+  /* Check out our super-users.  */
+  for (value = DECL_NAMESPACE_ASSOCIATIONS (scope); value;
+       value = TREE_CHAIN (value))
+    if (arg_assoc_namespace (k, TREE_PURPOSE (value)))
+      return true;
   
   value = namespace_binding (k->name, scope);
   if (!value)
