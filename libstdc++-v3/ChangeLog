@@ -1,3 +1,9 @@
+2004-02-08  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (assign(const _CharT*, size_type)):
+	When working in place remember to set the state to sharable
+	(otherwise, _M_mutate does it).
+
 2004-02-08  Bernardo Innocenti  <bernie@develer.com>
 
 	* include/bits/allocator.h, include/bits/basic_ios.h,
