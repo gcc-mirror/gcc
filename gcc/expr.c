@@ -7145,10 +7145,13 @@ expand_expr (exp, target, tmode, modifier)
 	      temp = XEXP (op0, 0);
 	    }
 
-	  else if (GET_CODE (op0) == REG)
+	  else if (GET_CODE (op0) == REG
+		   /* FIXME make it work for promoted modes too */
+		   && (GET_MODE (op0)
+		       == TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	    op0 = gen_mem_addressof (op0, TREE_TYPE (TREE_OPERAND (exp, 0)));
 
-	  else if (GET_CODE (op0) == SUBREG
+	  else if (GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 		   || GET_CODE (op0) == CONCAT)
 	    {
 	      /* If this object is in a register, it must be not

@@ -713,10 +713,14 @@ expand_call (exp, target, ignore)
 		int unsignedp = TREE_UNSIGNED (type);
 		enum machine_mode reg_mode
 		  = promote_mode (type, TYPE_MODE (type), &unsignedp, 0);
-		structure_value_addr
-		  = XEXP (gen_mem_addressof (gen_reg_rtx (reg_mode), type), 0);
+
+		/* FIXME make it work for promoted modes too */
+		if (reg_mode == TYPE_MODE (type))
+		  structure_value_addr
+		    = XEXP (gen_mem_addressof (gen_reg_rtx (reg_mode), type), 0);
 	      }
-	    else
+
+	    if (! structure_value_addr)
 	      structure_value_addr
 		= XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
 	    MEM_IN_STRUCT_P (structure_value_addr)

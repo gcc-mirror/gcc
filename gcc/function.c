@@ -449,6 +449,8 @@ static tree blocks_nreverse	PROTO((tree));
 static int all_blocks		PROTO((tree, tree *));
 static int *record_insns	PROTO((rtx));
 static int contains		PROTO((rtx, int *));
+static void put_addressof_into_stack PROTO((rtx));
+static void purge_addressof_1	PROTO((rtx *, rtx));
 
 /* Pointer to chain of `struct function' for containing functions.  */
 struct function *outer_function_chain;
@@ -1307,6 +1309,7 @@ put_var_into_stack (decl)
   enum machine_mode promoted_mode, decl_mode;
   struct function *function = 0;
   tree context;
+  int can_use_addressof;
 
   if (output_bytecode)
     return;
@@ -1346,6 +1349,21 @@ put_var_into_stack (decl)
       decl_mode = promoted_mode = GET_MODE (reg);
     }
 
+  can_use_addressof
+    = (function == 0
+       /* FIXME make it work for promoted modes too */
+       && decl_mode == promoted_mode
+#ifdef NON_SAVING_SETJMP
+       && ! (NON_SAVING_SETJMP && current_function_calls_setjmp)
+#endif
+       );
+
+  /* If we can't use ADDRESSOF, make sure we see through one we already
+     generated.  */
+  if (! can_use_addressof && GET_CODE (reg) == MEM
+      && GET_CODE (XEXP (reg, 0)) == ADDRESSOF)
+    reg = XEXP (XEXP (reg, 0), 0);
+
   /* Now we should have a value that resides in one or more pseudo regs.  */
 
   if (GET_CODE (reg) == REG)
@@ -1353,11 +1371,7 @@ put_var_into_stack (decl)
       /* If this variable lives in the current function and we don't need
 	 to put things in the stack for the sake of setjmp, try to keep it
 	 in a register until we know we actually need the address.  */
-      if (function == 0
-#ifdef NON_SAVING_SETJMP
-	  && ! (NON_SAVING_SETJMP && current_function_calls_setjmp)
-#endif
-	  )
+      if (can_use_addressof)
 	gen_mem_addressof (reg, TREE_TYPE (decl));
       else
 	put_reg_into_stack (function, reg, TREE_TYPE (decl),
@@ -2617,6 +2631,7 @@ gen_mem_addressof (reg, type)
 
   XEXP (reg, 0) = r;
   PUT_CODE (reg, MEM);
+  PUT_MODE (reg, TYPE_MODE (type));
 
   MEM_VOLATILE_P (reg) = MEM_VOLATILE_P (r) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (reg) = MEM_IN_STRUCT_P (r) = AGGREGATE_TYPE_P (type);
@@ -2663,15 +2678,23 @@ purge_addressof_1 (loc, insn)
 
   code = GET_CODE (x);
 
-  if ((code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF)
-      || (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM))
+  if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
+    {
+      *loc = XEXP (XEXP (x, 0), 0);
+      goto restart;
+    }
+  else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
       if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
-	sub = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
-      if (! validate_change (insn, loc, sub, 0))
-	abort ();
-      goto restart;
+	{
+	  rtx sub2 = gen_rtx (SUBREG, GET_MODE (x), sub, 0);
+	  if (validate_change (insn, loc, sub2, 0))
+	    goto restart;
+	}
+      if (validate_change (insn, loc, sub, 0))
+	goto restart;
+      /* else give up and put it into the stack */
     }
   else if (code == ADDRESSOF)
     {
@@ -4622,7 +4645,9 @@ setjmp_protect (block)
     if ((TREE_CODE (decl) == VAR_DECL
 	 || TREE_CODE (decl) == PARM_DECL)
 	&& DECL_RTL (decl) != 0
-	&& GET_CODE (DECL_RTL (decl)) == REG
+	&& (GET_CODE (DECL_RTL (decl)) == REG
+	    || (GET_CODE (DECL_RTL (decl)) == MEM
+		&& GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF))
 	/* If this variable came from an inline function, it must be
 	   that it's life doesn't overlap the setjmp.  If there was a
 	   setjmp in the function, it would already be in memory.  We
@@ -4653,7 +4678,9 @@ setjmp_protect_args ()
     if ((TREE_CODE (decl) == VAR_DECL
 	 || TREE_CODE (decl) == PARM_DECL)
 	&& DECL_RTL (decl) != 0
-	&& GET_CODE (DECL_RTL (decl)) == REG
+	&& (GET_CODE (DECL_RTL (decl)) == REG
+	    || (GET_CODE (DECL_RTL (decl)) == MEM
+		&& GET_CODE (XEXP (DECL_RTL (decl), 0)) == ADDRESSOF))
 	&& (
 	    /* If longjmp doesn't restore the registers,
 	       don't put anything in them.  */

@@ -2955,7 +2955,7 @@ rest_of_compilation (decl)
 	 finish compiling ourselves.  Otherwise, wait until EOF.
 	 We have to do this because the purge_addressof transformation
 	 changes the DECL_RTL for many variables, which confuses integrate.  */
-      if (DECL_INLINE (decl))
+      if (inlineable)
 	{
 	  if (decl_function_context (decl))
 	    purge_addressof (insns);
