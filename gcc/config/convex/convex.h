@@ -378,8 +378,8 @@ extern int target_flags;
  -fi									\
  -A__iob=___ap$iob							\
  -A_use_libc_sema=___ap$use_libc_sema					\
- %{traditional:-A__gcc_cleanup=__cleanup}				\
- %{!traditional:-A__gcc_cleanup=___ap$do_registered_functions}		\
+ %{traditional:-A___gcc_cleanup=__cleanup}				\
+ %{!traditional:-A___gcc_cleanup=___ap$do_registered_functions}		\
  -L/usr/lib"
 
 #define STARTFILE_SPEC							\
