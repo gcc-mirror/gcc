@@ -45,8 +45,12 @@ int
 test01()
 {
   bool test = true;
-  const char lit[] = "-0 123 456\n:-01 234 567:\n:-0 123 456 :"
-                     "\n:   -012 345:\n:-    01 234:\n0x000012 345 678";
+
+  const char lit[] = "037 777 654 322\n:037 776 543 211:\n:037 777 654 322   :\n"
+                     ":   037 777 765 433:\n:   037 777 776 544:\n: 04 553 207:\n"
+                     ":0361 100   :\n:    030 071:\n:     02 322:\n"
+                     "0x000012 345 678\n";
+
   std::ostringstream oss;
   oss.imbue(std::locale(std::locale(), new MyNP));
   oss << std::oct << std::showbase;
@@ -55,14 +59,26 @@ test01()
   oss << ":" << std::setw(11);
   oss << -01234567l << ":" << std::endl;
 
-  oss << ":" << std::setw(11) << std::left;
+  oss << ":" << std::setw(18) << std::left;
   oss << -0123456l << ":" << std::endl;
 
-  oss << ":" << std::setw(11) << std::right;
+  oss << ":" << std::setw(18) << std::right;
   oss << -012345l << ":" << std::endl;
 
-  oss << ":" << std::setw(11) << std::internal;
+  oss << ":" << std::setw(18) << std::internal;
   oss << -01234l << ":" << std::endl;
+
+  oss << ":" << std::setw(11);
+  oss << 1234567l << ":" << std::endl;
+
+  oss << ":" << std::setw(11) << std::left;
+  oss << 123456l << ":" << std::endl;
+
+  oss << ":" << std::setw(11) << std::right;
+  oss << 12345l << ":" << std::endl;
+
+  oss << ":" << std::setw(11) << std::internal;
+  oss << 1234l << ":" << std::endl;
 
   oss << std::hex;
   oss << std::setfill('0');
@@ -112,11 +128,14 @@ main()
 
 // Projected output:
 /*
--0 123 456
-:-01 234 567:
-:-0 123 456 :
-:   -012 345:
-:-    01 234:
+037 777 654 322
+:037 776 543 211:
+:037 777 654 322   :
+:   037 777 765 433:
+:   037 777 776 544:
+: 04 553 207:
+:0361 100   :
+:    030 071:
+:     02 322:
 0x000012 345 678
 */
-
