@@ -1,3 +1,31 @@
+2000-03-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* inc/cxxabi.h: New header file. Define new-abi entry points.
+	(__pointer_type_info::target): Rename member to ...
+	(__pointer_type_info::type): ... here.
+	(__base_class_info::type): Rename member to ...
+	(__base_class_info::base): ... here.
+	* Make-lang.in (CXX_EXTRA_HEADERS): Add cxxabi.h
+	* cp-tree.h (CPTI_ABI): New global tree enumeration.
+	(abi_node): New global tree node.
+	* decl.c (abi_node): Document.
+	(init_decl_processing): Initialize abi_node.
+	* rtti.c (build_dynamic_cast_1): Use abi_node for new-abi.
+	(get_vmi_pseudo_type_info): Likewise.
+	(create_tinfo_types): Likewise.
+	(emit_support_tinfos): Likewise.
+	* tinfo.h (cxxabi.h): Include for new-abi.
+	Move rtti class definitions to new header file.
+	* tinfo.cc (abi): Use the namespace.
+	(std): Move new abi rtti classes from here ...
+	(__cxxabiv1): ... to here.
+	* tinfo2.cc (cxxabi.h): Include for new-abi.
+	Move rtti class definitions to new header file.
+	(std): Move new abi rtti classes from here ...
+	(__cxxabiv1): ... to here.
+	* inc/typeinfo (__class_type_info): Move into __cxxabiv1
+	namespace.
+
 2000-03-20  Jed Wing <jedwin@zloty.ugcs.caltech.edu>
 	    Jason Merrill  <jason@casey.cygnus.com>
 

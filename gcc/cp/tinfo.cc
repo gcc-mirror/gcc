@@ -562,7 +562,7 @@ do_catch (const type_info *thr_type, void **, unsigned) const
 
 // upcast from this type to the target. __class_type_info will override
 bool type_info::
-do_upcast (const __class_type_info *, void **) const
+do_upcast (const abi::__class_type_info *, void **) const
 {
   return false;
 }
@@ -572,6 +572,7 @@ do_upcast (const __class_type_info *, void **) const
 namespace {
 
 using namespace std;
+using namespace abi;
 
 // initial part of a vtable, this structure is used with offsetof, so we don't
 // have to keep alignments consistent manually.
@@ -621,7 +622,8 @@ static const __class_type_info *const nonvirtual_base_type =
 
 }; // namespace
 
-namespace std {
+namespace __cxxabiv1
+{
 
 __class_type_info::
 ~__class_type_info ()
@@ -722,7 +724,7 @@ do_find_public_src (ptrdiff_t src2dst,
         }
       base = adjust_pointer <void> (base, offset);
       
-      sub_kind base_kind = base_list[i].type->do_find_public_src
+      sub_kind base_kind = base_list[i].base->do_find_public_src
                               (src2dst, base, src_type, src_ptr);
       if (contained_p (base_kind))
         {
@@ -849,7 +851,7 @@ do_dyncast (ptrdiff_t src2dst,
         base_access = sub_kind (base_access & ~contained_public_mask);
       
       bool result2_ambig
-          = base_list[i].type->do_dyncast (src2dst, base_access,
+          = base_list[i].base->do_dyncast (src2dst, base_access,
                                            dst_type, base,
                                            src_type, src_ptr, result2);
       result.whole2src = sub_kind (result.whole2src | result2.whole2src);
@@ -1043,13 +1045,13 @@ do_upcast (sub_kind access_path,
       if (base)
         base = adjust_pointer <void> (base, offset);
       
-      if (base_list[i].type->do_upcast (sub_access, dst, base, result2))
+      if (base_list[i].base->do_upcast (sub_access, dst, base, result2))
         return true; // must fail
       if (result2.base_type)
         {
           if (result2.base_type == nonvirtual_base_type
               && base_list[i].is_virtual_p ())
-            result2.base_type = base_list[i].type;
+            result2.base_type = base_list[i].base;
           if (!result.base_type)
             {
               result = result2;
@@ -1131,5 +1133,5 @@ __dynamic_cast (const void *src_ptr,    // object started from
   return NULL;
 }
 
-}; // namespace std
+}; // namespace __cxxabiv1
 #endif

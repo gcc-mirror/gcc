@@ -15,11 +15,14 @@
 
 extern "C++" {
 
-namespace std {
-
 #if defined(__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
-class __class_type_info;
+namespace __cxxabiv1
+{
+  class __class_type_info;
+} // namespace __cxxabiv1
 #endif
+
+namespace std {
 
 class type_info {
 public:
@@ -82,7 +85,7 @@ public:
                          unsigned outer) const;
 
   // internally used during catch matching
-  virtual bool do_upcast (const __class_type_info *target, void **obj_ptr) const;
+  virtual bool do_upcast (const __cxxabiv1::__class_type_info *target, void **obj_ptr) const;
 #endif
 };
 
