@@ -3715,7 +3715,6 @@ link_nested_class_to_enclosing ()
       DECL_INNER_CLASS_LIST (enclosing) = 
 	tree_cons (GET_CPC (), GET_CPC_UN (),
 		   DECL_INNER_CLASS_LIST (enclosing));
-      enclosing = enclosing;
     }
 }
 

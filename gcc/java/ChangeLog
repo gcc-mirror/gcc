@@ -1,3 +1,8 @@
+2001-12-17  Tom Tromey  <tromey@redhat.com>
+
+	* parse.y (link_nested_class_to_enclosing): Removed useless
+	statement.
+
 2001-12-16  Tom Tromey  <tromey@redhat.com>
 
 	* mangle.c (mangle_method_decl): Never emit `C2' constructor.
