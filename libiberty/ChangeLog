@@ -1,3 +1,7 @@
+2003-05-14  Carlo Wood  <carlo@alinoe.com>
+
+	* cp-demangle.c: Fix typo in "char_traints" string-literal.
+
 2003-05-13  Release Manager
 
 	* GCC 3.3 Released.
