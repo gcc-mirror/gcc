@@ -351,7 +351,10 @@ genheader ()
 {
   int i;
   const char **fmt;
-  
+
+  puts ("#ifndef GCC_GENRTL_H");
+  puts ("#define GCC_GENRTL_H\n");
+
   for (fmt = formats; *fmt; ++fmt)
     gendecl (*fmt);
 
@@ -360,6 +363,8 @@ genheader ()
   for (i = 0; i < NUM_RTX_CODE; i++)
     if (! special_format (defs[i].format))
       genmacro (i);
+
+  puts ("\n#endif /* GCC_GENRTL_H */");
 }
 
 /* Generate the text of the code file we write, genrtl.c.  */
@@ -420,6 +425,8 @@ main (argc, argv)
   else
     gencode ();
 
-  fflush (stdout);
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  if (ferror (stdout) || fflush (stdout) || fclose (stdout))
+    return FATAL_EXIT_CODE;
+
+  return SUCCESS_EXIT_CODE;
 }

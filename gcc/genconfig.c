@@ -280,8 +280,10 @@ main (argc, argv)
   if (init_md_reader (argv[1]) != SUCCESS_EXIT_CODE)
     return (FATAL_EXIT_CODE);
 
-  printf ("/* Generated automatically by the program `genconfig'\n\
-from the machine description file `md'.  */\n\n");
+  puts ("/* Generated automatically by the program `genconfig'");
+  puts ("   from the machine description file `md'.  */\n");
+  puts ("#ifndef GCC_INSN_CONFIG_H");
+  puts ("#define GCC_INSN_CONFIG_H\n");
 
   /* Allow at least 10 operands for the sake of asm constructs.  */
   max_recog_operands = 9;  /* We will add 1 later.  */
@@ -356,8 +358,12 @@ from the machine description file `md'.  */\n\n");
       printf ("#define MAX_INSNS_PER_PEEP2 %d\n", max_insns_per_peep2);
     }
 
-  fflush (stdout);
-  return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
+  puts("\n#endif /* GCC_INSN_CONFIG_H */");
+
+  if (ferror (stdout) || fflush (stdout) || fclose (stdout))
+    return FATAL_EXIT_CODE;
+
+  return SUCCESS_EXIT_CODE;
 }
 
 /* Define this so we can link with print-rtl.o to get debug_rtx function.  */
