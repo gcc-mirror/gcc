@@ -51,6 +51,8 @@ struct string_option
 static const char *java_init PARAMS ((const char *));
 static void java_finish PARAMS ((void));
 static void java_init_options PARAMS ((void));
+static void java_post_options PARAMS ((void));
+
 static int java_decode_option PARAMS ((int, char **));
 static void put_decl_string PARAMS ((const char *, int));
 static void put_decl_node PARAMS ((tree));
@@ -170,6 +172,10 @@ int flag_store_check = 1;
 /* When non zero, print extra version information.  */
 static int version_flag = 0;
 
+/* Set non-zero if the user specified -finline-functions on the command 
+   line.  */
+int flag_really_inline = 0;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -228,6 +234,8 @@ struct language_function GTY(())
 #define LANG_HOOKS_INIT_OPTIONS java_init_options
 #undef LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION java_decode_option
+#undef LANG_HOOKS_POST_OPTIONS
+#define LANG_HOOKS_POST_OPTIONS java_post_options
 #undef LANG_HOOKS_PARSE_FILE
 #define LANG_HOOKS_PARSE_FILE java_parse_file
 #undef LANG_HOOKS_MARK_ADDRESSABLE
@@ -385,6 +393,14 @@ java_decode_option (argc, argv)
   if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
     {
       current_encoding = p + sizeof (ARG) - 1;
+      return 1;
+    }
+#undef ARG
+#define ARG "-finline-functions"
+  if (strncmp (p, ARG, sizeof (ARG) - 1) == 0)
+    {
+      flag_inline_functions = 1;
+      flag_really_inline = 1;
       return 1;
     }
 #undef ARG
@@ -761,6 +777,18 @@ java_init_options ()
 
   /* In Java floating point operations never trap.  */
   flag_trapping_math = 0;
+}
+
+/* Post-switch processing.  */
+static void
+java_post_options ()
+{
+  /* Turn off RTL inliner unless -finline-functions was really specified.  */
+  if (flag_really_inline == 0)
+    {
+      flag_no_inline = 1;
+      flag_inline_functions = 0;
+    }
 }
 
 #include "gt-java-lang.h"
