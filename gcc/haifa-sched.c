@@ -397,7 +397,9 @@ static int *insn_tick;
 
 /* Forward declarations.  */
 static void add_dependence PROTO ((rtx, rtx, enum reg_note));
+#ifdef HAVE_cc0
 static void remove_dependence PROTO ((rtx, rtx));
+#endif
 static rtx find_insn_list PROTO ((rtx, rtx));
 static int insn_unit PROTO ((rtx));
 static unsigned int blockage_range PROTO ((int, rtx));
@@ -424,10 +426,6 @@ static int schedule_block PROTO ((int, int));
 static char *safe_concat PROTO ((char *, char *, const char *));
 static int insn_issue_delay PROTO ((rtx));
 static void adjust_priority PROTO ((rtx));
-
-/* Mapping of insns to their original block prior to scheduling.  */
-static int *insn_orig_block;
-#define INSN_BLOCK(insn) (insn_orig_block[INSN_UID (insn)])
 
 /* Some insns (e.g. call) are not allowed to move across blocks.  */
 static char *cant_move;
@@ -637,9 +635,9 @@ static edgeset *ancestor_edges;
 static void compute_dom_prob_ps PROTO ((int));
 
 #define ABS_VALUE(x) (((x)<0)?(-(x)):(x))
-#define INSN_PROBABILITY(INSN) (SRC_PROB (BLOCK_TO_BB (INSN_BLOCK (INSN))))
-#define IS_SPECULATIVE_INSN(INSN) (IS_SPECULATIVE (BLOCK_TO_BB (INSN_BLOCK (INSN))))
-#define INSN_BB(INSN) (BLOCK_TO_BB (INSN_BLOCK (INSN)))
+#define INSN_PROBABILITY(INSN) (SRC_PROB (BLOCK_TO_BB (BLOCK_NUM (INSN))))
+#define IS_SPECULATIVE_INSN(INSN) (IS_SPECULATIVE (BLOCK_TO_BB (BLOCK_NUM (INSN))))
+#define INSN_BB(INSN) (BLOCK_TO_BB (BLOCK_NUM (INSN)))
 
 /* Parameters affecting the decision of rank_for_schedule().  */
 #define MIN_DIFF_PRIORITY 2
@@ -828,6 +826,7 @@ add_dependence (insn, elem, dep_type)
   PUT_REG_NOTE_KIND (link, dep_type);
 }
 
+#ifdef HAVE_cc0
 /* Remove ELEM wrapped in an INSN_LIST from the LOG_LINKS
    of INSN.  Abort if not found.  */
 
@@ -867,6 +866,7 @@ remove_dependence (insn, elem)
     abort ();
   return;
 }
+#endif /* HAVE_cc0 */
 
 #ifndef INSN_SCHEDULING
 void
@@ -2333,7 +2333,7 @@ find_conditional_protection (insn, load_insn_bb)
   for (link = INSN_DEPEND (insn); link; link = XEXP (link, 1))
     {
       rtx next = XEXP (link, 0);
-      if ((CONTAINING_RGN (INSN_BLOCK (next)) ==
+      if ((CONTAINING_RGN (BLOCK_NUM (next)) ==
 	   CONTAINING_RGN (BB_TO_BLOCK (load_insn_bb)))
 	  && IS_REACHABLE (INSN_BB (next), load_insn_bb)
 	  && load_insn_bb != INSN_BB (next)
@@ -2377,7 +2377,7 @@ is_conditionally_protected (load_insn, bb_src, bb_trg)
 
       /* Must exist a path: region-entry -> ... -> bb_trg -> ... load_insn.  */
       if (INSN_BB (insn1) == bb_src
-	  || (CONTAINING_RGN (INSN_BLOCK (insn1))
+	  || (CONTAINING_RGN (BLOCK_NUM (insn1))
 	      != CONTAINING_RGN (BB_TO_BLOCK (bb_src)))
 	  || (!IS_REACHABLE (bb_trg, INSN_BB (insn1))
 	      && !IS_REACHABLE (INSN_BB (insn1), bb_trg)))
@@ -2448,7 +2448,7 @@ is_pfree (load_insn, bb_src, bb_trg)
 		    /* insn2 is the similar load, in the target block.  */
 		    return 1;
 
-		  if (*(candp->split_bbs.first_member) == INSN_BLOCK (insn2))
+		  if (*(candp->split_bbs.first_member) == BLOCK_NUM (insn2))
 		    /* insn2 is a similar load, in a split-block.  */
 		    return 1;
 		}
@@ -3108,7 +3108,7 @@ priority (insn)
 	    next = XEXP (link, 0);
 
 	    /* Critical path is meaningful in block boundaries only.  */
-	    if (INSN_BLOCK (next) != INSN_BLOCK (insn))
+	    if (BLOCK_NUM (next) != BLOCK_NUM (insn))
 	      continue;
 
 	    next_priority = insn_cost (insn, link, next) + priority (next);
@@ -3738,6 +3738,7 @@ sched_analyze_insn (x, insn, loop_notes)
       for (i = 0; i < maxreg; i++)
 	{
 	  free_INSN_LIST_list (&reg_last_sets[i]);
+	  free_INSN_LIST_list (&reg_last_clobbers[i]);
 	  reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
 	}
 
@@ -4087,7 +4088,7 @@ queue_insn (insn, n_cycles)
       fprintf (dump, ";;\t\tReady-->Q: insn %d: ", INSN_UID (insn));
 
       if (INSN_BB (insn) != target_bb)
-	fprintf (dump, "(b%d) ", INSN_BLOCK (insn));
+	fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
 
       fprintf (dump, "queued for %d cycles.\n", n_cycles);
     }
@@ -4185,7 +4186,7 @@ schedule_insn (insn, ready, n_ready, clock)
 		       INSN_UID (next));
 
 	      if (current_nr_blocks > 1 && INSN_BB (next) != target_bb)
-		fprintf (dump, "/b%d ", INSN_BLOCK (next));
+		fprintf (dump, "/b%d ", BLOCK_NUM (next));
 
 	      if (effective_cost < 1)
 		fprintf (dump, "into ready\n");
@@ -4630,7 +4631,7 @@ queue_to_ready (ready, n_ready)
 	fprintf (dump, ";;\t\tQ-->Ready: insn %d: ", INSN_UID (insn));
 
       if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
-	fprintf (dump, "(b%d) ", INSN_BLOCK (insn));
+	fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
 
       ready[n_ready++] = insn;
       if (sched_verbose >= 2)
@@ -4657,7 +4658,7 @@ queue_to_ready (ready, n_ready)
 		    fprintf (dump, ";;\t\tQ-->Ready: insn %d: ", INSN_UID (insn));
 
 		  if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
-		    fprintf (dump, "(b%d) ", INSN_BLOCK (insn));
+		    fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
 
 		  ready[n_ready++] = insn;
 		  if (sched_verbose >= 2)
@@ -4691,7 +4692,7 @@ debug_ready_list (ready, n_ready)
     {
       fprintf (dump, "  %d", INSN_UID (ready[i]));
       if (current_nr_blocks > 1 && INSN_BB (ready[i]) != target_bb)
-	fprintf (dump, "/b%d", INSN_BLOCK (ready[i]));
+	fprintf (dump, "/b%d", BLOCK_NUM (ready[i]));
     }
   fprintf (dump, "\n");
 }
@@ -5895,8 +5896,6 @@ schedule_block (bb, rgn_n_insns)
   /* Loop until all the insns in BB are scheduled.  */
   while (sched_target_n_insns < target_n_insns)
     {
-      int b1;
-
       clock_var++;
 
       /* Add to the ready list all pending insns that can be issued now.
@@ -5949,6 +5948,7 @@ schedule_block (bb, rgn_n_insns)
 	  if (INSN_BB (insn) != target_bb)
 	    {
 	      rtx temp;
+	      basic_block b1;
 
 	      if (IS_SPECULATIVE_INSN (insn))
 		{
@@ -5964,35 +5964,40 @@ schedule_block (bb, rgn_n_insns)
 		}
 	      nr_inter++;
 
+	      /* Find the beginning of the scheduling group; update the
+		 containing block number for the insns.  */
 	      temp = insn;
-	      while (SCHED_GROUP_P (temp))
-		temp = PREV_INSN (temp);
+	      set_block_num (temp, target_bb);
+	      while (SCHED_GROUP_P (insn))
+		{
+		  temp = PREV_INSN (temp);
+		  set_block_num (temp, target_bb);
+		}
 
 	      /* Update source block boundaries.   */
-	      b1 = INSN_BLOCK (temp);
-	      if (temp == BLOCK_HEAD (b1)
-		  && insn == BLOCK_END (b1))
+	      b1 = BLOCK_FOR_INSN (temp);
+	      if (temp == b1->head && insn == b1->end)
 		{
 		  /* We moved all the insns in the basic block.
 		     Emit a note after the last insn and update the
 		     begin/end boundaries to point to the note.  */
-		  emit_note_after (NOTE_INSN_DELETED, insn);
-		  BLOCK_END (b1) = NEXT_INSN (insn);
-		  BLOCK_HEAD (b1) = NEXT_INSN (insn);
+		  rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
+		  b1->head = note;
+		  b1->end = note;
 		}
-	      else if (insn == BLOCK_END (b1))
+	      else if (insn == b1->end)
 		{
 		  /* We took insns from the end of the basic block,
 		     so update the end of block boundary so that it
 		     points to the first insn we did not move.  */
-		  BLOCK_END (b1) = PREV_INSN (temp);
+		  b1->end = PREV_INSN (temp);
 		}
-	      else if (temp == BLOCK_HEAD (b1))
+	      else if (temp == b1->head)
 		{
 		  /* We took insns from the start of the basic block,
 		     so update the start of block boundary so that
 		     it points to the first insn we did not move.  */
-		  BLOCK_HEAD (b1) = NEXT_INSN (insn);
+		  b1->head = NEXT_INSN (insn);
 		}
 	    }
 	  else
@@ -6858,25 +6863,22 @@ schedule_insns (dump_file)
 
   split_all_insns (1);
 
-  max_uid = (get_max_uid () + 1);
+  /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
+     pseudos which do not cross calls.  */
+  max_uid = get_max_uid () + 1;
 
   cant_move = xcalloc (max_uid, sizeof (char));
   fed_by_spec_load = xcalloc (max_uid, sizeof (char));
   is_load_insn = xcalloc (max_uid, sizeof (char));
 
-  insn_orig_block = (int *) xmalloc (max_uid * sizeof (int));
   insn_luid = (int *) xmalloc (max_uid * sizeof (int));
 
-  /* We use LUID 0 for the fake insn (UID 0) which holds dependencies for
-     pseudos which do not cross calls.  */
   insn_luid[0] = 0;
   luid = 1;
   for (b = 0; b < n_basic_blocks; b++)
     for (insn = BLOCK_HEAD (b);; insn = NEXT_INSN (insn))
       {
-	INSN_BLOCK (insn) = b;
 	INSN_LUID (insn) = luid++;
-
 	if (insn == BLOCK_END (b))
 	  break;
       }
@@ -6898,6 +6900,8 @@ schedule_insns (dump_file)
   rgn_bb_table = (int *) alloca ((n_basic_blocks) * sizeof (int));
   block_to_bb = (int *) alloca ((n_basic_blocks) * sizeof (int));
   containing_rgn = (int *) alloca ((n_basic_blocks) * sizeof (int));
+
+  compute_bb_for_insn (max_uid);
 
   /* Compute regions for scheduling.  */
   if (reload_completed
@@ -7068,7 +7072,6 @@ schedule_insns (dump_file)
   free (cant_move);
   free (fed_by_spec_load);
   free (is_load_insn);
-  free (insn_orig_block);
   free (insn_luid);
 
   free (insn_priority);

@@ -2544,6 +2544,8 @@ verify_local_live_at_start (new_live_at_start, bb)
    If we find registers removed from live_at_start, that means we have
    a broken peephole that is killing a register it shouldn't.
 
+   BLOCK_FOR_INSN is assumed to be correct.
+
    ??? This is not true in one situation -- when a pre-reload splitter
    generates subregs of a multi-word pseudo, current life analysis will
    lose the kill.  So we _can_ have a pseudo go live.  How irritating.  */
@@ -2556,7 +2558,6 @@ update_life_info (blocks, extent)
   regset tmp;
   int i;
 
-  compute_bb_for_insn (get_max_uid ());
   tmp = ALLOCA_REG_SET ();
 
   /* For a global update, we go through the relaxation process again.  */
@@ -2584,7 +2585,6 @@ update_life_info (blocks, extent)
     });
 
   FREE_REG_SET (tmp);
-  free_basic_block_vars (1);
 }
 
 /* Free the variables allocated by find_basic_blocks.

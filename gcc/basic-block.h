@@ -245,6 +245,7 @@ extern varray_type basic_block_for_insn;
 
 extern void compute_bb_for_insn		PROTO ((int));
 extern void set_block_for_insn		PROTO ((rtx, basic_block));
+extern void set_block_num		PROTO ((rtx, int));
 
 extern void dump_bb_data		PROTO ((FILE *, int_list_ptr *,
 						int_list_ptr *, int));
