@@ -214,8 +214,9 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
-F77 = @F77@
-FFLAGS = @FFLAGS@
+FC = @FC@
+FCFLAGS = @FCFLAGS@
+GREP = @GREP@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -247,7 +248,7 @@ VERSION = @VERSION@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_AS = @ac_ct_AS@
 ac_ct_CC = @ac_ct_CC@
-ac_ct_F77 = @ac_ct_F77@
+ac_ct_FC = @ac_ct_FC@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 am__leading_dot = @am__leading_dot@
@@ -1804,10 +1805,10 @@ uninstall-am: uninstall-info-am uninstall-toolexeclibLTLIBRARIES
 
 
 selected_int_kind.inc: $(srcdir)/mk-sik-inc.sh
-	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(F77COMPILE)' > $@
+	$(SHELL) $(srcdir)/mk-sik-inc.sh '$(FCCOMPILE)' > $@
 
 selected_real_kind.inc: $(srcdir)/mk-srk-inc.sh
-	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(F77COMPILE)' > $@
+	$(SHELL) $(srcdir)/mk-srk-inc.sh '$(FCCOMPILE)' > $@
 
 @MAINTAINER_MODE_TRUE@$(i_all_c): m4/all.m4 $(I_M4_DEPS1)
 @MAINTAINER_MODE_TRUE@	m4 -Dfile=$@ -I$(srcdir)/m4 all.m4 > $@
