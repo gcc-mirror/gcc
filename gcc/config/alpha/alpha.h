@@ -1586,9 +1586,11 @@ do {									\
 
 #define MOVE_MAX 8
 
-/* Controls how many units are moved by expr.c before resorting to movstr.
-   Without byte/word accesses, we want no more than one; with, several single
-   byte accesses are better.   */
+/* If a memory-to-memory move would take MOVE_RATIO or more simple
+   move-instruction pairs, we will do a movstr or libcall instead.
+
+   Without byte/word accesses, we want no more than four instructions;
+   with, several single byte accesses are better.   */
 
 #define MOVE_RATIO  (TARGET_BWX ? 7 : 2)
 
