@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Declarations for functions used in insn-output.c.  */
 #ifdef RTX_CODE
-extern const char *output_a_shift PARAMS ((rtx, rtx *));
+extern const char *output_a_shift PARAMS ((rtx *));
 extern const char *emit_a_rotate PARAMS ((enum rtx_code, rtx *));
 extern const char *output_simode_bld PARAMS ((int, rtx[]));
 extern void print_operand_address PARAMS ((FILE *, rtx));

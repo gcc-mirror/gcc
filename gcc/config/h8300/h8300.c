@@ -2431,8 +2431,7 @@ get_shift_alg (shift_type, shift_mode, count, info)
 /* Emit the assembler code for doing shifts.  */
 
 const char *
-output_a_shift (insn, operands)
-     rtx insn ATTRIBUTE_UNUSED;
+output_a_shift (operands)
      rtx *operands;
 {
   static int loopend_lab;
@@ -2517,18 +2516,15 @@ output_a_shift (insn, operands)
 	  n = info.remainder;
 
 	  /* Emit two bit shifts first.  */
-	  while (n > 1 && info.shift2 != NULL)
+	  if (info.shift2 != NULL)
 	    {
-	      output_asm_insn (info.shift2, operands);
-	      n -= 2;
+	      for (; n > 1; n -= 2)
+		output_asm_insn (info.shift2, operands);
 	    }
 
 	  /* Now emit one bit shifts for any residual.  */
-	  while (n > 0)
-	    {
-	      output_asm_insn (info.shift1, operands);
-	      n -= 1;
-	    }
+	  for (; n > 0; n--)
+	    output_asm_insn (info.shift1, operands);
 
 	  /* Keep track of CC.  */
 	  if (info.cc_valid_p)
@@ -2542,8 +2538,8 @@ output_a_shift (insn, operands)
 	  {
 	    int m = GET_MODE_BITSIZE (mode) - n;
 	    int mask = (shift_type == SHIFT_ASHIFT
-			? ((1 << (GET_MODE_BITSIZE (mode) - n)) - 1) << n
-			: (1 << (GET_MODE_BITSIZE (mode) - n)) - 1);
+			? ((1 << m) - 1) << n
+			: (1 << m) - 1);
 	    char insn_buf[200];
 
 	    /* Not all possibilities of rotate are supported.  They shouldn't
@@ -2552,18 +2548,15 @@ output_a_shift (insn, operands)
 	      abort ();
 
 	    /* Emit two bit rotates first.  */
-	    while (m > 1 && info.shift2 != NULL)
+	    if (info.shift2 != NULL)
 	      {
-		output_asm_insn (info.shift2, operands);
-		m -= 2;
+		for (; m > 1; m -= 2)
+		  output_asm_insn (info.shift2, operands);
 	      }
 
 	    /* Now single bit rotates for any residual.  */
-	    while (m > 0)
-	      {
-		output_asm_insn (info.shift1, operands);
-		m -= 1;
-	      }
+	    for (; m > 0; m--)
+	      output_asm_insn (info.shift1, operands);
 
 	    /* Now mask off the high bits.  */
 	    if (TARGET_H8300)
@@ -2579,10 +2572,8 @@ output_a_shift (insn, operands)
 		    sprintf (insn_buf, "and\t#%d,%%s0\n\tand\t#%d,%%t0",
 			     mask & 255, mask >> 8);
 		    break;
-		  case SImode:
-		    abort ();
 		  default:
-		    break;
+		    abort ();
 		  }
 	      }
 	    else
