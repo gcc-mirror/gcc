@@ -1,3 +1,15 @@
+2000-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/eh1.C: New test.
+
+2000-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/type.C: New test.
+
+2000-06-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.old-deja/g++.other/initstring.C: New test.
+
 2000-06-12  Jason Merrill  <jason@redhat.com>
 
 	* g++.old-deja/old-deja.exp: Add -Wno-long-long.
