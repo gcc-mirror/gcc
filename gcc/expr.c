@@ -5799,7 +5799,7 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	     made during type construction.  */
 	  if (this_offset == 0)
 	    break;
-	  else if (CONTAINS_PLACEHOLDER_P (this_offset))
+	  else if (contains_placeholder_p (this_offset))
 	    this_offset = build (WITH_RECORD_EXPR, sizetype, this_offset, exp);
 
 	  offset = size_binop (PLUS_EXPR, offset, this_offset);
@@ -5829,9 +5829,9 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	  /* If the index has a self-referential type, pass it to a
 	     WITH_RECORD_EXPR; if the component size is, pass our
 	     component to one.  */
-	  if (CONTAINS_PLACEHOLDER_P (index))
+	  if (contains_placeholder_p (index))
 	    index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, exp);
-	  if (CONTAINS_PLACEHOLDER_P (unit_size))
+	  if (contains_placeholder_p (unit_size))
 	    unit_size = build (WITH_RECORD_EXPR, sizetype, unit_size, array);
 
 	  offset = size_binop (PLUS_EXPR, offset,
