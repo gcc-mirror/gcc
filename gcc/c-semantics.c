@@ -697,7 +697,7 @@ genrtl_case_label (tree case_label)
   if (cleanup)
     {
       static int explained = 0;
-      warning ("destructor needed for `%#D'", (TREE_PURPOSE (cleanup)));
+      warning ("destructor needed for `%D'", (TREE_PURPOSE (cleanup)));
       warning ("where case label appears here");
       if (!explained)
 	{
