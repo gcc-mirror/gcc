@@ -1492,8 +1492,15 @@ dbxout_type (type, full)
 		putc (TREE_VIA_VIRTUAL (child) ? '1' : '0', asmfile);
 		putc (TREE_VIA_PUBLIC (child) ? '2' : '0', asmfile);
 		CHARS (2);
-		print_wide_int (tree_low_cst (BINFO_OFFSET (child), 0)
-				* BITS_PER_UNIT);
+		if (TREE_VIA_VIRTUAL (child))
+		  /* For a virtual base, print the (negative) offset within
+		     the vtable where we must look to find the necessary
+		     adjustment.  */
+		  print_wide_int (tree_low_cst (BINFO_VPTR_FIELD (child), 0)
+				  * BITS_PER_UNIT);
+		else
+		  print_wide_int (tree_low_cst (BINFO_OFFSET (child), 0)
+				  * BITS_PER_UNIT);
 		putc (',', asmfile);
 		CHARS (1);
 		dbxout_type (BINFO_TYPE (child), 0);
