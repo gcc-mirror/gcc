@@ -2071,12 +2071,14 @@ extern tree lookup_attribute		PARAMS ((const char *, tree));
 
 extern tree merge_attributes		PARAMS ((tree, tree));
 
-/* Given a type node TYPE and a TYPE_QUALIFIER_SET, return a type for
-   the same kind of data as TYPE describes.  Variants point to the
-   "main variant" (which has no qualifiers set) via TYPE_MAIN_VARIANT,
-   and it points to a chain of other variants so that duplicate
-   variants are never made.  Only main variants should ever appear as
-   types of expressions.  */
+/* Return a version of the TYPE, qualified as indicated by the
+   TYPE_QUALS, if one exists.  If no qualified version exists yet,
+   return NULL_TREE.  */
+
+extern tree get_qualified_type          PARAMS ((tree, int));
+
+/* Like get_qualified_type, but creates the type if it does not
+   exist.  This function never returns NULL_TREE.  */
 
 extern tree build_qualified_type        PARAMS ((tree, int));
 
