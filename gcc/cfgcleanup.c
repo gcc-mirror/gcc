@@ -469,7 +469,7 @@ try_forward_edges (mode, b)
 		    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_LOOP_BEG)
 		  break;
 
-	      if (GET_CODE (insn) == NOTE)
+	      if (insn && GET_CODE (insn) == NOTE)
 		break;
 	    }
 

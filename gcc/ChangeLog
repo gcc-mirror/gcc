@@ -1,3 +1,48 @@
+2003-02-03  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* cfgcleanup.c (try_forward_edges): Check for null insn.
+
+2003-02-03  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+	Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	Backport following patches:
+
+	2002-09-16  Richard Henderson  <rth@redhat.com>
+
+        * emit-rtl.c (set_mem_attributes_minus_bitpos): Adjust SIZE
+        as well as OFFSET for BITPOS.
+
+	2002-09-08  Jan Hubicka  <jh@suse.cz>
+
+        * emit-rtl.c (set_mem_attributes_minus_bitpos): Fix array_ref
+        handling.
+
+	2002-07-29  Richard Henderson  <rth@redhat.com>
+
+        * emit-rtl.c (set_mem_attributes_minus_bitpos): Rename from
+        set_mem_attributes and add BITPOS argument.  Subtract it from
+        OFFSET when same is adjusted.
+        (set_mem_attributes): New wrapper function.
+        * expr.c (expand_assignment): Use set_mem_attributes_minus_bitpos;
+        remove offset adjustment hack.
+        * expr.h (set_mem_attributes_minus_bitpos): Declare.
+
+	2002-07-25  Richard Henderson  <rth@redhat.com>
+
+        * emit-rtl.c (set_mem_attributes): Fix size and alignment thinkos
+        in ARRAY_REF of DECL_P case.
+
+	2002-07-21  Richard Henderson  <rth@redhat.com>
+
+        * emit-rtl.c (set_mem_attributes): Preserve indirection of PARM_DECL
+        when flag_argument_noalias == 2.
+        * alias.c (nonoverlapping_memrefs_p): Handle that.
+        * print-rtl.c (print_mem_expr): Likewise.
+
+	2002-06-03  Dan Nicolaescu  <dann@godzilla.ics.uci.edu>
+
+        * alias.c (nonoverlapping_memrefs_p): Fix off by one error.
+
 2003-02-03  Steve Ellcey  <sje@cup.hp.com>
 
         * config/pa/pa64-hpux.h (INIT_ENVIRONMENT): New.

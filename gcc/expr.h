@@ -677,6 +677,12 @@ extern void maybe_set_unchanging PARAMS ((rtx, tree));
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  */
 extern void set_mem_attributes PARAMS ((rtx, tree, int));
+
+/* Similar, except that BITPOS has not yet been applied to REF, so if
+   we alter MEM_OFFSET according to T then we should subtract BITPOS
+   expecting that it'll be added back in later.  */
+extern void set_mem_attributes_minus_bitpos PARAMS ((rtx, tree, int,
+						     HOST_WIDE_INT));
 #endif
 
 /* Assemble the static constant template for function entry trampolines.  */

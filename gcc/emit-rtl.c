@@ -1698,19 +1698,22 @@ component_ref_for_mem_expr (ref)
 
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
-   if we are making a new object of this type.  */
+   if we are making a new object of this type.  BITPOS is nonzero if
+   there is an offset outstanding on T that will be applied later.  */
 
 void
-set_mem_attributes (ref, t, objectp)
+set_mem_attributes_minus_bitpos (ref, t, objectp, bitpos)
      rtx ref;
      tree t;
      int objectp;
+     HOST_WIDE_INT bitpos;
 {
   HOST_WIDE_INT alias = MEM_ALIAS_SET (ref);
   tree expr = MEM_EXPR (ref);
   rtx offset = MEM_OFFSET (ref);
   rtx size = MEM_SIZE (ref);
   unsigned int align = MEM_ALIGN (ref);
+  HOST_WIDE_INT apply_bitpos = 0;
   tree type;
 
   /* It can happen that type_for_mode was given a mode for which there
@@ -1779,6 +1782,7 @@ set_mem_attributes (ref, t, objectp)
 	{
 	  expr = t;
 	  offset = const0_rtx;
+	  apply_bitpos = bitpos;
 	  size = (DECL_SIZE_UNIT (t)
 		  && host_integerp (DECL_SIZE_UNIT (t), 1)
 		  ? GEN_INT (tree_low_cst (DECL_SIZE_UNIT (t), 1)) : 0);
@@ -1803,6 +1807,7 @@ set_mem_attributes (ref, t, objectp)
 	{
 	  expr = component_ref_for_mem_expr (t);
 	  offset = const0_rtx;
+	  apply_bitpos = bitpos;
 	  /* ??? Any reason the field size would be different than
 	     the size we got from the type?  */
 	}
@@ -1814,25 +1819,95 @@ set_mem_attributes (ref, t, objectp)
 
 	  do
 	    {
+	      tree index = TREE_OPERAND (t, 1);
+	      tree array = TREE_OPERAND (t, 0);
+	      tree domain = TYPE_DOMAIN (TREE_TYPE (array));
+	      tree low_bound = (domain ? TYPE_MIN_VALUE (domain) : 0);
+	      tree unit_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (array)));
+
+	      /* We assume all arrays have sizes that are a multiple of a byte.
+		 First subtract the lower bound, if any, in the type of the
+		 index, then convert to sizetype and multiply by the size of the
+		 array element.  */
+	      if (low_bound != 0 && ! integer_zerop (low_bound))
+		index = fold (build (MINUS_EXPR, TREE_TYPE (index),
+				     index, low_bound));
+
+	      /* If the index has a self-referential type, pass it to a
+		 WITH_RECORD_EXPR; if the component size is, pass our
+		 component to one.  */
+	      if (! TREE_CONSTANT (index)
+		  && contains_placeholder_p (index))
+		index = build (WITH_RECORD_EXPR, TREE_TYPE (index), index, t);
+	      if (! TREE_CONSTANT (unit_size)
+		  && contains_placeholder_p (unit_size))
+		unit_size = build (WITH_RECORD_EXPR, sizetype,
+				   unit_size, array);
+
 	      off_tree
 		= fold (build (PLUS_EXPR, sizetype,
 			       fold (build (MULT_EXPR, sizetype,
-					    TREE_OPERAND (t, 1),
-					    TYPE_SIZE_UNIT (TREE_TYPE (t)))),
+					    index,
+					    unit_size)),
 			       off_tree));
 	      t = TREE_OPERAND (t, 0);
 	    }
 	  while (TREE_CODE (t) == ARRAY_REF);
 
-	  if (TREE_CODE (t) == COMPONENT_REF)
+	  if (DECL_P (t))
+	    {
+	      expr = t;
+	      offset = NULL;
+	      if (host_integerp (off_tree, 1))
+		{
+		  HOST_WIDE_INT ioff = tree_low_cst (off_tree, 1);
+		  HOST_WIDE_INT aoff = (ioff & -ioff) * BITS_PER_UNIT;
+		  align = DECL_ALIGN (t);
+		  if (aoff && aoff < align)
+	            align = aoff;
+		  offset = GEN_INT (ioff);
+		  apply_bitpos = bitpos;
+		}
+	    }
+	  else if (TREE_CODE (t) == COMPONENT_REF)
 	    {
 	      expr = component_ref_for_mem_expr (t);
 	      if (host_integerp (off_tree, 1))
-		offset = GEN_INT (tree_low_cst (off_tree, 1));
+		{
+		  offset = GEN_INT (tree_low_cst (off_tree, 1));
+		  apply_bitpos = bitpos;
+		}
 	      /* ??? Any reason the field size would be different than
 		 the size we got from the type?  */
 	    }
+	  else if (flag_argument_noalias > 1
+		   && TREE_CODE (t) == INDIRECT_REF
+		   && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
+	    {
+	      expr = t;
+	      offset = NULL;
+	    }
 	}
+
+      /* If this is a Fortran indirect argument reference, record the
+	 parameter decl.  */
+      else if (flag_argument_noalias > 1
+	       && TREE_CODE (t) == INDIRECT_REF
+	       && TREE_CODE (TREE_OPERAND (t, 0)) == PARM_DECL)
+	{
+	  expr = t;
+	  offset = NULL;
+	}
+    }
+
+  /* If we modified OFFSET based on T, then subtract the outstanding 
+     bit position offset.  Similarly, increase the size of the accessed
+     object to contain the negative offset.  */
+  if (apply_bitpos)
+    {
+      offset = plus_constant (offset, -(apply_bitpos / BITS_PER_UNIT));
+      if (size)
+	size = plus_constant (size, apply_bitpos / BITS_PER_UNIT);
     }
 
   /* Now set the attributes we computed above.  */
@@ -1849,6 +1924,15 @@ set_mem_attributes (ref, t, objectp)
 	   || TREE_CODE (t) == ARRAY_RANGE_REF
 	   || TREE_CODE (t) == BIT_FIELD_REF)
     MEM_IN_STRUCT_P (ref) = 1;
+}
+
+void
+set_mem_attributes (ref, t, objectp)
+     rtx ref;
+     tree t;
+     int objectp;
+{
+  set_mem_attributes_minus_bitpos (ref, t, objectp, 0);
 }
 
 /* Set the alias set of MEM to SET.  */
