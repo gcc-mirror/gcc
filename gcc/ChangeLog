@@ -1,3 +1,14 @@
+2001-04-17  Zack Weinberg  <zackw@stanford.edu>
+
+	* dbxout.c (dbxout_init): If DBX_OUTPUT_GCC_MARKER is defined,
+	use it instead of blindly generating a .stabs.
+	* xcoffout.h: Define DBX_OUTPUT_GCC_MARKER so we put the type
+	in the right place.
+	* xcoffout.c: Don't bother defining default for N_CATCH.
+	(UNKNOWN_STAB): Use internal_error.
+	(stab_to_sclass): Remove now-unnecessary aborts.
+	Remove #if 0'ed case N_BROWS.  Add #ifdef N_OPT block.
+
 Tue Apr 17 21:39:12 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (mark_all_labels): Canonicalize the tail recursion
@@ -85,7 +96,7 @@ Mon Apr 16 08:02:14 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (reload_outdi): Operand 0 must be a non hard register.
 
-	* pa.c (secondary_reload_class): SAR<->FP copies require a 
+	* pa.c (secondary_reload_class): SAR<->FP copies require a
 	secondary register.
 
 	* install.texi (mips-mips-bsd): Update list of functions
