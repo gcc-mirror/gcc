@@ -1,3 +1,8 @@
+2003-06-16  Neil Booth  <neil@daikokuya.co.uk>
+
+	* config/rs6000/sysv4.h (ASM_OUTPUT_ALIGNED_LOCAL): Remove
+	unnecessary extern declaration.
+
 2003-06-15  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/gofast.h, config/interix.h, config/interix3.h, 
