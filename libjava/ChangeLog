@@ -1,3 +1,8 @@
+2003-02-16  Tom Tromey  <tromey@redhat.com>
+
+	* verify.cc (_Jv_BytecodeVerifier::pop_jump): Removed unused
+	variable.
+
 2003-02-14  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/natServerSocketChannelImpl.cc: Removed.
