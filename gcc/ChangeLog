@@ -1,3 +1,7 @@
+Tue Oct 17 20:05:51 2000  Martin Buchholz <martin@xemacs.org>
+
+	* i370.md: Fix spelling typo.
+
 2000-10-17  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* function.c (locate_and_pad_parm): Don't align stack unconditionally.
