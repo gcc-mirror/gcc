@@ -1,3 +1,8 @@
+2000-12-04  DJ Delorie  <dj@redhat.com>
+
+	* print-tree.c (print_node): target-specific builtins print
+	numbers, not names.
+
 2000-12-04  Jason Merrill  <jason@redhat.com>
 
 	* stor-layout.c (int_mode_for_mode): Handle MODE_VECTOR_INT,
