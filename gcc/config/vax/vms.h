@@ -264,7 +264,7 @@ const_section ()					\
       else								\
 	data_section ();						\
     }									\
-  if (*tree_code_type[(int) TREE_CODE (T)] == 'c')			\
+  if (tree_code_type[(int) TREE_CODE (T)] == 'c')			\
     {									\
       if ((TREE_CODE (T) == STRING_CST && flag_writable_strings))	\
 	data_section ();						\

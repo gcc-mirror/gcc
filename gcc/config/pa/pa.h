@@ -1649,7 +1649,7 @@ extern struct rtx_def *hppa_legitimize_address ();
        && TREE_READONLY (DECL) && ! TREE_SIDE_EFFECTS (DECL)		\
        && (! DECL_INITIAL (DECL) || ! reloc_needed (DECL_INITIAL (DECL))) \
        && !flag_pic)							\
-   || (*tree_code_type[(int) TREE_CODE (DECL)] == 'c'			\
+   || (tree_code_type[(int) TREE_CODE (DECL)] == 'c'			\
        && !(TREE_CODE (DECL) == STRING_CST && flag_writable_strings)))
 
 #define FUNCTION_NAME_P(NAME) \
