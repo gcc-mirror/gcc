@@ -55,10 +55,28 @@ public class PrintStream extends FilterOutputStream
    * This leads to some minor duplication, because neither inherits
    * from the other, and we want to maximize performance. */
 
+  public PrintStream (OutputStream out)
+  {
+    this(out, false);
+  }
+
+  public PrintStream (OutputStream out, boolean auto_flush)
+  {
+    super(out);
+    converter = UnicodeToBytes.getDefaultEncoder();
+    error = false;
+    this.auto_flush = auto_flush;
+  }
+
   public boolean checkError ()
   {
     flush();
     return error;
+  }
+
+  protected void setError ()
+  {
+    error = true;
   }
 
   public void close ()
@@ -256,24 +274,6 @@ public class PrintStream extends FilterOutputStream
   public void println (char[] charArray)
   {
     print(charArray, 0, charArray.length, true);
-  }
-
-  public PrintStream (OutputStream out)
-  {
-    this(out, false);
-  }
-
-  public PrintStream (OutputStream out, boolean af)
-  {
-    super(out);
-    converter = UnicodeToBytes.getDefaultEncoder();
-    error = false;
-    auto_flush = af;
-  }
-
-  protected void setError ()
-  {
-    error = true;
   }
 
   public void write (int oneByte)

@@ -280,15 +280,12 @@ public class FileInputStream extends InputStream
    * A file channel must be created by first creating an instance of
    * Input/Output/RandomAccessFile and invoking the getChannel() method on it.
    */
-  public FileChannel getChannel ()
+  public synchronized FileChannel getChannel () 
   {
-    synchronized (this)
-      {
-        if (ch == null)
-          ch = new FileChannelImpl (fd, false, this);
+    if (ch == null)
+      ch = new FileChannelImpl (fd, false, this);
     
-        return ch;
-      }
+    return ch;
   }
 
 } // class FileInputStream
