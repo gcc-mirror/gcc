@@ -1,3 +1,12 @@
+2004-06-18  Paolo Carlini  <pcarlini@suse.de>
+
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<wchar_t>::_M_initialize_numpunct): Clean up
+	assignments of _M_decimal_point and _M_thousands_sep.
+	* config/locale/gnu/time_members.cc
+	(__timepunct<wchar_t>::_M_initialize_timepunct): Clean up
+	and reformat assignments of date and time fields.
+
 2004-06-16  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/rope (rope(_CharT, const allocator_type&)): Fix
