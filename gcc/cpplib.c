@@ -718,7 +718,7 @@ cpp_push_buffer (pfile, buffer, length)
       return NULL;
     }
 
-  new = (cpp_buffer *) xcalloc (sizeof (cpp_buffer), 1);
+  new = (cpp_buffer *) xcalloc (1, sizeof (cpp_buffer));
 
   new->if_stack = pfile->if_stack;
   new->cleanup = null_cleanup;
