@@ -81,6 +81,12 @@ Boston, MA 02111-1307, USA.  */
 
 /* Target specific linker settings.  */
 
+#ifdef DEFAULT_TARGET_64BIT
+#define MULTILIB_DEFAULTS { "m64" }
+#else
+#define MULTILIB_DEFAULTS { "m31" }
+#endif
+
 #define LINK_ARCH31_SPEC \
   "-m elf_s390 \
    %{shared:-shared} \

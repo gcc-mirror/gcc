@@ -1,3 +1,11 @@
+2002-11-21  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/libgcc-libc.ver: Add multilib support.
+	* config/s390/linux.h (MULTILIB_DEFAULT): Define.
+	* config/s390/t-linux64 (MULTILIB_OPTIONS, MULTILIB_DIRNAMES, 
+	MULTILIB_OSDIRNAMES, LIBGCC, INSTALL_LIBGCC, 
+	EXTRA_MULTILIB_PARTS): Define.
+
 2002-11-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_get_frame_size): A leaf function does not need its
