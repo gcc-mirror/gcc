@@ -3741,26 +3741,30 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 
   switch (code)
     {
+    /* CONVERT_EXPR stands for unary plus in this context.  */
     case CONVERT_EXPR:
-      /* This is used for unary plus, because a CONVERT_EXPR
-	 is enough to prevent anybody from looking inside for
-	 associativity, but won't generate any code.  */
-      if (!(arg = build_expr_type_conversion
-	    (WANT_ARITH | WANT_ENUM | WANT_POINTER, arg, true)))
-	errstring = "wrong type argument to unary plus";
-      else
-	{
-	  if (!noconvert)
-	    arg = default_conversion (arg);
-	  arg = build1 (NON_LVALUE_EXPR, TREE_TYPE (arg), arg);
-	}
-      break;
-
     case NEGATE_EXPR:
-      if (!(arg = build_expr_type_conversion (WANT_ARITH | WANT_ENUM, arg, true)))
-	errstring = "wrong type argument to unary minus";
-      else if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
-	arg = perform_integral_promotions (arg);
+      {
+	int flags = WANT_ARITH | WANT_ENUM;
+	/* Unary plus (but not unary minus) is allowed on pointers.  */
+	if (code == CONVERT_EXPR)
+	  flags |= WANT_POINTER;
+	arg = build_expr_type_conversion (flags, arg, true);
+	if (!arg)
+	  errstring = (code == NEGATE_EXPR
+		       ? "wrong type argument to unary minus"
+		       : "wrong type argument to unary plus");
+	else
+	  {
+	    if (!noconvert && CP_INTEGRAL_TYPE_P (TREE_TYPE (arg)))
+	      arg = perform_integral_promotions (arg);
+
+	    /* Make sure the result is not a lvalue: a unary plus or minus
+	       expression is always a rvalue.  */
+	    if (real_lvalue_p (arg))
+	      arg = build1 (NON_LVALUE_EXPR, TREE_TYPE (arg), arg);
+	  }
+      }
       break;
 
     case BIT_NOT_EXPR:

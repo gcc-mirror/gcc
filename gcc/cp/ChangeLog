@@ -1,3 +1,9 @@
+2004-11-22  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/18354
+	* typeck.c (build_unary_op) <CONVERT_EXPR, NEGATE_EXPR>: Unify code.
+	Make sure the result is always a rvalue.
+
 2004-11-16  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	* decl.c (start_preparsed_function): Call check_function_type even

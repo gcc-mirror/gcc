@@ -1,3 +1,8 @@
+2004-11-22  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/18354
+	* g++.dg/template/nontype11.C: New test.
+
 2004-11-21  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/18520
