@@ -2008,21 +2008,27 @@ cp_tree_equal (t1, t2)
 
   switch (TREE_CODE_CLASS (code1))
     {
-      int i;
     case '1':
     case '2':
     case '<':
     case 'e':
     case 'r':
     case 's':
-      cmp = 1;
-      for (i = 0; i < TREE_CODE_LENGTH (code1); ++i)
-	{
-	  cmp = cp_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
-	  if (cmp <= 0)
-	    return cmp;
-	}
-      return cmp;
+      {
+	int i;
+	
+	cmp = 1;
+	for (i = 0; i < TREE_CODE_LENGTH (code1); ++i)
+	  {
+	    cmp = cp_tree_equal (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
+	    if (cmp <= 0)
+	      return cmp;
+	  }
+	return cmp;
+      }
+    
+      case 't':
+	return same_type_p (t1, t2) ? 1 : 0;
     }
 
   return -1;
