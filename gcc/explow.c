@@ -119,6 +119,10 @@ plus_constant_wide (x, c)
 	return gen_rtx (PLUS, mode,
 			XEXP (x, 0),
 			plus_constant (XEXP (x, 1), c));
+      break;
+      
+    default:
+      break;
     }
 
   if (c != 0)
@@ -342,6 +346,10 @@ convert_memory_address (to_mode, x)
 	return gen_rtx (GET_CODE (x), to_mode, 
 			convert_memory_address (to_mode, XEXP (x, 0)),
 			convert_memory_address (to_mode, XEXP (x, 1)));
+      break;
+      
+    default:
+      break;
     }
 
   return convert_modes (to_mode, from_mode,
@@ -743,6 +751,9 @@ promote_mode (type, mode, punsignedp, for_call)
       unsignedp = POINTERS_EXTEND_UNSIGNED;
       break;
 #endif
+      
+    default:
+      break;
     }
 
   *punsignedp = unsignedp;
@@ -849,8 +860,8 @@ emit_stack_save (save_level, psave, after)
 {
   rtx sa = *psave;
   /* The default is that we use a move insn and save in a Pmode object.  */
-  rtx (*fcn) () = gen_move_insn;
-  enum machine_mode mode = Pmode;
+  rtx (*fcn) ();
+  enum machine_mode mode;
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
@@ -882,6 +893,10 @@ emit_stack_save (save_level, psave, after)
 	}
       break;
 #endif
+    default:
+      mode = Pmode;
+      fcn = gen_move_insn;
+      break;
     }
 
   /* If there is no save area and we have to allocate one, do so.  Otherwise
@@ -938,7 +953,7 @@ emit_stack_restore (save_level, sa, after)
      rtx sa;
 {
   /* The default is that we use a move insn.  */
-  rtx (*fcn) () = gen_move_insn;
+  rtx (*fcn) ();
 
   /* See if this machine has anything special to do for this kind of save.  */
   switch (save_level)
@@ -962,6 +977,9 @@ emit_stack_restore (save_level, sa, after)
 	fcn = gen_restore_stack_nonlocal;
       break;
 #endif
+    default:
+      fcn = gen_move_insn;
+      break;
     }
 
   if (sa != 0)
