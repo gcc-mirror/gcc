@@ -395,16 +395,17 @@ which is no longer available, thanks deja...-->
       <p>It's not a bug, and it's not really a problem.  Nevertheless, some
          people don't like it, so here are two pseudo-solutions:
       </p>
-      <p>If the only functions from libstdc++.a which you need are language
-         support functions (those listed in
-         <a href="../18_support/howto.html">clause 18</a> of the standard,
-         e.g., <code>new</code> and <code>delete</code>), then try linking
-         against <code>libsupc++.a</code> (usually specifying
-         <code>-lsupc++</code> when calling g++ for the final link step will
-         do it).  This library contains only those support routines, one per
-         object file.  But if you are using anything from the rest of the
-         library, such as IOStreams or vectors, then you'll still need
-         pieces from <code>libstdc++.a</code>.
+      <p>If the only functions from libstdc++.a which you need are
+         language support functions (those listed in <a
+         href="../18_support/howto.html">clause 18</a> of the
+         standard, e.g., <code>new</code> and <code>delete</code>),
+         then try linking against <code>libsupc++.a</code> (Using
+         <code>gcc</code> instead of <code>g++</code> and explicitly
+         linking in <code>-lsupc++</code> for the final link step will
+         do it).  This library contains only those support routines,
+         one per object file.  But if you are using anything from the
+         rest of the library, such as IOStreams or vectors, then
+         you'll still need pieces from <code>libstdc++.a</code>.
       </p>
       <p>The second method is one we hope to incorporate into the library
          build process.  Some platforms can place each function and variable
