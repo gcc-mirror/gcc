@@ -11585,7 +11585,7 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	    DECL_CONTEXT (decl) = ctype;
 	    if (staticp == 1)
 	      {
-	        cp_pedwarn ("static member `%D' re-declared as static", decl);
+                cp_pedwarn ("`static' may not be used when defining (as opposed to declaring) a static data member");
 	        staticp = 0;
 		RIDBIT_RESET (RID_STATIC, specbits);
 	      }
