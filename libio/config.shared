@@ -205,6 +205,7 @@ if [ "${SUBDIRS}" != "" ] ; then
   echo '# overrides thouh $(MAKE)) but may be needed by older versions.'
   echo ''
   echo 'FLAGS_TO_PASS= \'
+  echo '	"SHELL=$(SHELL)" \'
   echo '	"INSTALL=$(INSTALL)" \'
   echo '	"INSTALL_DATA=$(INSTALL_DATA)" \'
   echo '	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \'
