@@ -1578,10 +1578,8 @@ generate_loop_for_temp_to_lhs (gfc_expr *expr, tree tmp1, tree size,
      /* Form the mask expression according to the mask tree list.  */
      if (wheremask)
        {
-         tmp2 = wheremask;
-         if (tmp2 != NULL)
-            wheremaskexpr = gfc_build_array_ref (tmp2, count3);
-         tmp2 = TREE_CHAIN (tmp2);
+	 wheremaskexpr = gfc_build_array_ref (wheremask, count3);
+         tmp2 = TREE_CHAIN (wheremask);
          while (tmp2)
            {
              tmp1 = gfc_build_array_ref (tmp2, count3);
@@ -1684,10 +1682,8 @@ generate_loop_for_rhs_to_temp (gfc_expr *expr2, tree tmp1, tree size,
   /* Form the mask expression according to the mask tree list.  */
   if (wheremask)
     {
-      tmp2 = wheremask;
-      if (tmp2 != NULL)
-        wheremaskexpr = gfc_build_array_ref (tmp2, count3);
-      tmp2 = TREE_CHAIN (tmp2);
+      wheremaskexpr = gfc_build_array_ref (wheremask, count3);
+      tmp2 = TREE_CHAIN (wheremask);
       while (tmp2)
         {
           tmp1 = gfc_build_array_ref (tmp2, count3);

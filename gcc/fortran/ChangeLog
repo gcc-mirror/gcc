@@ -1,3 +1,9 @@
+2005-02-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-stmt.c (generate_loop_for_temp_to_lhs,
+	generate_loop_for_rhs_to_temp): Remove if whose condition is
+	always true.
+
 2005-02-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* symbol.c (gfc_use_ha_derived): Remove, fold functionality into ...
