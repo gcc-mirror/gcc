@@ -1,3 +1,8 @@
+2000-01-13  Nick Clifton  <nickc@cygnus.com>
+
+	* config/fr30/fr30.c (fr30_expand_epilogue): Emit USEs of pop'ed
+	register to prevent compile time warnings.
+
 2000-01-13  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* longlong.h [i386] (udiv_qrnnd): Rename 'd' argument to 'dv'

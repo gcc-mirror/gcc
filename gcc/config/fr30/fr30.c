@@ -377,7 +377,10 @@ fr30_expand_epilogue ()
     
   for (regno = 0; regno < STACK_POINTER_REGNUM; regno ++)
     if (current_frame_info.gmask & (1 << regno))
-      emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno)));
+      {
+	emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno)));
+	emit_insn (gen_rtx_USE (VOIDmode, regno));
+      }
   
   if (current_frame_info.pretend_size)
     emit_insn (gen_add_to_stack (GEN_INT (current_frame_info.pretend_size)));
