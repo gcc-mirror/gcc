@@ -1,3 +1,7 @@
+2002-12-22  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* genautomata.c: Fix comment typos.
+
 Sun Dec 22 18:23:44 CET 2002  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (tracer-min-branch-probability-feedback): Fix default.
