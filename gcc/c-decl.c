@@ -3054,7 +3054,7 @@ init_decl_processing ()
 							    sizetype,
 							    endlink))));
 
-  builtin_function ("__builtin_constant_p", int_ftype_int,
+  builtin_function ("__builtin_constant_p", default_function_type,
 		    BUILT_IN_CONSTANT_P, NULL_PTR);
 
   builtin_function ("__builtin_return_address",
