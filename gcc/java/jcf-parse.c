@@ -682,12 +682,6 @@ load_class (tree class_or_name, int verbose)
 	      *separator = '\0';
 	      name = get_identifier (IDENTIFIER_POINTER (name));
 	      *separator = c;
-
-	      /* Otherwise we might get infinite recursion, if say we
-		 have String.class but not
-		 String$CaseInsensitiveComparator.class. */
-	      if (current_jcf && current_jcf->java_source == 0)
-		break;
 	    }
 	  /* Otherwise, we failed, we bail. */
 	  else
