@@ -13,7 +13,8 @@ The GNU implementation mostly follows the 1988 version of
 the language, with some backwards compatibility options for
 the 1984 version, and some other extensions.  However, it
 does not implement all of the features of any standard.
-The most recent standard is ?, available from ?.
+The most recent standard is Z.200 (11/93), available from
+http://www.itu.int/itudoc/itu-t/rec/z.html.
 
 The GNU Chill implementation is not being actively developed.
 Cygnus has one customer we are maintaining Chill for,
