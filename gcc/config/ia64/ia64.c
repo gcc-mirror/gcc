@@ -2137,7 +2137,7 @@ ia64_expand_prologue ()
       /* Even if we're not going to generate an epilogue, we still
 	 need to save the register so that EH works.  */
       if (! epilogue_p && current_frame_info.reg_save_ar_unat)
-	emit_insn (gen_rtx_USE (VOIDmode, ar_unat_save_reg));
+	emit_insn (gen_prologue_use (ar_unat_save_reg));
     }
   else
     ar_unat_save_reg = NULL_RTX;
@@ -2178,7 +2178,7 @@ ia64_expand_prologue ()
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
 	  if (! epilogue_p)
-	    emit_insn (gen_rtx_USE (VOIDmode, alt_reg));
+	    emit_insn (gen_prologue_use (alt_reg));
 	}
       else
 	{
@@ -2222,7 +2222,7 @@ ia64_expand_prologue ()
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
 	  if (! epilogue_p)
-	    emit_insn (gen_rtx_USE (VOIDmode, alt_reg));
+	    emit_insn (gen_prologue_use (alt_reg));
 	}
       else
 	{
@@ -2262,7 +2262,7 @@ ia64_expand_prologue ()
 	  /* Even if we're not going to generate an epilogue, we still
 	     need to save the register so that EH works.  */
 	  if (! epilogue_p)
-	    emit_insn (gen_rtx_USE (VOIDmode, alt_reg));
+	    emit_insn (gen_prologue_use (alt_reg));
 	}
       else
 	{
@@ -4776,6 +4776,7 @@ group_barrier_needed_p (insn)
 
 	  /* Doesn't generate code.  */
 	case CODE_FOR_pred_rel_mutex:
+	case CODE_FOR_prologue_use:
 	  return 0;
 
 	default:
@@ -6393,7 +6394,8 @@ ia64_sched_reorder2 (dump, sched_verbose, ready, pn_ready, clock_var)
 
 	  /* Ignore cycle displays and .pred.rel.mutex.  */
 	  if (insn_code == CODE_FOR_cycle_display
-	      || insn_code == CODE_FOR_pred_rel_mutex)
+	      || insn_code == CODE_FOR_pred_rel_mutex
+	      || insn_code == CODE_FOR_prologue_use)
 	    continue;
 
 	  if (insn_code == CODE_FOR_insn_group_barrier)
