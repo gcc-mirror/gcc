@@ -1,3 +1,8 @@
+2003-09-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR target/12281
+	* gcc.c-torture/compile/20030921-1.c: New test.
+
 2003-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/reg-stack2.C: New test.
