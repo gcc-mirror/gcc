@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Convex version.
-   Copyright (C) 1988, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1236,21 +1236,6 @@ extern double atof();
 /* Output before uninitialized data.  */
 
 #define BSS_SECTION_ASM_OP (current_section_is_text = 0, ".bss") 
-
-/* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
-
-#define EXTRA_SECTIONS in_bss
-
-#define EXTRA_SECTION_FUNCTIONS						\
-void									\
-bss_section ()								\
-{									\
-  if (in_section != in_bss)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);		\
-      in_section = in_bss;						\
-    }									\
-}
 
 /* This is how to output an assembler line
    that says to advance the location counter
