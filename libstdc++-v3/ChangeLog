@@ -1,3 +1,8 @@
+2000-05-31  Branko Cibej  <branko.cibej@hermes.si>
+
+        * bits/limits_generic.h (numeric_limits<wchar_t>): Use WCHAR_MIN
+        and WCHAR_MAX instead of WCHART_MIN and WCHART_MAX.
+
 2000-05-31  Nathan Myers  <ncm@cantrip.org>
  
        * docs/thanks.html: edit own credits

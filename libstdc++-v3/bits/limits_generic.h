@@ -304,9 +304,9 @@ namespace std {
         static const bool is_specialized = true;
 
         static wchar_t min() throw()
-        { return WCHART_MIN; }
+        { return WCHAR_MIN; }
         static wchar_t max() throw()
-        { return WCHART_MAX; }
+        { return WCHAR_MAX; }
 
         static const int digits = 31;
         static const int digits10 = 9;
