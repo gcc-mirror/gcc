@@ -73,11 +73,17 @@ extern int errno;
 
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library
-   functions, so turn it off in a cross-compiler.  */
+   functions, so turn it off in a cross-compiler.  Likewise, the names of
+   the utilities aren't correct for a cross-compiler; we have to hope that
+   cross-versions are in the proper directories.  */
 
 #ifdef CROSS_COMPILE
 #undef OBJECT_FORMAT_COFF
 #undef OBJECT_FORMAT_ROSE
+#undef MD_EXEC_PREFIX
+#undef REAL_LD_FILE_NAME
+#undef REAL_NM_FILE_NAME
+#undef REAL_STRIP_FILE_NAME
 #endif
 
 /* If we can't use a special method, use the ordinary one:
@@ -444,7 +450,169 @@ choose_temp_base ()
   mktemp (temp_filename);
   temp_filename_length = strlen (temp_filename);
 }
+
+/* By default, colon separates directories in a path.  */
+#ifndef PATH_SEPARATOR
+#define PATH_SEPARATOR ':'
+#endif
 
+/* Structure to hold all the directories in which to search for files to
+   execute.  */
+
+struct prefix_list
+{
+  char *prefix;               /* String to prepend to the path. */
+  struct prefix_list *next;   /* Next in linked list. */
+};
+
+struct path_prefix
+{
+  struct prefix_list *plist;  /* List of prefixes to try */
+  int max_len;                /* Max length of a prefix in PLIST */
+  char *name;                 /* Name of this list (used in config stuff) */
+};
+
+/* We maintain two prefix lists: one from COMPILER_PATH environment variable
+   and one from the PATH variable.  */
+
+static struct path_prefix cpath, path;
+
+#ifdef CROSS_COMPILE
+/* This is the name of the target machine.  We use it to form the name
+   of the files to execute.  */
+
+static char *target_machine = TARGET_MACHINE;
+#endif
+
+/* Search for NAME using prefix list PPREFIX.  We only look for executable
+   files. 
+
+   Return 0 if not found, otherwise return its name, allocated with malloc. */
+
+static char *
+find_a_file (pprefix, name)
+     struct path_prefix *pprefix;
+     char *name;
+{
+  char *temp;
+  struct prefix_list *pl;
+  int len = pprefix->max_len + strlen (name) + 1;
+
+#ifdef EXECUTABLE_SUFFIX
+  len += strlen (EXECUTABLE_SUFFIX);
+#endif
+
+  temp = xmalloc (len);
+
+  /* Determine the filename to execute (special case for absolute paths).  */
+
+  if (*name == '/')
+    {
+      if (access (name, X_OK))
+	{
+	  strcpy (temp, name);
+	  return temp;
+	}
+    }
+  else
+    for (pl = pprefix->plist; pl; pl = pl->next)
+      {
+	strcpy (temp, pl->prefix);
+	strcat (temp, name);
+	if (access (temp, X_OK) == 0)
+	  return temp;
+
+#ifdef EXECUTABLE_SUFFIX
+	/* Some systems have a suffix for executable files.
+	   So try appending that.  */
+	strcat (temp, EXECUTABLE_SUFFIX);
+	if (access (temp, X_OK) == 0)
+	  return temp;
+#endif
+      }
+
+  free (temp);
+  return 0;
+}
+
+/* Add an entry for PREFIX to prefix list PPREFIX.  */
+
+static void
+add_prefix (pprefix, prefix)
+     struct path_prefix *pprefix;
+     char *prefix;
+{
+  struct prefix_list *pl, **prev;
+  int len;
+
+  if (pprefix->plist)
+    {
+      for (pl = pprefix->plist; pl->next; pl = pl->next)
+	;
+      prev = &pl->next;
+    }
+  else
+    prev = &pprefix->plist;
+
+  /* Keep track of the longest prefix */
+
+  len = strlen (prefix);
+  if (len > pprefix->max_len)
+    pprefix->max_len = len;
+
+  pl = (struct prefix_list *) xmalloc (sizeof (struct prefix_list));
+  pl->prefix = savestring (prefix, len);
+
+  if (*prev)
+    pl->next = *prev;
+  else
+    pl->next = (struct prefix_list *) 0;
+  *prev = pl;
+}
+
+/* Take the value of the environment variable ENV, break it into a path, and
+   add of the entries to PPREFIX.  */
+
+static void
+prefix_from_env (env, pprefix)
+     char *env;
+     struct path_prefix *pprefix;
+{
+  char *p = getenv (env);
+
+  if (p)
+    {
+      char *startp, *endp;
+      char *nstore = (char *) xmalloc (strlen (p) + 3);
+
+      startp = endp = p;
+      while (1)
+	{
+	  if (*endp == PATH_SEPARATOR || *endp == 0)
+	    {
+	      strncpy (nstore, startp, endp-startp);
+	      if (endp == startp)
+		{
+		  strcpy (nstore, "./");
+		}
+	      else if (endp[-1] != '/')
+		{
+		  nstore[endp-startp] = '/';
+		  nstore[endp-startp+1] = 0;
+		}
+	      else
+		nstore[endp-startp] = 0;
+
+	      add_prefix (pprefix, nstore);
+	      if (*endp == 0)
+		break;
+	      endp = startp = endp + 1;
+	    }
+	  else
+	    endp++;
+	}
+    }
+}
 
 /* Main program. */
 
@@ -453,13 +621,26 @@ main (argc, argv)
      int argc;
      char *argv[];
 {
+  char *ld_suffix	= "ld";
+  char *full_ld_suffix	= ld_suffix;
+  char *real_ld_suffix	= "real-ld";
+  char *full_real_ld_suffix = ld_suffix;
+  char *gld_suffix	= "gld";
+  char *full_gld_suffix	= gld_suffix;
+  char *nm_suffix	= "nm";
+  char *full_nm_suffix	= nm_suffix;
+  char *gnm_suffix	= "gnm";
+  char *full_gnm_suffix	= gnm_suffix;
+  char *strip_suffix	= "strip";
+  char *full_strip_suffix = strip_suffix;
+  char *gstrip_suffix	= "gstrip";
+  char *full_gstrip_suffix = gstrip_suffix;
   char *outfile		= "a.out";
   char *arg;
   FILE *outf;
   char *ld_file_name;
   char *c_file_name;
   char *p;
-  char *prefix;
   char **c_argv;
   char **c_ptr;
   char **ld1_argv	= (char **) xcalloc (sizeof (char *), argc+2);
@@ -507,148 +688,131 @@ main (argc, argv)
   if (signal (SIGBUS, SIG_IGN) != SIG_IGN)
     signal (SIGBUS, handler);
 
-  /* Try to discover a valid linker/assembler/nm/strip to use.  */
-  len = strlen (argv[0]);
-  prefix = (char *)0;
-  if (len >= sizeof ("ld")-1)
-    {
-      p = argv[0] + len - sizeof ("ld") + 1;
-      if (strcmp (p, "ld") == 0)
-	{
-	  prefix = argv[0];
-	  *p = '\0';
-	}
-    }
+  /* Extract COMPILER_PATH and PATH into our prefix list.  */
+  prefix_from_env ("COMPILER_PATH", &cpath);
+  prefix_from_env ("PATH", &path);
 
-  if (prefix == (char *)0)
-    {
-      p = rindex (argv[0], '/');
-      if (p != (char *)0)
-	{
-	  prefix = argv[0];
-	  p[1] = '\0';
-	}
+#ifdef CROSS_COMPILE
+  /* If we look for a program in the compiler directories, we just use
+     the short name, since these directories are already system-specific.
+     But it we look for a took in the system directories, we need to
+     qualify the program name with the target machine.  */
 
-#ifdef STANDARD_EXEC_PREFIX
-      else if (access (STANDARD_EXEC_PREFIX, X_OK) == 0)
-	prefix = STANDARD_EXEC_PREFIX;
-#endif
+  full_ld_suffix
+    = xcalloc (strlen (ld_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_ld_suffix, ld_suffix);
+  strcat (full_ld_suffix, "-");
+  strcat (full_ld_suffix, target_machine);
 
-#ifdef MD_EXEC_PREFIX
-      else if (access (MD_EXEC_PREFIX, X_OK) == 0)
-	prefix = MD_EXEC_PREFIX;
-#endif
+  full_real_ld_suffix
+    = xcalloc (strlen (real_ld_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_real_ld_suffix, real_ld_suffix);
+  strcat (full_real_ld_suffix, "-");
+  strcat (full_real_ld_suffix, target_machine);
 
-      else if (access ("/usr/ccs/gcc", X_OK) == 0)
-	prefix = "/usr/ccs/gcc/";
+  full_gld_suffix
+    = xcalloc (strlen (gld_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_gld_suffix, gld_suffix);
+  strcat (full_gld_suffix, "-");
+  strcat (full_gld_suffix, target_machine);
 
-      else if (access ("/usr/ccs/bin", X_OK) == 0)
-	prefix = "/usr/ccs/bin/";
+  full_nm_suffix
+    = xcalloc (strlen (nm_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_nm_suffix, nm_suffix);
+  strcat (full_nm_suffix, "-");
+  strcat (full_nm_suffix, target_machine);
 
-      else
-	prefix = "/bin/";
-    }
+  full_gnm_suffix
+    = xcalloc (strlen (gnm_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_gnm_suffix, gnm_suffix);
+  strcat (full_gnm_suffix, "-");
+  strcat (full_gnm_suffix, target_machine);
 
-  clen = len = strlen (prefix);
+  full_strip_suffix
+    = xcalloc (strlen (strip_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_strip_suffix, strip_suffix);
+  strcat (full_strip_suffix, "-");
+  strcat (full_strip_suffix, target_machine);
+  
+  full_gstrip_suffix
+    = xcalloc (strlen (gstrip_suffix) + strlen (target_machine) + 1, 1);
+  strcpy (full_gstrip_suffix, gstrip_suffix);
+  strcat (full_gstrip_suffix, "-");
+  strcat (full_gstrip_suffix, target_machine);
+#endif /* CROSS_COMPILE */
 
-#ifdef STANDARD_BIN_PREFIX
-  if (clen < sizeof (STANDARD_BIN_PREFIX) - 1)
-    clen = sizeof (STANDARD_BIN_PREFIX) - 1;
-#endif
+  /* Try to discover a valid linker/nm/strip to use.  */
 
-#ifdef STANDARD_EXEC_PREFIX
-  if (clen < sizeof (STANDARD_EXEC_PREFIX) - 1)
-    clen = sizeof (STANDARD_EXEC_PREFIX) - 1;
-#endif
-
-  /* Allocate enough string space for the longest possible pathnames.  */
-  ld_file_name = xcalloc (len + sizeof ("real-ld"), 1);
-  nm_file_name = xcalloc (len + sizeof ("gnm"), 1);
-  strip_file_name = xcalloc (len + sizeof ("gstrip"), 1);
-
-  /* Determine the full path name of the ld program to use.  */
-  bcopy (prefix, ld_file_name, len);
-  strcpy (ld_file_name + len, "real-ld");
-  if (access (ld_file_name, X_OK) < 0)
-    {
-      strcpy (ld_file_name + len, "gld");
-      if (access (ld_file_name, X_OK) < 0)
-	{
-	  free (ld_file_name);
+  /* Search the (target-specific) compiler dirs for `gld'.  */
+  ld_file_name = find_a_file (&cpath, gld_suffix);
+  /* Search the ordinary system bin directories
+     for `gld' (if native linking) or `gld-TARGET' (if cross).  */
+  if (ld_file_name == 0)
+    ld_file_name = find_a_file (&path, full_gld_suffix);
+  /* Likewise for `real-ld'.  */
+  if (ld_file_name == 0)
+    ld_file_name = find_a_file (&cpath, real_ld_suffix);
+  if (ld_file_name == 0)
+    ld_file_name = find_a_file (&path, full_real_ld_suffix);
+  /* Maybe we know the right file to use (if not cross).  */
 #ifdef REAL_LD_FILE_NAME
-	  ld_file_name = REAL_LD_FILE_NAME;
-#else
-	  ld_file_name = (access ("/usr/bin/ld", X_OK) == 0
-			  ? "/usr/bin/ld" : "/bin/ld");
+  if (ld_file_name == 0)
+    ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
 #endif
-	}
-    }
+  /* This would be the right place to search the compiler dirs
+     for `ld', but we don't do that, since this program is installed
+     there as `ld'.  */
+  /* Search the ordinary system bin directories
+     for `ld' (if native linking) or `ld-TARGET' (if cross).  */
+  if (ld_file_name == 0)
+    ld_file_name = find_a_file (&path, full_ld_suffix);
+
+  nm_file_name = find_a_file (&cpath, gnm_suffix);
+  if (nm_file_name == 0)
+    nm_file_name = find_a_file (&path, full_gnm_suffix);
+  if (nm_file_name == 0)
+    nm_file_name = find_a_file (&cpath, nm_suffix);
+#ifdef REAL_NM_FILE_NAME
+  if (nm_file_name == 0)
+    nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
+#endif
+  if (nm_file_name == 0)
+    nm_file_name = find_a_file (&path, full_nm_suffix);
+
+  strip_file_name = find_a_file (&cpath, gstrip_suffix);
+  if (strip_file_name == 0)
+    strip_file_name = find_a_file (&path, full_gstrip_suffix);
+  if (strip_file_name == 0)
+    strip_file_name = find_a_file (&cpath, strip_suffix);
+#ifdef REAL_STRIP_FILE_NAME
+  if (strip_file_name == 0)
+    strip_file_name = find_a_file (&path, REAL_STRIP_FILE_NAME);
+#endif
+  if (strip_file_name == 0)
+    strip_file_name = find_a_file (&path, full_strip_suffix);
 
   /* Determine the full path name of the C compiler to use.  */
   c_file_name = getenv ("COLLECT_GCC");
-  /* If this is absolute, it must be a file that exists.
-     If it is relative, it must be something that execvp was able to find.
-     Either way, we can pass it to execvp and find the same executable.  */
   if (c_file_name == 0)
     {
-      c_file_name = xcalloc (clen + sizeof ("gcc"), 1);
-      bcopy (prefix, c_file_name, len);
-      strcpy (c_file_name + len, "gcc");
-      if (access (c_file_name, X_OK) < 0)
-	{
-#ifdef STANDARD_BIN_PREFIX
-	  strcpy (c_file_name, STANDARD_BIN_PREFIX);
-	  strcat (c_file_name, "gcc");
-	  if (access (c_file_name, X_OK) < 0)
+#ifdef CROSS_COMPILE
+      c_file_name = xcalloc (strlen ("gcc") + strlen (target_machine) + 1, 1);
+      strcpy (c_file_name, "gcc-");
+      strcat (c_file_name, target_machine);
+#else
+      c_file_name = "gcc";
 #endif
-	    {
-#ifdef STANDARD_EXEC_PREFIX
-	      strcpy (c_file_name, STANDARD_EXEC_PREFIX);
-	      strcat (c_file_name, "gcc");
-	      if (access (c_file_name, X_OK) < 0)
-#endif
-		{
-		  strcpy (c_file_name, "gcc");
-		}
-	    }
-	}
     }
 
-  /* Determine the full path name of the nm to use.  */
-  bcopy (prefix, nm_file_name, len);
-  strcpy (nm_file_name + len, "nm");
-  if (access (nm_file_name, X_OK) < 0)
-    {
-      strcpy (nm_file_name + len, "gnm");
-      if (access (nm_file_name, X_OK) < 0)
-	{
-	  free (nm_file_name);
-#ifdef REAL_NM_FILE_NAME
-	  nm_file_name = REAL_NM_FILE_NAME;
-#else
-	  nm_file_name = (access ("/usr/bin/nm", X_OK) == 0
-			  ? "/usr/bin/nm" : "/bin/nm");
-#endif
-	}
-    }
+  p = find_a_file (&cpath, c_file_name);
 
-  /* Determine the full pathname of the strip to use.  */
-  bcopy (prefix, strip_file_name, len);
-  strcpy (strip_file_name + len, "strip");
-  if (access (strip_file_name, X_OK) < 0)
-    {
-      strcpy (strip_file_name + len, "gstrip");
-      if (access (strip_file_name, X_OK) < 0)
-	{
-	  free (strip_file_name);
-#ifdef REAL_STRIP_FILE_NAME
-	  strip_file_name = REAL_STRIP_FILE_NAME;
-#else
-	  strip_file_name = (access ("/usr/bin/strip", X_OK) == 0
-			     ? "/usr/bin/strip" : "/bin/strip");
-#endif
-	}
-    }
+  /* Here it should be safe to use the system search path since we should have
+     already qualified the name of the compiler when it is needed.  */
+  if (p == 0)
+    p = find_a_file (&path, c_file_name);
+
+  if (p)
+    c_file_name = p;
 
   *ld1++ = *ld2++ = "ld";
 
@@ -755,10 +919,10 @@ main (argc, argv)
   if (debug)
     {
       char *ptr;
-      fprintf (stderr, "prefix              = %s\n", prefix);
       fprintf (stderr, "ld_file_name        = %s\n", ld_file_name);
       fprintf (stderr, "c_file_name         = %s\n", c_file_name);
       fprintf (stderr, "nm_file_name        = %s\n", nm_file_name);
+      fprintf (stderr, "strip_file_name     = %s\n", strip_file_name);
       fprintf (stderr, "c_file              = %s\n", c_file);
       fprintf (stderr, "o_file              = %s\n", o_file);
 
@@ -902,7 +1066,11 @@ fork_execute (prog, argv)
       char **p_argv;
       char *str;
 
-      fprintf (stderr, "%s", prog);
+      if (prog)
+	fprintf (stderr, "%s", prog);
+      else
+	fprintf (stderr, "[cannot find %s]", argv[0]);
+
       for (p_argv = &argv[1]; (str = *p_argv) != (char *)0; p_argv++)
 	fprintf (stderr, " %s", str);
 
@@ -911,6 +1079,12 @@ fork_execute (prog, argv)
 
   fflush (stdout);
   fflush (stderr);
+
+  /* If we can't find a program we need, complain error.  Do this here
+     since we might not end up needing something that we couldn't find.  */
+
+  if (prog == 0)
+    fatal ("cannot find `%s'", argv[0]);
 
   pid = vfork ();
   if (pid == -1)
@@ -1046,6 +1220,10 @@ scan_prog_file (prog_name, which_pass)
 
   if (which_pass != PASS_FIRST)
     return;
+
+  /* If we don't have an `nm', complain.  */
+  if (nm_file_name == 0)
+    fatal ("cannot find `nm'");
 
   nm_argv[argc++] = "nm";
   if (NM_FLAGS[0] != '\0')
