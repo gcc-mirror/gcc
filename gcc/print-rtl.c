@@ -302,9 +302,8 @@ print_rtx (in_rtx)
 	    rtx sub = XEXP (in_rtx, i);
 	    enum rtx_code subc = GET_CODE (sub);
 
-	    if (subc != CODE_LABEL
-		&& subc != NOTE
-		&& GET_RTX_CLASS (subc) != 'i')
+	    if (GET_CODE (in_rtx) == LABEL_REF
+		&& subc != CODE_LABEL)
 	      goto do_e;
 
 	    if (flag_dump_unnumbered)
@@ -313,7 +312,7 @@ print_rtx (in_rtx)
 	      fprintf (outfile, " %d", INSN_UID (sub));
 	  }
 	else
-	  fputs (" (nil)", outfile);
+	  fputs (" 0", outfile);
 	sawclose = 0;
 	break;
 
