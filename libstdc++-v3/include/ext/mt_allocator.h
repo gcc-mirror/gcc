@@ -197,12 +197,11 @@ namespace __gnu_cxx
       struct bin_record
       {
         /*
-         * An "array" of pointers to the first/last free block for each
-         * thread id. Memory to these "arrays" is allocated in _S_init()
+         * An "array" of pointers to the first free block for each
+         * thread id. Memory to this "array" is allocated in _S_init()
          * for _S_max_threads + global pool 0.
          */
         block_record** volatile first;
-        block_record** volatile last;
 
         /*
          * An "array" of counters used to keep track of the amount of blocks
@@ -336,34 +335,39 @@ namespace __gnu_cxx
 
                     block->next = NULL;
                     block->thread_id = thread_id;
-                    _S_bin[bin].last[thread_id] = block;
                   }
                 else
                   {
                     size_t global_count = 0;
 
+                    block_record* tmp;
+
                     while( _S_bin[bin].first[0] != NULL &&
                            global_count < block_count )
                       {
+                        tmp = _S_bin[bin].first[0]->next;
+
                         block = _S_bin[bin].first[0];
 
                         if (_S_bin[bin].first[thread_id] == NULL)
-                          _S_bin[bin].first[thread_id] = block;
+                          {
+                            _S_bin[bin].first[thread_id] = block;
+                            block->next = NULL;
+                          }
                         else
-                          _S_bin[bin].last[thread_id]->next = block;
-
-                        _S_bin[bin].last[thread_id] = block;
+                          {
+                            block->next = _S_bin[bin].first[thread_id];
+                            _S_bin[bin].first[thread_id] = block;
+                          }
 
                         block->thread_id = thread_id;
 
                         _S_bin[bin].free[thread_id]++;
 
-                        _S_bin[bin].first[0] = _S_bin[bin].first[0]->next;
+                        _S_bin[bin].first[0] = tmp;
 
                         global_count++;
                       }
-
-                    block->next = NULL;
 
                     __gthread_mutex_unlock(_S_bin[bin].mutex);
                   }
@@ -404,7 +408,6 @@ namespace __gnu_cxx
                   }
 
                 block->next = NULL;
-                _S_bin[bin].last[0] = block;
 
                 block = _S_bin[bin].first[0];
 
@@ -464,12 +467,6 @@ namespace __gnu_cxx
         block_record* block = (block_record*)((char*)__p
                                              - sizeof(block_record));
 
-        /*
-         * This block will always be at the back of a list and thus
-         * we set its next pointer to NULL.
-         */
-        block->next = NULL;
-
 #ifdef __GTHREADS
         if (__gthread_active_p())
           {
@@ -491,24 +488,29 @@ namespace __gnu_cxx
               {
                 __gthread_mutex_lock(_S_bin[bin].mutex);
 
+                block_record* tmp;
+
                 while (remove > 0)
                   {
+                    tmp = _S_bin[bin].first[thread_id]->next;
+
                     if (_S_bin[bin].first[0] == NULL)
-                      _S_bin[bin].first[0] = _S_bin[bin].first[thread_id];
+                      {
+                        _S_bin[bin].first[0] = _S_bin[bin].first[thread_id];
+                        _S_bin[bin].first[0]->next = NULL;
+                      }
                     else
-                      _S_bin[bin].last[0]->next = _S_bin[bin].first[thread_id];
+                      {
+                        _S_bin[bin].first[thread_id]->next = _S_bin[bin].first[0];
+                        _S_bin[bin].first[0] = _S_bin[bin].first[thread_id];
+                      }
 
-                    _S_bin[bin].last[0] = _S_bin[bin].first[thread_id];
-
-                    _S_bin[bin].first[thread_id] =
-                      _S_bin[bin].first[thread_id]->next;
+                    _S_bin[bin].first[thread_id] = tmp;
 
                     _S_bin[bin].free[thread_id]--;
 
                     remove--;
                   }
-
-                _S_bin[bin].last[0]->next = NULL;
 
                 __gthread_mutex_unlock(_S_bin[bin].mutex);
               }
@@ -518,11 +520,15 @@ namespace __gnu_cxx
              * counters and owner id as needed
              */
             if (_S_bin[bin].first[thread_id] == NULL)
-              _S_bin[bin].first[thread_id] = block;
+              {
+                _S_bin[bin].first[thread_id] = block;
+                block->next = NULL;
+              }
             else
-              _S_bin[bin].last[thread_id]->next = block;
-
-            _S_bin[bin].last[thread_id] = block;
+              {
+                block->next = _S_bin[bin].first[thread_id];
+                _S_bin[bin].first[thread_id] = block;
+              }
 
             _S_bin[bin].free[thread_id]++;
 
@@ -541,11 +547,15 @@ namespace __gnu_cxx
              * Single threaded application - return to global pool
              */
             if (_S_bin[bin].first[0] == NULL)
-              _S_bin[bin].first[0] = block;
+              {
+                _S_bin[bin].first[0] = block;
+                block->next = NULL;
+              }
             else
-              _S_bin[bin].last[0]->next = block;
-
-            _S_bin[bin].last[0] = block;
+              {
+                block->next = _S_bin[bin].first[0];
+                _S_bin[bin].first[0] = block;
+              }
           }
       }
     };
@@ -669,12 +679,6 @@ namespace __gnu_cxx
           if (!_S_bin[bin].first)
             std::__throw_bad_alloc();
 
-          _S_bin[bin].last = static_cast<block_record**>(::operator 
-            new(sizeof(block_record*) * __n));
-
-          if (!_S_bin[bin].last)
-            std::__throw_bad_alloc();
-
 #ifdef __GTHREADS
           if (__gthread_active_p())
             {
@@ -708,7 +712,6 @@ namespace __gnu_cxx
           for (size_t thread = 0; thread < __n; thread++)
             {
               _S_bin[bin].first[thread] = NULL;
-              _S_bin[bin].last[thread] = NULL;
 #ifdef __GTHREADS
               if (__gthread_active_p())
                 {

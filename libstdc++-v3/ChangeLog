@@ -1,3 +1,13 @@
+2004-02-17  Stefan Olsson  <stefan@xapa.se>
+
+	* include/ext/mt_allocator.h: Removed the last
+	pointer. Deallocated blocks are now added to the front of
+	freelists as proposed by Felix Yen.  This gives roughly 10%
+	performance boost and saves some memory.
+	* docs/html/ext/mt_allocator.html: Change due to that deallocated
+	blocks now are added to the front of freelists. The reason to this
+	approach is also explained.
+        
 2004-02-17  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float,
