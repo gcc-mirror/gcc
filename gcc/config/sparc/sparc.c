@@ -48,17 +48,6 @@ Boston, MA 02111-1307, USA.  */
 #include "target-def.h"
 #include "cfglayout.h"
 
-/* 1 if the caller has placed an "unimp" insn immediately after the call.
-   This is used in v8 code when calling a function that returns a structure.
-   v9 doesn't have this.  Be careful to have this test be the same as that
-   used on the call.  */
-
-#define SKIP_CALLERS_UNIMP_P  \
-(!TARGET_ARCH64 && current_function_returns_struct			\
- && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl)))	\
- && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))	\
-     == INTEGER_CST))
-
 /* Global variables for machine-dependent things.  */
 
 /* Size of frame.  Need to know this to emit return insns from leaf procedures.
@@ -81,6 +70,7 @@ rtx sparc_compare_op0, sparc_compare_op1;
 /* Coordinate with the md file wrt special insns created by
    sparc_function_epilogue.  */
 bool sparc_emitting_epilogue;
+bool sparc_skip_caller_unimp;
 
 /* Vector to say how input registers are mapped to output registers.
    HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
@@ -4498,6 +4488,17 @@ sparc_function_epilogue (FILE *file,
 {
   const char *ret;
 
+  /* True if the caller has placed an "unimp" insn immediately after the call.
+     This insn is used in the 32-bit ABI when calling a function that returns
+     a non zero-sized structure. The 64-bit ABI doesn't have it.  Be careful
+     to have this test be the same as that used on the call.  */
+  sparc_skip_caller_unimp =
+    ! TARGET_ARCH64
+    && current_function_returns_struct
+    && (TREE_CODE (DECL_SIZE (DECL_RESULT (current_function_decl)))
+	== INTEGER_CST)
+    && ! integer_zerop (DECL_SIZE (DECL_RESULT (current_function_decl)));
+
   if (current_function_epilogue_delay_list == 0)
     {
       /* If code does not drop into the epilogue, we need
@@ -4532,9 +4533,9 @@ sparc_function_epilogue (FILE *file,
 
   /* Work out how to skip the caller's unimp instruction if required.  */
   if (leaf_function)
-    ret = (SKIP_CALLERS_UNIMP_P ? "jmp\t%o7+12" : "retl");
+    ret = (sparc_skip_caller_unimp ? "jmp\t%o7+12" : "retl");
   else
-    ret = (SKIP_CALLERS_UNIMP_P ? "jmp\t%i7+12" : "ret");
+    ret = (sparc_skip_caller_unimp ? "jmp\t%i7+12" : "ret");
 
   if (! leaf_function)
     {
@@ -4542,7 +4543,7 @@ sparc_function_epilogue (FILE *file,
 	{
 	  if (current_function_epilogue_delay_list)
 	    abort ();
-	  if (SKIP_CALLERS_UNIMP_P)
+	  if (sparc_skip_caller_unimp)
 	    abort ();
 
 	  fputs ("\trestore\n\tretl\n\tadd\t%sp, %g1, %sp\n", file);
@@ -4555,7 +4556,7 @@ sparc_function_epilogue (FILE *file,
 	  if (TARGET_V9 && ! epilogue_renumber (&delay, 1))
 	    {
 	      epilogue_renumber (&delay, 0);
-	      fputs (SKIP_CALLERS_UNIMP_P
+	      fputs (sparc_skip_caller_unimp
 		     ? "\treturn\t%i7+12\n"
 		     : "\treturn\t%i7+8\n", file);
 	      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0),
@@ -4588,7 +4589,7 @@ sparc_function_epilogue (FILE *file,
 	      sparc_emitting_epilogue = false;
 	    }
 	}
-      else if (TARGET_V9 && ! SKIP_CALLERS_UNIMP_P)
+      else if (TARGET_V9 && ! sparc_skip_caller_unimp)
 	fputs ("\treturn\t%i7+8\n\tnop\n", file);
       else
 	fprintf (file, "\t%s\n\trestore\n", ret);

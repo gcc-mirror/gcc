@@ -7321,8 +7321,11 @@
 {
   rtx fn_rtx;
 
-   if (GET_MODE (operands[0]) != FUNCTION_MODE)
+  if (GET_MODE (operands[0]) != FUNCTION_MODE)
     abort ();
+
+  if (GET_CODE (operands[3]) != CONST_INT)
+    abort();
 
   if (GET_CODE (XEXP (operands[0], 0)) == LABEL_REF)
     {
@@ -7333,6 +7336,7 @@
 	 call-clobbered registers?  We lose this if it is a JUMP_INSN.
 	 Why cannot we have delay slots filled if it were a CALL?  */
 
+      /* We accept negative sizes for untyped calls.  */
       if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
 	emit_jump_insn
 	  (gen_rtx_PARALLEL
@@ -7353,6 +7357,7 @@
 
   fn_rtx = operands[0];
 
+  /* We accept negative sizes for untyped calls.  */
   if (! TARGET_ARCH64 && INTVAL (operands[3]) != 0)
     emit_call_insn
       (gen_rtx_PARALLEL
@@ -7419,7 +7424,7 @@
    (match_operand 2 "immediate_operand" "")
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
-  "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0"
+  "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
   "call\t%a0, %1\n\tnop\n\tunimp\t%2"
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
@@ -7432,7 +7437,7 @@
    (match_operand 2 "immediate_operand" "")
    (clobber (reg:SI 15))]
   ;;- Do not use operand 1 for most machines.
-  "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) >= 0"
+  "! TARGET_ARCH64 && GET_CODE (operands[2]) == CONST_INT && INTVAL (operands[2]) > 0"
   "call\t%a0, %1\n\tnop\n\tunimp\t%2"
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
@@ -7450,7 +7455,8 @@
   [(set_attr "type" "call_no_delay_slot")
    (set_attr "length" "3")])
 
-;; This is a call that wants a structure value.
+;; This is a call that may want a structure value.  This is used for
+;; untyped_calls.
 (define_insn "*call_symbolic_untyped_struct_value_sp32"
   [(call (mem:SI (match_operand:SI 0 "symbolic_operand" "s"))
 	 (match_operand 1 "" ""))
@@ -8083,7 +8089,7 @@
    (return)]
   "sparc_emitting_epilogue"
 {
-  if (! TARGET_ARCH64 && current_function_returns_struct)
+  if (sparc_skip_caller_unimp)
     return "jmp\t%%i7+12\n\trestore %%g0, %1, %Y0";
   else if (TARGET_V9 && (GET_CODE (operands[1]) == CONST_INT
 			 || IN_OR_GLOBAL_P (operands[1])))
@@ -8100,7 +8106,7 @@
    (return)]
   "sparc_emitting_epilogue"
 {
-  if (! TARGET_ARCH64 && current_function_returns_struct)
+  if (sparc_skip_caller_unimp)
     return "jmp\t%%i7+12\n\trestore %%g0, %1, %Y0";
   else if (TARGET_V9 && (GET_CODE (operands[1]) == CONST_INT
 			 || IN_OR_GLOBAL_P (operands[1])))
@@ -8117,7 +8123,7 @@
    (return)]
   "sparc_emitting_epilogue"
 {
-  if (! TARGET_ARCH64 && current_function_returns_struct)
+  if (sparc_skip_caller_unimp)
     return "jmp\t%%i7+12\n\trestore %%g0, %1, %Y0";
   else if (TARGET_V9 && (GET_CODE (operands[1]) == CONST_INT
 			 || IN_OR_GLOBAL_P (operands[1])))
@@ -8134,7 +8140,7 @@
    (return)]
   "sparc_emitting_epilogue"
 {
-  if (! TARGET_ARCH64 && current_function_returns_struct)
+  if (sparc_skip_caller_unimp)
     return "jmp\t%%i7+12\n\trestore %%g0, %1, %Y0";
   else if (TARGET_V9 && IN_OR_GLOBAL_P (operands[1]))
     return "return\t%%i7+8\n\tmov\t%Y1, %Y0";
@@ -8165,7 +8171,7 @@
    (return)]
   "sparc_emitting_epilogue"
 {
-  if (! TARGET_ARCH64 && current_function_returns_struct)
+  if (sparc_skip_caller_unimp)
     return "jmp\t%%i7+12\n\trestore %r1, %2, %Y0";
   /* If operands are global or in registers, can use return */
   else if (TARGET_V9 && IN_OR_GLOBAL_P (operands[1])
@@ -8185,7 +8191,7 @@
    (return)]
   "sparc_emitting_epilogue && ! TARGET_CM_MEDMID"
 {
-  if (! TARGET_ARCH64 && current_function_returns_struct)
+  if (sparc_skip_caller_unimp)
     return "jmp\t%%i7+12\n\trestore %r1, %%lo(%a2), %Y0";
   /* If operands are global or in registers, can use return */
   else if (TARGET_V9 && IN_OR_GLOBAL_P (operands[1]))

@@ -1,3 +1,17 @@
+2004-05-07  Eric Botcazou  <ebotcazou@act-europe.fr>
+
+	* config/sparc/sparc-protos.h (sparc_skip_caller_unimp): New
+	declaration.
+	* config/sparc/sparc.c (SKIP_CALLERS_UNIMP_P): Delete.
+	(sparc_skip_caller_unimp): New global variable.
+	(sparc_function_epilogue): Set 'sparc_skip_caller_unimp'.
+	Use it instead of SKIP_CALLERS_UNIMP_P.
+	* config/sparc/sparc.md (call expander): Add sanity check.
+	(call_address_struct_value_sp32): Re-sync with expander.
+	(call_symbolic_struct_value_sp32): Likewise.
+	(return peepholes): Use 'sparc_skip_caller_unimp' instead
+	of custom predicate.
+
 2004-05-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR c++/14962

@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #define __SPARC_PROTOS_H__
 
 extern bool sparc_emitting_epilogue;
+extern bool sparc_skip_caller_unimp;
 
 #ifdef TREE_CODE
 extern struct rtx_def *function_value (tree, enum machine_mode, int);
