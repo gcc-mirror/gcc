@@ -704,7 +704,7 @@ extern int x86_prefetch_sse;
    the rounding precision is indeterminate, since either may be chosen
    apparently at random.  */
 #define TARGET_FLT_EVAL_METHOD \
-  (TARGET_MIX_SSE_I387 ? -1 : TARGET_SSE_MATH ? 1 : 2)
+  (TARGET_MIX_SSE_I387 ? -1 : TARGET_SSE_MATH ? 0 : 2)
 
 #define SHORT_TYPE_SIZE 16
 #define INT_TYPE_SIZE 32
