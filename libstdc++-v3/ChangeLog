@@ -1,3 +1,9 @@
+2001-01-25  Michael Sokolov  <msokolov@ivan.Harhan.ORG>
+
+	* acinclude.m4 (GLIBCPP_CHECK_GNU_MAKE): Bourne shell portability bug
+	(use ${MAKE-make}, not ${MAKE:-make}).
+	* aclocal.m4, configure: Regenerate.
+
 2001-01-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* src/ios.cc: Remove accidental inclusion of <stdio.h> in last
