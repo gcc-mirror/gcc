@@ -1,3 +1,8 @@
+2004-10-14  David Edelsohn  <edelsohn@gnu.org>
+
+	* opts.c (common_handle_option): Do not enable
+	flag_speculative_prefetching for -fprofile-generate/use.
+
 2004-10-14  Devang Patel  <dpatel@apple.com>
 
 	PR 17635
