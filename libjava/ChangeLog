@@ -1,3 +1,9 @@
+2003-04-29  Michael Koch  <konqueror@gmx.de>
+
+	* java/util/zip/Deflater.java,
+	java/util/zip/DeflaterOutputStream.java:
+	Partly merged with classpath.
+
 2003-04-27  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/natString.cc (_Jv_AllocString): Initialize
