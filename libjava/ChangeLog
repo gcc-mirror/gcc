@@ -1,3 +1,8 @@
+2004-09-24  Casey Marshall <csm@gnu.org>
+
+	* java/io/ObjectInputStream.java (callReadMethod): re-throw
+	`ClassNotFoundException'.
+
 2004-09-24  Jeroen Frijters  <jeroen@frijters.net>
 
 	* java/io/ObjectInputStream.java (readObject): Delegate instantation
