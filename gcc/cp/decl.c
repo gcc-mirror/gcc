@@ -3972,9 +3972,6 @@ grok_reference_init (tree decl, tree type, tree init, tree *cleanup)
   if (TREE_CODE (init) == TREE_LIST)
     init = build_x_compound_expr_from_list (init, "initializer");
 
-  if (TREE_CODE (TREE_TYPE (init)) == REFERENCE_TYPE)
-    init = convert_from_reference (init);
-
   if (TREE_CODE (TREE_TYPE (type)) != ARRAY_TYPE
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
     /* Note: default conversion is only called in very special cases.  */

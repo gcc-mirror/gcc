@@ -108,17 +108,15 @@ static int doing_runtime = 0;
 void
 init_rtti_processing (void)
 {
-  tree const_type_info_type;
-
+  tree type_info_type;
+  
   push_namespace (std_identifier);
-  type_info_type_node 
-    = xref_tag (class_type, get_identifier ("type_info"),
-		/*tag_scope=*/ts_global, false);
+  type_info_type = xref_tag (class_type, get_identifier ("type_info"),
+			     /*tag_scope=*/ts_global, false);
   pop_namespace ();
-  const_type_info_type = build_qualified_type (type_info_type_node, 
-					       TYPE_QUAL_CONST);
-  type_info_ptr_type = build_pointer_type (const_type_info_type);
-  type_info_ref_type = build_reference_type (const_type_info_type);
+  const_type_info_type_node
+    = build_qualified_type (type_info_type, TYPE_QUAL_CONST);
+  type_info_ptr_type = build_pointer_type (const_type_info_type_node);
 
   unemitted_tinfo_decls = VEC_alloc (tree, 124);
   
@@ -182,12 +180,14 @@ throw_bad_typeid (void)
   tree fn = get_identifier ("__cxa_bad_typeid");
   if (!get_global_value_if_present (fn, &fn))
     {
-      tree t = build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
-      t = build_function_type (build_reference_type (t), void_list_node);
+      tree t;
+
+      t = build_reference_type (const_type_info_type_node);
+      t = build_function_type (t, void_list_node);
       fn = push_throw_library_fn (fn, t);
     }
 
-  return convert_from_reference (build_cxx_call (fn, NULL_TREE));
+  return build_cxx_call (fn, NULL_TREE);
 }
 
 /* Return an lvalue expression whose type is "const std::type_info"
@@ -244,7 +244,7 @@ typeid_ok_p (void)
       return false;
     }
   
-  if (!COMPLETE_TYPE_P (type_info_type_node))
+  if (!COMPLETE_TYPE_P (const_type_info_type_node))
     {
       error ("must #include <typeinfo> before using typeid");
       return false;
@@ -266,7 +266,7 @@ build_typeid (tree exp)
     return error_mark_node;
 
   if (processing_template_decl)
-    return build_min (TYPEID_EXPR, type_info_ref_type, exp);
+    return build_min (TYPEID_EXPR, const_type_info_type_node, exp);
 
   if (TREE_CODE (exp) == INDIRECT_REF
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == POINTER_TYPE
@@ -390,7 +390,7 @@ get_typeid (tree type)
     return error_mark_node;
   
   if (processing_template_decl)
-    return build_min (TYPEID_EXPR, type_info_ref_type, type);
+    return build_min (TYPEID_EXPR, const_type_info_type_node, type);
 
   /* If the type of the type-id is a reference type, the result of the
      typeid expression refers to a type_info object representing the
@@ -441,6 +441,7 @@ build_dynamic_cast_1 (tree type, tree expr)
     case POINTER_TYPE:
       if (TREE_CODE (TREE_TYPE (type)) == VOID_TYPE)
 	break;
+      /* Fall through.  */
     case REFERENCE_TYPE:
       if (! IS_AGGR_TYPE (TREE_TYPE (type)))
 	{
@@ -458,18 +459,6 @@ build_dynamic_cast_1 (tree type, tree expr)
       errstr = "target is not pointer or reference";
       goto fail;
     }
-
-  if (tc == POINTER_TYPE)
-    expr = convert_from_reference (expr);
-  else if (TREE_CODE (exprtype) != REFERENCE_TYPE)
-    {
-      /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
-      exprtype = build_reference_type (exprtype);
-      expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
-				   LOOKUP_NORMAL, NULL_TREE);
-    }
-
-  exprtype = TREE_TYPE (expr);
 
   if (tc == POINTER_TYPE)
     {
@@ -494,6 +483,11 @@ build_dynamic_cast_1 (tree type, tree expr)
     }
   else
     {
+      /* Apply trivial conversion T -> T& for dereferenced ptrs.  */
+      exprtype = build_reference_type (exprtype);
+      expr = convert_to_reference (exprtype, expr, CONV_IMPLICIT,
+				   LOOKUP_NORMAL, NULL_TREE);
+
       /* T is a reference type, v shall be an lvalue of a complete class
 	 type, and the result is an lvalue of the type referred to by T.  */
 

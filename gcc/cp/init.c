@@ -2675,8 +2675,6 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags)
     default:
       gcc_unreachable ();
     }
-
-  exp = convert_from_reference (exp);
   fn = lookup_fnfields (TREE_TYPE (exp), name, /*protect=*/2);
   return build_new_method_call (exp, fn, 
 				/*args=*/NULL_TREE,

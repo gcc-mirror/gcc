@@ -419,8 +419,6 @@ delete_sanity (tree exp, tree size, bool doing_vec, int use_global_delete)
       return t;
     }
 
-  exp = convert_from_reference (exp);
-
   /* An array can't have been allocated by new, so complain.  */
   if (TREE_CODE (exp) == VAR_DECL
       && TREE_CODE (TREE_TYPE (exp)) == ARRAY_TYPE)

@@ -1212,12 +1212,6 @@ build_x_arrow (tree expr)
       expr = build_non_dependent_expr (expr);
     }
 
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    {
-      expr = convert_from_reference (expr);
-      type = TREE_TYPE (expr);
-    }
-
   if (IS_AGGR_TYPE (type))
     {
       while ((expr = build_new_op (COMPONENT_REF, LOOKUP_NORMAL, expr,

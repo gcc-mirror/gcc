@@ -492,9 +492,6 @@ build_vfield_ref (tree datum, tree type)
   if (datum == error_mark_node)
     return error_mark_node;
 
-  if (TREE_CODE (TREE_TYPE (datum)) == REFERENCE_TYPE)
-    datum = convert_from_reference (datum);
-
   /* First, convert to the requested type.  */
   if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (datum), type))
     datum = convert_to_base (datum, type, /*check_access=*/false,

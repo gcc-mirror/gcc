@@ -1,3 +1,52 @@
+2004-12-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/18803
+	* cp-tree.h (REFERENCE_REF_P): New.
+	(CPTI_TYPE_INFO_TYPE): Rename to ...
+	(CPTI_CONST_TYPE_INFO_TYPE): ... here.
+	(CPTI_TYPE_INFO_REF_TYPE): Remove.
+	(type_info_type_node): Rename to ...
+	(const_type_info_type_node): ... here.
+	(type_info_ref_type): Remove.
+	* call.c (build_user_type_conversion): Reformat.
+	(resolve_args): Do not convert_from_reference.
+	(build_object_call): Call convert_from_reference.
+	(prep_operand): Do not convert_from_reference.
+	(build_new_method_call): Likewise.
+	* class.c (build_vfield_ref): Likewise.
+	* cvt.c (convert_to_reference): Likewise.
+	(convert_from_reference): Build INDIRECT_REF here, not with
+	build_indirect_ref.
+	(convert_force): Do not convert_from_reference.
+	(build_expr_type_conversion): Likewise.
+	* decl.c (grok_reference_init): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	* except.c (initialize_handler_parm): Use POINTER_TYPE_P.
+	* init.c (build_dtor_call): Do not convert_from_reference.
+	* parser.c (cp_parser_template_argument): Unwrap indirected
+	reference. Allow TEMPLATE_PARM_INDEX as an object parm.
+	* pt.c (tsubst_copy_and_build) <case INDIRECT_REF>: Use
+	convert_from_reference, if indicated.
+	<case CALL_EXPR>: Do not convert_from_reference.
+	<case PARM_DECL, VAR_DECL>: Convert_from_reference if needed.
+	(tsubst_initializer_list): Do not convert_from_reference.
+	* rtti.c (init_rtti_processing): Adjust node creation.
+	(throw_bad_typeid): Use const_type_info_type_node.
+	Do not convert_from_reference.
+	(typeid_ok_p): Use const_type_info_type_node.
+	(build_typeid, get_typeid): Always return type_info typed node.
+	(build_dynamic_cast_1): Dont convert_from_reference. Refactor.
+	* semantics.c (finish_stmt_expr_expr): Do not
+	convert_from_reference.
+	(finish_id_expression): Convert_from_reference as appropriate.
+	* typeck.c (decay_conversion): Do not convert_from_reference.
+	(finish_class_member_access_expr): Likewise.
+	(build_indirect_ref): Use POINTER_TYPE_P.
+	(convert_arguments): Do not convert_from_reference.
+	(build_modify_expr): Likewise.
+	(convert_for_initialization): Likewise.
+	* typeck2.c (build_x_arrow): Likewise.
+
 2004-12-07  Ziemowit Laski  <zlaski@apple.com>
 
 	* cp-tree.h (struct lang_type_class): Rename 'objc_protocols'

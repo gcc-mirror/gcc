@@ -337,8 +337,7 @@ initialize_handler_parm (tree decl, tree exp)
      adjusted by value from __cxa_begin_catch.  Others are returned by 
      reference.  */
   init_type = TREE_TYPE (decl);
-  if (! TYPE_PTR_P (init_type)
-      && TREE_CODE (init_type) != REFERENCE_TYPE)
+  if (!POINTER_TYPE_P (init_type))
     init_type = build_reference_type (init_type);
 
   choose_personality_routine (decl_is_java_type (init_type, 0)
