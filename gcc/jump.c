@@ -300,6 +300,9 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
       /* Zero the "deleted" flag of all the "deleted" insns.  */
       for (insn = f; insn; insn = NEXT_INSN (insn))
 	INSN_DELETED_P (insn) = 0;
+
+      /* Show that the jump chain is not valid.  */
+      jump_chain = 0;
       return;
     }
 
