@@ -1146,8 +1146,7 @@ warn_for_collisions_1 (tree written, tree writer, struct tlist *list,
 	  && DECL_NAME (list->expr))
 	{
 	  warned_ids = new_tlist (warned_ids, written, NULL_TREE);
-	  warning ("operation on %qs may be undefined",
-		   IDENTIFIER_POINTER (DECL_NAME (list->expr)));
+	  warning ("operation on %qE may be undefined", list->expr);
 	}
       list = list->next;
     }
@@ -3958,7 +3957,7 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
      that changes what the typedef is typing.  */
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -3977,7 +3976,7 @@ handle_nocommon_attribute (tree *node, tree name,
     DECL_COMMON (*node) = 0;
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -3995,7 +3994,7 @@ handle_common_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     DECL_COMMON (*node) = 1;
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4022,7 +4021,7 @@ handle_noreturn_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			     TYPE_READONLY (TREE_TYPE (type)), 1));
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4041,7 +4040,7 @@ handle_noinline_attribute (tree *node, tree name,
     DECL_UNINLINABLE (*node) = 1;
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4064,7 +4063,7 @@ handle_always_inline_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4088,7 +4087,7 @@ handle_used_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
     }
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4114,7 +4113,7 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	TREE_USED (decl) = 1;
       else
 	{
-	  warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+	  warning ("%qE attribute ignored", name);
 	  *no_add_attrs = true;
 	}
     }
@@ -4148,7 +4147,7 @@ handle_const_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 			     TREE_THIS_VOLATILE (TREE_TYPE (type))));
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4192,7 +4191,7 @@ handle_transparent_union_attribute (tree *node, tree name,
     DECL_TRANSPARENT_UNION (decl) = 1;
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4220,7 +4219,7 @@ handle_constructor_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4248,7 +4247,7 @@ handle_destructor_attribute (tree *node, tree name,
     }
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4267,7 +4266,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
   *no_add_attrs = true;
 
   if (TREE_CODE (TREE_VALUE (args)) != IDENTIFIER_NODE)
-    warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+    warning ("%qE attribute ignored", name);
   else
     {
       int j;
@@ -4598,7 +4597,7 @@ handle_alias_attribute (tree *node, tree name, tree args,
     }
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4622,14 +4621,13 @@ handle_visibility_attribute (tree *node, tree name, tree args,
     {
       if (TREE_CODE (*node) != RECORD_TYPE && TREE_CODE (*node) != UNION_TYPE)
        {
-         warning ("%qs attribute ignored on non-class types",
-                  IDENTIFIER_POINTER (name));
+         warning ("%qE attribute ignored on non-class types", name);
          return NULL_TREE;
        }
     }
   else if (decl_function_context (decl) != 0 || !TREE_PUBLIC (decl))
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       return NULL_TREE;
     }
 
@@ -4721,7 +4719,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
 
   if (!DECL_THREAD_LOCAL (decl))
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
   else
@@ -4788,7 +4786,7 @@ handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* ??? TODO: Support types.  */
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4806,7 +4804,7 @@ handle_returns_twice_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     DECL_IS_RETURNS_TWICE (*node) = 1;
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4852,7 +4850,7 @@ handle_pure_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* ??? TODO: Support types.  */
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -4882,7 +4880,7 @@ handle_deprecated_attribute (tree *node, tree name,
 {
   tree type = NULL_TREE;
   int warn = 0;
-  const char *what = NULL;
+  tree what = NULL_TREE;
 
   if (DECL_P (*node))
     {
@@ -4914,17 +4912,15 @@ handle_deprecated_attribute (tree *node, tree name,
       if (type && TYPE_NAME (type))
 	{
 	  if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	    what = IDENTIFIER_POINTER (TYPE_NAME (*node));
+	    what = TYPE_NAME (*node);
 	  else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_NAME (TYPE_NAME (type)))
-	    what = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type)));
+	    what = DECL_NAME (TYPE_NAME (type));
 	}
       if (what)
-	warning ("%qs attribute ignored for %qs",
-		  IDENTIFIER_POINTER (name), what);
+	warning ("%qE attribute ignored for %qE", name, what);
       else
-	warning ("%qs attribute ignored",
-		      IDENTIFIER_POINTER (name));
+	warning ("%qE attribute ignored", name);
     }
 
   return NULL_TREE;
@@ -4952,7 +4948,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   if (!host_integerp (size, 1))
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       return NULL_TREE;
     }
 
@@ -4981,8 +4977,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT)
       || !host_integerp (TYPE_SIZE_UNIT (type), 1))
     {
-      error ("invalid vector type for attribute %qs",
-	     IDENTIFIER_POINTER (name));
+      error ("invalid vector type for attribute %qE", name);
       return NULL_TREE;
     }
 
@@ -5231,7 +5226,7 @@ handle_nothrow_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* ??? TODO: Support types.  */
   else
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -5254,7 +5249,7 @@ handle_cleanup_attribute (tree *node, tree name, tree args,
      we'd be missing too much, since we do have attribute constructor.  */
   if (TREE_CODE (decl) != VAR_DECL || TREE_STATIC (decl))
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -5293,7 +5288,7 @@ handle_warn_unused_result_attribute (tree *node, tree name,
   /* Ignore the attribute for functions not returning any value.  */
   if (VOID_TYPE_P (TREE_TYPE (*node)))
     {
-      warning ("%qs attribute ignored", IDENTIFIER_POINTER (name));
+      warning ("%qE attribute ignored", name);
       *no_add_attrs = true;
     }
 
@@ -5310,8 +5305,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 
   if (!params)
     {
-      warning ("%qs attribute requires prototypes with named arguments",
-               IDENTIFIER_POINTER (name));
+      warning ("%qE attribute requires prototypes with named arguments", name);
       *no_add_attrs = true;
     }
   else
@@ -5321,8 +5315,7 @@ handle_sentinel_attribute (tree *node, tree name, tree args,
 
       if (VOID_TYPE_P (TREE_VALUE (params)))
         {
-	  warning ("%qs attribute only applies to variadic functions",
-		   IDENTIFIER_POINTER (name));
+	  warning ("%qE attribute only applies to variadic functions", name);
 	  *no_add_attrs = true;
 	}
     }
@@ -5567,8 +5560,8 @@ c_parse_error (const char *msgid, enum cpp_ttype token, tree value)
     message = catenate_messages (msgid, " before numeric constant");
   else if (token == CPP_NAME)
     {
-      message = catenate_messages (msgid, " before %qs");
-      error (message, IDENTIFIER_POINTER (value));
+      message = catenate_messages (msgid, " before %qE");
+      error (message, value);
       free (message);
       message = NULL;
     }
@@ -5712,7 +5705,7 @@ fold_offsetof_1 (tree expr)
       if (DECL_C_BIT_FIELD (t))
 	{
 	  error ("attempt to take address of bit-field structure "
-		 "member %qs", IDENTIFIER_POINTER (DECL_NAME (t)));
+		 "member %qD", t);
 	  return error_mark_node;
 	}
       off = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (t),
