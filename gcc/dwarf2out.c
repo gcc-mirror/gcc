@@ -1492,7 +1492,7 @@ output_call_frame_info (for_eh)
 #ifdef EH_FRAME_SECTION
       EH_FRAME_SECTION ();
 #else
-      tree label = (tree) get_file_function_name ('F');
+      tree label = get_file_function_name ('F');
 
       data_section ();
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
