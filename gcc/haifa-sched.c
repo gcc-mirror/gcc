@@ -298,19 +298,30 @@ static regset reg_pending_sets;
 static regset reg_pending_clobbers;
 static int reg_pending_sets_all;
 
-/* To speed up the test for duplicate dependency links we keep a record
-   of true dependencies created by add_dependence when the average number
-   of instructions in a basic block is very large.
+/* To speed up the test for duplicate dependency links we keep a
+   record of dependencies created by add_dependence when the average
+   number of instructions in a basic block is very large.
 
    Studies have shown that there is typically around 5 instructions between
    branches for typical C code.  So we can make a guess that the average
    basic block is approximately 5 instructions long; we will choose 100X
    the average size as a very large basic block.
 
-   Each insn has an associated bitmap for its dependencies.  Each bitmap
-   has enough entries to represent a dependency on any other insn in the
-   insn chain.  */
+   Each insn has associated bitmaps for its dependencies.  Each bitmap
+   has enough entries to represent a dependency on any other insn in
+   the insn chain.  All bitmap for true dependencies cache is
+   allocated then the rest two ones are also allocated. */
 static sbitmap *true_dependency_cache;
+static sbitmap *anti_dependency_cache;
+static sbitmap *output_dependency_cache;
+
+/* To speed up checking consistency of formed forward insn
+   dependencies we use the following cache.  Another possible solution
+   could be switching off checking duplication of insns in forward
+   dependencies. */
+#ifdef ENABLE_CHECKING
+static sbitmap *forward_dependency_cache;
+#endif
 
 /* Indexed by INSN_UID, the collection of all data associated with
    a single instruction.  */
@@ -802,6 +813,8 @@ add_dependence (insn, elem, dep_type)
      enum reg_note dep_type;
 {
   rtx link, next;
+  int present_p;
+  enum reg_note present_dep_type;
 
   /* Don't depend an insn on itself.  */
   if (insn == elem)
@@ -845,6 +858,7 @@ add_dependence (insn, elem, dep_type)
       elem = next;
     }
 
+  present_p = 1;
 #ifdef INSN_SCHEDULING
   /* (This code is guarded by INSN_SCHEDULING, otherwise INSN_BB is undefined.)
      No need for interblock dependences with calls, since
@@ -854,30 +868,72 @@ add_dependence (insn, elem, dep_type)
       && (INSN_BB (elem) != INSN_BB (insn)))
     return;
 
-  /* If we already have a true dependency for ELEM, then we do not
-     need to do anything.  Avoiding the list walk below can cut
-     compile times dramatically for some code.  */
-  if (true_dependency_cache
-      && TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
-    return;
+  /* If we already have a dependency for ELEM, then we do not need to
+     do anything.  Avoiding the list walk below can cut compile times
+     dramatically for some code.  */
+  if (true_dependency_cache != NULL)
+    {
+      if (anti_dependency_cache == NULL || output_dependency_cache == NULL)
+	abort ();
+      if (TEST_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem)))
+	present_dep_type = 0;
+      else if (TEST_BIT (anti_dependency_cache[INSN_LUID (insn)],
+			 INSN_LUID (elem)))
+	present_dep_type = REG_DEP_ANTI;
+      else if (TEST_BIT (output_dependency_cache[INSN_LUID (insn)],
+			 INSN_LUID (elem)))
+	present_dep_type = REG_DEP_OUTPUT;
+      else 
+	present_p = 0;
+      if (present_p && (int) dep_type >= (int) present_dep_type)
+	return;
+    }
 #endif
 
   /* Check that we don't already have this dependence.  */
-  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
-    if (XEXP (link, 0) == elem)
-      {
-	/* If this is a more restrictive type of dependence than the existing
-	   one, then change the existing dependence to this type.  */
-	if ((int) dep_type < (int) REG_NOTE_KIND (link))
-	  PUT_REG_NOTE_KIND (link, dep_type);
-
+  if (present_p)
+    for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
+      if (XEXP (link, 0) == elem)
+	{
 #ifdef INSN_SCHEDULING
-	/* If we are adding a true dependency to INSN's LOG_LINKs, then
-	   note that in the bitmap cache of true dependency information.  */
-	if ((int) dep_type == 0 && true_dependency_cache)
-	  SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+	  /* Clear corresponding cache entry because type of the link
+             may be changed. */
+	  if (true_dependency_cache != NULL)
+	    {
+	      if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+		RESET_BIT (anti_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
+		       && output_dependency_cache)
+		RESET_BIT (output_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	      else
+		abort ();
+	    }
 #endif
-	return;
+
+	  /* If this is a more restrictive type of dependence than the existing
+	     one, then change the existing dependence to this type.  */
+	  if ((int) dep_type < (int) REG_NOTE_KIND (link))
+	    PUT_REG_NOTE_KIND (link, dep_type);
+	  
+#ifdef INSN_SCHEDULING
+	  /* If we are adding a dependency to INSN's LOG_LINKs, then
+	     note that in the bitmap caches of dependency information. */
+	  if (true_dependency_cache != NULL)
+	    {
+	      if ((int)REG_NOTE_KIND (link) == 0)
+		SET_BIT (true_dependency_cache[INSN_LUID (insn)],
+			 INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+		SET_BIT (anti_dependency_cache[INSN_LUID (insn)],
+			 INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+		SET_BIT (output_dependency_cache[INSN_LUID (insn)],
+			 INSN_LUID (elem));
+	    }
+#endif
+	  return;
       }
   /* Might want to check one level of transitivity to save conses.  */
 
@@ -888,10 +944,17 @@ add_dependence (insn, elem, dep_type)
   PUT_REG_NOTE_KIND (link, dep_type);
 
 #ifdef INSN_SCHEDULING
-  /* If we are adding a true dependency to INSN's LOG_LINKs, then
-     note that in the bitmap cache of true dependency information.  */
-  if ((int) dep_type == 0 && true_dependency_cache)
-    SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+  /* If we are adding a dependency to INSN's LOG_LINKs, then note that
+     in the bitmap caches of dependency information. */
+  if (true_dependency_cache != NULL)
+    {
+      if ((int)dep_type == 0)
+	SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+      else if (dep_type == REG_DEP_ANTI)
+	SET_BIT (anti_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+      else if (dep_type == REG_DEP_OUTPUT)
+	SET_BIT (output_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
+    }
 #endif
 }
 
@@ -917,11 +980,20 @@ remove_dependence (insn, elem)
 	    LOG_LINKS (insn) = next;
 
 #ifdef INSN_SCHEDULING
-	  /* If we are removing a true dependency from the LOG_LINKS list,
+	  /* If we are removing a dependency from the LOG_LINKS list,
 	     make sure to remove it from the cache too.  */
-	  if (REG_NOTE_KIND (link) == 0 && true_dependency_cache)
-	    RESET_BIT (true_dependency_cache[INSN_LUID (insn)],
-		       INSN_LUID (elem));
+	  if (true_dependency_cache != NULL)
+	    {
+	      if (REG_NOTE_KIND (link) == 0)
+		RESET_BIT (true_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
+		RESET_BIT (anti_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT)
+		RESET_BIT (output_dependency_cache[INSN_LUID (insn)],
+			   INSN_LUID (elem));
+	    }
 #endif
 
 	  free_INSN_LIST_node (link);
@@ -6195,8 +6267,15 @@ compute_block_forward_dependences (bb)
 	     ahead and verify that add_dependence worked properly.  */
 	  if (GET_CODE (x) == NOTE
 	      || INSN_DELETED_P (x)
-	      || find_insn_list (insn, INSN_DEPEND (x)))
+	      || (forward_dependency_cache != NULL
+		  && TEST_BIT (forward_dependency_cache[INSN_LUID (x)],
+			       INSN_LUID (insn)))
+	      || (forward_dependency_cache == NULL
+		  && find_insn_list (insn, INSN_DEPEND (x))))
 	    abort ();
+	  if (forward_dependency_cache != NULL)
+	    SET_BIT (forward_dependency_cache[INSN_LUID (x)],
+		     INSN_LUID (insn));
 #endif
 
 	  new_link = alloc_INSN_LIST (insn, INSN_DEPEND (x));
@@ -6847,6 +6926,14 @@ schedule_insns (dump_file)
     {
       true_dependency_cache = sbitmap_vector_alloc (luid, luid);
       sbitmap_vector_zero (true_dependency_cache, luid);
+      anti_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (anti_dependency_cache, luid);
+      output_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (output_dependency_cache, luid);
+#ifdef ENABLE_CHECKING
+      forward_dependency_cache = sbitmap_vector_alloc (luid, luid);
+      sbitmap_vector_zero (forward_dependency_cache, luid);
+#endif
     }
 
   nr_regions = 0;
@@ -7063,6 +7150,14 @@ schedule_insns (dump_file)
     {
       free (true_dependency_cache);
       true_dependency_cache = NULL;
+      free (anti_dependency_cache);
+      anti_dependency_cache = NULL;
+      free (output_dependency_cache);
+      output_dependency_cache = NULL;
+#ifdef ENABLE_CHECKING
+      free (output_dependency_cache);
+      forward_dependency_cache = NULL;
+#endif
     }
   free (rgn_table);
   free (rgn_bb_table);
