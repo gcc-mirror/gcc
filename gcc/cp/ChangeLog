@@ -1,3 +1,7 @@
+2001-02-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* typeck.c (build_unary_op): Clarify error message.
+
 2001-02-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* pt.c (push_template_decl_real): Don't remangle the name of a
