@@ -613,8 +613,11 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 					       REG_NOTES (call_insn));
 
   if (ecf_flags & ECF_RETURNS_TWICE)
-    REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_SETJMP, const0_rtx,
-					       REG_NOTES (call_insn));
+    {
+      REG_NOTES (call_insn) = gen_rtx_EXPR_LIST (REG_SETJMP, const0_rtx,
+					         REG_NOTES (call_insn));
+      current_function_calls_setjmp = 1;
+    }
 
   SIBLING_CALL_P (call_insn) = ((ecf_flags & ECF_SIBCALL) != 0);
 
@@ -3530,6 +3533,9 @@ emit_library_call_value_1 (retval, orgfun, value, fn_type, outmode, nargs, p)
       break;
     case LCT_ALWAYS_RETURN:
       flags = ECF_ALWAYS_RETURN;
+      break;
+    case LCT_RETURNS_TWICE:
+      flags = ECF_RETURNS_TWICE;
       break;
     }
   fun = orgfun;

@@ -2144,7 +2144,7 @@ sjlj_emit_function_enter (dispatch_label)
 #ifdef DONT_USE_BUILTIN_SETJMP
   {
     rtx x, note;
-    x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_NORMAL,
+    x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_RETURNS_TWICE,
 				 TYPE_MODE (integer_type_node), 1,
 				 plus_constant (XEXP (fc, 0),
 						sjlj_fc_jbuf_ofs), Pmode);
