@@ -232,10 +232,7 @@ lang_decode_option (argc, argv)
 
       p += 2;
 
-      for (j = 0;
-	   !found 
-	   && j < (int)(sizeof (lang_f_options) / sizeof (lang_f_options[0]));
-	   j++)
+      for (j = 0; !found && j < (int) ARRAY_SIZE (lang_f_options); j++)
 	{
 	  if (!strcmp (p, lang_f_options[j].string))
 	    {
