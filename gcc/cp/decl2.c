@@ -2422,6 +2422,7 @@ key_method (type)
   tree method;
 
   if (TYPE_FOR_JAVA (type)
+      || CLASSTYPE_TEMPLATE_INSTANTIATION (type)
       || CLASSTYPE_INTERFACE_KNOWN (type))
     return NULL_TREE;
 
@@ -2528,8 +2529,7 @@ import_export_class (ctype)
   /* Base our import/export status on that of the first non-inline,
      non-pure virtual function, if any.  */
   if (import_export == 0
-      && TYPE_POLYMORPHIC_P (ctype)
-      && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
+      && TYPE_POLYMORPHIC_P (ctype))
     {
       tree method = key_method (ctype);
       if (method)
