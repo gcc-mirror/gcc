@@ -18,6 +18,8 @@
 	(_GLIBCPP_USE_C99_FLOAT_TRANSCENDENTALS_DYNAMIC): New macro.
 	* testsuite/26_numerics/c_math_dynamic.cc: New file.
 
+	* testsuite/26_numerics/c99_classification_macros_c.cc: Add XFAIL.
+
 2003-04-14  M. Warner Losh  <imp@bsdimp.com>
 
 	* include/std/std_fstream.h: Add required typename.

@@ -27,7 +27,8 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// { dg-do compile }
+// { dg-do compile { xfail *-*-linux-gnu *-*-freebsd5* } }
+// { dg-excess-errors "" { target *-*-linux-gnu *-*-freebsd5* } }
 
 #include <math.h>
 
