@@ -1,3 +1,11 @@
+2003-01-06  Aldy Hernandez  <aldyh@redhat.com>
+
+	Segher Boessenkool  <segher@koffie.nl>
+
+        * config/rs6000/rs6000.c (rs6000_reg_names): Add missing registers.
+        (alt_reg_names): Ditto, fix formatting.
+        * config/rs6000/rs6000.h (DEBUG_REGISTER_NAMES): Fix formatting.
+
 2003-01-06  Bruce Korb  <bkorb@gnu.org>
 
 	* fixinc/fixfixes.c(wrap_fix): the wrapper guard must be a function
