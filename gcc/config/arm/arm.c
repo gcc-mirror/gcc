@@ -1472,8 +1472,8 @@ store_multiple_operation (op, mode)
 
 int
 multi_register_push (op, mode)
-  rtx op;
-  enum machine_mode mode;
+     rtx op;
+     enum machine_mode mode;
 {
   if (GET_CODE (op) != PARALLEL
       || (GET_CODE (XVECEXP (op, 0, 0)) != SET)
@@ -1711,6 +1711,35 @@ gen_compare_reg (code, x, y, fp)
                       gen_rtx (COMPARE, mode, x, y)));
 
   return cc_reg;
+}
+
+void
+arm_reload_in_hi (operands)
+     rtx *operands;
+{
+  rtx base = find_replacement (&XEXP (operands[1], 0));
+
+  emit_insn (gen_zero_extendqisi2 (operands[2], gen_rtx (MEM, QImode, base)));
+  emit_insn (gen_zero_extendqisi2 (gen_rtx (SUBREG, SImode, operands[0], 0),
+				   gen_rtx (MEM, QImode, 
+					    plus_constant (base, 1))));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (SUBREG, SImode, 
+						operands[0], 0),
+			gen_rtx (IOR, SImode, 
+				 gen_rtx (ASHIFT, SImode,
+					  gen_rtx (SUBREG, SImode,
+						   operands[0], 0),
+					  GEN_INT (8)),
+				 operands[2])));
+  else
+    emit_insn (gen_rtx (SET, VOIDmode, gen_rtx (SUBREG, SImode, 
+						operands[0], 0),
+			gen_rtx (IOR, SImode, 
+				 gen_rtx (ASHIFT, SImode,
+					  operands[2],
+					  GEN_INT (8)),
+				 gen_rtx (SUBREG, SImode, operands[0], 0))));
 }
 
 void
