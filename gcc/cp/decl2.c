@@ -5258,7 +5258,9 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
 	 is different to the current scope.  */
       tree context = CP_DECL_CONTEXT (decl);
 
-      *new_type_p = current != context;
+      *new_type_p = (current != context
+		     && TREE_CODE (context) != TEMPLATE_TYPE_PARM
+		     && TREE_CODE (context) != BOUND_TEMPLATE_TEMPLATE_PARM);
       if (*new_type_p)
 	push_scope (context);
   
