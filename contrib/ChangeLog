@@ -1,3 +1,13 @@
+Tue Sep 22 07:30 Bruce Korb <korb@datadesign.com>
+
+	* fixinc/inclhack.def:  Not all C++ comments in C headers
+	were treated alike.  They are now.  Also fixed syntax
+	of sed expression in "systypes" fix.
+
+	* fixinc/inclhack.def:  Removed SVR4.2-ism from shell invocation
+
+	* egcs_update:  Added fixinc/* generated files to touch list.
+
 Wed Sep 16 16:06:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* egcs_update: Additionally touch gcc/java/parse.[ch].
