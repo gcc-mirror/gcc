@@ -2828,7 +2828,12 @@ expand_call (exp, target, ignore)
 		  if (needed == 0)
 		    argblock = virtual_outgoing_args_rtx;
 		  else
-		    argblock = push_block (GEN_INT (needed), 0, 0);
+		    {
+		      argblock = push_block (GEN_INT (needed), 0, 0);
+#ifdef ARGS_GROW_DOWNWARD
+		      argblock = plus_constant (argblock, needed);
+#endif
+		    }
 
 		  /* We only really need to call `copy_to_reg' in the case
 		     where push insns are going to be used to pass ARGBLOCK
