@@ -469,7 +469,7 @@ typedef struct conflict_graph_def *conflict_graph;
 /* Callback function when enumerating conflicts.  The arguments are
    the smaller and larger regno in the conflict.  Returns zero if
    enumeration is to continue, non-zero to halt enumeration.  */
-typedef int (*conflict_graph_enum_fn) (int, int, void *);
+typedef int (*conflict_graph_enum_fn) PARAMS ((int, int, void *));
 
 
 /* Prototypes of operations on conflict graphs.  */
