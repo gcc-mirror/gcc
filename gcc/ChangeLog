@@ -1,3 +1,9 @@
+2002-05-16  Richard Henderson  <rth@redhat.com>
+
+	PR c/3467
+	* c-decl.c (grokdeclarator): Don't pedwarn variable sized arrays
+	for c99.
+
 2002-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* cfgrtl.c (purge_dead_edges): Correct handling of EDGE_EH.
