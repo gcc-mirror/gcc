@@ -180,6 +180,7 @@ static void do_jump_for_compare	PROTO((rtx, rtx, rtx));
 static rtx compare		PROTO((tree, enum rtx_code, enum rtx_code));
 static rtx do_store_flag	PROTO((tree, rtx, enum machine_mode, int));
 static tree defer_cleanups_to	PROTO((tree));
+extern void (*interim_eh_hook)	PROTO((tree));
 
 /* Record for each mode whether we can move a register directly to or
    from an object of that mode in memory.  If we can't, we won't try
@@ -4616,6 +4617,7 @@ expand_expr (exp, target, tmode, modifier)
 	    = tree_cons (NULL_TREE, TREE_OPERAND (exp, 2), cleanups_this_call);
 	  /* That's it for this cleanup.  */
 	  TREE_OPERAND (exp, 2) = 0;
+	  (*interim_eh_hook) (NULL_TREE);
 	}
       return RTL_EXPR_RTL (exp);
 
@@ -5657,12 +5659,14 @@ expand_expr (exp, target, tmode, modifier)
 	    /* Now add in the conditionalized cleanups. */
 	    cleanups_this_call
 	      = tree_cons (NULL_TREE, new_cleanups, cleanups_this_call);
+	    (*interim_eh_hook) (NULL_TREE);
 	  }
 	return temp;
       }
 
     case TARGET_EXPR:
       {
+	int need_exception_region = 0;
 	/* Something needs to be initialized, but we didn't know
 	   where that thing was when building the tree.  For example,
 	   it could be the return value of a function, or a parameter
@@ -5674,6 +5678,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	tree slot = TREE_OPERAND (exp, 0);
 	tree exp1;
+	rtx temp;
 
 	if (TREE_CODE (slot) != VAR_DECL)
 	  abort ();
@@ -5709,6 +5714,7 @@ expand_expr (exp, target, tmode, modifier)
 		    cleanups_this_call = tree_cons (NULL_TREE,
 						    TREE_OPERAND (exp, 2),
 						    cleanups_this_call);
+		    need_exception_region = 1;
 		  }
 	      }
 	  }
@@ -5738,7 +5744,12 @@ expand_expr (exp, target, tmode, modifier)
 	/* Mark it as expanded.  */
 	TREE_OPERAND (exp, 1) = NULL_TREE;
 
-	return expand_expr (exp1, target, tmode, modifier);
+	temp = expand_expr (exp1, target, tmode, modifier);
+
+	if (need_exception_region)
+	  (*interim_eh_hook) (NULL_TREE);
+	
+	return temp;
       }
 
     case INIT_EXPR:
@@ -8279,6 +8290,7 @@ defer_cleanups_to (old_cleanups)
 
   while (cleanups_this_call != old_cleanups)
     {
+      (*interim_eh_hook) (TREE_VALUE (cleanups_this_call));
       cleanups_this_call = TREE_CHAIN (cleanups_this_call);
     }      
 
@@ -8314,6 +8326,7 @@ expand_cleanups_to (old_cleanups)
 {
   while (cleanups_this_call != old_cleanups)
     {
+      (*interim_eh_hook) (TREE_VALUE (cleanups_this_call));
       expand_expr (TREE_VALUE (cleanups_this_call), const0_rtx, VOIDmode, 0);
       cleanups_this_call = TREE_CHAIN (cleanups_this_call);
     }

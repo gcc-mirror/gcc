@@ -137,6 +137,8 @@ extern tree rtl_expr_chain;
    cleanup list whenever an empty list is required.  */
 static tree empty_cleanup_list;
 #endif
+
+extern void (*interim_eh_hook)	PROTO((tree));
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -3483,6 +3485,7 @@ expand_decl_cleanup (decl, cleanup)
 	= temp_tree_cons (decl, cleanup, thisblock->data.block.cleanups);
       /* If this block has a cleanup, it belongs in stack_block_stack.  */
       stack_block_stack = thisblock;
+      (*interim_eh_hook) (NULL_TREE);
     }
   return 1;
 }
@@ -3562,6 +3565,8 @@ expand_cleanups (list, dont_do)
 	  expand_cleanups (TREE_VALUE (tail), dont_do);
 	else
 	  {
+	    (*interim_eh_hook) (TREE_VALUE (tail));
+
 	    /* Cleanups may be run multiple times.  For example,
 	       when exiting a binding contour, we expand the
 	       cleanups associated with that contour.  When a goto
