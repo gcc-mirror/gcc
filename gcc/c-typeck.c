@@ -7551,6 +7551,11 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	op0 = convert (result_type, op0);
       if (TREE_TYPE (op1) != result_type)
 	op1 = convert (result_type, op1);
+
+      /* This can happen if one operand has a vector type, and the other
+	 has a different type.  */
+      if (TREE_CODE (op0) == ERROR_MARK || TREE_CODE (op1) == ERROR_MARK)
+	return error_mark_node;
     }
 
   if (build_type == NULL_TREE)
