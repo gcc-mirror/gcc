@@ -30,12 +30,5 @@ for frag in ${frags}; do
   fi
 done
 
-# record if we want to build shared libs.
-if [ "${shared}" = "yes" ]; then
-  echo enable_shared = yes >> temp-frag
-else
-  echo enable_shared = no >> temp-frag
-fi
-
 frag=xhost-mkfrag
 ${CONFIG_SHELL-/bin/sh} ${libiberty_topdir}/move-if-change temp-frag xhost-mkfrag

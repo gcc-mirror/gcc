@@ -31,6 +31,8 @@ srcdir = @srcdir@
 
 top_builddir = .
 
+enable_shared = @enable_shared@
+
 prefix = @prefix@
 
 exec_prefix = @exec_prefix@
@@ -70,7 +72,11 @@ PICFLAG =
 MAKEOVERRIDES =
 
 TARGETLIB = ./libiberty.a
+LTTARGETLIB = ./libiberty.la
+PREFIXTARGETLIB= ./libiberty
 TESTLIB = ./testlib.a
+LTTESTLIB = ./testlib.la
+PREFIXTESTLIB = ./testlib
 
 LIBOBJS = @LIBOBJS@
 LTLIBOBJS = @LTLIBOBJS@
@@ -121,6 +127,8 @@ INCDIR=$(srcdir)/$(MULTISRCTOP)../include
 
 COMPILE.c = $(CC) -c @DEFS@ $(LIBCFLAGS) -I. -I$(INCDIR) $(HDEFINES) @ac_libiberty_warn_cflags@
 LTCOMPILE = $(LIBTOOL) --mode=compile $(COMPILE.c)
+CCLD = $(CC)
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(CFLAGS)
 
 # Just to make sure we don't use a built-in rule with VPATH
 .c.o:
@@ -259,13 +267,25 @@ INSTALLED_HEADERS =                                                     \
 	$(INCDIR)/splay-tree.h                                          \
 	$(INCDIR)/ternary.h
 
+# FIXME: Libtool has to be used to create static and shared libraries
+# if it is used to compile object files. Since libiberty doesn't really
+# build shared library, we have to create the libraries we need by hand
+# and remove those created by libtool.
 $(TARGETLIB): $(REQUIRED_LTOFILES) $(EXTRA_LTOFILES) $(LTLIBOBJS)
-	-rm -f $(TARGETLIB) .libs/$(TARGETLIB)
-	$(AR) $(AR_FLAGS) $(TARGETLIB) \
-	  $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
-	$(RANLIB) $(TARGETLIB)
-	if [ -d .libs ]; then \
-	  cd .libs; \
+	libtooldir=`$(LIBTOOL) --config | sed -n -e 's/^objdir=//p'`; \
+	rm -f $(TARGETLIB) $$libtooldir/$(TARGETLIB) pic/$(TARGETLIB) \
+	  || true; \
+	$(LINK) -o $(LTTARGETLIB) -rpath $(libdir) \
+	  $(REQUIRED_LTOFILES) $(EXTRA_LTOFILES) $(LTLIBOBJS); \
+	if [ -f $$libtooldir/$(TARGETLIB) ]; then \
+	  cp $$libtooldir/$(TARGETLIB) $(TARGETLIB).tmp; \
+	  $(RANLIB) $(TARGETLIB).tmp; \
+	  $(SHELL) $(srcdir)/../move-if-change \
+	    $(TARGETLIB).tmp $(TARGETLIB); \
+	else true; fi; \
+	rm -f $(LTTARGETLIB) $$libtooldir/$(PREFIXTARGETLIB)*; \
+	if [ x$(enable_shared) = xyes ]; then \
+	  cd $$libtooldir; \
 	  $(AR) $(AR_FLAGS) $(TARGETLIB) \
 	    $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS); \
 	  $(RANLIB) $(TARGETLIB); \
@@ -276,10 +296,17 @@ $(TARGETLIB): $(REQUIRED_LTOFILES) $(EXTRA_LTOFILES) $(LTLIBOBJS)
 	else true; fi
 
 $(TESTLIB): $(REQUIRED_LTOFILES) $(CONFIGURED_LTOFILES)
-	-rm -f $(TESTLIB)
-	$(AR) $(AR_FLAGS) $(TESTLIB) \
-	  $(REQUIRED_OFILES) $(CONFIGURED_OFILES)
-	$(RANLIB) $(TESTLIB)
+	libtooldir=`$(LIBTOOL) --config | sed -n -e 's/^objdir=//p'`; \
+	rm -f $(TESTLIB) $$libtooldir/$(TESTLIB) || true; \
+	$(LINK) -o $(LTTESTLIB) -rpath $(libdir) \
+	  $(REQUIRED_LTOFILES) $(CONFIGURED_LTOFILES); \
+	if [ -f $$libtooldir/$(TESTLIB) ]; then \
+	  cp $$libtooldir/$(TESTLIB) $(TESTLIB).tmp; \
+	  $(RANLIB) $(TESTLIB).tmp; \
+	  $(SHELL) $(srcdir)/../move-if-change \
+	    $(TESTLIB).tmp $(TESTLIB); \
+	else true; fi; \
+	rm -f $(LTTESTLIB) $$libtooldir/$(PREFIXTESTLIB)*
 
 info: libiberty.info info-subdir
 install-info: install-info-subdir
@@ -402,7 +429,9 @@ maint-deps :
 # Cleaning has to be done carefully to ensure that we don't clean our SUBDIRS
 # multiple times, hence our explicit recursion with an empty SUBDIRS.
 mostlyclean: mostlyclean-subdir
-	-rm -rf *.o *.lo pic .libs core errs \#* *.E a.out
+	-libtooldir=`$(LIBTOOL) --config | sed -n -e 's/^objdir=//p'`; \
+	  rm -f $$libtooldir
+	-rm -rf *.o *.lo pic core errs \#* *.E a.out
 	-rm -f needed.awk needed2.awk errors dummy needed-list config.h stamp-*
 	-rm -f $(CONFIG_H) $(NEEDED_LIST)
 	-rm -f libiberty.aux libiberty.cp libiberty.cps libiberty.fn libiberty.ky

@@ -4,6 +4,9 @@ AC_PREREQ(2.59)
 AC_INIT
 AC_CONFIG_SRCDIR([xmalloc.c])
 
+# FIXME: libiberty doesn't support --disable-static
+enable_static=yes
+
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of
 # keeping the changes in LD private, export them just because LD is
@@ -113,8 +116,6 @@ GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_PROG_CPP_WERROR
 
-AC_PROG_LIBTOOL
-
 if test x$GCC = xyes; then
   ac_libiberty_warn_cflags='-W -Wall -Wtraditional -pedantic'
 fi
@@ -124,13 +125,11 @@ AC_C_CONST
 AC_C_INLINE
 AC_C_BIGENDIAN_CROSS
 
-dnl When we start using libtool:
 dnl Default to a non shared library.  This may be overridden by the
 dnl configure option --enable-shared.
-dnl AM_DISABLE_SHARED
+AM_DISABLE_SHARED
 
-dnl When we start using libtool:
-dnl AM_PROG_LIBTOOL
+AM_PROG_LIBTOOL
 
 dnl When we start using automake:
 dnl AM_CONFIG_HEADER(config.h:config.in)
@@ -528,6 +527,30 @@ else
   INSTALL_DEST=tooldir
 fi
 AC_SUBST(INSTALL_DEST)
+
+# Add `./' to avoid VPATH.
+m4_pattern_allow(LIBOBJS)
+L=""
+for l in x $LIBOBJS; do
+  case $l in
+    x) ;;
+    *) L="$L ./$l" ;;
+  esac
+done
+LIBOBJS="$L"
+
+m4_pattern_allow(LTLIBOBJS)
+L=""
+for l in x $LTLIBOBJS; do
+  case $l in
+    x) ;;
+    *) L="$L ./$l" ;;
+  esac
+done
+LTLIBOBJS="$L"
+
+dnl Delete it when we start creating shared library with libtool.
+AC_SUBST(enable_shared)
 
 # We need multilib support, but only if configuring for the target.
 AC_CONFIG_FILES([Makefile testsuite/Makefile])
