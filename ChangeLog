@@ -1,3 +1,8 @@
+Thu Oct  7 00:36:17 MDT 1999	Diego Novillo <dnovillo@cygnus.com>
+
+	* config/rs6000/rs6000.c (secondary_reload_class): For TARGET_ELF
+	make sure that HIGH instructions are copied into BASE_REGS.
+
 Sun Oct  3 14:20:22 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (fr30): Fix typo.
