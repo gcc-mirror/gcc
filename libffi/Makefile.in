@@ -1,6 +1,6 @@
 # Makefile.in generated automatically by automake 1.4a from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-9, 2000 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -30,8 +30,6 @@ mandir = @mandir@
 includedir = @includedir@
 oldincludedir = /usr/include
 
-DESTDIR =
-
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -56,20 +54,18 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
+
+@SET_MAKE@
 host_alias = @host_alias@
 host_triplet = @host@
-AMTAR = @AMTAR@
-AMTARFLAGS = @AMTARFLAGS@
 AS = @AS@
 CC = @CC@
 DLLTOOL = @DLLTOOL@
 EXEEXT = @EXEEXT@
-LD = @LD@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
-NM = @NM@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
@@ -77,10 +73,12 @@ SHELL = @SHELL@
 TARGET = @TARGET@
 TARGETDIR = @TARGETDIR@
 VERSION = @VERSION@
-install_sh = @install_sh@
+libffi_basedir = @libffi_basedir@
 
 
 AUTOMAKE_OPTIONS = cygnus
+
+SUBDIRS = include
 
 EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 		src/mips/n32.s src/mips/o32.S src/mips/o32.s \
@@ -93,6 +91,47 @@ EXTRA_DIST = LICENSE ChangeLog.v1 src/mips/ffi.c src/mips/n32.S \
 
 
 VPATH = @srcdir@:@srcdir@/src:@srcdir@/src/@TARGETDIR@
+
+# Work around what appears to be a GNU make bug handling MAKEFLAGS
+# values defined in terms of make variables, as is the case for CC and
+# friends when we are called from the top level Makefile.
+AM_MAKEFLAGS = \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+	"CFLAGS=$(CFLAGS)" \
+	"CXXFLAGS=$(CXXFLAGS)" \
+	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+	"INSTALL=$(INSTALL)" \
+	"INSTALL_DATA=$(INSTALL_DATA)" \
+	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+	"JC1FLAGS=$(JC1FLAGS)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
+	"MAKE=$(MAKE)" \
+	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	"PICFLAG=$(PICFLAG)" \
+	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+	"SHELL=$(SHELL)" \
+	"exec_prefix=$(exec_prefix)" \
+	"infodir=$(infodir)" \
+	"libdir=$(libdir)" \
+	"prefix=$(prefix)" \
+	"AR=$(AR)" \
+	"AS=$(AS)" \
+	"CC=$(CC)" \
+	"CXX=$(CXX)" \
+	"LD=$(LD)" \
+	"LIBCFLAGS=$(LIBCFLAGS)" \
+	"NM=$(NM)" \
+	"PICFLAG=$(PICFLAG)" \
+	"RANLIB=$(RANLIB)" \
+	"DESTDIR=$(DESTDIR)"
+
+
+MAKEOVERRIDES = 
 
 # Multilib support variables.
 MULTISRCTOP = 
@@ -115,20 +154,22 @@ ffitest_LDADD = libffi.la
 TARGET_SRC_MIPS_GCC = src/mips/ffi.c src/mips/o32.S src/mips/n32.S
 TARGET_SRC_MIPS_SGI = src/mips/ffi.c src/mips/o32.s src/mips/n32.s
 TARGET_SRC_X86 = src/x86/ffi.c src/x86/sysv.S
-TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S 
+TARGET_SRC_SPARC = src/sparc/ffi.c src/sparc/v8.S src/sparc/v9.S
 TARGET_SRC_ALPHA = src/alpha/ffi.c src/alpha/osf.S
 TARGET_SRC_IA64 = src/ia64/ffi.c src/ia64/unix.S
 TARGET_SRC_M68K = src/m68k/ffi.c src/m68k/sysv.S
 TARGET_SRC_POWERPC = src/powerpc/ffi.c src/powerpc/sysv.S
 TARGET_SRC_ARM = src/arm/sysv.S src/arm/ffi.c
 
-libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c src/raw_api.c src/java_raw_api.c
+libffi_la_common_SOURCES = src/debug.c src/prep_cif.c src/types.c \
+		src/raw_api.c src/java_raw_api.c
+
 @MIPS_GCC_TRUE@libffi_la_SOURCES = @MIPS_GCC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_GCC)
 @MIPS_SGI_TRUE@libffi_la_SOURCES = @MIPS_SGI_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_MIPS_SGI)
 @X86_TRUE@libffi_la_SOURCES = @X86_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_X86)
 @SPARC_TRUE@libffi_la_SOURCES = @SPARC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_SPARC)
 @ALPHA_TRUE@libffi_la_SOURCES = @ALPHA_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ALPHA)
-@IA64_TRUE@libffi_la_SOURCES = $(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
+@IA64_TRUE@libffi_la_SOURCES = @IA64_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_IA64)
 @M68K_TRUE@libffi_la_SOURCES = @M68K_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_M68K)
 @POWERPC_TRUE@libffi_la_SOURCES = @POWERPC_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_POWERPC)
 @ARM_TRUE@libffi_la_SOURCES = @ARM_TRUE@$(libffi_la_common_SOURCES) $(TARGET_SRC_ARM)
@@ -155,6 +196,8 @@ libffi_la_LIBADD =
 @ALPHA_TRUE@raw_api.lo java_raw_api.lo ffi.lo osf.lo
 @ARM_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
 @ARM_TRUE@raw_api.lo java_raw_api.lo sysv.lo ffi.lo
+@IA64_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
+@IA64_TRUE@raw_api.lo java_raw_api.lo ffi.lo unix.lo
 @M68K_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
 @M68K_TRUE@raw_api.lo java_raw_api.lo ffi.lo sysv.lo
 @MIPS_GCC_TRUE@am_libffi_la_OBJECTS =  debug.lo prep_cif.lo types.lo \
@@ -179,8 +222,9 @@ COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CF
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 CFLAGS = @CFLAGS@
 CCLD = $(CC)
-LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DIST_SOURCES =  $(libffi_la_SOURCES) $(ffitest_SOURCES)
+depcomp = 
 DIST_COMMON =  README ./stamp-h.in ChangeLog Makefile.am Makefile.in \
 acconfig.h aclocal.m4 config.guess config.sub configure configure.in \
 fficonfig.h.in install-sh ltconfig ltmain.sh missing mkinstalldirs
@@ -189,7 +233,6 @@ fficonfig.h.in install-sh ltconfig ltmain.sh missing mkinstalldirs
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 GZIP_ENV = --best
-depcomp = 
 SOURCES = $(libffi_la_SOURCES) $(ffitest_SOURCES)
 OBJECTS = $(am_libffi_la_OBJECTS) $(am_ffitest_OBJECTS)
 
@@ -296,6 +339,7 @@ java_raw_api.lo: src/java_raw_api.c
 ffi.lo: src/alpha/ffi.c
 osf.lo: src/alpha/osf.S
 sysv.lo: src/arm/sysv.S
+unix.lo: src/ia64/unix.S
 o32.lo: src/mips/o32.S
 n32.lo: src/mips/n32.S
 v8.lo: src/sparc/v8.S
@@ -330,6 +374,59 @@ ffitest$(EXEEXT): $(ffitest_OBJECTS) $(ffitest_DEPENDENCIES)
 .s.lo:
 	$(LTCOMPILE) -c -o $@ $<
 
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+
+all-recursive install-data-recursive install-exec-recursive \
+installdirs-recursive install-recursive uninstall-recursive install-info-recursive \
+check-recursive installcheck-recursive info-recursive dvi-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@set fnord $(MAKEFLAGS); amf=$$2; \
+	dot_seen=no; \
+	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
+	  rev="$$subdir $$rev"; \
+	  if test "$$subdir" = "."; then dot_seen=yes; else :; fi; \
+	done; \
+	test "$$dot_seen" = "no" && rev=". $$rev"; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	   || case "$$amf" in *=*) exit 1;; *k*) fail=yes;; *) exit 1;; esac; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+
 tags: TAGS
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
@@ -339,12 +436,17 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	  done | \
 	  $(AWK) '    { files[$$0] = 1; } \
 	       END { for (i in files) print i; }'`; \
-	mkid -f$$here/ID $$unique $(LISP)
+	mkid -fID $$unique $(LISP)
 
-TAGS:  $(HEADERS) $(SOURCES) fficonfig.h.in $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES) fficonfig.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+   if test "$$subdir" = .; then :; else \
+	    test -f $$subdir/TAGS && tags="$$tags -i $$here/$$subdir/TAGS"; \
+   fi; \
+	done; \
 	list='$(SOURCES) $(HEADERS) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
@@ -423,42 +525,53 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  if test -d $$d/$$file; then \
-	    cp -pR $$d/$$file $(distdir); \
+	    cp -pR $$d/$$file $(distdir) \
+	    || exit 1; \
 	  else \
 	    test -f $(distdir)/$$file \
-	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
-	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	    || cp -p $$d/$$file $(distdir)/$$file \
+	    || exit 1; \
+	  fi; \
+	done
+	for subdir in $(SUBDIRS); do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d $(distdir)/$$subdir \
+	    || mkdir $(distdir)/$$subdir \
+	    || exit 1; \
+	    (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) top_distdir=../$(distdir) distdir=../$(distdir)/$$subdir distdir) \
+	      || exit 1; \
 	  fi; \
 	done
 info-am:
-info: info-am
+info: info-recursive
 dvi-am:
-dvi: dvi-am
+dvi: dvi-recursive
 check-am:
-check: check-am
+check: check-recursive
 installcheck-am:
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 install-info-am: 
-install-info: install-info-am
+install-info: install-info-recursive
 all-recursive-am: fficonfig.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 install-exec-am: install-toolexeclibLTLIBRARIES
-install-exec: install-exec-am
+install-exec: install-exec-recursive
 
 install-data-am:
-install-data: install-data-am
+install-data: install-data-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
-install: install-am
+install: install-recursive
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
-uninstall: uninstall-am
+uninstall: uninstall-recursive
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) fficonfig.h
-all-redirect: all-am
+all-redirect: all-recursive-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
-installdirs:
+installdirs: installdirs-recursive
+installdirs-am:
 	$(mkinstalldirs)  $(DESTDIR)$(toolexeclibdir)
 
 
@@ -477,13 +590,13 @@ mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-noinstPROGRAMS mostlyclean-tags \
 		mostlyclean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
 clean-am:  clean-hdr clean-toolexeclibLTLIBRARIES clean-compile \
 		clean-libtool clean-noinstPROGRAMS clean-tags \
 		clean-generic mostlyclean-am
 
-clean: clean-am
+clean: clean-recursive
 
 distclean-am:  distclean-hdr distclean-toolexeclibLTLIBRARIES \
 		distclean-compile distclean-libtool \
@@ -491,7 +604,7 @@ distclean-am:  distclean-hdr distclean-toolexeclibLTLIBRARIES \
 		distclean-generic clean-am
 	-rm -f libtool
 
-distclean: distclean-am
+distclean: distclean-recursive
 	-rm -f config.status
 
 maintainer-clean-am:  maintainer-clean-hdr \
@@ -502,7 +615,7 @@ maintainer-clean-am:  maintainer-clean-hdr \
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
 .PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
@@ -513,15 +626,44 @@ mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
 clean-libtool maintainer-clean-libtool mostlyclean-noinstPROGRAMS \
 distclean-noinstPROGRAMS clean-noinstPROGRAMS \
-maintainer-clean-noinstPROGRAMS tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
-check-am installcheck-am installcheck install-info-am install-info \
-all-recursive-am install-exec-am install-exec install-data-am \
-install-data install-am install uninstall-am uninstall all-redirect \
-all-am all install-strip installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+maintainer-clean-noinstPROGRAMS install-recursive uninstall-recursive \
+install-data-recursive uninstall-data-recursive install-exec-recursive \
+uninstall-exec-recursive installdirs-recursive uninstalldirs-recursive \
+all-recursive check-recursive installcheck-recursive info-recursive \
+dvi-recursive mostlyclean-recursive distclean-recursive clean-recursive \
+maintainer-clean-recursive tags tags-recursive mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-info-am \
+install-info all-recursive-am install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all install-strip installdirs-am installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
+
+# Multilib support.
+.PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
+	maintainer-clean-multi
+
+all-recursive: all-multi
+install-recursive: install-multi
+mostlyclean-recursive: mostlyclean-multi
+clean-recursive: clean-multi
+distclean-recursive: distclean-multi
+maintainer-clean-recursive: maintainer-clean-multi
+
+all-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
+install-multi:
+	$(MULTIDO) $(AM_MAKEFLAGS) DO=install multi-do
+mostlyclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=mostlyclean multi-clean
+clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=clean multi-clean
+distclean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=distclean multi-clean
+maintainer-clean-multi:
+	$(MULTICLEAN) $(AM_MAKEFLAGS) DO=maintainer-clean multi-clean
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
