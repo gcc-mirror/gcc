@@ -1,5 +1,11 @@
 2000-08-25  Mark Mitchell  <mark@codesourcery.com>
 
+	* Make-lang.in (CXX_LIB2FUNCS): Remove cp-demangle.o and
+	dyn-string.o.
+	(CXX_LIB2SRCS): Remove cp-demangle.c and dyn-string.c.
+	(cp-demangle.o): Remove target.
+	(dyn-string.o): Likewise.
+
 	* decl.c (grokfndecl): Require that `main' return an `int'.
 	* mangle.c (write_encoding): Don't mangle return types for
 	conversion functions.

@@ -62,13 +62,10 @@ CXX_EXTRA_HEADERS = $(srcdir)/cp/inc/typeinfo $(srcdir)/cp/inc/exception \
 
 # Extra code to include in libgcc2.
 CXX_LIB2FUNCS = tinfo.o tinfo2.o new.o opnew.o opnewnt.o opvnew.o opvnewnt.o \
-	opdel.o opdelnt.o opvdel.o opvdelnt.o exception.o vec.o \
-	cp-demangle.o dyn-string.o
+	opdel.o opdelnt.o opvdel.o opvdelnt.o exception.o vec.o
 CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
 	$(srcdir)/cp/exception.cc $(srcdir)/cp/tinfo.cc \
-	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h \
-	$(srcdir)/../libiberty/cp-demangle.c \
-	$(srcdir)/../libiberty/dyn-string.c
+	$(srcdir)/cp/tinfo2.cc $(srcdir)/cp/tinfo.h
 #
 # Define the names for selecting c++ in LANGUAGES.
 # Note that it would be nice to move the dependency on g++
@@ -181,14 +178,6 @@ opvdelnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 vec.o: cc1plus$(exeext) $(srcdir)/cp/vec.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(GXX_ABI_FLAG) $(CXXFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/vec.cc -o vec.o
-cp-demangle.o: $(srcdir)/../libiberty/cp-demangle.c
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CFLAGS) $(INCLUDES) \
-	 -DHAVE_CONFIG_H \
-         -c $(srcdir)/../libiberty/cp-demangle.c -o cp-demangle.o
-dyn-string.o: $(srcdir)/../libiberty/dyn-string.c
-	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(CFLAGS) $(INCLUDES) \
-	 -DHAVE_CONFIG_H \
-	 -c $(srcdir)/../libiberty/dyn-string.c -o dyn-string.o
 
 # We want to update cplib2.txt if any of the source files change...
 cplib2.txt: $(CXX_LIB2SRCS) $(CXX_EXTRA_HEADERS)
