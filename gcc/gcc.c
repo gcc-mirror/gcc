@@ -513,6 +513,13 @@ static char *multilib_defaults_raw[] = MULTILIB_DEFAULTS;
 static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
 #endif
 
+struct user_specs {
+  struct user_specs *next;
+  char *filename;
+};
+
+static struct user_specs *user_specs_head, *user_specs_tail;
+
 /* This defines which switch letters take arguments.  */
 
 #define DEFAULT_SWITCH_TAKES_ARG(CHAR)      \
@@ -533,7 +540,7 @@ static struct { char *name, *spec; } extra_specs[] = { EXTRA_SPECS };
   || !strcmp (STR, "imacros") || !strcmp (STR, "aux-info") \
   || !strcmp (STR, "idirafter") || !strcmp (STR, "iprefix") \
   || !strcmp (STR, "iwithprefix") || !strcmp (STR, "iwithprefixbefore") \
-  || !strcmp (STR, "isystem"))
+  || !strcmp (STR, "isystem") || !strcmp (STR, "specs"))
 
 #ifndef WORD_SWITCH_TAKES_ARG
 #define WORD_SWITCH_TAKES_ARG(STR) DEFAULT_WORD_SWITCH_TAKES_ARG (STR)
@@ -815,6 +822,7 @@ struct option_map option_map[] =
    {"--save-temps", "-save-temps", 0},
    {"--shared", "-shared", 0},
    {"--silent", "-q", 0},
+   {"--specs", "-specs=", "aj"},
    {"--static", "-static", 0},
    {"--symbolic", "-symbolic", 0},
    {"--target", "-b", "a"},
@@ -2438,6 +2446,36 @@ process_command (argc, argv)
 	  save_temps_flag = 1;
 	  n_switches++;
 	}
+      else if (strcmp (argv[i], "-specs") == 0)
+	{
+	  struct user_specs *user = (struct user_specs *)
+	    xmalloc (sizeof (struct user_specs));
+	  if (++i >= argc)
+	    fatal ("argument to `-specs' is missing");
+
+	  user->next = (struct user_specs *)0;
+	  user->filename = argv[i];
+	  if (user_specs_tail)
+	    user_specs_tail->next = user;
+	  else
+	    user_specs_head = user;
+	  user_specs_tail = user;
+	}
+      else if (strncmp (argv[i], "-specs=", 7) == 0)
+	{
+	  struct user_specs *user = (struct user_specs *)
+	    xmalloc (sizeof (struct user_specs));
+	  if (strlen (argv[i]) == 7)
+	    fatal ("argument to `-specs=' is missing");
+
+	  user->next = (struct user_specs *)0;
+	  user->filename = argv[i]+7;
+	  if (user_specs_tail)
+	    user_specs_tail->next = user;
+	  else
+	    user_specs_head = user;
+	  user_specs_tail = user;
+	}
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
@@ -2688,6 +2726,10 @@ process_command (argc, argv)
 	  infiles[n_infiles].language = 0;
 	  infiles[n_infiles++].name = argv[i];
 	}
+      else if (strcmp (argv[i], "-specs") == 0)
+	i++;
+      else if (strncmp (argv[i], "-specs=", 7) == 0)
+	;
       else if (argv[i][0] == '-' && argv[i][1] != 0)
 	{
 	  register char *p = &argv[i][1];
@@ -4076,6 +4118,7 @@ main (argc, argv)
   char *explicit_link_files;
   char *specs_file;
   char *p;
+  struct user_specs *uptr;
 
   p = argv[0] + strlen (argv[0]);
   while (p != argv[0] && p[-1] != '/' && p[-1] != DIR_SEPARATOR) --p;
@@ -4187,6 +4230,14 @@ main (argc, argv)
 	set_spec (extra_specs[k].name, extra_specs[k].spec);
     }
 #endif
+
+  /* Process any user specified specs in the order given on the command
+     line.  */
+  for (uptr = user_specs_head; uptr; uptr = uptr->next)
+    {
+      char *filename = find_a_file (&startfile_prefixes, uptr->filename, R_OK);
+      read_specs (filename ? filename : uptr->filename);
+    }
 
   /* If not cross-compiling, look for startfiles in the standard places.  */
   /* The fact that these are done here, after reading the specs file,
