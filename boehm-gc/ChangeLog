@@ -1,3 +1,8 @@
+1999-04-21  Tom Tromey  <tromey@cygnus.com>
+
+	* os_dep.c: glibc 2.1 requires asm/sigcontext.h, not
+	sigcontext.h.  From Matthias Klose <doko@itso.de>.
+
 1999-04-16  Tom Tromey  <tromey@cygnus.com>
 
 	* config.h (__start): Declare as `int' in alpha/OSF1 case.  From

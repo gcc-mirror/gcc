@@ -30,7 +30,7 @@
       /* prototypes, so we have to include the top-level sigcontext.h to    */
       /* make sure the former gets defined to be the latter if appropriate. */
 #     include <features.h>
-#     if 2 <= __GLIBC__
+#     if 2 <= __GLIBC__ && 0 == __GLIBC_MINOR__
 #       include <sigcontext.h>
 #     else /* not 2 <= __GLIBC__ */
         /* libc5 doesn't have <sigcontext.h>: go directly with the kernel   */
