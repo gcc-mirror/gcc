@@ -60,7 +60,7 @@ extern struct ZipFile *SeenZipFiles;
 
 extern ZipFile * opendir_in_zip PARAMS ((const char *, int));
 extern int read_zip_archive PARAMS ((ZipFile *));
-#ifdef JCF_H
+#ifdef GCC_JCF_H
 extern int read_zip_member PARAMS ((JCF*, ZipDirectory*, ZipFile *));
 extern int open_in_zip PARAMS ((struct JCF *, const char *,
 			       const char *, int));
