@@ -1,5 +1,5 @@
 /* Makeinfo -- convert Texinfo source files into Info files.
-   $Id: makeinfo.c,v 1.6 1998/03/22 21:47:57 law Exp $
+   $Id: makeinfo.c,v 1.8 1998/03/24 18:07:53 law Exp $
 
    Copyright (C) 1987, 92, 93, 94, 95, 96, 97 Free Software Foundation, Inc.
 
@@ -774,7 +774,6 @@ static COMMAND command_table[] = {
   { NULL, NULL, NO_BRACE_ARGS }
 };
 
-
 struct option long_options[] =
 {
   { "error-limit", 1, 0, 'e' },                 /* formerly -el */
@@ -1148,25 +1147,6 @@ print_version_info ()
           major_version, minor_version);
 }
 
-/* Like realloc (), but barfs if there isn't enough memory. */
-void *
-xrealloc (pointer, nbytes)
-     void *pointer;
-     unsigned int nbytes;
-{
-  void *temp;
-
-  if (!pointer)
-    temp = (void *)xmalloc (nbytes);
-  else
-    temp = (void *)realloc (pointer, nbytes);
-
-  if (nbytes && !temp)
-    memory_error ("xrealloc", nbytes);
-
-  return (temp);
-}
-
 /* If EXIT_VALUE is zero, print the full usage message to stdout.
    Otherwise, just say to use --help for more info.
    Then exit with EXIT_VALUE. */
@@ -1269,7 +1249,7 @@ find_and_load (filename)
     goto error_exit;
 
   /* Load the file. */
-  result = (char *)xmalloc (file_size + 2);
+  result = (char *)xmalloc (1 + file_size);
 
   /* VMS stat lies about the st_size value.  The actual number of
      readable bytes is always less than this value.  The arcane
@@ -1313,8 +1293,6 @@ find_and_load (filename)
      extra unnecessary work each time it is called (that is a lot of times).
      The SIZE_OF_INPUT_TEXT is one past the actual end of the text. */
   input_text[size_of_input_text] = '\n';
-  /* Necessary, because later on we call strlen(input_text+limit). */
-  input_text[size_of_input_text+1] = '\0';
   return (result);
 }
 
@@ -1974,15 +1952,14 @@ convert_from_stream (stream, name)
      FILE *stream;
      char *name;
 {
-  int buffer_size = READ_BUFFER_GROWTH;
-  char *buffer = (char *) xmalloc (buffer_size + 2);
-  int buffer_offset = 0;
+  char *buffer = (char *)NULL;
+  int buffer_offset = 0, buffer_size = 0;
 
   initialize_conversion ();
 
   /* Read until the end of the stream.  This isn't strictly correct, since
      the texinfo input may end before the stream ends, but it is a quick
-     working heuristic. */
+     working hueristic. */
   while (!feof (stream))
     {
       int count;
@@ -2016,8 +1993,6 @@ convert_from_stream (stream, name)
      extra unnecessary work each time it is called (that is a lot of times).
      The SIZE_OF_INPUT_TEXT is one past the actual end of the text. */
   input_text[size_of_input_text] = '\n';
-  /* Necessary, because later on we call strlen(input_text+limit). */
-  input_text[size_of_input_text+1] = '\0';
 
   convert_from_loaded_file (name);
 }

@@ -1,5 +1,5 @@
 /*  man.c: How to read and format man files.
-    $Id: man.c,v 1.4 1998/03/22 21:47:54 law Exp $
+    $Id: man.c,v 1.5 1998/03/22 22:35:19 law Exp $
 
    Copyright (C) 1995, 97 Free Software Foundation, Inc.
 
@@ -32,10 +32,6 @@
 #include "tilde.h"
 #include "man.h"
 
-#if !defined (SIGCHLD) && defined (SIGCLD)
-#define SIGCHLD	SIGCLD
-#endif
-
 #if !defined (_POSIX_VERSION)
 #define pid_t int
 #endif
@@ -47,8 +43,6 @@
 #    define fd_set_cast(x) (fd_set *)(x)
 #  endif /* !hpux */
 #endif /* FD_SET */
-
-extern char *getenv ();
 
 static char *read_from_fd ();
 static void clean_manpage ();
@@ -175,7 +169,7 @@ executable_file_in_path (filename, path)
 static char *
 find_man_formatter ()
 {
-  return (executable_file_in_path ("man", getenv ("PATH")));
+  return (executable_file_in_path ("man", (char *)getenv ("PATH")));
 }
 
 static char *manpage_pagename = (char *)NULL;
