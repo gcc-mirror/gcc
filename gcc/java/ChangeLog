@@ -1,3 +1,22 @@
+2003-10-20  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in (info): Honor $(parsedir) and $(docobjdir).
+	(generate-manpages): Likewise.
+	(java.maintainer-clean): Likewise.
+	(gcj.info): Likewise.
+	(gcj.1): Likewise.
+	(gcjh.1): Likewise.
+	(jv-scan.1): Likewise.
+	(jcf-dump.1): Likewise.
+	(gij.1): Likewise.
+	(jv-convert.1): Likewise.
+	(rmic.1): Likewise.
+	(rmiregistry.1): Likewise.
+	(java.install-man): Likewise.
+	(parse-scan.o): Move and define complete compile line.
+	(parse.o): Likewise.
+	(jcf-tree-inline.o): Move.
+
 2003-10-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (info): Update dependencies.
