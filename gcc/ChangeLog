@@ -1,5 +1,9 @@
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.md: Remove constraints from expanders.
+
+2002-01-10  Kazu Hirata  <kazu@hxi.com>
+
 	* varasm.c: Fix formatting.
 	* varray.c: Likewise.
 	* vmsdbgout.c: Likewise.
