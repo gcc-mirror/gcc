@@ -69,67 +69,86 @@
 
 ;; Target CPU.
 
-(define_attr "cpu" "sh0,sh1,sh2,sh3,sh3e"
+(define_attr "cpu"
+ "sh1,sh2,sh3,sh3e"
   (const (symbol_ref "sh_cpu_attr")))
+
+(define_attr "endian" "big,little"
+ (const (if_then_else (symbol_ref "TARGET_LITTLE_ENDIAN")
+		      (const_string "little") (const_string "big"))))
 
 ;; cbranch	conditional branch instructions
 ;; jump		unconditional jumps
 ;; arith	ordinary arithmetic
+;; arith3	a compound insn that behaves similarily to a sequence of
+;;		three insns of type arith
+;; arith3b	like above, but might end with a redirected branch
 ;; load		from memory
+;; load_si	Likewise, SImode variant for general register.
 ;; store	to memory
 ;; move		register to register
+;; fmove	register to register, floating point
 ;; smpy		word precision integer multiply
 ;; dmpy		longword or doublelongword precision integer multiply
 ;; return	rts
 ;; pload	load of pr reg, which can't be put into delay slot of rts
 ;; pstore	store of pr reg, which can't be put into delay slot of jsr
 ;; pcload	pc relative load of constant value
+;; pcload_si	Likewise, SImode variant for general register.
 ;; rte		return from exception
 ;; sfunc	special function call with known used registers
 ;; call		function call
 ;; fp		floating point
 ;; fdiv		floating point divide (or square root)
+;; gp_fpul	move between general purpose register and fpul
 
 (define_attr "type"
- "cbranch,jump,arith,other,load,store,move,smpy,dmpy,return,pload,pstore,pcload,rte,sfunc,call,fp,fdiv"
+ "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,gp_fpul"
   (const_string "other"))
 
 ; If a conditional branch destination is within -252..258 bytes away
 ; from the instruction it can be 2 bytes long.  Something in the
 ; range -4090..4100 bytes can be 6 bytes long.  All other conditional
-; branches are 16 bytes long.
+; branches are initially assumed to be 16 bytes long.
+; In machine_dependent_reorg, we split all branches that are longer than
+; 2 bytes.
 
 ; An unconditional jump in the range -4092..4098 can be 2 bytes long.
-; Otherwise, it must be 14 bytes long.
+; For wider ranges, we need a combination of a code and a data part.
+; If we can get a scratch register for a long range jump, the code
+; part can be 4 bytes long; otherwise, it must be 8 bytes long.
+; If the jump is in the range -32764..32770, the data part can be 2 bytes
+; long; otherwise, it must be 6 bytes long.
 
 ; All other instructions are two bytes long by default.
 
-; All positive offsets have an adjustment added, which is the number of bytes
-; difference between this instruction length and the next larger instruction
-; length.  This is because shorten_branches starts with the largest
-; instruction size and then tries to reduce them.
-
 (define_attr "length" ""
   (cond [(eq_attr "type" "cbranch")
-	 (if_then_else (and (ge (minus (match_dup 0) (pc))
-				(const_int -252))
-			    (le (minus (match_dup 0) (pc))
-				(const_int 262)))
-		       (const_int 2)
-		       (if_then_else (and (ge (minus (match_dup 0) (pc))
-					      (const_int -4090))
-					  (le (minus (match_dup 0) (pc))
-					      (const_int 4110)))
-				     (const_int 6)
-				     (const_int 16)))
-
+	 (cond [(ne (symbol_ref "short_cbranch_p (insn)") (const_int 0))
+		(const_int 2)
+		(ne (symbol_ref "med_branch_p (insn, 2)") (const_int 0))
+		(const_int 6)
+		(ne (symbol_ref "braf_branch_p (insn, 2)") (const_int 0))
+		(const_int 10)
+		(ne (pc) (pc))
+		(const_int 12)
+		] (const_int 16))
 	 (eq_attr "type" "jump")
-	 (if_then_else (and (ge (minus (match_dup 0) (pc))
-				(const_int -4092))
-			    (le (minus (match_dup 0) (pc))
-				(const_int 4110)))
-		       (const_int 2)
-		       (const_int 14))
+	 (cond [(ne (symbol_ref "med_branch_p (insn, 0)") (const_int 0))
+		(const_int 2)
+		(and (eq (symbol_ref "GET_CODE (PREV_INSN (insn))")
+			 (symbol_ref "INSN"))
+		     (eq (symbol_ref "INSN_CODE (PREV_INSN (insn))")
+			 (symbol_ref "code_for_indirect_jump_scratch")))
+		(if_then_else (ne (symbol_ref "braf_branch_p (insn, 0)")
+				  (const_int 0))
+			      (const_int 6)
+			      (const_int 10))
+		(ne (symbol_ref "braf_branch_p (insn, 0)") (const_int 0))
+		(const_int 10)
+		(ne (pc) (pc))
+		(const_int 12)
+		] (const_int 14))
 	 ] (const_int 2)))
 
 ;; (define_function_unit {name} {num-units} {n-users} {test}
@@ -140,15 +159,40 @@
 ;; gcc to separate load and store instructions by one instruction,
 ;; which makes it more likely that the linker will be able to word
 ;; align them when relaxing.
+
+;; Loads have a latency of two.
+;; However, call insn can have ;; a delay slot, so that we want one more
+;; insn to be scheduled between the load of the function address and the call.
+;; This is equivalent to a latency of three.
+;; We cannot use a conflict list for this, because we need to distinguish
+;; between the actual call address and the function arguments.
+;; ADJUST_COST can only properly handle reductions of the cost, so we
+;; use a latency of three here.
+;; We only do this for SImode loads of general regsiters, to make the work
+;; for ADJUST_COST easier.
 (define_function_unit "memory" 1 0
-  (eq_attr "type" "load,pcload,pload,store,pstore") 2 2)
+  (eq_attr "type" "load_si,pcload_si")
+  3 2)
+(define_function_unit "memory" 1 0
+  (eq_attr "type" "load,pcload,pload,store,pstore")
+  2 2)
+
+(define_function_unit "int"    1 0
+  (eq_attr "type" "arith3,arith3b") 3 3)
+
+(define_function_unit "int"    1 0
+  (eq_attr "type" "dyn_shift") 2 2)
+
+(define_function_unit "int"    1 0
+  (eq_attr "type" "arith,arith3b,dyn_shift") 2 2)
 
 ;; ??? These are approximations.
 (define_function_unit "mpy"    1 0 (eq_attr "type" "smpy") 2 2)
 (define_function_unit "mpy"    1 0 (eq_attr "type" "dmpy") 3 3)
 
-(define_function_unit "fp"     1 0 (eq_attr "type" "fp") 2 1)
+(define_function_unit "fp"     1 0 (eq_attr "type" "fp,fmove") 2 1)
 (define_function_unit "fp"     1 0 (eq_attr "type" "fdiv") 13 12)
+
 
 ; Definitions for filling branch delay slots.
 
@@ -161,7 +205,7 @@
 
 (define_attr "in_delay_slot" "yes,no"
   (cond [(eq_attr "type" "cbranch") (const_string "no")
-	 (eq_attr "type" "pcload") (const_string "no")
+	 (eq_attr "type" "pcload,pcload_si") (const_string "no")
 	 (eq_attr "needs_delay_slot" "yes") (const_string "no")
 	 (eq_attr "length" "2") (const_string "yes")
 	 ] (const_string "no")))
@@ -197,26 +241,14 @@
 ;; Say that we have annulled true branches, since this gives smaller and
 ;; faster code when branches are predicted as not taken.
 
-;; ??? Branches which are out-of-range actually have two delay slots,
-;; the first is either always executed or else annulled false, and the
-;; second is always annulled false.  Handling these differently from
-;; in range branches would give better code.
-
 (define_delay
   (and (eq_attr "type" "cbranch")
-       (eq_attr "cpu" "sh2,sh3"))
+       (ne (symbol_ref "TARGET_SH2") (const_int 0)))
   [(eq_attr "in_delay_slot" "yes") (eq_attr "in_delay_slot" "yes") (nil)])
 
 ;; -------------------------------------------------------------------------
 ;; SImode signed integer comparisons
 ;; -------------------------------------------------------------------------
-
-(define_insn ""
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(eq:SI (reg:SI 18)
-	       (const_int 1)))]
-  ""
-  "movt	%0")
 
 (define_insn ""
   [(set (reg:SI 18)
@@ -288,6 +320,93 @@
 }")
 
 ;; -------------------------------------------------------------------------
+;; DImode signed integer comparisons
+;; -------------------------------------------------------------------------
+
+;; ??? Could get better scheduling by splitting the initial test from the
+;; rest of the insn after reload.  However, the gain would hardly justify
+;; the sh.md size increase necessary to do that.
+
+(define_insn ""
+  [(set (reg:SI 18)
+	(eq:SI (and:DI (match_operand:DI 0 "arith_reg_operand" "r")
+		       (match_operand:DI 1 "arith_operand" "r"))
+	       (const_int 0)))]
+  ""
+  "* return output_branchy_insn (EQ, \"tst\\t%S1,%S0\;bf\\t%l9\;tst\\t%R1,%R0\",
+				 insn, operands);"
+  [(set_attr "length" "6")
+   (set_attr "type" "arith3b")])
+
+(define_insn "cmpeqdi_t"
+  [(set (reg:SI 18) (eq:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
+			   (match_operand:DI 1 "arith_reg_or_0_operand" "N,r")))]
+  ""
+  "*
+  return output_branchy_insn
+   (EQ,
+    (which_alternative
+     ? \"cmp/eq\\t%S1,%S0\;bf\\t%l9\;cmp/eq\\t%R1,%R0\"
+     : \"tst\\t%S0,%S0\;bf\\t%l9\;tst\\t%R0,%R0\"),
+    insn, operands);"
+  [(set_attr "length" "6")
+   (set_attr "type" "arith3b")])
+
+(define_insn "cmpgtdi_t"
+  [(set (reg:SI 18) (gt:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
+			   (match_operand:DI 1 "arith_reg_or_0_operand" "r,N")))]
+  "TARGET_SH2"
+  "@
+	cmp/eq\\t%S1,%S0\;bf{.|/}s\\t%,Ldi%=\;cmp/gt\\t%S1,%S0\;cmp/hi\\t%R1,%R0\\n%,Ldi%=:
+	tst\\t%S0,%S0\;bf{.|/}s\\t%,Ldi%=\;cmp/pl\\t%S0\;cmp/hi\\t%S0,%R0\\n%,Ldi%=:"
+  [(set_attr "length" "8")
+   (set_attr "type" "arith3")])
+
+(define_insn "cmpgedi_t"
+  [(set (reg:SI 18) (ge:SI (match_operand:DI 0 "arith_reg_operand" "r,r")
+			   (match_operand:DI 1 "arith_reg_or_0_operand" "r,N")))]
+  "TARGET_SH2"
+  "@
+	cmp/eq\\t%S1,%S0\;bf{.|/}s\\t%,Ldi%=\;cmp/ge\\t%S1,%S0\;cmp/hs\\t%R1,%R0\\n%,Ldi%=:
+	cmp/pz\\t%S0"
+  [(set_attr "length" "8,2")
+   (set_attr "type" "arith3,arith")])
+
+;; -------------------------------------------------------------------------
+;; DImode unsigned integer comparisons
+;; -------------------------------------------------------------------------
+
+(define_insn "cmpgeudi_t"
+  [(set (reg:SI 18) (geu:SI (match_operand:DI 0 "arith_reg_operand" "r")
+			    (match_operand:DI 1 "arith_reg_operand" "r")))]
+  "TARGET_SH2"
+  "cmp/eq\\t%S1,%S0\;bf{.|/}s\\t%,Ldi%=\;cmp/hs\\t%S1,%S0\;cmp/hs\\t%R1,%R0\\n%,Ldi%=:"
+  [(set_attr "length" "8")
+   (set_attr "type" "arith3")])
+
+(define_insn "cmpgtudi_t"
+  [(set (reg:SI 18) (gtu:SI (match_operand:DI 0 "arith_reg_operand" "r")
+			    (match_operand:DI 1 "arith_reg_operand" "r")))]
+  "TARGET_SH2"
+  "cmp/eq\\t%S1,%S0\;bf{.|/}s\\t%,Ldi%=\;cmp/hi\\t%S1,%S0\;cmp/hi\\t%R1,%R0\\n%,Ldi%=:"
+  [(set_attr "length" "8")
+   (set_attr "type" "arith3")])
+
+;; We save the compare operands in the cmpxx patterns and use them when
+;; we generate the branch.
+
+(define_expand "cmpdi"
+  [(set (reg:SI 18) (compare (match_operand:DI 0 "arith_operand" "")
+			     (match_operand:DI 1 "arith_operand" "")))]
+  "TARGET_SH2"
+  "
+{
+  sh_compare_op0 = operands[0];
+  sh_compare_op1 = operands[1];
+  DONE;
+}")
+
+;; -------------------------------------------------------------------------
 ;; Addition instructions
 ;; -------------------------------------------------------------------------
 
@@ -299,8 +418,49 @@
 		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI 18))]
   ""
-  "clrt\;addc	%R2,%R0\;addc	%S2,%S0"
+  "#"
   [(set_attr "length" "6")])
+
+(define_split
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(plus:DI (match_operand:DI 1 "arith_reg_operand" "%0")
+		 (match_operand:DI 2 "arith_reg_operand" "r")))
+   (clobber (reg:SI 18))]
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
+  high0 = gen_rtx (REG, SImode,
+		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  high2 = gen_rtx (REG, SImode,
+		   true_regnum (operands[2]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  emit_insn (gen_clrt ());
+  emit_insn (gen_addc (low0, low0, gen_lowpart (SImode, operands[2])));
+  emit_insn (gen_addc1 (high0, high0, high2));
+  DONE;
+}")
+
+(define_insn "addc"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			  (match_operand:SI 2 "arith_reg_operand" "r"))
+		 (reg:SI 18)))
+   (set (reg:SI 18)
+	(ltu:SI (plus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
+  ""
+  "addc	%2,%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "addc1"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(plus:SI (plus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			  (match_operand:SI 2 "arith_reg_operand" "r"))
+		 (reg:SI 18)))
+   (clobber (reg:SI 18))]
+  ""
+  "addc	%2,%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -322,8 +482,49 @@
 		 (match_operand:DI 2 "arith_reg_operand" "r")))
    (clobber (reg:SI 18))]
   ""
-  "clrt\;subc	%R2,%R0\;subc	%S2,%S0"
+  "#"
   [(set_attr "length" "6")])
+
+(define_split
+  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
+	(minus:DI (match_operand:DI 1 "arith_reg_operand" "0")
+		  (match_operand:DI 2 "arith_reg_operand" "r")))
+   (clobber (reg:SI 18))]
+  "reload_completed"
+  [(const_int 0)]
+  "
+{
+  rtx high0, high2, low0 = gen_lowpart (SImode, operands[0]);
+  high0 = gen_rtx (REG, SImode,
+		   true_regnum (operands[0]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  high2 = gen_rtx (REG, SImode,
+		   true_regnum (operands[2]) + (TARGET_LITTLE_ENDIAN ? 1 : 0));
+  emit_insn (gen_clrt ());
+  emit_insn (gen_subc (low0, low0, gen_lowpart (SImode, operands[2])));
+  emit_insn (gen_subc1 (high0, high0, high2));
+  DONE;
+}")
+
+(define_insn "subc"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(minus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			    (match_operand:SI 2 "arith_reg_operand" "r"))
+		  (reg:SI 18)))
+   (set (reg:SI 18)
+	(gtu:SI (minus:SI (match_dup 1) (match_dup 2)) (match_dup 1)))]
+  ""
+  "subc	%2,%0"
+  [(set_attr "type" "arith")])
+
+(define_insn "subc1"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(minus:SI (minus:SI (match_operand:SI 1 "arith_reg_operand" "0")
+			    (match_operand:SI 2 "arith_reg_operand" "r"))
+		  (reg:SI 18)))
+   (clobber (reg:SI 18))]
+  ""
+  "subc	%2,%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "*subsi3_internal"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -369,14 +570,14 @@
 ;; If we let reload allocate r0, then this problem can never happen.
 
 (define_insn ""
-  [(set (match_operand:SI 1 "register_operand" "=z")
+  [(set (match_operand:SI 0 "register_operand" "=z")
 	(udiv:SI (reg:SI 4) (reg:SI 5)))
    (clobber (reg:SI 18))
    (clobber (reg:SI 17))
    (clobber (reg:SI 4))
-   (use (match_operand:SI 0 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   ""
-  "jsr	@%0%#"
+  "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
@@ -395,16 +596,16 @@
   "operands[3] = gen_reg_rtx(SImode);")
 
 (define_insn ""
-  [(set (match_operand:SI 1 "register_operand" "=z")
+  [(set (match_operand:SI 0 "register_operand" "=z")
 	(div:SI (reg:SI 4) (reg:SI 5)))
    (clobber (reg:SI 18))
    (clobber (reg:SI 17))
    (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:SI 3))
-   (use (match_operand:SI 0 "arith_reg_operand" "r"))]
+   (use (match_operand:SI 1 "arith_reg_operand" "r"))]
   ""
-  "jsr	@%0%#"
+  "jsr	@%1%#"
   [(set_attr "type" "sfunc")
    (set_attr "needs_delay_slot" "yes")])
 
@@ -676,7 +877,8 @@
 	(ior:SI (match_operand:SI 1 "arith_reg_operand" "%0,0")
 		(match_operand:SI 2 "logical_operand" "r,L")))]
   ""
-  "or	%2,%0")
+  "or	%2,%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "=z,r")
@@ -697,7 +899,8 @@
    (set (reg:SI 18)
 	(lshiftrt:SI (match_dup 1) (const_int 31)))]
   ""
-  "rotl	%0")
+  "rotl	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "rotlsi3_31"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -705,14 +908,16 @@
 		   (const_int 31)))
    (clobber (reg:SI 18))]
   ""
-  "rotr	%0")
+  "rotr	%0"
+  [(set_attr "type" "arith")])
 
-(define_insn ""
+(define_insn "rotlsi3_16"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(rotate:SI (match_operand:SI 1 "arith_reg_operand" "r")
 		   (const_int 16)))]
   ""
-  "swap.w	%1,%0")
+  "swap.w	%1,%0"
+  [(set_attr "type" "arith")])
 
 (define_expand "rotlsi3"
   [(set (match_operand:SI 0 "arith_reg_operand" "")
@@ -721,29 +926,62 @@
   ""
   "
 {
+  static char rot_tab[] = {
+    000, 000, 000, 000, 000, 000, 010, 001,
+    001, 001, 011, 013, 003, 003, 003, 003,
+    003, 003, 003, 003, 003, 013, 012, 002,
+    002, 002, 010, 000, 000, 000, 000, 000,
+  };
+
+  int count, choice;
+
   if (GET_CODE (operands[2]) != CONST_INT)
     FAIL;
-
-  if (INTVAL (operands[2]) == 1)
-    {
-      emit_insn (gen_rotlsi3_1 (operands[0], operands[1]));
-      DONE;
-    }
-  else if (INTVAL (operands[2]) == 31)
-    {
-      emit_insn (gen_rotlsi3_31 (operands[0], operands[1]));
-      DONE;
-    }
-  else if (INTVAL (operands[2]) != 16)
+  count = INTVAL (operands[2]);
+  choice = rot_tab[count];
+  if (choice & 010 && SH_DYNAMIC_SHIFT_COST <= 1)
     FAIL;
+  choice &= 7;
+  switch (choice)
+    {
+    case 0:
+      emit_move_insn (operands[0], operands[1]);
+      count -= (count & 16) * 2;
+      break;
+    case 3:
+     emit_insn (gen_rotlsi3_16 (operands[0], operands[1]));
+     count -= 16;
+     break;
+    case 1:
+    case 2:
+      {
+	rtx parts[2];
+	parts[0] = gen_reg_rtx (SImode);
+	parts[1] = gen_reg_rtx (SImode);
+	emit_insn (gen_rotlsi3_16 (parts[2-choice], operands[1]));
+	parts[choice-1] = operands[1];
+	emit_insn (gen_ashlsi3 (parts[0], parts[0], GEN_INT (8)));
+	emit_insn (gen_lshrsi3 (parts[1], parts[1], GEN_INT (8)));
+	emit_insn (gen_iorsi3 (operands[0], parts[0], parts[1]));
+	count = (count & ~16) - 8;
+      }
+    }
+
+  for (; count > 0; count--)
+    emit_insn (gen_rotlsi3_1 (operands[0], operands[0]));
+  for (; count < 0; count++)
+    emit_insn (gen_rotlsi3_31 (operands[0], operands[0]));
+
+  DONE;
 }")
 
-(define_insn ""
+(define_insn "*rotlhi3_8"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r")
 	(rotate:HI (match_operand:HI 1 "arith_reg_operand" "r")
 		   (const_int 8)))]
   ""
-  "swap.b	%1,%0")
+  "swap.b	%1,%0"
+  [(set_attr "type" "arith")])
 
 (define_expand "rotlhi3"
   [(set (match_operand:HI 0 "arith_reg_operand" "")
@@ -764,7 +1002,8 @@
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (match_operand:SI 2 "arith_reg_operand" "r")))]
   "TARGET_SH3"
-  "shld	%2,%0")
+  "shld	%2,%0"
+  [(set_attr "type" "dyn_shift")])
 
 (define_insn "ashlsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
@@ -773,7 +1012,8 @@
   "CONST_OK_FOR_K (INTVAL (operands[2]))"
   "@
 	add	%0,%0
-	shll%O2	%0")
+	shll%O2	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "ashlhi3_k"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r,r")
@@ -782,14 +1022,15 @@
   "CONST_OK_FOR_K (INTVAL (operands[2]))"
   "@
 	add	%0,%0
-	shll%O2	%0")
+	shll%O2	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "ashlsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		   (match_operand:SI 2 "const_int_operand" "n")))
    (clobber (reg:SI 18))]
-  ""
+  "! sh_dynamicalize_shift_p (operands[2])"
   "#"
   [(set (attr "length")
 	(cond [(eq (symbol_ref "shift_insns_rtx (insn)") (const_int 1))
@@ -822,6 +1063,9 @@
   ""
   "
 {
+  if (GET_CODE (operands[2]) == CONST_INT
+      && sh_dynamicalize_shift_p (operands[2]))
+    operands[2] = force_reg (SImode, operands[2]);
   if (TARGET_SH3 && arith_reg_operand (operands[2], GET_MODE (operands[2])))
     {
       emit_insn (gen_ashlsi3_d (operands[0], operands[1], operands[2]));
@@ -888,27 +1132,59 @@
         (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
                      (const_int 16)))]
   ""
-  "swap.w	%1,%0\;exts.w	%0,%0"
+  "#"
   [(set_attr "length" "4")])
+
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "r")
+		     (const_int 16)))]
+  ""
+  [(set (match_dup 0) (rotate:SI (match_dup 1) (const_int 16)))
+   (set (match_dup 0) (sign_extend:SI (match_dup 2)))]
+  "operands[2] = gen_lowpart (HImode, operands[0]);")
 
 ;; ??? This should be a define expand.
 
 (define_insn "ashrsi2_31"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-        (ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
-                     (const_int 31)))
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 31)))
    (clobber (reg:SI 18))]
   ""
-  "@
-   shll	%0\;subc	%0,%0"
+  "#"
   [(set_attr "length" "4")])
+
+(define_split
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
+		     (const_int 31)))
+   (clobber (reg:SI 18))]
+  ""
+  [(const_int 0)]
+  "
+{
+  emit_insn (gen_ashlsi_c (operands[0], operands[1], operands[1]));
+  emit_insn (gen_subc1 (operands[0], operands[0], operands[0]));
+  DONE;
+}")
+
+(define_insn "ashlsi_c"
+  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(ashift:SI (match_operand:SI 1 "arith_reg_operand" "0") (const_int 1)))
+   (set (reg:SI 18) (lt:SI (match_operand:SI 2 "arith_reg_operand" "0")
+			   (const_int 0)))]
+  ""
+  "shll	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "ashrsi3_d"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(ashiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
-  "shad	%2,%0")
+  "shad	%2,%0"
+  [(set_attr "type" "dyn_shift")])
 
 (define_insn "ashrsi3_n"
   [(set (reg:SI 4)
@@ -937,7 +1213,8 @@
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (neg:SI (match_operand:SI 2 "arith_reg_operand" "r"))))]
   "TARGET_SH3"
-  "shld	%2,%0")
+  "shld	%2,%0"
+  [(set_attr "type" "dyn_shift")])
 
 ;;  Only the single bit shift clobbers the T bit.
 
@@ -947,7 +1224,8 @@
 		     (match_operand:SI 2 "const_int_operand" "M")))
    (clobber (reg:SI 18))]
   "CONST_OK_FOR_M (INTVAL (operands[2]))"
-  "shlr	%0")
+  "shlr	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "lshrsi3_k"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -955,7 +1233,8 @@
 		     (match_operand:SI 2 "const_int_operand" "K")))]
   "CONST_OK_FOR_K (INTVAL (operands[2]))
    && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
-  "shlr%O2	%0")
+  "shlr%O2	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "lshrhi3_m"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r")
@@ -963,7 +1242,8 @@
 		     (match_operand:HI 2 "const_int_operand" "M")))
    (clobber (reg:SI 18))]
   "CONST_OK_FOR_M (INTVAL (operands[2]))"
-  "shlr	%0")
+  "shlr	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "lshrhi3_k"
   [(set (match_operand:HI 0 "arith_reg_operand" "=r")
@@ -971,14 +1251,15 @@
 		     (match_operand:HI 2 "const_int_operand" "K")))]
   "CONST_OK_FOR_K (INTVAL (operands[2]))
    && ! CONST_OK_FOR_M (INTVAL (operands[2]))"
-  "shlr%O2	%0")
+  "shlr%O2	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "lshrsi3_n"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
 	(lshiftrt:SI (match_operand:SI 1 "arith_reg_operand" "0")
 		     (match_operand:SI 2 "const_int_operand" "n")))
    (clobber (reg:SI 18))]
-  ""
+  "! sh_dynamicalize_shift_p (operands[2])"
   "#"
   [(set (attr "length")
 	(cond [(eq (symbol_ref "shift_insns_rtx (insn)") (const_int 1))
@@ -1011,6 +1292,9 @@
   ""
   "
 {
+  if (GET_CODE (operands[2]) == CONST_INT
+      && sh_dynamicalize_shift_p (operands[2]))
+    operands[2] = force_reg (SImode, operands[2]);
   if (TARGET_SH3 && arith_reg_operand (operands[2], GET_MODE (operands[2])))
     {
       rtx count = copy_to_mode_reg (SImode, operands[2]);
@@ -1060,7 +1344,8 @@
    (clobber (reg:SI 18))]
   ""
   "shll	%R0\;rotcl	%S0"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "type" "arith")])
 
 (define_expand "ashldi3"
   [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
@@ -1080,7 +1365,8 @@
    (clobber (reg:SI 18))]
   ""
   "shlr	%S0\;rotcr	%R0"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "type" "arith")])
 
 (define_expand "lshrdi3"
   [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
@@ -1100,7 +1386,8 @@
    (clobber (reg:SI 18))]
   ""
   "shar	%S0\;rotcr	%R0"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "type" "arith")])
 
 (define_expand "ashrdi3"
   [(parallel [(set (match_operand:DI 0 "arith_reg_operand" "")
@@ -1306,7 +1593,8 @@
  	        (lshiftrt:SI (match_operand:SI 2 "arith_reg_operand" "0")
 			     (const_int 16))))]
   ""
-  "xtrct	%1,%0")
+  "xtrct	%1,%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "xtrct_right"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -1315,7 +1603,8 @@
  	        (ashift:SI (match_operand:SI 2 "arith_reg_operand" "r")
 			   (const_int 16))))]
   ""
-  "xtrct	%2,%0")
+  "xtrct	%2,%0"
+  [(set_attr "type" "arith")])
 
 ;; -------------------------------------------------------------------------
 ;; Unary arithmetic
@@ -1400,13 +1689,8 @@
 ;; ??? This should be a define expand.
 ;; ??? Or perhaps it should be dropped?
 
-(define_insn "extendsidi2"
-  [(set (match_operand:DI 0 "arith_reg_operand" "=r")
-	(sign_extend:DI (match_operand:SI 1 "arith_reg_operand" "r")))
-   (clobber (reg:SI 18))]
-  ""
-  "mov	%1,%S0\;mov	%1,%R0\;shll	%S0\;subc	%S0,%S0"
-  [(set_attr "length" "8")])
+/* There is no point in defining extendsidi2; convert_move generates good
+   code for that.  */
 
 (define_insn "extendhisi2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r,r")
@@ -1499,17 +1783,17 @@
   ""
   "sett")
 
-;; t/z is first, so that it will be preferred over r/r when reloading a move
+;; t/r is first, so that it will be preferred over r/r when reloading a move
 ;; of a pseudo-reg into the T reg
 (define_insn "movsi_i"
-  [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,xl,xl,r")
-	(match_operand:SI 1 "general_movsrc_operand" "z,Q,rI,m,xl,t,r,xl,r,>,i"))]
+  [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,<,xl,x,l,r")
+	(match_operand:SI 1 "general_movsrc_operand" "r,Q,rI,m,xl,t,r,x,l,r,>,>,i"))]
   "
-   ! TARGET_SH3E &&
-   (register_operand (operands[0], SImode)
-    || register_operand (operands[1], SImode))"
+   ! TARGET_SH3E
+   && (register_operand (operands[0], SImode)
+       || register_operand (operands[1], SImode))"
   "@
-	tst	%1,%1\;rotcl	%1\;xor	#1,%1\;rotcr	%1
+	cmp/pl	%1
 	mov.l	%1,%0
 	mov	%1,%0
 	mov.l	%1,%0
@@ -1517,24 +1801,26 @@
 	movt	%0
 	mov.l	%1,%0
 	sts.l	%1,%0
+	sts.l	%1,%0
 	lds	%1,%0
 	lds.l	%1,%0
+	lds.l	%1,%0
 	fake	%1,%0"
-  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,pcload")
-   (set_attr "length" "8,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "*,pcload_si,move,load_si,move,move,store,store,pstore,move,load,pload,pcload_si")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
-;; t/z is first, so that it will be preferred over r/r when reloading a move
+;; t/r is first, so that it will be preferred over r/r when reloading a move
 ;; of a pseudo-reg into the T reg
 ;; ??? This allows moves from macl to fpul to be recognized, but these moves
 ;; will require a reload.
 (define_insn "movsi_ie"
-  [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,xl,xl,r,y,r")
-	(match_operand:SI 1 "general_movsrc_operand" "z,Q,rI,m,xl,t,r,xl,r,>,i,r,y"))]
+  [(set (match_operand:SI 0 "general_movdst_operand" "=t,r,r,r,r,r,m,<,<,xl,x,l,r,y,r,y")
+	(match_operand:SI 1 "general_movsrc_operand" "r,Q,rI,m,xl,t,r,x,l,r,>,>,i,r,y,y"))]
   "TARGET_SH3E
    && (register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
-	tst	%1,%1\;rotcl	%1\;xor	#1,%1\;rotcr	%1
+	cmp/pl	%1
 	mov.l	%1,%0
 	mov	%1,%0
 	mov.l	%1,%0
@@ -1542,14 +1828,31 @@
 	movt	%0
 	mov.l	%1,%0
 	sts.l	%1,%0
+	sts.l	%1,%0
 	lds	%1,%0
+	lds.l	%1,%0
 	lds.l	%1,%0
 	fake	%1,%0
 	lds	%1,%0
-	sts	%1,%0"
-  [(set_attr "type" "move,pcload,move,load,move,store,store,move,load,move,pcload,move,move")
-   (set_attr "length" "8,*,*,*,*,*,*,*,*,*,*,*,*")])
+	sts	%1,%0
+	! move optimized away"
+  [(set_attr "type" "*,pcload_si,move,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,other")
+   (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
+(define_insn "movsi_i_lowpart"
+  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "=r,r,r,r,r,m,r"))
+	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,m,xl,t,r,i"))]
+   "register_operand (operands[0], SImode)
+    || register_operand (operands[1], SImode)"
+  "@
+	mov.l	%1,%0
+	mov	%1,%0
+	mov.l	%1,%0
+	sts	%1,%0
+	movt	%0
+	mov.l	%1,%0
+	fake	%1,%0"
+  [(set_attr "type" "pcload,move,load,move,move,store,pcload")])
 (define_expand "movsi"
   [(set (match_operand:SI 0 "general_movdst_operand" "")
 	(match_operand:SI 1 "general_movsrc_operand" ""))]
@@ -1779,15 +2082,19 @@
   [(set (match_operand:DF 0 "general_movdst_operand" "")
 	(match_operand:DF 1 "general_movsrc_operand" ""))]
   ""
-  "{ if (prepare_move_operands (operands, DFmode)) DONE; }")
+  "
+{
+  if (prepare_move_operands (operands, DFmode)) DONE;
+}")
+
 
 (define_insn "movsf_i"
   [(set (match_operand:SF 0 "general_movdst_operand" "=r,r,r,r,m,l,r")
 	(match_operand:SF 1 "general_movsrc_operand"  "r,I,FQ,m,r,r,l"))]
   "
-   ! TARGET_SH3E &&
-   (arith_reg_operand (operands[0], SFmode)
-    || arith_reg_operand (operands[1], SFmode))"
+   ! TARGET_SH3E
+   && (arith_reg_operand (operands[0], SFmode)
+       || arith_reg_operand (operands[1], SFmode))"
   "@
 	mov	%1,%0
 	mov	%1,%0
@@ -1800,10 +2107,10 @@
 
 (define_insn "movsf_ie"
   [(set (match_operand:SF 0 "general_movdst_operand"
-	 "=f,r,f,f,?f,f,m,r,r,m,!??r,!??f")
+	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,ry")
 	(match_operand:SF 1 "general_movsrc_operand"
-	  "f,r,G,H,FQ,m,f,FQ,m,r,f,r"))
-   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X"))]
+	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,yr"))
+   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X"))]
 
   "TARGET_SH3E
    && (arith_reg_operand (operands[0], SFmode)
@@ -1819,28 +2126,38 @@
 	mov.l	%1,%0
 	mov.l	%1,%0
 	mov.l	%1,%0
-	flds	%1,fpul\;sts	fpul,%0
-	lds	%1,fpul\;fsts	fpul,%0"
-  [(set_attr "type" "move,move,fp,fp,pcload,load,store,pcload,load,store,move,fp")
-   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,4,4")])
+	fsts	fpul,%0
+	flds	%1,fpul
+	lds.l	%1,%0
+	#
+	#"
+  [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,*")
+   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,*,*")])
 
 (define_split
-  [(set (match_operand:SF 0 "general_movdst_operand" "")
-	(match_operand:SF 1 "general_movsrc_operand"  ""))
-   (clobber (reg:SI 0))]
-  "GET_CODE (operands[0]) == REG && REGNO (operands[0]) < FIRST_PSEUDO_REGISTER"
-  [(parallel [(set (match_dup 0) (match_dup 1))
-	      (clobber (scratch:SI))])]
+  [(set (match_operand:SF 0 "register_operand" "ry")
+	(match_operand:SF 1 "register_operand" "ry"))
+   (match_scratch:SI 2 "X")]
+  "reload_completed
+   && true_regnum (operands[0]) < FIRST_FP_REG
+   && true_regnum (operands[1]) < FIRST_FP_REG"
+  [(set (match_dup 0) (match_dup 1))]
   "
 {
-  if (REGNO (operands[0]) >= FIRST_FP_REG && REGNO (operands[0]) <= LAST_FP_REG)
-    {
-      if (GET_CODE (operands[1]) != MEM)
-	FAIL;
-      emit_insn (gen_mova (XEXP (operands[1], 0)));
-      XEXP (operands[1], 0) = gen_rtx (REG, Pmode, 0);
-    }
+  operands[0] = gen_rtx (REG, SImode, true_regnum (operands[0]));
+  operands[1] = gen_rtx (REG, SImode, true_regnum (operands[1]));
 }")
+
+(define_split
+  [(set (match_operand:SF 0 "register_operand" "")
+	(match_operand:SF 1 "register_operand" ""))
+   (clobber (reg:SI 22))]
+  ""
+  [(parallel [(set (reg:SF 22) (match_dup 1))
+	      (clobber (scratch:SI))])
+   (parallel [(set (match_dup 0) (reg:SF 22))
+	      (clobber (scratch:SI))])]
+  "")
 
 (define_expand "movsf"
   [(set (match_operand:SF 0 "general_movdst_operand" "")
@@ -1852,7 +2169,7 @@
     DONE;
   if (TARGET_SH3E)
     {
-      emit_insn (gen_movsf_ie (operands[0], operands[1]));
+      emit_insn (gen_movsf_ie (operands[0], operands[1]))
       DONE;
     }
 }")
@@ -1884,47 +2201,45 @@
   "* return output_branch (0, insn, operands);"
   [(set_attr "type" "cbranch")])
 
-(define_insn "inverse_branch_true"
-  [(set (pc) (if_then_else (ne (reg:SI 18) (const_int 0))
-			   (pc)
-			   (label_ref (match_operand 0 "" ""))))]
+;; Patterns to prevent reorg from re-combining a condbranch with a branch
+;; which destination is too far away.
+;; The const_int_operand is distinct for each branch target; it avoids
+;; unwanted matches with redundant_insn.
+(define_insn "block_branch_redirect"
+  [(set (pc) (unspec [(match_operand 0 "const_int_operand" "")] 4))]
   ""
-  "* return output_branch (0, insn, operands);"
-  [(set_attr "type" "cbranch")])
+  ""
+  [(set_attr "length" "0")])
 
-(define_insn "inverse_branch_false"
-  [(set (pc) (if_then_else (eq (reg:SI 18) (const_int 0))
-   			   (pc)
-			   (label_ref (match_operand 0 "" ""))))]
+;; This one has the additional purpose to record a possible scratch register
+;; for the following branch.
+(define_insn "indirect_jump_scratch"
+  [(set (match_operand 0 "register_operand" "r")
+	(unspec [(match_operand 1 "const_int_operand" "")] 4))]
   ""
-  "* return output_branch (1, insn, operands);"
-  [(set_attr "type" "cbranch")])
+  ""
+  [(set_attr "length" "0")])
 
 ;; Conditional branch insns
 
 (define_expand "beq"
-  [(set (reg:SI 18) (eq:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
+  [(set (pc)
 	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
   "from_compare (operands, EQ);")
 
-; There is no bne compare, so we reverse the branch arms.
-
 (define_expand "bne"
-  [(set (reg:SI 18) (eq:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
-	(if_then_else (ne (reg:SI 18) (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
+  [(set (pc)
+	(if_then_else (eq (reg:SI 18) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
-  "from_compare (operands, NE);")
+  "from_compare (operands, EQ);")
 
 (define_expand "bgt"
-  [(set (reg:SI 18) (gt:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
+  [(set (pc)
 	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
@@ -1932,11 +2247,10 @@
   "from_compare (operands, GT);")
 
 (define_expand "blt"
-  [(set (reg:SI 18) (ge:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
-	(if_then_else (ne (reg:SI 18) (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
+  [(set (pc)
+	(if_then_else (eq (reg:SI 18) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
   "
 {
@@ -1948,28 +2262,41 @@
       emit_insn (gen_bgt (operands[0]));
       DONE;
     }
-  from_compare (operands, LT);
+  from_compare (operands, GE);
 }")
 
 (define_expand "ble"
-  [(set (reg:SI 18) (gt:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
-	(if_then_else (ne (reg:SI 18) (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
+  [(set (pc)
+	(if_then_else (eq (reg:SI 18) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
-  "from_compare (operands, LE);")
+  "
+{
+  if (TARGET_SH3E
+      && TARGET_IEEE
+      && GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
+    {
+      rtx tmp = sh_compare_op0;
+      sh_compare_op0 = sh_compare_op1;
+      sh_compare_op1 = tmp;
+      emit_insn (gen_bge (operands[0]));
+      DONE;
+    }
+  from_compare (operands, GT);
+}")
 
 (define_expand "bge"
-  [(set (reg:SI 18) (ge:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
+  [(set (pc)
 	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
   "
 {
-  if (GET_MODE (sh_compare_op0) == SFmode)
+  if (TARGET_SH3E
+      && ! TARGET_IEEE
+      && GET_MODE_CLASS (GET_MODE (sh_compare_op0)) == MODE_FLOAT)
     {
       rtx tmp = sh_compare_op0;
       sh_compare_op0 = sh_compare_op1;
@@ -1981,8 +2308,7 @@
 }")
 
 (define_expand "bgtu"
-  [(set (reg:SI 18) (gtu:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
+  [(set (pc)
 	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
@@ -1990,17 +2316,15 @@
   "from_compare (operands, GTU); ")
 
 (define_expand "bltu"
-  [(set (reg:SI 18) (geu:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
-		  (if_then_else (ne (reg:SI 18) (const_int 0))
-				(pc)
-				(label_ref (match_operand 0 "" ""))))]
+  [(set (pc)
+		  (if_then_else (eq (reg:SI 18) (const_int 0))
+				(label_ref (match_operand 0 "" ""))
+				(pc)))]
   ""
-  "from_compare (operands, LTU);")
+  "from_compare (operands, GEU);")
 
 (define_expand "bgeu"
-  [(set (reg:SI 18) (geu:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
+  [(set (pc)
 	(if_then_else (ne (reg:SI 18) (const_int 0))
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
@@ -2008,13 +2332,12 @@
   "from_compare (operands, GEU);")
 
 (define_expand "bleu"
-  [(set (reg:SI 18) (gtu:SI (match_dup 1) (match_dup 2)))
-   (set (pc)
-	(if_then_else (ne (reg:SI 18) (const_int 0))
-		      (pc)
-		      (label_ref (match_operand 0 "" ""))))]
+  [(set (pc)
+	(if_then_else (eq (reg:SI 18) (const_int 0))
+		      (label_ref (match_operand 0 "" ""))
+		      (pc)))]
   ""
-  "from_compare (operands, LEU);")
+  "from_compare (operands, GTU);")
 
 ;; ------------------------------------------------------------------------
 ;; Jump and linkage insns
@@ -2027,7 +2350,7 @@
   "*
 {
   /* The length is 16 if the delay slot is unfilled.  */
-  if (get_attr_length(insn) >= 14)
+  if (get_attr_length(insn) > 4)
     return output_far_jump(insn, operands[0]);
   else
     return   \"bra	%l0%#\";
@@ -2074,19 +2397,45 @@
 	(match_operand:SI 0 "arith_reg_operand" "r"))]
   ""
   "jmp	@%0%#"
-  [(set_attr "needs_delay_slot" "yes")])
+  [(set_attr "needs_delay_slot" "yes")
+   (set_attr "type" "jump_ind")])
 
-;; This might seem redundant, but it helps us distinguish case table jumps
+;; The use of operand 2 helps us distinguish case table jumps
 ;; which can be present in structured code from indirect jumps which can not
 ;; be present in structured code.  This allows -fprofile-arcs to work.
 
-(define_insn "*casesi_jump"
+(define_expand "casesi_jump"
+  [(parallel [(set (pc) (match_operand:SI 0 "register_operand" "r"))
+	      (use (label_ref (match_operand 2 "" "")))])]
+  ""
+  "
+{
+  if (TARGET_SH2)
+    operands[0] = gen_rtx (PLUS, Pmode, operands[0],
+			   gen_rtx (LABEL_REF, VOIDmode, operands[1]));
+  else
+    emit_insn (gen_addsi3 (operands[0], operands[0], gen_rtx (REG, Pmode, 0)));
+}");
+
+;; For SH1 processors.
+(define_insn "*casesi_jump_1"
   [(set (pc)
-	(match_operand:SI 0 "arith_reg_operand" "r"))
+	(match_operand:SI 0 "register_operand" "r"))
    (use (label_ref (match_operand 1 "" "")))]
   ""
-  "jmp	@%0%#"
-  [(set_attr "needs_delay_slot" "yes")])
+  "jmp  @%0%#"
+  [(set_attr "needs_delay_slot" "yes")
+   (set_attr "type" "jump_ind")])
+
+;; For all later processors.
+(define_insn "*casesi_jump_2"
+  [(set (pc) (plus:SI (match_operand:SI 0 "register_operand" "r")
+		      (match_operand 1 "braf_label_ref_operand" "")))
+   (use (label_ref (match_operand 2 "" "")))]
+  ""
+  "braf	%0%#"
+  [(set_attr "needs_delay_slot" "yes")
+   (set_attr "type" "jump_ind")])
 
 ;; Call subroutine returning any type.
 ;; ??? This probably doesn't work.
@@ -2127,22 +2476,26 @@
 	(eq:SI (match_operand:SI 0 "arith_reg_operand" "+r") (const_int 1)))
    (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
   "TARGET_SH2"
-  "dt	%0")
+  "dt	%0"
+  [(set_attr "type" "arith")])
 
 (define_insn "nop"
   [(const_int 0)]
   ""
   "nop")
 
-;; Load address of a label. This is only generated by the casesi expand.
-;; This must use unspec, because this only works immediately before a casesi.
+;; Load address of a label. This is only generated by the casesi expand,
+;; and by machine_dependent_reorg (fixing up fp moves).
+;; This must use unspec, because this only works for labels that are
+;; within range,
 
 (define_insn "mova"
   [(set (reg:SI 0)
 	(unspec [(label_ref (match_operand 0 "" ""))] 1))]
   ""
   "mova	%O0,r0"
-  [(set_attr "in_delay_slot" "no")])
+  [(set_attr "in_delay_slot" "no")
+   (set_attr "type" "arith")])
 
 ;; case instruction for switch statements.
 
@@ -2152,132 +2505,132 @@
 ;; operand 3 is CODE_LABEL for the table;
 ;; operand 4 is the CODE_LABEL to go to if index out of range.
 
-;; ??? There should be a barrier after the jump at the end.
-
 (define_expand "casesi"
-  [(set (match_dup 5) (match_operand:SI 0 "arith_reg_operand" ""))
-   (set (match_dup 5) (minus:SI (match_dup 5)
+  [(match_operand:SI 0 "arith_reg_operand" "")
+   (match_operand:SI 1 "arith_reg_operand" "")
+   (match_operand:SI 2 "arith_reg_operand" "")
+   (match_operand 3 "" "") (match_operand 4 "" "")]
+  ""
+  "
+{
+  rtx lab = gen_label_rtx ();
+  rtx reg = gen_reg_rtx (SImode);
+  /* If optimizing, casesi_worker depends on the mode of the instruction
+     before label it 'uses' - operands[3].  */
+  emit_insn (gen_casesi_0 (operands[0], operands[1], operands[2], operands[3],
+			   operands[4], reg));
+  emit_jump_insn (gen_casesi_jump (reg, lab, operands[3]));
+  if (TARGET_SH2)
+    emit_label (lab);
+  /* For SH2 and newer, the ADDR_DIFF_VEC is not actually relative to
+     operands[3], but to lab.  We will fix this up in
+     machine_dependent_reorg.  */
+  emit_barrier ();
+  DONE;
+}")
+
+(define_expand "casesi_0"
+  [(set (match_dup 6) (match_operand:SI 0 "arith_reg_operand" ""))
+   (set (match_dup 6) (minus:SI (match_dup 6)
 				(match_operand:SI 1 "arith_operand" "")))
    (set (reg:SI 18)
-	(gtu:SI (match_dup 5)
+	(gtu:SI (match_dup 6)
 		(match_operand:SI 2 "arith_reg_operand" "")))
    (set (pc)
 	(if_then_else (ne (reg:SI 18)
 			  (const_int 0))
 		      (label_ref (match_operand 4 "" ""))
 		      (pc)))
-   (set (match_dup 6) (match_dup 5))
-   (set (match_dup 6) (ashift:SI (match_dup 6) (match_dup 7)))
    (set (reg:SI 0) (unspec [(label_ref (match_operand 3 "" ""))] 1))
-   (parallel [(set (reg:SI 0) (plus:SI (reg:SI 0)
-				       (mem:HI (plus:SI (reg:SI 0)
-							(match_dup 6)))))
-	      (set (match_dup 6) (mem:HI (plus:SI (reg:SI 0) (match_dup 6))))])
-   (parallel [(set (pc) (reg:SI 0))
-	      (use (label_ref (match_dup 3)))])]
+   (parallel [(set (match_operand 5 "" "")
+		   (unspec [(reg:SI 0) (match_dup 6)
+			    (label_ref (match_dup 3))] 2))
+	      (clobber (scratch:SI))])]
   ""
   "
 {
   operands[1] = copy_to_mode_reg (SImode, operands[1]);
   operands[2] = copy_to_mode_reg (SImode, operands[2]);
-  operands[5] = gen_reg_rtx (SImode);
   operands[6] = gen_reg_rtx (SImode);
-  operands[7] = GEN_INT (TARGET_BIGTABLE  ? 2 : 1);
 }")
 
 (define_insn "casesi_worker"
-  [(set (reg:SI 0)
-	(plus:SI (reg:SI 0)
-		 (mem:HI (plus:SI (reg:SI 0)
-				  (match_operand:SI 0 "arith_reg_operand" "+r")))))
-   (set (match_dup 0) (mem:HI (plus:SI (reg:SI 0)
-				       (match_dup 0))))]
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(unspec [(reg:SI 0) (match_operand 1 "register_operand" "0,r")
+		 (label_ref (match_operand 2 "" ""))] 2))
+   (clobber (match_scratch:SI 3 "=X,1"))]
   ""
   "*
 {
-  if (TARGET_BIGTABLE)
-    return \"mov.l	@(r0,%0),%0\;add	%0,r0\";
-  else
-    return \"mov.w	@(r0,%0),%0\;add	%0,r0\";
+  enum machine_mode mode
+    = optimize
+	? GET_MODE (PATTERN (prev_real_insn (operands[2])))
+	: sh_addr_diff_vec_mode;
+  switch (mode)
+    {
+    case SImode:
+      return \"shll2	%1\;mov.l	@(r0,%1),%0\";
+    case HImode:
+      return \"add	%1,%1\;mov.w	@(r0,%1),%0\";
+    case QImode:
+      {
+	rtx adj = PATTERN (prev_real_insn (operands[2]));
+	if ((insn_addresses[INSN_UID (XEXP ( XVECEXP (adj, 0, 1), 0))]
+	     - insn_addresses[INSN_UID (XEXP (XVECEXP (adj, 0, 2), 0))])
+	    <= 126)
+	  return \"mov.b	@(r0,%1),%0\";
+	return \"mov.b	@(r0,%1),%0\;extu.b	%0,%0\";
+      }
+    default:
+      abort ();
+    }
 }"
   [(set_attr "length" "4")])
+
+;; Include ADDR_DIFF_VECS in the shorten_branches pass; we have to
+;; use a negative-length instruction to actually accomplish this.
+(define_insn "addr_diff_vec_adjust"
+  [(unspec_volatile [(label_ref (match_operand 0 "" ""))
+		     (label_ref (match_operand 1 "" ""))
+		     (label_ref (match_operand 2 "" ""))
+		     (match_operand 3 "const_int_operand" "")] 7)]
+  ""
+  "*
+{
+  /* ??? ASM_OUTPUT_ADDR_DIFF_ELT gets passed no context information, so
+     we must use a kludge with a global variable.  */
+  sh_addr_diff_vec_mode = GET_MODE (PATTERN (insn));
+  return \"\";
+}"
+;; Need a variable length for this to be processed in each shorten_branch pass.
+;; The actual work is done in ADJUST_INSN_LENTH, because length attributes
+;; need to be (a choice of) constants.
+;; We use the calculated length before ADJUST_INSN_LENGTH to
+;; determine if the insn_addresses array contents are valid.
+  [(set (attr "length")
+	(if_then_else (eq (pc) (const_int -1))
+		      (const_int 2) (const_int 0)))])
 
 (define_insn "return"
   [(return)]
   "reload_completed"
-  "%@	%#"
-  [(set_attr "type" "return")
-   (set_attr "needs_delay_slot" "yes")])
-
-(define_expand "prologue"
-  [(const_int 0)]
-  ""
-  "sh_expand_prologue (); DONE;")
-
-(define_expand "epilogue"
-  [(return)]
-  ""
-  "sh_expand_epilogue ();")
-
-(define_insn "blockage"
-  [(unspec_volatile [(const_int 0)] 0)]
-  ""
-  ""
-  [(set_attr "length" "0")])
-
-;; ------------------------------------------------------------------------
-;; Scc instructions
-;; ------------------------------------------------------------------------
-
-(define_insn "movt"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(eq:SI (reg:SI 18) (const_int 1)))]
-  ""
-  "movt	%0")
-
-(define_expand "seq"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "operands[1] = prepare_scc_operands (EQ);")
-
-(define_expand "slt"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "operands[1] = prepare_scc_operands (LT);")
-
-(define_expand "sle"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (GET_MODE (sh_compare_op0) == SFmode)
     {
-      emit_insn (gen_sgt (operands[0]));
-      emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
-      DONE;
-    }
-  operands[1] = prepare_scc_operands (LE);
-}")
-
-(define_expand "sgt"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "operands[1] = prepare_scc_operands (GT);")
-
-(define_expand "sge"
-  [(set (match_operand:SI 0 "arith_reg_operand" "")
-	(match_dup 1))]
-  ""
-  "
-{
-  if (GET_MODE (sh_compare_op0) == SFmode)
-    {
-      emit_insn (gen_slt (operands[0]));
-      emit_insn (gen_xorsi3 (operands[0], operands[0], const1_rtx));
+      if (TARGET_IEEE)
+	{
+	  rtx t_reg = gen_rtx (REG, SImode, T_REG);
+	  rtx lab = gen_label_rtx ();
+	  emit_insn (gen_rtx (SET, VOIDmode, t_reg,
+			      gen_rtx (EQ, SImode, sh_compare_op0,
+				       sh_compare_op1)));
+	  emit_jump_insn (gen_branch_true (lab));
+	  emit_insn (gen_rtx (SET, VOIDmode, t_reg,
+			      gen_rtx (GT, SImode, sh_compare_op0,
+				       sh_compare_op1)));
+	  emit_label (lab);
+	  emit_insn (gen_movt (operands[0]));
+	}
+      else
+	emit_insn (gen_movnegt (operands[0], prepare_scc_operands (LT)));
       DONE;
     }
   operands[1] = prepare_scc_operands (GE);
@@ -2329,6 +2682,18 @@
    operands[1] = prepare_scc_operands (EQ);
    operands[2] = gen_reg_rtx (SImode);
 }")
+
+;; Use the same trick for FP sle / sge
+(define_expand "movnegt"
+  [(set (match_dup 2) (const_int -1))
+   (parallel [(set (match_operand 0 "" "")
+		   (neg:SI (plus:SI (match_dup 1)
+				    (match_dup 2))))
+	      (set (reg:SI 18)
+		   (ne:SI (ior:SI (match_operand 1 "" "") (match_dup 2))
+			  (const_int 0)))])]  
+  ""
+  "operands[2] = gen_reg_rtx (SImode);")
 
 ;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
 ;; This prevents a regression that occured when we switched from xor to
@@ -2416,22 +2781,42 @@
  [(set_attr "length" "8")
   (set_attr "in_delay_slot" "no")])
 
+;; Alignment is needed for some constant tables; it may also be added for
+;; Instructions at the start of loops, or after unconditional branches.
+;; ??? We would get more accurate lengths if we did instruction
+;; alignment based on the value of INSN_CURRENT_ADDRESS; the approach used
+;; here is too conservative.
+
 ; align to a two byte boundary
 
 (define_insn "align_2"
- [(unspec_volatile [(const_int 0)] 10)]
+ [(unspec_volatile [(const_int 1)] 1)]
  ""
  ".align 1"
  [(set_attr "length" "0")
   (set_attr "in_delay_slot" "no")])
 
 ; align to a four byte boundary
+;; align_4 and align_log are instructions for the starts of loops, or
+;; after unconditional branches, which may take up extra room.
 
-(define_insn "align_4"
- [(unspec_volatile [(const_int 0)] 5)]
+(define_expand "align_4"
+ [(unspec_volatile [(const_int 2)] 1)]
  ""
- ".align 2"
- [(set_attr "in_delay_slot" "no")])
+ "")
+
+; align to a cache line boundary
+
+(define_insn "align_log"
+ [(unspec_volatile [(match_operand 0 "const_int_operand" "")] 1)]
+ ""
+ ".align %O0"
+;; Need a variable length for this to be processed in each shorten_branch pass.
+;; The actual work is done in ADJUST_INSN_LENTH, because length attributes
+;; need to be (a choice of) constants.
+  [(set (attr "length")
+	(if_then_else (ne (pc) (pc)) (const_int 2) (const_int 0)))
+  (set_attr "in_delay_slot" "no")])
 
 ; emitted at the end of the literal table, used to emit the
 ; 32bit branch labels if needed.
@@ -2508,7 +2893,7 @@
 (define_insn "subsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(minus:SF (match_operand:SF 1 "arith_reg_operand" "0")
-		  (match_operand:SF 2 "arith_reg_operand" "f")))]
+		 (match_operand:SF 2 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "fsub	%2,%0"
   [(set_attr "type" "fp")])
@@ -2533,80 +2918,66 @@
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
 	(div:SF (match_operand:SF 1 "arith_reg_operand" "0")
-		(match_operand:SF 2 "arith_reg_operand" "f")))]
+		 (match_operand:SF 2 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "fdiv	%2,%0"
   [(set_attr "type" "fdiv")])
 
-;; ??? This is the right solution, but it fails because the movs[if] patterns
-;; silently clobber FPUL (r22) for int<->fp moves.  Thus we can not explicitly
-;; use FPUL here.
-;;
-;;(define_expand "floatsisf2"
-;;  [(set (reg:SI 22)
-;;	(match_operand:SI 1 "arith_reg_operand" ""))
-;;   (set (match_operand:SF 0 "arith_reg_operand" "")
-;;        (float:SF (reg:SI 22)))]
-;;  "TARGET_SH3E"
-;;  "")
-;;
-;;(define_insn "*floatsisf"
-;;  [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-;;	(float:SF (reg:SI 22)))]
-;;  "TARGET_SH3E"
-;;  "float	fpul,%0")
+(define_expand "floatsisf2"
+  [(set (reg:SI 22)
+	(match_operand:SI 1 "arith_reg_operand" ""))
+   (set (match_operand:SF 0 "arith_reg_operand" "")
+        (float:SF (reg:SI 22)))]
+   (parallel [(set (match_operand:SF 0 "arith_reg_operand" "")
+		   (float:SF (reg:SI 22)))
+	      (use (match_dup 2))])]
+  "TARGET_SH3E"
+  "")
 
-(define_insn "floatsisf2"
+(define_insn "*floatsisf2_ie"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
-	(float:SF (match_operand:SI 1 "arith_reg_operand" "r")))]
+	(float:SF (reg:SI 22)))]
   "TARGET_SH3E"
-  "lds	%1,fpul\;float	fpul,%0"
-  [(set_attr "length" "4")
-   (set_attr "type" "fp")])
+  "float	fpul,%0"
+  [(set_attr "type" "fp")])
 
-;; ??? This is the right solution, but it fails because the movs[if] patterns
-;; silently clobber FPUL (r22) for int<->fp moves.  Thus we can not explicitly
-;; use FPUL here.
-;;
-;;(define_expand "fix_truncsfsi2"
-;;  [(set (reg:SI 22)
-;;	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
-;;   (set (match_operand:SI 0 "arith_reg_operand" "=r")
-;;	(reg:SI 22))]
-;;  "TARGET_SH3E"
-;;  "")
-;;
-;;(define_insn "*fixsfsi"
-;;  [(set (reg:SI 22)
-;;	(fix:SI (match_operand:SF 0 "arith_reg_operand" "f")))]
-;;  "TARGET_SH3E"
-;;  "ftrc	%0,fpul")
-
-(define_insn "fix_truncsfsi2"
-  [(set (match_operand:SI 0 "arith_reg_operand" "=r")
-	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))]
+(define_expand "fix_truncsfsi2"
+  [(set (reg:SI 22)
+	(fix:SI (match_operand:SF 1 "arith_reg_operand" "f")))
+   (set (match_operand:SI 0 "arith_reg_operand" "=r")
+	(reg:SI 22))]
   "TARGET_SH3E"
-  "ftrc	%1,fpul\;sts	fpul,%0"
-  [(set_attr "length" "4")
-   (set_attr "type" "move")])
+  "")
 
-;; ??? This should be SFmode not SImode in the compare, but that would
-;; require fixing the branch patterns too.
-(define_insn "*cmpgtsf_t"
+(define_insn "*fixsfsi"
+  [(set (reg:SI 22)
+	(fix:SI (match_operand:SF 0 "arith_reg_operand" "f")))]
+  "TARGET_SH3E"
+  "ftrc	%0,fpul"
+  [(set_attr "type" "fp")])
+
+(define_insn "cmpgtsf_t"
   [(set (reg:SI 18) (gt:SI (match_operand:SF 0 "arith_reg_operand" "f")
 			   (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "fcmp/gt	%1,%0"
   [(set_attr "type" "fp")])
 
-;; ??? This should be SFmode not SImode in the compare, but that would
-;; require fixing the branch patterns too.
-(define_insn "*cmpeqsf_t"
+(define_insn "cmpeqsf_t"
   [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
 			   (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E"
   "fcmp/eq	%1,%0"
   [(set_attr "type" "fp")])
+
+(define_insn "ieee_ccmpeqsf_t"
+  [(set (reg:SI 18) (ior:SI (reg:SI 18)
+			    (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
+				   (match_operand:SF 1 "arith_reg_operand" "f"))))]
+  "TARGET_SH3E && TARGET_IEEE"
+  "* return output_ieee_ccmpeq (insn, operands);"
+  [(set_attr "length" "4")])
+
 
 (define_expand "cmpsf"
   [(set (reg:SI 18) (compare (match_operand:SF 0 "arith_operand" "")
@@ -2813,7 +3184,7 @@
        || (GET_CODE (operands[2]) == SUBREG
 	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
    && reg_unused_after (operands[0], insn)"
-  "fmov.s	%2,@(%0,%1)")
+  "fmov{.s|}	%2,@(%0,%1)")
 
 (define_peephole
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2826,7 +3197,7 @@
        || (GET_CODE (operands[2]) == SUBREG
 	   && REGNO (SUBREG_REG (operands[2])) >= FIRST_FP_REG))
    && reg_unused_after (operands[0], insn)"
-  "fmov.s	@(%0,%1),%2")
+  "fmov{.s|}	@(%0,%1),%2")
 
 ;; Switch to a new stack with its address in sp_switch (a SYMBOL_REF).  */
 (define_insn "sp_switch_1"
