@@ -1,3 +1,7 @@
+Wed Jan 14 19:36:08 1998  Gavin Kock  (gavin@cygnus.com)
+
+	* mips.h: Fix some type-o's from a previous change.
+
 Wed Jan 14 01:26:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (check_dbra_loop): Make sure initial value is a 

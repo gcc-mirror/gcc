@@ -537,7 +537,7 @@ extern void		text_section ();
   { "cpu=",	&mips_cpu_string	},				\
   { "ips",	&mips_isa_string	},				\
   { "entry",	&mips_entry_string	},				\
-  { "no-mips16", &mips_no_mips16_string	}
+  { "no-mips16", &mips_no_mips16_string	}                               \
 }
 
 /* This is meant to be redefined in the host dependent files.  */
@@ -545,7 +545,7 @@ extern void		text_section ();
 
 #define GENERATE_BRANCHLIKELY  (!TARGET_MIPS16 && (TARGET_MIPS3900 || (mips_isa >= 2)))
 #define GENERATE_MULT3         (TARGET_MIPS3900				\
-				&& !TARGET_MIPS16
+				&& !TARGET_MIPS16)
 #define GENERATE_MADD          (TARGET_MIPS3900				\
 				&& !TARGET_MIPS16)
 
