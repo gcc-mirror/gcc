@@ -1,6 +1,6 @@
 // TR1 utility -*- C++ -*-
 
-// Copyright (C) 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,11 +66,11 @@ namespace tr1
     struct __pair_get<1>
     {
       template<typename _Tp1, typename _Tp2>
-      static _Tp1& __get(std::pair<_Tp1, _Tp2>& __pair)
+      static _Tp2& __get(std::pair<_Tp1, _Tp2>& __pair)
       { return __pair.second; }
 
       template<typename _Tp1, typename _Tp2>
-      static const _Tp1& __const_get(const std::pair<_Tp1, _Tp2>& __pair)
+      static const _Tp2& __const_get(const std::pair<_Tp1, _Tp2>& __pair)
       { return __pair.second; }
     };
 
