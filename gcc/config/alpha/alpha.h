@@ -64,9 +64,9 @@ Boston, MA 02111-1307, USA.  */
 	    builtin_assert ("cpu=ev4");			\
 	  }						\
 	if (TARGET_IEEE || TARGET_IEEE_WITH_INEXACT)	\
-	  builtin_define ("__IEEE_FP");			\
+	  builtin_define ("_IEEE_FP");			\
 	if (TARGET_IEEE_WITH_INEXACT)			\
-	  builtin_define ("__IEEE_FP_INEXACT");		\
+	  builtin_define ("_IEEE_FP_INEXACT");		\
 							\
 	/* Macros dependent on the C dialect.  */	\
 	if (preprocessing_asm_p ())			\
