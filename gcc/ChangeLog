@@ -1,3 +1,9 @@
+2004-07-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ifcvt.c, modulo-sched.c, tree-alias-common.c, tree-sra.c,
+	tree-ssa-copy.c, tree-ssa-dom.c, tree-ssa-pre.c: Fix comment
+	typos.
+
 2004-07-02  Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
 
 	* gcc.c (STANDARD_STARTFILE_PREFIX_1): Define.

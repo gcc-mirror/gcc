@@ -96,7 +96,7 @@ static bitmap nonzero_vars;
 static bool cfg_altered;
 
 /* Bitmap of blocks that have had EH statements cleaned.  We should
-   remove thier dead edges eventually.  */
+   remove their dead edges eventually.  */
 static bitmap need_eh_cleanup;
 
 /* Statistics for dominator optimizations.  */

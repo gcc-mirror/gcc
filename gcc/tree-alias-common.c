@@ -533,7 +533,7 @@ find_func_aliases (tree stp)
 	  else if (TREE_CODE (op1) == CALL_EXPR)
 	    {
 	      /* Heap assignment. These are __attribute__ malloc or
-		 something, i'll deal with it later.  */
+		 something, I'll deal with it later.  */
 	      if (0)
 		{}
 	      else

@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* Given two SSA_NAMEs, replace the annotations for the one referred to by OP 
-   with VAR's annmoptations.
+   with VAR's annotations.
 
    If OP is a pointer, copy the memory tag used originally by OP into
    VAR.  This is needed in cases where VAR had never been dereferenced in the

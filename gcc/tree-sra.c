@@ -1630,7 +1630,7 @@ sra_replace (block_stmt_iterator *bsi, tree list)
 }
 
 /* Scalarize a USE.  To recap, this is either a simple reference to ELT,
-   if elt is scalar, or some ocurrence of ELT that requires a complete
+   if elt is scalar, or some occurrence of ELT that requires a complete
    aggregate.  IS_OUTPUT is true if ELT is being modified.  */
 
 static void
