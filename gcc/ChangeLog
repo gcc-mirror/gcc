@@ -1,3 +1,9 @@
+2004-09-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/17517
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Don't 
+	coalesce same-root variables without checking for abnormal PHI usage.
+
 2004-09-16  Daniel Berlin  <dberlin@dberlin.org>
 	
 	* cfgloop.h (duplicate_loop):  Add prototype.

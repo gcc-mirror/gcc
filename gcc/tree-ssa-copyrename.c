@@ -169,6 +169,16 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
       return;
     }
 
+  /* Don't coalesce if one of the variables occurs in an abnormal PHI.  */
+  abnorm = (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rep1)
+	    || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rep2));
+  if (abnorm)
+    {
+      if (debug)
+	fprintf (debug, " : Abnormal PHI barrier.  No coalesce.\n");
+      return;
+    }
+
   /* Partitions already have the same root, simply merge them.  */
   if (root1 == root2)
     {
@@ -248,16 +258,6 @@ copy_rename_partition_coalesce (var_map map, tree var1, tree var2, FILE *debug)
     {
       if (debug)
 	fprintf (debug, " : Incompatible types.  No coalesce.\n");
-      return;
-    }
-
-  /* Don't coalesce if one of the variables occurs in an abnormal PHI.  */
-  abnorm = (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rep1)
-	    || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rep2));
-  if (abnorm)
-    {
-      if (debug)
-	fprintf (debug, " : Abnormal PHI barrier.  No coalesce.\n");
       return;
     }
 
