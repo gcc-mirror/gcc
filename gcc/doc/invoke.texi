@@ -232,7 +232,8 @@ in the following sections.
 -Wsystem-headers  -Wtrigraphs  -Wundef  -Wuninitialized @gol
 -Wunknown-pragmas  -Wunreachable-code @gol
 -Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter @gol
--Wunused-value  -Wunused-variable  -Wwrite-strings}
+-Wunused-value  -Wunused-variable  -Wwrite-strings @gol
+-Wvariadic-macros}
 
 @item C-only Warning Options
 @gccoptlist{-Wbad-function-cast  -Wmissing-declarations @gol
@@ -2962,6 +2963,13 @@ Warn if @samp{long long} type is used.  This is default.  To inhibit
 the warning messages, use @option{-Wno-long-long}.  Flags
 @option{-Wlong-long} and @option{-Wno-long-long} are taken into account
 only when @option{-pedantic} flag is used.
+
+@item -Wvariadic-macros
+@opindex Wvariadic-macros
+@opindex Wno-variadic-macros
+Warn if variadic macros are used in pedantic ISO C90 mode, or the GNU
+alternate syntax when in pedantic ISO C99 mode.  This is default.
+To inhibit the warning messages, use @option{-Wno-variadic-macros}.
 
 @item -Wdisabled-optimization
 @opindex Wdisabled-optimization
