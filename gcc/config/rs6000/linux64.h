@@ -557,35 +557,43 @@ while (0)
 #define USE_LD_AS_NEEDED 1
 #endif
 
-/* Do code reading to identify a signal frame, and set the frame
-   state data appropriately.  See unwind-dw2.c for the structs.  */
-
 #ifdef IN_LIBGCC2
-#include <signal.h>
+
+/* This file defines our own versions of various kernel and user
+   structs, so that system headers are not needed, which otherwise
+   can make bootstrapping a new toolchain difficult.  Do not use
+   these structs elsewhere;  Many fields are missing, particularly
+   from the end of the structures.  */
+
+struct gcc_pt_regs
+{
+  unsigned long gpr[32];
+  unsigned long nip;
+  unsigned long msr;
+  unsigned long orig_gpr3;
+  unsigned long ctr;
+  unsigned long link;
+};
+
+struct gcc_sigcontext
+{
+  unsigned long	pad[7];
+  struct gcc_pt_regs *regs;
+};
+
+struct gcc_ucontext
+{
 #ifdef __powerpc64__
-#include <sys/ucontext.h>
+  unsigned long pad[21];
+#else
+  unsigned long pad[5];
+#endif
+  struct gcc_sigcontext uc_mcontext;
+};
+
+#ifdef __powerpc64__
 
 enum { SIGNAL_FRAMESIZE = 128 };
-
-#else
-
-/* During the 2.5 kernel series the kernel ucontext was changed, but
-   the new layout is compatible with the old one, so we just define
-   and use the old one here for simplicity and compatibility.  */
-
-struct kernel_old_ucontext {
-  unsigned long     uc_flags;
-  struct ucontext  *uc_link;
-  stack_t           uc_stack;
-  struct sigcontext_struct uc_mcontext;
-  sigset_t          uc_sigmask;
-};
-enum { SIGNAL_FRAMESIZE = 64 };
-#endif
-
-#endif
-
-#ifdef __powerpc64__
 
 /* If the current unwind info (FS) does not contain explicit info
    saving R2, then we have to do a minor amount of code reading to
@@ -605,10 +613,13 @@ enum { SIGNAL_FRAMESIZE = 64 };
       }									\
   } while (0)
 
+/* Do code reading to identify a signal frame, and set the frame
+   state data appropriately.  See unwind-dw2.c for the structs.  */
+
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
     unsigned char *pc_ = (CONTEXT)->ra;					\
-    struct sigcontext *sc_;						\
+    struct gcc_sigcontext *sc_;						\
     long new_cfa_;							\
     int i_;								\
 									\
@@ -621,7 +632,7 @@ enum { SIGNAL_FRAMESIZE = 64 };
       {									\
 	struct sigframe {						\
 	  char gap[SIGNAL_FRAMESIZE];					\
-	  struct sigcontext sigctx;					\
+	  struct gcc_sigcontext sigctx;					\
 	} *rt_ = (CONTEXT)->cfa;					\
 	sc_ = &rt_->sigctx;						\
       }									\
@@ -629,8 +640,8 @@ enum { SIGNAL_FRAMESIZE = 64 };
       {									\
 	struct rt_sigframe {						\
 	  int tramp[6];							\
-	  struct siginfo *pinfo;					\
-	  struct ucontext *puc;						\
+	  void *pinfo;							\
+	  struct gcc_ucontext *puc;					\
 	} *rt_ = (struct rt_sigframe *) pc_;				\
 	sc_ = &rt_->puc->uc_mcontext;					\
       }									\
@@ -661,12 +672,14 @@ enum { SIGNAL_FRAMESIZE = 64 };
     goto SUCCESS;							\
   } while (0)
 
-#else
+#else  /* !__powerpc64__ */
+
+enum { SIGNAL_FRAMESIZE = 64 };
 
 #define MD_FALLBACK_FRAME_STATE_FOR(CONTEXT, FS, SUCCESS)		\
   do {									\
     unsigned char *pc_ = (CONTEXT)->ra;					\
-    struct sigcontext *sc_;						\
+    struct gcc_sigcontext *sc_;						\
     long new_cfa_;							\
     int i_;								\
 									\
@@ -681,7 +694,7 @@ enum { SIGNAL_FRAMESIZE = 64 };
       {									\
 	struct sigframe {						\
 	  char gap[SIGNAL_FRAMESIZE];					\
-	  struct sigcontext sigctx;					\
+	  struct gcc_sigcontext sigctx;					\
 	} *rt_ = (CONTEXT)->cfa;					\
 	sc_ = &rt_->sigctx;						\
       }									\
@@ -689,12 +702,9 @@ enum { SIGNAL_FRAMESIZE = 64 };
 	     || *(unsigned int *) (pc_+0) == 0x380000AC)		\
       {									\
 	struct rt_sigframe {						\
-	  char gap[SIGNAL_FRAMESIZE];					\
-	  unsigned long _unused[2];					\
-	  struct siginfo *pinfo;					\
-	  void *puc;							\
-	  struct siginfo info;						\
-	  struct kernel_old_ucontext uc;				\
+	  char gap[SIGNAL_FRAMESIZE + 16];				\
+	  char siginfo[128];						\
+	  struct gcc_ucontext uc;					\
 	} *rt_ = (CONTEXT)->cfa;					\
 	sc_ = &rt_->uc.uc_mcontext;					\
       }									\
@@ -726,6 +736,6 @@ enum { SIGNAL_FRAMESIZE = 64 };
   } while (0)
 
 #endif
-
+#endif /* LIBGCC2 */
 
 #define OS_MISSING_POWERPC64 !TARGET_64BIT

@@ -1,3 +1,11 @@
+2004-09-02  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h: Don't include signal.h or sys/ucontext.h.
+	(struct kernel_old_ucontext): Delete.
+	(struct gcc_pt_regs, gcc_sigcontext, gcc_ucontext): New.
+	(MD_FALLBACK_FRAME_STATE_FOR): Use gcc_* structs.  Only define
+	when IN_LIGGCC2.
+
 2004-09-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* toplev.c (process_options): Fix typo.
