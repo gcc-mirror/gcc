@@ -1,3 +1,10 @@
+2003-02-16  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* config/i386/i386-protos.h (function_arg_pass_by_reference): Declare.
+	* config/i386/i386.h (FUNCTION_ARG_PASS_BY_REFERENCE): Use it.
+	* config/i386/i386.c (function_arg_pass_by_reference): New.
+	(ix86_va_arg): Support arguments passed by reference.
+
 2003-02-16 Arend Bayer <arend.bayer@web.de>
            Richard Henderson  <rth@redhat.com>
 

@@ -1730,6 +1730,15 @@ typedef struct ix86_args {
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 0
 
+/* A C expression that indicates when an argument must be passed by
+   reference.  If nonzero for an argument, a copy of that argument is
+   made in memory and a pointer to the argument is passed instead of
+   the argument itself.  The pointer is passed in whatever way is
+   appropriate for passing a pointer to that type.  */
+
+#define FUNCTION_ARG_PASS_BY_REFERENCE(CUM, MODE, TYPE, NAMED) \
+  function_arg_pass_by_reference(&CUM, MODE, TYPE, NAMED)
+
 /* If PIC, we cannot make sibling calls to global functions
    because the PLT requires %ebx live.
    If we are returning floats on the 80387 register stack, we cannot
