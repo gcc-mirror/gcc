@@ -187,7 +187,7 @@ negate_rtx (mode, x)
 {
   rtx result = simplify_unary_operation (NEG, mode, x, mode);
 
-  if (result = 0)
+  if (result == 0)
     result = expand_unop (mode, neg_optab, x, NULL_RTX, 0);
 
   return result;
