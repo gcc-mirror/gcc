@@ -1,3 +1,7 @@
+2004-08-23  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.c-torture/execute/20040823-1.c: New test.
+
 2004-08-23  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.dg/special/mips-abi.exp: Expect gcc to pass the GNU ABI flags
