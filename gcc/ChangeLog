@@ -1,3 +1,7 @@
+2000-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* tree.h (struct tree_common): Remove misleading comment.
+
 2000-04-16  Dave Pitts  <dpitts@cozx.com>
 
 	* Makefile.in ($(srcdir)/c-parse.y: c-parse.in): Enclose the whole
