@@ -35,6 +35,7 @@ details.  */
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/Runtime.h>
+#include <java/lang/StringBuffer.h>
 #include <java/io/Serializable.h>
 #include <java/lang/Cloneable.h>
 
@@ -184,11 +185,12 @@ gnu::gcj::runtime::VMClassLoader::findClass (jstring name)
 
   if (! klass)
     {
-      // Turn `gnu.pkg.quux' into `gnu-pkg-quux'.  Then search for a
-      // module named (eg, on Linux) `gnu-pkg-quux.so', followed by
-      // `gnu-pkg.so' and `gnu.so'.  If loading one of these causes
-      // the class to appear in the cache, then use it.
-      jstring so_base_name = name->replace ('.', '-');
+      // Turn `gnu.pkg.quux' into `lib-gnu-pkg-quux'.  Then search for
+      // a module named (eg, on Linux) `lib-gnu-pkg-quux.so', followed
+      // by `lib-gnu-pkg.so' and `lib-gnu.so'.  If loading one of
+      // these causes the class to appear in the cache, then use it.
+      java::lang::StringBuffer *sb = new java::lang::StringBuffer (JvNewStringLatin1("lib-"));
+      jstring so_base_name = (sb->append (name)->toString ())->replace ('.', '-');
 
       while (! klass && so_base_name && so_base_name->length() > 0)
 	{

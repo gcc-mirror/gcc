@@ -1,3 +1,8 @@
+2001-08-21  Anthony Green  <green@redhat.com>
+
+        * java/lang/natClassLoader.cc (findClass): Search for
+        lib-gnu-pkg-quux.so, not gnu-pkg-quux.so.
+
 2001-08-21  Jeff Sturm  <jsturm@one-point.com>
 
 	* java/util/IdentityHashMap.java (get): Fix off-by-one error.
