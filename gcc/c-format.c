@@ -325,16 +325,19 @@ static international_format_info *international_format_list = NULL;
 void
 init_function_format_info ()
 {
+  /* __builtin functions should be checked unconditionally, even with
+     -ffreestanding.  */
+  record_function_format (get_identifier ("__builtin_printf"), NULL_TREE,
+			  printf_format_type, 1, 2);
+  record_function_format (get_identifier ("__builtin_fprintf"), NULL_TREE,
+			  printf_format_type, 2, 3);
+
   if (flag_hosted)
     {
       /* Functions from ISO/IEC 9899:1990.  */
       record_function_format (get_identifier ("printf"), NULL_TREE,
 			      printf_format_type, 1, 2);
-      record_function_format (get_identifier ("__builtin_printf"), NULL_TREE,
-			      printf_format_type, 1, 2);
       record_function_format (get_identifier ("fprintf"), NULL_TREE,
-			      printf_format_type, 2, 3);
-      record_function_format (get_identifier ("__builtin_fprintf"), NULL_TREE,
 			      printf_format_type, 2, 3);
       record_function_format (get_identifier ("sprintf"), NULL_TREE,
 			      printf_format_type, 2, 3);
@@ -354,7 +357,7 @@ init_function_format_info ()
 			      strftime_format_type, 3, 0);
     }
 
-  if (flag_hosted && flag_isoc99)
+  if (flag_hosted && (flag_isoc99 || flag_noniso_default_format_attributes))
     {
       /* ISO C99 adds the snprintf and vscanf family functions.  */
       record_function_format (get_identifier ("snprintf"), NULL_TREE,
