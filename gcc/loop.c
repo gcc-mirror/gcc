@@ -3830,7 +3830,7 @@ emit_prefetch_instructions (loop)
 	      || GET_CODE (iv->mult_val) != CONST_INT
 	      /* Don't handle reversed order prefetches, since they are usually
 		 ineffective.  Later we may be able to reverse such BIVs.  */
-	      || (PREFETCH_NO_REVERSE_ORDER 
+	      || (PREFETCH_NO_REVERSE_ORDER
 		  && (stride = INTVAL (iv->mult_val) * basestride) < 0)
 	      /* Prefetching of accesses with such an extreme stride is probably
 		 not worthwhile, either.  */
@@ -9087,7 +9087,7 @@ canonicalize_condition (insn, cond, reverse, earliest, want_reg)
 
       if ((prev = prev_nonnote_insn (prev)) == 0
 	  || GET_CODE (prev) != INSN
-	  || FIND_REG_INC_NOTE (prev, 0))
+	  || FIND_REG_INC_NOTE (prev, NULL_RTX))
 	break;
 
       set = set_of (op0, prev);

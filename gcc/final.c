@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -960,7 +960,7 @@ shorten_branches (first)
       else if (GET_CODE (insn) == CODE_LABEL)
 	{
 	  rtx next;
-	  
+
 	  /* Merge in alignments computed by compute_alignments.  */
 	  log = LABEL_TO_ALIGNMENT (insn);
 	  if (max_log < log)
@@ -2372,7 +2372,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 			&& rtx_equal_p (SET_SRC (set), cc_status.value2)))
 		  {
 		    /* Don't delete insn if it has an addressing side-effect.  */
-		    if (! FIND_REG_INC_NOTE (insn, 0)
+		    if (! FIND_REG_INC_NOTE (insn, NULL_RTX)
 			/* or if anything in it is volatile.  */
 			&& ! volatile_refs_p (PATTERN (insn)))
 		      {
@@ -3041,7 +3041,7 @@ get_mem_expr_from_op (op, paddressp)
   expr = get_mem_expr_from_op (op, &inner_addressp);
   return inner_addressp ? 0 : expr;
 }
-  
+
 /* Output operand names for assembler instructions.  OPERANDS is the
    operand vector, OPORDER is the order to write the operands, and NOPS
    is the number of operands to write.  */
@@ -3175,7 +3175,7 @@ output_asm_insn (template, operands)
 		    output_operand_lossage ("unterminated assembly dialect alternative");
 		    break;
 		  }
-	      }	  
+	      }
 	    while (*p++ != '}');
 	    dialect = 0;
 	  }
