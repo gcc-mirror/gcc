@@ -1187,16 +1187,6 @@ compstmtend:
 	| maybe_label_decls error '}'
 	;
 
-already_scoped_stmt:
-	  save_lineno '{'
-		{ $<ttype>$ =  begin_compound_stmt (1); }
-	  compstmtend
-		{ STMT_LINENO ($<ttype>3) = $1;
-		  finish_compound_stmt (1, $<ttype>3); }
-	| save_lineno simple_stmt
-		{ if ($2) STMT_LINENO ($2) = $1; }
-	;
-
 nontrivial_exprlist:
 	  expr_no_commas ',' expr_no_commas
 		{ $$ = tree_cons (NULL_TREE, $$, 
@@ -3394,7 +3384,7 @@ simple_stmt:
 		}
 	  paren_cond_or_null
                 { finish_while_stmt_cond ($3, $<ttype>2); }
-	  already_scoped_stmt
+	  implicitly_scoped_stmt
                 { $$ = $<ttype>2;
 		  finish_while_stmt ($<ttype>2); }
 	| DO
@@ -3415,7 +3405,7 @@ simple_stmt:
                 { finish_for_cond ($6, $<ttype>2); }
 	  xexpr ')'
                 { finish_for_expr ($9, $<ttype>2); }
-	  already_scoped_stmt
+	  implicitly_scoped_stmt
                 { $$ = $<ttype>2;
 		  finish_for_stmt ($<ttype>2); }
 	| SWITCH 
