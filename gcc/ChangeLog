@@ -1,3 +1,7 @@
+Sun Apr  5 16:53:37 1998Don Bowman <don@pixsci.com>  
+
+        * configure.in (mips-wrs-vxworks): New target.
+
 Sat Apr 4 23:34:32 PST 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
