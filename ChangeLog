@@ -1,3 +1,7 @@
+2002-06-22  Nathanael Nerode  <neroden@twcny.rr.com>
+
+	* configure.in: Fix AIX configury bug.
+
 2002-06-20  Steve Ellcey  <sje@cup.hp.com>
 
 	* MAINTAINERS (Write After Approval): Add self.
