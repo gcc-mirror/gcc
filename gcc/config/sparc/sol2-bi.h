@@ -216,17 +216,9 @@
 #define MULTILIB_DEFAULTS { "m64" }
 #endif
 
-/* We use stabs-in-elf in 32-bit mode, because that is what the native
-   toolchain uses.  But gdb can't handle truncated 32-bit stabs so we
-   use dwarf2 in 64-bit mode.  */
 #undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE (TARGET_ARCH32 ? DBX_DEBUG : DWARF2_DEBUG)
+#define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
-/* We can't use the above definition for the purposes of specs.  */
 #if defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-# if DEFAULT_ARCH32_P
-#  define ASM_DEBUG_SPEC "%{gdwarf-2*:--gdwarf2}%{!gdwarf-2*:%{g*:--gstabs}}"
-# else
-#  define ASM_DEBUG_SPEC "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}"
-# endif
+# define ASM_DEBUG_SPEC "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}"
 #endif
