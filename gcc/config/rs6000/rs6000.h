@@ -1055,8 +1055,8 @@ enum reg_class
   { 0xfffffffe, 0x00000000, 0x00000008, 0x00000000 }, /* BASE_REGS */	     \
   { 0xffffffff, 0x00000000, 0x00000008, 0x00000000 }, /* GENERAL_REGS */     \
   { 0x00000000, 0xffffffff, 0x00000000, 0x00000000 }, /* FLOAT_REGS */       \
-  { 0x00000000, 0x00000000, 0xffffe000, 0x0001ffff }, /* ALTIVEC_REGS */     \
-  { 0x00000000, 0x00000000, 0x00000000, 0x00020000 }, /* VRSAVE_REGS */	     \
+  { 0x00000000, 0x00000000, 0xffffe000, 0x00001fff }, /* ALTIVEC_REGS */     \
+  { 0x00000000, 0x00000000, 0x00000000, 0x00002000 }, /* VRSAVE_REGS */	     \
   { 0xffffffff, 0xffffffff, 0x00000008, 0x00000000 }, /* NON_SPECIAL_REGS */ \
   { 0x00000000, 0x00000000, 0x00000001, 0x00000000 }, /* MQ_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000002, 0x00000000 }, /* LINK_REGS */	     \
@@ -1066,9 +1066,9 @@ enum reg_class
   { 0xffffffff, 0x00000000, 0x0000000f, 0x00000000 }, /* SPEC_OR_GEN_REGS */ \
   { 0x00000000, 0x00000000, 0x00000010, 0x00000000 }, /* CR0_REGS */	     \
   { 0x00000000, 0x00000000, 0x00000ff0, 0x00000000 }, /* CR_REGS */	     \
-  { 0xffffffff, 0x00000000, 0x0000ffff, 0x00000000 }, /* NON_FLOAT_REGS */   \
-  { 0x00000000, 0x00000000, 0x00010000, 0x00000000 }, /* XER_REGS */	     \
-  { 0xffffffff, 0xffffffff, 0xffffffff, 0x0003ffff }  /* ALL_REGS */	     \
+  { 0xffffffff, 0x00000000, 0x0000efff, 0x00000000 }, /* NON_FLOAT_REGS */   \
+  { 0x00000000, 0x00000000, 0x00001000, 0x00000000 }, /* XER_REGS */	     \
+  { 0xffffffff, 0xffffffff, 0xffffffff, 0x00003fff }  /* ALL_REGS */	     \
 }
 
 /* The same information, inverted:
@@ -2069,7 +2069,7 @@ do {									     \
 
 /* Define this macro if the register defined by
    `PIC_OFFSET_TABLE_REGNUM' is clobbered by calls.  Do not define
-   this macro if `PIC_OFFSET_TABLE_REGNUM' is not defined. */
+   this macro if `PIC_OFFSET_TABLE_REGNUM' is not defined.  */
 
 /* #define PIC_OFFSET_TABLE_REG_CALL_CLOBBERED */
 

@@ -1,3 +1,8 @@
+2001-11-17  Stan Shebs  <shebs@apple.com>
+
+	* config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Fix the
+	AltiVec-related bitfields.
+
 Sat Nov 17 12:06:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* except.c (enum eh_region_type): Add ERT_UNKNOWN.
