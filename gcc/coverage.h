@@ -1,5 +1,5 @@
-/* profile.h - Defines data exported from profile.c to other passes.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+/* coverage.h - Defines data exported from coverage.c
+   Copyright (C) 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,8 +18,10 @@ along with GCC; see the file COPYING.  If not, write to the Free
 Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-#ifndef GCC_PROFILE_H
-#define GCC_PROFILE_H
+#ifndef GCC_COVERAGE_H
+#define GCC_COVERAGE_H
+
+#include "gcov-io.h"
 
 /* The number of different counter sections.  */
 #define MAX_COUNTER_SECTIONS	1
@@ -57,6 +59,14 @@ struct profile_info
 
 extern struct profile_info profile_info;
 
+extern void coverage_init (const char *);
+extern void coverage_finish (void);
+extern void coverage_end_function (void);
+extern int coverage_begin_output (void);
+extern rtx coverage_counter_ref (unsigned /*tag*/, unsigned/*num*/);
+
+gcov_type *get_coverage_counts (unsigned /*tag*/, unsigned /*expected*/);
 struct section_info *find_counters_section	PARAMS ((unsigned));
+
 
 #endif

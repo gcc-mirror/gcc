@@ -25,6 +25,7 @@ Boston, MA 02111-1307, USA.  */
 #include <getopt.h>
 #define IN_GCOV (-1)
 #include "gcov-io.h"
+#include "gcov-io.c"
 
 static void dump_file PARAMS ((const char *));
 static void print_prefix PARAMS ((const char *, unsigned));

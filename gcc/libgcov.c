@@ -59,6 +59,7 @@ void __gcov_flush (void) { }
 #endif
 #define IN_LIBGCOV 1
 #include "gcov-io.h"
+#include "gcov-io.c"
 
 /* Chain of per-object gcov structures.  */
 static struct gcov_info *gcov_list;
@@ -136,7 +137,7 @@ gcov_exit (void)
       int error;
       int merging;
       unsigned long base;
-      const struct function_info *fn_info;
+      const struct gcov_function_info *fn_info;
       gcov_type **counters;
       gcov_type *count_ptr;
       gcov_type object_max_one = 0;

@@ -2195,7 +2195,7 @@ compile_file ()
   /* Initialize yet another pass.  */
 
   init_final (main_input_filename);
-  init_branch_prob (aux_base_name);
+  coverage_init (aux_base_name);
 
   timevar_push (TV_PARSE);
 
@@ -2216,11 +2216,10 @@ compile_file ()
 
   (*lang_hooks.decls.final_write_globals)();
 
-    if (profile_arc_flag)
-      /* This must occur after the loop to output deferred functions.
-         Else the profiler initializer would not be emitted if all the
-         functions in this compilation unit were deferred.  */
-      create_profiler ();
+  /* This must occur after the loop to output deferred functions.
+     Else the coverage initializer would not be emitted if all the
+     functions in this compilation unit were deferred.  */
+  coverage_finish ();
 
   /* Write out any pending weak symbol declarations.  */
 
@@ -3765,6 +3764,8 @@ rest_of_compilation (decl)
 
  exit_rest_of_compilation:
 
+  coverage_end_function ();
+  
   /* In case the function was not output,
      don't leave any temporary anonymous types
      queued up for sdb output.  */
