@@ -2123,9 +2123,13 @@ for machine in $build $host $target; do
 		else
 			tmake_file="rs6000/t-ppc t-linux rs6000/t-ppccomm"
 		fi
-		xmake_file=rs6000/x-sysv4
+		xmake_file=x-linux
 		fixincludes=Makefile.in
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
+		if [[ x$thread_file = x ]]; then
+			thread_file='posix'
+		fi
 		;;
         powerpc-*-vxworks*)
                 cpu_type=rs6000
