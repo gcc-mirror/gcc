@@ -22,17 +22,6 @@
 	* java/lang/ThreadGroup.java (ThreadGroup): Don't explicitly check
 	for `p==null'.
 
-2000-04-23  Tom Tromey  <tromey@cygnus.com>
-
-	* prims.cc (DECLARE_PRIM_TYPE): Define a vtable as well.
-	(_Jv_PrimClass): Set `methods' by calling _Jv_FindArrayClass.
-	* include/jvm.h (struct _Jv_ArrayVTable): Declare.
-	(NUM_OBJECT_METHODS): New define.
-	* java/lang/natClassLoader.cc (_Jv_FindArrayClass): Added
-	`array_vtable' parameter.  Added assertion.
-	* java/lang/Class.h (_Jv_FindArrayClass): Added `array_vtable'
-	parameter.
-
 2000-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (GCJCOMPILE, JCFLAGS, JF1CLAGS, jv_convert_LINK,
