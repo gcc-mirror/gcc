@@ -1,3 +1,11 @@
+2001-08-24  Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
+            Phil Edwards  <pme@sources.redhat.com>
+
+	PR libstdc++/3349
+	* include/bits/stl_tree.h (insert_unique):  Revert last change.
+	Values inserted at begin() must be less, not greater, than *begin()'s.
+	* testsuite/23_containers/map_insert.cc:  New file.
+
 2001-08-23  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* config/locale/c_locale_gnu.cc: Minor tweaks.
