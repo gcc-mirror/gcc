@@ -1,5 +1,6 @@
 /* SocketImpl.java -- Abstract socket implementation class
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -35,9 +36,13 @@ this exception to your version of the library, but you are not
 obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
+
 package java.net;
 
-import java.io.*;
+import java.io.FileDescriptor;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /* Written using on-line Java Platform 1.2 API Specification.
  * Believed complete and correct.
