@@ -826,7 +826,9 @@ struct hppa_args {int words, nargs_prototype; };
    The caller must make a distinction between calls to explicitly named
    functions and calls through pointers to functions -- the conventions
    are different!  Calls through pointers to functions only use general
-   registers for the first four argument words.
+   registers for the first four argument words.  Note the indirect function
+   calling conventions are in effect during TARGET_LONG_CALLS, but 
+   current_call_is_indirect will not be set in such situations. 
 
    Of course all this is different for the portable runtime model
    HP wants everyone to use for ELF.  Ugh.  Here's a quick description
@@ -861,11 +863,13 @@ struct hppa_args {int words, nargs_prototype; };
       || !FLOAT_MODE_P (MODE) || (CUM).nargs_prototype > 0)		\
       ? gen_rtx (REG, (MODE),						\
 		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-		  ? (((!current_call_is_indirect || TARGET_PORTABLE_RUNTIME) \
+		  ? (((!(current_call_is_indirect || TARGET_LONG_CALLS)	\
+		       || TARGET_PORTABLE_RUNTIME)			\
 		      && (MODE) == DFmode)				\
 		     ? ((CUM).words ? 38 : 34)				\
 		     : ((CUM).words ? 23 : 25))				\
-		  : (((!current_call_is_indirect || TARGET_PORTABLE_RUNTIME) \
+		  : (((!(current_call_is_indirect || TARGET_LONG_CALLS)	\
+		       || TARGET_PORTABLE_RUNTIME)			\
 		      && (MODE) == SFmode)				\
 		     ? (32 + 2 * (CUM).words)				\
 		     : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),	\
