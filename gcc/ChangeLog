@@ -1,3 +1,8 @@
+2001-06-07  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/alpha/elf.h (MAKE_DECL_ONE_ONLY): Copy definition
+	from config/elfos.h.
+
 2001-06-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/gcc.texi, doc/invoke.texi: Add index of command line
