@@ -935,7 +935,7 @@ _Jv_IsAssignableFrom (jclass target, jclass source)
       if (__builtin_expect ((if_idt == NULL), false))
 	return false; // No class implementing TARGET has been loaded.    
       jshort cl_iindex = cl_idt->cls.iindex;
-      if (cl_iindex <= if_idt->iface.ioffsets[0])
+      if (cl_iindex < if_idt->iface.ioffsets[0])
         {
 	  jshort offset = if_idt->iface.ioffsets[cl_iindex];
 	  if (offset < cl_idt->cls.itable_length
@@ -1319,7 +1319,7 @@ _Jv_FindIIndex (jclass *ifaces, jshort *offsets, jshort num)
         {
 	  if (j >= num)
 	    goto found;
-	  if (i > ifaces[j]->idt->iface.ioffsets[0])
+	  if (i >= ifaces[j]->idt->iface.ioffsets[0])
 	    continue;
 	  int ioffset = ifaces[j]->idt->iface.ioffsets[i];
 	  /* We can potentially share this position with another class. */
