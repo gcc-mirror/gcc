@@ -1,3 +1,8 @@
+2004-05-02  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/15112
+	* reload1.c (reload): Don't record unchanging memory locations.
+
 2004-04-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	PR other/1963
@@ -396,7 +401,6 @@
 	* ada/init.c: Reorder so the simple single OS conditional __rtems__
 	is tested before more complex ones which mix UNIX and embedded
 	systems in the conditional.
-
 
 2004-04-08  Joel Sherrill  <joel@oarcorp.com>
 
