@@ -103,7 +103,7 @@ void yyerror ();
 %start program
 
 %union {long itype; tree ttype; enum tree_code code;
-	char *filename; int lineno; }
+	char *filename; int lineno; int ends_in_label; }
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -209,6 +209,8 @@ void yyerror ();
 %type <ttype> identifiers_or_typenames
 
 %type <itype> setspecs
+
+%type <ends_in_label> lineno_stmt_or_label lineno_stmt_or_labels stmt_or_label
 
 %type <filename> save_filename
 %type <lineno> save_lineno
@@ -1557,9 +1559,19 @@ absdcl1:  /* a nonempty absolute declarator */
    is actually regarded as an invalid decl and part of the decls.  */
 
 stmts:
+	lineno_stmt_or_labels
+		{
+		  if (pedantic && $1)
+		    pedwarn ("ANSI C forbids label at end of compound statement");
+		}
+	;
+
+lineno_stmt_or_labels:
 	  lineno_stmt_or_label
-	| stmts lineno_stmt_or_label
-	| stmts errstmt
+	| lineno_stmt_or_labels lineno_stmt_or_label
+		{ $$ = $2; }
+	| lineno_stmt_or_labels errstmt
+		{ $$ = 0; }
 	;
 
 xstmts:
@@ -1699,19 +1711,14 @@ lineno_labeled_stmt:
 
 lineno_stmt_or_label:
 	  save_filename save_lineno stmt_or_label
-		{ }
+		{ $$ = $3; }
 	;
 
 stmt_or_label:
 	  stmt
+		{ $$ = 0; }
 	| label
-		{ int next;
-		  position_after_white_space ();
-		  next = getc (finput);
-		  ungetc (next, finput);
-		  if (pedantic && next == '}')
-		    pedwarn ("ANSI C forbids label at end of compound statement");
-		}
+		{ $$ = 1; }
 	;
 
 /* Parse a single real statement, not including any labels.  */
