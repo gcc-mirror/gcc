@@ -313,6 +313,7 @@ static void dbxout_prepare_symbol	PARAMS ((tree));
 static void dbxout_finish_symbol	PARAMS ((tree));
 static void dbxout_block		PARAMS ((tree, int, tree));
 static void dbxout_begin_function	PARAMS ((tree));
+static void dbxout_global_decl		PARAMS ((tree));
 
 /* The debug hooks structure.  */
 #if defined (DBX_DEBUGGING_INFO)
@@ -343,7 +344,7 @@ struct gcc_debug_hooks dbx_debug_hooks =
 #endif
   debug_nothing_int,		/* end_function */
   dbxout_function_decl,
-  debug_nothing_tree,		/* global_decl */
+  dbxout_global_decl,		/* global_decl */
   debug_nothing_tree,		/* deferred_inline_function */
   debug_nothing_tree,		/* outlining_inline_function */
   debug_nothing_rtx		/* label */
@@ -369,7 +370,7 @@ struct gcc_debug_hooks xcoff_debug_hooks =
   debug_nothing_tree,		/* begin_function */
   xcoffout_end_function,
   debug_nothing_tree,		/* function_decl */
-  debug_nothing_tree,		/* global_decl */
+  dbxout_global_decl,		/* global_decl */
   debug_nothing_tree,		/* deferred_inline_function */
   debug_nothing_tree,		/* outlining_inline_function */
   debug_nothing_rtx		/* label */
@@ -622,6 +623,18 @@ dbxout_end_block (line, n)
 {
   ASM_OUTPUT_INTERNAL_LABEL (asmfile, "LBE", n);
 }
+
+/* Debug information for a global DECL.  Called from toplev.c after
+   compilation proper has finished.  */
+static void
+dbxout_global_decl (decl)
+     tree decl;
+{
+  if (TREE_CODE (decl) == VAR_DECL
+      && ! DECL_EXTERNAL (decl)
+      && DECL_RTL_SET_P (decl))	/* Not necessary?  */
+    dbxout_symbol (decl, 0);
+} 
 
 /* Output dbx data for a function definition.
    This includes a definition of the function name itself (a symbol),
