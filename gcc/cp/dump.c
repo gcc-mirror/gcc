@@ -783,11 +783,16 @@ dequeue_and_dump (di)
     case MODIFY_EXPR:
     case COMPONENT_REF:
     case COMPOUND_EXPR:
-    case COND_EXPR:
     case ARRAY_REF:
       /* These nodes are binary, but do not have code class `2'.  */
       dump_child ("op 0", TREE_OPERAND (t, 0));
       dump_child ("op 1", TREE_OPERAND (t, 1));
+      break;
+
+    case COND_EXPR:
+      dump_child ("op 0", TREE_OPERAND (t, 0));
+      dump_child ("op 1", TREE_OPERAND (t, 1));
+      dump_child ("op 2", TREE_OPERAND (t, 2));
       break;
 
     case CALL_EXPR:
