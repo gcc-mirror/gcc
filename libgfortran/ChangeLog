@@ -1,3 +1,10 @@
+2004-09-13  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/17090
+
+	* io/list_read.c (list_formatted_read): Handle trailing spaces
+	at end of line.
+
 2004-09-06  Steven G. Kargl  <kargls@comcast.net>
 
 	* io/write.c (output_float): Typo in comment.  Remove debugging

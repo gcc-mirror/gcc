@@ -1270,7 +1270,12 @@ list_formatted_read (bt type, void *p, int len)
       if (at_eol)
         finish_separator ();
       else
-        eat_spaces ();
+        {
+          eat_spaces ();
+          /* trailing spaces prior to end of line */
+          if (at_eol)
+            finish_separator ();
+        }
 
       saved_type = BT_NULL;
       repeat_count = 1;
