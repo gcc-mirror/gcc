@@ -2629,9 +2629,10 @@ find_best_addr (insn, loc)
    A or the code corresponding to the inverse of the comparison.  */
 
 static enum rtx_code
-find_comparison_args (code, parg1, parg2)
+find_comparison_args (code, parg1, parg2, pmode1, pmode2)
      enum rtx_code code;
      rtx *parg1, *parg2;
+     enum machine_mode *pmode1, *pmode2;
 {
   rtx arg1, arg2;
 
@@ -2770,7 +2771,9 @@ find_comparison_args (code, parg1, parg2)
 	code = reverse_condition (code);
     }
 
-  /* Return our results.  */
+  /* Return our results.  Return the modes from before fold_rtx
+     because fold_rtx might produce const_int, and then it's too late.  */
+  *pmode1 = GET_MODE (arg1), *pmode2 = GET_MODE (arg2);
   *parg1 = fold_rtx (arg1, 0), *parg2 = fold_rtx (arg2, 0);
 
   return code;
@@ -4549,7 +4552,7 @@ fold_rtx (x, insn)
       if (new)
 	return fold_rtx (copy_rtx (XEXP (new, 0)), insn);
       break;
-      
+
     case MEM:
       /* If we are not actually processing an insn, don't try to find the
 	 best address.  Not only don't we care, but we could modify the
@@ -4848,6 +4851,7 @@ fold_rtx (x, insn)
 	{
 	  struct table_elt *p0, *p1;
 	  rtx true = const_true_rtx, false = const0_rtx;
+	  enum machine_mode mode_arg1;
 
 #ifdef FLOAT_STORE_FLAG_VALUE
 	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
@@ -4857,23 +4861,14 @@ fold_rtx (x, insn)
 	    }
 #endif
 
-	  code = find_comparison_args (code, &folded_arg0, &folded_arg1);
+	  code = find_comparison_args (code, &folded_arg0, &folded_arg1,
+				       &mode_arg0, &mode_arg1);
 	  const_arg0 = equiv_constant (folded_arg0);
 	  const_arg1 = equiv_constant (folded_arg1);
 
-	  /* Get a mode from the values actually being compared, or from the
-	     old value of MODE_ARG0 if both are constants.  If the resulting
-	     mode is VOIDmode or a MODE_CC mode, we don't know what kinds
-	     of things are being compared, so we can't do anything with this
-	     comparison.  */
-
-	  if (GET_MODE (folded_arg0) != VOIDmode
-	      && GET_MODE_CLASS (GET_MODE (folded_arg0)) != MODE_CC)
-	    mode_arg0 = GET_MODE (folded_arg0);
-
-	  else if (GET_MODE (folded_arg1) != VOIDmode
-		   && GET_MODE_CLASS (GET_MODE (folded_arg1)) != MODE_CC)
-	    mode_arg0 = GET_MODE (folded_arg1);
+	  /* If the mode is VOIDmode or a MODE_CC mode, we don't know
+	     what kinds of things are being compared, so we can't do
+	     anything with this comparison.  */
 
 	  if (mode_arg0 == VOIDmode || GET_MODE_CLASS (mode_arg0) == MODE_CC)
 	    break;
@@ -5020,10 +5015,21 @@ fold_rtx (x, insn)
 		  && XEXP (XEXP (y, 1), 0) == XEXP (const_arg1, 0))
 		return XEXP (y, 0);
 	    }
+	  goto from_plus;
+
+	case MINUS:
+	  /* If we have (MINUS Y C), see if Y is known to be (PLUS Z C2).
+	     If so, produce (PLUS Z C2-C).  */
+	  if (const_arg1 != 0 && GET_CODE (const_arg1) == CONST_INT)
+	    {
+	      rtx y = lookup_as_function (XEXP (x, 0), PLUS);
+	      if (y && GET_CODE (XEXP (y, 1)) == CONST_INT)
+		return fold_rtx (plus_constant (y, -INTVAL (const_arg1)));
+	    }
 
 	  /* ... fall through ... */
 
-	case MINUS:
+	from_plus:
 	case SMIN:    case SMAX:      case UMIN:    case UMAX:
 	case IOR:     case AND:       case XOR:
 	case MULT:    case DIV:       case UDIV:
@@ -5241,7 +5247,7 @@ record_jump_equiv (insn, taken)
 {
   int cond_known_true;
   rtx op0, op1;
-  enum machine_mode mode;
+  enum machine_mode mode, mode0, mode1;
   int reversed_nonequality = 0;
   enum rtx_code code;
 
@@ -5262,7 +5268,7 @@ record_jump_equiv (insn, taken)
   op0 = fold_rtx (XEXP (XEXP (SET_SRC (PATTERN (insn)), 0), 0), insn);
   op1 = fold_rtx (XEXP (XEXP (SET_SRC (PATTERN (insn)), 0), 1), insn);
 
-  code = find_comparison_args (code, &op0, &op1);
+  code = find_comparison_args (code, &op0, &op1, &mode0, &mode1);
   if (! cond_known_true)
     {
       reversed_nonequality = (code != EQ && code != NE);
@@ -5270,8 +5276,9 @@ record_jump_equiv (insn, taken)
     }
 
   /* The mode is the mode of the non-constant.  */
-  mode = GET_MODE (op0);
-  if (mode == VOIDmode) mode = GET_MODE (op1);
+  mode = mode0;
+  if (mode1 != VOIDmode)
+    mode = mode1;
 
   record_jump_cond (code, mode, op0, op1, reversed_nonequality);
 }
