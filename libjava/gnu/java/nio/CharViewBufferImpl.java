@@ -62,8 +62,9 @@ class CharViewBufferImpl extends CharBuffer
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit, limit, offset, position);
+    super (limit >> 1, limit >> 1, position >> 1, mark >> 1);
     this.bb = bb;
+    this.offset = offset;
     this.readOnly = readOnly;
     // FIXME: What if this is called from CharViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
@@ -71,25 +72,26 @@ class CharViewBufferImpl extends CharBuffer
 
   public char get ()
   {
-    char result = bb.getChar ((position () >> 1) + offset);
+    char result = bb.getChar ((position () << 1) + offset);
     position (position () + 1);
     return result;
   }
 
   public char get (int index)
   {
-    return bb.getChar ((index >> 1) + offset);
+    return bb.getChar ((index << 1) + offset);
   }
 
   public CharBuffer put (char value)
   {
-    bb.putChar ((position () >> 1) + offset, value);
+    bb.putChar ((position () << 1) + offset, value);
+    position (position () + 1);
     return this;
   }
   
   public CharBuffer put (int index, char value)
   {
-    bb.putChar ((index >> 1) + offset, value);
+    bb.putChar ((index << 1) + offset, value);
     return this;
   }
 

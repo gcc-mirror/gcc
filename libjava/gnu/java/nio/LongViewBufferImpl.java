@@ -62,8 +62,9 @@ class LongViewBufferImpl extends LongBuffer
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit, limit, offset, position);
+    super (limit >> 3, limit >> 3, position >> 3, mark >> 3);
     this.bb = bb;
+    this.offset = offset;
     this.readOnly = readOnly;
     // FIXME: What if this is called from LongViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
@@ -71,25 +72,26 @@ class LongViewBufferImpl extends LongBuffer
 
   public long get ()
   {
-    long result = bb.getLong ((position () >> 3) + offset);
+    long result = bb.getLong ((position () << 3) + offset);
     position (position () + 1);
     return result;
   }
 
   public long get (int index)
   {
-    return bb.getLong ((index >> 3) + offset);
+    return bb.getLong ((index << 3) + offset);
   }
 
   public LongBuffer put (long value)
   {
-    bb.putLong ((position () >> 3) + offset, value);
+    bb.putLong ((position () << 3) + offset, value);
+    position (position () + 1);
     return this;
   }
   
   public LongBuffer put (int index, long value)
   {
-    bb.putLong ((index >> 3) + offset, value);
+    bb.putLong ((index << 3) + offset, value);
     return this;
   }
 

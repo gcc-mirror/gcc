@@ -62,8 +62,9 @@ class IntViewBufferImpl extends IntBuffer
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit, limit, offset, position);
+    super (limit >> 2, limit >> 2, position >> 2, mark >> 2);
     this.bb = bb;
+    this.offset = offset;
     this.readOnly = readOnly;
     // FIXME: What if this is called from IntViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
@@ -71,25 +72,26 @@ class IntViewBufferImpl extends IntBuffer
 
   public int get ()
   {
-    int result = bb.getInt ((position () >> 2) + offset);
+    int result = bb.getInt ((position () << 2) + offset);
     position (position () + 1);
     return result;
   }
 
   public int get (int index)
   {
-    return bb.getInt ((index >> 2) + offset);
+    return bb.getInt ((index << 2) + offset);
   }
 
   public IntBuffer put (int value)
   {
-    bb.putInt ((position () >> 2) + offset, value);
+    bb.putInt ((position () << 2) + offset, value);
+    position (position () + 1);
     return this;
   }
   
   public IntBuffer put (int index, int value)
   {
-    bb.putInt ((index >> 2) + offset, value);
+    bb.putInt ((index << 2) + offset, value);
     return this;
   }
 

@@ -62,8 +62,9 @@ class ShortViewBufferImpl extends ShortBuffer
                                int limit, int position, int mark,
                                boolean readOnly)
   {
-    super (limit, limit, offset, position);
+    super (limit >> 1, limit >> 1, position >> 1, mark >> 1);
     this.bb = bb;
+    this.offset = offset;
     this.readOnly = readOnly;
     // FIXME: What if this is called from ShortViewBufferImpl and ByteBuffer has changed its endianess ?
     this.endian = bb.order ();
@@ -71,25 +72,26 @@ class ShortViewBufferImpl extends ShortBuffer
 
   public short get ()
   {
-    short result = bb.getShort ((position () >> 1) + offset);
+    short result = bb.getShort ((position () << 1) + offset);
     position (position () + 1);
     return result;
   }
 
   public short get (int index)
   {
-    return bb.getShort ((index >> 1) + offset);
+    return bb.getShort ((index << 1) + offset);
   }
 
   public ShortBuffer put (short value)
   {
-    bb.putShort ((position () >> 1) + offset, value);
+    bb.putShort ((position () << 1) + offset, value);
+    position (position () + 1);
     return this;
   }
   
   public ShortBuffer put (int index, short value)
   {
-    bb.putShort ((index >> 1) + offset, value);
+    bb.putShort ((index << 1) + offset, value);
     return this;
   }
 
