@@ -1,3 +1,13 @@
+Fri Oct 23 23:42:03 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* loop.c (loop_has_tablejump): New variable.
+	(prescan_loop): Scan for it.
+	(insert_bct): Replace explicit scan with use of it.
+	* regclass.c (regclass): Restore loop variable j.
+	(record_reg_classes): Deterine op_types modifiers and initialize
+	classes[i] before matching constraints.  Handle matching
+	constraints 5-9.
+	
 Fri Oct 23 13:55:48 1998  Jim Wilson  <wilson@cygnus.com>
 
 	* m32r/m32r.c (gen_split_move_double): Call alter_subreg.  Delete

@@ -998,6 +998,7 @@ regclass (f, nregs)
     {
       rtx r = gen_rtx_REG (VOIDmode, 0);
       enum machine_mode m;
+      register int j;
 
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	if (TEST_HARD_REG_BIT (reg_class_contents[i], j))
@@ -1210,8 +1211,19 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      continue;
 	    }
 
-	  if (*p == '%')
-	    p++;
+	  /* Ascertain modifiers for line and skip any modifiers that might
+	     occur before first constraint.  */
+	  while (*p == '%' || *p == '=' || *p == '+' || *p == '&')
+	    {
+	      if (*p == '=')
+		op_types[i] = OP_WRITE;
+	      else if (*p == '+')
+		op_types[i] = OP_READ_WRITE;
+
+	      p++;
+	    }
+
+	  classes[i] = NO_REGS;
 
 	  /* If this alternative is only relevant when this operand
 	     matches a previous operand, we do different things depending
@@ -1281,18 +1293,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	     any of the constraints.  Collect the valid register classes
 	     and see if this operand accepts memory.  */
 
-	  classes[i] = NO_REGS;
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '=':
-		op_types[i] = OP_WRITE;
-		break;
-
-	      case '+':
-		op_types[i] = OP_READ_WRITE;
-		break;
-
 	      case '*':
 		/* Ignore the next letter for this pass.  */
 		p++;
@@ -1300,10 +1303,9 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 
 	      case '?':
 		alt_cost += 2;
-	      case '%':
-	      case '!':  case '#':
-	      case '&':
+	      case '!':  case '#':  case '&':
 	      case '0':  case '1':  case '2':  case '3':  case '4':
+	      case '5':  case '6':  case '7':  case '8':  case '9':
 	      case 'p':
 		break;
 
