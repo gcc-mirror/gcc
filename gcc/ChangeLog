@@ -1,3 +1,12 @@
+2003-06-15  Andrew Pinski <pinskia@physics.uc.edu>
+
+	* config/rs6000/t-rs6000: Add dependence of cfglayout.h to rs6000.o.
+	* config/rs6000/rs6000.c: Include cfglayout.h.
+	* config/alpha/alpha.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/sh/sh.c: Likewise.
+
 2003-06-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* opts.sh: Quote '+' in regex.

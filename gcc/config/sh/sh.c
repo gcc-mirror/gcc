@@ -47,6 +47,7 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "basic-block.h"
 #include "ra.h"
+#include "cfglayout.h"
 
 int code_for_indirect_jump_scratch = CODE_FOR_indirect_jump_scratch;
 
