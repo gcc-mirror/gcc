@@ -588,7 +588,7 @@ collect_formal_parameters (pfile)
 	      continue;
 	    }
 	  if (CPP_PEDANTIC (pfile) && CPP_OPTIONS (pfile)->c99
-	      && strncmp (tok, "__VA_ARGS__", sizeof "__VA_ARGS__" - 1))
+	      && !strncmp (tok, "__VA_ARGS__", sizeof "__VA_ARGS__" - 1))
 	    cpp_pedwarn (pfile,
 	"C99 does not permit use of `__VA_ARGS__' as a macro argument name");
 	  namebuf = xrealloc (namebuf, argslen + len + 1);
@@ -1495,7 +1495,7 @@ _cpp_compare_defs (pfile, d1, d2)
       int i = d1->nargs;
       while (i--)
 	{
-	  len = strlen (arg1);
+	  len = strlen (arg1) + 1;
 	  if (strcmp (arg1, arg2))
 	    return 1;
 	  arg1 += len;
