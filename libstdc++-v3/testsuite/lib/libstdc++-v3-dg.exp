@@ -1,0 +1,136 @@
+#   Copyright (C) 2001 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
+
+# Define libstdc++-v3 callbacks for dg.exp.
+
+load_lib dg.exp
+load_lib libgloss.exp
+
+proc libstdc++-v3-init { args } {
+    global srcdir
+    global outdir
+    global blddir
+    global cxx
+    global includes
+    global cxxflags
+
+    set blddir   [lookfor_file $outdir libstdc++-v3]
+    set cxx 	 [exec sh ${blddir}/testsuite_flags --build-cxx]
+    set cxxflags [exec sh ${blddir}/testsuite_flags --cxxflags]
+    set includes [exec sh ${blddir}/testsuite_flags --build-includes]
+
+    # By default, we assume we want to run program images.
+    global dg-do-what-default
+    set dg-do-what-default run
+
+    # Copy any required data files.
+    foreach tst [glob -nocomplain "$srcdir/*/*.tst"] {
+	file copy -force $tst $outdir
+    }
+    foreach txt [glob -nocomplain "$srcdir/*/*.txt"] {
+	file copy -force $txt $outdir
+    }
+}
+
+proc libstdc++-v3-dg-test { prog do_what extra_tool_flags } {
+    # Set up the compiler flags, based on what we're going to do.
+
+    switch $do_what {
+	"preprocess" {
+	    set compile_type "preprocess"
+	    set output_file "[file rootname [file tail $prog]].i"
+	}
+	"compile" {
+	    set compile_type "assembly"
+	    set output_file "[file rootname [file tail $prog]].s"
+	}
+	"assemble" {
+	    set compile_type "object"
+	    set output_file "[file rootname [file tail $prog]].o"
+	}
+	"link" {
+	    set compile_type "executable"
+	    set output_file "a.out"
+	}
+	"run" {
+	    set compile_type "executable"
+	    # FIXME: "./" is to cope with "." not being in $PATH.
+	    # Should this be handled elsewhere?
+	    # YES.
+	    set output_file "./a.out"
+	    # This is the only place where we care if an executable was
+	    # created or not.  If it was, dg.exp will try to run it.
+	    remote_file build delete $output_file;
+	}
+	default {
+	    perror "$do_what: not a valid dg-do keyword"
+	    return ""
+	}
+    }
+    set options ""
+    if { $extra_tool_flags != "" } {
+	lappend options "additional_flags=$extra_tool_flags"
+    }
+
+    set comp_output [libstdc++-v3_target_compile "$prog" "$output_file" "$compile_type" $options];
+
+    return [list $comp_output $output_file]
+}
+
+
+proc libstdc++-v3_target_compile { source dest type options } {
+    global gluefile 
+    global wrap_flags
+    global cxx
+    global cxxflags
+    global includes
+
+    if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
+	lappend options "libs=${gluefile}"
+	lappend options "ldflags=${wrap_flags}"
+    }
+
+    set cxx_final $cxx
+    set cxxlibglossflags  [libgloss_link_flags]
+    set cxx_final [concat $cxx_final $cxxlibglossflags]
+    set cxx_final [concat $cxx_final $cxxflags]
+    set cxx_final [concat $cxx_final $includes]
+
+    # XXX 
+    set cxx_final [concat $cxx_final -static]
+
+    lappend options "compiler=$cxx_final";
+
+    return [target_compile $source $dest $type $options]
+}
+
+
+proc libstdc++-v3_exit { args } {
+    global gluefile;
+
+    if [info exists gluefile] {
+	file_on_build delete $gluefile;
+	unset gluefile;
+    }
+}
+
+proc libstdc++-v3-finish { } {
+    # do hacks to remove any check-DEJAGNU errors
+set exit_status 0
+set status 0
+#return 0
+}
+
