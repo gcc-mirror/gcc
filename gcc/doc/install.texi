@@ -678,6 +678,12 @@ SPARC@.  If configure does not recognize the model name (e.g.@: arm700,
 603e, or ultrasparc) you provide, please check the configure script
 for a complete list of supported models.
 
+@item --enable-altivec
+Specify that the target supports AltiVec vector enhancements.  This
+option will adjust the ABI for AltiVec enhancements, as well as generate
+AltiVec code when appropriate.  This option is only available for
+PowerPC systems.
+
 @item --enable-target-optspace
 Specify that target
 libraries should be optimized for code space instead of code speed.

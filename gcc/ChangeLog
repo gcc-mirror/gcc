@@ -1,3 +1,31 @@
+2001-12-19  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/install.texi: Add documentation for --enable-altivec.
+
+        * config.gcc: Add support for --enable-altivec.
+
+        * config/rs6000/altivec.h: New.
+
+        * config/rs6000/linuxaltivec.h (SUBSUBTARGET_OVERRIDE_OPTIONS):
+        Define.  Fix typo.
+
+        * config/rs6000/rs6000.c (vrsave_operation): Change unspec to
+	unspec_volatile.
+        (generate_set_vrsave): Generate the unspec here instead of calling
+        an .md pattern.
+        (generate_set_vrsave): Use gen_rtvec.
+        (rs6000_emit_prologue): Replace call to gen_get_vrsave with
+        gen_rtx_SET.
+
+        * config/rs6000/rs6000.md ("*movsi_internal1"): Add constraints
+	for setting special registers.
+        ("*set_vrsave_internal"): Use unspec_volatile.
+        ("set_vrsave"): Remove.
+        ("get_vrsave"): Remove.
+
+        * config/rs6000/rs6000.h (REG_CLASS_CONTENTS): Add vrsave to
+	SPECIAL_REGS.
+
 2001-12-19  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc/fixinc/inclhack.def:  Remove all the fix suppression "fixes".
