@@ -616,7 +616,10 @@ read_include_file (pfile, inc)
   if (fd < 0 || fstat (fd, &st) < 0)
     goto perror_fail;
   
+  /* These must be set right away.  */
   inc->date = st.st_mtime;
+  fp->inc = inc;
+  fp->nominal_fname = inc->name;
 
   /* If fd points to a plain file, we might be able to mmap it; we can
      definitely allocate the buffer all at once.  If fd is a pipe or
@@ -673,11 +676,6 @@ read_include_file (pfile, inc)
 	goto perror_fail;
     }
 
-  /* These must be set before prescan.  */
-  fp->inc = inc;
-  fp->nominal_fname = inc->name;
-  pfile->include_depth++;
-  
   if (length == 0)
     inc->cmacro = NEVER_REREAD;
 
@@ -691,6 +689,7 @@ read_include_file (pfile, inc)
   if (!CPP_OPTION (pfile, ignore_srcdir))
     fp->actual_dir = actual_directory (pfile, inc->name);
 
+  pfile->include_depth++;
   pfile->input_stack_listing_current = 0;
   if (pfile->cb.enter_file)
     (*pfile->cb.enter_file) (pfile);
