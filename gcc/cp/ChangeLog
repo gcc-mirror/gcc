@@ -1,5 +1,11 @@
 2001-11-29  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/3048
+	* cp-tree.h (ovl_member): Remove.
+	* decl2.c (merge_functions): Handle extern "C" functions 
+	specially.
+	* tree.c (ovl_member): Remove.
+
 	PR c++/4842
 	* class.c (get_basefndecls): Take an IDENTIFIER_NODE, not a
 	FUNCTION_DECL, as input.

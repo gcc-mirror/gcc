@@ -995,23 +995,6 @@ build_overload (decl, chain)
   return ovl_cons (decl, chain);
 }
 
-/* True if fn is in ovl. */
-
-int
-ovl_member (fn, ovl)
-     tree fn;
-     tree ovl;
-{
-  if (ovl == NULL_TREE)
-    return 0;
-  if (TREE_CODE (ovl) != OVERLOAD)
-    return ovl == fn;
-  for (; ovl; ovl = OVL_CHAIN (ovl))
-    if (OVL_FUNCTION (ovl) == fn)
-      return 1;
-  return 0;
-}
-
 int
 is_aggr_type_2 (t1, t2)
      tree t1, t2;
