@@ -1,3 +1,26 @@
+Mon Aug 17 10:06:11 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+			  Jeff Law <law@cygnus.com>
+
+	* c-decl.c (init_decl_processing): Remove unneeded &.
+
+	* alpha.h (alpha_initialize_trampoline): Provide prototype.
+	
+	* except.c (set_exception_lang_code, set_exception_version_code):
+	Change parameter from `short' to `int' to avoid using a gcc
+	extension.
+
+	* except.h (set_exception_lang_code, set_exception_version_code):
+	Likewise for prototypes.
+
+	* flow.c (count_reg_references): Remove unused variables `regno'
+	and `i'.
+
+	* gcse.c (hash_scan_insn): Declare parameter `in_libcall_block'.
+
+	* prefix.c (translate_name): Cast the result of `alloca'.
+
+	* varray.h (VARRAY_FREE): Reimplement as a `do-while(0)' statement.
+
 Mon Aug 17 09:23:42 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.c: Include "system.h" instead of <stdio.h>.
