@@ -2008,6 +2008,10 @@ write_expression (tree expr)
 
       switch (code)
 	{
+        case CALL_EXPR:
+          sorry ("call_expr cannot be mangled due to a defect in the C++ ABI");
+          break;
+
 	case CAST_EXPR:
 	  write_type (TREE_TYPE (expr));
 	  write_expression (TREE_VALUE (TREE_OPERAND (expr, 0)));
