@@ -1,5 +1,5 @@
 /* ThreadLocal -- a variable with a unique value per thread
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,6 +37,7 @@ exception statement from your version. */
 
 package java.lang;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -101,7 +102,7 @@ public class ThreadLocal
    * <code>set(Thread, Object)</code> and <code>get(Thread)</code> methods
    * access it. Package visible for use by InheritableThreadLocal.
    */
-  final Map valueMap = new WeakHashMap();
+  final Map valueMap = Collections.synchronizedMap(new WeakHashMap());
 	
   /**
    * Creates a ThreadLocal object without associating any value to it yet.
@@ -135,7 +136,7 @@ public class ThreadLocal
   {
     Thread currentThread = Thread.currentThread();
     // Note that we don't have to synchronize, as only this thread will
-    // ever modify the returned value.
+    // ever modify the returned value and valueMap is a synchronizedMap.
     Object value = valueMap.get(currentThread);
     if (value == null)
       {
@@ -156,7 +157,7 @@ public class ThreadLocal
   public void set(Object value)
   {
     // Note that we don't have to synchronize, as only this thread will
-    // ever modify the returned value.
+    // ever modify the returned value and valueMap is a synchronizedMap.
     valueMap.put(Thread.currentThread(), value == null ? NULL : value);
   }
 }
