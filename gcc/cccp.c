@@ -7844,9 +7844,9 @@ output_line_directive (ip, op, conditional, file_change)
     }
   }
 
-  /* Don't output a line number of 0 if we can help it.  */
-  if (ip->lineno == 0 && ip->bufp - ip->buf < ip->length
-      && *ip->bufp == '\n') {
+  /* Output a positive line number if possible.  */
+  while (ip->lineno <= 0 && ip->bufp - ip->buf < ip->length
+	 && *ip->bufp == '\n') {
     ip->lineno++;
     ip->bufp++;
   }
