@@ -2719,7 +2719,7 @@ compile_file (name)
 	  print_time ("cse", cse_time);
 	  print_time ("loop", loop_time);
 	  print_time ("cse2", cse2_time);
-	  print_time ("branch-probabilities", branch_prob_time);
+	  print_time ("branch-prob", branch_prob_time);
 	  print_time ("flow", flow_time);
 	  print_time ("combine", combine_time);
 	  print_time ("sched", sched_time);
