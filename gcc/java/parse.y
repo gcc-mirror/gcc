@@ -136,6 +136,7 @@ static tree obtain_incomplete_type PARAMS ((tree));
 static tree java_complete_lhs PARAMS ((tree));
 static tree java_complete_tree PARAMS ((tree));
 static tree maybe_generate_pre_expand_clinit PARAMS ((tree));
+static int maybe_yank_clinit PARAMS ((tree));
 static void java_complete_expand_method PARAMS ((tree));
 static int  unresolved_type_p PARAMS ((tree, tree *));
 static void create_jdep_list PARAMS ((struct parser_ctxt *));
@@ -7387,17 +7388,17 @@ maybe_generate_pre_expand_clinit (class_type)
 
   end_artificial_method_body (mdecl);
 
-  /* Now we want to place <clinit> as the last method for interface so
-     that it doesn't interfere with the dispatch table based
-     lookup. */
-  if (CLASS_INTERFACE (TYPE_NAME (class_type))
-      && TREE_CHAIN (TYPE_METHODS (class_type)))
+  /* Now we want to place <clinit> as the last method (because we need
+     it at least for interface so that it doesn't interfere with the
+     dispatch table based lookup. */
+  if (TREE_CHAIN (TYPE_METHODS (class_type)))
     {
-      tree current = 
-	TYPE_METHODS (class_type) = TREE_CHAIN (TYPE_METHODS (class_type));
+      current = TREE_CHAIN (TYPE_METHODS (class_type));
+      TYPE_METHODS (class_type) = current;
 
       while (TREE_CHAIN (current))
 	current = TREE_CHAIN (current);
+
       TREE_CHAIN (current) = mdecl;
       TREE_CHAIN (mdecl) = NULL_TREE;
     }
@@ -7405,12 +7406,63 @@ maybe_generate_pre_expand_clinit (class_type)
   return mdecl;
 }
 
+/* See whether we could get rid of <clinit>. Criteria are: all static
+   final fields have constant initial values and the body of <clinit>
+   is empty. Return 1 if <clinit> was discarded, 0 otherwise. */
+
+static int
+maybe_yank_clinit (mdecl)
+     tree mdecl;
+{
+  tree type, current;
+  tree fbody, bbody;
+  
+  if (!DECL_CLINIT_P (mdecl))
+    return 0;
+  
+  /* If the body isn't empty, then we keep <clinit> */
+  fbody = DECL_FUNCTION_BODY (mdecl);
+  if ((bbody = BLOCK_EXPR_BODY (fbody)))
+    bbody = BLOCK_EXPR_BODY (bbody);
+  if (bbody && bbody != empty_stmt_node)
+    return 0;
+  
+  type = DECL_CONTEXT (mdecl);
+  current = TYPE_FIELDS (type);
+
+  for (current = (current ? TREE_CHAIN (current) : current); 
+       current; current = TREE_CHAIN (current))
+    if (!(FIELD_STATIC (current) && FIELD_FINAL (current)
+	  && DECL_INITIAL (current) && TREE_CONSTANT (DECL_INITIAL (current))))
+      break;
+
+  if (current)
+    return 0;
+
+  /* Get rid of <clinit> in the class' list of methods */
+  if (TYPE_METHODS (type) == mdecl)
+    TYPE_METHODS (type) = TREE_CHAIN (mdecl);
+  else
+    for (current = TYPE_METHODS (type); current; 
+	 current = TREE_CHAIN (current))
+      if (TREE_CHAIN (current) == mdecl)
+	{
+	  TREE_CHAIN (current) = TREE_CHAIN (mdecl);
+	  break;
+	}
+
+  return 1;
+}
+
+
 /* Complete and expand a method.  */
 
 static void
 java_complete_expand_method (mdecl)
      tree mdecl;
 {
+  int yank_clinit = 0;
+
   current_function_decl = mdecl;
   /* Fix constructors before expanding them */
   if (DECL_CONSTRUCTOR_P (mdecl))
@@ -7459,15 +7511,19 @@ java_complete_expand_method (mdecl)
 	  && !flag_emit_xref)
 	missing_return_error (current_function_decl);
 
-      complete_start_java_method (mdecl); 
-
+      /* Check wether we could just get rid of clinit, now the picture
+         is complete. */
+      if (!(yank_clinit = maybe_yank_clinit (mdecl)))
+	complete_start_java_method (mdecl); 
+      
       /* Don't go any further if we've found error(s) during the
-         expansion */
-      if (!java_error_count)
+	 expansion */
+      if (!java_error_count && !yank_clinit)
 	source_end_java_method ();
       else
 	{
-	  pushdecl_force_head (DECL_ARGUMENTS (mdecl));
+	  if (java_error_count)
+	    pushdecl_force_head (DECL_ARGUMENTS (mdecl));
 	  poplevel (1, 0, 1);
 	}
 

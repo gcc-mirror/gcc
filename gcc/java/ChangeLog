@@ -47,6 +47,14 @@ Thu Apr 27 17:25:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 2000-04-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+        * parse.y (maybe_yank_clinit): New function.
+        (maybe_generate_pre_expand_clinit): Always link <clinit> at the
+        end of the list of methods belonging to a class.
+        (java_complete_expand_method): Check whether <clinit> is really
+        necessary and expand it accordingly.
+
+2000-04-17  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
 	* parse.y (fold_constant_for_init): Let VAR_DECL and FIELD_DECL be
 	processed by the method's switch statement.
 
