@@ -1894,6 +1894,52 @@ simplify_binary_operation (enum rtx_code code, enum machine_mode mode,
 	      && ! side_effects_p (op0)
 	      && GET_MODE_CLASS (mode) != MODE_CC)
 	    return const0_rtx;
+	  /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,
+	     ((A & N) + B) & M -> (A + B) & M
+	     Similarly if (N & M) == 0,
+	     ((A | N) + B) & M -> (A + B) & M
+	     and for - instead of + and/or ^ instead of |.  */
+	  if (GET_CODE (trueop1) == CONST_INT
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      && ~INTVAL (trueop1)
+	      && (INTVAL (trueop1) & (INTVAL (trueop1) + 1)) == 0
+	      && (GET_CODE (op0) == PLUS || GET_CODE (op0) == MINUS))
+	    {
+	      rtx pmop[2];
+	      int which;
+
+	      pmop[0] = XEXP (op0, 0);
+	      pmop[1] = XEXP (op0, 1);
+
+	      for (which = 0; which < 2; which++)
+		{
+		  tem = pmop[which];
+		  switch (GET_CODE (tem))
+		    {
+		    case AND:
+		      if (GET_CODE (XEXP (tem, 1)) == CONST_INT
+			  && (INTVAL (XEXP (tem, 1)) & INTVAL (trueop1))
+			     == INTVAL (trueop1))
+			pmop[which] = XEXP (tem, 0);
+		      break;
+		    case IOR:
+		    case XOR:
+		      if (GET_CODE (XEXP (tem, 1)) == CONST_INT
+			  && (INTVAL (XEXP (tem, 1)) & INTVAL (trueop1)) == 0)
+			pmop[which] = XEXP (tem, 0);
+		      break;
+		    default:
+		      break;
+		    }
+		}
+
+	      if (pmop[0] != XEXP (op0, 0) || pmop[1] != XEXP (op0, 1))
+		{
+		  tem = simplify_gen_binary (GET_CODE (op0), mode,
+					     pmop[0], pmop[1]);
+		  return simplify_gen_binary (code, mode, tem, op1);
+		}
+	    }
 	  tem = simplify_associative_operation (code, mode, op0, op1);
 	  if (tem)
 	    return tem;

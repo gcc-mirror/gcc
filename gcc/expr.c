@@ -3858,6 +3858,57 @@ expand_assignment (tree to, tree from, int want_value)
 	  MEM_KEEP_ALIAS_SET_P (to_rtx) = 1;
 	}
 
+      if (mode1 == VOIDmode && !want_value
+	  && bitpos + bitsize <= BITS_PER_WORD
+	  && bitsize < BITS_PER_WORD
+	  && GET_MODE_BITSIZE (GET_MODE (to_rtx)) <= BITS_PER_WORD
+	  && !TREE_SIDE_EFFECTS (to)
+	  && TREE_CODE (TREE_TYPE (from)) == INTEGER_TYPE
+	  && TREE_CODE_CLASS (TREE_CODE (from)) == '2'
+	  && operand_equal_p (to, TREE_OPERAND (from, 0), 0))
+	{
+	  rtx value;
+	  HOST_WIDE_INT count = bitpos;
+
+	  if (BYTES_BIG_ENDIAN)
+	    count = GET_MODE_BITSIZE (GET_MODE (to_rtx)) - bitpos - bitsize;
+
+	  /* Special case some bitfield op= exp.  */
+	  switch (TREE_CODE (from))
+	    {
+	    case PLUS_EXPR:
+	    case MINUS_EXPR:
+	      if (count <= 0)
+	        break;
+
+	      /* For now, just optimize the case of the topmost bitfield
+		 where we don't need to do any masking.
+		 We might win by one instruction for the other bitfields
+		 too if insv/extv instructions aren't used, so that
+		 can be added later.  */
+	      if (count + bitsize != GET_MODE_BITSIZE (GET_MODE (to_rtx)))
+		break;
+	      value = expand_expr (TREE_OPERAND (from, 1), NULL_RTX,
+				   VOIDmode, 0);
+	      value = protect_from_queue (value, 0);
+	      to_rtx = protect_from_queue (to_rtx, 1);
+	      value = expand_shift (LSHIFT_EXPR, GET_MODE (to_rtx),
+				    value, build_int_2 (count, 0),
+				    NULL_RTX, 1);
+	      result = expand_binop (GET_MODE (to_rtx),
+				     TREE_CODE (from) == PLUS_EXPR
+				     ? add_optab : sub_optab, to_rtx,
+				     value, to_rtx, 1, OPTAB_WIDEN);
+	      if (result != to_rtx)
+		emit_move_insn (to_rtx, result);
+	      free_temp_slots ();
+	      pop_temp_slots ();
+	      return NULL_RTX;
+	    default:
+	      break;
+	    }
+	}
+
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
 			    (want_value
 			     /* Spurious cast for HPUX compiler.  */
