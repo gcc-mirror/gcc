@@ -5226,7 +5226,7 @@ fold (expr)
       if (TREE_CODE (TREE_TYPE (arg0)) != COMPLEX_TYPE)
 	return arg0;
       else if (TREE_CODE (arg0) == COMPLEX_EXPR)
-	return build (COMPLEX_EXPR, TREE_TYPE (arg0),
+	return build (COMPLEX_EXPR, type,
 		      TREE_OPERAND (arg0, 0),
 		      negate_expr (TREE_OPERAND (arg0, 1)));
       else if (TREE_CODE (arg0) == COMPLEX_CST)
@@ -5525,7 +5525,7 @@ fold (expr)
       if (! FLOAT_TYPE_P (type))
 	{
 	  if (! wins && integer_zerop (arg0))
-	    return negate_expr (arg1);
+	    return convert (type, negate_expr (arg1));
 	  if (integer_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
 
@@ -5548,7 +5548,7 @@ fold (expr)
 	{
 	  /* Except with IEEE floating point, 0-x equals -x.  */
 	  if (! wins && real_zerop (arg0))
-	    return negate_expr (arg1);
+	    return convert (type, negate_expr (arg1));
 	  /* Except with IEEE floating point, x-0 equals x.  */
 	  if (real_zerop (arg1))
 	    return non_lvalue (convert (type, arg0));
@@ -6819,7 +6819,8 @@ fold (expr)
 	    switch (comp_code)
 	      {
 	      case EQ_EXPR:
-		return pedantic_non_lvalue (negate_expr (arg1));
+		return
+		  pedantic_non_lvalue (convert (type, negate_expr (arg1)));
 	      case NE_EXPR:
 		return pedantic_non_lvalue (convert (type, arg1));
 	      case GE_EXPR:
