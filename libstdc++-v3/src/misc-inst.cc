@@ -243,26 +243,6 @@ namespace std
 
   template
     void 
-    __sink_unused_warning<char>(char);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template
-    void 
-    __sink_unused_warning<wchar_t>(wchar_t);
-#endif
-
-  template
-    void
-    __sink_unused_warning<ostreambuf_iterator<char> > 
-    (ostreambuf_iterator<char>);
-#ifdef _GLIBCPP_USE_WCHAR_T
-  template
-    void
-    __sink_unused_warning<ostreambuf_iterator<wchar_t> > 
-    (ostreambuf_iterator<wchar_t>);
-#endif
-
-  template
-    void 
     __pad_char(basic_ios<char>&, char*, const char*,
 		const streamsize, const streamsize);
 #ifdef _GLIBCPP_USE_WCHAR_T

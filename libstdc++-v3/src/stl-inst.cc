@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,6 +34,7 @@
 #include <bits/c++config.h>
 #include <bits/stl_alloc.h>
 #include <bits/std_vector.h>
+#include <bits/std_ostream.h>
 
 namespace std
 {
@@ -49,8 +50,27 @@ namespace std
     vector<unsigned int>::
     _M_insert_aux(vector<unsigned int>::iterator, unsigned int const &);
 
+#ifdef __STL_USE_CONCEPT_CHECKS
   template
-    void
-    __sink_unused_warning<unsigned int>(unsigned int);
+    void __sink_unused_warning<unsigned int>(unsigned int);
 
+  template
+    void __sink_unused_warning<locale::facet*>(locale::facet*);
+
+  template
+    void __sink_unused_warning<char>(char);
+
+  template
+    void __sink_unused_warning<ostreambuf_iterator<char> >
+    (ostreambuf_iterator<char>);
+
+# ifdef _GLIBCPP_USE_WCHAR_T
+  template
+    void __sink_unused_warning<wchar_t>(wchar_t);
+
+  template
+    void __sink_unused_warning<ostreambuf_iterator<wchar_t> > 
+    (ostreambuf_iterator<wchar_t>);
+# endif
+#endif
 } //std
