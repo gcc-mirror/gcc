@@ -1,3 +1,8 @@
+2004-12-28  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	PR rtl-optimization/19103
+	* loop-iv.c (iv_number_of_iterations): Fix typo.
+
 2004-12-28  Andreas Jaeger  <aj@suse.de>
 
 	* genrecog.c (compute_predicate_codes): Avoid warning.

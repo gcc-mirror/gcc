@@ -2132,7 +2132,7 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       if (iv0.step == const0_rtx)
 	step_val = -INTVAL (iv1.step);
       else
-	step_val = INTVAL (iv1.step);
+	step_val = INTVAL (iv0.step);
 
       /* Ignore loops of while (i-- < 10) type.  */
       if (step_val < 0)
