@@ -1,3 +1,9 @@
+2002-12-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	PR C++/8031
+	* cvt.c (convert_to_pointer_force): Don't try comparing against 
+	erronous type.
+
 2002-12-13  Geoffrey Keating  <geoffk@apple.com>
 
 	* cp-tree.h: Have the multiple-include guards around
