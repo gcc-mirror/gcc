@@ -1,3 +1,8 @@
+2004-08-11  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/darwin-ld-20040809-1.c: New test.
+	* gcc.dg/darwin-ld-20040809-2.c: New test.
+	
 2004-08-11  Steven G. Kargl  <kargls@comcast.net>
 
 	PR fortran/16917

@@ -407,13 +407,15 @@ in the following sections.
 @gccoptlist{-all_load  -allowable_client  -arch  -arch_errors_fatal @gol
 -arch_only  -bind_at_load  -bundle  -bundle_loader @gol
 -client_name  -compatibility_version  -current_version @gol
+-dead_strip @gol
 -dependency-file  -dylib_file  -dylinker_install_name @gol
 -dynamic  -dynamiclib  -exported_symbols_list @gol
 -filelist  -flat_namespace  -force_cpusubtype_ALL @gol
 -force_flat_namespace  -headerpad_max_install_names @gol
 -image_base  -init  -install_name  -keep_private_externs @gol
 -multi_module  -multiply_defined  -multiply_defined_unused @gol
--noall_load  -nofixprebinding -nomultidefs  -noprebind  -noseglinkedit @gol
+-noall_load   -no_dead_strip_inits_and_terms @gol
+-nofixprebinding -nomultidefs  -noprebind  -noseglinkedit @gol
 -pagezero_size  -prebind  -prebind_all_twolevel_modules @gol
 -private_bundle  -read_only_relocs  -sectalign @gol
 -sectobjectsymbols  -whyload  -seg1addr @gol
@@ -7008,6 +7010,7 @@ output file being linked. See man ld(1) for more information.
 @itemx -client_name
 @itemx -compatibility_version
 @itemx -current_version
+@itemx -dead_strip
 @itemx -dependency-file
 @itemx -dylib_file
 @itemx -dylinker_install_name
@@ -7027,6 +7030,7 @@ output file being linked. See man ld(1) for more information.
 @itemx -multiply_defined
 @itemx -multiply_defined_unused
 @itemx -noall_load
+@items -no_dead_strip_inits_and_terms
 @itemx -nofixprebinding
 @itemx -nomultidefs
 @itemx -noprebind
@@ -7065,6 +7069,7 @@ output file being linked. See man ld(1) for more information.
 @opindex client_name
 @opindex compatibility_version
 @opindex current_version
+@opindex dead_strip
 @opindex dependency-file
 @opindex dylib_file
 @opindex dylinker_install_name
@@ -7084,6 +7089,7 @@ output file being linked. See man ld(1) for more information.
 @opindex multiply_defined
 @opindex multiply_defined_unused
 @opindex noall_load
+@opindex no_dead_strip_inits_and_terms
 @opindex nofixprebinding
 @opindex nomultidefs
 @opindex noprebind
