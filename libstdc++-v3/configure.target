@@ -42,6 +42,9 @@ case "${target_cpu}" in
   powerpc | rs6000)
     cpu_include_dir="config/cpu/powerpc"
     ;;
+  s390 | s390x)
+    cpu_include_dir="config/cpu/s390"
+    ;;
   sparc64 | ultrasparc)
     cpu_include_dir="config/cpu/sparc/sparc64"
     ;;
