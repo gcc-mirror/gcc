@@ -11,5 +11,5 @@ class bug {
   class a {}; 
 };
 template <class X> 
-template <> 
-class bug<X>::a<char> {}; // ERROR - invalid specialization
+template <>			// ERROR - invalid specialization
+class bug<X>::a<char> {};	// ERROR -  ""
