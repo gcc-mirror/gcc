@@ -514,7 +514,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-attr.h insn-attrtab.c insn-opinit.c \
  stamp-flags stamp-config stamp-codes \
  stamp-output stamp-recog stamp-emit stamp-extract stamp-peep \
- stamp-attr stamp-attrtab stamp-opinit stamp-proto \
+ stamp-attr stamp-attrtab stamp-opinit stamp-proto stamp-crt \
  genemit$(exeext) genoutput$(exeext) genrecog$(exeext) genextract$(exeext) \
  genflags$(exeext) gencodes$(exeext) genconfig$(exeext) genpeep$(exeext) \
  genattrtab$(exeext) genattr$(exeext) genopinit$(exeext) \
@@ -1000,17 +1000,19 @@ sublibobjc.a: cc1obj stmp-int-hdrs libgcc2.ready
 
 # Compile two additional files that are linked with every program
 # linked using GCC on system V, for the sake of C++ constructors.
-crtbegin.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+crtbegin.o: stamp-crt ; @true
+crtend.o: stamp-crt; @true
+
+stamp-crt:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_BEGIN -finhibit-size-directive -fno-inline-functions \
 	  -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff$(objext) $@
-
-crtend.o:	crtstuff.c $(GCC_PASSES) $(CONFIG_H) gbl-ctors.h
+	mv crtstuff$(objext) crtbegin$(objext)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(CRTSTUFF_T_CFLAGS) \
 	  -DCRT_END -finhibit-size-directive -fno-inline-functions \
 	  -g0 -c $(srcdir)/crtstuff.c
-	mv crtstuff$(objext) $@
+	mv crtstuff$(objext) crtend$(objext)
+	touch stamp-crt
 
 # Compiling object files from source files.
 
