@@ -1,3 +1,21 @@
+2004-05-13  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.def (documentation): Remove mention of class 'b'.
+	(BLOCK): Now in class 'x'.
+	* c-common.c (verify_tree): Remove case 'b'.
+	* c-typeck.c (same_translation_unit_p): Change 'b' to 'x'.
+	* calls.c (calls_function_1): Control cannot get past the switch
+	when exp is a BLOCK.
+	* print-tree.c (print_node): Move code for class 'b' to the class
+	'c'/'x' switch, as case BLOCK.
+	* tree.c (tree_size, make_node_stat, tree_node_structure): Likewise.
+	(unsafe_for_reeval, substitute_placeholder_in_expr)
+	(stabilize_reference_1): Remove case 'b'.
+	* tree-browser.c (browse_tree): Change all tests for TREE_CODE_CLASS
+	of something being 'b' to tests for TREE_CODE of something being
+	BLOCK.
+	* tree-ssa-operands.c (get_expr_operands): Likewise.
+
 2004-05-13  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-gimple.c: Rename from tree-simple.c.
@@ -861,7 +879,7 @@
 	* simplify-rtx.c (simplify_rtx): Do not handle
 	CONSTANT_P_RTX.
 	* stmt.c (parse_output_constraint): Don't warn for read-write
-        memory operand.
+	memory operand.
 	(tail_recursion_args): Use types_compatible_p langhook.
 	(force_label_rtx): Don't look at inline_function_decl.
 	(label_rtx): Set LABEL_PRESERVE_P appropriately.
@@ -1219,17 +1237,17 @@
 2004-05-12  Paolo Bonzini  <bonzini@gnu.org>
 
 	Replace several arrays with a struct of arrays.
-        * combine.c (struct reg_stat): New.
-        (init_reg_last_arrays): Renamed to...
-        (init_reg_last): ...this.  Callers adjusted.
-        (reg_stat): New.
-        (combine_instructions): Allocate it and use it.
-        (reg_last_death, reg_last_set, reg_last_set_value,
-        reg_last_set_label, reg_last_set_table_tick,
-        reg_last_set_invalid, reg_nonzero_bits, reg_sign_bit_copies,
-        reg_last_set_mode, reg_last_set_nonzero_bits,
-        reg_last_set_sign_bit_copies): Replace throughout
-        with items of reg_stat.
+	* combine.c (struct reg_stat): New.
+	(init_reg_last_arrays): Renamed to...
+	(init_reg_last): ...this.  Callers adjusted.
+	(reg_stat): New.
+	(combine_instructions): Allocate it and use it.
+	(reg_last_death, reg_last_set, reg_last_set_value,
+	reg_last_set_label, reg_last_set_table_tick,
+	reg_last_set_invalid, reg_nonzero_bits, reg_sign_bit_copies,
+	reg_last_set_mode, reg_last_set_nonzero_bits,
+	reg_last_set_sign_bit_copies): Replace throughout
+	with items of reg_stat.
 
 2004-05-11  Kaz Kojima  <kkojima@gcc.gnu.org>
 

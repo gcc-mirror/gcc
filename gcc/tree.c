@@ -155,9 +155,6 @@ tree_size (tree node)
     case 't':  /* a type node */
       return sizeof (struct tree_type);
 
-    case 'b':  /* a lexical block node */
-      return sizeof (struct tree_block);
-
     case 'r':  /* a reference */
     case 'e':  /* an expression */
     case 's':  /* an expression with side effects */
@@ -206,6 +203,7 @@ tree_size (tree node)
 	case EEXIT_NODE: 	return sizeof (struct tree_eref_common);
 
 	case STATEMENT_LIST:	return sizeof (struct tree_statement_list);
+	case BLOCK:		return sizeof (struct tree_block);
 
 	default:
 	  return lang_hooks.tree_size (code);
@@ -252,10 +250,6 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
       kind = t_kind;
       break;
 
-    case 'b':  /* a lexical block */
-      kind = b_kind;
-      break;
-
     case 's':  /* an expression with side effects */
       kind = s_kind;
       break;
@@ -284,6 +278,8 @@ make_node_stat (enum tree_code code MEM_STAT_DECL)
 	kind = phi_kind;
       else if (code == SSA_NAME)
 	kind = ssa_name_kind;
+      else if (code == BLOCK)
+	kind = b_kind;
       else
 	kind = x_kind;
       break;
@@ -1494,7 +1490,6 @@ tree_node_structure (tree t)
     {
     case 'd':	return TS_DECL;
     case 't':	return TS_TYPE;
-    case 'b':	return TS_BLOCK;
     case 'r': case '<': case '1': case '2': case 'e': case 's':
       return TS_EXP;
     default:  /* 'c' and 'x' */
@@ -1521,6 +1516,7 @@ tree_node_structure (tree t)
     case SSA_NAME:		return TS_SSA_NAME;
     case PLACEHOLDER_EXPR:	return TS_COMMON;
     case STATEMENT_LIST:	return TS_STATEMENT_LIST;
+    case BLOCK:			return TS_BLOCK;
 
     default:
       abort ();
@@ -1646,7 +1642,6 @@ unsafe_for_reeval (tree expr)
     case 't':  /* a type node */
     case 'x':  /* something random, like an identifier or an ERROR_MARK.  */
     case 'd':  /* A decl node */
-    case 'b':  /* A block node */
       return 0;
 
     case 'e':  /* an expression */
@@ -2078,7 +2073,6 @@ substitute_placeholder_in_expr (tree exp, tree obj)
       {
       case 'c':
       case 'd':
-      case 'b':
 	return exp;
 
       case 'x':
@@ -2267,7 +2261,6 @@ stabilize_reference_1 (tree e)
     case 'x':
     case 't':
     case 'd':
-    case 'b':
     case '<':
     case 's':
     case 'e':
