@@ -191,7 +191,7 @@ static void force_canonical_binfo_r PARAMS ((tree, tree, tree, tree));
 static void force_canonical_binfo PARAMS ((tree, tree, tree, tree));
 static tree dfs_unshared_virtual_bases PARAMS ((tree, void *));
 static void mark_primary_bases PARAMS ((tree));
-static tree mark_primary_virtual_base PARAMS ((tree, tree, tree));
+static tree mark_primary_virtual_base PARAMS ((tree, tree));
 static void clone_constructors_and_destructors PARAMS ((tree));
 static tree build_clone PARAMS ((tree, tree));
 static void update_vtable_entry_for_fn PARAMS ((tree, tree, tree, tree *));
