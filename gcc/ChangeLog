@@ -1,3 +1,7 @@
+Sun May 24 11:30:08 1998  Torbjorn Granlund  <tege@matematik.su.se>
+
+	* m68k/lb1sf68.asm (__addsf3): Fix typo in exg on coldfire.
+
 Sun May 24 09:38:17 1998  John Wehle  (john@feith.com)
 
 	* i386.md (movsi): Remove redundant integer push patterns.
