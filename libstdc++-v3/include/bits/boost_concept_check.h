@@ -565,7 +565,7 @@ struct _Aux_require_same<_Tp,_Tp> { typedef _Tp _Type; };
       __i = __c.end();
       __c.swap(__c2);
     }
-    _Iterator _i;
+    _Iterator __i;
     _Container __c, __c2;
   };
 
