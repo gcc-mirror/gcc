@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for some
    generic System V Release 4 system.
-   Copyright (C) 1991, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
@@ -82,7 +82,7 @@ Boston, MA 02111-1307, USA.
 /* Provide an ASM_SPEC appropriate for svr4.  Here we try to support as
    many of the specialized svr4 assembler options as seems reasonable,
    given that there are certain options which we can't (or shouldn't)
-   support directly due to the fact that they conflict with other options 
+   support directly due to the fact that they conflict with other options
    for other svr4 tools (e.g. ld) or with other options for GCC itself.
    For example, we don't support the -o (output file) or -R (remove
    input file) options because GCC already handles these things.  We
@@ -592,16 +592,62 @@ dtors_section ()							\
     }									\
 }
 
-/* Switch into a generic section.
-   This is currently only used to support section attributes.
 
-   We make the section read-only and executable for a function decl,
-   read-only for a const data decl, and writable for a non-const data decl.  */
-#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
-  fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, \
-	   (DECL) && TREE_CODE (DECL) == FUNCTION_DECL ? "ax" : \
-	   (DECL) && TREE_READONLY (DECL) ? "a" : "aw")
-
+/*
+ * Switch into a generic section.
+ *
+ * We make the section read-only and executable for a function decl,
+ * read-only for a const data decl, and writable for a non-const data decl.
+ *
+ * If the section has already been defined, we must not
+ * emit the attributes here. The SVR4 assembler does not
+ * recognize section redefinitions.
+ * If DECL is NULL, no attributes are emitted.
+ */
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME)			\
+do {									\
+  static struct section_info						\
+    {									\
+      struct section_info *next;				        \
+      char *name;						        \
+      enum sect_enum {SECT_RW, SECT_RO, SECT_EXEC} type;		\
+    } *sections;							\
+  struct section_info *s;						\
+  char *mode;								\
+  enum sect_enum type;							\
+									\
+  for (s = sections; s; s = s->next)					\
+    if (!strcmp (NAME, s->name))					\
+      break;								\
+									\
+  if (DECL)								\
+    {									\
+      if (TREE_CODE (DECL) == FUNCTION_DECL)				\
+	type = SECT_EXEC, mode = "ax";					\
+      else if (TREE_READONLY(DECL))					\
+	type = SECT_RO, mode = "a";					\
+      else								\
+	type = SECT_RW, mode = "aw";					\
+    }									\
+									\
+  if (s == 0 && DECL)							\
+    {									\
+      s = (struct section_info *) xmalloc (sizeof (struct section_info));  \
+      s->name = xmalloc ((strlen (NAME) + 1) * sizeof (*NAME));		\
+      strcpy (s->name, NAME);						\
+      s->type = type;							\
+      s->next = sections;						\
+      sections = s;							\
+      fprintf (FILE, ".section\t%s,\"%s\",@progbits\n", NAME, mode);	\
+    }									\
+  else									\
+    {									\
+      if (DECL && s->type != type)					\
+	error_with_decl (DECL, "%s causes a section type conflict");	\
+									\
+      fprintf (FILE, ".section\t%s\n", NAME);				\
+    }									\
+} while (0)
 
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
