@@ -1,3 +1,8 @@
+2001-03-23  Jim Wilson  <wilson@redhat.com>
+
+	* varasm.c (make_decl_rtl): Add TREE_PUBLIC check to abort test.
+	(assemble_alias): Call make_decl_rtl.
+	
 Fri Mar 23 16:59:08 2001  J"orn Rennecke <amylaar@redhat.com>
 
 	* stor-layout.c (layout_type): Give OFFSET_TYPE a MODE_INT type.
