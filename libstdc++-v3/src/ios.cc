@@ -220,8 +220,10 @@ namespace std {
 	    // _M_clear(_M_rdstate() | badbit);  // may throw
 	    return _M_dummy;
 	  }
-	do { words[i] = _M_words[i]; } while (++i < _M_word_limit);
-	if (_M_words != _M_word_array) delete [] _M_words;
+	for (; i < _M_word_limit; i++) 
+	  words[i] = _M_words[i];
+	if (_M_words != _M_word_array) 
+	  delete [] _M_words;
       }
     
     do { words[i] = zero; } while (++i < newlimit);
