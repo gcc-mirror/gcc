@@ -62,25 +62,25 @@ import java.io.Serializable;
  */
 public interface Name extends Cloneable, Serializable
 {
-  static final long serialVersionUID = -3617482732056931635L;
+  long serialVersionUID = -3617482732056931635L;
 
   /**
    * Returns the number of components of this <code>Name</code>.
    * The returned number can be zero.
    */
-  public int size();
+  int size();
 
   /**
    * Returns <code>true</code> if the number of components of this
    * <code>Name</code> is zero, <code>false</code> otherwise.
    */
-  public boolean isEmpty();
+  boolean isEmpty();
 
   /**
    * Returns a non-null (but possibly empty) <code>Enumeration</code> of the
    * components of the <code>Name</code> as <code>String</code>s.
    */
-  public Enumeration getAll();
+  Enumeration getAll();
 
   /**
    * Gets the component at the given index.
@@ -88,7 +88,7 @@ public interface Name extends Cloneable, Serializable
    * @exception ArrayIndexOutOfBoundsException if the given index is smaller
    *            then zero or greater then or equal to <code>size()</code>.
    */
-  public String get(int i);
+  String get(int i);
 
   /**
    * Returns the components till the given index as a <code>Name</code>.
@@ -98,7 +98,7 @@ public interface Name extends Cloneable, Serializable
    * @exception ArrayIndexOutOfBoundsException if the given index is smaller
    *            then zero or greater then or equal to <code>size()</code>.
    */
-  public Name getPrefix(int i);
+  Name getPrefix(int i);
 
   /**
    * Returns the components from the given index till the end as a
@@ -109,7 +109,7 @@ public interface Name extends Cloneable, Serializable
    * @exception ArrayIndexOutOfBoundsException if the given index is smaller
    *            then zero or greater then or equal to <code>size()</code>.
    */
-  public Name getSuffix(int i);
+  Name getSuffix(int i);
 
   /**
    * Adds the given <code>String</code> component to the end of this
@@ -119,7 +119,7 @@ public interface Name extends Cloneable, Serializable
    * @exception InvalidNameException if the given <code>String</code> is not a
    *            valid component for this <code>Name</code>.
    */
-  public Name add(String comp) throws InvalidNameException;
+  Name add(String comp) throws InvalidNameException;
 
   /**
    * Inserts the given <code>String</code> component to this <code>Name</code>
@@ -131,7 +131,7 @@ public interface Name extends Cloneable, Serializable
    * @exception InvalidNameException if the given <code>String</code> is not a
    *            valid component for this <code>Name</code>.
    */
-  public Name add(int posn, String comp) throws InvalidNameException;
+  Name add(int posn, String comp) throws InvalidNameException;
 
   /**
    * Adds all the components of the given <code>Name</code> to the end of this
@@ -141,7 +141,7 @@ public interface Name extends Cloneable, Serializable
    * @exception InvalidNameException if any of the given components is not a
    *            valid component for this <code>Name</code>.
    */
-  public Name addAll(Name suffix) throws InvalidNameException;
+  Name addAll(Name suffix) throws InvalidNameException;
 
   /**
    * Inserts all the components of the given <code>Name</code> to this
@@ -153,7 +153,7 @@ public interface Name extends Cloneable, Serializable
    * @exception InvalidNameException if any of the given components is not a
    *            valid component for this <code>Name</code>.
    */
-  public Name addAll(int posn, Name n) throws InvalidNameException;
+  Name addAll(int posn, Name n) throws InvalidNameException;
 
   /**
    * Removes the component at the given index from this <code>Name</code>.
@@ -162,19 +162,19 @@ public interface Name extends Cloneable, Serializable
    * @exception InvalidNameException if the given <code>String</code> is not a
    *            valid component for this <code>Name</code>.
    */
-  public Object remove(int posn) throws InvalidNameException;
+  Object remove(int posn) throws InvalidNameException;
 
   /**
    * Returns <code>true</code> if this <code>Name</code> starts with the
    * components of the given <code>Name</code>, <code>false</code> otherwise.
    */
-  public boolean startsWith(Name name);
+  boolean startsWith(Name name);
 
   /**
    * Returns <code>true</code> if this <code>Name</code> ends with the
    * components of the given <code>Name</code>, <code>false</code> otherwise.
    */
-  public boolean endsWith(Name name);
+  boolean endsWith(Name name);
 
   /**
    * Compares the given object to this <code>Name</code>.
@@ -187,12 +187,12 @@ public interface Name extends Cloneable, Serializable
    * be compared. The definition of smaller, bigger and equal is up to the
    * actual implementing class.
    */
-  public int compareTo(Object obj);
+  int compareTo(Object obj);
 
   /**
    * Returns a clone of this <code>Name</code>. It will be a deep copy of
    * all the components of the <code>Name</code> so that changes to components
    * of the components does not change the component in this <code>Name</code>.
    */
-  public Object clone();
+  Object clone();
 }

@@ -45,7 +45,7 @@ package javax.naming.event;
 
 public interface NamespaceChangeListener extends NamingListener
 {
-  public void objectAdded(NamingEvent evt);
-  public void objectRemoved(NamingEvent evt);
-  public void objectRenamed(NamingEvent evt);
+  void objectAdded(NamingEvent evt);
+  void objectRemoved(NamingEvent evt);
+  void objectRenamed(NamingEvent evt);
 }

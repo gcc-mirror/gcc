@@ -40,7 +40,7 @@ package javax.naming;
 
 public interface NameParser
 {
-  public Name parse (String name) throws NamingException;
+  Name parse (String name) throws NamingException;
 }
 
 

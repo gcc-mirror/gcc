@@ -72,7 +72,7 @@ public interface DirStateFactory extends StateFactory
     }
   }
 
-  public DirStateFactory.Result getStateToBind(Object obj, Name name,
+  DirStateFactory.Result getStateToBind(Object obj, Name name,
   					       Context nameCtx,
 					       Hashtable environment,
 					       Attributes inAttrs)

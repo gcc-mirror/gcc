@@ -48,7 +48,7 @@ import java.util.Hashtable;
 
 public interface DirObjectFactory extends ObjectFactory
 {
-  public Object getObjectInstance(Object obj, Name name, Context nameCtx,
+  Object getObjectInstance(Object obj, Name name, Context nameCtx,
   				  Hashtable environment, Attributes attrs)
 				  throws Exception;
 }

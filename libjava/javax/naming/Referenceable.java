@@ -40,5 +40,5 @@ package javax.naming;
 
 public interface Referenceable
 {
-  public Reference getReference() throws NamingException;
+  Reference getReference() throws NamingException;
 }

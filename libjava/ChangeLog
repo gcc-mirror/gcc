@@ -1,5 +1,37 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* javax/naming/Context.java,
+	javax/naming/Name.java,
+	javax/naming/NameParser.java,
+	javax/naming/NamingEnumeration.java,
+	javax/naming/Referenceable.java,
+	javax/naming/directory/Attribute.java,
+	javax/naming/directory/Attributes.java,
+	javax/naming/directory/DirContext.java,
+	javax/naming/event/EventContext.java,
+	javax/naming/event/EventDirContext.java,
+	javax/naming/event/NamespaceChangeListener.java,
+	javax/naming/event/NamingListener.java,
+	javax/naming/event/ObjectChangeListener.java,
+	javax/naming/ldap/Control.java,
+	javax/naming/ldap/ExtendedRequest.java,
+	javax/naming/ldap/ExtendedResponse.java,
+	javax/naming/ldap/HasControls.java,
+	javax/naming/ldap/LdapContext.java,
+	javax/naming/ldap/UnsolicitedNotification.java,
+	javax/naming/ldap/UnsolicitedNotificationListener.java,
+	javax/naming/spi/DirObjectFactory.java,
+	javax/naming/spi/DirStateFactory.java,
+	javax/naming/spi/InitialContextFactory.java,
+	javax/naming/spi/InitialContextFactoryBuilder.java,
+	javax/naming/spi/ObjectFactory.java,
+	javax/naming/spi/ObjectFactoryBuilder.java,
+	javax/naming/spi/Resolver.java,
+	javax/naming/spi/StateFactory.java:
+	Removing redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/security/Key.java,
 	* java/security/PrivateKey.java,
 	* java/security/PublicKey.java,

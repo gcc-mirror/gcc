@@ -45,5 +45,5 @@ package javax.naming.event;
 
 public interface ObjectChangeListener extends NamingListener
 {
-  public void objectChanged(NamingEvent evt);
+  void objectChanged(NamingEvent evt);
 }

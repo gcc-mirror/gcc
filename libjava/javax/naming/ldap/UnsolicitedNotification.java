@@ -46,6 +46,6 @@ import javax.naming.*;
 
 public interface UnsolicitedNotification extends ExtendedResponse, HasControls
 {
-  public String[] getReferrals();
-  public NamingException getException();
+  String[] getReferrals();
+  NamingException getException();
 }

@@ -46,5 +46,5 @@ import javax.naming.event.*;
 
 public interface UnsolicitedNotificationListener extends NamingListener
 {
-  public void notificationReceived(UnsolicitedNotificationEvent evt);
+  void notificationReceived(UnsolicitedNotificationEvent evt);
 }
