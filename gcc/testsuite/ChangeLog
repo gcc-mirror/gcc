@@ -1,3 +1,8 @@
+2002-08-19  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/bitfield-1.m: New test.
+	* objc.dg/bitfield-2.m: New test.
+
 2002-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/c90-flex-array-1.c, gcc.dg/c99-flex-array-3.c,
