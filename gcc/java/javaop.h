@@ -109,13 +109,16 @@ WORD_TO_FLOAT(jword w)
   return wu.f;
 } 
 
-/* Sign extend w. */
+/* Sign extend w.  If the host on which this cross-compiler runs uses
+   a 64-bit type for jword the appropriate sign extension is
+   performed; if it's a 32-bit type the arithmetic does nothing but is
+   harmless.  */
 static inline jint
 WORD_TO_INT(jword w)
 {
-  jint n = w;
+  jint n = w & 0xffffffff; /* Mask lower 32 bits.  */
   n ^= (jint)1 << 31;
-  n -= (jint)1 << 31;
+  n -= (jint)1 << 31; /* Sign extend lower 32 bits to upper.  */
   return n;
 } 
 

@@ -7,6 +7,13 @@
 	* lang.c (lang_decode_option): Use ARRAY_SIZE.
 	* parse.y (BINOP_LOOKUP): Likewise.
 
+2000-08-22  Andrew Haley  <aph@cygnus.com>
+
+	* javaop.h (WORD_TO_INT): Mask lower 32 bits of a jword before
+	sign extending. Fixes gcj/321.
+	* jcf-parse.c (get_constant): Mask lower 32 bits of a jint before
+	combining to make a jlong. Fixes gcj/321.
+
 2000-08-21  Nix  <nix@esperi.demon.co.uk>
         
 	* lang-specs.h: Do not process -o or run the assembler if
