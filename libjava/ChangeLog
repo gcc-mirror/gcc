@@ -1,5 +1,11 @@
 2002-03-05  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natPosixProcess.cc (fail): Removed.
+	(startProcess): Simplified error-handling.  Preserve
+	LD_LIBRARY_PATH across exec.
+
+2002-03-05  Tom Tromey  <tromey@redhat.com>
+
 	* jni.cc (_Jv_LookupJNIMethod): Throw UnsatisfiedLinkError, not
 	AbstractMethodError.
 
