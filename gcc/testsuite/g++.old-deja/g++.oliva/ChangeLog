@@ -1,5 +1,7 @@
 1999-07-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* new1.C: New test.
+
 	* partord1.C: New test.
 
 	* template1.C: New test.
