@@ -4514,8 +4514,6 @@ maybe_process_template_type_declaration (tree type, int globalize,
     ;
   else
     {
-      maybe_check_template_type (type);
-
       gcc_assert (IS_AGGR_TYPE (type) || TREE_CODE (type) == ENUMERAL_TYPE);
 
       if (processing_template_decl)

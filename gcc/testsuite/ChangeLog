@@ -1,3 +1,9 @@
+2005-02-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/14479
+	PR c++/19487
+	* g++.dg/template/enum5.C: New test.
+
 2005-02-12  Ira Rosen  <irar@il.ibm.com>
 
 	* gcc.dg/vect/vect-97.c: New test.
