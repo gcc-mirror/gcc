@@ -1,14 +1,9 @@
-This is a collection of tests for the C and C++ frontends of GCC. For
-further information please check README.gcc and README.g++, though the
-latter may not be up-to-date any more.
+This is a collection of tests for GCC. For further information about
+the C testsuite, see README.gcc.
 
 The driver that runs this testsuite is called DejaGnu and you will
 need a current DejaGnu snapshot, which is available from
 ftp://gcc.gnu.org/pub/gcc/infrastructure, for example.
-
-Most of these tests were originally developed and/or collected by
-Cygnus Solutions, but these days many are being added by the GCC
-developers.
 
 These tests are included "as is". If any of them fails, do not report
 a bug.  Bug reports for DejaGnu can go to bug-dejagnu@prep.ai.mit.edu.
@@ -19,11 +14,13 @@ gcc-patches@gcc.gnu.org.
 The entire testsuite is invoked by `make check` at the top level of
 the GCC tree. `make check-g++` runs the C++ testsuite only.
 
+STRUCTURE OF THE G++ TESTSUITE
 
-STRUCTURE OF THE TESTSUITE
+  g++.dg tests:
 
-Almost all C++ tests reside in subdirectories of g++.old-deja, based on
-the following structure:
+  All new tests should be placed in an appropriate subdirectory of g++.dg.
+
+  g++.old-deja tests:
 
   g++.benjamin	Tests by Benjamin Koz
   g++.bob
@@ -43,13 +40,6 @@ the following structure:
   g++.rfg
   g++.robertl	Tests from gcc-bugs@gcc.gnu.org, gathered by Robert Lipe
 	
-g++.old-deja uses a fixed driver for all g++ tests based on the old
-DejaGnu drivers. But just because its old, doesn't mean its redundant!
-Tests that want to use the normal dg.exp driver can be put in g++.dg instead.
-This may be required for platform-specific tests, or tests with other
-special requirements.
-
-
 Finally, some random last minute notes by Mike Stump <mrs@cygnus.com>, on
 how to run tests (in the GCC 2.7 era):
 

@@ -1,5 +1,7 @@
 2003-02-24  Mark Mitchell  <mark@codesourcery.com>
 
+	* README: Remove out-of-date information.
+
 	PR c++/9836
 	* g++.dg/template/spec6.C: New test.
 
