@@ -1,3 +1,10 @@
+Fri Jan 14 00:28:06 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* fr30.c (call_operand): Tighten and rework to match rules for
+	call RTL expressions.
+	* fr30.h (PREDICATE_CODES, case call_operand): Only allow MEMs.
+	* fr30.md (call patterns): Improve constraints.
+
 Thu Jan 13 23:44:03 2000  Richard Henderson  <rth@cygnus.com>
 
 	* fr30.c (fr30_expand_epilogue): Revert last change.

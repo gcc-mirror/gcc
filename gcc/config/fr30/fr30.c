@@ -847,11 +847,11 @@ low_register_operand (operand, mode)
 int
 call_operand (operand, mode)
      rtx operand;
-     Mmode mode;
+     Mmode mode ATTRIBUTE_UNUSED;
 {
-  return nonimmediate_operand (operand, mode)
-    || (GET_CODE (operand) == MEM
-	&& GET_CODE (XEXP (operand, 0)) == SYMBOL_REF);
+  return (GET_CODE (operand) == MEM
+	  && (GET_CODE (XEXP (operand, 0)) == SYMBOL_REF
+	      || GET_CODE (XEXP (operand, 0)) == REG));
 }
 
 /* Returns true iff all the registers in the operands array
