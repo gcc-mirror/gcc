@@ -1364,7 +1364,7 @@ push_reload (in, out, inloc, outloc, class,
       rld[i].opnum = MIN (rld[i].opnum, opnum);
     }
 
-  /* If the ostensible rtx being reload differs from the rtx found
+  /* If the ostensible rtx being reloaded differs from the rtx found
      in the location to substitute, this reload is not safe to combine
      because we cannot reliably tell whether it appears in the insn.  */
 
@@ -4847,7 +4847,7 @@ find_reloads_address (mode, memrefloc, ad, loc, opnum, type, ind_levels, insn)
      into a register.  */
   if (CONSTANT_P (ad) && ! strict_memory_address_p (mode, ad))
     {
-      /* If AD is in address in the constant pool, the MEM rtx may be shared.
+      /* If AD is an address in the constant pool, the MEM rtx may be shared.
 	 Unshare it so we can safely alter it.  */
       if (memrefloc && GET_CODE (ad) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (ad))
@@ -6076,7 +6076,7 @@ refers_to_regno_for_reload_p (regno, endregno, x, loc)
    contains a MEM (we don't bother checking for memory addresses that can't
    conflict because we expect this to be a rare case.
 
-   This function is similar to reg_overlap_mention_p in rtlanal.c except
+   This function is similar to reg_overlap_mentioned_p in rtlanal.c except
    that we look at equivalences for pseudos that didn't get hard registers.  */
 
 int
