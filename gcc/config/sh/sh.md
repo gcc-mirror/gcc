@@ -1341,7 +1341,7 @@
   ""
   "
 {
-  rtx first = 0, last;
+  rtx first, last;
 
   operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
@@ -1358,8 +1358,8 @@
     {
       operands[1] = force_reg (SImode, operands[1]);
       operands[2] = force_reg (SImode, operands[2]);
-      last = gen_udivsi3_i4_media (operands[0], operands[1], operands[2]);
-      first = last;
+      emit_insn (gen_udivsi3_i4_media (operands[0], operands[1], operands[2]));
+      DONE;
     }
   else if (TARGET_SH5)
     {
@@ -1386,11 +1386,8 @@
 		      gen_rtx_SYMBOL_REF (SImode, \"__udivsi3\"));
       last = gen_udivsi3_i1 (operands[0], operands[3]);
     }
-  if (! first)
-    {
-      first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
-    }
+  first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
+  emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
   last = emit_insn (last);
   /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
      invariant code motion can move it.  */
@@ -1494,7 +1491,7 @@
   ""
   "
 {
-  rtx first = 0, last;
+  rtx first, last;
 
   operands[3] = gen_reg_rtx (Pmode);
   /* Emit the move of the address to a pseudo outside of the libcall.  */
@@ -1511,8 +1508,8 @@
     {
       operands[1] = force_reg (SImode, operands[1]);
       operands[2] = force_reg (SImode, operands[2]);
-      last = gen_divsi3_i4_media (operands[0], operands[1], operands[2]);
-      first = last;
+      emit_insn (gen_divsi3_i4_media (operands[0], operands[1], operands[2]));
+      DONE;
     }
   else if (TARGET_SH5)
     {
@@ -1538,11 +1535,8 @@
       emit_move_insn (operands[3], gen_rtx_SYMBOL_REF (SImode, \"__sdivsi3\"));
       last = gen_divsi3_i1 (operands[0], operands[3]);
     }
-  if (! first)
-    {
-      first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
-    }
+  first = emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
+  emit_move_insn (gen_rtx_REG (SImode, 5), operands[2]);
   last = emit_insn (last);
   /* Wrap the sequence in REG_LIBCALL / REG_RETVAL notes so that loop
      invariant code motion can move it.  */
