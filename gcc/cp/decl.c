@@ -5003,7 +5003,7 @@ define_label (const char* filename, int line, tree name)
   if (DECL_INITIAL (decl) != NULL_TREE)
     {
       error ("duplicate label `%D'", decl);
-      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL);
+      POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, NULL_TREE);
     }
   else
     {
