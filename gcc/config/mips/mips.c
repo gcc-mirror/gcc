@@ -4064,6 +4064,13 @@ mips_asm_file_start (stream)
     /* ??? but do not want this (or want pic0) if -non-shared? */
     fprintf (stream, "\t%s\n", ABICALLS_ASM_OP);
 
+  /* This code exists so that we can put all externs before all symbol
+     references.  This is necessary for the assembler's global pointer
+     optimizations to work.  */
+  /* ??? Current versions of gas do not require that externs occur before
+     symbol references.  This means that this code is unnecessary when
+     gas is being used.  This gas feature hasn't been well tested as yet
+     though.  */
   if (TARGET_GP_OPT)
     {
       asm_out_data_file = stream;
