@@ -701,12 +701,7 @@ see_typename ()
   if (yychar == IDENTIFIER)
     {
       lastiddecl = lookup_name (yylval.ttype, -2);
-      if (lastiddecl == 0)
-	{
-	  if (flag_labels_ok)
-	    lastiddecl = IDENTIFIER_LABEL_VALUE (yylval.ttype);
-	}
-      else
+      if (lastiddecl)
 	yychar = identifier_type (lastiddecl);
     }
 }
