@@ -163,7 +163,7 @@ extern char *getcwd ();
 #ifndef abort
 extern VOLATILE void abort ();
 #endif
-extern int kill();
+extern int kill ();
 extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
@@ -186,17 +186,17 @@ extern int setjmp ();
 extern void longjmp ();
 #endif
 
-extern char *   strcat();
-extern int      strcmp();
-extern char *   strcpy();
+extern char *   strcat ();
+extern int      strcmp ();
+extern char *   strcpy ();
 #if 0 /* size_t from sys/types.h may fail to match GCC.
 	 If so, we would get a warning from this.
 	 So do without the prototype.  */
-extern size_t   strlen(const char *);
+extern size_t   strlen (const char *);
 #endif
-extern int      strncmp();
-extern char *   strncpy();
-extern char *   strrchr();
+extern int      strncmp ();
+extern char *   strncpy ();
+extern char *   strrchr ();
 
 #if !(defined (USG) || defined (VMS))
 extern int vfork ();
@@ -205,7 +205,7 @@ extern int vfork ();
 extern int fork ();
 #endif /* !(defined (USG) || defined (VMS)) */
 
-#endif /* !defined(POSIX) */
+#endif /* !defined (POSIX) */
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
 
@@ -232,7 +232,7 @@ extern int fork ();
 
 #ifndef STD_PROTO_DIR
 #define STD_PROTO_DIR "/usr/local/lib"
-#endif /* !defined(STD_PROTO_DIR) */
+#endif /* !defined (STD_PROTO_DIR) */
 
 /* Suffix of aux_info files.  */
 
@@ -259,7 +259,7 @@ static const char * const default_syscalls_dir = STD_PROTO_DIR;
 
 static char * syscalls_absolute_filename;
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
 /* Type of the structure that holds information about macro unexpansions. */
 
@@ -354,12 +354,12 @@ struct string_list *exclude_list;
 
 #ifdef UNPROTOIZE
 static const char * const other_var_style = "stdarg";
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
 static const char * const other_var_style = "varargs";
 /* Note that this is a string containing the expansion of va_alist.
    But in `main' we discard all but the first token.  */
-static const char *varargs_style_indicator = STRINGIFY(va_alist);
-#endif /* !defined(UNPROTOIZE) */
+static const char *varargs_style_indicator = STRINGIFY (va_alist);
+#endif /* !defined (UNPROTOIZE) */
 
 /* The following two types are used to create hash tables.  In this program,
    there are two hash tables which are used to store and quickly lookup two
@@ -458,10 +458,10 @@ struct def_dec_info_struct {
   char	        	is_static;	/* = 0 means visiblilty is "extern"  */
   char			is_implicit;	/* != 0 for implicit func decl's */
   char			written;	/* != 0 means written for implicit */
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
   const char *		formal_names;	/* -> to list of names of formals */
   const char *		formal_decls;	/* -> to string of formal declartions */
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 };
 
 /* Pointer to the tail component of the filename by which this program was
@@ -478,12 +478,9 @@ static int errors = 0;
 /* ??? These comments should say what the flag mean as well as the options
    that set them.  */
 
-/* allow the user to pass the pathname of the gcc2 compiler as a
-   command line option, instead of relying on the fact that 'gcc' in
-   the path should be gcc2 */
-
-static char *compiler_pathname = "gcc";
-
+/* File name to use for running gcc.  Allows GCC 2 to be named
+   something other than gcc.  */
+static char *compiler_file_name = "gcc";
 
 static int version_flag = 0;		/* Print our version number.  */
 static int quiet_flag = 0;		/* Don't print messages normally.  */
@@ -495,17 +492,17 @@ static const char ** compile_params = 0;	/* Option string for gcc.  */
 #ifdef UNPROTOIZE
 static const char *indent_string = "     ";	/* Indentation for newly
 						   inserted parm decls.  */
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
 static int local_flag = 0;		/* Insert new local decls (when?).  */
 static int global_flag = 0;		/* set by -g option */
 static int cplusplus_flag = 0;		/* Rename converted files to *.C.  */
 static const char* nondefault_syscalls_dir = 0; /* Dir to look for
 						   SYSCALLS.c.X in.  */
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
 /* An index into the compile_params array where we should insert the filename
    parameter when we are ready to exec the C compiler.  A zero value indicates
-   that we have not yet called munge_compile_params().  */
+   that we have not yet called munge_compile_params.  */
 
 static int filename_index = 0;
 
@@ -577,12 +574,12 @@ static char * repl_write_ptr;
 
 /* Pointer into the cleaned text buffer for the source file we are currently
    converting.  This points to the first character of the line that we last
-   did a "seek_to_line()" to (see below).  */
+   did a "seek_to_line" to (see below).  */
 
 static const char *last_known_line_start;
 
 /* Number of the line (in the cleaned text buffer) that we last did a
-   "seek_to_line()" to.  Will be one if we just read a new source file
+   "seek_to_line" to.  Will be one if we just read a new source file
    into the cleaned text buffer.  */
 
 static int last_known_line_number;
@@ -778,10 +775,10 @@ usage ()
 #ifdef UNPROTOIZE
   fprintf (stderr, "%s: usage '%s [ -VqfnkN ] [ -i <istring> ] [ filename ... ]'\n",
 	   pname, pname);
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
   fprintf (stderr, "%s: usage '%s [ -VqfnkNlgC ] [ -B <diname> ] [ filename ... ]'\n",
 	   pname, pname);
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
   exit (1);
 }
 
@@ -903,7 +900,7 @@ is_syscalls_file (fi_p)
   return (substr (fi_p->hash_entry->symbol, syscalls_filename) != NULL);
 }
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
 /* Check to see if this file will need to have anything done to it on this
    run.  If there is nothing in the given file which both needs conversion
@@ -912,7 +909,7 @@ is_syscalls_file (fi_p)
 
    Note that (for protoize) it is only valid to call this function *after*
    the connections between declarations and definitions have all been made
-   by connect_defs_and_decs().  */
+   by connect_defs_and_decs.  */
 
 static int
 needs_to_be_converted (file_p)
@@ -925,7 +922,7 @@ needs_to_be_converted (file_p)
   if (is_syscalls_file (file_p))
     return 0;
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   for (ddp = file_p->defs_decs; ddp; ddp = ddp->next_in_file)
 
@@ -938,12 +935,12 @@ needs_to_be_converted (file_p)
       /* ... and if this a definition or is a decl with an associated def ... */
       && (ddp->is_func_def || (!ddp->is_func_def && ddp->definition))
 
-#else /* defined(UNPROTOIZE) */
+#else /* defined (UNPROTOIZE) */
 
       /* ... and if we are unprotoizing and this function is in new style ... */
       ddp->prototyped
 
-#endif /* defined(UNPROTOIZE) */
+#endif /* defined (UNPROTOIZE) */
       )
           /* ... then the containing file needs converting.  */
           return -1;
@@ -1110,7 +1107,7 @@ free_def_dec (p)
         xfree (curr);
       }
   }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   xfree (p);
 }
@@ -1426,7 +1423,7 @@ aux_info_corrupted ()
 }
 
 /* ??? This comment is vague.  Say what the condition is for.  */
-/* Check to see that a condition is true.  This is kind of like an assert().  */
+/* Check to see that a condition is true.  This is kind of like an assert.  */
 
 static void
 check_aux_info (cond)
@@ -1526,7 +1523,7 @@ save_def_or_dec (l, is_syscalls)
 
 #ifndef UNPROTOIZE
   def_dec_p->written = 0;
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   /* Start processing the line by picking off 5 pieces of information from
      the left hand end of the line.  These are filename, line number,
@@ -1591,7 +1588,7 @@ save_def_or_dec (l, is_syscalls)
 
   def_dec_p->is_implicit = (*p == 'I');
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   p++;
 
@@ -1605,7 +1602,7 @@ save_def_or_dec (l, is_syscalls)
 
 #ifndef UNPROTOIZE
   def_dec_p->definition = 0;	/* Fill this in later if protoizing.  */
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   check_aux_info (*p++ == ' ');
   check_aux_info (*p++ == '*');
@@ -1614,14 +1611,14 @@ save_def_or_dec (l, is_syscalls)
 
 #ifdef UNPROTOIZE
   check_aux_info ((!strncmp (p, "static", 6)) || (!strncmp (p, "extern", 6)));
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
   if (!strncmp (p, "static", 6))
     def_dec_p->is_static = -1;
   else if (!strncmp (p, "extern", 6))
     def_dec_p->is_static = 0;
   else
     check_aux_info (0);	/* Didn't find either `extern' or `static'.  */
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   {
     const char *ansi_start = p;
@@ -1655,7 +1652,7 @@ save_def_or_dec (l, is_syscalls)
 
 #ifndef UNPROTOIZE
   def_dec_p->f_list_chain = NULL;
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   for (;;)
     {
@@ -1673,7 +1670,7 @@ save_def_or_dec (l, is_syscalls)
         cip->chain_next = def_dec_p->f_list_chain;
         def_dec_p->f_list_chain = cip;
       }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
       def_dec_p->f_list_count++;
 
       p = left_paren_p - 2;
@@ -1841,7 +1838,7 @@ save_def_or_dec (l, is_syscalls)
       return;
     }
 
-#endif /* defined(UNPROTOIZE) */
+#endif /* defined (UNPROTOIZE) */
 
   /* Add this record to the head of the list of records pertaining to this
      particular function name.  */
@@ -1901,7 +1898,7 @@ munge_compile_params (params_list)
   int param_count = 0;
   const char *param;
 
-  temp_params[param_count++] = compiler_pathname;
+  temp_params[param_count++] = compiler_file_name;
   for (;;)
     {
       while (isspace (*params_list))
@@ -2301,7 +2298,7 @@ rename_c_file (hp)
     }
 }
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
 /* Take the list of definitions and declarations attached to a particular
    file_info node and reverse the order of the list.  This should get the
@@ -2651,7 +2648,7 @@ connect_defs_and_decs (hp)
            do not already have definitions.
 
            Note that a trick is used here to prevent subsequent attempts to
-           call find_static_definition() for a given function-name & file
+           call find_static_definition for a given function-name & file
            if the first such call returns NULL.  Essentially, we convert
            these NULL return values to -1, and put the -1 into the definition
            field for each other static declaration from the same file which
@@ -2680,7 +2677,7 @@ connect_defs_and_decs (hp)
       ((NONCONST def_dec_info *) dd_p)->definition = NULL;
 }
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
 /* Give a pointer into the clean text buffer, return a number which is the
    original source line number that the given pointer points into.  */
@@ -2856,7 +2853,7 @@ other_variable_style_function (ansi_header)
 
   return (int) substr (ansi_header, "...");
 
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
 
   /* See if we have a varargs function, or a function which has varargs style
      parameters or a varargs style return type.  */
@@ -2877,7 +2874,7 @@ other_variable_style_function (ansi_header)
           p = candidate + 1;
     }
   return 0;
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 }
 
 /* Do the editing operation specifically for a function "declaration".  Note
@@ -2921,7 +2918,7 @@ edit_fn_declaration (def_dec_p, clean_text_p)
       return;
     }
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   /* Setup here to recover from confusing source code detected during this
      particular "edit".  */
@@ -3011,7 +3008,7 @@ edit_fn_declaration (def_dec_p, clean_text_p)
 
 #ifndef UNPROTOIZE
   this_f_list_chain_item = definition->f_list_chain;
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   for (;;)
     {
@@ -3057,7 +3054,7 @@ edit_fn_declaration (def_dec_p, clean_text_p)
 		     pname, def_dec_p->hash_entry->symbol);
           check_source (0, end_formals);  /* leave the declaration intact */
         }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
       clean_read_ptr = end_formals - 1;
 
       /* Now see if it looks like there may be another formals list associated
@@ -3078,7 +3075,7 @@ edit_fn_declaration (def_dec_p, clean_text_p)
 			   pname, def_dec_p->hash_entry->symbol);
                 check_source (0, start_formals); /* leave the decl intact */
               }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
             break;
   
           }
@@ -3185,7 +3182,7 @@ edit_formals_lists (end_formals, f_list_count, def_dec_p)
 #ifdef UNPROTOIZE
   if (f_list_count == 0)
     output_string (def_dec_p->formal_names);
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
   {
     unsigned f_list_depth;
     const f_list_chain_item *flci_p = def_dec_p->f_list_chain;
@@ -3198,7 +3195,7 @@ edit_formals_lists (end_formals, f_list_count, def_dec_p)
       flci_p = flci_p->chain_next;
     output_string (flci_p->formals_list);
   }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   clean_read_ptr = end_formals - 1;
   return 0;
@@ -3269,7 +3266,7 @@ find_rightmost_formals_list (clean_text_p)
     check_source (ch == '{', l_brace_p);
   }
 
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
 
   /* Now scan backwards while looking for the right end of the rightmost
      formals list associated with this function definition.  */
@@ -3312,7 +3309,7 @@ find_rightmost_formals_list (clean_text_p)
       check_source (--end_formals > clean_read_ptr, 0);
     }
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   return end_formals;
 }
@@ -3521,7 +3518,7 @@ add_global_decls (file_p, clean_text_p)
       ((NONCONST def_dec_info *) dd_p->definition)->written = 0;
 }
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
 /* Do the editing operation specifically for a function "definition".  Note
    that editing operations for function "declarations" are handled by a
@@ -3618,7 +3615,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
     if (!had_newlines)
       output_string ("\n");
   }
-#else /* !defined(UNPROTOIZE) */
+#else /* !defined (UNPROTOIZE) */
   /* If we are protoizing, there may be some flotsum & jetsum (like comments
      and preprocessing directives) after the old formals list but before
      the following { and we would like to preserve that stuff while effectively
@@ -3664,7 +3661,7 @@ edit_fn_definition (def_dec_p, clean_text_p)
         output_string (" ");
     clean_read_ptr = start_body - 1;
   }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 }
 
 /* Clean up the clean text buffer.  Do this by converting comments and
@@ -3962,7 +3959,7 @@ edit_file (hp)
              gentile way of prodding the user to convert his "system"
              include files to prototype format.  */
           && !in_system_include_dir (convert_filename)
-#endif /* defined(UNPROTOIZE) */
+#endif /* defined (UNPROTOIZE) */
           )
         fprintf (stderr, "%s: file `%s' not converted\n",
 		 pname, shortpath (NULL, convert_filename));
@@ -4123,7 +4120,7 @@ edit_file (hp)
          || (!def_dec_p->is_func_def && !def_dec_p->definition))
           continue;
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
         if (def_dec_p->is_func_def)
           edit_fn_definition (def_dec_p, clean_text_p);
@@ -4132,7 +4129,7 @@ edit_file (hp)
   	if (def_dec_p->is_implicit)
   	  add_local_decl (def_dec_p, clean_text_p);
   	else
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
             edit_fn_declaration (def_dec_p, clean_text_p);
       }
   }
@@ -4249,7 +4246,7 @@ do_processing ()
 
 #ifndef UNPROTOIZE
   int syscalls_len;
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   /* One-by-one, check (and create if necessary), open, and read all of the
      stuff in each aux_info file.  After reading each aux_info file, the
@@ -4292,7 +4289,7 @@ do_processing ()
 
   process_aux_info_file (syscalls_absolute_filename, 1, 1);
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   /* When we first read in all of the information from the aux_info files
      we saved in it decending line number order, because that was likely to
@@ -4314,7 +4311,7 @@ do_processing ()
 
   visit_each_hash_node (function_name_primary, connect_defs_and_decs);
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   /* Now convert each file that can be converted (and needs to be).  */
 
@@ -4328,13 +4325,13 @@ do_processing ()
   if (cplusplus_flag && !nochange_flag)
     visit_each_hash_node (filename_primary, rename_c_file);
 
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 }
 
 static struct option longopts[] =
 {
   {"version", 0, 0, 'V'},
-  {"pathname", 0, 0, 'p'},
+  {"file_name", 0, 0, 'p'},
   {"quiet", 0, 0, 'q'},
   {"silent", 0, 0, 'q'},
   {"force", 0, 0, 'f'},
@@ -4397,7 +4394,7 @@ main (argc, argv)
       switch (c)
 	{
 	case 'p':
-	  compiler_pathname = optarg;
+	  compiler_file_name = optarg;
 	  break;
 	case 'd':
 	  directory_list
@@ -4435,7 +4432,7 @@ main (argc, argv)
 	case 'i':
 	  indent_string = optarg;
 	  break;
-#else				/* !defined(UNPROTOIZE) */
+#else				/* !defined (UNPROTOIZE) */
 	case 'l':
 	  local_flag = 1;
 	  break;
@@ -4448,7 +4445,7 @@ main (argc, argv)
 	case 'B':
 	  nondefault_syscalls_dir = optarg;
 	  break;
-#endif				/* !defined(UNPROTOIZE) */
+#endif				/* !defined (UNPROTOIZE) */
 	default:
 	  usage ();
 	}
@@ -4489,7 +4486,7 @@ main (argc, argv)
       varargs_style_indicator = savestring (varargs_style_indicator,
 					    cp - varargs_style_indicator);
   }
-#endif /* !defined(UNPROTOIZE) */
+#endif /* !defined (UNPROTOIZE) */
 
   if (errors)
     usage ();
