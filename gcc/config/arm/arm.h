@@ -1319,17 +1319,6 @@ enum reg_class
    :							\
    ((FROM) == HI_REGS || (TO) == HI_REGS) ? 4 : 2)
 
-/* Register Renaming Parameters.  */
-
-/* A C expression that is nonzero if hard register number TO can be
-   considered for use as a rename register for FROM.
-
-   If the return register isn't already live, we mustn't use it.  */
-
-#define HARD_REGNO_RENAME_OK(FROM,TO) \
-  ((TO) != LR_REGNUM || regs_ever_live[LR_REGNUM])
-
-
 /* Stack layout; function entry, exit and calling.  */
 
 /* Define this if pushing a word on the stack
@@ -1622,6 +1611,8 @@ typedef struct
 #define FUNCTION_EPILOGUE(STREAM, SIZE)	\
   output_func_epilogue (SIZE)
 
+#define EPILOGUE_USES(REGNO) (reload_completed && (REGNO) == LR_REGNUM)
+
 /* Determine if the epilogue should be output as RTL.
    You should override this if you define FUNCTION_EXTRA_EPILOGUE.  */
 #define USE_RETURN_INSN(ISCOND)				\
@@ -1712,7 +1703,7 @@ typedef struct
 	   if (! frame_pointer_needed)					\
 	     offset -= 16;						\
 	   if (! volatile_func						\
-	       && (regs_ever_live[LR_REGNUM] || saved_hard_reg))	\
+	       && (regs_ever_live[LR_REGNUM] /*|| saved_hard_reg */))	\
 	     offset += 4;						\
 	   offset += current_function_outgoing_args_size;		\
 	   (OFFSET) = ROUND_UP (get_frame_size ()) + offset;		\
