@@ -1,5 +1,7 @@
 Sat Nov 28 19:32:33 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* rtl.def (INLINE_HEADER): Fix type error found by gen_rtx_FOO changes.
+
         * configure.in: If host != build, run autoconf to generate auto
 	build.h for the build machine and include it in build_xm_files.
 	
