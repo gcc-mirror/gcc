@@ -1,5 +1,10 @@
 2001-08-08  Graham Stott  <grahams@redhat.com>
 
+	* config/mips/mips.c (mips_legitimate_address_p): Fix enable checking
+	failure check for CONST_INT
+
+2001-08-08  Graham Stott  <grahams@redhat.com>
+
 	* flow.c (back_edge_of_syntactic_loop_p): Add whitespace.
 	(libcall_dead_p): Likewise.
 
