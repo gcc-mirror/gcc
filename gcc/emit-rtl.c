@@ -2948,6 +2948,17 @@ emit_insn (pattern)
       add_insn (insn);
     }
 
+#ifdef ENABLE_RTL_CHECKING
+  if (insn
+      && (returnjump_p (insn)
+	  || (GET_CODE (insn) == SET
+	      && SET_DEST (insn) == pc_rtx)))
+    {
+      warning ("ICE: emit_insn used where emit_jump_insn needed:\n");
+      debug_rtx (insn);
+    }
+#endif
+      
   return insn;
 }
 

@@ -1,3 +1,11 @@
+2000-01-14  Nick Clifton  <nickc@cygnus.com>
+
+	* emit-rtl.c (emit_insn): If checking is enabled, make sure
+	that this function has not been used to emit a jump
+	instruction.
+
+	* jump.c (return_jump_1): Cope with being passed a null rtx.
+
 2000-01-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* eh-common.h: PROTO -> PARAMS.
