@@ -256,6 +256,12 @@ cp_convert_to_pointer (type, expr, force)
       force_fit_type (expr, 0);
       return expr;
     }
+  else if ((TYPE_PTRMEM_P (type) || TYPE_PTRMEMFUNC_P (type))
+	   && INTEGRAL_CODE_P (form))
+    {
+      error ("invalid conversion from '%T' to '%T'", intype, type);
+      return error_mark_node;
+    }
 
   if (INTEGRAL_CODE_P (form))
     {
