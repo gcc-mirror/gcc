@@ -2,7 +2,7 @@ Mon Apr 5 05:55:15 PDT 1999 Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixincl.tpl: Separate "-e" from its argument, a la
 	the Sat Apr  3 17:05:13 1999 fix.
-	* mkfixinc.sh: Ensure that the server shell is _NOT_ csh.
+	* genfixes: Ensure that the server shell is _NOT_ csh.
 
 Mon Apr 5 03:52:30 PDT 1999 Jeff Law  (law@cygnus.com)
 
