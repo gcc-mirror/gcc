@@ -4440,14 +4440,11 @@ fold (expr)
       else if (TREE_CODE (arg0) == COMPLEX_CST)
 	return TREE_REALPART (arg0);
       else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return build_binary_op (TREE_CODE (arg0), type,
-				build_unary_op (REALPART_EXPR,
-						TREE_OPERAND (arg0, 0),
-						1),
-				build_unary_op (REALPART_EXPR,
-						TREE_OPERAND (arg0, 1),
-						1),
-				0);
+	return fold (build (TREE_CODE (arg0), type,
+			    fold (build1 (REALPART_EXPR, type,
+					  TREE_OPERAND (arg0, 0))),
+			    fold (build1 (REALPART_EXPR,
+					  type, TREE_OPERAND (arg0, 1)))));
       return t;
 
     case IMAGPART_EXPR:
@@ -4459,14 +4456,11 @@ fold (expr)
       else if (TREE_CODE (arg0) == COMPLEX_CST)
 	return TREE_IMAGPART (arg0);
       else if (TREE_CODE (arg0) == PLUS_EXPR || TREE_CODE (arg0) == MINUS_EXPR)
-	return build_binary_op (TREE_CODE (arg0), type,
-				build_unary_op (IMAGPART_EXPR,
-						TREE_OPERAND (arg0, 0),
-						1),
-				build_unary_op (IMAGPART_EXPR,
-						TREE_OPERAND (arg0, 1),
-						1),
-				0);
+	return fold (build (TREE_CODE (arg0), type,
+			    fold (build1 (IMAGPART_EXPR, type,
+					  TREE_OPERAND (arg0, 0))),
+			    fold (build1 (IMAGPART_EXPR, type,
+					  TREE_OPERAND (arg0, 1)))));
       return t;
 
     default:
