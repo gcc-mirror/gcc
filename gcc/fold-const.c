@@ -109,10 +109,6 @@ static int count_cond		PARAMS ((tree, int));
 static tree fold_binary_op_with_conditional_arg 
   PARAMS ((enum tree_code, tree, tree, tree, int));
 							 
-#ifndef BRANCH_COST
-#define BRANCH_COST 1
-#endif
-
 #if defined(HOST_EBCDIC)
 /* bit 8 is significant in EBCDIC */
 #define CHARMASK 0xff

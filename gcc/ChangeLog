@@ -1,3 +1,10 @@
+2002-04-18  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (BRANCH_COST): Define.
+
+	* fold-const.c (BRANCH_COST): Don't provide default here, expr.h
+	does it.
+
 2002-04-18  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): New.
