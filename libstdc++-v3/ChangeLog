@@ -1,3 +1,11 @@
+2003-02-25  Scott Snyder  <snyder@fnal.gov>
+
+	PR libstdc++/9811
+	* include/bits/stl_map.h (lower_bound, upper_bound, equal_range):
+	Correct documentation.
+	* include/bits/stl_multimap.h (lower_bound, upper_bound,
+	equal_range): Likewise.
+
 2003-02-24  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9825
