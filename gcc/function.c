@@ -6777,31 +6777,29 @@ expand_function_end (filename, line, end_bindings)
      SDB depends on this.  */
   emit_line_note_force (filename, line);
 
+  /* Before the return label (if any), clobber the return
+     registers so that they are not propogated live to the rest of
+     the function.  This can only happen with functions that drop
+     through; if there had been a return statement, there would
+     have either been a return rtx, or a jump to the return label.  */
+  {
+    rtx before, after;
+    
+    before = get_last_insn ();
+    clobber_return_register ();
+    after = get_last_insn ();
+    
+    if (before != after)
+      cfun->x_clobber_return_insn = after;
+  }
+
   /* Output the label for the actual return from the function,
      if one is expected.  This happens either because a function epilogue
      is used instead of a return instruction, or because a return was done
      with a goto in order to run local cleanups, or because of pcc-style
      structure returning.  */
-
   if (return_label)
-    {
-      rtx before, after;
-
-      /* Before the return label, clobber the return registers so that
-         they are not propogated live to the rest of the function.  This
-	 can only happen with functions that drop through; if there had
-	 been a return statement, there would have either been a return
-	 rtx, or a jump to the return label.  */
-
-      before = get_last_insn ();
-      clobber_return_register ();
-      after = get_last_insn ();
-
-      if (before != after)
-	cfun->x_clobber_return_insn = after;
-
-      emit_label (return_label);
-    }
+    emit_label (return_label);
 
   /* C++ uses this.  */
   if (end_bindings)
