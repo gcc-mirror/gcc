@@ -12,6 +12,9 @@
 	(do_spill, do_restore): Use it to add REG_INC note.
 	* config/ia64/ia64.md (movti_internal): Add REG_INC notes as needed.
 
+	* config/ia64/ia64.c (ia64_sched_reorder): Defer scheduling of
+	asms if other insns are available.
+
 2001-08-04  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/sh/sh.c (sh_asm_named_section): Fix typo in align
