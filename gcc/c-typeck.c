@@ -3138,7 +3138,8 @@ build_c_cast (tree type, tree expr)
       if (warn_bad_function_cast
 	  && TREE_CODE (value) == CALL_EXPR
 	  && TREE_CODE (type) != TREE_CODE (otype))
-	warning ("cast does not match function type");
+	warning ("cast from function call of type %qT to non-matching "
+		 "type %qT", otype, type);
 
       if (TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == INTEGER_TYPE
