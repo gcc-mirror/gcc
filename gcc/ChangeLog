@@ -1,3 +1,8 @@
+Sat Nov 17 12:06:31 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* except.c (enum eh_region_type): Add ERT_UNKNOWN.
+	(mark_eh_region, case ERT_UKNONW): New case.
+
 2001-11-17  Christopher Faylor  <cgf@redhat.com>
 	    Corinna Vinschen  <vinschen@redhat.com>
 
