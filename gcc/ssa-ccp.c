@@ -866,8 +866,13 @@ ssa_ccp_substitute_constants ()
 	  /* Do not try to simplify PHI nodes down to a constant load.
 	     That will be done later as we translate out of SSA.  Also,
 	     doing that here could violate the rule that all PHI nodes
-	     are consecutive at the start of the basic block.  */
-	  if (! PHI_NODE_P (def))
+	     are consecutive at the start of the basic block.
+
+	     Don't do anything to nodes that were already sets to
+	     constants.	 */
+	  if (! PHI_NODE_P (def)
+	      && ! ((GET_CODE (def) == INSN
+		     && GET_CODE (SET_SRC (set)) == CONST_INT)))
 	    {
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file,
