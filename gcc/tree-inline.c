@@ -1017,6 +1017,17 @@ inline_forbidden_p_1 (tree *nodep, int *walk_subtrees ATTRIBUTE_UNUSED,
 		   "it uses non-local goto");
 	    return node;
 
+	  case BUILT_IN_RETURN:
+	  case BUILT_IN_APPLY_ARGS:
+	    /* If a __builtin_apply_args caller would be inlined,
+	       it would be saving arguments of the function it has
+	       been inlined into.  Similarly __builtin_return would
+	       return from the function the inline has been inlined into.  */
+	    inline_forbidden_reason
+	      = N_("%Jfunction %qF can never be inlined because "
+		   "it uses __builtin_return or __builtin_apply_args");
+	    return node;
+
 	  default:
 	    break;
 	  }
