@@ -2765,8 +2765,8 @@ is_attribute_p (attr, ident)
 /* Given an attribute name and a list of attributes, return a pointer to the
    attribute's list element if the attribute is part of the list, or NULL_TREE
    if not found.  If the attribute appears more than once, this only
-   returns the first occurance; the TREE_CHAIN of the return value should
-   be passed back in if further occurances are wanted.  */
+   returns the first occurrence; the TREE_CHAIN of the return value should
+   be passed back in if further occurrences are wanted.  */
 
 tree
 lookup_attribute (attr_name, list)

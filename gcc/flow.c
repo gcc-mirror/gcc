@@ -2228,7 +2228,7 @@ invalidate_mems_from_autoinc (pbi, insn)
       invalidate_mems_from_set (pbi, XEXP (note, 0));
 }
 
-/* EXP is a REG.  Remove any dependant entries from pbi->mem_set_list.  */
+/* EXP is a REG.  Remove any dependent entries from pbi->mem_set_list.  */
 
 static void
 invalidate_mems_from_set (pbi, exp)

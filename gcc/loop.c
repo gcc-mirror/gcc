@@ -6480,7 +6480,7 @@ combine_givs_p (g1, g2)
 {
   rtx comb, ret;
 
-  /* With the introduction of ext dependant givs, we must care for modes.
+  /* With the introduction of ext dependent givs, we must care for modes.
      G2 must not use a wider mode than G1.  */
   if (GET_MODE_SIZE (g1->mode) < GET_MODE_SIZE (g2->mode))
     return NULL_RTX;
@@ -6526,7 +6526,7 @@ combine_givs_p (g1, g2)
   return NULL_RTX;
 }
 
-/* Check each extension dependant giv in this class to see if its
+/* Check each extension dependent giv in this class to see if its
    root biv is safe from wrapping in the interior mode, which would
    make the giv illegal.  */
 
@@ -6658,7 +6658,7 @@ check_ext_dependant_givs (bl, loop_info)
 	    if (loop_dump_stream)
 	      {
 		fprintf (loop_dump_stream,
-			 "Verified ext dependant giv at %d of reg %d\n",
+			 "Verified ext dependent giv at %d of reg %d\n",
 			 INSN_UID (v->insn), bl->regno);
 	      }
 	  }
@@ -6681,7 +6681,7 @@ check_ext_dependant_givs (bl, loop_info)
 		  }
 
 		fprintf (loop_dump_stream,
-			 "Failed ext dependant giv at %d, %s\n",
+			 "Failed ext dependent giv at %d, %s\n",
 			 INSN_UID (v->insn), why);
 	      }
 	    v->ignore = 1;

@@ -1119,7 +1119,7 @@ lang_independent_options f_options[] =
   {"rename-registers", &flag_rename_registers, 1,
    N_("Do the register renaming optimization pass") },
   {"common", &flag_no_common, 0,
-   N_("Do not put unitialised globals in the common section") },
+   N_("Do not put uninitialized globals in the common section") },
   {"inhibit-size-directive", &flag_inhibit_size_directive, 1,
    N_("Do not generate .size directives") },
   {"function-sections", &flag_function_sections, 1,
@@ -1539,7 +1539,7 @@ lang_independent_options W_options[] =
   {"unreachable-code", &warn_notreached, 1,
    N_("Warn about code that will never be executed") },
   {"uninitialized", &warn_uninitialized, 1,
-   N_("Warn about unitialized automatic variables") },
+   N_("Warn about uninitialized automatic variables") },
   {"inline", &warn_inline, 1,
    N_("Warn when an inlined function cannot be inlined") },
   {"packed", &warn_packed, 1,
@@ -1719,7 +1719,7 @@ set_float_handler (handler)
    pointer FN, and one argument DATA.  DATA is usually a struct which
    contains the real input and output for function FN.  This function
    returns 0 (failure) if longjmp was called (i.e. an exception
-   occured.)  It returns 1 (success) otherwise.  */
+   occurred.)  It returns 1 (success) otherwise.  */
 
 int
 do_float_handler (fn, data)

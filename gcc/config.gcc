@@ -92,16 +92,16 @@
 #
 #  extra_programs	Like extra_passes, but these are used when linking.
 #
-#  host_extra_objs	List of extra host-dependant objects that should
+#  host_extra_objs	List of extra host-dependent objects that should
 #			be linked into the compiler proper.
 #
-#  host_extra_gcc_objs	List of extra host-dependant objects that should
+#  host_extra_gcc_objs	List of extra host-dependent objects that should
 #			be linked into the gcc driver.
 #
-#  c_target_objs	List of extra target-dependant objects that be
+#  c_target_objs	List of extra target-dependent objects that be
 #			linked into the C compiler only.
 #
-#  cxx_target_objs	List of extra target-dependant objects that be
+#  cxx_target_objs	List of extra target-dependent objects that be
 #			linked into the C++ compiler only.
 #
 #  build_xm_defines	List of macros to define when compiling for the

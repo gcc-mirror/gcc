@@ -492,7 +492,7 @@ Fri Nov 28 12:34:03 1997  Scott Christley  <scottc@net-community.com>
 
 	* objc/Make-lang.in (runtime-info.h): Add comment in file.
 
-	* objc/selector.c: Replace all occurences of sarray_get
+	* objc/selector.c: Replace all occurrences of sarray_get
 	with sarray_get_safe.
 	* objc/sendmsg.c: Likewise.
 
@@ -7666,7 +7666,7 @@ Sun Feb  2 19:43:17 1997  Scott Christley <scottc@net-community.com>
 	(__alpha__): Remove unneeded code.
 	(objc_error): Allow user specified error handler function to
 	trap and handle the objc error.  Added an error code parameter
-	which indicates the specific error that occured.
+	which indicates the specific error that occurred.
 	(objc_malloc, objc_atomic_malloc): Replace call to objc_fatal
 	function with call to objc_error function.
 	(objc_valloc, objc_realloc, objc_calloc): Likewise.
@@ -9480,7 +9480,7 @@ Sat Oct 26 14:04:09 1996  Ben Harris  <bjh21@cam.ac.uk>
 Sat Oct 26 13:59:05 1996  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 	* explow.c (allocate_dynamic_stack_space): Delete reference to
-	nonexistant macro ALLOCATE_OUTGOING_ARGS.
+	nonexistent macro ALLOCATE_OUTGOING_ARGS.
 
 	* next.h (CPP_PREDEFINES): Add -D_NEXT_SOURCE.
 

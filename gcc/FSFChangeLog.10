@@ -5807,7 +5807,7 @@ Fri Jul 28 08:47:51 1995  Jim Wilson  <wilson@chestnut.cygnus.com>
 	(xcoffout_begin_function): Call dbxout_parms and
 	ASM_OUTPUT_SOURCE_LINE.
 
-	* va-mips.h: Change every occurance of #if __mips>=3 to
+	* va-mips.h: Change every occurrence of #if __mips>=3 to
 	#ifdef __mips64.
 	* mips/abi64.h (CPP_SPEC): Output -D__mips64 when -mips3, or -mips4,
 	or -mgp64.  Output -U__mips64 when -mgp32.

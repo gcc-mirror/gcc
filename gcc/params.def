@@ -69,9 +69,9 @@ DEFPARAM(PARAM_MAX_DELAY_SLOT_LIVE_SEARCH,
 	 333)
 
 /* This parameter limits the number of branch elements that the 
-   scheduler will track anti-dependancies through without resetting
+   scheduler will track anti-dependencies through without resetting
    the tracking mechanism.  Large functions with few calls or barriers 
-   can generate lists containing many 1000's of dependancies.  Generally 
+   can generate lists containing many 1000's of dependencies.  Generally 
    the compiler either uses all available memory, or runs for far too long.  */
 DEFPARAM(PARAM_MAX_PENDING_LIST_LENGTH,
 	 "max-pending-list-length",

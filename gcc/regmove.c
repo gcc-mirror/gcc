@@ -2372,7 +2372,7 @@ combine_stack_adjustments_for_block (bb)
 		 or a deallocation into the second insn.  We can not
 		 combine an allocation followed by a deallocation.
 
-		 The only somewhat frequent ocurrence of the later is when
+		 The only somewhat frequent occurrence of the later is when
 		 a function allocates a stack frame but does not use it.
 		 For this case, we would need to analyze rtl stream to be
 		 sure that allocated area is really unused.  This means not

@@ -2256,7 +2256,7 @@ lineno_stmt:
 		      /* ??? We currently have no way of recording
 			 the filename for a statement.  This probably
 			 matters little in practice at the moment,
-			 but I suspect that problems will ocurr when
+			 but I suspect that problems will occur when
 			 doing inlining at the tree level.  */
 		    }
 		}

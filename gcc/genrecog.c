@@ -1200,7 +1200,7 @@ maybe_both_true_1 (d1, d2)
   struct decision_test *t1, *t2;
 
   /* A match_operand with no predicate can match anything.  Recognize
-     this by the existance of a lone DT_accept_op test.  */
+     this by the existence of a lone DT_accept_op test.  */
   if (d1->type == DT_accept_op || d2->type == DT_accept_op)
     return 1;
 

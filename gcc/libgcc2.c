@@ -2080,7 +2080,7 @@ __bb_init_prg (void)
                    malloc (BB_BUCKETS * sizeof (struct bb_edge *));
       if (bb_hashbuckets)
 	/* Use a loop here rather than calling bzero to avoid having to
-	   conditionalize its existance.  */
+	   conditionalize its existence.  */
 	for (i = 0; i < BB_BUCKETS; i++)
 	  bb_hashbuckets[i] = 0;
     }

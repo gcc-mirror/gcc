@@ -1017,7 +1017,7 @@ sched_analyze_insn (deps, x, insn, loop_notes)
       sched_analyze_2 (deps, COND_EXEC_TEST (x), insn);
 
       /* ??? Should be recording conditions so we reduce the number of
-	 false dependancies.  */
+	 false dependencies.  */
       x = COND_EXEC_CODE (x);
       code = GET_CODE (x);
     }

@@ -162,7 +162,7 @@ extern struct sched_info *current_sched_info;
 struct haifa_insn_data
 {
   /* A list of insns which depend on the instruction.  Unlike LOG_LINKS,
-     it represents forward dependancies.  */
+     it represents forward dependencies.  */
   rtx depend;
 
   /* The line number note in effect for each insn.  For line number
