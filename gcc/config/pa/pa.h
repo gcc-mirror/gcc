@@ -2474,11 +2474,25 @@ extern char *output_div_insn ();
 extern char *output_mod_insn ();
 extern char *singlemove_string ();
 extern void output_arg_descriptor ();
+extern void output_deferred_plabels ();
+extern void override_options ();
+extern void output_ascii ();
+extern void output_function_prologue ();
+extern void output_function_epilogue ();
 extern void output_global_address ();
+extern void print_operand ();
 extern struct rtx_def *legitimize_pic_address ();
 extern struct rtx_def *gen_cmp_fp ();
 extern void hppa_encode_label ();
 extern int arith11_operand ();
+extern int symbolic_expression_p ();
+extern int reloc_needed ();
+extern int compute_frame_size ();
+extern int hppa_address_cost ();
+extern int and_mask_p ();
+extern int symbolic_memory_operand ();
+extern int pa_adjust_cost ();
+extern int pa_adjust_insn_length ();
 extern int int11_operand ();
 extern int reg_or_cint_move_operand ();
 extern int arith5_operand ();
@@ -2516,7 +2530,7 @@ extern void hppa_expand_epilogue ();
 extern int hppa_can_use_return_insn_p ();
 extern int is_function_label_plus_const ();
 extern int jump_in_call_delay ();
-
+extern enum reg_class secondary_reload_class ();
 
 /* Declare functions defined in pa.c and used in templates.  */
 
