@@ -887,7 +887,7 @@ objc_read_class (struct objc_typed_stream *stream, Class *class)
 
       if (buf[0] == (_B_EXT | _BX_CLASS))
 	{
-	  char *class_name;
+	  char *class_name = "";
 	  unsigned long version;
 
 	  /* get class */
@@ -938,7 +938,7 @@ objc_read_selector (struct objc_typed_stream *stream, SEL* selector)
 
       if (buf[0] == (_B_EXT|_BX_SEL)) /* selector! */
 	{
-	  char *selector_name;
+	  char *selector_name = "";
 
 	  /* get selector */
 	  len = objc_read_string (stream, &selector_name);
