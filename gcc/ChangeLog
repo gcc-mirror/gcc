@@ -1,3 +1,8 @@
+Sat Aug 15 08:39:49 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* config/sparc/sparc.md (movsi_lo_sum_pic_label_reg): Remove
+	write-only modifier from operand 1 constraint.
+
 Sat Aug 15 06:28:19 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (sparc_emit_set_const64_quick1): If

@@ -2207,7 +2207,7 @@
 
 (define_insn "*movsi_lo_sum_pic_label_ref"
   [(set (match_operand:SI 0 "register_operand" "=r")
-      (lo_sum:SI (match_operand:SI 1 "register_operand" "=r")
+      (lo_sum:SI (match_operand:SI 1 "register_operand" "r")
         (unspec:SI [(match_operand:SI 2 "label_ref_operand" "")
 		    (match_operand:SI 3 "" "")] 5)))]
   "flag_pic"
