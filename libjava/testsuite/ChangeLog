@@ -1,3 +1,11 @@
+2003-12-01  Jeff Sturm  <jsturm@one-point.com>
+
+	PR optimization/13024
+	* libjava.compile/PR13024.java: New file.
+
+	PR java/13237
+	* libjava.compile/PR13237.java: New file.
+
 2003-11-18  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* libjava.jar/jar.exp: Cleanup files and reset CLASSPATH.
