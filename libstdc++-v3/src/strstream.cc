@@ -194,7 +194,7 @@ namespace std
 	  gbump(-1);
 	  return _Traits::not_eof(c);
 	}
-      else if (c == static_cast<int_type>(gptr()[-1])) 
+      else if (c == _Traits::to_int_type(gptr()[-1])) 
 	{  // KLUDGE
 	  gbump(-1);
 	  return c;

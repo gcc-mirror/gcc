@@ -1,3 +1,10 @@
+2003-10-12  Petur Runolfsson  <peturr02@ru.is>
+	    Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/11460
+	* src/strstream.cc (pbackfail): Fix to use to_int_type.
+	* testsuite/backward/11460.cc: New, from the PR.
+
 2003-10-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	* config/locale/ieee_1003.1-2001/codecvt_specializations.h:
