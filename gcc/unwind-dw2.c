@@ -133,7 +133,7 @@ typedef struct
   _Unwind_Personality_Fn personality;
   _Unwind_Sword data_align;
   _Unwind_Word code_align;
-  unsigned char retaddr_column;
+  _Unwind_Word retaddr_column;
   unsigned char fde_encoding;
   unsigned char lsda_encoding;
   unsigned char saw_z;
@@ -337,7 +337,10 @@ extract_cie_info (const struct dwarf_cie *cie, struct _Unwind_Context *context,
      data alignment and return address column.  */
   p = read_uleb128 (p, &fs->code_align);
   p = read_sleb128 (p, &fs->data_align);
-  fs->retaddr_column = *p++;
+  if (cie->version == 1)
+    fs->retaddr_column = *p++;
+  else
+    p = read_uleb128 (p, &fs->retaddr_column);
   fs->lsda_encoding = DW_EH_PE_omit;
 
   /* If the augmentation starts with 'z', then a uleb128 immediately

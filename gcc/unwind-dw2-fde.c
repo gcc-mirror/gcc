@@ -276,7 +276,10 @@ get_cie_encoding (const struct dwarf_cie *cie)
   p = aug + strlen (aug) + 1;		/* Skip the augmentation string.  */
   p = read_uleb128 (p, &utmp);		/* Skip code alignment.  */
   p = read_sleb128 (p, &stmp);		/* Skip data alignment.  */
-  p++;					/* Skip return address column.  */
+  if (cie->version == 1)		/* Skip return address column.  */
+    p++;
+  else
+    p = read_uleb128 (p, &utmp);
 
   aug++;				/* Skip 'z' */
   p = read_uleb128 (p, &utmp);		/* Skip augmentation length.  */
