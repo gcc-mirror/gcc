@@ -19,18 +19,30 @@ details.  */
 // Total amount of memory allocated.
 static long total = 0;
 
+#ifdef INTERPRETER
 void *
-_Jv_AllocObj (jsize size)
+_Jv_BuildGCDescr(jclass klass)
+{
+  return 0;
+}
+#endif
+
+void *
+_Jv_AllocObj (jsize size, jclass klass)
 {
   total += size;
-  return calloc (size, 1);
+  ptr_t obj = calloc (size, 1);
+  *((_Jv_VTable **) obj) = klass->vtable;
+  return obj;
 }
 
 void *
-_Jv_AllocArray (jsize size)
+_Jv_AllocArray (jsize size, jclass klass)
 {
   total += size;
-  return calloc (size, 1);
+  ptr_t obj = calloc (size, 1);
+  *((_Jv_VTable **) obj) = klass->vtable;
+  return obj;
 }
 
 void *

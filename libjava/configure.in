@@ -208,6 +208,7 @@ GCINCS=
 GCDEPS=
 GCOBJS=
 GCSPEC=
+JC1GCSPEC=
 GCTESTSPEC=
 case "$GC" in
  boehm)
@@ -218,6 +219,7 @@ case "$GC" in
     GCLIBS="$GCDEPS -L\$(here)/../boehm-gc/$libsubdir"
     GCINCS='-I$(top_srcdir)/../boehm-gc -I$(top_builddir)/../boehm-gc'
     GCSPEC='-lgcjgc'
+    JC1GCSPEC='-fuse-boehm-gc'
     GCTESTSPEC="-L`pwd`/../boehm-gc/.libs -rpath `pwd`/../boehm-gc/.libs"
     dnl We also want to pick up some cpp flags required when including
     dnl boehm-config.h.  Yuck.
@@ -241,6 +243,7 @@ AC_SUBST(GCINCS)
 AC_SUBST(GCDEPS)
 AC_SUBST(GCOBJS)
 AC_SUBST(GCSPEC)
+AC_SUBST(JC1GCSPEC)
 AC_SUBST(GCTESTSPEC)
 AC_LINK_FILES(include/$GCHDR, include/java-gc.h)
 

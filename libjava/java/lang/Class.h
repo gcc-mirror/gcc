@@ -220,8 +220,8 @@ private:
   friend jint JvNumStaticFields (jclass);
 
   friend jobject _Jv_AllocObject (jclass, jint);
-  friend jobjectArray _Jv_NewObjectArray (jsize, jclass, jobject);
-  friend jobject _Jv_NewPrimArray (jclass, jint);
+  friend void *_Jv_AllocObj (jint, jclass);
+  friend void *_Jv_AllocArray (jint, jclass);
 
   friend jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv *, jclass, jfieldID,
 					   jboolean);

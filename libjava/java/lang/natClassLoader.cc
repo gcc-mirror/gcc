@@ -586,16 +586,15 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
       array_class = _Jv_NewClass (array_name, &ObjectClass, element->loader);
 
       // Note that `vtable_method_count' doesn't include the initial
-      // NULL slot.
+      // gc_descr slot.
       JvAssert (ObjectClass.vtable_method_count == NUM_OBJECT_METHODS);
-      int dm_count = ObjectClass.vtable_method_count + 1;
+      int dm_count = ObjectClass.vtable_method_count;
 
       // Create a new vtable by copying Object's vtable (except the
       // class pointer, of course).  Note that we allocate this as
       // unscanned memory -- the vtables are handled specially by the
       // GC.
-      int size = (sizeof (_Jv_VTable) +
-		  ((dm_count - 1) * sizeof (void *)));
+      int size = (sizeof (_Jv_VTable) + ((dm_count - 1) * sizeof (void *)));
       _Jv_VTable *vtable;
       if (array_vtable)
 	vtable = array_vtable;
@@ -604,6 +603,7 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
       vtable->clas = array_class;
       memcpy (vtable->method, ObjectClass.vtable->method,
 	      dm_count * sizeof (void *));
+      vtable->gc_descr = ObjectClass.vtable->gc_descr;
       array_class->vtable = vtable;
       array_class->vtable_method_count = ObjectClass.vtable_method_count;
 
@@ -615,6 +615,8 @@ _Jv_FindArrayClass (jclass element, java::lang::ClassLoader *loader,
       array_class->interfaces = interfaces;
       array_class->interface_count = sizeof interfaces / sizeof interfaces[0];
 
+      // FIXME: Shouldn't this be synchronized? _Jv_PrepareConstantTimeTables
+      // needs to be called with the mutex for array_class held.
       // Generate the interface dispatch table.
       _Jv_PrepareConstantTimeTables (array_class);
 

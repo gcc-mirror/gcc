@@ -46,6 +46,9 @@ extern java::lang::Class ClassObject;
 #define ObjectClass _CL_Q34java4lang6Object
 extern java::lang::Class ObjectClass;
 
+// Exceptional return values for _Jv_DetermineVTableIndex
+#define METHOD_NOT_THERE (-2)
+#define METHOD_INACCESSIBLE (-1)
 
 static int get_alignment_from_class (jclass);
 
@@ -299,7 +302,7 @@ _Jv_ResolvePoolEntry (jclass klass, int index)
 	vtable_index = _Jv_DetermineVTableIndex
 	  (found_class, method_name, method_signature);
 
-      if (vtable_index == 0)
+      if (vtable_index == METHOD_NOT_THERE)
 	throw_incompatible_class_change_error
 	  (JvNewStringLatin1 ("method not found"));
 
@@ -378,9 +381,9 @@ _Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
     things if compiled classes to know vtable offset, and _Jv_Method had
     a field for this.
 
-    Returns 0  if this class does not declare the given method.
-    Returns -1 if the given method does not appear in the vtable.
-               i.e., it is static, private, final or a constructor.
+    Returns METHOD_NOT_THERE if this class does not declare the given method.
+    Returns METHOD_INACCESSIBLE if the given method does not appear in the
+		vtable, i.e., it is static, private, final or a constructor.
     Otherwise, returns the vtable index.  */
 int 
 _Jv_DetermineVTableIndex (jclass klass,
@@ -396,7 +399,7 @@ _Jv_DetermineVTableIndex (jclass klass,
       int prev = _Jv_DetermineVTableIndex (super_class,
 					   name,
 					   signature);
-      if (prev != 0)
+      if (prev != METHOD_NOT_THERE)
 	return prev;
     }
 
@@ -410,7 +413,7 @@ _Jv_DetermineVTableIndex (jclass klass,
 
   /* now, if we do not declare this method, return zero */
   if (meth == NULL)
-    return 0;
+    return METHOD_NOT_THERE;
 
   /* so now, we know not only that the super class does not declare the
    * method, but we do!  So, this is a first declaration of the method. */
@@ -427,21 +430,21 @@ _Jv_DetermineVTableIndex (jclass klass,
 			 | Modifier::FINAL)) != 0
       || (klass->accflags & Modifier::FINAL) != 0
       || _Jv_equalUtf8Consts (name, init_name))
-    return -1;
+    return METHOD_INACCESSIBLE;
 
   /* reaching this point, we know for sure, that the method in question
    * will be in the vtable.  The question is where. */
 
   /* the base offset, is where we will start assigning vtable
-   * indexes for this class.  It is 1 for base classes
-   * (vtable->method[0] is unused), and for non-base classes it is the
-   * number of entries in the super class' vtable plus 1. */
+   * indexes for this class.  It is 0 for base classes
+   * and for non-base classes it is the
+   * number of entries in the super class' vtable. */
 
   int base_offset;
   if (super_class == 0)
-    base_offset = 1;
+    base_offset = 0;
   else
-    base_offset = super_class->vtable_method_count+1;
+    base_offset = super_class->vtable_method_count;
 
   /* we will consider methods 0..this_method_index-1.  And for each one,
    * determine if it is new (i.e., if it appears in the super class),
@@ -704,6 +707,7 @@ _Jv_PrepareClass(jclass klass)
     _Jv_AllocBytesChecked (sizeof (_Jv_VTable) 
 			   + (sizeof (void*) * (vtable_count)));
   vtable->clas = clz;
+  vtable->gc_descr = _Jv_BuildGCDescr(clz);
 
   {
     jclass effective_superclass = super_class;
@@ -713,10 +717,10 @@ _Jv_PrepareClass(jclass klass)
     while (effective_superclass && effective_superclass->vtable == NULL)
       effective_superclass = effective_superclass->superclass;
 
-    /* copy super class' vtable entries (index 0 goes unused). */
+    /* copy super class' vtable entries. */
     if (effective_superclass && effective_superclass->vtable)
-      memcpy ((void*)&vtable->method[1],
-	      (void*)&effective_superclass->vtable->method[1],
+      memcpy ((void*)&vtable->method[0],
+	      (void*)&effective_superclass->vtable->method[0],
 	      sizeof (void*) * effective_superclass->vtable_method_count);
   }
 
@@ -729,12 +733,12 @@ _Jv_PrepareClass(jclass klass)
 					    this_meth->name,
 					    this_meth->signature);
 
-      if (index == 0)
+      if (index == METHOD_NOT_THERE)
 	throw_internal_error ("method now found in own class");
 
-      if (index != -1)
+      if (index != METHOD_INACCESSIBLE)
 	{
-	  if (index > clz->vtable_method_count+1)
+	  if (index > clz->vtable_method_count)
 	    throw_internal_error ("vtable problem...");
 
 	  if (clz->interpreted_methods[i] == 0)
