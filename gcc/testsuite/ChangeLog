@@ -1,5 +1,9 @@
 2000-09-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/crash56.C: New test.
+
+2000-09-04  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.pt/koenig1.C: New test.
 
 2000-09-04  Jakub Jelinek  <jakub@redhat.com>
