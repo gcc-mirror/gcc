@@ -1,5 +1,9 @@
+#ifndef FLOAT
+#define FLOAT double
+#endif
+
 void
-test_isunordered(double x, double y, int true)
+test_isunordered(FLOAT x, FLOAT y, int true)
 {
   if (__builtin_isunordered(x, y))
     {
@@ -14,7 +18,7 @@ test_isunordered(double x, double y, int true)
 }
 
 void
-test_isless(double x, double y, int true)
+test_isless(FLOAT x, FLOAT y, int true)
 {
   if (__builtin_isless(x, y))
     {
@@ -29,7 +33,7 @@ test_isless(double x, double y, int true)
 }
 
 void
-test_islessequal(double x, double y, int true)
+test_islessequal(FLOAT x, FLOAT y, int true)
 {
   if (__builtin_islessequal(x, y))
     {
@@ -44,7 +48,7 @@ test_islessequal(double x, double y, int true)
 }
 
 void
-test_isgreater(double x, double y, int true)
+test_isgreater(FLOAT x, FLOAT y, int true)
 {
   if (__builtin_isgreater(x, y))
     {
@@ -59,7 +63,7 @@ test_isgreater(double x, double y, int true)
 }
 
 void
-test_isgreaterequal(double x, double y, int true)
+test_isgreaterequal(FLOAT x, FLOAT y, int true)
 {
   if (__builtin_isgreaterequal(x, y))
     {
@@ -74,7 +78,7 @@ test_isgreaterequal(double x, double y, int true)
 }
 
 void
-test_islessgreater(double x, double y, int true)
+test_islessgreater(FLOAT x, FLOAT y, int true)
 {
   if (__builtin_islessgreater(x, y))
     {
@@ -95,7 +99,7 @@ main()
 {
   struct try
   {
-    double x, y;
+    FLOAT x, y;
     unsigned unord : 1;
     unsigned lt : 1;
     unsigned le : 1;
