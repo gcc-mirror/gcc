@@ -248,7 +248,16 @@ install:
 	rootme=`pwd`/ ; export rootme ; \
 	if [ -z "$(MULTISUBDIR)" ]; then \
 	  cd $(srcdir); \
-	  for FILE in $(HEADERS) *.h std/*.*; do \
+	  for FILE in $(HEADERS); do \
+	    rm -f $(gxx_includedir)/$$FILE ; \
+	    if [ -f stl/$$FILE ]; then \
+	      $(INSTALL_DATA) stl/$$FILE $(gxx_includedir)/$$FILE ; \
+	    else \
+	      $(INSTALL_DATA) $$FILE $(gxx_includedir)/$$FILE ; \
+	    fi ; \
+	    chmod a-x $(gxx_includedir)/$$FILE ; \
+	  done ; \
+	  for FILE in *.h std/*.*; do \
 	    rm -f $(gxx_includedir)/$$FILE ; \
 	    $(INSTALL_DATA) $$FILE $(gxx_includedir)/$$FILE ; \
 	    chmod a-x $(gxx_includedir)/$$FILE ; \

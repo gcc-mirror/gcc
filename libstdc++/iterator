@@ -1,7 +1,0 @@
-// -*- C++ -*- forwarding header.
-// This file is part of the GNU ANSI C++ Library.
-
-#ifndef __ITERATOR__
-#define __ITERATOR__
-#include <iterator.h>
-#endif

@@ -12,16 +12,15 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  *
  */
-//
-//  Inclusion of this file is DEPRECATED.
-//  This is the original HP default allocator.
-//  DO NOT USE THIS FILE unless you have an old container implementation
-//  that requires an allocator with the HP-style interface.
-//  SGI STL uses a different allocator interface.
-//  SGI-style allocators are not parametrized with respect to
-//  the object type; they traffic in void * pointers.
-//  This file is not included by any other SGI STL header.
-//
+
+// Inclusion of this file is DEPRECATED.  This is the original HP
+// default allocator.  It is provided only for backward compatibility.
+// 
+// DO NOT USE THIS FILE unless you have an old container implementation
+// that requires an allocator with the HP-style interface.  SGI STL
+// uses a different allocator interface.  SGI-style allocators are not
+// parametrized with respect to the object type; they traffic in void *
+// pointers.  This file is not included by any other SGI STL header.
 
 #ifndef DEFALLOC_H
 #define DEFALLOC_H

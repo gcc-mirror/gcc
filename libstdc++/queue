@@ -1,7 +1,0 @@
-// -*- C++ -*- forwarding header.
-// This file is part of the GNU ANSI C++ Library.
-
-#ifndef __QUEUE__
-#define __QUEUE__
-#include <stack.h>
-#endif

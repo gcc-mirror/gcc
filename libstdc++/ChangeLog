@@ -1,7 +1,13 @@
+Sun Nov  2 12:14:37 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (install): Some of HEADERS come from the stl dir now.
+	* algorithm, deque, functional, iterator, list, map, memory, numeric,
+ 	queue, set, stack, utility, vector: Now in stl dir.
+
 Fri Oct 10 00:40:00 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h: Use ibegin internally.  Return passed iterator
-	instead of recalculating it were appropriate.
+	instead of recalculating it where appropriate.
 	* std/bastring.cc: Adjust for erase.
 
 	From Yotam Medini:
