@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for the ARC cpu.
+/* Definitions of target machine for GNU compiler, Argonaut ARC cpu.
    Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -27,7 +27,7 @@ Boston, MA 02111-1307, USA.  */
    - print active compiler options in assembler output
 */
 
-/* FIXME: Create elf.h and have svr4.h include it.  */
+/* ??? Create elf.h and have svr4.h include it.  */
 #include "svr4.h"
 
 #undef ASM_SPEC
@@ -589,7 +589,7 @@ extern enum reg_class arc_regno_reg_class[];
    If you don't define this macro, the default is to return the value
    of FRAMEADDR--that is, the stack frame address is also the address
    of the stack word that points to the previous frame.  */
-/* FIXME: unfinished */
+/* ??? unfinished */
 /*define DYNAMIC_CHAIN_ADDRESS (FRAMEADDR)*/
 
 /* A C expression whose value is RTL representing the value of the
@@ -989,7 +989,7 @@ do { \
 
 /* local to this file */
 #define RTX_OK_FOR_INDEX_P(X) \
-(0 && /*FIXME*/ REG_P (X) && REG_OK_FOR_INDEX_P (X))
+(0 && /*???*/ REG_P (X) && REG_OK_FOR_INDEX_P (X))
 
 /* local to this file */
 /* ??? Loads can handle any constant, stores can only handle small ones.  */
@@ -1060,7 +1060,7 @@ arc_select_cc_mode (OP, X, Y)
 
 /* Return non-zero if SELECT_CC_MODE will never return MODE for a
    floating point inequality comparison.  */
-#define REVERSIBLE_CC_MODE(MODE) 1 /*FIXME*/
+#define REVERSIBLE_CC_MODE(MODE) 1 /*???*/
 
 /* Costs.  */
 
