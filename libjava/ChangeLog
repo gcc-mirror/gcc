@@ -1,3 +1,10 @@
+2001-02-09  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* java/io/File.java (java.net): Imported.
+	(getAbsoluteFile): Added.
+	(getCanonicalPath): Likewise.
+	(toURL): Likewise.
+
 2001-02-08  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/lang/Byte.java: Remove redundant instanceof and null checks.

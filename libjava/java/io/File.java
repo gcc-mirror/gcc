@@ -11,6 +11,7 @@ details.  */
 package java.io;
 
 import java.util.*;
+import java.net.*;
 import gnu.gcj.runtime.FileDeleter;
 
 /**
@@ -106,7 +107,17 @@ public class File implements Serializable
     return System.getProperty("user.dir") + separatorChar + path;
   }
 
+  public File getAbsoluteFile () throws IOException
+  {
+    return new File (getAbsolutePath());
+  }
+
   public native String getCanonicalPath () throws IOException;
+
+  public File getCanonicalFile () throws IOException
+  {
+    return new File (getCanonicalPath());
+  }
 
   public String getName ()
   {
@@ -176,6 +187,11 @@ public class File implements Serializable
   public String toString ()
   {
     return path;
+  }
+
+  public URL toURL () throws MalformedURLException
+  {
+    return new URL ("file:" + path + (isDirectory() ? "/" : ""));
   }
 
   private final native boolean performMkdir ();
