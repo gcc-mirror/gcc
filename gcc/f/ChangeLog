@@ -1,3 +1,8 @@
+1999-02-20  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Properly attribute Priest document; clarify
+	that it is in the .ps version of the Goldberg document.
+
 1999-02-19  Craig Burley  <craig@jcb-sc.com>
 
 	* bugs0.texi, bugs.texi, install0.texi, g77install.texi,

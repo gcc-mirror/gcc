@@ -14,7 +14,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-up-date 1999-02-17
+@set last-up-date 1999-02-20
 @set version-g77 0.5.24
 @set email-general egcs@@egcs.cygnus.com
 @set email-bugs egcs-bugs@@egcs.cygnus.com
@@ -11824,19 +11824,25 @@ with that produced by some other Fortran implementations.
 A useful source of information on floating-point computation is David
 Goldberg, `What Every Computer Scientist Should Know About
 Floating-Point Arithmetic', Computing Surveys, 23, March 1991, pp.@:
-5--48.  At the time of writing this is available online under
-@uref{http://docs.sun.com} and there is a supplemented version at
-@uref{http://www.validgh.com/}.  Information related to the IEEE 754
+5--48.
+An online version is available at
+@uref{http://docs.sun.com},
+and there is a supplemented version, in PostScript form, at
+@uref{http://www.validgh.com/goldberg/paper.ps}.
+
+Information related to the IEEE 754
 floating-point standard by a leading light can be found at
-@uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status }; see also
-slides from the short course referenced from
+@uref{http://http.cs.berkeley.edu/%7Ewkahan/ieee754status};
+see also slides from the short course referenced from
 @uref{http://http.cs.berkeley.edu/%7Efateman/}.
 @uref{http://www.suburbia.net/%7Ebillm/floating-point/} has a brief
-guide to IEEE 754, a somewhat x86 GNU/Linux-specific FAQ and library
-code for GNU/Linux x86 systems.
+guide to IEEE 754, a somewhat x86-GNU/Linux-specific FAQ,
+and library code for GNU/Linux x86 systems.
 
-Also see `Differences Among IEEE 754 Implementations' by
-David Goldberg, available online at
+The supplement to the PostScript-formatted Goldberg document,
+referenced above, is available in HTML format.
+See `Differences Among IEEE 754 Implementations' by Doug Priest,
+available online at
 @uref{http://www.validgh.com/goldberg/addendum.html}.
 This document explores some of the issues surrounding computing
 of extended (80-bit) results on processors such as the x86,
@@ -11847,12 +11853,12 @@ as ``spills''.
 @cindex spills of floating-point results
 @cindex 80-bit spills
 @cindex truncation, of floating-point values
-(@code{g77} specifically, and @code{gcc} generally, does
-arbitrarily truncate 80-bit results during spills
+(@emph{Note:} @code{g77} specifically, and @code{gcc} generally,
+does arbitrarily truncate 80-bit results during spills
 as of this writing.
 It is not yet clear whether a future version of
 the GNU compiler suite will offer 80-bit spills
-as an option, or as the default behavior.)
+as an option, or perhaps even as the default behavior.)
 
 @c xref would be different between editions:
 The GNU C library provides routines for controlling the FPU, and other
