@@ -95,8 +95,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_SPEC \
  "%{m68000:-mc68000}%{mc68000:-mc68000}%{!mc68000:%{!m68000:-mc68020}}"
 
-/* special directory for gnu libs on hp-ux system */
-#define MD_STARTFILE_PREFIX "/usr/local/lib/gnu/"
+/* Tell GCC to put a space after -L when generating such options.  */
+#define SPACE_AFTER_L_OPTION
 
 #endif /* Not HPUX_ASM */
 
