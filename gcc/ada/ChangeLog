@@ -1,5 +1,9 @@
 2001-10-26  Robert Dewar <dewar@gnat.com>
 
+	* prj-attr.adb: Minor reformatting throughout
+
+2001-10-26  Robert Dewar <dewar@gnat.com>
+
 	* prj-attr.ads: Minor reformatting
 	Add ??? comment (this whole spec has almost no comments)
 

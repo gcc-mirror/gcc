@@ -33,11 +33,20 @@ with Output;    use Output;
 package body Prj.Attr is
 
    --  Names end with '#'
+
    --  Package names are preceded by 'P'
-   --  Attribute names are preceded by two capital letters:
-   --    'S' for Single or 'L' for list, then
-   --    'V' for single variable, 'A' for associative array or
-   --     'a' for case insensitive associative array.
+
+   --  Attribute names are preceded by two letters
+
+   --  The first letter is one of
+   --    'S' for Single
+   --    'L' for list
+
+   --  The second letter is one of
+   --    'V' for single variable
+   --    'A' for associative array
+   --    'a' for case insensitive associative array
+
    --  End is indicated by two consecutive '#'.
 
    Initialisation_Data : constant String :=
@@ -129,8 +138,8 @@ package body Prj.Attr is
       Package_Name      : Name_Id            := No_Name;
       Attribute_Name    : Name_Id            := No_Name;
       First_Attribute   : Attribute_Node_Id  := Attribute_First;
-   begin
 
+   begin
       --  Make sure the two tables are empty
 
       Attributes.Set_Last (Attributes.First);
@@ -140,16 +149,21 @@ package body Prj.Attr is
          Is_An_Attribute := True;
          case Initialisation_Data (Start) is
             when 'P' =>
+
                --  New allowed package
+
                Start := Start + 1;
+
                Finish := Start;
                while Initialisation_Data (Finish) /= '#' loop
                   Finish := Finish + 1;
                end loop;
+
                Name_Len := Finish - Start;
                Name_Buffer (1 .. Name_Len) :=
                  To_Lower (Initialisation_Data (Start .. Finish - 1));
                Package_Name := Name_Find;
+
                for Index in Package_First .. Package_Attributes.Last loop
                   if Package_Name = Package_Attributes.Table (Index).Name then
                      Write_Line ("Duplicate package name """ &
@@ -166,16 +180,21 @@ package body Prj.Attr is
                Package_Attributes.Table (Current_Package).Name :=
                  Package_Name;
                Start := Finish + 1;
+
             when 'S' =>
                Kind_1 := Single;
+
             when 'L' =>
                Kind_1 := List;
+
             when others =>
                raise Program_Error;
          end case;
 
          if Is_An_Attribute then
+
             --  New attribute
+
             Start := Start + 1;
             case Initialisation_Data (Start) is
                when 'V' =>
@@ -187,11 +206,14 @@ package body Prj.Attr is
                when others =>
                   raise Program_Error;
             end case;
+
             Start := Start + 1;
             Finish := Start;
+
             while Initialisation_Data (Finish) /= '#' loop
                Finish := Finish + 1;
             end loop;
+
             Name_Len := Finish - Start;
             Name_Buffer (1 .. Name_Len) :=
               To_Lower (Initialisation_Data (Start .. Finish - 1));
@@ -199,12 +221,15 @@ package body Prj.Attr is
             Attributes.Increment_Last;
             if Current_Attribute = Empty_Attribute then
                First_Attribute := Attributes.Last;
+
                if Current_Package /= Empty_Package then
                   Package_Attributes.Table (Current_Package).First_Attribute
                     := Attributes.Last;
                end if;
+
             else
                --  Check that there are no duplicate attributes
+
                for Index in First_Attribute .. Attributes.Last - 1 loop
                   if Attribute_Name =
                     Attributes.Table (Index).Name then
@@ -214,9 +239,11 @@ package body Prj.Attr is
                      raise Program_Error;
                   end if;
                end loop;
+
                Attributes.Table (Current_Attribute).Next :=
                  Attributes.Last;
             end if;
+
             Current_Attribute := Attributes.Last;
             Attributes.Table (Current_Attribute) :=
               (Name    => Attribute_Name,
