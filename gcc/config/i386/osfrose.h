@@ -323,6 +323,11 @@ while (0)
 /* Tell collect that the object format is OSF/rose.  */
 #define OBJECT_FORMAT_ROSE
 
+/* Tell collect where the appropriate binaries are.  */
+#define REAL_LD_FILE_NAME	"/usr/ccs/gcc/gld"
+#define REAL_NM_FILE_NAME	"/usr/ccs/bin/nm"
+#define REAL_STRIP_FILE_NAME	"/usr/ccs/bin/strip"
+
 /* Use atexit for static constructors/destructors, instead of defining
    our own exit function.  */
 #define HAVE_ATEXIT
