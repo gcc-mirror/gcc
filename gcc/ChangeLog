@@ -1,3 +1,11 @@
+2003-03-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* varasm.c (struct rtx_const): Change type of un.addr member
+	to struct holding an additional 'symbol' member.
+	(decode_rtx_const): Re-enable optimization to count SYMBOL_REFs
+	with equal string addresses as equal.
+	(simplify_subtraction): Adapt to struct rtx_const change.
+
 2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* fix-header.c (read_scan_file): Read main file before handling -D.
