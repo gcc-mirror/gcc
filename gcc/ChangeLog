@@ -1,5 +1,9 @@
 2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* rtl.def (define_combine): Remove.
+
+2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md: Tweak formatting.
 
 2004-03-02  Kazu Hirata  <kazu@cs.umass.edu>
