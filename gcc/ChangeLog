@@ -1,3 +1,8 @@
+2005-03-14  Zdenek Dvorak  <dvorakz@suse.cz>
+
+	* basic-block.h (BB_VISITED): Removed.
+	* cfganal.c (dfs_enumerate_from): Do not use BB_VISITED flag.
+
 2005-03-14  Falk Hueffner  <falk@debian.org>
 
 	PR bootstrap/20424
