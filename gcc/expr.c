@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -2432,7 +2432,7 @@ get_push_address (size)
   else
     temp = stack_pointer_rtx;
 
-  return force_operand (temp, NULL_RTX);
+  return copy_to_reg (temp);
 }
 
 /* Generate code to push X onto the stack, assuming it has mode MODE and
@@ -2561,7 +2561,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      
 	      in_check_memory_usage = 1;
 	      temp = get_push_address (INTVAL(size) - used);
-	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
+	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 				   temp, ptr_mode,
 				   XEXP (xinner, 0), ptr_mode,
@@ -2617,7 +2617,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      
 	      in_check_memory_usage = 1;
 	      target = copy_to_reg (temp);
-	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
+	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 				   target, ptr_mode,
 				   XEXP (xinner, 0), ptr_mode,
@@ -2829,7 +2829,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  if (target == 0)
 	    target = get_push_address (GET_MODE_SIZE (mode));
 
-	  if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
+	  if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
 			       target, ptr_mode,
 			       XEXP (x, 0), ptr_mode,
@@ -5495,12 +5495,16 @@ expand_expr (exp, target, tmode, modifier)
 	    memory_usage = get_memory_usage_from_modifier (modifier);
 
             if (memory_usage != MEMORY_USE_DONT)
-	      emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				 op0, ptr_mode,
-				 GEN_INT (int_size_in_bytes (type)),
-				 TYPE_MODE (sizetype),
-				 GEN_INT (memory_usage),
-				 TYPE_MODE (integer_type_node));
+	      {
+		in_check_memory_usage = 1;
+		emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+				   op0, ptr_mode,
+				   GEN_INT (int_size_in_bytes (type)),
+				   TYPE_MODE (sizetype),
+				   GEN_INT (memory_usage),
+				   TYPE_MODE (integer_type_node));
+		in_check_memory_usage = 0;
+	      }
 	  }
 
 	temp = gen_rtx (MEM, mode, op0);
@@ -8988,8 +8992,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  /* Just copy the rights of SRC to the rights of DEST.  */
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			       src_rtx, ptr_mode,
 			       dest_rtx, ptr_mode,
+			       src_rtx, ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype));
 
 	  /* There could be a void* cast on top of the object.  */
