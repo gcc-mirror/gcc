@@ -1,3 +1,19 @@
+2003-03-01  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/io/File.java (normalizePath): Remove trailing separator
+	on Windows only if path is not of the form "x:\".
+
+	* java/io/natFileWin32.cc (WIN32_EPOCH_MILLIS): New constant.
+	(java::io::File::attr): Change formatting a bit and use
+	WIN32_EPOCH_MILLIS instead of magic numbers.
+	(java::io::File::isAbsolute): Path must have at least 3 
+	characters for a UNC network path.
+	(java::io::File::init_native): Define.
+	(java::io::File::performCreate): Likewise.
+	(java::io::File::performSetReadOnly): Likewise.
+	(java::io::File::performSetLastModified): Likewise.
+	(java::io::File::performListRoots): Likewise.
+
 2003-03-01  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java
