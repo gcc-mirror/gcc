@@ -321,11 +321,11 @@ parse_defined (pfile)
   /* Don't expand macros.  */
   pfile->state.prevent_expansion++;
 
-  _cpp_get_token (pfile, &token);
+  cpp_get_token (pfile, &token);
   if (token.type == CPP_OPEN_PAREN)
     {
       paren = 1;
-      _cpp_get_token (pfile, &token);
+      cpp_get_token (pfile, &token);
     }
 
   if (token.type == CPP_NAME)
@@ -333,7 +333,7 @@ parse_defined (pfile)
       node = token.val.node;
       if (paren)
 	{
-	  _cpp_get_token (pfile, &token);
+	  cpp_get_token (pfile, &token);
 	  if (token.type != CPP_CLOSE_PAREN)
 	    {
 	      cpp_error (pfile, "missing ')' after \"defined\"");
@@ -378,13 +378,14 @@ lex (pfile, skip_evaluation, token)
 {
   struct op op;
 
-  _cpp_get_token (pfile, token);
+  cpp_get_token (pfile, token);
 
   switch (token->type)
     {
     case CPP_INT:
     case CPP_NUMBER:
       return parse_number (pfile, token);
+
     case CPP_CHAR:
     case CPP_WCHAR:
       return parse_charconst (pfile, token);

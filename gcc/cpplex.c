@@ -1677,12 +1677,12 @@ cpp_output_line (pfile, fp)
 {
   cpp_token token;
 
-  _cpp_get_token (pfile, &token);
+  cpp_get_token (pfile, &token);
   token.flags &= ~PREV_WHITE;
   while (token.type != CPP_EOF)
     {
       cpp_output_token (&token, fp);
-      _cpp_get_token (pfile, &token);
+      cpp_get_token (pfile, &token);
     }
 
   putc ('\n', fp);

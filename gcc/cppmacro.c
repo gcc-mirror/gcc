@@ -488,7 +488,7 @@ parse_arg (pfile, arg, var_args)
 	  token = &arg->first[arg->count];
 	}
 
-      _cpp_get_token (pfile, token);
+      cpp_get_token (pfile, token);
       result = token->type;
 
       if (result == CPP_OPEN_PAREN)
@@ -619,7 +619,13 @@ funlike_invocation_p (pfile, node, list)
   if (args)
     {
       if (node->value.macro->paramc > 0)
-	replace_args (pfile, node->value.macro, args, list);
+	{
+	  /* Don't save tokens during pre-expansion.  */
+	  struct cpp_lookahead *la_saved = pfile->la_write;
+	  pfile->la_write = 0;
+	  replace_args (pfile, node->value.macro, args, list);
+	  pfile->la_write = la_saved;
+	}
       free (args);
     }
 
@@ -846,7 +852,7 @@ expand_arg (pfile, arg)
 	    xrealloc (arg->expanded, capacity * sizeof (cpp_token));
 	}
       token = &arg->expanded[arg->expanded_count++];
-      _cpp_get_token (pfile, token);
+      cpp_get_token (pfile, token);
     }
   while (token->type != CPP_EOF);
 
@@ -872,12 +878,19 @@ _cpp_pop_context (pfile)
     }
 }
 
-/* Internal routine to return a token, either from an in-progress
-   macro expansion, or from the source file as appropriate.
-   Transparently enters included files.  Handles macros, so tokens
-   returned are post-expansion.  Returns CPP_EOF at EOL and EOF.  */
+/* Eternal routine to get a token.  Also used nearly everywhere
+   internally, except for places where we know we can safely call
+   the lexer directly, such as lexing a directive name.
+
+   Macro expansions and directives are transparently handled,
+   including entering included files.  Thus tokens are post-macro
+   expansion, and after any intervening directives.  External callers
+   see CPP_EOF only at EOF.  Internal callers also see it when meeting
+   a directive inside a macro call, when at the end of a directive and
+   state.in_directive is still 1, and at the end of argument
+   pre-expansion.  */
 void
-_cpp_get_token (pfile, token)
+cpp_get_token (pfile, token)
      cpp_reader *pfile;
      cpp_token *token;
 {
@@ -897,6 +910,9 @@ _cpp_get_token (pfile, token)
 	  *token = *context->list.first++;
 	  token->flags |= flags;
 	  flags = 0;
+	  /* PASTE_LEFT tokens can only appear in macro expansions.  */
+	  if (token->flags & PASTE_LEFT && !pfile->skipping)
+	    paste_all_tokens (pfile, token);
 	}
       else
 	{
@@ -914,9 +930,6 @@ _cpp_get_token (pfile, token)
       /* Loop until we're not skipping.  */
       if (pfile->skipping)
 	continue;
-
-      if (token->flags & PASTE_LEFT)
-	paste_all_tokens (pfile, token);
 
       if (token->type != CPP_NAME)
 	break;
@@ -949,27 +962,10 @@ _cpp_get_token (pfile, token)
       if (token->val.node != pfile->spec_nodes.n__Pragma)
 	break;
 
-      /* Handle it, and get another token.  */
-      pfile->mi_state = MI_FAILED;
+      /* Handle it, and loop back for another token.  MI is cleared
+         since this token came from either the lexer or a macro.  */
       _cpp_do__Pragma (pfile);
     }
-}
-
-/* External interface to get a token.  Tokens are returned after macro
-   expansion and directives have been handled, as a continuous stream.
-   Compared to the function above, CPP_EOF means EOF, and placemarker
-   tokens are filtered out.  Also, it skips tokens if we're skipping,
-   and saves tokens to lookahead.
-
-   CPP_EOF indicates end of original source file.  For the benefit of
-   #pragma callbacks which may want to get the pragma's tokens,
-   returns CPP_EOF to indicate end-of-directive in this case.  */
-void
-cpp_get_token (pfile, token)
-     cpp_reader *pfile;
-     cpp_token *token;
-{
-  _cpp_get_token (pfile, token);
 
   if (pfile->la_write)
     save_lookahead_token (pfile, token);
