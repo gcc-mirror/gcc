@@ -1,3 +1,10 @@
+2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/template/local1.C: Adjust quoting marks in
+	testing for diagnostics.
+	* g++.dg/tls/diag-2.C: Likewise.
+	* g++.dg/other/error8.C: Likewise.
+
 2004-10-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR c/17178

@@ -1,5 +1,30 @@
 2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	Convert diagnostics to use quoting flag q 3/n
+	* decl.c (pop_label, duplicate_decls, redeclaration_error_message,
+	redeclaration_error_message, lookup_label, check_goto,
+	make_typename_type, make_unbound_class_template,
+	fixup_anonymous_aggr, check_tag_decl, start_decl, start_decl_1, 
+	grok_reference_init, layout_var_decl, maybe_commonize_var, 
+	check_for_uninitialized_const_var, reshape_init_array, 
+	reshape_init, check_initializer, cp_finish_decl,
+	member_function_or_else, bad_specifiers, grokfndecl, grokvardecl, 
+	check_static_variable_definition, compute_array_index_type, 
+	create_array_type_for_decl, check_special_function_return_type, 
+	grokdeclarator, check_default_argument, grokparms, 
+	grok_ctor_properties, grok_op_properties, 
+	check_elaborated_type_specifier, xref_tag, finish_enum, 
+	build_enumerator, check_function_type, start_preparsed_function, 
+	store_parm_decls): Use quoting formats.
+	* decl2.c (grok_array_decl, delete_sanity, check_member_template, 
+	check_java_method, check_classfn, finish_static_data_member_decl, 
+	grokfield, grokbitfield, grok_function_init,
+	build_anon_union_vars, coerce_new_type, coerce_delete_type,
+	check_default_args): Likewise.
+	* parser.c (cp_parser_decl_specifier_seq): Likewise.
+
+2004-10-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	Convert diagnostics to use quoting flag q 2/n
 	* class.c (build_base_path, add_method, alter_access,
 	handle_using_decl, check_bases,

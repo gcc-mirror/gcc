@@ -7157,7 +7157,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  cp_lexer_consume_token (parser->lexer);
 	  if (decl_specs->specs[(int) ds_thread])
 	    {
-	      error ("`__thread' before `static'");
+	      error ("%<__thread%> before %<static%>");
 	      decl_specs->specs[(int) ds_thread] = 0;
 	    }
 	  cp_parser_set_storage_class (decl_specs, sc_static);
@@ -7167,7 +7167,7 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
 	  cp_lexer_consume_token (parser->lexer);
 	  if (decl_specs->specs[(int) ds_thread])
 	    {
-	      error ("`__thread' before `extern'");
+	      error ("%<__thread%> before %<extern%>");
 	      decl_specs->specs[(int) ds_thread] = 0;
 	    }
 	  cp_parser_set_storage_class (decl_specs, sc_extern);
