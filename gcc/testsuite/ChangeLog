@@ -1,3 +1,10 @@
+2002-12-29  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* g++.dg/other/anon-struct.C: No longer fails
+	* g++.old-deja/g++.brendan/parse4.C: Likewise.
+	* g++.old-deja/g++.brendan/parse5.C: Likewise.
+	* g++.old-deja/g++.brendan/parse6.C: Likewise.
+
 2002-12-28  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* g++.dg/parse/angle-bracket.C (main): No longer fails.

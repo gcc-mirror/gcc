@@ -5,5 +5,5 @@ namespace N { }
 
 namespace M
 {
-  typedef struct { } N;         // { dg-bogus ".*" "" { xfail *-*-* } }
+  typedef struct { } N; 
 }
