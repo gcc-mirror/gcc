@@ -1,3 +1,7 @@
+2003-09-26  Loren James Rittle  <ljrittle@acm.org>
+
+	* objc/objc-act.c (tm_p.h): Tweak order.
+
 2003-09-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc (hppa*64*-*-linux* | parisc*64*-*-linux*):
