@@ -23,6 +23,7 @@
 // This should include a list of all headers in the extension
 // subdirectory that are meant to be directly included.
 
+#include <ext/algorithm>
 #include <ext/hash_map>
 #include <ext/hash_set>
 #include <ext/rope>

@@ -172,6 +172,7 @@ backward_headers = \
 ext_srcdir = ${glibcpp_srcdir}/include/ext
 ext_builddir = ./ext
 ext_headers = \
+	${ext_srcdir}/algorithm \
 	${ext_srcdir}/rope \
 	${ext_srcdir}/ropeimpl.h \
 	${ext_srcdir}/stl_rope.h \
