@@ -1,3 +1,7 @@
+Sun Nov  9 02:07:16 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* fixinc.svr4 (__STDC__): Add another case.
+
 Sun Nov  9 02:00:29 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* a29k.h (ELIGIBLE_FOR_EPILOGUE_DELAY): Avoid loads from varying
