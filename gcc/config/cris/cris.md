@@ -119,6 +119,11 @@
 
 (define_attr "cc" "none,clobber,normal" (const_string "normal"))
 
+;; At the moment, this attribute is just used to help bb-reorder do its
+;; work; the default 0 doesn't help it.  Many insns have other lengths,
+;; though none are shorter.
+(define_attr "length" "" (const_int 2))
+
 ;; A branch or return has one delay-slot.  The instruction in the
 ;; delay-slot is always executed, independent of whether the branch is
 ;; taken or not.  Note that besides setting "slottable" to "has_slot",
