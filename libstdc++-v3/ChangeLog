@@ -1,3 +1,62 @@
+2000-07-20  H.J. Lu  (hjl@gnu.org)
+
+        * acinclude.m4: Change "#pragma system_header" to
+        "#pragma GCC system_header".
+        * aclocal.m4: Likewise.
+        * bits/std_cmath.h: Likewise.
+        * bits/std_cassert.h: Likewise.
+        * bits/std_cctype.h: Likewise.
+        * bits/std_cerrno.h: Likewise.
+        * bits/std_cfloat.h: Likewise.
+        * bits/std_climits.h: Likewise.
+        * bits/std_clocale.h: Likewise.
+        * bits/std_cwchar.h: Likewise.
+        * bits/std_csetjmp.h: Likewise.
+        * bits/std_csignal.h: Likewise.
+        * bits/std_cstdarg.h: Likewise.
+        * bits/std_cstddef.h: Likewise.
+        * bits/std_cstdio.h: Likewise.
+        * bits/std_cstdlib.h: Likewise.
+        * bits/std_cstring.h: Likewise.
+        * bits/std_ctime.h: Likewise.
+        * bits/std_cwctype.h: Likewise.
+        * bits/std_exception.h: Likewise.
+        * bits/std_new.h: Likewise.
+        * bits/std_typeinfo.h: Likewise.
+        * shadow/bits/std_cassert.h: Likewise.
+        * shadow/bits/std_cctype.h: Likewise.
+        * shadow/bits/std_cerrno.h: Likewise.
+        * shadow/bits/std_cfloat.h: Likewise.
+        * shadow/bits/std_climits.h: Likewise.
+        * shadow/bits/std_clocale.h: Likewise.
+        * shadow/bits/std_cmath.h: Likewise.
+        * shadow/bits/std_csetjmp.h: Likewise.
+        * shadow/bits/std_csignal.h: Likewise.
+        * shadow/bits/std_cstdarg.h: Likewise.
+        * shadow/bits/std_cstddef.h: Likewise.
+        * shadow/bits/std_cstdio.h: Likewise.
+        * shadow/bits/std_cstdlib.h: Likewise.
+        * shadow/bits/std_cstring.h: Likewise.
+        * shadow/bits/std_ctime.h: Likewise.
+        * shadow/bits/std_cwchar.h: Likewise.
+        * shadow/bits/std_cwctype.h: Likewise.
+        * shadow/bits/wrap_libio.h: Likewise.
+        * shadow/bits/wrap_unistd.h: Likewise.
+        * shadow/sys/cdefs.h: Likewise.
+
+        * configure: Rebuild.
+
+2000-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+        * config/cpu/sparc/sparc64/bits/atomicity.h (__exchange_and_add):
+        Use extended word instructions to match 64bit _Atomic_word.
+        (__atomic_add): Likewise.
+        * math/clog10l.c (clog10l): Use M_PIl if defined.
+        * math/c_logl.c (c_logl): Likewise.
+        * math/signbitl.c (__signbitl): Adapt for IEEE quad long doubles.
+        * math/mathconf.h (ieee_quad_double_shape_type): New type.
+        (GET_LDOUBLE_MSW64): New define.
+
 2000-07-20  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* bits/std_streambuf.h: Add bits for pback buffers here, so that
