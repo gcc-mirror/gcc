@@ -1,3 +1,9 @@
+2004-09-21  Uros Bizjak  <uros@kss-loka.si>
+
+	PR rtl-optimization/14851
+	* rtlanal.c (commutative_operand_precedence): Calculate
+	precedence of stripped constant.
+
 2004-09-20 Jeff Law  <law@redhat.com>
            Jan Hubicka  <jh@suse.cz>
 

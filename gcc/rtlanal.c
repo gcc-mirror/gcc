@@ -2980,6 +2980,7 @@ commutative_operand_precedence (rtx op)
   if (code == CONST_DOUBLE)
     return -6;
   op = avoid_constant_pool_reference (op);
+  code = GET_CODE (op);
 
   switch (GET_RTX_CLASS (code))
     {
