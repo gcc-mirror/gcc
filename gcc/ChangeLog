@@ -1,5 +1,10 @@
 2002-03-19  David Edelsohn  <edelsohn@gnu.org>
 
+	* config/rs6000/rs6000.c (rs6000_override_options): Only warn
+	about -fpic/-fPIC if extra_warnings set.
+
+2002-03-19  David Edelsohn  <edelsohn@gnu.org>
+
 	* expr.c (expand_expr): Sign-extend CONST_INT generated from
 	TREE_STRING_POINTER.
 
