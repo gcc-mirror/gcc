@@ -112,7 +112,7 @@ case $os in
 		os=-hiuxwe2
 		;;
 	-sco5)
-		os=sco3.2v5
+		os=-sco3.2v5
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-pc/'`
 		;;
 	-sco4)

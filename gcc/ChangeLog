@@ -1,3 +1,6 @@
+Mon Feb 23 15:09:18 1998  Bruno Haible <bruno@linuix.mathematik.uni-karlsruhe.de>
+        * config.sub (sco5): Fix typo.
+
 Mon Feb 23 18:19:31 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* config/t-linux (LIBGCC1, CROSS_LIBGCC1, LIBGCC1_TEST): Add macros and
