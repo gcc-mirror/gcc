@@ -22,15 +22,15 @@ dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
 
 if test "${srcdir}" = "."; then
   if test "${with_target_subdir}" != "."; then
-    libffi_basedir="${srcdir}/${with_multisrctop}.."
+    libffi_basedir="${with_multisrctop}.."
   else
-    libffi_basedir="${srcdir}/${with_multisrctop}"
+    libffi_basedir="${with_multisrctop}"
   fi
 else
-  libffi_basedir="${srcdir}"
+  libffi_basedir=
 fi
 AC_SUBST(libffi_basedir)
-AC_CONFIG_AUX_DIR(${libffi_basedir}/..)
+AC_CONFIG_AUX_DIR(${libffi_basedir}..)
 
 AC_CANONICAL_HOST
 
@@ -186,7 +186,7 @@ AC_OUTPUT(include/Makefile include/ffi.h Makefile,
 [
 if test -n "$CONFIG_FILES"; then
    LD="${ORIGINAL_LD_FOR_MULTILIBS}"
-   ac_file=Makefile . ${libffi_basedir}/../config-ml.in
+   ac_file=Makefile . ${srcdir}/${libffi_basedir}/../config-ml.in
 fi
 ],
 srcdir=${srcdir}
