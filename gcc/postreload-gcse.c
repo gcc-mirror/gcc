@@ -1,5 +1,5 @@
 /* Post reload partially redundant load elimination
-   Copyright (C) 2004
+   Copyright (C) 2004, 2005
    Free Software Foundation, Inc.
 
 This file is part of GCC.
