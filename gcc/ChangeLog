@@ -1,3 +1,24 @@
+2004-07-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* libgcc2.c: Change all conditionals testing
+	LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 96 to == 80.
+	* libgcc2.h: Likewise.
+	* config/i386/i386.c (ix86_init_mmx_sse_builtins): Set
+	TYPE_PRECISION of float80_type to 80.
+	* config/ia64/ia64.c (ia64_init_builtins): Set TYPE_PRECISION
+	of fpreg_type and float80_type to 80.
+	* config/i386/i386.h, config/ia64/ia64.h, config/m68k/m68k.h
+	* config/m68k/netbsd-elf.h:
+	Change LONG_DOUBLE_TYPE_SIZE and possibly LIBGCC2_LONG_DOUBLE_TYPE_SIZE
+	to evaluate to 80 whenever they would formerly have evaluated to 96.
+	* config/i386/sco5.h: Remove unnecessary redefinition of
+	LONG_DOUBLE_TYPE_SIZE.
+	* doc/rtl.texi: Clarify uses of XFmode and TFmode.
+	* config/i386/i386-modes.def: Use FRACTIONAL_FLOAT_MODE for
+	XFmode, with a bitsize of 80.  Update commentary.
+	* config/ia64/ia64-modes.def: Likewise.
+	* config/m68k/m68k-modes.def: Likewise.
+
 2004-07-27  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgexpand.c (tree_expand_cfg): Fix comment.

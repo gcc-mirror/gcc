@@ -96,13 +96,11 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE
 #undef WCHAR_TYPE_SIZE
 #undef WINT_TYPE
-#undef LONG_DOUBLE_TYPE_SIZE
 #define SIZE_TYPE		"unsigned int"
 #define PTRDIFF_TYPE		"int"
 #define WCHAR_TYPE		"long int"
 #define WCHAR_TYPE_SIZE		BITS_PER_WORD
 #define WINT_TYPE		"long int"
-#define LONG_DOUBLE_TYPE_SIZE 	96
 
 /*
  * New for multilib support. Set the default switches for multilib,

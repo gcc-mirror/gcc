@@ -89,7 +89,7 @@ typedef unsigned int UTItype	__attribute__ ((mode (TI)));
 typedef 	float SFtype	__attribute__ ((mode (SF)));
 typedef		float DFtype	__attribute__ ((mode (DF)));
 
-#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 96
+#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80
 typedef		float XFtype	__attribute__ ((mode (XF)));
 #endif
 #if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 128
@@ -272,7 +272,7 @@ extern UWtype __fixunssfSI (SFtype);
 extern DWtype __fixunsdfDI (DFtype);
 extern DWtype __fixunssfDI (SFtype);
 
-#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 96
+#if LIBGCC2_LONG_DOUBLE_TYPE_SIZE == 80
 extern DWtype __fixxfdi (XFtype);
 extern DWtype __fixunsxfDI (XFtype);
 extern XFtype __floatdixf (DWtype);

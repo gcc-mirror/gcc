@@ -1100,15 +1100,16 @@ this is a double-precision IEEE floating point number.
 
 @findex XFmode
 @item XFmode
-``Extended Floating'' mode represents a twelve byte floating point
-number.  This mode is used for IEEE extended floating point.  On some
-systems not all bits within these bytes will actually be used.
+``Extended Floating'' mode represents an IEEE extended floating point
+number.  This mode only has 80 meaningful bits (ten bytes).  Some
+processors require such numbers to be padded to twelve bytes, others
+to sixteen; this mode is used for either.
 
 @findex TFmode
 @item TFmode
-``Tetra Floating'' mode represents a sixteen byte floating point number.
-This gets used for both the 96-bit extended IEEE floating-point types
-padded to 128 bits, and true 128-bit extended IEEE floating-point types.
+``Tetra Floating'' mode represents a sixteen byte floating point number
+all 128 of whose bits are meaningful.  One common use is the
+IEEE quad-precision format.
 
 @findex CCmode
 @item CCmode

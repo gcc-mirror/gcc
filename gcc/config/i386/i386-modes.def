@@ -18,21 +18,20 @@ along with GCC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* x86_64 ABI specifies both XF and TF modes.
+/* The x86_64 ABI specifies both XF and TF modes.
    XFmode is __float80 is IEEE extended; TFmode is __float128
-   is IEEE quad.
+   is IEEE quad.  */
 
-   IEEE extended is 128 bits wide, except in ILP32 mode, but we
-   have to say it's 12 bytes so that the bitsize and wider_mode
-   tables are correctly set up.  We correct its size below.  */
+FRACTIONAL_FLOAT_MODE (XF, 80, 12, ieee_extended_intel_96_format);
+FLOAT_MODE (TF, 16, ieee_quad_format);
 
-FLOAT_MODE (XF, 12, ieee_extended_intel_96_format);
+/* In ILP32 mode, XFmode has size 12 and alignment 4.
+   In LP64 mode, XFmode has size and alignment 16.  */
 ADJUST_FLOAT_FORMAT (XF, (TARGET_128BIT_LONG_DOUBLE
 			  ? &ieee_extended_intel_128_format
 			  : &ieee_extended_intel_96_format));
 ADJUST_BYTESIZE  (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 12);
 ADJUST_ALIGNMENT (XF, TARGET_128BIT_LONG_DOUBLE ? 16 : 4);
-FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* Add any extra modes needed to represent the condition code.
 

@@ -8138,13 +8138,13 @@ ia64_init_builtins (void)
   fpreg_type = make_node (REAL_TYPE);
   /* ??? The back end should know to load/save __fpreg variables using
      the ldf.fill and stf.spill instructions.  */
-  TYPE_PRECISION (fpreg_type) = 96;
+  TYPE_PRECISION (fpreg_type) = 80;
   layout_type (fpreg_type);
   (*lang_hooks.types.register_builtin_type) (fpreg_type, "__fpreg");
 
   /* The __float80 type.  */
   float80_type = make_node (REAL_TYPE);
-  TYPE_PRECISION (float80_type) = 96;
+  TYPE_PRECISION (float80_type) = 80;
   layout_type (float80_type);
   (*lang_hooks.types.register_builtin_type) (float80_type, "__float80");
 

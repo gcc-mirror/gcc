@@ -354,7 +354,7 @@ extern int target_flags;
 
 /* target machine storage layout */
 
-#define LONG_DOUBLE_TYPE_SIZE 96
+#define LONG_DOUBLE_TYPE_SIZE 80
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using 68040 fp
    instructions, we get proper intermediate rounding, otherwise we

@@ -736,7 +736,7 @@ extern int x86_prefetch_sse;
 
 /* target machine storage layout */
 
-#define LONG_DOUBLE_TYPE_SIZE 96
+#define LONG_DOUBLE_TYPE_SIZE 80
 
 /* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
    FPU, assume that the fpcw is set to extended precision; when using
