@@ -742,6 +742,7 @@ dbxout_type_methods (type)
 
   type_encoding = DECL_NAME (TYPE_NAME (type));
 
+#if 0
   /* C++: Template classes break some assumptions made by this code about
      the class names, constructor names, and encodings for assembler
      label names.  For now, disable output of dbx info for them.  */
@@ -763,6 +764,7 @@ dbxout_type_methods (type)
 	return;
       }
   }
+#endif
 
   type_identifier_length = IDENTIFIER_LENGTH (type_encoding);
 
