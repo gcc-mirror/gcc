@@ -1,5 +1,5 @@
 /* Definitions for C parsing and type checking.
-   Copyright (C) 1987, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -403,6 +403,10 @@ extern int flag_cond_mismatch;
 
 extern int flag_no_asm;
 
+/* Nonzero means environment is hosted (i.e., not freestanding) */
+
+extern int flag_hosted;
+
 /* Nonzero means ignore `#ident' directives.  */
 
 extern int flag_no_ident;
@@ -465,6 +469,10 @@ extern int warn_char_subscripts;
 /* Warn if a type conversion is done that might have confusing results.  */
 
 extern int warn_conversion;
+
+/* Warn if main is suspicious. */
+
+extern int warn_main;
 
 /* Nonzero means do some things the same way PCC does.  */
 
