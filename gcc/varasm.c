@@ -4388,7 +4388,7 @@ remove_from_pending_weak_list (name)
       struct weak_syms *t;
       for (t = weak_decls; t; t = t->next)
 	{
-	  if (strcmp (name, t->name) == 0)
+	  if (t->name && strcmp (name, t->name) == 0)
 	    t->name = NULL;
 	}
     }
