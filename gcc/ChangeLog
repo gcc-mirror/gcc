@@ -1,5 +1,9 @@
 Fri Aug 14 21:07:03 1998  Jeffrey A Law  (law@cygnus.com)
 
+	From Joern:
+	* expr.c (store_expr): Don't optimize away load-store pair
+	when either source or destination have a side effect.
+
 	* loop.c (add_label_notes): Do not ignore references to labels
 	before dispatch tables.  Mirrors Apr 8 change to mark_jump_label.
 	* gcse.c (add_label_notes): Similarly.
