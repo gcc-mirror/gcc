@@ -425,10 +425,7 @@ toc_section ()						\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (", TOC[tc0], 0\n", FILE);				\
   in_section = no_section;					\
-  if (flag_function_sections)					\
-    named_section ((DECL), (char *) 0, 0);			\
-  else								\
-    text_section();						\
+  function_section(DECL);					\
   putc ('.', FILE);						\
   RS6000_OUTPUT_BASENAME (FILE, NAME);				\
   fputs (":\n", FILE);						\

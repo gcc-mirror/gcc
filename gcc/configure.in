@@ -298,7 +298,7 @@ case x${enable_threads_flag} in
 		target_thread_file=''
 		;;
 	xdecosf1 | xirix | xmach | xos2 | xposix | xpthreads | xsingle | \
-	xsolaris | xwin32 | xdce | xvxworks)
+	xsolaris | xwin32 | xdce | xvxworks | xaix)
 		target_thread_file=$enable_threads_flag
 		;;
 	*)
@@ -3343,6 +3343,7 @@ changequote([,])dnl
 		xmake_file=rs6000/x-aix41
 		float_format=none
 		use_collect2=yes
+		thread_file='aix'
 		;;
 changequote(,)dnl
 	rs6000-ibm-aix[56789].* | powerpc-ibm-aix[56789].*)
@@ -3352,6 +3353,7 @@ changequote([,])dnl
 		xmake_file=rs6000/x-aix41
 		float_format=none
 		use_collect2=yes
+		thread_file='aix'
 		;;
 	rs6000-ibm-aix*)
 		float_format=none
