@@ -1,8 +1,13 @@
+2003-03-02  Andreas Jaeger  <aj@suse.de>
+
+	* gnat_ug_unx.texi, gnat_ug_vms.texi, gnat_ug_vxw.texi,
+	gnat_ug_wnt.texi: Regenerate.
+
 2003-03-02  Laurent Guerby <guerby@acm.org>
 
-	* Makefile.in (install-gnatlib): Match previous change there 
+	* Makefile.in (install-gnatlib): Match previous change there
 	so it works.
-	
+
 2003-02-28  Andreas Schwab  <schwab@suse.de>
 
 	* Make-lang.in (install-gnatlib): Change to ada directory before
@@ -45,8 +50,8 @@
 
         PR ada/8344
         * final.c: rename to adafinal.c to avoid file name conflicts with gcc file.
-        * Makefile.in: match previous change. 
-        * Make-lang.in: match previous change. 
+        * Makefile.in: match previous change.
+        * Make-lang.in: match previous change.
 
 2003-01-29	Joel Sherrill <joel@OARcorp.com>
 
@@ -464,9 +469,9 @@
 	(REAL_VALUE_RNDZINT, REAL_VALUE_UNSIGNED_RNDZINT): Remove.
 
 2002-08-25  Andre Leis <a.leis@gmx.net>
- 	    David Billinghurst (David.Billinghurst@riotinto.com>
+	    David Billinghurst (David.Billinghurst@riotinto.com>
 
- 	* sysdep.c (__gnat_ttyname): include <termios.h> on cygwin
+	* sysdep.c (__gnat_ttyname): include <termios.h> on cygwin
 
 2002-08-13  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 

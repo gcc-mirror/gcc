@@ -1818,7 +1818,7 @@ GNAT MAKE MY_MAIN.ADB /LINKER_QUALIFIERS FILE1.OBJ FILE2.OBJ
 
 @cindex Binder output file
 @noindent
-If the main program is in some language other than Ada, Then you may
+If the main program is in some language other than Ada, you may
 have more than one entry point in the Ada subsystem. You must use a
 special option of the binder to generate callable routines to initialize
 and finalize the Ada units (@pxref{Binding with Non-Ada Main Programs}).
