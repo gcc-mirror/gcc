@@ -1,4 +1,4 @@
-# Makefile.in generated automatically by automake 1.2e from Makefile.am
+# Makefile.in generated automatically by automake 1.3 from Makefile.am
 
 # Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
@@ -11,7 +11,7 @@
 # PARTICULAR PURPOSE.
 
 
-SHELL = @SHELL@
+SHELL = /bin/sh
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -31,6 +31,8 @@ infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
 oldincludedir = /usr/include
+
+DISTDIR =
 
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -67,7 +69,6 @@ GT_NO = @GT_NO@
 GT_YES = @GT_YES@
 INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
 INSTALL = @INSTALL@
-INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
 INTLDEPS = @INTLDEPS@
@@ -89,7 +90,7 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 l = @l@
 
-bin_PROGRAMS = makeinfo
+noinst_PROGRAMS = makeinfo
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../intl -DLOCALEDIR=\"$(localedir)\"
@@ -101,8 +102,8 @@ EXTRA_DIST = README
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-bin_PROGRAMS =  makeinfo$(EXEEXT)
-PROGRAMS =  $(bin_PROGRAMS)
+noinst_PROGRAMS =  makeinfo$(EXEEXT)
+PROGRAMS =  $(noinst_PROGRAMS)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
@@ -123,46 +124,32 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP = --best
-DEP_FILES =  .deps/makeinfo.P .deps/multi.P
 SOURCES = $(makeinfo_SOURCES)
 OBJECTS = $(makeinfo_OBJECTS)
 
-default: all
+all: Makefile $(PROGRAMS)
 
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
-$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu makeinfo/Makefile
+$(srcdir)/Makefile.in: @MAINT@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps makeinfo/Makefile
 
-Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status $(BUILT_SOURCES)
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-mostlyclean-binPROGRAMS:
+mostlyclean-noinstPROGRAMS:
 
-clean-binPROGRAMS:
-	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
 
-distclean-binPROGRAMS:
+distclean-noinstPROGRAMS:
 
-maintainer-clean-binPROGRAMS:
+maintainer-clean-noinstPROGRAMS:
 
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(bindir)
-	@list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    echo "  $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`"; \
-	     $(INSTALL_PROGRAM) $$p $(bindir)/`echo $$p|sed '$(transform)'`; \
-	  else :; fi; \
-	done
-
-uninstall-binPROGRAMS:
-	$(NORMAL_UNINSTALL)
-	list='$(bin_PROGRAMS)'; for p in $$list; do \
-	  rm -f $(bindir)/`echo $$p|sed '$(transform)'`; \
-	done
+.c.o:
+	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -214,43 +201,22 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = makeinfo
 
 distdir: $(DISTFILES)
-	here=`cd $(top_builddir) && pwd`; \
-	top_distdir=`cd $(top_distdir) && pwd`; \
-	distdir=`cd $(distdir) && pwd`; \
-	cd $(top_srcdir) \
-	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu makeinfo/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  test -f $(distdir)/$$file \
 	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	  || cp -p $$d/$$file $(distdir)/$$file; \
 	done
+makeinfo.o: makeinfo.c ../lib/system.h ../config.h ../lib/getopt.h \
+	makeinfo.h
+multi.o: multi.c ../lib/system.h ../config.h makeinfo.h
 
-DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
-
--include $(DEP_FILES)
-
-mostlyclean-depend:
-
-clean-depend:
-
-distclean-depend:
-
-maintainer-clean-depend:
-	-rm -rf .deps
-
-%.o: %.c
-	@echo '$(COMPILE) -c $<'; \
-	DEPENDENCIES_OUTPUT='.deps/$(*F).P'; \
-	export DEPENDENCIES_OUTPUT; \
-	: > .deps/$(*F).P; \
-	$(COMPILE) -c $<
 info:
 dvi:
 check: all
 	$(MAKE)
 installcheck:
-install-exec: install-binPROGRAMS
+install-exec: 
 	@$(NORMAL_INSTALL)
 
 install-data: 
@@ -259,14 +225,11 @@ install-data:
 install: install-exec install-data all
 	@:
 
-uninstall: uninstall-binPROGRAMS
-
-all: Makefile $(PROGRAMS)
+uninstall: 
 
 install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
 installdirs:
-	$(mkinstalldirs)  $(bindir)
 
 
 mostlyclean-generic:
@@ -283,30 +246,29 @@ distclean-generic:
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
-mostlyclean:  mostlyclean-binPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean:  mostlyclean-noinstPROGRAMS mostlyclean-compile \
+		mostlyclean-tags mostlyclean-generic
 
-clean:  clean-binPROGRAMS clean-compile clean-tags clean-depend \
-		clean-generic mostlyclean
+clean:  clean-noinstPROGRAMS clean-compile clean-tags clean-generic \
+		mostlyclean
 
-distclean:  distclean-binPROGRAMS distclean-compile distclean-tags \
-		distclean-depend distclean-generic clean
+distclean:  distclean-noinstPROGRAMS distclean-compile distclean-tags \
+		distclean-generic clean
 	-rm -f config.status
 
-maintainer-clean:  maintainer-clean-binPROGRAMS maintainer-clean-compile \
-		maintainer-clean-tags maintainer-clean-depend \
+maintainer-clean:  maintainer-clean-noinstPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
 		maintainer-clean-generic distclean
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
-.PHONY: default mostlyclean-binPROGRAMS distclean-binPROGRAMS \
-clean-binPROGRAMS maintainer-clean-binPROGRAMS uninstall-binPROGRAMS \
-install-binPROGRAMS mostlyclean-compile distclean-compile clean-compile \
+.PHONY: mostlyclean-noinstPROGRAMS distclean-noinstPROGRAMS \
+clean-noinstPROGRAMS maintainer-clean-noinstPROGRAMS \
+mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir mostlyclean-depend \
-distclean-depend clean-depend maintainer-clean-depend info dvi \
-installcheck install-exec install-data install uninstall all \
-installdirs mostlyclean-generic distclean-generic clean-generic \
+clean-tags maintainer-clean-tags distdir info dvi installcheck \
+install-exec install-data install uninstall all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 

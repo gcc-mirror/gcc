@@ -1,5 +1,5 @@
 ## Makefile.am for texinfo.
-## $Id: Makefile.am,v 1.5 1998/04/10 00:37:57 law Exp $
+## $Id: Makefile.am,v 1.6 1999/01/21 10:39:10 gerald Exp $
 ## Process this file with automake to produce Makefile.in in all directories.
 
 # Be sure we're using the right version of Automake.
@@ -15,5 +15,7 @@ EXTRA_DIST = INTRODUCTION dir-example
 # Others are alphabetical.
 SUBDIRS = intl lib info makeinfo po util doc
 # ??? For EGCS, only build the stuff we actually need.  This eliminates the
-# need for xgettext that exists in the po subdirectory.
-SUBDIRS = intl lib makeinfo
+# need for xgettext that exists in the po subdirectory.  We do need util in
+# order to get install-info, which is used as part of the gcc build/install
+# process.
+SUBDIRS = intl lib makeinfo util

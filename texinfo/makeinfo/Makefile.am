@@ -1,8 +1,8 @@
 ## Makefile.am for texinfo/makeinfo.
-## $Id: Makefile.am,v 1.3 1998/03/24 19:41:22 law Exp $
+## $Id: Makefile.am,v 1.4 1998/11/19 22:39:54 manfred Exp $
 ## Run automake in .. to produce Makefile.in from this.
 
-bin_PROGRAMS = makeinfo
+noinst_PROGRAMS = makeinfo
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../intl -DLOCALEDIR=\"$(localedir)\"
