@@ -445,7 +445,7 @@ static void update_table_tick	PROTO((rtx));
 static void record_value_for_reg  PROTO((rtx, rtx, rtx));
 static void record_dead_and_set_regs_1  PROTO((rtx, rtx));
 static void record_dead_and_set_regs  PROTO((rtx));
-static int get_last_value_validate  PROTO((rtx *, int, int));
+static int get_last_value_validate  PROTO((rtx *, rtx, int, int));
 static rtx get_last_value	PROTO((rtx));
 static int use_crosses_set_p	PROTO((rtx, int));
 static void reg_dead_at_p_1	PROTO((rtx, rtx));
@@ -10203,11 +10203,12 @@ record_value_for_reg (reg, insn, value)
   /* The value being assigned might refer to X (like in "x++;").  In that
      case, we must replace it with (clobber (const_int 0)) to prevent
      infinite loops.  */
-  if (value && ! get_last_value_validate (&value,
+  if (value && ! get_last_value_validate (&value, insn,
 					  reg_last_set_label[regno], 0))
     {
       value = copy_rtx (value);
-      if (! get_last_value_validate (&value, reg_last_set_label[regno], 1))
+      if (! get_last_value_validate (&value, insn,
+				     reg_last_set_label[regno], 1))
 	value = 0;
     }
 
@@ -10328,8 +10329,9 @@ record_dead_and_set_regs (insn)
    we don't know exactly what registers it was produced from.  */
 
 static int
-get_last_value_validate (loc, tick, replace)
+get_last_value_validate (loc, insn, tick, replace)
      rtx *loc;
+     rtx insn;
      int tick;
      int replace;
 {
@@ -10359,10 +10361,20 @@ get_last_value_validate (loc, tick, replace)
 
       return 1;
     }
+  /* If this is a memory reference, make sure that there were
+     no stores after it that might have clobbered the value.  We don't
+     have alias info, so we assume any store invalidates it.  */
+  else if (GET_CODE (x) == MEM && ! RTX_UNCHANGING_P (x)
+	   && INSN_CUID (insn) <= mem_last_set)
+    {
+      if (replace)
+	*loc = gen_rtx (CLOBBER, GET_MODE (x), const0_rtx);
+      return replace;
+    }
 
   for (i = 0; i < len; i++)
     if ((fmt[i] == 'e'
-	 && get_last_value_validate (&XEXP (x, i), tick, replace) == 0)
+	 && get_last_value_validate (&XEXP (x, i), insn, tick, replace) == 0)
 	/* Don't bother with these.  They shouldn't occur anyway.  */
 	|| fmt[i] == 'E')
       return 0;
@@ -10459,14 +10471,16 @@ get_last_value (x)
     }
 
   /* If the value has all its registers valid, return it.  */
-  if (get_last_value_validate (&value, reg_last_set_label[regno], 0))
+  if (get_last_value_validate (&value, reg_last_set[regno],
+			       reg_last_set_label[regno], 0))
     return value;
 
   /* Otherwise, make a copy and replace any invalid register with
      (clobber (const_int 0)).  If that fails for some reason, return 0.  */
 
   value = copy_rtx (value);
-  if (get_last_value_validate (&value, reg_last_set_label[regno], 1))
+  if (get_last_value_validate (&value, reg_last_set[regno],
+			       reg_last_set_label[regno], 1))
     return value;
 
   return 0;
