@@ -1,3 +1,8 @@
+2001-06-16  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* g++.dg/mangle1.C: Modify regexp to test for `[: \t\n]' at end
+	of label name.
+
 2001-06-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.abi/vbase8-9.C: New test.
