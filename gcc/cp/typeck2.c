@@ -1063,7 +1063,7 @@ build_x_arrow (datum)
     last_rval = default_conversion (rval);
 
   if (TREE_CODE (TREE_TYPE (last_rval)) == POINTER_TYPE)
-    return build_indirect_ref (last_rval, NULL_PTR);
+    return build_indirect_ref (last_rval, NULL);
 
   if (types_memoized)
     error ("result of `operator->()' yields non-pointer result");

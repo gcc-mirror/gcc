@@ -4683,7 +4683,7 @@ implicitly_declare (functionid)
   /* ISO standard says implicit declarations are in the innermost block.
      So we record the decl in the standard fashion.  */
   pushdecl (decl);
-  rest_of_decl_compilation (decl, NULL_PTR, 0, 0);
+  rest_of_decl_compilation (decl, NULL, 0, 0);
 
   if (warn_implicit
       /* Only one warning per identifier.  */
@@ -6434,7 +6434,7 @@ init_decl_processing ()
   empty_except_spec = build_tree_list (NULL_TREE, NULL_TREE);
 
 #if 0
-  record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
+  record_builtin_type (RID_MAX, NULL, string_type_node);
 #endif
 
   delta_type_node = ptrdiff_type_node;
@@ -6502,10 +6502,10 @@ init_decl_processing ()
     = build_cplus_array_type (vtable_entry_type, NULL_TREE);
   layout_type (vtbl_type_node);
   vtbl_type_node = build_qualified_type (vtbl_type_node, TYPE_QUAL_CONST);
-  record_builtin_type (RID_MAX, NULL_PTR, vtbl_type_node);
+  record_builtin_type (RID_MAX, NULL, vtbl_type_node);
   vtbl_ptr_type_node = build_pointer_type (vtable_entry_type);
   layout_type (vtbl_ptr_type_node);
-  record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
+  record_builtin_type (RID_MAX, NULL, vtbl_ptr_type_node);
 
   push_namespace (get_identifier ("__cxxabiv1"));
   abi_node = current_namespace;
@@ -8074,7 +8074,7 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	  && !COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	TYPE_DECL_SUPPRESS_DEBUG (decl) = 1;
 
-      rest_of_decl_compilation (decl, NULL_PTR,
+      rest_of_decl_compilation (decl, NULL,
 				DECL_CONTEXT (decl) == NULL_TREE, at_eof);
       goto finish_end;
     }
@@ -13508,7 +13508,7 @@ start_function (declspecs, declarator, attrs, flags)
 			  19990811);
 
       cp_function_chain->x_current_class_ref
-	= build_indirect_ref (t, NULL_PTR);
+	= build_indirect_ref (t, NULL);
       cp_function_chain->x_current_class_ptr = t;
 
       /* Constructors and destructors need to know whether they're "in
@@ -14248,7 +14248,7 @@ hack_incomplete_structures (type)
 		  && TREE_TYPE (TREE_TYPE (decl)) == type)
 		layout_type (TREE_TYPE (decl));
 	      layout_decl (decl, 0);
-	      rest_of_decl_compilation (decl, NULL_PTR, toplevel, 0);
+	      rest_of_decl_compilation (decl, NULL, toplevel, 0);
 	      if (! toplevel)
 		{
 		  tree cleanup;

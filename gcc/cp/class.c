@@ -416,7 +416,7 @@ build_vbase_path (code, type, expr, path, nonnull)
 		      tree binfo = get_binfo (last, TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (nonnull_expr))), 0);
 		      nonnull_expr = convert_pointer_to_real (binfo, nonnull_expr);
 		    }
-		  ind = build_indirect_ref (nonnull_expr, NULL_PTR);
+		  ind = build_indirect_ref (nonnull_expr, NULL);
 		  nonnull_expr = build_vbase_pointer (ind, last_virtual);
 		  if (nonnull == 0
 		      && TREE_CODE (type) == POINTER_TYPE

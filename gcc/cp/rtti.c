@@ -139,7 +139,7 @@ build_headof (exp)
      the vptr.  */
   index = build_int_2 (-2, -1);
 
-  aref = build_vtbl_ref (build_indirect_ref (exp, NULL_PTR), index);
+  aref = build_vtbl_ref (build_indirect_ref (exp, NULL), index);
 
   if (flag_vtable_thunks)
     offset = aref;
@@ -233,7 +233,7 @@ get_tinfo_decl_dynamic (exp)
 	{
       	  exp = build_unary_op (ADDR_EXPR, exp, 0);
 	  exp = build_headof_sub (exp);
-	  exp = build_indirect_ref (exp, NULL_PTR);
+	  exp = build_indirect_ref (exp, NULL);
 	}
 
       /* The RTTI information is at index -1.  */

@@ -2137,7 +2137,7 @@ build_dummy_object (type)
      tree type;
 {
   tree decl = build1 (NOP_EXPR, build_pointer_type (type), void_zero_node);
-  return build_indirect_ref (decl, NULL_PTR);
+  return build_indirect_ref (decl, NULL);
 }
 
 /* We've gotten a reference to a member of TYPE.  Return *this if appropriate,

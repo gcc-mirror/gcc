@@ -1,3 +1,7 @@
+Wed May  2 10:20:08 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c: NULL_PTR -> NULL.
+
 Sun Apr 22 20:18:01 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* com.c (ffecom_subscript_check_): Use concat in lieu of
