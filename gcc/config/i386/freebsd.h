@@ -25,6 +25,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* This is tested by i386gas.h.  */
 #define YES_UNDERSCORES
 
+/* Don't assume anything about the header files. */
+#define NO_IMPLICIT_EXTERN_C
+
 #include "i386/gstabs.h"
 
 /* Get perform_* macros to build libgcc.a.  */
