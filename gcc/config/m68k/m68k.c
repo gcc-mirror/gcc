@@ -31,6 +31,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "insn-attr.h"
 
+/* Needed for bytecode function entry trampoline */
+#include "bytecode.h"
+#include "bc-emit.h"
+
 /* Needed for use_return_insn.  */
 #include "flags.h"
 
@@ -2303,6 +2307,7 @@ strict_low_part_peephole_ok (mode, first_insn, target)
 /* Trampoline code for the function entry.  */
 extern struct bc_seg *trampoline;
 extern struct bc_seg *bytecode;
+extern struct bc_sym *sym_lookup ();
 
 /* Emit the machine-code interface trampoline at the beginning of a byte
    coded function.  The argument is a label name of the interpreter
