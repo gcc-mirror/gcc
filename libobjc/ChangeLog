@@ -1,3 +1,10 @@
+Wed Jul 18 12:48:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* thr.c (objc_mutex_lock): Invoke __objc_thread_id directly,
+	rather than through objc_thread_id, to save a function call.
+	(objc_mutex_trylock, objc_mutex_unlock, objc_condition_wait):
+	Ditto.
+
 Mon Jul 16 12:15:00 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* objc/objc-api.h (object_is_class): Fixed - buggy code was trying
