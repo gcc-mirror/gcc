@@ -194,6 +194,12 @@ namespace std {
     vec_pfacet::
     insert(vec_pfacet::iterator, vec_pfacet::size_type, 
 	   const vec_pfacet::value_type&);
+  template 
+    void 
+    vec_pfacet::
+    _M_fill_insert(vec_pfacet::iterator, vec_pfacet::size_type, 
+		   const vec_pfacet::value_type&);
+
 
   typedef istreambuf_iterator<char, char_traits<char> > istreambuf_iter;
   typedef ostreambuf_iterator<char, char_traits<char> > ostreambuf_iter;
@@ -292,10 +298,10 @@ namespace std {
     fill_n<locale::facet**, unsigned int, locale::facet*>
     (locale::facet**, unsigned int, locale::facet* const &);
 
+  template 
+    locale::facet** 
+    fill_n<locale::facet**, unsigned long, locale::facet*>
+    (locale::facet**, unsigned long, locale::facet* const &);
+
 } //std
-
-
-
-
-
 
