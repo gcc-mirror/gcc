@@ -1,3 +1,25 @@
+Fri Jul  2 18:49:51 1999  Nick Clifton  <nickc@cygnus.com>
+
+	Add framework to support armv5 architecture when it becomes
+	available: 
+	
+	* config/arm/arm.c (FL_ARCH5): New processor capability flag.
+	(arm_arch5): New variable.
+	(all_architectures): Add armv5 line.
+	* config/arm/arm.h (CPP_CPU_ARCH_SPEC): Define __ARM_ARCH_5__ if
+	-march=armv5 is specified on the command line.
+	(arm_arch5): Export this variable.
+	* invoke.texi: Document new string accepted by -march= switch for
+	ARM ports.
+
+	* config/arm/arm.h: Replace use of constant 12 as a register
+	number with IP_REGNUM.  Similarly 14 and LR_REGNUM.
+	* config/arm/arm.c: Replace use of constant 12 as a register
+	number with IP_REGNUM.  Similarly 14 and LR_REGNUM.
+
+	* config/arm/elf.h: Tidy up.
+	* config/arm/coff.h: Tidy up.
+	
 Thu Jul  1 19:08:13 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
 	* gcc/configure.in (mips-sgi-irix6*): Handle --with-gnu-ld.

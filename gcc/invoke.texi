@@ -263,6 +263,7 @@ in the following sections.
 -mbsd -mxopen -mno-symrename
 -mabort-on-noreturn
 -mno-sched-prolog
+-mnop-fun-dllimport -mno-nop-fun-dllimport
 
 @emph{Thumb Options}
 -mtpcs-frame -mno-tpcs-frame
@@ -270,6 +271,9 @@ in the following sections.
 -mlittle-endian  -mbig-endian
 -mthumb-interwork -mno-thumb-interwork
 -mstructure-size-boundary=
+-mnop-fun-dllimport -mno-nop-fun-dllimport
+-mcallee-super-interworking -mno-callee-super-interworking
+-mcaller-super-interworking -mno-caller-super-interworking
 
 @emph{MN10200 Options}
 -mrelax
@@ -3853,17 +3857,25 @@ suppresses this pass.  The post-processor is never run when the
 compiler is built for cross-compilation.
 
 @item -mcpu=<name>
-@itemx -mtune=<name>
 @kindex -mcpu=
-@kindex -mtune=
 This specifies the name of the target ARM processor.  GCC uses this name
 to determine what kind of instructions it can use when generating
 assembly code.  Permissable names are: arm2, arm250, arm3, arm6, arm60,
 arm600, arm610, arm620, arm7, arm7m, arm7d, arm7dm, arm7di, arm7dmi,
 arm70, arm700, arm700i, arm710, arm710c, arm7100, arm7500, arm7500fe,
 arm7tdmi, arm8, strongarm, strongarm110, strongarm1100, arm8, arm810,
-arm9, arm9tdmi.  @samp{-mtune=} is a synonym for @samp{-mcpue=} to
-support older versions of GCC.
+arm9, arm920, arm920t, arm9tdmi.
+
+@itemx -mtune=<name>
+@kindex -mtune=
+This option is very similar to the @samp{-mcpu=} option, except that
+instead of specifying the actual target processor type, and hence
+restricting which instructions can be used, it specifies that GCC should
+tune the performance of the code as if the target were of the type
+specified in this option, but still choosing the instructions that it
+will generate based on the cpu specified by a @samp{-mcpu=} option.
+For some arm implementations better performance can be obtained by using
+this option.
 
 @item -march=<name>
 @kindex -march=
@@ -3871,7 +3883,7 @@ This specifies the name of the target ARM architecture.  GCC uses this
 name to determine what kind of instructions it can use when generating
 assembly code.  This option can be used in conjunction with or instead
 of the @samp{-mcpu=} option.  Permissable names are: armv2, armv2a,
-armv3, armv3m, armv4, armv4t
+armv3, armv3m, armv4, armv4t, armv5.
 
 @item -mfpe=<number>
 @itemx -mfp=<number>
@@ -3899,6 +3911,10 @@ value as future versions of the toolchain may default to this value.
 @kindex -mnoabort-on-noreturn
 Generate a call to the function abort at the end of a noreturn function.
 It will be executed if the function tries to return.
+
+@item -mnop-fun-dllimport
+@kindex -mnop-fun-dllimport
+Disable the support for the @emph{dllimport} attribute.
 
 @end table
 
@@ -3952,6 +3968,24 @@ compiled with one value cannot necessarily expect to work with code or
 libraries compiled with the other value, if they exchange information
 using structures or unions.  Programmers are encouraged to use the 32
 value as future versions of the toolchain may default to this value.
+
+@item -mnop-fun-dllimport
+@kindex -mnop-fun-dllimport
+Disable the support for the @emph{dllimport} attribute.
+
+@item -mcallee-super-interworking
+@kindex -mcallee-super-interworking
+Gives all externally visible functions in the file being compiled an ARM
+instruction set header which switches to Thumb mode before executing the
+rest of the function.  This allows these functions to be called from
+non-interworking code.
+
+@item -mcaller-super-interworking
+@kindex -mcaller-super-interworking
+Allows calls via function pointers (including virtual functions) to
+execute correctly regardless of whether the target code has been
+compiled for interworking or not.  There is a small overhead in the cost
+of executing a funciton pointer if this option is enabled.
 
 @end table
 

@@ -65,7 +65,7 @@ enum arm_cond_code
   ARM_HI, ARM_LS, ARM_GE, ARM_LT, ARM_GT, ARM_LE, ARM_AL, ARM_NV
 };
 extern enum arm_cond_code arm_current_cc;
-extern char *arm_condition_codes[];
+extern char * arm_condition_codes[];
 
 #define ARM_INVERSE_CONDITION_CODE(X)  ((enum arm_cond_code) (((int)X) ^ 1))
 
@@ -153,6 +153,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{march=armv3m:-D__ARM_ARCH_3M__} \
 %{march=armv4:-D__ARM_ARCH_4__} \
 %{march=armv4t:-D__ARM_ARCH_4T__} \
+%{march=armv5:-D__ARM_ARCH_5__} \
 %{!march=*: \
  %{mcpu=arm2:-D__ARM_ARCH_2__} \
  %{mcpu=arm250:-D__ARM_ARCH_2__} \
@@ -458,6 +459,9 @@ extern int arm_fast_multiply;
 
 /* Nonzero if this chip supports the ARM Architecture 4 extensions */
 extern int arm_arch4;
+
+/* Nonzero if this chip supports the ARM Architecture 5 extensions */
+extern int arm_arch5;
 
 /* Nonzero if this chip can benefit from load scheduling.  */
 extern int arm_ld_sched;
@@ -785,6 +789,12 @@ extern const char * structure_size_string;
    should point to a special register that we will make sure is eliminated. */
 #define HARD_FRAME_POINTER_REGNUM 11
 
+/* Register which holds return address from a subroutine call.  */
+#define LR_REGNUM		14
+
+/* Scratch register - used in all kinds of places, eg trampolines.  */
+#define IP_REGNUM		12
+
 /* Value should be nonzero if functions must have frame pointers.
    Zero means the frame pointer need not be set up (and parms may be accessed
    via the stack pointer) in functions that seem suitable.  
@@ -944,51 +954,53 @@ enum reg_class
    For the ARM, we wish to handle large displacements off a base
    register by splitting the addend across a MOV and the mem insn.
    This can cut the number of reloads needed. */
-#define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)	\
-do {									\
-  if (GET_CODE (X) == PLUS						\
-      && GET_CODE (XEXP (X, 0)) == REG					\
-      && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER			\
-      && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)			\
-      && GET_CODE (XEXP (X, 1)) == CONST_INT)				\
-    {									\
-      HOST_WIDE_INT val = INTVAL (XEXP (X, 1));				\
-      HOST_WIDE_INT low, high;						\
-									\
-      if (MODE == DImode || (TARGET_SOFT_FLOAT && MODE == DFmode))	\
-	low = ((val & 0xf) ^ 0x8) - 0x8;				\
-      else if (MODE == SImode || MODE == QImode				\
-	       || (MODE == SFmode && TARGET_SOFT_FLOAT)			\
-	       || (MODE == HImode && ! arm_arch4))			\
-	/* Need to be careful, -4096 is not a valid offset */		\
-	low = val >= 0 ? (val & 0xfff) : -((-val) & 0xfff);		\
-      else if (MODE == HImode && arm_arch4)				\
-	/* Need to be careful, -256 is not a valid offset */		\
-	low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);		\
-      else if (GET_MODE_CLASS (MODE) == MODE_FLOAT			\
-	       && TARGET_HARD_FLOAT)					\
-	/* Need to be careful, -1024 is not a valid offset */		\
-	low = val >= 0 ? (val & 0x3ff) : -((-val) & 0x3ff);		\
-      else								\
-	break;								\
-									\
-      high = ((((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000);	\
-      /* Check for overflow or zero */					\
-      if (low == 0 || high == 0 || (high + low != val))			\
-	break;								\
-									\
-      /* Reload the high part into a base reg; leave the low part	\
-	 in the mem.  */						\
-      X = gen_rtx_PLUS (GET_MODE (X),					\
-			gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),	\
-				      GEN_INT (high)),			\
-			GEN_INT (low));					\
-      push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,	\
-		   BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,	\
-		   OPNUM, TYPE);					\
-      goto WIN;								\
-    }									\
-} while (0)
+#define LEGITIMIZE_RELOAD_ADDRESS(X, MODE, OPNUM, TYPE, IND_LEVELS, WIN)		\
+  do											\
+    {											\
+      if (GET_CODE (X) == PLUS								\
+	  && GET_CODE (XEXP (X, 0)) == REG						\
+	  && REGNO (XEXP (X, 0)) < FIRST_PSEUDO_REGISTER				\
+	  && REG_MODE_OK_FOR_BASE_P (XEXP (X, 0), MODE)					\
+	  && GET_CODE (XEXP (X, 1)) == CONST_INT)					\
+	{										\
+	  HOST_WIDE_INT val = INTVAL (XEXP (X, 1));					\
+	  HOST_WIDE_INT low, high;							\
+	  										\
+	  if (MODE == DImode || (TARGET_SOFT_FLOAT && MODE == DFmode))			\
+	    low = ((val & 0xf) ^ 0x8) - 0x8;						\
+	  else if (MODE == SImode || MODE == QImode					\
+		   || (MODE == SFmode && TARGET_SOFT_FLOAT)				\
+		   || (MODE == HImode && ! arm_arch4))					\
+	    /* Need to be careful, -4096 is not a valid offset */			\
+	    low = val >= 0 ? (val & 0xfff) : -((-val) & 0xfff);				\
+	  else if (MODE == HImode && arm_arch4)						\
+	    /* Need to be careful, -256 is not a valid offset */			\
+	    low = val >= 0 ? (val & 0xff) : -((-val) & 0xff);				\
+	  else if (GET_MODE_CLASS (MODE) == MODE_FLOAT					\
+		   && TARGET_HARD_FLOAT)						\
+	    /* Need to be careful, -1024 is not a valid offset */			\
+	    low = val >= 0 ? (val & 0x3ff) : -((-val) & 0x3ff);				\
+	  else										\
+	    break;									\
+	  										\
+	  high = ((((val - low) & 0xffffffff) ^ 0x80000000) - 0x80000000);		\
+	  /* Check for overflow or zero */						\
+	  if (low == 0 || high == 0 || (high + low != val))				\
+	    break;									\
+	  										\
+	  /* Reload the high part into a base reg; leave the low part			\
+	     in the mem.  */								\
+	  X = gen_rtx_PLUS (GET_MODE (X),						\
+			    gen_rtx_PLUS (GET_MODE (X), XEXP (X, 0),			\
+					  GEN_INT (high)),				\
+			    GEN_INT (low));						\
+	  push_reload (XEXP (X, 0), NULL_RTX, &XEXP (X, 0), NULL_PTR,			\
+		       BASE_REG_CLASS, GET_MODE (X), VOIDmode, 0, 0,			\
+		       OPNUM, TYPE);							\
+	  goto WIN;									\
+	}										\
+    }											\
+  while (0)
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
@@ -1189,8 +1201,8 @@ do {									\
   rtx sym;								    \
 									    \
   fprintf ((STREAM), "\tmov\t%s%s, %s%s\n\tbl\t",			    \
-	   REGISTER_PREFIX, reg_names[12] /* ip */,			    \
-	   REGISTER_PREFIX, reg_names[14] /* lr */);			    \
+	   REGISTER_PREFIX, reg_names[IP_REGNUM] /* ip */,		    \
+	   REGISTER_PREFIX, reg_names[LR_REGNUM] /* lr */);		    \
   assemble_name ((STREAM), ARM_MCOUNT_NAME);				    \
   fputc ('\n', (STREAM));						    \
   ASM_GENERATE_INTERNAL_LABEL (temp, "LP", (LABELNO));			    \
@@ -1280,7 +1292,7 @@ do {									\
 	   if (! frame_pointer_needed)					\
 	     offset -= 16;						\
 	   if (! volatile_func						\
-	       && (regs_ever_live[14] || saved_hard_reg)) 		\
+	       && (regs_ever_live[LR_REGNUM] || saved_hard_reg))	\
 	     offset += 4;						\
 	   offset += current_function_outgoing_args_size;		\
 	   (OFFSET) = ((get_frame_size () + 3) & ~3) + offset;		\
@@ -1458,54 +1470,55 @@ do {									\
 /* A C statement (sans semicolon) to jump to LABEL for legitimate index RTXs
    used by the macro GO_IF_LEGITIMATE_ADDRESS.  Floating point indices can
    only be small constants. */
-#define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)  	\
-do									\
-{									\
-  HOST_WIDE_INT range;							\
-  enum rtx_code code = GET_CODE (INDEX);				\
-									\
-  if (TARGET_HARD_FLOAT && GET_MODE_CLASS (MODE) == MODE_FLOAT)		\
-    {									\
-      if (code == CONST_INT && INTVAL (INDEX) < 1024			\
-	  && INTVAL (INDEX) > -1024					\
-	  && (INTVAL (INDEX) & 3) == 0)					\
-	goto LABEL;							\
-    }									\
-  else									\
-    {									\
-      if (INDEX_REGISTER_RTX_P (INDEX) && GET_MODE_SIZE (MODE) <= 4)	\
-	goto LABEL;							\
-      if (GET_MODE_SIZE (MODE) <= 4  && code == MULT			\
-	  && (! arm_arch4 || (MODE) != HImode))				\
-	{								\
-	  rtx xiop0 = XEXP (INDEX, 0);					\
-	  rtx xiop1 = XEXP (INDEX, 1);					\
-	  if (INDEX_REGISTER_RTX_P (xiop0)				\
-	      && power_of_two_operand (xiop1, SImode))			\
-	    goto LABEL;							\
-	  if (INDEX_REGISTER_RTX_P (xiop1)				\
-	      && power_of_two_operand (xiop0, SImode))			\
-	    goto LABEL;							\
-	}								\
-      if (GET_MODE_SIZE (MODE) <= 4					\
-	  && (code == LSHIFTRT || code == ASHIFTRT			\
-	      || code == ASHIFT || code == ROTATERT)			\
-	  && (! arm_arch4 || (MODE) != HImode))				\
-	{								\
-	  rtx op = XEXP (INDEX, 1);					\
-	  if (INDEX_REGISTER_RTX_P (XEXP (INDEX, 0))			\
-	      && GET_CODE (op) == CONST_INT && INTVAL (op) > 0		\
-	      && INTVAL (op) <= 31)					\
-	    goto LABEL;							\
-        }								\
-      /* NASTY: Since this limits the addressing of unsigned byte loads */      \
-      range = ((MODE) == HImode || (MODE) == QImode)                    \
-              ? (arm_arch4 ? 256 : 4095) : 4096;                        \
-      if (code == CONST_INT && INTVAL (INDEX) < range			\
-	  && INTVAL (INDEX) > -range)  	      				\
-        goto LABEL;							\
-    }									\
-} while (0)
+#define GO_IF_LEGITIMATE_INDEX(MODE, BASE_REGNO, INDEX, LABEL)  			\
+  do											\
+    {											\
+      HOST_WIDE_INT range;								\
+      enum rtx_code code = GET_CODE (INDEX);						\
+      											\
+      if (TARGET_HARD_FLOAT && GET_MODE_CLASS (MODE) == MODE_FLOAT)			\
+	{										\
+	  if (code == CONST_INT && INTVAL (INDEX) < 1024				\
+	      && INTVAL (INDEX) > -1024							\
+	      && (INTVAL (INDEX) & 3) == 0)						\
+	    goto LABEL;									\
+	}										\
+      else										\
+	{										\
+	  if (INDEX_REGISTER_RTX_P (INDEX) && GET_MODE_SIZE (MODE) <= 4)		\
+	    goto LABEL;									\
+	  if (GET_MODE_SIZE (MODE) <= 4  && code == MULT				\
+	      && (! arm_arch4 || (MODE) != HImode))					\
+	    {										\
+	      rtx xiop0 = XEXP (INDEX, 0);						\
+	      rtx xiop1 = XEXP (INDEX, 1);						\
+	      if (INDEX_REGISTER_RTX_P (xiop0)						\
+		  && power_of_two_operand (xiop1, SImode))				\
+		goto LABEL;								\
+	      if (INDEX_REGISTER_RTX_P (xiop1)						\
+		  && power_of_two_operand (xiop0, SImode))				\
+		goto LABEL;								\
+	    }										\
+	  if (GET_MODE_SIZE (MODE) <= 4							\
+	      && (code == LSHIFTRT || code == ASHIFTRT					\
+		  || code == ASHIFT || code == ROTATERT)				\
+	      && (! arm_arch4 || (MODE) != HImode))					\
+	    {										\
+	      rtx op = XEXP (INDEX, 1);							\
+	      if (INDEX_REGISTER_RTX_P (XEXP (INDEX, 0))				\
+		  && GET_CODE (op) == CONST_INT && INTVAL (op) > 0			\
+		  && INTVAL (op) <= 31)							\
+		goto LABEL;								\
+	    }										\
+	  /* NASTY: Since this limits the addressing of unsigned byte loads */		\
+	  range = ((MODE) == HImode || (MODE) == QImode)                    		\
+	    ? (arm_arch4 ? 256 : 4095) : 4096;                        			\
+	  if (code == CONST_INT && INTVAL (INDEX) < range				\
+	      && INTVAL (INDEX) > -range)  	      					\
+	    goto LABEL;									\
+	}										\
+    }											\
+  while (0)
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
    REG_OK_STRICT into account when deciding about valid registers, but it uses
@@ -1588,7 +1601,6 @@ do									\
    On the ARM, try to convert [REG, #BIGCONST]
    into ADD BASE, REG, #UPPERCONST and [BASE, #VALIDCONST],
    where VALIDCONST == 0 in case of TImode.  */
-extern struct rtx_def *legitimize_pic_address ();
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)				 \
 {									 \
   if (GET_CODE (X) == PLUS)						 \
@@ -1767,7 +1779,7 @@ extern struct rtx_def *legitimize_pic_address ();
   ((X) == frame_pointer_rtx || (X) == stack_pointer_rtx	\
    || (X) == arg_pointer_rtx)
 
-#define DEFAULT_RTX_COSTS(X,CODE,OUTER_CODE)		\
+#define DEFAULT_RTX_COSTS(X, CODE, OUTER_CODE)		\
    return arm_rtx_costs (X, CODE);
 
 /* Moves to and from memory are quite expensive */
@@ -1851,18 +1863,19 @@ extern int making_const_table;
 
 #define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
 
-#define CANONICALIZE_COMPARISON(CODE,OP0,OP1)			\
-do								\
-{								\
-  if (GET_CODE (OP1) == CONST_INT				\
-      && ! (const_ok_for_arm (INTVAL (OP1))			\
-	    || (const_ok_for_arm (- INTVAL (OP1)))))		\
-    {								\
-      rtx const_op = OP1;					\
-      CODE = arm_canonicalize_comparison ((CODE), &const_op);	\
-      OP1 = const_op;						\
-    }								\
-} while (0)
+#define CANONICALIZE_COMPARISON(CODE, OP0, OP1)				\
+  do									\
+    {									\
+      if (GET_CODE (OP1) == CONST_INT					\
+          && ! (const_ok_for_arm (INTVAL (OP1))				\
+	        || (const_ok_for_arm (- INTVAL (OP1)))))		\
+        {								\
+          rtx const_op = OP1;						\
+          CODE = arm_canonicalize_comparison ((CODE), &const_op);	\
+          OP1 = const_op;						\
+        }								\
+    }									\
+  while (0)
 
 #define STORE_FLAG_VALUE 1
 
@@ -1870,7 +1883,8 @@ do								\
    stored from the compare operation.  Note that we can't use "rtx" here
    since it hasn't been defined!  */
 
-extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
+extern struct rtx_def * arm_compare_op0;
+extern struct rtx_def * arm_compare_op1;
 
 /* Define the codes that are matched by predicates in arm.c */
 #define PREDICATE_CODES							\
@@ -1914,22 +1928,23 @@ extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
 
 /* Output an internal label definition.  */
 #ifndef ASM_OUTPUT_INTERNAL_LABEL
-#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)  	\
-  do                                    	      	   	\
-    {						      	   	\
+#define ASM_OUTPUT_INTERNAL_LABEL(STREAM, PREFIX, NUM)		\
+  do								\
+    {								\
       char * s = (char *) alloca (40 + strlen (PREFIX));	\
-      extern int arm_target_label, arm_ccfsm_state;	   	\
+      extern int arm_target_label, arm_ccfsm_state;		\
       extern rtx arm_target_insn;				\
-						           	\
-      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)   	\
-	&& !strcmp (PREFIX, "L"))				\
+								\
+      if (arm_ccfsm_state == 3 && arm_target_label == (NUM)	\
+	  && !strcmp (PREFIX, "L"))				\
 	{							\
-	  arm_ccfsm_state = 0;				        \
+	  arm_ccfsm_state = 0;					\
 	  arm_target_insn = NULL;				\
 	}							\
-	ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));   	\
-	ASM_OUTPUT_LABEL (STREAM, s);		                \
-    } while (0)
+      ASM_GENERATE_INTERNAL_LABEL (s, (PREFIX), (NUM));		\
+      ASM_OUTPUT_LABEL (STREAM, s);		                \
+    }								\
+  while (0)
 #endif
 
 /* Output a push or a pop instruction (only used when profiling).  */
@@ -2076,34 +2091,36 @@ extern struct rtx_def *arm_compare_op0, *arm_compare_op1;
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
-do {									\
-  int mi_delta = (DELTA);						\
-  char *mi_op = mi_delta < 0 ? "sub" : "add";				\
-  int shift = 0;							\
-  int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))\
-		    ? 1 : 0);						\
-  if (mi_delta < 0) mi_delta = -mi_delta;				\
-  while (mi_delta != 0)							\
-    {									\
-      if (mi_delta & (3 << shift) == 0)					\
-	shift += 2;							\
-      else								\
-	{								\
-	  fprintf (FILE, "\t%s\t%s%s, %s%s, #%d\n",			\
-		   mi_op, REGISTER_PREFIX, reg_names[this_regno],	\
-		   REGISTER_PREFIX, reg_names[this_regno],		\
-		   mi_delta & (0xff << shift));				\
-	  mi_delta &= ~(0xff << shift);					\
-	  shift += 8;							\
-	}								\
-    }									\
-  fputs ("\tb\t", FILE);						\
-  assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	\
-  if (NEED_PLT_GOT)							\
-    fputs ("(PLT)", FILE);						\
-  fputc ('\n', FILE);							\
-} while (0)
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)		\
+  do										\
+    {										\
+      int mi_delta = (DELTA);							\
+      char * mi_op = mi_delta < 0 ? "sub" : "add";				\
+      int shift = 0;								\
+      int this_regno = (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION)))	\
+		        ? 1 : 0);						\
+      if (mi_delta < 0) mi_delta = -mi_delta;					\
+      while (mi_delta != 0)							\
+        {									\
+          if (mi_delta & (3 << shift) == 0)					\
+	    shift += 2;								\
+          else									\
+	    {									\
+	      fprintf (FILE, "\t%s\t%s%s, %s%s, #%d\n",				\
+		       mi_op, REGISTER_PREFIX, reg_names[this_regno],		\
+		       REGISTER_PREFIX, reg_names[this_regno],			\
+		       mi_delta & (0xff << shift));				\
+	      mi_delta &= ~(0xff << shift);					\
+	      shift += 8;							\
+	    }									\
+        }									\
+      fputs ("\tb\t", FILE);							\
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));		\
+      if (NEED_PLT_GOT)								\
+        fputs ("(PLT)", FILE);							\
+      fputc ('\n', FILE);							\
+    }										\
+  while (0)
 
 /* A C expression whose value is RTL representing the value of the return
    address for the frame COUNT steps up from the current frame.  */
