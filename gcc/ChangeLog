@@ -1,3 +1,8 @@
+Mon Jun  4 20:15:25 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* rtlanal.c (rtx_unsable_p): ADDRESSOF is stable.
+	(no_labels_between_p): Short circuit case beg==end.
+
 Mon Jun  4 20:03:05 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* rtlanal.c (operand_preference): Fix preference for objects.
