@@ -265,8 +265,8 @@ $(srcdir)/hash.h:
 	gawk '{ printf ("s/^%s,/%s,/\n", $$1, toupper ($$1)) }' < gperf.tmp > sed.tmp
 	sed -f sed.tmp < gperf.tmp > gperf.tmp2
 	cat $(srcdir)/gperf gperf.tmp2 > gperf.tmp
-	gperf -D -E -S1 -p -j1 -i 1 -g -o -t -k'*' gperf.tmp \
-          > $(srcdir)/hash.h
+	gperf -L KR-C -F ', 0, 0, 0' -D -E -S1 -p -j1 -i 1 -g -o -t -k'*' \
+	  gperf.tmp > $(srcdir)/hash.h
 	$(RM) gperf.tmp gperf.tmp2 sed.tmp
 
 actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H) \
