@@ -1,5 +1,12 @@
 2002-01-16  Kazu Hirata  <kazu@hxi.com>
 
+	* config/h8300/h8300.md (pushqi1_h8300): Use a tab instead of
+	spaces after an opcode name.
+	(pushqi1_h8300hs): Likewise.
+	(pushhi1_h8300hs): Likewise.
+
+2002-01-16  Kazu Hirata  <kazu@hxi.com>
+
 	* doc/extend.texi: Replace "option" with "attribute"
 	appropriately.
 
