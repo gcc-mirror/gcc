@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,6 +40,8 @@
 with System.IO; use System.IO;
 
 package body System.Vax_Float_Operations is
+   pragma Warnings (Off);
+   --  Warnings about infinite recursion when the -gnatdm switch is used.
 
    -----------
    -- Abs_F --
