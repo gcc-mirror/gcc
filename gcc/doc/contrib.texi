@@ -564,7 +564,8 @@ Linux kernels.
 Mike Moreton for his various Java patches.
 
 @item
-David Mosberger-Tang for various Alpha improvements.
+David Mosberger-Tang for various Alpha improvements, and for the initial
+IA-64 port.
 
 @item
 Stephen Moshier contributed the floating point emulator that assists in

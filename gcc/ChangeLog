@@ -28,6 +28,8 @@
 
 2003-12-01  James E Wilson  <wilson@specifixinc.com>
 
+	* doc/contrib.texi: Update David Mosberger.
+
 	* doc/c-tree.texi (CONSTRUCTOR): Clarify element order and handling
 	of missing fields.
 
