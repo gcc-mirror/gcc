@@ -1,3 +1,13 @@
+2005-01-26  Richard Henderson  <rth@redhat.com>
+
+	PR middle-end/18008
+	* c-decl.c (finish_struct): Set DECL_MODE after resetting a
+	field's type.
+	* expmed.c (store_fixed_bit_field): Create a paradoxical subreg
+	if we don't need the bits above those present in the current mode.
+	* expr.c (store_field): Strip conversions to odd-bit-sized types
+	if the destination field width matches.
+
 2005-01-26  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/iris6.h (ENDFILE_SPEC): Don't link in irix-csr.o if
@@ -33,6 +43,7 @@
 	* configure.ac: Check for a TLS capable gas.
 
 	* configure: Regenerate.
+
 2005-01-26  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/18008
