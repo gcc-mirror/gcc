@@ -1631,7 +1631,7 @@ legitimate_constant_p (register rtx op)
     return 1;
 
   /* Accept immediate LARL operands.  */
-  if (TARGET_64BIT && larl_operand (op, VOIDmode))
+  if (TARGET_CPU_ZARCH && larl_operand (op, VOIDmode))
     return 1;
 
   /* Thread-local symbols are never legal constants.  This is
@@ -1730,12 +1730,12 @@ legitimate_reload_constant_p (register rtx op)
     return 1;
 
   /* Accept lliXX operands.  */
-  if (TARGET_64BIT
+  if (TARGET_ZARCH
       && s390_single_hi (op, DImode, 0) >= 0)
   return 1;
 
   /* Accept larl operands.  */
-  if (TARGET_64BIT
+  if (TARGET_CPU_ZARCH
       && larl_operand (op, VOIDmode))
     return 1;
 
@@ -2260,7 +2260,7 @@ legitimize_pic_address (rtx orig, rtx reg)
       || (GET_CODE (addr) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (addr)))
     {
       /* This is a local symbol.  */
-      if (TARGET_64BIT && larl_operand (addr, VOIDmode))
+      if (TARGET_CPU_ZARCH && larl_operand (addr, VOIDmode))
         {
           /* Access local symbols PC-relative via LARL.
              This is the same as in the non-PIC case, so it is
@@ -2309,7 +2309,7 @@ legitimize_pic_address (rtx orig, rtx reg)
           emit_move_insn (reg, new);
           new = reg;
         }
-      else if (TARGET_64BIT)
+      else if (TARGET_CPU_ZARCH)
         {
           /* If the GOT offset might be >= 4k, we determine the position
              of the GOT entry via a PC-relative LARL (@GOTENT).  */
@@ -2378,7 +2378,7 @@ legitimize_pic_address (rtx orig, rtx reg)
                   /* @PLT is OK as is on 64-bit, must be converted to
                      GOT-relative @PLTOFF on 31-bit.  */
                   case UNSPEC_PLT:
-                    if (!TARGET_64BIT)
+                    if (!TARGET_CPU_ZARCH)
                       {
                         rtx temp = reg? reg : gen_reg_rtx (Pmode);
 
@@ -2418,7 +2418,7 @@ legitimize_pic_address (rtx orig, rtx reg)
 		|| (GET_CODE (op0) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (op0)))
 	      && GET_CODE (op1) == CONST_INT)
 	    {
-              if (TARGET_64BIT && larl_operand (op0, VOIDmode))
+              if (TARGET_CPU_ZARCH && larl_operand (op0, VOIDmode))
                 {
                   if (INTVAL (op1) & 1)
                     {
@@ -2625,7 +2625,7 @@ legitimize_tls_address (rtx addr, rtx reg)
 	    temp = gen_reg_rtx (Pmode);
 	    emit_move_insn (temp, new);
 	  }
-	else if (TARGET_64BIT)
+	else if (TARGET_CPU_ZARCH)
 	  {
 	    /* If the GOT offset might be >= 4k, we determine the position
 	       of the GOT entry via a PC-relative LARL.  */
@@ -2714,7 +2714,7 @@ legitimize_tls_address (rtx addr, rtx reg)
       switch (XINT (XEXP (addr, 0), 1))
 	{
 	case UNSPEC_INDNTPOFF:
-	  if (TARGET_64BIT)
+	  if (TARGET_CPU_ZARCH)
 	    new = addr;
 	  else
 	    abort ();
@@ -3806,12 +3806,12 @@ s390_split_branches (rtx temp_reg, bool *temp_used)
       else
 	continue;
 
-      if (get_attr_length (insn) <= (TARGET_64BIT ? 6 : 4))
+      if (get_attr_length (insn) <= (TARGET_CPU_ZARCH ? 6 : 4))
 	continue;
 
       *temp_used = 1;
 
-      if (TARGET_64BIT)
+      if (TARGET_CPU_ZARCH)
 	{
 	  tmp = emit_insn_before (gen_rtx_SET (Pmode, temp_reg, *label), insn);
 	  INSN_ADDRESSES_NEW (tmp, -1);
@@ -4212,7 +4212,7 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 
   /* Pool start insn switches to proper section
      and guarantees necessary alignment.  */
-  if (TARGET_64BIT)
+  if (TARGET_CPU_ZARCH)
     insn = emit_insn_after (gen_pool_start_64 (), pool->pool_insn);
   else
     insn = emit_insn_after (gen_pool_start_31 (), pool->pool_insn);
@@ -4253,7 +4253,7 @@ s390_dump_pool (struct constant_pool *pool, bool remote_label)
 
   /* Pool end insn switches back to previous section
      and guarantees necessary alignment.  */
-  if (TARGET_64BIT)
+  if (TARGET_CPU_ZARCH)
     insn = emit_insn_after (gen_pool_end_64 (), insn);
   else
     insn = emit_insn_after (gen_pool_end_31 (), insn);
@@ -4380,9 +4380,9 @@ s390_mainpool_finish (struct constant_pool *pool, rtx base_reg)
   /* We need correct insn addresses.  */
   shorten_branches (get_insns ());
 
-  /* In 64-bit, we use a LARL to load the pool register.  The pool is
+  /* On zSeries, we use a LARL to load the pool register.  The pool is
      located in the .rodata section, so we emit it after the function.  */
-  if (TARGET_64BIT)
+  if (TARGET_CPU_ZARCH)
     {
       insn = gen_main_base_64 (base_reg, pool->label);
       insn = emit_insn_after (insn, pool->pool_insn);
@@ -4396,7 +4396,7 @@ s390_mainpool_finish (struct constant_pool *pool, rtx base_reg)
       s390_dump_pool (pool, 0);
     }
 
-  /* In 31-bit, if the total size of the function's code plus literal pool
+  /* On S/390, if the total size of the function's code plus literal pool
      does not exceed 4096 bytes, we use BASR to set up a function base
      pointer, and emit the literal pool at the end of the function.  */
   else if (INSN_ADDRESSES (INSN_UID (get_last_insn ()))
@@ -4496,7 +4496,7 @@ s390_chunkify_start (rtx base_reg)
   rtx insn;
 
   rtx (*gen_reload_base) (rtx, rtx) =
-    TARGET_64BIT? gen_reload_base_64 : gen_reload_base_31;
+    TARGET_CPU_ZARCH? gen_reload_base_64 : gen_reload_base_31;
 
 
   /* We need correct insn addresses.  */
@@ -4562,7 +4562,7 @@ s390_chunkify_start (rtx base_reg)
           || INSN_ADDRESSES (INSN_UID (insn)) == -1)
 	continue;
 
-      if (TARGET_64BIT)
+      if (TARGET_CPU_ZARCH)
 	{
 	  if (curr_pool->size < S390_POOL_CHUNK_MAX)
 	    continue;
@@ -5426,7 +5426,7 @@ s390_load_got (int maybe_dead)
       SYMBOL_REF_FLAGS (got_symbol) = SYMBOL_FLAG_LOCAL;
     }
 
-  if (TARGET_64BIT)
+  if (TARGET_CPU_ZARCH)
     {
       rtx insn = emit_move_insn (pic_offset_table_rtx, got_symbol);
       if (maybe_dead)
@@ -6583,7 +6583,7 @@ s390_select_rtx_section (enum machine_mode mode ATTRIBUTE_UNUSED,
 			 rtx x ATTRIBUTE_UNUSED,
 			 unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED)
 {
-  if (TARGET_64BIT)
+  if (TARGET_CPU_ZARCH)
     readonly_data_section ();
   else
     function_section (current_function_decl);
