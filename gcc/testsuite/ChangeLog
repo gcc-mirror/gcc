@@ -1,3 +1,8 @@
+2004-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/14791
+	* g++.dg/opt/builtins1.C: New test.
+
 2004-06-10  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/i386-bitfield1.c: Add mingw32 and cygwin to targets

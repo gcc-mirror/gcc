@@ -3297,6 +3297,11 @@ c_common_nodes_and_builtins (void)
     (build_decl (TYPE_DECL, get_identifier ("complex long double"),
 		 complex_long_double_type_node));
 
+  if (c_dialect_cxx ())
+    /* For C++, make fileptr_type_node a distinct void * type until
+       FILE type is defined.  */
+    fileptr_type_node = build_type_copy (ptr_type_node);
+
   record_builtin_type (RID_VOID, NULL, void_type_node);
 
   void_zero_node = build_int_2 (0, 0);
