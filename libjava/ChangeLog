@@ -1,5 +1,7 @@
 2003-07-23  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natSystem.cc (arraycopy): Check for overflow.
+
 	* boehm.cc (_Jv_BuildGCDescr): Use `1ULL'.
 
 2003-07-22  Tom Tromey  <tromey@redhat.com>
