@@ -1,5 +1,10 @@
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.c (default_compilers): Add suffixes .mi, .cp, .ii, .FOR and
+	.FPP.
+
+2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* c-decl.c (grokdeclarator): If pedantic, warn about arrays with
 	incomplete element type.
 	(grokparms): Before checking for incomplete parameter type, check
