@@ -744,6 +744,10 @@ fspeculative-prefetching
 Common Report Var(flag_speculative_prefetching)
 Use value profiling for speculative prefetching
 
+fsplit-ivs-in-unroller
+Common Report Var(flag_split_ivs_in_unroller) Init(1)
+Split lifetimes of induction variables when loops are unrolled.
+
 ; Emit code to probe the stack, to help detect stack overflow; also
 ; may cause large objects to be allocated dynamically.
 fstack-check

@@ -1,4 +1,24 @@
 2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+	    Steven Bosscher  <stevenb@suse.de>
+
+	* Makefile.in (loop-unroll.o): Add HASHTAB_H and RECOG_H dependency.
+	* basic-block.h (struct reorder_block_def): Add copy_number field.
+	* cfgloop.h (biv_p): Declare.
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Set copy_number.
+	* common.opt (fsplit-ivs-in-unroller): New flag.
+	* loop-iv.c (biv_p): New function.
+	* loop-unroll.c: Include hashtab.h and recog.h.
+	(struct iv_to_split, struct split_ivs_info): New types.
+	(analyze_ivs_to_split, si_info_start_duplication, split_ivs_in_copies,
+	free_si_info, si_info_hash, si_info_eq, analyze_iv_to_split_insn,
+	determine_split_iv_delta, get_ivts_expr, allocate_basic_variable,
+	insert_base_initialization, split_iv): New functions.
+	(peel_loop_completely, unroll_loop_constant_iterations,
+	unroll_loop_runtime_iterations, peel_loop_simple, unroll_loop_stupid):
+	Use them.
+	* doc/invoke.texi (-fsplit-ivs-in-unroller): Document.
+
+2004-09-14  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* tree-cfg.c (thread_jumps): Update dominators correctly in
 	case destination of threaded edge dominates its source.

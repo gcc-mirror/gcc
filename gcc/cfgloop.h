@@ -410,6 +410,7 @@ extern void iv_analysis_loop_init (struct loop *);
 extern rtx iv_get_reaching_def (rtx, rtx);
 extern bool iv_analyze (rtx, rtx, struct rtx_iv *);
 extern rtx get_iv_value (struct rtx_iv *, rtx);
+extern bool biv_p (rtx, rtx);
 extern void find_simple_exit (struct loop *, struct niter_desc *);
 extern void iv_number_of_iterations (struct loop *, rtx, rtx,
 				     struct niter_desc *);

@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsignaling-nans -fsingle-precision-constant  -fspeculative-prefetching @gol
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
--funswitch-loops @gol
+-fsplit-ivs-in-unroller -funswitch-loops @gol
 -ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-loop-linear -ftree-loop-im -ftree-loop-ivcanon -fivopts @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
@@ -4695,6 +4695,20 @@ Unroll all loops, even if their number of iterations is uncertain when
 the loop is entered.  This usually makes programs run more slowly.
 @option{-funroll-all-loops} implies the same options as
 @option{-funroll-loops},
+
+@item -fsplit-ivs-in-unroller
+@opindex -fsplit-ivs-in-unroller
+Enables expressing of values of induction variables in later iterations
+of the unrolled loop using the value in the first iteration.  This breaks
+long dependency chains, thus improving efficiency of the scheduling passes
+(for best results, @option{-fweb} should be used as well).
+
+Combination of @option{-fweb} and CSE is often sufficient to obtain the
+same effect. However in cases the loop body is more complicated than
+a single basic block, this is not reliable.  It also does not work at all
+on some of the architectures due to restrictions in the CSE pass.
+
+This optimization is enabled by default.
 
 @item -fprefetch-loop-arrays
 @opindex fprefetch-loop-arrays

@@ -2028,7 +2028,7 @@ loop-unswitch.o : loop-unswitch.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    output.h $(EXPR_H) coretypes.h $(TM_H)
 loop-unroll.o: loop-unroll.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h $(CFGLOOP_H) $(CFGLAYOUT_H) $(PARAMS_H) \
-   output.h $(EXPR_H) coretypes.h $(TM_H)
+   output.h $(EXPR_H) coretypes.h $(TM_H) $(HASHTAB_H) $(RECOG_H)
 dominance.o : dominance.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    hard-reg-set.h $(BASIC_BLOCK_H) et-forest.h
 et-forest.o : et-forest.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) et-forest.h alloc-pool.h
