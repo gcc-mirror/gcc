@@ -3803,11 +3803,16 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 			   (insn_code_number < 0 ? 0
 			    : insn_operand_strict_low[insn_code_number][i]),
 			   1, i, operand_type[i]);
-	/* If a memory reference remains, yet we can't make an optional
+	/* If a memory reference remains (either as a MEM or a pseudo that
+	   did not get a hard register), yet we can't make an optional
 	   reload, check if this is actually a pseudo register reference;
 	   we then need to emit a USE and/or a CLOBBER so that reload
 	   inheritance will do the right thing.  */
-	else if (replace && GET_CODE (operand) == MEM)
+	else if (replace
+		 && (GET_CODE (operand) == MEM
+		     || (GET_CODE (operand) == REG
+			 && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+			 && reg_renumber [REGNO (operand)] < 0)))
 	  {
 	    operand = *recog_operand_loc[i];
 
