@@ -1,3 +1,9 @@
+Tue Jan 27 11:02:04 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (rest_of_compilation): Replace references to
+	stack_reg_dump_file and dbr_sched_dump_file with references to
+	rtl_dump_file. 
+
 Tue Jan 27 10:22:13 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
 	* tlink.c (scan_linker_output): Call fclose() for opened files.

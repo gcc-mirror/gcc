@@ -3538,7 +3538,7 @@ rest_of_compilation (decl)
 #ifdef DELAY_SLOTS
   if (optimize > 0 && flag_delayed_branch)
     {
-      TIMEVAR (dbr_sched_time, dbr_schedule (insns, dbr_sched_dump_file));
+      TIMEVAR (dbr_sched_time, dbr_schedule (insns, rtl_dump_file));
       
       if (dbr_sched_dump)
 	dump_rtl (".dbr", decl, print_rtl_with_bb, insns);
@@ -3552,7 +3552,7 @@ rest_of_compilation (decl)
 	   });
 
 #ifdef STACK_REGS
-  TIMEVAR (stack_reg_time, reg_to_stack (insns, stack_reg_dump_file));
+  TIMEVAR (stack_reg_time, reg_to_stack (insns, rtl_dump_file));
 
   if (stack_reg_dump)
     dump_rtl (".stack", decl, print_rtl_with_bb, insns);
