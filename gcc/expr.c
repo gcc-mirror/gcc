@@ -1490,7 +1490,7 @@ use_regs (regno, nregs)
 /* Mark the instructions since PREV as a libcall block.
    Add REG_LIBCALL to PREV and add a REG_RETVAL to the most recent insn.  */
 
-static rtx
+static void
 group_insns (prev)
      rtx prev;
 {
