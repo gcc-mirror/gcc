@@ -1645,7 +1645,7 @@ expand_shift (code, mode, shifted, amount, target, unsignedp)
 
   op1 = expand_expr (amount, NULL_RTX, VOIDmode, 0);
 
-#if SHIFT_COUNT_TRUNCATED
+#if 0 && SHIFT_COUNT_TRUNCATED
   if (SHIFT_COUNT_TRUNCATED
       && GET_CODE (op1) == CONST_INT
       && (unsigned HOST_WIDE_INT) INTVAL (op1) >= GET_MODE_BITSIZE (mode))
@@ -2068,29 +2068,30 @@ expand_mult (mode, op0, op1, target, unsignedp)
   if (GET_CODE (const_op1) == CONST_INT)
     {
       struct algorithm alg;
-      struct algorithm neg_alg;
-      int negate = 0;
+      struct algorithm alg2;
       HOST_WIDE_INT val = INTVAL (op1);
       HOST_WIDE_INT val_so_far;
       rtx insn;
       int mult_cost;
+      enum {basic_variant, negate_variant, add_variant} variant = basic_variant;
 
-      /* Try to do the computation two ways: multiply by the negative of OP1
-	 and then negate, or do the multiplication directly.  The latter is
-	 usually faster for positive numbers and the former for negative
-	 numbers, but the opposite can be faster if the original value
-	 has a factor of 2**m +/- 1, while the negated value does not or
-	 vice versa.  */
+      /* Try to do the computation three ways: multiply by the negative of OP1
+	 and then negate, do the multiplication directly, or do multiplication
+	 by OP1 - 1.  */
 
       mult_cost = rtx_cost (gen_rtx (MULT, mode, op0, op1), SET);
       mult_cost = MIN (12 * add_cost, mult_cost);
 
       synth_mult (&alg, val, mult_cost);
-      synth_mult (&neg_alg, - val,
+      synth_mult (&alg2, - val,
 		  (alg.cost < mult_cost ? alg.cost : mult_cost) - negate_cost);
+      if (alg2.cost + negate_cost < alg.cost)
+	alg = alg2, variant = negate_variant;
 
-      if (neg_alg.cost + negate_cost < alg.cost)
-	alg = neg_alg, negate = 1;
+      /* This proves very useful for division-by-constant.  */
+      synth_mult (&alg2, val - 1, (alg.cost < mult_cost ? alg.cost : mult_cost) - add_cost);
+      if (alg2.cost + add_cost < alg.cost)
+	alg = alg2, variant = add_variant;
 
       if (alg.cost < mult_cost)
 	{
@@ -2202,10 +2203,15 @@ expand_mult (mode, op0, op1, target, unsignedp)
 			   REG_NOTES (insn));
 	    }
 
-	  if (negate)
+	  if (variant == negate_variant)
 	    {
 	      val_so_far = - val_so_far;
 	      accum = expand_unop (mode, neg_optab, accum, target, 0);
+	    }
+	  else if (variant == add_variant)
+	    {
+	      val_so_far = val_so_far + 1;
+	      accum = force_operand (gen_rtx (PLUS, mode, accum, op0), target);
 	    }
 
 	  if (val != val_so_far)
@@ -2222,6 +2228,299 @@ expand_mult (mode, op0, op1, target, unsignedp)
   if (op0 == 0)
     abort ();
   return op0;
+}
+
+/* Return the smallest n such that 2**n >= X.  */
+
+int
+ceil_log2 (x)
+     unsigned HOST_WIDE_INT x;
+{
+  return floor_log2 (x - 1) + 1;
+}
+
+/* Choose a minimal N + 1 bit approximation to 1/D that can be used to
+   replace division by D, and put the least significant N bits of the result
+   in *MULTIPLIER_PTR and return the most significant bit.
+
+   The width of operations is N (should be <= HOST_BITS_PER_WIDE_INT), the
+   needed precision is in PRECISION (should be <= N).
+
+   PRECISION should be as small as possible so this function can choose
+   multiplier more freely.
+
+   The rounded-up logarithm of D is placed in *lgup_ptr.  A shift count that
+   is to be used for a final right shift is placed in *POST_SHIFT_PTR.
+
+   Using this function, x/D will be equal to (x * m) >> (*POST_SHIFT_PTR),
+   where m is the full HOST_BITS_PER_WIDE_INT + 1 bit multiplier.  */
+
+static
+unsigned HOST_WIDE_INT
+choose_multiplier (d, n, precision, multiplier_ptr, post_shift_ptr, lgup_ptr)
+     unsigned HOST_WIDE_INT d;
+     int n;
+     int precision;
+     unsigned HOST_WIDE_INT *multiplier_ptr;
+     int *post_shift_ptr;
+     int *lgup_ptr;
+{
+  unsigned HOST_WIDE_INT mhigh_hi, mhigh_lo;
+  unsigned HOST_WIDE_INT mlow_hi, mlow_lo;
+  int lgup, post_shift;
+  int pow, pow2;
+  unsigned HOST_WIDE_INT nh, nl, dummy1, dummy2;
+
+  /* lgup = ceil(log2(divisor)); */
+  lgup = ceil_log2 (d);
+
+  if (lgup > n)
+    abort ();
+
+  pow = n + lgup;
+  pow2 = n + lgup - precision;
+
+  if (pow == 2 * HOST_BITS_PER_WIDE_INT)
+    {
+      /* We could handle this with some effort, but this case is much better
+	 handled directly with a scc insn, so rely on caller using that.  */
+      abort ();
+    }
+
+  /* mlow = 2^(N + lgup)/d */
+ if (pow >= HOST_BITS_PER_WIDE_INT)
+    {
+      nh = (unsigned HOST_WIDE_INT) 1 << (pow - HOST_BITS_PER_WIDE_INT);
+      nl = 0;
+    }
+  else
+    {
+      nh = 0;
+      nl = (unsigned HOST_WIDE_INT) 1 << pow;
+    }
+  div_and_round_double (TRUNC_DIV_EXPR, 1, nl, nh, d, (HOST_WIDE_INT) 0,
+			&mlow_lo, &mlow_hi, &dummy1, &dummy2);
+
+  /* mhigh = (2^(N + lgup) + 2^N + lgup - precision)/d */
+  if (pow2 >= HOST_BITS_PER_WIDE_INT)
+    nh |= (unsigned HOST_WIDE_INT) 1 << (pow2 - HOST_BITS_PER_WIDE_INT);
+  else
+    nl |= (unsigned HOST_WIDE_INT) 1 << pow2;
+  div_and_round_double (TRUNC_DIV_EXPR, 1, nl, nh, d, (HOST_WIDE_INT) 0,
+			&mhigh_lo, &mhigh_hi, &dummy1, &dummy2);
+
+  if (mhigh_hi && nh - d >= d)
+    abort ();
+  if (mhigh_hi > 1 || mlow_hi > 1)
+    abort ();
+  /* assert that mlow < mhigh.  */
+  if (! (mlow_hi < mhigh_hi || (mlow_hi == mhigh_hi && mlow_lo < mhigh_lo)))
+    abort();
+
+  /* If precision == N, then mlow, mhigh exceed 2^N
+     (but they do not exceed 2^(N+1)).  */
+
+  /* Reduce to lowest terms */
+  for (post_shift = lgup; post_shift > 0; post_shift--)
+    {
+      unsigned HOST_WIDE_INT ml_lo = (mlow_hi << (HOST_BITS_PER_WIDE_INT - 1)) | (mlow_lo >> 1);
+      unsigned HOST_WIDE_INT mh_lo = (mhigh_hi << (HOST_BITS_PER_WIDE_INT - 1)) | (mhigh_lo >> 1);
+      if (ml_lo >= mh_lo)
+	break;
+
+      mlow_hi = 0;
+      mlow_lo = ml_lo;
+      mhigh_hi = 0;
+      mhigh_lo = mh_lo;
+    }
+
+  *post_shift_ptr = post_shift;
+  *lgup_ptr = lgup;
+  if (n < HOST_BITS_PER_WIDE_INT)
+    {
+      unsigned HOST_WIDE_INT mask = ((unsigned HOST_WIDE_INT) 1 << n) - 1;
+      *multiplier_ptr = mhigh_lo & mask;
+      return mhigh_lo >= mask;
+    }
+  else
+    {
+      *multiplier_ptr = mhigh_lo;
+      return mhigh_hi;
+    }
+}
+
+/* Compute the inverse of X mod 2**n, i.e., find Y such that X * Y is
+   congruent to 1 (mod 2**N).  */
+
+static unsigned HOST_WIDE_INT
+invert_mod2n (x, n)
+     unsigned HOST_WIDE_INT x;
+     int n;
+{
+  /* Solve x*y == 1 (mod 2^n), where x is odd.  Return y. */
+
+  /* The algorithm notes that the choice y = x satisfies
+     x*y == 1 mod 2^3, since x is assumed odd.
+     Each iteration doubles the number of bits of significance in y.  */
+
+  unsigned HOST_WIDE_INT mask;
+  unsigned HOST_WIDE_INT y = x;
+  int nbit = 3;
+
+  mask = (n == HOST_BITS_PER_WIDE_INT
+	  ? ~(unsigned HOST_WIDE_INT) 0
+	  : ((unsigned HOST_WIDE_INT) 1 << n) - 1);
+
+  while (nbit < n)
+    {
+      y = y * (2 - x*y) & mask;		/* Modulo 2^N */
+      nbit *= 2;
+    }
+  return y;
+}
+
+/* Emit code to adjust ADJ_OPERAND after multiplication of wrong signedness
+   flavor of OP0 and OP1.  ADJ_OPERAND is already the high half of the
+   product OP0 x OP1.  If UNSIGNEDP is nonzero, adjust the signed product
+   to become unsigned, if UNSIGNEDP is zero, adjust the unsigned product to
+   become signed.
+
+   The result is put in TARGET if that is convenient.
+
+   MODE is the mode of operation.  */
+
+rtx
+expand_mult_highpart_adjust (mode, adj_operand, op0, op1, target, unsignedp)
+     enum machine_mode mode;
+     register rtx adj_operand, op0, op1, target;
+     int unsignedp;
+{
+  rtx tem;
+  enum rtx_code adj_code = unsignedp ? PLUS : MINUS;
+
+  tem = expand_shift (RSHIFT_EXPR, mode, op0,
+		      build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
+		      NULL_RTX, 0);
+  tem = expand_and (tem, op1, NULL_RTX);
+  adj_operand = force_operand (gen_rtx (adj_code, mode, adj_operand, tem),
+			       adj_operand);
+
+  tem = expand_shift (RSHIFT_EXPR, mode, op1,
+		      build_int_2 (GET_MODE_BITSIZE (mode) - 1, 0),
+		      NULL_RTX, 0);
+  tem = expand_and (tem, op0, NULL_RTX);
+  target = force_operand (gen_rtx (adj_code, mode, adj_operand, tem), target);
+
+  return target;
+}
+
+/* Emit code to multiply OP0 and CNST1, putting the high half of the result
+   in TARGET if that is convenient, and return where the result is.  If the
+   operation can not be performed, 0 is returned.
+
+   MODE is the mode of operation and result.
+
+   UNSIGNEDP nonzero means unsigned multiply.  */
+
+rtx
+expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
+     enum machine_mode mode;
+     register rtx op0, target;
+     unsigned HOST_WIDE_INT cnst1;
+     int unsignedp;
+{
+  enum machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
+  optab mul_highpart_optab;
+  optab moptab;
+  rtx tem;
+  int size = GET_MODE_BITSIZE (mode);
+  rtx op1;
+
+  op1 = immed_double_const (cnst1,
+			    (unsignedp
+			     ? (HOST_WIDE_INT) 0
+			     : -(cnst1 >> (HOST_BITS_PER_WIDE_INT - 1))),
+			    wider_mode);
+
+  /* expand_mult handles constant multiplication of word_mode
+     or narrower.  It does a poor job for large modes.  */
+  if (size < BITS_PER_WORD)
+    {
+      /* We have to do this, since expand_binop doesn't do conversion for
+	 multiply.  Maybe change expand_binop to handle widening multiply?  */
+      op0 = convert_to_mode (wider_mode, op0, unsignedp);
+
+      tem = expand_mult (wider_mode, op0, op1, NULL_RTX, unsignedp);
+      tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
+			  build_int_2 (size, 0), NULL_RTX, 1);
+      return gen_lowpart (mode, tem);
+    }
+
+  if (target == 0)
+    target = gen_reg_rtx (mode);
+
+  /* Firstly, try using a multiplication insn that only generates the needed
+     high part of the product, and in the sign flavor of unsignedp.  */
+  mul_highpart_optab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
+  target = expand_binop (mode, mul_highpart_optab,
+			 op0, op1, target, unsignedp, OPTAB_DIRECT);
+  if (target)
+    return target;
+
+  /* Secondly, same as above, but use sign flavor opposite of unsignedp.
+     Need to adjust the result after the multiplication.  */
+  mul_highpart_optab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
+  target = expand_binop (mode, mul_highpart_optab,
+			 op0, op1, target, unsignedp, OPTAB_DIRECT);
+  if (target)
+    /* We used the wrong signedness.  Adjust the result.  */
+    return expand_mult_highpart_adjust (mode, target, op0,
+					GEN_INT (cnst1), target, unsignedp);
+
+  /* Thirdly, we try to use a widening multiplication, or a wider mode
+     multiplication.  */
+
+  moptab = unsignedp ? umul_widen_optab : smul_widen_optab;
+  if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+    ;
+  else if (smul_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+    moptab = smul_optab;
+  else
+    {
+      /* Try widening multiplication of opposite signedness, and adjust.  */
+      moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
+      if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
+	{
+	  tem = expand_binop (wider_mode, moptab, op0, op1,
+			      NULL_RTX, ! unsignedp, OPTAB_WIDEN);
+	  if (tem != 0)
+	    {
+	      /* Extract the high half of the just generated product.  */
+	      tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
+				  build_int_2 (size, 0), NULL_RTX, 1);
+	      tem = gen_lowpart (mode, tem);
+	      /* We used the wrong signedness.  Adjust the result.  */
+	      return expand_mult_highpart_adjust (mode, tem, op0,
+						  GEN_INT (cnst1),
+						  target, unsignedp);
+	    }
+	}
+
+      /* As a last resort, try widening the mode and perform a
+	 non-widening multiplication.  */
+      moptab = smul_optab;
+    }
+
+  /* Pass NULL_RTX as target since TARGET has wrong mode.  */
+  tem = expand_binop (wider_mode, moptab, op0, op1,
+		      NULL_RTX, unsignedp, OPTAB_WIDEN);
+  if (tem == 0)
+    return 0;
+
+  /* Extract the high half of the just generated product.  */
+  tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
+		      build_int_2 (size, 0), NULL_RTX, 1);
+  return gen_lowpart (mode, tem);
 }
 
 /* Emit the code to divide OP0 by OP1, putting the result in TARGET
@@ -2241,6 +2540,8 @@ expand_mult (mode, op0, op1, target, unsignedp)
    But C doesn't use these operations, so their optimizations are
    left for later.  */
 
+#define EXACT_POWER_OF_2_OR_ZERO_P(x) (((x) & ((x) - 1)) == 0)
+
 rtx
 expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      int rem_flag;
@@ -2249,16 +2550,49 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      register rtx op0, op1, target;
      int unsignedp;
 {
-  register rtx result = 0;
   enum machine_mode compute_mode;
-  int log = -1;
+  register rtx tquotient;
+  rtx quotient = 0, remainder = 0;
+  rtx last;
   int size;
-  int can_clobber_op0;
-  int mod_insn_no_good = 0;
-  rtx adjusted_op0 = op0;
+  rtx insn;
   optab optab1, optab2;
+  int op1_is_constant, op1_is_pow2;
 
-  /* We shouldn't be called with op1 == const1_rtx, but some of the
+  op1_is_constant = GET_CODE (op1) == CONST_INT;
+  op1_is_pow2 = (EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
+		 || EXACT_POWER_OF_2_OR_ZERO_P (-INTVAL (op1)));
+
+  /*
+     This is the structure of expand_divmod:
+
+     First comes code to fix up the operands so we can perform the operations
+     correctly and efficiently.
+
+     Second comes a switch statement with code specific for each rounding mode.
+     For some special operands this code emits all RTL for the desired
+     operation, for other cases, it generates a quotient and stores it in
+     QUOTIENT.  The case for trunc division/remainder might leave quotient = 0,
+     to indicate that it has not done anything.
+
+     Last comes code that finishes the operation.  If QUOTIENT is set an
+     REM_FLAG, the remainder is computed as OP0 - QUOTIENT * OP1.  If QUOTIENT
+     is not set, it is computed using trunc rounding.
+
+     We try to generate special code for division and remainder when OP1 is a
+     constant.  If |OP1| = 2**n we can use shifts and some other fast
+     operations.  For other values of OP1, we compute a carefully selected
+     fixed-point approximation m = 1/OP1, and generate code that multiplies OP0
+     by m.
+
+     In all cases but EXACT_DIV_EXPR, this multiplication requires the upper
+     half of the product.  Different strategies for generating the product are
+     implemented in expand_mult_highpart.
+
+     If what we actually want is the remainder, we generate that by another
+     by-constant multiplication and a subtraction.  */
+
+  /* We shouldn't be called with OP1 == const1_rtx, but some of the
      code below will malfunction if we are, so check here and handle
      the special case if so.  */
   if (op1 == const1_rtx)
@@ -2277,37 +2611,6 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 	  || (GET_CODE (op1) == MEM && GET_CODE (target) == MEM)))
     target = 0;
 
-  /* See if we are dividing by 2**log, and hence will do it by shifting,
-     which is really floor-division, or if we will really do a divide,
-     and we assume that is trunc-division.
-
-     We must correct the dividend by adding or subtracting something
-     based on the divisor, in order to do the kind of rounding specified
-     by CODE.  The correction depends on what kind of rounding is actually
-     available, and that depends on whether we will shift or divide.
-
-     In many of these cases it is possible to perform the operation by a
-     clever series of logical operations (shifts and/or exclusive-ors).
-     Although avoiding the jump has the advantage that it extends the basic
-     block and allows further optimization, the branch-free code is normally
-     at least one instruction longer in the (most common) case where the
-     dividend is non-negative.  Performance measurements of the two
-     alternatives show that the branch-free code is slightly faster on the
-     IBM ROMP but slower on CISC processors (significantly slower on the
-     VAX).  Accordingly, the jump code has been retained when BRANCH_COST
-     is small.
-
-     On machines where the jump code is slower, the cost of a DIV or MOD
-     operation can be set small (less than twice that of an addition); in 
-     that case, we pretend that we don't have a power of two and perform
-     a normal division or modulus operation.  */
-
-  if (GET_CODE (op1) == CONST_INT
-      && ! ((code == TRUNC_MOD_EXPR || code == TRUNC_DIV_EXPR)
-	    && ! unsignedp
-	    && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap)))
-    log = exact_log2 (INTVAL (op1));
-
   /* Get the mode in which to perform this computation.  Normally it will
      be MODE, but sometimes we can't do the desired operation in MODE.
      If so, pick a wider mode in which we can do the operation.  Convert
@@ -2323,9 +2626,14 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
      (either a division, modulus, or shift).  Finally, check for the smallest
      mode for which we can do the operation with a library call.  */
 
-  optab1 = (log >= 0 ? (unsignedp ? lshr_optab : ashr_optab)
+  /* We might want to refine this now that we have division-by-constant
+     optimization.  Since expand_mult_highpart tries so many variants, it is
+     not straightforward to generalize this.  Maybe we should make an array
+     of possible modes in init_expmed?  Save this for GCC 2.7.  */
+
+  optab1 = (op1_is_pow2 ? (unsignedp ? lshr_optab : ashr_optab)
 	    : (unsignedp ? udiv_optab : sdiv_optab));
-  optab2 = (log >= 0 ? optab1 : (unsignedp ? udivmod_optab : sdivmod_optab));
+  optab2 = (op1_is_pow2 ? optab1 : (unsignedp ? udivmod_optab : sdivmod_optab));
 
   for (compute_mode = mode; compute_mode != VOIDmode;
        compute_mode = GET_MODE_WIDER_MODE (compute_mode))
@@ -2345,294 +2653,721 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (compute_mode == VOIDmode)
     compute_mode = mode;
 
+  if (target && GET_MODE (target) == compute_mode)
+    tquotient = target;
+  else
+    tquotient = gen_reg_rtx (compute_mode);
+
   size = GET_MODE_BITSIZE (compute_mode);
+#if 0
+  /* It should be possible to restrict the precision to GET_MODE_BITSIZE
+     (mode), and thereby get better code when OP1 is a constant.  Do that for
+     GCC 2.7.  It will require going over all usages of SIZE below.  */
+  size = GET_MODE_BITSIZE (mode);
+#endif
 
-  /* If OP0 is a register that is used as the target, we can modify
-     it in place; otherwise, we have to ensure we copy OP0 before
-     modifying it.  */
-  can_clobber_op0 = (GET_CODE (op0) == REG && op0 == target);
-
-  /* Now convert to the best mode to use.  Normally show we made a copy of OP0
-     and hence we can clobber it (we cannot use a SUBREG to widen
-     something), but check that the conversion wasn't a no-op due to
-     promotion.  */
+  /* Now convert to the best mode to use.  */
   if (compute_mode != mode)
     {
-      adjusted_op0 = convert_modes (compute_mode, mode, op0, unsignedp);
-      can_clobber_op0 = ! (GET_CODE (op0) == SUBREG 
-			   && SUBREG_REG (op0) == adjusted_op0);
-      op0 = adjusted_op0;
+      op0 = convert_modes (compute_mode, mode, op0, unsignedp);
       op1 = convert_modes (compute_mode, mode, op1, unsignedp);
     }
 
-  /* If we are computing the remainder and one of the operands is a volatile
-     MEM, copy it into a register.  */
+  /* If one of the operands is a volatile MEM, copy it into a register.  */
 
-  if (rem_flag && GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0))
-    adjusted_op0 = op0 = force_reg (compute_mode, op0), can_clobber_op0 = 1;
-  if (rem_flag && GET_CODE (op1) == MEM && MEM_VOLATILE_P (op1))
+  if (GET_CODE (op0) == MEM && MEM_VOLATILE_P (op0))
+    op0 = force_reg (compute_mode, op0);
+  if (GET_CODE (op1) == MEM && MEM_VOLATILE_P (op1))
     op1 = force_reg (compute_mode, op1);
 
-  /* If we are computing the remainder, op0 will be needed later to calculate
-     X - Y * (X / Y), therefore cannot be clobbered. */
-  if (rem_flag)
-    can_clobber_op0 = 0;
+#if 0
+  op0 = force_reg (mode, op0);
+#endif
 
-  /* See if we will need to modify ADJUSTED_OP0.  Note that this code
-     must agree with that in the switch below.  */
-  if (((code == TRUNC_MOD_EXPR || code == TRUNC_DIV_EXPR)
-       && log >= 0 && ! unsignedp)
-      || ((code == FLOOR_MOD_EXPR || code == FLOOR_DIV_EXPR)
-	  && log < 0 && ! unsignedp)
-      || code == CEIL_MOD_EXPR || code == CEIL_DIV_EXPR
-      || code == ROUND_MOD_EXPR || code == ROUND_DIV_EXPR)
+  last = get_last_insn ();
+
+  /* Promote floor rouding to trunc rounding for unsigned operations.  */
+  if (unsignedp)
     {
-      /* If we want the remainder, we may need to use OP0, so make sure
-	 it and ADJUSTED_OP0 are in different registers.  We force OP0
-	 to a register in case it has any queued subexpressions, because
-	 emit_cmp_insn will call emit_queue.
-
-	 If we don't want the remainder, we aren't going to use OP0 anymore.
-	 However, if we cannot clobber OP0 (and hence ADJUSTED_OP0), we must
-	 make a copy of it, hopefully to TARGET.
-
-	 This code is somewhat tricky.  Note that if REM_FLAG is nonzero,
-	 CAN_CLOBBER_OP0 will be zero and we know that OP0 cannot
-	 equal TARGET.  */
-
-      if (rem_flag)
-	op0 = force_reg (compute_mode, op0);
-
-      if (! can_clobber_op0)
-	{
-	  if (target && GET_MODE (target) == compute_mode)
-	    adjusted_op0 = target;
-	  else
-	    adjusted_op0 = 0;
-	  adjusted_op0 = copy_to_suggested_reg (op0, adjusted_op0,
-						compute_mode);
-	}
+      if (code == FLOOR_DIV_EXPR)
+	code = TRUNC_DIV_EXPR;
+      if (code == FLOOR_MOD_EXPR)
+	code = TRUNC_MOD_EXPR;
     }
 
-  /* Adjust ADJUSTED_OP0 as described above.  Unless CAN_CLOBBER_OP0
-     is now non-zero, OP0 will retain it's original value.  */
+  if (op1 != const0_rtx)
+    switch (code)
+      {
+      case TRUNC_MOD_EXPR:
+      case TRUNC_DIV_EXPR:
+	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
+	  {
+	    if (unsignedp)
+	      {
+		unsigned HOST_WIDE_INT mh, ml;
+		int pre_shift, post_shift;
+		int dummy;
+		unsigned HOST_WIDE_INT d = INTVAL (op1);
 
-  switch (code)
-    {
-    case TRUNC_MOD_EXPR:
-    case TRUNC_DIV_EXPR:
-      if (log >= 0 && ! unsignedp)
-	{
-	  /* Here we need to add OP1-1 if OP0 is negative, 0 otherwise.
-	     This can be computed without jumps by arithmetically shifting
-	     OP0 right LOG-1 places and then shifting right logically
-	     SIZE-LOG bits.  The resulting value is unconditionally added
-	     to OP0.
+		if (EXACT_POWER_OF_2_OR_ZERO_P (d))
+		  {
+		    pre_shift = floor_log2 (d);
+		    if (rem_flag)
+		      {
+			remainder = expand_binop (compute_mode, and_optab, op0,
+						  GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
+						  remainder, 1,
+						  OPTAB_LIB_WIDEN);
+			if (remainder)
+			  return remainder;
+		      }
+		    quotient = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					     build_int_2 (pre_shift, 0),
+					     tquotient, 1);
+		  }
+		else if (d >= ((unsigned HOST_WIDE_INT) 1 << (size - 1)))
+		  {
+		    /* Most significant bit of divisor is set, emit a scc insn.
+		       emit_store_flag needs to be passed a place for the
+		       result.  */
+		    quotient = emit_store_flag (tquotient, GEU, op0, op1,
+						compute_mode, 1, 1);
+		    /* Can emit_store_flag have failed? */
+		    if (quotient == 0)
+		      goto fail1;
+		  }
+		else
+		  {
+		    /* Find a suitable multiplier and right shift count instead
+		       of multiplying with D.  */
 
-	     If OP0 cannot be modified in place, copy it, possibly to
-	     TARGET.  Note that we will have previously only allowed
-	     it to be modified in place if it is a register, so that
-	     after this `if', ADJUSTED_OP0 is known to be a
-	     register.  */
-	  if (log == 1 || BRANCH_COST >= 3)
-	    {
-	      rtx temp;
+		    mh = choose_multiplier (d, size, size,
+					    &ml, &post_shift, &dummy);
 
-	      temp = expand_shift (RSHIFT_EXPR, compute_mode, adjusted_op0,
-				   build_int_2 (log - 1, 0), NULL_RTX, 0);
+		    /* If the suggested multiplier is more than SIZE bits, we
+		       can do better for even divisors, using an initial right
+		       shift.  */
+		    if (mh != 0 && (d & 1) == 0)
+		      {
+			pre_shift = floor_log2 (d & -d);
+			mh = choose_multiplier (d >> pre_shift, size,
+						size - pre_shift,
+						&ml, &post_shift, &dummy);
+			if (mh)
+			  abort ();
+		      }
+		    else
+		      pre_shift = 0;
 
-	      /* We cannot allow TEMP to be ADJUSTED_OP0 here.  */
-	      temp = expand_shift (RSHIFT_EXPR, compute_mode, temp,
-				   build_int_2 (size - log, 0),
-				   temp != adjusted_op0 ? temp : NULL_RTX, 1);
+		    if (mh != 0)
+		      {
+			rtx t1, t2, t3, t4;
 
-	      adjusted_op0 = expand_binop (compute_mode, add_optab,
-					   adjusted_op0, temp, adjusted_op0,
-					   0, OPTAB_LIB_WIDEN);
-	    }
-	  else
-	    {
-	      rtx label = gen_label_rtx ();
+			t1 = expand_mult_highpart (compute_mode, op0, ml,
+						   NULL_RTX, 1);
+			if (t1 == 0)
+			  goto fail1;
+			t2 = force_operand (gen_rtx (MINUS, compute_mode,
+						     op0, t1),
+					    NULL_RTX);
+			t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+					   build_int_2 (1, 0), NULL_RTX, 1);
+			t4 = force_operand (gen_rtx (PLUS, compute_mode,
+						     t1, t3),
+					    NULL_RTX);
+			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t4,
+						 build_int_2 (post_shift - 1,
+							      0),
+						 tquotient, 1);
+		      }
+		    else
+		      {
+			rtx t1, t2;
 
-	      emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
-			     NULL_RTX, compute_mode, 0, 0);
-	      emit_jump_insn (gen_bge (label));
-	      expand_inc (adjusted_op0, plus_constant (op1, -1));
-	      emit_label (label);
-	    }
-	  mod_insn_no_good = 1;
-	}
-      break;
+			t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					   build_int_2 (pre_shift, 0),
+					   NULL_RTX, 1);
+			t2 = expand_mult_highpart (compute_mode, t1, ml,
+						   NULL_RTX, 1);
+			if (t2 == 0)
+			  goto fail1;
+			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+						 build_int_2 (post_shift, 0),
+						 tquotient, 1);
+		      }
+		  }
 
-    case FLOOR_DIV_EXPR:
-    case FLOOR_MOD_EXPR:
-      if (log < 0 && ! unsignedp)
-	{
-	  rtx label = gen_label_rtx ();
+		insn = get_last_insn ();
+		REG_NOTES (insn)
+		  = gen_rtx (EXPR_LIST, REG_EQUAL,
+			     gen_rtx (UDIV, compute_mode, op0, op1),
+			     REG_NOTES (insn));
+	      }
+	    else		/* TRUNC_DIV, signed */
+	      {
+		unsigned HOST_WIDE_INT ml;
+		int lgup, post_shift;
+		HOST_WIDE_INT d = INTVAL (op1);
+		unsigned HOST_WIDE_INT abs_d = d >= 0 ? d : -d;
 
-	  emit_cmp_insn (adjusted_op0, const0_rtx, GE, 
-			 NULL_RTX, compute_mode, 0, 0);
-	  emit_jump_insn (gen_bge (label));
-	  expand_dec (adjusted_op0, op1);
-	  expand_inc (adjusted_op0, const1_rtx);
-	  emit_label (label);
-	  mod_insn_no_good = 1;
-	}
-      break;
+		/* n rem d = n rem -d */
+		if (rem_flag && d < 0)
+		  {
+		    d = abs_d;
+		    op1 = GEN_INT (abs_d);
+		  }
 
-    case CEIL_DIV_EXPR:
-    case CEIL_MOD_EXPR:
-      if (log < 0)
-	{
-	  rtx label = 0;
-	  if (! unsignedp)
-	    {
-	      label = gen_label_rtx ();
-	      emit_cmp_insn (adjusted_op0, const0_rtx, LE, 
-			     NULL_RTX, compute_mode, 0, 0);
-	      emit_jump_insn (gen_ble (label));
-	    }
-	  expand_inc (adjusted_op0, op1);
-	  expand_dec (adjusted_op0, const1_rtx);
-	  if (! unsignedp)
-	    emit_label (label);
-	}
-      else
-	adjusted_op0 = expand_binop (compute_mode, add_optab,
-				     adjusted_op0, plus_constant (op1, -1),
-				     adjusted_op0, 0, OPTAB_LIB_WIDEN);
+		if (d == 1)
+		  quotient = op0;
+		else if (d == -1)
+		  quotient = expand_unop (compute_mode, neg_optab, op0,
+					  tquotient, 0);
+		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
+			 && (rem_flag ? smod_pow2_cheap : sdiv_pow2_cheap))
+		  ;
+		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d))
+		  {
+		    lgup = floor_log2 (abs_d);
+		    if (abs_d != 2 && BRANCH_COST < 3)
+		      {
+			rtx label = gen_label_rtx ();
+			rtx t1;
 
-      mod_insn_no_good = 1;
-      break;
-
-    case ROUND_DIV_EXPR:
-    case ROUND_MOD_EXPR:
-      if (log < 0)
-	{
-	  op1 = expand_shift (RSHIFT_EXPR, compute_mode, op1,
-			      integer_one_node, NULL_RTX, 0);
-	  if (! unsignedp)
-	    {
-	      if (BRANCH_COST >= 2)
-		{
-		  /* Negate OP1 if OP0 < 0.  Do this by computing a temporary
-		     that has all bits equal to the sign bit and exclusive
-		     or-ing it with OP1.  */
-		  rtx temp = expand_shift (RSHIFT_EXPR, compute_mode,
-					   adjusted_op0,
+			t1 = copy_to_mode_reg (compute_mode, op0);
+			emit_cmp_insn (t1, const0_rtx, GE, 
+				       NULL_RTX, compute_mode, 0, 0);
+			emit_jump_insn (gen_bge (label));
+			expand_inc (t1, GEN_INT (abs_d - 1));
+			emit_label (label);
+			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t1,
+						 build_int_2 (lgup, 0),
+						 tquotient, 0);
+		      }
+		    else
+		      {
+			rtx t1, t2, t3;
+			t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					   build_int_2 (size - 1, 0),
 					   NULL_RTX, 0);
-		  op1 = expand_binop (compute_mode, xor_optab, op1, temp, op1,
-				      unsignedp, OPTAB_LIB_WIDEN);
-		}
-	      else
-		{
-		  rtx label = gen_label_rtx ();
-		  emit_cmp_insn (adjusted_op0, const0_rtx, GE, NULL_RTX,
-				 compute_mode, 0, 0);
-		  emit_jump_insn (gen_bge (label));
-		  expand_unop (compute_mode, neg_optab, op1, op1, 0);
-		  emit_label (label);
-		}
-	    }
-	  expand_inc (adjusted_op0, op1);
-	}
-      else
-	expand_inc (adjusted_op0, GEN_INT (((HOST_WIDE_INT) 1 << log) / 2));
+			t2 = expand_shift (RSHIFT_EXPR, compute_mode, t1,
+					   build_int_2 (size - lgup, 0),
+					   NULL_RTX, 1);
+			t3 = force_operand (gen_rtx (PLUS, compute_mode,
+						     op0, t2),
+					    NULL_RTX);
+			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t3,
+						 build_int_2 (lgup, 0),
+						 tquotient, 0);
+		      }
 
-      mod_insn_no_good = 1;
-      break;
-    }
+		    if (d < 0)
+		      {
+			insn = get_last_insn ();
+			REG_NOTES (insn)
+			  = gen_rtx (EXPR_LIST, REG_EQUAL,
+				     gen_rtx (DIV, compute_mode, op0,
+					      GEN_INT (abs_d)),
+				     REG_NOTES (insn));
 
-  if (rem_flag && !mod_insn_no_good)
-    {
-      /* Try to produce the remainder directly */
-      if (log >= 0)
-	result = expand_binop (compute_mode, and_optab, adjusted_op0,
-			       GEN_INT (((HOST_WIDE_INT) 1 << log) - 1),
-			       target, 1, OPTAB_LIB_WIDEN);
-      else
+			quotient = expand_unop (compute_mode, neg_optab,
+						quotient, quotient, 0);
+		      }
+		  }
+		else
+		  {
+		    choose_multiplier (abs_d, size, size - 1,
+				       &ml, &post_shift, &lgup);
+		    if (ml < (unsigned HOST_WIDE_INT) 1 << (size - 1))
+		      {
+			rtx t1, t2, t3;
+
+			t1 = expand_mult_highpart (compute_mode, op0, ml,
+						   NULL_RTX, 0);
+			if (t1 == 0)
+			  goto fail1;
+			t2 = expand_shift (RSHIFT_EXPR, compute_mode, t1,
+					   build_int_2 (post_shift, 0), NULL_RTX, 0);
+			t3 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					   build_int_2 (size - 1, 0), NULL_RTX, 0);
+			if (d < 0)
+			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t3, t2),
+						    tquotient);
+			else
+			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t2, t3),
+						    tquotient);
+		      }
+		    else
+		      {
+			rtx t1, t2, t3, t4;
+
+			ml |= (~(unsigned HOST_WIDE_INT) 0) << (size - 1);
+			t1 = expand_mult_highpart (compute_mode, op0, ml,
+						   NULL_RTX, 0);
+			if (t1 == 0)
+			  goto fail1;
+			t2 = force_operand (gen_rtx (PLUS, compute_mode, t1, op0),
+					    NULL_RTX);
+			t3 = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+					   build_int_2 (post_shift, 0), NULL_RTX, 0);
+			t4 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					   build_int_2 (size - 1, 0), NULL_RTX, 0);
+			if (d < 0)
+			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t4, t3),
+						    tquotient);
+			else
+			  quotient = force_operand (gen_rtx (MINUS, compute_mode, t3, t4),
+						    tquotient);
+		      }
+		  }
+
+		insn = get_last_insn ();
+		REG_NOTES (insn)
+		  = gen_rtx (EXPR_LIST, REG_EQUAL,
+			     gen_rtx (DIV, compute_mode, op0, op1),
+			     REG_NOTES (insn));
+	      }
+	    break;
+	  }
+      fail1:
+	delete_insns_since (last);
+	break;
+
+      case FLOOR_DIV_EXPR:
+      case FLOOR_MOD_EXPR:
+      /* We will come here only for signed operations.  */
+	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
+	  {
+	    unsigned HOST_WIDE_INT mh, ml;
+	    int pre_shift, lgup, post_shift;
+	    HOST_WIDE_INT d = INTVAL (op1);
+
+	    if (d > 0)
+	      {
+		/* We could just as easily deal with negative constants here,
+		   but it does not seem worth the trouble for GCC 2.6.  */
+		if (EXACT_POWER_OF_2_OR_ZERO_P (d))
+		  {
+		    pre_shift = floor_log2 (d);
+		    if (rem_flag)
+		      {
+			remainder = expand_binop (compute_mode, and_optab, op0,
+						  GEN_INT (((HOST_WIDE_INT) 1 << pre_shift) - 1),
+						  remainder, 0, OPTAB_LIB_WIDEN);
+			if (remainder)
+			  return remainder;
+		      }
+		    quotient = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+					     build_int_2 (pre_shift, 0),
+					     tquotient, 0);
+		  }
+		else
+		  {
+		    rtx t1, t2, t3, t4;
+
+		    mh = choose_multiplier (d, size, size - 1,
+					    &ml, &post_shift, &lgup);
+		    if (mh)
+		      abort ();
+
+		    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+				       build_int_2 (size - 1, 0), NULL_RTX, 0);
+		    t2 = expand_binop (compute_mode, xor_optab, op0, t1,
+				       NULL_RTX, 0, OPTAB_WIDEN);
+		    t3 = expand_mult_highpart (compute_mode, t2, ml,
+					       NULL_RTX, 1);
+		    if (t3 != 0)
+		      {
+			t4 = expand_shift (RSHIFT_EXPR, compute_mode, t3,
+					   build_int_2 (post_shift, 0),
+					   NULL_RTX, 1);
+			quotient = expand_binop (compute_mode, xor_optab,
+						 t4, t1, tquotient, 0,
+						 OPTAB_WIDEN);
+		      }
+		  }
+	      }
+	    else
+	      {
+		rtx nsign, t1, t2, t3, t4;
+		t1 = force_operand (gen_rtx (PLUS, compute_mode,
+					     op0, constm1_rtx), NULL_RTX);
+		t2 = expand_binop (compute_mode, ior_optab, op0, t1, NULL_RTX,
+				   0, OPTAB_WIDEN);
+		nsign = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+				      build_int_2 (size - 1, 0), NULL_RTX, 0);
+		t3 = force_operand (gen_rtx (MINUS, compute_mode, t1, nsign),
+				    NULL_RTX);
+		t4 = expand_divmod (0, TRUNC_DIV_EXPR, compute_mode, t3, op1,
+				    NULL_RTX, 0);
+		if (t4)
+		  {
+		    rtx t5;
+		    t5 = expand_unop (compute_mode, one_cmpl_optab, nsign,
+				      NULL_RTX, 0);
+		    quotient = force_operand (gen_rtx (PLUS, compute_mode,
+						       t4, t5),
+					      tquotient);
+		  }
+	      }
+	  }
+
+	if (quotient != 0)
+	  break;
+	delete_insns_since (last);
+
+	/* Try using an instruction that produces both the quotient and
+	   remainder, using truncation.  We can easily compensate the quotient
+	   or remainder to get floor rounding, once we have the remainder.
+	   Notice that we compute also the final remainder value here,
+	   and return the result right away.  */
+	if (target == 0)
+	  target = gen_reg_rtx (compute_mode);
+	if (rem_flag)
+	  {
+	    remainder = target;
+	    quotient = gen_reg_rtx (compute_mode);
+	  }
+	else
+	  {
+	    quotient = target;
+	    remainder = gen_reg_rtx (compute_mode);
+	  }
+
+	if (expand_twoval_binop (sdivmod_optab, op0, op1,
+				 quotient, remainder, 0))
+	  {
+	    /* This could be computed with a branch-less sequence.
+	       Save that for later.  */
+	    rtx tem;
+	    rtx label = gen_label_rtx ();
+	    emit_cmp_insn (remainder, const0_rtx, EQ, NULL_RTX,
+			   compute_mode, 0, 0);
+	    emit_jump_insn (gen_beq (label));
+	    tem = expand_binop (compute_mode, xor_optab, op0, op1,
+				NULL_RTX, 0, OPTAB_WIDEN);
+	    emit_cmp_insn (tem, const0_rtx, GE, NULL_RTX, compute_mode, 0, 0);
+	    emit_jump_insn (gen_bge (label));
+	    expand_dec (quotient, const1_rtx);
+	    expand_inc (remainder, op1);
+	    emit_label (label);
+	    if (rem_flag)
+	      return remainder;
+	    else
+	      return quotient;
+	  }
+
+	/* No luck with division elimination or divmod.  Have to do it
+	   by conditionally adjusting op0 *and* the result.  */
 	{
-	  /* See if we can do remainder without a library call.  */
-	  result = sign_expand_binop (mode, umod_optab, smod_optab,
-				      adjusted_op0, op1, target,
-				      unsignedp, OPTAB_WIDEN);
-	  if (result == 0)
+	  rtx label1, label2, label3, label4, label5;
+	  rtx adjusted_op0;
+	  rtx tem;
+
+	  quotient = gen_reg_rtx (compute_mode);
+	  adjusted_op0 = copy_to_mode_reg (compute_mode, op0);
+	  label1 = gen_label_rtx ();
+	  label2 = gen_label_rtx ();
+	  label3 = gen_label_rtx ();
+	  label4 = gen_label_rtx ();
+	  label5 = gen_label_rtx ();
+	  emit_cmp_insn (op1, const0_rtx, LT, NULL_RTX, compute_mode, 0, 0);
+	  emit_jump_insn (gen_blt (label2));
+	  emit_cmp_insn (adjusted_op0, const0_rtx, LT, NULL_RTX,
+			 compute_mode, 0, 0);
+	  emit_jump_insn (gen_blt (label1));
+	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
+			      quotient, 0, OPTAB_LIB_WIDEN);
+	  if (tem != quotient)
+	    emit_move_insn (quotient, tem);
+	  emit_jump_insn (gen_jump (label5));
+	  emit_barrier ();
+	  emit_label (label1);
+	  expand_inc (adjusted_op0, const1_rtx);
+	  emit_jump_insn (gen_jump (label4));
+	  emit_barrier ();
+	  emit_label (label2);
+	  emit_cmp_insn (adjusted_op0, const0_rtx, GT, NULL_RTX,
+			 compute_mode, 0, 0);
+	  emit_jump_insn (gen_bgt (label3));
+	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
+			      quotient, 0, OPTAB_LIB_WIDEN);
+	  if (tem != quotient)
+	    emit_move_insn (quotient, tem);
+	  emit_jump_insn (gen_jump (label5));
+	  emit_barrier ();
+	  emit_label (label3);
+	  expand_dec (adjusted_op0, const1_rtx);
+	  emit_label (label4);
+	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
+			      quotient, 0, OPTAB_LIB_WIDEN);
+	  if (tem != quotient)
+	    emit_move_insn (quotient, tem);
+	  expand_dec (quotient, const1_rtx);
+	  emit_label (label5);
+	}
+	break;
+
+      case CEIL_DIV_EXPR:
+      case CEIL_MOD_EXPR:
+	if (unsignedp)
+	  {
+
+	    /* Try using an instruction that produces both the quotient and
+	       remainder, using truncation.  We can easily compensate the
+	       quotient or remainder to get ceiling rounding, once we have the
+	       remainder.  Notice that we compute also the final remainder
+	       value here, and return the result right away.  */
+	    if (target == 0)
+	      target = gen_reg_rtx (compute_mode);
+	    if (rem_flag)
+	      {
+		remainder = target;
+		quotient = gen_reg_rtx (compute_mode);
+	      }
+	    else
+	      {
+		quotient = target;
+		remainder = gen_reg_rtx (compute_mode);
+	      }
+
+	    if (expand_twoval_binop (udivmod_optab, op0, op1, quotient,
+				     remainder, 1))
+	      {
+		/* This could be computed with a branch-less sequence.
+		   Save that for later.  */
+		rtx label = gen_label_rtx ();
+		emit_cmp_insn (remainder, const0_rtx, EQ, NULL_RTX,
+			       compute_mode, 0, 0);
+		emit_jump_insn (gen_beq (label));
+		expand_inc (quotient, const1_rtx);
+		expand_dec (remainder, op1);
+		emit_label (label);
+		return rem_flag ? remainder : quotient;
+	      }
+
+	    /* No luck with division elimination or divmod.  Have to do it
+	       by conditionally adjusting op0 *and* the result.  */
+	    {
+	      rtx label1, label2;
+	      rtx adjusted_op0, tem;
+
+	      quotient = gen_reg_rtx (compute_mode);
+	      adjusted_op0 = copy_to_mode_reg (compute_mode, op0);
+	      label1 = gen_label_rtx ();
+	      label2 = gen_label_rtx ();
+	      emit_cmp_insn (adjusted_op0, const0_rtx, NE, NULL_RTX,
+			     compute_mode, 0, 0);
+	      emit_jump_insn (gen_bne (label1));
+	      emit_move_insn  (quotient, const0_rtx);
+	      emit_jump_insn (gen_jump (label2));
+	      emit_barrier ();
+	      emit_label (label1);
+	      expand_dec (adjusted_op0, const1_rtx);
+	      tem = expand_binop (compute_mode, udiv_optab, adjusted_op0, op1,
+				  quotient, 1, OPTAB_LIB_WIDEN);
+	      if (tem != quotient)
+		emit_move_insn (quotient, tem);
+	      expand_inc (quotient, const1_rtx);
+	      emit_label (label2);
+	    }
+	  }
+	else /* signed */
+	  {
+	    /* Try using an instruction that produces both the quotient and
+	       remainder, using truncation.  We can easily compensate the
+	       quotient or remainder to get ceiling rounding, once we have the
+	       remainder.  Notice that we compute also the final remainder
+	       value here, and return the result right away.  */
+	    if (target == 0)
+	      target = gen_reg_rtx (compute_mode);
+	    if (rem_flag)
+	      {
+		remainder = target;
+		quotient = gen_reg_rtx (compute_mode);
+	      }
+	    else
+	      {
+		quotient = target;
+		remainder = gen_reg_rtx (compute_mode);
+	      }
+
+	    if (expand_twoval_binop (sdivmod_optab, op0, op1, quotient,
+				     remainder, 0))
+	      {
+		/* This could be computed with a branch-less sequence.
+		   Save that for later.  */
+		rtx tem;
+		rtx label = gen_label_rtx ();
+		emit_cmp_insn (remainder, const0_rtx, EQ, NULL_RTX,
+			       compute_mode, 0, 0);
+		emit_jump_insn (gen_beq (label));
+		tem = expand_binop (compute_mode, xor_optab, op0, op1,
+				    NULL_RTX, 0, OPTAB_WIDEN);
+		emit_cmp_insn (tem, const0_rtx, LT, NULL_RTX,
+			       compute_mode, 0, 0);
+		emit_jump_insn (gen_blt (label));
+		expand_inc (quotient, const1_rtx);
+		expand_dec (remainder, op1);
+		emit_label (label);
+		return rem_flag ? remainder : quotient;
+	      }
+
+	    /* No luck with division elimination or divmod.  Have to do it
+	       by conditionally adjusting op0 *and* the result.  */
+	    {
+	      rtx label1, label2, label3, label4, label5;
+	      rtx adjusted_op0;
+	      rtx tem;
+
+	      quotient = gen_reg_rtx (compute_mode);
+	      adjusted_op0 = copy_to_mode_reg (compute_mode, op0);
+	      label1 = gen_label_rtx ();
+	      label2 = gen_label_rtx ();
+	      label3 = gen_label_rtx ();
+	      label4 = gen_label_rtx ();
+	      label5 = gen_label_rtx ();
+	      emit_cmp_insn (op1, const0_rtx, LT, NULL_RTX,
+			     compute_mode, 0, 0);
+	      emit_jump_insn (gen_blt (label2));
+	      emit_cmp_insn (adjusted_op0, const0_rtx, GT, NULL_RTX,
+			     compute_mode, 0, 0);
+	      emit_jump_insn (gen_bgt (label1));
+	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
+				  quotient, 0, OPTAB_LIB_WIDEN);
+	      if (tem != quotient)
+		emit_move_insn (quotient, tem);
+	      emit_jump_insn (gen_jump (label5));
+	      emit_barrier ();
+	      emit_label (label1);
+	      expand_dec (adjusted_op0, const1_rtx);
+	      emit_jump_insn (gen_jump (label4));
+	      emit_barrier ();
+	      emit_label (label2);
+	      emit_cmp_insn (adjusted_op0, const0_rtx, LT, NULL_RTX,
+			     compute_mode, 0, 0);
+	      emit_jump_insn (gen_blt (label3));
+	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
+				  quotient, 0, OPTAB_LIB_WIDEN);
+	      if (tem != quotient)
+		emit_move_insn (quotient, tem);
+	      emit_jump_insn (gen_jump (label5));
+	      emit_barrier ();
+	      emit_label (label3);
+	      expand_inc (adjusted_op0, const1_rtx);
+	      emit_label (label4);
+	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
+				  quotient, 0, OPTAB_LIB_WIDEN);
+	      if (tem != quotient)
+		emit_move_insn (quotient, tem);
+	      expand_inc (quotient, const1_rtx);
+	      emit_label (label5);
+	    }
+	  }
+	break;
+
+      case EXACT_DIV_EXPR:
+	if (op1_is_constant && HOST_BITS_PER_WIDE_INT >= size)
+	  {
+	    HOST_WIDE_INT d = INTVAL (op1);
+	    unsigned HOST_WIDE_INT ml;
+	    int post_shift;
+	    rtx t1;
+
+	    post_shift = floor_log2 (d & -d);
+	    ml = invert_mod2n (d >> post_shift, size);
+	    t1 = expand_mult (compute_mode, op0, GEN_INT (ml), NULL_RTX,
+			      unsignedp);
+	    quotient = expand_shift (RSHIFT_EXPR, compute_mode, t1,
+				     build_int_2 (post_shift, 0),
+				     NULL_RTX, unsignedp);
+
+	    insn = get_last_insn ();
+	    REG_NOTES (insn)
+	      = gen_rtx (EXPR_LIST, REG_EQUAL,
+			 gen_rtx (unsignedp ? UDIV : DIV, compute_mode,
+				  op0, op1),
+			 REG_NOTES (insn));
+	  }
+	break;
+
+      case ROUND_DIV_EXPR:
+      case ROUND_MOD_EXPR:
+	/* The code that used to be here was wrong, and nothing really
+	   depends on it.  */
+	abort ();
+	break;
+      }
+
+  if (quotient == 0)
+    {
+      if (rem_flag)
+	{
+	  /* Try to produce the remainder directly without a library call.  */
+	  remainder = sign_expand_binop (compute_mode, umod_optab, smod_optab,
+					 op0, op1, target,
+					 unsignedp, OPTAB_WIDEN);
+	  if (remainder == 0)
 	    {
 	      /* No luck there.  Can we do remainder and divide at once
 		 without a library call?  */
-	      result = gen_reg_rtx (compute_mode);
-	      if (! expand_twoval_binop (unsignedp
-					 ? udivmod_optab : sdivmod_optab,
-					 adjusted_op0, op1,
-					 NULL_RTX, result, unsignedp))
-		result = 0;
+	      remainder = gen_reg_rtx (compute_mode);
+	      if (! expand_twoval_binop ((unsignedp
+					  ? udivmod_optab
+					  : sdivmod_optab),
+					 op0, op1,
+					 NULL_RTX, remainder, unsignedp))
+		remainder = 0;
+	    }
+
+	  if (remainder)
+	    return gen_lowpart (mode, remainder);
+	}
+
+      /* Produce the quotient.  */
+      /* Try a quotient insn, but not a library call.  */
+      quotient = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
+				    op0, op1, rem_flag ? NULL_RTX : target,
+				    unsignedp, OPTAB_WIDEN);
+      if (quotient == 0)
+	{
+	  /* No luck there.  Try a quotient-and-remainder insn,
+	     keeping the quotient alone.  */
+	  quotient = gen_reg_rtx (compute_mode);
+	  if (! expand_twoval_binop (unsignedp ? udivmod_optab : sdivmod_optab,
+				     op0, op1,
+				     quotient, NULL_RTX, unsignedp))
+	    {
+	      quotient = 0;
+	      if (! rem_flag)
+		/* Still no luck.  If we are not computing the remainder,
+		   use a library call for the quotient.  */
+		quotient = sign_expand_binop (compute_mode,
+					      udiv_optab, sdiv_optab,
+					      op0, op1, target,
+					      unsignedp, OPTAB_LIB_WIDEN);
 	    }
 	}
     }
 
-  if (result)
-    return gen_lowpart (mode, result);
-
-  /* Produce the quotient.  */
-  if (log >= 0)
-    result = expand_shift (RSHIFT_EXPR, compute_mode, adjusted_op0,
-			   build_int_2 (log, 0), target, unsignedp);
-  else if (rem_flag && !mod_insn_no_good)
-    /* If producing quotient in order to subtract for remainder,
-       and a remainder subroutine would be ok,
-       don't use a divide subroutine.  */
-    result = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				adjusted_op0, op1, NULL_RTX, unsignedp,
-				OPTAB_WIDEN);
-  else
-    {
-      /* Try a quotient insn, but not a library call.  */
-      result = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				  adjusted_op0, op1,
-				  rem_flag ? NULL_RTX : target,
-				  unsignedp, OPTAB_WIDEN);
-      if (result == 0)
-	{
-	  /* No luck there.  Try a quotient-and-remainder insn,
-	     keeping the quotient alone.  */
-	  result = gen_reg_rtx (compute_mode);
-	  if (! expand_twoval_binop (unsignedp ? udivmod_optab : sdivmod_optab,
-				     adjusted_op0, op1,
-				     result, NULL_RTX, unsignedp))
-	    result = 0;
-	}
-
-      /* If still no luck, use a library call.  */
-      if (result == 0)
-	result = sign_expand_binop (compute_mode, udiv_optab, sdiv_optab,
-				    adjusted_op0, op1,
-				    rem_flag ? NULL_RTX : target,
-				    unsignedp, OPTAB_LIB_WIDEN);
-    }
-
-  /* If we really want the remainder, get it by subtraction.  */
   if (rem_flag)
     {
-      if (result == 0)
+      if (quotient == 0)
 	/* No divide instruction either.  Use library for remainder.  */
-	result = sign_expand_binop (compute_mode, umod_optab, smod_optab,
-				    op0, op1, target,
-				    unsignedp, OPTAB_LIB_WIDEN);
+	remainder = sign_expand_binop (compute_mode, umod_optab, smod_optab,
+				       op0, op1, target,
+				       unsignedp, OPTAB_LIB_WIDEN);
       else
 	{
 	  /* We divided.  Now finish doing X - Y * (X / Y).  */
-	  result = expand_mult (compute_mode, result, op1, target, unsignedp);
-	  if (! result) abort ();
-	  result = expand_binop (compute_mode, sub_optab, op0,
-				 result, target, unsignedp, OPTAB_LIB_WIDEN);
+	  remainder = expand_mult (compute_mode, quotient, op1,
+				   NULL_RTX, unsignedp);
+	  remainder = expand_binop (compute_mode, sub_optab, op0,
+				    remainder, target, unsignedp,
+				    OPTAB_LIB_WIDEN);
 	}
     }
 
-  if (result == 0)
-    abort ();
-
-  return gen_lowpart (mode, result);
+  return gen_lowpart (mode, rem_flag ? remainder : quotient);
 }
 
 /* Return a tree node with data type TYPE, describing the value of X.
