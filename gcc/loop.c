@@ -6005,7 +6005,23 @@ emit_iv_add_mult (b, m, a, reg, insert_before)
 
   emit_insn_before (seq, insert_before);
 
-  record_base_value (REGNO (reg), b, 0);
+  /* It is entirely possible that the expansion created lots of new 
+     registers.  Iterate over the sequence we just created and 
+     record them all.  */
+
+  if (GET_CODE (seq) == SEQUENCE)
+    {
+      int i;
+      for (i = 0; i < XVECLEN (seq, 0); ++i)
+	{
+	  rtx set = single_set (XVECEXP (seq, 0, i));
+	  if (set && GET_CODE (SET_DEST (set)) == REG)
+	    record_base_value (REGNO (SET_DEST (set)), SET_SRC (set), 0);
+	}
+    }
+  else if (GET_CODE (seq) == SET
+	   && GET_CODE (SET_DEST (seq)) == REG)
+    record_base_value (REGNO (SET_DEST (seq)), SET_SRC (seq), 0);
 }
 
 /* Test whether A * B can be computed without
