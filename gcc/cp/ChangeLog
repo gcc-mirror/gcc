@@ -1,7 +1,8 @@
-1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
+1999-08-08  Jason Merrill  <jason@yorick.cygnus.com>
 
-	* decl.c (bad_specifiers): It's OK to have an EH spec on a function
-	pointer.
+	* typeck.c (common_type): Use same_type_p.
+
+1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (maybe_get_template_decl_from_type_decl): Make sure that
 	we're looking at a class.
@@ -56,10 +57,6 @@ Thu Aug  5 02:40:42 1999  Jeffrey A Law  (law@cygnus.com)
 	* decl.c (start_decl): Set attributes before duplicate_decls call.
 
 Wed Jul 28 21:39:31 PDT 1999 Jeff Law  (law@cygnus.com)
-
-	* gcc-2.95 Released.
-
-Sun Jul 25 23:40:51 PDT 1999 Jeff Law  (law@cygnus.com)
 
 	* gcc-2.95 Released.
 

@@ -8709,9 +8709,9 @@ bad_specifiers (object, type, virtualp, quals, inlinep, friendp, raises)
     cp_error ("`const' and `volatile' function specifiers on `%D' invalid in %s declaration",
 	      object, type);
   if (friendp)
-    cp_error_at ("`%D' declared as a friend", object);
-  if (raises && ! TYPE_PTRFN_P (TREE_TYPE (object)))
-    cp_error_at ("`%D' declared with an exception specification", object);
+    cp_error_at ("invalid friend declaration", object);
+  if (raises)
+    cp_error_at ("invalid exception specifications", object);
 }
 
 /* CTYPE is class type, or null if non-class.
