@@ -1,3 +1,7 @@
+Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* unroll.c (copy_loop_body): Don't copy NOTE_INSN_LOOP_CONT.
+
 2002-07-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* fold-const.c: Fix comment typos.
