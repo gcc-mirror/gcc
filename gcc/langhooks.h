@@ -332,6 +332,15 @@ struct lang_hooks
      warning that the front end does not use such a parser.  */
   void (*set_yydebug) PARAMS ((int));
 
+  /* Pointers to machine-independent attribute tables, for front ends
+     using attribs.c.  If one is NULL, it is ignored.  Respectively, a
+     table of attributes specific to the language, a table of
+     attributes common to two or more languages (to allow easy
+     sharing), and a table of attributes for checking formats.  */
+  const struct attribute_spec *attribute_table;
+  const struct attribute_spec *common_attribute_table;
+  const struct attribute_spec *format_attribute_table;
+
   /* Function-related language hooks.  */
   struct lang_hooks_for_functions function;
 

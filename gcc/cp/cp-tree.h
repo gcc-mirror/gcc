@@ -4287,7 +4287,7 @@ extern void debug_binfo				PARAMS ((tree));
 extern tree build_dummy_object			PARAMS ((tree));
 extern tree maybe_dummy_object			PARAMS ((tree, tree *));
 extern int is_dummy_object			PARAMS ((tree));
-extern const struct attribute_spec cp_attribute_table[];
+extern const struct attribute_spec cxx_attribute_table[];
 extern tree make_ptrmem_cst                     PARAMS ((tree, tree));
 extern tree cp_build_qualified_type_real        PARAMS ((tree, int, tsubst_flags_t));
 #define cp_build_qualified_type(TYPE, QUALS) \

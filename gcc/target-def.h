@@ -159,7 +159,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* All in tree.c.  */
 #define TARGET_MERGE_DECL_ATTRIBUTES merge_decl_attributes
 #define TARGET_MERGE_TYPE_ATTRIBUTES merge_type_attributes
-#define TARGET_ATTRIBUTE_TABLE default_target_attribute_table
+#define TARGET_ATTRIBUTE_TABLE NULL
 #define TARGET_COMP_TYPE_ATTRIBUTES default_comp_type_attributes
 #define TARGET_SET_DEFAULT_TYPE_ATTRIBUTES default_set_default_type_attributes
 #define TARGET_INSERT_ATTRIBUTES default_insert_attributes

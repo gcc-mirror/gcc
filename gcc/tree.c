@@ -2570,12 +2570,6 @@ default_insert_attributes (decl, attr_ptr)
 {
 }
 
-/* Default value of targetm.attribute_table that is empty.  */
-const struct attribute_spec default_target_attribute_table[] =
-{
-  { NULL, 0, 0, false, false, false, NULL }
-};
-
 /* Default value of targetm.function_attribute_inlinable_p that always
    returns false.  */
 bool

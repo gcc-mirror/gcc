@@ -484,6 +484,10 @@ extern int warn_long_long;
    what operator was specified for it.  */
 #define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
 
+/* Attribute table common to the C front ends.  */
+extern const struct attribute_spec c_common_attribute_table[];
+extern const struct attribute_spec c_common_format_attribute_table[];
+
 /* Pointer to function to lazily generate the VAR_DECL for __FUNCTION__ etc.
    ID is the identifier to use, NAME is the string.
    TYPE_DEP indicates whether it depends on type of the function or not

@@ -388,9 +388,6 @@ gnat_init (filename)
   /* Show that REFERENCE_TYPEs are internal and should be Pmode.  */
   internal_reference_types ();
 
-  /* Show we don't use the common language attributes.  */
-  lang_attribute_common = 0;
-
   set_lang_adjust_rli (gnat_adjust_rli);
   return filename;
 }

@@ -1,3 +1,55 @@
+2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* attribs.c (c_common_attribute_table): Move table and handlers
+	to c-common.c.
+	(format_attribute_table, lang_attribute_table,
+	lang_attribute_common): Remove.
+	(init_attributes): Replace NULL pointers with pointers to the
+	empty table.
+	(handle_packed_attribute, handle_nocommon_attribute,
+	handle_common_attribute, handle_noreturn_attribute,
+	handle_noinline_attribute, handle_always_inline_attribute,
+	handle_used_attribute, handle_unused_attribute,
+	handle_const_attribute, handle_transparent_union_attribute,
+	handle_constructor_attribute, handle_destructor_attribute,
+	handle_mode_attribute, handle_section_attribute,
+	handle_aligned_attribute, handle_weak_attribute,
+	handle_alias_attribute, handle_visibility_attribute,
+	handle_no_instrument_function_attribute, handle_malloc_attribute,
+	handle_no_limit_stack_attribute, handle_pure_attribute,
+	handle_deprecated_attribute, handle_vector_size_attribute,
+	vector_size_helper): Move to c-common.c.
+	* c-common.c (c_common_attribute_table,
+	handle_packed_attribute, handle_nocommon_attribute,
+	handle_common_attribute, handle_noreturn_attribute,
+	handle_noinline_attribute, handle_always_inline_attribute,
+	handle_used_attribute, handle_unused_attribute,
+	handle_const_attribute, handle_transparent_union_attribute,
+	handle_constructor_attribute, handle_destructor_attribute,
+	handle_mode_attribute, handle_section_attribute,
+	handle_aligned_attribute, handle_weak_attribute,
+	handle_alias_attribute, handle_visibility_attribute,
+	handle_no_instrument_function_attribute, handle_malloc_attribute,
+	handle_no_limit_stack_attribute, handle_pure_attribute,
+	handle_deprecated_attribute, handle_vector_size_attribute,
+	vector_size_helper): Move from attribs.c.
+	* c-common.h (c_common_attribute_table,
+	c_common_format_attribute_table): New.
+	* c-lang.c (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE,
+	LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Redefine.
+	* langhooks-def.h (LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE,
+	LANG_HOOKS_COMMON_ATTRIBUTE_TABLE, LANG_HOOKS_ATTRIBUTE_TABLE): New.
+	(LANG_HOOKS_INITIALIZER): Update.
+	* langhooks.h (struct lang_hooks): 3 new attribute hooks.
+	* target-def.h (TARGET_ATTRIBUTE_TABLE): Default to NULL.
+	* target.h: Update comment.
+	* tree.c (default_target_attribute_table): Remove.
+	* tree.h (default_target_attribute_table, format_attribute_table,
+	lang_attribute_table, lang_attribute_common): Remove.
+objc:
+	* objc-lang.c (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE,
+	LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE): Redefine.
+
 2002-04-24  Jason Merrill  <jason@redhat.com>
 
 	* dwarf2.h (enum dwarf_attribute): Add DW_AT_GNU_vector.
