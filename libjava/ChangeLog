@@ -1,3 +1,9 @@
+2000-12-17  Jeff Sturm  <jeff.sturm@commerceone.com>
+
+	* java/util/Hashtable.java (put): Remove `last' variable.
+	Link new entry to head of list.
+	* java/util/HashMap.java (put): Ditto.
+
 2000-12-15  Tom Tromey  <tromey@redhat.com>
 
 	* java/util/ResourceBundle.java (trySomeGetBundle): Pass class

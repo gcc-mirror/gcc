@@ -64,8 +64,8 @@ import java.io.ObjectOutputStream;
  * @author      Jon Zeppieri
  * @author	Warren Levy
  * @author      Bryce McKinlay
- * @version     $Revision: 1.7 $
- * @modified    $Id: Hashtable.java,v 1.7 2000/12/11 03:47:47 bryce Exp $
+ * @version     $Revision: 1.8 $
+ * @modified    $Id: Hashtable.java,v 1.8 2000/12/11 04:54:55 bryce Exp $
  */
 public class Hashtable extends Dictionary 
   implements Map, Cloneable, Serializable
@@ -295,7 +295,6 @@ public class Hashtable extends Dictionary
     modCount++;
     int idx = hash(key);
     HashMap.Entry e = buckets[idx];
-    HashMap.Entry last = e; // Final entry in bucket's linked list, if any.
     
     // Hashtable does not accept null values. This method doesn't dereference 
     // `value' anywhere, so check for it explicitly.
@@ -312,7 +311,6 @@ public class Hashtable extends Dictionary
 	  }
 	else
 	  {
-	    last = e;
 	    e = e.next;
 	  }
       }
@@ -327,10 +325,8 @@ public class Hashtable extends Dictionary
 
     e = new Entry(key, value);
     
-    if (last != null)
-      last.next = e;
-    else
-      buckets[idx] = e;
+    e.next = buckets[idx];
+    buckets[idx] = e;
     
     return null;
   }
@@ -724,8 +720,8 @@ public class Hashtable extends Dictionary
    * as per the Javasoft spec.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.7 $
-   * @modified     $Id: Hashtable.java,v 1.7 2000/12/11 03:47:47 bryce Exp $
+   * @version      $Revision: 1.8 $
+   * @modified     $Id: Hashtable.java,v 1.8 2000/12/11 04:54:55 bryce Exp $
    */
   class HashIterator implements Iterator
   {
@@ -829,8 +825,8 @@ public class Hashtable extends Dictionary
    * hashtable during enumeration causes indeterminate results.  Don't do it!
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.7 $
-   * @modified $Id: Hashtable.java,v 1.7 2000/12/11 03:47:47 bryce Exp $ */
+   * @version      $Revision: 1.8 $
+   * @modified $Id: Hashtable.java,v 1.8 2000/12/11 04:54:55 bryce Exp $ */
   class Enumerator implements Enumeration
   {
     static final int KEYS = 0;

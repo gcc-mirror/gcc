@@ -60,8 +60,8 @@ import java.io.ObjectOutputStream;
  * @author         Jon Zeppieri
  * @author         Jochen Hoenicke
  * @author	   Bryce McKinlay
- * @version        $Revision: 1.8 $
- * @modified       $Id: HashMap.java,v 1.8 2000/10/26 10:19:00 bryce Exp $
+ * @version        $Revision: 1.2 $
+ * @modified       $Id: HashMap.java,v 1.2 2000/12/11 03:47:47 bryce Exp $
  */
 public class HashMap extends AbstractMap
   implements Map, Cloneable, Serializable
@@ -297,7 +297,6 @@ public class HashMap extends AbstractMap
     modCount++;
     int idx = hash(key);
     Entry e = buckets[idx];
-    Entry last = e; // Final entry in bucket's linked list, if any.
     
     while (e != null)
       {
@@ -309,7 +308,6 @@ public class HashMap extends AbstractMap
 	  }
 	else
 	  {
-	    last = e;
 	    e = e.next;
 	  }
       }
@@ -324,10 +322,8 @@ public class HashMap extends AbstractMap
 
     e = new Entry(key, value);
     
-    if (last != null)
-      last.next = e;
-    else
-      buckets[idx] = e;
+    e.next = buckets[idx];
+    buckets[idx] = e;
     
     return null;
   }
@@ -664,8 +660,8 @@ public class HashMap extends AbstractMap
    * as per the Javasoft spec.
    *
    * @author       Jon Zeppieri
-   * @version      $Revision: 1.8 $
-   * @modified     $Id: HashMap.java,v 1.8 2000/10/26 10:19:00 bryce Exp $
+   * @version      $Revision: 1.2 $
+   * @modified     $Id: HashMap.java,v 1.2 2000/12/11 03:47:47 bryce Exp $
    */
   class HashIterator implements Iterator
   {
