@@ -344,12 +344,9 @@ c_lex (value)
   *value = NULL_TREE;
   switch (tok->type)
     {
-    /* Issue this error here, where we can get at tok->val.c.  */
     case CPP_OTHER:
-      if (ISGRAPH (tok->val.c))
-	error ("stray '%c' in program", tok->val.c);
-      else
-	error ("stray '\\%o' in program", tok->val.c);
+      error ("stray token \"%s\" in program",
+	     cpp_token_as_text (parse_in, tok));
       goto retry;
       
     case CPP_NAME:

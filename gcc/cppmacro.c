@@ -395,7 +395,7 @@ stringify_arg (pfile, arg)
       else
 	dest = cpp_spell_token (pfile, token, dest);
 
-      if (token->type == CPP_OTHER && token->val.c == '\\')
+      if (token->type == CPP_OTHER && token->val.str.text[0] == '\\')
 	backslash_count++;
       else
 	backslash_count = 0;

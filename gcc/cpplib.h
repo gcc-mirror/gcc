@@ -128,7 +128,7 @@ struct file_name_map_list;
 \
   TK(CPP_CHAR,		SPELL_STRING)	/* 'char' */			\
   TK(CPP_WCHAR,		SPELL_STRING)	/* L'char' */			\
-  TK(CPP_OTHER,		SPELL_CHAR)	/* stray punctuation */		\
+  TK(CPP_OTHER,		SPELL_NUMBER)	/* stray punctuation */		\
 \
   TK(CPP_STRING,	SPELL_STRING)	/* "string" */			\
   TK(CPP_WSTRING,	SPELL_STRING)	/* L"string" */			\
@@ -184,7 +184,6 @@ struct cpp_token
     const cpp_token *source;	/* Inherit padding from this token.  */
     struct cpp_string str;	/* A string, or number.  */
     unsigned int arg_no;	/* Argument no. for a CPP_MACRO_ARG.  */
-    unsigned char c;		/* Character represented by CPP_OTHER.  */
   } val;
 };
 

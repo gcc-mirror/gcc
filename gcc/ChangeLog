@@ -1,3 +1,16 @@
+2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-lex.c (c_lex): Handle CPP_OTHER differently.
+	* cppexp.c (_cpp_parse_expr): Similarly.
+	* cpplex.c (SPELL_CHAR): Remove.
+	(_cpp_lex_direct): Stray chars are saved as byte strings.
+	(cpp_spell_token, cpp_output_token, _cpp_equiv_token): Don't
+	handle SPELL_CHAR.
+	(cpp_avoid_paste): Update handling of CPP_OTHER.
+	* cpplib.h: Spell CPP_OTHER like a number.
+	(struct cpp_token): Remove member c.
+	* cppmacro.c (stringify_arg): Update handling of CPP_OTHER.
+
 2003-04-22  David Turner <novalis@gnu.org>
 
 	* gbl-ctors.h: Add special license exception.
