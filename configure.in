@@ -238,6 +238,9 @@ case "${host}" in
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
     ;;
+  *-*-darwin*)
+    noconfigdirs="$noconfigdirs tk itcl tix libgui"
+    ;;
 esac
 
 # Save it here so that, even in case of --enable-libgcj, if the Java
@@ -525,7 +528,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   powerpc-*-darwin*)
-    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb tk itcl tix libgui gprof ${libgcj}"
+    noconfigdirs="$noconfigdirs bfd binutils ld gas opcodes gdb gprof ${libgcj}"
     ;;
   powerpc-*-eabi)
     noconfigdirs="$noconfigdirs ${libgcj}"
