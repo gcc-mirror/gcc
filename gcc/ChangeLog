@@ -1,3 +1,8 @@
+Fri Oct 31 00:34:55 1996  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* expr.c (expand_increment): When enqueing a postincrement for a MEM,
+	use copy_to_reg if address is not a general_operand.
+
 Fri Oct 31 00:16:55 1997  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* profile.c (output_func_start_profiler): Clear flag_inline_functions
