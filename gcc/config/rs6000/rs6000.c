@@ -1385,9 +1385,13 @@ output_epilog (file, size)
       else if (first_fp_reg == 63)
 	fprintf (file, "\tlfd 31,-8(1)\n");
 
-      /* If we saved cr, restore it here.  Just set cr2, cr3, and cr4.  */
+      /* If we saved cr, restore it here.  Just those of cr2, cr3, and cr4
+	 that were used.  */
       if (must_save_cr ())
-	fprintf (file, "\tmtcrf 0x38,12\n");
+	fprintf (file, "\tmtcrf %d,12\n",
+		 (regs_ever_live[70] != 0) * 0x20
+		 + (regs_ever_live[71] != 0) * 0x10
+		 + (regs_ever_live[72] != 0) * 0x8);
 
       /* If we have to restore more than two FP registers, branch to the
 	 restore function.  It will return to our caller.  */
