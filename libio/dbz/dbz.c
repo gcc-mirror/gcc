@@ -1198,14 +1198,19 @@ register struct dbzconfig *cp;
 		DEBUG(("fseek failure in putconf\n"));
 		ret = -1;
 	}
-	fprintf(f, "dbz %d %ld %d %c %ld %ld %d %d", dbzversion, cp->tsize,
-				cp->fieldsep, cp->casemap, cp->tagenb,
-				cp->tagmask, cp->tagshift, cp->valuesize);
+	fprintf(f, "dbz %d %ld %d %c %ld %ld %d %d", dbzversion,
+		(long)cp->tsize,
+		cp->fieldsep, cp->casemap, (long)cp->tagenb,
+		(long)cp->tagmask, cp->tagshift,
+		cp->valuesize);
+
 	for (i = 0; i < cp->valuesize; i++)
 		fprintf(f, " %d", cp->bytemap[i]);
 	fprintf(f, "\n");
 	for (i = 0; i < NUSEDS; i++)
-		fprintf(f, "%ld%c", cp->used[i], (i < NUSEDS-1) ? ' ' : '\n');
+		fprintf(f, "%ld%c",
+			(long)cp->used[i], (i < NUSEDS-1) ? ' ' : '\n');
+
 
 	(void) fflush(f);
 	if (ferror(f))
