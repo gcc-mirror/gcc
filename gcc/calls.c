@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1566,6 +1566,18 @@ expand_call (exp, target, ignore)
 	    = convert_modes (args[i].mode,
 			     TYPE_MODE (TREE_TYPE (args[i].tree_value)),
 			     args[i].value, args[i].unsignedp);
+
+	/* If the value is expensive, and we are inside an appropriately 
+	   short loop, put the value into a pseudo and then put the pseudo
+	   into the hard reg.  */
+
+	if ((! (GET_CODE (args[i].value) == REG
+		|| (GET_CODE (args[i].value) == SUBREG
+		    && GET_CODE (SUBREG_REG (args[i].value)) == REG)))
+	    && args[i].mode != BLKmode
+	    && rtx_cost (args[i].value, SET) > 2
+	    && preserve_subexpressions_p ())
+	  args[i].value = copy_to_mode_reg (args[i].mode, args[i].value);
       }
 
 #if defined(ACCUMULATE_OUTGOING_ARGS) && defined(REG_PARM_STACK_SPACE)
