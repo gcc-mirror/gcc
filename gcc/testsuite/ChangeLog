@@ -1,3 +1,8 @@
+2004-07-14  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/16325
+	* gcc.dg/profile-generate-1.c: New.
+
 2004-07-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/execute/20040709-1.c: New test.
