@@ -3704,11 +3704,11 @@ sched_analyze_insn (x, insn, loop_notes)
       link = loop_notes;
       while (XEXP (link, 1))
 	{
-	  if (XINT (link, 0) == NOTE_INSN_LOOP_BEG
-	      || XINT (link, 0) == NOTE_INSN_LOOP_END
-	      || XINT (link, 0) == NOTE_INSN_EH_REGION_BEG
-	      || XINT (link, 0) == NOTE_INSN_EH_REGION_END
-	      || XINT (link, 0) == NOTE_INSN_SETJMP)
+	  if (INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_BEG
+	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_LOOP_END
+	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_BEG
+	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_EH_REGION_END
+	      || INTVAL (XEXP (link, 0)) == NOTE_INSN_SETJMP)
 	    schedule_barrier_found = 1;
 
 	  link = XEXP (link, 1);
