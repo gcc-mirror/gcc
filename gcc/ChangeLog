@@ -1,5 +1,10 @@
 2001-01-13  Richard Henderson  <rth@redhat.com>
 
+	* ggc-page.c (alloc_page): Round up allocation size to one page.
+	Set e->order on extra pages.
+
+2001-01-13  Richard Henderson  <rth@redhat.com>
+
 	* genrecog.c (nodes_identical): Expand commentary.
 	(write_switch): Watch out for identical nodes.
 
