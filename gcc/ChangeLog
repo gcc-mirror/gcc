@@ -1,3 +1,7 @@
+Mon Sep  1 16:25:34 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* cse.c (cse_insn): Don't record BLKmode values.
+
 Mon Sep  1 11:25:47 1997  Stephen Williams  (steve@icarus.icarus.com)
 
 	* i960.h (LINK_SPEC): Handle "-mjX" and "-mrp" switches.

@@ -7297,6 +7297,10 @@ cse_insn (insn, in_libcall_block)
 	if ((flag_float_store
 	     && GET_CODE (dest) == MEM
 	     && FLOAT_MODE_P (GET_MODE (dest)))
+	    /* Don't record BLKmode values, because we don't know the
+	       size of it, and can't be sure that other BLKmode values
+	       have the same or smaller size.  */
+	    || GET_MODE (dest) == BLKmode
 	    /* Don't record values of destinations set inside a libcall block
 	       since we might delete the libcall.  Things should have been set
 	       up so we won't want to reuse such a value, but we play it safe
