@@ -1494,7 +1494,7 @@ not_sp_operand (op, mode)
      register rtx op;
      enum machine_mode mode;
 {
-  return op != stack_pointer_rtx && general_operand (op, mode);
+  return op != stack_pointer_rtx && nonimmediate_operand (op, mode);
 }
 
 /* Return TRUE if X is a valid comparison operator for the dbcc 

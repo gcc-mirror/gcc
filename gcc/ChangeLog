@@ -1,3 +1,9 @@
+2001-07-30  Roman Zippel  <zippel@linux-m68k.org>
+
+	* config/m68k/m68k.md: Replace all general_operand with
+	nonimmediate_operand for all destinations.
+	* config/m68k/m68k.c (not_sp_operand): Likewise.
+
 Mon Jul 30 23:20:34 EDT 2001  John Wehle  (john@feith.com)
 
         * flow.c (merge_blocks): Return 1 if an extra jump is inserted.
