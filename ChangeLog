@@ -1,3 +1,9 @@
+2004-06-21  Christopher Faylor  <cgf@alum.bu.edu>
+
+	* configure.in: Check for srcdir/winsup rather than build directory
+	winsup.
+	* configure: Regenerate.
+
 2004-06-17  Corinna Vinschen  <vinschen@redhat.com>
 
 	* configure.in: Don't build Cygwin native newlib if winsup
