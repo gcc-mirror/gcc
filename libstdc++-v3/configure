@@ -23525,7 +23525,13 @@ done
   # Don't do ABI checking unless native.
   
 
-if test x"$build" = x"$host" && test -z "$with_cross_host"; then
+  case "$target" in
+    *-*-cygwin* ) enable_abi_check=no ;;
+    * ) enable_abi_check=yes ;;
+  esac
+
+if test x"$build" = x"$host" && test -z "$with_cross_host" \
+		 && test "$enable_abi_check" = yes ; then
   GLIBCPP_BUILD_ABI_CHECK_TRUE=
   GLIBCPP_BUILD_ABI_CHECK_FALSE='#'
 else
