@@ -114,7 +114,12 @@ namespace __gnu_test
   private:
     int		_M_size;
     test_type	_M_tests[15];
-    
+
+    func_callback&
+    operator=(const func_callback&);
+
+    func_callback(const func_callback&);
+
   public:
     func_callback(): _M_size(0) { };
 

@@ -1,6 +1,6 @@
 // New abi Support -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 //  
 // This file is part of GCC.
 //
@@ -42,13 +42,19 @@ namespace __cxxabiv1
   {
     struct uncatch_exception 
     {
-      uncatch_exception ();
+      uncatch_exception();
       ~uncatch_exception () { __cxa_begin_catch (&p->unwindHeader); }
       
-      __cxa_exception *p;
+      __cxa_exception* p;
+
+    private:
+      uncatch_exception&
+      operator=(const uncatch_exception&);
+
+      uncatch_exception(const uncatch_exception&);
     };
 
-    uncatch_exception::uncatch_exception ()
+    uncatch_exception::uncatch_exception() : p(0)
     {
       __cxa_eh_globals *globals = __cxa_get_globals_fast ();
 
