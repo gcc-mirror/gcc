@@ -4554,13 +4554,8 @@ tree_ssa_iv_optimize (struct loops *loops)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	flow_loop_dump (loop, dump_file, NULL, 1);
-      if (tree_ssa_iv_optimize_loop (&data, loop))
-	{
-#ifdef ENABLE_CHECKING
-	  verify_loop_closed_ssa ();
-          verify_stmts ();
-#endif
-	}
+
+      tree_ssa_iv_optimize_loop (&data, loop);
 
       if (loop->next)
 	{
@@ -4571,6 +4566,11 @@ tree_ssa_iv_optimize (struct loops *loops)
       else
 	loop = loop->outer;
     }
+
+#ifdef ENABLE_CHECKING
+  verify_loop_closed_ssa ();
+  verify_stmts ();
+#endif
 
   tree_ssa_iv_optimize_finalize (loops, &data);
 }
