@@ -7817,8 +7817,20 @@ expand_builtin_apply (function, arguments, argsize)
   if (! call_insn)
     abort ();
 
-  /* Put the register usage information on the CALL.  */
-  CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
+  /* Put the register usage information on the CALL.  If there is already
+     some usage information, put ours at the end.  */
+  if (CALL_INSN_FUNCTION_USAGE (call_insn))
+    {
+      rtx link;
+
+      for (link = CALL_INSN_FUNCTION_USAGE (call_insn); XEXP (link, 1) != 0;
+	   link = XEXP (link, 1))
+	;
+
+      XEXP (link, 1) = call_fusage;
+    }
+  else
+    CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* Restore the stack.  */
   emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
