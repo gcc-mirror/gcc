@@ -6177,6 +6177,25 @@ binary_float_operator (op, mode)
 }
 
 int
+binary_logical_operator (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  if (GET_MODE (op) != mode)
+    return 0;
+  switch (GET_CODE (op))
+    {
+    case IOR:
+    case AND:
+    case XOR:
+      return 1;
+    default:
+      break;
+    }
+  return 0;
+}
+
+int
 equality_comparison_operator (op, mode)
      rtx op;
      enum machine_mode mode;

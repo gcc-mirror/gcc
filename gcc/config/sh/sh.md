@@ -2038,6 +2038,33 @@
 	xor	%1, %2, %0
 	xori	%1, %2, %0"
   [(set_attr "type" "arith_media")])
+
+;; Combiner bridge pattern for 2 * sign extend -> logical op -> truncate.
+;; converts 2 * sign extend -> logical op into logical op -> sign extend
+(define_split
+  [(set (match_operand:DI 0 "arith_reg_operand" "")
+	(sign_extend:DI (match_operator 4 "binary_logical_operator"
+			  [(match_operand 1 "any_register_operand" "")
+			   (match_operand 2 "any_register_operand" "")])))]
+  "TARGET_SHMEDIA"
+  [(set (match_dup 5) (match_dup 4))
+   (set (match_dup 0) (sign_extend:DI (match_dup 5)))]
+"
+{
+  enum machine_mode inmode = GET_MODE (operands[1]);
+  int regno, offset = 0;
+
+  if (GET_CODE (operands[0]) == SUBREG)
+    {
+      offset = SUBREG_BYTE (operands[0]);
+      operands[0] = SUBREG_REG (operands[0]);
+    }
+  if (GET_CODE (operands[0]) != REG)
+    abort ();
+  if (! TARGET_LITTLE_ENDIAN)
+    offset += 8 - GET_MODE_SIZE (inmode);
+  operands[5] = gen_rtx_SUBREG (inmode, operands[0], offset);
+}")
 
 ;; -------------------------------------------------------------------------
 ;; Shifts and rotates
