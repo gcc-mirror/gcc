@@ -24,7 +24,22 @@ import java.io.*;
 
 class PlainSocketImpl extends SocketImpl
 {
+  // These fields are mirrored for use in native code to avoid cpp conflicts
+  // when the #defines in system header files are the same as the public fields.
+  static final int _Jv_TCP_NODELAY_ = SocketOptions.TCP_NODELAY,
+                   _Jv_SO_BINDADDR_ = SocketOptions.SO_BINDADDR,
+                   _Jv_SO_REUSEADDR_ = SocketOptions.SO_REUSEADDR,
+		   _Jv_IP_MULTICAST_IF_ = SocketOptions.IP_MULTICAST_IF,
+                   _Jv_SO_LINGER_ = SocketOptions.SO_LINGER,
+                   _Jv_SO_TIMEOUT_ = SocketOptions.SO_TIMEOUT,
+                   _Jv_SO_SNDBUF_ = SocketOptions.SO_SNDBUF,
+                   _Jv_SO_RCVBUF_ = SocketOptions.SO_RCVBUF;
+
   int fnum = -1;
+
+  public native void setOption(int optID, Object value) throws SocketException;
+
+  public native Object getOption(int optID) throws SocketException;
 
   protected native void create (boolean stream)  throws IOException;
 

@@ -11,17 +11,25 @@ details.  */
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
 #include <cni.h>
+#include <javaprims.h>
 #include <java/io/IOException.h>
 #include <java/io/FileDescriptor.h>
 #include <java/net/BindException.h>
 #include <java/net/ConnectException.h>
 #include <java/net/PlainSocketImpl.h>
 #include <java/net/InetAddress.h>
+#include <java/net/SocketException.h>
+#include <java/lang/InternalError.h>
+#include <java/lang/Object.h>
+#include <java/lang/Boolean.h>
+#include <java/lang/Class.h>
+#include <java/lang/Integer.h>
 
 #ifndef HAVE_SOCKLEN_T
 typedef int socklen_t;
@@ -93,6 +101,7 @@ void
 java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
 {
   union SockAddr u;
+  socklen_t addrlen = sizeof(u);
   jbyteArray haddress = host->address;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
@@ -115,12 +124,14 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
 #endif
   else
     goto error;
-  if (::connect (fnum, ptr, len) == 0)
-    {
-      address = host;
-      port = rport;
-      return;
-    }
+  if (::connect (fnum, ptr, len) != 0)
+    goto error;
+  address = host;
+  port = rport;
+  if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+    goto error;
+  localport = ntohs (u.address.sin_port);
+  return;  
  error:
   char msg[100];
   char* strerr = strerror (errno);
@@ -177,4 +188,192 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   char* strerr = strerror (errno);
   sprintf (msg, "SocketImpl.accept: %.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
+}
+
+void
+java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
+{
+  int val;
+  socklen_t val_len = sizeof (val);
+
+  if ( _Jv_IsInstanceOf(value,
+    java::lang::Class::forName(JvNewStringUTF("java.lang.Boolean"))))
+    {
+      java::lang::Boolean *boolobj = 
+        static_cast<java::lang::Boolean *> (value);
+      if (boolobj->booleanValue())
+        val = 1; 
+      else 
+        {
+	  if (optID == _Jv_SO_LINGER_)
+	    val = -1;
+	  else
+	    val = 0;
+        }
+    }
+  else  // assume value is an Integer
+    {
+      java::lang::Integer *intobj = 
+        static_cast<java::lang::Integer *> (value);          
+      val = (int) intobj->intValue();
+    }
+
+  switch (optID) 
+    {
+      case _Jv_TCP_NODELAY_ :
+#ifdef TCP_NODELAY
+        if (::setsockopt (fnum, IPPROTO_TCP, TCP_NODELAY, (char *) &val,
+	    val_len) != 0)
+	  goto error;    
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("TCP_NODELAY not supported")));      
+#endif /* TCP_NODELAY */
+        return;
+      case _Jv_SO_LINGER_ :
+#ifdef SO_LINGER
+        struct linger l_val;
+        l_val.l_onoff = (val != -1);
+        l_val.l_linger = val;
+        if (::setsockopt (fnum, SOL_SOCKET, SO_LINGER, (char *) &l_val,
+	    sizeof(l_val)) != 0)
+	  goto error;    
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_LINGER not supported")));      
+#endif /* SO_LINGER */
+        return;
+      case _Jv_SO_SNDBUF_ :
+      case _Jv_SO_RCVBUF_ :
+#if defined(SO_SNDBUF) && defined(SO_RCVBUF)
+        int opt;
+        optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
+        if (::setsockopt (fnum, SOL_SOCKET, opt, (char *) &val, val_len) != 0)
+	  goto error;    
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+#endif 
+        return;
+      case _Jv_SO_BINDADDR_ :
+        JvThrow (new java::net::SocketException (
+          JvNewStringUTF ("SO_BINDADDR: read only option")));
+        return;
+      case _Jv_IP_MULTICAST_IF_ :
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("IP_MULTICAST_IF: not valid for TCP")));
+        return;
+      case _Jv_SO_REUSEADDR_ :
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_REUSEADDR: option not implemented")));
+        return;
+      case _Jv_SO_TIMEOUT_ :
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_TIMEOUT: option not implemented")));
+        return;
+      default :
+        errno = ENOPROTOOPT;
+    }
+
+ error:
+  char msg[100];
+  char* strerr = strerror (errno);
+  sprintf (msg, "SocketImpl.setOption: %.*s", 80, strerr);
+  JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
+}
+
+java::lang::Object *
+java::net::PlainSocketImpl::getOption (jint optID)
+{
+  int val;
+  socklen_t val_len = sizeof(val);
+  union SockAddr u;
+  socklen_t addrlen = sizeof(u);
+  struct linger l_val;
+  socklen_t l_val_len = sizeof(l_val);
+
+  switch (optID)
+    {
+#ifdef TCP_NODELAY
+      case _Jv_TCP_NODELAY_ :
+        if (::getsockopt (fnum, IPPROTO_TCP, TCP_NODELAY, (char *) &val,
+	    &val_len) != 0)
+          goto error;
+        else
+	  return new java::lang::Boolean (val != 0);
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("TCP_NODELAY not supported")));      
+#endif       
+        break;
+
+      case _Jv_SO_LINGER_ :
+#ifdef SO_LINGER
+        if (::getsockopt (fnum, SOL_SOCKET, SO_LINGER, (char *) &l_val,
+	    &l_val_len) != 0)
+	  goto error;    
+        if (l_val.l_onoff)
+          return new java::lang::Integer (l_val.l_linger);
+        else
+	  return new java::lang::Boolean (false);
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_LINGER not supported")));      
+#endif
+        break;    
+      case _Jv_SO_RCVBUF_ :
+      case _Jv_SO_SNDBUF_ :
+#if defined(SO_SNDBUF) && defined(SO_RCVBUF)
+        int opt;
+        optID == _Jv_SO_SNDBUF_ ? opt = SO_SNDBUF : opt = SO_RCVBUF;
+        if (::getsockopt (fnum, SOL_SOCKET, opt, (char *) &val, &val_len) != 0)
+	  goto error;    
+        else
+	  return new java::lang::Integer (val);
+#else
+        JvThrow (new java::lang::InternalError (
+          JvNewStringUTF ("SO_RCVBUF/SO_SNDBUF not supported")));
+#endif    
+	break;
+      case _Jv_SO_BINDADDR_:
+	jbyteArray laddr;
+	if (::getsockname (fnum, (sockaddr*) &u, &addrlen) != 0)
+	  goto error;
+	if (u.address.sin_family == AF_INET)
+	  {
+	    laddr = JvNewByteArray (4);
+	    memcpy (elements (laddr), &u.address.sin_addr, 4);
+	  }
+#ifdef HAVE_INET6
+        else if (u.address.sin_family == AF_INET6)
+	  {
+	    laddr = JvNewByteArray (16);
+	    memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+	  }
+#endif
+	else
+	  goto error;
+	return new java::net::InetAddress (laddr, NULL);
+	break;
+      case _Jv_IP_MULTICAST_IF_ :
+	JvThrow (new java::lang::InternalError (
+	  JvNewStringUTF ("IP_MULTICAST_IF: option not implemented")));
+	break;
+      case _Jv_SO_REUSEADDR_ :
+	JvThrow (new java::lang::InternalError (
+	  JvNewStringUTF ("SO_REUSEADDR: option not implemented")));
+	break;
+      case _Jv_SO_TIMEOUT_ :
+	JvThrow (new java::lang::InternalError (
+	  JvNewStringUTF ("SO_TIMEOUT: option not implemented")));
+	break;
+      default :
+	errno = ENOPROTOOPT;
+    }
+
+ error:
+  char msg[100];
+  char* strerr = strerror (errno);
+  sprintf (msg, "SocketImpl.getOption: %.*s", 80, strerr);
+  JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }

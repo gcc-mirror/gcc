@@ -1,3 +1,74 @@
+1999-05-26  Bryce McKinlay <bryce@albatross.co.nz>
+
+	* java/net/DatagramSocket.java (getSoTimeout): Verify class type.
+	* java/net/DatagramSocketImpl.java (getOption): Made abstract.
+	(setOption): Made abstract.
+	* java/net/PlainDatagramSocketImpl.java: Mirror SocketOptions fields
+	to avoid cpp conflicts in native code.
+	* java/net/PlainSocketImpl.java: Mirror SocketOptions fields to avoid
+	cpp conflicts in native code.
+	* java/net/ServerSocket.java (toString): Prepended "ServerSocket".
+	* java/net/Socket.java (getLocalAddress): Implemented.
+	(setTcpNoDelay): Implemented.
+	(getTcpNoDelay): Implemented.
+	(setSoLinger): Implemented.
+	(getSoLinger): Implemented.
+	(getSoTimeout): Verify class type.
+	(setSendBufferSize): Implemented.
+	(getSendBufferSize): Implemented.
+	(setReceiveBufferSize): Implemented.
+	(getReceiveBufferSize): Implemented.
+	(toString): Prepended "Socket".
+	* java/net/SocketImpl.java (toString): Rewritten.
+	(getOption): Made abstract.
+	(setOption): Made abstract.
+	* java/net/natPlainSocketImpl.cc (connect): Set localport properly.
+	(setOption): Implemented.
+	(getOption): Implemented.
+
+1999-05-26  Warren Levy  <warrenl@cygnus.com>
+
+	* java/net/DatagramSocket.java (DatagramSocket): Get local host
+	address when null.  Set SO_REUSEADDR for multicasts.
+	(getSoTimeout): Implemented.
+	(setSoTimeout): Implemented.
+	* java/net/DatagramSocketImpl.java: Implement SocketOptions interface.
+	* java/net/MulticastSocket.java (getInterface): Implemented.
+	(setInterface): Implemented.
+	(setTimeToLive): Check for invalid ttl.
+	(joinGroup): Verify multicast address and security.
+	(leaveGroup): Verify multicast address and security.
+	(send): Implemented.
+	* java/net/PlainDatagramSocketImpl.java (timeout): Added.
+	(iface): Added.
+	(ttl): Added.
+	(setOption): Added.
+	(getOption): Added.
+	(mcastGrp): Added.
+	(getTTL): Implemented as non-native.
+	(setTTL): ditto.
+	(join): ditto.
+	(leave): ditto.
+	* java/net/ServerSocket.java (setSoTimeout): Implemented.
+	(getSoTimeout): Implemented.
+	(setSocketFactory): Made synchronized.
+	* java/net/Socket.java (setSoTimeout): Implemented.
+	(getSoTimeout): Implemented.
+	(close): Made synchronized.
+	(setSocketImplFactory): Made synchronized.
+	* java/net/SocketImpl.java: Implement SocketOptions interface.
+	* java/net/natInetAddress.cc: Corrected module name at top of file.
+	* java/net/natPlainDatagramSocketImpl.cc (McastReq): Added union.
+	(bind): Added FIXME.
+	(peek): Implemented.
+	(setTTL): Removed.
+	(getTTL): Removed.
+	(join): Removed.
+	(leave): Removed.
+	(mcastGrp): Added.
+	(setOption): Implemented for SO_REUSEADDR.
+	(getOption): Implemented for SO_REUSEADDR.
+
 1999-05-24  Tom Tromey  <tromey@cygnus.com>
 
 	* java/util/ResourceBundle.java (getBundle): Throw

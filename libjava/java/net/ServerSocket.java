@@ -1,4 +1,4 @@
-// Socket.java
+// ServerSocket.java
 
 /* Copyright (C) 1999  Cygnus Solutions
 
@@ -14,8 +14,7 @@ details.  */
   */
 
 /** Written using on-line Java Platform 1.2 API Specification.
-  * Status:  I believe all methods are implemented, but many
-  * of them just throw an exception.
+  * Status:  I believe all methods are implemented.
   */
 
 package java.net;
@@ -81,25 +80,31 @@ public class ServerSocket
     impl.close();
   }
 
-  public void setSoTimeout (int timeout) throws SocketException
+  public synchronized void setSoTimeout (int timeout) throws SocketException
   {
-    throw new InternalError("ServerSocket.setSoTimeout not implemented");
+    if (timeout < 0)
+      throw new IllegalArgumentException("Invalid timeout: " + timeout);
+
+    impl.setOption(SocketOptions.SO_TIMEOUT, new Integer(timeout));
   }
 
-  public int getSoTimeout () throws SocketException
+  public synchronized int getSoTimeout () throws SocketException
   {
-    throw new InternalError("ServerSocket.getSoTimeout not implemented");
+    Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
+    if (timeout instanceof Integer) 
+      return ((Integer)timeout).intValue();
+    else
+      return 0;
   }
 
   public String toString ()
   {
-    return impl.toString();
+    return "ServerSocket" + impl.toString();
   }
 
-  public static void setSocketFactory (SocketImplFactory fac)
+  public static synchronized void setSocketFactory (SocketImplFactory fac)
     throws IOException
   {
     factory = fac;
   }
-
 }

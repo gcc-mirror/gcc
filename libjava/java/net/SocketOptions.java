@@ -29,10 +29,10 @@ public abstract interface SocketOptions
   public static final int SO_LINGER = 0x80;
   public static final int SO_TIMEOUT = 0x1006;
 
-// JDK1.2
+  // JDK1.2
   public static final int SO_SNDBUF = 0x1001;
 
-// JDK1.2
+  // JDK1.2
   public static final int SO_RCVBUF = 0x1002;
 
   public void setOption(int optID, Object value) throws SocketException;

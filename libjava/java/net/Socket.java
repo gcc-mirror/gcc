@@ -14,8 +14,7 @@ details.  */
   */
 
 /** Written using on-line Java Platform 1.2 API Specification.
-  * Status:  I believe all methods are implemented, but many
-  * of them just throw an exception.
+  * Status:  I believe all methods are implemented.
   */
 
 package java.net;
@@ -116,9 +115,18 @@ public class Socket
 
   public InetAddress getLocalAddress ()
   {
-    // There doesn't seem to be any way to implement this
-    // using a (generic) SocketImpl ...  What am I missing?
-    throw new InternalError("Socket.getLocalAddres not implemented");
+    InetAddress localAddress;
+    try
+      {
+	localAddress = (InetAddress)impl.getOption(SocketOptions.SO_BINDADDR);
+      }
+    catch (SocketException x)
+      {
+	// (hopefully) shouldn't happen
+	System.err.println(x);
+        throw new java.lang.InternalError("Error in PlainSocketImpl.getOption");
+      }
+    return localAddress;
   }
 
   public int getPort ()
@@ -143,65 +151,98 @@ public class Socket
 
   public void setTcpNoDelay (boolean on)  throws SocketException
   {
-    throw new InternalError("Socket.setTcpNoDelay not implemented");
+    impl.setOption( SocketOptions.TCP_NODELAY, new Boolean(on) );
   }
 
   public boolean getTcpNoDelay() throws SocketException
   {
-    throw new InternalError("Socket.getTcpNoDelay not implemented");
+    Boolean bool = (Boolean)impl.getOption( SocketOptions.TCP_NODELAY );
+    return bool.booleanValue();
   }
 
   public void setSoLinger(boolean on, int linger) throws SocketException
   {
-    throw new InternalError("Socket.setSoLinger not implemented");
+    if ( on && (linger >= 0) ) 
+      {
+	if (linger > 65535)
+	  linger = 65535;
+	impl.setOption( SocketOptions.SO_LINGER, new Integer(linger) );
+      } 
+    else if ( on && (linger < 0) ) 
+      throw new IllegalArgumentException("SO_LINGER must be >= 0");
+    else
+      impl.setOption( SocketOptions.SO_LINGER, new Boolean(false) );
   }
 
   public int getSoLinger() throws SocketException
   {
-    throw new InternalError("Socket.getSoLinger not implemented");
+    Object linger = impl.getOption(SocketOptions.SO_LINGER);    
+    if (linger instanceof Integer) 
+      return ((Integer)linger).intValue();
+    else
+      return -1;
   }
 
-  public void setSoTimeout (int timeout) throws SocketException
+  public synchronized void setSoTimeout (int timeout) throws SocketException
   {
-    throw new InternalError("Socket.setSoTimeout not implemented");
+    if (timeout < 0)
+      throw new IllegalArgumentException("Invalid timeout: " + timeout);
+
+    impl.setOption(SocketOptions.SO_TIMEOUT, new Integer(timeout));
   }
 
-  public int getSoTimeout () throws SocketException
+  public synchronized int getSoTimeout () throws SocketException
   {
-    throw new InternalError("Socket.getSoTimeout not implemented");
+    Object timeout = impl.getOption(SocketOptions.SO_TIMEOUT);
+    if (timeout instanceof Integer) 
+      return ((Integer)timeout).intValue();
+    else
+      return 0;
   }
 
+  // JDK1.2
   public void setSendBufferSize (int size) throws SocketException
   {
-    throw new InternalError("Socket.setSendBufferSize not implemented");
+    if (size <= 0)
+      throw new IllegalArgumentException("Invalid buffer size: " + size);
+
+    impl.setOption(SocketOptions.SO_SNDBUF, new Integer(size));
   }
 
+  // JDK1.2
   public int getSendBufferSize () throws SocketException
   {
-    throw new InternalError("Socket.getSendBufferSize not implemented");
+    Integer buf = (Integer)impl.getOption(SocketOptions.SO_SNDBUF);
+    return buf.intValue();
   }
 
+  // JDK1.2
   public void setReceiveBufferSize (int size) throws SocketException
   {
-    throw new InternalError("Socket.setReceiveBufferSize not implemented");
+    if (size <= 0)
+      throw new IllegalArgumentException("Invalid buffer size: " + size);
+
+    impl.setOption(SocketOptions.SO_RCVBUF, new Integer(size));
   }
 
+  // JDK1.2
   public int getReceiveBufferSize () throws SocketException
   {
-    throw new InternalError("Socket.getReceiveBufferSize not implemented");
+    Integer buf = (Integer)impl.getOption(SocketOptions.SO_RCVBUF);
+    return buf.intValue();
   }
 
-  public void close ()  throws IOException
+  public synchronized void close ()  throws IOException
   {
     impl.close();
   }
 
   public String toString ()
   {
-    return impl.toString();
+    return "Socket" + impl.toString();
   }
 
-  public static void setSocketImplFactory (SocketImplFactory fac)
+  public static synchronized void setSocketImplFactory (SocketImplFactory fac)
     throws IOException
   {
     factory = fac;
