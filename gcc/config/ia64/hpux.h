@@ -105,7 +105,7 @@ do {							\
 #define BITS_BIG_ENDIAN 1
 
 #undef TARGET_DEFAULT
-#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_BIG_ENDIAN)
+#define TARGET_DEFAULT (MASK_DWARF2_ASM | MASK_BIG_ENDIAN | MASK_ILP32)
 
 /* This needs to be set to force structure arguments with a single
    field to be treated as structures and not as the type of their
