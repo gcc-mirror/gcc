@@ -161,15 +161,32 @@ EOF
     inform "Tagging sources as ${TAG}"
     ${CVS} rtag -r ${CVSBRANCH} -F ${TAG} gcc || \
       error "Could not tag sources"
-    CVSBRANCH=$TAG
+    EXPORTTAG="-r${TAG}"
+    EXPORTDATE=""
+  else
+    if [ ${CVSBRANCH} != "HEAD" ]; then
+      EXPORTTAG="-r${CVSBRANCH}"
+    else
+      # HEAD is the default branch, no need to specify it.
+      EXPORTTAG=""
+    fi
+    EXPORTDATE="-D`date -u +"%Y-%m-%d %H:%M"` UTC"
   fi
 
   # Export the current sources.
-  inform "Retrieving release sources"
-  ${CVS} \
-       export -d "`basename ${SOURCE_DIRECTORY}`" \
-       -r ${CVSBRANCH} gcc || \
-    error "Could not retrieve release sources"
+  inform "Retrieving sources (cvs export ${EXPORTTAG} ${EXPORTDATE} gcc)"
+
+  if [ -z "${EXPORTTAG}" ]; then
+    ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
+       "${EXPORTDATE}" gcc || \
+      error "Could not retrieve sources"
+  elif [ -z "${EXPORTDATE}" ]; then
+    ${CVS} export -d "`basename ${SOURCE_DIRECTORY}`" \
+       "${EXPORTTAG}" gcc || \
+      error "Could not retrieve sources"
+  else
+    error "Cannot specify -r and -D at the same time"
+  fi
 
   # Run gcc_update on them to set up the timestamps nicely.
   changedir "gcc-${RELEASE}"
