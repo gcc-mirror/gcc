@@ -140,6 +140,15 @@ cpp_reader  parse_in;
 
 tree c_global_trees[CTI_MAX];
 
+/* Nonzero means don't recognize the non-ANSI builtin functions.  */
+
+int flag_no_builtin;
+
+/* Nonzero means don't recognize the non-ANSI builtin functions.
+   -ansi sets this.  */
+
+int flag_no_nonansi_builtin;
+
 /* Nonzero means warn about possible violations of sequence point rules.  */
 
 int warn_sequence_point;
@@ -4767,16 +4776,10 @@ lang_get_alias_set (t)
 }
 
 /* Build tree nodes and builtin functions common to both C and C++ language
-   frontends.
-   CPLUS_MODE is nonzero if we are called from the C++ frontend, we generate
-   some stricter prototypes in that case.
-   NO_BUILTINS and NO_NONANSI_BUILTINS contain the respective values of
-   the language frontend flags flag_no_builtin and
-   flag_no_nonansi_builtin.  */
+   frontends.  */
 
 void
-c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
-    int cplus_mode, no_builtins, no_nonansi_builtins;
+c_common_nodes_and_builtins ()
 {
   tree temp;
   tree memcpy_ftype, memset_ftype, strlen_ftype;
@@ -4889,7 +4892,8 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 						 const_string_type_node,
 						 endlink)));
 
-  traditional_len_type_node = (flag_traditional && ! cplus_mode
+  traditional_len_type_node = ((flag_traditional && 
+				c_language != clk_cplusplus)
 			       ? integer_type_node : sizetype);
   traditional_len_endlink = tree_cons (NULL_TREE, traditional_len_type_node,
 				       endlink);
@@ -4908,9 +4912,11 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 			   tree_cons (NULL_TREE, const_string_type_node,
 				      endlink));
 
-  traditional_ptr_type_node = (flag_traditional && ! cplus_mode
+  traditional_ptr_type_node = ((flag_traditional && 
+				c_language != clk_cplusplus)
 			       ? string_type_node : ptr_type_node);
-  traditional_cptr_type_node = (flag_traditional && ! cplus_mode
+  traditional_cptr_type_node = ((flag_traditional && 
+				 c_language != clk_cplusplus)
 			       ? const_string_type_node : const_ptr_type_node);
 
   /* Prototype for memcpy.  */
@@ -4970,7 +4976,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 		    BUILT_IN_NORMAL, NULL_PTR);
   /* Define alloca, ffs as builtins.
      Declare _exit just to mark it as volatile.  */
-  if (! no_builtins && ! no_nonansi_builtins)
+  if (! flag_no_builtin && ! flag_no_nonansi_builtin)
     {
 #ifndef SMALL_STACK
       temp = builtin_function ("alloca", ptr_ftype_sizetype,
@@ -5166,7 +5172,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
     builtin_function ("__builtin_fputs", int_ftype_any,
 		      BUILT_IN_FPUTS, BUILT_IN_NORMAL, "fputs");
 
-  if (! no_builtins)
+  if (! flag_no_builtin)
     {
       builtin_function ("abs", int_ftype_int, BUILT_IN_ABS,
 			BUILT_IN_NORMAL, NULL_PTR);
@@ -5178,7 +5184,7 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 			BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("labs", long_ftype_long, BUILT_IN_LABS,
 			BUILT_IN_NORMAL, NULL_PTR);
-      if (flag_isoc99 || ! no_nonansi_builtins)
+      if (flag_isoc99 || ! flag_no_nonansi_builtin)
 	builtin_function ("llabs", longlong_ftype_longlong, BUILT_IN_LLABS,
 			  BUILT_IN_NORMAL, NULL_PTR);
       builtin_function ("memcpy", memcpy_ftype, BUILT_IN_MEMCPY,
@@ -5225,27 +5231,19 @@ c_common_nodes_and_builtins (cplus_mode, no_builtins, no_nonansi_builtins)
 
       /* Declare these functions volatile
 	 to avoid spurious "control drops through" warnings.  */
-      temp = builtin_function ("abort", cplus_mode ? void_ftype : void_ftype_any,
+      temp = builtin_function ("abort", 
+			       ((c_language == clk_cplusplus)
+				? void_ftype : void_ftype_any),
 			       0, NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
 
-#if 0 /* ??? The C++ frontend used to do this.  */
-      /* Well, these are actually ANSI, but we can't set DECL_BUILT_IN on
-	 them...  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-#endif
       temp = builtin_function ("exit",
-			       cplus_mode ? void_ftype_int : void_ftype_any,
+			       ((c_language == clk_cplusplus)
+				? void_ftype_int : void_ftype_any),
 			       0, NOT_BUILT_IN, NULL_PTR);
       TREE_THIS_VOLATILE (temp) = 1;
       TREE_SIDE_EFFECTS (temp) = 1;
-
-#if 0 /* ??? The C++ frontend used to do this.  */
-      /* Well, these are actually ANSI, but we can't set DECL_BUILT_IN on
-	 them...  */
-      DECL_BUILT_IN_NONANSI (temp) = 1;
-#endif
     }
 
 #if 0
