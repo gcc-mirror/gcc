@@ -625,7 +625,13 @@ validate_replace_rtx_1 (loc, from, to, object)
 		  inner_mode = SImode;
 
 		if (GET_MODE_CLASS (mode) != MODE_INT)
-		  abort ();
+		  {
+		    /* Substitute in something that we know won't be
+		       recognized.  */
+		    to = gen_rtx_CLOBBER (GET_MODE (x), const0_rtx);
+		    validate_change (object, loc, to, 1);
+		    return;
+		  }
 
 		if (BYTES_BIG_ENDIAN || WORDS_BIG_ENDIAN)
 		  {
