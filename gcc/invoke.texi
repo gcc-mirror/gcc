@@ -5170,7 +5170,6 @@ than 8 bytes away.
 Align the start of functions to a 2 raised to @var{num} byte boundary.
 If @samp{-malign-functions} is not specified, the default is 2 if optimizing
 for a 386, and 4 if optimizing for a 486.
-@end table
 
 @item -mpreferred-stack-boundary=@var{num}
 Attempt to keep the stack boundary aligned to a 2 raised to @var{num}
