@@ -78,10 +78,15 @@ private boolean resizable = true;
   */
 private String title;
 
-  /**
-   * This field indicates whether the dialog is undecorated or not.
-   */
-  private boolean undecorated = false;
+/**
+  * This field indicates whether the dialog is undecorated or not.
+  */
+private boolean undecorated = false;
+
+/**
+  * Indicates that we are blocked for modality in show
+  */
+private boolean blocked = false;
 
 /*************************************************************************/
 
@@ -380,11 +385,78 @@ addNotify()
 
 /**
   * Makes this dialog visible and brings it to the front.
+  * If the dialog is modal and is not already visible, this call will not
+  *  return until the dialog is hidden by someone calling hide or dispose.
+  * If this is the event dispatching thread we must ensure that another event
+  *  thread runs while the one which invoked this method is blocked. 
   */
-public void
+public synchronized void
 show()
 {
   super.show();
+  if (isModal())
+    {
+      // If already shown (and blocked) just return
+      if (blocked)
+	return;
+
+      /* FIXME: Currently this thread may block forever if it called from
+         the event dispatch thread, so we only do this for FileDialog which
+         only depends on a signal which is delivered in the Gtk thread.
+         Remove this test when we add code to start another event
+         dispatch thread. */
+      if ((Thread.currentThread () instanceof EventDispatchThread) &&
+          !(this instanceof FileDialog))
+        return;
+      
+      try 
+        {
+	  blocked = true;
+	  wait ();
+	  blocked = false;
+        } 
+      catch (InterruptedException e)
+        {
+	  blocked = false;
+	  return;
+        }
+    }  
+}
+
+/*************************************************************************/
+
+/**
+  * Hides the Dialog and then
+  * causes show() to return if it is currently blocked.
+  */
+
+public synchronized void 
+hide ()
+{
+  if (blocked)
+    {
+      notifyAll ();
+    }
+
+  super.hide();
+}
+
+/*************************************************************************/
+
+/**
+  * Disposes the Dialog and then causes show() to return
+  * if it is currently blocked.
+  */
+
+public synchronized void 
+dispose ()
+{
+  if (blocked)
+    {
+      notifyAll ();
+    }
+
+  super.dispose();
 }
 
 /*************************************************************************/

@@ -1,3 +1,33 @@
+2004-01-08  Fernando Nasser  <fnasser@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFileDialogPeer.java (nativeSetFile):
+	New name for the former setFile native method.
+	(setFile): New method.
+	(setDirectory): Implemented.
+	(connectSignals): New native method.
+	(setFilenameFilter): Improve comment.
+	(getGraphics): Comment.
+	(gtkHideFileDialog): New method.
+	(gtkDisposeFileDialog): New method.
+	(gtkSetFilename): New method.
+	* java/awt/Dialog.java (show): Block on modal dialogs, but only
+	for FileDialog for now.
+	(hide): New method.
+	(dispose): New method.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkFileDialogPeer.c
+	(Java_gnu_java_awt_peer_gtk_GtkFileDialog_create): Replace
+	deprecated creation functions.  Make dialog modal.  Add it to the
+	window group.
+	(Java_gnu_java_awt_peer_gtk_GtkFileDialog_connectSignals): New
+	function.
+	(Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_gtkFileSelectionSetFilename):
+	Rename to...
+	(Java_gnu_java_awt_peer_gtk_GtkFileDialogPeer_nativeSetFile): New
+	name.
+	(window_closed): New function.
+	(ok_clicked): New function.
+	(cancel_clicked): New function.
+
 2004-01-08  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/JLayeredPane.java: Revert changes to standard
