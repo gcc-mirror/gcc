@@ -6,7 +6,10 @@ CROSS_LIBGCC1 =
 
 # These are really part of libgcc1, but this will cause them to be
 # built correctly, so... [taken from t-sparclite]
-LIB2FUNCS_EXTRA = eabi.S tramp.S
+LIB2FUNCS_EXTRA = tramp.S
+
+# This one can't end up in shared libgcc
+LIB2FUNCS_STATIC_EXTRA = eabi.S
 
 # We want fine grained libraries, so use the new code to build the
 # floating point emulation libraries.
