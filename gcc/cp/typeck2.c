@@ -732,6 +732,7 @@ process_init_constructor (type, init, elts)
 	    }
 	  else if (! zero_init_p (TREE_TYPE (type)))
 	    next1 = build_zero_init (TREE_TYPE (type),
+				     /*nelts=*/NULL_TREE,
 				     /*static_storage_p=*/false);
 	  else
 	    /* The default zero-initialization is fine for us; don't
@@ -850,6 +851,7 @@ process_init_constructor (type, init, elts)
 
 	      if (! zero_init_p (TREE_TYPE (field)))
 		next1 = build_zero_init (TREE_TYPE (field),
+					 /*nelts=*/NULL_TREE,
 					 /*static_storage_p=*/false);
 	      else
 		/* The default zero-initialization is fine for us; don't
