@@ -3869,13 +3869,12 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		      char *x = (char *) alloca (strlen (name) * 2 + 1);
 		      char *buf = x;
 		      char *y = name;
+		      int flag = 0;
 
 		      /* Copy all of NAME into BUF, but put __ after
 			 every -D and at the end of each arg,  */
 		      while (1)
 			{
-			  int flag;
-
 			  if (! strncmp (y, "-D", 2))
 			    {
 			      *x++ = '-';
