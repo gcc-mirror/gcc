@@ -205,7 +205,7 @@ struct reg_stat {
   int				last_set_label;
 
   /* These fields are maintained in parallel with last_set_value and are
-     used to store the mode in which the register was last set, te bits
+     used to store the mode in which the register was last set, the bits
      that were known to be zero when it was last set, and the number of
      sign bits copies it was known to have when it was last set.  */
 
