@@ -1,3 +1,8 @@
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
 The GCC project would like to thank its many contributors.  Without them the
 project would not have been nearly as successful as it has been.  Any omissions
 in this list are accidental.  Feel free to contact
