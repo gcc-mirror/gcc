@@ -1,5 +1,14 @@
 2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
 
+	PR other/19896
+	* treetree.c (tree_code_create_variable): Initialize DECL_EXTERNAL,
+	TREE_PUBLIC, and TREE_STATIC for var_decl to zero.  Don't call
+	rest_of_decl_compilation on static variables.
+	(pushdecl): Put DECL_EXPRs into the current BIND_EXPR for automatic
+	variables.
+	
+2005-02-24  James A. Morrison  <phython@gcc.gnu.org>
+
 	PR other/19897
 	* parse.y: (function_prototype): Accept EXTERNAL_REFERENCE_STORAGE.
 	Move function parameters check from ...
