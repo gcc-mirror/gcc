@@ -1,6 +1,4 @@
-/* Definitions of various defaults for how to do assembler output
-   (most of which are designed to be appropriate for GAS or for
-   some BSD assembler).
+/* Definitions of various defaults for tm.h macros.
    Copyright (C) 1992, 1996, 1997, 1998, 1999, 2000, 2001
    Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
@@ -190,6 +188,33 @@ do { ASM_OUTPUT_LABEL(FILE,LABEL_ALTERNATE_NAME (INSN)); } while (0)
      do { named_section (NULL_TREE, ".eh_frame", 0); } while (0)
 #  endif
 # endif
+#endif
+
+/* If we have no definition for UNIQUE_SECTION, but do have the 
+   ability to generate arbitrary sections, construct something
+   reasonable.  */
+#ifdef ASM_OUTPUT_SECTION_NAME
+#ifndef UNIQUE_SECTION
+#define UNIQUE_SECTION(DECL,RELOC)				\
+do {								\
+  int len;							\
+  const char *name;						\
+  char *string;							\
+								\
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));	\
+  /* Strip off any encoding in name.  */			\
+  STRIP_NAME_ENCODING (name, name);				\
+								\
+  len = strlen (name) + 1;					\
+  string = alloca (len + 1);					\
+  sprintf (string, ".%s", name);				\
+								\
+  DECL_SECTION_NAME (DECL) = build_string (len, string);	\
+} while (0)
+#endif
+#ifndef UNIQUE_SECTION_P
+#define UNIQUE_SECTION_P(DECL) 0
+#endif
 #endif
 
 /* By default, we generate a label at the beginning and end of the
