@@ -4143,12 +4143,8 @@ check_cp_case_value (value)
 
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   STRIP_TYPE_NOPS (value);
-
-  if (TREE_READONLY_DECL_P (value))
-    {
-      value = decl_constant_value (value);
-      STRIP_TYPE_NOPS (value);
-    }
+  value = decl_constant_value (value);
+  STRIP_TYPE_NOPS (value);
   value = fold (value);
 
   if (TREE_CODE (value) != INTEGER_CST

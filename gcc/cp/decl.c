@@ -9124,8 +9124,7 @@ compute_array_index_type (name, size)
   STRIP_TYPE_NOPS (size);
 
   /* It might be a const variable or enumeration constant.  */
-  if (TREE_READONLY_DECL_P (size))
-    size = decl_constant_value (size);
+  size = decl_constant_value (size);
 
   /* If this involves a template parameter, it will be a constant at
      instantiation time, but we don't know what the value is yet.
@@ -13019,8 +13018,7 @@ build_enumerator (name, value, enumtype)
       /* Validate and default VALUE.  */
       if (value != NULL_TREE)
 	{
-	  if (TREE_READONLY_DECL_P (value))
-	    value = decl_constant_value (value);
+	  value = decl_constant_value (value);
 
 	  if (TREE_CODE (value) == INTEGER_CST)
 	    {

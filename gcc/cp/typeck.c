@@ -1710,7 +1710,7 @@ decay_conversion (exp)
      don't do this for arrays, though; we want the address of the
      first element of the array, not the address of the first element
      of its initializing constant.  */
-  else if (TREE_READONLY_DECL_P (exp) && code != ARRAY_TYPE)
+  else if (code != ARRAY_TYPE)
     {
       exp = decl_constant_value (exp);
       type = TREE_TYPE (exp);
@@ -5084,8 +5084,7 @@ build_compound_expr (list)
   register tree rest;
   tree first;
 
-  if (TREE_READONLY_DECL_P (TREE_VALUE (list)))
-    TREE_VALUE (list) = decl_constant_value (TREE_VALUE (list));
+  TREE_VALUE (list) = decl_constant_value (TREE_VALUE (list));
 
   if (TREE_CHAIN (list) == 0)
     {
@@ -5272,8 +5271,7 @@ build_reinterpret_cast (type, expr)
   else if ((TYPE_PTRFN_P (type) && TYPE_PTRFN_P (intype))
 	   || (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype)))
     {
-      if (TREE_READONLY_DECL_P (expr))
-	expr = decl_constant_value (expr);
+      expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
   else if ((TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (intype))
@@ -5283,16 +5281,14 @@ build_reinterpret_cast (type, expr)
 	cp_pedwarn ("reinterpret_cast from `%T' to `%T' casts away const (or volatile)",
 		    intype, type);
 
-      if (TREE_READONLY_DECL_P (expr))
-	expr = decl_constant_value (expr);
+      expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
     {
       pedwarn ("ISO C++ forbids casting between pointer-to-function and pointer-to-object");
-      if (TREE_READONLY_DECL_P (expr))
-	expr = decl_constant_value (expr);
+      expr = decl_constant_value (expr);
       return fold (build1 (NOP_EXPR, type, expr));
     }
   else
@@ -5498,8 +5494,7 @@ build_c_cast (type, expr)
     {
       tree ovalue;
 
-      if (TREE_READONLY_DECL_P (value))
-	value = decl_constant_value (value);
+      value = decl_constant_value (value);
 
       ovalue = value;
       value = convert_force (type, value, CONV_C_CAST);
@@ -6493,7 +6488,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
   /* Simplify the RHS if possible.  */
   if (TREE_CODE (rhs) == CONST_DECL)
     rhs = DECL_INITIAL (rhs);
-  else if (TREE_READONLY_DECL_P (rhs) && coder != ARRAY_TYPE)
+  else if (coder != ARRAY_TYPE)
     rhs = decl_constant_value (rhs);
 
   /* [expr.ass]

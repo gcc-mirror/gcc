@@ -1779,13 +1779,15 @@ resolve_offset_ref (exp)
   return NULL_TREE;
 }
 
-/* Return either DECL or its known constant value (if it has one).  */
+/* If DECL is a `const' declaration, and its value is a known
+   constant, then return that value.  */
 
 tree
 decl_constant_value (decl)
      tree decl;
 {
-  if (! TREE_THIS_VOLATILE (decl)
+  if (TREE_READONLY_DECL_P (decl)
+      && ! TREE_THIS_VOLATILE (decl)
       && DECL_INITIAL (decl)
       && DECL_INITIAL (decl) != error_mark_node
       /* This is invalid if initial value is not constant.

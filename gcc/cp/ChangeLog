@@ -1,3 +1,23 @@
+2000-04-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (TREE_READONLY_DECL_P): Use DECL_P.
+	* init.c (decl_constant_value): Check TREE_READONLY_DECL_P.
+	* call.c (convert_like_real): Don't test TREE_READONLY_DECL_P
+	before calling decl_constant_value.
+	* class.c (check_bitfield_decl): Likewise.
+	* cvt.c (ocp_convert): Likewise.
+	(convert): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	(build_enumerator): Likewise.
+	* decl2.c (check_cp_case_value): Likewise.
+	* pt.c (convert_nontype_argument): Likewise.
+	(tsubst): Likewise.
+	* typeck.c (decay_conversion): Likewise.
+	(build_compound_expr): Likewise.
+	(build_reinterpret_cast): Likewise.
+	(build_c_cast): Likewise.
+	(convert_for_assignment): Likewise.
+	
 2000-04-26  Jason Merrill  <jason@casey.cygnus.com>
 
 	* decl.c (finish_function): Don't play games with DECL_INLINE.
