@@ -1,3 +1,8 @@
+2001-01-16  Hans Boehm  <hans_boehm@hp.com>
+
+	* java/math/BigInteger.java (setShiftRight): Only do negative shift
+	if count != 0.
+
 2001-01-14  Mark Wielaard  <mark@klomp.org>
 	* java/net/URLDecoder.java: Thanks Edgar Villanueva (edgarvil@home.com)
 	(decode): Merge comments with Classpath, don't throw Exception

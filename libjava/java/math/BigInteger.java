@@ -1401,11 +1401,13 @@ public class BigInteger extends Number implements Comparable
 	      realloc(d_len);
 	    if (count == 0)
 	      System.arraycopy(x.words, word_count, words, 0, d_len);
-	    else
-	      MPN.rshift(words, x.words, word_count, d_len, count);
+            else
+	      {
+		MPN.rshift(words, x.words, word_count, d_len, count);
+        	if (neg)
+        	  words[d_len-1] |= -1 << (32 - count);
+              }
 	    ival = d_len;
-	    if (neg)
-	      words[ival-1] |= -1 << (32 - count);
 	  }
       }
   }
