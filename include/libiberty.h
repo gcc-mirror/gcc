@@ -56,6 +56,10 @@ extern char *basename ();
 # endif
 #endif
 
+/* A well-defined basename () that is always compiled in.  */
+
+extern char *lbasename PARAMS ((const char *));
+
 /* Concatenate an arbitrary number of strings, up to (char *) NULL.
    Allocates memory using xmalloc.  */
 

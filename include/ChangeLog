@@ -1,3 +1,7 @@
+2001-03-20  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* libiberty.h: Declare lbasename ().
+
 2001-03-20  Jim Blandy  <jimb@redhat.com>
 
 	* demangle.h (enum gnu_v3_constructor_kinds,
