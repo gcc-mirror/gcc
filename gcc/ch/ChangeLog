@@ -1,3 +1,9 @@
+Wed Jan  6 02:53:38 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: Add some missing $(exeext).  Remove some obsolete
+	runtime stuff.
+	* Make-lang.in: Similarly.
+	
 Tue Nov 24 09:57:34 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (lex.c): Do not depend on hash.h.

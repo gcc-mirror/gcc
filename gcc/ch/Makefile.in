@@ -126,7 +126,7 @@ all: all.indirect
 
 # Now figure out from those variables how to compile and link.
 
-all.indirect: Makefile ../chill ../cc1chill
+all.indirect: Makefile ../chill ../cc1chill$(exeext)
 
 # IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
@@ -202,7 +202,7 @@ CHILL_OBJS = parse.o actions.o except.o grant.o lang.o \
 OBJS = `cat ../stamp-objlist`
 OBJDEPS = ../stamp-objlist
 
-../cc1chill: $(P) $(CHILL_OBJS) $(OBJDEPS) $(LIBDEPS)
+../cc1chill$(exeext): $(P) $(CHILL_OBJS) $(OBJDEPS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CHILL_OBJS) \
 	      $(OBJS) $(C_OBJS) $(LIBS)
 
@@ -215,7 +215,7 @@ utils/printf : $(srcdir)/utils/printf.c
 # This is the top-level trigger for a CHILL regression test.
 # It also builds those tools needed for CHILL regression testing.
 #
-check: ../cc1chill utils/printf
+check: ../cc1chill$(exeext) utils/printf
 	cd ..; $(MAKE) $(FLAGS_TO_PASS) xgcc gcov cpp cc1 ld
 	$(srcdir)/regression.sh -d -p
 
@@ -238,7 +238,7 @@ clean:  mostlyclean
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
-native: config.status ../cc1chill ../chill
+native: config.status ../cc1chill$(exeext) ../chill
 
 # Compiling object files from source files.
 
