@@ -17,7 +17,65 @@ Mon May 22 17:38:48 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 	(c++.mostlyclean, stage[1-4]): Use $(objext) in object file names.
 	* Makefile.in (../cc1plus): Use $(exeext) in name of executable.
 
+Wed May 24 01:39:03 1995  Jason Merrill  <jason@deneb.cygnus.com>
+
+	* call.c (build_method_call): parms can be null, duh.
+
+Tue May 23 01:32:09 1995  Jason Merrill  <jason@deneb.cygnus.com>
+
+	* call.c (build_method_call): If convert_arguments failed, just bail.
+
+Fri May 19 10:31:11 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* cvt.c (convert_force): Pass LOOKUP_NORMAL to cp_convert.
+
+	* tree.c (copy_to_permanent): Oops.
+
+Fri May 19 10:01:07 1995  Brendan Kehoe  (brendan@lisa.cygnus.com)
+
+	* cp-tree.h (break_out_target_exprs): Add decl.
+
+Thu May 18 13:02:30 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* decl.c (start_function): Move *all* interface handling stuff after
+	the pushdecl.
+
+	* tree.c (mapcar): Renamed from make_deep_copy and generalized.
+	(perm_manip): Return t if permanent, otherwise 0.
+	(copy_to_permanent): Use them.
+	(bot_manip): Helper for break_out_target_exprs.
+	(break_out_target_exprs): New function.  Uses mapcar.
+
+	* typeck.c (convert_arguments): Use it.
+
+	* method.c (hack_identifier): Use convert_from_reference to
+	dereference a reference.
+
+Wed May 17 17:54:54 1995  Mike Stump  <mrs@cygnus.com>
+
+	* call.c (convert_harshness): Move reference bashing before pointer
+	to member bashing.
+
+Wed May 17 16:57:53 1995  Mike Stump  <mrs@cygnus.com>
+
+	* cvt.c (convert_to_reference): Only complain, if complaints are
+	wanted.
+	typeck.c (build_function_call_real): Ditto.  If LOOKUP_SPECULATIVELY
+	is set and something won't work, return NULL_TREE.
+	cvt.c (cp_convert): Ditto.  Pass flags down to build_method_call.
+	(convert): Pass LOOKUP_NORMAL to cp_convert.
+	typeck.c (convert_for_assignment): Ditto.
+	(convert_force): Pass LOOKUP_COMPLAIN to cp_convert.
+	typeck.c (convert_arguments): Get out early if we get an
+	error_mark_node.
+	(convert_for_initialization): Use cp_convert instead of convert so
+	that we can pass flags down.
+	* cp-tree.h (LOOKUP_SPECULATIVELY): Added documentation.
+
 Wed May 17 01:43:58 1995  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* typeck2.c (store_init_value): Don't take the MAIN_VARIANT of the
+	decl type.
 
 	* class.c (finish_struct): Don't complain about a class with no
 	user-defined constructors but with a member that has no default

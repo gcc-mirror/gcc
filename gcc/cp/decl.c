@@ -11129,6 +11129,19 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
      (This does not mean `static' in the C sense!)  */
   TREE_STATIC (decl1) = 1;
 
+  /* Record the decl so that the function name is defined.
+     If we already have a decl for this name, and it is a FUNCTION_DECL,
+     use the old decl.  */
+
+  if (pre_parsed_p == 0)
+    {
+      current_function_decl = decl1 = pushdecl (decl1);
+      DECL_MAIN_VARIANT (decl1) = decl1;
+      fntype = TREE_TYPE (decl1);
+    }
+  else
+    current_function_decl = decl1;
+
   if (DECL_INTERFACE_KNOWN (decl1))
     {
       if (DECL_NOT_REALLY_EXTERN (decl1))
@@ -11154,27 +11167,15 @@ start_function (declspecs, declarator, raises, pre_parsed_p)
 	 So clear DECL_EXTERNAL.  */
       DECL_EXTERNAL (decl1) = 0;
 
-      if (DECL_C_STATIC (decl1))
-	TREE_PUBLIC (decl1) = 0;
+      if (DECL_THIS_INLINE (decl1) && ! DECL_INTERFACE_KNOWN (decl1))
+	DECL_DEFER_OUTPUT (decl1) = 1;
+      else
+	{
+	  DECL_INTERFACE_KNOWN (decl1) = 1;
+	  if (DECL_C_STATIC (decl1))
+	    TREE_PUBLIC (decl1) = 0;
+	}
     }
-
-  /* Record the decl so that the function name is defined.
-     If we already have a decl for this name, and it is a FUNCTION_DECL,
-     use the old decl.  */
-
-  if (pre_parsed_p == 0)
-    {
-      current_function_decl = decl1 = pushdecl (decl1);
-      DECL_MAIN_VARIANT (decl1) = decl1;
-      fntype = TREE_TYPE (decl1);
-    }
-  else
-    current_function_decl = decl1;
-
-  if (DECL_THIS_INLINE (decl1) && ! DECL_INTERFACE_KNOWN (decl1))
-    DECL_DEFER_OUTPUT (decl1) = 1;
-  else
-    DECL_INTERFACE_KNOWN (decl1) = 1;
 
   if (ctype != NULL_TREE && DECL_STATIC_FUNCTION_P (decl1))
     {

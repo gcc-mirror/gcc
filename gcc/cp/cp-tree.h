@@ -1825,6 +1825,9 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
    LOOKUP_HAS_IN_CHARGE means that the "in charge" variable is already
      in the parameter list.
    LOOKUP_ONLYCONVERTING means that non-conversion constructors are not tried.
+   LOOKUP_SPECULATIVELY means return NULL_TREE if we cannot find what we are
+     after.  Note, LOOKUP_COMPLAIN is checked and error messages printed
+     before LOOKUP_SPECULATIVELY is checked.
    LOOKUP_NO_CONVERSION means that user-defined conversions are not
      permitted.  Built-in conversions are permitted.
    LOOKUP_DESTRUCTOR means explicit call to destructor.  */
@@ -2361,6 +2364,7 @@ extern void print_lang_statistics		PROTO((void));
 /* skip __eprintf */
 extern tree array_type_nelts_total		PROTO((tree));
 extern tree array_type_nelts_top		PROTO((tree));
+extern tree break_out_target_exprs		PROTO((tree));
 
 /* in typeck.c */
 extern tree condition_conversion		PROTO((tree));

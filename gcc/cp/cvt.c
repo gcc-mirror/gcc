@@ -836,11 +836,11 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
 
   my_friendly_assert (TREE_CODE (intype) != OFFSET_TYPE, 189);
 
+  if (flags & LOOKUP_COMPLAIN)
+    cp_error ("cannot convert type `%T' to type `%T'", intype, reftype);
+
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
-
-  else if (flags & LOOKUP_COMPLAIN)
-    cp_error ("cannot convert type `%T' to type `%T'", intype, reftype);
 
   return error_mark_node;
 }
@@ -1190,6 +1190,10 @@ convert_pointer_to_vbase (binfo, expr)
   return NULL_TREE;
 }
 
+/* Conversion...
+
+   FLAGS indicates how we should behave.  */
+
 tree
 cp_convert (type, expr, convtype, flags)
      tree type, expr;
@@ -1259,7 +1263,10 @@ cp_convert (type, expr, convtype, flags)
 	  rval = build_type_conversion (CONVERT_EXPR, type, e, 1);
 	  if (rval)
 	    return rval;
-	  cp_error ("`%#T' used where a `%T' was expected", intype, type);
+	  if (flags & LOOKUP_COMPLAIN)
+	    cp_error ("`%#T' used where a `%T' was expected", intype, type);
+	  if (flags & LOOKUP_SPECULATIVELY)
+	    return NULL_TREE;
 	  return error_mark_node;
 	}
       if (code == BOOLEAN_TYPE)
@@ -1278,8 +1285,9 @@ cp_convert (type, expr, convtype, flags)
 	  if (rval)
 	    return rval;
 	  else
-	    cp_error ("`%#T' used where a floating point value was expected",
-		      TREE_TYPE (e));
+	    if (flags & LOOKUP_COMPLAIN)
+	      cp_error ("`%#T' used where a floating point value was expected",
+			TREE_TYPE (e));
 	}
       return fold (convert_to_real (type, e));
     }
@@ -1331,7 +1339,8 @@ cp_convert (type, expr, convtype, flags)
 
       if (conversion == error_mark_node)
 	{
-	  error ("ambiguous pointer conversion");
+	  if (flags & LOOKUP_COMPLAIN)
+	    error ("ambiguous pointer conversion");
 	  return conversion;
 	}
 
@@ -1339,19 +1348,25 @@ cp_convert (type, expr, convtype, flags)
 	ctor = build_method_call (NULL_TREE, constructor_name_full (type),
 				  build_tree_list (NULL_TREE, e),
 				  TYPE_BINFO (type),
-				  LOOKUP_NORMAL | LOOKUP_SPECULATIVELY
+				  (flags & LOOKUP_NORMAL) | LOOKUP_SPECULATIVELY
 				  | (convtype&CONV_NONCONVERTING ? 0 : LOOKUP_ONLYCONVERTING)
 				  | (conversion ? LOOKUP_NO_CONVERSION : 0));
 
       if (ctor == error_mark_node)
 	{
-	  cp_error ("in conversion to type `%T'", type);
+	  if (flags & LOOKUP_COMPLAIN)
+	    cp_error ("in conversion to type `%T'", type);
+	  if (flags & LOOKUP_SPECULATIVELY)
+	    return NULL_TREE;
 	  return error_mark_node;
 	}
       
       if (conversion && ctor)
 	{
-	  error ("both constructor and type conversion operator apply");
+	  if (flags & LOOKUP_COMPLAIN)
+	    error ("both constructor and type conversion operator apply");
+	  if (flags & LOOKUP_SPECULATIVELY)
+	    return NULL_TREE;
 	  return error_mark_node;
 	}
       else if (conversion)
@@ -1408,8 +1423,11 @@ cp_convert (type, expr, convtype, flags)
       && index_type_equal (TYPE_DOMAIN (TREE_TYPE (e)), TYPE_DOMAIN (type)))
     return e;
 
-  cp_error ("conversion from `%T' to non-scalar type `%T' requested",
-	    TREE_TYPE (expr), type);
+  if (flags & LOOKUP_COMPLAIN)
+    cp_error ("conversion from `%T' to non-scalar type `%T' requested",
+	      TREE_TYPE (expr), type);
+  if (flags & LOOKUP_SPECULATIVELY)
+    return NULL_TREE;
   return error_mark_node;
 }
 
@@ -1423,7 +1441,7 @@ tree
 convert (type, expr)
      tree type, expr;
 {
-  return cp_convert (type, expr, CONV_OLD_CONVERT, 0);
+  return cp_convert (type, expr, CONV_OLD_CONVERT, LOOKUP_NORMAL);
 }
 
 /* Like convert, except permit conversions to take place which
@@ -1459,7 +1477,7 @@ convert_force (type, expr, convtype)
       return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), e, 1);
     }
 
-  return cp_convert (type, e, CONV_C_CAST|convtype, 0);
+  return cp_convert (type, e, CONV_C_CAST|convtype, LOOKUP_NORMAL);
 }
 
 /* Subroutine of build_type_conversion.  */

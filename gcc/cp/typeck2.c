@@ -537,8 +537,11 @@ store_init_value (decl, init)
   if (TREE_CODE (type) == ERROR_MARK)
     return NULL_TREE;
 
+#if 0
+  /* This breaks arrays, and should not have any effect for other decls.  */
   /* Take care of C++ business up here.  */
   type = TYPE_MAIN_VARIANT (type);
+#endif
 
   if (IS_AGGR_TYPE (type))
     {

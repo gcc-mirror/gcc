@@ -2453,7 +2453,10 @@ build_function_call_real (function, params, require_complete, flags)
 					params, fndecl, 0);
 
   if (coerced_params == error_mark_node)
-    return error_mark_node;
+    if (flags & LOOKUP_SPECULATIVELY)
+      return NULL_TREE;
+    else
+      return error_mark_node;
 
   /* Check for errors in format strings.  */
 
@@ -2689,6 +2692,10 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 		parmval = default_conversion (parmval);
 #endif
 	    }
+
+	  if (parmval == error_mark_node)
+	    return error_mark_node;
+
 	  result = tree_cons (NULL_TREE, parmval, result);
 	}
       else
@@ -2736,7 +2743,7 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 	  for (; typetail != void_list_node; ++i)
 	    {
 	      tree type = TREE_VALUE (typetail);
-	      tree val = TREE_PURPOSE (typetail);
+	      tree val = break_out_target_exprs (TREE_PURPOSE (typetail));
 	      tree parmval;
 
 	      if (val == NULL_TREE)
@@ -2762,6 +2769,9 @@ convert_arguments (return_loc, typelist, values, fndecl, flags)
 		    parmval = default_conversion (parmval);
 #endif
 		}
+
+	      if (parmval == error_mark_node)
+		return error_mark_node;
 
 	      if (flag_gc
 		  && type_needs_gc_entry (TREE_TYPE (parmval))
@@ -6526,7 +6536,7 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
 	   || (coder == ENUMERAL_TYPE
 	       && (INTEGRAL_CODE_P (codel) || codel == REAL_TYPE)))
     {
-      return cp_convert (type, rhs, CONV_IMPLICIT, 0);
+      return cp_convert (type, rhs, CONV_IMPLICIT, LOOKUP_NORMAL);
     }
   /* Conversions among pointers */
   else if (codel == POINTER_TYPE
@@ -6898,7 +6908,9 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
    latter (X(X&)).
 
    If using constructor make sure no conversion operator exists, if one does
-   exist, an ambiguity exists.  */
+   exist, an ambiguity exists.
+
+   If flags doesn't include LOOKUP_COMPLAIN, don't complain about anything.  */
 tree
 convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
      tree exp, type, rhs;
@@ -7069,7 +7081,7 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
 	  return rhs;
 	}
 
-      return convert (type, rhs);
+      return cp_convert (type, rhs, CONV_OLD_CONVERT, flags);
     }
 
   if (type == TREE_TYPE (rhs))
