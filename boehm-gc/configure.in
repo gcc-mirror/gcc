@@ -243,7 +243,7 @@ else
   multilib_arg=
 fi
 
-AC_OUTPUT(Makefile, [
+AC_OUTPUT(Makefile include/Makefile, [
 dnl Put all the -D options in a file.
 echo "$DEFS" > boehm-cflags
 
