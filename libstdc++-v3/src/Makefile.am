@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.83 2001/04/11 18:52:31 bkoz Exp $
+## $Id: Makefile.am,v 1.84 2001/04/18 01:06:04 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -280,20 +280,6 @@ myinstallheaders:
 	  $(INSTALL_DATA) $$i $(gxx_include_dir); \
 	done; \
 	fi;
-
-
-# Alexandre put this in here for some libtool-related reason.
-all: libstdc++.INC
-libstdc++.INC: Makefile
-	$(MAKE) \
-	top_builddir=`CDPATH=:. && cd $(top_builddir) && pwd` \
-	top_srcdir=`CDPATH=:. && cd $(top_srcdir) && pwd` \
-	tmp-$@
-	-rm -f $@
-	mv tmp-$@ $@
-
-tmp-libstdc++.INC: Makefile
-	echo $(INCLUDES) > $@
 
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be

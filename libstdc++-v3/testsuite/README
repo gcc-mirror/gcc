@@ -1,6 +1,11 @@
-  We're in the process of converting the existing testsuite machinery to 
+We're in the process of converting the existing testsuite machinery to
 use the new style DejaGnu framework.  Eventually, we'll abandon
-../mkcheck.in in favor of this new testsuite framework. 
+../mkcheck.in in favor of this new testsuite framework.
+
+
+// 1: How to write a testcase
+As per the dejagnu instructions, always return 0 from main to indicate
+success.
 
 Basically, a testcase contains dg-keywords (see dg.exp) indicating
 what to do and what kinds of behaviour are to be expected.  New
@@ -74,23 +79,56 @@ effort.
 # At least one target must be specified, use *-*-* for "all targets".
 # At present it is not possible to specify both `xfail' and `target'.
 # "native" may be used in place of "*-*-*".
-#
-# Example:
-#
-#       [ ... some complicated code ... ]
-#	return a; /* { dg-build "fatal" "ran out of spill regs" { xfail i386-*-* } } */
-#
-# In this example, the compiler use to crash on the "return a;" for some
-# target and that it still does crash on i386-*-*.  Admittedly, this is a
-# contrived example.
-#
-# ??? It might be possible to add additional optional arguments by having
-# something like: { dg-error ".*syntax.*" "syntax error" { { foo 1 } ... } }
+
+Example 1: Testing compilation only
+(to just have a testcase do compile testing, without linking and executing)
+// { dg-do compile }
+
+Example 2: Testing for expected warings on line 36
+// { dg-warning "string literals" "" { xfail *-*-* } 36
+
+Example 3: Testing for compilation errors on line 41
+// { dg-do compile }
+// { dg-error "no match for" "" { xfail *-*-* } 41 }
+
+More examples can be found in the libstdc++-v3/testsuite/*/*.cc files.
 
 
-The V3 testing framework supports additional keywords for the purpose
-of easing the job of writing testcases.  All V3-keywords are of the
-form @xxx@.  Currently supported keywords include:
+// 2: Test harness notes, invocation, and debugging.
+Configuring the dejagnu harness to work with libstdc++-v3 in a cross
+compilation environment has been maddening. However, it does work now,
+and on a variety of platforms. Including solaris, linux, and cygwin.
+
+To debug the test harness during runs, try invoking with
+
+make check-target-libstdc++-v3 RUNTESTFLAGS="-v"
+or
+make check-target-libstdc++-v3 RUNTESTFLAGS="-v -v"
+
+There are two ways to run on a simulator: set up DEJAGNU to point to a
+specially crafted site.exp, or pass down --target_board flags.
+
+Example flags to pass down for various embedded builds are as follows:
+
+--target=powerpc-eabism (libgloss/sim)
+make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=powerpc-sim"
+
+--target=calmrisc32 (libgloss/sid)
+make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=calmrisc32-sid"
+
+--target=xscale-elf (newlib/sim)
+make check-target-libstdc++-v3 RUNTESTFLAGS="--target_board=arm-sim"
+
+
+// 3: Future plans, to be done
+Shared runs need to be implemented, for targets that support shared libraries.
+
+Diffing of expected output to standard streams needs to be finished off.
+
+The V3 testing framework supports, or will eventually support,
+additional keywords for the purpose of easing the job of writing
+testcases.  All V3-keywords are of the form @xxx@.  Currently plans
+for supported keywords include:
 
   @require@ <files>
       The existence of <files> is essential for the test to complete
@@ -108,4 +146,24 @@ form @xxx@.  Currently supported keywords include:
       same length.  The test fails if diff returns non-zero a pair of
       files.
 
--- Gaby
+Current testing problems with cygwin-hosted tools:
+
+There are two known problems which I have not addressed.  The first is
+that when testing cygwin hosted tools from the unix build dir, it does
+the wrong thing building the wrapper program (testglue.c) because host
+and target are the same in site.exp (host and target are the same from
+the perspective of the target libraries)
+
+Problem number two is a little more annoying.  In order for me to make
+v3 testing work on Windows, I had to tell dejagnu to copy over the
+debug_assert.h file to the remote host and then set the includes to
+-I./.  This is how all the other tests like this are done so I didn't
+think much of it.  However, this had some unfortunate results due to
+gcc having a testcase called "limits" and C++ having an include file
+called "limits".  The gcc "limits" binary was in the temporary dir
+when the v3 tests were being built.  As a result, the gcc "limits"
+binary was being #included rather than the intended one.  The only way
+to fix this is to go through the testsuites and make sure binaries are
+deleted on the remote host when testing is done with them.  That is a
+lot more work than I want to do so I worked around it by cleaning out
+D:\kermit on compsognathus and rerunning tests.
