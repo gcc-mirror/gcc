@@ -1,4 +1,9 @@
-Fri Nov 16 09:06:25 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+2001-11-16  Jeff Law  <law@redhat.com>
+
+	* unroll.c (copy_loop_body): Initialize JUMP_LABEL field after
+	creating a new jump insn.
+
+Fri Nov 13 09:06:25 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (expand_expr, case ADDR_EXPR): Refine test for when to
 	copy misaligned data.
