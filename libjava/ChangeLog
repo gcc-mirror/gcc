@@ -1,3 +1,9 @@
+2001-10-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/text/DecimalFormat.java (format): Use localized minus sign
+	when generating exponent; never use `+'.  Use floor to compute
+	exponent.
+
 2001-10-05  Mark Wielaard  <mark@klomp.org>
 
 	* java/util/zip/Adler32.java: Merge with Classpath

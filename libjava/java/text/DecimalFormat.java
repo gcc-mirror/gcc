@@ -442,7 +442,7 @@ public class DecimalFormat extends NumberFormat
 	double baseNumber;
 	if (useExponentialNotation)
 	  {
-	    exponent = (long) (Math.log(number) / Math.log(10));
+	    exponent = (long) Math.floor (Math.log(number) / Math.log(10));
 	    if (minimumIntegerDigits > 0)
 	      exponent -= minimumIntegerDigits - 1;
 	    baseNumber = (long) (number / Math.pow(10.0, exponent));
@@ -523,7 +523,11 @@ public class DecimalFormat extends NumberFormat
 	if (useExponentialNotation)
 	  {
 	    dest.append(symbols.getExponential());
-	    dest.append(exponent < 0 ? '-' : '+');
+	    if (exponent < 0)
+	      {
+		dest.append (symbols.getMinusSign ());
+		exponent = - exponent;
+	      }
 	    index = dest.length();
 	    for (count = 0;
 		 exponent > 0 || count < minExponentDigits;
