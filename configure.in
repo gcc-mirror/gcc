@@ -549,9 +549,9 @@ case "${host}" in
     ;;
   ppc*-*-pe)
      noconfigdirs="patch diff make tk tcl expect dejagnu cvssrc autoconf automake texinfo bison send-pr gprof rcs guile perl apache inet itcl tix db snavigator gnuserv"
+    ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs tk itcl tix libgui gdb dejagnu readline"
-    ;;
     ;;
 esac
 

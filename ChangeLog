@@ -1,3 +1,7 @@
+Wed Jan 12 18:00:26 2000  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* configure.in: Fix typo in last change.
+
 2000-01-12  Richard Henderson  <rth@cygnus.com>
 
 	* configure.in: Don't build some bits for beos.
