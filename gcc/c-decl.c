@@ -3690,7 +3690,8 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* The corresponding pop_obstacks is in finish_decl.  */
   push_obstacks_nochange ();
 
-  if (warn_main && !strcmp (IDENTIFIER_POINTER (declarator), "main"))
+  if (warn_main && TREE_CODE (decl) != FUNCTION_DECL 
+      && !strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "main"))
     warning_with_decl (decl, "`%s' is usually a function");
 
   if (initialized)
