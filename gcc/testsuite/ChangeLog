@@ -1,3 +1,10 @@
+2003-10-14  Roger Sayle  <roger@eyesopen.com>
+
+	PR optimization/9325
+	* gcc.c-torture/execute/20031003-1.c: Remove non-portable tests
+	for overflowing floating point to integer conversion during RTL
+	simplification.
+
 2003-10-13  Ziemowit Laski  <zlaski@apple.com>
 
 	* objc/execute/_cmd.m: Fix typo.
