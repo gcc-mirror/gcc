@@ -121,3 +121,8 @@ extern size_t
 #endif
 
 #endif  /* UNDEFINE_NULL_CHECK */
+
+
+#if defined( WINDISS_VALIST_CHECK )
+#include <stdarg.h>
+#endif  /* WINDISS_VALIST_CHECK */
