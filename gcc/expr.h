@@ -775,24 +775,7 @@ extern rtx (*lang_expand_expr) PARAMS ((union tree_node *, rtx,
 					enum machine_mode,
 					enum expand_modifier modifier));
 
-#ifdef TREE_CODE
-/* Hook called by output_constant for language-specific tree codes.
-   It is up to the language front-end to install a hook if it has any
-   such codes that output_constant needs to know about.  Returns a
-   language-independent constant equivalent to its input.  */
-extern tree (*lang_expand_constant) PARAMS ((tree));
-
 extern int safe_from_p PARAMS ((rtx, tree, int));
-
-/* Hook called by safe_from_p for language-specific tree codes.  It is
-   up to the language front-end to install a hook if it has any such
-   codes that safe_from_p needs to know about.  Since same_from_p will
-   recursively explore the TREE_OPERANDs of an expression, this hook
-   should not reexamine those pieces.  This routine may recursively
-   call safe_from_p; it should always pass `0' as the TOP_P
-   parameter.  */
-extern int (*lang_safe_from_p) PARAMS ((rtx, tree));
-#endif
 
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */

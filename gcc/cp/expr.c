@@ -135,7 +135,6 @@ void
 init_cplus_expand ()
 {
   lang_expand_expr = cplus_expand_expr;
-  lang_expand_constant = cplus_expand_constant;
 }
 
 int

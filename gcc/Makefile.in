@@ -1173,7 +1173,7 @@ c-typeck.o : c-typeck.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
 c-lang.o : c-lang.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(C_TREE_H) \
     $(GGC_H) c-lex.h toplev.h diagnostic.h output.h function.h $(VARRAY_H) \
     $(RTL_H) $(EXPR_H) tree-inline.h insn-config.h integrate.h langhooks.h \
-    langhooks-def.h
+    langhooks-def.h c-common.h
 c-lex.o : c-lex.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) c-lex.h \
     debug.h $(C_TREE_H) \
     c-pragma.h input.h intl.h flags.h toplev.h output.h \
@@ -1394,7 +1394,7 @@ errors.o : errors.c $(GCONFIG_H) $(SYSTEM_H) errors.h
 varasm.o : varasm.c $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(RTL_H) flags.h \
    function.h $(EXPR_H) hard-reg-set.h $(REGS_H) $(OBSTACK_H) \
    output.h c-pragma.h toplev.h xcoffout.h debug.h $(GGC_H) $(TM_P_H) \
-   $(HASHTAB_H) $(TARGET_H)
+   $(HASHTAB_H) $(TARGET_H) langhooks.h
 function.o : function.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    function.h $(EXPR_H) libfuncs.h $(REGS_H) hard-reg-set.h \
    insn-config.h $(RECOG_H) output.h toplev.h except.h hash.h $(GGC_H) $(TM_P_H)
@@ -1408,7 +1408,7 @@ except.o : except.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
 expr.o : expr.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h function.h \
    $(REGS_H) $(EXPR_H) $(OPTABS_H) libfuncs.h insn-attr.h insn-config.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \
-   except.h reload.h $(GGC_H) intl.h $(TM_P_H)
+   except.h reload.h $(GGC_H) langhooks.h intl.h $(TM_P_H)
 builtins.o : builtins.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    $(TARGET_H) function.h $(REGS_H) $(EXPR_H) $(OPTABS_H) insn-config.h \
    $(RECOG_H) output.h typeclass.h hard-reg-set.h toplev.h hard-reg-set.h \

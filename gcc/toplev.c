@@ -395,8 +395,6 @@ typedef rtx (*lang_expand_expr_t)
 
 lang_expand_expr_t lang_expand_expr = 0;
 
-tree (*lang_expand_constant) PARAMS ((tree)) = 0;
-
 /* Pointer to function to finish handling an incomplete decl at the
    end of compilation.  */
 

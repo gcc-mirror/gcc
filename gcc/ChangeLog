@@ -1,3 +1,41 @@
+Tue Nov 27 08:21:47 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (c-lang.o): Depends on langhooks-def.h.
+	(expr.o, varasm.o): Depends on langhooks.h.
+	* c-common.c (c_safe_from_p): Always declare.
+	(c_expand_expr): Refine when declared.
+	* c-lang.c (c-common.h): Now include.
+	(LANG_HOOKS_SAFE_FROM_P): Define new hook.
+	(c_init): Don't set lang_safe_from_expr.
+	* expr.c (langhooks.h): Now include.
+	(lang_safe_from_p): No longer define.
+	(safe_from_p): Use lang hook.
+	(expand_expr): Set IGNORE if VOID_TYPE result of VIEW_CONVERT_EXPR too.
+	(expand_expr, case VIEW_CONVERT_EXPR): Pass ro_modifier down.
+	* expr.h (lang_expand_constant, lang_safe_from_p): Delete.
+	* langhooks-def.h (lhd_return_tree, lhd_safe_from_p): New decls.
+	(LANG_HOOKS_EXPAND_CONSTANT, LANG_HOOKS_SAFE_FROM_P): New hooks.
+	* langhooks.c (lhd_return_tree, lhd_safe_from_p): New functions.
+	* langhooks.h (struct lang_hooks): New fields expand_constant
+	and safe_from_p.
+	* output.h (output_constant): Size arg is HOST_WIDE_INT.
+	* stmt.c (expand_decl_init): No longer need to expand constant
+	for CONST_DECL.
+	* stor-layout.c (put_pending_size): Don't check for SAVE_EXPR.
+	* toplev.c (lang_expand_constant): Delete var.
+	* tree.c (save_expr): Don't put another SAVE_EXPR around simple
+	operations on SAVE_EXPR.
+	* varasm.c (langhooks.h): Now include.
+	(compare_constant_1): Use lang_hooks, not lang_expand_constant.
+	(record_constant_1, output_addressed_constants): Likewise.
+	(initializer_constant_valid_p, output_constant): Likewise.
+	(output_constant_def): Process no-defer of string constant.
+	(output_addressed_constants, case ADDR_EXPR): Use handled_component_p.
+	(output_constant): Strip more conversions.
+	Track our size and pad for the rest.
+	(array_size_for_constructor): Remove code for non-byte STRING_CST.
+	(output_constructor): SIZE now HOST_WIDE_INT.
+
 2001-11-27  Richard Henderson  <rth@redhat.com>
 
 	* ifcvt.c (noce_try_store_flag_constants): Test for overflow
