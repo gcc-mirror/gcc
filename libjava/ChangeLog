@@ -1,3 +1,9 @@
+2002-10-23  Ranjit Mathew <rmathew@hotmail.com>
+
+	* java/io/natFileWin32.cc (attr): Use FindFirstFile( ) instead of
+	GetFileAttributesEx( ) to find file length and modification times,
+	as the latter is not present on Windows 95.
+
 2002-10-21  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/URL.java

@@ -83,10 +83,13 @@ java::io::File::attr (jint query)
 
   JvAssert (query == MODIFIED || query == LENGTH);
 
-  WIN32_FILE_ATTRIBUTE_DATA info;
-  if (! GetFileAttributesEx(buf, GetFileExInfoStandard, &info))
+  WIN32_FIND_DATA info;
+  HANDLE sHandle;
+  if ( ( sHandle = FindFirstFile( buf, &info)) == INVALID_HANDLE_VALUE)
     return 0;
-
+  
+  FindClose( sHandle);
+  
   if (query == LENGTH)
     return ((long long)info.nFileSizeHigh) << 32 | (unsigned long long)info.nFileSizeLow;
   else {
