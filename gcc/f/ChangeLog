@@ -1,3 +1,10 @@
+2001-11-19  Toon Moene <toon@moene.indiv.nluug.nl>
+
+	* .cvsignore: Ignore g77.1
+	* g77.texi: Substitute `@command' for `@code'
+	where appropriate.
+	* invoke.texi: Ditto.
+
 2001-11-18  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* Make-lang.in: Remove all references to LANGUAGES
