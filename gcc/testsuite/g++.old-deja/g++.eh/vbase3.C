@@ -1,5 +1,5 @@
 // Build don't link:
-// Special g++ Options: -fsjlj-exceptions
+// Used to use -fsjlj-exceptions, but that isn't an option anymore.
 // Origin: Donn Terry <donn@interix.com>
 
 struct ios {

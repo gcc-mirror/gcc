@@ -1,6 +1,6 @@
 // Build don't link:
 // Origin: Marc Espie <Marc.Espie@liafa.jussieu.fr>
-// Special g++ Options: -fsjlj-exceptions
+// Used to use -fsjlj-exceptions, but that isn't an option anymore.
 
 extern double f(double a); 
 
