@@ -1,5 +1,11 @@
 2004-10-26  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/basic_string.h (append(const basic_string&),
+	append(size_type, _CharT)): Move out of line...
+	* include/bits/basic_string.tcc: ... here.
+
+2004-10-26  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/basic_string.h (erase(size_type, size_type),
 	erase(iterator), erase(iterator, iterator)): Call _M_mutate
 	instead of _M_replace_safe, equivalent when the fourth argument

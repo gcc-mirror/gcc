@@ -264,6 +264,23 @@ namespace std
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
     basic_string<_CharT, _Traits, _Alloc>::
+    append(size_type __n, _CharT __c)
+    {
+      if (__n)
+	{
+	  _M_check_length(size_type(0), __n, "basic_string::append");	  
+	  const size_type __len = __n + this->size();
+	  if (__len > this->capacity() || _M_rep()->_M_is_shared())
+	    this->reserve(__len);
+	  _M_assign(_M_data() + this->size(), __n, __c);
+	  _M_rep()->_M_set_length_and_sharable(__len);
+	}
+      return *this;
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
     append(const _CharT* __s, size_type __n)
     {
       __glibcxx_requires_string_len(__s, __n);
@@ -287,6 +304,23 @@ namespace std
 	}
       return *this;
     }
+
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    basic_string<_CharT, _Traits, _Alloc>&
+    basic_string<_CharT, _Traits, _Alloc>::
+    append(const basic_string& __str)
+    {
+      const size_type __size = __str.size();
+      if (__size)
+	{
+	  const size_type __len = __size + this->size();
+	  if (__len > this->capacity() || _M_rep()->_M_is_shared())
+	    this->reserve(__len);
+	  _M_copy(_M_data() + this->size(), __str._M_data(), __size);
+	  _M_rep()->_M_set_length_and_sharable(__len);
+	}
+      return *this;
+    }    
 
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_string<_CharT, _Traits, _Alloc>&
