@@ -1390,7 +1390,7 @@ gen_split_move_double (operands)
   else
     abort ();
 
-  val = gen_sequence ();
+  val = get_insns ();
   end_sequence ();
   return val;
 }

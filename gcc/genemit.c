@@ -555,15 +555,15 @@ gen_expand (expand)
 	printf ("  emit_barrier ();");
     }
 
-  /* Call `gen_sequence' to make a SEQUENCE out of all the
+  /* Call `get_insns' to extract the list of all the
      insns emitted within this gen_... function.  */
 
-  printf ("  _val = gen_sequence ();\n");
+  printf ("  _val = get_insns ();\n");
   printf ("  end_sequence ();\n");
   printf ("  return _val;\n}\n\n");
 }
 
-/* Like gen_expand, but generates a SEQUENCE.  */
+/* Like gen_expand, but generates insns resulting from splitting SPLIT.  */
 
 static void
 gen_split (split)
@@ -667,10 +667,10 @@ gen_split (split)
 	printf ("  emit_barrier ();");
     }
 
-  /* Call `gen_sequence' to make a SEQUENCE out of all the
+  /* Call `get_insns' to make a list of all the
      insns emitted within this gen_... function.  */
 
-  printf ("  _val = gen_sequence ();\n");
+  printf ("  _val = get_insns ();\n");
   printf ("  end_sequence ();\n");
   printf ("  return _val;\n}\n\n");
 
@@ -841,7 +841,7 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"toplev.h\"\n");
   printf ("#include \"ggc.h\"\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
-  printf ("#define DONE return (_val = gen_sequence (), end_sequence (), _val)\n\n");
+  printf ("#define DONE return (_val = get_insns (), end_sequence (), _val)\n\n");
 
   /* Read the machine description.  */
 

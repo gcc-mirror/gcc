@@ -1942,7 +1942,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 
 	      SET_CONST_EQUIV_DATA (map, temp, loc, CONST_AGE_PARM);
 
-	      seq = gen_sequence ();
+	      seq = get_insns ();
 	      end_sequence ();
 	      emit_insn_after (seq, map->insns_at_start);
 	      return temp;
@@ -1975,7 +1975,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 
 	      SET_CONST_EQUIV_DATA (map, temp, loc, CONST_AGE_PARM);
 
-	      seq = gen_sequence ();
+	      seq = get_insns ();
 	      end_sequence ();
 	      emit_insn_after (seq, map->insns_at_start);
 	      return temp;
@@ -3128,7 +3128,7 @@ emit_initial_value_sets ()
   seq = get_insns ();
   end_sequence ();
 
-  emit_insns_after (seq, get_insns ());
+  emit_insn_after (seq, get_insns ());
 }
 
 /* If the backend knows where to allocate pseudos for hard

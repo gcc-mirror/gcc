@@ -2519,6 +2519,8 @@ alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
   switch (GET_CODE (x))
     {
     case SEQUENCE:
+      abort ();
+
     case PARALLEL:
       for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
 	alpha_set_memflags_1 (XVECEXP (x, 0, i), in_struct_p, volatile_p,
@@ -2553,11 +2555,11 @@ alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
     }
 }
 
-/* Given INSN, which is either an INSN or a SEQUENCE generated to
-   perform a memory operation, look for any MEMs in either a SET_DEST or
-   a SET_SRC and copy the in-struct, unchanging, and volatile flags from
-   REF into each of the MEMs found.  If REF is not a MEM, don't do
-   anything.  */
+/* Given INSN, which is an INSN list or the PATTERN of a single insn
+   generated to perform a memory operation, look for any MEMs in either
+   a SET_DEST or a SET_SRC and copy the in-struct, unchanging, and
+   volatile flags from REF into each of the MEMs found.  If REF is not
+   a MEM, don't do anything.  */
 
 void
 alpha_set_memflags (insn, ref)
@@ -6873,22 +6875,30 @@ alpha_write_verstamp (file)
 static rtx
 set_frame_related_p ()
 {
-  rtx seq = gen_sequence ();
+  rtx seq = get_insns ();
+  rtx insn;
+
   end_sequence ();
 
-  if (GET_CODE (seq) == SEQUENCE)
+  if (!seq)
+    return NULL_RTX;
+
+  if (INSN_P (seq))
     {
-      int i = XVECLEN (seq, 0);
-      while (--i >= 0)
-	RTX_FRAME_RELATED_P (XVECEXP (seq, 0, i)) = 1;
-     return emit_insn (seq);
+      insn = seq;
+      while (insn != NULL_RTX)
+	{
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	  insn = NEXT_INSN (insn);
+	}
+      seq = emit_insn (seq);
     }
   else
     {
       seq = emit_insn (seq);
       RTX_FRAME_RELATED_P (seq) = 1;
-      return seq;
     }
+  return seq;
 }
 
 #define FRP(exp)  (start_sequence (), exp, set_frame_related_p ())

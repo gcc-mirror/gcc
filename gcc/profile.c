@@ -1295,7 +1295,7 @@ gen_edge_profiler (edgeno)
   if (tmp != mem_ref)
     emit_move_insn (copy_rtx (mem_ref), tmp);
 
-  sequence = gen_sequence ();
+  sequence = get_insns ();
   end_sequence ();
   return sequence;
 }

@@ -2440,7 +2440,7 @@ arm_finalize_pic (prologue)
       emit_insn (gen_pic_add_dot_plus_four (pic_offset_table_rtx, l1));
     }
 
-  seq = gen_sequence ();
+  seq = get_insns ();
   end_sequence ();
   if (prologue)
     emit_insn_after (seq, get_insns ());
@@ -4319,7 +4319,7 @@ arm_gen_load_multiple (base_regno, count, from, up, write_back, unchanging_p,
       if (write_back)
 	emit_move_insn (from, plus_constant (from, count * 4 * sign));
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
       
       return seq;
@@ -4386,7 +4386,7 @@ arm_gen_store_multiple (base_regno, count, to, up, write_back, unchanging_p,
       if (write_back)
 	emit_move_insn (to, plus_constant (to, count * 4 * sign));
 
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
       
       return seq;

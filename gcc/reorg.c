@@ -3240,6 +3240,7 @@ relax_delay_slots (first)
 	  && GET_CODE (next) == JUMP_INSN
 	  && GET_CODE (PATTERN (next)) == RETURN)
 	{
+	  rtx after;
 	  int i;
 
 	  /* Delete the RETURN and just execute the delay list insns.
@@ -3256,7 +3257,15 @@ relax_delay_slots (first)
 
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
-	  emit_insn_after (pat, trial);
+	  if (GET_CODE (pat) != SEQUENCE)
+	    abort ();
+	  after = trial;
+	  for (i = 0; i < XVECLEN (pat, 0); i++)
+	    {
+	      rtx this_insn = XVECEXP (pat, 0, i);
+	      add_insn_after (this_insn, after);
+	      after = this_insn;
+	    }
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}
@@ -3352,6 +3361,7 @@ relax_delay_slots (first)
 #endif
 	  )
 	{
+	  rtx after;
 	  int i;
 
 	  /* All this insn does is execute its delay list and jump to the
@@ -3370,7 +3380,15 @@ relax_delay_slots (first)
 
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
-	  emit_insn_after (pat, trial);
+	  if (GET_CODE (pat) != SEQUENCE)
+	    abort ();
+	  after = trial;
+	  for (i = 0; i < XVECLEN (pat, 0); i++)
+	    {
+	      rtx this_insn = XVECEXP (pat, 0, i);
+	      add_insn_after (this_insn, after);
+	      after = this_insn;
+	    }
 	  delete_scheduled_jump (delay_insn);
 	  continue;
 	}

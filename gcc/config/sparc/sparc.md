@@ -113,6 +113,12 @@
 (define_attr "pic" "false,true"
   (symbol_ref "flag_pic != 0"))
 
+(define_attr "current_function_calls_alloca" "false,true"
+  (symbol_ref "current_function_calls_alloca != 0"))
+
+(define_attr "flat" "false,true"
+  (symbol_ref "TARGET_FLAT != 0"))
+
 ;; Length (in # of insns).
 (define_attr "length" ""
   (cond [(eq_attr "type" "uncond_branch,call,sibcall")
@@ -8174,8 +8180,10 @@
   ""
   "*
 {
-  if (! current_function_calls_alloca || ! TARGET_V9 || TARGET_FLAT)
-    return \"#\";
+  if (! current_function_calls_alloca)
+    return \"\";
+  if (! TARGET_V9 || TARGET_FLAT)
+    return \"\tta\t3\n\";
   fputs (\"\tflushw\n\", asm_out_file);
   if (flag_pic)
     fprintf (asm_out_file, \"\tst%c\t%%l7, [%%sp+%d]\n\",
@@ -8190,20 +8198,15 @@
   return \"\";
 }"
   [(set_attr "type" "multi")
-   (set (attr "length") (if_then_else (eq_attr "pic" "true")
-				       (const_int 4)
-				       (const_int 3)))])
-
-(define_split
-  [(unspec_volatile [(const_int 0)] UNSPECV_SETJMP)]
-  "! current_function_calls_alloca || ! TARGET_V9 || TARGET_FLAT"
-  [(const_int 0)]
-  "
-{
-  if (current_function_calls_alloca)
-    emit_insn (gen_flush_register_windows ());
-  DONE;
-}")
+   (set (attr "length")
+        (cond [(eq_attr "current_function_calls_alloca" "false")
+                 (const_int 0)
+               (eq_attr "flat" "true")
+                 (const_int 1)
+               (eq_attr "isa" "!v9")
+                 (const_int 1)
+               (eq_attr "pic" "true")
+                 (const_int 4)] (const_int 3)))])
 
 ;; Pattern for use after a setjmp to store FP and the return register
 ;; into the stack area.

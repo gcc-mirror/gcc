@@ -1159,12 +1159,12 @@ expand_builtin_apply_args ()
 
     apply_args_value = temp;
 
-    /* Put the sequence after the NOTE that starts the function.
-       If this is inside a SEQUENCE, make the outer-level insn
+    /* Put the insns after the NOTE that starts the function.
+       If this is inside a start_sequence, make the outer-level insn
        chain current, so the code is placed at the start of the
        function.  */
     push_topmost_sequence ();
-    emit_insns_before (seq, NEXT_INSN (get_insns ()));
+    emit_insn_before (seq, NEXT_INSN (get_insns ()));
     pop_topmost_sequence ();
     return temp;
   }
@@ -1393,7 +1393,7 @@ expand_builtin_return (result)
       }
 
   /* Put the USE insns before the return.  */
-  emit_insns (call_fusage);
+  emit_insn (call_fusage);
 
   /* Return whatever values was restored by jumping directly to the end
      of the function.  */
@@ -1581,7 +1581,7 @@ expand_builtin_mathfn (exp, target, subtarget)
   /* Output the entire sequence.  */
   insns = get_insns ();
   end_sequence ();
-  emit_insns (insns);
+  emit_insn (insns);
 
   return target;
 }
@@ -1663,7 +1663,7 @@ expand_builtin_strlen (exp, target)
 			    expand_expr (src, src_reg, ptr_mode, EXPAND_SUM));
       if (pat != src_reg)
 	emit_move_insn (src_reg, pat);
-      pat = gen_sequence ();
+      pat = get_insns ();
       end_sequence ();
 
       if (before_strlen)
@@ -2828,11 +2828,11 @@ expand_builtin_saveregs ()
 
   saveregs_value = val;
 
-  /* Put the sequence after the NOTE that starts the function.  If this
-     is inside a SEQUENCE, make the outer-level insn chain current, so
+  /* Put the insns after the NOTE that starts the function.  If this
+     is inside a start_sequence, make the outer-level insn chain current, so
      the code is placed at the start of the function.  */
   push_topmost_sequence ();
-  emit_insns_after (seq, get_insns ());
+  emit_insn_after (seq, get_insns ());
   pop_topmost_sequence ();
 
   return val;
@@ -3513,7 +3513,7 @@ expand_builtin_expect (arglist, target)
 
 /* Like expand_builtin_expect, except do this in a jump context.  This is
    called from do_jump if the conditional is a __builtin_expect.  Return either
-   a SEQUENCE of insns to emit the jump or NULL if we cannot optimize
+   a list of insns to emit the jump or NULL if we cannot optimize
    __builtin_expect.  We need to optimize this at jump time so that machines
    like the PowerPC don't turn the test into a SCC operation, and then jump
    based on the test being 0/1.  */
@@ -3534,8 +3534,8 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
   if (TREE_CODE (TREE_TYPE (arg1)) == INTEGER_TYPE
       && (integer_zerop (arg1) || integer_onep (arg1)))
     {
-      int j;
       int num_jumps = 0;
+      rtx insn;
 
       /* If we fail to locate an appropriate conditional jump, we'll
 	 fall back to normal evaluation.  Ensure that the expression
@@ -3556,16 +3556,17 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
       /* Expand the jump insns.  */
       start_sequence ();
       do_jump (arg0, if_false_label, if_true_label);
-      ret = gen_sequence ();
+      ret = get_insns ();
       end_sequence ();
 
       /* Now that the __builtin_expect has been validated, go through and add
 	 the expect's to each of the conditional jumps.  If we run into an
 	 error, just give up and generate the 'safe' code of doing a SCC
 	 operation and then doing a branch on that.  */
-      for (j = 0; j < XVECLEN (ret, 0); j++)
+      insn = ret;
+      while (insn != NULL_RTX)
 	{
-	  rtx insn = XVECEXP (ret, 0, j);
+	  rtx next = NEXT_INSN (insn);
 	  rtx pattern;
 
 	  if (GET_CODE (insn) == JUMP_INSN && any_condjump_p (insn)
@@ -3576,7 +3577,7 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
 	      int taken;
 
 	      if (GET_CODE (ifelse) != IF_THEN_ELSE)
-		continue;
+		goto do_next_insn;
 
 	      if (GET_CODE (XEXP (ifelse, 1)) == LABEL_REF)
 		{
@@ -3603,7 +3604,7 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
 		  label = NULL_RTX;
 		}
 	      else
-		continue;
+		goto do_next_insn;
 
 	      /* If the test is expected to fail, reverse the
 		 probabilities.  */
@@ -3617,11 +3618,14 @@ expand_builtin_expect_jump (exp, if_false_label, if_true_label)
 	      else if (label == if_false_label)
 		taken = 1 - taken;
 	      else if (label != if_true_label)
-		continue;
+		goto do_next_insn;
 
 	      num_jumps++;
 	      predict_insn_def (insn, PRED_BUILTIN_EXPECT, taken);
 	    }
+
+	do_next_insn:
+	  insn = next;
 	}
 
       /* If no jumps were modified, fail and do __builtin_expect the normal

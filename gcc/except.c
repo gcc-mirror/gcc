@@ -1724,7 +1724,7 @@ build_post_landing_pads ()
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  emit_insns_before (seq, region->u.try.catch->label);
+	  emit_insn_before (seq, region->u.try.catch->label);
 	  break;
 
 	case ERT_ALLOWED_EXCEPTIONS:
@@ -1748,7 +1748,7 @@ build_post_landing_pads ()
 	  seq = get_insns ();
 	  end_sequence ();
 
-	  emit_insns_before (seq, region->label);
+	  emit_insn_before (seq, region->label);
 	  break;
 
 	case ERT_CLEANUP:
@@ -1805,7 +1805,7 @@ connect_post_landing_pads ()
 
       seq = get_insns ();
       end_sequence ();
-      emit_insns_before (seq, region->resume);
+      emit_insn_before (seq, region->resume);
       delete_insn (region->resume);
     }
 }
@@ -1881,7 +1881,7 @@ dw2_build_landing_pads ()
       seq = get_insns ();
       end_sequence ();
 
-      emit_insns_before (seq, region->post_landing_pad);
+      emit_insn_before (seq, region->post_landing_pad);
     }
 }
 
@@ -2065,7 +2065,7 @@ sjlj_mark_call_sites (lp_info)
       p = get_insns ();
       end_sequence ();
 
-      emit_insns_before (p, before);
+      emit_insn_before (p, before);
       last_call_site = this_call_site;
     }
 }
@@ -2132,7 +2132,7 @@ sjlj_emit_function_enter (dispatch_label)
     if (GET_CODE (fn_begin) == NOTE
 	&& NOTE_LINE_NUMBER (fn_begin) == NOTE_INSN_FUNCTION_BEG)
       break;
-  emit_insns_after (seq, fn_begin);
+  emit_insn_after (seq, fn_begin);
 }
 
 /* Call back from expand_function_end to know where we should put
@@ -2162,7 +2162,7 @@ sjlj_emit_function_exit ()
      post-dominates all can_throw_internal instructions.  This is
      the last possible moment.  */
 
-  emit_insns_after (seq, cfun->eh->sjlj_exit_after);
+  emit_insn_after (seq, cfun->eh->sjlj_exit_after);
 }
 
 static void
@@ -2226,8 +2226,8 @@ sjlj_emit_dispatch_table (dispatch_label, lp_info)
   seq = get_insns ();
   end_sequence ();
 
-  emit_insns_before (seq, (cfun->eh->region_array[first_reachable]
-			   ->post_landing_pad));
+  emit_insn_before (seq, (cfun->eh->region_array[first_reachable]
+			  ->post_landing_pad));
 }
 
 static void

@@ -2855,7 +2855,7 @@ cris_split_movdx (operands)
   else
     abort ();
 
-  val = gen_sequence ();
+  val = get_insns ();
   end_sequence ();
   return val;
 }

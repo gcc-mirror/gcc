@@ -1009,7 +1009,7 @@ emit_stack_save (save_level, psave, after)
       if (sa != 0)
 	sa = validize_mem (sa);
       emit_insn (fcn (sa, stack_pointer_rtx));
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
       emit_insn_after (seq, after);
     }
@@ -1070,7 +1070,7 @@ emit_stack_restore (save_level, sa, after)
 
       start_sequence ();
       emit_insn (fcn (stack_pointer_rtx, sa));
-      seq = gen_sequence ();
+      seq = get_insns ();
       end_sequence ();
       emit_insn_after (seq, after);
     }

@@ -3065,7 +3065,7 @@ peephole2_optimize (dump_file)
 		     cfg-related call notes.  */
 		  for (i = 0; i <= match_len; ++i)
 		    {
-		      int j, k;
+		      int j;
 		      rtx old_insn, new_insn, note;
 
 		      j = i + peep2_current;
@@ -3076,20 +3076,15 @@ peephole2_optimize (dump_file)
 			continue;
 		      was_call = true;
 
-		      new_insn = NULL_RTX;
-		      if (GET_CODE (try) == SEQUENCE)
-			for (k = XVECLEN (try, 0) - 1; k >= 0; k--)
-			  {
-			    rtx x = XVECEXP (try, 0, k);
-			    if (GET_CODE (x) == CALL_INSN)
-			      {
-				new_insn = x;
-				break;
-			      }
-			  }
-		      else if (GET_CODE (try) == CALL_INSN)
-			new_insn = try;
-		      if (! new_insn)
+		      new_insn = try;
+		      while (new_insn != NULL_RTX)
+			{
+			  if (GET_CODE (new_insn) == CALL_INSN)
+			    break;
+			  new_insn = NEXT_INSN (new_insn);
+			}
+
+		      if (new_insn == NULL_RTX)
 			abort ();
 
 		      CALL_INSN_FUNCTION_USAGE (new_insn)

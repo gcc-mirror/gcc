@@ -1095,7 +1095,7 @@ fr30_move_double (operands)
     /* This should have been prevented by the constraints on movdi_insn.  */
     abort ();
   
-  val = gen_sequence ();
+  val = get_insns ();
   end_sequence ();
 
   return val;

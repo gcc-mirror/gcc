@@ -1349,7 +1349,6 @@ extern void push_to_sequence		PARAMS ((rtx));
 extern void end_sequence		PARAMS ((void));
 extern void push_to_full_sequence	PARAMS ((rtx, rtx));
 extern void end_full_sequence		PARAMS ((rtx*, rtx*));
-extern rtx gen_sequence			PARAMS ((void));
 
 /* In varasm.c  */
 extern rtx immed_double_const		PARAMS ((HOST_WIDE_INT, HOST_WIDE_INT, enum machine_mode));
@@ -1394,11 +1393,6 @@ extern rtx emit_label_after		PARAMS ((rtx, rtx));
 extern rtx emit_note_after		PARAMS ((int, rtx));
 extern rtx emit_line_note_after		PARAMS ((const char *, int, rtx));
 extern rtx emit_insn			PARAMS ((rtx));
-extern rtx emit_insns			PARAMS ((rtx));
-extern rtx emit_insns_before		PARAMS ((rtx, rtx));
-extern rtx emit_insns_before_scope	PARAMS ((rtx, rtx, tree));
-extern rtx emit_insns_after		PARAMS ((rtx, rtx));
-extern rtx emit_insns_after_scope	PARAMS ((rtx, rtx, tree));
 extern rtx emit_jump_insn		PARAMS ((rtx));
 extern rtx emit_call_insn		PARAMS ((rtx));
 extern rtx emit_label			PARAMS ((rtx));

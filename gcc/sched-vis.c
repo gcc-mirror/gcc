@@ -702,18 +702,8 @@ print_pattern (buf, x, verbose)
       }
       break;
     case SEQUENCE:
-      {
-	int i;
-
-	sprintf (t1, "%%{");
-	for (i = 0; i < XVECLEN (x, 0); i++)
-	  {
-	    print_insn (t2, XVECEXP (x, 0, i), verbose);
-	    sprintf (t3, "%s%s;", t1, t2);
-	    strcpy (t1, t3);
-	  }
-	sprintf (buf, "%s%%}", t1);
-      }
+      /* Should never see SEQUENCE codes until after reorg.  */
+      abort ();
       break;
     case ASM_INPUT:
       sprintf (buf, "asm {%s}", XSTR (x, 0));

@@ -2050,7 +2050,7 @@ spill_restore_mem (reg, cfa_off)
 				 spill_fill_data.init_reg[iter],
 				 disp_rtx));
 
-	  seq = gen_sequence ();
+	  seq = get_insns ();
 	  end_sequence ();
 	}
 

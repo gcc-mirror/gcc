@@ -3345,7 +3345,7 @@ attempt_auto_inc (pbi, inc, insn, mem, incr, incr_reg)
 
       /* We now know we'll be doing this change, so emit the
 	 new insn(s) and do the updates.  */
-      emit_insns_before (insns, insn);
+      emit_insn_before (insns, insn);
 
       if (pbi->bb->head == insn)
 	pbi->bb->head = insns;

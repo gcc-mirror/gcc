@@ -1970,7 +1970,7 @@ embedded_pic_fnaddr_reg ()
       start_sequence ();
       emit_insn (gen_get_fnaddr (cfun->machine->embedded_pic_fnaddr_rtx,
 				 XEXP (DECL_RTL (current_function_decl), 0)));
-      seq = gen_sequence ();
+      seq = get_insn ();
       end_sequence ();
       push_topmost_sequence ();
       emit_insn_after (seq, get_insns ());
@@ -7371,7 +7371,7 @@ mips_expand_prologue ()
 					    GEN_INT (gp_offset
 						     - base_offset))),
 			  reg_rtx);
-	  reg_18_save = gen_sequence ();
+	  reg_18_save = get_insns ();
 	  end_sequence ();
 	}
 
@@ -8343,7 +8343,7 @@ mips16_gp_pseudo_reg ()
       start_sequence ();
       emit_move_insn (cfun->machine->mips16_gp_pseudo_rtx,
 		      const_gp);
-      insn = gen_sequence ();
+      insn = get_insns ();
       end_sequence ();
 
       push_topmost_sequence ();

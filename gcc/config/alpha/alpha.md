@@ -6740,7 +6740,11 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF
    && prev_nonnote_insn (insn) == operands[0]"
   [(const_int 0)]
-  "DONE;")
+  "
+{
+  emit_note (NULL, NOTE_INSN_DELETED);
+  DONE;
+}")
 
 (define_insn "*builtin_setjmp_receiver_1"
   [(unspec_volatile [(label_ref (match_operand 0 "" ""))] UNSPECV_SETJMPR)]

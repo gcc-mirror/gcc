@@ -740,7 +740,7 @@ insert_code_for (gnat_node)
       do_pending_stack_adjust ();
       insns = get_insns ();
       end_sequence ();
-      emit_insns_after (insns, RTL_EXPR_RTL (get_gnu_tree (gnat_node)));
+      emit_insn_after (insns, RTL_EXPR_RTL (get_gnu_tree (gnat_node)));
     }
 }
 

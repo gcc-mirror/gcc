@@ -899,7 +899,7 @@ expand_fixup (tree_label, rtl_label, last_insn)
 	  NOTE_BLOCK (end) = block;
 	fixup->context = block;
 	end_sequence ();
-	emit_insns_after (start, original_before_jump);
+	emit_insn_after (start, original_before_jump);
       }
 
       fixup->block_start_count = current_block_start_count;
@@ -1044,7 +1044,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	  (*lang_hooks.decls.poplevel) (1, 0, 0);
 
 	  end_sequence ();
-	  emit_insns_after (cleanup_insns, f->before_jump);
+	  emit_insn_after (cleanup_insns, f->before_jump);
 
 	  f->before_jump = 0;
 	}
@@ -1084,7 +1084,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 	      end_sequence ();
 	      if (cleanup_insns != 0)
 		f->before_jump
-		  = emit_insns_after (cleanup_insns, f->before_jump);
+		  = emit_insn_after (cleanup_insns, f->before_jump);
 
 	      f->cleanup_list_list = TREE_CHAIN (lists);
 	    }
@@ -3421,7 +3421,7 @@ expand_nl_handler_label (slot, before_insn)
   emit_move_insn (slot, gen_rtx_LABEL_REF (Pmode, handler_label));
   insns = get_insns ();
   end_sequence ();
-  emit_insns_before (insns, before_insn);
+  emit_insn_before (insns, before_insn);
 
   emit_label (handler_label);
 
@@ -3508,7 +3508,7 @@ expand_nl_goto_receivers (thisblock)
 	emit_move_insn (save_receiver, XEXP (slot, 0));
 	insns = get_insns ();
 	end_sequence ();
-	emit_insns_before (insns, thisblock->data.block.first_insn);
+	emit_insn_before (insns, thisblock->data.block.first_insn);
       }
 
   /* Jump around the handlers; they run only when specially invoked.  */
@@ -3994,7 +3994,7 @@ expand_decl_cleanup (decl, cleanup)
 	  end_sequence ();
 
 	  thisblock->data.block.last_unconditional_cleanup
-	    = emit_insns_after (set_flag_0,
+	    = emit_insn_after (set_flag_0,
 				thisblock->data.block.last_unconditional_cleanup);
 
 	  emit_move_insn (flag, const1_rtx);
@@ -4036,8 +4036,8 @@ expand_decl_cleanup (decl, cleanup)
 	  end_sequence ();
 	  if (seq)
 	    thisblock->data.block.last_unconditional_cleanup
-	      = emit_insns_after (seq,
-				  thisblock->data.block.last_unconditional_cleanup);
+	      = emit_insn_after (seq,
+				 thisblock->data.block.last_unconditional_cleanup);
 	}
       else
 	{
