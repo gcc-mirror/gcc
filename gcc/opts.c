@@ -448,7 +448,8 @@ handle_options (unsigned int argc, const char **argv, unsigned int lang_mask)
       /* Interpret "-" or a non-switch as a file name.  */
       if (opt[0] != '-' || opt[1] == '\0')
 	{
-	  main_input_filename = opt;
+	  if (main_input_filename == NULL)
+	    main_input_filename = opt;
 	  add_input_filename (opt);
 	  n = 1;
 	  continue;
