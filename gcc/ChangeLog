@@ -1,3 +1,11 @@
+Thu Dec 13 20:30:08 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (copy_blkmode_from_reg): Add missing braces to eliminate
+	warning and reformat comments.
+	(expand_assignment): Don't pass EXPAND_WRITE if LHS is component.
+	(highest_pow2_factor, case INTEGER_CST): Return BIGGEST_ALIGNMENT
+	if overflow.
+
 2001-12-12  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_override_options): Add
