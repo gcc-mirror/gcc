@@ -7293,16 +7293,28 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 	    continue;
 	  if (! last_giv)
 	    {
-	      last_giv = v;
-	      life_start = stats[i].start_luid;
-	      life_end = stats[i].end_luid;
+	      /* Don't use a giv that's likely to be dead to derive
+		 others - that would be likely to keep that giv alive.  */
+	      if (! v->maybe_dead || v->combined_with)
+		{
+		  last_giv = v;
+		  life_start = stats[i].start_luid;
+		  life_end = stats[i].end_luid;
+		}
 	      continue;
 	    }
 	  /* Use unsigned arithmetic to model loop wrap around.  */
 	  if (((unsigned) stats[i].start_luid - life_start
 	       >= (unsigned) life_end - life_start)
 	      && ((unsigned) stats[i].end_luid - life_start
-		  >= (unsigned) life_end - life_start)
+		  > (unsigned) life_end - life_start)
+	      /*  Check that the giv insn we're about to use for deriving
+		  precedes all uses of that giv.  Note that initializing the
+		  derived giv would defeat the purpose of reducing register
+		  pressure.
+		  ??? We could arrange to move the insn.  */
+	      && ((unsigned) stats[i].end_luid - INSN_LUID (loop_start)
+                  > (unsigned) stats[i].start_luid - INSN_LUID (loop_start))
 	      && rtx_equal_p (last_giv->mult_val, v->mult_val)
 	      /* ??? Could handle libcalls, but would need more logic.  */
 	      && ! find_reg_note (v->insn, REG_RETVAL, NULL_RTX)
@@ -7312,7 +7324,11 @@ recombine_givs (bl, loop_start, loop_end, unroll_p)
 		 don't have this detailed control flow information.
 		 N.B. since last_giv will be reduced, it is valid
 		 anywhere in the loop, so we don't need to check the
-		 validity of last_giv.  */
+		 validity of last_giv.
+		 We rely here on the fact that v->always_executed implies that
+		 there is no jump to someplace else in the loop before the
+		 giv insn, and hence any insn that is executed before the
+		 giv insn in the loop will have a lower luid.  */
 	      && (v->always_executed || ! v->combined_with)
 	      && (sum = express_from (last_giv, v))
 	      /* Make sure we don't make the add more expensive.  ADD_COST
