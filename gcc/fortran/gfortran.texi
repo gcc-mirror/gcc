@@ -128,9 +128,10 @@ not accurately reflect the status of the most recent @command{gfortran}.
 * GFORTRAN and GCC::	    You can compile Fortran, C, or other programs.
 * GFORTRAN and G77::     Why we choose to start from scratch.
 * Invoking GFORTRAN::    Command options supported by @command{gfortran}.
-* Project Status::  Status of GFORTRAN, Roadmap, proposed extensions.
+* Project Status::  Status of @command{gfortran}, Roadmap, proposed extensions.
 * Contributing::    Helping you can help.
-* Standards::	    Standards supported by GFORTRAN.
+* Standards::	    Standards supported by @command{gfortran}
+* Extensions::      Laguage extensions implemented by @command{gfortran}
 * Index::	    Index of this documentation.
 @end menu
 
@@ -608,7 +609,71 @@ Variable for swapping endianness during unformatted read.
 Variable for swapping Endianness during unformatted write.
 @end itemize
 
+@c ---------------------------------------------------------------------
+@c Extensions
+@c ---------------------------------------------------------------------
 
+@c Maybe this chapter should be merged with the 'Standards' section,
+@c whenever that is written :-)
+
+@node Extensions
+@chapter Extensions
+@cindex Extension
+
+@command{gfortran} implements a number of extensions over standard
+Fortran. This chapter contains information on their syntax and
+meaning.
+
+@menu
+* Old-style kind specifications::
+* Old-style variable initialization::
+@end menu
+
+@node Old-style kind specifications
+@section Old-style kind specifications
+@cindex Kind specifications
+
+@command{gfortran} allows old-style kind specifications in
+declarations. These look like:
+@smallexample
+      TYPESPEC*k x,y,z
+@end smallexample
+where @code{TYPESPEC} is a basic type, and where @code{k} is a valid kind
+number for that type. The statement then declares @code{x}, @code{y}
+and @code{z} to be of type @code{TYPESPEC} with kind @code{k}. In
+other words, it is equivalent to the standard conforming declaration
+@smallexample
+      TYPESPEC(k) x,y,z
+@end smallexample
+
+@node Old-style variable initialization
+@section Old-style variable initialization
+@cindex Initialization
+
+@command{gfortran} allows old-style initialization of variables of the
+form:
+@smallexample
+      INTEGER*4 i/1/,j/2/
+      REAL*8 x(2,2) /3*0.,1./
+@end smallexample
+These are only allowed in declarations without double colons
+(@code{::}), as these were introduced in Fortran 90 which also
+introduced a new syntax for variable initializations. The syntax for
+the individual initializers is as for the @code{DATA} statement, but
+unlike in a @code{DATA} statement, an initializer only applies to the
+variable immediately preceding. In other words, something like
+@code{INTEGER I,J/2,3/} is not valid.
+
+Examples of standard conforming code equivalent to the above example, are:
+@smallexample
+! Fortran 90
+      INTEGER(4) :: i = 1, j = 2
+      REAL(8) :: x(2,2) = RESHAPE((/0.,0.,0.,1./),SHAPE(x))
+! Fortran 77
+      INTEGER  i, j
+      DOUBLE PRECISION x(2,2)
+      DATA i,j,x /1,2,3*0.,1./
+@end smallexample
 
 @c ---------------------------------------------------------------------
 @c Contributing

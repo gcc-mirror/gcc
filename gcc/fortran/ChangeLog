@@ -1,3 +1,19 @@
+2004-08-29  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/13910
+	* decl.c (free_variable, free_value, gfc_free_data, var_list,
+	var_element, top_var_list, match_data_constant, top_val_list,
+	gfc_match_data): Move here from match.c.
+	(match_old_style_init): New function.
+	(variable_decl): Match old-style initialization.
+	* expr.c (gfc_get_variable_expr): New function.
+	* gfortran.h (gfc_get_variable_expr): Add prototype.
+	* gfortran.texi: Start documentation for supported extensions.
+	* match.c: Remove the functions moved to decl.c.
+	* match.h (gfc_match_data): Move prototype to under decl.c.
+	* symbol.c (gfc_find_sym_tree, gfc_find_symbol): Add/correct
+	comments.
+
 2004-08-29  Steven G. Kargl  <kargls@comcast.net>
 	Paul Brook  <paul@codesourcery.com>
 

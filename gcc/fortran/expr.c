@@ -1983,3 +1983,30 @@ gfc_default_initializer (gfc_typespec *ts)
     }
   return init;
 }
+
+
+/* Given a symbol, create an expression node with that symbol as a
+   variable. If the symbol is array valued, setup a reference of the
+   whole array.  */
+
+gfc_expr *
+gfc_get_variable_expr (gfc_symtree * var)
+{
+  gfc_expr *e;
+
+  e = gfc_get_expr ();
+  e->expr_type = EXPR_VARIABLE;
+  e->symtree = var;
+  e->ts = var->n.sym->ts;
+
+  if (var->n.sym->as != NULL)
+    {
+      e->rank = var->n.sym->as->rank;
+      e->ref = gfc_get_ref ();
+      e->ref->type = REF_ARRAY;
+      e->ref->u.ar.type = AR_FULL;
+    }
+
+  return e;
+}
+
