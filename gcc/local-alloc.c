@@ -1099,6 +1099,9 @@ block_alloc (b)
   int max_uid = get_max_uid ();
   int *qty_order;
   int no_conflict_combined_regno = -1;
+  /* Counter to prevent allocating more SCRATCHes than can be stored
+     in SCRATCH_LIST.  */
+  int scratches_allocated = scratch_index;
 
   /* Count the instructions in the basic block.  */
 
@@ -1341,7 +1344,7 @@ block_alloc (b)
 	  if (insn_code_number >= 0)
 	    for (i = 0; i < insn_n_operands[insn_code_number]; i++)
 	      if (GET_CODE (recog_operand[i]) == SCRATCH
-		  && scratch_index < scratch_list_length - 1)
+		  && scratches_allocated++ < scratch_list_length)
 		alloc_qty_for_scratch (recog_operand[i], i, insn,
 				       insn_code_number, insn_number);
 
