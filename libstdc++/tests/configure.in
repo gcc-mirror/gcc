@@ -6,6 +6,7 @@ configdirs=
 srctrigger=tcomplex.cc
 srcname="tests for ANSI C++ library"
 package_makefile_frag=Make.pack
+package_makefile_rules_frag=Make.pack.r
 
 # per-host:
 
@@ -19,7 +20,7 @@ XCXXINCLUDES="-I${srcdir}/.. -I${srcdir}/../stl -I${TO_TOPDIR}libio -I${srcdir}/
 SIMPLE_TESTS='tstring tlist tmap tvector'
 TESTS="tcomplex ${SIMPLE_TESTS}"
 MOSTLYCLEAN="*.o core ${TESTS} *.out"
-(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag}
+(. ${srcdir}/${TO_TOPDIR}libio/config.shared) >${package_makefile_frag} 2>${package_makefile_rules_frag}
 
 # post-target:
 

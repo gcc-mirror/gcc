@@ -1,3 +1,8 @@
+Wed Jan 28 10:27:11 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+        * tests/configure.in, testsuite/configure.in: Update with yesterday's
+	toplevel configure.in changes.
+
 Tue Jan 27 23:27:32 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (package_makefile_rules_frag): New variable
