@@ -5919,7 +5919,7 @@ shadow_tag (declspecs)
 	}
 
       if (found_tag == 0)
-	pedwarn ("abstract declarator used as declaration");
+	cp_error ("abstract declarator used as declaration");
       else if (found_tag > 1)
 	pedwarn ("multiple types in one declaration");
     }
