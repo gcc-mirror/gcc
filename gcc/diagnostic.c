@@ -104,7 +104,6 @@ static void default_diagnostic_finalizer PARAMS ((output_buffer *,
                                                   diagnostic_context *));
 
 static void error_recursion PARAMS ((void)) ATTRIBUTE_NORETURN;
-static const char *trim_filename PARAMS ((const char *));
 
 extern int rtl_dump_and_exit;
 extern int inhibit_warnings;
@@ -1715,7 +1714,7 @@ error_recursion ()
    is used by fancy_abort() to print `Internal compiler error in expr.c'
    instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  */
 
-static const char *
+const char *
 trim_filename (name)
      const char *name;
 {
