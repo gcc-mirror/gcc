@@ -1,3 +1,7 @@
+2002-09-07  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
+
 2002-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.in (HAVE_AS_OFFSETABLE_LO10): Use -xarch=v9
