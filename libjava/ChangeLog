@@ -1,5 +1,8 @@
 2001-09-14  Tom Tromey  <tromey@redhat.com>
 
+	* java/util/TimeZone.java: Updated list of timezones from
+	Classpath.
+
 	* java/lang/CloneNotSupportedException.java: Re-merged with
 	Classpath.
 
