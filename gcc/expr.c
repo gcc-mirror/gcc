@@ -1624,7 +1624,10 @@ emit_block_move (x, y, size, align)
 		 here because if SIZE is less than the mode mask, as it is
 		 returned by the macro, it will definitely be less than the
 		 actual mode mask.  */
-	      && (unsigned HOST_WIDE_INT) INTVAL (size) <= GET_MODE_MASK (mode)
+	      && ((GET_CODE (size) == CONST_INT
+		   && ((unsigned HOST_WIDE_INT) INTVAL (size)
+		       <= GET_MODE_MASK (mode)))
+		  || GET_MODE_BITSIZE (mode) >= BITS_PER_WORD)
 	      && (insn_operand_predicate[(int) code][0] == 0
 		  || (*insn_operand_predicate[(int) code][0]) (x, BLKmode))
 	      && (insn_operand_predicate[(int) code][1] == 0
