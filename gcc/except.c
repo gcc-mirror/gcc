@@ -3709,6 +3709,7 @@ output_function_exception_table (void)
 	     care of this for us.  */
 	  if (TREE_CODE (type) == ADDR_EXPR)
 	    {
+	      type = TREE_OPERAND (type, 0);
 	      node = cgraph_varpool_node (type);
 	      if (node)
 		cgraph_varpool_mark_needed_node (node);
