@@ -1,5 +1,5 @@
 /* Configuration for GNU compiler for an Alpha running Windows NT 3.x.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
    Contributed by Douglas B. Rupp (drupp@cs.washington.edu)
 
 This file is part of GNU CC.
@@ -18,9 +18,6 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
-
-#include "alpha/xm-alpha.h"
-#include "winnt/xm-winnt.h"
 
 #undef HOST_BITS_PER_LONG
 #define	HOST_BITS_PER_LONG	32
