@@ -1,3 +1,38 @@
+2003-09-03  Petur Runolfsson  <peturr02@ru.is>
+
+	PR libstdc++/12048
+	* include/ext/stdio_sync_filebuf.h
+	(stdio_sync_filebuf::_M_unget_buf): Declare it.
+	(stdio_sync_filebuf::stdio_sync_filebuf): Initialize _M_unget_buf.
+	(stdio_sync_filebuf::uflow): Store the returned character in
+	_M_unget_buf.
+	(stdio_sync_filebuf::pbackfail): If argument is eof(), pass
+	_M_unget_buf to syncungetc(). Set _M_unget_buf to eof().
+	(stdio_sync_filebuf<char>::xsgetn): Store last read character in
+	_M_unget_buf, if any, else eof().
+	(stdio_sync_filebuf<wchar_t>::xsgetn: Store last read character in
+	_M_unget_buf, if any, else eof().
+	* testsuite/27_io/objects/char/12048.cc: Rename to...
+	* testsuite/27_io/objects/char/12048-1.cc: ...this.
+	* testsuite/27_io/objects/char/12048-2.cc: New test.
+	* testsuite/27_io/objects/char/12048-3.cc: New test.
+	* testsuite/27_io/objects/char/12048-4.cc: New test.
+	* testsuite/27_io/objects/char/12048-5.cc: New test. XFAIL.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: New test.
+	* testsuite/27_io/objects/wchar_t/12048-2.cc: New test.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: New test.
+	* testsuite/27_io/objects/wchar_t/12048-4.cc: New test.
+	* testsuite/27_io/objects/wchar_t/12048-5.cc: New test. XFAIL.
+	* testsuite/ext/stdio_sync_filebuf_char.cc
+	(test02, test03, test04, test05): New tests.
+	* testsuite/ext/stdio_sync_filebuf_wchar_t.cc
+	(test02, test03, test04, test05): New tests.
+
+2003-09-03  Petur Runolfsson  <peturr02@ru.is>
+
+	* docs/html/27_io/howto.html: setbuf(0, 0) has no effect on
+	stringbuf or strstreambuf. Fix typos.
+
 2003-09-02  Phil Edwards  <phil@codesourcery.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_HOSTED):  #define _GLIBCXX_HOSTED
