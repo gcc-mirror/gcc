@@ -1,3 +1,8 @@
+Thu Mar  4 08:28:34 1999  Aymeric Vincent  <Aymeric.Vincent@emi.u-bordeaux.fr>
+
+	* configure.in (m68k-*-gnu*): New target.
+	* m68k/gnu.h, m68k/xm-gnu.h: New files.
+
 Thu Mar  4 07:56:49 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-common.c (shorten_compare): Use type_for_size, not
