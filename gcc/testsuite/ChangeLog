@@ -1,3 +1,8 @@
+2004-01-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/sparc-ret.c: Run only in 32-bit mode.  Don't scan
+	the assembly output if -m64 is passed.
+
 2004-01-25  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/13833
