@@ -1247,12 +1247,12 @@ enum reg_class { NO_REGS, INDEX_REGS, BASE_REGS, ALL_REGS, LIM_REG_CLASSES };
   sprintf ((OUTPUT), "%s.%d", (NAME), (LABELNO)))
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE, NAME)  do {	\
-	fprintf(FILE, "\tinit\n\t"); assemble_name(NAME); \
-        fprintf(FILE,"  ;constructor"); } while (0)
+	fprintf(FILE, "\tinit\n\t"); assemble_name(FILE, NAME); \
+	fprintf(FILE,"  ;constructor\n"); } while (0)
 
 #define ASM_OUTPUT_DESTRUCTOR(FILE, NAME)  do {	\
-	fprintf(FILE, "\tinit\n\t"); assemble_name(NAME); \
-        fprintf(FILE,"  ;destructor"); } while (0)
+	fprintf(FILE, "\t; ASM_OUTPUT_DESTRUCTOR called for "); \
+	assemble_name(FILE, NAME); } while (0)
 
 /* Define the parentheses used to group arithmetic operations
    in assembler code.  */
