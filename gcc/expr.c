@@ -8542,10 +8542,17 @@ preexpand_calls (exp)
   for (i = 0; i < nops; i++)
     if (TREE_OPERAND (exp, i) != 0)
       {
-	type = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
-	if (type == 'e' || type == '<' || type == '1' || type == '2'
-	    || type == 'r')
-	  preexpand_calls (TREE_OPERAND (exp, i));
+	if (TREE_CODE (exp) == TARGET_EXPR && i == 2)
+	  /* We don't need to preexpand the cleanup for a TARGET_EXPR.
+	     It doesn't happen before the call is made.  */
+	  ;
+	else
+	  {
+	    type = TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, i)));
+	    if (type == 'e' || type == '<' || type == '1' || type == '2'
+		|| type == 'r')
+	      preexpand_calls (TREE_OPERAND (exp, i));
+	  }
       }
 }
 

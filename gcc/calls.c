@@ -1199,7 +1199,7 @@ compute_argument_block_size (reg_parm_stack_space, args_size)
   return unadjusted_args_size;
 }
 
-/* Precompute parameters has needed for a function call.
+/* Precompute parameters as needed for a function call.
 
    IS_CONST indicates the target function is a pure function.
 
