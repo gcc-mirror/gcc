@@ -1,3 +1,9 @@
+2003-12-15  Graydon Hoare  <graydon@redhat.com>
+
+	* jni/gtk-peer/gdkfont.h: New file.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics2D.c: Remove
+	include of cairo-xlib.h, add extra gdk_flush().
+
 2003-12-12  Fernando Nasser  <fnasser@redhat.com>
 
 	* jni/gtk-peer/gtkpeer.h: Extend NSA set of macros to handle a second
