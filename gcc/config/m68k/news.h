@@ -144,7 +144,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       else if (TARGET_68020)                                    \
         fprintf (FILE, "\tlink.l fp,#%d\n", -fsize);            \
       else							\
-	fprintf (FILE, "\tlink fp,#0\n\tsub.l #%d,sp\n", fsize); }  \
+	fprintf (FILE, "\tlink fp,#0\n\tsub.l #%d,sp\n", fsize);\
+    }								\
+  else if (fsize)						\
+    {								\
+      int amt = fsize + 4;					\
+      /* Adding negative number is faster on the 68040.  */	\
+      if (fsize + 4 < 0x8000)					\
+	asm_fprintf (FILE, "\tadd.w %0I%d,%Rsp\n", - amt);	\
+      else							\
+	asm_fprintf (FILE, "\tadd.l %0I%d,%Rsp\n", - amt);	\
+    }								\
   for (regno = 16; regno < FIRST_PSEUDO_REGISTER; regno++)	\
     if (regs_ever_live[regno] && ! call_used_regs[regno])	\
        mask |= 1 << (regno - 16);				\
@@ -217,6 +227,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	       foffset + fsize, fmask); }			\
   if (frame_pointer_needed)					\
     fprintf (FILE, "\tunlk fp\n");				\
+  else if (fsize)						\
+    {								\
+      if (fsize + 4 < 0x8000)					\
+	asm_fprintf (stream, "\tadd.w #%d,sp\n", fsize + 4);	\
+      else							\
+	asm_fprintf (stream, "\tadd.l #%d,sp\n", fsize + 4);	\
+    }								\
   if (current_function_pops_args)				\
     fprintf (FILE, "\trtd #%d\n", current_function_pops_args);	\
   else fprintf (FILE, "\trts\n"); }
