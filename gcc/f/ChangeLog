@@ -8,6 +8,11 @@ Mon Mar 16 21:20:35 1998  Craig Burley  <burley@gnu.org>
 	reset symbol info after calling ffesymbol_error,
 	to avoid crash.
 
+Thu Mar 12 13:50:21 1998  Craig Burley  <burley@gnu.org>
+
+	* lang-options.h: Sort all -f*-intrinsics-* options,
+	for consistency with other g77 versions.
+
 Mon Mar 16 15:38:50 1998  Craig Burley  <burley@gnu.org>
 
 	* Version 0.5.22 released.
