@@ -33,6 +33,11 @@ extern int rename(const char *_old, const char *_new);
 #endif  /* STDIO_STDARG_H_CHECK */
 
 
+#if defined( STDIO_DUMMY_VA_LIST_CHECK )
+extern void mumble( __gnuc_va_list);
+#endif  /* STDIO_DUMMY_VA_LIST_CHECK */
+
+
 #if defined( ULTRIX_CONST_CHECK )
 extern void perror( const char *__s );
 extern int fputs( const char *__s, FILE *);

@@ -43,6 +43,22 @@ int foo;
 #endif  /* SCO_STRICT_ANSI_CHECK */
 
 
+#if defined( SYSV68_STRING_CHECK )
+extern unsigned int strlen();
+extern int ffs(int);
+extern void
+	*memccpy(),
+	memcpy();
+extern int
+	strncmp();
+extern unsigned int
+	strlen(),
+	strspn();
+extern size_t
+	strlen(), strspn();
+#endif  /* SYSV68_STRING_CHECK */
+
+
 #if defined( UNDEFINE_NULL_CHECK )
 #ifndef NULL
 #define NULL 0UL
