@@ -491,14 +491,12 @@ while (0)
 #define OPTIMIZATION_OPTIONS(LEVEL)					\
 {									\
   if (LEVEL)								\
-    {									\
-      flag_omit_frame_pointer	       = TRUE;				\
-      flag_schedule_insns_after_reload = TRUE;				\
-      target_flags |= MASK_GPOPT;					\
-    }									\
+    target_flags |= MASK_GPOPT;					\
 }
-
 
+/* Show we can debug even without a frame pointer.  */
+#define CAN_DEBUG_WITHOUT_FP
+
 /* Complain about missing specs and predefines that should be defined in each
    of the target tm files to override the defaults.  This is mostly a place-
    holder until I can get each of the files updated [mm].  */
