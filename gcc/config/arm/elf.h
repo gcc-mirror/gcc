@@ -80,7 +80,7 @@ Boston, MA 02111-1307, USA.  */
   do							\
     {							\
       ARM_DECLARE_FUNCTION_NAME (FILE, NAME, DECL);     \
-      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);		\
+      fprintf (FILE, "%s", TYPE_ASM_OP);		\
       assemble_name (FILE, NAME);			\
       putc (',', FILE);					\
       fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
   do								\
     {								\
-      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);			\
+      fprintf (FILE, "%s", TYPE_ASM_OP);			\
       assemble_name (FILE, NAME);				\
       putc (',', FILE);						\
       fprintf (FILE, TYPE_OPERAND_FMT, "object");		\
@@ -103,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
       if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
         {							\
 	  size_directive_output = 1;				\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	  assemble_name (FILE, NAME);				\
 	  putc (',', FILE);					\
 	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
@@ -129,7 +129,7 @@ Boston, MA 02111-1307, USA.  */
 	  && !size_directive_output)					\
         {								\
 	  size_directive_output = 1;					\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);			\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);				\
 	  assemble_name (FILE, name);					\
 	  putc (',', FILE);						\
 	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,			\
@@ -151,7 +151,7 @@ Boston, MA 02111-1307, USA.  */
 	  labelno ++;						\
 	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
-	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
 	  assemble_name (FILE, (FNAME));			\
           fprintf (FILE, ",");					\
 	  assemble_name (FILE, label);				\
@@ -342,7 +342,7 @@ dtors_section ()						\
   do						\
     {						\
       ctors_section ();				\
-      fprintf (STREAM, "\t%s\t ", INT_ASM_OP);	\
+      fprintf (STREAM, "%s", INT_ASM_OP);	\
       assemble_name (STREAM, NAME);		\
       fprintf (STREAM, "\n");			\
     }						\
@@ -356,7 +356,7 @@ dtors_section ()						\
   do						\
     {						\
       dtors_section ();				\
-      fprintf (STREAM, "\t%s\t ", INT_ASM_OP);	\
+      fprintf (STREAM, "%s", INT_ASM_OP);	\
       assemble_name (STREAM, NAME);		\
       fprintf (STREAM, "\n");			\
     }						\

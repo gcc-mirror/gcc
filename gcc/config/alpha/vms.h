@@ -332,7 +332,7 @@ extern void dtors_section	PARAMS ((void));
 #undef ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
 do {									\
-  fprintf ((FILE), "\t%s\t", COMMON_ASM_OP);				\
+  fprintf ((FILE), "%s", COMMON_ASM_OP);				\
   assemble_name ((FILE), (NAME));					\
   fprintf ((FILE), ",%u,%u\n", (SIZE), (ALIGN) / BITS_PER_UNIT);	\
 } while (0)

@@ -94,7 +94,7 @@ ctor_section ()								\
 		   "Attempt to output more than one ctor section\n");	\
 	  abort ();							\
 	}								\
-      fprintf (asm_out_file, "\t%s\n", CTORS_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
       in_section = in_ctor;						\
       ctors_once = 1;							\
     }									\
@@ -113,7 +113,7 @@ dtor_section ()								\
 		   "Attempt to output more than one dtor section\n");	\
 	  abort ();							\
 	}								\
-      fprintf (asm_out_file, "\t%s\n", DTORS_SECTION_ASM_OP);		\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
       in_section = in_dtor;						\
       dtors_once = 1;							\
     }									\

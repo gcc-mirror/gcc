@@ -1206,7 +1206,7 @@ do {							\
 
 /* For DWARF.  Marginally different than default so output is "prettier"
    (and consistent with above).  */
-#define PUSHSECTION_FORMAT "\t%s %s\n"
+#define PUSHSECTION_ASM_OP "\t.section "
 
 /* Tell crtstuff.c we're using ELF.  */
 #define OBJECT_FORMAT_ELF
@@ -1336,7 +1336,7 @@ do {									\
 /* This is how to output an assembler line for a numeric constant byte.  */
 #define ASM_BYTE_OP	"\t.byte\t"
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
-  fprintf (FILE, "\t%s\t0x%x\n", ASM_BYTE_OP, (VALUE))
+  fprintf (FILE, "%s0x%x\n", ASM_BYTE_OP, (VALUE))
 
 /* The assembler's parentheses characters.  */
 #define ASM_OPEN_PAREN "("
