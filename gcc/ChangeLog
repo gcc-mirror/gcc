@@ -1,5 +1,11 @@
 2003-01-15  Roger Sayle  <roger@eyesopen.com>
 
+	* c-semantics.c (genrtl_while_stmt):  Improve initial RTL generation
+	when loop condition is known true, i.e.  "while (1) { ... }".
+	(genrtl_for_stmt): Similarly for "for" statements.
+
+2003-01-15  Roger Sayle  <roger@eyesopen.com>
+
 	* real.c (real_sqrt): Return a bool result indicating whether
 	a floating point exception or trap should be raised.
 	* real.h (real_sqrt): Update function prototype.

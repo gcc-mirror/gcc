@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the common
    tree codes used in the GNU C and C++ compilers (see c-common.def
    for the standard codes).  
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
 
 This file is part of GCC.
@@ -424,16 +424,20 @@ void
 genrtl_while_stmt (t)
      tree t;
 {
-  tree cond;
+  tree cond = WHILE_COND (t);
+
   emit_nop ();
   emit_line_note (input_filename, lineno);
   expand_start_loop (1); 
   genrtl_do_pushlevel ();
 
-  cond = expand_cond (WHILE_COND (t));
-  emit_line_note (input_filename, lineno);
-  expand_exit_loop_top_cond (0, cond);
-  genrtl_do_pushlevel ();
+  if (cond && !integer_nonzerop (cond))
+    {
+      cond = expand_cond (cond);
+      emit_line_note (input_filename, lineno);
+      expand_exit_loop_top_cond (0, cond);
+      genrtl_do_pushlevel ();
+    }
   
   expand_stmt (WHILE_BODY (t));
 
@@ -522,7 +526,7 @@ void
 genrtl_for_stmt (t)
      tree t;
 {
-  tree cond;
+  tree cond = FOR_COND (t);
   const char *saved_filename;
   int saved_lineno;
 
@@ -539,7 +543,6 @@ genrtl_for_stmt (t)
   else
     expand_start_loop (1);
   genrtl_do_pushlevel ();
-  cond = expand_cond (FOR_COND (t));
 
   /* Save the filename and line number so that we expand the FOR_EXPR
      we can reset them back to the saved values.  */
@@ -547,12 +550,15 @@ genrtl_for_stmt (t)
   saved_lineno = lineno;
 
   /* Expand the condition.  */
-  emit_line_note (input_filename, lineno);
-  if (cond)
-    expand_exit_loop_top_cond (0, cond);
+  if (cond && !integer_nonzerop (cond))
+    {
+      cond = expand_cond (cond);
+      emit_line_note (input_filename, lineno);
+      expand_exit_loop_top_cond (0, cond);
+      genrtl_do_pushlevel ();
+    }
 
   /* Expand the body.  */
-  genrtl_do_pushlevel ();
   expand_stmt (FOR_BODY (t));
 
   /* Expand the increment expression.  */
