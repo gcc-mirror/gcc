@@ -1892,6 +1892,9 @@ duplicate_decls (newdecl, olddecl, different_binding_level)
 	{
 	  DECL_STATIC_CONSTRUCTOR(newdecl) |= DECL_STATIC_CONSTRUCTOR(olddecl);
 	  DECL_STATIC_DESTRUCTOR (newdecl) |= DECL_STATIC_DESTRUCTOR (olddecl);
+
+	  DECL_NO_CHECK_MEMORY_USAGE (newdecl)
+	    |= DECL_NO_CHECK_MEMORY_USAGE (olddecl);
 	}
 
       pop_obstacks ();
