@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.225 1998/02/24 23:05:08 karl Exp karl $
+% $Id: texinfo.tex,v 2.226 1998/02/25 20:48:50 karl Exp karl $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -44,7 +44,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.225 $
+\deftexinfoversion$Revision: 2.226 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -2539,6 +2539,11 @@ width0pt\relax} \fi
   \indexbreaks
   %
   % See if the index file exists and is nonempty.
+  % Change catcode of @ here so that if the index file contains
+  % \initial {@}
+  % as its first line, TeX doesn't complain about mismatched braces
+  % (because it thinks @} is a control sequence).
+  \catcode`\@ = 11
   \openin 1 \jobname.#1s
   \ifeof 1
     % \enddoublecolumns gets confused if there is no text in the index,
@@ -2560,7 +2565,6 @@ width0pt\relax} \fi
       % to make right now.
       \def\indexbackslash{\rawbackslashxx}%
       \catcode`\\ = 0
-      \catcode`\@ = 11
       \escapechar = `\\
       \begindoublecolumns
       \input \jobname.#1s
