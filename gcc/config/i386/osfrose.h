@@ -234,7 +234,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    defined, is executed once just after all the command options have
    been parsed.  */
 
-#define OVERRIDE_OPTIONS						\
+#undef  SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS					\
 {									\
   /*									\
   if (TARGET_ELF && TARGET_HALF_PIC)					\
