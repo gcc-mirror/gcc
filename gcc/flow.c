@@ -4208,7 +4208,7 @@ count_reg_references (x)
    It might be worthwhile to update REG_LIVE_LENGTH, REG_BASIC_BLOCK and
    possibly other information which is used by the register allocators.  */
 
-int
+void
 recompute_reg_usage (f)
      rtx f;
 {
