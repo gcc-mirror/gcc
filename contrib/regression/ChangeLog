@@ -1,3 +1,7 @@
+2003-07-31  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* btest-gcc.sh: Add make check-target-libjava.
+
 2002-10-22  Geoffrey Keating  <geoffk@apple.com>
 
 	* btest-gcc.sh: Add gdb.sum to TESTLOGS only when GDB testsuite is run.
