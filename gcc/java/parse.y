@@ -10101,8 +10101,28 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
      int lc;
      tree class, name, arglist;
 {
-  static int object_done = 0;
+  static struct hash_table t, *searched_classes = NULL;
+  static int search_not_done = 0;
   tree list = NULL_TREE, all_list = NULL_TREE;
+
+  /* Check the hash table to determine if this class has been searched 
+     already. */
+  if (searched_classes)
+    {
+      if (hash_lookup (searched_classes, 
+                      (const hash_table_key) class, FALSE, NULL))
+       return NULL;
+    }
+  else
+    {
+      hash_table_init (&t, hash_newfunc, java_hash_hash_tree_node,
+                      java_hash_compare_tree_node);
+      searched_classes = &t;
+    }
+    
+  search_not_done++;
+  hash_lookup (searched_classes, 
+              (const hash_table_key) class, TRUE, NULL);
 
   if (!CLASS_LOADED_P (class) && !CLASS_FROM_SOURCE_P (class))
     {
@@ -10114,30 +10134,8 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
   if (TREE_CODE (TYPE_NAME (class)) == TYPE_DECL 
       && CLASS_INTERFACE (TYPE_NAME (class)))
     {
-      static struct hash_table t, *searched_interfaces = NULL;
-      static int search_not_done = 0;
       int i, n;
       tree basetype_vec = TYPE_BINFO_BASETYPES (class);
-
-      /* Search in the hash table, otherwise create a new one if
-         necessary and insert the new entry. */
-
-      if (searched_interfaces)
-	{
-	  if (hash_lookup (searched_interfaces, 
-			   (const hash_table_key) class, FALSE, NULL))
-	    return NULL;
-	}
-      else
-	{
-	  hash_table_init (&t, hash_newfunc, java_hash_hash_tree_node,
-			   java_hash_compare_tree_node);
-	  searched_interfaces = &t;
-	}
-
-      hash_lookup (searched_interfaces, 
-		   (const hash_table_key) class, TRUE, NULL);
-
       search_applicable_methods_list (lc, TYPE_METHODS (class), 
 				      name, arglist, &list, &all_list);
       n = TREE_VEC_LENGTH (basetype_vec);
@@ -10146,23 +10144,9 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 	  tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
 	  tree rlist;
 
-	  search_not_done++;
 	  rlist = find_applicable_accessible_methods_list (lc,  t, name, 
 							   arglist);
 	  list = chainon (rlist, list);
-	  search_not_done--;
-	}
-
-      /* We're done. Reset the searched interfaces list and finally search
-         java.lang.Object */
-      if (!search_not_done)
-	{  
-	  if (!object_done)
-	    search_applicable_methods_list (lc, 
-					    TYPE_METHODS (object_type_node),
-					    name, arglist, &list, &all_list);
-	  hash_table_free (searched_interfaces);
-	  searched_interfaces = NULL;  
 	}
     }
   /* Search classes */
@@ -10178,7 +10162,6 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       {
 	tree basetype_vec = TYPE_BINFO_BASETYPES (sc);
 	int n = TREE_VEC_LENGTH (basetype_vec), i;
-	object_done = 1;
 	for (i = 1; i < n; i++)
 	  {
 	    tree t = BINFO_TYPE (TREE_VEC_ELT (basetype_vec, i));
@@ -10190,7 +10173,6 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
 		list = chainon (rlist, list);
 	      }
 	  }
-	object_done = 0;
       }
 
       /* Search enclosing context of inner classes before looking
@@ -10211,10 +10193,35 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
       else
 	class = sc;
 
-      for (class = (lc ? NULL_TREE : CLASSTYPE_SUPER (class)); 
-        class; class = CLASSTYPE_SUPER (class))
-       search_applicable_methods_list (lc, TYPE_METHODS (class), 
-                                       name, arglist, &list, &all_list);
+      /* Search superclass */
+      if (!lc && CLASSTYPE_SUPER (class) != NULL_TREE)
+	{
+          tree rlist;
+          class = CLASSTYPE_SUPER (class);
+          rlist = find_applicable_accessible_methods_list (lc, class, 
+                                                           name, arglist);
+          list = chainon (rlist, list);
+        }
+    }
+
+  search_not_done--;
+
+  /* We're done. Reset the searched classes list and finally search
+     java.lang.Object if it wasn't searched already. */
+  if (!search_not_done)
+    {
+      if (!lc
+	  && TYPE_METHODS (object_type_node)
+	  && !hash_lookup (searched_classes, 
+                           (const hash_table_key) object_type_node, 
+                           FALSE, NULL))
+	{
+          search_applicable_methods_list (lc, 
+                                          TYPE_METHODS (object_type_node),
+                                          name, arglist, &list, &all_list);
+        }
+      hash_table_free (searched_classes);
+      searched_classes = NULL;
     }
 
   /* Either return the list obtained or all selected (but
@@ -10222,7 +10229,7 @@ find_applicable_accessible_methods_list (lc, class, name, arglist)
   return (!list ? all_list : list);
 }
 
-/* Effectively search for the approriate method in method */
+/* Effectively search for the appropriate method in method */
 
 static void 
 search_applicable_methods_list (lc, method, name, arglist, list, all_list)
@@ -10251,7 +10258,7 @@ search_applicable_methods_list (lc, method, name, arglist, list, all_list)
 	    *all_list = tree_cons (NULL_TREE, method, *list);
 	}
     }
-}    
+}
 
 /* 15.11.2.2 Choose the Most Specific Method */
 
