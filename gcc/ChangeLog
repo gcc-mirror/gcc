@@ -1,3 +1,10 @@
+Mon Oct 11 18:56:14 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/sparc/liteelf.h (INIT_SECTION_ASM_OP, FINI_SECTION_ASM_OP):
+	Undef.
+	* configure.in (sparclite-*-elf, sparc86x-*-elf): Don't use libgloss.h.
+	* configure: Regenerate.
+
 Mon Oct 11 16:07:49 1999  Richard Henderson  <rth@cygnus.com>
 
 	* gcse.c (delete_null_pointer_checks): Returns void.
