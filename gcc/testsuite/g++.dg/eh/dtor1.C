@@ -1,3 +1,5 @@
+// PR c++/411
+
 // Test that a fully-constructed base is destroyed before transferring
 // control to the handler of a function-try-block.
 
