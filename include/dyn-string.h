@@ -1,5 +1,5 @@
 /* An abstract string datatype.
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2002 Free Software Foundation, Inc.
    Contributed by Mark Mitchell (mark@markmitchell.com).
 
 This file is part of GCC.
@@ -45,7 +45,7 @@ typedef struct dyn_string
    names in user programs, the functions that are used in the
    demangler are given implementation-reserved names.  */
 
-#ifdef IN_LIBGCC2
+#if defined(IN_LIBGCC2) || defined(IN_GLIBCPP_V3)
 
 #define dyn_string_init                 __cxa_dyn_string_init
 #define dyn_string_new                  __cxa_dyn_string_new
@@ -66,7 +66,7 @@ typedef struct dyn_string
 #define dyn_string_substring            __cxa_dyn_string_substring
 #define dyn_string_eq                   __cxa_dyn_string_eq
 
-#endif /* IN_LIBGCC2 */
+#endif /* IN_LIBGCC2 || IN_GLIBCPP_V3 */
 
 
 extern int dyn_string_init              PARAMS ((struct dyn_string *, int));
