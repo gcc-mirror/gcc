@@ -1,3 +1,19 @@
+Tue Jun 30 16:01:01 1998  Richard Henderson  <rth@cygnus.com>
+
+	* rtl.def (CONSTANT_P_RTX): New.
+	* rtl.h (CONSTANT_P): Recognize it.
+	* cse.c (fold_rtx): Eliminate it.
+	* expr.c (can_handle_constant_p): New variable.
+	(init_expr_once): Initialize it.
+	(expand_builtin): Generate CONSTANT_P_RTX if the expression is not
+	immediately recognizable as a constant.
+
+	* alpha.c (reg_or_6bit_operand): Recognize CONSTANT_P_RTX.
+	(reg_or_8bit_operand, cint8_operand, add_operand): Likewise.
+	(sext_add_operand, and_operand, or_operand): Likewise.
+	(reg_or_cint_operand, some_operand, input_operand): Likewise.
+	* alpha.h (PREDICATE_CODES): Add CONSTANT_P_RTX where needed.
+
 1998-06-30  Benjamin Kosnik  <bkoz@bliss.nabi.net>
 
         * dbxout.c (dbxout_type_methods): Remove warn_template_debugging.

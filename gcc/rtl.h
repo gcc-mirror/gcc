@@ -219,7 +219,8 @@ typedef struct rtvec_def{
 #define CONSTANT_P(X)   \
   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF		\
    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST_DOUBLE		\
-   || GET_CODE (X) == CONST || GET_CODE (X) == HIGH)
+   || GET_CODE (X) == CONST || GET_CODE (X) == HIGH			\
+   || GET_CODE (X) == CONSTANT_P_RTX)
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
