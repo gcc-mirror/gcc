@@ -3259,7 +3259,12 @@ expand_call (exp, target, ignore)
 	  emit_move_insn (target, valreg);
 	}
       else if (TYPE_MODE (TREE_TYPE (exp)) == BLKmode)
-	target = copy_blkmode_from_reg (target, valreg, TREE_TYPE (exp));
+	{
+	  target = copy_blkmode_from_reg (target, valreg, TREE_TYPE (exp));
+
+	  /* We can not support sibling calls for this case.  */
+	  sibcall_failure = 1;
+	}
       else
 	target = copy_to_reg (valreg);
 
