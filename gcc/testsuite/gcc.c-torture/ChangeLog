@@ -1,3 +1,8 @@
+1999-03-01 Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* noncompile/noncompile.exp (951025-1.c): Accept an error
+	message on line 1 or line 2; cccp and cpplib do this differently.
+
 1999-02-03  Nick Clifton  <nickc@cygnus.com>
 
 	* execute/memcheck/blkarg.c (foo): Use 10 leading arguments in
