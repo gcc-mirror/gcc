@@ -1623,8 +1623,6 @@ add_call_read_ops (tree stmt)
 {
   bitmap_iterator bi;
 
-  bi.ptr2 = NULL;
-
   /* Otherwise, if the function is not pure, it may reference memory.  Add
      a VUSE for .GLOBAL_VAR if it has been created.  Otherwise, add a VUSE
      for each call-clobbered variable.  See add_referenced_var for the
