@@ -2806,10 +2806,10 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
      (or one of its primary bases, which are at the same offset).  */
 
   if (virtual_base)
-    /* The `this' pointer needs to be adjusted to the nearest virtual
-       base.  */
+    /* The `this' pointer needs to be adjusted from the declaration to
+       the nearest virtual base.  */
     delta = size_diffop (BINFO_OFFSET (virtual_base),
-			 BINFO_OFFSET (binfo));
+			 BINFO_OFFSET (first_defn));
   else
     {
       /* The `this' pointer needs to be adjusted from pointing to
@@ -2823,7 +2823,7 @@ update_vtable_entry_for_fn (t, binfo, fn, virtuals)
 	  /* We'll need a thunk.  But if we have a (perhaps formerly)
 	     primary virtual base, we have a vcall slot for this function,
 	     so we can use it rather than create a non-virtual thunk.  */
-
+	  
 	  b = get_primary_binfo (first_defn);
 	  for (; b; b = get_primary_binfo (b))
 	    {

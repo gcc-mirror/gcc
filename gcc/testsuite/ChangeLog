@@ -1,5 +1,9 @@
 2001-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.abi/vthunk1.C: New test.
+
+2001-07-31  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.abi/vbase8-22.C: New test.
 
 2001-07-30  Janis Johnson <janis@us.ibm.com>

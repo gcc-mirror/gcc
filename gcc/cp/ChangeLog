@@ -1,5 +1,11 @@
 2001-07-31  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR c++/3631
+	* class.c (update_vtable_entry_for_fn): The fixed adjustment
+	of a virtual thunk should be from declaring base.
+
+2001-07-31  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (dfs_ctor_vtable_bases_queue_p): Always walk into
 	the shared virtual base, so preserving inheritance graph order.
 
