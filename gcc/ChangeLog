@@ -1,3 +1,10 @@
+2001-10-01  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.md ("add-split"): Fix add split when
+	operand 2 is the stack pointer.
+	("addr-peephole"): Fix address computation peephole when operand 2
+	is the stack pointer.
+
 Mon Oct  1 09:26:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/i386/i386.c (ix86_va_arg): Call set_mem_alias_set.
