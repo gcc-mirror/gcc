@@ -525,17 +525,15 @@ proc check_effective_target_vect_double { } {
 
 proc is-effective-target { arg } {
     set selected 0
-    switch $arg {
-	"ilp32"  { set selected [check_effective_target_ilp32] }
-	"lp64"   { set selected [check_effective_target_lp64] }
-	"vmx_hw" { set selected [check_vmx_hw_available] }
-	"named_sections" { set selected [check_named_sections_available] }
-	"gc_sections" { set selected [check_gc_sections_available] }
-	"vect_int" { set selected [check_effective_target_vect_int] }
-	"vect_long" { set selected [check_effective_target_vect_long] }
-	"vect_float" { set selected [check_effective_target_vect_float] }
-	"vect_double" { set selected [check_effective_target_vect_double] }
-	default  { error "unknown effective target selector `$arg'" }
+    if { [info procs check_effective_target_${arg}] != [list] } {
+	set selected [check_effective_target_${arg}]
+    } else {
+	switch $arg {
+	  "vmx_hw"         { set selected [check_vmx_hw_available] }
+	  "named_sections" { set selected [check_named_sections_available] }
+	  "gc_sections"    { set selected [check_gc_sections_available] }
+	  default          { error "unknown effective target keyword `$arg'" }
+	}
     }
     verbose "is-effective-target: $arg $selected" 2
     return $selected
