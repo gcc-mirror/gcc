@@ -62,7 +62,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS
 #define _GLIBCXX_REF_TEMPLATE_ARGS
 #define _GLIBCXX_NUM_ARGS_PLUS_1 1
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T1
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -114,7 +116,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 2
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T2
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -166,7 +170,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 3
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T3
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -218,7 +224,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 4
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T4
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -270,7 +278,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 5
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T5
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -322,7 +332,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&, _T5&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 6
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T6
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -374,7 +386,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&, _T5&, _T6&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 7
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T7
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -426,7 +440,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 8
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T8
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -478,7 +494,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7), ref(__a8)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&, _T8&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 9
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T9
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -530,7 +548,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7), ref(__a8), ref(__a9)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&, _T8&, _T9&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 10
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T10
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS
@@ -583,7 +603,9 @@
 #define _GLIBCXX_REF_WRAP_PARAMS ref(__a1), ref(__a2), ref(__a3), ref(__a4), ref(__a5), ref(__a6), ref(__a7), ref(__a8), ref(__a9), ref(__a10)
 #define _GLIBCXX_REF_TEMPLATE_ARGS _T1&, _T2&, _T3&, _T4&, _T5&, _T6&, _T7&, _T8&, _T9&, _T10&
 #define _GLIBCXX_NUM_ARGS_PLUS_1 11
+#define _GLIBCXX_T_NUM_ARGS_PLUS_1 _T11
 #include _GLIBCXX_REPEAT_HEADER
+#undef _GLIBCXX_T_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_NUM_ARGS_PLUS_1
 #undef _GLIBCXX_REF_TEMPLATE_ARGS
 #undef _GLIBCXX_REF_WRAP_PARAMS

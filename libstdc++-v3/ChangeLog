@@ -1,3 +1,12 @@
+2005-04-02  Douglas Gregor  <doug.gregor@gmail.com>
+	
+	* include/tr1/tuple_iterate.h (tuple_element): Use new macro
+	_GLIBCXX_T_NUM_ARGS_PLUS_1 because _T is a macro on Darwin.
+	* include/tr1/repeat.h (_GLIBCXX_T_NUM_ARGS_PLUS_1): Define for
+	each iteration.
+	* scripts/gen_includers.h: Define _GLIBCXX_T_NUM_ARGS_PLUS_1 for
+	each iteration.
+	
 2005-04-01  Douglas Gregor  <doug.gregor@gmail.com>
 
 	* include/tr1/functional (_Maybe_wrap_member_pointer): Wrap up
