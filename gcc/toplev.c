@@ -3074,7 +3074,8 @@ rest_of_compilation (decl)
 	      int saved_optimize = optimize;
 	      optimize = 0;
 	      find_exception_handler_labels ();
-	      jump_optimize (get_insns(), 0, 0, 0);
+	      jump_optimize (get_insns(), !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+			     !JUMP_AFTER_REGSCAN);
 	      optimize = saved_optimize;
 	    }
 
@@ -3208,7 +3209,8 @@ rest_of_compilation (decl)
      are initialized and to compute whether control can drop off the end
      of the function.  */
   TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-  TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
+  TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP, !JUMP_NOOP_MOVES,
+				     JUMP_AFTER_REGSCAN));
 
   /* Now is when we stop if -fsyntax-only and -Wreturn-type.  */
   if (rtl_dump_and_exit || flag_syntax_only || DECL_DEFER_OUTPUT (decl))
@@ -3240,7 +3242,9 @@ rest_of_compilation (decl)
       TIMEVAR (cse_time, delete_trivially_dead_insns (insns, max_reg_num ()));
 
       if (tem || optimize > 1)
-	TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
+	TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
+					   !JUMP_NOOP_MOVES,
+					   !JUMP_AFTER_REGSCAN));
 
       /* Dump rtl code after cse, if we are doing that.  */
       
@@ -3303,13 +3307,17 @@ rest_of_compilation (decl)
 	     max_reg_num so we must rerun reg_scan afterwards.
 	     ??? Rework to not call reg_scan so often.  */
 	  TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
-	  TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 1));
+	  TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
+					     !JUMP_NOOP_MOVES,
+					     JUMP_AFTER_REGSCAN));
 	  
 	  TIMEVAR (cse2_time, reg_scan (insns, max_reg_num (), 0));
 	  TIMEVAR (cse2_time, tem = cse_main (insns, max_reg_num (),
 					      1, rtl_dump_file));
 	  if (tem)
-	    TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
+	    TIMEVAR (jump_time, jump_optimize (insns, !JUMP_CROSS_JUMP,
+					       !JUMP_NOOP_MOVES,
+					       !JUMP_AFTER_REGSCAN));
 	}
 
       if (flag_thread_jumps)
@@ -3530,7 +3538,9 @@ rest_of_compilation (decl)
 
   if (optimize > 0)
     {
-      TIMEVAR (jump_time, jump_optimize (insns, 1, 1, 0));
+      TIMEVAR (jump_time, jump_optimize (insns, JUMP_CROSS_JUMP,
+					 JUMP_NOOP_MOVES,
+					 !JUMP_AFTER_REGSCAN));
       
       /* Dump rtl code after jump, if we are doing that.  */
 

@@ -1,3 +1,11 @@
+Mon Apr 27 08:55:23 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* rtl.h (JUMP_{CROSS_JUMP,NOOP_MOVES,AFTER_REGSCAN}):  New macros
+	for calling jump_optimize.
+
+	* toplev.c (rest_of_compilation): Call jump_optimize using JUMP_*
+	macros, rather than 0/1's.
+
 Sun Apr 26 23:19:10 1998  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (CONST_COSTS): Zero is always free.
