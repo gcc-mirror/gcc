@@ -1,3 +1,7 @@
+1999-08-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* include/javaprims.h (TRUE, FALSE): Redefine as themselves.
+
 1999-08-11  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* java/util/BitSet.java (set, clear, hashCode): specify "1" constant

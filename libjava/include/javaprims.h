@@ -11,6 +11,14 @@ details.  */
 #ifndef __JAVAPRIMS_H__
 #define __JAVAPRIMS_H__
 
+// FIXME: this is a hack until we get a proper gcjh.
+// It is needed to work around system header files that define TRUE
+// and FALSE.
+#undef TRUE
+#define TRUE TRUE
+#undef FALSE
+#define FALSE FALSE
+
 // To force selection of correct types that will mangle consistently
 // across platforms.
 extern "Java"
