@@ -1,3 +1,9 @@
+2003-10-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* configure.in: Fix grammatical error.  Move UWIN host error to...
+	* config.host: Here.
+	* configure: Regenerate.
+
 2003-10-13  Andreas Krebbel  <krebbel1@de.ibm.com>
 
 	* config/s390/s390.md ("*fmadddf4", "*fmsubdf4", "*fmaddsf4", 
