@@ -1,5 +1,13 @@
 2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* cpplex.c (_cpp_lex_token): Don't warn about directives in
+	macro arguments when looking for the '('.
+	* cppmacro.c (funlike_invocation_p): Set parsing_args to
+	2 when really parsing arguments; 1 when looking for '('.
+	Always restore the lexer position.
+
+2001-03-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* longlong.h (umul_ppmm): Don't use a multiline string.
 
 2001-03-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
