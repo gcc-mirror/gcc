@@ -1,3 +1,9 @@
+2003-11-17  Jason Merrill  <jason@redhat.com>
+
+	* init.c (build_new_1): Preevaluate placement args.
+	* call.c (build_op_delete_call): Don't expose placement args to
+	overload resolution.
+
 2003-11-16  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (c++.tags): Create TAGS.sub files in each directory
