@@ -1,3 +1,7 @@
+2003-03-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* c-cppbuiltin.c (builtin_define_std): Add ATTRIBUTE_UNUSED.
+
 2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_stack_info): Remove
