@@ -3144,7 +3144,7 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
-	hppa1.1-*-hpux10*)
+	hppa1.1-*-hpux10* | hppa2*-*-hpux10*)
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux10.h"
 		xm_file=pa/xm-pahpux.h
@@ -3182,7 +3182,7 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
-	hppa1.1-*-hpux*)
+	hppa1.1-*-hpux* | hppa2*-*-hpux*)
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hpux9.h"
 		xm_file=pa/xm-pahpux.h
@@ -3205,7 +3205,7 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		use_collect2=yes
 		;;
-	hppa1.1-*-hiux*)
+	hppa1.1-*-hiux* | hppa2*-*-hiux*)
 		target_cpu_default=1
 		tm_file="${tm_file} pa/pa-hpux.h pa/pa-hiux.h"
 		xm_file=pa/xm-pahpux.h
@@ -4472,6 +4472,15 @@ for machine in $build $host $target; do
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
+	mipsel-*-linux*)			# Little endian Linux MIPS
+		xmake_file=x-linux
+		xm_file="xm-siglist.h ${xm_file}"
+		tm_file="mips/elfl.h mips/linux.h"
+		extra_parts="crtbegin.o crtend.o"
+		gnu_ld=yes
+		gas=yes
+		fixincludes=Makefile.in 
+		;;
 	mips-sony-bsd* | mips-sony-newsos*)	# Sony NEWS 3600 or risc/news.
 		tm_file="mips/news4.h ${tm_file}"
 		if test x$stabs = xyes; then
@@ -5583,7 +5592,7 @@ fi
 if test x$enable_haifa = x
 then
   case $target in
-    alpha*-* | hppa1.?-* | powerpc*-* | rs6000-* | *sparc*-* | m32r*-*)
+    alpha*-* | hppa*-* | powerpc*-* | rs6000-* | *sparc*-* | m32r*-*)
       enable_haifa=yes;;
   esac
 fi
@@ -5895,7 +5904,7 @@ fi
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:5899: checking assembler alignment features" >&5
+echo "configure:5908: checking assembler alignment features" >&5
 gcc_cv_as=
 gcc_cv_as_alignment_features=
 gcc_cv_as_gas_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/gas
@@ -5968,7 +5977,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:5972: checking assembler subsection support" >&5
+echo "configure:5981: checking assembler subsection support" >&5
 gcc_cv_as_subsections=
 if test x$gcc_cv_as != x; then
 	# Check if we have .subsection
@@ -6240,7 +6249,7 @@ fi
 
 # Warn if using init_priority.
 echo $ac_n "checking whether to enable init_priority by default""... $ac_c" 1>&6
-echo "configure:6244: checking whether to enable init_priority by default" >&5
+echo "configure:6253: checking whether to enable init_priority by default" >&5
 if test x$enable_init_priority != xyes; then
   enable_init_priority=no
 fi
