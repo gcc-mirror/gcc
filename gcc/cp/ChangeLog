@@ -1,3 +1,9 @@
+1999-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* decl2.c (grok_alignof): Don't decay lvalues.
+	
+	* init.c (build_new): Remove unused variable.
+
 1999-10-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (struct language_function): Remove static_labelno.
