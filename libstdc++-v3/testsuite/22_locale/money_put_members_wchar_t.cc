@@ -37,24 +37,13 @@ void test01()
   typedef ostreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
-  string str;
 
   // basic construction
   locale loc_c = locale::classic();
-  str = loc_c.name();
-
   locale loc_hk("en_HK");
-  str = loc_hk.name();
-  VERIFY( loc_c != loc_hk );
-
   locale loc_fr("fr_FR@euro");
-  str = loc_fr.name();
-  VERIFY( loc_c != loc_fr );
-
   locale loc_de("de_DE");
-  str = loc_de.name();
   VERIFY( loc_c != loc_de );
-
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );
@@ -181,24 +170,13 @@ void test02()
   typedef ostreambuf_iterator<wchar_t> iterator_type;
 
   bool test = true;
-  string str;
 
   // basic construction
   locale loc_c = locale::classic();
-  str = loc_c.name();
-
   locale loc_hk("en_HK");
-  str = loc_hk.name();
-  VERIFY( loc_c != loc_hk );
-
   locale loc_fr("fr_FR@euro");
-  str = loc_fr.name();
-  VERIFY( loc_c != loc_fr );
-
   locale loc_de("de_DE");
-  str = loc_de.name();
   VERIFY( loc_c != loc_de );
-
   VERIFY( loc_hk != loc_fr );
   VERIFY( loc_hk != loc_de );
   VERIFY( loc_de != loc_fr );

@@ -31,24 +31,13 @@ void test01()
   using namespace std;
   
   bool test = true;
-  string str;
 
   // basic construction
   locale loc_c = locale::classic();
-  str = loc_c.name();
-
   locale loc_us("en_US");
-  str = loc_us.name();
-  VERIFY( loc_c != loc_us );
-
   locale loc_fr("fr_FR");
-  str = loc_fr.name();
-  VERIFY( loc_c != loc_fr );
-
   locale loc_de("de_DE");
-  str = loc_de.name();
   VERIFY( loc_c != loc_de );
-
   VERIFY( loc_us != loc_fr );
   VERIFY( loc_us != loc_de );
   VERIFY( loc_de != loc_fr );

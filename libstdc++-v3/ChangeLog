@@ -1,3 +1,18 @@
+2001-09-20  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* testsuite/22_locale/numpunct_members_char.cc (test01): Remove
+	redundant sanity checks.
+	* testsuite/22_locale/money_put_members_wchar_t.cc (test01): Same.
+	(test02): Same.
+	* testsuite/22_locale/money_put_members_char.cc (test01): Same.
+	(test02): Same.
+	* testsuite/22_locale/moneypunct_members_wchar_t.cc (test01): Same.
+	* testsuite/22_locale/moneypunct_members_char.cc (test01): Same.
+	* testsuite/22_locale/money_get_members_wchar_t.cc (test01): Same.
+	(test02): Same.
+	* testsuite/22_locale/money_get_members_char.cc (test01): Same.
+	(test02): Same.
+
 2001-09-19  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Implement std::time_put.
