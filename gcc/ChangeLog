@@ -1,3 +1,8 @@
+2000-07-15  Neil Booth  <NeilB@earthling.net>
+
+	* README.Portability: Correct example about calling a function
+	through a pointer to function.  Format wide paragraphs.
+
 2000-07-15  Michael Meissner  <meissner@redhat.com>
 
 	* README.Portability: Update integer suffixes and function
