@@ -4309,7 +4309,10 @@ find_auto_inc (pbi, x, insn)
 				    ? (offset ? PRE_INC : POST_INC)
 				    : (offset ? PRE_DEC : POST_DEC));
 
-	  if (dead_or_set_p (incr, addr))
+	  if (dead_or_set_p (incr, addr)
+	      /* Mustn't autoinc an eliminable register.  */
+	      && (regno >= FIRST_PSEUDO_REGISTER
+	          || ! TEST_HARD_REG_BIT (elim_reg_set, regno)))
 	    {
 	      /* This is the simple case.  Try to make the auto-inc.  If
 		 we can't, we are done.  Otherwise, we will do any
@@ -4410,6 +4413,11 @@ find_auto_inc (pbi, x, insn)
 	     register.  */
 	  if (SET_DEST (set) == addr)
 	    {
+	      /* If the original source was dead, it's dead now.  */
+	      rtx note = find_reg_note (incr, REG_DEAD, NULL_RTX);
+	      if (note && XEXP (note, 0) != addr)
+		SET_REGNO_REG_SET (pbi->new_dead, REGNO (XEXP (note, 0)));
+	      
 	      PUT_CODE (incr, NOTE);
 	      NOTE_LINE_NUMBER (incr) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (incr) = 0;
