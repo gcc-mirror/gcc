@@ -1,0 +1,53 @@
+@c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
+
+@node Configuration Files
+@chapter Files Created by @code{configure}
+
+Here we spell out what files will be set up by @code{configure}.  Normally
+you need not be concerned with these files.
+
+@itemize @bullet
+@item
+@ifset INTERNALS
+A file named @file{config.h} is created that contains a @samp{#include}
+of the top-level config file for the machine you will run the compiler
+on (@pxref{Config}).  This file is responsible for defining information
+about the host machine.  It includes @file{tm.h}.
+@end ifset
+@ifclear INTERNALS
+A file named @file{config.h} is created that contains a @samp{#include}
+of the top-level config file for the machine you will run the compiler
+on (@pxref{Config,,The Configuration File, gcc.info, Using and Porting
+GCC}).  This file is responsible for defining information about the host
+machine.  It includes @file{tm.h}.
+@end ifclear
+
+The top-level config file is located in the subdirectory @file{config}.
+Its name is always @file{xm-@var{something}.h}; usually
+@file{xm-@var{machine}.h}, but there are some exceptions.
+
+If your system does not support symbolic links, you might want to
+set up @file{config.h} to contain a @samp{#include} command which
+refers to the appropriate file.
+
+@item
+A file named @file{tconfig.h} is created which includes the top-level config
+file for your target machine.  This is used for compiling certain
+programs to run on that machine.
+
+@item
+A file named @file{tm.h} is created which includes the
+machine-description macro file for your target machine.  It should be in
+the subdirectory @file{config} and its name is often
+@file{@var{machine}.h}.
+
+@item
+The command file @file{configure} also constructs the file
+@file{Makefile} by adding some text to the template file
+@file{Makefile.in}.  The additional text comes from files in the
+@file{config} directory, named @file{t-@var{target}} and
+@file{x-@var{host}}.  If these files do not exist, it means nothing
+needs to be added for a given target or host.
+@end itemize

@@ -11,12 +11,9 @@ new GCC install manual @file{gcc/doc/install.texi}.  It is
 provided for historical reference only.
 
 @menu
-* Configuration Files::  Files created by running @code{configure}.
 * Configurations::    Configurations Supported by GNU CC.
 * Cross-Compiler::   Building and installing a cross-compiler.
 * VMS Install::   See below for installation on VMS.
-* Collect2::	  How @code{collect2} works; how it finds @code{ld}.
-* Header Dirs::   Understanding the standard header file directories.
 @end menu
 
 Here is the procedure for installing GNU CC on a GNU or Unix system.
@@ -85,56 +82,6 @@ notes on many of the configurations.  You should check the notes in that
 section before proceeding any further with the installation of GNU CC@.
 
 @end enumerate
-
-@node Configuration Files
-@section Files Created by @code{configure}
-
-Here we spell out what files will be set up by @code{configure}.  Normally
-you need not be concerned with these files.
-
-@itemize @bullet
-@item
-@ifset INTERNALS
-A file named @file{config.h} is created that contains a @samp{#include}
-of the top-level config file for the machine you will run the compiler
-on (@pxref{Config}).  This file is responsible for defining information
-about the host machine.  It includes @file{tm.h}.
-@end ifset
-@ifclear INTERNALS
-A file named @file{config.h} is created that contains a @samp{#include}
-of the top-level config file for the machine you will run the compiler
-on (@pxref{Config,,The Configuration File, gcc.info, Using and Porting
-GCC}).  This file is responsible for defining information about the host
-machine.  It includes @file{tm.h}.
-@end ifclear
-
-The top-level config file is located in the subdirectory @file{config}.
-Its name is always @file{xm-@var{something}.h}; usually
-@file{xm-@var{machine}.h}, but there are some exceptions.
-
-If your system does not support symbolic links, you might want to
-set up @file{config.h} to contain a @samp{#include} command which
-refers to the appropriate file.
-
-@item
-A file named @file{tconfig.h} is created which includes the top-level config
-file for your target machine.  This is used for compiling certain
-programs to run on that machine.
-
-@item
-A file named @file{tm.h} is created which includes the
-machine-description macro file for your target machine.  It should be in
-the subdirectory @file{config} and its name is often
-@file{@var{machine}.h}.
-
-@item
-The command file @file{configure} also constructs the file
-@file{Makefile} by adding some text to the template file
-@file{Makefile.in}.  The additional text comes from files in the
-@file{config} directory, named @file{t-@var{target}} and
-@file{x-@var{host}}.  If these files do not exist, it means nothing
-needs to be added for a given target or host.
-@end itemize
 
 @node Configurations
 @section Configurations Supported by GNU CC
@@ -724,115 +671,3 @@ by @file{vmsconfig.com}) to define the macro @code{QSORT_WORKAROUND}.
 @code{QSORT_WORKAROUND} is always defined when GNU CC is compiled with
 VAX C, to avoid a problem in case @file{gcclib.olb} is not yet
 available.
-
-@node Collect2
-@section @code{collect2}
-
-GNU CC uses a utility called @code{collect2} on nearly all systems to arrange
-to call various initialization functions at start time.
-
-The program @code{collect2} works by linking the program once and
-looking through the linker output file for symbols with particular names
-indicating they are constructor functions.  If it finds any, it
-creates a new temporary @samp{.c} file containing a table of them,
-compiles it, and links the program a second time including that file.
-
-@findex __main
-@cindex constructors, automatic calls
-The actual calls to the constructors are carried out by a subroutine
-called @code{__main}, which is called (automatically) at the beginning
-of the body of @code{main} (provided @code{main} was compiled with GNU
-CC)@.  Calling @code{__main} is necessary, even when compiling C code, to
-allow linking C and C++ object code together.  (If you use
-@option{-nostdlib}, you get an unresolved reference to @code{__main},
-since it's defined in the standard GCC library.  Include @option{-lgcc} at
-the end of your compiler command line to resolve this reference.)
-
-The program @code{collect2} is installed as @code{ld} in the directory
-where the passes of the compiler are installed.  When @code{collect2}
-needs to find the @emph{real} @code{ld}, it tries the following file
-names:
-
-@itemize @bullet
-@item
-@file{real-ld} in the directories listed in the compiler's search
-directories.
-
-@item
-@file{real-ld} in the directories listed in the environment variable
-@code{PATH}.
-
-@item
-The file specified in the @code{REAL_LD_FILE_NAME} configuration macro,
-if specified.
-
-@item
-@file{ld} in the compiler's search directories, except that
-@code{collect2} will not execute itself recursively.
-
-@item
-@file{ld} in @code{PATH}.
-@end itemize
-
-``The compiler's search directories'' means all the directories where
-@code{gcc} searches for passes of the compiler.  This includes
-directories that you specify with @option{-B}.
-
-Cross-compilers search a little differently:
-
-@itemize @bullet
-@item
-@file{real-ld} in the compiler's search directories.
-
-@item
-@file{@var{target}-real-ld} in @code{PATH}.
-
-@item
-The file specified in the @code{REAL_LD_FILE_NAME} configuration macro,
-if specified.
-
-@item
-@file{ld} in the compiler's search directories.
-
-@item
-@file{@var{target}-ld} in @code{PATH}.
-@end itemize
-
-@code{collect2} explicitly avoids running @code{ld} using the file name
-under which @code{collect2} itself was invoked.  In fact, it remembers
-up a list of such names---in case one copy of @code{collect2} finds
-another copy (or version) of @code{collect2} installed as @code{ld} in a
-second place in the search path.
-
-@code{collect2} searches for the utilities @code{nm} and @code{strip}
-using the same algorithm as above for @code{ld}.
-
-@node Header Dirs
-@section Standard Header File Directories
-
-@code{GCC_INCLUDE_DIR} means the same thing for native and cross.  It is
-where GNU CC stores its private include files, and also where GNU CC
-stores the fixed include files.  A cross compiled GNU CC runs
-@code{fixincludes} on the header files in @file{$(tooldir)/include}.
-(If the cross compilation header files need to be fixed, they must be
-installed before GNU CC is built.  If the cross compilation header files
-are already suitable for ISO C and GNU CC, nothing special need be
-done).
-
-@code{GPLUSPLUS_INCLUDE_DIR} means the same thing for native and cross.  It
-is where @code{g++} looks first for header files.  The C++ library
-installs only target independent header files in that directory.
-
-@code{LOCAL_INCLUDE_DIR} is used only by native compilers.  GNU CC
-doesn't install anything there.  It is normally
-@file{/usr/local/include}.  This is where local additions to a packaged
-system should place header files.
-
-@code{CROSS_INCLUDE_DIR} is used only by cross compilers.  GNU CC
-doesn't install anything there.
-
-@code{TOOL_INCLUDE_DIR} is used for both native and cross compilers.  It
-is the place for other packages to install header files that GNU CC will
-use.  For a cross-compiler, this is the equivalent of
-@file{/usr/include}.  When you build a cross-compiler,
-@code{fixincludes} processes any header files in this directory.
