@@ -1378,6 +1378,15 @@ extern struct rtx_def *legitimize_pic_address ();
  "%f16", "%f17", "%f18", "%f19", "%f20", "%f21", "%f22", "%f23",	\
  "%f24", "%f25", "%f26", "%f27", "%f28", "%f29", "%f30", "%f31"}
 
+/* Define additional names for use in asm clobbers and asm declarations.
+
+   We define the fake Condition Code register as an alias for reg 0 (which
+   is our `condition code' register), so that condition codes can easily
+   be clobbered by an asm.  No such register actually exists.  Condition
+   codes are partly stored in the PSR and partly in the FSR.  */
+
+#define ADDITIONAL_REGISTER_NAMES	{"ccr", 0}
+
 /* How to renumber registers for dbx and gdb.  */
 
 #define DBX_REGISTER_NUMBER(REGNO) (REGNO)
