@@ -1,3 +1,7 @@
+1999-11-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* gcconfig.h: Don't define MPROTECT_VDB on Linux/i386.
+
 1999-11-02  Tom Tromey  <tromey@cygnus.com>
 
 	* quick_threads.c: Include gcconfig.h, not boehm-config.h.
