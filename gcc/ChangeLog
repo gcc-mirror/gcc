@@ -1,3 +1,7 @@
+2003-03-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* fixinc/fixinc.interix: Remove completely dead code
+
 2003-03-29  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	PR target/7784
