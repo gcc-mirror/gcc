@@ -291,7 +291,8 @@ convert_to_integer (type, expr)
 
 	case NEGATE_EXPR:
 	case BIT_NOT_EXPR:
-	case ABS_EXPR:
+	  /* This is not correct for ABS_EXPR,
+	     since we must test the sign before truncation.  */
 	  {
 	    register tree typex = type;
 
