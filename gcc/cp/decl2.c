@@ -879,6 +879,9 @@ grokfield (const cp_declarator *declarator,
       if (processing_template_decl)
 	value = push_template_decl (value);
 
+      if (attrlist)
+	cplus_decl_attributes (&value, attrlist, 0);
+
       return value;
     }
 
