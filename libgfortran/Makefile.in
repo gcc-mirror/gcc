@@ -263,7 +263,6 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-libtool_VERSION = @libtool_VERSION@
 localstatedir = @localstatedir@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
@@ -283,6 +282,7 @@ toolexecdir = @toolexecdir@
 toolexeclibdir = @toolexeclibdir@
 AM_CFLAGS = -std=gnu99
 toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
+libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
 AM_CPPFLAGS = -I$(srcdir)/io

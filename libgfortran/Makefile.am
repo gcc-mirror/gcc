@@ -6,6 +6,8 @@ AM_CFLAGS = -std=gnu99
 
 toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
 
+libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+
 ## This should really go in the compiler lib dir, not the system lib dir.
 libgfortranbegin_la_SOURCES = fmain.c
 libgfortranbegin_la_LDFLAGS = -static
