@@ -134,7 +134,10 @@ do {									\
       target_flags |= MASK_EABI;					\
     }									\
   else if (!strcmp (rs6000_abi_name, "aix"))				\
-    rs6000_current_abi = ABI_AIX_NODESC;				\
+    {									\
+      rs6000_current_abi = ABI_AIX_NODESC;				\
+      target_flags |= MASK_EABI;					\
+    }									\
   else if (!strcmp (rs6000_abi_name, "aixdesc"))			\
     rs6000_current_abi = ABI_AIX;					\
   else if (!strcmp (rs6000_abi_name, "nt"))				\
@@ -158,6 +161,12 @@ do {									\
     {									\
       target_flags &= ~MASK_SDATA;					\
       error ("-mrelocatable and -msdata are incompatible.");		\
+    }									\
+									\
+  if (TARGET_RELOCATABLE && !TARGET_EABI)				\
+    {									\
+      target_flags |= ~MASK_EABI;					\
+      error ("-mrelocatable and -mno-eabi are incompatible.");		\
     }									\
 									\
   if (TARGET_SDATA && DEFAULT_ABI != ABI_V4				\
