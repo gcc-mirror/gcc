@@ -59,15 +59,12 @@ CFLAGS = @CFLAGS@
 
 # List of variables to pass to sub-makes.
 # Quote this way so that it can be used to set shell variables too.
-# Currently no use for PICFLAG, RUNTESTFLAGS -- check usage.
 FLAGS_TO_PASS= \
 	CC='$(CC)' \
 	CFLAGS='$(CFLAGS)' \
 	CPPFLAGS='$(CPPFLAGS)' \
 	AR='$(AR)' \
 	RANLIB='$(RANLIB)' \
-	PICFLAG='$(PICFLAG)' \
-	RUNTESTFLAGS='$(RUNTESTFLAGS)' \
 	prefix='$(prefix)' \
 	exec_prefix='$(exec_prefix)' \
 	libdir='$(libdir)' \
