@@ -1,3 +1,9 @@
+Mon May 10 18:14:28 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* g77.texi: Fix various @xref's per proper style.
+	Go ahead and use nested braces in @xref's, with care.
+	* g77install.texi: Fix @xref per proper style.
+
 Mon May 10 17:38:39 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* news.texi: Doc upgrade to netlib libf2c as of today.
