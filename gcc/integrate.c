@@ -1559,6 +1559,7 @@ copy_insn_list (insns, map, static_chain_value)
 	    {
 	      copy = emit_label (get_label_from_map (map,
 						    CODE_LABEL_NUMBER (insn)));
+	      LABEL_NAME (copy) = NOTE_SOURCE_FILE (insn);
 	      map->const_age++;
 	      break;
 	    }

@@ -1,3 +1,8 @@
+2001-09-12  Richard Henderson  <rth@redhat.com>
+
+	* integrate.c (copy_insn_list): Copy label name from
+	NOTE_INSN_DELETED_LABEL.
+
 2001-09-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-common.c (c_tree_code_name): Const-ification.
