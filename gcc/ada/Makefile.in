@@ -144,6 +144,7 @@ exeext =
 arext  = .a
 soext  = .so
 shext  =
+hyphen = -
 
 # Define this as & to perform parallel make on a Sequent.
 # Note that this has some bugs, and it seems currently necessary 
@@ -1126,6 +1127,7 @@ endif
 ifeq ($(strip $(filter-out alpha% ia64 dec vms% openvms% alphavms%,$(host))),)
 
 soext  = .exe
+hyphen = _
 
 .SUFFIXES: .sym
 
@@ -1704,12 +1706,12 @@ install-gnatlib: ../stamp-gnatlib
 #     for shared libraries on some targets, e.g. on HP-UX where the x
 #     permission is required.
 	for file in gnat gnarl; do \
-	   if [ -f rts/lib$$file-$(LIBRARY_VERSION)$(soext) ]; then \
-	      $(INSTALL) rts/lib$$file-$(LIBRARY_VERSION)$(soext) \
+	   if [ -f rts/lib$$file$(hyphen)$(LIBRARY_VERSION)$(soext) ]; then \
+	      $(INSTALL) rts/lib$$file$(hyphen)$(LIBRARY_VERSION)$(soext) \
 			 $(DESTDIR)$(ADA_RTL_OBJ_DIR); \
 	   fi; \
 	   if [ -f rts/lib$$file$(soext) ]; then \
-	      $(LN_S) lib$$file-$(LIBRARY_VERSION)$(soext) \
+	      $(LN_S) lib$$file$(hyphen)$(LIBRARY_VERSION)$(soext) \
 	      $(DESTDIR)$(ADA_RTL_OBJ_DIR)/lib$$file$(soext); \
 	   fi; \
 	done
@@ -1892,15 +1894,19 @@ gnatlib-shared-default:
              gnatlib
 	$(RM) rts/libgnat$(soext) rts/libgnarl$(soext)
 	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
-		-o libgnat-$(LIBRARY_VERSION)$(soext) \
+		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
-		$(SO_OPTS)libgnat-$(LIBRARY_VERSION)$(soext) $(MISCLIB) -lm
+		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		$(MISCLIB) -lm
 	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
-		-o libgnarl-$(LIBRARY_VERSION)$(soext) \
+		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
-		$(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) $(THREADSLIB)
-	cd rts; $(LN_S) libgnat-$(LIBRARY_VERSION)$(soext) libgnat$(soext)
-	cd rts; $(LN_S) libgnarl-$(LIBRARY_VERSION)$(soext) libgnarl$(soext)
+		$(SO_OPTS)libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		$(THREADSLIB)
+	cd rts; $(LN_S) libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		libgnat$(soext)
+	cd rts; $(LN_S) libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		libgnarl$(soext)
 
 gnatlib-shared-dual:
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -1944,14 +1950,14 @@ gnatlib-shared-win32:
              gnatlib
 	$(RM) rts/libgnat$(soext) rts/libgnarl$(soext)
 	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
-		-o libgnat-$(LIBRARY_VERSION)$(soext) \
+		-o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_NONTASKING_OBJS) $(LIBGNAT_OBJS) \
-		$(SO_OPTS)libgnat-$(LIBRARY_VERSION)$(soext) $(MISCLIB)
+		$(SO_OPTS)libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) $(MISCLIB)
 	cd rts; ../../xgcc -B../../ -shared $(TARGET_LIBGCC2_CFLAGS) \
-		-o libgnarl-$(LIBRARY_VERSION)$(soext) \
+		-o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
 		$(GNATRTL_TASKING_OBJS) \
-		$(SO_OPTS)libgnarl-$(LIBRARY_VERSION)$(soext) \
-		$(THREADSLIB) -Wl,libgnat-$(LIBRARY_VERSION)$(soext)
+		$(SO_OPTS)libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+		$(THREADSLIB) -Wl,libgnat$(hyphen)$(LIBRARY_VERSION)$(soext)
 
 gnatlib-shared-vms:
 	$(MAKE) $(FLAGS_TO_PASS) \
@@ -1965,7 +1971,7 @@ gnatlib-shared-vms:
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
 	echo "case_sensitive=NO" >> SYMVEC_$$$$.opt && \
 	../../xgcc -g -B../../ -nostartfiles -shared -shared-libgcc \
-	   -o libgnat_$(LIBRARY_VERSION)$(soext) libgnat.a \
+	   -o libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) libgnat.a \
 	   sys\$$library:trace.exe \
 	   --for-linker=/noinform \
 	   --for-linker=SYMVEC_$$$$.opt \
@@ -1975,8 +1981,8 @@ gnatlib-shared-vms:
 	$(SHLIB_SYMVEC) >> SYMVEC_$$$$.opt && \
 	echo "case_sensitive=NO" >> SYMVEC_$$$$.opt && \
 	../../xgcc -g -B../../ -nostartfiles -shared -shared-libgcc \
-	   -o libgnarl_$(LIBRARY_VERSION)$(soext) \
-	   libgnarl.a libgnat_$(LIBRARY_VERSION)$(soext) \
+	   -o libgnarl$(hyphen)$(LIBRARY_VERSION)$(soext) \
+	   libgnarl.a libgnat$(hyphen)$(LIBRARY_VERSION)$(soext) \
 	   sys\$$library:trace.exe \
 	   --for-linker=/noinform \
 	   --for-linker=SYMVEC_$$$$.opt \

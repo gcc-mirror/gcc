@@ -1198,15 +1198,37 @@ package body Exp_Ch9 is
       Loc  : constant Source_Ptr := Sloc (E);
       P    : Node_Id;
       Decl : Node_Id;
-
+      S    : Entity_Id := Scope (E);
    begin
-      --  Nothing to do if we already built a master entity for this scope
-      --  or if there is no task hierarchy.
+      --  Ada0Y (AI-287): Do not set/get the has_master_entity reminder in
+      --  internal scopes. Required for nested limited aggregates.
 
-      if Has_Master_Entity (Scope (E))
-        or else Restrictions (No_Task_Hierarchy)
-      then
-         return;
+      if not Extensions_Allowed then
+
+         --  Nothing to do if we already built a master entity for this scope
+         --  or if there is no task hierarchy.
+
+         if Has_Master_Entity (Scope (E))
+           or else Restrictions (No_Task_Hierarchy)
+         then
+            return;
+         end if;
+      else
+
+         --  Ada0Y (AI-287): Similar to the Ãprevious casebut skipping internal
+         --  scopes. If we are not inside an internal scope this code is
+         --  equivalent to the previous code.
+
+         while Is_Internal (S) loop
+            S := Scope (S);
+         end loop;
+
+         if Has_Master_Entity (S)
+           or else Restrictions (No_Task_Hierarchy)
+         then
+            return;
+         end if;
+
       end if;
 
       --  Otherwise first build the master entity
@@ -1226,7 +1248,15 @@ package body Exp_Ch9 is
       P := Parent (E);
       Insert_Before (P, Decl);
       Analyze (Decl);
-      Set_Has_Master_Entity (Scope (E));
+
+      --  Ada0Y (AI-287): Set the has_marter_entity reminder in the
+      --  non-internal scope selected above.
+
+      if not Extensions_Allowed then
+         Set_Has_Master_Entity (Scope (E));
+      else
+         Set_Has_Master_Entity (S);
+      end if;
 
       --  Now mark the containing scope as a task master
 

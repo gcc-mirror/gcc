@@ -1949,7 +1949,9 @@ package body Exp_Aggr is
 
                   if not Inside_Init_Proc and not Inside_Allocator then
                      Build_Activation_Chain_Entity (N);
-                     Build_Master_Entity (Etype (N));
+                     if not Has_Master_Entity (Current_Scope) then
+                        Build_Master_Entity (Etype (N));
+                     end if;
                   end if;
                end if;
             end;

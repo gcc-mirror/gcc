@@ -1,3 +1,42 @@
+2004-01-21  Javier Miranda  <miranda@gnat.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Do not build the master
+	entity if already built in the current scope.
+
+	* exp_ch9.adb (Build_Master_Entity): Do not set the has_master_entity
+	reminder in internal scopes. Required for nested limited aggregates.
+
+2004-01-21  Doug Rupp  <rupp@gnat.com>
+
+	* Makefile.in (hyphen): New variable, default value '-'. Set to '_' on
+	VMS. Replace all occurences of libgnat- and libgnarl- with
+	libgnat$(hyphen) and libgnarl$(hyphen).
+	Fixed shared library build problem on VMS.
+
+2004-01-21  Robert Dewar  <dewar@gnat.com>
+
+	* mlib-prj.adb: Minor reformatting
+
+2004-01-21  Thomas Quinot  <quinot@act-europe.fr>
+
+	* prj-tree.adb, 7staprop.adb, vms_conv.adb, xr_tabls.adb: Add missing
+	'constant' keywords for declaration of pointers that are not modified.
+
+	* exp_pakd.adb: Fix English in comment.
+
+2004-01-21  Ed Schonberg  <schonberg@gnat.com>
+
+	PR ada/10889
+	* sem_ch3.adb (Analyze_Subtype_Declaration): For an array subtype,
+	copy all attributes of the parent, including the foreign language
+	convention.
+
+2004-01-21  Sergey Rybin  <rybin@act-europe.fr>
+
+	PR ada/10565
+	* sem_ch9.adb (Analyze_Delay_Alternative): Add expression type check
+	for 'delay until' statement.
+
 2004-01-20  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* Make-lang.in: Replace $(docdir) with doc.

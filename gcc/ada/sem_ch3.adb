@@ -2115,13 +2115,8 @@ package body Sem_Ch3 is
 
          case Ekind (T) is
             when Array_Kind =>
-               Set_Ekind                (Id, E_Array_Subtype);
-
-               --  Shouldn't we call Copy_Array_Subtype_Attributes here???
-
-               Set_First_Index          (Id, First_Index        (T));
-               Set_Is_Aliased           (Id, Is_Aliased         (T));
-               Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Ekind                       (Id, E_Array_Subtype);
+               Copy_Array_Subtype_Attributes   (Id, T);
 
             when Decimal_Fixed_Point_Kind =>
                Set_Ekind                (Id, E_Decimal_Fixed_Point_Subtype);

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -481,6 +481,13 @@ package body Sem_Ch9 is
 
          else
             Pre_Analyze_And_Resolve (Expr);
+         end if;
+
+         if Nkind (Delay_Statement (N)) = N_Delay_Until_Statement and then
+            not Is_RTE (Base_Type (Etype (Expr)), RO_CA_Time)     and then
+            not Is_RTE (Base_Type (Etype (Expr)), RO_RT_Time)
+         then
+            Error_Msg_N ("expect Time types for `DELAY UNTIL`", Expr);
          end if;
 
          Check_Restriction (No_Fixed_Point, Expr);

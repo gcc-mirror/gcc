@@ -1061,11 +1061,11 @@ package body Exp_Pakd is
          Set_Parent (Len_Expr, Typ);
          Analyze_Per_Use_Expression (Len_Expr, Standard_Integer);
 
-         --  Use a modular type if possible. We can do this if we are we
-         --  have static bounds, and the length is small enough, and the
-         --  length is not zero. We exclude the zero length case because the
-         --  size of things is always at least one, and the zero length object
-         --  would have an anomous size.
+         --  Use a modular type if possible. We can do this if we have
+         --  static bounds, and the length is small enough, and the length
+         --  is not zero. We exclude the zero length case because the size
+         --  of things is always at least one, and the zero length object
+         --  would have an anomalous size.
 
          if Compile_Time_Known_Value (Len_Expr) then
             Len_Bits := Expr_Value (Len_Expr) * Csize;
