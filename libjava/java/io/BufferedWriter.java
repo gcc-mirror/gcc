@@ -61,7 +61,7 @@ public class BufferedWriter extends Writer
   /**
    * This method initializes a new <code>BufferedWriter</code> instance
    * that will write to the specified subordinate <code>Writer</code>
-   * and which will use a default buffer size of 512 chars.
+   * and which will use a default buffer size of 8192 chars.
    *
    * @param out The underlying <code>Writer</code> to write data to
    */

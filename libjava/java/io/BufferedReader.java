@@ -1,5 +1,6 @@
 /* BufferedReader.java
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003 
+     Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -48,7 +49,7 @@ package java.io;
  * underlying implementation to provide a possibly more efficient read
  * mechanism.  It maintains the buffer and buffer state in instance 
  * variables that are available to subclasses.  The default buffer size
- * of 512 chars can be overridden by the creator of the stream.
+ * of 8192 chars can be overridden by the creator of the stream.
  * <p>
  * This class also implements mark/reset functionality.  It is capable
  * of remembering any number of input chars, to the limits of
@@ -89,7 +90,7 @@ public class BufferedReader extends Reader
 
   /**
     * Create a new <code>BufferedReader</code> that will read from the 
-    * specified subordinate stream with a default buffer size of 4096 chars.
+    * specified subordinate stream with a default buffer size of 8192 chars.
     *
     * @param in The subordinate stream to read from
     */
@@ -104,7 +105,7 @@ public class BufferedReader extends Reader
    * caller.
    *
    * @param in The subordinate stream to read from
-   * @param bufsize The buffer size to use
+   * @param size The buffer size to use
    */
   public BufferedReader(Reader in, int size)
   {
@@ -114,7 +115,8 @@ public class BufferedReader extends Reader
   }
 
   /**
-   * This method closes the stream 
+   * This method closes the underlying stream and frees any associated
+   * resources.
    *
    * @exception IOException If an error occurs
    */
@@ -143,7 +145,7 @@ public class BufferedReader extends Reader
   /**
    * Mark a position in the input to which the stream can be
    * "reset" by calling the <code>reset()</code> method.  The parameter
-   * <code>readlimit</code> is the number of chars that can be read from the 
+   * <code>readLimit</code> is the number of chars that can be read from the 
    * stream after setting the mark before the mark becomes invalid.  For
    * example, if <code>mark()</code> is called with a read limit of 10, then 
    * when 11 chars of data are read from the stream before the 
@@ -155,7 +157,7 @@ public class BufferedReader extends Reader
    * not dependent on the subordinate stream supporting mark/reset
    * functionality.
    *
-   * @param readlimit The number of chars that can be read before the mark 
+   * @param readLimit The number of chars that can be read before the mark 
    *        becomes invalid
    *
    * @exception IOException If an error occurs
@@ -240,7 +242,7 @@ public class BufferedReader extends Reader
 
   /**
    * This method determines whether or not a stream is ready to be read.  If
-   * This method returns <code>false</code> then this stream could (but is
+   * this method returns <code>false</code> then this stream could (but is
    * not guaranteed to) block on the next read attempt.
    *
    * @return <code>true</code> if this stream is ready to be read, 
@@ -478,7 +480,7 @@ public class BufferedReader extends Reader
    * <code>skip</code> method on the underlying stream to skip the 
    * remaining chars.
    *
-   * @param num_chars The requested number of chars to skip
+   * @param numChars The requested number of chars to skip
    *
    * @return The actual number of chars skipped.
    *
