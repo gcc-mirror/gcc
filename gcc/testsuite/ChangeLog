@@ -1,3 +1,7 @@
+2004-10-02  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* gcc.dg/20040920-1.c: Update expected message text.
+
 2004-10-02  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* gcc.dg/tree-ssa/loop-1.c: Merge changed dg-options for s390-*-*.

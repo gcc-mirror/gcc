@@ -1,3 +1,8 @@
+2004-10-02  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-objc-common.c (c_tree_printer): Correct description of %E.
+	Don't fall through after printing an expression.
+
 2004-10-02  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-cfg.c, config/s390/tpf-unwind.h: Fix comment typos.
