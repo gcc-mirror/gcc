@@ -1,3 +1,7 @@
+2004-10-29  Diego Novillo  <dnovillo@redhat.com>
+
+	* tree.h (struct tree_ssa_name): Remove field 'equiv'.
+
 2004-10-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* bitmap.h (bitmap_empty_p): New.
