@@ -1301,7 +1301,12 @@ neg_const_double_rtx_ok_for_fpu (x)
 /* Predicates for `match_operand' and `match_operator'.  */
 
 /* s_register_operand is the same as register_operand, but it doesn't accept
-   (SUBREG (MEM)...). */
+   (SUBREG (MEM)...).
+
+   This function exists because at the time it was put in it led to better
+   code.  SUBREG(MEM) always needs a reload in the places where
+   s_register_operand is used, and this seemed to lead to excessive
+   reloading.  */
 
 int
 s_register_operand (op, mode)
