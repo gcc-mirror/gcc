@@ -1,3 +1,8 @@
+1999-12-15  Anthony Green  <green@cygnus.com>
+
+	* check-init.c (check_init): Take into account both types of
+        `throw's when checking for uninitialized variables.
+
 Fri Dec 10 16:13:48 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.h (EXPR_WFL_QUALIFICATION): Temporary uses the third
