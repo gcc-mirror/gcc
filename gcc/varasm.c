@@ -827,8 +827,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   /* ANSI specifies that a tentative definition which is not merged with
      a non-tentative definition behaves exactly like a definition with an
      initializer equal to zero.  (Section 3.7.2)
-     -fno-common gives strict ANSI behavior.  Usually you don't want it.  */
-  if (! flag_no_common
+     -fno-common gives strict ANSI behavior.  Usually you don't want it.
+     This matters only for variables with external linkage.  */
+  if ((! flag_no_common || ! TREE_PUBLIC (decl))
       && ! dont_output_data
       && (DECL_INITIAL (decl) == 0 || DECL_INITIAL (decl) == error_mark_node))
     {
