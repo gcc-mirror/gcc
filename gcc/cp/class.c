@@ -3654,6 +3654,14 @@ finish_struct_1 (t)
 		cp_error_at ("multiple fields in union `%T' initialized");
 	      any_default_members = 1;
 	    }
+
+	  {
+	    unsigned int min_align = (DECL_PACKED (x) ? BITS_PER_UNIT
+				      : TYPE_ALIGN (TREE_TYPE (x)));
+	    /* Non-bit-fields are aligned for their type, except packed
+	       fields which require only BITS_PER_UNIT alignment.  */
+	    DECL_ALIGN (x) = MAX (DECL_ALIGN (x), min_align);
+	  }
 	}
     }
 
