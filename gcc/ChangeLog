@@ -1,3 +1,14 @@
+Fri Mar 22 16:30:42 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (flag_loop_optimize, flag_crossjumping):
+	New static variables.
+	(rest_of_compilation): Conditionalize crossjumping and
+	loop optimizer.
+	(parse_options_and_default_flags): Default loop_optimize and
+	crossjumping.
+	(lang_independent_options): Add -fcrossjumping and -floop-optimize
+	* invoke.texi (crossjumping, loop-optimize): Document.
+
 2002-03-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	* real.c (eiisneg): Move outside #ifdef NANS.

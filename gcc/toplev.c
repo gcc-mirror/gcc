@@ -605,6 +605,14 @@ int flag_syntax_only = 0;
 
 static int flag_gcse;
 
+/* Nonzero means perform loop optimizer.  */
+
+static int flag_loop_optimize;
+
+/* Nonzero means perform crossjumping.  */
+
+static int flag_crossjumping;
+
 /* Nonzero means to use global dataflow analysis to eliminate
    useless null pointer tests.  */
 
@@ -1017,6 +1025,10 @@ static const lang_independent_options f_options[] =
    N_("Perform enhanced load motion during global subexpression elimination") },
   {"gcse-sm", &flag_gcse_sm, 1,
    N_("Perform store motion after global subexpression elimination") },
+  {"loop-optimize", &flag_loop_optimize, 1,
+   N_("Perform the loop optimizations") },
+  {"crossjumping", &flag_crossjumping, 1,
+   N_("Perform cross-jumping optimization") },
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1,
    N_("Run CSE pass after loop optimizations") },
   {"rerun-loop-opt", &flag_rerun_loop_opt, 1,
@@ -2846,7 +2858,7 @@ rest_of_compilation (decl)
 
   /* Move constant computations out of loops.  */
 
-  if (optimize > 0)
+  if (optimize > 0 && flag_loop_optimize)
     {
       timevar_push (TV_LOOP);
       delete_dead_jumptables ();
@@ -3244,7 +3256,8 @@ rest_of_compilation (decl)
   if (optimize)
     {
       life_analysis (insns, rtl_dump_file, PROP_FINAL);
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP | CLEANUP_UPDATE_LIFE);
+      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE
+		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
 
       /* This is kind of a heuristic.  We need to run combine_stack_adjustments
          even for machines with possibly nonzero RETURN_POPS_ARGS
@@ -3350,7 +3363,7 @@ rest_of_compilation (decl)
 	 and insn splitting possibly introduced more crossjumping
 	 oppurtuntities.  */
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
-		   | CLEANUP_CROSSJUMP);
+		   | (flag_crossjumping ? CLEANUP_CROSSJUMP : 0));
       if (flag_reorder_blocks)
 	{
 	  reorder_basic_blocks ();
@@ -4645,6 +4658,8 @@ parse_options_and_default_flags (argc, argv)
 #endif
       flag_guess_branch_prob = 1;
       flag_cprop_registers = 1;
+      flag_loop_optimize = 1;
+      flag_crossjumping = 1;
     }
 
   if (optimize >= 2)
