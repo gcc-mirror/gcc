@@ -214,13 +214,6 @@ AC_ARG_ENABLE(haifa,
 [  --enable-haifa          use the experimental scheduler.
   --disable-haifa         don't use the experimental scheduler for the
                           targets which normally enable it.])
-# Fast fixincludes
-#
-# This is a work in progress...
-AC_ARG_WITH(fast-fixincludes,
-[  --with-fast-fixincludes use a faster fixinclude program (experimental)],
-fast_fixinc="$with_fast_fixincludes",
-fast_fixinc=no)
 
 # Enable threads
 # Pass with no value to take the default
@@ -442,10 +435,6 @@ for machine in $build $host $target; do
 	use_collect2=
 	# Set this to override the default target model.
 	target_cpu_default=
-	# Set this to control which fixincludes program to use.
-	if test x$fast_fixinc != xyes; then
-		fixincludes=fixincludes
-	else fixincludes=fixinc.sh ; fi
 	# Set this to control how the header file directory is installed.
 	install_headers_dir=install-headers-tar
 	# Set this to a non-empty list of args to pass to cpp if the target
@@ -575,7 +564,6 @@ changequote([,])dnl
 		target_cpu_default="MASK_GAS"
 		tmake_file="t-linux t-linux-gnulibc1 alpha/t-linux alpha/t-crtbe"
 		extra_parts="crtbegin.o crtend.o"
-		fixincludes=fixinc.wrap
 		xmake_file=none
 		gas=yes gnu_ld=yes
  		if test x$enable_threads = xyes; then
@@ -588,7 +576,6 @@ changequote([,])dnl
 		tmake_file="t-linux alpha/t-linux alpha/t-crtbe"
 		extra_parts="crtbegin.o crtend.o"
 		xmake_file=none
-		fixincludes=Makefile.in
 		gas=yes gnu_ld=yes
  		if test x$enable_threads = xyes; then
  			thread_file='posix'
@@ -600,7 +587,6 @@ changequote([,])dnl
 		tmake_file="alpha/t-crtbe"
 		extra_parts="crtbegin.o crtend.o"
 		xmake_file=none
-		fixincludes=fixinc.wrap
 		gas=yes gnu_ld=yes
 		;;
 
@@ -659,7 +645,6 @@ changequote([,])dnl
 		xmake_file=winnt/x-winnt
 		extra_host_objs=oldnames.o
 		extra_gcc_objs="spawnv.o oldnames.o"
-		fixincludes=fixinc.winnt
 		if test x$gnu_ld != xyes
 		then
 			extra_programs=ld.exe
@@ -672,7 +657,6 @@ changequote([,])dnl
 		tm_file=alpha/vms.h
 		xm_file="${xm_file} alpha/xm-vms.h"
 		tmake_file=alpha/t-vms
-		fixincludes=Makefile.in
 		;;
 	arc-*-elf*)
 		extra_parts="crtinit.o crtfini.o"
@@ -701,26 +685,21 @@ changequote([,])dnl
 	arm-semi-aout | armel-semi-aout)
 		tm_file=arm/semi.h
 		tmake_file=arm/t-semi
-		fixincludes=Makefile.in # There is nothing to fix
 		;;
 	arm-semi-aof | armel-semi-aof)
 		tm_file=arm/semiaof.h
 		tmake_file=arm/t-semiaof
-		fixincludes=Makefile.in # There is nothing to fix
 		;;
 	arm*-*-netbsd*)
 		tm_file=arm/netbsd.h
 		xm_file="arm/xm-netbsd.h ${xm_file}"
 		tmake_file="t-netbsd arm/t-netbsd"
-		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		;;
 	arm*-*-linux-gnuaout*)		# ARM GNU/Linux with a.out
 		cpu_type=arm
 		xmake_file=x-linux
 		tm_file=arm/linux-aout.h
 		tmake_file=arm/t-linux
-		fixincludes=Makefile.in
 		gnu_ld=yes
 		;;
 	arm*-*-linux-gnu*)		# ARM GNU/Linux with ELF
@@ -736,7 +715,6 @@ changequote([,])dnl
 		esac
 		tmake_file="t-linux arm/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in		# Nothing to fix
 		gnu_ld=yes
 		;;
 	arm*-*-aout)
@@ -758,27 +736,22 @@ changequote([,])dnl
 	c1-convex-*)			# Convex C1
 		target_cpu_default=1
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	c2-convex-*)			# Convex C2
 		target_cpu_default=2
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	c32-convex-*)
 		target_cpu_default=4
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	c34-convex-*)
 		target_cpu_default=8
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	c38-convex-*)
 		target_cpu_default=16		
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
  	c4x-*)
  		cpu_type=c4x
@@ -816,7 +789,6 @@ changequote([,])dnl
 		target_cpu_default="MASK_SNAKE"
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-rtems*)
 		tm_file="pa/pa-pro.h ${tm_file} pa/pa-pro-end.h libgloss.h pa/rtems.h"
@@ -826,16 +798,13 @@ changequote([,])dnl
 	hppa1.0-*-osf*)
 		tm_file="${tm_file} pa/pa-osf.h"
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	hppa1.1-*-bsd*)
 		target_cpu_default="MASK_SNAKE"
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	hppa1.0-*-bsd*)
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	hppa1.0-*-hpux7*)
 		tm_file="pa/pa-oldas.h ${tm_file} pa/pa-hpux7.h"
@@ -990,7 +959,6 @@ changequote([,])dnl
 	hppa*-*-lites*)
 		target_cpu_default="MASK_SNAKE"
 		use_collect2=yes
-		fixincludes=Makefile.in
 		;;
 	i370-*-mvs*)
 		;;
@@ -1056,7 +1024,6 @@ changequote([,])dnl
 		xmake_file=i386/x-sysv3
 		tm_file=i386/seq-sysv3.h
 		tmake_file=i386/t-crtstuff
-		fixincludes=fixinc.ptx
 		extra_parts="crtbegin.o crtend.o"
 		install_headers_dir=install-headers-cpio
 		;;
@@ -1068,7 +1035,6 @@ changequote([,])dnl
 		tm_file=i386/seq2-sysv3.h
 		tmake_file=i386/t-crtstuff
 		extra_parts="crtbegin.o crtend.o"
-		fixincludes=fixinc.ptx
 		install_headers_dir=install-headers-cpio
 		;;
 changequote(,)dnl
@@ -1080,7 +1046,6 @@ changequote([,])dnl
 		tm_file=i386/ptx4-i.h
 		tmake_file=t-svr4
 		extra_parts="crtbegin.o crtend.o"
-		fixincludes=fixinc.ptx
 		install_headers_dir=install-headers-cpio
 		;;
 	i386-sun-sunos*)		# Sun i386 roadrunner
@@ -1130,16 +1095,12 @@ changequote(,)dnl
 	i[34567]86-*-freebsd*)
 changequote([,])dnl
 		tm_file=i386/freebsd.h
-		# On FreeBSD, the headers are already ok, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=i386/t-freebsd
 		;;
 changequote(,)dnl
 	i[34567]86-*-netbsd*)
 changequote([,])dnl
 		tm_file=i386/netbsd.h
-		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
 changequote(,)dnl
@@ -1190,7 +1151,6 @@ changequote([,])dnl			# with a.out format using
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-oldld.h
-		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
 		;;
@@ -1200,7 +1160,6 @@ changequote([,])dnl			# with a.out format
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
-		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
 		;;
@@ -1212,7 +1171,6 @@ changequote([,])dnl			# with ELF format using the
 		tm_file=i386/linux.h	
 		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
  		if test x$enable_threads = xyes; then
@@ -1227,7 +1185,6 @@ changequote([,])dnl			# with ELF format using glibc 2
 		tm_file=i386/linux.h
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=fixinc.x86-linux-gnu
 		gnu_ld=yes
 		float_format=i386
  		if test x$enable_threads = xyes; then
@@ -1267,7 +1224,6 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file=i386/moss.h
 		tmake_file=t-libc-ok
-		fixincludes=Makefile.in
 		gnu_ld=yes
 		gas=yes
 		;;
@@ -1335,7 +1291,6 @@ changequote([,])dnl
 		xm_file="xm-siglist.h xm-alloca.h ${xm_file} i386/xm-sco5.h"
 		xm_defines="USG SVR3"
 		xmake_file=i386/x-sco5
-		fixincludes=fixinc.sco
 		install_headers_dir=install-headers-cpio
 		tm_file=i386/sco5.h
 		if test x$gas = xyes
@@ -1353,7 +1308,6 @@ changequote([,])dnl
 		xm_file="${xm_file} i386/xm-sco.h"
 		xm_defines="USG SVR3 BROKEN_LDEXP SMALL_ARG_MAX NO_SYS_SIGLIST"
 		xmake_file=i386/x-sco4
-		fixincludes=fixinc.sco
 		install_headers_dir=install-headers-cpio
                 if test x$stabs = xyes
 		then
@@ -1399,14 +1353,6 @@ changequote([,])dnl
 		tmake_file=i386/t-sol2
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 		xmake_file=x-svr4
-		case $machine in
-changequote(,)dnl
-		*-*-solaris2.[0-4])
-changequote([,])dnl
-			fixincludes=fixinc.svr4;;
-		*)
-			fixincludes=fixinc.wrap;;
-		esac
  		if test x$enable_threads = xyes; then
 			thread_file='solaris'
 		fi
@@ -1424,7 +1370,6 @@ changequote([,])dnl
                tmake_file=i386/t-crtpic
                xmake_file=x-svr4
                extra_parts="crtbegin.o crtend.o"
-               fixincludes=fixinc.svr4
                ;;
 changequote(,)dnl
 	i[34567]86-*-sysv4*)		# Intel 80386's running system V.4
@@ -1449,7 +1394,6 @@ changequote([,])dnl
 		tmake_file="i386/t-crtpic i386/t-udk"
 		xmake_file=x-svr4
 		extra_parts="crtbegin.o crtend.o"
-		fixincludes="fixinc.svr4"
 		;;
 changequote(,)dnl
 	i[34567]86-*-osf1*)		# Intel 80386's running OSF/1 1.3+
@@ -1457,7 +1401,6 @@ changequote([,])dnl
 		cpu_type=i386
 		xm_file="${xm_file} xm-svr4.h i386/xm-sysv4.h i386/xm-osf1elf.h"
 		xm_defines="USE_C_ALLOCA SMALL_ARG_MAX"
-		fixincludes=Makefile.in #Don't do it on OSF/1
 		if test x$stabs = xyes
 		then
 			tm_file=i386/osf1elfgdb.h
@@ -1505,7 +1448,6 @@ changequote([,])dnl
 		tm_file=i386/win32.h
 		xmake_file=i386/x-cygwin
 		extra_objs=winnt.o
-		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
@@ -1519,7 +1461,6 @@ changequote([,])dnl
 		tm_file=i386/cygwin.h
 		xmake_file=i386/x-cygwin
 		extra_objs=winnt.o
-		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
@@ -1533,7 +1474,6 @@ changequote([,])dnl
 		tmake_file="i386/t-cygwin i386/t-mingw32"
 		extra_objs=winnt.o
 		xmake_file=i386/x-cygwin
-		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
@@ -1571,7 +1511,6 @@ changequote([,])dnl
 		tmake_file=i386/t-winnt
 		extra_host_objs="winnt.o oldnames.o"
 		extra_gcc_objs="spawnv.o oldnames.o"
-		fixincludes=fixinc.winnt
 		if test x$gnu_ld != xyes
 		then
 			extra_programs=ld.exe
@@ -1589,7 +1528,6 @@ changequote([,])dnl
 		tm_file=i386/dgux.h
 		tmake_file=i386/t-dgux
 		xmake_file=i386/x-dgux
-		fixincludes=fixinc.dgux
 		install_headers_dir=install-headers-cpio
               ;;
 	i860-alliant-*)		# Alliant FX/2800
@@ -2023,8 +1961,6 @@ changequote([,])dnl
 		;;
 	m68k*-*-netbsd*)
 		tm_file=m68k/netbsd.h
-		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		float_format=m68k
 		;;
@@ -2055,7 +1991,6 @@ changequote([,])dnl
 		xmake_file=x-linux
 		tm_file=m68k/linux-aout.h
 		tmake_file="t-linux-aout m68k/t-linux-aout"
-		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		float_format=m68k
 		gnu_ld=yes
@@ -2067,7 +2002,6 @@ changequote([,])dnl
 		tm_file=m68k/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		float_format=m68k
 		gnu_ld=yes
@@ -2079,7 +2013,6 @@ changequote([,])dnl
 		tm_file=m68k/linux.h
 		tmake_file="t-linux m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		float_format=m68k
 		gnu_ld=yes
@@ -2117,7 +2050,6 @@ changequote([,])dnl
 		then
 			tmake_file=m88k/t-dgux-gas
 		fi
-		fixincludes=fixinc.dgux
 		;;
 	m88k-dolphin-sysv3*)
 		tm_file=m88k/dolph.h
@@ -2178,7 +2110,6 @@ changequote([,])dnl
 	mips-sgi-irix6*)		# SGI System V.4., IRIX 6
 		tm_file=mips/iris6.h
 		xm_file=mips/xm-iris6.h
-		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris6
 		tmake_file=mips/t-iris6
 # 		if test x$enable_threads = xyes; then
@@ -2197,7 +2128,6 @@ changequote([,])dnl
 		tm_file="mips/iris6.h mips/cross64.h"
 		xm_defines=USG
 		xm_file="mips/xm-iris5.h"
-		fixincludes=Makefile.in
 		xmake_file=mips/x-iris
 		tmake_file=mips/t-cross64
 		# See comment in mips/iris[56].h files.
@@ -2239,7 +2169,6 @@ changequote([,])dnl
 		fi
 		xm_defines=USG
 		xm_file="mips/xm-iris5.h"
-		fixincludes=fixinc.irix
 		xmake_file=mips/x-iris
 		# mips-tfile doesn't work yet
 		tmake_file=mips/t-mips-gas
@@ -2336,7 +2265,6 @@ changequote([,])dnl
 		;;
 	mips-dec-bsd*)                  # Decstation running 4.4 BSD
               tm_file=mips/dec-bsd.h
-              fixincludes=
 	      if test x$gas = xyes
 	      then
 		   	tmake_file=mips/t-mips-gas
@@ -2352,7 +2280,6 @@ changequote([,])dnl
 	mipsel-*-netbsd* | mips-dec-netbsd*)    # Decstation running NetBSD
 		tm_file=mips/netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
        mips*-*-linux*)                         # Linux MIPS, either endian.
@@ -2719,7 +2646,6 @@ changequote([,])dnl
 		tm_file=ns32k/netbsd.h
 		xm_file="ns32k/xm-netbsd.h ${xm_file}"
 		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
         pdp11-*-bsd)
@@ -2772,13 +2698,11 @@ changequote([,])dnl
 	powerpc-*-eabiaix*)
 		tm_file=rs6000/eabiaix.h
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-eabisim*)
 		tm_file=rs6000/eabisim.h
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-eabi*)
@@ -2789,7 +2713,6 @@ changequote([,])dnl
 		else
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
-		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-rtems*)
@@ -2800,7 +2723,6 @@ changequote([,])dnl
 		else
 		     tmake_file="rs6000/t-ppc t-rtems rs6000/t-ppccomm"
 		fi
-		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpc-*-linux-gnulibc1)
@@ -2814,7 +2736,6 @@ changequote([,])dnl
 			tmake_file="rs6000/t-ppc t-linux t-linux-gnulibc1 rs6000/t-ppccomm"
 		fi
 		xmake_file=x-linux
-		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
 		if test x$enable_threads = xyes; then
@@ -2833,7 +2754,6 @@ changequote([,])dnl
 			tmake_file="rs6000/t-ppc t-linux rs6000/t-ppccomm"
 		fi
 		xmake_file=x-linux
-		fixincludes=Makefile.in
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		extra_headers=ppc-asm.h
 		if test x$enable_threads = xyes; then
@@ -2865,7 +2785,6 @@ changequote([,])dnl
 	powerpcle-*-eabisim*)
 		tm_file=rs6000/eabilesim.h
 		tmake_file="rs6000/t-ppcgas rs6000/t-ppccomm"
-		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
 	powerpcle-*-eabi*)
@@ -2876,14 +2795,12 @@ changequote([,])dnl
 		else
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
-		fixincludes=Makefile.in
 		extra_headers=ppc-asm.h
 		;;
         powerpcle-*-winnt* )
                 tm_file=rs6000/win-nt.h
                 tmake_file=rs6000/t-winnt
 #               extra_objs=pe.o
-		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
@@ -2895,7 +2812,6 @@ changequote([,])dnl
 		tmake_file=rs6000/t-winnt
 		xmake_file=rs6000/x-cygwin
 #		extra_objs=pe.o
-		fixincludes=Makefile.in
  		if test x$enable_threads = xyes; then
 			thread_file='win32'
 		fi
@@ -2913,14 +2829,6 @@ changequote([,])dnl
 			tmake_file="rs6000/t-ppc rs6000/t-ppccomm"
 		fi
 		xmake_file=rs6000/x-sysv4
-		case $machine in
-changequote(,)dnl
-		*-*-solaris2.[0-4])
-changequote([,])dnl
-			fixincludes=fixinc.svr4;;
-		*)
-			fixincludes=fixinc.wrap;;
-		esac
 		extra_headers=ppc-asm.h
 		;;
 changequote(,)dnl
@@ -3039,8 +2947,6 @@ changequote([,])dnl
 		;;
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
-		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
 	sparc-*-openbsd*)
@@ -3061,7 +2967,6 @@ changequote([,])dnl
 		xm_file="${xm_file} sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
 	sparc-*-linux-gnulibc1*)	# Sparc's running GNU/Linux, libc5
@@ -3070,7 +2975,6 @@ changequote([,])dnl
 		tm_file=sparc/linux.h
 		tmake_file="t-linux t-linux-gnulibc1"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
 		;;
 	sparc-*-linux-gnu*)		# Sparc's running GNU/Linux, libc6
@@ -3079,7 +2983,6 @@ changequote([,])dnl
 		tm_file=sparc/linux.h
 		tmake_file="t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
 		gnu_ld=yes
  		if test x$enable_threads = xyes; then
  			thread_file='posix'
@@ -3107,7 +3010,6 @@ changequote([,])dnl
 		tmake_file="sparc/t-sol2 sparc/t-sol2-64"
 		xmake_file=sparc/x-sysv4
 		extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
-		fixincludes=fixinc.wrap
 		float_format=none
 		if test x${enable_threads} = x ; then
 		    enable_threads=$have_pthread_h
@@ -3148,11 +3050,9 @@ changequote([,])dnl
 changequote(,)dnl
 		*-*-solaris2.[0-4])
 changequote([,])dnl
-			fixincludes=fixinc.svr4
 			float_format=i128
 			;;
 		*)
-			fixincludes=fixinc.wrap
 			float_format=none
 			;;
 		esac
@@ -3228,7 +3128,6 @@ changequote([,])dnl
 		xm_file="sparc/xm-sp64.h sparc/xm-linux.h"
 		tm_file=sparc/linux64.h
 		xmake_file=x-linux
-		fixincludes=Makefile.in	# The headers are ok already.
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		gnu_ld=yes
 		;;
@@ -3244,7 +3143,6 @@ changequote([,])dnl
 		xm_file=arm/xm-thumb.h
 		md_file=arm/thumb.md
 		tmake_file=arm/t-thumb
-		fixincludes=Makefile.in # There is nothing to fix
 		;;
 # This hasn't been upgraded to GCC 2.
 #	tron-*-*)
@@ -3273,8 +3171,6 @@ changequote([,])dnl
 		;;
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
-		# On NetBSD, the headers are already okay, except for math.h.
-		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		float_format=vax
 		;;
@@ -3319,13 +3215,10 @@ changequote([,])dnl
 		# GNU tools are the only tools.
 		gnu_ld=yes
 		gas=yes
-		# On GNU, the headers are already okay.
-		fixincludes=Makefile.in
 		xmake_file=x-linux	# These details are the same as Linux.
 		tmake_file=t-gnu	# These are not.
 		;;
 	*-*-sysv4*)
-		fixincludes=fixinc.svr4
 		xmake_try_sysv=x-sysv
 		install_headers_dir=install-headers-cpio
 		;;
@@ -4105,7 +3998,7 @@ all_boot_languages=
 all_compilers=
 all_stagestuff=
 all_diff_excludes=
-all_outputs='Makefile intl/Makefile po/Makefile.in'
+all_outputs='Makefile intl/Makefile po/Makefile.in fixinc/Makefile'
 # List of language makefile fragments.
 all_lang_makefiles=
 all_headers=
@@ -4290,55 +4183,55 @@ ${CONFIG_SHELL-/bin/sh} $srcdir/configure.frag $srcdir "$subdirs" "$dep_host_xma
 
 # Substitute configuration variables
 AC_SUBST(subdirs)
-AC_SUBST(all_languages)
 AC_SUBST(all_boot_languages)
 AC_SUBST(all_compilers)
-AC_SUBST(all_lang_makefiles)
-AC_SUBST(all_stagestuff)
 AC_SUBST(all_diff_excludes)
-AC_SUBST(all_lib2funcs)
 AC_SUBST(all_headers)
+AC_SUBST(all_lang_makefiles)
+AC_SUBST(all_languages)
+AC_SUBST(all_lib2funcs)
+AC_SUBST(all_stagestuff)
+AC_SUBST(build_exeext)
+AC_SUBST(build_install_headers_dir)
+AC_SUBST(build_xm_file_list)
+AC_SUBST(cc_set_by_configure)
+AC_SUBST(cpp_install_dir)
 AC_SUBST(cpp_main)
-AC_SUBST(extra_passes)
-AC_SUBST(extra_programs)
-AC_SUBST(extra_parts)
-AC_SUBST(extra_c_objs)
-AC_SUBST(extra_cxx_objs)
-AC_SUBST(extra_cpp_objs)
-AC_SUBST(extra_c_flags)
-AC_SUBST(extra_objs)
-AC_SUBST(host_extra_gcc_objs)
-AC_SUBST(extra_headers_list)
 AC_SUBST(dep_host_xmake_file)
 AC_SUBST(dep_tmake_file)
-AC_SUBST(out_file)
-AC_SUBST(out_object_file)
-AC_SUBST(md_file)
-AC_SUBST(tm_file_list)
-AC_SUBST(build_xm_file_list)
-AC_SUBST(host_xm_file_list)
-AC_SUBST(lang_specs_files)
-AC_SUBST(lang_options_files)
-AC_SUBST(lang_tree_files)
-AC_SUBST(thread_file)
-AC_SUBST(objc_boehm_gc)
-AC_SUBST(JAVAGC)
+AC_SUBST(extra_c_flags)
+AC_SUBST(extra_c_objs)
+AC_SUBST(extra_cpp_objs)
+AC_SUBST(extra_cxx_objs)
+AC_SUBST(extra_headers_list)
+AC_SUBST(extra_objs)
+AC_SUBST(extra_parts)
+AC_SUBST(extra_passes)
+AC_SUBST(extra_programs)
+AC_SUBST(fixinc_defs)
+AC_SUBST(float_h_file)
+AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_version)
 AC_SUBST(gcc_version_trigger)
-AC_SUBST(local_prefix)
-AC_SUBST(gcc_gxx_include_dir)
-AC_SUBST(fixincludes)
-AC_SUBST(build_install_headers_dir)
-AC_SUBST(build_exeext)
 AC_SUBST(host_exeext)
-AC_SUBST(float_h_file)
-AC_SUBST(will_use_collect2)
-AC_SUBST(maybe_use_collect2)
-AC_SUBST(cc_set_by_configure)
-AC_SUBST(stage_prefix_set_by_configure)
+AC_SUBST(host_extra_gcc_objs)
+AC_SUBST(host_xm_file_list)
 AC_SUBST(install)
+AC_SUBST(JAVAGC)
+AC_SUBST(lang_options_files)
+AC_SUBST(lang_specs_files)
+AC_SUBST(lang_tree_files)
+AC_SUBST(local_prefix)
+AC_SUBST(maybe_use_collect2)
+AC_SUBST(md_file)
+AC_SUBST(objc_boehm_gc)
+AC_SUBST(out_file)
+AC_SUBST(out_object_file)
+AC_SUBST(stage_prefix_set_by_configure)
 AC_SUBST(symbolic_link)
-AC_SUBST(cpp_install_dir)
+AC_SUBST(thread_file)
+AC_SUBST(tm_file_list)
+AC_SUBST(will_use_collect2)
 
 
 AC_SUBST_FILE(target_overrides)
