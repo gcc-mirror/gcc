@@ -147,8 +147,15 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define TARGET_IEEE_WITH_INEXACT (target_flags & MASK_IEEE_WITH_INEXACT)
 
 /* This means we are compiling for Windows NT.  */
+
 #define MASK_WINDOWS_NT	64
 #define TARGET_WINDOWS_NT (target_flags & MASK_WINDOWS_NT)
+
+/* This means we must construct all constants rather than emitting
+   them as literal data.  */
+
+#define MASK_BUILD_CONSTANTS 128
+#define TARGET_BUILD_CONSTANTS (target_flags & MASK_BUILD_CONSTANTS)
 
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
@@ -166,6 +173,7 @@ extern enum alpha_fp_trap_mode alpha_fptm;
     {"ieee-conformant", MASK_IEEE_CONFORMANT},	\
     {"ieee", MASK_IEEE|MASK_IEEE_CONFORMANT},	\
     {"ieee-with-inexact", MASK_IEEE_WITH_INEXACT|MASK_IEEE_CONFORMANT}, \
+    {"build-constants", MASK_BUILD_CONSTANTS},  \
     {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
@@ -999,7 +1007,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    emitted.  If it would take more than N insns, zero is returned and no
    insns and emitted.  */
 extern struct rtx_def *alpha_emit_set_const ();
-
+extern struct rtx_def *alpha_emit_set_long_const ();
 extern struct rtx_def *alpha_emit_conditional_move ();
 
 /* Generate necessary RTL for __builtin_saveregs().
