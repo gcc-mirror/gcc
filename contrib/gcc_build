@@ -9,7 +9,7 @@
 # Contents:
 #   Script to automatically download and build GCC.
 #
-# Copyright (c) 2000 Free Software Foundation.
+# Copyright (c) 2000, 2001 Free Software Foundation.
 #
 # This file is part of GNU CC.
 #
@@ -127,7 +127,7 @@ update_gcc() {
     changedir ${DESTINATION}
 
     # Update the tree
-    ./contrib/gcc_update || \
+    ./contrib/gcc_update -d || \
 	error "Could not update GCC"
 }
 
