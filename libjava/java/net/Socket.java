@@ -84,8 +84,10 @@ public class Socket
    * Initializes a new instance of <code>Socket</code> object without 
    * connecting to a remote host.  This useful for subclasses of socket that 
    * might want this behavior.
+   *
+   * @specnote This constructor is public since JDK 1.4
    */
-  protected Socket ()
+  public Socket ()
   {
     if (factory != null)
       impl = factory.createSocketImpl();
@@ -263,6 +265,56 @@ public class Socket
 
     if (raddr != null)
       impl.connect(raddr, rport);
+  }
+
+  /**
+   * Binds the socket to the givent local address/port
+   *
+   * @param bindpoint The address/port to bind to
+   *
+   * @exception If an error occurs
+   * 
+   * @since 1.4
+   */
+  public void bind (SocketAddress bindpoint) throws IOException
+  {
+    if ( !(bindpoint instanceof InetSocketAddress))
+      throw new IllegalArgumentException ();
+
+    InetSocketAddress tmp = (InetSocketAddress) bindpoint;
+    impl.bind (tmp.getAddress(), tmp.getPort());
+  }
+  
+  /**
+   * Connects the socket with a remote address.
+   *
+   * @param endpoint The address to connect to
+   *
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public void connect (SocketAddress endpoint)
+    throws IOException
+  {
+    impl.connect (endpoint, 0);
+  }
+
+  /**
+   * Connects the socket with a remote address. A timeout of zero is
+   * interpreted as an infinite timeout. The connection will then block
+   * until established or an error occurs.
+   *
+   * @param endpoint The address to connect to
+   *
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public void connect (SocketAddress endpoint, int timeout)
+    throws IOException
+  {
+    impl.connect (endpoint, timeout);
   }
 
   /**
@@ -473,6 +525,43 @@ public class Socket
   }
 
   /**
+   * Enables/disables the SO_OOBINLINE option
+   * 
+   * @param on True if SO_OOBLINE should be enabled 
+   * 
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public void setOOBInline (boolean on) throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException("Not connected");
+
+    impl.setOption(SocketOptions.SO_OOBINLINE, new Boolean(on));
+  }
+
+  /**
+   * Returns the current setting of the SO_OOBINLINE option for this socket
+   * 
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public boolean getOOBInline () throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException("Not connected");
+
+    Object buf = impl.getOption(SocketOptions.SO_OOBINLINE);
+
+    if (buf instanceof Boolean)
+      return(((Boolean)buf).booleanValue());
+    else
+      throw new SocketException("Internal Error: Unexpected type");
+  }
+  
+  /**
    * Sets the value of the SO_TIMEOUT option on the socket.  If this value
    * is set, and an read/write is performed that does not complete within
    * the timeout period, a short count is returned (or an EWOULDBLOCK signal
@@ -632,7 +721,7 @@ public class Socket
     if (impl == null)
       throw new SocketException("Not connected");
 
-    impl.setOption(SocketOptions.SO_RCVBUF, new Boolean(on));
+    impl.setOption(SocketOptions.SO_KEEPALIVE, new Boolean(on));
   }
 
   /**
@@ -650,7 +739,7 @@ public class Socket
     if (impl == null)
       throw new SocketException("Not connected");
 
-    Object buf = impl.getOption(SocketOptions.SO_RCVBUF);
+    Object buf = impl.getOption(SocketOptions.SO_KEEPALIVE);
 
     if (buf instanceof Boolean)
       return(((Boolean)buf).booleanValue());

@@ -152,13 +152,67 @@ public class ServerSocket
   }
 
   /**
+   * Binds the server socket to a specified socket address
+   *
+   * @param endpoint The socket address to bind to
+   *
+   * @exception IOException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public void bind (SocketAddress endpoint)
+    throws IOException
+  {
+    if (impl == null)
+      throw new IOException ("Cannot initialize Socket implementation");
+
+    InetSocketAddress tmp = (InetSocketAddress) endpoint;
+    
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkListen (tmp.getPort ());
+
+    impl.bind (tmp.getAddress (), tmp.getPort ());
+  }
+ 
+  /**
+   * Binds the server socket to a specified socket address
+   *
+   * @param endpoint The socket address to bind to
+   * @param backlog The length of the pending connection queue
+   * @exception IOException If an error occurs
+   */
+  public void bind (SocketAddress endpoint, int backlog)
+    throws java.io.IOException 
+  {
+    if (impl == null)
+      throw new IOException ("Cannot initialize Socket implementation");
+
+    InetSocketAddress tmp = (InetSocketAddress) endpoint;
+    
+    SecurityManager s = System.getSecurityManager ();
+    if (s != null)
+      s.checkListen (tmp.getPort ());
+
+    impl.bind (tmp.getAddress (), tmp.getPort ());
+    impl.listen(backlog);
+  }
+  
+  /**
    * This method returns the local address to which this socket is bound
    *
    * @return The socket's local address
    */
   public InetAddress getInetAddress()
   {
-    return impl.getInetAddress();
+    try
+      {
+        return (InetAddress) impl.getOption (SocketOptions.SO_BINDADDR);
+      }
+    catch (SocketException e)
+      {
+        return null;
+      }
   }
 
   /**
@@ -169,6 +223,21 @@ public class ServerSocket
   public int getLocalPort()
   {
     return impl.getLocalPort();
+  }
+
+  /**
+   * Returns the local socket address
+   *
+   * @since 1.4
+   */
+  public SocketAddress getLocalSocketAddress()
+  {
+    InetAddress addr = getInetAddress();
+
+    if (addr != null)
+      return new InetSocketAddress (getInetAddress(), getLocalPort());
+
+    return null;
   }
 
   /**
@@ -255,13 +324,98 @@ public class ServerSocket
   }
 
   /**
+   * Enables/Disables the SO_REUSEADDR option
+   * 
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public void setReuseAddress (boolean on)
+    throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
+    impl.setOption (SocketOptions.SO_REUSEADDR, new Boolean (on));
+  }
+
+  /**
+   * Checks if the SO_REUSEADDR option is enabled
+   * 
+   * @exception SocketException If an error occurs
+   * 
+   * @since 1.4
+   */
+  public boolean getReuseAddress()
+    throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException ("Cannot initialize Socket implementation");
+
+    Object reuseaddr = impl.getOption (SocketOptions.SO_REUSEADDR);
+
+    if (!(reuseaddr instanceof Boolean))
+      throw new SocketException ("Internal Error");
+    
+    return ((Boolean) reuseaddr).booleanValue ();
+  }
+
+  /**
+   * This method sets the value for the system level socket option
+   * SO_RCVBUF to the specified value.  Note that valid values for this
+   * option are specific to a given operating system.
+   * 
+   * @param size The new receive buffer size.
+   * 
+   * @exception SocketException If an error occurs or Socket is not connected
+   *
+   * @since 1.4
+   */
+  public void setReceiveBufferSize (int size)
+    throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException ("Not connected");
+
+    if (size <= 0)
+      throw new IllegalArgumentException ("SO_RCVBUF value must be > 0");
+
+    impl.setOption (SocketOptions.SO_RCVBUF, new Integer (size));
+  }
+
+  /**
+   * This method returns the value of the system level socket option
+   * SO_RCVBUF, which is used by the operating system to tune buffer
+   * sizes for data transfers.
+   * 
+   * @return The receive buffer size.
+   *             
+   * @exception SocketException If an error occurs or Socket is not connected
+   * 
+   * @since 1.4
+   */
+  public int getReceiveBufferSize ()
+    throws SocketException
+  {
+    if (impl == null)
+      throw new SocketException ("Not connected");
+
+    Object buf = impl.getOption (SocketOptions.SO_RCVBUF);
+
+    if (!(buf instanceof Integer))
+      throw new SocketException ("Internal Error: Unexpected type");
+    
+    return ((Integer) buf).intValue ();
+  }
+
+  /**
    * Returns the value of this socket as a <code>String</code>. 
    *
    * @return This socket represented as a <code>String</code>.
    */
   public String toString ()
   {
-    return "ServerSocket " + impl.toString();
+    return "ServerSocket" + impl.toString();
   }
 
   // Class methods
