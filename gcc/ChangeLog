@@ -1,5 +1,9 @@
 Wed Sep 16 01:09:01 1998  Kamil Iskra  <iskra@student.uci.agh.edu.pl>
 
+	* m68k/m68k.c (output_function_prologue): Reverse NO_ADDSUB_Q
+	condition, fix format strings.
+	(output_function_epilogue): Likewise.
+
 	* m68k/m68k.c: Don't include <stdlib.h> directly.
 
 Wed Sep 16 00:30:56 1998  Geoff Keating  <geoffk@ozemail.com.au>

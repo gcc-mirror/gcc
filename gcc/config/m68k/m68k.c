@@ -231,25 +231,25 @@ output_function_prologue (stream, size)
     {
       if (fsize + 4 < 0x8000)
 	{
-#ifdef NO_ADDSUB_Q
+#ifndef NO_ADDSUB_Q
 	  if (fsize + 4 <= 8)
 	    {
 	      if (!TARGET_5200)
 		{
 		  /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-		  asm_fprintf (stream, "\tsubq.w %OI%d,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubq.w %0I%d,%Rsp\n", fsize + 4);
 #else
-		  asm_fprintf (stream, "\tsubqw %OI%d,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubqw %0I%d,%Rsp\n", fsize + 4);
 #endif
 		}
 	      else
 		{
 		  /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-		  asm_fprintf (stream, "\tsubq.l %OI%d,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubq.l %0I%d,%Rsp\n", fsize + 4);
 #else
-		  asm_fprintf (stream, "\tsubql %OI%d,%Rsp\n", fsize + 4);
+		  asm_fprintf (stream, "\tsubql %0I%d,%Rsp\n", fsize + 4);
 #endif
 		}
 	    }
@@ -259,15 +259,15 @@ output_function_prologue (stream, size)
 		 subtract a small integer (8 < N <= 16) to a register. */
 	      /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\tsubq.w %OI8,%Rsp\n\tsubq.w %OI%d,%Rsp\n",
+	      asm_fprintf (stream, "\tsubq.w %0I8,%Rsp\n\tsubq.w %0I%d,%Rsp\n",
 			   fsize + 4);
 #else
-	      asm_fprintf (stream, "\tsubqw %OI8,%Rsp\n\tsubqw %OI%d,%Rsp\n",
+	      asm_fprintf (stream, "\tsubqw %0I8,%Rsp\n\tsubqw %0I%d,%Rsp\n",
 			   fsize + 4);
 #endif
 	    }
 	  else 
-#endif /* NO_ADDSUB_Q */
+#endif /* not NO_ADDSUB_Q */
 	  if (TARGET_68040)
 	    {
 	      /* Adding negative number is faster on the 68040.  */
@@ -771,23 +771,23 @@ output_function_epilogue (stream, size)
 	     reg_names[FRAME_POINTER_REGNUM]);
   else if (fsize)
     {
-#ifdef NO_ADDSUB_Q
+#ifndef NO_ADDSUB_Q
       if (fsize + 4 <= 8) 
 	{
 	  if (!TARGET_5200)
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\taddq.w %OI%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddq.w %0I%d,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\taddqw %OI%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddqw %0I%d,%Rsp\n", fsize + 4);
 #endif
 	    }
 	  else
 	    {
 #ifdef MOTOROLA
-	      asm_fprintf (stream, "\taddq.l %OI%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddq.l %0I%d,%Rsp\n", fsize + 4);
 #else
-	      asm_fprintf (stream, "\taddql %OI%d,%Rsp\n", fsize + 4);
+	      asm_fprintf (stream, "\taddql %0I%d,%Rsp\n", fsize + 4);
 #endif
 	    }
 	}
@@ -797,15 +797,15 @@ output_function_epilogue (stream, size)
 	     add a small integer (8 < N <= 16) to a register. */
 	  /* asm_fprintf() cannot handle %. */
 #ifdef MOTOROLA
-	  asm_fprintf (stream, "\taddq.w %OI8,%Rsp\n\taddq.w %OI%d,%Rsp\n",
+	  asm_fprintf (stream, "\taddq.w %0I8,%Rsp\n\taddq.w %0I%d,%Rsp\n",
 		       fsize + 4);
 #else
-	  asm_fprintf (stream, "\taddqw %OI8,%Rsp\n\taddqw %OI%d,%Rsp\n",
+	  asm_fprintf (stream, "\taddqw %0I8,%Rsp\n\taddqw %0I%d,%Rsp\n",
 		       fsize + 4);
 #endif
 	}
       else
-#endif /* NO_ADDSUB_Q */
+#endif /* not NO_ADDSUB_Q */
       if (fsize + 4 < 0x8000)
 	{
 	  if (TARGET_68040)
