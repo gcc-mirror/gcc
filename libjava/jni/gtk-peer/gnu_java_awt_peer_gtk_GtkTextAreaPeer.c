@@ -135,27 +135,32 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkTextGetSize
   text = GTK_WIDGET (TEXT_FROM_SW (ptr));
   sw = GTK_SCROLLED_WINDOW (ptr);
 
-  gtk_signal_emit_by_name (GTK_OBJECT (GTK_SCROLLED_WINDOW(sw)->hscrollbar), 
+  gtk_signal_emit_by_name (GTK_OBJECT (GTK_SCROLLED_WINDOW(sw)->vscrollbar), 
 			   "size_request", &myreq);
   //gtk_widget_size_request(GTK_WIDGET (GTK_SCROLLED_WINDOW(sw)->hscrollbar), 
   //				      &myreq);
   dims[0]=myreq.width+GTK_SCROLLED_WINDOW_CLASS 
     (GTK_OBJECT (sw)->klass)->scrollbar_spacing;
 
-  gtk_signal_emit_by_name (GTK_OBJECT (GTK_SCROLLED_WINDOW(sw)->vscrollbar), 
+  gtk_signal_emit_by_name (GTK_OBJECT (GTK_SCROLLED_WINDOW(sw)->hscrollbar), 
 			   "size_request", &myreq);
   //gtk_widget_size_request(GTK_WIDGET (GTK_SCROLLED_WINDOW(sw)->vscrollbar), 
   //				      &myreq);
-  dims[1]=myreq.width+GTK_SCROLLED_WINDOW_CLASS 
+  dims[1]=myreq.height+GTK_SCROLLED_WINDOW_CLASS 
     (GTK_OBJECT (sw)->klass)->scrollbar_spacing;
   
   /* The '1' in the following assignments is from 
      #define TEXT_BORDER_ROOM         1
      in gtktext.c */
 
+  /* Gtk text seems to wrap slightly prematurely.  Compensate. */
+    ++cols;
+    ++dims[0];
+
   dims[0] += ((cols * gdk_char_width (text->style->font, 'W'))
 	     + (2 * (text->style->klass->xthickness + 1)));
-  dims[1] += ((rows * gdk_char_height (text->style->font, 'W'))
+  /* Guess at the height.  Is there a better way?	*/
+  dims[1] += ((rows * gdk_string_height (text->style->font, "Wg"))
 	     + (2 * (text->style->klass->ythickness + 1)));
 
   gdk_threads_leave ();
@@ -207,3 +212,35 @@ Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_replaceRange
   (*env)->ReleaseStringUTFChars (env, contents, str);
 }
 
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkTextAreaPeer_gtkSetFont
+  (JNIEnv *env, jobject obj, jstring jname, jint size)
+{
+  const char *xlfd;
+# define FBUFSZ 200
+  char buf[FBUFSZ];
+  void *ptr;
+  GdkFont * new_font;
+  GtkStyle * style;
+  GtkWidget * text;
+
+  ptr = NSA_GET_PTR (env, obj);
+  text = GTK_WIDGET (TEXT_FROM_SW (ptr));
+  
+  xlfd = (*env)->GetStringUTFChars (env, jname, NULL);
+    snprintf(buf, FBUFSZ, xlfd, size);
+  (*env)->ReleaseStringUTFChars (env, jname, xlfd);
+  gdk_threads_enter();
+  new_font = gdk_font_load (buf);  /* FIXME: deprecated. Replacement?	*/
+  if (new_font == NULL)
+    {
+      /* Fail quietly for now. */
+      gdk_threads_leave();
+      return;
+    }
+  style = gtk_style_copy (gtk_widget_get_style (text));
+  style -> font = new_font;
+  gtk_widget_set_style (text , style);
+  /* FIXME: Documentation varies as to whether we should unref style. */
+  gdk_threads_leave();
+}

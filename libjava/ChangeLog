@@ -1,3 +1,41 @@
+2003-02-18  Hans Boehm  <Hans.Boehm@hp.com>
+
+	* gnu/awt/xlib/XToolkit.java (getFontMetrics): initialize
+	if necessary.
+	
+	* gnu/java/awt/peer/gtk/GtkButtonPeer.java,
+	gnu/java/awt/peer/gtk/GtkTextAreaPeer.java,
+	gnu/java/awt/peer/gtk/GtkTextFieldPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkButtonPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextFieldPeer.c
+	(setFont, gtkSetFont): add.
+	gnu/java/awt/peer/gtk/GtkComponentPeer.java (GtkComponentPeer):
+	Propagate font to peer.  (setFont): add FIXME comment.
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
+	(gtkTextGetSize): fix height, width computation.
+
+	* gnu/java/awt/peer/gtk/GtkFontPeer.java (GtkFontPeer):
+	Make X font name a bit less bogus.
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkScrollBarPeer.c
+	(post_adjustment_event): Pass on GTK_SCROLL_NONE.
+
+	* java/awt/Scrollbar.java (setValues): Fix visibleAmount range check.
+	(processAdjustmentEvent): Adjust value.
+
+	* java/awt/FlowLayout.java (layoutContainer) Fix 2 indexing and one
+	logic errors.
+
+	* java/awt/Component.java (setVisible, show, hide): Call show and
+	hide methods in subclasses.
+	(getPreferredSize): don't set prefSize before we have peer.
+
+	* java/awt/TextArea.java, java/awt/TextField.java (getPreferredSize):
+	Guess (0,0) if we don't have peer.
+
+
 2003-02-18  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/channels/FileChannel.java

@@ -50,3 +50,39 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GtkButtonPeer_create
 
   NSA_SET_PTR (env, obj, widget);
 }
+
+JNIEXPORT void JNICALL 
+Java_gnu_java_awt_peer_gtk_GtkButtonPeer_gtkSetFont
+  (JNIEnv *env, jobject obj, jstring jname, jint size)
+{
+  const char *xlfd;
+# define FBUFSZ 200
+  char buf[FBUFSZ];
+  void *ptr;
+  GdkFont * new_font;
+  GtkStyle * style;
+  GtkWidget * button;
+  GtkWidget * label;
+
+  ptr = NSA_GET_PTR (env, obj);
+  button = GTK_WIDGET (ptr);
+  label = GTK_BIN(button)->child;
+  
+  if (label == NULL) return;
+  xlfd = (*env)->GetStringUTFChars (env, jname, NULL);
+  snprintf(buf, FBUFSZ, xlfd, size);
+  (*env)->ReleaseStringUTFChars (env, jname, xlfd);
+  gdk_threads_enter();
+  new_font = gdk_font_load (buf);  /* FIXME: deprecated. Replacement?	*/
+  if (new_font == NULL)
+    {
+      /* Fail quietly for now. */
+      gdk_threads_leave();
+      return;
+    }
+  style = gtk_style_copy (gtk_widget_get_style (label));
+  style -> font = new_font;
+  gtk_widget_set_style (label, style);
+  /* FIXME: Documentation varies as to whether we should unref style. */
+  gdk_threads_leave();
+}

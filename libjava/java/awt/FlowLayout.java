@@ -171,13 +171,13 @@ public class FlowLayout implements LayoutManager, Serializable
 	    int new_h = 0;
 	    int j;
 	    boolean found_one = false;
-	    for (j = i; j < num && ! found_one; ++j)
+	    for (j = i; j < num; ++j)
 	      {
 		// Skip invisible items.
-		if (! comps[i].visible)
+		if (! comps[j].visible)
 		  continue;
 
-		Dimension c = comps[i].getPreferredSize ();
+		Dimension c = comps[j].getPreferredSize ();
 
 		int next_w = new_w + hgap + c.width;
 		if (next_w <= d.width || ! found_one)

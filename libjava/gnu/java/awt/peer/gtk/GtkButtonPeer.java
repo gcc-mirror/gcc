@@ -47,6 +47,8 @@ public class GtkButtonPeer extends GtkComponentPeer
 {
   native void create ();
 
+  native void gtkSetFont(String xlfd, int size);
+
   public GtkButtonPeer (Button b)
   {
     super (b);
@@ -85,5 +87,10 @@ public class GtkButtonPeer extends GtkComponentPeer
     super.getArgs (component, args);
 
     args.add ("label", ((Button)component).getLabel ());
+  }
+
+  public void setFont (Font f)
+  {
+    gtkSetFont(((GtkFontPeer)f.getPeer()).getXLFD(), f.getSize());
   }
 }

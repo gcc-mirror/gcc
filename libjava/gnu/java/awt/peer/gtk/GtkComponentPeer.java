@@ -88,6 +88,8 @@ public class GtkComponentPeer extends GtkGenericPeer
 	awtComponent.setBackground (getBackground ());
       //        if (c.getFont () == null)
       //  	c.setFont (cp.getFont ());
+      if (awtComponent.getFont() != null)
+	setFont(awtComponent.getFont());
       
       if (! (awtComponent instanceof Window))
 	{
@@ -273,6 +275,9 @@ public class GtkComponentPeer extends GtkGenericPeer
 
   public void setFont (Font f)
   {
+    // FIXME: This should really affect the widget tree below me.
+    // Currently this is only handled if the call is made directly on
+    // a text widget, which implements setFont() itself.
   }
 
   public void setForeground (Color c) 
@@ -352,7 +357,8 @@ public class GtkComponentPeer extends GtkGenericPeer
 	p = component.getPeer ();
       } while (p instanceof java.awt.peer.LightweightPeer);
     
-    args.add ("parent", p);
+    if (p != null)
+      args.add ("parent", p);
   }
 
   native void set (String name, String value);

@@ -183,7 +183,7 @@ public class XToolkit extends Toolkit
 
   public FontMetrics getFontMetrics(Font font)
   {
-    return defaultConfig.getXFontMetrics(font);
+    return getDefaultXGraphicsConfiguration().getXFontMetrics(font);
   }
 
   public void sync()

@@ -345,8 +345,9 @@ getPreferredSize(int columns)
 {
   TextFieldPeer tfp = (TextFieldPeer)getPeer();
   if (tfp == null)
-    return(null); // FIXME: What do we do if there is no peer?
-
+    {
+      return new Dimension(0, 0);
+    }
   return(tfp.getPreferredSize(columns));
 }
 
