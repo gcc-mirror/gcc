@@ -1,0 +1,58 @@
+Debugging suggestions:
+
+****If you get a segmentation fault or bus error while debugging with a debugger:
+If the fault occurred in GC_find_limit, or with incremental collection enabled, this is probably normal.  The collector installs handlers to take care of these.  You will not see these unless you are using a debugger.  Your debugger should allow you to continue.  It's preferable to tell the debugger to ignore SIGBUS and SIGSEGV ("handle" in gdb, "ignore" in most versions of dbx) and set a breakpoint in abort.  The collector will call abort if the signal had another cause, and there was not other handler previously installed.  I recommend debugging without incremental collection if possible.  (This applies directly to UNIX systems.  Debugging with incremental collection under win32 is worse.  See README.win32.)  
+
+****If you get warning messages informing you that the collector needed to allocate blacklisted blocks:
+
+0) Ignore these warnings while you are using GC_DEBUG.  Some of the routines mentioned below don't have debugging equivalents.  (Alternatively, write the missing routines and send them to me.)
+
+1) Replace allocator calls that request large blocks with calls to GC_malloc_ignore_off_page or GC_malloc_atomic_ignore_off_page.  You may want to set a breakpoint in GC_default_warn_proc to help you identify such calls.  Make sure that a pointer to somewhere near the beginning of the resulting block is maintained in a (preferably volatile) variable as long as the block is needed.
+
+2) If the large blocks are allocated with realloc, I suggest instead allocating them with something like the following.  Note that the realloc size increment should be fairly large (e.g. a factor of 3/2) for this to exhibit reasonable performance.  But we all know we should do that anyway.
+
+void * big_realloc(void *p, size_t new_size)
+{
+    size_t old_size = GC_size(p);
+    void * result;
+ 
+    if (new_size <= 10000) return(GC_realloc(p, new_size));
+    if (new_size <= old_size) return(p);
+    result = GC_malloc_ignore_off_page(new_size);
+    if (result == 0) return(0);
+    memcpy(result,p,old_size);
+    GC_free(p);
+    return(result);
+}
+
+3) In the unlikely case that even relatively small object (<20KB) allocations are triggering these warnings, then your address space contains lots of "bogus pointers", i.e. values that appear to be pointers but aren't.  Usually this can be solved by using GC_malloc_atomic or the routines in gc_typed.h to allocate large pointerfree regions of bitmaps, etc.  Sometimes the problem can be solved with trivial changes of encoding in certain values.  It is possible, though not pleasant, to identify the source of the bogus pointers by setting a breakpoint in GC_add_to_black_list_stack, and looking at the value of current_p in the GC_mark_from_mark_stack frame.  Current_p contains the address of the bogus pointer.
+
+4) If you get only a fixed number of these warnings, you are probably only introducing a bounded leak by ignoring them.  If the data structures being allocated are intended to be permanent, then it is also safe to ignore them.  The warnings can be turned off by calling GC_set_warn_proc with a procedure that ignores these warnings (e.g. by doing absolutely nothing).
+
+
+****If the collector dies in GC_malloc while trying to remove a free list element:
+
+1) With > 99% probability, you wrote past the end of an allocated object.  Try setting GC_DEBUG and using the debugging facilities in gc.h.
+
+
+****If the heap grows too much:
+
+1) Consider using GC_malloc_atomic for objects containing nonpointers.  This is especially important for large arrays containg compressed data, pseudo-random numbers, and the like.  (This isn't all that likely to solve your problem, but it's a useful and easy optimization anyway, and this is a good time to try it.)   If you allocate large objects containg only one or two pointers at the beginning, either try the typed allocation primitives is gc.h, or separate out the pointerfree component.
+2) If you are using the collector in its default mode, with interior pointer recognition enabled, consider using GC_malloc_ignore_off_page to allocate large objects.  (See gc.h and above for details.  Large means > 100K in most environments.)
+3) GC_print_block_list() will print a list of all currently allocated heap blocks and what size objects they contain.  GC_print_hblkfreelist() will print a list of free heap blocks, and whether they are blacklisted.  GC_dump calls both of these, and also prints information about heap sections, and root segments.
+4) Write a tool that traces back references to the appropriate root.  Send me the code.  (I have code that does this for old PCR.)
+
+
+****If the collector appears to be losing objects:
+
+1) Replace all calls to GC_malloc_atomic and typed allocation by GC_malloc calls.  If this fixes the problem, gradually reinsert your optimizations.
+2) You may also want to try the safe(r) pointer manipulation primitives in gc.h.  But those are hard to use until the preprocessor becomes available.
+3) Try using the GC_DEBUG facilities.  This is less likely to be successful here than if the collector crashes.
+[The rest of these are primarily for wizards.  You shouldn't need them unless you're doing something really strange, or debugging a collector port.]
+4) Don't turn on incremental collection.  If that fixes the problem, suspect a bug in the dirty bit implementation.  Try compiling with -DCHECKSUMS to check for modified, but supposedly clean, pages.
+5) On a SPARC, in a single-threaded environment, GC_print_callers(GC_arrays._last_stack) prints a cryptic stack trace as of the time of the last collection.  (You will need a debugger to decipher the result.)  The question to ask then is "why should this object have been accessible at the time of the last collection?  Where was a pointer to it stored?".  This facility should be easy to add for some other collector ports (namely if it's easy to traverse stack frames), but will be hard for others.
+6) "print *GC_find_header(p)" in dbx or gdb will print the garbage collector block header information associated with the object p (e.g. object size, etc.)
+7) GC_is_marked(p) determines whether p is the base address of a marked object.  Note that objects allocated since the last collection should not be marked, and that unmarked objects are reclaimed incrementally.  It's usually most interesting to set a breakpoint in GC_finish_collection and then to determine how much of the damaged data structure is marked at that point.
+8) Look at the tracing facility in mark.c.  (Ignore this suggestion unless you are very familiar with collector internals.)
+
+

@@ -1,0 +1,20 @@
+# Makefile for cord.lib
+# Michel Schinz 1994/07/20
+
+OBJS = cordbscs.o cordprnt.o cordxtra.o
+
+all: cord.lib cordtest
+
+cordbscs.o: cordbscs.c
+cordprnt.o: cordprnt.c
+cordxtra.o: cordxtra.c
+cordtest.o: cordtest.c
+
+cord.lib: $(OBJS)
+	oml cord.lib r $(OBJS)
+
+cordtest: cordtest.o cord.lib
+	sc cordtest.o link
+
+clean:
+	delete cord.lib cordtest \#?.o \#?.lnk

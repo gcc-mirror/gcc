@@ -1,0 +1,9 @@
+Dynamic loading support requires that executables be linked with -ldld.
+The alternative is to build the collector without defining DYNAMIC_LOADING
+in config.h and ensuring that all garbage collectable objects are
+accessible without considering statically allocated variables in dynamic
+libraries.
+
+The collector should compile with either plain cc or cc -Ae.  CC -Aa
+fails to define _HPUX_SOURCE and thus will not configure the collector
+correctly.
