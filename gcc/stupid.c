@@ -1,5 +1,5 @@
 /* Dummy data flow analysis for GNU compiler in nonoptimizing mode.
-   Copyright (C) 1987, 91, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 91, 94-96, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
