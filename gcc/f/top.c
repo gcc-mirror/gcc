@@ -1,5 +1,5 @@
 /* top.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1997, 1999 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -83,7 +83,6 @@ bool ffe_is_mainprog_;		/* TRUE if current prog unit known to be
 bool ffe_is_null_version_ = FALSE;
 bool ffe_is_onetrip_ = FALSE;
 bool ffe_is_silent_ = TRUE;
-bool ffe_is_subscript_check_ = FALSE;
 bool ffe_is_typeless_boz_ = FALSE;
 bool ffe_is_pedantic_ = FFETARGET_defaultIS_PEDANTIC;
 bool ffe_is_saveall_;		/* TRUE if mainprog or SAVE (no args) seen. */
@@ -323,14 +322,10 @@ ffe_decode_option (argc, argv)
 	ffe_set_is_globals (TRUE);
       else if (strcmp (&opt[2], "no-globals") == 0)
 	ffe_set_is_globals (FALSE);
-      else if (strcmp (&opt[2], "bounds-check") == 0)
-	ffe_set_is_subscript_check (TRUE);
-      else if (strcmp (&opt[2], "no-bounds-check") == 0)
-	ffe_set_is_subscript_check (FALSE);
       else if (strcmp (&opt[2], "fortran-bounds-check") == 0)
-	ffe_set_is_subscript_check (TRUE);
+	flag_bounds_check = TRUE;
       else if (strcmp (&opt[2], "no-fortran-bounds-check") == 0)
-	ffe_set_is_subscript_check (FALSE);
+	flag_bounds_check = FALSE;
       else if (strcmp (&opt[2], "typeless-boz") == 0)
 	ffe_set_is_typeless_boz (TRUE);
       else if (strcmp (&opt[2], "no-typeless-boz") == 0)
