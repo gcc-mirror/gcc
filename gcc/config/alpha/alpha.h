@@ -1229,6 +1229,9 @@ extern char *current_function_name;
    the rest of the bits in the register.  */
 #define BYTE_LOADS_SIGN_EXTEND
 
+/* Define if loading short immediate values into registers sign extends.  */
+#define SHORT_IMMEDIATES_SIGN_EXTEND
+
 /* We aren't doing ANYTHING about debugging for now.  */
 /* #define SDB_DEBUGGING_INFO */
 
