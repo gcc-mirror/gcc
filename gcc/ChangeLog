@@ -1,6 +1,6 @@
 Sun May 17 08:45:21 1998  Krister Walfridsson <cato@df.lth.se>
 
-        toplev.c (output_lang_identify): Enable prototype and definition.
+        * toplev.c (output_lang_identify): Enable prototype and definition.
 
 Sun May 17 01:12:27 PDT 1998 Jeff Law  (law@cygnus.com)
 
@@ -981,7 +981,7 @@ Thu Apr 30 16:57:34 1998  Michael Meissner  <meissner@cygnus.com>
 	sure the buffer we are passed in doesn't overflow.
 	(safe_concat): Concatenate to a buffer without overflow.
 
-Thu Apr 30 16:57:34 1998  Kaveh R. Ghazi" <ghazi@caip.rutgers.edu>
+Thu Apr 30 16:57:34 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* haifa-sched.c (alloc_{INSN,EXPR}_LIST): Make static to agree
 	with the prototype.
