@@ -1,3 +1,11 @@
+Sat Apr  3 23:29:33 1999  Craig Burley  <craig@jcb-sc.com>
+
+	* bugs.texi, g77.texi, lang-options.h, news.texi, top.c:
+	Make -fno-emulate-complex the default, as COMPLEX support
+	in the back end is now believed to be working.
+
+	* version.c: Bump version.
+
 Fri Apr  2 13:33:16 1999  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.texi: -malign-double now works.

@@ -65,7 +65,7 @@ bool ffe_is_do_internal_checks_ = FALSE;
 bool ffe_is_90_ = FFETARGET_defaultIS_90;
 bool ffe_is_automatic_ = FFETARGET_defaultIS_AUTOMATIC;
 bool ffe_is_backslash_ = FFETARGET_defaultIS_BACKSLASH;
-bool ffe_is_emulate_complex_ = TRUE;
+bool ffe_is_emulate_complex_ = FALSE;
 bool ffe_is_underscoring_ = FFETARGET_defaultEXTERNAL_UNDERSCORED
   || FFETARGET_defaultUNDERSCORED_EXTERNAL_UNDERSCORED;
 bool ffe_is_second_underscore_ = FFETARGET_defaultUNDERSCORED_EXTERNAL_UNDERSCORED;

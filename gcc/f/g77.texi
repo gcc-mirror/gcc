@@ -2,7 +2,7 @@
 @c %**start of header
 @setfilename g77.info
 
-@set last-update 1999-04-02
+@set last-update 1999-04-03
 @set copyrights-g77 1995-1999
 
 @include root.texi
@@ -1466,7 +1466,7 @@ by type.  Explanations are in the following sections.
 -fpcc-struct-return  -freg-struct-return
 -fshort-double  -fno-common  -fpack-struct
 -fzeros  -fno-second-underscore
--fdebug-kludge  -fno-emulate-complex
+-fdebug-kludge  -femulate-complex
 -falias-check  -fargument-alias
 -fargument-noalias  -fno-argument-noalias-global
 -fno-globals
@@ -3253,43 +3253,35 @@ Current plans call for this to happen when published versions of @code{g77}
 and @code{gdb} exist that provide proper access to debugging information on
 @code{COMMON} and @code{EQUIVALENCE} members.
 
-@cindex -fno-emulate-complex option
-@cindex options, -fno-emulate-complex
-@item -fno-emulate-complex
-Implement @code{COMPLEX} arithmetic using the facilities in
+@cindex -femulate-complex option
+@cindex options, -femulate-complex
+@item -femulate-complex
+Implement @code{COMPLEX} arithmetic via emulation,
+instead of using the facilities of
 the @code{gcc} back end that provide direct support of
-@code{complex} arithmetic, instead of emulating the arithmetic.
+@code{complex} arithmetic.
 
-@code{gcc} has some known problems in its back-end support
+(@code{gcc} had some bugs in its back-end support
 for @code{complex} arithmetic, due primarily to the support not being
-completed as of version 2.7.2.2.
-Other front ends for the @code{gcc} back end avoid this problem
-by emulating @code{complex} arithmetic at a higher level, so the
-back end sees arithmetic on the real and imaginary components.
-To make @code{g77} more portable to systems where @code{complex}
-support in the @code{gcc} back end is particularly troublesome,
-@code{g77} now defaults to performing the same kinds of emulations
-done by these other front ends.
+completed as of version 2.8.1 and @code{egcs} 1.1.2.)
 
-Use @samp{-fno-emulate-complex} to try the @code{complex} support
-in the @code{gcc} back end, in case it works and produces faster
-programs.
-So far, all the known bugs seem to involve compile-time crashes,
-rather than the generation of incorrect code.
+Use @samp{-femulate-complex} if you suspect code-generation bugs,
+or experience compiler crashes,
+that might result from @code{g77} using the @code{COMPLEX} support
+in the @code{gcc} back end.
+If using that option fixes the bugs or crashes you are seeing,
+that indicates a likely @code{g77} bugs
+(though, all compiler crashes are considered bugs),
+so, please report it.
+(Note that the known bugs, now believed fixed, produced compiler crashes
+rather than causing the generation of incorrect code.)
 
 Use of this option should not affect how Fortran code compiled
 by @code{g77} works in terms of its interfaces to other code,
 e.g. that compiled by @code{f2c}.
 
-@emph{Caution:} Future versions of @code{g77} are likely to change
-the default for this option to
-@samp{-fno-emulate-complex}, and perhaps someday ignore both forms
+@emph{Caution:} Future versions of @code{g77} might ignore both forms
 of this option.
-
-Also, it is possible that use of the @samp{-fno-emulate-complex} option
-could result in incorrect code being silently produced by @code{g77}.
-But, this is generally true of compilers anyway, so, as usual, test
-the programs you compile before assuming they are working.
 
 @cindex -falias-check option
 @cindex options, -falias-check
@@ -8895,11 +8887,6 @@ entities of @code{COMPLEX} type and then switch back to Fortran language
 mode afterward.
 (In @code{gdb}, this is accomplished via @samp{set lang c} and
 either @samp{set lang fortran} or @samp{set lang auto}.)
-
-@emph{Note:} Compiling with the @samp{-fno-emulate-complex} option
-avoids the debugging problem, but is known to cause other problems
-like compiler crashes and generation of incorrect code, so it is
-not recommended.
 
 @node Arrays
 @section Arrays (DIMENSION)
