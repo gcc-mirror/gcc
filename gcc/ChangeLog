@@ -1,3 +1,7 @@
+2003-03-24  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Update Janis Johnson.
+
 2003-03-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/10072
