@@ -1,3 +1,13 @@
+2005-02-14  Andrew Haley  <aph@redhat.com>
+
+	PR java/19907
+	* expr.c (expand_byte_code): Call promote_arguments().
+	(promote_arguments): New function.
+	* decl.c (check_local_unnamed_variable): Remve special case for
+	new verifier.
+	(find_local_variable): Promote all boolean types to int
+	when searching for local variable decls.
+	
 2005-02-12  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c, java-except.h, jcf-parse.c, jv-scan.c, lex.c,

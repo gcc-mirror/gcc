@@ -263,24 +263,14 @@ check_local_unnamed_variable (tree best, tree decl, tree type)
 	 initially held a pointer arg -- or vice versa -- we create a
 	 new VAR_DECL.  
 
-	 ???: As long as verification is correct, this will be a
+      	 ???: As long as verification is correct, this will be a
 	 compatible type.  But maybe we should create a dummy variable
 	 and replace all references to it with the DECL and a
-	 NOP_EXPR.
+	 NOP_EXPR.  
       */
       || (TREE_CODE (decl_type) == POINTER_TYPE
 	  && TREE_CODE (decl) == PARM_DECL
-	  && TREE_CODE (type) == POINTER_TYPE)
-
-      /* The new verifier requires a similar treatment in the
-	 situation where the parameter has an integral type which
-	 promotes to `int'.  */
-      || (flag_new_verifier
-	  && TREE_CODE (decl) == PARM_DECL
-	  && INTEGRAL_TYPE_P (decl_type)
-	  && TYPE_PRECISION (decl_type) <= 32
-	  && INTEGRAL_TYPE_P (type)
-	  && TYPE_PRECISION (type) <= 32))
+	  && TREE_CODE (type) == POINTER_TYPE))
     {
       if (best == NULL_TREE
 	  || (decl_type == type && TREE_TYPE (best) != type))
@@ -311,6 +301,16 @@ find_local_variable (int index, tree type, int pc ATTRIBUTE_UNUSED)
 	decl = check_local_unnamed_variable (decl, tmp, type);
       tmp = DECL_LOCAL_SLOT_CHAIN (tmp);
     }
+
+  /* gcj has a function called promote_type(), which is used by both
+     the bytecode compiler and the source compiler.  Unfortunately,
+     the type systems for the Java VM and the Java language are not
+     the same: a boolean in the VM promotes to an int, not to a wide
+     boolean.  If our caller wants something to hold a boolean, that
+     had better be an int, because that slot might be re-used
+     later in integer context.  */
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    type = integer_type_node;
 
   /* If we don't find a match, create one with the type passed in.
      The name of the variable is #n#m, which n is the variable index
