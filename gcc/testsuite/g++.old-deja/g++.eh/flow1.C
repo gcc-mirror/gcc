@@ -3,6 +3,7 @@
 int bar ()
 {
   throw 100;
+  return 0;
 }
 
 int main ()

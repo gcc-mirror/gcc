@@ -25,6 +25,7 @@ public:
     }
     IncludeIt& operator=(const IncludeIt& i) {
 	myStrvec = i.myStrvec;
+	return *this;
     }
 private:
     CopyMe myStrvec;

@@ -16,8 +16,8 @@ public:
 class dictionary
 {
 public:
-  void *lookup(symbol s, void *v=0) { win = 1; }
-  void *lookup(const char *) {}
+  void lookup(symbol s, void *v=0) { win = 1; }
+  void lookup(const char *) {}
 };
 
 int main()
