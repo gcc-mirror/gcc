@@ -1,3 +1,25 @@
+2005-03-21  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/v850/v850-protos.h: Remove the prototypes for
+	reg_or_int9_operand, reg_or_const_operand,
+	pattern_is_ok_for_prepare, pattern_is_ok_for_dispose,
+	reg_or_0_operand, reg_or_int5_operand, call_address_operand,
+	movsi_source_operand, power_of_two_operand,
+	not_power_of_two_operand, special_symbolref_operand,
+	pattern_is_ok_for_prologue, pattern_is_ok_for_epilogue, and
+	register_is_ok_for_epilogue.
+	* config/v850/v850.c (reg_or_0_operand, reg_or_int5_operand,
+	reg_or_int9_operand, reg_or_const_operand,
+	call_address_operand, special_symbolref_operand,
+	movsi_source_operand, power_of_two_operand,
+	not_power_of_two_operand, register_is_ok_for_epilogue,
+	pattern_is_ok_for_epilogue, pattern_is_ok_for_prologue,
+	pattern_is_ok_for_dispose, pattern_is_ok_for_prepare): Move to
+	predicates.md.
+	* config/v850/v850.h (PREDICATE_CODES): Remove.
+	* config/v850/v850.md: Include predicates.md.
+	* config/v850/predicates.md: New.
+
 2005-03-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* Makefile.in (BASEVER, DEVPHASE, DATESTAMP)

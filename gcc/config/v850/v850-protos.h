@@ -1,5 +1,5 @@
 /* Prototypes for v850.c functions used in the md file & elsewhere.
-   Copyright (C) 1999, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -51,23 +51,9 @@ extern void   notice_update_cc              (rtx, rtx);
 extern char * construct_save_jarl           (rtx);
 extern char * construct_restore_jr          (rtx);
 #ifdef HAVE_MACHINE_MODES
-extern int    reg_or_int9_operand           (rtx, Mmode);
-extern int    reg_or_const_operand          (rtx, Mmode);
 extern char * construct_dispose_instruction (rtx);
 extern char * construct_prepare_instruction (rtx);
-extern int    pattern_is_ok_for_prepare     (rtx, Mmode);
-extern int    pattern_is_ok_for_dispose     (rtx, Mmode);
 extern int    ep_memory_operand             (rtx, Mmode, int);
-extern int    reg_or_0_operand              (rtx, Mmode);
-extern int    reg_or_int5_operand           (rtx, Mmode);
-extern int    call_address_operand          (rtx, Mmode);
-extern int    movsi_source_operand          (rtx, Mmode);
-extern int    power_of_two_operand          (rtx, Mmode);
-extern int    not_power_of_two_operand      (rtx, Mmode);
-extern int    special_symbolref_operand     (rtx, Mmode);
-extern int    pattern_is_ok_for_prologue    (rtx, Mmode);
-extern int    pattern_is_ok_for_epilogue    (rtx, Mmode);
-extern int    register_is_ok_for_epilogue   (rtx, Mmode);
 #ifdef TREE_CODE
 extern rtx    function_arg                  (CUMULATIVE_ARGS *, Mmode, tree, int);
 #endif
