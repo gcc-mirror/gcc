@@ -1,3 +1,8 @@
+
+2003-04-22  Devang Patel  <dpatel@apple.com>
+
+	* gcc.dg/cpp/trad/funlike-5.c: New test.
+	
 2003-04-21  Andreas Tobler <a.tobler@schweiz.ch>
 
 	* g++.dg/other/packed1.C: Fix dg options.

@@ -1,3 +1,9 @@
+
+2003-04-22  Devang Patel  <dpatel@apple.com>
+
+	* cpptrad.c (_cpp_replacement_text_len): Add check for macro parameter count.
+	(_cpp_copy_replacement_text): Same.
+	
 2003-04-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* c-lex.c (c_lex): Handle CPP_OTHER differently.
@@ -57,6 +63,7 @@
 	(note_eh_region_may_contain_throw): New function.
 	* except.h (note_eh_region_may_contain_throw): New function.
 
+>>>>>>> 1.17566
 2003-04-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* config/i386/winnt.c (i386_pe_mark_dllimport): Revert previous
