@@ -1,3 +1,9 @@
+1999-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* typeck.c (build_c_cast): Expand warning message. Move pointer
+	alignment warning to after the cast. Don't warn about pointer
+	alignment when given a pointer to incomplete.
+
 1999-12-15  Richard Henderson  <rth@cygnus.com>
 
 	* cp-tree.h (make_aggr_type): Declare.
@@ -61,6 +67,7 @@
 	(reinit_parse_for_expr): Use.
 	(check_newline): Use.
 
+>>>>>>> 1.1463
 1999-12-13  Mark Mitchell  <mark@codesourcery.com>
 
 	* optimize.c (initialize_inlined_parameters): Take FN to which the
@@ -89,7 +96,7 @@
 
 	* pt.c (for_each_template_parm_r): Add static prototype.
 
-11999-12-09  Andreas Jaeger  <aj@suse.de>
+1999-12-09  Andreas Jaeger  <aj@suse.de>
 
 	* except.c (expand_throw): Add static attribute to match
 	prototype.
@@ -98,7 +105,7 @@
 	* semantics.c: Include output.h for declaration of
 	make_function_rtl.
 
-999-12-09  Mark Mitchell  <mark@codesourcery.com>
+1999-12-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (init_decl_processing): Reenable inlining on trees.
 	(finish_function): Likewise.
