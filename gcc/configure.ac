@@ -331,6 +331,21 @@ if test $ac_cv_prog_cc_w_no_long_long = yes \
 fi
 AC_SUBST(strict1_warn)
 
+# Add -Wold-style-definition if it's accepted
+AC_CACHE_CHECK(
+  [whether ${CC} accepts -Wold-style-definition],
+  [ac_cv_prog_cc_w_old_style_definition],
+  [save_CFLAGS="$CFLAGS"
+  CFLAGS="-Wold-style-definition"
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([[]])],
+                    [ac_cv_prog_cc_w_old_style_definition=yes],
+                    [ac_cv_prog_cc_w_old_style_definition=no])
+  CFLAGS="$save_CFLAGS"
+  ])
+if test $ac_cv_prog_cc_w_old_style_definition = yes ; then
+  strict1_warn="${strict1_warn} -Wold-style-definition"
+fi
+
 # If the native compiler is GCC, we can enable warnings even in stage1.  
 # That's useful for people building cross-compilers, or just running a
 # quick `make'.

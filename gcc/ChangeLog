@@ -1,3 +1,10 @@
+2004-03-24  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Makefile.in (STRICT2_WARN): Reorder.
+	* configure.ac: Check for -Wold-style-definition, and use it
+	in strict1_warn if it's available.
+	* configure: Regnerate.
+
 2004-03-24  Paul Brook  <paul@nowt.org>
 
 	* config.gcc <arm>: Add --with-abi=
