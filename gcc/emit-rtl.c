@@ -811,7 +811,7 @@ gen_lowpart_common (mode, x)
 	   && GET_CODE (x) == CONST_DOUBLE
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
-    return operand_subword (x, 0, 0, GET_MODE (x));
+    return operand_subword (x, word, 0, GET_MODE (x));
 
   /* Similarly, if this is converting a floating-point value into a
      two-word integer, we can do this one word at a time and make an
@@ -827,8 +827,10 @@ gen_lowpart_common (mode, x)
 	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
 	   && GET_MODE_BITSIZE (mode) == 2 * BITS_PER_WORD)
     {
-      rtx lowpart = operand_subword (x, WORDS_BIG_ENDIAN, 0, GET_MODE (x));
-      rtx highpart = operand_subword (x, ! WORDS_BIG_ENDIAN, 0, GET_MODE (x));
+      rtx lowpart
+	= operand_subword (x, word + WORDS_BIG_ENDIAN, 0, GET_MODE (x));
+      rtx highpart
+	= operand_subword (x, word + ! WORDS_BIG_ENDIAN, 0, GET_MODE (x));
 
       if (lowpart && GET_CODE (lowpart) == CONST_INT
 	  && highpart && GET_CODE (highpart) == CONST_INT)
