@@ -260,6 +260,7 @@ skip_comment (pfile, m)
 	      return EOF;
 	    }
 	  else if (c == '\n' || c == '\r')
+	    /* \r cannot be a macro escape marker here. */
 	    CPP_BUMP_LINE (pfile);
 	  else if (c == '/' && prev_c == '*')
 	    return ' ';
@@ -288,6 +289,7 @@ skip_comment (pfile, m)
 		  return ' ';
 		}
 	      else if (c == '\r')
+		/* \r cannot be a macro escape marker here. */
 		CPP_BUMP_LINE (pfile);
 	}
     }
@@ -323,6 +325,7 @@ copy_comment (pfile, m)
 	    }
 	  else if (c == '\r')
 	    {
+	      /* \r cannot be a macro escape marker here. */
 	      CPP_BUMP_LINE (pfile);
 	      continue;
 	    }
@@ -362,6 +365,7 @@ copy_comment (pfile, m)
 	      return ' ';
 	    }
 	  else if (c == '\r')
+	    /* \r cannot be a macro escape marker here. */
 	    CPP_BUMP_LINE (pfile);
 
 	  CPP_PUTC (pfile, c);
@@ -392,7 +396,17 @@ cpp_skip_hspace (pfile)
 	}
       else if (c == '\r')
 	{
-	  CPP_BUFFER (pfile)->lineno++;
+	  /* \r is a backslash-newline marker if !has_escapes, and
+	     a deletable-whitespace or no-reexpansion marker otherwise. */
+	  if (CPP_BUFFER (pfile)->has_escapes)
+	    {
+	      if (PEEKC() == ' ')
+		FORWARD(1);
+	      else
+		break;
+	    }
+	  else
+	    CPP_BUFFER (pfile)->lineno++;
 	}
       else if (c == '/' || c == '-')
 	{
@@ -400,22 +414,12 @@ cpp_skip_hspace (pfile)
 	  if (c == EOF)
 	    return;
 	  else if (c != ' ')
-	    {
-	      FORWARD(-1);
-	      return;
-	    }
-	}
-      else if (c == '@' && CPP_BUFFER (pfile)->has_escapes
-	       && PEEKC() == ' ')
-	{
-	  FORWARD(1);
+	    break;
 	}
       else
-	{
-	  FORWARD(-1);
-	  return;
-	}
+	break;
     }
+  FORWARD(-1);
 }
 
 /* Read the rest of the current line.
@@ -437,8 +441,13 @@ copy_rest_of_line (pfile)
 	  return;
 
 	case '\r':
-	  CPP_BUFFER (pfile)->lineno++;
-	  continue;
+	  if (CPP_BUFFER (pfile)->has_escapes)
+	    break;
+	  else
+	    {
+	      CPP_BUFFER (pfile)->lineno++;
+	      continue;
+	    }
 	case '\'':
 	case '\"':
 	  parse_string (pfile, c);
@@ -2233,9 +2242,23 @@ cpp_get_token (pfile)
 		    }
 		  else if (c == '\r')
 		    {
-		      /* Backslash newline is replaced by nothing. */
-		      CPP_ADJUST_WRITTEN (pfile, -1);
-		      CPP_BUMP_LINE (pfile);
+		      if (!CPP_BUFFER (pfile)->has_escapes)
+			{
+			  /* Backslash newline is replaced by nothing. */
+			  CPP_ADJUST_WRITTEN (pfile, -1);
+			  CPP_BUMP_LINE (pfile);
+			}
+		      else
+			{
+			  /* We might conceivably get \r- or \r<space> in
+			     here.  Just delete 'em. */
+			  int d = GETC();
+			  if (d != '-' && d != ' ')
+			    cpp_fatal (pfile,
+				  "internal error: unrecognized escape \\r%c",
+				       d);
+			  CPP_ADJUST_WRITTEN (pfile, -1);
+			}			  
 		    }
 		}
 	      return CPP_STRING;
@@ -2257,33 +2280,6 @@ cpp_get_token (pfile)
 	  CPP_NUL_TERMINATE_Q (pfile);
 	  pfile->only_seen_white = 0;
 	  return CPP_OTHER;
-
-	case '@':
-	  if (CPP_BUFFER (pfile)->has_escapes)
-	    {
-	      c = GETC ();
-	      if (c == '-')
-		{
-		  if (pfile->output_escapes)
-		    CPP_PUTS (pfile, "@-", 2);
-		  parse_name (pfile, GETC ());
-		  return CPP_NAME;
-		}
-	      else if (c == ' ')
-		{
-		  CPP_RESERVE (pfile, 2);
-		  if (pfile->output_escapes)
-		    CPP_PUTC_Q (pfile, '@');
-		  CPP_PUTC_Q (pfile, c);
-		  return CPP_HSPACE;
-		}
-	    }
-	  if (pfile->output_escapes)
-	    {
-	      CPP_PUTS (pfile, "@@", 2);
-	      return CPP_OTHER;
-	    }
-	  goto randomchar;
 
 	case '.':
 	  c2 = PEEKC ();
@@ -2410,13 +2406,13 @@ cpp_get_token (pfile)
 	    if (hp->type == T_DISABLED)
 	      {
 		if (pfile->output_escapes)
-		  { /* Return "@-IDENT", followed by '\0'.  */
+		  { /* Return "\r-IDENT", followed by '\0'.  */
 		    int i;
 		    CPP_RESERVE (pfile, 3);
 		    ident = pfile->token_buffer + before_name_written;
 		    CPP_ADJUST_WRITTEN (pfile, 2);
 		    for (i = ident_len; i >= 0; i--) ident[i+2] = ident[i];
-		    ident[0] = '@';
+		    ident[0] = '\r';
 		    ident[1] = '-';
 		  }
 		return CPP_NAME;
@@ -2490,13 +2486,38 @@ cpp_get_token (pfile)
 	    }
 	  return CPP_HSPACE;
 
-        case '\\':
-	  goto randomchar;
-
 	case '\r':
-	  /* Backslash newline is ignored. */
-	  CPP_BUMP_LINE (pfile);
-	  goto get_next;
+	  if (CPP_BUFFER (pfile)->has_escapes)
+	    {
+	      c = GETC ();
+	      if (c == '-')
+		{
+		  if (pfile->output_escapes)
+		    CPP_PUTS (pfile, "\r-", 2);
+		  parse_name (pfile, GETC ());
+		  return CPP_NAME;
+		}
+	      else if (c == ' ')
+		{
+		  CPP_RESERVE (pfile, 2);
+		  if (pfile->output_escapes)
+		    CPP_PUTC_Q (pfile, '\r');
+		  CPP_PUTC_Q (pfile, c);
+		  return CPP_HSPACE;
+		}
+	      else
+		{
+		  cpp_fatal (pfile,
+			     "internal error: unrecognized escape \\r%c", c);
+		  goto get_next;
+		}
+	    }
+	  else
+	    {
+	      /* Backslash newline is ignored. */
+	      CPP_BUMP_LINE (pfile);
+	      goto get_next;
+	    }
 
 	case '\n':
 	  CPP_PUTC (pfile, c);
@@ -2639,9 +2660,16 @@ parse_string (pfile, c)
 	  break;
 
 	case '\r':
-	  /* Backslash newline is replaced by nothing at all.  */
 	  CPP_ADJUST_WRITTEN (pfile, -1);
-	  CPP_BUMP_LINE (pfile);
+	  if (CPP_BUFFER (pfile)->has_escapes)
+	    {
+	      cpp_fatal (pfile,
+			 "internal error: \\r escape inside string constant");
+	      FORWARD(1);
+	    }
+	  else
+	    /* Backslash newline is replaced by nothing at all.  */
+	    CPP_BUMP_LINE (pfile);
 	  break;
 
 	case '\\':
@@ -2711,6 +2739,7 @@ parse_assertion (pfile)
 	  return 0;
 	}
       else if (c == '\r')
+	/* \r cannot be a macro escape here. */
 	CPP_BUMP_LINE (pfile);
       else
 	{

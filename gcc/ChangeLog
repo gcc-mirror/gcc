@@ -1,3 +1,18 @@
+1999-04-12 14:55 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* cpphash.c (collect_expansion, macroexpand,
+	push_macro_expansion): Make the escape character in macro
+	buffers '\r', not '@'.  Remove code to protect literal
+	occurences of the escape character; '\r' cannot appear
+	in a macro buffer unless we put it there.
+	* cpplib.c (skip_comment, copy_comment, cpp_skip_hspace,
+	copy_rest_of_line, cpp_get_token, parse_string,
+	parse_assertion): '\r' might be a backslash-newline marker, or
+	it might be a macro escape marker, depending on
+	CPP_BUFFER (pfile)->has_escapes.  '@' is not a special
+	character.
+	* cpplib.h: Update commentary.
+
 Mon Apr 12 09:30:03 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.h (target_fp_name, structure_size_string, arm_cpu_select):

@@ -124,12 +124,17 @@ struct cpp_buffer
   char seen_eof;
 
   /* True if buffer contains escape sequences.
-     Currently there are three kinds:
-     "@-" means following identifier should not be macro-expanded.
-     "@ " means a token-separator.  This turns into " " in final output
+     Currently there are two kinds:
+     "\r-" means following identifier should not be macro-expanded.
+     "\r " means a token-separator.  This turns into " " in final output
           if not stringizing and needed to separate tokens; otherwise nothing.
-     "@@" means a normal '@'.
-     (An '@' inside a string stands for itself and is never an escape.) */
+     Any other two-character sequence beginning with \r is an error.
+
+     If this is NOT set, then \r is a one-character escape meaning backslash
+     newline.  This is guaranteed not to occur in the middle of a token.
+     The two interpretations of \r do not conflict, because the two-character
+     escapes are used only in macro buffers, and backslash-newline is removed
+     from macro expansion text in collect_expansion and/or macarg.  */
   char has_escapes;
 };
 

@@ -304,10 +304,6 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
      leading and trailing newline-marker and final null.  */
   maxsize = (sizeof (DEFINITION)
 	     + (limit - p) + 5);
-  /* Occurrences of '@' get doubled, so allocate extra space for them.  */
-  while (p < limit)
-    if (*p++ == '@')
-      maxsize++;
   defn = (DEFINITION *) xcalloc (1, maxsize);
 
   defn->nargs = nargs;
@@ -318,7 +314,7 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 
   /* Add one initial space escape-marker to prevent accidental
      token-pasting (often removed by macroexpand).  */
-  *exp_p++ = '@';
+  *exp_p++ = '\r';
   *exp_p++ = ' ';
 
   if (limit - p >= 2 && p[0] == '#' && p[1] == '#')
@@ -357,13 +353,6 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 		     and makes next char ordinary.  */
 		  *exp_p++ = *p++;
 		}
-	      break;
-
-	    case '@':
-	      /* An '@' in a string or character constant stands for itself,
-	         and does not need to be escaped.  */
-	      if (!expected_delimiter)
-		*exp_p++ = c;
 	      break;
 
 	    case '#':
@@ -548,10 +537,10 @@ collect_expansion (pfile, buf, limit, nargs, arglist)
 
   if (!CPP_TRADITIONAL (pfile) && expected_delimiter == 0)
     {
-      /* If ANSI, put in a "@ " marker to prevent token pasting.
+      /* If ANSI, put in a "\r " marker to prevent token pasting.
          But not if "inside a string" (which in ANSI mode
          happens only for -D option).  */
-      *exp_p++ = '@';
+      *exp_p++ = '\r';
       *exp_p++ = ' ';
     }
 
@@ -965,7 +954,7 @@ special_symbol (hp, pfile)
       if (!buf)
 	return;
       if (*buf == '\0')
-	buf = "@ ";
+	buf = "\r ";
 
       len = strlen (buf);
       CPP_RESERVE (pfile, len + 1);
@@ -1224,9 +1213,9 @@ macroexpand (pfile, hp)
 			  if (is_space[c])
 			    {
 			      if (CPP_WRITTEN (pfile) > (unsigned) arg->stringified
-				  && (CPP_PWRITTEN (pfile))[-1] == '@')
+				  && (CPP_PWRITTEN (pfile))[-1] == '\r')
 				{
-				  /* "@ " escape markers are removed */
+				  /* "\r " escape markers are removed */
 				  CPP_ADJUST_WRITTEN (pfile, -1);
 				  continue;
 				}
@@ -1360,27 +1349,11 @@ macroexpand (pfile, hp)
 		    {
 		      if (is_space[l1[-1]])
 			l1--;
-		      else if (l1[-1] == '@')
-			{
-			  U_CHAR *p2 = l1 - 1;
-			  /* If whitespace is preceded by an odd number
-			     of `@' signs, the last `@' was a whitespace
-			     marker; drop it too. */
-			  while (p2 != p1 && p2[0] == '@')
-			    p2--;
-			  if ((l1 - p2) & 1)
-			    l1--;
-			  break;
-			}
+		      else if (l1[-1] == '\r')
+			l1--;
 		      else if (l1[-1] == '-')
 			{
-			  U_CHAR *p2 = l1 - 1;
-			  /* If a `-' is preceded by an odd number of
-			     `@' signs then it and the last `@' are
-			     a no-reexpansion marker.  */
-			  while (p2 != p1 && p2[0] == '@')
-			    p2--;
-			  if ((l1 - p2) & 1)
+			  if (l1 != p1 + 1 && l1[-2] == '\r')
 			    l1 -= 2;
 			  else
 			    break;
@@ -1392,7 +1365,7 @@ macroexpand (pfile, hp)
 
 	      /* Delete any no-reexpansion marker that precedes
 	         an identifier at the beginning of the argument. */
-	      if (p1[0] == '@' && p1[1] == '-')
+	      if (p1[0] == '\r' && p1[1] == '-')
 		p1 += 2;
 
 	      bcopy (p1, xbuf + totlen, l1 - p1);
@@ -1405,7 +1378,7 @@ macroexpand (pfile, hp)
 		  && !CPP_TRADITIONAL (pfile)
 		  && unsafe_chars (xbuf[totlen - 1], expanded[0]))
 		{
-		  xbuf[totlen++] = '@';
+		  xbuf[totlen++] = '\r';
 		  xbuf[totlen++] = ' ';
 		}
 
@@ -1416,7 +1389,7 @@ macroexpand (pfile, hp)
 		  && !CPP_TRADITIONAL (pfile)
 		  && unsafe_chars (xbuf[totlen - 1], exp[offset]))
 		{
-		  xbuf[totlen++] = '@';
+		  xbuf[totlen++] = '\r';
 		  xbuf[totlen++] = ' ';
 		}
 
@@ -1533,7 +1506,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
   mbuf->cleanup = macro_cleanup;
   mbuf->data = hp;
 
-  /* The first chars of the expansion should be a "@ " added by
+  /* The first chars of the expansion should be a "\r " added by
      collect_expansion.  This is to prevent accidental token-pasting
      between the text preceding the macro invocation, and the macro
      expansion text.
@@ -1551,7 +1524,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
      Also, we don't need the extra space if the first char is '(',
      or some other (less common) characters.  */
 
-  if (xbuf[0] == '@' && xbuf[1] == ' '
+  if (xbuf[0] == '\r' && xbuf[1] == ' '
       && (is_idchar[xbuf[2]] || xbuf[2] == '(' || xbuf[2] == '\''
 	  || xbuf[2] == '\"'))
     mbuf->cur += 2;
@@ -1560,7 +1533,7 @@ push_macro_expansion (pfile, xbuf, xbuf_len, hp)
      if this is safe.  We can do a better job here since we can know
      what the next char will be.  */
   if (xbuf_len >= 3
-      && mbuf->rlimit[-2] == '@'
+      && mbuf->rlimit[-2] == '\r'
       && mbuf->rlimit[-1] == ' ')
     {
       int c1 = mbuf->rlimit[-3];
