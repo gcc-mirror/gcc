@@ -1,5 +1,10 @@
 2004-06-11  Zack Weinberg  <zack@codesourcery.com>
 
+	* c-typeck.c (default_function_array_conversion): Use
+	build_pointer_type not TYPE_POINTER_TO.
+
+2004-06-11  Zack Weinberg  <zack@codesourcery.com>
+
 	* configure.ac: Don't invoke ACX_HEADER_STDBOOL.
 	* configure, config.in: Regenerate.
 	* system.h: Unconditionally define bool as unsigned char,
