@@ -1480,7 +1480,7 @@ finalize_pic ()
 			gen_rtx (HIGH, Pmode, pic_pc_rtx)));
 
   /* Note that we pun calls and jumps here!  */
-  emit_jump_insn (gen_get_pc_sp32 (l2, l1));
+  emit_jump_insn (gen_get_pc_via_call (l2, l1));
 
   emit_label (l2);
 
