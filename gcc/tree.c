@@ -3759,7 +3759,7 @@ type_hash_add (hashcode, type)
 {
   register struct type_hash *h;
 
-  h = (struct type_hash *) oballoc (sizeof (struct type_hash));
+  h = (struct type_hash *) permalloc (sizeof (struct type_hash));
   h->hashcode = hashcode;
   h->type = type;
   h->next = type_hash_table[hashcode % TYPE_HASH_SIZE];
