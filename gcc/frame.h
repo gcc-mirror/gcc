@@ -1,6 +1,6 @@
 /* Header file for unwinding stack frames for exception handling.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+/* Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@cygnus.com>.
 
 This file is part of GNU CC.
@@ -30,11 +30,13 @@ typedef struct frame_state
   void *cfa;
   void *eh_ptr;
   long cfa_offset;
+  long base_offset;
   long args_size;
   long reg_or_offset[DWARF_FRAME_REGISTERS+1];
   unsigned short cfa_reg;
   unsigned short retaddr_column;
   char saved[DWARF_FRAME_REGISTERS+1];
+  char indirect;
 } frame_state;
 
 /* Values for 'saved' above.  */

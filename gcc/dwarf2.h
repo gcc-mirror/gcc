@@ -497,6 +497,8 @@ enum dwarf_call_frame_info
     DW_CFA_def_cfa = 0x0c,
     DW_CFA_def_cfa_register = 0x0d,
     DW_CFA_def_cfa_offset = 0x0e,
+    DW_CFA_def_cfa_expression = 0x0f,
+    DW_CFA_expression = 0x10,
     /* SGI/MIPS specific */
     DW_CFA_MIPS_advance_loc8 = 0x1d,
 

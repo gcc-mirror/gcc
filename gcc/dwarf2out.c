@@ -105,6 +105,7 @@ typedef union dw_cfi_oprnd_struct
   unsigned long dw_cfi_reg_num;
   long int dw_cfi_offset;
   const char *dw_cfi_addr;
+  struct dw_loc_descr_struct *dw_cfi_loc;
 }
 dw_cfi_oprnd;
 
@@ -116,6 +117,19 @@ typedef struct dw_cfi_struct
   dw_cfi_oprnd dw_cfi_oprnd2;
 }
 dw_cfi_node;
+
+/* This is how we define the location of the CFA. We use to handle it
+   as REG + OFFSET all the time,  but now it can be more complex.
+   It can now be either REG + CFA_OFFSET or *(REG + BASE_OFFSET) + CFA_OFFSET.
+   Instead of passing around REG and OFFSET, we pass a copy 
+   of this structure.  */
+typedef struct cfa_loc
+{
+  unsigned long reg;  
+  long offset;
+  long base_offset;
+  int indirect;            /* 1 if CFA is accessed via a dereference.  */
+} dw_cfa_location;
 
 /* All call frame descriptions (FDE's) in the GCC generated DWARF
    refer to a single Common Information Entry (CIE), defined at
@@ -222,17 +236,23 @@ static unsigned long size_of_sleb128	PARAMS ((long));
 static void output_uleb128		PARAMS ((unsigned long));
 static void output_sleb128		PARAMS ((long));
 static void add_fde_cfi			PARAMS ((const char *, dw_cfi_ref));
-static void lookup_cfa_1		PARAMS ((dw_cfi_ref, unsigned long *,
-						 long *));
-static void lookup_cfa			PARAMS ((unsigned long *, long *));
+static void lookup_cfa_1		PARAMS ((dw_cfi_ref, dw_cfa_location *));
+static void lookup_cfa			PARAMS ((dw_cfa_location *));
 static void reg_save			PARAMS ((const char *, unsigned,
 						 unsigned, long));
 static void initial_return_save		PARAMS ((rtx));
 static void output_cfi			PARAMS ((dw_cfi_ref, dw_fde_ref));
 static void output_call_frame_info	PARAMS ((int));
-static unsigned int reg_number		PARAMS ((rtx));
 static void dwarf2out_stack_adjust	PARAMS ((rtx));
 static void dwarf2out_frame_debug_expr	PARAMS ((rtx, const char *));
+
+/* Support for complex CFA locations.  */
+static void output_cfa_loc 		PARAMS ((dw_cfi_ref));
+static void get_cfa_from_loc_descr 	PARAMS ((dw_cfa_location *, 
+					        struct dw_loc_descr_struct *));
+static struct dw_loc_descr_struct *build_cfa_loc
+					PARAMS ((dw_cfa_location *));
+static void def_cfa_1		 	PARAMS ((const char *, dw_cfa_location *));
 
 /* Definitions of defaults for assembler-dependent names of various
    pseudo-ops and section names.
@@ -570,24 +590,6 @@ stripattributes (s)
   return stripped;
 }
 
-/* Return the register number described by a given RTL node.  */
-
-static unsigned int
-reg_number (rtl)
-     register rtx rtl;
-{
-  register unsigned regno = REGNO (rtl);
-
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    {
-      warning ("internal regno botch: regno = %d\n", regno);
-      regno = 0;
-    }
-
-  regno = DBX_REGISTER_NUMBER (regno);
-  return regno;
-}
-
 /* Generate code to initialize the register size table.  */
 
 void
@@ -654,6 +656,8 @@ dwarf_cfi_name (cfi_opc)
       return "DW_CFA_def_cfa_register";
     case DW_CFA_def_cfa_offset:
       return "DW_CFA_def_cfa_offset";
+    case DW_CFA_def_cfa_expression:
+      return "DW_CFA_def_cfa_expression";
 
     /* SGI/MIPS specific */
     case DW_CFA_MIPS_advance_loc8:
@@ -755,22 +759,24 @@ add_fde_cfi (label, cfi)
 /* Subroutine of lookup_cfa.  */
 
 static inline void
-lookup_cfa_1 (cfi, regp, offsetp)
+lookup_cfa_1 (cfi, loc)
      register dw_cfi_ref cfi;
-     register unsigned long *regp;
-     register long *offsetp;
+     register dw_cfa_location *loc;
 {
   switch (cfi->dw_cfi_opc)
     {
     case DW_CFA_def_cfa_offset:
-      *offsetp = cfi->dw_cfi_oprnd1.dw_cfi_offset;
+      loc->offset = cfi->dw_cfi_oprnd1.dw_cfi_offset;
       break;
     case DW_CFA_def_cfa_register:
-      *regp = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
+      loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
       break;
     case DW_CFA_def_cfa:
-      *regp = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
-      *offsetp = cfi->dw_cfi_oprnd2.dw_cfi_offset;
+      loc->reg = cfi->dw_cfi_oprnd1.dw_cfi_reg_num;
+      loc->offset = cfi->dw_cfi_oprnd2.dw_cfi_offset;
+      break;
+    case DW_CFA_def_cfa_expression:
+      get_cfa_from_loc_descr (loc, cfi->dw_cfi_oprnd1.dw_cfi_loc);
       break;
     default:
       break;
@@ -780,34 +786,33 @@ lookup_cfa_1 (cfi, regp, offsetp)
 /* Find the previous value for the CFA.  */
 
 static void
-lookup_cfa (regp, offsetp)
-     register unsigned long *regp;
-     register long *offsetp;
+lookup_cfa (loc)
+     register dw_cfa_location *loc;
 {
   register dw_cfi_ref cfi;
 
-  *regp = (unsigned long) -1;
-  *offsetp = 0;
+  loc->reg = (unsigned long) -1;
+  loc->offset = 0;
+  loc->indirect = 0;
+  loc->base_offset = 0;
 
   for (cfi = cie_cfi_head; cfi; cfi = cfi->dw_cfi_next)
-    lookup_cfa_1 (cfi, regp, offsetp);
+    lookup_cfa_1 (cfi, loc);
 
   if (fde_table_in_use)
     {
       register dw_fde_ref fde = &fde_table[fde_table_in_use - 1];
       for (cfi = fde->dw_fde_cfi; cfi; cfi = cfi->dw_cfi_next)
-	lookup_cfa_1 (cfi, regp, offsetp);
+	lookup_cfa_1 (cfi, loc);
     }
 }
 
 /* The current rule for calculating the DWARF2 canonical frame address.  */
-static unsigned long cfa_reg;
-static long cfa_offset;
+dw_cfa_location cfa;
 
 /* The register used for saving registers to the stack, and its offset
    from the CFA.  */
-static unsigned cfa_store_reg;
-static long cfa_store_offset;
+dw_cfa_location cfa_store;
 
 /* The running total of the size of arguments pushed onto the stack.  */
 static long args_size;
@@ -822,45 +827,75 @@ static long old_args_size;
 void
 dwarf2out_def_cfa (label, reg, offset)
      register const char *label;
-     register unsigned reg;
-     register long offset;
+     unsigned reg;
+     long offset;
+{
+  dw_cfa_location loc;
+  loc.indirect = 0;
+  loc.base_offset = 0;
+  loc.reg = reg;
+  loc.offset = offset;
+  def_cfa_1 (label, &loc);
+}
+
+/* This routine does the actual work. The CFA is now calculated from
+   the dw_cfa_location structure.  */
+static void
+def_cfa_1 (label, loc_p)
+     register const char *label;
+     dw_cfa_location *loc_p;
 {
   register dw_cfi_ref cfi;
-  unsigned long old_reg;
-  long old_offset;
+  dw_cfa_location old_cfa, loc;
 
-  cfa_reg = reg;
-  cfa_offset = offset;
-  if (cfa_store_reg == reg)
-    cfa_store_offset = offset;
+  cfa = *loc_p;
+  loc = *loc_p;
 
-  reg = DWARF_FRAME_REGNUM (reg);
-  lookup_cfa (&old_reg, &old_offset);
+  if (cfa_store.reg == loc.reg && loc.indirect == 0)
+    cfa_store.offset = loc.offset;
 
-  if (reg == old_reg && offset == old_offset)
-    return;
+  loc.reg = DWARF_FRAME_REGNUM (loc.reg);
+  lookup_cfa (&old_cfa);
+
+  if (loc.reg == old_cfa.reg && loc.offset == old_cfa.offset &&
+      loc.indirect == old_cfa.indirect)
+    {
+      if (loc.indirect == 0)
+	return;
+      else 
+        if (loc.base_offset == old_cfa.base_offset)
+	  return;
+    }
 
   cfi = new_cfi ();
 
-  if (reg == old_reg)
+  if (loc.reg == old_cfa.reg && loc.indirect == old_cfa.indirect)
     {
       cfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
-      cfi->dw_cfi_oprnd1.dw_cfi_offset = offset;
+      cfi->dw_cfi_oprnd1.dw_cfi_offset = loc.offset;
     }
 
 #ifndef MIPS_DEBUGGING_INFO  /* SGI dbx thinks this means no offset.  */
-  else if (offset == old_offset && old_reg != (unsigned long) -1)
+  else if (loc.offset == old_cfa.offset && old_cfa.reg != (unsigned long) -1
+	   && loc.indirect == old_cfa.indirect)
     {
       cfi->dw_cfi_opc = DW_CFA_def_cfa_register;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
     }
 #endif
 
-  else
+  else if (loc.indirect == 0)
     {
       cfi->dw_cfi_opc = DW_CFA_def_cfa;
-      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = reg;
-      cfi->dw_cfi_oprnd2.dw_cfi_offset = offset;
+      cfi->dw_cfi_oprnd1.dw_cfi_reg_num = loc.reg;
+      cfi->dw_cfi_oprnd2.dw_cfi_offset = loc.offset;
+    }
+  else
+    {
+      struct dw_loc_descr_struct * loc_list;
+      cfi->dw_cfi_opc = DW_CFA_def_cfa_expression;
+      loc_list = build_cfa_loc (&loc);
+      cfi->dw_cfi_oprnd1.dw_cfi_loc = loc_list;
     }
 
   add_fde_cfi (label, cfi);
@@ -1035,7 +1070,7 @@ initial_return_save (rtl)
       abort ();
     }
 
-  reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa_offset);
+  reg_save (NULL, DWARF_FRAME_RETURN_COLUMN, reg, offset - cfa.offset);
 }
 
 /* Check INSN to see if it looks like a push or a stack adjustment, and
@@ -1066,7 +1101,7 @@ dwarf2out_stack_adjust (insn)
   /* If only calls can throw, and we have a frame pointer,
      save up adjustments until we see the CALL_INSN.  */
   else if (! asynchronous_exceptions
-	   && cfa_reg != STACK_POINTER_REGNUM)
+	   && cfa.reg != STACK_POINTER_REGNUM)
     return;
 
   if (GET_CODE (insn) == BARRIER)
@@ -1124,8 +1159,8 @@ dwarf2out_stack_adjust (insn)
   if (offset == 0)
     return;
 
-  if (cfa_reg == STACK_POINTER_REGNUM)
-    cfa_offset += offset;
+  if (cfa.reg == STACK_POINTER_REGNUM)
+    cfa.offset += offset;
 
 #ifndef STACK_GROWS_DOWNWARD
   offset = -offset;
@@ -1135,7 +1170,7 @@ dwarf2out_stack_adjust (insn)
     args_size = 0;
 
   label = dwarf2out_cfi_label ();
-  dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+  def_cfa_1 (label, &cfa);
   dwarf2out_args_size (label, args_size);
 }
 
@@ -1194,14 +1229,14 @@ dwarf2out_frame_debug_expr (expr, label)
         {
           /* Setting FP from SP.  */
         case REG:
-          if (cfa_reg != (unsigned) REGNO (src))
+          if (cfa.reg != (unsigned) REGNO (src))
             abort ();
 
 	  /* We used to require that dest be either SP or FP, but the
 	     ARM copies SP to a temporary register, and from there to
 	     FP.  So we just rely on the backends to only set
 	     RTX_FRAME_RELATED_P on appropriate insns.  */
-          cfa_reg = REGNO (dest);
+          cfa.reg = REGNO (dest);
           break;
 
         case PLUS:
@@ -1226,19 +1261,19 @@ dwarf2out_frame_debug_expr (expr, label)
 	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
 		{
 		  /* Restoring SP from FP in the epilogue.  */
-		  if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
+		  if (cfa.reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
 		    abort ();
-		  cfa_reg = STACK_POINTER_REGNUM;
+		  cfa.reg = STACK_POINTER_REGNUM;
 		}
 	      else if (XEXP (src, 0) != stack_pointer_rtx)
 		abort ();
 
 	      if (GET_CODE (src) == PLUS)
 		offset = -offset;
-	      if (cfa_reg == STACK_POINTER_REGNUM)
-		cfa_offset += offset;
-	      if (cfa_store_reg == STACK_POINTER_REGNUM)
-		cfa_store_offset += offset;
+	      if (cfa.reg == STACK_POINTER_REGNUM)
+		cfa.offset += offset;
+	      if (cfa_store.reg == STACK_POINTER_REGNUM)
+		cfa_store.offset += offset;
             }
           else if (dest == hard_frame_pointer_rtx)
             {
@@ -1248,14 +1283,14 @@ dwarf2out_frame_debug_expr (expr, label)
 		abort ();
 
 	      if (GET_CODE (XEXP (src, 0)) == REG
-		  && (unsigned) REGNO (XEXP (src, 0)) == cfa_reg
+		  && (unsigned) REGNO (XEXP (src, 0)) == cfa.reg
 		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
 		{
 		  offset = INTVAL (XEXP (src, 1));
 		  if (GET_CODE (src) == PLUS)
 		    offset = -offset;
-		  cfa_offset += offset;
-		  cfa_reg = HARD_FRAME_POINTER_REGNUM;
+		  cfa.offset += offset;
+		  cfa.reg = HARD_FRAME_POINTER_REGNUM;
 		}
 	      else 
 		abort();
@@ -1268,10 +1303,10 @@ dwarf2out_frame_debug_expr (expr, label)
 	      if (GET_CODE (XEXP (src, 0)) != REG
 		  || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
 		abort ();
-	      if (cfa_reg != STACK_POINTER_REGNUM)
+	      if (cfa.reg != STACK_POINTER_REGNUM)
 		abort ();
-	      cfa_store_reg = REGNO (dest);
-	      cfa_store_offset = cfa_offset - cfa_temp_value;
+	      cfa_store.reg = REGNO (dest);
+	      cfa_store.offset = cfa.offset - cfa_temp_value;
             }
           break;
 
@@ -1292,7 +1327,7 @@ dwarf2out_frame_debug_expr (expr, label)
         default:
           abort ();
         }
-      dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+      def_cfa_1 (label, &cfa);
       break;
 
       /* Skip over HIGH, assuming it will be followed by a LO_SUM, which
@@ -1306,10 +1341,36 @@ dwarf2out_frame_debug_expr (expr, label)
       break;
 
     case MEM:
-      /* Saving a register to the stack.  Make sure dest is relative to the
-	 CFA register.  */
       if (GET_CODE (src) != REG)
 	abort ();
+
+      /* If the src is our current CFA, and it isn't the SP or FP, then we're
+         going to have to use an indrect mechanism.  */
+      if (REGNO (src) != STACK_POINTER_REGNUM 
+	  && REGNO (src) != HARD_FRAME_POINTER_REGNUM 
+	  && (unsigned) REGNO (src) == cfa.reg)
+	{
+	  /* We currently allow this to be ONLY a MEM or MEM + offset.  */
+	  rtx x = XEXP (dest, 0);
+	  int offset = 0;
+	  if (GET_CODE (x) == PLUS || GET_CODE (x) ==  MINUS)
+	    {
+	      offset = INTVAL (XEXP (x, 1));
+	      if (GET_CODE (x) == MINUS)
+		offset = -offset;
+	      x = XEXP (x, 0);
+	    }
+	  if (GET_CODE (x) != REG)
+	    abort ();
+	  cfa.reg = (unsigned) REGNO (x);
+	  cfa.base_offset = offset;
+	  cfa.indirect = 1;
+	  def_cfa_1 (label, &cfa);
+	  break;
+	}
+
+      /* Saving a register to the stack.  Make sure dest is relative to the
+	 CFA register.  */
       switch (GET_CODE (XEXP (dest, 0)))
 	{
 	  /* With a push.  */
@@ -1320,13 +1381,13 @@ dwarf2out_frame_debug_expr (expr, label)
 	    offset = -offset;
 
 	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
-	      || cfa_store_reg != STACK_POINTER_REGNUM)
+	      || cfa_store.reg != STACK_POINTER_REGNUM)
 	    abort ();
-	  cfa_store_offset += offset;
-	  if (cfa_reg == STACK_POINTER_REGNUM)
-	    cfa_offset = cfa_store_offset;
+	  cfa_store.offset += offset;
+	  if (cfa.reg == STACK_POINTER_REGNUM)
+	    cfa.offset = cfa_store.offset;
 
-	  offset = -cfa_store_offset;
+	  offset = -cfa_store.offset;
 	  break;
 
 	  /* With an offset.  */
@@ -1336,22 +1397,22 @@ dwarf2out_frame_debug_expr (expr, label)
 	  if (GET_CODE (XEXP (dest, 0)) == MINUS)
 	    offset = -offset;
 
-	  if (cfa_store_reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
+	  if (cfa_store.reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
 	    abort ();
-	  offset -= cfa_store_offset;
+	  offset -= cfa_store.offset;
 	  break;
 
 	  /* Without an offset.  */
 	case REG:
-	  if (cfa_store_reg != REGNO (XEXP (dest, 0)))
+	  if (cfa_store.reg != (unsigned) REGNO (XEXP (dest, 0)))
 	    abort();
-	  offset = -cfa_store_offset;
+	  offset = -cfa_store.offset;
 	  break;
 
 	default:
 	  abort ();
 	}
-      dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+      def_cfa_1 (label, &cfa);
       dwarf2out_reg_save (label, REGNO (src), offset);
       break;
 
@@ -1375,12 +1436,11 @@ dwarf2out_frame_debug (insn)
   if (insn == NULL_RTX)
     {
       /* Set up state for generating call frame debug info.  */
-      lookup_cfa (&cfa_reg, &cfa_offset);
-      if (cfa_reg != (unsigned long) DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
+      lookup_cfa (&cfa);
+      if (cfa.reg != (unsigned long) DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
 	abort ();
-      cfa_reg = STACK_POINTER_REGNUM;
-      cfa_store_reg = cfa_reg;
-      cfa_store_offset = cfa_offset;
+      cfa.reg = STACK_POINTER_REGNUM;
+      cfa_store = cfa;
       cfa_temp_reg = -1;
       cfa_temp_value = 0;
       return;
@@ -1618,6 +1678,9 @@ output_cfi (cfi, fde)
 	case DW_CFA_GNU_args_size:
 	  output_uleb128 (cfi->dw_cfi_oprnd1.dw_cfi_offset);
           fputc ('\n', asm_out_file);
+	  break;
+	case DW_CFA_def_cfa_expression:
+	  output_cfa_loc (cfi);
 	  break;
 	default:
 	  break;
@@ -1964,20 +2027,13 @@ dwarf2out_frame_finish ()
     output_call_frame_info (1);  
 #endif
 }  
+
+/* And now, the subset of the debugging information support code necessary
+   for emitting location expressions.  */
 
-#endif /* .debug_frame support */
-
-/* And now, the support for symbolic debugging information.  */
-#ifdef DWARF2_DEBUGGING_INFO
-
-/* NOTE: In the comments in this file, many references are made to
-   "Debugging Information Entries".  This term is abbreviated as `DIE'
-   throughout the remainder of this file.  */
-
-/* An internal representation of the DWARF output is built, and then
-   walked to generate the DWARF debugging info.  The walk of the internal
-   representation is done after the entire program has been compiled.
-   The types below are used to describe the internal representation.  */
+typedef struct dw_val_struct *dw_val_ref;
+typedef struct die_struct *dw_die_ref;
+typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
 
 /* Each DIE may have a series of attribute/value pairs.  Values
    can take on several forms.  The forms that are used in this
@@ -2000,22 +2056,6 @@ typedef enum
 }
 dw_val_class;
 
-/* Various DIE's use offsets relative to the beginning of the
-   .debug_info section to refer to each other.  */
-
-typedef long int dw_offset;
-
-/* Define typedefs here to avoid circular dependencies.  */
-
-typedef struct die_struct *dw_die_ref;
-typedef struct dw_attr_struct *dw_attr_ref;
-typedef struct dw_val_struct *dw_val_ref;
-typedef struct dw_line_info_struct *dw_line_info_ref;
-typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
-typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
-typedef struct pubname_struct *pubname_ref;
-typedef dw_die_ref *arange_ref;
-
 /* Describe a double word constant value.  */
 /* ??? Every instance of long_long in the code really means CONST_DOUBLE.  */
 
@@ -2034,28 +2074,6 @@ typedef struct dw_fp_struct
   unsigned length;
 }
 dw_float_const;
-
-/* Each entry in the line_info_table maintains the file and
-   line number associated with the label generated for that
-   entry.  The label gives the PC value associated with
-   the line number entry.  */
-
-typedef struct dw_line_info_struct
-{
-  unsigned long dw_file_num;
-  unsigned long dw_line_num;
-}
-dw_line_info_entry;
-
-/* Line information for functions in separate sections; each one gets its
-   own sequence.  */
-typedef struct dw_separate_line_info_struct
-{
-  unsigned long dw_file_num;
-  unsigned long dw_line_num;
-  unsigned long function;
-}
-dw_separate_line_info_entry;
 
 /* The dw_val_node describes an attribute's value, as it is
    represented internally.  */
@@ -2092,6 +2110,820 @@ typedef struct dw_loc_descr_struct
   dw_val_node dw_loc_oprnd2;
 }
 dw_loc_descr_node;
+
+static const char *dwarf_stack_op_name	PARAMS ((unsigned));
+static dw_loc_descr_ref new_loc_descr	PARAMS ((enum dwarf_location_atom,
+						 unsigned long,
+						 unsigned long));
+static void add_loc_descr		PARAMS ((dw_loc_descr_ref *,
+						 dw_loc_descr_ref));
+static unsigned long size_of_loc_descr	PARAMS ((dw_loc_descr_ref));
+static unsigned long size_of_locs	PARAMS ((dw_loc_descr_ref));
+static void output_loc_operands		PARAMS ((dw_loc_descr_ref));
+static void output_loc_sequence		PARAMS ((dw_loc_descr_ref));
+
+/* Convert a DWARF stack opcode into its string name.  */
+
+static const char *
+dwarf_stack_op_name (op)
+     register unsigned op;
+{
+  switch (op)
+    {
+    case DW_OP_addr:
+      return "DW_OP_addr";
+    case DW_OP_deref:
+      return "DW_OP_deref";
+    case DW_OP_const1u:
+      return "DW_OP_const1u";
+    case DW_OP_const1s:
+      return "DW_OP_const1s";
+    case DW_OP_const2u:
+      return "DW_OP_const2u";
+    case DW_OP_const2s:
+      return "DW_OP_const2s";
+    case DW_OP_const4u:
+      return "DW_OP_const4u";
+    case DW_OP_const4s:
+      return "DW_OP_const4s";
+    case DW_OP_const8u:
+      return "DW_OP_const8u";
+    case DW_OP_const8s:
+      return "DW_OP_const8s";
+    case DW_OP_constu:
+      return "DW_OP_constu";
+    case DW_OP_consts:
+      return "DW_OP_consts";
+    case DW_OP_dup:
+      return "DW_OP_dup";
+    case DW_OP_drop:
+      return "DW_OP_drop";
+    case DW_OP_over:
+      return "DW_OP_over";
+    case DW_OP_pick:
+      return "DW_OP_pick";
+    case DW_OP_swap:
+      return "DW_OP_swap";
+    case DW_OP_rot:
+      return "DW_OP_rot";
+    case DW_OP_xderef:
+      return "DW_OP_xderef";
+    case DW_OP_abs:
+      return "DW_OP_abs";
+    case DW_OP_and:
+      return "DW_OP_and";
+    case DW_OP_div:
+      return "DW_OP_div";
+    case DW_OP_minus:
+      return "DW_OP_minus";
+    case DW_OP_mod:
+      return "DW_OP_mod";
+    case DW_OP_mul:
+      return "DW_OP_mul";
+    case DW_OP_neg:
+      return "DW_OP_neg";
+    case DW_OP_not:
+      return "DW_OP_not";
+    case DW_OP_or:
+      return "DW_OP_or";
+    case DW_OP_plus:
+      return "DW_OP_plus";
+    case DW_OP_plus_uconst:
+      return "DW_OP_plus_uconst";
+    case DW_OP_shl:
+      return "DW_OP_shl";
+    case DW_OP_shr:
+      return "DW_OP_shr";
+    case DW_OP_shra:
+      return "DW_OP_shra";
+    case DW_OP_xor:
+      return "DW_OP_xor";
+    case DW_OP_bra:
+      return "DW_OP_bra";
+    case DW_OP_eq:
+      return "DW_OP_eq";
+    case DW_OP_ge:
+      return "DW_OP_ge";
+    case DW_OP_gt:
+      return "DW_OP_gt";
+    case DW_OP_le:
+      return "DW_OP_le";
+    case DW_OP_lt:
+      return "DW_OP_lt";
+    case DW_OP_ne:
+      return "DW_OP_ne";
+    case DW_OP_skip:
+      return "DW_OP_skip";
+    case DW_OP_lit0:
+      return "DW_OP_lit0";
+    case DW_OP_lit1:
+      return "DW_OP_lit1";
+    case DW_OP_lit2:
+      return "DW_OP_lit2";
+    case DW_OP_lit3:
+      return "DW_OP_lit3";
+    case DW_OP_lit4:
+      return "DW_OP_lit4";
+    case DW_OP_lit5:
+      return "DW_OP_lit5";
+    case DW_OP_lit6:
+      return "DW_OP_lit6";
+    case DW_OP_lit7:
+      return "DW_OP_lit7";
+    case DW_OP_lit8:
+      return "DW_OP_lit8";
+    case DW_OP_lit9:
+      return "DW_OP_lit9";
+    case DW_OP_lit10:
+      return "DW_OP_lit10";
+    case DW_OP_lit11:
+      return "DW_OP_lit11";
+    case DW_OP_lit12:
+      return "DW_OP_lit12";
+    case DW_OP_lit13:
+      return "DW_OP_lit13";
+    case DW_OP_lit14:
+      return "DW_OP_lit14";
+    case DW_OP_lit15:
+      return "DW_OP_lit15";
+    case DW_OP_lit16:
+      return "DW_OP_lit16";
+    case DW_OP_lit17:
+      return "DW_OP_lit17";
+    case DW_OP_lit18:
+      return "DW_OP_lit18";
+    case DW_OP_lit19:
+      return "DW_OP_lit19";
+    case DW_OP_lit20:
+      return "DW_OP_lit20";
+    case DW_OP_lit21:
+      return "DW_OP_lit21";
+    case DW_OP_lit22:
+      return "DW_OP_lit22";
+    case DW_OP_lit23:
+      return "DW_OP_lit23";
+    case DW_OP_lit24:
+      return "DW_OP_lit24";
+    case DW_OP_lit25:
+      return "DW_OP_lit25";
+    case DW_OP_lit26:
+      return "DW_OP_lit26";
+    case DW_OP_lit27:
+      return "DW_OP_lit27";
+    case DW_OP_lit28:
+      return "DW_OP_lit28";
+    case DW_OP_lit29:
+      return "DW_OP_lit29";
+    case DW_OP_lit30:
+      return "DW_OP_lit30";
+    case DW_OP_lit31:
+      return "DW_OP_lit31";
+    case DW_OP_reg0:
+      return "DW_OP_reg0";
+    case DW_OP_reg1:
+      return "DW_OP_reg1";
+    case DW_OP_reg2:
+      return "DW_OP_reg2";
+    case DW_OP_reg3:
+      return "DW_OP_reg3";
+    case DW_OP_reg4:
+      return "DW_OP_reg4";
+    case DW_OP_reg5:
+      return "DW_OP_reg5";
+    case DW_OP_reg6:
+      return "DW_OP_reg6";
+    case DW_OP_reg7:
+      return "DW_OP_reg7";
+    case DW_OP_reg8:
+      return "DW_OP_reg8";
+    case DW_OP_reg9:
+      return "DW_OP_reg9";
+    case DW_OP_reg10:
+      return "DW_OP_reg10";
+    case DW_OP_reg11:
+      return "DW_OP_reg11";
+    case DW_OP_reg12:
+      return "DW_OP_reg12";
+    case DW_OP_reg13:
+      return "DW_OP_reg13";
+    case DW_OP_reg14:
+      return "DW_OP_reg14";
+    case DW_OP_reg15:
+      return "DW_OP_reg15";
+    case DW_OP_reg16:
+      return "DW_OP_reg16";
+    case DW_OP_reg17:
+      return "DW_OP_reg17";
+    case DW_OP_reg18:
+      return "DW_OP_reg18";
+    case DW_OP_reg19:
+      return "DW_OP_reg19";
+    case DW_OP_reg20:
+      return "DW_OP_reg20";
+    case DW_OP_reg21:
+      return "DW_OP_reg21";
+    case DW_OP_reg22:
+      return "DW_OP_reg22";
+    case DW_OP_reg23:
+      return "DW_OP_reg23";
+    case DW_OP_reg24:
+      return "DW_OP_reg24";
+    case DW_OP_reg25:
+      return "DW_OP_reg25";
+    case DW_OP_reg26:
+      return "DW_OP_reg26";
+    case DW_OP_reg27:
+      return "DW_OP_reg27";
+    case DW_OP_reg28:
+      return "DW_OP_reg28";
+    case DW_OP_reg29:
+      return "DW_OP_reg29";
+    case DW_OP_reg30:
+      return "DW_OP_reg30";
+    case DW_OP_reg31:
+      return "DW_OP_reg31";
+    case DW_OP_breg0:
+      return "DW_OP_breg0";
+    case DW_OP_breg1:
+      return "DW_OP_breg1";
+    case DW_OP_breg2:
+      return "DW_OP_breg2";
+    case DW_OP_breg3:
+      return "DW_OP_breg3";
+    case DW_OP_breg4:
+      return "DW_OP_breg4";
+    case DW_OP_breg5:
+      return "DW_OP_breg5";
+    case DW_OP_breg6:
+      return "DW_OP_breg6";
+    case DW_OP_breg7:
+      return "DW_OP_breg7";
+    case DW_OP_breg8:
+      return "DW_OP_breg8";
+    case DW_OP_breg9:
+      return "DW_OP_breg9";
+    case DW_OP_breg10:
+      return "DW_OP_breg10";
+    case DW_OP_breg11:
+      return "DW_OP_breg11";
+    case DW_OP_breg12:
+      return "DW_OP_breg12";
+    case DW_OP_breg13:
+      return "DW_OP_breg13";
+    case DW_OP_breg14:
+      return "DW_OP_breg14";
+    case DW_OP_breg15:
+      return "DW_OP_breg15";
+    case DW_OP_breg16:
+      return "DW_OP_breg16";
+    case DW_OP_breg17:
+      return "DW_OP_breg17";
+    case DW_OP_breg18:
+      return "DW_OP_breg18";
+    case DW_OP_breg19:
+      return "DW_OP_breg19";
+    case DW_OP_breg20:
+      return "DW_OP_breg20";
+    case DW_OP_breg21:
+      return "DW_OP_breg21";
+    case DW_OP_breg22:
+      return "DW_OP_breg22";
+    case DW_OP_breg23:
+      return "DW_OP_breg23";
+    case DW_OP_breg24:
+      return "DW_OP_breg24";
+    case DW_OP_breg25:
+      return "DW_OP_breg25";
+    case DW_OP_breg26:
+      return "DW_OP_breg26";
+    case DW_OP_breg27:
+      return "DW_OP_breg27";
+    case DW_OP_breg28:
+      return "DW_OP_breg28";
+    case DW_OP_breg29:
+      return "DW_OP_breg29";
+    case DW_OP_breg30:
+      return "DW_OP_breg30";
+    case DW_OP_breg31:
+      return "DW_OP_breg31";
+    case DW_OP_regx:
+      return "DW_OP_regx";
+    case DW_OP_fbreg:
+      return "DW_OP_fbreg";
+    case DW_OP_bregx:
+      return "DW_OP_bregx";
+    case DW_OP_piece:
+      return "DW_OP_piece";
+    case DW_OP_deref_size:
+      return "DW_OP_deref_size";
+    case DW_OP_xderef_size:
+      return "DW_OP_xderef_size";
+    case DW_OP_nop:
+      return "DW_OP_nop";
+    default:
+      return "OP_<unknown>";
+    }
+}
+
+
+/* Return a pointer to a newly allocated location description.  Location
+   descriptions are simple expression terms that can be strung
+   together to form more complicated location (address) descriptions.  */
+
+static inline dw_loc_descr_ref
+new_loc_descr (op, oprnd1, oprnd2)
+     register enum dwarf_location_atom op;
+     register unsigned long oprnd1;
+     register unsigned long oprnd2;
+{
+  register dw_loc_descr_ref descr
+    = (dw_loc_descr_ref) xmalloc (sizeof (dw_loc_descr_node));
+
+  descr->dw_loc_next = NULL;
+  descr->dw_loc_opc = op;
+  descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
+  descr->dw_loc_oprnd1.v.val_unsigned = oprnd1;
+  descr->dw_loc_oprnd2.val_class = dw_val_class_unsigned_const;
+  descr->dw_loc_oprnd2.v.val_unsigned = oprnd2;
+
+  return descr;
+}
+
+/* Add a location description term to a location description expression.  */
+
+static inline void
+add_loc_descr (list_head, descr)
+     register dw_loc_descr_ref *list_head;
+     register dw_loc_descr_ref descr;
+{
+  register dw_loc_descr_ref *d;
+
+  /* Find the end of the chain.  */
+  for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
+    ;
+
+  *d = descr;
+}
+
+/* Return the size of a location descriptor.  */
+
+static unsigned long
+size_of_loc_descr (loc)
+     register dw_loc_descr_ref loc;
+{
+  register unsigned long size = 1;
+
+  switch (loc->dw_loc_opc)
+    {
+    case DW_OP_addr:
+      size += DWARF2_ADDR_SIZE;
+      break;
+    case DW_OP_const1u:
+    case DW_OP_const1s:
+      size += 1;
+      break;
+    case DW_OP_const2u:
+    case DW_OP_const2s:
+      size += 2;
+      break;
+    case DW_OP_const4u:
+    case DW_OP_const4s:
+      size += 4;
+      break;
+    case DW_OP_const8u:
+    case DW_OP_const8s:
+      size += 8;
+      break;
+    case DW_OP_constu:
+      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
+      break;
+    case DW_OP_consts:
+      size += size_of_sleb128 (loc->dw_loc_oprnd1.v.val_int);
+      break;
+    case DW_OP_pick:
+      size += 1;
+      break;
+    case DW_OP_plus_uconst:
+      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
+      break;
+    case DW_OP_skip:
+    case DW_OP_bra:
+      size += 2;
+      break;
+    case DW_OP_breg0:
+    case DW_OP_breg1:
+    case DW_OP_breg2:
+    case DW_OP_breg3:
+    case DW_OP_breg4:
+    case DW_OP_breg5:
+    case DW_OP_breg6:
+    case DW_OP_breg7:
+    case DW_OP_breg8:
+    case DW_OP_breg9:
+    case DW_OP_breg10:
+    case DW_OP_breg11:
+    case DW_OP_breg12:
+    case DW_OP_breg13:
+    case DW_OP_breg14:
+    case DW_OP_breg15:
+    case DW_OP_breg16:
+    case DW_OP_breg17:
+    case DW_OP_breg18:
+    case DW_OP_breg19:
+    case DW_OP_breg20:
+    case DW_OP_breg21:
+    case DW_OP_breg22:
+    case DW_OP_breg23:
+    case DW_OP_breg24:
+    case DW_OP_breg25:
+    case DW_OP_breg26:
+    case DW_OP_breg27:
+    case DW_OP_breg28:
+    case DW_OP_breg29:
+    case DW_OP_breg30:
+    case DW_OP_breg31:
+      size += size_of_sleb128 (loc->dw_loc_oprnd1.v.val_int);
+      break;
+    case DW_OP_regx:
+      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
+      break;
+    case DW_OP_fbreg:
+      size += size_of_sleb128 (loc->dw_loc_oprnd1.v.val_int);
+      break;
+    case DW_OP_bregx:
+      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
+      size += size_of_sleb128 (loc->dw_loc_oprnd2.v.val_int);
+      break;
+    case DW_OP_piece:
+      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
+      break;
+    case DW_OP_deref_size:
+    case DW_OP_xderef_size:
+      size += 1;
+      break;
+    default:
+      break;
+    }
+
+  return size;
+}
+
+/* Return the size of a series of location descriptors.  */
+
+static unsigned long
+size_of_locs (loc)
+     register dw_loc_descr_ref loc;
+{
+  register unsigned long size = 0;
+
+  for (; loc != NULL; loc = loc->dw_loc_next)
+    size += size_of_loc_descr (loc);
+
+  return size;
+}
+
+/* Output location description stack opcode's operands (if any).  */
+
+static void
+output_loc_operands (loc)
+     register dw_loc_descr_ref loc;
+{
+  register dw_val_ref val1 = &loc->dw_loc_oprnd1;
+  register dw_val_ref val2 = &loc->dw_loc_oprnd2;
+
+  switch (loc->dw_loc_opc)
+    {
+    case DW_OP_addr:
+      ASM_OUTPUT_DWARF_ADDR_CONST (asm_out_file, val1->v.val_addr);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_const1u:
+    case DW_OP_const1s:
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_flag);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_const2u:
+    case DW_OP_const2s:
+      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_const4u:
+    case DW_OP_const4s:
+      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_const8u:
+    case DW_OP_const8s:
+      abort ();
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_constu:
+      output_uleb128 (val1->v.val_unsigned);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_consts:
+      output_sleb128 (val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_pick:
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_plus_uconst:
+      output_uleb128 (val1->v.val_unsigned);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_skip:
+    case DW_OP_bra:
+      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_breg0:
+    case DW_OP_breg1:
+    case DW_OP_breg2:
+    case DW_OP_breg3:
+    case DW_OP_breg4:
+    case DW_OP_breg5:
+    case DW_OP_breg6:
+    case DW_OP_breg7:
+    case DW_OP_breg8:
+    case DW_OP_breg9:
+    case DW_OP_breg10:
+    case DW_OP_breg11:
+    case DW_OP_breg12:
+    case DW_OP_breg13:
+    case DW_OP_breg14:
+    case DW_OP_breg15:
+    case DW_OP_breg16:
+    case DW_OP_breg17:
+    case DW_OP_breg18:
+    case DW_OP_breg19:
+    case DW_OP_breg20:
+    case DW_OP_breg21:
+    case DW_OP_breg22:
+    case DW_OP_breg23:
+    case DW_OP_breg24:
+    case DW_OP_breg25:
+    case DW_OP_breg26:
+    case DW_OP_breg27:
+    case DW_OP_breg28:
+    case DW_OP_breg29:
+    case DW_OP_breg30:
+    case DW_OP_breg31:
+      output_sleb128 (val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_regx:
+      output_uleb128 (val1->v.val_unsigned);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_fbreg:
+      output_sleb128 (val1->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_bregx:
+      output_uleb128 (val1->v.val_unsigned);
+      fputc ('\n', asm_out_file);
+      output_sleb128 (val2->v.val_int);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_piece:
+      output_uleb128 (val1->v.val_unsigned);
+      fputc ('\n', asm_out_file);
+      break;
+    case DW_OP_deref_size:
+    case DW_OP_xderef_size:
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_flag);
+      fputc ('\n', asm_out_file);
+      break;
+    default:
+      break;
+    }
+}
+
+/* Output a sequence of location operations.  */
+
+static void
+output_loc_sequence (loc)
+     dw_loc_descr_ref loc;
+{
+  for (; loc != NULL; loc = loc->dw_loc_next)
+    {
+      /* Output the opcode.  */
+      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, loc->dw_loc_opc);
+      if (flag_debug_asm)
+	fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START,
+		 dwarf_stack_op_name (loc->dw_loc_opc));
+
+      fputc ('\n', asm_out_file);
+
+      /* Output the operand(s) (if any).  */
+      output_loc_operands (loc);
+    }
+}
+
+/* This routine will generate the correct assembly data for a location
+   description based on a cfi entry with a complex address.  */
+
+static void
+output_cfa_loc (cfi)
+     dw_cfi_ref cfi;
+{
+  dw_loc_descr_ref loc;
+  unsigned long size;
+
+  /* Output the size of the block.  */
+  loc = cfi->dw_cfi_oprnd1.dw_cfi_loc;
+  size = size_of_locs (loc);
+  output_uleb128 (size);
+  fputc ('\n', asm_out_file);
+
+  /* Now output the operations themselves.  */
+  output_loc_sequence (loc);
+}
+
+/* This function builds a dwarf location descriptor seqeunce from 
+   a dw_cfa_location. */
+
+static struct dw_loc_descr_struct *
+build_cfa_loc (cfa)
+     dw_cfa_location *cfa;
+{
+  struct dw_loc_descr_struct *head, *tmp;
+
+  if (cfa->indirect == 0)
+    abort ();
+
+  if (cfa->base_offset)
+    head = new_loc_descr (DW_OP_breg0 + cfa->reg, cfa->base_offset, 0);
+  else
+    head = new_loc_descr (DW_OP_reg0 + cfa->reg, 0, 0);
+  head->dw_loc_oprnd1.val_class = dw_val_class_const;
+  tmp = new_loc_descr (DW_OP_deref, 0, 0);
+  add_loc_descr (&head, tmp);
+  if (cfa->offset != 0)
+    {
+      tmp = new_loc_descr (DW_OP_plus_uconst, cfa->offset, 0);
+      add_loc_descr (&head, tmp);
+    }
+  return head;
+}
+
+/* This function fills in aa dw_cfa_location structure from a 
+   dwarf location descriptor sequence.  */
+
+static void
+get_cfa_from_loc_descr (cfa, loc)
+     dw_cfa_location *cfa;
+     struct dw_loc_descr_struct * loc;
+{
+  struct dw_loc_descr_struct * ptr;
+  cfa->offset = 0;
+  cfa->base_offset = 0;
+  cfa->indirect = 0;
+  cfa->reg = -1;
+
+  for (ptr = loc; ptr != NULL; ptr = ptr->dw_loc_next)
+    {
+      enum dwarf_location_atom op = ptr->dw_loc_opc;
+      switch (op)
+        {
+	case DW_OP_reg0:
+	case DW_OP_reg1:
+	case DW_OP_reg2:
+	case DW_OP_reg3:
+	case DW_OP_reg4:
+	case DW_OP_reg5:
+	case DW_OP_reg6:
+	case DW_OP_reg7:
+	case DW_OP_reg8:
+	case DW_OP_reg9:
+	case DW_OP_reg10:
+	case DW_OP_reg11:
+	case DW_OP_reg12:
+	case DW_OP_reg13:
+	case DW_OP_reg14:
+	case DW_OP_reg15:
+	case DW_OP_reg16:
+	case DW_OP_reg17:
+	case DW_OP_reg18:
+	case DW_OP_reg19:
+	case DW_OP_reg20:
+	case DW_OP_reg21:
+	case DW_OP_reg22:
+	case DW_OP_reg23:
+	case DW_OP_reg24:
+	case DW_OP_reg25:
+	case DW_OP_reg26:
+	case DW_OP_reg27:
+	case DW_OP_reg28:
+	case DW_OP_reg29:
+	case DW_OP_reg30:
+	case DW_OP_reg31:
+	  cfa->reg = op - DW_OP_reg0;
+	  break;
+	case DW_OP_regx:
+	  cfa->reg = ptr->dw_loc_oprnd1.v.val_int;
+	  break;
+	case DW_OP_breg0:
+	case DW_OP_breg1:
+	case DW_OP_breg2:
+	case DW_OP_breg3:
+	case DW_OP_breg4:
+	case DW_OP_breg5:
+	case DW_OP_breg6:
+	case DW_OP_breg7:
+	case DW_OP_breg8:
+	case DW_OP_breg9:
+	case DW_OP_breg10:
+	case DW_OP_breg11:
+	case DW_OP_breg12:
+	case DW_OP_breg13:
+	case DW_OP_breg14:
+	case DW_OP_breg15:
+	case DW_OP_breg16:
+	case DW_OP_breg17:
+	case DW_OP_breg18:
+	case DW_OP_breg19:
+	case DW_OP_breg20:
+	case DW_OP_breg21:
+	case DW_OP_breg22:
+	case DW_OP_breg23:
+	case DW_OP_breg24:
+	case DW_OP_breg25:
+	case DW_OP_breg26:
+	case DW_OP_breg27:
+	case DW_OP_breg28:
+	case DW_OP_breg29:
+	case DW_OP_breg30:
+	case DW_OP_breg31:
+	  cfa->reg = op - DW_OP_breg0;
+	  cfa->base_offset = ptr->dw_loc_oprnd1.v.val_int;
+	  break;
+	case DW_OP_bregx:
+	  cfa->reg = ptr->dw_loc_oprnd1.v.val_int;
+	  cfa->base_offset = ptr->dw_loc_oprnd2.v.val_int;
+	  break;
+	case DW_OP_deref:
+	  cfa->indirect = 1;
+	  break;
+	case DW_OP_plus_uconst:
+	  cfa->offset =  ptr->dw_loc_oprnd1.v.val_unsigned;
+	  break;
+	default:
+	  fatal ("DW_LOC_OP %s not implememnted yet.\n",
+		 dwarf_stack_op_name (ptr->dw_loc_opc));
+	}
+    }
+}
+#endif /* .debug_frame support */
+
+/* And now, the support for symbolic debugging information.  */
+#ifdef DWARF2_DEBUGGING_INFO
+
+/* NOTE: In the comments in this file, many references are made to
+   "Debugging Information Entries".  This term is abbreviated as `DIE'
+   throughout the remainder of this file.  */
+
+/* An internal representation of the DWARF output is built, and then
+   walked to generate the DWARF debugging info.  The walk of the internal
+   representation is done after the entire program has been compiled.
+   The types below are used to describe the internal representation.  */
+
+/* Various DIE's use offsets relative to the beginning of the
+   .debug_info section to refer to each other.  */
+
+typedef long int dw_offset;
+
+/* Define typedefs here to avoid circular dependencies.  */
+
+typedef struct dw_attr_struct *dw_attr_ref;
+typedef struct dw_line_info_struct *dw_line_info_ref;
+typedef struct dw_separate_line_info_struct *dw_separate_line_info_ref;
+typedef struct pubname_struct *pubname_ref;
+typedef dw_die_ref *arange_ref;
+
+/* Each entry in the line_info_table maintains the file and
+   line number associated with the label generated for that
+   entry.  The label gives the PC value associated with
+   the line number entry.  */
+
+typedef struct dw_line_info_struct
+{
+  unsigned long dw_file_num;
+  unsigned long dw_line_num;
+}
+dw_line_info_entry;
+
+/* Line information for functions in separate sections; each one gets its
+   own sequence.  */
+typedef struct dw_separate_line_info_struct
+{
+  unsigned long dw_file_num;
+  unsigned long dw_line_num;
+  unsigned long function;
+}
+dw_separate_line_info_entry;
 
 /* Each DIE attribute has a field specifying the attribute kind,
    a link to the next attribute in the chain, and an attribute value.
@@ -2383,7 +3215,6 @@ static int is_tagged_type		PARAMS ((tree));
 static const char *dwarf_tag_name	PARAMS ((unsigned));
 static const char *dwarf_attr_name	PARAMS ((unsigned));
 static const char *dwarf_form_name	PARAMS ((unsigned));
-static const char *dwarf_stack_op_name	PARAMS ((unsigned));
 #if 0
 static const char *dwarf_type_encoding_name PARAMS ((unsigned));
 #endif
@@ -2450,19 +3281,12 @@ static dw_die_ref lookup_type_die	PARAMS ((tree));
 static void equate_type_number_to_die	PARAMS ((tree, dw_die_ref));
 static dw_die_ref lookup_decl_die	PARAMS ((tree));
 static void equate_decl_number_to_die	PARAMS ((tree, dw_die_ref));
-static dw_loc_descr_ref new_loc_descr	PARAMS ((enum dwarf_location_atom,
-						 unsigned long,
-						 unsigned long));
-static void add_loc_descr		PARAMS ((dw_loc_descr_ref *,
-						 dw_loc_descr_ref));
 static void print_spaces		PARAMS ((FILE *));
 static void print_die			PARAMS ((dw_die_ref, FILE *));
 static void print_dwarf_line_table	PARAMS ((FILE *));
 static void add_sibling_attributes	PARAMS ((dw_die_ref));
 static void build_abbrev_table		PARAMS ((dw_die_ref));
 static unsigned long size_of_string	PARAMS ((const char *));
-static unsigned long size_of_loc_descr	PARAMS ((dw_loc_descr_ref));
-static unsigned long size_of_locs	PARAMS ((dw_loc_descr_ref));
 static int constant_size		PARAMS ((long unsigned));
 static unsigned long size_of_die	PARAMS ((dw_die_ref));
 static void calc_die_sizes		PARAMS ((dw_die_ref));
@@ -2472,7 +3296,6 @@ static unsigned long size_of_aranges	PARAMS ((void));
 static enum dwarf_form value_format	PARAMS ((dw_attr_ref));
 static void output_value_format		PARAMS ((dw_attr_ref));
 static void output_abbrev_section	PARAMS ((void));
-static void output_loc_operands		PARAMS ((dw_loc_descr_ref));
 static void output_die			PARAMS ((dw_die_ref));
 static void output_compilation_unit_header PARAMS ((void));
 static const char *dwarf2_name		PARAMS ((tree, int));
@@ -2486,6 +3309,7 @@ static tree root_type			PARAMS ((tree));
 static int is_base_type			PARAMS ((tree));
 static dw_die_ref modified_type_die	PARAMS ((tree, int, int, dw_die_ref));
 static int type_is_enum			PARAMS ((tree));
+static unsigned int reg_number		PARAMS ((rtx));
 static dw_loc_descr_ref reg_loc_descriptor PARAMS ((rtx));
 static dw_loc_descr_ref based_loc_descr	PARAMS ((unsigned, long));
 static int is_based_loc			PARAMS ((rtx));
@@ -3081,309 +3905,6 @@ dwarf_form_name (form)
       return "DW_FORM_indirect";
     default:
       return "DW_FORM_<unknown>";
-    }
-}
-
-/* Convert a DWARF stack opcode into its string name.  */
-
-static const char *
-dwarf_stack_op_name (op)
-     register unsigned op;
-{
-  switch (op)
-    {
-    case DW_OP_addr:
-      return "DW_OP_addr";
-    case DW_OP_deref:
-      return "DW_OP_deref";
-    case DW_OP_const1u:
-      return "DW_OP_const1u";
-    case DW_OP_const1s:
-      return "DW_OP_const1s";
-    case DW_OP_const2u:
-      return "DW_OP_const2u";
-    case DW_OP_const2s:
-      return "DW_OP_const2s";
-    case DW_OP_const4u:
-      return "DW_OP_const4u";
-    case DW_OP_const4s:
-      return "DW_OP_const4s";
-    case DW_OP_const8u:
-      return "DW_OP_const8u";
-    case DW_OP_const8s:
-      return "DW_OP_const8s";
-    case DW_OP_constu:
-      return "DW_OP_constu";
-    case DW_OP_consts:
-      return "DW_OP_consts";
-    case DW_OP_dup:
-      return "DW_OP_dup";
-    case DW_OP_drop:
-      return "DW_OP_drop";
-    case DW_OP_over:
-      return "DW_OP_over";
-    case DW_OP_pick:
-      return "DW_OP_pick";
-    case DW_OP_swap:
-      return "DW_OP_swap";
-    case DW_OP_rot:
-      return "DW_OP_rot";
-    case DW_OP_xderef:
-      return "DW_OP_xderef";
-    case DW_OP_abs:
-      return "DW_OP_abs";
-    case DW_OP_and:
-      return "DW_OP_and";
-    case DW_OP_div:
-      return "DW_OP_div";
-    case DW_OP_minus:
-      return "DW_OP_minus";
-    case DW_OP_mod:
-      return "DW_OP_mod";
-    case DW_OP_mul:
-      return "DW_OP_mul";
-    case DW_OP_neg:
-      return "DW_OP_neg";
-    case DW_OP_not:
-      return "DW_OP_not";
-    case DW_OP_or:
-      return "DW_OP_or";
-    case DW_OP_plus:
-      return "DW_OP_plus";
-    case DW_OP_plus_uconst:
-      return "DW_OP_plus_uconst";
-    case DW_OP_shl:
-      return "DW_OP_shl";
-    case DW_OP_shr:
-      return "DW_OP_shr";
-    case DW_OP_shra:
-      return "DW_OP_shra";
-    case DW_OP_xor:
-      return "DW_OP_xor";
-    case DW_OP_bra:
-      return "DW_OP_bra";
-    case DW_OP_eq:
-      return "DW_OP_eq";
-    case DW_OP_ge:
-      return "DW_OP_ge";
-    case DW_OP_gt:
-      return "DW_OP_gt";
-    case DW_OP_le:
-      return "DW_OP_le";
-    case DW_OP_lt:
-      return "DW_OP_lt";
-    case DW_OP_ne:
-      return "DW_OP_ne";
-    case DW_OP_skip:
-      return "DW_OP_skip";
-    case DW_OP_lit0:
-      return "DW_OP_lit0";
-    case DW_OP_lit1:
-      return "DW_OP_lit1";
-    case DW_OP_lit2:
-      return "DW_OP_lit2";
-    case DW_OP_lit3:
-      return "DW_OP_lit3";
-    case DW_OP_lit4:
-      return "DW_OP_lit4";
-    case DW_OP_lit5:
-      return "DW_OP_lit5";
-    case DW_OP_lit6:
-      return "DW_OP_lit6";
-    case DW_OP_lit7:
-      return "DW_OP_lit7";
-    case DW_OP_lit8:
-      return "DW_OP_lit8";
-    case DW_OP_lit9:
-      return "DW_OP_lit9";
-    case DW_OP_lit10:
-      return "DW_OP_lit10";
-    case DW_OP_lit11:
-      return "DW_OP_lit11";
-    case DW_OP_lit12:
-      return "DW_OP_lit12";
-    case DW_OP_lit13:
-      return "DW_OP_lit13";
-    case DW_OP_lit14:
-      return "DW_OP_lit14";
-    case DW_OP_lit15:
-      return "DW_OP_lit15";
-    case DW_OP_lit16:
-      return "DW_OP_lit16";
-    case DW_OP_lit17:
-      return "DW_OP_lit17";
-    case DW_OP_lit18:
-      return "DW_OP_lit18";
-    case DW_OP_lit19:
-      return "DW_OP_lit19";
-    case DW_OP_lit20:
-      return "DW_OP_lit20";
-    case DW_OP_lit21:
-      return "DW_OP_lit21";
-    case DW_OP_lit22:
-      return "DW_OP_lit22";
-    case DW_OP_lit23:
-      return "DW_OP_lit23";
-    case DW_OP_lit24:
-      return "DW_OP_lit24";
-    case DW_OP_lit25:
-      return "DW_OP_lit25";
-    case DW_OP_lit26:
-      return "DW_OP_lit26";
-    case DW_OP_lit27:
-      return "DW_OP_lit27";
-    case DW_OP_lit28:
-      return "DW_OP_lit28";
-    case DW_OP_lit29:
-      return "DW_OP_lit29";
-    case DW_OP_lit30:
-      return "DW_OP_lit30";
-    case DW_OP_lit31:
-      return "DW_OP_lit31";
-    case DW_OP_reg0:
-      return "DW_OP_reg0";
-    case DW_OP_reg1:
-      return "DW_OP_reg1";
-    case DW_OP_reg2:
-      return "DW_OP_reg2";
-    case DW_OP_reg3:
-      return "DW_OP_reg3";
-    case DW_OP_reg4:
-      return "DW_OP_reg4";
-    case DW_OP_reg5:
-      return "DW_OP_reg5";
-    case DW_OP_reg6:
-      return "DW_OP_reg6";
-    case DW_OP_reg7:
-      return "DW_OP_reg7";
-    case DW_OP_reg8:
-      return "DW_OP_reg8";
-    case DW_OP_reg9:
-      return "DW_OP_reg9";
-    case DW_OP_reg10:
-      return "DW_OP_reg10";
-    case DW_OP_reg11:
-      return "DW_OP_reg11";
-    case DW_OP_reg12:
-      return "DW_OP_reg12";
-    case DW_OP_reg13:
-      return "DW_OP_reg13";
-    case DW_OP_reg14:
-      return "DW_OP_reg14";
-    case DW_OP_reg15:
-      return "DW_OP_reg15";
-    case DW_OP_reg16:
-      return "DW_OP_reg16";
-    case DW_OP_reg17:
-      return "DW_OP_reg17";
-    case DW_OP_reg18:
-      return "DW_OP_reg18";
-    case DW_OP_reg19:
-      return "DW_OP_reg19";
-    case DW_OP_reg20:
-      return "DW_OP_reg20";
-    case DW_OP_reg21:
-      return "DW_OP_reg21";
-    case DW_OP_reg22:
-      return "DW_OP_reg22";
-    case DW_OP_reg23:
-      return "DW_OP_reg23";
-    case DW_OP_reg24:
-      return "DW_OP_reg24";
-    case DW_OP_reg25:
-      return "DW_OP_reg25";
-    case DW_OP_reg26:
-      return "DW_OP_reg26";
-    case DW_OP_reg27:
-      return "DW_OP_reg27";
-    case DW_OP_reg28:
-      return "DW_OP_reg28";
-    case DW_OP_reg29:
-      return "DW_OP_reg29";
-    case DW_OP_reg30:
-      return "DW_OP_reg30";
-    case DW_OP_reg31:
-      return "DW_OP_reg31";
-    case DW_OP_breg0:
-      return "DW_OP_breg0";
-    case DW_OP_breg1:
-      return "DW_OP_breg1";
-    case DW_OP_breg2:
-      return "DW_OP_breg2";
-    case DW_OP_breg3:
-      return "DW_OP_breg3";
-    case DW_OP_breg4:
-      return "DW_OP_breg4";
-    case DW_OP_breg5:
-      return "DW_OP_breg5";
-    case DW_OP_breg6:
-      return "DW_OP_breg6";
-    case DW_OP_breg7:
-      return "DW_OP_breg7";
-    case DW_OP_breg8:
-      return "DW_OP_breg8";
-    case DW_OP_breg9:
-      return "DW_OP_breg9";
-    case DW_OP_breg10:
-      return "DW_OP_breg10";
-    case DW_OP_breg11:
-      return "DW_OP_breg11";
-    case DW_OP_breg12:
-      return "DW_OP_breg12";
-    case DW_OP_breg13:
-      return "DW_OP_breg13";
-    case DW_OP_breg14:
-      return "DW_OP_breg14";
-    case DW_OP_breg15:
-      return "DW_OP_breg15";
-    case DW_OP_breg16:
-      return "DW_OP_breg16";
-    case DW_OP_breg17:
-      return "DW_OP_breg17";
-    case DW_OP_breg18:
-      return "DW_OP_breg18";
-    case DW_OP_breg19:
-      return "DW_OP_breg19";
-    case DW_OP_breg20:
-      return "DW_OP_breg20";
-    case DW_OP_breg21:
-      return "DW_OP_breg21";
-    case DW_OP_breg22:
-      return "DW_OP_breg22";
-    case DW_OP_breg23:
-      return "DW_OP_breg23";
-    case DW_OP_breg24:
-      return "DW_OP_breg24";
-    case DW_OP_breg25:
-      return "DW_OP_breg25";
-    case DW_OP_breg26:
-      return "DW_OP_breg26";
-    case DW_OP_breg27:
-      return "DW_OP_breg27";
-    case DW_OP_breg28:
-      return "DW_OP_breg28";
-    case DW_OP_breg29:
-      return "DW_OP_breg29";
-    case DW_OP_breg30:
-      return "DW_OP_breg30";
-    case DW_OP_breg31:
-      return "DW_OP_breg31";
-    case DW_OP_regx:
-      return "DW_OP_regx";
-    case DW_OP_fbreg:
-      return "DW_OP_fbreg";
-    case DW_OP_bregx:
-      return "DW_OP_bregx";
-    case DW_OP_piece:
-      return "DW_OP_piece";
-    case DW_OP_deref_size:
-      return "DW_OP_deref_size";
-    case DW_OP_xderef_size:
-      return "DW_OP_xderef_size";
-    case DW_OP_nop:
-      return "DW_OP_nop";
-    default:
-      return "OP_<unknown>";
     }
 }
 
@@ -4176,45 +4697,6 @@ equate_decl_number_to_die (decl, decl_die)
 
   decl_die_table[decl_id] = decl_die;
 }
-
-/* Return a pointer to a newly allocated location description.  Location
-   descriptions are simple expression terms that can be strung
-   together to form more complicated location (address) descriptions.  */
-
-static inline dw_loc_descr_ref
-new_loc_descr (op, oprnd1, oprnd2)
-     register enum dwarf_location_atom op;
-     register unsigned long oprnd1;
-     register unsigned long oprnd2;
-{
-  register dw_loc_descr_ref descr
-    = (dw_loc_descr_ref) xmalloc (sizeof (dw_loc_descr_node));
-
-  descr->dw_loc_next = NULL;
-  descr->dw_loc_opc = op;
-  descr->dw_loc_oprnd1.val_class = dw_val_class_unsigned_const;
-  descr->dw_loc_oprnd1.v.val_unsigned = oprnd1;
-  descr->dw_loc_oprnd2.val_class = dw_val_class_unsigned_const;
-  descr->dw_loc_oprnd2.v.val_unsigned = oprnd2;
-
-  return descr;
-}
-
-/* Add a location description term to a location description expression.  */
-
-static inline void
-add_loc_descr (list_head, descr)
-     register dw_loc_descr_ref *list_head;
-     register dw_loc_descr_ref descr;
-{
-  register dw_loc_descr_ref *d;
-
-  /* Find the end of the chain.  */
-  for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
-    ;
-
-  *d = descr;
-}
 
 /* Keep track of the number of spaces used to indent the
    output of the debugging routines that print the structure of
@@ -4480,123 +4962,6 @@ size_of_string (str)
      register const char *str;
 {
   return strlen (str) + 1;
-}
-
-/* Return the size of a location descriptor.  */
-
-static unsigned long
-size_of_loc_descr (loc)
-     register dw_loc_descr_ref loc;
-{
-  register unsigned long size = 1;
-
-  switch (loc->dw_loc_opc)
-    {
-    case DW_OP_addr:
-      size += DWARF2_ADDR_SIZE;
-      break;
-    case DW_OP_const1u:
-    case DW_OP_const1s:
-      size += 1;
-      break;
-    case DW_OP_const2u:
-    case DW_OP_const2s:
-      size += 2;
-      break;
-    case DW_OP_const4u:
-    case DW_OP_const4s:
-      size += 4;
-      break;
-    case DW_OP_const8u:
-    case DW_OP_const8s:
-      size += 8;
-      break;
-    case DW_OP_constu:
-      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
-      break;
-    case DW_OP_consts:
-      size += size_of_sleb128 (loc->dw_loc_oprnd1.v.val_int);
-      break;
-    case DW_OP_pick:
-      size += 1;
-      break;
-    case DW_OP_plus_uconst:
-      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
-      break;
-    case DW_OP_skip:
-    case DW_OP_bra:
-      size += 2;
-      break;
-    case DW_OP_breg0:
-    case DW_OP_breg1:
-    case DW_OP_breg2:
-    case DW_OP_breg3:
-    case DW_OP_breg4:
-    case DW_OP_breg5:
-    case DW_OP_breg6:
-    case DW_OP_breg7:
-    case DW_OP_breg8:
-    case DW_OP_breg9:
-    case DW_OP_breg10:
-    case DW_OP_breg11:
-    case DW_OP_breg12:
-    case DW_OP_breg13:
-    case DW_OP_breg14:
-    case DW_OP_breg15:
-    case DW_OP_breg16:
-    case DW_OP_breg17:
-    case DW_OP_breg18:
-    case DW_OP_breg19:
-    case DW_OP_breg20:
-    case DW_OP_breg21:
-    case DW_OP_breg22:
-    case DW_OP_breg23:
-    case DW_OP_breg24:
-    case DW_OP_breg25:
-    case DW_OP_breg26:
-    case DW_OP_breg27:
-    case DW_OP_breg28:
-    case DW_OP_breg29:
-    case DW_OP_breg30:
-    case DW_OP_breg31:
-      size += size_of_sleb128 (loc->dw_loc_oprnd1.v.val_int);
-      break;
-    case DW_OP_regx:
-      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
-      break;
-    case DW_OP_fbreg:
-      size += size_of_sleb128 (loc->dw_loc_oprnd1.v.val_int);
-      break;
-    case DW_OP_bregx:
-      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
-      size += size_of_sleb128 (loc->dw_loc_oprnd2.v.val_int);
-      break;
-    case DW_OP_piece:
-      size += size_of_uleb128 (loc->dw_loc_oprnd1.v.val_unsigned);
-      break;
-    case DW_OP_deref_size:
-    case DW_OP_xderef_size:
-      size += 1;
-      break;
-    default:
-      break;
-    }
-
-  return size;
-}
-
-/* Return the size of a series of location descriptors.  */
-
-static unsigned long
-size_of_locs (loc)
-     register dw_loc_descr_ref loc;
-{
-  register unsigned long size = 0;
-
-  for (; loc != NULL; loc = loc->dw_loc_next)
-    size += size_of_loc_descr (loc);
-
-  return size;
 }
 
 /* Return the power-of-two number of bytes necessary to represent VALUE.  */
@@ -4908,125 +5273,6 @@ output_abbrev_section ()
   fprintf (asm_out_file, "\t%s\t0\n", ASM_BYTE_OP);
 }
 
-/* Output location description stack opcode's operands (if any).  */
-
-static void
-output_loc_operands (loc)
-     register dw_loc_descr_ref loc;
-{
-  register dw_val_ref val1 = &loc->dw_loc_oprnd1;
-  register dw_val_ref val2 = &loc->dw_loc_oprnd2;
-
-  switch (loc->dw_loc_opc)
-    {
-    case DW_OP_addr:
-      ASM_OUTPUT_DWARF_ADDR_CONST (asm_out_file, val1->v.val_addr);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_const1u:
-    case DW_OP_const1s:
-      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_flag);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_const2u:
-    case DW_OP_const2s:
-      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_const4u:
-    case DW_OP_const4s:
-      ASM_OUTPUT_DWARF_DATA4 (asm_out_file, val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_const8u:
-    case DW_OP_const8s:
-      abort ();
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_constu:
-      output_uleb128 (val1->v.val_unsigned);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_consts:
-      output_sleb128 (val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_pick:
-      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_plus_uconst:
-      output_uleb128 (val1->v.val_unsigned);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_skip:
-    case DW_OP_bra:
-      ASM_OUTPUT_DWARF_DATA2 (asm_out_file, val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_breg0:
-    case DW_OP_breg1:
-    case DW_OP_breg2:
-    case DW_OP_breg3:
-    case DW_OP_breg4:
-    case DW_OP_breg5:
-    case DW_OP_breg6:
-    case DW_OP_breg7:
-    case DW_OP_breg8:
-    case DW_OP_breg9:
-    case DW_OP_breg10:
-    case DW_OP_breg11:
-    case DW_OP_breg12:
-    case DW_OP_breg13:
-    case DW_OP_breg14:
-    case DW_OP_breg15:
-    case DW_OP_breg16:
-    case DW_OP_breg17:
-    case DW_OP_breg18:
-    case DW_OP_breg19:
-    case DW_OP_breg20:
-    case DW_OP_breg21:
-    case DW_OP_breg22:
-    case DW_OP_breg23:
-    case DW_OP_breg24:
-    case DW_OP_breg25:
-    case DW_OP_breg26:
-    case DW_OP_breg27:
-    case DW_OP_breg28:
-    case DW_OP_breg29:
-    case DW_OP_breg30:
-    case DW_OP_breg31:
-      output_sleb128 (val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_regx:
-      output_uleb128 (val1->v.val_unsigned);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_fbreg:
-      output_sleb128 (val1->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_bregx:
-      output_uleb128 (val1->v.val_unsigned);
-      fputc ('\n', asm_out_file);
-      output_sleb128 (val2->v.val_int);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_piece:
-      output_uleb128 (val1->v.val_unsigned);
-      fputc ('\n', asm_out_file);
-      break;
-    case DW_OP_deref_size:
-    case DW_OP_xderef_size:
-      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, val1->v.val_flag);
-      fputc ('\n', asm_out_file);
-      break;
-    default:
-      break;
-    }
-}
-
 /* Output the DIE and its attributes.  Called recursively to generate
    the definitions of each child DIE.  */
 
@@ -5037,7 +5283,6 @@ output_die (die)
   register dw_attr_ref a;
   register dw_die_ref c;
   register unsigned long size;
-  register dw_loc_descr_ref loc;
 
   output_uleb128 (die->die_abbrev);
   if (flag_debug_asm)
@@ -5075,19 +5320,8 @@ output_die (die)
 		     ASM_COMMENT_START, dwarf_attr_name (a->dw_attr));
 
 	  fputc ('\n', asm_out_file);
-	  for (loc = AT_loc (a); loc != NULL; loc = loc->dw_loc_next)
-	    {
-	      /* Output the opcode.  */
-	      ASM_OUTPUT_DWARF_DATA1 (asm_out_file, loc->dw_loc_opc);
-	      if (flag_debug_asm)
-		fprintf (asm_out_file, "\t%s %s", ASM_COMMENT_START,
-			 dwarf_stack_op_name (loc->dw_loc_opc));
 
-	      fputc ('\n', asm_out_file);
-
-	      /* Output the operand(s) (if any).  */
-	      output_loc_operands (loc);
-	    }
+	  output_loc_sequence (AT_loc (a));
 	  break;
 
 	case dw_val_class_const:
@@ -6252,6 +6486,24 @@ type_is_enum (type)
      register tree type;
 {
   return TREE_CODE (type) == ENUMERAL_TYPE;
+}
+
+/* Return the register number described by a given RTL node.  */
+
+static unsigned int
+reg_number (rtl)
+     register rtx rtl;
+{
+  register unsigned regno = REGNO (rtl);
+
+  if (regno >= FIRST_PSEUDO_REGISTER)
+    {
+      warning ("internal regno botch: regno = %d\n", regno);
+      regno = 0;
+    }
+
+  regno = DBX_REGISTER_NUMBER (regno);
+  return regno;
 }
 
 /* Return a location descriptor that designates a machine register.  */

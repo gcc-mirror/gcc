@@ -1,3 +1,41 @@
+2000-06-26  Andrew Macleod <amacleod@cygnus.com>
+	    Jason Merrill <jason@redhat.com>
+
+	* dwarf2.h (enum dwarf_call_frame_info): Add 
+	DW_CFA_def_cfa_expression.
+	* dwarf2out.c (union dw_cfi_oprnd_struct): Add a pointer to a
+	dw_loc_descr_struct entry.
+	(struct cfa_loc): New structure to track a CFA location.
+	(lookup_cfa): Take a cfa_loc parameter instead of a reg and an offset.
+	(lookup_cfa_1): Take a cfa_loc parameter instead of a reg and an
+	offset, plus handle DW_CFA_def_cfa_expression.
+	(def_cfa_1): Use to be dwarf2out_def_cfa, only now it uses a
+	cfa_loc record.
+	(dwarf2out_def_cfa): Entry point maintained for compatability.
+	(dwarf_cfi_name): Add DW_CFA_def_cfa_expression.
+	(cfa_reg, cfa_offset): Replace with cfa_loc record 'cfa'.
+	(cfa_store_reg, cfa_store_offset): Replace with cfa_loc 'cfa_store'.
+	(initial_return_save, dwarf2out_stack_adjust): Use cfa.reg, not
+	cfa_reg.
+	(dwarf2out_frame_debug_expr): Use new cfa_loc records. Recognize rtl
+	sequences for the new DW_CFA_def_cfa_expression record.
+	(dwarf2out_frame_debug): Use new variables/fields.A
+	(output_cfi): Handle DW_CFA_def_cfa_expression.
+	(output_cfa_loc): New function to generate a CFI record for 
+	DW_CFA_def_cfa_expression.
+	(get_cfa_from_loc_descr): New function to get a cfa_loc record from
+	a dw_loc_descr sequeunce.
+	(build_loc_descr): Build a dw_loc_descr from a cfa_loc record.
+	(dwarf_stack_op_name, new_loc_descr, add_loc_descr, size_of_loc_descr,
+	size_of_locs, output_loc_operands, output_loc_sequence): Move into
+	unwind info section.
+	* frame.h (frame_state): Add base_offset and indirect fields.
+	* frame-dwarf2.c (decode_stack_op): New function to interpret a
+	dw_loc_descr operation.
+	(execute_cfa_insn): Add support for DW_CFA_def_cfa_expression.
+	(struct frame_state): Add base offset and indirect fields.
+	* libgcc2.c (next_stack_level): Support indirect loading for CFA.
+
 2000-06-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-decl.c (grokdeclarator): Don't warn about `long long' in C99.
@@ -76,7 +114,7 @@
 
 2000-06-24  Marc Espie <espie@cvs.openbsd.org>
 
-	* collect2.c (resolve_lib_name): Move '/' check to more rational place.
+	* collect2.c (resolve_lib_name): Move '/' check out of loop.
 
 2000-06-24  Dirk Duellmann  <Dirk.Duellmann@cern.ch>
 

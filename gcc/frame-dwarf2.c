@@ -466,6 +466,108 @@ extract_cie_info (fde *f, struct cie_info *c)
   return p;
 }
 
+/* Decode a DW_OP stack operation.  */
+
+static void *
+decode_stack_op (unsigned char *buf, struct frame_state *state)
+{
+  enum dwarf_location_atom op;
+  int offset;
+
+  op = *buf++;
+  switch (op)
+    {
+    case DW_OP_reg0:
+    case DW_OP_reg1:
+    case DW_OP_reg2:
+    case DW_OP_reg3:
+    case DW_OP_reg4:
+    case DW_OP_reg5:
+    case DW_OP_reg6:
+    case DW_OP_reg7:
+    case DW_OP_reg8:
+    case DW_OP_reg9:
+    case DW_OP_reg10:
+    case DW_OP_reg11:
+    case DW_OP_reg12:
+    case DW_OP_reg13:
+    case DW_OP_reg14:
+    case DW_OP_reg15:
+    case DW_OP_reg16:
+    case DW_OP_reg17:
+    case DW_OP_reg18:
+    case DW_OP_reg19:
+    case DW_OP_reg20:
+    case DW_OP_reg21:
+    case DW_OP_reg22:
+    case DW_OP_reg23:
+    case DW_OP_reg24:
+    case DW_OP_reg25:
+    case DW_OP_reg26:
+    case DW_OP_reg27:
+    case DW_OP_reg28:
+    case DW_OP_reg29:
+    case DW_OP_reg30:
+    case DW_OP_reg31:
+      state->cfa_reg = op - DW_OP_reg0;
+      break;
+    case DW_OP_regx:
+      buf = decode_sleb128 (buf, &offset);
+      state->cfa_reg = offset;
+    case DW_OP_breg0:
+    case DW_OP_breg1:
+    case DW_OP_breg2:
+    case DW_OP_breg3:
+    case DW_OP_breg4:
+    case DW_OP_breg5:
+    case DW_OP_breg6:
+    case DW_OP_breg7:
+    case DW_OP_breg8:
+    case DW_OP_breg9:
+    case DW_OP_breg10:
+    case DW_OP_breg11:
+    case DW_OP_breg12:
+    case DW_OP_breg13:
+    case DW_OP_breg14:
+    case DW_OP_breg15:
+    case DW_OP_breg16:
+    case DW_OP_breg17:
+    case DW_OP_breg18:
+    case DW_OP_breg19:
+    case DW_OP_breg20:
+    case DW_OP_breg21:
+    case DW_OP_breg22:
+    case DW_OP_breg23:
+    case DW_OP_breg24:
+    case DW_OP_breg25:
+    case DW_OP_breg26:
+    case DW_OP_breg27:
+    case DW_OP_breg28:
+    case DW_OP_breg29:
+    case DW_OP_breg30:
+    case DW_OP_breg31:
+      state->cfa_reg = op - DW_OP_breg0;
+      buf = decode_sleb128 (buf, &offset);
+      state->base_offset = offset;
+      break;
+    case DW_OP_bregx:
+      buf = decode_sleb128 (buf, &offset);
+      state->cfa_reg = offset;
+      buf = decode_sleb128 (buf, &offset);
+      state->base_offset = offset;
+      break;
+    case DW_OP_deref:
+      state->indirect = 1;
+      break;
+    case DW_OP_plus_uconst:
+      buf = decode_uleb128 (buf, &offset);
+      state->cfa_offset = offset;
+      break;
+    default:
+      abort ();
+    }
+  return buf;
+}
 /* Decode one instruction's worth of DWARF 2 call frame information.
    Used by __frame_state_for.  Takes pointers P to the instruction to
    decode, STATE to the current register unwind information, INFO to the
@@ -567,6 +669,20 @@ execute_cfa_insn (void *p, struct frame_state_internal *state,
       p = decode_uleb128 (p, &offset);
       state->s.cfa_offset = offset;
       break;
+    case DW_CFA_def_cfa_expression:
+      {
+	void *end;
+	state->s.cfa_reg = 0;
+	state->s.cfa_offset = 0;
+	state->s.base_offset = 0;
+	state->s.indirect = 0;
+
+	p = decode_uleb128 (p, &offset);
+	end = p + offset;
+	while (p < end)
+	  p = decode_stack_op (p, &(state->s));
+	break;
+      }
       
     case DW_CFA_remember_state:
       {
