@@ -1,3 +1,8 @@
+2000-05-31  Jeff Sturm  <jsturm@one-point.com>
+
+	* configure.in: Fix AC_ARG_ENABLE usage.
+	* configure: Rebuilt.
+
 2001-05-06  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* configure.in: Remove warning about beta code.
