@@ -1,3 +1,13 @@
+2002-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/6512, PR target/5628
+	* config/sparc/sparc.md (movdf_insn_v9only_novis): Don't allow >= %f32
+	when memory is not aligned.
+	(movdf_insn_v9only_vis): Likewise.
+	* config/sparc/sparc.h (SECONDARY_INPUT_RELOAD_CLASS): Request a FP_REGS
+	temporary for EXTRA_FP_REGS DFmode load from unaligned memory.
+	(SECONDARY_OUTPUT_RELOAD_CLASS): Similarly.
+
 2002-05-02  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: State GNAT version requirements.
@@ -39,7 +49,7 @@ Wed May  1 10:32:37 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* reload.c (find_reloads, case 'p'): Set BADOP to 0.
 
-2002-05-01	Joel Sherrill <joel@OARcorp.com>
+2002-05-01  Joel Sherrill  <joel@OARcorp.com>
 
 	* config/sparc/t-elf (sparc-rtems, sparc-elf): Build assembly
 	support routines.
@@ -62,7 +72,7 @@ Wed May  1 10:32:37 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* toplev.c (rest_of_compilation): Don't run cross-jump before
 	bb-reorder.
 
-2002-04-30	Joel Sherrill <joel@OARcorp.com>
+2002-04-30  Joel Sherrill  <joel@OARcorp.com>
 
 	* config/arm/rtems-elf.h: Add #undef TARGET_VERSION to prevent warning.
 

@@ -1426,7 +1426,10 @@ extern const char leaf_reg_remap[];
 
    We need a temporary when loading/storing a HImode/QImode value
    between memory and the FPU registers.  This can happen when combine puts
-   a paradoxical subreg in a float/fix conversion insn.  */
+   a paradoxical subreg in a float/fix conversion insn.
+
+   We need a temporary when loading/storing a DFmode value between
+   unaligned memory and the upper FPU registers.  */
 
 #define SECONDARY_INPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
   ((FP_REG_CLASS_P (CLASS)					\
@@ -1435,28 +1438,36 @@ extern const char leaf_reg_remap[];
         || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
             && true_regnum (IN) == -1)))			\
    ? GENERAL_REGS						\
-   : (((TARGET_CM_MEDANY					\
-        && symbolic_operand ((IN), (MODE)))			\
-       || (TARGET_CM_EMBMEDANY					\
-           && text_segment_operand ((IN), (MODE))))		\
-      && !flag_pic)						\
-     ? GENERAL_REGS						\
-     : NO_REGS)
+   : ((CLASS) == EXTRA_FP_REGS && (MODE) == DFmode		\
+      && GET_CODE (IN) == MEM && TARGET_ARCH32			\
+      && ! mem_min_alignment ((IN), 8))				\
+     ? FP_REGS							\
+     : (((TARGET_CM_MEDANY					\
+	  && symbolic_operand ((IN), (MODE)))			\
+	 || (TARGET_CM_EMBMEDANY				\
+	     && text_segment_operand ((IN), (MODE))))		\
+	&& !flag_pic)						\
+       ? GENERAL_REGS						\
+       : NO_REGS)
 
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, IN)		\
-   ((FP_REG_CLASS_P (CLASS)					\
+  ((FP_REG_CLASS_P (CLASS)					\
      && ((MODE) == HImode || (MODE) == QImode)			\
      && (GET_CODE (IN) == MEM					\
          || ((GET_CODE (IN) == REG || GET_CODE (IN) == SUBREG)	\
              && true_regnum (IN) == -1)))			\
-    ? GENERAL_REGS						\
-   : (((TARGET_CM_MEDANY					\
-        && symbolic_operand ((IN), (MODE)))			\
-       || (TARGET_CM_EMBMEDANY					\
-           && text_segment_operand ((IN), (MODE))))		\
-      && !flag_pic)						\
-     ? GENERAL_REGS						\
-     : NO_REGS)
+   ? GENERAL_REGS						\
+   : ((CLASS) == EXTRA_FP_REGS && (MODE) == DFmode		\
+      && GET_CODE (IN) == MEM && TARGET_ARCH32			\
+      && ! mem_min_alignment ((IN), 8))				\
+     ? FP_REGS							\
+     : (((TARGET_CM_MEDANY					\
+	  && symbolic_operand ((IN), (MODE)))			\
+	 || (TARGET_CM_EMBMEDANY				\
+	     && text_segment_operand ((IN), (MODE))))		\
+	&& !flag_pic)						\
+       ? GENERAL_REGS						\
+       : NO_REGS)
 
 /* On SPARC it is not possible to directly move data between 
    GENERAL_REGS and FP_REGS.  */
