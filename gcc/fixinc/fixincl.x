@@ -4217,12 +4217,12 @@ const char* apzSysv68_StringPatch[] = { "sed",
     "-e", "s/strdup(char \\*s1);/strdup(const char *s1);/",
     "-e", "/^extern char$/N",
     "-e", "s/^extern char\\(\\n\t\\*memccpy(),\\)$/extern void\\1/",
+    "-e", "/^extern int$/N",
+    "-e", "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/",
     "-e", "/^\tstrncmp(),$/N",
     "-e", "s/^\\(\tstrncmp()\\),\\n\\(\tstrlen(),\\)$/\\1;\\\n\
 extern unsigned int\\\n\
 \\2/",
-    "-e", "/^extern int$/N",
-    "-e", "s/^extern int\\(\\n\tstrlen(),\\)/extern size_t\\1/",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
