@@ -1,3 +1,8 @@
+Sun Sep 20 00:00:51 1998  Richard Henderson  <rth@cygnus.com>
+
+        * combine.c (distribute_notes): If an insn is a cc0 user, only
+        delete it if we can also delete the cc0 setter.
+
 Sun Sep 20 00:22:23 1998  Michael Tiemann  <michael@impact.tiemann.org>
 
 	* fold-const.c (fold): Fix typo in COND_EXPR handling code.

@@ -11542,6 +11542,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 		    {
 		      rtx set = single_set (tem);
 		      rtx inner_dest = 0;
+		      rtx cc0_setter = NULL_RTX;
 
 		      if (set != 0)
 			for (inner_dest = SET_DEST (set);
@@ -11552,10 +11553,21 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			  ;
 
 		      /* Verify that it was the set, and not a clobber that
-			 modified the register.  */
+			 modified the register. 
+
+			 CC0 targets must be careful to maintain setter/user
+			 pairs.  If we cannot delete the setter due to side
+			 effects, mark the user with an UNUSED note instead
+			 of deleting it.  */
 
 		      if (set != 0 && ! side_effects_p (SET_SRC (set))
-			  && rtx_equal_p (XEXP (note, 0), inner_dest))
+			  && rtx_equal_p (XEXP (note, 0), inner_dest)
+#ifdef HAVE_cc0
+			  && (! reg_mentioned_p (cc0_rtx, SET_SRC (set))
+			      || ((cc0_setter = prev_cc0_setter (tem)) != NULL
+				  && sets_cc0_p (PATTERN (cc0_setter)) > 0))
+#endif
+			  )
 			{
 			  /* Move the notes and links of TEM elsewhere.
 			     This might delete other dead insns recursively. 
@@ -11571,6 +11583,23 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			  PUT_CODE (tem, NOTE);
 			  NOTE_LINE_NUMBER (tem) = NOTE_INSN_DELETED;
 			  NOTE_SOURCE_FILE (tem) = 0;
+
+#ifdef HAVE_cc0
+			  /* Delete the setter too.  */
+			  if (cc0_setter)
+			    {
+			      PATTERN (cc0_setter) = pc_rtx;
+
+			      distribute_notes (REG_NOTES (cc0_setter),
+						cc0_setter, cc0_setter,
+						NULL_RTX, NULL_RTX, NULL_RTX);
+			      distribute_links (LOG_LINKS (cc0_setter));
+
+			      PUT_CODE (cc0_setter, NOTE);
+			      NOTE_LINE_NUMBER (cc0_setter) = NOTE_INSN_DELETED;
+			      NOTE_SOURCE_FILE (cc0_setter) = 0;
+			    }
+#endif
 			}
 		      /* If the register is both set and used here, put the
 			 REG_DEAD note here, but place a REG_UNUSED note
