@@ -277,7 +277,7 @@ namespace std
       { this->init(&_M_stringbuf); }
 
       explicit 
-      basic_ostringstream(const __string_type __str,
+      basic_ostringstream(const __string_type& __str,
 			  ios_base::openmode __mode = ios_base::out)
       : __ostream_type(NULL), _M_stringbuf(__str, __mode | ios_base::out)
       { this->init(&_M_stringbuf); }
