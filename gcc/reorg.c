@@ -248,6 +248,7 @@ static int redundant_insn_p	PROTO((rtx, rtx, rtx));
 static int own_thread_p		PROTO((rtx, rtx, int));
 static int find_basic_block	PROTO((rtx));
 static void update_block	PROTO((rtx, rtx));
+static int reorg_redirect_jump PROTO((rtx, rtx));
 static void update_reg_dead_notes PROTO((rtx, rtx));
 static void update_live_status	PROTO((rtx, rtx));
 static rtx next_insn_no_annul	PROTO((rtx));
@@ -1121,7 +1122,7 @@ optimize_skip (insn)
 	  target_label = JUMP_LABEL (next_trial);
 	  if (target_label == 0)
 	    target_label = find_end_label ();
-	  redirect_jump (insn, target_label);
+	  reorg_redirect_jump (insn, target_label);
 	}
 
       INSN_ANNULLED_BRANCH_P (insn) = 1;
@@ -2077,6 +2078,22 @@ update_block (insn, where)
     bb_ticks[b]++;
 }
 
+/* Similar to REDIRECT_JUMP except that we update the BB_TICKS entry for
+   the basic block containing the jump.  */
+
+static int
+reorg_redirect_jump (jump, nlabel)
+     rtx jump;
+     rtx nlabel;
+{
+  int b = find_basic_block (jump);
+
+  if (b != -1)
+    bb_ticks[b]++;
+
+  return redirect_jump (jump, nlabel);
+}
+
 /* Called when INSN is being moved forward into a delay slot of DELAYED_INSN.
    We check every instruction between INSN and DELAYED_INSN for REG_DEAD notes
    that reference values used in INSN.  If we find one, then we move the
@@ -2908,12 +2925,12 @@ fill_simple_delay_slots (first, non_jumps_p)
 	      delay_list 
 		= add_to_delay_list (copy_rtx (next_trial), delay_list);
 	      slots_filled++;
-	      redirect_jump (trial, new_label);
+	      reorg_redirect_jump (trial, new_label);
 
 	      /* If we merged because we both jumped to the same place,
 		 redirect the original insn also.  */
 	      if (target)
-		redirect_jump (insn, new_label);
+		reorg_redirect_jump (insn, new_label);
 	    }
 	}
 
@@ -3347,7 +3364,7 @@ fill_slots_from_thread (insn, condition, thread, opposite_thread, likely,
       else
 	label = get_label_before (new_thread);
 
-      redirect_jump (insn, label);
+      reorg_redirect_jump (insn, label);
     }
 
   return delay_list;
@@ -3513,7 +3530,7 @@ relax_delay_slots (first)
 	    }
 
 	  if (target_label != JUMP_LABEL (insn))
-	    redirect_jump (insn, target_label);
+	    reorg_redirect_jump (insn, target_label);
 
 	  /* See if this jump branches around a unconditional jump.
 	     If so, invert this jump and point it to the target of the
@@ -3578,7 +3595,7 @@ relax_delay_slots (first)
 	    ++LABEL_NUSES (other_target);
 
 	  if (invert_jump (other, target_label))
-	    redirect_jump (insn, other_target);
+	    reorg_redirect_jump (insn, other_target);
 
 	  if (other_target)
 	    --LABEL_NUSES (other_target);
@@ -3620,7 +3637,7 @@ relax_delay_slots (first)
 
 	  if (trial != target_label)
 	    {
-	      redirect_jump (delay_insn, trial);
+	      reorg_redirect_jump (delay_insn, trial);
 	      target_label = trial;
 	    }
 
@@ -3635,7 +3652,7 @@ relax_delay_slots (first)
 		target_label = find_end_label ();
 	      else
 		target_label = get_label_before (trial);
-	      redirect_jump (delay_insn, target_label);
+	      reorg_redirect_jump (delay_insn, target_label);
 	      next = insn;
 	      continue;
 	    }
@@ -3652,7 +3669,7 @@ relax_delay_slots (first)
 	      target_label = JUMP_LABEL (XVECEXP (PATTERN (trial), 0, 0));
 	      if (target_label == 0)
 		target_label = find_end_label ();
-	      redirect_jump (delay_insn, target_label);
+	      reorg_redirect_jump (delay_insn, target_label);
 	      next = insn;
 	      continue;
 	    }
@@ -3802,9 +3819,9 @@ make_return_insns (first)
 
       /* If we can't make the jump into a RETURN, redirect it to the best
 	 RETURN and go on to the next insn.  */
-      if (! redirect_jump (jump_insn, NULL_RTX))
+      if (! reorg_redirect_jump (jump_insn, NULL_RTX))
 	{
-	  redirect_jump (jump_insn, real_return_label);
+	  reorg_redirect_jump (jump_insn, real_return_label);
 	  continue;
 	}
 
@@ -3860,7 +3877,7 @@ make_return_insns (first)
       else
 	/* It is probably more efficient to keep this with its current
 	   delay slot as a branch to a RETURN.  */
-	redirect_jump (jump_insn, real_return_label);
+	reorg_redirect_jump (jump_insn, real_return_label);
     }
 
   /* Now delete REAL_RETURN_LABEL if we never used it.  Then try to fill any
