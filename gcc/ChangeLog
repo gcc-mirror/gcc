@@ -1,3 +1,17 @@
+2005-01-01  Richard Henderson  <rth@redhat.com>
+
+	PR c/19031
+	* c-decl.c (pop_file_scope): Call maybe_apply_pending_pragma_weaks.
+	* c-lang.c (finish_file): Don't do it here.
+	* objc/objc-act.c (objc_finish_file): Likewise.
+
+	* cgraph.c (decl_assembler_name_equal): New.
+	(cgraph_node_for_asm, cgraph_varpool_node_for_asm): New.
+	(cgraph_varpool_node): Actually link up cgraph_varpool_nodes.
+	* cgraph.h (struct cgraph_varpool_node): Add next.
+	(cgraph_node_for_asm, cgraph_varpool_node_for_asm): Declare.
+	* varasm.c (assemble_alias): Mark the target as needed.
+
 2005-01-01  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR middle-end/19221
