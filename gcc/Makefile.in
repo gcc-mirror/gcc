@@ -1321,7 +1321,7 @@ c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 
 c-options.c: c.opt $(srcdir)/opts.sh
-	$(SHELL) $(srcdir)/opts.sh c-options.c c-options.h $(srcdir)/c.opt
+	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh c-options.c c-options.h $(srcdir)/c.opt
 
 c-options.h: c-options.c
 	@true
@@ -2783,7 +2783,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	-rm -f xlimits.h
 # Delete other built files.
 	-rm -f xsys-protos.hT
-	-rm -f specs.h options.h gencheck.h
+	-rm -f specs.h options.h gencheck.h c-options.c c-options.h
 # Delete the stamp and temporary files.
 	-rm -f s-* tmp-* stamp-* stmp-*
 	-rm -f */stamp-* */tmp-*
