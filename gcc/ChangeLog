@@ -1,5 +1,8 @@
 2003-12-07  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in, aclocal.m4: Revert to pre-2.5x conversion status.
+	* configure: Regenerate with autoconf 2.13.
+
 	* configure.in: Replace AC_INIT, AC_OUTPUT, AC_CANONICAL_SYSTEM
 	with modern equivalents.
 	* configure: Regenerate.
