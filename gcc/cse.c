@@ -5557,6 +5557,8 @@ cse_insn (insn, libcall_insn)
 	  /* Look for a substitution that makes a valid insn.  */
 	  else if (validate_change (insn, &SET_SRC (sets[i].rtl), trial, 0))
 	    {
+	      rtx new = canon_reg (SET_SRC (sets[i].rtl), insn);
+
 	      /* If we just made a substitution inside a libcall, then we
 		 need to make the same substitution in any notes attached
 		 to the RETVAL insn.  */
@@ -5565,14 +5567,12 @@ cse_insn (insn, libcall_insn)
 		      || GET_CODE (sets[i].orig_src) == SUBREG
 		      || GET_CODE (sets[i].orig_src) == MEM))
 		replace_rtx (REG_NOTES (libcall_insn), sets[i].orig_src,
-			     canon_reg (SET_SRC (sets[i].rtl), insn));
+			     copy_rtx (new));
 
 	      /* The result of apply_change_group can be ignored; see
 		 canon_reg.  */
 
-	      validate_change (insn, &SET_SRC (sets[i].rtl),
-			       canon_reg (SET_SRC (sets[i].rtl), insn),
-			       1);
+	      validate_change (insn, &SET_SRC (sets[i].rtl), new, 1);
 	      apply_change_group ();
 	      break;
 	    }
