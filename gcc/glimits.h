@@ -67,5 +67,17 @@
 #undef ULONG_MAX
 #define ULONG_MAX 4294967295UL
 
+#if !defined (__STRICT_ANSI__) || defined (_GNU_SOURCE)
+/* Minimum and maximum values a `signed long long int' can hold.  */
+#undef LONG_LONG_MIN
+#define LONG_LONG_MIN (-LONG_LONG_MAX-1)
+#undef LONG_LONG_MAX
+#define LONG_LONG_MAX 9223372036854775807LL
+
+/* Maximum value an `unsigned long long int' can hold.  (Minimum is 0).  */
+#undef ULONG_LONG_MAX
+#define ULONG_LONG_MAX 18446744073709551615ULL
+#endif
+
 #endif /* _MACH_MACHLIMITS_H_ */
 #endif /* _LIMITS_H_ */
