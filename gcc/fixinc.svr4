@@ -31,6 +31,9 @@
 #
 #	See README-fixinc for more information.
 
+# Directory where gcc sources (and sometimes special include files) live.
+SRCDIR=${3-${SRCDIR-.}}
+
 # Directory containing the original header files.
 INPUT=${2-${INPUT-/usr/include}}
 
@@ -55,7 +58,7 @@ cd $LIB; LIB=`pwd`
 
 # This prevents /bin/ex from failing if the current terminal type is
 # unrecognizable.
-TERM=unknown
+TERM=dumb
 export TERM
 
 echo 'Building fixincludes in ' ${LIB}
@@ -950,7 +953,7 @@ cd ${ORIG_DIR}
 
 echo 'Replacing <sys/byteorder.h>'
 rm -f ${LIB}/sys/byteorder.h
-cp byteorder.h ${LIB}/sys/byteorder.h
+cp ${SRCDIR}/byteorder.h ${LIB}/sys/byteorder.h
 
 exit 0
 
