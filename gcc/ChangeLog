@@ -7,6 +7,8 @@ Thu Jun 17 15:07 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 Thu Jun 17 21:34:24 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* invoke.texi (ia32 options): Fix typo.
+
 	* loop.c (strength_reduce): When doing biv->giv conversion, update
 	reg note of NEXT->insn.
 
