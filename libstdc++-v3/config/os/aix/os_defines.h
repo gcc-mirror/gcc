@@ -1,6 +1,6 @@
 // Specific definitions for AIX  -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -54,14 +54,5 @@
 
 #undef _G_USING_THUNKS
 #define _G_USING_THUNKS 0
-
-#if !defined(_AIX51) || !defined(__64BIT__)
-#define __glibcpp_wchar_t_bits 16
-#define __glibcpp_wchar_t_is_signed false
-#endif
-
-#ifdef __64BIT__
-#define __glibcpp_long_bits 64
-#endif
 
 #endif

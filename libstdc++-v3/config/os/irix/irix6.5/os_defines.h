@@ -1,6 +1,6 @@
 // Specific definitions for IRIX  -*- C++ -*-
 
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,13 +50,6 @@
 
 // GCC does not use thunks on IRIX. 
 #define _G_USING_THUNKS 0
-
-#define __glibcpp_long_double_bits 64
-
-#if __LONG_MAX__ > 2147483647
-#define __glibcpp_wchar_t_bits 64
-#define __glibcpp_long_bits 64
-#endif
 
 #endif
 
