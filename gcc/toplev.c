@@ -567,8 +567,6 @@ char *lang_options[] =
   "-+e2",
   "-fsave-memoized",
   "-fno-save-memoized",
-  "-fSOS",
-  "-fno-SOS",
   "-fcadillac",
   "-fno-cadillac",
   "-fgc",
