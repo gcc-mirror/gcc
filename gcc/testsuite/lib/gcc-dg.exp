@@ -294,3 +294,31 @@ proc dg-require-gc-sections { args } {
 	return
     }
 }
+
+# We need to make sure that additional_files and additional_sources
+# are both cleared out after every test.  It is not enough to clear
+# them out *before* the next test run because gcc-target-compile gets
+# run directly from some .exp files (outside of any test).  (Those
+# uses should eventually be eliminated.) 
+
+# Because the DG framework doesn't provide a hook that is run at the
+# end of a test, we must replace dg-test with a wrapper.
+
+if { [info procs saved-dg-test] == [list] } {
+    rename dg-test saved-dg-test
+
+    proc dg-test { args } {
+	global additional_files
+	global additional_sources
+	global errorInfo
+
+	if { [ catch { eval saved-dg-test $args } errmsg ] } {
+	    set saved_info $errorInfo
+	    set additional_files ""
+	    set additional_sources ""
+	    error $errmsg $saved_info
+	}
+	set additional_files ""
+	set additional_sources ""
+    }
+}
