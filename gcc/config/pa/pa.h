@@ -1608,7 +1608,7 @@ bss_section ()								\
    if (TARGET_TRAILING_COLON)				\
      fputs (":\n", FILE);				\
    else							\
-     fputs (":\n", FILE);}
+     fputs ("\n", FILE);}
 
 /* This is how to store into the string LABEL
    the symbol_ref name of an internal numbered label where
