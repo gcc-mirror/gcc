@@ -1968,11 +1968,34 @@ char *
 xmalloc (size)
      unsigned size;
 {
-  register char *value = (char *) malloc (size);
-  if (value == 0 && size != 0)
+  register char *value;
+
+  if (size == 0)
+    size = 1;
+
+  value = (char *) malloc (size);
+  if (value == 0)
     fatal ("virtual memory exhausted");
   return value;
 }
+
+/* Same as `calloc' but report error if no memory available.  */
+
+char *
+xcalloc (size1, size2)
+     unsigned size1, size2;
+{
+  register char *value;
+
+  if (size1 == 0 || size2 == 0)
+    size1 = size2 = 1;
+
+  value = (char *) calloc (size1, size2);
+  if (value == 0)
+    fatal ("virtual memory exhausted");
+  return value;
+}
+
 
 /* Same as `realloc' but report error if no memory available.  
    Also handle null PTR even if the vendor realloc gets it wrong.  */
@@ -1982,11 +2005,18 @@ xrealloc (ptr, size)
      char *ptr;
      int size;
 {
-  char *result = (ptr
-		  ? (char *) realloc (ptr, size)
-		  : (char *) malloc (size));
+  char *result;
+
+  if (size == 0)
+    size = 1;
+
+  result = (ptr
+	    ? (char *) realloc (ptr, size)
+	    : (char *) malloc (size));
+
   if (!result)
     fatal ("virtual memory exhausted");
+
   return result;
 }
 

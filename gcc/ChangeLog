@@ -1,3 +1,13 @@
+Thu Jul  2 14:16:11 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* varray.{c,h}: New files to provide virtual array support.
+	* Makefile.in (OBJS): Add varray.o.
+	(varray.o): Add new file.
+
+	* toplev.c (x{m,re}alloc): If size is 0, allocate 1 byte.
+	(xcalloc): Provide frontend for calloc.
+	* {tree,rtl}.h (xcalloc): Add declaration.
+
 Thu Jul  2 10:11:47 1998  Robert Lipe  <robertl@dgii.com>
 
 	* install.texi (sco3.2v5): Document new --with-gnu-as flag.

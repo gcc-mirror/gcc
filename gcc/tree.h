@@ -1314,9 +1314,11 @@ extern int floor_log2_wide             PROTO((unsigned HOST_WIDE_INT));
    cast their pointers to char *, and all of the xrealloc's don't use
    void * yet.  */
 extern char *xmalloc			PROTO((size_t));
+extern char *xcalloc			PROTO((size_t, size_t));
 extern char *xrealloc			PROTO((void *, size_t));
 #else
 extern char *xmalloc ();
+extern char *xcalloc ();
 extern char *xrealloc ();
 #endif
 
