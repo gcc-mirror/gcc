@@ -1,5 +1,8 @@
 2002-01-23  Jason Merrill  <jason@redhat.com>
 
+	PR c++/5453
+	* class.c (fixed_type_or_null): Fix thinko.
+
 	PR c++/3331
 	* init.c (resolve_offset_ref): Use build_indirect_ref.
 
