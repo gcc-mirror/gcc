@@ -2,8 +2,8 @@
 
 # vasta@apollo.com says this is how to compile on an Apollo (SR10.x).
 # Use a Berkeley environment.
-CC=cc -g -A nansi -A cpu,3000 -A runtype,bsd4.3 -A systype,any -DSHORT_ENUM_BUG
-OLDCC=cc -g -A nansi -A cpu,3000 -A runtype,bsd4.3 -A systype,any -DSHORT_ENUM_BUG
+CC=cc -g -A nansi -A cpu,3000 -A runtype,bsd4.3 -A systype,any
+OLDCC=cc -g -A nansi -A cpu,3000 -A runtype,bsd4.3 -A systype,any
 
 # This used to redefine CFLAGS and LIBGCC2_CFLAGS to eliminate the unsupported
 # -g flag from both macros.  This gives an undebuggable stage1 compiler which

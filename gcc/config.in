@@ -419,6 +419,9 @@
 /* Define if you have the i library (-li).  */
 #undef HAVE_LIBI
 
+/* Define if enumerated bitfields are treated as unsigned values. */
+#undef ENUM_BITFIELDS_ARE_UNSIGNED
+
 /* Define if mmap can get us zeroed pages from /dev/zero. */
 #undef HAVE_MMAP_ANYWHERE
 

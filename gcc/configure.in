@@ -377,6 +377,27 @@ if test $gcc_cv_header_inttypes_h = yes; then
   AC_DEFINE(HAVE_INTTYPES_H)
 fi
 
+#
+# Determine if enumerated bitfields are unsigned.   ISO C says they can 
+# be either signed or unsigned.
+#
+AC_CACHE_CHECK(for unsigned enumerated bitfields, gcc_cv_enum_bf_unsigned,
+[AC_TRY_RUN(#include <stdlib.h>
+enum t { BLAH = 128 } ;
+struct s_t { enum t member : 8; } s ;
+int main(void)
+{            
+        s.member = BLAH;
+        if (s.member < 0) exit(1);
+        exit(0);
+
+}, gcc_cv_enum_bf_unsigned=yes, gcc_cv_enum_bf_unsigned=no, gcc_cv_enum_bf_unsigned=yes)])
+AC_MSG_RESULT($gcc_cv_enum_bf_unsigned)
+if test $gcc_cv_enum_bf_unsigned = yes; then
+  AC_DEFINE(ENUM_BITFIELDS_ARE_UNSIGNED, 1,
+    [Define if enumerated bitfields are treated as unsigned values.])
+fi
+
 AC_CHECK_FUNCS(strtoul bsearch putenv popen bcopy bzero bcmp \
 	index rindex strchr strrchr kill getrlimit setrlimit atoll atoq \
 	sysconf isascii gettimeofday strsignal putc_unlocked fputc_unlocked \
