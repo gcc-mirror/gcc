@@ -151,9 +151,11 @@ do {									\
 			  %{ansi:/usr/ccs/lib/values-Xc.o%s} \
 			  %{!ansi: \
 			   %{traditional:/usr/ccs/lib/values-Xt.o%s} \
-			   %{!traditional:/usr/ccs/lib/values-Xa.o%s}}}}"
+			   %{!traditional:/usr/ccs/lib/values-Xa.o%s}}}} \
+			  crtbegin.o%s"
 
 #undef	LIB_SPEC
 #define LIB_SPEC \
   "%{!shared:%{!symbolic:-lc}} \
+  crtend.o%s \
   %{!shared:%{!symbolic:%{pg:crtn.o%s}%{!pg:crtn.o%s}}}"

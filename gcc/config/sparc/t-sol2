@@ -1,10 +1,6 @@
 # we need startup files for solaris, since we don't get them with the system
 
-EXTRA_PARTS=crt1.o crti.o crtn.o gmon.o
-
-# For svr4 we run the special svr4 fixincludes script.
-
-FIXINCLUDES=fixinc.svr4
+EXTRA_PARTS=crt1.o crti.o crtn.o gmon.o crtbegin.o crtend.o
 
 # we need to supply our own assembly versions of libgcc1.c files,
 # since the user may not have native 'cc' available
