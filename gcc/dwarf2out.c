@@ -57,10 +57,10 @@ Boston, MA 02111-1307, USA.  */
 
 /* DWARF2 Abbreviation Glossary:
    CFA = Canonical Frame Address
-	   an abstract idea representing a fixed stack address
-	   identifying a stack call frame.  The CFA register and
-	   offset, whose value may change, keeps track of its value at
-	   runtime.
+	   a fixed address on the stack which identifies a call frame.
+	   We define it to be the value of SP just before the call insn.
+	   The CFA register and offset, which may change during the course
+	   of the function, are used to calculate its value at runtime.
    CFI = Call Frame Instruction
 	   an instruction for the DWARF2 abstract machine
    CIE = Common Information Entry
@@ -1547,12 +1547,14 @@ dwarf2out_frame_debug_expr (expr, label)
 	      if (GET_CODE (XEXP (src, 0)) == REG
 		  && REGNO (XEXP (src, 0)) == cfa.reg
 		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
-		/* Setting the FP (or a scratch that will be copied into the FP
-		   later on) from SP + const.  */
+		/* Setting a temporary CFA register that will be copied
+		   into the FP later on.  */
 		cfa.reg = REGNO (dest);
 	      /* Rule 5 */
 	      else
 		{
+		  /* Setting a scratch register that we will use instead
+		     of SP for saving registers to the stack.  */
 		  if (XEXP (src, 1) != stack_pointer_rtx)
 		    abort ();
 		  if (GET_CODE (XEXP (src, 0)) != REG
@@ -11665,7 +11667,8 @@ dwarf2out_line (filename, line)
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, SEPARATE_LINE_CODE_LABEL,
 				     separate_line_info_table_in_use);
 	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s line %d", ASM_COMMENT_START, line);
+	    fprintf (asm_out_file, "\t%s %s:%d", ASM_COMMENT_START,
+		     filename, line);
 	  fputc ('\n', asm_out_file);
 
 	  /* expand the line info table if necessary */
@@ -11694,7 +11697,8 @@ dwarf2out_line (filename, line)
 	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, LINE_CODE_LABEL,
 				     line_info_table_in_use);
 	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s line %d", ASM_COMMENT_START, line);
+	    fprintf (asm_out_file, "\t%s %s:%d", ASM_COMMENT_START,
+		     filename, line);
 	  fputc ('\n', asm_out_file);
 
 	  /* Expand the line info table if necessary.  */
