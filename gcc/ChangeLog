@@ -1,3 +1,8 @@
+1998-02-10  John F Carr  <jfc@mit.edu>
+
+	* config/sparc/sparc.md (movdi_v8plus): Output stx on alternative
+	1, fzero on alternative 8.
+
 Tue Feb 10 09:02:19 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rs6000.c (setup_incoming_varargs): Always set rs6000_sysv_varargs_p.
