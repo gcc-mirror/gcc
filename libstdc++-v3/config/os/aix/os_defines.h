@@ -35,6 +35,7 @@
 
 #undef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 500
+
 #undef _XOPEN_SOURCE_EXTENDED
 #define _XOPEN_SOURCE_EXTENDED 1
 
@@ -51,8 +52,5 @@
 #define __off_t off_t
 #define __off64_t off64_t
 #define __ssize_t ssize_t
-
-#undef _G_USING_THUNKS
-#define _G_USING_THUNKS 0
 
 #endif

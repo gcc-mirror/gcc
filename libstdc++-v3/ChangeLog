@@ -1,3 +1,7 @@
+2005-01-15  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/os/aix/os_defines.h (_G_USING_THUNKS): Delete.
+
 2005-01-14  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/19422
