@@ -1,5 +1,7 @@
 1998-05-24  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* g++.old-deja/old-deja.exp: Strip leading directories.
+
 	* lib/old-dejagnu.exp: All tests fail if we got an internal compiler
 	error for the line.  Don't run multiple tests for the same line.
 
