@@ -3231,12 +3231,14 @@ rest_of_compilation (decl)
       TIMEVAR (cse_time, reg_scan (insns, max_reg_num (), 1));
 
       if (flag_thread_jumps)
-	/* Hacks by tiemann & kenner.  */
 	TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 1));
 
       TIMEVAR (cse_time, tem = cse_main (insns, max_reg_num (),
 					 0, cse_dump_file));
       TIMEVAR (cse_time, delete_dead_from_cse (insns, max_reg_num ()));
+
+      /* We are no longer anticipating cse in this function, at least.  */
+      cse_not_expected = 1;
 
       if (tem || optimize > 1)
 	TIMEVAR (jump_time, jump_optimize (insns, 0, 0, 0));
@@ -3323,6 +3325,7 @@ rest_of_compilation (decl)
       TIMEVAR (jump_time, reg_scan (insns, max_reg_num (), 0));
       TIMEVAR (jump_time, thread_jumps (insns, max_reg_num (), 0));
     }
+
   /* Dump rtl code after cse, if we are doing that.  */
 
   if (cse2_dump)
@@ -3353,15 +3356,12 @@ rest_of_compilation (decl)
 	       if (! quiet_flag)
 		 fflush (branch_prob_dump_file);
 	     });
-  /* We are no longer anticipating cse in this function, at least.  */
-
-  cse_not_expected = 1;
 
   /* Now we choose between stupid (pcc-like) register allocation
      (if we got the -noreg switch and not -opt)
      and smart register allocation.  */
 
-  if (optimize > 0)			/* Stupid allocation probably won't work */
+  if (optimize > 0)		/* Stupid allocation probably won't work */
     obey_regdecls = 0;		/* if optimizations being done.  */
 
   regclass_init ();
