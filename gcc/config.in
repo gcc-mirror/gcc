@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -501,6 +501,12 @@
 /* Define if host mkdir takes a single argument. */
 #undef MKDIR_TAKES_ONE_ARG
 
+/* Define 0/1 to force the choice for exception handling model. */
+#undef CONFIG_SJLJ_EXCEPTIONS
+
+/* Define if gcc should use -lunwind. */
+#undef USE_LIBUNWIND_EXCEPTIONS
+
 /* Define to the name of a file containing a list of extra machine modes
    for this architecture. */
 #undef EXTRA_MODES_FILE
@@ -607,12 +613,6 @@
 
 /* Define if your MIPS libgloss linker scripts consistently include STARTUP directives. */
 #undef HAVE_MIPS_LIBGLOSS_STARTUP_DIRECTIVES
-
-/* Define 0/1 to force the choice for exception handling model. */
-#undef CONFIG_SJLJ_EXCEPTIONS
-
-/* Define if gcc should use -lunwind. */
-#undef USE_LIBUNWIND_EXCEPTIONS
 
 
 /* Bison unconditionally undefines `const' if neither `__STDC__' nor

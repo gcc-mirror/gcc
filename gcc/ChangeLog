@@ -1,3 +1,52 @@
+2003-08-10  Zack Weinberg  <zack@codesourcery.com>
+
+	Backport the following changes from mainline:
+
+    2003-05-08  David Mosberger <davidm@hpl.hp.com>
+
+	* unwind-libunwind.c (_Unwind_FindEnclosingFunction): New.
+
+    2003-04-03  Richard Henderson  <rth@redhat.com>
+
+	* unwind-libunwind.c (_Unwind_GetCFA): New.
+
+    2003-03-27  David Mosberger <davidm@hpl.hp.com>
+
+	* unwind-libunwind.c (uw_frame_state_for): Adjust for libunwind
+	v0.9 API change: replace read of UNW_REG_HANDLER with
+	unw_get_proc_info().
+	(_Unwind_GetLanguageSpecificData): Replace read of UNW_REG_LSDA
+	with unw_get_proc_info().
+	(_Unwind_GetRegionStart): Replace UNW_REG_PROC_START with
+	unw_get_proc_info().
+
+    2003-03-13  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* unwind-libunwind.c: Replace "GNU CC" with "GCC".
+
+    2002-10-02  David Mosberger-Tang  <David.Mosberger@acm.org>
+
+	* config/t-libunwind: Mention unwind-sjlj.c.
+	* unwind-libunwind.c: Change #ifdef __USING_LIBUNWIND_EXCEPTIONS__
+	to #ifndef __USING_SJLJ_EXCEPTIONS__.
+
+	* configure.in: Move sjlj-exceptions and --enable-libunwind-exceptions
+	before inclusion of config.gcc, but after configuring the compiler etc.
+	Determine default value for --enable-libunwind-exceptions based on
+	whether the host has a libunwind library (not guaranteed to be correct,
+	but it's a reasonable first guess and can always be overridden with an
+	explicit --enable/disable-libunwind-exceptions.
+	* config.gcc: For target ia64*-*-linux*, mention t-libunwind as a
+	tmake_file when $use_libunwind_exceptions is enabled.
+	* Makefile.in: Update comment: LIB2ADDEH is updated not just by
+	ia64 (e.g., config/t-linux also updates it).
+	* gcc.c (init_spec) [USE_LIBUNWIND_EXCEPTIONS]: Mention -lunwind
+	along with the shared version of libgcc since the latter requires
+	the former.
+
+	* unwind-libunwind.c: New file.
+	* config/t-libunwind: Ditto.
+
 2003-08-10  Richard Henderson  <rth@redhat.com>
 
 	PR target/11693
@@ -23,7 +72,7 @@
 	* config/i386/t-sco5: Multilib for PIC support
 	* config/i386/t-sco5gas: Remove
 	* config/i386/i386.c: Check value as well as presence of
-        SUPPORTS_ONE_ONLY
+	SUPPORTS_ONE_ONLY
 	* doc/install.texi: Update for modern SCO instructions
 	* fixinc/check.tpl: Allow user to specify diff program for make check
 	* fixinc/inclhack.def: Fix several SCO header files, namely string.h,
@@ -55,7 +104,7 @@
 2003-08-08  Richard Henderson  <rth@redhat.com>
 
 	PR target/11535
-	* config/ia64/ia64.c (ia64_initial_elimination_offset): Remove 
+	* config/ia64/ia64.c (ia64_initial_elimination_offset): Remove
 	RETURN_ADDRESS_POINTER_REGNUM.
 	(ia64_expand_prologue): Don't frob it.
 	(ia64_output_function_epilogue): Likewise.
@@ -77,7 +126,7 @@
 2003-08-03  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 11709
-	* varasm.c (output_constant_def_contents): Use 
+	* varasm.c (output_constant_def_contents): Use
 	ASM_DECLARE_CONSTANT_NAME if defined.
 	* doc/tm.texi (Label Output): Document ASM_DECLARE_CONSTANT_NAME.
 	* config/darwin.h (ASM_DECLARE_OBJECT_NAME): Ensure zero-sized
@@ -99,23 +148,23 @@
 
 2003-08-03  Neil Booth  <neil@daikokuya.co.uk>
 
-        PR preprocessor/11534
-        * cppexp.c (parse_defined): Warn only if -pedantic.
+	PR preprocessor/11534
+	* cppexp.c (parse_defined): Warn only if -pedantic.
 
 2003-08-03  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (ORDINARY_FLAGS_TO_PASS): Pass AR.
-	
+
 	* Makefile.in (STAGE2_FLAGS_TO_PASS): Pass AR_FOR_TARGET and
 	RANLIB_FOR_TARGET.
 	(stage1_build): Likewise.
 
 2003-08-03  Jan Hubicka  <jh@suse.cz>
 
-        PR 10510
-        * config/pa/pa.h (MAYBE_FP_REG_CLASS_P): New.
-        (SECONDARY_MEMORY_NEEDED): Use it.
-	
+	PR 10510
+	* config/pa/pa.h (MAYBE_FP_REG_CLASS_P): New.
+	(SECONDARY_MEMORY_NEEDED): Use it.
+
 2003-08-01  Geoffrey Keating  <geoffk@apple.com>
 
 	PR 11709 (partial fix)
@@ -131,18 +180,18 @@
 	PR target/10681
 
 	2003-06-27  J"orn Rennecke <joern.rennecke@superh.com>
-        * flow.c (propagate_one_insn): Use proper test for a register
-        being part of the return value.
+	* flow.c (propagate_one_insn): Use proper test for a register
+	being part of the return value.
 
 	2003-06-26  Richard Henderson  <rth@redhat.com>
-        * flow.c (propagate_one_insn): Preserve live-at-end registers
-        across tail calls.
+	* flow.c (propagate_one_insn): Preserve live-at-end registers
+	across tail calls.
 
 	2003-06-26  Richard Henderson  <rth@redhat.com>
-        * config/ia64/ia64.c (ia64_expand_call): Don't add ar.pfs for sibcalls.
-        (ia64_split_call): Only load descriptor for GP register inputs.
-        (ia64_expand_epilogue): Check current_frame_info.mask not
-        current_function_is_leaf to restore ar.pfs.
+	* config/ia64/ia64.c (ia64_expand_call): Don't add ar.pfs for sibcalls.
+	(ia64_split_call): Only load descriptor for GP register inputs.
+	(ia64_expand_epilogue): Check current_frame_info.mask not
+	current_function_is_leaf to restore ar.pfs.
 
 2003-07-26  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
@@ -153,15 +202,15 @@
 	Backport the folling patch.
 
 	2003-04-01  Aldy Hernandez  <aldyh@redhat.com>
-         
-        PR/8878
-        * expr.c (expand_expr): Handle VECTOR_CST.
-        (const_vector_from_tree): New.
-         
-        * varasm.c (output_constant): Handle VECTOR_CST.
-         
-        * c-typeck.c (digest_init): Build a vector constant from a
-        VECTOR_TYPE.
+
+	PR/8878
+	* expr.c (expand_expr): Handle VECTOR_CST.
+	(const_vector_from_tree): New.
+
+	* varasm.c (output_constant): Handle VECTOR_CST.
+
+	* c-typeck.c (digest_init): Build a vector constant from a
+	VECTOR_TYPE.
 
 2003-07-23  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
@@ -172,11 +221,11 @@
 
 	PR optimization/10679
 	* tree-inline.c (inlinable_function_p): Honor MIN_INLINE_INSNS.
-	
+
 2003-07-22  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* unwind-c.c (PERSONALITY_FUNCTION): Delete duplicate define.
-	
+
 2003-07-23  Dave Fluri  <dave.fluri@onlink.net>
 
 	* doc/extend.texi: Fixes to spelling, grammar, and diction.
@@ -188,7 +237,7 @@
 
 2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-        PR optimization/11536
+	PR optimization/11536
 	* unroll.c (loop_iterations): Do not replace a register holding
 	the final value by its equivalent before the loop if it is not
 	invariant.
@@ -243,7 +292,7 @@
 	if the predicate doesn't satisfy.
 	(gen_cond_trap): Allow prepare_operand to fail.
 	Pass correct opnum argument to prepare_operand.
-	
+
 2003-07-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11083
@@ -259,7 +308,7 @@
 2003-07-17  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	PR bootstrap/11043
-	* config/arc/t-arc: Replace bogus references to "x-crtinit.o", 
+	* config/arc/t-arc: Replace bogus references to "x-crtinit.o",
 	"x-crtfini.o" with "crtinit.o", "crtfini.o".
 
 2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
@@ -274,7 +323,7 @@
 	* doc/invoke.texi (SPARC Options): Document "-mimpure-text".
 
 2003-07-17  Eric Botcazou <ebotcazou@libertysurf.fr>
-            Phil Edwards <phil@jaj.com>
+	    Phil Edwards <phil@jaj.com>
 
 	* doc/install.texi (*-*-solaris2*): Document the step-by-step
 	procedure to bootstrap and install.
@@ -284,9 +333,9 @@
 2003-07-16  Richard Henderson  <rth@redhat.com>
 
 	PR target/10907
-        * config/ia64/ia64.c (ia64_epilogue_uses): GP is live at end
-        even with !TARGET_CONST_GP.
-        (ia64_function_ok_for_sibcall): Reject non-local functions.
+	* config/ia64/ia64.c (ia64_epilogue_uses): GP is live at end
+	even with !TARGET_CONST_GP.
+	(ia64_function_ok_for_sibcall): Reject non-local functions.
 
 2003-07-15  Geoffrey Keating  <geoffk@apple.com>
 
@@ -420,7 +469,7 @@
 	* loop.c (loop_iv_add_mult_emit_before): Call loop_regs_update before
 	loop_insn_emit_before.
 	(loop_iv_add_mult_sink, loop_iv_add_mult_hoist): Likewise.
-	
+
 2003-07-10  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	PR bootstrap/10758
@@ -476,8 +525,8 @@
 
 2003-07-07  Dale Johannesen <dalej@apple.com>
 
-        PR 10900
-        * config/rs6000/darwin-tramp.asm:  Fix trampolines.
+	PR 10900
+	* config/rs6000/darwin-tramp.asm:  Fix trampolines.
 
 2003-07-07 Andrew Pinski <pinskia@physics.uc.edu>
 
@@ -491,7 +540,7 @@
 	(-falign-jumps): Likewise.
 
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR optimization/11198
 	* alias.c (objects_must_conflict_p): Return 1 if the types have
@@ -4263,7 +4312,7 @@ Mon Apr  7 15:56:30 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* df.c (df_uses_record): Handle CC0.
 
 2003-01-25  Jan Hubicka  <jh@suse.cz>
-            Eric Botcazou <ebotcazou@libertysurf.fr>
+	    Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	PR opt/8492
 	* gcse.c (one_cprop_pass): Delete unreachable blocks.
