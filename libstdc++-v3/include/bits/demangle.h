@@ -28,6 +28,10 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
+// This file implements demangling of "C++ ABI for Itanium"-mangled symbol
+// and type names as described in Revision 1.73 of the C++ ABI as can be found
+// at http://www.codesourcery.com/cxx-abi/abi.html#mangling
+
 #ifndef _DEMANGLER_H
 #define _DEMANGLER_H 1
 
@@ -66,6 +70,15 @@
 // _GLIBCXX_DEMANGLER_STYLE_LITERAL_INT
 // Default behaviour:					4
 // Use also an explicit cast for int in literals:	(int)4
+
+// _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
+// Default behaviour:					(i) < (3), sizeof (int)
+// Don't output spaces around operators in expressions:	(i)<(3), sizeof(int)
+
+// _GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME
+// Default behaviour:					sizeof (X::t)
+// Put 'typename' infront of <nested-name> types
+// inside a 'sizeof':					sizeof (typename X::t)
 
 namespace __gnu_cxx
 {
@@ -363,6 +376,10 @@ namespace __gnu_cxx
 	{ return (M_pos > M_maxpos) ? 0 : M_str[M_pos]; }
 
 	char
+	next_peek(void) const
+	{ return (M_pos >= M_maxpos) ? 0 : M_str[M_pos + 1]; }
+
+	char
 	next(void)
 	{ return (M_pos >= M_maxpos) ? 0 : M_str[++M_pos]; }
 
@@ -406,7 +423,7 @@ namespace __gnu_cxx
 	    qualifier_list<Allocator>* qualifiers = NULL);
 	bool decode_unqualified_name(string_type& output);
 	bool decode_unscoped_name(string_type& output);
-	bool decode_decimal_integer(string_type& output);
+	bool decode_non_negative_decimal_integer(string_type& output);
 	bool decode_special_name(string_type& output);
       };
 
@@ -465,6 +482,8 @@ namespace __gnu_cxx
 		    subst += "::";
 		  if (current() == 'S')
 		    decode_substitution(subst);
+		  else if (current() == 'T')
+		    decode_template_param(subst);
 		  else
 		    decode_unqualified_name(subst);
 		}
@@ -500,13 +519,14 @@ namespace __gnu_cxx
     inline char tolower(char c) { return isupper(c) ? c - 'A' + 'a' : c; }
 
     //
-    // <decimal-integer> ::= 0
-    //                   ::= 1|2|3|4|5|6|7|8|9 [<digit>+]
-    // <digit>           ::= 0|1|2|3|4|5|6|7|8|9
+    // <non-negative decimal integer> ::= 0
+    //                                ::= 1|2|3|4|5|6|7|8|9 [<digit>+]
+    // <digit>                        ::= 0|1|2|3|4|5|6|7|8|9
     //
     template<typename Allocator>
       bool
-      session<Allocator>::decode_decimal_integer(string_type& output)
+      session<Allocator>::
+	  decode_non_negative_decimal_integer(string_type& output)
       {
 	char c = current();
 	if (c == '0')
@@ -527,7 +547,7 @@ namespace __gnu_cxx
 	return M_result;
       }
 
-    // <number> ::= [n] <decimal-integer>
+    // <number> ::= [n] <non-negative decimal integer>
     //
     template<typename Allocator>
       bool
@@ -535,12 +555,12 @@ namespace __gnu_cxx
       {
 	_GLIBCXX_DEMANGLER_DOUT_ENTERING("decode_number");
 	if (current() != 'n')
-	  decode_decimal_integer(output);
+	  decode_non_negative_decimal_integer(output);
 	else
 	{
 	  output += '-';
 	  eat_current();
-	  decode_decimal_integer(output);
+	  decode_non_negative_decimal_integer(output);
 	}
 	_GLIBCXX_DEMANGLER_RETURN;
       }
@@ -924,6 +944,7 @@ namespace __gnu_cxx
     //   na				# new[]
     //   dl				# delete        
     //   da				# delete[]      
+    //   ps				# + (unary)
     //   ng				# - (unary)     
     //   ad				# & (unary)     
     //   de				# * (unary)     
@@ -965,12 +986,11 @@ namespace __gnu_cxx
     //   pt				# ->            
     //   cl				# ()            
     //   ix				# []            
-    //   qu				# ?             
-    //   sz				# sizeof        
-    //   sr				# scope resolution (::), see below        
+    //   qu				# ?
+    //   st				# sizeof (a type)
+    //   sz				# sizeof (an expression)
     //   cv <type>			# (cast)        
     //   v <digit> <source-name>	# vendor extended operator
-    //
     //
     // Symbol operator codes exist of two characters, we need to find a
     // quick hash so that their names can be looked up in a table.
@@ -978,24 +998,24 @@ namespace __gnu_cxx
     // The puzzle :)
     // Shift the rows so that there is at most one character per column.
     //
-    // A perfect solution:
+    // A perfect solution (Oh no, it's THE MATRIX!):
     //                                              horizontal
-    //    .....................................     offset + 'a'
-    // a, ||a||d|||||||||n||||s||||||||||||||||||	    2
-    // c, || || ||lm|o||| |||| ||||||||||||||||||	   -3
-    // d, || a| |e  | ||l |||| |||v||||||||||||||	    3
-    // e, ||  | |   o q|  |||| ||| ||||||||||||||	   -4
-    // g, |e  | |      |  t||| ||| ||||||||||||||	   -3
-    // i, |   | |      |   ||| ||| ||||||||||x|||    12
-    // l, |   | |      e   ||| ||| ||st|||||| |||	    9
-    // m, |   | |          ||| ||| |i  lm|||| |||	   18
-    // n, a   e g          ||t |w| |     |||| |||	    0
-    // o,                  ||  | | |     ||o| r||	   19
-    // p,                  lm  p | t     || |  ||	    6
-    // q,                        |       || u  ||	   14
-    // r,                        |       |m    |s	   20
-    // s,                        r       z     | 	    6
-    //    .....................................
+    //    .......................................   offset + 'a'
+    // a, a||d|||||||||n||||s||||||||||||||||||||       0
+    // c,  || |||||||lm o||| ||||||||||||||||||||       0
+    // d,  || a|||e||    l|| ||||||v|||||||||||||       4
+    // e,  ||  ||| ||     || |||o|q |||||||||||||       8
+    // g,  ||  ||| ||     || e|| |  ||||||||t||||      15
+    // i,  ||  ||| ||     ||  || |  |||||||| |||x      15
+    // l,  |e  ||| ||     st  || |  |||||||| |||       -2
+    // m,  |   |i| lm         || |  |||||||| |||       -2
+    // n,  a   e g            t| w  |||||||| |||        1
+    // o,                      |    ||||o||r |||       16
+    // p,                      |    ||lm |p  st|       17
+    // q,                      |    u|   |     |        6
+    // r,                      m     s   |     |        9
+    // s,                                t     z       12
+    //    .......................................
     // ^            ^__ second character
     // |___ first character
     //
@@ -1021,65 +1041,71 @@ namespace __gnu_cxx
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
       //   a    b    c    d    e    f    g    h    i    j    k
-      0, -95,   0,-100, -94,-101,   0,-100,   0, -85,   0,   0,
+      0, -97,   0, -97, -93, -89,   0, -82,   0, -82,   0,   0,
       //   l    m    n    o    p    q    r    s    t    u    v
-	 -88, -79, -97, -78, -91, -83, -77, -91,   0,   0,   0,
+	 -99, -99, -96, -81, -80, -91, -88, -85,   0,   0,   0,
 #else
       //   a    b    c    d    e    f    g    h    i    j    k
-      0, 161,   0, 156, 162, 155,   0, 156,   0, 171,   0,   0,
+      0, 159,   0, 159, 163, 167,   0, 174,   0, 174,   0,   0,
       //   l    m    n    o    p    q    r    s    t    u    v
-	 168, 177, 159, 178, 165, 173, 179, 165,   0,   0,   0,
+	 157, 157, 160, 175, 176, 165, 168, 171,   0,   0,   0,
 #endif
       // ... more zeros
+    };
+
+    enum xary_nt {
+      unary,
+      binary,
+      trinary
     };
 
     struct entry_st
     {
       char const* opcode;
       char const* symbol_name;
-      bool unary;
+      xary_nt type;
     };
 
     entry_st const symbol_name_table_c[39] = {
-      { "na",  "operator new[]", true },
-      { "ge",  "operator>=", false },
-      { "aa",  "operator&&", false },
-      { "da",  "operator delete[]", true },
-      { "ne",  "operator!=", false },
-      { "ad",  "operator&", true },	// unary
-      { "ng",  "operator-", true },	// unary
-      { "de",  "operator*", true },	// unary
-      { "cl",  "operator()", true },
-      { "cm",  "operator,", false },
-      { "eo=", "operator^", false },
-      { "co",  "operator~", false },
-      { "eq",  "operator==", false },
-      { "le",  "operator<=", false },
-      { "dl",  "operator delete", true },
-      { "an=", "operator&", false },
-      { "gt",  "operator>", false },
-      { "pl=", "operator+", false },
-      { "pm",  "operator->*", false },
-      { "nt",  "operator!", true },
-      { "as=", "operator", false },
-      { "pp",  "operator++", true },
-      { "nw",  "operator new", true },
-      { "sr",  "::", true },
-      { "dv=", "operator/", false },
-      { "pt",  "operator->", false },
-      { "mi=", "operator-", false },
-      { "ls=", "operator<<", false },
-      { "lt",  "operator<", false },
-      { "ml=", "operator*", false },
-      { "mm",  "operator--", true },
-      { "sz",  "sizeof", true },
-      { "rm=", "operator%", false },
-      { "oo",  "operator||", false },
-      { "qu",  "operator?", false },
-      { "ix",  "operator[]", true },
-      { "or=", "operator|", false },
-      { "", NULL, false },
-      { "rs=", "operator>>", false }
+      { "aa",  "operator&&", binary },
+      { "na",  "operator new[]", unary },
+      { "le",  "operator<=", binary },
+      { "ad",  "operator&", unary },
+      { "da",  "operator delete[]", unary },
+      { "ne",  "operator!=", binary },
+      { "mi=", "operator-", binary },
+      { "ng",  "operator-", unary },
+      { "de",  "operator*", unary },
+      { "ml=", "operator*", binary },
+      { "mm",  "operator--", unary },
+      { "cl",  "operator()", unary },
+      { "cm",  "operator,", binary },
+      { "an=", "operator&", binary },
+      { "co",  "operator~", binary },
+      { "dl",  "operator delete", unary },
+      { "ls=", "operator<<", binary },
+      { "lt",  "operator<", binary },
+      { "as=", "operator", binary },
+      { "ge",  "operator>=", binary },
+      { "nt",  "operator!", unary },
+      { "rm=", "operator%", binary },
+      { "eo=", "operator^", binary },
+      { "nw",  "operator new", unary },
+      { "eq",  "operator==", binary },
+      { "dv=", "operator/", binary },
+      { "qu",  "operator?", trinary },
+      { "rs=", "operator>>", binary },
+      { "pl=", "operator+", binary },
+      { "pm",  "operator->*", binary },
+      { "oo",  "operator||", binary },
+      { "st",  "sizeof", unary },
+      { "pp",  "operator++", unary },
+      { "or=", "operator|", binary },
+      { "gt",  "operator>", binary },
+      { "ps",  "operator+", unary },
+      { "pt",  "operator->", binary },
+      { "sz",  "sizeof", unary },
+      { "ix",  "operator[]", unary }
     };
 
     template<typename Allocator>
@@ -1110,11 +1136,11 @@ namespace __gnu_cxx
 	      if (opcode1 != current())
 		output += '=';
 	      eat_current();
-	      if (hash == 27 || hash == 28)
+	      if (hash == 16 || hash == 17)
 		M_template_args_need_space = true;
 	      _GLIBCXX_DEMANGLER_RETURN;
 	    }
-	    else if (opcode0 == 'c' && opcode1 == 'v')
+	    else if (opcode0 == 'c' && opcode1 == 'v')	// casting operator
 	    {
 	      eat_current();
 	      output += "operator ";
@@ -1141,10 +1167,15 @@ namespace __gnu_cxx
     //
     // <expression> ::= <unary operator-name> <expression>
     //              ::= <binary operator-name> <expression> <expression>
+    //              ::= <trinary operator-name> <expression> <expression> <expression>
+    //              ::= st <type>
+    //              ::= <template-param>
+    //              ::= sr <type> <unqualified-name>                   # dependent name
+    //              ::= sr <type> <unqualified-name> <template-args>   # dependent template-id
     //              ::= <expr-primary>
     //
-    // <expr-primary> ::= <template-param>		# Starts with a T
-    //                ::= L <type> <value number> E	# literal
+    // <expr-primary> ::= L <type> <value number> E     # integer literal
+    //                ::= L <type> <value float> E	# floating literal
     //                ::= L <mangled-name> E		# external name
     //
     template<typename Allocator>
@@ -1167,6 +1198,86 @@ namespace __gnu_cxx
 	  eat_current();
 	  _GLIBCXX_DEMANGLER_RETURN;
 	}
+	else if (current() == 's')
+	{
+	  char opcode1 = next();
+	  if (opcode1 == 't' || opcode1 == 'z')
+	  {
+	    eat_current();
+#ifdef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
+	    output += "sizeof(";
+#else
+	    output += "sizeof (";
+#endif
+	    if (opcode1 == 't')
+	    {
+	      // I cannot think of a mangled name that is valid for both cases
+	      // when just replacing the 't' by a 'z' or vica versa, which
+	      // indicates that there is no ambiguity that dictates the need
+	      // for a seperate "st" case, except to be able catch invalid
+	      // mangled names.  However there CAN be ambiguity in the demangled
+	      // name when there are both a type and a symbol of the same name,
+	      // which then leads to different encoding (of course) with
+	      // sizeof (type) or sizeof (expression) respectively, but that
+	      // ambiguity is not per se related to "sizeof" except that that
+	      // is the only place where both a type AND an expression are valid
+	      // in as part of a (template function) type.
+	      //
+	      // Example:
+	      //
+	      // struct B { typedef int t; };
+	      // struct A : public B { static int t[2]; };
+	      // template<int i, int j> struct C { typedef int q; };
+	      // template<int i, typename T>
+	      //   void f(typename C<sizeof (typename T::t),
+	      //                     sizeof (T::t)>::q) { }
+	      // void instantiate() { f<5, A>(0); }
+	      //
+	      // Leads to _Z1fILi5E1AEvN1CIXstN1T1tEEXszsrS2_1tEE1qE which
+	      // demangles as
+	      // void f<5, A>(C<sizeof (T::t), sizeof (T::t)>::q)
+	      //
+	      // This is ambiguity is very unlikely to happen and it is kind
+	      // of fuzzy to detect when adding a 'typename' makes sense.
+	      //
+#ifdef _GLIBCXX_DEMANGLER_STYLE_SIZEOF_TYPENAME
+	      // We can only get here inside a template parameter,
+	      // so this is syntactically correct if the given type is
+	      // a typedef.  The only disadvantage is that it is inconsistent
+	      // with all other places where the 'typename' keyword should be
+	      // used and we don't.
+	      // With this, the above example will demangle as
+	      // void f<5, A>(C<sizeof (typename T::t), sizeof (T::t)>::q)
+	      if (current() == 'N' ||	// <nested-name>
+	      				// This should be a safe bet.
+	          (current() == 'S' &&
+		   next_peek() == 't'))	// std::something, guess that
+		   			// this involves a typedef.
+		output += "typename ";
+#endif
+	      if (!decode_type(output))
+		_GLIBCXX_DEMANGLER_FAILURE;
+	    }
+	    else
+	    {
+	      if (!decode_expression(output))
+		_GLIBCXX_DEMANGLER_FAILURE;
+	    }
+	    output += ')';
+	    _GLIBCXX_DEMANGLER_RETURN;
+	  }
+	  else if (current() == 'r')
+	  {
+	    eat_current();
+	    if (!decode_type(output))
+	      _GLIBCXX_DEMANGLER_FAILURE;
+	    output += "::";
+	    if (!decode_unqualified_name(output))
+	      _GLIBCXX_DEMANGLER_FAILURE;
+	    if (current() != 'I' || decode_template_args(output))
+	      _GLIBCXX_DEMANGLER_RETURN;
+	  }
+	}
 	else
 	{
 	  char opcode0 = current();
@@ -1187,31 +1298,57 @@ namespace __gnu_cxx
 	      if (entry.opcode[0] == opcode0 && entry.opcode[1] == opcode1
 		  && (opcode1 == current() || entry.opcode[2] == '='))
 	      {
-		char const* p = entry.symbol_name;
-		if (!strncmp("operator", p, 8))
-		  p += 8;
-		if (*p == ' ')
-		  ++p;
-		if (entry.unary)
-		  output += p;
+		char const* op = entry.symbol_name + 8;	// Skip "operator".
+		if (*op == ' ')				// operator new and delete.
+		  ++op;
+		if (entry.type == unary)
+		  output += op;
 		bool is_eq = (opcode1 != current());
 		eat_current();
 		output += '(';
 		if (!decode_expression(output))
 		  _GLIBCXX_DEMANGLER_FAILURE;
 		output += ')';
-		if (!entry.unary)
+		if (entry.type != unary)
 		{
+#ifndef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
 		  output += ' ';
-		  output += p;
+#endif
+		  output += op;
 		  if (is_eq)
 		    output += '=';
+#ifndef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
 		  output += ' ';
+#endif
 		  output += '(';
 		  if (!decode_expression(output))
 		    _GLIBCXX_DEMANGLER_FAILURE;
 		  output += ')';
+		  if (entry.type == trinary)
+		  {
+#ifdef _GLIBCXX_DEMANGLER_STYLE_COMPACT_EXPR_OPS
+		    output += ":(";
+#else
+		    output += " : (";
+#endif
+		    if (!decode_expression(output))
+		      _GLIBCXX_DEMANGLER_FAILURE;
+		    output += ')';
+		  }
 		}
+		_GLIBCXX_DEMANGLER_RETURN;
+	      }
+	      else if (opcode0 == 'c' &&
+	               opcode1 == 'v')		// casting operator.
+	      {
+		eat_current();
+		output += '(';
+		if (!decode_type(output))
+		  _GLIBCXX_DEMANGLER_FAILURE;
+		output += ")(";
+		if (!decode_expression(output))
+		  _GLIBCXX_DEMANGLER_FAILURE;
+		output += ')';
 		_GLIBCXX_DEMANGLER_RETURN;
 	      }
 	    }
@@ -1223,8 +1360,9 @@ namespace __gnu_cxx
     //
     // <template-args> ::= I <template-arg>+ E
     // <template-arg> ::= <type>			# type or template
-    //                ::= L <type> <value number> E	# literal
-    //                ::= L_Z <encoding> E		# external name
+    //                ::= L <type> <value number> E	# integer literal
+    //                ::= L <type> <value float> E	# floating literal
+    //                ::= L <mangled-name> E		# external name
     //                ::= X <expression> E		# expression
     template<typename Allocator>
       bool
@@ -1282,7 +1420,12 @@ namespace __gnu_cxx
       }
 
     // <bare-function-type> ::=
-    //   <signature type>+		# types are parameter types
+    //   <signature type>+		# Types are parameter types.
+    //
+    // Note that the possible return type of the <bare-function-type>
+    // has already been eaten before we call this function.  This makes
+    // our <bare-function-type> slightly different from the one in
+    // the C++-ABI description.
     //
     template<typename Allocator>
       bool
@@ -1673,6 +1816,7 @@ namespace __gnu_cxx
 	    }
 	    case 'M':
 	    {
+	      // <pointer-to-member-type> ::= M <class type> <member type>
 	      // <Q>M<C> or <Q>M<C><Q2>F<R><B>E
 	      eat_current();
 	      string_type class_type;
@@ -1773,9 +1917,17 @@ namespace __gnu_cxx
 	  {
 	    case 'F':
 	    {
+	      // <function-type> ::= F [Y] <bare-function-type> E
+	      //
+	      // Note that g++ never generates the 'Y', but we try to
+	      // demangle it anyway.
+	      bool extern_C = (next() == 'Y');
+	      if (extern_C)
+		eat_current();
+	        
 	      // <Q>F<R><B>E 		==> R (Q)B
 	      //     substitution: "<R>", "<B>" (<B> recursive) and "F<R><B>E".
-	      eat_current();
+
 	      // Return type.
 	      if (!decode_type_with_postfix(prefix, postfix))
 		  // Substitution: "<R>".
@@ -1802,6 +1954,8 @@ namespace __gnu_cxx
 	      qualifiers->decode_qualifiers(prefix, postfix);
 		  // substitution: all qualified types, if any.
 	      prefix += ")";
+	      if (extern_C)
+	        prefix += " [extern \"C\"] ";
 	      prefix += bare_function_type;
 	      break;
 	    }
@@ -1925,10 +2079,12 @@ namespace __gnu_cxx
     //
     // <prefix> ::= <prefix> <unqualified-name>
     //          ::= <template-prefix> <template-args>
+    //          ::= <template-param>
     //          ::= # empty
     //          ::= <substitution>
     //
     // <template-prefix> ::= <prefix> <template unqualified-name>
+    //                   ::= <template-param>
     //                   ::= <substitution>
     //
     template<typename Allocator>
@@ -1982,7 +2138,12 @@ namespace __gnu_cxx
 	  }
 	  else
 	  {
-	    if (!decode_unqualified_name(output))
+	    if (current() == 'T')
+	    {
+	      if (!decode_template_param(output))
+		_GLIBCXX_DEMANGLER_FAILURE;
+	    }
+	    else if (!decode_unqualified_name(output))
 	      _GLIBCXX_DEMANGLER_FAILURE;
 	    if (current() != 'E')
 	    {
@@ -2148,7 +2309,7 @@ namespace __gnu_cxx
 
     // <unscoped-name> ::=
     //   <unqualified-name>		# Starts not with an 'S'
-    //   St <unqualified-name>	# ::std::
+    //   St <unqualified-name>		# ::std::
     //
     template<typename Allocator>
       bool
