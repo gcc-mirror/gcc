@@ -72,9 +72,15 @@ X_CPPFLAGS =
 T_CPPFLAGS =
 
 CC = @CC@
-BISON = bison
+# srcdir might be a relative pathname which won't be valid in a subdirectory,
+# so we must use objdir/srcdir instead to make it safe.  objdir is always
+# a full pathname.
+BISON = `if [ -f $(objdir)/../bison/bison ] ; then case $(srcdir) in \
+	/*) echo $(objdir)/../bison/bison -L $(srcdir)/../bison/ ;; \
+	*) echo $(objdir)/../bison/bison -L $(objdir)/$(srcdir)/../bison/ ;; \
+	esac else echo bison ; fi`
 BISONFLAGS =
-LEX = flex
+LEX = `if [ -f $(objdir)/../flex/flex ] ; then echo $(objdir)/../flex/flex ; else echo flex ; fi`
 LEXFLAGS =
 AR = ar
 AR_FLAGS = rc
