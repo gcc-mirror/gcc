@@ -130,7 +130,7 @@ convert (tree type, tree expr)
   if (code == VOID_TYPE)
     return build1 (CONVERT_EXPR, type, expr);
   if (code == BOOLEAN_TYPE || code ==  CHAR_TYPE)
-    return fold (build1 (CONVERT_EXPR, type, expr));
+    return fold_convert (type, expr);
   if (code == INTEGER_TYPE)
     {
       if ((really_constant_p (expr)
