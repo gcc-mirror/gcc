@@ -268,10 +268,4 @@ if $LINKS; then
   done
 fi
 
-cd ${ORIG_DIR}
-
-echo 'Replacing <sys/byteorder.h>'
-rm -f ${LIB}/sys/byteorder.h
-cp ${SRCDIR}/byteorder.h ${LIB}/sys/byteorder.h
-
 exit 0
