@@ -2953,13 +2953,24 @@ eliminate_regs_in_insn (insn, replace)
 
 	    if (offset == 0)
 	      {
-		/* We assume here that we don't need a PARALLEL of
-		   any CLOBBERs for this assignment.  There's not
-		   much we can do if we do need it.  */
+		int num_clobbers;
+		/* We assume here that if we need a PARALLEL with
+		   CLOBBERs for this assignment, we can do with the
+		   MATCH_SCRATCHes that add_clobbers allocates.
+		   There's not much we can do if that doesn't work.  */
 		PATTERN (insn) = gen_rtx_SET (VOIDmode,
 					      SET_DEST (old_set),
 					      ep->to_rtx);
-		INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);
+		num_clobbers = 0;
+		INSN_CODE (insn) = recog (PATTERN (insn), insn, &num_clobbers);
+		if (num_clobbers)
+		  {
+		    rtvec vec = rtvec_alloc (num_clobbers + 1);
+
+		    vec->elem[0] = PATTERN (insn);
+		    PATTERN (insn) = gen_rtx_PARALLEL (VOIDmode, vec);
+		    add_clobbers (PATTERN (insn), INSN_CODE (insn));
+		  }
 		if (INSN_CODE (insn) < 0)
 		  abort ();
 	      }
