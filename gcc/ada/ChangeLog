@@ -1,5 +1,8 @@
 2004-01-12  Arnaud Charlet  <charlet@act-europe.fr>
 
+	* misc.c: Remove trailing spaces.
+	Update copyright notice missed in previous change.
+
 	PR ada/13572
 	* bld.adb (Recursive_Process): Reference prefix/share/gnat instead of
 	prefix/share/make

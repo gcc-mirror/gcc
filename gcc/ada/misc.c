@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2003 Free Software Foundation, Inc.          *
+ *          Copyright (C) 1992-2004 Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -534,7 +534,7 @@ static const char *
 gnat_printable_name (tree decl, int verbosity)
 {
   const char *coded_name = IDENTIFIER_POINTER (DECL_NAME (decl));
-  char *ada_name = (char *) ggc_alloc (strlen (coded_name) * 2 + 60);    
+  char *ada_name = (char *) ggc_alloc (strlen (coded_name) * 2 + 60);
 
   __gnat_decode (coded_name, ada_name, 0);
 
@@ -551,7 +551,7 @@ gnat_printable_name (tree decl, int verbosity)
    here are TRANSFORM_EXPR, ALLOCATE_EXPR, USE_EXPR and NULL_EXPR.  */
 
 static rtx
-gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode, 
+gnat_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 		  int modifier, rtx *alt_rtl)
 {
   tree type = TREE_TYPE (exp);
