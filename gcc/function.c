@@ -55,6 +55,15 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "basic-block.h"
 
+/* Some systems use __main in a way incompatible with its use in gcc, in these
+   cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
+   give the same symbol without quotes for an alternative entry point.  You
+   must define both, or niether. */
+#ifndef NAME__MAIN
+#define NAME__MAIN "__main"
+#define SYMBOL__MAIN __main
+#endif
+
 /* Round a value to the lowest integer less than it that is a multiple of
    the required alignment.  Avoid using division in case the value is
    negative.  Assume the alignment is a power of two.  */
@@ -301,6 +310,7 @@ void fixup_gotos ();
 static tree round_down ();
 static rtx round_trampoline_addr ();
 static rtx fixup_stack_1 ();
+static void put_reg_into_stack ();
 static void fixup_var_refs ();
 static void fixup_var_refs_insns ();
 static void fixup_var_refs_1 ();
@@ -815,7 +825,6 @@ put_var_into_stack (decl)
      tree decl;
 {
   register rtx reg;
-  register rtx new = 0;
   enum machine_mode promoted_mode, decl_mode;
   struct function *function = 0;
   tree context = decl_function_context (decl);
@@ -853,8 +862,54 @@ put_var_into_stack (decl)
       decl_mode = promoted_mode = GET_MODE (reg);
     }
 
-  if (GET_CODE (reg) != REG)
-    return;
+  /* Now we should have a value that resides in one or more pseudo regs.  */
+
+  if (GET_CODE (reg) == REG)
+    put_reg_into_stack (function, reg, TREE_TYPE (decl),
+			promoted_mode, decl_mode);
+  else if (GET_CODE (reg) == CONCAT)
+    {
+      /* A CONCAT contains two pseudos; put them both in the stack.
+	 We do it so they end up consecutive.  */
+      enum machine_mode part_mode = GET_MODE (XEXP (reg, 0));
+      tree part_type = TREE_TYPE (TREE_TYPE (decl));
+#ifdef STACK_GROWS_DOWNWARD
+      /* Since part 0 should have a lower address, do it second.  */
+      put_reg_into_stack (function, XEXP (reg, 1),
+			  part_type, part_mode, part_mode);
+      put_reg_into_stack (function, XEXP (reg, 0),
+			  part_type, part_mode, part_mode);
+#else
+      put_reg_into_stack (function, XEXP (reg, 0),
+			  part_type, part_mode, part_mode);
+      put_reg_into_stack (function, XEXP (reg, 1),
+			  part_type, part_mode, part_mode);
+#endif
+
+      /* Change the CONCAT into a combined MEM for both parts.  */
+      PUT_CODE (reg, MEM);
+      /* The two parts are in memory order already.
+	 Use the lower parts address as ours.  */
+      XEXP (reg, 0) = XEXP (XEXP (reg, 0), 0);
+      /* Prevent sharing of rtl that might lose.  */
+      if (GET_CODE (XEXP (reg, 0)) == PLUS)
+	XEXP (reg, 0) = copy_rtx (XEXP (reg, 0));
+    }
+}
+
+/* Subroutine of put_var_into_stack.  This puts a single pseudo reg REG
+   into the stack frame of FUNCTION (0 means the current function).
+   DECL_MODE is the machine mode of the user-level data type.
+   PROMOTED_MODE is the machine mode of the register.  */
+
+static void
+put_reg_into_stack (function, reg, type, promoted_mode, decl_mode)
+     struct function *function;
+     rtx reg;
+     tree type;
+     enum machine_mode promoted_mode, decl_mode;
+{
+  rtx new = 0;
 
   if (function)
     {
@@ -881,10 +936,10 @@ put_var_into_stack (decl)
   /* If this is a memory ref that contains aggregate components,
      mark it as such for cse and loop optimize.  */
   MEM_IN_STRUCT_P (reg)
-    = (TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
-       || TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE
-       || TREE_CODE (TREE_TYPE (decl)) == UNION_TYPE
-       || TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
+    = (TREE_CODE (type) == ARRAY_TYPE
+       || TREE_CODE (type) == RECORD_TYPE
+       || TREE_CODE (type) == UNION_TYPE
+       || TREE_CODE (type) == QUAL_UNION_TYPE);
 
   /* Now make sure that all refs to the variable, previously made
      when it was a register, are fixed up to be valid again.  */
@@ -899,14 +954,14 @@ put_var_into_stack (decl)
 	= (struct var_refs_queue *) oballoc (sizeof (struct var_refs_queue));
       temp->modified = reg;
       temp->promoted_mode = promoted_mode;
-      temp->unsignedp = TREE_UNSIGNED (TREE_TYPE (decl));
+      temp->unsignedp = TREE_UNSIGNED (type);
       temp->next = function->fixup_var_refs_queue;
       function->fixup_var_refs_queue = temp;
       pop_obstacks ();
     }
   else
     /* Variable is local; fix it up now.  */
-    fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (TREE_TYPE (decl)));
+    fixup_var_refs (reg, promoted_mode, TREE_UNSIGNED (type));
 }
 
 static void
@@ -4265,7 +4320,7 @@ void
 expand_main_function ()
 {
 #if !defined (INIT_SECTION_ASM_OP) || defined (INVOKE__main)
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__main"), 0,
+  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, NAME__MAIN), 0,
 		     VOIDmode, 0);
 #endif /* not INIT_SECTION_ASM_OP or INVOKE__main */
 }
