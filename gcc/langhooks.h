@@ -427,10 +427,6 @@ struct lang_hooks
      KNOWN_TYPE carries the true type of the OBJ_TYPE_REF_OBJECT.  */
   tree (*fold_obj_type_ref) (tree, tree);
 
-  /* True if the front end has gimplified the function before running the
-     inliner, false if the front end generates GENERIC directly.  */
-  bool gimple_before_inlining;
-
   /* Whenever you add entries here, make sure you adjust langhooks-def.h
      and langhooks.c accordingly.  */
 };

@@ -57,22 +57,13 @@ bool in_gimple_form;
 /* The root of the compilation pass tree, once constructed.  */
 static struct tree_opt_pass *all_passes;
 
-/* Pass: gimplify the function if it's not been done.  */
-
-static void
-execute_gimple (void)
-{
-  /* We have this test here rather than as the gate because we always
-     want to dump the original gimplified function.  */
-  if (!lang_hooks.gimple_before_inlining)
-    gimplify_function_tree (current_function_decl);
-}
+/* Pass: dump the gimplified, inlined, functions.  */
 
 static struct tree_opt_pass pass_gimple = 
 {
   "gimple",				/* name */
   NULL,					/* gate */
-  execute_gimple,			/* execute */
+  NULL,					/* execute */
   NULL,					/* sub */
   NULL,					/* next */
   0,					/* static_pass_number */

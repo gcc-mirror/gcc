@@ -201,7 +201,6 @@ extern int lhd_gimplify_expr (tree *, tree *, tree *);
 /* Hooks for tree gimplification.  */
 #define LANG_HOOKS_GIMPLIFY_EXPR lhd_gimplify_expr
 #define LANG_HOOKS_FOLD_OBJ_TYPE_REF NULL
-#define LANG_HOOKS_GIMPLE_BEFORE_INLINING true
 
 /* Tree dump hooks.  */
 extern bool lhd_tree_dump_dump_tree (void *, tree);
@@ -319,7 +318,6 @@ extern tree lhd_make_node (enum tree_code);
   LANG_HOOKS_FOR_TYPES_INITIALIZER, \
   LANG_HOOKS_GIMPLIFY_EXPR, \
   LANG_HOOKS_FOLD_OBJ_TYPE_REF, \
-  LANG_HOOKS_GIMPLE_BEFORE_INLINING \
 }
 
 #endif /* GCC_LANG_HOOKS_DEF_H */

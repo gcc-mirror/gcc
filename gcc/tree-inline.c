@@ -483,9 +483,8 @@ copy_body_r (tree *tp, int *walk_subtrees, void *data)
       if (assignment)
         {
 	  /* Do not create a statement containing a naked RESULT_DECL.  */
-	  if (lang_hooks.gimple_before_inlining)
-	    if (TREE_CODE (assignment) == RESULT_DECL)
-	      gimplify_stmt (&assignment);
+	  if (TREE_CODE (assignment) == RESULT_DECL)
+	    gimplify_stmt (&assignment);
 
 	  *tp = build (BIND_EXPR, void_type_node, NULL, NULL, NULL);
 	  append_to_statement_list (assignment, &BIND_EXPR_BODY (*tp));
@@ -709,24 +708,13 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
 	 Theoretically, we could check the expression to see if
 	 all of the variables that determine its value are
 	 read-only, but we don't bother.  */
-      if ((TREE_CONSTANT (value) || TREE_READONLY_DECL_P (value))
-	  /* We may produce non-gimple trees by adding NOPs or introduce
-	     invalid sharing when operand is not really constant.
-	     It is not big deal to prohibit constant propagation here as
-	     we will constant propagate in DOM1 pass anyway.  */
-	  && (!lang_hooks.gimple_before_inlining
-	      || (is_gimple_min_invariant (value)
-		  && TREE_TYPE (value) == TREE_TYPE (p))))
+      /* We may produce non-gimple trees by adding NOPs or introduce
+	 invalid sharing when operand is not really constant.
+	 It is not big deal to prohibit constant propagation here as
+	 we will constant propagate in DOM1 pass anyway.  */
+      if (is_gimple_min_invariant (value)
+	  && lang_hooks.types_compatible_p (TREE_TYPE (value), TREE_TYPE (p)))
 	{
-	  /* If this is a declaration, wrap it a NOP_EXPR so that
-	     we don't try to put the VALUE on the list of BLOCK_VARS.  */
-	  if (DECL_P (value))
-	    value = build1 (NOP_EXPR, TREE_TYPE (value), value);
-
-	  /* If this is a constant, make sure it has the right type.  */
-	  else if (TREE_TYPE (value) != TREE_TYPE (p))
-	    value = fold (build1 (NOP_EXPR, TREE_TYPE (p), value));
-
 	  insert_decl_map (id, p, value);
 	  return;
 	}
@@ -760,7 +748,7 @@ setup_one_parameter (inline_data *id, tree p, tree value, tree fn,
   *vars = var;
 
   /* Make gimplifier happy about this variable.  */
-  DECL_SEEN_IN_BIND_EXPR_P (var) = lang_hooks.gimple_before_inlining;
+  DECL_SEEN_IN_BIND_EXPR_P (var) = 1;
 
   /* Even if P was TREE_READONLY, the new VAR should not be.
      In the original code, we would have constructed a
@@ -856,7 +844,7 @@ initialize_inlined_parameters (inline_data *id, tree args, tree static_chain,
 			    &gimplify_init_stmts_p);
     }
 
-  if (gimplify_init_stmts_p && lang_hooks.gimple_before_inlining)
+  if (gimplify_init_stmts_p)
     gimplify_body (&init_stmts, current_function_decl);
 
   declare_inline_vars (bind_expr, vars);
@@ -1637,50 +1625,41 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
   /* The new expression has side-effects if the old one did.  */
   TREE_SIDE_EFFECTS (expr) = TREE_SIDE_EFFECTS (t);
 
-  /* If we are working with gimple form, then we need to keep the tree
-     in gimple form.  If we are not in gimple form, we can just replace
-     *tp with the new BIND_EXPR.  */ 
-  if (lang_hooks.gimple_before_inlining)
+  /* We want to create a new variable to hold the result of the inlined
+     body.  This new variable needs to be added to the function which we
+     are inlining into, thus the saving and restoring of
+     current_function_decl.  */
+  {
+    tree save_decl = current_function_decl;
+    current_function_decl = id->node->decl;
+    inline_result = voidify_wrapper_expr (expr, NULL);
+    current_function_decl = save_decl;
+  }
+
+  /* If the inlined function returns a result that we care about,
+     then we're going to need to splice in a MODIFY_EXPR.  Otherwise
+     the call was a standalone statement and we can just replace it
+     with the BIND_EXPR inline representation of the called function.  */
+  if (TREE_CODE (tsi_stmt (id->tsi)) != CALL_EXPR)
     {
-      tree save_decl;
-
-      /* We want to create a new variable to hold the result of the inlined
-	 body.  This new variable needs to be added to the function which we
-	 are inlining into, thus the saving and restoring of
-	 current_function_decl.  */
-      save_decl = current_function_decl;
-      current_function_decl = id->node->decl;
-      inline_result = voidify_wrapper_expr (expr, NULL);
-      current_function_decl = save_decl;
-
-      /* If the inlined function returns a result that we care about,
-	 then we're going to need to splice in a MODIFY_EXPR.  Otherwise
-	 the call was a standalone statement and we can just replace it
-	 with the BIND_EXPR inline representation of the called function.  */
-      if (TREE_CODE (tsi_stmt (id->tsi)) != CALL_EXPR)
-	{
-	  tsi_link_before (&id->tsi, expr, TSI_SAME_STMT);
-	  *tp = inline_result;
-	}
-      else
-	*tp = expr;
-
-      /* When we gimplify a function call, we may clear TREE_SIDE_EFFECTS on
-	 the call if it is to a "const" function.  Thus the copy of
-	 TREE_SIDE_EFFECTS from the CALL_EXPR to the BIND_EXPR above with
-	 result in TREE_SIDE_EFFECTS not being set for the inlined copy of a
-	 "const" function.
-
-	 Unfortunately, that is wrong as inlining the function can
-	 create/expose interesting side effects (such as setting of a return
-	 value).
-
-	 The easiest solution is to simply recalculate TREE_SIDE_EFFECTS for
-	 the toplevel expression.  */
-      recalculate_side_effects (expr);
+      tsi_link_before (&id->tsi, expr, TSI_SAME_STMT);
+      *tp = inline_result;
     }
   else
     *tp = expr;
+
+  /* When we gimplify a function call, we may clear TREE_SIDE_EFFECTS on
+     the call if it is to a "const" function.  Thus the copy of
+     TREE_SIDE_EFFECTS from the CALL_EXPR to the BIND_EXPR above with
+     result in TREE_SIDE_EFFECTS not being set for the inlined copy of a
+     "const" function.
+
+     Unfortunately, that is wrong as inlining the function can create/expose
+     interesting side effects (such as setting of a return value).
+
+     The easiest solution is to simply recalculate TREE_SIDE_EFFECTS for
+     the toplevel expression.  */
+  recalculate_side_effects (expr);
 
   /* If the value of the new expression is ignored, that's OK.  We
      don't warn about this for CALL_EXPRs, so we shouldn't warn about
@@ -1706,7 +1685,7 @@ expand_call_inline (tree *tp, int *walk_subtrees, void *data)
 }
 
 static void
-gimple_expand_calls_inline (tree *stmt_p, inline_data *id)
+expand_calls_inline (tree *stmt_p, inline_data *id)
 {
   tree stmt = *stmt_p;
   enum tree_code code = TREE_CODE (stmt); 
@@ -1722,7 +1701,7 @@ gimple_expand_calls_inline (tree *stmt_p, inline_data *id)
 	for (i = tsi_start (stmt); !tsi_end_p (i); )
 	  {
 	    id->tsi = i;
-	    gimple_expand_calls_inline (tsi_stmt_ptr (i), id);
+	    expand_calls_inline (tsi_stmt_ptr (i), id);
 
 	    new = tsi_stmt (i);
 	    if (TREE_CODE (new) == STATEMENT_LIST)
@@ -1737,26 +1716,26 @@ gimple_expand_calls_inline (tree *stmt_p, inline_data *id)
       break;
 
     case COND_EXPR:
-      gimple_expand_calls_inline (&COND_EXPR_THEN (stmt), id);
-      gimple_expand_calls_inline (&COND_EXPR_ELSE (stmt), id);
+      expand_calls_inline (&COND_EXPR_THEN (stmt), id);
+      expand_calls_inline (&COND_EXPR_ELSE (stmt), id);
       break;
 
     case CATCH_EXPR:
-      gimple_expand_calls_inline (&CATCH_BODY (stmt), id);
+      expand_calls_inline (&CATCH_BODY (stmt), id);
       break;
 
     case EH_FILTER_EXPR:
-      gimple_expand_calls_inline (&EH_FILTER_FAILURE (stmt), id);
+      expand_calls_inline (&EH_FILTER_FAILURE (stmt), id);
       break;
 
     case TRY_CATCH_EXPR:
     case TRY_FINALLY_EXPR:
-      gimple_expand_calls_inline (&TREE_OPERAND (stmt, 0), id);
-      gimple_expand_calls_inline (&TREE_OPERAND (stmt, 1), id);
+      expand_calls_inline (&TREE_OPERAND (stmt, 0), id);
+      expand_calls_inline (&TREE_OPERAND (stmt, 1), id);
       break;
 
     case BIND_EXPR:
-      gimple_expand_calls_inline (&BIND_EXPR_BODY (stmt), id);
+      expand_calls_inline (&BIND_EXPR_BODY (stmt), id);
       break;
 
     case COMPOUND_EXPR:
@@ -1786,30 +1765,6 @@ gimple_expand_calls_inline (tree *stmt_p, inline_data *id)
     default:
       break;
     }
-}
-
-/* Walk over the entire tree *TP, replacing CALL_EXPRs with inline
-   expansions as appropriate.  */
-
-static void
-expand_calls_inline (tree *tp, inline_data *id)
-{
-  /* If we are not in gimple form, then we want to walk the tree
-     recursively as we do not know anything about the structure
-     of the tree.  */
-
-  if (!lang_hooks.gimple_before_inlining)
-    {
-      walk_tree (tp, expand_call_inline, id, id->tree_pruner);
-      return;
-    }
-
-  /* We are in gimple form.  We want to stay in gimple form.  Walk
-     the statements, inlining calls in each statement.  By walking
-     the statements, we have enough information to keep the tree
-     in gimple form as we insert inline bodies.  */
-
-  gimple_expand_calls_inline (tp, id);
 }
 
 /* Expand calls to inline functions in the body of FN.  */
@@ -2510,13 +2465,9 @@ debug_find_tree (tree top, tree search)
 static void
 declare_inline_vars (tree bind_expr, tree vars)
 {
-  if (lang_hooks.gimple_before_inlining)
-    {
-      tree t;
-
-      for (t = vars; t; t = TREE_CHAIN (t))
-	DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
-    }
+  tree t;
+  for (t = vars; t; t = TREE_CHAIN (t))
+    DECL_SEEN_IN_BIND_EXPR_P (t) = 1;
 
   add_var_to_bind_expr (bind_expr, vars);
 }
