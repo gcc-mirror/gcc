@@ -270,6 +270,7 @@ void gfc_resolve_minloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_minval (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_mod (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_modulo (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_nearest (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_nint (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_not (gfc_expr *, gfc_expr *);
 void gfc_resolve_pack (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);

@@ -1301,7 +1301,7 @@ add_functions (void)
   make_generic ("modulo", GFC_ISYM_MODULO);
 
   add_sym_2 ("nearest", 1, 1, BT_REAL, dr,
-	     gfc_check_nearest, gfc_simplify_nearest, NULL,
+	     gfc_check_nearest, gfc_simplify_nearest, gfc_resolve_nearest,
 	     x, BT_REAL, dr, 0, s, BT_REAL, dr, 0);
 
   make_generic ("nearest", GFC_ISYM_NEAREST);
