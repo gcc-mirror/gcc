@@ -5447,6 +5447,12 @@ expand_expr (exp, target, tmode, modifier)
       if (temp != 0)
 	return temp;
 
+      /* At this point, a MEM target is no longer useful; we will get better
+	 code without it.  */
+	 
+      if (GET_CODE (target) == MEM)
+	target = gen_reg_rtx (mode);
+
       if (target != op0)
 	emit_move_insn (target, op0);
 
