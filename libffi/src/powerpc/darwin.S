@@ -37,30 +37,34 @@
 .text
 	.align 2
 _ffi_call_DARWIN:
-	mr      r12,r8 // We only need r12 until the call, so it doesn't have to be saved...
+LFB0:	
+	mr      r12,r8		/* We only need r12 until the call,
+				so it doesn't have to be saved...  */
+LFB1:	
 	/* Save the old stack pointer as AP.  */
 	mr	r8,r1
-
+LCFI0:	
 	/* Allocate the stack space we need.  */
 	stwux	r1,r1,r4	
 	
 	/* Save registers we use.  */
 	mflr	r9
 
-	stw	r28,-16(r8)
+	stw	r28,-16(r8)	
 	stw	r29,-12(r8)
 	stw	r30, -8(r8)
 	stw	r31, -4(r8)
-	
-	stw	r9,  8(r8)
+
+	stw	r9,  8(r8)	
 	stw	r2, 20(r1)
+LCFI1:	
 
 	/* Save arguments over call...  */
-	mr	r31,r5	/* flags, */
-	mr	r30,r6	/* rvalue, */
-	mr	r29,r7	/* function address, */
-	mr	r28,r8	/* our AP. */
-		
+	mr	r31,r5	/* flags,  */
+	mr	r30,r6	/* rvalue,  */
+	mr	r29,r7	/* function address,  */
+	mr	r28,r8	/* our AP.  */
+LCFI2:		
 	/* Call ffi_prep_args.  */
 	mr	r4,r1
 	li	r9,0
@@ -143,7 +147,8 @@ L(fp_return_value):
 L(float_return_value):
 	stfs	f1,0(r30)
 	b	L(done_return_value)
-//END(_ffi_call_DARWIN)
+LFE1:	
+/* END(_ffi_call_DARWIN)  */
 
 /* Provide a null definition of _ffi_call_AIX.  */
 .text
@@ -153,5 +158,60 @@ L(float_return_value):
 	.align 2
 _ffi_call_AIX:
 	blr
-//END(_ffi_call_AIX)
+/* END(_ffi_call_AIX)  */
 
+.data
+.section __TEXT,__eh_frame
+Lframe1:
+	.set	L$set$0,LECIE1-LSCIE1
+	.long	L$set$0	; Length of Common Information Entry
+LSCIE1:
+	.long	0x0	; CIE Identifier Tag
+	.byte	0x1	; CIE Version
+	.ascii	"zR\0"	; CIE Augmentation
+	.byte	0x1	; uleb128 0x1; CIE Code Alignment Factor
+	.byte	0x7c	; sleb128 -4; CIE Data Alignment Factor
+	.byte	0x41	; CIE RA Column
+	.byte   0x1     ; uleb128 0x1; Augmentation size
+	.byte   0x10    ; FDE Encoding (pcrel)
+	.byte	0xc	; DW_CFA_def_cfa
+	.byte	0x1	; uleb128 0x1
+	.byte	0x0	; uleb128 0x0
+	.align	2
+LECIE1:
+LSFDE1:
+	.set	L$set$1,LEFDE1-LASFDE1
+	.long	L$set$1	; FDE Length
+LASFDE1:
+	.set	L$set$2,LASFDE1-Lframe1
+	.long	L$set$2	; FDE CIE offset
+	.long	LFB0-.	; FDE initial location
+	.set	L$set$3,LFE1-LFB0
+	.long	L$set$3	; FDE address range
+	.byte	0x4	; DW_CFA_advance_loc4
+	.set	L$set$4,LCFI0-LFB1
+	.long	L$set$4
+	.byte	0xd	; DW_CFA_def_cfa_register
+	.byte	0x08	; uleb128 0x08 
+	.byte	0x4	; DW_CFA_advance_loc4
+	.set	L$set$5,LCFI1-LCFI0
+	.long	L$set$5
+	.byte   0x11    ; DW_CFA_offset_extended_sf
+	.byte	0x41	; uleb128 0x41
+	.byte   0x7e    ; sleb128 -2
+	.byte	0x9f	; DW_CFA_offset, column 0x1f 
+	.byte	0x1	; uleb128 0x1 
+	.byte	0x9e	; DW_CFA_offset, column 0x1e
+	.byte	0x2	; uleb128 0x2
+	.byte	0x9d	; DW_CFA_offset, column 0x1d 
+	.byte	0x3	; uleb128 0x3 
+	.byte	0x9c	; DW_CFA_offset, column 0x1c 
+	.byte	0x4	; uleb128 0x4
+	.byte	0x4	; DW_CFA_advance_loc4 
+	.set	L$set$6,LCFI2-LCFI1
+	.long	L$set$6
+	.byte	0xd	; DW_CFA_def_cfa_register 
+	.byte	0x1c	; uleb128 0x1c 
+	.align 2
+LEFDE1:
+	
