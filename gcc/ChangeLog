@@ -1,5 +1,8 @@
 Mon Apr 27 08:55:23 1998  Michael Meissner  <meissner@cygnus.com>
 
+	* final.c (split_double): Avoid a compiler warning if
+	BITS_PER_WORD is less than or equal to HOST_BIT_PER_WIDE_INT.
+
 	* rtl.h (JUMP_{CROSS_JUMP,NOOP_MOVES,AFTER_REGSCAN}):  New macros
 	for calling jump_optimize.
 
