@@ -1,0 +1,40 @@
+/* Copyright (C) 2001 Free Software Foundation, Inc.  */
+
+/* { dg-do compile } */
+/* { dg-options -Wno-multichar } */
+
+/* This tests values and signedness of multichar charconsts.
+
+   Neil Booth, 5 May 2002.  */
+
+#include <limits.h>
+
+int main ()
+{
+  /* These tests require at least 2-byte ints.  8-)  */
+#if INT_MAX > 127
+  int scale = (int) (unsigned char) -1 + 1;
+
+  if ('ab' != ('a' * scale + 'b'))
+    abort ();
+
+  if ('\234b' != ('\234' * scale + 'b'))
+    abort ();
+
+  if ('b\234' != ('b' * scale + '\234'))
+    abort ();
+
+  /* Multichar charconsts have type int and should be signed.  */
+#if INT_MAX == 32767
+  if ('\234a' > 0)
+    abort ();
+#elif INT_MAX == 2147483647
+  if ('\234aaa' > 0)
+    abort ();
+#elif INT_MAX == 9223372036854775807
+  if ('\234aaaaaaa' > 0)
+    abort ();
+#endif
+#endif
+  return 0;
+}

@@ -1,5 +1,10 @@
 2002-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+doc:
+	* cpp.texi: Update multichar charconst docs.
+
+2002-05-06  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cpplex.c (cpp_interpret_charconst): Sign-extend each
 	character.  Don't ignore excess characters.  Treat
 	multicharacter character constants as signed.
