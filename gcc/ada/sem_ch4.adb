@@ -1603,7 +1603,7 @@ package body Sem_Ch4 is
       then
          U_N := Entity (P);
 
-         if Ekind (U_N) in  Type_Kind then
+         if Ekind (U_N) in Type_Kind then
 
             --  Reformat node as a type conversion
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -51,7 +51,7 @@ package Ada.Streams.Stream_IO is
    --  used in this package and System.File_IO.
 
    for File_Mode use
-     (In_File     => 0,  -- System.FIle_IO.File_Mode'Pos (In_File)
+     (In_File     => 0,  -- System.File_IO.File_Mode'Pos (In_File)
       Out_File    => 2,  -- System.File_IO.File_Mode'Pos (Out_File)
       Append_File => 3); -- System.File_IO.File_Mode'Pos (Append_File)
 
