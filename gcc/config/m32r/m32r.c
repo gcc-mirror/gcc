@@ -920,7 +920,7 @@ signed_comparison_operator (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 
   return (COMPARISON_P (op)
   	  && (code == EQ || code == NE
-	      || code == LT || code == LE || code == GT || code == GE);
+	      || code == LT || code == LE || code == GT || code == GE));
 }
 
 /* Return 1 if OP is (mem (reg ...)).
