@@ -1,6 +1,6 @@
 // ClassLoader.java - Define policies for loading Java classes.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -733,8 +733,7 @@ public abstract class ClassLoader
   /**
    * If a class named <code>name</code> was previously loaded using
    * this <code>ClassLoader</code>, then it is returned.  Otherwise
-   * it returns <code>null</code>.  (Unlike the JDK this is native,
-   * since we implement the class table internally.)
+   * it returns <code>null</code>.
    * @param     name  class to find.
    * @return    the class loaded, or null.
    */ 
