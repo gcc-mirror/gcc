@@ -1,3 +1,8 @@
+2000-01-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* optimize.c (copy_body_r): Clear the operand three of a
+	TARGET_EXPR when copying it.
+
 2000-01-14  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
 
 	* method.c (build_decl_overload_real): Check whether we are in ::

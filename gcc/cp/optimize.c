@@ -1,6 +1,6 @@
 /* Perform optimizations on tree structure.
 
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
    This file is part of GNU CC.
@@ -285,6 +285,9 @@ copy_body_r (tp, walk_subtrees, data)
       /* Replace this variable with the copy.  */
       *tp = new_decl;
     }
+  else if (nonstatic_local_decl_p (*tp) 
+	   && DECL_CONTEXT (*tp) != VARRAY_TREE (id->fns, 0))
+    my_friendly_abort (0);
   else if (TREE_CODE (*tp) == SAVE_EXPR)
     remap_save_expr (tp, id->decl_map, VARRAY_TREE (id->fns, 0), 
 		     walk_subtrees);
@@ -303,7 +306,10 @@ copy_body_r (tp, walk_subtrees, data)
       /* The copied TARGET_EXPR has never been expanded, even if the
 	 original node was expanded already.  */
       if (TREE_CODE (*tp) == TARGET_EXPR && TREE_OPERAND (*tp, 3))
-	TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
+	{
+	  TREE_OPERAND (*tp, 1) = TREE_OPERAND (*tp, 3);
+	  TREE_OPERAND (*tp, 3) = NULL_TREE;
+	}
       /* Similarly, if we're copying a CALL_EXPR, the RTL for the
 	 result is no longer valid.  */
       else if (TREE_CODE (*tp) == CALL_EXPR)
