@@ -9,6 +9,7 @@
 	(getListSelectionListeners): Likewise.
 	* javax/swing/JComboBox.java: Merged copyright year.
 	* javax/swing/plaf/basic/BasicGraphicsUtils.java: Merged empty line.
+
 2004-01-26  Andrew Haley  <aph@redhat.com>
 
 	* javax/swing/table/JTableHeader.java: Extend JComponent

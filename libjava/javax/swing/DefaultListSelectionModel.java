@@ -1,5 +1,5 @@
 /* DefaultListSelectionModel.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -47,14 +47,11 @@ import javax.swing.event.ListSelectionListener;
 
 public class DefaultListSelectionModel implements Cloneable, ListSelectionModel, Serializable
 {
-  private EventListenerList listenerList = new EventListenerList();
+  protected EventListenerList listenerList = new EventListenerList();
   
     int mode = SINGLE_SELECTION;
 
     Vector sel = new Vector();
-
-    {
-    }
 
     class Range
     {
@@ -169,23 +166,59 @@ public class DefaultListSelectionModel implements Cloneable, ListSelectionModel,
 	sel.addElement(new Range(index0, index1));
     }
 
+  /**
+   * Adds a listener.
+   *
+   * @param listener the listener to add
+   *
+   * @see removeListSelectionListener
+   * @see getListSelectionListeners
+   */
   public void addListSelectionListener(ListSelectionListener listener)
   {
     listenerList.add (ListSelectionListener.class, listener);
   }
 
+  /**
+   * Removes a registered listener.
+   *
+   * @param listener the listener to remove
+   *
+   * @see addListSelectionListener
+   * @see getListSelectionListeners
+   */
   public void removeListSelectionListener(ListSelectionListener listener)
   {
     listenerList.remove (ListSelectionListener.class, listener);
   }
-
-  public ListSelectionListener[] getListSelectionListeners()
-  {
-    return (ListSelectionListener[]) getListeners (ListSelectionListener.class);
-  }
   
+  /**
+   * Returns an array of all registerers listeners.
+   * 
+   * @return the array
+   * 
+   * @since 1.3
+   *
+   * @see getListSelectionListener
+   */
   public EventListener[] getListeners (Class listenerType)
   {
     return listenerList.getListeners (listenerType);
+  }
+
+  /**
+   * Returns an array of all registerd list selection listeners.
+   *
+   * @return the array
+   * 
+   * @since 1.4
+   *
+   * @see addListSelectionListener
+   * @see removeListSelectionListener
+   * @see getListeners
+   */
+  public ListSelectionListener[] getListSelectionListeners()
+  {
+    return (ListSelectionListener[]) getListeners (ListSelectionListener.class);
   }
 }

@@ -1,5 +1,5 @@
 /* AbstractCellEditor.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -54,15 +54,15 @@ public abstract class AbstractCellEditor
 {
   static final long serialVersionUID = -1048006551406220959L;
 
-	/**
-	 * listenerList
-	 */
-	protected EventListenerList listenerList;
+  /**
+   * listenerList
+   */
+  protected EventListenerList listenerList;
 
-	/**
-	 * changeEvent
-	 */
-	protected transient ChangeEvent changeEvent;
+  /**
+   * changeEvent
+   */
+  protected transient ChangeEvent changeEvent;
 
 	/**
 	 * Constructor AbstractCellEditor
@@ -165,6 +165,4 @@ public abstract class AbstractCellEditor
 	listeners [index].editingCanceled (changeEvent);
       }
   }
-
-
-} // AbstractCellEditor
+}
