@@ -571,6 +571,8 @@ find_a_file (pprefix, name)
 	strcat (temp, name);
 	if (strcmp (temp, our_file_name) != 0
 	    && ! (last_file_name != 0 && strcmp (temp, last_file_name) == 0)
+	    /* This is a kludge, but there seems no way around it.  */
+	    && strcmp (temp, "./ld") != 0
 	    && access (temp, X_OK) == 0)
 	  return temp;
 
@@ -1020,7 +1022,7 @@ main (argc, argv)
      and destructors to call.
      Write the constructor and destructor tables to a .s file and reload. */
 
-  fork_execute (ld_file_name, ld1_argv);
+  fork_execute ("ld", ld1_argv);
 
   /* If -r, don't build the constructor or destructor list, just return now.  */
   if (rflag)
@@ -1040,10 +1042,10 @@ main (argc, argv)
       if (strip_flag)
 	{
 	  char **strip_argv = (char **) xcalloc (sizeof (char *), 3);
-	  strip_argv[0] = "strip";
+	  strip_argv[0] = strip_file_name;
 	  strip_argv[1] = outfile;
 	  strip_argv[2] = (char *) 0;
-	  fork_execute (strip_file_name, strip_argv);
+	  fork_execute ("strip", strip_argv);
 	}
       return 0;
     }
@@ -1067,8 +1069,8 @@ main (argc, argv)
   /* Assemble the constructor and destructor tables.
      Link the tables in with the rest of the program. */
 
-  fork_execute (c_file_name,  c_argv);
-  fork_execute (ld_file_name, ld2_argv);
+  fork_execute ("gcc",  c_argv);
+  fork_execute ("ld", ld2_argv);
 
   /* Let scan_prog_file do any final mods (OSF/rose needs this for
      constructors/destructors in shared libraries.  */
@@ -1136,10 +1138,10 @@ fork_execute (prog, argv)
       char **p_argv;
       char *str;
 
-      if (prog)
-	fprintf (stderr, "%s", prog);
+      if (argv[0])
+	fprintf (stderr, "%s", argv[0]);
       else
-	fprintf (stderr, "[cannot find %s]", argv[0]);
+	fprintf (stderr, "[cannot find %s]", prog);
 
       for (p_argv = &argv[1]; (str = *p_argv) != (char *)0; p_argv++)
 	fprintf (stderr, " %s", str);
@@ -1153,8 +1155,8 @@ fork_execute (prog, argv)
   /* If we can't find a program we need, complain error.  Do this here
      since we might not end up needing something that we couldn't find.  */
 
-  if (prog == 0)
-    fatal ("cannot find `%s'", argv[0]);
+  if (argv[0] == 0)
+    fatal ("cannot find `%s'", prog);
 
   pid = vfork ();
   if (pid == -1)
@@ -1162,7 +1164,7 @@ fork_execute (prog, argv)
 
   if (pid == 0)			/* child context */
     {
-      execvp (prog, argv);
+      execvp (argv[0], argv);
       fatal_perror ("executing %s", prog);
     }
 
