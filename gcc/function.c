@@ -288,8 +288,8 @@ static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
 static bool purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
 					  struct hash_table *));
 static void purge_single_hard_subreg_set PARAMS ((rtx));
-#ifdef HAVE_epilogue
-static void keep_stack_depressed PARAMS ((rtx));
+#if defined(HAVE_epilogue) && defined(INCOMING_RETURN_ADDR_RTX)
+static rtx keep_stack_depressed PARAMS ((rtx));
 #endif
 static int is_addressof		PARAMS ((rtx *, void *));
 static struct hash_entry *insns_for_mem_newfunc PARAMS ((struct hash_entry *,
@@ -7115,67 +7115,295 @@ emit_return_into_block (bb, line_note)
 }
 #endif /* HAVE_return */
 
-#ifdef HAVE_epilogue
+#if defined(HAVE_epilogue) && defined(INCOMING_RETURN_ADDR_RTX)
+
+/* These functions convert the epilogue into a variant that does not modify the
+   stack pointer.  This is used in cases where a function returns an object
+   whose size is not known until it is computed.  The called function leavs the
+   object on the stack, leaves the stack depressed, and returns a pointer to
+   the object.
+
+   What we need to do is track all modifications and references to the stack
+   pointer, deleting the modifications and changing the references to point to
+   the location the stack pointer would have pointed to had the modifications
+   taken place.
+
+   These functions need to be portable so we need to make as few assumptions
+   about the epilogue as we can.  However, the epilogue basically contains
+   three things: instructions to reset the stack pointer, instructions to
+   reload registers, possibly including the frame pointer, and an
+   instruction to return to the caller.
+
+   If we can't be sure of what a relevant epilogue insn is doing, we abort.
+   We also make no attempt to validate the insns we make since if they are
+   invalid, we probably can't do anything valid.  The intent is that these
+   routines get "smarter" as more and more machines start to use them and
+   they try operating on different epilogues.
+
+   We use the following structure to track what the part of the epilogue that
+   we've already processed has done.  We keep two copies of the SP equivalence,
+   one for use during the insn we are processing and one for use in the next
+   insn.  The difference is because one part of a PARALLEL may adjust SP
+   and the other may use it.  */
+
+struct epi_info
+{
+  rtx sp_equiv_reg;		/* REG that SP is set from, perhaps SP.  */
+  HOST_WIDE_INT sp_offset;	/* Offset from SP_EQUIV_REG of present SP.  */
+  rtx new_sp_equiv_reg;		/* REG to be used at end of insn.   */
+  HOST_WIDE_INT new_sp_offset;	/* Offset to be used at end of insn.  */
+  rtx equiv_reg_src;		/* If nonzero, the value that SP_EQUIV_REG
+				   should be set to once we no longer need
+				   its value.  */
+};
+
+static void handle_epilogue_set PARAMS ((rtx, struct epi_info *));
+static void emit_equiv_load PARAMS ((struct epi_info *));
 
 /* Modify SEQ, a SEQUENCE that is part of the epilogue, to no modifications
-   to the stack pointer.  */
+   to the stack pointer.  Return the new sequence.  */
 
-static void
+static rtx
 keep_stack_depressed (seq)
      rtx seq;
 {
-  int i;
-  rtx sp_from_reg = 0;
-  int sp_modified_unknown = 0;
+  int i, j;
+  struct epi_info info;
 
-  /* If the epilogue is just a single instruction, it's OK as is */
+  /* If the epilogue is just a single instruction, it ust be OK as is.   */
 
   if (GET_CODE (seq) != SEQUENCE)
-    return;
+    return seq;
 
-  /* Scan all insns in SEQ looking for ones that modified the stack
-     pointer.  Record if it modified the stack pointer by copying it
-     from the frame pointer or if it modified it in some other way.
-     Then modify any subsequent stack pointer references to take that
-     into account.  We start by only allowing SP to be copied from a
-     register (presumably FP) and then be subsequently referenced.  */
+  /* Otherwise, start a sequence, initialize the information we have, and
+     process all the insns we were given.  */
+  start_sequence ();
+
+  info.sp_equiv_reg = stack_pointer_rtx;
+  info.sp_offset = 0;
+  info.equiv_reg_src = 0;
 
   for (i = 0; i < XVECLEN (seq, 0); i++)
     {
       rtx insn = XVECEXP (seq, 0, i);
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
-	continue;
-
-      if (reg_set_p (stack_pointer_rtx, insn))
+      if (!INSN_P (insn))
 	{
-	  rtx set = single_set (insn);
+	  add_insn (insn);
+	  continue;
+	}
 
-	  /* If SP is set as a side-effect, we can't support this.  */
-	  if (set == 0)
-	    abort ();
+      /* If this insn references the register that SP is equivalent to and
+	 we have a pending load to that register, we must force out the load
+	 first and then indicate we no longer know what SP's equivalent is.  */
+      if (info.equiv_reg_src != 0
+	  && reg_referenced_p (info.sp_equiv_reg, PATTERN (insn)))
+	{
+	  emit_equiv_load (&info);
+	  info.sp_equiv_reg = 0;
+	}
 
-	  if (GET_CODE (SET_SRC (set)) == REG)
-	    sp_from_reg = SET_SRC (set);
+      info.new_sp_equiv_reg = info.sp_equiv_reg;
+      info.new_sp_offset = info.sp_offset;
+
+      /* If this is a (RETURN) and the return address is on the stack,
+	 update the address and change to an indirect jump.  */
+      if (GET_CODE (PATTERN (insn)) == RETURN
+	  || (GET_CODE (PATTERN (insn)) == PARALLEL
+	      && GET_CODE (XVECEXP (PATTERN (insn), 0, 0)) == RETURN))
+	{
+	  rtx retaddr = INCOMING_RETURN_ADDR_RTX;
+	  rtx base = 0;
+	  HOST_WIDE_INT offset = 0;
+	  rtx jump_insn, jump_set;
+
+	  /* If the return address is in a register, we can emit the insn
+	     unchanged.  Otherwise, it must be a MEM and we see what the
+	     base register and offset are.  In any case, we have to emit any
+	     pending load to the equivalent reg of SP, if any.  */
+	  if (GET_CODE (retaddr) == REG)
+	    {
+	      emit_equiv_load (&info);
+	      add_insn (insn);
+	      continue;
+	    }
+	  else if (GET_CODE (retaddr) == MEM
+		   && GET_CODE (XEXP (retaddr, 0)) == REG)
+	    base = gen_rtx_REG (Pmode, REGNO (XEXP (retaddr, 0))), offset = 0;
+	  else if (GET_CODE (retaddr) == MEM
+		   && GET_CODE (XEXP (retaddr, 0)) == PLUS
+		   && GET_CODE (XEXP (XEXP (retaddr, 0), 0)) == REG
+		   && GET_CODE (XEXP (XEXP (retaddr, 0), 1)) == CONST_INT)
+	    {
+	      base = gen_rtx_REG (Pmode, REGNO (XEXP (XEXP (retaddr, 0), 0)));
+	      offset = INTVAL (XEXP (XEXP (retaddr, 0), 1));
+	    }
 	  else
-	    sp_modified_unknown = 1;
-
-	  /* Don't allow the SP modification to happen.  We don't call
-	     delete_insn here since INSN isn't in any chain.  */
-	  PUT_CODE (insn, NOTE);
-	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-	  NOTE_SOURCE_FILE (insn) = 0;
-	}
-      else if (reg_referenced_p (stack_pointer_rtx, PATTERN (insn)))
-	{
-	  if (sp_modified_unknown)
 	    abort ();
 
-	  else if (sp_from_reg != 0)
-	    PATTERN (insn)
-	      = replace_rtx (PATTERN (insn), stack_pointer_rtx, sp_from_reg);
+	  /* If the base of the location containing the return pointer
+	     is SP, we must update it with the replacement address.  Otherwise,
+	     just build the necessary MEM.  */
+	  retaddr = plus_constant (base, offset);
+	  if (base == stack_pointer_rtx)
+	    retaddr = simplify_replace_rtx (retaddr, stack_pointer_rtx,
+					    plus_constant (info.sp_equiv_reg,
+							   info.sp_offset));
+
+	  retaddr = gen_rtx_MEM (Pmode, retaddr);
+
+	  /* If there is a pending load to the equivalent register for SP
+	     and we reference that register, we must load our address into
+	     a scratch register and then do that load.  */
+	  if (info.equiv_reg_src
+	      && reg_overlap_mentioned_p (info.equiv_reg_src, retaddr))
+	    {
+	      unsigned int regno;
+	      rtx reg;
+
+	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+		if (HARD_REGNO_MODE_OK (regno, Pmode)
+		    && !fixed_regs[regno] && call_used_regs[regno]
+		    && !FUNCTION_VALUE_REGNO_P (regno))
+		  break;
+
+	      if (regno == FIRST_PSEUDO_REGISTER)
+		abort ();
+
+	      reg = gen_rtx_REG (Pmode, regno);
+	      emit_move_insn (reg, retaddr);
+	      retaddr = reg;
+	    }
+
+	  emit_equiv_load (&info);
+	  jump_insn = emit_jump_insn (gen_indirect_jump (retaddr));
+
+	  /* Show the SET in the above insn is a RETURN.  */
+	  jump_set = single_set (jump_insn);
+	  if (jump_set == 0)
+	    abort ();
+	  else
+	    SET_IS_RETURN_P (jump_set) = 1;
 	}
+
+      /* If SP is not mentioned in the pattern and its equivalent register, if
+	 any, is not modified, just emit it.  Otherwise, if neither is set,
+	 replace the reference to SP and emit the insn.  If none of those are
+	 true, handle each SET individually.  */
+      else if (!reg_mentioned_p (stack_pointer_rtx, PATTERN (insn))
+	       && (info.sp_equiv_reg == stack_pointer_rtx
+		   || !reg_set_p (info.sp_equiv_reg, insn)))
+	add_insn (insn);
+      else if (! reg_set_p (stack_pointer_rtx, insn)
+	       && (info.sp_equiv_reg == stack_pointer_rtx
+		   || !reg_set_p (info.sp_equiv_reg, insn)))
+	{
+	  if (! validate_replace_rtx (stack_pointer_rtx,
+				      plus_constant (info.sp_equiv_reg,
+						     info.sp_offset),
+				      insn))
+	    abort ();
+
+	  add_insn (insn);
+	}
+      else if (GET_CODE (PATTERN (insn)) == SET)
+	handle_epilogue_set (PATTERN (insn), &info);
+      else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+	{
+	  for (j = 0; j < XVECLEN (PATTERN (insn), 0); j++)
+	    if (GET_CODE (XVECEXP (PATTERN (insn), 0, j)) == SET)
+	      handle_epilogue_set (XVECEXP (PATTERN (insn), 0, j), &info);
+	}
+      else
+	add_insn (insn);
+
+      info.sp_equiv_reg = info.new_sp_equiv_reg;
+      info.sp_offset = info.new_sp_offset;
     }
+
+  seq = gen_sequence ();
+  end_sequence ();
+  return seq;
+}
+
+/* SET is a SET from an insn in the epilogue.  P is a pointr to the epi_info
+   structure that contains information about what we've seen so far.  We
+   process this SET by either updating that data or by emitting one or 
+   more insns.  */
+
+static void
+handle_epilogue_set (set, p)
+     rtx set;
+     struct epi_info *p;
+{
+  /* First handle the case where we are setting SP.  Record what it is being
+     set from.  If unknown, abort.  */
+  if (reg_set_p (stack_pointer_rtx, set))
+    {
+      if (SET_DEST (set) != stack_pointer_rtx)
+	abort ();
+
+      if (GET_CODE (SET_SRC (set)) == PLUS
+	  && GET_CODE (XEXP (SET_SRC (set), 1)) == CONST_INT)
+	{
+	  p->new_sp_equiv_reg = XEXP (SET_SRC (set), 0);
+	  p->new_sp_offset = INTVAL (XEXP (SET_SRC (set), 1));
+	}
+      else
+	p->new_sp_equiv_reg = SET_SRC (set), p->new_sp_offset = 0;
+
+      /* If we are adjusting SP, we adjust from the old data.  */
+      if (p->new_sp_equiv_reg == stack_pointer_rtx)
+	{
+	  p->new_sp_equiv_reg = p->sp_equiv_reg;
+	  p->new_sp_offset += p->sp_offset;
+	}
+
+      if (p->new_sp_equiv_reg == 0 || GET_CODE (p->new_sp_equiv_reg) != REG)
+	abort ();
+
+      return;
+    }
+
+  /* Next handle the case where we are setting SP's equivalent register.
+     If we already have a value to set it to, abort.  We could update, but
+     there seems little point in handling that case.  */
+  else if (p->sp_equiv_reg != 0 && reg_set_p (p->sp_equiv_reg, set))
+    {
+      if (!rtx_equal_p (p->sp_equiv_reg, SET_DEST (set))
+	  || p->equiv_reg_src != 0)
+	abort ();
+      else
+	p->equiv_reg_src
+	  = simplify_replace_rtx (SET_SRC (set), stack_pointer_rtx,
+				  plus_constant (p->sp_equiv_reg,
+						 p->sp_offset));
+    }
+
+  /* Otherwise, replace any references to SP in the insn to its new value
+     and emit the insn.  */
+  else
+    {
+      SET_SRC (set) = simplify_replace_rtx (SET_SRC (set), stack_pointer_rtx,
+					    plus_constant (p->sp_equiv_reg,
+							   p->sp_offset));
+      SET_DEST (set) = simplify_replace_rtx (SET_DEST (set), stack_pointer_rtx,
+					     plus_constant (p->sp_equiv_reg,
+							    p->sp_offset));
+      emit_insn (set);
+    }
+}
+
+/* Emit an insn to do the load shown in p->equiv_reg_src, if needed.  */
+
+static void
+emit_equiv_load (p)
+     struct epi_info *p;
+{
+  if (p->equiv_reg_src != 0)
+    emit_move_insn (p->sp_equiv_reg, p->equiv_reg_src);
+
+  p->equiv_reg_src = 0;
 }
 #endif
 
@@ -7360,11 +7588,13 @@ thread_prologue_and_epilogue_insns (f)
 
       seq = gen_epilogue ();
 
-      /* If this function returns with the stack depressed, massage
-	 the epilogue to actually do that.  */
+#ifdef INCOMING_RETURN_ADDR_RTX
+      /* If this function returns with the stack depressed and we can support
+	 it, massage the epilogue to actually do that.  */
       if (TREE_CODE (TREE_TYPE (current_function_decl)) == FUNCTION_TYPE
 	  && TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (current_function_decl)))
-	keep_stack_depressed (seq);
+	seq = keep_stack_depressed (seq);
+#endif
 
       emit_jump_insn (seq);
 

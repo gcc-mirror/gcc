@@ -130,7 +130,8 @@ struct rtx_def
   /* 1 in an INSN if it can alter flow of control
      within this function.
      MEM_KEEP_ALIAS_SET_P in a MEM.
-     LINK_COST_ZERO in an INSN_LIST.  */
+     LINK_COST_ZERO in an INSN_LIST.
+     SET_IS_RETURN_P in a SET.  */
   unsigned int jump : 1;
   /* 1 in an INSN if it can call another function.
      LINK_COST_FREE in an INSN_LIST.  */
@@ -965,6 +966,7 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
    and SET_SRC is the value it is set to.  */
 #define SET_DEST(RTX) XC2EXP(RTX, 0, SET, CLOBBER)
 #define SET_SRC(RTX) XCEXP(RTX, 1, SET)
+#define SET_IS_RETURN_P(RTX) ((RTX)->jump)
 
 /* For a TRAP_IF rtx, TRAP_CONDITION is an expression.  */
 #define TRAP_CONDITION(RTX) XCEXP(RTX, 0, TRAP_IF)
