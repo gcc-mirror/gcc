@@ -1339,7 +1339,7 @@ namespace std
 	    if (__res.size() > 1)
 	      {
 		const size_type __first = __res.find_first_not_of('0');
-		const bool __only_zeros = __first == string_type::npos;
+		const bool __only_zeros = __first == string::npos;
 		if (__first)
 		  __res.erase(0, __only_zeros ? __res.size() - 1 : __first);
 	      }
@@ -1405,7 +1405,7 @@ namespace std
     do_get(iter_type __beg, iter_type __end, bool __intl, ios_base& __io,
 	   ios_base::iostate& __err, string_type& __units) const
     {
-      typedef typename string_type::size_type             size_type;
+      typedef typename string::size_type                  size_type;
 
       const locale& __loc = __io._M_getloc();
       const ctype<_CharT>& __ctype = use_facet<ctype<_CharT> >(__loc);
