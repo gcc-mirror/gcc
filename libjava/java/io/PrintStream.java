@@ -218,7 +218,6 @@ public class PrintStream extends FilterOutputStream
   public void println (String str)
   {
     print (str == null ? "null" : str, true);
-    println ();
   }
 
   public synchronized void println (char ch)
