@@ -30,6 +30,7 @@ package java.io;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Hashtable;
 
 import gnu.java.io.ObjectIdentityWrapper;
@@ -241,13 +242,33 @@ public class ObjectOutputStream extends OutputStream
 
 	Object replacedObject = null;
 
-	if ((replacementEnabled || obj instanceof Replaceable)
+	if ((replacementEnabled || obj instanceof Serializable)
 	    && ! replaceDone)
 	{
 	  replacedObject = obj;
 
-	  if (obj instanceof Replaceable)
-	    obj = ((Replaceable)obj).writeReplace ();
+	  if (obj instanceof Serializable)
+	    {
+	      Method m = null;
+	      try
+	      {
+	        Class classArgs[] = {};
+		m = obj.getClass ().getDeclaredMethod ("writeReplace",
+						       classArgs);
+		// m can't be null by definition since an exception would
+		// have been thrown so a check for null is not needed.
+		obj = m.invoke (obj, new Object[] {});
+	      }
+	      catch (NoSuchMethodException ignore)
+	      {
+	      }
+	      catch (IllegalAccessException ignore)
+	      {
+	      }
+	      catch (InvocationTargetException ignore)
+	      {
+	      }
+	    }
 
 	  if (replacementEnabled)
 	    obj = replaceObject (obj);

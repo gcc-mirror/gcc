@@ -1,3 +1,32 @@
+2000-10-05  Warren Levy  <warrenl@cygnus.com>
+
+	* Makefile.am: Removed java/io/Replaceable.java and
+	java/io/Resolvable.java.
+	* Makefile.in: Rebuilt.
+	* gcj/javaprims.h: Removed Replaceable and Resolvable from java.io
+	namespace.
+	* java/io/ObjectInputStream.java (processResolution): Fixed typo
+	in method name.
+	(processResolution): Handle readResolve method via reflection with
+	removal of Resolvable interface.
+	* java/io/ObjectOutputStream.java (writeObject): Handle writeReplace
+	method via reflection with removal of Replaceable interface.
+	* java/io/Replaceable.java: Removed.
+	* java/io/Resolvable.java: Removed.
+	* java/security/Key.java (serialVersionUID): New field.
+	* java/security/Provider.java (serialVersionUID): New field.
+	* java/security/interfaces/DSAPrivateKey.java (serialVersionUID):
+	New field.
+	* java/security/interfaces/DSAPublicKey.java (serialVersionUID):
+        New field.
+	* java/sql/DataTruncation.java (serialVersionUID): New field.
+	* java/sql/SQLException.java (serialVersionUID): New field.
+	* java/sql/SQLWarning.java (serialVersionUID): New field.
+	* java/util/Date.java (serialVersionUID): New field.
+	(millis): Made transient.
+	(readObject): New method.
+	(writeObject): New method.
+
 2000-10-05  Tom Tromey  <tromey@cygnus.com>
 
 	* gnu/gcj/convert/natIconv.cc (init): Terminate buffer.

@@ -68,6 +68,7 @@ AR = @AR@
 AS = @AS@
 CC = @CC@
 COMPPATH = @COMPPATH@
+CPP = @CPP@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 DIRLTDL = @DIRLTDL@
@@ -78,8 +79,6 @@ EXEEXT = @EXEEXT@
 FORCELIBGCCSPEC = @FORCELIBGCCSPEC@
 GCDEPS = @GCDEPS@
 GCINCS = @GCINCS@
-GCJ = @GCJ@
-GCJFLAGS = @GCJFLAGS@
 GCLIBS = @GCLIBS@
 GCOBJS = @GCOBJS@
 GCSPEC = @GCSPEC@
@@ -96,11 +95,9 @@ LN_S = @LN_S@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
-OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PERL = @PERL@
 RANLIB = @RANLIB@
-STRIP = @STRIP@
 SYSDEP_SOURCES = @SYSDEP_SOURCES@
 SYSTEMSPEC = @SYSTEMSPEC@
 THREADDEPS = @THREADDEPS@
@@ -118,40 +115,27 @@ here = @here@
 libgcj_basedir = @libgcj_basedir@
 
 AUTOMAKE_OPTIONS = foreign no-installinfo
-@TESTSUBDIR_TRUE@SUBDIRS = \
-@TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
-@TESTSUBDIR_FALSE@SUBDIRS = \
-@TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
-@USE_LIBDIR_TRUE@toolexeclibdir = \
-@USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexeclibdir = \
-@USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
-@USE_LIBDIR_FALSE@toolexecdir = \
-@USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
+@TESTSUBDIR_TRUE@SUBDIRS = @TESTSUBDIR_TRUE@$(DIRLTDL) testsuite gcj include
+@TESTSUBDIR_FALSE@SUBDIRS = @TESTSUBDIR_FALSE@$(DIRLTDL) gcj include
+@USE_LIBDIR_TRUE@toolexeclibdir = @USE_LIBDIR_TRUE@$(libdir)$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexeclibdir = @USE_LIBDIR_FALSE@$(toolexecdir)/lib$(MULTISUBDIR)
+@USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 
 toolexeclib_LTLIBRARIES = libgcj.la
 toolexeclib_DATA = libgcj.spec
 data_DATA = libgcj.zip
 
-@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.a
-@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = \
-@NEEDS_DATA_START_TRUE@libgcjdata.c
+@NEEDS_DATA_START_TRUE@toolexeclib_LIBRARIES = @NEEDS_DATA_START_TRUE@libgcjdata.a
+@NEEDS_DATA_START_TRUE@libgcjdata_a_SOURCES = @NEEDS_DATA_START_TRUE@libgcjdata.c
 
-@NATIVE_TRUE@bin_PROGRAMS = \
-@NATIVE_TRUE@jv-convert gij
+@NATIVE_TRUE@bin_PROGRAMS = @NATIVE_TRUE@jv-convert gij
 
 bin_SCRIPTS = addr2name.awk
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = \
-@CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
-@CANADIAN_FALSE@ZIP = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
-@CANADIAN_TRUE@GCJH = \
-@CANADIAN_TRUE@gcjh
-@CANADIAN_FALSE@GCJH = \
-@CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@zip
+@CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/zip/zip$(EXEEXT)
+@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
+@CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh$(EXEEXT)
 
 GCJCOMPILE = $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -fclasspath=$(here) -L$(here) $(JC1FLAGS) -c
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
@@ -166,10 +150,8 @@ AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 	-fdollars-in-identifiers \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
 
-@USING_GCC_TRUE@AM_CFLAGS = \
-@USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
-@USING_GCC_FALSE@AM_CFLAGS = \
-@USING_GCC_FALSE@@LIBGCJ_CFLAGS@
+@USING_GCC_TRUE@AM_CFLAGS = @USING_GCC_TRUE@@LIBGCJ_CFLAGS@ $(WARNINGS)
+@USING_GCC_FALSE@AM_CFLAGS = @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
 JCFLAGS = -g
 JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
@@ -221,8 +203,7 @@ extra_headers = java/lang/Object.h java/lang/Class.h
 
 NM = nm
 
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = \
-@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
+@NATIVE_TRUE@@MAINTAINER_MODE_TRUE@noinst_PROGRAMS = @NATIVE_TRUE@@MAINTAINER_MODE_TRUE@gen-from-JIS
 
 CONVERT_DIR = gnu/gcj/convert
 
@@ -596,8 +577,6 @@ java/io/PushbackInputStream.java \
 java/io/PushbackReader.java \
 java/io/RandomAccessFile.java \
 java/io/Reader.java \
-java/io/Replaceable.java \
-java/io/Resolvable.java	\
 java/io/SequenceInputStream.java \
 java/io/Serializable.java \
 java/io/SerializablePermission.java \
@@ -1015,7 +994,7 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 libgcjdata_a_LIBADD = 
-@NEEDS_DATA_START_TRUE@libgcjdata_a_OBJECTS =  libgcjdata.$(OBJEXT)
+@NEEDS_DATA_START_TRUE@libgcjdata_a_OBJECTS =  libgcjdata.o
 LTLIBRARIES =  $(toolexeclib_LTLIBRARIES)
 
 libgcj_la_OBJECTS =  prims.lo posix.lo jni.lo exception.lo resolve.lo \
@@ -1026,7 +1005,7 @@ defineclass.lo interpret.lo name-finder.lo
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 jv_convert_OBJECTS = 
-gij_OBJECTS =  gij.$(OBJEXT)
+gij_OBJECTS =  gij.o
 gen_from_JIS_OBJECTS = 
 gen_from_JIS_LDFLAGS = 
 SCRIPTS =  $(bin_SCRIPTS)
@@ -1044,13 +1023,14 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acinclude.m4 aclocal.m4 configure configure.in \
-libgcj-test.spec.in libgcj.spec.in
+THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
+include/config.h.in include/stamp-h.in libgcj-test.spec.in \
+libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -1282,8 +1262,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/io/PipedWriter.P .deps/java/io/PrintStream.P \
 .deps/java/io/PrintWriter.P .deps/java/io/PushbackInputStream.P \
 .deps/java/io/PushbackReader.P .deps/java/io/RandomAccessFile.P \
-.deps/java/io/Reader.P .deps/java/io/Replaceable.P \
-.deps/java/io/Resolvable.P .deps/java/io/SequenceInputStream.P \
+.deps/java/io/Reader.P .deps/java/io/SequenceInputStream.P \
 .deps/java/io/Serializable.P .deps/java/io/SerializablePermission.P \
 .deps/java/io/StreamCorruptedException.P \
 .deps/java/io/StreamTokenizer.P .deps/java/io/StringBufferInputStream.P \
@@ -1504,7 +1483,7 @@ OBJECTS = $(libgcjdata_a_OBJECTS) $(libgcj_la_OBJECTS) $(jv_convert_OBJECTS) $(g
 
 all: all-redirect
 .SUFFIXES:
-.SUFFIXES: .S .c .cc .class .h .java .lo .o .obj .s
+.SUFFIXES: .S .c .cc .class .h .java .lo .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
 	cd $(top_srcdir) && $(AUTOMAKE) --foreign Makefile
 
@@ -1519,6 +1498,34 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
+
+include/config.h: include/stamp-h
+	@if test ! -f $@; then \
+		rm -f include/stamp-h; \
+		$(MAKE) include/stamp-h; \
+	else :; fi
+include/stamp-h: $(srcdir)/include/config.h.in $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
+	     $(SHELL) ./config.status
+	@echo timestamp > include/stamp-h 2> /dev/null
+$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h.in
+	@if test ! -f $@; then \
+		rm -f $(srcdir)/include/stamp-h.in; \
+		$(MAKE) $(srcdir)/include/stamp-h.in; \
+	else :; fi
+$(srcdir)/include/stamp-h.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
+	cd $(top_srcdir) && $(AUTOHEADER)
+	@echo timestamp > $(srcdir)/include/stamp-h.in 2> /dev/null
+
+mostlyclean-hdr:
+
+clean-hdr:
+
+distclean-hdr:
+	-rm -f include/config.h
+
+maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -1556,11 +1563,6 @@ uninstall-toolexeclibLIBRARIES:
 	  rm -f $(DESTDIR)$(toolexeclibdir)/$$p; \
 	done
 
-# FIXME: We should only use cygpath when building on Windows,
-# and only if it is available.
-.c.obj:
-	$(COMPILE) -c `cygpath -w $<`
-
 .s.o:
 	$(COMPILE) -c $<
 
@@ -1569,7 +1571,6 @@ uninstall-toolexeclibLIBRARIES:
 
 mostlyclean-compile:
 	-rm -f *.o core *.core
-	-rm -f *.$(OBJEXT)
 
 clean-compile:
 
@@ -1693,8 +1694,6 @@ uninstall-binSCRIPTS:
 	done
 .cc.o:
 	$(CXXCOMPILE) -c $<
-.cc.obj:
-	$(CXXCOMPILE) -c `cygpath -w $<`
 .cc.lo:
 	$(LTCXXCOMPILE) -c $<
 
@@ -1871,7 +1870,7 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
@@ -1989,31 +1988,33 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-toolexeclibLIBRARIES mostlyclean-compile \
-		mostlyclean-libtool mostlyclean-toolexeclibLTLIBRARIES \
+mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLIBRARIES \
+		mostlyclean-compile mostlyclean-libtool \
+		mostlyclean-toolexeclibLTLIBRARIES \
 		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
 		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-toolexeclibLIBRARIES clean-compile clean-libtool \
-		clean-toolexeclibLTLIBRARIES clean-binPROGRAMS \
-		clean-noinstPROGRAMS clean-tags clean-depend \
-		clean-generic mostlyclean-am clean-local
+clean-am:  clean-hdr clean-toolexeclibLIBRARIES clean-compile \
+		clean-libtool clean-toolexeclibLTLIBRARIES \
+		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
+		clean-depend clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-toolexeclibLIBRARIES distclean-compile \
-		distclean-libtool distclean-toolexeclibLTLIBRARIES \
-		distclean-binPROGRAMS distclean-noinstPROGRAMS \
-		distclean-tags distclean-depend distclean-generic \
-		clean-am
+distclean-am:  distclean-hdr distclean-toolexeclibLIBRARIES \
+		distclean-compile distclean-libtool \
+		distclean-toolexeclibLTLIBRARIES distclean-binPROGRAMS \
+		distclean-noinstPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
+maintainer-clean-am:  maintainer-clean-hdr \
+		maintainer-clean-toolexeclibLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-binPROGRAMS \
@@ -2026,7 +2027,8 @@ maintainer-clean-am:  maintainer-clean-toolexeclibLIBRARIES \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
+.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
+mostlyclean-toolexeclibLIBRARIES distclean-toolexeclibLIBRARIES \
 clean-toolexeclibLIBRARIES maintainer-clean-toolexeclibLIBRARIES \
 uninstall-toolexeclibLIBRARIES install-toolexeclibLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \

@@ -20,8 +20,7 @@ import java.io.Serializable;
  
 public interface Key extends Serializable
 {
-  // FIXME: need to set this at some point when serialization is implemented.
-  // public static final long serialVersionUID = 0L;
+  public static final long serialVersionUID = 6603384152749567654L;
 
   public String getAlgorithm();
   public String getFormat();

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -18,13 +18,13 @@ import java.text.*;
  * "The Java Language Specification", ISBN 0-201-63451-1,
  * and O'Reilly's "Java in a Nutshell".
  * Status:  Need to re-write toString().
- *   Missing:  ToGMTString and toLocaleString.
- *   Serialization spec:  Specifies readObject/writeObject.
+ *   Missing:  ToGMTString.
  */
-
 public class Date implements java.io.Serializable, Cloneable
 {
-  private long millis;
+  private static final long serialVersionUID = 7523967970034938905L;
+
+  transient private long millis;
 
   public Date() { millis = System.currentTimeMillis(); }
 
@@ -479,5 +479,28 @@ public class Date implements java.io.Serializable, Cloneable
     GregorianCalendar cal = new GregorianCalendar (TimeZone.zoneGMT);
     cal.set(year+1900, month, date, hours, minutes, seconds);
     return cal.getTimeInMillis();
+  }
+
+  /**
+   * Reads an Object from the stream.
+   */
+  private void readObject (java.io.ObjectInputStream input)
+    throws java.io.IOException, ClassNotFoundException
+  {
+    input.defaultReadObject ();
+    millis = input.readLong ();
+  }
+
+  /**
+   * Writes an Object to the stream.
+   * @serialdata A long value representing the offset from the epoch
+   * in milliseconds.  This is the same value that is returned by the
+   * method getTime().
+   */
+  private void writeObject (java.io.ObjectOutputStream output)
+    throws java.io.IOException
+  {
+    output.defaultWriteObject ();
+    output.writeLong (millis);
   }
 }
