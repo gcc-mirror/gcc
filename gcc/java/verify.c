@@ -353,7 +353,7 @@ start_pc_cmp (xp, yp)
              goto verify_error; } while (0)
 
 #ifdef __GNUC__
-#define CHECK_PC_IN_RANGE(PC) ({if (PC < 0 || PC > length) goto bad_pc; 1;})
+#define CHECK_PC_IN_RANGE(PC) ({if (PC < 0 || PC > length) goto bad_pc; (void)1;})
 #else
 #define CHECK_PC_IN_RANGE(PC) (PC < 0 || PC > length ? \
   (fatal("Bad byte codes.\n"), 0) : 1)

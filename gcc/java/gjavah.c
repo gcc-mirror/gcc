@@ -222,6 +222,10 @@ static int decompiled = 0;
   if (out && method_printed && !method_synthetic) 	\
     fputs (decompiled || stubs ? "\n" : ";\n", out);
 
+/* We're going to need {peek,skip}_attribute, enable their definition.   */
+#define NEED_PEEK_ATTRIBUTE
+#define NEED_SKIP_ATTRIBUTE
+
 #include "jcf-reader.c"
 
 /* Some useful constants.  */

@@ -940,6 +940,10 @@ extern void java_parser_context_save_global PARAMS ((void));
 extern void java_parser_context_restore_global PARAMS ((void));
 int yyparse PARAMS ((void));
 extern int java_parse PARAMS ((void));
-void yyerror PARAMS ((const char *));
+extern void yyerror PARAMS ((const char *))
+#ifdef JC1_LITE
+ATTRIBUTE_NORETURN
+#endif
+;
 extern void java_expand_classes PARAMS ((void));
 #endif

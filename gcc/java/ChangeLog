@@ -1,3 +1,14 @@
+2000-10-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (NEED_PEEK_ATTRIBUTE, NEED_SKIP_ATTRIBUTE): Define
+	
+	* jcf-reader.c (peek_attribute, skip_attribute): Only define
+	when requested.
+
+	* parse.h (yyerror): If JC1_LITE, mark with ATTRIBUTE_NORETURN.
+
+	* verify.c (CHECK_PC_IN_RANGE): Cast result of stmt-expr to void.
+
 2000-10-16  Tom Tromey  <tromey@cygnus.com>
 
 	* jvspec.c (lang_specific_driver): Recognize -MF and -MT.
