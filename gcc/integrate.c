@@ -595,7 +595,8 @@ process_reg_param (map, loc, copy)
 }
 
 /* Compare two BLOCKs for qsort.  The key we sort on is the
-   BLOCK_ABSTRACT_ORIGIN of the blocks.  */
+   BLOCK_ABSTRACT_ORIGIN of the blocks.  We cannot just subtract the
+   two pointers, because it may overflow sizeof(int).  */
 
 static int
 compare_blocks (v1, v2)
@@ -604,9 +605,12 @@ compare_blocks (v1, v2)
 {
   tree b1 = *((const tree *) v1);
   tree b2 = *((const tree *) v2);
+  char *p1 = (char *) BLOCK_ABSTRACT_ORIGIN (b1);
+  char *p2 = (char *) BLOCK_ABSTRACT_ORIGIN (b2);
 
-  return ((char *) BLOCK_ABSTRACT_ORIGIN (b1)
-	  - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
+  if (p1 == p2)
+    return 0;
+  return p1 < p2 ? -1 : 1;
 }
 
 /* Compare two BLOCKs for bsearch.  The first pointer corresponds to
@@ -619,8 +623,12 @@ find_block (v1, v2)
 {
   const union tree_node *b1 = (const union tree_node *) v1;
   tree b2 = *((const tree *) v2);
+  char *p1 = (char *) b1;
+  char *p2 = (char *) BLOCK_ABSTRACT_ORIGIN (b2);
 
-  return ((const char *) b1 - (char *) BLOCK_ABSTRACT_ORIGIN (b2));
+  if (p1 == p2)
+    return 0;
+  return p1 < p2 ? -1 : 1;
 }
 
 /* Integrate the procedure defined by FNDECL.  Note that this function
