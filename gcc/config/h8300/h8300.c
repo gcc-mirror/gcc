@@ -68,7 +68,6 @@ static void h8300_file_end PARAMS ((void));
 static void h8300_asm_named_section PARAMS ((const char *, unsigned int));
 #endif
 static void h8300_encode_section_info PARAMS ((tree, rtx, int));
-static int const_costs PARAMS ((rtx, enum rtx_code, enum rtx_code));
 static int h8300_and_costs PARAMS ((rtx));
 static int h8300_shift_costs PARAMS ((rtx));
 static bool h8300_rtx_costs PARAMS ((rtx, int, int, int *));
@@ -1090,55 +1089,6 @@ function_arg (cum, mode, type, named)
   return result;
 }
 
-/* Return the cost of the rtx R with code CODE.  */
-
-static int
-const_costs (r, c, outer_code)
-     rtx r;
-     enum rtx_code c;
-     enum rtx_code outer_code;
-{
-  switch (c)
-    {
-    case CONST_INT:
-      {
-	HOST_WIDE_INT n = INTVAL (r);
-
-	if (-4 <= n || n <= 4)
-	  {
-	    switch ((int) n)
-	      {
-	      case 0:
-		return 0;
-	      case 1:
-	      case 2:
-	      case -1:
-	      case -2:
-		return 0 + (outer_code == SET);
-	      case 4:
-	      case -4:
-		if (TARGET_H8300H || TARGET_H8300S)
-		  return 0 + (outer_code == SET);
-		else
-		  return 1;
-	      }
-	  }
-	return 1;
-      }
-
-    case CONST:
-    case LABEL_REF:
-    case SYMBOL_REF:
-      return 3;
-
-    case CONST_DOUBLE:
-      return 20;
-
-    default:
-      return 4;
-    }
-}
-
 static int
 h8300_and_costs (x)
      rtx x;
@@ -1185,6 +1135,46 @@ h8300_rtx_costs (x, code, outer_code, total)
 {
   switch (code)
     {
+    case CONST_INT:
+      {
+	HOST_WIDE_INT n = INTVAL (x);
+
+	if (-4 <= n || n <= 4)
+	  {
+	    switch ((int) n)
+	      {
+	      case 0:
+		*total = 0;
+		return true;
+	      case 1:
+	      case 2:
+	      case -1:
+	      case -2:
+		*total = 0 + (outer_code == SET);
+		return true;
+	      case 4:
+	      case -4:
+		if (TARGET_H8300H || TARGET_H8300S)
+		  *total = 0 + (outer_code == SET);
+		else
+		  *total = 1;
+		return true;
+	      }
+	  }
+	*total = 1;
+	return true;
+      }
+
+    case CONST:
+    case LABEL_REF:
+    case SYMBOL_REF:
+      *total = 3;
+      return true;
+
+    case CONST_DOUBLE:
+      *total = 20;
+      return true;
+
     case AND:
       *total = COSTS_N_INSNS (h8300_and_costs (x));
       return true;
@@ -1215,7 +1205,7 @@ h8300_rtx_costs (x, code, outer_code, total)
       return true;
 
     default:
-      *total = const_costs (x, code, outer_code);
+      *total = 4;
       return true;
     }
 }
