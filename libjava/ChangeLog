@@ -1,3 +1,8 @@
+1999-06-24  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/e_asin.c: Don't use __int32_t or __uint32_t.
+	* java/lang/fdlibm.h (HUGE): Conditionally define.
+
 Fri May 28 22:20:03 1999  Anthony Green  <green@cygnus.com>
 
 	* java/lang/fdlibm.h: Don't use __uint32_t.  Include mprec.h.
