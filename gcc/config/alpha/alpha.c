@@ -137,6 +137,7 @@ struct alpha_rtx_cost_data
   unsigned char int_mult_di;
   unsigned char int_shift;
   unsigned char int_cmov;
+  unsigned short int_div;
 };
 
 static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
@@ -150,6 +151,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
     COSTS_N_INSNS (23),		/* int_mult_di */
     COSTS_N_INSNS (2),		/* int_shift */
     COSTS_N_INSNS (2),		/* int_cmov */
+    COSTS_N_INSNS (70),		/* int_div */
   },
   { /* EV5 */
     COSTS_N_INSNS (4),		/* fp_add */
@@ -160,6 +162,7 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
     COSTS_N_INSNS (12),		/* int_mult_di */
     COSTS_N_INSNS (1) + 1,	/* int_shift */
     COSTS_N_INSNS (1),		/* int_cmov */
+    COSTS_N_INSNS (45),		/* int_div */
   },
   { /* EV6 */
     COSTS_N_INSNS (4),		/* fp_add */
@@ -170,7 +173,26 @@ static struct alpha_rtx_cost_data const alpha_rtx_cost_data[PROCESSOR_MAX] =
     COSTS_N_INSNS (7),		/* int_mult_di */
     COSTS_N_INSNS (1),		/* int_shift */
     COSTS_N_INSNS (2),		/* int_cmov */
+    COSTS_N_INSNS (25),		/* int_div */
   },
+};
+
+/* Similar but tuned for code size instead of execution latency.  The
+   extra +N is fractional cost tuning based on latency.  It's used to
+   encourage use of cheaper insns like shift, but only if there's just
+   one of them.  */
+
+static struct alpha_rtx_cost_data const alpha_rtx_cost_size =
+{
+  COSTS_N_INSNS (1),		/* fp_add */
+  COSTS_N_INSNS (1),		/* fp_mult */
+  COSTS_N_INSNS (1),		/* fp_div_sf */
+  COSTS_N_INSNS (1) + 1,	/* fp_div_df */
+  COSTS_N_INSNS (1) + 1,	/* int_mult_si */
+  COSTS_N_INSNS (1) + 2,	/* int_mult_di */
+  COSTS_N_INSNS (1),		/* int_shift */
+  COSTS_N_INSNS (1),		/* int_cmov */
+  COSTS_N_INSNS (6),		/* int_div */
 };
 
 /* Get the number of args of a function in one of two ways.  */
@@ -2103,15 +2125,21 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 {
   enum machine_mode mode = GET_MODE (x);
   bool float_mode_p = FLOAT_MODE_P (mode);
+  const struct alpha_rtx_cost_data *cost_data;
+
+  if (optimize_size)
+    cost_data = &alpha_rtx_cost_size;
+  else
+    cost_data = &alpha_rtx_cost_data[alpha_cpu];
 
   switch (code)
     {
+    case CONST_INT:
       /* If this is an 8-bit constant, return zero since it can be used
 	 nearly anywhere with no cost.  If it is a valid operand for an
 	 ADD or AND, likewise return 0 if we know it will be used in that
 	 context.  Otherwise, return 2 since it might be used there later.
 	 All other constants take at least two insns.  */
-    case CONST_INT:
       if (INTVAL (x) >= 0 && INTVAL (x) < 256)
 	{
 	  *total = 0;
@@ -2140,16 +2168,17 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 	*total = COSTS_N_INSNS (1 + (outer_code != MEM));
       else if (tls_symbolic_operand_type (x))
 	/* Estimate of cost for call_pal rduniq.  */
+	/* ??? How many insns do we emit here?  More than one...  */
 	*total = COSTS_N_INSNS (15);
       else
 	/* Otherwise we do a load from the GOT.  */
-	*total = COSTS_N_INSNS (alpha_memory_latency);
+	*total = COSTS_N_INSNS (optimize_size ? 1 : alpha_memory_latency);
       return true;
     
     case PLUS:
     case MINUS:
       if (float_mode_p)
-	*total = alpha_rtx_cost_data[alpha_cpu].fp_add;
+	*total = cost_data->fp_add;
       else if (GET_CODE (XEXP (x, 0)) == MULT
 	       && const48_operand (XEXP (XEXP (x, 0), 1), VOIDmode))
 	{
@@ -2161,11 +2190,11 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case MULT:
       if (float_mode_p)
-	*total = alpha_rtx_cost_data[alpha_cpu].fp_mult;
+	*total = cost_data->fp_mult;
       else if (mode == DImode)
-	*total = alpha_rtx_cost_data[alpha_cpu].int_mult_di;
+	*total = cost_data->int_mult_di;
       else
-	*total = alpha_rtx_cost_data[alpha_cpu].int_mult_si;
+	*total = cost_data->int_mult_si;
       return false;
 
     case ASHIFT:
@@ -2179,14 +2208,14 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
 
     case ASHIFTRT:
     case LSHIFTRT:
-      *total = alpha_rtx_cost_data[alpha_cpu].int_shift;
+      *total = cost_data->int_shift;
       return false;
 
     case IF_THEN_ELSE:
       if (float_mode_p)
-        *total = alpha_rtx_cost_data[alpha_cpu].fp_add;
+        *total = cost_data->fp_add;
       else
-        *total = alpha_rtx_cost_data[alpha_cpu].int_cmov;
+        *total = cost_data->int_cmov;
       return false;
 
     case DIV:
@@ -2194,15 +2223,15 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
     case MOD:
     case UMOD:
       if (!float_mode_p)
-	*total = COSTS_N_INSNS (70);	/* ??? */
+	*total = cost_data->int_div;
       else if (mode == SFmode)
-        *total = alpha_rtx_cost_data[alpha_cpu].fp_div_sf;
+        *total = cost_data->fp_div_sf;
       else
-        *total = alpha_rtx_cost_data[alpha_cpu].fp_div_df;
+        *total = cost_data->fp_div_df;
       return false;
 
     case MEM:
-      *total = COSTS_N_INSNS (alpha_memory_latency);
+      *total = COSTS_N_INSNS (optimize_size ? 1 : alpha_memory_latency);
       return true;
 
     case NEG:
@@ -2216,7 +2245,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
     case ABS:
       if (! float_mode_p)
 	{
-	  *total = COSTS_N_INSNS (1) + alpha_rtx_cost_data[alpha_cpu].int_cmov;
+	  *total = COSTS_N_INSNS (1) + cost_data->int_cmov;
 	  return false;
 	}
       /* FALLTHRU */
@@ -2227,7 +2256,7 @@ alpha_rtx_costs (rtx x, int code, int outer_code, int *total)
     case UNSIGNED_FIX:
     case FLOAT_EXTEND:
     case FLOAT_TRUNCATE:
-      *total = alpha_rtx_cost_data[alpha_cpu].fp_add;
+      *total = cost_data->fp_add;
       return false;
 
     default:

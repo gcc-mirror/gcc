@@ -1,5 +1,12 @@
 2004-07-01  Richard Henderson  <rth@redhat.com>
 
+	* config/alpha/alpha.c (struct alpha_rtx_cost_data): Add int_div.
+	(alpha_rtx_cost_data): Update to match.
+	(alpha_rtx_cost_size): New.
+	(alpha_rtx_costs): Honor optimize_size.
+
+2004-07-01  Richard Henderson  <rth@redhat.com>
+
         * gimple-low.c (lower_function_body): Don't reset_block_changes here.
         * cfgexpand.c (tree_expand_cfg): Do it here.
         * config/alpha/alpha.c (alpha_output_mi_thunk_osf): And here.
