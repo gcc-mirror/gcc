@@ -3667,7 +3667,7 @@ fold (expr)
 	      case EQ_EXPR:
 		return fold (build1 (NEGATE_EXPR, type, arg1));
 	      case NE_EXPR:
-		return arg1;
+		return convert (type, arg1);
 	      case GE_EXPR:
 	      case GT_EXPR:
 		return fold (build1 (ABS_EXPR, type, arg1));
@@ -3683,7 +3683,7 @@ fold (expr)
 	  if (integer_zerop (TREE_OPERAND (arg0, 1)) && integer_zerop (arg2))
 	    {
 	      if (comp_code == NE_EXPR)
-		return arg1;
+		return convert (type, arg1);
 	      else if (comp_code == EQ_EXPR)
 		return convert (type, integer_zero_node);
 	    }
@@ -3696,9 +3696,9 @@ fold (expr)
 	    switch (comp_code)
 	      {
 	      case EQ_EXPR:
-		return arg2;
+		return convert (type, arg2);
 	      case NE_EXPR:
-		return arg1;
+		return convert (type, arg1);
 	      case LE_EXPR:
 	      case LT_EXPR:
 		return fold (build (MIN_EXPR, type, arg1, arg2));

@@ -3187,8 +3187,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		  && GET_CODE (PATTERN (insn)) != RETURN
 		  && (! condjump_p (insn)
 		      || (JUMP_LABEL (insn) != 0
-			  && (INSN_UID (JUMP_LABEL (insn)) > max_uid_for_loop
-			      || INSN_UID (insn) > max_uid_for_loop
+			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
+			      || INSN_UID (insn) >= max_uid_for_loop
 			      || (INSN_LUID (JUMP_LABEL (insn))
 				  < INSN_LUID (insn))))))
 	      {
