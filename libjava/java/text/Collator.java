@@ -1,6 +1,6 @@
 // Collator.java - Locale-sensitive string comparison.
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -54,6 +54,11 @@ public abstract class Collator implements Cloneable, Serializable
   public boolean equals (String source, String target)
   {
     return compare (source, target) == 0;
+  }
+
+  public Object clone ()
+  {
+    return super.clone ();
   }
 
   public static synchronized Locale[] getAvailableLocales ()

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -106,6 +106,21 @@ public abstract class Calendar implements java.io.Serializable, Cloneable
       {
 	throw new RuntimeException("internal error - "+ex);
       }
+  }
+
+  public String toString ()
+  {
+    // We have much latitude in how we implement this.
+    return ("areFieldsSet " + areFieldsSet
+	    + "; fields " + fields
+	    + "; firstDayOfWeek " + firstDayOfWeek
+	    + "; isSet " + isSet
+	    + "; isTimeSet " + isTimeSet
+	    + "; lenient " + lenient
+	    + "; minimalDaysInFirstWeek " + minimalDaysInFirstWeek
+	    + "; nextStamp " + nextStamp
+	    + "; time " + time
+	    + "; zone " + zone);
   }
 
   public static Calendar getInstance ()

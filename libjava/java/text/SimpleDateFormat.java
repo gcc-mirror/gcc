@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -510,6 +510,12 @@ public class SimpleDateFormat extends DateFormat
 	    && DateFormatSymbols.equals(formatData, other.formatData)
 	    && DateFormatSymbols.equals(defaultCenturyStart,
 					other.defaultCenturyStart));
+  }
+
+  public Object clone ()
+  {
+    // We know the superclass just call's Object's generic cloner.
+    return super.clone ();
   }
 
   public int hashCode ()

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -60,6 +60,12 @@ public abstract class DateFormat extends Format implements Cloneable
       return false;
     DateFormat d = (DateFormat) obj;
     return calendar.equals(d.calendar) && numberFormat.equals(d.numberFormat);
+  }
+
+  public Object clone ()
+  {
+    // We know the superclass just call's Object's generic cloner.
+    return super.clone ();
   }
 
   public final StringBuffer format (Object obj,

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -49,6 +49,27 @@ public abstract class NumberFormat extends Format implements Cloneable
 
   public abstract StringBuffer format (long number,
 				       StringBuffer sbuf, FieldPosition pos);
+
+  public Object clone ()
+  {
+    // We know the superclass just uses Object's generic cloner.
+    // Why not just inherit?  Because the online docs specify that
+    // this method exists for this class.
+    return super.clone ();
+  }
+
+  public boolean equals (Object obj)
+  {
+    if (! (obj instanceof NumberFormat))
+      return false;
+    NumberFormat nf = (NumberFormat) obj;
+    return (groupingUsed == nf.groupingUsed
+	    && maximumFractionDigits == nf.maximumFractionDigits
+	    && maximumIntegerDigits == nf.maximumIntegerDigits
+	    && minimumFractionDigits == nf.minimumFractionDigits
+	    && minimumIntegerDigits == nf.minimumIntegerDigits
+	    && parseIntegerOnly == nf.parseIntegerOnly);
+  }
 
   public static Locale[] getAvailableLocales ()
     {

@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -167,6 +167,32 @@ public class SimpleTimeZone extends TimeZone
       return false;
     SimpleTimeZone other = (SimpleTimeZone) obj;
     return getID() == other.getID() && hasSameRules(other);
+  }
+
+  public Object clone ()
+  {
+    // We know the superclass just call's Object's generic cloner.
+    return super.clone ();
+  }
+
+  public String toString ()
+  {
+    // The docs don't say much about how we might implement this.
+    // We choose a debugging implementation.
+    return ("dstSavings " + dstSavings
+	    + "; rawOffset " + rawOffset
+	    + "; startDay " + startDay
+	    + "; startDayOfWeek " + startDayOfWeek
+	    + "; startMode " + startMode
+	    + "; startMonth " + startMonth
+	    + "; startTime " + startTime
+	    + "; startYear " + startYear
+	    + "; endDay " + endDay
+	    + "; endDayOfWeek " + endDayOfWeek
+	    + "; endMode " + endMode
+	    + "; endMonth " + endMonth
+	    + "; endTime " + endTime
+	    + "; useDaylight " + useDaylight);
   }
 
   public int hashCode ()

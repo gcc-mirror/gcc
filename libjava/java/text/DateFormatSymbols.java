@@ -1,4 +1,4 @@
-/* Copyright (C) 1998, 1999  Red Hat, Inc.
+/* Copyright (C) 1998, 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -119,6 +119,19 @@ public class DateFormatSymbols extends Object
   public DateFormatSymbols ()
   {
     this (Locale.getDefault());
+  }
+
+  // Copy constructor.
+  private DateFormatSymbols (DateFormatSymbols old)
+  {
+    ampms = old.ampms;
+    eras = old.eras;
+    localPatternChars = old.localPatternChars;
+    months = old.months;
+    shortMonths = old.shortMonths;
+    shortWeekdays = old.shortWeekdays;
+    weekdays = old.weekdays;
+    zoneStrings = old.zoneStrings;
   }
 
   public String[] getAmPmStrings()
@@ -249,6 +262,11 @@ public class DateFormatSymbols extends Object
 	    && equals(shortWeekdays, other.shortWeekdays)
 	    && equals(weekdays, other.weekdays)
 	    && equals(zoneStrings, other.zoneStrings));
+  }
+
+  public Object clone ()
+  {
+    return new DateFormatSymbols (this);
   }
 
   public int hashCode ()
