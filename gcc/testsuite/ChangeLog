@@ -1,3 +1,9 @@
+2003-04-02  Geoffrey Keating  <geoffk@apple.com>
+
+	PR other/9274
+	* g++.dg/pch/system-2.C: New.
+	* g++.dg/pch/system-2.Hs: New.
+
 2003-04-02  Aldy Hernandez  <aldyh@redhat.com>
 
         * g++.dg/eh/simd-2.C (vecfunc): Fix typo.
