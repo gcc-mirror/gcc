@@ -1,3 +1,11 @@
+2001-10-01  Jason Merrill  <jason_merrill@redhat.com>
+
+	* decl.c (grokdeclarator): Copy array typedef handling from C
+	frontend.
+
+	* decl.c (grokdeclarator): Copy too-large array handling from C
+	frontend.
+
 2001-09-29  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config-lang.in (target_libs): Added target-gperf, so that we
