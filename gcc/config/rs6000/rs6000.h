@@ -330,7 +330,7 @@ extern int target_flags;
 
    On the RS/6000, bump this up a bit.  */
 
-#define MEMORY_MOVE_COST(MODE)  4
+#define MEMORY_MOVE_COST(MODE)  6
 
 /* Specify the cost of a branch insn; roughly the number of extra insns that
    should be added to avoid a branch.
@@ -401,7 +401,8 @@ extern int target_flags;
 
 enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
   NON_SPECIAL_REGS, MQ_REGS, LINK_REGS, CTR_REGS, LINK_OR_CTR_REGS,
-  SPECIAL_REGS, CR0_REGS, CR_REGS, ALL_REGS, LIM_REG_CLASSES };
+  SPECIAL_REGS, SPEC_OR_GEN_REGS, CR0_REGS, CR_REGS, NON_FLOAT_REGS,
+  ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
@@ -410,7 +411,8 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 #define REG_CLASS_NAMES					 	\
   { "NO_REGS", "BASE_REGS", "GENERAL_REGS", "FLOAT_REGS",	\
     "NON_SPECIAL_REGS", "MQ_REGS", "LINK_REGS", "CTR_REGS",	\
-    "LINK_OR_CTR_REGS", "SPECIAL_REGS", "CR0_REGS", "CR_REGS", "ALL_REGS" }
+    "LINK_OR_CTR_REGS", "SPECIAL_REGS", "SPEC_OR_GEN_REGS",	\
+    "CR0_REGS", "CR_REGS", "NON_FLOAT_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -418,9 +420,10 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
 
 #define REG_CLASS_CONTENTS				\
   { {0, 0, 0}, {0xfffffffe, 0, 8}, {~0, 0, 8},		\
-    {0, ~0, 0}, {~0, ~0, 0}, {0, 0, 1}, {0, 0, 2},	\
-    {0, 0, 4}, {0, 0, 6}, {0, 0, 7}, {0, 0, 16}, 	\
-    {0, 0, 0xff0}, {~0, ~0, 0xfff5} }
+    {0, ~0, 0}, {~0, ~0, 8}, {0, 0, 1}, {0, 0, 2},	\
+    {0, 0, 4}, {0, 0, 6}, {0, 0, 7}, {~0, 0, 15},	\
+    {0, 0, 16}, {0, 0, 0xff0}, {~0, 0, 0xffff},		\
+    {~0, ~0, 0xffff} }
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -496,8 +499,9 @@ enum reg_class { NO_REGS, BASE_REGS, GENERAL_REGS, FLOAT_REGS,
    For the RS/6000, `Q' means that this is a memory operand that is just
    an offset from a register.  */
 
-#define EXTRA_CONSTRAINT(OP, C)				\
-  ((C) == 'Q' ? indirect_operand (OP, VOIDmode) : 0)
+#define EXTRA_CONSTRAINT(OP, C)						\
+  ((C) == 'Q' ? GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG	\
+   : 0)
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
