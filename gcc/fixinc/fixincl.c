@@ -24,9 +24,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "fixlib.h"
 
-   #include <fcntl.h>
-   #include <sys/mman.h>
-   #define  BAD_ADDR ((void*)-1)
+#if HAVE_MMAP
+#include <sys/mman.h>
+#define  BAD_ADDR ((void*)-1)
+#endif
 
 #include <signal.h>
 
@@ -528,10 +529,8 @@ run_compiles ()
          && (p_fixd->papz_machs != (const char**) NULL) )
         {
           tSCC case_fmt[] = "case %s in\n";     /*  9 bytes, plus string */
-          tSCC esac_fmt[] = " )\n"              /*  3 bytes */
-                           "    echo %s ;;\n"   /* 13 bytes */
-                           "* ) echo %s ;;\n"   /* 13 bytes */
-                           "esac";              /*  4 bytes */
+          tSCC esac_fmt[] =
+               " )\n    echo %s ;;\n* ) echo %s ;;\nesac";/*  4 bytes */
           tSCC skip[] = "skip";                 /*  4 bytes */
           tSCC run[] = "run";                   /*  3 bytes */
           /* total bytes to add to machine sum:    49 - see fixincl.tpl */

@@ -8,6 +8,15 @@ Mon Nov  1 08:03:15 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	* regclass.c (record_reg_classes): In matching case, recompute
 	costs since the direction of movement is different.
 
+Sun Oct 31 15:48:49 1999  Philippe De Muyter  <phdm@macqel.be>
+
+        * fixinc/fixtests.c, fixinc/fixfixes.c : Keep `#' in first column for
+        old cpp's.
+        * fixinc/fixincl.c (fcntl.h) : Do not include this file twice.
+        (sys/mman.h): Include this file only if #HAVE_MMAP.
+        (run_compiles): Initialize `esac_fmt' with one old KR string, not
+        with automatically concatenated ANSI strings.
+
 Sun Oct 31 23:57:07 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-page.c (struct page_entry): Remove save_num_free_objects.
