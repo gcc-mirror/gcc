@@ -633,6 +633,18 @@ bsi_stmt_ptr (block_stmt_iterator i)
   return tsi_stmt_ptr (i.tsi);
 }
 
+/* Returns the loop of the statement STMT.  */
+
+static inline struct loop *
+loop_containing_stmt (tree stmt)
+{
+  basic_block bb = bb_for_stmt (stmt);
+  if (!bb)
+    return NULL;
+
+  return bb->loop_father;
+}
+
 /* Return true if VAR may be aliased.  */
 static inline bool
 may_be_aliased (tree var)
