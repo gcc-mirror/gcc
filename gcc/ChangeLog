@@ -1,3 +1,7 @@
+Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
+
+	* jump.c (jump_optimize_1): More accurately detect casesi insns.
+
 Tue Oct 19 23:43:50 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (call, call_value): Do not emit a blockage after restoring
