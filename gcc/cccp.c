@@ -619,6 +619,10 @@ static struct file_name_list *last_include = 0;	/* Last in chain */
 static struct file_name_list *after_include = 0;
 static struct file_name_list *last_after_include = 0;	/* Last in chain */
 
+/* Chain to put at the start of the system include files.  */
+static struct file_name_list *before_system = 0;
+static struct file_name_list *last_before_system = 0;	/* Last in chain */
+
 /* List of included files that contained #pragma once.  */
 static struct file_name_list *dont_repeat_files = 0;
 
@@ -1177,6 +1181,27 @@ main (argc, argv)
 	  else
 	    include_prefix = argv[++i];
 	}
+	if (!strcmp (argv[i], "-isystem")) {
+	  struct file_name_list *dirtmp;
+
+	  if (i + 1 == argc)
+	    fatal ("Filename missing after `-isystem' option");
+
+	  dirtmp = (struct file_name_list *)
+	    xmalloc (sizeof (struct file_name_list));
+	  dirtmp->next = 0;
+	  dirtmp->control_macro = 0;
+	  dirtmp->c_system_include_path = 1;
+	  dirtmp->fname = (char *) xmalloc (strlen (argv[i+1]) + 1);
+	  strcpy (dirtmp->fname, argv[++i]);
+	  dirtmp->got_name_map = 0;
+
+	  if (before_system == 0)
+	    before_system = dirtmp;
+	  else
+	    last_before_system->next = dirtmp;
+	  last_before_system = dirtmp; /* Tail follows the last one */
+	}
 	/* Add directory to end of path for includes,
 	   with the default prefix at the front of its name.  */
 	if (!strcmp (argv[i], "-iwithprefix")) {
@@ -1733,7 +1758,9 @@ main (argc, argv)
     }
   }
 
-  first_system_include = 0;
+  append_include_chain (before_system, last_before_system);
+  first_system_include = before_system;
+
   /* Unless -fnostdinc,
      tack on the standard include file dirs to the specified list */
   if (!no_standard_includes) {
