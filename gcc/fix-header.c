@@ -97,7 +97,6 @@ int warnings = 0;
 #if ADD_MISSING_EXTERN_C
 int missing_extern_C_count = 0;
 #endif
-int missing_errno = 0;
 
 #include "xsys-protos.h"
 
@@ -127,6 +126,7 @@ enum special_file
   no_special,
   errno_h,
   stdio_h,
+  stdlib_h,
   sys_stat_h
 };
 
@@ -141,12 +141,17 @@ typedef int symbol_flags;
 /* Used to mark names defined in the ANSI/ISO C standard. */
 #define ANSI_SYMBOL 1
 
-  /* Used to mark names defined in the Posix.1 or Posix.2 standard. */
+/* Used to mark names defined in the Posix.1 or Posix.2 standard. */
 #define POSIX1_SYMBOL 2
 #define POSIX2_SYMBOL 4
 
+/* Used to mark names defined in X/Open Portability Guide. */
+#define XOPEN_SYMBOL 8
+/* Used to mark names defined in X/Open UNIX Extensions. */
+#define XOPEN_EXTENDED_SYMBOL 16
+
 /* Used to indicate names that are not functions */
-#define MACRO_SYMBOL 8
+#define MACRO_SYMBOL 512
 
 struct symbol_list {
   symbol_flags flags;
@@ -246,6 +251,7 @@ tmpnam\0ungetc\0" },
       "abort\0abs\0atexit\0atof\0atoi\0atol\0bsearch\0calloc\0\
 exit\0free\0getenv\0labs\0malloc\0putenv\0qsort\0rand\0realloc\0\
 srand\0strtod\0strtol\0strtoul\0system\0" },
+  { CONTINUED, ANSI_SYMBOL|MACRO_SYMBOL, "EXIT_FAILURE\0EXIT_SUCCESS\0" },
 
   { "string.h", ANSI_SYMBOL, "memchr\0memcmp\0memcpy\0memmove\0memset\0\
 strcat\0strchr\0strcmp\0strcoll\0strcpy\0strcspn\0strerror\0\
@@ -253,11 +259,30 @@ strlen\0strncat\0strncmp\0strncpy\0strpbrk\0strrchr\0strspn\0strstr\0\
 strtok\0strxfrm\0" },
 /* Should perhaps also add NULL and size_t */
 
+  { "strings.h", XOPEN_EXTENDED_SYMBOL,
+      "bcmp\0bcopy\0bzero\0ffs\0index\0rindex\0strcasecmp\0strncasecmp\0" },
+
+  { "strops.h", XOPEN_EXTENDED_SYMBOL, "ioctl\0" },
+
+  /* Actually, XPG4 does not seem to have <sys/ioctl.h>, but defines
+     ioctl in <strops.h>.  However, many systems have it is sys/ioctl.h,
+     and many systems do have <sys/ioctl.h> but not <strops.h>. */
+  { "sys/ioctl.h", XOPEN_EXTENDED_SYMBOL, "ioctl\0" },
+
+  { "sys/socket.h", XOPEN_EXTENDED_SYMBOL, "socket\0" },
+
   { "sys/stat.h", POSIX1_SYMBOL,
       "chmod\0fstat\0mkdir\0mkfifo\0stat\0lstat\0umask\0" },
   { CONTINUED, POSIX1_SYMBOL|MACRO_SYMBOL,
       "S_ISDIR\0S_ISBLK\0S_ISCHR\0S_ISFIFO\0S_ISREG\0S_ISLNK\0S_IFDIR\0\
 S_IFBLK\0S_IFCHR\0S_IFIFO\0S_IFREG\0S_IFLNK\0" },
+  { CONTINUED, XOPEN_EXTENDED_SYMBOL, "fchmod\0" },
+
+#if 0
+/* How do we handle fd_set? */
+  { "sys/time.h", XOPEN_EXTENDED_SYMBOL, "select\0" },
+  { "sys/select.h", XOPEN_EXTENDED_SYMBOL /* fake */, "select\0" },
+#endif
 
   { "sys/times.h", POSIX1_SYMBOL, "times\0" },
   /* "sys/types.h" add types (not in old g++-include) */
@@ -285,20 +310,28 @@ getppid\0getuid\0isatty\0link\0lseek\0pathconf\0pause\0pipe\0read\0rmdir\0\
 setgid\0setpgid\0setsid\0setuid\0sleep\0sysconf\0tcgetpgrp\0tcsetpgrp\0\
 ttyname\0unlink\0write\0" },
   { CONTINUED, POSIX2_SYMBOL, "getopt\0" },
+  { CONTINUED, XOPEN_EXTENDED_SYMBOL,
+      "lockf\0gethostid\0gethostname\0readlink\0" },
+
+  { "utime.h", POSIX1_SYMBOL, "utime\0" },
 
   { NULL, 0, NONE }
 };
 
 enum special_file special_file_handling = no_special;
 
-/* The following are only used when handling sys/stat.h */
 /* They are set if the corresponding macro has been seen. */
+/* The following are only used when handling sys/stat.h */
 int seen_S_IFBLK = 0, seen_S_ISBLK  = 0;
 int seen_S_IFCHR = 0, seen_S_ISCHR  = 0;
 int seen_S_IFDIR = 0, seen_S_ISDIR  = 0;
 int seen_S_IFIFO = 0, seen_S_ISFIFO = 0;
 int seen_S_IFLNK = 0, seen_S_ISLNK  = 0;
 int seen_S_IFREG = 0, seen_S_ISREG  = 0;
+/* The following are only used when handling errno.h */
+int seen_errno = 0;
+/* The following are only used when handling stdlib.h */
+int seen_EXIT_FAILURE = 0, seen_EXIT_SUCCESS = 0;
 
 /* Wrapper around free, to avoid prototype clashes. */
 
@@ -355,6 +388,7 @@ sstring line;
 int lbrac_line, rbrac_line;
 
 int required_unseen_count = 0;
+int required_other = 0;
 
 void 
 write_lbrac ()
@@ -411,7 +445,14 @@ recognized_macro (fname)
   switch (special_file_handling)
     {
     case errno_h:
-      if (strcmp (fname, "errno") == 0) missing_errno = 0;
+      if (strcmp (fname, "errno") == 0 && !seen_errno)
+	seen_errno = 1, required_other--;
+      break;
+    case stdlib_h:
+      if (strcmp (fname, "EXIT_FAILURE") == 0 && !seen_EXIT_FAILURE)
+	seen_EXIT_FAILURE = 1, required_other--;
+      if (strcmp (fname, "EXIT_SUCCESS") == 0 && !seen_EXIT_SUCCESS)
+	seen_EXIT_SUCCESS = 1, required_other--;
       break;
     case sys_stat_h:
       if (fname[0] == 'S' && fname[1] == '_')
@@ -441,7 +482,8 @@ recognized_extern (name, name_length, type, type_length)
   switch (special_file_handling)
     {
     case errno_h:
-      if (strncmp (name, "errno", name_length) == 0) missing_errno = 0;
+      if (strcmp (name, "errno") == 0 && !seen_errno)
+	seen_errno = 1, required_other--;
       break;
     }
 }
@@ -630,7 +672,7 @@ read_scan_file (in_fname, argc, argv)
 	}
     }
 
-  if (required_unseen_count + partial_count + missing_errno
+  if (required_unseen_count + partial_count + required_other
 #if ADD_MISSING_EXTERN_C
       + missing_extern_C_count
 #endif      
@@ -696,11 +738,27 @@ write_rbrac ()
 	      if (cur_symbols->flags & ANSI_SYMBOL)
 		fprintf (outf,
 	 "#if defined(__USE_FIXED_PROTOTYPES__) || defined(__cplusplus) || defined (__STRICT_ANSI__)\n");
-	      else
+	      else if (cur_symbols->flags & (POSIX1_SYMBOL|POSIX2_SYMBOL))
 		fprintf (outf,
        "#if defined(__USE_FIXED_PROTOTYPES__) || (defined(__cplusplus) \\\n\
-    ? (!defined(__STRICT_ANSI__) || defined(__POSIX_SOURCE__)) \\\n\
-    : (defined(__STRICT_ANSI__) && defined(__POSIX_SOURCE__)))\n");
+    ? (!defined(__STRICT_ANSI__) || defined(_POSIX_SOURCE)) \\\n\
+    : (defined(__STRICT_ANSI__) && defined(_POSIX_SOURCE)))\n");
+	      else if (cur_symbols->flags & XOPEN_SYMBOL)
+		{
+		fprintf (outf,
+       "#if defined(__USE_FIXED_PROTOTYPES__) \\\n\
+   || (defined(__STRICT_ANSI__) && defined(_XOPEN_SOURCE))\n");
+		}
+	      else if (cur_symbols->flags & XOPEN_EXTENDED_SYMBOL)
+		{
+		fprintf (outf,
+       "#if defined(__USE_FIXED_PROTOTYPES__) \\\n\
+   || (defined(__STRICT_ANSI__) && defined(_XOPEN_EXTENDED_SOURCE))\n");
+		}
+	      else
+		{
+		  fatal ("internal error for function %s", fn->fname);
+		}
 	      if_was_emitted = 1;
 	    }
 
@@ -734,8 +792,14 @@ write_rbrac ()
   switch (special_file_handling)
     {
     case errno_h:
-      if (missing_errno)
+      if (!seen_errno)
 	fprintf (outf, "extern int errno;\n");
+      break;
+    case stdlib_h:
+      if (!seen_EXIT_FAILURE)
+	fprintf (outf, "#define EXIT_FAILURE 1\n");
+      if (!seen_EXIT_SUCCESS)
+	fprintf (outf, "#define EXIT_SUCCESS 0\n");
       break;
     case sys_stat_h:
       if (!seen_S_ISBLK && seen_S_IFBLK)
@@ -1032,7 +1096,9 @@ main (argc, argv)
   if (strcmp (inc_filename, "sys/stat.h") == 0)
     special_file_handling = sys_stat_h;
   else if (strcmp (inc_filename, "errno.h") == 0)
-    special_file_handling = errno_h, missing_errno = 1;
+    special_file_handling = errno_h, required_other++;
+  else if (strcmp (inc_filename, "stdlib.h") == 0)
+    special_file_handling = stdlib_h, required_other+=2;
   else if (strcmp (inc_filename, "stdio.h") == 0)
     special_file_handling = stdio_h;
   include_entry = std_include_table;
