@@ -1127,7 +1127,6 @@ java_estimate_num_insns_1 (tree *tp, int *walk_subtrees, void *data)
     case ROUND_MOD_EXPR:
     case RDIV_EXPR:
     case CALL_EXPR:
-    case METHOD_CALL_EXPR:
 
     case NEW_ARRAY_EXPR:
     case NEW_ANONYMOUS_ARRAY_EXPR:

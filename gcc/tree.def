@@ -474,11 +474,6 @@ DEFTREECODE (BIND_EXPR, "bind_expr", 'e', 3)
    made out of a chain of TREE_LIST nodes.  */
 DEFTREECODE (CALL_EXPR, "call_expr", 'e', 2)
 
-/* Call a method.  Operand 0 is the method, whose type is a METHOD_TYPE.
-   Operand 1 is the expression for "self".
-   Operand 2 is the list of explicit arguments.  */
-DEFTREECODE (METHOD_CALL_EXPR, "method_call_expr", 'e', 4)
-
 /* Specify a value to compute along with its corresponding cleanup.
    Operand 0 argument is an expression whose value needs a cleanup.
    Operand 1 is the cleanup expression for the object.

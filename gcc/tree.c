@@ -1461,8 +1461,6 @@ first_rtl_op (enum tree_code code)
       return 0;
     case WITH_CLEANUP_EXPR:
       return 2;
-    case METHOD_CALL_EXPR:
-      return 3;
     default:
       return TREE_CODE_LENGTH (code);
     }
