@@ -858,11 +858,11 @@ package Snames is
 
    Name_Raise_Exception                : constant Name_Id := N + 522;
 
-   --  Reserved words of GNAT Project Files
+   --  Additional reserved words in GNAT Project Files
+   --  Note that Name_External is already previously declared
 
    Name_Project                        : constant Name_Id := N + 523;
    Name_Extends                        : constant Name_Id := N + 524;
-   --  Name_External is already declared as N + 161
 
    --  Names used in GNAT Project Files
 
