@@ -1,3 +1,8 @@
+2001-08-12  Richard Henderson  <rth@redhat.com>
+
+	* config/rs6000/rs6000.c (rs6000_elf_section_type_flags): Fix
+	thinko wrt TARGET_RELOCATABLE.
+
 2001-08-12  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* fix-header.c (cb_file_change): Update prototype.
