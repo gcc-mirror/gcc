@@ -1,5 +1,5 @@
 
-C++ Standard Library Style Guidelines  DRAFT 1999-02-26
+C++ Standard Library Style Guidelines  DRAFT 2001-01-15
 -------------------------------------
 
 This library is written to appropriate C++ coding standards.  As such,
@@ -99,8 +99,8 @@ Notable areas of divergence from what may be previous local practice
 07. Member initialization lists
    All one line, separate from class name.
 
-  gribble::gribble()
-  : _M_private_data(0), _M_more_stuff(0), _M_helper(0);
+  gribble::gribble() :
+  _M_private_data(0), _M_more_stuff(0), _M_helper(0);
   { }
   -NOT-
   gribble::gribble() : _M_private_data(0), _M_more_stuff(0), _M_helper(0);
@@ -148,15 +148,42 @@ Notable areas of divergence from what may be previous local practice
 
 	Reason: Koenig lookup.
 
-11. constructor member intialization lists
+11. Namespaces
+  namespace std
+  {
+    blah blah blah;
+  } // namespace std
 
-  should look like this:
-  ctype<char>::ctype(const mask* __table, bool __del, size_t __refs) : 
-  __ctype_abstract_base<char>(__refs), _M_del(__table != 0 && __del), 
-  _M_toupper(__ctype_toupper), _M_tolower(__ctype_tolower),
-  _M_ctable(static_cast<const mask*>(__ctype_b), 
-  _M_table(__table == 0 ? _M_ctable : __table) 
-  { }
+  -NOT-
+
+  namespace std {
+    blah blah blah;
+  } // namespace std
+
+12. Spacing under protected and private in class declarations:
+   space above, none below
+   ie
+
+   public:
+     int foo;
+
+   -NOT-
+   public:
+   
+     int foo;
+
+13. Spacing WRT return statements.
+   no extra spacing before returns
+   ie
+
+   }
+   return __ret;
+
+   -NOT-
+   }
+
+   return __ret;
+
 
 
 The library currently has a mixture of GNU-C and modern C++ coding
@@ -264,8 +291,8 @@ namespace std
   extern long long _G_global_with_a_good_long_name;  // avoid globals!
 # endif
 
-  // avoid in-class inline definitions, define separately;
-  //   likewise for member class definitions:
+  // Avoid in-class inline definitions, define separately;
+  // likewise for member class definitions:
   inline int
   gribble::public_member() const
   { int __local = 0; return __local; }
@@ -285,8 +312,8 @@ namespace std
 #endif /* _HEADER_ */
 
 
-namespace std {
-
+namespace std 
+{
   template<typename T>  // notice: "typename", not "class", no space
     long_return_value_type<with_many, args>  
     function_name(char* pointer,               // "char *pointer" is wrong.
@@ -321,8 +348,8 @@ namespace std {
   {
     // doesn't fit in one line.
   }
+} // namespace std
 
-}
 
 
 

@@ -1,6 +1,6 @@
 // 1999-08-11 bkoz
 
-// Copyright (C) 1999, 2000 Free Software Foundation
+// Copyright (C) 1999, 2000, 2001 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -103,7 +103,7 @@ test01()
   VERIFY( is_04.peek() == traits_type::eof() );
   VERIFY( is_04.gcount() == 0 );
   state2 = is_04.rdstate();
-  VERIFY( state1 == state2 );
+  VERIFY( state1 != state2 );
 
 
   // istream& putback(char c)

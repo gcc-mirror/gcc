@@ -41,39 +41,44 @@ namespace std
     basic_filebuf<_CharT, _Traits>::
     _M_filebuf_init()
     {
-      _M_buf_unified = true; // Tie input to output for basic_filebuf.
-      _M_buf_size = _M_buf_size_opt;
-      try {
-	_M_file = new __file_type(&_M_lock);
-      }
-      catch(...) {
-	delete _M_file;
-	throw;
-      }
-     }
+      if (!_M_file)
+	{
+	  _M_buf_unified = true; // Tie input to output for basic_filebuf.
+	  try 
+	    { _M_file = new __file_type(&_M_lock); }
+	  catch(...) 
+	    {
+	      delete _M_file;
+	      throw;
+	    }
+	}
+    }
 
   template<typename _CharT, typename _Traits>
     void
     basic_filebuf<_CharT, _Traits>::
     _M_allocate_buffers()
     {
-      // Allocate internal buffer.
-      try {
-	_M_buf = new char_type[_M_buf_size];
-      }
-      catch(...) {
-	delete [] _M_buf;
-	throw;
-      }
-      
-      // Allocate pback buffer.
-      try {
-	_M_pback = new char_type[_M_pback_size];
-      }
-      catch(...) {
-	delete [] _M_pback;
-	throw;
-      }
+      if (!_M_buf)
+	{
+	  _M_buf_size = _M_buf_size_opt;
+	  // Allocate internal buffer.
+	  try { _M_buf = new char_type[_M_buf_size]; }
+	  catch(...) 
+	    {
+	      delete [] _M_buf;
+	      throw;
+	    }
+	  
+	  // Allocate pback buffer.
+	  try 
+	    { _M_pback = new char_type[_M_pback_size]; }
+	  catch(...) 
+	    {
+	      delete [] _M_pback;
+	      throw;
+	    }
+	}
     }
 
   template<typename _CharT, typename _Traits>
@@ -86,13 +91,13 @@ namespace std
   template<typename _CharT, typename _Traits>
     basic_filebuf<_CharT, _Traits>::
     basic_filebuf(int __fd, const char* /*__name*/, ios_base::openmode __mode)
-    : __streambuf_type(), _M_state_cur(__state_type()), 
+    : __streambuf_type(),  _M_file(NULL), _M_state_cur(__state_type()), 
     _M_state_beg(__state_type()), _M_last_overflowed(false)
     {
       _M_fcvt = &use_facet<__codecvt_type>(this->getloc());
       _M_filebuf_init();
       _M_file->sys_open(__fd, __mode);
-      if (this->is_open() && _M_buf_size)
+      if (this->is_open())
 	{
 	  _M_allocate_buffers();
 	  _M_mode = __mode;
@@ -116,7 +121,7 @@ namespace std
 	{
 	  _M_filebuf_init();
 	  _M_file->open(__s, __mode);
-	  if (this->is_open() && _M_buf_size)
+	  if (this->is_open())
 	    {
 	      _M_allocate_buffers();
 	      _M_mode = __mode;
@@ -157,13 +162,15 @@ namespace std
 #endif
 
 	  _M_mode = ios_base::openmode(0);
-	  if (_M_buf_size)
-	    delete [] _M_buf;
-	  _M_buf = NULL;
-	  delete [] _M_pback;
-	  _M_pback = NULL;
-	  this->setg(NULL, NULL, NULL);
-	  this->setp(NULL, NULL);
+	  if (_M_buf)
+	    {
+	      delete [] _M_buf;
+	      _M_buf = NULL;
+	      delete [] _M_pback;
+	      _M_pback = NULL;
+	      this->setg(NULL, NULL, NULL);
+	      this->setp(NULL, NULL);
+	    }
 	  __ret = this;
 	}
 

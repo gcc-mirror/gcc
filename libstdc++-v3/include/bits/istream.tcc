@@ -1,4 +1,4 @@
-// Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -66,7 +66,14 @@ namespace std {
 #endif
 	    }
 	}
-      _M_ok = __in.good();
+
+      if (__in.good())
+	_M_ok = true;
+      else
+	{
+	  _M_ok = false;
+	  __in.setstate(ios_base::failbit);
+	}
     }
 
   template<typename _CharT, typename _Traits>
@@ -1123,7 +1130,7 @@ namespace std {
 	  bool __testsp = __ctype->is(ctype_base::space, __c);
 	  bool __testeof =  __c == __eof;
 
-	  while (__extracted <= __n && !__testeof && !__testsp)
+	  while (__extracted < __n && !__testeof && !__testsp)
 	    {
 	      __str += _Traits::to_char_type(__c);
 	      ++__extracted;

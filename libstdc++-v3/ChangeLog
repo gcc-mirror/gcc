@@ -1,3 +1,29 @@
+2001-01-16  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* docs/html/17_intro/C++STYLE (classname): Add more existing
+	and stylish patterns.
+
+	libstdc++/944
+	* include/bits/istream.tcc (istream::sentry::sentry()): Set
+	failbit if the tate of the stream is not good.
+	* testsuite/27_io/istream_sentry.cc (test02): Add test.
+	* testsuite/27_io/istream_manip.cc (test01): Modify.
+
+	libstdc++/1019
+	reported by Paolo Carlini <pcarlini@unitus.it>
+	* include/bits/istream.tcc (operator>>(istream&, string&)): Fix. 
+	* testsuite/21_strings/inserters_extractors.cc (test08): Add test.
+
+	libstdc++/1057
+	* include/bits/std_streambuf.h (setp): Set _M_buf_size correctly.
+	* include/bits/streambuf.tcc (xsputn): Remove outside if clause.
+	(xsgetn): Same. Simplify.
+	* testsuite/27_io/streambuf.cc (test04): Add testcases.
+
+	reported by Larry Evans <jcampbell3@prodigy.net> 
+	* include/bits/streambuf.tcc (streambuf::xsputn): Just check for
+	equality with eof on returned value from overflow.
+
 2001-01-14  Andreas Jaeger  <aj@suse.de>
 
 	* libio/libio.h: Add test for glibc 2.0.

@@ -1,6 +1,6 @@
 // 1999-10-14 bkoz
 
-// Copyright (C) 1999 Free Software Foundation, Inc.
+// Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -57,16 +57,30 @@ void test01()
 
   std::istream::sentry sentry04(istr02, true);
   VERIFY( bool(sentry04) == true ); 
-
-#ifdef DEBUG_ASSERT
-  assert(test);
-#endif
 }
 
+// libstdc++/944
+void 
+test02()
+{
+  using namespace std;
+  istringstream in("80.21 56.89 12.3");
+  bool  test = true;
+  int i = 0;
+  double x;
 
-int main() {
-  
+  // ios_base::eof == 2
+  while(in >> x)
+    {
+      ++i;
+    }
+  VERIFY( i == 3 );
+}    
+
+int main() 
+{
   test01();
+  test02();
   return 0;
 }
 

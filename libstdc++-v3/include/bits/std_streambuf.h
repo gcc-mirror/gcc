@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,7 +44,7 @@ namespace std {
 
   template<typename _CharT, typename _Traits>
     static streamsize
-    _S_copy_streambufs(basic_ios<_CharT, _Traits>& __ios,
+    _S_copy_streambufs(basic_ios<_CharT, _Traits>& _ios,
 		       basic_streambuf<_CharT, _Traits>* __sbin,
 		       basic_streambuf<_CharT, _Traits>* __sbout);
   
@@ -83,7 +83,7 @@ namespace std {
       // leave it NULL.
       char_type*		_M_buf; 	
 
-      // Actual size of internal buffer, in bytes.
+      // Actual size of allocated internal buffer, in bytes.
       int_type			_M_buf_size;
 
       // Optimal or preferred size of internal buffer, in bytes.
@@ -172,6 +172,17 @@ namespace std {
 	  }
       }
 
+      // Correctly sets the _M_in_cur pointer, and bumps the
+      // _M_out_cur pointer as well if necessary.
+      void 
+      _M_in_cur_move(off_type __n) // argument needs to be +-
+      {
+	bool __testout = _M_out_cur;
+	_M_in_cur += __n;
+	if (__testout && _M_buf_unified)
+	  _M_out_cur += __n;
+      }
+
       // Correctly sets the _M_out_cur pointer, and bumps the
       // appropriate _M_*_end pointers as well. Necessary for the
       // un-tied stringbufs, in in|out mode.
@@ -183,7 +194,7 @@ namespace std {
       void 
       _M_out_cur_move(off_type __n) // argument needs to be +-
       {
-	bool __testin = _M_mode & ios_base::in;
+	bool __testin = _M_in_cur;
 
 	_M_out_cur += __n;
 	if (__testin && _M_buf_unified)
@@ -195,6 +206,25 @@ namespace std {
 	    if (__testin)
 	      _M_in_end += __n;
 	  }
+      }
+
+      // Return the size of the output buffer.  This depends on the
+      // buffer in use: allocated buffers have a stored size in
+      // _M_buf_size and setbuf() buffers don't.
+      off_type
+      _M_out_buf_size()
+      {
+	off_type __ret = 0;
+	if (_M_out_cur)
+	  {
+	    // Using allocated buffer.
+	    if (_M_out_beg == _M_buf)
+	      __ret = _M_out_beg + _M_buf_size - _M_out_cur;
+	    // Using non-allocated buffer.
+	    else
+	      __ret = _M_out_end - _M_out_cur;
+	  }
+	return __ret;
       }
 
       // These three functions are used to clarify internal buffer
@@ -219,11 +249,7 @@ namespace std {
 	bool __testin = _M_mode & ios_base::in;
 	bool __testout = _M_mode & ios_base::out;
 	if (__testin)
-	  {
-	    this->setg(_M_buf, _M_buf, _M_buf + __off);
-	    if (!__testout)
-	      _M_buf_size = static_cast<int_type>(__off);
-	  }
+	  this->setg(_M_buf, _M_buf, _M_buf + __off);
 	if (__testout)
 	  this->setp(_M_buf, _M_buf + __off);
 
@@ -404,12 +430,6 @@ namespace std {
 	_M_out_end = __pend; 
 	if (!(_M_mode & ios_base::out) && __pbeg && __pend)
 	  _M_mode = _M_mode | ios_base::out;
-	// The output sequence is highly tied to _M_buf and
-	// _M_buf_size in addition to the actual pointers into the
-	// buffer. Because of this, (re)set _M_buf_size here, as
-	// sputc/xsputn need _M_buf_size to be accurate. (The
-	// corresponding input functions rely instead on _M_in_end.)
-	_M_buf_size = max(_M_buf_size, static_cast<int_type>(__pend - __pbeg));
       }
 
       // Virtual functions:
@@ -460,7 +480,6 @@ namespace std {
 	int_type __ret = traits_type::eof();
 	bool __testeof = this->underflow() == __ret;
 	bool __testpending = _M_in_cur && _M_in_cur < _M_in_end;
-	
 	if (!__testeof && __testpending)
 	  {
 	    __ret = traits_type::to_int_type(*_M_in_cur);

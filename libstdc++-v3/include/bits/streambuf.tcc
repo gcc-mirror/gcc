@@ -1,6 +1,6 @@
 // Stream buffer classes -*- C++ -*-
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -45,9 +45,7 @@ namespace std {
       if (_M_in_cur && _M_in_cur < _M_in_end)
 	{
 	  char_type __c = *gptr();
-	  ++_M_in_cur;
-	  if (_M_buf_unified &&  _M_mode & ios_base::out)
-	    ++_M_out_cur;
+	  _M_in_cur_move(1);
 	  __ret = traits_type::to_int_type(__c);
 	}
       else 
@@ -67,9 +65,7 @@ namespace std {
 	__ret = pbackfail(traits_type::to_int_type(__c));
       else 
 	{
-	  --_M_in_cur;
-	  if (_M_buf_unified && _M_mode & ios_base::out)
-	    --_M_out_cur;
+	  _M_in_cur_move(-1);
 	  __ret = traits_type::to_int_type(*this->gptr());
 	}
       return __ret;
@@ -83,9 +79,7 @@ namespace std {
       int_type __ret;
       if (_M_in_cur && _M_in_beg < _M_in_cur)
 	{
-	  --_M_in_cur;
-	  if (_M_buf_unified && _M_mode & ios_base::out)
-	    --_M_out_cur;
+	  _M_in_cur_move(-1);
 	  __ret = traits_type::to_int_type(*_M_in_cur);
 	}
       else 
@@ -104,8 +98,7 @@ namespace std {
     sputc(char_type __c)
     {
       int_type __ret;
-
-      if (_M_out_cur && _M_out_cur < _M_out_beg + _M_buf_size)
+      if (_M_out_buf_size())
 	{
 	  *_M_out_cur = __c;
 	  _M_out_cur_move(1);
@@ -121,37 +114,27 @@ namespace std {
     basic_streambuf<_CharT, _Traits>::
     xsgetn(char_type* __s, streamsize __n)
     {
-      bool __testout = _M_mode & ios_base::out;
       streamsize __ret = 0;
-
-      if (__n)
+      while (__ret < __n)
 	{
-	  while (__ret < __n)
+	  size_t __buf_len = _M_in_end - _M_in_cur;
+	  if (__buf_len > 0)
 	    {
-	      if (_M_in_cur < _M_in_end)
-		{
-		  size_t __len;
-		  if (_M_in_cur + __n - __ret <= _M_in_end)
-		    __len = __n - __ret;
-		  else
-		    __len = _M_in_end - _M_in_cur;
-		  traits_type::copy(__s, _M_in_cur, __len);
-		  __ret += __len;
-		  __s += __len;
-		  _M_in_cur += __len;
-		  if (_M_buf_unified && __testout)
-		    _M_out_cur += __len;
-		}
-	      
-	      if (__ret != __n)
-		{
-		  int_type __c = this->uflow();  
-		  if (traits_type::eq_int_type(__c, traits_type::eof()))
-                    break;
-
-		  traits_type::assign(*__s++, traits_type::to_char_type(__c));
-                  ++__ret;
-		}
+	      size_t __remaining = __n - __ret;
+	      size_t __len = min(__buf_len, __remaining);
+	      traits_type::copy(__s, _M_in_cur, __len);
+	      __ret += __len;
+	      __s += __len;
+	      _M_in_cur_move(__len);
+	    }
+	  
+	  if (__ret < __n)
+	    {
+	      int_type __c = this->uflow();  
+	      if (traits_type::eq_int_type(__c, traits_type::eof()))
+		break;
+	      traits_type::assign(*__s++, traits_type::to_char_type(__c));
+	      ++__ret;
 	    }
 	}
       return __ret;
@@ -168,43 +151,31 @@ namespace std {
     xsputn(const char_type* __s, streamsize __n)
     {
       streamsize __ret = 0;
-
-      if (__n)
+      while (__ret < __n)
 	{
-	  while (__ret < __n)
+	  off_type __buf_len = _M_out_buf_size();
+	  if (__buf_len > 0)
 	    {
-	      bool __testput = _M_out_cur < _M_out_beg + _M_buf_size;
-	      bool __testout = _M_mode & ios_base::out;
-	      if (!(__testput && __testout))
-		{
-		  int_type __c = traits_type::to_int_type(*__s);
-		  int_type __overfc = this->overflow(__c);
-		  if (traits_type::eq_int_type(__c, __overfc))
-		    {
-		      ++__ret;
-		      ++__s;
-		    }
-		  else
-		    break;
-		}
-	      
-	      if (__ret != __n)
-		{
-		  size_t __len;
-		  if (_M_out_cur + __n - __ret <= _M_out_beg + _M_buf_size)
-		    __len = __n - __ret;
-		  else
-		    __len = _M_out_beg + _M_buf_size - _M_out_cur;
-		  traits_type::copy(_M_out_cur, __s, __len);
-		  __ret += __len;
-		  __s += __len;
-		  _M_out_cur_move(__len);
-		}
+	      off_type __remaining = __n - __ret;
+	      off_type __len = min(__buf_len, __remaining);
+	      traits_type::copy(_M_out_cur, __s, __len);
+	      __ret += __len;
+	      __s += __len;
+	      _M_out_cur_move(__len);
+	    }
+
+	  if (__ret < __n)
+	    {
+	      int_type __c = traits_type::to_int_type(*__s);
+	      int_type __overfc = this->overflow(__c);
+	      if (traits_type::eq_int_type(__overfc, traits_type::eof()))
+		break;
+	      ++__ret;
+	      ++__s;
 	    }
 	}
       return __ret;
     }
-
 
   // Conceivably, this could be used to implement buffer-to-buffer
   // copies, if this was ever desired in an un-ambiguous way by the
@@ -221,16 +192,13 @@ namespace std {
       streamsize __ret = 0;
       streamsize __bufsize = __sbin->in_avail();
       streamsize __xtrct;
-      bool __testout = __sbin->_M_mode & ios_base::out;
       bool __testput = __sbout->_M_mode & ios_base::out;
       try {
 	while (__testput && __bufsize != -1)
 	  {
 	    __xtrct = __sbout->sputn(__sbin->gptr(), __bufsize);
 	    __ret += __xtrct;
-	    __sbin->_M_in_cur += __xtrct;
-	    if (__testout && __sbin->_M_buf_unified)
-	      __sbin->_M_out_cur += __xtrct;
+	    __sbin->_M_in_cur_move(__xtrct);
 	    if (__xtrct == __bufsize)
 	      {
 		int_type __c = __sbin->sgetc();
@@ -251,10 +219,10 @@ namespace std {
       }
       return __ret;
     }
-
 } // namespace std
 
 #endif // _CPP_BITS_STREAMBUF_TCC
+
 
 
 
