@@ -1,3 +1,8 @@
+2003-06-04  Andrew Pinski <pinskia@physics.uc.edu>
+
+	* config/rs6000/darwin.h (RS6000_OUTPUT_BASENAME):
+	Remove semi-colon at the end of the expression.
+
 2003-06-04  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* i370.c (mvs_function_name_length): Fix signed/unsigned warnings. 
