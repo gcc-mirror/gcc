@@ -3708,6 +3708,8 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	  if (general_operand (true_rtx, VOIDmode)
 	      && general_operand (false_rtx, VOIDmode))
 	    {
+	      enum rtx_code reversed;
+
 	      /* Restarting if we generate a store-flag expression will cause
 		 us to loop.  Just drop through in this case.  */
 
@@ -3716,9 +3718,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	      if (true_rtx == const_true_rtx && false_rtx == const0_rtx)
 		x = gen_binary (cond_code, mode, cond, cop1);
 	      else if (true_rtx == const0_rtx && false_rtx == const_true_rtx
-		       && reverse_condition (cond_code) != UNKNOWN)
-		x = gen_binary (reverse_condition (cond_code),
-				mode, cond, cop1);
+		       && ((reversed = reversed_comparison_code_parts
+			   		(cond_code, cond, cop1, NULL))
+		           != UNKNOWN))
+		x = gen_binary (reversed, mode, cond, cop1);
 
 	      /* Likewise, we can make the negate of a comparison operation
 		 if the result values are - STORE_FLAG_VALUE and zero.  */
@@ -3731,11 +3734,13 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 					mode);
 	      else if (GET_CODE (false_rtx) == CONST_INT
 		       && INTVAL (false_rtx) == - STORE_FLAG_VALUE
-		       && true_rtx == const0_rtx)
+		       && true_rtx == const0_rtx
+		       && ((reversed = reversed_comparison_code_parts
+			   		(cond_code, cond, cop1, NULL))
+		           != UNKNOWN))
 		x = simplify_gen_unary (NEG, mode,
-					gen_binary (reverse_condition
-						    (cond_code),
-						    mode, cond, cop1),
+					gen_binary (reversed, mode,
+					  	    cond, cop1),
 					mode);
 	      else
 		return gen_rtx_IF_THEN_ELSE (mode,
