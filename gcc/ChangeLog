@@ -1,3 +1,13 @@
+2003-01-21  Zack Weinberg  <zack@codesourcery.com>
+
+	* genautomata.c: Space savings in generated code:
+	(output_dfa_insn_code_func): Split out the table-enlargement
+	path to an out-of-line static function, dfa_insn_code_enlarge.
+	(output_internal_insn_latency_func): Use a lookup table for the
+	default latencies.
+	(output_print_reservation_func): Use a lookup table for the
+	strings.
+
 2003-01-21  Christian Ehrhardt  <ehrhardt@mathematik.uni-ulm.de>
 
 	PR opt/7507
