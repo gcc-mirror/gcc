@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  MIPS ORION version with
    GOFAST floating point library.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -20,5 +20,3 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #define MIPS_CPU_STRING_DEFAULT "orion"
-
-#include "mips/elf64.h"
