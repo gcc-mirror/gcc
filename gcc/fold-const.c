@@ -1517,7 +1517,13 @@ fold_convert (t, arg1)
 
 	    high = (HOST_WIDE_INT) (d / half_word / half_word);
 	    d -= (REAL_VALUE_TYPE) high * half_word * half_word;
-	    low = (unsigned HOST_WIDE_INT) d;
+	    if (d >= (REAL_VALUE_TYPE) half_word * half_word / 2)
+	      {
+		low = d - (REAL_VALUE_TYPE) half_word * half_word / 2;
+		low |= 1 << (HOST_BITS_PER_WIDE_INT - 1);
+	      }
+	    else
+	      low = (HOST_WIDE_INT) d;
 	    if (TREE_REAL_CST (arg1) < 0)
 	      neg_double (low, high, &low, &high);
 	    t = build_int_2 (low, high);
