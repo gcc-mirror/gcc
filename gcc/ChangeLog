@@ -1,3 +1,9 @@
+2002-02-15  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* gcc.c (init_gcc_specs): Revert patch from 2002-02-15.
+	* config/pa/pa-linux.h (LIB_SPEC): Likewise.
+	* config/pa/pa32-linux.h (LINK_COMMAND_SPEC): Likewise.
+
 2002-02-15  Richard Sandiford  <rsandifo@redhat.com>
 
 	* c-decl.c (grokdeclarator): Prevent a segfault on unnamed decls.
