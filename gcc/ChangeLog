@@ -1,3 +1,7 @@
+Fri Jan  2 04:57:57 1998  Weiwen Liu  <liu@hepmail.physics.yale.edu>
+
+	* alpha.c (vms_valid_decl_attribute_p): Move within #if OPEN_VMS.
+
 Fri Jan  2 04:34:14 1998  Richard Henderson  <rth@cygnus.com>
 
 	* c-decl.c (init_decl_processing): Provide proper fallback symbol
