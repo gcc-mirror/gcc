@@ -1,3 +1,14 @@
+Thu Jan 21 16:00:06 1999  Andrew Haley  <aph@cygnus.com>
+
+	* typeck.c (convert): Allow conversions to void type: some
+ 	optimizations in gcc do this.
+
+Thu Jan 21 15:21:49 1999  Andrew Haley  <aph@cygnus.com>
+
+	* typeck.c (convert_ieee_real_to_integer): New function.
+	(convert): When not using fast-math and using hardware fp, convert
+ 	an IEEE NaN to zero.
+ 
 1999-01-18  Andrew Haley  <aph@cygnus.com>
 
 	* parse.y (patch_binop): Do a type conversion from signed to
