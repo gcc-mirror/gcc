@@ -1,3 +1,15 @@
+2003-10-16  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/cygming.h (ASM_OUTPUT_DEF_FROM_DECLS): Define.
+
+	* config/i386/winnt.c (gen_stdcall_suffix): Make static
+	(gen_fastcall_suffix): Likewise.
+	(i386_pe_dllexport_p): Likewise.
+	(i386_pe_dllimport_p): Likewise.
+	(i386_pe_mark_dllexport): Likewise.
+	(i386_pe_mark_dllimport): Likewise.
+	(i386_pe_asm_named_section): Fix formatting.
+
 2003-10-16  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: Add snprintf to gcc_AC_CHECK_DECLS list.
