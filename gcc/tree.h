@@ -3366,7 +3366,8 @@ extern tree get_narrower (tree, int *);
    and find the ultimate containing object, which is returned.  */
 
 extern tree get_inner_reference (tree, HOST_WIDE_INT *, HOST_WIDE_INT *,
-				 tree *, enum machine_mode *, int *, int *);
+				 tree *, enum machine_mode *, int *, int *,
+				 bool);
 
 /* Return 1 if T is an expression that get_inner_reference handles.  */
 

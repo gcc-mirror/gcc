@@ -13,7 +13,7 @@
 	(decode_field_reference): Likewise.
 	(split_address_to_core_and_offset): Likewise.
 	* tree-ssa-loop-ivopts.c (split_address_cost): Likewise.
-	* expr.h (get_inner_reference): Adjust prototype.
+	* tree.h (get_inner_reference): Adjust prototype.
 
 2004-12-23  Richard Henderson  <rth@redhat.com>
 
