@@ -1,3 +1,7 @@
+2004-08-12  Janis Johnson  <janis1872us.ibm.com>
+
+	* g++.dg/ext/altivec-11.C: New test.
+
 2004-08-12  Paul Brook  <paul@codesourcery.com>
 
 	* g++.dg/abi/arm_cxa_vec_1.C: New test.
