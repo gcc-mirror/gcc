@@ -290,6 +290,36 @@ EOF
   fi
 fi
 
+# Fix these Sun OS files to avoid an invalid identifier in an #ifdef.
+file=sunwindow/win_cursor.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+#  mkdir ${LIB}/sunwindow 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e "s/ecd.cursor/ecd_cursor/" ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  fi
+fi
+file=sunwindow/win_lock.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+#  mkdir ${LIB}/sunwindow 2>/dev/null
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e "s/ecd.cursor/ecd_cursor/" ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm ${LIB}/$file
+  fi
+fi
+
 # Fix this Sun file to avoid interfering with stddef.h.
 file=sys/stdtypes.h
 if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
