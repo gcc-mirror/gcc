@@ -2129,9 +2129,9 @@ get_abstract_virtuals_1 (binfo, do_self, abstract_virtuals)
   /* Should we use something besides CLASSTYPE_VFIELDS? */
   if (do_self && CLASSTYPE_VFIELDS (BINFO_TYPE (binfo)))
     {
-      tree virtuals = BINFO_VIRTUALS (binfo);
+      tree virtuals;
 
-      skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
+      virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), NULL);
 
       while (virtuals)
 	{
@@ -2160,9 +2160,9 @@ get_pure_virtuals (type)
 					       
   for (vbases = CLASSTYPE_VBASECLASSES (type); vbases; vbases = TREE_CHAIN (vbases))
     {
-      tree virtuals = BINFO_VIRTUALS (vbases);
+      tree virtuals;
 
-      skip_rtti_stuff (&virtuals, BINFO_TYPE (vbases));
+      virtuals = skip_rtti_stuff (vbases, BINFO_TYPE (vbases), NULL);
 
       while (virtuals)
 	{
@@ -2598,7 +2598,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
 		      vbase_offsets)
      tree binfo, addr, orig_addr, vbase, vbase_addr, t, *vbase_offsets;
 {
-  tree virtuals = BINFO_VIRTUALS (binfo);
+  tree virtuals;
   tree vc;
   tree delta;
   unsigned HOST_WIDE_INT n;
@@ -2613,7 +2613,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
       *vbase_offsets = delta;
     }
 
-  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
+  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
 
   while (virtuals)
     {

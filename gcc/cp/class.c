@@ -2384,39 +2384,48 @@ get_class_offset (context, t, binfo, fndecl)
   return offset;
 }
 
-/* Skip RTTI information at the front of the virtual list.  */
+/* Return the BINFO_VIRTUALS list for BINFO, without the RTTI stuff at
+   the front.  If non-NULL, N is set to the number of entries
+   skipped.  */
 
-unsigned HOST_WIDE_INT
-skip_rtti_stuff (virtuals, t)
-     tree *virtuals, t;
+tree
+skip_rtti_stuff (binfo, t, n)
+     tree binfo;
+     tree t;
+     unsigned HOST_WIDE_INT *n;
 {
-  int n;
+  tree virtuals;
 
   if (CLASSTYPE_COM_INTERFACE (t))
     return 0;
 
-  n = 0;
-  if (*virtuals)
+  if (n)
+    *n = 0;
+  virtuals = BINFO_VIRTUALS (binfo);
+  if (virtuals)
     {
       /* We always reserve a slot for the offset/tdesc entry.  */
-      ++n;
-      *virtuals = TREE_CHAIN (*virtuals);
+      if (n)
+	++*n;
+      virtuals = TREE_CHAIN (virtuals);
     }
-  if (flag_vtable_thunks && *virtuals)
+  if (flag_vtable_thunks && virtuals)
     {
       /* The second slot is reserved for the tdesc pointer when thunks
          are used.  */
-      ++n;
-      *virtuals = TREE_CHAIN (*virtuals);
+      if (n)
+	++*n;
+      virtuals = TREE_CHAIN (virtuals);
     }
-  return n;
+
+  return virtuals;
 }
 
 static void
 modify_one_vtable (binfo, t, fndecl)
      tree binfo, t, fndecl;
 {
-  tree virtuals = BINFO_VIRTUALS (binfo);
+  tree virtuals;
   unsigned HOST_WIDE_INT n;
   
   /* update rtti entry */
@@ -2430,7 +2439,7 @@ modify_one_vtable (binfo, t, fndecl)
   if (fndecl == NULL_TREE)
     return;
 
-  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
+  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
 
   while (virtuals)
     {
@@ -2519,10 +2528,10 @@ static void
 fixup_vtable_deltas1 (binfo, t)
      tree binfo, t;
 {
-  tree virtuals = BINFO_VIRTUALS (binfo);
+  tree virtuals;
   unsigned HOST_WIDE_INT n;
   
-  n = skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
+  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), &n);
 
   while (virtuals)
     {
@@ -2677,8 +2686,8 @@ static void
 override_one_vtable (binfo, old, t)
      tree binfo, old, t;
 {
-  tree virtuals = BINFO_VIRTUALS (binfo);
-  tree old_virtuals = BINFO_VIRTUALS (old);
+  tree virtuals;
+  tree old_virtuals;
   enum { REUSE_NEW, REUSE_OLD, UNDECIDED, NEITHER } choose = UNDECIDED;
 
   /* If we have already committed to modifying it, then don't try and
@@ -2686,8 +2695,8 @@ override_one_vtable (binfo, old, t)
   if (BINFO_NEW_VTABLE_MARKED (binfo))
     choose = NEITHER;
 
-  skip_rtti_stuff (&virtuals, BINFO_TYPE (binfo));
-  skip_rtti_stuff (&old_virtuals, BINFO_TYPE (binfo));
+  virtuals = skip_rtti_stuff (binfo, BINFO_TYPE (binfo), NULL);
+  old_virtuals = skip_rtti_stuff (old, BINFO_TYPE (binfo), NULL);
 
   while (virtuals)
     {
