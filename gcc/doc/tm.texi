@@ -1070,7 +1070,7 @@ by the @code{__attribute__ ((aligned (@var{n})))} construct.
 An expression for the alignment of a structure field @var{field} if the
 alignment computed in the usual way is @var{computed}.  GCC uses
 this value instead of the value in @code{BIGGEST_ALIGNMENT} or
-@code{BIGGEST_FIELD_ALIGNMENT}, if defined, for structure fields only.
+@code{BIGGEST_FIELD_ALIGNMENT}, if defined.
 
 @findex MAX_OFILE_ALIGNMENT
 @item MAX_OFILE_ALIGNMENT
