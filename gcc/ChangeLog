@@ -1,3 +1,11 @@
+Tue Sep  8 23:46:04 1998  Hans-Peter Nilsson  <hp@axis.se>
+
+	* expr.c: Corrected comment about what MOVE_RATIO does.
+	* config/alpha/alpha.h: Ditto.
+	* config/1750a/1750a.h: Ditto.
+	* config/clipper/clipper.h: Ditto.
+	* config/i386/i386.h: Ditto.
+
 Tue Sep  8 22:56:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in (m68k-next-nextstep3*): Use collect2.
