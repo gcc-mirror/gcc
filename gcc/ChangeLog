@@ -1,3 +1,8 @@
+20001-01-09  Graham Stott  <grahams@redhat.com>
+
+	* cppfiles.c (_cpp_execute_include): Move `len` initialisation
+	after `ptr` is initialised.
+
 2001-01-09  Alexandre Oliva  <aoliva@redhat.com>
 
 	* config/sh/sh.h (STATIC_CHAIN_REGNUM): Change from r13 to r3.
