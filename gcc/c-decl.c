@@ -3476,7 +3476,7 @@ start_decl (declarator, declspecs, initialized, attributes)
      initializer equal to zero.  (Section 3.7.2)
      -fno-common gives strict ANSI behavior.  Usually you don't want it.
      This matters only for variables with external linkage.  */
-  if (! flag_no_common || ! TREE_PUBLIC (decl))
+  if (!initialized && (! flag_no_common || ! TREE_PUBLIC (decl)))
     DECL_COMMON (decl) = 1;
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
