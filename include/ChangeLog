@@ -1,3 +1,8 @@
+Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
+                          Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ansidecl.h: Define and test `GCC_VERSION', not `HAVE_GCC_VERSION'.
+	
 1999-10-23 08:51 -0700  Zack Weinberg  <zack@bitmover.com>
 
 	* hashtab.h: Give hash_table_t a struct tag.  Add prototypes

@@ -163,7 +163,7 @@ extern varray_type varray_grow	PROTO((varray_type, size_t));
 #define VARRAY_SIZE(VA)	((VA)->num_elements)
 
 /* Check for VARRAY_xxx macros being in bound.  */
-#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
+#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 extern void varray_check_failed PROTO ((varray_type, size_t,
 					const char *, int,
 					const char *)) ATTRIBUTE_NORETURN;

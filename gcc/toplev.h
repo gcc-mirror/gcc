@@ -51,7 +51,7 @@ extern void _fatal_insn			PROTO ((const char *,
 						const char *))
   ATTRIBUTE_NORETURN;
 
-#if HAVE_GCC_VERSION(2,7)
+#if (GCC_VERSION >= 2007)
 #define fatal_insn(msgid, insn) \
 	_fatal_insn (msgid, insn, __FILE__, __LINE__, __PRETTY_FUNCTION__)
 #define fatal_insn_not_found(insn) \

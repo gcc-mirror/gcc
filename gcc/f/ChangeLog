@@ -1,3 +1,8 @@
+Wed Nov 10 12:43:21 1999  Philippe De Muyter  <phdm@macqel.be>
+                          Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* proj.h: Test `GCC_VERSION', not `HAVE_GCC_VERSION'.
+
 Tue Oct 26 01:32:19 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* com.c (poplevel): Don't call remember_end_note.

@@ -160,27 +160,40 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #endif	/* ANSI C.  */
 
-/* This macro will return true if we are using gcc, and it is of a
-   particular minimum version (both major & minor numbers are checked.)  */
-#ifndef HAVE_GCC_VERSION
+
+/* Using MACRO(x,y) in cpp #if conditionals does not work with some
+   older preprocessors.  Thus we can't define something like this:
+
 #define HAVE_GCC_VERSION(MAJOR, MINOR) \
   (__GNUC__ > (MAJOR) || (__GNUC__ == (MAJOR) && __GNUC_MINOR__ >= (MINOR)))
-#endif /* ! HAVE_GCC_VERSION */
+
+and then test "#if HAVE_GCC_VERSION(2,7)".
+
+So instead we use the macro below and test it against specific values.  */
+
+/* This macro simplifies testing whether we are using gcc, and if it
+   is of a particular minimum version. (Both major & minor numbers are
+   significant.)  This macro will evaluate to 0 if we are not using
+   gcc at all.  */
+#ifndef GCC_VERSION
+#define GCC_VERSION (__GNUC__ * 1000 + __GNUC_MINOR__)
+#endif /* GCC_VERSION */
 
 /* Define macros for some gcc attributes.  This permits us to use the
    macros freely, and know that they will come into play for the
    version of gcc in which they are supported.  */
 
-#if ! HAVE_GCC_VERSION(2,7)
+#if (GCC_VERSION < 2007)
 # define __attribute__(x)
 #endif
 
+/* Attributes on labels were valid as of gcc 2.93. */
 #ifndef ATTRIBUTE_UNUSED_LABEL
-# if ! HAVE_GCC_VERSION(2,93)
-#  define ATTRIBUTE_UNUSED_LABEL
-# else
+# if (GCC_VERSION >= 2093)
 #  define ATTRIBUTE_UNUSED_LABEL ATTRIBUTE_UNUSED
-# endif /* GNUC < 2.93 */
+# else
+#  define ATTRIBUTE_UNUSED_LABEL
+# endif /* GNUC >= 2.93 */
 #endif /* ATTRIBUTE_UNUSED_LABEL */
 
 #ifndef ATTRIBUTE_UNUSED

@@ -321,7 +321,7 @@ struct tree_common
 
 /* When checking is enabled, errors will be generated if a tree node
    is accessed incorrectly. The macros abort with a fatal error.  */
-#if defined ENABLE_CHECKING && HAVE_GCC_VERSION(2,7)
+#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 
 #define TREE_CHECK(t, code)						\
 ({  const tree __t = t;							\
@@ -2513,8 +2513,8 @@ extern void dwarf2out_end_epilogue	PROTO((void));
 
 extern void fancy_abort PROTO((const char *, int, const char *))
     ATTRIBUTE_NORETURN;
-#if ! HAVE_GCC_VERSION(2,7)
-#define abort() fancy_abort (__FILE__, __LINE__, 0)
-#else
+#if (GCC_VERSION >= 2007)
 #define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#else
+#define abort() fancy_abort (__FILE__, __LINE__, 0)
 #endif

@@ -41,7 +41,7 @@ Boston, MA 02111-1307, USA.  */
    need to do this very early; i.e. before any systems header files or
    gcc header files in case they use these keywords.  Otherwise
    conflicts might occur. */
-#if HAVE_GCC_VERSION(2,7)
+#if (GCC_VERSION >= 2007)
 # undef const
 # undef inline
 # define inline __inline__  /* Modern gcc can use `__inline__' freely. */

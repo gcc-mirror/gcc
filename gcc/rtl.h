@@ -226,7 +226,7 @@ typedef struct rtvec_def{
 
 /* General accessor macros for accessing the fields of an rtx.  */
 
-#if defined ENABLE_CHECKING  && HAVE_GCC_VERSION(2,7)
+#if defined ENABLE_CHECKING && (GCC_VERSION >= 2007)
 /* The bit with a star outside the statement expr and an & inside is
    so that N can be evaluated only once.  */
 #define RTL_CHECK1(RTX, N, C1)						\
@@ -1679,10 +1679,10 @@ extern int read_rtx_lineno;
 
 extern void fancy_abort PROTO((const char *, int, const char *))
     ATTRIBUTE_NORETURN;
-#if ! HAVE_GCC_VERSION(2,7)
-#define abort() fancy_abort (__FILE__, __LINE__, 0)
-#else
+#if (GCC_VERSION >= 2007)
 #define abort() fancy_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
+#else
+#define abort() fancy_abort (__FILE__, __LINE__, 0)
 #endif
 
 /* In alias.c */
