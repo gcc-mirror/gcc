@@ -88,6 +88,8 @@ public class FileInputStream extends InputStream
 
   public long skip(long n) throws IOException
   {
-    return n <= 0 ? 0 : fd.seek(n, FileDescriptor.CUR, true);
+    long startPos = fd.getFilePointer();
+    long endPos = fd.seek(n, FileDescriptor.CUR, true);
+    return endPos - startPos;
   }
 }
