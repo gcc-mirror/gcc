@@ -1,5 +1,10 @@
 2001-10-01  David Billinghurst <David.Billinghurst@riotinto.com>
 
+	* flow.c (propagate_block_delete_libcall): Remove unused first arg
+	(propagate_one_insn):  Update for above change
+
+2001-10-01  David Billinghurst <David.Billinghurst@riotinto.com>
+
 	* unwind-sjlj.c (_Unwind_GetRegionStart, _Unwind_GetDataRelBase,
 	_Unwind_GetTextRelBase): Argument is unused.
 
