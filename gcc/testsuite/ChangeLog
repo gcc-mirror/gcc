@@ -1,3 +1,8 @@
+Sun Sep  1 12:47:39 2002  Nicola Pero  <n.pero@mi.flashnet.it>
+
+	* objc/execute/class-tests-1.h (test_class_with_superclass): Call
+	[Object class], not [Object initialize].
+
 2002-08-31  Roger Sayle  <roger@eyesopen.com>
 	    Hans-Peter Nilsson  <hp@bitrange.com>
 
