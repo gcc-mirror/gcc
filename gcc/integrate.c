@@ -1952,7 +1952,7 @@ copy_rtx_and_substitute (orig, map)
 		   reach here, so return the register unchanged.  */
 		return orig;
 	      else if (mode != GET_MODE (map->inline_target))
-		return gen_rtx (SUBREG, mode, map->inline_target, 0);
+		return gen_lowpart (mode, map->inline_target);
 	      else
 		return map->inline_target;
 	    }
