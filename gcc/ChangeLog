@@ -1,3 +1,7 @@
+2003-12-29  Richard Henderson  <rth@redhat.com>
+
+	* config/sparc/sparc.c (TARGET_RELAXED_ORDERING): True.
+
 2004-12-29  Jeff Law  <law@redhat.com>
 
 	* tree-outof-ssa.c (insert_backedge_copies): New function.

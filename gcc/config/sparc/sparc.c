@@ -495,9 +495,19 @@ enum processor_type sparc_cpu;
 #endif
 
 /* The SPARC v9 architecture defines a relaxed memory ordering model (RMO)
-   which requires this if enabled, though it is never used in userspace,
-   and the Ultra3 processors don't implement it.  */
-#define TARGET_RELAXED_ORDERING TARGET_V9
+   which requires this if enabled.  Prior to v9, there are no instructions
+   to even talk about memory syncronization.  The Ultra3 processor doesn't
+   implement RMO.
+
+   Solaris never enables RMO; only ever uses total memory ordering (TMO.
+
+   Linux currently uses RMO in uniprocessor mode, which is equivalent to
+   TMO, and TMO in multiprocessor mode.  But they reserve the right to
+   change their minds.  */
+/* ??? Getting the configury correct is harder than it's worth.  Just
+   enable it all the time.  */
+#undef TARGET_RELAXED_ORDERING
+#define TARGET_RELAXED_ORDERING true
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
