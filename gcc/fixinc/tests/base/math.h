@@ -35,11 +35,19 @@ extern double floor(), ceil(), fmod(), fabs _PARAMS((double));
 #endif  /* FIX_HEADER_BREAKAGE_CHECK */
 
 
+#if defined( HPUX10_CPP_POW_INLINE_CHECK )
+
+#endif  /* HPUX10_CPP_POW_INLINE_CHECK */
+
+
+#if defined( HPUX11_CPP_POW_INLINE_CHECK )
+
+#endif  /* HPUX11_CPP_POW_INLINE_CHECK */
+
+
 #if defined( HPUX11_FABSF_CHECK )
 #ifdef _PA_RISC
-#ifndef __cplusplus
 #  define fabsf(x) ((float)fabs((double)(float)(x)))
-#endif
 #endif
 #endif  /* HPUX11_FABSF_CHECK */
 
