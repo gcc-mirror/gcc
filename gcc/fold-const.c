@@ -2357,7 +2357,7 @@ simple_operand_p (exp)
 	  || (TREE_CODE_CLASS (TREE_CODE (exp)) == 'd'
 	      && ! TREE_ADDRESSABLE (exp)
 	      && ! TREE_THIS_VOLATILE (exp)
-	      && ! TREE_NONLOCAL (exp)));
+	      && ! DECL_NONLOCAL (exp)));
 }
 
 /* Subroutine for fold_truthop: try to optimize a range test.

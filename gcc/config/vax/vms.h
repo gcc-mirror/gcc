@@ -118,7 +118,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    us to do this.  */
 
 #define ENCODE_SECTION_INFO(decl)  				\
-  if (TREE_EXTERNAL (decl) && TREE_PUBLIC (decl)) 		\
+  if (DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)) 		\
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (decl), 0)) = 1; 
 
 /* Under VMS we write the actual size of the storage to be allocated even
