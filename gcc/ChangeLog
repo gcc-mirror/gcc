@@ -1,3 +1,13 @@
+2003-10-01  Nick Clifton  <nickc@redhat.com>
+
+	* Import this patch from mainline:
+	
+	2003-02-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* collect2.c (pexecute_pid): Rename to pid.
+	(collect_wait, collect_execute, scan_prog_file, scan_libraries): Use
+	pid.
+
 2003-09-23  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Undefine

@@ -234,7 +234,7 @@ struct obstack temporary_obstack;
 char * temporary_firstobj;
 
 /* Holds the return value of pexecute.  */
-int pexecute_pid;
+int pid;
 
 /* Structure to hold all the directories in which to search for files to
    execute.  */
@@ -1499,7 +1499,7 @@ collect_wait (prog)
 {
   int status;
 
-  pwait (pexecute_pid, &status, 0);
+  pwait (pid, &status, 0);
   if (status)
     {
       if (WIFSIGNALED (status))
@@ -1588,9 +1588,9 @@ collect_execute (prog, argv, redir)
       dup2 (redir_handle, STDERR_FILENO);
     }
 
-  pexecute_pid = pexecute (argv[0], argv, argv[0], NULL,
-			   &errmsg_fmt, &errmsg_arg,
-			   (PEXECUTE_FIRST | PEXECUTE_LAST | PEXECUTE_SEARCH));
+  pid = pexecute (argv[0], argv, argv[0], NULL,
+		  &errmsg_fmt, &errmsg_arg,
+		  (PEXECUTE_FIRST | PEXECUTE_LAST | PEXECUTE_SEARCH));
 
   if (redir)
     {
@@ -1602,7 +1602,7 @@ collect_execute (prog, argv, redir)
       close (redir_handle);
     }
 
- if (pexecute_pid == -1)
+ if (pid == -1)
    fatal_perror (errmsg_fmt, errmsg_arg);
 }
 
@@ -2069,7 +2069,6 @@ scan_prog_file (prog_name, which_pass)
   void (*quit_handler) PARAMS ((int));
   char *real_nm_argv[4];
   const char **nm_argv = (const char **) real_nm_argv;
-  int pid;
   int argc = 0;
   int pipe_fd[2];
   char *p, buf[1024];
@@ -2514,7 +2513,6 @@ scan_libraries (prog_name)
   void (*quit_handler) PARAMS ((int));
   char *real_ldd_argv[4];
   const char **ldd_argv = (const char **) real_ldd_argv;
-  int pid;
   int argc = 0;
   int pipe_fd[2];
   char buf[1024];
