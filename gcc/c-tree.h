@@ -195,7 +195,7 @@ extern tree finish_enum (tree, tree, tree);
 extern void finish_function (int, int);
 extern tree finish_struct (tree, tree, tree);
 extern tree get_parm_info (int);
-extern tree grokfield (const char *, int, tree, tree, tree);
+extern tree grokfield (tree, tree, tree);
 extern tree groktypename (tree);
 extern tree groktypename_in_parm_context (tree);
 extern tree implicitly_declare (tree);
