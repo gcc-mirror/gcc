@@ -1955,19 +1955,24 @@ while(0)
    so we read only the condition codes by using branch instructions
    and hope that this is enough. */
 
-#define MACHINE_STATE_SAVE(ID) \
-  asm ("	mov %g0,%l0");\
-  asm ("	be,a LFLGNZ" ID);\
-  asm ("	or %l0,4,%l0");\
-  asm ("LFLGNZ" ID ":  bcs,a LFLGNC" ID);\
-  asm ("	or %l0,1,%l0");\
-  asm ("LFLGNC" ID ":  bvs,a LFLGNV" ID);\
-  asm ("	or %l0,2,%l0");\
-  asm ("LFLGNV" ID ":  bneg,a LFLGNN" ID);\
-  asm ("	or %l0,8,%l0");\
-  asm ("LFLGNN" ID ": sethi %hi(LFLAGS" ID "),%l1");\
-  asm ("	st %l0,[%l1+%lo(LFLAGS" ID ")]"); \
-  asm ("	st %g2,[%l1+%lo(LSAVRET" ID ")]");
+#define MACHINE_STATE_SAVE(ID)			\
+  int ms_flags, ms_saveret;			\
+  asm volatile(					\
+	"mov %%g0,%0\n\
+	be,a LFLGNZ"ID"\n\
+	or %0,4,%0\n\
+LFLGNZ"ID":\n\
+	bcs,a LFLGNC"ID"\n\
+	or %0,1,%0\n\
+LFLGNC"ID":\n\
+	bvs,a LFLGNV"ID"\n\
+	or %0,2,%0\n\
+LFLGNV"ID":\n\
+	bneg,a LFLGNN"ID"\n\
+	or %0,8,%0\n\
+LFLGNN"ID":\n\
+	mov %%g2,%1"				\
+	: "=r"(ms_flags), "=r"(ms_saveret));
 
 /* On sparc MACHINE_STATE_RESTORE restores the psw register from memory.
    The psw register can be written in supervisor mode only,
@@ -1977,74 +1982,65 @@ while(0)
    be generated in this way. If this happens an unimplemented
    instruction will be executed to abort the program. */
 
-#define MACHINE_STATE_RESTORE(ID) \
-  asm ("	sethi %hi(LFLGTAB" ID "),%l1");\
-  asm ("	ld [%l1+%lo(LFLGTAB" ID "-(LFLGTAB" ID "-LFLAGS" ID "))],%l0");\
-  asm ("	ld [%l1+%lo(LFLGTAB" ID "-(LFLGTAB" ID "-LSAVRET" ID "))],%g2");\
-  asm ("	sll %l0,2,%l0");\
-  asm ("	add %l0,%l1,%l0");\
-  asm ("	ld [%l0+%lo(LFLGTAB" ID ")],%l1");\
-  asm ("	jmp %l1");\
-  asm (" nop");\
-  asm (".data");\
-  asm ("	.align 4");\
-  asm ("LFLAGS" ID ":");\
-  asm ("	.word 0");\
-  asm ("LSAVRET" ID ":");\
-  asm (" .word 0");\
-  asm ("LFLGTAB" ID ": ");\
-  asm ("	.word LSFLG0" ID);\
-  asm ("	.word LSFLGC" ID);\
-  asm ("	.word LSFLGV" ID);\
-  asm ("	.word LSFLGVC" ID);\
-  asm ("	.word LSFLGZ" ID);\
-  asm ("	.word LSFLGZC" ID);\
-  asm ("	.word LSFLGZV" ID);\
-  asm ("	.word LSFLGZVC" ID);\
-  asm ("	.word LSFLGN" ID);\
-  asm ("	.word LSFLGNC" ID);\
-  asm ("	.word LSFLGNV" ID);\
-  asm ("	.word LSFLGNVC" ID);\
-  asm ("	.word LSFLGNZ" ID);\
-  asm ("	.word LSFLGNZC" ID);\
-  asm ("	.word LSFLGNZV" ID);\
-  asm ("	.word LSFLGNZVC" ID);\
-  asm (".text");\
-  asm ("LSFLGVC" ID ": mov -1,%l0");\
-  asm ("	addcc 2,%l0,%g0");\
-  asm ("	sethi %hi(0x80000000),%l0");\
-  asm ("	mov %l0,%l1");\
-  asm ("	ba LFLGRET" ID);\
-  asm ("	addxcc %l0,%l1,%l0");\
-  asm ("LSFLGC" ID ":	mov -1,%l0");\
-  asm ("	ba LFLGRET" ID);\
-  asm ("	addcc 2,%l0,%g0");\
-  asm ("LSFLGZC" ID ": mov -1,%l0");\
-  asm ("	ba LFLGRET" ID);\
-  asm ("	addcc 1,%l0,%l0");\
-  asm ("LSFLGZVC" ID ": sethi %hi(0x80000000),%l0");\
-  asm ("	mov %l0,%l1");\
-  asm ("	ba LFLGRET" ID);\
-  asm ("	addcc %l0,%l1,%l0");\
-  asm ("LSFLGZ" ID ":	ba LFLGRET" ID);\
-  asm ("	subcc %g0,%g0,%g0");\
-  asm ("LSFLGNC" ID ": add %g0,1,%l0");\
-  asm ("	ba LFLGRET" ID);\
-  asm ("	subcc %g0,%l0,%g0");\
-  asm ("LSFLG0" ID ":	ba LFLGRET" ID);\
-  asm ("	orcc 1,%g0,%g0");\
-  asm ("LSFLGN" ID ":	ba LFLGRET" ID);\
-  asm (" orcc -1,%g0,%g0");\
-  asm ("LSFLGV" ID ":");\
-  asm ("LSFLGZV" ID ":");\
-  asm ("LSFLGNV" ID ":");\
-  asm ("LSFLGNVC" ID ":");\
-  asm ("LSFLGNZ" ID ":");\
-  asm ("LSFLGNZC" ID ":");\
-  asm ("LSFLGNZV" ID ":");\
-  asm ("LSFLGNZVC" ID ":");\
-  asm ("	unimp");\
-  asm ("LFLGRET" ID ":");
+#define MACHINE_STATE_RESTORE(ID)				\
+{ extern char flgtab[] __asm__("LFLGTAB"ID);			\
+  int scratch;							\
+  asm volatile (						\
+	"jmpl %2+%1,%%g0\n\
+    ! Do part of VC in the delay slot here, as it needs 3 insns.\n\
+	 addcc 2,%3,%%g0\n\
+LFLGTAB" ID ":\n\
+    ! 0\n\
+	ba LFLGRET"ID"\n\
+	 orcc 1,%%g0,%%g0\n\
+    ! C\n\
+	ba LFLGRET"ID"\n\
+	 addcc 2,%3,%%g0\n\
+    ! V\n\
+	unimp\n\
+	nop\n\
+    ! VC\n\
+	ba LFLGRET"ID"\n\
+	 addxcc %4,%4,%0\n\
+    ! Z\n\
+	ba LFLGRET"ID"\n\
+	 subcc %%g0,%%g0,%%g0\n\
+    ! ZC\n\
+	ba LFLGRET"ID"\n\
+	 addcc 1,%3,%0\n\
+    ! ZVC\n\
+	ba LFLGRET"ID"\n\
+	 addcc %4,%4,%0\n\
+    ! N\n\
+	ba LFLGRET"ID"\n\
+	 orcc %%g0,-1,%%g0\n\
+    ! NC\n\
+	ba LFLGRET"ID"\n\
+	 addcc %%g0,%3,%%g0\n\
+    ! NV\n\
+	unimp\n\
+	nop\n\
+    ! NVC\n\
+	unimp\n\
+	nop\n\
+    ! NZ\n\
+	unimp\n\
+	nop\n\
+    ! NZC\n\
+	unimp\n\
+	nop\n\
+    ! NZV\n\
+	unimp\n\
+	nop\n\
+    ! NZVC\n\
+	unimp\n\
+	nop\n\
+LFLGRET"ID":\n\
+	mov %5,%%g2"						\
+	: "=r"(scratch)						\
+	: "r"(ms_flags*8), "r"(flgtab), "r"(-1),		\
+	  "r"(0x80000000), "r"(ms_saveret)			\
+	: "cc", "%g2"); }
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
