@@ -1,5 +1,10 @@
 2003-05-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
+	PR c++/10230, c++/10481
+	* g++.dg/lookup/scoped5.C: New test.
+
+2003-05-11  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
 	PR c++/10552
 	* g++.dg/template/ttp6.C: New test.
 

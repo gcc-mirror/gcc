@@ -1276,11 +1276,20 @@ finish_non_static_data_member (tree decl, tree qualifying_scope)
       tree access_type = current_class_type;
       tree object = current_class_ref;
 
-      while (!DERIVED_FROM_P (context_for_name_lookup (decl), access_type))
+      while (access_type
+	     && !DERIVED_FROM_P (context_for_name_lookup (decl), access_type))
 	{
 	  access_type = TYPE_CONTEXT (access_type);
-	  while (DECL_P (access_type))
+	  while (access_type && DECL_P (access_type))
 	    access_type = DECL_CONTEXT (access_type);
+	}
+
+      if (!access_type)
+	{
+	  cp_error_at ("object missing in reference to `%D'",
+		       decl);
+	  error ("from this location");
+	  return error_mark_node;
 	}
 
       perform_or_defer_access_check (access_type, decl);
