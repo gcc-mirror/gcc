@@ -1,3 +1,10 @@
+2003-07-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/std/std_bitset.h: Fully qualify standard
+	functions with std::, thus avoiding Koenig lookup.
+
+	* include/std/std_fstream.h: Change comment to doxygen style.
+
 2003-07-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* include/std/std_limits.h:  More CPP->CXX changes.
