@@ -1,5 +1,11 @@
 Tue Mar  7 21:41:17 2000  Jeffrey A Law  (law@cygnus.com)
 
+	Tue Oct 12 09:45:19 1999  Jonathan Larmour  <jlarmour@cygnus.co.uk>
+	* config/rs6000/eabi-ctors.c (__do_global_ctors): Run through
+	__CTOR_LIST__ in opposite order, which is the correct order for sorted
+	constructors.
+	(__do_global_dtors): similarly for __DTOR_LIST__.
+
 	2000-01-05  Bernd Schmidt  <bernds@cygnus.co.uk>
 	* reload1.c (choose_reload_regs): When disabling a reload, also
 	set reload_spill_index to -1.
