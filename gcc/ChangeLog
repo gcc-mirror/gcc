@@ -1,3 +1,31 @@
+1999-08-29  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* loop.c (this_loop_info): New variable.
+	(loop_has_call, loop_has_volatile, loop_has_tablejump,
+	loop_continue, loops_enclosed): Replace with fields in this_loop_info.
+	All uses updated.
+	(prescan_loop, strength_reduce): New argument loop_info.  All callers
+	updated.
+	(scan_loop): New variable loop_info, initialise to address of
+	this_loop_info.
+	(prescan_loop): Set loop_info->vtop if find NOTE_INSN_LOOP_VTOP.
+	Delete variable loop_has_multiple_exit targets and replace with
+	field in this_loop_info.
+	(find_and_verify_loops): Rename this_loop to this_loop_num.
+	(strength_reduce): Delete loop_iteration_info.  Replace variable
+	loop_info with function argument of same name.
+	(insert_bct): Rework test for loop being completely unrolled.
+
+	* loop.h (struct loop_info): New fields num, loops_enclosed,
+	has_call, has_volatile, has_tablejump, has_multiple_exit_targets,
+	has_indirect_jump, and cont.  Redefine use of unroll_number.
+	(loop_unroll_number): Delete.
+
+	* unroll.c (unroll_loop): Store loop unroll count in unroll_number
+	field of loop_info.
+	(loop_iterations): Delete variable vtop and instead use
+	loop_info->vtop computed in prescan_loop.
+
 Sun Aug 29 03:27:23 1999  Scott Weikart <scott@igc.apc.org>
 
 	* fix-header.c (main): Do not pass a null pointer to strcmp.
