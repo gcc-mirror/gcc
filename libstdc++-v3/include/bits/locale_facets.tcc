@@ -1551,6 +1551,10 @@ namespace std
     time_get<_CharT, _InIter>::do_date_order() const
     { return time_base::no_order; }
 
+  // Recursively expand a strftime format string and parse it.  Starts w/ %x
+  // and %X from do_get_time() and do_get_date(), which translate to a more
+  // specific string, which may contain yet more strings.  I.e. %x => %r =>
+  // %H:%M:%S => extracted characters.
   template<typename _CharT, typename _InIter>
     void
     time_get<_CharT, _InIter>::
