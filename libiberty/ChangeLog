@@ -1,3 +1,10 @@
+2002-05-07  Mark Mitchell  <mark@codesourcery.com>
+
+	* configure.in (AC_TYPE_PID_T): Use it.
+	* configure: Regenerated.
+	* getruntime.c: Include <sys/types.h>.
+	* waitpid.c: Likewise.  Use pid_t, not int, as the type of "pid".
+
 2002-04-09  Richard Henderson  <rth@redhat.com>
 
 	* hashtab.c (higher_prime_number): Use 7 as minimum.
