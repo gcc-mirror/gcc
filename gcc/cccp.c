@@ -219,8 +219,6 @@ my_bzero (b, length)
 /* VMS-specific definitions */
 #ifdef VMS
 #include <descrip.h>
-#define O_RDONLY	0	/* Open arg for Read/Only  */
-#define O_WRONLY	1	/* Open arg for Write/Only */
 #define read(fd,buf,size)	VMS_read (fd,buf,size)
 #define write(fd,buf,size)	VMS_write (fd,buf,size)
 #define open(fname,mode,prot)	VMS_open (fname,mode,prot)
@@ -237,9 +235,6 @@ static void hack_vms_include_specification ();
 #define INO_T_EQ(a, b) (!bcmp((char *) &(a), (char *) &(b), sizeof (a)))
 #define INO_T_HASH(a) 0
 #define INCLUDE_LEN_FUDGE 12	/* leave room for VMS syntax conversion */
-#ifdef __GNUC__
-#define BSTRING			/* VMS/GCC supplies the bstring routines */
-#endif /* __GNUC__ */
 #endif /* VMS */
 
 #ifndef O_RDONLY
@@ -4204,6 +4199,9 @@ do_include (buf, limit, op, keyword)
   int retried = 0;		/* Have already tried macro
 				   expanding the include line*/
   int angle_brackets = 0;	/* 0 for "...", 1 for <...> */
+#ifdef VMS
+  int vaxc_include = 0;		/* 1 for token without punctuation */
+#endif
   int pcf = -1;
   char *pcfbuf;
   char *pcfbuflimit;
@@ -4315,6 +4313,7 @@ get_filename:
       while (fin != limit && (!isspace(*fin)))
 	*fend++ = *fin++;
       warning ("VAX-C-style include specification found, use '#include <filename.h>' !");
+      vaxc_include = 1;
       if (fin == limit) {
 	angle_brackets = 1;
 	/* If -I-, start with the first -I dir after the -I-.  */
@@ -4432,12 +4431,12 @@ get_filename:
          full VMS file specification */
       if (searchptr->fname[0]) {
 	/* Fix up the filename */
-	hack_vms_include_specification (fname);
+	hack_vms_include_specification (fname, vaxc_include);
       } else {
-      	/* This is a normal VMS filespec, so use it unchanged.  */
+	/* This is a normal VMS filespec, so use it unchanged.  */
 	strcpy (fname, fbeg);
 	/* if it's '#include filename', add the missing .h */
-	if (index(fname,'.')==NULL) {
+	if (vaxc_include && index(fname,'.')==NULL) {
 	  strcat (fname, ".h");
 	}
       }
@@ -10009,8 +10008,9 @@ savestring (input)
    VMS file specification.  */
 
 static void
-hack_vms_include_specification (fname)
+hack_vms_include_specification (fname, vaxc_include)
      char *fname;
+     int vaxc_include;
 {
   register char *cp, *cp1, *cp2;
   int f, check_filename_before_returning;
@@ -10024,7 +10024,7 @@ hack_vms_include_specification (fname)
    * Check if we have a vax-c style '#include filename'
    * and add the missing .h
    */
-  if (!index (cp,'.'))
+  if (vaxc_include && !index (cp,'.'))
     strcat (cp, ".h");
 
   cp2 = Local;			/* initialize */
