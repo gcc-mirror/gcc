@@ -1,3 +1,8 @@
+2004-06-16  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc_update (boehm-gc/configure): Depend on
+	boehm-gc/configure.ac instead of boehm-gc/configure.in
+
 2004-06-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* gcc_update (libmudflap/configure): Depend on

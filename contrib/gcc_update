@@ -83,7 +83,7 @@ fastjar/Makefile.in: fastjar/Makefile.am fastjar/configure.ac fastjar/aclocal.m4
 fastjar/configure: fastjar/configure.ac fastjar/aclocal.m4
 boehm-gc/aclocal.m4: boehm-gc/configure.in boehm-gc/acinclude.m4
 boehm-gc/Makefile.in: boehm-gc/Makefile.am boehm-gc/configure.in boehm-gc/aclocal.m4
-boehm-gc/configure: boehm-gc/configure.in boehm-gc/aclocal.m4
+boehm-gc/configure: boehm-gc/configure.ac boehm-gc/aclocal.m4
 libada/configure: libada/configure.ac
 libffi/aclocal.m4: libffi/configure.ac libffi/acinclude.m4
 libffi/Makefile.in: libffi/Makefile.am libffi/configure.ac libffi/aclocal.m4

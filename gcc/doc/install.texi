@@ -315,8 +315,8 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 @file{libiberty}, @file{libobjc} directories as well as any
 of their subdirectories.
 
-The Java directories @file{boehm-gc} and @file{libjava}
-require a modified version of automake 1.4 downloadable from
+The Java directory @file{libjava} requires a modified version of
+automake 1.4 downloadable from
 @uref{ftp://gcc.gnu.org/pub/java/automake-gcj-1.4.tar.gz}.
 
 Every other directory requires automake 1.8.5.
