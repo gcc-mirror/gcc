@@ -1594,7 +1594,7 @@ install-headers: install-include-dir $(INSTALL_HEADERS_DIR) install-assert-h
 	fi
 
 # Create or recreate the gcc private include file directory.
-install-include-dir:
+install-include-dir: install-dir
 	-rm -rf $(libsubdir)/include
 	mkdir $(libsubdir)/include
 	-chmod a+rx $(libsubdir)/include
