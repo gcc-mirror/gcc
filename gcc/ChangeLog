@@ -1,3 +1,11 @@
+Thu Mar 19 09:06:35 1998  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* config/m68k/m68k.md (addqi3): Fix typo gen_INT vs. GEN_INT.
+
+	* flow.c (life_analysis): #include <sys/types.h> to make sure
+	size_t is defined.
+	* cplus-dem.c (demangle_function_name): Likewise.
+
 Thu Mar 19 09:00:01 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* final.c (insn_noperands): Change type to unsigned int.
