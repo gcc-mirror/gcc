@@ -1,3 +1,8 @@
+Tue Sep 21 14:55:11 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* flow.c (split_edge): Handle insertion on a fallthrough edge which
+	has the EXIT_BLOCK as a dest.
+
 Tue Sep 21 14:51:23 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* flow.c (remove_edge): New function to remove an edge from the 
