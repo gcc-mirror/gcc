@@ -1,5 +1,5 @@
 /* Separate lexical analyzer for GNU C++.
-   Copyright (C) 1987, 89, 92-96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 89, 92-97, 1998 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -46,16 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifdef MULTIBYTE_CHARS
-#include <stdlib.h>
 #include <locale.h>
-#endif
-
-#ifdef HAVE_STDLIB_H
-#ifndef MULTIBYTE_CHARS
-#include <stdlib.h>
-#endif
-#else
-extern double atof ();
 #endif
 
 #define obstack_chunk_alloc xmalloc
@@ -2604,13 +2595,6 @@ do_pending_lang_change ()
     pop_lang_context ();
 }
 
-#if 0
-#define isalnum(char) (char >= 'a' ? char <= 'z' : char >= '0' ? char <= '9' || (char >= 'A' && char <= 'Z') : 0)
-#define isdigit(char) (char >= '0' && char <= '9')
-#else
-#include <ctype.h>
-#endif
-
 #define ENDFILE -1  /* token that represents end-of-file */
 
 /* Read an escape sequence, returning its equivalent as a character,
@@ -2635,7 +2619,7 @@ readescape (ignore_ptr)
       while (1)
 	{
 	  c = getch ();
-	  if (! isxdigit (c))
+	  if (! ISXDIGIT (c))
 	    {
 	      put_back (c);
 	      break;
@@ -3176,7 +3160,7 @@ real_yylex ()
 	    /* Make this run fast.  We know that we are reading straight
 	       from FINPUT in this case (since identifiers cannot straddle
 	       input sources.  */
-	    while (isalnum (c) || (c == '_') || c == '$')
+	    while (ISALNUM (c) || (c == '_') || c == '$')
 	      {
 		if (c == '$')
 		  {
@@ -3206,7 +3190,7 @@ real_yylex ()
 	    *p++ = c;
 	    c = getch ();
 
-	    while (isalnum (c) || (c == '_') || c == '$')
+	    while (ISALNUM (c) || (c == '_') || c == '$')
 	      {
 		if (c == '$')
 		  {
@@ -3399,7 +3383,7 @@ real_yylex ()
 	      }
 	    error ("parse error at `..'");
 	  }
-	if (isdigit (c1))
+	if (ISDIGIT (c1))
 	  {
 	    put_back (c1);
 	    goto resume_numerical_scan;
@@ -3413,7 +3397,7 @@ real_yylex ()
 	/* Optimize for most frequent case.  */
       {
 	register int c1 = getch ();
-	if (! isalnum (c1) && c1 != '.')
+	if (! ISALNUM (c1) && c1 != '.')
 	  {
 	    /* Terminate string.  */
 	    token_buffer[0] = c;
@@ -3478,7 +3462,7 @@ real_yylex ()
 	/* Read all the digits-and-decimal-points.  */
 
 	while (c == '.'
-	       || (isalnum (c) && (c != 'l') && (c != 'L')
+	       || (ISALNUM (c) && (c != 'l') && (c != 'L')
 		   && (c != 'u') && (c != 'U')
 		   && c != 'i' && c != 'I' && c != 'j' && c != 'J'
 		   && (floatflag == NOT_FLOAT || ((c != 'f') && (c != 'F')))))
@@ -3507,7 +3491,7 @@ real_yylex ()
 		   only when it is followed by a digit.
 		   Otherwise, unread the following non-digit
 		   and use the '.' as a structural token.  */
-		if (p == token_buffer + 2 && !isdigit (c))
+		if (p == token_buffer + 2 && !ISDIGIT (c))
 		  {
 		    if (c == '.')
 		      {
@@ -3532,7 +3516,7 @@ real_yylex ()
 		/* It is not a decimal point.
 		   It should be a digit (perhaps a hex digit).  */
 
-		if (isdigit (c))
+		if (ISDIGIT (c))
 		  {
 		    c = c - '0';
 		  }
@@ -3614,9 +3598,9 @@ real_yylex ()
 		    *p++ = c;
 		    c = getch ();
 		  }
-		if (! isdigit (c))
+		if (! ISDIGIT (c))
 		  error ("floating constant exponent has no digits");
-	        while (isdigit (c))
+	        while (ISDIGIT (c))
 		  {
 		    if (p >= token_buffer + maxtoken - 3)
 		      p = extend_token_buffer (p);
@@ -3920,7 +3904,7 @@ real_yylex ()
 		    && (unsigned) c >= (1 << width))
 		  warning ("escape sequence out of range for character");
 #ifdef MAP_CHARACTER
-		if (isprint (c))
+		if (ISPRINT (c))
 		  c = MAP_CHARACTER (c);
 #endif
 	      }

@@ -937,7 +937,7 @@ build_qualified_name (decl)
     {
       tree id = DECL_ASSEMBLER_NAME (decl);
       OB_PUTID (id);
-      if (isdigit (IDENTIFIER_POINTER (id) [IDENTIFIER_LENGTH (id) - 1]))
+      if (ISDIGIT (IDENTIFIER_POINTER (id) [IDENTIFIER_LENGTH (id) - 1]))
 	numeric_output_need_bar = 1;
       return;
     }

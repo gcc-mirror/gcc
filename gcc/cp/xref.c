@@ -1,5 +1,5 @@
 /* Code for handling XREF output from GNU C++.
-   Copyright (C) 1992, 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93-97, 1998 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -715,7 +715,7 @@ simplify_type(typ)
   int lvl, i;
 
   i = strlen(typ);
-  while (i > 0 && isspace(typ[i-1])) typ[--i] = 0;
+  while (i > 0 && ISSPACE(typ[i-1])) typ[--i] = 0;
 
   if (i > 7 && STREQL(&typ[i-5], "const"))
     {
