@@ -1,3 +1,9 @@
+Fri Nov  7 16:23:20 1997  Jim Wilson  (wilson@cygnus.com)
+
+	* flags.h (flag_rerun_loop_opt): Declare.
+	* loop.c (invariant_p, case LABEL_REF): Check flag_rerun_loop_opt.
+	* toplev.c (flag_rerum_loop_opt): Delete static.
+
 Fri Nov  7 10:22:24 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* frame.c (add_fdes, count_fdes): Go back to checking pc_begin for
