@@ -434,6 +434,36 @@ small_int (op, mode)
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
 }
 
+/* Recognize operand values for the umul instruction.  That instruction sign
+   extends immediate values just like all other sparc instructions, but
+   interprets the extended result as an unsigned number.  */
+
+int
+uns_small_int (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+#if HOST_BITS_PER_WIDE_INT > 32
+  /* All allowed constants will fit a CONST_INT.  */
+  return (GET_CODE (op) == CONST_INT
+	  && ((INTVAL (op) >= 0 && INTVAL (op) < 0x1000)
+	      || (INTVAL (op) >= 0xFFFFF000 && INTVAL (op) < 0x100000000L)));
+#else
+  return ((GET_CODE (op) == CONST_INT && (unsigned) INTVAL (op) < 0x1000)
+	  || (GET_CODE (op) == CONST_DOUBLE
+	      && CONST_DOUBLE_HIGH (op) == 0
+	      && (unsigned) CONST_DOUBLE_LOW (op) - 0xFFFFF000 < 0x1000));
+#endif
+}
+
+int
+uns_arith_operand (op, mode)
+     rtx op;
+     enum machine_mode mode;
+{
+  return register_operand (op, mode) || uns_small_int (op, mode);
+}
+
 /* Return truth value of statement that OP is a call-clobbered register.  */
 int
 clobbered_register (op, mode)
