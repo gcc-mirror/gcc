@@ -166,13 +166,8 @@ print_rtx (in_rtx)
 	break;
 
       case 'w':
-	fprintf (outfile,
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-		 " %d",
-#else
-		 " %ld",
-#endif
-		 XWINT (in_rtx, i));
+	fprintf (outfile, " ");
+	fprintf (outfile, HOST_WIDE_INT_PRINT_DEC, XWINT (in_rtx, i));
 	break;
 
       case 'i':
