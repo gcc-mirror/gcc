@@ -1,3 +1,9 @@
+2003-02-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/9602
+	* typeck2.c (abstract_virtuals_error): Don't check when
+	TYPE is still template parameter dependent.
+
 2003-02-23  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/5333
