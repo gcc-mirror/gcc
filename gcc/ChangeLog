@@ -1,3 +1,10 @@
+2004-01-28  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/fp-bit.c (pack_d): When using paired doubles to implement
+	a long double, round the high part separately.
+	(unpack_d): Fix the case in which the high part is a power of two
+	and the low part is a nonzero value of the opposite sign.
+
 2004-01-27  Roger Sayle  <roger@eyesopen.com>
 
 	* config/pa/pa.c (emit_move_sequence): Check that operand1 is a
