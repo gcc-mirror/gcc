@@ -3,6 +3,8 @@
 	* sdbout.c (sdbout_one_type): Add braces to avoid "ambigous else"
 	warning.
 
+	* tree.h (safe_for_unsave): Prototype.
+
 2000-03-20  Richard Henderson  <rth@cygnus.com>
 
 	* regmove.c (stack_memref_p): Fix typo, reorg for readability.
