@@ -1058,12 +1058,12 @@ compute_sets (f)
 #define NEVER_SET -1
 
 /* For each register, the cuid of the first/last insn in the block to set it,
-   or zero if not set.  */
+   or -1 if not set.  */
 static int *reg_first_set;
 static int *reg_last_set;
 
 /* While computing "first/last set" info, this is the CUID of first/last insn
-   to set memory or zero if not set.  `mem_last_set' is also used when
+   to set memory or -1 if not set.  `mem_last_set' is also used when
    performing GCSE to record whether memory has been set since the beginning
    of the block.
    Note that handling of memory is very simple, we don't make any attempt
