@@ -1444,8 +1444,14 @@ output_quoted_string (FILE *asm_file, const char *string)
 void
 output_file_directive (FILE *asm_file, const char *input_name)
 {
-  int len = strlen (input_name);
-  const char *na = input_name + len;
+  int len;
+  const char *na;
+  
+  if (input_name == NULL)
+    input_name = "<stdin>";
+
+  len = strlen (input_name);
+  na = input_name + len;
 
   /* NA gets INPUT_NAME sans directory names.  */
   while (na > input_name)
