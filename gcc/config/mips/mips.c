@@ -263,15 +263,17 @@ static tree mips_gimplify_va_arg_expr (tree, tree, tree *, tree *);
 static bool mips_pass_by_reference (CUMULATIVE_ARGS *, enum machine_mode mode,
 				    tree, bool);
 static bool mips_vector_mode_supported_p (enum machine_mode);
-static void mips_init_builtins (void);
+static rtx mips_prepare_builtin_arg (enum insn_code, unsigned int, tree *);
+static rtx mips_prepare_builtin_target (enum insn_code, unsigned int, rtx);
 static rtx mips_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
-static rtx mips_expand_compare_builtin (rtx, unsigned int, tree);
-static rtx mips_expand_ps_compare_builtin (enum mips_cmp_choice, rtx,
-					   unsigned int, tree);
-static rtx mips_expand_4s_compare_builtin (enum mips_cmp_choice, rtx,
-					   unsigned int, tree);
-static rtx mips_expand_ps_cond_move_builtin (enum mips_cmp_choice, rtx,
-					     unsigned int, tree);
+static void mips_init_builtins (void);
+static rtx mips_expand_ps_cond_move_builtin (bool, enum insn_code, rtx, tree);
+static rtx mips_expand_compare_builtin (bool, rtx, rtx, rtx, int);
+static rtx mips_expand_scalar_compare_builtin (enum insn_code, rtx, tree);
+static rtx mips_expand_4s_compare_builtin (enum mips_cmp_choice,
+					   enum insn_code, rtx, tree);
+static rtx mips_expand_ps_compare_builtin (enum mips_cmp_choice,
+					   enum insn_code, rtx, tree);
 
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
@@ -10011,6 +10013,41 @@ static const struct builtin_description mips_bdesc[] =
 };
 
 
+/* Take the head of argument list *ARGLIST and convert it into a form
+   suitable for input operand OP of instruction ICODE.  Return the value
+   and point *ARGLIST at the next element of the list.  */
+
+static rtx
+mips_prepare_builtin_arg (enum insn_code icode,
+			  unsigned int op, tree *arglist)
+{
+  rtx value;
+  enum machine_mode mode;
+
+  value = expand_expr (TREE_VALUE (*arglist), NULL_RTX, VOIDmode, 0);
+  mode = insn_data[icode].operand[op].mode;
+  if (!insn_data[icode].operand[op].predicate (value, mode))
+    value = copy_to_mode_reg (mode, value);
+
+  *arglist = TREE_CHAIN (*arglist);
+  return value;
+}
+
+/* Return an rtx suitable for output operand OP of instruction ICODE.
+   If TARGET is non-null, try to use it where possible.  */
+
+static rtx
+mips_prepare_builtin_target (enum insn_code icode, unsigned int op, rtx target)
+{
+  enum machine_mode mode;
+
+  mode = insn_data[icode].operand[op].mode;
+  if (target == 0 || !insn_data[icode].operand[op].predicate (target, mode))
+    target = gen_reg_rtx (mode);
+
+  return target;
+}
+
 /* Expand builtin functions.  This is called from TARGET_EXPAND_BUILTIN.  */
 
 rtx
@@ -10018,22 +10055,18 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 		     enum machine_mode mode ATTRIBUTE_UNUSED,
 		     int ignore ATTRIBUTE_UNUSED)
 {
-  rtx pat;
+  rtx op0, op1, op2;
   enum insn_code icode;
-  tree fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
-  tree arglist = TREE_OPERAND (exp, 1);
-  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
-  tree arg0;
-  tree arg1;
-  tree arg2;
-  enum machine_mode tmode;
-  enum machine_mode mode0;
-  enum machine_mode mode1;
-  enum machine_mode mode2;
-  rtx op0;
-  rtx op1;
-  rtx op2;
+  tree fndecl, arglist;
+  unsigned int fcode;
 
+  fndecl = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+  arglist = TREE_OPERAND (exp, 1);
+  fcode = DECL_FUNCTION_CODE (fndecl);
+  if (fcode >= ARRAY_SIZE (mips_bdesc))
+    return 0;
+
+  icode = mips_bdesc[fcode].icode;
   switch (fcode)
     {
     /* Two Operands.  */
@@ -10050,31 +10083,10 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_RSQRT2_S:
     case MIPS_BUILTIN_RSQRT2_D:
     case MIPS_BUILTIN_RSQRT2_PS:
-
-      icode = mips_bdesc[fcode].icode;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      pat = GEN_FCN (icode) (target, op0, op1);
-      if (!pat)
-	return 0;
-      
-      emit_insn (pat);
+      target = mips_prepare_builtin_target (icode, 0, target);
+      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+      emit_insn (GEN_FCN (icode) (target, op0, op1));
       return target;
 
     /* One Operand.  */
@@ -10089,62 +10101,18 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_RSQRT1_S:
     case MIPS_BUILTIN_RSQRT1_D:
     case MIPS_BUILTIN_RSQRT1_PS:
-
-      icode = mips_bdesc[fcode].icode;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-      
-      pat = GEN_FCN (icode) (target, op0);
-      if (!pat)
-	return 0;
-      
-      emit_insn (pat);
+      target = mips_prepare_builtin_target (icode, 0, target);
+      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+      emit_insn (GEN_FCN (icode) (target, op0));
       return target;
 
     /* Three Operands.  */
     case MIPS_BUILTIN_ALNV_PS:
-
-      icode = mips_bdesc[fcode].icode;
-      arg0 = TREE_VALUE (arglist);
-      arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-      arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-      op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-      tmode = insn_data[icode].operand[0].mode;
-      mode0 = insn_data[icode].operand[1].mode;
-      mode1 = insn_data[icode].operand[2].mode;
-      mode2 = insn_data[icode].operand[3].mode;
-
-      if (target == 0
-	  || GET_MODE (target) != tmode
-	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-	target = gen_reg_rtx (tmode);
-
-      if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-	op0 = copy_to_mode_reg (mode0, op0);
-
-      if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-	op1 = copy_to_mode_reg (mode1, op1);
-
-      if (!(*insn_data[icode].operand[3].predicate) (op2, mode2))
-	op2 = copy_to_mode_reg (mode2, op2);
-
-      pat = GEN_FCN (icode) (target, op0, op1, op2);
-      if (!pat)
-	return 0;
-      
-      emit_insn (pat);
+      target = mips_prepare_builtin_target (icode, 0, target);
+      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+      op2 = mips_prepare_builtin_arg (icode, 3, &arglist);
+      emit_insn (GEN_FCN (icode) (target, op0, op1, op2));
       return target;
 
     /* Paired Single Comparison.  */
@@ -10180,8 +10148,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_ANY_CABS_NGE_PS:
     case MIPS_BUILTIN_ANY_CABS_LE_PS:
     case MIPS_BUILTIN_ANY_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_ANY, target, 
-					     fcode, arglist);
+      return mips_expand_ps_compare_builtin (MIPS_CMP_ANY, icode,
+					     target, arglist);
 
     /* Paired Single Comparison.  */
     case MIPS_BUILTIN_UPPER_C_F_PS:
@@ -10216,8 +10184,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_UPPER_CABS_NGE_PS:
     case MIPS_BUILTIN_UPPER_CABS_LE_PS:
     case MIPS_BUILTIN_UPPER_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_UPPER, target, 
-					     fcode, arglist);
+      return mips_expand_ps_compare_builtin (MIPS_CMP_UPPER, icode,
+					     target, arglist);
 
     /* Paired Single Comparison.  */
     case MIPS_BUILTIN_LOWER_C_F_PS:
@@ -10252,8 +10220,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_LOWER_CABS_NGE_PS:
     case MIPS_BUILTIN_LOWER_CABS_LE_PS:
     case MIPS_BUILTIN_LOWER_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_LOWER, target, 
-					     fcode, arglist);
+      return mips_expand_ps_compare_builtin (MIPS_CMP_LOWER, icode,
+					     target, arglist);
 
     /* Paired Single Comparison.  */
     case MIPS_BUILTIN_ALL_C_F_PS:
@@ -10288,8 +10256,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_ALL_CABS_NGE_PS:
     case MIPS_BUILTIN_ALL_CABS_LE_PS:
     case MIPS_BUILTIN_ALL_CABS_NGT_PS:
-      return mips_expand_ps_compare_builtin (MIPS_CMP_ALL, target, 
-					     fcode, arglist);
+      return mips_expand_ps_compare_builtin (MIPS_CMP_ALL, icode,
+					     target, arglist);
 
     /* Four Single Comparison.  */
     case MIPS_BUILTIN_ANY_C_F_4S:
@@ -10324,8 +10292,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_ANY_CABS_NGE_4S:
     case MIPS_BUILTIN_ANY_CABS_LE_4S:
     case MIPS_BUILTIN_ANY_CABS_NGT_4S:
-      return mips_expand_4s_compare_builtin (MIPS_CMP_ANY, target, 
-					     fcode, arglist);
+      return mips_expand_4s_compare_builtin (MIPS_CMP_ANY, icode,
+					     target, arglist);
 
     /* Four Single Comparison.  */
     case MIPS_BUILTIN_ALL_C_F_4S:
@@ -10360,8 +10328,8 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_ALL_CABS_NGE_4S:
     case MIPS_BUILTIN_ALL_CABS_LE_4S:
     case MIPS_BUILTIN_ALL_CABS_NGT_4S:
-      return mips_expand_4s_compare_builtin (MIPS_CMP_ALL, target, 
-					     fcode, arglist);
+      return mips_expand_4s_compare_builtin (MIPS_CMP_ALL, icode,
+					     target, arglist);
 
     /* Single/Double Compare Absolute.  */
     case MIPS_BUILTIN_CABS_F_S:
@@ -10396,7 +10364,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_CABS_NGE_D:
     case MIPS_BUILTIN_CABS_LE_D:
     case MIPS_BUILTIN_CABS_NGT_D:
-      return mips_expand_compare_builtin (target, fcode, arglist);
+      return mips_expand_scalar_compare_builtin (icode, target, arglist);
 
     /* Conditional Move on True.  */
     case MIPS_BUILTIN_MOVT_C_F_PS:
@@ -10431,8 +10399,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_MOVT_CABS_NGE_PS:
     case MIPS_BUILTIN_MOVT_CABS_LE_PS:
     case MIPS_BUILTIN_MOVT_CABS_NGT_PS:
-      return mips_expand_ps_cond_move_builtin (MIPS_CMP_MOVT, target, 
-					       fcode, arglist);
+      return mips_expand_ps_cond_move_builtin (true, icode, target, arglist);
 
     /* Conditional Move on False.  */
     case MIPS_BUILTIN_MOVF_C_F_PS:
@@ -10467,8 +10434,7 @@ mips_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case MIPS_BUILTIN_MOVF_CABS_NGE_PS:
     case MIPS_BUILTIN_MOVF_CABS_LE_PS:
     case MIPS_BUILTIN_MOVF_CABS_NGT_PS:
-      return mips_expand_ps_cond_move_builtin (MIPS_CMP_MOVF, target, 
-					       fcode, arglist);
+      return mips_expand_ps_cond_move_builtin (false, icode, target, arglist);
 
     default:
       break;
@@ -10654,169 +10620,116 @@ mips_init_builtins (void)
     }
 }
 
-/* This performs a paired single compare, and then a conditional move based
-   on the result of that compare.  CMP_CHOICE is the kind of comparison we
-   want.  TARGET is a suggestion of where to put the result.  FCODE is the
-   function code.  ARGLIST is the list of arguments.  The return value is
-   the result of the conditional move.  */
+/* Expand a __builtin_mips_movt_*_ps() or __builtin_mips_movf_*_ps()
+   function (MOVE_ON_TRUE says which).  ARGLIST is the list of arguments
+   to the function and ICODE says which instruction should be used to
+   compare the first two arguments.  TARGET, if nonnull, suggests a
+   good place to put the result.  */
 
 static rtx
-mips_expand_ps_cond_move_builtin (enum mips_cmp_choice cmp_choice,
-				  rtx target, unsigned int fcode,
-				  tree arglist)
+mips_expand_ps_cond_move_builtin (bool move_on_true, enum insn_code icode,
+				  rtx target, tree arglist)
 {
-  rtx pat;
-  enum insn_code icode;
-  tree arg0;
-  tree arg1;
-  tree arg2;
-  tree arg3;
-  rtx op0;
-  rtx op1;
-  rtx op2;
-  rtx op3;
-  enum machine_mode tmode;
-  enum machine_mode mode0;
-  enum machine_mode mode1;
-  rtx temp_target;
-  rtx src1;
-  rtx src2;
+  rtx cmp_result, op0, op1;
 
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-  arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-  op3 = expand_expr (arg3, NULL_RTX, VOIDmode, 0);
-
-  icode = mips_bdesc[fcode].icode;
-  tmode = insn_data[icode].operand[0].mode;
-  mode0 = insn_data[icode].operand[1].mode;
-  mode1 = insn_data[icode].operand[2].mode;
-
-  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-
-  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  /* temp_target is the result of the comparison.  */
-  temp_target = gen_reg_rtx (tmode);
-
-  pat = GEN_FCN (icode) (temp_target, op0, op1);
-  if (!pat)
-    return 0;
-
-  emit_insn (pat);
+  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
+  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+  emit_insn (GEN_FCN (icode) (cmp_result, op0, op1));
 
   icode = CODE_FOR_mips_cond_move_tf_ps;
-  tmode = insn_data[icode].operand[0].mode;
-
-  if (target == 0
-      || GET_MODE (target) != tmode
-      || !(*insn_data[icode].operand[0].predicate) (target, tmode))
-    target = gen_reg_rtx (tmode);
-
-  /* Let op2 be the same as the tmode */
-  if (!(*insn_data[icode].operand[0].predicate) (op2, tmode))
-    op2 = copy_to_mode_reg (tmode, op2);
-
-  /* Let op3 be the same as the tmode */
-  if (!(*insn_data[icode].operand[0].predicate) (op3, tmode))
-    op3 = copy_to_mode_reg (tmode, op3);
-
-  /* Copy op2 to target */
-  emit_insn (gen_rtx_SET (tmode, target, op2)); 
-
-  switch (cmp_choice)
+  target = mips_prepare_builtin_target (icode, 0, target);
+  if (move_on_true)
     {
-    case MIPS_CMP_MOVT:
-      src1 = op3;
-      src2 = target;
-      break;
-
-    case MIPS_CMP_MOVF:
-      src1 = target;
-      src2 = op3;
-      break;
-
-    default:
-      return 0;
+      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
     }
-
-  emit_insn (gen_mips_cond_move_tf_ps (target, src1, src2, temp_target));
-
+  else
+    {
+      op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+      op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+    }
+  emit_insn (gen_mips_cond_move_tf_ps (target, op0, op1, cmp_result));
   return target;
 }
 
-/* This performs two paired single compares, and returns an boolean value to
-   represent the result of the compare.  CMP_CHOICE is the kind of comparison
-   we want.  TARGET is a suggestion of where to put the result.  FCODE is
-   the builtin function code.  ARGLIST is the list of arguments.  The
-   return value is the result of the compare.  */
+/* Use comparison instruction PAT to set condition-code register REG.
+   If NONZERO_IF_EQUAL_P, return an rtx that is 1 if the new value of
+   REG equals CONSTANT and 0 otherwise.  Return the inverse if
+   !NONZERO_IF_EQUAL_P.  TARGET, if nonnull, suggests a good place
+   for the result.  */
 
-rtx
-mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
-				unsigned int fcode, tree arglist)
+static rtx
+mips_expand_compare_builtin (bool nonzero_if_equal_p, rtx target,
+			     rtx pat, rtx reg, int constant)
 {
-  rtx pat;
-  enum insn_code icode;
-  tree arg0;
-  tree arg1;
-  tree arg2;
-  tree arg3;
-  rtx op0;
-  rtx op1;
-  rtx op2;
-  rtx op3;
-  enum machine_mode tmode;
-  enum machine_mode mode0;
-  enum machine_mode mode1;
-  enum machine_mode mode2;
-  enum machine_mode mode3;
-  rtx temp_target;
-  rtx label1;
-  rtx label2;
-  rtx if_then_else;
-  int compare_value;
+  rtx label1, label2, if_then_else;
 
   if (target == 0 || GET_MODE (target) != SImode)
     target = gen_reg_rtx (SImode);
 
-  icode = mips_bdesc[fcode].icode;
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-  arg3 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (TREE_CHAIN (arglist))));
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  op2 = expand_expr (arg2, NULL_RTX, VOIDmode, 0);
-  op3 = expand_expr (arg3, NULL_RTX, VOIDmode, 0);
-  tmode = insn_data[icode].operand[0].mode;
-  mode0 = insn_data[icode].operand[1].mode;
-  mode1 = insn_data[icode].operand[2].mode;
-  mode2 = insn_data[icode].operand[3].mode;
-  mode3 = insn_data[icode].operand[4].mode;
+  /* First assume that REG == CONSTANT.  */
+  emit_move_insn (target, nonzero_if_equal_p ? const1_rtx : const0_rtx);
 
-  temp_target = gen_reg_rtx (tmode);
+  /* Branch to LABEL1 if REG != CONSTANT.  */
+  emit_insn (pat);
+  label1 = gen_label_rtx ();
+  label2 = gen_label_rtx ();
+  if_then_else
+    = gen_rtx_IF_THEN_ELSE (VOIDmode,
+			    gen_rtx_fmt_ee (NE, GET_MODE (reg),
+					    reg, GEN_INT (constant)),
+			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else));
+  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+			       gen_rtx_LABEL_REF (VOIDmode, label2)));
+  emit_barrier ();
+  emit_label (label1);
 
-  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
+  /* Fix TARGET for REG != CONSTANT.  */
+  emit_move_insn (target, nonzero_if_equal_p ? const0_rtx : const1_rtx);
+  emit_label (label2);
 
-  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
+  return target;
+}
 
-  if (!(*insn_data[icode].operand[3].predicate) (op2, mode2))
-    op2 = copy_to_mode_reg (mode2, op2);
+/* Read two scalar arguments from ARGLIST and use instruction ICODE to
+   compare them.  Return the result as a boolean SImode value.  TARGET,
+   if nonnull, suggests a good place to put the result.  */
 
-  if (!(*insn_data[icode].operand[4].predicate) (op3, mode3))
-    op3 = copy_to_mode_reg (mode3, op3);
+rtx
+mips_expand_scalar_compare_builtin (enum insn_code icode, rtx target,
+				    tree arglist)
+{
+  rtx pat, cmp_result, op0, op1;
 
-  pat = GEN_FCN (icode) (temp_target, op0, op1, op2, op3);
-  if (!pat)
-    return 0;
+  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
+  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+  pat = GEN_FCN (icode) (cmp_result, op0, op1);
+
+  return mips_expand_compare_builtin (false, target, pat, cmp_result, 0);
+}
+
+/* Read four V2SF arguments from ARGLIST and use instruction ICODE to
+   compare them.  Use CMP_CHOICE to convert the four condition codes
+   into an SImode value.  TARGET, if nonnull, suggests a good place
+   to put this value.  */
+
+rtx
+mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice,
+				enum insn_code icode, rtx target,
+				tree arglist)
+{
+  rtx pat, cmp_result, op0, op1, op2, op3;
+  int compare_value;
+
+  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
+  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+  op2 = mips_prepare_builtin_arg (icode, 3, &arglist);
+  op3 = mips_prepare_builtin_arg (icode, 4, &arglist);
+  pat = GEN_FCN (icode) (cmp_result, op0, op1, op2, op3);
 
   /* We fake the value of CCV4 to be:
      0 if all registers are false.
@@ -10841,161 +10754,28 @@ mips_expand_4s_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
       break;
 
     default:
-      return 0;
+      abort ();
     }
 
-  if (cmp_choice == MIPS_CMP_ALL)
-    emit_move_insn (target, const1_rtx);
-  else
-    emit_move_insn (target, const0_rtx);
-
-  emit_insn (pat);
-
-  label1 = gen_label_rtx ();
-  label2 = gen_label_rtx ();
-  if_then_else 
-    = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (NE, CCV4mode, temp_target,
-				            GEN_INT (compare_value)),
-			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
-
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else)); 
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, 
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
-
-  emit_barrier ();
-  emit_label (label1);
-
-  if (cmp_choice == MIPS_CMP_ALL)
-    emit_move_insn (target, const0_rtx);
-  else
-    emit_move_insn (target, const1_rtx);
-
-  emit_label (label2);
-
-  return target;
+  return mips_expand_compare_builtin (cmp_choice == MIPS_CMP_ALL,
+				      target, pat, cmp_result, compare_value);
 }
 
-/* This performs a single float or double float comparison.  TARGET is a
-   suggestion of where to put the result.  FCODE is the builtin function code.
-   ARGLIST is the list of arguments.  The return value is the result of the
-   compare.  */
+/* Like mips_expand_4s_compare_builtin, but compares two V2SF vectors rather
+   than four.  The arguments and return type are otherwise the same. */
 
 rtx
-mips_expand_compare_builtin (rtx target, unsigned int fcode, tree arglist)
+mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice,
+				enum insn_code icode, rtx target,
+				tree arglist)
 {
-  rtx pat;
-  enum insn_code icode;
-  tree arg0;
-  tree arg1;
-  rtx op0;
-  rtx op1;
-  enum machine_mode tmode;
-  enum machine_mode mode0;
-  enum machine_mode mode1;
-  rtx temp_target;
-  rtx label1;
-  rtx label2;
-  rtx if_then_else;
-  enum rtx_code test_code;
-
-  if (target == 0 || GET_MODE (target) != SImode)
-    target = gen_reg_rtx (SImode);
-
-  icode = mips_bdesc[fcode].icode;
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  tmode = insn_data[icode].operand[0].mode;
-  mode0 = insn_data[icode].operand[1].mode;
-  mode1 = insn_data[icode].operand[2].mode;
-
-  temp_target = gen_reg_rtx (tmode);
-
-  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-
-  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  pat = GEN_FCN (icode) (temp_target, op0, op1);
-  if (!pat)
-    return 0;
-
-  emit_move_insn (target, const0_rtx);
-  emit_insn (pat);
-
-  label1 = gen_label_rtx ();
-  label2 = gen_label_rtx ();
-
-  test_code =  NE;
-  if_then_else
-    = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (test_code, CCmode, 
-				            temp_target, const0_rtx),
-			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
-
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else)); 
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, 
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
-
-  emit_barrier ();
-  emit_label (label1);
-  emit_move_insn (target, const1_rtx);
-  emit_label (label2);
-
-  return target;
-}
-
-/* This performs a paired single compare, and returns an boolean value to
-   represent the result of the compare.  CMP_CHOICE is the kind of comparison
-   we want.  TARGET is a suggestion of where to put the result.  FCODE is
-   the builtin function code.  ARGLIST is the list of arguments.  The
-   return value is the result of the compare.  */
-
-rtx
-mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
-				unsigned int fcode, tree arglist)
-{
-  rtx pat;
-  enum insn_code icode;
-  tree arg0;
-  tree arg1;
-  rtx op0;
-  rtx op1;
-  enum machine_mode tmode;
-  enum machine_mode mode0;
-  enum machine_mode mode1;
-  rtx temp_target;
-  rtx label1;
-  rtx label2;
-  rtx if_then_else;
+  rtx pat, cmp_result, op0, op1;
   int compare_value;
 
-  if (target == 0 || GET_MODE (target) != SImode)
-    target = gen_reg_rtx (SImode);
-
-  icode = mips_bdesc[fcode].icode;
-  arg0 = TREE_VALUE (arglist);
-  arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-  op1 = expand_expr (arg1, NULL_RTX, VOIDmode, 0);
-  tmode = insn_data[icode].operand[0].mode;
-  mode0 = insn_data[icode].operand[1].mode;
-  mode1 = insn_data[icode].operand[2].mode;
-
-  temp_target = gen_reg_rtx (tmode);
-
-  if (!(*insn_data[icode].operand[1].predicate) (op0, mode0))
-    op0 = copy_to_mode_reg (mode0, op0);
-
-  if (!(*insn_data[icode].operand[2].predicate) (op1, mode1))
-    op1 = copy_to_mode_reg (mode1, op1);
-
-  pat = GEN_FCN (icode) (temp_target, op0, op1);
-  if (!pat)
-    return 0;
+  cmp_result = mips_prepare_builtin_target (icode, 0, 0);
+  op0 = mips_prepare_builtin_arg (icode, 1, &arglist);
+  op1 = mips_prepare_builtin_arg (icode, 2, &arglist);
+  pat = GEN_FCN (icode) (cmp_result, op0, op1);
 
   /* We fake the value of CCV2 to be:
      0 if all registers are false.
@@ -11019,12 +10799,12 @@ mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
       break;
 
     case MIPS_CMP_UPPER:
-      temp_target = simplify_gen_subreg (CCmode, temp_target, CCV2mode, 4);
+      cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 4);
       compare_value = 0;
       break;
 
     case MIPS_CMP_LOWER:
-      temp_target = simplify_gen_subreg (CCmode, temp_target, CCV2mode, 0);
+      cmp_result = simplify_gen_subreg (CCmode, cmp_result, CCV2mode, 0);
       compare_value = 0;
       break;
 
@@ -11033,41 +10813,11 @@ mips_expand_ps_compare_builtin (enum mips_cmp_choice cmp_choice, rtx target,
       break;
 
     default:
-      return 0;
+      abort ();
     }
 
-  if (cmp_choice == MIPS_CMP_ALL)
-    emit_move_insn (target, const1_rtx);
-  else
-    emit_move_insn (target, const0_rtx);
-
-  emit_insn (pat);
-
-  label1 = gen_label_rtx ();
-  label2 = gen_label_rtx ();
-
-  if_then_else 
-    = gen_rtx_IF_THEN_ELSE (VOIDmode,
-			    gen_rtx_fmt_ee (NE, GET_MODE (temp_target),
-					    temp_target,
-					    GEN_INT (compare_value)),
-			    gen_rtx_LABEL_REF (VOIDmode, label1), pc_rtx);
-
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, if_then_else)); 
-  emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, 
-			       gen_rtx_LABEL_REF (VOIDmode, label2)));
-
-  emit_barrier ();
-  emit_label (label1);
-
-  if (cmp_choice == MIPS_CMP_ALL)
-    emit_move_insn (target, const0_rtx);
-  else
-    emit_move_insn (target, const1_rtx);
-
-  emit_label (label2);
-
-  return target;
+  return mips_expand_compare_builtin (cmp_choice == MIPS_CMP_ALL,
+				      target, pat, cmp_result, compare_value);
 }
 
 #include "gt-mips.h"
