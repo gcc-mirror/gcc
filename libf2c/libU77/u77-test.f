@@ -76,6 +76,9 @@
 
 c consistency-check etime vs. dtime for first call
       r1 = etime (tarray1)
+      if (r1.ne.tarray1(1)+tarray1(2))
+     +     write (6,*) '*** ETIME didn''t return sum of the array: ',
+     +     r1, ' /= ', tarray1(1), '+', tarray1(2)
       r2 = dtime (tarray2)
       if (abs (r1-r2).gt.1.0) write (6,*)
      +     'Results of ETIME and DTIME differ by more than a second:',
