@@ -2306,12 +2306,14 @@ gfc_match_common (void)
 	      as = NULL;
 	    }
 
+	  gfc_gobble_whitespace ();
 	  if (gfc_match_eos () == MATCH_YES)
 	    goto done;
 	  if (gfc_peek_char () == '/')
 	    break;
 	  if (gfc_match_char (',') != MATCH_YES)
 	    goto syntax;
+	  gfc_gobble_whitespace ();
 	  if (gfc_peek_char () == '/')
 	    break;
 	}
