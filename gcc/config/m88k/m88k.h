@@ -1564,6 +1564,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #undef	TYPE_ASM_OP
 #undef	SIZE_ASM_OP
 #undef	WEAK_ASM_OP
+#undef	SET_ASM_OP
 #undef	SKIP_ASM_OP
 #undef	COMMON_ASM_OP
 
