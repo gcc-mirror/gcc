@@ -70,7 +70,7 @@ CXX_LIB2SRCS = $(srcdir)/cp/new.cc $(srcdir)/cp/new1.cc $(srcdir)/cp/new2.cc \
 # Note that it would be nice to move the dependency on g++
 # into the C++ rule, but that needs a little bit of work
 # to do the right thing within all.cross.
-C++ c++: cc1plus
+C++ c++: cc1plus$(exeext)
 
 # Tell GNU make to ignore these if they exist.
 .PHONY: C++ c++
@@ -124,9 +124,9 @@ CXX_SRCS = $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
  $(srcdir)/cp/parse.y $(srcdir)/cp/sig.c $(srcdir)/cp/typeck2.c \
  $(srcdir)/cp/repo.c $(srcdir)/cp/semantics.c
 
-cc1plus: $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o \
+cc1plus$(exeext): $(P) $(CXX_SRCS) $(LIBDEPS) stamp-objlist c-common.o c-pragma.o \
 	$(srcdir)/cp/cp-tree.h $(srcdir)/cp/cp-tree.def
-	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus
+	cd cp; $(MAKE) $(FLAGS_TO_PASS) $(CXX_FLAGS_TO_PASS) ../cc1plus$(exeext)
 #
 # Build hooks:
 
@@ -139,40 +139,40 @@ c++.info:
 c++.dvi:
 
 # C++ language-support library pieces for libgcc.
-tinfo.o: cc1plus $(srcdir)/cp/tinfo.cc
+tinfo.o: cc1plus$(exeext) $(srcdir)/cp/tinfo.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/tinfo.cc
-tinfo2.o: cc1plus $(srcdir)/cp/tinfo2.cc
+tinfo2.o: cc1plus$(exeext) $(srcdir)/cp/tinfo2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/tinfo2.cc
-exception.o: cc1plus $(srcdir)/cp/exception.cc
+exception.o: cc1plus$(exeext) $(srcdir)/cp/exception.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c -fexceptions $(srcdir)/cp/exception.cc
-new.o: cc1plus $(srcdir)/cp/new.cc
+new.o: cc1plus$(exeext) $(srcdir)/cp/new.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new.cc
-opnew.o: cc1plus $(srcdir)/cp/new1.cc
+opnew.o: cc1plus$(exeext) $(srcdir)/cp/new1.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new1.cc -DL_op_new -o opnew.o
-opnewnt.o: cc1plus $(srcdir)/cp/new1.cc
+opnewnt.o: cc1plus$(exeext) $(srcdir)/cp/new1.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new1.cc -DL_op_newnt -o opnewnt.o
-opvnew.o: cc1plus $(srcdir)/cp/new2.cc
+opvnew.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vnew -o opvnew.o
-opvnewnt.o: cc1plus $(srcdir)/cp/new2.cc
+opvnewnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vnewnt -o opvnewnt.o
-opdel.o: cc1plus $(srcdir)/cp/new2.cc
+opdel.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_delete -o opdel.o
-opdelnt.o: cc1plus $(srcdir)/cp/new2.cc
+opdelnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_delnt -o opdelnt.o
-opvdel.o: cc1plus $(srcdir)/cp/new2.cc
+opvdel.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vdel -o opvdel.o
-opvdelnt.o: cc1plus $(srcdir)/cp/new2.cc
+opvdelnt.o: cc1plus$(exeext) $(srcdir)/cp/new2.cc
 	$(GCC_FOR_TARGET) $(LIBGCC2_CFLAGS) $(INCLUDES) \
 	  -c $(srcdir)/cp/new2.cc -DL_op_vdelnt -o opvdelnt.o
 

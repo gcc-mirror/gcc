@@ -139,7 +139,7 @@ all: all.indirect
 #
 # Now figure out from those variables how to compile and link.
 
-all.indirect: f/Makefile f771
+all.indirect: f/Makefile f771$(exeext)
 
 # IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC
@@ -253,9 +253,9 @@ F77_OBJS = \
 OBJS = `cat stamp-objlist | sed -e "s:  : :g" -e "s: : f/:g"`
 OBJDEPS = stamp-objlist
 
-compiler: f771
+compiler: f771$(exeext)
 # This is now meant to be built in the top level directory, not `f':
-f771: $(P) f/Makefile $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)
+f771$(exeext): $(P) f/Makefile $(F77_OBJS) $(OBJDEPS) $(LIBDEPS)
 	rm -f f771$(exeext)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) $(F771_LDFLAGS) -o $@ \
 	      $(F77_OBJS) $(OBJS) $(LIBS)
@@ -268,7 +268,7 @@ f/Makefile:
 
 Makefile: $(srcdir)/f/Makefile.in $(srcdir)/configure
 
-native: f771
+native: f771$(exeext)
 #
 # Compiling object files from source files.
 

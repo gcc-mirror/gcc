@@ -125,7 +125,7 @@ all: all.indirect
 #
 # Now figure out from those variables how to compile and link.
 
-all.indirect: Makefile ../cc1plus
+all.indirect: Makefile ../cc1plus$(exeext)
 
 # IN_GCC tells obstack.h that we are using gcc's <stddef.h> file.
 INTERNAL_CFLAGS = $(CROSS) -DIN_GCC @extra_c_flags@
@@ -172,15 +172,15 @@ CXX_OBJS = call.o decl.o errfn.o expr.o pt.o sig.o typeck2.o \
 OBJS = `cat ../stamp-objlist` ../c-common.o ../c-pragma.o
 OBJDEPS = ../stamp-objlist ../c-common.o ../c-pragma.o
 
-compiler: ../cc1plus
-../cc1plus: $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)
+compiler: ../cc1plus$(exeext)
+../cc1plus$(exeext): $(P) $(CXX_OBJS) $(OBJDEPS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
 	      $(CXX_OBJS) $(OBJS) $(LIBS)
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
-native: config.status ../cc1plus
+native: config.status ../cc1plus$(exeext)
 #
 # Compiling object files from source files.
 
@@ -202,7 +202,7 @@ parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(BIG_SWITCHFLAG) \
   `echo $(PARSE_C) | sed 's,^\./,,'`
 
-CONFLICTS = expect 19 shift/reduce conflicts and 39 reduce/reduce conflicts.
+CONFLICTS = expect 21 shift/reduce conflicts and 49 reduce/reduce conflicts.
 $(PARSE_H) : $(PARSE_C)
 $(PARSE_C) : $(srcdir)/parse.y
 	@echo $(CONFLICTS)
