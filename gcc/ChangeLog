@@ -1,3 +1,7 @@
+Mon Mar  9 14:10:23 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (MUST_PASS_IN_STACK): Define.
+
 Sun Mar  8 13:01:56 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* final.c (shorten_branches): Fix minor logic error in
