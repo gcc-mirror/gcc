@@ -932,7 +932,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
       return;
 
     case WITH_SIZE_EXPR:
-      /* WITH_SIZE_EXPR is a pass-through reference to it's first argument,
+      /* WITH_SIZE_EXPR is a pass-through reference to its first argument,
 	 and an rvalue reference to its second argument.  */
       get_expr_operands (stmt, &TREE_OPERAND (expr, 1), opf_none, prev_vops);
       get_expr_operands (stmt, &TREE_OPERAND (expr, 0), flags, prev_vops);
