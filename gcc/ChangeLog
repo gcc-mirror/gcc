@@ -1,3 +1,8 @@
+2000-02-09  Robert Lipe  <robertl@sco.com>
+
+	* Makefile.in (gen-protos): Don't depend on HOST_LIBDEPS.
+	Don't link with HOST_LIBS. 
+
 2000-02-09  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* configure.in: Correct --help text for --with-dwarf2.
