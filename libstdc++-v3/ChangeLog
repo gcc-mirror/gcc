@@ -1,3 +1,18 @@
+2000-09-06  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+	
+	* acinclude.m4 (GLIBCPP_ENABLE_CSTDIO): Force glibc_satisfactory
+	to no, so that libstdc++-v3's libio will be built on glibc-2.2
+	systems. 
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* */Makefile.in: Regenerate.
+
+	* bits/std_cwctype.h: Put in temporary hack to work around -O2 +
+	glibc 2.1.x unsigned errors. Or disable -Werror by default...
+
+	* testsuite/23_containers/vector_element_access.cc: New file.
+	* bits/stl_config.h (__STL_THROW_RANGE_ERRORS): Define.
+
 2000-09-06  Levente Farkas  <lfarkas@mindmaker.hu>
 
 	* bits/string.tcc: Fix up more parameter names.

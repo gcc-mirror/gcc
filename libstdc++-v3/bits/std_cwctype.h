@@ -34,6 +34,12 @@
 #ifndef _CPP_CWCTYPE
 #define _CPP_CWCTYPE 1
 
+// XXX 2000-09-06 get unsigned warnings in glibc 2.1.x 
+// XXX either remove -Werror or do this hackery
+#if __GLIBC__ >= 2 && __GLIBC_MINOR__ < 2 && defined(__OPTIMIZE__)
+#undef __OPTIMIZE__
+#endif
+
 # pragma GCC system_header
 # include_next <wctype.h>
 

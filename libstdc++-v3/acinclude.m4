@@ -1235,6 +1235,10 @@ AC_DEFUN(GLIBCPP_ENABLE_CSTDIO, [
 	    ;;
         esac
 
+	# XXX at the moment, admit defeat and force the recompilation
+        # XXX of glibc even on glibc-2.2 systems, because libio is not synched.
+        glibc_satisfactory=no	
+
   	if test x$glibc_satisfactory = x"yes"; then
 	  need_libio=no
 	  need_xtra_libio=no

@@ -266,6 +266,7 @@
 #   define __STL_HAS_NAMESPACES
 #   define __STL_USE_NAMESPACES
 #   define __STL_USE_EXCEPTIONS
+#   define __STL_THROW_RANGE_ERRORS 
 #   define __STL_CAN_THROW_RANGE_ERRORS 
 #   define __STL_USE_STD_ALLOCATORS 
 #   define __USE_MALLOC // As the "underlying allocator"
