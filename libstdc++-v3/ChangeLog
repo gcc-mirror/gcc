@@ -1,3 +1,8 @@
+2004-06-15  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/hashtable.h: Trivial formatting fixes.
+	* include/ext/rb_tree: Likewise.
+
 2004-06-14  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/hash_map: Trivial formatting fixes.

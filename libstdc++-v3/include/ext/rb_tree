@@ -1,6 +1,6 @@
 // rb_tree extension -*- C++ -*-
 
-// Copyright (C) 2002 Free Software Foundation, Inc.
+// Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -81,17 +81,18 @@ namespace __gnu_cxx
    */
   template <class _Key, class _Value, class _KeyOfValue, class _Compare,
 	    class _Alloc = allocator<_Value> >
-  struct rb_tree : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
-  {
-    typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
-    typedef typename _Base::allocator_type allocator_type;
+    struct rb_tree
+    : public _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc>
+    {
+      typedef _Rb_tree<_Key, _Value, _KeyOfValue, _Compare, _Alloc> _Base;
+      typedef typename _Base::allocator_type allocator_type;
 
-    rb_tree(const _Compare& __comp = _Compare(),
-	    const allocator_type& __a = allocator_type())
+      rb_tree(const _Compare& __comp = _Compare(),
+	      const allocator_type& __a = allocator_type())
       : _Base(__comp, __a) { }
 
-    ~rb_tree() { }
-  };
+      ~rb_tree() { }
+    };
 } // namespace __gnu_cxx
 
 #endif
