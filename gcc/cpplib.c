@@ -3246,7 +3246,7 @@ convert_string (pfile, result, in, limit, handle_escapes)
 	  if (handle_escapes)
 	    {
 	      char *bpc = (char *) in;
-	      int i = (U_CHAR) cpp_parse_escape (pfile, &bpc, 0x00ffU);
+	      int i = (U_CHAR) cpp_parse_escape (pfile, &bpc, 0x00ff);
 	      in = (U_CHAR *) bpc;
 	      if (i >= 0)
 		*result++ = (U_CHAR)c;

@@ -1,3 +1,7 @@
+Tue Dec  8 11:58:51 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cpplib.c (convert_string): Use `0x00ff', not `0x00ffU'.
+
 Tue Dec  8 09:28:36 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* dbxout.c: If USG is defined use gstab.h, even if HAVE_STAB_H is set.
