@@ -1,3 +1,8 @@
+2002-09-11  Matthias Klose  <doko@debian.org>
+
+	* Makefile.am: Revert the previous patch.
+	* Makefile.in: Regenerated.
+
 2002-09-10  Matthias Klose  <doko@debian.org>
 
 	* fastjar.texi: New.

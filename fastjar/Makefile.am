@@ -58,16 +58,6 @@ grepjar_DEPENDENCIES = $(ZDEPS) $(LIBIBERTY)
 
 AM_CFLAGS = @fastjar_warn_cflags@
 
-MAKEINFO += -I $(srcdir)/../gcc/doc/include
-TEXINFO_TEX = $(srcdir)/../gcc/doc/include/texinfo.tex
-info_TEXINFOS = fastjar.texi
-fastjar_TEXINFOS = \
-	$(srcdir)/../gcc/doc/include/gcc-common.texi \
-	$(srcdir)/../gcc/doc/include/fdl.texi \
-	$(srcdir)/../gcc/doc/include/gpl.texi
-man_MANS = jar.1 grepjar.1
-EXTRA_DIST = $(man_MANS)
-
 TEXI2POD = perl $(srcdir)/../contrib/texi2pod.pl
 POD2MAN = pod2man --center="GNU" --release="gcc-@gcc_version@"
 
