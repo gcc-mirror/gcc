@@ -1,3 +1,34 @@
+2000-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CPTI_VTABLE_INDEX_TYPE): New macro.
+	(CPTI_CLASS_STAR_TYPE): Remove.
+	(vtable_index_type): Likewise.
+	(class_star_type_node): Remove.
+	(TYPE_PTRMEMFUNC_FN_TYPE): Adjust for the new ABI.
+	(build_binary_op_nodefault): Remove.
+	* call.c (build_new_op): Use build_binary_op instead of
+	build_binary_op_nodefault.
+	* decl.c (init_decl_processing): Remove class_star_type_node
+	initialization.  Make delta_type_node ptrdiff_type_node under the
+	new ABI.  Initialize vtable_index_type.
+	(build_ptrmemfunc_type): Build different structures for the new
+	ABI.
+	(build_enumerator): Use build_binary_op instead of
+	build_binary_op_nodefault.
+	* method.c (build_overload_value): Mangle pointers-to-members
+	appropriately under the new ABI.
+	* typeck.c (build_array_ref): Use build_binary_op instead of
+	build_binary_op_nodefault.
+	(get_member_function_from_ptrfunc): Adjust for the new ABI.
+	(build_binary_op_nodefault): Rename to ...
+	(build_binary_op): ... this.  Remove old version.  Adjust for
+	pointer-to-member comparisons under the new ABI.
+	(build_ptrmemfunc1): Remove dead code.  Adjust for the new ABI.
+	(build_ptrmemfunc): Adjust for the new ABI.
+	(expand_ptrmemfunc_cst): Likewise.
+	(delta2_from_ptrmemfunc): Assert that we're not using the new ABI.
+	(pfn_from_ptrmemfunc): Adjust for the new ABI.
+	
 2000-02-21  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* call.c (build_object_call): Compress consecutive calls to

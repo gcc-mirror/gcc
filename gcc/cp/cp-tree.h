@@ -517,6 +517,7 @@ enum cp_tree_index
     CPTI_WCHAR_DECL,
     CPTI_VTABLE_ENTRY_TYPE,
     CPTI_DELTA_TYPE,
+    CPTI_VTABLE_INDEX_TYPE,
     CPTI_CLEANUP_TYPE,
 
     CPTI_TI_DESC_TYPE,
@@ -532,7 +533,6 @@ enum cp_tree_index
     CPTI_PTMD_DESC_TYPE,
     CPTI_BASE_DESC_TYPE,
     
-    CPTI_CLASS_STAR_TYPE,
     CPTI_CLASS_TYPE,
     CPTI_RECORD_TYPE,
     CPTI_UNION_TYPE,
@@ -601,7 +601,12 @@ extern tree cp_global_trees[CPTI_MAX];
 #define void_zero_node			cp_global_trees[CPTI_VOID_ZERO]
 #define wchar_decl_node			cp_global_trees[CPTI_WCHAR_DECL]
 #define vtable_entry_type		cp_global_trees[CPTI_VTABLE_ENTRY_TYPE]
+/* The type used to represent an offset by which to adjust the `this'
+   pointer in pointer-to-member types and, when not using vtable
+   thunks, in vtables.  */
 #define delta_type_node			cp_global_trees[CPTI_DELTA_TYPE]
+/* The type used to represent an index into the vtable.  */
+#define vtable_index_type               cp_global_trees[CPTI_VTABLE_INDEX_TYPE]
 
 #define ti_desc_type_node		cp_global_trees[CPTI_TI_DESC_TYPE]
 #define bltn_desc_type_node		cp_global_trees[CPTI_BLTN_DESC_TYPE]
@@ -616,7 +621,6 @@ extern tree cp_global_trees[CPTI_MAX];
 #define ptmd_desc_type_node		cp_global_trees[CPTI_PTMD_DESC_TYPE]
 #define base_desc_type_node		cp_global_trees[CPTI_BASE_DESC_TYPE]
 
-#define class_star_type_node		cp_global_trees[CPTI_CLASS_STAR_TYPE]
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
 #define record_type_node		cp_global_trees[CPTI_RECORD_TYPE]
 #define union_type_node			cp_global_trees[CPTI_UNION_TYPE]
@@ -2498,12 +2502,27 @@ extern int flag_new_for_scope;
    function.
 
    (Of course, the exact values may differ depending on the mangling
-   scheme, sizes of types, and such.).  */
+   scheme, sizes of types, and such.).  
+
+   Under the new ABI, we do:
+
+     struct {
+       __P __pfn;
+       ptrdiff_t __delta;
+     };
+
+   (We don't need DELTA2, because the vtable is always the first thing
+   in the object.)  If the function is virtual, then PFN is one plus
+   twice the index into the vtable; otherwise, it is just a pointer to
+   the function.  */
      
 /* Get the POINTER_TYPE to the METHOD_TYPE associated with this
    pointer to member function.  TYPE_PTRMEMFUNC_P _must_ be true,
    before using this macro.  */
-#define TYPE_PTRMEMFUNC_FN_TYPE(NODE) (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (NODE)))))))
+#define TYPE_PTRMEMFUNC_FN_TYPE(NODE) \
+  (flag_new_abi                       \
+   ? (TREE_TYPE (TYPE_FIELDS (NODE))) \
+   : (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (TREE_CHAIN (TREE_CHAIN (TYPE_FIELDS (NODE))))))))
 
 /* Returns `A' for a type like `int (A::*)(double)' */
 #define TYPE_PTRMEMFUNC_OBJECT_TYPE(NODE) \
@@ -4341,7 +4360,6 @@ extern tree build_function_call_maybe		PARAMS ((tree, tree));
 extern tree convert_arguments			PARAMS ((tree, tree, tree, int));
 extern tree build_x_binary_op			PARAMS ((enum tree_code, tree, tree));
 extern tree build_binary_op			PARAMS ((enum tree_code, tree, tree));
-extern tree build_binary_op_nodefault		PARAMS ((enum tree_code, tree, tree, enum tree_code));
 extern tree build_x_unary_op			PARAMS ((enum tree_code, tree));
 extern tree build_unary_op			PARAMS ((enum tree_code, tree, int));
 extern tree unary_complex_lvalue		PARAMS ((enum tree_code, tree));

@@ -222,7 +222,6 @@ tree error_mark_list;
 	tree __ptmf_desc_array_type, __ptmd_desc_array_type;
 #endif
 
-	tree class_star_type_node;
 	tree class_type_node, record_type_node, union_type_node, enum_type_node;
 	tree unknown_type_node;
 
@@ -6207,14 +6206,17 @@ init_decl_processing ()
   int_array_type_node
     = build_array_type (integer_type_node, array_domain_type);
 
-  /* This is just some anonymous class type.  Nobody should ever
-     need to look inside this envelope.  */
-  class_star_type_node = build_pointer_type (make_aggr_type (RECORD_TYPE));
-
-  if (flag_huge_objects)
+  if (flag_new_abi)
+    delta_type_node = ptrdiff_type_node;
+  else if (flag_huge_objects)
     delta_type_node = long_integer_type_node;
   else
     delta_type_node = short_integer_type_node;
+
+  if (flag_new_abi)
+    vtable_index_type = ptrdiff_type_node;
+  else
+    vtable_index_type = delta_type_node;
 
   default_function_type
     = build_function_type (integer_type_node, NULL_TREE);
@@ -8804,27 +8806,36 @@ build_ptrmemfunc_type (type)
     unqualified_variant
       = build_ptrmemfunc_type (TYPE_MAIN_VARIANT (type));
 
-  u = make_aggr_type (UNION_TYPE);
-  SET_IS_AGGR_TYPE (u, 0);
-  fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
-  fields[1] = build_lang_decl (FIELD_DECL, delta2_identifier,
-			       delta_type_node);
-  finish_builtin_type (u, "__ptrmemfunc_type", fields, 1, ptr_type_node);
-  TYPE_NAME (u) = NULL_TREE;
-
   t = make_aggr_type (RECORD_TYPE);
-
   /* Let the front-end know this is a pointer to member function...  */
   TYPE_PTRMEMFUNC_FLAG (t) = 1;
   /* ... and not really an aggregate.  */
   SET_IS_AGGR_TYPE (t, 0);
 
-  fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
-			       delta_type_node);
-  fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
-			       delta_type_node);
-  fields[2] = build_lang_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
-  finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
+  if (!flag_new_abi)
+    {
+      u = make_aggr_type (UNION_TYPE);
+      SET_IS_AGGR_TYPE (u, 0);
+      fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
+      fields[1] = build_lang_decl (FIELD_DECL, delta2_identifier,
+				   delta_type_node);
+      finish_builtin_type (u, "__ptrmemfunc_type", fields, 1, ptr_type_node);
+      TYPE_NAME (u) = NULL_TREE;
+
+      fields[0] = build_lang_decl (FIELD_DECL, delta_identifier,
+				   delta_type_node);
+      fields[1] = build_lang_decl (FIELD_DECL, index_identifier,
+				   delta_type_node);
+      fields[2] = build_lang_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
+      finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
+    }
+  else
+    {
+      fields[0] = build_lang_decl (FIELD_DECL, pfn_identifier, type);
+      fields[1] = build_lang_decl (FIELD_DECL, delta_identifier,
+				   delta_type_node);
+      finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
+    }
 
   /* Zap out the name so that the back-end will give us the debugging
      information for this anonymous RECORD_TYPE.  */
@@ -12777,10 +12788,9 @@ build_enumerator (name, value, enumtype)
 	      /* The next value is the previous value ... */
 	      prev_value = DECL_INITIAL (TREE_VALUE (TYPE_VALUES (enumtype)));
 	      /* ... plus one.  */
-	      value = build_binary_op_nodefault (PLUS_EXPR,
-						 prev_value,
-						 integer_one_node,
-						 PLUS_EXPR);
+	      value = build_binary_op (PLUS_EXPR,
+				       prev_value,
+				       integer_one_node);
 
 	      if (tree_int_cst_lt (value, prev_value))
 		cp_error ("overflow in enumeration values at `%D'", name);
