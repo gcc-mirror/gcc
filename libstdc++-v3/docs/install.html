@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL="home" HREF="http://sourceware.cygnus.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $ -->
+<!-- $Id: install.html,v 1.2 2000/06/19 22:20:15 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -48,12 +48,13 @@
       GCC snapshots can be had from one of the sites on their
       <A HREF="http://gcc.gnu.org/mirrors.html">mirror list</A>.
    </P>
-   <P>In addition, if you plan to modify the makefiles or regenerate the
-      configure scripts:  automake (version 1.4 from Cygnus, not the one on
-      the net.  It's available 
-<A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/000215-automake.tar.gz">here</A>
-      and autoconf (version 2.13 and higher), which is available 
-    <A HREF="ftp://ftp.gnu.org/gnu/autoconf/autoconf-2.13.tar.gz">here</A>.
+   <P>In addition, if you plan to modify the makefiles or regenerate
+      the configure scripts you'll need the nuevo automake (version
+      1.4 from Cygnus, not the one on the net.  In addition, libtool
+      and autoconf are also required to be installed in the same
+      location as the new automake: you can get them all in one
+      easy-to-use tarball 
+<A HREF="ftp://sourceware.cygnus.com/pub/libstdc++/20000619-maintainer-tools.tar.gz"> here</A>.
    </P>
    <P>If you don't have bash, and want to run <TT>'make check'</TT> to
       test your build, you'll need to get bash 2.x.  Also recommended
@@ -67,7 +68,8 @@
    obtain maximum benefit from this, binutils after this date should
    also be used (bugs were fixed with c++ exception handling related
    to this change in libstdc++-v3.) The version of these tools should
-   be: <TT>2.10.90</TT>
+   be: <TT>2.10.90</TT>, and you can get snapshots (as well as releases) of binutils 
+<A HREF="ftp://sourceware.cygnus.com/pub/binutils"> here</A>.
    </P>
  
    <P>Finally, if you are using cygwin to compile libstdc++-v3 on
@@ -379,7 +381,7 @@ To rebuild just libstdc++, use:
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sourceware.cygnus.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.1 2000/04/21 20:33:30 bkoz Exp $
+<BR> $Id: install.html,v 1.2 2000/06/19 22:20:15 bkoz Exp $
 </EM></P>
 
 

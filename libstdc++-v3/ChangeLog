@@ -1,3 +1,15 @@
+2000-06-20  Anthony Williams  <anthony@anthonyw.cjb.net>
+
+	* bits/string.tcc: Fix find.
+	* testsuite/21_strings/find.cc: Patch.
+	
+2000-06-20  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* docs/install.html: Update where to get automake, where to get
+	binutils.
+	* acinclude.m4: Need -fno-builtins too, so gcc doesn't recognize
+	builtins.
+
 2000-06-19  Benjamin Kosnik  <bkoz@soma.redhat.com>
 
 	* acinclude.m4 ((GLIBCPP_CHECK_MATH_SUPPORT): Revert last change.
