@@ -611,12 +611,12 @@ expand_prologue ()
 	      if (!regs_ever_live[5])
 		{
 		  regs_ever_live[5] = 1;
-		  zero_dreg = gen_rtx (REG, HImode, 5);
+		  zero_areg = gen_rtx (REG, HImode, 5);
 		}
 	      if (!regs_ever_live[6])
 		{
 		  regs_ever_live[6] = 1;
-		  zero_dreg = gen_rtx (REG, HImode, 6);
+		  zero_areg = gen_rtx (REG, HImode, 6);
 		}
 	    }
 
@@ -862,16 +862,6 @@ call_address_operand (op, mode)
      enum machine_mode mode;
 {
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
-}
-
-/* Return true if OP is an indirect memory operand, the "bset" and "bclr"
-   insns use this predicate.  */
-int
-indirect_memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  return (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == REG);
 }
 
 /* Return true if OP is a memory operand with a constant address.

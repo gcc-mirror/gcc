@@ -614,10 +614,15 @@ extern struct rtx_def *function_arg();
 #define CONSTANT_ADDRESS_P(X)   CONSTANT_P (X)
 
 /* Extra constraints.  */
+#define OK_FOR_R(OP) \
+   (GET_CODE (OP) == MEM					\
+    && GET_MODE (OP) == QImode					\
+    && REG_P (XEXP (OP, 0)))
  
 /* Q is used for sp + <something> in the {zero,sign}_extendpsisi2 patterns.  */
 #define EXTRA_CONSTRAINT(OP, C) \
- ((C) == 'S' ? GET_CODE (OP) == SYMBOL_REF : \
+ ((C) == 'R' ? OK_FOR_R (OP) : \
+  (C) == 'S' ? GET_CODE (OP) == SYMBOL_REF : \
   (C) == 'Q' ? GET_CODE (OP) == PLUS : 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
