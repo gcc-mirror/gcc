@@ -120,6 +120,8 @@ static int toc_hash_eq PARAMS ((const void *, const void *));
 static int toc_hash_mark_entry PARAMS ((void **, void *));
 static void toc_hash_mark_table PARAMS ((void *));
 static int constant_pool_expr_1 PARAMS ((rtx, int *, int *));
+static void rs6000_free_machine_status (struct function *);
+static void rs6000_init_machine_status (struct function *);
 
 /* Default register names.  */
 char rs6000_reg_names[][8] =
