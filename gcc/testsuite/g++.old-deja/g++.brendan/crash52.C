@@ -10,5 +10,4 @@ public:
 
 A &f(A &a) {// ERROR -  new decl.*
   std::cout << "Blah\n";
-} // ERROR - non-void function
-
+}
