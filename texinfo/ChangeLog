@@ -1,3 +1,8 @@
+Tue Oct  7 10:25:22 1997  Manfred Hollstein  (manfred@lts.sel.alcatel.de)
+
+	* info/man.c (SIGCHLD): Define to SIGCLD if <sys/signal.h>
+	fails to provide it.
+
 Wed Sep 17 23:56:11 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* util/install-info.c: Only provide an external decl for strrchr
