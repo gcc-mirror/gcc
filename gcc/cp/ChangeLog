@@ -1,3 +1,8 @@
+2002-04-30  Paul Eggert  <eggert@twinsun.com>
+
+	* parse.y (nomods_initdcl0): Do not move stack entries
+	when setting things up as initdcl0_innards expects.
+
 2002-04-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/6477
