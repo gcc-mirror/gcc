@@ -1,3 +1,9 @@
+2002-01-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* unwind-dw2-fde-glibc.c: If inhibit_libc, use __register_frame*
+	registry only.
+	* crtstuff.c: Likewise.
+
 2002-01-25  Kazu Hirata  <kazu@hxi.com>
 
 	* config/h8300/h8300.md (negation patterns): Tighten

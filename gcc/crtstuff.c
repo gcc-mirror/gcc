@@ -67,7 +67,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 
 #if defined(OBJECT_FORMAT_ELF) && defined(HAVE_LD_EH_FRAME_HDR) \
-    && !defined(CRTSTUFFT_O) \
+    && !defined(inhibit_libc) && !defined(CRTSTUFFT_O) \
     && defined(__GLIBC__) && __GLIBC__ >= 2
 #include <link.h>
 # if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2) \
