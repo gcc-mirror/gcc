@@ -403,20 +403,20 @@ fi
 
 if [ -r ${LIB}/$file ]; then
   echo Fixing $file
-sed -e '/size_t.*;/i\
+sed -e '/[	 ]size_t.*;/i\
 #ifndef _GCC_SIZE_T\
 #define _GCC_SIZE_T' \
-    -e '/size_t.*;/a\
+    -e '/[	 ]size_t.*;/a\
 #endif' \
-    -e '/ptrdiff_t.*;/i\
+    -e '/[	 ]ptrdiff_t.*;/i\
 #ifndef _GCC_PTRDIFF_T\
 #define _GCC_PTRDIFF_T' \
-    -e '/ptrdiff_t.*;/a\
+    -e '/[	 ]ptrdiff_t.*;/a\
 #endif' \
-    -e '/wchar_t.*;/i\
+    -e '/[	 ]wchar_t.*;/i\
 #ifndef _GCC_WCHAR_T\
 #define _GCC_WCHAR_T' \
-    -e '/wchar_t.*;/a\
+    -e '/[	 ]wchar_t.*;/a\
 #endif' ${LIB}/$file > ${LIB}/${file}.sed
   rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
   if cmp $file ${LIB}/$file >/dev/null 2>&1; then
