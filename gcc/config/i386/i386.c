@@ -388,7 +388,6 @@ static void put_condition_code PARAMS ((enum rtx_code, enum machine_mode,
 				       int, int, FILE *));
 static enum rtx_code unsigned_comparison PARAMS ((enum rtx_code code));
 static rtx ix86_expand_int_compare PARAMS ((enum rtx_code, rtx, rtx));
-static enum machine_mode ix86_fp_compare_mode PARAMS ((enum rtx_code));
 static enum rtx_code ix86_prepare_fp_compare_args PARAMS ((enum rtx_code,
 							   rtx *, rtx *));
 static rtx gen_push PARAMS ((rtx));
@@ -4635,7 +4634,7 @@ ix86_expand_int_compare (code, op0, op1)
 /* Figure out whether to use ordered or unordered fp comparisons.
    Return the appropriate mode to use.  */
 
-static enum machine_mode
+enum machine_mode
 ix86_fp_compare_mode (code)
      enum rtx_code code;
 {

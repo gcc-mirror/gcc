@@ -842,46 +842,91 @@ insn_dependent_p_1 (x, pat, data)
    will not be used, which we ignore.  */
 
 rtx
-single_set (insn)
+single_set_1 (insn)
      rtx insn;
 {
   rtx set;
+  rtx pat = PATTERN (insn);
   int i;
   
-  if (! INSN_P (insn))
-    return 0;
-
-  if (GET_CODE (PATTERN (insn)) == SET)
-    return PATTERN (insn);
-  
-  else if (GET_CODE (PATTERN (insn)) == PARALLEL)
+  if (GET_CODE (pat) == PARALLEL)
     {
-      for (i = 0, set = 0; i < XVECLEN (PATTERN (insn), 0); i++)
+      rtx x, sub;
+      /* This part is is performance critical for targets that use a lot of
+	 parallels, such as i386.  We want to accept as single set
+	 instructions even an instructions with multiple sets where only
+	 one has live result, but we attempt to delay this tests only for
+	 multiple set instructions to reduce amount of calls to
+	 find_reg_note and side_effects_p.
+       
+	 We expect the "common" instruction to be parallel with first SET
+	 followed by the clobbers.  So first we get the set, then look
+	 if it is followed by USE or CLOBBER. If so, we just return expect
+	 no SETs after these.  When SET is followed by another SET, we
+	 continue by the clomplex loop trought all members of PARALLEL.
+       */
+#ifdef ENABLE_CHECKING
+      if (XVECLEN (pat, 0) < 2)
+	abort ();
+#endif
+      set = XVECEXP (pat, 0, 0);
+      switch (GET_CODE (set))
 	{
-	  rtx sub = XVECEXP (PATTERN (insn), 0, i);
-
-	  switch (GET_CODE (sub))
-	    {
-	    case USE:
-	    case CLOBBER:
-	      break;
-
-	    case SET:
-	      if (! find_reg_note (insn, REG_UNUSED, SET_DEST (sub))
-		  || side_effects_p (sub))
-		{
-		  if (set)
-		    return 0;
-		  else
-		    set = sub;
-		}
-	      break;
-
-	    default:
-	      return 0;
-	    }
+#ifdef ENABLE_CHECKING
+	  case USE:
+	  case CLOBBER:
+	    /* Instruction should not consist only from USEs and CLOBBERS,
+	       since then gcc is allowed to remove it entirely.  In case
+	       something else is present, it should be first in the pattern.  */
+	    abort();
+#endif
+	  case SET:
+	    break;
+	  default:
+	    return NULL_RTX;
 	}
-      return set;
+      x = XVECEXP (pat, 0, 1);
+      switch (GET_CODE (x))
+	{
+	case USE:
+	case CLOBBER:
+#ifdef ENABLE_CHECKING
+	  /* The USEs and CLOBBERs should always come last in the pattern.  */
+	  for (i = XVECLEN (pat, 0) - 1; i > 1; i--)
+	    if (GET_CODE (XVECEXP (pat, 0, i)) != USE
+		&& GET_CODE (XVECEXP (pat, 0, i)) != CLOBBER)
+	      abort();
+#endif
+	    return set;
+	case SET:
+	  /* Multiple set insns - we are off the critical path now.  */
+	  for (i = XVECLEN (pat, 0) - 1; i > 0; i--)
+	    {
+	      sub = XVECEXP (pat, 0, i);
+	      switch GET_CODE (sub)
+		{
+		case USE:
+		case CLOBBER:
+		  break;
+
+		case SET:
+		  if (!set
+		      || (find_reg_note (insn, REG_UNUSED, SET_DEST (set))
+			  && side_effects_p (set)))
+		    set = sub;
+		  else if (! find_reg_note (insn, REG_UNUSED, SET_DEST (sub))
+			   || side_effects_p (sub))
+		    return NULL_RTX;
+		  break;
+
+		default:
+		  return NULL_RTX;
+		}
+	    }
+	  return set;
+	default:
+	  return NULL_RTX;
+	}
     }
   
   return 0;

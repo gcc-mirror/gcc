@@ -1329,6 +1329,12 @@ extern void set_unique_reg_note         PARAMS ((rtx, enum reg_note, rtx));
 
 /* Functions in rtlanal.c */
 
+/* Single set is implemented as macro for performance reasons.  */
+#define single_set(I) (INSN_P (I) \
+		       ? (GET_CODE (PATTERN (I)) == SET \
+			  ? PATTERN (I) : single_set_1 (I)) \
+		       : NULL_RTX)
+
 extern int rtx_unstable_p		PARAMS ((rtx));
 extern int rtx_varies_p			PARAMS ((rtx));
 extern int rtx_addr_varies_p		PARAMS ((rtx));
@@ -1347,7 +1353,7 @@ extern int no_jumps_between_p		PARAMS ((rtx, rtx));
 extern int modified_in_p		PARAMS ((rtx, rtx));
 extern int insn_dependent_p		PARAMS ((rtx, rtx));
 extern int reg_set_p			PARAMS ((rtx, rtx));
-extern rtx single_set			PARAMS ((rtx));
+extern rtx single_set_1			PARAMS ((rtx));
 extern int multiple_sets		PARAMS ((rtx));
 extern rtx find_last_value		PARAMS ((rtx, rtx *, rtx, int));
 extern int refers_to_regno_p		PARAMS ((unsigned int, unsigned int,
