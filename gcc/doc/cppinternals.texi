@@ -41,7 +41,7 @@ into another language, under the above conditions for modified versions.
 @titlepage
 @c @finalout
 @title Cpplib Internals
-@subtitle Last revised October 2001
+@subtitle Last revised December 2001
 @subtitle for GCC version 3.1
 @author Neil Booth
 @page
@@ -373,7 +373,7 @@ the pointers to the tokens of its expansion that we return will always
 remain valid.  However, macros are a little trickier than that, since
 they give rise to three sources of fresh tokens.  They are the built-in
 macros like @code{__LINE__}, and the @samp{#} and @samp{##} operators
-for stringifcation and token pasting.  I handled this by allocating
+for stringification and token pasting.  I handled this by allocating
 space for these tokens from the lexer's token run chain.  This means
 they automatically receive the same lifetime guarantees as lexed tokens,
 and we don't need to concern ourselves with freeing them.
@@ -467,6 +467,46 @@ enum stored in its hash node, so that directive lookup is also O(1).
 
 @node Macro Expansion
 @unnumbered Macro Expansion Algorithm
+@cindex macro expansion
+
+Macro expansion is a surprisingly tricky operation, fraught with nasty
+corner cases and situations that render what you thought was a nifty
+way to optimize the preprocessor's expansion algorithm wrong in quite
+subtle ways.
+
+I strongly recommend you have a good grasp of how the C and C++
+standards require macros to be expanded before diving into this
+section, let alone the code!.  If you don't have a clear mental
+picture of how things like nested macro expansion, stringification and
+token pasting are supposed to work, damage to you sanity can quickly
+result.
+
+@section Internal representation of Macros
+@cindex macro representation (internal)
+
+The preprocessor stores macro expansions in tokenized form.  This
+saves repeated lexing passes during expansion, at the cost of a small
+increase in memory consumption on average.  The tokens are stored
+contiguously in memory, so a pointer to the first one and a token
+count is all we need.
+
+If the macro is a function-like macro the preprocessor also stores its
+parameters, in the form of an ordered list of pointers to the hash
+table entry of each parameter's identifier.  Further, in the macro's
+stored expansion each occurrence of a parameter is replaced with a
+special token of type @code{CPP_MACRO_ARG}.  Each such token holds the
+index of the parameter it represents in the parameter list, which
+allows rapid replacement of parameters with their arguments during
+expansion.  Despite this optimization it is still necessary to store
+the original parameters to the macro, both for dumping with e.g.,
+@option{-dD}, and to warn about non-trivial macro redefinitions when
+the parameter names have changed.
+
+@section Nested object-like macros
+
+@c TODO
+
+@section Function-like macros
 
 @c TODO
 
@@ -479,8 +519,8 @@ enum stored in its hash node, so that directive lookup is also O(1).
 First, let's look at an issue that only concerns the stand-alone
 preprocessor: we want to guarantee that re-reading its preprocessed
 output results in an identical token stream.  Without taking special
-measures, this might not be the case because of macro substitution.  For
-example:
+measures, this might not be the case because of macro substitution.
+For example:
 
 @smallexample
 #define PLUS +
