@@ -370,6 +370,9 @@ __do_global_ctors_aux ()	/* prologue goes in .text section */
   asm (INIT_SECTION_ASM_OP);
   DO_GLOBAL_CTORS_BODY;
   ON_EXIT (__do_global_dtors, 0);
+#ifdef FORCE_INIT_SECTION_ALIGN
+  FORCE_INIT_SECTION_ALIGN;
+#endif
 }				/* epilogue and body go in .init section */
 
 #endif /* OBJECT_FORMAT_ELF */
