@@ -429,6 +429,166 @@ sbitmap_union_of_predsucc (dst, src, bb, pred_succ)
     }
 }
 
+/* Set the bitmap DST to the intersection of SRC of successors of
+   block number BB, using the new flow graph structures.  */
+
+void
+sbitmap_intersection_of_succs (dst, src, bb)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+{
+  basic_block b = BASIC_BLOCK (bb);
+  edge e = b->succ;
+  int set_size = dst->size;
+
+  for ( ; e != NULL; e = e->succ_next)
+    {
+      if (e->dest == EXIT_BLOCK_PTR)
+        continue;
+      sbitmap_copy (dst, src[e->dest->index]);
+      break;
+    }
+  if (e == NULL)
+    sbitmap_ones (dst);
+  else
+    {
+      for ( e = e->succ_next; e != NULL; e = e->succ_next)
+        {
+	  int i;
+	  sbitmap_ptr p,r;
+
+	  if (e->dest == EXIT_BLOCK_PTR)
+	    continue;
+
+	  p = src[e->dest->index]->elms;
+	  r = dst->elms;
+	  for (i = 0; i < set_size; i++)
+	    *r++ &= *p++;
+	}
+    }
+}
+
+/* Set the bitmap DST to the intersection of SRC of predecessors of
+   block number BB, using the new flow graph structures.  */
+
+void
+sbitmap_intersection_of_preds (dst, src, bb)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+{
+  basic_block b = BASIC_BLOCK (bb);
+  edge e = b->pred;
+  int set_size = dst->size;
+
+  for ( ; e != NULL; e = e->pred_next)
+    {
+      if (e->src== ENTRY_BLOCK_PTR)
+        continue;
+      sbitmap_copy (dst, src[e->src->index]);
+      break;
+    }
+  if (e == NULL)
+    sbitmap_ones (dst);
+  else
+    {
+      for ( e = e->pred_next; e != NULL; e = e->pred_next)
+        {
+	  int i;
+	  sbitmap_ptr p,r;
+
+	  if (e->src == ENTRY_BLOCK_PTR)
+	    continue;
+
+	  p = src[e->src->index]->elms;
+	  r = dst->elms;
+	  for (i = 0; i < set_size; i++)
+	    *r++ &= *p++;
+	}
+    }
+}
+
+/* Set the bitmap DST to the union of SRC of successors of
+   block number BB, using the new flow graph structures.  */
+
+void
+sbitmap_union_of_succs (dst, src, bb)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+{
+  basic_block b = BASIC_BLOCK (bb);
+  edge e = b->succ;
+  int set_size = dst->size;
+
+  for ( ; e != NULL; e = e->succ_next)
+    {
+      if (e->dest == EXIT_BLOCK_PTR)
+        continue;
+      sbitmap_copy (dst, src[e->dest->index]);
+      break;
+    }
+  if (e == NULL)
+    sbitmap_zero (dst);
+  else
+    {
+      for ( e = e->succ_next; e != NULL; e = e->succ_next)
+        {
+	  int i;
+	  sbitmap_ptr p,r;
+
+	  if (e->dest == EXIT_BLOCK_PTR)
+	    continue;
+
+	  p = src[e->dest->index]->elms;
+	  r = dst->elms;
+	  for (i = 0; i < set_size; i++)
+	    *r++ |= *p++;
+	}
+    }
+}
+
+/* Set the bitmap DST to the union of SRC of predecessors of
+   block number BB, using the new flow graph structures.  */
+
+void
+sbitmap_union_of_preds (dst, src, bb)
+     sbitmap dst;
+     sbitmap *src;
+     int bb;
+{
+  basic_block b = BASIC_BLOCK (bb);
+  edge e = b->pred;
+  int set_size = dst->size;
+
+  for ( ; e != NULL; e = e->pred_next)
+    {
+      if (e->src== ENTRY_BLOCK_PTR)
+        continue;
+      sbitmap_copy (dst, src[e->src->index]);
+      break;
+    }
+  if (e == NULL)
+    sbitmap_zero (dst);
+  else
+    {
+      for ( e = e->pred_next; e != NULL; e = e->pred_next)
+        {
+	  int i;
+	  sbitmap_ptr p,r;
+
+	  if (e->src == ENTRY_BLOCK_PTR)
+	    continue;
+
+	  p = src[e->src->index]->elms;
+	  r = dst->elms;
+	  for (i = 0; i < set_size; i++)
+	    *r++ |= *p++;
+	}
+    }
+}
+
 void
 dump_sbitmap (file, bmap)
      FILE *file;

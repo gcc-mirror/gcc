@@ -1,3 +1,25 @@
+Wed Aug 25 13:55:47 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* sbitmap.h (sbitmap_intersection_of_succs): Add prototype.
+	(sbitmap_intersection_of_preds, sbitmap_union_of_succs, 
+	sbitmap_union_of_preds): Add prototypes.
+	* sbitmap.c (sbitmap_intersection_of_succs): New function to compute
+	the intersection of successors with the new flow graph structures.
+	(sbitmap_intersection_of_preds): New function to compute the 
+	intersection of predecessors with the new flow graph structures.
+	(sbitmap_union_of_succs): New function to compute the union of 
+	successors with the new flow graph structures.
+	(sbitmap_union_of_preds): New function to compute the union of 
+	predecessors with the new flow graph structures.
+	* gcse.c (compute_rdm, compute_available): Use new sbitmap routines.
+	(expr_reaches_here_p): Use edge and basic_block structures instead 
+	of s_preds and s_succs.
+	(compute_cprop_avinout): Use new sbitmap routines.
+	(pre_expr_reaches_here_p): Use edge and basic_block structures instead 
+	of s_preds and s_succs.
+	* flow.c (compute_flow_dominators): Compute dominators using
+	edges and basic blocks instead of s_preds and s_succs.
+
 Wed Aug 25 13:41:47 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* lists.c (unused_insn_list, unused_expr_list): New file for

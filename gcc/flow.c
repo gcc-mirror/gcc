@@ -4678,6 +4678,50 @@ compute_dominators (dominators, post_dominators, s_preds, s_succs)
   free (temp_bitmap);
 }
 
+/* Compute dominator relationships using new flow graph structures.  */
+void
+compute_flow_dominators (dominators, post_dominators)
+     sbitmap *dominators;
+     sbitmap *post_dominators;
+{
+  int bb, changed, passes;
+  sbitmap *temp_bitmap;
+
+  temp_bitmap = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
+  sbitmap_vector_ones (dominators, n_basic_blocks);
+  sbitmap_vector_ones (post_dominators, n_basic_blocks);
+  sbitmap_vector_zero (temp_bitmap, n_basic_blocks);
+
+  sbitmap_zero (dominators[0]);
+  SET_BIT (dominators[0], 0);
+
+  sbitmap_zero (post_dominators[n_basic_blocks - 1]);
+  SET_BIT (post_dominators[n_basic_blocks - 1], 0);
+
+  passes = 0;
+  changed = 1;
+  while (changed)
+    {
+      changed = 0;
+      for (bb = 1; bb < n_basic_blocks; bb++)
+	{
+	  sbitmap_intersection_of_preds (temp_bitmap[bb], dominators, bb);
+	  SET_BIT (temp_bitmap[bb], bb);
+	  changed |= sbitmap_a_and_b (dominators[bb],
+				      dominators[bb],
+				      temp_bitmap[bb]);
+	  sbitmap_intersection_of_succs (temp_bitmap[bb], post_dominators, bb);
+	  SET_BIT (temp_bitmap[bb], bb);
+	  changed |= sbitmap_a_and_b (post_dominators[bb],
+				      post_dominators[bb],
+				      temp_bitmap[bb]);
+	}
+      passes++;
+    }
+
+  free (temp_bitmap);
+}
+
 /* Given DOMINATORS, compute the immediate dominators into IDOM.  */
 
 void
