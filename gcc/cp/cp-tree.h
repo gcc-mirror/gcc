@@ -240,9 +240,6 @@ struct lang_identifier GTY(())
 
 #define C_IS_RESERVED_WORD(ID) TREE_LANG_FLAG_5 (ID)
 
-extern const short rid_to_yy[RID_MAX];
-#define C_RID_YYCODE(ID) rid_to_yy[C_RID_CODE (ID)]
-
 #define LANG_IDENTIFIER_CAST(NODE) \
 	((struct lang_identifier*)IDENTIFIER_NODE_CHECK (NODE))
 
@@ -3886,7 +3883,6 @@ extern tree build_cleanup			(tree);
 extern void finish_file				(void);
 extern tree build_expr_from_tree		(tree);
 extern tree build_cleanup			(tree);
-extern void finish_file				(void);
 extern tree build_expr_from_tree		(tree);
 extern tree build_offset_ref_call_from_tree     (tree, tree);
 extern tree build_call_from_tree                (tree, tree, bool);

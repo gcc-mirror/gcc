@@ -1,3 +1,7 @@
+2003-02-18  Geoffrey Keating  <geoffk@apple.com>
+
+	* gcc.c (validate_switches): Don't scan past closing '}'.
+
 2003-02-18  Ben Elliston  <bje@redhat.com>
 
 	PR c++/1607

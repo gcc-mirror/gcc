@@ -6871,7 +6871,8 @@ next_member:
 	      else if (p[0] == 'W' && p[1] == '{')
 		p = validate_switches (p+2);
 	    }
-	  if (*p) p++;
+	  else
+	    p++;
 	}
 
       if (*p) p++;
