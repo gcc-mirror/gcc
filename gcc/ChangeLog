@@ -1,3 +1,9 @@
+2000-12-22  Graham Stott  <grahams@redhat.com>
+
+	* reload.c (update_auto_inc_notes): New, broken out from ...
+        (find_reloads_address_1): ... use here, also correct possible
+        use of uninitialised reloadnum.
+
 2000-12-21  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/freebsd.h (LIB_SPEC): remove -kthread option.
@@ -22,7 +28,7 @@
 	* varasm.c (output_addressed_constants): Use language specific
 	expander on unknown nodes.
 
-2000-12-21  Graham Stott <grahams@redhat.com>
+2000-12-21  Graham Stott  <grahams@redhat.com>
 
 	* combine.c (distribute_notes): Handle REG_NON_LOCAL_GOTO notes.
 

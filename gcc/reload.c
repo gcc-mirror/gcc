@@ -263,6 +263,7 @@ static int find_reloads_address	PARAMS ((enum machine_mode, rtx *, rtx, rtx *,
 				       int, enum reload_type, int, rtx));
 static rtx subst_reg_equivs	PARAMS ((rtx, rtx));
 static rtx subst_indexed_address PARAMS ((rtx));
+static void update_auto_inc_notes PARAMS ((rtx, int, int));
 static int find_reloads_address_1 PARAMS ((enum machine_mode, rtx, int, rtx *,
 					 int, enum reload_type,int, rtx));
 static void find_reloads_address_part PARAMS ((rtx, rtx *, enum reg_class,
@@ -4990,6 +4991,32 @@ subst_indexed_address (addr)
   return addr;
 }
 
+/* Update the REG_INC notes for an insn.  It updates all REG_INC
+   notes for the instruction which refer to REGNO the to refer
+   to the reload number.
+
+   INSN is the insn for which any REG_INC notes need updating.
+
+   REGNO is the register number which has been reloaded.
+
+   RELOADNUM is the reload number.  */
+
+static void
+update_auto_inc_notes (insn, regno, reloadnum)
+     rtx insn ATTRIBUTE_UNUSED;
+     int regno ATTRIBUTE_UNUSED;
+     int reloadnum ATTRIBUTE_UNUSED;
+{
+#ifdef AUTO_INC_DEC
+  rtx link;
+
+  for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_INC
+        && REGNO (XEXP (link, 0)) == regno)
+      push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
+#endif
+}
+
 /* Record the pseudo registers we must reload into hard registers in a
    subexpression of a would-be memory address, X referring to a value
    in mode MODE.  (This function is not called if the address we find
@@ -5159,7 +5186,6 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 
 	if (REG_P (XEXP (op1, 0)))
 	  {
-	    rtx link;
 	    int regno = REGNO (XEXP (op1, 0));
 	    int reloadnum;
 
@@ -5194,7 +5220,9 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 					     &XEXP (op1, 0), BASE_REG_CLASS,
 					     GET_MODE (x), GET_MODE (x), 0,
 					     0, opnum, RELOAD_OTHER);
-		    goto reg_inc;
+
+		    update_auto_inc_notes (this_insn, regno, reloadnum);
+		    return 0;
 		  }
 	      }
 
@@ -5209,14 +5237,10 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 					 BASE_REG_CLASS,
 					 GET_MODE (x), GET_MODE (x), 0, 0,
 					 opnum, RELOAD_OTHER);
-	      }
 
-	    /* Update the REG_INC notes.  */
-	  reg_inc:
-	    for (link = REG_NOTES (this_insn); link; link = XEXP (link, 1))
-	      if (REG_NOTE_KIND (link) == REG_INC
-		  && REGNO (XEXP (link, 0)) == regno)
-		push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
+		update_auto_inc_notes (this_insn, regno, reloadnum);
+		return 0;
+	      }
 	  }
 	else
 	  abort ();
@@ -5277,9 +5301,6 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 	       || !(context ? REGNO_OK_FOR_INDEX_P (regno)
 		    : REGNO_MODE_OK_FOR_BASE_P (regno, mode))))
 	    {
-#ifdef AUTO_INC_DEC
-	      register rtx link;
-#endif
 	      int reloadnum;
 
 	      /* If we can output the register afterwards, do so, this
@@ -5331,15 +5352,8 @@ find_reloads_address_1 (mode, x, context, loc, opnum, type, ind_levels, insn)
 		  value = 1;
 		}
 
-#ifdef AUTO_INC_DEC
-	      /* Update the REG_INC notes.  */
-
-	      for (link = REG_NOTES (this_insn);
-		   link; link = XEXP (link, 1))
-		if (REG_NOTE_KIND (link) == REG_INC
-		    && REGNO (XEXP (link, 0)) == REGNO (XEXP (x_orig, 0)))
-		  push_replacement (&XEXP (link, 0), reloadnum, VOIDmode);
-#endif
+	      update_auto_inc_notes (this_insn, REGNO (XEXP (x_orig, 0)),
+				     reloadnum);
 	    }
 	  return value;
 	}
