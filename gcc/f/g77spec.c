@@ -397,6 +397,11 @@ or type the command `info -f g77 Copying'.\n\
 	  break;
 
 	case OPTION_help:
+	  /* Let gcc.c handle this, as the egcs version has a really
+	     cool facility for handling --help and --verbose --help.  */
+	  return;
+
+#if 0
 	  printf ("\
 Usage: g77 [OPTION]... FORTRAN-SOURCE...\n\
 \n\
@@ -425,6 +430,7 @@ and `info -f gcc' to read the Info documentation.\n\
 Report bugs to <egcs-bugs@cygnus.org>.\n");
 	  exit (0);
 	  break;
+#endif
 
 	case OPTION_driver:
 	  (*fn) ("--driver no longer supported", argv[i]);
