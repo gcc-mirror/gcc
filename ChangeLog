@@ -1,3 +1,9 @@
+2000-07-28  Alexandre Oliva  <aoliva@redhat.com>
+
+	* libtool.m4, ltcf-c.sh, ltcf-cxx.sh, ltcf-gcj.sh: New files from
+	the libtool CVS tree multi-language branch.
+	* ltconfig, ltmain.sh: Updated.
+	
 2000-07-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (clean-target-libgcc): Remove gcc/libgcc.
