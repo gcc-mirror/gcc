@@ -922,83 +922,35 @@
   ""
   "
 {
-  if (CONSTANT_P (operands[1])
-      && register_operand (operands[0], DImode))
-    {
-      rtx src0, src1, dst0, dst1;
-      dst0 = operand_subword (operands[0], 0, 1, DImode);
-      src0 = operand_subword (operands[1], 0, 1, DImode);
-      dst1 = operand_subword (operands[0], 1, 1, DImode);
-      src1 = operand_subword (operands[1], 1, 1, DImode);
-      if (!dst0 || !src0 || !dst1 || !src1)
-        abort ();
-      emit_insn (gen_movsi (dst0, src0));
-      emit_insn (gen_movsi (dst1, src1));
-      DONE;
-    }
+  if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
+    operands[1] = force_const_mem (DImode, operands[1]);
 
-  if (!(reload_in_progress | reload_completed))
-    {
-      if (!register_operand (operands[0], DImode)
-	  && !register_operand (operands[1], DImode))
-	operands[1] = force_reg (DImode, operands[1]);
+  if (!register_operand (operands[0], DImode)
+      && !register_operand (operands[1], DImode))
+    operands[1] = force_reg (DImode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, DImode))
-	DONE;
-    }
+  if (xtensa_copy_incoming_a7 (operands, DImode))
+    DONE;
 }")
 
-(define_insn "movdi_internal"
-  [(set (match_operand:DI 0 "nonimmed_operand" "=D,D,S,a,a,U")
-	(match_operand:DI 1 "nonimmed_operand" "d,S,d,r,U,r"))]
+(define_insn_and_split "movdi_internal"
+  [(set (match_operand:DI 0 "nonimmed_operand" "=a,W,a,a,U")
+	(match_operand:DI 1 "move_operand" "r,i,T,U,r"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
-  "*
+  "#"
+  "reload_completed"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 1) (match_dup 3))]
 {
-  rtx dstreg;
-  switch (which_alternative)
+  xtensa_split_operand_pair (operands, SImode);
+  if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-    case 0: return \"mov.n\\t%0, %1\;mov.n\\t%D0, %D1\";
-    case 2: return \"%v0s32i.n\\t%1, %0\;s32i.n\\t%D1, %N0\";
-    case 3: return \"mov\\t%0, %1\;mov\\t%D0, %D1\";
-    case 5: return \"%v0s32i\\t%1, %0\;s32i\\t%D1, %N0\";
-
-    case 1:
-    case 4:
-      /* Check if the first half of the destination register is used
-	 in the source address.  If so, reverse the order of the loads
-	 so that the source address doesn't get clobbered until it is
-	 no longer needed. */
-
-      dstreg = operands[0];
-      if (GET_CODE (dstreg) == SUBREG)
-	dstreg = SUBREG_REG (dstreg);
-      if (GET_CODE (dstreg) != REG)
-	abort();
-
-      if (reg_mentioned_p (dstreg, operands[1]))
-	{
-	  switch (which_alternative)
-	    {
-	    case 1: return \"%v1l32i.n\\t%D0, %N1\;l32i.n\\t%0, %1\";
-	    case 4: return \"%v1l32i\\t%D0, %N1\;l32i\\t%0, %1\";
-	    }
-	}
-      else
-	{
-	  switch (which_alternative)
-	    {
-	    case 1: return \"%v1l32i.n\\t%0, %1\;l32i.n\\t%D0, %N1\";
-	    case 4: return \"%v1l32i\\t%0, %1\;l32i\\t%D0, %N1\";
-	    }
-	}
+      rtx tmp;
+      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
+      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
     }
-  abort ();
-  return \"\";
-}"
-  [(set_attr "type"	"move,load,store,move,load,store")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"4,4,4,6,6,6")])
+})
 
 
 ;; 32-bit Integer moves
@@ -1122,7 +1074,7 @@
 
 (define_insn "movsf_internal"
   [(set (match_operand:SF 0 "nonimmed_operand" "=f,f,U,D,D,R,a,f,a,W,a,a,U")
-	(match_operand:SF 1 "move_operand" "f,U,f,d,R,d,r,r,f,F,T,U,r"))]
+	(match_operand:SF 1 "move_operand" "f,U,f,d,R,d,r,r,f,iF,T,U,r"))]
   "((register_operand (operands[0], SFmode)
      || register_operand (operands[1], SFmode))
     && !(FP_REG_P (xt_true_regnum (operands[0]))
@@ -1187,82 +1139,36 @@
   ""
   "
 {
-  if (CONSTANT_P (operands[1]))
-    {
-      rtx src0, src1, dst0, dst1;
-      dst0 = operand_subword (operands[0], 0, 1, DFmode);
-      src0 = operand_subword (operands[1], 0, 1, DFmode);
-      dst1 = operand_subword (operands[0], 1, 1, DFmode);
-      src1 = operand_subword (operands[1], 1, 1, DFmode);
-      if (!dst0 || !src0 || !dst1 || !src1)
-        abort ();
-      emit_insn (gen_movsi (dst0, src0));
-      emit_insn (gen_movsi (dst1, src1));
-      DONE;
-    }
+  if (CONSTANT_P (operands[1]) && !TARGET_CONST16)
+    operands[1] = force_const_mem (DFmode, operands[1]);
 
-  if (!(reload_in_progress | reload_completed))
-    {
-      if (!register_operand (operands[0], DFmode)
-	  && !register_operand (operands[1], DFmode))
-	operands[1] = force_reg (DFmode, operands[1]);
+  if (!register_operand (operands[0], DFmode)
+      && !register_operand (operands[1], DFmode))
+    operands[1] = force_reg (DFmode, operands[1]);
 
-      if (xtensa_copy_incoming_a7 (operands, DFmode))
-	DONE;
-    }
+  if (xtensa_copy_incoming_a7 (operands, DFmode))
+    DONE;
 }")
 
-(define_insn "movdf_internal"
-  [(set (match_operand:DF 0 "nonimmed_operand" "=D,D,S,a,a,U")
-	(match_operand:DF 1 "nonimmed_operand" "d,S,d,r,U,r"))]
+(define_insn_and_split "movdf_internal"
+  [(set (match_operand:DF 0 "nonimmed_operand" "=a,W,a,a,U")
+	(match_operand:DF 1 "move_operand" "r,iF,T,U,r"))]
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
-  "*
+  "#"
+  "reload_completed"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 1) (match_dup 3))]
 {
-  rtx dstreg;
-  switch (which_alternative)
+  xtensa_split_operand_pair (operands, SFmode);
+  if (reg_overlap_mentioned_p (operands[0], operands[3]))
     {
-    case 0: return \"mov.n\\t%0, %1\;mov.n\\t%D0, %D1\";
-    case 2: return \"%v0s32i.n\\t%1, %0\;s32i.n\\t%D1, %N0\";
-    case 3: return \"mov\\t%0, %1\;mov\\t%D0, %D1\";
-    case 5: return \"%v0s32i\\t%1, %0\;s32i\\t%D1, %N0\";
-
-    case 1:
-    case 4:
-      /* Check if the first half of the destination register is used
-	 in the source address.  If so, reverse the order of the loads
-	 so that the source address doesn't get clobbered until it is
-	 no longer needed.  */
-
-      dstreg = operands[0];
-      if (GET_CODE (dstreg) == SUBREG)
-	dstreg = SUBREG_REG (dstreg);
-      if (GET_CODE (dstreg) != REG)
-	abort ();
-
-      if (reg_mentioned_p (dstreg, operands[1]))
-	{
-	  switch (which_alternative)
-	    {
-	    case 1: return \"%v1l32i.n\\t%D0, %N1\;l32i.n\\t%0, %1\";
-	    case 4: return \"%v1l32i\\t%D0, %N1\;l32i\\t%0, %1\";
-	    }
-	}
-      else
-	{
-	  switch (which_alternative)
-	    {
-	    case 1: return \"%v1l32i.n\\t%0, %1\;l32i.n\\t%D0, %N1\";
-	    case 4: return \"%v1l32i\\t%0, %1\;l32i\\t%D0, %N1\";
-	    }
-	}
+      rtx tmp;
+      tmp = operands[0], operands[0] = operands[1], operands[1] = tmp;
+      tmp = operands[2], operands[2] = operands[3], operands[3] = tmp;
     }
-  abort ();
-  return \"\";
-}"
-  [(set_attr "type"	"move,load,store,move,load,store")
-   (set_attr "mode"	"DF")
-   (set_attr "length"	"4,4,4,6,6,6")])
+})
+ 
 
 ;; Block moves
 
