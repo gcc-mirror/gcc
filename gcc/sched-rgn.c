@@ -519,7 +519,7 @@ do { register bitset tmpset = set;                                   \
     abort ();                                                        \
   else                                                               \
     set[index/HOST_BITS_PER_WIDE_INT] |=			     \
-      1 << (index % HOST_BITS_PER_WIDE_INT);                         \
+      ((unsigned HOST_WIDE_INT) 1) << (index % HOST_BITS_PER_WIDE_INT); \
 }
 
 /* Turn off the index'th bit in set.  */
@@ -529,7 +529,7 @@ do { register bitset tmpset = set;                                   \
     abort ();                                                        \
   else                                                               \
     set[index/HOST_BITS_PER_WIDE_INT] &=			     \
-      ~(1 << (index%HOST_BITS_PER_WIDE_INT));                        \
+      ~(((unsigned HOST_WIDE_INT) 1) << (index % HOST_BITS_PER_WIDE_INT)); \
 }
 
 /* Check if the index'th bit in bitset set is on.  */
@@ -541,8 +541,9 @@ bitset_member (set, index, len)
 {
   if (index >= HOST_BITS_PER_WIDE_INT * len)
     abort ();
-  return (set[index / HOST_BITS_PER_WIDE_INT] &
-	  1 << (index % HOST_BITS_PER_WIDE_INT)) ? 1 : 0;
+  return ((set[index / HOST_BITS_PER_WIDE_INT] &
+	   ((unsigned HOST_WIDE_INT) 1) << (index % HOST_BITS_PER_WIDE_INT))
+	  ? 1 : 0);
 }
 
 /* Translate a bit-set SET to a list BL of the bit-set members.  */
