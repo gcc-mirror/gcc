@@ -1,5 +1,5 @@
 /* Lexical analyzer for C and Objective C.
-   Copyright (C) 1987, 88, 89, 92, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92, 94-96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1731,8 +1731,6 @@ yylex ()
 		else if (! spec_long_long)
 		  ansi_type = long_unsigned_type_node;
 		else if (! spec_unsigned
-			 /* Verify value does not overflow into sign bit.  */
-			 && TREE_INT_CST_HIGH (yylval.ttype) >= 0
 			 && int_fits_type_p (yylval.ttype,
 					     long_long_integer_type_node))
 		  ansi_type = long_long_integer_type_node;
