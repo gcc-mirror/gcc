@@ -1345,16 +1345,18 @@ emit_support_tinfos (void)
   for (ix = 0; fundamentals[ix]; ix++)
     {
       tree bltn = *fundamentals[ix];
-      tree types[3] = {
-	bltn,
-	build_pointer_type (bltn),
-	build_pointer_type (build_qualified_type (bltn, TYPE_QUAL_CONST))
-      };
+      tree types[3];
       int i;
 
+      types[0] = bltn;
+      types[1] = build_pointer_type (bltn);
+      types[2] = build_pointer_type (build_qualified_type (bltn, 
+							   TYPE_QUAL_CONST));
+ 
       for (i = 0; i < 3; ++i)
 	{
 	  tree tinfo;
+
 	  tinfo = get_tinfo_decl (types[i]);
 	  TREE_USED (tinfo) = 1;
 	  mark_needed (tinfo);
