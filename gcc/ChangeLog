@@ -6,6 +6,9 @@
 	config/sparc/freebsd.h, config/sparc/netbsd-elf.h,
 	config/sparc/sol2.h: Update copyright.
 
+	* tree-cfg.c (remove_forwarder_block_with_phi): Look at the
+	first label to see if it is a nonlocal label.
+
 2005-01-22  David Edelsohn  <edelsohn@gnu.org>
             Andrew Pinski  <pinskia@physics.uc.edu>
 
