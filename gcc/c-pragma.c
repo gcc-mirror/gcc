@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1992, 1997, 1998, 1999, 2000, 2001, 2002
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -298,7 +298,8 @@ handle_pragma_weak (dummy)
   if (t != CPP_EOF)
     warning ("junk at end of #pragma weak");
 
-  add_weak (IDENTIFIER_POINTER (name), value ? IDENTIFIER_POINTER (value) : 0);
+  add_weak (NULL_TREE, IDENTIFIER_POINTER (name),
+	    value ? IDENTIFIER_POINTER (value) : NULL);
 }
 #endif
 

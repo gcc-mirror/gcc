@@ -6169,7 +6169,7 @@ itself; before and after that, output the additional assembler syntax
 for making that name global, and a newline.
 
 @findex ASM_WEAKEN_LABEL
-@item ASM_WEAKEN_LABEL
+@item ASM_WEAKEN_LABEL (@var{stream}, @var{name})
 A C statement (sans semicolon) to output to the stdio stream
 @var{stream} some commands that will make the label @var{name} weak;
 that is, available for reference from other files but only used if
@@ -6178,18 +6178,29 @@ no other definition is available.  Use the expression
 itself; before and after that, output the additional assembler syntax
 for making that name weak, and a newline.
 
-If you don't define this macro, GCC will not support weak
-symbols and you should not define the @code{SUPPORTS_WEAK} macro.
+If you don't define this macro or @code{ASM_WEAKEN_DECL}, GCC will not
+support weak symbols and you should not define the @code{SUPPORTS_WEAK}
+macro.
+
+@findex ASM_WEAKEN_DECL
+@item ASM_WEAKEN_DECL (@var{stream}, @var{decl}, @var{name}, @var{value})
+Combines (and replaces) the function of @code{ASM_WEAKEN_LABEL} and
+@code{ASM_OUTPUT_WEAK_ALIAS}, allowing access to the associated function
+or variable decl.  If @var{value} is not @code{NULL}, this C statement
+should output to the stdio stream @var{stream} assembler code which
+defines (equates) the weak symbol @var{name} to have the value
+@var{value}.  If @var{value} is @code{NULL}, it should output commands
+to make @var{name} weak.
 
 @findex SUPPORTS_WEAK
 @item SUPPORTS_WEAK
 A C expression which evaluates to true if the target supports weak symbols.
 
 If you don't define this macro, @file{defaults.h} provides a default
-definition.  If @code{ASM_WEAKEN_LABEL} is defined, the default
-definition is @samp{1}; otherwise, it is @samp{0}.  Define this macro if
-you want to control weak symbol support with a compiler flag such as
-@option{-melf}.
+definition.  If either @code{ASM_WEAKEN_LABEL} or @code{ASM_WEAKEN_DECL}
+is defined, the default definition is @samp{1}; otherwise, it is
+@samp{0}.  Define this macro if you want to control weak symbol support
+with a compiler flag such as @option{-melf}.
 
 @findex MAKE_DECL_ONE_ONLY (@var{decl})
 @item MAKE_DECL_ONE_ONLY

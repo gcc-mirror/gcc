@@ -137,7 +137,7 @@ extern const char *get_insn_template PARAMS ((int, rtx));
 
 /* Add function NAME to the weak symbols list.  VALUE is a weak alias
    associated with NAME.  */
-extern int add_weak PARAMS ((const char *, const char *));
+extern int add_weak PARAMS ((tree, const char *, const char *));
 
 /* Functions in flow.c */
 extern void allocate_for_life_analysis	PARAMS ((void));
