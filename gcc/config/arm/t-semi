@@ -1,0 +1,11 @@
+# Just for these, we omit the frame pointer since it makes such a big
+# difference.  It is then pointless adding debugging.
+LIBGCC2_CFLAGS=-O2 -fomit-frame-pointer $(LIBGCC2_INCLUDES) $(GCC_CFLAGS) -g0 \
+	-Dinhibit_libc
+
+# Don't build enquire
+ENQUIRE=
+
+CROSS_LIBGCC1 = libgcc1-asm.a
+LIB1ASMSRC = arm/lib1funcs.asm
+LIB1ASMFUNCS = _udivsi3 _divsi3 _umodsi3 _modsi3 _divmodsi_tools
