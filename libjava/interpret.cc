@@ -2917,11 +2917,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
       {
 	int index = GET2U ();
 	jclass klass = (_Jv_ResolvePoolEntry (defining_class, index)).clazz;
-	// We initialize here because otherwise `size_in_bytes' may
-	// not be set correctly, leading us to pass `0' as the size.
-	// FIXME: fix in the allocator?  There is a PR for this.
-	_Jv_InitClass (klass);
-	jobject res = _Jv_AllocObject (klass, klass->size_in_bytes);
+	jobject res = _Jv_AllocObject (klass);
 	PUSHA (res);
 
 #ifdef DIRECT_THREADED
@@ -2935,7 +2931,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     new_resolved:
       {
 	jclass klass = (jclass) AVAL ();
-	jobject res = _Jv_AllocObject (klass, klass->size_in_bytes);
+	jobject res = _Jv_AllocObject (klass);
 	PUSHA (res);
       }
       NEXT_INSN;
