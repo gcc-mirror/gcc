@@ -7592,75 +7592,69 @@ fixup_reorder_chain ()
   /* Add jumps and labels to fixup blocks.  */
   for (i = 0; i < n_basic_blocks - 1; i++)
     {
-      if (REORDER_BLOCK_ADD_JUMP (BASIC_BLOCK (i)))
+      basic_block bbi = BASIC_BLOCK (i);
+      if (REORDER_BLOCK_ADD_JUMP (bbi))
 	{
-	  rtx new_label = gen_label_rtx ();
 	  rtx label_insn, jump_insn, barrier_insn;
 
-	  label_insn = emit_label_before (new_label,
-			  REORDER_BLOCK_ADD_JUMP (BASIC_BLOCK (i))->head);
-	  REORDER_BLOCK_ADD_JUMP (BASIC_BLOCK (i))->head = label_insn;	 
+	  if (GET_CODE (REORDER_BLOCK_ADD_JUMP (bbi)->head)
+	      == CODE_LABEL)
+	    label_insn  = REORDER_BLOCK_ADD_JUMP (bbi)->head;
+	  else
+	    {
+	      rtx new_label = gen_label_rtx ();
+	      label_insn = emit_label_before (new_label,
+			      REORDER_BLOCK_ADD_JUMP (bbi)->head);
+	    }
+	  REORDER_BLOCK_ADD_JUMP (bbi)->head = label_insn;	 
 
 	  jump_insn = emit_jump_insn_after (gen_jump (label_insn),
-					    BASIC_BLOCK (i)->end);
+					    bbi->end);
 	  JUMP_LABEL (jump_insn) = label_insn;
 	  ++LABEL_NUSES (label_insn);
 	  barrier_insn = emit_barrier_after (jump_insn);
-	  if (GET_CODE (BASIC_BLOCK (i)->end) != JUMP_INSN)
-	    BASIC_BLOCK (i)->end = barrier_insn;
+	  if (GET_CODE (bbi->end) != JUMP_INSN)
+	    bbi->end = jump_insn;
 	  /* Add block for jump.  Typically this is when a then is not
 	     predicted and we are jumping to the moved then block.  */
 	  else	
 	    {
-	      basic_block b;
+	      basic_block nb;
 
-	      b = (basic_block) obstack_alloc (function_obstack, sizeof (*b));
 	      VARRAY_GROW (basic_block_info, ++n_basic_blocks);
-	      BASIC_BLOCK (n_basic_blocks - 1) = b;
-	      b->index = n_basic_blocks - 1;
-	      b->head = emit_note_before (NOTE_INSN_BASIC_BLOCK, jump_insn);
-	      NOTE_BASIC_BLOCK (b->head) = b;
-	      b->end = barrier_insn;
-	      
-	      {
-		basic_block nb = BASIC_BLOCK (n_basic_blocks - 1);
-		nb->global_live_at_start
-		  = OBSTACK_ALLOC_REG_SET (function_obstack);
-		nb->global_live_at_end
-		  = OBSTACK_ALLOC_REG_SET (function_obstack);
+	      create_basic_block (n_basic_blocks - 1, jump_insn,
+				  jump_insn, NULL);
+	      nb = BASIC_BLOCK (n_basic_blocks - 1);
+	      nb->global_live_at_start
+		= OBSTACK_ALLOC_REG_SET (function_obstack);
+	      nb->global_live_at_end
+		= OBSTACK_ALLOC_REG_SET (function_obstack);
 
-		COPY_REG_SET (nb->global_live_at_start,
-			      BASIC_BLOCK (i)->global_live_at_start);
-		COPY_REG_SET (nb->global_live_at_end,
-			      BASIC_BLOCK (i)->global_live_at_start);
-		if (BASIC_BLOCK (i)->local_set)
-		  {
-		    OBSTACK_ALLOC_REG_SET (function_obstack);
-		    COPY_REG_SET (nb->local_set, BASIC_BLOCK (i)->local_set);
-		  }
-		else
-		  BASIC_BLOCK (nb->index)->local_set = 0;
+	      COPY_REG_SET (nb->global_live_at_start,
+			    bbi->global_live_at_start);
+	      COPY_REG_SET (nb->global_live_at_end,
+			    bbi->global_live_at_start);
+	      BASIC_BLOCK (nb->index)->local_set = 0;
 
-		nb->aux = xcalloc (1, sizeof (struct reorder_block_def));
-		REORDER_BLOCK_INDEX (BASIC_BLOCK (n_basic_blocks - 1))
-		  = REORDER_BLOCK_INDEX (BASIC_BLOCK (i)) + 1;
-		/* Relink to new block.  */
-		nb->succ = BASIC_BLOCK (i)->succ;
+	      nb->aux = xcalloc (1, sizeof (struct reorder_block_def));
+	      REORDER_BLOCK_INDEX (BASIC_BLOCK (n_basic_blocks - 1))
+		= REORDER_BLOCK_INDEX (bbi) + 1;
+	      /* Relink to new block.  */
+	      nb->succ = bbi->succ;
+	      nb->succ->src = nb;
 
-		make_edge (0, BASIC_BLOCK (i), nb, 0);
-		BASIC_BLOCK (i)->succ->succ_next
-		  = BASIC_BLOCK (i)->succ->succ_next->succ_next;
-		nb->succ->succ_next = 0;
-		/* Fix reorder block index to reflect new block.  */
-		for (j = 0; j < n_basic_blocks - 1; j++)
-		  {
-		    basic_block bbj = BASIC_BLOCK (j);
-		    basic_block bbi = BASIC_BLOCK (i);
-		    if (REORDER_BLOCK_INDEX (bbj)
-			>= REORDER_BLOCK_INDEX (bbi) + 1)
-		      REORDER_BLOCK_INDEX (bbj)++;
-		  }
-	      }
+	      make_edge (NULL, bbi, nb, 0);
+	      bbi->succ->succ_next
+		= bbi->succ->succ_next->succ_next;
+	      nb->succ->succ_next = 0;
+	      /* Fix reorder block index to reflect new block.  */
+	      for (j = 0; j < n_basic_blocks - 1; j++)
+		{
+		  basic_block bbj = BASIC_BLOCK (j);
+		  if (REORDER_BLOCK_INDEX (bbj)
+		      >= REORDER_BLOCK_INDEX (bbi) + 1)
+		    REORDER_BLOCK_INDEX (bbj)++;
+		}
 	    }
 	}
     }

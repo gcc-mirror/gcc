@@ -1,3 +1,7 @@
+Wed Feb 23 13:00:06 CET 2000  Jan Hubicka  <jh@suse.cz>
+        * flow.c (fixup_reorder_chain): Avoid double labels in the basic block;
+        end of basic block is jump_insn, not barrier; use create_basic_block
+        instead of creating basic block by hand.
 
 2000-03-14  Jason Eckhardt  <jle@cygnus.com>
 	* flow.c (reorder_basic_blocks): Account for barriers when writing
