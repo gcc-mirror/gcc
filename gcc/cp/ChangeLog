@@ -1,3 +1,10 @@
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* typeck.c (build_modify_expr): Say `initialization' for
+	INIT_EXPRs.
+	* init.c (build_default_init): Convert to enumeral type, if
+	needed.
+
 2001-01-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.y (nomods_initdcl0): Properly set things up for

@@ -1,3 +1,7 @@
+2001-01-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.other/init17.C: New test.
+
 2001-01-18  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/cpp/if-2.c: Adjust for signed wchar_t.
