@@ -90,7 +90,7 @@ binding_table_construct (binding_table table, size_t chain_count)
     (table->chain_count * sizeof (binding_entry));
 }
 
-/* Free TABLE by making its entries ready for reuse. */
+/* Free TABLE by making its entries ready for reuse.  */
 void
 binding_table_free (binding_table table)
 {

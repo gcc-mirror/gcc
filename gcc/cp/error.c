@@ -1514,7 +1514,7 @@ dump_expr (tree t, int flags)
     case COMPOUND_EXPR:
       print_left_paren (scratch_buffer);
       /* Within templates, a COMPOUND_EXPR has only one operand,
-         containing a TREE_LIST of the two operands. */
+         containing a TREE_LIST of the two operands.  */
       if (TREE_CODE (TREE_OPERAND (t, 0)) == TREE_LIST)
       {
         if (TREE_OPERAND (t, 1))

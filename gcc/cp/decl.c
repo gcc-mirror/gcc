@@ -2377,7 +2377,7 @@ identifier_type_value (tree id)
   if (REAL_IDENTIFIER_TYPE_VALUE (id) != global_type_node)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, REAL_IDENTIFIER_TYPE_VALUE (id));
   /* Have to search for it. It must be on the global level, now.
-     Ask lookup_name not to return non-types. */
+     Ask lookup_name not to return non-types.  */
   id = lookup_name_real (id, 2, 1, 0, LOOKUP_COMPLAIN);
   if (id)
     POP_TIMEVAR_AND_RETURN (TV_NAME_LOOKUP, TREE_TYPE (id));

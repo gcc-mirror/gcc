@@ -1440,7 +1440,7 @@ lookup_fnfields_1 (tree type, tree name)
 	  tmp = methods[i];
 	  /* This slot may be empty; we allocate more slots than we
 	     need.  In that case, the entry we're looking for is
-	     closer to the beginning of the list. */
+	     closer to the beginning of the list.  */
 	  if (tmp)
 	    tmp = DECL_NAME (OVL_CURRENT (tmp));
 	  if (!tmp || tmp > name)
@@ -1685,7 +1685,7 @@ check_final_overrider (tree overrider, tree basefn)
 	   || (TREE_CODE (base_return) == TREE_CODE (over_return)
 	       && POINTER_TYPE_P (base_return)))
     {
-      /* Potentially covariant. */
+      /* Potentially covariant.  */
       unsigned base_quals, over_quals;
       
       fail = !POINTER_TYPE_P (base_return);
@@ -1716,7 +1716,7 @@ check_final_overrider (tree overrider, tree basefn)
 	   converting to void *, or qualification conversion.  */
 	{
 	  /* can_convert will permit user defined conversion from a
-	     (reference to) class type. We must reject them. */
+	     (reference to) class type. We must reject them.  */
 	  over_return = TREE_TYPE (over_type);
 	  if (TREE_CODE (over_return) == REFERENCE_TYPE)
 	    over_return = TREE_TYPE (over_return);
@@ -2448,7 +2448,7 @@ binfo_via_virtual (tree binfo, tree limit)
 
 /* BINFO is a base binfo in the complete type BINFO_TYPE (HERE).
    Find the equivalent binfo within whatever graph HERE is located.
-   This is the inverse of original_binfo. */
+   This is the inverse of original_binfo.  */
 
 tree
 copied_binfo (tree binfo, tree here)
@@ -2499,7 +2499,7 @@ copied_binfo (tree binfo, tree here)
 /* BINFO is some base binfo of HERE, within some other
    hierarchy. Return the equivalent binfo, but in the hierarchy
    dominated by HERE.  This is the inverse of copied_binfo.  If BINFO
-   is not a base binfo of HERE, returns NULL_TREE. */
+   is not a base binfo of HERE, returns NULL_TREE.  */
 
 tree
 original_binfo (tree binfo, tree here)

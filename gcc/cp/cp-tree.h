@@ -1470,7 +1470,7 @@ struct lang_type GTY(())
 #define BINFO_VTABLE_PATH_MARKED(NODE) TREE_LANG_FLAG_3 (NODE)
 
 /* Nonzero means B (a BINFO) has its own vtable.  Any copies will not
-   have this flag set. */
+   have this flag set.  */
 #define BINFO_NEW_VTABLE_MARKED(B) (TREE_LANG_FLAG_4 (B))
 
 /* Any subobject that needs a new vtable must have a vptr and must not
@@ -1691,7 +1691,7 @@ struct lang_decl GTY(())
 	   DECL_THIS_THUNK_P does not hold, this is DECL_THUNKS. Both
 	   this pointer and result pointer adjusting thunks are
 	   chained here.  This pointer thunks to return pointer thunks
-	   will be chained on the return pointer thunk. */
+	   will be chained on the return pointer thunk.  */
 	tree context;
 
 	/* In a FUNCTION_DECL, this is DECL_CLONED_FUNCTION.  */
@@ -1911,7 +1911,7 @@ struct lang_decl GTY(())
 
 /* Nonzero if the DECL was initialized in the class definition itself,
    rather than outside the class.  This is used for both static member
-   VAR_DECLS, and FUNTION_DECLS that are defined in the class. */
+   VAR_DECLS, and FUNTION_DECLS that are defined in the class.  */
 #define DECL_INITIALIZED_IN_CLASS_P(DECL) \
  (DECL_LANG_SPECIFIC (DECL)->decl_flags.initialized_in_class)
 
@@ -2966,7 +2966,7 @@ typedef enum tmpl_spec_kind {
 /* The various kinds of access.  BINFO_ACCESS depends on these being
    two bit quantities.  The numerical values are important; they are
    used to initialize RTTI data structures, so changing them changes
-   the ABI.   */
+   the ABI.  */
 typedef enum access_kind {
   ak_none = 0,             /* Inaccessible.  */
   ak_public = 1,           /* Accessible, as a `public' thing.  */
@@ -3989,7 +3989,7 @@ extern void init_repo (const char *);
 extern void finish_repo (void);
 
 /* in rtti.c */
-/* A varray of all tinfo decls that haven't been emitted yet. */
+/* A varray of all tinfo decls that haven't been emitted yet.  */
 extern GTY(()) varray_type unemitted_tinfo_decls;
 
 extern void init_rtti_processing (void);

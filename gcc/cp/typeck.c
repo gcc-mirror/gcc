@@ -981,7 +981,7 @@ comptypes (tree t1, tree t2, int strict)
       return compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
 
     case ARRAY_TYPE:
-      /* Target types must match incl. qualifiers. */
+      /* Target types must match incl. qualifiers.  */
       return comp_array_types (t1, t2, !!(strict & COMPARE_REDECLARATION));
 
     case TEMPLATE_TYPE_PARM:
@@ -2975,12 +2975,12 @@ build_template_expr (enum tree_code code, tree op0, tree op1, tree op2)
 	    case MINUS_EXPR:
 	      /* FIXME: Be careful of special pointer-arithmetic
 		 cases.  */
-	      /* Fall through. */
+	      /* Fall through.  */
 	    case MAX_EXPR:
 	    case MIN_EXPR:
 	      /* These are GNU extensions; the result type is computed
 		 as it would be for other arithmetic operators.  */
-	      /* Fall through. */
+	      /* Fall through.  */
 	    case BIT_AND_EXPR:
 	    case BIT_XOR_EXPR:
 	    case BIT_IOR_EXPR:

@@ -2216,7 +2216,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
     return;
   overrider_target = overrider_fn = TREE_PURPOSE (overrider);
   
-  /* Check for adjusting covariant return types. */
+  /* Check for adjusting covariant return types.  */
   over_return = TREE_TYPE (TREE_TYPE (overrider_target));
   base_return = TREE_TYPE (TREE_TYPE (target_fn));
   
@@ -2242,7 +2242,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
       if (!virtual_offset)
 	{
 	  /* There was no existing virtual thunk (which takes
-	     precidence). */
+	     precidence).  */
 	  tree thunk_binfo;
 	  base_kind kind;
 	  
@@ -2279,7 +2279,7 @@ update_vtable_entry_for_fn (tree t, tree binfo, tree fn, tree* virtuals,
       if (fixed_offset || virtual_offset)
 	/* Replace the overriding function with a covariant thunk.  We
 	   will emit the overriding function in its own slot as
-	   well. */
+	   well.  */
 	overrider_fn = make_thunk (overrider_target, /*this_adjusting=*/0,
 				   fixed_offset, virtual_offset);
     }
@@ -5061,7 +5061,7 @@ finish_struct_1 (tree t)
       CLASSTYPE_KEY_METHOD (t) = key_method (t);
 
       /* If a polymorphic class has no key method, we may emit the vtable
-	 in every translation unit where the class definition appears. */
+	 in every translation unit where the class definition appears.  */
       if (CLASSTYPE_KEY_METHOD (t) == NULL_TREE)
 	keyed_classes = tree_cons (NULL_TREE, t, keyed_classes);
     }
@@ -5622,7 +5622,7 @@ currently_open_derived_class (tree t)
 {
   int i;
 
-  /* The bases of a dependent type are unknown. */
+  /* The bases of a dependent type are unknown.  */
   if (dependent_type_p (t))
     return NULL_TREE;
 
@@ -6522,7 +6522,7 @@ maybe_indent_hierarchy (FILE * stream, int indent, int indented_p)
 /* Dump the offsets of all the bases rooted at BINFO to STREAM.
    INDENT should be zero when called from the top level; it is
    incremented recursively.  IGO indicates the next expected BINFO in
-   inheritance graph ordering. */
+   inheritance graph ordering.  */
 
 static tree
 dump_class_hierarchy_r (FILE *stream,

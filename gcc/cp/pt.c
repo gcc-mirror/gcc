@@ -1009,7 +1009,7 @@ register_specialization (tree spec, tree tmpl, tree args)
 		  if (!duplicate_decls (spec, fn) && DECL_INITIAL (spec))
 		    /* Dup decl failed, but this is a new
 		       definition. Set the line number so any errors
-		       match this new definition. */
+		       match this new definition.  */
 		    DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (spec);
 		  
 		  return fn;
@@ -7171,7 +7171,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   class, rather than the instantiated class.  
 	   
 	   In addition, lookups that were not ambiguous before may be
-	   ambiguous now.  Therefore, we perform the lookup again. */
+	   ambiguous now.  Therefore, we perform the lookup again.  */
 	qualifying_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (t));
 	fns = BASELINK_FUNCTIONS (t);
 	if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
@@ -8319,7 +8319,7 @@ tsubst_copy_and_build (tree t,
 /* Verify that the instantiated ARGS are valid. For type arguments,
    make sure that the type's linkage is ok. For non-type arguments,
    make sure they are constants if they are integral or enumerations.
-   Emit an error under control of COMPLAIN, and return TRUE on error. */
+   Emit an error under control of COMPLAIN, and return TRUE on error.  */
 
 static bool
 check_instantiated_args (tree tmpl, tree args, tsubst_flags_t complain)
@@ -9472,7 +9472,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	{
 	  /* If ARG is an offset type, we're trying to unify '*T' with
 	     'U C::*', which is ill-formed. See the comment in the
-	     POINTER_TYPE case about this ugliness. */
+	     POINTER_TYPE case about this ugliness.  */
 	  if (TREE_CODE (arg) == OFFSET_TYPE)
 	    return 1;
 	  
@@ -10345,7 +10345,7 @@ mark_class_instantiated (tree t, int extern_p)
 }     
 
 /* Called from do_type_instantiation through binding_table_foreach to
-   do recursive instantiation for the type bound in ENTRY.   */
+   do recursive instantiation for the type bound in ENTRY.  */
 static void
 bt_instantiate_type_proc (binding_entry entry, void *data)
 {

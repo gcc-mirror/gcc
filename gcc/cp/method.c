@@ -218,7 +218,7 @@ make_thunk (tree function, bool this_adjusting,
   tree thunk;
   
   my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 20021025);
-  /* We can have this thunks to covariant thunks, but not vice versa. */
+  /* We can have this thunks to covariant thunks, but not vice versa.  */
   my_friendly_assert (!DECL_THIS_THUNK_P (function), 20021127);
   
   /* Scale the VIRTUAL_OFFSET to be in terms of bytes.  */
@@ -233,7 +233,7 @@ make_thunk (tree function, bool this_adjusting,
   
   /* See if we already have the thunk in question.  For this_adjusting
      thunks VIRTUAL_OFFSET will be an INTEGER_CST, for covariant thunks it
-     will be a BINFO. */
+     will be a BINFO.  */
   for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
     if (DECL_THIS_THUNK_P (thunk) == this_adjusting
  	&& THUNK_FIXED_OFFSET (thunk) == d
@@ -313,7 +313,7 @@ finish_thunk (tree thunk)
 /* Adjust PTR by the constant FIXED_OFFSET, and by the vtable
    offset indicated by VIRTUAL_OFFSET, if that is
    non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
-   zero for a result adjusting thunk. */
+   zero for a result adjusting thunk.  */
 
 static tree
 thunk_adjust (tree ptr, bool this_adjusting,
@@ -417,7 +417,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   HOST_WIDE_INT fixed_offset, virtual_value;
   bool this_adjusting = DECL_THIS_THUNK_P (thunk_fndecl);
 
-  /* We should have called finish_thunk to give it a name. */
+  /* We should have called finish_thunk to give it a name.  */
   my_friendly_assert (DECL_NAME (thunk_fndecl), 20021127);
 
   if (TREE_ASM_WRITTEN (thunk_fndecl))
