@@ -35,7 +35,7 @@ data_DATA = libgcj.jar
 
 ## For now, only on native systems.  FIXME.
 if NATIVE
-bin_PROGRAMS = jv-convert gij
+bin_PROGRAMS = jv-convert gij rmic rmiregistry
 endif
 
 bin_SCRIPTS = addr2name.awk
@@ -435,6 +435,38 @@ gij_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
 ## linking this program.
 gij_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
 
+rmic_SOURCES =
+## This is a dummy definition.
+EXTRA_rmic_SOURCES = $(rmi_java_source_files)
+rmic_LDFLAGS = --main=gnu.java.rmi.rmic.RMIC \
+	-rpath $(toolexeclibdir) -shared-libgcc
+rmic_LINK = $(GCJLINK)
+## We explicitly link in the libraries we need.  This way we don't
+## need -nodefaultlibs, so we can still rely on gcj picking up the
+## system libraries we need (via the specs file).
+## We need the -L so that gcj can find libgcj with `-lgcj'.
+## FIXME: should be _libs on some systems.
+rmic_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+rmic_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+
+rmiregistry_SOURCES =
+## This is a dummy definition.
+EXTRA_rmiregistry_SOURCES = $(rmi_java_source_files)
+rmiregistry_LDFLAGS = --main=gnu.java.rmi.registry.RegistryImpl \
+	-rpath $(toolexeclibdir) -shared-libgcc
+rmiregistry_LINK = $(GCJLINK)
+## We explicitly link in the libraries we need.  This way we don't
+## need -nodefaultlibs, so we can still rely on gcj picking up the
+## system libraries we need (via the specs file).
+## We need the -L so that gcj can find libgcj with `-lgcj'.
+## FIXME: should be _libs on some systems.
+rmiregistry_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
+## Depend on the spec file to make sure it is up to date before
+## linking this program.
+rmiregistry_DEPENDENCIES = $(GCDEPS) $(THREADDEPS) $(ZDEPS) libgcj.la libgcj.spec
+
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from ftp://ftp.unicode.org/Public/MAPPINGS/EASTASIA/JIS/.
 
@@ -768,6 +800,93 @@ java/beans/SimpleBeanInfo.java \
 java/beans/VetoableChangeListener.java \
 java/beans/VetoableChangeSupport.java \
 java/beans/Visibility.java
+
+rmi_java_source_files =	\
+java/rmi/activation/Activatable.java \
+java/rmi/activation/ActivateFailedException.java \
+java/rmi/activation/ActivationDesc.java	\
+java/rmi/activation/ActivationException.java \
+java/rmi/activation/ActivationGroup.java \
+java/rmi/activation/ActivationGroupDesc.java \
+java/rmi/activation/ActivationGroupID.java \
+java/rmi/activation/ActivationID.java \
+java/rmi/activation/ActivationInstantiator.java	\
+java/rmi/activation/ActivationMonitor.java \
+java/rmi/activation/ActivationSystem.java \
+java/rmi/activation/Activator.java \
+java/rmi/activation/UnknownGroupException.java \
+java/rmi/activation/UnknownObjectException.java	\
+java/rmi/AccessException.java \
+java/rmi/AlreadyBoundException.java \
+java/rmi/ConnectException.java \
+java/rmi/ConnectIOException.java \
+java/rmi/MarshalException.java \
+java/rmi/MarshalledObject.java \
+java/rmi/Naming.java \
+java/rmi/NoSuchObjectException.java \
+java/rmi/NotBoundException.java	\
+java/rmi/RMISecurityException.java \
+java/rmi/RMISecurityManager.java \
+java/rmi/Remote.java \
+java/rmi/RemoteException.java \
+java/rmi/ServerError.java \
+java/rmi/ServerException.java \
+java/rmi/ServerRuntimeException.java \
+java/rmi/StubNotFoundException.java \
+java/rmi/UnexpectedException.java \
+java/rmi/UnknownHostException.java \
+java/rmi/UnmarshalException.java \
+java/rmi/dgc/DGC.java \
+java/rmi/dgc/Lease.java	\
+java/rmi/dgc/VMID.java \
+java/rmi/registry/LocateRegistry.java \
+java/rmi/registry/Registry.java	\
+java/rmi/registry/RegistryHandler.java \
+java/rmi/server/ExportException.java \
+java/rmi/server/LoaderHandler.java \
+java/rmi/server/LogStream.java \
+java/rmi/server/ObjID.java \
+java/rmi/server/Operation.java \
+java/rmi/server/RMIClassLoader.java \
+java/rmi/server/RMIClientSocketFactory.java \
+java/rmi/server/RMIFailureHandler.java \
+java/rmi/server/RMIServerSocketFactory.java \
+java/rmi/server/RMISocketFactory.java \
+java/rmi/server/RemoteCall.java	\
+java/rmi/server/RemoteObject.java \
+java/rmi/server/RemoteRef.java \
+java/rmi/server/RemoteServer.java \
+java/rmi/server/RemoteStub.java	\
+java/rmi/server/ServerCloneException.java \
+java/rmi/server/ServerNotActiveException.java \
+java/rmi/server/ServerRef.java \
+java/rmi/server/Skeleton.java \
+java/rmi/server/SkeletonMismatchException.java \
+java/rmi/server/SkeletonNotFoundException.java \
+java/rmi/server/SocketSecurityException.java \
+java/rmi/server/UID.java \
+java/rmi/server/UnicastRemoteObject.java \
+java/rmi/server/Unreferenced.java \
+gnu/java/rmi/dgc/DGCImpl.java \
+gnu/java/rmi/dgc/DGCImpl_Skel.java \
+gnu/java/rmi/dgc/DGCImpl_Stub.java \
+gnu/java/rmi/registry/RegistryImpl.java	\
+gnu/java/rmi/registry/RegistryImpl_Skel.java \
+gnu/java/rmi/registry/RegistryImpl_Stub.java \
+gnu/java/rmi/rmic/RMIC.java \
+gnu/java/rmi/rmic/TabbedWriter.java \
+gnu/java/rmi/server/ProtocolConstants.java \
+gnu/java/rmi/server/RMIDefaultSocketFactory.java \
+gnu/java/rmi/server/RMIHashes.java \
+gnu/java/rmi/server/RMIObjectInputStream.java \
+gnu/java/rmi/server/RMIObjectOutputStream.java \
+gnu/java/rmi/server/UnicastConnection.java \
+gnu/java/rmi/server/UnicastConnectionManager.java \
+gnu/java/rmi/server/UnicastRef.java \
+gnu/java/rmi/server/UnicastRemoteCall.java \
+gnu/java/rmi/server/UnicastRemoteStub.java \
+gnu/java/rmi/server/UnicastServer.java \
+gnu/java/rmi/server/UnicastServerRef.java
 
 ## Java files which are created by configure and thus are in the build
 ## directory.
@@ -1309,6 +1428,7 @@ org/xml/sax/SAXNotSupportedException.java \
 org/xml/sax/SAXParseException.java \
 org/xml/sax/XMLFilter.java \
 org/xml/sax/XMLReader.java \
+$(rmi_java_source_files) \
 $(awt_java_source_files) \
 $(convert_source_files)
 
