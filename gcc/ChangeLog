@@ -1,3 +1,48 @@
+2003-09-01  Mark Mitchell  <mark@codesourcery.com>
+
+	* Makefile.in (gencheck.o): Remove build commands.
+	(dummy-conditions.o): Likewise.
+	(read-rtl.o): Likewise.
+	(gensupport.o): Likewise.
+	(genconfig$(build_exeext)): Remove rule.
+	(genconfig.o): Remove build commands.
+	(genflags$(build_exeext)): Remove rule.
+	(genflags.o): Remove build commands.
+	(gencodes$(build_exeext)): Remove rule.
+	(gencodes.o): Remove build commands.
+	(genconstants.o): Remove build commands.
+	(genemit$(build_exeext)): Remove rule.
+	(genemit.o): Remove build commands.
+	(genrecog$(build_exeext)): Remove rule.
+	(genrecog.o): Remove build commands.
+	(genextract$(build_exeext)): Remove rule.
+	(genextract.o): Remove build commands.
+	(genpeep$(build_exeext)): Remove rule.
+	(genpeep.o): Remove build commands.
+	(genattr$(build_exeext)): Remove rule.
+	(genattr.o): Remove build commands.
+	(genprognames): New variable.
+	(genprogs): Likewise.
+	(genobjs): Likewise.
+	(genprogs): New rule.
+	(genobjs): Likewise.
+	(genattrtab.o): Remove build commands.
+	(genautomata.o): Likewise.
+	(genoutput$(build_exeext)): Remove rule.
+	(genoutput.o): Remove build commands.
+	(gengenrtl.o): Likewise.
+	(genpreds.o): Likewise.
+	(gengtype.o): Likewise.
+	(genconditions.o): Likewise.
+	(gen-protos.o): Likewise.
+	(scan.o): Likewise.
+	(fix-header.o): Likewise.
+	(scan-decls.o): Likewise.
+	(check-g++): Combine with other check targets.
+	(check-gcc): Likewise.
+	(check-g77): Likewise.
+	(check-objc): Likewise.
+
 2003-09-01  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config.gcc: Remove host-specific stuff which is unused here
