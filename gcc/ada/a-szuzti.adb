@@ -31,10 +31,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Strings.Wide_Wide_Unbounded.Aux;
-use Ada.Strings.Wide_Wide_Unbounded.Aux;
-with Ada.Wide_Wide_Text_IO;
-use Ada.Wide_Wide_Text_IO;
+with Ada.Wide_Wide_Text_IO; use Ada.Wide_Wide_Text_IO;
 
 package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
 
@@ -59,13 +56,13 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
          Str1 := Str2;
       end loop;
 
-      Set_Wide_Wide_String (Result, Str1);
+      Result.Reference := Str1;
+      Result.Last      := Str1'Length;
       return Result;
    end Get_Line;
 
    function Get_Line
-     (File : Ada.Wide_Wide_Text_IO.File_Type)
-      return Unbounded_Wide_Wide_String
+     (File : Ada.Wide_Wide_Text_IO.File_Type) return Unbounded_Wide_Wide_String
    is
       Buffer : Wide_Wide_String (1 .. 1000);
       Last   : Natural;
@@ -84,49 +81,52 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
          Str1 := Str2;
       end loop;
 
-      Set_Wide_Wide_String (Result, Str1);
+      Result.Reference := Str1;
+      Result.Last      := Str1'Length;
       return Result;
    end Get_Line;
 
    procedure Get_Line (Item : out Unbounded_Wide_Wide_String) is
-      Buffer : Wide_Wide_String (1 .. 1000);
-      Last   : Natural;
-      Str1   : Wide_Wide_String_Access;
-      Str2   : Wide_Wide_String_Access;
-
    begin
-      Get_Line (Buffer, Last);
-      Str1 := new Wide_Wide_String'(Buffer (1 .. Last));
-      while Last = Buffer'Last loop
-         Get_Line (Buffer, Last);
-         Str2 := new Wide_Wide_String'(Str1.all & Buffer (1 .. Last));
-         Free (Str1);
-         Str1 := Str2;
-      end loop;
-
-      Set_Wide_Wide_String (Item, Str1);
+      Get_Line (Current_Input, Item);
    end Get_Line;
 
    procedure Get_Line
      (File : Ada.Wide_Wide_Text_IO.File_Type;
       Item : out Unbounded_Wide_Wide_String)
    is
-      Buffer : Wide_Wide_String (1 .. 1000);
-      Last   : Natural;
-      Str1   : Wide_Wide_String_Access;
-      Str2   : Wide_Wide_String_Access;
-
    begin
-      Get_Line (File, Buffer, Last);
-      Str1 := new Wide_Wide_String'(Buffer (1 .. Last));
-      while Last = Buffer'Last loop
-         Get_Line (Buffer, Last);
-         Str2 := new Wide_Wide_String'(Str1.all & Buffer (1 .. Last));
-         Free (Str1);
-         Str1 := Str2;
-      end loop;
+      --  We are going to read into the string that is already there and
+      --  allocated. Hopefully it is big enough now, if not, we will extend
+      --  it in the usual manner using Realloc_For_Chunk.
 
-      Set_Wide_Wide_String (Item, Str1);
+      --  Make sure we start with at least 80 characters
+
+      if Item.Reference'Last < 80 then
+         Realloc_For_Chunk (Item, 80);
+      end if;
+
+      --  Loop to read data, filling current string as far as possible.
+      --  Item.Last holds the number of characters read so far.
+
+      Item.Last := 0;
+      loop
+         Get_Line
+           (File,
+            Item.Reference (Item.Last + 1 .. Item.Reference'Last),
+            Item.Last);
+
+         --  If we hit the end of the line before the end of the buffer, then
+         --  we are all done, and the result length is properly set.
+
+         if Item.Last < Item.Reference'Last then
+            return;
+         end if;
+
+         --  If not enough room, double it and keep reading
+
+         Realloc_For_Chunk (Item, Item.Last);
+      end loop;
    end Get_Line;
 
    ---------
@@ -135,12 +135,12 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
 
    procedure Put (U : Unbounded_Wide_Wide_String) is
    begin
-      Put (Get_Wide_Wide_String (U).all);
+      Put (U.Reference (1 .. U.Last));
    end Put;
 
    procedure Put (File : File_Type; U : Unbounded_Wide_Wide_String) is
    begin
-      Put (File, Get_Wide_Wide_String (U).all);
+      Put (File, U.Reference (1 .. U.Last));
    end Put;
 
    --------------
@@ -149,12 +149,12 @@ package body Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO is
 
    procedure Put_Line (U : Unbounded_Wide_Wide_String) is
    begin
-      Put_Line (Get_Wide_Wide_String (U).all);
+      Put_Line (U.Reference (1 .. U.Last));
    end Put_Line;
 
    procedure Put_Line (File : File_Type; U : Unbounded_Wide_Wide_String) is
    begin
-      Put_Line (File, Get_Wide_Wide_String (U).all);
+      Put_Line (File, U.Reference (1 .. U.Last));
    end Put_Line;
 
 end Ada.Strings.Wide_Wide_Unbounded.Wide_Wide_Text_IO;
