@@ -7412,8 +7412,7 @@ emit_return_into_block (bb, line_note)
 {
   emit_jump_insn_after (gen_return (), bb->end);
   if (line_note)
-    emit_line_note_after (NOTE_SOURCE_FILE (line_note),
-			  NOTE_LINE_NUMBER (line_note), PREV_INSN (bb->end));
+    emit_note_copy_after (line_note, PREV_INSN (bb->end));
 }
 #endif /* HAVE_return */
 
@@ -7997,9 +7996,7 @@ epilogue_done:
 	       insn = PREV_INSN (insn))
 	    if (GET_CODE (insn) == NOTE && NOTE_LINE_NUMBER (insn) > 0)
 	      {
-		emit_line_note_after (NOTE_SOURCE_FILE (insn),
-				      NOTE_LINE_NUMBER (insn),
-				      prologue_end);
+		emit_note_copy_after (insn, prologue_end);
 		break;
 	      }
 	}

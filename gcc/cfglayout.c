@@ -1008,8 +1008,7 @@ duplicate_insn_chain (rtx from, rtx to)
 	      abort ();
 	      break;
 	    case NOTE_INSN_REPEATED_LINE_NUMBER:
-	      emit_line_note (NOTE_SOURCE_FILE (insn),
-			      NOTE_LINE_NUMBER (insn));
+	      emit_note_copy (insn);
 	      break;
 
 	    default:
@@ -1017,8 +1016,7 @@ duplicate_insn_chain (rtx from, rtx to)
 		abort ();
 	      /* It is possible that no_line_number is set and the note
 	         won't be emitted.  */
-	      emit_line_note (NOTE_SOURCE_FILE (insn),
-			      NOTE_LINE_NUMBER (insn));
+	      emit_note_copy (insn);
 	    }
 	  break;
 	default:

@@ -3869,13 +3869,9 @@ reorder_insns_with_line_notes (rtx from, rtx to, rtx after)
     return;
 
   if (from_line)
-    emit_line_note_after (NOTE_SOURCE_FILE (from_line),
-			  NOTE_LINE_NUMBER (from_line),
-			  after);
+    emit_note_copy_after (from_line, after);
   if (after_line)
-    emit_line_note_after (NOTE_SOURCE_FILE (after_line),
-			  NOTE_LINE_NUMBER (after_line),
-			  to);
+    emit_note_copy_after (after_line, to);
 }
 
 /* Remove unnecessary notes from the instruction stream.  */
@@ -4295,14 +4291,10 @@ emit_insn_after_with_line_notes (rtx x, rtx after, rtx from)
   rtx insn = emit_insn_after (x, after);
 
   if (from_line)
-    emit_line_note_after (NOTE_SOURCE_FILE (from_line),
-			  NOTE_LINE_NUMBER (from_line),
-			  after);
+    emit_note_copy_after (from_line, after);
 
   if (after_line)
-    emit_line_note_after (NOTE_SOURCE_FILE (after_line),
-			  NOTE_LINE_NUMBER (after_line),
-			  insn);
+    emit_note_copy_after (after_line, insn);
 }
 
 /* Make an insn of code JUMP_INSN with body X
@@ -4428,16 +4420,14 @@ emit_note_after (int subtype, rtx after)
   return note;
 }
 
-/* Emit a line note for FILE and LINE after the insn AFTER.  */
+/* Emit a copy of note ORIG after the insn AFTER.  */
 
 rtx
-emit_line_note_after (const char *file, int line, rtx after)
+emit_note_copy_after (rtx orig, rtx after)
 {
   rtx note;
 
-  if (line < 0)
-    abort ();
-  if (no_line_numbers)
+  if (NOTE_LINE_NUMBER (orig) >= 0 && no_line_numbers)
     {
       cur_insn_uid++;
       return 0;
@@ -4445,8 +4435,8 @@ emit_line_note_after (const char *file, int line, rtx after)
 
   note = rtx_alloc (NOTE);
   INSN_UID (note) = cur_insn_uid++;
-  NOTE_SOURCE_FILE (note) = file;
-  NOTE_LINE_NUMBER (note) = line;
+  NOTE_LINE_NUMBER (note) = NOTE_LINE_NUMBER (orig);
+  NOTE_DATA (note) = NOTE_DATA (orig);
   BLOCK_FOR_INSN (note) = NULL;
   add_insn_after (note, after);
   return note;
@@ -4704,7 +4694,31 @@ emit_line_note (const char *file, int line)
 
   note = emit_note (line);
   NOTE_SOURCE_FILE (note) = file;
+  
+  return note;
+}
 
+/* Emit a copy of note ORIG.  */
+
+rtx
+emit_note_copy (rtx orig)
+{
+  rtx note;
+  
+  if (NOTE_LINE_NUMBER (orig) >= 0 && no_line_numbers)
+    {
+      cur_insn_uid++;
+      return NULL_RTX;
+    }
+  
+  note = rtx_alloc (NOTE);
+  
+  INSN_UID (note) = cur_insn_uid++;
+  NOTE_DATA (note) = NOTE_DATA (orig);
+  NOTE_LINE_NUMBER (note) = NOTE_LINE_NUMBER (orig);
+  BLOCK_FOR_INSN (note) = NULL;
+  add_insn (note);
+  
   return note;
 }
 
