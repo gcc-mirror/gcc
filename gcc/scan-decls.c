@@ -13,30 +13,12 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-/* This filter scans a C source file (actually, the output of cpp).
-   It looks for function declaration.  For each declaration, it prints:
+   Written by Per Bothner <bothner@cygnus.com>, July 1993.  */
 
-   	NAME;C;RTYPE;ARGS;FILENAME;LINENO;
-
-   NAME is the function's name.
-   C is "I" if the function is declared as inline;  "F" if the
-   declaration is nested inside 'extern "C"' braces;  otherwise "f".
-   RTYPE is the function's return type.
-   ARGS is the function's argument list.
-   FILENAME and LINENO is where the declarations was seen
-   (taking #-directives into account).
-
-   Also:
-
-	NAME;M;
-   indicates that the macro NAME was seen (when invoked from fixproto).
-	NAME;X;TYPE;
-   indicates that 'extern TYPE NAME;' was seen.
-
-   Written by Per Bothner <bothner@cygnus.com>, July 1993.
-   */
+#ifdef OLD
+#endif
 
 #include <stdio.h>
 #include <ctype.h>
@@ -44,6 +26,7 @@ Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 sstring buf;
 sstring rtype;
+sstring arg_list;
 
 int brace_nesting = 0;
 
@@ -75,10 +58,14 @@ skip_to_closing_brace (fp)
     }
 }
 
+/* This function scans a C source file (actually, the output of cpp),
+   reading from FP.  It looks for function declarations, and certain
+   other interesting sequences (external variables and macros).  */
+
 int
-main ()
+scan_decls (fp)
+     FILE *fp;
 {
-  FILE *fp = stdin;
   int c;
   int saw_extern, saw_inline;
 
@@ -112,7 +99,13 @@ main ()
   if (SSTRING_LENGTH (&buf) > 16
       && strncmp (buf.base, "__DEFINED_MACRO_", 16) == 0)
     {
-      fprintf (stdout, "%s;M;\n", buf.base+16);
+      /* For certain interesting macro names, fixproto puts
+	   #ifdef FOO
+	   __DEFINED_MACRO_FOO
+	   #endif
+	 into the file to be pre-processed.  So if we see __DEFINED_MACRO_FOO,
+	 it means FOO was defined, which we may want to make a note of. */
+      recognized_macro (buf.base+16);
       goto new_statement;
     }
   if (strcmp (buf.base, "inline") == 0)
@@ -151,11 +144,7 @@ main ()
 	    {
 	      int nesting = 1;
 
- 	      fprintf (stdout, "%s;%s;%s;",
-		       buf.base,
-		       saw_inline ? "I"
-		       : in_extern_C_brace || current_extern_C ? "F" : "f",
-		       rtype.base);
+	      arg_list.ptr = arg_list.base;
 	      c = skip_spaces (fp, ' ');
 	      for (;;)
 		{
@@ -168,11 +157,16 @@ main ()
 		    break;
 		  if (c == '\n')
 		    c = ' ';
-		  putc (c, stdout);	
+		  SSTRING_PUT(&arg_list, c);
 		  c = getc (fp);
 		}
-	      fprintf (stdout, ";%s;%d;\n",
-		       source_filename.base, source_lineno);
+	      SSTRING_PUT(&arg_list, '\0');
+	      recognized_function (buf.base,
+				  saw_inline ? 'I'
+				  : in_extern_C_brace || current_extern_C
+				  ? 'F' : 'f',
+				  rtype.base, arg_list.base,
+				  source_filename.base, source_lineno);
 	      c = get_token (fp, &buf);
 	      if (c == '{')
 		{
@@ -184,7 +178,7 @@ main ()
 	    }
 	  else if (nextc == ';' && saw_extern)
 	    {
- 	      fprintf (stdout, "%s;X;%s;\n", buf.base, rtype.base);
+	      recognized_extern (buf.base, rtype.base);
 	      goto handle_statement;
 	    }
 	  else
