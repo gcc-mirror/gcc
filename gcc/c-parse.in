@@ -565,7 +565,7 @@ end ifobjc
 			}
 		      else if (current_function_decl == 0)
 			{
-			  error ("`%s' undeclared, outside of functions",
+			  error ("`%s' undeclared here (not in a function)",
 				 IDENTIFIER_POINTER ($1));
 			  $$ = error_mark_node;
 			}
