@@ -844,11 +844,13 @@ _cpp_lex_token (pfile, result)
      cpp_token *result;
 {
   cppchar_t c;
-  cpp_buffer *buffer = pfile->buffer;
+  cpp_buffer *buffer;
   const unsigned char *comment_start;
   unsigned char was_skip_newlines = pfile->state.skip_newlines;
   unsigned char newline_in_args = 0;
 
+ done_directive:
+  buffer = pfile->buffer;
   pfile->state.skip_newlines = 0;
   result->flags = 0;
  next_char:
@@ -1160,19 +1162,50 @@ _cpp_lex_token (pfile, result)
       break;
 	  
     case '#':
-      if (get_effective_char (buffer) == '#')
+      c = buffer->extra_char;	/* Can be set by error condition below.  */
+      if (c != EOF)
+	{
+	  buffer->read_ahead = c;
+	  buffer->extra_char = EOF;
+	}
+      else
+	c = get_effective_char (buffer);
+
+      if (c == '#')
 	ACCEPT_CHAR (CPP_PASTE);
       else
 	{
 	  result->type = CPP_HASH;
 	do_hash:
-	  /* CPP_DHASH is the hash introducing a directive.  */
-	  if (was_skip_newlines || newline_in_args)
+	  if (newline_in_args)
 	    {
-	      result->type = CPP_DHASH;
+	      /* 6.10.3 paragraph 11: If there are sequences of
+		 preprocessing tokens within the list of arguments that
+		 would otherwise act as preprocessing directives, the
+		 behavior is undefined.
+
+		 This implementation will report a hard error, terminate
+		 the macro invocation, and proceed to process the
+		 directive.  */
+	      cpp_error (pfile,
+			 "directives may not be used inside a macro argument");
+
+	      /* Put a '#' in lookahead, return CPP_EOF for parse_arg.  */
+	      buffer->extra_char = buffer->read_ahead;
+	      buffer->read_ahead = '#';
+	      pfile->state.skip_newlines = 1;
+	      result->type = CPP_EOF;
+
 	      /* Get whitespace right - newline_in_args sets it.  */
 	      if (pfile->lexer_pos.col == 1)
 		result->flags &= ~PREV_WHITE;
+	    }
+	  else if (was_skip_newlines)
+	    {
+	      /* This is the hash introducing a directive.  */
+	      if (_cpp_handle_directive (pfile, result->flags & PREV_WHITE))
+		goto done_directive; /* was_skip_newlines still 1.  */
+	      /* This is in fact an assembler #.  */
 	    }
 	}
       break;

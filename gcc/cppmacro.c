@@ -534,21 +534,6 @@ parse_arg (pfile, arg, var_args)
 	break;
       else if (result == CPP_EOF)
 	break;		/* Error reported by caller.  */
-      else if (result == CPP_DHASH)
-	{
-	  /* 6.10.3 paragraph 11: If there are sequences of
-	     preprocessing tokens within the list of arguments that
-	     would otherwise act as preprocessing directives, the
-	     behavior is undefined.
-
-	     This implementation will report a hard error, terminate
-	     the macro invocation, and proceed to process the
-	     directive.  */
-	  cpp_error (pfile, "directives may not be used inside a macro argument");
-	  _cpp_push_token (pfile, token, &pfile->lexer_pos);
-	  result = CPP_EOF;
-	  break;
-	}
     }
 
   /* Empty arguments become a single placemarker token.  */
@@ -1018,16 +1003,6 @@ cpp_get_token (pfile, token)
 	      || pfile->state.in_directive || pfile->state.parsing_args)
 	    break;
 	  continue;
-	}
-      else if (token->type == CPP_DHASH)
-	{
-	  /* Handle directives.  */
-	  if (_cpp_handle_directive (pfile, token->flags & PREV_WHITE))
-	    continue;
-	  /* This is in fact an assembler #.  */
-	  if (pfile->skipping)
-	    continue;
-	  token->type = CPP_HASH;
 	}
       /* We are not merging the PREV_WHITE of CPP_PLACEMARKERS.  I
          don't think it really matters.  */

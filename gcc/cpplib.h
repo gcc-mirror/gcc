@@ -139,7 +139,6 @@ struct htab;
   TK(CPP_HEADER_NAME,	SPELL_STRING)	/* <stdio.h> in #include */	\
 \
   TK(CPP_COMMENT,	SPELL_STRING)	/* Only if output comments.  */ \
-  TK(CPP_DHASH,		SPELL_NONE)	/* The # of a directive.  */	\
   TK(CPP_MACRO_ARG,	SPELL_NONE)	/* Macro argument.  */		\
   TK(CPP_PLACEMARKER,	SPELL_NONE)	/* Placemarker token.  */	\
   OP(CPP_EOF,		"EOL")		/* End of line or file.  */
