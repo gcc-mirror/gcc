@@ -1350,6 +1350,15 @@ mostly_true_jump (jump_insn, condition)
   int rare_dest = rare_destination (target_label);
   int rare_fallthrough = rare_destination (NEXT_INSN (jump_insn));
 
+  /* CYGNUS LOCAL -- branch prediction */
+  int expected = condjump_expect_p (jump_insn);
+
+  if (expected > 0)
+    return 2;
+  else if (expected < 0)
+    return -1;
+  /* END CYGNUS LOCAL -- branch prediction */
+
   /* If branch probabilities are available, then use that number since it
      always gives a correct answer.  */
   if (flag_branch_probabilities)

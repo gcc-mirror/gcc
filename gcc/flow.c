@@ -123,6 +123,13 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+/* The contents of the current function definition are allocated
+   in this obstack, and all are freed at the end of the function.
+   For top-level functions, this is temporary_obstack.
+   Separate obstacks are made for nested functions.  */
+
+extern struct obstack *function_obstack;
+
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
 
@@ -246,7 +253,7 @@ static int jmp_uses_reg_or_mem		PROTO((rtx));
 static void mark_label_ref		PROTO((rtx, rtx, int));
 static void life_analysis		PROTO((rtx, int));
 void allocate_for_life_analysis		PROTO((void));
-static void init_regset_vector		PROTO((regset *, regset, int, int));
+static void init_regset_vector		PROTO((regset *, int, int, struct obstack *));
 static void propagate_block		PROTO((regset, rtx, rtx, int, 
 					       regset, int));
 static rtx flow_delete_insn		PROTO((rtx));
@@ -260,7 +267,8 @@ static void find_auto_inc		PROTO((regset, rtx, rtx));
 static void mark_used_regs		PROTO((regset, regset, rtx, int, rtx));
 static int try_pre_increment_1		PROTO((rtx));
 static int try_pre_increment		PROTO((rtx, rtx, HOST_WIDE_INT));
-static rtx find_use_as_address		PROTO((rtx, rtx, HOST_WIDE_INT));
+/* CYGNUS LOCAL: regmove/amylaar */ /* find_use_as_address non-static */
+rtx find_use_as_address			PROTO((rtx, rtx, HOST_WIDE_INT));
 void dump_flow_info			PROTO((FILE *));
 
 /* Find basic blocks of the current function and perform data flow analysis.
@@ -860,7 +868,6 @@ life_analysis (f, nregs)
      rtx f;
      int nregs;
 {
-  register regset tem;
   int first_pass;
   int changed;
   /* For each basic block, a bitmask of regs
@@ -906,24 +913,18 @@ life_analysis (f, nregs)
      if there isn't enough space.
      Don't use oballoc since we may need to allocate other things during
      this function on the temporary obstack.  */
-  tem = (regset) obstack_alloc (&flow_obstack, n_basic_blocks * regset_bytes);
-  bzero ((char *) tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_live_at_end, tem,
-		      n_basic_blocks, regset_bytes);
+  init_regset_vector (basic_block_live_at_end, n_basic_blocks, regset_bytes,
+		      &flow_obstack);
 
   basic_block_new_live_at_end
     = (regset *) alloca (n_basic_blocks * sizeof (regset));
-  tem = (regset) obstack_alloc (&flow_obstack, n_basic_blocks * regset_bytes);
-  bzero ((char *) tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_new_live_at_end, tem,
-		      n_basic_blocks, regset_bytes);
+  init_regset_vector (basic_block_new_live_at_end, n_basic_blocks, regset_bytes,
+		      &flow_obstack);
 
   basic_block_significant
     = (regset *) alloca (n_basic_blocks * sizeof (regset));
-  tem = (regset) obstack_alloc (&flow_obstack, n_basic_blocks * regset_bytes);
-  bzero ((char *) tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_significant, tem,
-		      n_basic_blocks, regset_bytes);
+  init_regset_vector (basic_block_significant, n_basic_blocks, regset_bytes,
+		      &flow_obstack);
 
   /* Record which insns refer to any volatile memory
      or for any reason can't be deleted just because they are dead stores.
@@ -1259,7 +1260,6 @@ void
 allocate_for_life_analysis ()
 {
   register int i;
-  register regset tem;
 
   regset_size = ((max_regno + REGSET_ELT_BITS - 1) / REGSET_ELT_BITS);
   regset_bytes = regset_size * sizeof (*(regset) 0);
@@ -1275,13 +1275,11 @@ allocate_for_life_analysis ()
 
   basic_block_live_at_start
     = (regset *) oballoc (n_basic_blocks * sizeof (regset));
-  tem = (regset) oballoc (n_basic_blocks * regset_bytes);
-  bzero ((char *) tem, n_basic_blocks * regset_bytes);
-  init_regset_vector (basic_block_live_at_start, tem,
-		      n_basic_blocks, regset_bytes);
+  init_regset_vector (basic_block_live_at_start, n_basic_blocks, regset_bytes,
+		      function_obstack);
 
-  regs_live_at_setjmp = (regset) oballoc (regset_bytes);
-  bzero ((char *) regs_live_at_setjmp, regset_bytes);
+  regs_live_at_setjmp = OBSTACK_ALLOC_REG_SET (function_obstack);
+  CLEAR_REG_SET (regs_live_at_setjmp);
 }
 
 /* Make each element of VECTOR point at a regset,
@@ -1290,19 +1288,18 @@ allocate_for_life_analysis ()
    BYTES_PER_ELT is the number of bytes in one regset.  */
 
 static void
-init_regset_vector (vector, space, nelts, bytes_per_elt)
+init_regset_vector (vector, nelts, bytes_per_elt, alloc_obstack)
      regset *vector;
-     regset space;
      int nelts;
      int bytes_per_elt;
+     struct obstack *alloc_obstack;
 {
   register int i;
-  register regset p = space;
 
   for (i = 0; i < nelts; i++)
     {
-      vector[i] = p;
-      p += bytes_per_elt / sizeof (*p);
+      vector[i] = OBSTACK_ALLOC_REG_SET (alloc_obstack);
+      CLEAR_REG_SET (vector[i]);
     }
 }
 
@@ -1354,8 +1351,8 @@ propagate_block (old, first, last, final, significant, bnum)
      current basic block, and adjust as we pass ends and starts of loops.  */
   loop_depth = basic_block_loop_depth[bnum];
 
-  dead = (regset) alloca (regset_bytes);
-  live = (regset) alloca (regset_bytes);
+  dead = ALLOCA_REG_SET ();
+  live = ALLOCA_REG_SET ();
 
   cc0_live = 0;
   last_mem_set = 0;
@@ -1378,7 +1375,7 @@ propagate_block (old, first, last, final, significant, bnum)
       register int i;
 
       num_scratch = 0;
-      maxlive = (regset) alloca (regset_bytes);
+      maxlive = ALLOCA_REG_SET ();
       COPY_REG_SET (maxlive, old);
       regs_sometimes_live = (int *) alloca (max_regno * sizeof (int));
 
@@ -2300,9 +2297,15 @@ mark_used_regs (needed, live, x, final, insn)
       return;
 
     case MEM:
-      /* Invalidate the data for the last MEM stored.  We could do this only
-	 if the addresses conflict, but this doesn't seem worthwhile.  */
-      last_mem_set = 0;
+      /* CYGNUS LOCAL dje/8176 */
+      /* Invalidate the data for the last MEM stored, but only if MEM is
+	 something that can be stored into.  */
+      if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+	; /* needn't clear last_mem_set */
+      else
+	last_mem_set = 0;
+      /* END CYGNUS LOCAL */
 
 #ifdef AUTO_INC_DEC
       if (final)
@@ -2732,7 +2735,7 @@ try_pre_increment (insn, reg, amount)
    If REG appears more than once, or is used other than in such an address,
    return (rtx)1.  */
 
-static rtx
+rtx /* CYGNUS LOCAL: regmove/amylaar */ /* find_use_as_address non-static */
 find_use_as_address (x, reg, plusconst)
      register rtx x;
      rtx reg;
