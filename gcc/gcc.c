@@ -844,6 +844,11 @@ translate_options (argcp, argvp)
 	    nskip += SWITCH_TAKES_ARG (c) - (p[1] != 0);
 	  else if (WORD_SWITCH_TAKES_ARG (p))
 	    nskip += WORD_SWITCH_TAKES_ARG (p);
+	  else if ((c == 'B' || c == 'b' || c == 'V' || c == 'x')
+		   && p[1] == 0)
+	    nskip += 1;
+	  else if (! strcmp (p, "Xlinker"))
+	    nskip += 1;
 
 	  while (nskip > 0)
 	    {
