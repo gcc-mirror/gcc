@@ -293,6 +293,11 @@ if test -z "${setobjs}"; then
     # can hang configure; on other versions, vfork exists just as a stub.
     # FIXME: This should be removed once vfork in uwin's runtime is fixed.
     ac_cv_func_vfork_works=no
+    # Under uwin 2.0+, sys_nerr and sys_errlist exist, but they are
+    # macros (actually, these are imported from a DLL, but the end effect 
+    # is the same), so the test below won't find them.
+    AC_DEFINE(HAVE_SYS_NERR)
+    AC_DEFINE(HAVE_SYS_ERRLIST)
     ;;
 
   esac
