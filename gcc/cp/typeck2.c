@@ -830,8 +830,7 @@ process_init_constructor (type, init, elts)
 	    {
 	      if (TREE_READONLY (field))
 		error ("uninitialized const member `%D'", field);
-	      else if (TYPE_LANG_SPECIFIC (TREE_TYPE (field))
-		       && CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
+	      else if (CLASSTYPE_READONLY_FIELDS_NEED_INIT (TREE_TYPE (field)))
 		error ("member `%D' with uninitialized const fields",
 			  field);
 	      else if (TREE_CODE (TREE_TYPE (field)) == REFERENCE_TYPE)
