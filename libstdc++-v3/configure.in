@@ -106,6 +106,8 @@ else
   AC_CHECK_HEADERS([nan.h ieeefp.h endian.h sys/isa_defs.h machine/endian.h \
   machine/param.h sys/machine.h fp.h locale.h float.h inttypes.h])
 
+  GLIBCPP_CHECK_COMPILER_FEATURES
+  GLIBCPP_CHECK_LINKER_FEATURES
   GLIBCPP_CHECK_COMPLEX_SUPPORT
   GLIBCPP_CHECK_COMPLEX_FLOAT_SUPPORT
   GLIBCPP_CHECK_BUILTIN_MATH_SUPPORT

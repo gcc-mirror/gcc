@@ -38,25 +38,23 @@ EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
 # Using these options is probably a good idea for thrill-seekers. Just
-# uncomment the lines below and make, everything else is ready to go...
-# OPTIMIZE_CXXFLAGS = \
-#	-O3 -fstrict-aliasing \
-#	-fdata-sections -ffunction-sections -fvtable-gc -Wl,--gc-sections
+# uncomment the lines below and make, everything else is ready to go... 
+# OPTIMIZE_CXXFLAGS = -O3 -fstrict-aliasing -fvtable-gc 
 
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set.
+# NB: DEBUGFLAGS have to be at the end so that -O2 can be overridden.
 AC_CXXFLAGS = \
-	@WERROR@ @FMTFLAGS@ @CSHADOWFLAGS@ @CPUFLAGS@ \
-	@EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
+	@WERROR@ @WFMT_FLAGS@ @CPU_FLAGS@ @EXTRA_CXX_FLAGS@ \
+	@SECTION_FLAGS@ @SECTION_LDFLAGS@ @DEBUG_FLAGS@ 
 
 # Need to manually set this option because AC_CXXFLAGS has to be at
-# the end of the compile line so that -O2 can be over-riden as the
+# the end of the compile line so that -O2 can be overridden as the
 # occasion call for it. (ie, --enable-debug)
 AM_CXXFLAGS = \
-	$(FORMAT_CXXFLAGS) \
-	-fno-implicit-templates \
+	-fno-implicit-templates $(OPTIMIZE_CXXFLAGS) \
 	-Wall -Wno-format -W -Wwrite-strings -Winline \
-	$(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 
+	$(AC_CXXFLAGS) 
 
 
 # Passed down for cross compilers, canadian crosses.
@@ -79,8 +77,8 @@ INCLUDES = \
 # Need to explicitly set this so that AM_CXXFLAGS is last. (That way,
 # things like -O2 passed down from the toplevel can be overridden by
 # --enable-debug.)
-CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) \
-	     $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
+CXXCOMPILE = $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	     $(CXXFLAGS) $(AM_CXXFLAGS) 
 
 LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 	       $(AM_CPPFLAGS) $(CPPFLAGS) $(CXXFLAGS) $(AM_CXXFLAGS) 
@@ -195,63 +193,25 @@ sources = \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
 	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
 	locale.cc localename.cc  \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc 
-
-string_sources = \
-	stringMAIN.cc stringCTORNC.cc stringCTORAL.cc \
-	stringCTORCPR.cc stringCTORCPRAL.cc stringCTORPRAL.cc \
-	stringCTORPAL.cc stringCTORPP.cc stringCTORII.cc \
-	stringMUTATE.cc stringRESERVE.cc \
-	stringSWAP.cc stringSLOP.cc \
-	stringRESIZE.cc stringAPPCOPY.cc stringAPPCPR.cc stringAPPPR.cc \
-	stringAPPDUP.cc stringAPPII.cc stringASSCP.cc stringASSII.cc \
-	stringINSII.cc stringREPRR.cc stringREPIIDUP.cc stringREPII.cc \
-	stringREPIII.cc stringREP4I.cc stringREPIIPP.cc stringREPIIPP2.cc \
-	stringCOPY.cc stringCONII.cc stringCONIIF.cc stringCONPPF.cc \
-	stringCONPPF2.cc stringCONSC.cc \
-	stringFIND.cc stringFINDC.cc stringRFIND.cc \
-	stringRFINDC.cc stringFFO.cc stringFLO.cc stringFFNO.cc \
-	stringFLNO.cc stringFLNOC.cc stringCOMPARE.cc stringCOMPARE2.cc \
-	stringCOMPAREP.cc stringCOMPAREP2.cc stringADDPS.cc stringADDCS.cc \
-	stringEXTRACT.cc stringINSERT.cc stringGETLINE.cc stringSCOPY.cc \
-	stringEQ.cc
+	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc string-inst.cc
 
 wstring_sources = \
-	wstringMAIN.cc wstringCTORNC.cc wstringCTORAL.cc \
-	wstringCTORCPR.cc wstringCTORCPRAL.cc wstringCTORPRAL.cc \
-	wstringCTORPAL.cc wstringCTORPP.cc \
-	wstringCTORII.cc \
-	wstringMUTATE.cc wstringRESERVE.cc \
-	wstringSWAP.cc wstringSLOP.cc \
-	wstringRESIZE.cc wstringAPPCOPY.cc wstringAPPCPR.cc wstringAPPPR.cc \
-	wstringAPPDUP.cc wstringAPPII.cc wstringASSCP.cc wstringASSII.cc \
-	wstringINSII.cc wstringREPRR.cc wstringREPIIDUP.cc wstringREPII.cc \
-	wstringREPIII.cc wstringREP4I.cc wstringREPIIPP.cc wstringREPIIPP2.cc \
-	wstringCOPY.cc wstringCONII.cc wstringCONIIF.cc wstringCONPPF.cc \
-	wstringCONPPF2.cc wstringCONSC.cc \
-	wstringFIND.cc wstringFINDC.cc wstringRFIND.cc \
-	wstringRFINDC.cc wstringFFO.cc wstringFLO.cc wstringFFNO.cc \
-	wstringFLNO.cc wstringFLNOC.cc wstringCOMPARE.cc wstringCOMPARE2.cc \
-	wstringCOMPAREP.cc wstringCOMPAREP2.cc wstringADDPS.cc \
-	wstringADDCS.cc wstringEXTRACT.cc wstringINSERT.cc wstringGETLINE.cc \
-	wstringSCOPY.cc wstringEQ.cc
+	wstring-inst.cc
 
 VPATH += $(top_srcdir) $(top_srcdir)/std $(top_srcdir)/src
 VPATH += $(top_srcdir)/@ctype_include_dir@
 
 
 # Actual sources for the distro, but don't build these.
-EXTRA_sources = string-inst.cc 
+#EXTRA_sources = string-inst.cc 
 
 libstdc___la_SOURCES = $(sources)
-
-libinst_string_la_SOURCES = $(string_sources)
 
 libinst_wstring_la_SOURCES = $(wstring_sources)
 
 libstdc___la_LIBADD = \
 	../math/libmath.la ../libio/libio.la \
-	libinst-string.la @libinst_wstring_la@
+	@libinst_wstring_la@
 
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
 
@@ -333,235 +293,9 @@ locale-inst.o: locale-inst.cc
 locale-inst.lo: locale-inst.cc
 	$(LTCXXCOMPILE) -fimplicit-templates -c $<
 
-stringMAIN.lo \
-stringCTORNC.lo \
-stringCTORAL.lo \
-stringCTORCPR.lo \
-stringCTORCPRAL.lo \
-stringCTORPRAL.lo \
-stringCTORPAL.lo \
-stringCTORPP.lo \
-stringCTORII.lo \
-stringMUTATE.lo \
-stringRESERVE.lo \
-stringSWAP.lo \
-stringSLOP.lo \
-stringRESIZE.lo \
-stringAPPCOPY.lo \
-stringAPPCPR.lo \
-stringAPPPR.lo \
-stringAPPDUP.lo \
-stringAPPII.lo \
-stringASSCP.lo \
-stringASSII.lo \
-stringINSII.lo \
-stringREPRR.lo \
-stringREPIIDUP.lo \
-stringREPII.lo \
-stringREPIII.lo \
-stringREP4I.lo \
-stringREPIIPP.lo \
-stringREPIIPP2.lo \
-stringCOPY.lo \
-stringCONII.lo \
-stringCONIIF.lo \
-stringCONPPF.lo \
-stringCONPPF2.lo \
-stringCONSC.lo \
-stringFIND.lo \
-stringFINDC.lo \
-stringRFIND.lo \
-stringRFINDC.lo \
-stringFFO.lo \
-stringFLO.lo \
-stringFFNO.lo \
-stringFLNO.lo \
-stringFLNOC.lo \
-stringCOMPARE.lo \
-stringCOMPARE2.lo \
-stringCOMPAREP.lo \
-stringCOMPAREP2.lo \
-stringADDPS.lo \
-stringADDCS.lo \
-stringEXTRACT.lo \
-stringINSERT.lo \
-stringGETLINE.lo \
-stringSCOPY.lo \
-stringEQ.lo : string-inst.cc
-	$(LTCXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc '0-9A-Z'` $< -o $@
-
-wstringMAIN.lo \
-wstringCTORNC.lo \
-wstringCTORAL.lo \
-wstringCTORCPR.lo \
-wstringCTORCPRAL.lo \
-wstringCTORPRAL.lo \
-wstringCTORPAL.lo \
-wstringCTORPP.lo \
-wstringCTORII.lo \
-wstringMUTATE.lo \
-wstringRESERVE.lo \
-wstringSWAP.lo \
-wstringSLOP.lo \
-wstringRESIZE.lo \
-wstringAPPCOPY.lo \
-wstringAPPCPR.lo \
-wstringAPPPR.lo \
-wstringAPPDUP.lo \
-wstringAPPII.lo \
-wstringASSCP.lo \
-wstringASSII.lo \
-wstringINSII.lo \
-wstringREPRR.lo \
-wstringREPIIDUP.lo \
-wstringREPII.lo \
-wstringREPIII.lo \
-wstringREP4I.lo \
-wstringREPIIPP.lo \
-wstringREPIIPP2.lo \
-wstringCOPY.lo \
-wstringCONII.lo \
-wstringCONIIF.lo \
-wstringCONPPF.lo \
-wstringCONPPF2.lo \
-wstringCONSC.lo \
-wstringFIND.lo \
-wstringFINDC.lo \
-wstringRFIND.lo \
-wstringRFINDC.lo \
-wstringFFO.lo \
-wstringFLO.lo \
-wstringFFNO.lo \
-wstringFLNO.lo \
-wstringFLNOC.lo \
-wstringCOMPARE.lo \
-wstringCOMPARE2.lo \
-wstringCOMPAREP.lo \
-wstringCOMPAREP2.lo \
-wstringADDPS.lo \
-wstringADDCS.lo \
-wstringEXTRACT.lo \
-wstringINSERT.lo \
-wstringGETLINE.lo \
-wstringSCOPY.lo \
-wstringEQ.lo : string-inst.cc
-	$(LTCXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc '0-9A-Z'` -DC=wchar_t $< -o $@
-
-stringMAIN.o \
-stringCTORNC.o \
-stringCTORAL.o \
-stringCTORCPR.o \
-stringCTORCPRAL.o \
-stringCTORPRAL.o \
-stringCTORPAL.o \
-stringCTORPP.o \
-stringCTORII.o \
-stringMUTATE.o \
-stringRESERVE.o \
-stringSWAP.o \
-stringSLOP.o \
-stringRESIZE.o \
-stringAPPCOPY.o \
-stringAPPCPR.o \
-stringAPPPR.o \
-stringAPPDUP.o \
-stringAPPII.o \
-stringASSCP.o \
-stringASSII.o \
-stringINSII.o \
-stringREPRR.o \
-stringREPIIDUP.o \
-stringREPII.o \
-stringREPIII.o \
-stringREP4I.o \
-stringREPIIPP.o \
-stringREPIIPP2.o \
-stringCOPY.o \
-stringCONII.o \
-stringCONIIF.o \
-stringCONPPF.o \
-stringCONPPF2.o \
-stringCONSC.o \
-stringFIND.o \
-stringFINDC.o \
-stringRFIND.o \
-stringRFINDC.o \
-stringFFO.o \
-stringFLO.o \
-stringFFNO.o \
-stringFLNO.o \
-stringFLNOC.o \
-stringCOMPARE.o \
-stringCOMPARE2.o \
-stringCOMPAREP.o \
-stringCOMPAREP2.o \
-stringADDPS.o \
-stringADDCS.o \
-stringEXTRACT.o \
-stringINSERT.o \
-stringGETLINE.o \
-stringSCOPY.o \
-stringEQ.o : string-inst.cc
-	$(CXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc '0-9A-Z'` $< -o $@
-
-wstringMAIN.o \
-wstringCTORNC.o \
-wstringCTORAL.o \
-wstringCTORCPR.o \
-wstringCTORCPRAL.o \
-wstringCTORPRAL.o \
-wstringCTORPAL.o \
-wstringCTORPP.o \
-wstringCTORII.o \
-wstringMUTATE.o \
-wstringRESERVE.o \
-wstringSWAP.o \
-wstringSLOP.o \
-wstringRESIZE.o \
-wstringAPPCOPY.o \
-wstringAPPCPR.o \
-wstringAPPPR.o \
-wstringAPPDUP.o \
-wstringAPPII.o \
-wstringASSCP.o \
-wstringASSII.o \
-wstringINSII.o \
-wstringREPRR.o \
-wstringREPIIDUP.o \
-wstringREPII.o \
-wstringREPIII.o \
-wstringREP4I.o \
-wstringREPIIPP.o \
-wstringREPIIPP2.o \
-wstringCOPY.o \
-wstringCONII.o \
-wstringCONIIF.o \
-wstringCONPPF.o \
-wstringCONPPF2.o \
-wstringCONSC.o \
-wstringFIND.o \
-wstringFINDC.o \
-wstringRFIND.o \
-wstringRFINDC.o \
-wstringFFO.o \
-wstringFLO.o \
-wstringFFNO.o \
-wstringFLNO.o \
-wstringFLNOC.o \
-wstringCOMPARE.o \
-wstringCOMPARE2.o \
-wstringCOMPAREP.o \
-wstringCOMPAREP2.o \
-wstringADDPS.o \
-wstringADDCS.o \
-wstringEXTRACT.o \
-wstringINSERT.o \
-wstringGETLINE.o \
-wstringSCOPY.o \
-wstringEQ.o : string-inst.cc
-	$(CXXCOMPILE) -fimplicit-templates \
-	-c -D`echo $@ | tr -dc '0-9A-Z'` -DC=wchar_t $< -o $@
+# We have to instantiate wstring bits too. . . 
+wstring-inst.o: string-inst.cc
+	$(CXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
+wstring-inst.lo: string-inst.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c -DC=wchar_t $< -o $@
 

@@ -1,6 +1,6 @@
 // Explicit instantiation file.
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -185,6 +185,36 @@ namespace std {
   template class basic_ostringstream<wchar_t>; 
 #endif
 
+
+  //
+  // string related to iostreams
+  //
+  template 
+    basic_istream<char>& 
+    operator>>(basic_istream<char>&, string&);
+  template 
+    basic_ostream<char>& 
+    operator<<(basic_ostream<char>&, const string&);
+  template 
+    basic_istream<char>& 
+    getline(basic_istream<char>&, string&, char);
+  template 
+    basic_istream<char>& 
+    getline(basic_istream<char>&, string&);
+#ifdef _GLIBCPP_USE_WCHAR_T
+  template 
+    basic_istream<wchar_t>& 
+    operator>>(basic_istream<wchar_t>&, wstring&);
+  template 
+    basic_ostream<wchar_t>& 
+    operator<<(basic_ostream<wchar_t>&, const wstring&);
+  template 
+    basic_istream<wchar_t>& 
+    getline(basic_istream<wchar_t>&, wstring&, wchar_t);
+  template 
+    basic_istream<wchar_t>& 
+    getline(basic_istream<wchar_t>&, wstring&);
+#endif
 
   //
   // algorithm

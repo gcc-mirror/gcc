@@ -155,27 +155,10 @@ AC_SUBST(GLIBCPP_CXXFLAGS)
 
 dnl
 dnl Check to see if g++ can compile this library, and if so, if any version-
-dnl specific precautions need to be taken. In particular, test for
-dnl newer compiler features, or features that are present in newer
-dnl compiler version but not older compiler versions should be placed
-dnl here.
-dnl
-dnl Define FMTFLAGS='-fdiagnostics-show-location=once' if possible
-dnl Define WERROR='-Werror' if possible; g++'s that lack the new inlining
-dnl    code or the new system_header pragma will die.  Other options dealing
-dnl    with warnings, errors, and compiler complaints may be folded into
-dnl    the WERROR variable.
-dnl
+dnl specific precautions need to be taken. 
+dnl 
 dnl GLIBCPP_CHECK_COMPILER_VERSION
 AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
-  # All these tests are for C++; save the language and the compiler flags.
-  # The CXXFLAGS thing is suspicious, but based on similar bits 
-  # found in GLIBCPP_CONFIGURE.
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  ac_test_CXXFLAGS="${CXXFLAGS+set}"
-  ac_save_CXXFLAGS="$CXXFLAGS"
-  WERROR='-Werror'
 
   # Sanity check that g++ is capable of dealing with v-3.
   AC_MSG_CHECKING([for g++ that will successfully compile this code])
@@ -185,6 +168,31 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
   #endif
   ], gpp_satisfactory=yes, AC_MSG_ERROR("please upgrade to gcc-2.95 or above"))
   AC_MSG_RESULT($gpp_satisfactory)
+])
+
+
+dnl
+dnl Test for newer compiler features, or features that are present in newer
+dnl compiler version but not older compiler versions should be placed
+dnl here.
+dnl
+dnl Define WFMT_FLAGS='-fdiagnostics-show-location=once' if possible
+dnl 
+dnl Define WERROR='-Werror' if possible; g++'s that lack the new inlining
+dnl code or the new system_header pragma will die.  
+dnl
+dnl Define SECTION_FLAGS='-ffunction-sections -fdata-sections' if
+dnl compiler supports it.  
+dnl GLIBCPP_CHECK_COMPILER_FEATURES
+AC_DEFUN(GLIBCPP_CHECK_COMPILER_FEATURES, [
+  # All these tests are for C++; save the language and the compiler flags.
+  # The CXXFLAGS thing is suspicious, but based on similar bits 
+  # found in GLIBCPP_CONFIGURE.
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+  ac_test_CXXFLAGS="${CXXFLAGS+set}"
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  WERROR='-Werror'
 
   # Check for pragma system_header.
   AC_MSG_CHECKING([for g++ that supports pragma system_header])
@@ -214,14 +222,65 @@ AC_DEFUN(GLIBCPP_CHECK_COMPILER_VERSION, [
     CXXFLAGS=''
   fi
   if test "$ac_gabydiags" = "yes"; then
-    FMTFLAGS='-fdiagnostics-show-location=once'
+    WFMT_FLAGS='-fdiagnostics-show-location=once'
   fi
   AC_MSG_RESULT($ac_gabydiags)
 
+  # Check for -ffunction-sections -fdata-sections
+  AC_MSG_CHECKING([for g++ that supports -ffunction-sections -fdata-sections])
+  CXXFLAGS='-ffunction-sections -fdata-sections'
+  AC_TRY_COMPILE(, [int foo;
+  ], [ac_fdsections=yes], [ac_fdsections=no])
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  else
+    # this is the suspicious part
+    CXXFLAGS=''
+  fi
+  if test "$ac_fdsections" = "yes"; then
+    SECTION_FLAGS='-ffunction-sections -fdata-sections'
+  fi
+  AC_MSG_RESULT($ac_fdsections)
+
   AC_LANG_RESTORE
   AC_SUBST(WERROR)
-  AC_SUBST(FMTFLAGS)
+  AC_SUBST(WFMT_FLAGS)
+  AC_SUBST(SECTION_FLAGS)
 ])
+
+
+dnl
+dnl Check to see if tricky linker opts can be used.
+dnl
+dnl Define SECTION_LDFLAGS='-Wl,--gc-sections' if possible
+dnl GLIBCPP_CHECK_LINKER_FEATURES
+AC_DEFUN(GLIBCPP_CHECK_LINKER_FEATURES, [
+  # All these tests are for C++; save the language and the compiler flags.
+  # The CXXFLAGS thing is suspicious, but based on similar bits 
+  # found in GLIBCPP_CONFIGURE.
+  AC_LANG_SAVE
+  AC_LANG_CPLUSPLUS
+
+  # Check for -Wl,--gc-sections
+  AC_MSG_CHECKING([for ld that supports -Wl,--gc-sections])
+  CXXFLAGS='-Wl,--gc-sections'
+  AC_TRY_COMPILE(, [int foo;
+  ], [ac_sectionLDflags=yes], [ac_sectionLFflags=no])
+  if test "$ac_test_CXXFLAGS" = set; then
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  else
+    # this is the suspicious part
+    CXXFLAGS=''
+  fi
+  if test "$ac_sectionLDflags" = "yes"; then
+    SECTION_LDFLAGS='-Wl,--gc-sections'
+  fi
+  AC_MSG_RESULT($ac_sectionLDflags)
+
+  AC_LANG_RESTORE
+  AC_SUBST(SECTION_LDFLAGS)
+])
+
 
 dnl
 dnl Check to see what builtin math functions are supported
@@ -841,7 +900,7 @@ dnl
 dnl GLIBCPP_CHECK_CPU
 AC_DEFUN(GLIBCPP_CHECK_CPU, [
     AC_MSG_CHECKING([for cpu primitives directory])
-    CPUFLAGS=			
+    CPU_FLAGS=			
     case "$target_cpu" in
       alpha*)
 	cpu_include_dir="config/cpu/alpha"
@@ -857,7 +916,7 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
         ;;
       powerpc | rs6000)
 	cpu_include_dir="config/cpu/powerpc"
-    	CPUFLAGS='-mcpu=powerpc'
+    	CPU_FLAGS='-mcpu=powerpc'
         ;;
       sparc64 | ultrasparc)
 	cpu_include_dir="config/cpu/sparc/sparc64"
@@ -871,7 +930,7 @@ AC_DEFUN(GLIBCPP_CHECK_CPU, [
     esac
     AC_MSG_RESULT($cpu_include_dir)
     AC_SUBST(cpu_include_dir)
-    AC_SUBST(CPUFLAGS)
+    AC_SUBST(CPU_FLAGS)
 ])
 
  
@@ -1270,13 +1329,13 @@ enable_debug=GLIBCPP_ENABLE_DEBUG_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
 case "$enable_debug" in
     yes) 
-	DEBUGFLAGS='-O0 -ggdb'			
+	DEBUG_FLAGS='-O0 -ggdb'			
 	;;
     no)   
-	DEBUGFLAGS='-g'
+	DEBUG_FLAGS='-g'
         ;;
 esac
-AC_SUBST(DEBUGFLAGS)
+AC_SUBST(DEBUG_FLAGS)
 ])
 
 

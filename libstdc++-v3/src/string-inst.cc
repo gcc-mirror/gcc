@@ -36,14 +36,6 @@
 
 #include <bits/std_string.h>
 #include <bits/std_algorithm.h>
-#include <bits/std_istream.h>
-#include <bits/std_ostream.h>
-
-// NB: Unnecessary if the .h headers include these
-#ifndef  _GLIBCPP_FULLY_COMPLIANT_HEADERS
-#include <bits/istream.tcc>
-#include <bits/ostream.tcc>
-#endif
 
 // Instantiation configuration.
 #ifndef C
@@ -55,7 +47,6 @@ namespace std
 {
   typedef basic_string<C> S;
 
-#ifdef MAIN
   template C S::_Rep::_S_terminal;
   template S::size_type S::_Rep::_S_max_size;
   template S::size_type S::_S_empty_rep_storage[];
@@ -64,159 +55,107 @@ namespace std
   template S::_Rep* S::_Rep::_S_create(size_t, S::allocator_type const&);
   template void S::_Rep::_M_destroy(S::allocator_type const&) throw();
   template void __destroy_aux(S*, S*, __false_type);
-#endif
 
-#ifdef CTORNC
   template 
     S::basic_string(S::size_type, C, S::allocator_type const&);
-#endif
 
-#ifdef CTORAL
   template 
     S::basic_string(S::allocator_type const&);
-#endif
 
-#ifdef CTORCPR
   template 
     S::basic_string(S const&, S::size_type, S::size_type);
-#endif
 
-#ifdef CTORCPRAL
   template 
     S::basic_string(
       S const&, S::size_type, S::size_type, S::allocator_type const&);
-#endif
 
-#ifdef CTORPRAL
   template 
     S::basic_string(
       C const*, S::size_type, S::allocator_type const&);
-#endif
 
-#ifdef CTORPAL
   template 
     S::basic_string(
       C const*, S::allocator_type const&);
-#endif
 
-#ifdef CTORPP
   template 
     S::basic_string
     (C*, C*, const allocator<C>&);
-#endif
 
-#ifdef CTORII
   template 
     S::basic_string
     (S::iterator, S::iterator, const allocator<C>&);
-#endif
 
-#ifdef MUTATE
   template
     void S::_M_leak_hard();
   template
     void S::_M_mutate(S::size_type, S::size_type, S::size_type);
   template
     C* S::_Rep::_M_clone(S::allocator_type const&, S::size_type);
-#endif
 
-#ifdef RESERVE
   template
     void S::reserve(S::size_type);
-#endif
 
-#ifdef SWAP
   template
     void S::swap(S&);
-#endif
 
-#ifdef SLOP
 # ifdef _GLIBCPP_ALLOC_CONTROL
     template
       bool (* S::_Rep::_S_excess_slop)(size_t, size_t); 
     template
       bool S::_Rep::_S_default_excess(size_t, size_t); 
 # endif
-#endif
 
-#ifdef RESIZE
   template
     void S::resize(S::size_type, C);
-#endif
 
-#ifdef APPCOPY
   template
     S& S::append(S const&);
-#endif
 
-#ifdef APPCPR
   template
     S& S::append(S const&, S::size_type, S::size_type);
-#endif
 
-#ifdef APPPR
   template
     S& S::append(C const*, S::size_type);
-#endif
 
-#ifdef APPDUP
   template
     S& S::append(S::size_type, C);
-#endif
 
-#ifdef APPII
   template 
     S& 
     S::append<S::iterator>
     (S::iterator, S::iterator);
-#endif
 
-#ifdef ASSCP
   template
     S& 
     S::assign(S const&);
-#endif
 
-#ifdef ASSII
   template 
     S& 
     S::assign<S::iterator>
     (S::iterator, S::iterator);
-#endif
 
-#ifdef INSII
   template 
     void
     S::insert<S::iterator> //c*
     (S::iterator, S::iterator, S::iterator); //it, c+, c+ and temptype = char*
-#endif
 
-#ifdef REPRR
   template
     S& S::replace(
       S::size_type, S::size_type, S const&, S::size_type, S::size_type);
-#endif
 
-#ifdef REPIIDUP
   template 
     S& S::replace(S::iterator, S::iterator, S::size_type, C);
-#endif
 
-#ifdef REPII
   template 
     S&
     S::replace<S::iterator> // c*
     (S::iterator, S::iterator, S::iterator, S::iterator); //it, it, c+, c+ 
-#endif
 
-#ifdef REPIII
   template 
     S& 
     S::_M_replace<S::iterator>
     (S::iterator, S::iterator, S::iterator, S::iterator, forward_iterator_tag);
-#endif
 
-#ifdef REP4I
   // Only one template keyword allowed here. 
   // See core issue #46 (NAD)
   // http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/cwg_closed.html#46
@@ -225,62 +164,44 @@ namespace std
     S::_M_replace<S::const_iterator>
     (S::iterator, S::iterator, 
      S::const_iterator, S::const_iterator, forward_iterator_tag);
-#endif
 
-#ifdef REPIIPP
   template 
     S& 
     S::_M_replace<C*>
     (S::iterator, S::iterator, C*, C*, forward_iterator_tag);
-#endif
-  
-#ifdef REPIIPP2
+
   template 
     S& 
     S::_M_replace<const C*>
     (S::iterator, S::iterator, const C*, const C*, forward_iterator_tag);
-#endif
 
-#ifdef COPY
   template
     S::size_type  S::copy(C*, S::size_type, S::size_type) const;
-#endif
 
-#ifdef CONII
   template 
     C* 
     S::_S_construct<S::iterator>
     (S::iterator, S::iterator, const allocator<C>&);
-#endif
-  
-#ifdef CONIIF
+
   template 
     C* 
     S::_S_construct<S::iterator>
     (S::iterator, S::iterator, const allocator<C>&, forward_iterator_tag);
-#endif
 
-#ifdef CONPPF
   template 
     C* 
     S::_S_construct<C*>
     (C*, C*, const allocator<C>&, forward_iterator_tag);
-#endif
 
-#ifdef CONPPF2
   template 
     C* 
     S::_S_construct<const C*>
     (const C*, const C*, const allocator<C>&, forward_iterator_tag);
-#endif
 
-#ifdef CONSC
   template 
     C* 
     S::_S_construct(S::size_type, C, S::allocator_type const&);
-#endif
 
-#ifdef FIND
   // These members are explicitly specialized, and can only be in one
   // translation unit or else we get multiple copies. . . 
 #if _GLIBCPP_INSTANTIATING_CHAR
@@ -300,101 +221,55 @@ namespace std
 		     _Char_traits_match<wchar_t, traits_type>(__c));
     }
 #endif
-#endif 
 
-#ifdef FINDC
   template
     S::size_type S::find(C, S::size_type) const;
-#endif
 
-#ifdef RFIND
   template
     S::size_type S::rfind(C const*, S::size_type, S::size_type) const;
-#endif
 
-#ifdef RFINDC
   template
     S::size_type S::rfind(C, S::size_type) const;
-#endif
 
-#ifdef FFO
   template
     S::size_type S::find_first_of(C const*, S::size_type, S::size_type) const;
-#endif
 
-#ifdef FLO
   template
     S::size_type S::find_last_of(C const*, S::size_type, S::size_type) const;
-#endif
 
-#ifdef FFNO
   template
     S::size_type S::find_first_not_of(
       C const*, S::size_type, S::size_type) const;
-#endif
 
-#ifdef FLNO
   template
     S::size_type S::find_last_not_of(
       C const*, S::size_type, S::size_type) const;
-#endif
 
-#ifdef FLNOC
   template
     S::size_type S::find_last_not_of(C, S::size_type) const;
-#endif
 
-#ifdef COMPARE
   template
     int S::compare(S::size_type, S::size_type, S const&) const;
-#endif
 
-#ifdef COMPARE2
   template
     int S::compare(S::size_type, S::size_type, S const&, S::size_type, 
 		   S::size_type) const;
-#endif
 
-#ifdef COMPAREP
   template
     int S::compare(C const*) const;
-#endif
 
-#ifdef COMPAREP2
   template
     int S::compare(
       S::size_type, S::size_type, C const*, S::size_type) const;
-#endif
 
-#ifdef ADDPS
   template S operator+(const C*, const S&);
-#endif
 
-#ifdef ADDCS
   template S operator+(C, const S&);
-#endif
 
-#ifdef EQ
   template bool operator==(const S::iterator&, const S::iterator&);
   template bool operator==(const S::const_iterator&, const S::const_iterator&);
-#endif
 
-#ifdef EXTRACT
-  template basic_istream<C>& operator>>(basic_istream<C>&, S&);
-#endif
-
-#ifdef INSERT
-  template basic_ostream<C>& operator<<(basic_ostream<C>&, const S&);
-#endif
-
-#ifdef GETLINE
-  template basic_istream<C>& getline(basic_istream<C>&, S&, C);
-  template basic_istream<C>& getline(basic_istream<C>&, S&);
-#endif
-
-#ifdef SCOPY
   template void _S_string_copy(const S&, C*, allocator<C>::size_type);
-#endif
 
 } // std
 

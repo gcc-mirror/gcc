@@ -69,7 +69,7 @@ fi
 # gcc compiler flags
 #CXX_FLAG="-fsquangle -fhonor-std -fnew-exceptions -g -O2 -DDEBUG_ASSERT "
 #CXX_FLAG="-g -O2 -DDEBUG_ASSERT "
-CXX_FLAG="-g -DDEBUG_ASSERT "
+CXX_FLAG="-g -DDEBUG_ASSERT @SECTION_FLAGS@ @SECTION_LDFLAGS@"
 
 # a specific flag(s) to force the use of shared libraries, if any
 SH_FLAG=""
