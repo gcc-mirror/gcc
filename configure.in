@@ -433,7 +433,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gas ld fileutils target-newlib target-libgloss"
     ;;
   alpha*-*-*vms*)
-    noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss build-fixincludes ${libgcj}"
     ;;
   alpha*-*-linux*)
     # newlib is not 64 bit ready
@@ -466,6 +466,9 @@ case "${target}" in
     ;;
   arc-*-*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
+    ;;
+  arm-semi-aof )
+    noconfigdirs="$noconfigdirs build-fixincludes"
     ;;
   arm-*-coff | strongarm-*-coff | xscale-*-coff)
     noconfigdirs="$noconfigdirs ${libgcj}"
@@ -530,6 +533,9 @@ case "${target}" in
   h8500-*-*)
     noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
     ;;
+  hppa1.1-*-osf* | hppa1.1-*-bsd* )
+    noconfigdirs="$noconfigdirs build-fixincludes"
+    ;;
   hppa*64*-*-linux* | parisc*64*-*-linux*)
     # In this case, it's because the hppa64-linux target is for
     # the kernel only at this point and has no libc, and thus no
@@ -560,6 +566,9 @@ case "${target}" in
     # No gdb or ld support yet.
     noconfigdirs="$noconfigdirs ${libgcj} readline mmalloc libgui itcl gdb ld"
     ;;
+  i370-*-opened*)
+    noconfigdirs="$noconfigdirs build-fixincludes"
+    ;;
   i[[3456789]]86-*-coff | i[[3456789]]86-*-elf)
     noconfigdirs="$noconfigdirs ${libgcj}"
     ;;
@@ -584,7 +593,7 @@ case "${target}" in
     ;;
   i[[3456789]]86-*-mingw32*)
     target_configdirs="$target_configdirs target-mingw"
-    noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs expect target-libgloss ${libgcj} build-fixincludes"
 
     # Can't build gdb for mingw32 if not native.
     case "${host}" in
@@ -595,7 +604,7 @@ case "${target}" in
     ;;    
   *-*-cygwin*)
     target_configdirs="$target_configdirs target-libtermcap target-winsup"
-    noconfigdirs="$noconfigdirs target-gperf target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-gperf target-libgloss build-fixincludes ${libgcj}"
     # always build newlib if winsup directory is present.
     if test -d "$srcdir/winsup"; then
       skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
@@ -610,8 +619,12 @@ case "${target}" in
          ;;
     esac
     ;;    
+  i[[3456789]]86-moss-msdos | i[[3456789]]86-*-moss* | \
+  i[[3456789]]86-*-uwin* | i[[3456789]]86-*-interix* )
+    noconfigdirs="$noconfigdirs build-fixincludes"
+    ;;
   i[[3456789]]86-*-pe)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-libgloss ${libgcj} build-fixincludes"
     ;;
   i[[3456789]]86-*-sco3.2v5*)
     # The linker does not yet know about weak symbols in COFF,
@@ -674,7 +687,10 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
     ;;
   powerpc-*-eabi)
-    noconfigdirs="$noconfigdirs ${libgcj}"
+    noconfigdirs="$noconfigdirs ${libgcj} build-fixincludes"
+    ;;
+  powerpc-*-eabi* | powerpcle-*-eabi* | powerpc-*-rtems* )
+    noconfigdirs="$noconfigdirs build-fixincludes"
     ;;
   rs6000-*-lynxos*)
     noconfigdirs="$noconfigdirs target-newlib gprof ${libgcj}"
@@ -1250,15 +1266,25 @@ The available languages are: ${potential_languages}])
   ac_configure_args=`echo " $ac_configure_args" | sed -e 's/ --enable-languages=[[^ ]]*//' -e 's/$/ --enable-languages='"$enable_languages"/ `
 fi
 
-# Remove the entries in $skipdirs and $noconfigdirs from $configdirs and
-# $target_configdirs.
+# Remove the entries in $skipdirs and $noconfigdirs from $configdirs,
+# $build_configdirs and $target_configdirs.
 # If we have the source for $noconfigdirs entries, add them to $notsupp.
 
 notsupp=""
 for dir in . $skipdirs $noconfigdirs ; do
-  dirname=`echo $dir | sed -e s/target-//g`
+  dirname=`echo $dir | sed -e s/target-//g -e s/build-//g`
   if test $dir != .  && echo " ${configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
     configdirs=`echo " ${configdirs} " | sed -e "s/ ${dir} / /"`
+    if test -r $srcdir/$dirname/configure ; then
+      if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
+	true
+      else
+	notsupp="$notsupp $dir"
+      fi
+    fi
+  fi
+  if test $dir != .  && echo " ${build_configdirs} " | grep " ${dir} " >/dev/null 2>&1; then
+    build_configdirs=`echo " ${build_configdirs} " | sed -e "s/ ${dir} / /"`
     if test -r $srcdir/$dirname/configure ; then
       if echo " ${skipdirs} " | grep " ${dir} " >/dev/null 2>&1; then
 	true
