@@ -1,3 +1,18 @@
+Sat Aug  4 13:51:36 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (try_copy_prop); Kill invalidated REG_EQUAL notes.
+
+	* reload1.c (fixup_abnormal_edges): New static function.
+	(reload): Use it.
+
+	* flow.c (need_fake_edge_p): New function.
+	(flow_call_edges_add): Fix handling of noreturn and sibbling calls;
+	avoid call insn to be very last insn in the insn stream.
+
+	* profile.c (branch_prob): Call flow_call_edges_add instead of
+	doing that by hand; cleanup cfg to re-merge basic blocks once
+	we are done.
+
 2001-08-04  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
 
 	* Makefile.in (CPPLIB_H): New, so that dependencies on cpplib.h

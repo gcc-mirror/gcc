@@ -528,6 +528,8 @@ branch_prob ()
 
   total_num_times_called++;
 
+  flow_call_edges_add (NULL);
+
   /* We can't handle cyclic regions constructed using abnormal edges.
      To avoid these we replace every source of abnormal edge by a fake
      edge from entry node and every destination by fake edge to exit.
@@ -560,28 +562,6 @@ branch_prob ()
 	    need_entry_edge = 1;
 	  if (e->src == ENTRY_BLOCK_PTR)
 	    have_entry_edge = 1;
-	}
-
-      /* ??? Not strictly needed unless flag_test_coverage, but adding
-	 them anyway keeps the .da file consistent.  */
-      /* ??? Currently inexact for basic blocks with multiple calls. 
-	 We need to split blocks here.  */
-      for (insn = bb->head;
-	   insn != NEXT_INSN (bb->end);
-	   insn = NEXT_INSN (insn))
-	{
-	  rtx set;
-	  if (GET_CODE (insn) == CALL_INSN && !CONST_CALL_P (insn))
-	    need_exit_edge = 1;
-	  else if (GET_CODE (insn) == INSN)
-	    {
-	      set = PATTERN (insn);
-	      if (GET_CODE (set) == PARALLEL)
-		set = XVECEXP (set, 0, 0);
-	      if ((GET_CODE (set) == ASM_OPERANDS && MEM_VOLATILE_P (set))
-		  || GET_CODE (set) == ASM_INPUT)
-		need_exit_edge = 1;
-	    }
 	}
 
       if (need_exit_edge && !have_exit_edge)
@@ -787,6 +767,12 @@ branch_prob ()
     }
 
   remove_fake_edges ();
+  /* Re-merge split basic blocks and the mess introduced by
+     insert_insn_on_edge.  */
+  cleanup_cfg (profile_arc_flag ? CLEANUP_EXPENSIVE : 0);
+  if (rtl_dump_file)
+    dump_flow_info (rtl_dump_file);
+
   free (edge_infos);
   free_edge_list (el);
 }

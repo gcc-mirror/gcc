@@ -461,6 +461,7 @@ static void failed_reload		PARAMS ((rtx, int));
 static int set_reload_reg		PARAMS ((int, int));
 static void reload_cse_delete_noop_set	PARAMS ((rtx, rtx));
 static void reload_cse_simplify		PARAMS ((rtx));
+static void fixup_abnormal_edges	PARAMS ((void));
 extern void dump_needs			PARAMS ((struct insn_chain *));
 
 /* Initialize the reload pass once per compilation.  */
@@ -1269,6 +1270,7 @@ reload (first, global)
   /* Free all the insn_chain structures at once.  */
   obstack_free (&reload_obstack, reload_startobj);
   unused_insn_chains = 0;
+  fixup_abnormal_edges ();
 
   return failure;
 }
@@ -9470,3 +9472,56 @@ copy_eh_notes (insn, x)
     }
 }
 
+/* This is used by reload pass, that does emit some instructions after
+   abnormal calls moving basic block end, but in fact it wants to emit
+   them on the edge.  Looks for abnormal call edges, find backward the
+   proper call and fix the damage.
+ 
+   Similar handle instructions throwing exceptions internally.  */
+static void
+fixup_abnormal_edges ()
+{
+  int i;
+  bool inserted = false;
+
+  for (i = 0; i < n_basic_blocks; i++)
+    {
+      basic_block bb = BASIC_BLOCK (i);
+      edge e;
+
+      /* Look for cases we are interested in - an calls or instructions causing
+         exceptions.  */
+      for (e = bb->succ; e; e = e->succ_next)
+	{
+	  if (e->flags & EDGE_ABNORMAL_CALL)
+	    break;
+	  if ((e->flags & (EDGE_ABNORMAL | EDGE_EH))
+	      == (EDGE_ABNORMAL | EDGE_EH))
+	    break;
+	}
+      if (e && GET_CODE (bb->end) != CALL_INSN && !can_throw_internal (bb->end))
+	{
+	  rtx insn = bb->end;
+	  rtx next;
+	  for (e = bb->succ; e; e = e->succ_next)
+	    if (e->flags & EDGE_FALLTHRU)
+	      break;
+	  while (GET_CODE (insn) == INSN && !can_throw_internal (insn))
+	    insn = PREV_INSN (insn);
+	  if (GET_CODE (insn) != CALL_INSN && !can_throw_internal (insn))
+	    abort ();
+	  bb->end = insn;
+	  inserted = true;
+	  insn = NEXT_INSN (insn);
+	  while (insn && GET_CODE (insn) == INSN)
+	    {
+	      next = NEXT_INSN (insn);
+	      insert_insn_on_edge (PATTERN (insn), e);
+	      flow_delete_insn (insn);
+	      insn = next;
+	    }
+	}
+    }
+  if (inserted)
+    commit_edge_insertions ();
+}
