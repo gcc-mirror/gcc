@@ -1,3 +1,7 @@
+2001-03-19  David Edelsohn  <edelsohn@gnu.org>
+
+	* encoding.c (TYPE_MODE): Define.
+
 2001-03-14  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* thr.c (objc_thread_add): New function.
