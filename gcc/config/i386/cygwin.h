@@ -117,8 +117,8 @@ Boston, MA 02111-1307, USA. */
 
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "\
-  %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " mingw/dllcrt2%O%s}}\
-  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " mingw/crt2%O%s}\
+  %{shared|mdll: %{mno-cygwin:" MINGW_LIBS " dllcrt2%O%s}}\
+  %{!shared: %{!mdll: %{!mno-cygwin:crt0%O%s} %{mno-cygwin:" MINGW_LIBS " crt2%O%s}\
   %{pg:gcrt0%O%s}}}\
 "
 
