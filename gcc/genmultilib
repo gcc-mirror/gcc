@@ -42,6 +42,9 @@
 # appear in the first argument, and the second should be a synonym for
 # it.  Question marks are replaced with equal signs in both options.
 
+# The optional fourth argument is a list of multilib directory 
+# combinations that should not be built.
+
 # The output looks like
 #   #define MULTILIB_MATCHES "\
 #   SUBDIRECTORY OPTIONS;\
@@ -78,6 +81,7 @@
 options=$1
 dirnames=$2
 matches=$3
+exceptions=$4
 
 # What we want to do is select all combinations of the sets in
 # options.  Each combination which includes a set of mutually
@@ -111,6 +115,33 @@ chmod +x tmpmultilib
 combinations=`initial=/ ./tmpmultilib ${options}`
 
 rm -f tmpmultilib
+
+# If there exceptions, weed them out now
+if [ -n "${exceptions}" ]; then
+  rm -f tmpmultilib2
+  cat >tmpmultilib2 <<\EOF
+#!/bin/sh
+# This recursive script weeds out any combination of multilib
+# switches that should not be generated.  The output looks like
+# a list of subdirectory names with leading and trailing slashes.
+
+  for opt in $@; do
+    case "$opt" in
+EOF
+
+  for except in ${exceptions}; do
+    echo "      /${except}/) : ;;" >> tmpmultilib2
+  done
+
+cat >>tmpmultilib2 <<\EOF
+      *) echo ${opt};;
+    esac
+  done
+EOF
+  chmod +x tmpmultilib2
+  combinations=`./tmpmultilib2 ${combinations}`
+  rm -f ./tmpmultilib2
+fi
 
 # Construct a sed pattern which will convert option names to directory
 # names.
