@@ -9064,7 +9064,7 @@
   "TARGET_THUMB"
   "*
   making_const_table = TRUE;
-  assemble_integer (operands[0], 1, 1);
+  assemble_integer (operands[0], 1, BITS_PER_WORD, 1);
   assemble_zeros (3);
   return \"\";
   "
@@ -9076,7 +9076,7 @@
   "TARGET_THUMB"
   "*
   making_const_table = TRUE;
-  assemble_integer (operands[0], 2, 1);
+  assemble_integer (operands[0], 2, BITS_PER_WORD, 1);
   assemble_zeros (2);
   return \"\";
   "
@@ -9095,11 +9095,11 @@
       {
         union real_extract u;
         memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-        assemble_real (u.d, GET_MODE (operands[0]));
+        assemble_real (u.d, GET_MODE (operands[0]), BITS_PER_WORD);
         break;
       }
       default:
-        assemble_integer (operands[0], 4, 1);
+        assemble_integer (operands[0], 4, BITS_PER_WORD, 1);
         break;
       }
     return \"\";
@@ -9119,11 +9119,11 @@
         {
           union real_extract u;
           memcpy (&u, &CONST_DOUBLE_LOW (operands[0]), sizeof u);
-          assemble_real (u.d, GET_MODE (operands[0]));
+          assemble_real (u.d, GET_MODE (operands[0]), BITS_PER_WORD);
           break;
         }
       default:
-        assemble_integer (operands[0], 8, 1);
+        assemble_integer (operands[0], 8, BITS_PER_WORD, 1);
         break;
       }
     return \"\";

@@ -8745,7 +8745,7 @@ rs6000_elf_asm_out_constructor (symbol, priority)
       fputs (")@fixup\n", asm_out_file);
     }
   else
-    assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+    assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 
 static void
@@ -8776,7 +8776,7 @@ rs6000_elf_asm_out_destructor (symbol, priority)
       fputs (")@fixup\n", asm_out_file);
     }
   else
-    assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
+    assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }
 #endif
 

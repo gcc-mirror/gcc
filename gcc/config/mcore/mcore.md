@@ -3409,7 +3409,7 @@
  ""
  "*
 {
-  assemble_integer (operands[0], 4, 1);
+  assemble_integer (operands[0], 4, BITS_PER_WORD, 1);
   return \"\";
 }"
  [(set_attr "length" "4")])

@@ -4304,9 +4304,9 @@ do {									\
   else									\
     {									\
       assemble_integer (operand_subword ((VALUE), 0, 0, DImode),	\
-			UNITS_PER_WORD, 1);				\
+			UNITS_PER_WORD, BITS_PER_WORD, 1);		\
       assemble_integer (operand_subword ((VALUE), 1, 0, DImode),	\
-			UNITS_PER_WORD, 1);				\
+			UNITS_PER_WORD, BITS_PER_WORD, 1);		\
     }									\
 } while (0)
 

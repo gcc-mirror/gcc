@@ -287,18 +287,17 @@ extern void assemble_eh_label		PARAMS ((const char *));
 extern void assemble_name		PARAMS ((FILE *, const char *));
 
 #ifdef RTX_CODE
-/* Assemble the integer constant X into an object of SIZE bytes.
-   X must be either a CONST_INT or CONST_DOUBLE.
-
-   Return 1 if we were able to output the constant, otherwise 0.  If FORCE is
-   non-zero, abort if we can't output the constant.  */
-extern int assemble_integer		PARAMS ((rtx, int, int));
-extern int assemble_eh_integer		PARAMS ((rtx, int, int));
+/* Assemble the integer constant X into an object of SIZE bytes.  ALIGN is
+   the alignment of the integer in bits.  Return 1 if we were able to output
+   the constant, otherwise 0.  If FORCE is non-zero, abort if we can't output
+   the constant.  */
+extern int assemble_integer		PARAMS ((rtx, unsigned, unsigned, int));
 
 #ifdef REAL_VALUE_TYPE
 /* Assemble the floating-point constant D into an object of size MODE.  */
 extern void assemble_real		PARAMS ((REAL_VALUE_TYPE,
-					       enum machine_mode));
+					         enum machine_mode,
+						 unsigned));
 #endif
 #endif
 
@@ -341,8 +340,10 @@ extern tree initializer_constant_valid_p	PARAMS ((tree, tree));
    Assumes output_addressed_constants has been done on EXP already.
 
    Generate exactly SIZE bytes of assembler data, padding at the end
-   with zeros if necessary.  SIZE must always be specified.  */
-extern void output_constant		PARAMS ((tree, int));
+   with zeros if necessary.  SIZE must always be specified.
+
+   ALIGN is the alignment in bits that may be assumed for the data.  */
+extern void output_constant		PARAMS ((tree, int, unsigned));
 #endif
 
 #ifdef RTX_CODE

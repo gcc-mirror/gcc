@@ -3311,8 +3311,8 @@ m88k_svr3_asm_out_destructor (symbol, priority)
   int i;
 
   fini_section ();
-  assemble_integer (symbol, UNITS_PER_WORD, 1);
+  assemble_integer (symbol, UNITS_PER_WORD, BITS_PER_WORD, 1);
   for (i = 1; i < 4; i++)
-    assemble_integer (constm1_rtx, UNITS_PER_WORD, 1);
+    assemble_integer (constm1_rtx, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
 #endif

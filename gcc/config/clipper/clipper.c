@@ -712,6 +712,6 @@ clix_asm_out_destructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   fini_section ();
-  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, 1);
-  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, 1);
+  assemble_integer (symbol, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
+  assemble_integer (const0_rtx, POINTER_SIZE / BITS_PER_UNIT, POINTER_SIZE, 1);
 }

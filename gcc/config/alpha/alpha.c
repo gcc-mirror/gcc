@@ -6595,7 +6595,8 @@ vms_asm_out_constructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   ctors_section ();
-  assemble_integer (symbol, UNITS_PER_WORD, 1);
+  assemble_align (BITS_PER_WORD);
+  assemble_integer (symbol, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
 
 static void
@@ -6604,7 +6605,8 @@ vms_asm_out_destructor (symbol, priority)
      int priority ATTRIBUTE_UNUSED;
 {
   dtors_section ();
-  assemble_integer (symbol, UNITS_PER_WORD, 1);
+  assemble_align (BITS_PER_WORD);
+  assemble_integer (symbol, UNITS_PER_WORD, BITS_PER_WORD, 1);
 }
 #else
 
