@@ -304,6 +304,34 @@ extern int flag_shared_data;
 extern int flag_schedule_insns;
 extern int flag_schedule_insns_after_reload;
 
+#ifdef HAIFA
+/* The following flags have effect only for scheduling before register
+   allocation:
+
+   flag_schedule_interblock means schedule insns accross basic blocks.
+   flag_schedule_speculative means allow speculative motion of non-load insns.
+   flag_schedule_speculative_load means allow speculative motion of some
+   load insns.
+   flag_schedule_speculative_load_dangerous allows speculative motion of more
+   load insns.
+   flag_schedule_reverse_before_reload means try to reverse original order
+   of insns (S).
+   flag_schedule_reverse_after_reload means try to reverse original order
+   of insns (R).  */
+
+extern int flag_schedule_interblock;
+extern int flag_schedule_speculative;
+extern int flag_schedule_speculative_load;
+extern int flag_schedule_speculative_load_dangerous;
+extern int flag_schedule_reverse_before_reload;
+extern int flag_schedule_reverse_after_reload;
+
+/* flag_on_branch_count_reg means try to replace add-1,compare,branch tupple
+   by a cheaper branch, on a count register. */
+extern int flag_branch_on_count_reg;
+#endif  /* HAIFA */
+
+
 /* Nonzero means put things in delayed-branch slots if supported. */
 
 extern int flag_delayed_branch;

@@ -147,7 +147,7 @@ in the following sections.
 -ffunction-sections -finline-functions
 -fkeep-inline-functions -fno-default-inline
 -fno-defer-pop  -fno-function-cse
--fno-inline  -fno-peephole  -fomit-frame-pointer
+-fno-inline  -fno-peephole  -fomit-frame-pointer -fregmove
 -frerun-cse-after-loop  -fschedule-insns
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
 -funroll-all-loops  -funroll-loops
@@ -2195,6 +2195,12 @@ used in one place: in @file{reorg.c}, instead of guessing which path a
 branch is mostly to take, the @samp{REG_BR_PROB} values are used to
 exactly determine which path is taken more often.
 @end ifset
+
+@item -fregmove
+Some machines only support 2 operands per instruction.  On such
+machines, GNU CC might have to do extra copies.  The @samp{-fregmove}
+option overrides the default for the machine to do the copy before
+register allocation.
 @end table
 
 @node Preprocessor Options

@@ -202,7 +202,7 @@ static rtx initial_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void final_reg_note_copy PROTO((rtx, struct inline_remap *));
 static void copy_loop_body PROTO((rtx, rtx, struct inline_remap *, rtx, int,
 				  enum unroll_types, rtx, rtx, rtx, rtx));
-static void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
+void iteration_info PROTO((rtx, rtx *, rtx *, rtx, rtx));
 static rtx approx_final_value PROTO((enum rtx_code, rtx, int *, int *));
 static int find_splittable_regs PROTO((enum unroll_types, rtx, rtx, rtx, int));
 static int find_splittable_givs PROTO((struct iv_class *,enum unroll_types,
@@ -1094,6 +1094,16 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	  /* Set unroll type to MODULO now.  */
 	  unroll_type = UNROLL_MODULO;
 	  loop_preconditioned = 1;
+#ifdef HAIFA
+	  if (loop_n_iterations > 0)
+	    loop_unroll_iter[ loop_number(loop_start, loop_end) ]
+	      = (loop_n_iterations
+		  - loop_n_iterations % (abs_inc * unroll_number));
+	  else
+	    /* inform loop.c about the new initial value */
+	    loop_start_value[loop_number(loop_start, loop_end)] = initial_value;
+#endif
+
 	}
     }
 
@@ -1107,6 +1117,15 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     }
 
   /* At this point, we are guaranteed to unroll the loop.  */
+
+#ifdef HAIFA
+  /* inform loop.c about the factor of unrolling */
+  if (unroll_type == UNROLL_COMPLETELY)
+    loop_unroll_factor[ loop_number(loop_start, loop_end) ] = -1;
+  else
+    loop_unroll_factor[ loop_number(loop_start, loop_end) ] = unroll_number;
+#endif  /* HAIFA */
+
 
   /* For each biv and giv, determine whether it can be safely split into
      a different variable for each unrolled copy of the loop body.
@@ -2263,7 +2282,7 @@ biv_total_increment (bl, loop_start, loop_end)
    Initial_value and/or increment are set to zero if their values could not
    be calculated.  */
 
-static void
+void
 iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
      rtx iteration_var, *initial_value, *increment;
      rtx loop_start, loop_end;

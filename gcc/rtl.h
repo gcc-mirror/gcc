@@ -812,6 +812,7 @@ extern void remove_note		PROTO((rtx, rtx));
 extern void note_stores		PROTO((rtx, void (*)()));
 extern int refers_to_regno_p	PROTO((int, int, rtx, rtx *));
 extern int reg_overlap_mentioned_p PROTO((rtx, rtx));
+extern rtx find_use_as_address	PROTO((rtx, rtx, HOST_WIDE_INT));
 
 
 /* Maximum number of parallel sets and clobbers in any insn in this fn.
