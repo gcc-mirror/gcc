@@ -44,12 +44,6 @@
 #endif /* !USE_COLLECT2 */
 
 
-/* GAS want's DBX debugging information.  */
-#undef SDB_DEBUGGING_INFO
-#ifndef DBX_DEBUGGING_INFO
-#define DBX_DEBUGGING_INFO
-#endif
-
 /*
  * we are using GAS
  */
@@ -66,13 +60,6 @@
 #define const_section()  text_section()
 #define fini_section() while (0)
 			       
-#if 0					/* this is fixed in 2.1 */
-#undef ASM_OUTPUT_ALIGN
-#define ASM_OUTPUT_ALIGN(FILE,LOG)	\
-  if ((LOG) >= 1)			\
-    fprintf (FILE, "\t.even\n");	
-#endif
-
 #undef CTORS_SECTION_ASM_OP
 #define CTORS_SECTION_ASM_OP "\t.data"
 #undef DTORS_SECTION_ASM_OP
