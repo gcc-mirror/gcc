@@ -796,7 +796,7 @@ scan_loop (loop_start, end, nregs)
 	      if (m->consec > 0)
 		{
 		  /* Skip this insn, not checking REG_LIBCALL notes.  */
-		  p = NEXT_INSN (p);
+		  p = next_nonnote_insn (p);
 		  /* Skip the consecutive insns, if there are any.  */
 		  p = skip_consec_insns (p, m->consec);
 		  /* Back up to the last insn of the consecutive group.  */
