@@ -1,5 +1,10 @@
 2001-06-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* c-typeck.c (build_c_cast): Use TYPE_MAIN_VARIANT when checking
+	for casting an aggregate to its own type.  Fixes PR c/2735.
+
+2001-06-05  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* doc/texinfo.tex: Update to version 2001-05-24.08.
 
 2001-06-05  Nathan Sidwell  <nathan@codesourcery.com>

@@ -3719,7 +3719,7 @@ build_c_cast (type, expr)
       return error_mark_node;
     }
 
-  if (type == TREE_TYPE (value))
+  if (type == TYPE_MAIN_VARIANT (TREE_TYPE (value)))
     {
       if (pedantic)
 	{
