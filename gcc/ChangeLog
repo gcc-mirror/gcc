@@ -1,3 +1,8 @@
+Fri Oct 29 18:16:03 1999  Andrew Haley  <aph@cygnus.com>
+
+       * config/i386/i386.h (ENCODE_SECTION_INFO): Don't do anything if
+       DECL is not a memory ref.
+ 
 Fri Oct 29 09:05:34 1999  Catherine Moore  <clm@cygnus.com>
 
 	* config/i386/i386.h (ix86_cpu): Remove extern attribute.
