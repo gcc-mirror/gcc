@@ -3636,9 +3636,11 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
 	    return x;
 
 	  /* Simplify the alternative arms; this may collapse the true and
-	     false arms to store-flag values.  */
-	  true_rtx = subst (true_rtx, pc_rtx, pc_rtx, 0, 0);
-	  false_rtx = subst (false_rtx, pc_rtx, pc_rtx, 0, 0);
+	     false arms to store-flag values.  Be careful to use copy_rtx
+	     here since true_rtx or false_rtx might share RTL with x as a
+	     result of the if_then_else_cond call above.  */
+	  true_rtx = subst (copy_rtx (true_rtx), pc_rtx, pc_rtx, 0, 0);
+	  false_rtx = subst (copy_rtx (false_rtx), pc_rtx, pc_rtx, 0, 0);
 
 	  /* If true_rtx and false_rtx are not general_operands, an if_then_else
 	     is unlikely to be simpler.  */

@@ -1,3 +1,7 @@
+2003-08-25  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* combine.c (combine_simplify_rtx): Fix RTL sharing bug.
+
 2003-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (pp_maybe_newline_and_indent): New macro.
