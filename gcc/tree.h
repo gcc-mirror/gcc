@@ -1494,3 +1494,9 @@ extern void end_temporary_allocation PROTO((void));
 /* Pop the obstack selection stack.  */
 extern void pop_obstacks PROTO((void));
 
+/* Make sure tree does not have an incomplete type.
+  (That includes void types. */
+extern tree require_complete_type PROTO((tree));
+
+/* Lookup an IDENTIFIER_NODE */
+extern tree lookup_name_current_level PROTO((tree));
