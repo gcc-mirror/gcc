@@ -1888,8 +1888,13 @@ finish_class_member_access_expr (tree object, tree name)
 
 	  /* Find the base of OBJECT_TYPE corresponding to SCOPE.  */
 	  access_path = lookup_base (object_type, scope, ba_check, NULL);
-	  if (!access_path || access_path == error_mark_node)
+	  if (access_path == error_mark_node)
 	    return error_mark_node;
+	  if (!access_path)
+	    {
+	      error ("`%T' is not a base of `%T'", scope, object_type);
+	      return error_mark_node;
+	    }
 	}
       else
 	{

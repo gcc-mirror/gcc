@@ -1,3 +1,9 @@
+2003-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12486
+	* typeck.c (finish_class_member_access_expr): Issue diagnostic
+	on erroneous use of qualified name.
+
 2003-09-30  Richard Henderson  <rth@redhat.com>
 
 	* decl.c (duplicate_decls): Copy DECL_SAVED_INSNS too.
