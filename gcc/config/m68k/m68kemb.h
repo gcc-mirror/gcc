@@ -45,9 +45,11 @@
 /* Override the default LIB_SPEC from gcc.c.  We don't currently support
    profiling, or libg.a.  */
 
+#undef  LIB_SPEC
 #define LIB_SPEC "-lc"
 
 /* Make this be null, since we want the crt0.o to come from the linker
    script */
 
+#undef  STARTFILE_SPEC
 #define STARTFILE_SPEC ""

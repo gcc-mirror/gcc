@@ -216,8 +216,8 @@ output_function_prologue (stream, size)
 	}
       if (dwarf2out_do_frame ())
 	{
-	  char *l = dwarf2out_cfi_label ();
-
+	  char *l;
+          l = (char *) dwarf2out_cfi_label ();   
 	  cfa_store_offset += 4;
 	  cfa_offset = cfa_store_offset;
 	  dwarf2out_def_cfa (l, FRAME_POINTER_REGNUM, cfa_offset);
@@ -343,7 +343,7 @@ output_function_prologue (stream, size)
 #endif
 	  if (dwarf2out_do_frame ())
 	    {
-	      char *l = dwarf2out_cfi_label ();
+	      char *l = (char *) dwarf2out_cfi_label ();
 	      int n_regs;
 
 	      cfa_store_offset += num_saved_regs * 12;
@@ -407,7 +407,7 @@ output_function_prologue (stream, size)
 			 reg_names[15 - i]);
 	    if (dwarf2out_do_frame ())
 	      {
-		char *l = dwarf2out_cfi_label ();
+		char *l = (char *) dwarf2out_cfi_label ();
 
 		cfa_store_offset += 4;
  		if (! frame_pointer_needed)
@@ -458,7 +458,7 @@ output_function_prologue (stream, size)
 	}
       if (dwarf2out_do_frame ())
 	{
-	  char *l = dwarf2out_cfi_label ();
+	  char *l = (char *) dwarf2out_cfi_label ();
 	  int n_regs;
 
 	  cfa_store_offset += num_saved_regs * 4;

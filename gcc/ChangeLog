@@ -1,3 +1,9 @@
+Tue Dec 16 18:51:00 1997  Bill Moyer <billm@cygnus.com>
+	 
+        * config/m68k/m68k.c (output_function_prologue): Typecast
+        dwarf2out_cfi_label to (char *).
+        * config/m68k/m68kemb.h (STARTFILE_SPEC): Redefined to "".
+	 
 Wed Dec 17 15:06:04 1997  Richard Henderson  <rth@cygnus.com>
 
 	* sparc.md (jump): Don't use the annul bit around an empty loop.
