@@ -1,3 +1,9 @@
+2004-08-18  Matt Austern  <austern@apple.com>
+
+	Dead code stripping
+	* darwin.h (EH_FRAME_SECTION_ATTR): Mark so it doesn't get stripped.
+	* darwin.c (darwin_file_end): Mark file as potentially strippable.
+	
 2004-08-18  Richard Henderson  <rth@redhat.com>
 
 	* alias.c (readonly_fields_p): Remove.

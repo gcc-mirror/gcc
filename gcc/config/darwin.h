@@ -898,7 +898,7 @@ enum machopic_addr_class {
 #define TARGET_ASM_EH_FRAME_SECTION darwin_eh_frame_section
 
 #define EH_FRAME_SECTION_NAME   "__TEXT"
-#define EH_FRAME_SECTION_ATTR ",coalesced,no_toc+strip_static_syms"
+#define EH_FRAME_SECTION_ATTR ",coalesced,no_toc+strip_static_syms+live_support"
 
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \

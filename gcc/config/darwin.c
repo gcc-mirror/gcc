@@ -1252,6 +1252,7 @@ darwin_file_end (void)
       destructor_section ();
       ASM_OUTPUT_ALIGN (asm_out_file, 1);
     }
+  fprintf (asm_out_file, "\t.subsections_via_symbols\n");
 }
 
 #include "gt-darwin.h"
