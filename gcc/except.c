@@ -368,13 +368,13 @@ struct eh_stack ehstack;
 struct eh_queue ehqueue;
 
 /* Insns for all of the exception handlers for the current function.
-   They are currently emitted by the frontend code. */
+   They are currently emitted by the frontend code.  */
 
 rtx catch_clauses;
 
 /* A TREE_CHAINed list of handlers for regions that are not yet
    closed. The TREE_VALUE of each entry contains the handler for the
-   corresponding entry on the ehstack. */
+   corresponding entry on the ehstack.  */
 
 static tree protect_list;
 
@@ -384,7 +384,7 @@ static tree protect_list;
    normal control flow out of a handler (instead of, say, returning to
    the caller of the current function or exiting the program).  Also
    used as the context of a throw to rethrow an exception to the outer
-   exception region. */
+   exception region.  */
 
 struct label_node *caught_return_label_stack = NULL;
 
@@ -468,7 +468,7 @@ copy_eh_entry (entry)
 }
 
 /* Push a new eh_node entry onto STACK, and return the start label for
-   the entry. */
+   the entry.  */
 
 static rtx
 push_eh_entry (stack)
@@ -555,7 +555,7 @@ dequeue_eh_entry (queue)
    handling is turned off. 
 
    This is used to ensure that -fexceptions has been specified if the
-   compiler tries to use any exception-specific functions. */
+   compiler tries to use any exception-specific functions.  */
 
 int
 doing_eh (do_warn)
@@ -575,7 +575,7 @@ doing_eh (do_warn)
 }
 
 /* Given a return address in ADDR, determine the address we should use
-   to find the corresponding EH region. */
+   to find the corresponding EH region.  */
 
 rtx
 eh_outer_context (addr)
@@ -601,7 +601,7 @@ eh_outer_context (addr)
 
 /* Start a new exception region and push the HANDLER for the region
    onto protect_list. All of the regions created with add_partial_entry
-   will be ended when end_protect_partials () is invoked. */
+   will be ended when end_protect_partials () is invoked.  */
 
 void
 add_partial_entry (handler)
@@ -609,7 +609,7 @@ add_partial_entry (handler)
 {
   expand_eh_region_start ();
 
-  /* Make sure the entry is on the correct obstack. */
+  /* Make sure the entry is on the correct obstack.  */
   push_obstacks_nochange ();
   resume_temporary_allocation ();
   protect_list = tree_cons (NULL_TREE, handler, protect_list);
@@ -618,7 +618,7 @@ add_partial_entry (handler)
 
 /* Output a note marking the start of an exception handling region.
    All instructions emitted after this point are considered to be part
-   of the region until expand_eh_region_end () is invoked. */
+   of the region until expand_eh_region_end () is invoked.  */
 
 void
 expand_eh_region_start ()
@@ -647,7 +647,7 @@ expand_eh_region_start ()
    marking the end of a try block, HANDLER is integer_zero_node.
 
    HANDLER will be transformed to rtl when expand_leftover_cleanups ()
-   is invoked. */
+   is invoked.  */
 
 void
 expand_eh_region_end (handler)
@@ -665,7 +665,7 @@ expand_eh_region_end (handler)
   note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
   NOTE_BLOCK_NUMBER (note) = CODE_LABEL_NUMBER (entry->exception_handler_label);
 
-  /* Emit a label marking the end of this exception region. */
+  /* Emit a label marking the end of this exception region.  */
   emit_label (entry->end_label);
 
   /* Put in something that takes up space, as otherwise the end
@@ -691,7 +691,7 @@ expand_eh_region_end (handler)
    Before invoking throw, the __eh_pc variable must have been set up
    to contain the PC being thrown from. This address is used by
    __throw () to determine which exception region (if any) is
-   responsible for handling the exception. */
+   responsible for handling the exception.  */
 
 static void
 emit_throw ()
@@ -707,7 +707,7 @@ emit_throw ()
 }
 
 /* An internal throw with an indirect CONTEXT we want to throw from.
-   CONTEXT evaluates to the context of the throw. */
+   CONTEXT evaluates to the context of the throw.  */
 
 static void
 expand_internal_throw_indirect (context)
@@ -720,7 +720,7 @@ expand_internal_throw_indirect (context)
 
 /* An internal throw with a direct CONTEXT we want to throw from.
    CONTEXT must be a label; its address will be used as the context of
-   the throw. */
+   the throw.  */
 
 void
 expand_internal_throw (context)
@@ -730,7 +730,7 @@ expand_internal_throw (context)
 }
 
 /* Called from expand_exception_blocks and expand_end_catch_block to
-   emit any pending handlers/cleanups queued from expand_eh_region_end (). */
+   emit any pending handlers/cleanups queued from expand_eh_region_end ().  */
 
 void
 expand_leftover_cleanups ()
@@ -745,10 +745,10 @@ expand_leftover_cleanups ()
       if (entry->finalization == integer_zero_node)
 	abort ();
 
-      /* Output the label for the start of the exception handler. */
+      /* Output the label for the start of the exception handler.  */
       emit_label (entry->exception_handler_label);
 
-      /* And now generate the insns for the handler. */
+      /* And now generate the insns for the handler.  */
       expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
 
       prev = get_last_insn ();
@@ -765,7 +765,7 @@ expand_leftover_cleanups ()
     }
 }
 
-/* Called at the start of a block of try statements. */
+/* Called at the start of a block of try statements.  */
 void
 expand_start_try_stmts ()
 {
@@ -780,7 +780,7 @@ expand_start_try_stmts ()
    It is responsible for starting a new instruction sequence for the
    instructions in the catch block, and expanding the handlers for the
    internally-generated exception regions nested within the try block
-   corresponding to this catch block. */
+   corresponding to this catch block.  */
 
 void
 expand_start_all_catch ()
@@ -791,7 +791,7 @@ expand_start_all_catch ()
   if (! doing_eh (1))
     return;
 
-  /* End the try block. */
+  /* End the try block.  */
   expand_eh_region_end (integer_zero_node);
 
   emit_line_note (input_filename, lineno);
@@ -809,7 +809,7 @@ expand_start_all_catch ()
   emit_insn (gen_nop ());
 
   /* Push the label that points to where normal flow is resumed onto
-     the top of the label stack. */
+     the top of the label stack.  */
   push_label_entry (&caught_return_label_stack, NULL_RTX, label);
 
   /* Start a new sequence for all the catch blocks.  We will add this
@@ -830,14 +830,14 @@ expand_start_all_catch ()
 	 integer_zero_node, so no code will be generated in the
 	 expand_expr call below. But, the label for the handler will
 	 still be emitted, so any code emitted after this point will
-	 end up being the handler. */
+	 end up being the handler.  */
       emit_label (entry->exception_handler_label);
       expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
 
       /* When we get down to the matching entry for this try block, stop.  */
       if (entry->finalization == integer_zero_node)
 	{
-	  /* Don't forget to free this entry. */
+	  /* Don't forget to free this entry.  */
 	  free (entry);
 	  break;
 	}
@@ -863,7 +863,7 @@ expand_start_all_catch ()
    catch clauses have already been generated, so we only have to add
    them to the catch_clauses list. We also want to make sure that if
    we fall off the end of the catch clauses that we rethrow to the
-   outer EH region. */
+   outer EH region.  */
 
 void
 expand_end_all_catch ()
@@ -881,7 +881,7 @@ expand_end_all_catch ()
      In other words, if the catch handler doesn't exit or return, we
      do a "throw" (using the address of Lresume as the point being
      thrown from) so that the outer EH region can then try to process
-     the exception. */
+     the exception.  */
 
   expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
 
@@ -903,7 +903,7 @@ expand_end_all_catch ()
 }
 
 /* End all the pending exception regions on protect_list. The handlers
-   will be emitted when expand_leftover_cleanups () is invoked. */
+   will be emitted when expand_leftover_cleanups () is invoked.  */
 
 void
 end_protect_partials ()
@@ -921,7 +921,7 @@ end_protect_partials ()
 
    The number in eh_table is the code label number of the exception
    handler for the region. This is added by add_eh_table_entry () and
-   used by output_exception_table_entry (). */
+   used by output_exception_table_entry ().  */
 
 static int *eh_table;
 static int eh_table_size;
@@ -933,7 +933,7 @@ static int eh_table_max_size;
 
    Called from final_scan_insn when a NOTE_INSN_EH_REGION_BEG is seen.
    N is the NOTE_BLOCK_NUMBER of the note, which comes from the code
-   label number of the exception handler for the region. */
+   label number of the exception handler for the region.  */
 
 void
 add_eh_table_entry (n)
@@ -982,7 +982,7 @@ exception_table_p ()
    exception region numbered N to file FILE. 
 
    N is the code label number corresponding to the handler of the
-   region. */
+   region.  */
 
 static void
 output_exception_table_entry (file, n)
@@ -1007,7 +1007,7 @@ output_exception_table_entry (file, n)
   putc ('\n', file);		/* blank line */
 }
 
-/* Output the exception table if we have and need one. */
+/* Output the exception table if we have and need one.  */
 
 void
 output_exception_table ()
@@ -1059,7 +1059,7 @@ register_exception_table ()
 
    DOESNT_NEED_UNWINDER is a target-specific macro that determines if
    the current function actually needs a per-function unwinder or not.
-   By default, all functions need one. */
+   By default, all functions need one.  */
 
 void
 start_eh_unwinder ()
@@ -1098,18 +1098,18 @@ end_eh_unwinder ()
   start_sequence_for_rtl_expr (expr);
 
   /* ret_val will contain the address of the code where the call
-     to the current function occurred. */
+     to the current function occurred.  */
   ret_val = expand_builtin_return_addr (BUILT_IN_RETURN_ADDRESS,
 					0, hard_frame_pointer_rtx);
   return_val_rtx = copy_to_reg (ret_val);
 
   /* Get the address we need to use to determine what exception
-     handler should be invoked, and store it in __eh_pc. */
+     handler should be invoked, and store it in __eh_pc.  */
   return_val_rtx = eh_outer_context (return_val_rtx);
   emit_move_insn (eh_saved_pc_rtx, return_val_rtx);
   
   /* Either set things up so we do a return directly to __throw, or
-     we return here instead. */
+     we return here instead.  */
 #ifdef JUMP_TO_THROW
   emit_move_insn (ret_val, throw_libfunc);
 #else
@@ -1231,8 +1231,9 @@ find_exception_handler_labels ()
   /* Generate a handy reference to each label.  */
 
   labels = (rtx *) alloca ((max_labelno - min_labelno) * sizeof (rtx));
+  bzero ((char *) labels, (max_labelno - min_labelno) * sizeof (rtx));
 
-  /* Eeeeeeew. */
+  /* Arrange for labels to be indexed directly by CODE_LABEL_NUMBER.  */
   labels -= min_labelno;
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -1288,7 +1289,7 @@ check_exception_handler_labels ()
 
   /* Ensure that the CODE_LABEL_NUMBER for the CODE_LABEL entry point
      in each handler corresponds to the CODE_LABEL_NUMBER of the
-     handler. */
+     handler.  */
 
   for (handler = exception_handler_labels;
        handler;
@@ -1348,7 +1349,7 @@ void
 init_eh ()
 {
   /* Generate rtl to reference the variable in which the PC of the
-     current context is saved. */
+     current context is saved.  */
   tree type = build_pointer_type (make_node (VOID_TYPE));
 
   eh_saved_pc = build_decl (VAR_DECL, get_identifier ("__eh_pc"), type);
@@ -1358,7 +1359,7 @@ init_eh ()
   eh_saved_pc_rtx = DECL_RTL (eh_saved_pc);
 }
 
-/* Initialize the per-function EH information. */
+/* Initialize the per-function EH information.  */
 
 void
 init_eh_for_function ()
@@ -1374,7 +1375,7 @@ init_eh_for_function ()
 /* Save some of the per-function EH info into the save area denoted by
    P. 
 
-   This is currently called from save_stmt_status (). */
+   This is currently called from save_stmt_status ().  */
 
 void
 save_eh_status (p)
@@ -1394,7 +1395,7 @@ save_eh_status (p)
 
 /* Restore the per-function EH info saved into the area denoted by P.  
 
-   This is currently called from restore_stmt_status. */
+   This is currently called from restore_stmt_status.  */
 
 void
 restore_eh_status (p)
@@ -1420,13 +1421,13 @@ static int
 can_throw (insn)
      rtx insn;
 {
-  /* Calls can always potentially throw exceptions. */
+  /* Calls can always potentially throw exceptions.  */
   if (GET_CODE (insn) == CALL_INSN)
     return 1;
 
 #ifdef ASYNCH_EXCEPTIONS
   /* If we wanted asynchronous exceptions, then everything but NOTEs
-     and CODE_LABELs could throw. */
+     and CODE_LABELs could throw.  */
   if (GET_CODE (insn) != NOTE && GET_CODE (insn) != CODE_LABEL)
     return 1;
 #endif
@@ -1449,7 +1450,7 @@ can_throw (insn)
    calls abort () if it can't find one.
 
    Can abort if INSN is not a NOTE_INSN_EH_REGION_BEGIN, or if N doesn't
-   correspond to the region number, or if DELETE_OUTER is NULL. */
+   correspond to the region number, or if DELETE_OUTER is NULL.  */
 
 static rtx
 scan_region (insn, n, delete_outer)
@@ -1545,7 +1546,7 @@ scan_region (insn, n, delete_outer)
 
    We look for empty exception regions and make them go (away). The
    jump optimization code will remove the handler if nothing else uses
-   it. */
+   it.  */
 
 void
 exception_optimize ()
@@ -1563,7 +1564,7 @@ exception_optimize ()
 	     insn, we will indirectly skip through all the insns
 	     inbetween. We are also guaranteed that the value of insn
 	     returned will be valid, as otherwise scan_region () won't
-	     return. */
+	     return.  */
 	  insn = scan_region (insn, NOTE_BLOCK_NUMBER (insn), &n);
 	}
     }
