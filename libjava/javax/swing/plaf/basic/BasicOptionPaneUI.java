@@ -64,7 +64,7 @@ public class BasicOptionPaneUI extends OptionPaneUI
 
 	System.out.println("     -------------: " + pane);
 
-	JLabel  message   = pane.msg != null ? new JLabel((String)pane.msg) : null;
+	JLabel  message   = pane.getMessage() != null ? new JLabel((String)pane.getMessage()) : null;
 	JButton ok_button = new JButton("Ok");	
 
 	ok_button.addActionListener(new ActionListener()
@@ -83,11 +83,11 @@ public class BasicOptionPaneUI extends OptionPaneUI
 		}
 	    });
 
-	if (pane.args != null)
+	if (pane.getOptions() != null)
 	    {
-		for (int i=0; i<pane.args.length; i++)
+		for (int i=0; i<pane.getOptions().length; i++)
 		    {
-			Object o = pane.args[i];
+			Object o = pane.getOptions()[i];
 			if (o != null)
 			    {
 				if (o instanceof String)
