@@ -453,7 +453,7 @@ namespace std
       {
 	int_type __ret;
 	if (_M_in_cur < _M_in_end)
-	  __ret = traits_type::to_int_type(*(this->gptr()));
+	  __ret = traits_type::to_int_type(*this->_M_in_cur);
 	else 
 	  __ret = this->underflow();
 	return __ret;

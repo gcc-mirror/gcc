@@ -1,5 +1,15 @@
 2003-04-21  Paolo Carlini  <pcarlini@unitus.it>
 
+	Consistently use _M_in_beg instead of eback(), _M_in_cur
+	instead of gptr(), and so on.
+	* include/bits/fstream.tcc (pbackfail, imbue): Here.
+	* include/bits/sstream.tcc (pbackfail, seekoff, seekpos): Ditto.
+	* include/bits/streambuf.tcc (sbumpc, sputbackc,
+	__copy_streambufs): Ditto.
+	* include/std/std_streambuf.h (sgetc): Ditto.
+
+2003-04-21  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/sstream.tcc (pbackfail, overflow):
 	Formatting fixes.
 

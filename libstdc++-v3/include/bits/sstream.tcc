@@ -55,7 +55,8 @@ namespace std
       // Order these tests done in is unspecified by the standard.
       if (__testpos)
 	{
-	  if (traits_type::eq(traits_type::to_char_type(__c), this->gptr()[-1])
+	  if (traits_type::eq(traits_type::to_char_type(__c),
+			      this->_M_in_cur[-1])
 	      && !__testeof)
 	    {
 	      --this->_M_in_cur;
@@ -139,14 +140,14 @@ namespace std
 
 	  if (__testin || __testboth)
 	    {
-	      __curi = this->gptr();
-	      __endi = this->egptr();
+	      __curi = this->_M_in_cur;
+	      __endi = this->_M_in_end;
 	    }
 	  if (__testout || __testboth)
 	    {
-	      __curo = this->pptr();
+	      __curo = this->_M_out_cur;
 	      // Due to the resolution of DR169, ios_base::end
-	      // is this->_M_out_lim, not epptr().
+	      // is this->_M_out_lim, not _M_out_end.
 	      __endo = this->_M_out_lim;
 	    }
 
@@ -199,15 +200,15 @@ namespace std
 	  bool __testposo = false;
 	  if (__testin)
 	    {
-	      __beg = this->eback();
-	      __end = this->egptr();
+	      __beg = this->_M_in_beg;
+	      __end = this->_M_in_end;
 	      if (0 <= __pos && __pos <= __end - __beg)
 		__testposi = true;
 	    }
 	  if (__testout)
 	    {
-	      __beg = this->pbase();
-	      __end = this->epptr();
+	      __beg = this->_M_out_beg;
+	      __end = this->_M_out_end;
 	      if (0 <= __pos && __pos <= __end - __beg)
 		__testposo = true;
 	    }
