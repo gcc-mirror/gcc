@@ -1,3 +1,9 @@
+2004-12-13  Daniel Berlin  <dberlin@dberlin.org>
+
+	* tree-ssa-loop-ch.c (copy_loop_headers): Loop can be null.
+	* tree-ssa-loop-im.c (determine_lsm): tree_root may not have a real
+	inner loop.
+
 2004-12-12  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-gimple.c (get_base_address): Update documentation.

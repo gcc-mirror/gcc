@@ -152,6 +152,8 @@ copy_loop_headers (void)
       int limit = 20;
 
       loop = loops->parray[i];
+      if (!loop)
+	continue;
       header = loop->header;
 
       /* If the loop is already a do-while style one (either because it was
