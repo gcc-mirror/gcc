@@ -1605,7 +1605,7 @@ m32r_sched_reorder (stream, verbose, ready, n_ready)
       if (new_tail+1 != new_head)
 	abort ();
 
-      bcopy ((char *) new_head, (char *) ready, sizeof (rtx) * n_ready);
+      memcpy (ready, new_head, sizeof (rtx) * n_ready);
       if (stream)
 	{
 #ifdef HAIFA

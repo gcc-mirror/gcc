@@ -1,3 +1,11 @@
+2001-03-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* alpha.c (check_float_value): Use memcpy, not bcopy.
+
+	* m32r.c (m32r_sched_reorder): Likewise.
+
+	* vax.c (check_float_value): Likewise.
+
 2001-03-10  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* toplev.c (file_name_nondirectory): Remove.
