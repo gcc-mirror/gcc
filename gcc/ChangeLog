@@ -1,5 +1,7 @@
 2000-08-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* extend.texi: Fix typo in last change.
+
 	* extend.texi: Add commentary on statement-expressions and their
 	interactions with C++.
 

@@ -220,7 +220,7 @@ on,
 
 @example
 string a, b;
-printf("%s", toupper((a+b).c_str()[0]));
+printf("%c", toupper((a+b).c_str()[0]));
 @end example
 
 @noindent
