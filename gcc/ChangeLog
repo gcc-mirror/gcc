@@ -1,3 +1,12 @@
+2002-08-08  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c-opts.c (cpp_opts): New.
+	(COMMAND_LINE_OPTIONS): Add switches from cppinit.c.
+	(c_common_decode_options): Handle cpplib switches.
+	(c_common_init_options): Set cpp_opts.
+	* cppinit.c (COMMAND_LINE_OPTIONS): Move some switches to c-opts.c.
+	(cpp_handle_option): Similarly.
+
 2002-08-08  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (TARGET_ALTIVEC): Define to 0.
