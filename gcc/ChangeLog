@@ -4,6 +4,7 @@ Wed Oct 20 10:46:41 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* flow.c (merge_blocks_move_predecessor_nojumps): Re-order the basic
 	block records so that merge_blocks_nomove will clean up correctly.
+	(split_edge): Handle casesi insns.
 
 Tue Oct 19 23:43:50 1999  Jeffrey A Law  (law@cygnus.com)
 
