@@ -1,3 +1,8 @@
+2001-05-22  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/freebsd.h (FBSD_CPP_PREDEFINES): Use #endif/#if pair
+	instead of #elif (which is OK for this case but not in general).
+
 2001-05-22  Andrew MacLeod  <amacleod@redhat.com>
 
 	* builtins.c (expand_builtin_longjmp): A longjmp can be a call too.
