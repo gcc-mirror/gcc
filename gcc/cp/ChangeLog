@@ -1,3 +1,9 @@
+2003-11-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12796
+	* class.c (handle_using_decl): Set input_location before calling
+	error_not_base_type.
+
 2003-10-26  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10371
