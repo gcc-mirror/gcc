@@ -779,7 +779,7 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
 
 /* Initialize a tree_partition_associator object using MAP.  */
 
-tpa_p
+static tpa_p
 tpa_init (var_map map)
 {
   tpa_p tpa;
@@ -1233,7 +1233,7 @@ sort_coalesce_list (coalesce_list_p cl)
    partitions via P1 and P2.  Their calculated cost is returned by the function.
    NO_BEST_COALESCE is returned if the coalesce list is empty.  */
 
-int 
+static int
 pop_best_coalesce (coalesce_list_p cl, int *p1, int *p2)
 {
   partition_pair_p node;
