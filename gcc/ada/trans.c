@@ -88,6 +88,7 @@ struct stmt_group GTY((chain_next ("%h.previous"))) {
 };
 
 static GTY(()) struct stmt_group *current_stmt_group;
+static struct stmt_group *global_stmt_group;
 
 /* List of unused struct stmt_group nodes.  */
 static GTY((deletable)) struct stmt_group *stmt_group_free_list;
@@ -113,9 +114,8 @@ static GTY(()) tree gnu_loop_label_stack;
    TREE_VALUE of each entry is the label at the end of the switch.  */
 static GTY(()) tree gnu_switch_label_stack;
 
-/* List of TREE_LIST nodes containing pending elaborations lists.
-   used to prevent the elaborations being reclaimed by GC.  */
-static GTY(()) tree gnu_pending_elaboration_lists;
+/* The FUNCTION_DECL for the elaboration procedure for the main unit.  */
+static GTY(()) tree gnu_elab_proc_decl;
 
 /* Map GNAT tree codes to GCC tree codes for simple expressions.  */
 static enum tree_code gnu_codes[Number_Node_Kinds];
@@ -127,6 +127,8 @@ static void record_code_position (Node_Id);
 static void insert_code_for (Node_Id);
 static void start_stmt_group (void);
 static void add_cleanup (tree);
+static tree mark_visited (tree *, int *, void *);
+static tree mark_unvisited (tree *, int *, void *);
 static tree end_stmt_group (void);
 static void add_stmt_list (List_Id);
 static tree build_stmt_group (List_Id, bool);
@@ -148,7 +150,7 @@ static tree extract_values (tree, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static tree maybe_implicit_deref (tree);
 static tree gnat_stabilize_reference_1 (tree, int);
-static int build_unit_elab (Entity_Id, int, tree);
+static bool build_unit_elab (void);
 static void annotate_with_node (tree, Node_Id);
 
 /* Constants for +0.5 and -0.5 for float-to-integer rounding.  */
@@ -159,22 +161,13 @@ static REAL_VALUE_TYPE dconstmp5;
    structures and then generates code.  */
 
 void
-gigi (Node_Id gnat_root,
-      int max_gnat_node,
-      int number_name,
-      struct Node *nodes_ptr,
-      Node_Id *next_node_ptr,
-      Node_Id *prev_node_ptr,
-      struct Elist_Header *elists_ptr,
-      struct Elmt_Item *elmts_ptr,
-      struct String_Entry *strings_ptr,
-      Char_Code *string_chars_ptr,
-      struct List_Header *list_headers_ptr,
-      Int number_units ATTRIBUTE_UNUSED,
-      char *file_info_ptr ATTRIBUTE_UNUSED,
-      Entity_Id standard_integer,
-      Entity_Id standard_long_long_float,
-      Entity_Id standard_exception_type,
+gigi (Node_Id gnat_root, int max_gnat_node, int number_name,
+      struct Node *nodes_ptr, Node_Id *next_node_ptr, Node_Id *prev_node_ptr,
+      struct Elist_Header *elists_ptr, struct Elmt_Item *elmts_ptr,
+      struct String_Entry *strings_ptr, Char_Code *string_chars_ptr,
+      struct List_Header *list_headers_ptr, Int number_units ATTRIBUTE_UNUSED,
+      char *file_info_ptr ATTRIBUTE_UNUSED, Entity_Id standard_integer,
+      Entity_Id standard_long_long_float, Entity_Id standard_exception_type,
       Int gigi_operating_mode)
 {
   tree gnu_standard_long_long_float;
@@ -193,6 +186,10 @@ gigi (Node_Id gnat_root,
 
   type_annotate_only = (gigi_operating_mode == 1);
 
+  init_gnat_to_gnu ();
+  gnat_compute_largest_alignment ();
+  init_dummy_type ();
+
   /* If we are just annotating types, give VOID_TYPE zero sizes to avoid
      errors.  */
   if (type_annotate_only)
@@ -204,20 +201,6 @@ gigi (Node_Id gnat_root,
   if (Nkind (gnat_root) != N_Compilation_Unit)
     gigi_abort (301);
 
-  /* Initialize ourselves.  */
-  init_gnat_to_gnu ();
-  init_dummy_type ();
-  init_code_table ();
-  gnat_compute_largest_alignment ();
-  start_stmt_group ();
-
-  /* Enable GNAT stack checking method if needed */
-  if (!Stack_Check_Probes_On_Target)
-    set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
-
-  if (Exception_Mechanism == Front_End_ZCX)
-    abort ();
-
   /* Save the type we made for integer as the type for Standard.Integer.
      Then make the rest of the standard types.  Note that some of these
      may be subtypes.  */
@@ -225,9 +208,6 @@ gigi (Node_Id gnat_root,
 		 TYPE_NAME (integer_type_node), 0);
 
   gnu_except_ptr_stack = tree_cons (NULL_TREE, NULL_TREE, NULL_TREE);
-
-  REAL_ARITHMETIC (dconstp5, RDIV_EXPR, dconst1, dconst2);
-  REAL_ARITHMETIC (dconstmp5, RDIV_EXPR, dconstm1, dconst2);
 
   gnu_standard_long_long_float
     = gnat_to_gnu_entity (Base_Type (standard_long_long_float), NULL_TREE, 0);
@@ -251,6 +231,28 @@ gigi (Node_Id gnat_root,
   gnat_to_gnu (gnat_root);
 }
 
+/* Perform initializations for this module.  */
+
+void
+gnat_init_stmt_group ()
+{
+  /* Initialize ourselves.  */
+  init_code_table ();
+  start_stmt_group ();
+
+  global_stmt_group = current_stmt_group;
+
+  /* Enable GNAT stack checking method if needed */
+  if (!Stack_Check_Probes_On_Target)
+    set_stack_check_libfunc (gen_rtx_SYMBOL_REF (Pmode, "_gnat_stack_check"));
+
+  if (Exception_Mechanism == Front_End_ZCX)
+    abort ();
+
+  REAL_ARITHMETIC (dconstp5, RDIV_EXPR, dconst1, dconst2);
+  REAL_ARITHMETIC (dconstmp5, RDIV_EXPR, dconstm1, dconst2);
+}
+
 /* This function is the driver of the GNAT to GCC tree transformation
    process.  It is the entry point of the tree transformer.  GNAT_NODE is the
    root of some GNAT tree.  Return the root of the corresponding GCC tree.
@@ -263,6 +265,7 @@ gigi (Node_Id gnat_root,
 tree
 gnat_to_gnu (Node_Id gnat_node)
 {
+  bool went_into_elab_proc = false;
   tree gnu_result = error_mark_node; /* Default to no value. */
   tree gnu_result_type = void_type_node;
   tree gnu_expr;
@@ -286,6 +289,27 @@ gnat_to_gnu (Node_Id gnat_node)
       && ! Compile_Time_Known_Value (gnat_node))
     return build1 (NULL_EXPR, get_unpadded_type (Etype (gnat_node)),
 		   build_call_raise (CE_Range_Check_Failed));
+
+  /* If this is a Statement and we are at top level, it must be part of
+     the elaboration procedure, so mark us as being in that procedure
+     and push our context.  */
+  if (!current_function_decl
+      && ((IN (Nkind (gnat_node), N_Statement_Other_Than_Procedure_Call)
+	   && Nkind (gnat_node) != N_Null_Statement)
+	  || Nkind (gnat_node) == N_Procedure_Call_Statement
+	  || Nkind (gnat_node) == N_Label
+	  || Nkind (gnat_node) == N_Handled_Sequence_Of_Statements
+	  || ((Nkind (gnat_node) == N_Raise_Constraint_Error
+	       || Nkind (gnat_node) == N_Raise_Storage_Error
+	       || Nkind (gnat_node) == N_Raise_Program_Error)
+	      && (Ekind (Etype (gnat_node)) == E_Void))))
+    {
+      current_function_decl = gnu_elab_proc_decl;
+      start_stmt_group ();
+      gnat_pushlevel ();
+      went_into_elab_proc = true;
+    }
+
 
   switch (Nkind (gnat_node))
     {
@@ -721,14 +745,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	    {
 	      if ((Is_Public (gnat_temp) || global_bindings_p ())
 		  && ! TREE_CONSTANT (gnu_expr))
-		{
-		  gnu_expr
-		    = create_var_decl (create_concat_name (gnat_temp, "init"),
-				       NULL_TREE, TREE_TYPE (gnu_expr),
-				       gnu_expr, 0, Is_Public (gnat_temp), 0,
-				       0, 0);
-		  add_decl_expr (gnu_expr, gnat_temp);
-		}
+		gnu_expr
+		  = create_var_decl (create_concat_name (gnat_temp, "init"),
+				     NULL_TREE, TREE_TYPE (gnu_expr),
+				     gnu_expr, 0, Is_Public (gnat_temp), 0,
+				     0, 0, gnat_temp);
 	      else
 		gnu_expr = maybe_variable (gnu_expr);
 
@@ -995,15 +1016,11 @@ gnat_to_gnu (Node_Id gnat_node)
 	   Prefix is a unit, not an object with a GCC equivalent.  Similarly
 	   for Elaborated, since that variable isn't otherwise known.  */
 	if (attribute == Attr_Elab_Body || attribute == Attr_Elab_Spec)
-	  {
-	    gnu_prefix
-	      = create_subprog_decl
-		(create_concat_name (Entity (Prefix (gnat_node)),
-				     attribute == Attr_Elab_Body
-				     ? "elabb" : "elabs"),
-		 NULL_TREE, void_ftype, NULL_TREE, 0, 1, 1, 0);
-	    return gnu_prefix;
-	  }
+	  return (create_subprog_decl
+		  (create_concat_name (Entity (Prefix (gnat_node)),
+				       attribute == Attr_Elab_Body
+				       ? "elabb" : "elabs"),
+		   NULL_TREE, void_ftype, NULL_TREE, 0, 1, 1, 0, gnat_node));
 
 	gnu_prefix = gnat_to_gnu (Prefix (gnat_node));
 	gnu_type = TREE_TYPE (gnu_prefix);
@@ -2272,6 +2289,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  {
 	    COND_EXPR_THEN (gnu_cond_expr) = gnu_loop_stmt;
 	    gnu_result = gnu_cond_expr;
+	    recalculate_side_effects (gnu_cond_expr);
 	  }
 	else
 	  gnu_result = gnu_loop_stmt;
@@ -2489,31 +2507,14 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	gnu_subprog_type = TREE_TYPE (gnu_subprog_decl);
 
-	/* We handle pending sizes via the elaboration of types, so we don't
-	   need to save them.  This causes them to be marked as part of the
-	   outer function and then discarded.  */
-	get_pending_sizes ();
-
-	/* ??? Temporarily do this to avoid GC throwing away outer stuff.  */
-	ggc_push_context ();
-
 	/* Set the line number in the decl to correspond to that of
 	   the body so that the line number notes are written
 	   correctly.  */
 	Sloc_to_locus (Sloc (gnat_node),
 		       &DECL_SOURCE_LOCATION (gnu_subprog_decl));
 
-	current_function_decl = gnu_subprog_decl;
-	announce_function (gnu_subprog_decl);
+	begin_subprog_body (gnu_subprog_decl);
 
-	/* Enter a new binding level and show that all the parameters belong to
-	   this function.  */
-	gnat_pushlevel ();
-	for (gnu_expr = DECL_ARGUMENTS (gnu_subprog_decl); gnu_expr;
-	     gnu_expr = TREE_CHAIN (gnu_expr))
-	  DECL_CONTEXT (gnu_expr) = gnu_subprog_decl;
-	
-	make_decl_rtl (gnu_subprog_decl, NULL);
 	gnu_cico_list = TYPE_CI_CO_LIST (gnu_subprog_type);
 
 	/* If there are OUT parameters, we need to ensure that the return
@@ -2595,8 +2596,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  }
 
 	pop_stack (&gnu_return_label_stack);
-	if (!type_annotate_only)
-	  add_decl_expr (current_function_decl, gnat_node);
 
 	/* Initialize the information node for the function and set the
 	   end location.  */
@@ -2621,7 +2620,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	mark_out_of_scope (Defining_Unit_Name (Specification (gnat_node)));
 	write_symbols = save_write_symbols;
 	debug_hooks = save_debug_hooks;
-	ggc_pop_context ();
 	gnu_result = alloc_stmt_list ();
       }
       break;
@@ -3151,7 +3149,29 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Compilation_Unit:
 
-      start_stmt_group ();
+      /* If this is the main unit, make the decl for the elaboration
+	 procedure.  Otherwise, push a statement group for this nested
+	 compilation unit.  */
+      if (gnat_node == Cunit (Main_Unit))
+	{
+	  bool body_p = (Defining_Entity (Unit (gnat_node)),
+			 Nkind (Unit (gnat_node)) == N_Package_Body
+			 || Nkind (Unit (gnat_node)) == N_Subprogram_Body);
+	  Entity_Id gnat_unit_entity = Defining_Entity (Unit (gnat_node));
+
+	  gnu_elab_proc_decl
+	    = create_subprog_decl
+	      (create_concat_name (gnat_unit_entity,
+				   body_p ? "elabb" : "elabs"),
+	       NULL_TREE, void_ftype, NULL_TREE, 0, 1, 0, 0, gnat_unit_entity);
+
+	  DECL_ELABORATION_PROC_P (gnu_elab_proc_decl) = 1;
+	  allocate_struct_function (gnu_elab_proc_decl);
+	  Sloc_to_locus (Sloc (gnat_unit_entity), &cfun->function_end_locus);
+	  cfun = 0;
+	}
+      else
+	start_stmt_group ();
 
       /* For a body, first process the spec if there is one. */
       if (Nkind (Unit (gnat_node)) == N_Package_Body
@@ -3169,7 +3189,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	      || Nkind (Unit (gnat_node)) == N_Generic_Package_Declaration
 	      || Nkind (Unit (gnat_node)) == N_Generic_Subprogram_Declaration)
 	    {
-	      gnu_result = end_stmt_group ();
+	      gnu_result = alloc_stmt_list ();
 	      break;
 	    }
 	}
@@ -3182,17 +3202,19 @@ gnat_to_gnu (Node_Id gnat_node)
       add_stmt_list (Pragmas_After (Aux_Decls_Node (gnat_node)));
       add_stmt_list (Actions (Aux_Decls_Node (gnat_node)));
       
-      /* Generate elaboration code for this unit, if necessary, and
-	 say whether we did or not.  */
-      Set_Has_No_Elaboration_Code
-	(gnat_node,
-	 build_unit_elab
-	 (Defining_Entity (Unit (gnat_node)),
-	  Nkind (Unit (gnat_node)) == N_Package_Body
-	  || Nkind (Unit (gnat_node)) == N_Subprogram_Body,
-	  get_pending_elaborations ()));
-
-      gnu_result = end_stmt_group ();
+      /* If this is the main unit, generate elaboration code for this
+	 unit, if necessary, and say whether we did or not.  Otherwise,
+	 there is no elaboration code and we end our statement group. */
+      if (gnat_node == Cunit (Main_Unit))
+	{
+	  Set_Has_No_Elaboration_Code (gnat_node, build_unit_elab ());
+	  gnu_result = alloc_stmt_list ();
+	}
+      else
+	{
+	  Set_Has_No_Elaboration_Code (gnat_node, 1);
+	  gnu_result = end_stmt_group ();
+	}
       break;
 
     case N_Subprogram_Body_Stub:
@@ -3258,8 +3280,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	     && Exception_Mechanism == Setjmp_Longjmp);
 	bool at_end = !type_annotate_only && Present (At_End_Proc (gnat_node));
 	bool binding_for_block = (at_end || gcc_zcx || setjmp_longjmp);
-	/* The statement(s) for the block itself.  */
-	tree gnu_inner_block;
+	tree gnu_inner_block; /* The statement(s) for the block itself.  */
 
 	/* If there are any exceptions or cleanup processing involved, we need
 	   an outer statement group (for Setjmp_Longjmp) and binding level.  */
@@ -3285,14 +3306,12 @@ gnat_to_gnu (Node_Id gnat_node)
 	      = create_var_decl (get_identifier ("JMPBUF_SAVE"), NULL_TREE,
 				 jmpbuf_ptr_type,
 				 build_call_0_expr (get_jmpbuf_decl),
-				 0, 0, 0, 0, 0);
+				 0, 0, 0, 0, 0, gnat_node);
 	    gnu_jmpbuf_decl
 	      = create_var_decl (get_identifier ("JMP_BUF"),
 				 NULL_TREE, jmpbuf_type,
-				 NULL_TREE, 0, 0, 0, 0, 0);
+				 NULL_TREE, 0, 0, 0, 0, 0, gnat_node);
 
-	    add_decl_expr (gnu_jmpsave_decl, gnat_node);
-	    add_decl_expr (gnu_jmpbuf_decl, gnat_node);
 	    set_block_jmpbuf_decl (gnu_jmpbuf_decl);
 
 	    /* When we exit this block, restore the saved value.  */
@@ -3340,8 +3359,7 @@ gnat_to_gnu (Node_Id gnat_node)
 					 NULL_TREE,
 					 build_pointer_type (except_type_node),
 					 build_call_0_expr (get_excptr_decl),
-					 0, 0, 0, 0, 0));
-	    add_decl_expr (TREE_VALUE (gnu_except_ptr_stack), gnat_node);
+					 0, 0, 0, 0, 0, gnat_node));
 
 	    /* Generate code for each handler. The N_Exception_Handler case
 	       below does the real work and returns a COND_EXPR for each
@@ -3602,9 +3620,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	  gnu_incoming_exc_ptr
 	    = create_var_decl (get_identifier ("EXPTR"), NULL_TREE,
 			       ptr_type_node, gnu_current_exc_ptr,
-			       0, 0, 0, 0, 0);
+			       0, 0, 0, 0, 0, gnat_node);
 
-	  add_decl_expr (gnu_incoming_exc_ptr, gnat_node);
 	  add_stmt_with_node (build_call_1_expr (begin_handler_decl,
 						 gnu_incoming_exc_ptr),
 			      gnat_node);
@@ -3863,6 +3880,16 @@ gnat_to_gnu (Node_Id gnat_node)
       gnu_result = alloc_stmt_list ();
     }
 
+  /* If we pushed our level as part of processing the elaboration routine,
+     pop it back now.  */
+  if (went_into_elab_proc)
+    {
+      add_stmt (gnu_result);
+      gnat_poplevel ();
+      gnu_result = end_stmt_group ();
+      current_function_decl = NULL_TREE;
+    }
+
   /* Set the location information into the result.  If we're supposed to
      return something of void_type, it means we have something we're
      elaborating for effect, so just return.  */
@@ -4030,28 +4057,10 @@ add_stmt (tree gnu_stmt)
 {
   append_to_statement_list (gnu_stmt, &current_stmt_group->stmt_list);
 
-  /* If this is a DECL_EXPR for a variable with DECL_INITIAL set
-     and decl has a padded type, convert it to the unpadded type so the
-     assignment is done properly.  In other case, the gimplification
-     of the DECL_EXPR will deal with DECL_INITIAL.  */
-  if (TREE_CODE (gnu_stmt) == DECL_EXPR
-      && TREE_CODE (DECL_EXPR_DECL (gnu_stmt)) == VAR_DECL
-      && DECL_INITIAL (DECL_EXPR_DECL (gnu_stmt))
-      && TREE_CODE (TREE_TYPE (DECL_EXPR_DECL (gnu_stmt))) == RECORD_TYPE
-      && TYPE_IS_PADDING_P (TREE_TYPE (DECL_EXPR_DECL (gnu_stmt))))
-    {
-      tree gnu_decl = DECL_EXPR_DECL (gnu_stmt);
-      tree gnu_lhs
-	= convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_decl))), gnu_decl);
-      tree gnu_assign_stmt
-	= build_binary_op (MODIFY_EXPR, NULL_TREE,
-			   gnu_lhs, DECL_INITIAL (gnu_decl));
-
-      DECL_INITIAL (gnu_decl) = 0;
-
-      annotate_with_locus (gnu_assign_stmt, DECL_SOURCE_LOCATION (gnu_decl));
-      add_stmt (gnu_assign_stmt);
-    }
+  /* If we're at top level, show everything in here is in use in case
+     any of it is shared by a subprogram.  */
+  if (!current_function_decl)
+    walk_tree (&gnu_stmt, mark_visited, NULL, NULL);
 }
 
 /* Similar, but set the location of GNU_STMT to that of GNAT_NODE.  */
@@ -4070,6 +4079,8 @@ add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 void
 add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 {
+  struct stmt_group *save_stmt_group = current_stmt_group;
+
   /* If this is a variable that Gigi is to ignore, we may have been given
      an ERROR_MARK.  So test for it.  We also might have been given a
      reference for a renaming.  So only do something for a decl.  Also
@@ -4079,8 +4090,76 @@ add_decl_expr (tree gnu_decl, Entity_Id gnat_entity)
 	  && TREE_CODE (TREE_TYPE (gnu_decl)) == UNCONSTRAINED_ARRAY_TYPE))
     return;
 
+  if (global_bindings_p ())
+    current_stmt_group = global_stmt_group;
+
   add_stmt_with_node (build (DECL_EXPR, void_type_node, gnu_decl),
 		      gnat_entity);
+
+  if (global_bindings_p ())
+    current_stmt_group = save_stmt_group;
+
+  /* If this is a DECL_EXPR for a variable with DECL_INITIAl set,
+     there are two cases we need to handle here.  */
+  if (TREE_CODE (gnu_decl) == VAR_DECL && DECL_INITIAL (gnu_decl))
+    {
+      tree gnu_init = DECL_INITIAL (gnu_decl);
+      tree gnu_lhs = NULL_TREE;
+
+      /* If this is a DECL_EXPR for a variable with DECL_INITIAL set
+	 and decl has a padded type, convert it to the unpadded type so the
+	 assignment is done properly.  */
+      if (TREE_CODE (TREE_TYPE (gnu_decl)) == RECORD_TYPE
+	  && TYPE_IS_PADDING_P (TREE_TYPE (gnu_decl)))
+	gnu_lhs
+	  = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_decl))), gnu_decl);
+
+      /* Otherwise, if this is going into memory and the initializer isn't
+	 valid for the assembler and loader.  Gimplification could do this,
+	 but would be run too late if -fno-unit-at-a-time.  */
+      else if (TREE_STATIC (gnu_decl)
+	       && !initializer_constant_valid_p (gnu_init,
+						 TREE_TYPE (gnu_decl)))
+	gnu_lhs = gnu_decl;
+
+      if (gnu_lhs)
+	{
+	  tree gnu_assign_stmt
+	    = build_binary_op (MODIFY_EXPR, NULL_TREE,
+			       gnu_lhs, DECL_INITIAL (gnu_decl));
+	  
+	  DECL_INITIAL (gnu_decl) = 0;
+	  annotate_with_locus (gnu_assign_stmt,
+			       DECL_SOURCE_LOCATION (gnu_decl));
+	  add_stmt (gnu_assign_stmt);
+	}
+    }
+}
+
+/* Utility function to mark nodes with TREE_VISITED.  Called from walk_tree.
+   We use this to indicate all variable sizes and positions in global types
+   may not be shared by any subprogram.  */
+
+static tree
+mark_visited (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
+{
+  if (TREE_VISITED (*tp))
+    *walk_subtrees = 0;
+  else
+    TREE_VISITED (*tp) = 1;
+
+  return NULL_TREE;
+}
+
+/* Likewise, but to mark as unvisited.  */
+
+static tree
+mark_unvisited (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
+		void *data ATTRIBUTE_UNUSED)
+{
+  TREE_VISITED (*tp) = 0;
+
+  return NULL_TREE;
 }
 
 /* Add GNU_CLEANUP, a cleanup action, to the current code group.  */
@@ -5083,7 +5162,7 @@ process_type (Entity_Id gnat_entity)
         {
 	  tree gnu_decl = create_type_decl (get_entity_name (gnat_entity),
 					    make_dummy_type (gnat_entity),
-					    0, 0, 0);
+					    0, 0, 0, gnat_entity);
 
 	  save_gnu_tree (gnat_entity, gnu_decl, 0);
 	  if (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
@@ -5510,93 +5589,43 @@ gnat_stabilize_reference_1 (tree e, int force)
   return result;
 }
 
-/* GNAT_UNIT is the Defining_Identifier for some package or subprogram,
-   either a spec or a body, BODY_P says which.  If needed, make a function
-   to be the elaboration routine for that object and perform the elaborations
-   in GNU_ELAB_LIST.
+/* Take care of building the elaboration procedure for the main unit.
 
-   Return 1 if we didn't need an elaboration function, zero otherwise.  */
+   Return true if we didn't need an elaboration function, false otherwise.  */
 
-static int
-build_unit_elab (Entity_Id gnat_unit, int body_p, tree gnu_elab_list)
+static bool
+build_unit_elab ()
 {
-  tree gnu_decl;
-  rtx insn;
-  int result = 1;
+  tree body, stmts;
 
-  /* ??? For now, force nothing to do.  */
-  gnu_elab_list = 0;
+  /* Mark everything we have as not visited.  */
+  walk_tree_without_duplicates (&current_stmt_group->stmt_list,
+				mark_unvisited, NULL);
 
-  /* If we have nothing to do, return.  */
-  if (gnu_elab_list == 0)
-    return 1;
-
-  /* Prevent the elaboration list from being reclaimed by the GC.  */
-  gnu_pending_elaboration_lists = chainon (gnu_pending_elaboration_lists,
-					   gnu_elab_list);
-
-  /* Set our file and line number to that of the object and set up the
-     elaboration routine.  */
-  gnu_decl = create_subprog_decl (create_concat_name (gnat_unit,
-						      body_p ?
-						      "elabb" : "elabs"),
-				  NULL_TREE, void_ftype, NULL_TREE, 0, 1, 0,
-				  0);
-  DECL_ELABORATION_PROC_P (gnu_decl) = 1;
-
-  begin_subprog_body (gnu_decl);
-  gnat_pushlevel ();
-  expand_start_bindings (0);
-
-  /* Emit the assignments for the elaborations we have to do.  If there
-     is no destination, this is just a call to execute some statement
-     that was placed within the declarative region.   But first save a
-     pointer so we can see if any insns were generated.  */
-
-  insn = get_last_insn ();
-
-  for (; gnu_elab_list; gnu_elab_list = TREE_CHAIN (gnu_elab_list))
-    if (TREE_PURPOSE (gnu_elab_list) == NULL_TREE)
-      {
-	if (TREE_VALUE (gnu_elab_list) != 0)
-	  expand_expr_stmt (TREE_VALUE (gnu_elab_list));
-      }
-    else
-      {
-	tree lhs = TREE_PURPOSE (gnu_elab_list);
-
-	input_location = DECL_SOURCE_LOCATION (lhs);
-
-	/* If LHS has a padded type, convert it to the unpadded type
-	   so the assignment is done properly.  */
-	if (TREE_CODE (TREE_TYPE (lhs)) == RECORD_TYPE
-	    && TYPE_IS_PADDING_P (TREE_TYPE (lhs)))
-	  lhs = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (lhs))), lhs);
-
-	emit_line_note (input_location);
-	expand_expr_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE,
-					   TREE_PURPOSE (gnu_elab_list),
-					   TREE_VALUE (gnu_elab_list)));
-      }
-
-  /* See if any non-NOTE insns were generated.  */
-  for (insn = NEXT_INSN (insn); insn; insn = NEXT_INSN (insn))
-    if (GET_RTX_CLASS (GET_CODE (insn)) == RTX_INSN)
-      {
-	result = 0;
-	break;
-      }
-
-  expand_end_bindings (NULL_TREE, block_has_vars (), -1);
+  /* Set the current function to be the elaboration procedure, pop our
+     binding level, end our statement group, and gimplify what we have.  */
+  set_current_block_context (gnu_elab_proc_decl);
   gnat_poplevel ();
-  end_subprog_body (alloc_stmt_list ());
+  body = end_stmt_group ();
+  current_function_decl = gnu_elab_proc_decl;
+  gimplify_body (&body, gnu_elab_proc_decl);
 
-  /* We are finished with the elaboration list it can now be discarded.  */
-  gnu_pending_elaboration_lists = TREE_CHAIN (gnu_pending_elaboration_lists);
+  /* We should have a BIND_EXPR, but it may or may not have any statements
+     in it.  If it doesn't have any, we have nothing to do.  */
+  stmts = body;
+  if (TREE_CODE (stmts) == BIND_EXPR)
+    stmts = BIND_EXPR_BODY (stmts);
 
-  /* If there were no insns, we don't need an elab routine.  It would
-     be nice to not output this one, but there's no good way to do that.  */
-  return result;
+  /* If there are no statements, we have nothing to do.  */
+  if (!stmts || !STATEMENT_LIST_HEAD (stmts))
+    return true;
+
+  /* Otherwise, compile the function.  Note that we'll be gimplifying
+     it twice, but that's fine for the nodes we use.  */
+  begin_subprog_body (gnu_elab_proc_decl);
+  end_subprog_body (body);
+
+  return false;
 }
 
 extern char *__gnat_to_canonical_file_spec (char *);

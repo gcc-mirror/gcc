@@ -1751,9 +1751,10 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
 	  tree gnu_range
 	    = build_range_type (NULL_TREE, size_one_node, gnu_size);
 	  tree gnu_array_type = build_array_type (char_type_node, gnu_range);
-	  tree gnu_decl =
-	    create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
-			     gnu_array_type, NULL_TREE, 0, 0, 0, 0, 0);
+	  tree gnu_decl
+	    = create_var_decl (get_identifier ("RETVAL"), NULL_TREE,
+			       gnu_array_type, NULL_TREE, 0, 0, 0, 0, 0,
+			       gnat_node);
 
 	  return convert (ptr_void_type_node,
 			  build_unary_op (ADDR_EXPR, NULL_TREE, gnu_decl));
@@ -1779,12 +1780,8 @@ build_call_alloc_dealloc (tree gnu_obj, tree gnu_size, unsigned align,
    the storage pool to use.  */
 
 tree
-build_allocator (tree type,
-                 tree init,
-                 tree result_type,
-                 Entity_Id gnat_proc,
-                 Entity_Id gnat_pool,
-                 Node_Id gnat_node)
+build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
+                 Entity_Id gnat_pool, Node_Id gnat_node)
 {
   tree size = TYPE_SIZE_UNIT (type);
   tree result;
