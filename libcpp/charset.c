@@ -1409,7 +1409,7 @@ _cpp_default_encoding (void)
      - the appropriate Unicode byte-order mark (FE FF) to recognize
        UTF16 and UCS4 (in both big-endian and little-endian flavors)
        and UTF8
-     - a "#i", "#d", "/*", "//", " #p" or "#p" (for #pragma) to
+     - a "#i", "#d", "/ *", "//", " #p" or "#p" (for #pragma) to
        distinguish ASCII and EBCDIC.
      - now we can parse something like "#pragma GCC encoding <xyz>
        on the first line, or even Emacs/VIM's mode line tags (there's

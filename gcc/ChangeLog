@@ -1,3 +1,11 @@
+2004-06-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.in (MKDEPS_H): New shorthand.
+	(c-opts.o): Update dependencies.
+	* c-opts.c: Include mkdeps.h.
+	(handle_deferred_opts): Use cpp_get_deps and deps_add_target,
+	not cpp_add_dependency_target.
+
 2004-06-05  Steven Bosscher  <stevenb@suse.de>
 
 	* config/v850/v850.c (v850_use_dfa_pipeline_interface): New.
@@ -9,7 +17,7 @@
 	* doc/install.texi: Document GMP as prerequisite. Document
 	--with-gmp and --with-gmp-dir configure options.
 	* fortran/gfortran.texi: Remove section "Compiling and testing",
-	remove TOC reference to it. 
+	remove TOC reference to it.
 
 2004-06-05  Graham Stott  <graham.stott@btinternet.com>
 
@@ -19,15 +27,15 @@
 2004-06-05  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* toplev.c (init_asm_output): Add explicit 'b' to mode when
-	opening asm_out_file. 
+	opening asm_out_file.
 	* c-pch.c (c_common_write_pch): Remove unnecessary fflush before
 	reading asm_out_file. Replace fflush after reading asm_out_file
 	with fseek.
 	* hosthooks-def.h (HOST_HOOKS_GT_PCH_ALLOC_GRANULARITY): Define
-	default and add to HOST_HOOKS_INITIALIZER. 
+	default and add to HOST_HOOKS_INITIALIZER.
 	* hosthooks.h (gt_pch_alloc_granularity): Declare hook function.
 	* ggc-common.c (default_gt_pch_alloc_granularity): New function.
-	(gt_pch_save): Use host_hooks.gt_pch_alloc_granularity 
+	(gt_pch_save): Use host_hooks.gt_pch_alloc_granularity
 	to set mmi.offset padding.
 	 * config.gcc (i[34567]86-*-mingw32*): Set target_gtfiles to
 	$(srcdir)/config/i386/winnt.c.
@@ -109,9 +117,9 @@
 	for TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY, with reversed sense.
 	* config/darwin.h (TARGET_WEAK_NOT_IN_ARCHIVE_TOC): Likewise.
 	* doc/tm.texi (TARGET_WEAK_NOT_IN_ARCHIVE_TOC): Rewrite
-	documentation to reflect the new macro name and to clarify its 
+	documentation to reflect the new macro name and to clarify its
 	meaning.
-	
+
 2004-06-03  Steven Bosscher  <stevenb@suse.de>
 
 	* rtl.def (VAR_LOCATION): Make RTX_EXTRA.
@@ -182,7 +190,7 @@
 	Update callers.
 	Use new worklist.
 	(process_ssa_edge_worklist): New function.
-	(tree_ssa_ccp): Move worklist processing core to 
+	(tree_ssa_ccp): Move worklist processing core to
 	process_ssa_edge_worklist, and just call that for the two worklists.
 
 2004-06-03  Steven Bosscher  <stevenb@suse.de>

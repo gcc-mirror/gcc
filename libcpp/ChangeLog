@@ -1,3 +1,34 @@
+2004-06-05  Zack Weinberg  <zack@codesourcery.com>
+
+	* Makefile.am: Add makedepend.
+	* Makefile.in, aclocal.m4: Regenerate.
+	* charset.c: Insert a space to avoid a warning.
+	* directives.c: Include mkdeps.h.
+	(_cpp_handle_directive): Reenable macro expander if appropriate.
+	(undefine_macros): Inline body of _cpp_free_definition for speed.
+	Do not call undef callback or _cpp_warn_if_unused_macro.
+	(cpp_get_deps): New interface.
+	* files.c (search_cache): Add pfile argument.  Check for file
+	that would be found by "" or <> search here...
+	(_cpp_find_file): ...not here.  Correct recorded start_dir of
+	files found by directory-of-current-file search that would be
+	found by "" or <> search.
+	* init.c (cpp_add_dependency_target): Delete.
+	* internal.h (struct lexer_state): Add discarding_output flag.
+	* lex.c (lex_identifier): Compute hash function while scanning.
+	* macro.c (cpp_scan_nooutput): Disable macro expansion outside
+	directives.
+	* makedepend.c: New file.
+	* mkdeps.c (struct deps): Add vpath vector.
+	(apply_vpath, deps_add_vpath): New function.
+	(deps_free): Free vpath vector.
+	(deps_add_dep, deps_add_target): Use apply_vpath.
+	* symtab.c (calc_hash): Use HT_HASHSTEP and HT_FINISH.
+	(ht_lookup_with_hash): New function.
+	* cpplib.h, mkdeps.h: Update prototypes.
+	* symtab.h: Update prototypes.
+	(HT_HASHSTEP, HT_FINISH): New macros.
+
 2004-05-29  Geoffrey Keating  <geoffk@apple.com>
 
 	* symtab.c (ht_create): Set entries_owned.

@@ -1142,12 +1142,18 @@ cpp_scan_nooutput (cpp_reader *pfile)
      transparently continuing with the including file.  */
   pfile->buffer->return_at_eof = true;
 
+  pfile->state.discarding_output++;
+  pfile->state.prevent_expansion++;
+
   if (CPP_OPTION (pfile, traditional))
     while (_cpp_read_logical_line_trad (pfile))
       ;
   else
     while (cpp_get_token (pfile)->type != CPP_EOF)
       ;
+
+  pfile->state.discarding_output--;
+  pfile->state.prevent_expansion--;
 }
 
 /* Step back one (or more) tokens.  Can only step mack more than 1 if

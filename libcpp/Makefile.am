@@ -13,6 +13,9 @@ noinst_HEADERS = \
 	include/cpplib.h include/line-map.h include/mkdeps.h \
 	include/symtab.h internal.h system.h ucnid.h
 
+noinst_PROGRAMS = makedepend
+makedepend_LDADD = libcpp.a ../libiberty/libiberty.a
+
 XGETTEXT = @XGETTEXT@
 GMSGFMT = @GMSGFMT@
 MSGMERGE = msgmerge

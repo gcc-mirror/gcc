@@ -34,6 +34,13 @@ extern struct deps *deps_init (void);
 /* Destroy a deps buffer.  */
 extern void deps_free (struct deps *);
 
+/* Add a set of "vpath" directories. The second argument is a colon-
+   separated list of pathnames, like you would set Make's VPATH
+   variable to.  If a dependency or target name begins with any of
+   these pathnames (and the next path element is not "..") that
+   pathname is stripped off.  */
+extern void deps_add_vpath (struct deps *, const char *);
+
 /* Add a target (appears on left side of the colon) to the deps list.  Takes
    a boolean indicating whether to quote the target for MAKE.  */
 extern void deps_add_target (struct deps *, const char *, int);

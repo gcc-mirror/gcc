@@ -714,6 +714,7 @@ SYSTEM_H = system.h hwint.h $(srcdir)/../include/libiberty.h
 PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/cpplib.h \
 	$(srcdir)/../libcpp/include/line-map.h
+MKDEPS_H = $(srcdir)/../libcpp/include/mkdeps.h
 SYMTAB_H = $(srcdir)/../libcpp/include/symtab.h
 TREE_DUMP_H = tree-dump.h $(SPLAY_TREE_H)
 TREE_GIMPLE_H = tree-gimple.h tree-iterator.h
@@ -1416,7 +1417,7 @@ c-pretty-print.o : c-pretty-print.c $(C_PRETTY_PRINT_H) \
 c-opts.o : c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H)		\
         $(TREE_H) c-pragma.h flags.h toplev.h langhooks.h		\
         tree-inline.h $(DIAGNOSTIC_H) intl.h debug.h $(C_COMMON_H)	\
-        opts.h options.h $(PARAMS_H)
+        opts.h options.h $(PARAMS_H) $(MKDEPS_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$< $(OUTPUT_OPTION) @TARGET_SYSTEM_ROOT_DEFINE@
 

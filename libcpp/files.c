@@ -158,7 +158,8 @@ static struct cpp_dir *search_path_head (cpp_reader *, const char *fname,
 				 int angle_brackets, enum include_type);
 static const char *dir_name_of_file (_cpp_file *file);
 static void open_file_failed (cpp_reader *pfile, _cpp_file *file);
-static struct file_hash_entry *search_cache (struct file_hash_entry *head,
+static struct file_hash_entry *search_cache (cpp_reader *pfile,
+					     struct file_hash_entry *head,
 					     const cpp_dir *start_dir);
 static _cpp_file *make_cpp_file (cpp_reader *, cpp_dir *, const char *fname);
 static cpp_dir *make_cpp_dir (cpp_reader *, const char *dir_name, int sysp);
@@ -406,7 +407,7 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
 			      INSERT);
 
   /* First check the cache before we resort to memory allocation.  */
-  entry = search_cache (*hash_slot, start_dir);
+  entry = search_cache (pfile, *hash_slot, start_dir);
   if (entry)
     return entry->u.file;
 
@@ -435,17 +436,6 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
 	    }
 	  break;
 	}
-
-      /* Only check the cache for the starting location (done above)
-	 and the quote and bracket chain heads because there are no
-	 other possible starting points for searches.  */
-      if (file->dir != pfile->bracket_include
-	  && file->dir != pfile->quote_include)
-	continue;
-
-      entry = search_cache (*hash_slot, file->dir);
-      if (entry)
-	break;
     }
 
   if (entry)
@@ -460,6 +450,33 @@ _cpp_find_file (cpp_reader *pfile, const char *fname, cpp_dir *start_dir, bool f
       /* This is a new file; put it in the list.  */
       file->next_file = pfile->all_files;
       pfile->all_files = file;
+    }
+
+  /* If this file was found in the directory-of-the-current-file,
+     check whether that directory is reachable via one of the normal
+     search paths.  If so, we must record this entry as being
+     reachable that way, otherwise we will mistakenly reprocess this
+     file if it is included later from the normal search path.  */
+  if (file->dir && start_dir->next == pfile->quote_include)
+    {
+      cpp_dir *d;
+      cpp_dir *proper_start_dir = pfile->quote_include;
+
+      for (d = proper_start_dir;; d = d->next)
+	{
+	  if (d == pfile->bracket_include)
+	    proper_start_dir = d;
+	  if (d == 0)
+	    {
+	      proper_start_dir = 0;
+	      break;
+	    }
+	  /* file->dir->name will have a trailing slash.  */
+	  if (!strncmp (d->name, file->dir->name, file->dir->len - 1))
+	    break;
+	}
+      if (proper_start_dir)
+	start_dir = proper_start_dir;
     }
 
   /* Store this new result in the hash table.  */
@@ -821,12 +838,40 @@ open_file_failed (cpp_reader *pfile, _cpp_file *file)
 /* Search in the chain beginning at HEAD for a file whose search path
    started at START_DIR != NULL.  */
 static struct file_hash_entry *
-search_cache (struct file_hash_entry *head, const cpp_dir *start_dir)
+search_cache (cpp_reader *pfile, struct file_hash_entry *head,
+	      const cpp_dir *start_dir)
 {
-  while (head && head->start_dir != start_dir)
-    head = head->next;
+  struct file_hash_entry *p;
 
-  return head;
+  /* Look for a file that was found from a search starting at the
+     given location.  */
+  for (p = head; p; p = p->next)
+    if (p->start_dir == start_dir)
+      return p;
+
+  /* If the given location is for a search of the directory containing
+     the current file, check for a match starting at the base of the
+     quoted include chain.  */
+  if (start_dir->next == pfile->quote_include)
+    {
+      start_dir = pfile->quote_include;
+      for (p = head; p; p = p->next)
+	if (p->start_dir == start_dir)
+	  return p;
+    }
+
+  /* If the given location is for a search from the base of the quoted
+     include chain, check for a match starting at the base of the
+     bracket include chain.  */
+  if (start_dir == pfile->quote_include)
+    {
+      start_dir = pfile->bracket_include;
+      for (p = head; p; p = p->next)
+	if (p->start_dir == start_dir)
+	  return p;
+    }
+
+  return 0;
 }
 
 /* Allocate a new _cpp_file structure.  */

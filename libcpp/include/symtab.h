@@ -71,6 +71,11 @@ extern void ht_destroy (hash_table *);
 
 extern hashnode ht_lookup (hash_table *, const unsigned char *,
 			   size_t, enum ht_lookup_option);
+extern hashnode ht_lookup_with_hash (hash_table *, const unsigned char *,
+                                     size_t, unsigned int,
+                                     enum ht_lookup_option);
+#define HT_HASHSTEP(r, c) ((r) * 67 + ((c) - 113));
+#define HT_HASHFINISH(r, len) ((r) + (len))
 
 /* For all nodes in TABLE, make a callback.  The callback takes
    TABLE->PFILE, the node, and a PTR, and the callback sequence stops

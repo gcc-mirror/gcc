@@ -35,6 +35,11 @@ struct deps
   const char **depv;
   unsigned int ndeps;
   unsigned int deps_size;
+
+  const char **vpathv;
+  size_t *vpathlv;
+  unsigned int nvpaths;
+  unsigned int vpaths_size;
 };
 
 static const char *munge (const char *);
@@ -105,24 +110,48 @@ munge (const char *filename)
   return buffer;
 }
 
+/* If T begins with any of the partial pathnames listed in d->vpathv,
+   then advance T to point beyond that pathname.  */
+static const char *
+apply_vpath (struct deps *d, const char *t)
+{
+  if (d->vpathv)
+    {
+      unsigned int i;
+      for (i = 0; i < d->nvpaths; i++)
+	{
+	  if (!strncmp (d->vpathv[i], t, d->vpathlv[i]))
+	    {
+	      const char *p = t + d->vpathlv[i];
+	      if (!IS_DIR_SEPARATOR (*p))
+		goto not_this_one;
+
+	      /* Do not simplify $(vpath)/../whatever.  ??? Might not
+		 be necessary. */
+	      if (p[1] == '.' && p[2] == '.' && IS_DIR_SEPARATOR (p[3]))
+		goto not_this_one;
+
+	      /* found a match */
+	      t = t + d->vpathlv[i] + 1;
+	      break;
+	    }
+	not_this_one:;
+	}
+    }
+
+  /* Remove leading ./ in any case.  */
+  while (t[0] == '.' && IS_DIR_SEPARATOR (t[1]))
+    t += 2;
+
+  return t;
+}
+
 /* Public routines.  */
 
 struct deps *
 deps_init (void)
 {
-  struct deps *d = xmalloc (sizeof (struct deps));
-
-  /* Allocate space for the vectors only if we need it.  */
-
-  d->targetv = 0;
-  d->depv = 0;
-
-  d->ntargets = 0;
-  d->targets_size = 0;
-  d->ndeps = 0;
-  d->deps_size = 0;
-
-  return d;
+  return xcalloc (sizeof (struct deps), 1);
 }
 
 void
@@ -144,6 +173,14 @@ deps_free (struct deps *d)
       free (d->depv);
     }
 
+  if (d->vpathv)
+    {
+      for (i = 0; i < d->nvpaths; i++)
+	free ((void *) d->vpathv[i]);
+      free (d->vpathv);
+      free (d->vpathlv);
+    }
+
   free (d);
 }
 
@@ -159,6 +196,7 @@ deps_add_target (struct deps *d, const char *t, int quote)
 			     d->targets_size * sizeof (const char *));
     }
 
+  t = apply_vpath (d, t);
   if (quote)
     t = munge (t);  /* Also makes permanent copy.  */
   else
@@ -202,7 +240,7 @@ deps_add_default_target (struct deps *d, const char *tgt)
 void
 deps_add_dep (struct deps *d, const char *t)
 {
-  t = munge (t);  /* Also makes permanent copy.  */
+  t = munge (apply_vpath (d, t));  /* Also makes permanent copy.  */
 
   if (d->ndeps == d->deps_size)
     {
@@ -210,6 +248,36 @@ deps_add_dep (struct deps *d, const char *t)
       d->depv = xrealloc (d->depv, d->deps_size * sizeof (const char *));
     }
   d->depv[d->ndeps++] = t;
+}
+
+void
+deps_add_vpath (struct deps *d, const char *vpath)
+{
+  const char *elem, *p;
+  char *copy;
+  size_t len;
+
+  for (elem = vpath; *elem; elem = p)
+    {
+      for (p = elem; *p && *p != ':'; p++);
+      len = p - elem;
+      copy = xmalloc (len + 1);
+      memcpy (copy, elem, len);
+      copy[len] = '\0';
+      if (*p == ':')
+	p++;
+
+      if (d->nvpaths == d->vpaths_size)
+	{
+	  d->vpaths_size = d->vpaths_size * 2 + 8;
+	  d->vpathv = xrealloc (d->vpathv,
+				d->vpaths_size * sizeof (const char *));
+	  d->vpathlv = xrealloc (d->vpathlv, d->vpaths_size * sizeof (size_t));
+	}
+      d->vpathv[d->nvpaths] = copy;
+      d->vpathlv[d->nvpaths] = len;
+      d->nvpaths++;
+    }
 }
 
 void

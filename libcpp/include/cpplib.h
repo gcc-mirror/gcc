@@ -538,23 +538,18 @@ extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *,
    command line options).  */
 extern void cpp_set_lang (cpp_reader *, enum c_lang);
 
-/* Add a dependency TARGET.  Quote it for "make" if QUOTE.  Can be
-   called any number of times before cpp_read_main_file().  If no
-   targets have been added before cpp_read_main_file(), then the
-   default target is used.  */
-extern void cpp_add_dependency_target (cpp_reader *, const char *, int);
-
 /* Set the include paths.  */
 extern void cpp_set_include_chains (cpp_reader *, cpp_dir *, cpp_dir *, int);
 
-/* Call these to get pointers to the options and callback structures
-   for a given reader.  These pointers are good until you call
-   cpp_finish on that reader.  You can either edit the callbacks
+/* Call these to get pointers to the options, callback, and deps
+   structures for a given reader.  These pointers are good until you
+   call cpp_finish on that reader.  You can either edit the callbacks
    through the pointer returned from cpp_get_callbacks, or set them
    with cpp_set_callbacks.  */
 extern cpp_options *cpp_get_options (cpp_reader *);
 extern cpp_callbacks *cpp_get_callbacks (cpp_reader *);
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
+extern struct deps *cpp_get_deps (cpp_reader *);
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the

@@ -37,6 +37,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "debug.h"		/* For debug_hooks.  */
 #include "opts.h"
 #include "options.h"
+#include "mkdeps.h"
 
 #ifndef DOLLARS_IN_IDENTIFIERS
 # define DOLLARS_IN_IDENTIFIERS true
@@ -1322,13 +1323,22 @@ static void
 handle_deferred_opts (void)
 {
   size_t i;
+  struct deps *deps;
+
+  /* Avoid allocating the deps buffer if we don't need it.
+     (This flag may be true without there having been -MT or -MQ
+     options, but we'll still need the deps buffer.)  */
+  if (!deps_seen)
+    return;
+
+  deps = cpp_get_deps (parse_in);
 
   for (i = 0; i < deferred_count; i++)
     {
       struct deferred_opt *opt = &deferred_opts[i];
 
       if (opt->code == OPT_MT || opt->code == OPT_MQ)
-	cpp_add_dependency_target (parse_in, opt->arg, opt->code == OPT_MQ);
+	deps_add_target (deps, opt->arg, opt->code == OPT_MQ);
     }
 }
 
