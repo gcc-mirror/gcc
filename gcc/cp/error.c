@@ -2010,7 +2010,7 @@ dump_expr (tree t, int flags)
       break;
 
     case BASELINK:
-      print_tree_identifier (scratch_buffer, DECL_NAME (get_first_fn (t)));
+      dump_expr (get_first_fn (t), flags & ~TFF_EXPR_IN_PARENS);
       break;
 
       /* else fall through */

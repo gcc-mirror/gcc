@@ -117,6 +117,7 @@ static int  type_unification_real PARAMS ((tree, tree, tree, tree,
 					   int, unification_kind_t, int, int));
 static void note_template_header PARAMS ((int));
 static tree maybe_fold_nontype_arg PARAMS ((tree));
+static void maybe_fold_nontype_args PARAMS ((tree));
 static tree convert_nontype_argument PARAMS ((tree, tree));
 static tree convert_template_argument PARAMS ((tree, tree, tree,
 					       tsubst_flags_t, int, tree));
@@ -5618,6 +5619,28 @@ maybe_fold_nontype_arg (arg)
   return arg;
 }
 
+/* Apply maybe_fold_nontype_arg on a list or vector of args.  */
+
+static void
+maybe_fold_nontype_args (tree targs)
+{
+  if (!targs)
+    /*OK*/;
+  else if (TREE_CODE (targs) == TREE_LIST)
+    {
+      tree chain;
+      for (chain = targs; chain; chain = TREE_CHAIN (chain))
+	TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
+    }
+  else
+    {
+      int i;
+      for (i = 0; i < TREE_VEC_LENGTH (targs); ++i)
+	TREE_VEC_ELT (targs, i)
+	  = maybe_fold_nontype_arg (TREE_VEC_ELT (targs, i));
+    }
+}
+
 /* Substitute ARGS into the vector of template arguments T.  */
 
 static tree
@@ -7243,6 +7266,9 @@ tsubst_copy (t, args, complain, in_decl)
 	    template_id_p = true;
 	    template_args = TREE_OPERAND (fns, 1);
 	    fns = TREE_OPERAND (fns, 0);
+	    template_args = tsubst_copy (template_args, args,
+					 complain, in_decl);
+	    maybe_fold_nontype_args (template_args);
 	  }
 	name = DECL_NAME (get_first_fn (fns));
 	t = lookup_fnfields (qualifying_scope, name, /*protect=*/1);
@@ -7450,20 +7476,7 @@ tsubst_copy (t, args, complain, in_decl)
 	tree targs = tsubst_copy (TREE_OPERAND (t, 1), args, complain,
 				  in_decl);
 
-	if (targs && TREE_CODE (targs) == TREE_LIST)
-	  {
-	    tree chain;
-	    for (chain = targs; chain; chain = TREE_CHAIN (chain))
-	      TREE_VALUE (chain) = maybe_fold_nontype_arg (TREE_VALUE (chain));
-	  }
-	else if (targs)
-	  {
-	    int i;
-	    for (i = 0; i < TREE_VEC_LENGTH (targs); ++i)
-	      TREE_VEC_ELT (targs, i) 
-		= maybe_fold_nontype_arg (TREE_VEC_ELT (targs, i));
-	  }
-
+	maybe_fold_nontype_args (targs);
 	return lookup_template_function
 	  (tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl), targs);
       }
@@ -7916,6 +7929,8 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 	tree object;
 	tree template
 	  = tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl);
+	tree targs
+	  = tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl);
 	
 	if (TREE_CODE (template) == COMPONENT_REF)
 	  {
@@ -7924,10 +7939,8 @@ tsubst_copy_and_build (t, args, complain, in_decl)
 	  }
 	else
 	  object = NULL_TREE;
-
-	template = lookup_template_function
-	  (template,
-	   tsubst_copy (TREE_OPERAND (t, 1), args, complain, in_decl));
+	maybe_fold_nontype_args (targs);
+	template = lookup_template_function (template, targs);
 	
 	if (object)
 	  return build (COMPONENT_REF, TREE_TYPE (template), 
