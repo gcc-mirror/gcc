@@ -496,7 +496,8 @@ read_skip_spaces (infile)
 	;
       else if (c == ';')
 	{
-	  while ((c = getc (infile)) && c != '\n') ;
+	  while ((c = getc (infile)) && c != '\n' && c != EOF)
+	    ;
 	}
       else if (c == '/')
 	{
@@ -506,7 +507,7 @@ read_skip_spaces (infile)
 	    dump_and_abort ('*', c, infile);
 	  
 	  prevc = 0;
-	  while ((c = getc (infile)))
+	  while ((c = getc (infile)) && c != EOF)
 	    {
 	      if (prevc == '*' && c == '/')
 		break;

@@ -1,3 +1,8 @@
+Fri Apr 10 13:40:20 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* rtl.c (read_skip_spaces): Prevent infinite loops upon
+	encountering unterminated comments.
+
 Fri Apr 10 10:43:41 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* emit-rtl.c (operand_subword): Properly handle CONST_INTs for
