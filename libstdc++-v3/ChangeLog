@@ -1,3 +1,9 @@
+2003-12-08  David S. Miller  <davem@redhat.com>
+
+	PR libstdc++/12496
+	* config/cpu/sparc/atomicity.h (__exchange_and_add, __atomic_add):
+	Extend increment to _Atomic_word before giving to assembler.
+
 2003-12-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/ext/enc_filebuf/char/13189.cc: Guard for __enc_traits.
