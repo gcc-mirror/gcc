@@ -2260,7 +2260,7 @@ build_new_1 (exp)
 
   size = size_in_bytes (true_type);
   if (has_array)
-    size = fold (cp_build_binary_op (MULT_EXPR, size, nelts));
+    size = size_binop (MULT_EXPR, size, convert (sizetype, nelts));
 
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
