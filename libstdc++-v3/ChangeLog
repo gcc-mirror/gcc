@@ -1,3 +1,21 @@
+2000-05-25  Benjamin Kosnik  <bkoz@milou.soma.redhat.com>
+
+	* inclosure: Change to...
+	* mkinclosure: This.
+	Fix paths to bash.	
+	* mkcshadow: Fix paths to bash.
+	
+	* src/Makefile.am: Tweaks. Do cshadow header trickery at build time.
+	* src/Makefile.in: Regnerate.
+	* acinclude.m4 (GLIBCPP_COMPILER_VERSION): Fix typo.
+	(GLIBCPP_ENABLE_SHADOW): Do a less gross hack.
+	* aclocal.m4: Regenerate.
+	
+	* configure.in: Enable long long by default.
+	* configure: Regenerate.
+	
+	* mkcheck.in (LIB_PATH): Revert.
+
 2000-05-24   Nathan "I don't write ChangeLog Entries" Myers  <ncm@cantrip.org>
 
 	* config/cpu/i486: New directory.

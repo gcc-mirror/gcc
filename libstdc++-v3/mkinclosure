@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # usage: inclosure [ -I dir ] ... [ -G header-name ] ... header-name ...
 #
@@ -97,4 +97,6 @@ until cmp -s $OLDH $HDRS; do #  (until no new headers found)
 
 done
 cat $HDRS
+
+
 

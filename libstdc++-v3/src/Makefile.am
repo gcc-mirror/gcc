@@ -46,7 +46,8 @@ EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 # These bits are all figured out from configure. Look in acinclude.m4
 # or configure.in to see how they are set.
 AC_CXXFLAGS = \
-	@WERROR@ @FMTFLAGS@ @CPUFLAGS@ @EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
+	@WERROR@ @FMTFLAGS@ @CSHADOWFLAGS@ @CPUFLAGS@ \
+	@EXTRA_CXX_FLAGS@ @DEBUGFLAGS@ 
 
 # Need to manually set this option because AC_CXXFLAGS has to be at
 # the end of the compile line so that -O2 can be over-riden as the
@@ -56,6 +57,23 @@ AM_CXXFLAGS = \
 	-fno-implicit-templates \
 	-Wall -Wno-format -W -Wwrite-strings -Winline \
 	$(OPTIMIZE_CXXFLAGS) $(AC_CXXFLAGS) 
+
+
+# Passed down for cross compilers, canadian crosses.
+TOPLEVEL_INCLUDES = -I$(includedir)
+
+LIBIO_INCLUDES = @BUILD_LIBIO_INCLUDE@ -I$(top_srcdir)/libio 
+
+CSHADOW_INCLUDES = @CSHADOWFLAGS@ @CSHADOW_INCLUDES@
+
+CONFIG_INCLUDES = \
+	-I$(top_srcdir)/@cpu_include_dir@ \
+	-I$(top_srcdir)/@ctype_include_dir@
+
+INCLUDES = \
+	-nostdinc++ -I$(top_srcdir) \
+	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(CSHADOW_INCLUDES) \
+	$(TOPLEVEL_INCLUDES)	
 
 
 # Need to explicitly set this so that AM_CXXFLAGS is last. (That way,
@@ -73,18 +91,6 @@ LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(INCLUDES) \
 # course is impossible.
 CXXLINK = $(LIBTOOL) --mode=link "$(CC)" $(AM_CXXFLAGS) $(LDFLAGS) -o $@
 
-
-TOPLEVEL_INCLUDES = -I$(includedir)
-
-LIBIO_INCLUDES = @BUILD_LIBIO_INCLUDE@ -I$(top_srcdir)/libio 
-
-CONFIG_INCLUDES = \
-	-I$(top_srcdir)/@cpu_include_dir@ \
-	-I$(top_srcdir)/@ctype_include_dir@
-
-INCLUDES = \
-	-nostdinc++ -I$(top_srcdir) \
-	$(LIBIO_INCLUDES) $(CONFIG_INCLUDES) $(TOPLEVEL_INCLUDES)	
 
 headers = \
 	bits/cpp_type_traits.h \
@@ -182,6 +188,15 @@ generated_headers = \
 cpu_headers = \
 	 $(top_srcdir)/@cpu_include_dir@/bits/atomicity.h 
 
+
+sources = \
+	limitsMEMBERS.cc c++io.cc \
+	cmath.cc \
+	complex.cc complexf.cc complexl.cc complex_io.cc \
+	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
+	locale.cc localename.cc  \
+	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc 
+
 string_sources = \
 	stringMAIN.cc stringCTORNC.cc stringCTORAL.cc \
 	stringCTORCPR.cc stringCTORCPRAL.cc stringCTORPRAL.cc \
@@ -221,14 +236,6 @@ wstring_sources = \
 	wstringADDCS.cc wstringEXTRACT.cc wstringINSERT.cc wstringGETLINE.cc \
 	wstringSCOPY.cc wstringEQ.cc
 
-sources = \
-	limitsMEMBERS.cc c++io.cc \
-	cmath.cc \
-	complex.cc complexf.cc complexl.cc complex_io.cc \
-	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
-	locale.cc localename.cc  \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc 
-
 VPATH += $(top_srcdir) $(top_srcdir)/std $(top_srcdir)/src
 VPATH += $(top_srcdir)/@ctype_include_dir@
 
@@ -249,6 +256,24 @@ libstdc___la_LIBADD = \
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
 
 libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
+
+
+# Make sure cshadow headers are built first.
+if GLIBCPP_USE_CSHADOW
+CSHADOW_H = $(top_builddir)/stamp-cshadow
+else
+CSHADOW_H =
+endif
+
+# Specify that all *.o's depend on this.
+$(libstdc___la_OBJECTS): $(CSHADOW_H)
+
+$(top_builddir)/stamp-cshadow: $(top_srcdir)/mkinclosure \
+                               $(top_srcdir)/mkcshadow
+	$(top_srcdir)/mkinclosure \
+	"-I $(top_builddir)/../../gcc/include -I /usr/include -G machine/ansi.h" | $(top_srcdir)/mkcshadow;
+	rm -f  $(top_builddir)/stamp-cshadow 
+	echo "done" > $(top_builddir)/stamp-cshadow 
 
 
 # We cannot use the default rules to install headers since we cannot

@@ -69,6 +69,8 @@ BUILD_LIBIO_INCLUDE = @BUILD_LIBIO_INCLUDE@
 CC = @CC@
 CPP = @CPP@
 CPUFLAGS = @CPUFLAGS@
+CSHADOWFLAGS = @CSHADOWFLAGS@
+CSHADOW_INCLUDES = @CSHADOW_INCLUDES@
 CSTDIO_CC = @CSTDIO_CC@
 CSTDIO_H = @CSTDIO_H@
 CXX = @CXX@
@@ -90,7 +92,6 @@ MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
-SHADOW_INCLUDES = @SHADOW_INCLUDES@
 THREADDEPS = @THREADDEPS@
 THREADINCS = @THREADINCS@
 THREADLIBS = @THREADLIBS@
@@ -107,9 +108,8 @@ libinst_wstring_la = @libinst_wstring_la@
 AUTOMAKE_OPTIONS = 1.3 cygnus
 
 noinst_LTLIBRARIES = libio.la
-@GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE@LIBIO_CONFIG_H = \
-@GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE@_G_config.h
-@GLIBCPP_NEED_LIBIO_CONFIG_H_FALSE@LIBIO_CONFIG_H = \
+
+LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 
 includes = 
 
@@ -126,8 +126,9 @@ EXTRA_DIST = iostreamP.h
 libio_la_LIBADD = $(LIBIO_SRCS) 
 libio_la_DEPENDENCIES = $(libio_la_LIBADD)
 libio_la_SOURCES = $(LIBIO_SRCS)
-
-LINK = $(LIBTOOL) --mode=link "$(CCLD)" $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+@GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE@LIBIO_CONFIG_H = \
+@GLIBCPP_NEED_LIBIO_CONFIG_H_TRUE@_G_config.h
+@GLIBCPP_NEED_LIBIO_CONFIG_H_FALSE@LIBIO_CONFIG_H = \
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -338,7 +339,7 @@ installdirs mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-# Specifying that *.o depend on this one header
+# Specify that *.o depend on this one header
 $(libio_la_OBJECTS): $(LIBIO_CONFIG_H)
 
 # Generate this file.
