@@ -332,6 +332,14 @@ move_operand (op, mode)
 
   op = XEXP (op, 0);
 
+  /* The LO_SUM part of a DLT reference is not considered a move_operand;
+     we must reject it here since it must be accepted by memory_address_p.  */
+  if (GET_CODE (op) == LO_SUM
+      && GET_CODE (XEXP (op, 0)) == REG
+      && REG_OK_FOR_BASE_P (XEXP (op, 0))
+      && GET_CODE (XEXP (op, 1)) == UNSPEC)
+    return 0;
+
   /* Since move_operand is only used for source operands, we can always
      allow scaled indexing!  */
   if (! TARGET_DISABLE_INDEXING
