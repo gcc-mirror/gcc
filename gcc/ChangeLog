@@ -1,3 +1,7 @@
+2004-06-22  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* Makefile.in (distclean): Don't try to remove empty directories.
+
 2004-06-22  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/15869

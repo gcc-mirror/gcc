@@ -3068,7 +3068,6 @@ distclean: clean lang.distclean
 	-rm -f fixinc/Makefile
 # Delete po/*.gmo only if we are not building in the source directory.
 	-if [ ! -f po/exgettext ]; then rm -f po/*.gmo; fi
-	-rmdir ada cp f java objc fixinc intl po testsuite 2>/dev/null
 
 # Get rid of every file that's generated from some other file, except for `configure'.
 # Most of these files ARE PRESENT in the GCC distribution.
