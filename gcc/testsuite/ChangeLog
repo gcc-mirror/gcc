@@ -1,5 +1,11 @@
 2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
 
+	* gfortran.dg/g77/f77-edit-s-out.f: Copy from g77.dg. XFAIL 
+	* gfortran.dg/g77/f77-edit-t-in.f: Likewise
+	* gfortran.dg/g77/f77-edit-x-out.f: Likewise
+
+2004-07-09  David Billinghurst (David.Billinghurst@riotinto.com)
+
 	* gfortran.dg/g77/7388.f: Copy from g77.dg
 	* gfortran.dg/g77/f77-edit-i-out.f: Likewise
 	* gfortran.dg/g77/f77-edit-apostrophe-out.f: Likewise  
