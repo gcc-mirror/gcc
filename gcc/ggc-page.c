@@ -281,7 +281,6 @@ static void clear_marks PROTO ((void));
 static void sweep_pages PROTO ((void));
 
 #ifdef GGC_POISON
-static void poison PROTO ((void *, size_t));
 static void poison_pages PROTO ((void));
 #endif
 
@@ -346,8 +345,8 @@ lookup_page_table_entry(p)
   return base[L1][L2];
 }
 
-
 /* Set the page table entry for a page.  */
+
 static void
 set_page_table_entry(p, entry)
      void *p;
@@ -384,8 +383,8 @@ found:
   base[L1][L2] = entry;
 }
 
-
 /* Prints the page-entry for object size ORDER, for debugging.  */
+
 void
 debug_print_page_list (order)
      int order;
@@ -402,20 +401,9 @@ debug_print_page_list (order)
   fflush (stdout);
 }
 
-#ifdef GGC_POISON
-/* `Poisons' the region of memory starting at START and extending for
-   LEN bytes.  */
-static inline void
-poison (start, len)
-     void *start;
-     size_t len;
-{
-  memset (start, 0xa5, len);
-}
-#endif
-
 /* Allocate SIZE bytes of anonymous memory, preferably near PREF,
    (if non-null).  */
+
 static inline char *
 alloc_anon (pref, size)
      char *pref ATTRIBUTE_UNUSED;
@@ -456,6 +444,7 @@ alloc_anon (pref, size)
 /* Allocate a new page for allocating objects of size 2^ORDER,
    and return an entry for it.  The entry is not added to the
    appropriate page_table list.  */
+
 static inline struct page_entry *
 alloc_page (order)
      unsigned order;
@@ -496,7 +485,7 @@ alloc_page (order)
     }
   else
     {
-      /* Actually allocate the memory, using mmap.  */
+      /* Actually allocate the memory.  */
       page = alloc_anon (NULL, entry_size);
     }
 
@@ -525,8 +514,8 @@ alloc_page (order)
   return entry;
 }
 
+/* For a page that is no longer needed, put it on the free page list.  */
 
-/* Free a page when it's no longer needed.  */
 static inline void
 free_page (entry)
      page_entry *entry;
@@ -542,8 +531,8 @@ free_page (entry)
   G.free_pages = entry;
 }
 
+/* Release the free page cache to the system.  */
 
-/* Release the page cache to the system.  */
 static inline void
 release_pages ()
 {
@@ -598,9 +587,9 @@ release_pages ()
   G.free_pages = NULL;
 }
 
-
 /* This table provides a fast way to determine ceil(log_2(size)) for
    allocation requests.  The minimum allocation size is four bytes.  */
+
 static unsigned char const size_lookup[257] = 
 { 
   2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 
@@ -624,6 +613,7 @@ static unsigned char const size_lookup[257] =
 
 /* Allocate a chunk of memory of SIZE bytes.  If ZERO is non-zero, the
    memory is zeroed; otherwise, its contents are undefined.  */
+
 void *
 ggc_alloc_obj (size, zero)
      size_t size;
@@ -721,8 +711,9 @@ ggc_alloc_obj (size, zero)
 #ifdef GGC_POISON
   /* `Poison' the entire allocated object before zeroing the requested area,
      so that bytes beyond the end, if any, will not necessarily be zero.  */
-  poison (result, 1 << order);
+  memset (result, 0xaf, 1 << order);
 #endif
+
   if (zero)
     memset (result, 0, size);
 
@@ -738,10 +729,10 @@ ggc_alloc_obj (size, zero)
   return result;
 }
 
-
-/* If P is not marked, marks it and returns 0.  Otherwise returns 1.
+/* If P is not marked, marks it and return false.  Otherwise return true.
    P must have been allocated by the GC allocator; it mustn't point to
    static objects, stack variables, or memory allocated with malloc.  */
+
 int
 ggc_set_mark (p)
      void *p;
@@ -780,6 +771,8 @@ ggc_set_mark (p)
   return 0;
 }
 
+/* Mark P, but check first that it was allocated by the collector.  */
+
 void
 ggc_mark_if_gcable (p)
      void *p;
@@ -787,6 +780,8 @@ ggc_mark_if_gcable (p)
   if (p && ggc_allocated_p (p))
     ggc_set_mark (p);
 }
+
+/* Return the size of the gc-able object P.  */
 
 size_t
 ggc_get_size (p)
@@ -797,6 +792,7 @@ ggc_get_size (p)
 }
 
 /* Initialize the ggc-mmap allocator.  */
+
 void
 init_ggc ()
 {
@@ -841,6 +837,8 @@ init_ggc ()
   ggc_add_string_root (&empty_string, 1);
 }
 
+/* Increment the `GC context'.  Objects allocated in an outer context
+   are never freed, eliminating the need to register their roots.  */
 
 void
 ggc_push_context ()
@@ -852,6 +850,8 @@ ggc_push_context ()
     abort ();
 }
 
+/* Decrement the `GC context'.  All objects allocated since the 
+   previous ggc_push_context are migrated to the outer context.  */
 
 void
 ggc_pop_context ()
@@ -890,6 +890,8 @@ ggc_pop_context ()
     }
 }
 
+/* Unmark all objects.  */
+
 static inline void
 clear_marks ()
 {
@@ -931,6 +933,9 @@ clear_marks ()
 	}
     }
 }
+
+/* Free all empty pages.  Partially empty pages need no attention
+   because the `mark' bit doubles as an `unused' bit.  */
 
 static inline void
 sweep_pages ()
@@ -1024,6 +1029,8 @@ sweep_pages ()
 }
 
 #ifdef GGC_POISON
+/* Clobber all free objects.  */
+
 static inline void
 poison_pages ()
 {
@@ -1052,12 +1059,14 @@ poison_pages ()
 	      word = i / HOST_BITS_PER_LONG;
 	      bit = i % HOST_BITS_PER_LONG;
 	      if (((p->in_use_p[word] >> bit) & 1) == 0)
-		poison (p->page + i * size, size);
+		memset (p->page + i * size, 0xa5, size);
 	    }
 	}
     }
 }
 #endif
+
+/* Top level mark-and-sweep routine.  */
 
 void
 ggc_collect ()
@@ -1086,11 +1095,12 @@ ggc_collect ()
 
   clear_marks ();
   ggc_mark_roots ();
-  sweep_pages ();
   
 #ifdef GGC_POISON
   poison_pages ();
 #endif
+
+  sweep_pages ();
 
   G.allocated_last_gc = G.allocated;
   if (G.allocated_last_gc < GGC_MIN_LAST_ALLOCATED)

@@ -97,12 +97,21 @@ ggc_mark_tree_hash_table_ptr (elt)
   ggc_mark_tree_hash_table (*(struct hash_table **) elt);
 }
 
+/* Type-correct function to pass to ggc_add_root.  It just forwards
+   ELT (which is really a char **) to ggc_mark_string.  */
+
 static void
 ggc_mark_string_ptr (elt)
      void *elt;
 {
   ggc_mark_string (*(char **)elt);
 }
+
+/* Add BASE as a new garbage collection root.  It is an array of
+   length NELT with each element SIZE bytes long.  CB is a 
+   function that will be called with a pointer to each element
+   of the array; it is the intention that CB call the appropriate
+   routine to mark gc-able memory for that element.  */
 
 void
 ggc_add_root (base, nelt, size, cb)
@@ -121,6 +130,8 @@ ggc_add_root (base, nelt, size, cb)
   roots = x;
 }
 
+/* Register an array of rtx as a GC root.  */
+
 void
 ggc_add_rtx_root (base, nelt)
      rtx *base;
@@ -128,6 +139,8 @@ ggc_add_rtx_root (base, nelt)
 {
   ggc_add_root (base, nelt, sizeof(rtx), ggc_mark_rtx_ptr);
 }
+
+/* Register an array of trees as a GC root.  */
 
 void
 ggc_add_tree_root (base, nelt)
@@ -137,7 +150,7 @@ ggc_add_tree_root (base, nelt)
   ggc_add_root (base, nelt, sizeof(tree), ggc_mark_tree_ptr);
 }
 
-/* Add V (a varray full of trees) to the list of GC roots.  */
+/* Register a varray of trees as a GC root.  */
 
 void
 ggc_add_tree_varray_root (base, nelt)
@@ -148,8 +161,7 @@ ggc_add_tree_varray_root (base, nelt)
 		ggc_mark_tree_varray_ptr);
 }
 
-/* Add HT (a hash-table where ever key is a tree) to the list of GC
-   roots.  */
+/* Register a hash table of trees as a GC root.  */
 
 void
 ggc_add_tree_hash_table_root (base, nelt)
@@ -160,6 +172,8 @@ ggc_add_tree_hash_table_root (base, nelt)
 		ggc_mark_tree_hash_table_ptr);
 }
 
+/* Register an array of strings as a GC root.  */
+
 void
 ggc_add_string_root (base, nelt)
      char **base;
@@ -168,6 +182,7 @@ ggc_add_string_root (base, nelt)
   ggc_add_root (base, nelt, sizeof (char *), ggc_mark_string_ptr);
 }
 
+/* Remove the previously registered GC root at BASE.  */
 
 void
 ggc_del_root (base)
@@ -191,6 +206,8 @@ ggc_del_root (base)
   abort();
 }
 
+/* Iterate through all registered roots and mark each element.  */
+
 void
 ggc_mark_roots ()
 {
@@ -207,6 +224,9 @@ ggc_mark_roots ()
 	(*cb)(elt);
     }
 }
+
+/* R had not been previously marked, but has now been marked via
+   ggc_set_mark.  Now recurse and process the children.  */
 
 void
 ggc_mark_rtx_children (r)
@@ -285,6 +305,9 @@ ggc_mark_rtx_children (r)
     }
 }
 
+/* V had not been previously marked, but has now been marked via
+   ggc_set_mark.  Now recurse and process the children.  */
+
 void
 ggc_mark_rtvec_children (v)
      rtvec v;
@@ -295,6 +318,9 @@ ggc_mark_rtvec_children (v)
   while (--i >= 0)
     ggc_mark_rtx (RTVEC_ELT (v, i));
 }
+
+/* T had not been previously marked, but has now been marked via
+   ggc_set_mark.  Now recurse and process the children.  */
 
 void
 ggc_mark_tree_children (t)
@@ -466,7 +492,10 @@ ggc_mark_tree_hash_table (ht)
   hash_traverse (ht, ggc_mark_tree_hash_table_entry, /*info=*/0);
 }
 
-/* Allocation wrappers.  */
+/* Allocate a gc-able string.  If CONTENTS is null, then the memory will
+   be uninitialized.  If LENGTH is -1, then CONTENTS is assumed to be a
+   null-terminated string and the memory sized accordingly.  Otherwise,
+   the memory is filled with LENGTH bytes from CONTENTS.  */
 
 char *
 ggc_alloc_string (contents, length)
