@@ -387,8 +387,7 @@ convert_to_integer (tree type, tree expr)
 	expr = integer_zero_node;
       else
 	expr = fold (build1 (CONVERT_EXPR,
-			     lang_hooks.types.type_for_size
-				(POINTER_SIZE, TYPE_UNSIGNED (type)),
+			     lang_hooks.types.type_for_size (POINTER_SIZE, 0),
 			     expr));
 
       return convert_to_integer (type, expr);

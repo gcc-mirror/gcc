@@ -1,5 +1,9 @@
 2005-02-18  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/20023
+	PR tree-optimization/20009
+	* convert.c (convert_to_integer): Revert 2005-02-16 change.
+
 	PR tree-optimization/18947
 	* cgraphunit.c (cgraph_finalize_function): When redefining an extern
 	inline, remove all nodes that are inlined into the extern inline
