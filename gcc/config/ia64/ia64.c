@@ -3623,6 +3623,7 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
       for (; offset < byte_size && int_regs < MAX_ARGUMENT_SLOTS; i++)
 	{
 	  enum machine_mode gr_mode = DImode;
+	  unsigned int gr_size;
 
 	  /* If we have an odd 4 byte hunk because we ran out of FR regs,
 	     then this goes in a GR reg left adjusted/little endian, right
@@ -3636,17 +3637,19 @@ ia64_function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	     adjusted/little endian.  */
 	  else if (byte_size - offset == 4)
 	    gr_mode = SImode;
-	  /* Complex floats need to have float mode.  */
-	  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
-	    gr_mode = hfa_mode;
 
 	  loc[i] = gen_rtx_EXPR_LIST (VOIDmode,
 				      gen_rtx_REG (gr_mode, (basereg
 							     + int_regs)),
 				      GEN_INT (offset));
-	  offset += GET_MODE_SIZE (gr_mode);
-	  int_regs += GET_MODE_SIZE (gr_mode) <= UNITS_PER_WORD
-		      ? 1 : GET_MODE_SIZE (gr_mode) / UNITS_PER_WORD;
+
+	  gr_size = GET_MODE_SIZE (gr_mode);
+	  offset += gr_size;
+	  if (gr_size == UNITS_PER_WORD
+	      || (gr_size < UNITS_PER_WORD && offset % UNITS_PER_WORD == 0))
+	    int_regs++;
+	  else if (gr_size > UNITS_PER_WORD)
+	    int_regs += gr_size / UNITS_PER_WORD;
 	}
 
       /* If we ended up using just one location, just return that one loc, but

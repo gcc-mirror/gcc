@@ -1,3 +1,10 @@
+2004-01-27  Zack Weinberg  <zack@codesourcery.com>
+
+	* ia64.c (ia64_function_arg): When placing HFAs in integer
+	registers, do not special case the mode used for complex
+	types.  Do not advance int_regs until the current register
+	is full.
+
 2004-01-27  Richard Sandiford  <rsandifo@redhat.com>
 
 	PR target/7297
@@ -15,9 +22,9 @@
 	(restore_stack_nonlocal): Same.
 
 2004-01-27  Devang Patel <dpatel@apple.com>
-	
+
 	* Makefile.in (dwarf2out.o): Depend on input.h
-	* dbxout.c (dbx_debug_hooks): Add new empty hook for 
+	* dbxout.c (dbx_debug_hooks): Add new empty hook for
 	imported_module_or_decl.
 	(xcoff_debug_hooks): Same.
 	* sdbout.c (sdb_debug_hooks): Same.
@@ -43,14 +50,14 @@
 	(dwarf2out_imported_module_or_decl): New function.
 
 2004-01-27  Bob Wilson  <bob.wilson@acm.org>
-	
+
 	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Remove SUBREG
 	on CQImode and CHImode incoming arguments in register a7.
 	(function_arg): Wrap BLKmode argument in register a7 in a PARALLEL.
 	* config/xtensa/xtensa.h (BLOCK_REG_PADDING): Define.
 	* config/xtensa/xtensa.md (movdi, movdf): Only call force_reg or
 	xtensa_copy_incoming_a7 before reload.
-	
+
 2004-01-27  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* coverage.c (get_coverage_counts): Give a different message
@@ -83,7 +90,7 @@
 
 2004-01-24  James A. Morrison  <ja2morri@uwaterloo.ca>
 
-        * fixinc/fixinc.c (test_test): Initialize res.
+	* fixinc/fixinc.c (test_test): Initialize res.
 	(start_flexer): Initialize pz_cmd_save.
 
 2004-01-27  Zack Weinberg  <zack@codesourcery.com>
