@@ -57,7 +57,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    %{p:-L/lib/profiled -L/usr/lib/profiled} %{g*:-lg} -lc"
 
 /* gcc must do the search itself to find libgcc.a, not use -l.  */
-/* #define LINK_LIBGCC_SPECIAL */
+#define LINK_LIBGCC_SPECIAL_1
 
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #define RELATIVE_PREFIX_NOT_LINKDIR
