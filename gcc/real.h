@@ -142,9 +142,14 @@ extern double (atof) ();
 #define REAL_VALUE_ISNAN(x) (target_isnan (x))
 #endif
 
+/* Determine whether a floating-point value X is negative. */
+#ifndef REAL_VALUE_NEGATIVE
+#define REAL_VALUE_NEGATIVE(x) (target_negative (x))
+#endif
+
 /* Determine whether a floating-point value X is minus 0. */
 #ifndef REAL_VALUE_MINUS_ZERO
-#define REAL_VALUE_MINUS_ZERO(x) (target_minus_zero (x))
+#define REAL_VALUE_MINUS_ZERO(x) ((x) == 0 && REAL_VALUE_NEGATIVE (x))
 #endif
 
 /* Constant real values 0, 1, 2, and -1.  */
