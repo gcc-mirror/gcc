@@ -3510,6 +3510,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 
 	  recog_data.operand[commutative] = substed_operand[commutative + 1];
 	  recog_data.operand[commutative + 1] = substed_operand[commutative];
+	  /* Swap the duplicates too.  */
+	  for (i = 0; i < recog_data.n_dups; i++)
+	    if (recog_data.dup_num[i] == commutative
+		|| recog_data.dup_num[i] == commutative + 1)
+	      *recog_data.dup_loc[i]
+		 = recog_data.operand[(int) recog_data.dup_num[i]];
 
 	  tclass = preferred_class[commutative];
 	  preferred_class[commutative] = preferred_class[commutative + 1];
@@ -3528,6 +3534,12 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 	  recog_data.operand[commutative] = substed_operand[commutative];
 	  recog_data.operand[commutative + 1]
 	    = substed_operand[commutative + 1];
+	  /* Unswap the duplicates too.  */
+	  for (i = 0; i < recog_data.n_dups; i++)
+	    if (recog_data.dup_num[i] == commutative
+		|| recog_data.dup_num[i] == commutative + 1)
+	      *recog_data.dup_loc[i]
+		 = recog_data.operand[(int) recog_data.dup_num[i]];
 	}
     }
 
