@@ -1,6 +1,6 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001  Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -173,6 +173,7 @@ static tree check_special_function_return_type
 static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 static void store_parm_decls PARAMS ((tree));
+static int cp_missing_noreturn_ok_p PARAMS ((tree));
 
 #if defined (DEBUG_CP_BINDING_LEVELS)
 static void indent PARAMS ((void));
@@ -502,7 +503,7 @@ struct binding_level
 
 #define current_binding_level			\
   (cfun						\
-   ? cp_function_chain->bindings   		\
+   ? cp_function_chain->bindings		\
    : scope_chain->bindings)
 
 /* The binding level of the current class, if any.  */
@@ -6304,6 +6305,7 @@ init_decl_processing ()
   mark_lang_status = &mark_cp_function_context;
   lang_safe_from_p = &c_safe_from_p;
   lang_dump_tree = &cp_dump_tree;
+  lang_missing_noreturn_ok_p = &cp_missing_noreturn_ok_p;
 
   cp_parse_init ();
   init_decl2 ();
@@ -6618,7 +6620,7 @@ init_decl_processing ()
   }
 
   abort_fndecl
-    = build_library_fn_ptr ((flag_new_abi 
+    = build_library_fn_ptr ((flag_new_abi
 			     ? "__cxa_pure_virtual"
 			     : "__pure_virtual"),
 			    void_ftype);
@@ -8908,7 +8910,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	{
 	  tree fns = TREE_OPERAND (orig_declarator, 0);
 	  tree args = TREE_OPERAND (orig_declarator, 1);
-	  
+
 	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    {
 	      /* Something like `template <class T> friend void f<T>()'.  */
@@ -8928,7 +8930,7 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
                  up an operator_name or PFUNCNAME within the current class
                  (see template_id in parse.y). If the current class contains
                  such a name, we'll get a COMPONENT_REF here. Undo that. */
-              
+
               my_friendly_assert (TREE_TYPE (TREE_OPERAND (fns, 0))
                                   == current_class_type, 20001120);
               fns = TREE_OPERAND (fns, 1);
@@ -9177,7 +9179,7 @@ build_ptrmemfunc_type (type)
 
   if (type == error_mark_node)
     return type;
-  
+
   /* If a canonical type already exists for this type, use it.  We use
      this method instead of type_hash_canon, because it only does a
      simple equality check on the list of field members.  */
@@ -10379,10 +10381,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
       else if (RIDBIT_SETP (RID_TYPEDEF, specbits))
 	;
       else if (decl_context == FIELD
- 	       /* C++ allows static class elements  */
- 	       && RIDBIT_SETP (RID_STATIC, specbits))
- 	/* C++ also allows inlines and signed and unsigned elements,
- 	   but in those cases we don't come in here.  */
+	       /* C++ allows static class elements  */
+	       && RIDBIT_SETP (RID_STATIC, specbits))
+	/* C++ also allows inlines and signed and unsigned elements,
+	   but in those cases we don't come in here.  */
 	;
       else
 	{
@@ -10664,7 +10666,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 			cp_error ("constructors may not be `%s'",
 				  IDENTIFIER_POINTER (TREE_VALUE (quals)));
 			quals = NULL_TREE;
- 		      }
+		      }
 		    {
 		      RID_BIT_TYPE tmp_bits;
 		      memcpy (&tmp_bits, &specbits, sizeof (RID_BIT_TYPE));
@@ -10982,7 +10984,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	          {
 	            incomplete_type_error (NULL_TREE, ctype);
 	            return error_mark_node;
-  		  }
+		  }
 
 		declarator = sname;
 	      }
@@ -11255,14 +11257,14 @@ friend declaration requires class-key, i.e. `friend %#T'",
 	  if (type != integer_type_node)
 	    {
 	      decl_type_access_control (TYPE_NAME (type));
-	      
+
 	      /* A friendly class?  */
 	      if (current_class_type)
 		make_friend_class (current_class_type, TYPE_MAIN_VARIANT (type));
 	      else
 		cp_error ("trying to make class `%T' a friend of global scope",
 		          type);
-              
+
 	      type = void_type_node;
 	    }
 	}
@@ -11980,10 +11982,10 @@ grokparms (first_parm)
         break;
 
       decl = grokdeclarator (TREE_VALUE (decl), TREE_PURPOSE (decl),
-        		     PARM, init != NULL_TREE, NULL_TREE);
+		     PARM, init != NULL_TREE, NULL_TREE);
       if (! decl || TREE_TYPE (decl) == error_mark_node)
         continue;
-    
+
       type = TREE_TYPE (decl);
       if (VOID_TYPE_P (type))
         {
@@ -11999,7 +12001,7 @@ grokparms (first_parm)
 	  TREE_TYPE (decl) = error_mark_node;
         }
 
-      if (type != error_mark_node) 
+      if (type != error_mark_node)
 	{
 	  /* Top-level qualifiers on the parameters are
 	     ignored for function types.  */
@@ -14635,4 +14637,12 @@ identifier_global_value	(t)
      tree t;
 {
   return IDENTIFIER_GLOBAL_VALUE (t);
+}
+
+static int
+cp_missing_noreturn_ok_p (decl)
+     tree decl;
+{
+  /* A missing noreturn is ok for the `main' function.  */
+  return MAIN_NAME_P (DECL_ASSEMBLER_NAME (decl));
 }

@@ -1,3 +1,8 @@
+2001-01-02  Andreas Jaeger  <aj@suse.de>
+
+	* decl.c (cp_missing_noreturn_ok_p): New.
+	(init_decl_processing): Set lang_missing_noreturn_ok_p.
+
 2000-12-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (init_decl_processing): Fix sign of wchar_type_node.
@@ -9,7 +14,7 @@
 	* decl.c (store_bindings): Simplify.
 	(pop_from_top_level): Likewise.
 	* pt.c (overload_template_name): Remove.
-	(instantiate_decl): Don't call push_to_top_level if it's not 
+	(instantiate_decl): Don't call push_to_top_level if it's not
 	needed.
 
 2000-12-28  Mark Mitchell  <mark@codesourcery.com>
@@ -45,7 +50,7 @@
 	(fn_type_unification): Likewise.
 	(type_unification_real): Succeed after checking 'len' args.
 	(most_specialized_instantiation): Lose explicit_args parm.
-	* class.c (resolve_address_of_overloaded_function): Strip 'this', 
+	* class.c (resolve_address_of_overloaded_function): Strip 'this',
 	pass len.
 
 2000-12-21  Jason Merrill  <jason@redhat.com>
@@ -155,12 +160,12 @@
 	* class.c (check_field_decls): Don't special case anonymous
 	fields in error messages.
 	(note_name_declared_in_class): Use %D on diagnostic.
-	
+
 	* tree.c (pod_type_p): Use strip_array_types.
 	(cp_valid_lang_attribute): Likewise.
 	* typeck.c (cp_type_quals): Strip arrays separately, to avoid
 	multiple evaluations.
-	(cp_has_mutable_p): Use strip_array_types.	
+	(cp_has_mutable_p): Use strip_array_types.
 
 2000-12-07  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -233,7 +238,7 @@
 2000-12-04  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (write_type): Mangle VECTOR_TYPE with "U8__vector".
-	(write_builtin_type): Pass intSI_type_node and the like through 
+	(write_builtin_type): Pass intSI_type_node and the like through
 	type_for_mode.
 	* method.c (process_overload_item): Mangle VECTOR_TYPEs with 'o'.
 	Pass intSI_type_node and the like through type_for_mode.
@@ -242,7 +247,7 @@
 	* tree.c (walk_tree): Likewise.
 	* error.c (dump_type): Likewise.
 	(dump_type_prefix, dump_type_suffix): Don't bother with VECTOR_TYPE.
-	
+
 	* Make-lang.in: Tweak top comment for emacs.
 	(cp/TAGS): Restore.
 
@@ -259,7 +264,7 @@
 
 	* error.c (dump_function_decl): Use DECL_VIRTUAL_P, not
 	TYPE_POLYMORPHIC_P.
-	
+
 	* typeck.c (build_static_cast): Remove unused variable.
 
 2000-12-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
@@ -402,7 +407,7 @@ Thu Nov 23 02:16:47 2000  J"orn Rennecke <amylaar@redhat.com>
 	* mangle.c (write_name): Use <unscoped-name> for names directly in
 	function scope.
 	(write_unscoped_name): Accept names directly in function scope.
-	
+
 2000-11-20  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* lex.c (rid_to_yy, RID_EXPORT): Make unique keyword.
