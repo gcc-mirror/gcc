@@ -1,3 +1,8 @@
+2000-06-05  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* fold-const.c (fold, case COND_EXPR): Elide conversion between
+	cv-qualified versions of types.
+
 Mon Jun  5 14:06:18 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/sparc/sparc.c (short_branch): Correct error in range
