@@ -1,3 +1,12 @@
+2002-02-05  Jason Merrill  <jason@redhat.com>
+
+	* cplus-dem.c (flags): Add DMGL_VERBOSE
+	(cplus_demangle_v3_p): Remove.
+	(demangle_it): Add DMGL_TYPES to passed flags.
+	* cp-demangle.c (cplus_demangle_v3_all): Remove.
+	(cplus_demangle_v3_type): Remove.
+	(cplus_demangle_v3): Add options parm.
+
 2002-02-02  H.J. Lu  (hjl@gnu.org)
 
 	* cp-demangle.c (cp_demangle_type): Do not protect with

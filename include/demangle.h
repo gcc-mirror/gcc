@@ -29,6 +29,8 @@
 #define DMGL_PARAMS	 (1 << 0)	/* Include function args */
 #define DMGL_ANSI	 (1 << 1)	/* Include const, volatile, etc */
 #define DMGL_JAVA	 (1 << 2)	/* Demangle as Java rather than C++. */
+#define DMGL_VERBOSE	 (1 << 3)	/* Include implementation details.  */
+#define DMGL_TYPES	 (1 << 4)	/* Also try to demangle type encodings.  */
 
 #define DMGL_AUTO	 (1 << 8)
 #define DMGL_GNU	 (1 << 9)
@@ -125,12 +127,7 @@ cplus_demangle_name_to_style PARAMS ((const char *name));
 
 /* V3 ABI demangling entry points, defined in cp-demangle.c.  */
 extern char*
-cplus_demangle_v3 PARAMS ((const char* mangled));
-
-/* V3 ABI demangling entry points, defined in cp-demangle.c. Also
-   demagle types. */
-extern char*
-cplus_demangle_v3_type PARAMS ((const char* mangled));
+cplus_demangle_v3 PARAMS ((const char* mangled, int options));
 
 extern char*
 java_demangle_v3 PARAMS ((const char* mangled));

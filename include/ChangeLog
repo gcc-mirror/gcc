@@ -1,3 +1,10 @@
+2002-02-05  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (cplus_demangle_v3): Add "options" parm.
+	(cplus_demangle_v3_type): Remove prototype.
+	(DMGL_VERBOSE): New macro.
+	(DMGL_TYPES): New macro.
+
 2002-02-02  H.J. Lu  (hjl@gnu.org)
 
 	* demangle.h (cplus_demangle_v3_type): New prototype.
