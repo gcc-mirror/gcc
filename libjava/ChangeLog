@@ -1,5 +1,9 @@
 2004-05-15  Mark Wielaard  <mark@klomp.org>
 
+	* doc/cni.sgml: Removed, merged into gcj.texi.
+
+2004-05-15  Mark Wielaard  <mark@klomp.org>
+
 	* Makefile.am (ordinary_java_source_files): Add new javax.print
 	classes.
 	* Makefile.in: Regenerated.
