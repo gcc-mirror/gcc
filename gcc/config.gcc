@@ -1343,7 +1343,7 @@ i[34567]86-*-interix3*)
 	xm_file="i386/xm-i386-interix.h"
 	xm_defines=POSIX
 	tmake_file="t-interix i386/t-interix"
-	extra_objs=interix.o
+	extra_objs=winnt.o
 	xmake_file="x-interix"
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
@@ -1357,7 +1357,7 @@ i[34567]86-*-interix*)
 	xm_file="i386/xm-i386-interix.h"
 	xm_defines=POSIX
 	tmake_file="t-interix i386/t-interix"
-	extra_objs=interix.o
+	extra_objs=winnt.o
 	if test x$enable_threads = xyes ; then
 		thread_file='posix'
 	fi
