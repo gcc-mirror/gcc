@@ -1,3 +1,10 @@
+2004-08-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cuintp.c (UI_To_gnu): Be more conservative with build_int_cst
+	call.s
+	* trans.c (Exception_Handler_to_gnu_sjlj): Likewise.
+	(gnat_to_gnu): Likewise.
+
 2004-08-16  Pascal Obry  <obry@gnat.com>
 
 	* adaint.c (__gnat_prj_add_obj_files): Set to 0 only on Win32 for GCC
