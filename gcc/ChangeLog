@@ -1,3 +1,8 @@
+2004-01-04  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/3414
+	* doc/extend.texi: Clarify definition of malloc attribute.
+
 2004-01-04  Jan Hubicka  <jh@suse.cz>
 
 	* Makefile.in (cgraph.o, cgraphunit.o): Add intl.h dependency.
