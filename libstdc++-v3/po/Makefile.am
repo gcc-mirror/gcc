@@ -41,7 +41,7 @@ DISTFILES = \
 	$(LOCALE_IN) 
 
 .po.mo:
-	$(MSGFMT) $< -o $@
+	$(MSGFMT) -o $@ $<
 
 all-local: all-local-@USE_NLS@
 all-local-no: 

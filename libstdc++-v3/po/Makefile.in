@@ -280,7 +280,7 @@ mostlyclean distclean maintainer-clean
 
 
 .po.mo:
-	$(MSGFMT) $< -o $@
+	$(MSGFMT) -o $@ $<
 
 all-local: all-local-@USE_NLS@
 all-local-no: 

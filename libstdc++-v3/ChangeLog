@@ -1,3 +1,8 @@
+2001-12-16  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* po/Makefile.am (.po.mo): Use POSIXLY_CORRECT argument ordering.
+	* po/Makefile.in: Regenerated.
+
 2001-12-16  Paolo Carlini  <pcarlini@unitus.it>
 
 	* testsuite/21_strings/assign.cc (test01): Add tests.
