@@ -2254,7 +2254,8 @@ legitimize_pic_address (orig, mode, reg)
      enum machine_mode mode;
      rtx reg;
 {
-  if (GET_CODE (orig) == SYMBOL_REF)
+  if (GET_CODE (orig) == SYMBOL_REF
+      || GET_CODE (orig) == LABEL_REF)
     {
 #ifndef AOF_ASSEMBLER
       rtx pic_ref, address;
@@ -2287,10 +2288,16 @@ legitimize_pic_address (orig, mode, reg)
       else
 	emit_insn (gen_pic_load_addr_thumb (address, orig));
 
-      pic_ref = gen_rtx_MEM (Pmode,
-			     gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
-					   address));
-      RTX_UNCHANGING_P (pic_ref) = 1;
+      if (GET_CODE (orig) == LABEL_REF && NEED_GOT_RELOC)
+	pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
+      else
+	{
+	  pic_ref = gen_rtx_MEM (Pmode,
+				 gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+					       address));
+	  RTX_UNCHANGING_P (pic_ref) = 1;
+	}
+
       insn = emit_move_insn (reg, pic_ref);
 #endif
       current_function_uses_pic_offset_table = 1;
@@ -2350,25 +2357,6 @@ legitimize_pic_address (orig, mode, reg)
 	}
 
       return gen_rtx_PLUS (Pmode, base, offset);
-    }
-  else if (GET_CODE (orig) == LABEL_REF)
-    {
-      current_function_uses_pic_offset_table = 1;
-      
-      if (NEED_GOT_RELOC)
-	{
-	  rtx pic_ref, address = gen_reg_rtx (Pmode);
-
-	  if (TARGET_ARM)
-	    emit_insn (gen_pic_load_addr_arm (address, orig));
-	  else
-	    emit_insn (gen_pic_load_addr_thumb (address, orig));
-
-	  pic_ref = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, address);
-	  
-	  emit_move_insn (address, pic_ref);
-	  return address;
-	}
     }
 
   return orig;
