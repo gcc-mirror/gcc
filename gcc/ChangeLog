@@ -1,3 +1,12 @@
+2000-12-18  Zack Weinberg <zackw@Stanford.EDU>:
+
+	* Makefile.in: Rename cpp to cpp0, tradcpp to tradcpp0, and
+        xcpp to cpp throughout.
+        (native): Remove unnecessary dependency on cpp.
+	* gcc.c (C specs): Call cpp0 to do preprocessing, not cpp.
+	* ch/lang-specs.h, cp/lang-specs.h, f/lang-specs.h,
+	objc/lang-specs.h: Call cpp0 to do preprocessing, not cpp.
+
 2000-12-18  Christian Groessler <cpg@aladdin.de>
 
 	* toplev.c (check_lang_option): Use NUM_ELEM only on arrays, not on

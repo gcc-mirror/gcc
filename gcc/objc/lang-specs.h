@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.  */
   {".m", {"@objective-c"}},
   {"@objective-c",
 #if USE_CPPLIB
-   {"%{E|M|MM:cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"%{E|M|MM:cpp0 -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
@@ -55,7 +55,7 @@ Boston, MA 02111-1307, USA.  */
 	%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
         %{!pipe:%g.s} %A\n }}}}"}
 #else /* ! USE_CPPLIB */
-   {"cpp -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"cpp0 -lang-objc %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -D__OBJC__ %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\

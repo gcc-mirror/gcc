@@ -35,7 +35,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	Sun f77, at least) so you test `__unix' rather than `unix'.
 	-D_LANGUAGE_FORTRAN is used by some compilers like SGI and
 	might as well be in there. */
-   {"cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
+   {"cpp0 -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
 	%{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2}\
@@ -85,7 +85,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
 		      %{!pipe:%g.s} %A\n }}}}"}},
   {"@f77-version",
-   {"cpp -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I \
+   {"cpp0 -lang-c %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %{$} %I \
       %{C:%{!E:%eGNU C does not support -C without using -E}} \
       %{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG} \
       %{!no-gcc:-D__GNUC__=%v1 -D__GNUC_MINOR__=%v2} \

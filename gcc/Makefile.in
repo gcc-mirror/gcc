@@ -441,7 +441,7 @@ COMPILERS = cc1$(exeext) @all_compilers@
 
 # List of things which should already be built whenever we try to use xgcc
 # to compile anything (without linking).
-GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES)
+GCC_PASSES=xgcc$(exeext) cc1$(exeext) cpp0$(exeext) $(EXTRA_PASSES)
 
 # List of things which should already be built whenever we try to use xgcc
 # to link anything.
@@ -704,7 +704,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) \
- xgcc$(exeext) xcpp$(exeext) cc1$(exeext) cpp$(exeext) $(EXTRA_PASSES) \
+ xgcc$(exeext) cpp$(exeext) cc1$(exeext) cpp0$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) \
  $(CCCP)$(exeext) cc1obj$(exeext) enquire$(exeext) \
  protoize$(exeext) unprotoize$(exeext) \
@@ -840,15 +840,15 @@ all.internal: start.encap rest.encap doc
 all.cross: native gcc-cross specs stmp-headers $(STMP_FIXPROTO) $(LIBGCC) \
 	$(LIBGCC1_TEST) $(EXTRA_PARTS) lang.all.cross doc
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native xgcc$(exeext) xcpp$(exeext) $(EXTRA_PARTS) lang.all.build
+all.build: native xgcc$(exeext) cpp$(exeext) $(EXTRA_PARTS) lang.all.build
 # This is what must be made before installing GCC and converting libraries.
-start.encap: native xgcc$(exeext) xcpp$(exeext) specs $(LIBGCC1) \
+start.encap: native xgcc$(exeext) cpp$(exeext) specs $(LIBGCC1) \
 	xlimits.h lang.start.encap
 # These can't be made until after GCC can run.
 rest.encap: stmp-headers $(STMP_FIXPROTO) $(LIBGCC) $(EXTRA_PARTS) lang.rest.encap
 # This is what is made with the host's compiler
 # whether making a cross compiler or not.
-native: config.status auto-host.h cpp$(exeext) intl.all $(LANGUAGES) \
+native: config.status auto-host.h intl.all $(LANGUAGES) \
 	$(EXTRA_PASSES) $(EXTRA_PROGRAMS) $(USE_COLLECT2)
 
 # Define the names for selecting languages in LANGUAGES.
@@ -893,7 +893,7 @@ xgcc$(exeext): gcc.o gccspec.o version.o intl.o prefix.o \
 # when it is installed.
 # The only difference from xgcc is that it's linked with cppspec.o
 # instead of gccspec.o.
-xcpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
+cpp$(exeext): gcc.o cppspec.o version.o intl.o prefix.o \
    version.o $(LIBDEPS) $(EXTRA_GCC_OBJS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ gcc.o cppspec.o intl.o \
 	  prefix.o version.o $(EXTRA_GCC_OBJS) $(LIBS)
@@ -1953,9 +1953,9 @@ intl.distdir-fixup:
 # Remake cpp and protoize.
 
 # Making the preprocessor
-cpp$(exeext): $(CCCP)$(exeext)
-	-rm -f cpp$(exeext)
-	$(LN) $(CCCP)$(exeext) cpp$(exeext)
+cpp0$(exeext): $(CCCP)$(exeext)
+	-rm -f cpp0$(exeext)
+	$(LN) $(CCCP)$(exeext) cpp0$(exeext)
 CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o @extra_cpp_objs@ mbchar.o 
 cccp$(exeext): $(CCCP_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CCCP_OBJS) $(LIBS)
@@ -2448,12 +2448,12 @@ install-build: force
 install-cross-rest: install-float-h-cross
 
 # Handle cpp installation.
-install-cpp: xcpp$(exeext)
+install-cpp: cpp$(exeext)
 	-rm -f $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
-	$(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(bindir)/$(CPP_INSTALL_NAME)$(exeext)
 	if [ x$(cpp_install_dir) != x ]; then \
 	  rm -f $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
-	  $(INSTALL_PROGRAM) -m 755 xcpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
+	  $(INSTALL_PROGRAM) -m 755 cpp$(exeext) $(prefix)/$(cpp_install_dir)/$(CPP_INSTALL_NAME)$(exeext); \
 	else true; fi
 
 uninstall-cpp:
@@ -2544,8 +2544,8 @@ install-common: native installdirs $(EXTRA_PARTS) lang.install-common
 	    $(INSTALL_DATA) SYSCALLS.c.X $(libsubdir)/SYSCALLS.c.X; \
 	    chmod a-x $(libsubdir)/SYSCALLS.c.X; \
 	fi
-	-rm -f $(libsubdir)/cpp$(exeext)
-	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
+	-rm -f $(libsubdir)/cpp0$(exeext)
+	$(INSTALL_PROGRAM) cpp0$(exeext) $(libsubdir)/cpp0$(exeext)
 # Install gcov if it was compiled.
 	-if [ -f gcov$(exeext) ]; \
 	then \
