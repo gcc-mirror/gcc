@@ -59,6 +59,13 @@ public static final int VARBINARY = -3;
 public static final int LONGVARBINARY = -4;
 public static final int NULL = 0;
 public static final int OTHER = 1111;
+public static final int JAVA_OBJECT = 2000;
+public static final int DISTINCT = 2001;
+public static final int STRUCT = 2002;
+public static final int ARRAY = 2003;
+public static final int BLOB = 2004;
+public static final int CLOB = 2005;
+public static final int REF = 2006;
 
 } // class Types 
 

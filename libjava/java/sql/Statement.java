@@ -1,5 +1,5 @@
 /* Statement.java -- Interface for executing SQL statements.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -272,6 +272,142 @@ getUpdateCount() throws SQLException;
   */
 public abstract boolean
 getMoreResults() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the current direction that the driver thinks the
+  * result set will be accessed int.
+  *
+  * @return The direction the result set will be accessed in (????)
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract int
+getFetchDirection() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method informs the driver which direction the result set will
+  * be accessed in.
+  *
+  * @param direction The direction the result set will be accessed in (?????)
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setFetchDirection(int direction) throws SQLException;
+  
+/*************************************************************************/
+
+/**
+  * This method returns the number of rows the driver believes should be
+  * fetched from the database at a time.
+  *
+  * @return The number of rows that will be fetched from the database at a time.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract int
+getFetchSize() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method informs the driver how many rows it should fetch from the
+  * database at a time.
+  *
+  * @param numrows The number of rows the driver should fetch at a time
+  * to populate the result set.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setFetchSize(int numrows) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the concurrency type of the result set for this
+  * statement. This will be one of the concurrency types defined in
+  * <code>ResultSet</code>.
+  *
+  * @return The concurrency type of the result set for this statement.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract int
+getResultSetConcurrency() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the result set type for this statement.  This will
+  * be one of the result set types defined in <code>ResultSet</code>.
+  *
+  * @return The result set type for this statement.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see ResultSet
+  */
+public abstract int
+getResultSetType() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method adds a SQL statement to a SQL batch.  A driver is not
+  * required to implement this method.
+  *
+  * @param sql The sql statement to add to the batch.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+addBatch(String sql) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method clears out any SQL statements that have been populated in
+  * the current batch.  A driver is not required to implement this method.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+clearBatch() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method executes the SQL batch and returns an array of update
+  * counts - one for each SQL statement in the batch - ordered in the same
+  * order the statements were added to the batch.  A driver is not required
+  * to implement this method.
+  *
+  * @return An array of update counts for this batch.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract int[]
+executeBatch() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the <code>Connection</code> instance that was
+  * used to create this object.
+  *
+  * @return The connection used to create this object.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Connection
+getConnection() throws SQLException;
 
 } // interface Statement
 

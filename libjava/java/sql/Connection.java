@@ -27,6 +27,8 @@ executable file might be covered by the GNU General Public License. */
 
 package java.sql;
 
+import java.util.Map;
+
 /**
   * This interface provides methods for managing a connection to a database.
   *
@@ -92,6 +94,28 @@ createStatement() throws SQLException;
 /*************************************************************************/
 
 /**
+  * This method creates a new SQL statement with the specified type and
+  * concurrency.  Valid values for these parameters are specified in the
+  * <code>ResultSet</code> class.
+  *
+  * @param resultSetType The type of result set to use for this statement.
+  * @param resultSetConcurrency.  The type of concurrency to be used in
+  * the result set for this statement.
+  *
+  * @return A new <code>Statement</code> object.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see Statement
+  * @see ResultSet
+  */
+public abstract Statement
+createStatement(int resultSetType, int resultSetConcurrency) 
+                throws SQLException;
+
+/*************************************************************************/
+
+/**
   * This method creates a new <code>PreparedStatement</code> for the specified
   * SQL string.  This method is designed for use with parameterized
   * statements.  The default result set type and concurrency will be used.
@@ -107,6 +131,32 @@ createStatement() throws SQLException;
   */
 public abstract PreparedStatement
 prepareStatement(String sql) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method creates a new <code>PreparedStatement</code> for the specified
+  * SQL string.  This method is designed for use with parameterized
+  * statements.  The specified result set type and concurrency will be used.
+  * Valid values for these parameters are specified in the
+  * <code>ResultSet</code> class.
+  *
+  * @param The SQL statement to use in creating this 
+  * <code>PreparedStatement</code>.
+  * @param resultSetType The type of result set to use for this statement.
+  * @param resultSetConcurrency.  The type of concurrency to be used in
+  * the result set for this statement.
+  *
+  * @return A new <code>PreparedStatement</code>.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see PreparedStatement
+  * @see ResultSet
+  */
+public abstract PreparedStatement
+prepareStatement(String sql, int resultSetType, int resultSetConcurrency) 
+                 throws SQLException;
 
 /*************************************************************************/
 
@@ -127,6 +177,32 @@ prepareStatement(String sql) throws SQLException;
   */
 public abstract CallableStatement
 prepareCall(String sql) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method creates a new <code>CallableStatement</code> for the 
+  * specified SQL string.  Thie method is designed to be used with
+  * stored procedures.  The specified result set type and concurrency
+  * will be used.  Valid values for these parameters are specified in the
+  * <code>ResultSet</code> class.
+  *
+  * @param The SQL statement to use in creating this 
+  * <code>PreparedStatement</code>.
+  * @param resultSetType The type of result set to use for this statement.
+  * @param resultSetConcurrency.  The type of concurrency to be used in
+  * the result set for this statement.
+  *
+  * @return A new <code>CallableStatement</code>.
+  *
+  * @exception SQLException If an error occurs.
+  *
+  * @see CallableStatement
+  * @see ResultSet
+  */
+public abstract CallableStatement
+prepareCall(String sql, int resultSetType, int resultSetConcurrency) 
+            throws SQLException;
 
 /*************************************************************************/
 
@@ -309,12 +385,10 @@ getTransactionIsolation() throws SQLException;
 /*************************************************************************/
 
 /**
-  * This method sets the transaction isolation level using one of the
-  * constants defined in this interface.
+  * This method sets the current transaction isolation mode.  This must
+  * be one of the constants defined in this interface.
   *
-  * @param level The transaction isolation level to change to; must be
-  * one of the TRANSACTION_* isolation values with the exception of
-  * TRANSACTION_NONE; some databases may not support other values.
+  * @param level The transaction isolation level.
   *
   * @exception SQLException If an error occurs.
   */
@@ -345,6 +419,33 @@ getWarnings() throws SQLException;
   */
 public abstract void
 clearWarnings() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the mapping of SQL types to Java classes
+  * currently in use by this connection.  This mapping will have no
+  * entries unless they have been manually added.
+  *
+  * @return The SQL type to Java class mapping.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract Map
+getTypeMap() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the mapping table for SQL types to Java classes.
+  * Any entries in this map override the defaults.
+  *
+  * @param map The new SQL mapping table.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setTypeMap(Map map) throws SQLException;
 
 } // interface Connection
 

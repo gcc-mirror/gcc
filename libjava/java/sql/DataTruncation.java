@@ -33,7 +33,7 @@ package java.sql;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class DataTruncation extends SQLWarning implements java.io.Serializable
+public class DataTruncation extends SQLWarning
 {
 
 /*************************************************************************/
@@ -72,6 +72,15 @@ private boolean read;
   */
 private int transferSize;
 
+/*************************************************************************/
+
+/**
+  * Static Variables
+  */
+
+/**
+  * This is the serialization UID for this class
+  */
 private static final long serialVersionUID = 6464298989504059473L;
 
 /*************************************************************************/

@@ -32,8 +32,19 @@ package java.sql;
   *
   * @author Aaron M. Renn (arenn@urbanophile.com)
   */
-public class SQLWarning extends SQLException implements java.io.Serializable
+public class SQLWarning extends SQLException
 {
+
+/*************************************************************************/
+
+/**
+  * Static Variables
+  */
+
+/**
+  * This is the serialization UID for this class
+  */
+private static final long serialVersionUID = 3917336774604784856L;
 
 /*************************************************************************/
 
@@ -131,8 +142,6 @@ setNextWarning(SQLWarning e)
 {
   super.setNextException(e);
 }
-
-private static final long serialVersionUID = 3917336774604784856L;
 
 } // class SQLWarning
 

@@ -30,6 +30,7 @@ package java.sql;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
+import java.util.Calendar;
 
 /**
   * This interface provides a mechanism for executing pre-compiled
@@ -53,6 +54,21 @@ public interface PreparedStatement extends Statement
   */
 public abstract void
 setNull(int index, int type) throws SQLException;
+  
+/*************************************************************************/
+
+/**
+  * This method populates the specified parameter with a SQL NULL value
+  * for the specified type.
+  *
+  * @param index The index of the parameter to set.
+  * @param type The SQL type identifier of the parameter from <code>Types</code>
+  * @param name The name of the data type, for user defined types.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setNull(int index, int type, String name) throws SQLException;
   
 /*************************************************************************/
 
@@ -212,6 +228,21 @@ setDate(int index, java.sql.Date value) throws SQLException;
 
 /**
   * This method sets the specified parameter from the given Java
+  * <code>java.sql.Date</code> value.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  * @param calendar The <code>Calendar</code> to use for timezone and locale.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setDate(int index, java.sql.Date value, Calendar calendar) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
   * <code>java.sql.Time</code> value.
   *
   * @param index The index of the parameter value to set.
@@ -226,6 +257,21 @@ setTime(int index, java.sql.Time value) throws SQLException;
 
 /**
   * This method sets the specified parameter from the given Java
+  * <code>java.sql.Time</code> value.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  * @param calendar The <code>Calendar</code> to use for timezone and locale.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setTime(int index, java.sql.Time value, Calendar calendar) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
   * <code>java.sql.Timestamp</code> value.
   *
   * @param index The index of the parameter value to set.
@@ -235,6 +281,22 @@ setTime(int index, java.sql.Time value) throws SQLException;
   */
 public abstract void
 setTimestamp(int index, java.sql.Timestamp value) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
+  * <code>java.sql.Timestamp</code> value.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  * @param calendar The <code>Calendar</code> to use for timezone and locale.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setTimestamp(int index, java.sql.Timestamp value, Calendar calendar) 
+             throws SQLException;
 
 /*************************************************************************/
 
@@ -280,6 +342,81 @@ setUnicodeStream(int index, InputStream value, int length) throws SQLException;
   */
 public abstract void
 setBinaryStream(int index, InputStream value, int length) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
+  * character <code>Reader</code> value.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  * @param length The number of bytes in the stream.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setCharacterStream(int index, Reader value, int length) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
+  * <code>Ref</code> value.  The default object type to SQL type mapping
+  * will be used.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setRef(int index, Ref value) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
+  * <code>Blob</code> value.  The default object type to SQL type mapping
+  * will be used.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setBlob(int index, Blob value) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
+  * <code>Clob</code> value.  The default object type to SQL type mapping
+  * will be used.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setClob(int index, Clob value) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method sets the specified parameter from the given Java
+  * <code>Array</code> value.  The default object type to SQL type mapping
+  * will be used.
+  *
+  * @param index The index of the parameter value to set.
+  * @param value The value of the parameter.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+setArray(int index, Array value) throws SQLException;
 
 /*************************************************************************/
 
@@ -334,6 +471,16 @@ setObject(int index, Object value, int type, int scale) throws SQLException;
 /*************************************************************************/
 
 /**
+  * This method adds a set of parameters to the batch for JDBC 2.0.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract void
+addBatch() throws SQLException;
+  
+/*************************************************************************/
+
+/**
   * This method clears all of the input parameter that have been
   * set on this statement.
   *
@@ -341,6 +488,18 @@ setObject(int index, Object value, int type, int scale) throws SQLException;
   */
 public abstract void
 clearParameters() throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns meta data for the result set from this statement.
+  *
+  * @return Meta data for the result set from this statement.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract ResultSetMetaData
+getMetaData() throws SQLException;
 
 /*************************************************************************/
 

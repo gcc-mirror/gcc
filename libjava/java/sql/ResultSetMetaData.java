@@ -1,5 +1,5 @@
 /* ResultSetMetaData.java -- Returns information about the ResultSet
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -357,6 +357,22 @@ isWritable(int index) throws SQLException;
   */
 public abstract boolean
 isDefinitelyWritable(int index) throws SQLException;
+
+/*************************************************************************/
+
+/**
+  * This method returns the name of the Java class which will be used to
+  * create objects representing the data in this column.
+  *
+  * @param index The index of the column to check.
+  *
+  * @return The name of the Java class that will be used for values in
+  * this column.
+  *
+  * @exception SQLException If an error occurs.
+  */
+public abstract String
+getColumnClassName(int index) throws SQLException;
 
 } // interface ResultSetMetaData
 
