@@ -1,4 +1,9 @@
 2003-10-06  Roger Sayle  <roger@eyesopen.com>
+
+	* expr.c (expand_expr <COND_EXPR>): Handle the void type semantics
+	of COND_EXPR when expanding the "A op 0 ? FOO : A" optimizations.
+
+2003-10-06  Roger Sayle  <roger@eyesopen.com>
 	    Zack Weinberg  <zack@codesourcery.com>
 
 	* optabs.c (prepare_float_lib_cmp): Avoid searching for REG_RETVAL

@@ -8910,8 +8910,12 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	    jumpif (TREE_OPERAND (exp, 0), op0);
 
 	    start_cleanup_deferral ();
-	    store_expr (TREE_OPERAND (exp, 2), temp,
-			modifier == EXPAND_STACK_PARM ? 2 : 0);
+	    if (TREE_TYPE (TREE_OPERAND (exp, 2)) != void_type_node)
+	      store_expr (TREE_OPERAND (exp, 2), temp,
+			  modifier == EXPAND_STACK_PARM ? 2 : 0);
+	    else
+	      expand_expr (TREE_OPERAND (exp, 2),
+			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	    op1 = op0;
 	  }
 	else if (temp
@@ -8931,8 +8935,12 @@ expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
 	    start_cleanup_deferral ();
-	    store_expr (TREE_OPERAND (exp, 1), temp,
-			modifier == EXPAND_STACK_PARM ? 2 : 0);
+	    if (TREE_TYPE (TREE_OPERAND (exp, 1)) != void_type_node)
+	      store_expr (TREE_OPERAND (exp, 1), temp,
+			  modifier == EXPAND_STACK_PARM ? 2 : 0);
+	    else
+	      expand_expr (TREE_OPERAND (exp, 1),
+			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	    op1 = op0;
 	  }
 	else
