@@ -2486,13 +2486,13 @@ stabilize_call (tree call, tree *initp)
    so we look past the TARGET_EXPR and stabilize the arguments of the call
    instead.  */
 
-void
+bool
 stabilize_init (tree init, tree *initp)
 {
   tree t = init;
 
   if (t == error_mark_node)
-    return;
+    return true;
 
   if (TREE_CODE (t) == INIT_EXPR
       && TREE_CODE (TREE_OPERAND (t, 1)) != TARGET_EXPR)
@@ -2508,11 +2508,18 @@ stabilize_init (tree init, tree *initp)
 	{
 	  /* Default-initialization.  */
 	  *initp = NULL_TREE;
-	  return;
+	  return true;
 	}
+
+      /* If the initializer is a COND_EXPR, we can't preevaluate
+	 anything.  */
+      if (TREE_CODE (t) == COND_EXPR)
+	return false;
 
       stabilize_call (t, initp);
     }
+
+  return true;
 }
 
 

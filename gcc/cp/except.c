@@ -678,7 +678,12 @@ build_throw (tree exp)
 	 it does.  But that conflicted with expectations (PR 13944) and the
 	 EDG compiler; now we wrap the initialization in a TRY_CATCH_EXPR
 	 to call do_free_exception rather than in a MUST_NOT_THROW_EXPR,
-	 for this case only.  */
+	 for this case only.
+
+         Note that we don't check the return value from stabilize_init
+         because it will only return false in cases where elided is true,
+         and therefore we don't need to work around the failure to
+         preevaluate.  */
       stabilize_init (exp, &temp_expr);
 
       if (elided)

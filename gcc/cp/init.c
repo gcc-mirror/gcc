@@ -2183,6 +2183,8 @@ build_new_1 (tree exp)
      placement delete.  */
   if (is_initialized)
     {
+      bool stable;
+
       init_expr = build_indirect_ref (data_addr, NULL);
 
       if (init == void_zero_node)
@@ -2191,18 +2193,25 @@ build_new_1 (tree exp)
 	pedwarn ("ISO C++ forbids initialization in array new");
 
       if (has_array)
-	init_expr
-	  = build_vec_init (init_expr,
-			    cp_build_binary_op (MINUS_EXPR, outer_nelts,
-						integer_one_node),
-			    init, /*from_array=*/0);
+	{
+	  init_expr
+	    = build_vec_init (init_expr,
+			      cp_build_binary_op (MINUS_EXPR, outer_nelts,
+						  integer_one_node),
+			      init, /*from_array=*/0);
+
+	  /* An array initialization is stable because the initialization
+	     of each element is a full-expression, so the temporaries don't
+	     leak out.  */
+	  stable = true;
+	}
       else if (TYPE_NEEDS_CONSTRUCTING (type))
 	{
 	  init_expr = build_special_member_call (init_expr, 
 						 complete_ctor_identifier,
 						 init, TYPE_BINFO (true_type),
 						 LOOKUP_NORMAL);
-	  stabilize_init (init_expr, &init_preeval_expr);
+	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}
       else
 	{
@@ -2217,7 +2226,7 @@ build_new_1 (tree exp)
 	    abort ();
 
 	  init_expr = build_modify_expr (init_expr, INIT_EXPR, init);
-	  stabilize_init (init_expr, &init_preeval_expr);
+	  stable = stabilize_init (init_expr, &init_preeval_expr);
 	}
 
       if (init_expr == error_mark_node)
@@ -2247,11 +2256,45 @@ build_new_1 (tree exp)
 					  (placement_allocation_fn_p 
 					   ? alloc_call : NULL_TREE));
 
-	  /* This is much simpler now that we've preevaluated all of the
-	     arguments to the constructor call.  */
-	  if (cleanup)
+	  if (!cleanup)
+	    /* We're done.  */;
+	  else if (stable)
+	    /* This is much simpler if we were able to preevaluate all of
+	       the arguments to the constructor call.  */
 	    init_expr = build (TRY_CATCH_EXPR, void_type_node,
 			       init_expr, cleanup);
+	  else
+	    /* Ack!  First we allocate the memory.  Then we set our sentry
+	       variable to true, and expand a cleanup that deletes the
+	       memory if sentry is true.  Then we run the constructor, and
+	       finally clear the sentry.
+
+	       We need to do this because we allocate the space first, so
+	       if there are any temporaries with cleanups in the
+	       constructor args and we weren't able to preevaluate them, we
+	       need this EH region to extend until end of full-expression
+	       to preserve nesting.  */
+	    {
+	      tree end, sentry, begin;
+
+	      begin = get_target_expr (boolean_true_node);
+	      CLEANUP_EH_ONLY (begin) = 1;
+
+	      sentry = TARGET_EXPR_SLOT (begin);
+
+	      TARGET_EXPR_CLEANUP (begin)
+		= build (COND_EXPR, void_type_node, sentry,
+			 cleanup, void_zero_node);
+
+	      end = build (MODIFY_EXPR, TREE_TYPE (sentry),
+			   sentry, boolean_false_node);
+
+	      init_expr
+		= build (COMPOUND_EXPR, void_type_node, begin,
+			 build (COMPOUND_EXPR, void_type_node, init_expr,
+				end));
+	    }
+	    
 	}
     }
   else

@@ -1,3 +1,9 @@
+2004-03-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/14452
+	* tree.c (stabilize_init): Return whether or not it worked.
+	* init.c (build_new_1): If not, use a sentry.
+
 2004-03-09  Nathan Sidwell  <nathan@garibaldi.home>
 
 	PR c++/14397

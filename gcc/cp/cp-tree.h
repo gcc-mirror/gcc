@@ -4100,7 +4100,7 @@ extern void lang_check_failed			(const char *, int,
 							 const char *);
 extern tree stabilize_expr			(tree, tree *);
 extern void stabilize_call			(tree, tree *);
-extern void stabilize_init			(tree, tree *);
+extern bool stabilize_init			(tree, tree *);
 extern tree cxx_unsave_expr_now			(tree);
 extern tree cxx_maybe_build_cleanup		(tree);
 extern void init_tree			        (void);
