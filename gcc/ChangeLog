@@ -1,3 +1,7 @@
+Tue Feb 11 13:32:12 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* sched-ebb.c (schedule_ebbs): Do not verify_flow_info.
+
 Tue Feb 11 10:02:54 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (choose_function_section): Choose sections correctly.

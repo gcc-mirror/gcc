@@ -495,8 +495,4 @@ schedule_ebbs (dump_file)
     rm_redundant_line_notes ();
 
   sched_finish ();
-
-#ifdef ENABLE_CHECKING
-  verify_flow_info ();
-#endif
 }
