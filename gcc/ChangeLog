@@ -1,3 +1,16 @@
+2003-04-28  Zack Weinberg  <zack@codesourcery.com>
+
+	* tree.h (TREE_CST_RTL, CST_OR_CONSTRUCTOR_CHECK): Delete.
+	(struct tree_int_cst, struct tree_real_cst, struct tree_string,
+	struct tree_complex, struct tree_vector): Remove RTL field.
+	(CONSTRUCTOR_ELTS): Use elt 0.
+	* tree.def (CONSTRUCTOR): Delete first of its two operands.
+	* varasm.c (output_constant_def): Remove early exit if
+	TREE_CST_RTL is set.  Don't set TREE_CST_RTL.
+	(decode_addr_const): Don't mention TREE_CST_RTL in comment.
+	* target.h (select_section): Don't mention TREE_CST_RTL in comment.
+	* doc/tm.texi (encode_section_info): Don't talk about TREE_CST_RTL.
+
 2003-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (finish_decl): When prototype with asmspec is found
@@ -8,16 +21,16 @@
 
 2003-04-28  Richard Henderson  <rth@redhat.com>
 
-        * config/sparc/sparc.c (print_operand): Add 's' to sign-extend.
-        * config/sparc/sparc.md (const_mulsidi3_v8plus): Fix mode of
-        integral constant mult operand.
-        (const_mulsidi3_sp32, const_mulsidi3_sp64): Likewise.
-        (const_smulsi3_highpart_v8plus): Likewise.
-        (const_smulsi3_highpart): Likewise.
-        (const_umulsidi3_sp32): Likewise; sign-extend it in the output.
-        (const_umulsidi3_sp64, const_umulsidi3_v8plus): Likewise.
-        (const_umulsi3_highpart_v8plus): Likewise.
-        (const_umulsi3_highpart): Likewise.
+	* config/sparc/sparc.c (print_operand): Add 's' to sign-extend.
+	* config/sparc/sparc.md (const_mulsidi3_v8plus): Fix mode of
+	integral constant mult operand.
+	(const_mulsidi3_sp32, const_mulsidi3_sp64): Likewise.
+	(const_smulsi3_highpart_v8plus): Likewise.
+	(const_smulsi3_highpart): Likewise.
+	(const_umulsidi3_sp32): Likewise; sign-extend it in the output.
+	(const_umulsidi3_sp64, const_umulsidi3_v8plus): Likewise.
+	(const_umulsi3_highpart_v8plus): Likewise.
+	(const_umulsi3_highpart): Likewise.
 
 2003-04-28  David O'Brien  <obrien@FreeBSD.org>
 

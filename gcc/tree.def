@@ -387,10 +387,8 @@ DEFTREECODE (VTABLE_REF, "vtable_ref", 'r', 3)
 /* Constructor: return an aggregate value made from specified components.
    In C, this is used only for structure and array initializers.
    Also used for SET_TYPE in Chill (and potentially Pascal).
-   The first "operand" is really a pointer to the RTL,
-   for constant constructors only.
-   The second operand is a list of component values
-   made out of a chain of TREE_LIST nodes.
+   The operand is a list of component values made out of a chain of
+   TREE_LIST nodes.
 
    For ARRAY_TYPE:
    The TREE_PURPOSE of each node is the corresponding index.
@@ -406,7 +404,7 @@ DEFTREECODE (VTABLE_REF, "vtable_ref", 'r', 3)
    The TREE_VALUE specifies a value (index) in the set that is true.
    If TREE_PURPOSE is non-NULL, it specifies the lower limit of a
    range of true values.  Elements not listed are false (not in the set).  */
-DEFTREECODE (CONSTRUCTOR, "constructor", 'e', 2)
+DEFTREECODE (CONSTRUCTOR, "constructor", 'e', 1)
 
 /* The expression types are mostly straightforward, with the fourth argument
    of DEFTREECODE saying how many operands there are.

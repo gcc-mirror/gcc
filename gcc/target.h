@@ -102,10 +102,9 @@ struct gcc_target
     void (* eh_frame_section) PARAMS ((void));
 
     /* Select and switch to a section for EXP.  It may be a DECL or a
-       constant for which TREE_CST_RTL is valid.  RELOC is nonzero if
-       runtime relocations must be applied; bit 1 will be set if the
-       runtime relocations require non-local name resolution.  ALIGN is
-       the required alignment of the data.  */
+       constant.  RELOC is nonzero if runtime relocations must be applied;
+       bit 1 will be set if the runtime relocations require non-local
+       name resolution.  ALIGN is the required alignment of the data.  */
     void (* select_section) PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 
     /* Select and switch to a section for X with MODE.  ALIGN is
