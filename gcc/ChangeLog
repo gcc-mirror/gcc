@@ -1,3 +1,8 @@
+2003-02-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Fix typo.
+	* configure: Regenerate.
+
 2003-02-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (*iorsi2_and_1_lshiftrt_1): New.
