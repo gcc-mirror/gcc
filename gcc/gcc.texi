@@ -166,7 +166,7 @@ instead of in the original English.
 @sp 2
 @center Richard M. Stallman
 @sp 3
-@center Last updated 18 March 2001
+@center Last updated 22 March 2001
 @sp 1
 @c The version number appears five times more in this file.
 
@@ -540,11 +540,6 @@ prototypes.
 When @samp{-pedantic-errors} is specified, GCC will incorrectly give
 an error message when a function name is specified in an expression
 involving the comma operator.
-
-@item
-Loop unrolling doesn't work properly for certain C++ programs.  This is
-a bug in the C++ front end.  It sometimes emits incorrect debug info, and
-the loop unrolling code is unable to recover from this error.
 @end itemize
 
 @node Installation Problems
@@ -575,17 +570,6 @@ result in a failure to fix the declaration of @code{size_t} in
 that type mismatches occur, this could be the cause.
 
 The solution is not to use such a directory for building GCC.
-
-@item
-In previous versions of GCC, the @code{gcc} driver program looked for
-@code{as} and @code{ld} in various places; for example, in files
-beginning with @file{/usr/local/lib/gcc-}.  GCC version 2 looks for
-them in the directory
-@file{/usr/local/lib/gcc-lib/@var{target}/@var{version}}.
-
-Thus, to use a version of @code{as} or @code{ld} that is not the system
-default, for example @code{gas} or GNU @code{ld}, you must put them in
-that directory (or make links to them from that directory).
 
 @item
 Some commands executed when making the compiler may fail (return a
@@ -673,25 +657,6 @@ stop such warnings by installing the GNU linker.
 
 It would be nice to extend GAS to produce the gp tables, but they are
 optional, and there should not be a warning about their absence.
-
-@item
-In Ultrix 4.0 on the MIPS machine, @file{stdio.h} does not work with GNU
-CC at all unless it has been fixed with @code{fixincludes}.  This causes
-problems in building GCC.  Once GCC is installed, the problems go
-away.
-
-To work around this problem, when making the stage 1 compiler, specify
-this option to Make:
-
-@example
-GCC_FOR_TARGET="./xgcc -B./ -I./include"
-@end example
-
-When making stage 2 and stage 3, specify this option:
-
-@example
-CFLAGS="-g -I./include"
-@end example
 
 @item
 Users have reported some problems with version 2.0 of the MIPS
