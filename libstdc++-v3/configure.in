@@ -52,6 +52,8 @@ GLIBCPP_ENABLE_SJLJ_EXCEPTIONS
 GLIBCPP_ENABLE_LIBUNWIND_EXCEPTIONS
 GLIBCPP_ENABLE_CONCEPT_CHECKS
 
+# Check for headers necessary for libsupc++ using dyn-string.c/cxa_demangle.c
+AC_CHECK_HEADERS(string.h stdlib.h)
 
 if test -n "$with_cross_host" || test x"$build" != x"$host"; then
 
