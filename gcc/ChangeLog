@@ -1,5 +1,14 @@
 2001-05-26  Philip Blundell  <philb@gnu.org>
 
+	* config/c4x/c4x-protos.h: Use GCC_C_PRAGMA_H in place of _C_PRAGMA_H.
+	* config/i960/i960-protos.h: Likewise.
+	* config/i370/i370-protos.h: Likewise.
+	* config/h8300/h8300-protos.h: Likewise,
+	* config/sh/sh-protos.h: Likewise.
+	* config/v850/v850-protos.h: Likewise.
+
+2001-05-26  Philip Blundell  <philb@gnu.org>
+
 	* config/arm/arm-protos.h: Use GCC_C_PRAGMA_H in place of _C_PRAGMA_H.
 
 2001-05-25  Zack Weinberg  <zackw@stanford.edu>

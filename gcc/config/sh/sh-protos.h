@@ -125,7 +125,7 @@ extern int fldi_ok PARAMS ((void));
 extern void fpscr_set_from_mem PARAMS ((int, HARD_REG_SET));
 #endif
 
-#ifdef _C_PRAGMA_H
+#ifdef GCC_C_PRAGMA_H
 extern void sh_pr_interrupt PARAMS ((cpp_reader *));
 extern void sh_pr_trapa PARAMS ((cpp_reader *));
 extern void sh_pr_nosave_low_regs PARAMS ((cpp_reader *));

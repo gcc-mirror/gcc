@@ -78,7 +78,7 @@ extern int ok_for_bclr PARAMS ((HOST_WIDE_INT));
 extern int small_power_of_two PARAMS ((HOST_WIDE_INT));
 extern int initial_offset PARAMS ((int, int));
 
-#ifdef _C_PRAGMA_H
+#ifdef GCC_C_PRAGMA_H
 extern void h8300_pr_interrupt PARAMS ((cpp_reader *));
 extern void h8300_pr_saveall PARAMS ((cpp_reader *));
 #endif

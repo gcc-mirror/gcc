@@ -303,7 +303,7 @@ extern enum machine_mode c4x_caller_save_map[];
 extern int c4x_rpts_cycles;	        /* Max cycles for RPTS.  */
 extern int c4x_cpu_version;		/* Cpu version C30/31/32/40/44.  */
 
-#ifdef _C_PRAGMA_H
+#ifdef GCC_C_PRAGMA_H
 extern void c4x_pr_CODE_SECTION		PARAMS ((cpp_reader *));
 extern void c4x_pr_DATA_SECTION		PARAMS ((cpp_reader *));
 extern void c4x_pr_FUNC_IS_PURE		PARAMS ((cpp_reader *));
