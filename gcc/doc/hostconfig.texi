@@ -71,6 +71,13 @@ indicate an out-of-date PCH file (built by some other GCC executable),
 and such a PCH file won't work.
 @end deftypefn
 
+@deftypefn {Host Hook} size_t HOST_HOOKS_GT_PCH_ALLOC_GRANULARITY (void);
+This host hook returns the alignment required for allocating virtual
+memory. Usually this is the same as getpagesize, but on some hosts the
+alignment for reserving memory differs from the pagesize for committing
+memory.
+@end deftypefn
+
 @node Filesystem
 @section Host Filesystem
 @cindex configuration file

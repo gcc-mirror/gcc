@@ -431,7 +431,7 @@ gt_pch_save (FILE *f)
   char *this_object = NULL;
   size_t this_object_size = 0;
   struct mmap_info mmi;
-  size_t page_size = getpagesize();
+  const size_t mmap_offset_alignment = host_hooks.gt_pch_alloc_granularity();
 
   gt_pch_save_stringpool ();
 
@@ -481,14 +481,15 @@ gt_pch_save (FILE *f)
 
   ggc_pch_prepare_write (state.d, state.f);
 
-  /* Pad the PCH file so that the mmapped area starts on a page boundary.  */
+  /* Pad the PCH file so that the mmapped area starts on an allocation
+     granularity (usually page) boundary.  */
   {
     long o;
     o = ftell (state.f) + sizeof (mmi);
     if (o == -1)
       fatal_error ("can't get position in PCH file: %m");
-    mmi.offset = page_size - o % page_size;
-    if (mmi.offset == page_size)
+    mmi.offset = mmap_offset_alignment - o % mmap_offset_alignment;
+    if (mmi.offset == mmap_offset_alignment)
       mmi.offset = 0;
     mmi.offset += o;
   }
@@ -610,6 +611,16 @@ default_gt_pch_use_address (void *base, size_t size, int fd ATTRIBUTE_UNUSED,
 {
   void *addr = xmalloc (size);
   return (addr == base) - 1;
+}
+
+/* Default version of HOST_HOOKS_GT_PCH_GET_ADDRESS.   Return the
+   alignment required for allocating virtual memory. Usually this is the
+   same as pagesize.  */
+
+size_t
+default_gt_pch_alloc_granularity (void)
+{
+  return getpagesize();
 }
 
 #if HAVE_MMAP_FILE
