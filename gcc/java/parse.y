@@ -14031,7 +14031,8 @@ patch_incomplete_class_ref (node)
   if (!(ref_type = resolve_type_during_patch (type)))
     return error_mark_node;
 
-  if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type))
+  if (!flag_emit_class_files || JPRIMITIVE_TYPE_P (ref_type)
+      || TREE_CODE (ref_type) == VOID_TYPE)
     {
       tree dot = build_class_ref (ref_type);
       /* A class referenced by `foo.class' is initialized.  */
