@@ -7,5 +7,5 @@ void bar()
 {
     A a;
     asm("" : : "r"(foo(a)) );//<-- cleanup needed here.
-};
+}
 

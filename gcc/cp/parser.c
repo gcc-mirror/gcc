@@ -10389,7 +10389,13 @@ cp_parser_asm_definition (cp_parser* parser)
 				  inputs, clobbers);
       /* If the extended syntax was not used, mark the ASM_EXPR.  */
       if (!extended_p)
-	ASM_INPUT_P (asm_stmt) = 1;
+	{
+	  tree temp = asm_stmt;
+	  if (TREE_CODE (temp) == CLEANUP_POINT_EXPR)
+	    temp = TREE_OPERAND (temp, 0);
+	  
+	  ASM_INPUT_P (temp) = 1;
+	}
     }
   else
     assemble_asm (string);
