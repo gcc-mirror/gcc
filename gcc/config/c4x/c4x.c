@@ -2176,7 +2176,10 @@ c4x_rptb_insert (insn)
     fatal_insn ("c4x_rptb_insert: Cannot find start label", start_label);
 
   /* We'll have to update the basic blocks.  */
-  emit_insn_before (gen_rptb_top (start_label, end_label), insn);
+  if (TARGET_RPTS && c4x_rptb_rpts_p (PREV_INSN (insn), 0))
+    emit_insn_before (gen_rpts_top (start_label, end_label), insn);
+  else
+    emit_insn_before (gen_rptb_top (start_label, end_label), insn);
 }
 
 

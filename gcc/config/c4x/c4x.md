@@ -4908,10 +4908,20 @@
   "
   [(set_attr "type" "repeat_top")])
 
+(define_insn "rpts_top"
+  [(unspec [(use (label_ref (match_operand 0 "" "")))
+            (use (label_ref (match_operand 1 "" "")))] 2)]
+  ""
+  "*
+   return ! final_sequence && c4x_rptb_rpts_p (insn, operands[0])
+	 ? \"rpts\\trc\" : \"rptb%#\\t%l1-1\";
+  "
+  [(set_attr "type" "repeat")])
+
 ; This pattern needs to be emitted at the start of the loop to
 ; say that RS and RE are loaded.
 (define_insn "rptb_init"
-  [(unspec[(match_operand:QI 0 "register_operand" "va")] 22)
+  [(unspec [(match_operand:QI 0 "register_operand" "va")] 22)
    (clobber (reg:QI 25))
    (clobber (reg:QI 26))]
   ""
@@ -4964,6 +4974,32 @@
      return c4x_output_cbranch (\"push\\tr0\\n\\tldi\\t%0,r0\\n\\tsubi\\t1,r0\\n\\tsti\\tr0,%0\\n\\tpop\\tr0\\n\\tbhs\", insn);
   "
   [(set_attr "type" "repeat,db,jmpc,jmpc,jmpc")])
+
+(define_split
+   [(set (pc)
+        (if_then_else (ge (match_operand:QI 0 "addr_reg_operand" "")
+                          (const_int 0))
+                      (label_ref (match_operand 1 "" ""))
+                      (pc)))
+   (set (match_dup 0)
+        (plus:QI (match_dup 0)
+                 (const_int -1)))
+   (use (match_operand:QI 2 "const_int_operand" ""))
+   (use (match_operand:QI 3 "const_int_operand" ""))
+   (use (match_operand:QI 4 "const_int_operand" ""))
+   (use (reg:QI 25))
+   (use (reg:QI 26))
+   (clobber (reg:CC_NOOV 21))]
+  "reload_completed"
+  [(parallel [(set (pc)
+                   (if_then_else (ge (match_dup 0)
+			             (const_int 0))
+		                 (label_ref (match_dup 1))
+		                 (pc)))
+              (set (match_dup 0)
+                   (plus:QI (match_dup 0)
+                            (const_int -1)))])]
+  "")
 
 ; operand 0 is the loop count pseudo register
 ; operand 1 is the number of loop iterations or 0 if it is unknown
