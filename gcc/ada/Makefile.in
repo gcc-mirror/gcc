@@ -78,7 +78,18 @@ T_CFLAGS =
 X_CPPFLAGS =
 T_CPPFLAGS =
 
+X_ADAFLAGS =
+T_ADAFLAGS =
+
 CC = cc
+# Let the configure setting prevail only if CC hasn't been overridden
+# to xgcc by the top level Makefile (in a later stage of bootstrap).
+ifeq ($(findstring xgcc, $(CC)),)
+ADAC = @ADAC@
+else
+ADAC = $(CC)
+endif
+
 BISON = bison
 BISONFLAGS =
 ECHO = echo
@@ -103,13 +114,13 @@ MAKEINFO = makeinfo
 TEXI2DVI = texi2dvi
 GNATBIND = $(STAGE_PREFIX)gnatbind -C
 ADA_CFLAGS =
-ADAFLAGS = -gnatpg -gnata
+ADAFLAGS = -W -Wall -gnatpg -gnata
 SOME_ADAFLAGS =-gnata
 FORCE_DEBUG_ADAFLAGS = -g
 GNATLIBFLAGS = -gnatpg
 GNATLIBCFLAGS= -g -O2
-ALL_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS)
-MOST_ADAFLAGS = $(CFLAGS) $(ADA_CFLAGS) $(SOME_ADAFLAGS)
+ALL_ADAFLAGS = $(ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) $(ADAFLAGS)
+MOST_ADAFLAGS = $(ADA_CFLAGS) $(X_ADAFLAGS) $(T_ADAFLAGS) $(SOME_ADAFLAGS)
 THREAD_KIND=native
 GMEM_LIB=
 MISCLIB =
@@ -268,9 +279,9 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)
 .c.o:
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 .adb.o:
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
 .ads.o:
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $<
 
 # This tells GNU make version 3 not to export all the variables
 # defined in this file into the environment.
@@ -836,11 +847,11 @@ ifeq ($(strip $(filter-out %86 interix,$(arch) $(osys))),)
 
 # Work around for gcc optimization bug wrt cxa5a09
 a-numaux.o  : a-numaux.adb a-numaux.ads                                     
-	$(CC) -c $(ALL_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
 
 # Work around for gcc optimization bug wrt cxf3a01
 a-teioed.o  : a-teioed.adb a-teioed.ads                   
-	$(CC) -c $(ALL_ADAFLAGS) -O0 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) -O0 $(ADA_INCLUDES) $<
 
 endif
 
@@ -960,7 +971,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
 
 # ??? work around a gcc -O2 bug on m68k
 s-interr.o  : s-interr.adb s-interr.ads
-	$(CC) -c $(ALL_ADAFLAGS) -O1 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) -O1 $(ADA_INCLUDES) $<
 endif
 
 ifeq ($(strip $(filter-out powerpc% wrs vx%,$(targ))),)
@@ -1140,7 +1151,7 @@ ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
 
 # ??? work around a gcc -O3 bug on x86
 a-numaux.o  : a-numaux.adb a-numaux.ads
-	$(CC) -c $(ALL_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
 endif
 
 ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
@@ -1265,7 +1276,7 @@ a-tcbinf.o: s-tpgetc.ali
 
 # force debug info so that workshop can find the All_Tasks_List symbol
 s-taskin.o: s-taskin.adb s-taskin.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) $<
 endif
 
 ifeq ($(strip $(filter-out hppa% hp hpux%,$(targ))),)
@@ -1484,7 +1495,7 @@ ifeq ($(strip $(filter-out cygwin32% mingw32% pe,$(osys))),)
 
 # ??? work around a gcc -O3 bug on x86
 a-numaux.o  : a-numaux.adb a-numaux.ads
-	$(CC) -c $(ALL_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
 endif
 
 # The runtime library for gnat comprises two directories.  One contains the
@@ -2076,12 +2087,7 @@ gnatbl.o: gnatbl.c adaint.h
 	  true; \
 	fi
 
-gnattools: force
-	$(MAKE) \
-	   "CC=$(CC)" "ALL_CFLAGS=$(ALL_CFLAGS)" "INCLUDE=$(INCLUDES)" \
-	   "LDFLAGS=$(LDFLAGS)" \
-	   "MISCLIB=$(MISCLIB)" "exeext=$(exeext)" \
-	   ../gnatbl$(exeext) ../gnatchop$(exeext) ../gnatcmd$(exeext) \
+gnattools: ../gnatbl$(exeext) ../gnatchop$(exeext) ../gnatcmd$(exeext) \
 	   ../gnatkr$(exeext) ../gnatlink$(exeext) \
 	   ../gnatls$(exeext) ../gnatmake$(exeext) ../gnatmem$(exeext) \
 	   ../gnatprep$(exeext) ../gnatpsta$(exeext) ../gnatpsys$(exeext) \
@@ -2175,11 +2181,12 @@ gnatlib: ../stamp-gnatlib1 ../stamp-gnatlib2
 	$(MAKE) -C rts CC="../../xgcc -B../../" \
 	        INCLUDES="$(INCLUDES_FOR_SUBDIR) -I./../.." \
                 CFLAGS="$(GNATLIBCFLAGS) $(TARGET_LIBGCC2_CFLAGS) -DIN_RTS" \
+		ADA_CFLAGS="$(GNATLIBCFLAGS)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile $(LIBGNAT_OBJS)
 	$(MAKE) -C rts CC="../../xgcc -B../../" \
 	        ADA_INCLUDES="$(ADA_INCLUDES_FOR_SUBDIR)" \
-                CFLAGS="$(GNATLIBCFLAGS)" \
+                CFLAGS="$(GNATLIBCFLAGS)" ADA_CFLAGS="$(GNATLIBCFLAGS)" \
 	        ADAFLAGS="$(GNATLIBFLAGS)" \
 		srcdir=$(fsrcdir) \
 	        -f ../Makefile \
@@ -2464,40 +2471,43 @@ ADA_TREE_H = ada-tree.h ada-tree.def
 
 sdefault.o : sdefault.ads sdefault.adb types.ads unchdeal.ads \
    system.ads s-exctab.ads s-stalib.ads unchconv.ads 
-	$(CC) -c -O2 $(MOST_ADAFLAGS) $(ADA_INCLUDES) sdefault.adb
+	$(ADAC) -c -O2 $(MOST_ADAFLAGS) $(ADA_INCLUDES) sdefault.adb
 
 # force debugging information on s-tasdeb.o so that it is always
 # possible to set conditional breakpoints on tasks.
 
 s-tasdeb.o  : s-tasdeb.adb s-tasdeb.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) $<
 
 # force debugging information on s-vaflop.o so that it is always
 # possible to call the VAX float debug print routines.
 # force at least -O so that the inline assembly works.
 
 s-vaflop.o  : s-vaflop.adb s-vaflop.ads
-	$(CC) -c -O $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) $<
+	$(ADAC) -c -O $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) \
+	 $(ADA_INCLUDES) $<
 
 # force debugging information on a-except.o so that it is always
 # possible to set conditional breakpoints on exceptions.
 # use -O1 otherwise gdb isn't able to get a full backtrace on mips targets.
 
 a-except.o  : a-except.adb a-except.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
 	 $(ADA_INCLUDES) $<
 
 # force debugging information on s-assert.o so that it is always
 # possible to set breakpoint on assert failures.
 
 s-assert.o  : s-assert.adb s-assert.ads a-except.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O2 \
+	 $(ADA_INCLUDES) $<
 
 # force debugging information on s-stalib.o so that it is always
 # possible to set breakpoints on exceptions.
 
 s-stalib.o  : s-stalib.adb s-stalib.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O2 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O2 \
+	 $(ADA_INCLUDES) $<
 
 # force debugging information and no optimization on s-memory.o so that it 
 # is always possible to set breakpoint on __gnat_malloc and __gnat_free
@@ -2505,10 +2515,12 @@ s-stalib.o  : s-stalib.adb s-stalib.ads
 # memtrack.adb, and used by the post-mortem analysis with gnatmem.
 
 s-memory.o  : s-memory.adb s-memory.ads memtrack.o
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
+	 $(ADA_INCLUDES) $<
 
 memtrack.o  : memtrack.adb s-memory.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 $(ADA_INCLUDES) $<
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
+	 $(ADA_INCLUDES) $<
 
 # Need to keep the frame pointer in this file to pop the stack properly on
 # some targets.
@@ -2599,7 +2611,7 @@ stamp-tool_src_dir:
 	touch stamp-tool_src_dir
 
 mlib-tgt.o : stamp-tool_src_dir
-	$(CC) -c -Itools $(ALL_ADAFLAGS) $(ADA_INCLUDES) tools/mlib-tgt.adb
+	$(ADAC) -c -Itools $(ALL_ADAFLAGS) $(ADA_INCLUDES) tools/mlib-tgt.adb
 
 # GNAT DEPENDENCIES
 # regular dependencies
