@@ -1,3 +1,12 @@
+2004-01-13  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	PR fortran/6491
+	* expr.c (ffeexpr_reduce_): When handling AND, OR, and XOR, and
+	when using -fugly-logint, if both operands are logical, convert
+	the result back to logical.
+	(ffeexpr_reduced_ugly2log_): Add bothlogical parameter.  Change
+	all callers.  Convert logical operands to integer.
+
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* README: Remove.
