@@ -1,3 +1,7 @@
+2001-11-06  Tom Tromey  <tromey@redhat.com>
+
+	* HACKING: Make people commit their own patches.
+
 2001-11-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Class.h (Class): Made _Jv_BytecodeVerifier a friend.
