@@ -1,3 +1,27 @@
+2002-09-14  Alan Modra  <amodra@bigpond.net.au>
+
+	Merge from mainline.
+	2002-09-14  Alan Modra  <amodra@bigpond.net.au>
+	* doc/tm.texi (DBX_OUTPUT_NFUN): Describe.
+	* dbxout.c (dbxout_function_end): Use DBX_OUTPUT_NFUN.
+	* config/rs6000/linux64.h (DBX_OUTPUT_NFUN): Define.
+
+	2002-08-27  David Edelsohn  <edelsohn@gnu.org>
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Undef before define.
+
+	2002-08-02  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/linux64.h (DBX_OUTPUT_BRAC): Define.
+	(DBX_OUTPUT_LBRAC, DBX_OUTPUT_RBRAC): Define.
+	* config/rs6000/rs6000.c (output_toc): Don't use lshift_double when
+	HOST_BITS_PER_WIDE_INT == 64.
+
+	2002-07-27  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/rs6000.c (output_profile_hook): Don't generate profile
+	label reference when NO_PROFILE_COUNTERS.
+
+	2002-07-11  Alan Modra  <amodra@bigpond.net.au>
+	* config/rs6000/linux64.h (ASM_SPEC): Define.
+
 2002-09-13  Alan Modra  <amodra@bigpond.net.au>
 
 	Merge from mainline.

@@ -10100,8 +10100,17 @@ output_toc (file, x, labelno, mode)
 	abort ();/* It would be easy to make this work, but it doesn't now.  */
 
       if (POINTER_SIZE > GET_MODE_BITSIZE (mode))
-	lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
-		       POINTER_SIZE, &low, &high, 0);
+	{
+#if HOST_BITS_PER_WIDE_INT == 32
+	  lshift_double (low, high, POINTER_SIZE - GET_MODE_BITSIZE (mode),
+			 POINTER_SIZE, &low, &high, 0);
+#else
+	  low |= high << 32;
+	  low <<= POINTER_SIZE - GET_MODE_BITSIZE (mode);
+	  high = (HOST_WIDE_INT) low >> 32;
+	  low &= 0xffffffff;
+#endif
+	}
 
       if (TARGET_64BIT)
 	{
@@ -10319,10 +10328,13 @@ rs6000_gen_section_name (buf, filename, section_desc)
 
 void
 output_profile_hook (labelno)
-     int labelno;
+     int labelno ATTRIBUTE_UNUSED;
 {
   if (DEFAULT_ABI == ABI_AIX)
     {
+#ifdef NO_PROFILE_COUNTERS
+      emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 0);
+#else
       char buf[30];
       const char *label_name;
       rtx fun;
@@ -10333,6 +10345,7 @@ output_profile_hook (labelno)
 
       emit_library_call (init_one_libfunc (RS6000_MCOUNT), 0, VOIDmode, 1,
                          fun, Pmode);
+#endif
     }
   else if (DEFAULT_ABI == ABI_DARWIN)
     {
