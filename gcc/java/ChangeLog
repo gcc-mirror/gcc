@@ -1,3 +1,13 @@
+Thu Dec 10 11:02:49 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (array_initializer:): Array init operand is NULL_TREE
+ 	instead of a TREE_LIST of NULL_TREEs when parsing `{}'. `{,}' is
+ 	now an error. Fixed indentation problems.
+	(patch_string): Handle error_mark_node as an argument.
+	(patch_new_array_init): Fixed indentation problems.
+	(array_constructor_check_entry): Removed check on null wfl_value.
+  	Return an error if wfl_value's walk returns an error.
+
 Wed Dec  9 15:37:05 1998  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.def (NEW_ARRAY_INIT): New Java tree code.
