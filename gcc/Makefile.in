@@ -858,36 +858,47 @@ stmp-multilib: $(LIBGCC1) libgcc2.c libgcc2.ready $(CONFIG_H) \
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
 	  flags=`echo $$i | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
-	  rm -f $${dir}/libgcc.a $(LIBGCC2); \
+	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	    RANLIB="$(RANLIB)" RANLIB_TEST="$(RANLIB_TEST)" \
+	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" \
+	    LIBGCC1="$(LIBGCC1)" LIBGCC2="$(LIBGCC2)" \
+	    dir="$${dir}" stmp-multilib-sub; \
+	done
+	touch stmp-multilib
+
+# Subroutine of stmp-multilib so make -n works.
+stmp-multilib-sub:
+	rm -f $(dir)/libgcc.a $(LIBGCC2)
+	$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
+	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
+	  HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
+	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC2)
+	if [ x$(LIBGCC1) != xlibgcc1-asm.a ]; \
+	then true; \
+	else rm -f $(LIBGCC1); \
+	fi
+	if [ x$(LIBGCC1) != xlibgcc1-asm.a ]; \
+	then true; \
+	else \
 	  $(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
 	    AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
 	    HOST_PREFIX="$(HOST_PREFIX)" HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" $(LIBGCC2); \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  if [ x$(LIBGCC1) != xlibgcc1-asm.a ]; \
-	  then true; \
-	  else (rm -f $(LIBGCC1); \
-		$(MAKE) GCC_FOR_TARGET="$(GCC_FOR_TARGET)" \
-	    	  AR="$(AR)" AR_FLAGS="$(AR_FLAGS)" \
-		  HOST_PREFIX="$(HOST_PREFIX)" \
-		  HOST_PREFIX_1="$(HOST_PREFIX_1)" \
-	    	  LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS) $${flags}" $(LIBGCC1) ) \
-	  fi; \
-	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
-	  rm -rf tmpcopy; \
-	  mkdir tmpcopy; \
-	  if [ x$(LIBGCC1) != x ]; \
-	  then (cd tmpcopy; $(AR) x ../$(LIBGCC1)); \
-	  else true; \
-	  fi; \
-	  (cd tmpcopy; $(AR) x ../$(LIBGCC2)); \
-	  (cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *.o); \
-	  rm -rf libgcc2.a tmpcopy; \
-	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc.a; else true; fi; \
-	  if [ -d $${dir} ]; then true; else mkdir $${dir}; fi; \
-	  mv tmplibgcc.a $${dir}/libgcc.a; \
-	done
-	touch stmp-multilib
+	    LIBGCC2_CFLAGS="$(LIBGCC2_CFLAGS)" $(LIBGCC1); \
+	fi
+	rm -rf tmplibgcc.a tmpcopy
+	mkdir tmpcopy
+	if [ x$(LIBGCC1) != x ]; \
+	then (cd tmpcopy; $(AR) x ../$(LIBGCC1)); \
+	else true; \
+	fi
+	(cd tmpcopy; $(AR) x ../$(LIBGCC2))
+	(cd tmpcopy; $(AR) $(AR_FLAGS) ../tmplibgcc.a *.o)
+	rm -rf libgcc2.a tmpcopy
+	if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc.a; else true; fi
+	if [ -d $(dir) ]; then true; else mkdir $(dir); fi
+	mv tmplibgcc.a $(dir)/libgcc.a
 
 objc-runtime: libobjc.a
 
