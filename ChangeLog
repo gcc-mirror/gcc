@@ -1,3 +1,8 @@
+2000-08-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* configure.in (libstdcxx_flags): Use
+	libstdc++-v3/src/libstdc++.INC.
+
 2000-08-15  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (libstdcxx_flags): Use libstdc++-v3/src/INCLUDES.
