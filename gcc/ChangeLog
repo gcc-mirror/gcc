@@ -1,3 +1,17 @@
+Wed Feb 14 01:13:59 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (fixsfsi2, fixdfdi2): Fix previous patch again.
+	(sqrtsf2): Use TARGET_SSE instead of TARGET_SSE2)
+	(sqrtsf2 patterns): Use 'x' instead of 'Y'.
+	(sqrtextendsfdf2): Disable for SSE2.
+
+Wed Feb 14 00:19:28 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (fixsfsi2, fixdfdi2): Fix previous patch again.
+	(sqrtsf2): Use TARGET_SSE instead of TARGET_SSE2)
+	(sqrtsf2 patterns): Use 'x' instead of 'Y'.
+	(sqrtextendsfdf2): Disable for SSE2.
+
 Wed Feb 14 00:11:20 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (movsfcc_1): Support integer cmove instruction.
