@@ -1,3 +1,9 @@
+Sun Feb  7 22:18:42 1999  Robert Lipe  <robertlipe@usa.net>
+
+	* tree.h (TYPE_CHECK): Make it clear to the preprocessor
+	that we do not want macro replacement within a character constant.
+	(TYPE_CHECK1): Likewise.
+
 Sun Feb  7 15:37:10 1999  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.h (DECL_P): New macro.
