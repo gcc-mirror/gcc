@@ -1,5 +1,11 @@
 2004-11-24  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/security/PolicyFile.java: New file.
+	* Makefile.am: Added gnu/java/security/PolicyFile.java.
+	* Makefile.in: Regenerated.
+
+2004-11-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/lang/Character.java, scripts/unicode-blocks.pl:
 	Reorder "final static" to "static final".
 
