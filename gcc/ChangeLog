@@ -1,5 +1,10 @@
 2004-08-25  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (reg): Renamed mode attribute from ccreg.
+	(*mov*_on_*): Adjust accordingly.  Add an explicit MOVECC: prefix.
+
+2004-08-25  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (any_shift): New code macro.
 	(optab, insn): New code attributes.
 	({ashl,ashr,lshr}[sd]i3): Redefine using :GPR and any_shift.

@@ -310,9 +310,9 @@
 ;; field but the equivalent daddiu has only a 5-bit field.
 (define_mode_attr si8_di5 [(SI "8") (DI "5")])
 
-;; In MOVECC templates, this attribute gives the constraint to use
-;; for the condition register.
-(define_mode_attr ccreg [(SI "d") (DI "d") (CC "z")])
+;; This attribute gives the best constraint to use for registers of
+;; a given mode.
+(define_mode_attr reg [(SI "d") (DI "d") (CC "z")])
 
 ;; This code macro allows all branch instructions to be generated from
 ;; a single define_expand template.
@@ -5688,7 +5688,7 @@ beq\t%2,%.,1b\;\
   [(set (match_operand:GPR 0 "register_operand" "=d,d")
 	(if_then_else:GPR
 	 (match_operator:MOVECC 4 "equality_operator"
-		[(match_operand:MOVECC 1 "register_operand" "<ccreg>,<ccreg>")
+		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:GPR 2 "reg_or_0_operand" "dJ,0")
 	 (match_operand:GPR 3 "reg_or_0_operand" "0,dJ")))]
@@ -5703,7 +5703,7 @@ beq\t%2,%.,1b\;\
   [(set (match_operand:SF 0 "register_operand" "=f,f")
 	(if_then_else:SF
 	 (match_operator:MOVECC 4 "equality_operator"
-		[(match_operand:MOVECC 1 "register_operand" "<ccreg>,<ccreg>")
+		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:SF 2 "register_operand" "f,0")
 	 (match_operand:SF 3 "register_operand" "0,f")))]
@@ -5718,7 +5718,7 @@ beq\t%2,%.,1b\;\
   [(set (match_operand:DF 0 "register_operand" "=f,f")
 	(if_then_else:DF
 	 (match_operator:MOVECC 4 "equality_operator"
-		[(match_operand:MOVECC 1 "register_operand" "<ccreg>,<ccreg>")
+		[(match_operand:MOVECC 1 "register_operand" "<MOVECC:reg>,<MOVECC:reg>")
 		 (const_int 0)])
 	 (match_operand:DF 2 "register_operand" "f,0")
 	 (match_operand:DF 3 "register_operand" "0,f")))]
