@@ -1,5 +1,9 @@
 2003-11-26  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* aclocal.m4 (gcc_AC_PROG_GNAT): Rewrite to account for removal
+	of ADAC.
+	* configure: Regenerate.
+
 	* Makefile.in: Remove references to ADAC.
 
 	* configure.in: Remove check for whether ${ADAC} accepts -Wno-long-long.
