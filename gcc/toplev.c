@@ -2845,14 +2845,15 @@ rest_of_compilation (decl)
      have been run to re-initialize it.  */
   cse_not_expected = ! optimize;
 
-  /* First, remove any notes we don't need.  That will make iterating
+  /* First, make sure that NOTE_BLOCK is set correctly for each
+     NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
+  find_loop_tree_blocks ();
+
+  /* Then remove any notes we don't need.  That will make iterating
      over the instruction sequence faster, and allow the garbage
      collector to reclaim the memory used by the notes.  */
   remove_unncessary_notes ();
 
-  /* We need to make sure that NOTE_BLOCK is set correctly
-     for each NOTE_INSN_BLOCK_BEG/NOTE_INSN_BLOCK_END note.  */
-  find_loop_tree_blocks ();
   /* In function-at-a-time mode, we do not attempt to keep the BLOCK
      tree in sensible shape.  So, we just recalculate it here.  */
   if (cfun->x_whole_function_mode_p)
@@ -2928,17 +2929,15 @@ rest_of_compilation (decl)
 	 for those functions that need to be output.  Also defer those
 	 functions that we are supposed to defer.  */
 
-      if (inlinable)
-	DECL_DEFER_OUTPUT (decl) = 1;
-
-      if (DECL_DEFER_OUTPUT (decl)
+      if (inlinable
 	  || (DECL_INLINE (decl)
 	      && ((! TREE_PUBLIC (decl) && ! TREE_ADDRESSABLE (decl)
 		   && ! flag_keep_inline_functions)
 		  || DECL_EXTERNAL (decl))))
-	{
-	  DECL_DEFER_OUTPUT (decl) = 1;
+	DECL_DEFER_OUTPUT (decl) = 1;
 
+      if (DECL_DEFER_OUTPUT (decl))
+	{
 	  /* If -Wreturn-type, we have to do a bit of compilation.
 	     However, if we just fall through we will call
 	     save_for_inline_copying() which results in excessive
@@ -5159,4 +5158,18 @@ debug_undef (lineno, buffer)
       && write_symbols == DWARF2_DEBUG)
     dwarf2out_undef (lineno, buffer);
 #endif /* DWARF2_DEBUGGING_INFO */
+}
+
+/* Tell the debugging backend that we've decided not to emit any
+   debugging information for BLOCK, so it can clean up after any local
+   classes or nested functions.  */
+
+void
+debug_ignore_block (block)
+     tree block;
+{
+#ifdef DWARF2_DEBUGGING_INFO
+  if (write_symbols == DWARF2_DEBUG)
+    dwarf2out_ignore_block (block);
+#endif
 }

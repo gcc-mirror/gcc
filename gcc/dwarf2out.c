@@ -1355,7 +1355,7 @@ dwarf2out_frame_debug (insn)
     {
       /* Set up state for generating call frame debug info.  */
       lookup_cfa (&cfa_reg, &cfa_offset);
-      if (cfa_reg != DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
+      if (cfa_reg != (unsigned long) DWARF_FRAME_REGNUM (STACK_POINTER_REGNUM))
 	abort ();
       cfa_reg = STACK_POINTER_REGNUM;
       cfa_store_reg = cfa_reg;
@@ -9296,12 +9296,8 @@ gen_decl_die (decl, context_die)
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
-  /* If this ..._DECL node is marked to be ignored, then ignore it. But don't 
-     ignore a function definition, since that would screw up our count of
-     blocks, and that in turn will completely screw up the labels we will 
-     reference in subsequent DW_AT_low_pc and DW_AT_high_pc attributes (for
-     subsequent blocks).  */
-  if (DECL_IGNORED_P (decl) && TREE_CODE (decl) != FUNCTION_DECL)
+  /* If this ..._DECL node is marked to be ignored, then ignore it.  */
+  if (DECL_IGNORED_P (decl))
     return;
 
   switch (TREE_CODE (decl))
@@ -9460,21 +9456,9 @@ dwarf2out_decl (decl)
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
-  /* If this ..._DECL node is marked to be ignored, then ignore it.  We gotta 
-     hope that the node in question doesn't represent a function definition.
-     If it does, then totally ignoring it is bound to screw up our count of
-     blocks, and that in turn will completely screw up the labels we will 
-     reference in subsequent DW_AT_low_pc and DW_AT_high_pc attributes (for
-     subsequent blocks).  (It's too bad that BLOCK nodes don't carry their
-     own sequence numbers with them!) */
+  /* If this ..._DECL node is marked to be ignored, then ignore it.  */
   if (DECL_IGNORED_P (decl))
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL
-          && DECL_INITIAL (decl) != NULL)
-	abort ();
-
-      return;
-    }
+    return;
 
   switch (TREE_CODE (decl))
     {
@@ -9592,6 +9576,33 @@ dwarf2out_end_block (blocknum)
 {
   function_section (current_function_decl);
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, BLOCK_END_LABEL, blocknum);
+}
+
+/* We've decided not to emit any debugging information for BLOCK; make
+   sure that we don't end up with orphans as a result.  */
+
+void
+dwarf2out_ignore_block (block)
+     tree block;
+{
+  tree decl;
+  for (decl = BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
+    {
+      dw_die_ref die;
+
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	die = lookup_decl_die (decl);
+      else if (TREE_CODE (decl) == TYPE_DECL && TYPE_DECL_IS_STUB (decl))
+	die = lookup_type_die (TREE_TYPE (decl));
+      else
+	die = NULL;
+
+      /* Just give them a dummy value for parent so dwarf2out_finish
+	 doesn't blow up; we would use add_child_die if we really
+	 wanted to add them to comp_unit_die's children.  */
+      if (die && die->die_parent == 0)
+	die->die_parent = comp_unit_die;
+    }
 }
 
 /* Output a marker (i.e. a label) at a point in the assembly code which

@@ -2710,6 +2710,8 @@ remove_unncessary_notes ()
 		     nesting structure.  */
 		  if (NOTE_BLOCK (prev) != NOTE_BLOCK (insn))
 		    abort ();
+
+		  debug_ignore_block (NOTE_BLOCK (insn));
 		  
 		  remove_insn (prev);
 		  remove_insn (insn);

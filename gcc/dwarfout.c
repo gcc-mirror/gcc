@@ -4787,13 +4787,9 @@ output_decl (decl, containing_scope)
 	      && (TREE_CODE (TYPE_FIELDS (TREE_TYPE (decl))) == ERROR_MARK))))
     return;
   
-  /* If this ..._DECL node is marked to be ignored, then ignore it.
-     But don't ignore a function definition, since that would screw
-     up our count of blocks, and that it turn will completely screw up the
-     labels we will reference in subsequent AT_low_pc and AT_high_pc
-     attributes (for subsequent blocks).  */
+  /* If this ..._DECL node is marked to be ignored, then ignore it.  */
 
-  if (DECL_IGNORED_P (decl) && TREE_CODE (decl) != FUNCTION_DECL)
+  if (DECL_IGNORED_P (decl))
     return;
 
   switch (TREE_CODE (decl))
@@ -5133,20 +5129,10 @@ dwarfout_file_scope_decl (decl, set_finalizing)
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
 
-  /* If this ..._DECL node is marked to be ignored, then ignore it.  We
-     gotta hope that the node in question doesn't represent a function
-     definition.  If it does, then totally ignoring it is bound to screw
-     up our count of blocks, and that it turn will completely screw up the
-     labels we will reference in subsequent AT_low_pc and AT_high_pc
-     attributes (for subsequent blocks).  (It's too bad that BLOCK nodes
-     don't carry their own sequence numbers with them!)  */
+  /* If this ..._DECL node is marked to be ignored, then ignore it.  */
 
   if (DECL_IGNORED_P (decl))
-    {
-      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_INITIAL (decl) != NULL)
-	abort ();
-      return;
-    }
+    return;
 
   switch (TREE_CODE (decl))
     {

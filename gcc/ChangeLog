@@ -1,3 +1,27 @@
+2000-03-03  Jason Merrill  <jason@casey.cygnus.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug): Add cast to silence warning.
+	(dwarf2out_decl): Functions can now have DECL_IGNORED_P.
+	(gen_decl_die): Likewise.
+	* dwarfout.c (dwarfout_file_scope_decl): Likewise.
+	(output_decl): Likewise.
+
+	* varasm.c (make_function_rtl): If we change the name used in the
+	rtl, update DECL_ASSEMBLER_NAME accordingly.
+	(make_decl_rtl): Likewise.
+
+	* toplev.c (rest_of_compilation): Tweak formatting.
+
+	* toplev.c (rest_of_compilation): find_loop_tree_blocks before
+	remove_unnecessary_notes.
+	(debug_ignore_block): New fn.
+	* toplev.h: Declare it.
+	* emit-rtl.c (remove_unncessary_notes): Call it.
+	* dwarf2out.c (dwarf2out_ignore_block): New fn.
+	* dwarf2out.h: Declare it.
+	* final.c (final_start_function): Don't call remove_unnecessary_notes
+	if we did insn scheduling.
+
 2000-03-03  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cppinit.c (cpp_handle_option): Set opts->pedantic directly.
@@ -10,7 +34,7 @@ Fri Mar  3 14:56:12 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2000-03-03  Jonathan Larmour  <jlarmour@cygnus.co.uk>
 
-	* config/mips/elf.h (CTOR_LISTS_DEFINED_EXTERNALLY): Added.
+	* mips/elf.h (CTOR_LISTS_DEFINED_EXTERNALLY): Added.
 
 2000-03-03  Richard Henderson  <rth@cygnus.com>
 
