@@ -1,3 +1,8 @@
+2000-05-29  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (redirect_jump): Don't emit NOTE_INSN_FUNCTION_END
+	if nlabel is null.
+
 2000-05-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpplib.h (cpp_reader): Remove if_stack.  Change
