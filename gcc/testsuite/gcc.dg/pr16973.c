@@ -2,6 +2,8 @@
    we were removing the BB for it but forgot
    to add back the label.   */
 
+/* { dg-options "" } */
+
 void
 f (void)
 {
