@@ -1,3 +1,8 @@
+Wed May 26 09:53:05 1999  Mark Mitchell  <mark@codesourcery.com>
+
+        * fold-const.c (fold): STRIP_NOPS when deciding whether or not
+	something is a candidate for optimize_bit_field_compare.
+
 Wed May 26 03:54:33 1999  Melissa O'Neill <oneill@cs.sfu.ca>
 
 	* fixinc/fixincl.c: (WIFSIGNALED): Define if not already defined.
