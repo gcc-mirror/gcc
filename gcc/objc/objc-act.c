@@ -4967,7 +4967,11 @@ finish_objc ()
 	}
     }
 
+  /* If we are using an array of selectors, we must always
+     finish up the array decl even if no selectors were used.  */
+#ifndef OBJC_SELECTORS_WITHOUT_LABELS
   if (sel_ref_chain)
+#endif
     build_selector_translation_table ();
 
   if (implementation_context || sel_refdef_chain)
