@@ -1,5 +1,5 @@
 /* Allocate registers within a basic block, for GNU compiler.
-   Copyright (C) 1987, 88, 91, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -234,6 +234,10 @@ static int scratch_index;
    from `block_alloc' to `reg_is_set', `wipe_dead_reg', and `alloc_qty'.  */
 static int this_insn_number;
 static rtx this_insn;
+
+/* Used to communicate changes made by update_equiv_regs to
+   memref_referenced_p.  */
+static rtx *reg_equiv_replacement;
 
 static void alloc_qty		PROTO((int, enum machine_mode, int, int));
 static void alloc_qty_for_scratch PROTO((rtx, int, rtx, int, int));
@@ -609,7 +613,6 @@ memref_referenced_p (memref, x)
 
   switch (code)
     {
-    case REG:
     case CONST_INT:
     case CONST:
     case LABEL_REF:
@@ -620,6 +623,11 @@ memref_referenced_p (memref, x)
     case HIGH:
     case LO_SUM:
       return 0;
+
+    case REG:
+      return (reg_equiv_replacement[REGNO (x)] == 0
+	      || memref_referenced_p (memref,
+				      reg_equiv_replacement[REGNO (x)]));
 
     case MEM:
       if (true_dependence (memref, x))
@@ -941,8 +949,9 @@ static void
 update_equiv_regs ()
 {
   rtx *reg_equiv_init_insn = (rtx *) alloca (max_regno * sizeof (rtx *));
-  rtx *reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx *));
   rtx insn;
+
+  reg_equiv_replacement = (rtx *) alloca (max_regno * sizeof (rtx *));
 
   bzero ((char *) reg_equiv_init_insn, max_regno * sizeof (rtx *));
   bzero ((char *) reg_equiv_replacement, max_regno * sizeof (rtx *));
