@@ -1,5 +1,5 @@
 /* Output sdb-format symbol table information from GNU compiler.
-   Copyright (C) 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -506,6 +506,8 @@ plain_type_1 (type)
 	if (size == INT_TYPE_SIZE)
 	  return (TREE_UNSIGNED (type) ? T_UINT : T_INT);
 	if (size == LONG_TYPE_SIZE)
+	  return (TREE_UNSIGNED (type) ? T_ULONG : T_LONG);
+	if (size == LONG_LONG_TYPE_SIZE)	/* better than nothing */
 	  return (TREE_UNSIGNED (type) ? T_ULONG : T_LONG);
 	return 0;
       }
