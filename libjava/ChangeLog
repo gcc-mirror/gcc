@@ -1,5 +1,17 @@
 2003-02-07  Stephen Crawley  <crawley@dstc.edu.au>
 
+	* java/math/BigDecimal(valueOf): fix DiagBigDecimal val008, val013
+	tests; see patch #1016 on Savannah.
+
+2003-02-07  Stephen Crawley  <crawley@dstc.edu.au>
+
+	* java/math/BigDecimal.java (BigDecimal): enhance parsing of exponents
+	(toString): do not return Strings starting with . and - erroneously.
+	Improves Mauve results to 12 of 600 instead of 16 of 338 on
+	DiagBigDecimal.
+
+2003-02-07  Stephen Crawley  <crawley@dstc.edu.au>
+
 	* java/beans/PropertyDescriptor.java
 	(PropertyDescriptor(String, Class)): Sanity check getter and setter
 	methods.
