@@ -1032,3 +1032,18 @@ find_new_referenced_vars (tree *stmt_p)
 {
   walk_tree (stmt_p, find_new_referenced_vars_1, NULL, NULL);
 }
+
+
+/* Mark all call-clobbered variables for renaming.  */
+
+void
+mark_call_clobbered_vars_to_rename (void)
+{
+  unsigned i;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (call_clobbered_vars, 0, i, bi)
+    {
+      tree var = referenced_var (i);
+      bitmap_set_bit (vars_to_rename, var_ann (var)->uid);
+    }
+}
