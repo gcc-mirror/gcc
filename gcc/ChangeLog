@@ -1,3 +1,8 @@
+2003-03-15  Glen Nakamura  <glen@imodulo.com>
+
+	* reload1.c (choose_reload_regs): Use && instead of ||
+	with REG_CANNOT_CHANGE_MODE_P condition.
+
 2003-03-15  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Makefile.in: Update.
@@ -101,7 +106,7 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-14  Richard Henderson  <rth@redhat.com>
 
 	PR target/9700
-	* config/alpha/alpha.c (alpha_va_start): Account for 
+	* config/alpha/alpha.c (alpha_va_start): Account for
 	current_function_pretend_args_size in the AP offset.
 
 	* config/alpha/alpha.h (SETUP_INCOMING_VARARGS): Move out of line.
@@ -169,7 +174,7 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* ChangeLog: Rotated last year's entries to...
 	* ChangeLog.8: New.
 
-	* config/ia64/fde-glibc.c, config/ia64/freebsd.h, 
+	* config/ia64/fde-glibc.c, config/ia64/freebsd.h,
 	config/ia64/hpux.h, config/ia64/hpux_longdouble.h,
 	config/ia64/ia64-c.c, config/ia64/ia64-modes.def,
 	config/ia64/ia64-protos.h, config/ia64/ia64.c,
@@ -230,7 +235,7 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(ia64_expand_epilogue): Don't restore gp.
 	(ia64_hard_regno_rename_ok): Remove R4 hack.
 	(ia64_function_ok_for_sibcall): New.
-	(ia64_output_mi_thunk): Set reload_completed, no_new_pseudos; 
+	(ia64_output_mi_thunk): Set reload_completed, no_new_pseudos;
 	call try_split on sibcall pattern.
 	* config/ia64/ia64-protos.h: Update.
 	* config/ia64/ia64.md (call_nogp, call_value_nogp, sibcall_nogp):
@@ -243,7 +248,7 @@ Thu Mar 13 18:39:42 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-03-12  Nathanael Nerode  <neroden@gcc.gnu.org>
 
-	* config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c, 
+	* config/dsp16xx/dsp16xx-protos.h, config/dsp16xx/dsp16xx.c,
 	config/dsp16xx/dsp16xx.h, config/dsp16xx/dsp16xx.md: Replace
 	"GNU CC" with "GCC".
 
@@ -408,7 +413,7 @@ Wed Mar 12 16:30:25 2003  J"orn Rennecke <joern.rennecke@superh.com>
 	(doloop_end_internal): Likewise.
 
 2003-03-12  Danny Smith  <dannysmith@users.sourceforge.net>
- 
+
 	* config/i386/winnt.c (DLL_IMPORT_PREFIX): New define.
 	Use throughout instead of DLL_IMPORT_EXPORT_PREFIX and "e."
 	(DLL_EXPORT_PREFIX): New define. Use throughout instead of
@@ -547,7 +552,7 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* df.c (read_modify_subreg_p): Change from static to global.
 	* df.h (read_modify_subreg_p): Add prototype.
 	* sched-deps.c (sched_analyze_1): Generate true dependency for
-	strict_low_part, certain subregs and zero/sign_extract. 
+	strict_low_part, certain subregs and zero/sign_extract.
 
 2003-03-11  Neil Booth  <neil@daikokuya.co.uk>
 
@@ -585,7 +590,7 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	symbol and labels with a new reg.  Dynamic-no-pic does not have a
 	pic_offset_table_rtx.
 	(machopic_select_section): Change references of flag_pic to
-	MACHOPIC_INDIRECT. 
+	MACHOPIC_INDIRECT.
 	(machopic_asm_out_destructor): Likewise.
 	* config/darwin.h (ASM_DECLARE_UNRESOLVED_REFERENCE): Change
 	reference of flag_pic to MACHOPIC_INDIRECT.
@@ -598,7 +603,7 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* config/rs6000/darwin.h (MASK_MACHO_DYNAMIC_NO_PIC): Define.
 	(TARGET_DYNAMIC_NO_PIC): Define.
 	(SUBTARGET_SWITCHES): Define, have sub-target switches for
-	dynamic-no-pic. 
+	dynamic-no-pic.
 	(SUBTARGET_OVERRIDE_OPTIONS): Move check for -fpic from
 	rs6000_override_options to here. Dynamic-no-pic overrides
 	pic.
@@ -625,7 +630,7 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	* doc/invoke.texi (-mdynamic-no-pic): Document.
 
 2003-03-10  Devang Patel  <dpatel@apple.com>
-	
+
 	PR c++/9394
 	* gcc.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
@@ -633,7 +638,7 @@ Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Add.
 	* cppspec.c (DEFAULT_SWITCH_TAKES_ARG): Remove.
 	(DEFAULT_WORD_SWITCH_TAKES_ARG): Remove.
-	
+
 2003-03-10  Steven Bosscher  <s.bosscher@student.tudelft.nl>
 
 	PR optimization/7189
@@ -924,7 +929,7 @@ Sat Mar  8 19:22:30 CET 2003  Jan Hubicka  <jh@suse.cz>
 2003-03-08  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* config/cris/cris.h: Remove EGCS references.
- 	(CPP_SPEC): Remove "-$".
+	(CPP_SPEC): Remove "-$".
 	(INIT_CUMULATIVE_ARGS): Adjust parameter name to FNDECL.
 
 2003-03-08  Neil Booth  <neil@daikokuya.co.uk>
