@@ -2,6 +2,8 @@
 
 	* java/lang/reflect/AccessibleObject.java (secureSetAccessible):
 	Don't check for AccessibleObject. Update javadocs.
+	
+	* java/util/TreeMap.java: Doc fixes. HashMap -> TreeMap.
 
 2003-10-26  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
