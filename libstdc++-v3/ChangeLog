@@ -1,4 +1,8 @@
 2004-07-29  Paolo Carlini  <pcarlini@suse.de>
+
+	* docs/html/ext/lwg-active.html, lwg-defects.html: Import Revision 31.
+
+2004-07-29  Paolo Carlini  <pcarlini@suse.de>
             Petur Runolfsson  <peturr02@ru.is>
 
 	PR libstdc++/12658 (continued)

@@ -5,11 +5,11 @@
 <table>
 <tr>
 <td align="left">Doc. no.</td>
-<td align="left">N1635=04-0075</td>
+<td align="left">N1657=04-0097</td>
 </tr>
 <tr>
 <td align="left">Date:</td>
-<td align="left">12 Apr 2004</td>
+<td align="left">16 Jul 2004</td>
 </tr>
 <tr>
 <td align="left">Project:</td>
@@ -20,7 +20,7 @@
 <td align="left">Matt Austern &lt;austern@apple.com&gt;</td>
 </tr>
 </table>
-<h1>C++ Standard Library Active Issues List (Revision 30)</h1>
+<h1>C++ Standard Library Active Issues List (Revision 31)</h1>
   <p>Reference ISO/IEC IS 14882:1998(E)</p>
   <p>Also see:</p>
   <ul>
@@ -88,6 +88,11 @@
   directory as the issues list files.  </p>
 <h2>Revision History</h2>
 <ul>
+<li>R31: 
+2004-07 mid-term mailing: reflects new proposed resolutions and
+new issues received after the post-Sydney mailing.  Added
+new issues <a href="lwg-active.html#463">463</a>-<a href="lwg-active.html#478">478</a>.
+</li>
 <li>R30: 
 Post-Sydney mailing: reflects decisions made at the Sydney meeting.
 Voted all "Ready" issues from R29 into the working paper.
@@ -2080,7 +2085,7 @@ part of the "Effects" paragraph.
   Someone who understands string replace well needs to work on
   this.]</i></p>
 <hr>
-<a name="369"><h3>369.&nbsp;io stream objects and static ctors</h3></a><p><b>Section:</b>&nbsp;27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Ruslan Abdikeev&nbsp; <b>Date:</b>&nbsp;8 Jul 2002</p>
+<a name="369"><h3>369.&nbsp;io stream objects and static ctors</h3></a><p><b>Section:</b>&nbsp;27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Ruslan Abdikeev&nbsp; <b>Date:</b>&nbsp;8 Jul 2002</p>
 <p>
 Is it safe to use standard iostream objects from constructors of
 static objects?  Are standard iostream objects constructed and are
@@ -2145,25 +2150,14 @@ an appropriate class for doing the trick, I failed to found a
 mention of an _instance_ of ios_base::Init in Standard.
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>
-At the end of header &lt;iostream&gt; synopsis in 27.3 <a href="lib-iostreams.html#lib.iostream.objects"> [lib.iostream.objects]</a>
-</p>
-
-<pre>
-       namespace std
-       {
-          ... extern istream cin; ...
-</pre>
-
-<p>add the following lines</p>
-
-<pre>
-          namespace
-          {
-             ios_base::Init &lt;some_implementation_defined_name&gt;;
-          }
-        }
-</pre>
+<p>Add to [lib.iostream.objects], p2, immediately before the last sentence
+of the paragraph, the following two sentences:</p>
+<blockquote>
+It is implementation-defined whether the header &lt;iostream&gt; defines
+an ios_base::Init object or not. If it does not, an implementation
+must specify the means of achieving safe access to the standard
+objects for input and output during program startup.
+</blockquote>
 
 <p><i>[Santa Cruz: The LWG is leaning toward NAD.  There isn't any
 normative wording saying that the Init scheme will be used, but that
@@ -2171,10 +2165,48 @@ is probably intentional.  Implementers use dirty tricks for iostream
 initialization, and doing it portably is somewhere between difficult
 and impossible.  Too much constraint in this area is dangerous, and if
 we are to make any changes it would probably be more appropriate
-forthem to be nonnormative.  Martin will try to come up with clearer
-wording that expreses this intent.]</i></p>
+for them to be nonnormative.  Summer '04 mid-meeting mailing: Martin
+provided wording for resolution and rationale.]</i></p>
+<p><b>Rationale:</b></p>
+<p>
+The original proposed resolution unconditionally required
+implementations to define an ios_base::Init object of some
+implementation-defined name in the header &lt;iostream&gt;. That's an
+overspecification. First, defining the object may be unnecessary
+and even detrimental to performance if an implementation can
+guarantee that the 8 standard iostream objects will be initialized
+before any other user-defined object in a program. Second, there
+is no need to require implementations to document the name of the
+object.</p>
 
+<p>
+The new proposed resolution specifies that implementations may
+(but need not) define an ios_base::Init object, while requiring
+them to document whether they do or not, and if not, to document
+how portable programs achieve safe access to the 8 standard iostream
+objects during program startup (3.6)(*). The intent is that if an
+implementation documents that &lt;iostream&gt; defines an ios_base::Init
+object, it implies that the header must be #included before any
+references to the standard iostream objects. Otherwise, if an
+implementation does not define an ios_base::Init object in
+&lt;iostream&gt; it must either assure and document that the standard
+iostream objects are safely accessible at startup, or specify what
+a portable program must do to safely access them (e.g., it may
+require that a program define an ios_base::Init object before
+doing so, or that it call ios::sync_with_stdio(), etc.).
+</p>
 
+<p>
+(*) Note that the term startup is broader than the term "Constructors
+and destructors for static objects" used in Footnote 265 since the
+former includes other functions besides constructors and destructors,
+including the following example:
+</p>
+<pre>
+    int foo () { return (std::cout &lt;&lt; "foo()\n").rdstate (); }
+    int i = foo ();
+    int main () { return i; }
+</pre>
 <hr>
 <a name="371"><h3>371.&nbsp;Stability of multiset and multimap member functions</h3></a><p><b>Section:</b>&nbsp;23.1 <a href="lib-containers.html#lib.container.requirements"> [lib.container.requirements]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Frank Compagner&nbsp; <b>Date:</b>&nbsp;20 Jul 2002</p>
 <p>
@@ -2277,7 +2309,7 @@ implementations before we decide on a solution.]</i></p>
 
 <p><b>Proposed resolution:</b></p>
 <hr>
-<a name="378"><h3>378.&nbsp;locale immutability and locale::operator=()</h3></a><p><b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
+<a name="378"><h3>378.&nbsp;locale immutability and locale::operator=()</h3></a><p><b>Section:</b>&nbsp;22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;6 Sep 2002</p>
 <p>
 I think there is a problem with 22.1.1, p6 which says that
 </p>
@@ -2310,20 +2342,10 @@ Is r0 really supposed to be preserved and destroyed only when loc goes
 out of scope?
 </p>
 <p><b>Proposed resolution:</b></p>
-<p>
-Suggest to replace 22.1.1 <a href="lib-locales.html#lib.locale"> [lib.locale]</a>, p6 with
-</p>
-<pre>
-    -6- Unless assigned a new value, locale objects are immutable;
-        once a facet reference is obtained from it, that reference
-        remains usable as long as the locale object itself exists
-        or until the locale object is assigned the value of another,
-        distinct locale object.
-</pre>
-
-<p><i>[Santa Cruz: Dietmar agrees with this general direction, but is
-uncomfortable about the proposed wording.  He and Martin will try to
-come up with better wording.]</i></p>
+<p><i>[Summer '04 mid-meeting mailing: Martin and Dietmar believe this
+  is a duplicate of issue <a href="lwg-defects.html#31">31</a> and recommend that it be
+  closed.
+]</i></p>
 
 <hr>
 <a name="382"><h3>382.&nbsp;codecvt do_in/out result</h3></a><p><b>Section:</b>&nbsp;22.2.1.5 <a href="lib-locales.html#lib.locale.codecvt"> [lib.locale.codecvt]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;30 Aug  2002</p>
@@ -2581,7 +2603,7 @@ into references? References aren't copy constructible, so this should
 not be allowed.
 ]</i></p>
 <hr>
-<a name="386"><h3>386.&nbsp;Reverse iterator's operator[] has impossible return type</h3></a><p><b>Section:</b>&nbsp;24.4.1.3.11 <a href="lib-iterators.html#lib.reverse.iter.opindex"> [lib.reverse.iter.opindex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Oct 2002</p>
+<a name="386"><h3>386.&nbsp;Reverse iterator's operator[] has impossible return type</h3></a><p><b>Section:</b>&nbsp;24.4.1.3.11 <a href="lib-iterators.html#lib.reverse.iter.opindex"> [lib.reverse.iter.opindex]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Matt Austern&nbsp; <b>Date:</b>&nbsp;23 Oct 2002</p>
 <p>In 24.4.1.3.11 <a href="lib-iterators.html#lib.reverse.iter.opindex"> [lib.reverse.iter.opindex]</a>, <tt>reverse_iterator&lt;&gt;::operator[]</tt> 
 is specified as having a return type of <tt>reverse_iterator::reference</tt>,
 which is the same as <tt>iterator_traits&lt;Iterator&gt;::reference</tt>.
@@ -2594,8 +2616,37 @@ which is the same as <tt>iterator_traits&lt;Iterator&gt;::reference</tt>.
   to <tt>Iterator</tt>'s value type.  The return type specified for
   reverse_iterator's operator[] would thus appear to be impossible.</p>
 
-<p>Related issue: <a href="lwg-active.html#299">299</a>.  Jeremy will work on this.</p>
+<p>With the resolution of issue <a href="lwg-active.html#299">299</a>, the type of
+  <tt>a[n]</tt> will continue to be required (for random access
+  iterators) to be convertible to the value type, and also <tt>a[n] =
+  t</tt> will be a valid expression.  Implementations of
+  <tt>reverse_iterator</tt> will likely need to return a proxy from
+  <tt>operator[]</tt> to meet these requirements. As mentioned in the
+  comment from Dave Abrahams, the simplest way to specify that
+  <tt>reverse_iterator</tt> meet this requirement to just mandate
+  it and leave the return type of <tt>operator[]</tt> unspecified.</p>
+
 <p><b>Proposed resolution:</b></p>
+
+<p>In 24.4.1.2 <a href="lib-iterators.html#lib.reverse.iter.requirements"> [lib.reverse.iter.requirements]</a> change:</p>
+
+<blockquote>
+<pre>
+reference operator[](difference_type n) const;
+</pre>
+</blockquote>
+
+<p>to:</p>
+
+<blockquote>
+<pre>
+<b><i>implementation defined</i></b> operator[](difference_type n) const; // see <font color="red">lib.random.access.iterators</font>
+</pre>
+</blockquote>
+
+
+
+
 <p><i>[
 Comments from Dave Abrahams: IMO we should resolve 386 by just saying
     that the return type of reverse_iterator's operator[] is
@@ -4451,7 +4502,7 @@ longer allowable since [pbase(), epptr()) may now contain
 uninitialized characters.  Positioning is only allowable over the
 initialized range.</p>
 <hr>
-<a name="434"><h3>434.&nbsp;bitset::to_string() hard to use</h3></a><p><b>Section:</b>&nbsp;23.3.5.2 <a href="lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
+<a name="434"><h3>434.&nbsp;bitset::to_string() hard to use</h3></a><p><b>Section:</b>&nbsp;23.3.5.2 <a href="lib-containers.html#lib.bitset.members"> [lib.bitset.members]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
 <p>
 It has been pointed out a number of times that the bitset to_string() member
 function template is tedious to use since callers must explicitly specify the
@@ -4486,10 +4537,10 @@ to_string() member function template:</p>
 </pre>
 
 <p><i>[Kona: the LWG agrees that this is an improvement over the
-  status quo.  Dietmar will propose an alternative using a proxy
-  object, so that "s = b.to_string()" would work not just when s is
-  of type std::string, but when s is of type std::basic_string&lt;C,T&gt;
-  for arbitrary types C and T.]</i></p>
+  status quo.  Dietmar thought about an alternative using a proxy
+  object but now believes that the proposed resolution above is the
+  right choice.
+]</i></p>
 
 <hr>
 <a name="435"><h3>435.&nbsp;bug in DR 25</h3></a><p><b>Section:</b>&nbsp;21.3.7.9 <a href="lib-strings.html#lib.string.io"> [lib.string.io]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Ready">Ready</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;15 Oct 2003</p>
@@ -4914,7 +4965,7 @@ should be overflow(traits::eof()).
 Change overflow(EOF) to overflow(traits::eof()).
 </p>
 <hr>
-<a name="444"><h3>444.&nbsp;Bad use of casts in fstream</h3></a><p><b>Section:</b>&nbsp;27.8.1 <a href="lib-iostreams.html#lib.fstreams"> [lib.fstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Vincent Leloup&nbsp; <b>Date:</b>&nbsp;20 Nov 2003</p>
+<a name="444"><h3>444.&nbsp;Bad use of casts in fstream</h3></a><p><b>Section:</b>&nbsp;27.8.1 <a href="lib-iostreams.html#lib.fstreams"> [lib.fstreams]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Vincent Leloup&nbsp; <b>Date:</b>&nbsp;20 Nov 2003</p>
 <p>
 27.8.1.7 <a href="lib-iostreams.html#lib.ifstream.members"> [lib.ifstream.members]</a> p1, 27.8.1.10 <a href="lib-iostreams.html#lib.ofstream.members"> [lib.ofstream.members]</a> p1, 27.8.1.13 <a href="lib-iostreams.html#lib.fstream.members"> [lib.fstream.members]</a> p1 seems have same problem as exposed in LWG issue
 <a href="lwg-defects.html#252">252</a>.
@@ -4959,7 +5010,7 @@ Change overflow(EOF) to overflow(traits::eof()).
 
 
 <hr>
-<a name="445"><h3>445.&nbsp;iterator_traits::reference unspecified for some iterator categories</h3></a><p><b>Section:</b>&nbsp;24.3.1 <a href="lib-iterators.html#lib.iterator.traits"> [lib.iterator.traits]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Open">Open</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;9 Dec 2003</p>
+<a name="445"><h3>445.&nbsp;iterator_traits::reference unspecified for some iterator categories</h3></a><p><b>Section:</b>&nbsp;24.3.1 <a href="lib-iterators.html#lib.iterator.traits"> [lib.iterator.traits]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#Review">Review</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;9 Dec 2003</p>
 <p>
 The standard places no restrictions at all on the reference type
 of input, output, or forward iterators (for forward iterators it
@@ -5004,11 +5055,113 @@ its reference type would have to be changed to a constant
 reference.
 </p>
 
+
+<p>
+(Jeremy Siek) During the discussion in Sydney, it was felt that a
+simpler long term solution for this was needed. The solution proposed
+was to require <tt>reference</tt> to be the same type as <tt>*a</tt>
+and <tt>pointer</tt> to be the same type as <tt>a-&gt;</tt>.  Most
+iterators in the Standard Library already meet this requirement. Some
+iterators are output iterators, and do not need to meet the
+requirement, and others are only specified through the general
+iterator requirements (which will change with this resolution). The
+sole case where there is an explicit definition of the reference type
+that will need to change is <tt>istreambuf_iterator</tt> which returns
+<tt>charT</tt> from <tt>operator*</tt> but has a reference type of
+<tt>charT&amp;</tt>. We propose changing the reference type of
+<tt>istreambuf_iterator</tt> to <tt>charT</tt>.
+</p>
+
+<p>The other option for resolving the issue with <tt>pointer</tt>,
+  mentioned in the note below, is to remove <tt>pointer</tt>
+  altogether. I prefer placing requirements on <tt>pointer</tt> to
+  removing it for two reasons. First, <tt>pointer</tt> will become
+  useful for implementing iterator adaptors and in particular,
+  <tt>reverse_iterator</tt> will become more well defined. Second,
+  removing <tt>pointer</tt> is a rather drastic and publicly-visible
+  action to take.</p>
+
+<p>The proposed resolution technically enlarges the requirements for
+iterators, which means there are existing iterators (such as
+<tt>istreambuf_iterator</tt>, and potentially some programmer-defined
+iterators) that will no longer meet the requirements. Will this break
+existing code? The scenario in which it would is if an algorithm
+implementation (say in the Standard Library) is changed to rely on
+<tt>iterator_traits::reference</tt>, and then is used with one of the
+iterators that do not have an appropriately defined
+<tt>iterator_traits::reference</tt>.
+</p>
+
+
+<p>The proposed resolution makes one other subtle change. Previously,
+it was required that output iterators have a <tt>difference_type</tt>
+and <tt>value_type</tt> of <tt>void</tt>, which means that a forward
+iterator could not be an output iterator. This is clearly a mistake,
+so I've changed the wording to say that those types may be
+<tt>void</tt>.
+</p>
+
 <p><b>Proposed resolution:</b></p>
 
+<p>In <font color="red">24.3.1.1</font>, after:</p>
+
+<blockquote>
+be defined as the iterator's difference type, value type and iterator
+category, respectively.
+</blockquote>
+
+<p>In <font color="red">24.3.1.1</font>, add:</p>
+
+<blockquote>
+In addition, the types
+<pre>
+iterator_traits&lt;Iterator&gt;::reference
+iterator_traits&lt;Iterator&gt;::pointer
+</pre>
+must be defined as the iterator's reference and pointer types, that
+is, the same type as the type of <tt>*a</tt> and <tt>a-&gt;</tt>,
+respectively.
+</blockquote>
+
+<p>In <font color="red">24.3.1.1</font>, change:</p>
+
+<blockquote>
+In the case of an output iterator, the types
+<pre>
+iterator_traits&lt;Iterator&gt;::difference_type
+iterator_traits&lt;Iterator&gt;::value_type
+</pre>
+are both defined as <tt>void</tt>.
+</blockquote>
+
+<p>to:</p>
+<blockquote>
+In the case of an output iterator, the types
+<pre>
+iterator_traits&lt;Iterator&gt;::difference_type
+iterator_traits&lt;Iterator&gt;::value_type
+iterator_traits&lt;Iterator&gt;::reference
+iterator_traits&lt;Iterator&gt;::pointer
+</pre>
+may be defined as <tt>void</tt>.
+</blockquote>
+
+<p>In <font color="red">24.5.6</font>, change:</p>
+<blockquote>
+<pre>
+typename traits::off_type, charT*, charT&amp;&gt;
+</pre>
+</blockquote>
+<p>to:</p>
+<blockquote>
+<pre>
+typename traits::off_type, charT*, charT&gt;
+</pre>
+</blockquote>
+
 <p><i>[
-Sydney: Agreed that this is underspecified, but it's not the only
-place where iterators are underspecified. We may need a more complete
+Sydney: Agreed that this is under-specified, but it's not the only
+place where iterators are under-specified. We may need a more complete
 review.  One nice simple rule that would solve this problem: *a is
 always <tt>reference</tt> by definition, and a-&gt; is
 always <tt>pointer</tt> by definition. If we do that, then we'll also
@@ -5455,6 +5608,808 @@ even if we don't require it.
 <p><b>Proposed resolution:</b></p>
 <p>
 </p>
+<hr>
+<a name="463"><h3>463.&nbsp;auto_ptr usability issues</h3></a><p><b>Section:</b>&nbsp;20.4.5 <a href="lib-utilities.html#lib.auto.ptr"> [lib.auto.ptr]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Rani Sharoni&nbsp; <b>Date:</b>&nbsp;7 Dec 2003</p>
+
+<p>
+TC1 CWG DR #84 effectively made the template%lt;class Y&gt; operator auto_ptr%lt;Y&gt;()
+member of auto_ptr (20.4.5.3/4) obsolete.
+</p>
+
+<p>
+The sole purpose of this obsolete conversion member is to enable copy
+initialization base from r-value derived (or any convertible types like
+cv-types) case:
+</p>
+<pre>
+#include %lt;memory&gt;
+using std::auto_ptr;
+
+struct B {};
+struct D : B {};
+
+auto_ptr%lt;D&gt; source();
+int sink(auto_ptr%lt;B&gt;);
+int x1 = sink( source() ); // #1 EDG - no suitable copy constructor
+</pre>
+
+<p>
+The excellent analysis of conversion operations that was given in the final
+auto_ptr proposal
+(http://anubis.dkuug.dk/jtc1/sc22/wg21/docs/papers/1997/N1128.pdf)
+explicitly specifies this case analysis (case 4). DR #84 makes the analysis
+wrong and actually comes to forbid the loophole that was exploited by the
+auto_ptr designers.
+</p>
+
+<p>
+I didn't encounter any compliant compiler (e.g. EDG, GCC, BCC and VC) that
+ever allowed this case. This is probably because it requires 3 user defined
+conversions and in fact current compilers conform to DR #84.
+</p>
+
+<p>
+I was surprised to discover that the obsolete conversion member actually has
+negative impact of the copy initialization base from l-value derived
+case:</p>
+<pre>
+auto_ptr%lt;D&gt; dp;
+int x2 = sink(dp); // #2 EDG - more than one user-defined conversion applies
+</pre>
+
+<p>
+I'm sure that the original intention was allowing this initialization using
+the template%lt;class Y&gt; auto_ptr(auto_ptr%lt;Y&gt;&amp; a) constructor (20.4.5.1/4) but
+since in this copy initialization it's merely user defined conversion (UDC)
+and the obsolete conversion member is UDC with the same rank (for the early
+overloading stage) there is an ambiguity between them.
+</p>
+
+<p>
+Removing the obsolete member will have impact on code that explicitly
+invokes it:
+</p>
+<pre>
+int y = sink(source().operator auto_ptr%lt;B&gt;());
+</pre>
+
+<p>
+IMHO no one ever wrote such awkward code and the reasonable workaround for
+#1 is:
+</p>
+<pre>
+int y = sink( auto_ptr%lt;B&gt;(source()) );
+</pre>
+
+<p>
+I was even more surprised to find out that after removing the obsolete
+conversion member the initialization was still ill-formed:
+int x3 = sink(dp); // #3 EDG - no suitable copy constructor
+</p>
+
+<p>
+This copy initialization semantically requires copy constructor which means
+that both template conversion constructor and the auto_ptr_ref conversion
+member (20.4.5.3/3) are required which is what was explicitly forbidden in
+DR #84. This is a bit amusing case in which removing ambiguity results with
+no candidates.
+</p>
+
+<p>
+I also found exception safety issue with auto_ptr related to auto_ptr_ref:
+</p>
+<pre>
+int f(auto_ptr%lt;B&gt;, std::string);
+auto_ptr%lt;B&gt; source2();
+
+// string constructor throws while auto_ptr_ref
+// "holds" the pointer
+int x4 = f(source2(), "xyz"); // #4
+</pre>
+
+<p>
+The theoretic execution sequence that will cause a leak:
+</p>
+<ol>
+<li>call auto_ptr%lt;B&gt;::operator auto_ptr_ref%lt;B&gt;()</li>
+<li>call string::string(char const*) and throw</li>
+</ol>
+
+<p>
+According to 20.4.5.3/3 and 20.4.5/2 the auto_ptr_ref conversion member
+returns auto_ptr_ref%lt;Y&gt; that holds *this and this is another defect since
+the type of *this is auto_ptr%lt;X&gt; where X might be different from Y. Several
+library vendors (e.g. SGI) implement auto_ptr_ref%lt;Y&gt; with Y* as member which
+is much more reasonable. Other vendor implemented auto_ptr_ref as
+defectively required and it results with awkward and catastrophic code:
+int oops = sink(auto_ptr%lt;B&gt;(source())); // warning recursive on all control
+paths
+</p>
+
+<p>
+Dave Abrahams noticed that there is no specification saying that
+auto_ptr_ref copy constructor can't throw.
+</p>
+
+<p>
+My proposal comes to solve all the above issues and significantly simplify
+auto_ptr implementation. One of the fundamental requirements from auto_ptr
+is that it can be constructed in an intuitive manner (i.e. like ordinary
+pointers) but with strict ownership semantics which yield that source
+auto_ptr in initialization must be non-const. My idea is to add additional
+constructor template with sole propose to generate ill-formed, diagnostic
+required, instance for const auto_ptr arguments during instantiation of
+declaration. This special constructor will not be instantiated for other
+types which is achievable using 14.8.2/2 (SFINAE). Having this constructor
+in hand makes the constructor template%lt;class Y&gt; auto_ptr(auto_ptr%lt;Y&gt; const&amp;)
+legitimate since the actual argument can't be const yet non const r-value
+are acceptable.
+</p>
+
+<p>
+This implementation technique makes the "private auxiliary class"
+auto_ptr_ref obsolete and I found out that modern C++ compilers (e.g. EDG,
+GCC and VC) consume the new implementation as expected and allow all
+intuitive initialization and assignment cases while rejecting illegal cases
+that involve const auto_ptr arguments.
+</p>
+
+<p>The proposed auto_ptr interface:</p>
+
+<pre>
+namespace std {
+    template%lt;class X&gt; class auto_ptr {
+    public:
+        typedef X element_type;
+
+        // 20.4.5.1 construct/copy/destroy:
+        explicit auto_ptr(X* p=0) throw();
+        auto_ptr(auto_ptr&amp;) throw();
+        template%lt;class Y&gt; auto_ptr(auto_ptr%lt;Y&gt; const&amp;) throw();
+        auto_ptr&amp; operator=(auto_ptr&amp;) throw();
+        template%lt;class Y&gt; auto_ptr&amp; operator=(auto_ptr%lt;Y&gt;) throw();
+        ~auto_ptr() throw();
+
+        // 20.4.5.2 members:
+        X&amp; operator*() const throw();
+        X* operator-&gt;() const throw();
+        X* get() const throw();
+        X* release() throw();
+        void reset(X* p=0) throw();
+
+    private:
+        template%lt;class U&gt;
+        auto_ptr(U&amp; rhs, typename
+unspecified_error_on_const_auto_ptr%lt;U&gt;::type = 0);
+    };
+}
+</pre>
+
+<p>
+One compliant technique to implement the unspecified_error_on_const_auto_ptr
+helper class is using additional private auto_ptr member class template like
+the following:
+</p>
+<pre>
+template%lt;typename T&gt; struct unspecified_error_on_const_auto_ptr;
+
+template%lt;typename T&gt;
+struct unspecified_error_on_const_auto_ptr%lt;auto_ptr%lt;T&gt; const&gt;
+{ typedef typename auto_ptr%lt;T&gt;::const_auto_ptr_is_not_allowed type; };
+</pre>
+
+<p>
+There are other techniques to implement this helper class that might work
+better for different compliers (i.e. better diagnostics) and therefore I
+suggest defining its semantic behavior without mandating any specific
+implementation. IMO, and I didn't found any compiler that thinks otherwise,
+14.7.1/5 doesn't theoretically defeat the suggested technique but I suggest
+verifying this with core language experts.
+</p>
+
+<p><b>Further changes in standard text:</b></p>
+<p>Remove section 20.4.5.3</p>
+
+<p>Change 20.4.5/2 to read something like:
+Initializing auto_ptr%lt;X&gt; from const auto_ptr%lt;Y&gt; will result with unspecified
+ill-formed declaration that will require unspecified diagnostic.</p>
+
+<p>Change 20.4.5.1/4,5,6 to read:</p>
+
+<pre>template%lt;class Y&gt; auto_ptr(auto_ptr%lt;Y&gt; const&amp; a) throw();</pre>
+<p> 4 Requires: Y* can be implicitly converted to X*.</p>
+<p> 5 Effects: Calls const_cast%lt;auto_ptr%lt;Y&gt;&amp;&gt;(a).release().</p>
+<p> 6 Postconditions: *this holds the pointer returned from a.release().</p>
+
+<p>Change 20.4.5.1/10</p>
+<pre>
+template%lt;class Y&gt; auto_ptr&amp; operator=(auto_ptr%lt;Y&gt; a) throw();
+</pre>
+<p>
+10 Requires: Y* can be implicitly converted to X*. The expression delete
+get() is well formed.
+</p>
+
+<p>LWG TC DR #127 is obsolete.</p>
+
+<p>
+Notice that the copy constructor and copy assignment operator should remain
+as before and accept non-const auto_ptr&amp; since they have effect on the form
+of the implicitly declared copy constructor and copy assignment operator of
+class that contains auto_ptr as member per 12.8/5,10:
+</p>
+<pre>
+struct X {
+    // implicit X(X&amp;)
+    // implicit X&amp; operator=(X&amp;)
+    auto_ptr%lt;D&gt; aptr_;
+};
+</pre>
+
+<p>
+In most cases this indicates about sloppy programming but preserves the
+current auto_ptr behavior.
+</p>
+
+<p>
+Dave Abrahams encouraged me to suggest fallback implementation in case that
+my suggestion that involves removing of auto_ptr_ref will not be accepted.
+In this case removing the obsolete conversion member to auto_ptr%lt;Y&gt; and
+20.4.5.3/4,5 is still required in order to eliminate ambiguity in legal
+cases. The two constructors that I suggested will co exist with the current
+members but will make auto_ptr_ref obsolete in initialization contexts.
+auto_ptr_ref will be effective in assignment contexts as suggested in DR
+#127 and I can't see any serious exception safety issues in those cases
+(although it's possible to synthesize such). auto_ptr_ref%lt;X&gt; semantics will
+have to be revised to say that it strictly holds pointer of type X and not
+reference to an auto_ptr for the favor of cases in which auto_ptr_ref%lt;Y&gt; is
+constructed from auto_ptr%lt;X&gt; in which X is different from Y (i.e. assignment
+from r-value derived to base).
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="464"><h3>464.&nbsp;Suggestion for new member functions in standard containers</h3></a><p><b>Section:</b>&nbsp;23.2.4 <a href="lib-containers.html#lib.vector"> [lib.vector]</a>, 23.3.1 <a href="lib-containers.html#lib.map"> [lib.map]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Thorsten Ottosen&nbsp; <b>Date:</b>&nbsp;12 May 2004</p>
+
+<p>To add slightly more convenience to vector&lt;T&gt; and map&lt;Key,T&gt; we should consider to add</p>
+<ol>
+<li> add vector&lt;T&gt;::data() member (const and non-const version)
+semantics: if( empty() ) return 0; else return buffer_;</li>
+<li> add map&lt;Key,T&gt;::at( const Key&amp; k ) member (const and non-const version)
+<i>semantics</i>: iterator i = find( k ); if( i != end() ) return *i; else throw range_error();</li>
+</ol>
+
+<p>Rationale:</p>
+
+<ul>
+<li>To obtain a pointer to the vector's buffer, one must use either operator[]() (which can give undefined  behavior for empty vectors) or at() (which will then throw if the vector is empty).  </li>
+<li>tr1::array&lt;T,sz&gt; already has a data() member</li>
+<li>e cannot use operator[]() when T is not DefaultDonstructible</li>
+<li>Neither when the map is const.</li>
+<li>when we want to make sure we don't add an element accidently</li>
+<li>when it should be considered an error if a key is not in the map</li>
+</ul>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="465"><h3>465.&nbsp;Contents of &lt;ciso646&gt;</h3></a><p><b>Section:</b>&nbsp;17.4.1.2 <a href="lib-intro.html#lib.headers"> [lib.headers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Steve Clamage&nbsp; <b>Date:</b>&nbsp;3 Jun 2004</p>
+<p>C header &lt;iso646.h&gt; defines macros for some operators, such as
+not_eq for !=.</p>
+
+<p>Section 17.4.1.2 <a href="lib-intro.html#lib.headers"> [lib.headers]</a> "Headers" says that except as noted in
+clauses 18 through 27, the &lt;cname&gt; C++ header contents are the same
+as the C header &lt;name.h&gt;. In particular, table 12 lists
+&lt;ciso646&gt; as a C++ header.</p>
+
+<p>I don't find any other mention of &lt;ciso646&gt;, or any mention of
+&lt;iso646.h&gt;, in clauses 17 thorough 27. That implies that the
+contents of &lt;ciso646&gt; are the same as C header &lt;iso646.h&gt;.</p>
+
+<p>Annex C (informative, not normative) in [diff.header.iso646.h] C.2.2.2
+"Header &lt;iso646.h&gt;" says that the alternative tokens are not
+defined as macros in &lt;ciso646&gt;, but does not mention the contents
+of &lt;iso646.h&gt;.</p>
+
+<p>I don't find any normative text to support C.2.2.2.</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Add a section somewhere (clause 18? clause 22?) that says &lt;iso646.h&gt; and &lt;ciso646&gt; are empty for C++.
+</p>
+<hr>
+<a name="466"><h3>466.&nbsp;basic_string ctor should prevent null pointer error</h3></a><p><b>Section:</b>&nbsp;21.3.1 <a href="lib-strings.html#lib.string.cons"> [lib.string.cons]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Daniel Frey&nbsp; <b>Date:</b>&nbsp;10 Jun 2004</p>
+<p>
+Today, my colleagues and me wasted a lot of time. After some time, I
+found the problem. It could be reduced to the following short example:
+</p>
+
+<pre>
+  #include &lt;string&gt;
+  int main() { std::string( 0 ); }
+</pre>
+
+<p>The problem is that the tested compilers (GCC 2.95.2, GCC 3.3.1 and
+Comeau online) compile the above without errors or warnings! The
+programs (at least for the GCC) resulted in a SEGV.</p>
+
+<p>I know that the standard explicitly states that the ctor of string
+requires a char* which is not zero. STLs could easily detect the above
+case with a private ctor for basic_string which takes a single 'int'
+argument. This would catch the above code at compile time and would not
+ambiguate any other legal ctors.</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+</p>
+<hr>
+<a name="467"><h3>467.&nbsp;char_traits::lt(), compare(), and memcmp()</h3></a><p><b>Section:</b>&nbsp;21.1.3.1 <a href="lib-strings.html#lib.char.traits.specializations.char"> [lib.char.traits.specializations.char]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+
+<p>
+Table 37 describes the requirements on Traits::compare() in terms of
+those on Traits::lt(). 21.1.3.1, p6 requires char_traits&lt;char&gt;::lt()
+to yield the same result as operator&lt;(char, char).
+</p>
+
+<p>
+Most, if not all, implementations of char_traits&lt;char&gt;::compare()
+call memcmp() for efficiency. However, the C standard requires both
+memcmp() and strcmp() to interpret characters under comparison as
+unsigned, regardless of the signedness of char. As a result, all
+these char_traits implementations fail to meet the requirement
+imposed by Table 37 on compare() when char is signed.
+</p>
+
+
+<p>Read email thread starting with c++std-lib-13499 for more. </p>
+<p><b>Proposed resolution:</b></p>
+
+
+<p>Change 21.1.3.1, p6 from</p>
+<pre>
+    The two-argument members assign, eq, and lt are defined identically
+    to the built-in operators =, ==, and &lt; respectively.
+</pre>
+<p>to</p>
+<pre>
+    The two-argument members assign and eq are defined identically
+    to the built-in operators = and == respectively. The two-argument
+    member lt is defined identically to the built-in operator &lt; for
+    type unsigned char.
+</pre>
+
+<hr>
+<a name="468"><h3>468.&nbsp;unexpected consequences of ios_base::operator void*()</h3></a><p><b>Section:</b>&nbsp;27.4.4.3 <a href="lib-iostreams.html#lib.iostate.flags"> [lib.iostate.flags]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+
+<p>The program below is required to compile but when run it typically
+produces unexpected results due to the user-defined conversion from
+std::cout or any object derived from basic_ios to void*.
+</p>
+
+<pre>
+    #include &lt;cassert&gt;
+    #include &lt;iostream&gt;
+
+    int main ()
+    {
+        assert (std::cin.tie () == std::cout);
+        // calls std::cout.ios::operator void*()
+    }
+</pre>
+
+<p><b>Proposed resolution:</b></p>
+
+<p>
+Replace std::basic_ios&lt;charT, traits&gt;::operator void*() with another
+conversion operator to some unspecified type that is guaranteed not
+to be convertible to any other type except for bool (a pointer-to-member
+might be one such suitable type). In addition, make it clear that the
+pointer type need not be a pointer to a complete type and when non-null,
+the value need not be valid.
+</p>
+
+<p>Specifically, change in [lib.ios] the signature of</p>
+<pre>
+    operator void*() const;
+</pre>
+<p>to</p>
+<pre>
+    operator unspecified_pointer_type () const;
+</pre>
+<p>and change [lib.iostate.flags], p1 from</p>
+<pre>
+    operator void*() const;
+</pre>
+<p>to</p>
+<pre>
+    operator unspecified_pointer_type() const;
+    -1- Returns: If fail() then a null pointer; otherwise some
+        non-null but not necessarily valid pointer to indicate
+        success.
+    -2- Note: The type named unspecified_pointer_type above is a pointer
+        to some unspecified, possibly incomplete type, that is guaranteed
+        not to be convertible to any other type except bool.(Footnote 1)
+        --
+        Footnote 1: A pointer-to-member might be one such suitable type.
+</pre>
+
+<hr>
+<a name="469"><h3>469.&nbsp;vector&lt;bool&gt; ill-formed relational operators</h3></a><p><b>Section:</b>&nbsp;23.2.5 <a href="lib-containers.html#lib.vector.bool"> [lib.vector.bool]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+
+<p>
+The overloads of relational operators for vector&lt;bool&gt; specified
+in [lib.vector.bool] are redundant (they are semantically identical
+to those provided for the vector primary template) and may even be
+diagnosed as ill-formed (refer to Daveed Vandevoorde's explanation
+in c++std-lib-13647).
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>
+Remove all overloads of overloads of relational operators for
+vector&lt;bool&gt; from [lib.vector.bool].
+</p>
+<hr>
+<a name="470"><h3>470.&nbsp;accessing containers from their elements' special functions</h3></a><p><b>Section:</b>&nbsp;23 <a href="lib-containers.html#lib.containers"> [lib.containers]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+
+<p>
+The standard doesn't prohibit the destructors (or any other special
+functions) of containers' elements invoked from a member function
+of the container from "recursively" calling the same (or any other)
+member function on the same container object, potentially while the
+container is in an intermediate state, or even changing the state
+of the container object while it is being modified. This may result
+in some surprising (i.e., undefined) behavior.
+</p>
+
+<p>Read email thread starting with c++std-lib-13637 for more.</p>
+
+<p><b>Proposed resolution:</b></p>
+
+<p>Add to Container Requirements the following new paragraph:</p>
+
+<pre>
+    Unless otherwise specified, the behavior of a program that
+    invokes a container member function f from a member function
+    g of the container's value_type on a container object c that
+    called g from its mutating member function h, is undefined.
+    I.e., if v is an element of c, directly or indirectly calling
+    c.h() from v.g() called from c.f(), is undefined.
+</pre>
+
+<hr>
+<a name="471"><h3>471.&nbsp;result of what() implementation-defined</h3></a><p><b>Section:</b>&nbsp;18.6.1 <a href="lib-support.html#lib.exception"> [lib.exception]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;28 Jun 2004</p>
+
+<p>[lib.exception] specifies the following:</p>
+<pre>
+    exception (const exception&amp;) throw();
+    exception&amp; operator= (const exception&amp;) throw();
+
+    -4- Effects: Copies an exception object.
+    -5- Notes: The effects of calling what() after assignment
+        are implementation-defined.
+</pre>
+
+<p>
+First, does the Note only apply to the assignment operator? If so,
+what are the effects of calling what() on a copy of an object? Is
+the returned pointer supposed to point to an identical copy of
+the NTBS returned by what() called on the original object or not?
+</p>
+
+<p>
+Second, is this Note intended to extend to all the derived classes
+in section 19? I.e., does the standard provide any guarantee for
+the effects of what() called on a copy of any of the derived class
+described in section 19?
+</p>
+
+<p>
+Finally, if the answer to the first question is no, I believe it
+constitutes a defect since throwing an exception object typically
+implies invoking the copy ctor on the object. If the answer is yes,
+then I believe the standard ought to be clarified to spell out
+exactly what the effects are on the copy (i.e., after the copy
+ctor was called).
+</p>
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="472"><h3>472.&nbsp;Missing "Returns" clause in std::equal_range</h3></a><p><b>Section:</b>&nbsp;25.3.3.3 <a href="lib-algorithms.html#lib.equal.range"> [lib.equal.range]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Prateek R Karandikar&nbsp; <b>Date:</b>&nbsp;29 Feb 1900</p>
+<p>
+There is no "Returns:" clause for std::equal_range, which returns non-void.
+</p>
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="473"><h3>473.&nbsp;underspecified ctype calls</h3></a><p><b>Section:</b>&nbsp;22.2.1.1 <a href="lib-locales.html#lib.locale.ctype"> [lib.locale.ctype]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;1 Jul 2004</p>
+<p>
+Most ctype member functions come in two forms: one that operates
+on a single character at a time and another form that operates
+on a range of characters. Both forms are typically described by
+a single Effects and/or Returns clause.
+</p>
+<p>
+The Returns clause of each of the single-character non-virtual forms
+suggests that the function calls the corresponding single character
+virtual function, and that the array form calls the corresponding
+virtual array form. Neither of the two forms of each virtual member
+function is required to be implemented in terms of the other.
+</p>
+<p>
+There are three problems:
+</p>
+<p>
+1. One is that while the standard does suggest that each non-virtual
+member function calls the corresponding form of the virtual function,
+it doesn't actually explicitly require it.
+</p>
+<p>
+Implementations that cache results from some of the virtual member
+functions for some or all values of their arguments might want to
+call the array form from the non-array form the first time to fill
+the cache and avoid any or most subsequent virtual calls. Programs
+that rely on each form of the virtual function being called from
+the corresponding non-virtual function will see unexpected behavior
+when using such implementations.
+</p>
+<p>
+2. The second problem is that either form of each of the virtual
+functions can be overridden by a user-defined function in a derived
+class to return a value that is different from the one produced by
+the virtual function of the alternate form that has not been
+overriden.
+</p>
+<p>
+Thus, it might be possible for, say, ctype::widen(c) to return one
+value, while for ctype::widen(&amp;c, &amp;c + 1, &amp;wc) to set
+wc to another value. This is almost certainly not intended. Both
+forms of every function should be required to return the same result
+for the same character, otherwise the same program using an
+implementation that calls one form of the functions will behave
+differently than when using another implementation that calls the
+other form of the function "under the hood."
+</p>
+<p>
+3. The last problem is that the standard text fails to specify whether
+one form of any of the virtual functions is permitted to be implemented
+in terms of the other form or not, and if so, whether it is required
+or permitted to call the overridden virtual function or not.
+</p>
+<p>
+Thus, a program that overrides one of the virtual functions so that
+it calls the other form which then calls the base member might end
+up in an infinite loop if the called form of the base implementation
+of the function in turn calls the other form.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+To fix these problems I propose the following:
+</p>
+<p>
+Add two paragraphs immediately after 22.2.1.1 [lib.locale.ctype],
+p2, with the following text:
+</p>
+
+<pre>
+  -3- Each ctype non-virtual member function that comes in two forms,
+      one that takes a range of elements of char_type, and another
+      that takes just a single element of char_type, is required to
+      call the corresponding form of the virtual member function
+      with the same value of char_type to obtain the result. The
+      result for the same argument may be cached and returned from
+      subsequent calls to either form of the non-virtual member
+      function with that argument.
+
+  -4- For each ctype virtual member function that comes in two forms
+      (as explained above), the single element form is required to
+      produce the same result for a character c that the corresponding
+      array form produces for the array element with the same value as
+      c, and vice versa.
+
+  -5- It is unspecified whether the array form of each virtual member
+      function calls the single-element virtual overload of the same
+      function in a loop, or whether the single element form calls
+      the array form with an array of a single element with the value
+      of its argument, or whether neither form calls the other. In
+      any case, an implementation is not permitted to make calls from
+      one form of any virtual member function to the corresponding
+      other form that is overridden in a derived class.
+</pre>
+
+<hr>
+<a name="474"><h3>474.&nbsp;confusing Footnote 297</h3></a><p><b>Section:</b>&nbsp;27.6.2.5.4 <a href="lib-iostreams.html#lib.ostream.inserters.character"> [lib.ostream.inserters.character]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Martin Sebor&nbsp; <b>Date:</b>&nbsp;1 Jul 2004</p>
+
+<p>
+I think Footnote 297 is confused. The paragraph it applies to seems
+quite clear in that widen() is only called if the object is not a char
+stream (i.e., not basic_ostream&lt;char&gt;), so it's irrelevant what the
+value of widen(c) is otherwise.
+</p>
+<p><b>Proposed resolution:</b></p>
+<p>
+I propose to strike the Footnote.
+</p>
+<hr>
+<a name="475"><h3>475.&nbsp;May the function object passed to for_each modify the elements of the iterated sequence?</h3></a><p><b>Section:</b>&nbsp;25.1.1 <a href="lib-algorithms.html#lib.alg.foreach"> [lib.alg.foreach]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Stephan T. Lavavej, Jaakko Jarvi&nbsp; <b>Date:</b>&nbsp;9 Jul 2004</p>
+<p>
+It is not clear whether the function object passed to for_each is allowed to
+modify the elements of the sequence being iterated over.
+</p>
+
+<p>
+for_each is classified without explanation in [lib.alg.nonmodifying], "25.1
+Non-modifying sequence operations". 'Non-modifying sequence operation' is
+never defined.
+</p>
+
+<p>
+25(5) says: "If an algorithm's Effects section says that a value pointed to
+by any iterator passed as an argument is modified, then that algorithm has
+an additional type requirement: The type of that argument shall satisfy the
+requirements of a mutable iterator (24.1)."
+</p>
+
+<p>for_each's Effects section does not mention whether arguments can be
+modified:</p>
+
+<blockquote>
+  "Effects: Applies f to the result of dereferencing every iterator in the
+   range [first, last), starting from first and proceeding to last - 1."
+</blockquote>
+
+<p>
+Every other algorithm in [lib.alg.nonmodifying] is "really" non-modifying in
+the sense that neither the algorithms themselves nor the function objects
+passed to the algorithms may modify the sequences or elements in any way.
+This DR affects only for_each.
+</p>
+
+<p>
+We suspect that for_each's classification in "non-modifying sequence
+operations" means that the algorithm itself does not inherently modify the
+sequence or the elements in the sequence, but that the function object
+passed to it may modify the elements it operates on. 
+</p>
+
+<p>
+The original STL document by Stepanov and Lee explicitly prohibited the
+function object from modifying its argument.
+The "obvious" implementation of for_each found in several standard library 
+implementations, however, does not impose this restriction.
+As a result, we suspect that the use of for_each with function objects that modify
+their arguments is wide-spread. 
+If the restriction was reinstated, all such code would become non-conforming.
+Further, none of the other algorithms in the Standard
+could serve the purpose of for_each (transform does not guarantee the order in
+which its function object is called). 
+</p>
+
+<p>
+We suggest that the standard be clarified to explicitly allow the function object 
+passed to for_each modify its argument.</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>Add the following sentence to the Effects in 25.1.1 <a href="lib-algorithms.html#lib.alg.foreach"> [lib.alg.foreach]</a>:</p>
+
+<blockquote>
+"f may apply non-constant functions through the dereferenced iterators
+passed to it; if it does, the type of first shall satisfy the requirements
+of a mutable iterator (24.1)."
+</blockquote>
+
+<hr>
+<a name="476"><h3>476.&nbsp;Forward Iterator implied mutability</h3></a><p><b>Section:</b>&nbsp;24.1.3 <a href="lib-iterators.html#lib.forward.iterators"> [lib.forward.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;9 Jul 2004</p>
+
+<p>24.1/3 says:</p>
+<blockquote>
+  Forward iterators satisfy all the requirements of the input and
+  output iterators and can be used whenever either kind is specified
+</blockquote>
+
+<p>
+The problem is that satisfying the requirements of output iterator
+means that you can always assign *something* into the result of
+dereferencing it.  That makes almost all non-mutable forward
+iterators non-conforming.  I think we need to sever the refinement
+relationship between forward iterator and output iterator.
+</p>
+
+<p><b>Proposed resolution:</b></p>
+<p>in 24.1/3, replace:</p>
+<blockquote>
+    Forward iterators satisfy all the requirements of the input and
+    output iterators and can be used whenever either kind is specified.
+</blockquote>
+<p>with</p>
+<blockquote>
+   A forward iterator satisfies all the input iterator requirements.
+   A mutable forward iterator satisfies all the output iterator
+   requirements.
+</blockquote>
+<hr>
+<a name="477"><h3>477.&nbsp;Operator-&gt; for const forward iterators</h3></a><p><b>Section:</b>&nbsp;24.1.3 <a href="lib-iterators.html#lib.forward.iterators"> [lib.forward.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;11 Jul 2004</p>
+<p>
+The Forward Iterator requirements table contains the following:
+</p>
+<pre>
+ expression  return type         operational  precondition
+                                  semantics
+  ==========  ==================  ===========  ==========================
+  a-&gt;m        U&amp; if X is mutable, (*a).m       pre: (*a).m is well-defined.
+              otherwise const U&amp;
+
+  r-&gt;m        U&amp;                  (*r).m       pre: (*r).m is well-defined.
+</pre>
+
+<p>
+The first line is exactly right.  The second line is wrong.  Basically
+it implies that the const-ness of the iterator affects the const-ness
+of referenced members.  But Paragraph 11 of [lib.iterator.requirements] says:
+</p>
+
+<blockquote>
+   In the following sections, a and b denote values of type const X, n
+   denotes a value of the difference type Distance, u, tmp, and m
+   denote identifiers, r denotes a value of X&amp;, t denotes a value of
+   value type T, o denotes a value of some type that is writable to
+   the output iterator.
+</blockquote>
+
+<p>AFAICT if we need the second line at all, it should read the same
+as the first line.</p>
+
+<p>Related issue: <a href="lwg-active.html#478">478</a></p>
+<p><b>Proposed resolution:</b></p>
+<hr>
+<a name="478"><h3>478.&nbsp;Should forward iterator requirements table have a line for r-&gt;m?</h3></a><p><b>Section:</b>&nbsp;24.1.3 <a href="lib-iterators.html#lib.forward.iterators"> [lib.forward.iterators]</a>&nbsp; <b>Status:</b>&nbsp;<a href="lwg-active.html#New">New</a>&nbsp; <b>Submitter:</b>&nbsp;Dave Abrahams&nbsp; <b>Date:</b>&nbsp;11 Jul 2004</p>
+<p>
+The Forward Iterator requirements table contains the following:
+</p>
+<pre>
+ expression  return type         operational  precondition
+                                  semantics
+  ==========  ==================  ===========  ==========================
+  a-&gt;m        U&amp; if X is mutable, (*a).m       pre: (*a).m is well-defined.
+              otherwise const U&amp;
+
+  r-&gt;m        U&amp;                  (*r).m       pre: (*r).m is well-defined.
+</pre>
+
+<p>The second line may be unnecessary.  Paragraph 11 of
+  [lib.iterator.requirements] says:
+</p>
+
+<blockquote>
+   In the following sections, a and b denote values of type const X, n
+   denotes a value of the difference type Distance, u, tmp, and m
+   denote identifiers, r denotes a value of X&amp;, t denotes a value of
+   value type T, o denotes a value of some type that is writable to
+   the output iterator.
+</blockquote>
+
+<p>
+Because operators can be overloaded on an iterator's const-ness, the
+current requirements allow iterators to make many of the operations
+specified using the identifiers a and b invalid for non-const
+iterators.  Rather than expanding the tables, I think the right
+answer is to change 
+</p>
+<blockquote>
+    "const X"
+</blockquote>
+
+<p> to </p>
+
+<blockquote>
+    "X or const X" 
+</blockquote>
+
+<p>in paragraph 11 of [lib.iterator.requirements].</p>
+
+<p>Related issue: <a href="lwg-active.html#477">477</a></p>
+<p><b>Proposed resolution:</b></p>
 <p>----- End of document -----</p>
 </body>
 </html>
