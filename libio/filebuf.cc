@@ -131,7 +131,11 @@ filebuf* filebuf::open(const char *filename, ios::openmode mode, int prot)
 
 filebuf* filebuf::open(const char *filename, const char *mode)
 {
+#if _G_IO_IO_FILE_VERSION == 0x20001
+  return (filebuf*)_IO_file_fopen(this, filename, mode, 0);
+#else
   return (filebuf*)_IO_file_fopen(this, filename, mode);
+#endif
 }
 
 filebuf* filebuf::attach(int fd)

@@ -55,7 +55,11 @@ extern "C" {
 #endif
 
 #ifndef _IO_wchar_t
+#if _G_IO_IO_FILE_VERSION == 0x20001
+#define _IO_wchar_t _G_wchar_t
+#else
 #define _IO_wchar_t short
+#endif
 #endif
 
 extern "C++" {
@@ -176,9 +180,9 @@ class ios : public _ios_fields {
     ostream* tie(ostream* val) { ostream* save=_tie; _tie=val; return save; }
 
     // Methods to change the format state.
-    _IO_wchar_t fill() const { return (_IO_wchar_t)_fill; }
+    _IO_wchar_t fill() const { return _fill; }
     _IO_wchar_t fill(_IO_wchar_t newf)
-	{_IO_wchar_t oldf = (_IO_wchar_t)_fill; _fill = (char)newf; return oldf;}
+	{_IO_wchar_t oldf = _fill; _fill = newf; return oldf;}
     fmtflags flags() const { return _flags; }
     fmtflags flags(fmtflags new_val) {
 	fmtflags old_val = _flags; _flags = new_val; return old_val; }
@@ -409,6 +413,10 @@ struct streambuf : public _IO_FILE { // protected??
     virtual streampos sys_seek(streamoff, _seek_dir);
     virtual int sys_close();
     virtual int sys_stat(void*); // Actually, a (struct stat*)
+#if _G_IO_IO_FILE_VERSION == 0x20001
+    virtual int showmanyc();
+    virtual void imbue(void *);
+#endif
 };
 
 // A backupbuf is a streambuf with full backup and savepoints on reading.

@@ -301,6 +301,17 @@ streampos streambuf::sys_seek(streamoff, _seek_dir)
 
 int streambuf::sys_close() { return 0; /* Suceess; do nothing */ }
 
+#if _G_IO_IO_FILE_VERSION == 0x20001
+int streambuf::showmanyc()
+{
+  return -1;
+}
+
+void streambuf::imbue(void *)
+{
+}
+#endif
+
 streammarker::streammarker(streambuf *sb)
 {
   _IO_init_marker(this, sb);
