@@ -723,9 +723,17 @@ output_scc_di(op, operand1, operand2, dest)
   loperands[4] = gen_label_rtx();
   if (operand2 != const0_rtx)
 #ifdef MOTOROLA
+#ifdef SGS_CMP_ORDER
     output_asm_insn ("cmp%.l %0,%2\n\tjbne %l4\n\tcmp%.l %1,%3", loperands);
 #else
+    output_asm_insn ("cmp%.l %2,%0\n\tjbne %l4\n\tcmp%.l %3,%1", loperands);
+#endif
+#else
+#ifdef SGS_CMP_ORDER
     output_asm_insn ("cmp%.l %0,%2\n\tjne %l4\n\tcmp%.l %1,%3", loperands);
+#else
+    output_asm_insn ("cmp%.l %2,%0\n\tjne %l4\n\tcmp%.l %3,%1", loperands);
+#endif
 #endif
   else
 #ifdef MOTOROLA
