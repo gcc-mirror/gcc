@@ -980,6 +980,7 @@
 (define_insn "udivsi3_i4"
   [(set (match_operand:SI 0 "register_operand" "=y")
 	(udiv:SI (reg:SI R4_REG) (reg:SI R5_REG)))
+   (clobber (reg:SI T_REG))
    (clobber (reg:SI PR_REG))
    (clobber (reg:DF DR0_REG))
    (clobber (reg:DF DR2_REG))
@@ -999,6 +1000,7 @@
 (define_insn "udivsi3_i4_single"
   [(set (match_operand:SI 0 "register_operand" "=y")
 	(udiv:SI (reg:SI R4_REG) (reg:SI R5_REG)))
+   (clobber (reg:SI T_REG))
    (clobber (reg:SI PR_REG))
    (clobber (reg:DF DR0_REG))
    (clobber (reg:DF DR2_REG))
