@@ -3616,11 +3616,30 @@ finish_decl (decl, init, asmspec_tree)
 				   || TREE_ASM_WRITTEN (decl)), 0);
       else
 	{
+	  /* This is a local variable.  If there is an ASMSPEC, the
+	     user has requested that we handle it specially.  */
 	  if (asmspec)
 	    {
-	      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
-	      DECL_C_HARD_REGISTER (decl) = 1;
+	      /* In conjunction with an ASMSPEC, the `register'
+		 keyword indicates that we should place the variable
+		 in a particular register.  */
+	      if (DECL_REGISTER (decl))
+		DECL_C_HARD_REGISTER (decl) = 1;
+
+	      /* If this is not a static variable, issue a warning.
+		 It doesn't make any sense to give an ASMSPEC for an
+		 ordinary, non-register local variable.  Historically,
+		 GCC has accepted -- but ignored -- the ASMSPEC in
+		 this case.  */
+	      if (TREE_CODE (decl) == VAR_DECL 
+		  && !DECL_REGISTER (decl)
+		  && !TREE_STATIC (decl))
+		warning_with_decl (decl,
+				   "ignoring asm-specifier for non-static local variable `%s'");
+	      else
+		SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
 	    }
+
 	  add_decl_stmt (decl);
 	}
 
