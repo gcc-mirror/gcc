@@ -3460,6 +3460,7 @@ static dw_loc_descr_ref loc_descriptor_from_tree PARAMS ((tree, int));
 static HOST_WIDE_INT ceiling		PARAMS ((HOST_WIDE_INT, unsigned int));
 static tree field_type			PARAMS ((tree));
 static unsigned int simple_type_align_in_bits PARAMS ((tree));
+static unsigned int simple_decl_align_in_bits PARAMS ((tree));
 static unsigned HOST_WIDE_INT simple_type_size_in_bits PARAMS ((tree));
 static HOST_WIDE_INT field_byte_offset	PARAMS ((tree));
 static void add_AT_location_description	PARAMS ((dw_die_ref,
@@ -8050,16 +8051,22 @@ field_type (decl)
   return type;
 }
 
-/* Given a pointer to a tree node, assumed to be some kind of a ..._TYPE
-   node, return the alignment in bits for the type, or else return
-   BITS_PER_WORD if the node actually turns out to be an
-   ERROR_MARK node.  */
+/* Given a pointer to a tree node, return the alignment in bits for
+   it, or else return BITS_PER_WORD if the node actually turns out to
+   be an ERROR_MARK node.  */
 
 static inline unsigned
 simple_type_align_in_bits (type)
      register tree type;
 {
   return (TREE_CODE (type) != ERROR_MARK) ? TYPE_ALIGN (type) : BITS_PER_WORD;
+}
+
+static inline unsigned
+simple_decl_align_in_bits (decl)
+     register tree decl;
+{
+  return (TREE_CODE (decl) != ERROR_MARK) ? DECL_ALIGN (decl) : BITS_PER_WORD;
 }
 
 /* Given a pointer to a tree node, assumed to be some kind of a ..._TYPE
@@ -8096,10 +8103,9 @@ static HOST_WIDE_INT
 field_byte_offset (decl)
      register tree decl;
 {
-  unsigned int type_align_in_bytes;
   unsigned int type_align_in_bits;
+  unsigned int decl_align_in_bits;
   unsigned HOST_WIDE_INT type_size_in_bits;
-  HOST_WIDE_INT object_offset_in_align_units;
   HOST_WIDE_INT object_offset_in_bits;
   HOST_WIDE_INT object_offset_in_bytes;
   tree type;
@@ -8138,7 +8144,7 @@ field_byte_offset (decl)
 
   type_size_in_bits = simple_type_size_in_bits (type);
   type_align_in_bits = simple_type_align_in_bits (type);
-  type_align_in_bytes = type_align_in_bits / BITS_PER_UNIT;
+  decl_align_in_bits = simple_decl_align_in_bits (decl);
 
   /* Note that the GCC front-end doesn't make any attempt to keep track of
      the starting bit offset (relative to the start of the containing
@@ -8185,14 +8191,25 @@ field_byte_offset (decl)
 
   /* This is the tricky part.  Use some fancy footwork to deduce where the
      lowest addressed bit of the containing object must be.  */
-  object_offset_in_bits
-    = ceiling (deepest_bitpos, type_align_in_bits) - type_size_in_bits;
+  object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
-  /* Compute the offset of the containing object in "alignment units".  */
-  object_offset_in_align_units = object_offset_in_bits / type_align_in_bits;
+  /* Round up to type_align by default.  This works best for bitfields.  */
+  object_offset_in_bits += type_align_in_bits - 1;
+  object_offset_in_bits /= type_align_in_bits;
+  object_offset_in_bits *= type_align_in_bits;
 
-  /* Compute the offset of the containing object in bytes.  */
-  object_offset_in_bytes = object_offset_in_align_units * type_align_in_bytes;
+  if (object_offset_in_bits > bitpos_int)
+    {
+      /* Sigh, the decl must be packed.  */
+      object_offset_in_bits = deepest_bitpos - type_size_in_bits;
+
+      /* Round up to decl_align instead.  */
+      object_offset_in_bits += decl_align_in_bits - 1;
+      object_offset_in_bits /= decl_align_in_bits;
+      object_offset_in_bits *= decl_align_in_bits;
+    }
+
+  object_offset_in_bytes = object_offset_in_bits / BITS_PER_UNIT;
 
   return object_offset_in_bytes;
 }
