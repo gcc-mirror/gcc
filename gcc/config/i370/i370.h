@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  System/370 version.
-   Copyright (C) 1989, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for C/370 MVS by Dave Pitts (dpitts@nyx.cs.du.edu)
 
@@ -27,6 +27,10 @@ Boston, MA 02111-1307, USA.  */
 #include <time.h>
 
 #define TARGET_VERSION printf (" (370/MVS)");
+
+/* Options for the preprocessor for this target machine.  */
+
+#define CPP_SPEC "-trigraphs"
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
