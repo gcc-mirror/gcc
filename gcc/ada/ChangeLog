@@ -1,3 +1,7 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* 5oosinte.adb: Fix spelling error of "separate" as "seperate".
+
 2001-10-05  Geert Bosch  (bosch@gnat.com)
 
 	* adaint.h: Small formatting fix.

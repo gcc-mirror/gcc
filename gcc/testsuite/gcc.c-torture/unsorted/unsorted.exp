@@ -35,7 +35,7 @@ load_lib c-torture.exp
 # This loop will run c-torture on any *.c file found in this directory.
 # If a *.c has a corresponding *.exp file, then the test is skipped as
 # as the *.exp will drive the test itself.  It is done this way so that
-# generic tests do not need a seperate .exp for it.  Only the tests that 
+# generic tests do not need a separate .exp for it.  Only the tests that 
 # require unique options need their own .exp file.
 #
 

@@ -298,7 +298,7 @@
    being found.
 
    Please  read  [61]the configuration instructions for GCC, specifically
-   the  part  about  configuring  in  a seperate build directory, and how
+   the  part  about  configuring  in  a separate build directory, and how
    strongly  recommended  it  is.  Building  in  the  source directory is
    fragile,  is  rarely tested, and tends to break, as in this case. Work
    has  already  gone  into the source tree to make this less painful for

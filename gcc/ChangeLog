@@ -1,3 +1,9 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* ChangeLog.2, c-decl.c, config/i386/i386.md, doc/gcc.texi, gcc.c,
+	genmultilib, toplev.c: Fix spelling errors of "separate" as
+	"seperate", and corresponding spelling errors of related words.
+
 2001-10-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_setjmp_receiver): Const-ify.

@@ -1071,7 +1071,7 @@ AC_DEFUN(CYG_AC_PATH_TKH, [
 # Note the gross little conversion here of srcdir by cd'ing to the found
 # directory. This converts the path from a relative to an absolute, so
 # recursive cache variables for the path will work right. We check all
-# the possible paths in one loop rather than many seperate loops to speed
+# the possible paths in one loop rather than many separate loops to speed
 # things up.
 # the alternative search directory is involked by --with-tkinclude
 #

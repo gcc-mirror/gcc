@@ -95,7 +95,7 @@ public interface X509Extension
   /**
      Returns the DER encoded OCTET string for the specified
      extension value identified by a OID. The OID is a string
-     of number seperated by periods. Ex: 12.23.45.67
+     of number separated by periods. Ex: 12.23.45.67
   */
   public byte[] getExtensionValue(String oid);
 

@@ -46,7 +46,7 @@ static _Jv_Utf8Const *clinit_name = _Jv_makeUtf8Const ("<clinit>", 8);
 static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
 
-// these go in some seperate functions, to avoid having _Jv_InitClass
+// these go in some separate functions, to avoid having _Jv_InitClass
 // inserted all over the place.
 static void throw_internal_error (char *msg)
 	__attribute__ ((__noreturn__));

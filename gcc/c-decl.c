@@ -5247,7 +5247,7 @@ parmlist_tags_warning ()
 		 IDENTIFIER_POINTER (TREE_PURPOSE (elt)));
       else
 	{
-	  /* For translation these need to be seperate warnings */
+	  /* For translation these need to be separate warnings */
 	  if (code == RECORD_TYPE)
 	    warning ("anonymous struct declared inside parameter list");
 	  else if (code == UNION_TYPE)

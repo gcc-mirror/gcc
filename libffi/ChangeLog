@@ -1,3 +1,7 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* src/x86/ffi.c: Fix spelling error of "separate" as "seperate".
+
 2001-07-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* src/x86/sysv.S: Avoid gas-only .balign directive.

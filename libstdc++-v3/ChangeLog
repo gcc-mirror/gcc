@@ -1,3 +1,10 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* docs/html/22_locale/locale.html, docs/html/faq/index.html: Fix
+	spelling errors of "separate" as "seperate", and corresponding
+	spelling errors of related words.
+	* docs/html/faq/index.txt: Regenerate.
+
 2001-10-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* config/cpu/alpha/bits/atomicity.h (__compare_and_swap):  Remove

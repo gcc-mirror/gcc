@@ -1,3 +1,11 @@
+2001-10-07  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* defineclass.cc, java/awt/image/ColorModel.java,
+	java/awt/image/SampleModel.java, java/lang/Package.java,
+	java/security/cert/X509Extension.java: Fix spelling errors of
+	"separate" as "seperate", and corresponding spelling errors of
+	related words.
+
 2001-10-05  Tom Tromey  <tromey@redhat.com>
 
 	* java/text/DecimalFormat.java (format): Use localized minus sign
