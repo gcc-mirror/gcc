@@ -1,3 +1,8 @@
+Wed Aug 18 06:37:44 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* Makefile.in (insn-recog.o): Update dependencies.
+	* genrecog.c (main): Make generated file include "function.h".
+
 Sat Aug 14 00:54:57 1999  Geoffrey Keating  <geoffk@cygnus.com>
 
 	* cse.c (cse_insn): Call never_reached_warning when a jump is
