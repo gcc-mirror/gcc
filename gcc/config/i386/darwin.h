@@ -41,6 +41,16 @@ Boston, MA 02111-1307, USA.  */
 #undef CC1_SPEC
 #define CC1_SPEC "%{!static:-fPIC}"
 
+#define ASM_SPEC "-arch i386 \
+  %{Zforce_cpusubtype_ALL:-force_cpusubtype_ALL} \
+  %{!Zforce_cpusubtype_ALL:%{mmmx:-force_cpusubtype_ALL}\
+			   %{msse:-force_cpusubtype_ALL}\
+			   %{msse2:-force_cpusubtype_ALL}}"
+
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS			\
+  { "darwin_arch", "i386" },
+
 /* The Darwin assembler mostly follows AT&T syntax.  */
 #undef ASSEMBLER_DIALECT
 #define ASSEMBLER_DIALECT ASM_ATT

@@ -1,3 +1,15 @@
+2003-08-19  Geoffrey Keating  <geoffk@apple.com>
+
+	* config/darwin.h (LINK_COMMAND_SPEC): Add -arch and -arch_only
+	options.
+	* config/i386/darwin.h (ASM_SPEC): New.
+	(SUBTARGET_EXTRA_SPECS): New.
+	* config/rs6000/darwin.h (ASM_SPEC): New.
+	(SUBTARGET_EXTRA_SPECS): New.
+	* configure.in: Don't set CROSS or SYSTEM_HEADER_DIR when building
+	a cross-compiler between two different processors on Darwin.
+	* configure: Regenerate.
+
 2003-08-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* builtins.c: Fix comment typos.
