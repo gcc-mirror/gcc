@@ -201,6 +201,8 @@ static void record_biv PARAMS ((struct loop *, struct induction *,
 				int, int));
 static void check_final_value PARAMS ((const struct loop *,
 				       struct induction *));
+static void loop_biv_dump PARAMS((const struct induction *, FILE *, int));
+static void loop_giv_dump PARAMS((const struct induction *, FILE *, int));
 static void record_giv PARAMS ((const struct loop *, struct induction *,
 				rtx, rtx, rtx, rtx, rtx, rtx, int,
 				enum g_types, int, int, rtx *));
@@ -248,6 +250,8 @@ static rtx check_insn_for_bivs PARAMS((struct loop *, rtx, int, int));
 static int iv_add_mult_cost PARAMS ((rtx, rtx, rtx, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
+void debug_biv PARAMS ((const struct induction *));
+void debug_giv PARAMS ((const struct induction *));
 void debug_loop PARAMS ((const struct loop *));
 void debug_loops PARAMS ((const struct loops *));
 
@@ -3662,7 +3666,7 @@ loop_bivs_find (loop)
 	  || ! bl->incremented)
 	{
 	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Reg %d: biv discarded, %s\n",
+	    fprintf (loop_dump_stream, "Biv %d: discarded, %s\n",
 		     bl->regno,
 		     (REG_IV_TYPE (ivs, bl->regno) != BASIC_INDUCT
 		      ? "not induction variable"
@@ -3677,7 +3681,7 @@ loop_bivs_find (loop)
 	  backbl = &bl->next;
 
 	  if (loop_dump_stream)
-	    fprintf (loop_dump_stream, "Reg %d: biv verified\n", bl->regno);
+	    fprintf (loop_dump_stream, "Biv %d: verified\n", bl->regno);
 	}
     }
 }
@@ -3770,7 +3774,7 @@ loop_bivs_check (loop)
 
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
-		 "Biv %d initialized at insn %d: initial value ",
+		 "Biv %d: initialized at insn %d: initial value ",
 		 bl->regno, INSN_UID (bl->init_insn));
 
       if ((GET_MODE (src) == GET_MODE (regno_reg_rtx[bl->regno])
@@ -3783,17 +3787,8 @@ loop_bivs_check (loop)
 
 	  if (loop_dump_stream)
 	    {
-	      if (GET_CODE (src) == CONST_INT)
-		{
-		  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, 
-			   INTVAL (src));
-		  fputc ('\n', loop_dump_stream);
-		}
-	      else
-		{
-		  print_rtl (loop_dump_stream, src);
-		  fprintf (loop_dump_stream, "\n");
-		}
+	      print_simple_rtl (loop_dump_stream, src);
+	      fputc ('\n', loop_dump_stream);
 	    }
 	}
       /* If we can't make it a giv,
@@ -4160,7 +4155,7 @@ loop_givs_rescan (loop, bl, reg_map, end_insert_before)
 	{
 	  fprintf (loop_dump_stream, "giv at %d reduced to ",
 		   INSN_UID (v->insn));
-	  print_rtl (loop_dump_stream, v->new_reg);
+	  print_simple_rtl (loop_dump_stream, v->new_reg);
 	  fprintf (loop_dump_stream, "\n");
 	}
     }
@@ -4947,23 +4942,7 @@ record_biv (loop, v, insn, dest_reg, inc_val, mult_val, location,
     bl->incremented = 1;
 
   if (loop_dump_stream)
-    {
-      fprintf (loop_dump_stream,
-	       "Insn %d: possible biv, reg %d,",
-	       INSN_UID (insn), REGNO (dest_reg));
-      if (GET_CODE (inc_val) == CONST_INT)
-	{
-	  fprintf (loop_dump_stream, " const =");
-	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (inc_val));
-	  fputc ('\n', loop_dump_stream);
-	}
-      else
-	{
-	  fprintf (loop_dump_stream, " const = ");
-	  print_rtl (loop_dump_stream, inc_val);
-	  fprintf (loop_dump_stream, "\n");
-	}
-    }
+    loop_biv_dump (v, loop_dump_stream, 0);
 }
 
 /* Fill in the data about one giv.
@@ -5177,69 +5156,7 @@ record_giv (loop, v, insn, src_reg, dest_reg, mult_val, add_val, ext_val,
   }
 
   if (loop_dump_stream)
-    {
-      if (type == DEST_REG)
- 	fprintf (loop_dump_stream, "Insn %d: giv reg %d",
-		 INSN_UID (insn), REGNO (dest_reg));
-      else
- 	fprintf (loop_dump_stream, "Insn %d: dest address",
- 		 INSN_UID (insn));
-
-      fprintf (loop_dump_stream, " src reg %d benefit %d",
-	       REGNO (src_reg), v->benefit);
-      fprintf (loop_dump_stream, " lifetime %d",
-	       v->lifetime);
-
-      if (v->replaceable)
- 	fprintf (loop_dump_stream, " replaceable");
-
-      if (v->no_const_addval)
-	fprintf (loop_dump_stream, " ncav");
-
-      if (v->ext_dependant)
-	{
-	  switch (GET_CODE (v->ext_dependant))
-	    {
-	    case SIGN_EXTEND:
-	      fprintf (loop_dump_stream, " ext se");
-	      break;
-	    case ZERO_EXTEND:
-	      fprintf (loop_dump_stream, " ext ze");
-	      break;
-	    case TRUNCATE:
-	      fprintf (loop_dump_stream, " ext tr");
-	      break;
-	    default:
-	      abort ();
-	    }
-	}
-
-      if (GET_CODE (mult_val) == CONST_INT)
-	{
-	  fprintf (loop_dump_stream, " mult ");
-	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (mult_val));
-	}
-      else
-	{
-	  fprintf (loop_dump_stream, " mult ");
-	  print_rtl (loop_dump_stream, mult_val);
-	}
-
-      if (GET_CODE (add_val) == CONST_INT)
-	{
-	  fprintf (loop_dump_stream, " add ");
-	  fprintf (loop_dump_stream, HOST_WIDE_INT_PRINT_DEC, INTVAL (add_val));
-	}
-      else
-	{
-	  fprintf (loop_dump_stream, " add ");
-	  print_rtl (loop_dump_stream, add_val);
-	}
-    }
-
-  if (loop_dump_stream)
-    fprintf (loop_dump_stream, "\n");
-
+    loop_giv_dump (v, loop_dump_stream, 0);
 }
 
 /* All this does is determine whether a giv can be made replaceable because
@@ -9481,6 +9398,112 @@ replace_label (x, data)
   return 0;
 }
 
+static void
+loop_biv_dump (v, file, verbose)
+     const struct induction *v;
+     FILE *file;
+     int verbose;
+{
+  if (! v || ! file)
+    return;
+
+  fprintf (file,
+	   "Biv %d: insn %d",
+	   REGNO (v->dest_reg), INSN_UID (v->insn));
+  fprintf (file, " const ");
+  print_simple_rtl (file, v->add_val);
+
+  if (verbose && v->final_value)
+    {
+      fputc ('\n', file);  
+      fprintf (file, " final ");
+      print_simple_rtl (file, v->final_value);
+    }
+
+  fputc ('\n', file);
+}
+
+
+static void
+loop_giv_dump (v, file, verbose)
+     const struct induction *v;
+     FILE *file;
+     int verbose;
+{
+  if (! v || ! file)
+    return;
+
+  if (v->giv_type == DEST_REG)
+    fprintf (file, "Giv %d: insn %d",
+	     REGNO (v->dest_reg),  INSN_UID (v->insn)); 
+  else
+    fprintf (file, "Dest address: insn %d",
+	     INSN_UID (v->insn));
+  
+  fprintf (file, " src reg %d benefit %d",
+	   REGNO (v->src_reg), v->benefit);
+  fprintf (file, " lifetime %d",
+	   v->lifetime);
+  
+  if (v->replaceable)
+    fprintf (file, " replaceable");
+  
+  if (v->no_const_addval)
+    fprintf (file, " ncav");
+  
+  if (v->ext_dependant)
+    {
+      switch (GET_CODE (v->ext_dependant))
+	{
+	case SIGN_EXTEND:
+	  fprintf (file, " ext se");
+	  break;
+	case ZERO_EXTEND:
+	  fprintf (file, " ext ze");
+	  break;
+	case TRUNCATE:
+	  fprintf (file, " ext tr");
+	      break;
+	default:
+	  abort ();
+	}
+    }
+
+  fputc ('\n', file);  
+  fprintf (file, " mult ");
+  print_simple_rtl (file, v->mult_val);
+
+  fputc ('\n', file);  
+  fprintf (file, " add  ");
+  print_simple_rtl (file, v->add_val);
+
+  if (verbose && v->final_value)
+    {
+      fputc ('\n', file);  
+      fprintf (file, " final ");
+      print_simple_rtl (file, v->final_value);
+    }
+
+  fputc ('\n', file);  
+}
+
+
+void
+debug_biv (v)
+     const struct induction *v;
+{
+  loop_biv_dump (v, stderr, 1);
+}
+
+
+void
+debug_giv (v)
+     const struct induction *v;
+{
+  loop_giv_dump (v, stderr, 1);
+}
+
+
 #define LOOP_BLOCK_NUM_1(INSN) \
 ((INSN) ? (BLOCK_FOR_INSN (INSN) ? BLOCK_NUM (INSN) : - 1) : -1)
 

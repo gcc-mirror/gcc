@@ -3852,7 +3852,7 @@ loop_iterations (loop)
 	    {
 	      fprintf (loop_dump_stream,
 		       "Loop iterations: Increment value not constant ");
-	      print_rtl (loop_dump_stream, increment);
+	      print_simple_rtl (loop_dump_stream, increment);
 	      fprintf (loop_dump_stream, ".\n");
 	    }
 	  return 0;
@@ -3866,7 +3866,7 @@ loop_iterations (loop)
 	{
 	  fprintf (loop_dump_stream,
 		   "Loop iterations: Initial value not constant ");
-	  print_rtl (loop_dump_stream, initial_value);
+	  print_simple_rtl (loop_dump_stream, initial_value);
 	  fprintf (loop_dump_stream, ".\n");
 	}
       return 0;
@@ -3883,7 +3883,7 @@ loop_iterations (loop)
 	{
 	  fprintf (loop_dump_stream,
 		   "Loop iterations: Final value not constant ");
-	  print_rtl (loop_dump_stream, final_value);
+	  print_simple_rtl (loop_dump_stream, final_value);
 	  fprintf (loop_dump_stream, ".\n");
 	}
       return 0;
