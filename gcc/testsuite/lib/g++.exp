@@ -133,7 +133,7 @@ proc g++_init { args } {
 
     # Make sure that lines are not wrapped.  That can confuse the
     # error-message parsing machinery.
-    lappend ALWAYS_CXXFLAGS "additional_flags={-fmessage-length=0}"
+    lappend ALWAYS_CXXFLAGS "additional_flags=-fmessage-length=0"
 
     verbose -log "ALWAYS_CXXFLAGS set to $ALWAYS_CXXFLAGS"
 
@@ -156,9 +156,9 @@ proc g++_target_compile { source dest type options } {
     lappend options "additional_flags=[libio_include_flags]"
     lappend options "compiler=$GXX_UNDER_TEST";
 
-    set options [concat $options $gpp_compile_options]
+    set options [concat $gpp_compile_options $options]
 
-    set options [concat $options "$ALWAYS_CXXFLAGS"];
+    set options [concat "$ALWAYS_CXXFLAGS" $options];
 
     if { [regexp "(^| )-frepo( |$)" $options] && \
 	 [regexp "\.o(|bj)$" $dest] } then {
