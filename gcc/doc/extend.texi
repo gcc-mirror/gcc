@@ -5337,7 +5337,7 @@ Generates the @code{movhps} machine instruction as a store to memory.
 Generates the @code{movlps} machine instruction as a store to memory.
 @end table
 
-The following built-in functions are available when @option{-mpni} is used.
+The following built-in functions are available when @option{-msse3} is used.
 All of them generate the machine instruction that is part of the name.
 
 @example
@@ -5355,7 +5355,7 @@ v4sf __builtin_ia32_movsldup (v4sf)
 void __builtin_ia32_mwait (unsigned int, unsigned int)
 @end example
 
-The following built-in functions are available when @option{-mpni} is used.
+The following built-in functions are available when @option{-msse3} is used.
 
 @table @code
 @item v2df __builtin_ia32_loadddup (double const *)

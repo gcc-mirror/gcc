@@ -30,7 +30,7 @@
 #ifndef _PMMINTRIN_H_INCLUDED
 #define _PMMINTRIN_H_INCLUDED
 
-#ifdef __PNI__
+#ifdef __SSE3__
 #include <xmmintrin.h>
 #include <emmintrin.h>
 
@@ -127,6 +127,6 @@ _mm_mwait (unsigned int __E, unsigned int __H)
 #define _mm_mwait(E, H)		__builtin_ia32_mwait ((E), (H))
 #endif
 
-#endif /* __PNI__ */
+#endif /* __SSE3__ */
 
 #endif /* _PMMINTRIN_H_INCLUDED */

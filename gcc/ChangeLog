@@ -1,3 +1,18 @@
+2004-02-06  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* doc/invoke.texi: Mention SSE2 and SSE3.
+
+	* config/i386/i386.h: Deprecate -mpni/-mno-pni.
+
+2004-02-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* config/i386/i386.c: Rename pni to sse3.
+	* config/i386/i386.h: Likewise.
+        * config/i386/i386.md: Likewise.
+	* config/i386/pmmintrin.h: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+
 2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org>
 
 	PR other/14003
