@@ -7942,6 +7942,9 @@ qualify_ambiguous_name (id)
 	&& TREE_CODE (TREE_TYPE (qual_wfl)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_TYPE (qual_wfl));
 
+    else if (code == INTEGER_CST)
+      name = qual_wfl;
+    
     else if ((code == ARRAY_REF || code == CALL_EXPR || code == MODIFY_EXPR) &&
 	     TREE_CODE (TREE_OPERAND (qual_wfl, 0)) == EXPR_WITH_FILE_LOCATION)
       name = EXPR_WFL_NODE (TREE_OPERAND (qual_wfl, 0));
@@ -7996,8 +7999,9 @@ qualify_ambiguous_name (id)
      declaration or parameter declaration, then it is an expression
      name. We don't carry this test out if we're in the context of the
      use of SUPER or THIS */
-  if (!this_found && !super_found && 
-      TREE_CODE (name) != STRING_CST && (decl = IDENTIFIER_LOCAL_VALUE (name)))
+  if (!this_found && !super_found 
+      && TREE_CODE (name) != STRING_CST && TREE_CODE (name) != INTEGER_CST
+      && (decl = IDENTIFIER_LOCAL_VALUE (name)))
     {
       RESOLVE_EXPRESSION_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;
@@ -8023,8 +8027,8 @@ qualify_ambiguous_name (id)
      - NAME is declared by exactly on type-import-on-demand declaration
      of the compilation unit containing NAME. 
      - NAME is actually a STRING_CST. */
-  else if (TREE_CODE (name) == STRING_CST ||
-	   (decl = resolve_and_layout (name, NULL_TREE)))
+  else if (TREE_CODE (name) == STRING_CST || TREE_CODE (name) == INTEGER_CST
+	   || (decl = resolve_and_layout (name, NULL_TREE)))
     {
       RESOLVE_TYPE_NAME_P (qual_wfl) = 1;
       QUAL_RESOLUTION (qual) = decl;
