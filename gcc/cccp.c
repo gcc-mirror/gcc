@@ -5821,6 +5821,14 @@ collect_expansion (buf, end, nargs, arglist)
     }
   }
 
+  if (!traditional && expected_delimiter == 0) {
+    /* There is no trailing whitespace, so invent some in ANSI mode.
+       But not if "inside a string" (which in ANSI mode
+       happens only for -D option).  */
+    *exp_p++ = '\n';
+    *exp_p++ = ' ';
+  }
+
   *exp_p = '\0';
 
   defn->length = exp_p - defn->expansion;
