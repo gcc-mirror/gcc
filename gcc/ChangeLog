@@ -10,7 +10,7 @@ Mon Jan 20 14:36:23 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-01-20  Richard Henderson  <rth@redhat.com>
 
-        PR opt/7507
+        PR opt/7154
         * stmt.c (expand_asm_operands): Validize memory operands.
 
 2003-01-20  Richard Henderson  <rth@redhat.com>
