@@ -146,7 +146,8 @@ insert_pack_attributes (node, attributes, prefix)
   tree a;
 
   /* If we are not packing, then there is nothing to do.  */
-  if (maximum_field_alignment == 0)
+  if (maximum_field_alignment == 0
+      || alignment_stack == NULL)
     return;
 
   /* We are only interested in fields.  */
