@@ -2680,9 +2680,10 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   if (GET_CODE (op1) == MEM && MEM_VOLATILE_P (op1))
     op1 = force_reg (compute_mode, op1);
 
-#if 0
-  op0 = force_reg (mode, op0);
-#endif
+  /* If we need the remainder or if OP1 is constant, we need to
+     put OP0 in a register in case it has any queued subexpressions.  */
+  if (rem_flag || op1_is_constant)
+    op0 = force_reg (compute_mode, op0);
 
   last = get_last_insn ();
 
