@@ -131,6 +131,13 @@ override_options ()
       warning ("Out of line entry/exit sequences are not compatable\n");
       warning ("with PIC or profiling\n");
     }
+
+  if (! TARGET_GAS && write_symbols != NO_DEBUG)
+    {
+      warning ("-g is only supported when using GAS on this processor,");
+      warning ("-g option disabled.");
+      write_symbols = NO_DEBUG;
+    }
 }
 
 

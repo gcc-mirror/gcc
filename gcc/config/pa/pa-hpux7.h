@@ -29,11 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #define SIZE_TYPE "unsigned int"
 #define PTRDIFF_TYPE "int"
 
-/* HPUX doesn't use any debugging format that GCC knows about.  */
-#undef DBX_DEBUGGING_INFO
-#undef DEFAULT_GDB_EXTENSIONS
-#define DEFAULT_GDB_EXTENSIONS 0
-
 /* Like the default, except no -lg.  */
 #undef LIB_SPEC
 #define LIB_SPEC "%{!p:%{!pg:-lc}}%{p: -L/lib/libp/ -lc}%{pg: -L/lib/libp/ -lc}"
