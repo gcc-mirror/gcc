@@ -1905,7 +1905,7 @@ alpha_emit_setcc (code)
       break;
 
     case GE:  case GT: case GEU:  case GTU:
-      /* These are normally need swapping, but for integer zero we have
+      /* These normally need swapping, but for integer zero we have
 	 special patterns that recognize swapped operands.  */
       if (!fp_p && op1 == const0_rtx)
 	break;
@@ -1996,8 +1996,9 @@ alpha_emit_conditional_move (cmp, mode)
 	  break;
 
 	case GE: case GT: case GEU: case GTU:
-	  /* These must be swapped.  */
-	  if (op1 == CONST0_RTX (cmp_mode))
+	  /* These normally need swapping, but for integer zero we have
+	     special patterns that recognize swapped operands.  */
+	  if (!fp_p && op1 == const0_rtx)
 	    cmp_code = code, code = NE;
 	  else
 	    {
