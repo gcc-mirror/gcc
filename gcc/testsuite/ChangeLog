@@ -1,3 +1,9 @@
+2005-03-22  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/20465
+	PR c++/20381
+	* g++.dg/template/ptrmem12.C: New.
+
 2005-03-22  Paolo Carlini  <pcarlini@suse.de>
 
 	PR c++/20461
