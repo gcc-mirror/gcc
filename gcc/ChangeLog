@@ -1,3 +1,12 @@
+Tue Jul 30 18:31:31 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (cond_delay_slot): New attribute.
+	(cbranch delay): Use it for anulled-true case.
+	(stuff_delay_slot): New pattern.
+	* sh.c (print_operand, case '.'): Don't print .s / /s fore zero-length
+	delay slot insn.
+	(gen_far_branch): Emit stuff_delay_slot pattern.
+
 Tue Jul 30 11:21:44 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* unroll.c (copy_loop_body): Don't copy NOTE_INSN_LOOP_CONT.

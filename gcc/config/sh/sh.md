@@ -696,6 +696,10 @@
 	 (eq_attr "length" "2") (const_string "yes")
 	 ] (const_string "no")))
 
+(define_attr "cond_delay_slot" "yes,no"
+  (cond [(eq_attr "in_delay_slot" "yes") (const_string "yes")
+	 ] (const_string "no")))
+
 (define_attr "is_sfunc" ""
   (if_then_else (eq_attr "type" "sfunc") (const_int 1) (const_int 0)))
 
@@ -738,7 +742,7 @@
 (define_delay
   (and (eq_attr "type" "cbranch")
        (ne (symbol_ref "TARGET_SH2") (const_int 0)))
-  [(eq_attr "in_delay_slot" "yes") (eq_attr "in_delay_slot" "yes") (nil)])
+  [(eq_attr "in_delay_slot" "yes") (eq_attr "cond_delay_slot" "yes") (nil)])
 
 ;; -------------------------------------------------------------------------
 ;; SImode signed integer comparisons
@@ -5141,6 +5145,18 @@
   "TARGET_SH1"
   ""
   [(set_attr "length" "0")])
+
+;; This one is used to preemt an insn from beyond the bra / braf / jmp
+;; being pulled into the delay slot of a condbranch that has been made to
+;; jump around the unconditional jump because it was out of range.
+(define_insn "stuff_delay_slot"
+  [(set (pc)
+	(unspec [(match_operand 0 "const_int_operand" "") (pc)] UNSPEC_BBR))
+   (set (reg:SI T_REG) (match_operand 1 "const_int_operand" ""))]
+  "TARGET_SH1"
+  ""
+  [(set_attr "length" "0")
+   (set_attr "cond_delay_slot" "yes")])
 
 ;; Conditional branch insns
 
