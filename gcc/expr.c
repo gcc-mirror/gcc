@@ -8882,14 +8882,20 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    return const0_rtx;
 
 	  /* Otherwise, emit (const (constant_p_rtx (ARG))) and let CSE
-	     get a chance to see if it can deduce whether ARG is constant.  */
+	     get a chance to see if it can deduce whether ARG is constant. 
+	     We always generate the CONST in ptr_mode since that's
+	     certain to be valid on this machine, then convert it to
+	     whatever we need.  */
 	  else
 	    return
-	      gen_rtx_CONST
+	      convert_to_mode
 		(mode,
-		 gen_rtx_CONSTANT_P_RTX (mode,
-					 expand_expr (arg, NULL_RTX,
-						      VOIDmode, 0)));
+		 gen_rtx_CONST
+		 (ptr_mode,
+		  gen_rtx_CONSTANT_P_RTX (ptr_mode,
+					  expand_expr (arg, NULL_RTX,
+						       VOIDmode, 0))),
+		 0);
 	  
 	}
 
