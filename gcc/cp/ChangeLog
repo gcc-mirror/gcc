@@ -1,3 +1,12 @@
+2004-07-15  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* decl.c (xref_basetypes): Refactor.
+	* tree.c (copy_base_binfos): Replace with ...
+	(copy_binfo): ... this. Deep copy the given binfo, (not the just
+	bases of the given base).
+	* cp-tree.h (copy_base_binfo): Remove.
+	(copy_binfo): Declare.
+
 2004-07-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* name-lookup.c (set_inherited_value_binding_p): Add class_type 
