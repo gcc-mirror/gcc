@@ -803,6 +803,7 @@ readescape ()
   register int code;
   register unsigned count;
   unsigned firstdig;
+  int nonnull;
 
   switch (c)
     {
@@ -815,6 +816,7 @@ readescape ()
 
       code = 0;
       count = 0;
+      nonnull = 0;
       while (1)
 	{
 	  c = getc (finput);
@@ -832,11 +834,15 @@ readescape ()
 	    code += c - 'A' + 10;
 	  if (c >= '0' && c <= '9')
 	    code += c - '0';
-	  if (count == 0)
-	    firstdig = code;
-	  count++;
+	  if (code != 0 || count != 0)
+	    {
+	      if (count == 0)
+		firstdig = code;
+	      count++;
+	    }
+	  nonnull = 1;
 	}
-      if (count == 0)
+      if (! nonnull)
 	error ("\\x used with no following hex digits");
       else if ((count - 1) * 4 >= TYPE_PRECISION (integer_type_node)
 	       || (count > 1
