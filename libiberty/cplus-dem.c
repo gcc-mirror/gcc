@@ -1436,7 +1436,12 @@ demangle_template_value_parm (work, mangled, s, tk)
 	  char *p = xmalloc (symbol_len + 1), *q;
 	  strncpy (p, *mangled, symbol_len);
 	  p [symbol_len] = '\0';
-	  q = internal_cplus_demangle (work, p);
+	  /* We use cplus_demangle here, rather than
+	     internal_cplus_demangle, because the name of the entity
+	     mangled here does not make use of any of the squangling
+	     or type-code information we have built up thus far; it is
+	     mangled independently.  */
+	  q = cplus_demangle (p, work->options);
 	  string_appendn (s, "&", 1);
 	  /* FIXME: Pointer-to-member constants should get a
 	            qualifying class name here.  */
