@@ -68,19 +68,20 @@
 typedef struct cp_token GTY (())
 {
   /* The kind of token.  */
-  enum cpp_ttype type;
-  /* The value associated with this token, if any.  */
-  tree value;
+  enum cpp_ttype type : 8;
   /* If this token is a keyword, this value indicates which keyword.
      Otherwise, this value is RID_MAX.  */
-  enum rid keyword;
+  enum rid keyword : 8;
+  /* The value associated with this token, if any.  */
+  tree value;
   /* The location at which this token was found.  */
   location_t location;
 } cp_token;
 
-/* The number of tokens in a single token block.  */
+/* The number of tokens in a single token block.
+   Computed so that cp_token_block fits in a 512B allocation unit.  */
 
-#define CP_TOKEN_BLOCK_NUM_TOKENS 32
+#define CP_TOKEN_BLOCK_NUM_TOKENS ((512 - 3*sizeof (char*))/sizeof (cp_token))
 
 /* A group of tokens.  These groups are chained together to store
    large numbers of tokens.  (For example, a token block is created
@@ -1062,9 +1063,9 @@ typedef enum cp_parser_declarator_kind
 typedef struct cp_parser_token_tree_map_node
 {
   /* The token type.  */
-  enum cpp_ttype token_type;
+  enum cpp_ttype token_type : 8;
   /* The corresponding tree code.  */
-  enum tree_code tree_type;
+  enum tree_code tree_type : 8;
 } cp_parser_token_tree_map_node;
 
 /* A complete map consists of several ordinary entries, followed by a
