@@ -52,18 +52,18 @@ Boston, MA 02111-1307, USA.  */
 
 /* This macro defines reserved value for empty table entry. */
 
-#define EMPTY_ENTRY    ((void *) 0)
+#define EMPTY_ENTRY    ((PTR) 0)
 
 /* This macro defines reserved value for table entry which contained
    a deleted element. */
 
-#define DELETED_ENTRY  ((void *) 1)
+#define DELETED_ENTRY  ((PTR) 1)
 
 static unsigned long higher_prime_number PARAMS ((unsigned long));
 static hashval_t hash_pointer PARAMS ((const void *));
 static int eq_pointer PARAMS ((const void *, const void *));
 static void htab_expand PARAMS ((htab_t));
-static void **find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
+static PTR *find_empty_slot_for_expand  PARAMS ((htab_t, hashval_t));
 
 /* At some point, we could make these be NULL, and modify the
    hash-table routines to handle NULL specially; that would avoid
@@ -106,7 +106,7 @@ higher_prime_number (n)
 
 static hashval_t
 hash_pointer (p)
-     const void *p;
+     const PTR p;
 {
   return (hashval_t) ((long)p >> 3);
 }
@@ -115,8 +115,8 @@ hash_pointer (p)
 
 static int
 eq_pointer (p1, p2)
-     const void *p1;
-     const void *p2;
+     const PTR p1;
+     const PTR p2;
 {
   return p1 == p2;
 }
@@ -124,7 +124,7 @@ eq_pointer (p1, p2)
 /* This function creates table with length slightly longer than given
    source length.  Created hash table is initiated as empty (all the
    hash table entries are EMPTY_ENTRY).  The function returns the
-   created hash table. */
+   created hash table.  */
 
 htab_t
 htab_create (size, hash_f, eq_f, del_f)
@@ -137,7 +137,7 @@ htab_create (size, hash_f, eq_f, del_f)
 
   size = higher_prime_number (size);
   result = (htab_t) xcalloc (1, sizeof (struct htab));
-  result->entries = (void **) xcalloc (size, sizeof (void *));
+  result->entries = (PTR *) xcalloc (size, sizeof (PTR));
   result->size = size;
   result->hash_f = hash_f;
   result->eq_f = eq_f;
@@ -178,7 +178,7 @@ htab_empty (htab)
 	  && htab->entries[i] != DELETED_ENTRY)
 	(*htab->del_f) (htab->entries[i]);
 
-  memset (htab->entries, 0, htab->size * sizeof (void *));
+  memset (htab->entries, 0, htab->size * sizeof (PTR));
 }
 
 /* Similar to htab_find_slot, but without several unwanted side effects:
@@ -188,7 +188,7 @@ htab_empty (htab)
    This function also assumes there are no deleted entries in the table.
    HASH is the hash value for the element to be inserted.  */
 
-static void **
+static PTR *
 find_empty_slot_for_expand (htab, hash)
      htab_t htab;
      hashval_t hash;
@@ -199,7 +199,7 @@ find_empty_slot_for_expand (htab, hash)
 
   for (;;)
     {
-      void **slot = htab->entries + index;
+      PTR *slot = htab->entries + index;
 
       if (*slot == EMPTY_ENTRY)
 	return slot;
@@ -216,21 +216,21 @@ find_empty_slot_for_expand (htab, hash)
    entries and repeatedly inserts the table elements.  The occupancy
    of the table after the call will be about 50%.  Naturally the hash
    table must already exist.  Remember also that the place of the
-   table entries is changed. */
+   table entries is changed.  */
 
 static void
 htab_expand (htab)
      htab_t htab;
 {
-  void **oentries;
-  void **olimit;
-  void **p;
+  PTR *oentries;
+  PTR *olimit;
+  PTR *p;
 
   oentries = htab->entries;
   olimit = oentries + htab->size;
 
   htab->size = higher_prime_number (htab->size * 2);
-  htab->entries = (void **) xcalloc (htab->size, sizeof (void **));
+  htab->entries = (PTR *) xcalloc (htab->size, sizeof (PTR *));
 
   htab->n_elements -= htab->n_deleted;
   htab->n_deleted = 0;
@@ -238,11 +238,11 @@ htab_expand (htab)
   p = oentries;
   do
     {
-      void *x = *p;
+      PTR x = *p;
 
       if (x != EMPTY_ENTRY && x != DELETED_ENTRY)
 	{
-	  void **q = find_empty_slot_for_expand (htab, (*htab->hash_f) (x));
+	  PTR *q = find_empty_slot_for_expand (htab, (*htab->hash_f) (x));
 
 	  *q = x;
 	}
@@ -257,16 +257,16 @@ htab_expand (htab)
 /* This function searches for a hash table entry equal to the given
    element.  It cannot be used to insert or delete an element.  */
 
-void *
+PTR
 htab_find_with_hash (htab, element, hash)
      htab_t htab;
-     const void *element;
+     const PTR element;
      hashval_t hash;
 {
   unsigned int index;
   hashval_t hash2;
   size_t size;
-  void *entry;
+  PTR entry;
 
   htab->searches++;
   size = htab->size;
@@ -296,10 +296,10 @@ htab_find_with_hash (htab, element, hash)
 /* Like htab_find_slot_with_hash, but compute the hash value from the
    element.  */
 
-void *
+PTR
 htab_find (htab, element)
      htab_t htab;
-     const void *element;
+     const PTR element;
 {
   return htab_find_with_hash (htab, element, (*htab->hash_f) (element));
 }
@@ -310,14 +310,14 @@ htab_find (htab, element)
    after doing some checks).  To insert an entry, call this with
    INSERT = 1, then write the value you want into the returned slot.  */
 
-void **
+PTR *
 htab_find_slot_with_hash (htab, element, hash, insert)
      htab_t htab;
-     const void *element;
+     const PTR element;
      hashval_t hash;
      enum insert_option insert;
 {
-  void **first_deleted_slot;
+  PTR *first_deleted_slot;
   unsigned int index;
   hashval_t hash2;
   size_t size;
@@ -334,7 +334,7 @@ htab_find_slot_with_hash (htab, element, hash, insert)
 
   for (;;)
     {
-      void *entry = htab->entries[index];
+      PTR entry = htab->entries[index];
       if (entry == EMPTY_ENTRY)
 	{
 	  if (insert == NO_INSERT)
@@ -369,10 +369,10 @@ htab_find_slot_with_hash (htab, element, hash, insert)
 /* Like htab_find_slot_with_hash, but compute the hash value from the
    element.  */
 
-void **
+PTR *
 htab_find_slot (htab, element, insert)
      htab_t htab;
-     const void *element;
+     const PTR element;
      enum insert_option insert;
 {
   return htab_find_slot_with_hash (htab, element, (*htab->hash_f) (element),
@@ -386,9 +386,9 @@ htab_find_slot (htab, element, insert)
 void
 htab_remove_elt (htab, element)
      htab_t htab;
-     void *element;
+     PTR element;
 {
-  void **slot;
+  PTR *slot;
 
   slot = htab_find_slot (htab, element, NO_INSERT);
   if (*slot == EMPTY_ENTRY)
@@ -408,7 +408,7 @@ htab_remove_elt (htab, element)
 void
 htab_clear_slot (htab, slot)
      htab_t htab;
-     void **slot;
+     PTR *slot;
 {
   if (slot < htab->entries || slot >= htab->entries + htab->size
       || *slot == EMPTY_ENTRY || *slot == DELETED_ENTRY)
@@ -430,14 +430,14 @@ void
 htab_traverse (htab, callback, info)
      htab_t htab;
      htab_trav callback;
-     void *info;
+     PTR info;
 {
-  void **slot = htab->entries;
-  void **limit = slot + htab->size;
+  PTR *slot = htab->entries;
+  PTR *limit = slot + htab->size;
 
   do
     {
-      void *x = *slot;
+      PTR x = *slot;
 
       if (x != EMPTY_ENTRY && x != DELETED_ENTRY)
 	if (!(*callback) (slot, info))
