@@ -1,3 +1,9 @@
+1998-09-28  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* g++.old-deja/g++.other/bitfld1.C: expected failure
+	* g++.old-deja/g++.other/nested2.C: ditto
+	* g++.old-deja/g++.robertl/eb132.C: no longer an expected failure
+
 1998-09-26  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* g++.old-deja/g++.other/bitfld1.C: built-in operator!= should be

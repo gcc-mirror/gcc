@@ -9,8 +9,6 @@
 //
 // They vanish if the declaration of a::b is taken out.
 
-// excess errors test - XFAIL *-*-*
-
 #include <string>
 
 string foo();
