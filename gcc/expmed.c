@@ -2800,7 +2800,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 	      && (STORE_FLAG_VALUE 
 		  == (HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1)))))
     {
-      rtx subtarget = target;
+      subtarget = target;
 
       /* If the result is to be wider than OP0, it is best to convert it
 	 first.  If it is to be narrower, it is *incorrect* to convert it
@@ -2850,6 +2850,12 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 		: normalizep == 1 ? const1_rtx
 		: normalizep == -1 ? constm1_rtx
 		: const_true_rtx);
+
+      /* Comparison operands could have been swapped;
+	 so get the new comprison code.
+	 Note that GET_CODE gives us either the original code
+	 or the result of swap_condition.  */
+      icode = setcc_gen_code[(int) GET_CODE (comparison)];
 
       /* Get a reference to the target in the proper mode for this insn.  */
       compare_mode = insn_operand_mode[(int) icode][0];
