@@ -1,3 +1,9 @@
+2005-03-20  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (cgraph_node): Add prev_clone pointer.
+	* cgraph.c (cgraph_remove_node): Remove from doubly linked chain.
+	(cgraph_clone_node): Produce doubly linked chain.
+
 2005-03-20  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.c (handle_aligned_attribute, check_function_sentinel,

@@ -422,7 +422,10 @@ cgraph_remove_node (struct cgraph_node *node)
   if (*slot == node)
     {
       if (node->next_clone)
+      {
 	*slot = node->next_clone;
+	node->next_clone->prev_clone = NULL;
+      }
       else
 	{
           htab_clear_slot (cgraph_hash, slot);
@@ -431,11 +434,9 @@ cgraph_remove_node (struct cgraph_node *node)
     }
   else
     {
-      struct cgraph_node *n;
-
-      for (n = *slot; n->next_clone != node; n = n->next_clone)
-	continue;
-      n->next_clone = node->next_clone;
+      node->prev_clone->next_clone = node->next_clone;
+      if (node->next_clone)
+        node->next_clone->prev_clone = node->prev_clone;
     }
 
   /* While all the clones are removed after being proceeded, the function 
@@ -779,7 +780,10 @@ cgraph_clone_node (struct cgraph_node *n)
     cgraph_clone_edge (e, new, e->call_expr);
 
   new->next_clone = n->next_clone;
+  new->prev_clone = n;
   n->next_clone = new;
+  if (new->next_clone)
+    new->next_clone->prev_clone = new;
 
   return new;
 }
