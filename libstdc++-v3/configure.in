@@ -37,12 +37,12 @@ AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$target}
 AC_SUBST(target_alias)
 
-AM_INIT_AUTOMAKE($PACKAGE, $release_VERSION)
-AM_CONFIG_HEADER(config.h)
-
 # Runs configure.target, finds CC, CXX and assorted other critical bits.
 # Must run this before the GLIBCPP_ENABLE_* macros below.
 GLIBCPP_CONFIGURE(.)
+
+AM_INIT_AUTOMAKE($PACKAGE, $gcc_version)
+AM_CONFIG_HEADER(config.h)
 
 AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
