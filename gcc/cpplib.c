@@ -1,6 +1,6 @@
 /* CPP Library. (Directive handling.)
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -36,7 +36,6 @@ struct answer
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
-
 struct if_stack
 {
   struct if_stack *next;
@@ -263,7 +262,6 @@ end_directive (pfile, skip_line)
 
 /* Output diagnostics for a directive DIR.  INDENTED is non-zero if
    the '#' was indented.  */
-
 static void
 directive_diagnostics (pfile, dir, indented)
      cpp_reader *pfile;
@@ -311,7 +309,6 @@ directive_diagnostics (pfile, dir, indented)
    to save unnecessarily exporting dtable etc. to cpplex.c.  Returns
    non-zero if the line of tokens has been handled, zero if we should
    continue processing the line.  */
-
 int
 _cpp_handle_directive (pfile, indented)
      cpp_reader *pfile;
@@ -479,7 +476,7 @@ do_define (pfile)
     }
 }
 
-/* Handle #undef.  Marks the identifier NT_VOID in the hash table.  */
+/* Handle #undef.  Mark the identifier NT_VOID in the hash table.  */
 static void
 do_undef (pfile)
      cpp_reader *pfile;
@@ -659,7 +656,6 @@ do_include_next (pfile)
 /* Subroutine of do_line.  Read possible flags after file name.  LAST
    is the last flag seen; 0 if this is the first flag. Return the flag
    if it is valid, 0 at the end of the directive. Otherwise complain.  */
-
 static unsigned int
 read_flag (pfile, last)
      cpp_reader *pfile;
@@ -709,7 +705,6 @@ strtoul_for_line (str, len, nump)
 /* Interpret #line command.
    Note that the filename string (if any) is treated as if it were an
    include filename.  That means no escape handling.  */
-
 static void
 do_line (pfile)
      cpp_reader *pfile;
@@ -807,11 +802,8 @@ _cpp_do_file_change (pfile, reason, to_file, file_line, sysp)
     (*pfile->cb.file_change) (pfile, pfile->map);
 }
 
-/*
- * Report a warning or error detected by the program we are
- * processing.  Use the directive's tokens in the error message.
- */
-
+/* Report a warning or error detected by the program we are
+   processing.  Use the directive's tokens in the error message.  */
 static void
 do_diagnostic (pfile, code, print_dir)
      cpp_reader *pfile;
@@ -844,7 +836,6 @@ do_warning (pfile)
 }
 
 /* Report program identification.  */
-
 static void
 do_ident (pfile)
      cpp_reader *pfile;
@@ -1015,6 +1006,7 @@ do_pragma (pfile)
   pfile->state.prevent_expansion--;
 }
 
+/* Handle #pragma once.  */
 static void
 do_pragma_once (pfile)
      cpp_reader *pfile;
@@ -1029,12 +1021,12 @@ do_pragma_once (pfile)
   check_eol (pfile);
 }
 
+/* Handle #pragma poison, to poison one or more identifiers so that
+   the lexer produces a hard error for each subsequent usage.  */
 static void
 do_pragma_poison (pfile)
      cpp_reader *pfile;
 {
-  /* Poison these symbols so that all subsequent usage produces an
-     error message.  */
   const cpp_token *tok;
   cpp_hashnode *hp;
 
@@ -1208,6 +1200,7 @@ do_sccs (pfile)
 }
 #endif
 
+/* Handle #ifdef.  */
 static void
 do_ifdef (pfile)
      cpp_reader *pfile;
@@ -1228,6 +1221,7 @@ do_ifdef (pfile)
   push_conditional (pfile, skip, T_IFDEF, 0);
 }
 
+/* Handle #ifndef.  */
 static void
 do_ifndef (pfile)
      cpp_reader *pfile;
@@ -1253,7 +1247,6 @@ do_ifndef (pfile)
    optimisations.  If macro expansion occurs in the expression, we
    cannot treat it as a controlling conditional, since the expansion
    could change in the future.  That is handled by cpp_get_token.  */
-
 static void
 do_if (pfile)
      cpp_reader *pfile;
@@ -1269,7 +1262,6 @@ do_if (pfile)
 /* Flip skipping state if appropriate and continue without changing
    if_stack; this is so that the error message for missing #endif's
    etc. will point to the original #if.  */
-
 static void
 do_else (pfile)
      cpp_reader *pfile;
@@ -1302,9 +1294,8 @@ do_else (pfile)
     }
 }
 
-/* handle a #elif directive by not changing if_stack either.  see the
+/* Handle a #elif directive by not changing if_stack either.  See the
    comment above do_else.  */
-
 static void
 do_elif (pfile)
      cpp_reader *pfile;
@@ -1341,7 +1332,6 @@ do_elif (pfile)
 }
 
 /* #endif pops the if stack and resets pfile->state.skipping.  */
-
 static void
 do_endif (pfile)
      cpp_reader *pfile;
@@ -1370,10 +1360,10 @@ do_endif (pfile)
     }
 }
 
-/* Push an if_stack entry and set pfile->state.skipping accordingly.
-   If this is a #if or #ifndef, CMACRO is a potentially controlling
-   macro - we need to check here that we are at the top of the file.  */
-
+/* Push an if_stack entry for a preprocessor conditional, and set
+   pfile->state.skipping to SKIP.  If TYPE indicates the conditional
+   is #if or #ifndef, CMACRO is a potentially controlling macro, and
+   we need to check here that we are at the top of the file.  */
 static void
 push_conditional (pfile, skip, type, cmacro)
      cpp_reader *pfile;
@@ -1400,10 +1390,10 @@ push_conditional (pfile, skip, type, cmacro)
   buffer->if_stack = ifs;
 }
 
-/* Read the tokens of the answer into the macro pool.  Only commit the
-   memory if we intend it as permanent storage, i.e. the #assert case.
-   Returns 0 on success.  */
-
+/* Read the tokens of the answer into the macro pool, in a directive
+   of type TYPE.  Only commit the memory if we intend it as permanent
+   storage, i.e. the #assert case.  Returns 0 on success, and sets
+   ANSWERP to point to the answer.  */
 static int
 parse_answer (pfile, answerp, type)
      cpp_reader *pfile;
@@ -1480,9 +1470,9 @@ parse_answer (pfile, answerp, type)
   return 0;
 }
 
-/* Parses an assertion, returning a pointer to the hash node of the
-   predicate, or 0 on error.  If an answer was supplied, it is placed
-   in ANSWERP, otherwise it is set to 0.  */
+/* Parses an assertion directive of type TYPE, returning a pointer to
+   the hash node of the predicate, or 0 on error.  If an answer was
+   supplied, it is placed in ANSWERP, otherwise it is set to 0.  */
 static cpp_hashnode *
 parse_assertion (pfile, answerp, type)
      cpp_reader *pfile;
@@ -1516,7 +1506,7 @@ parse_assertion (pfile, answerp, type)
   return result;
 }
 
-/* Returns a pointer to the pointer to the answer in the answer chain,
+/* Returns a pointer to the pointer to CANDIDATE in the answer chain,
    or a pointer to NULL if the answer is not in the chain.  */
 static struct answer **
 find_answer (node, candidate)
@@ -1564,6 +1554,7 @@ _cpp_test_assertion (pfile, value)
   return node == 0;
 }
 
+/* Handle #assert.  */
 static void
 do_assert (pfile)
      cpp_reader *pfile;
@@ -1596,6 +1587,7 @@ do_assert (pfile)
     }
 }
 
+/* Handle #unassert.  */
 static void
 do_unassert (pfile)
      cpp_reader *pfile;
@@ -1635,7 +1627,6 @@ do_unassert (pfile)
    If STR is just an identifier, define it with value 1.
    If STR has anything after the identifier, then it should
    be identifier=definition.  */
-
 void
 cpp_define (pfile, str)
      cpp_reader *pfile;
@@ -1826,6 +1817,7 @@ _cpp_pop_buffer (pfile)
     obstack_free (&pfile->buffer_ob, buffer);
 }
 
+/* Enter all recognised directives in the hash table.  */
 void
 _cpp_init_directives (pfile)
      cpp_reader *pfile;
@@ -1833,7 +1825,6 @@ _cpp_init_directives (pfile)
   unsigned int i;
   cpp_hashnode *node;
 
-  /* Register the directives.  */
   for (i = 0; i < (unsigned int) N_DIRECTIVES; i++)
     {
       node = cpp_lookup (pfile, dtable[i].name, dtable[i].length);

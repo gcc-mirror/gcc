@@ -1,6 +1,6 @@
 /* Hash tables for the CPP library.
    Copyright (C) 1986, 1987, 1989, 1992, 1993, 1994, 1995, 1996, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -32,7 +32,6 @@ static cpp_hashnode *alloc_node PARAMS ((hash_table *));
 
 /* Return an identifier node for hashtable.c.  Used by cpplib except
    when integrated with the C front ends.  */
-
 static cpp_hashnode *
 alloc_node (table)
      hash_table *table;
@@ -47,7 +46,6 @@ alloc_node (table)
 
 /* Set up the identifier hash table.  Use TABLE if non-null, otherwise
    create our own.  */
-
 void
 _cpp_init_hashtable (pfile, table)
      cpp_reader *pfile;
@@ -81,7 +79,6 @@ _cpp_init_hashtable (pfile, table)
 }
 
 /* Tear down the identifier hash table.  */
-
 void
 _cpp_destroy_hashtable (pfile)
      cpp_reader *pfile;
@@ -95,7 +92,6 @@ _cpp_destroy_hashtable (pfile)
 
 /* Returns the hash entry for the STR of length LEN, creating one
    if necessary.  */
-
 cpp_hashnode *
 cpp_lookup (pfile, str, len)
      cpp_reader *pfile;
@@ -107,7 +103,6 @@ cpp_lookup (pfile, str, len)
 }
 
 /* Determine whether the str STR, of length LEN, is a defined macro.  */
-
 int
 cpp_defined (pfile, str, len)
      cpp_reader *pfile;
@@ -124,7 +119,6 @@ cpp_defined (pfile, str, len)
 
 /* For all nodes in the hashtable, callback CB with parameters PFILE,
    the node, and V.  */
-
 void
 cpp_forall_identifiers (pfile, cb, v)
      cpp_reader *pfile;

@@ -1,5 +1,6 @@
 /* Part of CPP library.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+   Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -43,7 +44,6 @@ struct directive;		/* Deliberately incomplete.  */
 #define CPP_STACK_MAX 200
 
 /* A generic memory buffer, and operations on it.  */
-
 typedef struct _cpp_buff _cpp_buff;
 struct _cpp_buff
 {
@@ -93,6 +93,7 @@ union utoken
   const cpp_token **ptoken;
 };
 
+/* A "run" of tokens; part of a chain of runs.  */
 typedef struct tokenrun tokenrun;
 struct tokenrun
 {
@@ -167,6 +168,7 @@ struct spec_nodes
   cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
 };
 
+/* Represents the contents of a file cpplib has read in.  */
 struct cpp_buffer
 {
   const unsigned char *cur;	 /* current position */
@@ -224,7 +226,6 @@ struct cpp_buffer
 /* A cpp_reader encapsulates the "state" of a pre-processor run.
    Applying cpp_get_token repeatedly yields a stream of pre-processor
    tokens.  Usually, there is only one cpp_reader object active.  */
-
 struct cpp_reader
 {
   /* Top of buffer stack.  */

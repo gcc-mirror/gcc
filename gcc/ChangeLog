@@ -1,3 +1,9 @@
+2002-01-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpperror.c: Update comments and copyright.
+	* cppexp.c, cppfiles.c, cpphash.c, cpphash.h, cppinit.c,
+	cpplex.c, cpplib.c, cpplib.h, cppmacro.c, cppmain.c: Similarly.
+
 2002-01-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* collect2.c (main): Use strcmp when testing for "-shared".
