@@ -1,3 +1,9 @@
+2001-04-19  Geoff Keating  <geoffk@redhat.com>
+
+	* fold-const.c (fold): Use first_rtl_op rather than
+	TREE_CODE_LENGTH when looping over parameters of a tree.
+	Correct strange grouping in test for evaluated SAVE_EXPR.
+
 Thu Apr 19 19:15:26 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* config/pa/pa-linux.h (CPLUSPLUS_CPP_SPEC): Undefine.
