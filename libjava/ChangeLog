@@ -1,3 +1,7 @@
+2001-03-22  Joerg Brunsmann <joerg_brunsmann@yahoo.de>
+
+	* javax/naming/Context.java (SECURITY_CREDENTIALS): Fix typo.
+
 2001-03-22  Marcus G. Daniels  <mgd@swarm.org>
 
 	* jni.cc (add_char): Handle `.' like `/'.
