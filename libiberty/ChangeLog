@@ -1,3 +1,8 @@
+2004-04-26  Maciej W. Rozycki  <macro@ds2.pg.gda.pl>
+
+	* configure.ac (UNSIGNED_64BIT_TYPE): Unquote the definition.
+	* configure: Regenerate.
+
 2004-04-22  Richard Henderson  <rth@redhat.com>
 
 	* hashtab.c: Include limits.h, stdint.h, ansidecl.h.

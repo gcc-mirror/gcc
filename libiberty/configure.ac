@@ -196,8 +196,8 @@ liberty_cv_uint64="unsigned long",
 liberty_cv_uint64="unsigned long long", liberty_cv_uint64=none)])])])
 AC_MSG_RESULT($liberty_cv_uint64)
 if test "$liberty_cv_uint64" != none; then
-  AC_DEFINE(UNSIGNED_64BIT_TYPE, $liberty_cv_uint64,
-            [Define to an unsigned 64-bit type available in the compiler.])
+  AC_DEFINE_UNQUOTED(UNSIGNED_64BIT_TYPE, $liberty_cv_uint64,
+                     [Define to an unsigned 64-bit type available in the compiler.])
 fi
 
 # Given the above check, we always have uintptr_t or a fallback
