@@ -42,9 +42,9 @@ main ()
       fi
     fi
     AC_REQUIRE([AC_HEADER_TIME])
-    AC_CACHE_CHECK(whether gettimeofday can accept two arguments,
+    AC_CACHE_CHECK([whether gettimeofday can accept two arguments],
       emacs_cv_gettimeofday_two_arguments,
-      AC_TRY_LINK([
+      [AC_TRY_LINK([
 #ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>
 #include <time.h>
@@ -66,7 +66,7 @@ main ()
 #endif
       gettimeofday (&time, DUMMY);],
       emacs_cv_gettimeofday_two_arguments=yes,
-      emacs_cv_gettimeofday_two_arguments=no))
+      emacs_cv_gettimeofday_two_arguments=no)])
     if test $emacs_cv_gettimeofday_two_arguments = no; then
       AC_DEFINE(GETTIMEOFDAY_ONE_ARGUMENT, 1,
         [Does gettimeofday take a single argument])

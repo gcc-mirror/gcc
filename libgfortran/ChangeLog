@@ -1,3 +1,9 @@
+2004-11-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* acinclude.m4: Properly quote AC_CACHE_CHECK.
+	* Makefile.am: Add in ACLOCAL_AMFLAGS.
+	* aclocal.m4, configure, Makefile.in: Regenerate.
+
 2004-10-30  Aaron W. LaFramboise <aaronavay62@aaronwl.com>
 
 	* config.h.in: Regenerate.

@@ -3,6 +3,7 @@
 ## We like to use C99 routines when available.  This makes sure that
 ## __STDC_VERSION__ is set such that libc includes make them available.
 AM_CFLAGS = -std=gnu99
+ACLOCAL_AMFLAGS = -I ../config
 
 toolexeclib_LTLIBRARIES = libgfortran.la libgfortranbegin.la
 
