@@ -1,8 +1,6 @@
 /* Declarations for getopt.
    Copyright (C) 1989,90,91,92,93,94,96,97 Free Software Foundation, Inc.
 
-   the C library, however.  The master source lives in /gd/gnu/lib.
-
 NOTE: The canonical source of this file is maintained with the GNU C Library.
 Bugs can be reported to bug-glibc@prep.ai.mit.edu.
 
