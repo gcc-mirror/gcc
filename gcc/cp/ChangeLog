@@ -1,3 +1,14 @@
+2004-09-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17324
+	* mangle.c (partially_mangled_name): New variable.
+	(partially_mangled_name_len): Likewise.
+	(save_partially_mangled_name): New function.
+	(restore_partially_mangled_name): Likewise.
+	(write_encoding): Save and restore partially mangled names around
+	calls to get_mostly_instantiated_function_type.
+	(write_unqualified_name): Likewise.
+
 2004-09-14  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* pt.c (unify): Replace gcc_unreachable with gcc_assert.
