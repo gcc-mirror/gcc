@@ -1,3 +1,8 @@
+2004-02-03  Wolfgang Bangerth  <bangerth@dealii.org>
+
+	PR other/14003
+	* doc/invoke.texi (x86 options): Fix spelling/wording.
+
 2004-02-01  Geoffrey Keating  <geoffk@apple.com>
 
 	PR bootstrap/13960
