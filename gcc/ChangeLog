@@ -3,6 +3,9 @@
 	* fixinc/mkfixinc.sh:  added support for x86-interix
 	* fixinc/fixinc.interix:  fixincludes script, slight chages
 	from ./fixinc.interix.  Untested (needs interix box).
+	* fixinc/inclhack.def:
+	Complete the change to the 'fixinc.tmp' file
+	* fixincl.x, fixincl.sh, inclhack.sh: regenerate
 
 Fri Apr  2 11:36:12 1999  Jan Hubicka  (hubicka@paru.cas.cz)
 
