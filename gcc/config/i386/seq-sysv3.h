@@ -1,3 +1,5 @@
+/* Sequent DYNIX/ptx 1.x (SVr3) */
+
 #include "i386/sysv3.h"
 
 /* Sequent Symmetry SVr3 doesn't have crtn.o; crt1.o doesn't work
@@ -23,10 +25,6 @@
    This because the _start() function in /lib/crt0.o never calls anything
    from the .init section */
 #define INVOKE__main
-
-/* Use atexit for static destructors, instead of defining
-   our own exit function.  */
-#define HAVE_ATEXIT
 
 /* Assembler pseudo-op for initialized shared variables (.shdata). */
 #undef  SHARED_SECTION_ASM_OP
