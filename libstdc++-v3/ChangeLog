@@ -1,3 +1,17 @@
+2001-06-25  Phil Edwards  <pme@sources.redhat.com>
+            Kurt Garloff <garloff@suse.de>
+
+	PR libstdc++/3377
+	* src/cmath.cc:  New [version of an old] file; instantiate
+	__cmath_power to start with.
+	* src/Makefile.am (sources):  Add cmath.cc (and alphabetize).
+	* Makefile.in:  Regenerate.
+	* libio/Makefile.in:  Regenerate.
+	* libmath/Makefile.in:  Regenerate.
+	* libsupc++/Makefile.in:  Regenerate.
+	* src/Makefile.in:  Regenerate.
+	* testsuite/Makefile.in:  Regenerate.
+
 2001-06-24  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* libmath/stubs.c: Fix thinko.

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.86 2001/06/01 09:22:05 hp Exp $
+## $Id: Makefile.am,v 1.87 2001/06/08 03:53:32 ljrittle Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -165,13 +165,11 @@ build_headers = \
 	bits/ctype_base.h bits/ctype_noninline.h bits/ctype_inline.h 
 
 sources = \
-	limitsMEMBERS.cc \
-	stdexcept.cc functexcept.cc bitset.cc \
-	globals.cc \
-	basic_file.cc ios.cc complex_io.cc strstream.cc \
-	c++locale.cc locale.cc localename.cc codecvt.cc \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc \
-	string-inst.cc wstring-inst.cc 
+	basic_file.cc bitset.cc c++locale.cc cmath.cc codecvt.cc \
+	complex_io.cc functexcept.cc globals.cc ios.cc limitsMEMBERS.cc \
+	locale.cc locale-inst.cc localename.cc misc-inst.cc stdexcept.cc \
+	stl-inst.cc string-inst.cc strstream.cc valarray-inst.cc \
+	wstring-inst.cc
 
 
 VPATH = $(top_srcdir):$(top_srcdir)/src:$(GLIBCPP_INCLUDE_DIR):$(GLIBCPP_INCLUDE_DIR)/std:$(C_INCLUDE_DIR)
