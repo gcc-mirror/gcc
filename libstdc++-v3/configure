@@ -4757,9 +4757,9 @@ cross_compiling=$ac_cv_prog_cc_cross
 
   
 
-          ac_test_CFLAGS="${CFLAGS+set}"
-  ac_save_CFLAGS="$CFLAGS"
-  CFLAGS='-x c++'
+        #  ac_test_CFLAGS="${CFLAGS+set}"
+#  ac_save_CFLAGS="$CFLAGS"
+#  CFLAGS='-x c++'
 
     echo $ac_n "checking for sin in -lm""... $ac_c" 1>&6
 echo "configure:4766: checking for sin in -lm" >&5
@@ -4990,7 +4990,7 @@ done
 
 
   LIBS="$save_LIBS"
-  CFLAGS="$ac_save_CFLAGS"
+#  CFLAGS="$ac_save_CFLAGS"
 
   
     for ac_hdr in complex.h

@@ -378,6 +378,110 @@ bool test09()
   return test;
 }
 
+bool test10() {
+  std::string str_01("0 00 000 +0 +  0 -   0");
+  std::stringbuf isbuf_01(str_01);
+  std::istream is_01(&isbuf_01);
+
+  bool test = true;
+
+  int n = 365;
+  is_01 >> n;
+  test &= n == 0;
+  n = 364;
+  is_01 >> n;
+  test &= n == 0;
+  n = 363;
+  is_01 >> n;
+  test &= n == 0;
+  n = 362;
+  is_01 >> n;
+  test &= n == 0;
+  n = 361;
+  is_01 >> n;
+  test &= n == 0;
+  n = 360;
+  is_01 >> n;
+  test &= n == 0;
+  test &= is_01.rdstate() == std::ios_base::eofbit;
+
+  std::string str_02("0x32 0X33 033 33");
+  std::stringbuf isbuf_02(str_02);
+  std::istream is_02(&isbuf_02);
+  is_02.unsetf(std::ios_base::basefield);
+  is_02 >> n;
+  test &= n == 50;
+  is_02 >> n;
+  test &= n == 51;
+  is_02 >> n;
+  test &= n == 27;
+  is_02 >> n;
+  test &= n == 33;
+  test &= is_02.rdstate() == std::ios_base::eofbit;
+
+  std::stringbuf isbuf_03(str_02);
+  std::istream is_03(&isbuf_03);
+  char c;
+  int m;
+
+  is_03 >> std::dec >> n >> c >> m;
+  test &= n == 0;
+  test &= c == 'x';
+  test &= m == 32;
+
+  is_03 >> std::oct >> m >> c >> n;
+  test &= m == 0;
+  test &= c == 'X';
+  test &= n == 27;
+
+  is_03 >> std::dec >> m >> n;
+  test &= m == 33;
+  test &= n == 33;
+  test &= is_03.rdstate() == std::ios_base::eofbit;
+
+  std::string str_04("3. 4.5E+  2a5E-3 .6E1");
+  std::stringbuf isbuf_04(str_04);
+  std::istream is_04(&isbuf_04);
+
+  double f;
+  is_04 >> f;
+  test &= f == 3.0;
+  is_04 >> f;
+  test &= f == 450.0;
+  is_04.ignore();
+  is_04 >> f;
+  test &= f == 0.005;
+  is_04 >> f;
+  test &= f == 6;
+  test &= is_03.rdstate() == std::ios_base::eofbit;
+
+  std::string str_05("0E20 5Ea E16");
+  std::stringbuf isbuf_05(str_05);
+  std::istream is_05(&isbuf_05);
+
+  is_05 >> f;
+  test &= f == 0;
+  is_05 >> f;
+  test &= f == 0;
+  test &= is_05.rdstate() == std::ios_base::failbit;
+  is_05.clear();
+  is_05 >> c;
+  test &= c == 'a';
+  is_05 >> f;
+  test &= f == 0;
+  test &= is_05.rdstate() == std::ios_base::failbit;
+  is_05.clear();
+  is_05.ignore();
+  is_05 >> n;
+  test &= n == 16;
+
+#ifdef DEBUG_ASSERT
+  assert(test);
+#endif
+
+  return test;
+}
+
 int main()
 {
   test01();
@@ -388,6 +492,7 @@ int main()
   test07();
   test08();
   test09();
+  test10();
   return 0;
 }
 
