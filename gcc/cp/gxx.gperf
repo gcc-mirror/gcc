@@ -15,6 +15,7 @@ __extension__, EXTENSION, NORID
 __inline, SCSPEC, RID_INLINE
 __inline__, SCSPEC, RID_INLINE
 __label__, LABEL, NORID
+__null, CONSTANT, RID_NULL
 __signature__, AGGR, RID_SIGNATURE	/* Extension */,
 __signed, TYPESPEC, RID_SIGNED
 __signed__, TYPESPEC, RID_SIGNED

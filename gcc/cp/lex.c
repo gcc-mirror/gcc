@@ -673,6 +673,9 @@ init_lex ()
   TREE_TYPE (signature_type_node) = signature_type_node;
   ridpointers[(int) RID_SIGNATURE] = signature_type_node;
 
+  null_pointer_node = build_int_2 (0, 0);
+  ridpointers[RID_NULL] = null_pointer_node;
+
   opname_tab[(int) COMPONENT_REF] = "->";
   opname_tab[(int) MEMBER_REF] = "->*";
   opname_tab[(int) METHOD_CALL_EXPR] = "->()";
@@ -2561,7 +2564,7 @@ do_identifier (token, parsing)
       else if (IDENTIFIER_OPNAME_P (token))
 	{
 	  if (token != ansi_opname[ERROR_MARK])
-	    cp_error ("operator %O not defined", token);
+	    cp_error ("`%D' not defined", token);
 	  id = error_mark_node;
 	}
       else if (parsing && (yychar == '(' || yychar == LEFT_RIGHT))

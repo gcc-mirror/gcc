@@ -1541,9 +1541,14 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	    {
 	      tree rval = build_type_conversion (CONVERT_EXPR, type, init, 1);
 
-	      if (rval)
+	      if (flag_ansi_overloading && rval)
 		{
-#ifndef NEW_OVER
+		  if (rval != error_mark_node)
+		    expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
+		  return;
+		}
+	      else if (rval)
+		{
 		  /* See if there is a constructor for``type'' that takes a
 		     ``ttype''-typed object.  */
 		  tree parms = build_tree_list (NULL_TREE, init);
@@ -1557,9 +1562,8 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		    cp_error ("ambiguity between conversion to `%T' and constructor",
 			      type);
 		  else
-#endif
-		  if (rval != error_mark_node)
-		    expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
+		    if (rval != error_mark_node)
+		      expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
 		  return;
 		}
 	    }

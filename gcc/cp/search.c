@@ -3087,8 +3087,8 @@ build_mi_matrix (type)
   dfs_walk (binfo, dfs_number, unnumberedp);
 
   mi_size = CLASSTYPE_N_SUPERCLASSES (type) + CLASSTYPE_N_VBASECLASSES (type);
-  if (mi_size < cid)
-    mi_size = cid;
+  if (mi_size < (cid-1))
+    mi_size = cid-1;
   mi_matrix = (char *)xmalloc ((mi_size + 1) * (mi_size + 1));
   mi_type = type;
   bzero (mi_matrix, (mi_size + 1) * (mi_size + 1));
@@ -3551,6 +3551,7 @@ add_conversions (binfo)
 	break;
       conversions = tree_cons (binfo, tmp, conversions);
     }
+  SET_BINFO_MARKED (binfo);
 }
 
 tree
@@ -3559,7 +3560,10 @@ lookup_conversions (type)
 {
   conversions = NULL_TREE;
   if (TYPE_SIZE (type))
-    dfs_walk (TYPE_BINFO (type), add_conversions, 0);
+    {
+      dfs_walk (TYPE_BINFO (type), add_conversions, unmarkedp);
+      dfs_walk (TYPE_BINFO (type), dfs_unmark, markedp);
+    }
   return conversions;
 }
 

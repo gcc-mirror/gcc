@@ -1079,7 +1079,7 @@ expand_throw (exp)
 	  start_sequence ();
 	  object = build_reinterpret_cast (TREE_TYPE (exp), saved_throw_value);
 	  object = build_indirect_ref (object, NULL_PTR);
-	  cleanup = maybe_build_cleanup (object);
+	  cleanup = maybe_build_cleanup_and_delete (object);
 	  if (cleanup)
 	    expand_expr (cleanup, const0_rtx, VOIDmode, 0);
 	  cleanup_insns = get_insns ();
@@ -1089,7 +1089,8 @@ expand_throw (exp)
 	    {
 	      cleanup = start_anon_func ();
 
-	      expand_expr (maybe_build_cleanup (object), const0_rtx, VOIDmode, 0);
+	      expand_expr (maybe_build_cleanup_and_delete (object),
+			   const0_rtx, VOIDmode, 0);
 
 	      end_anon_func ();
 

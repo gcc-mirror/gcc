@@ -4912,9 +4912,7 @@ init_decl_processing ()
   void_list_node = build_tree_list (NULL_TREE, void_type_node);
   TREE_PARMLIST (void_list_node) = 1;
 
-  null_pointer_node = build_int_2 (0, 0);
   TREE_TYPE (null_pointer_node) = build_pointer_type (void_type_node);
-  layout_type (TREE_TYPE (null_pointer_node));
 
   /* Used for expressions that do nothing, but are not errors.  */
   void_zero_node = build_int_2 (0, 0);
@@ -9864,6 +9862,10 @@ grokparms (first_parm, funcdef_flag)
 			}
 		      else
 			init = require_instantiated_type (type, init, integer_zero_node);
+		      if (! current_template_parms
+			  && ! implicit_conversion (type, TREE_TYPE (init), init, LOOKUP_NORMAL))
+			cp_pedwarn ("invalid type `%T' for default argument to `%#D'",
+				    TREE_TYPE (init), decl);
 		    }
 		}
 	      else
@@ -11962,7 +11964,7 @@ finish_function (lineno, call_poplevel, nested)
     pop_memoized_context (1);
 
   /* Must mark the RESULT_DECL as being in this function.  */
-  DECL_CONTEXT (DECL_RESULT (fndecl)) = DECL_INITIAL (fndecl);
+  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
   /* Obey `register' declarations if `setjmp' is called in this fn.  */
   if (flag_traditional && current_function_calls_setjmp)
@@ -12303,15 +12305,14 @@ hack_incomplete_structures (type)
 }
 
 /* If DECL is of a type which needs a cleanup, build that cleanup here.
-   We don't build cleanups if just going for syntax checking, since
-   fixup_cleanups does not know how to not handle them.
+   See build_delete for information about AUTO_DELETE.
 
    Don't build these on the momentary obstack; they must live
    the life of the binding contour.  */
 
-tree
-maybe_build_cleanup (decl)
-     tree decl;
+static tree
+maybe_build_cleanup_1 (decl, auto_delete)
+     tree decl, auto_delete;
 {
   tree type = TREE_TYPE (decl);
   if (TYPE_NEEDS_DESTRUCTOR (type))
@@ -12335,7 +12336,7 @@ maybe_build_cleanup (decl)
 	  || flag_expensive_optimizations)
 	flags |= LOOKUP_NONVIRTUAL;
 
-      rval = build_delete (TREE_TYPE (rval), rval, integer_two_node, flags, 0);
+      rval = build_delete (TREE_TYPE (rval), rval, auto_delete, flags, 0);
 
       if (TYPE_USES_VIRTUAL_BASECLASSES (type)
 	  && ! TYPE_HAS_DESTRUCTOR (type))
@@ -12351,6 +12352,26 @@ maybe_build_cleanup (decl)
       return rval;
     }
   return 0;
+}
+
+/* If DECL is of a type which needs a cleanup, build that cleanup
+   here.  The cleanup does free the storage with a call to delete.  */
+
+tree
+maybe_build_cleanup_and_delete (decl)
+     tree decl;
+{
+  return maybe_build_cleanup_1 (decl, integer_three_node);
+}
+
+/* If DECL is of a type which needs a cleanup, build that cleanup
+   here.  The cleanup does not free the storage with a call a delete.  */
+
+tree
+maybe_build_cleanup (decl)
+     tree decl;
+{
+  return maybe_build_cleanup_1 (decl, integer_two_node);
 }
 
 /* Expand a C++ expression at the statement level.

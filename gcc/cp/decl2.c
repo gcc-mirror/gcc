@@ -125,6 +125,15 @@ int flag_no_ident;
 
 int flag_ansi;
 
+/* Nonzero means do argument matching for overloading according to the
+   ANSI rules, rather than what g++ used to believe to be correct.  */
+
+#ifdef NEW_OVER
+int flag_ansi_overloading = 1;
+#else
+int flag_ansi_overloading;
+#endif
+
 /* Nonzero means do emit exported implementations of functions even if
    they can be inlined.  */
 
@@ -157,7 +166,11 @@ int warn_ctor_dtor_privacy = 1;
 /* True if we want to implement vtables using "thunks".
    The default is off.  */
 
+#if defined(NEW_OVER) && defined (__i386__)
+int flag_vtable_thunks = 1;
+#else
 int flag_vtable_thunks;
+#endif
 
 /* True if we want to deal with repository information.  */
 
@@ -410,6 +423,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"implement-inlines", &flag_implement_inlines, 1},
   {"external-templates", &flag_external_templates, 1},
   {"implicit-templates", &flag_implicit_templates, 1},
+  {"ansi-overloading", &flag_ansi_overloading, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
@@ -2562,7 +2576,7 @@ import_export_template (type)
     }
 }
     
-static int
+int
 finish_prevtable_vardecl (prev, vars)
      tree prev, vars;
 {

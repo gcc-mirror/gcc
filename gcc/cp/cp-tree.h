@@ -295,6 +295,11 @@ extern int flag_elide_constructors;
 
 extern int flag_ansi;
 
+/* Nonzero means do argument matching for overloading according to the
+   ANSI rules, rather than what g++ used to believe to be correct.  */
+
+extern int flag_ansi_overloading;
+
 /* Nonzero means recognize and handle signature language constructs.  */
 
 extern int flag_handle_signatures;
@@ -1841,7 +1846,8 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
      before LOOKUP_SPECULATIVELY is checked.
    LOOKUP_NO_CONVERSION means that user-defined conversions are not
      permitted.  Built-in conversions are permitted.
-   LOOKUP_DESTRUCTOR means explicit call to destructor.  */
+   LOOKUP_DESTRUCTOR means explicit call to destructor.
+   LOOKUP_NO_TEMP_BIND means temporaries will not be bound to references.  */
 
 #define LOOKUP_PROTECT (1)
 #define LOOKUP_COMPLAIN (2)
@@ -1855,6 +1861,7 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 #define INDIRECT_BIND (256)
 #define LOOKUP_NO_CONVERSION (512)
 #define LOOKUP_DESTRUCTOR (512)
+#define LOOKUP_NO_TEMP_BIND (1024)
 
 /* These flags are used by the conversion code.
    CONV_IMPLICIT   :  Perform implicit conversions (standard and user-defined).
@@ -1935,6 +1942,9 @@ extern tree build_scoped_method_call		PROTO((tree, tree, tree, tree));
 extern tree build_method_call			PROTO((tree, tree, tree, tree, int));
 extern tree build_overload_call_real		PROTO((tree, tree, int, struct candidate *, int));
 extern tree build_overload_call			PROTO((tree, tree, int));
+extern tree build_new_method_call		PROTO((tree, tree, tree, tree, int));
+extern tree build_new_function_call		PROTO((tree, tree, tree));
+extern tree build_new_op			PROTO((enum tree_code, int, tree, tree, tree));
 
 /* in class.c */
 extern tree build_vbase_pointer			PROTO((tree, tree));
@@ -2057,6 +2067,7 @@ extern tree start_method			PROTO((tree, tree, tree));
 extern tree finish_method			PROTO((tree));
 extern void hack_incomplete_structures		PROTO((tree));
 extern tree maybe_build_cleanup			PROTO((tree));
+extern tree maybe_build_cleanup_and_delete	PROTO((tree));
 extern void cplus_expand_expr_stmt		PROTO((tree));
 extern void finish_stmt				PROTO((void));
 extern void pop_implicit_try_blocks		PROTO((tree));
@@ -2096,6 +2107,7 @@ extern void finish_builtin_type			PROTO((tree, char *, tree *, int, tree));
 extern tree coerce_new_type			PROTO((tree));
 extern tree coerce_delete_type			PROTO((tree));
 extern void import_export_vtable		PROTO((tree, tree, int));
+extern int finish_prevtable_vardecl		PROTO((tree, tree));
 extern int walk_vtables				PROTO((void (*)(), int (*)()));
 extern void walk_sigtables			PROTO((void (*)(), void (*)()));
 extern void finish_file				PROTO((void));
@@ -2330,6 +2342,7 @@ extern void init_search_processing		PROTO((void));
 extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
+extern tree get_template_base			PROTO((tree, tree));
 
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));

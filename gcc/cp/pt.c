@@ -1189,10 +1189,15 @@ instantiate_class_template (type)
       tree tmp;
       for (tmp = TYPE_FIELDS (type); tmp; tmp = TREE_CHAIN (tmp))
 	if (TREE_CODE (tmp) == FIELD_DECL)
-	  require_complete_type (tmp);
+	  {
+	    TREE_TYPE (tmp) = complete_type (TREE_TYPE (tmp));
+	    require_complete_type (tmp);
+	  }
 
       type = finish_struct_1 (type, 0);
       CLASSTYPE_GOT_SEMICOLON (type) = 1;
+      if (at_eof && TYPE_BINFO_VTABLE (type) != NULL_TREE)
+	finish_prevtable_vardecl (NULL, TYPE_BINFO_VTABLE (type));
 
       repo_template_used (type);
     }
@@ -2707,13 +2712,11 @@ unify (tparms, targs, ntparms, parm, arg, nsubsts, strict)
       if (CLASSTYPE_TEMPLATE_INFO (parm) && uses_template_parms (parm))
 	{
 	  tree t = NULL_TREE;
-#ifdef NEW_OVER
-	  if (! strict)
+	  if (flag_ansi_overloading && ! strict)
 	    t = get_template_base (CLASSTYPE_TI_TEMPLATE (parm), arg);
-	  else
-#endif
-	  if (CLASSTYPE_TEMPLATE_INFO (arg)
-	      && CLASSTYPE_TI_TEMPLATE (parm) == CLASSTYPE_TI_TEMPLATE (arg))
+	  else if
+	    (CLASSTYPE_TEMPLATE_INFO (arg)
+	     && CLASSTYPE_TI_TEMPLATE (parm) == CLASSTYPE_TI_TEMPLATE (arg))
 	    t = arg;
 	  if (! t || t == error_mark_node)
 	    return 1;
