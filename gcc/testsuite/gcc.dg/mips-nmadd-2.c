@@ -1,5 +1,5 @@
 /* { dg-do compile { target "mips*-*-*" } } */
-/* { dg-options "-O2 -mips4" } */
+/* { dg-options "-O2 -fno-fast-math -mips4" } */
 /* { dg-final { scan-assembler "nmadd.s" } } */
 /* { dg-final { scan-assembler "nmadd.d" } } */
 /* { dg-final { scan-assembler "nmsub.s" } } */
