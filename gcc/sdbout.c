@@ -422,12 +422,8 @@ sdbout_record_type_name (type)
       tree t = 0;
       /* Find the IDENTIFIER_NODE for the type name.  */
       if (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE)
-	{
 	  t = TYPE_NAME (type);
-	}
-#if 1  /* As a temporary hack, use typedef names for C++ only.  */
-      else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	       && TYPE_LANG_SPECIFIC (type))
+      else if (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
 	{
 	  t = DECL_NAME (TYPE_NAME (type));
 	  /* The DECL_NAME for templates includes "<>", which breaks
@@ -436,7 +432,6 @@ sdbout_record_type_name (type)
 	  if (t && template_name_p (t))
 	    t = DECL_ASSEMBLER_NAME (TYPE_NAME (type));
 	}
-#endif
 
       /* Now get the name as a string, or invent one.  */
       if (t != NULL_TREE)
