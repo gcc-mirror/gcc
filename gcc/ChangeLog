@@ -1,3 +1,10 @@
+2002-02-28  Richard Henderson  <rth@redhat.com>
+
+	* expmed.c (store_bit_field): Prevent generation of CONCATs;
+	pun complex values as integers; use gen_lowpart instead of
+	gen_rtx_SUBREG.
+	(extract_bit_field): Likewise.
+
 2002-02-28  David O'Brien  <obrien@FreeBSD.org>
 
 	* config.gcc (sparc64-*-freebsd): Explicitly accept a cpu specification
