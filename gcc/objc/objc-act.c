@@ -1154,6 +1154,11 @@ build_selector_translation_table ()
     }
 
 #ifdef OBJC_SELECTORS_WITHOUT_LABELS
+  /* Cause the variable and its initial value to be actually output.  */
+  DECL_EXTERNAL (_OBJC_SELECTOR_REFERENCES_decl) = 0;
+  TREE_STATIC (_OBJC_SELECTOR_REFERENCES_decl) = 1;
+  /* NULL terminate the list and fix the decl for output. */
+  initlist = tree_cons (NULLT, build_int_2 (0, 0), initlist);
   DECL_INITIAL (_OBJC_SELECTOR_REFERENCES_decl) = (tree) 1;
   initlist = build_nt (CONSTRUCTOR, NULLT, nreverse (initlist));
   finish_decl (_OBJC_SELECTOR_REFERENCES_decl, initlist, NULLT);
