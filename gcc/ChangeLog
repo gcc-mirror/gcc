@@ -1,3 +1,10 @@
+2002-11-02  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	Revert this change:
+
+	*doc/install.texi (Installing GCC: Configuration): Clarify
+	the only supported ways to configure gcc.
+
 2002-11-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (anonymous and:QI pattern): Use 'n'
