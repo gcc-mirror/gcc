@@ -38,6 +38,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MASK_ELF		0x10000000	/* ELF not rose */
 #define MASK_NO_IDENT		0x08000000	/* suppress .ident */
 #define MASK_NO_UNDERSCORES	0x04000000	/* suppress leading _ */
+#define MASK_LARGE_ALIGN	0x02000000	/* align to >word boundaries */
 
 #define TARGET_HALF_PIC		(target_flags & MASK_HALF_PIC)
 #define TARGET_DEBUG		(target_flags & MASK_HALF_PIC_DEBUG)
@@ -46,6 +47,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define TARGET_ROSE		((target_flags & MASK_ELF) == 0)
 #define TARGET_IDENT		((target_flags & MASK_NO_IDENT) == 0)
 #define TARGET_UNDERSCORES	((target_flags & MASK_NO_UNDERSCORES) == 0)
+#define TARGET_LARGE_ALIGN	(target_flags & MASK_LARGE_ALIGN)
 
 #undef	SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
@@ -58,7 +60,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
      { "ident",		-MASK_NO_IDENT},				\
      { "no-ident",	 MASK_NO_IDENT},				\
      { "underscores",	-MASK_NO_UNDERSCORES},				\
-     { "no-underscores", MASK_NO_UNDERSCORES},
+     { "no-underscores", MASK_NO_UNDERSCORES},				\
+     { "no-large-align",-MASK_LARGE_ALIGN},				\
+     { "large-align",	 MASK_LARGE_ALIGN},
 
 /* OSF/rose uses stabs, not dwarf.  */
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
@@ -173,6 +177,92 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef  FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABELNO) fprintf (FILE, "\tcall _mcount\n")
 
+/* A C statement or compound statement to output to FILE some
+   assembler code to initialize basic-block profiling for the current
+   object module.  This code should call the subroutine
+   `__bb_init_func' once per object module, passing it as its sole
+   argument the address of a block allocated in the object module.
+
+   The name of the block is a local symbol made with this statement:
+
+	ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 0);
+
+   Of course, since you are writing the definition of
+   `ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+   can take a short cut in the definition of this macro and use the
+   name that you know will result.
+
+   The first word of this block is a flag which will be nonzero if the
+   object module has already been initialized.  So test this word
+   first, and do not call `__bb_init_func' if the flag is nonzero.  */
+
+#undef	FUNCTION_BLOCK_PROFILER
+#define FUNCTION_BLOCK_PROFILER(STREAM, LABELNO)			\
+do									\
+  {									\
+    if (!flag_pic)							\
+      {									\
+	fprintf (STREAM, "\tcmpl $0,%sPBX0\n", LPREFIX);		\
+	fprintf (STREAM, "\tjne 0f\n");					\
+	fprintf (STREAM, "\tpushl $%sPBX0\n", LPREFIX);			\
+	fprintf (STREAM, "\tcall %s__bb_init_func\n",			\
+		 (TARGET_UNDERSCORES) ? "_" : "");			\
+	fprintf (STREAM, "0:\n");					\
+      }									\
+    else								\
+      {									\
+	fprintf (STREAM, "\tpushl %eax\n");				\
+	fprintf (STREAM, "\tmovl %sPBX0@GOT(%ebx),%eax\n");		\
+	fprintf (STREAM, "\tcmpl $0,(%eax)\n");				\
+	fprintf (STREAM, "\tjne 0f\n");					\
+	fprintf (STREAM, "\tpushl %eax\n");				\
+	fprintf (STREAM, "\tcall %s__bb_init_func@PLT\n",		\
+		 (TARGET_UNDERSCORES) ? "_" : "");			\
+	fprintf (STREAM, "0:\n");					\
+	fprintf (STREAM, "\tpopl %eax\n");				\
+      }									\
+  }									\
+while (0)
+
+/* A C statement or compound statement to increment the count
+   associated with the basic block number BLOCKNO.  Basic blocks are
+   numbered separately from zero within each compilation.  The count
+   associated with block number BLOCKNO is at index BLOCKNO in a
+   vector of words; the name of this array is a local symbol made
+   with this statement:
+
+	ASM_GENERATE_INTERNAL_LABEL (BUFFER, "LPBX", 2);
+
+   Of course, since you are writing the definition of
+   `ASM_GENERATE_INTERNAL_LABEL' as well as that of this macro, you
+   can take a short cut in the definition of this macro and use the
+   name that you know will result.  */
+
+#undef	BLOCK_PROFILER
+#define BLOCK_PROFILER(STREAM, BLOCKNO)					\
+do									\
+  {									\
+    if (!flag_pic)							\
+      fprintf (STREAM, "\tincl %sPBX2+%d\n", LPREFIX, (BLOCKNO)*4);	\
+    else								\
+      {									\
+	fprintf (STREAM, "\tpushl %eax\n");				\
+	fprintf (STREAM, "\tmovl %sPBX2@GOT(%ebx),%eax\n", LPREFIX);	\
+	fprintf (STREAM, "\tincl %d(%eax)\n", (BLOCKNO)*4);		\
+	fprintf (STREAM, "\tpopl %eax\n");				\
+      }									\
+  }									\
+while (0)
+
+/* A C function or functions which are needed in the library to
+   support block profiling.  When support goes into libc, undo
+   the #if 0.  */
+
+#if 0
+#undef	BLOCK_PROFILING_CODE
+#define	BLOCK_PROFILING_CODE
+#endif
+
 /* Prefix for internally generated assembler labels.  If we aren't using
    underscores, we are using prefix `.'s to identify labels that should
    be ignored, as in `i386/gas.h' --karl@cs.umb.edu  */
@@ -202,6 +292,39 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(FILE,NAME)					\
   fprintf (FILE, "%s%s", (TARGET_UNDERSCORES) ? "_" : "", NAME)
+
+/* A C expression to output text to align the location counter in the
+   way that is desirable at a point in the code that is reached only
+   by jumping.
+
+   This macro need not be defined if you don't want any special
+   alignment to be done at such a time.  Most machine descriptions do
+   not currently define the macro.  */
+
+#undef	ASM_OUTPUT_ALIGN_CODE
+#define ASM_OUTPUT_ALIGN_CODE(STREAM)					\
+  fprintf (STREAM, "\t.align\t%d\n",					\
+	   (TARGET_486 && TARGET_LARGE_ALIGN) ? 4 : 2)
+
+/* A C expression to output text to align the location counter in the
+   way that is desirable at the beginning of a loop.
+
+   This macro need not be defined if you don't want any special
+   alignment to be done at such a time.  Most machine descriptions do
+   not currently define the macro.  */
+
+#undef	ASM_OUTPUT_LOOP_ALIGN
+#define ASM_OUTPUT_LOOP_ALIGN(STREAM) \
+  fprintf (STREAM, "\t.align\t2\n")
+
+/* A C statement to output to the stdio stream STREAM an assembler
+   command to advance the location counter to a multiple of 2 to the
+   POWER bytes.  POWER will be a C expression of type `int'.  */
+
+#undef	ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(STREAM, POWER)					\
+  fprintf (STREAM, "\t.align\t%d\n",					\
+	   (!TARGET_LARGE_ALIGN && (POWER) > 2) ? 2 : (POWER))
 
 /* A C expression that is 1 if the RTX X is a constant which is a
    valid address.  On most machines, this can be defined as
@@ -346,6 +469,41 @@ do									\
   }									\
 while (0)
 
+
+/* On most machines, read-only variables, constants, and jump tables
+   are placed in the text section.  If this is not the case on your
+   machine, this macro should be defined to be the name of a function
+   (either `data_section' or a function defined in `EXTRA_SECTIONS')
+   that switches to the section to be used for read-only items.
+
+   If these items should be placed in the text section, this macro
+   should not be defined.  */
+
+#if 0
+#undef	READONLY_DATA_SECTION
+#define READONLY_DATA_SECTION()						\
+do									\
+  {									\
+    if (TARGET_ELF)							\
+      {									\
+	if (in_section != in_rodata)					\
+	  {								\
+	    fprintf (asm_out_file, "\t.section \"rodata\"\n");		\
+	    in_section = in_rodata;					\
+	  }								\
+      }									\
+    else								\
+      text_section ();							\
+  }									\
+while (0)
+#endif
+
+/* A list of names for sections other than the standard two, which are
+   `in_text' and `in_data'.  You need not define this macro on a
+   system with no other sections (that GCC needs to use).  */
+
+#undef	EXTRA_SECTIONS
+#define	EXTRA_SECTIONS in_rodata, in_data1
 
 /* Given a decl node or constant node, choose the section to output it in
    and select that section.  */
