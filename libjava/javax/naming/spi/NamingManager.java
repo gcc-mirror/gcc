@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation
+/* Copyright (C) 2000, 2001, 2002 Free Software Foundation
    
    This file is part of libgcj.
    
@@ -166,7 +166,7 @@ public class NamingManager
       path = path2;
     else if (path2 != null)
       path += ":" + path2;
-    return new StringTokenizer (path, ":");
+    return new StringTokenizer (path != null ? path : "", ":");
   }
 
   public static Object getObjectInstance (Object refInfo,
