@@ -1,0 +1,3 @@
+ALLOCA=alloca.o
+ALLOCA_FLAGS = -c -Demacs
+ALLOCA_FINISH = 
