@@ -28,6 +28,8 @@ Mon Jul 17 02:37:06 2000  Marc Espie <espie@openbsd.org>
 
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* glimits.h (LLONG_MIN, LLONG_MAX, ULLONG_MAX): Define for C99.
+
 	* contrib.texi, cpp.texi, extend.texi, invoke.texi: Update
 	references to C9X.  Change references to -fstd and -flang-isoc9x
 	to refer to -std.
