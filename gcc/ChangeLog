@@ -1,3 +1,9 @@
+Tue Mar 23 22:51:48 1999  Mumit Khan  <khan@xraylith.wisc.edu>
+			  Donn Terry  <donn@interix.com>
+
+	* protoize.c (abspath): Preserve multiple leading slashes for
+	_WIN32 and Interix.
+
 1999-01-23  Mike Stump  <mrs@wrs.com>
 
 	* arm/vxarm.h: Split out vxWorks support into separate headerfile
