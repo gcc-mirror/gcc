@@ -952,6 +952,18 @@ struct option_map option_map[] =
    {"--", "-f", "*j"}
  };
 
+
+#ifdef TARGET_OPTION_TRANSLATE_TABLE
+static struct {
+  const char *option_found;
+  const char *replacements;
+} target_option_translations[] =
+{
+  TARGET_OPTION_TRANSLATE_TABLE,
+  { 0, 0 }
+};
+#endif
+
 /* Translate the options described by *ARGCP and *ARGVP.
    Make a new vector and store it back in *ARGVP,
    and store its length in *ARGVC.  */
@@ -964,8 +976,9 @@ translate_options (argcp, argvp)
   int i;
   int argc = *argcp;
   const char *const *argv = *argvp;
+  int newvsize = (argc + 2) * 2 * sizeof (const char *);
   const char **newv =
-    (const char **) xmalloc ((argc + 2) * 2 * sizeof (const char *));
+    (const char **) xmalloc (newvsize);
   int newindex = 0;
 
   i = 0;
@@ -973,6 +986,56 @@ translate_options (argcp, argvp)
 
   while (i < argc)
     {
+#ifdef TARGET_OPTION_TRANSLATE_TABLE
+      int tott_idx;
+
+      for (tott_idx = 0;
+	   target_option_translations[tott_idx].option_found;
+	   tott_idx++)
+	{
+	  if (strcmp (target_option_translations[tott_idx].option_found,
+		      argv[i]) == 0)
+	    {
+	      int spaces = 1;
+	      const char *sp;
+	      char *np;
+
+	      for (sp = target_option_translations[tott_idx].replacements;
+		   *sp; sp++)
+		{
+		  if (*sp == ' ')
+		    spaces ++;
+		}
+
+	      newvsize += spaces * sizeof (const char *);
+	      newv = (const char **) xrealloc (newv, newvsize);
+
+	      sp = target_option_translations[tott_idx].replacements;
+	      np = (char *) xmalloc (strlen (sp) + 1);
+	      strcpy (np, sp);
+
+	      while (1)
+		{
+		  while (*np == ' ')
+		    np++;
+		  if (*np == 0)
+		    break;
+		  newv[newindex++] = np;
+		  while (*np != ' ' && *np)
+		    np++;
+		  if (*np == 0)
+		    break;
+		  *np++ = 0;
+		}
+
+	      i ++;
+	      break;
+	    }
+	}
+      if (target_option_translations[tott_idx].option_found)
+	continue;
+#endif
+
       /* Translate -- options.  */
       if (argv[i][0] == '-' && argv[i][1] == '-')
 	{
