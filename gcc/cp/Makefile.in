@@ -207,6 +207,7 @@ TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
 CXX_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
 PARSE_H = $(srcdir)/parse.h
 PARSE_C = $(srcdir)/parse.c
+EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 
 parse.o : $(PARSE_C) $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h lex.h \
 	$(srcdir)/../except.h $(srcdir)/../output.h $(srcdir)/../system.h \
@@ -248,14 +249,13 @@ decl.o : decl.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   lex.h decl.h $(srcdir)/../stack.h $(srcdir)/../output.h  \
   $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 decl2.o : decl2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
-  lex.h decl.h $(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../except.h \
+  lex.h decl.h $(EXPR_H) $(srcdir)/../except.h \
   $(srcdir)/../output.h $(srcdir)/../except.h $(srcdir)/../system.h \
   $(srcdir)/../toplev.h $(srcdir)/../dwarf2out.h $(srcdir)/../dwarfout.h
 typeck2.o : typeck2.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 typeck.o : typeck.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 class.o : class.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
@@ -263,8 +263,7 @@ call.o : call.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
 friend.o : friend.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 init.o : init.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
-  $(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 method.o : method.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h \
   $(srcdir)/../toplev.h
 cvt.o : cvt.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../system.h
@@ -278,8 +277,7 @@ rtti.o : rtti.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h \
 except.o : except.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../flags.h $(RTL_H) \
   $(srcdir)/../except.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(CXX_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
-  $(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../system.h \
-  $(srcdir)/../toplev.h
+  $(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 xref.o : xref.c $(CONFIG_H) $(CXX_TREE_H) $(srcdir)/../input.h \
   $(srcdir)/../system.h $(srcdir)/../toplev.h
 pt.o : pt.c $(CONFIG_H) $(CXX_TREE_H) decl.h $(PARSE_H) lex.h \
