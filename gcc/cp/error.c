@@ -2230,6 +2230,8 @@ language_to_string (enum languages c)
 static const char *
 parm_to_string (int p)
 {
+  reinit_global_formatting_buffer ();
+
   if (p < 0)
     output_add_string (scratch_buffer, "'this'");
   else

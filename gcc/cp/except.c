@@ -107,8 +107,7 @@ prepare_eh_type (tree type)
     return error_mark_node;
 
   /* peel back references, so they match.  */
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    type = TREE_TYPE (type);
+  type = non_reference (type);
 
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
@@ -872,10 +871,8 @@ nothrow_libfn_p (tree fn)
 static int
 can_convert_eh (tree to, tree from)
 {
-  if (TREE_CODE (to) == REFERENCE_TYPE)
-    to = TREE_TYPE (to);
-  if (TREE_CODE (from) == REFERENCE_TYPE)
-    from = TREE_TYPE (from);
+  to = non_reference (to);
+  from = non_reference (from);
 
   if (TREE_CODE (to) == POINTER_TYPE && TREE_CODE (from) == POINTER_TYPE)
     {

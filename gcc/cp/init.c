@@ -2915,7 +2915,7 @@ static tree
 build_dtor_call (tree exp, special_function_kind dtor_kind, int flags)
 {
   tree name;
-
+  tree fn;
   switch (dtor_kind)
     {
     case sfk_complete_destructor:
@@ -2933,8 +2933,13 @@ build_dtor_call (tree exp, special_function_kind dtor_kind, int flags)
     default:
       abort ();
     }
-  return build_method_call (exp, name, NULL_TREE, 
-			    TYPE_BINFO (TREE_TYPE (exp)), flags);
+
+  exp = convert_from_reference (exp);
+  fn = lookup_fnfields (TREE_TYPE (exp), name, /*protect=*/2);
+  return build_new_method_call (exp, fn, 
+				/*args=*/NULL_TREE,
+				/*conversion_path=*/NULL_TREE,
+				flags);
 }
 
 /* Generate a call to a destructor. TYPE is the type to cast ADDR to.

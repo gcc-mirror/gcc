@@ -3493,7 +3493,6 @@ extern GTY(()) operator_name_info_t assignment_operator_name_info
 extern bool check_dtor_name (tree, tree);
 
 extern tree build_vfield_ref			(tree, tree);
-extern tree build_scoped_method_call (tree, tree, tree, tree);
 extern tree build_conditional_expr		(tree, tree, tree);
 extern tree build_addr_func (tree);
 extern tree build_call (tree, tree);
@@ -3660,7 +3659,7 @@ extern tree make_typename_type			(tree, tree, tsubst_flags_t);
 extern tree make_unbound_class_template		(tree, tree, tsubst_flags_t);
 extern tree lookup_name_nonclass		(tree);
 extern tree lookup_function_nonclass            (tree, tree);
-extern tree lookup_qualified_name               (tree, tree, bool, int);
+extern tree lookup_qualified_name               (tree, tree, bool);
 extern tree lookup_name				(tree, int);
 extern tree lookup_name_current_level		(tree);
 extern tree lookup_type_current_level		(tree);
@@ -3775,7 +3774,6 @@ extern void import_export_decl (tree);
 extern void import_export_tinfo	(tree, tree, bool);
 extern void finish_file				(void);
 extern tree build_cleanup			(tree);
-extern tree build_expr_from_tree		(tree);
 extern tree build_offset_ref_call_from_tree     (tree, tree);
 extern tree build_call_from_tree                (tree, tree, bool);
 extern void set_decl_namespace (tree, tree, bool);
@@ -3967,6 +3965,7 @@ extern tree most_specialized_instantiation      (tree);
 extern void print_candidates                    (tree);
 extern int instantiate_pending_templates        (void);
 extern tree tsubst_default_argument             (tree, tree, tree);
+extern tree tsubst_copy_and_build               (tree, tree, tsubst_flags_t, tree);
 extern tree most_general_template		(tree);
 extern tree get_mostly_instantiated_function_type (tree);
 extern int problematic_instantiation_changed    (void);
@@ -4114,7 +4113,6 @@ extern tree finish_call_expr                    (tree, tree, bool);
 extern tree finish_increment_expr               (tree, enum tree_code);
 extern tree finish_this_expr                    (void);
 extern tree finish_object_call_expr             (tree, tree, tree);
-extern tree finish_qualified_object_call_expr   (tree, tree, tree);
 extern tree finish_pseudo_destructor_expr       (tree, tree, tree);
 extern tree finish_unary_op_expr                (enum tree_code, tree);
 extern tree finish_compound_literal             (tree, tree);
@@ -4149,6 +4147,8 @@ extern tree begin_global_stmt_expr              (void);
 extern tree finish_global_stmt_expr             (tree);
 extern tree check_template_template_default_arg (tree);
 extern void expand_or_defer_fn			(tree);
+extern void check_accessibility_of_qualified_id (tree, tree, tree);
+extern tree finish_qualified_id_expr            (tree, tree, bool, bool);
 
 /* in tree.c */
 extern void lang_check_failed			(const char *, int,
@@ -4299,6 +4299,7 @@ extern tree check_return_expr                   (tree);
 extern tree build_ptrmemfunc_access_expr       (tree, tree);
 extern tree build_address                       (tree);
 extern tree build_nop                           (tree, tree);
+extern tree non_reference                       (tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);

@@ -401,9 +401,7 @@ build_vtable_entry_ref (tree array_ref, tree instance, tree idx)
 {
   tree i, i2, vtable, first_fn, basetype;
 
-  basetype = TREE_TYPE (instance);
-  if (TREE_CODE (basetype) == REFERENCE_TYPE)
-    basetype = TREE_TYPE (basetype);
+  basetype = non_reference (TREE_TYPE (instance));
 
   vtable = get_vtbl_decl_for_binfo (TYPE_BINFO (basetype));
   first_fn = TYPE_BINFO_VTABLE (basetype);
@@ -439,9 +437,7 @@ build_vtbl_ref_1 (tree instance, tree idx)
   int cdtorp = 0;
   tree fixed_type = fixed_type_or_null (instance, NULL, &cdtorp);
 
-  tree basetype = TREE_TYPE (instance);
-  if (TREE_CODE (basetype) == REFERENCE_TYPE)
-    basetype = TREE_TYPE (basetype);
+  tree basetype = non_reference (TREE_TYPE (instance));
 
   if (fixed_type && !cdtorp)
     {

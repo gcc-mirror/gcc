@@ -1712,9 +1712,7 @@ check_final_overrider (tree overrider, tree basefn)
 	{
 	  /* can_convert will permit user defined conversion from a
 	     (reference to) class type. We must reject them.  */
-	  over_return = TREE_TYPE (over_type);
-	  if (TREE_CODE (over_return) == REFERENCE_TYPE)
-	    over_return = TREE_TYPE (over_return);
+	  over_return = non_reference (TREE_TYPE (over_type));
 	  if (CLASS_TYPE_P (over_return))
 	    fail = 2;
 	}

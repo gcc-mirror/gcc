@@ -2197,14 +2197,7 @@ write_pointer_to_member_type (const tree type)
    TEMPLATE_TEMPLATE_PARM, BOUND_TEMPLATE_TEMPLATE_PARM or a
    TEMPLATE_PARM_INDEX.
 
-     <template-param> ::= T </parameter/ number> _
-
-   If we are internally mangling then we distinguish level and, for
-   non-type parms, type too. The mangling appends
-   
-     </level/ number> _ </non-type type/ type> _
-
-   This is used by mangle_conv_op_name_for_type.  */
+     <template-param> ::= T </parameter/ number> _  */
 
 static void
 write_template_param (const tree parm)

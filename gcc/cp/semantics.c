@@ -1276,6 +1276,119 @@ finish_non_static_data_member (tree decl, tree qualifying_scope)
     }
 }
 
+/* DECL was the declaration to which a qualified-id resolved.  Issue
+   an error message if it is not accessible.  If OBJECT_TYPE is
+   non-NULL, we have just seen `x->' or `x.' and OBJECT_TYPE is the
+   type of `*x', or `x', respectively.  If the DECL was named as
+   `A::B' then NESTED_NAME_SPECIFIER is `A'.  */
+
+void
+check_accessibility_of_qualified_id (tree decl, 
+				     tree object_type, 
+				     tree nested_name_specifier)
+{
+  tree scope;
+  tree qualifying_type = NULL_TREE;
+  
+  /* Determine the SCOPE of DECL.  */
+  scope = context_for_name_lookup (decl);
+  /* If the SCOPE is not a type, then DECL is not a member.  */
+  if (!TYPE_P (scope))
+    return;
+  /* Compute the scope through which DECL is being accessed.  */
+  if (object_type 
+      /* OBJECT_TYPE might not be a class type; consider:
+
+	   class A { typedef int I; };
+	   I *p;
+	   p->A::I::~I();
+
+         In this case, we will have "A::I" as the DECL, but "I" as the
+	 OBJECT_TYPE.  */
+      && CLASS_TYPE_P (object_type)
+      && DERIVED_FROM_P (scope, object_type))
+    /* If we are processing a `->' or `.' expression, use the type of the
+       left-hand side.  */
+    qualifying_type = object_type;
+  else if (nested_name_specifier)
+    {
+      /* If the reference is to a non-static member of the
+	 current class, treat it as if it were referenced through
+	 `this'.  */
+      if (DECL_NONSTATIC_MEMBER_P (decl)
+	  && current_class_ptr
+	  && DERIVED_FROM_P (scope, current_class_type))
+	qualifying_type = current_class_type;
+      /* Otherwise, use the type indicated by the
+	 nested-name-specifier.  */
+      else
+	qualifying_type = nested_name_specifier;
+    }
+  else
+    /* Otherwise, the name must be from the current class or one of
+       its bases.  */
+    qualifying_type = currently_open_derived_class (scope);
+
+  if (qualifying_type)
+    perform_or_defer_access_check (TYPE_BINFO (qualifying_type), decl);
+}
+
+/* EXPR is the result of a qualified-id.  The QUALIFYING_CLASS was the
+   class named to the left of the "::" operator.  DONE is true if this
+   expression is a complete postfix-expression; it is false if this
+   expression is followed by '->', '[', '(', etc.  ADDRESS_P is true
+   iff this expression is the operand of '&'.  */
+
+tree
+finish_qualified_id_expr (tree qualifying_class, tree expr, bool done,
+			  bool address_p)
+{
+  /* If EXPR occurs as the operand of '&', use special handling that
+     permits a pointer-to-member.  */
+  if (address_p && done)
+    {
+      if (TREE_CODE (expr) == SCOPE_REF)
+	expr = TREE_OPERAND (expr, 1);
+      expr = build_offset_ref (qualifying_class, expr);
+      return expr;
+    }
+
+  if (TREE_CODE (expr) == FIELD_DECL)
+    expr = finish_non_static_data_member (expr, qualifying_class);
+  else if (BASELINK_P (expr) && !processing_template_decl)
+    {
+      tree fn;
+      tree fns;
+
+      /* See if any of the functions are non-static members.  */
+      fns = BASELINK_FUNCTIONS (expr);
+      if (TREE_CODE (fns) == TEMPLATE_ID_EXPR)
+	fns = TREE_OPERAND (fns, 0);
+      for (fn = fns; fn; fn = OVL_NEXT (fn))
+	if (DECL_NONSTATIC_MEMBER_FUNCTION_P (fn))
+	  break;
+      /* If so, the expression may be relative to the current
+	 class.  */
+      if (fn && current_class_type 
+	  && DERIVED_FROM_P (qualifying_class, current_class_type))
+	expr = (build_class_member_access_expr 
+		(maybe_dummy_object (qualifying_class, NULL),
+		 expr,
+		 BASELINK_ACCESS_BINFO (expr),
+		 /*preserve_reference=*/false));
+      else if (done)
+	{
+	  /* The expression is a qualified name whose address is not
+	     being taken.  */
+	  expr = build_offset_ref (qualifying_class, expr);
+	  if (TREE_CODE (expr) == OFFSET_REF)
+	    expr = resolve_offset_ref (expr);
+	}
+    }
+
+  return expr;
+}
+
 /* Begin a statement-expression.  The value returned must be passed to
    finish_stmt_expr.  */
 
@@ -1546,16 +1659,6 @@ finish_object_call_expr (tree fn, tree object, tree args)
     return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
   else
     return build_new_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
-}
-
-/* Finish a qualified member function call using OBJECT and ARGS as
-   arguments to FN.  Returns an expression for the call.  */
-
-tree 
-finish_qualified_object_call_expr (tree fn, tree object, tree args)
-{
-  return build_scoped_method_call (object, TREE_OPERAND (fn, 0),
-				   TREE_OPERAND (fn, 1), args);
 }
 
 /* Finish a pseudo-destructor expression.  If SCOPE is NULL, the
