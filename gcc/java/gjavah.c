@@ -148,6 +148,8 @@ static void print_class_decls PARAMS ((FILE *, JCF *, int));
 static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void help PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void version PARAMS ((void)) ATTRIBUTE_NORETURN;
+static int overloaded_jni_method_exists_p PARAMS ((const unsigned char *, int,
+						   const char *, int));
 
 JCF_u2 current_field_name;
 JCF_u2 current_field_value;
@@ -1085,7 +1087,7 @@ DEFUN (print_name_for_stub_or_jni, (stream, jcf, name_index, signature_index,
        AND int name_index AND int signature_index
        AND int is_init AND const char *name_override AND int flags)
 {
-  char *prefix = flag_jni ? "Java_" : "\n";
+  const char *const prefix = flag_jni ? "Java_" : "\n";
   print_cxx_classname (stream, prefix, jcf, jcf->this_class);
   fputs (flag_jni ? "_" : "::", stream);
   print_full_cxx_name (stream, jcf, name_index, 
@@ -1567,7 +1569,7 @@ DEFUN(process_file, (jcf, out),
 
   if (written_class_count++ == 0 && out)
     {
-      char *cstart, *cstart2, *mode, *cend, *what, *jflag;
+      const char *cstart, *cstart2, *mode, *cend, *what, *jflag;
       if (flag_jni)
 	{
 	  cstart = "/*";

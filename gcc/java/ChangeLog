@@ -1,3 +1,8 @@
+2000-02-05  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gjavah.c (overloaded_jni_method_exists_p): Add prototype.
+	(print_name_for_stub_or_jni, process_file): Constify a char*.
+
 2000-02-03  Tom Tromey  <tromey@cygnus.com>
 
 	* jcf-io.c (jcf_print_utf8_replace): Handle UTF-8 input.
