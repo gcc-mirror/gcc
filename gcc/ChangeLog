@@ -1,6 +1,10 @@
 2001-05-12  Richard Henderson  <rth@redhat.com>
 
-	EH merge from mainline, parts 5 - 13.
+	EH merge from mainline, parts 5 - 14.
+	* sched-deps.c (sched_analyze_insn): Consolidate scheduling
+	barrier code.  Add a scheduling barrier if a non-call insn
+	can throw internally.
+
 	* rtlanal.c (rtx_addr_can_trap_p): Virtual registers cannot trap.
 	Auto-inc addresses trap only if their base register does.
 
