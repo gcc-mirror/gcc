@@ -1,3 +1,12 @@
+2000-11-21  Bernd Schmidt  <bernds@redhat.co.uk>
+
+	Mostly from Vladimir Makarov (vmakarov@redhat.com)
+	* ia64.md (attr itanium_class): Define insn types as described in
+	Itanium docs.
+	(all insn patterns): Use itanium_class, not type attributes.
+	Occasionally split alternatives as necessary.
+	(attr type): Compute from new attr itanium_class.
+	
 2000-11-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* tradcpp.c (output_line_command): Mark system headers as such in
