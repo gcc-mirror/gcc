@@ -1,3 +1,10 @@
+2004-02-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/13866
+	* arm.c (load_multiple_operation): Don't insist that the source reg
+	of a post-increment component is the same as the destination.
+	(store_multiple_operation): Likewise.
+
 2004-02-18  Paul Brook  <paul@codesourcery.com>
 
 	* rtlanal.c (rtx_varies_p): Return 0 for NULL_RTX
