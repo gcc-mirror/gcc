@@ -1,4 +1,22 @@
-;; POWER4 model
+;; Scheduling description for IBM Power4 and PowerPC 970 processors.
+;;   Copyright (C) 2003 Free Software Foundation, Inc.
+;;
+;; This file is part of GNU CC.
+;;
+;; GNU CC is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2, or (at your option)
+;; any later version.
+;;
+;; GNU CC is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with GNU CC; see the file COPYING.  If not, write to
+;; the Free Software Foundation, 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
 
 ;; Sources: IBM Red Book and White Paper on POWER4
 
@@ -276,6 +294,7 @@
   "vpq_power4")
 
 (define_bypass 4 "power4-vecload" "power4-vecperm")
-(define_bypass 5 "power4-vec" "power4-branch,power4-crlogical")
+(define_bypass 5 "power4-vec"
+		 "power4-branch,power4-crlogical,power4-delayedcr,power4-mfcr")
 (define_bypass 3 "power4-vec,power4-vecfloat" "power4-vecperm")
 (define_bypass 3 "power4-vecperm" "power4-vec,power4-vecfloat")
