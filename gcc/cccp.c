@@ -5961,6 +5961,8 @@ do_line (buf, limit, op, keyword)
 	file_change = leave_file;
       else if (*bp == '3')
 	ip->system_header_p = 1;
+      else if (*bp == '4')
+	ip->system_header_p = 2;
       else {
 	error ("invalid format `#line' command");
 	return 0;
@@ -5970,6 +5972,11 @@ do_line (buf, limit, op, keyword)
       SKIP_WHITE_SPACE (bp);
       if (*bp == '3') {
 	ip->system_header_p = 1;
+	bp++;
+	SKIP_WHITE_SPACE (bp);
+      }
+      if (*bp == '4') {
+	ip->system_header_p = 2;
 	bp++;
 	SKIP_WHITE_SPACE (bp);
       }
@@ -7108,7 +7115,7 @@ output_line_command (ip, op, conditional, file_change)
     *line_end++ = '3';
   }
   /* Tell cc1plus if following text should be treated as C.  */
-  if (ip->system_header_p == 2) {
+  if (ip->system_header_p == 2 && cplusplus) {
     *line_end++ = ' ';
     *line_end++ = '4';
   }
