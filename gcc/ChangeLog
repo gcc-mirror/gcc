@@ -1,5 +1,9 @@
 Tue Oct  7 15:37:35 1997  Jeffrey A Law  (law@cygnus.com)
 
+        * integrate.c (save_for_inline_copying): Avoid undefined pointer
+        operations.
+        (expand_inline_function): Likewise.
+
 	* dwarf2out.c (output_call_frame_info): Reinstate last change
 	using flag_debug_asm check instead of flag_verbose_asm.
 
