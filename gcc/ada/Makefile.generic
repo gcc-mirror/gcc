@@ -337,21 +337,16 @@ internal-build: $(LINKER) archive-objects force
 
 else
 # C/C++ main
-# The trick here is to force gnatmake to bind/link, even if there is no
-# Ada main program. To achieve this effect, we use the -z switch, which is
-# close enough to our needs, and the usual -n gnatbind switch and --LINK=
-# gnatlink switch.
 
 link: $(LINKER) archive-objects force
-	$(GNATMAKE) $(EXEC_RULE) -z -P$(PROJECT_FILE) $(ADA_SOURCES) \
-		 -bargs -n -largs $(LARGS) $(LDFLAGS)
+	$(GNATMAKE) $(EXEC_RULE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) \
+		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS)
 
 internal-build: $(LINKER) archive-objects force
-	@echo $(GNATMAKE) -z -P$(PROJECT_FILE) $(ADA_SOURCES) $(EXEC_RULE) $(ADAFLAGS)
-	@$(GNATMAKE) $(EXEC_RULE) -z \
-		 -P$(PROJECT_FILE) $(ADA_SOURCES) $(ADAFLAGS) \
-		 -bargs -n \
-		 -largs $(LARGS) $(LDFLAGS)
+	@echo $(GNATMAKE) -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(EXEC_RULE) $(ADAFLAGS)
+	@$(GNATMAKE) $(EXEC_RULE) \
+		 -B -P$(PROJECT_FILE) $(ADA_SOURCES) $(ADAFLAGS) \
+		 -largs $(MAIN_OBJECT) $(LARGS) $(LDFLAGS)
 endif
 
 else

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -81,6 +81,7 @@ package Exp_Tss is
    TSS_RAS_Access         : constant TNT := "RA";  -- RAs type access
    TSS_RAS_Dereference    : constant TNT := "RD";  -- RAs type deference
    TSS_Rep_To_Pos         : constant TNT := "RP";  -- Rep to Pos conversion
+   TSS_Slice_Assign       : constant TNT := "SA";  -- Slice assignment
    TSS_Stream_Input       : constant TNT := "SI";  -- Stream Input attribute
    TSS_Stream_Output      : constant TNT := "SO";  -- Stream Output attribute
    TSS_Stream_Read        : constant TNT := "SR";  -- Stream Read attribute
@@ -95,6 +96,7 @@ package Exp_Tss is
       TSS_RAS_Access,
       TSS_RAS_Dereference,
       TSS_Rep_To_Pos,
+      TSS_Slice_Assign,
       TSS_Stream_Input,
       TSS_Stream_Output,
       TSS_Stream_Read,

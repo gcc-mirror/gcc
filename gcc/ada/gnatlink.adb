@@ -673,6 +673,11 @@ procedure Gnatlink is
       --  Predicate indicating whether this target uses the GNU linker. In
       --  this case we must output a GNU linker compatible response file.
 
+      Opening : aliased constant String := """";
+      Closing : aliased constant String := '"' & ASCII.LF;
+      --  Needed to quote object paths in object list files when GNU linker
+      --  is used.
+
       procedure Get_Next_Line;
       --  Read the next line from the binder file without the line
       --  terminator.
@@ -883,6 +888,8 @@ procedure Gnatlink is
          --  If target is using the GNU linker we must add a special header
          --  and footer in the response file.
          --  The syntax is : INPUT (object1.o object2.o ... )
+         --  Because the GNU linker does not like name with characters such
+         --  as '!', we must put the object paths between double quotes.
 
          if Using_GNU_Linker then
             declare
@@ -895,9 +902,22 @@ procedure Gnatlink is
          end if;
 
          for J in Objs_Begin .. Objs_End loop
+            --  Opening quote for GNU linker
+            if Using_GNU_Linker then
+               Status := Write (Tname_FD, Opening'Address, 1);
+            end if;
+
             Status := Write (Tname_FD, Linker_Objects.Table (J).all'Address,
-              Linker_Objects.Table (J).all'Length);
-            Status := Write (Tname_FD, ASCII.LF'Address, 1);
+                             Linker_Objects.Table (J).all'Length);
+
+            --  Closing quote for GNU linker
+
+            if Using_GNU_Linker then
+               Status := Write (Tname_FD, Closing'Address, 2);
+
+            else
+               Status := Write (Tname_FD, ASCII.LF'Address, 1);
+            end if;
 
             Response_File_Objects.Increment_Last;
             Response_File_Objects.Table (Response_File_Objects.Last) :=
