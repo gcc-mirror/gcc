@@ -304,6 +304,7 @@ flow_analysis (f, nregs, file)
   {
     register RTX_CODE prev_code = JUMP_INSN;
     register RTX_CODE code;
+    int eh_region = 0;
 
     max_uid_for_flow = 0;
 
@@ -316,7 +317,7 @@ flow_analysis (f, nregs, file)
 	    || (GET_RTX_CLASS (code) == 'i'
 		&& (prev_code == JUMP_INSN
 		    || (prev_code == CALL_INSN
-			&& nonlocal_label_list != 0)
+			&& (nonlocal_label_list != 0 || eh_region))
 		    || prev_code == BARRIER)))
 	  i++;
 
@@ -325,6 +326,10 @@ flow_analysis (f, nregs, file)
 
 	if (code != NOTE)
 	  prev_code = code;
+	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
+	  ++eh_region;
+	else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
+	  --eh_region;
       }
   }
 
@@ -418,7 +423,7 @@ find_basic_blocks (f, nonlocal_label_list)
 	       || (GET_RTX_CLASS (code) == 'i'
 		   && (prev_code == JUMP_INSN
 		       || (prev_code == CALL_INSN
-			   && nonlocal_label_list != 0
+			   && (nonlocal_label_list != 0 || eh_note)
 			   && ! find_reg_note (insn, REG_RETVAL, NULL_RTX))
 		       || prev_code == BARRIER)))
 	{
