@@ -97,12 +97,12 @@ typedef unsigned char U_CHAR;
 #include <descrip.h>
 #define O_RDONLY	0	/* Open arg for Read/Only  */
 #define O_WRONLY	1	/* Open arg for Write/Only */
-#define read(fd,buf,size)	VMS_read(fd,buf,size)
-#define write(fd,buf,size)	VMS_write(fd,buf,size)
-#define open(fname,mode,prot)	VMS_open(fname,mode,prot)
-#define fopen(fname,mode)	VMS_fopen(fname,mode)
-#define freopen(fname,mode,ofile) VMS_freopen(fname,mode,ofile)
-#define strncat(dst,src,cnt) VMS_strncat(dst,src,cnt)
+#define read(fd,buf,size)	VMS_read (fd,buf,size)
+#define write(fd,buf,size)	VMS_write (fd,buf,size)
+#define open(fname,mode,prot)	VMS_open (fname,mode,prot)
+#define fopen(fname,mode)	VMS_fopen (fname,mode)
+#define freopen(fname,mode,ofile) VMS_freopen (fname,mode,ofile)
+#define strncat(dst,src,cnt) VMS_strncat (dst,src,cnt)
 static char * VMS_strncat ();
 static int VMS_read ();
 static int VMS_write ();
@@ -691,14 +691,14 @@ union hashval {
 /*
  * special extension string that can be added to the last macro argument to 
  * allow it to absorb the "rest" of the arguments when expanded.  Ex:
- * 		#define wow(a, b...)		process(b, a, b)
- *		{ wow(1, 2, 3); }	->	{ process( 2, 3, 1,  2, 3); }
- *		{ wow(one, two); }	->	{ process( two, one,  two); }
+ * 		#define wow(a, b...)		process (b, a, b)
+ *		{ wow (1, 2, 3); }	->	{ process (2, 3, 1, 2, 3); }
+ *		{ wow (one, two); }	->	{ process (two, one, two); }
  * if this "rest_arg" is used with the concat token '##' and if it is not
  * supplied then the token attached to with ## will not be outputted.  Ex:
- * 		#define wow(a, b...)		process(b ## , a, ## b)
- *		{ wow(1, 2); }		->	{ process( 2, 1,2); }
- *		{ wow(one); }		->	{ process( one); {
+ * 		#define wow (a, b...)		process (b ## , a, ## b)
+ *		{ wow (1, 2); }		->	{ process (2, 1, 2); }
+ *		{ wow (one); }		->	{ process (one); {
  */
 static char rest_extension[] = "...";
 #define REST_EXTENSION_LENGTH	(sizeof (rest_extension) - 1)
@@ -924,9 +924,9 @@ static char *out_fname;
    -$ stores 0; -traditional may store 1.  Default is 1 for VMS, 0 otherwise.
    This must be 0 for correct processing of this ANSI C program:
 	#define foo(a) #a
-	#define lose(b) foo(b)
+	#define lose(b) foo (b)
 	#define test$
-	lose(test)	*/
+	lose (test)	*/
 static int dollars_in_ident;
 #ifndef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 1
@@ -2604,7 +2604,7 @@ do { ip = &instack[indepth];		\
 	  switch (*ibp++) {
 	  case '/':
 	    if (warn_comments && ibp < limit && *ibp == '*')
-	      warning("`/*' within comment");
+	      warning ("`/*' within comment");
 	    break;
 	  case '*':
 	    if (*ibp == '\\' && ibp[1] == '\n')
@@ -2892,8 +2892,8 @@ startagain:
 	      if (disabled) {
 #if 0
 		/* This error check caught useful cases such as
-		   #define foo(x,y) bar(x(y,0), y)
-		   foo(foo, baz)  */
+		   #define foo(x,y) bar (x (y,0), y)
+		   foo (foo, baz)  */
 		if (traditional)
 		  error ("recursive use of macro `%s'", hp->name);
 #endif
@@ -4498,7 +4498,7 @@ check_preconditions (prec)
       mdef = create_definition (prec, lineend, NULL_PTR);
 
       if (mdef.defn == 0)
-	abort();
+	abort ();
       
       if ((hp = lookup (mdef.symnam, mdef.symlen, -1)) == NULL
 	  || (hp->type != T_MACRO && hp->type != T_CONST)
@@ -4849,11 +4849,11 @@ create_definition (buf, limit, op)
 
 	for (otemp = temp->next; otemp != NULL; otemp = otemp->next)
 	  if (temp->length == otemp->length &&
-	    strncmp(temp->name, otemp->name, temp->length) == 0) {
+	    strncmp (temp->name, otemp->name, temp->length) == 0) {
 	      U_CHAR *name;
 
-	      name = (U_CHAR *) alloca(temp->length + 1);
-	      (void) strncpy(name, temp->name, temp->length);
+	      name = (U_CHAR *) alloca (temp->length + 1);
+	      (void) strncpy (name, temp->name, temp->length);
 	      name[temp->length] = '\0';
 	      error ("duplicate argument name `%s' in `#define'", name);
 	      goto nope;
@@ -5955,7 +5955,7 @@ do_undef (buf, limit, op, keyword)
 /*
  * Report a fatal error detected by the program we are processing.
  * Use the text of the line in the error message, then terminate.
- * (We use error() because it prints the filename & line#.)
+ * (We use error because it prints the filename & line#.)
  */
 
 static int
@@ -5978,7 +5978,7 @@ do_error (buf, limit, op, keyword)
 /*
  * Report a warning detected by the program we are processing.
  * Use the text of the line in the warning message, then continue.
- * (We use error() because it prints the filename & line#.)
+ * (We use error because it prints the filename & line#.)
  */
 
 static int
@@ -6277,10 +6277,10 @@ do_xifdef (buf, limit, op, keyword)
     if (pcp_outfile) {
       /* Output a precondition for this macro.  */
       if (hp && hp->value.defn->predefined)
-	fprintf(pcp_outfile, "#define %s\n", hp->name);
+	fprintf (pcp_outfile, "#define %s\n", hp->name);
       else {
 	U_CHAR *cp = buf;
-	fprintf(pcp_outfile, "#undef ");
+	fprintf (pcp_outfile, "#undef ");
 	while (is_idchar[*cp]) /* Ick! */
 	  fputc (*cp++, pcp_outfile);
 	putc ('\n', pcp_outfile);
@@ -7381,8 +7381,8 @@ macroexpand (hp, op)
     ip2->system_header_p = 0;
 
     /* Recursive macro use sometimes works traditionally.
-       #define foo(x,y) bar(x(y,0), y)
-       foo(foo, baz)  */
+       #define foo(x,y) bar (x (y,0), y)
+       foo (foo, baz)  */
 
     if (!traditional)
       hp->type = T_DISABLED;
@@ -8972,7 +8972,7 @@ hack_vms_include_specification (fname)
      * Then all we need to do is to push a '[' into the output string. Later
      * processing will fill this in, and close the bracket.
      */
-    if(cp[-1] != ':') *cp2++ = ':'; /* dev not in spec.  take first dir */
+    if (cp[-1] != ':') *cp2++ = ':'; /* dev not in spec.  take first dir */
     *cp2++ = '[';		/* Open the directory specification */
   }
 
@@ -9011,7 +9011,7 @@ hack_vms_include_specification (fname)
       cp1++;			/* Skip the "/" */
     }
     /* Close the directory specification */
-    if(cp2[-1] == '.')		/* no trailing periods */
+    if (cp2[-1] == '.')		/* no trailing periods */
       cp2--;
     *cp2++ = ']';
   }
@@ -9066,7 +9066,7 @@ read (fd, buf, size)
     i = read (fd, buf, i);
     if (i <= 0) {
       if (i == 0) return (total);
-      return(i);
+      return (i);
     }
     /* Account for this read */
     total += i;
