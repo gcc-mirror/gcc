@@ -738,9 +738,14 @@ extern rtx gen_cond_trap PROTO((enum rtx_code, rtx, rtx, rtx));
 /* Functions from builtins.c:  */
 #ifdef TREE_CODE
 extern rtx expand_builtin PROTO((tree, rtx, rtx, enum machine_mode, int));
+extern void std_expand_builtin_va_start PROTO((int, tree, rtx));
+extern rtx std_expand_builtin_va_arg PROTO((tree, tree));
+extern rtx expand_builtin_va_arg PROTO((tree, tree));
 #endif
 
 extern rtx expand_builtin_setjmp PROTO((rtx, rtx, rtx, rtx));
+extern rtx expand_builtin_saveregs PROTO((void));
+extern int get_varargs_alias_set PROTO((void));
 
 /* Functions from expr.c:  */
 

@@ -8240,6 +8240,9 @@ expand_expr (exp, target, tmode, modifier)
 	return const0_rtx;
       }
 
+    case VA_ARG_EXPR:
+      return expand_builtin_va_arg (TREE_OPERAND (exp, 0), type);
+
     default:
       return (*lang_expand_expr) (exp, original_target, tmode, modifier);
     }

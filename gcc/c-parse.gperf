@@ -21,6 +21,7 @@ __asm, ASM_KEYWORD, NORID
 __asm__, ASM_KEYWORD, NORID
 __attribute, ATTRIBUTE, NORID
 __attribute__, ATTRIBUTE, NORID
+__builtin_va_arg, VA_ARG, NORID
 __complex, TYPESPEC, RID_COMPLEX
 __complex__, TYPESPEC, RID_COMPLEX
 __const, TYPE_QUAL, RID_CONST

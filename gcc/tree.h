@@ -117,6 +117,11 @@ enum built_in_function
   BUILT_IN_EXTRACT_RETURN_ADDR,
   BUILT_IN_EH_RETURN,
 
+  BUILT_IN_VARARGS_START,
+  BUILT_IN_STDARG_START,
+  BUILT_IN_VA_END,
+  BUILT_IN_VA_COPY,
+
   /* C++ extensions */
   BUILT_IN_NEW,
   BUILT_IN_VEC_NEW,
@@ -1853,6 +1858,11 @@ extern tree unsigned_type_node;
 
 /* The type node for the ordinary character type.  */
 extern tree char_type_node;
+
+extern tree ptr_type_node;
+
+/* Type `va_list'.  Used by va_start, va_arg, etc.  */
+extern tree va_list_type_node;
 
 /* Points to the name of the input file from which the current input
    being parsed originally came (before it went into cpp).  */
