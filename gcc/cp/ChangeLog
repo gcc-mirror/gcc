@@ -79,7 +79,6 @@ Mon Feb 23 02:52:29 1998  Mark Mitchell  <mmitchell@usa.net>
 	(build_template_parm_index): New function.
 	(reduce_template_parm_level): New function.
 	(process_template_parm): Modify to use build_template_parm_index.
-	(current_template_args): Change name to current_template_parms.
 	(push_template_decl): Deal with friend templates.
 	(uses_template_parms): Use TEMPLATE_PARM_INDEX instead of
 	TEMPLATE_CONST_PARM.
