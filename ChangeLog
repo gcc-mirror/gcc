@@ -1,3 +1,7 @@
+Thu Jan 22 01:38:33 1998  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Revert 3 Jan change for alpha-linux-gnulibc1.
+
 Sat Jan 17 21:28:08 1998  Pieter Nagel <pnagel@epiuse.co.za>
 
 	* Makefile.in (FLAGS_TO_PASS): Pass down gcc_include_dir and
