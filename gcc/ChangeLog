@@ -1,3 +1,9 @@
+2004-07-06  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/cppinternals.texi, doc/install.texi, doc/invoke.texi,
+	doc/md.texi, doc/sourcebuild.texi, doc/tm.texi, doc/trouble.texi:
+	Use terminology "testsuite" and "enumerated".
+
 2004-07-06  Eric Christopher  <echristo@redhat.com>
 
 	PR rtl-optimization/14700

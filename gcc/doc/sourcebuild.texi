@@ -14,7 +14,7 @@ which it is presumed that you are familiar.
 * Configure Terms:: Configuration terminology and history.
 * Top Level::       The top level source directory.
 * gcc Directory::   The @file{gcc} subdirectory.
-* Test Suites::     The GCC test suites.
+* Testsuites::      The GCC testsuites.
 @end menu
 
 @include configterms.texi
@@ -44,7 +44,7 @@ front end.
 @item gcc
 The main sources of GCC itself (except for runtime libraries),
 including optimizers, support for different target architectures,
-language front ends, and test suites.  @xref{gcc Directory, , The
+language front ends, and testsuites.  @xref{gcc Directory, , The
 @file{gcc} Subdirectory}, for details.
 
 @item include
@@ -91,7 +91,7 @@ configure, The GNU configure and build system}, for details.
 The @file{gcc} directory contains many files that are part of the C
 sources of GCC, other files used as part of the configuration and
 build process, and subdirectories including documentation and a
-test suite.  The files that are sources of GCC are documented in a
+testsuite.  The files that are sources of GCC are documented in a
 separate chapter.  @xref{Passes, , Passes and Files of the Compiler}.
 
 @menu
@@ -159,8 +159,8 @@ by @samp{make gcc.pot}, and @file{EXCLUDES}, a list of files from
 which messages should not be extracted.
 
 @item testsuite
-The GCC test suites (except for those for runtime libraries).
-@xref{Test Suites}.
+The GCC testsuites (except for those for runtime libraries).
+@xref{Testsuites}.
 @end table
 
 @node Configuration
@@ -475,9 +475,9 @@ Details of source file suffixes for that language and @option{-x
 Entries in @code{default_compilers} in @file{gcc.c} for source file
 suffixes for that language.
 @item
-Preferably test suites, which may be under @file{gcc/testsuite} or
+Preferably testsuites, which may be under @file{gcc/testsuite} or
 runtime library directories.  FIXME: document somewhere how to write
-test suite harnesses.
+testsuite harnesses.
 @item
 Probably a runtime library for the language, outside the @file{gcc}
 directory.  FIXME: document this further.
@@ -787,26 +787,26 @@ but it would be unusual to add support for a target that does not have
 a maintainer when support is added.
 @end itemize
 
-@node Test Suites
-@section Test Suites
+@node Testsuites
+@section Testsuites
 
-GCC contains several test suites to help maintain compiler quality.
-Most of the runtime libraries and language front ends in GCC have test
-suites.  Currently only the C language test suites are documented
+GCC contains several testsuites to help maintain compiler quality.
+Most of the runtime libraries and language front ends in GCC have
+testsuites.  Currently only the C language testsuites are documented
 here; FIXME: document the others.
 
 @menu
-* Test Idioms::     Idioms used in test suite code.
-* Ada Tests::       The Ada language test suites.
-* C Tests::         The C language test suites.
-* libgcj Tests::    The Java library test suites.
+* Test Idioms::     Idioms used in testsuite code.
+* Ada Tests::       The Ada language testsuites.
+* C Tests::         The C language testsuites.
+* libgcj Tests::    The Java library testsuites.
 * gcov Testing::    Support for testing gcov.
 * profopt Testing:: Support for testing profile-directed optimizations.
 * compat Testing::  Support for testing binary compatibility.
 @end menu
 
 @node Test Idioms
-@subsection Idioms Used in Test Suite Code
+@subsection Idioms Used in Testsuite Code
 
 In general C testcases have a trailing @file{-@var{n}.c}, starting
 with @file{-1.c}, in case other testcases with similar names are added
@@ -828,7 +828,7 @@ Test cases should use @code{abort ()} to indicate failure and
 @code{exit (0)} for success; on some targets these may be redefined to
 indicate failure and success in other ways.
 
-In the @file{gcc.dg} test suite, it is often necessary to test that an
+In the @file{gcc.dg} testsuite, it is often necessary to test that an
 error is indeed a hard error and not just a warning---for example,
 where it is a constraint violation in the C standard, which must
 become an error with @option{-pedantic-errors}.  The following idiom,
@@ -886,20 +886,21 @@ All testcases must be portable.  Target-specific testcases must have
 appropriate code to avoid causing failures on unsupported systems;
 unfortunately, the mechanisms for this differ by directory.
 
-FIXME: discuss non-C test suites here.
+FIXME: discuss non-C testsuites here.
 
 @node Ada Tests
-@subsection Ada Language Test Suites
+@subsection Ada Language Testsuites
 
-The Ada test suite includes executable tests from the ACATS 2.5 test
-suite, publicly available at @uref{http://www.adaic.org/compilers/acats/2.5}
+The Ada testsuite includes executable tests from the ACATS 2.5
+testsuite, publicly available at
+@uref{http://www.adaic.org/compilers/acats/2.5}
 
-These tests are integrated in the GCC test suite in the
+These tests are integrated in the GCC testsuite in the
 @file{gcc/testsuite/ada/acats} directory, and
 enabled automatically when running @code{make check}, assuming
 the Ada language has been enabled when configuring GCC.
 
-You can also run the Ada test suite independently, using
+You can also run the Ada testsuite independently, using
 @code{make check-ada}, or run a subset of the tests by specifying which
 chapter to run, e.g:
 
@@ -922,9 +923,9 @@ These tests are run using the build tree: they can be run without doing
 a @code{make install}.
 
 @node C Tests
-@subsection C Language Test Suites
+@subsection C Language Testsuites
 
-GCC contains the following C language test suites, in the
+GCC contains the following C language testsuites, in the
 @file{gcc/testsuite} directory:
 
 @table @file
@@ -973,7 +974,7 @@ FIXME: describe this.
 
 This directory should probably not be used for new tests.
 @item gcc.c-torture/compile
-This test suite contains test cases that should compile, but do not
+This testsuite contains test cases that should compile, but do not
 need to link or run.  These test cases are compiled with several
 different combinations of optimization options.  All warnings are
 disabled for these test cases, so this directory is not suitable if
@@ -983,7 +984,7 @@ platforms, by the use of @file{.x} files, mostly these test cases
 should not contain platform dependencies.  FIXME: discuss how defines
 such as @code{NO_LABEL_VALUES} and @code{STACK_SIZE} are used.
 @item gcc.c-torture/execute
-This test suite contains test cases that should compile, link and run;
+This testsuite contains test cases that should compile, link and run;
 otherwise the same comments as for @file{gcc.c-torture/compile} apply.
 @item gcc.c-torture/execute/ieee
 This contains tests which are specific to IEEE floating point.
@@ -1020,14 +1021,14 @@ FIXME: merge in @file{testsuite/README.gcc} and discuss the format of
 test cases and magic comments more.
 
 @node libgcj Tests
-@subsection The Java library test suites.
+@subsection The Java library testsuites.
 
 Runtime tests are executed via @samp{make check} in the
 @file{@var{target}/libjava/testsuite} directory in the build
 tree.  Additional runtime tests can be checked into this testsuite.
 
 Regression testing of the core packages in libgcj is also covered by the
-Mauve test suite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}
+Mauve testsuite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}
 develops tests for the Java Class Libraries.  These tests are run as part
 of libgcj testing by placing the Mauve tree within the libjava testsuite
 sources at @file{libjava/testsuite/libjava.mauve/mauve}, or by specifying
@@ -1041,8 +1042,8 @@ Update this file when adding new failing tests to Mauve, or when fixing
 bugs in libgcj that had caused Mauve test failures.
 
 The @uref{http://oss.software.ibm.com/developerworks/opensource/jacks/,,
-Jacks} project provides a test suite for Java compilers that can be used
-to test changes that affect the GCJ front end.  This test suite is run as
+Jacks} project provides a testsuite for Java compilers that can be used
+to test changes that affect the GCJ front end.  This testsuite is run as
 part of Java testing by placing the Jacks tree within the the libjava
 testsuite sources at @file{libjava/testsuite/libjava.jacks/jacks}.
 
@@ -1157,11 +1158,10 @@ torture tests
 @subsection Support for testing binary compatibility
 
 The file @file{compat.exp} provides language-independent support for
-binary compatibility testing.  It supports testing interoperability
-of two compilers that follow the same ABI, or of multiple sets of
-compiler options that should not affect binary compatibility.
-It is intended to be used for test suites that complement ABI test
-suites.
+binary compatibility testing.  It supports testing interoperability of
+two compilers that follow the same ABI, or of multiple sets of
+compiler options that should not affect binary compatibility.  It is
+intended to be used for testsuites that complement ABI testsuites.
 
 A test supported by this framework has three parts, each in a
 separate source file: a main program and two pieces that interact

@@ -2283,9 +2283,9 @@ single-byte values can be loaded or stored.  This is so that
 @code{PREFERRED_RELOAD_CLASS} can always have a possible value to return.
 
 @deftp {Data type} {enum reg_class}
-An enumeral type that must be defined with all the register class names
-as enumeral values.  @code{NO_REGS} must be first.  @code{ALL_REGS}
-must be the last register class, followed by one more enumeral value,
+An enumerated type that must be defined with all the register class names
+as enumerated values.  @code{NO_REGS} must be first.  @code{ALL_REGS}
+must be the last register class, followed by one more enumerated value,
 @code{LIM_REG_CLASSES}, which is not a register class but rather
 tells how many classes there are.
 

@@ -1696,7 +1696,7 @@ to a plain pointer.
 @item -Wsign-promo @r{(C++ only)}
 @opindex Wsign-promo
 Warn when overload resolution chooses a promotion from unsigned or
-enumeral type to a signed type, over a conversion to an unsigned type of
+enumerated type to a signed type, over a conversion to an unsigned type of
 the same size.  Previous versions of G++ would try to preserve
 unsignedness, but the standard mandates the current behavior.
 
@@ -2315,7 +2315,7 @@ exceptions are @samp{main} and functions defined in system headers.
 
 @item -Wswitch
 @opindex Wswitch
-Warn whenever a @code{switch} statement has an index of enumeral type
+Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  (The presence of a @code{default} label prevents this
 warning.)  @code{case} labels outside the enumeration range also
@@ -2328,7 +2328,7 @@ case.
 
 @item -Wswitch-enum
 @opindex Wswitch-enum
-Warn whenever a @code{switch} statement has an index of enumeral type
+Warn whenever a @code{switch} statement has an index of enumerated type
 and lacks a @code{case} for one or more of the named codes of that
 enumeration.  @code{case} labels outside the enumeration range also
 provoke warnings when this option is used.

@@ -4880,7 +4880,7 @@ specified for an attribute, the following are defined:
 A @samp{#define} is written for the symbol @samp{HAVE_ATTR_@var{name}}.
 
 @item
-An enumeral class is defined for @samp{attr_@var{name}} with
+An enumerated class is defined for @samp{attr_@var{name}} with
 elements of the form @samp{@var{upper-name}_@var{upper-value}} where
 the attribute name and value are first converted to uppercase.
 
