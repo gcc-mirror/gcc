@@ -1,3 +1,10 @@
+2005-01-19  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/19535
+	* include/tr1/utility (struct __pair_get<1>::__get, __const_get):
+	Fix typo in the return type.
+	* testsuite/tr1/6_containers/utility/19535.cc: New.
+
 2005-01-19  Loren J. Rittle  <ljrittle@acm.org>
 
 	* include/ext/array_allocator.h (array_allocator<>::allocate):
