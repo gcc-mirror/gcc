@@ -1,5 +1,10 @@
 2004-05-28  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (extendsidi2): Tie the source and destination
+	of the register alternative.  Split it into nothing.
+
+2004-05-28  Richard Sandiford  <rsandifo@redhat.com>
+
 	* rtl.h (skip_consecutive_labels): Declare.
 	* emit-rtl.c (skip_consecutive_labels): New function.
 	* reorg.c (relax_delay_slots, dbr_schedule): Use it.
