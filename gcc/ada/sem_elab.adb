@@ -521,6 +521,7 @@ package body Sem_Elab is
 
          if Unit_Caller /= No_Unit
            and then Unit_Callee /= Unit_Caller
+           and then Unit_Callee /= No_Unit
            and then not Dynamic_Elaboration_Checks
          then
             E_Scope := Spec_Entity (Cunit_Entity (Unit_Caller));
