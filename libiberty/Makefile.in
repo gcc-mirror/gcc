@@ -133,7 +133,7 @@ CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 	strncasecmp.c strchr.c strdup.c strerror.c strncmp.c strrchr.c        \
 	strsignal.c strstr.c strtod.c strtol.c strtoul.c tmpnam.c vasprintf.c \
 	vfork.c vfprintf.c vprintf.c vsprintf.c waitpid.c xatexit.c xexit.c   \
-	xmalloc.c xmemdup.c xstrdup.c xstrerror.c ternary.c
+	xmalloc.c xmemdup.c xstrdup.c xstrerror.c ternary.c fibheap.c
 
 # These are always included in the library.
 REQUIRED_OFILES = argv.o alloca.o choose-temp.o concat.o cplus-dem.o          \
@@ -142,7 +142,7 @@ REQUIRED_OFILES = argv.o alloca.o choose-temp.o concat.o cplus-dem.o          \
         md5.o make-temp-file.o objalloc.o				      \
 	obstack.o partition.o pexecute.o regex.o safe-ctype.o sort.o spaces.o \
 	splay-tree.o strerror.o strsignal.o xatexit.o xexit.o xmalloc.o       \
-	xmemdup.o xstrdup.o xstrerror.o ternary.o
+	xmemdup.o xstrdup.o xstrerror.o ternary.o fibheap.o
 
 $(TARGETLIB): $(REQUIRED_OFILES) $(EXTRA_OFILES) $(LIBOBJS)
 	-rm -f $(TARGETLIB)
@@ -265,6 +265,7 @@ cplus-dem.o: config.h $(INCDIR)/demangle.h
 cp-demangle.o: config.h $(INCDIR)/dyn-string.h $(INCDIR)/demangle.h
 dyn-string.o: config.h $(INCDIR)/dyn-string.h
 fdmatch.o: $(INCDIR)/libiberty.h
+fibheap.o: $(INCDIR)/libiberty.h $(INCDIR)/fibheap.h
 fnmatch.o: config.h $(INCDIR)/fnmatch.h
 getcwd.o: config.h
 getopt.o: config.h $(INCDIR)/getopt.h
