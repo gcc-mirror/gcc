@@ -3666,7 +3666,7 @@
    (set_attr "length" "12,16")])
 
 (define_insn ""
-  [(set (match_operand 0 "register_operand" "=rf,rf,rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 27))
@@ -3680,7 +3680,7 @@
    (set_attr "length" "12,*,16")])
 
 (define_insn ""
-  [(set (match_operand 0 "register_operand" "=rf,rf,rf")
+  [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,R,i"))
 	      (match_operand 2 "" "")))
    (clobber (reg:DI 26))]
@@ -3693,7 +3693,7 @@
    (set_attr "length" "*,*,12")])
 
 (define_insn ""
-  [(set (match_operand 0 "register_operand" "")
+  [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,i"))
 	      (match_operand 2 "" "")))
    (use (match_operand:DI 3 "general_operand" "r,m"))

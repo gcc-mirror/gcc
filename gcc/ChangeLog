@@ -1,3 +1,7 @@
+Wed Sep  8 15:23:54 1999  Ricahrd Henderson  <rth@cygnus.com>
+
+	* alpha.md (call value patterns): Remove the result predicates.
+
 Wed Sep  8 13:35:38 1999  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (stmp-fixinc): Remove extraneous exit 1 from
