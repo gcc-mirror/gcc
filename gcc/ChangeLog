@@ -1,3 +1,8 @@
+2001-07-20  Catherine Moore  <clm@redhat.com>
+
+        * config/v850/v850.md (casesi): Generate LABEL_REF
+        with Pmode.
+
 Fri Jul 20 14:12:57 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386-protos.h (ix86_zero_extend_to_Pmode): Declare.
