@@ -1814,13 +1814,13 @@ install-common: native install-dir xgcc g++ $(EXTRA_PARTS)
 	  rm -f $(bindir)/$(target)-gcc-1; \
 	  ln $(bindir)/gcc $(bindir)/$(target)-gcc-1; \
 	  mv $(bindir)/$(target)-gcc-1 $(bindir)/$(target)-gcc; \
-	  -if [ -f cc1plus ] ; then \
+	  if [ -f cc1plus ] ; then \
 	    rm -f $(bindir)/g++; \
 	    $(INSTALL_PROGRAM) g++ $(bindir)/g++; \
 	    chmod a+x $(bindir)/g++; \
 	    rm -f $(bindir)/c++; \
 	    ln $(bindir)/g++ $(bindir)/c++; \
-	  fi
+	  fi ; \
 	fi
 # Install protoize if it was compiled.
 	-if [ -f protoize ]; \
