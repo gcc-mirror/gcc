@@ -1,3 +1,8 @@
+2003-08-07  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/5767
+	* g++.dg/parse/crash11.C: New test.
+
 2003-08-06  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.dg/cpp/spacing1.c: Update.
