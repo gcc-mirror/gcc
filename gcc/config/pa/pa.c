@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for HPPA.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
+   2002 Free Software Foundation, Inc.
    Contributed by Tim Moore (moore@cs.utah.edu), based on sparc.c
 
 This file is part of GNU CC.
@@ -55,6 +55,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
+#ifndef FUNC_BEGIN_PROLOG_LABEL
+#define FUNC_BEGIN_PROLOG_LABEL        "LFBP"
+#endif
+
 static inline rtx force_mode PARAMS ((enum machine_mode, rtx));
 static void pa_combine_instructions PARAMS ((rtx));
 static int pa_can_combine_p PARAMS ((rtx, rtx, rtx, int, rtx, rtx, rtx));
@@ -95,6 +99,11 @@ const char *pa_arch_string;
 /* Counts for the number of callee-saved general and floating point
    registers which were saved by the current function's prologue.  */
 static int gr_saved, fr_saved;
+
+/* The number of the current function for which profile information
+   is to be collected.  These numbers are used to create unique label
+   id's for labels emitted at the beginning of profiled functions.  */
+static unsigned int current_function_number = 0;
 
 static rtx find_addr_reg PARAMS ((rtx));
 
@@ -3007,6 +3016,16 @@ pa_output_function_prologue (file, size)
 
   fputs ("\n\t.ENTRY\n", file);
 
+  /* When profiling, we need a local label at the beginning of the
+     prologue because GAS can't handle the difference of a global symbol
+     and a local symbol.  */
+  if (current_function_profile)
+    {
+      ASM_OUTPUT_INTERNAL_LABEL (file, FUNC_BEGIN_PROLOG_LABEL,
+				 current_function_number);
+      current_function_number++;
+    }
+
   /* If we're using GAS and not using the portable runtime model, then
      we don't need to accumulate the total number of code bytes.  */
   if (TARGET_GAS && ! TARGET_PORTABLE_RUNTIME)
@@ -3459,14 +3478,12 @@ void
 hppa_profile_hook (label_no)
      int label_no ATTRIBUTE_UNUSED;
 {
-  rtx call_insn;
+  rtx begin_label_rtx, call_insn;
+  char begin_label_name[16];
 
-  /* No profiling for inline functions.  We don't want extra calls to
-     _mcount when the inline function is expanded.  Even if that made
-     sense, it wouldn't work here as there is no function label for
-     the inline expansion.  */
-  if (DECL_INLINE (cfun->decl))
-    return;
+  ASM_GENERATE_INTERNAL_LABEL (begin_label_name, FUNC_BEGIN_PROLOG_LABEL,
+			       current_function_number);
+  begin_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (begin_label_name));
 
   if (TARGET_64BIT)
     emit_move_insn (arg_pointer_rtx,
@@ -3478,10 +3495,10 @@ hppa_profile_hook (label_no)
 #ifndef NO_PROFILE_COUNTERS
   {
     rtx count_label_rtx, addr, r24;
-    char label_name[16];
+    char count_label_name[16];
 
-    ASM_GENERATE_INTERNAL_LABEL (label_name, "LP", label_no);
-    count_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (label_name));
+    ASM_GENERATE_INTERNAL_LABEL (count_label_name, "LP", label_no);
+    count_label_rtx = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (count_label_name));
 
     if (flag_pic)
       {
@@ -3508,7 +3525,7 @@ hppa_profile_hook (label_no)
     call_insn =
       emit_call_insn (gen_call_profiler (gen_rtx_SYMBOL_REF (Pmode, "_mcount"),
 					 GEN_INT (TARGET_64BIT ? 24 : 12),
-					 XEXP (DECL_RTL (cfun->decl), 0)));
+					 begin_label_rtx));
 
     use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), r24);
   }
@@ -3517,7 +3534,7 @@ hppa_profile_hook (label_no)
   call_insn =
     emit_call_insn (gen_call_profiler (gen_rtx_SYMBOL_REF (Pmode, "_mcount"),
 				       GEN_INT (TARGET_64BIT ? 16 : 8),
-				       XEXP (DECL_RTL (cfun->decl), 0)));
+				       begin_label_rtx));
 #endif
 
   /* Indicate the _mcount call cannot throw, nor will it execute a
