@@ -1,3 +1,24 @@
+2001-12-05  Vincent Celier <celier@gnat.com>
+
+	* gnatcmd.adb: (MAKE): Add new translations: -b /BIND_ONLY, 
+	-c /COMPILE_ONLY, -l /LINK_ONLY
+	
+	* opt.ads:
+	(Bind_Only): New Flag
+	(Link_Only): New flag
+	
+	* switch.adb (Scan_Make_Switches): Add processing for -b (Bind_Only) 
+	and -l (Link_Only)
+	
+	* makeusg.adb: Add new switches -b and -l. Update Copyright notice.
+	
+	* make.adb:
+	(Do_Compile_Step, Do_Bind_Step, Do_Link_Step): New flags.
+	(Gnatmake): Set the step flags. Only perform a step if the
+	corresponding step flag is True.
+	(Scan_Make_Arg): Reset the bind and link step flags when -u
+	or -gnatc has been specified.
+
 2001-12-05  Ed Schonberg <schonber@gnat.com>
 
 	* sem_eval.adb (Eval_Concatenation): If left operand is a null string, 

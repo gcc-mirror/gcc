@@ -6,9 +6,9 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.14 $
+--                            $Revision$
 --                                                                          --
---          Copyright (C) 1992-2000 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,10 +68,16 @@ begin
    Write_Str ("a       Consider all files, even readonly ali files");
    Write_Eol;
 
+   --  Line for -b
+
+   Write_Switch_Char;
+   Write_Str ("b       Bind only");
+   Write_Eol;
+
    --  Line for -c
 
    Write_Switch_Char;
-   Write_Str ("c       Compile only, do not bind and link");
+   Write_Str ("c       Compile only");
    Write_Eol;
 
    --  Line for -f
@@ -97,6 +103,12 @@ begin
 
    Write_Switch_Char;
    Write_Str ("k       Keep going after compilation errors");
+   Write_Eol;
+
+   --  Line for -l
+
+   Write_Switch_Char;
+   Write_Str ("l       Link only");
    Write_Eol;
 
    --  Line for -m

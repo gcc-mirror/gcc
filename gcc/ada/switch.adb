@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.194 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -1164,6 +1164,12 @@ package body Switch is
             Ptr := Ptr + 1;
             Check_Readonly_Files := True;
 
+         --  Processing for b switch
+
+         when 'b' =>
+            Ptr := Ptr + 1;
+            Bind_Only := True;
+
          --  Processing for c switch
 
          when 'c' =>
@@ -1244,6 +1250,12 @@ package body Switch is
          when 'k' =>
             Ptr := Ptr + 1;
             Keep_Going := True;
+
+         --  Processing for l switch
+
+         when 'l' =>
+            Ptr := Ptr + 1;
+            Link_Only := True;
 
          when 'M' =>
             Ptr := Ptr + 1;
