@@ -4236,10 +4236,6 @@ note_invalid_constants (insn, address)
   /* Extract the operands of the insn */
   extract_insn(insn);
 
-  /* If this is an asm, we can't do anything about it (or can we?) */
-  if (INSN_CODE (insn) < 0)
-    return;
-
   /* Find the alternative selected */
   if (! constrain_operands (1))
     fatal_insn_not_found (insn);
@@ -4375,11 +4371,20 @@ arm_reorg (first)
 	  barrier = last_barrier->insn;
 	  ftmp = last_barrier;
 	}
+      /* ftmp is last fix that we can fit into this pool and we
+	 failed to find a barrier that we could use.  Insert a new
+	 barrier in the code and arrange to jump around it.  */
       else
-	/* ftmp is last fix that we can fit into this pool and we
-	   failed to find a barrier that we could use.  Insert a new
-	   barrier in the code and arrange to jump around it.  */
-	barrier = find_barrier (ftmp->insn, max_range - ftmp->address);
+        {
+	  /* Check that there isn't another fix that is in range that
+	     we couldn't fit into this pool because the pool was
+	     already too large: we need to put the pool before such an
+	     instruction.  */
+	  if (ftmp->next && ftmp->next->address < max_range)
+	    max_range = ftmp->address;
+
+	  barrier = find_barrier (ftmp->insn, max_range - ftmp->address);
+	}
 
       /* Scan over the fixes we have identified for this pool, fixing them
 	 up and adding the constants to the pool itself.  */

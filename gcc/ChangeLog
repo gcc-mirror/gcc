@@ -1,3 +1,10 @@
+Fri Sep  3 17:24:31 1999  Richard Earnshaw <rearnsha@arm.com>
+
+	* arm.c (note_invalid_constants): No need to ignore ASMs, we can
+	now rework these too.
+	(arm_reorg): If an insn can't reach the end of the current pool,
+	ensure that we emit that pool before the insn.
+
 Fri Sep  3 09:14:32 1999  Marc Espie <espie@tetto.liafa.jussieu.fr>
 
 	* tlink.c (scan_linker_output): Skip the initial underscore in
