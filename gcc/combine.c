@@ -6835,8 +6835,6 @@ rtx_equal_for_field_assignment_p (x, y)
      rtx x;
      rtx y;
 {
-  rtx last_x, last_y;
-
   if (x == y || rtx_equal_p (x, y))
     return 1;
 
@@ -6858,19 +6856,12 @@ rtx_equal_for_field_assignment_p (x, y)
 		      gen_lowpart_for_combine (GET_MODE (SUBREG_REG (x)), y)))
     return 1;
 
-  last_x = get_last_value (x);
-  last_y = get_last_value (y);
-
-  return ((last_x != 0
-	   && GET_CODE (last_x) != CLOBBER
-	   && rtx_equal_for_field_assignment_p (last_x, y))
-	  || (last_y != 0
-	      && GET_CODE (last_y) != CLOBBER
-	      && rtx_equal_for_field_assignment_p (x, last_y))
-	  || (last_x != 0 && last_y != 0
-	      && GET_CODE (last_x) != CLOBBER
-	      && GET_CODE (last_y) != CLOBBER
-	      && rtx_equal_for_field_assignment_p (last_x, last_y)));
+  /* We used to see if get_last_value of X and Y were the same but that's
+     not correct.  In one direction, we'll cause the assignment to have
+     the wrong destination and in the case, we'll import a register into this
+     insn that might have already have been dead.   So fail if none of the
+     above cases are true.  */
+  return 0;
 }
 
 /* See if X, a SET operation, can be rewritten as a bit-field assignment.
