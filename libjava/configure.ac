@@ -818,12 +818,12 @@ else
 	AC_CACHE_CHECK([whether gethostbyname_r declaration requires -D_REENTRANT],
 	[libjava_cv_gethostbyname_r_needs_reentrant],
 	[ AC_LANG_PUSH(C++)
-	  AC_TRY_COMPILE([#include <netdb.h>],
-	    [gethostbyname_r("", 0, 0);],
+	  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <netdb.h>]],
+	    [[gethostbyname_r("", 0, 0);]])],
 	    [libjava_cv_gethostbyname_r_needs_reentrant=no], [dnl
 		CPPFLAGS_SAVE="$CPPFLAGS"
 		CPPFLAGS="$CPPFLAGS -D_REENTRANT"
-		AC_TRY_COMPILE([#include <netdb.h>], [gethostbyname_r("", 0, 0);],
+		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <netdb.h>]], [[gethostbyname_r("", 0, 0);]])],
 		    [libjava_cv_gethostbyname_r_needs_reentrant=yes],
 		    [libjava_cv_gethostbyname_r_needs_reentrant=fail])
 		CPPFLAGS="$CPPFLAGS_SAVE"
@@ -838,11 +838,11 @@ else
 
      AC_CACHE_CHECK([for struct hostent_data],
 	[libjava_cv_struct_hostent_data], [dnl
-	AC_TRY_COMPILE([
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #if GETHOSTBYNAME_R_NEEDS_REENTRANT && !defined(_REENTRANT)
 # define _REENTRANT 1
 #endif
-#include <netdb.h>], [struct hostent_data data;],
+#include <netdb.h>]], [[struct hostent_data data;]])],
 	  [libjava_cv_struct_hostent_data=yes],
 	  [libjava_cv_struct_hostent_data=no])])
      if test "x$libjava_cv_struct_hostent_data" = xyes; then
@@ -903,13 +903,13 @@ else
 
       # We can save a little space at runtime if the mutex has m_count
       # or __m_count.  This is a nice hack for Linux.
-      AC_TRY_COMPILE([#include <pthread.h>], [
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pthread.h>]], [[
           extern pthread_mutex_t *mutex; int q = mutex->m_count;
-        ], AC_DEFINE(PTHREAD_MUTEX_HAVE_M_COUNT, 1,
+        ]])], AC_DEFINE(PTHREAD_MUTEX_HAVE_M_COUNT, 1,
              [Define if pthread_mutex_t has m_count member.]), [
-	AC_TRY_COMPILE([#include <pthread.h>], [
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <pthread.h>]], [[
 	    extern pthread_mutex_t *mutex; int q = mutex->__m_count;
-	  ], AC_DEFINE(PTHREAD_MUTEX_HAVE___M_COUNT, 1,
+	  ]])], AC_DEFINE(PTHREAD_MUTEX_HAVE___M_COUNT, 1,
             [Define if pthread_mutex_t has __m_count member.]))])
    fi
 
@@ -1194,50 +1194,50 @@ AC_HEADER_SYS_WAIT
 AC_CHECK_TYPE([ssize_t], [int])
 
 AC_MSG_CHECKING([for in_addr_t])
-AC_TRY_COMPILE([#include <sys/types.h>
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/types.h>
 #if STDC_HEADERS
 #include <stdlib.h>
 #include <stddef.h>
 #endif
 #if HAVE_NETINET_IN_H
 #include <netinet/in.h>
-#endif], [in_addr_t foo;],
+#endif]], [[in_addr_t foo;]])],
   [AC_DEFINE(HAVE_IN_ADDR_T, 1,
      [Define to 1 if 'in_addr_t' is defined in sys/types.h or netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether struct ip_mreq is in netinet/in.h])
-AC_TRY_COMPILE([#include <netinet/in.h>], [struct ip_mreq mreq;],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>]], [[struct ip_mreq mreq;]])],
   [AC_DEFINE(HAVE_STRUCT_IP_MREQ, 1,
      [Define if struct ip_mreq is defined in netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether struct ipv6_mreq is in netinet/in.h])
-AC_TRY_COMPILE([#include <netinet/in.h>], [struct ipv6_mreq mreq6;],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>]], [[struct ipv6_mreq mreq6;]])],
   [AC_DEFINE(HAVE_STRUCT_IPV6_MREQ, 1,
      [Define if struct ipv6_mreq is defined in netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([whether struct sockaddr_in6 is in netinet/in.h])
-AC_TRY_COMPILE([#include <netinet/in.h>], [struct sockaddr_in6 addr6;],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <netinet/in.h>]], [[struct sockaddr_in6 addr6;]])],
   [AC_DEFINE(HAVE_INET6, 1,
      [Define if inet6 structures are defined in netinet/in.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([for socklen_t in sys/socket.h])
-AC_TRY_COMPILE([#define _POSIX_PII_SOCKET
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#define _POSIX_PII_SOCKET
 #include <sys/types.h>
-#include <sys/socket.h>], [socklen_t x = 5;],
+#include <sys/socket.h>]], [[socklen_t x = 5;]])],
   [AC_DEFINE(HAVE_SOCKLEN_T, 1, [Define it socklen_t typedef is in sys/socket.h.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)])
 
 AC_MSG_CHECKING([for tm_gmtoff in struct tm])
-AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]], [[struct tm tim; tim.tm_gmtoff = 0;]])],
   [AC_DEFINE(STRUCT_TM_HAS_GMTOFF, 1, [Define if struct tm has tm_gmtoff field.])
    AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)
@@ -1246,13 +1246,13 @@ AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
    dnl when cross-compiling.  So instead we make an assumption that
    dnl the header file will mention timezone if it exists.
    dnl Don't find the win32 function timezone
-   AC_TRY_COMPILE([#include <time.h>], [void i(){long z2 = 2*timezone;}],
+   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]], [[void i(){long z2 = 2*timezone;}]])],
      [AC_DEFINE(HAVE_TIMEZONE, 1, [Define if global 'timezone' exists.])
       AC_MSG_RESULT(yes)],
      [AC_MSG_RESULT(no)
        AC_MSG_CHECKING([for global _timezone variable])
        dnl FIXME: As above, don't want link check
-       AC_TRY_COMPILE([#include <time.h>], [long z2 = _timezone;],
+       AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <time.h>]], [[long z2 = _timezone;]])],
          [AC_DEFINE(HAVE_UNDERSCORE_TIMEZONE, 1,
             [Define if your platform has the global _timezone variable.])
           AC_MSG_RESULT(yes)],

@@ -1,5 +1,10 @@
 2004-08-20  Michael Koch  <konqueror@gmx.de>
 
+	* configure.ac: Replaced all AC_TRY_COMPILE macros with
+	AC_COMPILE_IFELSE macros.
+
+2004-08-20  Michael Koch  <konqueror@gmx.de>
+
 	* configure.in: Renamed to configure.ac.
 	* configure.ac: New file.
 	* configure, Makefile.in, gcj/Makefile.in, include/Makefile.in
