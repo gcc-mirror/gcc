@@ -10,13 +10,15 @@ details.  */
 
 #include <config.h>
 
-#include <stdlib.h>
+#include <limits.h>
 #include <string.h>
 
 #pragma implementation "Class.h"
 
 #include <gcj/cni.h>
 #include <jvm.h>
+#include <java-threads.h>
+
 #include <java/lang/Class.h>
 #include <java/lang/ClassLoader.h>
 #include <java/lang/String.h>
@@ -26,6 +28,8 @@ details.  */
 #include <java/lang/reflect/Field.h>
 #include <java/lang/reflect/Constructor.h>
 #include <java/lang/AbstractMethodError.h>
+#include <java/lang/ArrayStoreException.h>
+#include <java/lang/ClassCastException.h>
 #include <java/lang/ClassNotFoundException.h>
 #include <java/lang/ExceptionInInitializerError.h>
 #include <java/lang/IllegalAccessException.h>
@@ -34,6 +38,7 @@ details.  */
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoClassDefFoundError.h>
 #include <java/lang/NoSuchFieldException.h>
+#include <java/lang/NoSuchMethodError.h>
 #include <java/lang/NoSuchMethodException.h>
 #include <java/lang/Thread.h>
 #include <java/lang/NullPointerException.h>
@@ -608,40 +613,10 @@ java::lang::Class::getMethods (void)
 jboolean
 java::lang::Class::isAssignableFrom (jclass klass)
 {
-  if (this == klass)
-    return true;
-  // Primitive types must be equal, which we just tested for.
-  if (isPrimitive () || ! klass || klass->isPrimitive())
-    return false;
-
-  // If target is array, so must source be.
-  if (isArray ())
-    {
-      if (! klass->isArray())
-	return false;
-      return getComponentType()->isAssignableFrom(klass->getComponentType());
-    }
-
-  if (isAssignableFrom (klass->getSuperclass()))
-    return true;
-
-  if (isInterface())
-    {
-      // See if source implements this interface.
-      for (int i = 0; i < klass->interface_count; ++i)
-	{
-	  jclass interface = klass->interfaces[i];
-	  // FIXME: ensure that class is prepared here.
-	  // See Spec 12.3.2.
-	  if (isAssignableFrom (interface))
-	    return true;
-	}
-    }
-
-  return false;
+  return _Jv_IsAssignableFrom (this, klass);
 }
 
-jboolean
+inline jboolean
 java::lang::Class::isInstance (jobject obj)
 {
   if (! obj || isPrimitive ())
@@ -649,7 +624,7 @@ java::lang::Class::isInstance (jobject obj)
   return isAssignableFrom (obj->getClass());
 }
 
-jboolean
+inline jboolean
 java::lang::Class::isInterface (void)
 {
   return (accflags & java::lang::reflect::Modifier::INTERFACE) != 0;
@@ -696,36 +671,32 @@ java::lang::Class::finalize (void)
 void
 java::lang::Class::initializeClass (void)
 {
-  // Short-circuit to avoid needless locking.
+  // jshort-circuit to avoid needless locking.
   if (state == JV_STATE_DONE)
     return;
 
-  // do this before we enter the monitor below, since this can cause
-  // exceptions.  Here we assume, that reading "state" is an atomic
-  // operation, I pressume that is true? --Kresten
+  // Step 1.
+  _Jv_MonitorEnter (this);
+
   if (state < JV_STATE_LINKED)
-    {
+    {    
 #ifdef INTERPRETER
       if (_Jv_IsInterpretedClass (this))
 	{
+	  // this can throw exceptions, so exit the monitor as a precaution.
+	  _Jv_MonitorExit (this);
 	  java::lang::ClassLoader::resolveClass0 (this);
-
-	  // Step 1.
 	  _Jv_MonitorEnter (this);
 	}
       else
 #endif
         {
-          // Step 1.
-	  _Jv_MonitorEnter (this);
 	  _Jv_PrepareCompiledClass (this);
 	}
     }
-  else
-    {
-      // Step 1.
-      _Jv_MonitorEnter (this);
-    }
+  
+  if (state <= JV_STATE_LINKED)
+    _Jv_PrepareConstantTimeTables (this);
 
   // Step 2.
   java::lang::Thread *self = java::lang::Thread::currentThread();
@@ -828,14 +799,14 @@ _Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 
 _Jv_Method *
 _Jv_LookupDeclaredMethod (jclass klass, _Jv_Utf8Const *name,
-			_Jv_Utf8Const *signature)
+                          _Jv_Utf8Const *signature)
 {
   for (; klass; klass = klass->getSuperclass())
     {
       _Jv_Method *meth = _Jv_GetMethodLocal (klass, name, signature);
 
       if (meth)
-	return meth;
+        return meth;
     }
 
   return NULL;
@@ -854,15 +825,15 @@ static _Jv_mcache method_cache[MCACHE_SIZE + 1];
 
 static void *
 _Jv_FindMethodInCache (jclass klass,
-		       _Jv_Utf8Const *name,
-		       _Jv_Utf8Const *signature)
+                       _Jv_Utf8Const *name,
+                       _Jv_Utf8Const *signature)
 {
   int index = name->hash & MCACHE_SIZE;
   _Jv_mcache *mc = method_cache + index;
   _Jv_Method *m = mc->method;
 
   if (mc->klass == klass
-      && m != NULL		// thread safe check
+      && m != NULL             // thread safe check
       && _Jv_equalUtf8Consts (m->name, name)
       && _Jv_equalUtf8Consts (m->signature, signature))
     return mc->method->ncode;
@@ -871,7 +842,7 @@ _Jv_FindMethodInCache (jclass klass,
 
 static void
 _Jv_AddMethodToCache (jclass klass,
-			_Jv_Method *method)
+                       _Jv_Method *method)
 {
   _Jv_MonitorEnter (&ClassClass); 
 
@@ -885,8 +856,10 @@ _Jv_AddMethodToCache (jclass klass,
 
 void *
 _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
-			   _Jv_Utf8Const *signature)
+                           _Jv_Utf8Const *signature)
 {
+  using namespace java::lang::reflect;
+
   void *ncode = _Jv_FindMethodInCache (klass, name, signature);
   if (ncode != 0)
     return ncode;
@@ -895,31 +868,432 @@ _Jv_LookupInterfaceMethod (jclass klass, _Jv_Utf8Const *name,
     {
       _Jv_Method *meth = _Jv_GetMethodLocal (klass, name, signature);
       if (! meth)
-	continue;
+        continue;
 
-      if (java::lang::reflect::Modifier::isStatic(meth->accflags))
-	JvThrow (new java::lang::IncompatibleClassChangeError);
-      if (java::lang::reflect::Modifier::isAbstract(meth->accflags))
-	JvThrow (new java::lang::AbstractMethodError);
-      if (! java::lang::reflect::Modifier::isPublic(meth->accflags))
-	JvThrow (new java::lang::IllegalAccessError);
+      if (Modifier::isStatic(meth->accflags))
+	JvThrow (new java::lang::IncompatibleClassChangeError
+	         (_Jv_GetMethodString (klass, meth->name)));
+      if (Modifier::isAbstract(meth->accflags))
+	JvThrow (new java::lang::AbstractMethodError
+	         (_Jv_GetMethodString (klass, meth->name)));
+      if (! Modifier::isPublic(meth->accflags))
+	JvThrow (new java::lang::IllegalAccessError
+	         (_Jv_GetMethodString (klass, meth->name)));
 
       _Jv_AddMethodToCache (klass, meth);
 
       return meth->ncode;
     }
   JvThrow (new java::lang::IncompatibleClassChangeError);
-  return NULL;			// Placate compiler.
+  return NULL;                 // Placate compiler.
 }
 
-void
-_Jv_InitClass (jclass klass)
+// Fast interface method lookup by index.
+void *
+_Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, int method_idx)
 {
-  klass->initializeClass();
+  _Jv_IDispatchTable *cldt = klass->idt;
+  int idx = iface->idt->iface.ioffsets[cldt->cls.iindex] + method_idx;
+  return cldt->cls.itable[idx];
+}
+
+inline jboolean
+_Jv_IsAssignableFrom (jclass target, jclass source)
+{
+  if (target == &ObjectClass 
+      || source == target 
+      || (source->ancestors != NULL 
+          && source->ancestors[source->depth - target->depth] == target))
+     return true;
+     
+  // If target is array, so must source be.  
+  if (target->isArray ())
+    {
+      if (! source->isArray())
+	return false;
+      return _Jv_IsAssignableFrom(target->getComponentType(), 
+                                  source->getComponentType());
+    }
+        
+  if (target->isInterface())
+    {
+      _Jv_IDispatchTable *cl_idt = source->idt;
+      _Jv_IDispatchTable *if_idt = target->idt;
+      jshort cl_iindex = cl_idt->cls.iindex;
+      if (cl_iindex <= if_idt->iface.ioffsets[0])
+        {
+	  jshort offset = if_idt->iface.ioffsets[cl_iindex];
+	  if (offset < cl_idt->cls.itable_length
+	      && cl_idt->cls.itable[offset] == target)
+	    return true;
+	}
+      return false;
+    }
+    
+  return false;
 }
 
 jboolean
 _Jv_IsInstanceOf(jobject obj, jclass cl)
 {
-  return cl->isInstance(obj);
+  return (obj ? _Jv_IsAssignableFrom (cl, JV_CLASS (obj)) : false);
+}
+
+void *
+_Jv_CheckCast (jclass c, jobject obj)
+{
+  if (obj != NULL && ! _Jv_IsAssignableFrom(c, JV_CLASS (obj)))
+    JvThrow (new java::lang::ClassCastException);
+  return obj;
+}
+
+void
+_Jv_CheckArrayStore (jobject arr, jobject obj)
+{
+  if (obj)
+    {
+      JvAssert (arr != NULL);
+      jclass elt_class = (JV_CLASS (arr))->getComponentType();
+      jclass obj_class = JV_CLASS (obj);
+      if (! _Jv_IsAssignableFrom (elt_class, obj_class))
+	JvThrow (new java::lang::ArrayStoreException);
+    }
+}
+
+#define INITIAL_IOFFSETS_LEN 4
+#define INITIAL_IFACES_LEN 4
+
+// Generate tables for constant-time assignment testing and interface
+// method lookup. This implements the technique described by Per Bothner
+// <per@bothner.com> on the java-discuss mailing list on 1999-09-02:
+// http://sourceware.cygnus.com/ml/java-discuss/1999-q3/msg00377.html
+void 
+_Jv_PrepareConstantTimeTables (jclass klass)
+{  
+  if (klass->isPrimitive () || klass->isInterface ())
+    return;
+  
+  // Short-circuit in case we've been called already.
+  if ((klass->idt != NULL) || klass->depth != 0)
+    return;
+
+  // Calculate the class depth and ancestor table. The depth of a class 
+  // is how many "extends" it is removed from Object. Thus the depth of 
+  // java.lang.Object is 0, but the depth of java.io.FilterOutputStream 
+  // is 2. Depth is defined for all regular and array classes, but not 
+  // interfaces or primitive types.
+   
+  jclass klass0 = klass;
+  while (klass0 != &ObjectClass)
+    {
+      klass0 = klass0->superclass;
+      klass->depth++;
+    }
+
+  // We do class member testing in constant time by using a small table 
+  // of all the ancestor classes within each class. The first element is 
+  // a pointer to the current class, and the rest are pointers to the 
+  // classes ancestors, ordered from the current class down by decreasing 
+  // depth. We do not include java.lang.Object in the table of ancestors, 
+  // since it is redundant.
+	
+  klass->ancestors = (jclass *) _Jv_Malloc (klass->depth * sizeof (jclass));
+  klass0 = klass;
+  for (int index = 0; index < klass->depth; index++)
+    {
+      klass->ancestors[index] = klass0;
+      klass0 = klass0->superclass;
+    }
+    
+  if (klass->isArray () 
+      || java::lang::reflect::Modifier::isAbstract (klass->accflags))
+    return;
+
+  klass->idt = 
+    (_Jv_IDispatchTable *) _Jv_Malloc (sizeof (_Jv_IDispatchTable));
+    
+  _Jv_ifaces ifaces;
+
+  ifaces.count = 0;
+  ifaces.len = INITIAL_IFACES_LEN;
+  ifaces.list = (jclass *) _Jv_Malloc (ifaces.len * sizeof (jclass *));
+
+  int itable_size = _Jv_GetInterfaces (klass, &ifaces);
+
+  if (ifaces.count > 0)
+    {
+      klass->idt->cls.itable = 
+	(void **) _Jv_Malloc (itable_size * sizeof (void *));
+      klass->idt->cls.itable_length = itable_size;
+          
+      jshort *itable_offsets = 
+	(jshort *) _Jv_Malloc (ifaces.count * sizeof (jshort));
+
+      _Jv_GenerateITable (klass, &ifaces, itable_offsets);
+
+      jshort cls_iindex = 
+	_Jv_FindIIndex (ifaces.list, itable_offsets, ifaces.count);
+
+      for (int i=0; i < ifaces.count; i++)
+	{
+	  ifaces.list[i]->idt->iface.ioffsets[cls_iindex] =
+	    itable_offsets[i];
+	}
+
+      klass->idt->cls.iindex = cls_iindex;	    
+
+      _Jv_Free (ifaces.list);
+      _Jv_Free (itable_offsets);
+    }
+  else 
+    {
+      klass->idt->cls.iindex = SHRT_MAX;
+    }
+}
+
+// Return index of item in list, or -1 if item is not present.
+jshort
+_Jv_IndexOf (void *item, void **list, jshort list_len)
+{
+  for (int i=0; i < list_len; i++)
+    {
+      if (list[i] == item)
+        return i;
+    }
+  return -1;
+}
+
+// Find all unique interfaces directly or indirectly implemented by klass.
+// Returns the size of the interface dispatch table (itable) for klass, which 
+// is the number of unique interfaces plus the total number of methods that 
+// those interfaces declare. May extend ifaces if required.
+jshort
+_Jv_GetInterfaces (jclass klass, _Jv_ifaces *ifaces)
+{
+  jshort result = 0;
+  
+  for (int i=0; i < klass->interface_count; i++)
+    {
+      jclass iface = klass->interfaces[i];
+      if (_Jv_IndexOf (iface, (void **) ifaces->list, ifaces->count) == -1)
+        {
+	  if (ifaces->count + 1 >= ifaces->len)
+	    {
+	      /* Resize ifaces list */
+	      ifaces->len = ifaces->len * 2;
+	      ifaces->list = (jclass *) _Jv_Realloc (ifaces->list, 
+	                     ifaces->len * sizeof(jclass));
+	    }
+	  ifaces->list[ifaces->count] = iface;
+	  ifaces->count++;
+
+	  result += _Jv_GetInterfaces (klass->interfaces[i], ifaces);
+	}
+    }
+    
+  if (klass->isInterface())
+    {
+      result += klass->method_count + 1;
+    }
+  else
+    {
+      if (klass->superclass)
+        {
+	  result += _Jv_GetInterfaces (klass->superclass, ifaces);
+	}
+    }
+  return result;
+}
+
+// Fill out itable in klass, resolving method declarations in each ifaces.
+// itable_offsets is filled out with the position of each iface in itable,
+// such that itable[itable_offsets[n]] == ifaces.list[n].
+void
+_Jv_GenerateITable (jclass klass, _Jv_ifaces *ifaces, jshort *itable_offsets)
+{
+  void **itable = klass->idt->cls.itable;
+  jshort itable_pos = 0;
+
+  for (int i=0; i < ifaces->count; i++)
+    { 
+      jclass iface = ifaces->list[i];
+      itable_offsets[i] = itable_pos;
+      itable_pos = _Jv_AppendPartialITable (klass, iface, itable,
+                   itable_pos);
+      
+      /* Create interface dispatch table for iface */
+      if (iface->idt == NULL)
+	{
+	  iface->idt = 
+	    (_Jv_IDispatchTable *) _Jv_Malloc (sizeof (_Jv_IDispatchTable));
+
+	  // The first element of ioffsets is its length (itself included).
+	  jshort *ioffsets = 
+	    (jshort *) _Jv_Malloc (INITIAL_IOFFSETS_LEN * sizeof (jshort));
+	  ioffsets[0] = INITIAL_IOFFSETS_LEN;
+	  for (int i=1; i < INITIAL_IOFFSETS_LEN; i++)
+	    ioffsets[i] = -1;
+
+	  iface->idt->iface.ioffsets = ioffsets;	    
+	}
+    }
+}
+
+// Format method name for use in error messages.
+jstring
+_Jv_GetMethodString (jclass klass, _Jv_Utf8Const *name)
+{
+  jstring r = JvNewStringUTF (klass->name->data);
+  r = r->concat (JvNewStringUTF ("."));
+  r = r->concat (JvNewStringUTF (name->data));
+  return r;
+}
+
+void 
+_Jv_ThrowNoSuchMethodError ()
+{
+  JvThrow (new java::lang::NoSuchMethodError ());
+}
+
+// Each superinterface of a class (i.e. each interface that the class
+// directly or indirectly implements) has a corresponding "Partial
+// Interface Dispatch Table" whose size is (number of methods + 1) words.
+// The first word is a pointer to the interface (i.e. the java.lang.Class
+// instance for that interface).  The remaining words are pointers to the
+// actual methods that implement the methods declared in the interface,
+// in order of declaration.
+//
+// Append partial interface dispatch table for "iface" to "itable", at
+// position itable_pos.
+// Returns the offset at which the next partial ITable should be appended.
+jshort
+_Jv_AppendPartialITable (jclass klass, jclass iface, void **itable, 
+                         jshort pos)
+{
+  using namespace java::lang::reflect;
+
+  itable[pos++] = (void *) iface;
+  _Jv_Method *meth;
+  
+  for (int j=0; j < iface->method_count; j++)
+    {
+      meth = NULL;
+      for (jclass cl = klass; cl; cl = cl->getSuperclass())
+        {
+	  meth = _Jv_GetMethodLocal (cl, iface->methods[j].name,
+                 iface->methods[j].signature);
+		 
+	  if (meth)
+	    break;
+	}
+
+      if (meth && (meth->name->data[0] == '<'))
+	{
+	  // leave a placeholder in the itable for hidden init methods.
+          itable[pos] = NULL;	
+	}
+      else if (meth)
+        {
+	  if (Modifier::isStatic(meth->accflags))
+	    JvThrow (new java::lang::IncompatibleClassChangeError
+	             (_Jv_GetMethodString (klass, meth->name)));
+	  if (Modifier::isAbstract(meth->accflags))
+	    JvThrow (new java::lang::AbstractMethodError
+	             (_Jv_GetMethodString (klass, meth->name)));
+	  if (! Modifier::isPublic(meth->accflags))
+	    JvThrow (new java::lang::IllegalAccessError
+	             (_Jv_GetMethodString (klass, meth->name)));
+
+	  itable[pos] = meth->ncode;
+	}
+      else
+        {
+	  // The method doesn't exist in klass. Binary compatibility rules
+	  // permit this, so we delay the error until runtime using a pointer
+	  // to a method which throws an exception.
+	  itable[pos] = (void *) _Jv_ThrowNoSuchMethodError;
+	}
+      pos++;
+    }
+    
+  return pos;
+}
+
+static _Jv_Mutex_t iindex_mutex;
+bool iindex_mutex_initialized = false;
+
+// We need to find the correct offset in the Class Interface Dispatch 
+// Table for a given interface. Once we have that, invoking an interface 
+// method just requires combining the Method's index in the interface 
+// (known at compile time) to get the correct method.  Doing a type test 
+// (cast or instanceof) is the same problem: Once we have a possible Partial 
+// Interface Dispatch Table, we just compare the first element to see if it 
+// matches the desired interface. So how can we find the correct offset?  
+// Our solution is to keep a vector of candiate offsets in each interface 
+// (idt->iface.ioffsets), and in each class we have an index 
+// (idt->cls.iindex) used to select the correct offset from ioffsets.
+//
+// Calculate and return iindex for a new class. 
+// ifaces is a vector of num interfaces that the class implements.
+// offsets[j] is the offset in the interface dispatch table for the
+// interface corresponding to ifaces[j].
+// May extend the interface ioffsets if required.
+jshort
+_Jv_FindIIndex (jclass *ifaces, jshort *offsets, jshort num)
+{
+  int i;
+  int j;
+  
+  // Acquire a global lock to prevent itable corruption in case of multiple 
+  // classes that implement an intersecting set of interfaces being linked
+  // simultaneously. We can assume that the mutex will be initialized
+  // single-threaded.
+  if (! iindex_mutex_initialized)
+    {
+      _Jv_MutexInit (&iindex_mutex);
+      iindex_mutex_initialized = true;
+    }
+  
+  _Jv_MutexLock (&iindex_mutex);
+  
+  for (i=1;; i++)  /* each potential position in ioffsets */
+    {
+      for (j=0;; j++)  /* each iface */
+        {
+	  if (j >= num)
+	    goto found;
+	  if (i > ifaces[j]->idt->iface.ioffsets[0])
+	    continue;
+	  int ioffset = ifaces[j]->idt->iface.ioffsets[i];
+	  /* We can potentially share this position with another class. */
+	  if (ioffset >= 0 && ioffset != offsets[j])
+	    break; /* Nope. Try next i. */	  
+	}
+    }
+  found:
+  for (j = 0; j < num; j++)
+    {
+      int len = ifaces[j]->idt->iface.ioffsets[0];
+      if (i >= len) 
+	{
+	  /* Resize ioffsets. */
+	  int newlen = 2 * len;
+	  if (i >= newlen)
+	    newlen = i + 3;
+	  jshort *old_ioffsets = ifaces[j]->idt->iface.ioffsets;
+	  jshort *new_ioffsets = (jshort *) _Jv_Realloc (old_ioffsets, 
+	                                  newlen * sizeof(jshort));	  
+	  new_ioffsets[0] = newlen;
+
+	  while (len < newlen)
+	    new_ioffsets[len++] = -1;
+	  
+	  ifaces[j]->idt->iface.ioffsets = new_ioffsets;
+	}
+      ifaces[j]->idt->iface.ioffsets[i] = offsets[j];
+    }
+
+  _Jv_MutexUnlock (&iindex_mutex);
+
+  return i;
 }

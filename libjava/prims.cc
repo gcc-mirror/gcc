@@ -42,11 +42,9 @@ details.  */
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/ClassFormatError.h>
-#include <java/lang/ClassCastException.h>
 #include <java/lang/NegativeArraySizeException.h>
 #include <java/lang/NullPointerException.h>
 #include <java/lang/OutOfMemoryError.h>
-#include <java/lang/ArrayStoreException.h>
 #include <java/lang/System.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
@@ -286,31 +284,6 @@ _Jv_ThrowBadArrayIndex(jint bad_index)
 	   (java::lang::String::valueOf(bad_index)));
 }
 
-void*
-_Jv_CheckCast (jclass c, jobject obj)
-{
-  if (obj != NULL && ! c->isAssignableFrom(obj->getClass()))
-    JvThrow (new java::lang::ClassCastException);
-  return obj;
-}
-
-void
-_Jv_CheckArrayStore (jobject arr, jobject obj)
-{
-  if (obj)
-    {
-      JvAssert (arr != NULL);
-      jclass arr_class = arr->getClass();
-      JvAssert (arr_class->isArray());
-      jclass elt_class = arr_class->getComponentType();
-      jclass obj_class = obj->getClass();
-      if (! elt_class->isAssignableFrom(obj_class))
-	JvThrow (new java::lang::ArrayStoreException);
-    }
-}
-
-
-
 // Allocate some unscanned memory and throw an exception if no memory.
 void *
 _Jv_AllocBytesChecked (jsize size)
@@ -419,54 +392,6 @@ _Jv_NewPrimArray (jclass eltype, jint count)
   // assignment.
   *((_Jv_VTable **) arr) = klass->vtable;
   return arr;
-}
-
-jcharArray
-JvNewCharArray (jint length)
-{
-  return (jcharArray) _Jv_NewPrimArray (JvPrimClass (char), length);
-}
-
-jbooleanArray
-JvNewBooleanArray (jint length)
-{
-  return (jbooleanArray) _Jv_NewPrimArray (JvPrimClass (boolean), length);
-}
-
-jbyteArray
-JvNewByteArray (jint length)
-{
-  return (jbyteArray) _Jv_NewPrimArray (JvPrimClass (byte), length);
-}
-
-jshortArray
-JvNewShortArray (jint length)
-{
-  return (jshortArray) _Jv_NewPrimArray (JvPrimClass (short), length);
-}
-
-jintArray
-JvNewIntArray (jint length)
-{
-  return (jintArray) _Jv_NewPrimArray (JvPrimClass (int), length);
-}
-
-jlongArray
-JvNewLongArray (jint length)
-{
-  return (jlongArray) _Jv_NewPrimArray (JvPrimClass (long), length);
-}
-
-jfloatArray
-JvNewFloatArray (jint length)
-{
-  return (jfloatArray) _Jv_NewPrimArray (JvPrimClass (float), length);
-}
-
-jdoubleArray
-JvNewDoubleArray (jint length)
-{
-  return (jdoubleArray) _Jv_NewPrimArray (JvPrimClass (double), length);
 }
 
 jobject
@@ -919,14 +844,6 @@ _Jv_SetMaximumHeapSize (const char *arg)
 
 
 void *
-_Jv_MallocUnchecked (jsize size)
-{
-  if (size == 0)
-    size = 1;
-  return malloc ((size_t) size);
-}
-
-void *
 _Jv_Malloc (jsize size)
 {
   if (size == 0)
@@ -935,6 +852,25 @@ _Jv_Malloc (jsize size)
   if (ptr == NULL)
     JvThrow (no_memory);
   return ptr;
+}
+
+void *
+_Jv_Realloc (void *ptr, jsize size)
+{
+  if (size == 0)
+    size = 1;
+  ptr = realloc (ptr, (size_t) size);
+  if (ptr == NULL)
+    JvThrow (no_memory);
+  return ptr;
+}
+
+void *
+_Jv_MallocUnchecked (jsize size)
+{
+  if (size == 0)
+    size = 1;
+  return malloc ((size_t) size);
 }
 
 void

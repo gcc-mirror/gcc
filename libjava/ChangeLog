@@ -1,3 +1,77 @@
+2000-03-07  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* resolve.cc (_Jv_SearchMethodInClass): New function.
+	(_Jv_ResolvePoolEntry): Search superinterfaces for interface methods.
+	* java/lang/Class.h (_Jv_SearchMethodInClass): New prototype.
+
+2000-03-07  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/Class.h (union _Jv_IDispatchTable): New declaration.
+	(struct _Jv_ifaces): New declaration.
+	JV_CLASS: New macro definition.
+	(getComponentType): Relocate below isArray() for inlining.
+	(getModifiers): Declare `inline'.
+	(getSuperclass): Ditto.
+	(isArray): Ditto.
+	(isPrimitive): Ditto.
+	(_Jv_IsAssignableFrom): New prototype.
+	(_Jv_LookupInterfaceMethodIdx): New prototype. Predeclare with "C"
+	linkage.
+	(_Jv_InitClass): Move from natClass.cc. Declare `inline'.
+	Check for JV_STATE_DONE before invoking initializeClass().
+	(_Jv_PrepareConstantTimeTables): New prototype.
+	(_Jv_GetInterfaces): Ditto.
+	(_Jv_GenerateITable): Ditto.
+	(_Jv_GetMethodString): Ditto.
+	(_Jv_AppendPartialITable): Ditto.
+	(_Jv_FindIIndex): Ditto.
+	depth, ancestors, idt: New class fields.
+
+	* java/lang/natClass.cc (isAssignableFrom): Move functionality to
+	inline function `_Jv_IsAssignableFrom'. Use that function.
+	(isInstance): Declare `inline'.
+	(initializeClass): Get lock on class before checking `state'. Unlock 
+	before calling resolveClass0. Call _Jv_PrepareConstantTimeTables with 
+	the lock held.
+	(_Jv_LookupInterfaceMethod): Use _Jv_GetMessageString.
+	(_Jv_IsAssignableFrom): New inline function. Test assignability using 
+	class->depth and ancestor table.
+	(_Jv_IsInstanceOf): Use _Jv_IsAssignableFrom.
+	(_Jv_CheckCast): Move from prims.cc. Use JV_CLASS and
+	_Jv_IsAssignableFrom.
+	(_Jv_CheckArrayStore): Ditto.
+	(_Jv_LookupInterfaceMethodIdx): New function. 
+	INITIAL_IOFFSETS_LEN, INITIAL_IFACES_LEN: New #defines.
+	(_Jv_PrepareConstantTimeTables): New function.
+	(_Jv_IndexOf): Ditto.
+	(_Jv_GetInterfaces): Ditto.
+	(_Jv_GenerateITable): Ditto.
+	(_Jv_GetMethodString): Ditto.
+	(_Jv_AppendPartialITable): Ditto.
+	iindex_mutex, iindex_mutex_initialized: New static fields.
+	(_Jv_FindIIndex): New function.
+
+	* java/lang/natClassLoader.cc (_Jv_NewClass): Set new jclass fields.
+
+	* prims.cc (_Jv_CheckCast): Moved to natClass.cc.
+	(_Jv_CheckArrayStore): Ditto.
+	(JvNewCharArray, JvNewBooleanArray, JvNewByteArray, JvNewShortArray,
+	JvNewIntArray, JvNewLongArray, JvNewFloatArray, JvNewDoubleArray):
+	Moved to gcj/array.h.
+	(_Jv_Realloc): New function.
+
+	* gcj/cni.h: Move _Jv_PrimClass definitions to gcj/array.h.
+
+	* gcj/array.h: _Jv_PrimClass definitions moved from gcj/cni.h.
+	(JvNewCharArray, JvNewBooleanArray, JvNewByteArray,
+	JvNewShortArray, JvNewIntArray, JvNewLongArray, JvNewFloatArray,
+	JvNewDoubleArray): Implementations moved from prims.cc and
+	declared `inline'.
+
+	* gcj/javaprims.h (_Jv_Realloc): Prototype.
+
+	* include/jvm.h (_Jv_LookupInterfaceMethodIdx): Prototype.
+
 2000-03-06  Tom Tromey  <tromey@cygnus.com>
 
 	* jni.cc (MARK_NONE): New define.

@@ -22,6 +22,10 @@ details.  */
 extern "C" void _Jv_InitClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
 
+// This must be predefined with "C" linkage.
+extern "C" void *_Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, 
+                                               int meth_idx);
+
 // These are the possible values for the `state' field of the class
 // structure.  Note that ordering is important here.  Whenever the
 // state changes, one should notify all waiters of this class.
@@ -60,12 +64,40 @@ struct _Jv_Method
   _Jv_Utf8Const *signature;
   _Jv_ushort accflags;
   void *ncode;
-
   _Jv_Method *getNextMethod ()
   { return this + 1; }
 };
 
+// Interface Dispatch Tables 
+union _Jv_IDispatchTable
+{
+  struct
+  {
+    // Index into interface's ioffsets.
+    jshort iindex;
+    jshort itable_length;
+    // Class Interface dispatch table.
+    void **itable;
+  } cls;
+
+  struct
+  {
+    // Offsets into implementation class itables.
+    jshort *ioffsets;
+  } iface;
+};
+
+// Used by _Jv_GetInterfaces ()
+struct _Jv_ifaces
+{
+  jclass *list;
+  jshort len;
+  jshort count;
+};
+
 #define JV_PRIMITIVE_VTABLE ((_Jv_VTable *) -1)
+
+#define JV_CLASS(Obj) ((jclass) (*(_Jv_VTable **) Obj)->clas)
 
 class java::lang::Class : public java::lang::Object
 {
@@ -76,11 +108,6 @@ public:
   java::lang::ClassLoader *getClassLoader (void)
     {
       return loader;
-    }
-
-  jclass getComponentType (void)
-    {
-      return isArray () ? (* (jclass *) &methods) : 0;
     }
 
   java::lang::reflect::Constructor *getConstructor (JArray<jclass> *);
@@ -112,7 +139,7 @@ public:
   java::lang::reflect::Method *getMethod (jstring, JArray<jclass> *);
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
-  jint getModifiers (void)
+  inline jint getModifiers (void)
     {
       return accflags;
     }
@@ -123,21 +150,26 @@ public:
   java::io::InputStream *getResourceAsStream (jstring resourceName);
   JArray<jobject> *getSigners (void);
 
-  jclass getSuperclass (void)
+  inline jclass getSuperclass (void)
     {
       return superclass;
     }
 
-  jboolean isArray (void)
+  inline jboolean isArray (void)
     {
       return name->data[0] == '[';
+    }
+
+  inline jclass getComponentType (void)
+    {
+      return isArray () ? (* (jclass *) &methods) : 0;
     }
 
   jboolean isAssignableFrom (jclass cls);
   jboolean isInstance (jobject obj);
   jboolean isInterface (void);
-
-  jboolean isPrimitive (void)
+  
+  inline jboolean isPrimitive (void)
     {
       return vtable == JV_PRIMITIVE_VTABLE;
     }
@@ -150,11 +182,12 @@ public:
     {
       return size_in_bytes;
     }
-
+    
   // finalization
   void finalize ();
 
-private:
+private:   
+
   void checkMemberAccess (jint flags);
 
   void initializeClass (void);
@@ -162,10 +195,19 @@ private:
   // Friend functions implemented in natClass.cc.
   friend _Jv_Method *_Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
 					 _Jv_Utf8Const *signature);
+  friend jboolean _Jv_IsAssignableFrom(jclass, jclass);
+  friend void *_Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, 
+					     int method_idx);
+
+  inline friend void 
+  _Jv_InitClass (jclass klass)
+  {
+    if (klass->state != JV_STATE_DONE)
+      klass->initializeClass ();
+  }
+
   friend _Jv_Method* _Jv_LookupDeclaredMethod (jclass, _Jv_Utf8Const *, 
 					       _Jv_Utf8Const*);
-  friend void _Jv_InitClass (jclass klass);
-
   friend jfieldID JvGetFirstInstanceField (jclass);
   friend jint JvNumInstanceFields (jclass);
   friend jfieldID JvGetFirstStaticField (jclass);
@@ -205,6 +247,12 @@ private:
 			      java::lang::ClassLoader *loader);
 
   friend void _Jv_PrepareCompiledClass (jclass);
+  friend void _Jv_PrepareConstantTimeTables (jclass);
+  friend jshort _Jv_GetInterfaces (jclass, _Jv_ifaces *);
+  friend void _Jv_GenerateITable (jclass, _Jv_ifaces *, jshort *);
+  friend jstring _Jv_GetMethodString(jclass, _Jv_Utf8Const *);
+  friend jshort _Jv_AppendPartialITable (jclass, jclass, void **, jshort);
+  friend jshort _Jv_FindIIndex (jclass *, jshort *, jshort);
 
 #ifdef INTERPRETER
   friend jboolean _Jv_IsInterpretedClass (jclass);
@@ -213,6 +261,10 @@ private:
 				       _Jv_Utf8Const*);
   friend void _Jv_InitField (jobject, jclass, int);
   friend _Jv_word _Jv_ResolvePoolEntry (jclass, int);
+  friend _Jv_Method *_Jv_SearchMethodInClass (jclass cls, jclass klass, 
+                        		      _Jv_Utf8Const *method_name, 
+					      _Jv_Utf8Const *method_signature);
+
   friend void _Jv_PrepareClass (jclass);
 
   friend class _Jv_ClassReader;	
@@ -265,6 +317,12 @@ private:
   // The thread which has locked this class.  Used during class
   // initialization.
   java::lang::Thread *thread;
+  // How many levels of "extends" this class is removed from Object.
+  jshort depth;
+  // Vector of this class's superclasses, ordered by decreasing depth.
+  jclass *ancestors;
+  // Interface Dispatch Table.
+  _Jv_IDispatchTable *idt;
 };
 
 #endif /* __JAVA_LANG_CLASS_H__ */

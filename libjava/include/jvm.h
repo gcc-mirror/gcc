@@ -156,7 +156,9 @@ extern "C" jobject _Jv_NewMultiArray (jclass klass, jint dims, ...)
   __attribute__((__malloc__));
 extern "C" void *_Jv_CheckCast (jclass klass, jobject obj);
 extern "C" void *_Jv_LookupInterfaceMethod (jclass klass, Utf8Const *name,
-					    Utf8Const *signature);
+                                           Utf8Const *signature);
+extern "C" void *_Jv_LookupInterfaceMethodIdx (jclass klass, jclass iface, 
+                                               int meth_idx);
 extern "C" void _Jv_CheckArrayStore (jobject array, jobject obj);
 extern "C" void _Jv_RegisterClass (jclass klass);
 extern "C" void _Jv_RegisterClasses (jclass *classes);
