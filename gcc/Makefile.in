@@ -1361,7 +1361,7 @@ except.o : except.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    insn-config.h $(RECOG_H) output.h except.h toplev.h
 expr.o : expr.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h function.h \
    regs.h insn-flags.h insn-codes.h expr.h insn-config.h $(RECOG_H) output.h \
-   typeclass.h hard-reg-set.h toplev.h modemap.def hard-reg-set.h except.h
+   typeclass.h hard-reg-set.h toplev.h hard-reg-set.h except.h
 calls.o : calls.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h expr.h \
    insn-codes.h insn-flags.h regs.h toplev.h output.h
 expmed.o : expmed.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h  \
