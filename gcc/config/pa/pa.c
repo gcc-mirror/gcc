@@ -21,7 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -662,8 +661,9 @@ legitimize_pic_address (orig, mode, reg)
 	}
       else
 	pic_ref = gen_rtx_MEM (Pmode,
-			       gen_rtx_PLUS (Pmode,
-					     pic_offset_table_rtx, orig));
+			       gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+					     orig));
+
       current_function_uses_pic_offset_table = 1;
       RTX_UNCHANGING_P (pic_ref) = 1;
       emit_move_insn (reg, pic_ref);
@@ -803,16 +803,14 @@ hppa_legitimize_address (x, oldx, mode)
       if (! VAL_14_BITS_P (newoffset)
 	  && GET_CODE (XEXP (x, 0)) == SYMBOL_REF)
 	{
-	  rtx const_part
-	    = gen_rtx_CONST (VOIDmode, gen_rtx_PLUS (Pmode,
-						     XEXP (x, 0),
-						     GEN_INT (newoffset)));
+	  rtx const_part = plus_constant (XEXP (x, 0), newoffset);
 	  rtx tmp_reg
 	    = force_reg (Pmode,
 			 gen_rtx_HIGH (Pmode, const_part));
 	  ptr_reg
 	    = force_reg (Pmode,
-			 gen_rtx_LO_SUM (Pmode, tmp_reg, const_part));
+			 gen_rtx_LO_SUM (Pmode,
+					 tmp_reg, const_part));
 	}
       else
 	{
@@ -850,8 +848,9 @@ hppa_legitimize_address (x, oldx, mode)
         reg2 = force_reg (Pmode, force_operand (reg2, 0));
 
       return force_reg (Pmode, gen_rtx_PLUS (Pmode,
-					     gen_rtx_MULT (Pmode, reg2,
-						           GEN_INT (val)),
+					     gen_rtx_MULT (Pmode,
+							   reg2,
+							   GEN_INT (val)),
 					     reg1));
     }
 
@@ -926,11 +925,12 @@ hppa_legitimize_address (x, oldx, mode)
 	  reg1 = force_reg (Pmode, gen_rtx_PLUS (Pmode, reg1, GEN_INT (val)));
 
 	  /* We can now generate a simple scaled indexed address.  */
-	  return force_reg (Pmode,
-			    gen_rtx_PLUS (Pmode,
-					  gen_rtx_MULT (Pmode, reg1,
-						        XEXP (XEXP (idx, 0), 1)),
-					  base));
+	  return
+	    force_reg
+	      (Pmode, gen_rtx_PLUS (Pmode,
+				    gen_rtx_MULT (Pmode, reg1,
+						  XEXP (XEXP (idx, 0), 1)),
+				    base));
 	}
 
       /* If B + C is still a valid base register, then add them.  */
@@ -948,7 +948,8 @@ hppa_legitimize_address (x, oldx, mode)
 	    reg2 = force_reg (Pmode, force_operand (reg2, 0));
 
 	  return force_reg (Pmode, gen_rtx_PLUS (Pmode,
-					         gen_rtx_MULT (Pmode, reg2,
+						 gen_rtx_MULT (Pmode,
+							       reg2,
 							       GEN_INT (val)),
 						 reg1));
 	}
@@ -1034,9 +1035,10 @@ hppa_legitimize_address (x, oldx, mode)
 
 	      return force_reg (Pmode,
 				gen_rtx_PLUS (Pmode,
-					      gen_rtx_MULT (Pmode, reg2,
+					      gen_rtx_MULT (Pmode,
+							    reg2,
 							    GEN_INT (val)),
-						reg1));
+					      reg1));
 	    }
 	  else if ((mode == DFmode || mode == SFmode)
 		   && GET_CODE (XEXP (y, 0)) == SYMBOL_REF
@@ -1054,12 +1056,12 @@ hppa_legitimize_address (x, oldx, mode)
 		regx2 = force_reg (Pmode, force_operand (regx2, 0));
 	      regx2 = force_reg (Pmode, gen_rtx_fmt_ee (GET_CODE (y), Pmode,
 							regx2, regx1));
-	      return force_reg (Pmode,
-				gen_rtx_PLUS (Pmode,
-					      gen_rtx_MULT (Pmode, regx2,
-						            XEXP (XEXP (x, 0),
-							    1)),
-					      force_reg (Pmode, XEXP (y, 0))));
+	      return
+		force_reg (Pmode,
+			   gen_rtx_PLUS (Pmode,
+					 gen_rtx_MULT (Pmode, regx2,
+						       XEXP (XEXP (x, 0), 1)),
+					 force_reg (Pmode, XEXP (y, 0))));
 	    }
 	  else if (GET_CODE (XEXP (y, 1)) == CONST_INT
 		   && INTVAL (XEXP (y, 1)) >= -4096
@@ -1201,8 +1203,8 @@ emit_move_sequence (operands, mode, scratch_reg)
 	}
       else
 	emit_move_insn (scratch_reg, XEXP (operand1, 0));
-      emit_insn (gen_rtx_SET (VOIDmode, operand0, gen_rtx_MEM (mode,
-							       scratch_reg)));
+      emit_insn (gen_rtx_SET (VOIDmode, operand0,
+			      gen_rtx_MEM (mode, scratch_reg)));
       return 1;
     }
   else if (fp_reg_operand (operand1, mode)
@@ -1266,7 +1268,8 @@ emit_move_sequence (operands, mode, scratch_reg)
       emit_move_sequence (xoperands, Pmode, 0);
 
       /* Now load the destination register.  */
-      emit_insn (gen_rtx_SET (mode, operand0, gen_rtx_MEM (mode, scratch_reg)));
+      emit_insn (gen_rtx_SET (mode, operand0,
+			      gen_rtx_MEM (mode, scratch_reg)));
       return 1;
     }
   /* Handle secondary reloads for SAR.  These occur when trying to load
@@ -1495,7 +1498,8 @@ emit_move_sequence (operands, mode, scratch_reg)
 	      if (ishighonly)
 		set = gen_rtx_SET (mode, operand0, temp);
 	      else
-		set = gen_rtx_SET (VOIDmode, operand0,
+		set = gen_rtx_SET (VOIDmode,
+				   operand0,
 				   gen_rtx_LO_SUM (mode, temp, operand1));
 
 	      emit_insn (gen_rtx_SET (VOIDmode,
@@ -2515,18 +2519,16 @@ remove_useless_addtr_insns (insns, check_notes)
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+
 static void
 store_reg (reg, disp, base)
      int reg, disp, base;
 {
   if (VAL_14_BITS_P (disp))
-    {
-      emit_move_insn (gen_rtx_MEM (word_mode,
-				   gen_rtx_PLUS (Pmode,
-						 gen_rtx_REG (Pmode, base),
-						 GEN_INT (disp))),
-				   gen_rtx_REG (word_mode, reg));
-    }
+    emit_move_insn (gen_rtx_MEM (word_mode,
+				 plus_constant (gen_rtx_REG (Pmode, base),
+						disp)),
+		    gen_rtx_REG (word_mode, reg));
   else
     {
       emit_move_insn (gen_rtx_REG (Pmode, 1),
@@ -2545,18 +2547,16 @@ store_reg (reg, disp, base)
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+
 static void
 load_reg (reg, disp, base)
      int reg, disp, base;
 {
   if (VAL_14_BITS_P (disp))
-    {
-      emit_move_insn (gen_rtx_REG (word_mode, reg),
-		      gen_rtx_MEM (word_mode,
-				   gen_rtx_PLUS (Pmode,
-						 gen_rtx_REG (Pmode, base),
-				            GEN_INT (disp))));
-    }
+    emit_move_insn (gen_rtx_REG (word_mode, reg),
+		    gen_rtx_MEM (word_mode,
+				 plus_constant (gen_rtx_REG (Pmode, base),
+						disp)));
   else
     {
       emit_move_insn (gen_rtx_REG (Pmode, 1),
@@ -2575,17 +2575,14 @@ load_reg (reg, disp, base)
 
    Note in DISP > 8k case, we will leave the high part of the address
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+
 static void
-set_reg_plus_d(reg, base, disp)
+set_reg_plus_d (reg, base, disp)
      int reg, base, disp;
 {
   if (VAL_14_BITS_P (disp))
-    {
-      emit_move_insn (gen_rtx_REG (Pmode, reg),
-		      gen_rtx_PLUS (Pmode,
-				    gen_rtx_REG (Pmode, base),
-				    GEN_INT (disp)));
-    }
+    emit_move_insn (gen_rtx_REG (Pmode, reg),
+		    plus_constant (gen_rtx_REG (Pmode, base), disp));
   else
     {
       emit_move_insn (gen_rtx_REG (Pmode, 1),
@@ -2839,7 +2836,8 @@ hppa_expand_prologue()
 	 place to get the expected results.   sprintf here is just to
 	 put something in the name.  */
       sprintf(hp_profile_label_name, "LP$%04d", -1);
-      hp_profile_label_rtx = gen_rtx_SYMBOL_REF (Pmode, hp_profile_label_name);
+      hp_profile_label_rtx = gen_rtx_SYMBOL_REF (Pmode,
+						 hp_profile_label_name);
       if (current_function_returns_struct)
 	store_reg (STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
       if (current_function_needs_context)
@@ -6392,11 +6390,12 @@ pa_combine_instructions (insns)
 		  || anchor_attr == PA_COMBINE_TYPE_FMPY))
 	    {
 	      /* Emit the new instruction and delete the old anchor.  */
-	      emit_insn_before (gen_rtx_PARALLEL (VOIDmode,
-						  gen_rtvec (2,
-							     PATTERN (anchor),
-							     PATTERN (floater))),
-						  anchor);
+	      emit_insn_before (gen_rtx_PARALLEL
+				(VOIDmode,
+				 gen_rtvec (2, PATTERN (anchor),
+					    PATTERN (floater))),
+				anchor);
+
 	      PUT_CODE (anchor, NOTE);
 	      NOTE_LINE_NUMBER (anchor) = NOTE_INSN_DELETED;
 	      NOTE_SOURCE_FILE (anchor) = 0;
@@ -6413,10 +6412,13 @@ pa_combine_instructions (insns)
 	    {
 	      rtx temp;
 	      /* Emit the new_jump instruction and delete the old anchor.  */
-	      temp = emit_jump_insn_before (gen_rtx_PARALLEL (VOIDmode,
-					      gen_rtvec (2, PATTERN (anchor),
-							 PATTERN (floater))),
-				anchor);
+	      temp
+		= emit_jump_insn_before (gen_rtx_PARALLEL
+					 (VOIDmode,
+					  gen_rtvec (2, PATTERN (anchor),
+						     PATTERN (floater))),
+					 anchor);
+
 	      JUMP_LABEL (temp) = JUMP_LABEL (anchor);
 	      PUT_CODE (anchor, NOTE);
 	      NOTE_LINE_NUMBER (anchor) = NOTE_INSN_DELETED;

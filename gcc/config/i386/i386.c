@@ -1441,11 +1441,11 @@ static rtx
 gen_push (arg)
      rtx arg;
 {
-  return gen_rtx (SET, VOIDmode,
-		  gen_rtx_MEM (SImode,
-			       gen_rtx (PRE_DEC, SImode,
-					stack_pointer_rtx)),
-		  arg);
+  return gen_rtx_SET (VOIDmode,
+		      gen_rtx_MEM (SImode,
+				   gen_rtx_PRE_DEC (SImode,
+						    stack_pointer_rtx)),
+		      arg);
 }
 
 /* Compute the size of local storage taking into consideration the
@@ -2239,9 +2239,9 @@ legitimize_address (x, oldx, mode)
 	  && (log = (unsigned)exact_log2 (INTVAL (XEXP (XEXP (x, 0), 1)))) < 4)
 	{
 	  changed = 1;
-	  XEXP (x, 0) = gen_rtx (MULT, Pmode,
-				 force_reg (Pmode, XEXP (XEXP (x, 0), 0)),
-				 GEN_INT (1 << log));
+	  XEXP (x, 0) = gen_rtx_MULT (Pmode,
+				      force_reg (Pmode, XEXP (XEXP (x, 0), 0)),
+				      GEN_INT (1 << log));
 	}
 
       if (GET_CODE (XEXP (x, 1)) == ASHIFT
@@ -2249,9 +2249,9 @@ legitimize_address (x, oldx, mode)
 	  && (log = (unsigned)exact_log2 (INTVAL (XEXP (XEXP (x, 1), 1)))) < 4)
 	{
 	  changed = 1;
-	  XEXP (x, 1) = gen_rtx (MULT, Pmode,
-				 force_reg (Pmode, XEXP (XEXP (x, 1), 0)),
-				 GEN_INT (1 << log));
+	  XEXP (x, 1) = gen_rtx_MULT (Pmode,
+				      force_reg (Pmode, XEXP (XEXP (x, 1), 0)),
+				      GEN_INT (1 << log));
 	}
 
       /* Put multiply first if it isn't already. */
@@ -2270,10 +2270,10 @@ legitimize_address (x, oldx, mode)
       if (GET_CODE (XEXP (x, 0)) == MULT && GET_CODE (XEXP (x, 1)) == PLUS)
 	{
 	  changed = 1;
-	  x = gen_rtx (PLUS, Pmode,
-		       gen_rtx (PLUS, Pmode, XEXP (x, 0),
-				XEXP (XEXP (x, 1), 0)),
-		       XEXP (XEXP (x, 1), 1));
+	  x = gen_rtx_PLUS (Pmode,
+			    gen_rtx_PLUS (Pmode, XEXP (x, 0),
+					  XEXP (XEXP (x, 1), 0)),
+			    XEXP (XEXP (x, 1), 1));
 	}
 
       /* Canonicalize
@@ -2303,10 +2303,10 @@ legitimize_address (x, oldx, mode)
 	  if (constant)
 	    {
 	      changed = 1;
-	      x = gen_rtx (PLUS, Pmode,
-			   gen_rtx (PLUS, Pmode, XEXP (XEXP (x, 0), 0),
-				    XEXP (XEXP (XEXP (x, 0), 1), 0)),
-			   plus_constant (other, INTVAL (constant)));
+	      x = gen_rtx_PLUS (Pmode,
+				gen_rtx_PLUS (Pmode, XEXP (XEXP (x, 0), 0),
+					      XEXP (XEXP (XEXP (x, 0), 1), 0)),
+				plus_constant (other, INTVAL (constant)));
 	    }
 	}
 

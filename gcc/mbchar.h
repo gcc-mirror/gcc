@@ -1,4 +1,4 @@
-/* mbchar.h - Various declarations for functions found in mbchar.c
+/* Various declarations for functions found in mbchar.c
    Copyright (C) 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -22,7 +22,8 @@ Boston, MA 02111-1307, USA.  */
 #define __GCC_MBCHAR_H__
 
 #ifdef MULTIBYTE_CHARS
-/* escape character used for JIS encoding */
+
+/* Escape character used for JIS encoding */
 #define JIS_ESC_CHAR 0x1b
 
 #define ISSJIS1(c)   ((c) >= 0x81 && (c) <= 0x9f || (c) >= 0xe0 && (c) <= 0xef)
@@ -30,12 +31,10 @@ Boston, MA 02111-1307, USA.  */
 #define ISEUCJP(c)   ((c) >= 0xa1 && (c) <= 0xfe)
 #define ISJIS(c)     ((c) >= 0x21 && (c) <= 0x7e)
 
-int local_mbtowc     PROTO ((wchar_t *, const char *, size_t));
-int local_mblen      PROTO ((const char *, size_t));
-int local_mb_cur_max PROTO ((void));
+extern int local_mbtowc     PROTO ((wchar_t *, char *, size_t));
+extern int local_mblen      PROTO ((char *, size_t));
+extern int local_mb_cur_max PROTO ((void));
 
 /* The locale being used for multibyte characters in string/char literals.  */
 extern char *literal_codeset;
 #endif /* MULTIBYTE_CHARS */
-
-#endif /* __GCC_MBCHAR_H__ */

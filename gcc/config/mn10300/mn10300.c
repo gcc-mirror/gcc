@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "regs.h"
@@ -233,7 +233,7 @@ print_operand (file, x, code)
       case 'A':
 	fputc ('(', file);
 	if (GET_CODE (XEXP (x, 0)) == REG)
-	  output_address (gen_rtx (PLUS, SImode, XEXP (x, 0), GEN_INT (0)));
+	  output_address (gen_rtx_PLUS (SImode, XEXP (x, 0), GEN_INT (0)));
 	else
 	  output_address (XEXP (x, 0));
 	fputc (')', file);
@@ -314,9 +314,9 @@ print_operand_address (file, addr)
     {
     case REG:
       if (addr == stack_pointer_rtx)
-	print_operand_address (file, gen_rtx (PLUS, SImode,
-					      stack_pointer_rtx,
-					      GEN_INT (0)));
+	print_operand_address (file, gen_rtx_PLUS (SImode,
+						   stack_pointer_rtx,
+						   GEN_INT (0)));
       else
 	print_operand (file, addr, 0);
       break;
@@ -376,14 +376,12 @@ expand_prologue ()
      need to be flushed back to the stack.  */
   if (current_function_varargs)
     {
-      emit_move_insn (gen_rtx (MEM, SImode,
-			       gen_rtx (PLUS, Pmode, stack_pointer_rtx,
-					GEN_INT (4))),
-		      gen_rtx (REG, SImode, 0));
-      emit_move_insn (gen_rtx (MEM, SImode,
-			       gen_rtx (PLUS, Pmode, stack_pointer_rtx,
-					GEN_INT (8))),
-		      gen_rtx (REG, SImode, 1));
+      emit_move_insn (gen_rtx_MEM (SImode,
+				   plus_constant (stack_pointer_rtx, 4)),
+		      gen_rtx_REG (SImode, 0));
+      emit_move_insn (gen_rtx_MEM (SImode,
+				   plus_constant (stack_pointer_rtx, 8)),
+		      gen_rtx_REG (SImode, 1));
     }
 
   /* And now store all the registers onto the stack with a
@@ -747,10 +745,10 @@ function_arg (cum, mode, type, named)
   switch (cum->nbytes / UNITS_PER_WORD)
     {
     case 0:
-      result = gen_rtx (REG, mode, 0);
+      result = gen_rtx_REG (mode, 0);
       break;
     case 1:
-      result = gen_rtx (REG, mode, 1);
+      result = gen_rtx_REG (mode, 1);
       break;
     default:
       result = 0;
@@ -995,7 +993,7 @@ legitimize_address (x, oldx, mode)
 	  regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
 	  regx1 = force_reg (Pmode,
 			     gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
-	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+	  return force_reg (Pmode, gen_rtx_PLUS (Pmode, regx1, regy1));
 	}
     }
   return x;

@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "flags.h"
 #include "rtl.h"
 #include "tree.h"
@@ -522,7 +522,7 @@ singlemove_string (operands)
 	  rtx xoperands[2];
 
 	  cc_status.flags &= ~CC_F0_IS_0;
-	  xoperands[0] = gen_rtx (REG, SFmode, 32);
+	  xoperands[0] = gen_rtx_REG (SFmode, 32);
 	  xoperands[1] = operands[1];
 	  output_asm_insn (singlemove_string (xoperands), xoperands);
 	  xoperands[1] = xoperands[0];
@@ -627,14 +627,14 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
@@ -693,7 +693,7 @@ output_move_double (operands)
 	  xops[0] = latehalf[0];
 	  xops[1] = operands[0];
 	  output_asm_insn ("adds %1,%0,%1", xops);
-	  operands[1] = gen_rtx (MEM, DImode, operands[0]);
+	  operands[1] = gen_rtx_MEM (DImode, operands[0]);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	  addreg1 = 0;
 	  highest_first = 1;
@@ -747,7 +747,7 @@ output_fp_move_double (operands)
   /* If the source operand is any sort of zero, use f0 instead.  */
 
   if (operands[1] == CONST0_RTX (GET_MODE (operands[1])))
-    operands[1] = gen_rtx (REG, DFmode, F0_REGNUM);
+    operands[1] = gen_rtx_REG (DFmode, F0_REGNUM);
 
   if (FP_REG_P (operands[0]))
     {
@@ -756,8 +756,8 @@ output_fp_move_double (operands)
       if (GET_CODE (operands[1]) == REG)
 	{
 	  output_asm_insn ("ixfr %1,%0", operands);
-	  operands[0] = gen_rtx (REG, VOIDmode, REGNO (operands[0]) + 1);
-	  operands[1] = gen_rtx (REG, VOIDmode, REGNO (operands[1]) + 1);
+	  operands[0] = gen_rtx_REG (VOIDmode, REGNO (operands[0]) + 1);
+	  operands[1] = gen_rtx_REG (VOIDmode, REGNO (operands[1]) + 1);
 	  return "ixfr %1,%0";
 	}
       if (operands[1] == CONST0_RTX (DFmode))
@@ -782,8 +782,8 @@ output_fp_move_double (operands)
       if (GET_CODE (operands[0]) == REG)
 	{
 	  output_asm_insn ("fxfr %1,%0", operands);
-	  operands[0] = gen_rtx (REG, VOIDmode, REGNO (operands[0]) + 1);
-	  operands[1] = gen_rtx (REG, VOIDmode, REGNO (operands[1]) + 1);
+	  operands[0] = gen_rtx_REG (VOIDmode, REGNO (operands[0]) + 1);
+	  operands[1] = gen_rtx_REG (VOIDmode, REGNO (operands[1]) + 1);
 	  return "fxfr %1,%0";
 	}
       if (CONSTANT_ADDRESS_P (XEXP (operands[0], 0)))
@@ -1116,8 +1116,7 @@ output_size_for_block_move (size, reg, align)
     output_asm_insn ("sub %2,%1,%0", xoperands);
   else
     {
-      xoperands[1]
-	= GEN_INT (INTVAL (size) - INTVAL (align));
+      xoperands[1] = GEN_INT (INTVAL (size) - INTVAL (align));
       cc_status.flags &= ~ CC_KNOW_HI_R31;
       output_asm_insn ("mov %1,%0", xoperands);
     }
@@ -1432,8 +1431,8 @@ output_delayed_branch (template, operands, insn)
   else
     {
       int insn_code_number;
-      rtx pat = gen_rtx (SET, VOIDmode, dest, src);
-      rtx delay_insn = gen_rtx (INSN, VOIDmode, 0, 0, 0, pat, -1, 0, 0);
+      rtx pat = gen_rtx_SET (VOIDmode, dest, src);
+      rtx delay_insn = gen_rtx_INSN (VOIDmode, 0, 0, 0, pat, -1, 0, 0);
       int i;
 
       /* Output the branch instruction first.  */

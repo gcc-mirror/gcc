@@ -976,6 +976,7 @@ extern rtx read_rtx			PROTO((FILE *));
 extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern rtx rtx_alloc			PROTO((RTX_CODE));
+extern rtx obstack_alloc_rtx		PROTO((int));
 extern rtvec rtvec_alloc		PROTO((int));
 extern rtx copy_rtx			PROTO((rtx));
 extern rtx copy_rtx_if_shared		PROTO((rtx));
@@ -1241,7 +1242,6 @@ extern rtx gen_rtx_MEM PROTO((enum machine_mode, rtx));
 /* We need the cast here to ensure that we get the same result both with
    and without prototypes.  */
 #define GEN_INT(N)  gen_rtx_CONST_INT (VOIDmode, (HOST_WIDE_INT) (N))
-
 
 /* If HARD_FRAME_POINTER_REGNUM is defined, then a special dummy reg
    is used to represent the frame pointer.  This is because the

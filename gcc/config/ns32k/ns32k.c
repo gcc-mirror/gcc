@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the NS32000.
-   Copyright (C) 1988, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 94, 95, 96, 97, 98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,7 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Some output-actions in ns32k.md need these.  */
 #include "config.h"
 #include "system.h"
 #include "rtl.h"
@@ -208,10 +207,10 @@ gen_indexed_expr (base, index, scale)
   /* This generates an invalid addressing mode, if BASE is
      fp or sp.  This is handled by PRINT_OPERAND_ADDRESS.  */
   if (GET_CODE (base) != REG && GET_CODE (base) != CONST_INT)
-    base = gen_rtx (MEM, SImode, base);
-  addr = gen_rtx (MULT, SImode, index,
-		  GEN_INT (1 << INTVAL (scale)));
-  addr = gen_rtx (PLUS, SImode, base, addr);
+    base = gen_rtx_MEM (SImode, base);
+  addr = gen_rtx_MULT (SImode, index,
+		       GEN_INT (1 << INTVAL (scale)));
+  addr = gen_rtx_PLUS (SImode, base, addr);
   return addr;
 }
 
@@ -246,8 +245,8 @@ split_di (operands, num, lo_half, hi_half)
     {
       if (GET_CODE (operands[num]) == REG)
 	{
-	  lo_half[num] = gen_rtx (REG, SImode, REGNO (operands[num]));
-	  hi_half[num] = gen_rtx (REG, SImode, REGNO (operands[num]) + 1);
+	  lo_half[num] = gen_rtx_REG (SImode, REGNO (operands[num]));
+	  hi_half[num] = gen_rtx_REG (SImode, REGNO (operands[num]) + 1);
 	}
       else if (CONSTANT_P (operands[num]))
 	{
@@ -324,14 +323,14 @@ output_move_double (operands)
      operands in OPERANDS to be suitable for the low-numbered word.  */
 
   if (optype0 == REGOP)
-    latehalf[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    latehalf[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (optype0 == OFFSOP)
     latehalf[0] = adj_offsettable_operand (operands[0], 4);
   else
     latehalf[0] = operands[0];
 
   if (optype1 == REGOP)
-    latehalf[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+    latehalf[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
   else if (optype1 == OFFSOP)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
@@ -382,7 +381,7 @@ output_move_double (operands)
 	  xops[0] = XEXP (operands[1], 0);
 	  xops[1] = operands[0];
 	  output_asm_insn ("addr %a0,%1", xops);
-	  operands[1] = gen_rtx (MEM, DImode, operands[0]);
+	  operands[1] = gen_rtx_MEM (DImode, operands[0]);
 	  latehalf[1] = adj_offsettable_operand (operands[1], 4);
 	  /* The first half has the overlap, Do the late half first.  */
 	  output_asm_insn (singlemove_string (latehalf), latehalf);
@@ -968,7 +967,7 @@ print_operand_address (file, addr)
 	case CONST_INT:
 	case LABEL_REF:
 	  if (offset)
-	    offset = gen_rtx (PLUS, SImode, tmp, offset);
+	    offset = gen_rtx_PLUS (SImode, tmp, offset);
 	  else
 	    offset = tmp;
 	  break;
@@ -1063,7 +1062,7 @@ print_operand_address (file, addr)
 	      case SYMBOL_REF:
 	      case LABEL_REF:
 		if (offset)
-		  offset = gen_rtx (PLUS, SImode, tmp, offset);
+		  offset = gen_rtx_PLUS (SImode, tmp, offset);
 		else
 		  offset = tmp;
 		break;

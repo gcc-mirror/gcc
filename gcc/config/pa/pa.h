@@ -880,7 +880,7 @@ int zdepi_cint_p ();
 #define LIBCALL_VALUE(MODE)	\
   gen_rtx_REG (MODE,							\
 	       (! TARGET_SOFT_FLOAT					\
-	        && ((MODE) == SFmode || (MODE) == DFmode) ? 32 : 28))
+		&& ((MODE) == SFmode || (MODE) == DFmode) ? 32 : 28))
 
 /* 1 if N is a possible register number for a function value
    as seen by the caller.  */
@@ -1007,41 +1007,42 @@ struct hppa_args {int words, nargs_prototype, indirect; };
       || !FLOAT_MODE_P (MODE) || TARGET_SOFT_FLOAT			\
       || (CUM).nargs_prototype > 0)					\
       ? gen_rtx_REG ((MODE),						\
-		 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
-		  ? (((!(CUM).indirect 					\
-		       || TARGET_PORTABLE_RUNTIME)			\
-		      && (MODE) == DFmode				\
-		      && ! TARGET_SOFT_FLOAT)				\
-		     ? ((CUM).words ? 38 : 34)				\
-		     : ((CUM).words ? 23 : 25))				\
-		  : (((!(CUM).indirect					\
-		       || TARGET_PORTABLE_RUNTIME)			\
-		      && (MODE) == SFmode				\
-		      && ! TARGET_SOFT_FLOAT)				\
-		     ? (32 + 2 * (CUM).words)				\
-		     : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),	\
-							      (TYPE))))))\
+		     (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
+		      ? (((!(CUM).indirect 				\
+			   || TARGET_PORTABLE_RUNTIME)			\
+			  && (MODE) == DFmode				\
+			  && ! TARGET_SOFT_FLOAT)			\
+			 ? ((CUM).words ? 38 : 34)			\
+			 : ((CUM).words ? 23 : 25))			\
+		      : (((!(CUM).indirect				\
+			   || TARGET_PORTABLE_RUNTIME)			\
+			  && (MODE) == SFmode				\
+			  && ! TARGET_SOFT_FLOAT)			\
+			 ? (32 + 2 * (CUM).words)			\
+			 : (27 - (CUM).words - FUNCTION_ARG_SIZE ((MODE),\
+								  (TYPE))))))\
    /* We are calling a non-prototyped function with floating point	\
       arguments using the portable conventions.  */			\
-   : gen_rtx_PARALLEL ((MODE),						\
-	      gen_rtvec							\
-	      (2,							\
-	       gen_rtx_EXPR_LIST (VOIDmode,				\
-			gen_rtx_REG ((MODE),				\
-				 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 \
-				  ? ((CUM).words ? 38 : 34)		\
-				  : (32 + 2 * (CUM).words))),		\
-			const0_rtx),					\
-	       gen_rtx_EXPR_LIST (VOIDmode,				\
-			gen_rtx_REG ((MODE),				\
-				 (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 \
-				  ? ((CUM).words ? 23 : 25)		\
-				  : (27 - (CUM).words -			\
-				     FUNCTION_ARG_SIZE ((MODE),		\
-							(TYPE))))),	\
-			const0_rtx)))					\
-  /* Pass this parameter in the stack.  */				\
-  : 0)
+   : (gen_rtx_PARALLEL							\
+      ((MODE),								\
+       gen_rtvec							\
+       (2,								\
+	gen_rtx_EXPR_LIST						\
+	(VOIDmode,							\
+	 gen_rtx_REG ((MODE),						\
+		      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1 		\
+		       ? ((CUM).words ? 38 : 34) : (32 + 2 * (CUM).words))), \
+	 const0_rtx),							\
+	gen_rtx_EXPR_LIST						\
+	(VOIDmode,							\
+	 gen_rtx_REG ((MODE),						\
+		      (FUNCTION_ARG_SIZE ((MODE), (TYPE)) > 1		\
+		       ? ((CUM).words ? 23 : 25)			\
+		       : (27 - (CUM).words -				\
+			  FUNCTION_ARG_SIZE ((MODE), (TYPE))))),	\
+	 const0_rtx))))							\
+      /* Pass this parameter in the stack.  */				\
+      : 0)
 
 /* For an arg passed partly in registers and partly in memory,
    this is the number of registers used.

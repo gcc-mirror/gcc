@@ -134,6 +134,7 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-flags.h"
 
 #include "obstack.h"
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
@@ -4449,6 +4450,14 @@ print_rtl_with_bb (outf, rtx_first)
 	  if (did_output)
 	    putc ('\n', outf);
 	}
+    }
+
+  if (current_function_epilogue_delay_list != 0)
+    {
+      fprintf (outf, "\n;; Insns in epilogue delay list:\n\n");
+      for (tmp_rtx = current_function_epilogue_delay_list; tmp_rtx != 0;
+	   tmp_rtx = XEXP (tmp_rtx, 1))
+	print_rtl_single (outf, XEXP (tmp_rtx, 0));
     }
 }
 

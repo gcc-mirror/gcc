@@ -76,7 +76,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include "system.h"
-#include "rtl.h" /* stdio.h must precede rtl.h for FFS.  */
+#include "rtl.h"
 #include "flags.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -1812,17 +1812,17 @@ try_combine (i3, i2, i1)
 	    ? gen_rtx_SET (VOIDmode, i1dest, i1src) : PATTERN (i1));
 
      if (added_sets_2)
-	{
-	  /* If there is no I1, use I2's body as is.  We used to also not do
-	     the subst call below if I2 was substituted into I3,
-	     but that could lose a simplification.  */
-	  if (i1 == 0)
-	    XVECEXP (newpat, 0, --total_sets) = i2pat;
-	  else
-	    /* See comment where i2pat is assigned.  */
-	    XVECEXP (newpat, 0, --total_sets)
-	      = subst (i2pat, i1dest, i1src, 0, 0);
-	}
+       {
+	 /* If there is no I1, use I2's body as is.  We used to also not do
+	    the subst call below if I2 was substituted into I3,
+	    but that could lose a simplification.  */
+	 if (i1 == 0)
+	   XVECEXP (newpat, 0, --total_sets) = i2pat;
+	 else
+	   /* See comment where i2pat is assigned.  */
+	   XVECEXP (newpat, 0, --total_sets)
+	     = subst (i2pat, i1dest, i1src, 0, 0);
+       }
     }
 
   /* We come here when we are replacing a destination in I2 with the
@@ -1906,14 +1906,14 @@ try_combine (i3, i2, i1)
 		  || (REG_N_SETS (REGNO (i2dest)) == 1 && ! added_sets_2
 		      && ! REG_USERVAR_P (i2dest))))
 	    ni2dest = gen_rtx_REG (GET_MODE (SET_DEST (newpat)),
-			       REGNO (i2dest));
+				   REGNO (i2dest));
 
-	  m_split = split_insns
-	    (gen_rtx_PARALLEL (VOIDmode,
-			       gen_rtvec (2, newpat,
-					  gen_rtx_CLOBBER (VOIDmode,
-							   ni2dest))),
-	     i3);
+	  m_split = split_insns (gen_rtx_PARALLEL
+				 (VOIDmode,
+				  gen_rtvec (2, newpat,
+					     gen_rtx_CLOBBER (VOIDmode,
+							      ni2dest))),
+				 i3);
 	}
 
       if (m_split && GET_CODE (m_split) == SEQUENCE
@@ -4604,7 +4604,10 @@ simplify_set (x)
      low-order bits.  */
 
   if (GET_MODE_CLASS (mode) == MODE_INT)
-    src = force_to_mode (src, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
+    {
+      src = force_to_mode (src, mode, GET_MODE_MASK (mode), NULL_RTX, 0);
+      SUBST (SET_SRC (x), src);
+    }
 
   /* If we are setting CC0 or if the source is a COMPARE, look for the use of
      the comparison result and try to simplify it unless we already have used
@@ -4851,6 +4854,68 @@ simplify_set (x)
 
       src = SET_SRC (x);
     }
+
+#ifdef HAVE_conditional_arithmetic
+  /* If we have conditional arithmetic and the operand of a SET is
+     a conditional expression, replace this with an IF_THEN_ELSE.
+     We can either have a conditional expression or a MULT of that expression
+     with a constant.  */
+  if ((GET_RTX_CLASS (GET_CODE (src)) == '1'
+       || GET_RTX_CLASS (GET_CODE (src)) == '2'
+       || GET_RTX_CLASS (GET_CODE (src)) == 'c')
+      && (GET_RTX_CLASS (GET_CODE (XEXP (src, 0))) == '<'
+	  || (GET_CODE (XEXP (src, 0)) == MULT
+	      && GET_RTX_CLASS (GET_CODE (XEXP (XEXP (src, 0), 0))) == '<'
+	      && GET_CODE (XEXP (XEXP (src, 0), 1)) == CONST_INT)))
+    {
+      rtx cond = XEXP (src, 0);
+      rtx true_val = const1_rtx;
+      rtx false_arm, true_arm;
+
+      if (GET_CODE (cond) == MULT)
+	{
+	  true_val = XEXP (cond, 1);
+	  cond = XEXP (cond, 0);
+	}
+
+      if (GET_RTX_CLASS (GET_CODE (src)) == '1')
+	{
+	  true_arm = gen_unary (GET_CODE (src), GET_MODE (src),
+				GET_MODE (XEXP (src, 0)), true_val);
+	  false_arm = gen_unary (GET_CODE (src), GET_MODE (src),
+				 GET_MODE (XEXP (src, 0)), const0_rtx);
+	}
+      else
+	{
+	  true_arm = gen_binary (GET_CODE (src), GET_MODE (src),
+				 true_val, XEXP (src, 1));
+	  false_arm = gen_binary (GET_CODE (src), GET_MODE (src),
+				  const0_rtx, XEXP (src, 1));
+	}
+
+      /* Canonicalize if true_arm is the simpler one.  */
+      if (GET_RTX_CLASS (GET_CODE (true_arm)) == 'o'
+	  && GET_RTX_CLASS (GET_CODE (false_arm)) != 'o'
+	  && reversible_comparison_p (cond))
+	{
+	  rtx temp = true_arm;
+
+	  true_arm = false_arm;
+	  false_arm = temp;
+
+	  cond = gen_rtx_combine (reverse_condition (GET_CODE (cond)),
+				  GET_MODE (cond), XEXP (cond, 0),
+				  XEXP (cond, 1));
+	}
+
+      src = gen_rtx_combine (IF_THEN_ELSE, GET_MODE (src),
+			     gen_rtx_combine (GET_CODE (cond), VOIDmode,
+					      XEXP (cond, 0),
+					      XEXP (cond, 1)),
+			     true_arm, false_arm);
+      SUBST (SET_SRC (x), src);
+    }
+#endif
 
   /* If either SRC or DEST is a CLOBBER of (const_int 0), make this
      whole thing fail.  */
@@ -5419,8 +5484,9 @@ expand_field_assignment (x)
 			+ (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)))
 	{
 	  x = gen_rtx_SET (VOIDmode, SUBREG_REG (SET_DEST (x)),
-			   gen_lowpart_for_combine (GET_MODE (SUBREG_REG (SET_DEST (x))),
-						    SET_SRC (x)));
+			   gen_lowpart_for_combine
+			   (GET_MODE (SUBREG_REG (SET_DEST (x))),
+			    SET_SRC (x)));
 	  continue;
 	}
       else
@@ -5458,22 +5524,22 @@ expand_field_assignment (x)
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
-      x = gen_rtx_SET (VOIDmode, copy_rtx (inner),
-		       gen_binary (IOR, compute_mode,
-				   gen_binary (AND, compute_mode,
-					       gen_unary (NOT, compute_mode,
-							  compute_mode,
-							  gen_binary (ASHIFT,
-								      compute_mode,
-								      mask, pos)),
-					       inner),
-				   gen_binary (ASHIFT, compute_mode,
-					       gen_binary (AND, compute_mode,
-							   gen_lowpart_for_combine
-							   (compute_mode,
-							    SET_SRC (x)),
-							   mask),
-					       pos)));
+      x = gen_rtx_SET
+	(VOIDmode, copy_rtx (inner),
+	 gen_binary (IOR, compute_mode,
+		     gen_binary (AND, compute_mode,
+				 gen_unary (NOT, compute_mode,
+					    compute_mode,
+					    gen_binary (ASHIFT,
+							compute_mode,
+							mask, pos)),
+				 inner),
+		     gen_binary (ASHIFT, compute_mode,
+				 gen_binary (AND, compute_mode,
+					     gen_lowpart_for_combine
+					     (compute_mode, SET_SRC (x)),
+					     mask),
+				 pos)));
     }
 
   return x;
@@ -5614,7 +5680,8 @@ make_extraction (mode, inner, pos, pos_rtx, len,
 	  if (tmode != inner_mode)
 	    new = gen_rtx_SUBREG (tmode, inner,
 				  (WORDS_BIG_ENDIAN
-				   && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD
+				   && (GET_MODE_SIZE (inner_mode)
+				       > UNITS_PER_WORD)
 				   ? (((GET_MODE_SIZE (inner_mode)
 					- GET_MODE_SIZE (tmode))
 				       / UNITS_PER_WORD)
@@ -5654,12 +5721,12 @@ make_extraction (mode, inner, pos, pos_rtx, len,
       && ! in_compare && ! spans_byte && unsignedp)
     return 0;
 
-  /* Unless we are allowed to span bytes, reject this if we would be
-     spanning bytes or if the position is not a constant and the length
-     is not 1.  In all other cases, we would only be going outside
-     out object in cases when an original shift would have been
+  /* Unless we are allowed to span bytes or INNER is not MEM, reject this if
+     we would be spanning bytes or if the position is not a constant and the
+     length is not 1.  In all other cases, we would only be going outside
+     our object in cases when an original shift would have been
      undefined.  */
-  if (! spans_byte
+  if (! spans_byte && GET_CODE (inner) == MEM
       && ((pos_rtx == 0 && pos + len > GET_MODE_BITSIZE (is_mode))
 	  || (pos_rtx != 0 && len != 1)))
     return 0;
@@ -9129,7 +9196,8 @@ recog_for_combine (pnewpat, insn, pnotes)
     {
       rtx newpat = gen_rtx_PARALLEL (VOIDmode,
 				     gen_rtvec (GET_CODE (pat) == PARALLEL
-						? XVECLEN (pat, 0) + num_clobbers_to_add
+						? (XVECLEN (pat, 0)
+						   + num_clobbers_to_add)
 						: num_clobbers_to_add + 1));
 
       if (GET_CODE (pat) == PARALLEL)
@@ -9230,6 +9298,7 @@ gen_lowpart_for_combine (mode, x)
       if (WORDS_BIG_ENDIAN)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
 		  - MAX (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+
       if (BYTES_BIG_ENDIAN)
 	{
 	  /* Adjust the address so that the address-after-the-data is
@@ -10208,12 +10277,17 @@ simplify_comparison (code, pop0, pop1)
 	     represents the low part, permute the SUBREG and the AND and
 	     try again.  */
 	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
-	      && ((mode_width
-		   >= GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (XEXP (op0, 0)))))
+	      && (0
 #ifdef WORD_REGISTER_OPERATIONS
-		  || subreg_lowpart_p (XEXP (op0, 0))
+		  || ((mode_width
+		       > (GET_MODE_BITSIZE
+			   (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
+		      && mode_width <= BITS_PER_WORD)
 #endif
-		  )
+		  || ((mode_width
+		       <= (GET_MODE_BITSIZE
+			   (GET_MODE (SUBREG_REG (XEXP (op0, 0))))))
+		      && subreg_lowpart_p (XEXP (op0, 0))))
 #ifndef WORD_REGISTER_OPERATIONS
 	      /* It is unsafe to commute the AND into the SUBREG if the SUBREG
 		 is paradoxical and WORD_REGISTER_OPERATIONS is not defined.
@@ -11700,8 +11774,7 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			  if (! find_regno_note (tem, REG_UNUSED,
 						 REGNO (XEXP (note, 0))))
 			    REG_NOTES (tem)
-			      = gen_rtx_EXPR_LIST (REG_UNUSED,
-						   XEXP (note, 0),
+			      = gen_rtx_EXPR_LIST (REG_UNUSED, XEXP (note, 0),
 						   REG_NOTES (tem));
 			}
 		      else
@@ -11863,8 +11936,8 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 			      && ! reg_bitfield_target_p (piece,
 							  PATTERN (place)))
 			    REG_NOTES (place)
-			      = gen_rtx_EXPR_LIST (REG_DEAD,
-						   piece, REG_NOTES (place));
+			      = gen_rtx_EXPR_LIST (REG_DEAD, piece,
+						   REG_NOTES (place));
 			}
 
 		      place = 0;

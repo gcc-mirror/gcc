@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #include "config.h"
 #include "system.h"
 #include <setjmp.h>
-/* #include <stab.h> */
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -796,7 +795,7 @@ make_decl_rtl (decl, asmspec, top_level)
 	  DECL_RTL (decl) = gen_rtx_MEM (DECL_MODE (decl),
 					 gen_rtx_SYMBOL_REF (Pmode, name));
 	  MEM_ALIAS_SET (DECL_RTL (decl)) = get_alias_set (decl);
-	    
+
 	  /* If this variable is to be treated as volatile, show its
 	     tree node has side effects.  If it has side effects, either
 	     because of this test or from TREE_THIS_VOLATILE also

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on AMD Am29000.
-   Copyright (C) 1987, 88, 90-94, 1995, 1997, 1999 Free Software
+   Copyright (C) 1987, 88, 90-95, 1997, 1998, 1999 Free Software
    Foundation, Inc. 
    Contributed by Richard Kenner (kenner@nyu.edu)
 
@@ -21,7 +21,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -854,9 +854,10 @@ a29k_clobbers_to (insn, op)
 
   for (i = R_LR (2); i < high_regno; i++)
     CALL_INSN_FUNCTION_USAGE (insn)
-      = gen_rtx (EXPR_LIST, VOIDmode,
-		 gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, SImode, i)),
-		 CALL_INSN_FUNCTION_USAGE (insn));
+      = gen_rtx_EXPR_LIST (VOIDmode,
+			   gen_rtx_CLOBBER (VOIDmode,
+					    gen_rtx (REG, SImode, i)),
+			   CALL_INSN_FUNCTION_USAGE (insn));
 }
 
 /* These routines are used in finding insns to fill delay slots in the

@@ -5169,9 +5169,9 @@ asctoeg (ss, y, oprec)
 	  else
 	    {
 	      if (decflg)
-		nexp += 1;	/* count digits after decimal point */
+		nexp += 1;		/* count digits after decimal point */
 
-	      eshup1 (yy);	/* multiply current number by 10 */
+	      eshup1 (yy);		/* multiply current number by 10 */
 	      emovz (yy, xt);
 	      eshup1 (xt);
 	      eshup1 (xt);
@@ -5274,7 +5274,7 @@ read_expnt:
       exp *= 10;
       exp += *s++ - '0';
       if (exp > 999999)
- 	break;
+	break;
     }
   if (esign < 0)
     exp = -exp;

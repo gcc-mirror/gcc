@@ -1,6 +1,6 @@
 /* Subroutines for insn-output.c for AT&T we32000 Family.
+   Copyright (C) 1991, 1992, 1997, 1998, 1999 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
-   Copyright (C) 1991, 1992, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -21,11 +21,10 @@ Boston, MA 02111-1307, USA.  */
 
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "function.h"
 #include "real.h"
-
 
 void
 output_move_double (operands)
@@ -37,7 +36,7 @@ output_move_double (operands)
 
   if (GET_CODE (operands[0]) == REG) 
     {
-      lsw_operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+      lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
       msw_dreg = operands[0];
     }
   else if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
@@ -47,7 +46,7 @@ output_move_double (operands)
 
   if (GET_CODE (operands[1]) == REG) 
     {
-      lsw_operands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+      lsw_operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
       lsw_sreg = lsw_operands[1];
     }
   else if (GET_CODE (operands[1]) == MEM && offsettable_memref_p (operands[1])) 
@@ -116,12 +115,12 @@ output_push_double (operands)
   rtx lsw_operands[1];
 
   if (GET_CODE (operands[0]) == REG)
-    lsw_operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+    lsw_operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
   else if (GET_CODE (operands[0]) == MEM && offsettable_memref_p (operands[0]))
     lsw_operands[0] = adj_offsettable_operand (operands[0], 4);
   else if (GET_CODE (operands[0]) == CONST_DOUBLE)
     {
-      lsw_operands[0] = GEN_INT (CONST_DOUBLE_HIGH (operands[0]));
+      lsw_operands[0] = GEN_INT CONST_DOUBLE_HIGH (operands[0]));
       operands[0] = GEN_INT (CONST_DOUBLE_LOW (operands[0]));
     }
   else if (GET_CODE (operands[0]) == CONST_INT)

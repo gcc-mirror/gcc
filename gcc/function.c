@@ -1419,7 +1419,7 @@ find_fixup_replacement (replacements, x)
   struct fixup_replacement *p;
 
   /* See if we have already replaced this.  */
-  for (p = *replacements; p && p->old != x; p = p->next)
+  for (p = *replacements; p != 0 && ! rtx_equal_p (p->old, x); p = p->next)
     ;
 
   if (p == 0)
@@ -2045,7 +2045,8 @@ fixup_var_refs_1 (var, promoted_mode, loc, insn, replacements)
 		    pos %= GET_MODE_BITSIZE (wanted_mode);
 
 		    newmem = gen_rtx_MEM (wanted_mode,
-					  plus_constant (XEXP (tem, 0), offset));
+					  plus_constant (XEXP (tem, 0),
+							 offset));
 		    RTX_UNCHANGING_P (newmem) = RTX_UNCHANGING_P (tem);
 		    MEM_COPY_ATTRIBUTES (newmem, tem);
 
@@ -2693,12 +2694,22 @@ purge_addressof_1 (loc, insn, force, store, ht)
 
   code = GET_CODE (x);
 
-  if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
+  /* If we don't return in any of the cases below, we will recurse inside
+     the RTX, which will normally result in any ADDRESSOF being forced into
+     memory.  */
+  if (code == SET)
     {
-      rtx insns;
+      purge_addressof_1 (&SET_DEST (x), insn, force, 1, ht);
+      purge_addressof_1 (&SET_SRC (x), insn, force, 0, ht);
+      return;
+    }
+
+  else if (code == ADDRESSOF && GET_CODE (XEXP (x, 0)) == MEM)
+    {
       /* We must create a copy of the rtx because it was created by
 	 overwriting a REG rtx which is always shared.  */
       rtx sub = copy_rtx (XEXP (XEXP (x, 0), 0));
+      rtx insns;
 
       if (validate_change (insn, loc, sub, 0)
 	  || validate_replace_rtx (x, sub, insn))
@@ -2715,6 +2726,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
       emit_insn_before (insns, insn);
       return;
     }
+
   else if (code == MEM && GET_CODE (XEXP (x, 0)) == ADDRESSOF && ! force)
     {
       rtx sub = XEXP (XEXP (x, 0), 0);
@@ -2727,13 +2739,9 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	  RTX_UNCHANGING_P (sub2) = RTX_UNCHANGING_P (sub);
 	  sub = sub2;
 	}
-
-      if (GET_CODE (sub) == REG
-	  && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
-	{
-	  put_addressof_into_stack (XEXP (x, 0), ht);
-	  return;
-	}
+      else if (GET_CODE (sub) == REG
+	       && (MEM_VOLATILE_P (x) || GET_MODE (x) == BLKmode))
+	;
       else if (GET_CODE (sub) == REG && GET_MODE (x) != GET_MODE (sub))
 	{
 	  int size_x, size_sub;
@@ -2890,6 +2898,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
 	      return;
 	    }
 	}
+
       else if (validate_change (insn, loc, sub, 0))
 	{
 	  /* Remember the replacement so that the same one can be done
@@ -2917,6 +2926,7 @@ purge_addressof_1 (loc, insn, force, store, ht)
     give_up:;
       /* else give up and put it into the stack */
     }
+
   else if (code == ADDRESSOF)
     {
       put_addressof_into_stack (x, ht);
@@ -5925,7 +5935,8 @@ expand_function_start (subr, parms_have_cleanups)
 	  last_ptr = plus_constant (last_ptr, - GET_MODE_SIZE (Pmode));
 #endif
 	  last_ptr = copy_to_reg (gen_rtx_MEM (Pmode,
-					       memory_address (Pmode, last_ptr)));
+					       memory_address (Pmode,
+							       last_ptr)));
 
 	  /* If we are not optimizing, ensure that we know that this
 	     piece of context is live over the entire function.  */

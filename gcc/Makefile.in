@@ -689,7 +689,7 @@ CCCP=@cpp_main@
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c tree-check.h \
- s-flags s-config s-codes s-mlib s-under\
+ s-flags s-config s-codes s-mlib s-unders s-genrtl \
  s-output s-recog s-emit s-extract s-peep s-check \
  s-attr s-attrtab s-opinit s-crt s-crtS s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
@@ -786,6 +786,16 @@ REGS_H = regs.h varray.h machmode.h machmode.def
 .SUFFIXES:
 .SUFFIXES: .c .o
 
+$(srcdir)/version.c: $(VERSION_DEP)
+	(cd $(srcdir); cvs log -h `basename $?`) >tmp-ver
+	tag=`sed '1,/^sym/d;s/	*gcc-//;s/:.*$$//;q' tmp-ver`; \
+	ver=`echo $${tag} | sed 's/-.*//' | sed 's/_/./g'`; \
+	date=`echo $${tag} | sed 's/.*-//'`; \
+	if [ $${date} != RELEASE ]; then ver="testgcc-$${ver} $${date} experimental"; fi; \
+	echo "char *version_string = \"$${ver}\";" >tmp-version.c
+	rm -f tmp-ver
+	$(srcdir)/move-if-change tmp-version.c $(srcdir)/version.c
+
 Makefile: $(srcdir)/Makefile.in config.status $(srcdir)/version.c \
    $(xmake_file) $(tmake_file) $(LANG_MAKEFILES)
 	$(SHELL) $(srcdir)/configure.frag $(srcdir) "$(SUBDIRS)" \
@@ -818,7 +828,7 @@ cstamp-h: config.in config.status
 # Really, really stupid make features, such as SUN's KEEP_STATE, may force
 # a target to build even if it is up-to-date.  So we must verify that
 # config.status does not exist before failing.
-config.status: configure version.c
+config.status: $(srcdir)/configure version.c
 	@if [ ! -f config.status ] ; then \
 	  echo You must configure gcc.  Look at the INSTALL file for details.; \
 	  false; \
@@ -1449,7 +1459,7 @@ prefix.o: prefix.c $(CONFIG_H) system.h Makefile prefix.h
 	-DPREFIX=\"$(prefix)\" \
 	  -c `echo $(srcdir)/prefix.c | sed 's,^\./,,'`
 
-convert.o: convert.c $(CONFIG_H) $(TREE_H) flags.h convert.h toplev.h
+convert.o: convert.c $(CONFIG_H) system.h $(TREE_H) flags.h convert.h toplev.h
 
 tree.o : tree.c $(CONFIG_H) system.h $(TREE_H) flags.h function.h toplev.h \
    ggc.h
@@ -1521,11 +1531,9 @@ emit-rtl.o : emit-rtl.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    function.h $(REGS_H) insn-config.h $(RECOG_H) real.h ggc.h \
    $(EXPR_H) $(srcdir)/../include/obstack.h hard-reg-set.h bitmap.h toplev.h
 real.o : real.c $(CONFIG_H) system.h $(TREE_H) toplev.h
-
 integrate.o : integrate.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h \
    integrate.h insn-flags.h insn-config.h $(EXPR_H) real.h $(REGS_H) \
    intl.h function.h output.h $(RECOG_H) except.h toplev.h
-
 jump.o : jump.c $(CONFIG_H) system.h $(RTL_H) flags.h hard-reg-set.h $(REGS_H) \
    insn-config.h insn-flags.h $(RECOG_H) $(EXPR_H) real.h except.h function.h \
    toplev.h insn-attr.h
@@ -1567,7 +1575,6 @@ bitmap.o : bitmap.c $(CONFIG_H) system.h $(RTL_H) flags.h $(BASIC_BLOCK_H) \
 global.o : global.c $(CONFIG_H) system.h $(RTL_H) flags.h reload.h function.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h insn-config.h output.h toplev.h
 varray.o : varray.c $(CONFIG_H) system.h varray.h $(RTL_H) $(TREE_H) bitmap.h
-
 reload.o : reload.c $(CONFIG_H) system.h $(RTL_H) flags.h output.h $(EXPR_H) \
    reload.h $(RECOG_H) hard-reg-set.h insn-config.h insn-codes.h $(REGS_H) \
    function.h real.h toplev.h
@@ -1757,11 +1764,11 @@ genrtl.c genrtl.h : s-genrtl
 	@true	# force gnu make to recheck modification times.
 
 s-genrtl: gengenrtl $(srcdir)/move-if-change $(RTL_BASE_H)
-	./gengenrtl tmp-genrtl.h tmp-genrtl.c
+	./gengenrtl -h >tmp-genrtl.h
 	$(srcdir)/move-if-change tmp-genrtl.h genrtl.h
+	./gengenrtl >tmp-genrtl.c
 	$(srcdir)/move-if-change tmp-genrtl.c genrtl.c
 	touch s-genrtl
-
 #
 # Compile the programs that generate insn-* from the machine description.
 # They are compiled with $(HOST_CC), and associated libraries,
@@ -1862,7 +1869,6 @@ gengenrtl : gengenrtl.o $(HOST_LIBDEPS)
 
 gengenrtl.o : gengenrtl.c $(RTL_BASE_H) system.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gengenrtl.c
-
 #
 # Compile the libraries to be used by gen*.
 # If we are not cross-building, gen* use the same .o's that cc1 will use,
@@ -1970,7 +1976,7 @@ cpp$(exeext): $(CCCP)$(exeext)
 CCCP_OBJS = cccp.o cexp.o intl.o prefix.o version.o @extra_cpp_objs@ mbchar.o 
 cccp$(exeext): $(CCCP_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o $@ $(CCCP_OBJS) $(LIBS)
-cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h
+cexp.o: $(srcdir)/cexp.c $(CONFIG_H) system.h mbchar.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) -c $(srcdir)/cexp.c
 $(srcdir)/cexp.c: $(srcdir)/cexp.y
 	cd $(srcdir); $(BISON) -o cexp.c cexp.y
@@ -2162,6 +2168,7 @@ fixinc.sh: $(FIXINCSRCDIR)/mkfixinc.sh $(FIXINCSRCDIR)/fixincl.c \
 # Build fixed copies of system files.
 stmp-fixinc: fixinc.sh gsyslimits.h
 	rm -rf include; mkdir include
+	-chmod a+rx include
 	TARGET_MACHINE=$(target); srcdir=`cd $(srcdir); pwd`; \
 	INSTALL_ASSERT_H=$(INSTALL_ASSERT_H); SHELL=$(SHELL) ;\
 	export TARGET_MACHINE srcdir INSTALL_ASSERT_H SHELL ; \
@@ -2251,7 +2258,7 @@ fixhdr.ready: fix-header
 # if it has already been run on the files in `include'.
 stmp-fixproto: fixhdr.ready fixproto stmp-headers
 	@echo "Various warnings and error messages from fixproto are normal"
-	-if [ -d include ] ; then true; else mkdir include; fi
+	-if [ -d include ] ; then true; else mkdir include; chmod a+rx include; fi
 	-if [ -f include/fixed ] ; then true; \
 	else \
 	  : This line works around a 'make' bug in BSDI 1.1.; \
@@ -2621,7 +2628,7 @@ install-libgcc: libgcc.a installdirs
 install-multilib: stmp-multilib installdirs
 	for i in `$(GCC_FOR_TARGET) --print-multi-lib`; do \
 	  dir=`echo $$i | sed -e 's/;.*$$//'`; \
-	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; fi; \
+	  if [ -d $(libsubdir)/$${dir} ]; then true; else mkdir $(libsubdir)/$${dir}; chmod a+rx $(libsubdir)/$${dir}; fi; \
 	  for f in libgcc.a $(EXTRA_MULTILIB_PARTS); do \
 	    rm -f $(libsubdir)/$${dir}/$${f}; \
 	    $(INSTALL_DATA) $${dir}/$${f} $(libsubdir)/$${dir}/$${f}; \

@@ -1,5 +1,7 @@
 /* Output routines for GCC for Hitachi Super-H.
-   Copyright (C) 1993-1998 Free Software Foundation, Inc.
+   Copyright (C) 1993-1998, 1999 Free Software Foundation, Inc.
+   Contributed by Steve Chamberlain (sac@cygnus.com).
+   Improved by Jim Wilson (wilson@cygnus.com). 
 
 This file is part of GNU CC.
 
@@ -18,13 +20,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* Contributed by Steve Chamberlain (sac@cygnus.com).
-   Improved by Jim Wilson (wilson@cygnus.com).  */
-
 #include "config.h"
-
-#include <stdio.h>
-
+#include "system.h"
 #include "rtl.h"
 #include "tree.h"
 #include "flags.h"
@@ -392,16 +389,16 @@ expand_block_move (operands)
       char entry[30];
       tree entry_name;
       rtx func_addr_rtx;
-      rtx r4 = gen_rtx (REG, SImode, 4);
-      rtx r5 = gen_rtx (REG, SImode, 5);
+      rtx r4 = gen_rtx_REG (SImode, 4);
+      rtx r5 = gen_rtx_REG (SImode, 5);
 
       sprintf (entry, "__movstrSI%d", bytes);
       entry_name = get_identifier (entry);
 
       func_addr_rtx
 	= copy_to_mode_reg (Pmode,
-			    gen_rtx (SYMBOL_REF, Pmode,
-				     IDENTIFIER_POINTER (entry_name)));
+			    gen_rtx_SYMBOL_REF
+			    (Pmode, IDENTIFIER_POINTER (entry_name)));
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
       emit_insn (gen_block_move_real (func_addr_rtx));
@@ -415,15 +412,15 @@ expand_block_move (operands)
       tree entry_name;
       rtx func_addr_rtx;
       int final_switch, while_loop;
-      rtx r4 = gen_rtx (REG, SImode, 4);
-      rtx r5 = gen_rtx (REG, SImode, 5);
-      rtx r6 = gen_rtx (REG, SImode, 6);
+      rtx r4 = gen_rtx_REG (SImode, 4);
+      rtx r5 = gen_rtx_REG (SImode, 5);
+      rtx r6 = gen_rtx_REG (SImode, 6);
 
       entry_name = get_identifier ("__movstr");
       func_addr_rtx
 	= copy_to_mode_reg (Pmode,
-			    gen_rtx (SYMBOL_REF, Pmode,
-				     IDENTIFIER_POINTER (entry_name)));
+			    gen_rtx_SYMBOL_REF
+			    (Pmode, IDENTIFIER_POINTER (entry_name)));
       force_into (XEXP (operands[0], 0), r4);
       force_into (XEXP (operands[1], 0), r5);
 
@@ -478,7 +475,7 @@ rtx
 prepare_scc_operands (code)
      enum rtx_code code;
 {
-  rtx t_reg = gen_rtx (REG, SImode, T_REG);
+  rtx t_reg = gen_rtx_REG (SImode, T_REG);
   enum rtx_code oldcode = code;
   enum machine_mode mode;
 
@@ -562,9 +559,10 @@ from_compare (operands, code)
       insn = gen_ieee_ccmpeqsf_t (sh_compare_op0, sh_compare_op1);
     }
   else
-    insn = gen_rtx (SET, VOIDmode,
-		    gen_rtx (REG, SImode, 18),
-		    gen_rtx (code, SImode, sh_compare_op0, sh_compare_op1));
+    insn = gen_rtx_SET (VOIDmode,
+			gen_rtx_REG (SImode, 18),
+			gen_rtx (code, SImode, sh_compare_op0,
+				 sh_compare_op1));
   if (TARGET_SH4 && GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
       insn = gen_rtx (PARALLEL, VOIDmode,
@@ -711,7 +709,7 @@ output_far_jump (insn, op)
       if (dbr_sequence_length ())
 	print_slot (final_sequence);
 
-      this.reg = gen_rtx (REG, SImode, 13);
+      this.reg = gen_rtx_REG (SImode, 13);
       output_asm_insn ("mov.l	r13,@-r15", 0);
       output_asm_insn (jump, &this.lab);
       output_asm_insn ("mov.l	@r15+,r13", 0);
@@ -1218,13 +1216,13 @@ expand_ashiftrt (operands)
   wrk = gen_reg_rtx (Pmode);
 
   /* Load the value into an arg reg and call a helper.  */
-  emit_move_insn (gen_rtx (REG, SImode, 4), operands[1]);
+  emit_move_insn (gen_rtx_REG (SImode, 4), operands[1]);
   sprintf (func, "__ashiftrt_r4_%d", value);
   func_name = get_identifier (func);
-  emit_move_insn (wrk, gen_rtx (SYMBOL_REF, Pmode,
-				IDENTIFIER_POINTER (func_name)));
+  emit_move_insn (wrk, gen_rtx_SYMBOL_REF (Pmode,
+					   IDENTIFIER_POINTER (func_name)));
   emit_insn (gen_ashrsi3_n (GEN_INT (value), wrk));
-  emit_move_insn (operands[0], gen_rtx (REG, SImode, 4));
+  emit_move_insn (operands[0], gen_rtx_REG (SImode, 4));
   return 1;
 }
 
@@ -2559,7 +2557,7 @@ gen_block_redirect (jump, addr, need_block)
 
   if (dead)
     {
-      rtx reg = gen_rtx (REG, SImode, exact_log2 (dead & -dead));
+      rtx reg = gen_rtx_REG (SImode, exact_log2 (dead & -dead));
 
       /* It would be nice if we could convert the jump into an indirect
 	 jump / far branch right now, and thus exposing all constituent
@@ -2767,8 +2765,8 @@ machine_dependent_reorg (first)
 {
   rtx insn, mova;
   int num_mova;
-  rtx r0_rtx = gen_rtx (REG, Pmode, 0);
-  rtx r0_inc_rtx = gen_rtx (POST_INC, Pmode, r0_rtx);
+  rtx r0_rtx = gen_rtx_REG (Pmode, 0);
+  rtx r0_inc_rtx = gen_rtx_POST_INC (Pmode, r0_rtx);
 
   /* If relaxing, generate pseudo-ops to associate function calls with
      the symbols they call.  It does no harm to not generate these
@@ -2973,10 +2971,10 @@ machine_dependent_reorg (first)
              or pseudo-op.  */
 
 	  label = gen_label_rtx ();
-	  REG_NOTES (link) = gen_rtx (EXPR_LIST, REG_LABEL, label,
-				      REG_NOTES (link));
-	  REG_NOTES (insn) = gen_rtx (EXPR_LIST, REG_LABEL, label,
-				      REG_NOTES (insn));
+	  REG_NOTES (link) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+						REG_NOTES (link));
+	  REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_LABEL, label,
+						REG_NOTES (insn));
 	  if (rescan)
 	    {
 	      scan = link;
@@ -2990,8 +2988,8 @@ machine_dependent_reorg (first)
 			   && reg_mentioned_p (reg, scan))
 			  || ((reg2 = sfunc_uses_reg (scan))
 			      && REGNO (reg2) == REGNO (reg))))
-		    REG_NOTES (scan) = gen_rtx (EXPR_LIST, REG_LABEL,
-						label, REG_NOTES (scan));
+		    REG_NOTES (scan)
+		      = gen_rtx_EXPR_LIST (REG_LABEL, label, REG_NOTES (scan));
 		}
 	      while (scan != dies);
 	    }
@@ -3091,7 +3089,7 @@ machine_dependent_reorg (first)
 			  offset += SUBREG_WORD (dst);
 			  dst = SUBREG_REG (dst);
 			}
-		      dst = gen_rtx (REG, HImode, REGNO (dst) + offset);
+		      dst = gen_rtx_REG (HImode, REGNO (dst) + offset);
 		    }
 
 		  if (GET_CODE (dst) == REG
@@ -3145,11 +3143,11 @@ machine_dependent_reorg (first)
 		  else
 		    {
 		      lab = add_constant (src, mode, 0);
-		      newsrc = gen_rtx (MEM, mode,
-					gen_rtx (LABEL_REF, VOIDmode, lab));
+		      newsrc = gen_rtx_MEM (mode,
+					    gen_rtx_LABEL_REF (VOIDmode, lab));
 		    }
 		  RTX_UNCHANGING_P (newsrc) = 1;
-		  *patp = gen_rtx (SET, VOIDmode, dst, newsrc);
+		  *patp = gen_rtx_SET (VOIDmode, dst, newsrc);
 		  INSN_CODE (scan) = -1;
 		}
 	    }
@@ -3564,7 +3562,7 @@ output_stack_adjust (size, reg, temp)
 	     to handle this case, so just abort when we see it.  */
 	  if (temp < 0)
 	    abort ();
-	  const_reg = gen_rtx (REG, SImode, temp);
+	  const_reg = gen_rtx_REG (SImode, temp);
 
 	  /* If SIZE is negative, subtract the positive value.
 	     This sometimes allows a constant pool entry to be shared
@@ -3597,16 +3595,17 @@ push (rn)
     {
       if ((rn - FIRST_FP_REG) & 1 && rn <= LAST_FP_REG)
 	return;
-      x = gen_push_4 (gen_rtx (REG, DFmode, rn));
+      x = gen_push_4 (gen_rtx_REG (DFmode, rn));
     }
   else if (TARGET_SH3E && rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
-    x = gen_push_e (gen_rtx (REG, SFmode, rn));
+    x = gen_push_e (gen_rtx_REG (SFmode, rn));
   else
-    x = gen_push (gen_rtx (REG, SImode, rn));
+    x = gen_push (gen_rtx_REG (SImode, rn));
 
   x = emit_insn (x);
-  REG_NOTES (x) = gen_rtx (EXPR_LIST, REG_INC,
-			   gen_rtx(REG, SImode, STACK_POINTER_REGNUM), 0);
+  REG_NOTES (x)
+    = gen_rtx_EXPR_LIST (REG_INC,
+			 gen_rtx_REG (SImode, STACK_POINTER_REGNUM), 0);
 }
 
 /* Output RTL to pop register RN from the stack.  */
@@ -3623,16 +3622,17 @@ pop (rn)
     {
       if ((rn - FIRST_FP_REG) & 1 && rn <= LAST_FP_REG)
 	return;
-      x = gen_pop_4 (gen_rtx (REG, DFmode, rn));
+      x = gen_pop_4 (gen_rtx_REG (DFmode, rn));
     }
   else if (TARGET_SH3E && rn >= FIRST_FP_REG && rn <= LAST_FP_REG)
-    x = gen_pop_e (gen_rtx (REG, SFmode, rn));
+    x = gen_pop_e (gen_rtx_REG (SFmode, rn));
   else
-    x = gen_pop (gen_rtx (REG, SImode, rn));
+    x = gen_pop (gen_rtx_REG (SImode, rn));
     
   x = emit_insn (x);
-  REG_NOTES (x) = gen_rtx (EXPR_LIST, REG_INC,
-			   gen_rtx(REG, SImode, STACK_POINTER_REGNUM), 0);
+  REG_NOTES (x)
+    = gen_rtx_EXPR_LIST (REG_INC,
+			 gen_rtx_REG (SImode, STACK_POINTER_REGNUM), 0);
 }
 
 /* Generate code to push the regs specified in the mask.  */
@@ -3904,9 +3904,10 @@ sh_builtin_saveregs ()
      named args need not be saved.  */
   if (n_intregs > 0)
     move_block_from_reg (BASE_ARG_REG (SImode) + first_intreg,
-			 gen_rtx (MEM, BLKmode, 
-			 	plus_constant (XEXP (regbuf, 0),
-					n_floatregs * UNITS_PER_WORD)), 
+			 gen_rtx_MEM (BLKmode, 
+				      plus_constant (XEXP (regbuf, 0),
+						     (n_floatregs
+						      * UNITS_PER_WORD))),
 			 n_intregs, n_intregs * UNITS_PER_WORD);
 
   /* Save float args.
@@ -3943,8 +3944,8 @@ sh_builtin_saveregs ()
     for (regno = NPARM_REGS (SFmode) - 1; regno >= first_floatreg; regno--)
       {
 	emit_insn (gen_addsi3 (fpregs, fpregs, GEN_INT (- UNITS_PER_WORD)));
-	emit_move_insn (gen_rtx (MEM, SFmode, fpregs),
-			gen_rtx (REG, SFmode, BASE_ARG_REG (SFmode) + regno));
+	emit_move_insn (gen_rtx_MEM (SFmode, fpregs),
+			gen_rtx_REG (SFmode, BASE_ARG_REG (SFmode) + regno));
       }
 
   /* Return the address of the regbuf.  */
@@ -4085,8 +4086,8 @@ sh_valid_machine_decl_attribute (decl, attributes, attr, args)
       if (TREE_CODE (TREE_VALUE (args)) != STRING_CST)
 	return 0;
 
-      sp_switch = gen_rtx (SYMBOL_REF, VOIDmode,
-			   TREE_STRING_POINTER (TREE_VALUE (args)));
+      sp_switch = gen_rtx_SYMBOL_REF (VOIDmode,
+				      TREE_STRING_POINTER (TREE_VALUE (args)));
       return 1;
     }
 

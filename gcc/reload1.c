@@ -463,7 +463,8 @@ init_reload ()
   register rtx tem
     = gen_rtx_MEM (Pmode,
 		   gen_rtx_PLUS (Pmode,
-				 gen_rtx_REG (Pmode, LAST_VIRTUAL_REGISTER + 1),
+				 gen_rtx_REG (Pmode,
+					      LAST_VIRTUAL_REGISTER + 1),
 				 GEN_INT (4)));
   spill_indirect_levels = 0;
 
@@ -485,6 +486,7 @@ init_reload ()
       tem = gen_rtx_PLUS (Pmode,
 			  gen_rtx_REG (Pmode, HARD_FRAME_POINTER_REGNUM),
 			  gen_rtx_REG (Pmode, i));
+
       /* This way, we make sure that reg+reg is an offsettable address.  */
       tem = plus_constant (tem, 4);
 
@@ -2756,6 +2758,20 @@ eliminate_regs (x, mem_mode, insn)
 			       mem_mode, insn);
       return x;
 
+    /* You might think handling MINUS in a manner similar to PLUS is a
+       good idea.  It is not.  It has been tried multiple times and every
+       time the change has had to have been reverted.
+
+       Other parts of reload know a PLUS is special (gen_reload for example)
+       and require special code to handle code a reloaded PLUS operand.
+
+       Also consider backends where the flags register is clobbered by a
+       MINUS, but we can emit a PLUS that does not clobber flags (ia32,
+       lea instruction comes to mind).  If we try to reload a MINUS, we
+       may kill the flags register that was holding a useful value.
+
+       So, please before trying to handle MINUS, consider reload as a
+       whole instead of this little section as well as the backend issues.  */
     case PLUS:
       /* If this is the sum of an eliminable register and a constant, rework
 	 the sum.   */
@@ -2871,6 +2887,7 @@ eliminate_regs (x, mem_mode, insn)
 
     case CALL:
     case COMPARE:
+    /* See comments before PLUS about handling MINUS.  */
     case MINUS:
     case DIV:      case UDIV:
     case MOD:      case UMOD:
@@ -9208,6 +9225,7 @@ reload_cse_simplify_operands (insn)
 		case '#':  case '&':  case '!':
 		case '*':  case '%':
 		case '0':  case '1':  case '2':  case '3':  case '4':
+		case '5':  case '6':  case '7':  case '8':  case '9':
 		case 'm':  case '<':  case '>':  case 'V':  case 'o':
 		case 'E':  case 'F':  case 'G':  case 'H':
 		case 's':  case 'i':  case 'n':

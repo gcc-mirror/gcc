@@ -1232,7 +1232,7 @@ expand_asm (body)
 {
   if (current_function_check_memory_usage)
     {
-      error ("`asm' cannot be used with `-fcheck-memory-usage'");
+      error ("`asm' cannot be used in function where memory usage is checked");
       return;
     }
 
@@ -1300,6 +1300,12 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
      the flags register.  */
   MD_ASM_CLOBBERS (clobbers);
 #endif
+
+  if (current_function_check_memory_usage)
+    {
+      error ("`asm' cannot be used in function where memory usage is checked");
+      return;
+    }
 
   /* Count the number of meaningful clobbered registers, ignoring what
      we would ignore later.  */
@@ -1724,11 +1730,13 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  XVECEXP (body, 0, i)
 	    = gen_rtx_SET (VOIDmode,
 			   output_rtx[i],
-			   gen_rtx_ASM_OPERANDS (VOIDmode,
-						 TREE_STRING_POINTER (string),
-						 TREE_STRING_POINTER (TREE_PURPOSE (tail)),
-						 i, argvec, constraints,
-						 filename, line));
+			   gen_rtx_ASM_OPERANDS
+			   (VOIDmode,
+			    TREE_STRING_POINTER (string),
+			    TREE_STRING_POINTER (TREE_PURPOSE (tail)),
+			    i, argvec, constraints,
+			    filename, line));
+
 	  MEM_VOLATILE_P (SET_SRC (XVECEXP (body, 0, i))) = vol;
 	}
 
@@ -1754,8 +1762,9 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		{
 		  XVECEXP (body, 0, i++)
 		    = gen_rtx_CLOBBER (VOIDmode,
-				       gen_rtx_MEM (BLKmode,
-						    gen_rtx_SCRATCH (VOIDmode)));
+				       gen_rtx_MEM
+				       (BLKmode,
+					gen_rtx_SCRATCH (VOIDmode)));
 		  continue;
 		}
 
@@ -5040,7 +5049,9 @@ check_for_full_enumeration_handling (type)
   bytes_needed = (size + HOST_BITS_PER_CHAR) / HOST_BITS_PER_CHAR;
 
   if (size > 0 && size < 600000
-      /* We deliberately use calloc here - not xcalloc.  */
+      /* We deliberately use calloc here, not cmalloc, so that we can suppress
+	 this optimization if we don't have enough memory rather than 
+	 aborting, as xmalloc would do.  */
       && (cases_seen = (unsigned char *) calloc (bytes_needed, 1)) != NULL)
     {
       long i;

@@ -412,7 +412,7 @@ sext_add_operand (op, mode)
     return (CONST_OK_FOR_LETTER_P (INTVAL (op), 'I')
 	    || CONST_OK_FOR_LETTER_P (INTVAL (op), 'O'));
 
-  return register_operand (op, mode);
+  return reg_not_elim_operand (op, mode);
 }
 
 /* Return 1 if OP is the constant 4 or 8.  */
@@ -3052,9 +3052,9 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
 
   /* Store function address and CXT.  */
   addr = memory_address (mode, plus_constant (tramp, fnofs));
-  emit_move_insn (gen_rtx (MEM, mode, addr), fnaddr);
+  emit_move_insn (gen_rtx_MEM (mode, addr), fnaddr);
   addr = memory_address (mode, plus_constant (tramp, cxtofs));
-  emit_move_insn (gen_rtx (MEM, mode, addr), cxt);
+  emit_move_insn (gen_rtx_MEM (mode, addr), cxt);
 
   /* This has been disabled since the hint only has a 32k range, and in
      no existing OS is the stack within 32k of the text segment. */
@@ -3070,15 +3070,15 @@ alpha_initialize_trampoline (tramp, fnaddr, cxt, fnofs, cxtofs, jmpofs)
 
       /* Merge in the hint.  */
       addr = memory_address (SImode, plus_constant (tramp, jmpofs));
-      temp1 = force_reg (SImode, gen_rtx (MEM, SImode, addr));
+      temp1 = force_reg (SImode, gen_rtx_MEM (SImode, addr));
       temp1 = expand_and (temp1, GEN_INT (0xffffc000), NULL_RTX);
       temp1 = expand_binop (SImode, ior_optab, temp1, temp, temp1, 1,
 			    OPTAB_WIDEN);
-      emit_move_insn (gen_rtx (MEM, SImode, addr), temp1);
+      emit_move_insn (gen_rtx_MEM (SImode, addr), temp1);
     }
 
 #ifdef TRANSFER_FROM_TRAMPOLINE
-  emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "__enable_execute_stack"),
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
 		     0, VOIDmode, 1, addr, Pmode);
 #endif
 

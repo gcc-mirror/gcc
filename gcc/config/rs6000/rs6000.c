@@ -2199,8 +2199,8 @@ expand_block_move (operands)
 	    }
 	  else
 	    {
-	      src_addr  = gen_rtx_PLUS (Pmode, src_reg,  GEN_INT (offset));
-	      dest_addr = gen_rtx_PLUS (Pmode, dest_reg, GEN_INT (offset));
+	      src_addr = plus_constant (src_reg, offset);
+	      dest_addr = plus_constant (dest_reg, offset);
 	    }
 
 	  /* Generate the appropriate load and store, saving the stores for later */
@@ -3675,7 +3675,8 @@ rs6000_stack_info ()
   if (TARGET_EABI)
 #endif
     {
-      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main") == 0
+      if (0 == strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
+		       "main")
 	  && DECL_CONTEXT (current_function_decl) == NULL_TREE)
 	{
 	  info_ptr->main_p = 1;
@@ -5594,7 +5595,8 @@ rs6000_initialize_trampoline (addr, fnaddr, cxt)
 
 /* Macros to shorten the code expansions below.  */
 #define MEM_DEREF(addr) gen_rtx_MEM (pmode, memory_address (pmode, addr))
-#define MEM_PLUS(addr,offset) gen_rtx_MEM (pmode, memory_address (pmode, plus_constant (addr, offset)))
+#define MEM_PLUS(addr,offset) \
+  gen_rtx_MEM (pmode, memory_address (pmode, plus_constant (addr, offset)))
 
     /* Under AIX, just build the 3 word function descriptor */
     case ABI_AIX:

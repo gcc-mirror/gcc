@@ -1291,8 +1291,8 @@ struct tree_type
    be instrumented with calls to support routines.  */
 #define DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(NODE) ((NODE)->decl.no_instrument_function_entry_exit)
 
-/* Used in FUNCTION_DECLs to indicate that in this function,
-   check-memory-usage should be disabled.  */
+/* Used in FUNCTION_DECLs to indicate that check-memory-usage should be
+   disabled in this function.  */
 #define DECL_NO_CHECK_MEMORY_USAGE(NODE) ((NODE)->decl.no_check_memory_usage)
 
 /* Additional flags for language-specific uses.  */

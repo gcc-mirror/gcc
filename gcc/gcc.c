@@ -30,11 +30,11 @@ and deleting the temporary files at the end.
 CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
-
+
+
 #include "config.h"
 #include "system.h"
 #include <signal.h>
-
 #include "obstack.h"
 #include "intl.h"
 #include "prefix.h"

@@ -195,8 +195,8 @@
 
   if (GET_CODE(operands[1]) == REG)
     {
-      if (REGNO (operands[1]) == REG_Y ||
-	  REGNO (operands[1]) == REG_PROD)
+      if (REGNO (operands[1]) == REG_Y
+	  || REGNO (operands[1]) == REG_PROD)
 	{
 	  output_asm_insn (\"a1=%1\", operands);
 	}
@@ -1049,11 +1049,13 @@
   emit_move_insn (operands[0], addr_reg);
 
   /* Then generate the add insn */
-  emit_insn (gen_rtx (PARALLEL, VOIDmode, 
-		      gen_rtvec (2,
-				 gen_rtx (SET, VOIDmode, operands[0], 
-					  gen_rtx (PLUS, QImode, operands[0], offset)),
-				 gen_rtx (CLOBBER, VOIDmode, operands[2]))));
+  emit_insn (gen_rtx_PARALLEL
+	     (VOIDmode, 
+	      gen_rtvec (2,
+			 gen_rtx_SET (VOIDmode, operands[0], 
+				      gen_rtx_PLUS (QImode, operands[0],
+						    offset)),
+			 gen_rtx_CLOBBER (VOIDmode, operands[2]))));
   DONE;
 }")
 
@@ -1251,7 +1253,7 @@
   "
 {
 	operands[2] = gen_reg_rtx (HImode);
-	operands[3] = gen_rtx (SUBREG, QImode, operands[2], 1);
+	operands[3] = gen_rtx_SUBREG (QImode, operands[2], 1);
 }")
 
 ;;(define_insn "extendqihi2"
@@ -1301,7 +1303,7 @@
   "
 {
 	operands[2] = gen_reg_rtx (HImode);
-	operands[3] = gen_rtx (SUBREG, QImode, operands[2], 1);
+	operands[3] = gen_rtx_SUBREG (QImode, operands[2], 1);
 }")
 
 
@@ -1357,8 +1359,8 @@
       emit_jump_insn (gen_bge (label1));
 
       emit_insn (gen_fix_trunchfhi2 (operands[0], operands[1]));
-      emit_jump_insn (gen_rtx (SET, VOIDmode, pc_rtx,
-			       gen_rtx (LABEL_REF, VOIDmode, label2)));
+      emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx,
+				   gen_rtx_LABEL_REF (VOIDmode, label2)));
       emit_barrier ();
 
       emit_label (label1);
@@ -1372,7 +1374,7 @@
 
       /* allow REG_NOTES to be set on last insn (labels don't have enough
 	 fields, and can't be used for REG_NOTES anyway).  */
-      emit_insn (gen_rtx (USE, VOIDmode, stack_pointer_rtx));
+      emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
       DONE;
     }
 }")
@@ -1438,7 +1440,8 @@
 
 #if 0
 	if (!dsp16xx_ashrhi3_libcall)
-	  dsp16xx_ashrhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, ASHRHI3_LIBCALL);
+	  dsp16xx_ashrhi3_libcall
+	    = gen_rtx_SYMBOL_REF (Pmode, ASHRHI3_LIBCALL);
 
 	  emit_library_call (dsp16xx_ashrhi3_libcall, 1, HImode, 2,
 			     operands[1], HImode,
@@ -1562,7 +1565,8 @@
 	  rtx label2 = gen_label_rtx ();
 #if 0
 	  if (!dsp16xx_lshrhi3_libcall)
-	    dsp16xx_lshrhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, LSHRHI3_LIBCALL);
+	    dsp16xx_lshrhi3_libcall
+	      = gen_rtx_SYMBOL_REF (Pmode, LSHRHI3_LIBCALL);
 	  
 	  emit_library_call (dsp16xx_lshrhi3_libcall, 1, HImode, 2,
 			     operands[1], HImode,
@@ -1704,11 +1708,11 @@
 	rtx label2 = gen_label_rtx ();
 #if 0
 	if (!dsp16xx_ashlhi3_libcall)
-	  dsp16xx_ashlhi3_libcall = gen_rtx_SYMBOL_REF (Pmode, ASHLHI3_LIBCALL);
+	  dsp16xx_ashlhi3_libcall
+	    = gen_rtx_SYMBOL_REF (Pmode, ASHLHI3_LIBCALL);
 
 	  emit_library_call (dsp16xx_ashlhi3_libcall, 1, HImode, 2,
-			     operands[1], HImode,
-			     operands[2], QImode);
+			     operands[1], HImode, operands[2], QImode);
 	  emit_move_insn (operands[0], hard_libcall_value(HImode));
 	  DONE;
 #else
@@ -2028,8 +2032,8 @@
 {
   if (GET_CODE (operands[0]) == MEM
       && ! call_address_operand (XEXP (operands[0], 0), QImode))
-    operands[0] = gen_rtx (MEM, GET_MODE (operands[0]),
-			   force_reg (Pmode, XEXP (operands[0], 0)));
+    operands[0] = gen_rtx_MEM (GET_MODE (operands[0]),
+			       force_reg (Pmode, XEXP (operands[0], 0)));
 }")
 
 (define_insn ""
@@ -2059,8 +2063,8 @@
 {
   if (GET_CODE (operands[1]) == MEM
       && ! call_address_operand (XEXP (operands[1], 0), QImode))
-    operands[1] = gen_rtx (MEM, GET_MODE (operands[1]),
-			   force_reg (Pmode, XEXP (operands[1], 0)));
+    operands[1] = gen_rtx_MEM (GET_MODE (operands[1]),
+			       force_reg (Pmode, XEXP (operands[1], 0)));
 }")
 
 (define_insn ""

@@ -1,5 +1,5 @@
 ;;- Machine description for GNU compiler, ns32000 Version
-;;  Copyright (C) 1988, 1994, 1996, 1999 Free Software Foundation, Inc.
+;;  Copyright (C) 1988, 1994, 1996, 1998, 1999 Free Software Foundation, Inc.
 ;;  Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 ;; This file is part of GNU CC.
@@ -221,7 +221,7 @@
       if (REG_P (operands[1]))
 	{
 	  rtx xoperands[2];
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
 	  output_asm_insn (\"movd %1,tos\", xoperands);
 	  output_asm_insn (\"movd %1,tos\", operands);
 	  return \"movl tos,%0\";
@@ -233,7 +233,7 @@
       if (REG_P (operands[0]))
 	{
 	  output_asm_insn (\"movl %1,tos\;movd tos,%0\", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  return \"movd tos,%0\";
 	}
       else
@@ -277,7 +277,7 @@
       convrt.i[1] = CONST_DOUBLE_HIGH (operands[1]);
       convrt.f = convrt.d;
 
-      /* Is there a better machine-independent way to do this?  */
+      /* Is there a better machine-independent way to to this?  */
       operands[1] = GEN_INT (convrt.i[0]);
       return \"movd %1,%0\";
     }
@@ -304,7 +304,7 @@
       if (REG_P (operands[1]))
 	{
 	  rtx xoperands[2];
-	  xoperands[1] = gen_rtx (REG, SImode, REGNO (operands[1]) + 1);
+	  xoperands[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + 1);
 	  output_asm_insn (\"movd %1,tos\", xoperands);
 	  output_asm_insn (\"movd %1,tos\", operands);
 	  return \"movl tos,%0\";
@@ -316,7 +316,7 @@
       if (REG_P (operands[0]))
 	{
 	  output_asm_insn (\"movl %1,tos\;movd tos,%0\", operands);
-	  operands[0] = gen_rtx (REG, SImode, REGNO (operands[0]) + 1);
+	  operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + 1);
 	  return \"movd tos,%0\";
 	}
       else
@@ -357,8 +357,7 @@
       && REGNO (operands[0]) == FRAME_POINTER_REGNUM)
     return \"lprd fp,%1\";
   if (GET_CODE (operands[1]) == CONST_DOUBLE)
-    operands[1]
-      = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
+    operands[1] = GEN_INT (CONST_DOUBLE_LOW (operands[1]));
   if (GET_CODE (operands[1]) == CONST_INT)
     {
       int i = INTVAL (operands[1]);
@@ -437,8 +436,7 @@
       if (i <= 7 && i >= -8)
 	{
 	  if (INTVAL (operands[1]) > 7)
-	    operands[1] =
-	      GEN_INT (i);
+	    operands[1] = GEN_INT (i);
 	  return \"movqw %1,%0\";
 	}
 	return \"movw %1,%0\";
@@ -483,8 +481,7 @@
       if (char_val <= 7 && char_val >= -8)
 	{
 	  if (INTVAL (operands[1]) > 7)
-	    operands[1] =
-	      GEN_INT (char_val);
+	    operands[1] = GEN_INT (char_val);
 	  return \"movqb %1,%0\";
 	}
 	return \"movb %1,%0\";
@@ -1784,7 +1781,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1809,7 +1806,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1834,7 +1831,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1862,7 +1859,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1887,7 +1884,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1912,7 +1909,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1962,7 +1959,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -1987,7 +1984,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""
@@ -2012,7 +2009,7 @@
   "
 {
   if (GET_CODE (operands[2]) != CONST_INT)
-    operands[2] = gen_rtx (NEG, SImode, negate_rtx (SImode, operands[2]));
+    operands[2] = gen_rtx_NEG (SImode, negate_rtx (SImode, operands[2]));
 }")
 
 (define_insn ""

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Clipper
-   Copyright (C) 1987, 1988, 1991, 1997, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 91, 97, 98, 1999 Free Software Foundation, Inc.
    Contributed by Holger Teutsch (holger@hotbso.rhein-main.de)
 
 This file is part of GNU CC.
@@ -20,7 +20,7 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
-#include <stdio.h>
+#include "system.h"
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -43,16 +43,14 @@ extern int frame_pointer_needed;
 
 static int frame_size;
 
-/*
- * compute size of a clipper stack frame where 'lsize' is the required
- * space for local variables.
- */
+/* Compute size of a clipper stack frame where 'lsize' is the required
+   space for local variables.  */
 
 int
 clipper_frame_size (lsize)
      int lsize;
 {
-  int i,size;				/* total size of frame */
+  int i, size;				/* total size of frame */
   int save_size;
   save_size = 0;			/* compute size for reg saves */
 
@@ -70,17 +68,15 @@ clipper_frame_size (lsize)
   return size;
 }
 
-/*
- * prologue and epilogue output
- * function is entered with pc pushed, i.e. stack is 32 bit aligned
- *
- * current_function_args_size == 0 means that the current function's args
- * are passed totally in registers i.e fp is not used as ap.
- * If frame_size is also 0 the current function does not push anything and
- * can run with misaligned stack -> subq $4,sp / add $4,sp on entry and exit
- * can be omitted.
- *
- */
+/* Prologue and epilogue output
+   Function is entered with pc pushed, i.e. stack is 32 bit aligned
+
+   current_function_args_size == 0 means that the current function's args
+   are passed totally in registers i.e fp is not used as ap.
+   If frame_size is also 0 the current function does not push anything and
+   can run with misaligned stack -> subq $4,sp / add $4,sp on entry and exit
+   can be omitted.  */
+
 void
 output_function_prologue (file, lsize)
      FILE *file;

@@ -427,20 +427,20 @@ static void dwarf2out_frame_debug_expr	PROTO((rtx, char *));
 
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
   assemble_integer (gen_rtx_MINUS (HImode,			      	\
-			     gen_rtx_SYMBOL_REF (Pmode, LABEL1),   	\
-			     gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),  \
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    2, 1)
   
 #define ASM_OUTPUT_DWARF_DELTA4(FILE,LABEL1,LABEL2)			\
   assemble_integer (gen_rtx_MINUS (SImode,			      	\
-			     gen_rtx_SYMBOL_REF (Pmode, LABEL1),   	\
-			     gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),  \
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    4, 1)
 
 #define ASM_OUTPUT_DWARF_ADDR_DELTA(FILE,LABEL1,LABEL2)			\
   assemble_integer (gen_rtx_MINUS (Pmode,				\
-			     gen_rtx_SYMBOL_REF (Pmode, LABEL1),	\
-			     gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL1),	\
+				   gen_rtx_SYMBOL_REF (Pmode, LABEL2)),	\
 		    PTR_SIZE, 1)
 
 #define ASM_OUTPUT_DWARF_DELTA(FILE,LABEL1,LABEL2) \
@@ -7390,7 +7390,7 @@ add_bound_info (subrange_die, bound_attr, bound)
 	      rtx new_addr = fix_lexical_addr (XEXP (loc, 0), bound);
 
 	      if (XEXP (loc, 0) != new_addr)
-		loc = gen_rtx (MEM, GET_MODE (loc), new_addr);
+		loc = gen_rtx_MEM (GET_MODE (loc), new_addr);
 	    }
 
 	  add_AT_flag (decl_die, DW_AT_artificial, 1);

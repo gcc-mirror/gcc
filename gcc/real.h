@@ -180,8 +180,8 @@ extern REAL_VALUE_TYPE real_value_truncate	PROTO ((enum machine_mode,
 
 /* Convert ASCII string S to floating point in mode M.
    Decimal input uses ATOF.  Hexadecimal uses HTOF.  */
-#define REAL_VALUE_ATOF ereal_atof
-#define REAL_VALUE_HTOF ereal_atof
+#define REAL_VALUE_ATOF(s,m) ereal_atof(s,m)
+#define REAL_VALUE_HTOF(s,m) ereal_atof(s,m)
 
 #define REAL_VALUE_NEGATE ereal_negate
 
@@ -393,7 +393,8 @@ extern REAL_VALUE_TYPE real_hex_to_f PROTO((char *, enum machine_mode));
    size and where `float' is SFmode.  */
 
 /* Don't use REAL_VALUE_TRUNCATE directly--always call real_value_truncate.  */
-extern REAL_VALUE_TYPE real_value_truncate PROTO((enum machine_mode, REAL_VALUE_TYPE));
+extern REAL_VALUE_TYPE real_value_truncate PROTO((enum machine_mode,
+						  REAL_VALUE_TYPE));
 
 #ifndef REAL_VALUE_TRUNCATE
 #define REAL_VALUE_TRUNCATE(mode, x) \
@@ -416,9 +417,9 @@ extern REAL_VALUE_TYPE real_value_truncate PROTO((enum machine_mode, REAL_VALUE_
 #define REAL_VALUE_NEGATIVE(x) (target_negative (x))
 #endif
 
-extern int target_isnan			PROTO ((REAL_VALUE_TYPE));
-extern int target_isinf			PROTO ((REAL_VALUE_TYPE));
-extern int target_negative		PROTO ((REAL_VALUE_TYPE));
+extern int target_isnan			PROTO((REAL_VALUE_TYPE));
+extern int target_isinf			PROTO((REAL_VALUE_TYPE));
+extern int target_negative		PROTO((REAL_VALUE_TYPE));
 
 /* Determine whether a floating-point value X is minus 0. */
 #ifndef REAL_VALUE_MINUS_ZERO
@@ -485,11 +486,18 @@ extern struct rtx_def *immed_real_const_1	PROTO((REAL_VALUE_TYPE,
 #endif
 
 /* Replace R by 1/R in the given machine mode, if the result is exact.  */
-extern int exact_real_inverse PROTO((enum machine_mode, REAL_VALUE_TYPE *));
-
-extern void debug_real			PROTO ((REAL_VALUE_TYPE));
+extern int exact_real_inverse	PROTO((enum machine_mode, REAL_VALUE_TYPE *));
+extern int target_isnan		PROTO((REAL_VALUE_TYPE));
+extern int target_isinf		PROTO((REAL_VALUE_TYPE));
+extern int target_negative	PROTO((REAL_VALUE_TYPE));
+extern void debug_real		PROTO((REAL_VALUE_TYPE));
 
 /* In varasm.c */
-extern void assemble_real		PROTO ((REAL_VALUE_TYPE,
-						enum machine_mode));
+extern void assemble_real		PROTO((REAL_VALUE_TYPE,
+					       enum machine_mode));
+extern void debug_real			PROTO((REAL_VALUE_TYPE));
+
+/* In varasm.c */
+extern void assemble_real		PROTO((REAL_VALUE_TYPE,
+					       enum machine_mode));
 #endif /* Not REAL_H_INCLUDED */

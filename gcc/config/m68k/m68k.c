@@ -18,8 +18,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-
-/* Some output-actions in m68k.md need these.  */
 #include "config.h"
 #include "system.h"
 #include "tree.h"
@@ -2147,7 +2145,7 @@ output_addsi3 (operands)
       if (INTVAL (operands[2]) < 0
 	  && INTVAL (operands[2]) >= -8)
         {
-	  operands[2] = GEN_INT (-INTVAL (operands[2]));
+	  operands[2] = GEN_INT (- INTVAL (operands[2]));
 	  return "subq%.l %2,%0";
 	}
       /* On the CPU32 it is faster to use two addql instructions to
@@ -2164,7 +2162,7 @@ output_addsi3 (operands)
 	  if (INTVAL (operands[2]) < -8
 	      && INTVAL (operands[2]) >= -16)
 	    {
-	      operands[2] = GEN_INT (-INTVAL (operands[2]) - 8);
+	      operands[2] = GEN_INT (- INTVAL (operands[2]) - 8);
 	      return "subq%.l %#8,%0\n\tsubq%.l %2,%0";
 	    }
 	}

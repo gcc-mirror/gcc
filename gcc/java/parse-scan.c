@@ -1378,7 +1378,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/gnu/share/bison.simple"
+#line 3 "/usr/cygnus/TBD-TBD/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -1571,7 +1571,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/gnu/share/bison.simple"
+#line 196 "/usr/cygnus/TBD-TBD/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2159,7 +2159,7 @@ case 337:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/gnu/share/bison.simple"
+#line 498 "/usr/cygnus/TBD-TBD/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;

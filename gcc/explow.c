@@ -215,7 +215,7 @@ plus_constant_for_output_wide (x, c)
 
   if (GET_CODE (x) == LO_SUM)
     return gen_rtx_LO_SUM (mode, XEXP (x, 0),
-		    plus_constant_for_output (XEXP (x, 1), c));
+			   plus_constant_for_output (XEXP (x, 1), c));
 
   else
     return plus_constant (x, c);
@@ -1314,6 +1314,10 @@ allocate_dynamic_stack_space (size, target, known_align)
 #else
 	target = copy_to_mode_reg (Pmode, target);
 #endif
+
+      if (mode == VOIDmode)
+	mode = Pmode;
+
       size = convert_modes (mode, ptr_mode, size, 1);
       if (insn_operand_predicate[(int) CODE_FOR_allocate_stack][1]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_allocate_stack][1])
@@ -1420,10 +1424,10 @@ probe_stack_range (first, size)
 
       if (insn_operand_predicate[(int) CODE_FOR_check_stack][0]
 	  && ! ((*insn_operand_predicate[(int) CODE_FOR_check_stack][0])
-		(last_address, Pmode)))
-	last_address = copy_to_mode_reg (Pmode, last_address);
+		(last_addr, Pmode)))
+	last_addr = copy_to_mode_reg (Pmode, last_addr);
 
-      emit_insn (gen_check_stack (last_address));
+      emit_insn (gen_check_stack (last_addr));
       return;
     }
 #endif

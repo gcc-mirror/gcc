@@ -609,6 +609,8 @@ dwarf.h
 dwarf2.h
 dwarf2out.c
 dwarfout.c
+dyn-string.c
+dyn-string.h
 emit-rtl.c
 #enquire.c is used only by GCC maintainers and installers
 except.c
@@ -642,6 +644,7 @@ gcov.c
 #genemit.c is used only by GCC maintainers and installers
 #genextract.c is used only by GCC maintainers and installers
 #genflags.c is used only by GCC maintainers and installers
+#gengenrtl.c is used only by GCC maintainers and installers
 #genopinit.c is used only by GCC maintainers and installers
 #genoutput.c is used only by GCC maintainers and installers
 #genpeep.c is used only by GCC maintainers and installers
@@ -718,6 +721,8 @@ local-alloc.c
 loop.c
 loop.h
 machmode.h
+mbchar.c
+mbchar.h
 #mips-tdump.c is not yet internationalized
 #mips-tfile.c is not yet internationalized
 objc/objc-act.c
@@ -762,6 +767,7 @@ stor-layout.c
 stupid.c
 sys-protos.h
 sys-types.h
+system.h
 toplev.c
 tree.c
 tree.h

@@ -76,6 +76,10 @@ Boston, MA 02111-1307, USA.  */
 #define ATTRIBUTE_PRINTF_5 ATTRIBUTE_PRINTF(5, 6)
 #endif /* ATTRIBUTE_PRINTF */
 
+#ifndef NULL
+#define NULL 0
+#endif
+
 #define GENERIC_PTR PTR
 
 #ifndef NULL_PTR

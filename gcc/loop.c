@@ -301,11 +301,11 @@ static void strength_reduce PROTO((rtx, rtx, rtx, int, rtx, rtx,
 				   struct loop_info *, rtx, int, int));
 static void find_single_use_in_loop PROTO((rtx, rtx, varray_type));
 static int valid_initial_value_p PROTO((rtx, rtx, int, rtx));
-static void find_mem_givs PROTO((rtx, rtx, int, rtx, rtx));
+static void find_mem_givs PROTO((rtx, rtx, int, int, rtx, rtx));
 static void record_biv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx *, int, int));
 static void check_final_value PROTO((struct induction *, rtx, rtx, 
 				     unsigned HOST_WIDE_INT));
-static void record_giv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx, int, enum g_types, int, rtx *, rtx, rtx));
+static void record_giv PROTO((struct induction *, rtx, rtx, rtx, rtx, rtx, int, enum g_types, int, int, rtx *, rtx, rtx));
 static void update_giv_derive PROTO((rtx));
 static int basic_induction_var PROTO((rtx, enum machine_mode, rtx, rtx, rtx *, rtx *, rtx **));
 static rtx simplify_giv_expr PROTO((rtx, int *));
@@ -2356,12 +2356,15 @@ constant_high_bytes (p, loop_start)
   /* Try to change (SET (REG ...) (ZERO_EXTEND (..:B ...)))
      to (SET (STRICT_LOW_PART (SUBREG:B (REG...))) ...).  */
 
-  new = gen_rtx_SET (VOIDmode,
-		     gen_rtx_STRICT_LOW_PART (VOIDmode,
-					      gen_rtx_SUBREG (GET_MODE (XEXP (SET_SRC (PATTERN (p)), 0)),
-				   SET_DEST (PATTERN (p)),
-				   0)),
-		 XEXP (SET_SRC (PATTERN (p)), 0));
+  new
+    = gen_rtx_SET
+      (VOIDmode,
+       gen_rtx_STRICT_LOW_PART
+       (VOIDmode,
+	gen_rtx_SUBREG (GET_MODE (XEXP (SET_SRC (PATTERN (p)), 0)),
+			SET_DEST (PATTERN (p)), 0)),
+       XEXP (SET_SRC (PATTERN (p)), 0));
+
   insn_code_number = recog (new, p);
 
   if (insn_code_number)
@@ -2369,8 +2372,8 @@ constant_high_bytes (p, loop_start)
       register int i;
 
       /* Clear destination register before the loop.  */
-      emit_insn_before (gen_rtx_SET (VOIDmode, SET_DEST (PATTERN (p)),
-				     const0_rtx),
+      emit_insn_before (gen_rtx_SET (VOIDmode,
+				     SET_DEST (PATTERN (p)), const0_rtx),
 			loop_start);
 
       /* Inside the loop, just load the low part.  */
@@ -4377,6 +4380,7 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 
   not_every_iteration = 0;
   loop_depth = 0;
+  maybe_multiple = 0;
   p = scan_start;
   while (1)
     {
@@ -4445,8 +4449,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
 		p = last_consec_insn;
 
 	      record_giv (v, p, src_reg, dest_reg, mult_val, add_val, benefit,
-			  DEST_REG, not_every_iteration, NULL_PTR, loop_start,
-			  loop_end);
+			  DEST_REG, not_every_iteration, maybe_multiple,
+			  NULL_PTR, loop_start, loop_end);
 
 	    }
 	}
@@ -4456,8 +4460,8 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       /* This resulted in worse code on a VAX 8600.  I wonder if it
 	 still does.  */
       if (GET_CODE (p) == INSN)
-	find_mem_givs (PATTERN (p), p, not_every_iteration, loop_start,
-		       loop_end);
+	find_mem_givs (PATTERN (p), p, not_every_iteration, maybe_multiple,
+		       loop_start, loop_end);
 #endif
 
       /* Update the status of whether giv can derive other givs.  This can
@@ -4465,6 +4469,49 @@ strength_reduce (scan_start, end, loop_top, insn_count,
       if (GET_CODE (p) == INSN || GET_CODE (p) == JUMP_INSN
 	|| GET_CODE (p) == CODE_LABEL)
 	update_giv_derive (p);
+
+      /* Past CODE_LABEL, we get to insns that may be executed multiple
+	 times.  The only way we can be sure that they can't is if every
+	 every jump insn between here and the end of the loop either
+	 returns, exits the loop, is a forward jump, or is a jump
+	 to the loop start.  */
+
+      if (GET_CODE (p) == CODE_LABEL)
+	{
+	  rtx insn = p;
+
+	  maybe_multiple = 0;
+
+	  while (1)
+	    {
+	      insn = NEXT_INSN (insn);
+	      if (insn == scan_start)
+		break;
+	      if (insn == end)
+		{
+		  if (loop_top != 0)
+		    insn = loop_top;
+		  else
+		    break;
+		  if (insn == scan_start)
+		    break;
+		}
+
+	      if (GET_CODE (insn) == JUMP_INSN
+		  && GET_CODE (PATTERN (insn)) != RETURN
+		  && (! condjump_p (insn)
+		      || (JUMP_LABEL (insn) != 0
+			  && JUMP_LABEL (insn) != scan_start
+			  && (INSN_UID (JUMP_LABEL (insn)) >= max_uid_for_loop
+			      || INSN_UID (insn) >= max_uid_for_loop
+			      || (INSN_LUID (JUMP_LABEL (insn))
+				  < INSN_LUID (insn))))))
+		{
+		  maybe_multiple = 1;
+		  break;
+		}
+	    }
+	}
 
       /* Past a jump, we get to insns for which we can't count
 	 on whether they will be executed during each iteration.  */
@@ -5224,13 +5271,15 @@ valid_initial_value_p (x, insn, call_seen, loop_start)
 /* Scan X for memory refs and check each memory address
    as a possible giv.  INSN is the insn whose pattern X comes from.
    NOT_EVERY_ITERATION is 1 if the insn might not be executed during
-   every loop iteration.  */
+   every loop iteration.  MAYBE_MULTIPLE is 1 if the insn might be executed
+   more thanonce in each loop iteration.  */
 
 static void
-find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
+find_mem_givs (x, insn, not_every_iteration, maybe_multiple, loop_start,
+	       loop_end)
      rtx x;
      rtx insn;
-     int not_every_iteration;
+     int not_every_iteration, maybe_multiple;
      rtx loop_start, loop_end;
 {
   register int i, j;
@@ -5278,7 +5327,7 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
 
 	    record_giv (v, insn, src_reg, addr_placeholder, mult_val,
 			add_val, benefit, DEST_ADDR, not_every_iteration,
-			&XEXP (x, 0), loop_start, loop_end);
+			maybe_multiple, &XEXP (x, 0), loop_start, loop_end);
 
 	    v->mem_mode = GET_MODE (x);
 	  }
@@ -5294,12 +5343,12 @@ find_mem_givs (x, insn, not_every_iteration, loop_start, loop_end)
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     if (fmt[i] == 'e')
-      find_mem_givs (XEXP (x, i), insn, not_every_iteration, loop_start,
-		     loop_end);
+      find_mem_givs (XEXP (x, i), insn, not_every_iteration, maybe_multiple,
+		     loop_start, loop_end);
     else if (fmt[i] == 'E')
       for (j = 0; j < XVECLEN (x, i); j++)
 	find_mem_givs (XVECEXP (x, i, j), insn, not_every_iteration,
-		       loop_start, loop_end);
+		       maybe_multiple, loop_start, loop_end);
 }
 
 /* Fill in the data about one biv update.
@@ -5421,7 +5470,8 @@ record_biv (v, insn, dest_reg, inc_val, mult_val, location,
 
 static void
 record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
-	    type, not_every_iteration, location, loop_start, loop_end)
+	    type, not_every_iteration, maybe_multiple, location, loop_start,
+	    loop_end)
      struct induction *v;
      rtx insn;
      rtx src_reg;
@@ -5429,7 +5479,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
      rtx mult_val, add_val;
      int benefit;
      enum g_types type;
-     int not_every_iteration;
+     int not_every_iteration, maybe_multiple;
      rtx *location;
      rtx loop_start, loop_end;
 {
@@ -5447,7 +5497,7 @@ record_giv (v, insn, src_reg, dest_reg, mult_val, add_val, benefit,
   v->location = location;
   v->cant_derive = 0;
   v->combined_with = 0;
-  v->maybe_multiple = 0;
+  v->maybe_multiple = maybe_multiple;
   v->maybe_dead = 0;
   v->derive_adjustment = 0;
   v->same = 0;
@@ -5882,9 +5932,10 @@ update_giv_derive (p)
 					     &dummy);
 
 		  if (tem && giv->derive_adjustment)
-		    tem = simplify_giv_expr (gen_rtx_PLUS (giv->mode, tem,
-							   giv->derive_adjustment),
-					     &dummy);
+		    tem = simplify_giv_expr
+		      (gen_rtx_PLUS (giv->mode, tem, giv->derive_adjustment),
+		       &dummy);
+
 		  if (tem)
 		    giv->derive_adjustment = tem;
 		  else
@@ -6274,10 +6325,13 @@ simplify_giv_expr (x, benefit)
 
 	  case PLUS:
 	    /* (a + invar_1) + invar_2.  Associate.  */
-	    return simplify_giv_expr (
-		gen_rtx_PLUS (mode, XEXP (arg0, 0),
-			      gen_rtx_PLUS (mode, XEXP (arg0, 1), arg1)),
-		benefit);
+	    return
+	      simplify_giv_expr (gen_rtx_PLUS (mode,
+					       XEXP (arg0, 0),
+					       gen_rtx_PLUS (mode,
+							     XEXP (arg0, 1),
+							     arg1)),
+				 benefit);
 
 	  default:
 	    abort ();
@@ -6297,11 +6351,12 @@ simplify_giv_expr (x, benefit)
 	tem = arg0, arg0 = arg1, arg1 = tem;
 
       if (GET_CODE (arg1) == PLUS)
-	  return simplify_giv_expr (gen_rtx_PLUS (mode,
-						  gen_rtx_PLUS (mode, arg0,
-								XEXP (arg1, 0)),
-						  XEXP (arg1, 1)),
-				    benefit);
+	  return
+	    simplify_giv_expr (gen_rtx_PLUS (mode,
+					     gen_rtx_PLUS (mode, arg0,
+							   XEXP (arg1, 0)),
+					     XEXP (arg1, 1)),
+			       benefit);
 
       /* Now must have MULT + MULT.  Distribute if same biv, else not giv.  */
       if (GET_CODE (arg0) != MULT || GET_CODE (arg1) != MULT)
@@ -6321,7 +6376,8 @@ simplify_giv_expr (x, benefit)
       /* Handle "a - b" as "a + b * (-1)".  */
       return simplify_giv_expr (gen_rtx_PLUS (mode,
 					      XEXP (x, 0),
-					      gen_rtx_MULT (mode, XEXP (x, 1),
+					      gen_rtx_MULT (mode,
+							    XEXP (x, 1),
 							    constm1_rtx)),
 				benefit);
 
@@ -6380,7 +6436,8 @@ simplify_giv_expr (x, benefit)
 
 	case MULT:
 	  /* (a * invar_1) * invar_2.  Associate.  */
-	  return simplify_giv_expr (gen_rtx_MULT (mode, XEXP (arg0, 0),
+	  return simplify_giv_expr (gen_rtx_MULT (mode,
+						  XEXP (arg0, 0),
 						  gen_rtx_MULT (mode,
 								XEXP (arg0, 1),
 								arg1)),
@@ -6406,11 +6463,12 @@ simplify_giv_expr (x, benefit)
       if (GET_CODE (XEXP (x, 1)) != CONST_INT)
 	return 0;
 
-      return simplify_giv_expr (gen_rtx_MULT (mode,
-					      XEXP (x, 0),
-					      GEN_INT ((HOST_WIDE_INT) 1
-						       << INTVAL (XEXP (x, 1)))),
-				benefit);
+      return
+	simplify_giv_expr (gen_rtx_MULT (mode,
+					 XEXP (x, 0),
+					 GEN_INT ((HOST_WIDE_INT) 1
+						  << INTVAL (XEXP (x, 1)))),
+			   benefit);
 
     case NEG:
       /* "-a" is "a * (-1)" */
@@ -6448,9 +6506,10 @@ simplify_giv_expr (x, benefit)
 	    if (v->cant_derive)
 	      return 0;
 
-	    tem = gen_rtx_PLUS (mode, gen_rtx_MULT (mode, v->src_reg,
-						    v->mult_val),
-			   v->add_val);
+	    tem = gen_rtx_PLUS (mode, gen_rtx_MULT (mode,
+						    v->src_reg, v->mult_val),
+				v->add_val);
+
 	    if (v->derive_adjustment)
 	      tem = gen_rtx_MINUS (mode, tem, v->derive_adjustment);
 	    return simplify_giv_expr (tem, benefit);

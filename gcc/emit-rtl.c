@@ -187,6 +187,10 @@ static rtx make_call_insn_raw		PROTO((rtx));
 static rtx find_line_note		PROTO((rtx));
 static void mark_sequence_stack         PROTO((struct sequence_stack *));
 
+/* There are some RTL codes that require special attention; the generation
+   functions do the raw handling.  If you add to this list, modify
+   special_rtx in gengenrtl.c as well.  */
+
 rtx
 gen_rtx_CONST_INT (mode, arg)
      enum machine_mode mode;
@@ -247,21 +251,22 @@ gen_rtx_REG (mode, regno)
 
   if (mode == Pmode && !reload_in_progress)
     {
-      if (regno == FRAME_POINTER_REGNUM)
+      if (frame_pointer_rtx != 0 && regno == FRAME_POINTER_REGNUM)
 	return frame_pointer_rtx;
 #if FRAME_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
-      if (regno == HARD_FRAME_POINTER_REGNUM)
+      if (hard_frame_pointer_rtx != 0 && regno == HARD_FRAME_POINTER_REGNUM)
 	return hard_frame_pointer_rtx;
 #endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM && HARD_FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
-      if (regno == ARG_POINTER_REGNUM)
+      if (arg_pointer_rtx != 0 && regno == ARG_POINTER_REGNUM)
 	return arg_pointer_rtx;
 #endif
 #ifdef RETURN_ADDRESS_POINTER_REGNUM
-      if (regno == RETURN_ADDRESS_POINTER_REGNUM)
+      if (return_address_pointer_rtx != 0
+	  && regno == RETURN_ADDRESS_POINTER_REGNUM)
 	return return_address_pointer_rtx;
 #endif
-      if (regno == STACK_POINTER_REGNUM)
+      if (stack_pointer_rtx != 0 && regno == STACK_POINTER_REGNUM)
 	return stack_pointer_rtx;
     }
 
@@ -281,7 +286,7 @@ gen_rtx_MEM (mode, addr)
 
   return rt;
 }
-
+
 /* rtx gen_rtx (code, mode, [element1, ..., elementn])
 **
 **	    This routine generates an RTX of the size specified by
@@ -747,6 +752,9 @@ gen_lowpart_common (mode, x)
 
       i = INTVAL (x);
       r = REAL_VALUE_FROM_TARGET_SINGLE (i);
+      /* Avoid changing the bit pattern of a NaN.  */
+      if (REAL_VALUE_ISNAN (r))
+	return 0;
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
 #else
@@ -785,6 +793,8 @@ gen_lowpart_common (mode, x)
 	i[0] = low, i[1] = high;
 
       r = REAL_VALUE_FROM_TARGET_DOUBLE (i);
+      if (REAL_VALUE_ISNAN (r))
+	return 0;
       return CONST_DOUBLE_FROM_REAL_VALUE (r, mode);
     }
 #else
@@ -1478,7 +1488,8 @@ reverse_comparison (insn)
     }
   else
     {
-      rtx new = gen_rtx_COMPARE (VOIDmode, CONST0_RTX (GET_MODE (comp)), comp);
+      rtx new = gen_rtx_COMPARE (VOIDmode,
+				 CONST0_RTX (GET_MODE (comp)), comp);
       if (GET_CODE (body) == SET)
 	SET_SRC (body) = new;
       else
@@ -2105,7 +2116,8 @@ link_cc0_insns (insn)
   if (GET_CODE (user) == INSN && GET_CODE (PATTERN (user)) == SEQUENCE)
     user = XVECEXP (PATTERN (user), 0, 0);
 
-  REG_NOTES (user) = gen_rtx_INSN_LIST (REG_CC_SETTER, insn, REG_NOTES (user));
+  REG_NOTES (user) = gen_rtx_INSN_LIST (REG_CC_SETTER, insn,
+					REG_NOTES (user));
   REG_NOTES (insn) = gen_rtx_INSN_LIST (REG_CC_USER, user, REG_NOTES (insn));
 }
 
@@ -3541,6 +3553,8 @@ init_emit_once (line_numbers)
 
   /* Create the unique rtx's for certain rtx codes and operand values.  */
 
+  /* Don't use gen_rtx here since gen_rtx in this case
+     tries to use these variables.  */
   for (i = - MAX_SAVED_CONST_INT; i <= MAX_SAVED_CONST_INT; i++)
     {
       PUT_CODE (&const_int_rtx[i + MAX_SAVED_CONST_INT], CONST_INT);
@@ -3648,7 +3662,8 @@ init_emit_once (line_numbers)
 
 #ifdef STATIC_CHAIN_INCOMING_REGNUM
   if (STATIC_CHAIN_INCOMING_REGNUM != STATIC_CHAIN_REGNUM)
-    static_chain_incoming_rtx = gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
+    static_chain_incoming_rtx
+      = gen_rtx_REG (Pmode, STATIC_CHAIN_INCOMING_REGNUM);
   else
 #endif
     static_chain_incoming_rtx = static_chain_rtx;

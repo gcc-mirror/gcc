@@ -1103,7 +1103,7 @@ enum reg_class
    otherwise, FUNC is 0.  */
 #define FUNCTION_VALUE(VALTYPE, FUNC)  \
    gen_rtx_REG (TYPE_MODE (VALTYPE), \
-	    VALUE_REGNO (TYPE_MODE (VALTYPE)))
+		VALUE_REGNO (TYPE_MODE (VALTYPE)))
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
@@ -2168,12 +2168,12 @@ number as al, and ax.
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
   gen_rtx_MEM (VOIDmode, gen_rtx_REG (VOIDmode, STACK_POINTER_REGNUM))
-
+ 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
   ((COUNT) == 0								\
-   ? gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, arg_pointer_rtx, GEN_INT(-4)))\
-   : gen_rtx_MEM (Pmode, gen_rtx_PLUS (Pmode, (FRAME), GEN_INT(4))))
+   ? gen_rtx_MEM (Pmode, plus_constant (arg_pointer_rtx, -4))\
+   : gen_rtx_MEM (Pmode, plus_constant (FRAME, 4)))
 
 /* PC is dbx register 8; let's use that column for RA. */
 #define DWARF_FRAME_RETURN_COLUMN 	8

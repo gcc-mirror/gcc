@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Mitsubishi M32R cpu.
-   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -938,18 +938,15 @@ m32r_select_cc_mode (op, x, y)
    than being susummed into the following branch instruction. */
 
 rtx
-gen_compare (int_code, x, y, need_compare)
-     int	   int_code;
-     rtx           x;
-     rtx           y;
-     int           need_compare;
+gen_compare (code, x, y, need_compare)
+     enum rtx_code code;
+     rtx x, y;
+     int need_compare;
 {
-  enum rtx_code     code = (enum rtx_code)int_code;
-  enum rtx_code     compare_code;
-  enum rtx_code     branch_code;
-  enum machine_mode mode      = SELECT_CC_MODE (code, x, y);
-  rtx               cc_reg    = gen_rtx (REG, mode, CARRY_REGNUM);
-  int               must_swap = 0;
+  enum machine_mode mode = SELECT_CC_MODE (code, x, y);
+  enum rtx_code compare_code, branch_code;
+  rtx cc_reg = gen_rtx_REG (mode, CARRY_REGNUM);
+  int swap_p = 0;
 
   switch (code)
     {
@@ -1336,9 +1333,9 @@ m32r_setup_incoming_varargs (cum, int_mode, type, pretend_size, no_rtl)
       int size = M32R_MAX_PARM_REGS - first_reg_offset;
       rtx regblock;
 
-      regblock = gen_rtx (MEM, BLKmode,
-			  plus_constant (arg_pointer_rtx,
-					 FIRST_PARM_OFFSET (0)));
+      regblock = gen_rtx_MEM (BLKmode,
+			      plus_constant (arg_pointer_rtx,
+					     FIRST_PARM_OFFSET (0)));
       MEM_ALIAS_SET (regblock) = get_varargs_alias_set ();
       move_block_from_reg (first_reg_offset, regblock,
 			   size, size * UNITS_PER_WORD);

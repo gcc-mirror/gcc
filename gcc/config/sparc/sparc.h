@@ -1195,15 +1195,14 @@ extern int sparc_mode_class[];
 #define STRUCT_VALUE \
   (TARGET_ARCH64					\
    ? 0							\
-   : gen_rtx_MEM (Pmode,				\
-		  gen_rtx_PLUS (Pmode, stack_pointer_rtx, \
-		       GEN_INT (STRUCT_VALUE_OFFSET))))
+   : gen_rtx_MEM (Pmode, plus_constant (stack_pointer_rtx, \
+					STRUCT_VALUE_OFFSET)))
+
 #define STRUCT_VALUE_INCOMING \
-  (TARGET_ARCH64					\
-   ? 0							\
-   : gen_rtx_MEM (Pmode,				\
-		  gen_rtx_PLUS (Pmode, frame_pointer_rtx, \
-		       GEN_INT (STRUCT_VALUE_OFFSET))))
+  (TARGET_ARCH64						\
+   ? 0								\
+   : gen_rtx_MEM (Pmode, plus_constant (frame_pointer_rtx,	\
+					STRUCT_VALUE_OFFSET)))
 
 /* Define the classes of registers for register constraints in the
    machine description.  Also define ranges of constants.
@@ -1497,8 +1496,8 @@ extern char leaf_reg_remap[];
 #define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
   (get_frame_size () == 0						\
    ? assign_stack_local (MODE, GET_MODE_SIZE (MODE), 0)			\
-   : gen_rtx_MEM (MODE, gen_rtx_PLUS (Pmode, frame_pointer_rtx,	\
-				  GEN_INT (STARTING_FRAME_OFFSET))))
+   : gen_rtx_MEM (MODE, plus_constant (frame_pointer_rtx,		\
+				       STARTING_FRAME_OFFSET)))
 
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
@@ -2076,8 +2075,7 @@ extern struct rtx_def *sparc_builtin_saveregs ();
    return an rtx for the address of the word in the frame
    that holds the dynamic chain--the previous frame's address.
    ??? -mflat support? */
-#define DYNAMIC_CHAIN_ADDRESS(frame) \
-  gen_rtx_PLUS (Pmode, frame, GEN_INT (14 * UNITS_PER_WORD))
+#define DYNAMIC_CHAIN_ADDRESS(frame) plus_constant (frame, 14 * UNITS_PER_WORD)
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the
@@ -2098,14 +2096,15 @@ extern struct rtx_def *sparc_builtin_saveregs ();
   ((count == -1)				\
    ? gen_rtx_REG (Pmode, 31)			\
    : gen_rtx_MEM (Pmode,			\
-	      memory_address (Pmode, plus_constant (frame, 15 * UNITS_PER_WORD))))
+		  memory_address (Pmode, plus_constant (frame, \
+							15 * UNITS_PER_WORD))))
 
 /* Before the prologue, the return address is %o7 + 8.  OK, sometimes it's
    +12, but always using +8 is close enough for frame unwind purposes.
    Actually, just using %o7 is close enough for unwinding, but %o7+8
    is something you can return to.  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx_PLUS (word_mode, gen_rtx_REG (word_mode, 15), GEN_INT (8))
+  plus_constant (gen_rtx_REG (word_mode, 15), 8)
 
 /* The offset from the incoming value of %sp to the top of the stack frame
    for the current function.  On sparc64, we have to account for the stack
@@ -2389,25 +2388,25 @@ extern struct rtx_def *legitimize_pic_address ();
 { rtx sparc_x = (X);						\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == MULT)	\
     (X) = gen_rtx_PLUS (Pmode, XEXP (X, 1),			\
-		   force_operand (XEXP (X, 0), NULL_RTX));	\
+			force_operand (XEXP (X, 0), NULL_RTX));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == MULT)	\
     (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), NULL_RTX));	\
+			force_operand (XEXP (X, 1), NULL_RTX));	\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == PLUS)	\
     (X) = gen_rtx_PLUS (Pmode, force_operand (XEXP (X, 0), NULL_RTX),\
-		   XEXP (X, 1));				\
+			XEXP (X, 1));				\
   if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 1)) == PLUS)	\
     (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-		   force_operand (XEXP (X, 1), NULL_RTX));	\
+			force_operand (XEXP (X, 1), NULL_RTX));	\
   if (sparc_x != (X) && memory_address_p (MODE, X))		\
     goto WIN;							\
   if (flag_pic) (X) = legitimize_pic_address (X, MODE, 0);	\
   else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 1)))	\
     (X) = gen_rtx_PLUS (Pmode, XEXP (X, 0),			\
-		   copy_to_mode_reg (Pmode, XEXP (X, 1)));	\
+			copy_to_mode_reg (Pmode, XEXP (X, 1)));	\
   else if (GET_CODE (X) == PLUS && CONSTANT_ADDRESS_P (XEXP (X, 0)))	\
     (X) = gen_rtx_PLUS (Pmode, XEXP (X, 1),			\
-		   copy_to_mode_reg (Pmode, XEXP (X, 0)));	\
+			copy_to_mode_reg (Pmode, XEXP (X, 0)));	\
   else if (GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == CONST	\
 	   || GET_CODE (X) == LABEL_REF)			\
     (X) = copy_to_suggested_reg (X, NULL_RTX, Pmode); 		\
