@@ -1,3 +1,12 @@
+Wed Aug 25 10:57:12 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/telf.h (ASM_WEAKEN_LABEL): Define.
+	(ASM_DECLARE_FUNCTION_NAME): Define.
+	(TYPE_ASM_OP, SIZE_ASM_OP, TYPE_OPERAND_FORMAT,
+	ASM_DECLARE_RESULT, ASM_DECLARE_OBJECT_NAME,
+	ASM_FINISH_DECLARE_OBJECT, ASM_DECLARE_FUNCTION_SIZE): Define if
+	not already defined.
+
 Wed Aug 25 01:36:11 1999  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* calls.c (emit_call_1): Use call_pop/call_value_pop for all values

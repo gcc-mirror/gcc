@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for Thumb with ELF obj format.
-   Copyright (C) 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1999 Free Software Foundation, Inc.
    
 This file is part of GNU CC.
 
@@ -213,14 +213,14 @@ extern int arm_structure_size_boundary;
 #endif
 
 #define RDATA_SECTION_FUNCTION \
-void									\
-rdata_section ()							\
-{									\
-  if (in_section != in_rdata)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", RDATA_SECTION_ASM_OP);		\
-      in_section = in_rdata;						\
-    }									\
+void								\
+rdata_section ()						\
+{								\
+  if (in_section != in_rdata)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", RDATA_SECTION_ASM_OP);	\
+      in_section = in_rdata;					\
+    }								\
 }
 
 #define CTOR_LIST_BEGIN                                 \
@@ -240,25 +240,25 @@ asm (DTORS_SECTION_ASM_OP);                             \
 func_ptr __DTOR_END__[1] = { (func_ptr) 0 };
 
 #define CTORS_SECTION_FUNCTION \
-void									\
-ctors_section ()							\
-{									\
-  if (in_section != in_ctors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);		\
-      in_section = in_ctors;						\
-    }									\
+void								\
+ctors_section ()						\
+{								\
+  if (in_section != in_ctors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
+      in_section = in_ctors;					\
+    }								\
 }
 
 #define DTORS_SECTION_FUNCTION \
-void									\
-dtors_section ()							\
-{									\
-  if (in_section != in_dtors)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);		\
-      in_section = in_dtors;						\
-    }									\
+void								\
+dtors_section ()						\
+{								\
+  if (in_section != in_dtors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
+      in_section = in_dtors;					\
+    }								\
 }
 
 /* Support the ctors/dtors sections for g++.  */
@@ -341,3 +341,132 @@ dtors_section ()							\
       DECL_SECTION_NAME (DECL) = build_string (len, string);	\
     }								\
   while (0)
+
+/* This is how we tell the assembler that a symbol is weak.  */
+#ifndef ASM_WEAKEN_LABEL
+#define ASM_WEAKEN_LABEL(FILE, NAME) 		\
+  do						\
+    {						\
+      fputs ("\t.weak\t", FILE);		\
+      assemble_name (FILE, NAME); 		\
+      fputc ('\n', FILE);			\
+    }						\
+  while (0)
+#endif
+
+#ifndef TYPE_ASM_OP
+
+/* These macros generate the special .type and .size directives which
+   are used to set the corresponding fields of the linker symbol table
+   entries in an ELF object file under SVR4.  These macros also output
+   the starting labels for the relevant functions/objects.  */
+#define TYPE_ASM_OP     ".type"
+#define SIZE_ASM_OP     ".size"
+
+/* The following macro defines the format used to output the second
+   operand of the .type assembler directive.  Different svr4 assemblers
+   expect various different forms for this operand.  The one given here
+   is just a default.  You may need to override it in your machine-
+   specific tm.h file (depending upon the particulars of your assembler).  */
+#define TYPE_OPERAND_FMT	"%s"
+
+/* Write the extra assembler code needed to declare a function's result.
+   Most svr4 assemblers don't require any special declaration of the
+   result value, but there are exceptions.  */
+#ifndef ASM_DECLARE_RESULT
+#define ASM_DECLARE_RESULT(FILE, RESULT)
+#endif
+
+/* Write the extra assembler code needed to declare a function properly.
+   Some svr4 assemblers need to also have something extra said about the
+   function's return value.  We allow for that here.  */
+#undef  ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
+  do							\
+    {							\
+      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);		\
+      assemble_name (FILE, NAME);			\
+      putc (',', FILE);					\
+      fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
+      putc ('\n', FILE);				\
+      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));	\
+      if (! is_called_in_ARM_mode (decl))		\
+        fprintf (FILE, "\t.thumb_func\n") ;		\
+      else						\
+        fprintf (FILE, "\t.code\t32\n") ;		\
+      ASM_OUTPUT_LABEL(FILE, NAME);			\
+    }							\
+  while (0)
+
+/* Write the extra assembler code needed to declare an object properly.  */
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
+  do								\
+    {								\
+      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);			\
+      assemble_name (FILE, NAME);				\
+      putc (',', FILE);						\
+      fprintf (FILE, TYPE_OPERAND_FMT, "object");		\
+      putc ('\n', FILE);					\
+      size_directive_output = 0;				\
+      if (!flag_inhibit_size_directive && DECL_SIZE (DECL))	\
+        {							\
+	  size_directive_output = 1;				\
+	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  assemble_name (FILE, NAME);				\
+	  putc (',', FILE);					\
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
+		   int_size_in_bytes (TREE_TYPE (DECL)));	\
+	  fputc ('\n', FILE);					\
+        }							\
+      ASM_OUTPUT_LABEL(FILE, NAME);				\
+    }								\
+  while (0)
+
+/* Output the size directive for a decl in rest_of_decl_compilation
+   in the case where we did not do so before the initializer.
+   Once we find the error_mark_node, we know that the value of
+   size_directive_output was set
+   by ASM_DECLARE_OBJECT_NAME when it was run for the same decl.  */
+#define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)\
+  do								\
+    {								\
+      char * name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);	\
+      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)	\
+          && ! AT_END && TOP_LEVEL				\
+	  && DECL_INITIAL (DECL) == error_mark_node		\
+	  && !size_directive_output)				\
+        {							\
+	  size_directive_output = 1;				\
+	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  assemble_name (FILE, name);				\
+	  putc (',', FILE);					\
+	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
+		  int_size_in_bytes (TREE_TYPE (DECL)));	\
+	 fputc ('\n', FILE);					\
+        }							\
+    }								\
+  while (0)
+
+/* This is how to declare the size of a function.  */
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
+  do								\
+    {								\
+      if (!flag_inhibit_size_directive)				\
+        {							\
+          char label[256];					\
+	  static int labelno;					\
+	  labelno ++;						\
+	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
+	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
+	  fprintf (FILE, "\t%s\t ", SIZE_ASM_OP);		\
+	  assemble_name (FILE, (FNAME));			\
+          fprintf (FILE, ",");					\
+	  assemble_name (FILE, label);				\
+          fprintf (FILE, "-");					\
+	  assemble_name (FILE, (FNAME));			\
+	  putc ('\n', FILE);					\
+        }							\
+    }								\
+  while (0)
+
+#endif /* TYPE_ASM_OP */
