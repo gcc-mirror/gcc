@@ -1,5 +1,24 @@
 2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/xtensa/xtensa-protos.h: Remove the prototype for
+	xtensa_builtin_saveregs.
+	* config/xtensa/xtensa.c (TARGET_PROMOTE_FUNCTION_ARGS): New.
+	(TARGET_PROMOTE_FUNCTION_RETURN): Likewise.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_EXPAND_BUILTIN_SAVEREGS): Likewise.
+	(xtensa_builtin_saveregs): Make it static.
+	(xtensa_return_in_memory): New.
+	* config/xtensa/xtensa.h (PROMOTE_FUNCTION_ARGS: Remove.
+	(PROMOTE_FUNCTION_RETURN): Likewise.
+	(PROMOTE_PROTOTYPES): Likewise.
+	(STRUCT_VALUE): Likewise.
+	(RETURN_IN_MEMORY): Likewise.
+	(EXPAND_BUILTIN_SAVEREGS): Likewise.
+
+2004-01-26  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/arm/arm.c (TARGET_SETUP_INCOMING_VARARGS): New.
 	(arm_setup_incoming_varargs): Likewise.
 	* config/arm/arm.h (SETUP_INCOMING_VARARGS): Remove.
