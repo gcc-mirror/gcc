@@ -1,3 +1,8 @@
+Tue Jan 16 17:20:43 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* combine.c (try_combine): If i3_subst_into_i2, properly check for
+	I3 having more than one SET.
+
 2001-01-16  Jim Wilson  <wilson@redhat.com>
 
 	* invoke.texi: Document IA-64 options.
