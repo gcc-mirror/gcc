@@ -2126,36 +2126,7 @@ dbxout_parms (parms)
 			 DBX_MEMPARM_STABS_LETTER);
 	      }
 
-	    if (GET_CODE (DECL_RTL (parms)) == REG
-		&& REGNO (DECL_RTL (parms)) >= 0
-		&& REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
-	      dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
-	    else
-	      {
-		int original_value = current_sym_value;
-
-		/* This is the case where the parm is passed as an int or double
-		   and it is converted to a char, short or float and stored back
-		   in the parmlist.  In this case, describe the parm
-		   with the variable's declared type, and adjust the address
-		   if the least significant bytes (which we are using) are not
-		   the first ones.  */
-		if (BYTES_BIG_ENDIAN
-		    && TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
-		  current_sym_value += (GET_MODE_SIZE (TYPE_MODE (DECL_ARG_TYPE (parms)))
-					- GET_MODE_SIZE (GET_MODE (DECL_RTL (parms))));
-
-		if (GET_CODE (DECL_RTL (parms)) == MEM
-		    && GET_CODE (XEXP (DECL_RTL (parms), 0)) == PLUS
-		    && GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 1)) == CONST_INT
-		    && INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1)) == current_sym_value)
-		  dbxout_type (TREE_TYPE (parms), 0, 0);
-		else
-		  {
-		    current_sym_value = original_value;
-		    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
-		  }
-	      }
+	    dbxout_type (DECL_ARG_TYPE (parms), 0, 0);
 	    current_sym_value = DEBUGGER_ARG_OFFSET (current_sym_value, addr);
 	    dbxout_finish_symbol (parms);
 	  }
@@ -2323,7 +2294,7 @@ dbxout_reg_parms (parms)
      tree parms;
 {
   for (; parms; parms = TREE_CHAIN (parms))
-    if (DECL_NAME (parms))
+    if (DECL_NAME (parms) && PARM_PASSED_IN_MEMORY (parms))
       {
 	dbxout_prepare_symbol (parms);
 
@@ -2331,70 +2302,17 @@ dbxout_reg_parms (parms)
 	   but were passed in memory.  */
 	if (GET_CODE (DECL_RTL (parms)) == REG
 	    && REGNO (DECL_RTL (parms)) >= 0
-	    && REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER
-	    && PARM_PASSED_IN_MEMORY (parms))
+	    && REGNO (DECL_RTL (parms)) < FIRST_PSEUDO_REGISTER)
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));
-	else if (GET_CODE (DECL_RTL (parms)) == CONCAT
-		 && PARM_PASSED_IN_MEMORY (parms))
+	else if (GET_CODE (DECL_RTL (parms)) == CONCAT)
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));
 	/* Report parms that live in memory but not where they were passed.  */
 	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == PLUS
-		 && GET_CODE (XEXP (XEXP (DECL_RTL (parms), 0), 1)) == CONST_INT
-		 && PARM_PASSED_IN_MEMORY (parms)
 		 && ! rtx_equal_p (DECL_RTL (parms), DECL_INCOMING_RTL (parms)))
-	  {
-#if 0 /* ??? It is not clear yet what should replace this.  */
-	    int offset = DECL_OFFSET (parms) / BITS_PER_UNIT;
-	    /* A parm declared char is really passed as an int,
-	       so it occupies the least significant bytes.
-	       On a big-endian machine those are not the low-numbered ones.  */
-	    if (BYTES_BIG_ENDIAN
-		&& offset != -1
-		&& TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
-	      offset += (GET_MODE_SIZE (TYPE_MODE (DECL_ARG_TYPE (parms)))
-			 - GET_MODE_SIZE (GET_MODE (DECL_RTL (parms))));
-	    if (INTVAL (XEXP (XEXP (DECL_RTL (parms), 0), 1)) != offset) {...}
-#endif
-	    dbxout_symbol_location (parms, TREE_TYPE (parms),
-				    0, DECL_RTL (parms));
-	  }
-#if 0
-	else if (GET_CODE (DECL_RTL (parms)) == MEM
-		 && GET_CODE (XEXP (DECL_RTL (parms), 0)) == REG)
-	  {
-	    /* Parm was passed via invisible reference.
-	       That is, its address was passed in a register.
-	       Output it as if it lived in that register.
-	       The debugger will know from the type
-	       that it was actually passed by invisible reference.  */
-
-	    current_sym_code = N_RSYM;
-
-	    /* DECL_RTL looks like (MEM (REG...).  Get the register number.  */
-	    current_sym_value = REGNO (XEXP (DECL_RTL (parms), 0));
-	    current_sym_addr = 0;
-
-	    FORCE_TEXT;
-	    if (DECL_NAME (parms))
-	      {
-		current_sym_nchars = 2 + strlen (IDENTIFIER_POINTER (DECL_NAME (parms)));
-
-		fprintf (asmfile, "%s \"%s:r", ASM_STABS_OP,
-			 IDENTIFIER_POINTER (DECL_NAME (parms)));
-	      }
-	    else
-	      {
-		current_sym_nchars = 8;
-		fprintf (asmfile, "%s \"(anon):r", ASM_STABS_OP);
-	      }
-
-	    dbxout_type (TREE_TYPE (parms), 0, 0);
-	    dbxout_finish_symbol (parms);
-	  }
-#endif
+	  dbxout_symbol_location (parms, TREE_TYPE (parms),
+				  0, DECL_RTL (parms));
       }
 }
 
