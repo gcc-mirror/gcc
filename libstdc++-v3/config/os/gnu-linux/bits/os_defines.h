@@ -34,7 +34,7 @@
 // By enabling this, all GNU extensions are enabled.
 #define _GNU_SOURCE 1
 
-// By enabling this, all ISO C99, ISO C9X functionality is enabled.
+// By enabling this, all ISO C99 functionality is enabled.
 #define _ISOC99_SOURCE 1
 
 // This keeps isanum, et al from being propagated as macros.
