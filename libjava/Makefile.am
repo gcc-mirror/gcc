@@ -79,6 +79,12 @@ GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fassume-comp
 GCJLINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --mode=link $(CC) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
+## We define this because otherwise libtool can be run with different
+## values of `CXX' and will then get confused and fail to work.  So,
+## we use --tag explicitly.  Someday automake will be changed to do
+## this automatically.
+LTCXXCOMPILE = $(LIBTOOL) --tag=CXX --mode=compile $(CXX) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+
 JAVAC = $(GCJ_WITH_FLAGS) -C
 
 EH_COMMON_INCLUDE = @EH_COMMON_INCLUDE@
