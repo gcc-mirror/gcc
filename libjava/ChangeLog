@@ -1,5 +1,12 @@
 2005-02-09  Tom Tromey  <tromey@redhat.com>
 
+	* gnu/java/net/protocol/jar/Connection.java (getJarFile): Open
+	jar file with OPEN_DELETE.
+	* java/util/zip/ZipFile.java (ZipFile): Call deleteOnExit when
+	OPEN_DELETE is used.
+
+2005-02-09  Tom Tromey  <tromey@redhat.com>
+
 	* java/util/zip/InflaterInputStream.java (markSupported):
 	Override.
 	(mark, reset): Likewise.

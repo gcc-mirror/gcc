@@ -1,5 +1,5 @@
 /* Connection - jar url connection for java.net
-   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -222,9 +222,8 @@ public final class Connection extends JarURLConnection
 	  fos.write(buf, 0, len);
         fos.close();
 	// Always verify the Manifest, open read only and delete when done.
-	// XXX ZipFile.OPEN_DELETE not yet implemented.
-	// jf = new JarFile(f, true, ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
-	jar_file = new JarFile (f, true, ZipFile.OPEN_READ);
+	jar_file = new JarFile (f, true,
+				ZipFile.OPEN_READ | ZipFile.OPEN_DELETE);
       }
 
     return jar_file;
