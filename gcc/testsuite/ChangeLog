@@ -1,5 +1,11 @@
 2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
+	* gcc.dg/format-ext-1.c: Add tests for mixing %m with $ formats.
+	* gcc.dg/format-xopen-1.c: Fix error in one $ format test.  Add
+	more $ format tests.
+
+2000-09-18  Joseph S. Myers  <jsm28@cam.ac.uk>
+
 	* gcc.dg/format-errmk-1.c: New test.
 
 2000-09-17  Greg McGary  <greg@mcgary.org>

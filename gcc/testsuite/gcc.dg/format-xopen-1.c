@@ -103,13 +103,15 @@ foo (int i, unsigned int u, wint_t lc, wchar_t *ls, int *ip, double d,
   */
   scanf ("%1$d", ip);
   printf ("%1$d", i);
-  printf ("%3$*2$.*1$d", i2, i, l);
+  printf ("%1$d", l); /* { dg-warning "arg 2" "mismatched args with $ format" } */
+  printf ("%3$*2$.*1$ld", i2, i, l);
   printf ("%4$ld%7$ld%5$d%6$d%3$d%1$d%2$d", i, i, i, l, i, i, l);
   scanf ("%4$ld%7$ld%5$d%6$d%3$d%1$d%2$d", ip, ip, ip, lp, ip, ip, lp);
   printf ("%1$d%d", i, i); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
   printf ("%%%1$d%%%2$d", i, i);
   printf ("%d%2$d", i); /* { dg-warning "type character" "mixing $ and non-$ formats" } */
   printf ("%1$*d", i, i); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
+  printf ("%*1$d", i); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
   scanf ("%1$d%d", ip, ip); /* { dg-warning "missing" "mixing $ and non-$ formats" } */
   scanf ("%*f%%%1$d%%%2$d", ip, ip);
   printf ("%2$d", i); /* { dg-warning "operand" "$ number too large" } */
