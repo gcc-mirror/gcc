@@ -173,7 +173,7 @@ namespace __gnu_cxx_test
 	VERIFY( preLC_ALL == postLC_ALL );
       }
     else
-      throw environment_variable(string("LC_ALL for") + string(name));
+      throw environment_variable(string("LC_ALL for ") + string(name));
   }
   
   void 

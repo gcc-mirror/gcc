@@ -1,3 +1,93 @@
+2003-03-18  Paolo Carlini  <pcarlini@unitus.it>
+
+	Reshuffle 21_strings testsuite.
+	* testsuite/21_strings/append.cc, c_strings.cc, invariants.cc,
+	assign.cc, ctor_copy_dtor.cc, nonmember.cc, capacity.cc,
+	element_access.cc, operations.cc, char_traits_requirements.cc,
+	find.cc, replace.cc, char_traits_typedefs.cc, insert.cc, rfind.cc,
+	compare.cc, inserters_extractors.cc, substr.cc: Split up, add
+	wchar_t tests as follows.	
+	* 21_strings/basic_string/append/char/1.cc: New.
+	* 21_strings/basic_string/append/wchar_t/1.cc: New.
+	* 21_strings/basic_string/assign/char/1.cc: New.
+	* 21_strings/basic_string/assign/char/2.cc: New.
+	* 21_strings/basic_string/assign/char/3.cc: New.
+	* 21_strings/basic_string/assign/wchar_t/1.cc: New.
+	* 21_strings/basic_string/assign/wchar_t/2.cc: New.
+	* 21_strings/basic_string/assign/wchar_t/3.cc: New.
+	* 21_strings/basic_string/capacity/1.cc: New.
+	* 21_strings/basic_string/capacity/char/1.cc: New.
+	* 21_strings/basic_string/capacity/char/2.cc: New.
+	* 21_strings/basic_string/capacity/wchar_t/1.cc: New.
+	* 21_strings/basic_string/capacity/wchar_t/2.cc: New.
+	* 21_strings/basic_string/compare/char/1.cc: New.
+	* 21_strings/basic_string/compare/wchar_t/1.cc: New.
+	* 21_strings/basic_string/cons/char/1.cc: New.
+	* 21_strings/basic_string/cons/char/2.cc: New.
+	* 21_strings/basic_string/cons/char/3.cc: New.
+	* 21_strings/basic_string/cons/char/4.cc: New.
+	* 21_strings/basic_string/cons/char/5.cc: New.
+	* 21_strings/basic_string/cons/wchar_t/1.cc: New.
+	* 21_strings/basic_string/cons/wchar_t/2.cc: New.
+	* 21_strings/basic_string/cons/wchar_t/3.cc: New.
+	* 21_strings/basic_string/cons/wchar_t/4.cc: New.
+	* 21_strings/basic_string/cons/wchar_t/5.cc: New.
+	* 21_strings/basic_string/element_access/char/1.cc: New.
+	* 21_strings/basic_string/element_access/char/2.cc: New.
+	* 21_strings/basic_string/element_access/char/3.cc: New.
+	* 21_strings/basic_string/element_access/wchar_t/1.cc: New.
+	* 21_strings/basic_string/element_access/wchar_t/2.cc: New.
+	* 21_strings/basic_string/element_access/wchar_t/3.cc: New.
+	* 21_strings/basic_string/find/char/1.cc: New.
+	* 21_strings/basic_string/find/wchar_t/1.cc: New.
+	* 21_strings/basic_string/insert/char/1.cc: New.
+	* 21_strings/basic_string/insert/char/2.cc: New.
+	* 21_strings/basic_string/insert/wchar_t/1.cc: New.
+	* 21_strings/basic_string/insert/wchar_t/2.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/1.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/4.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/5.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/6.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/7.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/8.cc: New.
+	* 21_strings/basic_string/inserters_extractors/char/9.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/1.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/4.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/5.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/6.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/7.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/8.cc: New.
+	* 21_strings/basic_string/inserters_extractors/wchar_t/9.cc: New.
+	* 21_strings/basic_string/operators/char/1.cc: New.
+	* 21_strings/basic_string/operators/char/2.cc: New.
+	* 21_strings/basic_string/operators/wchar_t/1.cc: New.
+	* 21_strings/basic_string/operators/wchar_t/2.cc: New.
+	* 21_strings/basic_string/replace/char/1.cc: New.
+	* 21_strings/basic_string/replace/char/2.cc: New.
+	* 21_strings/basic_string/replace/char/3.cc: New.
+	* 21_strings/basic_string/replace/char/4.cc: New.
+	* 21_strings/basic_string/replace/char/5.cc: New.
+	* 21_strings/basic_string/replace/wchar_t/1.cc: New.
+	* 21_strings/basic_string/replace/wchar_t/2.cc: New.
+	* 21_strings/basic_string/replace/wchar_t/3.cc: New.
+	* 21_strings/basic_string/replace/wchar_t/4.cc: New.
+	* 21_strings/basic_string/replace/wchar_t/5.cc: New.
+	* 21_strings/basic_string/rfind/char/1.cc: New.
+	* 21_strings/basic_string/rfind/char/2.cc: New.
+	* 21_strings/basic_string/rfind/char/3.cc: New.
+	* 21_strings/basic_string/rfind/wchar_t/1.cc: New.
+	* 21_strings/basic_string/rfind/wchar_t/2.cc: New.
+	* 21_strings/basic_string/rfind/wchar_t/3.cc: New.
+	* 21_strings/basic_string/substr/char/1.cc: New.
+	* 21_strings/basic_string/substr/wchar_t/1.cc: New.
+	* 21_strings/c_strings/char/1.cc: New.
+	* 21_strings/c_strings/char/2.cc: New.
+	* 21_strings/c_strings/wchar_t/1.cc: New.
+	* 21_strings/c_strings/wchar_t/2.cc: New.
+	* 21_strings/char_traits/requirements/char/1.cc: New.
+	* 21_strings/char_traits/requirements/wchar_t/1.cc: New.
+	* 21_strings/char_traits/typedefs/char/1.cc: New.
+	
 2003-03-17  Paolo Carlini  <pcarlini@unitus.it>
             Petur Runolfsson  <peturr02@ru.is>
 
@@ -1192,7 +1282,7 @@
 	global_templates.cc time_get_members_wchar_t.cc, members.cc,
 	time_put.cc, messages_byname.cc, time_put_members_char.cc,
 	messages.cc, time_put_members_wchar_t.cc, messages_members_char.cc): 
-	Splint up into individual test cases...	
+	Split up into individual test cases...	
 	* 22_locale/codecvt/1.cc: New.
 	* 22_locale/codecvt/2.cc: New.
 	* 22_locale/codecvt/always_noconv/char/1.cc: New.
