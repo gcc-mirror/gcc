@@ -2436,7 +2436,6 @@ static void output_pubnames		PARAMS ((void));
 static void add_arange			PARAMS ((tree, dw_die_ref));
 static void output_aranges		PARAMS ((void));
 static void output_line_info		PARAMS ((void));
-static int is_body_block		PARAMS ((tree));
 static dw_die_ref base_type_die		PARAMS ((tree));
 static tree root_type			PARAMS ((tree));
 static int is_base_type			PARAMS ((tree));
@@ -5924,36 +5923,6 @@ output_line_info ()
   ASM_OUTPUT_LABEL (asm_out_file, ".LTEND");
 }
 
-/* Given a pointer to a BLOCK node return non-zero if (and only if) the node
-   in question represents the outermost pair of curly braces (i.e. the "body
-   block") of a function or method.
-
-   For any BLOCK node representing a "body block" of a function or method, the
-   BLOCK_SUPERCONTEXT of the node will point to another BLOCK node which
-   represents the outermost (function) scope for the function or method (i.e.
-   the one which includes the formal parameters).  The BLOCK_SUPERCONTEXT of
-   *that* node in turn will point to the relevant FUNCTION_DECL node. */
-
-static inline int
-is_body_block (stmt)
-     register tree stmt;
-{
-  if (TREE_CODE (stmt) == BLOCK)
-    {
-      register tree parent = BLOCK_SUPERCONTEXT (stmt);
-
-      if (TREE_CODE (parent) == BLOCK)
-	{
-	  register tree grandparent = BLOCK_SUPERCONTEXT (parent);
-
-	  if (TREE_CODE (grandparent) == FUNCTION_DECL)
-	    return 1;
-	}
-    }
-
-  return 0;
-}
-
 /* Given a pointer to a tree node for some base type, return a pointer to
    a DIE that describes the given type.
 

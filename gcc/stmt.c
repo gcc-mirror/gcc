@@ -3310,6 +3310,36 @@ expand_end_target_temps ()
   pop_temp_slots ();
 }
 
+/* Given a pointer to a BLOCK node return non-zero if (and only if) the node
+   in question represents the outermost pair of curly braces (i.e. the "body
+   block") of a function or method.
+
+   For any BLOCK node representing a "body block" of a function or method, the
+   BLOCK_SUPERCONTEXT of the node will point to another BLOCK node which
+   represents the outermost (function) scope for the function or method (i.e.
+   the one which includes the formal parameters).  The BLOCK_SUPERCONTEXT of
+   *that* node in turn will point to the relevant FUNCTION_DECL node. */
+
+int
+is_body_block (stmt)
+     register tree stmt;
+{
+  if (TREE_CODE (stmt) == BLOCK)
+    {
+      tree parent = BLOCK_SUPERCONTEXT (stmt);
+
+      if (parent && TREE_CODE (parent) == BLOCK)
+	{
+	  tree grandparent = BLOCK_SUPERCONTEXT (parent);
+
+	  if (grandparent && TREE_CODE (grandparent) == FUNCTION_DECL)
+	    return 1;
+	}
+    }
+
+  return 0;
+}
+
 /* Mark top block of block_stack as an implicit binding for an
    exception region.  This is used to prevent infinite recursion when
    ending a binding with expand_end_bindings.  It is only ever called

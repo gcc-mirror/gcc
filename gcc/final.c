@@ -1644,10 +1644,7 @@ final_start_function (first, file, optimize)
   if (write_symbols)
     {
       number_blocks (current_function_decl);
-      /* Scheduling packs block notes together at the top of a basic block,
-	 so we can't learn anything from them.  */
-      if (! flag_schedule_insns && ! flag_schedule_insns_after_reload)
-	remove_unncessary_notes ();
+      remove_unncessary_notes ();
       /* We never actually put out begin/end notes for the top-level
 	 block in the function.  But, conceptually, that block is
 	 always needed.  */

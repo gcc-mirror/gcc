@@ -2711,10 +2711,16 @@ remove_unncessary_notes ()
 		  if (NOTE_BLOCK (prev) != NOTE_BLOCK (insn))
 		    abort ();
 
-		  debug_ignore_block (NOTE_BLOCK (insn));
-		  
-		  remove_insn (prev);
-		  remove_insn (insn);
+		  /* Never delete the BLOCK for the outermost scope
+		     of the function; we can refer to names from
+		     that scope even if the block notes are messed up.  */
+		  if (! is_body_block (NOTE_BLOCK (insn)))
+		    {
+		      debug_ignore_block (NOTE_BLOCK (insn));
+
+		      remove_insn (prev);
+		      remove_insn (insn);
+		    }
 		  break;
 		}
 	      else if (NOTE_LINE_NUMBER (prev) == NOTE_INSN_BLOCK_END)
