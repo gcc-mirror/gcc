@@ -1,5 +1,5 @@
 /* Demangler for GNU C++ 
-   Copyright 1989, 1991, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright 1989, 1991, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    
@@ -39,11 +39,13 @@ Boston, MA 02111-1307, USA.  */
 extern char *xmalloc PARAMS((unsigned));
 extern char *xrealloc PARAMS((char *, unsigned));
 
-char *
+static const char *mystrstr PARAMS ((const char *, const char *));
+
+static const char *
 mystrstr (s1, s2)
-     char *s1, *s2;
+     const char *s1, *s2;
 {
-  register char *p = s1;
+  register const char *p = s1;
   register int len = strlen (s2);
 
   for (; (p = strchr (p, *s2)) != 0; p++)
@@ -221,6 +223,16 @@ demangle_method_args PARAMS ((struct work_stuff *work, const char **, string *))
 static int
 demangle_template PARAMS ((struct work_stuff *work, const char **, string *,
 			   string *));
+
+static int
+arm_pt PARAMS ((struct work_stuff *, const char *, int, const char **,
+		const char **));
+
+static void
+demangle_arm_pt PARAMS ((struct work_stuff *, const char **, int, string *));
+
+static int
+demangle_class_name PARAMS ((struct work_stuff *, const char **, string *));
 
 static int
 demangle_qualified PARAMS ((struct work_stuff *, const char **, string *,
@@ -470,21 +482,6 @@ cplus_mangle_opname (opname, options)
 	return optable[i].in;
     }
   return (0);
-}
-
-/* Check to see whether MANGLED can match TEXT in the first TEXT_LEN
-   characters.  */
-
-int cplus_match (mangled, text, text_len)
-     const char *mangled;
-     char *text;
-     int text_len;
-{
-  if (strncmp (mangled, text, text_len) != 0) {
-    return(0); /* cannot match either */
-  } else {
-    return(1); /* matches mangled, may match demangled */
-  }
 }
 
 /* char *cplus_demangle (const char *mangled, int options)
