@@ -110,3 +110,5 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define this so we can compile MS code for use with WINE.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+#define TARGET_HAS_F_SETLKW
