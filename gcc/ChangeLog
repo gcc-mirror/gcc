@@ -1,3 +1,10 @@
+1999-11-18  Nick Clifton  <nickc@cygnus.com>
+
+	* toplev.c (main): Correctly detect an unrecognised option.
+
+	* cppinit.c (cpp_handle_option): Do not claim to have consumed
+	a -f option if it has not been recognised.
+
 Thu Nov 18 00:59:11 1999  Michael Gschwind  <mikeg@alagoas.watson.ibm.com>
 
 	* basic-block.h (update_life_extent): Remove trailing comma on

@@ -1105,6 +1105,10 @@ cpp_handle_option (pfile, argc, argv)
 	  opts->preprocessed = 1;
 	else if (!strcmp (argv[i], "-fno-preprocessed"))
 	  opts->preprocessed = 0;
+	else
+	  {
+	    return i;
+	  }
 	break;
 
       case 'I':			/* Add directory to path for includes.  */
