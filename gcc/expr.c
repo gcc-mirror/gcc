@@ -3276,8 +3276,11 @@ expand_assignment (to, from, want_value, suggest_reg)
 #endif
 	    }
 
+	  /* A constant address in TO_RTX can have VOIDmode, we must not try
+	     to call force_reg for that case.  Avoid that case.  */
 	  if (GET_CODE (to_rtx) == MEM
 	      && GET_MODE (to_rtx) == BLKmode
+	      && GET_MODE (XEXP (to_rtx, 0)) != VOIDmode
 	      && bitsize
 	      && (bitpos % bitsize) == 0 
 	      && (bitsize % GET_MODE_ALIGNMENT (mode1)) == 0
