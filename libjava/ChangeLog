@@ -1,5 +1,7 @@
 2000-12-14  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/SerializablePermission.java (legal_names): Now private.
+
 	* java/lang/Character.java: Updated UnicodeBlock constants.
 	* scripts/blocks.pl: Special case private use and surrogate
 	areas.  Updated URL.

@@ -1,5 +1,5 @@
 /* SerializablePermission.java -- Basic permissions related to serialization.
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -55,8 +55,8 @@ public final class SerializablePermission extends BasicPermission
  * Class Variables
  */
 
-public static final String[] legal_names = { "enableSubclassImplementation",
-                                             "enableSubstitution" };
+private static final String[] legal_names = { "enableSubclassImplementation",
+					      "enableSubstitution" };
 /*************************************************************************/
 
 /*
