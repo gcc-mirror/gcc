@@ -119,7 +119,7 @@ parse_options (int argc, char **argv)
 	    usage (2);
 	  }
 	return optind;
-	
+
       default:
 	abort ();
       }
