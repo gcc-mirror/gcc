@@ -1,3 +1,8 @@
+2002-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.c (associate_trees): Only optimize NEGATE_EXPR in one
+	of the operands into MINUS_EXPR if code is PLUS_EXPR.
+
 2002-12-02  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_emit_call): Use a static buffer.
