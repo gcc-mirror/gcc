@@ -1146,10 +1146,11 @@ remove_scope_notes ()
 	  && (NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_BEG
 	      || NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_END))
 	{
-	  /* Check if the scope end happens to be the end of a bb.  */
-	  if (currbb && x == currbb->end
-	      && NOTE_LINE_NUMBER (x) == NOTE_INSN_BLOCK_END)
+	  /* Check if the scope note happens to be the end of a bb.  */
+	  if (currbb && x == currbb->end)
 	    currbb->end = PREV_INSN (x);
+	  if (currbb && x == currbb->head)
+	    abort ();
 
 	  if (PREV_INSN (x))
 	    {
