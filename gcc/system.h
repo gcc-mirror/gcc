@@ -84,11 +84,6 @@ extern int fputs_unlocked PARAMS ((const char *, FILE *));
    replacement instead.  */
 #include <safe-ctype.h>
 
-/* Define a default escape character; it's different for EBCDIC.  */
-#ifndef TARGET_ESC
-#define TARGET_ESC 033
-#endif
-
 #include <sys/types.h>
 
 #include <errno.h>

@@ -2707,6 +2707,19 @@ build_type_attribute_variant (ttype, attribute)
   return ttype;
 }
 
+/* Default value of target.valid_decl_attribute_p and
+   target.valid_type_attribute_p that always returns false.  */
+
+int
+default_valid_attribute_p PARAMS ((attr_name, attr_args, decl, type))
+     tree attr_name ATTRIBUTE_UNUSED;
+     tree attr_args ATTRIBUTE_UNUSED;
+     tree decl ATTRIBUTE_UNUSED;
+     tree type ATTRIBUTE_UNUSED;
+{
+  return 0;
+}
+
 /* Return 1 if ATTR_NAME and ATTR_ARGS is valid for either declaration
    DECL or type TYPE and 0 otherwise.  Validity is determined the
    target functions valid_decl_attribute and valid_machine_attribute.  */
@@ -2718,10 +2731,12 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
      tree decl;
      tree type;
 {
+  tree type_attrs;
+
   if (TREE_CODE (attr_name) != IDENTIFIER_NODE)
     abort ();
 
-  if (decl && target.valid_decl_attribute != NULL)
+  if (decl)
     {
       tree decl_attrs = DECL_MACHINE_ATTRIBUTES (decl);
 
@@ -2748,75 +2763,70 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 	}
     }
 
-  if (target.valid_type_attribute != NULL)
+  type_attrs = TYPE_ATTRIBUTES (type);
+  if ((*target.valid_type_attribute) (type, type_attrs, attr_name,
+				      attr_args))
     {
-      tree type_attrs = TYPE_ATTRIBUTES (type);
+      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
+				    type_attrs);
 
-      if ((*target.valid_type_attribute) (type, type_attrs, attr_name,
-					  attr_args))
+      if (attr != NULL_TREE)
 	{
-	  tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
-					type_attrs);
-
-	  if (attr != NULL_TREE)
-	    {
-	      /* Override existing arguments.  ??? This currently
-		 works since attribute arguments are not included in
-		 `attribute_hash_list'.  Something more complicated
-		 may be needed in the future.  */
-	      TREE_VALUE (attr) = attr_args;
-	    }
+	  /* Override existing arguments.  ??? This currently
+	     works since attribute arguments are not included in
+	     `attribute_hash_list'.  Something more complicated
+	     may be needed in the future.  */
+	  TREE_VALUE (attr) = attr_args;
+	}
+      else
+	{
+	  /* If this is part of a declaration, create a type variant,
+	     otherwise, this is part of a type definition, so add it
+	     to the base type.  */
+	  type_attrs = tree_cons (attr_name, attr_args, type_attrs);
+	  if (decl != 0)
+	    type = build_type_attribute_variant (type, type_attrs);
 	  else
-	    {
-	      /* If this is part of a declaration, create a type variant,
-		 otherwise, this is part of a type definition, so add it
-		 to the base type.  */
-	      type_attrs = tree_cons (attr_name, attr_args, type_attrs);
-	      if (decl != 0)
-		type = build_type_attribute_variant (type, type_attrs);
-	      else
-		TYPE_ATTRIBUTES (type) = type_attrs;
-	    }
-
-	  if (decl)
-	    TREE_TYPE (decl) = type;
-
-	  return 1;
+	    TYPE_ATTRIBUTES (type) = type_attrs;
 	}
 
-      /* Handle putting a type attribute on pointer-to-function-type
-	 by putting the attribute on the function type.  */
-      else if (POINTER_TYPE_P (type)
-	       && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
-	       && (*target.valid_type_attribute) (TREE_TYPE (type), type_attrs,
-						  attr_name, attr_args))
+      if (decl)
+	TREE_TYPE (decl) = type;
+
+      return 1;
+    }
+  /* Handle putting a type attribute on pointer-to-function-type
+     by putting the attribute on the function type.  */
+  else if (POINTER_TYPE_P (type)
+	   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE
+	   && (*target.valid_type_attribute) (TREE_TYPE (type), type_attrs,
+					      attr_name, attr_args))
+    {
+      tree inner_type = TREE_TYPE (type);
+      tree inner_attrs = TYPE_ATTRIBUTES (inner_type);
+      tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
+				    type_attrs);
+
+      if (attr != NULL_TREE)
+	TREE_VALUE (attr) = attr_args;
+      else
 	{
-	  tree inner_type = TREE_TYPE (type);
-	  tree inner_attrs = TYPE_ATTRIBUTES (inner_type);
-	  tree attr = lookup_attribute (IDENTIFIER_POINTER (attr_name),
-					type_attrs);
-
-	  if (attr != NULL_TREE)
-	    TREE_VALUE (attr) = attr_args;
-	  else
-	    {
-	      inner_attrs = tree_cons (attr_name, attr_args, inner_attrs);
-	      inner_type = build_type_attribute_variant (inner_type,
-							 inner_attrs);
-	    }
-
-	  if (decl)
-	    TREE_TYPE (decl) = build_pointer_type (inner_type);
-	  else
-	    {
-	      /* Clear TYPE_POINTER_TO for the old inner type, since
-		 `type' won't be pointing to it anymore.  */
-	      TYPE_POINTER_TO (TREE_TYPE (type)) = NULL_TREE;
-	      TREE_TYPE (type) = inner_type;
-	    }
-
-	  return 1;
+	  inner_attrs = tree_cons (attr_name, attr_args, inner_attrs);
+	  inner_type = build_type_attribute_variant (inner_type,
+						     inner_attrs);
 	}
+
+      if (decl)
+	TREE_TYPE (decl) = build_pointer_type (inner_type);
+      else
+	{
+	  /* Clear TYPE_POINTER_TO for the old inner type, since
+	     `type' won't be pointing to it anymore.  */
+	  TYPE_POINTER_TO (TREE_TYPE (type)) = NULL_TREE;
+	  TREE_TYPE (type) = inner_type;
+	}
+
+      return 1;
     }
 
   return 0;

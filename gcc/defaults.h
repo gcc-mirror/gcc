@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #  define TARGET_VT 013
 #  define TARGET_FF 014
 #  define TARGET_CR 015
+#  define TARGET_ESC 033
 #endif
 
 /* Store in OUTPUT a string (made with alloca) containing

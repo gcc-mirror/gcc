@@ -1,3 +1,15 @@
+2001-06-27  Neil Booth  <neil@cat.daikokuya.demon.co.uk>
+
+	* system.h (TARGET_ESC): Move to ...
+	* defaults.h (TARGET_ESC): ... here.
+	* target-def.h (TARGET_VALID_DECL_ATTRIBUTE,
+	TARGET_VALID_TYPE_ATTRIBUTE): Default to a no-op handler.
+	* tree.c (default_valid_attribute_p): New.
+	(valid_machine_attribute): Handlers can not be NULL.
+	* tree.h (default_valid_attribute_p): New.
+	* doc/tm.texi: Document TARGET_ESC.
+	* cp/decl2.c (import_export_class): Update.
+
 2001-06-26  Bruce Korb  <bkorb@gnu.org>
 
 	* gcc/fixinc/fixincl.c(initialize): In very strict ANSI, you cannot

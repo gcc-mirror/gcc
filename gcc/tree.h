@@ -2039,8 +2039,11 @@ extern tree make_tree			PARAMS ((tree, struct rtx_def *));
 extern tree build_type_attribute_variant PARAMS ((tree, tree));
 extern tree build_decl_attribute_variant PARAMS ((tree, tree));
 
+/* Default versions of target-overridable functions.  */
+
 extern tree merge_decl_attributes PARAMS ((tree, tree));
 extern tree merge_type_attributes PARAMS ((tree, tree));
+extern int default_valid_attribute_p PARAMS ((tree, tree, tree, tree));
 
 /* Split a list of declspecs and attributes into two.  */
 
