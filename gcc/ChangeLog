@@ -1,3 +1,8 @@
+2004-10-15  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-typeck.c (build_compound_expr, build_c_cast): Don't try to use
+	non_lvalue to stop something being a null pointer constant.
+
 2004-10-15  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (FUNCTION_ARG_REGNO_P): FPRs are only
