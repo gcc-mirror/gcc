@@ -1,3 +1,9 @@
+2005-02-22  Devang Patel  <dpatel@apple.com>
+
+	PR 19952
+	* tree-if-conv.c (process_phi_nodes): Use bsi_after_labels and skip 
+	all labels
+	
 2005-02-22  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/aix.h (WINT_TYPE): Define.

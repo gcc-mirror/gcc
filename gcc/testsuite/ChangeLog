@@ -1,3 +1,8 @@
+2005-02-22  Devang Patel  <dpatel@apple.com>
+
+	PR 19952
+	* g++.dg/tree-ssa/pr19952.C: New test.
+	
 2005-02-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19883
