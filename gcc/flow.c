@@ -2011,12 +2011,11 @@ static int
 merge_blocks_move_predecessor_nojumps (a, b)
      basic_block a, b;
 {
-  rtx start, end, insertpoint, barrier;
+  rtx start, end, barrier;
   int index;
 
   start = a->head;
   end = a->end;
-  insertpoint = PREV_INSN (b->head);
 
   /* We want to delete the BARRIER after the end of the insns we are
      going to move.  If we don't find a BARRIER, then do nothing.  This
@@ -2042,7 +2041,8 @@ merge_blocks_move_predecessor_nojumps (a, b)
   start = squeeze_notes (start, end);
 
   /* Scramble the insn chain.  */
-  reorder_insns (start, end, insertpoint);
+  if (end != PREV_INSN (b->head))
+    reorder_insns (start, end, PREV_INSN (b->head));
 
   if (rtl_dump_file)
     {
@@ -2073,11 +2073,10 @@ static int
 merge_blocks_move_successor_nojumps (a, b)
      basic_block a, b;
 {
-  rtx start, end, insertpoint, barrier;
+  rtx start, end, barrier;
 
   start = b->head;
   end = b->end;
-  insertpoint = a->end;
 
   /* We want to delete the BARRIER after the end of the insns we are
      going to move.  If we don't find a BARRIER, then do nothing.  This
@@ -2103,7 +2102,7 @@ merge_blocks_move_successor_nojumps (a, b)
   start = squeeze_notes (start, end);
 
   /* Scramble the insn chain.  */
-  reorder_insns (start, end, insertpoint);
+  reorder_insns (start, end, a->end);
 
   /* Now blocks A and B are contiguous.  Merge them.  */
   merge_blocks_nomove (a, b);
@@ -4964,6 +4963,12 @@ dump_flow_info (file)
     }
 
   putc('\n', file);
+}
+
+void
+debug_flow_info ()
+{
+  dump_flow_info (stderr);
 }
 
 static void

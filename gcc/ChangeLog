@@ -1,3 +1,13 @@
+Tue Oct 26 20:21:02 1999  Richard Henderson  <rth@cygnus.com>
+
+	* flow.c (merge_blocks_move_predecessor_nojumps): Cope
+	with already adjacent blocks, but no fallthru.
+	(merge_blocks_move_successor_nojumps): Simplify.
+	(debug_flow_info): New.
+
+	* toplev.c (rest_of_compilation): Open jump1 dump file before
+	jump and close after, as opposed to just using dump_rtl.
+
 Wed Oct 27 03:09:23 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* reload.h (earlyclobber_operand_p): Declare.
