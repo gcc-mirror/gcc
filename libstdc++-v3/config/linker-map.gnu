@@ -156,6 +156,40 @@ GLIBCPP_3.2.1 {
   _ZNSt7codecvtIwc11__mbstate_tEC1EP15__locale_structj;
   _ZNSt7codecvtIwc11__mbstate_tEC2EP15__locale_structj;
 
+  # stub functions from libmath
+  sinf;
+  sinl;
+  sinhf;
+  sinhl;
+  cosf;
+  cosl;
+  coshf;
+  coshl;
+  tanf;
+  tanl;
+  tanhf;
+  tanhl;
+  atan2f;
+  atan2l;
+  expf;
+  expl;
+  hypotf;
+  hypotl;
+  hypot;
+  logf;
+  logl;
+  log10f;
+  log10l;
+  powf;
+  powl;
+  sqrtf;
+  sqrtl;
+  copysignf;
+  nan;
+  __signbit;
+  __signbitf;
+  __signbitl;
+
 } GLIBCPP_3.2;
 
 # Symbols in the support library (libsupc++) have their own tag.
