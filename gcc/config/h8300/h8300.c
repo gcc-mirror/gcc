@@ -1574,11 +1574,10 @@ notice_update_cc (body, insn)
       break;
 
     case CC_SET:
-      /* Insn sets the Z,N flags of CC to recog_operand[0].
-	 V is always set to 0.  C may or may not be set to 0 but that's ok
+      /* Insn sets the Z,N,V flags of CC to recog_operand[0].
+	 C may or may not be set to 0 but that's ok
 	 because alter_cond will change tests to use EQ/NE.  */
       CC_STATUS_INIT;
-      cc_status.flags |= CC_OVERFLOW_0 | CC_NO_CARRY;
       cc_status.value1 = recog_operand[0];
       break;
 
@@ -1602,44 +1601,6 @@ notice_update_cc (body, insn)
       CC_STATUS_INIT;
       break;
     }
-}
-
-/* Return 1 if a previous compare needs to be re-issued.  This will happen
-   if the compare was deleted because the previous insn set it, but the
-   branch needs CC flags not set.
-
-   OP is the comparison being performed.  */
-
-int
-restore_compare_p (op)
-     rtx op;
-{
-  switch (GET_CODE (op))
-    {
-    case EQ:
-    case NE:
-      break;
-    case LT:
-    case LE:
-    case GT:
-    case GE:
-      if (cc_status.flags & CC_OVERFLOW_UNUSABLE)
-	return 1;
-      break;
-    case LTU:
-    case LEU:
-    case GTU:
-    case GEU:
-      /* If the carry flag isn't usable, the test should have been changed
-	 by alter_cond.  */
-      if (cc_status.flags & CC_NO_CARRY)
-	abort ();
-      break;
-    default:
-      abort ();
-    }
-
-  return 0;
 }
 
 /* Recognize valid operators for bit instructions */
@@ -2329,7 +2290,7 @@ get_shift_alg (cpu, shift_type, mode, count, assembler_p,
 	      *cc_valid_p = 0;
 	      return SHIFT_SPECIAL;
 	    }
-	  else
+	  else if (shift_type != SHIFT_ASHIFTRT)
 	    {
 	      *assembler_p = rotate_one[cpu][shift_type][shift_mode];
 	      if (TARGET_H8300S)
