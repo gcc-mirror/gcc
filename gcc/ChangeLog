@@ -1,3 +1,9 @@
+2004-11-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/18322
+	* c-common.c (fname_decl): Don't use line number of decl in
+	diagnostic.
+
 2004-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_union_value): New 'slotno'

@@ -1137,7 +1137,7 @@ fname_decl (unsigned int rid, tree id)
       input_line = saved_lineno;
     }
   if (!ix && !current_function_decl)
-    pedwarn ("%J'%D' is not defined outside of function scope", decl, decl);
+    pedwarn ("'%D' is not defined outside of function scope", decl);
 
   return decl;
 }

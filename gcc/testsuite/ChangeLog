@@ -1,3 +1,9 @@
+2004-11-10  Joseph S. Myers  <joseph@codesourcery.com>
+
+	PR c/18322
+	* gcc.dg/func-outside-1.c, gcc.dg/func-outside-2.c: Correct
+	expected diagnostic location.
+
 2004-11-10  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/union-2.c: New test.
