@@ -1082,11 +1082,11 @@ dbxout_type (type, full, show_arg_types)
 	 ar1;0;N;M for a C array of type M and size N+1.  */
       tem = TYPE_DOMAIN (type);
       if (tem == NULL)
-	fprintf(asmfile, "ar%d;0;-1",
-		   TYPE_SYMTAB_ADDRESS (integer_type_node));
+	fprintf (asmfile, "ar%d;0;-1;",
+		 TYPE_SYMTAB_ADDRESS (integer_type_node));
       else
 	{
-	  fprintf(asmfile, "a");
+	  fprintf (asmfile, "a");
 	  dbxout_range_type (tem);
 	}
       CHARS (17);
