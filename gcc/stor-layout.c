@@ -688,7 +688,7 @@ finalize_record_size (rli)
   /* Determine the desired alignment.  */
 #ifdef ROUND_TYPE_ALIGN
   TYPE_ALIGN (rli->t) = ROUND_TYPE_ALIGN (rli->t, TYPE_ALIGN (rli->t),
-					  record_align);
+					  rli->record_align);
 #else
   TYPE_ALIGN (rli->t) = MAX (TYPE_ALIGN (rli->t), rli->record_align);
 #endif
