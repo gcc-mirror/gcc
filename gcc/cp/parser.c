@@ -8660,8 +8660,31 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 					/*is_type=*/true,
 					/*is_namespace=*/false,
 					/*check_dependency=*/true);
+
+	  /* If we are parsing friend declaration, DECL may be a
+	     TEMPLATE_DECL tree node here.  However, we need to check
+	     whether this TEMPLATE_DECL results in valid code.  Consider
+	     the following example:
+
+	       namespace N {
+		 template <class T> class C {};
+	       }
+	       class X {
+		 template <class T> friend class N::C; // #1, valid code
+	       };
+	       template <class T> class Y {
+		 friend class N::C;		       // #2, invalid code
+	       };
+
+	     For both case #1 and #2, we arrive at a TEMPLATE_DECL after
+	     name lookup of `N::C'.  We see that friend declaration must
+	     be template for the code to be valid.  Note that
+	     processing_template_decl does not work here since it is
+	     always 1 for the above two cases.  */
+
 	  decl = (cp_parser_maybe_treat_template_as_class 
-		  (decl, /*tag_name_p=*/is_friend));
+		  (decl, /*tag_name_p=*/is_friend
+			 && parser->num_template_parameter_lists));
 
 	  if (TREE_CODE (decl) != TYPE_DECL)
 	    {
@@ -13187,18 +13210,8 @@ cp_parser_resolve_typename_type (cp_parser* parser, tree type)
 static tree
 cp_parser_maybe_treat_template_as_class (tree decl, bool tag_name_p)
 {
-  /* If the DECL is a TEMPLATE_DECL for a class type, and we are in
-     the scope of the class, then treat the TEMPLATE_DECL as a
-     class-name.  For example, in:
-
-       template <class T> struct S {
-         S s;
-       };
-
-     is OK.  
-
-     If the TEMPLATE_DECL is being declared as part of a class-head,
-     the same translation occurs:
+  /* If the TEMPLATE_DECL is being declared as part of a class-head,
+     the translation from TEMPLATE_DECL to TYPE_DECL occurs:
 
        struct A { 
          template <typename T> struct B;
@@ -13214,12 +13227,18 @@ cp_parser_maybe_treat_template_as_class (tree decl, bool tag_name_p)
          template <typename T> friend struct N::X;
        };
 
-     */
-  if (DECL_CLASS_TEMPLATE_P (decl)
-      && (tag_name_p
-	  || (current_class_type
-	      && same_type_p (TREE_TYPE (DECL_TEMPLATE_RESULT (decl)),
-			      current_class_type))))
+     However, if the DECL refers to a class type, and we are in
+     the scope of the class, then the name lookup automatically
+     finds the TYPE_DECL created by build_self_reference rather
+     than a TEMPLATE_DECL.  For example, in:
+
+       template <class T> struct S {
+         S s;
+       };
+
+     there is no need to handle such case.  */
+
+  if (DECL_CLASS_TEMPLATE_P (decl) && tag_name_p)
     return DECL_TEMPLATE_RESULT (decl);
 
   return decl;

@@ -1,3 +1,10 @@
+2003-01-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8591
+	* parser.c (cp_parser_elaborated_type_specifier): Convert
+	TEMPLATE_DECL to TYPE_DECL only when processing template friends.
+	(cp_parser_maybe_treat_template_as_class): Remove redundant tests.
+
 2003-01-28  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/9437
