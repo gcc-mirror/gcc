@@ -1401,6 +1401,78 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# NeXT 3.2 adds const prefix to some math functions. These conflict
+# with the built-in functions.
+file=ansi/math.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/^extern.*double.*__const__.*cos(/s/__const__//' \
+      -e '/^extern.*double.*__const__.*sin(/s/__const__//' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
+# NeXT 3.2 uses the word "template" as a parameter for some 
+# functions. GCC reports an invalid use of a reserved key word
+# with the built-in functions. NeXT 3.2 includes the keyword
+# volatile in the prototype for abort(). This conflicts with
+# the built-in definition.
+file=bsd/libc.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/\(.*template\)/s/template//' \
+      -e '/extern.*volatile.*void.*abort/s/volatile//' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
+
+# NeXT 3.2 includes the keyword volatile in the abort() and 
+# exit() function prototypes. That conflicts with the 
+# built-in functions.
+file=ansi/stdlib.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+fi
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/extern.*volatile.*void.*exit/s/volatile//' \
+      -e '/extern.*volatile.*void.*abort/s/volatile//' ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    rm -f ${LIB}/$file
+  else
+    # Find any include directives that use "file".
+    for include in `egrep '^[       ]*#[    ]*include[      ]*"[^/]' ${LIB}/$file | sed -e 's/^[    ]*#[    ]*include[      ]*"\([^"]*\)".*$/\1/'`; do
+      dir=`echo $file | sed -e s'|/[^/]*$||'`
+      required="$required ${INPUT} $dir/$include ${LIB}/$dir/$include"
+    done
+  fi
+fi
 
 # NeXT 2.0 defines 'int wait(union wait*)', which conflicts with Posix.1.
 # Note that version 3 of the NeXT system has wait.h in a different directory,
