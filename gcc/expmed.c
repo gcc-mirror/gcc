@@ -1072,7 +1072,8 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 		  : bitpos == 0))))
     {
       enum machine_mode mode1
-	= mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0);
+	= (VECTOR_MODE_P (tmode) ? mode
+	   : mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0));
 
       if (mode1 != GET_MODE (op0))
 	{

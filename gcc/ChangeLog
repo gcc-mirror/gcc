@@ -1,3 +1,16 @@
+2000-06-24  Bernd Schmidt  <bernds@cygnus.co.uk>
+
+	* tree.def (VECTOR_TYPE): New node type.
+	* tree.h: Adjust some comments to reflect addition of vector types.
+	(TYPE_VECTOR_SUBPARTS): New macro.
+	* stor-layout.c (layout_type): Handle VECTOR_TYPE.
+	* c-convert.c (convert): Likewise.
+	* convert.c (convert_to_integer): Handle vector modes.
+	(convert_to_vector): New function.
+	* convert.h (convert_to_vector): Declare.
+	* expr.c (convert_move): Handle vector modes.
+	* expmed.c (extract_bit_field): Don't abort for vector modes.
+
 2000-06-24  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr-protos.h (avr_hard_regno_mode_ok): New prototype.

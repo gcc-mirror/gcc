@@ -108,8 +108,8 @@ convert_to_real (type, expr)
 
 /* Convert EXPR to some integer (or enum) type TYPE.
 
-   EXPR must be pointer, integer, discrete (enum, char, or bool), or float;
-   in other cases error is called.
+   EXPR must be pointer, integer, discrete (enum, char, or bool), float, or
+   vector; in other cases error is called.
 
    The result of this is always supposed to be a newly created tree node
    not in use in any existing structure.  */
@@ -383,6 +383,15 @@ convert_to_integer (type, expr)
 		      fold (build1 (REALPART_EXPR,
 				    TREE_TYPE (TREE_TYPE (expr)), expr)));
 
+    case VECTOR_TYPE:
+      if (GET_MODE_SIZE (TYPE_MODE (type))
+	  != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr))))
+	{
+	  error ("can't convert between vector values of different size");
+	  return error_mark_node;
+	}
+      return build1 (NOP_EXPR, type, expr);
+
     default:
       error ("aggregate value used where an integer was expected");
       return convert (type, integer_zero_node);
@@ -442,5 +451,31 @@ convert_to_complex (type, expr)
     default:
       error ("aggregate value used where a complex was expected");
       return convert_to_complex (type, integer_zero_node);
+    }
+}
+
+/* Convert EXPR to the vector type TYPE in the usual ways.  */
+
+tree
+convert_to_vector (type, expr)
+     tree type, expr;
+{
+  tree subtype = TREE_TYPE (type);
+  
+  switch (TREE_CODE (TREE_TYPE (expr)))
+    {
+    case INTEGER_TYPE:
+    case VECTOR_TYPE:
+      if (GET_MODE_SIZE (TYPE_MODE (type))
+	  != GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr))))
+	{
+	  error ("can't convert between vector values of different size");
+	  return error_mark_node;
+	}
+      return build1 (NOP_EXPR, type, expr);
+
+    default:
+      error ("can't convert value to a vector");
+      return convert_to_vector (type, integer_zero_node);
     }
 }
