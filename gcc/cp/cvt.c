@@ -1016,7 +1016,7 @@ convert_to_void (expr, implicit)
    conversions to/from basetypes may involve memory references
    (vbases) and adding or subtracting small values (multiple
    inheritance), but it calls convert from the constant folding code
-   on subtrees of already build trees after it has ripped them apart.
+   on subtrees of already built trees after it has ripped them apart.
 
    Also, if we ever support range variables, we'll probably also have to
    do a little bit more work.  */
