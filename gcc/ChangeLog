@@ -1,5 +1,7 @@
 Mon Dec 20 15:00:04 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* tree.c (real_value_from_int_cst): Clear REAL_VALUE_TYPE object first.
+
 	* expr.c (store_constructor): New argument SIZE; pass to clear_storage.
 	(store_constructor_field, expand_expr): Pass new arg.
 
