@@ -108,7 +108,13 @@ static tree decl_for_component_ref	PARAMS ((tree));
 static rtx adjust_offset_for_component_ref PARAMS ((tree, rtx));
 static int nonoverlapping_memrefs_p	PARAMS ((rtx, rtx));
 static int write_dependence_p           PARAMS ((rtx, rtx, int));
+
+static int nonlocal_mentioned_p_1       PARAMS ((rtx *, void *));
 static int nonlocal_mentioned_p         PARAMS ((rtx));
+static int nonlocal_referenced_p_1      PARAMS ((rtx *, void *));
+static int nonlocal_referenced_p        PARAMS ((rtx));
+static int nonlocal_set_p_1             PARAMS ((rtx *, void *));
+static int nonlocal_set_p               PARAMS ((rtx));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
@@ -2233,36 +2239,23 @@ output_dependence (mem, x)
 {
   return write_dependence_p (mem, x, /*writep=*/1);
 }
-
-/* Returns non-zero if X mentions something which is not
-   local to the function and is not constant.  */
+
+/* A subroutine of nonlocal_mentioned_p, returns 1 if *LOC mentions
+   something which is not local to the function and is not constant.  */
 
 static int
-nonlocal_mentioned_p (x)
-     rtx x;
+nonlocal_mentioned_p_1 (loc, data)
+     rtx *loc;
+     void *data ATTRIBUTE_UNUSED;
 {
+  rtx x = *loc;
   rtx base;
-  RTX_CODE code;
   int regno;
 
-  code = GET_CODE (x);
+  if (! x)
+    return 0;
 
-  if (GET_RTX_CLASS (code) == 'i')
-    {
-      /* Constant functions can be constant if they don't use
-         scratch memory used to mark function w/o side effects.  */
-      if (code == CALL_INSN && CONST_OR_PURE_CALL_P (x))
-        {
-	  x = CALL_INSN_FUNCTION_USAGE (x);
-	  if (x == 0)
-	    return 0;
-        }
-      else
-        x = PATTERN (x);
-      code = GET_CODE (x);
-    }
-
-  switch (code)
+  switch (GET_CODE (x))
     {
     case SUBREG:
       if (GET_CODE (SUBREG_REG (x)) == REG)
@@ -2344,30 +2337,210 @@ nonlocal_mentioned_p (x)
       break;
     }
 
-  /* Recursively scan the operands of this expression.  */
+  return 0;
+}
 
-  {
-    const char *fmt = GET_RTX_FORMAT (code);
-    int i;
-    
-    for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-      {
-	if (fmt[i] == 'e' && XEXP (x, i))
-	  {
-	    if (nonlocal_mentioned_p (XEXP (x, i)))
-	      return 1;
-	  }
-	else if (fmt[i] == 'E')
-	  {
-	    int j;
-	    for (j = 0; j < XVECLEN (x, i); j++)
-	      if (nonlocal_mentioned_p (XVECEXP (x, i, j)))
-		return 1;
-	  }
-      }
-  }
+/* Returns non-zero if X might mention something which is not
+   local to the function and is not constant.  */
+
+static int
+nonlocal_mentioned_p (x)
+     rtx x;
+{
+
+  if (INSN_P (x))
+    {
+      if (GET_CODE (x) == CALL_INSN)
+	{
+	  if (! CONST_OR_PURE_CALL_P (x))
+	    return 1;
+	  x = CALL_INSN_FUNCTION_USAGE (x);
+	  if (x == 0)
+	    return 0;
+        }
+      else
+        x = PATTERN (x);
+    }
+
+  return for_each_rtx (&x, nonlocal_mentioned_p_1, NULL);
+}
+
+/* A subroutine of nonlocal_referenced_p, returns 1 if *LOC references
+   something which is not local to the function and is not constant.  */
+
+static int
+nonlocal_referenced_p_1 (loc, data)
+     rtx *loc;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *loc;
+
+  if (! x)
+    return 0;
+
+  switch (GET_CODE (x))
+    {
+    case MEM:
+    case REG:
+    case SYMBOL_REF:
+    case SUBREG:
+      return nonlocal_mentioned_p (x);
+
+    case CALL:
+      /* Non-constant calls and recursion are not local.  */
+      return 1;
+
+    case SET:
+      if (nonlocal_mentioned_p (SET_SRC (x)))
+	return 1;
+
+      if (GET_CODE (SET_DEST (x)) == MEM)
+	return nonlocal_mentioned_p (XEXP (SET_DEST (x), 0));
+
+      /* If the destination is anything other than a CC0, PC,
+	 MEM, REG, or a SUBREG of a REG that occupies all of
+	 the REG, then X references nonlocal memory if it is
+	 mentioned in the destination.  */
+      if (GET_CODE (SET_DEST (x)) != CC0
+	  && GET_CODE (SET_DEST (x)) != PC
+	  && GET_CODE (SET_DEST (x)) != REG
+	  && ! (GET_CODE (SET_DEST (x)) == SUBREG
+		&& GET_CODE (SUBREG_REG (SET_DEST (x))) == REG
+		&& (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (SET_DEST (x))))
+		      + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
+		    == ((GET_MODE_SIZE (GET_MODE (SET_DEST (x)))
+			 + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))))
+	return nonlocal_mentioned_p (SET_DEST (x));
+      return 0;
+
+    case CLOBBER:
+      if (GET_CODE (XEXP (x, 0)) == MEM)
+	return nonlocal_mentioned_p (XEXP (XEXP (x, 0), 0));
+      return 0;
+
+    case USE:
+      return nonlocal_mentioned_p (XEXP (x, 0));
+
+    case ASM_INPUT:
+    case UNSPEC_VOLATILE:
+      return 1;
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+
+    /* FALLTHROUGH */
+
+    default:
+      break;
+    }
 
   return 0;
+}
+
+/* Returns non-zero if X might reference something which is not
+   local to the function and is not constant.  */
+
+static int
+nonlocal_referenced_p (x)
+     rtx x;
+{
+
+  if (INSN_P (x))
+    {
+      if (GET_CODE (x) == CALL_INSN)
+	{
+	  if (! CONST_OR_PURE_CALL_P (x))
+	    return 1;
+	  x = CALL_INSN_FUNCTION_USAGE (x);
+	  if (x == 0)
+	    return 0;
+        }
+      else
+        x = PATTERN (x);
+    }
+
+  return for_each_rtx (&x, nonlocal_referenced_p_1, NULL);
+}
+
+/* A subroutine of nonlocal_set_p, returns 1 if *LOC sets
+   something which is not local to the function and is not constant.  */
+
+static int
+nonlocal_set_p_1 (loc, data)
+     rtx *loc;
+     void *data ATTRIBUTE_UNUSED;
+{
+  rtx x = *loc;
+
+  if (! x)
+    return 0;
+
+  switch (GET_CODE (x))
+    {
+    case CALL:
+      /* Non-constant calls and recursion are not local.  */
+      return 1;
+
+    case PRE_INC:
+    case PRE_DEC:
+    case POST_INC:
+    case POST_DEC:
+    case PRE_MODIFY:
+    case POST_MODIFY:
+      return nonlocal_mentioned_p (XEXP (x, 0));
+
+    case SET:
+      if (nonlocal_mentioned_p (SET_DEST (x)))
+	return 1;
+      return nonlocal_set_p (SET_SRC (x));
+
+    case CLOBBER:
+      return nonlocal_mentioned_p (XEXP (x, 0));
+
+    case USE:
+      return 0;
+
+    case ASM_INPUT:
+    case UNSPEC_VOLATILE:
+      return 1;
+
+    case ASM_OPERANDS:
+      if (MEM_VOLATILE_P (x))
+	return 1;
+
+    /* FALLTHROUGH */
+
+    default:
+      break;
+    }
+
+  return 0;
+}
+
+/* Returns non-zero if X might set something which is not
+   local to the function and is not constant.  */
+
+static int
+nonlocal_set_p (x)
+     rtx x;
+{
+
+  if (INSN_P (x))
+    {
+      if (GET_CODE (x) == CALL_INSN)
+	{
+	  if (! CONST_OR_PURE_CALL_P (x))
+	    return 1;
+	  x = CALL_INSN_FUNCTION_USAGE (x);
+	  if (x == 0)
+	    return 0;
+        }
+      else
+        x = PATTERN (x);
+    }
+
+  return for_each_rtx (&x, nonlocal_set_p_1, NULL);
 }
 
 /* Mark the function if it is constant.  */
@@ -2376,40 +2549,51 @@ void
 mark_constant_function ()
 {
   rtx insn;
-  int nonlocal_mentioned;
+  int nonlocal_memory_referenced;
 
   if (TREE_PUBLIC (current_function_decl)
       || TREE_READONLY (current_function_decl)
       || DECL_IS_PURE (current_function_decl)
       || TREE_THIS_VOLATILE (current_function_decl)
-      || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode)
+      || TYPE_MODE (TREE_TYPE (current_function_decl)) == VOIDmode
+      || current_function_has_nonlocal_goto)
     return;
 
   /* A loop might not return which counts as a side effect.  */
   if (mark_dfs_back_edges ())
     return;
 
-  nonlocal_mentioned = 0;
+  nonlocal_memory_referenced = 0;
 
   init_alias_analysis ();
 
-  /* Determine if this is a constant function.  */
+  /* Determine if this is a constant or pure function.  */
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-    if (INSN_P (insn) && nonlocal_mentioned_p (insn))
-      {
-	nonlocal_mentioned = 1;
-	break;
-      }
+    {
+      if (! INSN_P (insn))
+	continue;
 
+      if (nonlocal_set_p (insn) || global_reg_mentioned_p (insn)
+	  || volatile_refs_p (PATTERN (insn)))
+  	break;
+
+      if (! nonlocal_memory_referenced)
+	nonlocal_memory_referenced = nonlocal_referenced_p (insn);
+    }
+  
   end_alias_analysis ();
-
+  
   /* Mark the function.  */
-
-  if (! nonlocal_mentioned)
+  
+  if (insn)
+    ;
+  else if (nonlocal_memory_referenced)
+    DECL_IS_PURE (current_function_decl) = 1;
+  else
     TREE_READONLY (current_function_decl) = 1;
 }
-
+
 
 static HARD_REG_SET argument_registers;
 
