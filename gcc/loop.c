@@ -8529,7 +8529,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 	     overflows.  */
 
 	  for (v = bl->giv; v; v = v->next_iv)
-	    if (CONSTANT_P (v->mult_val) && v->mult_val != const0_rtx
+	    if (GET_CODE (v->mult_val) == CONST_INT && v->mult_val != const0_rtx
 		&& v->add_val == const0_rtx
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode
@@ -8561,7 +8561,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 	     overflow problem.  */
 
 	  for (v = bl->giv; v; v = v->next_iv)
-	    if (CONSTANT_P (v->mult_val) && v->mult_val != const0_rtx
+	    if (GET_CODE (v->mult_val) == CONST_INT && v->mult_val != const0_rtx
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode
 		&& (GET_CODE (v->add_val) == SYMBOL_REF
@@ -8626,7 +8626,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 	     negative mult_val, but it seems complex to do it in general.  */
 
 	  for (v = bl->giv; v; v = v->next_iv)
-	    if (CONSTANT_P (v->mult_val) && INTVAL (v->mult_val) > 0
+	    if (GET_CODE (v->mult_val) == CONST_INT && INTVAL (v->mult_val) > 0
 		&& (GET_CODE (v->add_val) == SYMBOL_REF
 		    || GET_CODE (v->add_val) == LABEL_REF
 		    || GET_CODE (v->add_val) == CONST
@@ -8642,28 +8642,29 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 		  return 1;
 
 		/* Replace biv with the giv's reduced reg.  */
-		XEXP (x, 1-arg_operand) = v->new_reg;
+		validate_change (insn, &XEXP (x, 1-arg_operand), v->new_reg, 1);
 
 		/* If all constants are actually constant integers and
 		   the derived constant can be directly placed in the COMPARE,
 		   do so.  */
 		if (GET_CODE (arg) == CONST_INT
 		    && GET_CODE (v->mult_val) == CONST_INT
-		    && GET_CODE (v->add_val) == CONST_INT
-		    && validate_change (insn, &XEXP (x, arg_operand),
-					GEN_INT (INTVAL (arg)
-						 * INTVAL (v->mult_val)
-						 + INTVAL (v->add_val)), 0))
+		    && GET_CODE (v->add_val) == CONST_INT)
+		  {
+		    validate_change (insn, &XEXP (x, arg_operand),
+				     GEN_INT (INTVAL (arg)
+					     * INTVAL (v->mult_val)
+					     + INTVAL (v->add_val)), 1);
+		  }
+		else
+		  {
+		    /* Otherwise, load it into a register.  */
+		    tem = gen_reg_rtx (mode);
+		    emit_iv_add_mult (arg, v->mult_val, v->add_val, tem, where);
+		    validate_change (insn, &XEXP (x, arg_operand), tem, 1);
+		  }
+		if (apply_change_group ())
 		  return 1;
-
-		/* Otherwise, load it into a register.  */
-		tem = gen_reg_rtx (mode);
-		emit_iv_add_mult (arg, v->mult_val, v->add_val, tem, where);
-		if (validate_change (insn, &XEXP (x, arg_operand), tem, 0))
-		  return 1;
-
-		/* If that failed, put back the change we made above.  */
-		XEXP (x, 1-arg_operand) = reg;
 	      }
 	  
 	  /* Look for giv with positive constant mult_val and nonconst add_val.
@@ -8671,7 +8672,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 	     ??? Turn this off due to possible overflow.  */
 
 	  for (v = bl->giv; v; v = v->next_iv)
-	    if (CONSTANT_P (v->mult_val) && INTVAL (v->mult_val) > 0
+	    if (GET_CODE (v->mult_val) == CONST_INT && INTVAL (v->mult_val) > 0
 		&& ! v->ignore && ! v->maybe_dead && v->always_computable
 		&& v->mode == mode
 		&& 0)
@@ -8707,7 +8708,7 @@ maybe_eliminate_biv_1 (loop, x, insn, bl, eliminate_p, where)
 		 ??? Turn this off due to possible overflow.  */
 
 	      for (v = bl->giv; v; v = v->next_iv)
-		if (CONSTANT_P (v->mult_val) && INTVAL (v->mult_val) > 0
+		if (GET_CODE (v->mult_val) == CONST_INT && INTVAL (v->mult_val) > 0
 		    && ! v->ignore && ! v->maybe_dead && v->always_computable
 		    && v->mode == mode
 		    && 0)

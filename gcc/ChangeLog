@@ -1,3 +1,8 @@
+Sun Apr 23 14:27:44 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* loop.c (maybe_eliminate_biv_1): Use GET_CODE (x) == CONST_INT instead
+	of CONSTANT_P for mult_val; always use validate_change to update insn.
+
 2000-04-22  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (trad_stringify, add_pat): New functions.
