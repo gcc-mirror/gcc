@@ -155,7 +155,6 @@ package System.Rident is
    --  Synonyms permitted for historical purposes of compatibility
 
    --   No_Requeue         synonym for No_Requeue_Statements
-   --   No_Tasking         synonym for Max_Tasks => 0
    --   No_Task_Attributes synonym for No_Task_Attributes_Package
 
    subtype All_Restrictions is Restriction_Id range

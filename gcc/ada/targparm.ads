@@ -104,9 +104,10 @@ package Targparm is
    --  if a pragma Suppress_Exception_Locations appears, then the flag
    --  Opt.Exception_Locations_Suppressed is set to True.
 
-   --  The only other pragma allowed is a pragma Restrictions that gives the
-   --  simple name of a restriction for which partition consistency is always
-   --  required (see definition of Rident.Restriction_Info).
+   --  The only other pragma allowed is a pragma Restrictions that specifies
+   --  a restriction that will be imposed on all units in the partition. Note
+   --  that in this context, only one restriction can be specified in a single
+   --  pragma, and the pragma must appear on its own on a single source line.
 
    Restrictions_On_Target : Restrictions_Info;
    --  Records restrictions specified by system.ads. Only the Set and Value

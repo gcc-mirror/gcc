@@ -2505,16 +2505,20 @@ package body Exp_Ch3 is
    --       end if;
 
    --       loop
+   --             if Rev then
+   --                exit when Li1 < Left_Lo;
+   --             else
+   --                exit when Li1 > Left_Hi;
+   --             end if;
+
    --             Target (Li1) := Source (Ri1);
 
    --             if Rev then
-   --                exit when Li2 = Left_Lo;
-   --                Li2 := Index'pred (Li2);
-   --                Ri2 := Index'pred (Ri2);
+   --                Li1 := Index'pred (Li1);
+   --                Ri1 := Index'pred (Ri1);
    --             else
-   --                exit when Li2 = Left_Hi;
-   --                Li2 := Index'succ (Li2);
-   --                Ri2 := Index'succ (Ri2);
+   --                Li1 := Index'succ (Li1);
+   --                Ri1 := Index'succ (Ri1);
    --             end if;
    --       end loop;
    --    end Assign;
@@ -2561,7 +2565,6 @@ package body Exp_Ch3 is
       Stats : List_Id;
 
    begin
-
       --  Build declarations for indices
 
       Decls := New_List;
@@ -2630,7 +2633,7 @@ package body Exp_Ch3 is
                   Expressions => New_List (New_Occurrence_Of (Rnn, Loc))))),
           End_Label  => Empty);
 
-      --  Build the increment/decrement statements
+      --  Build exit condition.
 
       declare
          F_Ass : constant List_Id := New_List;
@@ -2640,17 +2643,31 @@ package body Exp_Ch3 is
          Append_To (F_Ass,
            Make_Exit_Statement (Loc,
              Condition =>
-               Make_Op_Eq (Loc,
+               Make_Op_Gt (Loc,
                  Left_Opnd  => New_Occurrence_Of (Lnn, Loc),
                  Right_Opnd => New_Occurrence_Of (Left_Hi, Loc))));
 
          Append_To (B_Ass,
            Make_Exit_Statement (Loc,
              Condition =>
-               Make_Op_Eq (Loc,
+               Make_Op_Lt (Loc,
                  Left_Opnd  => New_Occurrence_Of (Lnn, Loc),
                  Right_Opnd => New_Occurrence_Of (Left_Lo, Loc))));
 
+         Prepend_To (Statements (Loops),
+           Make_If_Statement (Loc,
+             Condition       => New_Occurrence_Of (Rev, Loc),
+             Then_Statements => B_Ass,
+             Else_Statements => F_Ass));
+      end;
+
+      --  Build the increment/decrement statements
+
+      declare
+         F_Ass : constant List_Id := New_List;
+         B_Ass : constant List_Id := New_List;
+
+      begin
          Append_To (F_Ass,
            Make_Assignment_Statement (Loc,
              Name => New_Occurrence_Of (Lnn, Loc),
