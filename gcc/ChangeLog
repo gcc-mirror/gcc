@@ -1,3 +1,8 @@
+2001-04-26  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Define, if the
+	assembler supports .p2align.
+
 2001-04-26  Nathan Sidwell <nathan@codesourcery.com>
 
 	* c-lex.c (c_lex): Remove # from %o diagnostic formatting.
