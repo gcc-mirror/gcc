@@ -136,18 +136,36 @@ simplify_gen_binary (code, mode, op0, op1)
     return gen_rtx_fmt_ee (code, mode, op0, op1);
 }
 
-/* In case X is MEM referencing constant pool, return the real value.
+/* If X is a MEM referencing the constant pool, return the real value.
    Otherwise return X.  */
 static rtx
 avoid_constant_pool_reference (x)
      rtx x;
 {
+  rtx c, addr;
+  enum machine_mode cmode;
+
   if (GET_CODE (x) != MEM)
     return x;
-  if (GET_CODE (XEXP (x, 0)) != SYMBOL_REF
-      || !CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
+  addr = XEXP (x, 0);
+
+  if (GET_CODE (addr) != SYMBOL_REF
+      || ! CONSTANT_POOL_ADDRESS_P (addr))
     return x;
-  return get_pool_constant (XEXP (x, 0));
+
+  c = get_pool_constant (addr);
+  cmode = get_pool_mode (addr);
+
+  /* If we're accessing the constant in a different mode than it was
+     originally stored, attempt to fix that up via subreg simplifications.
+     If that fails we have no choice but to return the original memory.  */
+  if (cmode != GET_MODE (x))
+    {
+      c = simplify_subreg (GET_MODE (x), c, cmode, 0);
+      return c ? c : x;
+    }
+
+  return c;
 }
 
 /* Make a unary operation by first seeing if it folds and otherwise making
