@@ -6433,6 +6433,17 @@ issue_nops_and_insn (struct bundle_state *originator, int before_nops_num,
     }
   else
     {
+      /* If this is an insn that must be first in a group, then don't allow
+	 nops to be emitted before it.  Currently, alloc is the only such
+	 supported instruction.  */
+      /* ??? The bundling automatons should handle this for us, but they do
+	 not yet have support for the first_insn attribute.  */
+      if (before_nops_num > 0 && get_attr_first_insn (insn) == FIRST_INSN_YES)
+	{
+	  free_bundle_state (curr_state);
+	  return;
+	}
+
       state_transition (curr_state->dfa_state, dfa_pre_cycle_insn);
       state_transition (curr_state->dfa_state, NULL);
       curr_state->cost++;
