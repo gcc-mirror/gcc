@@ -2844,18 +2844,21 @@ find_best_addr (rtx insn, rtx *loc, enum machine_mode mode)
      be valid and produce better code.  */
   if (!REG_P (addr))
     {
-      rtx folded = fold_rtx (copy_rtx (addr), NULL_RTX);
-      int addr_folded_cost = address_cost (folded, mode);
-      int addr_cost = address_cost (addr, mode);
+      rtx folded = fold_rtx (addr, NULL_RTX);
+      if (folded != addr)
+	{
+	  int addr_folded_cost = address_cost (folded, mode);
+	  int addr_cost = address_cost (addr, mode);
 
-      if ((addr_folded_cost < addr_cost
-	   || (addr_folded_cost == addr_cost
-	       /* ??? The rtx_cost comparison is left over from an older
-		  version of this code.  It is probably no longer helpful.  */
-	       && (rtx_cost (folded, MEM) > rtx_cost (addr, MEM)
-		   || approx_reg_cost (folded) < approx_reg_cost (addr))))
-	  && validate_change (insn, loc, folded, 0))
-	addr = folded;
+	  if ((addr_folded_cost < addr_cost
+	       || (addr_folded_cost == addr_cost
+		   /* ??? The rtx_cost comparison is left over from an older
+		      version of this code.  It is probably no longer helpful.*/
+		   && (rtx_cost (folded, MEM) > rtx_cost (addr, MEM)
+		       || approx_reg_cost (folded) < approx_reg_cost (addr))))
+	      && validate_change (insn, loc, folded, 0))
+	    addr = folded;
+	}
     }
 
   /* If this address is not in the hash table, we can't look for equivalences
@@ -3608,9 +3611,12 @@ fold_rtx (rtx x, rtx insn)
 #endif
 
     case ASM_OPERANDS:
-      for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
-	validate_change (insn, &ASM_OPERANDS_INPUT (x, i),
-			 fold_rtx (ASM_OPERANDS_INPUT (x, i), insn), 0);
+      if (insn)
+	{
+	  for (i = ASM_OPERANDS_INPUT_LENGTH (x) - 1; i >= 0; i--)
+	    validate_change (insn, &ASM_OPERANDS_INPUT (x, i),
+			     fold_rtx (ASM_OPERANDS_INPUT (x, i), insn), 0);
+	}
       break;
 
     default:
