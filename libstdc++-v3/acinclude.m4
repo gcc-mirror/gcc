@@ -788,66 +788,6 @@ AC_DEFUN(GLIBCPP_CHECK_TARGET, [
 
 
 dnl
-dnl Check to see what the underlying c library's interface to ctype looks
-dnl like. Bits of locale rely on things like isspace, toupper, etc. This
-dnl stuff makes sure the right bits from the clibrary get called.
-dnl 
-dnl Depending on what is found, select various configure/*/bits/ctype_base.h 
-dnl Depending on what is found, select various configure/*/ctype.cc
-dnl
-dnl GLIBCPP_CHECK_CTYPE_SUPPORT
-AC_DEFUN(GLIBCPP_CHECK_CTYPE_SUPPORT, [
-  AC_CHECK_HEADER(ctype.h, [
-    
-    dnl If doesn't match any specified, go with defaults.
-    if test x$ctype_include_dir != x; then
-      ctype_default=no
-    else
-      ctype_default=yes
-    fi
-
-    dnl Test for <ctype> functionality -- newlib
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for newlib])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return _U + _L + _N + _S + _P + _C + _X + _B \
-        + _ctype_[a];}], \
-    ctype_newlib=yes, ctype_newlib=no)
-    AC_MSG_RESULT($ctype_newlib)
-    if test $ctype_newlib = "yes"; then
-      ctype_include_dir="config/os/newlib"
-      ctype_default=no
-    fi
-    fi
-
-    dnl Test for <ctype> functionality -- DJGPP
-    dnl FIXME: this test won't work if __dj_ENFORCE_FUNCTION_CALLS
-    dnl is defined.
-    if test $ctype_default = "yes"; then
-    AC_MSG_CHECKING([<ctype> for DJGPP])
-    AC_TRY_COMPILE([#include <ctype.h>],
-    [int
-    foo (int a)
-    { return __dj_ctype_flags[0] + __dj_ctype_flags[1];}], \
-    ctype_djgpp=yes, ctype_djgpp=no)
-    AC_MSG_RESULT($ctype_djgpp)
-    if test $ctype_djgpp = "yes"; then
-      ctype_include_dir="config/os/djgpp"
-      ctype_default=no
-    fi
-    fi
-
-    if test $ctype_default = "yes"; then
-      ctype_include_dir="config/os/generic"
-      AC_MSG_WARN("Using default ctype headers.")
-    fi
-  ])
-])
-
-
-dnl
 dnl Check to see if this target can enable the wchar_t parts of libstdc++.
 dnl If --disable-c-mbchar was given, no wchar_t stuff is enabled.  (This
 dnl must have been previously checked.)
@@ -1296,19 +1236,6 @@ AC_DEFUN(GLIBCPP_ENABLE_THREADS, [
   if test $THREADH != threads-no.h; then
     AC_DEFINE(_GLIBCPP_USE_THREADS)
   fi
-])
-
-
-dnl Enable atomic locking
-dnl GLIBCPP_ENABLE_ATOMICITY
-AC_DEFUN(GLIBCPP_ENABLE_ATOMICITY, [
-    AC_MSG_CHECKING([for atomicity.h])
-    # We have ATOMICITY already from GLIBCPP_CONFIGURE
-    if test "$ATOMICITYH" = "config/cpu/generic"; then
-      AC_MSG_WARN([No ATOMICITY settings found, using generic atomic ops.])
-    fi
-    AC_MSG_RESULT($ATOMICITYH/bits/atomicity.h)
-    AC_LINK_FILES($ATOMICITYH/bits/atomicity.h, include/bits/atomicity.h)
 ])
 
 
