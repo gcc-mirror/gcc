@@ -1,3 +1,8 @@
+Tue Dec  9 09:43:59 1997  Manfred Hollstein  <manfred@s-direktnet.de>
+
+	* toplev.c (main): Check HAVE_GETRLIMIT and HAVE_SETRLIMIT in addition
+	to RLIMIT_STACK to see if we can call getrlimit and setrlimit.
+
 Tue Dec  9 09:38:58 1997  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.h (FUNCTION_ARG_PADDING): Define.
