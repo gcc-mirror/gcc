@@ -1,3 +1,9 @@
+2004-03-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* builtin-types.def (BT_WINT, BT_FN_INT_WINT, BT_FN_WINT_WINT): New.
+	* builtins.def (DEF_C94_BUILTIN): New.  Add wctype builtins.
+	* doc/extend.texi: Likewise.
+
 2004-03-26  Diego Novillo  <dnovillo@redhat.com>
 
 	* c-typeck.c (comptypes): Replace calls to TYPE_DOMAIN

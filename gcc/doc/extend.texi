@@ -4898,6 +4898,18 @@ v4si f (v4si a, v4si b, v4si c)
 @findex ispunct
 @findex isspace
 @findex isupper
+@findex iswalnum
+@findex iswalpha
+@findex iswblank
+@findex iswcntrl
+@findex iswdigit
+@findex iswgraph
+@findex iswlower
+@findex iswprint
+@findex iswpunct
+@findex iswspace
+@findex iswupper
+@findex iswxdigit
 @findex isxdigit
 @findex j0
 @findex j0f
@@ -5042,6 +5054,8 @@ v4si f (v4si a, v4si b, v4si c)
 @findex toascii
 @findex tolower
 @findex toupper
+@findex towlower
+@findex towupper
 @findex trunc
 @findex truncf
 @findex truncl
@@ -5127,13 +5141,13 @@ The ISO C99 functions
 @code{fmaxf}, @code{fmaxl}, @code{fmax}, @code{fma}, @code{fminf},
 @code{fminl}, @code{fmin}, @code{hypotf}, @code{hypotl}, @code{hypot},
 @code{ilogbf}, @code{ilogbl}, @code{ilogb}, @code{imaxabs},
-@code{isblank}, @code{lgammaf}, @code{lgammal}, @code{lgamma},
-@code{llabs}, @code{llrintf}, @code{llrintl}, @code{llrint},
-@code{llroundf}, @code{llroundl}, @code{llround}, @code{log1pf},
-@code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l}, @code{log2},
-@code{logbf}, @code{logbl}, @code{logb}, @code{lrintf}, @code{lrintl},
-@code{lrint}, @code{lroundf}, @code{lroundl}, @code{lround},
-@code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
+@code{isblank}, @code{iswblank}, @code{lgammaf}, @code{lgammal},
+@code{lgamma}, @code{llabs}, @code{llrintf}, @code{llrintl},
+@code{llrint}, @code{llroundf}, @code{llroundl}, @code{llround},
+@code{log1pf}, @code{log1pl}, @code{log1p}, @code{log2f}, @code{log2l},
+@code{log2}, @code{logbf}, @code{logbl}, @code{logb}, @code{lrintf},
+@code{lrintl}, @code{lrint}, @code{lroundf}, @code{lroundl},
+@code{lround}, @code{nearbyintf}, @code{nearbyintl}, @code{nearbyint},
 @code{nextafterf}, @code{nextafterl}, @code{nextafter},
 @code{nexttowardf}, @code{nexttowardl}, @code{nexttoward},
 @code{remainderf}, @code{remainderl}, @code{remainder}, @code{remquof},
@@ -5159,6 +5173,14 @@ There are also built-in versions of the ISO C99 functions
 that are recognized in any mode since ISO C90 reserves these names for
 the purpose to which ISO C99 puts them.  All these functions have
 corresponding versions prefixed with @code{__builtin_}.
+
+The ISO C94 functions
+@code{iswalnum}, @code{iswalpha}, @code{iswcntrl}, @code{iswdigit},
+@code{iswgraph}, @code{iswlower}, @code{iswprint}, @code{iswpunct},
+@code{iswspace}, @code{iswupper}, @code{iswxdigit}, @code{towlower} and
+@code{towupper}
+are handled as built-in functions
+except in strict ISO C90 mode (@option{-ansi} or @option{-std=c89}).
 
 The ISO C90 functions
 @code{abort}, @code{abs}, @code{acos}, @code{asin}, @code{atan2},
