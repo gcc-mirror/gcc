@@ -23,7 +23,7 @@ int main (void)
   static ffi_closure cl;
   ffi_closure *pcl = &cl;
   ffi_type * cl_arg_types[2];
-
+  unsigned int res;
 
   cl_arg_types[0] = &ffi_type_uint32;
   cl_arg_types[1] = NULL;
@@ -34,8 +34,8 @@ int main (void)
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_ret_uint_fn, NULL)  == FFI_OK);
 
-  (*((cls_ret_uint)pcl))(2147483647);
+  res = (*((cls_ret_uint)pcl))(2147483647);
   /* { dg-output "2147483647: 2147483647" } */
-
+  CHECK(res == 2147483647);
   exit(0);
 }

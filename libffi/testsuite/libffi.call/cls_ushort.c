@@ -23,7 +23,7 @@ int main (void)
   static ffi_closure cl;
   ffi_closure *pcl = &cl;
   ffi_type * cl_arg_types[2];
-
+  unsigned short res;
 
   cl_arg_types[0] = &ffi_type_ushort;
   cl_arg_types[1] = NULL;
@@ -34,8 +34,8 @@ int main (void)
 
   CHECK(ffi_prep_closure(pcl, &cif, cls_ret_ushort_fn, NULL)  == FFI_OK);
 
-  (*((cls_ret_ushort)pcl))(65535);
+  res = (*((cls_ret_ushort)pcl))(65535);
   /* { dg-output "65535: 65535" } */
-
+  CHECK(res == 65535);
   exit(0);
 }
