@@ -308,9 +308,10 @@ machopic_non_lazy_ptr_name (const char *name)
       }
     else
       {
-	buffer[bufferlen] = '_';
-	memcpy (buffer + bufferlen +1, name, namelen+1);
-        bufferlen += namelen +1;
+	strcpy (buffer + bufferlen, user_label_prefix);
+	bufferlen += strlen (user_label_prefix);
+	memcpy (buffer + bufferlen, name, namelen+1);
+        bufferlen += namelen;
       }
 
     memcpy (buffer + bufferlen, "$non_lazy_ptr", strlen("$non_lazy_ptr")+1);
@@ -383,9 +384,10 @@ machopic_stub_name (const char *name)
       }
     else
       {
-	buffer[bufferlen] = '_';
-	memcpy (buffer + bufferlen +1, name, namelen+1);
-        bufferlen += namelen +1;
+	strcpy (buffer + bufferlen, user_label_prefix);
+	bufferlen += strlen (user_label_prefix);
+	memcpy (buffer + bufferlen, name, namelen+1);
+        bufferlen += namelen;
       }
 
     if (needs_quotes)
@@ -909,13 +911,13 @@ machopic_finish (FILE *asm_out_file)
       else if (sym_name[0] == '-' || sym_name[0] == '+')
 	strcpy (sym, sym_name);
       else
-	sym[0] = '_', strcpy (sym + 1, sym_name);
+	sprintf (sym, "%s%s", user_label_prefix, sym_name);
 
       stub = alloca (strlen (stub_name) + 2);
       if (stub_name[0] == '*' || stub_name[0] == '&')
 	strcpy (stub, stub_name + 1);
       else
-	stub[0] = '_', strcpy (stub + 1, stub_name);
+	sprintf (stub, "%s%s", user_label_prefix, stub_name);
 
       machopic_output_stub (asm_out_file, sym, stub);
     }
