@@ -2861,9 +2861,9 @@
 ;; explained in the code for {registers,memory}_ok_for_ldd functions.
 
 (define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=rf")
         (match_operand:SI 1 "memory_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "=r")
+   (set (match_operand:SI 2 "register_operand" "=rf")
         (match_operand:SI 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[0], operands[2]) 
    && ! MEM_VOLATILE_P (operands[1]) && ! MEM_VOLATILE_P (operands[3])
@@ -2872,9 +2872,9 @@
 
 (define_peephole
   [(set (match_operand:SI 0 "memory_operand" "")
-        (match_operand:SI 1 "register_operand" "r"))
+        (match_operand:SI 1 "register_operand" "rf"))
    (set (match_operand:SI 2 "memory_operand" "")
-        (match_operand:SI 3 "register_operand" "r"))]
+        (match_operand:SI 3 "register_operand" "rf"))]
   "registers_ok_for_ldd_peep (operands[1], operands[3]) 
    && ! MEM_VOLATILE_P (operands[0]) && ! MEM_VOLATILE_P (operands[2])
    && addrs_ok_for_ldd_peep (XEXP (operands[0], 0), XEXP (operands[2], 0))"
@@ -2901,9 +2901,9 @@
   "std %1,%0")
 
 (define_peephole
-  [(set (match_operand:SI 0 "register_operand" "=r")
+  [(set (match_operand:SI 0 "register_operand" "=rf")
         (match_operand:SI 1 "memory_operand" ""))
-   (set (match_operand:SI 2 "register_operand" "=r")
+   (set (match_operand:SI 2 "register_operand" "=rf")
         (match_operand:SI 3 "memory_operand" ""))]
   "registers_ok_for_ldd_peep (operands[2], operands[0]) 
    && ! MEM_VOLATILE_P (operands[3]) && ! MEM_VOLATILE_P (operands[1])
@@ -2912,9 +2912,9 @@
 
 (define_peephole
   [(set (match_operand:SI 0 "memory_operand" "")
-        (match_operand:SI 1 "register_operand" "r"))
+        (match_operand:SI 1 "register_operand" "rf"))
    (set (match_operand:SI 2 "memory_operand" "")
-        (match_operand:SI 3 "register_operand" "r"))]
+        (match_operand:SI 3 "register_operand" "rf"))]
   "registers_ok_for_ldd_peep (operands[3], operands[1]) 
    && ! MEM_VOLATILE_P (operands[2]) && ! MEM_VOLATILE_P (operands[0])
    && addrs_ok_for_ldd_peep (XEXP (operands[2], 0), XEXP (operands[0], 0))" 
