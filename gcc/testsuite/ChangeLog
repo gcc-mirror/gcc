@@ -1,3 +1,7 @@
+2000-07-17  Geoffrey Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/20000717-2.c: New test.
+
 2000-07-17  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.dg/c90-digraph-1.c, gcc.dg/c94-digraph.c,

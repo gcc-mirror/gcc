@@ -1792,8 +1792,8 @@ simplify_relational_operation (code, mode, op0, op1)
 	}
 
       equal = (h0u == h1u && l0u == l1u);
-      op0lt = (h0s < h1s || (h0s == h1s && l0s < l1s));
-      op1lt = (h1s < h0s || (h1s == h0s && l1s < l0s));
+      op0lt = (h0s < h1s || (h0s == h1s && l0u < l1u));
+      op1lt = (h1s < h0s || (h1s == h0s && l1u < l0u));
       op0ltu = (h0u < h1u || (h0u == h1u && l0u < l1u));
       op1ltu = (h1u < h0u || (h1u == h0u && l1u < l0u));
     }
