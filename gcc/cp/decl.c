@@ -443,7 +443,8 @@ poplevel (int keep, int reverse, int functionbody)
 		       ? ((functionbody = 0), tmp) : functionbody);
   subblocks = functionbody >= 0 ? current_binding_level->blocks : 0;
 
-  my_friendly_assert (!current_binding_level->class_shadowed,
+  my_friendly_assert (VEC_length(cp_class_binding, 
+				 current_binding_level->class_shadowed) == 0,
 		      19990414);
 
   /* We used to use KEEP == 2 to indicate that the new block should go

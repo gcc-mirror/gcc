@@ -117,6 +117,15 @@ typedef enum scope_kind {
 			"template <>", this scope is always empty.  */
 } scope_kind;
 
+typedef struct cp_class_binding GTY(())
+{
+  cxx_binding base;
+  /* The bound name.  */
+  tree identifier;
+} cp_class_binding;
+
+DEF_VEC_O(cp_class_binding);
+
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
    Contours include:
@@ -175,7 +184,7 @@ struct cp_binding_level GTY(())
        class_shadowed is a TREE_LIST.  The TREE_PURPOSE of each node
        is the name of an entity bound in the class.  The TREE_TYPE is
        the DECL bound by this name in the class.  */
-    tree class_shadowed;
+    VEC(cp_class_binding) *class_shadowed;
 
     /* Similar to class_shadowed, but for IDENTIFIER_TYPE_VALUE, and
        is used for all binding levels. In addition the TREE_VALUE is the
@@ -273,6 +282,7 @@ extern void keep_next_level (bool);
 extern bool is_ancestor (tree, tree);
 extern bool push_scope (tree);
 extern void pop_scope (tree);
+extern void push_binding_level (struct cp_binding_level *);
 
 extern void push_namespace (tree);
 extern void pop_namespace (void);
@@ -299,7 +309,6 @@ extern bool push_class_level_binding (tree, tree);
 extern void storetags (tree);
 extern tree getdecls (void);
 extern tree cp_namespace_decls (tree);
-extern void set_class_shadows (tree);
 extern void set_decl_namespace (tree, tree, bool);
 extern tree current_decl_namespace (void);
 extern void push_decl_namespace (tree);
