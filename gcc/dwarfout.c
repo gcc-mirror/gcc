@@ -1722,79 +1722,73 @@ output_bound_representation (bound, dim_num, u_or_l)
   switch (TREE_CODE (bound))
     {
 
-      case ERROR_MARK:
-	return;
+    case ERROR_MARK:
+      return;
 
       /* All fixed-bounds are represented by INTEGER_CST nodes.	 */
 
-      case INTEGER_CST:
-	ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
-				(unsigned) TREE_INT_CST_LOW (bound));
-	break;
+    case INTEGER_CST:
+      ASM_OUTPUT_DWARF_DATA4 (asm_out_file,
+			      (unsigned) TREE_INT_CST_LOW (bound));
+      break;
+
+    default:
 
       /* Dynamic bounds may be represented by NOP_EXPR nodes containing
-	 SAVE_EXPR nodes.  */
+	 SAVE_EXPR nodes, in which case we can do something, or as
+	 an expression, which we cannot represent.  */
+      {
+	char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
+	char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 
-      case NOP_EXPR:
-	bound = TREE_OPERAND (bound, 0);
-	/* ... fall thru...  */
+	sprintf (begin_label, BOUND_BEGIN_LABEL_FMT,
+		 current_dienum, dim_num, u_or_l);
 
-      case SAVE_EXPR:
-	{
-	  char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
-	  char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
+	sprintf (end_label, BOUND_END_LABEL_FMT,
+		 current_dienum, dim_num, u_or_l);
 
-	  sprintf (begin_label, BOUND_BEGIN_LABEL_FMT,
-				current_dienum, dim_num, u_or_l);
+	ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, end_label, begin_label);
+	ASM_OUTPUT_LABEL (asm_out_file, begin_label);
 
-	  sprintf (end_label,	BOUND_END_LABEL_FMT,
-				current_dienum, dim_num, u_or_l);
+	/* If optimization is turned on, the SAVE_EXPRs that describe
+	   how to access the upper bound values are essentially bogus.
+	   They only describe (at best) how to get at these values at
+	   the points in the generated code right after they have just
+	   been computed.  Worse yet, in the typical case, the upper
+	   bound values will not even *be* computed in the optimized
+	   code, so these SAVE_EXPRs are entirely bogus.
 
-	  ASM_OUTPUT_DWARF_DELTA2 (asm_out_file, end_label, begin_label);
-	  ASM_OUTPUT_LABEL (asm_out_file, begin_label);
+	   In order to compensate for this fact, we check here to see
+	   if optimization is enabled, and if so, we effectively create
+	   an empty location description for the (unknown and unknowable)
+	   upper bound.
 
-	  /* If we are working on a bound for a dynamic dimension in C,
-	     the dynamic dimension in question had better have a static
-	     (zero) lower bound and a dynamic *upper* bound.  */
+	   This should not cause too much trouble for existing (stupid?)
+	   debuggers because they have to deal with empty upper bounds
+	   location descriptions anyway in order to be able to deal with
+	   incomplete array types.
 
-	  if (u_or_l != 'u')
-	    abort ();
+	   Of course an intelligent debugger (GDB?) should be able to
+	   comprehend that a missing upper bound specification in a
+	   array type used for a storage class `auto' local array variable
+	   indicates that the upper bound is both unknown (at compile-
+	   time) and unknowable (at run-time) due to optimization. */
 
-	  /* If optimization is turned on, the SAVE_EXPRs that describe
-	     how to access the upper bound values are essentially bogus.
-	     They only describe (at best) how to get at these values at
-	     the points in the generated code right after they have just
-	     been computed.  Worse yet, in the typical case, the upper
-	     bound values will not even *be* computed in the optimized
-	     code, so these SAVE_EXPRs are entirely bogus.
+	if (! optimize)
+	  {
+	    while (TREE_CODE (bound) == NOP_EXPR
+		   || TREE_CODE (bound) == CONVERT_EXPR)
+	      bound = TREE_OPERAND (bound, 0);
 
-	     In order to compensate for this fact, we check here to see
-	     if optimization is enabled, and if so, we effectively create
-	     an empty location description for the (unknown and unknowable)
-	     upper bound.
+	    if (TREE_CODE (bound) == SAVE_EXPR_RTL)
+	      output_loc_descriptor
+		(eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
+	  }
 
-	     This should not cause too much trouble for existing (stupid?)
-	     debuggers because they have to deal with empty upper bounds
-	     location descriptions anyway in order to be able to deal with
-	     incomplete array types.
+	ASM_OUTPUT_LABEL (asm_out_file, end_label);
+      }
+      break;
 
-	     Of course an intelligent debugger (GDB?) should be able to
-	     comprehend that a missing upper bound specification in a
-	     array type used for a storage class `auto' local array variable
-	     indicates that the upper bound is both unknown (at compile-
-	     time) and unknowable (at run-time) due to optimization.
-	  */
-
-	  if (! optimize)
-	    output_loc_descriptor
-	      (eliminate_regs (SAVE_EXPR_RTL (bound), 0, NULL_RTX));
-
-	  ASM_OUTPUT_LABEL (asm_out_file, end_label);
-	}
-	break;
-
-      default:
-	abort ();
     }
 }
 
