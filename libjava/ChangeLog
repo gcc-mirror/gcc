@@ -1,3 +1,40 @@
+2002-12-03  Mark Wielaard  <mark@klomp.org>
+
+	* java/util/jar/JarFile.java (manifest): Not final.
+	(manifestRead): New field.
+	(JarFile): Don't read Manifest in constructor.
+	(getManifest): New method.
+	(JarEnumeration.nextElement): Use new method.
+	(getEntry): Likewise.
+	* java/util/zip/ZipFile.java (name): Final.
+	(raf): Likewsie.
+	(entries): Change type to Hashtable.
+	(closed): New field.
+	(ZipFile): Don't read enties in constructor.
+	(readEntries): Use Hashtable.
+	(close): Set new close flag and set entries to null inside
+	synchronized block.
+	(entries): Contruct enumeration using new getEntries() method and
+	entries Hashtable.
+	(getEntryIndex): Removed.
+	(getEntries): New method.
+	(getEntry): Use new getEntries() method and entries Hastable.
+	(getInputStream): Likewise.
+	(size): Return getEntries().size().
+	(ZipEntryEnumeration): Wrap entries Hashtable elements.
+	* java/util/zip/ZipEntry.java (cal): Don't initialize.
+	(time): Removed
+	(dostime): New field.
+	(zipFileIndex): Removed.
+	(ZipEntry(ZipEntry)): Copy dostime.
+	(setDOSTime): Now final and doesn't convert dos time.
+	(getDOSTime): Likewise.
+	(setTime): Convert dos time.
+	(getTime): Likewise.
+	(getCalendar): New method.
+	(setExtra): Use setTime().
+	* java/util/zip/ZipInputStream.java (getNextEntry): Format error msg.
+
 2002-12-03  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/Character.java (forDigit): Formatting fix.

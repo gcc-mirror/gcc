@@ -55,19 +55,18 @@ public class ZipEntry implements ZipConstants, Cloneable
   private static int KNOWN_CRC    = 4;
   private static int KNOWN_TIME   = 8;
 
-  private static Calendar cal = Calendar.getInstance();
+  private static Calendar cal;
 
   private String name;
   private int size;
   private int compressedSize;
   private int crc;
-  private int time;
+  private int dostime;
   private short known = 0;
   private short method = -1;
   private byte[] extra = null;
   private String comment = null;
 
-  int zipFileIndex = -1;  /* used by ZipFile */
   int flags;              /* used by ZipOutputStream */
   int offset;             /* used by ZipFile and ZipOutputStream */
 
@@ -104,53 +103,24 @@ public class ZipEntry implements ZipConstants, Cloneable
     size = e.size;
     compressedSize = e.compressedSize;
     crc = e.crc;
-    time = e.time;
+    dostime = e.dostime;
     method = e.method;
     extra = e.extra;
     comment = e.comment;
   }
 
-  void setDOSTime(int dostime)
+  final void setDOSTime(int dostime)
   {
-    int sec = 2 * (dostime & 0x1f);
-    int min = (dostime >> 5) & 0x3f;
-    int hrs = (dostime >> 11) & 0x1f;
-    int day = (dostime >> 16) & 0x1f;
-    int mon = ((dostime >> 21) & 0xf) - 1;
-    int year = ((dostime >> 25) & 0x7f) + 1980; /* since 1900 */
-    
-    // Guard against invalid or missing date causing
-    // IndexOutOfBoundsException.
-    try
-      {
-	synchronized (cal)
-	  {
-	    cal.set(year, mon, day, hrs, min, sec);
-	    time = (int) (cal.getTime().getTime() / 1000L);
-	  }
-	known |= KNOWN_TIME;
-      }
-    catch (RuntimeException ex)
-      {
-	/* Ignore illegal time stamp */
-	known &= ~KNOWN_TIME;
-      }
+    this.dostime = dostime;
+    known |= KNOWN_TIME;
   }
 
-  int getDOSTime()
+  final int getDOSTime()
   {
     if ((known & KNOWN_TIME) == 0)
       return 0;
-    synchronized (cal)
-      {
-	cal.setTime(new Date(time*1000L));
-	return (cal.get(cal.YEAR) - 1980 & 0x7f) << 25
-	  | (cal.get(cal.MONTH) + 1) << 21
-	  | (cal.get(cal.DAY_OF_MONTH)) << 16
-	  | (cal.get(cal.HOUR_OF_DAY)) << 11
-	  | (cal.get(cal.MINUTE)) << 5
-	  | (cal.get(cal.SECOND)) >> 1;
-      }
+    else
+      return dostime;
   }
 
   /**
@@ -190,7 +160,18 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public void setTime(long time)
   {
-    this.time = (int) (time / 1000L);
+    Calendar cal = getCalendar();
+    synchronized (cal)
+      {
+	cal.setTime(new Date(time*1000L));
+	dostime = (cal.get(cal.YEAR) - 1980 & 0x7f) << 25
+	  | (cal.get(cal.MONTH) + 1) << 21
+	  | (cal.get(cal.DAY_OF_MONTH)) << 16
+	  | (cal.get(cal.HOUR_OF_DAY)) << 11
+	  | (cal.get(cal.MINUTE)) << 5
+	  | (cal.get(cal.SECOND)) >> 1;
+      }
+    dostime = (int) (dostime / 1000L);
     this.known |= KNOWN_TIME;
   }
 
@@ -200,7 +181,39 @@ public class ZipEntry implements ZipConstants, Cloneable
    */
   public long getTime()
   {
-    return (known & KNOWN_TIME) != 0 ? time * 1000L : -1;
+    if ((known & KNOWN_TIME) == 0)
+      return -1;
+    
+    int sec = 2 * (dostime & 0x1f);
+    int min = (dostime >> 5) & 0x3f;
+    int hrs = (dostime >> 11) & 0x1f;
+    int day = (dostime >> 16) & 0x1f;
+    int mon = ((dostime >> 21) & 0xf) - 1;
+    int year = ((dostime >> 25) & 0x7f) + 1980; /* since 1900 */
+   
+    try
+      {
+	cal = getCalendar();
+	synchronized (cal)
+	  {
+	    cal.set(year, mon, day, hrs, min, sec);
+	    return cal.getTime().getTime();
+	  }
+      }
+    catch (RuntimeException ex)
+      {
+	/* Ignore illegal time stamp */
+	known &= ~KNOWN_TIME;
+	return -1;
+      }
+  }
+
+  private static synchronized Calendar getCalendar()
+  {
+    if (cal == null)
+      cal = Calendar.getInstance();
+
+    return cal;
   }
 
   /**
@@ -320,11 +333,11 @@ public class ZipEntry implements ZipConstants, Cloneable
 		int flags = extra[pos];
 		if ((flags & 1) != 0)
 		  {
-		    time = ((extra[pos+1] & 0xff)
+		    long time = ((extra[pos+1] & 0xff)
 			    | (extra[pos+2] & 0xff) << 8
 			    | (extra[pos+3] & 0xff) << 16
 			    | (extra[pos+4] & 0xff) << 24);
-		    known |= KNOWN_TIME;
+		    setTime(time);
 		  }
 	      }
 	    pos += len;
