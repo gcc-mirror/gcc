@@ -1,3 +1,7 @@
+2003-01-23  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* cp-tree.h, decl.h: Get rid of PARAMS.  Again.
+
 2003-01-22  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/9354
