@@ -1,3 +1,7 @@
+2000-11-27  Jim Wilson  <wilson@redhat.com>
+
+	* reload1.c (reload): Use HOST_WIDE_INT for old_frame_size.
+
 2000-11-27  Matthias Klose  <doko@cs.tu-berlin.de>
 
 	* extend.texi (Nested Functions): Update URL of Usenix paper.

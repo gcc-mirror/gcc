@@ -1015,7 +1015,7 @@ reload (first, global)
   if (insns_need_reload != 0 || something_needs_elimination
       || something_needs_operands_changed)
     {
-      int old_frame_size = get_frame_size ();
+      HOST_WIDE_INT old_frame_size = get_frame_size ();
 
       reload_as_needed (global);
 
