@@ -1320,7 +1320,7 @@ build_indirect_ref (ptr, errorstring)
 	      error ("dereferencing pointer to incomplete type");
 	      return error_mark_node;
 	    }
-	  if (TREE_CODE (t) == VOID_TYPE)
+	  if (TREE_CODE (t) == VOID_TYPE && skip_evaluation == 0)
 	    warning ("dereferencing `void *' pointer");
 
 	  /* We *must* set TREE_READONLY when dereferencing a pointer to const,
