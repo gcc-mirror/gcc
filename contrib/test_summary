@@ -29,6 +29,7 @@
 # It accepts a few command line arguments.  For example:
 # -o: re-reads logs that have been mailed already (.sum.sent)
 # -t: prevents logs from being renamed
+# -i: append specified file (or list of files: -i "a b") to the report
 # -m: specify the e-mail address to send notes to.  An appropriate default should be selected from the log files.
 # -f: force reports to be mailed; if omitted, only reports that differ from the sent.* version are sent
 
@@ -50,6 +51,7 @@ while true; do
     case "$1" in 
       -o) filesuffix=.sent; move=false; : ${mailto=nobody}; shift;;
       -t) move=false; shift;;
+      -i) append_logs=${append_logs+"$append_logs "}"$2"; shift 2;;
       -m) mailto=$2; forcemail=true; shift 2;;
       -f) unset mailto; forcemail=true; shift;;
       *) break;;
@@ -108,9 +110,11 @@ $2 == "version" { save = $0; $1 = ""; $2 = ""; version = $0; gsub(/^ */, "", ver
 # /^FAIL/ { dumpall=1; }
 /^$/ && blanks>0 { print; --blanks; }
 END { if (lang != "") {
+  print "";
   print configflags;
   '${BOOT_CFLAGS+'print "BOOT_CFLAGS='"${BOOT_CFLAGS}"'";'}'
   if (boot_cflags != 0) print boot_cflags;
+'${append_logs+"  system(\"cat $append_logs\"); "}'
   print "EOF";
   print "Mail -s \"Results for " prefix version lang "testsuite on " host "\" '"${mailto}"' &&";
 }}
