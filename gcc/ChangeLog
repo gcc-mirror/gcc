@@ -1,3 +1,13 @@
+2001-08-25  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* reload1.c (reload): Make all entries in reg_equiv_memory_loc
+	unshared.
+	* reload.c (make_memloc): Copy result if it is still
+	reg_equiv_memory_loc[regno] on return.
+	(subst_reloads) [ENABLE_CHECKING]: Check that none of
+	reg_equiv_constant, reg_equiv_memory_loc, reg_equiv_address and
+	reg_equiv_mem are modified by the substitutions.
+
 Sat Aug 25 23:07:35 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (expensive_function_p): New.

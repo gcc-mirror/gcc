@@ -782,12 +782,10 @@ reload (first, global)
 		{
 		  if (GET_CODE (x) == MEM)
 		    {
-		      /* If the operand is a PLUS, the MEM may be shared,
-			 so make sure we have an unshared copy here.  */
-		      if (GET_CODE (XEXP (x, 0)) == PLUS)
-			x = copy_rtx (x);
-
-		      reg_equiv_memory_loc[i] = x;
+		      /* Always unshare the equivalence, so we can
+			 substitute into this insn without touching the
+			 equivalence. */
+		      reg_equiv_memory_loc[i] = copy_rtx (x);
 		    }
 		  else if (function_invariant_p (x))
 		    {

@@ -4486,7 +4486,13 @@ make_memloc (ad, regno)
     tem = copy_rtx (tem);
 
   tem = replace_equiv_address_nv (reg_equiv_memory_loc[regno], tem);
-  return adjust_address_nv (tem, GET_MODE (ad), 0);
+  tem = adjust_address_nv (tem, GET_MODE (ad), 0);
+
+  /* Copy the result if it's still the same as the equivalence, to avoid
+     modifying it when we do the substitution for the reload.  */
+  if (tem == reg_equiv_memory_loc[regno])
+    tem = copy_rtx (tem);
+  return tem;
 }
 
 /* Record all reloads needed for handling memory address AD
@@ -5769,6 +5775,32 @@ subst_reloads (insn)
       register rtx reloadreg = rld[r->what].reg_rtx;
       if (reloadreg)
 	{
+#ifdef ENABLE_CHECKING
+	  /* Internal consistency test.  Check that we don't modify
+	     anything in the equivalence arrays.  Whenever something from
+	     those arrays needs to be reloaded, it must be unshared before
+	     being substituted into; the equivalence must not be modified.
+	     Otherwise, if the equivalence is used after that, it will
+	     have been modified, and the thing substituted (probably a
+	     register) is likely overwritten and not a usable equivalence.  */
+	  int check_regno;
+
+	  for (check_regno = 0; check_regno < max_regno; check_regno++)
+	    {
+#define CHECK_MODF(ARRAY)						\
+	      if (ARRAY[check_regno]					\
+		  && loc_mentioned_in_p (r->where,			\
+					 ARRAY[check_regno]))		\
+		abort ()
+
+	      CHECK_MODF (reg_equiv_constant);
+	      CHECK_MODF (reg_equiv_memory_loc);
+	      CHECK_MODF (reg_equiv_address);
+	      CHECK_MODF (reg_equiv_mem);
+#undef CHECK_MODF
+	    }
+#endif /* ENABLE_CHECKING */
+
 	  /* If we're replacing a LABEL_REF with a register, add a
 	     REG_LABEL note to indicate to flow which label this
 	     register refers to.  */
