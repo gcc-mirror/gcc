@@ -220,17 +220,6 @@ void FN ()							\
 	fputc ( '\n', FILE);						\
  } while (0)
 
-#undef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
-#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)    	\
-  do {									\
-	fputc ('\t', FILE);						\
-	assemble_name (FILE, SY);					\
-	fputc ('=', FILE);						\
-	assemble_name (FILE, HI);					\
-	fputc ('-', FILE);						\
-	assemble_name (FILE, LO);					\
-  } while (0)
-
 #undef ASM_DECLARE_FUNCTION_NAME
 #define ASM_DECLARE_FUNCTION_NAME(STREAM, NAME, DECL)			\
   do {									\
