@@ -2362,8 +2362,9 @@ struct lang_decl
 
    As a special case, for a member friend template of a template
    class, this value will not be a TEMPLATE_DECL, but rather a
-   LOOKUP_EXPR or IDENTIFIER_NODE indicating the name of the template
-   and any explicit template arguments provided.  For example, in:
+   LOOKUP_EXPR, IDENTIFIER_NODE or OVERLOAD indicating the name of
+   the template and any explicit template arguments provided.  For
+   example, in:
 
      template <class T> struct S { friend void f<int>(int, double); }
 

@@ -8944,6 +8944,9 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	   orig_declarator);
       else
 	{
+	  tree fns = TREE_OPERAND (orig_declarator, 0);
+	  tree args = TREE_OPERAND (orig_declarator, 1);
+	  
 	  if (PROCESSING_REAL_TEMPLATE_DECL_P ())
 	    {
 	      /* Something like `template <class T> friend void f<T>()'.  */
@@ -8956,10 +8959,22 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 	  /* A friend declaration of the form friend void f<>().  Record
 	     the information in the TEMPLATE_ID_EXPR.  */
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
-	  DECL_TEMPLATE_INFO (decl)
-	    = tree_cons (TREE_OPERAND (orig_declarator, 0),
-			 TREE_OPERAND (orig_declarator, 1),
-			 NULL_TREE);
+
+          if (TREE_CODE (fns) == COMPONENT_REF)
+            {
+              /* Due to bison parser ickiness, we will have already looked
+                 up an operator_name or PFUNCNAME within the current class
+                 (see template_id in parse.y). If the current class contains
+                 such a name, we'll get a COMPONENT_REF here. Undo that. */
+              
+              my_friendly_assert (TREE_TYPE (TREE_OPERAND (fns, 0))
+                                  == current_class_type, 20001120);
+              fns = TREE_OPERAND (fns, 1);
+            }
+	  my_friendly_assert (TREE_CODE (fns) == IDENTIFIER_NODE
+	                      || TREE_CODE (fns) == LOOKUP_EXPR
+	                      || TREE_CODE (fns) == OVERLOAD, 20001120);
+	  DECL_TEMPLATE_INFO (decl) = tree_cons (fns, args, NULL_TREE);
 
 	  if (has_default_arg)
 	    {
