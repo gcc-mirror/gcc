@@ -1,3 +1,7 @@
+2004-09-12  Jan Hubicka  <jh@suse.cz>
+
+	* ggc-common.c (cmp_statistics): Fix sorting.
+
 2004-09-12  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/16795
