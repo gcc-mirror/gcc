@@ -468,13 +468,16 @@ find_basic_blocks (f, nonlocal_label_list)
 	{
 	  basic_block_end[i] = insn;
 	  basic_block_loop_depth[i] = depth;
+	}
 
+      if (GET_RTX_CLASS (code) == 'i')
+	{
 	  /* Make a list of all labels referred to other than by jumps.  */
 	  for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
 	    if (REG_NOTE_KIND (note) == REG_LABEL)
 	      label_value_list = gen_rtx (EXPR_LIST, VOIDmode, XEXP (note, 0),
 					  label_value_list);
-	  }
+	}
 
       BLOCK_NUM (insn) = i;
 
