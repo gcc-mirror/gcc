@@ -540,6 +540,8 @@ else
       AC_MSG_ERROR([memcpy is required])
    fi
 
+   AC_CHECK_LIB(dl, dlopen, [AC_DEFINE(HAVE_DLOPEN)])
+
    # Some library-finding code we stole from Tcl.
    #--------------------------------------------------------------------
    #	Check for the existence of the -lsocket and -lnsl libraries.

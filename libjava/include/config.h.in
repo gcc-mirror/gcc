@@ -148,6 +148,8 @@
 /* Define if you have dladdr() */
 #undef HAVE_DLADDR
 
+/* Define if yo have dlopen(). */
+#undef HAVE_DLOPEN
  
 /* Define if getuid() and friends are missing.  */
 #undef NO_GETUID
