@@ -1,5 +1,16 @@
 2000-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
 
+	* java/awt/Event.java: Add all the event type constants.
+	(Event): Implemented constructors.
+	(controlDown): Implemented.
+	(metaDown): Implemented.
+	(paramString): Stubbed.
+	(shiftDown): Implemented.
+	(toString): Implemented.
+	(translate): Implemented.
+
+2000-03-21  Bryce McKinlay  <bryce@albatross.co.nz>
+
 	* java/lang/natClass.cc (isInstance): Initialize `this'.
 	(isAssignableFrom): Initialize `this' and `klass'.
 	(_Jv_IsAssignableFrom): If an interface has no idt, it is not 
