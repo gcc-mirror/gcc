@@ -319,6 +319,47 @@ do { text_section ();							\
 	      "\t.stabs \"%s\",%d,0,0,Letext\nLetext:\n", "" , N_SO);	\
    } while (0)
 
+/* Making a symbols weak on Darwin requires more than just setting DECL_WEAK. */
+#define MAKE_DECL_ONE_ONLY(DECL) darwin_make_decl_one_only (DECL)
+
+/* Representation of linkonce symbols for the MACH-O assembler. Linkonce
+   symbols must be given a special section *and* must be preceded by a 
+   special assembler directive. */
+#define ASM_MAKE_LABEL_LINKONCE(FILE,  NAME)                            \
+ do { const char* _x = (NAME); if (!!strncmp (_x, "_OBJC_", 6)) {	\
+  fputs (".weak_definition ", FILE); assemble_name (FILE, _x);		\
+  fputs ("\n", FILE); }} while (0)
+
+/* We support hidden visibility */
+#undef TARGET_SUPPORTS_HIDDEN
+#define TARGET_SUPPORTS_HIDDEN 1
+
+/* The Darwin linker imposes two limitations on common symbols: they 
+   can't have hidden visibility, and they can't appear in dylibs.  As
+   a consequence, we should never use common symbols to represent 
+   vague linkage. */
+#undef USE_COMMON_FOR_ONE_ONLY
+#define USE_COMMON_FOR_ONE_ONLY 0
+
+/* The Darwin linker doesn't like explicit template instantions to be
+   coalesced, because it doesn't want coalesced symbols to appear in
+   a static archive's table of contents. */
+#undef TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
+#define TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY 0
+
+/* We make exception information linkonce. */
+#undef TARGET_USES_WEAK_UNWIND_INFO
+#define TARGET_USES_WEAK_UNWIND_INFO 1
+
+/* We need to use a nonlocal label for the start of an EH frame: the
+   Darwin linker requires that a coalesced section start with a label. */
+#undef FRAME_BEGIN_LABEL
+#define FRAME_BEGIN_LABEL "EH_frame"
+
+/* Emit a label for the FDE corresponding to DECL.  EMPTY means 
+   emit a label for an empty FDE. */
+#define TARGET_ASM_EMIT_UNWIND_LABEL darwin_emit_unwind_label
+
 /* Our profiling scheme doesn't LP labels and counter words.  */
 
 #define NO_PROFILE_COUNTERS	1
@@ -370,10 +411,11 @@ do { text_section ();							\
     const char *xname = NAME;						\
     if (GET_CODE (XEXP (DECL_RTL (DECL), 0)) != SYMBOL_REF)		\
       xname = IDENTIFIER_POINTER (DECL_NAME (DECL));			\
-    if ((TREE_STATIC (DECL)						\
-	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
-        || DECL_INITIAL (DECL))						\
-      machopic_define_name (xname);					\
+    if (! DECL_ONE_ONLY (DECL) && ! DECL_WEAK (DECL))                   \
+      if ((TREE_STATIC (DECL)						\
+	   && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
+          || DECL_INITIAL (DECL))					\
+        machopic_define_name (xname);					\
     if ((TREE_STATIC (DECL)						\
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))		\
         || DECL_INITIAL (DECL))						\
@@ -390,10 +432,11 @@ do { text_section ();							\
     const char *xname = NAME;                                           \
     if (GET_CODE (XEXP (DECL_RTL (DECL), 0)) != SYMBOL_REF)             \
       xname = IDENTIFIER_POINTER (DECL_NAME (DECL));                    \
-    if ((TREE_STATIC (DECL)                                             \
-	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
-        || DECL_INITIAL (DECL))                                         \
-      machopic_define_name (xname);                                     \
+    if (! DECL_ONE_ONLY (DECL) && ! DECL_WEAK (DECL))			\
+      if ((TREE_STATIC (DECL)                                           \
+	   && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))             \
+          || DECL_INITIAL (DECL))                                       \
+        machopic_define_name (xname);                                   \
     if ((TREE_STATIC (DECL)                                             \
 	 && (!DECL_COMMON (DECL) || !TREE_PUBLIC (DECL)))               \
         || DECL_INITIAL (DECL))                                         \
@@ -646,7 +689,7 @@ SECTION_FUNCTION (darwin_exception_section,		\
 		".section __DATA,__gcc_except_tab", 0)	\
 SECTION_FUNCTION (darwin_eh_frame_section,		\
 		in_darwin_eh_frame,			\
-		".section __TEXT,__eh_frame", 0)	\
+		".section " EH_FRAME_SECTION_NAME ",__eh_frame" EH_FRAME_SECTION_ATTR, 0)  \
 							\
 static void					\
 objc_section_init (void)			\
@@ -687,6 +730,10 @@ objc_section_init (void)			\
 #define TARGET_ASM_SELECT_SECTION machopic_select_section
 #undef	TARGET_ASM_SELECT_RTX_SECTION
 #define TARGET_ASM_SELECT_RTX_SECTION machopic_select_rtx_section
+#undef  TARGET_ASM_UNIQUE_SECTION
+#define TARGET_ASM_UNIQUE_SECTION darwin_unique_section
+
+
 
 #define ASM_DECLARE_UNRESOLVED_REFERENCE(FILE,NAME)			\
     do {								\
@@ -814,6 +861,9 @@ enum machopic_addr_class {
 
 #define TARGET_ASM_EH_FRAME_SECTION darwin_eh_frame_section
 
+#define EH_FRAME_SECTION_NAME   "__TEXT"
+#define EH_FRAME_SECTION_ATTR ",coalesced,no_toc+strip_static_syms"
+
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)  \
   (((CODE) == 2 && (GLOBAL) == 1) \
@@ -823,7 +873,19 @@ enum machopic_addr_class {
 #define ASM_OUTPUT_DWARF_DELTA(FILE,SIZE,LABEL1,LABEL2)  \
   darwin_asm_output_dwarf_delta (FILE, SIZE, LABEL1, LABEL2)
 
+#define ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX(ASM_OUT_FILE, ENCODING, SIZE, ADDR, DONE)	\
+      if (ENCODING == ASM_PREFERRED_EH_DATA_FORMAT (2, 1)) {				\
+	darwin_non_lazy_pcrel (ASM_OUT_FILE, ADDR);					\
+	goto DONE;									\
+      }
+
+
 #define TARGET_TERMINATE_DW2_EH_FRAME_INFO false
+
+#undef TARGET_ASM_NAMED_SECTION
+#define TARGET_ASM_NAMED_SECTION darwin_asm_named_section
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS darwin_section_type_flags
 
 #define DARWIN_REGISTER_TARGET_PRAGMAS()			\
   do {								\

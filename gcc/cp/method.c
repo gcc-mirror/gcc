@@ -390,6 +390,8 @@ use_thunk (tree thunk_fndecl, bool emit_p)
      rewrite.  */
   TREE_PUBLIC (thunk_fndecl) = TREE_PUBLIC (function);
   DECL_VISIBILITY (thunk_fndecl) = DECL_VISIBILITY (function);
+  if (flag_weak && TREE_PUBLIC (thunk_fndecl))
+    comdat_linkage (thunk_fndecl);
 
   if (flag_syntax_only)
     {

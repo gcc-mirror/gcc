@@ -1,3 +1,58 @@
+2004-03-12  Matt Austern  <austern@apple.com>
+
+	* target.h (struct gcc_target): New target hook, unwind_label.
+	* target-def.h (TARGET_ASM_EMIT_UNWIND_LABEL): New hook.
+	* output.h (default_emit_unwind_label): New function.
+	* default.h (TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY): New macro.
+	(TARGET_USES_WEAK_UNWIND_INFO): New target macro.
+	(TARGET_SUPPORTS_HIDDEN): New target macro.
+	* dwarf2out.c (struct dw_fde_struct): Add field for function decl
+	that corresponds to this FDE.
+	(FRAME_BEGIN_LABEL): Allow target to override default label.
+	(output_call_frame_info): If FDEs are linknonce, then use extra
+	indirection for FDE encoding, output a label for each FDE, and 
+	output an empty label for each function without an FDE.
+	(dwarf2out_begin_prologue): Set up decl field when creating an FDE.
+	* varasm.c (globalize_decl): Call ASM_MAKE_LABEL_LINKONCE for
+	decls with DECL_ONE_ONLY set, if that macro is defined.
+	(make_decl_one_only): Don't use DECL_COMMON if we're compiling
+	for a SUPPORTS_ONE_ONLY target.
+	* config/darwin-protos.h (darwin_unique_section): Declare.
+	(darwin_asm_named_section): Likewise.
+	(darwin_section_type_flags): Likewise.
+	(darwin_non_lazy_pcrel): Likewise.
+	(darwin_emit_unwind_label): Likewise.
+	(darwin_make_decl_one_only): Likewise.
+	* config/darwin.c (machopic_finish): Get rid of tweak that
+	eliminate stubs for symbols that are defined.
+	(darwin_encode_section_info): Don't treat weak functions as defined.
+	(darwin_make_decl_one_only): Define.
+	(darwin_asm_named_section): Likewise.
+	(darwin_section_type_flags): Likewise.
+	(darwin_unique_section): Likewise.
+	(darwin_emit_unwind_label): Likewise.
+	(darwin_non_lazy_pcrel): Likewise.
+	(darwin_asm_output_dwarf_delta): Difference between two labels is
+	local only if both labels are local.
+	* config/darwin.h (MAKE_DECL_ONE_ONLY): Define.
+	(ASM_MAKE_LABEL_LINKONCE): Likewise.
+	(TARGET_SUPPORTS_HIDDEN): Likewise.
+	(TARGET_USES_WEAK_UNWIND_INFO): Likewise.
+	(TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY): Likewise.
+	(FRAME_BEGIN_LABEL): Likewise.
+	(ASM_DECLARE_OBJECT_NAME): Make references to weak symbols indirect.
+	(ASM_DECLARE_FUNCTION_NAME): Likewise.
+	(darwin_eh_frame_section): Give __eh_frame section the coalesced flag.
+	(TARGET_ASM_UNIQUE_SECTION): Define.
+	(EH_FRAME_SECTION_NAME): Define.
+	(EH_FRAME_SECTION_ATTR): Likewise.
+	(ASM_MAYBE_OUTPUT_ENCODED_ADDR_RTX): Likewise.
+	(TARGET_ASM_NAMED_SECTION): Likewise.
+	(TARGET_SECTION_TYPE_FLAGS): Likewise.
+	* doc/tm.texi: Document TARGET_USES_WEAK_UNWIND_INFO,
+	TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY, TARGET_SUPPORTS_HIDDEN,
+	TARGET_ASM_EMIT_UNWIND_LABEL.
+	
 2004-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_mathfn): Add pow10* to the
