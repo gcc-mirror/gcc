@@ -1,3 +1,12 @@
+2003-05-10  Zack Weinberg  <zack@codesourcery.com>
+
+	* diagnostic.c: Reorder functions for clarity, putting all the
+	functions in the "error" family next to each other, and
+	likewise all the functions in the "error_with_decl" family.
+	Some other routines were moved too.  Add comments.
+	(vbuild_message_string): Fold into sole caller.
+
+
 2003-05-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* except.c (EH_RETURN_STACKADJ_RTX): Do not define.
@@ -57,10 +66,10 @@
 
 2003-05-10  Richard Earnshaw  <rearnsha@arm.com>
 
-	* arm.md (DOM_CC_X_AND_Y, DOM_CC_NX_OR_Y, DOM_CC_X_OR_Y): New 
+	* arm.md (DOM_CC_X_AND_Y, DOM_CC_NX_OR_Y, DOM_CC_X_OR_Y): New
 	constants.
 	(ior_scc_scc, and_scc_scc): New insn_and_split patterns.
-	* arm.c (arm_select_dominance_cc_mode): Renamed from 
+	* arm.c (arm_select_dominance_cc_mode): Renamed from
 	select_dominance_cc_mode, no-longer static.  Use DOM_CC... constants.
 	Callers updated.
 	* arm-protos.h (arm_select_dominance_cc_mode): Add prototype.
@@ -123,7 +132,7 @@
 	(if_stmt_file): Remove.
 	(if_stmt_line): Likewise.
 	* jump.c: include "diagnostic.h"
-	(never_reached_warning): Don't use warning_with_file_and_line. 
+	(never_reached_warning): Don't use warning_with_file_and_line.
 	* Makefile.in (jump.o): Add dependce on diagnostic.h
 
 2003-05-09  Alan Modra  <amodra@bigpond.net.au>
@@ -159,8 +168,8 @@
 
 2003-05-08  Aldy Hernandez  <aldyh@redhat.com>
 
-        * mklibgcc.in: Use mkinstalldirs when installing multilib
-        directories.
+	* mklibgcc.in: Use mkinstalldirs when installing multilib
+	directories.
 
 2003-05-08  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -170,7 +179,7 @@
 2003-05-08  Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 	* objc/objc-act.c (error_with_ivar): Don't use
-	error_with_file_and_line. 
+	error_with_file_and_line.
 	(warn_with_method): Don't use warning_with_file_and_line.
 
 2003-05-08  Gabriel Dos Reis  <gdr@integrable-solutions.net>
@@ -205,7 +214,7 @@
 
 2003-05-07  David Mosberger <davidm@hpl.hp.com>
 
-        * unwind-libunwind.c (_Unwind_FindEnclosingFunction): New.
+	* unwind-libunwind.c (_Unwind_FindEnclosingFunction): New.
 
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
@@ -224,38 +233,38 @@
 
 2003-05-07  David Mosberger <davidm@hpl.hp.com>
 
-        * config/ia64/crtbegin.asm (__do_jv_register_classes): Don't
+	* config/ia64/crtbegin.asm (__do_jv_register_classes): Don't
 	forget to preserve gp.
-        * config/ia64/crtend.asm (__do_global_ctors_au): Ditto.
+	* config/ia64/crtend.asm (__do_global_ctors_au): Ditto.
 
-        * config/ia64/crtbegin.asm (__do_jv_register_classes): Add missing
-        .prologue directive.
-        Use .skip instead of data8 for .bss section to make Intel
-        Assembler (ias) happy.  Minor whitespace fixups.  Make "nop 0"
-        explicit in the .mib bundles and remove the unnecessary stop
-        bits.  Replace local labels with normal labels, to make ias
-        happy.  Don't register __do_global_ctors_aux here, do it in
-        crtend.asm instead.
+	* config/ia64/crtbegin.asm (__do_jv_register_classes): Add missing
+	.prologue directive.
+	Use .skip instead of data8 for .bss section to make Intel
+	Assembler (ias) happy.  Minor whitespace fixups.  Make "nop 0"
+	explicit in the .mib bundles and remove the unnecessary stop
+	bits.  Replace local labels with normal labels, to make ias
+	happy.  Don't register __do_global_ctors_aux here, do it in
+	crtend.asm instead.
 
-        * config/ia64/crtend.asm [HAVE_INIT_FINI_ARRAY]: Register
-        __do_global_ctors_aux in .init_array section instead of
-        declaring it as a hidden global.  Replace local labels with
-        ordinary labels to make ias happy.
+	* config/ia64/crtend.asm [HAVE_INIT_FINI_ARRAY]: Register
+	__do_global_ctors_aux in .init_array section instead of
+	declaring it as a hidden global.  Replace local labels with
+	ordinary labels to make ias happy.
 
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
-        PR c++/10570
-        * except.c: Revert 04-01 and 04-02 forced-unwind changes.
-        * flags.h, toplev.c, doc/invoke.texi: Likewise.
+	PR c++/10570
+	* except.c: Revert 04-01 and 04-02 forced-unwind changes.
+	* flags.h, toplev.c, doc/invoke.texi: Likewise.
 
-        * unwind-dw2.c (_Unwind_GetCFA): Fix ptr->int conversion warning.
-        * unwind.inc (_Unwind_DeleteException): Check for null
-        exception_cleanup.
+	* unwind-dw2.c (_Unwind_GetCFA): Fix ptr->int conversion warning.
+	* unwind.inc (_Unwind_DeleteException): Check for null
+	exception_cleanup.
 
-        * unwind-sjlj.c (_Unwind_SjLj_Resume_or_Rethrow): New.
-        * unwind.inc (_Unwind_Resume_or_Rethrow): New.
-        * unwind.h: Declare them.
-        * libgcc-std.ver (GCC_3.3): Export them.
+	* unwind-sjlj.c (_Unwind_SjLj_Resume_or_Rethrow): New.
+	* unwind.inc (_Unwind_Resume_or_Rethrow): New.
+	* unwind.h: Declare them.
+	* libgcc-std.ver (GCC_3.3): Export them.
 
 2003-05-07  Richard Henderson  <rth@redhat.com>
 
