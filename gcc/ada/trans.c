@@ -348,7 +348,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     }
   else
     {
-      /* Expand the type of this identitier first, in case it is an enumeral
+      /* Expand the type of this identifier first, in case it is an enumeral
 	 literal, which only get made when the type is expanded.  There is no
 	 order-of-elaboration issue here.  We want to use the Actual_Subtype if
 	 it has already been elaborated, otherwise the Etype.  Avoid using
@@ -1335,7 +1335,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   /* Save debug output mode in case it is reset.  */
   enum debug_info_type save_write_symbols = write_symbols;
   const struct gcc_debug_hooks *const save_debug_hooks = debug_hooks;
-  /* Definining identifier of a parameter to the subprogram.  */
+  /* Defining identifier of a parameter to the subprogram.  */
   Entity_Id gnat_param;
   /* The defining identifier for the subprogram body. Note that if a
      specification has appeared before for this body, then the identifier
@@ -3641,7 +3641,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Defining_Program_Unit_Name:
       /* For a child unit identifier go up a level to get the
-         specificaton.  We get this when we try to find the spec of
+         specification.  We get this when we try to find the spec of
 	 a child unit package that is the compilation unit being compiled. */
       gnu_result = gnat_to_gnu (Parent (gnat_node));
       break;
@@ -3969,7 +3969,7 @@ gnat_to_gnu (Node_Id gnat_node)
       /* If the result is a pointer type, see if we are either converting
          from a non-pointer or from a pointer to a type with a different
  	 alias set and warn if so.  If the result defined in the same unit as
- 	 this unchecked convertion, we can allow this because we can know to
+ 	 this unchecked conversion, we can allow this because we can know to
  	 make that type have alias set 0.  */
       {
  	tree gnu_source_type = gnat_to_gnu_type (Source_Type (gnat_node));
@@ -5351,7 +5351,7 @@ addressable_p (tree gnu_expr)
 
 /* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
    a separate Freeze node exists, delay the bulk of the processing.  Otherwise
-   make a GCC type for GNAT_ENTITY and set up the correspondance.  */
+   make a GCC type for GNAT_ENTITY and set up the correspondence.  */
 
 void
 process_type (Entity_Id gnat_entity)

@@ -1643,7 +1643,7 @@ __gnat_dup (int oldfd)
 }
 
 /* Make newfd be the copy of oldfd, closing newfd first if necessary.
-   Return -1 if an error occured.  */
+   Return -1 if an error occurred.  */
 
 int
 __gnat_dup2 (int oldfd, int newfd)

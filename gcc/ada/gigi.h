@@ -200,7 +200,7 @@ extern int gnat_gimplify_expr (tree *expr_p, tree *pre_p,
 
 /* Do the processing for the declaration of a GNAT_ENTITY, a type.  If
    a separate Freeze node exists, delay the bulk of the processing.  Otherwise
-   make a GCC type for GNAT_ENTITY and set up the correspondance.  */
+   make a GCC type for GNAT_ENTITY and set up the correspondence.  */
 extern void process_type (Entity_Id gnat_entity);
 
 /* Convert Sloc into *LOCUS (a location_t).  Return true if this Sloc
@@ -623,7 +623,7 @@ extern tree remove_conversions (tree exp, bool true_address);
    likewise return an expression pointing to the underlying array.  */
 extern tree maybe_unconstrained_array (tree exp);
 
-/* Return an expression that does an unchecked converstion of EXPR to TYPE.
+/* Return an expression that does an unchecked conversion of EXPR to TYPE.
    If NOTRUNC_P is true, truncation operations should be suppressed.  */
 extern tree unchecked_convert (tree type, tree expr, bool notrunc_p);
 

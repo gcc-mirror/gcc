@@ -30,7 +30,7 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file contains host-specific parameters describing the behaviour    */
+/*  This file contains host-specific parameters describing the behavior     */
 /*  of the linker. It is used by gnatlink as well as all tools that use     */
 /*  Mlib.                                                                   */
 

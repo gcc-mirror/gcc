@@ -1039,7 +1039,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  gnu_ext_name = create_concat_name (gnat_entity, 0);
 
 	/* If this is constant initialized to a static constant and the
-	   object has an aggregrate type, force it to be statically
+	   object has an aggregate type, force it to be statically
 	   allocated. */
 	if (const_flag && gnu_expr && TREE_CONSTANT (gnu_expr)
 	    && host_integerp (TYPE_SIZE_UNIT (gnu_type), 1)
@@ -2884,7 +2884,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	/* If we are pointing to an incomplete type whose completion is an
 	   unconstrained array, make a fat pointer type instead of a pointer
 	   to VOID.  The two types in our fields will be pointers to VOID and
-	   will be replaced in update_pointer_to.  Similiarly, if the type
+	   will be replaced in update_pointer_to.  Similarly, if the type
 	   itself is a dummy type or an unconstrained array.  Also make
 	   a dummy TYPE_OBJECT_RECORD_TYPE in case we have any thin
 	   pointers to it.  */
@@ -3421,7 +3421,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      post_error ("unsupported mechanism for&", gnat_param);
 
 	    /* If this is either a foreign function or if the
-	       underlying type won't be passed by refererence, strip off
+	       underlying type won't be passed by reference, strip off
 	       possible padding type.  */
 	    if (TREE_CODE (gnu_param_type) == RECORD_TYPE
 		&& TYPE_IS_PADDING_P (gnu_param_type)
@@ -4348,7 +4348,7 @@ copy_alias_set (tree gnu_new_type, tree gnu_old_type)
 /* Return a TREE_LIST describing the substitutions needed to reflect
    discriminant substitutions from GNAT_SUBTYPE to GNAT_TYPE and add
    them to GNU_LIST.  If GNAT_TYPE is not specified, use the base type
-   of GNAT_SUBTYPE. The substitions can be in any order.  TREE_PURPOSE
+   of GNAT_SUBTYPE. The substitutions can be in any order.  TREE_PURPOSE
    gives the tree for the discriminant and TREE_VALUES is the replacement
    value.  They are in the form of operands to substitute_in_expr.
    DEFINITION is as in gnat_to_gnu_entity.  */
@@ -4617,7 +4617,7 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity,
 		   && Ekind (Entity (gnat_expr)) == E_Discriminant)))
     return 0;
 
-  /* Otherwise, convert this tree to its GCC equivalant.  */
+  /* Otherwise, convert this tree to its GCC equivalent.  */
   gnu_expr
     = elaborate_expression_1 (gnat_expr, gnat_entity, gnat_to_gnu (gnat_expr),
 			      gnu_name, definition, need_debug);
@@ -5211,7 +5211,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
 	    }
 
 	  /* If Aliased, the size must match exactly the rounded size.  We
-	     used to be more accomodating here and accept greater sizes, but
+	     used to be more accommodating here and accept greater sizes, but
 	     fully supporting this case on big-endian platforms would require
 	     switching to a more involved layout for the field.  */
 	  else if (Is_Aliased (gnat_field)
@@ -5703,7 +5703,7 @@ annotate_value (tree gnu_size)
       /* For negative values, use NEGATE_EXPR of the supplied value.  */
       if (tree_int_cst_sgn (gnu_size) < 0)
 	{
-	  /* The rediculous code below is to handle the case of the largest
+	  /* The ridiculous code below is to handle the case of the largest
 	     negative integer.  */
 	  tree negative_size = size_diffop (bitsize_zero_node, gnu_size);
 	  bool adjust = false;
