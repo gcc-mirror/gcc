@@ -1914,7 +1914,6 @@ i960_expr_alignment (x, size)
       break;
 
     case ASHIFT:
-    case LSHIFT:
       align = i960_expr_alignment (XEXP (x, 0));
 
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
