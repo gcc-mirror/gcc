@@ -2825,6 +2825,16 @@ attach_deaths (x, insn, set_p)
 	      {
 		if (! all_needed && ! dead_or_set_p (insn, x))
 		  {
+		    /* Check for the case where the register dying partially
+		       overlaps the register set by this insn.  */
+		    if (regno < FIRST_PSEUDO_REGISTER
+			&& HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
+		      {
+			int n = HARD_REGNO_NREGS (regno, GET_CODE (x));
+			while (--n >= 0)
+			  some_needed |= dead_or_set_regno_p (insn, regno + n);
+		      }
+
 		    /* If none of the words in X is needed, make a REG_DEAD
 		       note.  Otherwise, we must make partial REG_DEAD
 		       notes.  */
