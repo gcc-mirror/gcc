@@ -1238,6 +1238,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   unsigned int align;
   int reloc = 0;
   enum in_section saved_in_section;
+  rtx decl_rtl;
 
   last_assemble_variable_decl = 0;
 
@@ -1319,6 +1320,9 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   if (TREE_ASM_WRITTEN (decl))
     return;
 
+  /* Make sure ENCODE_SECTION_INFO is invoked before we set ASM_WRITTEN.  */
+  decl_rtl = DECL_RTL (decl);
+
   TREE_ASM_WRITTEN (decl) = 1;
 
   /* Do no output if -fsyntax-only.  */
@@ -1334,7 +1338,7 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       goto finish;
     }
 
-  name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  name = XSTR (XEXP (decl_rtl, 0), 0);
   if (TREE_PUBLIC (decl) && DECL_NAME (decl)
       && ! first_global_object_name
       && ! (DECL_COMMON (decl) && (DECL_INITIAL (decl) == 0
