@@ -2900,9 +2900,8 @@ emit_predicate_relation_info (insns)
       for (r = PR_REG (0); r < PR_REG (64); r += 2)
 	if (REGNO_REG_SET_P (bb->global_live_at_start, r))
 	  {
-	    rtx p1 = gen_rtx_REG (CCmode, r);
-	    rtx p2 = gen_rtx_REG (CCmode, r + 1);
-	    rtx n = emit_insn_after (gen_pred_rel_mutex (p1, p2), head);
+	    rtx p = gen_rtx_REG (CCmode, r);
+	    rtx n = emit_insn_after (gen_pred_rel_mutex (p), head);
 	    if (head == bb->end)
 	      bb->end = n;
 	    head = n;
