@@ -1,0 +1,64 @@
+# Tests for ClassLoader and native library loader code.
+
+# Do all the work for a single JNI test.  Return 0 on failure.
+proc gcj_loader_test_one {srcfile} {
+  global objdir srcdir subdir
+
+  set resfile $srcdir/$subdir/[file rootname [file tail $srcfile]].out
+
+  regsub "^.*/(\[^/.\]+)\[.\]\[^/]*$" "$srcfile" "\\1" out
+  set executable "${objdir}/$out.exe"
+
+    set errname [file rootname [file tail $srcfile]]
+    set args [libjava_arguments link]
+    lappend args "additional_flags=--main=[file rootname [file tail $srcfile]] $srcdir/$subdir/MyLoader.java $objdir/dummy.o"
+  set x [prune_warnings \
+	     [libjava_tcompile $srcfile "$executable" "$executable" $args]]
+
+    if { $x != "" } {
+	verbose "target_compile failed: $x" 2
+
+	fail "$errname compilation from source"
+	untested "$errname execution from source compiled test"
+	return
+    }
+    pass "$errname compilation from source"
+
+    libjava_invoke $executable $executable "" $executable "" $resfile ""
+
+  return 1
+}
+
+# Run the bytecode loader tests.
+proc gcj_loader_run {} {
+  global srcdir subdir objdir
+  global build_triplet host_triplet
+  global GCJ_UNDER_TEST
+
+  set file "${srcdir}/${subdir}/dummy.java"
+  if {! [bytecompile_file $file [pwd]]} {
+    fail "bytecompile $file"
+    # FIXME - should use `untested' on all remaining tests.
+    # But that is hard.
+    return 0
+  }
+  pass "bytecompile $file"
+
+  set x [prune_warnings \
+	     [eval exec "$GCJ_UNDER_TEST --resource $objdir/dummy.class -c $objdir/dummy.class -o $objdir/dummy.o"]]
+    if { $x != "" } {
+	verbose "resource compilation failed: $x" 2
+
+	fail "resource compilation dummy.class"
+	return 0;
+    }
+  pass "resource compilation: dummy.class"
+
+  catch { lsort [glob -nocomplain ${srcdir}/${subdir}/Test*.java] } srcfiles
+
+  foreach x $srcfiles {
+    gcj_loader_test_one $x
+  }
+}
+
+gcj_loader_run
