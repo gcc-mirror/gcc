@@ -8,9 +8,7 @@
 /* { dg-do run } */
 /* { dg-options "-O -fno-pic" } */
 
-#if #cpu(a29k)
-/* No pic register.  */
-#elif defined(__alpha__)
+#if defined(__alpha__)
 /* PIC register is $29, but is used even without -fpic.  */
 #elif defined(__arc__)
 # define PIC_REG  "26"
@@ -18,17 +16,11 @@
 # define PIC_REG  "9"
 #elif defined(AVR)
 /* No pic register.  */
-#elif defined(__clipper__)
-/* No pic register.  */
-#elif defined(__convex__)
-/* No pic register.  */
 #elif defined(__cris__)
 # define PIC_REG  "0"
 #elif defined(__D30V__)
 /* No pic register.  */
 #elif defined(__dsp1600__)
-/* No pic register.  */
-#elif defined(__elxsi__)
 /* No pic register.  */
 #elif defined(__fr30__)
 /* No pic register.  */
@@ -40,8 +32,6 @@
 /* No pic register.  */
 #elif defined(__i386__)
 # define PIC_REG  "ebx"
-#elif defined(__i860__)
-/* No pic register.  */
 #elif defined(__i960__)
 /* No pic register.  */
 #elif defined(__ia64__)
@@ -70,8 +60,6 @@
 /* PIC register is %r27 or %r19, but is used even without -fpic.  */
 #elif defined(__pdp11__)
 /* No pic register.  */
-#elif defined(__pj__)
-/* No pic register.  */
 #elif defined(__powerpc__) || defined(__PPC__) || defined(__POWERPC__)
 # ifdef __MACH__
 #  define PIC_REG  "31"
@@ -87,8 +75,6 @@
 #elif defined(__v850)
 /* No pic register.  */
 #elif defined(__vax__)
-/* No pic register.  */
-#elif defined(__we32000__)
 /* No pic register.  */
 #elif defined(__xstormy16__)
 /* No pic register.  */

@@ -28,7 +28,7 @@ C     of the Hessian.
 C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C:::##INCLUDE '~/charmm_fcm/impnon.fcm'
-C..##IF VAX CONVEX IRIS HPUX IRIS GNU CSPP OS2 GWS CRAY ALPHA
+C..##IF VAX IRIS HPUX IRIS GNU CSPP OS2 GWS CRAY ALPHA
       IMPLICIT NONE
 C..##ENDIF
 C-----------------------------------------------------------------------

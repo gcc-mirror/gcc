@@ -1,3 +1,59 @@
+2003-01-08  Larin Hennessey  <larin@science.oregonstate.edu>
+
+	* g++.old-deja/g++.mike/dyncast1.C: Remove reference to AMD A29K
+	* g++.old-deja/g++.mike/dyncast2.C: Likewise
+	* g++.old-deja/g++.mike/dyncast3.C: Likewise
+	* g++.old-deja/g++.mike/eh2.C: Likewise
+	* g++.old-deja/g++.mike/eh3.C: Likewise
+	* g++.old-deja/g++.mike/eh5.C: Likewise
+	* g++.old-deja/g++.mike/eh6.C: Likewise
+	* g++.old-deja/g++.mike/eh7.C: Likewise
+	* g++.old-deja/g++.mike/eh8.C: Likewise
+	* g++.old-deja/g++.mike/eh9.C: Likewise
+	* g++.old-deja/g++.mike/eh10.C: Likewise
+	* g++.old-deja/g++.mike/eh12.C: Likewise
+	* g++.old-deja/g++.mike/eh13.C: Likewise
+	* g++.old-deja/g++.mike/eh14.C: Likewise
+	* g++.old-deja/g++.mike/eh16.C: Likewise
+	* g++.old-deja/g++.mike/eh17.C: Likewise
+	* g++.old-deja/g++.mike/eh18.C: Likewise
+	* g++.old-deja/g++.mike/eh21.C: Likewise
+	* g++.old-deja/g++.mike/eh23.C: Likewise
+	* g++.old-deja/g++.mike/eh24.C: Likewise
+	* g++.old-deja/g++.mike/eh25.C: Likewise
+	* g++.old-deja/g++.mike/eh26.C: Likewise
+	* g++.old-deja/g++.mike/eh27.C: Likewise
+	* g++.old-deja/g++.mike/eh28.C: Likewise
+	* g++.old-deja/g++.mike/eh29.C: Likewise
+	* g++.old-deja/g++.mike/eh31.C: Likewise
+	* g++.old-deja/g++.mike/eh33.C: Likewise
+	* g++.old-deja/g++.mike/eh34.C: Likewise
+	* g++.old-deja/g++.mike/eh35.C: Likewise
+	* g++.old-deja/g++.mike/eh36.C: Likewise
+	* g++.old-deja/g++.mike/eh37.C: Likewise
+	* g++.old-deja/g++.mike/eh38.C: Likewise
+	* g++.old-deja/g++.mike/eh39.C: Likewise
+	* g++.old-deja/g++.mike/eh40.C: Likewise
+	* g++.old-deja/g++.mike/eh41.C: Likewise
+	* g++.old-deja/g++.mike/eh42.C: Likewise
+	* g++.old-deja/g++.mike/eh44.C: Likewise
+	* g++.old-deja/g++.mike/eh46.C: Likewise
+	* g++.old-deja/g++.mike/eh47.C: Likewise
+	* g++.old-deja/g++.mike/eh48.C: Likewise
+	* g++.old-deja/g++.mike/eh49.C: Likewise
+	* g++.old-deja/g++.mike/eh50.C: Likewise
+	* g++.old-deja/g++.mike/eh51.C: Likewise
+	* g++.old-deja/g++.mike/eh53.C: Likewise
+	* g++.old-deja/g++.mike/eh55.C: Likewise
+	* g++.old-deja/g++.mike/p7912.C: Likewise
+	* g++.old-deja/g++.mike/p9706.C: Likewise
+	* g++.old-deja/g++.mike/p10416.C: Likewise
+	* g++.old-deja/g++.mike/p11667.C: Likewise
+	* g77.f-torture/compile/20010519-1.f: Remove reference to Convex. 
+	Remove redundant reference to Iris.
+	* gcc.dg/20020312-2.c: Remove references to AMD A29K, Clipper, Convex,
+	Elxsi, i860, Pico Java, and WE32K.
+
 2003-01-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/ext/asm4.C: New test.
