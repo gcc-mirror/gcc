@@ -1,5 +1,30 @@
 2003-01-28  Vladimir Makarov  <vmakarov@redhat.com>
 
+	* haifa-sched.c (schedule_insn): Return necessary cycle advance
+	after issuing the insn.
+	(rank_for_schedule): Make a insn with /S the highest priority
+	insn.
+	(move_insn): Ignore schedule groups.  Clear SCHED_GROUP_P.
+	(choose_ready): Check SCHED_GROUP_P.
+	(schedule_block): Advance cycle after issuing insn if it is
+	necessary.  Don't reorder insns if there is an insn with /S.
+	(set_priorities): Ignore schedule groups.
+
+	* sched-deps.c (remove_dependence, group_leader): Remove the
+	functions.
+	(add_dependence): Ignore schedule groups.
+	(set_sched_group_p): Don't make copy of dependencies from previous
+	insn of the schedule group.  Add anti-dependency to the previous
+	insn of the schedule group.
+	(compute_forward_dependences): Ignore schedule groups.
+
+	* sched-ebb.c (init_ready_list): Ignore schedule groups.
+
+	* sched-rgn.c (init_ready_list): Ditto.
+	(can_schedule_ready_p): Ditto.
+	
+2003-01-28  Vladimir Makarov  <vmakarov@redhat.com>
+
 	* config/i386/i386.md (*movsi_1): Use movdqa to move one xmm
 	register to another one.
 

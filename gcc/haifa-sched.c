@@ -319,7 +319,7 @@ static int priority PARAMS ((rtx));
 static int rank_for_schedule PARAMS ((const PTR, const PTR));
 static void swap_sort PARAMS ((rtx *, int));
 static void queue_insn PARAMS ((rtx, int));
-static void schedule_insn PARAMS ((rtx, struct ready_list *, int));
+static int schedule_insn PARAMS ((rtx, struct ready_list *, int));
 static int find_set_reg_weight PARAMS ((rtx));
 static void find_insn_reg_weight PARAMS ((int));
 static void adjust_priority PARAMS ((rtx));
@@ -852,6 +852,10 @@ rank_for_schedule (x, y)
   int tmp_class, tmp2_class, depend_count1, depend_count2;
   int val, priority_val, weight_val, info_val;
 
+  /* The insn in a schedule group should be issued the first.  */
+  if (SCHED_GROUP_P (tmp) != SCHED_GROUP_P (tmp2))
+    return SCHED_GROUP_P (tmp2) ? 1 : -1;
+
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
 
@@ -1105,16 +1109,18 @@ static int last_clock_var;
 
 /* INSN is the "currently executing insn".  Launch each insn which was
    waiting on INSN.  READY is the ready list which contains the insns
-   that are ready to fire.  CLOCK is the current cycle.
-   */
+   that are ready to fire.  CLOCK is the current cycle.  The function
+   returns necessary cycle advance after issuing the insn (it is not
+   zero for insns in a schedule group).  */
 
-static void
+static int
 schedule_insn (insn, ready, clock)
      rtx insn;
      struct ready_list *ready;
      int clock;
 {
   rtx link;
+  int advance = 0;
   int unit = 0;
 
   if (!targetm.sched.use_dfa_pipeline_interface
@@ -1156,7 +1162,7 @@ schedule_insn (insn, ready, clock)
 	schedule_unit (unit, insn, clock);
       
       if (INSN_DEPEND (insn) == 0)
-	return;
+	return 0;
     }
 
   for (link = INSN_DEPEND (insn); link != 0; link = XEXP (link, 1))
@@ -1181,7 +1187,8 @@ schedule_insn (insn, ready, clock)
 	      if (effective_cost < 1)
 		fprintf (sched_dump, "into ready\n");
 	      else
-		fprintf (sched_dump, "into queue with cost=%d\n", effective_cost);
+		fprintf (sched_dump, "into queue with cost=%d\n",
+			 effective_cost);
 	    }
 
 	  /* Adjust the priority of NEXT and either put it on the ready
@@ -1190,7 +1197,12 @@ schedule_insn (insn, ready, clock)
 	  if (effective_cost < 1)
 	    ready_add (ready, next);
 	  else
-	    queue_insn (next, effective_cost);
+	    {
+	      queue_insn (next, effective_cost);
+
+	      if (SCHED_GROUP_P (next) && advance < effective_cost)
+		advance = effective_cost;
+	    }
 	}
     }
 
@@ -1207,6 +1219,7 @@ schedule_insn (insn, ready, clock)
 	PUT_MODE (insn, clock > last_clock_var ? TImode : VOIDmode);
       last_clock_var = clock;
     }
+  return advance;
 }
 
 /* Functions for handling of notes.  */
@@ -1757,8 +1770,7 @@ reemit_notes (insn, last)
   return retval;
 }
 
-/* Move INSN, and all insns which should be issued before it,
-   due to SCHED_GROUP_P flag.  Reemit notes if needed.
+/* Move INSN.  Reemit notes if needed.
 
    Return the last insn emitted by the scheduler, which is the
    return value from the first call to reemit_notes.  */
@@ -1769,26 +1781,6 @@ move_insn (insn, last)
 {
   rtx retval = NULL;
 
-  /* If INSN has SCHED_GROUP_P set, then issue it and any other
-     insns with SCHED_GROUP_P set first.  */
-  while (SCHED_GROUP_P (insn))
-    {
-      rtx prev = PREV_INSN (insn);
-      
-      /* Move a SCHED_GROUP_P insn.  */
-      move_insn1 (insn, last);
-      /* If this is the first call to reemit_notes, then record
-	 its return value.  */
-      if (retval == NULL_RTX)
-	retval = reemit_notes (insn, insn);
-      else
-	reemit_notes (insn, insn);
-      /* Consume SCHED_GROUP_P flag.  */
-      SCHED_GROUP_P (insn) = 0;
-      insn = prev;
-    }
-
-  /* Now move the first non SCHED_GROUP_P insn.  */
   move_insn1 (insn, last);
 
   /* If this is the first call to reemit_notes, then record
@@ -1797,6 +1789,8 @@ move_insn (insn, last)
     retval = reemit_notes (insn, insn);
   else
     reemit_notes (insn, insn);
+
+  SCHED_GROUP_P (insn) = 0;
 
   return retval;
 }
@@ -1911,7 +1905,8 @@ choose_ready (ready)
      struct ready_list *ready;
 {
   if (!targetm.sched.first_cycle_multipass_dfa_lookahead
-      || (*targetm.sched.first_cycle_multipass_dfa_lookahead) () <= 0)
+      || (*targetm.sched.first_cycle_multipass_dfa_lookahead) () <= 0
+      || SCHED_GROUP_P (ready_element (ready, 0)))
     return ready_remove_first (ready);
   else
     {
@@ -1961,7 +1956,7 @@ schedule_block (b, rgn_n_insns)
   int i, first_cycle_insn_p;
   int can_issue_more;
   state_t temp_state = NULL;  /* It is used for multipass scheduling.  */
-  int sort_p;
+  int sort_p, advance, start_clock_var;
 
   /* Head/tail info for this block.  */
   rtx prev_head = current_sched_info->prev_head;
@@ -2045,29 +2040,37 @@ schedule_block (b, rgn_n_insns)
 
   /* Start just before the beginning of time.  */
   clock_var = -1;
+  advance = 0;
 
   sort_p = TRUE;
   /* Loop until all the insns in BB are scheduled.  */
   while ((*current_sched_info->schedule_more_p) ())
     {
-      clock_var++;
-
-      advance_one_cycle ();
-
-      /* Add to the ready list all pending insns that can be issued now.
-         If there are no ready insns, increment clock until one
-         is ready and add all pending insns at that point to the ready
-         list.  */
-      queue_to_ready (&ready);
-
-      if (ready.n_ready == 0)
-	abort ();
-
-      if (sched_verbose >= 2)
+      do
 	{
-	  fprintf (sched_dump, ";;\t\tReady list after queue_to_ready:  ");
-	  debug_ready_list (&ready);
+	  start_clock_var = clock_var;
+
+	  clock_var++;
+	  
+	  advance_one_cycle ();
+	  
+	  /* Add to the ready list all pending insns that can be issued now.
+	     If there are no ready insns, increment clock until one
+	     is ready and add all pending insns at that point to the ready
+	     list.  */
+	  queue_to_ready (&ready);
+	  
+	  if (ready.n_ready == 0)
+	    abort ();
+	  
+	  if (sched_verbose >= 2)
+	    {
+	      fprintf (sched_dump, ";;\t\tReady list after queue_to_ready:  ");
+	      debug_ready_list (&ready);
+	    }
+	  advance -= clock_var - start_clock_var;
 	}
+      while (advance > 0);
 
       if (sort_p)
 	{
@@ -2083,7 +2086,9 @@ schedule_block (b, rgn_n_insns)
 
       /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
-      if (targetm.sched.reorder)
+      if (targetm.sched.reorder
+	  && (ready.n_ready == 0
+	      || !SCHED_GROUP_P (ready_element (&ready, 0))))
 	can_issue_more =
 	  (*targetm.sched.reorder) (sched_dump, sched_verbose,
 				    ready_lastpos (&ready),
@@ -2256,7 +2261,9 @@ schedule_block (b, rgn_n_insns)
 		   && GET_CODE (PATTERN (insn)) != CLOBBER)
 	    can_issue_more--;
 
-	  schedule_insn (insn, &ready, clock_var);
+	  advance = schedule_insn (insn, &ready, clock_var);
+	  if (advance != 0)
+	    break;
 
 	next:
 	  first_cycle_insn_p = 0;
@@ -2267,7 +2274,9 @@ schedule_block (b, rgn_n_insns)
 	  if (ready.n_ready > 0)
 	    ready_sort (&ready);
 
-	  if (targetm.sched.reorder2)
+	  if (targetm.sched.reorder2
+	      && (ready.n_ready == 0
+		  || !SCHED_GROUP_P (ready_element (&ready, 0))))
 	    {
 	      can_issue_more =
 		(*targetm.sched.reorder2) (sched_dump, sched_verbose,
@@ -2393,8 +2402,7 @@ set_priorities (head, tail)
       if (GET_CODE (insn) == NOTE)
 	continue;
 
-      if (! SCHED_GROUP_P (insn))
-	n_insn++;
+      n_insn++;
       (void) priority (insn);
     }
 
