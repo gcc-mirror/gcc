@@ -709,12 +709,13 @@ static struct compiler default_compilers[] =
      were not present when we built the driver, we will hit these copies
      and be given a more meaningful error than "file not used since
      linking is not done".  */
-  {".m",  "#Objective-C"},
-  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"},
-  {".c++", "#C++"}, {".C", "#C++"},
+  {".m",  "#Objective-C"}, {".mi",  "#Objective-C"},
+  {".cc", "#C++"}, {".cxx", "#C++"}, {".cpp", "#C++"}, {".cp", "#C++"},
+  {".c++", "#C++"}, {".C", "#C++"}, {".ii", "#C++"},
   {".ads", "#Ada"}, {".adb", "#Ada"}, {".ada", "#Ada"},
-  {".f", "#Fortran"}, {".for", "#Fortran"}, {".F", "#Fortran"},
-  {".fpp", "#Fortran"}, {".r", "#Ratfor"},
+  {".f", "#Fortran"}, {".for", "#Fortran"}, {".fpp", "#Fortran"},
+  {".F", "#Fortran"}, {".FOR", "#Fortran"}, {".FPP", "#Fortran"},
+  {".r", "#Ratfor"},
   {".p", "#Pascal"}, {".pas", "#Pascal"},
   {".ch", "#Chill"}, {".chi", "#Chill"},
   {".java", "#Java"}, {".class", "#Java"},
