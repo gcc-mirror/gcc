@@ -478,9 +478,18 @@ find_edge (basic_block pred, basic_block succ)
   edge e;
   edge_iterator ei;
 
-  FOR_EACH_EDGE (e, ei, pred->succs)
-    if (e->dest == succ)
-      return e;
+  if (EDGE_COUNT (pred->succs) <= EDGE_COUNT (succ->preds))
+    {
+      FOR_EACH_EDGE (e, ei, pred->succs)
+	if (e->dest == succ)
+	  return e;
+    }
+  else
+    {
+      FOR_EACH_EDGE (e, ei, succ->preds)
+	if (e->src == pred)
+	  return e;
+    }
 
   return NULL;
 }

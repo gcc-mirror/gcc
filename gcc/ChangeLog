@@ -1,3 +1,11 @@
+2004-11-08 Jeff Law  <law@redhat.com>
+
+	* cfg.c (redirect_edge_succ_nodup): Use find_edge rather than
+	implementing it inline.
+
+	* cfganal.c (find_edge): Search pred->succs or succ->preds,
+	whichever is shorter.
+
 2004-11-08  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* passes.c (rest_of_handle_jump): Remove dead code.
