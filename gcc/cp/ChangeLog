@@ -1,3 +1,39 @@
+2003-01-10  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (reparse_absdcl_as_expr): Remove.
+	(reparse_absdcl_as_casts): Likewise.
+	(reparse_decl_as_expr): Likewise.
+	(finish_decl_parsing): Likewise.
+	* decl2.c (reparse_absdcl_as_expr): Remove.
+	(reparse_absdcl_as_casts): Likewise.
+	(repase_decl_as_expr): Likewise.
+	(finish_decl_parsing): Likewise.
+
+	PR c++/9128
+	PR c++/9153
+	PR c++/9171
+	* parser.c (cp_parser_pre_parsed_nested_name_specifier): New
+	function.
+	(cp_parser_nested_name_specifier_opt): Correct the
+	check_dependency_p false.
+	(cp_parser_postfix_expression): Fix formatting.
+	(cp_parser_decl_specifier_seq): Avoid looking for constructor
+	declarators when possible.
+	(cp_parser_template_id): Avoid performing name-lookup when
+	possible.
+	(cp_parser_class_head): Do not count specializations when counting
+	levels of templates.
+	(cp_parser_constructor_declarator_p): Return immediately if
+	there's no chance that the tokens form a constructor declarator.
+	* rtti.c (throw_bad_typeid): Add comment.  Do not return an
+	expression with reference type.
+	(get_tinfo_decl_dynamic): Do not return an expression with
+	reference type.
+	(build_typeid): Add comment.  Do not return an expression with
+	reference type.
+	* typeck.c (build_class_member_access_expr): Improve handling of
+	conditionals and comma-expressions as objects.
+
 2003-01-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* decl.c (bad_specifiers): Fix parameter order error I introduced.

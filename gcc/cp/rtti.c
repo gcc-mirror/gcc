@@ -174,6 +174,9 @@ throw_bad_cast (void)
   return build_call (fn, NULL_TREE);
 }
 
+/* Return an expression for "__cxa_bad_typeid()".  The expression
+   returned is an lvalue of type "const std::type_info".  */
+
 static tree
 throw_bad_typeid (void)
 {
@@ -187,17 +190,19 @@ throw_bad_typeid (void)
       fn = push_throw_library_fn (fn, t);
     }
 
-  return build_call (fn, NULL_TREE);
+  return convert_from_reference (build_call (fn, NULL_TREE));
 }
 
-/* Return a pointer to type_info function associated with the expression EXP.
-   If EXP is a reference to a polymorphic class, return the dynamic type;
+/* Return an lvalue expression whose type is "const std::type_info"
+   and whose value indicates the type of the expression EXP.  If EXP
+   is a reference to a polymorphic class, return the dynamic type;
    otherwise return the static type of the expression.  */
 
 static tree
 get_tinfo_decl_dynamic (tree exp)
 {
   tree type;
+  tree t;
   
   if (exp == error_mark_node)
     return error_mark_node;
@@ -221,18 +226,18 @@ get_tinfo_decl_dynamic (tree exp)
   if (TYPE_POLYMORPHIC_P (type) && ! resolves_to_fixed_type_p (exp, 0))
     {
       /* build reference to type_info from vtable.  */
-      tree t;
       tree index;
 
       /* The RTTI information is at index -1.  */
       index = build_int_2 (-1 * TARGET_VTABLE_DATA_ENTRY_DISTANCE, -1);
       t = build_vtbl_ref (exp, index);
       TREE_TYPE (t) = type_info_ptr_type;
-      return t;
     }
+  else
+    /* Otherwise return the type_info for the static type of the expr.  */
+    t = get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
 
-  /* Otherwise return the type_info for the static type of the expr.  */
-  return get_tinfo_ptr (TYPE_MAIN_VARIANT (type));
+  return build_indirect_ref (t, NULL);
 }
 
 static bool
@@ -252,6 +257,9 @@ typeid_ok_p (void)
   
   return true;
 }
+
+/* Return an expression for "typeid(EXP)".  The expression returned is
+   an lvalue of type "const std::type_info".  */
 
 tree
 build_typeid (tree exp)
@@ -280,8 +288,6 @@ build_typeid (tree exp)
   if (exp == error_mark_node)
     return error_mark_node;
 
-  exp = build_indirect_ref (exp, NULL);
-
   if (cond)
     {
       tree bad = throw_bad_typeid ();
@@ -289,7 +295,7 @@ build_typeid (tree exp)
       exp = build (COND_EXPR, TREE_TYPE (exp), cond, exp, bad);
     }
 
-  return convert_from_reference (exp);
+  return exp;
 }
 
 /* Generate the NTBS name of a type.  */

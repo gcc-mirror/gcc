@@ -1865,27 +1865,6 @@ build_class_member_access_expr (tree object, tree member,
   my_friendly_assert (DECL_P (member) || BASELINK_P (member),
 		      20020801);
 
-  /* Transform `(a, b).x' into `a, b.x' and `(a ? b : c).x' into 
-     `a ? b.x : c.x'.  These transformations should not really be
-     necessary, but they are.  */
-  if (TREE_CODE (object) == COMPOUND_EXPR)
-    {
-      result = build_class_member_access_expr (TREE_OPERAND (object, 1),
-					       member, access_path, 
-					       preserve_reference);
-      return build (COMPOUND_EXPR, TREE_TYPE (result), 
-		    TREE_OPERAND (object, 0), result);
-    }
-  else if (TREE_CODE (object) == COND_EXPR)
-    return (build_conditional_expr
-	    (TREE_OPERAND (object, 0),
-	     build_class_member_access_expr (TREE_OPERAND (object, 1),
-					     member, access_path,
-					     preserve_reference),
-	     build_class_member_access_expr (TREE_OPERAND (object, 2),
-					     member, access_path,
-					     preserve_reference)));
-
   /* [expr.ref]
 
      The type of the first expression shall be "class object" (of a
@@ -1923,6 +1902,34 @@ build_class_member_access_expr (tree object, tree member,
     {
       error ("`%D' is not a member of `%T'", member, object_type);
       return error_mark_node;
+    }
+
+  /* Transform `(a, b).x' into `(*(a, &b)).x' and `(a ? b : c).x' into
+     `(*(a ?  &b : &c)).x'.  Unfortunately, expand_expr cannot handle a
+     COMPONENT_REF where the first operand is a conditional or comma
+     expression with class type.  */
+  if (TREE_CODE (object) == COMPOUND_EXPR)
+    {
+      object = build (COMPOUND_EXPR, 
+		      build_pointer_type (object_type),
+		      TREE_OPERAND (object, 0),
+		      build_unary_op (ADDR_EXPR, 
+				      TREE_OPERAND (object, 1),
+				      /*noconvert=*/1));
+      object = build_indirect_ref (object, NULL);
+    }
+  else if (TREE_CODE (object) == COND_EXPR)
+    {
+      object = build (COND_EXPR, 
+		      build_pointer_type (object_type),
+		      TREE_OPERAND (object, 0),
+		      build_unary_op (ADDR_EXPR, 
+				      TREE_OPERAND (object, 1),
+				      /*noconvert=*/1),
+		      build_unary_op (ADDR_EXPR, 
+				      TREE_OPERAND (object, 2),
+				      /*noconvert=*/1));
+      object = build_indirect_ref (object, NULL);
     }
 
   /* In [expr.ref], there is an explicit list of the valid choices for
