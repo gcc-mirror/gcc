@@ -1950,6 +1950,7 @@ build_template_decl (decl, parms)
       DECL_CLASS_CONTEXT (tmpl) = DECL_CLASS_CONTEXT (decl);
       DECL_STATIC_FUNCTION_P (tmpl) = DECL_STATIC_FUNCTION_P (decl);
       DECL_CONSTRUCTOR_P (tmpl) = DECL_CONSTRUCTOR_P (decl);
+      DECL_NONCONVERTING_P (tmpl) = DECL_NONCONVERTING_P (decl);
     }
 
   return tmpl;
