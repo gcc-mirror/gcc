@@ -481,7 +481,7 @@ was_declared (gfc_symbol * sym)
   if (!a.implicit_type && sym->ts.type != BT_UNKNOWN)
     return 1;
 
-  if (a.allocatable || a.dimension || a.external || a.intrinsic
+  if (a.allocatable || a.dimension || a.dummy || a.external || a.intrinsic
       || a.optional || a.pointer || a.save || a.target
       || a.access != ACCESS_UNKNOWN || a.intent != INTENT_UNKNOWN)
     return 1;

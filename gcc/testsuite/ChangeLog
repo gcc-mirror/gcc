@@ -1,3 +1,8 @@
+2005-03-19  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/18525
+	* gfortran.dg/nesting_1.f90: New test.
+
 2005-03-19  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/20240
