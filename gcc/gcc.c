@@ -2934,23 +2934,23 @@ process_command (argc, argv)
 	  for (j = 4; argv[i][j]; j++)
 	    if (argv[i][j] == ',')
 	      {
-		infiles[n_infiles].language = 0;
+		infiles[n_infiles].language = "*";
 		infiles[n_infiles++].name
 		  = save_string (argv[i] + prev, j - prev);
 		prev = j + 1;
 	      }
 	  /* Record the part after the last comma.  */
-	  infiles[n_infiles].language = 0;
+	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[i] + prev;
 	}
       else if (strcmp (argv[i], "-Xlinker") == 0)
 	{
-	  infiles[n_infiles].language = 0;
+	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[++i];
 	}
       else if (strncmp (argv[i], "-l", 2) == 0)
 	{
-	  infiles[n_infiles].language = 0;
+	  infiles[n_infiles].language = "*";
 	  infiles[n_infiles++].name = argv[i];
 	}
       else if (strcmp (argv[i], "-specs") == 0)
@@ -4820,7 +4820,7 @@ main (argc, argv)
 
 /* Find the proper compilation spec for the file name NAME,
    whose length is LENGTH.  LANGUAGE is the specified language,
-   or 0 if none specified.  */
+   or 0 if this file is to be passed to the linker.  */
 
 static struct compiler *
 lookup_compiler (name, length, language)
@@ -4830,19 +4830,20 @@ lookup_compiler (name, length, language)
 {
   struct compiler *cp;
 
-  /* Look for the language, if one is spec'd.  */
+  /* If this was specified by the user to be a linker input, indicate that. */
+  if (language != 0 && language[0] == '*')
+    return 0;
+
+  /* Otherwise, look for the language, if one is spec'd.  */
   if (language != 0)
     {
       for (cp = compilers + n_compilers - 1; cp >= compilers; cp--)
-	{
-	  if (language != 0)
-	    {
-	      if (cp->suffix[0] == '@'
-		  && !strcmp (cp->suffix + 1, language))
-		return cp;
-	    }
-	}
+	if (language != 0)
+	  if (cp->suffix[0] == '@' && !strcmp (cp->suffix + 1, language))
+	    return cp;
+
       error ("language %s not recognized", language);
+      return 0;
     }
 
   /* Look for a suffix.  */
@@ -4850,23 +4851,24 @@ lookup_compiler (name, length, language)
     {
       if (/* The suffix `-' matches only the file name `-'.  */
 	  (!strcmp (cp->suffix, "-") && !strcmp (name, "-"))
-	  ||
-	  (strlen (cp->suffix) < length
-	   /* See if the suffix matches the end of NAME.  */
+	  || (strlen (cp->suffix) < length
+	      /* See if the suffix matches the end of NAME.  */
 #ifdef OS2
-	   && (!strcmp (cp->suffix,
-			name + length - strlen (cp->suffix))
-	    || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	     && !strcasecmp (cp->suffix,
-			  name + length - strlen (cp->suffix)))))
+	      && ((!strcmp (cp->suffix,
+			   name + length - strlen (cp->suffix))
+		   || !strpbrk (cp->suffix, "ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
+		  && !strcasecmp (cp->suffix,
+				  name + length - strlen (cp->suffix)))
 #else
-	   && !strcmp (cp->suffix,
-		       name + length - strlen (cp->suffix))))
+	      && !strcmp (cp->suffix,
+			  name + length - strlen (cp->suffix))
 #endif
+	 ))
 	{
 	  if (cp->spec[0][0] == '@')
 	    {
 	      struct compiler *new;
+
 	      /* An alias entry maps a suffix to a language.
 		 Search for the language; pass 0 for NAME and LENGTH
 		 to avoid infinite recursion if language not found.
@@ -4878,6 +4880,7 @@ lookup_compiler (name, length, language)
 		     (char *) new->spec, sizeof new->spec);
 	      return new;
 	    }
+
 	  /* A non-alias entry: return it.  */
 	  return cp;
 	}
