@@ -1,3 +1,11 @@
+Mon Mar 15 12:39:38 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.c (init_idents): New function.  Initialise
+	static tree nodes for m32r specific attribute identifiers.  Remove
+	leading and trailing double underscores from the attribute names.
+	(m32r_valid_machine_decl_attribute): Call init_idents.
+	(m32r_encode_section_info): Call init_idents.
+
 Mon Mar 15 10:20:20 1999  Mark Mitchell  <mark@markmitchell.com>
 
 	* reload.c (find_reloads): Add a REG_LABEL note if we substitute a
