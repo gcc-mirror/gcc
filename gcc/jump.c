@@ -3771,7 +3771,7 @@ rtx_renumbered_equal_p (x, y)
       return 0;
 
     case CONST_INT:
-      return XINT (x, 0) == XINT (y, 0);
+      return INTVAL (x) == INTVAL (y);
 
     case LABEL_REF:
       /* We can't assume nonlocal labels have their following insns yet.  */
