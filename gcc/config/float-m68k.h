@@ -94,4 +94,7 @@
 #undef LDBL_MAX_10_EXP
 #define LDBL_MAX_10_EXP 4932
 
+/* ??? FLT_EVAL_METHOD depends on TARGET_68040_ONLY.  We do not currently
+   have a preprocessor token that we can use to tell that this is on.  */
+
 #endif /*  _FLOAT_H_ */
