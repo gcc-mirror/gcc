@@ -6182,13 +6182,8 @@ expand_function_start (subr, parms_have_cleanups)
   else
     /* Scalar, returned in a register.  */
     {
-#ifdef FUNCTION_OUTGOING_VALUE
       DECL_RTL (DECL_RESULT (subr))
-	= FUNCTION_OUTGOING_VALUE (TREE_TYPE (DECL_RESULT (subr)), subr);
-#else
-      DECL_RTL (DECL_RESULT (subr))
-	= FUNCTION_VALUE (TREE_TYPE (DECL_RESULT (subr)), subr);
-#endif
+	= hard_function_value (TREE_TYPE (DECL_RESULT (subr)), subr, 1);
 
       /* Mark this reg as the function's return value.  */
       if (GET_CODE (DECL_RTL (DECL_RESULT (subr))) == REG)

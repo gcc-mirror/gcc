@@ -1,3 +1,8 @@
+2000-04-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* function.c (expand_function_start): Use hard_function_value to
+	compute the RTL to use for DECL_RESULT.
+
 Mon Apr 17 23:35:29 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (athlon_cost): Fix lea, divide and XFmode move costs.
