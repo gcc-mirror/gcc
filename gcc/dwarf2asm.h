@@ -32,9 +32,6 @@ extern void dw2_asm_output_delta (int, const char *, const char *,
 extern void dw2_asm_output_offset (int, const char *, const char *, ...)
      ATTRIBUTE_NULL_PRINTF_3;
 
-extern void dw2_asm_output_pcrel (int, const char *, const char *, ...)
-     ATTRIBUTE_NULL_PRINTF_3;
-
 extern void dw2_asm_output_addr (int, const char *, const char *, ...)
      ATTRIBUTE_NULL_PRINTF_3;
 
@@ -61,13 +58,20 @@ extern void dw2_asm_output_delta_uleb128 (const char *, const char *,
 					  const char *, ...)
      ATTRIBUTE_NULL_PRINTF_3;
 
-extern void dw2_asm_output_delta_sleb128 (const char *, const char *,
-					  const char *, ...)
-     ATTRIBUTE_NULL_PRINTF_3;
-
 extern int size_of_uleb128 (unsigned HOST_WIDE_INT);
 extern int size_of_sleb128 (HOST_WIDE_INT);
 extern int size_of_encoded_value (int);
 extern const char *eh_data_format_name (int);
 
 extern void dw2_output_indirect_constants (void);
+
+/* These are currently unused.  */
+
+#if 0
+extern void dw2_asm_output_pcrel (int, const char *, const char *, ...)
+     ATTRIBUTE_NULL_PRINTF_3;
+
+extern void dw2_asm_output_delta_sleb128 (const char *, const char *,
+					  const char *, ...)
+     ATTRIBUTE_NULL_PRINTF_3;
+#endif

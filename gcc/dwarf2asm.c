@@ -149,6 +149,8 @@ dw2_asm_output_offset (int size, const char *label,
   va_end (ap);
 }
 
+#if 0
+
 /* Output a self-relative reference to a label, possibly in a
    different section or object file.  */
 
@@ -179,6 +181,7 @@ dw2_asm_output_pcrel (int size ATTRIBUTE_UNUSED,
 
   va_end (ap);
 }
+#endif /* 0 */
 
 /* Output an absolute reference to a label.  */
 
@@ -649,6 +652,8 @@ dw2_asm_output_delta_uleb128 (const char *lab1 ATTRIBUTE_UNUSED,
   va_end (ap);
 }
 
+#if 0
+
 void
 dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 			      const char *lab2 ATTRIBUTE_UNUSED,
@@ -676,6 +681,7 @@ dw2_asm_output_delta_sleb128 (const char *lab1 ATTRIBUTE_UNUSED,
 
   va_end (ap);
 }
+#endif /* 0 */
 
 static rtx dw2_force_const_mem (rtx);
 static int dw2_output_indirect_constant_1 (splay_tree_node, void *);
