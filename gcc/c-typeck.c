@@ -4894,7 +4894,7 @@ digest_init (type, init, require_constant, constructor_constant)
      and it initializes the first element of x to 0.  */
   if (flag_traditional)
     {
-      tree top = 0, prev = 0;
+      tree top = 0, prev = 0, otype = type;
       while (TREE_CODE (type) == RECORD_TYPE
 	     || TREE_CODE (type) == ARRAY_TYPE
 	     || TREE_CODE (type) == QUAL_UNION_TYPE
@@ -4916,11 +4916,17 @@ digest_init (type, init, require_constant, constructor_constant)
 	      return error_mark_node;
 	    }
 	}
-      TREE_OPERAND (prev, 1)
-	= build_tree_list (NULL_TREE,
-			   digest_init (type, init, require_constant,
-					constructor_constant));
-      return top;
+
+      if (otype != type)
+	{
+	  TREE_OPERAND (prev, 1)
+	    = build_tree_list (NULL_TREE,
+			       digest_init (type, init, require_constant,
+					    constructor_constant));
+	  return top;
+	}
+      else
+	return error_mark_node;
     }
   error_init ("invalid initializer%s", " for `%s'", NULL);
   return error_mark_node;
