@@ -2150,8 +2150,8 @@ do {									\
 { "sdata_symbolic_operand", {SYMBOL_REF, CONST}},			\
 { "small_addr_symbolic_operand", {SYMBOL_REF}},				\
 { "symbolic_operand", {SYMBOL_REF, CONST, LABEL_REF}},			\
+{ "tls_symbolic_operand", {SYMBOL_REF}},				\
 { "function_operand", {SYMBOL_REF}},					\
-{ "setjmp_operand", {SYMBOL_REF}},					\
 { "destination_operand", {SUBREG, REG, MEM}},				\
 { "not_postinc_memory_operand", {MEM}},					\
 { "move_operand", {SUBREG, REG, MEM, CONST_INT, CONST_DOUBLE,		\

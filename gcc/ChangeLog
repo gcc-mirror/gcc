@@ -1,3 +1,12 @@
+2004-07-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (setjmp_operand): Delete, unused.
+	(got_symbolic_operand): Remove unreachable code.
+	* config/ia64/ia64.h (PREDICATE_CODES): Remove entry for
+	setjmp_operand; add entry for tls_symbolic_operand.
+	* config/ia64/ia64-protos.h: Remove all prototypes of
+	predicate functions.
+
 2004-07-29  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.h (lang_post_pch_load): New variable.
@@ -162,7 +171,7 @@
 	* config/rs6000/darwin.h (BOOL_TYPE_SIZE): Conditionalize on
 	value of darwin_one_byte_bool.
 	* doc/invoke.texi: Document -mone-byte-bool flag.
-	
+
 2004-07-28  Eric Christopher  <echristo@redhat.com>
 
 	* c-common.c (c_common_unsafe_for_reeval): Delete.
