@@ -1,3 +1,10 @@
+2000-10-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	Patch contributed by Corey Minyard.
+	* decl.c (check_local_named_variable): New function.
+	(tree check_local_unnamed_variable): Likewise.
+	(find_local_variable): Splitted. Call check_local_{un}named_variable.
+
 2000-10-07  Anthony Green  <green@redhat.com>
 
 	* class.c (layout_class): Handle case where superclass can't be
@@ -247,6 +254,13 @@ Wed Sep 13 11:50:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* zipfile.h (ZipDirectory): Add uncompressed_size and
 	compression_method fields.
 	* zextract.c (read_zip_archive): Collect file compression info.
+
+2000-08-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (variable_declarator_id:): Better error message.
+	(expression_statement:): Use YYNOT_TWICE.
+	(cast_expression:): Likewise.
+	(assignment:): Likewise.
 
 2000-08-11  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 

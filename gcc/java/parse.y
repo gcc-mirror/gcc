@@ -971,7 +971,15 @@ variable_declarator_id:
 |	identifier error
 		{yyerror ("Invalid declaration"); DRECOVER(vdi);}
 |	variable_declarator_id OSB_TK error
-		{yyerror ("']' expected"); DRECOVER(vdi);}
+		{ 
+		  tree node = java_lval.node;
+		  if (node && (TREE_CODE (node) == INTEGER_CST
+			       || TREE_CODE (node) == EXPR_WITH_FILE_LOCATION))
+		    yyerror ("Can't specify array dimension in a declaration");
+		  else
+		    yyerror ("']' expected");
+		  DRECOVER(vdi);
+		}
 |	variable_declarator_id CSB_TK error
 		{yyerror ("Unbalanced ']'"); DRECOVER(vdi);}
 ;
@@ -1465,20 +1473,17 @@ expression_statement:
 		}
 |	error SC_TK 
 		{
-		  if (ctxp->prevent_ese != lineno)
-		    yyerror ("Invalid expression statement");
+		  YYNOT_TWICE yyerror ("Invalid expression statement");
 		  DRECOVER (expr_stmt);
 		}
 |	error OCB_TK
 		{
-		  if (ctxp->prevent_ese != lineno)
-		    yyerror ("Invalid expression statement");
+		  YYNOT_TWICE yyerror ("Invalid expression statement");
 		  DRECOVER (expr_stmt);
 		}
 |	error CCB_TK
 		{
-		  if (ctxp->prevent_ese != lineno)
-		    yyerror ("Invalid expression statement");
+		  YYNOT_TWICE yyerror ("Invalid expression statement");
 		  DRECOVER (expr_stmt);
 		}
 |       this_or_super OP_TK error
@@ -2342,8 +2347,7 @@ cast_expression:		/* Error handling here is potentially weak */
 		{yyerror ("']' expected, invalid type expression");}
 |       OP_TK error
 		{
-	          if (ctxp->prevent_ese != lineno)
-		    yyerror ("Invalid type expression"); RECOVER;
+	          YYNOT_TWICE yyerror ("Invalid type expression"); RECOVER;
 		  RECOVER;
 		}
 |	OP_TK primitive_type dims CP_TK error
@@ -2560,8 +2564,7 @@ assignment:
 		{ $$ = build_assignment ($2.token, $2.location, $1, $3); }
 |	left_hand_side assignment_operator error
 		{
-		  if (ctxp->prevent_ese != lineno)
-		    yyerror ("Missing term");
+		  YYNOT_TWICE yyerror ("Missing term");
 		  DRECOVER (assign);
 		}
 ;
