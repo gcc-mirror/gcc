@@ -37,7 +37,7 @@ void
 gnu::gcj::io::SimpleSHSStream::shsUpdate (jbyteArray shs_info, jbyteArray buf, jint count)
 {
   SHS_INFO *info = (SHS_INFO *)elements(shs_info);
-  BYTE *buffer = (BYTE *)elements(buf);
+  uint8_t *buffer = (uint8_t *)elements(buf);
   
   ::shsUpdate (info, buffer, count);
 }

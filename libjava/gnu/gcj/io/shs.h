@@ -14,8 +14,14 @@
 #ifndef SHS_H
 #define SHS_H
 
-typedef unsigned char BYTE;
-typedef unsigned int LONG; /* A 32-bit type */
+#include<config.h>
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
+#else
+# if HAVE_STDINT_H
+#  include <stdint.h>
+# endif
+#endif
 
 /* The SHS block size and message digest sizes, in bytes */
 
@@ -25,9 +31,9 @@ typedef unsigned int LONG; /* A 32-bit type */
 /* The structure for storing SHS info */
 
 typedef struct {
-	LONG digest [5];	/* Message digest */
-	LONG countLo, countHi;	/* 64-bit bit count */
-	LONG data [16];		/* SHS data buffer */
+       uint32_t digest [5];    /* Message digest */
+       uint32_t countLo, countHi;      /* 64-bit bit count */
+       uint32_t data [16];             /* SHS data buffer */
 } SHS_INFO;
 
 /* Turn off prototypes if requested */
@@ -45,7 +51,7 @@ typedef struct {
 #define	local	static
 
 void shsInit OF((SHS_INFO *shsInfo));
-void shsUpdate OF((SHS_INFO *shsInfo, BYTE *buffer, int count));
+void shsUpdate OF((SHS_INFO *shsInfo, uint8_t *buffer, int count));
 void shsFinal OF((SHS_INFO *shsInfo));
 
 #endif
