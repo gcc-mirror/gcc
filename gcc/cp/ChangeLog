@@ -1,3 +1,21 @@
+1999-03-13  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (duplicate_decls): Use same_type_p.
+	* method.c (try_old_backref): Renamed from flush_repeats.  Use
+	same_type_p.  Don't try to handle repeats.  Return success.
+	(is_back_referenceable_type): Return 0 if TYPE_FOR_JAVA.  Support
+	calls from old-style code, too.
+	(check_ktype): Use same_type_p.
+	(check_btype): Use same_type_p.  Don't pull out TYPE_MAIN_VARIANT.
+	(build_qualified_name): Simplify logic.
+	(build_mangled_name_for_type_with_Gcode): Remove call to
+	type_canonical_variant.
+	(process_overload_item): Strip typedefs and quals at the top.
+	(build_mangled_name): Likewise.  Remove support for old-style 
+	repeats, which have been disabled since 2.7.2.  Don't mess with 
+	TREE_USED.
+	(build_decl_overload_real): Don't mess with TREE_USED.
+
 1999-03-13  Nathan Sidwell  <nathan@acm.org>
 
 	* error.c (cp_printers): Add 'F' escape character.
