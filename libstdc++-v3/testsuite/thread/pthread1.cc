@@ -124,14 +124,6 @@ main (int argc, char** argv)
 	{
 	  pthread_join (prod[i], NULL);
 	  pthread_join (cons[i], NULL);
-#if defined(__FreeBSD__) && __FreeBSD__ < 5
-	  // These lines are not required by POSIX since a successful
-	  // join is suppose to detach as well...
-	  pthread_detach (prod[i]);
-	  pthread_detach (cons[i]);
-	  // ...but they are according to the FreeBSD 4.X code base
-	  // or else you get a memory leak.
-#endif
 	  delete tq[i];
 	}
     }
