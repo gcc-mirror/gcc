@@ -108,7 +108,7 @@ in the following sections.
 -fname-mangling-version-@var{n}  -fno-default-inline  
 -fno-gnu-keywords -fnonnull-objects -fguiding-decls
 -foperator-names  -fno-optional-diags -fstrict-prototype  -fthis-is-variable
--ftemplate-depth-@var{n} -fdiag-codes -nostdinc++  -traditional  +e@var{n}
+-ftemplate-depth-@var{n}  -nostdinc++  -traditional  +e@var{n}
 @end smallexample
 
 @item Warning Options
@@ -129,7 +129,7 @@ in the following sections.
 -Wreturn-type -Wshadow  -Wsign-compare  -Wstrict-prototypes  
 -Wswitch -Wsynth  -Wtemplate-debugging  -Wtraditional  
 -Wtrigraphs -Wundef  -Wuninitialized  -Wunused  -Wwrite-strings
--Wunknown-pragmas -Wnumber-@var{n}
+-Wunknown-pragmas
 @end smallexample
 
 @item Debugging Options
@@ -1165,19 +1165,6 @@ A limit on the template instantiation depth is needed to detect
 endless recursions during template class instantiation. ANSI/ISO C++
 conforming programs must not rely on a maximum depth greater than 17.
 
-@item -fdiag-codes
-When printing a diagnostic, also print the corresponding diagnostic
-code.  The code is printed in square brackets, before the message
-itself.  For example, you might see something like:
-
-@smallexample
-test.C:3: warning: [62] all member functions in class `C' are private
-@end smallexample
-
-which indicates that this is warning number 62.  Some diagnostics do not
-(yet) have corresponding code numbers.  This option is useful in
-conjuction with @samp{-Wnumber-@var{n}}.
-
 @item -nostdinc++
 Do not search for header files in the standard directories specific to
 C++, but do still search the other standard directories.  (This option
@@ -1202,7 +1189,6 @@ Do not assume @samp{inline} for functions defined inside a class scope.
 @item -Wold-style-cast
 @itemx -Woverloaded-virtual
 @itemx -Wtemplate-debugging
-@itemx -Wnumber-@var{n}
 Warnings that apply only to C++ programs.  @xref{Warning
 Options,,Options to Request or Suppress Warnings}.
 
@@ -1710,11 +1696,6 @@ conformant compiler code but disables the helpful warning.
 @item -Winline
 Warn if a function can not be inlined, and either it was declared as inline,
 or else the @samp{-finline-functions} option was given.
-
-@item -Wnumber-@var{n} (C++ only)
-Enable warning number @var{n}.  (Or, more often, with
-@samp{-Wno-number-@var{n}}, disable that warning.)  To obtain the
-appropriate numbers, use @samp{-fdiag-codes}.
 
 @item -Wold-style-cast
 Warn if an old-style (C-style) cast is used within a program.
