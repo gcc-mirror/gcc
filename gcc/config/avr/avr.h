@@ -2884,17 +2884,6 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
    addresses.  Thus sorting to put the smallest address first allows
    the most combinations to be found.  */
 
-/* Define results of standard character escape sequences.  */
-#define TARGET_BELL 007
-#define TARGET_BS 010
-#define TARGET_TAB 011
-#define TARGET_NEWLINE 012
-#define TARGET_VT 013
-#define TARGET_FF 014
-#define TARGET_CR 015
-
-
-
 #define TRAMPOLINE_TEMPLATE(FILE) \
   internal_error ("Trampolines not supported\n")
 

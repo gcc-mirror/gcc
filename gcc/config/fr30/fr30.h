@@ -341,14 +341,6 @@ extern int target_flags;
    default with the options `-fsigned-char' and `-funsigned-char'.  */
 #define DEFAULT_SIGNED_CHAR 1
 
-#define TARGET_BELL     0x7	/*  '\a'  */
-#define TARGET_BS	0x8	/*  '\b'  */
-#define TARGET_TAB	0x9	/*  '\t'  */
-#define TARGET_NEWLINE	0xa	/*  '\n'  */
-#define TARGET_VT	0xb	/*  '\v'  */
-#define TARGET_FF	0xc	/*  '\f'  */
-#define TARGET_CR	0xd	/*  '\r'  */
-
 /*}}}*/ 
 /*{{{  REGISTER BASICS.  */ 
 

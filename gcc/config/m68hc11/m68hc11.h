@@ -345,15 +345,6 @@ extern struct processor_costs *m68hc11_cost;
    where TARGET_SHORT is not available.  */
 #define WCHAR_TYPE              "short int"
 #define WCHAR_TYPE_SIZE         16
-
-/* Define results of standard character escape sequences.  */
-#define TARGET_BELL		007
-#define TARGET_BS		010
-#define TARGET_TAB		011
-#define TARGET_NEWLINE		012
-#define TARGET_VT		013
-#define TARGET_FF		014
-#define TARGET_CR		015
 
 
 /* Standard register usage.  */

@@ -304,15 +304,6 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
    On the NEC V850, loads do sign extension, so make this default. */
 #define DEFAULT_SIGNED_CHAR 1
-
-/* Define results of standard character escape sequences.  */
-#define TARGET_BELL 007
-#define TARGET_BS 010
-#define TARGET_TAB 011
-#define TARGET_NEWLINE 012
-#define TARGET_VT 013
-#define TARGET_FF 014
-#define TARGET_CR 015
 
 /* Standard register usage.  */
 

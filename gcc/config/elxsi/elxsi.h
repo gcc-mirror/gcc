@@ -921,15 +921,6 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_OPEN_PAREN "("
 #define ASM_CLOSE_PAREN ")"
 
-/* Define results of standard character escape sequences.  */
-#define TARGET_BELL 007
-#define TARGET_BS 010
-#define TARGET_TAB 011
-#define TARGET_NEWLINE 012
-#define TARGET_VT 013
-#define TARGET_FF 014
-#define TARGET_CR 015
-
 /* Print an instruction operand X on file FILE.
    CODE is the code from the %-spec that requested printing this operand;
    if `%z3' was used to print operand 3, then CODE is 'z'.  */

@@ -2514,17 +2514,6 @@ do { fprintf (asm_out_file, "\t.sdef\t");		\
 	      "%s\t.val\t.%s\t.scl\t-1%s\t.endef\n",	\
 	      SDB_DELIM, SDB_DELIM, SDB_DELIM); } while (0)
 
-
-/* Define results of standard character escape sequences.  */
-
-#define TARGET_BELL 007
-#define TARGET_BS 010
-#define TARGET_TAB 011
-#define TARGET_NEWLINE 012
-#define TARGET_VT 013
-#define TARGET_FF 014
-#define TARGET_CR 015
-
 /* This is the kind of divide that is easiest to do in the general case.  */
 
 #define EASY_DIV_EXPR TRUNC_DIV_EXPR

@@ -2721,15 +2721,6 @@ extern int making_const_table;
                  (LOG), (MAX_SKIP));				\
     }
 #endif
-
-/* Target characters.  */
-#define TARGET_BELL	007
-#define TARGET_BS	010
-#define TARGET_TAB	011
-#define TARGET_NEWLINE	012
-#define TARGET_VT	013
-#define TARGET_FF	014
-#define TARGET_CR	015
 
 /* Only perform branch elimination (by making instructions conditional) if
    we're optimising.  Otherwise it's of no use anyway.  */
