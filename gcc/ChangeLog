@@ -1,3 +1,10 @@
+2004-08-17  James E Wilson  <wilson@specifixinc.com>
+
+	* config/mips/mips.c (gen_conditional_move): Use GET_MODE (op0) instead
+	of VOIDmode for comparison code mode.
+	* config/mips/mips.md: For conditional move patterns, use mode of
+	first compare operand for comparison mode, instead of VOIDmode.
+	
 2004-08-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15871
