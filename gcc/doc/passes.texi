@@ -661,13 +661,6 @@ Global register allocation.  This pass allocates hard registers for
 the remaining pseudo registers (those whose life spans are not
 contained in one basic block).  The pass is located in @file{global.c}.
 
-@item
-Graph coloring register allocator.  The files @file{ra.c}, @file{ra-build.c},
-@file{ra-colorize.c}, @file{ra-debug.c}, @file{ra-rewrite.c} together with
-the header @file{ra.h} contain another register allocator, which is used
-when the option @option{-fnew-ra} is given.  In that case it is run instead
-of the above mentioned local and global register allocation passes.
-
 @cindex reloading
 @item
 Reloading.  This pass renumbers pseudo registers with the hardware
