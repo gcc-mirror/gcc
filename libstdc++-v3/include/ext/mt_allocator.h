@@ -232,7 +232,7 @@ namespace __gnu_cxx
          * Requests larger than _S_max_bytes are handled by
          * new/delete directly
          */
-        if (__n > _S_max_bytes)
+        if (__n * sizeof(_Tp) > _S_max_bytes)
           {
             void* __ret = malloc(__n * sizeof(_Tp));
             if (!__ret)
@@ -263,7 +263,7 @@ namespace __gnu_cxx
         /*
          * Round up to power of 2 and figure out which bin to use
          */
-        size_t bin = _S_binmap[__n];
+        size_t bin = _S_binmap[__n * sizeof(_Tp)];
 
 #ifdef __GTHREADS
         size_t thread_id = _S_get_thread_id();
@@ -408,7 +408,7 @@ namespace __gnu_cxx
          * Requests larger than _S_max_bytes are handled by
          * malloc/free directly
          */
-        if (__n > _S_max_bytes)
+        if (__n * sizeof(_Tp) > _S_max_bytes)
           {
             free(__p);
             return;
@@ -417,7 +417,7 @@ namespace __gnu_cxx
         /*
          * Round up to power of 2 and figure out which bin to use
          */
-        size_t bin = _S_binmap[__n];
+        size_t bin = _S_binmap[__n * sizeof(_Tp)];
 
 #ifdef __GTHREADS
         size_t thread_id = _S_get_thread_id();
@@ -607,14 +607,8 @@ namespace __gnu_cxx
 
           /*
            * Initialize per thread key to hold pointer to
-           * _S_thread_freelist NOTE! Here's an ugly workaround - if
-           * _S_thread_key_destr is not explicitly called at least
-           * once it won't be linked into the application. This is the
-           * behavior of template methods and __gthread_key_create()
-           * takes only a pointer to the function and does not cause
-           * the compiler to create an instance.
+           * _S_thread_freelist
            */
-          _S_thread_key_destr(NULL);
           __gthread_key_create(&_S_thread_key, _S_thread_key_destr);
         }
 #endif
@@ -647,7 +641,6 @@ namespace __gnu_cxx
 
           if (!_S_bin[bin].free)
             __throw_bad_alloc();
-
           _S_bin[bin].used = (size_t*) malloc(sizeof(size_t) * __n);
 
           if (!_S_bin[bin].used)
