@@ -1,5 +1,5 @@
 /* Definitions for Bytecode Interpreter.
-   Copyright (C) 1993 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -124,7 +124,7 @@ struct bytecode
    DEST offset by OFFSET bits. */
 
 
-#ifdef BYTES_BIG_ENDIAN
+#if BYTES_BIG_ENDIAN
 
 #define SHIFT_IN_BITS(DEST, SOURCE, OFFSET, NBITS)		\
   (DEST = ((DEST) << (NBITS))					\
