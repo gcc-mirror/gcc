@@ -1,3 +1,12 @@
+2002-06-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (FIRST, LAST, CUR, RLIMIT): New.
+	(struct cpp_context): Add traditional fields.
+	* cppmacro.c (paste_all_tokens, push_ptoken_context,
+	push_token_context, cpp_get_token, _cpp_backup_tokens): Update.
+	* cpptrad.c (skip_comment, lex_identifier,
+	_cpp_read_logical_line_trad, scan_out_logical_line): Update.
+
 2002-06-04  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* gbl-ctors.h: Fix formatting.

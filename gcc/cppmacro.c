@@ -425,9 +425,9 @@ paste_all_tokens (pfile, lhs)
 	 inserted.  In either case, the constraints to #define
 	 guarantee we have at least one more token.  */
       if (context->direct_p)
-	rhs = context->first.token++;
+	rhs = FIRST (context).token++;
       else
-	rhs = *context->first.ptoken++;
+	rhs = *FIRST (context).ptoken++;
 
       if (rhs->type == CPP_PADDING)
 	abort ();
@@ -896,8 +896,8 @@ push_ptoken_context (pfile, macro, buff, first, count)
   context->direct_p = false;
   context->macro = macro;
   context->buff = buff;
-  context->first.ptoken = first;
-  context->last.ptoken = first + count;
+  FIRST (context).ptoken = first;
+  LAST (context).ptoken = first + count;
 }
 
 /* Push a list of tokens.  */
@@ -913,8 +913,8 @@ push_token_context (pfile, macro, first, count)
   context->direct_p = true;
   context->macro = macro;
   context->buff = NULL;
-  context->first.token = first;
-  context->last.token = first + count;
+  FIRST (context).token = first;
+  LAST (context).token = first + count;
 }
 
 /* Expand an argument ARG before replacing parameters in a
@@ -1004,12 +1004,12 @@ cpp_get_token (pfile)
       /* Context->prev == 0 <=> base context.  */
       if (!context->prev)
 	result = _cpp_lex_token (pfile);
-      else if (context->first.token != context->last.token)
+      else if (FIRST (context).token != LAST (context).token)
 	{
 	  if (context->direct_p)
-	    result = context->first.token++;
+	    result = FIRST (context).token++;
 	  else
-	    result = *context->first.ptoken++;
+	    result = *FIRST (context).ptoken++;
 
 	  if (result->flags & PASTE_LEFT)
 	    {
@@ -1118,9 +1118,9 @@ _cpp_backup_tokens (pfile, count)
       if (count != 1)
 	abort ();
       if (pfile->context->direct_p)
-	pfile->context->first.token--;
+	FIRST (pfile->context).token--;
       else
-	pfile->context->first.ptoken--;
+	FIRST (pfile->context).ptoken--;
     }
 }
 

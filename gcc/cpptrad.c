@@ -23,7 +23,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Lexing TODO: Handle -C, maybe -CC, and space in escaped newlines.
    Stop cpplex.c from recognizing comments and directives during its
-   lexing pass.  */
+   lexing pass.  Get rid of line_base usage - seems pointless?  */
 
 static const uchar *handle_newline PARAMS ((cpp_reader *, const uchar *));
 static const uchar *skip_escaped_newlines PARAMS ((cpp_reader *,
@@ -90,8 +90,8 @@ skip_comment (pfile, cur)
      const uchar *cur;
 {
   unsigned int from_line = pfile->line;
-  unsigned int c = 0, prevc;
-  const uchar *limit = pfile->buffer->rlimit;
+  unsigned int c = 0, prevc = 0;
+  const uchar *limit = RLIMIT (pfile->context);
 
   while (cur < limit)
     {
@@ -138,7 +138,7 @@ lex_identifier (pfile, cur)
     }
   while (ISIDNUM (*cur));
 
-  pfile->buffer->cur = cur;
+  CUR (pfile->context) = cur;
   len = out - pfile->trad_out_cur;
   pfile->trad_out_cur = out;
   return (cpp_hashnode *) ht_lookup (pfile->hash_table, pfile->trad_out_cur,
@@ -206,8 +206,12 @@ _cpp_read_logical_line_trad (pfile)
 	return false;
     }
 
+  CUR (pfile->context) = buffer->cur;
+  RLIMIT (pfile->context) = buffer->rlimit;
   pfile->trad_out_cur = pfile->trad_out_base;
   scan_out_logical_line (pfile);
+  buffer->cur = CUR (pfile->context);
+
   pfile->trad_line = pfile->line;
   pfile->line = first_line;
   _cpp_overlay_buffer (pfile, pfile->trad_out_base,
@@ -222,12 +226,12 @@ static void
 scan_out_logical_line (pfile)
      cpp_reader *pfile;
 {
-  cpp_buffer *buffer = pfile->buffer;
-  const uchar *cur = buffer->cur;
+  cpp_context *context = pfile->context;
+  const uchar *cur = CUR (context);
   unsigned int c, quote = 0;
   uchar *out;
 
-  check_output_buffer (pfile, buffer->rlimit - cur);
+  check_output_buffer (pfile, RLIMIT (context) - cur);
   out = pfile->trad_out_cur;
 
   for (;;)
@@ -240,20 +244,20 @@ scan_out_logical_line (pfile)
       switch (c)
 	{
 	case '\0':
-	  if (cur - 1 != buffer->rlimit)
+	  if (cur - 1 != RLIMIT (context))
 	    break;
 	  cur--;
-	  if (!buffer->from_stage3)
+	  if (!pfile->buffer->from_stage3)
 	    cpp_error (pfile, DL_PEDWARN, "no newline at end of file");
 	  pfile->line++;
-	  if (0)
-	    {
-	    case '\r': case '\n':
-	      cur = handle_newline (pfile, cur - 1);
-	    }
+	  goto finish_output;
+
+	case '\r': case '\n':
+	  cur = handle_newline (pfile, cur - 1);
+	finish_output:
 	  out[-1] = '\n';
 	  out[0] = '\0';
-	  buffer->cur = cur;
+	  CUR (context) = cur;
 	  pfile->trad_out_cur = out;
 	  return;
 
@@ -306,7 +310,7 @@ scan_out_logical_line (pfile)
 	    pfile->trad_out_cur = --out;
 	    node = lex_identifier (pfile, cur - 1);
 	    out = pfile->trad_out_cur;
-	    cur = buffer->cur;
+	    cur = CUR (context);
 	  }
 	  break;
 
