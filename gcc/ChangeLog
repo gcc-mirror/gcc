@@ -1,3 +1,15 @@
+1999-11-23  Gavin Romig-Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (ISA_HAS_FP4,ISA_HAS_CONDMOVE,ISA_HAS_8CC): Split 
+	the second two from the first.
+	(CONDITIONAL_REGISTER_USAGE): Use ISA_HAS_8CC rather than ISA_HAS_FP4.
+	* config/mips/mips.md (movcc,reload_incc,reload_outcc,
+	conditional move): Use ISA_HAS_CONDMOVE or ISA_HAS_8CC rather than 
+	ISA_HAS_FP4.
+	* config/mips/mips.c (mips_move_1word,gen_conditional_branch,
+	override_options): Use ISA_HAS_CONDMOVE or ISA_HAS_8CC rather than
+	ISA_HAS_FP4.
+
 Tue Nov 23 11:15:04 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (call_internal_symref, call_value_internal_symref): No mode

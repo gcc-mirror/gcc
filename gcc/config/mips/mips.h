@@ -566,16 +566,29 @@ extern void		sbss_section PARAMS ((void));
 #define HAVE_SQRT_P()		(mips_isa != 1)
 
 /* ISA has instructions for managing 64 bit fp and gp regs (eg. mips3). */
-#define ISA_HAS_64BIT_REGS	(mips_isa == 3 || mips_isa == 4 || mips_isa == 64)
+#define ISA_HAS_64BIT_REGS	(mips_isa == 3 || mips_isa == 4 	\
+                                )
 
 /* ISA has branch likely instructions (eg. mips2). */ 
 #define ISA_HAS_BRANCHLIKELY	(mips_isa != 1)
 
-/* ISA has the FP instructions introduced in mips4. */
-#define ISA_HAS_FP4             (mips_isa == 4)
+/* ISA has the conditional move instructions introduced in mips4. */
+#define ISA_HAS_CONDMOVE        (mips_isa == 4				\
+				 )
 
-/* ISA has the non-FP conditional move instructions introduced in mips4. */
-#define ISA_HAS_CONDMOVE        (mips_isa == 4)
+/* ISA has the mips4 FP condition code instructions: FP-compare to CC,
+   branch on CC, and move (both FP and non-FP) on CC. */
+#define ISA_HAS_8CC		(mips_isa == 4				\
+				)
+
+
+/* This is a catch all for the other new mips4 instructions: indexed load and
+   indexed prefetch instructions, the FP madd,msub,nmadd, and nmsub instructions, 
+   and the FP recip and recip sqrt instructions */
+#define ISA_HAS_FP4             (mips_isa == 4				\
+				)
+
+
 
 /* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
    -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
@@ -645,7 +658,7 @@ do									\
 	for (regno = ST_REG_FIRST; regno <= ST_REG_LAST; regno++)	\
 	  fixed_regs[regno] = call_used_regs[regno] = 1;		\
       }									\
-    else if (! ISA_HAS_FP4)						\
+    else if (! ISA_HAS_8CC)						\
       {									\
 	int regno;							\
 									\
