@@ -376,7 +376,6 @@ Tue Mar 19 14:12:32 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(movqi): Use gen_lowpart in place of gen_rtx_SUBREG.
 	Replace gen_rtx (SUBREG) with gen_rtx_SUBREG.
 
->>>>>>> 1.13452
 2002-03-18  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.h (PREDICATE_CODES): Add PARALLEL to
