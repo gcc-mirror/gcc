@@ -1875,10 +1875,15 @@ gfc_match_end (gfc_statement * st)
 
   if (gfc_match_eos () == MATCH_YES)
     {
+      state = gfc_current_state ();
 
       if (*st == ST_ENDIF || *st == ST_ENDDO || *st == ST_END_SELECT
 	  || *st == ST_END_INTERFACE || *st == ST_END_FORALL
-	  || *st == ST_END_WHERE)
+	  || *st == ST_END_WHERE
+	  || /* A contained procedure requires END FUNCTION/SUBROUTINE.  */
+	     ((state == COMP_FUNCTION || state == COMP_SUBROUTINE)
+              && gfc_state_stack->previous != NULL
+              && gfc_state_stack->previous->state == COMP_CONTAINS))
 	{
 
 	  gfc_error ("%s statement expected at %C",
