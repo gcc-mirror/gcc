@@ -969,79 +969,75 @@ class __normal_iterator
                     iterator_traits<_Iterator>::pointer,
                     iterator_traits<_Iterator>::reference>
 {
+
+protected:
+  _Iterator _M_current;
+
 public:
-
   typedef __normal_iterator<_Iterator, _Container> normal_iterator_type;
+  typedef iterator_traits<_Iterator>  			__traits_type;
+  typedef typename __traits_type::iterator_category 	iterator_category;
+  typedef typename __traits_type::value_type 		value_type;
+  typedef typename __traits_type::difference_type 	difference_type;
+  typedef typename __traits_type::pointer          	pointer;
+  typedef typename __traits_type::reference 		reference;
 
-  inline __normal_iterator() : _M_current() { }
+  __normal_iterator() : _M_current(_Iterator()) { }
 
-  inline explicit __normal_iterator(const _Iterator& __i)
-    : _M_current(__i) { }
+  explicit __normal_iterator(const _Iterator& __i) : _M_current(__i) { }
 
   // Allow iterator to const_iterator conversion
   template<typename _Iter>
   inline __normal_iterator(const __normal_iterator<_Iter, _Container>& __i)
     : _M_current(__i.base()) { }
 
-  // forward iterator requirements
+  // Forward iterator requirements
+  reference
+  operator*() const { return *_M_current; }
 
-  inline reference
-  operator*() const
-    { return *_M_current; }
+  pointer
+  operator->() const { return _M_current; }
 
-  inline pointer
-  operator->() const
-    { return _M_current; }
+  normal_iterator_type&
+  operator++() { ++_M_current; return *this; }
 
-  inline normal_iterator_type&
-  operator++()
-    { ++_M_current; return *this; }
+  normal_iterator_type
+  operator++(int) { return __normal_iterator(_M_current++); }
 
-  inline normal_iterator_type
-  operator++(int)
-    { return __normal_iterator(_M_current++); }
+  // Bidirectional iterator requirements
+  normal_iterator_type&
+  operator--() { --_M_current; return *this; }
 
-  // bidirectional iterator requirements
+  normal_iterator_type
+  operator--(int) { return __normal_iterator(_M_current--); }
 
-  inline normal_iterator_type&
-  operator--()
-    { --_M_current; return *this; }
-
-  inline normal_iterator_type
-  operator--(int)
-    { return __normal_iterator(_M_current--); }
-
-  // random access iterator requirements
-
-  inline reference
+  // Random access iterator requirements
+  reference
   operator[](const difference_type& __n) const
-    { return _M_current[__n]; }
+  { return _M_current[__n]; }
 
-  inline normal_iterator_type&
+  normal_iterator_type&
   operator+=(const difference_type& __n)
-    { _M_current += __n; return *this; }
+  { _M_current += __n; return *this; }
 
-  inline normal_iterator_type
+  normal_iterator_type
   operator+(const difference_type& __n) const
-    { return __normal_iterator(_M_current + __n); }
+  { return __normal_iterator(_M_current + __n); }
 
-  inline normal_iterator_type&
+  normal_iterator_type&
   operator-=(const difference_type& __n)
-    { _M_current -= __n; return *this; }
+  { _M_current -= __n; return *this; }
 
-  inline normal_iterator_type
+  normal_iterator_type
   operator-(const difference_type& __n) const
-    { return __normal_iterator(_M_current - __n); }
+  { return __normal_iterator(_M_current - __n); }
 
-  inline difference_type
+  difference_type
   operator-(const normal_iterator_type& __i) const
-    { return _M_current - __i._M_current; }
+  { return _M_current - __i._M_current; }
 
-  const _Iterator& base() const
-    { return _M_current; }
-
-protected:
-  _Iterator _M_current;
+  const _Iterator& 
+  base() const { return _M_current; }
 };
 
 // forward iterator requirements

@@ -34,6 +34,7 @@ toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
 toolexeclib_LTLIBRARIES = libstdc++.la
+EXTRA_LTLIBRARIES = libinst-string.la libinst-wstring.la
 
 
 WERROR = -Werror
@@ -212,8 +213,7 @@ sources = \
 	complex.cc complexf.cc complexl.cc complex_io.cc \
 	stdexcept.cc ios.cc stdstreams.cc strstream.cc \
 	locale.cc localename.cc  \
-	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc \
-	$(string_sources) $(wstring_sources)
+	locale-inst.cc stl-inst.cc misc-inst.cc valarray-inst.cc 
 
 VPATH += $(top_srcdir) $(top_srcdir)/std $(top_srcdir)/src
 VPATH += $(top_srcdir)/@ctype_include_dir@
@@ -224,9 +224,17 @@ EXTRA_sources = string-inst.cc
 
 libstdc___la_SOURCES = $(sources)
 
-libstdc___la_LIBADD = ../math/libmath.la ../libio/libio.la 
+libinst_string_la_SOURCES = $(string_sources)
+
+libinst_wstring_la_SOURCES = $(wstring_sources)
+
+libstdc___la_LIBADD = \
+	../math/libmath.la ../libio/libio.la \
+	libinst-string.la @libinst_wstring_la@
 
 libstdc___la_LDFLAGS = -version-info 3:0:0 -lm
+
+libstdc___la_DEPENDENCIES = $(libstdc___la_LIBADD)
 
 
 # We cannot use the default rules to install headers since we cannot

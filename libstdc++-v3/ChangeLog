@@ -1,3 +1,29 @@
+2000-04-24  Nathan Myers  <ncm@cantrip.org>
+
+	* src/string-inst.cc: More fixing.
+
+2000-04-24  Benjamin Kosnik  <bkoz@gnu.org>
+
+	* bits/stl_iterator.h: Pedantic fixing.
+	* bits/std_sstream.h: And here.
+	* bits/string.tcc: And here.
+
+2000-04-24  Felix Natter <fnatter@gmx.net> 
+
+	* docs/17_intro/howto.html: Add bits.
+	* docs/17_intro/porting-howto.html: New file.
+	
+2000-04-24  Branko Cibej  <branko.cibej@hermes.si>
+
+        * acinclude.m4(GLIBCPP_CHECK_WCHAR_T_SUPPORT): Expand
+        @libinst_wstring_la@ to libinst-wstring.la when specializing for
+        wchar_t, to empty string otherwise.
+        * src/Makefile.am: (EXTRA_LTLIBRARIES): New.
+        (sources): Remove $(string_sources) and $(wstring_sources).
+        (libstdc___la_LIBADD): Add libinst-string.la and @libinst_wstring_la@.
+        (libstdc___la_DEPENDENCIES): New.
+        (libinst_string_la_SOURCES, libinst_wstring_la_SOURCES): New.
+
 2000-04-20  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* bits/std_sstream.h: Tweak formatting.
