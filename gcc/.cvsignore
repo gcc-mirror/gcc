@@ -1,7 +1,3 @@
-c-parse.y
-c-parse.h
-c-parse.c
-tradcif.c
 cscope.files
 cscope.out
 cscope.in.out

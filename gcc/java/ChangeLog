@@ -1,3 +1,7 @@
+2003-11-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* .cvsignore: Delete.
+
 2003-10-28  Frank Ch. Eigler  <fche@redhat.com>
 
 	* verify.c (verify_jvm_instructions): Don't warn about legal

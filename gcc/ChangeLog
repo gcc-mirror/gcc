@@ -1,3 +1,8 @@
+2003-11-01  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* .cvsignore: Remove c-parse* and tradcif.c.
+	* objc/.cvsignore: Delete.
+
 2003-11-01  Roger Sayle  <roger@eyesopen.com>
 
 	* unwind-sjlj.c (_Unwind_GetCFA): Return (_Unwind_Word)0 instead
