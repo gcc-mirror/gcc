@@ -1,3 +1,7 @@
+2005-01-05  Roger Sayle  <roger@eyesopen.com>
+
+	* ifcvt.c (find_if_case_1): Revert 2005-01-04 change.
+
 2005-01-05  Jan Hubicka  <jh@suse.cz>
 	    Richard Henderson  <rth@redhat.com>
 
