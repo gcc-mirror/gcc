@@ -1,3 +1,19 @@
+2001-11-19  John Wilkinson <johnw@research.att.com>
+
+	* dump.c (dump_op): New function.
+	(cp_dump_tree): Dump CLASSTYPE_TEMPLATE_SPECIALIZATION.  Use
+	dump_op.  Dump DECL_MUTABLE, access and staticness for VAR_DECLs.
+	DECL_PURE_VIRTUAL_P, DECL_VIRTUAL_P,
+	
+2001-11-19  Mark Mitchell  <mark@codesourcery.com>
+
+	PR4629
+	* semantics.c (finish_sizeof): Make sure that expression created
+	while processing a template do not have a type.
+	(finish_alignof): Likewise.
+	* typeck.c (c_sizeof): Likewise.
+	(expr_sizeof): Likewise.
+
 2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* lex.c (cxx_finish): Call c_common_finish.

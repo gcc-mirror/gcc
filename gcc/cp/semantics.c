@@ -2196,7 +2196,7 @@ finish_sizeof (t)
      tree t;
 {
   if (processing_template_decl)
-    return build_min (SIZEOF_EXPR, sizetype, t);
+    return build_min_nt (SIZEOF_EXPR, t);
 
   return TYPE_P (t) ? c_sizeof (t) : expr_sizeof (t);
 }
@@ -2209,7 +2209,7 @@ finish_alignof (t)
      tree t;
 {
   if (processing_template_decl)
-    return build_min (ALIGNOF_EXPR, sizetype, t);
+    return build_min_nt (ALIGNOF_EXPR, t);
 
   return TYPE_P (t) ? c_alignof (t) : c_alignof_expr (t);
 }

@@ -28,6 +28,9 @@ Boston, MA 02111-1307, USA.  */
 static void dump_access
   PARAMS ((dump_info_p, tree));
 
+static void dump_op
+  PARAMS ((dump_info_p, tree));
+
 /* Dump a representation of the accessibility information associated
    with T.  */
 
@@ -42,6 +45,166 @@ dump_access (di, t)
     dump_string (di, "private");
   else
     dump_string (di, "public");
+}
+
+/* Dump a representation of the specific operator for an overloaded
+   operator associated with node t.
+*/
+
+static void
+dump_op (di, t)
+     dump_info_p di;
+     tree t;
+{
+  switch (DECL_OVERLOADED_OPERATOR_P (t)) {
+    case NEW_EXPR:
+      dump_string (di, "new");
+      break;
+    case VEC_NEW_EXPR:
+      dump_string (di, "vecnew");
+      break;
+    case DELETE_EXPR:
+      dump_string (di, "delete");
+      break;
+    case VEC_DELETE_EXPR:
+      dump_string (di, "vecdelete");
+      break;
+    case CONVERT_EXPR:
+      dump_string (di, "pos");
+      break;
+    case NEGATE_EXPR:
+      dump_string (di, "neg");
+      break;
+    case ADDR_EXPR:
+      dump_string (di, "addr");
+      break;
+    case INDIRECT_REF:
+      dump_string(di, "deref");
+      break;
+    case BIT_NOT_EXPR:
+      dump_string(di, "not");
+      break;
+    case TRUTH_NOT_EXPR:
+      dump_string(di, "lnot");
+      break;
+    case PREINCREMENT_EXPR:
+      dump_string(di, "preinc");
+      break;
+    case PREDECREMENT_EXPR:
+      dump_string(di, "predec");
+      break;
+    case PLUS_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "plusassign");
+      else
+        dump_string(di, "plus");
+      break;
+    case MINUS_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "minusassign");
+      else
+        dump_string(di, "minus");
+      break;
+    case MULT_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "multassign");
+      else
+        dump_string (di, "mult");
+      break;
+    case TRUNC_DIV_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "divassign");
+      else
+        dump_string (di, "div");
+      break;
+    case TRUNC_MOD_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+         dump_string (di, "modassign");
+      else
+        dump_string (di, "mod");
+      break;
+    case BIT_AND_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "andassign");
+      else
+        dump_string (di, "and");
+      break;
+    case BIT_IOR_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "orassign");
+      else
+        dump_string (di, "or");
+      break;
+    case BIT_XOR_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "xorassign");
+      else
+        dump_string (di, "xor");
+      break;
+    case LSHIFT_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "lshiftassign");
+      else
+        dump_string (di, "lshift");
+      break;
+    case RSHIFT_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "rshiftassign");
+      else
+        dump_string (di, "rshift");
+      break;
+    case EQ_EXPR:
+      dump_string (di, "eq");
+      break;
+    case NE_EXPR:
+      dump_string (di, "ne");
+      break;
+    case LT_EXPR:
+      dump_string (di, "lt");
+      break;
+    case GT_EXPR:
+      dump_string (di, "gt");
+      break;
+    case LE_EXPR:
+      dump_string (di, "le");
+      break;
+    case GE_EXPR:
+      dump_string (di, "ge");
+      break;
+    case TRUTH_ANDIF_EXPR:
+      dump_string (di, "land");
+      break;
+    case TRUTH_ORIF_EXPR:
+      dump_string (di, "lor");
+      break;
+    case COMPOUND_EXPR:
+      dump_string (di, "compound");
+      break;
+    case MEMBER_REF:
+      dump_string (di, "memref");
+      break;
+    case COMPONENT_REF:
+      dump_string (di, "ref");
+      break;
+    case ARRAY_REF:
+      dump_string (di, "subs");
+      break;
+    case POSTINCREMENT_EXPR:
+      dump_string (di, "postinc");     
+      break;
+    case POSTDECREMENT_EXPR:
+      dump_string (di, "postdec");
+      break;
+    case CALL_EXPR:
+      dump_string (di, "call");
+      break;
+    case NOP_EXPR:
+      if (DECL_ASSIGNMENT_OPERATOR_P (t))
+        dump_string (di, "assign");
+      break;
+    default:
+      break;
+  }
 }
 
 int
@@ -101,6 +264,8 @@ cp_dump_tree (di, t)
 	}
 
       dump_child ("vfld", TYPE_VFIELD (t));
+      if (CLASSTYPE_TEMPLATE_SPECIALIZATION(t))
+        dump_string(di, "spec");
 
       if (!dump_flag (di, TDF_SLIM, t))
 	{
@@ -119,22 +284,37 @@ cp_dump_tree (di, t)
 
     case FIELD_DECL:
       dump_access (di, t);
+      if (DECL_MUTABLE_P (t))
+        dump_string(di, "mutable");
       break;
+
+    case VAR_DECL:
+      if (TREE_CODE (CP_DECL_CONTEXT (t)) == RECORD_TYPE)
+        dump_access (di, t);
+      if (TREE_STATIC (t) && !TREE_PUBLIC (t))
+        dump_string (di, "static");
+      break; 
 
     case FUNCTION_DECL:
       if (!DECL_THUNK_P (t))
 	{
+          if (DECL_OVERLOADED_OPERATOR_P (t)) {
+	    dump_string (di, "operator");
+            dump_op (di, t);
+          }
 	  if (DECL_FUNCTION_MEMBER_P (t)) 
 	    {
 	      dump_string (di, "member");
 	      dump_access (di, t);
 	    }
+          if (DECL_PURE_VIRTUAL_P (t))
+            dump_string (di, "pure");
+          if (DECL_VIRTUAL_P (t))
+            dump_string (di, "virtual");
 	  if (DECL_CONSTRUCTOR_P (t))
 	    dump_string (di, "constructor");
 	  if (DECL_DESTRUCTOR_P (t))
 	    dump_string (di, "destructor");
-	  if (DECL_OVERLOADED_OPERATOR_P (t))
-	    dump_string (di, "operator");
 	  if (DECL_CONV_FN_P (t))
 	    dump_string (di, "conversion");
 	  if (DECL_GLOBAL_CTOR_P (t) || DECL_GLOBAL_DTOR_P (t))
