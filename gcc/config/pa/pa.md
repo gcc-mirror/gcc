@@ -1,5 +1,6 @@
 ;;- Machine description for HP PA-RISC architecture for GNU C compiler
-;;   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+;;   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997
+;;   Free Software Foundation, Inc.
 ;;   Contributed by the Center for Software Science at the University
 ;;   of Utah.
 
@@ -1499,7 +1500,7 @@
   if (GET_CODE (operands[1]) == LABEL_REF
       && insn_addresses
       && abs (insn_addresses[INSN_UID (XEXP (operands[1], 0))]
-	        - insn_current_address) < 8100)
+	        - insn_addresses[INSN_UID (insn)]) < 8100)
     {
       /* Prefixing with R% here is wrong, it extracts just 11 bits and is
 	 always non-negative.  */
