@@ -1432,6 +1432,12 @@ output_epilog (file, size)
        language_string, so we can't detect it anyways.  */
     if (! strcmp (language_string, "GNU C"))
       i = 0;
+    else if (! strcmp (language_string, "GNU F77"))
+      i = 1;
+    else if (! strcmp (language_string, "GNU Ada"))
+      i = 3;
+    else if (! strcmp (language_string, "GNU PASCAL"))
+      i = 2;
     else if (! strcmp (language_string, "GNU C++"))
       i = 9;
     else
