@@ -1,3 +1,7 @@
+Thu Dec 11 11:20:59 1997  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (target frags): Add *-linux-gnu.
+
 Fri Dec  5 16:22:15 1997  H.J. Lu  (hjl@gnu.org)
 
 	* streambuf.cc (streambuf::~streambuf): Don't delete _lock

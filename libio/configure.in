@@ -64,6 +64,17 @@ case "${target}" in
     cp ${srcdir}/config/linuxaxp1-libc-lock.h libc-lock.h
     cp ${srcdir}/config/linuxaxp1-stdio-lock.h stdio-lock.h
     ;;
+  *-linux-gnu)
+    # We have a correct libc-lock.h in glibc 2.1 but not all glibc 2.0.
+    # Create a wrapper if necessary.
+    (echo "#include <bits/libc-lock.h>" | ${CC-cc} -E -) >/dev/null 2>&1 ||
+      {
+	echo "#include_next <libc-lock.h>" > libc-lock.h
+	echo 'asm (".weak _pthread_cleanup_pop_restore");' >> libc-lock.h
+	echo 'asm (".weak _pthread_cleanup_push_defer");' >> libc-lock.h
+
+      }
+    ;;
 esac
 
 for frag in ${frags}; do
