@@ -1,3 +1,9 @@
+Mon Jul 19 14:22:18 1999  Mark P. Mitchell  <mark@codesourcery.com>
+
+	* config/mips/iris6gld.h (MAKE_DECL_ONE_ONLY): Define.
+	(UNIQUE_SECTION_P): Likewise.
+	(UNIQUE_SECTION): Likewise.
+
 1999-07-19  Linas Vepstas  <linas@linas.org>
 
 	* config/i370/README: New file.
