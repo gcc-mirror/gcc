@@ -1,5 +1,6 @@
 2002-01-30  Richard Henderson  <rth@redhat.com>
 
+	PR opt/5076
 	* rtl.h (NOTE_INSN_LOOP_END_TOP_COND): New.
 	* rtl.c (note_insn_name): Update.
 	* emit-rtl.c (remove_unnecessary_notes): Kill it.
