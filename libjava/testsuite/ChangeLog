@@ -1,3 +1,8 @@
+2000-03-04  Anthony Green  <green@redhat.com>
+
+	* libjava.lang/PR160.java: New file.
+	* libjava.lang/PR160.out: New file.
+
 2000-02-28  Mo DeJong <mdejong@cygnus.com>
 
 	* libjava.compile/static_inner.java: New file.
