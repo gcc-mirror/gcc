@@ -1,3 +1,8 @@
+2004-01-26  David Jee  <djee@redhat.com>
+
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkComponentPeer.c
+	(find_bg_color_widget): For GtkButton, return its child.
+
 2004-01-26  Kim Ho  <kho@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GtkFramePeer.java (menuBarHeight): Mark
