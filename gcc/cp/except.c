@@ -60,38 +60,6 @@ static void initialize_handler_parm PARAMS ((tree));
 static tree expand_throw PARAMS ((tree));
 static int decl_is_java_type PARAMS ((tree decl, int err));
 
-#if 0
-/* This is the startup, and finish stuff per exception table.  */
-
-/* XXX - Tad: exception handling section */
-#ifndef EXCEPT_SECTION_ASM_OP
-#define EXCEPT_SECTION_ASM_OP	"section\t.gcc_except_table,\"a\",@progbits"
-#endif
-
-#ifdef EXCEPT_SECTION_ASM_OP
-
- /* on machines which support it, the exception table lives in another section,
-	but it needs a label so we can reference it...  This sets up that
-    label! */
-asm (EXCEPT_SECTION_ASM_OP);
-exception_table __EXCEPTION_TABLE__[1] = { (void*)0, (void*)0, (void*)0 };
-asm (TEXT_SECTION_ASM_OP);
-
-#endif /* EXCEPT_SECTION_ASM_OP */
-
-#ifdef EXCEPT_SECTION_ASM_OP
-
- /* we need to know where the end of the exception table is... so this
-    is how we do it! */
-
-asm (EXCEPT_SECTION_ASM_OP);
-exception_table __EXCEPTION_END__[1] = { (void*)-1, (void*)-1, (void*)-1 };
-asm (TEXT_SECTION_ASM_OP);
-
-#endif /* EXCEPT_SECTION_ASM_OP */
-
-#endif
-
 #include "decl.h"
 #include "insn-flags.h"
 #include "obstack.h"
