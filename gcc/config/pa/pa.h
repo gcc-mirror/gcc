@@ -887,6 +887,7 @@ struct hppa_args {int words, nargs_prototype, indirect; };
 
 #define INIT_CUMULATIVE_INCOMING_ARGS(CUM,FNTYPE,IGNORE) \
   (CUM).words = 0,				\
+  (CUM).indirect = 0,				\
   (CUM).nargs_prototype = 1000
 
 /* Figure out the size in words of the function argument. */
