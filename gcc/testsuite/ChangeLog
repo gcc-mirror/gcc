@@ -1,3 +1,7 @@
+2002-11-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20021119-1.c: New test.
+
 2002-11-19  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* gcc.dg/duff-1.c: New test.
