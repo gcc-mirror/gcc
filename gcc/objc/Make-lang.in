@@ -179,7 +179,7 @@ $(srcdir)/objc/libobjc_entry.o: $(srcdir)/objc/libobjc_entry.c $(GCC_PASSES)
 
 # Build the Objective C runtime library.
 libobjc.a: cc1obj specs stmp-int-hdrs libgcc2.ready \
- $(USE_COLLECT2) $(EXTRA_PARTS) $(OBJC_O)
+ $(USE_COLLECT2) $(EXTRA_PARTS) $(srcdir)/objc/runtime-info.h $(OBJC_O)
 	-rm -f libobjc.a
 	$(AR) $(AR_FLAGS) libobjc.a $(OBJC_O)
 	-if $(RANLIB_TEST) ; then $(RANLIB) libobjc.a; else true; fi
@@ -204,6 +204,11 @@ libobjc.dll: libobjc_s.a $(srcdir)/objc/libobjc_entry.o
 		$(srcdir)/objc/libobjc_entry.o -lkernel32
 	$(DLLTOOL) --dllname libobjc.dll --def $(srcdir)/objc/libobjc.def \
 		--output-lib libobjc.a
+
+# Platform generated information needed by ObjC runtime
+$(srcdir)/objc/runtime-info.h: cc1obj
+	echo "" > emptyfile
+	./cc1obj -print-objc-runtime-info emptyfile >$@
 
 #
 # Build hooks:
