@@ -1,5 +1,5 @@
-/* Definitions of target machine for IA64.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+/* Definitions of target machine for IA-64.
+   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
