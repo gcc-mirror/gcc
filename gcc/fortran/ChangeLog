@@ -1,3 +1,8 @@
+2004-08-11  Paul Brook  <paul@codeourcery.com>
+
+	PR fortran/16917
+	* intrinsic.c (add_functions): Add dfloat as an alias for dble.
+
 2004-08-10  Richard Henderson  <rth@redhat.com>
 
 	* f95-lang.c (gfc_init_builtin_functions): Remove

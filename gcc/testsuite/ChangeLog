@@ -1,3 +1,8 @@
+2004-08-11  Steven G. Kargl  <kargls@comcast.net>
+
+	PR fortran/16917
+	* gfortran.dg/dfloat_1.f90: New test.
+
 2004-08-09  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc.dg/testsuite/gcc.dg/arm-eabi1.c: New test.
