@@ -1,9 +1,8 @@
-/* { dg-do run { target powerpc*-*-darwin* powerpc*-*-*altivec* } } */
-/* { dg-options "-maltivec" } */
-/* This test requires altivec, which means it'll fail on Darwin running
-   on G3. FIXME.  */
+/* { dg-do run { target powerpc*-*-darwin* powerpc*-*-*altivec* powerpc*-*-linux*} } */
+/* { dg-options "-maltivec -mabi=altivec -fno-inline" } */
 
 #include <stdarg.h>
+#include <signal.h>
 
 #define vector __attribute__((mode(V4SI)))
 
@@ -54,7 +53,7 @@ void bar(vector unsigned int a, ...)
 }
 
 
-int main(void)
+int main1(void)
 {
   /* In this call, in the Darwin ABI, the first argument goes into v2
      the second one into r9-r10 and memory,
@@ -71,4 +70,21 @@ int main(void)
        (vector unsigned int){20,21,22,23},
        (vector unsigned int){30,31,32,33});
   return 0;
+}
+
+void 
+sig_ill_handler (int sig)
+{
+    exit(0);
+}
+
+int main (void)
+{
+  /* Exit on systems without altivec.  */
+  signal (SIGILL, sig_ill_handler);
+  /* Altivec instruction, 'vor %v0,%v0,%v0'.  */
+  asm volatile (".long 0x10000484");
+  signal (SIGILL, SIG_DFL);
+
+  return main1 ();
 }
