@@ -1,5 +1,14 @@
 2003-06-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/Font.java,
+	java/awt/Window.java,
+	java/awt/color/ColorSpace.java,
+	java/awt/datatransfer/StringSelection.java,
+	java/awt/image/ColorModel.java:
+	New versions from classpath.
+
+2003-06-24  Michael Koch  <konqueror@gmx.de>
+
 	* Makefile.am
 	(awt_java_source_files): Added new files:
 	javax/swing/plaf/basic/BasicSplitPaneDivider.java,

@@ -50,7 +50,7 @@ import java.util.ResourceBundle;
 /**
  * This class represents a top-level window with no decorations.
  *
- * @author Aaron M. Renn (arenn@urbanophile.com)
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Warren Levy  <warrenl@cygnus.com>
  */
 public class Window extends Container
@@ -79,7 +79,7 @@ public class Window extends Container
   Window()
   {
     setVisible(false);
-    setLayout((LayoutManager) new BorderLayout());
+    setLayout(new BorderLayout());
   }
 
   Window(GraphicsConfiguration gc)
