@@ -2582,12 +2582,15 @@ truthvalue_conversion (expr)
     }
 
   if (TREE_CODE (TREE_TYPE (expr)) == COMPLEX_TYPE)
-    return (build_binary_op
-	    ((TREE_SIDE_EFFECTS (expr)
-	      ? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
-	     truthvalue_conversion (build_unary_op (REALPART_EXPR, expr, 0)),
-	     truthvalue_conversion (build_unary_op (IMAGPART_EXPR, expr, 0)),
-	     0));
+    {
+      tree tem = save_expr (expr);
+      return (build_binary_op
+	      ((TREE_SIDE_EFFECTS (expr)
+		? TRUTH_OR_EXPR : TRUTH_ORIF_EXPR),
+	       truthvalue_conversion (build_unary_op (REALPART_EXPR, tem, 0)),
+	       truthvalue_conversion (build_unary_op (IMAGPART_EXPR, tem, 0)),
+	       0));
+    }
 
   return build_binary_op (NE_EXPR, expr, integer_zero_node, 1);
 }
