@@ -1,3 +1,10 @@
+2001-05-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-decl.c (finish_decl): Don't set DECL_C_HARD_REGISTER for
+	non-register variables.
+	* extend.texi: Document that asm-specifications do not make sense
+	for non-static local variables.
+
 2001-05-21  Jason Merrill  <jason_merrill@redhat.com>
 
 	* dbxout.c (MINIMAL_DEBUG, flag_minimal_debug): Lose.
