@@ -1748,7 +1748,7 @@ Used to indicate a template function.
 Encodes the C++ and Java @code{int} types.
 
 @item I
-Encodes typedef names of the form @code{int@var{n}_t, where @var{n} is a
+Encodes typedef names of the form @code{int@var{n}_t}, where @var{n} is a
 positive decimal number.  The @samp{I} is followed by either two
 hexidecimal digits, which encode the value of @var{n}, or by an
 arbitrary number of hexidecimal digits between underscores.  For
