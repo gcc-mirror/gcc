@@ -99,8 +99,6 @@ static void tree_cfg2vcg (FILE *);
 static void tree_merge_blocks (basic_block, basic_block);
 static bool tree_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
-static void group_case_labels (void);
-static void cleanup_dead_labels (void);
 static bool cleanup_control_flow (void);
 static bool cleanup_control_expr_graph (basic_block, block_stmt_iterator);
 static edge find_taken_edge_cond_expr (basic_block, tree);
@@ -769,7 +767,16 @@ update_eh_label (struct eh_region *region)
   tree old_label = get_eh_region_tree_label (region);
   if (old_label)
     {
-      tree new_label = label_for_bb[label_to_block (old_label)->index];
+      tree new_label;
+      basic_block bb = label_to_block (old_label);
+
+      /* ??? After optimizing, there may be EH regions with labels
+	 that have already been removed from the function body, so
+	 there is no basic block for them.  */
+      if (! bb)
+	return;
+
+      new_label = label_for_bb[bb->index];
       set_eh_region_tree_label (region, new_label);
     }
 }
@@ -791,7 +798,7 @@ main_block_label (tree label)
      2) Redirect all references to labels to the leading labels.
      3) Cleanup all useless labels.  */
 
-static void
+void
 cleanup_dead_labels (void)
 {
   basic_block bb;
@@ -924,7 +931,7 @@ cleanup_dead_labels (void)
    same label.
    Eg. three separate entries 1: 2: 3: become one entry 1..3:  */
 
-static void
+void
 group_case_labels (void)
 {
   basic_block bb;

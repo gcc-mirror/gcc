@@ -174,16 +174,6 @@ struct nesting GTY(())
 	     reverts to the saved target_temp_slot_level at the very
 	     end of the block.  */
 	  int block_target_temp_slot_level;
-	  /* True if we are currently emitting insns in an area of
-	     output code that is controlled by a conditional
-	     expression.  This is used by the cleanup handling code to
-	     generate conditional cleanup actions.  */
-	  int conditional_code;
-	  /* A place to move the start of the exception region for any
-	     of the conditional cleanups, must be at the end or after
-	     the start of the last unconditional cleanup, and before any
-	     conditional branch points.  */
-	  rtx last_unconditional_cleanup;
 	} GTY ((tag ("BLOCK_NESTING"))) block;
       /* For switch (C) or case (Pascal) statements.  */
       struct nesting_case
@@ -199,14 +189,6 @@ struct nesting GTY(())
 	  tree default_label;
 	  /* The expression to be dispatched on.  */
 	  tree index_expr;
-	  /* Type that INDEX_EXPR should be converted to.  */
-	  tree nominal_type;
-	  /* Name of this kind of statement, for warnings.  */
-	  const char *printname;
-	  /* Used to save no_line_numbers till we see the first case label.
-	     We set this to -1 when we see the first case label in this
-	     case statement.  */
-	  int line_number_status;
 	} GTY ((tag ("CASE_NESTING"))) case_stmt;
     } GTY ((desc ("%1.desc"))) data;
 };
@@ -234,32 +216,6 @@ do { struct nesting *target = STACK;			\
 	  nesting_stack = this->all; }			\
      while (this != target); } while (0)
 
-/* In some cases it is impossible to generate code for a forward goto
-   until the label definition is seen.  This happens when it may be necessary
-   for the goto to reset the stack pointer: we don't yet know how to do that.
-   So expand_goto puts an entry on this fixup list.
-   Each time a binding contour that resets the stack is exited,
-   we check each fixup.
-   If the target label has now been defined, we can insert the proper code.  */
-
-struct goto_fixup GTY(())
-{
-  /* Points to following fixup.  */
-  struct goto_fixup *next;
-  /* Points to the insn before the jump insn.
-     If more code must be inserted, it goes after this insn.  */
-  rtx before_jump;
-  /* The LABEL_DECL that this jump is jumping to, or 0
-     for break, continue or return.  */
-  tree target;
-  /* The BLOCK for the place where this goto was found.  */
-  tree context;
-  /* The CODE_LABEL rtx that this is jumping to.  */
-  rtx target_rtl;
-  /* Number of binding contours started in current function
-     before the label reference.  */
-  int block_start_count;
-};
 
 struct stmt_status GTY(())
 {
@@ -287,8 +243,6 @@ struct stmt_status GTY(())
   /* Location of last line-number note, whether we actually
      emitted it or not.  */
   location_t x_emit_locus;
-
-  struct goto_fixup *x_goto_fixup_chain;
 };
 
 #define block_stack (cfun->stmt->x_block_stack)
@@ -298,10 +252,6 @@ struct stmt_status GTY(())
 #define nesting_depth (cfun->stmt->x_nesting_depth)
 #define current_block_start_count (cfun->stmt->x_block_start_count)
 #define emit_locus (cfun->stmt->x_emit_locus)
-#define goto_fixup_chain (cfun->stmt->x_goto_fixup_chain)
-
-/* Nonzero if we are using EH to handle cleanups.  */
-int using_eh_for_cleanups_p = 0;
 
 static int n_occurrences (int, const char *);
 static bool decl_conflicts_with_clobbers_p (tree, const HARD_REG_SET);
@@ -316,25 +266,16 @@ static void expand_value_return (rtx);
 static void do_jump_if_equal (rtx, rtx, rtx, int);
 static int estimate_case_costs (case_node_ptr);
 static bool same_case_target_p (rtx, rtx);
-static void strip_default_case_nodes (case_node_ptr *, rtx);
 static bool lshift_cheap_p (void);
 static int case_bit_test_cmp (const void *, const void *);
 static void emit_case_bit_tests (tree, tree, tree, tree, case_node_ptr, rtx);
-static void group_case_nodes (case_node_ptr);
 static void balance_case_nodes (case_node_ptr *, case_node_ptr);
 static int node_has_low_bound (case_node_ptr, tree);
 static int node_has_high_bound (case_node_ptr, tree);
 static int node_is_bounded (case_node_ptr, tree);
-static void emit_jump_if_reachable (rtx);
 static void emit_case_nodes (rtx, case_node_ptr, rtx, tree);
 static struct case_node *case_tree2list (case_node *, case_node *);
 
-void
-using_eh_for_cleanups (void)
-{
-  using_eh_for_cleanups_p = 1;
-}
-
 void
 init_stmt_for_function (void)
 {
@@ -2207,8 +2148,6 @@ expand_start_bindings_and_block (int flags, tree block)
   thisblock->depth = ++nesting_depth;
   thisblock->data.block.block_target_temp_slot_level = target_temp_slot_level;
 
-  thisblock->data.block.conditional_code = 0;
-  thisblock->data.block.last_unconditional_cleanup = note;
   /* When we insert instructions after the last unconditional cleanup,
      we don't adjust last_insn.  That means that a later add_insn will
      clobber the instructions we've just added.  The easiest way to
@@ -2760,8 +2699,7 @@ expand_anon_union_decl (tree decl, tree cleanup ATTRIBUTE_UNUSED,
    but instead we take short cuts.  */
 
 void
-expand_start_case (int exit_flag, tree expr, tree type,
-		   const char *printname)
+expand_start_case (tree index_expr)
 {
   struct nesting *thiscase = ALLOC_NESTING ();
 
@@ -2771,13 +2709,10 @@ expand_start_case (int exit_flag, tree expr, tree type,
   thiscase->next = case_stack;
   thiscase->all = nesting_stack;
   thiscase->depth = ++nesting_depth;
-  thiscase->exit_label = exit_flag ? gen_label_rtx () : 0;
+  thiscase->exit_label = 0;
   thiscase->data.case_stmt.case_list = 0;
-  thiscase->data.case_stmt.index_expr = expr;
-  thiscase->data.case_stmt.nominal_type = type;
+  thiscase->data.case_stmt.index_expr = index_expr;
   thiscase->data.case_stmt.default_label = 0;
-  thiscase->data.case_stmt.printname = printname;
-  thiscase->data.case_stmt.line_number_status = force_line_numbers ();
   case_stack = thiscase;
   nesting_stack = thiscase;
 
@@ -2791,119 +2726,12 @@ expand_start_case (int exit_flag, tree expr, tree type,
   thiscase->data.case_stmt.start = get_last_insn ();
 }
 
-/* Accumulate one case or default label inside a case or switch statement.
-   VALUE is the value of the case (a null pointer, for a default label).
-   The function CONVERTER, when applied to arguments T and V,
-   converts the value V to the type T.
-
-   If not currently inside a case or switch statement, return 1 and do
-   nothing.  The caller will print a language-specific error message.
-   If VALUE is a duplicate or overlaps, return 2 and do nothing
-   except store the (first) duplicate node in *DUPLICATE.
-   If VALUE is out of range, return 3 and do nothing.
-   Return 0 on success.
-
-   Extended to handle range statements.  */
-
-int
-pushcase (tree value, tree (*converter) (tree, tree), tree label,
-	  tree *duplicate)
-{
-  tree index_type;
-  tree nominal_type;
-
-  /* Fail if not inside a real case statement.  */
-  if (! (case_stack && case_stack->data.case_stmt.start))
-    return 1;
-
-  index_type = TREE_TYPE (case_stack->data.case_stmt.index_expr);
-  nominal_type = case_stack->data.case_stmt.nominal_type;
-
-  /* If the index is erroneous, avoid more problems: pretend to succeed.  */
-  if (index_type == error_mark_node)
-    return 0;
-
-  /* Convert VALUE to the type in which the comparisons are nominally done.  */
-  if (value != 0)
-    value = (*converter) (nominal_type, value);
-
-  /* Fail if this value is out of range for the actual type of the index
-     (which may be narrower than NOMINAL_TYPE).  */
-  if (value != 0
-      && (TREE_CONSTANT_OVERFLOW (value)
-	  || ! int_fits_type_p (value, index_type)))
-    return 3;
-
-  return add_case_node (value, value, label, duplicate, false);
-}
-
-/* Like pushcase but this case applies to all values between VALUE1 and
-   VALUE2 (inclusive).  If VALUE1 is NULL, the range starts at the lowest
-   value of the index type and ends at VALUE2.  If VALUE2 is NULL, the range
-   starts at VALUE1 and ends at the highest value of the index type.
-   If both are NULL, this case applies to all values.
-
-   The return value is the same as that of pushcase but there is one
-   additional error code: 4 means the specified range was empty.  */
-
-int
-pushcase_range (tree value1, tree value2, tree (*converter) (tree, tree),
-		tree label, tree *duplicate)
-{
-  tree index_type;
-  tree nominal_type;
-
-  /* Fail if not inside a real case statement.  */
-  if (! (case_stack && case_stack->data.case_stmt.start))
-    return 1;
-
-  index_type = TREE_TYPE (case_stack->data.case_stmt.index_expr);
-  nominal_type = case_stack->data.case_stmt.nominal_type;
-
-  /* If the index is erroneous, avoid more problems: pretend to succeed.  */
-  if (index_type == error_mark_node)
-    return 0;
-
-  /* Convert VALUEs to type in which the comparisons are nominally done
-     and replace any unspecified value with the corresponding bound.  */
-  if (value1 == 0)
-    value1 = TYPE_MIN_VALUE (index_type);
-  if (value2 == 0)
-    value2 = TYPE_MAX_VALUE (index_type);
-
-  /* Fail if the range is empty.  Do this before any conversion since
-     we want to allow out-of-range empty ranges.  */
-  if (value2 != 0 && tree_int_cst_lt (value2, value1))
-    return 4;
-
-  /* If the max was unbounded, use the max of the nominal_type we are
-     converting to.  Do this after the < check above to suppress false
-     positives.  */
-  if (value2 == 0)
-    value2 = TYPE_MAX_VALUE (nominal_type);
-
-  value1 = (*converter) (nominal_type, value1);
-  value2 = (*converter) (nominal_type, value2);
-
-  /* Fail if these values are out of range.  */
-  if (TREE_CONSTANT_OVERFLOW (value1)
-      || ! int_fits_type_p (value1, index_type))
-    return 3;
-
-  if (TREE_CONSTANT_OVERFLOW (value2)
-      || ! int_fits_type_p (value2, index_type))
-    return 3;
-
-  return add_case_node (value1, value2, label, duplicate, false);
-}
-
-/* Do the actual insertion of a case label for pushcase and pushcase_range
-   into case_stack->data.case_stmt.case_list.  Use an AVL tree to avoid
+/* Do the insertion of a case label into
+   case_stack->data.case_stmt.case_list.  Use an AVL tree to avoid
    slowdown for large switch statements.  */
 
 int
-add_case_node (tree low, tree high, tree label, tree *duplicate,
-	       bool dont_expand_label)
+add_case_node (tree low, tree high, tree label, tree *duplicate)
 {
   struct case_node *p, **q, *r;
 
@@ -2922,8 +2750,6 @@ add_case_node (tree low, tree high, tree label, tree *duplicate,
 	  return 2;
 	}
       case_stack->data.case_stmt.default_label = label;
-      if (!dont_expand_label)
-        expand_label (label);
       return 0;
     }
 
@@ -2962,8 +2788,6 @@ add_case_node (tree low, tree high, tree label, tree *duplicate,
     r->high = high;
 
   r->code_label = label;
-  if (!dont_expand_label)
-    expand_label (label);
 
   *q = r;
   r->parent = p;
@@ -3355,11 +3179,6 @@ expand_end_case_type (tree orig_index, tree orig_type)
 	thiscase->data.case_stmt.case_list
 	  = case_tree2list (thiscase->data.case_stmt.case_list, 0);
 
-      /* Simplify the case-list before we count it.  */
-      group_case_nodes (thiscase->data.case_stmt.case_list);
-      strip_default_case_nodes (&thiscase->data.case_stmt.case_list,
-				default_label);
-
       /* Get upper and lower bounds of case values.
 	 Also convert all the case values to the index expr's data type.  */
 
@@ -3534,7 +3353,7 @@ expand_end_case_type (tree orig_index, tree orig_type)
 	      balance_case_nodes (&thiscase->data.case_stmt.case_list, NULL);
 	      emit_case_nodes (index, thiscase->data.case_stmt.case_list,
 			       default_label, index_type);
-	      emit_jump_if_reachable (default_label);
+	      emit_jump (default_label);
 	    }
 	}
       else
@@ -3543,7 +3362,7 @@ expand_end_case_type (tree orig_index, tree orig_type)
 	  if (! try_casesi (index_type, index_expr, minval, range,
 			    table_label, default_label))
 	    {
-	      index_type = thiscase->data.case_stmt.nominal_type;
+	      index_type = integer_type_node;
 
 	      /* Index jumptables from zero for suitable values of
                  minval to avoid a subtraction.  */
@@ -3745,98 +3564,14 @@ estimate_case_costs (case_node_ptr node)
   return 1;
 }
 
-/* Determine whether two case labels branch to the same target.  */
+/* Determine whether two case labels branch to the same target.
+   Since we now do tree optimizations, just comparing labels is
+   good enough.  */
 
 static bool
 same_case_target_p (rtx l1, rtx l2)
 {
-#if 0
-  rtx i1, i2;
-
-  if (l1 == l2)
-    return true;
-
-  i1 = next_real_insn (l1);
-  i2 = next_real_insn (l2);
-  if (i1 == i2)
-    return true;
-
-  if (i1 && simplejump_p (i1))
-    {
-      l1 = XEXP (SET_SRC (PATTERN (i1)), 0);
-    }
-
-  if (i2 && simplejump_p (i2))
-    {
-      l2 = XEXP (SET_SRC (PATTERN (i2)), 0);
-    }
-#endif
-  /* When coming from gimple, we usually won't have emitted either
-     the labels or the body of the switch statement.  The job being
-     done here should be done via jump threading at the tree level.
-     Cases that go the same place should have the same label.  */
   return l1 == l2;
-}
-
-/* Delete nodes that branch to the default label from a list of
-   case nodes.  Eg. case 5: default: becomes just default:  */
-
-static void
-strip_default_case_nodes (case_node_ptr *prev, rtx deflab)
-{
-  case_node_ptr ptr;
-
-  while (*prev)
-    {
-      ptr = *prev;
-      if (same_case_target_p (label_rtx (ptr->code_label), deflab))
-	*prev = ptr->right;
-      else
-	prev = &ptr->right;
-    }
-}
-
-/* Scan an ordered list of case nodes
-   combining those with consecutive values or ranges.
-
-   Eg. three separate entries 1: 2: 3: become one entry 1..3:  */
-
-static void
-group_case_nodes (case_node_ptr head)
-{
-  case_node_ptr node = head;
-
-  while (node)
-    {
-      rtx lab;
-      case_node_ptr np = node;
-
-      lab = label_rtx (node->code_label);
-
-      /* Try to group the successors of NODE with NODE.  */
-      while (((np = np->right) != 0)
-	     /* Do they jump to the same place?  */
-	     && same_case_target_p (label_rtx (np->code_label), lab)
-	     /* Are their ranges consecutive?  */
-	     && tree_int_cst_equal (np->low,
-				    fold (build (PLUS_EXPR,
-						 TREE_TYPE (node->high),
-						 node->high,
-						 integer_one_node)))
-	     /* An overflow is not consecutive.  */
-	     && tree_int_cst_lt (node->high,
-				 fold (build (PLUS_EXPR,
-					      TREE_TYPE (node->high),
-					      node->high,
-					      integer_one_node))))
-	{
-	  node->high = np->high;
-	}
-      /* NP is the first node after NODE which can't be grouped with it.
-	 Delete the nodes in between, and move on to that node.  */
-      node->right = np;
-      node = np;
-    }
 }
 
 /* Take an ordered list of case nodes
@@ -4061,15 +3796,6 @@ node_is_bounded (case_node_ptr node, tree index_type)
   return (node_has_low_bound (node, index_type)
 	  && node_has_high_bound (node, index_type));
 }
-
-/*  Emit an unconditional jump to LABEL unless it would be dead code.  */
-
-static void
-emit_jump_if_reachable (rtx label)
-{
-  if (!BARRIER_P (get_last_insn ()))
-    emit_jump (label);
-}
 
 /* Emit step-by-step code to select a case for the value of INDEX.
    The thus generated decision tree follows the form of the
@@ -4215,7 +3941,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	      emit_case_nodes (index, node->left, default_label, index_type);
 	      /* If left-hand subtree does nothing,
 		 go to default.  */
-	      emit_jump_if_reachable (default_label);
+	      emit_jump (default_label);
 
 	      /* Code branches here for the right-hand subtree.  */
 	      expand_label (test_label);
@@ -4356,7 +4082,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	    {
 	      /* If the left-hand subtree fell through,
 		 don't let it fall into the right-hand subtree.  */
-	      emit_jump_if_reachable (default_label);
+	      emit_jump (default_label);
 
 	      expand_label (test_label);
 	      emit_case_nodes (index, node->right, default_label, index_type);

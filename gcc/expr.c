@@ -8541,6 +8541,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
     case TARGET_EXPR:
+    case CASE_LABEL_EXPR:
     case VA_ARG_EXPR:
       /* Lowered by gimplify.c.  */
       abort ();
@@ -8561,10 +8562,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       abort ();
 
     case SWITCH_EXPR:
-      expand_start_case (0, SWITCH_COND (exp), integer_type_node,
-			 "switch");
+      expand_start_case (SWITCH_COND (exp));
+      /* The switch body is lowered in gimplify.c, we should never have
+	 switches with a non-NULL SWITCH_BODY here.  */
       if (SWITCH_BODY (exp))
-        expand_expr_stmt (SWITCH_BODY (exp));
+        abort ();
       if (SWITCH_LABELS (exp))
 	{
 	  tree duplicate = 0;
@@ -8623,7 +8625,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		    }
 		}
 	      
-	      add_case_node (case_low, case_high, CASE_LABEL (elt), &duplicate, true);
+	      add_case_node (case_low, case_high, CASE_LABEL (elt), &duplicate);
 	      if (duplicate)
 		abort ();
 	    }
@@ -8634,16 +8636,6 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
     case LABEL_EXPR:
       expand_label (TREE_OPERAND (exp, 0));
       return const0_rtx;
-
-    case CASE_LABEL_EXPR:
-      {
-	tree duplicate = 0;
-	add_case_node (CASE_LOW (exp), CASE_HIGH (exp), CASE_LABEL (exp),
-		       &duplicate, false);
-	if (duplicate)
-	  abort ();
-	return const0_rtx;
-      }
 
     case ASM_EXPR:
       expand_asm_expr (exp);

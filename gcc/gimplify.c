@@ -1066,7 +1066,7 @@ compare_case_labels (const void *p1, const void *p2)
   return tree_int_cst_compare (CASE_LOW (case1), CASE_LOW (case2));
 }
 
-/* Sort the case labels in LABEL_VEC in ascending order.  */
+/* Sort the case labels in LABEL_VEC in place in ascending order.  */
 
 void
 sort_case_labels (tree label_vec)

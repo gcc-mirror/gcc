@@ -7742,21 +7742,9 @@ java_complete_expand_methods (tree class_decl)
   /* Now do the constructors */
   for (decl = first_decl ; !java_error_count && decl; decl = TREE_CHAIN (decl))
     {
-      int no_body;
-
       if (!DECL_CONSTRUCTOR_P (decl))
 	continue;
-
-      no_body = !DECL_FUNCTION_BODY (decl);
-      /* Don't generate debug info on line zero when expanding a
-	 generated constructor. */
-      if (no_body)
-	restore_line_number_status (1);
-
       java_complete_expand_method (decl);
-
-      if (no_body)
-	restore_line_number_status (0);
     }
 
   /* First, do the ordinary methods. */
@@ -9032,9 +9020,7 @@ java_expand_classes (void)
 		{
 		  if (DECL_CONSTRUCTOR_P (d))
 		    {
-		      restore_line_number_status (1);
 		      java_complete_expand_method (d);
-		      restore_line_number_status (0);
 		      break;	/* There is only one constructor. */
 		    }
 		}
@@ -9056,11 +9042,7 @@ java_expand_classes (void)
 	  for (d = TYPE_METHODS (current_class); d; d = TREE_CHAIN (d))
 	    {
 	      if (DECL_RESULT (d) == NULL_TREE)
-		{
-		  restore_line_number_status (1);
-		  java_complete_expand_method (d);
-		  restore_line_number_status (0);
-		}
+		java_complete_expand_method (d);
 	    }
 	}
     }
@@ -9089,9 +9071,7 @@ java_expand_classes (void)
 		      if (DECL_RESULT (d) == NULL_TREE)
 			{
 			  something_changed = 1;
-			  restore_line_number_status (1);
 			  java_complete_expand_method (d);
-			  restore_line_number_status (0);
 			}
 		    }
 		}

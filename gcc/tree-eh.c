@@ -37,8 +37,15 @@ Boston, MA 02111-1307, USA.  */
 #include "langhooks.h"
 #include "ggc.h"
 
-/* HACK */
-extern int using_eh_for_cleanups_p;
+
+/* Nonzero if we are using EH to handle cleanups.  */
+static int using_eh_for_cleanups_p = 0;
+
+void
+using_eh_for_cleanups (void)
+{
+  using_eh_for_cleanups_p = 1;
+}
 
 /* Misc functions used in this file.  */
 

@@ -1,3 +1,8 @@
+2004-07-16  Steven Bosscher  <stevenb@suse.de>
+
+	* cp-tree.h (struct lang_type): Don't have three GTY options on a
+	single bit GTY desc.
+
 2004-07-16  Richard Henderson  <rth@redhat.com>
 
 	* cp-lang.c (LANG_HOOKS_TREE_INLINING_COPY_RES_DECL_FOR_INLINING): Die.

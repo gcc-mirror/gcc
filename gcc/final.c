@@ -1999,7 +1999,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	rtx body = PATTERN (insn);
 	int insn_code_number;
 	const char *template;
-	rtx note;
 
 	/* An INSN, JUMP_INSN or CALL_INSN.
 	   First check for special kinds that recog doesn't recognize.  */
@@ -2548,18 +2547,6 @@ final_scan_insn (rtx insn, FILE *file, int optimize ATTRIBUTE_UNUSED,
 	    && dwarf2out_do_frame ())
 	  dwarf2out_frame_debug (insn);
 #endif
-
-#if 0
-	/* It's not at all clear why we did this and doing so used to
-	   interfere with tests that used REG_WAS_0 notes, which are
-	   now gone, so let's try with this out.  */
-
-	/* Mark this insn as having been output.  */
-	INSN_DELETED_P (insn) = 1;
-#endif
-
-	/* Emit information for vtable gc.  */
-	note = find_reg_note (insn, REG_VTABLE_REF, NULL_RTX);
 
 	current_output_insn = debug_insn = 0;
       }

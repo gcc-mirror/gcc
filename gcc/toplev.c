@@ -1926,8 +1926,7 @@ backend_init (void)
 		    /* Enable line number info for traceback.  */
 		    || debug_info_level > DINFO_LEVEL_NONE
 #endif
-		    || flag_test_coverage
-		    || warn_notreached);
+		    || flag_test_coverage);
 
   init_regs ();
   init_fake_stack_mems ();

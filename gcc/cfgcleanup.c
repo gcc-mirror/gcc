@@ -122,8 +122,6 @@ try_simplify_condjump (basic_block cbranch_block)
   basic_block jump_block, jump_dest_block, cbranch_dest_block;
   edge cbranch_jump_edge, cbranch_fallthru_edge;
   rtx cbranch_insn;
-  rtx insn, next;
-  rtx end;
 
   /* Verify that there are exactly two successors.  */
   if (!cbranch_block->succ
@@ -186,26 +184,6 @@ try_simplify_condjump (basic_block cbranch_block)
   cbranch_fallthru_edge->flags &= ~EDGE_FALLTHRU;
   update_br_prob_note (cbranch_block);
 
-  end = BB_END (jump_block);
-  /* Deleting a block may produce unreachable code warning even when we are
-     not deleting anything live.  Suppress it by moving all the line number
-     notes out of the block.  */
-  for (insn = BB_HEAD (jump_block); insn != NEXT_INSN (BB_END (jump_block));
-       insn = next)
-    {
-      next = NEXT_INSN (insn);
-      if (NOTE_P (insn) && NOTE_LINE_NUMBER (insn) > 0)
-	{
-	  if (insn == BB_END (jump_block))
-	    {
-	      BB_END (jump_block) = PREV_INSN (insn);
-	      if (insn == end)
-	        break;
-	    }
-	  reorder_insns_nobb (insn, insn, end);
-	  end = insn;
-	}
-    }
   /* Delete the block with the unconditional jump, and clean up the mess.  */
   delete_basic_block (jump_block);
   tidy_fallthru_edge (cbranch_jump_edge);

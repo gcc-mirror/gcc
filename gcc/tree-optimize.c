@@ -101,6 +101,35 @@ static struct tree_opt_pass pass_all_optimizations =
   0					/* todo_flags_finish */
 };
 
+/* Pass: cleanup the CFG just before expanding trees to RTL.
+   This is just a round of label cleanups and case node grouping
+   because after the tree optimizers have run such cleanups may
+   be necessary.  */
+
+static void 
+execute_cleanup_cfg_post_optimizing (void)
+{
+  cleanup_tree_cfg ();
+  cleanup_dead_labels ();
+  group_case_labels ();
+}
+
+static struct tree_opt_pass pass_cleanup_cfg_post_optimizing =
+{
+  NULL,					/* name */
+  NULL,					/* gate */
+  execute_cleanup_cfg_post_optimizing,	/* execute */
+  NULL,					/* sub */
+  NULL,					/* next */
+  0,					/* static_pass_number */
+  0,					/* tv_id */
+  PROP_cfg,				/* properties_required */
+  0,					/* properties_provided */
+  0,					/* properties_destroyed */
+  0,					/* todo_flags_start */
+  0					/* todo_flags_finish */
+};
+
 /* Pass: do the actions required to finish with tree-ssa optimization
    passes.  */
 
@@ -324,6 +353,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_remove_useless_vars);
+  NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   *p = NULL;
 
   p = &pass_loop.sub;

@@ -1,3 +1,53 @@
+2004-07-17  Steven Bosscher  <stevenb@suse.de>
+
+	* cfgcleanup.c (try_simplify_condjump): Don't remove line
+	notes to avoid unreachable code warnings.
+	* toplev.c (backend_init): Don't emit line notes for
+	unreachable code warnings.
+
+	* combine.c (distribute_notes): Don't distribute a
+	REG_VTABLE_REF note.
+	* final.c (final_scan_insn): Don't handle it.
+	* rtl.c (reg_note_name): Remove it.
+	* rtl.h (enum reg_node): Dito.
+
+	* emit-rtl.c (force_line_numbers, restore_line_number_status):
+	Remove.
+	* rtl.h (force_line_numbers, restore_line_number_status):
+	Remove prototypes.
+
+	* stmt.c (using_eh_for_cleanups_p, using_eh_for_cleanups): Move...
+	* tree-eh.c (using_eh_for_cleanups_p): ...here.  Make static.
+	(using_eh_for_cleanups): Also moved here.
+
+	* expr.c (expand_expr_real_1) <CASE_LABEL_EXPR>: Die if we see one.
+	<SWITCH_EXPR>: Die if we have a non-NULL SWITCH_BODY.  Update calls
+	to expand_start_case and add_case_node.
+	* stmt.c (struct nesting): Cleanup unused fields condition_code,
+	last_unconditional_cleanup, nominal_type, printname, and
+	line_number_status.
+	(struct fixup_goto): Remove.
+	(struct stmt_status): Remove x_goto_fixup_chain field.
+	(goto_fixup_chain): Remove.
+	(strip_default_case_nodes, group_case_nodes, emit_jump_if_reachable,
+	pushcase, pushcase_range): Remove.
+	(expand_start_bindings_and_block): Don't set unused fields in
+	the nesting stack.
+	(expand_start_case, add_case_node): Cleanup unused formal arguments.
+	(expand_end_case_type): Don't simplify the case-list.  Use emit_jump
+	instead of emit_jump_if_reachable.
+	(emit_case_nodes): Likewise.
+	* tree-cfg.c (group_case_labels, cleanup_dead_labels): No longer
+	static.
+	(update_eh_label): Work around left-over exception handing regions.
+	* tree-flow.h (group_case_labels, cleanup_dead_labels): Add protos.
+	* tree-optimize.c (execute_cleanup_cfg_post_optimizing): New function.
+	(pass_cleanup_cfg_post_optimizing): New pass.
+	(init_tree_optimization_passes): Run the new pass after all
+	optimizations.
+	* tree.h (pushcase, pushcase_range): Remove prototypes.
+	(expand_start_case, add_case_node): Update prototypes.
+
 2004-07-16  Krister Walfridsson  <cato@df.lth.se>
 
 	* tree-inline.c (estimate_num_insns_1): Correct increase of count.

@@ -3352,12 +3352,12 @@ extern void warn_about_unused_variables (tree);
 extern int is_body_block (tree);
 
 extern struct nesting * current_nesting_level (void);
-extern void expand_start_case (int, tree, tree, const char *);
+extern void expand_start_case (tree);
 extern void expand_end_case_type (tree, tree);
 #define expand_end_case(cond) expand_end_case_type (cond, NULL)
-extern int add_case_node (tree, tree, tree, tree *, bool);
-extern int pushcase (tree, tree (*) (tree, tree), tree, tree *);
-extern int pushcase_range (tree, tree, tree (*) (tree, tree), tree, tree *);
+extern int add_case_node (tree, tree, tree, tree *);
+
+/* In tree-eh.c */
 extern void using_eh_for_cleanups (void);
 
 /* In fold-const.c */
