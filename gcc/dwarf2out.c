@@ -8826,6 +8826,9 @@ loc_descriptor_from_tree (tree loc, int addressp)
       }
       break;
 
+    case EXPR_WITH_FILE_LOCATION:
+      return loc_descriptor_from_tree (EXPR_WFL_NODE (loc), addressp);
+
     default:
       /* Leave front-end specific codes as simply unknown.  This comes
 	 up, for instance, with the C STMT_EXPR.  */

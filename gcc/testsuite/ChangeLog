@@ -1,3 +1,8 @@
+2004-02-18  Paul Brook  <paul@codesourcery.com>
+
+	PR debug/12934
+	* gcc.dg/debug/debug-7.c: New test.
+
 2004-02-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11326

@@ -1,3 +1,9 @@
+2004-02-18  Paul Brook  <paul@codesourcery.com>
+
+	PR debug/12934
+	* dwarf2out.c (loc_descriptor_from_tree): Handle
+	EXPR_WITH_FILE_LOCATION.
+
 2004-02-17  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11326
