@@ -1,3 +1,7 @@
+Sun Mar 15 15:53:39 1998  Philippe De Muyter  <phdm@macqel.be>
+
+	* libgcc2.c (exit): Don't call __bb_exit_func if HAVE_ATEXIT.
+
 Sun Mar 15 15:44:41 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* cccp.c: Fix bugs relating to NUL in input file name,
