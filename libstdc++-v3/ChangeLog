@@ -1,3 +1,76 @@
+2003-03-08  Loren J. Rittle  <ljrittle@acm.org>
+
+	* config/locale/generic/c_locale.cc (locale::facet::_S_create_c_locale):
+	Throw runtime exception when unsupported language is specified.
+	* testsuite/testsuite_hooks.h
+	(run_test_wrapped_generic_locale_exception_catcher): New function.
+	* testsuite/testsuite_hooks.cc (run_tests_wrapped_locale):
+	Suppress runtime exception thrown by generic implementation.
+	(run_tests_wrapped_env): Likewise.
+	(run_test_wrapped_generic_locale_exception_catcher): New function.
+	* testsuite/22_locale/collate/compare/char/1.cc: New test wrap.
+	* testsuite/22_locale/collate/compare/char/2.cc: New test wrap.
+	* testsuite/22_locale/collate/compare/char/3.cc: New test wrap.
+	* testsuite/22_locale/collate/hash/char/2.cc: New test wrap.
+	* testsuite/22_locale/collate/transform/char/2.cc: New test wrap.
+	* testsuite/22_locale/collate/transform/char/3.cc: New test wrap.
+	* testsuite/22_locale/collate_byname/1.cc: New test wrap.
+	* testsuite/22_locale/ctype/is/char/2.cc: New test wrap.
+	* testsuite/22_locale/facet/2.cc: New test wrap.
+	* testsuite/22_locale/locale/cons/4.cc: New test wrap.
+	* testsuite/22_locale/locale/cons/5.cc: New test wrap.
+	* testsuite/22_locale/locale/cons/7.cc: New test wrap.
+	* testsuite/22_locale/messages/members/char/1.cc: New test wrap.
+	* testsuite/22_locale/messages/members/char/2.cc: New test wrap.
+	* testsuite/22_locale/messages/members/char/3.cc: New test wrap.
+	* testsuite/22_locale/messages_byname/1.cc: New test wrap.
+	* testsuite/22_locale/money_get/get/char/1.cc: New test wrap.
+	* testsuite/22_locale/money_get/get/char/2.cc: New test wrap.
+	* testsuite/22_locale/money_get/get/char/3.cc: New test wrap.
+	* testsuite/22_locale/money_get/get/char/4.cc: New test wrap.
+	* testsuite/22_locale/money_put/put/char/1.cc: New test wrap.
+	* testsuite/22_locale/money_put/put/char/2.cc: New test wrap.
+	* testsuite/22_locale/money_put/put/char/3.cc: New test wrap.
+	* testsuite/22_locale/moneypunct/members/char/2.cc: New test wrap.
+	* testsuite/22_locale/moneypunct_byname/1.cc: New test wrap.
+	* testsuite/22_locale/num_get/get/char/1.cc: New test wrap.
+	* testsuite/22_locale/num_get/get/char/2.cc: New test wrap.
+	* testsuite/22_locale/num_get/get/char/3.cc: New test wrap.
+	* testsuite/22_locale/num_get/get/char/5.cc: New test wrap.
+	* testsuite/22_locale/num_get/get/char/6.cc: New test wrap.
+	* testsuite/22_locale/num_put/put/char/1.cc: New test wrap.
+	* testsuite/22_locale/num_put/put/char/2.cc: New test wrap.
+	* testsuite/22_locale/num_put/put/char/3.cc: New test wrap.
+	* testsuite/22_locale/num_put/put/char/5.cc: New test wrap.
+	* testsuite/22_locale/numpunct/members/char/1.cc: New test wrap.
+	* testsuite/22_locale/numpunct/members/char/2.cc: New test wrap.
+	* testsuite/22_locale/numpunct_byname/1.cc: New test wrap.
+	* testsuite/22_locale/numpunct_byname/2.cc: New test wrap.
+	* testsuite/22_locale/time_get/date_order/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_date/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_date/char/2.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_monthname/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_monthname/char/2.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_time/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_time/char/2.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_weekday/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_weekday/char/2.cc: New test wrap.
+	* testsuite/22_locale/time_get/get_year/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/1.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/2.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/3.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/4.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/5.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/6.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/7.cc: New test wrap.
+	* testsuite/22_locale/time_put/put/char/8.cc: New test wrap.
+	* testsuite/27_io/filebuf_virtuals.cc: New test wrap.
+	* testsuite/27_io/ios_members.cc: New test wrap.
+	* testsuite/27_io/ostream_inserter_arith.cc (test02): Make void.
+	New test wrap.
+	* testsuite/27_io/streambuf_members.cc: New test wrap.
+	* testsuite/27_io/stringbuf_virtuals.cc: New test wrap.
+
 2003-03-08  Paolo Carlini <pcarlini@unitus.it>
             Petur Runolfsson  <peturr02@ru.is>
 

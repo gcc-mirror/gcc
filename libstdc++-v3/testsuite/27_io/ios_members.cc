@@ -168,6 +168,6 @@ int main()
 {
   test01();
   test02();
-  test03();
+  __gnu_cxx_test::run_test_wrapped_generic_locale_exception_catcher(test03);
   return 0;
 }
