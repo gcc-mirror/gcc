@@ -28,4 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_PREDEFINES "-Dmips -DMIPSEB -DR4000 -D_mips -D_MIPSEB -D_R4000 \
    -Drtems -D__rtems__ -Asystem(rtems)"
 
-/* end of rtems64.h */
+#undef  SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
+  { "rtems", 0 },
+
+/* end of mips/rtems64.h */

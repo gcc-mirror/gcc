@@ -28,3 +28,5 @@ Boston, MA 02111-1307, USA.  */
 #undef  SUBTARGET_SWITCHES
 #define SUBTARGET_SWITCHES \
   { "rtems", 0 },
+
+/* end of pa/rtems.h */

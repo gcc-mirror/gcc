@@ -1,6 +1,6 @@
-/* Definitions for rtems targetting a PowerPC using elf.
+/* Definitions for rtems targetting a SH using elf.
 
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
 This file is part of GNU CC.
@@ -20,18 +20,16 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "rs6000/eabi.h"
+#include "sh/elf.h"
 
 /* Specify predefined symbols in preprocessor.  */
 
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-DPPC -Drtems -D__rtems__ \
-   -Asystem(rtems) -Acpu(powerpc) -Amachine(powerpc)"
+#define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Drtems -D__rtems__ \
+  -Asystem(rtems) -Acpu(sh) -Amachine(sh)"
 
-/* extend the SUBTARGET_SWITCHES in rs6000/sysv4.h */
-
-#undef  EXTRA_SUBTARGET_SWITCHES
-#define EXTRA_SUBTARGET_SWITCHES \
+#undef  SUBTARGET_SWITCHES
+#define SUBTARGET_SWITCHES \
   { "rtems", 0 },
 
-/* end of powerpc-rtems.h */
+/* end of sparc/rtems.h */

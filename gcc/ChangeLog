@@ -1,3 +1,16 @@
+Mon Sep  1 08:04:07 1997  Joel Sherrill (joel@OARcorp.com)
+
+	* i386/go32-rtems.h, i386/rtems.h, i960/rtems.h, 
+	m68k/rtems.h, mips/rtems64.h, pa/rtems.h, rs6000/rtems.h,
+	sparc/rtems.h (subtarget_switches): Added -mrtems as a switch.
+	* i960/i960.h: Added SUBTARGET_SWITCHES macro.
+	* rs6000/sysv4.h (extra_subtarget_switches): Added new
+	macro EXTRA_SUBTARGET_SWITCHES.
+	* configure.in (sh*-*-rtems*): New target.
+	* sh/rtems.h: New file.
+	* sh/sh.h: Added SUBTARGET_SWITCHES macro.
+	* configure: Rebuilt.
+
 Sat Aug 30 22:54:26 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* unroll.c (calculate_giv_inc): Handle increment with code PLUS.
