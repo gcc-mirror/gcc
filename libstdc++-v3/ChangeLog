@@ -1,3 +1,11 @@
+2002-02-05  Paolo Carlini  <pcarlini@unitus.it>
+
+	* include/bits/locale_facets.tcc (money_get::do_get(string)):
+	First construct a tentative returned string, then, only if the
+	parsing succeeds, copy it into the string passed by reference.
+	* testsuite/22_locale/money_get_members_char.cc: Add test06.
+	* testsuite/22_locale/money_get_members_wchar_t.cc: Add test06.
+
 2002-02-04  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/TODO:  Impl-defined behavior now documented...
