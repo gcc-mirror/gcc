@@ -3012,7 +3012,7 @@ check_field_decls (tree t, tree *access_decls,
 	  /* [class.union]
 
 	     If a union contains a static data member, or a member of
-	     reference type, the program is ill-formed. */
+	     reference type, the program is ill-formed.  */
 	  if (TREE_CODE (x) == VAR_DECL)
 	    {
 	      cp_error_at ("`%D' may not be static because it is a member of a union", x);

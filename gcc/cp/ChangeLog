@@ -1,3 +1,8 @@
+2004-05-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* call.c, class.c, cp-tree.def, decl2.c, name-lookup.c, pt.c,
+	typeck.c: Fix comment formatting.
+
 2004-05-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* cp-lang.c (cp_expand_decl): Remove.

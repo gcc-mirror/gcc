@@ -9543,7 +9543,7 @@ template_decl_level (tree decl)
 
 /* Decide whether ARG can be unified with PARM, considering only the
    cv-qualifiers of each type, given STRICT as documented for unify.
-   Returns nonzero iff the unification is OK on that basis. */
+   Returns nonzero iff the unification is OK on that basis.  */
 
 static int
 check_cv_quals_for_unify (int strict, tree arg, tree parm)
@@ -10792,7 +10792,7 @@ do_type_instantiation (tree t, tree storage, tsubst_flags_t complain)
        a static archive's TOC.  The problematic case is if we're doing
        a non-extern explicit instantiation of an extern template: we
        have to put member functions in the TOC in that case, or we'll
-       get unresolved symbols at link time. */
+       get unresolved symbols at link time.  */
 
     explicitly_instantiate_members =
       TARGET_EXPLICIT_INSTANTIATIONS_ONE_ONLY
