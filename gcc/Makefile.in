@@ -142,7 +142,7 @@ ENQUIRE_LDFLAGS = $(LDFLAGS)
 
 # Sed command to transform gcc to installed name.  Overwritten by configure.
 program_transform_name = -e s,x,x,
-program_transform_cross_name = -e s,^,$(target)-,
+program_transform_cross_name = -e s,^,$(target_alias)-,
 
 # Tools to use when building a cross-compiler.
 # These are used because `configure' appends `cross-make'
@@ -171,6 +171,7 @@ PREMADE_ATTRTAB_MD = Makefile  # Guaranteed not to cmp equal to md.
 PREMADE_ATTRTAB = 
 
 target= ... `configure' substitutes actual target name here.
+target_alias= ... `configure' substitutes specified target name here.
 xmake_file= ... `configure' substitutes actual x- file name here.
 tmake_file= ... `configure' substitutes actual t- file name here.
 out_file= ... `configure' substitutes actual out file name here.
@@ -202,7 +203,7 @@ bindir = $(exec_prefix)/bin
 # Directory in which to put the directories used by the compiler.
 libdir = $(exec_prefix)/lib
 # Directory in which the compiler finds executables, libraries, etc.
-libsubdir = $(libdir)/gcc-lib/$(target)/$(version)
+libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(version)
 # Directory in which the compiler finds g++ includes.
 gxx_include_dir= $(prefix)/include/g++
 # Directory in which the old g++ header files may be found.
@@ -223,7 +224,7 @@ exeext =
 mandir = $(prefix)/man/man1
 # Directory in which to find other cross-compilation tools and headers.
 # Used in install-cross.
-tooldir = $(exec_prefix)/$(target)
+tooldir = $(exec_prefix)/$(target_alias)
 # Dir for temp files.
 tmpdir = /tmp
 
@@ -1124,7 +1125,7 @@ collect2 : collect2.o cplus-dem.o underscore.o version.o \
 
 collect2.o : collect2.c $(CONFIG_H) gstab.h obstack.h demangle.h
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES)  \
-	-DTARGET_MACHINE=\"$(target)\" $(MAYBE_USE_COLLECT2) \
+	-DTARGET_MACHINE=\"$(target_alias)\" $(MAYBE_USE_COLLECT2) \
 	-c `echo $(srcdir)/collect2.c | sed 's,^\./,,'`
 
 cplus-dem.o: cplus-dem.c demangle.h
@@ -1172,7 +1173,7 @@ gcc.o: gcc.c $(CONFIG_H) multilib.h config.status $(lang_specs_files)
   -DSTANDARD_STARTFILE_PREFIX=\"$(libdir)/\" \
   -DSTANDARD_EXEC_PREFIX=\"$(libdir)/gcc-lib/\" \
   -DDEFAULT_TARGET_VERSION=\"$(version)\" \
-  -DDEFAULT_TARGET_MACHINE=\"$(target)\" \
+  -DDEFAULT_TARGET_MACHINE=\"$(target_alias)\" \
   -DTOOLDIR_BASE_PREFIX=\"$(exec_prefix)/\" \
   -c `echo $(srcdir)/gcc.c | sed 's,^\./,,'`
 
@@ -1193,7 +1194,7 @@ toplev.o : toplev.c $(CONFIG_H) $(TREE_H) $(RTL_H) bytecode.h bc-emit.h \
    flags.h input.h insn-attr.h xcoffout.h defaults.h output.h \
    $(lang_options_files)
 	$(CC) $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(MAYBE_USE_COLLECT2) \
-	  -DTARGET_NAME=\"$(target)\" \
+	  -DTARGET_NAME=\"$(target_alias)\" \
 	  -c `echo $(srcdir)/toplev.c | sed 's,^\./,,'`
 
 rtl.o : rtl.c $(CONFIG_H) $(RTL_H)
@@ -2094,9 +2095,9 @@ install-dir:
 	-if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib ; chmod a+rx $(libdir)/gcc-lib ; fi
 # This dir isn't currently searched by cpp.
 #	-if [ -d $(libdir)/gcc-lib/include ] ; then true ; else mkdir $(libdir)/gcc-lib/include ; chmod a+rx $(libdir)/gcc-lib/include ; fi
-	-if [ -d $(libdir)/gcc-lib/$(target) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target) ; chmod a+rx $(libdir)/gcc-lib/$(target) ; fi
-	-if [ -d $(libdir)/gcc-lib/$(target)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version) ; chmod a+rx $(libdir)/gcc-lib/$(target)/$(version) ; fi
-	-if [ -d $(libdir)/gcc-lib/$(target)/$(version)/include ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target)/$(version)/include ; chmod a+rx $(libdir)/gcc-lib/$(target)/$(version)/include ; fi
+	-if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; chmod a+rx $(libdir)/gcc-lib/$(target_alias) ; fi
+	-if [ -d $(libdir)/gcc-lib/$(target_alias)/$(version) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias)/$(version) ; chmod a+rx $(libdir)/gcc-lib/$(target_alias)/$(version) ; fi
+	-if [ -d $(libdir)/gcc-lib/$(target_alias)/$(version)/include ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias)/$(version)/include ; chmod a+rx $(libdir)/gcc-lib/$(target_alias)/$(version)/include ; fi
 	-if [ -d $(bindir) ] ; then true ; else mkdir $(bindir) ; chmod a+rx $(bindir) ; fi
 	-if [ -d $(includedir) ] ; then true ; else mkdir $(includedir) ; chmod a+rx $(includedir) ; fi
 	-if [ -d $(tooldir) ] ; then true ; else mkdir $(tooldir) ; chmod a+rx $(tooldir) ; fi
@@ -2149,7 +2150,7 @@ install-common: native install-dir $(EXTRA_PARTS) lang.install-common
 	-rm -f $(libsubdir)/cpp$(exeext)
 	$(INSTALL_PROGRAM) cpp$(exeext) $(libsubdir)/cpp$(exeext)
 
-# Install the driver program as $(target)-gcc
+# Install the driver program as $(target_alias)-gcc
 # and also as either gcc (if native) or $(tooldir)/bin/gcc.
 install-driver: xgcc
 	-if [ -f gcc-cross$(exeext) ] ; then \
@@ -2162,11 +2163,11 @@ install-driver: xgcc
 	else \
 	  rm -f $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
 	  $(INSTALL_PROGRAM) xgcc$(exeext) $(bindir)/$(GCC_INSTALL_NAME)$(exeext); \
-	  rm -f $(bindir)/$(target)-gcc-1$(exeext); \
-	  ln $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext) \
+	  rm -f $(bindir)/$(target_alias)-gcc-1$(exeext); \
+	  ln $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-1$(exeext) \
 	    > /dev/null 2>&1 \
-	    || cp $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target)-gcc-1$(exeext); \
-	  mv $(bindir)/$(target)-gcc-1$(exeext) $(bindir)/$(target)-gcc$(exeext); \
+	    || cp $(bindir)/$(GCC_INSTALL_NAME)$(exeext) $(bindir)/$(target_alias)-gcc-1$(exeext); \
+	  mv $(bindir)/$(target_alias)-gcc-1$(exeext) $(bindir)/$(target_alias)-gcc$(exeext); \
 	fi
 
 # Install the info files.
