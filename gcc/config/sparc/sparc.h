@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Sun SPARC.
-   Copyright (C) 1987, 1988, 1989, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1994 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -1456,6 +1456,11 @@ extern struct rtx_def *legitimize_pic_address ();
    : ((GET_CODE (X) == PLUS || GET_CODE (X) == MINUS			\
        || GET_CODE (X) == NEG || GET_CODE (X) == ASHIFT)		\
       ? CC_NOOVmode : CCmode))
+
+/* Return non-zero if SELECT_CC_MODE will never return MODE for a
+   floating point inequality comparison.  */
+
+#define REVERSIBLE_CC_MODE(MODE) ((MODE) != CCFPEmode)
 
 /* A function address in a call instruction
    is a byte address (for indexing purposes)
