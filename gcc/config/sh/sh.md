@@ -71,12 +71,11 @@
 ;; Attributes
 ;; -------------------------------------------------------------------------
 
-; Target CPU.
+;; Target CPU.
 
 (define_attr "cpu" "sh0,sh1,sh2,sh3"
   (const (symbol_ref "sh_cpu_attr")))
 
-;;
 ;; cbranch	conditional branch instructions
 ;; jump		unconditional jumps
 ;; arith	ordinary arithmetic
