@@ -1,4 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
+AC_PREREQ(2.57)
 AC_INIT(jartool.h)
 AM_INIT_AUTOMAKE(fastjar, 0.92-gcc)
 AM_CONFIG_HEADER(config.h)
