@@ -43,6 +43,16 @@ Boston, MA 02111-1307, USA.  */
    exception, and thus there is the concept of "throwing" the
    exception up the call stack.
 
+   There are two major codegen options for exception handling.  The
+   flag -fsjlj-exceptions can be used to select the setjmp/longjmp
+   approach, which is the default.  -fnosjlj-exceptions can be used to
+   get the PC range table approach.  While this is a compile time
+   flag, an entire application must be compiled with the same codegen
+   option.  The first is a PC range table approach, the second is a
+   setjmp/longjmp based scheme.  We will first discuss the PC range
+   table approach, after that, we will discuss the setjmp/longjmp
+   based approach.
+
    It is appropriate to speak of the "context of a throw". This
    context refers to the address where the exception is thrown from,
    and is used to determine which exception region will handle the
@@ -83,13 +93,13 @@ Boston, MA 02111-1307, USA.  */
    and is responsible for recording all of the exception regions into
    one list (which is kept in a static variable named exception_table_list).
 
-   The function __throw () is actually responsible for doing the
-   throw. In the C++ frontend, __throw () is generated on a
+   The function __throw is actually responsible for doing the
+   throw. In the C++ frontend, __throw is generated on a
    per-object-file basis for each source file compiled with
-   -fexceptions. Before __throw () is invoked, the current context
+   -fexceptions. Before __throw is invoked, the current context
    of the throw needs to be placed in the global variable __eh_pc.
 
-   __throw () attempts to find the appropriate exception handler for the 
+   __throw attempts to find the appropriate exception handler for the 
    PC value stored in __eh_pc by calling __find_first_exception_table_match
    (which is defined in libgcc2.c). If __find_first_exception_table_match
    finds a relevant handler, __throw jumps directly to it.
@@ -99,22 +109,22 @@ Boston, MA 02111-1307, USA.  */
    address of the caller of the current function (which will be used
    as the new context to throw from), and then restarting the process
    of searching for a handler for the new context. __throw may also
-   call abort () if it is unable to unwind the stack, and can also
+   call abort if it is unable to unwind the stack, and can also
    call an external library function named __terminate if it reaches
    the top of the stack without finding an appropriate handler. (By
-   default __terminate () invokes abort (), but this behavior can be
+   default __terminate invokes abort, but this behavior can be
    changed by the user to perform some sort of cleanup behavior before
    exiting).
 
    Internal implementation details:
 
    To associate a user-defined handler with a block of statements, the
-   function expand_start_try_stmts () is used to mark the start of the
+   function expand_start_try_stmts is used to mark the start of the
    block of statements with which the handler is to be associated
    (which is known as a "try block"). All statements that appear
    afterwards will be associated with the try block.
 
-   A call to expand_start_all_catch () marks the end of the try block,
+   A call to expand_start_all_catch marks the end of the try block,
    and also marks the start of the "catch block" (the user-defined
    handler) associated with the try block.
 
@@ -129,7 +139,7 @@ Boston, MA 02111-1307, USA.  */
    If the handler chooses not to process the exception (perhaps by
    looking at an "exception type" or some other additional data
    supplied with the exception), it can fall through to the end of the
-   handler. expand_end_all_catch () and expand_leftover_cleanups ()
+   handler. expand_end_all_catch and expand_leftover_cleanups
    add additional code to the end of each handler to take care of
    rethrowing to the outer exception handler.
 
@@ -137,15 +147,15 @@ Boston, MA 02111-1307, USA.  */
    code", or in other words to resume executing at the statement
    immediately after the end of the exception region. The variable
    caught_return_label_stack contains a stack of labels, and jumping
-   to the topmost entry's label via expand_goto () will resume normal
+   to the topmost entry's label via expand_goto will resume normal
    flow to the statement immediately after the end of the exception
    region. If the handler falls through to the end, the exception will
    be rethrown to the outer exception region.
 
    The instructions for the catch block are kept as a separate
    sequence, and will be emitted at the end of the function along with
-   the handlers specified via expand_eh_region_end (). The end of the
-   catch block is marked with expand_end_all_catch ().
+   the handlers specified via expand_eh_region_end. The end of the
+   catch block is marked with expand_end_all_catch.
 
    Any data associated with the exception must currently be handled by
    some external mechanism maintained in the frontend.  For example,
@@ -161,7 +171,7 @@ Boston, MA 02111-1307, USA.  */
    to be allocated isn't known at compile time.)
 
    Internally-generated exception regions (cleanups) are marked by
-   calling expand_eh_region_start () to mark the start of the region,
+   calling expand_eh_region_start to mark the start of the region,
    and expand_eh_region_end (handler) is used to both designate the
    end of the region and to associate a specified handler/cleanup with
    the region. The rtl code in HANDLER will be invoked whenever an
@@ -184,14 +194,14 @@ Boston, MA 02111-1307, USA.  */
    will be emitted at the end of the function.
 
    Cleanups can also be specified by using add_partial_entry (handler)
-   and end_protect_partials (). add_partial_entry creates the start of
+   and end_protect_partials. add_partial_entry creates the start of
    a new exception region; HANDLER will be invoked if an exception is
    thrown with the context of the region between the calls to
    add_partial_entry and end_protect_partials. end_protect_partials is
    used to mark the end of these regions. add_partial_entry can be
    called as many times as needed before calling end_protect_partials.
    However, end_protect_partials should only be invoked once for each
-   group of calls to add_partial_entry () as the entries are queued
+   group of calls to add_partial_entry as the entries are queued
    and all of the outstanding entries are processed simultaneously
    when end_protect_partials is invoked. Similarly to the other
    handlers, the code for HANDLER will be emitted at the end of the
@@ -209,12 +219,22 @@ Boston, MA 02111-1307, USA.  */
    exception involves calling __throw).  If an exception region is
    created but no function calls occur within that region, the region
    can be safely optimized away (along with its exception handlers)
-   since no exceptions can ever be caught in that region.
+   since no exceptions can ever be caught in that region.  This
+   optimization is performed unless -fasynchronous-exceptions is
+   given.  If the user wishes to throw from a signal handler, or other
+   asynchronous place, -fasynchronous-exceptions should be used when
+   compiling for maximally correct code, at the cost of additional
+   exception regions.  Using -fasynchronous-exceptions only produces
+   code that is reasonably safe in such situations, but a correct
+   program cannot rely upon this working.  It can be used in failsafe
+   code, where trying to continue on, and proceeding with potentially
+   incorrect results is better than halting the program.
+
 
    Unwinding the stack:
 
    The details of unwinding the stack to the next frame can be rather
-   complex. While in many cases a generic __unwind_function () routine
+   complex. While in many cases a generic __unwind_function routine
    can be used by the generated exception handling code to do this, it
    is often necessary to generate inline code to do the unwinding.
 
@@ -222,7 +242,7 @@ Boston, MA 02111-1307, USA.  */
    target-specific.
 
    By default, if the target-specific backend doesn't supply a
-   definition for __unwind_function (), inlined unwinders will be used
+   definition for __unwind_function, inlined unwinders will be used
    instead. The main tradeoff here is in text space utilization.
    Obviously, if inline unwinders have to be generated repeatedly,
    this uses much more space than if a single routine is used.
@@ -240,14 +260,14 @@ Boston, MA 02111-1307, USA.  */
    is defined and has a non-zero value, a per-function unwinder is
    not emitted for the current function.
 
-   On some platforms it is possible that neither __unwind_function ()
+   On some platforms it is possible that neither __unwind_function
    nor inlined unwinders are available. For these platforms it is not
-   possible to throw through a function call, and abort () will be
+   possible to throw through a function call, and abort will be
    invoked instead of performing the throw. 
 
    Future directions:
 
-   Currently __throw () makes no differentiation between cleanups and
+   Currently __throw makes no differentiation between cleanups and
    user-defined exception regions. While this makes the implementation
    simple, it also implies that it is impossible to determine if a
    user-defined exception handler exists for a given exception without
@@ -258,7 +278,7 @@ Boston, MA 02111-1307, USA.  */
 
    This problem can be solved by marking user-defined handlers in a
    special way (probably by adding additional bits to exception_table_list).
-   A two-pass scheme could then be used by __throw () to iterate
+   A two-pass scheme could then be used by __throw to iterate
    through the table. The first pass would search for a relevant
    user-defined handler for the current context of the throw, and if
    one is found, the second pass would then invoke all needed cleanups
@@ -268,36 +288,36 @@ Boston, MA 02111-1307, USA.  */
    user-defined handler conditional on the "type" of the exception
    thrown. (The type of the exception is actually the type of the data
    that is thrown with the exception.) It will thus be necessary for
-   __throw () to be able to determine if a given user-defined
+   __throw to be able to determine if a given user-defined
    exception handler will actually be executed, given the type of
    exception.
 
    One scheme is to add additional information to exception_table_list
-   as to the types of exceptions accepted by each handler. __throw ()
+   as to the types of exceptions accepted by each handler. __throw
    can do the type comparisons and then determine if the handler is
    actually going to be executed.
 
    There is currently no significant level of debugging support
-   available, other than to place a breakpoint on __throw (). While
+   available, other than to place a breakpoint on __throw. While
    this is sufficient in most cases, it would be helpful to be able to
    know where a given exception was going to be thrown to before it is
    actually thrown, and to be able to choose between stopping before
    every exception region (including cleanups), or just user-defined
    exception regions. This should be possible to do in the two-pass
-   scheme by adding additional labels to __throw () for appropriate
+   scheme by adding additional labels to __throw for appropriate
    breakpoints, and additional debugger commands could be added to
    query various state variables to determine what actions are to be
    performed next.
 
    Another major problem that is being worked on is the issue with
    stack unwinding on various platforms. Currently the only platform
-   that has support for __unwind_function () is the Sparc; all other
+   that has support for __unwind_function is the Sparc; all other
    ports require per-function unwinders, which causes large amounts of
    code bloat.
 
    Ideally it would be possible to store a small set of metadata with
    each function that would then make it possible to write a
-   __unwind_function () for every platform. This would eliminate the
+   __unwind_function for every platform. This would eliminate the
    need for per-function unwinders.
 
    The main reason the data is needed is that on some platforms the
@@ -310,7 +330,27 @@ Boston, MA 02111-1307, USA.  */
    aren't compiled with exception handling support will still not be
    possible on some platforms. This problem is currently being
    investigated, but no solutions have been found that do not imply
-   some unacceptable performance penalties.  */
+   some unacceptable performance penalties.
+
+   For setjmp/longjmp based exception handling, some of the details
+   are as above, but there are some additional details.  This section
+   discusses the details.
+
+   We don't use NOTE_INSN_EH_REGION_{BEG,END} pairs.  We don't
+   optimize EH regions yet.  We don't have to worry about machine
+   specific issues with unwinding the stack, as we rely upon longjmp
+   for all the machine specific details.  There is no variable context
+   of a throw, just the one implied by the dynamic handler stack
+   pointed to by the dynamic handler chain.  There is no exception
+   table, and no calls to __register_excetpions.  __sjthrow is used
+   instead of __throw, and it works by using the dynamic handler
+   chain, and longjmp.  -fasynchronous-exceptions has no effect, as
+   the elimination of trivial exception regions is not yet performed.
+
+   A frontend can set protect_cleanup_actions_with_terminate when all
+   the cleanup actions should be protected with an EH region that
+   calls terminate when an unhandled exception is throw.  C++ does
+   this, Ada does not.  */
 
 
 #include "config.h"
@@ -330,6 +370,20 @@ Boston, MA 02111-1307, USA.  */
 #include "output.h"
 #include "assert.h"
 
+/* One to use setjmp/longjmp method of generating code for exception
+   handling.  */
+
+int exceptions_via_longjmp = 1;
+
+/* One to enable asynchronous exception support.  */
+
+int asynchronous_exceptions = 0;
+
+/* One to protect cleanup actions with a handler that calls
+   __terminate, zero otherwise.  */
+
+int protect_cleanup_actions_with_terminate = 0;
+
 /* A list of labels used for exception handlers.  Created by
    find_exception_handler_labels for the optimization passes.  */
 
@@ -342,30 +396,42 @@ rtx exception_handler_labels;
 
 int throw_used;
 
+/* The dynamic handler chain.  Nonzero if the function has already
+   fetched a pointer to the dynamic handler chain for exception
+   handling.  */
+
+rtx current_function_dhc;
+
+/* The dynamic cleanup chain.  Nonzero if the function has already
+   fetched a pointer to the dynamic cleanup chain for exception
+   handling.  */
+
+rtx current_function_dcc;
+
 /* A stack used for keeping track of the currectly active exception
    handling region.  As each exception region is started, an entry
    describing the region is pushed onto this stack.  The current
    region can be found by looking at the top of the stack, and as we
    exit regions, the corresponding entries are popped. 
 
-   Entries cannot overlap; they must be nested. So there is only one
+   Entries cannot overlap; they can be nested. So there is only one
    entry at most that corresponds to the current instruction, and that
    is the entry on the top of the stack.  */
 
-struct eh_stack ehstack;
+static struct eh_stack ehstack;
 
 /* A queue used for tracking which exception regions have closed but
    whose handlers have not yet been expanded. Regions are emitted in
    groups in an attempt to improve paging performance.
 
    As we exit a region, we enqueue a new entry. The entries are then
-   dequeued during expand_leftover_cleanups () and expand_start_all_catch (),
+   dequeued during expand_leftover_cleanups and expand_start_all_catch,
 
    We should redo things so that we either take RTL for the handler,
    or we expand the handler expressed as a tree immediately at region
    end time.  */
 
-struct eh_queue ehqueue;
+static struct eh_queue ehqueue;
 
 /* Insns for all of the exception handlers for the current function.
    They are currently emitted by the frontend code.  */
@@ -599,9 +665,10 @@ eh_outer_context (addr)
   return addr;
 }
 
-/* Start a new exception region and push the HANDLER for the region
-   onto protect_list. All of the regions created with add_partial_entry
-   will be ended when end_protect_partials () is invoked.  */
+/* Start a new exception region for a region of code that has a
+   cleanup action and push the HANDLER for the region onto
+   protect_list. All of the regions created with add_partial_entry
+   will be ended when end_protect_partials is invoked.  */
 
 void
 add_partial_entry (handler)
@@ -612,13 +679,322 @@ add_partial_entry (handler)
   /* Make sure the entry is on the correct obstack.  */
   push_obstacks_nochange ();
   resume_temporary_allocation ();
+
+  /* Because this is a cleanup action, we may have to protect the handler
+     with __terminate.  */
+  handler = protect_with_terminate (handler);
+
   protect_list = tree_cons (NULL_TREE, handler, protect_list);
   pop_obstacks ();
 }
 
-/* Output a note marking the start of an exception handling region.
+/* Get a reference to the dynamic handler chain.  It points to the
+   pointer to the next element in the dynamic handler chain.  It ends
+   when there are no more elements in the dynamic handler chain, when
+   the value is &top_elt from libgcc2.c.  Immediately after the
+   pointer, is an area suitable for setjmp/longjmp when
+   USE_BUILTIN_SETJMP isn't defined, and an area suitable for
+   __builtin_setjmp/__builtin_longjmp when USE_BUILTIN_SETJMP is
+   defined.
+
+   This routine is here to facilitate the porting of this code to
+   systems with threads.  One can either replace the routine we emit a
+   call for here in libgcc2.c, or one can modify this routine to work
+   with their thread system.  */
+
+rtx
+get_dynamic_handler_chain ()
+{
+#if 0
+  /* Do this once we figure out how to get this to the front of the
+     function, and we really only want one per real function, not one
+     per inlined function.  */
+  if (current_function_dhc == 0)
+    {
+      rtx dhc, insns;
+      start_sequence ();
+
+      dhc = emit_library_call_value (get_dynamic_handler_chain_libfunc,
+				     NULL_RTX, 1,
+				     Pmode, 0);
+      current_function_dhc = copy_to_reg (dhc);
+      insns = get_insns ();
+      end_sequence ();
+      emit_insns_before (insns, get_first_nonparm_insn ());
+    }
+#else
+  rtx dhc;
+  dhc = emit_library_call_value (get_dynamic_handler_chain_libfunc,
+				 NULL_RTX, 1,
+				 Pmode, 0);
+  current_function_dhc = copy_to_reg (dhc);
+#endif
+
+  /* We don't want a copy of the dhc, but rather, the single dhc.  */
+  return gen_rtx (MEM, Pmode, current_function_dhc);
+}
+
+/* Get a reference to the dynamic cleanup chain.  It points to the
+   pointer to the next element in the dynamic cleanup chain.
+   Immediately after the pointer, are two Pmode variables, one for a
+   pointer to a function that performs the cleanup action, and the
+   second, the argument to pass to that function.  */
+
+rtx
+get_dynamic_cleanup_chain ()
+{
+  rtx dhc, dcc;
+
+  dhc = get_dynamic_handler_chain ();
+  dcc = plus_constant (dhc, GET_MODE_SIZE (Pmode));
+
+  current_function_dcc = copy_to_reg (dcc);
+
+  /* We don't want a copy of the dcc, but rather, the single dcc.  */
+  return gen_rtx (MEM, Pmode, current_function_dcc);
+}
+
+/* Generate code to evaluate X and jump to LABEL if the value is nonzero.
+   LABEL is an rtx of code CODE_LABEL, in this function.  */
+
+void
+jumpif_rtx (x, label)
+     rtx x;
+     rtx label;
+{
+  jumpif (make_tree (type_for_mode (GET_MODE (x), 0), x), label);
+}
+
+/* Generate code to evaluate X and jump to LABEL if the value is zero.
+   LABEL is an rtx of code CODE_LABEL, in this function.  */
+
+void
+jumpifnot_rtx (x, label)
+     rtx x;
+     rtx label;
+{
+  jumpifnot (make_tree (type_for_mode (GET_MODE (x), 0), x), label);
+}
+
+/* Start a dynamic cleanup on the EH runtime dynamic cleanup stack.
+   We just need to create an element for the cleanup list, and push it
+   into the chain.
+
+   A dynamic cleanup is a cleanup action implied by the presence of an
+   element on the EH runtime dynamic cleanup stack that is to be
+   performed when an exception is thrown.  The cleanup action is
+   performed by __sjthrow when an exception is thrown.  Only certain
+   actions can be optimized into dynamic cleanup actions.  For the
+   restrictions on what actions can be performed using this routine,
+   see expand_eh_region_start_tree.  */
+
+static void
+start_dynamic_cleanup (func, arg)
+     tree func;
+     tree arg;
+{
+  rtx dhc, dcc;
+  rtx new_func, new_arg;
+  rtx x, buf;
+  int size;
+
+  /* We allocate enough room for a pointer to the function, and
+     one argument.  */
+  size = 2;
+
+  /* XXX, FIXME: The stack space allocated this way is too long lived,
+     but there is no allocation routine that allocates at the level of
+     the last binding contour.  */
+  buf = assign_stack_local (BLKmode,
+			    GET_MODE_SIZE (Pmode)*(size+1),
+			    0);
+
+  buf = change_address (buf, Pmode, NULL_RTX);
+
+  /* Store dcc into the first word of the newly allocated buffer.  */
+
+  dcc = get_dynamic_cleanup_chain ();
+  emit_move_insn (buf, dcc);
+
+  /* Store func and arg into the cleanup list element.  */
+
+  new_func = gen_rtx (MEM, Pmode, plus_constant (XEXP (buf, 0),
+						 GET_MODE_SIZE (Pmode)));
+  new_arg = gen_rtx (MEM, Pmode, plus_constant (XEXP (buf, 0),
+						GET_MODE_SIZE (Pmode)*2));
+  x = expand_expr (func, new_func, Pmode, 0);
+  if (x != new_func)
+    emit_move_insn (new_func, x);
+
+  x = expand_expr (arg, new_arg, Pmode, 0);
+  if (x != new_arg)
+    emit_move_insn (new_arg, x);
+
+  /* Update the cleanup chain.  */
+
+  emit_move_insn (dcc, XEXP (buf, 0));
+}
+
+/* Emit RTL to start a dynamic handler on the EH runtime dynamic
+   handler stack.  This should only be used by expand_eh_region_start
+   or expand_eh_region_start_tree.  */
+
+static void
+start_dynamic_handler ()
+{
+  rtx dhc, dcc;
+  rtx x, arg;
+  int size;
+
+#ifdef USE_BUILTIN_SETJMP
+  /* The number of Pmode words for the setjmp buffer, when using the
+     builtin setjmp/longjmp, see expand_builtin, case
+     BUILT_IN_LONGJMP.  */
+  size = 5;
+#else
+#ifdef JMP_BUF_SIZE
+  size = JMP_BUF_SIZE;
+#else
+  /* Should be large enough for most systems, if it is not,
+     JMP_BUF_SIZE should be defined with the proper value.  It will
+     also tend to be larger than necessary for most systems, a more
+     optimal port will define JMP_BUF_SIZE.  */
+  size = FIRST_PSEUDO_REGISTER+2;
+#endif
+#endif
+  /* XXX, FIXME: The stack space allocated this way is too long lived,
+     but there is no allocation routine that allocates at the level of
+     the last binding contour.  */
+  arg = assign_stack_local (BLKmode,
+			    GET_MODE_SIZE (Pmode)*(size+1),
+			    0);
+
+  arg = change_address (arg, Pmode, NULL_RTX);
+
+  /* Store dhc into the first word of the newly allocated buffer.  */
+
+  dhc = get_dynamic_handler_chain ();
+  dcc = gen_rtx (MEM, Pmode, plus_constant (XEXP (arg, 0),
+					    GET_MODE_SIZE (Pmode)));
+  emit_move_insn (arg, dhc);
+
+  /* Zero out the start of the cleanup chain.  */
+  emit_move_insn (dcc, const0_rtx);
+
+  /* The jmpbuf starts two words into the area allocated.  */
+
+  x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1, SImode, 1,
+			       plus_constant (XEXP (arg, 0), GET_MODE_SIZE (Pmode)*2),
+			       Pmode);
+
+  /* If we come back here for a catch, transfer control to the
+     handler.  */
+
+  jumpif_rtx (x, ehstack.top->entry->exception_handler_label);
+
+  /* We are committed to this, so update the handler chain.  */
+
+  emit_move_insn (dhc, XEXP (arg, 0));
+}
+
+/* Start an exception handling region for the given cleanup action.
    All instructions emitted after this point are considered to be part
-   of the region until expand_eh_region_end () is invoked.  */
+   of the region until expand_eh_region_end is invoked.  CLEANUP is
+   the cleanup action to perform.  The return value is true if the
+   exception region was optimized away.  If that case,
+   expand_eh_region_end does not need to be called for this cleanup,
+   nor should it be.
+
+   This routine notices one particular common case in C++ code
+   generation, and optimizes it so as to not need the exception
+   region.  It works by creating a dynamic cleanup action, instead of
+   of a using an exception region.  */
+
+int
+expand_eh_region_start_tree (cleanup)
+     tree cleanup;
+{
+  rtx note;
+
+  /* This is the old code.  */
+  if (! doing_eh (0))
+    return 0;
+
+  /* The optimization only applies to actions protected with
+     terminate, and only applies if we are using the setjmp/longjmp
+     codegen method.  */
+  if (exceptions_via_longjmp
+      && protect_cleanup_actions_with_terminate)
+    {
+      tree func, arg;
+      tree args;
+
+      /* Ignore any UNSAVE_EXPR.  */
+      if (TREE_CODE (cleanup) == UNSAVE_EXPR)
+	cleanup = TREE_OPERAND (cleanup, 0);
+      
+      /* Further, it only applies if the action is a call, if there
+	 are 2 arguments, and if the second argument is 2.  */
+
+      if (TREE_CODE (cleanup) == CALL_EXPR
+	  && (args = TREE_OPERAND (cleanup, 1))
+	  && (func = TREE_OPERAND (cleanup, 0))
+	  && (arg = TREE_VALUE (args))
+	  && (args = TREE_CHAIN (args))
+
+	  /* is the second argument 2?  */
+	  && TREE_CODE (TREE_VALUE (args)) == INTEGER_CST
+	  && TREE_INT_CST_LOW (TREE_VALUE (args)) == 2
+	  && TREE_INT_CST_HIGH (TREE_VALUE (args)) == 0
+
+	  /* Make sure there are no other arguments.  */
+	  && TREE_CHAIN (args) == NULL_TREE)
+	{
+	  /* Arrange for returns and gotos to pop the entry we make on the
+	     dynamic cleanup stack.  */
+	  expand_dcc_cleanup ();
+	  start_dynamic_cleanup (func, arg);
+	  return 1;
+	}
+    }
+
+  if (exceptions_via_longjmp)
+    {
+      /* We need a new block to record the start and end of the
+	 dynamic handler chain.  We could always do this, but we
+	 really want to permit jumping into such a block, and we want
+	 to avoid any errors or performance impact in the SJ EH code
+	 for now.  */
+      expand_start_bindings (0);
+
+      /* But we don't need or want a new temporary level.  */
+      pop_temp_slots ();
+
+      /* Mark this block as created by expand_eh_region_start.  This
+	 is so that we can pop the block with expand_end_bindings
+	 automatically.  */
+      mark_block_as_eh_region ();
+
+      /* Arrange for returns and gotos to pop the entry we make on the
+	 dynamic handler stack.  */
+      expand_dhc_cleanup ();
+    }
+
+  if (exceptions_via_longjmp == 0)
+    note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
+  emit_label (push_eh_entry (&ehstack));
+  if (exceptions_via_longjmp == 0)
+    NOTE_BLOCK_NUMBER (note)
+      = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
+  if (exceptions_via_longjmp)
+    start_dynamic_handler ();
+
+  return 0;
+}
+
+/* Start an exception handling region.  All instructions emitted after
+   this point are considered to be part of the region until
+   expand_eh_region_end is invoked.  */
 
 void
 expand_eh_region_start ()
@@ -629,32 +1005,51 @@ expand_eh_region_start ()
   if (! doing_eh (0))
     return;
 
-#if 0
-  /* Maybe do this to prevent jumping in and so on...  */
-  pushlevel (0);
-#endif
+  if (exceptions_via_longjmp)
+    {
+      /* We need a new block to record the start and end of the
+	 dynamic handler chain.  We could always do this, but we
+	 really want to permit jumping into such a block, and we want
+	 to avoid any errors or performance impact in the SJ EH code
+	 for now.  */
+      expand_start_bindings (0);
 
-  note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
+      /* But we don't need or want a new temporary level.  */
+      pop_temp_slots ();
+
+      /* Mark this block as created by expand_eh_region_start.  This
+	 is so that we can pop the block with expand_end_bindings
+	 automatically.  */
+      mark_block_as_eh_region ();
+
+      /* Arrange for returns and gotos to pop the entry we make on the
+	 dynamic handler stack.  */
+      expand_dhc_cleanup ();
+    }
+
+  if (exceptions_via_longjmp == 0)
+    note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_BEG);
   emit_label (push_eh_entry (&ehstack));
-  NOTE_BLOCK_NUMBER (note)
-    = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
+  if (exceptions_via_longjmp == 0)
+    NOTE_BLOCK_NUMBER (note)
+      = CODE_LABEL_NUMBER (ehstack.top->entry->exception_handler_label);
+  if (exceptions_via_longjmp)
+    start_dynamic_handler ();
 }
 
-/* Output a note marking the end of the exception handling region on
-   the top of ehstack.
+/* End an exception handling region.  The information about the region
+   is found on the top of ehstack.
 
    HANDLER is either the cleanup for the exception region, or if we're
    marking the end of a try block, HANDLER is integer_zero_node.
 
-   HANDLER will be transformed to rtl when expand_leftover_cleanups ()
+   HANDLER will be transformed to rtl when expand_leftover_cleanups
    is invoked.  */
 
 void
 expand_eh_region_end (handler)
      tree handler;
 {
-  rtx note;
-
   struct eh_entry *entry;
 
   if (! doing_eh (0))
@@ -662,47 +1057,75 @@ expand_eh_region_end (handler)
 
   entry = pop_eh_entry (&ehstack);
 
-  note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
-  NOTE_BLOCK_NUMBER (note) = CODE_LABEL_NUMBER (entry->exception_handler_label);
+  if (exceptions_via_longjmp == 0)
+    {
+      rtx note = emit_note (NULL_PTR, NOTE_INSN_EH_REGION_END);
+      NOTE_BLOCK_NUMBER (note) = CODE_LABEL_NUMBER (entry->exception_handler_label);
+    }
 
   /* Emit a label marking the end of this exception region.  */
   emit_label (entry->end_label);
 
-  /* Put in something that takes up space, as otherwise the end
-     address for this EH region could have the exact same address as
-     its outer region. This would cause us to miss the fact that
-     resuming exception handling with this PC value would be inside
-     the outer region.  */
-  emit_insn (gen_nop ());
+  if (exceptions_via_longjmp == 0)
+    {
+      /* Put in something that takes up space, as otherwise the end
+	 address for this EH region could have the exact same address as
+	 its outer region. This would cause us to miss the fact that
+	 resuming exception handling with this PC value would be inside
+	 the outer region.  */
+      emit_insn (gen_nop ());
+    }
 
   entry->finalization = handler;
 
   enqueue_eh_entry (&ehqueue, entry);
 
-#if 0
-  /* Maybe do this to prevent jumping in and so on...  */
-  poplevel (1, 0, 0);
-#endif
+  /* If we have already started ending the bindings, don't recurse.
+     This only happens when exceptions_via_longjmp is true.  */
+  if (is_eh_region ())
+    {
+      /* Because we don't need or want a new temporary level and
+	 because we didn't create one in expand_eh_region_start,
+	 create a fake one now to avoid removing one in
+	 expand_end_bindings.  */
+      push_temp_slots ();
+
+      mark_block_as_not_eh_region ();
+
+      /* Maybe do this to prevent jumping in and so on...  */
+      expand_end_bindings (NULL_TREE, 0, 0);
+    }
 }
 
-/* Emit a call to __throw and note that we threw something, so we know
-   we need to generate the necessary code for __throw.  
+/* If we are using the setjmp/longjmp EH codegen method, we emit a
+   call to __sjthrow.
+
+   Otherwise, we emit a call to __throw and note that we threw
+   something, so we know we need to generate the necessary code for
+   __throw.
 
    Before invoking throw, the __eh_pc variable must have been set up
    to contain the PC being thrown from. This address is used by
-   __throw () to determine which exception region (if any) is
+   __throw to determine which exception region (if any) is
    responsible for handling the exception.  */
 
-static void
+void
 emit_throw ()
 {
+  if (exceptions_via_longjmp)
+    {
+      emit_library_call (sjthrow_libfunc, 0, VOIDmode, 0);
+    }
+  else
+    {
 #ifdef JUMP_TO_THROW
-  emit_indirect_jump (throw_libfunc);
+      emit_indirect_jump (throw_libfunc);
 #else
-  SYMBOL_REF_USED (throw_libfunc) = 1;
-  emit_library_call (throw_libfunc, 0, VOIDmode, 0);
+      SYMBOL_REF_USED (throw_libfunc) = 1;
+      emit_library_call (throw_libfunc, 0, VOIDmode, 0);
 #endif
-  throw_used = 1;
+      throw_used = 1;
+    }
   emit_barrier ();
 }
 
@@ -730,7 +1153,7 @@ expand_internal_throw (context)
 }
 
 /* Called from expand_exception_blocks and expand_end_catch_block to
-   emit any pending handlers/cleanups queued from expand_eh_region_end ().  */
+   emit any pending handlers/cleanups queued from expand_eh_region_end.  */
 
 void
 expand_leftover_cleanups ()
@@ -752,13 +1175,18 @@ expand_leftover_cleanups ()
       expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
 
       prev = get_last_insn ();
-      if (! (prev && GET_CODE (prev) == BARRIER))
+      if (prev == NULL || GET_CODE (prev) != BARRIER)
 	{
-	  /* The below can be optimized away, and we could just fall into the
-	     next EH handler, if we are certain they are nested.  */
-	  /* Emit code to throw to the outer context if we fall off
-	     the end of the handler.  */
-	  expand_internal_throw (entry->end_label);
+	  if (exceptions_via_longjmp)
+	    emit_throw ();
+	  else
+	    {
+	      /* The below can be optimized away, and we could just fall into the
+		 next EH handler, if we are certain they are nested.  */
+	      /* Emit code to throw to the outer context if we fall off
+		 the end of the handler.  */
+	      expand_internal_throw (entry->end_label);
+	    }
 	}
 
       free (entry);
@@ -801,12 +1229,15 @@ expand_start_all_catch ()
      This is Lresume in the documention.  */
   expand_label (label);
   
-  /* Put in something that takes up space, as otherwise the end
-     address for the EH region could have the exact same address as
-     the outer region, causing us to miss the fact that resuming
-     exception handling with this PC value would be inside the outer
-     region.  */
-  emit_insn (gen_nop ());
+  if (exceptions_via_longjmp == 0)
+    {
+      /* Put in something that takes up space, as otherwise the end
+	 address for the EH region could have the exact same address as
+	 the outer region, causing us to miss the fact that resuming
+	 exception handling with this PC value would be inside the outer
+	 region.  */
+      emit_insn (gen_nop ());
+    }
 
   /* Push the label that points to where normal flow is resumed onto
      the top of the label stack.  */
@@ -832,7 +1263,6 @@ expand_start_all_catch ()
 	 still be emitted, so any code emitted after this point will
 	 end up being the handler.  */
       emit_label (entry->exception_handler_label);
-      expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
 
       /* When we get down to the matching entry for this try block, stop.  */
       if (entry->finalization == integer_zero_node)
@@ -842,18 +1272,26 @@ expand_start_all_catch ()
 	  break;
 	}
 
+      /* And now generate the insns for the handler.  */
+      expand_expr (entry->finalization, const0_rtx, VOIDmode, 0);
+
       prev = get_last_insn ();
       if (prev == NULL || GET_CODE (prev) != BARRIER)
 	{
-	  /* Code to throw out to outer context when we fall off end
-	     of the handler. We can't do this here for catch blocks,
-	     so it's done in expand_end_all_catch () instead.
+	  if (exceptions_via_longjmp)
+	    emit_throw ();
+	  else
+	    {
+	      /* Code to throw out to outer context when we fall off end
+		 of the handler. We can't do this here for catch blocks,
+		 so it's done in expand_end_all_catch instead.
 
-	     The below can be optimized away (and we could just fall
-	     into the next EH handler) if we are certain they are
-	     nested.  */
+		 The below can be optimized away (and we could just fall
+		 into the next EH handler) if we are certain they are
+		 nested.  */
 
-	  expand_internal_throw (entry->end_label);
+	      expand_internal_throw (entry->end_label);
+	    }
 	}
       free (entry);
     }
@@ -873,17 +1311,22 @@ expand_end_all_catch ()
   if (! doing_eh (1))
     return;
 
-  /* Code to throw out to outer context, if we fall off end of catch
-     handlers.  This is rethrow (Lresume, same id, same obj) in the
-     documentation. We use Lresume because we know that it will throw
-     to the correct context.
+  if (exceptions_via_longjmp)
+    emit_throw ();
+  else
+    {
+      /* Code to throw out to outer context, if we fall off end of catch
+	 handlers.  This is rethrow (Lresume, same id, same obj) in the
+	 documentation. We use Lresume because we know that it will throw
+	 to the correct context.
 
-     In other words, if the catch handler doesn't exit or return, we
-     do a "throw" (using the address of Lresume as the point being
-     thrown from) so that the outer EH region can then try to process
-     the exception.  */
+	 In other words, if the catch handler doesn't exit or return, we
+	 do a "throw" (using the address of Lresume as the point being
+	 thrown from) so that the outer EH region can then try to process
+	 the exception.  */
 
-  expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+      expand_internal_throw (DECL_RTL (top_label_entry (&caught_return_label_stack)));
+    }
 
   /* Now we have the complete catch sequence.  */
   new_catch_clause = get_insns ();
@@ -903,7 +1346,7 @@ expand_end_all_catch ()
 }
 
 /* End all the pending exception regions on protect_list. The handlers
-   will be emitted when expand_leftover_cleanups () is invoked.  */
+   will be emitted when expand_leftover_cleanups is invoked.  */
 
 void
 end_protect_partials ()
@@ -914,14 +1357,57 @@ end_protect_partials ()
       protect_list = TREE_CHAIN (protect_list);
     }
 }
+
+/* Arrange for __terminate to be called if there is an unhandled throw
+   from within E.  */
+
+tree
+protect_with_terminate (e)
+     tree e;
+{
+  /* We only need to do this when using setjmp/longjmp EH and the
+     language requires it, as otherwise we protect all of the handlers
+     at once, if we need to.  */
+  if (exceptions_via_longjmp && protect_cleanup_actions_with_terminate)
+    {
+      tree handler, result;
+
+      /* All cleanups must be on the function_obstack.  */
+      push_obstacks_nochange ();
+      resume_temporary_allocation ();
+
+      handler = make_node (RTL_EXPR);
+      TREE_TYPE (handler) = void_type_node;
+      RTL_EXPR_RTL (handler) = const0_rtx;
+      TREE_SIDE_EFFECTS (handler) = 1;
+      start_sequence_for_rtl_expr (handler);
+
+      emit_library_call (terminate_libfunc, 0, VOIDmode, 0);
+      emit_barrier ();
+
+      RTL_EXPR_SEQUENCE (handler) = get_insns ();
+      end_sequence ();
+	
+      result = build (TRY_CATCH_EXPR, TREE_TYPE (e), e, handler);
+      TREE_SIDE_EFFECTS (result) = TREE_SIDE_EFFECTS (e);
+      TREE_THIS_VOLATILE (result) = TREE_THIS_VOLATILE (e);
+      TREE_READONLY (result) = TREE_READONLY (e);
+
+      pop_obstacks ();
+
+      e = result;
+    }
+
+  return e;
+}
 
 /* The exception table that we build that is used for looking up and
    dispatching exceptions, the current number of entries, and its
    maximum size before we have to extend it. 
 
    The number in eh_table is the code label number of the exception
-   handler for the region. This is added by add_eh_table_entry () and
-   used by output_exception_table_entry ().  */
+   handler for the region. This is added by add_eh_table_entry and
+   used by output_exception_table_entry.  */
 
 static int *eh_table;
 static int eh_table_size;
@@ -1055,7 +1541,7 @@ register_exception_table ()
 }
 
 /* Emit the RTL for the start of the per-function unwinder for the
-   current function. See emit_unwinder () for further information.
+   current function. See emit_unwinder for further information.
 
    DOESNT_NEED_UNWINDER is a target-specific macro that determines if
    the current function actually needs a per-function unwinder or not.
@@ -1068,6 +1554,12 @@ start_eh_unwinder ()
   if (DOESNT_NEED_UNWINDER)
     return;
 #endif
+
+  /* If we are using the setjmp/longjmp implementation, we don't need a
+     per function unwinder.  */
+
+  if (exceptions_via_longjmp)
+    return;
 
   expand_eh_region_start ();
 }
@@ -1088,6 +1580,12 @@ end_eh_unwinder ()
   if (DOESNT_NEED_UNWINDER)
     return;
 #endif
+
+  /* If we are using the setjmp/longjmp implementation, we don't need a
+     per function unwinder.  */
+
+  if (exceptions_via_longjmp)
+    return;
 
   assemble_external (eh_saved_pc);
 
@@ -1128,6 +1626,7 @@ end_eh_unwinder ()
 
   RTL_EXPR_SEQUENCE (expr) = get_insns ();
   end_sequence ();
+
   expand_eh_region_end (expr);
 
   emit_jump (end);
@@ -1319,8 +1818,8 @@ check_exception_handler_labels ()
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == NOTE
-	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG ||
-	      NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
+	  && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG
+	      || NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
 	{
 	  for (handler = exception_handler_labels;
 	       handler;
@@ -1370,12 +1869,14 @@ init_eh_for_function ()
   false_label_stack = 0;
   caught_return_label_stack = 0;
   protect_list = NULL_TREE;
+  current_function_dhc = NULL_RTX;
+  current_function_dcc = NULL_RTX;
 }
 
 /* Save some of the per-function EH info into the save area denoted by
    P. 
 
-   This is currently called from save_stmt_status ().  */
+   This is currently called from save_stmt_status.  */
 
 void
 save_eh_status (p)
@@ -1389,6 +1890,8 @@ save_eh_status (p)
   p->false_label_stack = false_label_stack;
   p->caught_return_label_stack = caught_return_label_stack;
   p->protect_list = protect_list;
+  p->dhc = current_function_dhc;
+  p->dcc = current_function_dcc;
 
   init_eh ();
 }
@@ -1409,6 +1912,8 @@ restore_eh_status (p)
   catch_clauses	= p->catch_clauses;
   ehqueue = p->ehqueue;
   ehstack = p->ehstack;
+  current_function_dhc = p->dhc;
+  current_function_dcc = p->dcc;
 }
 
 /* This section is for the exception handling specific optimization
@@ -1425,12 +1930,13 @@ can_throw (insn)
   if (GET_CODE (insn) == CALL_INSN)
     return 1;
 
-#ifdef ASYNCH_EXCEPTIONS
-  /* If we wanted asynchronous exceptions, then everything but NOTEs
-     and CODE_LABELs could throw.  */
-  if (GET_CODE (insn) != NOTE && GET_CODE (insn) != CODE_LABEL)
-    return 1;
-#endif
+  if (asynchronous_exceptions)
+    {
+      /* If we wanted asynchronous exceptions, then everything but NOTEs
+	 and CODE_LABELs could throw.  */
+      if (GET_CODE (insn) != NOTE && GET_CODE (insn) != CODE_LABEL)
+	return 1;
+    }
 
   return 0;
 }
@@ -1441,13 +1947,13 @@ can_throw (insn)
    region can throw.
 
    Regions are removed if they cannot possibly catch an exception.
-   This is determined by invoking can_throw () on each insn within the
+   This is determined by invoking can_throw on each insn within the
    region; if can_throw returns true for any of the instructions, the
    region can catch an exception, since there is an insn within the
    region that is capable of throwing an exception.
 
    Returns the NOTE_INSN_EH_REGION_END corresponding to this region, or
-   calls abort () if it can't find one.
+   calls abort if it can't find one.
 
    Can abort if INSN is not a NOTE_INSN_EH_REGION_BEGIN, or if N doesn't
    correspond to the region number, or if DELETE_OUTER is NULL.  */
@@ -1554,16 +2060,20 @@ exception_optimize ()
   rtx insn, regions = NULL_RTX;
   int n;
 
+  /* The below doesn't apply to setjmp/longjmp EH.  */
+  if (exceptions_via_longjmp)
+    return;
+
   /* Remove empty regions.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (GET_CODE (insn) == NOTE
 	  && NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG)
 	{
-	  /* Since scan_region () will return the NOTE_INSN_EH_REGION_END
+	  /* Since scan_region will return the NOTE_INSN_EH_REGION_END
 	     insn, we will indirectly skip through all the insns
 	     inbetween. We are also guaranteed that the value of insn
-	     returned will be valid, as otherwise scan_region () won't
+	     returned will be valid, as otherwise scan_region won't
 	     return.  */
 	  insn = scan_region (insn, NOTE_BLOCK_NUMBER (insn), &n);
 	}

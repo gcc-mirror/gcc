@@ -3089,6 +3089,9 @@ do {									\
     }								\
 }
 
+/* The number of Pmode words for the setjmp buffer.  */
+#define JMP_BUF_SIZE 12
+
 /* Declare functions defined in sparc.c and used in templates.  */
 
 extern char *singlemove_string ();

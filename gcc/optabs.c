@@ -119,6 +119,12 @@ rtx memset_libfunc;
 rtx bzero_libfunc;
 
 rtx throw_libfunc;
+rtx sjthrow_libfunc;
+rtx sjpopnthrow_libfunc;
+rtx terminate_libfunc;
+rtx setjmp_libfunc;
+rtx longjmp_libfunc;
+rtx get_dynamic_handler_chain_libfunc;
 
 rtx eqhf2_libfunc;
 rtx nehf2_libfunc;
@@ -4268,6 +4274,17 @@ init_optabs ()
   bzero_libfunc = gen_rtx (SYMBOL_REF, Pmode, "bzero");
 
   throw_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__throw");
+  sjthrow_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__sjthrow");
+  sjpopnthrow_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__sjpopnthrow");
+  terminate_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__terminate");
+#ifdef USE_BUILTIN_SETJMP
+  setjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__builtin_setjmp");
+  longjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__builtin_longjmp");
+#else
+  setjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "setjmp");
+  longjmp_libfunc = gen_rtx (SYMBOL_REF, Pmode, "longjmp");
+#endif
+  get_dynamic_handler_chain_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__get_dynamic_handler_chain");
 
   eqhf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__eqhf2");
   nehf2_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__nehf2");
