@@ -3809,13 +3809,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
   /* Otherwise, if we were avoiding committing until we knew
      whether or not we had a pointer-to-member, we now know that
      the expression is an ordinary reference to a qualified name.  */
-  if (qualifying_class && !processing_template_decl)
+  if (qualifying_class)
     {
       if (TREE_CODE (postfix_expression) == FIELD_DECL)
 	postfix_expression 
 	  = finish_non_static_data_member (postfix_expression,
 					   qualifying_class);
-      else if (BASELINK_P (postfix_expression))
+      else if (BASELINK_P (postfix_expression) 
+	       && !processing_template_decl)
 	{
 	  tree fn;
 	  tree fns;
@@ -11756,8 +11757,8 @@ cp_parser_class_head (cp_parser* parser,
     }
   else
     {
-      bool new_type_p;
       tree class_type;
+      tree scope;
 
       /* Given:
 
@@ -11780,14 +11781,25 @@ cp_parser_class_head (cp_parser* parser,
 	    }
 	}
 
+      /* Figure out in what scope the declaration is being placed.  */
+      scope = current_scope ();
+      if (!scope)
+	scope = current_namespace;
+      /* If that scope does not contain the scope in which the
+	 class was originally declared, the program is invalid.  */
+      if (scope && !is_ancestor (scope, CP_DECL_CONTEXT (type)))
+	{
+	  error ("declaration of `%D' in  `%D' which does not "
+		 "enclose `%D'", type, scope, nested_name_specifier);
+	  return NULL_TREE;
+	}
+
       maybe_process_partial_specialization (TREE_TYPE (type));
       class_type = current_class_type;
       type = TREE_TYPE (handle_class_head (class_key, 
 					   nested_name_specifier,
 					   type,
-					   attributes,
-					   /*defn_p=*/true,
-					   &new_type_p));
+					   attributes));
       if (type != error_mark_node)
 	{
 	  if (!class_type && TYPE_CONTEXT (type))

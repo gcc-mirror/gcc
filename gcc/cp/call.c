@@ -1382,6 +1382,11 @@ add_function_candidate (struct z_candidate **candidates,
   tree orig_arglist;
   int viable = 1;
 
+  /* Built-in functions that haven't been declared don't really
+     exist.  */
+  if (DECL_ANTICIPATED (fn))
+    return NULL;
+
   /* The `this', `in_chrg' and VTT arguments to constructors are not
      considered in overload resolution.  */
   if (DECL_CONSTRUCTOR_P (fn))

@@ -1,3 +1,20 @@
+2003-03-08  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9809
+	* g++.dg/parse/builtin1.C: New test.
+
+	PR c++/9982
+	* g++.dg/abi/cookie1.C: New test.
+	* g++.dg/abi/cookie2.C: Likewise.
+
+	PR c++/9524
+	* g++.dg/parse/field1.C: New test.
+
+	PR c++/9912
+	* g++.dg/parse/class1.C: New test.
+	* g++.dg/parse/namespace7.C: Likewise.
+	* g++.old-deja/g++.other/decl5.C: Remove XFAILs.
+	
 2003-03-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/init/ref4.C: New test.
