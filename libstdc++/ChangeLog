@@ -1,3 +1,8 @@
+Thu Aug  5 02:00:13 1999  Loren Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (MARLINK, MSHLINK): Handle library version
+	number components with more than one numeric digit.
+
 Sat Jul 17 23:51:58 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (INTERFACE): Bump to 3.
