@@ -1,5 +1,8 @@
 2003-10-14  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* configure.in: Clean up some feedback echoes.
+	* configure: Regenerate.
+
 	* aclocal.m4: Properly quote names of macros being defined.
 
 	* config.gcc (am33_2.0-*-linux*): Use t-slibgcc-elf-ver.

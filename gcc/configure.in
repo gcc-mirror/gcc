@@ -2988,30 +2988,22 @@ AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)
 
-# Echo that links are built
-if test x$host = x$target
-then
-	str1="native "
+# Echo link setup.
+if test x${build} = x${host} ; then
+  if test x${host} = x${target} ; then
+    echo "Links are now set up to build a native compiler for ${target}." 1>&2
+  else
+    echo "Links are now set up to build a cross-compiler" 1>&2
+    echo " from ${host} to ${target}." 1>&2
+  fi
 else
-	str1="cross-"
-	str2=" from $host"
-fi
-
-if test x$host != x$build
-then
-	str3=" on a $build system"
-fi
-
-if test "x$str2" != x || test "x$str3" != x
-then
-	str4=
-fi
-
-echo "Links are now set up to build a ${str1}compiler for ${target}$str4" 1>&2
-
-if test "x$str2" != x || test "x$str3" != x
-then
-	echo " ${str2}${str3}." 1>&2
+  if test x${host} = x${target} ; then
+    echo "Links are now set up to build (on ${build}) a native compiler" 1>&2
+    echo " for ${target}." 1>&2
+  else
+    echo "Links are now set up to build (on ${build}) a cross-compiler" 1>&2
+    echo " from ${host} to ${target}." 1>&2
+  fi
 fi
 
 # Configure the subdirectories
