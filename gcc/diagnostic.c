@@ -89,6 +89,7 @@ static void default_diagnostic_finalizer PARAMS ((diagnostic_context *,
                                                   diagnostic_info *));
 
 static void error_recursion PARAMS ((diagnostic_context *)) ATTRIBUTE_NORETURN;
+static bool text_specifies_location PARAMS ((text_info *, location_t *));
 
 extern int rtl_dump_and_exit;
 extern int warnings_are_errors;
@@ -495,7 +496,8 @@ output_buffer_to_stream (buffer)
    %c: character.
    %s: string.
    %%: `%'.
-   %*.s: a substring the length of which is specified by an integer.  */
+   %*.s: a substring the length of which is specified by an integer.
+   %H: location_t.  */
 static void
 output_format (buffer, text)
      output_buffer *buffer;
@@ -575,6 +577,16 @@ output_format (buffer, text)
 	case '%':
 	  output_add_character (buffer, '%');
 	  break;
+
+        case 'H':
+          {
+            const location_t *locus = va_arg (*text->args_ptr, location_t *);
+            output_add_string (buffer, "file '");
+            output_add_string (buffer, locus->file);
+            output_add_string (buffer, "', line ");
+            output_decimal (buffer, locus->file);
+          }
+          break;
 
 	case '.':
 	  {
@@ -769,6 +781,30 @@ diagnostic_initialize (context)
   context->warnings_are_errors_message = warnings_are_errors;
 }
 
+/* Returns true if the next format specifier in TEXT is a format specifier
+   for a location_t.  If so, update the object pointed by LOCUS to reflect
+   the specified location in *TEXT->args_ptr.  */
+static bool
+text_specifies_location (text, locus)
+     text_info *text;
+     location_t *locus;
+{
+  const char *p;
+  /* Skip any leading text.  */
+  for (p = text->format_spec; *p && *p != '%'; ++p)
+    ;
+
+  /* Extract the location information if any.  */
+  if (*p == '%' && *++p == 'H')
+    {
+      *locus = *va_arg (*text->args_ptr, location_t *);
+      text->format_spec = p + 1;
+      return true;
+    }
+
+  return false;
+}
+
 void
 diagnostic_set_info (diagnostic, msgid, args, file, line, kind)
      diagnostic_info *diagnostic;
@@ -780,8 +816,13 @@ diagnostic_set_info (diagnostic, msgid, args, file, line, kind)
 {
   diagnostic->message.format_spec = msgid;
   diagnostic->message.args_ptr = args;
-  diagnostic->location.file = file;
-  diagnostic->location.line = line;
+  /* If the diagnostic message doesn't specify a loccation,
+     use FILE and LINE.  */
+  if (!text_specifies_location (&diagnostic->message, &diagnostic->location))
+    {
+      diagnostic->location.file = file;
+      diagnostic->location.line = line;
+    }
   diagnostic->kind = kind;
 }
 
