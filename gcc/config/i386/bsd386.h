@@ -1,8 +1,6 @@
 /* Configuration for an i386 running BSDI's BSD/OS (formerly known as BSD/386)
    as the target machine.  */
 
-#include "i386/386bsd.h"
-
 /* We exist mostly to add -Dbsdi and such to the predefines. */
 
 #undef CPP_PREDEFINES

@@ -1039,7 +1039,7 @@ i[34567]86-*-beoself* | i[34567]86-*-beos*)
 	extra_parts='crtbegin.o crtend.o'
 	;;
 i[34567]86-*-bsdi* | i[34567]86-*-bsd386*)
-	tm_file=i386/bsd386.h
+	tm_file="i386/386bsd.h i386/bsd386.h"
 #	tmake_file=t-libc-ok
 	;;
 i[34567]86-*-bsd*)
