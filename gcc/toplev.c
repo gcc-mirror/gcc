@@ -1867,7 +1867,7 @@ rest_of_decl_compilation (tree decl,
 
       /* Don't output anything when a tentative file-scope definition
 	 is seen.  But at end of compilation, do output code for them.  */
-      if (at_end || !DECL_DEFER_OUTPUT (decl))
+      if ((at_end || !DECL_DEFER_OUTPUT (decl)) && !DECL_EXTERNAL (decl))
 	{
 	  if (flag_unit_at_a_time && !cgraph_global_info_ready
 	      && TREE_CODE (decl) != FUNCTION_DECL && top_level)
