@@ -5911,7 +5911,9 @@ static void
 hoist_code ()
 {
   basic_block bb, dominated;
-  unsigned int i;
+  basic_block *domby;
+  unsigned int domby_len;
+  unsigned int i,j;
   struct expr **index_map;
   struct expr *expr;
 
@@ -5932,24 +5934,25 @@ hoist_code ()
       int found = 0;
       int insn_inserted_p;
 
+      domby_len = get_dominated_by (dominators, bb, &domby);
       /* Examine each expression that is very busy at the exit of this
 	 block.  These are the potentially hoistable expressions.  */
       for (i = 0; i < hoist_vbeout[bb->index]->n_bits; i++)
 	{
 	  int hoistable = 0;
 
-	  if (TEST_BIT (hoist_vbeout[bb->index], i) && TEST_BIT (transpout[bb->index], i))
+	  if (TEST_BIT (hoist_vbeout[bb->index], i)
+	      && TEST_BIT (transpout[bb->index], i))
 	    {
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
-	      FOR_EACH_BB (dominated)
+	      for (j = 0; j < domby_len; j++)
 		{
+		  dominated = domby[j];
 		  /* Ignore self dominance.  */
-		  if (bb == dominated
-		      || dominated_by_p (dominators, dominated, bb))
+		  if (bb == dominated)
 		    continue;
-
 		  /* We've found a dominated block, now see if it computes
 		     the busy expression and whether or not moving that
 		     expression to the "beginning" of that block is safe.  */
@@ -5982,10 +5985,12 @@ hoist_code ()
 		}
 	    }
 	}
-
       /* If we found nothing to hoist, then quit now.  */
       if (! found)
+        {
+  	  free (domby);
 	continue;
+	}
 
       /* Loop over all the hoistable expressions.  */
       for (i = 0; i < hoist_exprs[bb->index]->n_bits; i++)
@@ -6000,11 +6005,11 @@ hoist_code ()
 	      /* We've found a potentially hoistable expression, now
 		 we look at every block BB dominates to see if it
 		 computes the expression.  */
-	      FOR_EACH_BB (dominated)
+	      for (j = 0; j < domby_len; j++)
 		{
+		  dominated = domby[j];
 		  /* Ignore self dominance.  */
-		  if (bb == dominated
-		      || ! dominated_by_p (dominators, dominated, bb))
+		  if (bb == dominated)
 		    continue;
 
 		  /* We've found a dominated block, now see if it computes
@@ -6058,6 +6063,7 @@ hoist_code ()
 		}
 	    }
 	}
+      free (domby);
     }
 
   free (index_map);
