@@ -1,3 +1,7 @@
+1999-02-17 14:49 -0500  Zack Weinberg  <zack@rabi.columbia.edu>
+
+	* Makefile.in: Correct dependencies for cpplib object files.
+
 Wed Feb 17 14:04:18 1999  Michael Meissner  <meissner@cygnus.com>
 
 	* rs6000.md ({add,sub}si3 `.'): Add alternatives to use CR other
