@@ -1920,33 +1920,39 @@ synth_mult (t, cost_limit)
       q = t - 1;
       q = q & -q;
       m = exact_log2 (q);
-      cost = shiftadd_cost[m];
-      *alg_in = synth_mult ((t - 1) >> m, cost_limit - cost);
-
-      cost += alg_in->cost;
-      if (cost < best_alg->cost)
+      if (m >= 0)
 	{
-	  struct algorithm *x;
-	  x = alg_in, alg_in = best_alg, best_alg = x;
-	  best_alg->log[best_alg->ops] = m;
-	  best_alg->op[best_alg->ops++] = alg_add_t2_m;
-	  best_alg->cost = cost_limit = cost;
+	  cost = shiftadd_cost[m];
+	  *alg_in = synth_mult ((t - 1) >> m, cost_limit - cost);
+
+	  cost += alg_in->cost;
+	  if (cost < best_alg->cost)
+	    {
+	      struct algorithm *x;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->log[best_alg->ops] = m;
+	      best_alg->op[best_alg->ops++] = alg_add_t2_m;
+	      best_alg->cost = cost_limit = cost;
+	    }
 	}
 
       q = t + 1;
       q = q & -q;
       m = exact_log2 (q);
-      cost = shiftsub_cost[m];
-      *alg_in = synth_mult ((t + 1) >> m, cost_limit - cost);
-
-      cost += alg_in->cost;
-      if (cost < best_alg->cost)
+      if (m >= 0)
 	{
-	  struct algorithm *x;
-	  x = alg_in, alg_in = best_alg, best_alg = x;
-	  best_alg->log[best_alg->ops] = m;
-	  best_alg->op[best_alg->ops++] = alg_sub_t2_m;
-	  best_alg->cost = cost_limit = cost;
+	  cost = shiftsub_cost[m];
+	  *alg_in = synth_mult ((t + 1) >> m, cost_limit - cost);
+
+	  cost += alg_in->cost;
+	  if (cost < best_alg->cost)
+	    {
+	      struct algorithm *x;
+	      x = alg_in, alg_in = best_alg, best_alg = x;
+	      best_alg->log[best_alg->ops] = m;
+	      best_alg->op[best_alg->ops++] = alg_sub_t2_m;
+	      best_alg->cost = cost_limit = cost;
+	    }
 	}
     }
 
@@ -2064,7 +2070,7 @@ expand_mult (mode, op0, op1, target, unsignedp)
 			    - negate_cost);
 
       if (neg_alg.cost + negate_cost < alg.cost)
-	alg = neg_alg, negate = 1, val = - val;
+	alg = neg_alg, negate = 1;
 
       if (alg.cost < mult_cost)
 	{
