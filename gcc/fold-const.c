@@ -4451,6 +4451,10 @@ extract_muldiv (t, c, code, wide_type)
 	 or floor division, by a power of two, so we can treat it that
 	 way unless the multiplier or divisor overflows.  */
       if (TREE_CODE (op1) == INTEGER_CST
+	  /* const_binop may not detect overflow correctly,
+	     so check for it explicitly here.  */
+	  && TYPE_PRECISION (TREE_TYPE (size_one_node)) > TREE_INT_CST_LOW (op1)
+	  && TREE_INT_CST_HIGH (op1) == 0
 	  && 0 != (t1 = convert (ctype,
 				 const_binop (LSHIFT_EXPR, size_one_node,
 					      op1, 0)))
