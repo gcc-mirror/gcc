@@ -774,6 +774,12 @@ optimize_specialization_lookup_p (tree tmpl)
 	  /* DECL_CLASS_SCOPE_P holds of T::f even if T is a template
 	     parameter.  */
 	  && CLASS_TYPE_P (DECL_CONTEXT (tmpl))
+	  /* The optimized lookup depends on the fact that the
+	     template arguments for the member function template apply
+	     purely to the containing class, which is not true if the
+	     containing class is an explicit or partial
+	     specialization.  */
+	  && !CLASSTYPE_TEMPLATE_SPECIALIZATION (DECL_CONTEXT (tmpl))
 	  && !DECL_MEMBER_TEMPLATE_P (tmpl)
 	  && !DECL_CONV_FN_P (tmpl)
 	  /* It is possible to have a template that is not a member

@@ -1,5 +1,10 @@
 2004-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/17936
+	* cp-tree.h (CLASSTYPE_TEMPLATE_SPECIALIZATION): Add a comment.
+	* pt.c (optimize_specialization_lookup_p): Do not optimize lookups
+	for members of partial or explicit specializations.
+
 	PR c++/17929
 	* decl2.c (finish_anon_union): Robustify.
 
