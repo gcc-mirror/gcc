@@ -285,16 +285,6 @@ extern void expand_leftover_cleanups		PROTO((void));
 
 extern void emit_eh_context			PROTO((void));
 
-/* If necessary, emit insns for the start of per-function unwinder for
-   the current function.  */
-
-extern void emit_unwinder			PROTO((void));
-
-/* If necessary, emit insns for the end of the per-function unwinder
-   for the current function.  */
-
-extern void end_eh_unwinder			PROTO((void));
-
 /* Builds a list of handler labels and puts them in the global
    variable exception_handler_labels.  */
 
