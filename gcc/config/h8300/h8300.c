@@ -314,7 +314,7 @@ h8300_init_once ()
       error ("-ms2600 is used without -ms");
       target_flags |= MASK_H8300S;
     }
-  
+
   if (TARGET_H8300 && TARGET_NORMAL_MODE)
     {
       error ("-mn is used without -mh or -ms");

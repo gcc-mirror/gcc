@@ -42,7 +42,7 @@ extern const char * const *h8_reg_names;
   do							\
     {							\
       if (TARGET_H8300H)				\
-        {						\
+	{						\
 	  builtin_define ("__H8300H__");		\
 	  builtin_assert ("cpu=h8300h");		\
 	  builtin_assert ("machine=h8300h");		\
@@ -52,7 +52,7 @@ extern const char * const *h8_reg_names;
 	    }						\
 	}						\
       else if (TARGET_H8300S)				\
-        {						\
+	{						\
 	  builtin_define ("__H8300S__");		\
 	  builtin_assert ("cpu=h8300s");		\
 	  builtin_assert ("machine=h8300s");		\
@@ -62,7 +62,7 @@ extern const char * const *h8_reg_names;
 	    }						\
 	}						\
       else						\
-        {						\
+	{						\
 	  builtin_define ("__H8300__");			\
 	  builtin_assert ("cpu=h8300");			\
 	  builtin_assert ("machine=h8300");		\
@@ -74,14 +74,14 @@ extern const char * const *h8_reg_names;
 
 #define LIB_SPEC "%{mrelax:-relax} %{g:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}"
 
-#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)				  \
-  do									  \
-    {                                                                     \
-      /* Basic block reordering is only beneficial on targets with cache  \
-	 and/or variable-cycle branches where (cycle count taken !=	  \
-	 cycle count not taken).  */            			  \
-      flag_reorder_blocks = 0;                                        	  \
-    }									  \
+#define OPTIMIZATION_OPTIONS(LEVEL, SIZE)				 \
+  do									 \
+    {									 \
+      /* Basic block reordering is only beneficial on targets with cache \
+	 and/or variable-cycle branches where (cycle count taken !=	 \
+	 cycle count not taken).  */					 \
+      flag_reorder_blocks = 0;						 \
+    }									 \
   while (0)
 
 /* Print subsidiary information on the compiler version in use.  */
@@ -162,7 +162,7 @@ extern int target_flags;
   {"relax",		 MASK_RELAX, N_("Enable linker relaxing")},	    \
   {"rtl-dump",		 MASK_RTL_DUMP, NULL},				    \
   {"h",			 MASK_H8300H, N_("Generate H8/300H code")},	    \
-  {"n",                  MASK_NORMAL_MODE, N_("Enable the normal mode")},   \
+  {"n",			 MASK_NORMAL_MODE, N_("Enable the normal mode")},   \
   {"no-h",		-MASK_H8300H, N_("Do not generate H8/300H code")},  \
   {"align-300",		 MASK_ALIGN_300, N_("Use H8/300 alignment rules")}, \
   { "",			 TARGET_DEFAULT, NULL}}
@@ -870,11 +870,11 @@ struct cum_arg
    || (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == SYMBOL_REF	\
        && TARGET_H8300S)						\
    || ((GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == CONST	\
-        && GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS			\
-        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF	\
-        && GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)	\
-        && (TARGET_H8300S						\
-	    || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
+	&& GET_CODE (XEXP (XEXP (OP, 0), 0)) == PLUS			\
+	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == SYMBOL_REF	\
+	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)	\
+       && (TARGET_H8300S						\
+	   || SYMBOL_REF_FLAG (XEXP (XEXP (XEXP (OP, 0), 0), 0))))	\
    || (GET_CODE (OP) == MEM						\
        && h8300_eightbit_constant_address_p (XEXP (OP, 0)))		\
    || (GET_CODE (OP) == MEM && TARGET_H8300S				\
