@@ -1,3 +1,4 @@
 *** Noteworthy changes in libstdc++ for EGCS
   the HP distribution, thanks to improved template support in EGCS.
 * As a result of these and other changes, libstc++ for EGCS is not binary
+* EGCS includes the SGI STL implementation without changes.

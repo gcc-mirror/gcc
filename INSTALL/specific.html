@@ -60,9 +60,11 @@ after getting the failure from "make bootstrap".
 <p><b>m68k-*-nextstep*</b><br>
 You absolutely must use GNU sed and GNU make on this platform.  
 
-If you try to build the integrated C++ & C++ runtime libraries on this system
+<p>If you try to build the integrated C++ & C++ runtime libraries on this system
 you will run into trouble with include files.  The way to get around this is
-to use the following sequence.
+to use the following sequence.  Note you must have write permission to
+<i>prefix</i> for this sequence to work.
+
 <p>cd <i>objdir</i><br>
 make all-texinfo all-bison all-byacc all-binutils all-gas all-ld<br>
 cd gcc<br>
@@ -71,12 +73,15 @@ make install-headers-tar<br>
 cd ..<br>
 make bootstrap3<br>
 
+<p><b>m68k-sun-sunos4.1.1</b><br>
+It is reported that you may need the GNU assembler on this platform.
+
 <p><b>mips*-sgi-irix4</b><br>
-<p><b>mips*-sgi-irix5</b><br>
+<b>mips*-sgi-irix5</b><br>
 You must use GAS on these platforms, the native assembler can not handle the
 code for exception handling support on this platform.
 
-These systems don't have ranlib, which various components in egcs need; you
+<p>These systems don't have ranlib, which various components in egcs need; you
 should be able to avoid this problem by installing GNU binutils, which includes
 a functional ranlib for this system.
 
@@ -85,6 +90,18 @@ ignored.
 <pre>
     warning: foo.o does not have gp tables for all its sections.
 </pre>
+
+<p><b>mips*-sgi-irix6</b><br>
+You must not use GAS on irix6 platforms; doing so will only cause problems.
+
+<p>These systems don't have ranlib, which various components in egcs need; you
+should be able to avoid this problem by making a dummy script called ranlib
+which just exits with zero status and placing it in your path.
+
+<p><b>rs6000-ibm-aix*</b><br>
+<b>powerpc-ibm-aix*</b><br>
+At least one person as reported problems with older versions of gnu-make on
+this platform.  make-3.76 is reported to work correctly.
 
 <p><b>powerpc-*-linux-gnu*</b><br>
 You will need
