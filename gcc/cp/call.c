@@ -2179,7 +2179,7 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
 
   if ((DECL_MAYBE_IN_CHARGE_CONSTRUCTOR_P (tmpl)
        || DECL_BASE_CONSTRUCTOR_P (tmpl))
-      && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (tmpl)))
+      && CLASSTYPE_VBASECLASSES (DECL_CONTEXT (tmpl)))
     args_without_in_chrg = TREE_CHAIN (args_without_in_chrg);
 
   i = fn_type_unification (tmpl, explicit_targs, targs,
@@ -5052,7 +5052,7 @@ build_special_member_call (tree instance, tree name, tree args,
      the subobject.  */
   if ((name == base_ctor_identifier
        || name == base_dtor_identifier)
-      && TYPE_USES_VIRTUAL_BASECLASSES (class_type))
+      && CLASSTYPE_VBASECLASSES (class_type))
     {
       tree vtt;
       tree sub_vtt;

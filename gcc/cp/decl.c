@@ -9241,11 +9241,6 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_bases > 1)
     {
-      TYPE_USES_MULTIPLE_INHERITANCE (ref) = 1;
-      /* If there is more than one non-empty they cannot be at the
-	 same address.  */
-      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
-
       if (TYPE_FOR_JAVA (ref))
 	error ("Java class '%T' cannot have multiple bases", ref);
     }
@@ -9253,10 +9248,6 @@ xref_basetypes (tree ref, tree base_list)
   if (max_vbases)
     {
       CLASSTYPE_VBASECLASSES (ref) = VEC_alloc (tree, max_vbases);
-      TYPE_USES_VIRTUAL_BASECLASSES (ref) = 1;
-      /* Converting to a virtual base class requires looking up the
-	 offset of the virtual base.  */
-      TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref) = 1;
 
       if (TYPE_FOR_JAVA (ref))
 	error ("Java class '%T' cannot have virtual bases", ref);
@@ -9309,10 +9300,6 @@ xref_basetypes (tree ref, tree base_list)
 	  TYPE_HAS_ARRAY_NEW_OPERATOR (ref)
 	    |= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
 	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
-	  TYPE_USES_MULTIPLE_INHERITANCE (ref)
-	    |= TYPE_USES_MULTIPLE_INHERITANCE (basetype);
-	  TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (ref)
-	    |= TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype);
 	  TYPE_HAS_CONVERSION (ref) |= TYPE_HAS_CONVERSION (basetype);
 	}
 
@@ -10788,6 +10775,8 @@ cxx_maybe_build_cleanup (tree decl)
     {
       int flags = LOOKUP_NORMAL|LOOKUP_DESTRUCTOR;
       tree rval;
+      bool has_vbases = (TREE_CODE (type) == RECORD_TYPE
+			 && CLASSTYPE_VBASECLASSES (type));
 
       if (TREE_CODE (type) == ARRAY_TYPE)
 	rval = decl;
@@ -10798,15 +10787,13 @@ cxx_maybe_build_cleanup (tree decl)
 	}
 
       /* Optimize for space over speed here.  */
-      if (! TYPE_USES_VIRTUAL_BASECLASSES (type)
-	  || flag_expensive_optimizations)
+      if (!has_vbases || flag_expensive_optimizations)
 	flags |= LOOKUP_NONVIRTUAL;
 
       rval = build_delete (TREE_TYPE (rval), rval,
 			   sfk_complete_destructor, flags, 0);
 
-      if (TYPE_USES_VIRTUAL_BASECLASSES (type)
-	  && ! TYPE_HAS_DESTRUCTOR (type))
+      if (has_vbases && !TYPE_HAS_DESTRUCTOR (type))
 	rval = build_compound_expr (rval, build_vbase_delete (type, decl));
 
       return rval;

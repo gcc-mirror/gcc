@@ -1,3 +1,39 @@
+2004-09-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* cp-tree.h (struct lang_type_header): Remove
+	uses_multiple_inheritance field.
+	(TYPE_USES_MULTIPLE_INHERITANCE): Remove.
+	(TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P): Remove.
+	(TYPE_USES_VIRTUAL_BASECLASSES): Remove.
+	(DECL_NEEDS_VTT_PARM_P): Use CLASSTYPE_VBASECLASSES.
+	(TYPE_CONTAINS_VPTR_P): Likewise.
+	* call.c (add_template_candidate_real): Use
+	CLASSTYPE_VBASECLASSES.
+	(build_special_member_call): Likewise.
+	* class.c (finish_struct_bits): Remove
+	TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P & TYPE_USES_VIRTUAL_BASECLASSES
+	bookkeeping.
+	(check_bases_and_members): Use TYPE_CONTAINS_VPTR_P.
+	(create_vtable_ptr): Remove TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P
+	bookkeeping.
+	(build_vtt_inits): Use CLASSTYPE_VBASECLASSES.
+	(accumulate_vtbl_inits, build_vbase_offset_vtbl_entries):
+	Likewise.
+	* decl.c (xref_basetypes): Remove TYPE_USES_MULTIPLE_INHERITANCE,
+	TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P, TYPE_USES_VIRTUAL_BASECLASSES
+	bookkeeping.
+	(cxx_maybe_build_cleanup): Use CLASSTYPE_VBASECLASSES.
+	* decl2.c (maybe_retrofit_in_chrg): Likewise.
+	* init.c (expand_member, push_base_cleanups): Likewise.
+	* pt.c (instantiate_class_template): Remove
+	TYPE_USES_MULTIPLE_INHERITANCE,
+	TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P, TYPE_USES_VIRTUAL_BASECLASSES
+	bookkeeping.
+	* ptree.c (cxx_print_type): Remove TYPE_USES_MULTIPLE_INHERITANCE
+	check.
+	* typeck2.c (process_init_constructor): Replace some sorrys with
+	asserts.
+
 2004-09-21  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* decl.c (reshape_init_array): Initialize max_index_cst to fix
