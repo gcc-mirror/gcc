@@ -1,3 +1,8 @@
+2002-04-30  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Don't override TYPE_NAME of an
+	anonymous class with a typedef if there are attributes.
+
 2002-04-29  Paul Eggert  <eggert@twinsun.com>
 
 	* parse.y (nomods_initdcl0): Replace $<ttype>3 with $<ttype>$.
