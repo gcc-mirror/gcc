@@ -88,7 +88,7 @@ public abstract class Calendar implements java.io.Serializable, Cloneable
     this (null, null);
   }
 
-  protected Calendar (TimeZone tx, Locale loc)
+  protected Calendar (TimeZone zone, Locale loc)
   {
     fields = new int[FIELD_COUNT];
     isSet = new boolean[FIELD_COUNT];
