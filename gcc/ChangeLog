@@ -1,3 +1,13 @@
+2005-03-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mn10300/mn10300-protos.h: Remove the prototypes for
+	call_address_operand, const_8bit_operand.
+	* config/mn10300/mn10300.c (call_address_operand,
+	const_8bit_operand, const_1f_operand): Move to predicates.md.
+	* config/mn10300/mn10300.h (PREDICATE_CODES): Remove.
+	* config/mn10300/mn10300.md: Include predicates.md.
+	* config/mn10300/predicates.md: New.
+
 2005-03-18  Joseph S. Myers  <joseph@codesourcery.com>
 
 	* c-common.c, c-decl.c, c-format.c, c-typeck.c: Use %D for

@@ -1073,11 +1073,6 @@ while (0)
 
 #define FILE_ASM_OP "\t.file\n"
 
-#define PREDICATE_CODES					\
-  {"const_1f_operand", {CONST_INT, CONST_DOUBLE}},	\
-  {"const_8bit_operand", {CONST_INT}},			\
-  {"call_address_operand", {SYMBOL_REF, REG, UNSPEC}},
-
 typedef struct mn10300_cc_status_mdep
   {
     int fpCC;

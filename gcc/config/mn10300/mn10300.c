@@ -1295,17 +1295,6 @@ store_multiple_operation (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
   return mask;
 }
 
-/* Return true if OP is a valid call operand.  */
-
-int
-call_address_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  if (flag_pic)
-    return (EXTRA_CONSTRAINT (op, 'S') || GET_CODE (op) == REG);
-
-  return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG);
-}
-
 /* What (if any) secondary registers are needed to move IN with mode
    MODE into a register in register class CLASS. 
 
@@ -1673,24 +1662,6 @@ impossible_plus_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
     return 1;
 
   return 0;
-}
-
-/* Return 1 if X is a CONST_INT that is only 8 bits wide.  This is used
-   for the btst insn which may examine memory or a register (the memory
-   variant only allows an unsigned 8 bit integer).  */
-int
-const_8bit_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (GET_CODE (op) == CONST_INT
-	  && INTVAL (op) >= 0
-	  && INTVAL (op) < 256);
-}
-
-/* Return true if the operand is the 1.0f constant.  */
-int
-const_1f_operand (register rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
-{
-  return (op == CONST1_RTX (SFmode));
 }
 
 /* Similarly, but when using a zero_extract pattern for a btst where
