@@ -990,7 +990,8 @@ Each time a class is initialized, print a short message on standard error.
 @c man begin SYNOPSIS gcj-dbtool
 gcj-dbtool @option{OPTION} @var{DBFILE} [@option{MORE}] @dots{}
 
-gcj-dbtool [@option{-n}] [@option{-a}] [@option{-t}] [@option{-l}]
+gcj-dbtool [@option{-n}] [@option{-a}] [@option{-f}]
+  [@option{-t}] [@option{-l}]
   [@option{-v}] [@option{--version}] [@option{--help}]
 
 @c man end
@@ -1027,11 +1028,14 @@ you can choose a larger initial size if desired.  The default size is
 32,749.
 
 @item -a @var{DBFILE} @var{JARFILE} @var{LIB}
+@itemx -f @var{DBFILE} @var{JARFILE} @var{LIB}
 This adds a jar file to the database.  For each class file in the jar,
 a cryptographic signature of the bytecode representation of the class
 is recorded in the database.  At runtime, a class is looked up by its
 signature and the compiled form of the class is looked for in the
-corresponding shared library.
+corresponding shared library.  The @option{-a} option will verify
+that @var{LIB} exists before adding it to the database; @option{-f}
+skips this check.
 
 @item -t @var{DBFILE}
 Test a database.
