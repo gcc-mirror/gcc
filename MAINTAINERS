@@ -88,6 +88,7 @@ i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
 windows, cygwin, mingw	Christopher Faylor	cgf@redhat.com
 windows, cygwin, mingw	DJ Delorie		dj@redhat.com
+DJGPP			DJ Delorie		dj@delorie.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
