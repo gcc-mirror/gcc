@@ -1,3 +1,8 @@
+Wed Feb 25 01:31:40 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* c-parse.y (undeclared variable error): Tweak error message
+	to be clearer.
+
 Tue Feb 24 23:54:07 1998  Richard Henderson  <rth@cygnus.com>
 
 	* flags.h (g_switch_value, g_switch_set): Declare.

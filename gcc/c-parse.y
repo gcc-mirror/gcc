@@ -602,7 +602,7 @@ primary:
 			      if (IDENTIFIER_GLOBAL_VALUE ($1) != error_mark_node
 				  || IDENTIFIER_ERROR_LOCUS ($1) != current_function_decl)
 				{
-				  error ("`%s' undeclared (first use this function)",
+				  error ("`%s' undeclared (first use in this function)",
 					 IDENTIFIER_POINTER ($1));
 
 				  if (! undeclared_variable_notice)
