@@ -41,18 +41,21 @@ package java.io;
 import java.nio.channels.FileChannel;
 import gnu.java.nio.FileChannelImpl;
 
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date September 24, 1998 
- */
-
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * Status:  Complete to version 1.1.
  */
 
+/**
+ * @author Tom Tromey <tromey@cygnus.com>
+ * @date September 24, 1998 
+ */
 public class FileOutputStream extends OutputStream
 {
+  // Instance variables.
+  private FileDescriptor fd;
+  private FileChannel ch;
+  
   public FileOutputStream (String path, boolean append)
     throws SecurityException, FileNotFoundException
   {
@@ -159,7 +162,4 @@ public class FileOutputStream extends OutputStream
       }
   }
 
-  // Instance variables.
-  private FileDescriptor fd;
-  private FileChannel ch;
 }

@@ -66,10 +66,10 @@ public class InputStreamReader extends Reader
     this(in, BytesToUnicode.getDefaultDecoder());
   }
 
-  public InputStreamReader(InputStream in, String enc)
+  public InputStreamReader(InputStream in, String encoding_name)
     throws UnsupportedEncodingException
   {
-    this(in, BytesToUnicode.getDecoder(enc));
+    this(in, BytesToUnicode.getDecoder(encoding_name));
   }
 
   private InputStreamReader(InputStream in, BytesToUnicode decoder)
@@ -88,6 +88,12 @@ public class InputStreamReader extends Reader
     converter.setInput(this.in.buf, 0, 0);
   }
 
+  /**
+   * This method closes this stream, as well as the underlying 
+   * <code>InputStream</code>.
+   *
+   * @exception IOException If an error occurs
+   */
   public void close() throws IOException
   {
     synchronized (lock)
@@ -100,11 +106,29 @@ public class InputStreamReader extends Reader
       }
   }
 
+  /**
+   * This method returns the name of the encoding that is currently in use
+   * by this object.  If the stream has been closed, this method is allowed
+   * to return <code>null</code>.
+   *
+   * @param The current encoding name
+   */
   public String getEncoding()
   {
     return in != null ? converter.getName() : null;
   }
 
+  /**
+   * This method checks to see if the stream is read to be read.  It
+   * will return <code>true</code> if is, or <code>false</code> if it is not.
+   * If the stream is not ready to be read, it could (although is not required
+   * to) block on the next read attempt.
+   *
+   * @return <code>true</code> if the stream is ready to be read, 
+   * <code>false</code> otherwise
+   *
+   * @exception IOException If an error occurs
+   */
   public boolean ready() throws IOException
   {
     synchronized (lock)
@@ -149,6 +173,13 @@ public class InputStreamReader extends Reader
       }
   }
 
+  /**
+   * This method reads a single character of data from the stream.
+   *
+   * @return The char read, as an int, or -1 if end of stream.
+   *
+   * @exception IOException If an error occurs
+   */
   public int read() throws IOException
   {
     synchronized (lock)
@@ -198,4 +229,6 @@ public class InputStreamReader extends Reader
 	  }
       }
   }
-}
+
+} // class InputStreamReader
+

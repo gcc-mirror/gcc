@@ -122,10 +122,10 @@ public class DataOutputStream extends FilterOutputStream implements DataOutput
    *
    * @exception IOException If an error occurs.
    */
-  public synchronized void write (byte[] b, int off, int len)
-    throws IOException, NullPointerException, IndexOutOfBoundsException
+  public synchronized void write (byte[] buf, int offset, int len) 
+     throws IOException
   {
-    out.write(b, off, len);
+    out.write(buf, offset, len);
     written += len;
   }
 

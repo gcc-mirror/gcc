@@ -70,7 +70,7 @@ package java.io;
 public class LineNumberReader extends BufferedReader
 {
   /** The current line number. */
-  int lineNumber;
+  private int lineNumber;
 
   /**
     * Create a new <code>LineNumberReader</code> that reads from the
@@ -81,7 +81,7 @@ public class LineNumberReader extends BufferedReader
     */
   public LineNumberReader(Reader in)
   {
-    super(in, 8192);
+    super(in, DEFAULT_BUFFER_SIZE);
   }
 
   /**

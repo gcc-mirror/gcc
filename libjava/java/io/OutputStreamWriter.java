@@ -57,11 +57,6 @@ public class OutputStreamWriter extends Writer
   private char[] work;
   private int wcount;
 
-  public String getEncoding()
-  {
-    return out != null ? converter.getName() : null;
-  }
-
   private OutputStreamWriter(OutputStream out, UnicodeToBytes encoder)
   {
     this.out = out instanceof BufferedOutputStream 
@@ -72,17 +67,29 @@ public class OutputStreamWriter extends Writer
     this.converter = encoder;
   }
 
-  public OutputStreamWriter(OutputStream out, String enc)
+  public OutputStreamWriter(OutputStream out, String encoding_scheme)
    throws UnsupportedEncodingException
   {
-    this(out, UnicodeToBytes.getEncoder(enc));
+    this(out, UnicodeToBytes.getEncoder(encoding_scheme));
   }
 
+  /**
+   * This method initializes a new instance of <code>OutputStreamWriter</code>
+   * to write to the specified stream using the default encoding.
+   *
+   * @param out The <code>OutputStream</code> to write to
+   */
   public OutputStreamWriter(OutputStream out)
   {
     this(out, UnicodeToBytes.getDefaultEncoder());
   }
 
+  /**
+   * This method closes this stream, and the underlying 
+   * <code>OutputStream</code>
+   *
+   * @exception IOException If an error occurs
+   */
   public void close() throws IOException
   {
     synchronized (lock)
@@ -97,6 +104,23 @@ public class OutputStreamWriter extends Writer
       }
   }
 
+  /**
+   * This method returns the name of the character encoding scheme currently
+   * in use by this stream.  If the stream has been closed, then this method
+   * may return <code>null</code>.
+   *
+   * @return The encoding scheme name
+   */
+  public String getEncoding()
+  {
+    return out != null ? converter.getName() : null;
+  }
+
+  /**
+   * This method flushes any buffered bytes to the underlying output sink.
+   *
+   * @exception IOException If an error occurs
+   */
   public void flush() throws IOException
   {
     synchronized (lock)
@@ -186,6 +210,13 @@ public class OutputStreamWriter extends Writer
       }
   }
 
+  /**
+   * This method writes a single character to the output stream.
+   *
+   * @param c The char to write, passed as an int.
+   *
+   * @exception IOException If an error occurs
+   */
   public void write(int ch) throws IOException
   {
     synchronized (lock)
@@ -203,4 +234,6 @@ public class OutputStreamWriter extends Writer
 	work[wcount++] = (char) ch;
       }
   }
-}
+
+} // class OutputStreamWriter
+

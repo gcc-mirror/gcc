@@ -1,5 +1,32 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/DataOutputStream.java
+	(write): Merged from classpath.
+	* java/io/File.java:
+	Merged copyrigth with classpath.
+	* java/io/FileInputStream.java
+	(getChannel): Made it synchronized instead of using a synchronized
+	block.
+	* java/io/FileOutputStream.java: Reformatted.
+	* java/io/InputStreamReader.java
+	(InputStreamReader): Renamed enc to encoding_name.
+	(close): Merged documentation from classpath.
+	(getEncoding): Merged documentation from classpath.
+	(ready): Merged documentation from classpath.
+	(read): Merged documentation from classpath.
+	* java/io/LineNumberReader.java
+	(lineNumber): Made it private.
+	(LineNumberReader): Use Constant instead of a direct value.
+	* java/io/OutputStreamWriter.java
+	(OutputStreamWriter): Renamed enc to encoding_scheme, merged
+	documentation from classpath.
+	(close): Merged documentation from classpath.
+	(flush): Merged documentation from classpath.
+	(write): Merged documentation from classpath.
+	* java/io/PrintStream.java: Reformatted.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/text/ComponentView.java
 	(getComponent): Must be final.
 	* javax/swing/tree/DefaultTreeCellRenderer.java:
