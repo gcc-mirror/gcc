@@ -10,6 +10,8 @@
 
 2002-04-26  Alexandre Oliva  <aoliva@redhat.com>
 
+	* gcc.dg/enum1.c: New test.
+
 	* g++.dg/abi/enum1.C: New test.
 
 2002-04-25  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>

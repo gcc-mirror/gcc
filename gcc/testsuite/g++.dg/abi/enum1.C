@@ -9,7 +9,7 @@ enum foo
   foo3   = 0xf0fffffffffffffeULL
 };
 
-int main (int i)
+int main ()
 {
   if (sizeof (enum foo) != sizeof (unsigned long long))
     std::abort ();
