@@ -448,6 +448,8 @@ public abstract class Toolkit
    * Returns the names of the available fonts.
    *
    * @return The names of the available fonts.
+   *
+   * @deprecated
    */
   public abstract String[] getFontList();
 
@@ -457,6 +459,8 @@ public abstract class Toolkit
    * @param name The name of the font to return metrics for.
    *
    * @return The requested font metrics.
+   *
+   * @deprecated
    */
   public abstract FontMetrics getFontMetrics(Font name);
 
@@ -597,12 +601,32 @@ public abstract class Toolkit
    *
    * @return The requested print job, or <code>null</code> if the job
    * was cancelled.
+   *
+   * @exception NullPointerException If frame is null,
+   * or GraphicsEnvironment.isHeadless() returns true.
+   * @exception SecurityException If this thread is not allowed to initiate
+   * a print job request.
    */
   public abstract PrintJob getPrintJob(Frame frame, String title,
                                        Properties props);
 
-
   /**
+   * Returns a instance of <code>PrintJob</code> for the specified
+   * arguments.
+   *
+   * @param frame The window initiating the print job.
+   * @param title The print job title.
+   * @param jobAttr A set of job attributes which will control the print job.
+   * @param pageAttr A set of page attributes which will control the print job.
+   *
+   * @exception NullPointerException If frame is null, and either jobAttr is null
+   * or jobAttr.getDialog() returns JobAttributes.DialogType.NATIVE.
+   * @exception IllegalArgumentException If pageAttrspecifies differing cross
+   * feed and feed resolutions, or when GraphicsEnvironment.isHeadless() returns
+   * true.
+   * @exception SecurityException If this thread is not allowed to initiate
+   * a print job request.
+   *
    * @since 1.3
    */
   public PrintJob getPrintJob(Frame frame, String title,
@@ -626,6 +650,8 @@ public abstract class Toolkit
   public abstract Clipboard getSystemClipboard();
 
   /**
+   * Gets the singleton instance of the system selection as a Clipboard object.
+   *
    * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
    *
    * @since 1.4
@@ -649,21 +675,42 @@ public abstract class Toolkit
     return Event.CTRL_MASK;
   }
 
+  /**
+   * Returns whether the given locking key on the keyboard is currently in its
+   * "on" state.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   * @exception IllegalArgumentException If keyCode is not one of the valid keys.
+   * @exception UnsupportedOperationException If the host system doesn't allow
+   * getting the state of this key programmatically, or if the keyboard doesn't
+   * have this key.
+   */
   public boolean getLockingKeyState(int keyCode)
   {
     if (keyCode != KeyEvent.VK_CAPS_LOCK
         && keyCode != KeyEvent.VK_NUM_LOCK
         && keyCode != KeyEvent.VK_SCROLL_LOCK)
       throw new IllegalArgumentException();
+    
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Sets the state of the given locking key on the keyboard.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   * @exception IllegalArgumentException If keyCode is not one of the valid keys.
+   * @exception UnsupportedOperationException If the host system doesn't allow
+   * getting the state of this key programmatically, or if the keyboard doesn't
+   * have this key.
+   */
   public void setLockingKeyState(int keyCode, boolean on)
   {
     if (keyCode != KeyEvent.VK_CAPS_LOCK
         && keyCode != KeyEvent.VK_NUM_LOCK
         && keyCode != KeyEvent.VK_SCROLL_LOCK)
       throw new IllegalArgumentException();
+    
     throw new UnsupportedOperationException();
   }
 
@@ -697,6 +744,13 @@ public abstract class Toolkit
       }
   }
 
+  /**
+   * Creates a new custom cursor object.
+   *
+   * @exception IndexOutOfBoundsException If the hotSpot values are outside
+   * the bounds of the cursor.
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   */
   public Cursor createCustomCursor(Image cursor, Point hotSpot, String name)
   {
     // Presumably the only reason this isn't abstract is for backwards
@@ -704,17 +758,33 @@ public abstract class Toolkit
     return null;
   }
 
+  /**
+   * Returns the supported cursor dimension which is closest to the
+   * desired sizes.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   */
   public Dimension getBestCursorSize(int preferredWidth, int preferredHeight)
   {
     return new Dimension (0,0);
   }
 
+  /**
+   * Returns the maximum number of colors the Toolkit supports in a custom
+   * cursor palette.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   */
   public int getMaximumCursorColors()
   {
     return 0;
   }
 
   /**
+   * Returns whether Toolkit supports this state for Frames.
+   *
+   * @exception HeadlessException If GraphicsEnvironment.isHeadless() is true.
+   * 
    * @since 1.4
    */
   public boolean isFrameStateSupported(int state)

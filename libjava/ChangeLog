@@ -1,3 +1,24 @@
+2003-03-24  Michael Koch  <koqnueror@gmx.de>
+
+	* java/awt/ContainerOrderFocusTraversalPolicy.java
+	(getFirstComponent): Implemented.
+	(getLastComponent): Implemented.
+	(getDefaultComponent): Implemented.
+	(setImplicitDownCycleTraversal): Fixed implementation.
+	* java/awt/Robot.java
+	(Robot): Added documentation.
+	* java/awt/Toolkit.java
+	(getFontList): Deprecated.
+	(getFontMetrics): Deprecated.
+	(getPrintJob): Added documentation.
+	(getSystemSelection): Added documentation.
+	(getLockingKeyState): Added documentation.
+	(setLockingKeyState): Added documentation.
+	(createCustomCursor): Added documentation.
+	(getBestCursorSize): Added documentation.
+	(getMaximumCursorColors): Added documentation.
+	(isFrameStateSupported): Added documentation.
+
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
 	* java/io/RandomAccessFile.java:
