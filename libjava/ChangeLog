@@ -1,5 +1,18 @@
 2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
 
+	* java/text/MessageFormat.java:
+	(class Field): New class.
+	(formatToCharacterIterator): New method.
+	(format): Use formatInternal now.
+	(formatInternal): New method. String formatter should
+	be done here (with attributes). Attributes merging supported.
+	(parse): More documentation.
+	(getFormatsByArgumentIndex): New method.
+	(setFormatByArgumentIndex): New method.
+	(setFormatsByArgumentIndex): New method.
+
+2004-05-05  Guilhem Lavaux <guilhem@kaffe.org>
+
 	* java/text/DecimalFormat.java
 	(MAXIMUM_INTEGER_DIGITS): New constant to keep the numeric value 309.
 	(applyPatternWithSymbols): Use MAXIMUM_INTEGER_DIGITS.
