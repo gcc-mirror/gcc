@@ -337,8 +337,8 @@ The @file{config/rs6000/sysv.h} target file defines:
 #undef CPP_SPEC
 #define CPP_SPEC \
 "%@{posix: -D_POSIX_SOURCE @} \
-%@{mcall-sysv: -D_CALL_SYSV @} %@{mcall-aix: -D_CALL_AIX @} \
-%@{!mcall-sysv: %@{!mcall-aix: %(cpp_sysv_default) @}@} \
+%@{mcall-sysv: -D_CALL_SYSV @} \
+%@{!mcall-sysv: %(cpp_sysv_default) @} \
 %@{msoft-float: -D_SOFT_FLOAT@} %@{mcpu=403: -D_SOFT_FLOAT@}"
 
 #undef CPP_SYSV_DEFAULT

@@ -1386,8 +1386,6 @@ enum reg_class
 enum rs6000_abi {
   ABI_NONE,
   ABI_AIX,			/* IBM's AIX */
-  ABI_AIX_NODESC,		/* AIX calling sequence minus
-				   function descriptors */
   ABI_V4,			/* System V.4/eabi */
   ABI_DARWIN			/* Apple's Darwin (OS X kernel) */
 };
@@ -1452,14 +1450,13 @@ typedef struct rs6000_stack {
 
 /* Size of the outgoing register save area */
 #define RS6000_REG_SAVE ((DEFAULT_ABI == ABI_AIX			\
-			  || DEFAULT_ABI == ABI_AIX_NODESC		\
 			  || DEFAULT_ABI == ABI_DARWIN)			\
 			 ? (TARGET_64BIT ? 64 : 32)			\
 			 : 0)
 
 /* Size of the fixed area on the stack */
 #define RS6000_SAVE_AREA \
-  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_AIX_NODESC || DEFAULT_ABI == ABI_DARWIN) ? 24 : 8)	\
+  (((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_DARWIN) ? 24 : 8)	\
    << (TARGET_64BIT ? 1 : 0))
 
 /* MEM representing address to save the TOC register */
@@ -1625,7 +1622,6 @@ typedef struct rs6000_stack {
 #define	FP_ARG_AIX_MAX_REG 45
 #define	FP_ARG_V4_MAX_REG  40
 #define	FP_ARG_MAX_REG ((DEFAULT_ABI == ABI_AIX				\
-			 || DEFAULT_ABI == ABI_AIX_NODESC		\
 			 || DEFAULT_ABI == ABI_DARWIN)			\
 			? FP_ARG_AIX_MAX_REG : FP_ARG_V4_MAX_REG)
 #define FP_ARG_NUM_REG (FP_ARG_MAX_REG - FP_ARG_MIN_REG + 1)
@@ -1900,8 +1896,7 @@ typedef struct rs6000_args
    abi's store the return address.  */
 #define RETURN_ADDRESS_OFFSET						\
  ((DEFAULT_ABI == ABI_AIX						\
-   || DEFAULT_ABI == ABI_DARWIN						\
-   || DEFAULT_ABI == ABI_AIX_NODESC)	? (TARGET_32BIT ? 8 : 16) :	\
+   || DEFAULT_ABI == ABI_DARWIN)	? (TARGET_32BIT ? 8 : 16) :	\
   (DEFAULT_ABI == ABI_V4)		? 4 :				\
   (internal_error ("RETURN_ADDRESS_OFFSET not supported"), 0))
 

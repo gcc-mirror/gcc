@@ -185,11 +185,6 @@ do {									\
       rs6000_current_abi = ABI_V4;					\
       target_flags |= MASK_EABI;					\
     }									\
-  else if (!strcmp (rs6000_abi_name, "aix"))				\
-    {									\
-      rs6000_current_abi = ABI_AIX_NODESC;				\
-      target_flags |= MASK_EABI;					\
-    }									\
   else if (!strcmp (rs6000_abi_name, "aixdesc"))			\
     rs6000_current_abi = ABI_AIX;					\
   else if (!strcmp (rs6000_abi_name, "freebsd"))			\

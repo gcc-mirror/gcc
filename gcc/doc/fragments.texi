@@ -134,12 +134,12 @@ specified, there are combinations that should not be built.  In that
 case, set @code{MULTILIB_EXCEPTIONS} to be all of the switch exceptions
 in shell case syntax that should not be built.
 
-For example, in the PowerPC embedded ABI support, it is not desirable
-to build libraries compiled with the @option{-mcall-aix} option
-and either of the @option{-fleading-underscore} or @option{-mlittle} options
-at the same time.  Therefore @code{MULTILIB_EXCEPTIONS} is set to
+For example the ARM processor cannot execute both hardware floating
+point instructions and the reduced size THUMB instructions at the same
+time, so there is no need to build libraries with both of these
+options enabled.  Therefore @code{MULTILIB_EXCEPTIONS} is set to:
 @smallexample
-*mcall-aix/*fleading-underscore* *mlittle/*mcall-aix*
+*mthumb/*mhard-float*
 @end smallexample
 
 @findex MULTILIB_EXTRA_OPTS

@@ -1,3 +1,32 @@
+2003-04-13  Nick Clifton  <nickc@redhat.com>
+
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Delete
+	support for -mcall-aix switch.
+	* config/rs6000/eabiaix.h: Delete.
+	* config/rs6000/rs6000.h (rs6000_abi): Remove ABI_AIX_NODESC.
+	(RS6000_REG_SAVE, RS6000_SAVE_AREA, FP_ARGS_MAX_REG,
+	RETURN_ADDRESS_OFFSET): Remove use of ABI_AIX_NODESC.
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): Likewise.
+	* config/rs6000/rs6000.c (print_operand, rs6000_stack_info,
+	debug_stack_info, output_function_profiler,
+	rs6000_trampoline_size, rs6000_initialise_trampoline): Likewise.
+	* config/rs6000/rs6000.md (call, call_value, call_nonlocal_sysv,
+	call_indirect_nonlocal_sysv, call_value_indirect_nonlocal_sysv,
+	call_value_nonlocal_sysv, sibcall_value_nonlocal_sysv,
+	sibcall_nonlocal_sysv, sibcall_value_local64): Likewise.
+	* config/rs6000/t-ppcgas (MULTILIB_OPTIONS): Remove mcall-aix
+	multilibs.
+	(MULTILIB_DIRNAMES): Remove mcall-aix directories.
+	(MULTILIB_EXCEPTIONS): Delete.
+	(MULTILIB_MATCHES): Remove mcall-aix matches.
+
+	* doc/fragments.texi: Replace -mcall-aix example with an ARM
+	one.
+	* doc/install.texi: Delete powerpc-*-eabiaix target.
+	* doc/invoke.texi: Remove documentation of mcall-aix switch.
+	* doc/tm.texi: Remove mcall-aix from example CPP_SPEC.
+	* config.gcc: Delete powerpc-*-eabiaix target.
+
 2003-04-13  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/invoke.texi: Fix typos.

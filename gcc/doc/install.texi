@@ -2997,13 +2997,6 @@ Texinfo version 3.12).
 @html
 <hr />
 @end html
-@heading @anchor{powerpc-*-eabiaix}powerpc-*-eabiaix
-Embedded PowerPC system in big endian mode with @option{-mcall-aix} selected as
-the default.
-
-@html
-<hr />
-@end html
 @heading @anchor{powerpc-*-eabisim}powerpc-*-eabisim
 Embedded PowerPC system in big endian mode for use in running under the
 PSIM simulator.
