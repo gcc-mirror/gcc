@@ -25,12 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "hashtab.h"
 
-#ifndef ISDIGIT
-#include <ctype.h>
-#define ISDIGIT isdigit
-#define ISSPACE isspace
-#endif
-
 #define	obstack_chunk_alloc	xmalloc
 #define	obstack_chunk_free	free
 
