@@ -1,3 +1,7 @@
+2005-03-28  Mark Mitchell <mark@codesourcery.com>
+
+	* libiberty.h (ffs): Declare, if necessary.
+	
 2005-03-27  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* xregex2.h (_RE_ARGS): Remove definition and uses.
