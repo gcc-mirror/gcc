@@ -42,7 +42,7 @@ start_l:
 	cmp/ge	r0,r1
 	bt	start_l
 
-#if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY)
+#if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 	mov.l set_fpscr_k, r1
 	jsr @r1
 	mov #0,r4
@@ -75,7 +75,7 @@ start_l:
 #if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 set_fpscr_k:
 	.long	___set_fpscr
-#endif /*  defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(SH4_SINGLE_ONLY) */
+#endif /*  defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
 stack_k:
 	.long	_stack	
 edata_k:
