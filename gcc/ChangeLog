@@ -2,7 +2,7 @@ Mon Jul 26 19:07:11 1999  Geoff Keating  <geoffk@cygnus.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_builtin_saveregs):
 	Rename from expand_builtin_saveregs.
-	* config/rs6000/rs6000.c (EXPAND_BUILTIN_SAVEREGS): Change caller.
+	* config/rs6000/rs6000.h (EXPAND_BUILTIN_SAVEREGS): Change caller.
 
 Mon Jul 26 22:52:47 1999  Richard Henderson  <rth@cygnus.com>
 
