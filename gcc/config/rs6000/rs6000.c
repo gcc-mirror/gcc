@@ -9702,7 +9702,7 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
       if (TARGET_RELOCATABLE
 	  && !in_toc_section ()
 	  && !in_text_section ()
-	  && !in_text_unlikely_section ()
+	  && !in_unlikely_text_section ()
 	  && !recurse
 	  && GET_CODE (x) != CONST_INT
 	  && GET_CODE (x) != CONST_DOUBLE
