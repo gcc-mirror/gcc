@@ -82,6 +82,31 @@ public abstract class ClassLoader
     return parent;
   }
 
+  /**
+   * Returns the system classloader. The system classloader (also called
+   * the application classloader) is the classloader that was used to
+   * load the application classes on the classpath (given by the system
+   * property <code>java.class.path</code>. This is set as the context
+   * class loader for a thread. The system property
+   * <code>java.system.class.loader</code>, if defined, is taken to be the
+   * name of the class to use as the system class loader, which must have
+   * a public constructor which takes a ClassLoader as a parent; otherwise this
+   * uses gnu.java.lang.SystemClassLoader.
+   *
+   * <p>Note that this is different from the bootstrap classloader that
+   * actually loads all the real "system" classes (the bootstrap classloader
+   * is the parent of the returned system classloader).
+   *
+   * <p>A security check will be performed for
+   * <code>RuntimePermission("getClassLoader")</code> if the calling class
+   * is not a parent of the system class loader.
+   *
+   * @return the system class loader
+   * @throws SecurityException if the security check fails
+   * @throws IllegalStateException if this is called recursively
+   * @throws Error if <code>java.system.class.loader</code> fails to load
+   * @since 1.2
+   */
   public static ClassLoader getSystemClassLoader ()
   {
     return gnu.gcj.runtime.VMClassLoader.instance;
@@ -174,14 +199,48 @@ public abstract class ClassLoader
     return c;
   }
 
-  /** Find a class.  This should be overridden by subclasses; the
-   *  default implementation throws ClassNotFoundException.
+  /**
+   * Called for every class name that is needed but has not yet been
+   * defined by this classloader or one of its parents. It is called by
+   * <code>loadClass()</code> after both <code>findLoadedClass()</code> and
+   * <code>parent.loadClass()</code> couldn't provide the requested class.
    *
-   * @param name Name of the class to find.
-   * @return     The class found.
-   * @exception  java.lang.ClassNotFoundException
+   * <p>The default implementation throws a
+   * <code>ClassNotFoundException</code>. Subclasses should override this
+   * method. An implementation of this method in a subclass should get the
+   * class bytes of the class (if it can find them), if the package of the
+   * requested class doesn't exist it should define the package and finally
+   * it should call define the actual class. It does not have to resolve the
+   * class. It should look something like the following:<br>
+   *
+   * <pre>
+   * // Get the bytes that describe the requested class
+   * byte[] classBytes = classLoaderSpecificWayToFindClassBytes(name);
+   * // Get the package name
+   * int lastDot = name.lastIndexOf('.');
+   * if (lastDot != -1)
+   *   {
+   *     String packageName = name.substring(0, lastDot);
+   *     // Look if the package already exists
+   *     if (getPackage(pkg) == null)
+   *       {
+   *         // define the package
+   *         definePackage(packageName, ...);
+   *       }
+   *   }
+   * // Define and return the class
+   *  return defineClass(name, classBytes, 0, classBytes.length);
+   * </pre>
+   *
+   * <p><code>loadClass()</code> makes sure that the <code>Class</code>
+   * returned by <code>findClass()</code> will later be returned by
+   * <code>findLoadedClass()</code> when the same class name is requested.
+   *
+   * @param name class name to find (including the package name)
+   * @return the requested Class
+   * @throws ClassNotFoundException when the class can not be found
    * @since 1.2
-   */
+   */   
   protected Class findClass (String name)
     throws ClassNotFoundException
   {
@@ -234,6 +293,25 @@ public abstract class ClassLoader
     return defineClass (null, data, off, len, defaultProtectionDomain);
   }
 
+  /**
+   * Helper to define a class using a string of bytes without a
+   * ProtectionDomain. Subclasses should call this method from their
+   * <code>findClass()</code> implementation. The name should use '.'
+   * separators, and discard the trailing ".class".  The default protection
+   * domain has the permissions of
+   * <code>Policy.getPolicy().getPermissions(new CodeSource(null, null))<code>.
+   *
+   * @param name the name to give the class, or null if unknown
+   * @param data the data representing the classfile, in classfile format
+   * @param offset the offset into the data where the classfile starts
+   * @param len the length of the classfile data in the array
+   * @return the class that was defined
+   * @throws ClassFormatError if data is not in proper classfile format
+   * @throws IndexOutOfBoundsException if offset or len is negative, or
+   *         offset + len exceeds data
+   * @throws SecurityException if name starts with "java."
+   * @since 1.1
+   */
   protected final Class defineClass(String name, byte[] data, int off, int len)
     throws ClassFormatError
   {
@@ -504,11 +582,19 @@ public abstract class ClassLoader
     return gnu.gcj.runtime.VMClassLoader.instance.loadClass (name);
   }
 
-  /*
-   * Does currently nothing. FIXME.
-   */ 
-  protected final void setSigners(Class claz, Object[] signers) {
-    /* claz.setSigners (signers); */
+  /**
+   * Helper to set the signers of a class. This should be called after
+   * defining the class.
+   *
+   * @param c the Class to set signers of
+   * @param signers the signers to set
+   * @since 1.1
+   */   
+  protected final void setSigners(Class c, Object[] signers)
+  {
+    /*
+     * Does currently nothing. FIXME.
+     */ 
   }
 
   /**
@@ -521,12 +607,43 @@ public abstract class ClassLoader
    */ 
   protected final native Class findLoadedClass(String name);
 
+
+  /**
+   * Get a resource using the system classloader.
+   *
+   * @param name the name of the resource relative to the system classloader
+   * @return an input stream for the resource, or null
+   * @since 1.1
+   */
   public static InputStream getSystemResourceAsStream(String name) {
     return getSystemClassLoader().getResourceAsStream (name);
   }
 
+  /**
+   * Get the URL to a resource using the system classloader.
+   *
+   * @param name the name of the resource relative to the system classloader
+   * @return the URL to the resource
+   * @since 1.1
+   */
   public static URL getSystemResource(String name) {
     return getSystemClassLoader().getResource (name);
+  }
+
+  /**
+   * Get an Enumeration of URLs to resources with a given name using the
+   * the system classloader. The enumeration firsts lists the resources with
+   * the given name that can be found by the bootstrap classloader followed
+   * by the resources with the given name that can be found on the classpath.
+   *
+   * @param name the name of the resource relative to the system classloader
+   * @return an Enumeration of URLs to the resources
+   * @throws IOException if I/O errors occur in the process
+   * @since 1.2
+   */
+  public static Enumeration getSystemResources(String name) throws IOException
+  {
+    return getSystemClassLoader().getResources(name);
   }
 
   /**
@@ -541,13 +658,17 @@ public abstract class ClassLoader
    */
   public InputStream getResourceAsStream(String name) 
   {
-    try {
-      URL res = getResource (name);
-      if (res == null) return null;
-      return res.openStream ();
-    } catch (java.io.IOException x) {
-      return null;
-    }
+    try
+      {
+	URL res = getResource (name);
+	if (res == null)
+          return null;
+	return res.openStream ();
+      }
+    catch (java.io.IOException x)
+      {
+	return null;
+      }
   }
  
   /**
@@ -582,13 +703,47 @@ public abstract class ClassLoader
       return findResource (name);
   }
 
+  /**
+   * Called whenever a resource is needed that could not be provided by
+   * one of the parents of this classloader. It is called by
+   * <code>getResource()</code> after <code>parent.getResource()</code>
+   * couldn't provide the requested resource.
+   *
+   * <p>The default implementation always returns null. Subclasses should
+   * override this method when they can provide a way to return a URL
+   * to a named resource.
+   *
+   * @param name the name of the resource to be found
+   * @return a URL to the named resource or null when not found
+   * @since 1.2
+   */
   protected URL findResource (String name)
   {
     // Default to returning null.  Derived classes implement this.
     return null;
   }
 
-  public final Enumeration getResources (String name) throws IOException
+  /**
+   * Returns an Enumeration of all resources with a given name that can
+   * be found by this classloader and its parents. Certain classloaders
+   * (such as the URLClassLoader when given multiple jar files) can have
+   * multiple resources with the same name that come from multiple locations.
+   * It can also occur that a parent classloader offers a resource with a
+   * certain name and the child classloader also offers a resource with that
+   * same name. <code>getResource() only offers the first resource (of the
+   * parent) with a given name. This method lists all resources with the
+   * same name. The name should use '/' as path separators.
+   *
+   * <p>The Enumeration is created by first calling <code>getResources()</code>
+   * on the parent classloader and then calling <code>findResources()</code>
+   * on this classloader.
+   *
+   * @param name the resource name
+   * @return an enumaration of all resources found
+   * @throws IOException if I/O errors occur in the process
+   * @since 1.2
+   */
+  public final Enumeration getResources(String name) throws IOException
   {
     // The rules say search the parent class if non-null,
     // otherwise search the built-in class loader (assumed to be
@@ -611,10 +766,26 @@ public abstract class ClassLoader
       return findResources (name);
   }
 
-  protected Enumeration findResources (String name) throws IOException
+  /**
+   * Called whenever all locations of a named resource are needed.
+   * It is called by <code>getResources()</code> after it has called
+   * <code>parent.getResources()</code>. The results are combined by
+   * the <code>getResources()</code> method.
+   *
+   * <p>The default implementation always returns an empty Enumeration.
+   * Subclasses should override it when they can provide an Enumeration of
+   * URLs (possibly just one element) to the named resource.
+   * The first URL of the Enumeration should be the same as the one
+   * returned by <code>findResource</code>.
+   *
+   * @param name the name of the resource to be found
+   * @return a possibly empty Enumeration of URLs to the named resource
+   * @throws IOException if I/O errors occur in the process
+   * @since 1.2
+   */
+  protected Enumeration findResources(String name) throws IOException
   {
-    // Default to returning null.  Derived classes implement this.
-    return null;
+    return Collections.enumeration(Collections.EMPTY_LIST);
   }
 
   /**
