@@ -215,17 +215,41 @@ decl_attributes (decl, attributes)
 	  DECL_PACKED (decl) = 1;
 	/* We can't set DECL_PACKED for a VAR_DECL, because the bit is
 	   used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
+	else
+	  warning_with_decl (decl, "`packed' attribute ignore");
+
       }
     else if (TREE_VALUE (a) == get_identifier ("noreturn")
 	     || TREE_VALUE (a) == get_identifier ("volatile"))
       {
+	tree type = TREE_TYPE (decl);
+
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_THIS_VOLATILE (decl) = 1;
+	else if (TREE_CODE (type) == POINTER_TYPE
+		 && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+	  TREE_TYPE (decl)
+	    = build_pointer_type
+	      (build_type_variant (TREE_TYPE (type),
+				   TREE_READONLY (TREE_TYPE (type)), 1));
+	else
+	  warning_with_decl (decl, "`%s' attribute ignored",
+			     IDENTIFIER_POINTER (TREE_VALUE (a)));
       }
     else if (TREE_VALUE (a) == get_identifier ("const"))
       {
+	tree type = TREE_TYPE (decl);
+
 	if (TREE_CODE (decl) == FUNCTION_DECL)
 	  TREE_READONLY (decl) = 1;
+	else if (TREE_CODE (type) == POINTER_TYPE
+		 && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+	  TREE_TYPE (decl)
+	    = build_pointer_type
+	      (build_type_variant (TREE_TYPE (type), 1,
+				   TREE_THIS_VOLATILE (TREE_TYPE (type))));
+	else
+	  warning_with_decl (decl, "`const' attribute ignored");
       }
     else if (TREE_VALUE (a) != 0
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
@@ -252,7 +276,7 @@ decl_attributes (decl, attributes)
 	      break;
 	    }
 	if (i == NUM_MACHINE_MODES)
-	  error ("unknown machine mode `%s'", specified_name);
+	  error_with_decl (decl, "unknown machine mode `%s'", specified_name);
       }
     else if (TREE_VALUE (a) != 0
 	     && TREE_CODE (TREE_VALUE (a)) == TREE_LIST
@@ -262,7 +286,8 @@ decl_attributes (decl, attributes)
 	if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
 	  {
 	    if (TREE_CODE (decl) == VAR_DECL && current_function_decl != NULL_TREE)
-	      error ("section attribute cannot be specified for local variables");
+	      error_with_decl (decl,
+			       "section attribute cannot be specified for local variables");
 	    /* The decl may have already been given a section attribute from
 	       a previous declaration.  Ensure they match.  */
 	    else if (DECL_SECTION_NAME (decl) != NULL_TREE
