@@ -51,7 +51,11 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JMenu extends JMenuItem implements Accessible, MenuElement {
+public class JMenu
+  extends JMenuItem
+  implements Accessible, MenuElement
+{
+  static final long serialVersionUID = 4227225638931828014L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

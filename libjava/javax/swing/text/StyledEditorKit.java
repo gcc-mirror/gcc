@@ -50,7 +50,9 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class StyledEditorKit extends DefaultEditorKit {
+public class StyledEditorKit extends DefaultEditorKit
+{
+  static final long serialVersionUID = 7002391892985555948L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

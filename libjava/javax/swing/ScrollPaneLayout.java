@@ -47,7 +47,10 @@ import javax.swing.plaf.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class ScrollPaneLayout implements LayoutManager, ScrollPaneConstants, Serializable {
+public class ScrollPaneLayout
+  implements LayoutManager, ScrollPaneConstants, Serializable
+{
+  static final long serialVersionUID = -4480022884523193743L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

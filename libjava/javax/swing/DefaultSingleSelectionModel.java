@@ -48,7 +48,9 @@ import javax.swing.event.*;
  * @version	1.0
  */
 public class DefaultSingleSelectionModel implements 
-		SingleSelectionModel, Serializable {
+		SingleSelectionModel, Serializable
+{
+  static final long serialVersionUID = 3676229404753786004L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

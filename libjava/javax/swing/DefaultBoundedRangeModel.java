@@ -47,7 +47,10 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class DefaultBoundedRangeModel implements BoundedRangeModel, Serializable {
+public class DefaultBoundedRangeModel
+  implements BoundedRangeModel, Serializable
+{
+  static final long serialVersionUID = 5034068491295259790L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -49,7 +49,11 @@ import javax.swing.plaf.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class JSlider extends JComponent implements SwingConstants, Accessible {
+public class JSlider
+  extends JComponent
+  implements SwingConstants, Accessible
+{
+  static final long serialVersionUID = -1441275936141218479L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

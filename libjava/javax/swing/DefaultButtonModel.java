@@ -42,9 +42,11 @@ import java.awt.event.*;
 import java.awt.*;
 import javax.swing.event.*;
 
-public 
-class DefaultButtonModel implements ButtonModel, java.io.Serializable
+public class DefaultButtonModel
+  implements ButtonModel, java.io.Serializable
 {
+  static final long serialVersionUID = -5342609566534980231L;
+
     Vector actions          = new Vector();
 
     Vector items    = new Vector();

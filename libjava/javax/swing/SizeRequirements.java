@@ -45,7 +45,9 @@ import java.io.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class SizeRequirements implements Serializable {
+public class SizeRequirements implements Serializable
+{
+  static final long serialVersionUID = 9217749429906736553L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

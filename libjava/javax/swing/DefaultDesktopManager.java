@@ -46,7 +46,9 @@ import java.io.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class DefaultDesktopManager implements DesktopManager, Serializable {
+public class DefaultDesktopManager implements DesktopManager, Serializable
+{
+  static final long serialVersionUID = 4657624909838017887L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

@@ -61,6 +61,7 @@ import javax.accessibility.*;
  */
 public abstract class JComponent extends Container implements Serializable
 {
+  static final long serialVersionUID = -5242478962609715464L;
         /**
          * accessibleContext
          */

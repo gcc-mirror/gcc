@@ -1,3 +1,46 @@
+2003-03-31  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/AbstractCellEditor.java,
+	javax/swing/AbstractListModel.java,
+	javax/swing/ActionMap.java,
+	javax/swing/BorderFactory.java,
+	javax/swing/ButtonGroup.java,
+	javax/swing/DefaultBoundedRangeModel.java,
+	javax/swing/DefaultButtonModel.java,
+	javax/swing/DefaultCellEditor.java,
+	javax/swing/DefaultComboBoxModel.java,
+	javax/swing/DefaultDesktopManager.java,
+	javax/swing/DefaultListCellRenderer.java,
+	javax/swing/DefaultSingleSelectionModel.java,
+	javax/swing/InputMap.java,
+	javax/swing/JComponent.java,
+	javax/swing/JMenu.java,
+	javax/swing/JSlider.java,
+	javax/swing/KeyStroke.java,
+	javax/swing/OverlayLayout.java,
+	javax/swing/ScrollPaneLayout.java,
+	javax/swing/SizeRequirements.java,
+	javax/swing/UIManager.java,
+	javax/swing/ViewportLayout.java,
+	javax/swing/border/AbstractBorder.java,
+	javax/swing/colorchooser/DefaultColorSelectionModel.java,
+	javax/swing/event/EventListenerList.java,
+	javax/swing/table/AbstractTableModel.java,
+	javax/swing/table/DefaultTableCellRenderer.java,
+	javax/swing/table/DefaultTableColumnModel.java,
+	javax/swing/table/DefaultTableModel.java,
+	javax/swing/table/TableColumn.java,
+	javax/swing/text/StyledEditorKit.java,
+	javax/swing/tree/DefaultMutableTreeNode.java,
+	javax/swing/tree/DefaultTreeModel.java,
+	javax/swing/tree/DefaultTreeSelectionModel.java,
+	javax/swing/tree/TreePath.java,
+	javax/swing/undo/AbstractUndoableEdit.java,
+	javax/swing/undo/StateEdit.java,
+	javax/swing/undo/StateEditable.java,
+	javax/swing/undo/UndoableEditSupport.java:
+	Merges from classpath.
+
 2003-03-30  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/String.java (data, boffset, count): Documented.

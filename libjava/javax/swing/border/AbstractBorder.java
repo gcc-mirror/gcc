@@ -42,6 +42,8 @@ import java.awt.*;
 
 public abstract class AbstractBorder implements Border, Serializable
 {
+  static final long serialVersionUID = -545885975315191844L;
+
     AbstractBorder()
     {
     }

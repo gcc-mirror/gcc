@@ -44,6 +44,8 @@ import javax.swing.event.*;
 
 public class ButtonGroup implements Serializable 
 {
+  static final long serialVersionUID = 4259076101881721375L;
+
     Vector v = new Vector();
     ButtonModel sel;
     

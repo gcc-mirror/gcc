@@ -47,7 +47,9 @@ import java.util.*;
  * @version	1.0
  */
 public class DefaultComboBoxModel extends AbstractListModel 
-		implements MutableComboBoxModel, Serializable {
+		implements MutableComboBoxModel, Serializable
+{
+  static final long serialVersionUID = 6698657703676921904L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

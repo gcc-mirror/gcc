@@ -1,5 +1,5 @@
-/* AbstractTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+/* UndoableEditSupport.java --
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -45,126 +45,169 @@ import javax.swing.event.*;
  * UndoableEditSupport
  * @author	Andrew Selkirk
  */
-public class UndoableEditSupport {
+public class UndoableEditSupport
+{
 
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
+  //-------------------------------------------------------------
+  // Variables --------------------------------------------------
+  //-------------------------------------------------------------
 
-	/**
-	 * updateLevel
-	 */
-	protected int updateLevel;
+  /**
+   * updateLevel
+   */
+  protected int updateLevel;
 
-	/**
-	 * compoundEdit
-	 */
-	protected CompoundEdit compoundEdit;
+  /**
+   * compoundEdit
+   */
+  protected CompoundEdit compoundEdit;
 
-	/**
-	 * listeners
-	 */
-	protected Vector listeners = new Vector();
+  /**
+   * listeners
+   */
+  protected Vector listeners = new Vector();
 
-	/**
-	 * realSource
-	 */
-	protected Object realSource;
-
-
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * Constructor UndoableEditSupport
-	 */
-	public UndoableEditSupport() {
-		// TODO
-	} // UndoableEditSupport()
-
-	/**
-	 * Constructor UndoableEditSupport
-	 * @param object TODO
-	 */
-	public UndoableEditSupport(Object object) {
-		realSource = object;
-	} // UndoableEditSupport()
+  /**
+   * realSource
+   */
+  protected Object realSource;
 
 
-	//-------------------------------------------------------------
-	// Methods ----------------------------------------------------
-	//-------------------------------------------------------------
+  //-------------------------------------------------------------
+  // Initialization ---------------------------------------------
+  //-------------------------------------------------------------
 
-	/**
-	 * toString
-	 * @returns String
-	 */
-	public String toString() {
-		return null; // TODO
-	} // toString()
+  /**
+   * Constructor UndoableEditSupport
+   */
+  public UndoableEditSupport()
+  {
+  }
 
-	/**
-	 * addUndoableEditListener
-	 * @param value0 TODO
-	 */
-	public synchronized void addUndoableEditListener(UndoableEditListener value0) {
-		// TODO
-	} // addUndoableEditListener()
-
-	/**
-	 * removeUndoableEditListener
-	 * @param value0 TODO
-	 */
-	public synchronized void removeUndoableEditListener(UndoableEditListener value0) {
-		// TODO
-	} // removeUndoableEditListener()
-
-	/**
-	 * _postEdit
-	 * @param value0 TODO
-	 */
-	protected void _postEdit(UndoableEdit value0) {
-		// TODO
-	} // _postEdit()
-
-	/**
-	 * postEdit
-	 * @param value0 TODO
-	 */
-	public synchronized void postEdit(UndoableEdit value0) {
-		// TODO
-	} // postEdit()
-
-	/**
-	 * getUpdateLevel
-	 * @returns int
-	 */
-	public int getUpdateLevel() {
-		return 0; // TODO
-	} // getUpdateLevel()
-
-	/**
-	 * beginUpdate
-	 */
-	public synchronized void beginUpdate() {
-		// TODO
-	} // beginUpdate()
-
-	/**
-	 * createCompoundEdit
-	 * @returns CompoundEdit
-	 */
-	protected CompoundEdit createCompoundEdit() {
-		return null; // TODO
-	} // createCompoundEdit()
-
-	/**
-	 * endUpdate
-	 */
-	public synchronized void endUpdate() {
-		// TODO
-	} // endUpdate()
+  /**
+   * Constructor UndoableEditSupport
+   * @param object TODO
+   */
+  public UndoableEditSupport(Object object)
+  {
+    realSource = object;
+  }
 
 
-} // UndoableEditSupport
+  //-------------------------------------------------------------
+  // Methods ----------------------------------------------------
+  //-------------------------------------------------------------
+
+  /**
+   * toString
+   * @returns String
+   */
+  public String toString()
+  {
+    return (super.toString() + " realSource: " + realSource
+	    + " updateLevel: " + updateLevel);
+  }
+
+  /**
+   * Add a listener.
+   * @param val the listener
+   */
+  public synchronized void addUndoableEditListener(UndoableEditListener val)
+  {
+    listeners.add(val);
+  }
+
+  /**
+   * Remove a listener.
+   * @param val the listener
+   */
+  public synchronized void removeUndoableEditListener(UndoableEditListener val)
+  {
+    listeners.removeElement(val);
+  }
+
+  /**
+   * Return an array of all listeners.
+   * @returns all the listeners
+   */
+  public synchronized UndoableEditListener[] getUndoableEditListeners()
+  {
+    UndoableEditListener[] result = new UndoableEditListener[listeners.size()];
+    return (UndoableEditListener[]) listeners.toArray(result);
+  }
+
+  /**
+   * _postEdit
+   * @param value0 TODO
+   */
+  protected void _postEdit(UndoableEdit edit)
+  {
+    UndoableEditEvent event = new UndoableEditEvent(realSource, edit);
+    int max = listeners.size();
+    for (int i = 0; i < max; ++i)
+      {
+	UndoableEditListener l
+	  = (UndoableEditListener) (listeners.elementAt(i));
+	l.undoableEditHappened(event);
+      }
+  }
+
+  /**
+   * postEdit
+   * @param value0 TODO
+   */
+  public synchronized void postEdit(UndoableEdit edit)
+  {
+    if (compoundEdit == null)
+      compoundEdit.addEdit(edit);
+    else
+      _postEdit(edit);
+  }
+
+  /**
+   * getUpdateLevel
+   * @returns int
+   */
+  public int getUpdateLevel()
+  {
+    return updateLevel;
+  }
+
+  /**
+   * beginUpdate
+   */
+  public synchronized void beginUpdate()
+  {
+    if (compoundEdit != null)
+      {
+	// FIXME: what?  We can't push a new one.  This isn't even
+	// documented anyway.
+	endUpdate();
+      }
+
+    compoundEdit = createCompoundEdit();
+    ++updateLevel;
+  }
+
+  /**
+   * createCompoundEdit
+   * @returns CompoundEdit
+   */
+  protected CompoundEdit createCompoundEdit()
+  {
+    return new CompoundEdit();
+  }
+
+  /**
+   * endUpdate
+   */
+  public synchronized void endUpdate()
+  {
+    // FIXME: assert updateLevel == 1;
+    compoundEdit.end();
+    CompoundEdit c = compoundEdit;
+    compoundEdit = null;
+    --updateLevel;
+    _postEdit(c);
+  }
+}

@@ -46,7 +46,9 @@ import javax.swing.event.*;
  * DefaultTreeModel
  * @author Andrew Selkirk
  */
-public class DefaultTreeModel implements Serializable, TreeModel {
+public class DefaultTreeModel implements Serializable, TreeModel
+{
+  static final long serialVersionUID = -2621068368932566998L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

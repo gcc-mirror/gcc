@@ -50,7 +50,11 @@ import javax.swing.tree.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class DefaultCellEditor extends AbstractCellEditor implements TableCellEditor, TreeCellEditor {
+public class DefaultCellEditor
+  extends AbstractCellEditor
+  implements TableCellEditor, TreeCellEditor
+{
+  static final long serialVersionUID = 3564035141373880027L;
 
 	//-------------------------------------------------------------
 	// Classes ----------------------------------------------------

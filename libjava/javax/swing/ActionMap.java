@@ -46,7 +46,9 @@ import java.util.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class ActionMap implements Serializable {
+public class ActionMap implements Serializable
+{
+  static final long serialVersionUID = -6277518704513986346L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

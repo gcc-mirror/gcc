@@ -47,7 +47,9 @@ import javax.swing.event.*;
  * @author	Andrew Selkirk
  * @version	1.0
  */
-public class TableColumn implements Serializable {
+public class TableColumn implements Serializable
+{
+  static final long serialVersionUID = -6113660025878112608L;
 
 	//-------------------------------------------------------------
 	// Variables --------------------------------------------------

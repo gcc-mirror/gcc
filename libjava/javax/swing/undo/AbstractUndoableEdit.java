@@ -1,5 +1,5 @@
 /* AbstractTableModel.java --
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -44,171 +44,175 @@ import java.io.Serializable;
  * AbstractUndoableEdit
  * @author Andrew Selkirk
  */
-public class AbstractUndoableEdit	extends		Object
-									implements	UndoableEdit,
-												Serializable {
+public class AbstractUndoableEdit implements UndoableEdit, Serializable
+{
+  static final long serialVersionUID = 580150227676302096L;
 
-	//-------------------------------------------------------------
-	// Constants --------------------------------------------------
-	//-------------------------------------------------------------
+  //-------------------------------------------------------------
+  // Constants --------------------------------------------------
+  //-------------------------------------------------------------
 
-	/**
-	 * String returned by getRedoPresentationName()
-	 */
-	protected static	String	RedoName	= "Redo";
+  /**
+   * String returned by getRedoPresentationName()
+   */
+  protected static final String RedoName = "Redo";
 
-	/**
-	 * String returned by getUndoPresentationName()
-	 */
-	protected static	String	UndoName	= "Undo";
-
-
-	//-------------------------------------------------------------
-	// Variables --------------------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * TODO
-	 */
-	private 			boolean	hasBeenDone	= false;
-
-	/**
-	 * The edit is alive
-	 */
-	private				boolean	alive 		= true;
+  /**
+   * String returned by getUndoPresentationName()
+   */
+  protected static final String UndoName = "Undo";
 
 
-	//-------------------------------------------------------------
-	// Initialization ---------------------------------------------
-	//-------------------------------------------------------------
+  //-------------------------------------------------------------
+  // Variables --------------------------------------------------
+  //-------------------------------------------------------------
 
-	/**
-	 * Create new AbstractUndoableEdit
-	 */
-	public AbstractUndoableEdit() {
-	} // AbstractUndoableEdit()
+  /**
+   * TODO
+   */
+  private boolean hasBeenDone = false;
 
-
-	//-------------------------------------------------------------
-	// Interface: UndoableEdit ------------------------------------
-	//-------------------------------------------------------------
-
-	/**
-	 * addEdit
-	 * @param anEdit TODO
-	 * @returns TODO
-	 */
-	public boolean addEdit(UndoableEdit anEdit) {
-		return false;
-	} // addEdit()
-
-	/**
-	 * canRedo()
-	 * @returns true if redoable, false otherwise
-	 */
-	public boolean canRedo() {
-		if (alive == true && hasBeenDone == false) {
-			return true;
-		} // if
-		return false;
-	} // canRedo()
-
-	/**
-	 * canUndo()
-	 * @returns true if undoable, false otherwise
-	 */
-	public boolean canUndo() {
-		if (alive == true && hasBeenDone == true) {
-			return true;
-		} // if
-		return false;
-	} // canUndo()
-
-	/**
-	 * die
-	 */
-	public void die() {
-		alive = false;
-	} // die()
-
-	/**
-	 * getPresentation
-	 * @returns TODO
-	 */
-	public String getPresentationName() {
-		return "";
-	} // getPresentationName()
-
-	/**
-	 * getRedoPresentationName
-	 * @returns TODO
-	 */
-	public String getRedoPresentationName()	{
-		if (getPresentationName().equals("") == true) {
-			return RedoName;
-		} else {
-			return RedoName + " " + getPresentationName();
-		}
-	} // getRedoPresentationName()
-
-	/**
-	 * getUndoPresentationName
-	 * @returns TODO
-	 */
-	public String getUndoPresentationName()	{
-		if (getPresentationName().equals("") == true) {
-			return UndoName;
-		} else {
-			return UndoName + " " + getPresentationName();
-		}
-	} // getUndoPresentationName()
-
-	/**
-	 * isSignificant
-	 * @returns true
-	 */
-	public boolean isSignificant() {
-		return true;
-	} // isSignificant()
-
-	/**
-	 * redo
-	 * @throws CannotRedoException TODO
-	 */
-	public void redo() throws CannotRedoException {
-		if (canRedo() == false) {
-			throw new CannotRedoException();
-		}
-		hasBeenDone = true;
-	} // redo()
-
-	/**
-	 * replaceEdit
-	 * @param anEdit TODO
-	 * @returns TODO
-	 */
-	public boolean replaceEdit(UndoableEdit anEdit) {
-		return false;
-	} // replaceEdit()
-
-	/**
-	 * String representation
-	 * @returns String representation
-	 */
-	public String toString() {
-		return null; // TODO
-	} // toString()
-
-	/**
-	 * undo
-	 * @throws CannotUndoException TODO
-	 */
-	public void undo() throws CannotUndoException {
-		if (canUndo() == false) {
-			throw new CannotUndoException();
-		}
-		hasBeenDone = false;
-	} // undo()
+  /**
+   * The edit is alive
+   */
+  private boolean alive = true;
 
 
+  //-------------------------------------------------------------
+  // Initialization ---------------------------------------------
+  //-------------------------------------------------------------
+
+  /**
+   * Create new AbstractUndoableEdit
+   */
+  public AbstractUndoableEdit()
+  {
+  } // AbstractUndoableEdit()
+
+
+  //-------------------------------------------------------------
+  // Interface: UndoableEdit ------------------------------------
+  //-------------------------------------------------------------
+
+  /**
+   * addEdit
+   * @param anEdit TODO
+   * @returns TODO
+   */
+  public boolean addEdit(UndoableEdit anEdit)
+  {
+    return false;
+  } // addEdit()
+
+  /**
+   * canRedo()
+   * @returns true if redoable, false otherwise
+   */
+  public boolean canRedo()
+  {
+    if (alive == true && hasBeenDone == false)
+      return true;
+    return false;
+  } // canRedo()
+
+  /**
+   * canUndo()
+   * @returns true if undoable, false otherwise
+   */
+  public boolean canUndo()
+  {
+    if (alive == true && hasBeenDone == true)
+      return true;
+    return false;
+  } // canUndo()
+
+  /**
+   * die
+   */
+  public void die()
+  {
+    alive = false;
+  } // die()
+
+  /**
+   * getPresentation
+   * @returns TODO
+   */
+  public String getPresentationName()
+  {
+    return "";
+  } // getPresentationName()
+
+  /**
+   * getRedoPresentationName
+   * @returns TODO
+   */
+  public String getRedoPresentationName()
+  {
+    if (getPresentationName().equals(""))
+      return RedoName;
+    return RedoName + " " + getPresentationName();
+  } // getRedoPresentationName()
+
+  /**
+   * getUndoPresentationName
+   * @returns TODO
+   */
+  public String getUndoPresentationName()
+  {
+    if (getPresentationName().equals(""))
+      return UndoName;
+    return UndoName + " " + getPresentationName();
+  } // getUndoPresentationName()
+
+  /**
+   * isSignificant
+   * @returns true
+   */
+  public boolean isSignificant()
+  {
+    return true;
+  } // isSignificant()
+
+  /**
+   * redo
+   * @throws CannotRedoException TODO
+   */
+  public void redo() throws CannotRedoException
+  {
+    if (! canRedo())
+      throw new CannotRedoException();
+    hasBeenDone = true;
+  } // redo()
+
+  /**
+   * replaceEdit
+   * @param anEdit TODO
+   * @returns TODO
+   */
+  public boolean replaceEdit(UndoableEdit anEdit)
+  {
+    return false;
+  } // replaceEdit()
+
+  /**
+   * String representation
+   * @returns String representation
+   */
+  public String toString()
+  {
+    return (super.toString() + " hasBeenDone: " + hasBeenDone
+	    + " alive: " + alive);
+  }
+
+  /**
+   * undo
+   * @throws CannotUndoException TODO
+   */
+  public void undo() throws CannotUndoException
+  {
+    if (! canUndo())
+      throw new CannotUndoException();
+    hasBeenDone = false;
+  } // undo()
 } // AbstractUndoableEdit
