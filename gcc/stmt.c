@@ -5866,10 +5866,6 @@ find_loop_tree_blocks ()
 {
   tree block = DECL_INITIAL (current_function_decl);
 
-  /* There first block is for the function body, and does not have
-     corresponding block notes.  Don't include it in the block vector.  */
-  block = BLOCK_SUBBLOCKS (block);
-
   block_vector = identify_blocks (block, get_insns ());
 }
 

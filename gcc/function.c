@@ -4532,33 +4532,34 @@ round_trampoline_addr (tramp)
    duplicate portions of the RTL code.  Call identify_blocks before
    changing the RTL, and call reorder_blocks after.  */
 
-/* Put all this function's BLOCK nodes into a vector, and return it.
+/* Put all this function's BLOCK nodes including those that are chained
+   onto the first block into a vector, and return it.
    Also store in each NOTE for the beginning or end of a block
    the index of that block in the vector.
-   The arguments are TOP_BLOCK, the top-level block of the function,
+   The arguments are BLOCK, the chain of top-level blocks of the function,
    and INSNS, the insn chain of the function.  */
 
 tree *
-identify_blocks (top_block, insns)
-     tree top_block;
+identify_blocks (block, insns)
+     tree block;
      rtx insns;
 {
   int n_blocks;
   tree *block_vector;
   int *block_stack;
   int depth = 0;
-  int next_block_number = 0;
-  int current_block_number = 0;
+  int next_block_number = 1;
+  int current_block_number = 1;
   rtx insn;
 
-  if (top_block == 0)
+  if (block == 0)
     return 0;
 
-  n_blocks = all_blocks (top_block, 0);
+  n_blocks = all_blocks (block, 0);
   block_vector = (tree *) xmalloc (n_blocks * sizeof (tree));
   block_stack = (int *) alloca (n_blocks * sizeof (int));
 
-  all_blocks (top_block, block_vector);
+  all_blocks (block, block_vector);
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
@@ -4576,6 +4577,9 @@ identify_blocks (top_block, insns)
 	  }
       }
 
+  if (n_blocks != next_block_number)
+    abort ();
+
   return block_vector;
 }
 
@@ -4586,19 +4590,20 @@ identify_blocks (top_block, insns)
    Returns the current top-level block.  */
 
 tree
-reorder_blocks (block_vector, top_block, insns)
+reorder_blocks (block_vector, block, insns)
      tree *block_vector;
-     tree top_block;
+     tree block;
      rtx insns;
 {
-  tree current_block = top_block;
+  tree current_block = block;
   rtx insn;
 
   if (block_vector == 0)
-    return top_block;
+    return block;
 
-  /* Prune the old tree away, so that it doesn't get in the way.  */
+  /* Prune the old trees away, so that it doesn't get in the way.  */
   BLOCK_SUBBLOCKS (current_block) = 0;
+  BLOCK_CHAIN (current_block) = 0;
 
   for (insn = insns; insn; insn = NEXT_INSN (insn))
     if (GET_CODE (insn) == NOTE)
@@ -4626,6 +4631,8 @@ reorder_blocks (block_vector, top_block, insns)
 	  }
       }
 
+  BLOCK_SUBBLOCKS (current_block)
+    = blocks_nreverse (BLOCK_SUBBLOCKS (current_block));
   return current_block;
 }
 
@@ -4646,26 +4653,32 @@ blocks_nreverse (t)
   return prev;
 }
 
-/* Count the subblocks of BLOCK, and list them all into the vector VECTOR.
-   Also clear TREE_ASM_WRITTEN in all blocks.  */
+/* Count the subblocks of the list starting with BLOCK, and list them
+   all into the vector VECTOR.  Also clear TREE_ASM_WRITTEN in all
+   blocks.  */
 
 static int
 all_blocks (block, vector)
      tree block;
      tree *vector;
 {
-  int n_blocks = 1;
-  tree subblocks; 
+  int n_blocks = 0;
 
-  TREE_ASM_WRITTEN (block) = 0;
-  /* Record this block.  */
-  if (vector)
-    vector[0] = block;
+  while (block)
+    {
+      TREE_ASM_WRITTEN (block) = 0;
 
-  /* Record the subblocks, and their subblocks.  */
-  for (subblocks = BLOCK_SUBBLOCKS (block);
-       subblocks; subblocks = BLOCK_CHAIN (subblocks))
-    n_blocks += all_blocks (subblocks, vector ? vector + n_blocks : 0);
+      /* Record this block.  */
+      if (vector)
+	vector[n_blocks] = block;
+
+      ++n_blocks;
+      
+      /* Record the subblocks, and their subblocks...  */
+      n_blocks += all_blocks (BLOCK_SUBBLOCKS (block),
+			      vector ? vector + n_blocks : 0);
+      block = BLOCK_CHAIN (block);
+    }
 
   return n_blocks;
 }
