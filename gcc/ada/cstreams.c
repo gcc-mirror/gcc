@@ -140,37 +140,35 @@ int    __gnat_constant_seek_end = SEEK_END;
 int    __gnat_constant_seek_set = SEEK_SET;
 
 FILE *
-__gnat_constant_stderr ()
+__gnat_constant_stderr (void)
 {
   return stderr;
 }
 
 FILE *
-__gnat_constant_stdin ()
+__gnat_constant_stdin (void)
 {
   return stdin;
 }
 
 FILE *
-__gnat_constant_stdout ()
+__gnat_constant_stdout (void)
 {
   return stdout;
 }
 
 char *
-__gnat_full_name (nam, buffer)
-     char *nam;
-     char *buffer;
+__gnat_full_name (char *nam, char *buffer)
 {
 #if defined(__EMX__) || defined (__MINGW32__)
-  char *p;
-
   /* If this is a device file return it as is; under Windows NT and
      OS/2 a device file end with ":".  */
   if (nam[strlen (nam) - 1] == ':')
     strcpy (buffer, nam);
   else
     {
+      char *p;
+
       _fullpath (buffer, nam, __gnat_max_path_len);
 
       for (p = buffer; *p; p++)
@@ -189,7 +187,6 @@ __gnat_full_name (nam, buffer)
      getcwd approach instead. */
   realpath (nam, buffer);
 
-  return buffer;
 #elif defined (VMS)
   strncpy (buffer, __gnat_to_canonical_file_spec (nam), __gnat_max_path_len);
 
@@ -207,14 +204,11 @@ __gnat_full_name (nam, buffer)
       strncpy (buffer, __gnat_to_host_file_spec (buffer), __gnat_max_path_len);
     }
 
-  return buffer;
-
 #else
-  char *p;
-
   if (nam[0] != '/')
     {
-      p = getcwd (buffer, __gnat_max_path_len);
+      char *p = getcwd (buffer, __gnat_max_path_len);
+
       if (p == 0)
 	{
 	  buffer[0] = '\0';
@@ -230,7 +224,7 @@ __gnat_full_name (nam, buffer)
     }
   else
     strcpy (buffer, nam);
+#endif
 
   return buffer;
-#endif
 }
