@@ -81,7 +81,7 @@ static void pp_c_assignment_expression (c_pretty_printer *, tree);
 /* declarations.  */
 
 
-/* Helper functions. */
+/* Helper functions.  */
 
 void
 pp_c_whitespace (c_pretty_printer *pp)
@@ -223,7 +223,7 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
   switch (TREE_CODE (t))
     {
     case POINTER_TYPE:
-      /* It is easier to handle C++ reference types here. */
+      /* It is easier to handle C++ reference types here.  */
     case REFERENCE_TYPE:
       if (TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
         pp_c_pointer (pp, TREE_TYPE (t));

@@ -93,7 +93,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* This structure is used for a resizable string buffer throughout.  */
 /* Don't call it strbuf, as that conflicts with unistd.h on systems
-   such as DYNIX/ptx where unistd.h includes stropts.h. */
+   such as DYNIX/ptx where unistd.h includes stropts.h.  */
 struct _cpp_strbuf
 {
   uchar *text;

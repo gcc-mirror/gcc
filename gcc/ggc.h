@@ -63,7 +63,7 @@ extern void gt_pch_note_reorder (void *, void *, gt_handle_reorder);
 typedef void (*gt_pointer_walker) (void *);
 
 /* Structures for the easy way to mark roots.
-   In an array, terminated by having base == NULL.*/
+   In an array, terminated by having base == NULL.  */
 struct ggc_root_tab {
   void *base;
   size_t nelt;

@@ -992,7 +992,7 @@ mark_irreducible_loops (struct loops *loops)
       }
 
   /* Compute dfs numbering, starting from loop headers, and mark found
-     loops.*/
+     loops.  */
   tick = 0;
   for (i = 0; i < last_basic_block + loops->num; i++)
     {

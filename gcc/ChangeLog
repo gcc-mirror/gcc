@@ -1,3 +1,14 @@
+2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* c-pretty-print.c: Fix comment formatting.
+	* cfglayout.c: Likewise.
+	* cfgloopanal.c: Likewise.
+	* cppcharset.c: Likewise.
+	* dbxout.c: Likewise.
+	* ggc-page.c: Likewise.
+	* ggc.h: Likewise.
+	* target.h: Likewise.
+
 2003-10-04  Kelley Cook  <kelleycook@wideopenwest.com>
 
 	* gengtype-lex.l: Recognize typedef of functions without PARAMS macro.
