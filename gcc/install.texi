@@ -248,19 +248,19 @@ If you want to install its files somewhere else, specify
 is a directory name to use instead of @file{/usr/local} for all purposes
 with one exception: the directory @file{/usr/local/include} is searched
 for header files no matter where you install the compiler.  To override
-this name, use the @code{--local-prefix} option below.  The directory
+this name, use the @code{--with-local-prefix} option below.  The directory
 you specify need not exist, but its parent directory must exist.
 
 @item
-Specify @samp{--local-prefix=@var{dir}} if you want the compiler to
+Specify @samp{--with-local-prefix=@var{dir}} if you want the compiler to
 search directory @file{@var{dir}/include} for locally installed header
 files @emph{instead} of @file{/usr/local/include}.
 
-You should specify @samp{--local-prefix} @strong{only} if your site has
+You should specify @samp{--with-local-prefix} @strong{only} if your site has
 a different convention (not @file{/usr/local}) for where to put
 site-specific files.
 
-The default value for @samp{--local-prefix} is @file{/usr/local}
+The default value for @samp{--with-local-prefix} is @file{/usr/local}
 regardless of the value of @samp{--prefix}.  Specifying @samp{--prefix}
 has no effect on which directory GNU CC searches for local header files.
 This may seem counterintuitive, but actually it is logical.
@@ -271,8 +271,8 @@ any in that directory---are not part of GNU CC.  They are part of other
 programs---perhaps many others.  (GNU CC installs its own header files
 in another directory which is based on the @samp{--prefix} value.)
 
-@strong{Do not} specify @file{/usr} as the @samp{--local-prefix}!  The
-directory you use for @samp{--local-prefix} @strong{must not} contain
+@strong{Do not} specify @file{/usr} as the @samp{--with-local-prefix}!  The
+directory you use for @samp{--with-local-prefix} @strong{must not} contain
 any of the system's standard header files.  If it did contain them,
 certain programs would be miscompiled (including GNU Emacs, on certain
 targets), because this would override and nullify the header file
