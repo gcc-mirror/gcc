@@ -1,6 +1,6 @@
 ;; Machine description for DEC Alpha for GNU C compiler
 ;; Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
-;; 2000 Free Software Foundation, Inc.
+;; 2000, 2001 Free Software Foundation, Inc.
 ;; Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 ;;
 ;; This file is part of GNU CC.
@@ -1820,7 +1820,7 @@
 			 (match_operand 2 "const_int_operand" "I")))]
   "(unsigned HOST_WIDE_INT) INTVAL (operands[2]) < 8"
   "#"
-  ""
+  "(unsigned HOST_WIDE_INT) INTVAL (operands[2]) < 8"
   [(set (match_dup 0)
 	(and:DI (match_dup 1) (match_dup 3)))
    (set (match_dup 0)

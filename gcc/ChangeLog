@@ -1,3 +1,7 @@
+2001-01-02  Richard Henderson  <rth@redhat.com>
+
+	* alpha.md (*ze_and_ne): Duplicate insn condition to split.
+
 2001-01-02  Andreas Jaeger  <aj@suse.de>
 
 	* c-decl.c (c_decode_option): Remove support of
