@@ -526,6 +526,15 @@
         replaced by <code>isspace(c,is.getloc())</code>.
     </dd>
 
+    <dt><a href="lwg-defects.html#91">91</a>:
+        <em>Description of operator&gt;&gt; and getline() for string&lt;&gt;
+	    might cause endless loop</em>
+    </dt>
+    <dd>They behave as a formatted input function and as an unformatted
+        input function, respectively (except that <code>getline</code> is
+	not required to set <code>gcount</code>).
+    </dd>
+
     <dt><a href="lwg-defects.html#109">109</a>:
         <em>Missing binders for non-const sequence elements</em>
     </dt>

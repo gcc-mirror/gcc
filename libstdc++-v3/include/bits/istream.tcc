@@ -1102,32 +1102,46 @@ namespace std
       typedef typename __istream_type::__ctype_type 	__ctype_type;
       typedef basic_string<_CharT, _Traits, _Alloc> 	__string_type;
       typedef typename __string_type::size_type		__size_type;
-      __size_type __extracted = 0;
 
+      __size_type __extracted = 0;
       typename __istream_type::sentry __cerb(__in, false);
       if (__cerb) 
 	{
-	  __str.erase();
-	  streamsize __w = __in.width();
-	  __size_type __n;
-	  __n = __w > 0 ? static_cast<__size_type>(__w) : __str.max_size();
-
-	  const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
-	  const __int_type __eof = _Traits::eof();
-	  __streambuf_type* __sb = __in.rdbuf();
-	  __int_type __c = __sb->sgetc();
-	  
-	  while (__extracted < __n 
-		 && !_Traits::eq_int_type(__c, __eof)
-		 && !__ct.is(ctype_base::space, _Traits::to_char_type(__c)))
+	  try
 	    {
-	      __str += _Traits::to_char_type(__c);
-	      ++__extracted;
-	      __c = __sb->snextc();
+	      __str.erase();
+	      streamsize __w = __in.width();
+	      __size_type __n;
+	      __n = __w > 0 ? static_cast<__size_type>(__w) : __str.max_size();
+	      
+	      const __ctype_type& __ct = use_facet<__ctype_type>(__in.getloc());
+	      const __int_type __eof = _Traits::eof();
+	      __streambuf_type* __sb = __in.rdbuf();
+	      __int_type __c = __sb->sgetc();
+	      
+	      while (__extracted < __n 
+		     && !_Traits::eq_int_type(__c, __eof)
+		     && !__ct.is(ctype_base::space, _Traits::to_char_type(__c)))
+		{
+		  __str += _Traits::to_char_type(__c);
+		  ++__extracted;
+		  __c = __sb->snextc();
+		}
+	      if (_Traits::eq_int_type(__c, __eof))
+		__in.setstate(ios_base::eofbit);
+	      __in.width(0);
 	    }
-	  if (_Traits::eq_int_type(__c, __eof))
-	    __in.setstate(ios_base::eofbit);
-	  __in.width(0);
+	  catch(...)
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 91. Description of operator>> and getline() for string<>
+	      // might cause endless loop
+	      // 27.6.1.2.1 Common requirements.
+	      // Turn this on without causing an ios::failure to be thrown.
+	      __in.setstate(ios_base::badbit);
+	      if ((__in.exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
+	    }
 	}
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 211.  operator>>(istream&, string&) doesn't set failbit
@@ -1149,31 +1163,44 @@ namespace std
       typedef typename __string_type::size_type		__size_type;
 
       __size_type __extracted = 0;
+      const __size_type __n = __str.max_size();
       bool __testdelim = false;
       typename __istream_type::sentry __cerb(__in, true);
       if (__cerb) 
 	{
-	  __str.erase();
-	  __size_type __n = __str.max_size();
-
-	  __int_type __idelim = _Traits::to_int_type(__delim);
-	  __streambuf_type* __sb = __in.rdbuf();
-	  __int_type __c = __sb->sbumpc();
-	  const __int_type __eof = _Traits::eof();
-	  __testdelim = _Traits::eq_int_type(__c, __idelim);
-
-	  while (__extracted <= __n && !_Traits::eq_int_type(__c, __eof)
-		 && !__testdelim)
+	  try
 	    {
-	      __str += _Traits::to_char_type(__c);
-	      ++__extracted;
-	      __c = __sb->sbumpc();
+	      __str.erase();
+	      __int_type __idelim = _Traits::to_int_type(__delim);
+	      __streambuf_type* __sb = __in.rdbuf();
+	      __int_type __c = __sb->sbumpc();
+	      const __int_type __eof = _Traits::eof();
 	      __testdelim = _Traits::eq_int_type(__c, __idelim);
+	      
+	      while (!_Traits::eq_int_type(__c, __eof) && !__testdelim
+		     && __extracted < __n)
+		{
+		  __str += _Traits::to_char_type(__c);
+		  ++__extracted;
+		  __c = __sb->sbumpc();
+		  __testdelim = _Traits::eq_int_type(__c, __idelim);
+		}
+	      if (_Traits::eq_int_type(__c, __eof))
+		__in.setstate(ios_base::eofbit);
 	    }
-	  if (_Traits::eq_int_type(__c, __eof))
-	    __in.setstate(ios_base::eofbit);
+	  catch(...)
+	    {
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 91. Description of operator>> and getline() for string<>
+	      // might cause endless loop
+	      // 27.6.1.2.1 Common requirements.
+	      // Turn this on without causing an ios::failure to be thrown.
+	      __in.setstate(ios_base::badbit);
+	      if ((__in.exceptions() & ios_base::badbit) != 0)
+		__throw_exception_again;
+	    }
 	}
-      if (!__extracted && !__testdelim)
+      if ((!__extracted && !__testdelim) || __extracted == __n)
 	__in.setstate(ios_base::failbit);
       return __in;
     }
