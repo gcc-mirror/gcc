@@ -2131,6 +2131,26 @@ expand_parity (enum machine_mode mode, rtx op0, rtx target)
   return 0;
 }
 
+/* Extract the OMODE lowpart from VAL, which has IMODE.  Under certain 
+   conditions, VAL may already be a SUBREG against which we cannot generate
+   a further SUBREG.  In this case, we expect forcing the value into a
+   register will work around the situation.  */
+
+static rtx
+lowpart_subreg_maybe_copy (enum machine_mode omode, rtx val,
+			   enum machine_mode imode)
+{
+  rtx ret;
+  ret = lowpart_subreg (omode, val, imode);
+  if (ret == NULL)
+    {
+      val = force_reg (imode, val);
+      ret = lowpart_subreg (omode, val, imode);
+      gcc_assert (ret != NULL);
+    }
+  return ret;
+}
+
 /* Generate code to perform an operation specified by UNOPTAB
    on operand OP0, with result having machine-mode MODE.
 
@@ -2322,7 +2342,8 @@ expand_unop (enum machine_mode mode, optab unoptab, rtx op0, rtx target,
 	      rtx insn;
 	      if (target == 0)
 		target = gen_reg_rtx (mode);
-	      insn = emit_move_insn (target, gen_lowpart (mode, temp));
+	      temp = lowpart_subreg_maybe_copy (mode, temp, imode);
+	      insn = emit_move_insn (target, temp);
 	      set_unique_reg_note (insn, REG_EQUAL,
 				   gen_rtx_fmt_e (NEG, mode,
 						  copy_rtx (op0)));
@@ -2513,7 +2534,8 @@ expand_abs_nojump (enum machine_mode mode, rtx op0, rtx target,
 	      rtx insn;
 	      if (target == 0)
 		target = gen_reg_rtx (mode);
-	      insn = emit_move_insn (target, gen_lowpart (mode, temp));
+	      temp = lowpart_subreg_maybe_copy (mode, temp, imode);
+	      insn = emit_move_insn (target, temp);
 	      set_unique_reg_note (insn, REG_EQUAL,
 				   gen_rtx_fmt_e (ABS, mode,
 						  copy_rtx (op0)));
