@@ -17984,8 +17984,31 @@ rs6000_rtx_costs (rtx x, int code, int outer_code, int *total)
 	  *total = rs6000_cost->fp;
 	  return false;
 	}
-
       break;
+
+    case EQ:
+    case GTU:
+    case LTU:
+      if (mode == Pmode)
+	{
+	  switch (outer_code)
+	    {
+	    case PLUS:
+	    case NEG:
+	      /* PLUS or NEG already counted so only add one more.  */
+	      *total = COSTS_N_INSNS (1);
+	      break;
+	    case SET:
+	      *total = COSTS_N_INSNS (3);
+	      break;
+	    case COMPARE:
+	      *total = 0;
+	      return true;
+	    default:
+	      break;
+	    }
+	  return false;
+	}
 
     default:
       break;

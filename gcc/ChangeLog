@@ -1,3 +1,8 @@
+2004-11-09  David Edelsohn  <edelsohn@gnu.org>
+
+	* config/rs6000/rs6000.c (rs6000_rtx_costs): Add EQ, GTU, and LTU.
+	* config/rs6000/rs6000.md (sCC): Split GTU and LTU patterns.
+
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-phinodes.c (phi_reverse): New.
