@@ -384,7 +384,18 @@ gen_type (ret_val, t, style)
           return ret_val;
 
         case ARRAY_TYPE:
-          ret_val = gen_type (concat (ret_val, "[]"), TREE_TYPE (t), style);
+	  if (TYPE_SIZE (t) == 0 || TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
+	    ret_val = gen_type (concat (ret_val, "[]"), TREE_TYPE (t), style);
+	  else if (int_size_in_bytes (t) == 0)
+	    ret_val = gen_type (concat (ret_val, "[0]"), TREE_TYPE (t), style);
+	  else
+	    {
+	      int size = (int_size_in_bytes (t) / int_size_in_bytes (TREE_TYPE (t)));
+	      char buff[10];
+	      sprintf (buff, "[%d]", size);
+	      ret_val = gen_type (concat (ret_val, buff),
+				  TREE_TYPE (t), style);
+	    }
           break;
 
         case FUNCTION_TYPE:
