@@ -142,24 +142,56 @@ if [ -r ${INPUT}/$file ]; then
 #ifndef __INT_VARARGS_H
 #define __INT_VARARGS_H
 
-#if defined(__m88k__) && defined (__DGUX__)
-#ifndef __GNUC_VA_LIST
-#define __GNUC_VA_LIST
-typedef struct
-{
-  int  __va_arg;		/* argument number */
-  int *__va_stk;		/* start of args passed on stack */
-  int *__va_reg;		/* start of args passed in regs */
-} __gnuc_va_list;
-#endif /* not __GNUC_VA_LIST */
-#endif /* 88k && dgux */
+#ifndef ___int_features_h
+#include <sys/_int_features.h>
+#endif
 
-#ifndef _VA_LIST_
+#if !(defined(_VA_LIST) || defined(_VA_LIST_))
+#define _VA_LIST
 #define _VA_LIST_
-typedef __gnuc_va_list va_list;
-#endif /* _VA_LIST_ */
 
-#endif /* __INT_VARARGS_H */
+#ifdef __LINT__
+
+#ifdef __STDC__
+typedef void * va_list;
+#else
+typedef char * va_list;
+#endif
+
+#else
+#if _M88K_ANY
+
+#if defined(__DCC__)
+
+typedef struct {
+       int     next_arg;
+       int     *mem_ptr;
+       int     *reg_ptr;
+} va_list;
+
+#else  /* ! defined(__DCC__) */
+
+typedef struct {
+       int  __va_arg;          /* argument number */
+       int *__va_stk;          /* start of args passed on stack */
+       int *__va_reg;          /* start of args passed in regs */
+} va_list;
+
+#endif  /* ! defined(__DCC__) */
+
+#elif _IX86_ANY
+
+#if defined(__GNUC__) || defined(__STDC__)
+typedef void * va_list;
+#else
+typedef char * va_list;
+#endif
+
+#endif  /*  _IX86_ANY */
+
+#endif /* __LINT__ */
+#endif /*  !(defined(_VA_LIST) || defined(_VA_LIST_)) */
+#endif /*  #ifndef __INT_VARARGS_H  */
 
 EOF
   chmod a+r ${LIB}/$file

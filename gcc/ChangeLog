@@ -2,6 +2,7 @@ Fri May 28 03:47:03 1999  Eric Raskin (ehr@listworks.com)
 
 	* i386/t-dgux (EXTRA_PARTS): Add crti.o
 	(crti.o): Add build rule and dependencies.
+	* fixinc/fixinc.dgux:  Use modified _int_varargs.h
 
 Fri May 28 03:41:02 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
