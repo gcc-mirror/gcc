@@ -1,3 +1,9 @@
+2002-10-23  Tom Tromey  <tromey@redhat.com>
+
+	* gjavah.c (decode_signature_piece): In JNI mode, print
+	`jobjectArray' when array depth is nonzero.
+	Fixes PR java/8296.
+
 2002-10-15  Andrew Haley  <aph@redhat.com>
 
 	* parse.y (patch_invoke): Call force_evaluation_order on a static

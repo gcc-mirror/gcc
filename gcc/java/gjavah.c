@@ -1289,7 +1289,7 @@ decode_signature_piece (stream, signature, limit, need_space)
       /* If the previous iterations left us with something to print,
 	 print it.  For JNI, we always print `jobjectArray' in the
 	 nested cases.  */
-      if (flag_jni && ctype == NULL)
+      if (flag_jni && (ctype == NULL || array_depth > 0))
 	{
 	  ctype = "jobjectArray";
 	  *need_space = 1;
