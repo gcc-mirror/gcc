@@ -6028,6 +6028,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      /* Save some info needed to produce the new insns.  */
 	      reg = bl->biv->dest_reg;
 	      jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 1);
+	      if (jump_label == pc_rtx)
+		jump_label = XEXP (SET_SRC (PATTERN (PREV_INSN (loop_end))), 2);
 	      new_add_val = GEN_INT (- INTVAL (bl->biv->add_val));
 
 	      final_value = XEXP (comparison, 1);
