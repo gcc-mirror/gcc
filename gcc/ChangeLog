@@ -1,3 +1,8 @@
+Fri Oct  2 19:14:20 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* function.c (purge_addressof_1): Do not perform endianness
+	corrections on bitpos, who we call will do it for us.
+
 Fri Oct  2 11:52:35 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* h8300.c (WORD_REG_USED): Fix typo.

@@ -2879,20 +2879,7 @@ purge_addressof_1 (loc, insn, force, store)
 	      /* Do a bitfield insertion to mirror what would happen
 		 in memory.  */
 
-	      int bitpos;
 	      rtx val, seq;
-
-	      bitpos = 0;
-	      if (WORDS_BIG_ENDIAN)
-		{
-		  bitpos += (size_sub / BITS_PER_WORD) * BITS_PER_WORD;
-		  bitpos -= (size_x / BITS_PER_WORD) * BITS_PER_WORD;
-		}
-	      if (BYTES_BIG_ENDIAN)
-		{
-		  bitpos += size_sub % BITS_PER_WORD;
-		  bitpos -= size_x % BITS_PER_WORD;
-		}
 
 	      if (store)
 		{
@@ -2907,7 +2894,7 @@ purge_addressof_1 (loc, insn, force, store)
 		  emit_insn_before (seq, insn);
 	      
 		  start_sequence ();
-		  store_bit_field (sub, size_x, bitpos, GET_MODE (x),
+		  store_bit_field (sub, size_x, 0, GET_MODE (x),
 				   val, GET_MODE_SIZE (GET_MODE (sub)),
 				   GET_MODE_SIZE (GET_MODE (sub)));
 
@@ -2918,7 +2905,7 @@ purge_addressof_1 (loc, insn, force, store)
 	      else
 		{
 		  start_sequence ();
-		  val = extract_bit_field (sub, size_x, bitpos, 1, NULL_RTX,
+		  val = extract_bit_field (sub, size_x, 0, 1, NULL_RTX,
 					   GET_MODE (x), GET_MODE (x),
 					   GET_MODE_SIZE (GET_MODE (sub)),
 					   GET_MODE_SIZE (GET_MODE (sub)));
