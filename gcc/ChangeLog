@@ -1,3 +1,7 @@
+2004-09-14  Mark Mitchell  <mark@codesourcery.com>
+
+	* config.gcc: Do not build a shared libgcc for arm-none-eabi.
+
 2004-09-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* c-tree.h (struct c_declspecs): Add const_p, volatile_p and
