@@ -1338,6 +1338,17 @@ get_first_fn (from)
   return OVL_CURRENT (from);
 }
 
+/* Returns nonzero if T is a ->* or .* expression that refers to a
+   member function.  */
+
+int
+bound_pmf_p (t)
+     tree t;
+{
+  return (TREE_CODE (t) == OFFSET_REF
+	  && TYPE_PTRMEMFUNC_P (TREE_TYPE (TREE_OPERAND (t, 1))));
+}
+
 /* Return a new OVL node, concatenating it with the old one. */
 
 tree

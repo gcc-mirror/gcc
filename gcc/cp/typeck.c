@@ -5630,10 +5630,9 @@ build_c_cast (type, expr)
     {
       if (TREE_CODE (TREE_TYPE (value)) == FUNCTION_TYPE
 	  || (TREE_CODE (TREE_TYPE (value)) == METHOD_TYPE
-	      /* Don't do the default conversion if we want a
-		 pointer to a function.  */
+	      /* Don't do the default conversion on a ->* expression.  */
 	      && ! (TREE_CODE (type) == POINTER_TYPE
-		    && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE))
+		    && bound_pmf_p (value)))
 	  || TREE_CODE (TREE_TYPE (value)) == ARRAY_TYPE
 	  || TREE_CODE (TREE_TYPE (value)) == REFERENCE_TYPE)
 	value = default_conversion (value);

@@ -1,5 +1,8 @@
 1999-01-04  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* tree.c (bound_pmf_p): New fn.
+	* typeck.c (build_c_cast): Use it.
+
 	* decl.c (grok_op_properties): Use same_type_p.
 
 Tue Dec 22 15:09:25 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
