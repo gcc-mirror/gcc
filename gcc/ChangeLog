@@ -6,6 +6,10 @@
 	config/rs6000/rs6000-protos.h, doc/contrib.texi,
 	doc/include/gcc-common.texi: Update copyright.
 
+	PR middle-end/18029 and PR middle-end/18030
+	* expr.c (optimize_bitfield_assignment_op): Add a special case
+	to handle BIT_IOR_EXPR and BIT_XOR_EXPR.
+
 2005-03-02  Richard Guenther  <rguenth@gcc.gnu.org>
 
 	* cgraph.h (struct cgraph_edge): Add prev_caller and
