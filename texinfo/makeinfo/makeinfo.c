@@ -782,7 +782,9 @@ static COMMAND CommandTable[] = {
   { "infoinclude", cm_obsolete, NO_BRACE_ARGS },
   { "titlespec", cm_obsolete, NO_BRACE_ARGS },
 
-  {(char *) NULL, (COMMAND_FUNCTION *) NULL}, NO_BRACE_ARGS};
+  {(char *) NULL, (COMMAND_FUNCTION *) NULL, NO_BRACE_ARGS}
+};
+
 
 struct option long_options[] =
 {
