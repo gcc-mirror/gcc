@@ -196,8 +196,7 @@ namespace std
 	  // Check for pback madness, and if so swich back to the
 	  // normal buffers and jet outta here before expensive
 	  // fileops happen...
-	  if (_M_pback_init)
-	    _M_destroy_pback();
+	  _M_destroy_pback();
 
 	  if (this->_M_in_cur < this->_M_in_end)
 	    {
@@ -208,15 +207,8 @@ namespace std
 	    }
 
 	  // Sync internal and external buffers.
-	  // NB: __testget -> __testput as _M_buf_unified here.
-	  if (this->_M_in_cur > this->_M_in_beg)
-	    {
-	      if (__testout)
-		_M_overflow();
-	      else if (this->_M_in_cur != _M_filepos)
-		_M_file.seekoff(this->_M_in_cur - _M_filepos, ios_base::cur, 
-				ios_base::in);
-	    }
+	  if (__testout && this->_M_out_beg < this->_M_out_lim)
+	    _M_overflow();
 
 	  if (_M_buf_size > 1)
 	    {
