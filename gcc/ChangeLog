@@ -1,3 +1,7 @@
+1999-12-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/rtems.h: New file.
+
 1999-12-19  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* reload1.c (spill_failure): Take class of failed reload as argument
