@@ -90,7 +90,8 @@ case "$THREADS" in
 	THREADLIBS="-lpthread -lrt"
 	;;
      *-*-freebsd*)
-	AC_MSG_WARN("FreeBSD does not yet fully support threads with Boehm GC.")
+	AC_MSG_WARN("Threaded GC is prone to deadlock before FreeBSD 4.5.")
+	AC_MSG_WARN("Related symptom is pthread_join returns spurious EINTR.")
 	AC_DEFINE(GC_FREEBSD_THREADS)
 	INCLUDES="$INCLUDES -pthread"
 	THREADLIBS=-pthread

@@ -1,3 +1,10 @@
+2001-11-26  Loren J. Rittle  <ljrittle@acm.org>
+
+	* linux_threads.c (WRAP_FUNC(pthread_join)): Remove special
+	case for GC_FREEBSD_THREADS.
+	* configure.in (*-*-freebsd*): Clarify warning.
+	* configure: Rebuilt.
+
 2001-10-23  Loren J. Rittle  <ljrittle@acm.org>
 	    Andreas Tobler <toa@pop.agri.ch>
 
