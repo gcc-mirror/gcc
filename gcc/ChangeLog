@@ -1,4 +1,29 @@
-2003-01-20  Per Bothner  <pbothner@apple.com>
+2004-01-19  Per Bothner  <per@bothner.com>
+
+	Move cpp_reader's line_maps field to a shared global.
+	* cpphash.h (cpp_reader):  Rename line_maps field to line_table
+	and change the type to a pointer rather than a struct.
+	* cppinit.c (cpp_push_main_field):  Adjust accordingly.
+	* cpplib.c (do_include_common, _cpp_do_file_change, cpp_get_callbacks):
+	Likewise.
+	* cppfiles.c (validate_pch):  Likewise.
+	* cppmacro.c (_cpp_warn_if_unused_macro, _cpp_builtin_macro_text):
+	Likewise.
+	* cpperror.c (print_location):  Likewise.
+	* cpplib.h (cpp_create_reader):  New line_maps pointer parameter.
+	* cppinit.c (cpp_create_reader):  Handle new parameter.
+	(cpp_destroy):  Don't free line_maps - that's no longer our job.
+	* input.h (line_table):  New variable.
+	* toplev.c (line_table):  Declare variable.
+	(general_init):  Initialize line_table.
+	* c-opts.c (c_common_init_options):  Pass line_table to
+	cpp_create_reader.
+	* fix-header.c (read_scan_file):  New local variable line_table.
+	Initialize, and pass it to cpp_create_reader.
+	* Makefile.in (LIBS, LIBDEPS):  Add libcpp.a.
+	(C_AND_OBJC_OBJS, fix-header):  Remove redundant libcpp.a.
+
+2004-01-19  Per Bothner  <per@bothner.com>
 
 	Implement a cache for linemap_lookup.
 	* line-map.h (struct_line_maps):  Add cache field.

@@ -124,7 +124,8 @@ init_library (void)
 
 /* Initialize a cpp_reader structure.  */
 cpp_reader *
-cpp_create_reader (enum c_lang lang, hash_table *table)
+cpp_create_reader (enum c_lang lang, hash_table *table,
+		   struct line_maps *line_table)
 {
   cpp_reader *pfile;
 
@@ -172,7 +173,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
 
   /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
-  linemap_init (&pfile->line_maps);
+  pfile->line_table = line_table;
   pfile->line = 1;
 
   /* Initialize lexer state.  */
@@ -262,7 +263,6 @@ cpp_destroy (cpp_reader *pfile)
       free (context);
     }
 
-  linemap_free (&pfile->line_maps);
   free (pfile);
 }
 
@@ -501,7 +501,7 @@ cpp_push_main_file (cpp_reader *pfile)
   /* Set this here so the client can change the option if it wishes,
      and after stacking the main file so we don't trace the main
      file.  */
-  pfile->line_maps.trace_includes = CPP_OPTION (pfile, print_include_names);
+  pfile->line_table->trace_includes = CPP_OPTION (pfile, print_include_names);
 }
 
 /* For preprocessed files, if the first tokens are of the form # NUM.

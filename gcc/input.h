@@ -22,6 +22,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_INPUT_H
 #define GCC_INPUT_H
 
+#include "line-map.h"
+
+extern struct line_maps line_table;
+
 /* The data structure used to record a location in a translation unit.  */
 /* Long-term, we want to get rid of this and typedef fileline location_t.  */
 struct location_s GTY (())

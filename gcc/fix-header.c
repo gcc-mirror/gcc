@@ -590,10 +590,12 @@ read_scan_file (char *in_fname, int argc, char **argv)
   struct fn_decl *fn;
   int i, strings_processed;
   struct symbol_list *cur_symbols;
+  struct line_maps line_table;
 
   obstack_init (&scan_file_obstack);
 
-  scan_in = cpp_create_reader (CLK_GNUC89, NULL);
+  linemap_init (&line_table);
+  scan_in = cpp_create_reader (CLK_GNUC89, NULL, &line_table);
   cb = cpp_get_callbacks (scan_in);
   cb->file_change = cb_file_change;
 

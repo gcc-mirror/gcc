@@ -189,6 +189,8 @@ const char *main_input_filename;
 
 location_t input_location;
 
+struct line_maps line_table;
+
 /* Nonzero if it is unsafe to create any new pseudo registers.  */
 int no_new_pseudos;
 
@@ -4228,6 +4230,7 @@ general_init (const char *argv0)
      table.  */
   init_ggc ();
   init_stringpool ();
+  linemap_init (&line_table);
   init_ttree ();
 
   /* Initialize register usage now so switches may override.  */

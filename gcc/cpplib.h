@@ -510,7 +510,8 @@ struct cpp_hashnode GTY(())
    pointer.  Otherwise you should pass in an initialized hash table
    that cpplib will share; this technique is used by the C front
    ends.  */
-extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *);
+extern cpp_reader *cpp_create_reader (enum c_lang, struct ht *,
+				      struct line_maps *);
 
 /* Call this to change the selected language standard (e.g. because of
    command line options).  */

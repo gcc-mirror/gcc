@@ -334,7 +334,7 @@ struct cpp_reader
   struct lexer_state state;
 
   /* Source line tracking.  */
-  struct line_maps line_maps;
+  struct line_maps *line_table;
   const struct line_map *map;
   fileline line;
 
