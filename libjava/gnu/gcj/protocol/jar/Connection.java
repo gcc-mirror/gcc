@@ -59,7 +59,7 @@ public class Connection extends JarURLConnection
 	if (getUseCaches())
 	  {
 	    jarfile = (JarFile) file_cache.get(jarFileURL);
-	    if (jarFile == null)
+	    if (jarfile == null)
 	      {
 		jarfile = new JarFile (jarFileURL.getFile ());
 		file_cache.put (jarFileURL, jarfile);
