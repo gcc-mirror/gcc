@@ -284,14 +284,13 @@ setup_size_command()
         }
         ;;
       *)
-        echo ' * Warning!  Guessing how to extract section sizes!' 1>&2
+        echo ' * Warning!  Skipping section sizes!' 1>&2
         function size_command()
         {
-        # These are GNU size's settings... hey, it's worth a shot.  Maybe.
         case $1 in
-          TEXT)  TEXT=$(size -A $EXENAME | grep ^.text | awk '{print $2}') ;;
-          DATA)  DATA=$(size -A $EXENAME | grep -w ^.data | awk '{print $2}') ;;
-          SIZE)  SIZE=$(size -A $EXENAME | grep otal | awk '{print $2}') ;;
+          TEXT)  TEXT=0 ;;
+          DATA)  DATA=0 ;;
+          SIZE)  SIZE=0 ;;
         esac
         }
         ;;
@@ -439,7 +438,7 @@ printf "static\tshared\ttest\n"
 echo "------------------------------------------------------------------------"
 
 TEST_TIME_START=$($TEST_DIR/printnow)
-for NAME in $(<$TESTS_FILE)
+for NAME in `cat $TESTS_FILE`
 do
     PRE_NAME="$TEST_DIR/`basename $NAME`"
     ST_NAME="`echo $PRE_NAME | sed 's/cc$/st-exe/'`"
