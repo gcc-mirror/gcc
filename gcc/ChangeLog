@@ -1,5 +1,10 @@
 2004-06-25  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* gimplify.c (lookup_tmp_var): Set TREE_READONLY in is_formal case.
+	(build_addr_expr_with_type): Deleted.
+	(build_addr_expr): Deleted; callers changed to build_fold_addr_expr.
+	(gimplify_compound_lval): Make two passes over reference nest.
+
 	* tree-nested.c (build_addr): Merge real/imagpart with
 	handled_component_p.
 	(convert_nonlocal_reference, convert_local_reference): Process extra
