@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-/* Sometimes the directive `riscos' is check.  This does not imply that this
+/* Sometimes the directive `riscos' is checked.  This does not imply that this
    tm file can be used unchanged to build a GCC for RISC OS.
    (Since in fact, it can't.)  */
 
@@ -876,9 +876,6 @@ do \
 
 /* Chars and shorts should be passed as ints.  */
 #define PROMOTE_PROTOTYPES 1
-
-/* There is no support for s<cond> insns at present */
-#define STORE_FLAG_VALUE  0
 
 /* The machine modes of pointers and functions */
 #define Pmode  SImode
