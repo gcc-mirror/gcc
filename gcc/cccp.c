@@ -4415,7 +4415,7 @@ pcfinclude (buf, limit, name, op)
 	hp = lookup (tmpbuf.bufp, -1, -1);
 	if (hp == NULL) {
 	  kp->chain = 0;
-	  install (tmpbuf.bufp, -1, T_PCSTRING, (int) kp, -1);
+	  install (tmpbuf.bufp, -1, T_PCSTRING, 0, (char *) kp, -1);
 	}
 	else if (hp->type == T_PCSTRING) {
 	  kp->chain = hp->value.keydef;
@@ -4753,7 +4753,8 @@ do_define (buf, limit, op, keyword)
 	 that for this new definition now.  */
       if (debug_output && op)
 	pass_thru_directive (buf, limit, op, keyword);
-      install (mdef.symnam, mdef.symlen, T_MACRO, mdef.defn, hashcode);
+      install (mdef.symnam, mdef.symlen, T_MACRO, 0,
+	       (char *) mdef.defn, hashcode);
     }
   }
 
@@ -5945,7 +5946,7 @@ eval_if_expression (buf, length)
   HASHNODE *save_defined;
   int value;
 
-  save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, -1);
+  save_defined = install ("defined", -1, T_SPEC_DEFINED, 0, 0, -1);
   pcp_inside_if = 1;
   temp_obuf = expand_to_temp_buffer (buf, buf + length, 0, 1);
   pcp_inside_if = 0;
@@ -7741,13 +7742,13 @@ grow_outbuf (obuf, needed)
  * Otherwise, compute the hash code.
  */
 static HASHNODE *
-install (name, len, type, value, hash)
+install (name, len, type, ivalue, value, hash)
      U_CHAR *name;
      int len;
      enum node_type type;
-     int value;
+     int ivalue;
+     char *value;
      int hash;
-        /* watch out here if sizeof (U_CHAR *) != sizeof (int) */
 {
   register HASHNODE *hp;
   register int i, bucket;
@@ -7774,7 +7775,10 @@ install (name, len, type, value, hash)
     hp->next->prev = hp;
   hp->type = type;
   hp->length = len;
-  hp->value.ival = value;
+  if (hp->type == T_CONST)
+    hp->value.ival = ivalue;
+  else
+    hp->value.cpval = value;
   hp->name = ((U_CHAR *) hp) + sizeof (HASHNODE);
   p = hp->name;
   q = name;
@@ -8051,23 +8055,23 @@ initialize_builtins (inp, outp)
      FILE_BUF *inp;
      FILE_BUF *outp;
 {
-  install ("__LINE__", -1, T_SPECLINE, 0, -1);
-  install ("__DATE__", -1, T_DATE, 0, -1);
-  install ("__FILE__", -1, T_FILE, 0, -1);
-  install ("__BASE_FILE__", -1, T_BASE_FILE, 0, -1);
-  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, -1);
-  install ("__VERSION__", -1, T_VERSION, 0, -1);
-  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, -1);
-  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, -1);
-  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, -1);
-  install ("__TIME__", -1, T_TIME, 0, -1);
+  install ("__LINE__", -1, T_SPECLINE, 0, 0, -1);
+  install ("__DATE__", -1, T_DATE, 0, 0, -1);
+  install ("__FILE__", -1, T_FILE, 0, 0, -1);
+  install ("__BASE_FILE__", -1, T_BASE_FILE, 0, 0, -1);
+  install ("__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, 0, -1);
+  install ("__VERSION__", -1, T_VERSION, 0, 0, -1);
+  install ("__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, 0, -1);
+  install ("__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
+  install ("__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
+  install ("__TIME__", -1, T_TIME, 0, 0, -1);
   if (!traditional)
-    install ("__STDC__", -1, T_CONST, STDC_VALUE, -1);
+    install ("__STDC__", -1, T_CONST, STDC_VALUE, 0, -1);
   if (objc)
-    install ("__OBJC__", -1, T_CONST, 1, -1);
+    install ("__OBJC__", -1, T_CONST, 1, 0, -1);
 /*  This is supplied using a -D by the compiler driver
     so that it is present only when truly compiling with GNU C.  */
-/*  install ("__GNUC__", -1, T_CONST, 2, -1);  */
+/*  install ("__GNUC__", -1, T_CONST, 2, 0, -1);  */
 
   if (debug_output)
     {
