@@ -2970,34 +2970,15 @@ legitimize_address (register rtx x, register rtx oldx ATTRIBUTE_UNUSED,
 void
 s390_expand_movstr (rtx dst, rtx src, rtx len)
 {
-  rtx (*gen_short) (rtx, rtx, rtx) =
-    TARGET_64BIT ? gen_movstr_short_64 : gen_movstr_short_31;
-  rtx (*gen_long) (rtx, rtx, rtx, rtx) =
-    TARGET_64BIT ? gen_movstr_long_64 : gen_movstr_long_31;
-
-
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
-        emit_insn (gen_short (dst, src, GEN_INT (INTVAL (len) - 1)));
+        emit_insn (gen_movstr_short (dst, src, GEN_INT (INTVAL (len) - 1)));
     }
 
   else if (TARGET_MVCLE)
     {
-      enum machine_mode double_mode = TARGET_64BIT ? TImode : DImode;
-      enum machine_mode single_mode = TARGET_64BIT ? DImode : SImode;
-      rtx reg0 = gen_reg_rtx (double_mode);
-      rtx reg1 = gen_reg_rtx (double_mode);
-
-      emit_move_insn (gen_highpart (single_mode, reg0),
-		      force_operand (XEXP (dst, 0), NULL_RTX));
-      emit_move_insn (gen_highpart (single_mode, reg1),
-		      force_operand (XEXP (src, 0), NULL_RTX));
-
-      convert_move (gen_lowpart (single_mode, reg0), len, 1);
-      convert_move (gen_lowpart (single_mode, reg1), len, 1);
-
-      emit_insn (gen_long (reg0, reg1, reg0, reg1));
+      emit_insn (gen_movstr_long (dst, src, convert_to_mode (Pmode, len, 1)));
     }
 
   else
@@ -3009,7 +2990,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
-        mode = word_mode;
+        mode = Pmode;
 
       type = lang_hooks.types.type_for_mode (mode, 1);
       if (!type)
@@ -3042,7 +3023,7 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 					   make_tree (type, blocks),
 					   make_tree (type, const0_rtx)));
 
-      emit_insn (gen_short (dst, src, GEN_INT (255)));
+      emit_insn (gen_movstr_short (dst, src, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
       s390_load_address (src_addr,
@@ -3054,7 +3035,8 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 
       expand_end_loop ();
 
-      emit_insn (gen_short (dst, src, convert_to_mode (word_mode, count, 1)));
+      emit_insn (gen_movstr_short (dst, src, 
+				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
 }
@@ -3064,33 +3046,15 @@ s390_expand_movstr (rtx dst, rtx src, rtx len)
 void
 s390_expand_clrstr (rtx dst, rtx len)
 {
-  rtx (*gen_short) (rtx, rtx) =
-    TARGET_64BIT ? gen_clrstr_short_64 : gen_clrstr_short_31;
-  rtx (*gen_long) (rtx, rtx, rtx) =
-    TARGET_64BIT ? gen_clrstr_long_64 : gen_clrstr_long_31;
-
-
   if (GET_CODE (len) == CONST_INT && INTVAL (len) >= 0 && INTVAL (len) <= 256)
     {
       if (INTVAL (len) > 0)
-        emit_insn (gen_short (dst, GEN_INT (INTVAL (len) - 1)));
+        emit_insn (gen_clrstr_short (dst, GEN_INT (INTVAL (len) - 1)));
     }
 
   else if (TARGET_MVCLE)
     {
-      enum machine_mode double_mode = TARGET_64BIT ? TImode : DImode;
-      enum machine_mode single_mode = TARGET_64BIT ? DImode : SImode;
-      rtx reg0 = gen_reg_rtx (double_mode);
-      rtx reg1 = gen_reg_rtx (double_mode);
-
-      emit_move_insn (gen_highpart (single_mode, reg0),
-		      force_operand (XEXP (dst, 0), NULL_RTX));
-      convert_move (gen_lowpart (single_mode, reg0), len, 1);
-
-      emit_move_insn (gen_highpart (single_mode, reg1), const0_rtx);
-      emit_move_insn (gen_lowpart (single_mode, reg1), const0_rtx);
-
-      emit_insn (gen_long (reg0, reg1, reg0));
+      emit_insn (gen_clrstr_long (dst, convert_to_mode (Pmode, len, 1)));
     }
 
   else
@@ -3102,7 +3066,7 @@ s390_expand_clrstr (rtx dst, rtx len)
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
-        mode = word_mode;
+        mode = Pmode;
 
       type = lang_hooks.types.type_for_mode (mode, 1);
       if (!type)
@@ -3133,7 +3097,7 @@ s390_expand_clrstr (rtx dst, rtx len)
 					   make_tree (type, blocks),
 					   make_tree (type, const0_rtx)));
 
-      emit_insn (gen_short (dst, GEN_INT (255)));
+      emit_insn (gen_clrstr_short (dst, GEN_INT (255)));
       s390_load_address (dst_addr,
 			 gen_rtx_PLUS (Pmode, dst_addr, GEN_INT (256)));
 
@@ -3143,7 +3107,7 @@ s390_expand_clrstr (rtx dst, rtx len)
 
       expand_end_loop ();
 
-      emit_insn (gen_short (dst, convert_to_mode (word_mode, count, 1)));
+      emit_insn (gen_clrstr_short (dst, convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
     }
 }
@@ -3154,10 +3118,6 @@ s390_expand_clrstr (rtx dst, rtx len)
 void
 s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 {
-  rtx (*gen_short) (rtx, rtx, rtx) =
-    TARGET_64BIT ? gen_cmpmem_short_64 : gen_cmpmem_short_31;
-  rtx (*gen_long) (rtx, rtx, rtx, rtx) =
-    TARGET_64BIT ? gen_cmpmem_long_64 : gen_cmpmem_long_31;
   rtx (*gen_result) (rtx) =
     GET_MODE (target) == DImode ? gen_cmpint_di : gen_cmpint_si;
 
@@ -3169,7 +3129,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
     {
       if (INTVAL (len) > 0)
         {
-          emit_insn (gen_short (op0, op1, GEN_INT (INTVAL (len) - 1)));
+          emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (INTVAL (len) - 1)));
           emit_insn (gen_result (target));
         }
       else
@@ -3178,20 +3138,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
   else /* if (TARGET_MVCLE) */
     {
-      enum machine_mode double_mode = TARGET_64BIT ? TImode : DImode;
-      enum machine_mode single_mode = TARGET_64BIT ? DImode : SImode;
-      rtx reg0 = gen_reg_rtx (double_mode);
-      rtx reg1 = gen_reg_rtx (double_mode);
-
-      emit_move_insn (gen_highpart (single_mode, reg0),
-		      force_operand (XEXP (op0, 0), NULL_RTX));
-      emit_move_insn (gen_highpart (single_mode, reg1),
-		      force_operand (XEXP (op1, 0), NULL_RTX));
-
-      convert_move (gen_lowpart (single_mode, reg0), len, 1);
-      convert_move (gen_lowpart (single_mode, reg1), len, 1);
-
-      emit_insn (gen_long (reg0, reg1, reg0, reg1));
+      emit_insn (gen_cmpmem_long (op0, op1, convert_to_mode (Pmode, len, 1)));
       emit_insn (gen_result (target));
     }
 
@@ -3207,7 +3154,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
       mode = GET_MODE (len);
       if (mode == VOIDmode)
-        mode = word_mode;
+        mode = Pmode;
 
       type = lang_hooks.types.type_for_mode (mode, 1);
       if (!type)
@@ -3240,7 +3187,7 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 					   make_tree (type, blocks),
 					   make_tree (type, const0_rtx)));
 
-      emit_insn (gen_short (op0, op1, GEN_INT (255)));
+      emit_insn (gen_cmpmem_short (op0, op1, GEN_INT (255)));
       temp = gen_rtx_NE (VOIDmode, gen_rtx_REG (CCSmode, 33), const0_rtx);
       temp = gen_rtx_IF_THEN_ELSE (VOIDmode, temp,
 			gen_rtx_LABEL_REF (VOIDmode, end_label), pc_rtx);
@@ -3258,7 +3205,8 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
 
       expand_end_loop ();
 
-      emit_insn (gen_short (op0, op1, convert_to_mode (word_mode, count, 1)));
+      emit_insn (gen_cmpmem_short (op0, op1, 
+				   convert_to_mode (Pmode, count, 1)));
       emit_label (end_label);
 
       emit_insn (gen_result (target));
