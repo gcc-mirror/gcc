@@ -12,9 +12,11 @@
 # 2. Copy this Makefile from the standard Adalib directory, e.g.
 #    $ cp /usr/local/gnat/lib/gcc-lib/<target>/2.8.1/adalib/Makefile.adalib .
 #
-# 3. Copy or create a gnat.adc containing the configuration pragmas
-#    you want to use to build the library
-#    e.g. $ cp ~/gnat.adc gnat.adc
+# 3. If needed (e.g for pragma Normalize_Scalars), create a gnat.adc
+#    containing the configuration pragmas you want to use to build the library
+#    e.g. $ echo pragma Normalize_Scalars; > gnat.adc
+#    Note that this step is usually not needed, and most pragmas are not
+#    relevant to the GNAT run time. 
 #          
 # 4. Determine the values of the following MACROS
 #      ROOT   (location of GNAT installation, e.g /usr/local)
