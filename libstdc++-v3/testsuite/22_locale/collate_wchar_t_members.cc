@@ -25,7 +25,7 @@
 
 // XXX This may not work for non-glibc locale models.
 // { dg-do run { xfail *-*-* } }
-
+#ifdef _GLIBCPP_USE_WCHAR_T
 void test01()
 {
   using namespace std;
@@ -128,13 +128,16 @@ void test01()
   i2 = coll_de.compare(strlit3, strlit3 + size3, strlit4, strlit4 + size4);
   VERIFY(i1 == i2);
 }
+#endif
 
 int main()
 {
+#if _GLIBCPP_USE_WCHAR_T
   test01();
-
+#endif
   return 0;
 }
+
 
 
 
