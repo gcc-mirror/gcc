@@ -1,3 +1,14 @@
+Sat Apr 10 21:53:02 1999  Philipp Thomas  (kthomas@gwdg.de)
+			  Richard Henderson  <rth@cygnus.com>
+
+	* configure.in: Set target_cpu_default2 for target_alias k6.
+	* i386.h (TARGET_SWITCHES): Remove no-<cpu> entries.
+	(CC1_CPU_SPEC): Likewise.
+	(CPP_CPU_DEFAULT_SPEC): Streamline definition.  Add K6 version.
+	(CPP_K6_SPEC): New.
+	(CPP_CPU_SPEC): Add K6 variant.
+	(EXTRA_SPECS): Likewise.
+
 Fri Apr  9 11:29:17 1999  Richard Henderson  <rth@cygnus.com>
 
 	* flow.c (merge_blocks_nomove): Rewrite to properly handle two
