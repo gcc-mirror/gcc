@@ -3222,14 +3222,20 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		  && this_alternative_matches[i] < 0)
 		bad = 1;
 
+#if 0
 	      /* If this is a pseudo-register that is set in the previous
 		 insns, there's a good chance that it will already be in a
 		 spill register and we can use that spill register.  So
-		 make this case cheaper.  */
+		 make this case cheaper. 
+
+		 Disabled for egcs.  egcs has better inheritance code and
+		 this change causes problems with the improved reload
+		 inheritance code.  */
 	      if (GET_CODE (operand) == REG
 		  && REGNO (operand) >= FIRST_PSEUDO_REGISTER
 		  && REGNO (operand) == last_output_reload_regno)
 		reject--;
+#endif
 
 	      /* If this is a constant that is reloaded into the desired
 		 class by copying it to memory first, count that as another
