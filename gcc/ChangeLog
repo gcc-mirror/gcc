@@ -1,3 +1,15 @@
+2003-03-11  Loren James Rittle  <ljrittle@acm.org>
+
+	(per-port preprocessor fix, concurrent to Neil's cppinit.c fix)
+	* config/freebsd-spec.h (FBSD_CPP_PREDEFINES): Remove.
+	(FBSD_TARGET_OS_CPP_BUILTINS): New port-specific macro.
+	(FBSD_TARGET_CPU_CPP_BUILTINS): New port-specific macro.
+	* config/freebsd.h (CPP_PREDEFINES): Remove.
+	(TARGET_OS_CPP_BUILTINS): New.
+	* config/alpha/freebsd.h: Use overridden FBSD_TARGET_CPU_CPP_BUILTINS
+	instead of TARGET_OS_CPP_BUILTINS.
+	* config/sparc/freebsd.h (CPP_PREDEFINES): Remove.
+
 2003-03-11  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	PR bootstrap/9994
