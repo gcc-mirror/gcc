@@ -117,9 +117,5 @@ Makefile: Makefile.in ../config.status
 
 check : fixincl
 	autogen -T $(srcdir)/check.tpl $(srcdir)/inclhack.def
-	$(SHELL) ./check.sh
-	@echo ; echo "diff of diffs:"
-	@if diff testdir/NEWDIFF $(srcdir)/check.diff ; \
-	then rm -rf ./testdir ./check.sh ; \
-	else echo ; echo "Results do not match expectations" ; echo ; \
-	exit 1 ; fi
+	$(SHELL) ./check.sh $(srcdir)/tests/base
+	@rm -f ./check.sh

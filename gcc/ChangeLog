@@ -1,16 +1,17 @@
 2000-05-31  Bruce Korb  <bkorb@gnu.org>
 
-	* check.tpl: rework to use test result tree
-	* check.diff: No longer needed
-	* fixincl.x: regenerate
-	* inclhack.def:  add new tests
-	* tests/base/arch/i960/archI960.h:  New test result
-	* tests/base/curses.h: modified test result
-	* tests/base/stdio.h: ditto
-	* tests/base/time.h: ditto
-	* tests/base/sys/asm.h: ditto
-	* tests/base/sys/stat.h: ditto
-	* tests/base/sys/wait.h: ditto
+	* fixinc/check.tpl: rework to use test result tree
+	* fixinc/Makefile.in: change invocation of check script
+	* fixinc/check.diff: No longer needed
+	* fixinc/fixincl.x: regenerate
+	* fixinc/inclhack.def:  add new tests
+	* fixinc/tests/base/arch/i960/archI960.h:  New test result
+	* fixinc/tests/base/curses.h: modified test result
+	* fixinc/tests/base/stdio.h: ditto
+	* fixinc/tests/base/time.h: ditto
+	* fixinc/tests/base/sys/asm.h: ditto
+	* fixinc/tests/base/sys/stat.h: ditto
+	* fixinc/tests/base/sys/wait.h: ditto
 
 Wed May 31 13:17:20 2000  Philippe De Muyter  <phdm@macqel.be>
 
