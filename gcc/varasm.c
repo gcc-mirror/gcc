@@ -600,7 +600,7 @@ default_function_rodata_section (tree decl)
 
 	  memcpy (rname, name, len);
 	  rname[14] = 'r';
-	  named_section_flags (rname, SECTION_LINKONCE);
+	  named_section_real (rname, SECTION_LINKONCE, decl);
 	  return;
 	}
       /* For .text.foo we want to use .rodata.foo.  */

@@ -1,3 +1,8 @@
+2004-09-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* varasm.c (default_function_rdodata_section): Make sure to pass
+	along a decl for a link-once section.
+
 2004-09-15  Richard Henderson  <rth@redhat.com>
 
 	* tree-ssa-operands.c (add_call_clobber_ops): Fix unused variable
