@@ -1,3 +1,9 @@
+2003-07-08  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_release: Move handling of complex modes directly after
+	switch handling.
+	(TAG): Include the branch name as part of snapshot CVS tags.
+
 2003-07-04  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 
 	* gcc_release: Execute gcc.gnu.org-only operations which are
