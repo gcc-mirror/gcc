@@ -6985,7 +6985,7 @@ else
   else
     if cp -p conftestdata_f conftestdata_t 2>/dev/null
     then
-      gcc_cv_prog_LN_S=ln
+      gcc_cv_prog_LN_S="cp -p"
     else
       gcc_cv_prog_LN_S=cp
     fi
