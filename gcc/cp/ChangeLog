@@ -1,3 +1,11 @@
+2003-08-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11945
+	* pt.c (build_non_dependent_expr): Look inside COND_EXPR and
+	COMPOUND_EXPR.
+	* semantics.c (finish_expr_stmt): Always convert to void.
+	* typeck.c (build_x_compound_exp): Always convert to void.
+
 2003-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/11684

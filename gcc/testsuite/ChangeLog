@@ -1,3 +1,8 @@
+2003-08-20  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11945
+	* g++.dg/warn/noeffect2.C: New test.
+
 2003-08-19  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10926
@@ -53,6 +58,9 @@
 	* gcc.dg/noncompile/20030818-1.c: New.
 
 2003-08-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	PR c++/11957
+	* g++.dg/warn/noeffect1.C: New test.
 
 	* g++.dg/template/scope2.C: New test.
 	* g++.dg/template/error2.C: Correct dg-error

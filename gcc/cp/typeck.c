@@ -4309,11 +4309,8 @@ build_x_compound_expr (tree op1, tree op2)
 tree
 build_compound_expr (tree lhs, tree rhs)
 {
-  if (!processing_template_decl)
-    {
-      lhs = decl_constant_value (lhs);
-      lhs = convert_to_void (lhs, "left-hand operand of comma");
-    }
+  lhs = decl_constant_value (lhs);
+  lhs = convert_to_void (lhs, "left-hand operand of comma");
   
   if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
