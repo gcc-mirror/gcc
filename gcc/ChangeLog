@@ -1,6 +1,6 @@
 2002-04-05  Andreas Schwab  <schwab@suse.de>
 
-	* c-convert.c: Include c-convert.h.
+	* c-convert.c: Include c-common.h.
 	* Makefile.in (c-convert.o): Updated.
 
 2002-04-05  Jakub Jelinek  <jakub@redhat.com>
