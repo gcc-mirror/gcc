@@ -383,6 +383,10 @@ pop_type_0 (tree type, char **messagep)
  fail:
   {
     char *temp = xstrdup (lang_printable_name (type, 0));
+    /* If the stack contains a multi-word type, keep popping the stack until 
+       the real type is found.  */
+    while (t == void_type_node)
+      t = stack_type_map[--stack_pointer];
     *messagep = concat ("expected type '", temp,
 			"' but stack contains '", lang_printable_name (t, 0),
 			"'", NULL);
@@ -818,7 +822,7 @@ build_java_array_length_access (tree node)
      throws a NullPointerException.  The only way we could get a node
      of type ptr_type_node at this point is `aconst_null; arraylength'
      or something equivalent.  */
-  if (!flag_new_verifier && type == ptr_type_node)
+  if (type == ptr_type_node)
     return build3 (CALL_EXPR, int_type_node, 
 		   build_address_of (soft_nullpointer_node),
 		   NULL_TREE, NULL_TREE);

@@ -231,17 +231,18 @@ vfy_get_class_name (vfy_jclass klass)
 bool
 vfy_is_assignable_from (vfy_jclass target, vfy_jclass source)
 {
-  /* At compile time, for the BC-ABI we assume that reference types are always 
-  compatible.  However, a type assertion table entry is emitted so that the
-  runtime can detect binary-incompatible changes.  */
-
-  /* FIXME: implement real test for old ABI.  */
-
   /* Any class is always assignable to itself, or java.lang.Object. */
   if (source == target || target == object_type_node)
     return true;
 
-  /* Otherwise, a type assertion is required.  */
+  /* For the C++ ABI, perform this test statically. */
+  if (! flag_indirect_dispatch)
+    return can_widen_reference_to (source, target);
+
+  /* For the BC-ABI, we assume at compile time that reference types are always 
+  compatible.  However, a type assertion table entry is emitted so that the
+  runtime can detect binary-incompatible changes.  */
+
   add_type_assertion (current_class, JV_ASSERT_TYPES_COMPATIBLE, source,
 		      target);
   return true;
@@ -255,28 +256,6 @@ vfy_get_primitive_char (vfy_jclass klass)
     abort ();
   sig = build_java_signature (klass);
   return (IDENTIFIER_POINTER (sig))[0];
-}
-
-int
-vfy_get_interface_count (vfy_jclass klass ATTRIBUTE_UNUSED)
-{
-  /* FIXME: Need to merge from mainline to get this. */
-  #if 0
-  return BINFO_N_BASE_BINFOS (klass);
-  #endif
-  return -1;
-}
-
-vfy_jclass
-vfy_get_interface (vfy_jclass klass ATTRIBUTE_UNUSED, int index ATTRIBUTE_UNUSED)
-{
-  /* FIXME: Need to merge from mainline to get this. */
-  #if 0
-  vfy_jclass k;
-  k = BINFO_BASE_BINFO (klass, index);
-  return k;
-  #endif
-  return NULL;
 }
 
 bool
