@@ -7145,7 +7145,7 @@ mips_output_function_prologue (file, size)
 	{
 	  fprintf (file, "\t%s\t%s,%s,%ld\n",
 		   (Pmode == DImode ? "dsubu" : "subu"),
-		   sp_str, sp_str, tsize);
+		   sp_str, sp_str, (long) tsize);
 	  fprintf (file, "\t.cprestore %ld\n", current_frame_info.args_size);
 	}
 
