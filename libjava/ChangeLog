@@ -1,3 +1,13 @@
+2002-01-29  Tom Tromey  <tromey@redhat.com>
+
+	* java/awt/GridLayout.java (layoutContainer): Use number of rows
+	to compute height of each cell, and number of columns to compute
+	width of each cell.
+	* java/awt/Window.java (getOwnedWindows): Don't return null.
+	* java/awt/FlowLayout.java (layoutContainer): Set width and height
+	of component.  Increment x using horizontal gap, not vertical
+	gap.
+
 2002-01-28  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (class _Jv_BytecodeVerifier) [op_invokeinterface]:

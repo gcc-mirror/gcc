@@ -212,8 +212,8 @@ public class FlowLayout implements LayoutManager, Serializable
 	    if (comps[k].visible)
 	      {
 		Dimension c = comps[k].getPreferredSize ();
-		comps[k].setLocation (x, y);
-		x += c.width + vgap;
+		comps[k].setBounds (x, y, c.width, new_h);
+		x += c.width + hgap;
 	      }
 	  }
 
