@@ -1,3 +1,10 @@
+2002-07-18  Bo Thorsen  <bo@suse.de>
+
+	* include/private/gcconfig.h: Add x86-64 definitions.
+	* os_dep.c: Add x86-64 support.
+	* configure.in: Likewise.
+	* configure: Regenerate.
+
 2002-07-18  H.J. Lu <hjl@gnu.org>
 
 	* mach_dep.c (GC_push_regs): Remove the unused Linux/mips code.
