@@ -47,6 +47,7 @@ intrinsics/env.c \
 intrinsics/eoshift0.c \
 intrinsics/eoshift2.c \
 intrinsics/etime.c \
+intrinsics/getXid.c \
 intrinsics/ishftc.c \
 intrinsics/pack_generic.c \
 intrinsics/size.c \

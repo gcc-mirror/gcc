@@ -39,14 +39,23 @@
 /* libm includes frexpf */
 #undef HAVE_FREXPF
 
+/* libc includes getgid */
+#undef HAVE_GETGID
+
 /* Define to 1 if you have the `getpagesize' function. */
 #undef HAVE_GETPAGESIZE
+
+/* libc includes getpid */
+#undef HAVE_GETPID
 
 /* Define to 1 if you have the `getrusage' function. */
 #undef HAVE_GETRUSAGE
 
 /* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
+
+/* libc includes getuid */
+#undef HAVE_GETUID
 
 /* libm includes hypotf */
 #undef HAVE_HYPOTF

@@ -160,6 +160,11 @@ AC_CHECK_LIB([m],[csin],[need_math="no"],[need_math="yes"])
 # Check for library functions.
 AC_CHECK_FUNCS(getrusage times)
 
+# Check libc for getgid, getpid, getuid
+AC_CHECK_LIB([c],[getgid],[AC_DEFINE([HAVE_GETGID],[1],[libc includes getgid])])
+AC_CHECK_LIB([c],[getpid],[AC_DEFINE([HAVE_GETPID],[1],[libc includes getpid])])
+AC_CHECK_LIB([c],[getuid],[AC_DEFINE([HAVE_GETUID],[1],[libc includes getuid])])
+
 # Check for C99 (and other IEEE) math functions
 AC_CHECK_LIB([m],[acosf],[AC_DEFINE([HAVE_ACOSF],[1],[libm includes acosf])])
 AC_CHECK_LIB([m],[asinf],[AC_DEFINE([HAVE_ASINF],[1],[libm includes asinf])])

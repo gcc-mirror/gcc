@@ -306,6 +306,9 @@ enum gfc_generic_isym_id
   GFC_ISYM_EXPONENT,
   GFC_ISYM_FLOOR,
   GFC_ISYM_FRACTION,
+  GFC_ISYM_GETGID,
+  GFC_ISYM_GETPID,
+  GFC_ISYM_GETUID,
   GFC_ISYM_IACHAR,
   GFC_ISYM_IAND,
   GFC_ISYM_IARGC,
@@ -918,6 +921,7 @@ gfc_intrinsic_arg;
 
 typedef union
 {
+  try (*f0)(void);
   try (*f1)(struct gfc_expr *);
   try (*f1m)(gfc_actual_arglist *);
   try (*f2)(struct gfc_expr *, struct gfc_expr *);
@@ -937,6 +941,7 @@ gfc_check_f;
 
 typedef union
 {
+  struct gfc_expr *(*f0)(void);
   struct gfc_expr *(*f1)(struct gfc_expr *);
   struct gfc_expr *(*f2)(struct gfc_expr *, struct gfc_expr *);
   struct gfc_expr *(*f3)(struct gfc_expr *, struct gfc_expr *,
