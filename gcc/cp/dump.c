@@ -158,10 +158,6 @@ cp_dump_tree (di, t)
       break;
 
     case NAMESPACE_DECL:
-      /* The fake `::std' namespace does not have DECL_LANG_SPECIFIC,
-	 and therefore many other macros do not work on it.  */
-      if (t == fake_std_node)
-	break;
       if (DECL_NAMESPACE_ALIAS (t))
 	dump_child ("alis", DECL_NAMESPACE_ALIAS (t));
       else if (!dump_flag (di, TDF_SLIM, t))

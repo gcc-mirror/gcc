@@ -1,3 +1,10 @@
+2001-08-02  Nathan Sidwell  <nathan@codesourcery.com>
+
+	Kill -fhonor-std.
+	* doc/c-tree.texi (Namespaces): Remove std & -fhonor-std
+	interaction.
+	* doc/invoke.texi (C++ Dialect Options): Remove -fno-honor-std.
+
 2001-08-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* mips.md (movdicc): Make conditional on TARGET_64BIT.  Likewise

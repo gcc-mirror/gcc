@@ -71,12 +71,10 @@ static int doing_runtime = 0;
 void
 init_rtti_processing ()
 {
-  if (flag_honor_std)
-    push_namespace (std_identifier);
+  push_namespace (std_identifier);
   type_info_type_node = xref_tag
     (class_type_node, get_identifier ("type_info"), 1);
-  if (flag_honor_std)
-    pop_namespace ();
+  pop_namespace ();
   tinfo_decl_type = 
     build_qualified_type (type_info_type_node, TYPE_QUAL_CONST);
 }

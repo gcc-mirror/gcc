@@ -209,10 +209,6 @@ Boston, MA 02111-1307, USA.  */
 
 extern int flag_use_cxa_atexit;
 
-/* Nonzero to not ignore namespace std. */
-
-extern int flag_honor_std;
-
 /* Nonzero means generate 'rtti' that give run-time type information.  */
 
 extern int flag_rtti;
@@ -526,7 +522,6 @@ enum cp_tree_index
     CPTI_VTBL_TYPE,
     CPTI_VTBL_PTR_TYPE,
     CPTI_STD,
-    CPTI_FAKE_STD,
     CPTI_ABI,
     CPTI_TYPE_INFO_TYPE,
     CPTI_TINFO_DECL_TYPE,
@@ -613,14 +608,7 @@ extern tree cp_global_trees[CPTI_MAX];
 #define unknown_type_node		cp_global_trees[CPTI_UNKNOWN_TYPE]
 #define vtbl_type_node			cp_global_trees[CPTI_VTBL_TYPE]
 #define vtbl_ptr_type_node		cp_global_trees[CPTI_VTBL_PTR_TYPE]
-/* When the `std' namespace is a real namespace, this is the
-   corresponding NAMESPACE_DECL.  When the `std' namespace is an alias
-   for the global namespace, this is NULL_TREE.  */
 #define std_node			cp_global_trees[CPTI_STD]
-/* When the `std' namespace is a real namespace, this is the
-   ERROR_MARK_NODE.  Otherwise, this is a dummy NAMESPACE_DECL that
-   should be treated like the global namespace.  */
-#define fake_std_node                   cp_global_trees[CPTI_FAKE_STD]
 #define abi_node                        cp_global_trees[CPTI_ABI]
 #define type_info_type_node		cp_global_trees[CPTI_TYPE_INFO_TYPE]
 #define tinfo_decl_type			cp_global_trees[CPTI_TINFO_DECL_TYPE]

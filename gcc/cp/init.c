@@ -1503,9 +1503,6 @@ build_member_call (type, name, parmlist)
   if (DECL_P (name))
     name = DECL_NAME (name);
 
-  if (type == fake_std_node)
-    return build_x_function_call (do_scoped_id (name, 0), parmlist,
-				  current_class_ref);
   if (TREE_CODE (type) == NAMESPACE_DECL)
     return build_x_function_call (lookup_namespace_name (type, name),
 				  parmlist, current_class_ref);
@@ -1637,9 +1634,6 @@ build_offset_ref (type, name)
   /* class templates can come in as TEMPLATE_DECLs here.  */
   if (TREE_CODE (name) == TEMPLATE_DECL)
     return name;
-
-  if (type == fake_std_node)
-    return do_scoped_id (name, 0);
 
   if (processing_template_decl || uses_template_parms (type))
     return build_min_nt (SCOPE_REF, type, name);
