@@ -4306,6 +4306,13 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 				      flag_traditional 
 				      ? NULL_TREE : arg_types);
 #endif
+	  /* ANSI seems to say that `const int foo ();'
+	     does not make the function foo const.  */
+	  if (constp || volatilep)
+	    type = c_build_type_variant (type, constp, volatilep);
+	  constp = 0;
+	  volatilep = 0;
+
 	  type = build_function_type (type, arg_types);
 	  declarator = TREE_OPERAND (declarator, 0);
 
@@ -4424,12 +4431,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       return type;
     }
 
-  /* `void' at top level (not within pointer)
-     is allowed only in typedefs or type names.
+  /* Aside from typedefs and type names (handle above),
+     `void' at top level (not within pointer)
+     is allowed only in public variables.
      We don't complain about parms either, but that is because
      a better error message can be made later.  */
 
-  if (TYPE_MAIN_VARIANT (type) == void_type_node && decl_context != PARM)
+  if (TYPE_MAIN_VARIANT (type) == void_type_node && decl_context != PARM
+      && ! ((decl_context != FIELD && TREE_CODE (type) != FUNCTION_TYPE)
+	    && ((specbits & (1 << (int) RID_EXTERN))
+		|| (current_binding_level == global_binding_level
+		    && !(specbits
+			 & ((1 << (int) RID_STATIC) | (1 << (int) RID_REGISTER)))))))
     {
       error ("variable or field `%s' declared void",
 	     IDENTIFIER_POINTER (declarator));
@@ -4563,6 +4576,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 	if (pedantic && (constp || volatilep)
 	    && ! DECL_IN_SYSTEM_HEADER (decl))
 	  pedwarn ("ANSI C forbids const or volatile functions");
+
+	if (volatilep
+	    && TREE_TYPE (TREE_TYPE (decl)) != void_type_node)
+	  warning ("volatile function returns non-void value");
 
 	if (extern_ref)
 	  DECL_EXTERNAL (decl) = 1;
@@ -5154,7 +5171,11 @@ finish_struct (t, fieldlist)
 	}
       if (DECL_INITIAL (x) && pedantic
 	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != integer_type_node
-	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != unsigned_type_node)
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (x)) != unsigned_type_node
+	  /* Accept an enum that's equivalent to int or unsigned int.  */
+	  && !(TREE_CODE (TREE_TYPE (x)) == ENUMERAL_TYPE
+	       && (TYPE_PRECISION (TREE_TYPE (x))
+		   == TYPE_PRECISION (integer_type_node))))
 	pedwarn_with_decl (x, "bit-field `%s' type invalid in ANSI C");
 
       /* Detect and ignore out of range field width.  */
@@ -5647,10 +5668,6 @@ start_function (declspecs, declarator, nested)
     return 0;
 
   announce_function (decl1);
-
-  if (TREE_THIS_VOLATILE (decl1)
-      && TREE_TYPE (decl1) != void_type_node)
-    warning ("volatile function returns non-void value");
 
   if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (decl1))) == 0)
     {
