@@ -1,3 +1,11 @@
+2003-01-28  Christian Cornelssen  <ccorn@cs.tu-berlin.de>
+
+	* Makefile.in (mkinstalldirs): New variable.
+	(FLAGS_TO_PASS): Also pass DESTDIR.
+	(install_to_libdir, install_to_tooldir): Add $(mkinstalldirs)
+	command.  Prepend $(DESTDIR) to destination paths.
+	Cd to destination directory for post-install work.
+
 2003-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* Makefile.in (install_to_tooldir): Instead of $(MULTISUBDIR), use

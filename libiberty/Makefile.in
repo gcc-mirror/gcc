@@ -48,6 +48,7 @@ MULTICLEAN = true
 INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
+mkinstalldirs = $(SHELL) $(srcdir)/../mkinstalldirs
 
 AR = @AR@
 AR_FLAGS = rc
@@ -78,6 +79,7 @@ FLAGS_TO_PASS = \
 	"AR_FLAGS=$(AR_FLAGS)" \
 	"CC=$(CC)" \
 	"CFLAGS=$(CFLAGS)" \
+	"DESTDIR=$(DESTDIR)" \
 	"LIBCFLAGS=$(LIBCFLAGS)" \
 	"EXTRA_OFILES=$(EXTRA_OFILES)" \
 	"HDEFINES=$(HDEFINES)" \
@@ -237,15 +239,19 @@ INSTALL_DEST = @INSTALL_DEST@
 install: install_to_$(INSTALL_DEST) install-subdir
 
 install_to_libdir: all
-	$(INSTALL_DATA) $(TARGETLIB) $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
-	( cd $(libdir)$(MULTISUBDIR) ; $(RANLIB) $(TARGETLIB)n )
-	mv -f $(libdir)$(MULTISUBDIR)/$(TARGETLIB)n $(libdir)$(MULTISUBDIR)/$(TARGETLIB)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)$(MULTISUBDIR)
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)$(MULTISUBDIR)/$(TARGETLIB)n
+	( cd $(DESTDIR)$(libdir)$(MULTISUBDIR) && \
+	  $(RANLIB) $(TARGETLIB)n && \
+	  mv -f $(TARGETLIB)n $(TARGETLIB) )
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 install_to_tooldir: all
-	$(INSTALL_DATA) $(TARGETLIB) $(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n
-	( cd $(tooldir)/lib/`$$CC -print-multi-os-directory` ; $(RANLIB) $(TARGETLIB)n )
-	mv -f $(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n $(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)
+	$(mkinstalldirs) $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`
+	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory`/$(TARGETLIB)n
+	( cd $(DESTDIR)$(tooldir)/lib/`$$CC -print-multi-os-directory` && \
+	  $(RANLIB) $(TARGETLIB)n && \
+	  mv -f $(TARGETLIB)n $(TARGETLIB) )
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 
 # needed-list is used by libstdc++.  NEEDED is the list of functions
