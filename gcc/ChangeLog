@@ -1,3 +1,10 @@
+2004-01-14  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (c_estimate_num_insns_1):  Fix bug in MODIFY_EXPR
+	cost estimation.
+	* expr.c (MOVE_RATIO, CLEAR_RATIO): Move to ...
+	* expr.h (MOVE_RATIO, CLEAR_RATIO): ... here.
+
 2004-01-13  Bernardo Innocenti  <bernie@develer.com>
 
 	* config/m68k/netbsd-elf.h (REGISTER_NAMES): Add missing "argptr"
