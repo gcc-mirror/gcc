@@ -2523,7 +2523,7 @@ compile_file (name)
 
    This does nothing for local (non-static) variables, unless the
    variable is a register variable with an ASMSPEC.  In that case, or
-   if the variable is not an automatice, it sets up the RTL and
+   if the variable is not an automatic, it sets up the RTL and
    outputs any assembler code (label definition, storage allocation
    and initialization).
 
@@ -4896,6 +4896,12 @@ toplev_main (argc, argv)
       if (warn_uninitialized == 1)
 	warning ("-Wuninitialized is not supported without -O");
     }
+
+  /* We do not currently support sibling-call optimization in the
+     presence of exceptions.  See PR2975 for a test-case that will
+     fail if we try to combine both of these features.  */
+  if (flag_exceptions)
+    flag_optimize_sibling_calls = 0;
 
 #ifdef OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of options.  */

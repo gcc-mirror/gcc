@@ -1,3 +1,15 @@
+2001-06-05  Mark Mitchell  <mark@codesourcery.com>
+
+	* print-rtl.c (xspaces): Remove.
+	(print_rtx): Use printf field-width, rather than xpsaces, to
+	indent.
+	* toplev.c (main): Disable sibling-call optimization if we are
+	handling exceptions.
+	
+2001-06-05  Bernd Schmidt  <bernds@redhat.com>
+
+	* reload1.c (reload): Delete all USEs generated during reload.
+
 2001-06-05  scott snyder  <snyder@fnal.gov>
 
 	* gccbug.in:  Fix typo.
