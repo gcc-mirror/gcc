@@ -1269,16 +1269,7 @@ extern int may_call_alloca;
   else if (GET_CODE (X) == PLUS)			\
     {							\
       rtx base = 0, index = 0;				\
-      if (flag_pic && XEXP (X, 0) == pic_offset_table_rtx)\
-	{						\
-	  if (GET_CODE (XEXP (X, 1)) == REG		\
-	      && REG_OK_FOR_BASE_P (XEXP (X, 1)))	\
-	    goto ADDR;					\
-	  else if (flag_pic == 1			\
-		   && GET_CODE (XEXP (X, 1)) == SYMBOL_REF)\
-	    goto ADDR;					\
-	}						\
-      else if (REG_P (XEXP (X, 0))			\
+      if (REG_P (XEXP (X, 0))				\
 	  && REG_OK_FOR_BASE_P (XEXP (X, 0)))		\
 	base = XEXP (X, 0), index = XEXP (X, 1);	\
       else if (REG_P (XEXP (X, 1))			\
@@ -1970,9 +1961,7 @@ while (0)
 	fputs ("R'", FILE);						\
       else if (flag_pic == 0)						\
 	fputs ("RR'", FILE);						\
-      else if (flag_pic == 1)						\
-	abort ();							\
-      else if (flag_pic == 2)						\
+      else								\
 	fputs ("RT'", FILE);						\
       output_global_address (FILE, XEXP (addr, 1), 0);			\
       fputs ("(", FILE);						\

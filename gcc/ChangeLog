@@ -1,3 +1,14 @@
+Tue Feb 27 16:49:13 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.c (override_options): Promote -fpic to -fPIC.
+	(legitimize_pic_address): Simplify due to removal of
+	small PIC as a code generation option.
+	(secondary_reload_class): Similarly.
+	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Similarly.
+	(PRINT_OPERAND_ADDRESS): Similarly.
+	* pa.md (various patterns): Similarly.
+	(small pic lo_sum pattern): Remove.
+
 Tue Feb 27 16:01:13 CET 2001  Jan Hubicka  <jh@suse.cz>
 			      Fergus Henderson
 
