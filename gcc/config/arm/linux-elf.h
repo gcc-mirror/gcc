@@ -235,12 +235,8 @@ const_section ()							\
 #define DWARF2_DEBUGGING_INFO
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
-/* Make LBRAC and RBRAC addresses relative to the start of the
-   function.  The native Solaris stabs debugging format works this
-   way, gdb expects it, and it reduces the number of relocation
-   entries.  */
-
-#define DBX_BLOCKS_FUNCTION_RELATIVE 1
+/* Get the standard ELF stabs definitions.  */
+#include "dbxelf.h"
 
 #include "arm/elf.h"
 #include "arm/linux-gas.h"

@@ -1,3 +1,7 @@
+Fri Mar 26 10:48:27 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/linux-elf.h: Include dbxelf.h
+
 Fri Mar 26 10:43:47 1999  Nick Clifton  <nickc@cygnus.com>
 
 	* config/svr4.h: Include new header file dbxelf.h.
