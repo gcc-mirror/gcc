@@ -297,6 +297,10 @@
 #   endif
 #   define mach_type_known
 # endif
+# if defined(__embedded__) && defined(PPC)
+#    define POWERPC
+#    define mach_type_known
+# endif
 
 /* Feel free to add more clauses here */
 
@@ -572,6 +576,17 @@
 #     define DATASTART ((ptr_t) get_etext())
 #     define STACKBOTTOM ((ptr_t) 0xc0000000)
 #     define DATAEND	/* not needed */
+#   endif
+#   ifdef __embedded__
+#     define ALIGNMENT 4
+#     define OS_TYPE "EMBEDDED"
+      extern void __end, __dso_handle;
+#     define DATASTART (&__dso_handle)  /* OK, that's ugly.  */
+#     define DATAEND (&__end)
+	/* Stack starts at 0xE0000000 for the simulator.  */
+#     undef STACK_GRAN
+#     define STACK_GRAN 0x10000000
+#     define HEURISTIC1
 #   endif
 # endif
 

@@ -1,3 +1,8 @@
+2000-12-10  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcconfig.h: Add new case for powerpc EABI.
+	[PPC]: Handle embedded OS for powerpc simulator.
+
 2000-09-30  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* configure.in: Define GC_GCJ_SUPPORT. Define NO_DEBUGGING in 
