@@ -66,6 +66,8 @@ st_rewind (void)
 	  u->current_record = 0;
 	  test_endfile (u);
 	}
+      /* update position for INQUIRE */
+      u->flags.position = POSITION_REWIND;
     }
 
   library_end ();

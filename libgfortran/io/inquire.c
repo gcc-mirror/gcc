@@ -166,13 +166,27 @@ inquire_via_unit (gfc_unit * u)
   if (ioparm.position != NULL)
     {
       if (u == NULL || u->flags.access == ACCESS_DIRECT)
-	p = undefined;
+        p = undefined;
       else
-	{
-	  p = NULL;		/* TODO: Try to decode what the standard says... */
-	}
-
-      cf_strcpy (ioparm.blank, ioparm.blank_len, p);
+        switch (u->flags.position)
+          {
+             case POSITION_REWIND:
+               p = "REWIND";
+               break;
+             case POSITION_APPEND:
+               p = "APPEND";
+               break;
+             case POSITION_ASIS:
+               p = "ASIS";
+               break;
+             default:
+               /* if not direct access, it must be
+                  either REWIND, APPEND, or ASIS.
+                  ASIS seems to be the best default */
+               p = "ASIS";
+               break;
+          }
+      cf_strcpy (ioparm.position, ioparm.position_len, p);
     }
 
   if (ioparm.action != NULL)

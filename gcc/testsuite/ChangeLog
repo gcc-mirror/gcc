@@ -1,3 +1,8 @@
+2005-01-22  Bud Davis  <bdavis9659@comcast.net>
+
+	PR fortran/19314
+	* gfortran.dg/inquire_5.f90: New test.
+
 2005-01-22  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c/18809

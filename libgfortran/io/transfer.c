@@ -1363,6 +1363,9 @@ next_record (int done)
   else
     next_record_w (done);
 
+  /* keep position up to date for INQUIRE */
+  current_unit->flags.position = POSITION_ASIS;
+
   current_unit->current_record = 0;
   if (current_unit->flags.access == ACCESS_DIRECT)
    {
