@@ -1,3 +1,9 @@
+2000-02-19  Richard Henderson  <rth@cygnus.com>
+
+	* c-typeck.c (add_pending_init): Don't abort for multiple
+	fields at the same offset.
+	(pending_init_member): Test the correct member.
+
 2000-02-19  Herman A.J. ten Brugge <Haj.Ten.Brugge@net.HCC.nl>
 
 	* except.c (start_dynamic_handler) : Use TYPE_MODE (integer_type_node)
