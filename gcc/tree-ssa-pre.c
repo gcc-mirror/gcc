@@ -1113,52 +1113,32 @@ DEF_VEC_MALLOC_P (basic_block);
 
    ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] - TMP_GEN[BLOCK])
 
-   Iterate until fixpointed.
-
    XXX: It would be nice to either write a set_clear, and use it for
    ANTIC_OUT, or to mark the antic_out set as deleted at the end
    of this routine, so that the pool can hand the same memory back out
    again for the next ANTIC_OUT.  */
 
-
 static bool
-compute_antic_aux (basic_block block)
+compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 {
-  basic_block son;
-  edge e;
   bool changed = false;
   value_set_t S, old, ANTIC_OUT;
   value_set_node_t node;
-  
+
   ANTIC_OUT = S = NULL;
-  /* If any edges from predecessors are abnormal, antic_in is empty, so
-     punt.  Remember that the block has an incoming abnormal edge by
-     setting the BB_VISITED flag.  */
-  if (! (block->flags & BB_VISITED))
-    {
-      edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, block->preds)
-	if (e->flags & EDGE_ABNORMAL)
-	  {
-	    block->flags |= BB_VISITED;
-	    break;
-	  }
-    }
-  if (block->flags & BB_VISITED)
-    {
-      S = NULL;
-      goto visit_sons;
-    }
-  
+
+  /* If any edges from predecessors are abnormal, antic_in is empty,
+     so do nothing.  */
+  if (block_has_abnormal_pred_edge)
+    goto maybe_dump_sets;
 
   old = set_new (false);
   set_copy (old, ANTIC_IN (block));
   ANTIC_OUT = set_new (true);
 
-  /* If the block has no successors, ANTIC_OUT is empty, because it is
-     the exit block.  */
-  if (EDGE_COUNT (block->succs) == 0);
-
+  /* If the block has no successors, ANTIC_OUT is empty.  */
+  if (EDGE_COUNT (block->succs) == 0)
+    ;
   /* If we have one successor, we could have some phi nodes to
      translate through.  */
   else if (EDGE_COUNT (block->succs) == 1)
@@ -1206,21 +1186,16 @@ compute_antic_aux (basic_block block)
 							 TMP_GEN (block),
 							 true);
   
-  /* Then union in the ANTIC_OUT - TMP_GEN values, to get ANTIC_OUT U
-     EXP_GEN - TMP_GEN */
-  for (node = S->head;
-       node;
-       node = node->next)
-    {
-      value_insert_into_set (ANTIC_IN (block), node->expr);
-    }
-  clean (ANTIC_IN (block));
-  
+  /* Then union in the ANTIC_OUT - TMP_GEN values,
+     to get ANTIC_OUT U EXP_GEN - TMP_GEN */
+  for (node = S->head; node; node = node->next)
+    value_insert_into_set (ANTIC_IN (block), node->expr);
 
+  clean (ANTIC_IN (block));
   if (!set_equal (old, ANTIC_IN (block)))
     changed = true;
 
- visit_sons:
+ maybe_dump_sets:
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       if (ANTIC_OUT)
@@ -1228,43 +1203,82 @@ compute_antic_aux (basic_block block)
       print_value_set (dump_file, ANTIC_IN (block), "ANTIC_IN", block->index);
       if (S)
 	print_value_set (dump_file, S, "S", block->index);
-
     }
 
-  for (son = first_dom_son (CDI_POST_DOMINATORS, block);
-       son;
-       son = next_dom_son (CDI_POST_DOMINATORS, son))
-    {
-      changed |= compute_antic_aux (son);
-    }
   return changed;
 }
 
-/* Compute ANTIC sets.  */
+/* Compute ANTIC sets.  Iterates until fixpointed.  */
 
 static void
 compute_antic (void)
 {
-  bool changed = true;
-  basic_block bb;
+  bool changed= true;
   int num_iterations = 0;
-  FOR_ALL_BB (bb)
-    {
-      ANTIC_IN (bb) = set_new (true);
-      gcc_assert (!(bb->flags & BB_VISITED));
-    }
+  basic_block block, *worklist;
+  size_t sp = 0;
+  sbitmap has_abnormal_preds;
 
+  /* If any predecessor edges are abnormal, we punt, so antic_in is empty.
+     We pre-build the map of blocks with incoming abnormal edges here.  */
+  has_abnormal_preds = sbitmap_alloc (last_basic_block);
+  sbitmap_zero (has_abnormal_preds);
+  FOR_EACH_BB (block)
+    {
+      edge_iterator ei;
+      edge e;
+
+      FOR_EACH_EDGE (e, ei, block->preds)
+        if (e->flags & EDGE_ABNORMAL)
+          {
+            SET_BIT (has_abnormal_preds, block->index);
+            break;
+          }
+
+      /* While we are here, give empty ANTIC_IN sets to each block.  */
+      ANTIC_IN (block) = set_new (true);
+    }
+  /* At the exit block we anticipate nothing.  */
+  ANTIC_IN (EXIT_BLOCK_PTR) = set_new (true);
+
+  /* Allocate the worklist.  */
+  worklist = xmalloc (sizeof (basic_block) * n_basic_blocks);
+
+  /* Loop until fixpointed.  */
   while (changed)
     {
-      num_iterations++;
+      basic_block son, bb;
+
       changed = false;
-      changed = compute_antic_aux (EXIT_BLOCK_PTR);
+      num_iterations++;
+
+      /* Seed the algorithm by putting post-dominator children of
+         the exit block in the worklist.  */
+      for (son = first_dom_son (CDI_POST_DOMINATORS, EXIT_BLOCK_PTR);
+	   son;
+	   son = next_dom_son (CDI_POST_DOMINATORS, son))
+	worklist[sp++] = son;
+
+      /* Now visit all blocks in a DFS of the post dominator tree.  */
+      while (sp)
+	{
+	  bool bb_has_abnormal_pred;
+
+	  bb = worklist[--sp];
+	  bb_has_abnormal_pred = TEST_BIT (has_abnormal_preds, bb->index);
+ 	  changed |= compute_antic_aux (bb, bb_has_abnormal_pred);
+
+	  for (son = first_dom_son (CDI_POST_DOMINATORS, bb);
+	       son;
+	       son = next_dom_son (CDI_POST_DOMINATORS, son))
+	    worklist[sp++] = son;
+	}
     }
-  FOR_ALL_BB (bb)
-    {
-      bb->flags &= ~BB_VISITED;
-    }
-  if (num_iterations > 2 && dump_file && (dump_flags & TDF_STATS))
+
+  free (worklist);
+  sbitmap_free (has_abnormal_preds);
+
+  if (dump_file && (dump_flags & TDF_STATS))
     fprintf (dump_file, "compute_antic required %d iterations\n", num_iterations);
 }
 

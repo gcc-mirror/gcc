@@ -1,3 +1,15 @@
+2005-01-14  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-ssa-dce.c (visited_control_parents): New sbitmap to
+	replace BB_VISITED uses.
+	(find_obviously_necessary_stmts): Don't clear BB_VISITED.
+	(propagate_necessity): Check the bitmap instead of BB_VISITED.
+	(tree_dce_done): Free visited_control_parents.
+	(perform_tree_ssa_dce): Allocate and clear it.
+	* tree-ssa-pre.c (compute_antic_aux): Make non-recursive.
+	(compute_antic): Iterate from here using a DFS.  Use an sbitmap
+	instead of BB_VISITED.
+
 2005-01-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* c-tree.h, coverage.h, langhooks-def.h, optabs.h, output.h,
