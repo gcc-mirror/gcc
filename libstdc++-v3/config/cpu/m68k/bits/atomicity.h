@@ -1,6 +1,6 @@
-// Low-level functions for atomic operations: m680x0, x >= 2 version -*- C++ -*-
+// Low-level functions for atomic operations: m68k version -*- C++ -*-
 
-// Copyright (C) 2001 Free Software Foundation, Inc.
+// Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,30 +32,105 @@
 
 typedef int _Atomic_word;
 
+#if defined(__mc68020__) || defined(__mc68030__) \
+    || defined(__mc68040__) || defined(__mc68060__)
+// These variants support compare-and-swap.
+
 static inline _Atomic_word 
 __attribute__ ((__unused__))
 __exchange_and_add (volatile _Atomic_word *__mem, int __val)
 {
   register _Atomic_word __result = *__mem;
   register _Atomic_word __temp;
-  __asm__ __volatile__ ("1: move%.l %0,%1;"
-			"   add%.l %2,%1;"
-			"   cas%.l %0,%1,%3;"
-			"   jbne 1b"
+  __asm__ __volatile__ ("1: move%.l %0,%1\n\t"
+			"add%.l %2,%1\n\t"
+			"cas%.l %0,%1,%3\n\t"
+			"jbne 1b"
 			: "=d" (__result), "=&d" (__temp)
 			: "d" (__val), "m" (*__mem), "0" (__result)
 			: "memory");
   return __result;
 }
 
+#elif !defined(__mcf5200__) && !defined(__mcf5300__)
+// 68000, 68010, cpu32 and 5400 support test-and-set.
+
+template <int __inst>
+struct __Atomicity_lock
+{
+  static volatile unsigned char _S_atomicity_lock;
+};
+
+template <int __inst>
+volatile unsigned char __Atomicity_lock<__inst>::_S_atomicity_lock = 0;
+
+template volatile unsigned char __Atomicity_lock<0>::_S_atomicity_lock;
+
+static inline _Atomic_word 
+__attribute__ ((__unused__))
+__exchange_and_add (volatile _Atomic_word *__mem, int __val)
+{
+  _Atomic_word __result;
+
+  __asm__ __volatile__("1: tas %0\n\tjbne 1b"
+		       : "=m"(__Atomicity_lock<0>::_S_atomicity_lock)
+		       : "m"(__Atomicity_lock<0>::_S_atomicity_lock));
+
+  __result = *__mem;
+  *__mem = __result + __val;
+
+  __Atomicity_lock<0>::_S_atomicity_lock = 0;
+
+  return __result;
+}
+
+#else
+// These variants do not support any atomic operations at all.
+// The best we can hope for is to disable interrupts, which we
+// can only do from supervisor mode.
+
+#if defined(__rtems__) || defined(__vxWorks__) || defined(__embedded__)
+static inline _Atomic_word 
+__attribute__ ((__unused__))
+__exchange_and_add (volatile _Atomic_word *__mem, int __val)
+{
+  _Atomic_word __result;
+  short __level, __tmpsr;
+  __asm__ __volatile__ ("move%.w %%sr,%0\n\tor%.l %0,%1\n\tmove%.w %1,%%sr"
+		  	: "=d"(__level), "=d"(__tmpsr) : "1"(0x700));
+
+  __result = *__mem;
+  *__mem = __result + __val;
+
+  __asm__ __volatile__ ("move%.w %0,%%sr" : : "d"(__level));
+
+  return __result;
+}
+#else
+#warning "__exchange_and_add is not atomic for this target"
+
+static inline _Atomic_word
+__attribute__ ((__unused__))
+__exchange_and_add (volatile _Atomic_word *__mem, int __val)
+{
+  _Atomic_word __result;
+
+  __result = *__mem;
+  *__mem = __result + __val;
+
+  return __result;
+}
+
+#endif /* embedded */
+#endif /* CAS / TAS / IRQ */
+
 static inline void
 __attribute__ ((__unused__))
 __atomic_add (volatile _Atomic_word* __mem, int __val)
 {
-  __asm__ __volatile__ ("add%.l %0,%1"
-			: : "id" (__val), "m" (*__mem) : "memory");
+  // Careful: using add.l with a memory destination is not
+  // architecturally guaranteed to be atomic.
+  (void) __exchange_and_add (__mem, __val);
 }
 
 #endif /* atomicity.h */
-
-
