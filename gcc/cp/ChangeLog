@@ -1,5 +1,7 @@
 1998-05-25  Mark Mitchell  <mark@markmitchell.com>
 
+	* call.c (tourney): Don't do any extra comparisons.
+
 	* decl2.c (build_anon_union_vars): Don't crash on empty sub-unions.
 
 	* cp-tree.h (processing_template_parmlist): Declare.
