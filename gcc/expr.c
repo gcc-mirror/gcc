@@ -215,7 +215,7 @@ enum insn_code movstr_optab[NUM_MACHINE_MODES];
 /* SLOW_UNALIGNED_ACCESS is non-zero if unaligned accesses are very slow. */
 
 #ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS 0
+#define SLOW_UNALIGNED_ACCESS STRICT_ALIGNMENT
 #endif
 
 /* Register mappings for target machines without register windows.  */
@@ -1447,7 +1447,7 @@ move_by_pieces (to, from, len, align)
 	data.to_addr = copy_addr_to_reg (to_addr);
     }
 
-  if (! (STRICT_ALIGNMENT || SLOW_UNALIGNED_ACCESS)
+  if (! SLOW_UNALIGNED_ACCESS
       || align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
     align = MOVE_MAX;
 
@@ -1492,7 +1492,7 @@ move_by_pieces_ninsns (l, align)
   register int n_insns = 0;
   int max_size = MOVE_MAX + 1;
 
-  if (! (STRICT_ALIGNMENT || SLOW_UNALIGNED_ACCESS)
+  if (! SLOW_UNALIGNED_ACCESS
       || align > MOVE_MAX || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT)
     align = MOVE_MAX;
 
@@ -2152,7 +2152,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  /* Here we avoid the case of a structure whose weak alignment
 	     forces many pushes of a small amount of data,
 	     and such small pushes do rounding that causes trouble.  */
-	  && ((! STRICT_ALIGNMENT && ! SLOW_UNALIGNED_ACCESS)
+	  && ((! SLOW_UNALIGNED_ACCESS)
 	      || align >= BIGGEST_ALIGNMENT / BITS_PER_UNIT
 	      || PUSH_ROUNDING (align) == align)
 	  && PUSH_ROUNDING (INTVAL (size)) == INTVAL (size))
@@ -2455,7 +2455,7 @@ expand_assignment (to, from, want_value, suggest_reg)
       || (TREE_CODE (to) == ARRAY_REF
 	  && ((TREE_CODE (TREE_OPERAND (to, 1)) == INTEGER_CST
 	       && TREE_CODE (TYPE_SIZE (TREE_TYPE (to))) == INTEGER_CST)
-	      || (STRICT_ALIGNMENT && get_inner_unaligned_p (to)))))
+	      || (SLOW_UNALIGNED_ACCESS && get_inner_unaligned_p (to)))))
     {
       enum machine_mode mode1;
       int bitsize;
@@ -3165,9 +3165,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
       || GET_CODE (target) == SUBREG
       /* If the field isn't aligned enough to store as an ordinary memref,
 	 store it as a bit field.  */
-      || (STRICT_ALIGNMENT
+      || (SLOW_UNALIGNED_ACCESS
 	  && align * BITS_PER_UNIT < GET_MODE_ALIGNMENT (mode))
-      || (STRICT_ALIGNMENT && bitpos % GET_MODE_ALIGNMENT (mode) != 0))
+      || (SLOW_UNALIGNED_ACCESS && bitpos % GET_MODE_ALIGNMENT (mode) != 0))
     {
       rtx temp = expand_expr (exp, NULL_RTX, VOIDmode, 0);
 
@@ -4376,7 +4376,7 @@ expand_expr (exp, target, tmode, modifier)
 
 	if ((TREE_CODE (index) != INTEGER_CST
 	     || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
-	    && (! STRICT_ALIGNMENT || ! get_inner_unaligned_p (exp)))
+	    && (! SLOW_UNALIGNED_ACCESS || ! get_inner_unaligned_p (exp)))
 	  {
 	    /* Nonconstant array index or nonconstant element size, and
 	       not an array in an unaligned (packed) structure field.
@@ -4584,9 +4584,10 @@ expand_expr (exp, target, tmode, modifier)
 	    || GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG
 	    /* If the field isn't aligned enough to fetch as a memref,
 	       fetch it as a bit field.  */
-	    || (STRICT_ALIGNMENT
+	    || (SLOW_UNALIGNED_ACCESS
 		&& TYPE_ALIGN (TREE_TYPE (tem)) < GET_MODE_ALIGNMENT (mode))
-	    || (STRICT_ALIGNMENT && bitpos % GET_MODE_ALIGNMENT (mode) != 0))
+	    || (SLOW_UNALIGNED_ACCESS
+		&& bitpos % GET_MODE_ALIGNMENT (mode) != 0))
 	  {
 	    enum machine_mode ext_mode = mode;
 
