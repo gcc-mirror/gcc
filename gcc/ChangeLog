@@ -1,3 +1,13 @@
+2003-06-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.h (ASM_OUTPUT_SKIP, ASM_OUTPUT_ALIGNED_COMMON,
+	ASM_OUTPUT_ALIGNED_LOCAL): Cast `SIZE' and `ALIGNED' parameters to
+	unsigned HOST_WIDE_INT.
+	* pa-pro-end.h (ASM_OUTPUT_ALIGNED_COMMOM, ASM_OUTPUT_ALIGNED_LOCAL):
+	Likewise.
+	* pa64-hpux.h (ASM_OUTPUT_ALIGNED_COMMON, ASM_OUTPUT_ALIGNED_LOCAL):
+	Likewise.
+
 2003-06-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* doc/install.texi (Prerequisites): New section documenting
