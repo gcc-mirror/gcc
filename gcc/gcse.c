@@ -126,6 +126,10 @@ Boston, MA 02111-1307, USA.  */
    Steven Muchnick
    Morgan Kaufmann, 1997
 
+   Building an Optimizing Compiler
+   Robert Morgan
+   Digital Press, 1998
+
    People wishing to speed up the code here should read:
      Elimination Algorithms for Data Flow Analysis
      B.G. Ryder, M.C. Paull
@@ -284,14 +288,6 @@ static FILE *gcse_file;
     * If we added any labels via edge splitting.  */
 
 static int run_jump_opt_after_gcse;
-
-/* Element I is a list of I's predecessors/successors.  */
-static int_list_ptr *s_preds;
-static int_list_ptr *s_succs;
-
-/* Element I is the number of predecessors/successors of basic block I.  */
-static int *num_preds;
-static int *num_succs;
 
 /* Bitmaps are normally not included in debugging dumps.
    However it's useful to be able to print them from GDB.
@@ -591,7 +587,6 @@ static void compute_pre_data	  PROTO ((void));
 static int pre_expr_reaches_here_p    PROTO ((int, struct expr *,
 					      int, int, char *));
 static void insert_insn_end_bb	PROTO ((struct expr *, int, int));
-static void pre_insert		PROTO ((struct expr **));
 static void pre_insert_copy_insn      PROTO ((struct expr *, rtx));
 static void pre_insert_copies	 PROTO ((void));
 static int pre_delete		 PROTO ((void));
@@ -617,8 +612,7 @@ static void alloc_avail_expr_mem      PROTO ((int, int));
 static void free_avail_expr_mem       PROTO ((void));
 static void compute_ae_gen	    PROTO ((void));
 static int expr_killed_p	      PROTO ((rtx, int));
-static void compute_ae_kill	   PROTO ((void));
-static void compute_available	 PROTO ((void));
+static void compute_ae_kill	   PROTO ((sbitmap *, sbitmap *));
 static int expr_reaches_here_p	PROTO ((struct occr *, struct expr *,
 					      int, int, char *));
 static rtx computing_insn	     PROTO ((struct expr *, rtx));
@@ -664,6 +658,9 @@ gcse_main (f, file)
   max_gcse_regno = max_reg_num ();
   find_basic_blocks (f, max_gcse_regno, file, 1);
 
+  if (file)
+    dump_flow_info (file);
+
   /* Return if there's nothing to do.  */
   if (n_basic_blocks <= 1)
     {
@@ -695,18 +692,7 @@ gcse_main (f, file)
     }
 
   gcc_obstack_init (&gcse_obstack);
-
-  /* Allocate and compute predecessors/successors.  */
-
-  s_preds = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
-  s_succs = (int_list_ptr *) alloca (n_basic_blocks * sizeof (int_list_ptr));
-  num_preds = (int *) alloca (n_basic_blocks * sizeof (int));
-  num_succs = (int *) alloca (n_basic_blocks * sizeof (int));
-  bytes_used = 4 * n_basic_blocks * sizeof (int_list_ptr);
-  compute_preds_succs (s_preds, s_succs, num_preds, num_succs);
-
-  if (file)
-    dump_bb_data (file, s_preds, s_succs, 0);
+  bytes_used = 0;
 
   /* Record where pseudo-registers are set.
      This data is kept accurate during each pass.
@@ -748,7 +734,13 @@ gcse_main (f, file)
       if (optimize_size)
 	changed |= one_classic_gcse_pass (pass + 1);
       else
-	changed |= one_pre_gcse_pass (pass + 1);
+        {
+	  changed |= one_pre_gcse_pass (pass + 1);
+	  free_reg_set_mem ();
+	  alloc_reg_set_mem (max_reg_num ());
+	  compute_sets (f);
+	  run_jump_opt_after_gcse = 1;
+	}
 
       if (max_pass_bytes < bytes_used)
 	max_pass_bytes = bytes_used;
@@ -2846,7 +2838,8 @@ expr_killed_p (x, bb)
 /* Compute the set of available expressions killed in each basic block.  */
 
 static void
-compute_ae_kill ()
+compute_ae_kill (ae_gen, ae_kill)
+     sbitmap *ae_gen, *ae_kill;
 {
   int bb,i;
 
@@ -2867,41 +2860,6 @@ compute_ae_kill ()
 	    }
 	}
     }
-}
-
-/* Compute available expressions.
-
-   Implement the algorithm to find available expressions
-   as given in the Aho Sethi Ullman book, pages 627-631.  */
-
-static void
-compute_available ()
-{
-  int bb, changed, passes;
-
-  sbitmap_zero (ae_in[0]);
-
-  sbitmap_copy (ae_out[0] /*dst*/, ae_gen[0] /*src*/);
-
-  for (bb = 1; bb < n_basic_blocks; bb++)
-    sbitmap_difference (ae_out[bb], u_bitmap, ae_kill[bb]);
-    
-  passes = 0;
-  changed = 1;
-  while (changed)
-    {
-      changed = 0;
-      for (bb = 1; bb < n_basic_blocks; bb++)
-	{
-	  sbitmap_intersection_of_preds (ae_in[bb], ae_out, bb);
-	  changed |= sbitmap_union_of_diff (ae_out[bb], ae_gen[bb],
-					    ae_in[bb], ae_kill[bb]);
-	}
-      passes++;
-    }
-
-  if (gcse_file)
-    fprintf (gcse_file, "avail expr computation: %d passes\n", passes);
 }
 
 /* Actually perform the Classic GCSE optimizations.  */
@@ -3364,12 +3322,15 @@ one_classic_gcse_pass (pass)
 		     expr_hash_table_size, n_exprs);
   if (n_exprs > 0)
     {
+      int passes;
       compute_kill_rd ();
       compute_rd ();
       alloc_avail_expr_mem (n_basic_blocks, n_exprs);
       compute_ae_gen ();
-      compute_ae_kill ();
-      compute_available ();
+      compute_ae_kill (ae_gen, ae_kill);
+      passes = compute_available (ae_gen, ae_kill, ae_out, ae_in);
+      if (gcse_file)
+	fprintf (gcse_file, "avail expr computation: %d passes\n", passes);
       changed = classic_gcse ();
       free_avail_expr_mem ();
     }
@@ -4111,6 +4072,15 @@ static sbitmap *pre_optimal;
 /* Nonzero for expressions which are redundant in a particular block.  */
 static sbitmap *pre_redundant;
 
+/* Nonzero for expressions which should be inserted on a specific edge.  */
+static sbitmap *pre_insert_map;
+
+/* Nonzero for expressions which should be deleted in a specific block.  */
+static sbitmap *pre_delete_map;
+
+/* Contains the edge_list returned by pre_edge_lcm.  */
+static struct edge_list *edge_list;
+
 static sbitmap *temp_bitmap;
 
 /* Redundant insns.  */
@@ -4127,9 +4097,16 @@ alloc_pre_mem (n_blocks, n_exprs)
   antloc = sbitmap_vector_alloc (n_blocks, n_exprs);
 
   temp_bitmap = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_optimal = sbitmap_vector_alloc (n_blocks, n_exprs);
-  pre_redundant = sbitmap_vector_alloc (n_blocks, n_exprs);
+  pre_optimal = NULL;
+  pre_redundant = NULL;
+  pre_insert_map = NULL;
+  pre_delete_map = NULL;
+  ae_in = NULL;
+  ae_out = NULL;
+  u_bitmap = NULL;
   transpout = sbitmap_vector_alloc (n_blocks, n_exprs);
+  ae_kill = sbitmap_vector_alloc (n_blocks, n_exprs);
+  /* pre_insert and pre_delete are allocated later.  */
 }
 
 /* Free vars used for PRE analysis.  */
@@ -4141,10 +4118,31 @@ free_pre_mem ()
   free (comp);
   free (antloc);
 
-  free (temp_bitmap);
-  free (pre_optimal);
-  free (pre_redundant);
-  free (transpout);
+  if (pre_optimal)
+    free (pre_optimal);
+  if (pre_redundant)
+    free (pre_redundant);
+  if (pre_insert_map)
+    free (pre_insert_map);
+  if (pre_delete_map)
+    free (pre_delete_map);
+  if (transpout)
+    free (transpout);
+
+  if (ae_in)
+    free (ae_in);
+  if (ae_out)
+    free (ae_out);
+  if (ae_kill)
+    free (ae_kill);
+  if (u_bitmap)
+    free (u_bitmap);
+
+  transp = comp = antloc = NULL;
+  pre_optimal = pre_redundant = pre_insert_map = pre_delete_map = NULL;
+  transpout = ae_in = ae_out = ae_kill = NULL;
+  u_bitmap = NULL;
+
 }
 
 /* Top level routine to do the dataflow analysis needed by PRE.  */
@@ -4154,8 +4152,10 @@ compute_pre_data ()
 {
   compute_local_properties (transp, comp, antloc, 0);
   compute_transpout ();
-  pre_lcm (n_basic_blocks, n_exprs, s_preds, s_succs, transp,
-	   antloc, pre_redundant, pre_optimal);
+  sbitmap_vector_zero (ae_kill, n_basic_blocks);
+  compute_ae_kill (comp, ae_kill);
+  edge_list = pre_edge_lcm (gcse_file, n_exprs, transp, comp, antloc,
+			    ae_kill, &pre_insert_map, &pre_delete_map);
 }
 
 
@@ -4231,6 +4231,29 @@ pre_expr_reaches_here_p (occr_bb, expr, bb, check_pre_comp, visited)
   return 0;
 }
 
+
+/* Given an expr, generate RTL which we can insert at the end of a BB,
+   or on an edge.  Set the block number of any insns generated to 
+   the value of BB.  */
+
+static rtx
+process_insert_insn (expr)
+     struct expr *expr;
+{
+  rtx reg = expr->reaching_reg;
+  rtx pat, copied_expr;
+  rtx first_new_insn;
+
+  start_sequence ();
+  copied_expr = copy_rtx (expr->expr);
+  emit_move_insn (reg, copied_expr);
+  first_new_insn = get_insns ();
+  pat = gen_sequence ();
+  end_sequence ();
+
+  return pat;
+}
+  
 /* Add EXPR to the end of basic block BB.
 
    This is used by both the PRE and code hoisting.
@@ -4249,15 +4272,9 @@ insert_insn_end_bb (expr, bb, pre)
   rtx new_insn;
   rtx reg = expr->reaching_reg;
   int regno = REGNO (reg);
-  rtx pat, copied_expr;
-  rtx first_new_insn;
+  rtx pat;
 
-  start_sequence ();
-  copied_expr = copy_rtx (expr->expr);
-  emit_move_insn (reg, copied_expr);
-  first_new_insn = get_insns ();
-  pat = gen_sequence ();
-  end_sequence ();
+  pat = process_insert_insn (expr);
 
   /* If the last insn is a jump, insert EXPR in front [taking care to
      handle cc0, etc. properly].  */
@@ -4407,37 +4424,34 @@ insert_insn_end_bb (expr, bb, pre)
     }
 }
 
-/* Insert partially redundant expressions at the ends of appropriate basic
-   blocks making them fully redundant.  */
+/* Insert partially redundant expressions on edges in the CFG to make
+   the expressions fully redundant.  */
 
-static void
-pre_insert (index_map)
+static int
+pre_edge_insert (edge_list, index_map)
+     struct edge_list *edge_list;
      struct expr **index_map;
 {
-  int bb, i, set_size;
+  int e, i, num_edges, set_size, did_insert = 0;
   sbitmap *inserted;
 
-  /* Compute INSERT = PRE_OPTIMAL & ~PRE_REDUNDANT. 
-     Where INSERT is nonzero, we add the expression at the end of the basic
-     block if it reaches any of the deleted expressions.  */
+  /* Where PRE_INSERT_MAP is nonzero, we add the expression on that edge
+     if it reaches any of the deleted expressions.  */
 
-  set_size = pre_optimal[0]->size;
-  inserted = sbitmap_vector_alloc (n_basic_blocks, n_exprs);
-  sbitmap_vector_zero (inserted, n_basic_blocks);
+  set_size = pre_insert_map[0]->size;
+  num_edges = NUM_EDGES (edge_list);
+  inserted = sbitmap_vector_alloc (num_edges, n_exprs);
+  sbitmap_vector_zero (inserted, num_edges);
 
-  for (bb = 0; bb < n_basic_blocks; bb++)
+  for (e = 0; e < num_edges; e++)
     {
       int indx;
+      basic_block pred = INDEX_EDGE_PRED_BB (edge_list, e);
+      int bb = pred->index;
 
-      /* This computes the number of potential insertions we need.  */
-      sbitmap_not (temp_bitmap[bb], pre_redundant[bb]);
-      sbitmap_a_and_b (temp_bitmap[bb], temp_bitmap[bb], pre_optimal[bb]);
-
-      /* TEMP_BITMAP[bb] now contains a bitmap of the expressions that we need
-	 to insert at the end of this basic block.  */
       for (i = indx = 0; i < set_size; i++, indx += SBITMAP_ELT_BITS)
 	{
-	  SBITMAP_ELT_TYPE insert = temp_bitmap[bb]->elms[i];
+	  SBITMAP_ELT_TYPE insert = pre_insert_map[e]->elms[i];
 	  int j;
 
 	  for (j = indx; insert && j < n_exprs; j++, insert >>= 1)
@@ -4453,23 +4467,49 @@ pre_insert (index_map)
 		      if (! occr->deleted_p)
 			continue;
 
-		      /* Insert this expression at the end of BB if it would
-			 reach the deleted occurence.  */
-		      if (!TEST_BIT (inserted[bb], j)
-			  && pre_expr_reaches_here_p (bb, expr,
+		      /* Insert this expression on this edge if if it would
+			 reach the deleted occurence in BB.  */
+		      if (!TEST_BIT (inserted[e], j)
+			  && (bb == ENTRY_BLOCK 
+			      || pre_expr_reaches_here_p (bb, expr,
 						   BLOCK_NUM (occr->insn), 0,
-						   NULL))
+						   NULL)))
 			{
-			  SET_BIT (inserted[bb], j);
-			  insert_insn_end_bb (index_map[j], bb, 1);
+			  rtx insn;
+			  edge eg = INDEX_EDGE (edge_list, e);
+			  /* We can't insert anything on an abnormal 
+			     and critical edge, so we insert the
+			     insn at the end of the previous block. There
+			     are several alternatives detailed in 
+			     Morgans book P277 (sec 10.5) for handling 
+			     this situation.  This one is easiest for now.  */
+
+			  if ((eg->flags & EDGE_ABNORMAL) == EDGE_ABNORMAL)
+			    {
+			      insert_insn_end_bb (index_map[j], bb, 0);
+			    }
+			  else
+			    {
+			      insn = process_insert_insn (index_map[j]);
+			      insert_insn_on_edge (insn, eg);
+			    }
+			  if (gcse_file)
+			    {
+			      fprintf (gcse_file,
+				       "PRE/HOIST: edge (%d,%d), copy expression %d\n",
+				        bb,
+					INDEX_EDGE_SUCC_BB (edge_list, e)->index, expr->bitmap_index);
+			    }
+			  SET_BIT (inserted[e], j);
+			  did_insert = 1;
+			  gcse_create_count++;
 			}
 		    }
 		}
 	    }
 	}
     }
-
-  sbitmap_vector_free (inserted);
+  return did_insert;
 }
 
 /* Copy the result of INSN to REG.
@@ -4485,23 +4525,26 @@ pre_insert_copy_insn (expr, insn)
   int indx = expr->bitmap_index;
   rtx set = single_set (insn);
   rtx new_insn;
+  int bb = BLOCK_NUM (insn);
 
   if (!set)
     abort ();
   new_insn = emit_insn_after (gen_rtx_SET (VOIDmode, reg, SET_DEST (set)),
 			      insn);
   /* Keep block number table up to date.  */
-  set_block_num (new_insn, BLOCK_NUM (insn));
+  set_block_num (new_insn, bb);
   /* Keep register set table up to date.  */
   record_one_set (regno, new_insn);
+  if (insn == BLOCK_END (bb))
+    BLOCK_END (bb) = new_insn;
 
   gcse_create_count++;
 
   if (gcse_file)
-    {
-      fprintf (gcse_file, "PRE: bb %d, insn %d, copying expression %d in insn %d to reg %d\n",
-	       BLOCK_NUM (insn), INSN_UID (new_insn), indx, INSN_UID (insn), regno);
-    }
+    fprintf (gcse_file,
+	     "PRE: bb %d, insn %d, copy expression %d in insn %d to reg %d\n",
+	      BLOCK_NUM (insn), INSN_UID (new_insn), indx,
+	      INSN_UID (insn), regno);
 }
 
 /* Copy available expressions that reach the redundant expression
@@ -4511,11 +4554,6 @@ static void
 pre_insert_copies ()
 {
   int i, bb;
-
-  for (bb = 0; bb < n_basic_blocks; bb++)
-    {
-      sbitmap_a_and_b (temp_bitmap[bb], pre_optimal[bb], pre_redundant[bb]);
-    }
 
   /* For each available expression in the table, copy the result to
      `reaching_reg' if the expression reaches a deleted one.
@@ -4550,10 +4588,6 @@ pre_insert_copies ()
 	      for (avail = expr->avail_occr; avail != NULL; avail = avail->next)
 		{
 		  rtx insn = avail->insn;
-		  int bb = BLOCK_NUM (insn);
-
-		  if (!TEST_BIT (temp_bitmap[bb], expr->bitmap_index))
-		    continue;
 
 		  /* No need to handle this one if handled already.  */
 		  if (avail->copied_p)
@@ -4591,10 +4625,7 @@ pre_delete ()
   /* Compute the expressions which are redundant and need to be replaced by
      copies from the reaching reg to the target reg.  */
   for (bb = 0; bb < n_basic_blocks; bb++)
-    {
-      sbitmap_not (temp_bitmap[bb], pre_optimal[bb]);
-      sbitmap_a_and_b (temp_bitmap[bb], temp_bitmap[bb], pre_redundant[bb]);
-    }
+    sbitmap_copy (temp_bitmap[bb], pre_delete_map[bb]);
 
   changed = 0;
   for (i = 0; i < expr_hash_table_size; i++)
@@ -4681,7 +4712,7 @@ pre_delete ()
 static int
 pre_gcse ()
 {
-  int i;
+  int i, did_insert;
   int changed;
   struct expr **index_map;
 
@@ -4708,13 +4739,15 @@ pre_gcse ()
      - we know which insns are redundant when we go to create copies  */
   changed = pre_delete ();
 
-  /* Insert insns in places that make partially redundant expressions
-     fully redundant.  */
-  pre_insert (index_map);
-
+  did_insert = pre_edge_insert (edge_list, index_map);
   /* In other places with reaching expressions, copy the expression to the
-     specially allocated pseudo-reg that reaches the redundant expression.  */
+     specially allocated pseudo-reg that reaches the redundant expr.  */
   pre_insert_copies ();
+  if (did_insert)
+    {
+      commit_edge_insertions ();
+      changed = 1;
+    }
 
   free (pre_redundant_insns);
 
@@ -4735,6 +4768,7 @@ one_pre_gcse_pass (pass)
   gcse_create_count = 0;
 
   alloc_expr_hash_table (max_cuid);
+  add_noreturn_fake_exit_edges ();
   compute_expr_hash_table ();
   if (gcse_file)
     dump_hash_table (gcse_file, "Expression", expr_hash_table,
@@ -4744,8 +4778,10 @@ one_pre_gcse_pass (pass)
       alloc_pre_mem (n_basic_blocks, n_exprs);
       compute_pre_data ();
       changed |= pre_gcse ();
+      free_edge_list (edge_list);
       free_pre_mem ();
     }
+  remove_fake_edges ();
   free_expr_hash_table ();
 
   if (gcse_file)
@@ -5194,8 +5230,7 @@ compute_code_hoist_vbeinout ()
 	  changed |= sbitmap_a_or_b_and_c (hoist_vbein[bb], antloc[bb],
 					   hoist_vbeout[bb], transp[bb]);
 	  if (bb != n_basic_blocks - 1)
-	    sbitmap_intersect_of_successors (hoist_vbeout[bb], hoist_vbein,
-					     bb, s_succs);
+	    sbitmap_intersection_of_succs (hoist_vbeout[bb], hoist_vbein, bb);
 	}
       passes++;
     }

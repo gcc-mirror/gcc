@@ -310,11 +310,13 @@ extern void update_life_info	PROTO ((sbitmap, enum update_life_extent));
 extern int count_or_remove_death_notes	PROTO ((sbitmap, int));
 
 /* In lcm.c */
-extern void pre_lcm 			PROTO ((int, int, int_list_ptr *,
-						int_list_ptr *,
-						sbitmap *, sbitmap *,
-						sbitmap *, sbitmap *));
-extern void pre_rev_lcm 		PROTO ((int, int, int_list_ptr *,
-						int_list_ptr *,
-						sbitmap *, sbitmap *,
+extern struct edge_list *pre_edge_lcm 	PROTO ((FILE *, int, sbitmap *,
+						sbitmap *, sbitmap *, 
+						sbitmap *, sbitmap **,
+						sbitmap **));
+extern struct edge_list *pre_edge_rev_lcm PROTO ((FILE *, int, sbitmap *,
+						  sbitmap *, sbitmap *, 
+						  sbitmap *, sbitmap **, 
+						  sbitmap **));
+extern int compute_available		PROTO ((sbitmap *, sbitmap *,
 						sbitmap *, sbitmap *));
