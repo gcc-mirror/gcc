@@ -1,3 +1,8 @@
+2003-07-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/11513
+	* g++.dg/template/crash8.C: New test.
+
 2003-07-23  Steven Bosscher <steven@gcc.gnu.org>
 
 	PR c/10602
