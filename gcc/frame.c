@@ -59,7 +59,7 @@ typedef struct fde_accumulator
 static inline int
 start_fde_sort (fde_accumulator *accu, size_t count)
 {
-  accu->linear.array = (fde **) malloc (sizeof (fde *) * count);
+  accu->linear.array = count ? (fde **) malloc (sizeof (fde *) * count) : NULL;
   accu->erratic.array = accu->linear.array ?
       (fde **) malloc (sizeof (fde *) * count) : NULL;
   accu->linear.count = 0;
@@ -230,8 +230,7 @@ end_fde_sort (fde_accumulator *accu, size_t count)
 	abort ();
       frame_heapsort (&accu->erratic);
       fde_merge (&accu->linear, &accu->erratic);
-      if (accu->erratic.array)
-        free (accu->erratic.array);
+      free (accu->erratic.array);
     }
   else
     {

@@ -1,3 +1,11 @@
+2000-06-08  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* frame.c (end_fde_sort): Remove extraneous erratic array test.
+
+2000-06-08  Denis Perchine <dyp@perchine.com>
+
+	* frame.c (start_fde_sort): Don't malloc (0).
+
 2000-06-07  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* c-decl.c (pushdecl): Do not call COMPLETE_TYPE_P on
