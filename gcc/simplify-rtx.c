@@ -343,9 +343,22 @@ simplify_replace_rtx (x, old, new)
 	return replace_equiv_address_nv (x,
 					 simplify_replace_rtx (XEXP (x, 0),
 							       old, new));
+      else if (code == LO_SUM)
+	{
+	  rtx op0 = simplify_replace_rtx (XEXP (x, 0), old, new);
+	  rtx op1 = simplify_replace_rtx (XEXP (x, 1), old, new);
 
-      if (REG_P (x) && REG_P (old) && REGNO (x) == REGNO (old))
-	return new;
+	  /* (lo_sum (high x) x) -> x  */
+	  if (GET_CODE (op0) == HIGH && rtx_equal_p (XEXP (op0, 0), op1))
+	    return op1;
+
+	  return gen_rtx_LO_SUM (mode, op0, op1);
+	}
+      else if (code == REG)
+	{
+	  if (REG_P (old) && REGNO (x) == REGNO (old))
+	    return new;
+	}
 
       return x;
 

@@ -4330,23 +4330,17 @@ do_local_cprop (x, insn, alter_jumps, libcall_sp)
 
 /* LIBCALL_SP is a zero-terminated array of insns at the end of a libcall;
    their REG_EQUAL notes need updating to reflect that OLDREG has been
-   replaced with NEWVAL in INSN.  Also update the REG_EQUAL notes in INSN.
-
-   Return true if all substitutions could be made.  */
-
+   replaced with NEWVAL in INSN.  Return true if all substitutions could
+   be made.  */
 static bool
 adjust_libcall_notes (oldreg, newval, insn, libcall_sp)
      rtx oldreg, newval, insn, *libcall_sp;
 {
-  rtx end, note;
-
-  note = find_reg_equal_equiv_note (insn);
-  if (note)
-    XEXP (note, 0) = replace_rtx (XEXP (note, 0), oldreg, newval);
+  rtx end;
 
   while ((end = *libcall_sp++))
     {
-      note = find_reg_equal_equiv_note (end);
+      rtx note = find_reg_equal_equiv_note (end);
 
       if (! note)
 	continue;

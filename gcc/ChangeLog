@@ -1,3 +1,9 @@
+2002-10-14  Richard Henderson  <rth@redhat.com>
+
+	PR opt/8165
+	* gcse.c (adjust_libcall_notes): Revert last change.
+	* simplify-rtx.c (simplify_replace_rtx): Handle LO_SUM.
+
 2002-10-14  Andrew Haley  <aph@redhat.com>
 
 	* tree-inline.c (remap_block): All local class initialization
