@@ -1,5 +1,5 @@
 /* Process declarations and variables for C compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -454,6 +454,10 @@ int flag_no_nonansi_builtin;
 
 int flag_traditional;
 
+/* Nonzero means that we have builtin functions, and main is an int */
+
+int flag_hosted = 1;
+
 /* Nonzero means to allow single precision math even if we're generally
    being traditional.  */
 int flag_allow_single_precision = 0;
@@ -545,6 +549,10 @@ int warn_parentheses;
 
 int warn_missing_braces;
 
+/* Warn if main is suspicious.  */
+
+int warn_main;
+
 /* Warn about comparison of signed and unsigned values.  */
 
 int warn_sign_compare;
@@ -571,6 +579,19 @@ c_decode_option (p)
     }
   else if (!strcmp (p, "-fallow-single-precision"))
     flag_allow_single_precision = 1;
+  else if (!strcmp (p, "-fhosted") || !strcmp (p, "-fno-freestanding"))
+    {
+      flag_hosted = 1;
+      flag_no_builtin = 0;
+    }
+  else if (!strcmp (p, "-ffreestanding") || !strcmp (p, "-fno-hosted"))
+    {
+      flag_hosted = 0;
+      flag_no_builtin = 1;
+      /* warn_main will be 2 if set by -Wall, 1 if set by -Wmain */
+      if (warn_main == 2)
+	warn_main = 0;
+    }
   else if (!strcmp (p, "-fnotraditional") || !strcmp (p, "-fno-traditional"))
     {
       flag_traditional = 0;
@@ -710,6 +731,10 @@ c_decode_option (p)
     warn_missing_braces = 1;
   else if (!strcmp (p, "-Wno-missing-braces"))
     warn_missing_braces = 0;
+  else if (!strcmp (p, "-Wmain"))
+    warn_main = 1;
+  else if (!strcmp (p, "-Wno-main"))
+    warn_main = 0;
   else if (!strcmp (p, "-Wsign-compare"))
     warn_sign_compare = 1;
   else if (!strcmp (p, "-Wno-sign-compare"))
@@ -730,6 +755,9 @@ c_decode_option (p)
       warn_parentheses = 1;
       warn_missing_braces = 1;
       warn_sign_compare = 1;
+      /* We set this to 2 here, but 1 in -Wmain, so -ffreestanding can turn
+	 it off only if it's not explicit.  */
+      warn_main = 2;
     }
   else
     return 0;
@@ -3541,6 +3569,9 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   /* The corresponding pop_obstacks is in finish_decl.  */
   push_obstacks_nochange ();
 
+  if (warn_main && !strcmp (IDENTIFIER_POINTER (declarator), "main"))
+    warning_with_decl (decl, "`%s' is usually a function");
+
   if (initialized)
     /* Is it valid for this decl to have an initializer at all?
        If not, set INITIALIZED to zero, which will indirectly
@@ -6216,6 +6247,67 @@ start_function (declspecs, declarator, prefix_attributes, attributes, nested)
   if (current_function_decl != 0)
     TREE_PUBLIC (decl1) = 0;
 
+  /* Warn for unlikely, improbable, or stupid declarations of `main'. */
+  if (warn_main
+      && strcmp ("main", IDENTIFIER_POINTER (DECL_NAME (decl1))) == 0)
+    {
+      tree args;
+      int argct = 0;
+
+      if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (decl1)))
+	   != integer_type_node)
+	pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
+
+      for (args = TYPE_ARG_TYPES (TREE_TYPE (decl1)); args;
+	   args = TREE_CHAIN (args))
+	{
+	  tree type = args ? TREE_VALUE (args) : 0;
+
+	  if (type == void_type_node)
+	    break;
+
+	  ++argct;
+	  switch (argct)
+	    {
+	    case 1:
+	      if (TYPE_MAIN_VARIANT (type) != integer_type_node)
+		pedwarn_with_decl (decl1,
+				   "first argument of `%s' should be `int'");
+	      break;
+
+	    case 2:
+	      if (TREE_CODE (type) != POINTER_TYPE
+		  || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
+		      != char_type_node))
+		pedwarn_with_decl (decl1,
+			       "second argument of `%s' should be `char **'");
+	      break;
+
+	    case 3:
+	      if (TREE_CODE (type) != POINTER_TYPE
+		  || TREE_CODE (TREE_TYPE (type)) != POINTER_TYPE
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (type)))
+		      != char_type_node))
+		pedwarn_with_decl (decl1,
+		   "third argument of `%s' should probably be `char **'");
+	      break;
+	    }
+
+	  /* It is intentional that this message does not mention the third
+	     argument, which is warned for only pedantically, because it's
+	     blessed by mention in an appendix of the standard. */
+	  if (argct > 0 && (argct < 2 || argct > 3))
+	    pedwarn_with_decl (decl1, "`%s' takes only zero or two arguments");
+
+	  if (argct == 3 && pedantic)
+	    pedwarn_with_decl (decl1, "third argument of `%s' is deprecated");
+	}
+
+      if (! TREE_PUBLIC (decl1))
+	pedwarn_with_decl (decl1, "`%s' is normally a non-static function");
+    }
+
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,
      use the old decl.  */
@@ -6872,7 +6964,16 @@ finish_function (nested)
     {
       if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (fndecl)))
 	  != integer_type_node)
-	pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
+	{
+	  /* You would expect the sense of this test to be the other way
+	     around, but if warn_main is set, we will already have warned,
+	     so this would be a duplicate.  This is the warning you get
+	     in some environments even if you *don't* ask for it, because
+	     these are environments where it may be more of a problem than
+	     usual.  */
+	  if (! warn_main)
+	    pedwarn_with_decl (fndecl, "return type of `%s' is not `int'");
+	}
       else
 	{
 #ifdef DEFAULT_MAIN_RETURN
