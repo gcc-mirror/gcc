@@ -1,3 +1,8 @@
+2003-06-06  Michael Koch  <konqueror@gmx.de>
+
+	* javax/swing/plaf/basic/BasicOptionPaneUI.java:
+	More compile fixes from my stupid work yesterday.
+
 2003-06-05  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* java/lang/w_exp.c (o_threshold, u_threshold): Define only
