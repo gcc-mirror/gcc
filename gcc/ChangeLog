@@ -1,3 +1,7 @@
+2003-12-09  James E Wilson  <wilson@specifixinc.com>
+
+	* rtl.def (CODE_LABEL, NOTE): Correct operand numbers in comments.
+
 2003-12-09  Matt Austern  <austern@apple.com>
 
 	PR c/13134
