@@ -94,12 +94,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
       EQ_ATTR rtx is true if !volatil and false if volatil.  */
 
 
-#include <stdio.h>
 #include "gvarargs.h"
 #include "config.h"
 #include "rtl.h"
 #include "obstack.h"
 #include "insn-config.h"	/* For REGISTER_CONSTRAINTS */
+#include <stdio.h>
 
 static struct obstack obstack, obstack1, obstack2;
 struct obstack *rtl_obstack = &obstack;

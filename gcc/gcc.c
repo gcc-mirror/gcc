@@ -30,7 +30,6 @@ CC recognizes how to compile each input file by suffixes in the file names.
 Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
-#include <stdio.h>
 #include <sys/types.h>
 #include <ctype.h>
 #include <signal.h>
@@ -40,6 +39,7 @@ compilation is specified by a string called a "spec".  */
 #include "config.h"
 #include "obstack.h"
 #include "gvarargs.h"
+#include <stdio.h>
 
 #ifndef R_OK
 #define R_OK 4

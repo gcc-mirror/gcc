@@ -43,7 +43,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    directly as assembler code by the macros FUNCTION_PROLOGUE and
    FUNCTION_EPILOGUE.  Those instructions never exist as rtl.  */
 
-#include <stdio.h>
 #include "config.h"
 #include "gvarargs.h"
 #include "rtl.h"
@@ -59,6 +58,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "hard-reg-set.h"
 #include "defaults.h"
+#include <stdio.h>
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)

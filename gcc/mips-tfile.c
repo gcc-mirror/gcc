@@ -598,9 +598,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 */
 
 
-#include <stdio.h>
 #include "gvarargs.h"
 #include "config.h"
+#include <stdio.h>
 
 #ifndef __SABER__
 #define saber_stop()
