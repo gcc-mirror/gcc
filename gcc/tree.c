@@ -840,11 +840,7 @@ make_node (code)
   tree_node_sizes[(int)kind] += length;
 #endif
 
-  TREE_TYPE (t) = 0;
-  TREE_CHAIN (t) = 0;
-  for (i = (length / sizeof (int)) - 1;
-       i >= sizeof (struct tree_common) / sizeof (int) - 1;
-       i--)
+  for (i = (length / sizeof (int)) - 1; i >= 0; i--)
     ((int *) t)[i] = 0;
 
   TREE_SET_CODE (t, code);
