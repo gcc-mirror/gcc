@@ -1,3 +1,7 @@
+2005-03-05  Uros Bizjak  <uros@kss-loka.si>
+
+	* lib/target-supports.exp (check_iconv_available): Fix comment.
+
 2005-03-04  John David Anglin  <dave.danglin@nrc-cnrc.gc.ca>
 	    Joseph S. Myers  <joseph@codesourcery.com>
 
