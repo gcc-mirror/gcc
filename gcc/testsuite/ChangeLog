@@ -1,5 +1,6 @@
 2004-03-05  Hans-Peter Nilsson  <hp@axis.com>
 
+	PR other/14354
 	* gcc.c-torture/execute/ieee/mul-subnormal-single-1.c: New test.
 
 2004-03-04  Ziemowit Laski  <zlaski@apple.com>
