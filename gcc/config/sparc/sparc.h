@@ -2722,7 +2722,7 @@ do {                                                                    \
 
 /* Adjust the cost of dependencies.  */
 #define ADJUST_COST(INSN,LINK,DEP,COST) \
-  sparc_adjust_cost(INSN, LINK, DEP, COST)
+  (COST) = sparc_adjust_cost(INSN, LINK, DEP, COST)
 
 #define MD_SCHED_INIT(DUMP, SCHED_VERBOSE)				\
   if (sparc_cpu == PROCESSOR_ULTRASPARC)				\
