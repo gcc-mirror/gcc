@@ -90,7 +90,7 @@ output_file_directive ((FILE), main_input_filename)
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)			\
 	fprintf (FILE, ".%s%d:\n", PREFIX, NUM)
 #define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, VALUE, REL)			\
-	fprintf (FILE, "\t.word .L%d-.LI%d\n", VALUE, REL)
+	fprintf (FILE, "\t.double .L%d-.LI%d\n", VALUE, REL)
 
 /*
  *  Different syntax for integer constants, double constants, and
