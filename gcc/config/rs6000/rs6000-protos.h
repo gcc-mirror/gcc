@@ -108,6 +108,7 @@ extern void rs6000_emit_eh_toc_restore PARAMS ((rtx));
 extern void rs6000_emit_move PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern void rs6000_select_rtx_section PARAMS ((enum machine_mode, rtx));
+extern rtx rs6000_return_addr PARAMS ((int, rtx));
 #endif /* RTX_CODE */
 
 #ifdef TREE_CODE
@@ -147,7 +148,6 @@ extern struct rtx_def *rs6000_float_const PARAMS ((const char *,
 extern int direct_return PARAMS ((void));
 extern int get_issue_rate PARAMS ((void));
 extern union tree_node *rs6000_build_va_list PARAMS ((void));
-extern void rs6000_init_expanders PARAMS ((void));
 extern int first_reg_to_save PARAMS ((void));
 extern int first_fp_reg_to_save PARAMS ((void));
 extern rs6000_stack_t *rs6000_stack_info PARAMS ((void));

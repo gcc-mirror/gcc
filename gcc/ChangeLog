@@ -1,3 +1,9 @@
+2001-01-23  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.h (rs6000_return_addr): Move prototype from here...
+	* rs6000-protos.h (rs6000_return_addr): ...to here.
+	(rs6000_init_expanders): Delete prototype.
+
 2001-01-23  Nick Clifton  <nickc@redhat.com>
 
 	* invoke.texi: Replace , with \, inside @gccoptlist macros.

@@ -1652,9 +1652,6 @@ typedef struct rs6000_args
 #define RETURN_ADDR_RTX(COUNT, FRAME)                 \
   (rs6000_return_addr (COUNT, FRAME))
 
-extern struct rtx_def* rs6000_return_addr (int, struct rtx_def *rtx);
-
-
 
 /* Definitions for register eliminations.
 
