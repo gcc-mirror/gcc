@@ -1449,12 +1449,12 @@ aligned_operand (op, mode)
   if (parts.index)
     {
       if (parts.scale < 4
-	  && REGNO_POINTER_ALIGN (REGNO (parts.index)) < 4)
+	  && REGNO_POINTER_ALIGN (REGNO (parts.index)) < 32)
 	return 0;
     }
   if (parts.base)
     {
-      if (REGNO_POINTER_ALIGN (REGNO (parts.base)) < 4)
+      if (REGNO_POINTER_ALIGN (REGNO (parts.base)) < 32)
 	return 0;
     }
   if (parts.disp)

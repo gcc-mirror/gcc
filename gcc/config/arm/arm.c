@@ -2487,7 +2487,7 @@ alignable_memory_operand (op, mode)
 	       && (GET_CODE (reg = XEXP (op, 0)) == REG
 		   || (GET_CODE (XEXP (op, 0)) == SUBREG
 		       && GET_CODE (reg = SUBREG_REG (XEXP (op, 0))) == REG))))
-	  && REGNO_POINTER_ALIGN (REGNO (reg)) >= 4);
+	  && REGNO_POINTER_ALIGN (REGNO (reg)) >= 32);
 }
 
 /* Similar to s_register_operand, but does not allow hard integer 

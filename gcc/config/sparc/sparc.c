@@ -2938,9 +2938,10 @@ mem_min_alignment (mem, desired)
 	     completed, we already matched with proper alignments.
 	     If not running global_alloc, reload might give us
 	     unaligned pointer to local stack though.  */
-	  if (((cfun != 0 && REGNO_POINTER_ALIGN (regno) >= desired)
+	  if (((cfun != 0
+		&& REGNO_POINTER_ALIGN (regno) >= desired * BITS_PER_UNIT)
 	       || (optimize && reload_completed))
-	      && ((INTVAL (offset) & (desired - 1)) == 0))
+	      && (INTVAL (offset) & (desired - 1)) == 0)
 	    return 1;
 	}
       else

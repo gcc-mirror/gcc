@@ -756,8 +756,7 @@ expand_inline_function (fndecl, parms, target, ignore, type,
       if (arg_vals[i] != 0 && GET_CODE (arg_vals[i]) == REG
 	  && POINTER_TYPE_P (TREE_TYPE (formal)))
 	mark_reg_pointer (arg_vals[i],
-			  (TYPE_ALIGN (TREE_TYPE (TREE_TYPE (formal)))
-			   / BITS_PER_UNIT));
+			  TYPE_ALIGN (TREE_TYPE (TREE_TYPE (formal))));
     }
 	
   /* Allocate the structures we use to remap things.  */
@@ -1761,8 +1760,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
 
 #ifdef STACK_BOUNDARY
-	      mark_reg_pointer (map->reg_map[regno],
-				STACK_BOUNDARY / BITS_PER_UNIT);
+	      mark_reg_pointer (map->reg_map[regno], STACK_BOUNDARY);
 #endif
 
 	      SET_CONST_EQUIV_DATA (map, temp, loc, CONST_AGE_PARM);
@@ -1795,8 +1793,7 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 		= force_reg (Pmode, force_operand (loc, NULL_RTX));
 
 #ifdef STACK_BOUNDARY
-	      mark_reg_pointer (map->reg_map[regno],
-				STACK_BOUNDARY / BITS_PER_UNIT);
+	      mark_reg_pointer (map->reg_map[regno], STACK_BOUNDARY);
 #endif
 
 	      SET_CONST_EQUIV_DATA (map, temp, loc, CONST_AGE_PARM);
