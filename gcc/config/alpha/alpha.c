@@ -117,12 +117,6 @@ static void alpha_sa_mask
   PARAMS ((unsigned long *imaskP, unsigned long *fmaskP));
 static int alpha_does_function_need_gp
   PARAMS ((void));
-static void alpha_init_machine_status
-  PARAMS ((struct function *p));
-static void alpha_mark_machine_status
-  PARAMS ((struct function *p));
-static void alpha_free_machine_status
-  PARAMS ((struct function *p));
 static int alpha_ra_ever_killed
   PARAMS ((void));
 static rtx set_frame_related_p
@@ -147,6 +141,11 @@ static rtx alpha_emit_xfloating_compare
 #define REG_RA 26
 
 /* Initialize the GCC target structure.  */
+#ifdef OPEN_VMS
+   static int vms_valid_decl_attribute_p PARAMS ((tree, tree, tree, tree));
+#  undef TARGET_VALID_DECL_ATTRIBUTE
+#  define TARGET_VALID_DECL_ATTRIBUTE vms_valid_decl_attribute_p
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4459,7 +4458,9 @@ alpha_using_fp ()
   return vms_unwind_regno == HARD_FRAME_POINTER_REGNUM;
 }
 
-int
+#ifdef OPEN_VMS
+
+static int
 vms_valid_decl_attribute_p (decl, attributes, identifier, args)
      tree decl ATTRIBUTE_UNUSED;
      tree attributes ATTRIBUTE_UNUSED;
@@ -4470,6 +4471,8 @@ vms_valid_decl_attribute_p (decl, attributes, identifier, args)
     return (args == NULL_TREE);
   return 0;
 }
+
+#endif
 
 static int
 alpha_does_function_need_gp ()
