@@ -1,0 +1,47 @@
+#! /bin/sh
+#
+# Update a local CVS tree from the egcs repository, with an emphasis
+# on treating generated files correctly, so that autoconf, bison et
+# al are not required for the ``end'' user.
+#
+# By Gerald Pfeifer <pfeifer@dbai.tuwien.ac.at>, 10.8.1998.
+
+UPDATE_OPTIONS=-P
+# Add -d to create any directories that exist in the repository but not
+#        locally.
+# Add -A to reset any sticky tags, dates, or `-k' options.
+
+
+echo "Current directory is `pwd`."
+
+# First of all, check whether this indeed looks like a local CVS of egcs.
+if [ ! -d CVS ] || [ ! -f gcc/version.c ]; then
+	echo "This does not seem to be an egcs CVS tree!"
+	exit
+fi
+
+echo "Pass 1: Updating autoconf and bison generated files"
+find . -name configure.in -o -name '*.y' | xargs cvs -q update
+
+echo "Pass 2: Updating full tree"
+cvs -q update $UPDATE_OPTIONS
+
+echo "Pass 3: Fixing local tree"
+touch `find . -name configure -print`
+touch `find texinfo -name Makefile.in -print`
+touch `find texinfo -name \*.pot -print`
+touch `find texinfo -name \*.gmo -print`
+for f in gcc/c-parse.y \
+	 gcc/cstamp-h.in \
+	 gcc/c-gperf.h \
+	 gcc/c-parse.c \
+	 gcc/c-parse.h \
+	 gcc/cexp.c \
+	 gcc/cp/parse.c \
+	 gcc/cp/parse.h \
+	 gcc/objc/objc-parse.c \
+	 gcc/objc/objc-parse.y \
+	 libf2c/libU77/stamp-h.in
+do
+	touch $f
+done

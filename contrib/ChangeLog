@@ -1,3 +1,7 @@
+Tue Aug 11 17:33:19 1998  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* egcs_update: New script.
+
 1998-08-05  Bruce Korb <korbb@datadesign.com>
 
 	* fixinc/Makefile
