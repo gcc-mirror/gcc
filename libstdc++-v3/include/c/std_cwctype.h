@@ -42,4 +42,4 @@
 #include_next <wctype.h>
 #endif
 
-#endif 
+#endif

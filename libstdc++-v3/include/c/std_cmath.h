@@ -33,7 +33,7 @@
 
 #ifndef _GLIBCXX_CMATH
 #define _GLIBCXX_CMATH 1
- 
+
 #pragma GCC system_header
 
 #include <bits/c++config.h>
@@ -79,7 +79,7 @@
 #undef islessgreater
 #undef isunordered
 
-namespace std 
+namespace std
 {
   inline double
   abs(double __x)
@@ -94,10 +94,10 @@ namespace std
   { return __builtin_fabsl(__x); }
 
 #if _GLIBCXX_HAVE_MODFF
-  inline float 
+  inline float
   modf(float __x, float* __iptr) { return modff(__x, __iptr); }
 #else
-  inline float 
+  inline float
   modf(float __x, float* __iptr)
   {
     double __tmp;
@@ -108,12 +108,12 @@ namespace std
 #endif
 
 #if _GLIBCXX_HAVE_MODFL
-  inline long double 
+  inline long double
   modf(long double __x, long double* __iptr) { return modfl(__x, __iptr); }
 #else
-  inline long double 
-  modf(long double __x, long double* __iptr) 
-  { 
+  inline long double
+  modf(long double __x, long double* __iptr)
+  {
     double __tmp;
     double __res = modf(static_cast<double>(__x), &__tmp);
     * __iptr = static_cast<long double>(__tmp);
