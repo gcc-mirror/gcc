@@ -1,3 +1,8 @@
+Thu Sep  2 01:35:50 1999  Marc Espie <espie@cvs.openbsd.org>
+
+	* protoize.c (gen_aux_info_file):  Let pexecute call choose_temp_base if
+	needed.
+
 Thu Sep  2 00:43:59 1999  Finn Hakansson  <finn@axis.com>
 
 	* combine.c (simplify_shift_const): Remove extra semicolon.

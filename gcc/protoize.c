@@ -2085,10 +2085,9 @@ gen_aux_info_file (base_filename)
   {
     char *errmsg_fmt, *errmsg_arg;
     int wait_status, pid;
-    char *temp_base = choose_temp_base ();
 
     pid = pexecute (compile_params[0], (char * const *) compile_params,
-		    pname, temp_base, &errmsg_fmt, &errmsg_arg,
+		    pname, NULL, &errmsg_fmt, &errmsg_arg,
 		    PEXECUTE_FIRST | PEXECUTE_LAST | PEXECUTE_SEARCH);
 
     if (pid == -1)
