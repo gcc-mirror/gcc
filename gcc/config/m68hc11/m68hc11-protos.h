@@ -1,5 +1,5 @@
 /* Prototypes for exported functions defined in m68hc11.c
-   Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Stephane Carrez (stcarrez@nerim.fr)
 
 This file is part of GCC.
@@ -104,6 +104,7 @@ extern int memory_reload_operand (rtx, enum machine_mode);
 extern int stack_register_operand (rtx, enum machine_mode);
 extern int d_register_operand (rtx, enum machine_mode);
 extern int hard_addr_reg_operand (rtx, enum machine_mode);
+extern int splitable_operand (rtx, enum machine_mode);
 extern int arith_src_operand (rtx, enum machine_mode);
 extern int m68hc11_logical_operator (rtx, enum machine_mode);
 extern int m68hc11_arith_operator (rtx, enum machine_mode);
