@@ -1482,7 +1482,7 @@ cgraph_decide_inlining (void)
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file,
 		 "\nConsidering %s %i insns (always inline)\n",
-		 cgraph_node_name (e->callee), e->callee->global.insns);
+		 cgraph_node_name (node), node->global.insns);
       old_insns = overall_insns;
       for (e = node->callers; e; e = next)
 	{
@@ -1496,8 +1496,8 @@ cgraph_decide_inlining (void)
 	  if (cgraph_dump_file)
 	    fprintf (cgraph_dump_file, 
 		     " Inlined into %s which now has %i insns.\n",
-		     cgraph_node_name (node->callees->caller),
-	             node->callees->caller->global.insns);
+		     cgraph_node_name (e->caller),
+		     e->caller->global.insns);
 	}
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file, 
