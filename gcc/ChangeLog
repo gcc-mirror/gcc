@@ -1,3 +1,7 @@
+Sat May  9 01:53:23 1998  Richard Henderson  <rth@cygnus.com>
+
+	* haifa-sched.c (print_exp): Fix typo.
+
 Fri May 8 21:48:50 PDT 1998 Jeff Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.

@@ -5939,8 +5939,8 @@ print_exp (buf, x, verbose)
       }
       break;
     default:
-/*    if (verbose) debug_rtx (x); */
-      st[0] = GET_RTX_NAME (x);
+      /* if (verbose) debug_rtx (x); */
+      st[0] = GET_RTX_NAME (GET_CODE (x));
       break;
     }
 
