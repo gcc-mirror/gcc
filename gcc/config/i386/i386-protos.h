@@ -139,7 +139,9 @@ extern void ix86_expand_unary_operator (enum rtx_code, enum machine_mode,
 extern rtx ix86_build_signbit_mask (enum machine_mode, bool, bool);
 extern void ix86_expand_fp_absneg_operator (enum rtx_code, enum machine_mode,
 					    rtx[]);
-extern void ix86_split_copysign (rtx []);
+extern void ix86_expand_copysign (rtx []);
+extern void ix86_split_copysign_const (rtx []);
+extern void ix86_split_copysign_var (rtx []);
 extern int ix86_unary_operator_ok (enum rtx_code, enum machine_mode, rtx[]);
 extern int ix86_match_ccmode (rtx, enum machine_mode);
 extern rtx ix86_expand_compare (enum rtx_code, rtx *, rtx *);
