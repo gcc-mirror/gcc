@@ -52,7 +52,11 @@ Boston, MA 02111-1307, USA.  */
 %{mcpu=rsc1: -D_ARCH_PWR} \
 %{mcpu=403: -D_ARCH_PPC} \
 %{mcpu=601: -D_ARCH_PPC -D_ARCH_PWR} \
-%{mcpu=6*: -D_ARCH_PPC}"
+%{mcpu=602: -D_ARCH_PPC} \
+%{mcpu=603: -D_ARCH_PPC} \
+%{mcpu=603e: -D_ARCH_PPC} \
+%{mcpu=604: -D_ARCH_PPC} \
+%{mcpu=620: -D_ARCH_PPC}"
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
