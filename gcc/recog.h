@@ -17,28 +17,37 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
+/* Add prototype support.  */
+#ifndef PROTO
+#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
+#define PROTO(ARGS) ARGS
+#else
+#define PROTO(ARGS) ()
+#endif
+#endif
+
 /* Recognize an insn and return its insn-code,
    which is the sequence number of the DEFINE_INSN that it matches.
    If the insn does not match, return -1.  */
 
-extern int recog_memoized ();
+extern int recog_memoized PROTO((rtx));
 
 /* Determine whether a proposed change to an insn or MEM will make it
    invalid.  Make the change if not.  */
 
-extern int validate_change ();
+extern int validate_change PROTO((rtx, rtx *, rtx, int));
 
 /* Apply a group of changes if valid.  */
 
-extern int apply_change_group ();
+extern int apply_change_group PROTO((void));
 
 /* Return the number of changes so far in the current group.   */
 
-extern int num_validated_changes ();
+extern int num_validated_changes PROTO((void));
 
 /* Retract some changes.  */
 
-extern void cancel_changes ();
+extern void cancel_changes PROTO((int));
 
 /* Nonzero means volatile operands are recognized.  */
 
@@ -46,7 +55,7 @@ extern int volatile_ok;
 
 /* Extract the operands from an insn that has been recognized.  */
 
-extern void insn_extract ();
+extern void insn_extract PROTO((rtx));
 
 /* The following vectors hold the results from insn_extract.  */
 
