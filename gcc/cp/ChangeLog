@@ -1,3 +1,11 @@
+2002-12-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/8442
+	* decl2.c (handle_class_head): Verify if the looked up name is a
+	type or template.
+	* pt.c (convert_template_argument): Fix type or template template
+	parameter decision logic.
+
 2002-12-13  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	PR C++/8031
