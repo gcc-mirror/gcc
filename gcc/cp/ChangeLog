@@ -1,5 +1,30 @@
 2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
+	Kill strict_prototype. Backwards compatibility only for
+	non NO_IMPLICIT_EXTERN_C systems.
+	* cp-tree.h (flag_strict_prototype): Remove.
+	(strict_prototype): Remove.
+	(strict_prototypes_lang_c, strict_prototypes_lang_cplusplus): Remove.
+	* decl.c (maybe_push_to_top_level): Adjust.
+	(pop_from_top_level): Adjust.
+	(decls_match): Only allow sloppy parm matching for ancient
+	system headers.
+	(init_decl_processing): Adjust.
+	(grokdeclarator): Adjust.
+	* decl2.c (flag_strict_prototype): Remove.
+	(strict_prototype): Remove.
+	(strict_prototypes_lang_c, strict_prototypes_lang_cplusplus): Remove.
+	(lang_f_options): Remove "strict-prototype".
+	(unsupported-options): Add "strict-prototype".
+	* lex.c (do_identifier): Adjust.
+	(do_scoped_id): Adjust.
+	* parse.y (empty_parms): Adjust.
+	* class.c (push_lang_context): Adjust.
+	(pop_lang_context): Adjust.
+	* typeck.c (comp_target_parms): Adjust.
+
+2000-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (poplevel): Deal with anonymous variables at for scope.
 	(maybe_inject_for_scope_var): Likewise.
 

@@ -101,11 +101,12 @@ empty_parms ()
 {
   tree parms;
 
-  if (strict_prototype
-      || current_class_type != NULL)
-    parms = void_list_node;
-  else
+#ifndef NO_IMPLICIT_EXTERN_C
+  if (in_system_header && current_class_type == NULL)
     parms = NULL_TREE;
+  else
+#endif
+  parms = void_list_node;
   return parms;
 }
 

@@ -2588,7 +2588,6 @@ maybe_push_to_top_level (pseudo)
   VARRAY_TREE_INIT (current_lang_base, 10, "current_lang_base");
   current_lang_stack = &VARRAY_TREE (current_lang_base, 0);
   current_lang_name = lang_name_cplusplus;
-  strict_prototype = strict_prototypes_lang_cplusplus;
   current_namespace = global_namespace;
 }
 
@@ -2621,11 +2620,6 @@ pop_from_top_level ()
 	  IDENTIFIER_CLASS_VALUE (id) = TREE_VEC_ELT (t, 3);
  	}
     }
-
-  if (current_lang_name == lang_name_cplusplus)
-    strict_prototype = strict_prototypes_lang_cplusplus;
-  else if (current_lang_name == lang_name_c)
-    strict_prototype = strict_prototypes_lang_c;
 
   /* If we were in the middle of compiling a function, restore our
      state.  */
@@ -3021,22 +3015,31 @@ decls_match (newdecl, olddecl)
 
       if (same_type_p (TREE_TYPE (f1), TREE_TYPE (f2)))
 	{
-	  if ((! strict_prototypes_lang_c || DECL_BUILT_IN (olddecl))
-	      && DECL_EXTERN_C_P (olddecl)
-	      && p2 == NULL_TREE)
+	  if (p2 == NULL_TREE && DECL_EXTERN_C_P (olddecl)
+	      && (DECL_BUILT_IN (olddecl)
+#ifndef NO_IMPLICIT_EXTERN_C
+	          || (DECL_IN_SYSTEM_HEADER (newdecl) && !DECL_CLASS_SCOPE_P (newdecl))
+	          || (DECL_IN_SYSTEM_HEADER (olddecl) && !DECL_CLASS_SCOPE_P (olddecl))
+#endif
+	      ))
 	    {
 	      types_match = self_promoting_args_p (p1);
 	      if (p1 == void_list_node)
 		TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
 	    }
-	  else if (!strict_prototypes_lang_c 
-		   && DECL_EXTERN_C_P (olddecl)
-		   && DECL_EXTERN_C_P (newdecl)
-		   && p1 == NULL_TREE)
+#ifndef NO_IMPLICIT_EXTERN_C
+	  else if (p1 == NULL_TREE
+		   && (DECL_EXTERN_C_P (olddecl)
+	               && DECL_IN_SYSTEM_HEADER (olddecl)
+	               && !DECL_CLASS_SCOPE_P (olddecl))
+		   && (DECL_EXTERN_C_P (newdecl)
+	               && DECL_IN_SYSTEM_HEADER (newdecl)
+	               && !DECL_CLASS_SCOPE_P (newdecl)))
 	    {
 	      types_match = self_promoting_args_p (p2);
 	      TREE_TYPE (newdecl) = TREE_TYPE (olddecl);
 	    }
+#endif
 	  else
 	    types_match = compparms (p1, p2);
 	}
@@ -6287,14 +6290,10 @@ init_decl_processing ()
   current_lang_name = NULL_TREE;
 
   /* Adjust various flags based on command-line settings.  */
-  if (flag_strict_prototype == 2)
-    flag_strict_prototype = pedantic;
   if (! flag_permissive && ! pedantic)
     flag_pedantic_errors = 1;
   if (!flag_no_inline)
     flag_inline_trees = 1;
-
-  strict_prototypes_lang_c = flag_strict_prototype;
 
   /* Initially, C.  */
   current_lang_name = lang_name_c;
@@ -7986,7 +7985,7 @@ destroy_local_var (decl)
    If the length of an array type is not known before,
    it must be determined now, from the initial value, or it is an error.
 
-   INIT0 holds the value of an initializer that should be allowed to escape
+   INIT holds the value of an initializer that should be allowed to escape
    the normal rules.
 
    FLAGS is LOOKUP_ONLYCONVERTING if the = init syntax was used, else 0
@@ -10678,10 +10677,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 		if (TREE_CODE (declarator) == BIT_NOT_EXPR)
 		  declarator = TREE_OPERAND (declarator, 0);
 
-		if (strict_prototype == 0 && arg_types == NULL_TREE)
-		  arg_types = void_list_node;
-		else if (arg_types == NULL_TREE
-			 || arg_types != void_list_node)
+                if (arg_types != void_list_node)
 		  {
 		    cp_error ("destructors may not have parameters");
 		    arg_types = void_list_node;
