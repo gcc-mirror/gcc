@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.  */
 #include "tconfig.h"
 #include "coretypes.h"
 #include "tm.h"
-#include "fp-bit.h"
+#include "config/fp-bit.h"
 
 /* The following macros can be defined to change the behavior of this file:
    FLOAT: Implement a `float', aka SFmode, fp library.  If this is not
