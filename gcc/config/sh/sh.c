@@ -3467,6 +3467,7 @@ sh_expand_prologue ()
   int live_regs_mask;
   int d, i;
   int live_regs_mask2;
+  int double_align = 0;
 
   /* We have pretend args if we had an object sent partially in registers
      and partially on the stack, e.g. a large structure.  */
@@ -3505,7 +3506,11 @@ sh_expand_prologue ()
   live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
   push_regs (live_regs_mask, live_regs_mask2);
 
-  output_stack_adjust (-get_frame_size (), stack_pointer_rtx, 3);
+  if (TARGET_ALIGN_DOUBLE && d & 1)
+    double_align = 4;
+
+  output_stack_adjust (-get_frame_size () - double_align,
+		       stack_pointer_rtx, 3);
 
   if (frame_pointer_needed)
     emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
@@ -3518,10 +3523,16 @@ sh_expand_epilogue ()
   int d, i;
 
   int live_regs_mask2;
+  int frame_size = get_frame_size ();
+
+  live_regs_mask = calc_live_regs (&d, &live_regs_mask2);
+
+  if (TARGET_ALIGN_DOUBLE && d & 1)
+    frame_size += 4;
 
   if (frame_pointer_needed)
     {
-      output_stack_adjust (get_frame_size (), frame_pointer_rtx, 7);
+      output_stack_adjust (frame_size, frame_pointer_rtx, 7);
 
       /* We must avoid moving the stack pointer adjustment past code
 	 which reads from the local frame, else an interrupt could
@@ -3530,14 +3541,14 @@ sh_expand_epilogue ()
       emit_insn (gen_blockage ());
       emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
     }
-  else if (get_frame_size ())
+  else if (frame_size)
     {
       /* We must avoid moving the stack pointer adjustment past code
 	 which reads from the local frame, else an interrupt could
 	 occur after the SP adjustment and clobber data in the local
 	 frame.  */
       emit_insn (gen_blockage ());
-      output_stack_adjust (get_frame_size (), stack_pointer_rtx, 7);
+      output_stack_adjust (frame_size, stack_pointer_rtx, 7);
     }
 
   /* Pop all the registers.  */
