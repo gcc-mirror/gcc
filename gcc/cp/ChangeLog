@@ -1,5 +1,8 @@
 Mon Nov 24 12:15:55 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* typeck.c (mark_addressable): Don't assume a FUNCTION_DECL
+	has DECL_LANG_SPECIFIC.
+
 	* exception.cc (struct cp_eh_info): Add handlers field.
 	(__cp_push_exception): Initialize it.
 	(__cp_pop_exception): Decrement it.  Don't pop unless it's 0.
