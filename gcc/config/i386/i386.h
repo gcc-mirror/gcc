@@ -2406,17 +2406,6 @@ enum ix86_builtins
       fputs (user_label_prefix, FILE);		\
     fputs (xname, FILE);			\
   } while (0)
-
-/* The `FINALIZE_PIC' macro serves as a hook to emit these special
-   codes once the function is being compiled into assembly code, but
-   not before.  (It is not done before, because in the case of
-   compiling an inline function, it would lead to multiple PIC
-   prologues being included in functions which used inline functions
-   and were compiled to assembly language.)  */
-
-#define FINALIZE_PIC \
-  (current_function_uses_pic_offset_table |= current_function_profile)
-
 
 /* Max number of args passed in registers.  If this is more than 3, we will
    have problems with ebx (register #4), since it is a caller save register and

@@ -4012,8 +4012,8 @@ ix86_save_reg (regno, maybe_eh_return)
      int maybe_eh_return;
 {
   if (regno == PIC_OFFSET_TABLE_REGNUM
-      && (current_function_uses_pic_offset_table
-	  || current_function_uses_const_pool
+      && (regs_ever_live[regno]
+	  || current_function_profile
 	  || current_function_calls_eh_return))
     return 1;
 
@@ -4235,9 +4235,9 @@ void
 ix86_expand_prologue ()
 {
   rtx insn;
-  int pic_reg_used = (flag_pic && (current_function_uses_pic_offset_table
-				  || current_function_uses_const_pool)
-		      && !TARGET_64BIT);
+  int pic_reg_used = (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM
+		      && (regs_ever_live[PIC_OFFSET_TABLE_REGNUM]
+			  || current_function_profile));
   struct ix86_frame frame;
   int use_mov = 0;
   HOST_WIDE_INT allocate;
@@ -4320,18 +4320,19 @@ ix86_expand_prologue ()
     {
       insn = emit_insn (gen_set_got (pic_offset_table_rtx));
 
-      /* ??? The current_function_uses_pic_offset_table flag is woefully
-	 inaccurate, as it isn't updated as code gets deleted.  Allow the
-	 thing to be removed.  A better solution would be to actually get
-	 proper liveness for ebx, as then we won't save/restore it too.  */
+      /* Even with accurate pre-reload life analysis, we can wind up
+	 deleting all references to the pic register after reload.
+	 Consider if cross-jumping unifies two sides of a branch
+	 controled by a comparison vs the only read from a global.
+	 In which case, allow the set_got to be deleted, though we're
+	 too late to do anything about the ebx save in the prologue.  */
       REG_NOTES (insn) = gen_rtx_EXPR_LIST (REG_MAYBE_DEAD, const0_rtx, NULL);
     }
 
-  /* If we are profiling, make sure no instructions are scheduled before
-     the call to mcount.  However, if -fpic, the above call will have
-     done that.  */
-  if (current_function_profile && ! pic_reg_used)
-    emit_insn (gen_blockage ());
+  /* Prevent function calls from be scheduled before the call to mcount.
+     In the pic_reg_used case, make sure that the got load isn't deleted.  */
+  if (current_function_profile)
+    emit_insn (gen_blockage (pic_reg_used ? pic_offset_table_rtx : const0_rtx));
 }
 
 /* Emit code to restore saved registers using MOV insns.  First register
@@ -5245,7 +5246,8 @@ legitimize_pic_address (orig, reg)
 	  /* This symbol may be referenced via a displacement from the PIC
 	     base address (@GOTOFF).  */
 
-	  current_function_uses_pic_offset_table = 1;
+	  if (reload_in_progress)
+	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTOFF);
 	  new = gen_rtx_CONST (Pmode, new);
 	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
@@ -5261,7 +5263,6 @@ legitimize_pic_address (orig, reg)
     {
       if (TARGET_64BIT)
 	{
-	  current_function_uses_pic_offset_table = 1;
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOTPCREL);
 	  new = gen_rtx_CONST (Pmode, new);
 	  new = gen_rtx_MEM (Pmode, new);
@@ -5281,7 +5282,8 @@ legitimize_pic_address (orig, reg)
 	  /* This symbol must be referenced via a load from the
 	     Global Offset Table (@GOT).  */
 
-	  current_function_uses_pic_offset_table = 1;
+	  if (reload_in_progress)
+	    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 	  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, addr), UNSPEC_GOT);
 	  new = gen_rtx_CONST (Pmode, new);
 	  new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
@@ -5322,7 +5324,8 @@ legitimize_pic_address (orig, reg)
 	    {
 	      if (!TARGET_64BIT)
 		{
-		  current_function_uses_pic_offset_table = 1;
+		  if (reload_in_progress)
+		    regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 		  new = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, op0),
 					UNSPEC_GOTOFF);
 		  new = gen_rtx_PLUS (Pmode, new, op1);
@@ -5518,7 +5521,8 @@ legitimize_address (x, oldx, mode)
         case TLS_MODEL_INITIAL_EXEC:
 	  if (flag_pic)
 	    {
-	      current_function_uses_pic_offset_table = 1;
+	      if (reload_in_progress)
+		regs_ever_live[PIC_OFFSET_TABLE_REGNUM] = 1;
 	      pic = pic_offset_table_rtx;
 	    }
 	  else
@@ -10464,10 +10468,7 @@ ix86_expand_call (retval, fnaddr, callarg1, callarg2, pop)
   if (! TARGET_64BIT && flag_pic
       && GET_CODE (XEXP (fnaddr, 0)) == SYMBOL_REF
       && ! SYMBOL_REF_FLAG (XEXP (fnaddr, 0)))
-    {
-      current_function_uses_pic_offset_table = 1;
-      use_reg (&use, pic_offset_table_rtx);
-    }
+    use_reg (&use, pic_offset_table_rtx);
 
   if (TARGET_64BIT && INTVAL (callarg2) >= 0)
     {
