@@ -88,9 +88,16 @@
 	(const_string "false")))
 
 
-;; Unconditional branch, call, and millicode call delay slot description.
-(define_delay (eq_attr "type" "uncond_branch,branch,call,milli")
+;; Unconditional branch and call delay slot description.
+(define_delay (eq_attr "type" "uncond_branch,branch,call")
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
+
+;; millicode call delay slot description.  Note it disallows delay slot
+;; when TARGET_LONG_CALLS is true.
+(define_delay (eq_attr "type" "milli")
+  [(and (eq_attr "in_call_delay" "true")
+	(eq (symbol_ref "TARGET_LONG_CALLS") (const_int 0)))
+   (nil) (nil)])
 
 ;; Unconditional branch, return and other similar instructions.
 (define_delay (eq_attr "type" "uncond_branch,branch")
@@ -2155,7 +2162,11 @@
    (clobber (reg:SI 31))]
   ""
   "* return output_mul_insn (0, insn);"
-  [(set_attr "type" "milli")])
+  [(set_attr "type" "milli")
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 4)
+				      (const_int 24)))])
 
 ;;; Division and mod.
 (define_expand "divsi3"
@@ -2201,7 +2212,11 @@
   ""
   "*
    return output_div_insn (operands, 0, insn);"
-  [(set_attr "type" "milli")])
+  [(set_attr "type" "milli")
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 4)
+				      (const_int 24)))])
 
 (define_expand "udivsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -2246,7 +2261,11 @@
   ""
   "*
    return output_div_insn (operands, 1, insn);"
-  [(set_attr "type" "milli")])
+  [(set_attr "type" "milli")
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 4)
+				      (const_int 24)))])
 
 (define_expand "modsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -2287,7 +2306,11 @@
   ""
   "*
   return output_mod_insn (0, insn);"
-  [(set_attr "type" "milli")])
+  [(set_attr "type" "milli")
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 4)
+				      (const_int 24)))])
 
 (define_expand "umodsi3"
   [(set (reg:SI 26) (match_operand:SI 1 "move_operand" ""))
@@ -2328,7 +2351,11 @@
   ""
   "*
   return output_mod_insn (1, insn);"
-  [(set_attr "type" "milli")])
+  [(set_attr "type" "milli")
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 4)
+				      (const_int 24)))])
 
 ;;- and instructions
 ;; We define DImode `and` so with DImode `not` we can get
@@ -3061,9 +3088,19 @@
    (clobber (reg:SI 2))
    (use (const_int 1))]
   ""
-  "copy %r0,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2"
+  "*
+{
+  /* Yuk!  bl may not be able to reach $$dyncall.  */
+  if (TARGET_LONG_CALLS)
+    return \"copy %r0,%%r22\;ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
+  else
+    return \"copy %r0,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+}"
   [(set_attr "type" "dyncall")
-   (set_attr "length" "12")])
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 12)
+				      (const_int 24)))])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "" "")
@@ -3133,9 +3170,19 @@
    (use (const_int 1))]
   ;;- Don't use operand 1 for most machines.
   ""
-  "copy %r1,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2"
+  "*
+{
+  /* Yuk!  bl may not be able to reach $$dyncall.  */
+  if (TARGET_LONG_CALLS)
+    return \"copy %r1,%%r22\;ldil L%%$$dyncall,%%r31\;ldo R%%$$dyncall(%%r31),%%r31\;blr 0,%%r2\;bv,n 0(%%r31)\;nop\";
+  else
+    return \"copy %r1,%%r22\;.CALL\\tARGW0=GR\;bl $$dyncall,%%r31\;copy %%r31,%%r2\";
+}"
   [(set_attr "type" "dyncall")
-   (set_attr "length" "12")])
+   (set (attr "length") (if_then_else (ne (symbol_ref "TARGET_LONG_CALLS")
+					  (const_int 0))
+				      (const_int 12)
+				      (const_int 24)))])
 
 ;; Call subroutine returning any type.
 
