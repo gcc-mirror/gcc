@@ -967,7 +967,7 @@ process_init_constructor (type, init, elts)
 	  if (TREE_VALUE (tail) != 0)
 	    {
 	      tree tail1 = tail;
-	      next1 = digest_init (TYPE_MAIN_VARIANT (TREE_TYPE (type)),
+	      next1 = digest_init (TREE_TYPE (type),
 				   TREE_VALUE (tail), &tail1);
 	      if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (type))
 		  && TYPE_MAIN_VARIANT (TREE_TYPE (type)) != TYPE_MAIN_VARIANT (TREE_TYPE (next1)))
