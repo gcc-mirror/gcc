@@ -1,3 +1,12 @@
+2000-05-10  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/StringBuffer.java (delete): Call arrayCopy() correctly.
+	Avoid arrayCopy() call where possible. Update `count' _after_ calling
+	arrayCopy().
+	(replace): Reimplemented. Fix javadoc.
+	(reverse): Call ensureCapacity_unsynchronized().
+	(StringBuffer (String)): Use DEFAULT_CAPACITY.
+	
 2000-05-09  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/StringBuffer.java (toString): Don't mark buffer as

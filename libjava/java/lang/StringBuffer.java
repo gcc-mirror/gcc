@@ -227,8 +227,9 @@ public final class StringBuffer implements Serializable
       end = count;
     // This will unshare if required.
     ensureCapacity_unsynchronized (count);
+    if (count - end != 0)
+      System.arraycopy (value, end, value, start, count - end);
     count -= (end - start);
-    System.arraycopy (value, end - 1, value, start, end - start);
     return this;
   }
 
@@ -498,17 +499,31 @@ public final class StringBuffer implements Serializable
     return count;
   }
 
-  /** Delete a character from this <code>StringBuffer</code>.
-   *  @param index the index of the character to delete.
+  /** Replace characters between index <code>start</code> (inclusive) and 
+   *  <code>end</code> (exclusive) with <code>str</code>. If <code>end</code> 
+   *  is larger than the size of this StringBuffer, all characters after
+   *  <code>start</code> are replaced.
+   *  @param start the beginning index of characters to delete (inclusive).
+   *  @param end the ending index of characters to delete (exclusive).
+   *  @param str the new <code>String</code> to insert.
    *  @return this <code>StringBuffer</code>.
-   *  @exception StringIndexOutOfBoundsException if <code>index</code>
-   *             is out of bounds.
    */
   public synchronized StringBuffer replace (int start, int end, String str)
   {
-    // FIXME: this is inefficient.
-    delete (start, end);
-    return insert (start, str);
+    if (start < 0 || start > count || start > end)
+      throw new StringIndexOutOfBoundsException (start);
+  
+    int len = str.length();
+    // Calculate the difference in 'count' after the replace.
+    int delta = len - ((end > count ? count : end) - start);
+    ensureCapacity_unsynchronized (count + delta);
+        
+    if (delta != 0 && end < count)
+      System.arraycopy(value, end, value, end + delta, count - start);
+    
+    str.getChars (0, len, value, start);    
+    count += delta;    
+    return this;    
   }
 
   /** Reverse the characters in this StringBuffer.
@@ -516,6 +531,8 @@ public final class StringBuffer implements Serializable
    */
   public synchronized StringBuffer reverse ()
   {
+    // Call ensureCapacity to enforce copy-on-write.
+    ensureCapacity_unsynchronized (count);
     for (int i = 0; i < count / 2; ++i)
       {
 	char c = value[i];
@@ -594,7 +611,7 @@ public final class StringBuffer implements Serializable
     count = str.length();
     // JLS: The initial capacity of the string buffer is 16 plus the
     // length of the argument string.
-    value = new char[count + 16];
+    value = new char[count + DEFAULT_CAPACITY];
     str.getChars(0, count, value, 0);
     shared = false;
   }
