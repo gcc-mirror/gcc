@@ -1,3 +1,15 @@
+2003-03-21  Richard Henderson  <rth@redhat.com>
+
+	PR opt/2001
+        * bb-reorder.c (maybe_duplicate_computed_goto_succ): New.
+        (make_reorder_chain_1): Call it.
+
+        * function.h (struct function): Add computed_goto_common_label,
+        computed_goto_common_reg.
+        * function.c (free_after_compilation): Zap them.
+        * stmt.c (expand_computed_goto): Use them to produce one
+        indirect branch per function.
+
 2003-03-22  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* config/m68hc11/m68hc11.md ("call_value"): Fix trap check.

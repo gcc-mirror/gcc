@@ -89,11 +89,13 @@
 #include "flags.h"
 #include "output.h"
 #include "cfglayout.h"
+#include "function.h"
 #include "target.h"
 
 /* Local function prototypes.  */
 static void make_reorder_chain		PARAMS ((void));
 static basic_block make_reorder_chain_1	PARAMS ((basic_block, basic_block));
+static basic_block maybe_duplicate_computed_goto_succ PARAMS ((basic_block));
 
 /* Compute an ordering for a subgraph beginning with block BB.  Record the
    ordering in RBI()->index and chained through RBI()->next.  */
@@ -128,6 +130,45 @@ make_reorder_chain ()
     }
   while (next);
   RBI (prev)->next = NULL;
+}
+
+/* If the successor is our artificial computed_jump block, duplicate it.  */
+
+static inline basic_block
+maybe_duplicate_computed_goto_succ (bb)
+     basic_block bb;
+{
+  edge e;
+  basic_block next;
+
+  /* Note that we can't rely on computed_goto_common_label still being in
+     the instruction stream -- cfgloop.c likes to munge things about.  But
+     we can still use it's non-null-ness to avoid a fruitless search.  */
+  if (!cfun->computed_goto_common_label)
+    return NULL;
+
+  /* Only want to duplicate when coming from a simple branch.  */
+  e = bb->succ;
+  if (!e || e->succ_next)
+    return NULL;
+
+  /* Only duplicate if we've already layed out this block once.  */
+  next = e->dest;
+  if (!RBI (next)->visited)
+    return NULL;
+
+  /* See if the block contains only a computed branch.  */
+  if ((next->head == next->end
+       || next_active_insn (next->head) == next->end)
+      && computed_jump_p (next->end))
+    {
+      if (rtl_dump_file)
+	fprintf (rtl_dump_file, "Duplicating block %d after %d\n",
+		 next->index, bb->index);
+      return cfg_layout_duplicate_bb (next, e);
+    }
+
+  return NULL;
 }
 
 /* A helper function for make_reorder_chain.
@@ -205,6 +246,10 @@ make_reorder_chain_1 (bb, prev)
 
       next = ((taken && e_taken) ? e_taken : e_fall)->dest;
     }
+
+  /* If the successor is our artificial computed_jump block, duplicate it.  */
+  else
+    next = maybe_duplicate_computed_goto_succ (bb);
 
   /* In the absence of a prediction, disturb things as little as possible
      by selecting the old "next" block from the list of successors.  If

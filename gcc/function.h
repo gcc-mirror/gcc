@@ -273,6 +273,10 @@ struct function GTY(())
      on machines which require execution of the epilogue on all returns.  */
   rtx x_return_label;
 
+  /* Label and register for unswitching computed gotos.  */
+  rtx computed_goto_common_label;
+  rtx computed_goto_common_reg;
+
   /* List (chain of EXPR_LISTs) of pseudo-regs of SAVE_EXPRs.
      So we can mark them all live at the end of the function, if nonopt.  */
   rtx x_save_expr_regs;
