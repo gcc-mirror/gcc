@@ -1,5 +1,5 @@
 /* Iterator.java -- Interface for iterating over collections
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -28,20 +28,28 @@ executable file might be covered by the GNU General Public License. */
 package java.util;
 
 /**
- * An object which iterates over a collection. An Iterator is used to return the
- * items once only, in sequence, by successive calls to the next method. It is
- * also possible to remove elements from the underlying collection by using the
- * optional remove method. Iterator is intended as a replacement for the
- * Enumeration interface of previous versions of Java, which did not have the
- * remove method and had less conveniently named methods.
+ * An object which iterates over a collection. An Iterator is used to return
+ * the items once only, in sequence, by successive calls to the next method.
+ * It is also possible to remove elements from the underlying collection by
+ * using the optional remove method. Iterator is intended as a replacement
+ * for the Enumeration interface of previous versions of Java, which did not
+ * have the remove method and had less conveniently named methods.
+ *
+ * @author Original author unknown
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see ListIterator
+ * @see Enumeration
+ * @since 1.2
+ * @status updated to 1.4
  */
 public interface Iterator
 {
   /**
-   * Tests whether there are elements remaining in the collection.
+   * Tests whether there are elements remaining in the collection. In other
+   * words, calling <code>next()</code> will not throw an exception.
    *
-   * @return true if there is at least one more element in the collection,
-   *   that is, if the next call to next will not throw NoSuchElementException.
+   * @return true if there is at least one more element in the collection
    */
   boolean hasNext();
 
@@ -49,20 +57,20 @@ public interface Iterator
    * Obtain the next element in the collection.
    *
    * @return the next element in the collection
-   * @exception NoSuchElementException if there are no more elements
+   * @throws NoSuchElementException if there are no more elements
    */
   Object next();
 
   /**
-   * Remove from the underlying collection the last element returned by next.
-   * This method can be called only once after each call to next. It does not
-   * affect what will be returned by subsequent calls to next. This operation is
-   * optional, it may throw an UnsupportedOperationException.
+   * Remove from the underlying collection the last element returned by next
+   * (optional operation). This method can be called only once after each
+   * call to <code>next()</code>. It does not affect what will be returned
+   * by subsequent calls to next.
    *
-   * @exception IllegalStateException if next has not yet been called or remove
-   *   has already been called since the last call to next.
-   * @exception UnsupportedOperationException if this Iterator does not support
-   *   the remove operation.
+   * @throws IllegalStateException if next has not yet been called or remove
+   *         has already been called since the last call to next.
+   * @throws UnsupportedOperationException if this Iterator does not support
+   *         the remove operation.
    */
   void remove();
 }

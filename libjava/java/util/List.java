@@ -1,5 +1,5 @@
 /* List.java -- An ordered collection which allows indexed access
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -25,131 +25,179 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public License. */
 
 
-// TO DO:
-// ~ Doc comment for the interface itself needs to be put into english.
-// ~ Some more @see clauses might be nice.
-
 package java.util;
 
 /**
- * [This is what this doc comment will mention:
- * ~ Additional restrictions on some methods. Others included for completeness.
- * ~ ListIterator and what it can do
- * ~ Positional and iterated access
- * ~ search (but linear time)
- * ~ be careful when containing self as an element, because equals and hashCode
- *   loop.]
+ * An ordered collection (also known as a list). This collection allows
+ * access to elements by position, as well as control on where elements
+ * are inserted. Unlike sets, duplicate elements are permitted by this
+ * general contract (if a subclass forbids duplicates, this should be
+ * documented).
+ * <p>
+ *
+ * List places additional requirements on <code>iterator</code>,
+ * <code>add</code>, <code>remove</code>, <code>equals</code>, and
+ * <code>hashCode</code>, in addition to requiring more methods. List
+ * indexing is 0-based (like arrays), although some implementations may
+ * require time proportional to the index to obtain an arbitrary element.
+ * The List interface is incompatible with Set; you cannot implement both
+ * simultaneously.
+ * <p>
+ *
+ * Lists also provide a <code>ListIterator</code> which allows bidirectional
+ * traversal and other features atop regular iterators. Lists can be
+ * searched for arbitrary elements, and allow easy insertion and removal
+ * of multiple elements in one method call.
+ * <p>
+ *
+ * Note: While lists may contain themselves as elements, this leads to
+ * undefined (usually infinite recursive) behavior for some methods like
+ * hashCode or equals.
+ *
+ * @author Original author unknown
+ * @author Eric Blake <ebb9@email.byu.edu>
+ * @see Collection
+ * @see Set
+ * @see ArrayList
+ * @see LinkedList
+ * @see Vector
+ * @see Arrays#asList(Object[])
+ * @see Collections#nCopies(int, Object)
+ * @see Collections#EMPTY_LIST
+ * @see AbstractList
+ * @see AbstractSequentialList
+ * @since 1.2
+ * @status updated to 1.4
  */
 public interface List extends Collection
 {
   /**
-   * Insert an element into the list at a given position.
+   * Insert an element into the list at a given position (optional operation).
+   * This shifts all existing elements from that position to the end one
+   * index to the right. This version of add has no return, since it is
+   * assumed to always succeed if there is no exception.
    *
-   * @param index the location to insert the item.
-   * @param o the object to insert.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   add operation.
-   * @exception IndexOutOfBoundsException if index < 0 || index > size()
-   * @exception ClassCastException if o cannot be added to this list due to its
-   *   type.
-   * @exception IllegalArgumentException if o cannot be added to this list for
-   *   some other reason.
+   * @param index the location to insert the item
+   * @param o the object to insert
+   * @throws UnsupportedOperationException if this list does not support the
+   *         add operation
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   * @throws ClassCastException if o cannot be added to this list due to its
+   *         type
+   * @throws IllegalArgumentException if o cannot be added to this list for
+   *         some other reason
    */
   void add(int index, Object o);
 
   /**
-   * Add an element to the end of the list.
+   * Add an element to the end of the list (optional operation). If the list
+   * imposes restraints on what can be inserted, such as no null elements,
+   * this should be documented.
    *
-   * @param o the object to add.
-   * @returns true, as Collection defines this method as returning true if the
-   *   list was modified as a result of this action, and it always is for a
-   *   list.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   add operation.
-   * @exception ClassCastException if o cannot be added to this list due to its
-   *   type.
-   * @exception IllegalArgumentException if o cannot be added to this list for
-   *   some other reason.
+   * @param o the object to add
+   * @return true, as defined by Collection for a modified list
+   * @throws UnsupportedOperationException if this list does not support the
+   *         add operation
+   * @throws ClassCastException if o cannot be added to this list due to its
+   *         type
+   * @throws IllegalArgumentException if o cannot be added to this list for
+   *         some other reason
    */
   boolean add(Object o);
 
   /**
-   * Insert the contents of a collection into the list at a given position.
+   * Insert the contents of a collection into the list at a given position
+   * (optional operation). Shift all elements at that position to the right
+   * by the number of elements inserted. This operation is undefined if
+   * this list is modified during the operation (for example, if you try
+   * to insert a list into itself).
    *
-   * @param index the location to insert the collection.
-   * @param c the collection to insert.
-   * @returns true if the list was modified by this action, that is, if c is
-   *   non-empty.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   addAll operation.
-   * @exception IndexOutOfBoundsException if index < 0 || index > size()
-   * @exception ClassCastException if some element of c cannot be added to this
-   *   list due to its type.
-   * @exception IllegalArgumentException if some element of c cannot be added
-   *   to this list for some other reason.
+   * @param index the location to insert the collection
+   * @param c the collection to insert
+   * @return true if the list was modified by this action, that is, if c is
+   *         non-empty
+   * @throws UnsupportedOperationException if this list does not support the
+   *         addAll operation
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
+   * @throws ClassCastException if some element of c cannot be added to this
+   *         list due to its type
+   * @throws IllegalArgumentException if some element of c cannot be added
+   *         to this list for some other reason
+   * @throws NullPointerException if the specified collection is null
+   * @see #add(int, Object)
    */
   boolean addAll(int index, Collection c);
 
   /**
-   * Add the contents of a collection to the end of the list.
+   * Add the contents of a collection to the end of the list (optional
+   * operation).  This operation is undefined if this list is modified
+   * during the operation (for example, if you try to insert a list into
+   * itself).
    *
-   * @param c the collection to add.
-   * @returns true if the list was modified by this action, that is, if c is
-   *   non-empty.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   addAll operation.
-   * @exception ClassCastException if some element of c cannot be added to this
-   *   list due to its type.
-   * @exception IllegalArgumentException if some element of c cannot be added
-   *   to this list for some other reason.
+   * @param c the collection to add
+   * @return true if the list was modified by this action, that is, if c is
+   *         non-empty
+   * @throws UnsupportedOperationException if this list does not support the
+   *         addAll operation
+   * @throws ClassCastException if some element of c cannot be added to this
+   *         list due to its type
+   * @throws IllegalArgumentException if some element of c cannot be added
+   *         to this list for some other reason
+   * @throws NullPointerException if the specified collection is null
+   * @see #add(Object)
    */
   boolean addAll(Collection c);
 
   /**
    * Clear the list, such that a subsequent call to isEmpty() would return
-   * true.
+   * true (optional operation).
    *
-   * @exception UnsupportedOperationException if this list does not support the
-   *   clear operation.
+   * @throws UnsupportedOperationException if this list does not support the
+   *         clear operation
    */
   void clear();
 
   /**
    * Test whether this list contains a given object as one of its elements.
+   * This is defined as the existence of an element e such that
+   * <code>o == null ? e == null : o.equals(e)</code>.
    *
-   * @param o the element to look for.
-   * @returns true if this list contains an element e such that <code>o ==
-   *   null ? e == null : o.equals(e)</code>.
+   * @param o the element to look for
+   * @return true if this list contains the element
    */
   boolean contains(Object o);
 
   /**
    * Test whether this list contains every element in a given collection.
    *
-   * @param c the collection to test for.
-   * @returns true if for every element o in c, contains(o) would return true.
+   * @param c the collection to test for
+   * @return true if for every element o in c, contains(o) would return true
+   * @throws NullPointerException if the collection is null
+   * @see #contains(Object)
    */
   boolean containsAll(Collection c);
 
   /**
    * Test whether this list is equal to another object. A List is defined to be
    * equal to an object if and only if that object is also a List, and the two
-   * lists are equal. Two lists l1 and l2 are defined to be equal if and only
+   * lists have the same sequence. Two lists l1 and l2 are equal if and only
    * if <code>l1.size() == l2.size()</code>, and for every integer n between 0
    * and <code>l1.size() - 1</code> inclusive, <code>l1.get(n) == null ?
    * l2.get(n) == null : l1.get(n).equals(l2.get(n))</code>.
    *
-   * @param o the object to test for equality with this list.
-   * @returns true if o is equal to this list.
+   * @param o the object to test for equality with this list
+   * @return true if o is equal to this list
+   * @see Object#equals(Object)
+   * @see #hashCode()
    */
   boolean equals(Object o);
 
   /**
    * Get the element at a given index in this list.
    *
-   * @param index the index of the element to be returned.
-   * @returns the element at index index in this list.
-   * @exception IndexOutOfBoundsException if index < 0 || index >= size()
+   * @param index the index of the element to be returned
+   * @return the element at index index in this list
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   Object get(int index);
 
@@ -159,14 +207,17 @@ public interface List extends Collection
    * <pre>
    *   hashCode = 1;
    *   Iterator i = list.iterator();
-   *   while (i.hasNext()) {
-   *     Object obj = i.next();
-   *     hashCode = 31*hashCode + (obj==null ? 0 : obj.hashCode());
-   *   }
+   *   while (i.hasNext())
+   *     {
+   *       Object obj = i.next();
+   *       hashCode = 31 * hashCode + (obj == null ? 0 : obj.hashCode());
+   *     }
    * </pre>
    * This ensures that the general contract of Object.hashCode() is adhered to.
    *
-   * @returns the hash code of this list.
+   * @return the hash code of this list
+   * @see Object#hashCode()
+   * @see #equals(Object)
    */
   int hashCode();
 
@@ -174,22 +225,23 @@ public interface List extends Collection
    * Obtain the first index at which a given object is to be found in this
    * list.
    *
-   * @returns the least integer n such that <code>o == null ? get(n) == null :
-   *   o.equals(get(n))</code>, or -1 if there is no such index.
+   * @param o the object to search for
+   * @return the least integer n such that <code>o == null ? get(n) == null :
+   *         o.equals(get(n))</code>, or -1 if there is no such index
    */
   int indexOf(Object o);
 
   /**
    * Test whether this list is empty, that is, if size() == 0.
    *
-   * @returns true if this list contains no elements.
+   * @return true if this list contains no elements
    */
   boolean isEmpty();
 
   /**
-   * Obtain an Iterator over this list.
+   * Obtain an Iterator over this list, whose sequence is the list order.
    *
-   * @returns an Iterator over the elements of this list, in order.
+   * @return an Iterator over the elements of this list, in order
    */
   Iterator iterator();
 
@@ -197,119 +249,135 @@ public interface List extends Collection
    * Obtain the last index at which a given object is to be found in this
    * list.
    *
-   * @returns the greatest integer n such that <code>o == null ? get(n) == null
-   *   : o.equals(get(n))</code>.
+   * @return the greatest integer n such that <code>o == null ? get(n) == null
+   *         : o.equals(get(n))</code>, or -1 if there is no such index
    */
   int lastIndexOf(Object o);
 
   /**
    * Obtain a ListIterator over this list, starting at the beginning.
    *
-   * @returns a ListIterator over the elements of this list, in order, starting
-   *   at the beginning.
+   * @return a ListIterator over the elements of this list, in order, starting
+   *         at the beginning
    */
   ListIterator listIterator();
 
   /**
    * Obtain a ListIterator over this list, starting at a given position.
+   * A first call to next() would return the same as get(index), and a
+   * first call to previous() would return the same as get(index - 1).
    *
    * @param index the position, between 0 and size() inclusive, to begin the
-   *   iteration from.
-   * @returns a ListIterator over the elements of this list, in order, starting
-   *   at index.
-   * @exception IndexOutOfBoundsException if index < 0 || index > size()
+   *        iteration from
+   * @return a ListIterator over the elements of this list, in order, starting
+   *         at index
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt; size()
    */
   ListIterator listIterator(int index);
 
   /**
-   * Remove the element at a given position in this list.
+   * Remove the element at a given position in this list (optional operation).
+   * Shifts all remaining elements to the left to fill the gap.
    *
-   * @param index the position within the list of the object to remove.
-   * @returns the object that was removed.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   remove operation.
-   * @exception IndexOutOfBoundsException if index < 0 || index > size()
+   * @param index the position within the list of the object to remove
+   * @return the object that was removed
+   * @throws UnsupportedOperationException if this list does not support the
+   *         remove operation
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
    */
   Object remove(int index);
 
   /**
-   * Remove the first occurence of an object from this list. That is, remove
-   * the first element e such that <code>o == null ? e == null :
-   * o.equals(e)</code>.
+   * Remove the first occurence of an object from this list (optional
+   * operation). That is, remove the first element e such that
+   * <code>o == null ? e == null : o.equals(e)</code>.
    *
-   * @param o the object to remove.
-   * @returns true if the list changed as a result of this call, that is, if
-   *   the list contained at least one occurrence of o.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   remove operation.
+   * @param o the object to remove
+   * @return true if the list changed as a result of this call, that is, if
+   *         the list contained at least one occurrence of o
+   * @throws UnsupportedOperationException if this list does not support the
+   *         remove operation
    */
   boolean remove(Object o);
 
   /**
-   * Remove all elements of a given collection from this list. That is, remove
-   * every element e such that c.contains(e).
+   * Remove all elements of a given collection from this list (optional
+   * operation). That is, remove every element e such that c.contains(e).
    *
-   * @returns true if this list was modified as a result of this call.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   removeAll operation.
+   * @param c the collection to filter out
+   * @return true if this list was modified as a result of this call
+   * @throws UnsupportedOperationException if this list does not support the
+   *         removeAll operation
+   * @throws NullPointerException if the collection is null
+   * @see #remove(Object)
+   * @see #contains(Object)
    */
   boolean removeAll(Collection c);
 
   /**
    * Remove all elements of this list that are not contained in a given
-   * collection. That is, remove every element e such that !c.contains(e).
+   * collection (optional operation). That is, remove every element e such
+   * that !c.contains(e).
    *
-   * @returns true if this list was modified as a result of this call.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   retainAll operation.
+   * @param c the collection to retain
+   * @return true if this list was modified as a result of this call
+   * @throws UnsupportedOperationException if this list does not support the
+   *         retainAll operation
+   * @throws NullPointerException if the collection is null
+   * @see #remove(Object)
+   * @see #contains(Object)
    */
   boolean retainAll(Collection c);
 
   /**
-   * Replace an element of this list with another object.
+   * Replace an element of this list with another object (optional operation).
    *
-   * @param index the position within this list of the element to be replaced.
-   * @param o the object to replace it with.
-   * @returns the object that was replaced.
-   * @exception UnsupportedOperationException if this list does not support the
-   *   set operation.
-   * @exception IndexOutOfBoundsException if index < 0 || index >= size()
-   * @exception ClassCastException if o cannot be added to this list due to its
-   *   type.
-   * @exception IllegalArgumentException if o cannot be added to this list for
-   *   some other reason.
+   * @param index the position within this list of the element to be replaced
+   * @param o the object to replace it with
+   * @return the object that was replaced
+   * @throws UnsupportedOperationException if this list does not support the
+   *         set operation
+   * @throws IndexOutOfBoundsException if index &lt; 0 || index &gt;= size()
+   * @throws ClassCastException if o cannot be added to this list due to its
+   *         type
+   * @throws IllegalArgumentException if o cannot be added to this list for
+   *         some other reason
    */
   Object set(int index, Object o);
 
   /**
-   * Get the number of elements in this list.
+   * Get the number of elements in this list. If the list contains more
+   * than Integer.MAX_VALUE elements, return Integer.MAX_VALUE.
    *
-   * @returns the number of elements in the list.
+   * @return the number of elements in the list
    */
   int size();
 
   /**
    * Obtain a List view of a subsection of this list, from fromIndex
-   * (inclusive) to toIndex (exclusive). The returned list should be modifiable
-   * if and only if this list is modifiable. Changes to the returned list
-   * should be reflected in this list. If this list is structurally modified in
+   * (inclusive) to toIndex (exclusive). If the two indices are equal, the
+   * sublist is empty. The returned list should be modifiable if and only
+   * if this list is modifiable. Changes to the returned list should be
+   * reflected in this list. If this list is structurally modified in
    * any way other than through the returned list, the result of any subsequent
    * operations on the returned list is undefined.
    *
    * @param fromIndex the index that the returned list should start from
-   *    (inclusive).
-   * @param toIndex the index that the returned list should go to (exclusive).
-   * @returns a List backed by a subsection of this list.
-   * @exception IndexOutOfBoundsException if fromIndex < 0 || toIndex > size()
-   *   || fromIndex > toIndex.
+   *        (inclusive)
+   * @param toIndex the index that the returned list should go to (exclusive)
+   * @return a List backed by a subsection of this list
+   * @throws IndexOutOfBoundsException if fromIndex &lt; 0
+   *         || toIndex &gt; size() || fromIndex &gt; toIndex
+   * @throws IllegalArgumentException if fromIndex &gt; toIndex (according to
+   *         AbstractList). Don't you love Sun's inconsistent specifications?
    */
   List subList(int fromIndex, int toIndex);
 
   /**
    * Copy the current contents of this list into an array.
    *
-   * @returns an array of type Object[] and length equal to the length of this
-   *   list, containing the elements currently in this list, in order.
+   * @return an array of type Object[] and length equal to the length of this
+   *         list, containing the elements currently in this list, in order
    */
   Object[] toArray();
 
@@ -323,11 +391,12 @@ public interface List extends Collection
    * Note: The fact that the following element is set to null is only useful
    * if it is known that this list does not contain any null elements.
    *
-   * @param a the array to copy this list into.
-   * @returns an array containing the elements currently in this list, in
-   *    order.
-   * @exception ArrayStoreException if the type of any element of the
-   *   collection is not a subtype of the element type of a.
+   * @param a the array to copy this list into
+   * @return an array containing the elements currently in this list, in
+   *         order
+   * @throws ArrayStoreException if the type of any element of the
+   *         collection is not a subtype of the element type of a
+   * @throws NullPointerException if the specified array is null
    */
   Object[] toArray(Object[] a);
 }

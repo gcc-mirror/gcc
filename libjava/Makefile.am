@@ -1089,6 +1089,7 @@ java/util/Hashtable.java \
 java/util/IdentityHashMap.java \
 java/util/Iterator.java	\
 java/util/LinkedList.java \
+java/util/LinkedHashMap.java \
 java/util/List.java \
 java/util/ListIterator.java \
 java/util/ListResourceBundle.java \
@@ -1102,6 +1103,7 @@ java/util/Properties.java \
 java/util/PropertyPermission.java \
 java/util/PropertyResourceBundle.java \
 java/util/Random.java \
+java/util/RandomAccess.java \
 java/util/ResourceBundle.java \
 java/util/Set.java \
 java/util/SimpleTimeZone.java \
