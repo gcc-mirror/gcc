@@ -1,3 +1,16 @@
+2001-01-22  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* rs6000.h (INIT_EXPANDERS): Delete.
+	(RETURN_ADDR_RTX): Call rs6000_return_addr().
+	* rs6000.c (rs6000_override_options): Call *_machine_status from
+	here...
+	(rs6000_init_expanders): ...instead of here. Delete.
+	(rs6000_mark_machine_status): New function.
+	(rs6000_init_machine_status): Use xcalloc.
+	(rs6000_return_addr): Generate RTX for the return address.
+	(rs6000_ra_ever_killed): New, check if LR was ever destroyed.
+	(rs6000_stack_info): Use it.
+
 2001-01-22  Thomas Pfaff  <tpfaff@gmx.net>
 
 	* gthr-win32.h: Include errno.h to get a declaration for
