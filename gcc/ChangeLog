@@ -1,3 +1,7 @@
+2000-09-24  Richard Henderson  <rth@cygnus.com>
+
+	* emit-rtl.c (gen_lowpart_common): Use trunc_int_for_mode.
+
 2000-09-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-tree.texi: Moved here from cp/ir.texi.  Documented nested

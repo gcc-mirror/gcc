@@ -767,11 +767,7 @@ gen_lowpart_common (mode, x)
     {
       /* If MODE is twice the host word size, X is already the desired
 	 representation.  Otherwise, if MODE is wider than a word, we can't
-	 do this.  If MODE is exactly a word, return just one CONST_INT.
-	 If MODE is smaller than a word, clear the bits that don't belong
-	 in our mode, unless they and our sign bit are all one.  So we get
-	 either a reasonable negative value or a reasonable unsigned value
-	 for this mode.  */
+	 do this.  If MODE is exactly a word, return just one CONST_INT.  */
 
       if (GET_MODE_BITSIZE (mode) >= 2 * HOST_BITS_PER_WIDE_INT)
 	return x;
@@ -783,12 +779,11 @@ gen_lowpart_common (mode, x)
       else
 	{
 	  /* MODE must be narrower than HOST_BITS_PER_WIDE_INT.  */
-	  int width = GET_MODE_BITSIZE (mode);
 	  HOST_WIDE_INT val = (GET_CODE (x) == CONST_INT ? INTVAL (x)
 			       : CONST_DOUBLE_LOW (x));
 
 	  /* Sign extend to HOST_WIDE_INT.  */
-	  val = val << (HOST_BITS_PER_WIDE_INT - width) >> (HOST_BITS_PER_WIDE_INT - width);
+	  val = trunc_int_for_mode (val, mode);
 
 	  return (GET_CODE (x) == CONST_INT && INTVAL (x) == val ? x
 		  : GEN_INT (val));
