@@ -1,3 +1,28 @@
+2003-01-01  Steven Bosscher  <s.bosscher@student.tudelft.nl>
+
+	* Make-lang.in, boehm.c, buffer.c,
+	  buffer.h, builtins.c, class.c,
+	  config-lang.in, constants.c,
+	  convert.h, decl.c, except.c,
+	  expr.c, java-except.h,
+	  java-tree.h, javaop.def,
+	  jcf-parse.c, jcf-write.c,
+	  jv-scan.c, jvgenmain.c,
+	  jvspec.c, keyword.gperf, 
+	  keyword.h, lang-options.h,
+	  lang-specs.h, lang.c, lex.c,
+	  lex.h, mangle.c, mangle_name.c,
+	  parse-scan.y, parse.h, parse.y,
+	  typeck.c, verify.c, xref.c,
+	  xref.h: Replace "GNU CC" with
+	  "GCC" in the copyright header.
+
+	* check-init.c, gjavah.c, javaop.h,
+	  jcf-depend.c, jcf-dump.c, jcf-io.c,
+	  jcf-path.c, jcf-reader.c, jcf.h,
+	  zextract.c, zipfile.h: These files are
+	  "part of GCC". Also say "GCC" not "GNU CC".
+
 2002-12-30  DJ Delorie  <dj@redhat.com>
 
 	* Make-lang.in: Protect against texi2pod/pod2man failing.
