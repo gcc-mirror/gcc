@@ -1,3 +1,18 @@
+Tue Feb 24 20:56:03 1998  H.J. Lu  (hjl@gnu.org)
+
+	* configure.in (topsrcdir): New.
+	(configdirs): Check ${topsrcdir}/gcc instead.
+	(config-ml.in): Use ${topsrcdir}/config-ml.in.
+
+	* tests/configure.in (topsrcdir): New.
+	(check): Check ${topsrcdir}/gcc instead.
+
+	* configure.in (configdirs): Include testsuite only if
+	${srcdir}/../gcc exists.
+
+	* tests/configure.in (check): Set to ${CHECK} if
+	${srcdir}/../../gcc doesn't exists.
+
 1998-02-18  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* std/bastring.h: Don't #include <std/bastring.cc> yet.

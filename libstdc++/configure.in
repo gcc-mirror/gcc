@@ -2,7 +2,21 @@
 # necessary for a configure script to process the program in
 # this directory.  For more information, look at ../configure.
 
-configdirs="tests testsuite"
+if [ "${srcdir}" = "." ] ; then
+  if [ "${with_target_subdir}" != "." ] ; then
+    topsrcdir=${with_multisrctop}../..
+  else
+    topsrcdir=${with_multisrctop}..
+  fi
+else
+  topsrcdir=${srcdir}/..
+fi
+
+if [ -d ${topsrcdir}/gcc ] ; then
+  configdirs="tests testsuite"
+else
+  configdirs="tests"
+fi
 srctrigger=sinst.cc
 srcname="ANSI C++ library"
 package_makefile_frag=Make.pack
@@ -82,12 +96,4 @@ if [ -n "${with_cross_host}" ] ; then
     mv -f Makefile.tem Makefile
 fi
 
-if [ "${srcdir}" = "." ] ; then
-  if [ "${with_target_subdir}" != "." ] ; then
-    . ${with_multisrctop}../../config-ml.in
-  else
-    . ${with_multisrctop}../config-ml.in
-  fi
-else
-  . ${srcdir}/../config-ml.in
-fi
+. ${topsrcdir}/config-ml.in
