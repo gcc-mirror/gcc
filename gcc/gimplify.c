@@ -202,6 +202,9 @@ append_to_statement_list_1 (tree t, tree *list_p, bool side_effects)
   tree list = *list_p;
   tree_stmt_iterator i;
 
+  if (!side_effects)
+    return;
+
   if (!list)
     {
       if (t && TREE_CODE (t) == STATEMENT_LIST)
@@ -211,9 +214,6 @@ append_to_statement_list_1 (tree t, tree *list_p, bool side_effects)
 	}
       *list_p = list = alloc_stmt_list ();
     }
-
-  if (!side_effects)
-    return;
 
   i = tsi_last (list);
   tsi_link_after (&i, t, TSI_CONTINUE_LINKING);
@@ -3023,7 +3023,7 @@ gimplify_target_expr (tree *expr_p, tree *pre_p, tree *post_p)
 /* Gimplification of expression trees.  */
 
 /* Gimplify an expression which appears at statement context; usually, this
-   means replacing it with a suitably gimple COMPOUND_EXPR.  */
+   means replacing it with a suitably gimple STATEMENT_LIST.  */
 
 void
 gimplify_stmt (tree *stmt_p)
@@ -3042,7 +3042,7 @@ gimplify_to_stmt_list (tree *stmt_p)
   if (TREE_CODE (*stmt_p) != STATEMENT_LIST)
     {
       tree t = *stmt_p;
-      *stmt_p = NULL;
+      *stmt_p = alloc_stmt_list ();
       append_to_statement_list (t, stmt_p);
     }
 }
@@ -3526,10 +3526,13 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
      gimplified form.  */
   if (is_statement)
     {
-      append_to_statement_list (*expr_p, &internal_pre);
-      append_to_statement_list (internal_post, &internal_pre);
-      annotate_all_with_locus (&internal_pre, input_location);
-      *expr_p = internal_pre;
+      if (internal_pre || internal_post)
+	{
+	  append_to_statement_list (*expr_p, &internal_pre);
+	  append_to_statement_list (internal_post, &internal_pre);
+	  annotate_all_with_locus (&internal_pre, input_location);
+	  *expr_p = internal_pre;
+	}
       goto out;
     }
 
@@ -3725,7 +3728,7 @@ gimplify_body (tree *body_p, tree fndecl)
       tree b = build (BIND_EXPR, void_type_node, NULL_TREE,
 		      NULL_TREE, NULL_TREE);
       TREE_SIDE_EFFECTS (b) = 1;
-      append_to_statement_list (body, &BIND_EXPR_BODY (b));
+      append_to_statement_list_force (body, &BIND_EXPR_BODY (b));
       body = b;
     }
   *body_p = body;

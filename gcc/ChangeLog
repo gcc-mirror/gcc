@@ -1,3 +1,8 @@
+2004-05-29  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_expr): Don't build a statement list
+	if no gimplification was necessary.
+
 2004-05-29  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* pretty-print.c (pp_base_format_text): Support %< instead of %`
