@@ -1,5 +1,16 @@
 2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
 
+	* config/rs6000/rs6000.c (function_arg): Always split vectors for
+	e500 if it's a stdarg function.
+	(function_arg_advance): Advance 2 registers for vectors in a
+	stdarg function.
+	(init_cumulative_args): Initialize stdarg.
+	(rs6000_spe_function_arg): New.
+
+	* config/rs6000/rs6000.h (rs6000_args): Add stdarg.
+
+2003-06-12  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/rs6000.h (MODES_TIEABLE_P): Add SPE vectors.
 
 2003-06-12  Roger Sayle  <roger@eyesopen.com>
