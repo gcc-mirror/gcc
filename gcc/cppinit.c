@@ -194,7 +194,6 @@ struct pending_option
   } while (0)
 #endif
 
-static void initialize_char_syntax	PARAMS ((int));
 static void print_help                  PARAMS ((void));
 static void path_include		PARAMS ((cpp_reader *,
 						 struct cpp_pending *,
@@ -210,174 +209,57 @@ static void initialize_dependency_output PARAMS ((cpp_reader *));
 /* Last argument to append_include_chain: chain to use */
 enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
 
-/* If gcc is in use (stage2/stage3) we can make these tables initialized
-   data. */
+/* If gcc is in use (stage2/stage3) we can make this table initialized data. */
+#ifdef __STDC__
+#define CAT(a, b) a##b
+#else
+#define CAT(a, b) a/**/b
+#endif
+
 #if HAVE_GCC_VERSION(2,7)
-/* Table to tell if a character is legal as the second or later character
-   of a C identifier. */
-U_CHAR is_idchar[256] =
-{
-  ['a'] = 1, ['b'] = 1, ['c'] = 1,  ['d'] = 1, ['e'] = 1, ['f'] = 1,
-  ['g'] = 1, ['h'] = 1, ['i'] = 1,  ['j'] = 1, ['k'] = 1, ['l'] = 1,
-  ['m'] = 1, ['n'] = 1, ['o'] = 1,  ['p'] = 1, ['q'] = 1, ['r'] = 1,
-  ['s'] = 1, ['t'] = 1, ['u'] = 1,  ['v'] = 1, ['w'] = 1, ['x'] = 1,
-  ['y'] = 1, ['z'] = 1,
+#define TABLE(id) static inline void CAT(init_, id) PARAMS ((void)) {} \
+unsigned char id[256] = {
+#define s(p, v) [p] = v,
+#define END };
+#else
+#define TABLE(id) unsigned char id[256] = { 0 }; \
+static void CAT(init_, id) PARAMS ((void)) { \
+unsigned char *x = id;
+#define s(p, v) x[p] = v;
+#define END } 
+#endif
 
-  ['A'] = 1, ['B'] = 1, ['C'] = 1,  ['D'] = 1, ['E'] = 1, ['F'] = 1,
-  ['G'] = 1, ['H'] = 1, ['I'] = 1,  ['J'] = 1, ['K'] = 1, ['L'] = 1,
-  ['M'] = 1, ['N'] = 1, ['O'] = 1,  ['P'] = 1, ['Q'] = 1, ['R'] = 1,
-  ['S'] = 1, ['T'] = 1, ['U'] = 1,  ['V'] = 1, ['W'] = 1, ['X'] = 1,
-  ['Y'] = 1, ['Z'] = 1,
+#define A(x) s(x, ISidnum|ISidstart)
+#define N(x) s(x, ISidnum|ISnumstart)
+#define H(x) s(x, IShspace|ISspace)
+#define S(x) s(x, ISspace)
 
-  ['1'] = 1, ['2'] = 1, ['3'] = 1,  ['4'] = 1, ['5'] = 1, ['6'] = 1,
-  ['7'] = 1, ['8'] = 1, ['9'] = 1,  ['0'] = 1,
+TABLE (IStable)
+  A('_')
 
-  ['_']  = 1,
-};
+  A('a') A('b') A('c') A('d') A('e') A('f') A('g') A('h') A('i')
+  A('j') A('k') A('l') A('m') A('n') A('o') A('p') A('q') A('r')
+  A('s') A('t') A('u') A('v') A('w') A('x') A('y') A('z')
 
-/* Table to tell if a character is legal as the first character of
-   a C identifier. */
-U_CHAR is_idstart[256] =
-{
-  ['a'] = 1, ['b'] = 1, ['c'] = 1,  ['d'] = 1, ['e'] = 1, ['f'] = 1,
-  ['g'] = 1, ['h'] = 1, ['i'] = 1,  ['j'] = 1, ['k'] = 1, ['l'] = 1,
-  ['m'] = 1, ['n'] = 1, ['o'] = 1,  ['p'] = 1, ['q'] = 1, ['r'] = 1,
-  ['s'] = 1, ['t'] = 1, ['u'] = 1,  ['v'] = 1, ['w'] = 1, ['x'] = 1,
-  ['y'] = 1, ['z'] = 1,
+  A('A') A('B') A('C') A('D') A('E') A('F') A('G') A('H') A('I')
+  A('J') A('K') A('L') A('M') A('N') A('O') A('P') A('Q') A('R')
+  A('S') A('T') A('U') A('V') A('W') A('X') A('Y') A('Z')
 
-  ['A'] = 1, ['B'] = 1, ['C'] = 1,  ['D'] = 1, ['E'] = 1, ['F'] = 1,
-  ['G'] = 1, ['H'] = 1, ['I'] = 1,  ['J'] = 1, ['K'] = 1, ['L'] = 1,
-  ['M'] = 1, ['N'] = 1, ['O'] = 1,  ['P'] = 1, ['Q'] = 1, ['R'] = 1,
-  ['S'] = 1, ['T'] = 1, ['U'] = 1,  ['V'] = 1, ['W'] = 1, ['X'] = 1,
-  ['Y'] = 1, ['Z'] = 1,
+  N('1') N('2') N('3') N('4') N('5') N('6') N('7') N('8') N('9') N('0')
 
-  ['_']  = 1,
-};
+  H(' ') H('\t') H('\v') H('\f')
 
-/* Table to tell if a character is horizontal space.
-   \r is magical, so it is not in here.  */
-U_CHAR is_hor_space[256] =
-{
-  [' '] = 1, ['\t'] = 1, ['\v'] = 1, ['\f'] = 1,
-};
-/* table to tell if a character is horizontal or vertical space.  */
-U_CHAR is_space[256] =
-{
-  [' '] = 1, ['\t'] = 1, ['\v'] = 1, ['\f'] = 1, ['\n'] = 1,
-};
-/* Table to handle trigraph conversion, which occurs before all other
-   processing, everywhere in the file.  (This is necessary since one
-   of the trigraphs encodes backslash.)  Note it's off by default.
+  S('\n')
+END
 
-	from	to	from	to	from	to
-	?? =	#	?? )	]	?? !	|
-	?? (	[	?? '	^	?? >	}
-	?? /	\	?? <	{	?? -	~
-
-   There is not a space between the ?? and the third char.  I put spaces
-   there to avoid warnings when compiling this file. */
-U_CHAR trigraph_table[256] =
-{
-  ['='] = '#',  [')'] = ']',  ['!'] = '|',
-  ['('] = '[',  ['\''] = '^', ['>'] = '}',
-  ['/'] = '\\', ['<'] = '{',  ['-'] = '~',
-};
-
-/* This function will be entirely removed soon. */
-static inline void
-initialize_char_syntax (dollar_in_ident)
-     int dollar_in_ident;
-{
-  is_idchar['$'] = dollar_in_ident;
-  is_idstart['$'] = dollar_in_ident;
-}
-
-#else /* Not GCC. */
-
-U_CHAR is_idchar[256] = { 0 };
-U_CHAR is_idstart[256] = { 0 };
-U_CHAR is_hor_space[256] = { 0 };
-U_CHAR is_space[256] = { 0 };
-U_CHAR trigraph_table[256] = { 0 };
-
-/* Initialize syntactic classifications of characters. */
-static void
-initialize_char_syntax (dollar_in_ident)
-     int dollar_in_ident;
-{
-  is_idstart['a'] = 1; is_idstart['b'] = 1; is_idstart['c'] = 1;
-  is_idstart['d'] = 1; is_idstart['e'] = 1; is_idstart['f'] = 1;
-  is_idstart['g'] = 1; is_idstart['h'] = 1; is_idstart['i'] = 1;
-  is_idstart['j'] = 1; is_idstart['k'] = 1; is_idstart['l'] = 1;
-  is_idstart['m'] = 1; is_idstart['n'] = 1; is_idstart['o'] = 1;
-  is_idstart['p'] = 1; is_idstart['q'] = 1; is_idstart['r'] = 1;
-  is_idstart['s'] = 1; is_idstart['t'] = 1; is_idstart['u'] = 1;
-  is_idstart['v'] = 1; is_idstart['w'] = 1; is_idstart['x'] = 1;
-  is_idstart['y'] = 1; is_idstart['z'] = 1;
-
-  is_idstart['A'] = 1; is_idstart['B'] = 1; is_idstart['C'] = 1;
-  is_idstart['D'] = 1; is_idstart['E'] = 1; is_idstart['F'] = 1;
-  is_idstart['G'] = 1; is_idstart['H'] = 1; is_idstart['I'] = 1;
-  is_idstart['J'] = 1; is_idstart['K'] = 1; is_idstart['L'] = 1;
-  is_idstart['M'] = 1; is_idstart['N'] = 1; is_idstart['O'] = 1;
-  is_idstart['P'] = 1; is_idstart['Q'] = 1; is_idstart['R'] = 1;
-  is_idstart['S'] = 1; is_idstart['T'] = 1; is_idstart['U'] = 1;
-  is_idstart['V'] = 1; is_idstart['W'] = 1; is_idstart['X'] = 1;
-  is_idstart['Y'] = 1; is_idstart['Z'] = 1;
-
-  is_idstart['_'] = 1;
-
-  is_idchar['a'] = 1; is_idchar['b'] = 1; is_idchar['c'] = 1;
-  is_idchar['d'] = 1; is_idchar['e'] = 1; is_idchar['f'] = 1;
-  is_idchar['g'] = 1; is_idchar['h'] = 1; is_idchar['i'] = 1;
-  is_idchar['j'] = 1; is_idchar['k'] = 1; is_idchar['l'] = 1;
-  is_idchar['m'] = 1; is_idchar['n'] = 1; is_idchar['o'] = 1;
-  is_idchar['p'] = 1;  is_idchar['q'] = 1; is_idchar['r'] = 1;
-  is_idchar['s'] = 1; is_idchar['t'] = 1;  is_idchar['u'] = 1;
-  is_idchar['v'] = 1; is_idchar['w'] = 1; is_idchar['x'] = 1;
-  is_idchar['y'] = 1; is_idchar['z'] = 1;
-
-  is_idchar['A'] = 1; is_idchar['B'] = 1; is_idchar['C'] = 1;
-  is_idchar['D'] = 1; is_idchar['E'] = 1; is_idchar['F'] = 1;
-  is_idchar['G'] = 1; is_idchar['H'] = 1; is_idchar['I'] = 1;
-  is_idchar['J'] = 1; is_idchar['K'] = 1; is_idchar['L'] = 1;
-  is_idchar['M'] = 1; is_idchar['N'] = 1; is_idchar['O'] = 1;
-  is_idchar['P'] = 1; is_idchar['Q'] = 1; is_idchar['R'] = 1;
-  is_idchar['S'] = 1; is_idchar['T'] = 1;  is_idchar['U'] = 1;
-  is_idchar['V'] = 1; is_idchar['W'] = 1; is_idchar['X'] = 1;
-  is_idchar['Y'] = 1; is_idchar['Z'] = 1;
-
-  is_idchar['1'] = 1; is_idchar['2'] = 1; is_idchar['3'] = 1;
-  is_idchar['4'] = 1; is_idchar['5'] = 1; is_idchar['6'] = 1;
-  is_idchar['7'] = 1; is_idchar['8'] = 1; is_idchar['9'] = 1;
-  is_idchar['0'] = 1;
-
-  is_idchar['_']  = 1;
-
-  is_idchar['$']  = dollar_in_ident;
-  is_idstart['$'] = dollar_in_ident;
-
-  /* white space tables */
-  is_hor_space[' '] = 1;
-  is_hor_space['\t'] = 1;
-  is_hor_space['\v'] = 1;
-  is_hor_space['\f'] = 1;
-
-  is_space[' '] = 1;
-  is_space['\t'] = 1;
-  is_space['\v'] = 1;
-  is_space['\f'] = 1;
-  is_space['\n'] = 1;
-
-  /* trigraph conversion */
-  trigraph_table['='] = '#';  trigraph_table[')'] = ']';
-  trigraph_table['!'] = '|';  trigraph_table['('] = '[';
-  trigraph_table['\''] = '^'; trigraph_table['>'] = '}';
-  trigraph_table['/'] = '\\'; trigraph_table['<'] = '{';
-  trigraph_table['-'] = '~';
-}
-
-#endif /* Not GCC. */
+#undef A
+#undef N
+#undef H
+#undef S
+#undef TABLE
+#undef END
+#undef s
+#undef CAT
 
 /* Given a colon-separated list of file names PATH,
    add all the names to the search path for include files.  */
@@ -614,58 +496,89 @@ cpp_cleanup (pfile)
 }
 
 
-/* Initialize the built-in macros.  */
+/* This structure defines one built-in macro.  A node of type TYPE will
+   be entered in the macro hash table under the name NAME, with value
+   VALUE (if any).  FLAGS tweaks the behavior a little:
+   DUMP		write debug info for this macro
+   STDC		define only if not -traditional
+   C89		define only if -lang-c89
+   C9X		define only if -lang-c9x
+   ULP		value is the global user_label_prefix (which can't be
+		put directly into the table).
+ */
+
+struct builtin
+{
+  const char *name;
+  const char *value;
+  unsigned short type;
+  unsigned short flags;
+};
+#define DUMP 0x01
+#define STDC 0x02
+#define C89  0x04
+#define C9X  0x08
+#define ULP  0x10
+
+static const struct builtin builtin_array[] =
+{
+  { "__TIME__",			0, T_TIME,		DUMP },
+  { "__DATE__",			0, T_DATE,		DUMP },
+  { "__FILE__",			0, T_FILE,		0    },
+  { "__BASE_FILE__",		0, T_BASE_FILE,		DUMP },
+  { "__LINE__",			0, T_SPECLINE,		0    },
+  { "__INCLUDE_LEVEL__",	0, T_INCLUDE_LEVEL,	0    },
+  { "__VERSION__",		0, T_VERSION,		DUMP },
+  { "__STDC__",			0, T_STDC,		DUMP|STDC },
+
+  { "__USER_LABEL_PREFIX__",	0,		 T_CONST, ULP  },
+  { "__REGISTER_PREFIX__",	REGISTER_PREFIX, T_CONST, 0    },
+  { "__HAVE_BUILTIN_SETJMP__",	"1",		 T_CONST, 0    },
+#ifndef NO_BUILTIN_SIZE_TYPE
+  { "__SIZE_TYPE__",		SIZE_TYPE,	 T_CONST, DUMP },
+#endif
+#ifndef NO_BUILTIN_PTRDIFF_TYPE
+  { "__PTRDIFF_TYPE__",		PTRDIFF_TYPE,	 T_CONST, DUMP },
+#endif
+  { "__WCHAR_TYPE__",		WCHAR_TYPE,	 T_CONST, DUMP },
+  { "__STDC_VERSION__",		"199409L",	 T_CONST, DUMP|STDC|C89 },
+  { "__STDC_VERSION__",		"199909L",	 T_CONST, DUMP|STDC|C9X },
+  { 0, 0, 0, 0 }
+};
+
+/* Subroutine of cpp_start_read; reads the builtins table above and
+   enters the macros into the hash table.  */
+
 static void
 initialize_builtins (pfile)
      cpp_reader *pfile;
 {
-#define NAME(str) (const U_CHAR *)str, sizeof str - 1
-  cpp_install (pfile, NAME("__TIME__"),		  T_TIME,	0, -1);
-  cpp_install (pfile, NAME("__DATE__"),		  T_DATE,	0, -1);
-  cpp_install (pfile, NAME("__FILE__"),		  T_FILE,	0, -1);
-  cpp_install (pfile, NAME("__BASE_FILE__"),	  T_BASE_FILE,	0, -1);
-  cpp_install (pfile, NAME("__LINE__"),		  T_SPECLINE,	0, -1);
-  cpp_install (pfile, NAME("__INCLUDE_LEVEL__"),  T_INCLUDE_LEVEL, 0, -1);
-  cpp_install (pfile, NAME("__VERSION__"),	  T_VERSION,	0, -1);
-#ifndef NO_BUILTIN_SIZE_TYPE
-  cpp_install (pfile, NAME("__SIZE_TYPE__"),	  T_CONST, SIZE_TYPE, -1);
-#endif
-#ifndef NO_BUILTIN_PTRDIFF_TYPE
-  cpp_install (pfile, NAME("__PTRDIFF_TYPE__ "),  T_CONST, PTRDIFF_TYPE, -1);
-#endif
-  cpp_install (pfile, NAME("__WCHAR_TYPE__"),	  T_CONST, WCHAR_TYPE, -1);
-  cpp_install (pfile, NAME("__USER_LABEL_PREFIX__"), T_CONST, user_label_prefix, -1);
-  cpp_install (pfile, NAME("__REGISTER_PREFIX__"),  T_CONST, REGISTER_PREFIX, -1);
-  cpp_install (pfile, NAME("__HAVE_BUILTIN_SETJMP__"), T_CONST, "1", -1);
-  if (!CPP_TRADITIONAL (pfile))
+  int len;
+  const struct builtin *b;
+  const char *val;
+  for(b = builtin_array; b->name; b++)
     {
-      cpp_install (pfile, NAME("__STDC__"),	  T_STDC,  0, -1);
-#if 0
-      if (CPP_OPTIONS (pfile)->c9x)
-	cpp_install (pfile, NAME("__STDC_VERSION__"),T_CONST, "199909L", -1);
-      else
-#endif
-	cpp_install (pfile, NAME("__STDC_VERSION__"),T_CONST, "199409L", -1);
-    }
-#undef NAME
+      if ((b->flags & STDC) && CPP_TRADITIONAL (pfile))
+	continue;
+      if ((b->flags & C89) && CPP_OPTIONS (pfile)->c9x)
+	continue;
+      if ((b->flags & C9X) && !CPP_OPTIONS (pfile)->c9x)
+	continue;
 
-  if (CPP_OPTIONS (pfile)->debug_output)
-    {
-      dump_special_to_buffer (pfile, "__BASE_FILE__");
-      dump_special_to_buffer (pfile, "__VERSION__");
-#ifndef NO_BUILTIN_SIZE_TYPE
-      dump_special_to_buffer (pfile, "__SIZE_TYPE__");
-#endif
-#ifndef NO_BUILTIN_PTRDIFF_TYPE
-      dump_special_to_buffer (pfile, "__PTRDIFF_TYPE__");
-#endif
-      dump_special_to_buffer (pfile, "__WCHAR_TYPE__");
-      dump_special_to_buffer (pfile, "__DATE__");
-      dump_special_to_buffer (pfile, "__TIME__");
-      if (!CPP_TRADITIONAL (pfile))
-	dump_special_to_buffer (pfile, "__STDC__");
+      val = (b->flags & ULP) ? user_label_prefix : b->value;
+      len = strlen (b->name);
+
+      cpp_install (pfile, b->name, len, b->type, val, -1);
+      if ((b->flags & DUMP) && CPP_OPTIONS (pfile)->debug_output)
+	dump_special_to_buffer (pfile, b->name);
     }
+
 }
+#undef DUMP
+#undef STDC
+#undef C89
+#undef C9X
+#undef ULP
 
 /* Another subroutine of cpp_start_read.  This one sets up to do
    dependency-file output. */
@@ -802,7 +715,11 @@ cpp_start_read (pfile, fname)
   
   /* Now that we know dollars_in_ident, we can initialize the syntax
      tables. */
-  initialize_char_syntax (opts->dollars_in_ident);
+  init_IStable ();
+  /* XXX Get rid of code that depends on this, then IStable can
+     be truly const.  */
+  if (opts->dollars_in_ident)
+    IStable['$'] = ISidstart|ISidnum;
 
   /* Do partial setup of input buffer for the sake of generating
      early #line directives (when -g is in effect).  */

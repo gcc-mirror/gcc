@@ -1,3 +1,46 @@
+1999-10-28 21:27 -0700  Zack Weinberg  <zack@bitmover.com>
+
+	* cpplib.h (struct cpp_buffer: fname, nominal_fname,
+	last_nominal_fname): Mark const.
+	(struct include_hash: name, nshort, control_macro): Mark
+	const.
+	(struct macrodef: symnam): Mark const.
+	(struct if_stack: fname): Mark const.
+	(is_idchar, is_idstart, is_hor_space, trigraph_table): Delete.
+	(IStable): New character-syntax array which encompasses all
+	the old is_foo arrays.
+	(is_idchar, is_numchar, is_idstart, is_numstart, is_hspace,
+	is_space): New macros for interrogating IStable.
+	(check_macro_name): Kill last argument.  All callers changed.
+
+	* cppinit.c (initialize_char_syntax): Delete.
+	(is_idchar, is_idstart, is_hor_space, is_space,
+	trigraph_table): Delete.
+	(IStable): New.  Initialize with clever macros to avoid
+	information duplication.
+	(builtin_array): Table of builtins to get rid of explicit list
+	in initialize_builtins.
+	(initialize_builtins): Use builtins_array.
+	(cpp_start_read): Call init_IStable, and set IStable['$'] if
+	opts->dollars_in_ident.
+
+	* cppexp.c: Change all refs to is_xyz[] arrays to use new
+	is_xyz() macros.
+	(cpp_parse_expr): Avoid 'format string is not constant'
+	warning. Use ISGRAPH to identify printable chars.
+	* cppfiles.c: Change all refs to is_xyz[] arrays to use new
+	is_xyz() macros.
+	(read_and_prescan): Map trigraphs to chars with open-coded
+	if-else-if-... sequence, not a lookup table.
+	* cpphash.c: Change all refs to is_xyz[] arrays to use new
+	is_xyz() macros.
+	* cpplib.c: Change all refs to is_xyz[] arrays to use new
+	is_xyz() macros.  Kill SKIP_ALL_WHITE_SPACE (unused).
+	(check_macro_name): Remove ability to report an invalid
+	assertion name, which is never used.
+	(do_line): Constify a couple of char *'s.
+	* cppmain.c (main): Call cpp_cleanup before returning.
+
 Thu Oct 28 21:16:35 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc.h (struct ggc_statistics): New type.

@@ -25,8 +25,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpphash.h"
 #include "intl.h"
 
-#define SKIP_WHITE_SPACE(p) do { while (is_hor_space[*p]) p++; } while (0)
-#define SKIP_ALL_WHITE_SPACE(p) do { while (is_space[*p]) p++; } while (0)
+#define SKIP_WHITE_SPACE(p) do { while (is_hspace(*p)) p++; } while (0)
 
 #define PEEKN(N) (CPP_BUFFER (pfile)->rlimit - CPP_BUFFER (pfile)->cur >= (N) ? CPP_BUFFER (pfile)->cur[N] : EOF)
 #define FORWARD(N) CPP_FORWARD (CPP_BUFFER (pfile), (N))
@@ -411,7 +410,7 @@ cpp_skip_hspace (pfile)
       c = GETC();
       if (c == EOF)
 	return;
-      else if (is_hor_space[c])
+      else if (is_hspace(c))
 	{
 	  if ((c == '\f' || c == '\v') && CPP_PEDANTIC (pfile))
 	    cpp_pedwarn (pfile, "%s in preprocessing directive",
@@ -596,36 +595,29 @@ pass_thru_directive (buf, len, pfile, keyword)
   CPP_PUTS_Q (pfile, buf, len);
 }
 
-/* Check a purported macro name SYMNAME, and yield its length.
-   ASSERTION is nonzero if this is really for an assertion name.  */
+/* Check a purported macro name SYMNAME, and yield its length.  */
 
 int
-check_macro_name (pfile, symname, assertion)
+check_macro_name (pfile, symname)
      cpp_reader *pfile;
      const U_CHAR *symname;
-     int assertion;
 {
   const U_CHAR *p;
   int sym_length;
 
-  for (p = symname; is_idchar[*p]; p++)
+  for (p = symname; is_idchar(*p); p++)
     ;
   sym_length = p - symname;
   if (sym_length == 0
       || (sym_length == 1 && *symname == 'L' && (*p == '\'' || *p == '"')))
-    cpp_error (pfile,
-	       assertion ? "invalid assertion name" : "invalid macro name");
-  else if (!is_idstart[*symname]
+    cpp_error (pfile, "invalid macro name");
+  else if (!is_idstart(*symname)
 	   || (! strncmp (symname, "defined", 7) && sym_length == 7)) {
     U_CHAR *msg;			/* what pain...  */
     msg = (U_CHAR *) alloca (sym_length + 1);
     bcopy (symname, msg, sym_length);
     msg[sym_length] = 0;
-    cpp_error (pfile,
-	       (assertion
-		? "invalid assertion name `%s'"
-		: "invalid macro name `%s'"),
-	       msg);
+    cpp_error (pfile, "invalid macro name `%s'", msg);
   }
   return sym_length;
 }
@@ -1354,7 +1346,7 @@ do_line (pfile, keyword)
       
       if (strcmp (fname, ip->nominal_fname))
 	{
-	  char *newname, *oldname;
+	  const char *newname, *oldname;
 	  if (!strcmp (fname, ip->fname))
 	    newname = ip->fname;
 	  else if (ip->last_nominal_fname
@@ -1370,7 +1362,7 @@ do_line (pfile, keyword)
 	      && ip->last_nominal_fname != oldname
 	      && ip->last_nominal_fname != newname
 	      && ip->last_nominal_fname != ip->fname)
-	    free (ip->last_nominal_fname);
+	    free ((void *) ip->last_nominal_fname);
 
 	  if (newname == ip->fname)
 	    ip->last_nominal_fname = NULL;
@@ -1415,7 +1407,7 @@ do_undef (pfile, keyword)
 
   cpp_skip_hspace (pfile);
   c = GETC();
-  if (! is_idstart[c])
+  if (! is_idstart(c))
   {
       cpp_error (pfile, "token after #undef is not an identifier");
       skip_rest_of_line (pfile);
@@ -1440,7 +1432,7 @@ do_undef (pfile, keyword)
 
   CPP_SET_WRITTEN (pfile, here);
 
-  sym_length = check_macro_name (pfile, buf, 0);
+  sym_length = check_macro_name (pfile, buf);
 
   while ((hp = cpp_lookup (pfile, name, sym_length, -1)) != NULL)
     {
@@ -1643,10 +1635,10 @@ do_pragma (pfile, keyword)
 	{
 	  U_CHAR *end = syms;
 	  
-	  while (is_idchar[*end])
+	  while (is_idchar(*end))
 	    end++;
 
-	  if (!is_hor_space[*end] && *end != '\0')
+	  if (!is_hspace(*end) && *end != '\0')
 	    {
 	      cpp_error (pfile, "invalid #pragma poison directive");
 	      return 1;
@@ -1924,7 +1916,7 @@ do_xifdef (pfile, keyword)
       else {
 	U_CHAR *cp = buf;
 	fprintf (pcp_outfile, "#undef ");
-	while (is_idchar[*cp]) /* Ick! */
+	while (is_idchar(*cp)) /* Ick! */
 	  fputc (*cp++, pcp_outfile);
 	putc ('\n', pcp_outfile);
       }
@@ -2573,7 +2565,7 @@ cpp_get_token (pfile)
 	      c = PEEKC ();
 	      if (c == EOF)
 		break;
-	      if (!is_idchar[c] && c != '.'
+	      if (!is_idchar(c) && c != '.'
 		  && ((c2 != 'e' && c2 != 'E'
 		       && ((c2 != 'p' && c2 != 'P') || CPP_C89 (pfile)))
 		      || (c != '+' && c != '-')))
@@ -2598,7 +2590,7 @@ cpp_get_token (pfile)
 		  c = GETC();
 		  if (c == EOF)
 		    goto chill_number_eof;
-		  if (!is_idchar[c])
+		  if (!is_idchar(c))
 		    break;
 		  CPP_PUTC (pfile, c);
 		}
@@ -2720,7 +2712,7 @@ cpp_get_token (pfile)
 	    {
 	      CPP_PUTC (pfile, c);
 	      c = PEEKC ();
-	      if (c == EOF || !is_hor_space[c])
+	      if (c == EOF || !is_hspace(c))
 		break;
 	      FORWARD(1);
 	    }
@@ -2816,7 +2808,7 @@ parse_name (pfile, c)
 {
   for (;;)
   {
-      if (! is_idchar[c])
+      if (! is_idchar(c))
       {
 	  FORWARD (-1);
 	  break;
@@ -2939,7 +2931,7 @@ parse_assertion (pfile)
   int c, dropwhite;
   cpp_skip_hspace (pfile);
   c = PEEKC();
-  if (! is_idstart[c])
+  if (! is_idstart(c))
     {
       cpp_error (pfile, "assertion predicate is not an identifier");
       return 0;
@@ -2951,7 +2943,7 @@ parse_assertion (pfile)
   c = PEEKC();
   if (c != '(')
     {
-      if (is_hor_space[c] || c == '\r')
+      if (is_hspace(c) || c == '\r')
 	cpp_skip_hspace (pfile);
       c = PEEKC();
     }
@@ -2963,7 +2955,7 @@ parse_assertion (pfile)
   dropwhite = 1;
   while ((c = GETC()) != ')')
     {
-      if (is_hor_space[c])
+      if (is_space(c))
 	{
 	  if (! dropwhite)
 	    {

@@ -117,6 +117,8 @@ main (argc, argv)
       < CPP_WRITTEN (&parse_in))
     cpp_pfatal_with_name (&parse_in, opts->out_fname);
 
+  cpp_cleanup (&parse_in);
+
   if (parse_in.errors)
     return (FATAL_EXIT_CODE);
   return (SUCCESS_EXIT_CODE);
