@@ -367,8 +367,11 @@ java::lang::Class::getName (void)
 JArray<jclass> *
 java::lang::Class::getClasses (void)
 {
-  // FIXME: implement.
-  return NULL;
+  // Until we have inner classes, it always makes sense to return an
+  // empty array.
+  JArray<jclass> *result
+    = (JArray<jclass> *) JvNewObjectArray (0, &ClassClass, NULL);
+  return result;
 }
 
 JArray<jclass> *
