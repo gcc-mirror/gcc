@@ -240,16 +240,6 @@ extern int errno;
    here.  These checks will be in the undefined state while configure
    is running so be careful to test "defined (HAVE_DECL_*)".  */
 
-#ifndef bcopy
-# ifdef HAVE_BCOPY
-#  if defined (HAVE_DECL_BCOPY) && !HAVE_DECL_BCOPY
-extern void bcopy PARAMS ((const PTR, PTR, size_t));
-#  endif
-# else /* ! HAVE_BCOPY */
-#  define bcopy(src,dst,len) memmove((dst),(src),(len))
-# endif
-#endif
-
 #if defined (HAVE_DECL_ATOF) && !HAVE_DECL_ATOF
 extern double atof PARAMS ((const char *));
 #endif
@@ -557,12 +547,13 @@ typedef char _Bool;
  #pragma GCC poison malloc realloc calloc strdup
 #endif /* IN_GCC */
 
-/* Note: not all uses of `bcopy' and `index' (esp. variable names)
-   have been eliminated.  */
+/* Note: not all uses of the `index' token (e.g. variable names and
+   structure members) have been eliminated.  */
+#undef bcopy
 #undef bzero
 #undef bcmp
 #undef rindex
- #pragma GCC poison bzero bcmp rindex
+ #pragma GCC poison bcopy bzero bcmp rindex
 
 #endif /* GCC >= 3.0 */
 
