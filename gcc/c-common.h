@@ -538,6 +538,7 @@ extern char *get_directive_line			PARAMS ((void));
    and, if so, perhaps change them both back to their original type.  */
 extern tree shorten_compare			PARAMS ((tree *, tree *, tree *, enum tree_code *));
 
+extern tree pointer_int_sum			PARAMS ((enum tree_code, tree, tree));
 extern unsigned int min_precision		PARAMS ((tree, int));
 
 /* Add qualifiers to a type, in the fashion for C.  */

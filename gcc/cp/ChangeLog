@@ -1,5 +1,10 @@
 2002-02-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* typeck.c (cp_pointer_int_sum): Renamed from
+	pointer_int_sum, call pointer_int_sum.
+
+2002-02-20  Jakub Jelinek  <jakub@redhat.com>
+
 	* decl.c (duplicate_decls): Return 0 if issued error about
 	redeclaration.
 
