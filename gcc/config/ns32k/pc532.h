@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "ns32k.h"
+#include "ns32k/ns32k.h"
 
 /* Compile for the floating point unit & 32532 by default;
    also presume SB is zero */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Generic Tektronix 6000 series NS32000 version.
-   See tek6100.h and tek6200.h, which include this file.
+   See ns32k/tek6100.h and ns32k/tek6200.h, which include this file.
    Copyright (C) 1990 Free Software Foundation, Inc.
    Created by Snoopy  (sopwith.uucp!snoopy).
    Based on work by Mark Mason (mason@reed.bitnet,
@@ -35,7 +35,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ABSOLUTE_PREFIX		0
 #define IMMEDIATE_PREFIX	'$'
 
-#include "ns32k.h"
+#include "ns32k/ns32k.h"
 
 /* Define these after ns32k.c so we will notice if gcc tries to
  * output external mode addressing.  UTek's as and ld do not support

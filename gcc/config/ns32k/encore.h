@@ -23,7 +23,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define EXTERNAL_PREFIX '?'
 #define IMMEDIATE_PREFIX '$'
 
-#include "ns32k.h"
+#include "ns32k/ns32k.h"
 
 #define SDB_DEBUGGING_INFO
 #undef DBX_REGISTER_NUMBER

@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "ns32k.h"
+#include "ns32k/ns32k.h"
 
 /* This is BSD, so it wants DBX format.  */
 #define DBX_DEBUGGING_INFO

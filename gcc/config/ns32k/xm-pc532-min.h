@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define USG
 
-#include "xm-ns32k.h"
+#include "ns32k/xm-ns32k.h"
 
 #ifndef HZ
 #define HZ 60
