@@ -4,6 +4,7 @@
 	(TARGET_INITIALIZER): Include it.
 	* target.h (struct gcc_target): Add machine_dependent_reorg field.
 	* toplev.c (rest_of_compilation): Use targetm.machine_dependent_reorg.
+	* system.h: Poison MACHINE_DEPENDENT_REORG.
 
 	* config/alpha/alpha-protos.h (alpha_reorg): Remove declaration.
 	* config/alpha/alpha.h (MACHINE_DEPENDENT_REORG): Remove.
