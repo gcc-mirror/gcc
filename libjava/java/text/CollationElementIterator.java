@@ -1,5 +1,5 @@
 /* CollationElementIterator.java -- Walks through collation elements
-   Copyright (C) 1998, 1999, 2001, 2002, 2003  Free Software Foundation
+   Copyright (C) 1998, 1999, 2001, 2002, 2003, 2004  Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -178,6 +178,27 @@ public final class CollationElementIterator
     this.textIndex = 0;
     this.lookahead_set = false;
     this.lookahead = 0;
+  }
+
+  /**
+   * This method sets the <code>String</code> that it is iterating over
+   * to the <code>String</code> represented by the specified
+   * <code>CharacterIterator</code>.
+   *
+   * @param source The <code>CharacterIterator</code> containing the new
+   * <code>String</code> to iterate over.
+   */
+  public void setText(CharacterIterator source)
+  {
+    StringBuffer expand = new StringBuffer();
+
+    // For now assume we read from the beginning of the string.
+    for (char c = source.first();
+	 c != CharacterIterator.DONE;
+	 c = source.next())
+      expand.append(c);
+
+    setText(expand.toString());
   }
 
   /**

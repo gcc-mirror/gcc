@@ -1,5 +1,10 @@
 2004-01-23  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/CollationElementIterator.java:
+	(setText): New method.
+
+2004-01-23  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileLockImpl.java:
 	Fixed filename in copyright.
 	(released): Removed.
