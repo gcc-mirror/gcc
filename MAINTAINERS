@@ -53,7 +53,6 @@ i960 port		Jim Wilson		wilson@tuliptree.org
 ia64 port		Jim Wilson		wilson@tuliptree.org
 ip2k port		Denis Chertykov		denisc@overta.ru
 m32r port		Nick Clifton		nickc@redhat.com
-m32r port		Michael Meissner	gnu@the-meissners.org
 m68hc11 port		Stephane Carrez		stcarrez@nerim.fr
 m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
@@ -74,7 +73,6 @@ sparc port		Richard Henderson	rth@redhat.com
 sparc port		David S. Miller		davem@redhat.com
 sparc port		Jakub Jelinek		jakub@redhat.com
 v850 port		Nick Clifton		nickc@redhat.com
-v850 port		Michael Meissner	gnu@the-meissners.org
 vax port		Dave Anglin		dave.anglin@nrc.ca
 x86-64 port		Jan Hubicka		jh@suse.cz
 xstormy16 port		Geoffrey Keating	geoffk@geoffk.org
