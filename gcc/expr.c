@@ -7671,7 +7671,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* At this point, a MEM target is no longer useful; we will get better
 	 code without it.  */
 
-      if (MEM_P (target))
+      if (! REG_P (target))
 	target = gen_reg_rtx (mode);
 
       /* If op1 was placed in target, swap op0 and op1.  */
@@ -7681,6 +7681,11 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	  op0 = op1;
 	  op1 = tem;
 	}
+
+      /* We generate better code and avoid problems with op1 mentioning
+	 target by forcing op1 into a pseudo if it isn't a constant.  */
+      if (! CONSTANT_P (op1))
+	op1 = force_reg (mode, op1);
 
       if (target != op0)
 	emit_move_insn (target, op0);
