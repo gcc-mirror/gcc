@@ -1144,11 +1144,8 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-/* We have a choice here too.  */
-#if 0
-/* FIXME:  Revisit, we don't have scc expanders yet.  */
-#define STORE_FLAG_VALUE 1
-#endif
+/* ??? MMIX allows a choice of STORE_FLAG_VALUE.  Revisit later,
+   we don't have scc expanders yet.  */
 
 #define Pmode DImode
 

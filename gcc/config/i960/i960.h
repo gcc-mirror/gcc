@@ -1115,11 +1115,6 @@ struct cum_args { int ca_nregparms; int ca_nstackparms; };
 
 #define SLOW_BYTE_ACCESS 1
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-
-#define STORE_FLAG_VALUE 1
-
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 0

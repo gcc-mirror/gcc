@@ -1679,8 +1679,6 @@ call_ ## FUNC (void)						\
 
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-#define STORE_FLAG_VALUE 1
-
 #define Pmode SImode
 
 #define FUNCTION_MODE QImode

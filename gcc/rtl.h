@@ -1952,12 +1952,6 @@ extern rtx output_constant_def		PARAMS ((tree, int));
 /* Called from integrate.c when a deferred constant is inlined.  */
 extern void notice_rtl_inlining_of_deferred_constant PARAMS ((void));
 
-/* Define a default value for STORE_FLAG_VALUE.  */
-
-#ifndef STORE_FLAG_VALUE
-#define STORE_FLAG_VALUE 1
-#endif
-
 /* Nonzero after the second flow pass has completed.
    Set to 1 or 0 by toplev.c  */
 extern int flow2_completed;

@@ -2265,9 +2265,7 @@ do {									\
    an integral mode and stored by a store-flag instruction (`sCOND') when the
    condition is true.  */
 
-/* ??? Investigate using -1 instead of 1.  */
-
-#define STORE_FLAG_VALUE 1
+/* ??? Investigate using STORE_FLAG_VALUE of -1 instead of 1.  */
 
 /* An alias for the machine mode for pointers.  */
 

@@ -2260,8 +2260,6 @@ extern int making_const_table;
     }									\
   while (0)
 
-#define STORE_FLAG_VALUE 1
-
 /* The arm5 clz instruction returns 32.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 

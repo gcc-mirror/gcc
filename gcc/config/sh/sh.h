@@ -2713,11 +2713,6 @@ while (0)
 /* Nonzero if access to memory by bytes is no faster than for words.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-
-#define STORE_FLAG_VALUE 1
-
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by SH.  Note
    that the native compiler puts too large (> 32) immediate shift counts

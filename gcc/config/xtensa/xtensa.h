@@ -1279,13 +1279,10 @@ typedef struct xtensa_args {
 /* Prefer word-sized loads.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Xtensa doesn't have any instructions that set integer values based on the
-   results of comparisons, but the simplification code in the combiner also
-   uses this macro.  The value should be either 1 or -1 to enable some
-   optimizations in the combiner; I'm not sure which is better for us.
-   Since we've been using 1 for a while, it should probably stay that way for
-   compatibility.  */
-#define STORE_FLAG_VALUE 1
+/* ??? Xtensa doesn't have any instructions that set integer values
+   based on the results of comparisons, but the simplification code in
+   the combiner also uses STORE_FLAG_VALUE.  The default value (1) is
+   fine for us, but (-1) might be better.  */
 
 /* Shift instructions ignore all but the low-order few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1

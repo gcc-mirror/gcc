@@ -977,10 +977,6 @@ extern const enum reg_class reg_class_from_letter[];
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS TARGET_SLOW_BYTES
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-#define STORE_FLAG_VALUE 1
-
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note
    that the native compiler puts too large (> 32) immediate shift counts

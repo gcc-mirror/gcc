@@ -633,4 +633,9 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  0
 #endif
 
+/* Provide a default value for STORE_FLAG_VALUE.  */
+#ifndef STORE_FLAG_VALUE
+#define STORE_FLAG_VALUE  1
+#endif
+
 #endif  /* ! GCC_DEFAULTS_H */

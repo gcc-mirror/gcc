@@ -3153,11 +3153,6 @@ typedef struct mips_args {
    this as 1, since it avoids making a QI or HI mode register.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* We assume that the store-condition-codes instructions store 0 for false
-   and some other value for true.  This is the value stored for true.  */
-
-#define STORE_FLAG_VALUE 1
-
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
