@@ -245,7 +245,7 @@ Improvements to the way @code{libg2c} is built could make
 building @code{g77} as a cross-compiler easier---for example,
 passing and using @samp{$(LD)} and @samp{$(AR)} in the appropriate
 ways.
-(This is improved in the @code{egcs} version of @code{g77},
+(This was improved in the @code{egcs} version of @code{g77},
 especially as of version 1.1.)
 
 @item
