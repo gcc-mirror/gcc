@@ -1692,7 +1692,6 @@ package body Sem_Prag is
       is
          Id        : Node_Id;
          E1        : Entity_Id;
-         Comp_Unit : Unit_Number_Type;
          Cname     : Name_Id;
 
          procedure Set_Convention_From_Pragma (E : Entity_Id);
@@ -1908,12 +1907,9 @@ package body Sem_Prag is
             end if;
 
          --  For the subprogram case, set proper convention for all homonyms
-         --  in same compilation unit.
-         --  Is the test of compilation unit really necessary ???
-         --  What about subprogram renamings here???
+         --  in same scope.
 
          else
-            Comp_Unit := Get_Source_Unit (E);
             Set_Convention_From_Pragma (E);
 
             --  Treat a pragma Import as an implicit body, for GPS use.
@@ -1931,7 +1927,10 @@ package body Sem_Prag is
                --  That is deliberate, we cannot chain the rep item on more
                --  than one Rep_Item chain, to be fixed later ???
 
-               if Comp_Unit = Get_Source_Unit (E1) then
+               if Comes_From_Source (E1)
+                 and then Nkind (Original_Node (Parent (E1))) /=
+                   N_Full_Type_Declaration
+               then
                   Set_Convention_From_Pragma (E1);
 
                   if Prag_Id = Pragma_Import then
@@ -8561,9 +8560,39 @@ package body Sem_Prag is
          -- Source_File_Name --
          ----------------------
 
+         --  There are five forms for this pragma:
+
          --  pragma Source_File_Name (
-         --    [UNIT_NAME =>] unit_NAME,
-         --    [BODY_FILE_NAME | SPEC_FILE_NAME] => STRING_LITERAL);
+         --    [UNIT_NAME      =>] unit_NAME,
+         --     BODY_FILE_NAME =>  STRING_LITERAL
+         --    [, [INDEX =>] INTEGER_LITERAL]);
+
+         --  pragma Source_File_Name (
+         --    [UNIT_NAME      =>] unit_NAME,
+         --     SPEC_FILE_NAME =>  STRING_LITERAL
+         --    [, [INDEX =>] INTEGER_LITERAL]);
+
+         --  pragma Source_File_Name (
+         --     BODY_FILE_NAME  => STRING_LITERAL
+         --  [, DOT_REPLACEMENT => STRING_LITERAL]
+         --  [, CASING          => CASING_SPEC]);
+
+         --  pragma Source_File_Name (
+         --     SPEC_FILE_NAME  => STRING_LITERAL
+         --  [, DOT_REPLACEMENT => STRING_LITERAL]
+         --  [, CASING          => CASING_SPEC]);
+
+         --  pragma Source_File_Name (
+         --     SUBUNIT_FILE_NAME  => STRING_LITERAL
+         --  [, DOT_REPLACEMENT    => STRING_LITERAL]
+         --  [, CASING             => CASING_SPEC]);
+
+         --  CASING_SPEC ::= Uppercase | Lowercase | Mixedcase
+
+         --  Pragma Source_File_Name_Project (SFNP) is equivalent to pragma
+         --  Source_File_Name (SFN), however their usage is exclusive:
+         --  SFN can only be used when no project file is used, while
+         --  SFNP can only be used when a project file is used.
 
          --  No processing here. Processing was completed during parsing,
          --  since we need to have file names set as early as possible.
@@ -8580,9 +8609,7 @@ package body Sem_Prag is
          -- Source_File_Name_Project --
          ------------------------------
 
-         --  pragma Source_File_Name_Project (
-         --    [UNIT_NAME =>] unit_NAME,
-         --    [BODY_FILE_NAME | SPEC_FILE_NAME] => STRING_LITERAL);
+         --  See Source_File_Name for syntax
 
          --  No processing here. Processing was completed during parsing,
          --  since we need to have file names set as early as possible.
@@ -8597,6 +8624,7 @@ package body Sem_Prag is
 
             --  Check that a pragma Source_File_Name_Project is used only
             --  in a configuration pragmas file.
+
             --  Pragmas Source_File_Name_Project should only be generated
             --  by the Project Manager in configuration pragmas files.
 

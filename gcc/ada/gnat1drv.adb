@@ -310,7 +310,13 @@ begin
             --  include both in a partition, this is diagnosed at bind time.
             --  In Ada 83 mode this is not a warning case.
 
+            --  Note: if weird file names are being used, we can have a
+            --  situation where the file name that supposedly contains a
+            --  body, in fact contains a spec, or we can't tell what it
+            --  contains. Skip the error message in these cases.
+
             if Src_Ind /= No_Source_File
+              and then Get_Expected_Unit_Type (Fname) = Expect_Body
               and then not Source_File_Is_Subunit (Src_Ind)
             then
                Error_Msg_Name_1 := Sname;

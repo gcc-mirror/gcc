@@ -1488,6 +1488,7 @@ package body Exp_Ch9 is
       Protnm      : constant Name_Id := Chars (Prottyp);
       Ident       : Entity_Id;
       Nam         : Name_Id;
+      New_Id      : Entity_Id;
       New_Plist   : List_Id;
       Append_Char : Character;
       New_Spec    : Node_Id;
@@ -1514,20 +1515,28 @@ package body Exp_Ch9 is
          Append_Char := 'P';
       end if;
 
+      New_Id :=
+        Make_Defining_Identifier (Loc,
+          Chars => Build_Selected_Name (Protnm, Nam, Append_Char));
+
+      --  The unprotected operation carries the user code, and debugging
+      --  information must be generated for it, even though this spec does
+      --  not come from source. It is also convenient to allow gdb to step
+      --  into the protected operation, even though it only contains lock/
+      --  unlock calls.
+
+      Set_Needs_Debug_Info (New_Id);
+
       if Nkind (Specification (Decl)) = N_Procedure_Specification then
          return
            Make_Procedure_Specification (Loc,
-             Defining_Unit_Name =>
-               Make_Defining_Identifier (Loc,
-                 Chars => Build_Selected_Name (Protnm, Nam, Append_Char)),
+             Defining_Unit_Name => New_Id,
              Parameter_Specifications => New_Plist);
 
       else
          New_Spec :=
            Make_Function_Specification (Loc,
-             Defining_Unit_Name =>
-               Make_Defining_Identifier (Loc,
-                 Chars => Build_Selected_Name (Protnm, Nam, Append_Char)),
+             Defining_Unit_Name => New_Id,
              Parameter_Specifications => New_Plist,
              Subtype_Mark => New_Copy (Subtype_Mark (Specification (Decl))));
          Set_Return_Present (Defining_Unit_Name (New_Spec));

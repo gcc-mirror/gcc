@@ -1541,6 +1541,19 @@ package body Exp_Ch5 is
            (Expression (Rhs), Designated_Type (Etype (Lhs)));
       end if;
 
+      --  Ada 0Y (AI-231): Generate conversion to the null-excluding
+      --  type to force the corresponding run-time check
+
+      if Is_Access_Type (Typ)
+        and then ((Is_Entity_Name (Lhs)
+                   and then Can_Never_Be_Null (Entity (Lhs)))
+                   or else Can_Never_Be_Null (Etype (Lhs)))
+      then
+         Rewrite (Rhs, Convert_To (Etype (Lhs),
+                                   Relocate_Node (Rhs)));
+         Analyze_And_Resolve (Rhs, Etype (Lhs));
+      end if;
+
       --  If we are assigning an access type and the left side is an
       --  entity, then make sure that Is_Known_Non_Null properly
       --  reflects the state of the entity after the assignment

@@ -692,10 +692,24 @@ package body Sprint is
             Write_Char (';');
 
          when N_Access_Definition =>
+
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str ("not null ");
+            end if;
+
             Write_Str_With_Col_Check_Sloc ("access ");
             Sprint_Node (Subtype_Mark (Node));
 
          when N_Access_Function_Definition =>
+
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str ("not null ");
+            end if;
+
             Write_Str_With_Col_Check_Sloc ("access ");
 
             if Protected_Present (Node) then
@@ -708,6 +722,12 @@ package body Sprint is
             Sprint_Node (Subtype_Mark (Node));
 
          when N_Access_Procedure_Definition =>
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str ("not null ");
+            end if;
+
             Write_Str_With_Col_Check_Sloc ("access ");
 
             if Protected_Present (Node) then
@@ -724,6 +744,12 @@ package body Sprint is
                Write_Str_With_Col_Check ("all ");
             elsif Constant_Present (Node) then
                Write_Str_With_Col_Check ("constant ");
+            end if;
+
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str ("not null ");
             end if;
 
             Sprint_Node (Subtype_Indication (Node));
@@ -774,6 +800,12 @@ package body Sprint is
 
          when N_Allocator =>
             Write_Str_With_Col_Check_Sloc ("new ");
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str ("not null ");
+            end if;
+
             Sprint_Node (Expression (Node));
 
             if Present (Storage_Pool (Node)) then
@@ -962,6 +994,12 @@ package body Sprint is
                   Write_Str_With_Col_Check ("aliased ");
                end if;
 
+               --  Ada 0Y (AI-231)
+
+               if Null_Exclusion_Present (Node) then
+                  Write_Str (" not null ");
+               end if;
+
                Sprint_Node (Subtype_Indication (Node));
             else
                pragma Assert (False);
@@ -1084,6 +1122,13 @@ package body Sprint is
             end if;
 
             Write_Str_With_Col_Check_Sloc ("new ");
+
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str_With_Col_Check ("not null ");
+            end if;
+
             Sprint_Node (Subtype_Indication (Node));
 
             if Present (Record_Extension_Part (Node)) then
@@ -1117,6 +1162,11 @@ package body Sprint is
 
             if Write_Identifiers (Node) then
                Write_Str (" : ");
+
+               if Null_Exclusion_Present (Node) then
+                  Write_Str ("not null ");
+               end if;
+
                Sprint_Node (Discriminant_Type (Node));
 
                if Present (Expression (Node)) then
@@ -1688,6 +1738,12 @@ package body Sprint is
                   Write_Str_With_Col_Check ("constant ");
                end if;
 
+               --  Ada 0Y (AI-231)
+
+               if Null_Exclusion_Present (Node) then
+                  Write_Str_With_Col_Check ("not null ");
+               end if;
+
                Sprint_Node (Object_Definition (Node));
 
                if Present (Expression (Node)) then
@@ -1940,6 +1996,12 @@ package body Sprint is
 
                if Out_Present (Node) then
                   Write_Str_With_Col_Check ("out ");
+               end if;
+
+               --  Ada 0Y (AI-231)
+
+               if Null_Exclusion_Present (Node) then
+                  Write_Str ("not null ");
                end if;
 
                Sprint_Node (Parameter_Type (Node));
@@ -2326,6 +2388,13 @@ package body Sprint is
             Write_Indent_Str_Sloc ("subtype ");
             Write_Id (Defining_Identifier (Node));
             Write_Str (" is ");
+
+            --  Ada 0Y (AI-231)
+
+            if Null_Exclusion_Present (Node) then
+               Write_Str ("not null ");
+            end if;
+
             Sprint_Node (Subtype_Indication (Node));
             Write_Char (';');
 

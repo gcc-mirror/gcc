@@ -902,7 +902,8 @@ package body Sem_Res is
       Act1      : Node_Id := First_Actual (N);
       Act2      : Node_Id := Next_Actual (Act1);
       Error     : Boolean := False;
-      Is_Binary : constant Boolean := Present (Act2);
+      Func      : constant Entity_Id := Entity (Name (N));
+      Is_Binary : constant Boolean   := Present (Act2);
       Op_Node   : Node_Id;
       Opnd_Type : Entity_Id;
       Orig_Type : Entity_Id := Empty;
@@ -1195,6 +1196,20 @@ package body Sem_Res is
          Set_Etype (Op_Node, Base_Type (Etype (N)));
       else
          Set_Etype (Op_Node, Etype (N));
+      end if;
+
+      --  If this is a call to a function that renames a predefined equality,
+      --  the renaming declaration provides a type that must be used to
+      --  resolve the operands. This must be done now because resolution of
+      --  the equality node will not resolve any remaining ambiguity, and it
+      --  assumes that the first operand is not overloaded.
+
+      if (Op_Name = Name_Op_Eq or else Op_Name = Name_Op_Ne)
+        and then Ekind (Func) = E_Function
+        and then Is_Overloaded (Act1)
+      then
+         Resolve (Act1, Base_Type (Etype (First_Formal (Func))));
+         Resolve (Act2, Base_Type (Etype (First_Formal (Func))));
       end if;
 
       Set_Entity (Op_Node, Op_Id);
@@ -2681,6 +2696,19 @@ package body Sem_Res is
 
                else
                   Apply_Range_Check (A, F_Typ);
+               end if;
+
+               --  Ada 0Y (AI-231)
+
+               if Extensions_Allowed
+                 and then Is_Access_Type (F_Typ)
+                 and then (Can_Never_Be_Null (F)
+                           or else Can_Never_Be_Null (F_Typ))
+               then
+                  if Nkind (A) = N_Null then
+                     Error_Msg_NE ("(Ada 0Y) not allowed for null-exclusion " &
+                                   "formal", A, F_Typ);
+                  end if;
                end if;
             end if;
 
@@ -5140,7 +5168,10 @@ package body Sem_Res is
       --  anonymous null access values via a debug switch to allow
       --  for easier transition.
 
-      if not Debug_Flag_J
+      --  Ada 0Y (AI-231): Remove restriction
+
+      if not Extensions_Allowed
+        and then not Debug_Flag_J
         and then Ekind (Typ) = E_Anonymous_Access_Type
         and then Comes_From_Source (N)
       then

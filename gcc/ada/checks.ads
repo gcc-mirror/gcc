@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -615,6 +615,9 @@ package Checks is
    --  Inserts code that will check for the value of Expr being valid, in
    --  the sense of the 'Valid attribute returning True. Constraint_Error
    --  will be raised if the value is not valid.
+
+   procedure Null_Exclusion_Static_Checks (N : Node_Id);
+   --  Ada 0Y (AI-231): Check bad usages of the null-exclusion issue
 
    procedure Remove_Checks (Expr : Node_Id);
    --  Remove all checks from Expr except those that are only executed

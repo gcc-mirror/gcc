@@ -301,7 +301,6 @@ package body Ch10 is
          else
             if Operating_Mode = Check_Syntax and then Token = Tok_EOF then
                Error_Msg_SC ("?file contains no compilation units");
-
             else
                Error_Msg_SC ("compilation unit expected");
                Cunit_Error_Flag := True;
@@ -333,15 +332,10 @@ package body Ch10 is
          --  contained subprogram bodies), by knowing that that the file we
          --  are compiling has a name that requires a body to be found.
 
-         --  However, we do not do this check if we are operating in syntax
-         --  checking only mode, because in that case there may be multiple
-         --  units in the same file, and the file name is not a reliable guide.
-
          Save_Scan_State (Scan_State);
          Scan; -- past Package keyword
 
          if Token /= Tok_Body
-           and then Operating_Mode /= Check_Syntax
            and then
              Get_Expected_Unit_Type
                (File_Name (Current_Source_File)) = Expect_Body
@@ -665,13 +659,26 @@ package body Ch10 is
          elsif Operating_Mode = Check_Syntax then
             return Comp_Unit_Node;
 
+         --  We also allow multiple units if we are in multiple unit mode
+
+         elsif Multiple_Unit_Index /= 0 then
+
+            --  Skip tokens to end of file, so that the -gnatl listing
+            --  will be complete in this situation, but no need to parse
+            --  the remaining units.
+
+            while Token /= Tok_EOF loop
+               Scan;
+            end loop;
+
+            return Comp_Unit_Node;
+
          --  Otherwise we have an error. We suppress the error message
          --  if we already had a fatal error, since this stops junk
          --  cascaded messages in some situations.
 
          else
             if not Fatal_Error (Current_Source_Unit) then
-
                if Token in Token_Class_Cunit then
                   Error_Msg_SC
                     ("end of file expected, " &
@@ -706,7 +713,6 @@ package body Ch10 is
       when Error_Resync =>
          Set_Fatal_Error (Current_Source_Unit);
          return Error;
-
    end P_Compilation_Unit;
 
    --------------------------

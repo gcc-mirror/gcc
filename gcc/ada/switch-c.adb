@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2001-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -219,6 +219,12 @@ package body Switch.C is
                if Tree_Output then
                   ASIS_Mode := True;
                end if;
+
+            --  Processing for C switch
+
+            when 'C' =>
+               Ptr := Ptr + 1;
+               Scan_Pos (Switch_Chars, 999, Ptr, Multiple_Unit_Index);
 
             --  Processing for d switch
 

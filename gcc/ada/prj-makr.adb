@@ -365,6 +365,7 @@ package body Prj.Makr is
                                     Output.Write_Str ("(process died) ");
                                  end if;
                               end if;
+
                            else
                               Line_Loop : while not End_Of_File (File) loop
                                  Get_Line (File, Text_Line, Text_Last);
@@ -376,8 +377,7 @@ package body Prj.Makr is
                                        if J >= 13 and then
                                          Text_Line (1 .. 4) = "Unit"
                                        then
-                                          --  Add an entry in the SFN_Pragmas
-                                          --  table.
+                                          --  Add entry to SFN_Pragmas table
 
                                           Name_Len := J - 12;
                                           Name_Buffer (1 .. Name_Len) :=
@@ -431,25 +431,24 @@ package body Prj.Makr is
 
                               if Project_File then
 
-                                 --  Add the corresponding attribute in
-                                 --  the Naming package of the naming
-                                 --  project.
+                                 --  Add the corresponding attribute in the
+                                 --  Naming package of the naming project.
 
                                  declare
-                                    Decl_Item : constant Project_Node_Id
-                                      := Default_Project_Node
-                                        (Of_Kind =>
-                                             N_Declarative_Item);
+                                    Decl_Item : constant Project_Node_Id :=
+                                                  Default_Project_Node
+                                                   (Of_Kind =>
+                                                      N_Declarative_Item);
 
-                                    Attribute : constant Project_Node_Id
-                                      := Default_Project_Node
-                                        (Of_Kind =>
-                                             N_Attribute_Declaration);
+                                    Attribute : constant Project_Node_Id :=
+                                                  Default_Project_Node
+                                                   (Of_Kind =>
+                                                      N_Attribute_Declaration);
 
-                                    Expression : constant Project_Node_Id
-                                      := Default_Project_Node
-                                        (Of_Kind => N_Expression,
-                                         And_Expr_Kind => Single);
+                                    Expression : constant Project_Node_Id :=
+                                                   Default_Project_Node
+                                                    (Of_Kind => N_Expression,
+                                                     And_Expr_Kind => Single);
 
                                     Term : constant Project_Node_Id :=
                                              Default_Project_Node
@@ -458,10 +457,8 @@ package body Prj.Makr is
 
                                     Value : constant Project_Node_Id :=
                                               Default_Project_Node
-                                                (Of_Kind =>
-                                                             N_Literal_String,
-                                                 And_Expr_Kind =>
-                                                   Single);
+                                                (Of_Kind => N_Literal_String,
+                                                 And_Expr_Kind => Single);
 
                                  begin
                                     Set_Next_Declarative_Item
@@ -503,8 +500,7 @@ package body Prj.Makr is
                                       (Value, To => File_Name_Id);
                                  end;
 
-                                 --  Add source file name to source list
-                                 --  file.
+                                 --  Add source file name to source list file
 
                                  Last := Last + 1;
                                  Str (Last) := ASCII.LF;
@@ -527,8 +523,7 @@ package body Prj.Makr is
                   --  File name matches none of the regular expressions
 
                   else
-                     --  If the file is not excluded, look if this is a foreign
-                     --  source.
+                     --  If file is not excluded, see if this is foreign source
 
                      if Matched /= Excluded then
                         for Index in Foreign_Expressions'Range loop

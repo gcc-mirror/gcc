@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -395,6 +395,20 @@ package body Sem_Ch5 is
         and then Is_Tag_Indeterminate (Rhs)
       then
          Propagate_Tag (Lhs, Rhs);
+      end if;
+
+      --  Ada 0Y (AI-231)
+
+      if Extensions_Allowed
+        and then Nkind (Rhs) = N_Null
+        and then Is_Access_Type (T1)
+        and then not Assignment_OK (Lhs)
+        and then ((Is_Entity_Name (Lhs)
+                     and then Can_Never_Be_Null (Entity (Lhs)))
+                   or else Can_Never_Be_Null (Etype (Lhs)))
+      then
+         Error_Msg_N
+           ("(Ada 0Y) NULL not allowed in null-excluding objects", Lhs);
       end if;
 
       if Is_Scalar_Type (T1) then

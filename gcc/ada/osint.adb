@@ -750,13 +750,11 @@ package body Osint is
       return Name_Enter;
    end Executable_Name;
 
-   -------------------------
+   -----------------------
    -- Executable_Prefix --
-   -------------------------
+   -----------------------
 
    function Executable_Prefix return String_Ptr is
-      Exec_Name : String (1 .. Len_Arg (0));
-
       function Get_Install_Dir (Exec : String) return String_Ptr;
       --  S is the executable name preceeded by the absolute or relative
       --  path, e.g. "c:\usr\bin\gcc.exe" or "..\bin\gcc".
@@ -790,21 +788,25 @@ package body Osint is
    --  Start of processing for Executable_Prefix
 
    begin
-      Osint.Fill_Arg (Exec_Name'Address, 0);
+      if Exec_Name = null then
+         Exec_Name := new String (1 .. Len_Arg (0));
+         Osint.Fill_Arg (Exec_Name (1)'Address, 0);
+      end if;
 
       --  First determine if a path prefix was placed in front of the
       --  executable name.
 
       for J in reverse Exec_Name'Range loop
          if Is_Directory_Separator (Exec_Name (J)) then
-            return Get_Install_Dir (Exec_Name);
+            return Get_Install_Dir (Exec_Name.all);
          end if;
       end loop;
 
       --  If we come here, the user has typed the executable name with no
       --  directory prefix.
 
-      return Get_Install_Dir (GNAT.OS_Lib.Locate_Exec_On_Path (Exec_Name).all);
+      return Get_Install_Dir
+        (GNAT.OS_Lib.Locate_Exec_On_Path (Exec_Name.all).all);
    end Executable_Prefix;
 
    ------------------
@@ -1390,27 +1392,26 @@ package body Osint is
    -------------------
 
    function Lib_File_Name
-     (Source_File : File_Name_Type)
-      return        File_Name_Type
+     (Source_File : File_Name_Type;
+      Munit_Index : Nat := 0) return File_Name_Type
    is
-      Fptr : Natural;
-      --  Pointer to location to set extension in place
-
    begin
       Get_Name_String (Source_File);
-      Fptr := Name_Len + 1;
 
       for J in reverse 2 .. Name_Len loop
          if Name_Buffer (J) = '.' then
-            Fptr := J;
+            Name_Len := J - 1;
             exit;
          end if;
       end loop;
 
-      Name_Buffer (Fptr) := '.';
-      Name_Buffer (Fptr + 1 .. Fptr + ALI_Suffix'Length) := ALI_Suffix.all;
-      Name_Buffer (Fptr + ALI_Suffix'Length + 1) := ASCII.NUL;
-      Name_Len := Fptr + ALI_Suffix'Length;
+      if Munit_Index /= 0 then
+         Add_Char_To_Name_Buffer ('~');
+         Add_Nat_To_Name_Buffer (Munit_Index);
+      end if;
+
+      Add_Char_To_Name_Buffer ('.');
+      Add_Str_To_Name_Buffer (ALI_Suffix.all);
       return Name_Find;
    end Lib_File_Name;
 

@@ -262,6 +262,10 @@ package Lib is
    --      Set when the entry is created by a call to Lib.Load and then cannot
    --      be changed.
 
+   --    Munit_Index
+   --      The index of the unit within the file for multiple unit per file
+   --      mode. Set to zero in normal single unit per file mode.
+
    --    Error_Location
    --      This is copied from the Sloc field of the Enode argument passed
    --      to Load_Unit. It refers to the enclosing construct which caused
@@ -388,6 +392,7 @@ package Lib is
    function Has_RACW         (U : Unit_Number_Type) return Boolean;
    function Loading          (U : Unit_Number_Type) return Boolean;
    function Main_Priority    (U : Unit_Number_Type) return Int;
+   function Munit_Index      (U : Unit_Number_Type) return Nat;
    function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
    function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
    function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
@@ -614,6 +619,7 @@ private
    pragma Inline (Increment_Serial_Number);
    pragma Inline (Loading);
    pragma Inline (Main_Priority);
+   pragma Inline (Munit_Index);
    pragma Inline (Set_Cunit);
    pragma Inline (Set_Cunit_Entity);
    pragma Inline (Set_Fatal_Error);
@@ -629,6 +635,7 @@ private
    type Unit_Record is record
       Unit_File_Name   : File_Name_Type;
       Unit_Name        : Unit_Name_Type;
+      Munit_Index      : Nat;
       Expected_Unit    : Unit_Name_Type;
       Source_Index     : Source_File_Index;
       Cunit            : Node_Id;

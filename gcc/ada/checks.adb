@@ -244,6 +244,10 @@ package body Checks is
    --  that the access value is non-null, since the checks do not
    --  not apply to null access values.
 
+   procedure Install_Null_Excluding_Check (N : Node_Id);
+   --  Determines whether an access node requires a runtime access check and
+   --  if so inserts the appropriate run-time check
+
    procedure Install_Static_Check (R_Cno : Node_Id; Loc : Source_Ptr);
    --  Called by Apply_{Length,Range}_Checks to rewrite the tree with the
    --  Constraint_Error node.
@@ -392,19 +396,7 @@ package body Checks is
 
       --  Access check is required
 
-      declare
-         Loc : constant Source_Ptr := Sloc (N);
-
-      begin
-         Insert_Action (N,
-           Make_Raise_Constraint_Error (Sloc (N),
-              Condition =>
-                Make_Op_Eq (Loc,
-                  Left_Opnd => Duplicate_Subexpr_Move_Checks (P),
-                  Right_Opnd =>
-                    Make_Null (Loc)),
-              Reason => CE_Access_Check_Failed));
-      end;
+      Install_Null_Excluding_Check (P);
    end Apply_Access_Check;
 
    -------------------------------
@@ -506,7 +498,7 @@ package body Checks is
                  Reason => PE_Misaligned_Address_Value));
             Error_Msg_NE
               ("?specified address for& not " &
-               "consistent with alignment", Expr, E);
+               "consistent with alignment ('R'M 13.3(27))", Expr, E);
          end if;
 
       --  Here we do not know if the value is acceptable, generate
@@ -996,6 +988,12 @@ package body Checks is
             and then Is_Constrained (Desig_Typ)
          then
             Apply_Discriminant_Check (N, Typ);
+         end if;
+
+         if Can_Never_Be_Null (Typ)
+           and then not Can_Never_Be_Null (Etype (N))
+         then
+            Install_Null_Excluding_Check (N);
          end if;
       end if;
    end Apply_Constraint_Check;
@@ -2192,6 +2190,170 @@ package body Checks is
          Check_Valid_Lvalue_Subscripts (Prefix (Expr));
       end if;
    end Check_Valid_Lvalue_Subscripts;
+
+   ----------------------------------
+   -- Null_Exclusion_Static_Checks --
+   ----------------------------------
+
+   procedure Null_Exclusion_Static_Checks (N : Node_Id) is
+      K                  : constant Node_Kind := Nkind (N);
+      Expr               : Node_Id;
+      Typ                : Entity_Id;
+      Related_Nod        : Node_Id;
+      Has_Null_Exclusion : Boolean := False;
+
+      --  Following declarations and subprograms are just used to qualify the
+      --  error messages
+
+      type Msg_Kind is (Components, Formals, Objects);
+      Msg_K : Msg_Kind := Objects;
+
+      procedure Must_Be_Initialized;
+      procedure Null_Not_Allowed;
+
+      -------------------------
+      -- Must_Be_Initialized --
+      -------------------------
+
+      procedure Must_Be_Initialized is
+      begin
+         case Msg_K is
+            when Components =>
+               Error_Msg_N
+                 ("(Ada 0Y) null-excluding components must be initialized",
+                  Related_Nod);
+
+            when Formals =>
+               Error_Msg_N
+                 ("(Ada 0Y) null-excluding formals must be initialized",
+                  Related_Nod);
+
+            when Objects =>
+               Error_Msg_N
+                 ("(Ada 0Y) null-excluding objects must be initialized",
+                  Related_Nod);
+         end case;
+      end Must_Be_Initialized;
+
+      ----------------------
+      -- Null_Not_Allowed --
+      ----------------------
+
+      procedure Null_Not_Allowed is
+      begin
+         case Msg_K is
+            when Components =>
+               Error_Msg_N
+                 ("(Ada 0Y) NULL not allowed in null-excluding components",
+                  Expr);
+
+            when Formals =>
+               Error_Msg_N
+                 ("(Ada 0Y) NULL not allowed in null-excluding formals",
+                  Expr);
+
+            when Objects =>
+               Error_Msg_N
+                 ("(Ada 0Y) NULL not allowed in null-excluding objects",
+                  Expr);
+         end case;
+      end Null_Not_Allowed;
+
+   --  Start of processing for Null_Exclusion_Static_Checks
+
+   begin
+      pragma Assert (K = N_Component_Declaration
+                     or else K = N_Parameter_Specification
+                     or else K = N_Object_Declaration
+                     or else K = N_Discriminant_Specification
+                     or else K = N_Allocator);
+
+      Expr := Expression (N);
+
+      case K is
+         when N_Component_Declaration =>
+            Msg_K               := Components;
+            Has_Null_Exclusion  := Null_Exclusion_Present
+                                     (Component_Definition (N));
+            Typ                 := Etype (Subtype_Indication
+                                           (Component_Definition (N)));
+            Related_Nod         := Subtype_Indication
+                                     (Component_Definition (N));
+
+         when N_Parameter_Specification =>
+            Msg_K              := Formals;
+            Has_Null_Exclusion := Null_Exclusion_Present (N);
+            Typ                := Entity (Parameter_Type (N));
+            Related_Nod        := Parameter_Type (N);
+
+         when N_Object_Declaration =>
+            Msg_K              := Objects;
+            Has_Null_Exclusion := Null_Exclusion_Present (N);
+            Typ                := Entity (Object_Definition (N));
+            Related_Nod        := Object_Definition (N);
+
+         when N_Discriminant_Specification =>
+            Msg_K              := Components;
+
+            if Nkind (Discriminant_Type (N)) = N_Access_Definition then
+
+               --  This case is special. We do not want to carry out some of
+               --  the null-excluding checks. Reason: the analysis of the
+               --  access_definition propagates the null-excluding attribute
+               --  to the can_never_be_null entity attribute (and thus it is
+               --  wrong to check it now)
+
+               Has_Null_Exclusion := False;
+            else
+               Has_Null_Exclusion := Null_Exclusion_Present (N);
+            end if;
+
+            Typ                := Etype (Defining_Identifier (N));
+            Related_Nod        := Discriminant_Type (N);
+
+         when N_Allocator =>
+            Msg_K              := Objects;
+            Has_Null_Exclusion := Null_Exclusion_Present (N);
+            Typ                := Etype (Expr);
+
+            if Nkind (Expr) = N_Qualified_Expression then
+               Related_Nod     := Subtype_Mark (Expr);
+            else
+               Related_Nod     := Expr;
+            end if;
+
+         when others =>
+            pragma Assert (False);
+            null;
+      end case;
+
+      --  Check that the entity was already decorated
+
+      pragma Assert (Typ /= Empty);
+
+      if Has_Null_Exclusion
+        and then not Is_Access_Type (Typ)
+      then
+         Error_Msg_N ("(Ada 0Y) must be an access type", Related_Nod);
+
+      elsif Has_Null_Exclusion
+        and then Can_Never_Be_Null (Typ)
+      then
+         Error_Msg_N
+           ("(Ada 0Y) already a null-excluding type", Related_Nod);
+
+      elsif (Nkind (N) = N_Component_Declaration
+             or else Nkind (N) = N_Object_Declaration)
+        and not Present (Expr)
+      then
+         Must_Be_Initialized;
+
+      elsif Present (Expr)
+        and then Nkind (Expr) = N_Null
+      then
+         Null_Not_Allowed;
+      end if;
+   end Null_Exclusion_Static_Checks;
 
    ----------------------------------
    -- Conditional_Statements_Begin --
@@ -4191,6 +4353,38 @@ package body Checks is
          Suppress => All_Checks);
       Validity_Checks_On := True;
    end Insert_Valid_Check;
+
+   ----------------------------------
+   -- Install_Null_Excluding_Check --
+   ----------------------------------
+
+   procedure Install_Null_Excluding_Check (N : Node_Id) is
+      Loc  : constant Source_Ptr := Sloc (N);
+      Etyp : constant Entity_Id  := Etype (N);
+
+   begin
+      pragma Assert (Is_Access_Type (Etyp));
+
+      --  Don't need access check if: 1) we are analyzing a generic, 2) it is
+      --  known to be non-null, or 3) the check was suppressed on the type
+
+      if Inside_A_Generic
+        or else Access_Checks_Suppressed (Etyp)
+      then
+         return;
+
+         --  Otherwise install access check
+
+      else
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Loc,
+             Condition =>
+               Make_Op_Eq (Loc,
+                 Left_Opnd  => Duplicate_Subexpr_Move_Checks (N),
+                 Right_Opnd => Make_Null (Loc)),
+             Reason    => CE_Access_Check_Failed));
+      end if;
+   end Install_Null_Excluding_Check;
 
    --------------------------
    -- Install_Static_Check --
