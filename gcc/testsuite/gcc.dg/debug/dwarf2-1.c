@@ -5,7 +5,7 @@
 
 static int foo () {}
 
-int bar () {
+void bar () {
   int foo ();
   int foo ();
 }

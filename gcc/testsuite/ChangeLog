@@ -1,3 +1,10 @@
+2002-02-07  Richard Henderson  <rth@redhat.com>
+
+	* gcc.dg/debug/dwarf2-1.c: Update for return warnings.
+	* gcc.dg/noncompile/920507-1.c, gcc.dg/noncompile/920721-2.c,
+	gcc.dg/noncompile/label-lineno-1.c, objc.dg/const-str-1.m,
+	objc.dg/const-str-2.m, objc.dg/method-1.m: Likewise.
+
 2002-02-06  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/asm-4.c: Add case with an unnamed operand in the middle.

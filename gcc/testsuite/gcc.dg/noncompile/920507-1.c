@@ -1,4 +1,4 @@
-int
+void
 x(void)
 {
  register int *a asm("unknown_register");  /* { dg-error "invalid register" } */

@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fgnu-runtime" } */
 
-int foo()
+void foo()
 {
   baz(@"hiya");  /* { dg-error "annot find interface declaration" } */
 }
@@ -10,7 +10,7 @@ int foo()
 @interface NXConstantString
 @end
 
-int bar()
+void bar()
 {
   baz(@"howdah");
 }

@@ -1,4 +1,4 @@
-int f(int n)
+void f(int n)
 {
 int s;
 for(s=0;s<n;s++)
