@@ -1435,7 +1435,7 @@ do_define (pfile, keyword)
 	 that for this new definition now.  */
       if (CPP_OPTIONS (pfile)->debug_output && keyword)
 	pass_thru_directive (macro, end, pfile, keyword);
-      install (mdef.symnam, mdef.symlen, T_MACRO, 0,
+      install (mdef.symnam, mdef.symlen, T_MACRO,
 	       (char *) mdef.defn, hashcode);
     }
 
@@ -1883,201 +1883,121 @@ special_symbol (hp, pfile)
      cpp_reader *pfile;
 {
   const char *buf;
-  char *wbuf;
   int len;
-  int true_indepth;
-  cpp_buffer *ip = NULL;
-  struct tm *timebuf;
-
-  int paren = 0;		/* For special `defined' keyword */
-
-#if 0
-  if (pcp_outfile && pcp_inside_if
-      && hp->type != T_SPEC_DEFINED && hp->type != T_CONST)
-    cpp_error (pfile,
-	       "Predefined macro `%s' used inside `#if' during precompilation",
-	       hp->name);
-#endif
-    
-  for (ip = CPP_BUFFER (pfile); ; ip = CPP_PREV_BUFFER (ip))
-    {
-      if (ip == CPP_NULL_BUFFER (pfile))
-	{
-	  cpp_error (pfile, "cccp error: not in any file?!");
-	  return;			/* the show must go on */
-	}
-      if (ip->fname != NULL)
-	break;
-    }
 
   switch (hp->type)
     {
     case T_FILE:
     case T_BASE_FILE:
       {
-	char *string;
+	cpp_buffer *ip = CPP_BUFFER (pfile);
 	if (hp->type == T_BASE_FILE)
 	  {
 	    while (CPP_PREV_BUFFER (ip) != CPP_NULL_BUFFER (pfile))
 	      ip = CPP_PREV_BUFFER (ip);
 	  }
-	string = ip->nominal_fname;
+	else
+	  {
+	    ip = CPP_BUFFER (pfile);
+	    while (! ip->nominal_fname && ip != CPP_NULL_BUFFER (pfile))
+	      ip = CPP_PREV_BUFFER (ip);
+	  }
 
-	if (!string)
-	  string = "";
-	CPP_RESERVE (pfile, 3 + 4 * strlen (string));
-	quote_string (pfile, string);
+	buf = ip->nominal_fname;
+
+	if (!buf)
+	  buf = "";
+	CPP_RESERVE (pfile, 3 + 4 * strlen (buf));
+	quote_string (pfile, buf);
 	return;
       }
 
     case T_INCLUDE_LEVEL:
-      true_indepth = 0;
-      ip = CPP_BUFFER (pfile);
-      for (;  ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
-	if (ip->fname != NULL)
-	  true_indepth++;
+      {
+	int true_indepth = 0;
+	cpp_buffer *ip = CPP_BUFFER (pfile);
+	for (;  ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
+	  if (ip->fname != NULL)
+	    true_indepth++;
 
-      wbuf = (char *) alloca (8); /* Eight bytes ought to be more than enough*/
-      sprintf (wbuf, "%d", true_indepth - 1);
-      buf = wbuf;
-      break;
+	CPP_RESERVE (pfile, 10);
+	sprintf (CPP_PWRITTEN (pfile), "%d", true_indepth);
+	CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
+	return;
+      }
 
-  case T_VERSION:
-      wbuf = (char *) alloca (3 + strlen (version_string));
-      sprintf (wbuf, "\"%s\"", version_string);
-      buf = wbuf;
-      break;
+    case T_VERSION:
+      len = strlen (version_string);
+      CPP_RESERVE (pfile, 3 + len);
+      CPP_PUTC_Q (pfile, '"');
+      CPP_PUTS_Q (pfile, version_string, len);
+      CPP_PUTC_Q (pfile, '"');
+      CPP_NUL_TERMINATE_Q (pfile);
+      return;
 
-#ifndef NO_BUILTIN_SIZE_TYPE
-    case T_SIZE_TYPE:
-      buf = SIZE_TYPE;
-      break;
-#endif
+    case T_CONST:
+      buf = hp->value.cpval;
+      if (!buf)
+	return;
 
-#ifndef NO_BUILTIN_PTRDIFF_TYPE
-    case T_PTRDIFF_TYPE:
-      buf = PTRDIFF_TYPE;
-      break;
-#endif
+      len = strlen (buf);
+      CPP_RESERVE (pfile, len + 1);
+      CPP_PUTS_Q (pfile, buf, len);
+      CPP_NUL_TERMINATE_Q (pfile);
+      return;
 
-    case T_WCHAR_TYPE:
-      buf = CPP_WCHAR_TYPE (pfile);
-    break;
-
-    case T_USER_LABEL_PREFIX_TYPE:
-      buf = user_label_prefix;
-      break;
-
-    case T_REGISTER_PREFIX_TYPE:
-      buf = REGISTER_PREFIX;
-      break;
-
-  case T_CONST:
-      wbuf = (char *) alloca (4 * sizeof (int));
-      sprintf (wbuf, "%d", hp->value.ival);
+    case T_STDC:
+      CPP_RESERVE (pfile, 2);
 #ifdef STDC_0_IN_SYSTEM_HEADERS
+      ip = CPP_BUFFER (pfile);
+      while (! ip->nominal_fname && ip != CPP_NULL_BUFFER (pfile))
+	ip = CPP_PREV_BUFFER (ip);
       if (ip->system_header_p
-	  && hp->length == 8 && bcmp (hp->name, "__STDC__", 8) == 0
-	  && ! cpp_lookup (pfile, (U_CHAR *) "__STRICT_ANSI__", -1, -1))
-	strcpy (wbuf, "0");
+	  && ! cpp_lookup (pfile, (U_CHAR *) "__STRICT_ANSI__", 15, -1))
+	CPP_PUTC_Q (pfile, '0');
+      else
 #endif
-#if 0
-      if (pcp_inside_if && pcp_outfile)
-	/* Output a precondition for this macro use */
-	fprintf (pcp_outfile, "#define %s %d\n", hp->name, hp->value.ival);
-#endif
-      buf = wbuf;
-      break;
+	CPP_PUTC_Q (pfile, '1');
+      CPP_NUL_TERMINATE_Q (pfile);
+      return;
 
     case T_SPECLINE:
       {
-	long line = ip->lineno;
-	long col = ip->colno;
-	adjust_position (CPP_LINE_BASE (ip), ip->cur, &line, &col);
+	long line;
+	cpp_buf_line_and_col (CPP_BUFFER (pfile), &line, NULL);
 
-	wbuf = (char *) alloca (10);
-	sprintf (wbuf, "%ld", line);
-	buf = wbuf;
+	CPP_RESERVE (pfile, 10);
+	sprintf (CPP_PWRITTEN (pfile), "%ld", line);
+	CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
+	return;
       }
-      break;
 
     case T_DATE:
     case T_TIME:
-      wbuf = (char *) alloca (20);
-      timebuf = timestamp (pfile);
-      if (hp->type == T_DATE)
-	sprintf (wbuf, "\"%s %2d %4d\"", monthnames[timebuf->tm_mon],
-		 timebuf->tm_mday, timebuf->tm_year + 1900);
-      else
-	sprintf (wbuf, "\"%02d:%02d:%02d\"", timebuf->tm_hour, timebuf->tm_min,
-		 timebuf->tm_sec);
-      buf = wbuf;
-      break;
+      {
+	struct tm *timebuf;
 
-    case T_SPEC_DEFINED:
-      buf = " 0 ";		/* Assume symbol is not defined */
-      ip = CPP_BUFFER (pfile);
-      SKIP_WHITE_SPACE (ip->cur);
-      if (*ip->cur == '(')
-	{
-	  paren++;
-	  ip->cur++;			/* Skip over the paren */
-	  SKIP_WHITE_SPACE (ip->cur);
-	}
+	CPP_RESERVE (pfile, 20);
+	timebuf = timestamp (pfile);
+	if (hp->type == T_DATE)
+	  sprintf (CPP_PWRITTEN (pfile), "\"%s %2d %4d\"",
+		   monthnames[timebuf->tm_mon],
+		   timebuf->tm_mday, timebuf->tm_year + 1900);
+	else
+	  sprintf (CPP_PWRITTEN (pfile), "\"%02d:%02d:%02d\"",
+		   timebuf->tm_hour, timebuf->tm_min, timebuf->tm_sec);
 
-      if (!is_idstart[*ip->cur])
-	goto oops;
-      if (ip->cur[0] == 'L' && (ip->cur[1] == '\'' || ip->cur[1] == '"'))
-	goto oops;
-      if ((hp = cpp_lookup (pfile, ip->cur, -1, -1)))
-	{
-#if 0
-	  if (pcp_outfile && pcp_inside_if
-	      && (hp->type == T_CONST
-		  || (hp->type == T_MACRO && hp->value.defn->predefined)))
-	    /* Output a precondition for this macro use.  */
-	    fprintf (pcp_outfile, "#define %s\n", hp->name);
-#endif
-	  buf = " 1 ";
-	}
-#if 0
-      else
-	if (pcp_outfile && pcp_inside_if)
-	  {
-	    /* Output a precondition for this macro use */
-	    U_CHAR *cp = ip->bufp;
-	    fprintf (pcp_outfile, "#undef ");
-	    while (is_idchar[*cp]) /* Ick! */
-	      fputc (*cp++, pcp_outfile);
-	    putc ('\n', pcp_outfile);
-	  }
-#endif
-      while (is_idchar[*ip->cur])
-	++ip->cur;
-      SKIP_WHITE_SPACE (ip->cur);
-      if (paren)
-	{
-	  if (*ip->cur != ')')
-	    goto oops;
-	  ++ip->cur;
-	}
-      break;
-
-    oops:
-
-      cpp_error (pfile, "`defined' without an identifier");
-      break;
+	CPP_ADJUST_WRITTEN (pfile, strlen (CPP_PWRITTEN (pfile)));
+	return;
+      }
 
     default:
-      cpp_error (pfile, "cccp error: invalid special hash type"); /* time for gdb */
-      abort ();
+      cpp_fatal (pfile, "cpplib internal error: invalid special hash type");
+      return;
     }
-  len = strlen (buf);
-  CPP_RESERVE (pfile, len + 1);
-  CPP_PUTS_Q (pfile, buf, len);
-  CPP_NUL_TERMINATE_Q (pfile);
 
-  return;
+  /* This point should be unreachable. */
+  abort();
 }
 
 /* Write out a #define command for the special named MACRO_NAME
@@ -2105,29 +2025,34 @@ static void
 initialize_builtins (pfile)
      cpp_reader *pfile;
 {
-  install ((U_CHAR *)"__LINE__", -1, T_SPECLINE, 0, 0, -1);
-  install ((U_CHAR *)"__DATE__", -1, T_DATE, 0, 0, -1);
-  install ((U_CHAR *)"__FILE__", -1, T_FILE, 0, 0, -1);
-  install ((U_CHAR *)"__BASE_FILE__", -1, T_BASE_FILE, 0, 0, -1);
-  install ((U_CHAR *)"__INCLUDE_LEVEL__", -1, T_INCLUDE_LEVEL, 0, 0, -1);
-  install ((U_CHAR *)"__VERSION__", -1, T_VERSION, 0, 0, -1);
+#define NAME(str) (U_CHAR *)str, sizeof str - 1
+  install (NAME("__TIME__"),		  T_TIME,	0, -1);
+  install (NAME("__DATE__"),		  T_DATE,	0, -1);
+  install (NAME("__FILE__"),		  T_FILE,	0, -1);
+  install (NAME("__BASE_FILE__"),	  T_BASE_FILE,	0, -1);
+  install (NAME("__LINE__"),		  T_SPECLINE,	0, -1);
+  install (NAME("__INCLUDE_LEVEL__"),	  T_INCLUDE_LEVEL, 0, -1);
+  install (NAME("__VERSION__"),		  T_VERSION,	0, -1);
 #ifndef NO_BUILTIN_SIZE_TYPE
-  install ((U_CHAR *)"__SIZE_TYPE__", -1, T_SIZE_TYPE, 0, 0, -1);
+  install (NAME("__SIZE_TYPE__"),	  T_CONST, SIZE_TYPE, -1);
 #endif
 #ifndef NO_BUILTIN_PTRDIFF_TYPE
-  install ((U_CHAR *)"__PTRDIFF_TYPE__ ", -1, T_PTRDIFF_TYPE, 0, 0, -1);
+  install (NAME("__PTRDIFF_TYPE__ "),	  T_CONST, PTRDIFF_TYPE, -1);
 #endif
-  install ((U_CHAR *)"__WCHAR_TYPE__", -1, T_WCHAR_TYPE, 0, 0, -1);
-  install ((U_CHAR *)"__USER_LABEL_PREFIX__", -1, T_USER_LABEL_PREFIX_TYPE, 0, 0, -1);
-  install ((U_CHAR *)"__REGISTER_PREFIX__", -1, T_REGISTER_PREFIX_TYPE, 0, 0, -1);
-  install ((U_CHAR *)"__TIME__", -1, T_TIME, 0, 0, -1);
+  install (NAME("__WCHAR_TYPE__"),	  T_CONST, WCHAR_TYPE, -1);
+  install (NAME("__USER_LABEL_PREFIX__"), T_CONST, user_label_prefix, -1);
+  install (NAME("__REGISTER_PREFIX__"),	  T_CONST, REGISTER_PREFIX, -1);
   if (!CPP_TRADITIONAL (pfile))
-    install ((U_CHAR *)"__STDC__", -1, T_CONST, STDC_VALUE, 0, -1);
-  if (CPP_OPTIONS (pfile)->objc)
-    install ((U_CHAR *)"__OBJC__", -1, T_CONST, 1, 0, -1);
-/*  This is supplied using a -D by the compiler driver
-    so that it is present only when truly compiling with GNU C.  */
-/*  install ("__GNUC__", -1, T_CONST, 2, 0, -1);  */
+    {
+      install (NAME("__STDC__"),	  T_STDC,  0, -1);
+#if 0
+      if (CPP_OPTIONS (pfile)->c9x)
+	install (NAME("__STDC_VERSION__"),T_CONST, "199909L", -1);
+      else
+#endif
+	install (NAME("__STDC_VERSION__"),T_CONST, "199409L", -1);
+    }
+#undef NAME
 
   if (CPP_OPTIONS (pfile)->debug_output)
     {
@@ -2144,8 +2069,6 @@ initialize_builtins (pfile)
       dump_special_to_buffer (pfile, "__TIME__");
       if (!CPP_TRADITIONAL (pfile))
 	dump_special_to_buffer (pfile, "__STDC__");
-      if (CPP_OPTIONS (pfile)->objc)
-	dump_special_to_buffer (pfile, "__OBJC__");
     }
 }
 
@@ -3377,16 +3300,12 @@ static HOST_WIDE_INT
 eval_if_expression (pfile)
      cpp_reader *pfile;
 {
-  HASHNODE *save_defined;
   HOST_WIDE_INT value;
   long old_written = CPP_WRITTEN (pfile);
 
-  save_defined = install ((U_CHAR *)"defined", -1, T_SPEC_DEFINED, 0, 0, -1);
   pfile->pcp_inside_if = 1;
-
   value = cpp_parse_expr (pfile);
   pfile->pcp_inside_if = 0;
-  delete_macro (save_defined);	/* clean up special symbol */
 
   CPP_SET_WRITTEN (pfile, old_written); /* Pop */
 
@@ -5818,7 +5737,7 @@ do_assert (pfile, keyword)
 
   base = cpp_lookup (pfile, sym, baselen, -1);
   if (! base)
-    base = install (sym, baselen, T_ASSERT, 0, 0, -1);
+    base = install (sym, baselen, T_ASSERT, 0, -1);
   else if (base->type != T_ASSERT)
   {
     /* Token clash - but with what?! */
@@ -5827,7 +5746,7 @@ do_assert (pfile, keyword)
     goto error;
   }
 
-  this = install (sym, thislen, T_ASSERT, 0,
+  this = install (sym, thislen, T_ASSERT,
 		  (char *)base->value.aschain, -1);
   base->value.aschain = this;
   

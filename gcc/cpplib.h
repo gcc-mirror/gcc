@@ -526,12 +526,7 @@ struct include_hash
 			   redundant_include_p */
   char *buf, *limit;	/* for file content cache, not yet implemented */
 };
-    
-/* If a buffer's dir field is SELF_DIR_DUMMY, it means the file was found
-   via the same directory as the file that #included it.  */
-#define SELF_DIR_DUMMY ((struct file_name_list *) (~0))
 
-    
 /* Name under which this program was invoked.  */
 
 extern char *progname;
@@ -570,16 +565,11 @@ enum node_type {
  T_BASE_FILE,	/* `__BASE_FILE__' */
  T_INCLUDE_LEVEL, /* `__INCLUDE_LEVEL__' */
  T_VERSION,	/* `__VERSION__' */
- T_SIZE_TYPE,   /* `__SIZE_TYPE__' */
- T_PTRDIFF_TYPE,   /* `__PTRDIFF_TYPE__' */
- T_WCHAR_TYPE,   /* `__WCHAR_TYPE__' */
- T_USER_LABEL_PREFIX_TYPE, /* `__USER_LABEL_PREFIX__' */
- T_REGISTER_PREFIX_TYPE,   /* `__REGISTER_PREFIX__' */
  T_TIME,	/* `__TIME__' */
- T_CONST,	/* Constant value, used by `__STDC__' */
+ T_STDC,	/* `__STDC__' */
+ T_CONST,	/* Constant string, used by `__SIZE_TYPE__' etc */
  T_MACRO,	/* macro defined by `#define' */
  T_DISABLED,	/* macro temporarily turned off for rescan */
- T_SPEC_DEFINED, /* special `defined' macro for use in #if statements */
  T_PCSTRING,	/* precompiled string (hashval is KEYDEF *) */
  T_UNUSED	/* Used for something not defined.  */
  };
