@@ -20,6 +20,7 @@
 load_lib dg.exp
 load_lib file-format.exp
 load_lib target-supports.exp
+load_lib scanasm.exp
 
 if ![info exists TORTURE_OPTIONS] {
     # It is theoretically beneficial to group all of the O2/O3 options together,
@@ -161,35 +162,3 @@ proc gcc-dg-runtest { testcases default-extra-flags } {
 	}
     }
 }
-
-# Utility for scanning compiler result, invoked via dg-final.
-# Call pass if pattern is present, otherwise fail.
-proc scan-assembler { testcase pattern } {
-    global subdir
-
-    set fd [open [file rootname $testcase].s r]
-    set text [read $fd]
-    close $fd
-
-    if [regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler"
-    } else {
-	fail "$subdir/$testcase scan-assembler"
-    }
-}
-
-# Call pass if pattern is not present, otherwise fail.
-proc scan-assembler-not { testcase pattern } {
-    global subdir
-
-    set fd [open [file rootname $testcase].s r]
-    set text [read $fd]
-    close $fd
-
-    if ![regexp -- $pattern $text] {
-	pass "$subdir/$testcase scan-assembler-not"
-    } else {
-	fail "$subdir/$testcase scan-assembler-not"
-    }
-}
-

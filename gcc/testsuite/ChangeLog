@@ -1,3 +1,15 @@
+2000-11-22  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* lib/gcc-dg.exp: load_lib scanasm.exp.
+	(scan-assembler, scan-assembler-not): Break out to scanasm.exp.
+	* lib/g++-dg.exp: load_lib scanasm.exp.
+	* lib/scanasm.exp: New.
+	(scan-assembler, scan-assembler-not): Add optional arguments to
+	test name, or if not present, the pattern name.
+	(scan-assembler-dem, scan-assembler-demnot): New.
+
+	* g++.dg/dg.exp: New.
+
 2000-11-21  Neil Booth  <neilb@earthling.net>
 
         * gcc.dg/cpp/integrated1.c: Remove.
