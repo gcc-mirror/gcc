@@ -1231,7 +1231,7 @@ finish_parenthesized_expr (tree expr)
 {
   if (IS_EXPR_CODE_CLASS (TREE_CODE_CLASS (TREE_CODE (expr))))
     /* This inhibits warnings in c_common_truthvalue_conversion.  */
-    C_SET_EXP_ORIGINAL_CODE (expr, ERROR_MARK); 
+    TREE_NO_WARNING (expr) = 1;
 
   if (TREE_CODE (expr) == OFFSET_REF)
     /* [expr.unary.op]/3 The qualified id of a pointer-to-member must not be

@@ -816,15 +816,8 @@ grokfield (const cp_declarator *declarator,
       && TREE_CODE (declarator->u.id.name) == SCOPE_REF
       && (TREE_CODE (TREE_OPERAND (declarator->u.id.name, 1)) 
 	  == IDENTIFIER_NODE))
-    {
-      /* Access declaration */
-      if (! IS_AGGR_TYPE_CODE (TREE_CODE 
-			       (TREE_OPERAND (declarator->u.id.name, 0))))
-	;
-      else if (TREE_COMPLEXITY (declarator->u.id.name) == current_class_depth)
-	pop_nested_class ();
-      return do_class_using_decl (declarator->u.id.name);
-    }
+    /* Access declaration */
+    return do_class_using_decl (declarator->u.id.name);
 
   if (init
       && TREE_CODE (init) == TREE_LIST

@@ -1,3 +1,13 @@
+2004-07-10  Steven Bosscher  <stevenb@suse.de>
+	    Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* cp-tree.h (C_SET_EXP_ORIGINAL_CODE): Remove.
+	* decl2.c (grokfield): Don't check current_class_depth via
+	unused TREE_COMPLEXITY.
+	* semantics.c (finish_parenthesized_expr): Set TREE_NO_WARNING
+	to avoid the missing parentheses warning.
+	Don't set C_SET_EXP_ORIGINAL_CODE.
+
 2004-07-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* mangle.c (write_expression): Issue a sorry for zero-operand

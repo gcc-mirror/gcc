@@ -1,3 +1,9 @@
+2004-07-10  Steven Bosscher  <stevenb@suse.de>
+	    Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-common.c (c_common_truthvalue_conversion): Don't warn if
+	TREE_NO_WARNING is set.
+
 2004-07-18  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (simplify_builtin_memcmp, simplify_builtin_strcmp,

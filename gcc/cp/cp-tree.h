@@ -370,10 +370,6 @@ typedef enum cp_id_kind
 #define C_TYPE_FIELDS_READONLY(TYPE) \
   (LANG_TYPE_CLASS_CHECK (TYPE)->fields_readonly)
 
-/* Store a value in that field.  */
-#define C_SET_EXP_ORIGINAL_CODE(EXP, CODE) \
-  (TREE_COMPLEXITY (EXP) = (int)(CODE))
-
 /* The tokens stored in the default argument.  */
 
 #define DEFARG_TOKENS(NODE) \
