@@ -1,3 +1,24 @@
+Wed Jun 10 13:07:02 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* objc/objc-act.c: Add cpplib declarations.
+	(lang_decode_option): Initialize cpplib if necessary.
+	(lang_decode_option): New argc/argv interface. 
+	* tree.h (lang_decode_option): New argc/argv interface. 
+	* toplev.c (lang_options): Add cpp options.
+	(main): New interface for lang_decode_option.
+	* gcc.c (default_compilers): Don't call cpp for a cpplib-enabled C compiler
+	unless -E, -M or -MM is specified.
+	* cpplib.h (cpp_handle_option): New function. 
+	* cpplib.c (cpp_handle_option): New function.
+	(cpp_handle_options): Now calls cpp_handle_option.
+	* c-tree.h (c_decode_option): New argc/argv interface. 
+	* c-lex.c (init_parse): cpplib now initialized in c_decode_option.
+	* c-lang.c (lang_decode_option): New argc/argv interface.
+	* c-decl.c: Add cpplib declarations.
+	(c_decode_option): New argc/argv interface.
+	(c_decode_option): Call cpp_handle_option.
+	(c_decode_option): Now returns number of strings processed.
+
 Wed Jun 10 09:47:13 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* unroll.c (verify_addresses): Use validate_replace_rtx to undo the 

@@ -31,10 +31,11 @@ Boston, MA 02111-1307, USA.  */
    is an alternative to a function in objc-actions.c.  */
    
 int
-lang_decode_option (p)
-     char *p;
+lang_decode_option (argc, argv)
+     int argc;
+     char **argv;
 {
-  return c_decode_option (p);
+  return c_decode_option (argc, argv);
 }
 
 void

@@ -597,7 +597,46 @@ static struct compiler default_compilers[] =
   /* Next come the entries for C.  */
   {".c", {"@c"}},
   {"@c",
-   {"cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+   {
+#if USE_CPPLIB
+#define CPP_FOR_C \
+     "cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
+	%{C:%{!E:%eGNU C does not support -C without using -E}}\
+	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
+        -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+	%{ansi:-trigraphs -D__STRICT_ANSI__}\
+	%{!undef:%{!ansi:%p} %P} %{trigraphs} \
+        %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+        %{traditional} %{ftraditional:-traditional}\
+        %{traditional-cpp:-traditional}\
+	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
+        %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n"
+
+     "%{E:"CPP_FOR_C"}"
+     "%{!E:%{M:"CPP_FOR_C"}"
+          "%{!M:%{MM:"CPP_FOR_C"}"
+               "%{!MM:cc1 %i %1 \
+                  -lang-c%{ansi:89} %{nostdinc*} %{A*} %{I*} %I\
+                  %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
+                  %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
+                  -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
+                  %{ansi:-trigraphs -D__STRICT_ANSI__}\
+                  %{!undef:%{!ansi:%p} %P} %{trigraphs} \
+                  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
+                  %{H} %C %{D*} %{U*} %{i*} %Z\
+                  %{ftraditional:-traditional}\
+                  %{traditional-cpp:-traditional}\
+		  %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
+		  %{aux-info*}\
+		  %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
+		  %{pg:%{fomit-frame-pointer:%e-pg and -fomit-frame-pointer are incompatible}}\
+		  %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
+                  %{!S:as %a %Y\
+		     %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
+                     %{!pipe:%g.s} %A\n }}}}"
+  }},
+#else /* ! USE_CPPLIB */
+    "cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
 	%{M} %{MM} %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
         -undef -D__GNUC__=%v1 -D__GNUC_MINOR__=%v2\
@@ -608,7 +647,7 @@ static struct compiler default_compilers[] =
         %{traditional-cpp:-traditional}\
 	%{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z\
         %i %{!M:%{!MM:%{!E:%{!pipe:%g.i}}}}%{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}} |\n",
-    "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
+   "%{!M:%{!MM:%{!E:cc1 %{!pipe:%g.i} %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*} %{a*}\
 		   %{g*} %{O*} %{W*} %{w} %{pedantic*} %{ansi} \
 		   %{traditional} %{v:-version} %{pg:-p} %{p} %{f*}\
@@ -617,7 +656,9 @@ static struct compiler default_compilers[] =
 		   %{S:%W{o*}%{!o*:-o %b.s}}%{!S:-o %{|!pipe:%g.s}} |\n\
               %{!S:as %a %Y\
 		      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O}\
-                      %{!pipe:%g.s} %A\n }}}}"}},
+                      %{!pipe:%g.s} %A\n }}}}"
+  }},
+#endif /* ! USE_CPPLIB */
   {"-",
    {"%{E:cpp -lang-c%{ansi:89} %{nostdinc*} %{C} %{v} %{A*} %{I*} %{P} %I\
 	%{C:%{!E:%eGNU C does not support -C without using -E}}\
