@@ -1,3 +1,12 @@
+2005-01-20  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.dg/data_char_1.f90: Fix typo, add dg-do directive.
+	* gfortran.dg/direct_io_1.f90: Add dg-do directive.
+	* gfortran.dg/entry_1.f90: Fix typo, add dg-do directive.
+	* gfortran.dg/getenv_1.f90: Add dg-do directive.
+	* gfortran.dg/pr16597.f90, gfortran.dg/pr17143.f90,
+	gfortran.dg/pr17164.f90: Add missing dg-do directives.
+
 2005-01-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR tree-optimization/15349

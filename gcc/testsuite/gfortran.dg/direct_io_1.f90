@@ -1,3 +1,4 @@
+! { dg-do run }
 ! PR 16908
 ! Segfaulted on second set of writes.  We weren't handling partial records
 ! properly when calculating the file position.
