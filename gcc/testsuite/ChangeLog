@@ -1,3 +1,7 @@
+2003-03-14  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/20030314-1.c: New test.
+
 2003-03-13  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* gcc.dg/dll-1.c: Remove thumb target. Change exp to _exp. 
