@@ -424,7 +424,7 @@ all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
 all.cross: native gcc-cross libgcc.a cross-test $(EXTRA_PARTS)
 # This is what to compile if making gcc with a cross-compiler.
-all.build: native $(EXTRA_PARTS)
+all.build: native $(GCC_PASSES) $(EXTRA_PARTS)
 # This is what must be made before installing GCC and converting libraries.
 start.encap: native xgcc specs $(LIBGCC1) xlimits.h
 # Use this to make a GCC that will be used only to recompile GCC.
