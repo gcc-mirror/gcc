@@ -1,0 +1,2469 @@
+/* C++ error messages.
+   Copyright (C) 1998 Free Software Foundation, Inc.
+   Written by Mark Mitchell (mark@markmitchell.com)
+
+   This file is part of GNU CC.
+   
+   GNU CC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+   
+   GNU CC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+   
+   You should have received a copy of the GNU General Public License
+   along with GNU CC; see the file COPYING.  If not, write to the Free
+   Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+   02111-1307, USA.  */
+
+/* This file contains descriptions for the warning and error messages
+   issued by the C++ front-end.  Each message is defined by the use of 
+   the DEFERROR macro.  There are two arguments to this macro.  The
+   first is the "code" for the macro.  These codes become enumeration
+   constants of the enumeration type cp_error_code defined in
+   cp-tree.h.  The second argument is the message text itself, which
+   may contain the format specifiers (like "%D") handled by cp_thing. 
+
+   Some messages are defined with the DEFERRORNUM macro.  The first
+   two arguments to this macro are as for DEFERROR, but the third
+   argument is a code for another error.  The implication is that the
+   new error is "the same as" the previous error; i.e., that turning
+   off one should turn off both.  There's no point in using this for
+   messages that are always errors; those messages will always be
+   emitted.
+
+   Users may control what warnings are emitted by use by numeric codes
+   assigned automatically to the error messages.  Therefore, when an
+   error message is removed, it should *not* be removed from this
+   list.  (That will change the numeric codes assigned to all
+   subsequent error messages).  Instead, just make the string the
+   constant 0; this will automatically cause an internal error if that
+   error code is ever used again.  It is also safe to change the name
+   of the code, as you see fit.  Similarly, you should *not* insert
+   new error codes in the middle of this list; only at the end.
+
+   There is no need to have separate message codes if the same message
+   is used as an error in some places and as a warning in others.  It
+   is the use of cp_error vs. cp_warning vs ... that makes that
+   distinction.  
+
+   Be careful when introducing new format specifiers into an error
+   message that you change all uses of that error code, and not just
+   the one you are looking at.  The same error code may be used in
+   multiple places.  */
+
+DEFERROR(ec_this_has_no_member_named,
+	 "`this' has no member named `%D'")
+DEFERROR(ec_qualified_type_does_not_match_destructor_name,
+	 "qualified type `%T' does not match destructor name `~%T'")
+DEFERROR(ec_type_of_does_not_match_destructor_type_type_was,
+	 "type of `%E' does not match destructor type `%T' (type was `%T')")
+DEFERROR(ec_base_object_of_scoped_method_call_is_of_nonaggregate_type,
+	 "base object `%E' of scoped method call is of non-aggregate type `%T'")
+DEFERROR(ec_builtin_3,
+	 "%s %D(%T, %T, %T) <builtin>")
+DEFERROR(ec_builtin_2,
+	 "%s %D(%T, %T) <builtin>")
+DEFERROR(ec_builtin_1,
+	 "%s %D(%T) <builtin>")
+DEFERROR(ec_candidate_1,
+	 "%s %+D%s")
+DEFERROR(ec_no_viable_candidates,
+	 "no viable candidates")
+DEFERROR(ec_conversion_from_to_is_ambiguous,
+	 "conversion from `%T' to `%T' is ambiguous")
+DEFERROR(ec_no_matching_function_for_call_to,
+	 "no matching function for call to `%D (%A)'")
+DEFERROR(ec_call_of_overloaded_is_ambiguous,
+	 "call of overloaded `%D (%A)' is ambiguous")
+DEFERROR(ec_pointertomember_function_cannot_be_called,
+	 "pointer-to-member function %E cannot be called")
+DEFERROR(ec_without_an_object_consider_using_or,
+	 "without an object; consider using .* or ->*")
+DEFERROR(ec_no_match_for_call_to,
+	 "no match for call to `(%T) (%A)'")
+DEFERROR(ec_call_of_is_ambiguous,
+	 "call of `(%T) (%A)' is ambiguous")
+DEFERROR(ec_for_1,
+	 "%s for `%T ? %T : %T'")
+DEFERROR(ec_for_2,
+	 "%s for `%T%s'")
+DEFERROR(ec_for_3,
+	 "%s for `%T[%T]'")
+DEFERROR(ec_for_4,
+	 "%s for `%T %s %T'")
+DEFERROR(ec_for_5,
+	 "%s for `%s%T'")
+DEFERROR(ec_must_be_declared_before_use,
+	 "`%D' must be declared before use")
+DEFERROR(ec_no_int_declared_for_postfix_s_trying_prefix_operator_instead,
+	 "no `%D (int)' declared for postfix `%s', trying prefix operator instead")
+DEFERROR(ec_using_synthesized_for_copy_assignment,
+	 "using synthesized `%#D' for copy assignment")
+DEFERROR(ec_where_cfront_would_use,
+	 "  where cfront would use `%#D'")
+DEFERROR(ec_comparison_between_and,
+	 "comparison between `%#T' and `%#T'")
+DEFERROR(ec_no_suitable_operator_delete_for,
+	 "no suitable operator delete for `%T'")
+DEFERROR(ec_access_is_1,
+	 "`%+#D' is %s")
+DEFERROR(ec_access_is_2,
+	 "`%+#D' %s")
+DEFERROR(ec_could_not_convert_with_incomplete_type_to,
+	 "could not convert `%E' (with incomplete type `%T') to `%T'")
+DEFERROR(ec_could_not_convert_to,
+	 "could not convert `%E' to `%T'")
+DEFERROR(ec_cannot_pass_objects_of_type_through,
+	 "cannot pass objects of type `%T' through `...'")
+DEFERROR(ec_passing_as_this_argument_of_discards_s,
+	 "passing `%T' as `this' argument of `%#D' discards %s")
+DEFERROR(ec_converting_null_to_nonpointer_type,
+	 "converting NULL to non-pointer type")
+DEFERROR(ec_request_for_member_in_which_is_of_nonaggregate_type,
+	 "request for member `%D' in `%E', which is of non-aggregate type `%T'")
+DEFERROR(ec_no_matching_function_for_call_to_member,
+	 "no matching function for call to `%T::%D (%A)%V'")
+DEFERROR(ec_call_of_overloaded_is_ambiguous_2,
+	 "call of overloaded `%D(%A)' is ambiguous")
+DEFERROR(ec_abstract_virtual_called_from_constructor,
+	 "abstract virtual `%#D' called from constructor")
+DEFERROR(ec_cannot_call_member_function_without_object,
+	 "cannot call member function `%D' without object")
+DEFERROR(ec_passing_chooses_over,
+	 "passing `%T' chooses `%T' over `%T'")
+DEFERROR(ec_in_call_to,
+	 "  in call to `%D'")
+DEFERROR(ec_choosing_over,
+	 "choosing `%D' over `%D'")
+DEFERROR(ec_for_conversion_from_to,
+	 "  for conversion from `%T' to `%T'")
+DEFERROR(ec_because_conversion_sequence_for_the_argument_is_better,
+	 "  because conversion sequence for the argument is better")
+DEFERROR(ec_cannot_cast_up_from_virtual_baseclass,
+	 "cannot cast up from virtual baseclass `%T'")
+DEFERROR(ec_replaced_with,
+	 "replaced %D with %D")
+DEFERROR(ec_internal_problem_current_class_type_is_zero_when_adding_please_report,
+	 "internal problem, current_class_type is zero when adding `%D', please report")
+DEFERROR(ec_internal_problem_current_class_type_differs_when_adding_please_report,
+	 "internal problem, current_class_type differs when adding `%D', please report")
+DEFERROR(ec_duplicate_enum_value,
+	 "duplicate enum value `%D'")
+DEFERROR(ec_duplicate_field_as_enum_and_nonenum,
+	 "duplicate field `%D' (as enum and non-enum)")
+DEFERROR(ec_duplicate_nested_type,
+	 "duplicate nested type `%D'")
+DEFERROR(ec_duplicate_field_as_type_and_nontype,
+	 "duplicate field `%D' (as type and non-type)")
+DEFERROR(ec_duplicate_member,
+	 "duplicate member `%D'")
+DEFERROR(ec_conflicting_access_specifications_for_method_ignored,
+	 "conflicting access specifications for method `%D', ignored")
+DEFERROR(ec_usingdeclaration_for_constructor,
+	 "using-declaration for constructor")
+DEFERROR(ec_no_members_matching_in,
+	 "no members matching `%D' in `%#T'")
+DEFERROR(ec_cannot_adjust_access_to_in,
+	 "cannot adjust access to `%#D' in `%#T'")
+DEFERROR(ec_because_of_local_method_with_same_name,
+	 "  because of local method `%#D' with same name")
+DEFERROR(ec_because_of_local_field_with_same_name,
+	 "  because of local field `%#D' with same name")
+DEFERROR(ec_base_class_has_a_nonvirtual_destructor,
+	 "base class `%#T' has a non-virtual destructor")
+DEFERROR(ec_base_with_only_nondefault_constructor,
+	 "base `%T' with only non-default constructor")
+DEFERROR(ec_in_class_without_a_constructor,
+	 "in class without a constructor")
+DEFERROR(ec_all_member_functions_in_class_are_private,
+	 "all member functions in class `%T' are private")
+DEFERROR(ec_only_defines_a_private_destructor_and_has_no_friends,
+	 "`%#T' only defines a private destructor and has no friends")
+DEFERROR(ec_redefinition_of,
+	 "redefinition of `%#T'")
+DEFERROR(ec_previous_definition_here,
+	 "previous definition here")
+DEFERROR(ec_found_two_or_more_class_subobjects_in,
+	 "  found two (or more) `%T' class subobjects in `%T'")
+DEFERROR(ec_with_virtual_from_virtual_base_class,
+	 "  with virtual `%D' from virtual base class")
+DEFERROR(ec_in,
+	 "in %D")
+DEFERROR(ec_method_may_not_be_declared_static,
+	 "method `%D' may not be declared static")
+DEFERROR(ec_since_declared_virtual_in_base_class,
+	 "(since `%D' declared virtual in base class.)")
+DEFERROR(ec_was_hidden,
+	 "`%D' was hidden")
+DEFERROR(ec_by,
+	 "  by `%D'")
+DEFERROR(ec_initializer_specified_for_nonvirtual_method,
+	 "initializer specified for non-virtual method `%D'")
+DEFERROR(ec_field_in_local_class_cannot_be_static,
+	 "field `%D' in local class cannot be static")
+DEFERROR(ec_field_invalidly_declared_function_type,
+	 "field `%D' invalidly declared function type")
+DEFERROR(ec_field_invalidly_declared_method_type,
+	 "field `%D' invalidly declared method type")
+DEFERROR(ec_field_invalidly_declared_offset_type,
+	 "field `%D' invalidly declared offset type")
+DEFERROR(ec_field_declared_static_in_union,
+	 "field `%D' declared static in union")
+DEFERROR(ec_nonstatic_reference_name_in_class_without_a_constructor,
+	 "non-static reference `%#D' in class without a constructor")
+DEFERRORNUM(ec_nonstatic_reference_in_class_without_a_constructor,
+	    "non-static reference in class without a constructor",
+	    ec_nonstatic_reference_name_in_class_without_a_constructor)
+DEFERROR(ec_nonstatic_const_member_name_in_class_without_a_constructor,
+	 "non-static const member `%#D' in class without a constructor")
+DEFERRORNUM(ec_nonstatic_const_member_in_class_without_a_constructor,
+	    "non-static const member in class without a constructor", 
+	    ec_nonstatic_const_member_name_in_class_without_a_constructor)
+DEFERROR(ec_bitfield_with_nonintegral_type,
+	 "bit-field `%#D' with non-integral type")
+DEFERROR(ec_bitfield_width_not_an_integer_constant,
+	 "bit-field `%D' width not an integer constant")
+DEFERROR(ec_negative_width_in_bitfield,
+	 "negative width in bit-field `%D'")
+DEFERROR(ec_zero_width_for_bitfield,
+	 "zero width for bit-field `%D'")
+DEFERROR(ec_in_declaration_of,
+	 "  in declaration of `%D'")
+DEFERROR(ec_width_of_exceeds_its_type,
+	 "width of `%D' exceeds its type")
+DEFERROR(ec_is_too_small_to_hold_all_values_of,
+	 "`%D' is too small to hold all values of `%#T'")
+DEFERROR(ec_member_with_s_not_allowed_in_union,
+	 "member `%#D' with %s not allowed in union")
+DEFERROR(ec_multiple_fields_in_union_initialized,
+	 "multiple fields in union `%T' initialized")
+DEFERROR(ec_has_pointer_data_members,
+	 "`%#T' has pointer data members")
+DEFERROR(ec_but_does_not_override_const,
+	 "  but does not override `%T(const %T&)'")
+DEFERROR(ec_or_operatorconst,
+	 "  or `operator=(const %T&)'")
+DEFERROR(ec_but_does_not_override_operatorconst,
+	 "  but does not override `operator=(const %T&)'")
+DEFERROR(ec_only_defines_private_constructors_and_has_no_friends,
+	 "`%#T' only defines private constructors and has no friends")
+DEFERROR(ec_data_member_conflicts_with,
+	 "data member `%#D' conflicts with")
+DEFERROR(ec_function_member,
+	 "function member `%#D'")
+DEFERROR(ec_oing_hard_virtuals_for,
+	 "Doing hard virtuals for %T...")
+DEFERROR(ec_has_virtual_functions_but_nonvirtual_destructor,
+	 "`%#T' has virtual functions but non-virtual destructor")
+DEFERROR(ec_argument_of_type_does_not_match,
+	 "argument of type `%T' does not match `%T'")
+DEFERROR(ec_ambiguous_template_instantiation_converting_to,
+	 "ambiguous template instantiation converting to `%#T'")
+DEFERROR(ec_ambiguity_between,
+	 "  ambiguity between `%#D'")
+DEFERROR(ec_and_at_least,
+	 "  and `%#D', at least")
+DEFERROR(ec_cannot_resolve_overload_to_target_type,
+	 "cannot resolve overload to target type `%#T'")
+DEFERROR(ec_no_compatible_member_functions_named,
+	 "no compatible member functions named `%D'")
+DEFERROR(ec_cant_convert_from_incomplete_type_to,
+	 "can't convert from incomplete type `%T' to `%T'")
+DEFERROR(ec_conversion_of_from_to_is_ambiguous,
+	 "conversion of `%E' from `%T' to `%T' is ambiguous")
+DEFERROR(ec_converting_from_to,
+	 "converting from `%T' to `%T'")
+DEFERROR(ec_cannot_convert_from_type_to_type,
+	 "cannot convert `%E' from type `%T' to type `%T'")
+DEFERROR(ec_type_is_ambiguous_baseclass_of_s,
+	 "type `%T' is ambiguous baseclass of `%s'")
+DEFERROR(ec_initialization_of_nonconst_reference_from_rvalue,
+	 "initialization of non-const reference `%#T' from rvalue `%T'")
+DEFERROR(ec_conversion_to_nonconst_from_rvalue,
+	 "conversion to non-const `%T' from rvalue `%T'")
+DEFERROR(ec_conversion_from_to_discards_const,
+	 "conversion from `%T' to `%T' discards const")
+DEFERROR(ec_conversion_from_to_discards_volatile,
+	 "conversion from `%T' to `%T' discards volatile")
+DEFERROR(ec_casting_to_does_not_dereference_pointer,
+	 "casting `%T' to `%T' does not dereference pointer")
+DEFERROR(ec_initializing_nonconst_with_will_use_a_temporary,
+	 "initializing non-const `%T' with `%T' will use a temporary")
+DEFERROR(ec_cannot_convert_type_to_type,
+	 "cannot convert type `%T' to type `%T'")
+DEFERROR(ec_cannot_convert_a_pointer_of_type_to_a_pointer_of_type,
+	 "cannot convert a pointer of type `%T' to a pointer of type `%T'")
+DEFERROR(ec_because_is_an_ambiguous_base_class,
+	 "because `%T' is an ambiguous base class")
+DEFERROR(ec_conversion_from_to,
+	 "conversion from `%#T' to `%#T'")
+DEFERROR(ec_used_where_a_was_expected,
+	 "`%#T' used where a `%T' was expected")
+DEFERROR(ec_the_address_of_will_always_be_true,
+	 "the address of `%D', will always be `true'")
+DEFERROR(ec_used_where_a_floating_point_value_was_expected,
+	 "`%#T' used where a floating point value was expected")
+DEFERROR(ec_conversion_from_to_nonscalar_type_requested,
+	 "conversion from `%T' to non-scalar type `%T' requested")
+DEFERROR(ec_ambiguous_default_type_conversion_from,
+	 "ambiguous default type conversion from `%T'")
+DEFERROR(ec_candidate_conversions_include_and,
+	 "  candidate conversions include `%D' and `%D'")
+DEFERROR(ec_label_used_but_not_defined,
+	 "label `%D' used but not defined")
+DEFERROR(ec_label_defined_but_not_used,
+	 "label `%D' defined but not used")
+DEFERROR(ec_namespace_alias_not_allowed_here_assuming,
+	 "namespace alias `%D' not allowed here, assuming `%D'")
+DEFERROR(ec_redeclared_as_member_function,
+	 "`%D' redeclared as member function")
+DEFERROR(ec_redeclared_as_nonmember_function,
+	 "`%D' redeclared as non-member function")
+DEFERROR(ec_shadowing_s_function,
+	 "shadowing %s function `%#D'")
+DEFERROR(ec_library_function_redeclared_as_nonfunction,
+	 "library function `%#D' redeclared as non-function `%#D'")
+DEFERROR(ec_declaration_of,
+	 "declaration of `%#D'")
+DEFERRORNUM(ec_conflicts_with_builtin_declaration,
+	    "conflicts with built-in declaration `%#D'", ec_declaration_of)
+DEFERROR(ec_redeclared_as_different_kind_of_symbol,
+	 "`%#D' redeclared as different kind of symbol")
+DEFERROR(ec_previous_declaration_of,
+	 "previous declaration of `%#D'")
+DEFERROR(ec_declaration_of_template,
+	 "declaration of template `%#D'")
+DEFERROR(ec_conflicts_with_previous_declaration,
+	 "conflicts with previous declaration `%#D'")
+DEFERROR(ec_new_declaration,
+	 "new declaration `%#D'")
+DEFERROR(ec_ambiguates_old_declaration,
+	 "ambiguates old declaration `%#D'")
+DEFERROR(ec_declaration_of_function_conflicts_with,
+	 "declaration of C function `%#D' conflicts with")
+DEFERROR(ec_previous_declaration_here,
+	 "previous declaration `%#D' here")
+DEFERROR(ec_conflicting_types_for,
+	"conflicting types for `%#D'")
+DEFERROR(ec_previous_declaration_as,
+	"previous declaration as `%#D'")
+DEFERROR(ec_prototype_for,
+	"prototype for `%#D'")
+DEFERROR(ec_follows_nonprototype_definition_here,
+	"follows non-prototype definition here")
+DEFERROR(ec_previous_declaration_of_with_linkage,
+	"previous declaration of `%#D' with %L linkage")
+DEFERROR(ec_conflicts_with_new_declaration_with_linkage,
+	"conflicts with new declaration with %L linkage")
+DEFERROR(ec_default_argument_given_for_parameter_d_of,
+	"default argument given for parameter %d of `%#D'")
+DEFERROR(ec_after_previous_specification_in,
+	"after previous specification in `%#D'")
+DEFERROR(ec_was_used_before_it_was_declared_inline,
+	"`%#D' was used before it was declared inline")
+DEFERROR(ec_previous_noninline_declaration_here,
+	"previous non-inline declaration here")
+DEFERROR(ec_type_qualifiers_for,
+	"type qualifiers for `%#D'")
+DEFERROR(ec_redundant_redeclaration_of_in_same_scope,
+	"redundant redeclaration of `%D' in same scope")
+DEFERROR(ec_invalid_redeclaration_of,
+	"invalid redeclaration of %D")
+DEFERROR(ec_declaration_of_throws_different_exceptions,
+	"declaration of `%D' throws different exceptions")
+DEFERROR(ec_explicit_specialization_of_after_first_use,
+	"explicit specialization of %D after first use")
+DEFERROR(ec_used_prior_to_declaration,
+	"`%#D' used prior to declaration")
+DEFERROR(ec_redeclaration_of_wchar_t_as,
+	"redeclaration of wchar_t as `%T'")
+DEFERROR(ec_static_missing_from_declaration_of,
+	"`static' missing from declaration of `%D'")
+DEFERROR(ec_as,
+	"as `%D'")
+DEFERROR(ec_type_mismatch_with_previous_external_decl,
+	"type mismatch with previous external decl")
+DEFERROR(ec_extern_declaration_of_doesnt_match,
+	"extern declaration of `%#D' doesn't match")
+DEFERROR(ec_global_declaration,
+	"global declaration `%#D'")
+DEFERROR(ec_declaration_of_shadows_a_parameter,
+	"declaration of `%#D' shadows a parameter")
+DEFERROR(ec_this_is_the_shadowed_declaration,
+	"  this is the shadowed declaration")
+DEFERROR(ec_reusing_name_of_template_parameter_in_this_scope,
+	"re-using name of template parameter `%T' in this scope")
+DEFERROR(ec_previously_declared_here,
+	" previously declared here `%#D'")
+DEFERROR(ec_declaration_of_identifier_as,
+	"declaration of identifier `%D' as `%+#D'")
+DEFERROR(ec_hides_constructor_for,
+	"`%#D' hides constructor for `%#T'")
+DEFERROR(ec_previous_nonfunction_declaration,
+	"previous non-function declaration `%#D'")
+DEFERROR(ec_conflicts_with_function_declaration,
+	"conflicts with function declaration `%#D'")
+DEFERROR(ec_implicit_declaration_of_function,
+	"implicit declaration of function `%#D'")
+DEFERROR(ec_label_named_wchar_t,
+	"label named wchar_t")
+DEFERROR(ec_duplicate_label,
+	"duplicate label `%D'")
+DEFERROR(ec_jump_to_label,
+	"jump to label `%D'")
+DEFERROR(ec_crosses_initialization_of,
+	"  crosses initialization of `%#D'")
+DEFERROR(ec_destructor_needed_for,
+	"destructor needed for `%#D'")
+DEFERROR(ec_redeclared_as,
+	"`%#D' redeclared as %C")
+DEFERROR(ec_redeclared_as_in_class_scope,
+	"`%#D' redeclared as %C in class scope")
+DEFERROR(ec_undeclared_in_namespace,
+	"`%D' undeclared in namespace `%D'")
+DEFERROR(ec_no_class_template_named_in,
+	"no class template named `%#T' in `%#T'")
+DEFERROR(ec_no_type_named_in,
+	"no type named `%#T' in `%#T'")
+DEFERROR(ec_namespacescope_type,
+	"namespace-scope type `%#D'")
+DEFERROR(ec_use_typename_if_thats_what_you_meant,
+	"  (use `typename %D' if that's what you meant)")
+DEFERROR(ec_lookup_of_in_the_scope_of,
+	"lookup of `%D' in the scope of `%#T' (`%#T')")
+DEFERROR(ec_does_not_match_lookup_in_the_current_scope,
+	"  does not match lookup in the current scope (`%#T')")
+DEFERROR(ec_can_only_be_specified_for_functions,
+	"`%D' can only be specified for functions")
+DEFERROR(ec_can_only_be_specified_for_constructors,
+	"`%D' can only be specified for constructors")
+DEFERROR(ec_can_only_be_specified_for_objects_and_functions,
+	"`%D' can only be specified for objects and functions")
+DEFERROR(ec_abstract_declarator_used_as_declaration,
+	"abstract declarator used as declaration")
+DEFERROR(ec_typedef_is_initialized,
+	"typedef `%D' is initialized")
+DEFERROR(ec_function_is_initialized_like_a_variable,
+	"function `%#D' is initialized like a variable")
+DEFERROR(ec_declaration_of_has_extern_and_is_initialized,
+	"declaration of `%#D' has `extern' and is initialized")
+DEFERROR(ec_is_not_a_static_member_of,
+	"`%#D' is not a static member of `%#T'")
+DEFERROR(ec_does_not_permit_to_be_defined_as,
+	"ANSI C++ does not permit `%T::%D' to be defined as `%T::%D'")
+DEFERROR(ec_duplicate_initialization_of,
+	"duplicate initialization of %D")
+DEFERROR(ec_declaration_of_outside_of_class_is_not_definition,
+	"declaration of `%#D' outside of class is not definition")
+DEFERROR(ec_variable_has_initializer_but_incomplete_type,
+	"variable `%#D' has initializer but incomplete type")
+DEFERROR(ec_elements_of_array_have_incomplete_type,
+	"elements of array `%#D' have incomplete type")
+DEFERROR(ec_aggregate_has_incomplete_type_and_cannot_be_initialized,
+	"aggregate `%#D' has incomplete type and cannot be initialized")
+DEFERROR(ec_declared_as_reference_but_not_initialized,
+	"`%D' declared as reference but not initialized")
+DEFERROR(ec_forbids_use_of_initializer_list_to_initialize_reference,
+	"ANSI C++ forbids use of initializer list to initialize reference `%D'")
+DEFERROR(ec_cannot_initialize_from,
+	"cannot initialize `%T' from `%T'")
+DEFERROR(ec_annot_initialize_to_namespace,
+	"Cannot initialize `%D' to namespace `%D'")
+DEFERROR(ec_shadowing_previous_type_declaration_of,
+	"shadowing previous type declaration of `%#D'")
+DEFERROR(ec_must_be_initialized_by_constructor_not_by,
+	"`%D' must be initialized by constructor, not by `{...}'")
+DEFERROR(ec_structure_with_uninitialized_const_members,
+	"structure `%D' with uninitialized const members")
+DEFERROR(ec_structure_with_uninitialized_reference_members,
+	"structure `%D' with uninitialized reference members")
+DEFERROR(ec_uninitialized_const,
+	"uninitialized const `%#D'")
+DEFERROR(ec_initializer_fails_to_determine_size_of,
+	"initializer fails to determine size of `%D'")
+DEFERROR(ec_array_size_missing_in,
+	"array size missing in `%D'")
+DEFERROR(ec_zerosize_array,
+	"zero-size array `%D'")
+DEFERROR(ec_storage_size_of_isnt_known,
+	"storage size of `%D' isn't known")
+DEFERROR(ec_storage_size_of_isnt_constant,
+	"storage size of `%D' isn't constant")
+DEFERROR(ec_parser_lost_in_parsing_declaration_of,
+	"parser lost in parsing declaration of `%D'")
+DEFERROR(ec_multiple_initializations_given_for,
+	"multiple initializations given for `%D'")
+DEFERROR(ec_declared_as_a_virtual_s,
+	"`%D' declared as a `virtual' %s")
+DEFERROR(ec_declared_as_an_inline_s,
+	"`%D' declared as an `inline' %s")
+DEFERROR(ec_const_and_volatile_function_specifiers_on_invalid_in_s_declaration,
+	"`const' and `volatile' function specifiers on `%D' invalid in %s declaration")
+DEFERROR(ec_invalid_friend_declaration,
+	"invalid friend declaration")
+DEFERROR(ec_invalid_exception_specifications,
+	"invalid exception specifications")
+DEFERROR(ec_nonlocal_function_uses_anonymous_type,
+	"non-local function `%#D' uses anonymous type")
+DEFERROR(ec_nonlocal_function_uses_local_type,
+	"non-local function `%#D' uses local type `%T'")
+DEFERROR(ec_smember_function_cannot_have_method_qualifier,
+	"%smember function `%D' cannot have `%T' method qualifier")
+DEFERROR(ec_templateid_in_declaration_of_primary_template,
+	"template-id `%D' in declaration of primary template")
+DEFERROR(ec_definition_of_implicitlydeclared,
+	"definition of implicitly-declared `%D'")
+DEFERROR(ec_inconsistent_declarations_for,
+	"inconsistent declarations for `%D'")
+DEFERROR(ec_nonlocal_variable_uses_local_type,
+	"non-local variable `%#D' uses local type `%T'")
+DEFERROR(ec_destructor_must_match_class_name,
+	"destructor `%T' must match class name `%T'")
+DEFERROR(ec_declaratorid_missing_using_reserved_word,
+	"declarator-id missing; using reserved word `%D'")
+DEFERROR(ec_is_not_a_valid_declarator,
+	"`%T::%D' is not a valid declarator")
+DEFERROR(ec_perhaps_you_want_typename_to_make_it_a_type,
+	"  perhaps you want `typename %T::%D' to make it a type")
+DEFERROR(ec_type_is_not_derived_from_type,
+	"type `%T' is not derived from type `%T'")
+DEFERROR(ec_specified_as_declaratorid,
+	"`%T' specified as declarator-id")
+DEFERROR(ec_perhaps_you_want_for_a_constructor,
+	"  perhaps you want `%T' for a constructor")
+DEFERROR(ec_as_declarator,
+	"`%D' as declarator")
+DEFERROR(ec_declaration_of_as_nonfunction,
+	"declaration of `%D' as non-function")
+DEFERROR(ec_extraneous_ignored,
+	"extraneous `%T' ignored")
+DEFERROR(ec_multiple_declarations_and,
+	"multiple declarations `%T' and `%T'")
+DEFERROR(ec_returntype_of_defaults_to_int,
+	"return-type of `%D' defaults to `int'")
+DEFERROR(ec_forbids_declaration_with_no_type,
+	"ANSI C++ forbids declaration `%D' with no type")
+DEFERROR(ec_operator_declared_to_return,
+	"operator `%T' declared to return `%T'")
+DEFERROR(ec_return_type_specified_for_operator,
+	"return type specified for `operator %T'")
+DEFERROR(ec_operator_cannot_be_cvqualified,
+	"`operator %T' cannot be cv-qualified")
+DEFERROR(ec_member_cannot_be_declared_both_virtual_and_static,
+	"member `%D' cannot be declared both virtual and static")
+DEFERROR(ec_declaration_of_as_array_of_voids,
+	"declaration of `%D' as array of voids")
+DEFERROR(ec_declaration_of_as_array_of_functions,
+	"declaration of `%D' as array of functions")
+DEFERROR(ec_cannot_make_arrays_of_references,
+	"cannot make arrays of references")
+DEFERROR(ec_declaration_of_as_array_of_references,
+	"declaration of `%D' as array of references")
+DEFERROR(ec_declaration_of_as_array_of_data_members,
+	"declaration of `%D' as array of data members")
+DEFERROR(ec_declaration_of_as_array_of_function_members,
+	"declaration of `%D' as array of function members")
+DEFERROR(ec_size_of_array_has_noninteger_type,
+	"size of array `%D' has non-integer type")
+DEFERROR(ec_forbids_zerosize_array,
+	"ANSI C++ forbids zero-size array `%D'")
+DEFERROR(ec_size_of_array_is_negative,
+	"size of array `%D' is negative")
+DEFERROR(ec_forbids_variablesize_array_name,
+	"ANSI C++ forbids variable-size array `%D'")
+DEFERROR(ec_forbids_variablesize_array,
+	"ANSI C++ forbids variable-size array")
+DEFERROR(ec_cant_define_friend_function_s_in_a_local_class_definition,
+	"can't define friend function `%s' in a local class definition")
+DEFERROR(ec_cannot_declare_pointer_to_member,
+	"cannot declare pointer to `%#T' member")
+DEFERROR(ec_empty_signature_used_in_signature_reference_declaration,
+	"empty signature `%T' used in signature reference declaration")
+DEFERROR(ec_empty_signature_used_in_signature_pointer_declaration,
+	"empty signature `%T' used in signature pointer declaration")
+DEFERROR(ec_extra_qualification_on_member_s_ignored,
+	"extra qualification `%T::' on member `%s' ignored")
+DEFERROR(ec_cannot_declare_member_function_s_within,
+	"cannot declare member function `%T::%s' within `%T'")
+DEFERROR(ec_cannot_declare_member_s_within,
+	"cannot declare member `%T::%s' within `%T'")
+DEFERROR(ec_structure_not_yet_defined,
+	"structure `%T' not yet defined")
+DEFERROR(ec_forbids_nested_type_with_same_name_as_enclosing_class,
+	"ANSI C++ forbids nested type `%D' with same name as enclosing class")
+DEFERROR(ec_typedef_name_may_not_be_classqualified,
+	"typedef name may not be class-qualified")
+DEFERROR(ec_invalid_type_qualifier_for_nonmethod_type,
+	"invalid type qualifier for non-method type")
+DEFERROR(ec_volatile_specified_for_friend_class_declaration,
+	"`volatile' specified for friend class declaration")
+DEFERROR(ec_inline_specified_for_friend_class_declaration,
+	"`inline' specified for friend class declaration")
+DEFERROR(ec_abstract_declarator_type_used_as_declaration,
+	"abstract declarator `%T' used as declaration")
+DEFERROR(ec_invalid_use_of_scope,
+	"invalid use of `::'")
+DEFERROR(ec_function_cannot_be_declared_friend,
+	"function `%D' cannot be declared friend")
+DEFERROR(ec_cant_make_into_a_method_not_in_a_class,
+	"can't make `%D' into a method -- not in a class")
+DEFERROR(ec_function_declared_virtual_inside_a_union,
+	"function `%D' declared virtual inside a union")
+DEFERROR(ec_cannot_be_declared_virtual_since_it_is_always_static,
+	"`%D' cannot be declared virtual, since it is always static")
+DEFERROR(ec_field_has_incomplete_type,
+	"field `%D' has incomplete type")
+DEFERROR(ec_name_has_incomplete_type,
+	"name `%T' has incomplete type")
+DEFERROR(ec_in_instantiation_of_template,
+	"  in instantiation of template `%T'")
+DEFERROR(ec_forbids_initialization_of_s,
+	"ANSI C++ forbids initialization of %s `%D'")
+DEFERROR(ec_making_static,
+	"making `%D' static")
+DEFERROR(ec_inclass_initialization_of_static_data_member_of_nonintegral_type,
+	"in-class initialization of static data member of non-integral type `%T'")
+DEFERROR(ec_forbids_inclass_initialization_of_nonconst_static_member,
+	"ANSI C++ forbids in-class initialization of non-const static member `%D'")
+DEFERROR(ec_forbids_initialization_of_member_constant_of_nonintegral_type,
+	"ANSI C++ forbids initialization of member constant `%D' of non-integral type `%T'")
+DEFERROR(ec_forbids_static_member_with_same_name_as_enclosing_class,
+	"ANSI C++ forbids static member `%D' with same name as enclosing class")
+DEFERROR(ec_cannot_declare_member_function_to_have_static_linkage,
+	"cannot declare member function `%D' to have static linkage")
+DEFERROR(ec_static_member_redeclared_as_static,
+	"static member `%D' re-declared as static")
+DEFERROR(ec_static_member_declared_register,
+	"static member `%D' declared `register'")
+DEFERROR(ec_cannot_explicitly_declare_member_to_have_extern_linkage,
+	"cannot explicitly declare member `%#D' to have extern linkage")
+DEFERROR(ec_invalid_string_constant,
+	"invalid string constant `%E'")
+DEFERROR(ec_parameter_invalidly_declared_method_type,
+	"parameter `%D' invalidly declared method type")
+DEFERROR(ec_parameter_invalidly_declared_offset_type,
+	"parameter `%D' invalidly declared offset type")
+DEFERROR(ec_parameter_type_includes_pointer_to_array_of_unknown_bound,
+	"parameter type `%T' includes pointer to array of unknown bound")
+DEFERROR(ec_local_variable_may_not_be_used_as_a_default_argument,
+	"local variable `%D' may not be used as a default argument")
+DEFERROR(ec_invalid_type_for_default_argument_to_decl,
+	"invalid type `%T' for default argument to `%#D'")
+DEFERROR(ec_invalid_type_for_default_argument_to,
+	"invalid type `%T' for default argument to `%T'")
+DEFERROR(ec_invalid_constructor_you_probably_meant_const,
+	"invalid constructor; you probably meant `%T (const %T&)'")
+DEFERROR(ec_must_be_a_nonstatic_member_function,
+	"`%D' must be a nonstatic member function")
+DEFERROR(ec_must_be_either_a_nonstatic_member_function_or_a_nonmember_function,
+	"`%D' must be either a non-static member function or a non-member function")
+DEFERROR(ec_must_take_exactly_one_argument,
+	"`%D' must take exactly one argument")
+DEFERROR(ec_must_take_exactly_three_arguments,
+	"`%D' must take exactly three arguments")
+DEFERROR(ec_postfix_must_take_int_as_its_argument,
+	"postfix `%D' must take `int' as its argument")
+DEFERROR(ec_must_take_either_zero_or_one_argument,
+	"`%D' must take either zero or one argument")
+DEFERROR(ec_must_take_either_one_or_two_arguments,
+	"`%D' must take either one or two arguments")
+DEFERROR(ec_prefix_should_return,
+	"prefix `%D' should return `%T'")
+DEFERROR(ec_postfix_should_return,
+	"postfix `%D' should return `%T'")
+DEFERROR(ec_must_take_void,
+	"`%D' must take `void'")
+DEFERROR(ec_must_take_exactly_two_arguments,
+	"`%D' must take exactly two arguments")
+DEFERROR(ec_userdefined_always_evaluates_both_arguments,
+	"user-defined `%D' always evaluates both arguments")
+DEFERROR(ec_should_return_by_value,
+	"`%D' should return by value")
+DEFERROR(ec_cannot_have_default_arguments,
+	"`%D' cannot have default arguments")
+DEFERROR(ec_redeclaration_of_template_typeparameter,
+	"redeclaration of template type-parameter `%T'")
+DEFERROR(ec_use_of_enum_without_previous_declaration,
+	"use of enum `%#D' without previous declaration")
+DEFERROR(ec_derived_union_invalid,
+	"derived union `%T' invalid")
+DEFERROR(ec_base_type_fails_to_be_a_struct_or_class_type,
+	"base type `%T' fails to be a struct or class type")
+DEFERROR(ec_base_class_has_incomplete_type,
+	"base class `%T' has incomplete type")
+DEFERROR(ec_recursive_type_undefined,
+	"recursive type `%T' undefined")
+DEFERROR(ec_duplicate_base_type_invalid,
+	"duplicate base type `%T' invalid")
+DEFERROR(ec_multiple_definition_of,
+	"multiple definition of `%#T'")
+DEFERROR(ec_enumerator_value_for_not_integer_constant,
+	"enumerator value for `%D' not integer constant")
+DEFERROR(ec_overflow_in_enumeration_values_at,
+	"overflow in enumeration values at `%D'")
+DEFERROR(ec_redeclaration_of,
+	"redeclaration of `%#D'")
+DEFERROR(ec_semicolon_missing_after_declaration_of,
+	"semicolon missing after declaration of `%#T'")
+DEFERROR(ec_implicitly_declared_before_its_definition,
+	"`%D' implicitly declared before its definition")
+DEFERROR(ec_returntype_is_an_incomplete_type,
+	"return-type `%#T' is an incomplete type")
+DEFERROR(ec_operator_should_return_a_reference_to_this,
+	"`operator=' should return a reference to `*this'")
+DEFERROR(ec_parameter_declared_void,
+	"parameter `%D' declared void")
+DEFERROR(ec_return_identifier_already_in_place,
+	"return identifier `%D' already in place")
+DEFERROR(ec_noreturn_function_does_return,
+	"`noreturn' function `%D' does return")
+DEFERROR(ec_control_reaches_end_of_nonvoid_function,
+	"control reaches end of non-void function `%D'")
+DEFERROR(ec_is_already_defined_in_class,
+	"`%D' is already defined in class %s")
+DEFERROR(ec_reference_not_call_to_function,
+	"reference, not call, to function `%D'")
+DEFERROR(ec_static_member_function_declared_const,
+	"static member function `%#D' declared const")
+DEFERROR(ec_static_member_function_declared_volatile,
+	"static member function `%#D' declared volatile")
+DEFERROR(ec_template_instantiated_in_file_without_pragma_interface,
+	"template `%#D' instantiated in file without #pragma interface")
+DEFERROR(ec_template_defined_in_file_without_pragma_interface,
+	"template `%#D' defined in file without #pragma interface")
+DEFERROR(ec_invalid_types_for_array_subscript,
+	"invalid types `%T[%T]' for array subscript")
+DEFERROR(ec_type_argument_given_to_delete_expected_pointer,
+	"type `%#T' argument given to `delete', expected pointer")
+DEFERROR(ec_deleting_array,
+	"deleting array `%#D'")
+DEFERROR(ec_declaration_of_member_template_in_local_class,
+	"declaration of member template `%#D' in local class")
+DEFERROR(ec_template_declaration_of,
+	"template declaration of `%#D'")
+DEFERROR(ec_ava_method_has_nonava_return_type,
+	"Java method '%D' has non-Java return type `%T'")
+DEFERROR(ec_ava_method_has_nonava_parameter_type,
+	"Java method '%D' has non-Java parameter type `%T'")
+DEFERROR(ec_prototype_for_does_not_match_any_in_class,
+	"prototype for `%#D' does not match any in class `%T'")
+DEFERROR(ec_candidates,
+	"candidate%s: %+#D")
+DEFERROR(ec_candidate_2,
+	"                %#D")
+DEFERROR(ec_no_member_function_declared_in_class,
+	"no `%#D' member function declared in class `%T'")
+DEFERROR(ec_member_conflicts_with_virtual_function_table_field_name,
+	"member `%D' conflicts with virtual function table field name")
+DEFERROR(ec_is_already_defined_in_the_class,
+	"`%D' is already defined in the class %T")
+DEFERROR(ec_redeclaration_of_template_parameter,
+	"redeclaration of template parameter `%T'")
+DEFERROR(ec_method_of_local_class_must_be_defined_in_class_body,
+	"method `%#D' of local class must be defined in class body")
+DEFERROR(ec_cannot_declare_to_be_a_bitfield_type,
+	"cannot declare `%D' to be a bitfield type")
+DEFERROR(ec_cannot_declare_bitfield_with_funcion_type,
+	"cannot declare bitfield `%D' with funcion type")
+DEFERROR(ec_static_member_cannot_be_a_bitfield,
+	"static member `%D' cannot be a bitfield")
+DEFERROR(ec_initializer_specified_for_nonmember_function,
+	"initializer specified for non-member function `%D'")
+DEFERROR(ec_invalid_initializer_for_virtual_method,
+	"invalid initializer for virtual method `%D'")
+DEFERROR(ec_init_priority_for_ignored_without_finitpriority,
+	"init_priority for `%#D' ignored without -finit-priority")
+DEFERROR(ec_case_label_does_not_reduce_to_an_integer_constant,
+	"case label `%E' does not reduce to an integer constant")
+DEFERROR(ec_use_of_is_ambiguous,
+	"use of `%D' is ambiguous")
+DEFERROR(ec_first_declared_as_here,
+	"  first declared as `%#D' here")
+DEFERROR(ec_also_declared_as_here,
+	"  also declared as `%#D' here")
+DEFERROR(ec_denotes_an_ambiguous_type,
+	"`%D' denotes an ambiguous type")
+DEFERROR(ec_first_type_here,
+	"  first type here")
+DEFERROR(ec_other_type_here,
+	"  other type here")
+DEFERROR(ec_declaration_of_not_in_a_namespace_surrounding,
+	"declaration of `%D' not in a namespace surrounding `%D'")
+DEFERROR(ec_should_have_been_declared_inside,
+	"`%D' should have been declared inside `%D'")
+DEFERROR(ec_is_not_a_function,
+	"`%D' is not a function,")
+DEFERROR(ec_conflict_with,
+	"  conflict with `%D'")
+DEFERROR(ec_unknown_namespace,
+	"unknown namespace `%D'")
+DEFERROR(ec_not_declared,
+	"`%D' not declared")
+DEFERROR(ec_using_directive_introduced_ambiguous_type,
+	"using directive `%D' introduced ambiguous type `%T'")
+DEFERROR(ec_usingdeclaration_for_nonmember_at_class_scope,
+	"using-declaration for non-member at class scope")
+DEFERROR(ec_usingdeclaration_for_destructor,
+	"using-declaration for destructor")
+DEFERROR(ec_namespace_undeclared,
+	"namespace `%T' undeclared")
+DEFERROR(ec_is_not_a_namespace,
+	"`%T' is not a namespace")
+DEFERROR(ec_default_argument_missing_for_parameter_of,
+	"default argument missing for parameter %P of `%+#D'")
+DEFERROR(ec_does_not_have_a_nested_type_named,
+	"`%T' does not have a nested type named `%D'")
+DEFERROR(ec_no_filescope_type_named,
+	"no file-scope type named `%D'")
+DEFERROR(ec_throwing_which_has_integral_not_pointer_type,
+	"throwing NULL, which has integral, not pointer type")
+DEFERROR(ec_case_label_not_within_a_switch_statement,
+	"case label `%E' not within a switch statement")
+DEFERROR(ec_this_is_the_first_entry_overlapping_that_value,
+	"this is the first entry overlapping that value")
+DEFERROR(ec_duplicate_case_value,
+	"duplicate case value `%E'")
+DEFERROR(ec_previously_used_here,
+	"previously used here")
+DEFERROR(ec_this_is_the_first_default_label,
+	"this is the first default label")
+DEFERROR(ec_case_label_within_scope_of_cleanup_or_variable_array,
+	"case label `%E' within scope of cleanup or variable array")
+DEFERROR(ec_is_already_a_friend_of_class,
+	"`%D' is already a friend of class `%T'")
+DEFERROR(ec_previous_friend_declaration_of,
+	"previous friend declaration of `%D'")
+DEFERROR(ec_partial_specialization_declared_friend,
+	"partial specialization `%T' declared `friend'")
+DEFERROR(ec_is_already_a_friend_of,
+	"`%T' is already a friend of `%T'")
+DEFERROR(ec_member_declared_as_friend_before_type_defined,
+	"member `%D' declared as friend before type `%T' defined")
+DEFERROR(ec_method_is_not_a_member_of_class,
+	"method `%D' is not a member of class `%T'")
+DEFERROR(ec_friend_declaration,
+	"friend declaration `%#D'")
+DEFERROR(ec_implicitly_declaring_as_struct,
+	"implicitly declaring `%T' as struct")
+DEFERROR(ec_friend_archaic_use_friend_class_instead,
+	"`friend %T' archaic, use `friend class %T' instead")
+DEFERROR(ec_defaultinitialization_of_which_has_reference_type,
+	"default-initialization of `%#D', which has reference type")
+DEFERROR(ec_uninitialized_reference_member,
+	"uninitialized reference member `%D'")
+DEFERROR(ec_member_initializers_for,
+	"member initializers for `%#D'")
+DEFERROR(ec_and,
+	"  and `%#D'")
+DEFERROR(ec_multiple_initializations_given_for_member,
+	"multiple initializations given for member `%D'")
+DEFERROR(ec_does_not_have_a_base_class_to_initialize,
+	"`%T' does not have a base class to initialize")
+DEFERROR(ec_unnamed_initializer_ambiguous_for_which_uses_multiple_inheritance,
+	"unnamed initializer ambiguous for `%T' which uses multiple inheritance")
+DEFERROR(ec_is_not_an_immediate_base_class_of,
+	"`%T' is not an immediate base class of `%T'")
+DEFERROR(ec_base_initializers_for,
+	"base initializers for `%#T'")
+DEFERROR(ec_and_type,
+	"  and `%#T'")
+DEFERROR(ec_base_class_should_be_explicitly_initialized_in_the_copy_constructor,
+	"base class `%#T' should be explicitly initialized in the copy constructor")
+DEFERROR(ec_should_be_initialized_in_the_member_initialization_list,
+	"`%D' should be initialized in the member initialization list")
+DEFERROR(ec_field_not_in_immediate_context,
+	"field `%D' not in immediate context")
+DEFERROR(ec_field_used_before_initialized_after_assignment_to_this,
+	"field `%D' used before initialized (after assignment to `this')")
+DEFERROR(ec_class_does_not_have_any_field_named_s,
+	"class `%T' does not have any field named `%s'")
+DEFERROR(ec_field_is_static_only_point_of_initialization_is_its_declaration,
+	"field `%#D' is static; only point of initialization is its declaration")
+DEFERROR(ec_type_uses_multiple_inheritance,
+	"(type `%T' uses multiple inheritance)")
+DEFERROR(ec_type_is_not_an_immediate_or_virtual_basetype_for,
+	"type `%T' is not an immediate or virtual basetype for `%T'")
+DEFERROR(ec_type_is_not_an_immediate_basetype_for,
+	"type `%T' is not an immediate basetype for `%T'")
+DEFERROR(ec_base_class_already_initialized,
+	"base class `%T' already initialized")
+DEFERROR(ec_base_initializer_for,
+	"base initializer for `%T'")
+DEFERROR(ec_field_already_initialized,
+	"field `%D' already initialized")
+DEFERROR(ec_is_not_an_aggregate_typedef,
+	"`%T' is not an aggregate typedef")
+DEFERROR(ec_is_not_an_aggregate_type,
+	"`%T' is not an aggregate type")
+DEFERROR(ec_fails_to_be_an_aggregate_typedef,
+	"`%T' fails to be an aggregate typedef")
+DEFERROR(ec_type_is_of_nonaggregate_type,
+	"type `%T' is of non-aggregate type")
+DEFERROR(ec_cannot_call_destructor_without_object,
+	"cannot call destructor `%T::~%T' without object")
+DEFERROR(ec_invalid_use_of_nonstatic_field,
+	"invalid use of non-static field `%D'")
+DEFERROR(ec_invalid_use_of_member,
+	"invalid use of member `%D'")
+DEFERROR(ec_no_method,
+	"no method `%T::%D'")
+DEFERROR(ec_incomplete_type_does_not_have_member,
+	"incomplete type `%T' does not have member `%D'")
+DEFERROR(ec_member_function_is_protected,
+	"member function `%#D' is protected")
+DEFERROR(ec_member_function_is_private,
+	"member function `%#D' is private")
+DEFERROR(ec_is_not_a_member_of_type,
+	"`%D' is not a member of type `%T'")
+DEFERROR(ec_illegal_pointer_to_bit_field,
+	"illegal pointer to bit field `%D'")
+DEFERROR(ec_assuming_on_overloaded_member_function,
+	"assuming & on overloaded member function")
+DEFERROR(ec_member_is_nonstatic_but_referenced_as_a_static_member,
+	"member `%D' is non-static but referenced as a static member")
+DEFERROR(ec_member_is_s,
+	"member `%D' is %s")
+DEFERROR(ec_in_this_context,
+	"in this context")
+DEFERROR(ec_object_missing_in,
+	"object missing in `%E'")
+DEFERROR(ec_initialization_in_array_new,
+	"initialization in array new")
+DEFERROR(ec_uninitialized_const_in_new_of,
+	"uninitialized const in `new' of `%#T'")
+DEFERROR(ec_invalid_use_of_member_from_base_class,
+	"invalid use of member `%D' from base class `%T'")
+DEFERROR(ec_not_defined,
+	"`%D' not defined")
+DEFERROR(ec_was_not_declared_in_this_scope,
+	"`%D' was not declared in this scope")
+DEFERROR(ec_undeclared_first_use_this_function,
+	"`%D' undeclared (first use this function)")
+DEFERROR(ec_matches_this_under_current_rules,
+	"  matches this `%D' under current ANSI rules")
+DEFERROR(ec_matches_this_under_old_rules,
+	"  matches this `%D' under old rules")
+DEFERROR(ec_cannot_use_obsolete_binding_at_because_it_has_a_destructor,
+	"  cannot use obsolete binding at `%D' because it has a destructor")
+DEFERROR(ec_enum_is_private,
+	"enum `%D' is private")
+DEFERROR(ec_undeclared_first_use_here,
+	"`::%D' undeclared (first use here)")
+DEFERROR(ec_invalid_use_of_member_in_static_member_function,
+	"invalid use of member `%D' in static member function")
+DEFERROR(ec_use_of_namespace_as_expression,
+	"use of namespace `%D' as expression")
+DEFERROR(ec_use_of_class_template_as_expression,
+	"use of class template `%T' as expression")
+DEFERROR(ec_use_of_s_from_containing_function,
+	"use of %s from containing function")
+DEFERROR(ec_declared_here,
+	"  `%#D' declared here")
+DEFERROR(ec_implementationreserved_name_used,
+	"implementation-reserved name `%D' used")
+DEFERROR(ec_generic_thunk_code_fails_for_method_which_uses,
+	"generic thunk code fails for method `%#D' which uses `...'")
+DEFERROR(ec_in_default_copy_constructor,
+	"in default copy constructor")
+DEFERROR(ec_nonstatic_const_member_cant_use_default_assignment_operator,
+	"non-static const member `%#D', can't use default assignment operator")
+DEFERROR(ec_nonstatic_const_member_in_type_cant_use_default_assignment_operator,
+	"non-static const member in type `%T', can't use default assignment operator")
+DEFERROR(ec_nonstatic_reference_member_cant_use_default_assignment_operator,
+	"non-static reference member `%#D', can't use default assignment operator")
+DEFERROR(ec_nonstatic_reference_member_in_type_cant_use_default_assignment_operator,
+	"non-static reference member in type `%T', can't use default assignment operator")
+DEFERROR(ec_use_of_linkage_spec_is_different_from_previous_spec,
+	"use of linkage spec `%D' is different from previous spec `%D'")
+DEFERROR(ec_definition_of_class_in_condition,
+	"definition of class `%T' in condition")
+DEFERROR(ec_definition_of_enum_in_condition,
+	"definition of enum `%T' in condition")
+DEFERROR(ec_definition_of_array_in_condition,
+	"definition of array `%#D' in condition")
+DEFERROR(ec_old_style_placement_syntax_use_instead,
+	"old style placement syntax, use () instead")
+DEFERROR(ec_is_not_a_valid_expression,
+	"`%T' is not a valid expression")
+DEFERROR(ec_using_typename_outside_of_template,
+	"using `typename' outside of template")
+DEFERROR(ec_is_not_a_class_type,
+	"%T is not a class type")
+DEFERROR(ec_base_clause_without_member_specification_for,
+	"base clause without member specification for `%#T'")
+DEFERROR(ec_union_tag_used_in_declaring,
+	"`union' tag used in declaring `%#T'")
+DEFERROR(ec_nonunion_tag_used_in_declaring,
+	"non-`union' tag used in declaring `%#T'")
+DEFERROR(ec_access,
+	"`%D' access")
+DEFERROR(ec_is_not_a_class_or_namespace,
+	"`%T' is not a class or namespace")
+DEFERROR(ec_perhaps_you_want_typename_expr_to_make_it_a_type,
+	"  perhaps you want `typename %E' to make it a type")
+DEFERROR(ec_invalid_member_template_declaration,
+	"invalid member template declaration `%D'")
+DEFERROR(ec_explicit_specialization_in_nonnamespace_scope,
+	"explicit specialization in non-namespace scope `%D'")
+DEFERROR(ec_enclosing_class_templates_are_not_explicit_specialized,
+	"enclosing class templates are not explicitly specialized")
+DEFERROR(ec_specialization_of_type_after_instantiation,
+	"specialization of `%T' after instantiation")
+DEFERROR(ec_specialization_of_decl_after_instantiation,
+	"specialization of `%D' after instantiation")
+DEFERROR(ec_decl,
+	"%s %+#D")
+DEFERROR(ec_templateid_for_does_not_match_any_template_declaration,
+	"template-id `%D' for `%+D' does not match any template declaration")
+DEFERROR(ec_ambiguous_template_specialization_for,
+	"ambiguous template specialization `%D' for `%+D'")
+DEFERROR(ec_too_many_template_parameter_lists_in_declaration_of,
+	"too many template parameter lists in declaration of `%D'")
+DEFERROR(ec_template_parameter_list_used_in_explicit_instantiation,
+	"template parameter list used in explicit instantiation")
+DEFERROR(ec_definition_provided_for_explicit_instantiation,
+	"definition provided for explicit instantiation")
+DEFERROR(ec_template_parameters_specified_in_specialization,
+	"template parameters specified in specialization")
+DEFERROR(ec_specialization_of_implicitlydeclared_special_member_function,
+	"specialization of implicitly-declared special member function")
+DEFERROR(ec_no_member_function_s_declared_in,
+	"no member function `%s' declared in `%T'")
+DEFERROR(ec_too_many_template_parameter_lists_in_declaration_of_type,
+	"too many template parameter lists in declaration of `%T'")
+DEFERROR(ec_is_not_a_valid_type_for_a_template_constant_parameter,
+	"`%#T' is not a valid type for a template constant parameter")
+DEFERROR(ec_default_argument_in_partial_specialization,
+	"default argument in partial specialization `%T'")
+DEFERROR(ec_template_parameters_not_used_in_partial_specialization,
+	 "template parameters not used in partial specialization:")
+DEFERROR(ec_template_parm,
+	"  `%D'")
+DEFERROR(ec_partial_specialization_does_not_specialize_any_template_arguments,
+	"partial specialization `%T' does not specialize any template arguments")
+DEFERROR(ec_template_argument_involves_template_parameters,
+	"template argument `%E' involves template parameter(s)")
+DEFERROR(ec_type_of_template_argument_depends_on_template_paramters,
+	"type `%T' of template argument `%E' depends on template paramter(s)")
+DEFERROR(ec_template_with_linkage,
+	"template with C linkage")
+DEFERROR(ec_template_class_without_a_name,
+	"template class without a name")
+DEFERROR(ec_template_declaration_of_type,
+	"template declaration of `%#T'")
+DEFERROR(ec_must_specialize_before_defining_member,
+	"must specialize `%#T' before defining member `%#D'")
+DEFERROR(ec_does_not_declare_a_template_type,
+	"`%D' does not declare a template type")
+DEFERROR(ec_template_definition_of_nontemplate,
+	"template definition of non-template `%#D'")
+DEFERROR(ec_got_d_template_parameters_for,
+	"got %d template parameters for `%#D'")
+DEFERROR(ec_but_d_required,
+	"  but %d required")
+DEFERROR(ec_but_has_d,
+	"  but `%#T' has %d")
+DEFERROR(ec_previous_declaration,
+	"previous declaration `%D'")
+DEFERROR(ec_used_d_template_parameters_instead_of_d,
+	"used %d template parameter%s instead of %d")
+DEFERROR(ec_template_parameter,
+	"template parameter `%#D'")
+DEFERROR(ec_redeclared_here_as,
+	"redeclared here as `%#D'")
+DEFERROR(ec_redefinition_of_default_argument_for,
+	"redefinition of default argument for `%#D'")
+DEFERROR(ec_original_definition_appeared_here,
+	"  original definition appeared here")
+DEFERROR(ec_nonconstant_cannot_be_used_as_template_argument,
+	"non-constant `%E' cannot be used as template argument")
+DEFERROR(ec_is_not_a_valid_template_argument,
+	"`%E' is not a valid template argument")
+DEFERROR(ec_string_literal_is_not_a_valid_template_argument,
+	"string literal %E is not a valid template argument")
+DEFERROR(ec_address_of_nonextern_cannot_be_used_as_template_argument,
+	"address of non-extern `%E' cannot be used as template argument")
+DEFERROR(ec_object_cannot_be_used_as_template_argument,
+	"object `%E' cannot be used as template argument")
+DEFERROR(ec_to_refer_to_a_type_member_of_a_template_parameter,
+	"to refer to a type member of a template parameter,")
+DEFERROR(ec_use_typename,
+	"  use `typename %E'")
+DEFERROR(ec_typevalue_mismatch_at_argument_d_in_template_parameter_list_for,
+	"type/value mismatch at argument %d in template parameter list for `%D'")
+DEFERROR(ec_expected_a_constant_of_type_got,
+	"  expected a constant of type `%T', got `%T'")
+DEFERROR(ec_expected_a_type_got_expr,
+	"  expected a type, got `%E'")
+DEFERROR(ec_expected_a_type_got_type,
+	"  expected a type, got `%T'")
+DEFERROR(ec_expected_a_class_template_got,
+	"  expected a class template, got `%T'")
+DEFERROR(ec_expected_a_template_of_type_got,
+	"  expected a template of type `%D', got `%D'")
+DEFERROR(ec_could_not_convert_template_argument_to,
+	"could not convert template argument `%E' to `%T'")
+DEFERROR(ec_wrong_number_of_template_arguments_d_should_be_d,
+	"wrong number of template arguments (%d, should be %d)")
+DEFERROR(ec_provided_for,
+	"provided for `%D'")
+DEFERROR(ec_template_argument_d_is_invalid,
+	"template argument %d is invalid")
+DEFERROR(ec_nontemplate_used_as_template,
+	"non-template used as template")
+DEFERROR(ec_nontemplate_type_used_as_a_template,
+	"non-template type `%T' used as a template")
+DEFERROR(ec_for_template_declaration,
+	"for template declaration `%D'")
+DEFERROR(ec_invalid_use_of,
+	"invalid use of `%D'")
+DEFERROR(ec_instantiating,
+	"  instantiating `%D'")
+DEFERROR(ec_ambiguous_class_template_instantiation_for,
+	"ambiguous class template instantiation for `%#T'")
+DEFERROR(ec_type,
+	"%s %+#T")
+DEFERROR(ec_base_class_of_has_incomplete_type,
+	"base class `%T' of `%T' has incomplete type")
+DEFERROR(ec_instantiation_of_as_type_void,
+	"instantiation of `%D' as type void")
+DEFERROR(ec_cannot_form_type_s_to_reference_type_during_template_instantiation,
+	"cannot form type %s to reference type %T during template instantiation")
+DEFERROR(ec_type_composed_from_a_local_class_is_not_a_valid_templateargument,
+	"type `%T' composed from a local class is not a valid template-argument")
+DEFERROR(ec_trying_to_instantiate,
+	"  trying to instantiate `%D'")
+DEFERROR(ec_explicit_instantiation_of_nontemplate,
+	"explicit instantiation of non-template `%#D'")
+DEFERROR(ec_no_matching_template_for_found,
+	"no matching template for `%D' found")
+DEFERROR(ec_explicit_instantiation_of,
+	"explicit instantiation of `%#D'")
+DEFERROR(ec_explicit_instantiation_of_after,
+	"explicit instantiation of `%#D' after")
+DEFERROR(ec_explicit_specialization_here,
+	"explicit specialization here")
+DEFERROR(ec_duplicate_explicit_instantiation_of,
+	"duplicate explicit instantiation of `%#D'")
+DEFERROR(ec_forbids_the_use_of_extern_on_explicit_instantiations,
+	"ANSI C++ forbids the use of `extern' on explicit instantiations")
+DEFERROR(ec_explicit_instantiation_of_nontemplate_type,
+	"explicit instantiation of non-template type `%T'")
+DEFERROR(ec_explicit_instantiation_of_before_definition_of_template,
+	"explicit instantiation of `%#T' before definition of template")
+DEFERROR(ec_storage_class_applied_to_template_instantiation,
+	"storage class `%D' applied to template instantiation")
+DEFERROR(ec_explicit_instantiation_of_type_after,
+	"explicit instantiation of `%#T' after")
+DEFERROR(ec_duplicate_explicit_instantiation_of_type,
+	"duplicate explicit instantiation of `%#T'")
+DEFERROR(ec_explicit_instantiation_of_but_no_definition_available,
+	"explicit instantiation of `%D' but no definition available")
+DEFERROR(ec_ambiguous_template_instantiation_for,
+	"ambiguous template instantiation for `%D'")
+DEFERROR(ec_dynamic_cast_of_to_can_never_succeed,
+	"dynamic_cast of `%#D' to `%#T' can never succeed")
+DEFERROR(ec_cannot_dynamic_cast_of_type_to_type,
+	"cannot dynamic_cast `%E' (of type `%#T') to type `%#T'")
+DEFERROR(ec_fields_of_are_inaccessible_in_due_to_private_inheritance,
+	"fields of `%T' are inaccessible in `%T' due to private inheritance")
+DEFERROR(ec_type_is_ambiguous_base_class_for_type,
+	"type `%T' is ambiguous base class for type `%T'")
+DEFERROR(ec_assignment_to_nonstatic_member_of_enclosing_class,
+	"assignment to non-static member `%D' of enclosing class `%T'")
+DEFERROR(ec_overriding,
+	"  overriding `%#D'")
+DEFERROR(ec_with,
+	"  with `%#D'")
+DEFERROR(ec_conflicting_return_type_specified_for_virtual_function,
+	"conflicting return type specified for virtual function `%#D'")
+DEFERROR(ec_overriding_definition_as,
+	"  overriding definition as `%#D'")
+DEFERROR(ec_member_is_shadowed,
+	"member `%#D' is shadowed")
+DEFERROR(ec_by_member_function,
+	"by member function `%#D'")
+DEFERROR(ec_break_statement_not_within_loop_or_switch,
+	"break statement not within loop or switch")
+DEFERROR(ec_continue_statement_not_within_a_loop,
+	"continue statement not within a loop")
+DEFERROR(ec_qualifier_ignored_on_asm,
+	"%s qualifier ignored on asm")
+DEFERROR(ec_calling_type_like_a_method,
+	"calling type `%T' like a method")
+DEFERROR(ec_destructor_specifier_must_have_matching_names,
+	"destructor specifier `%T::~%T' must have matching names")
+DEFERROR(ec_is_not_of_type,
+	"`%E' is not of type `%T'")
+DEFERROR(ec_class_does_not_contain_type,
+	"class `%T' does not contain type `%T'")
+DEFERROR(ec_class_does_not_contain_method,
+	"class `%T' does not contain method `%D'")
+DEFERROR(ec_undefined_signature_used_in_signature_s_declaration,
+	"undefined signature `%T' used in signature %s declaration")
+DEFERROR(ec_direct_base_inaccessible_in_due_to_ambiguity,
+	"direct base `%T' inaccessible in `%T' due to ambiguity")
+DEFERROR(ec_virtual_base_inaccessible_in_due_to_ambiguity,
+	"virtual base `%T' inaccessible in `%T' due to ambiguity")
+DEFERROR(ec_prohibits_conversion_from_to,
+	"ANSI C++ prohibits conversion from `(%#T)' to `(...)'")
+DEFERROR(ec_sizeof_applied_to_incomplete_type,
+	"`sizeof' applied to incomplete type `%T'")
+DEFERROR(ec_assuming_on,
+	"assuming & on `%E'")
+DEFERROR(ec_deprecated_conversion_from_string_constant_to_char,
+	"deprecated conversion from string constant to `char *'")
+DEFERROR(ec_request_for_member_in_expression_of_nonaggregate_type,
+	"request for member `%T::%D' in expression of non-aggregate type `%T'")
+DEFERROR(ec_type_has_no_destructor,
+	"type `%T' has no destructor")
+DEFERROR(ec_invalid_use_of_type_decl_as_expression,
+	"invalid use of type decl `%#D' as expression")
+DEFERROR(ec_has_no_member_named,
+	"`%#T' has no member named `%D'")
+DEFERROR(ec_function_declared_overloaded_but_no_definitions_appear_with_which_to_resolve_it,
+	"function `%D' declared overloaded, but no definitions appear with which to resolve it?!?")
+DEFERROR(ec_must_use_or_to_call_pointertomember_function_in,
+	"must use .* or ->* to call pointer-to-member function in `%E (...)'")
+DEFERROR(ec_cannot_be_used_as_a_function,
+	"`%E' cannot be used as a function")
+DEFERROR(ec_too_many_arguments_to_s,
+	"too many arguments to %s `%+D'")
+DEFERROR(ec_insufficient_type_information_to_resolve_address_of_overloaded_function,
+	"insufficient type information to resolve address of overloaded function `%D'")
+DEFERROR(ec_division_by_zero_in_div,
+	"division by zero in `%E / 0'")
+DEFERROR(ec_division_by_zero_in_mod,
+	"division by zero in `%E %% 0'")
+DEFERROR(ec_comparison_of_distinct_pointer_types_and_lacks_a_cast,
+	"comparison of distinct pointer types `%T' and `%T' lacks a cast")
+DEFERROR(ec_invalid_operands_and_to_binary,
+	"invalid operands `%T' and `%T' to binary `%O'")
+DEFERROR(ec_used_in_arithmetic,
+	"NULL used in arithmetic")
+DEFERROR(ec_cannot_s_a_pointer_to_incomplete_type,
+	"cannot %s a pointer to incomplete type `%T'")
+DEFERROR(ec_forbids_sing_a_pointer_of_type,
+	"ANSI C++ forbids %sing a pointer of type `%T'")
+DEFERROR(ec_invalid_use_of_on_bool_variable,
+	"invalid use of `--' on bool variable `%D'")
+DEFERROR(ec_taking_address_of_destructor,
+	"taking address of destructor")
+DEFERROR(ec_address_requested_for_which_is_declared_register,
+	"address requested for `%D', which is declared `register'")
+DEFERROR(ec_enumeral_mismatch_in_conditional_expression_vs,
+	"enumeral mismatch in conditional expression: `%T' vs `%T'")
+DEFERROR(ec_common_base_type_of_types_and_is_ambiguous,
+	"common base type of types `%T' and `%T' is ambiguous")
+DEFERROR(ec_and_converted_to_in_conditional_expression,
+	"`%T' and `%T' converted to `%T *' in conditional expression")
+DEFERROR(ec_aggregate_mismatch_in_conditional_expression_vs,
+	"aggregate mismatch in conditional expression: `%T' vs `%T'")
+DEFERROR(ec_incompatible_types_and_in,
+	"incompatible types `%T' and `%T' in `?:'")
+DEFERROR(ec_static_cast_from_to,
+	"static_cast from `%T' to `%T'")
+DEFERROR(ec_reinterpret_cast_from_rvalue_to,
+	"reinterpret_cast from `%T' rvalue to `%T'")
+DEFERROR(ec_reinterpret_cast_from_to_loses_precision,
+	"reinterpret_cast from `%T' to `%T' loses precision")
+DEFERROR(ec_reinterpret_cast_from_to_casts_away_const_or_volatile,
+	"reinterpret_cast from `%T' to `%T' casts away const (or volatile)")
+DEFERROR(ec_reinterpret_cast_from_to,
+	"reinterpret_cast from `%T' to `%T'")
+DEFERROR(ec_const_cast_from_rvalue_to,
+	"const_cast from `%T' rvalue to `%T'")
+DEFERROR(ec_const_cast_from_to,
+	"const_cast from `%T' to `%T'")
+DEFERROR(ec_casting_to_function_type,
+	"casting to function type `%T'")
+DEFERROR(ec_in_evaluation_of,
+	"  in evaluation of `%Q(%#T, %#T)'")
+DEFERROR(ec_incompatible_types_in_assignment_of_to,
+	"incompatible types in assignment of `%T' to `%T'")
+DEFERROR(ec_pointer_to_member_cast_to_virtual_base,
+	"pointer to member cast to virtual base `%T'")
+DEFERROR(ec_pointer_to_member_cast_from_virtual_base,
+	"pointer to member cast from virtual base `%T'")
+DEFERROR(ec_pointer_to_member_conversion_from_virtual_base,
+	"pointer to member conversion from virtual base `%T'")
+DEFERROR(ec_conversion_to_from,
+	"conversion to `%T' from `%T'")
+DEFERROR(ec_used_for_argument_of,
+	"`%T' used for argument %P of `%D'")
+DEFERROR(ec_s_to_from,
+	"%s to `%T' from `%T'")
+DEFERROR(ec_negative_value_passed_as_argument_of,
+	"negative value `%E' passed as argument %P of `%D'")
+DEFERROR(ec_s_of_negative_value_to,
+	"%s of negative value `%E' to `%T'")
+DEFERROR(ec_passing_as_argument_of_discards_const,
+	"passing `%T' as argument %P of `%D' discards const")
+DEFERROR(ec_s_to_from_discards_const,
+	"%s to `%T' from `%T' discards const")
+DEFERROR(ec_passing_as_argument_of_discards_volatile,
+	"passing `%T' as argument %P of `%D' discards volatile")
+DEFERROR(ec_s_to_from_discards_volatile,
+	"%s to `%T' from `%T' discards volatile")
+DEFERROR(ec_no_standard_conversion_from_to_void,
+	"no standard conversion from `%T' to `void *'")
+DEFERROR(ec_converting_to_is_a_contravariance_violation,
+	"converting `%T' to `%T' is a contravariance violation")
+DEFERROR(ec_implicit_conversion_of_signature_pointer_to_type,
+	"implicit conversion of signature pointer to type `%T'")
+DEFERROR(ec_passing_as_argument_of_changes_signedness,
+	"passing `%T' as argument %P of `%D' changes signedness")
+DEFERROR(ec_s_to_from_changes_signedness,
+	"%s to `%T' from `%T' changes signedness")
+DEFERROR(ec_passing_as_argument_of_adds_cvquals_without_intervening_const,
+	"passing `%T' as argument %P of `%D' adds cv-quals without intervening `const'")
+DEFERROR(ec_s_to_from_adds_cvquals_without_intervening_const,
+	"%s to `%T' from `%T' adds cv-quals without intervening `const'")
+DEFERROR(ec_passing_as_argument_of_changes_signed_to_unsigned,
+	"passing `%T' as argument %P of `%D' changes signed to unsigned")
+DEFERROR(ec_s_to_from_changes_signed_to_unsigned,
+	"%s to `%T' from `%T' changes signed to unsigned")
+DEFERROR(ec_s_to_from_changes_unsigned_to_signed,
+	"%s to `%T' from `%T' changes unsigned to signed")
+DEFERROR(ec_passing_as_argument_of_changes_unsigned_to_signed,
+	"passing `%T' as argument %P of `%D' changes unsigned to signed")
+DEFERROR(ec_t,
+	"\t`%T' != `%T'")
+DEFERROR(ec_passing_as_argument_of,
+	"passing `%T' as argument %P of `%D'")
+DEFERROR(ec_passing_to_argument_of_lacks_a_cast,
+	"passing `%T' to argument %P of `%D' lacks a cast")
+DEFERROR(ec_s_to_from_lacks_a_cast,
+	"%s to `%T' from `%T' lacks a cast")
+DEFERROR(ec_in_passing_argument_of,
+	"in passing argument %P of `%+D'")
+DEFERROR(ec_reference_to_local_variable_returned,
+	"reference to local variable `%D' returned")
+DEFERROR(ec_address_of_local_variable_returned,
+	"address of local variable `%D' returned")
+DEFERROR(ec_type_is_not_a_base_type_for_type,
+	"type `%T' is not a base type for type `%T'")
+DEFERROR(ec_cannot_declare_variable_to_be_of_type,
+	"cannot declare variable `%D' to be of type `%T'")
+DEFERROR(ec_cannot_declare_parameter_to_be_of_type,
+	"cannot declare parameter `%D' to be of type `%T'")
+DEFERROR(ec_cannot_declare_field_to_be_of_type,
+	"cannot declare field `%D' to be of type `%T'")
+DEFERROR(ec_cannot_allocate_an_object_of_type,
+	"cannot allocate an object of type `%T'")
+DEFERROR(ec_virtual,
+	"\t%#D")
+DEFERROR(ec_since_type_has_abstract_virtual_functions_and_must_override_virtual_functions,
+	"  since type `%T' has abstract virtual functions and must override virtual functions")
+DEFERROR(ec_since_type_has_abstract_virtual_functions,
+	"  since type `%T' has abstract virtual functions")
+DEFERROR(ec_since_type_must_override_virtual_functions,
+	"  since type `%T' must override virtual functions")
+DEFERROR(ec_cannot_declare_variable_to_be_of_signature_type,
+	"cannot declare variable `%D' to be of signature type `%T'")
+DEFERROR(ec_cannot_declare_parameter_to_be_of_signature_type,
+	"cannot declare parameter `%D' to be of signature type `%T'")
+DEFERROR(ec_cannot_declare_field_to_be_of_signature_type,
+	"cannot declare field `%D' to be of signature type `%T'")
+DEFERROR(ec_invalid_return_type_for_method,
+	"invalid return type for method `%#D'")
+DEFERROR(ec_invalid_return_type_for_function,
+	"invalid return type for function `%#D'")
+DEFERROR(ec_cannot_allocate_an_object_of_signature_type,
+	"cannot allocate an object of signature type `%T'")
+DEFERROR(ec_has_incomplete_type,
+	"`%D' has incomplete type")
+DEFERROR(ec_constructor_syntax_cannot_be_used_with_signature_type,
+	"constructor syntax cannot be used with signature type `%T'")
+DEFERROR(ec_constructor_syntax_used_but_no_constructor_declared_for_type,
+	"constructor syntax used, but no constructor declared for type `%T'")
+DEFERROR(ec_initializer_list_construction_invalid_for_derived_class_object,
+	"initializer list construction invalid for derived class object `%D'")
+DEFERROR(ec_initializer_list_construction_invalid_for_polymorphic_class_object,
+	"initializer list construction invalid for polymorphic class object `%D'")
+DEFERROR(ec_initializer_list_construction_invalid_for,
+	"initializer list construction invalid for `%D'")
+DEFERROR(ec_due_to_nonpublic_access_of_member,
+	"due to non-public access of member `%D'")
+DEFERROR(ec_braces_around_scalar_initializer_for,
+	"braces around scalar initializer for `%T'")
+DEFERROR(ec_ignoring_extra_initializers_for,
+	"ignoring extra initializers for `%T'")
+DEFERROR(ec_variablesized_object_of_type_may_not_be_initialized,
+	"variable-sized object of type `%T' may not be initialized")
+DEFERROR(ec_subobject_of_type_must_be_initialized_by_constructor_not_by,
+	"subobject of type `%T' must be initialized by constructor, not by `%E'")
+DEFERROR(ec_union_with_no_named_members_cannot_be_initialized,
+	"union `%T' with no named members cannot be initialized")
+DEFERROR(ec_base_operand_of_has_nonpointer_type,
+	"base operand of `->' has non-pointer type `%T'")
+DEFERROR(ec_cannot_be_used_as_a_member_pointer_since_it_is_of_type,
+	"`%E' cannot be used as a member pointer, since it is of type `%T'")
+DEFERROR(ec_cannot_apply_member_pointer_to,
+	"cannot apply member pointer `%E' to `%E'")
+DEFERROR(ec_which_is_of_nonaggregate_type,
+	"which is of non-aggregate type `%T'")
+DEFERROR(ec_member_type_incompatible_with_object_type,
+	"member type `%T::' incompatible with object type `%T'")
+DEFERROR(ec_fails_to_be_a_typedef_or_builtin_type,
+	"`%T' fails to be a typedef or built-in type")
+DEFERROR(ec_type_is_not_yet_defined,
+	"type `%T' is not yet defined")
+DEFERROR(ec_destructor_name_does_not_match_type, 
+	 "destructor name `~%T' does not match type `%T' of expression")
+DEFERROR(ec_explicit_extern_static,
+	 "`%D' was declared `extern' and later `static'")
+DEFERROR(ec_implicit_extern_static,
+	 "`%D' was declared implicitly `extern' and later `static'")
+DEFERROR(ec_not_declared_in_class,
+	"`%#D' not declared in class")
+DEFERROR(ec_conflicts_with_used_function, 
+	 "`%D' conflicts with used function")
+DEFERROR(ec_previously_defined_here,
+	"`%#D' previously defined here")
+DEFERROR(ec_previously_declared_here_2,
+	"`%#D' previously declared here")
+DEFERROR(ec_used_instead_of_decl_from_base,
+	 "  is used instead of `%D' from dependent base class")
+DEFERROR(ec_conflict_with_previous_decl,
+	"conflict with previous decl `%#D'")
+DEFERROR(ec_previous_external_decl_of,
+	"previous external decl of `%#D'")
+DEFERROR(ec_was_previously_implicitly_declared_to_return_int,
+	"`%D' was previously implicitly declared to return `int'")
+DEFERROR(ec_too_few_template_parameter_lists_in_declaration_of,
+	"too few template parameter lists in declaration of `%D'")
+DEFERROR(ec_explicit_specialization_not_preceded_by_template,
+	"explicit specialization not preceded by `template <>'")
+DEFERROR(ec_default_argument_specified_in_explicit_specialization,
+	"default argument specified in explicit specialization")
+DEFERROR(ec_templateargument_uses_anonymous_type,
+	"template-argument `%T' uses anonymous type")
+DEFERROR(ec_templateargument_uses_local_type,
+	"template-argument `%T' uses local type `%T'")
+DEFERROR(ec_base_type_of_fails_to_be_a_struct_or_class_type,
+	"base type `%T' of `%T' fails to be a struct or class type")
+DEFERROR(ec_forbids_the_use_of_s_on_explicit_instantiations,
+	"ANSI C++ forbids the use of `%s' on explicit instantiations")
+DEFERROR(ec_conflicts_with_previous_use_in_class_as,
+	"conflicts with previous use in class as `%#D'")
+DEFERROR(ec_variablesized_object_may_not_be_initialized,
+	"variable-sized object `%D' may not be initialized")
+DEFERROR(ec_defining_explicit_specialization_in_friend_declaration,
+	"defining explicit specialization `%D' in friend declaration")
+DEFERROR(ec_must_have_an_argument_of_class_or_enumerated_type,
+	"`%D' must have an argument of class or enumerated type")
+DEFERROR(ec_postfix_must_take_int_as_its_second_argument,
+	"postfix `%D' must take `int' as its second argument")
+DEFERROR(ec_invalid_use_of_undefined_type, 
+	 "invalid use of undefined type `%#T'")
+DEFERROR(ec_member_in_readonly_structure,
+	 "%s of member `%D' in read-only structure")
+DEFERROR(ec_readonly_member,
+	"%s of read-only member `%D'")
+DEFERROR(ec_constant_field,
+	"%s of constant field `%D'")
+DEFERROR(ec_readonly_variable,
+	"%s of read-only variable `%D'")
+DEFERROR(ec_readonly_parameter,
+	"%s of read-only parameter `%D'")
+DEFERROR(ec_readonly_reference,
+	"%s of read-only reference `%D'")
+DEFERROR(ec_readonly_named_return_val, 
+	 "%s of read-only named return value `%D'")
+DEFERROR(ec_readonly_location,
+	"%s of read-only location")
+DEFERROR(ec_private_member_in_anonymous_union,
+	"private member `%#D' in anonymous union")
+DEFERROR(ec_protected_member_in_anonymous_union,
+	"protected member `%#D' in anonymous union")
+DEFERROR(ec_member_decl_with_only_nondefault_constructor,
+	"member `%#D' with only non-default constructor")
+DEFERROR(ec_member_with_only_nondefault_constructor,
+	"member with only non-default constructor")
+DEFERROR(ec_conflicts_with_other_use_in_class_as,
+	"conflicts with other use in class as `%#D'")
+DEFERROR(ec_cannot_resolve_overloaded_function,
+	"cannot resolve overloaded function `%D' based on non-function type")
+DEFERROR(ec_because_no_suitable_overload_of_function_exists,
+	"  because no suitable overload of function `%D' exists")
+DEFERROR(ec_invalid_use_of_virtual_in_template_declaration_of,
+	"invalid use of `virtual' in template declaration of `%#D'")
+DEFERROR(ec_using_obsolete_binding_at,
+	"  using obsolete binding at `%D'")
+DEFERROR(ec_too_few_arguments,
+	"too few arguments to %s `%+#D'")
+DEFERROR(ec_private_in_class,
+	"`%D' is private in `%T'")
+DEFERROR(ec_protected_in_class,
+	"`%D' is protected in `%T'")
+DEFERROR(ec_ambiguous_member,
+	"request for member `%D' is ambiguous")
+DEFERROR(ec_conflicting_access,
+	"conflicting access to member `%D'")
+DEFERROR(ec_member_private,
+	"member `%D' declared private")
+DEFERROR(ec_member_protected,
+	"member `%D' declared private")
+DEFERROR(ec_member_in_private_base,
+	"member `%D' is from private base class")
+DEFERROR(ec_member_in_protected_base,
+	"member `%D' is from protected base class")
+DEFERROR(ec_invalid_covariant_return_type_for_must_be_pointer_or_reference_to_class,
+	"invalid covariant return type for `%#D' (must be pointer or reference to class)")
+DEFERROR(ec_a_template_type_parameter_must_begin_with_class_or_typename,
+	"  a template type parameter must begin with `class' or `typename'")
+DEFERROR(ec_it_must_be_ss_with_external_linkage,
+	"it must be %s%s with external linkage")
+DEFERROR(ec_because_it_is_the_address_of_an_object_with_static_linkage,
+	"because it is the address of an object with static linkage")
+DEFERROR(ec_template_instantiation_depth_exceeds_maximum_of_d,
+	"template instantiation depth exceeds maximum of %d")
+DEFERROR(ec_use_ftemplatedepth_to_increase_the_maximum,
+	" (use -ftemplate-depth-NN to increase the maximum)")
+DEFERROR(ec_incomplete_type_unification,
+	"incomplete type unification")
+DEFERROR(ec_invalid_call_via_pointertomember_function,
+	"invalid call via pointer-to-member function")
+DEFERROR(ec_destructors_take_no_parameters,
+	"destructors take no parameters")
+DEFERROR(ec_invalid_use_of_void_expression,
+	"invalid use of void expression")
+DEFERROR(ec_within_this_context,
+	"within this context")
+DEFERROR(ec_internal_inconsistency_binfo_offset_error_for_rtti,
+	"internal inconsistency: binfo offset error for rtti")
+DEFERROR(ec_conflicting_access_specifications_for_field_s_ignored,
+	"conflicting access specifications for field `%s', ignored")
+DEFERROR(ec_every_virtual_function_must_have_a_unique_final_overrider,
+	"every virtual function must have a unique final overrider")
+DEFERROR(ec_anonymous_class_type_not_used_to_declare_any_objects,
+	"anonymous class type not used to declare any objects")
+DEFERROR(ec_trying_to_finish_struct_but_kicked_out_due_to_previous_parse_errors,
+	"trying to finish struct, but kicked out due to previous parse errors.")
+DEFERROR(ec_language_string_not_recognized,
+	"language string `\"%s\"' not recognized")
+DEFERROR(ec_invalid_type_combination_for_overload,
+	"invalid type combination for overload")
+DEFERROR(ec_not_enough_type_information,
+	"not enough type information")
+DEFERROR(ec_ambiguous_overload_for_requested,
+	"ambiguous overload for COMPONENT_REF requested")
+DEFERROR(ec_no_appropriate_overload_exists_for,
+	"no appropriate overload exists for COMPONENT_REF")
+DEFERROR(ec_ambiguous_overload_for_overloaded_method_requested,
+	"ambiguous overload for overloaded method requested")
+DEFERROR(ec_invalid_operation_on_uninstantiated_type,
+	"invalid operation on uninstantiated type")
+DEFERROR(ec_type_for_resolving_address_of_overloaded_function_must_be_pointer_type,
+	"type for resolving address of overloaded function must be pointer type")
+DEFERROR(ec_internal_compiler_error_debugging_info_corrupted,
+	"internal compiler error: debugging info corrupted")
+DEFERROR(ec_variable_s_shadows_local,
+	"variable `%s' shadows local")
+DEFERROR(ec_label_s_referenced_outside_of_any_function,
+	"label `%s' referenced outside of any function")
+DEFERROR(ec_where_case_label_appears_here,
+	"where case label appears here")
+DEFERROR(ec_enclose_actions_of_previous_case_statements_requiring,
+	"(enclose actions of previous case statements requiring")
+DEFERROR(ec_destructors_in_their_own_binding_contours,
+	"destructors in their own binding contours.)")
+DEFERROR(ec_jump_to_case_label,
+	"jump to case label")
+DEFERROR(ec_multiple_types_in_one_declaration,
+	"multiple types in one declaration")
+DEFERROR(ec_assignment_not_initialization_in_declaration,
+	"assignment (not initialization) in declaration")
+DEFERROR(ec_cannot_declare_main_to_be_inline,
+	"cannot declare `main' to be inline")
+DEFERROR(ec_cannot_declare_main_to_be_static,
+	"cannot declare `main' to be static")
+DEFERROR(ec_destructors_must_be_member_functions,
+	"destructors must be member functions")
+DEFERROR(ec_bool_is_now_a_keyword,
+	"`bool' is now a keyword")
+DEFERROR(ec_does_not_support_long_long,
+	"ANSI C++ does not support `long long'")
+DEFERROR(ec_long_long_long_is_too_long_for,
+	"`long long long' is too long for GCC")
+DEFERROR(ec_duplicate_s,
+	"duplicate `%s'")
+DEFERROR(ec_two_or_more_data_types_in_declaration_of_s,
+	"two or more data types in declaration of `%s'")
+DEFERROR(ec_s_fails_to_be_a_typedef_or_built_in_type,
+	"`%s' fails to be a typedef or built in type")
+DEFERROR(ec_forbids_typedef_which_does_not_specify_a_type,
+	"ANSI C++ forbids typedef which does not specify a type")
+DEFERROR(ec_return_type_specification_for_destructor_invalid,
+	"return type specification for destructor invalid")
+DEFERROR(ec_return_type_specification_for_constructor_invalid,
+	"return type specification for constructor invalid")
+DEFERROR(ec_short_signed_or_unsigned_invalid_for_s,
+	"short, signed or unsigned invalid for `%s'")
+DEFERROR(ec_long_short_signed_or_unsigned_invalid_for_s,
+	"long, short, signed or unsigned invalid for `%s'")
+DEFERROR(ec_long_and_short_specified_together_for_s,
+	"long and short specified together for `%s'")
+DEFERROR(ec_long_or_short_specified_with_char_for_s,
+	"long or short specified with char for `%s'")
+DEFERROR(ec_long_or_short_specified_with_floating_type_for_s,
+	"long or short specified with floating type for `%s'")
+DEFERROR(ec_signed_and_unsigned_given_together_for_s,
+	"signed and unsigned given together for `%s'")
+DEFERROR(ec_long_short_signed_or_unsigned_used_invalidly_for_s,
+	"long, short, signed or unsigned used invalidly for `%s'")
+DEFERROR(ec_complex_invalid_for_s,
+	"complex invalid for `%s'")
+DEFERROR(ec_nonmember_s_cannot_be_declared_mutable,
+	"non-member `%s' cannot be declared `mutable'")
+DEFERROR(ec_nonobject_member_s_cannot_be_declared_mutable,
+	"non-object member `%s' cannot be declared `mutable'")
+DEFERROR(ec_storage_class_specifiers_invalid_in_parameter_declarations,
+	"storage class specifiers invalid in parameter declarations")
+DEFERROR(ec_typedef_declaration_invalid_in_parameter_declaration,
+	"typedef declaration invalid in parameter declaration")
+DEFERROR(ec_virtual_outside_class_declaration,
+	"virtual outside class declaration")
+DEFERROR(ec_only_members_can_be_declared_mutable,
+	"only members can be declared mutable")
+DEFERROR(ec_const_specified_for_signature_member_function_s,
+	"`const' specified for signature member function `%s'")
+DEFERROR(ec_volatile_specified_for_signature_member_function_s,
+	"`volatile' specified for signature member function `%s'")
+DEFERROR(ec_inline_specified_for_signature_member_function_s,
+	"`inline' specified for signature member function `%s'")
+DEFERROR(ec_friend_declaration_in_signature_definition,
+	"`friend' declaration in signature definition")
+DEFERROR(ec_virtual_specified_for_signature_member_function_s,
+	"`virtual' specified for signature member function `%s'")
+DEFERROR(ec_multiple_storage_classes_in_declaration_of_s,
+	"multiple storage classes in declaration of `%s'")
+DEFERROR(ec_storage_class_specified_for_s_s,
+	"storage class specified for %s `%s'")
+DEFERROR(ec_s_initialized_and_declared_extern,
+	"`%s' initialized and declared `extern'")
+DEFERROR(ec_s_has_both_extern_and_initializer,
+	"`%s' has both `extern' and initializer")
+DEFERROR(ec_nested_function_s_declared_extern,
+	"nested function `%s' declared `extern'")
+DEFERROR(ec_toplevel_declaration_of_s_specifies_auto,
+	"top-level declaration of `%s' specifies `auto'")
+DEFERROR(ec_storage_class_specifiers_invalid_in_friend_function_declarations,
+	"storage class specifiers invalid in friend function declarations")
+DEFERROR(ec_overflow_in_array_dimension,
+	"overflow in array dimension")
+DEFERROR(ec_function_declared_to_return_const_or_volatile_result,
+	"function declared to return const or volatile result")
+DEFERROR(ec_s_declared_as_function_returning_a_function,
+	"`%s' declared as function returning a function")
+DEFERROR(ec_s_declared_as_function_returning_an_array,
+	"`%s' declared as function returning an array")
+DEFERROR(ec_destructor_cannot_be_static_member_function,
+	"destructor cannot be static member function")
+DEFERROR(ec_destructors_cannot_be_declared_const_or_volatile,
+	"destructors cannot be declared `const' or `volatile'")
+DEFERROR(ec_constructor_cannot_be_static_member_function,
+	"constructor cannot be static member function")
+DEFERROR(ec_constructors_cannot_be_declared_virtual,
+	"constructors cannot be declared virtual")
+DEFERROR(ec_constructors_cannot_be_declared_const_or_volatile,
+	"constructors cannot be declared `const' or `volatile'")
+DEFERROR(ec_return_value_type_specifier_for_constructor_ignored,
+	"return value type specifier for constructor ignored")
+DEFERROR(ec_constructor_not_allowed_in_signature,
+	"constructor not allowed in signature")
+DEFERROR(ec_cant_initialize_friend_function_s,
+	"can't initialize friend function `%s'")
+DEFERROR(ec_virtual_functions_cannot_be_friends,
+	"virtual functions cannot be friends")
+DEFERROR(ec_friend_declaration_not_in_class_definition,
+	"friend declaration not in class definition")
+DEFERROR(ec_destructors_cannot_be_specified_with_parameters,
+	"destructors cannot be specified with parameters")
+DEFERROR(ec_cannot_declare_s_to_references,
+	"cannot declare %s to references")
+DEFERROR(ec_cannot_declare_references_to_functions_use_pointer_to_function_instead,
+	"cannot declare references to functions; use pointer to function instead")
+DEFERROR(ec_invalid_type_void,
+	"invalid type: `void &'")
+DEFERROR(ec_invalid_type_modifier_within_s_declarator,
+	"invalid type modifier within %s declarator")
+DEFERROR(ec_duplicate_const,
+	"duplicate `const'")
+DEFERROR(ec_duplicate_volatile,
+	"duplicate `volatile'")
+DEFERROR(ec_discarding_const_applied_to_a_reference,
+	"discarding `const' applied to a reference")
+DEFERROR(ec_discarding_volatile_applied_to_a_reference,
+	"discarding `volatile' applied to a reference")
+DEFERROR(ec_only_constructors_can_be_declared_explicit,
+	"only constructors can be declared `explicit'")
+DEFERROR(ec_const_s_cannot_be_declared_mutable,
+	"const `%s' cannot be declared `mutable'")
+DEFERROR(ec_static_s_cannot_be_declared_mutable,
+	"static `%s' cannot be declared `mutable'")
+DEFERROR(ec_typedef_declaration_includes_an_initializer,
+	"typedef declaration includes an initializer")
+DEFERROR(ec_const_or_volatile_specified_with_signature_type,
+	"`const' or `volatile' specified with signature type")
+DEFERROR(ec_trying_to_make_class_s_a_friend_of_global_scope,
+	"trying to make class `%s' a friend of global scope")
+DEFERROR(ec_unnamed_variable_or_field_declared_void,
+	"unnamed variable or field declared void")
+DEFERROR(ec_variable_or_field_s_declared_void,
+	"variable or field `%s' declared void")
+DEFERROR(ec_variable_or_field_declared_void,
+	"variable or field declared void")
+DEFERROR(ec_cannot_use_in_parameter_declaration,
+	"cannot use `::' in parameter declaration")
+DEFERROR(ec_declaration_of_s_as_void,
+	"declaration of `%s' as void")
+DEFERROR(ec_parameter_of_signature_member_function_declared_inline,
+	"parameter of signature member function declared `inline'")
+DEFERROR(ec_parameter_of_signature_member_function_declared_auto,
+	"parameter of signature member function declared `auto'")
+DEFERROR(ec_parameter_of_signature_member_function_declared_register,
+	"parameter of signature member function declared `register'")
+DEFERROR(ec_s_is_neither_function_nor_method_cannot_be_declared_friend,
+	"`%s' is neither function nor method; cannot be declared friend")
+DEFERROR(ec_member_functions_are_implicitly_friends_of_their_class,
+	"member functions are implicitly friends of their class")
+DEFERROR(ec_storage_class_auto_invalid_for_function_s,
+	"storage class `auto' invalid for function `%s'")
+DEFERROR(ec_storage_class_register_invalid_for_function_s,
+	"storage class `register' invalid for function `%s'")
+DEFERROR(ec_storage_class_static_invalid_for_function_s_declared_out_of_global_scope,
+	"storage class `static' invalid for function `%s' declared out of global scope")
+DEFERROR(ec_storage_class_inline_invalid_for_function_s_declared_out_of_global_scope,
+	"storage class `inline' invalid for function `%s' declared out of global scope")
+DEFERROR(ec_virtual_nonclass_function_s,
+	"virtual non-class function `%s'")
+DEFERROR(ec_cannot_declare_static_function_inside_another_function,
+	"cannot declare static function inside another function")
+DEFERROR(ec_s_cannot_be_declared_mutable,
+	"`%s' cannot be declared mutable")
+DEFERROR(ec_parameter_s_has_incomplete_type,
+	"parameter `%s' has incomplete type")
+DEFERROR(ec_parameter_has_incomplete_type,
+	"parameter has incomplete type")
+DEFERROR(ec_parameter_s_points_to_incomplete_type,
+	"parameter `%s' points to incomplete type")
+DEFERROR(ec_parameter_points_to_incomplete_type,
+	"parameter points to incomplete type")
+DEFERROR(ec_parameter_names_without_types_in_function_declaration,
+	"parameter names (without types) in function declaration")
+DEFERROR(ec_invalid_integer_constant_in_parameter_list_did_you_forget_to_give_parameter_name,
+	"invalid integer constant in parameter list, did you forget to give parameter name?")
+DEFERROR(ec_void_in_parameter_list_must_be_entire_list,
+	"`void' in parameter list must be entire list")
+DEFERROR(ec_void_is_not_a_valid_type_conversion_operator,
+	"void is not a valid type conversion operator")
+DEFERROR(ec_conversion_to_ss_will_never_use_a_type_conversion_operator,
+	"conversion to %s%s will never use a type conversion operator")
+DEFERROR(ec_prohibits_overloading_operator,
+	"ANSI C++ prohibits overloading operator ?:")
+DEFERROR(ec_return_type_for_main_changed_to_int,
+	"return type for `main' changed to `int'")
+DEFERROR(ec_returntype_defaults_to_int,
+	"return-type defaults to `int'")
+DEFERROR(ec_does_not_permit_named_return_values,
+	"ANSI C++ does not permit named return values")
+DEFERROR(ec_cant_redefine_default_return_value_for_constructors,
+	"can't redefine default return value for constructors")
+DEFERROR(ec_this_function_may_return_with_or_without_a_value,
+	"this function may return with or without a value")
+DEFERROR(ec_address_of_overloaded_function_with_no_contextual_type_information,
+	"address of overloaded function with no contextual type information")
+DEFERROR(ec_useless_reference_to_a_member_function_name_did_you_forget_the,
+	"useless reference to a member function name, did you forget the ()?")
+DEFERROR(ec_at_this_point_in_file,
+	"at this point in file")
+DEFERROR(ec_fhandleexceptions_has_been_renamed_to_fexceptions_and_is_now_on_by_default,
+	"-fhandle-exceptions has been renamed to -fexceptions (and is now on by default)")
+DEFERROR(ec_fs_is_no_longer_supported,
+	"-f%s is no longer supported")
+DEFERROR(ec_invalid_option_s,
+	"Invalid option `%s'")
+DEFERROR(ec_duplicate_s_s,
+	"duplicate `%s' %s")
+DEFERROR(ec_error_in_component_specification,
+	"error in component specification")
+DEFERROR(ec_an_anonymous_union_cannot_have_function_members,
+	"an anonymous union cannot have function members")
+DEFERROR(ec_empty_component_declaration,
+	"empty component declaration")
+DEFERROR(ec_name_missing_for_member_function,
+	"name missing for member function")
+DEFERROR(ec_alignof_applied_to_a_bitfield,
+	"`__alignof__' applied to a bit-field")
+DEFERROR(ec_parser_may_be_lost_is_there_a_missing_somewhere,
+	"parser may be lost: is there a '{' missing somewhere?")
+DEFERROR(ec_ambiguous_conversion_for_array_subscript,
+	"ambiguous conversion for array subscript")
+DEFERROR(ec_anachronistic_use_of_array_size_in_vector_delete,
+	"anachronistic use of array size in vector delete")
+DEFERROR(ec_cannot_delete_a_function,
+	"cannot delete a function")
+DEFERROR(ec_field_declaration_not_allowed_in_signature,
+	"field declaration not allowed in signature")
+DEFERROR(ec_function_declarations_cannot_have_initializers_in_signature,
+	"function declarations cannot have initializers in signature")
+DEFERROR(ec_field_initializer_is_not_constant,
+	"field initializer is not constant")
+DEFERROR(ec_initializer_invalid_for_static_member_with_constructor,
+	"initializer invalid for static member with constructor")
+DEFERROR(ec_you_really_want_to_initialize_it_separately,
+	"(you really want to initialize it separately)")
+DEFERROR(ec_global_anonymous_unions_must_be_declared_static,
+	"global anonymous unions must be declared static")
+DEFERROR(ec_anonymous_union_with_no_members,
+	"anonymous union with no members")
+DEFERROR(ec_operator_new_must_return_type_void,
+	"`operator new' must return type `void *'")
+DEFERROR(ec_operator_new_takes_type_size_t_parameter,
+	"`operator new' takes type `size_t' parameter")
+DEFERROR(ec_operator_new_takes_type_size_t_as_first_parameter,
+	"`operator new' takes type `size_t' as first parameter")
+DEFERROR(ec_operator_delete_must_return_type_void,
+	"`operator delete' must return type `void'")
+DEFERROR(ec_operator_delete_takes_type_void_as_first_parameter,
+	"`operator delete' takes type `void *' as first parameter")
+DEFERROR(ec_second_argument_to_operator_delete_must_be_of_type_size_t,
+	"second argument to `operator delete' must be of type `size_t'")
+DEFERROR(ec_too_many_arguments_in_declaration_of_operator_delete,
+	"too many arguments in declaration of `operator delete'")
+DEFERROR(ec_invalid_in_specification_of_operator_delete,
+	"`...' invalid in specification of `operator delete'")
+DEFERROR(ec_cast_specifies_signature_type,
+	"cast specifies signature type")
+DEFERROR(ec_use_of_oldstyle_cast,
+	"use of old-style cast")
+DEFERROR(ec_invalid_catch_parameter,
+	"invalid catch parameter")
+DEFERROR(ec_in_thrown_expression,
+	"  in thrown expression")
+DEFERROR(ec_pointers_are_not_permitted_as_case_values,
+	"pointers are not permitted as case values")
+DEFERROR(ec_forbids_range_expressions_in_switch_statement,
+	"ANSI C++ forbids range expressions in switch statement")
+DEFERROR(ec_default_label_not_within_a_switch_statement,
+	"default label not within a switch statement")
+DEFERROR(ec_duplicate_or_overlapping_case_value,
+	"duplicate (or overlapping) case value")
+DEFERROR(ec_multiple_default_labels_in_one_switch,
+	"multiple default labels in one switch")
+DEFERROR(ec_empty_range_specified,
+	"empty range specified")
+DEFERROR(ec_default_label_within_scope_of_cleanup_or_variable_array,
+	"`default' label within scope of cleanup or variable array")
+DEFERROR(ec_method_ss_is_already_a_friend_of_class,
+	"method `%s::%s' is already a friend of class")
+DEFERROR(ec_function_s_is_already_a_friend_of_class_s,
+	"function `%s' is already a friend of class `%s'")
+DEFERROR(ec_signature_type_s_declared_friend,
+	"signature type `%s' declared `friend'")
+DEFERROR(ec_class_s_is_implicitly_friends_with_itself,
+	"class `%s' is implicitly friends with itself")
+DEFERROR(ec_declares_a_nontemplate_function,
+	"  declares a non-template function")
+DEFERROR(ec_if_this_is_not_what_you_intended_make_sure,
+	"  (if this is not what you intended, make sure")
+DEFERROR(ec_the_function_template_has_already_been_declared,
+	"  the function template has already been declared,")
+DEFERROR(ec_and_add_after_the_function_name_here,
+	"  and add <> after the function name here)")
+DEFERROR(ec_o_disable_warning_use_nonontemplatefriend,
+	"  To disable warning use -Wno-non-template-friend")
+DEFERROR(ec_initializer_list_treated_as_compound_expression,
+	"initializer list treated as compound expression")
+DEFERROR(ec_will_be_reordered_to_match_declaration_order,
+	"  will be re-ordered to match declaration order")
+DEFERROR(ec_will_be_reordered_to_match_inheritance_order,
+	"  will be re-ordered to match inheritance order")
+DEFERROR(ec_base_class_initializer_specified_but_no_base_class_to_initialize,
+	"base class initializer specified, but no base class to initialize")
+DEFERROR(ec_initializer_for_unnamed_base_class_ambiguous,
+	"initializer for unnamed base class ambiguous")
+DEFERROR(ec_no_base_class_to_initialize,
+	"no base class to initialize")
+DEFERROR(ec_will_be_reordered_to_precede_member_initializations,
+	"   will be re-ordered to precede member initializations")
+DEFERROR(ec_bad_array_initializer,
+	"bad array initializer")
+DEFERROR(ec_object_missing_in_use_of_pointertomember_construct,
+	"object missing in use of pointer-to-member construct")
+DEFERROR(ec_new_of_array_type_fails_to_specify_size,
+	"new of array type fails to specify size")
+DEFERROR(ec_zero_size_array_reserves_no_space,
+	"zero size array reserves no space")
+DEFERROR(ec_new_cannot_be_applied_to_a_reference_type,
+	"new cannot be applied to a reference type")
+DEFERROR(ec_new_cannot_be_applied_to_a_function_type,
+	"new cannot be applied to a function type")
+DEFERROR(ec_invalid_type_void_for_new,
+	"invalid type `void' for new")
+DEFERROR(ec_constructors_take_parameter_lists,
+	"constructors take parameter lists")
+DEFERROR(ec_initializer_list_being_treated_as_compound_expression,
+	"initializer list being treated as compound expression")
+DEFERROR(ec_initializer_list_appears_where_operand_should_be_used,
+	"initializer list appears where operand should be used")
+DEFERROR(ec_initializer_ends_prematurely,
+	"initializer ends prematurely")
+DEFERROR(ec_unknown_array_size_in_delete,
+	"unknown array size in delete")
+DEFERROR(ec_type_to_vector_delete_is_neither_pointer_or_array_type,
+	"type to vector delete is neither pointer or array type")
+DEFERROR(ec_type_name_expected_before_star,
+	"type name expected before `*'")
+DEFERROR(ec_cannot_declare_references_to_references,
+	"cannot declare references to references")
+DEFERROR(ec_cannot_declare_pointers_to_references,
+	"cannot declare pointers to references")
+DEFERROR(ec_type_name_expected_before_amp,
+	"type name expected before `&'")
+DEFERROR(ec_yydebug_not_defined,
+	"YYDEBUG not defined.")
+DEFERROR(ec_parse_error_at_end_of_saved_function_text,
+	"parse error at end of saved function text")
+DEFERROR(ec_end_of_file_encountered_inside_string_constant,
+	"end of file encountered inside string constant")
+DEFERROR(ec_end_of_file_encountered_inside_character_constant,
+	"end of file encountered inside character constant")
+DEFERROR(ec_forbids_newline_in_string_constant,
+	"ANSI C++ forbids newline in string constant")
+DEFERROR(ec_parse_error_in_method_specification,
+	"parse error in method specification")
+DEFERROR(ec_function_body_for_constructor_missing,
+	"function body for constructor missing")
+DEFERROR(ec_semicolon_missing_after_s_declaration,
+	"semicolon missing after %s declaration")
+DEFERROR(ec_stray_in_program,
+	"stray '\\' in program")
+DEFERROR(ec_ignoring_pragma_s,
+	"ignoring pragma: %s")
+DEFERROR(ec_invalid_ident,
+	"invalid #ident")
+DEFERROR(ec_undefined_or_invalid_directive,
+	"undefined or invalid # directive")
+DEFERROR(ec_invalid_line,
+	"invalid #line")
+DEFERROR(ec_badly_nested_headers_from_preprocessor,
+	"badly nested C headers from preprocessor")
+DEFERROR(ec_lines_for_entering_and_leaving_files_dont_match,
+	"#-lines for entering and leaving files don't match")
+DEFERROR(ec_x_used_with_no_following_hex_digits,
+	"\\x used with no following hex digits")
+DEFERROR(ec_hex_escape_out_of_range,
+	"hex escape out of range")
+DEFERROR(ec_nonstandard_escape_sequence_c,
+	"non-ANSI-standard escape sequence, `\\%c'")
+DEFERROR(ec_unknown_escape_sequence_c,
+	"unknown escape sequence `\\%c'")
+DEFERROR(ec_unknown_escape_sequence_followed_by_char_code_0xx,
+	"unknown escape sequence: `\\' followed by char code 0x%x")
+DEFERROR(ec_ach_undeclared_identifier_is_reported_only_once,
+	"(Each undeclared identifier is reported only once")
+DEFERROR(ec_for_each_function_it_appears_in,
+	"for each function it appears in.)")
+DEFERROR(ec_name_lookup_of_s_changed,
+	"name lookup of `%s' changed")
+DEFERROR(ec_in_identifier,
+	"`$' in identifier")
+DEFERROR(ec_invalid_modifier_s_for_language_string,
+	"invalid modifier `%s' for language string")
+DEFERROR(ec_identifier_name_s_conflicts_with_internal_naming_strategy,
+	"identifier name `%s' conflicts with GNU C++ internal naming strategy")
+DEFERROR(ec_parse_error_at,
+	"parse error at `..'")
+DEFERROR(ec_floating_constant_may_not_be_in_radix_16,
+	"floating constant may not be in radix 16")
+DEFERROR(ec_malformed_floating_constant,
+	"malformed floating constant")
+DEFERROR(ec_nondigits_in_number_and_not_hexadecimal,
+	"nondigits in number and not hexadecimal")
+DEFERROR(ec_numeric_constant_with_no_digits,
+	"numeric constant with no digits")
+DEFERROR(ec_numeric_constant_contains_digits_beyond_the_radix,
+	"numeric constant contains digits beyond the radix")
+DEFERROR(ec_floating_constant_exponent_has_no_digits,
+	"floating constant exponent has no digits")
+DEFERROR(ec_floating_constant_out_of_range,
+	"floating constant out of range")
+DEFERROR(ec_more_than_one_f_in_numeric_constant,
+	"more than one `f' in numeric constant")
+DEFERROR(ec_more_than_one_l_in_numeric_constant,
+	"more than one `l' in numeric constant")
+DEFERROR(ec_more_than_one_i_or_j_in_numeric_constant,
+	"more than one `i' or `j' in numeric constant")
+DEFERROR(ec_forbids_imaginary_numeric_constants,
+	"ANSI C++ forbids imaginary numeric constants")
+DEFERROR(ec_both_f_and_l_in_floating_constant,
+	"both `f' and `l' in floating constant")
+DEFERROR(ec_floating_point_number_exceeds_range_of_float,
+	"floating point number exceeds range of `float'")
+DEFERROR(ec_floating_point_number_exceeds_range_of_long_double,
+	"floating point number exceeds range of `long double'")
+DEFERROR(ec_floating_point_number_exceeds_range_of_double,
+	"floating point number exceeds range of `double'")
+DEFERROR(ec_floating_point_number_exceeds_range_of_s,
+	"floating point number exceeds range of `%s'")
+DEFERROR(ec_two_us_in_integer_constant,
+	"two `u's in integer constant")
+DEFERROR(ec_three_ls_in_integer_constant,
+	"three `l's in integer constant")
+DEFERROR(ec_forbids_long_long_integer_constants,
+	"ANSI C++ forbids long long integer constants")
+DEFERROR(ec_integer_constant_out_of_range,
+	"integer constant out of range")
+DEFERROR(ec_decimal_integer_constant_is_so_large_that_it_is_unsigned,
+	"decimal integer constant is so large that it is unsigned")
+DEFERROR(ec_complex_integer_constant_is_too_wide_for_complex_int,
+	"complex integer constant is too wide for `__complex int'")
+DEFERROR(ec_escape_sequence_out_of_range_for_character,
+	"escape sequence out of range for character")
+DEFERROR(ec_forbids_newline_in_character_constant,
+	"ANSI C forbids newline in character constant")
+DEFERROR(ec_gnoring_invalid_multibyte_character,
+	"ignoring invalid multibyte character")
+DEFERROR(ec_malformatted_character_constant,
+	"malformatted character constant")
+DEFERROR(ec_empty_character_constant,
+	"empty character constant")
+DEFERROR(ec_character_constant_too_long,
+	"character constant too long")
+DEFERROR(ec_multicharacter_character_constant,
+	"multi-character character constant")
+DEFERROR(ec_nterminated_string,
+	"unterminated string")
+DEFERROR(ec_use_of_operator_s_is_not_standard,
+	"use of `operator %s' is not standard C++")
+DEFERROR(ec_invalid_pragma_vtable,
+	"invalid #pragma vtable")
+DEFERROR(ec_use_e2_option_to_enable_pragma_vtable,
+	"use `+e2' option to enable #pragma vtable")
+DEFERROR(ec_trailing_characters_ignored,
+	"trailing characters ignored")
+DEFERROR(ec_invalid_pragma_unit,
+	"invalid #pragma unit")
+DEFERROR(ec_invalid_pragma_interface,
+	"invalid `#pragma interface'")
+DEFERROR(ec_garbage_after_pragma_interface_ignored,
+	"garbage after `#pragma interface' ignored")
+DEFERROR(ec_invalid_pragma_implementation,
+	"invalid `#pragma implementation'")
+DEFERROR(ec_garbage_after_pragma_implementation_ignored,
+	"garbage after `#pragma implementation' ignored")
+DEFERROR(ec_pragma_implementation_can_only_appear_at_toplevel,
+	"`#pragma implementation' can only appear at top-level")
+DEFERROR(ec_forbids_floatingpoint_template_arguments,
+	"ANSI C++ forbids floating-point template arguments")
+DEFERROR(ec_methods_cannot_be_converted_to_function_pointers,
+	"methods cannot be converted to function pointers")
+DEFERROR(ec_ambiguous_request_for_method_pointer_s,
+	"ambiguous request for method pointer `%s'")
+DEFERROR(ec_static_member_s_is_s,
+	"static member `%s' is %s")
+DEFERROR(ec_enum_s_is_from_private_base_class,
+	"enum `%s' is from private base class")
+DEFERROR(ec_request_for_member_s_is_ambiguous_in_multiple_inheritance_lattice,
+	"request for member `%s' is ambiguous in multiple inheritance lattice")
+DEFERROR(ec_syntax_error,
+	"syntax error")
+DEFERROR(ec_invalid_default_template_argument,
+	"invalid default template argument")
+DEFERROR(ec_empty_declaration,
+	"empty declaration")
+DEFERROR(ec_no_base_initializers_given_following,
+	"no base initializers given following ':'")
+DEFERROR(ec_base_initializers_not_allowed_for_nonmember_functions,
+	"base initializers not allowed for non-member functions")
+DEFERROR(ec_only_constructors_take_base_initializers,
+	"only constructors take base initializers")
+DEFERROR(ec_anachronistic_old_style_base_class_initializer,
+	"anachronistic old style base class initializer")
+DEFERROR(ec_should_be_in_template_class_name,
+	"`>>' should be `> >' in template class name")
+DEFERROR(ec_forbids_an_empty_condition_for_s,
+	"ANSI C++ forbids an empty condition for `%s'")
+DEFERROR(ec_forbids,
+	"ANSI C++ forbids `&&'")
+DEFERROR(ec_forbids_initialization_of_new_expression_with,
+	"ANSI C++ forbids initialization of new expression with `='")
+DEFERROR(ec_forbids_constructorexpressions,
+	"ANSI C++ forbids constructor-expressions")
+DEFERROR(ec_bracedgroup_within_expression_allowed_only_inside_a_function,
+	"braced-group within expression allowed only inside a function")
+DEFERROR(ec_forbids_bracedgroups_within_expressions,
+	"ANSI C++ forbids braced-groups within expressions")
+DEFERROR(ec_cannot_cast_null_list_to_type_s,
+	"cannot cast null list to type `%s'")
+DEFERROR(ec_cannot_cast_expression_to_friend_type,
+	"cannot cast expression to `friend' type")
+DEFERROR(ec_s_is_not_at_beginning_of_declaration,
+	"`%s' is not at beginning of declaration")
+DEFERROR(ec_sigof_applied_to_nonaggregate_expression,
+	"`sigof' applied to non-aggregate expression")
+DEFERROR(ec_sigof_applied_to_nonaggregate_type,
+	"`sigof' applied to non-aggregate type")
+DEFERROR(ec_comma_at_end_of_enumerator_list,
+	"comma at end of enumerator list")
+DEFERROR(ec_storage_class_specifier_s_not_allowed_after_struct_or_class,
+	"storage class specifier `%s' not allowed after struct or class")
+DEFERROR(ec_type_specifier_s_not_allowed_after_struct_or_class,
+	"type specifier `%s' not allowed after struct or class")
+DEFERROR(ec_type_qualifier_s_not_allowed_after_struct_or_class,
+	"type qualifier `%s' not allowed after struct or class")
+DEFERROR(ec_no_body_nor_separates_two_class_struct_or_union_declarations,
+	"no body nor ';' separates two class, struct or union declarations")
+DEFERROR(ec_sigof_in_struct_or_class_declaration,
+	"`sigof' in struct or class declaration")
+DEFERROR(ec_multiple_access_specifiers,
+	"multiple access specifiers")
+DEFERROR(ec_multiple_virtual_specifiers,
+	"multiple `virtual' specifiers")
+DEFERROR(ec_access_specifier_not_allowed_in_signature,
+	"access specifier not allowed in signature")
+DEFERROR(ec_missing_before_right_brace,
+	"missing ';' before right brace")
+DEFERROR(ec_forbids_array_dimensions_with_parenthesized_type_in_new,
+	"ANSI C++ forbids array dimensions with parenthesized type in new")
+DEFERROR(ec_forbids_label_declarations,
+	"ANSI C++ forbids label declarations")
+DEFERROR(ec_forbids_computed_gotos,
+	"ANSI C++ forbids computed gotos")
+DEFERROR(ec_label_must_be_followed_by_statement,
+	"label must be followed by statement")
+DEFERROR(ec_forbids_compound_statements_inside_for_initializations,
+	"ANSI C++ forbids compound statements inside for initializations")
+DEFERROR(ec_possibly_missing,
+	"possibly missing ')'")
+DEFERROR(ec_type_specifier_omitted_for_parameter,
+	"type specifier omitted for parameter")
+DEFERROR(ec_frepo_must_be_used_with_c,
+	"-frepo must be used with -c")
+DEFERROR(ec_mysterious_repository_information_in_s,
+	"mysterious repository information in %s")
+DEFERROR(ec_cant_create_repository_information_file_s,
+	"can't create repository information file `%s'")
+DEFERROR(ec_headof_applied_to_nonpointer_type,
+	"`headof' applied to non-pointer type")
+DEFERROR(ec_typeid_of_overloaded_function,
+	"typeid of overloaded function")
+DEFERROR(ec_taking_dynamic_typeid_of_object_without_frtti,
+	"taking dynamic typeid of object without -frtti")
+DEFERROR(ec_requesting_typeid_of_object_without_frtti,
+	"requesting typeid of object without -frtti")
+DEFERROR(ec_invalid_covariant_return_type_must_use_pointer_or_reference,
+	"invalid covariant return type (must use pointer or reference)")
+DEFERROR(ec_recoverable_compiler_error_fixups_for_virtual_function,
+	"recoverable compiler error, fixups for virtual function")
+DEFERROR(ec_recoverable_internal_compiler_error_nobodys_in_charge,
+	"recoverable internal compiler error, nobody's in charge!")
+DEFERROR(ec_this_is_unavailable_for_static_member_functions,
+	"`this' is unavailable for static member functions")
+DEFERROR(ec_invalid_use_of_this_in_nonmember_function,
+	"invalid use of `this' in non-member function")
+DEFERROR(ec_invalid_use_of_this_at_top_level,
+	"invalid use of `this' at top level")
+DEFERROR(ec_signature_name_in_scope_resolution_ignored,
+	"signature name in scope resolution ignored")
+DEFERROR(ec_template_type_parameters_must_use_the_keyword_class_or_typename,
+	"template type parameters must use the keyword `class' or `typename'")
+DEFERROR(ec_invalid_base_class,
+	"invalid base class")
+DEFERROR(ec_access_and_source_specifiers_not_allowed_in_signature,
+	"access and source specifiers not allowed in signature")
+DEFERROR(ec_class_name_not_allowed_as_base_signature,
+	"class name not allowed as base signature")
+DEFERROR(ec_signature_name_not_allowed_as_base_class,
+	"signature name not allowed as base class")
+DEFERROR(ec_class_s_does_not_contain_a_method_conforming_to_s,
+	"class `%s' does not contain a method conforming to `%s'")
+DEFERROR(ec_signature_with_opaque_type_implemented_by_multiple_classes,
+	"signature with opaque type implemented by multiple classes")
+DEFERROR(ec_invalid_assignment_to_signature_pointer_or_reference,
+	"invalid assignment to signature pointer or reference")
+DEFERROR(ec_cannot_build_call_of_signature_member_function_s,
+	"cannot build call of signature member function `%s'")
+DEFERROR(ec_nonlvalue_in_s,
+	"non-lvalue in %s")
+DEFERROR(ec_base_class_s_ambiguous_in_binfo_value,
+	"base class `%s' ambiguous in binfo_value")
+DEFERROR(ec_argument_list_may_not_have_an_initializer_list,
+	"argument list may not have an initializer list")
+DEFERROR(ec_common_type_called_with_uncommon_aggregate_types,
+	"common_type called with uncommon aggregate types")
+DEFERROR(ec_common_type_called_with_uncommon_method_types,
+	"common_type called with uncommon method types")
+DEFERROR(ec_common_type_called_with_uncommon_member_types,
+	"common_type called with uncommon member types")
+DEFERROR(ec_forbids_taking_the_sizeof_a_function_type,
+	"ANSI C++ forbids taking the sizeof a function type")
+DEFERROR(ec_forbids_taking_the_sizeof_a_method_type,
+	"ANSI C++ forbids taking the sizeof a method type")
+DEFERROR(ec_forbids_taking_the_sizeof_a_void_type,
+	"ANSI C++ forbids taking the sizeof a void type")
+DEFERROR(ec_sizeof_applied_to_a_signature_type,
+	"`sizeof' applied to a signature type")
+DEFERROR(ec_sizeof_applied_to_a_bitfield,
+	"sizeof applied to a bit-field")
+DEFERROR(ec_alignof_applied_to_a_signature_type,
+	"`__alignof' applied to a signature type")
+DEFERROR(ec_void_value_not_ignored_as_it_ought_to_be,
+	"void value not ignored as it ought to be")
+DEFERROR(ec_invalid_use_of_nonlvalue_array,
+	"invalid use of non-lvalue array")
+DEFERROR(ec_invalid_reference_to_ptr_use_ptrtomember_instead,
+	"invalid reference to NULL ptr, use ptr-to-member instead")
+DEFERROR(ec_invalid_use_of_s_on_pointer_to_member_function,
+	"invalid use of `%s' on pointer to member function")
+DEFERROR(ec_cannot_dereference_signature_pointerreference,
+	"cannot dereference signature pointer/reference")
+DEFERROR(ec_invalid_type_argument_of_s,
+	"invalid type argument of `%s'")
+DEFERROR(ec_invalid_type_argument,
+	"invalid type argument")
+DEFERROR(ec_subscript_missing_in_array_reference,
+	"subscript missing in array reference")
+DEFERROR(ec_array_subscript_has_type_char,
+	"array subscript has type `char'")
+DEFERROR(ec_forbids_subscripting_nonlvalue_array,
+	"ANSI C++ forbids subscripting non-lvalue array")
+DEFERROR(ec_subscripting_array_declared_register,
+	"subscripting array declared `register'")
+DEFERROR(ec_subscripted_value_is_neither_array_nor_pointer,
+	"subscripted value is neither array nor pointer")
+DEFERROR(ec_array_subscript_is_not_an_integer,
+	"array subscript is not an integer")
+DEFERROR(ec_pointer_to_member_function_called_but_not_in_class_scope,
+	"pointer to member function called, but not in class scope")
+DEFERROR(ec_object_missing_in_call_to_method_s,
+	"object missing in call to method `%s'")
+DEFERROR(ec_invalid_call_to_member_function_needing_this_in_static_member_function_scope,
+	"invalid call to member function needing `this' in static member function scope")
+DEFERROR(ec_forbids_calling_main_from_within_program,
+	"ANSI C++ forbids calling `main' from within program")
+DEFERROR(ec_too_many_arguments_to_function,
+	"too many arguments to function")
+DEFERROR(ec_insufficient_type_information_in_parameter_list,
+	"insufficient type information in parameter list")
+DEFERROR(ec_parameter_type_of_called_function_is_incomplete,
+	"parameter type of called function is incomplete")
+DEFERROR(ec_too_few_arguments_to_function,
+	"too few arguments to function")
+DEFERROR(ec_right_shift_count_is_negative,
+	"right shift count is negative")
+DEFERROR(ec_right_shift_count_width_of_type,
+	"right shift count >= width of type")
+DEFERROR(ec_left_shift_count_is_negative,
+	"left shift count is negative")
+DEFERROR(ec_left_shift_count_width_of_type,
+	"left shift count >= width of type")
+DEFERROR(ec_s_rotate_count_is_negative,
+	"%s rotate count is negative")
+DEFERROR(ec_s_rotate_count_width_of_type,
+	"%s rotate count >= width of type")
+DEFERROR(ec_forbids_comparison_of_void_with_function_pointer,
+	"ANSI C++ forbids comparison of `void *' with function pointer")
+DEFERROR(ec_forbids_conversion_of_a_pointer_to_member_to_void,
+	"ANSI C++ forbids conversion of a pointer to member to `void *'")
+DEFERROR(ec_forbids_comparison_between_pointer_and_integer,
+	"ANSI C++ forbids comparison between pointer and integer")
+DEFERROR(ec_comparison_between_signed_and_unsigned,
+	"comparison between signed and unsigned")
+DEFERROR(ec_comparison_of_promoted_unsigned_with_constant,
+	"comparison of promoted ~unsigned with constant")
+DEFERROR(ec_comparison_of_promoted_unsigned_with_unsigned,
+	"comparison of promoted ~unsigned with unsigned")
+DEFERROR(ec_forbids_using_pointer_of_type_void_in_arithmetic,
+	"ANSI C++ forbids using pointer of type `void *' in arithmetic")
+DEFERROR(ec_forbids_using_pointer_to_a_function_in_arithmetic,
+	"ANSI C++ forbids using pointer to a function in arithmetic")
+DEFERROR(ec_forbids_using_pointer_to_a_method_in_arithmetic,
+	"ANSI C++ forbids using pointer to a method in arithmetic")
+DEFERROR(ec_forbids_using_pointer_to_a_member_in_arithmetic,
+	"ANSI C++ forbids using pointer to a member in arithmetic")
+DEFERROR(ec_forbids_using_pointer_of_type_void_in_subtraction,
+	"ANSI C++ forbids using pointer of type `void *' in subtraction")
+DEFERROR(ec_forbids_using_pointer_to_a_function_in_subtraction,
+	"ANSI C++ forbids using pointer to a function in subtraction")
+DEFERROR(ec_forbids_using_pointer_to_a_method_in_subtraction,
+	"ANSI C++ forbids using pointer to a method in subtraction")
+DEFERROR(ec_forbids_using_pointer_to_a_member_in_subtraction,
+	"ANSI C++ forbids using pointer to a member in subtraction")
+DEFERROR(ec_arithmetic_on_pointer_to_an_incomplete_type,
+	"arithmetic on pointer to an incomplete type")
+DEFERROR(ec_taking_address_of_temporary,
+	"taking address of temporary")
+DEFERROR(ec_forbids_sing_an_enum,
+	"ANSI C++ forbids %sing an enum")
+DEFERROR(ec_cast_to_nonreference_type_used_as_lvalue,
+	"cast to non-reference type used as lvalue")
+DEFERROR(ec_taking_address_of_function_main,
+	"taking address of function `main'")
+DEFERROR(ec_taking_the_address_of_a_cast_to_nonreference_type,
+	"taking the address of a cast to non-reference type")
+DEFERROR(ec_address_of_this_not_available,
+	"address of `this' not available")
+DEFERROR(ec_forbids_omitting_the_middle_term_of_a_expression,
+	"ANSI C++ forbids omitting the middle term of a ?: expression")
+DEFERROR(ec_enumeral_and_nonenumeral_type_in_conditional_expression,
+	"enumeral and non-enumeral type in conditional expression")
+DEFERROR(ec_forbids_conditional_expr_with_only_one_void_side,
+	"ANSI C++ forbids conditional expr with only one void side")
+DEFERROR(ec_forbids_conditional_expr_between_void_and_function_pointer,
+	"ANSI C++ forbids conditional expr between `void *' and function pointer")
+DEFERROR(ec_pointer_type_mismatch_in_conditional_expression,
+	"pointer type mismatch in conditional expression")
+DEFERROR(ec_pointerinteger_type_mismatch_in_conditional_expression,
+	"pointer/integer type mismatch in conditional expression")
+DEFERROR(ec_ambiguous_pointer_conversion,
+	"ambiguous pointer conversion")
+DEFERROR(ec_type_mismatch_in_conditional_expression,
+	"type mismatch in conditional expression")
+DEFERROR(ec_lefthand_operand_of_comma_expression_has_no_effect,
+	"left-hand operand of comma expression has no effect")
+DEFERROR(ec_forbids_casting_between_pointers_to_functions_and_objects,
+	"ANSI C++ forbids casting between pointers to functions and objects")
+DEFERROR(ec_forbids_casting_to_an_array_type,
+	"ANSI C++ forbids casting to an array type")
+DEFERROR(ec_cast_discards_volatile_from_pointer_target_type,
+	"cast discards `volatile' from pointer target type")
+DEFERROR(ec_cast_discards_const_from_pointer_target_type,
+	"cast discards `const' from pointer target type")
+DEFERROR(ec_cast_increases_required_alignment_of_target_type,
+	"cast increases required alignment of target type")
+DEFERROR(ec_cast_from_pointer_to_integer_of_different_size,
+	"cast from pointer to integer of different size")
+DEFERROR(ec_cast_to_pointer_from_integer_of_different_size,
+	"cast to pointer from integer of different size")
+DEFERROR(ec_invalid_static_class_member,
+	"invalid static class member")
+DEFERROR(ec_forbids_cast_to_nonreference_type_used_as_lvalue,
+	"ANSI C++ forbids cast to non-reference type used as lvalue")
+DEFERROR(ec_assignment_to_this_not_in_constructor_or_destructor,
+	"assignment to `this' not in constructor or destructor")
+DEFERROR(ec_forbids_assignment_of_arrays,
+	"ANSI C++ forbids assignment of arrays")
+DEFERROR(ec_return_value_from_function_receives_multiple_initializations,
+	"return value from function receives multiple initializations")
+DEFERROR(ec_in_pointer_to_member_function_conversion,
+	"   in pointer to member function conversion")
+DEFERROR(ec_in_pointer_to_member_conversion,
+	"   in pointer to member conversion")
+DEFERROR(ec_will_only_work_if_you_are_very_careful,
+	"  will only work if you are very careful")
+DEFERROR(ec_assuming_pointer_to_member_function_is_nonvirtual,
+	"assuming pointer to member function is non-virtual")
+DEFERROR(ec_forbids_implicit_conversion_from_void_in_s,
+	"ANSI C++ forbids implicit conversion from `void *' in %s")
+DEFERROR(ec_s_between_pointer_to_members_converting_across_virtual_baseclasses,
+	"%s between pointer to members converting across virtual baseclasses")
+DEFERROR(ec_conflicting_function_types_in_s,
+	"conflicting function types in %s:")
+DEFERROR(ec_function_declared_noreturn_has_a_return_statement,
+	"function declared `noreturn' has a `return' statement")
+DEFERROR(ec_returning_a_value_from_a_destructor,
+	"returning a value from a destructor")
+DEFERROR(ec_return_with_no_value_in_function_returning_nonvoid,
+	"`return' with no value, in function returning non-void")
+DEFERROR(ec_return_from_a_constructor_use_this_instead,
+	"return from a constructor: use `this = ...' instead")
+DEFERROR(ec_returning_a_value_from_a_constructor,
+	"returning a value from a constructor")
+DEFERROR(ec_return_with_a_value_in_function_returning_void,
+	"`return' with a value, in function returning void")
+DEFERROR(ec_return_of_void_value_in_function_returning_nonvoid,
+	"return of void value in function returning non-void")
+DEFERROR(ec_returning_reference_to_temporary,
+	"returning reference to temporary")
+DEFERROR(ec_reference_to_nonlvalue_returned,
+	"reference to non-lvalue returned")
+DEFERROR(ec_switch_quantity_not_an_integer,
+	"switch quantity not an integer")
+DEFERROR(ec_since_the_following_virtual_functions_are_abstract,
+	"  since the following virtual functions are abstract:")
+DEFERROR(ec_and_the_following_virtual_functions_need_a_final_overrider,
+	"  and the following virtual functions need a final overrider:")
+DEFERROR(ec_since_the_following_virtual_functions_need_a_final_overrider,
+	"  since the following virtual functions need a final overrider:")
+DEFERROR(ec_invalid_use_of_array_with_unspecified_bounds,
+	"invalid use of array with unspecified bounds")
+DEFERROR(ec_invalid_use_of_member_type_did_you_forget_the,
+	"invalid use of member type (did you forget the `&' ?)")
+DEFERROR(ec_invalid_use_of_template_type_parameter,
+	"invalid use of template type parameter")
+DEFERROR(ec_confused_by_earlier_errors_bailing_out,
+	"confused by earlier errors, bailing out")
+DEFERROR(ec_nternal_compiler_error,
+	"Internal compiler error.")
+DEFERROR(ec_nternal_compiler_error_d,
+	"Internal compiler error %d.")
+DEFERROR(ec_due_to_the_presence_of_a_constructor,
+	"due to the presence of a constructor")
+DEFERROR(ec_comma_expression_used_to_initialize_return_value,
+	"comma expression used to initialize return value")
+DEFERROR(ec_cannot_initialize_arrays_using_this_syntax,
+	"cannot initialize arrays using this syntax")
+DEFERROR(ec_forbids_nonconstant_aggregate_initializer_expressions,
+	"ANSI C++ forbids non-constant aggregate initializer expressions")
+DEFERROR(ec_initializing_array_with_parameter_list,
+	"initializing array with parameter list")
+DEFERROR(ec_chararray_initialized_from_wide_string,
+	"char-array initialized from wide string")
+DEFERROR(ec_intarray_initialized_from_nonwide_string,
+	"int-array initialized from non-wide string")
+DEFERROR(ec_initializerstring_for_array_of_chars_is_too_long,
+	"initializer-string for array of chars is too long")
+DEFERROR(ec_initializer_for_scalar_variable_requires_one_element,
+	"initializer for scalar variable requires one element")
+DEFERROR(ec_invalid_initializer,
+	"invalid initializer")
+DEFERROR(ec_aggregate_has_a_partly_bracketed_initializer,
+	"aggregate has a partly bracketed initializer")
+DEFERROR(ec_nonempty_initializer_for_array_of_empty_elements,
+	"non-empty initializer for array of empty elements")
+DEFERROR(ec_uninitialized_const_member_s,
+	"uninitialized const member `%s'")
+DEFERROR(ec_member_s_with_uninitialized_const_fields,
+	"member `%s' with uninitialized const fields")
+DEFERROR(ec_member_s_is_uninitialized_reference,
+	"member `%s' is uninitialized reference")
+DEFERROR(ec_missing_initializer_for_member_s,
+	"missing initializer for member `%s'")
+DEFERROR(ec_index_value_instead_of_field_name_in_union_initializer,
+	"index value instead of field name in union initializer")
+DEFERROR(ec_no_field_s_in_union_being_initialized,
+	"no field `%s' in union being initialized")
+DEFERROR(ec_excess_elements_in_aggregate_initializer,
+	"excess elements in aggregate initializer")
+DEFERROR(ec_circular_pointer_delegation_detected,
+	"circular pointer delegation detected")
+DEFERROR(ec_result_of_operator_yields_nonpointer_result,
+	"result of `operator->()' yields non-pointer result")
+DEFERROR(ec_base_operand_of_is_not_a_pointer,
+	"base operand of `->' is not a pointer")
+DEFERROR(ec_signature_type_not_allowed_in_cast_or_constructor_expression,
+	"signature type not allowed in cast or constructor expression")
+DEFERROR(ec_duplicate_label_s_in_switch_statement,
+	"duplicate label `%s' in switch statement")
+DEFERROR(ec_duplicate_label_d_in_switch_statement,
+	"duplicate label (%d) in switch statement")
+DEFERROR(ec_case_value_out_of_range_for_enum_s,
+	"case value out of range for enum %s")
+DEFERROR(ec_case_value_out_of_range,
+	"case value out of range")
+DEFERROR(ec_range_values_s_and_s_reversed,
+	"range values `%s' and `%s' reversed")
+DEFERROR(ec_range_values_reversed,
+	"range values reversed")
+DEFERROR(ec_forbids_defining_types_within_s,
+	"ANSI C++ forbids defining types within %s")
+DEFERROR(ec_ant_create_crossreference_file_s,
+	"can't create cross-reference file `%s'")

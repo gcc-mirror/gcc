@@ -101,6 +101,8 @@ DEFINE_LANG_NAME ("C++")
   { "-fno-weak", "" },
   { "-fxref", "Emit cross referencing information" },
   { "-fno-xref", "" },
+  { "-fdiag-codes", "Show code numbers when printing diagnostics" },
+  { "-fno-diag-codes", "" },
 
   { "-Wreturn-type", "Warn about inconsistent return types" },
   { "-Wno-return-type", "" },
@@ -126,4 +128,6 @@ DEFINE_LANG_NAME ("C++")
   { "-Wno-old-style-cast", "" },
   { "-Wnon-template-friend", "" }, 
   { "-Wno-non-template-friend", "Don't warn when non-templatized friend functions are declared within a template" },
+  { "-Wnumber-" },
+  { "-Wno-number-" },
 

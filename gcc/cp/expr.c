@@ -331,10 +331,10 @@ do_case (start, end)
 
   if (start != NULL_TREE && TREE_TYPE (start) != NULL_TREE 
       && POINTER_TYPE_P (TREE_TYPE (start)))
-    error ("pointers are not permitted as case values");
+    cp_error (ec_pointers_are_not_permitted_as_case_values);
 
   if (end && pedantic)
-    pedwarn ("ANSI C++ forbids range expressions in switch statement");
+    cp_pedwarn (ec_forbids_range_expressions_in_switch_statement);
 
   if (processing_template_decl)
     {
@@ -366,43 +366,43 @@ do_case (start, end)
       if (success == 1)
 	{
 	  if (end)
-	    error ("case label not within a switch statement");
+	    cp_error (ec_case_label_not_within_a_switch_statement);
 	  else if (start)
-	    cp_error ("case label `%E' not within a switch statement", start);
+	    cp_error (ec_case_label_not_within_a_switch_statement, start);
 	  else
-	    error ("default label not within a switch statement");
+	    cp_error (ec_default_label_not_within_a_switch_statement);
 	}
       else if (success == 2)
 	{
 	  if (end)
 	    {
-	      error ("duplicate (or overlapping) case value");
-	      cp_error_at ("this is the first entry overlapping that value",
+	      cp_error (ec_duplicate_or_overlapping_case_value);
+	      cp_error_at (ec_this_is_the_first_entry_overlapping_that_value,
 			   duplicate);
 	    }
 	  else if (start)
 	    {
-	      cp_error ("duplicate case value `%E'", start);
-	      cp_error_at ("previously used here", duplicate);
+	      cp_error (ec_duplicate_case_value, start);
+	      cp_error_at (ec_previously_used_here, duplicate);
 	    }
 	  else
 	    {
-	      error ("multiple default labels in one switch");
-	      cp_error_at ("this is the first default label", duplicate);
+	      cp_error (ec_multiple_default_labels_in_one_switch);
+	      cp_error_at (ec_this_is_the_first_default_label, duplicate);
 	    }
 	}
       else if (success == 3)
-	warning ("case value out of range");
+	cp_warning (ec_case_value_out_of_range);
       else if (success == 4)
-	warning ("empty range specified");
+	cp_warning (ec_empty_range_specified);
       else if (success == 5)
 	{
 	  if (end)
-	    error ("case label within scope of cleanup or variable array");
+	    cp_error (ec_case_label_within_scope_of_cleanup_or_variable_array);
 	  else if (! start)
-	    error ("`default' label within scope of cleanup or variable array");
+	    cp_error (ec_default_label_within_scope_of_cleanup_or_variable_array);
 	  else
-	    cp_error ("case label `%E' within scope of cleanup or variable array", start);
+	    cp_error (ec_case_label_within_scope_of_cleanup_or_variable_array, start);
 	}
     }
   if (start)

@@ -493,6 +493,16 @@ enum cplus_tree_code {
 };
 #undef DEFTREECODE
 
+/* Error codes.  */
+typedef enum error_code {
+#undef DEFERROR
+#undef DEFERRORNUM
+#define DEFERROR(code, string) code,
+#define DEFERRORNUM(code, string, num) DEFERROR(code, string)
+#include "cp-error.def"
+  ec_last_error_code
+} error_code;
+
 enum languages { lang_c, lang_cplusplus, lang_java };
 
 /* Macros to make error reporting functions' lives easier.  */
@@ -2240,6 +2250,9 @@ extern int flag_new_abi;
 
 extern int flag_honor_std;
 
+/* Nonzero means show diagnostic codes when printing error messages.  */
+extern int flag_diag_codes;
+
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 extern int at_eof;
@@ -2627,6 +2640,7 @@ extern tree handle_class_head			PROTO((tree, tree, tree));
 extern tree lookup_arg_dependent                PROTO((tree, tree, tree));
 
 /* in errfn.c */
+#ifndef NO_CP_ERROR_FNS
 extern void cp_error				();
 extern void cp_error_at				();
 extern void cp_warning				();
@@ -2635,6 +2649,8 @@ extern void cp_pedwarn				();
 extern void cp_pedwarn_at			();
 extern void cp_compiler_error			();
 extern void cp_sprintf				();
+#endif
+extern void cp_enable_warning                   PROTO((int, int));
 
 /* in error.c */
 extern void init_error				PROTO((void));

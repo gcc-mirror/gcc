@@ -132,7 +132,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 
       if (field == NULL_TREE)
 	{
-	  cp_error ("`this' has no member named `%D'", name);
+	  cp_error (ec_this_has_no_member_named, name);
 	  return error_mark_node;
 	}
 
@@ -203,7 +203,7 @@ build_field_call (basetype_path, instance_ptr, name, parms)
 	}
       else if (TREE_CODE (ftype) == METHOD_TYPE)
 	{
-	  error ("invalid call via pointer-to-member function");
+	  cp_error (ec_invalid_call_via_pointertomember_function);
 	  return error_mark_node;
 	}
       else
@@ -421,7 +421,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 	return build_method_call (exp, name, parms, NULL_TREE, LOOKUP_NORMAL);
 
       if (! check_dtor_name (basetype, name))
-	cp_error ("qualified type `%T' does not match destructor name `~%T'",
+	cp_error (ec_qualified_type_does_not_match_destructor_name,
 		  basetype, TREE_OPERAND (name, 0));
 
       /* Destructors can be "called" for simple types; see 5.2.4 and 12.4 Note
@@ -430,7 +430,7 @@ build_scoped_method_call (exp, basetype, name, parms)
       if (! IS_AGGR_TYPE (basetype))
 	{
 	  if (TYPE_MAIN_VARIANT (type) != TYPE_MAIN_VARIANT (basetype))
-	    cp_error ("type of `%E' does not match destructor type `%T' (type was `%T')",
+	    cp_error (ec_type_of_does_not_match_destructor_type_type_was,
 		      exp, basetype, type);
 
 	  return cp_convert (void_type_node, exp);
@@ -442,7 +442,7 @@ build_scoped_method_call (exp, basetype, name, parms)
 
   if (! IS_AGGR_TYPE (type))
     {
-      cp_error ("base object `%E' of scoped method call is of non-aggregate type `%T'",
+      cp_error (ec_base_object_of_scoped_method_call_is_of_nonaggregate_type,
 		exp, type);
       return error_mark_node;
     }
@@ -661,15 +661,14 @@ build_method_call (instance, name, parms, basetype_path, flags)
   if (TREE_CODE (name) == BIT_NOT_EXPR)
     {
       if (parms)
-	error ("destructors take no parameters");
+	cp_error (ec_destructors_take_no_parameters);
       basetype = TREE_TYPE (instance);
       if (TREE_CODE (basetype) == REFERENCE_TYPE)
 	basetype = TREE_TYPE (basetype);
 
       if (! check_dtor_name (basetype, name))
-	cp_error
-	  ("destructor name `~%T' does not match type `%T' of expression",
-	   TREE_OPERAND (name, 0), basetype);
+	cp_error (ec_destructor_name_does_not_match_type,
+		  TREE_OPERAND (name, 0), basetype);
 
       if (! TYPE_HAS_DESTRUCTOR (complete_type (basetype)))
 	return cp_convert (void_type_node, instance);
@@ -2019,20 +2018,20 @@ print_z_candidates (candidates)
       if (TREE_CODE (candidates->fn) == IDENTIFIER_NODE)
 	{
 	  if (candidates->fn == ansi_opname [COND_EXPR])
-	    cp_error ("%s %D(%T, %T, %T) <builtin>", str, candidates->fn,
+	    cp_error (ec_builtin_3, str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 2)));
 	  else if (TREE_VEC_LENGTH (candidates->convs) == 2)
-	    cp_error ("%s %D(%T, %T) <builtin>", str, candidates->fn,
+	    cp_error (ec_builtin_2, str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)),
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 1)));
 	  else
-	    cp_error ("%s %D(%T) <builtin>", str, candidates->fn,
+	    cp_error (ec_builtin_1, str, candidates->fn,
 		      TREE_TYPE (TREE_VEC_ELT (candidates->convs, 0)));
 	}
       else
-	cp_error_at ("%s %+D%s", str, candidates->fn,
+	cp_error_at (ec_candidate_1, str, candidates->fn,
 		     candidates->viable == -1 ? " <near match>" : "");
       str = "               "; 
     }
@@ -2169,7 +2168,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 	  if (candidates && ! candidates->next)
 	    /* say why this one won't work or try to be loose */;
 	  else
-	    cp_error ("no viable candidates");
+	    cp_error (ec_no_viable_candidates);
 	}
 #endif
 
@@ -2183,7 +2182,7 @@ build_user_type_conversion_1 (totype, expr, flags)
     {
       if (flags & LOOKUP_COMPLAIN)
 	{
-	  cp_error ("conversion from `%T' to `%T' is ambiguous",
+	  cp_error (ec_conversion_from_to_is_ambiguous,
 		    fromtype, totype);
 	  print_z_candidates (candidates);
 	}
@@ -2249,7 +2248,7 @@ resolve_args (args)
 	return error_mark_node;
       else if (TREE_CODE (TREE_TYPE (TREE_VALUE (t))) == VOID_TYPE)
 	{
-	  error ("invalid use of void expression");
+	  cp_error (ec_invalid_use_of_void_expression);
 	  return error_mark_node;
 	}
       else if (TREE_CODE (TREE_VALUE (t)) == OFFSET_REF)
@@ -2302,7 +2301,7 @@ build_new_function_call (fn, args)
 	{
 	  if (candidates && ! candidates->next)
 	    return build_function_call (candidates->fn, args);
-	  cp_error ("no matching function for call to `%D (%A)'",
+	  cp_error (ec_no_matching_function_for_call_to,
 		    DECL_NAME (OVL_FUNCTION (fn)), args);
 	  if (candidates)
 	    print_z_candidates (candidates);
@@ -2313,7 +2312,7 @@ build_new_function_call (fn, args)
 
       if (cand == 0)
 	{
-	  cp_error ("call of overloaded `%D (%A)' is ambiguous",
+	  cp_error (ec_call_of_overloaded_is_ambiguous,
 		    DECL_NAME (OVL_FUNCTION (fn)), args);
 	  print_z_candidates (candidates);
 	  return error_mark_node;
@@ -2348,8 +2347,8 @@ build_object_call (obj, args)
     {
       /* It's no good looking for an overloaded operator() on a
 	 pointer-to-member-function.  */
-      cp_error ("pointer-to-member function %E cannot be called", obj);
-      cp_error ("without an object; consider using .* or ->*");
+      cp_error (ec_pointertomember_function_cannot_be_called, obj);
+      cp_error (ec_without_an_object_consider_using_or);
       return error_mark_node;
     }
 
@@ -2419,7 +2418,7 @@ build_object_call (obj, args)
 
   if (! any_viable (candidates))
     {
-      cp_error ("no match for call to `(%T) (%A)'", TREE_TYPE (obj), args);
+      cp_error (ec_no_match_for_call_to, TREE_TYPE (obj), args);
       print_z_candidates (candidates);
       return error_mark_node;
     }
@@ -2429,7 +2428,7 @@ build_object_call (obj, args)
 
   if (cand == 0)
     {
-      cp_error ("call of `(%T) (%A)' is ambiguous", TREE_TYPE (obj), args);
+      cp_error (ec_call_of_is_ambiguous, TREE_TYPE (obj), args);
       print_z_candidates (candidates);
       return error_mark_node;
     }
@@ -2455,23 +2454,23 @@ op_error (code, code2, arg1, arg2, arg3, problem)
   switch (code)
     {
     case COND_EXPR:
-      cp_error ("%s for `%T ? %T : %T'", problem,
+      cp_error (ec_for_1, problem,
 		error_type (arg1), error_type (arg2), error_type (arg3));
       break;
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      cp_error ("%s for `%T%s'", problem, error_type (arg1), opname);
+      cp_error (ec_for_2, problem, error_type (arg1), opname);
       break;
     case ARRAY_REF:
-      cp_error ("%s for `%T[%T]'", problem,
+      cp_error (ec_for_3, problem,
 		error_type (arg1), error_type (arg2));
       break;
     default:
       if (arg2)
-	cp_error ("%s for `%T %s %T'", problem,
+	cp_error (ec_for_4, problem,
 		  error_type (arg1), opname, error_type (arg2));
       else
-	cp_error ("%s for `%s%T'", problem, opname, error_type (arg1));
+	cp_error (ec_for_5, problem, opname, error_type (arg1));
     }
 }
 
@@ -2496,7 +2495,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
      undeclared_template<1, 5, 72>a;  */
   if (code == LT_EXPR && TREE_CODE (arg1) == TEMPLATE_DECL)
     {
-      cp_error ("`%D' must be declared before use", arg1);
+      cp_error (ec_must_be_declared_before_use, arg1);
       return error_mark_node;
     }
 
@@ -2713,7 +2712,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  /* Look for an `operator++ (int)'.  If they didn't have
 	     one, then we fall back to the old way of doing things.  */
 	  if (flags & LOOKUP_COMPLAIN)
-	    cp_pedwarn ("no `%D (int)' declared for postfix `%s', trying prefix operator instead",
+	    cp_pedwarn (ec_no_int_declared_for_postfix_s_trying_prefix_operator_instead,
 			fnname, opname_tab [code]);
 	  if (code == POSTINCREMENT_EXPR)
 	    code = PREINCREMENT_EXPR;
@@ -2759,9 +2758,9 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  && candidates->next
 	  && ! candidates->next->next)
 	{
-	  cp_warning ("using synthesized `%#D' for copy assignment",
+	  cp_warning (ec_using_synthesized_for_copy_assignment,
 		      cand->fn);
-	  cp_warning_at ("  where cfront would use `%#D'",
+	  cp_warning_at (ec_where_cfront_would_use,
 			 cand == candidates
 			 ? candidates->next->fn
 			 : candidates->fn);
@@ -2796,7 +2795,7 @@ build_new_op (code, flags, arg1, arg2, arg3)
 	  && (TYPE_MAIN_VARIANT (TREE_TYPE (arg1))
 	      != TYPE_MAIN_VARIANT (TREE_TYPE (arg2))))
 	{
-	  cp_warning ("comparison between `%#T' and `%#T'", 
+	  cp_warning (ec_comparison_between_and, 
 		      TREE_TYPE (arg1), TREE_TYPE (arg2));
 	}
       break;
@@ -3023,7 +3022,7 @@ build_op_delete_call (code, addr, size, flags, placement)
   if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
 
-  cp_error ("no suitable operator delete for `%T'", type);
+  cp_error (ec_no_suitable_operator_delete_for, type);
   return error_mark_node;
 }
 
@@ -3038,17 +3037,17 @@ enforce_access (basetype_path, decl)
 
   if (access == access_private_node)
     {
-      cp_error_at ("`%+#D' is %s", decl, 
+      cp_error_at (ec_access_is_1, decl, 
 		   TREE_PRIVATE (decl) ? "private"
 		   : "from private base class");
-      error ("within this context");
+      cp_error (ec_within_this_context);
     }
   else if (access == access_protected_node)
     {
-      cp_error_at ("`%+#D' %s", decl,
+      cp_error_at (ec_access_is_2, decl,
 		   TREE_PROTECTED (decl) ? "is protected"
 		   : "has protected accessibility");
-      error ("within this context");
+      cp_error (ec_within_this_context);
     }
 }
 
@@ -3151,11 +3150,11 @@ convert_like (convs, expr)
 		if (comptypes (TREE_TYPE (expr), TREE_TYPE (convs), 1))
 		  incomplete_type_error (expr, TREE_TYPE (expr));
 		else
-		  cp_error ("could not convert `%E' (with incomplete type `%T') to `%T'",
+		  cp_error (ec_could_not_convert_with_incomplete_type_to,
 			    expr, TREE_TYPE (expr), TREE_TYPE (convs));
 	      }
 	    else
-	      cp_error ("could not convert `%E' to `%T'",
+	      cp_error (ec_could_not_convert_to,
 			expr, TREE_TYPE (convs));
 	    return error_mark_node;
 	  }
@@ -3196,7 +3195,7 @@ convert_arg_to_ellipsis (arg)
     arg = cp_convert (double_type_node, arg);
   else if (IS_AGGR_TYPE (TREE_TYPE (arg))
 	   && ! TYPE_HAS_TRIVIAL_INIT_REF (TREE_TYPE (arg)))
-    cp_warning ("cannot pass objects of type `%T' through `...'",
+    cp_warning (ec_cannot_pass_objects_of_type_through,
 		TREE_TYPE (arg));
   else
     /* Convert `short' and `char' to full-size `int'.  */
@@ -3296,7 +3295,7 @@ build_over_call (cand, args, flags)
 	  char *p = (dv && dc ? "const and volatile"
 		              : dc ? "const" : dv ? "volatile" : "");
 
-	  cp_pedwarn ("passing `%T' as `this' argument of `%#D' discards %s",
+	  cp_pedwarn (ec_passing_as_this_argument_of_discards_s,
 		      TREE_TYPE (argtype), fn, p);
 	}
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
@@ -3348,7 +3347,7 @@ build_over_call (cand, args, flags)
 	  /* Issue warnings about peculiar, but legal, uses of NULL.  */
 	  if (ARITHMETIC_TYPE_P (TREE_VALUE (parm))
 	      && TREE_VALUE (arg) == null_node)
-	    cp_warning ("converting NULL to non-pointer type");
+	    cp_warning (ec_converting_null_to_nonpointer_type);
 	    
 	  val = convert_like (conv, TREE_VALUE (arg));
 	}
@@ -3598,7 +3597,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 		    || IS_SIGNATURE_REFERENCE (basetype))))
 	{
 	  if ((flags & LOOKUP_COMPLAIN) && basetype != error_mark_node)
-	    cp_error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
+	    cp_error (ec_request_for_member_in_which_is_of_nonaggregate_type,
 		      name, instance, basetype);
 
 	  return error_mark_node;
@@ -3689,7 +3688,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       /* XXX will LOOKUP_SPECULATIVELY be needed when this is done?  */
       if (flags & LOOKUP_SPECULATIVELY)
 	return NULL_TREE;
-      cp_error ("no matching function for call to `%T::%D (%A)%V'", basetype,
+      cp_error (ec_no_matching_function_for_call_to_member, basetype,
 		pretty_name, user_args, TREE_TYPE (TREE_TYPE (instance_ptr)));
       print_z_candidates (candidates);
       return error_mark_node;
@@ -3699,7 +3698,7 @@ build_new_method_call (instance, name, args, basetype_path, flags)
 
   if (cand == 0)
     {
-      cp_error ("call of overloaded `%D(%A)' is ambiguous", pretty_name,
+      cp_error (ec_call_of_overloaded_is_ambiguous_2, pretty_name,
 		user_args);
       print_z_candidates (candidates);
       return error_mark_node;
@@ -3710,11 +3709,11 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       && DECL_CONSTRUCTOR_P (current_function_decl)
       && ! (flags & LOOKUP_NONVIRTUAL)
       && value_member (cand->fn, get_abstract_virtuals (basetype)))
-    cp_error ("abstract virtual `%#D' called from constructor", cand->fn);
+    cp_error (ec_abstract_virtual_called_from_constructor, cand->fn);
   if (TREE_CODE (TREE_TYPE (cand->fn)) == METHOD_TYPE
       && TREE_CODE (instance_ptr) == NOP_EXPR
       && TREE_OPERAND (instance_ptr, 0) == error_mark_node)
-    cp_error ("cannot call member function `%D' without object", cand->fn);
+    cp_error (ec_cannot_call_member_function_without_object, cand->fn);
 
   if (DECL_VINDEX (cand->fn) && ! (flags & LOOKUP_NONVIRTUAL)
       && ((instance == current_class_ref && (dtor_label || ctor_label))
@@ -4327,9 +4326,9 @@ joust (cand1, cand2, warn)
 
 	      if (warn)
 		{
-		  cp_warning ("passing `%T' chooses `%T' over `%T'",
+		  cp_warning (ec_passing_chooses_over,
 			      type, type1, type2);
-		  cp_warning ("  in call to `%D'", w->fn);
+		  cp_warning (ec_in_call_to, w->fn);
 		}
 	      else
 		add_warning (w, l);
@@ -4368,10 +4367,10 @@ joust (cand1, cand2, warn)
 	      tree source = source_type (TREE_VEC_ELT (w->convs, 0));
 	      if (! DECL_CONSTRUCTOR_P (w->fn))
 		source = TREE_TYPE (source);
-	      cp_warning ("choosing `%D' over `%D'", w->fn, l->fn);
-	      cp_warning ("  for conversion from `%T' to `%T'",
+	      cp_warning (ec_choosing_over, w->fn, l->fn);
+	      cp_warning (ec_for_conversion_from_to,
 			  source, TREE_TYPE (w->second_conv));
-	      cp_warning ("  because conversion sequence for the argument is better");
+	      cp_warning (ec_because_conversion_sequence_for_the_argument_is_better);
 	    }
 	  else
 	    add_warning (w, l);

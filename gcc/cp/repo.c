@@ -254,7 +254,7 @@ get_base_filename (filename)
 
   if (p && ! compiling)
     {
-      warning ("-frepo must be used with -c");
+      cp_warning (ec_frepo_must_be_used_with_c);
       flag_use_repository = 0;
       return NULL;
     }
@@ -344,7 +344,7 @@ init_repo (filename)
 	  }
 	  break;
 	default:
-	  error ("mysterious repository information in %s", repo_name);
+	  cp_error (ec_mysterious_repository_information_in_s, repo_name);
 	}
       obstack_free (&temporary_obstack, buf);
     }
@@ -359,7 +359,7 @@ reopen_repo_file_for_write ()
 
   if (repo_file == 0)
     {
-      error ("can't create repository information file `%s'", repo_name);
+      cp_error (ec_cant_create_repository_information_file_s, repo_name);
       flag_use_repository = 0;
     }
 }

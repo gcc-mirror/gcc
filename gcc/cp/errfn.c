@@ -23,6 +23,10 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include "tree.h"
 #include "toplev.h"
+/* The declarations of cp_error and such here are incompatible with
+   those in cp-tree.h.  */
+#define NO_CP_ERROR_FNS
+#include "cp-tree.h"
 
 /* cp_printer is the type of a function which converts an argument into
    a string for digestion by printf.  The cp_printer function should deal
@@ -37,10 +41,36 @@ extern cp_printer * cp_printers[256];
    when we're computing the conversion costs for a method call.  */
 int cp_silent = 0;
 
+/* The error messages themselves.  */
+typedef struct cp_err_msg {
+  /* The format of the error message.  */
+  char* format;
+
+  /* The code which we should check when deciding whether or not to
+     issue this message.  Used to indicate that some errors are "the
+     same" even though they have different formats.  */
+  error_code equiv_code;
+
+  /* A count of how many more times this warning has been enabled than
+     disabled.  (Ignored for errors.)  */
+  int enabled;
+} cp_err_msg;
+
+static cp_err_msg err_msgs[] = {
+#undef DEFERROR
+#undef DEFERRORNUM
+#define DEFERROR(code, format) DEFERRORNUM(code, format, code)
+#define DEFERRORNUM(code, format, equiv_code) \
+  { format, equiv_code, 1 },
+#include "cp-error.def"
+  { 0, 0, 0 }
+};
+
 typedef void errorfn ();	/* deliberately vague */
 
 extern char* cp_file_of PROTO((tree));
 extern int   cp_line_of PROTO((tree));
+static int   is_warning_enabled PROTO((error_code));
 
 #define STRDUP(f) (ap = (char *) alloca (strlen (f) +1), strcpy (ap, (f)), ap)
 
@@ -49,13 +79,13 @@ extern int   cp_line_of PROTO((tree));
 
 #ifdef __STDC__
 static void
-cp_thing (errorfn *errfn, int atarg1, const char *format, va_list ap)
+cp_thing (errorfn *errfn, int atarg1, error_code ec, va_list ap)
 #else
 static void
-cp_thing (errfn, atarg1, format, ap)
+cp_thing (errfn, atarg1, ec, ap)
      errorfn *errfn;
      int atarg1;
-     const char *format;
+     error_code ec;
      va_list ap;
 #endif
 {
@@ -66,14 +96,29 @@ cp_thing (errfn, atarg1, format, ap)
   long offset;
   const char *f;
   tree atarg = 0;
+  char* format;
 
-  len = strlen (format) + 1;
+  my_friendly_assert ((int) ec >= 0 && (int) ec < ec_last_error_code, 
+		      0);
+    
+  format = err_msgs[(int) ec].format;
+
+  my_friendly_assert (format != 0, 0);
+
+  len = strlen (format) + 1 /* '\0' */ + 16 /* code number */;
   if (len > buflen)
     {
       buflen = len;
       buf = xrealloc (buf, buflen);
     }
-  offset = 0;
+  if (flag_diag_codes) 
+    {
+      sprintf (buf, "[%d] ", (int) ec);
+      for (offset = 0; buf[offset]; ++offset)
+	;
+    }
+  else
+    offset = 0;
 
   for (f = format; *f; ++f)
     {
@@ -198,10 +243,10 @@ cp_thing (errfn, atarg1, format, ap)
 }
 
 #ifdef __STDC__
-#define DECLARE(name) void name (const char *format, ...)
-#define INIT va_start (ap, format)
+#define DECLARE(name) void name (error_code ec, ...)
+#define INIT va_start (ap, ec)
 #else
-#define DECLARE(name) void name (format, va_alist) char *format; va_dcl
+#define DECLARE(name) void name (ec, va_alist) error_code ec; va_dcl
 #define INIT va_start (ap)
 #endif
 
@@ -210,7 +255,7 @@ DECLARE (cp_error)
   va_list ap;
   INIT;
   if (! cp_silent)
-    cp_thing ((errorfn *) error, 0, format, ap);
+    cp_thing ((errorfn *) error, 0, ec, ap);
   va_end (ap);
 }
 
@@ -218,8 +263,8 @@ DECLARE (cp_warning)
 {
   va_list ap;
   INIT;
-  if (! cp_silent)
-    cp_thing ((errorfn *) warning, 0, format, ap);
+  if (! cp_silent && is_warning_enabled (ec))
+    cp_thing ((errorfn *) warning, 0, ec, ap);
   va_end (ap);
 }
 
@@ -227,8 +272,8 @@ DECLARE (cp_pedwarn)
 {
   va_list ap;
   INIT;
-  if (! cp_silent)
-    cp_thing ((errorfn *) pedwarn, 0, format, ap);
+  if (! cp_silent && is_warning_enabled (ec))
+    cp_thing ((errorfn *) pedwarn, 0, ec, ap);
   va_end (ap);
 }
 
@@ -238,7 +283,7 @@ DECLARE (cp_compiler_error)
   va_list ap;
   INIT;
   if (! cp_silent)
-    cp_thing (compiler_error, 0, format, ap);
+    cp_thing (compiler_error, 0, ec, ap);
   va_end (ap);
 }
 
@@ -246,7 +291,7 @@ DECLARE (cp_sprintf)
 {
   va_list ap;
   INIT;
-  cp_thing ((errorfn *) sprintf, 0, format, ap);
+  cp_thing ((errorfn *) sprintf, 0, ec, ap);
   va_end (ap);
 }
 
@@ -255,7 +300,7 @@ DECLARE (cp_error_at)
   va_list ap;
   INIT;
   if (! cp_silent)
-    cp_thing ((errorfn *) error_with_file_and_line, 1, format, ap);
+    cp_thing ((errorfn *) error_with_file_and_line, 1, ec, ap);
   va_end (ap);
 }
 
@@ -263,8 +308,8 @@ DECLARE (cp_warning_at)
 {
   va_list ap;
   INIT;
-  if (! cp_silent)
-    cp_thing ((errorfn *) warning_with_file_and_line, 1, format, ap);
+  if (! cp_silent && is_warning_enabled (ec))
+    cp_thing ((errorfn *) warning_with_file_and_line, 1, ec, ap);
   va_end (ap);
 }
 
@@ -272,7 +317,42 @@ DECLARE (cp_pedwarn_at)
 {
   va_list ap;
   INIT;
-  if (! cp_silent)
-    cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, format, ap);
+  if (! cp_silent && is_warning_enabled (ec))
+    cp_thing ((errorfn *) pedwarn_with_file_and_line, 1, ec, ap);
   va_end (ap);
+}
+
+/* If ON is non-zero, enable the warning with the indicated NUMBER.
+   If OFF is zero, disable it.  Actually, this function manipulates a
+   counter, so that enabling/disabling of warnings can nest
+   appropriately.  */
+
+void 
+cp_enable_warning (number, on)
+     int number;
+     int on;
+{
+  if (number < 0 || number > (int) ec_last_error_code)
+    error ("invalid warning number %d", number);
+  else if (on)
+    err_msgs[number].enabled++;
+  else
+    {
+      if (!err_msgs[number].enabled)
+	warning ("warning %d not enabled", number);
+      else
+	err_msgs[number].enabled--;
+    }
+}
+
+/* Returns non-zero if EC corresponds to an enabled error message.  */
+
+int
+is_warning_enabled (ec)
+     error_code ec;
+{
+  my_friendly_assert ((int) ec >= 0 && (int) ec < ec_last_error_code, 
+		      0);
+    
+  return err_msgs[(int) ec].enabled;
 }
