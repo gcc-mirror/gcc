@@ -1,3 +1,7 @@
+Sat May 30 22:17:13 1998  Mumit Khan  <khan@xraylith.wisc.edu>
+
+	* configure.in (checkfuncs): Add missing "'".
+
 Fri May 22 11:06:41 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* Makefile.in (distclean): Don't remove alloca-conf.h
