@@ -42,7 +42,7 @@ typedef GC_word word;
 typedef GC_signed_word signed_word;
 
 # ifndef CONFIG_H
-#   include "config.h"
+#   include "gcconfig.h"
 # endif
 
 # ifndef HEADERS_H
@@ -336,6 +336,9 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 /* space is assumed to be cleared.				*/
 /* In the case os USE_MMAP, the argument must also be a 	*/
 /* physical page size.						*/
+/* GET_MEM is currently not assumed to retrieve 0 filled space, */
+/* though we should perhaps take advantage of the case in which */
+/* does.							*/
 # ifdef PCR
     char * real_malloc();
 #   define GET_MEM(bytes) HBLKPTR(real_malloc((size_t)bytes + GC_page_size) \
@@ -434,7 +437,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #  ifdef LINUX_THREADS
 #    include <pthread.h>
 #    ifdef __i386__
-       inline static GC_test_and_set(volatile unsigned int *addr) {
+       inline static int GC_test_and_set(volatile unsigned int *addr) {
 	  int oldval;
 	  /* Note: the "xchg" instruction does not need a "lock" prefix */
 	  __asm__ __volatile__("xchgl %0, %1"
@@ -475,14 +478,15 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 		}
 #    define EXIT_GC() GC_collecting = 0;
 #  endif /* LINUX_THREADS */
-#  ifdef IRIX_THREADS
+#  if defined(IRIX_THREADS) || defined(IRIX_JDK_THREADS)
 #    include <pthread.h>
 #    include <mutex.h>
 
-#    if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64))
+#    if __mips < 3 || !(defined (_ABIN32) || defined(_ABI64)) \
+	|| !defined(_COMPILER_VERSION) || _COMPILER_VERSION < 700
 #        define GC_test_and_set(addr, v) test_and_set(addr,v)
 #    else
-#	  define GC_test_and_set(addr, v) __test_and_set(addr,v)
+#	 define GC_test_and_set(addr, v) __test_and_set(addr,v)
 #    endif
      extern unsigned long GC_allocate_lock;
 	/* This is not a mutex because mutexes that obey the (optional) 	*/
@@ -501,10 +505,17 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #    	define UNLOCK() pthread_mutex_unlock(&GC_allocate_ml)
 #    else
 #	define LOCK() { if (GC_test_and_set(&GC_allocate_lock, 1)) GC_lock(); }
-#       if __mips >= 3 && (defined (_ABIN32) || defined(_ABI64))
+#       if __mips >= 3 && (defined (_ABIN32) || defined(_ABI64)) \
+	   && defined(_COMPILER_VERSION) && _COMPILER_VERSION >= 700
 #	    define UNLOCK() __lock_release(&GC_allocate_lock)
 #	else
-#           define UNLOCK() GC_allocate_lock = 0
+	    /* The function call in the following should prevent the	*/
+	    /* compiler from moving assignments to below the UNLOCK.	*/
+	    /* This is probably not necessary for ucode or gcc 2.8.	*/
+	    /* It may be necessary for Ragnarok and future gcc		*/
+	    /* versions.						*/
+#           define UNLOCK() { GC_noop1(&GC_allocate_lock); \
+			*(volatile unsigned long *)(&GC_allocate_lock) = 0; }
 #	endif
 #    endif
      extern GC_bool GC_collecting;
@@ -513,7 +524,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 		    GC_collecting = 1; \
 		}
 #    define EXIT_GC() GC_collecting = 0;
-#  endif /* IRIX_THREADS */
+#  endif /* IRIX_THREADS || IRIX_JDK_THREADS */
 #  ifdef WIN32_THREADS
 #    include <windows.h>
      GC_API CRITICAL_SECTION GC_allocate_ml;
@@ -567,7 +578,7 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
 #   if defined(SRC_M3) || defined(AMIGA) || defined(SOLARIS_THREADS) \
 	|| defined(MSWIN32) || defined(MACOS) || defined(DJGPP) \
 	|| defined(NO_SIGNALS) || defined(IRIX_THREADS) \
-	|| defined(LINUX_THREADS)
+	|| defined(IRIX_JDK_THREADS) || defined(LINUX_THREADS) 
 			/* Also useful for debugging.		*/
 	/* Should probably use thr_sigsetmask for SOLARIS_THREADS. */
 #     define DISABLE_SIGNALS()
@@ -595,7 +606,8 @@ void GC_print_callers (/* struct callinfo info[NFRAMES] */);
  				   PCR_waitForever);
 # else
 #   if defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
-	|| defined(IRIX_THREADS) || defined(LINUX_THREADS)
+	|| defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+	|| defined(IRIX_JDK_THREADS)
       void GC_stop_world();
       void GC_start_world();
 #     define STOP_WORLD() GC_stop_world()
@@ -864,7 +876,69 @@ struct hblk {
 /* Object free list link */
 # define obj_link(p) (*(ptr_t *)(p))
 
-/*  lists of all heap blocks and free lists	*/
+/* The type of mark procedures.  This really belongs in gc_mark.h.	*/
+/* But we put it here, so that we can avoid scanning the mark proc	*/
+/* table.								*/
+typedef struct ms_entry * (*mark_proc)(/* word * addr, mark_stack_ptr,
+					  mark_stack_limit, env */);
+# define LOG_MAX_MARK_PROCS 6
+# define MAX_MARK_PROCS (1 << LOG_MAX_MARK_PROCS)
+
+/* Root sets.  Logically private to mark_rts.c.  But we don't want the	*/
+/* tables scanned, so we put them here.					*/
+/* MAX_ROOT_SETS is the maximum number of ranges that can be 	*/
+/* registered as static roots. 					*/
+# ifdef LARGE_CONFIG
+#   define MAX_ROOT_SETS 4096
+# else
+#   ifdef PCR
+#     define MAX_ROOT_SETS 1024
+#   else
+#     ifdef MSWIN32
+#	define MAX_ROOT_SETS 512
+	    /* Under NT, we add only written pages, which can result 	*/
+	    /* in many small root sets.					*/
+#     else
+#       define MAX_ROOT_SETS 64
+#     endif
+#   endif
+# endif
+
+# define MAX_EXCLUSIONS (MAX_ROOT_SETS/4)
+/* Maximum number of segments that can be excluded from root sets.	*/
+
+/*
+ * Data structure for excluded static roots.
+ */
+struct exclusion {
+    ptr_t e_start;
+    ptr_t e_end;
+};
+
+/* Data structure for list of root sets.				*/
+/* We keep a hash table, so that we can filter out duplicate additions.	*/
+/* Under Win32, we need to do a better job of filtering overlaps, so	*/
+/* we resort to sequential search, and pay the price.			*/
+struct roots {
+	ptr_t r_start;
+	ptr_t r_end;
+#	ifndef MSWIN32
+	  struct roots * r_next;
+#	endif
+	GC_bool r_tmp;
+	  	/* Delete before registering new dynamic libraries */
+};
+
+#ifndef MSWIN32
+    /* Size of hash table index to roots.	*/
+#   define LOG_RT_SIZE 6
+#   define RT_SIZE (1 << LOG_RT_SIZE) /* Power of 2, may be != MAX_ROOT_SETS */
+#endif
+
+/* Lists of all heap blocks and free lists	*/
+/* as well as other random data structures	*/
+/* that should not be scanned by the		*/
+/* collector.					*/
 /* These are grouped together in a struct	*/
 /* so that they can be easily skipped by the	*/
 /* GC_mark routine.				*/
@@ -904,7 +978,10 @@ struct _GC_arrays {
   word _mem_freed;
   	/* Number of explicitly deallocated words of memory	*/
   	/* since last collection.				*/
-  	
+  mark_proc _mark_procs[MAX_MARK_PROCS];
+  	/* Table of user-defined mark procedures.  There is	*/
+	/* a small number of these, which can be referenced	*/
+	/* by DS_PROC mark descriptors.  See gc_mark.h.		*/
   ptr_t _objfreelist[MAXOBJSZ+1];
 			  /* free list for objects */
   ptr_t _aobjfreelist[MAXOBJSZ+1];
@@ -986,16 +1063,23 @@ struct _GC_arrays {
 				/* GC_modws_valid_offsets[i%sizeof(word)] */
 #   endif
 # ifdef STUBBORN_ALLOC
-      page_hash_table _changed_pages;
+    page_hash_table _changed_pages;
         /* Stubborn object pages that were changes since last call to	*/
 	/* GC_read_changed.						*/
-      page_hash_table _prev_changed_pages;
+    page_hash_table _prev_changed_pages;
         /* Stubborn object pages that were changes before last call to	*/
 	/* GC_read_changed.						*/
 # endif
 # if defined(PROC_VDB) || defined(MPROTECT_VDB)
-      page_hash_table _grungy_pages; /* Pages that were dirty at last 	   */
+    page_hash_table _grungy_pages; /* Pages that were dirty at last 	   */
 				     /* GC_read_dirty.			   */
+# endif
+# ifdef MPROTECT_VDB
+    VOLATILE page_hash_table _dirty_pages;	
+			/* Pages dirtied since last GC_read_dirty. */
+# endif
+# ifdef PROC_VDB
+    page_hash_table _written_pages;	/* Pages ever dirtied	*/
 # endif
 # ifdef LARGE_CONFIG
 #   if CPP_WORDSZ > 32
@@ -1013,6 +1097,11 @@ struct _GC_arrays {
     ptr_t _heap_bases[MAX_HEAP_SECTS];
     		/* Start address of memory regions obtained from kernel. */
 # endif
+  struct roots _static_roots[MAX_ROOT_SETS];
+# ifndef MSWIN32
+    struct roots * _root_index[RT_SIZE];
+# endif
+  struct exclusion _excl_table[MAX_EXCLUSIONS];
   /* Block header index; see gc_headers.h */
   bottom_index * _all_nils;
   bottom_index * _top_index [TOP_SZ];
@@ -1049,6 +1138,7 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # define GC_words_finalized GC_arrays._words_finalized
 # define GC_non_gc_bytes_at_gc GC_arrays._non_gc_bytes_at_gc
 # define GC_mem_freed GC_arrays._mem_freed
+# define GC_mark_procs GC_arrays._mark_procs
 # define GC_heapsize GC_arrays._heapsize
 # define GC_max_heapsize GC_arrays._max_heapsize
 # define GC_words_allocd_before_gc GC_arrays._words_allocd_before_gc
@@ -1057,10 +1147,19 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # ifdef MSWIN32
 #   define GC_heap_bases GC_arrays._heap_bases
 # endif
+# define GC_static_roots GC_arrays._static_roots
+# define GC_root_index GC_arrays._root_index
+# define GC_excl_table GC_arrays._excl_table
 # define GC_all_nils GC_arrays._all_nils
 # define GC_top_index GC_arrays._top_index
 # if defined(PROC_VDB) || defined(MPROTECT_VDB)
 #   define GC_grungy_pages GC_arrays._grungy_pages
+# endif
+# ifdef MPROTECT_VDB
+#   define GC_dirty_pages GC_arrays._dirty_pages
+# endif
+# ifdef PROC_VDB
+#   define GC_written_pages GC_arrays._written_pages
 # endif
 # ifdef GATHERSTATS
 #   define GC_composite_in_use GC_arrays._composite_in_use
@@ -1073,11 +1172,9 @@ GC_API GC_FAR struct _GC_arrays GC_arrays;
 # define beginGC_arrays ((ptr_t)(&GC_arrays))
 # define endGC_arrays (((ptr_t)(&GC_arrays)) + (sizeof GC_arrays))
 
-GC_API word GC_fo_entries;
-
+/* Object kinds: */
 # define MAXOBJKINDS 16
 
-/* Object kinds: */
 extern struct obj_kind {
    ptr_t *ok_freelist;	/* Array of free listheaders for this kind of object */
    			/* Point either to GC_arrays or to storage allocated */
@@ -1091,8 +1188,14 @@ extern struct obj_kind {
    			/* Add object size in bytes to descriptor 	*/
    			/* template to obtain descriptor.  Otherwise	*/
    			/* template is used as is.			*/
-   GC_bool ok_init;     /* Clear objects before putting them on the free list. */
+   GC_bool ok_init;   /* Clear objects before putting them on the free list. */
 } GC_obj_kinds[MAXOBJKINDS];
+
+# define endGC_obj_kinds (((ptr_t)(&GC_obj_kinds)) + (sizeof GC_obj_kinds))
+
+# define end_gc_area ((ptr_t)endGC_arrays == (ptr_t)(&GC_obj_kinds) ? \
+			endGC_obj_kinds : endGC_arrays)
+
 /* Predefined kinds: */
 # define PTRFREE 0
 # define NORMAL  1
@@ -1107,6 +1210,8 @@ extern struct obj_kind {
 # endif
 
 extern int GC_n_kinds;
+
+GC_API word GC_fo_entries;
 
 extern word GC_n_heap_sects;	/* Number of separately added heap	*/
 				/* sections.				*/
@@ -1142,16 +1247,18 @@ extern GC_bool GC_is_initialized;	/* GC_init() has been run.	*/
 extern GC_bool GC_objects_are_marked;	/* There are marked objects in  */
 					/* the heap.			*/
 
-extern GC_bool GC_incremental; /* Using incremental/generational collection. */
+#ifndef SMALL_CONFIG
+  extern GC_bool GC_incremental;
+			/* Using incremental/generational collection. */
+#else
+# define GC_incremental TRUE
+			/* Hopefully allow optimizer to remove some code. */
+#endif
 
 extern GC_bool GC_dirty_maintained;
 				/* Dirty bits are being maintained, 	*/
 				/* either for incremental collection,	*/
 				/* or to limit the root set.		*/
-
-# ifndef PCR
-    extern ptr_t GC_stackbottom;	/* Cool end of user stack	*/
-# endif
 
 extern word GC_root_size;	/* Total size of registered root sections */
 
@@ -1216,7 +1323,8 @@ void GC_mark_from_mark_stack(); /* Mark from everything on the mark stack. */
 				/* Return after about one pages worth of   */
 				/* work.				   */
 GC_bool GC_mark_stack_empty();
-GC_bool GC_mark_some();	/* Perform about one pages worth of marking	*/
+GC_bool GC_mark_some(/* cold_gc_frame */);
+			/* Perform about one pages worth of marking	*/
 			/* work of whatever kind is needed.  Returns	*/
 			/* quickly if no collection is in progress.	*/
 			/* Return TRUE if mark phase finished.		*/
@@ -1238,7 +1346,31 @@ void GC_push_dirty(/*b,t*/);      /* Push all possibly changed	 	*/
 				/* on the third arg.			*/
 void GC_push_all_stack(/*b,t*/);    /* As above, but consider		*/
 				    /*  interior pointers as valid  	*/
-void GC_push_roots(/* GC_bool all */); /* Push all or dirty roots.	*/
+void GC_push_all_eager(/*b,t*/);    /* Same as GC_push_all_stack, but   */
+				    /* ensures that stack is scanned	*/
+				    /* immediately, not just scheduled  */
+				    /* for scanning.			*/
+#ifndef THREADS
+  void GC_push_all_stack_partially_eager(/* bottom, top, cold_gc_frame */);
+			/* Similar to GC_push_all_eager, but only the	*/
+			/* part hotter than cold_gc_frame is scanned	*/
+			/* immediately.  Needed to endure that callee-	*/
+			/* save registers are not missed.		*/
+#else
+  /* In the threads case, we push part of the current thread stack	*/
+  /* with GC_push_all_eager when we push the registers.  This gets the  */
+  /* callee-save registers that may disappear.  The remainder of the	*/
+  /* stacks are scheduled for scanning in *GC_push_other_roots, which	*/
+  /* is thread-package-specific.					*/
+#endif
+void GC_push_current_stack(/* ptr_t cold_gc_frame */);
+			/* Push enough of the current stack eagerly to	*/
+			/* ensure that callee-save registers saved in	*/
+			/* GC frames are scanned.			*/
+			/* In the non-threads case, schedule entire	*/
+			/* stack for scanning.				*/
+void GC_push_roots(/* GC_bool all, ptr_t cold_gc_frame */);
+			/* Push all or dirty roots.	*/
 extern void (*GC_push_other_roots)();
 			/* Push system or application specific roots	*/
 			/* onto the mark stack.  In some environments	*/
@@ -1403,7 +1535,7 @@ GC_bool GC_collect_or_expand(/* needed_blocks */);
 				/* blocks available.  Should be called	*/
 				/* until the blocks are available or	*/
 				/* until it fails by returning FALSE.	*/
-void GC_init();			/* Initialize collector.		*/
+GC_API void GC_init();		/* Initialize collector.		*/
 void GC_collect_a_little_inner(/* int n */);
 				/* Do n units worth of garbage 		*/
 				/* collection work, if appropriate.	*/
@@ -1491,7 +1623,7 @@ void GC_write_hint(/* struct hblk * h  */);
 void GC_dirty_init();
 
 /* Slow/general mark bit manipulation: */
-GC_bool GC_is_marked();
+GC_API GC_bool GC_is_marked();
 void GC_clear_mark_bit();
 void GC_set_mark_bit();
 

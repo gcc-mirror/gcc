@@ -565,7 +565,6 @@ int argc;
 char ** argv;
 {
     int c;
-    CORD initial;
 
 #if defined(MACINTOSH)
 	console_options.title = "\pDumb Editor";
