@@ -31,6 +31,7 @@
 
 namespace std {
 
+  // codecvt<char, char, mbstate_t> required specialization
   locale::id codecvt<char, char, mbstate_t>::id;
 
   codecvt<char, char, mbstate_t>::
@@ -48,10 +49,8 @@ namespace std {
 	 extern_type* __to, extern_type* __to_end, 
 	 extern_type*& __to_next) const
   { 
-    size_t __sizefrom = __from_end - __from;
-    size_t __sizeto = __to_end - __to;
-    size_t __length = __sizefrom <= __sizeto ? __sizefrom : __sizeto;
-    memcpy(__to, __from, __length);
+    size_t __len = min(__from_end - __from, __to_end - __to);
+    memcpy(__to, __from, __len);
     __from_next = __from; 
     __to_next = __to;
     return noconv;  
@@ -60,7 +59,7 @@ namespace std {
   codecvt_base::result
   codecvt<char, char, mbstate_t>::
   do_unshift(state_type& /*__state*/, extern_type* __to,
-             extern_type* /*__to_limit*/, extern_type*& __to_next) const
+             extern_type* /*__to_end*/, extern_type*& __to_next) const
   { 
     __to_next = __to; 
     return noconv; 
@@ -73,10 +72,8 @@ namespace std {
 	intern_type* __to, intern_type* __to_end, 
 	intern_type*& __to_next) const
   { 
-    size_t __sizefrom = __from_end - __from;
-    size_t __sizeto = __to_end - __to;
-    size_t __length = __sizefrom <= __sizeto ? __sizefrom : __sizeto;
-    memcpy(__to, __from, __length);
+    size_t __len = min(__from_end - __from, __to_end - __to);
+    memcpy(__to, __from, __len);
     __from_next = __from; 
     __to_next = __to;
     return noconv;  
@@ -84,21 +81,24 @@ namespace std {
 
   int 
   codecvt<char, char, mbstate_t>::
-  do_encoding() const throw() { return 1; }
+  do_encoding() const throw() 
+  { return 1; }
   
   bool 
   codecvt<char, char, mbstate_t>::
-  do_always_noconv() const throw() { return true; }
+  do_always_noconv() const throw() 
+  { return true; }
   
   int 
   codecvt<char, char, mbstate_t>::
   do_length (const state_type& /*__state*/, const extern_type* __from,
 	     const extern_type* __end, size_t __max) const
-  { return (__max < size_t(__end - __from)) ? __max : __end - __from; }
+  { return min(__max, static_cast<size_t>(__end - __from)); }
   
   int 
   codecvt<char, char, mbstate_t>::
-  do_max_length() const throw() { return 1; }
+  do_max_length() const throw() 
+  { return 1; }
   
   codecvt_byname<char, char, mbstate_t>::
   codecvt_byname(const char* /*__s*/, size_t __refs)
@@ -108,6 +108,7 @@ namespace std {
   ~codecvt_byname() { }
 
 #ifdef _GLIBCPP_USE_WCHAR_T
+  // codecvt<wchar_t, char, mbstate_t> required specialization
   locale::id codecvt<wchar_t, char, mbstate_t>::id;
 
   codecvt<wchar_t, char, mbstate_t>::
@@ -119,21 +120,37 @@ namespace std {
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_out(state_type& /*__state*/, const intern_type* __from, 
+  do_out(state_type& __state, const intern_type* __from, 
 	 const intern_type* __from_end, const intern_type*& __from_next,
-	 extern_type* __to, extern_type* __to_limit,
+	 extern_type* __to, extern_type* __to_end,
 	 extern_type*& __to_next) const
   {
-    for (; __from < __from_end && __to < __to_limit; ++__from, ++__to)
-      *__to = static_cast<char>(*__from);
-    __from_next = __from; __to_next = __to;
-    return __from == __from_end ? ok : partial;
+    result __ret = error;
+    size_t __len = min(__from_end - __from, __to_end - __to);
+    size_t __conv = wcsrtombs(__to, &__from, __len, &__state);
+
+    if (__conv == __len)
+      {
+	__from_next = __from;
+	__to_next = __to + __conv;
+	__ret = ok;
+      }
+    else if (__conv > 0 && __conv < __len)
+      {
+	__from_next = __from;
+	__to_next = __to + __conv;
+	__ret = partial;
+      }
+    else
+      __ret = error;
+	
+    return __ret; 
   }
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_unshift (state_type& /*__state*/, extern_type* __to,
-              extern_type* /*__to_limit*/, extern_type*& __to_next) const
+  do_unshift(state_type& /*__state*/, extern_type* __to,
+	     extern_type* /*__to_end*/, extern_type*& __to_next) const
   {
     __to_next = __to;
     return noconv;
@@ -141,22 +158,37 @@ namespace std {
   
   codecvt_base::result
   codecvt<wchar_t, char, mbstate_t>::
-  do_in(state_type& /*__state*/, const extern_type* __from, 
+  do_in(state_type& __state, const extern_type* __from, 
 	const extern_type* __from_end, const extern_type*& __from_next,
-	intern_type* __to, intern_type* __to_limit,
+	intern_type* __to, intern_type* __to_end,
 	intern_type*& __to_next) const
   {
-    for (; __from < __from_end && __to < __to_limit; ++__from, ++__to)
-      *__to = static_cast<wchar_t>(*__from);
-    __from_next = __from; 
-    __to_next = __to;
-    return __from == __from_end ? ok : partial;
+    result __ret = error;
+    size_t __len = min(__from_end - __from, __to_end - __to);
+    size_t __conv = mbsrtowcs(__to, &__from, __len, &__state);
+
+    if (__conv == __len)
+      {
+	__from_next = __from;
+	__to_next = __to + __conv;
+	__ret = ok;
+      }
+    else if (__conv > 0 && __conv < __len)
+      {
+	__from_next = __from;
+	__to_next = __to + __conv;
+	__ret = partial;
+      }
+    else
+      __ret = error;
+	
+    return __ret; 
   }
   
   int 
   codecvt<wchar_t, char, mbstate_t>::
   do_encoding() const throw()
-  { return 1; }
+  { return 0; }
   
   bool 
   codecvt<wchar_t, char, mbstate_t>::
@@ -167,10 +199,11 @@ namespace std {
   codecvt<wchar_t, char, mbstate_t>::
   do_length(const state_type& /*__state*/, const extern_type* __from,
 	    const extern_type* __end, size_t __max) const
-  { return (__max < size_t(__end - __from)) ? __max : __end - __from; }
-  
+  { return min(__max, static_cast<size_t>(__end - __from)); }
+
   int 
-  codecvt<wchar_t, char, mbstate_t>::do_max_length() const throw()
+  codecvt<wchar_t, char, mbstate_t>::
+  do_max_length() const throw()
   { return 1; }
 
   codecvt_byname<wchar_t, char, mbstate_t>::

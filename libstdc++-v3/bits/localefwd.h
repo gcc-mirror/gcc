@@ -67,14 +67,6 @@ namespace std
   template<typename _Tp, typename _Alloc> class vector;
   class locale;
 
-  template<typename _Facet>
-    const _Facet&  
-    use_facet(const locale&);
-
-  template<typename _Facet>
-    bool           
-    has_facet(const locale&) throw();
-
   // 22.1.3 Convenience interfaces
   template<typename _CharT> 
     inline bool 
@@ -289,10 +281,14 @@ namespace std
     classic();
 
   private:
-    _Impl* _M_impl;  // The (shared) implementation
+    // The (shared) implementation
+    _Impl* 		_M_impl;  
 
-    static _Impl* _S_classic; // The one true C reference locale
-    static _Impl* _S_global;  // Current global reference locale
+    // The one true C reference locale
+    static _Impl* 	_S_classic; 
+
+    // Current global reference locale
+    static _Impl* 	_S_global;  
 
     explicit 
     locale(_Impl*) throw();
@@ -312,10 +308,11 @@ namespace std
   // locale implementation object
   class locale::_Impl
   {
+    // Types.
     typedef vector<facet*, allocator<facet*> > __vec_facet;
     typedef vector<string, allocator<string> > __vec_string;
 
-    // Friends:
+    // Friends.
     friend class locale;
     friend class facet;
 
@@ -327,12 +324,13 @@ namespace std
       friend bool  
       has_facet(const locale&) throw();
 
-    size_t _M_num_references;
-    __vec_facet* _M_facets;
-    __vec_string* _M_category_names;
-    bool _M_has_name;
-    bool _M_cached_name_ok;
-    string _M_cached_name;
+    // Data Members.
+    size_t 		_M_num_references;
+    __vec_facet* 	_M_facets;
+    __vec_string* 	_M_category_names;
+    bool 		_M_has_name;
+    bool 		_M_cached_name_ok;
+    string 		_M_cached_name;
 
     inline void 
     _M_add_reference() throw()
@@ -467,11 +465,13 @@ namespace std
   public:
     id() {};
   private:
-    // NB: there is no accessor for _M_index because it may be used
+    // NB: There is no accessor for _M_index because it may be used
     // before the constructor is run; the effect of calling a member
     // function (even an inline) would be undefined.
-    mutable size_t _M_index;
-    static size_t _S_highwater;   // last id number assigned
+    mutable size_t 	_M_index;
+
+    // Last id number assigned
+    static size_t 	_S_highwater;   
 
     void 
     operator=(const id&);  // not defined
