@@ -1144,10 +1144,10 @@ namespace std
       const money_base::pattern __p = __intl ? __mpt.neg_format() 
 					     : __mpf.neg_format();
 
-      const string_type __pos_sign =__intl ? __mpt.positive_sign() 
-					   : __mpf.positive_sign();
-      const string_type __neg_sign =__intl ? __mpt.negative_sign() 
-					   : __mpf.negative_sign();
+      const string_type __pos_sign = __intl ? __mpt.positive_sign() 
+					    : __mpf.positive_sign();
+      const string_type __neg_sign = __intl ? __mpt.negative_sign() 
+					    : __mpf.negative_sign();
       const char_type __d = __intl ? __mpt.decimal_point() 
   	    	       		   : __mpf.decimal_point();
       const char_type __sep = __intl ? __mpt.thousands_sep() 
@@ -1169,113 +1169,103 @@ namespace std
       // The tentative returned string is stored here.
       string_type __tmp_units;
 
-      char_type __c = *__beg;
       for (int __i = 0; __beg != __end && __i < 4 && __testvalid; ++__i)
 	{
+	  char_type __c;
 	  const part __which = static_cast<part>(__p.field[__i]);
 	  switch (__which)
+	    {
+	    case money_base::symbol:
+	      if (__io.flags() & ios_base::showbase 
+		  || __i < 2 || __sign.size() > 1
+		  || ((static_cast<part>(__p.field[3]) != money_base::none)
+		      && __i == 2)) 
 		{
-		case money_base::symbol:
-		  if (__io.flags() & ios_base::showbase 
-		      || __i < 2 || __sign.size() > 1
-		      || ((static_cast<part>(__p.field[3]) != money_base::none)
-			  && __i == 2)) 
-		    {
-		      // According to 22.2.6.1.2.2, symbol is required
-		      // if (__io.flags() & ios_base::showbase),
-		      // otherwise is optional and consumed only if
-		      // other characters are needed to complete the
-		      // format.
-		      const string_type __symbol = __intl ? __mpt.curr_symbol()
-			                                  : __mpf.curr_symbol();
-		      const size_type __len = __symbol.size();
-		      size_type __j = 0;
-		      while (__beg != __end 
-			     && __j < __len && __symbol[__j] == __c)
-			{
-			  __c = *(++__beg);
-			  ++__j;
-			}
-		      // When (__io.flags() & ios_base::showbase)
-		      // symbol is required.
-		      if (__j != __len && (__io.flags() & ios_base::showbase))
-			__testvalid = false;
-		    }
-		  break;
-		case money_base::sign:		    
-		  // Sign might not exist, or be more than one character long.
-		  if (__pos_sign.size() && __c == __pos_sign[0])
-		    {
-		      __sign = __pos_sign;
-		      __c = *(++__beg);
-		    }
-		  else if (__neg_sign.size() && __c == __neg_sign[0])
-		    {
-		      __sign = __neg_sign;
-		      __c = *(++__beg);
-		    }
-		  else if (__pos_sign.size() && __neg_sign.size())
-		    {
-		      // Sign is mandatory.
-		      __testvalid = false;
-		    }
-		  break;
-		case money_base::value:
-		  // Extract digits, remove and stash away the
-		  // grouping of found thousands separators.
-		  while (__beg != __end 
-			 && (__ctype.is(ctype_base::digit, __c) 
-			     || (__c == __d && !__testdecfound)
-			     || __c == __sep))
-		    {
-		      if (__c == __d)
-			{
-			  __grouping_tmp += static_cast<char>(__sep_pos);
-			  __sep_pos = 0;
-			  __testdecfound = true;
-			}
-		      else if (__c == __sep)
-			{
-			  if (__grouping.size())
-			    {
-			      // Mark position for later analysis.
-			      __grouping_tmp += static_cast<char>(__sep_pos);
-			      __sep_pos = 0;
-			    }
-			  else
-			    {
-			      __testvalid = false;
-			      break;
-			    }
-			}
-		      else
-			{
-			  __tmp_units += __c;
-			  ++__sep_pos;
-			}
-		      __c = *(++__beg);
-		    }
-		  break;
-		case money_base::space:
-		case money_base::none:
-		  // Only if not at the end of the pattern.
-		  if (__i != 3)
-		    while (__beg != __end 
-			   && __ctype.is(ctype_base::space, __c))
-		      __c = *(++__beg);
-		  break;
+		  // According to 22.2.6.1.2.2, symbol is required
+		  // if (__io.flags() & ios_base::showbase),
+		  // otherwise is optional and consumed only if
+		  // other characters are needed to complete the
+		  // format.
+		  const string_type __symbol = __intl ? __mpt.curr_symbol()
+		                                      : __mpf.curr_symbol();
+		  const size_type __len = __symbol.size();
+		  size_type __j = 0;
+		  for (; __beg != __end && __j < __len
+			 && *__beg == __symbol[__j]; ++__beg, ++__j);
+		  // When (__io.flags() & ios_base::showbase)
+		  // symbol is required.
+		  if (__j != __len && (__io.flags() & ios_base::showbase))
+		    __testvalid = false;
 		}
+	      break;
+	    case money_base::sign:		    
+	      // Sign might not exist, or be more than one character long.
+	      if (__pos_sign.size() && *__beg == __pos_sign[0])
+		{
+		  __sign = __pos_sign;
+		  ++__beg;
+		}
+	      else if (__neg_sign.size() && *__beg == __neg_sign[0])
+		{
+		  __sign = __neg_sign;
+		  ++__beg;
+		}
+	      else if (__pos_sign.size() && __neg_sign.size())
+		{
+		  // Sign is mandatory.
+		  __testvalid = false;
+		}
+	      break;
+	    case money_base::value:
+	      // Extract digits, remove and stash away the
+	      // grouping of found thousands separators.
+	      for (; __beg != __end; ++__beg)
+		if (__ctype.is(ctype_base::digit, __c = *__beg))
+		  {
+		    __tmp_units += __c;
+		    ++__sep_pos;
+		  }
+		else if (__c == __d && !__testdecfound)
+		  {
+		    __grouping_tmp += static_cast<char>(__sep_pos);
+		    __sep_pos = 0;
+		    __testdecfound = true;
+		  }
+		else if (__c == __sep)
+		  {
+		    if (__grouping.size())
+		      {
+			// Mark position for later analysis.
+			__grouping_tmp += static_cast<char>(__sep_pos);
+			__sep_pos = 0;
+		      }
+		    else
+		      {
+			__testvalid = false;
+			break;
+		      }
+		  }
+		else
+		  break;
+	      break;
+	    case money_base::space:
+	    case money_base::none:
+	      // Only if not at the end of the pattern.
+	      if (__i != 3)
+		for (; __beg != __end 
+		       && __ctype.is(ctype_base::space, *__beg); ++__beg);
+	      break;
+	    }
 	}
-
+      
       // Need to get the rest of the sign characters, if they exist.
-      const char_type __eof = static_cast<char_type>(char_traits<char_type>::eof());
       if (__sign.size() > 1)
 	{
 	  const size_type __len = __sign.size();
 	  size_type __i = 1;
-	  for (; __c != __eof && __i < __len; ++__i)
-	    while (__beg != __end && __c != __sign[__i])
-	      __c = *(++__beg);
+	  for (; __beg != __end && __i < __len; ++__i)
+	    for (; __beg != __end
+		   && *__beg != __sign[__i]; ++__beg);
 	  
 	  if (__i != __len)
 	    __testvalid = false;
@@ -1320,7 +1310,7 @@ namespace std
 	__testvalid = false;
 
       // Iff no more characters are available.      
-      if (__c == __eof)
+      if (__beg == __end)
 	__err |= ios_base::eofbit;
 
       // Iff valid sequence is not recognized.
