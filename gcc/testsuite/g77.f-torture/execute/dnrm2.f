@@ -15,7 +15,7 @@ C     (This is actually an obsolete version of dnrm2 -- consult the
 c     current Netlib BLAS.)
 
       integer i
-      double precision a(1:100)
+      double precision a(1:100), dnrm2
       do i=1,100
          a(i)=0.D0
       enddo
@@ -26,6 +26,8 @@ c     current Netlib BLAS.)
       integer i, incx, ix, j, n, next
       double precision   dx(1), cutlo, cuthi, hitest, sum, xmax,zero,one
       data   zero, one /0.0d0, 1.0d0/
+      data cutlo, cuthi / 8.232d-11,  1.304d19 /
+      j = 0
       if(n .gt. 0 .and. incx.gt.0) go to 10
          dnrm2  = zero
          go to 300
