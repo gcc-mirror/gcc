@@ -1,3 +1,9 @@
+Wed Dec 23 07:30:22 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* toplev.c (fatal_function): New static variable.
+	(set_fatal_function): New function.
+	(vfatal): If fatal_function nonzero, call it.
+
 Thu Dec 10 07:21:44 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (move_by_pieces_1): Give inner arg types of function passed
