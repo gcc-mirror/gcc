@@ -1,3 +1,7 @@
+Thu Jan  7 23:39:27 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.c (c4x_preferred_reload_class): Always return class.
+
 Thu Jan  7 00:29:25 199  Bernd Schmidt <crux@pool.informatik.rwth-aachen.de>
 
 	* combine.c (num_sign_bit_copies): In NEG, MULT, DIV and MOD cases,
