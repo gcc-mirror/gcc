@@ -1,5 +1,10 @@
 2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/ext/iterator:  Add #include <bits/std_iterator.h>, tweak.
+	* testsuite/ext/headers.cc:  Add <ext/iterator>.
+
+2001-12-31  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/backward/algo.h:  Add two more using declarations.
 	* include/backward/iterator.h:  Include <ext/iterator>,
 	add using declaration.
