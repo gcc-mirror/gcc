@@ -1,3 +1,7 @@
+Sat Feb 27 19:18:24 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* SERVICE: Update from the FSF.
+
 Sat Feb 27 01:12:40 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* md.texi (prologue,epilogue): Document named patterns.
