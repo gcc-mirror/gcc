@@ -16,7 +16,8 @@
 @ifinfo
 This file documents the GNU C Preprocessor.
 
-Copyright 1987, 1989, 1991-1999 Free Software Foundation, Inc.
+Copyright 1987, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+1999 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
