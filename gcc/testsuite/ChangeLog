@@ -1,3 +1,11 @@
+2003-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.dg/switch-2.c: New test.
+	* gcc.dg/switch-3.c: New test.
+	* gcc.dg/Wswitch.c: Adjust line numbers.
+	* gcc.dg/Wswitch-default.c: Likewise.
+	* gcc.dg/Wswitch-enum.c: Likewise.
+
 2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
 
 	* gcc.c-torture/execute/20030222-1.c: New test.

@@ -1,3 +1,9 @@
+2003-03-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/9262
+	* c-typeck.c (do_case): Attach the first case label to the SWITCH_BODY.
+	(c_finish_case): Rechain the next statements to the SWITCH_STMT.
+
 Tue Mar  4 11:30:04 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* doc/invoke.texi:  Document that unit-at-a-time is enabled for -O3

@@ -7184,11 +7184,19 @@ do_case (low_value, high_value)
 
   if (switch_stack)
     {
+      bool switch_was_empty_p = (SWITCH_BODY (switch_stack->switch_stmt) == NULL_TREE);
+
       label = c_add_case_label (switch_stack->cases, 
 				SWITCH_COND (switch_stack->switch_stmt), 
 				low_value, high_value);
       if (label == error_mark_node)
 	label = NULL_TREE;
+      else if (switch_was_empty_p)
+	{
+	  /* Attach the first case label to the SWITCH_BODY.  */
+	  SWITCH_BODY (switch_stack->switch_stmt) = TREE_CHAIN (switch_stack->switch_stmt);
+	  TREE_CHAIN (switch_stack->switch_stmt) = NULL_TREE;
+	}
     }
   else if (low_value)
     error ("case label not within a switch statement");
@@ -7205,7 +7213,8 @@ c_finish_case ()
 {
   struct c_switch *cs = switch_stack;
 
-  RECHAIN_STMTS (cs->switch_stmt, SWITCH_BODY (cs->switch_stmt)); 
+  /* Rechain the next statements to the SWITCH_STMT.  */
+  last_tree = cs->switch_stmt;
 
   /* Pop the stack.  */
   switch_stack = switch_stack->next;
