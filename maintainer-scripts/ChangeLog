@@ -1,3 +1,10 @@
+2001-10-24  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_release: Build snapshots from mainline.  Generate Ada and
+	Chill tarballs.  Correct error check when building diffs.  Check
+	for errors when building bzip2 files.
+	* crontab: Use /sourceware/snapshot-tmp for building snapshots.
+
 2001-10-08  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* crontab: Build weekly snapshots.
