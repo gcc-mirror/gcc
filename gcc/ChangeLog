@@ -1,3 +1,15 @@
+2002-04-09  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.c (sparc_extra_constraint_check): New
+	function, implementing EXTRA_CONSTRAINTS.  For memory constraints,
+	allow reloading pseudos.
+	* config/sparc/sparc.h (EXTRA_CONSTRAINTS): Use it.
+	* config/sparc/sparc-protos.h: Declare it.
+
+	* config/sparc/sparc.c (const64_is_2insns): Kill signed vs.
+	unsigned comparison warning.
+	(output_restore_regs): Mark leaf_function as unused.
+
 Tue Apr  9 09:35:45 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (is_aligning_offset): New function.

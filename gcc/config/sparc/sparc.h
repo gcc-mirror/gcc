@@ -2116,12 +2116,6 @@ do {									\
    'W' handles the memory operand when moving operands in/out
        of 'e' constraint floating point registers.  */
 
-#define EXTRA_CONSTRAINT_BASE(OP, C)   \
-   ((C) == 'Q' ? fp_sethi_p(OP)        \
-    : (C) == 'R' ? fp_mov_p(OP)        \
-    : (C) == 'S' ? fp_high_losum_p(OP) \
-    : 0)
-
 #ifndef REG_OK_STRICT
 
 /* Nonzero if X is a hard reg that can be used as an index
@@ -2136,18 +2130,13 @@ do {									\
 #define REG_OK_FOR_BASE_P(X)  REG_OK_FOR_INDEX_P (X)
 
 /* 'T', 'U' are for aligned memory loads which aren't needed for arch64.
-   'W' is like 'T' but is assumed true on arch64.  */
+   'W' is like 'T' but is assumed true on arch64.
 
-#define EXTRA_CONSTRAINT(OP, C)				\
-   (EXTRA_CONSTRAINT_BASE(OP, C)                        \
-    || ((! TARGET_ARCH64 && (C) == 'T')			\
-        ? (mem_min_alignment (OP, 8))			\
-        : ((! TARGET_ARCH64 && (C) == 'U')		\
-            ? (register_ok_for_ldd (OP))		\
-            : ((C) == 'W'				\
-	       ? ((TARGET_ARCH64 && GET_CODE (OP) == MEM) \
-	          || mem_min_alignment (OP, 8)) \
-	       : 0))))
+   Remember to accept pseudo-registers for memory constraints if reload is
+   in progress.  */
+
+#define EXTRA_CONSTRAINT(OP, C) \
+	sparc_extra_constraint_check(OP, C, 0)
 
 #else
 
@@ -2156,20 +2145,8 @@ do {									\
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
 #define REG_OK_FOR_BASE_P(X) REGNO_OK_FOR_BASE_P (REGNO (X))
 
-#define EXTRA_CONSTRAINT(OP, C)				\
-   (EXTRA_CONSTRAINT_BASE(OP, C)                        \
-    || ((! TARGET_ARCH64 && (C) == 'T')			\
-        ? mem_min_alignment (OP, 8) && strict_memory_address_p (Pmode, XEXP (OP, 0)) \
-        : ((! TARGET_ARCH64 && (C) == 'U')		\
-           ? (GET_CODE (OP) == REG			\
-              && (REGNO (OP) < FIRST_PSEUDO_REGISTER	\
-	          || reg_renumber[REGNO (OP)] >= 0)	\
-              && register_ok_for_ldd (OP))		\
-           : ((C) == 'W'				\
-	      ? (((TARGET_ARCH64 && GET_CODE (OP) == MEM) \
-		  || mem_min_alignment (OP, 8))		\
-                 && strict_memory_address_p (Pmode, XEXP (OP, 0))) \
-	      : 0))))
+#define EXTRA_CONSTRAINT(OP, C) \
+	sparc_extra_constraint_check(OP, C, 1)
 
 #endif
 
