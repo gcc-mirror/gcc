@@ -3,7 +3,7 @@
    Changed by Michael Meissner,		meissner@osf.org
    64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
    Brendan Eich, brendan@microunity.com.
-   Copyright (C) 1989, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 92, 93, 94, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -260,8 +260,8 @@ extern char	       *mktemp ();
 #define MASK_EMBEDDED_PIC 0x00004000	/* Generate embedded PIC code */
 #define MASK_EMBEDDED_DATA 0x00008000	/* Reduce RAM usage, not fast code */
 #define MASK_BIG_ENDIAN	0x00010000	/* Generate big endian code */
-#define MASK_UNUSED3	0x00020000
-#define MASK_UNUSED2	0x00040000
+#define MASK_SINGLE_FLOAT 0x00020000	/* Only single precision FPU.  */
+#define MASK_MAD	0x00040000	/* Generate mad/madu as on 4650.  */
 #define MASK_UNUSED1	0x00080000
 
 					/* Dummy switches used only in spec's*/
@@ -341,6 +341,11 @@ extern char	       *mktemp ();
 					/* generate big endian code.  */
 #define TARGET_BIG_ENDIAN	(target_flags & MASK_BIG_ENDIAN)
 
+#define TARGET_SINGLE_FLOAT	(target_flags & MASK_SINGLE_FLOAT)
+#define TARGET_DOUBLE_FLOAT	(! TARGET_SINGLE_FLOAT)
+
+#define TARGET_MAD		(target_flags & MASK_MAD)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -383,6 +388,11 @@ extern char	       *mktemp ();
   {"no-embedded-data",	 -MASK_EMBEDDED_DATA},				\
   {"eb",		  MASK_BIG_ENDIAN},				\
   {"el",		 -MASK_BIG_ENDIAN},				\
+  {"single-float",	  MASK_SINGLE_FLOAT},				\
+  {"double-float",	 -MASK_SINGLE_FLOAT},				\
+  {"mad",		  MASK_MAD},					\
+  {"no-mad",		 -MASK_MAD},					\
+  {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT},		\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\
@@ -575,7 +585,7 @@ while (0)
 	%{pipe: %e-pipe is not supported.} \
 	%{K}} \
 %{!mmips-as: \
-	%{mcpu=*}} \
+	%{mcpu=*} %{m4650} %{mmad:-m4650}} \
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
 %{noasmopt:-O0} \
 %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
@@ -594,7 +604,7 @@ while (0)
 	%{pipe: %e-pipe is not supported.} \
 	%{K}} \
 %{mgas: \
-	%{mcpu=*}} \
+	%{mcpu=*} %{m4650} %{mmad:-m4650}} \
 %{G*} %{EB} %{EL} %{mips1} %{mips2} %{mips3} %{v} \
 %{noasmopt:-O0} \
 %{!noasmopt:%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}} \
@@ -662,7 +672,11 @@ while (0)
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
 %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
-%{mips1:-mfp32 -mgp32}%{mips2:-mfp32 -mgp32}%{mips3:-mfp64 -mgp64} \
+%{mips1:-mfp32 -mgp32}%{mips2:-mfp32 -mgp32}\
+%{mips3:%{!msingle-float:%{!m4650:-mfp64}} -mgp64} \
+%{mfp64:%{msingle-float:%emay not use both -mfp64 and -msingle-float}} \
+%{mfp64:%{m4650:%emay not use both -mfp64 and -m4650}} \
+%{m4650:-mcpu=r4650} \
 %{G*} %{EB:-meb} %{EL:-mel} %{EB:%{EL:%emay not use both -EB and -EL}} \
 %{pic-none:   -mno-half-pic} \
 %{pic-lib:    -mhalf-pic} \
@@ -1138,7 +1152,7 @@ do {							\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,			\
-  1, 1, 1								\
+  0, 0, 1								\
 }
 
 
@@ -1211,7 +1225,9 @@ do {							\
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
   (! FP_REG_P (REGNO)							\
 	? ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD) \
-        : (((GET_MODE_SIZE (MODE) + 7) / 8) << (TARGET_FLOAT64 == 0)))
+        : (TARGET_SINGLE_FLOAT						\
+	   ? ((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG) \
+	   : (((GET_MODE_SIZE (MODE) + 7) / 8) << (TARGET_FLOAT64 == 0))))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.  In 32 bit mode, require that DImode and DFmode be in even
@@ -1534,6 +1550,16 @@ extern enum reg_class mips_char_to_class[];
        && ((CLASS1 == GR_REGS && CLASS2 == FP_REGS)			\
 	   || (CLASS2 == GR_REGS && CLASS1 == FP_REGS))))
 
+/* The HI and LO registers can only be reloaded via the general
+   registers.  */
+
+#define SECONDARY_RELOAD_CLASS(CLASS, MODE, X)				\
+  mips_secondary_reload_class (CLASS, MODE, X)
+
+/* Not declared above, with the other functions, because enum
+   reg_class is not declared yet.  */
+extern enum reg_class	mips_secondary_reload_class ();
+
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
@@ -1816,9 +1842,11 @@ extern struct mips_frame_info current_frame_info;
 
 #define LIBCALL_VALUE(MODE)						\
   gen_rtx (REG, MODE,							\
-	   (GET_MODE_CLASS (MODE) == MODE_FLOAT)			\
-		? FP_RETURN						\
-		: GP_RETURN)
+	   ((GET_MODE_CLASS (MODE) == MODE_FLOAT			\
+	     && (! TARGET_SINGLE_FLOAT					\
+		 || GET_MODE_SIZE (MODE) <= 4))				\
+	    ? FP_RETURN							\
+	    : GP_RETURN))
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).
@@ -2824,7 +2852,11 @@ while (0)
    : (FROM) == FP_REGS && (TO) == FP_REGS ? 2				\
    : (FROM) == GR_REGS && (TO) == FP_REGS ? 4				\
    : (FROM) == FP_REGS && (TO) == GR_REGS ? 4				\
-   : 6)
+   : (((FROM) == HI_REG || (FROM) == LO_REG || (FROM) == MD_REGS)	\
+      && (TO) == GR_REGS) ? 6						\
+   : (((TO) == HI_REG || (TO) == LO_REG || (TO) == MD_REGS)		\
+      && (FROM) == GR_REGS) ? 6						\
+   : 12)
 
 #define MEMORY_MOVE_COST(MODE) \
   ((mips_cpu == PROCESSOR_R4000 || mips_cpu == PROCESSOR_R6000) ? 6 : 4)
