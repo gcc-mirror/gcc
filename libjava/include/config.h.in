@@ -265,3 +265,9 @@
 /* Version number of package */
 #undef VERSION
 
+/* Define if gethostbyname_r is only declared if _REENTRANT is defined */
+#undef GETHOSTBYNAME_R_NEEDS_REENTRANT
+
+/* Define if struct hostent_data is defined in netdb.h */
+#undef HAVE_STRUCT_HOSTENT_DATA
+
