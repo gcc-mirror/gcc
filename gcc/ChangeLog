@@ -1,3 +1,10 @@
+Mon Oct 25 00:42:35 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (note_set_pseudo_multiple_uses_retval): New variable.
+	(note_set_pseudo_multiple_uses): New function.
+	(check_dbra_loop): Use not_set_pseudo_multiple_uses to determine
+	if a pseudo set in the loop exit is used elsewhere.
+
 Sun Oct 24 20:52:40 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* i386.md (mulsi3): Tweak to work with SCO OSR5 COFF assembler.
