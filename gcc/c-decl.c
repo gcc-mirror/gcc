@@ -5529,8 +5529,8 @@ finish_struct (t, fieldlist, attributes)
   /* Delete all zero-width bit-fields from the fieldlist */
   {
     tree *fieldlistp = &fieldlist;
-    while (*fieldlistp && TREE_CODE (*fieldlistp) == FIELD_DECL)
-      if (DECL_INITIAL (*fieldlistp))
+    while (*fieldlistp)
+      if (TREE_CODE (*fieldlistp) == FIELD_DECL && DECL_INITIAL (*fieldlistp))
 	*fieldlistp = TREE_CHAIN (*fieldlistp);
       else
 	fieldlistp = &TREE_CHAIN (*fieldlistp);
