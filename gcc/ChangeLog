@@ -1,3 +1,12 @@
+2002-10-22  Alan Modra  <amodra@bigpond.net.au>
+
+	* output.h (SECTION_NOTYPE): Define.
+	* varasm.c (default_section_type_flags_1): Set SECTION_NOTYPE for
+	init array sections.
+	(default_elf_asm_named_section): Mind SECTION_NOTYPE.
+	* config/arm/arm.c (arm_elf_asm_named_section): Likewise.  Also
+	merge TLS support.
+
 2002-10-21  Richard Henderson  <rth@redhat.com>
 
 	* real.c (sticky_rshift_significand): Return inexact, don't
