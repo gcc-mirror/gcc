@@ -50,8 +50,6 @@ extern time_t time PROTO ((time_t *)); /* FIXME: use NEED_DECLARATION_TIME */
 # define assert(e) do { if (! (e)) abort (); } while (0)
 #endif
 
-extern char *getpwd PROTO((void));
-
 /* IMPORTANT NOTE: Please see the file README.DWARF for important details
    regarding the GNU implementation of Dwarf.  */
 

@@ -307,8 +307,6 @@ static void leaf_renumber_regs	PROTO((rtx));
 #ifdef HAVE_cc0
 static int alter_cond		PROTO((rtx));
 #endif
-
-extern char *getpwd ();
 
 /* Initialize data in final at the beginning of a compilation.  */
 

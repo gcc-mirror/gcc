@@ -109,8 +109,6 @@ extern char *version_string;
 #define my_open(file, mode, flag)	open((char *)file, mode, flag)
 #define my_chmod(file, mode)	chmod((char *)file, mode)
 
-extern char *getpwd ();
-
 static void usage PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void aux_info_corrupted PARAMS ((void)) ATTRIBUTE_NORETURN;
 static void declare_source_confusing PARAMS ((const char *)) ATTRIBUTE_NORETURN;

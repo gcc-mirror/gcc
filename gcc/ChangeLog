@@ -1,3 +1,16 @@
+Mon Aug 30 20:56:08 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (OBJS, PROTO_OBJS): Remove getpwd.o.
+	(getpwd.o): Remove target.
+
+	* getpwd.c: Delete file.  Its in libiberty now.
+
+	* dbxout.c (getpwd): Don't prototype.
+	* dwarf2out.c (getpwd): Likewise
+	* dwarfout.c (getpwd): Likewise
+	* final.c (getpwd): Likewise.
+	* protoize.c (getpwd): Likewise.
+
 Mon Aug 30 20:21:34 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cse.c: (fold_rtx): Cast to HOST_WIDE_INT in left shift.
