@@ -107,10 +107,10 @@ static int compute_movstr_length (rtx);
 static int compute_clrstr_length (rtx);
 static bool pa_assemble_integer (rtx, unsigned int, int);
 static void remove_useless_addtr_insns (int);
-static void store_reg (int, int, int);
-static void store_reg_modify (int, int, int);
-static void load_reg (int, int, int);
-static void set_reg_plus_d (int, int, int, int);
+static void store_reg (int, HOST_WIDE_INT, int);
+static void store_reg_modify (int, int, HOST_WIDE_INT);
+static void load_reg (int, HOST_WIDE_INT, int);
+static void set_reg_plus_d (int, int, HOST_WIDE_INT, int);
 static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
 static void update_total_code_bytes (int);
 static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
@@ -1552,13 +1552,13 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   /* Handle secondary reloads for loads/stores of FP registers from
      REG+D addresses where D does not fit in 5 bits, including
      (subreg (mem (addr))) cases.  */
-  if (fp_reg_operand (operand0, mode)
+  if (scratch_reg
+      && fp_reg_operand (operand0, mode)
       && ((GET_CODE (operand1) == MEM
 	   && !memory_address_p (DFmode, XEXP (operand1, 0)))
 	  || ((GET_CODE (operand1) == SUBREG
 	       && GET_CODE (XEXP (operand1, 0)) == MEM
-	       && !memory_address_p (DFmode, XEXP (XEXP (operand1, 0), 0)))))
-      && scratch_reg)
+	       && !memory_address_p (DFmode, XEXP (XEXP (operand1, 0), 0))))))
     {
       if (GET_CODE (operand1) == SUBREG)
 	operand1 = XEXP (operand1, 0);
@@ -1585,14 +1585,14 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 			      gen_rtx_MEM (mode, scratch_reg)));
       return 1;
     }
-  else if (fp_reg_operand (operand1, mode)
+  else if (scratch_reg
+	   && fp_reg_operand (operand1, mode)
 	   && ((GET_CODE (operand0) == MEM
 		&& ! memory_address_p (DFmode, XEXP (operand0, 0)))
 	       || ((GET_CODE (operand0) == SUBREG)
 		   && GET_CODE (XEXP (operand0, 0)) == MEM
 		   && !memory_address_p (DFmode,
-			   		 XEXP (XEXP (operand0, 0), 0))))
-	   && scratch_reg)
+			   		 XEXP (XEXP (operand0, 0), 0)))))
     {
       if (GET_CODE (operand0) == SUBREG)
 	operand0 = XEXP (operand0, 0);
@@ -1623,15 +1623,15 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
   /* Handle secondary reloads for loads of FP registers from constant
      expressions by forcing the constant into memory.
 
-     use scratch_reg to hold the address of the memory location.
+     Use scratch_reg to hold the address of the memory location.
 
      The proper fix is to change PREFERRED_RELOAD_CLASS to return
      NO_REGS when presented with a const_int and a register class
      containing only FP registers.  Doing so unfortunately creates
      more problems than it solves.   Fix this for 2.5.  */
-  else if (fp_reg_operand (operand0, mode)
+  else if (scratch_reg
 	   && CONSTANT_P (operand1)
-	   && scratch_reg)
+	   && fp_reg_operand (operand0, mode))
     {
       rtx xoperands[2];
 
@@ -1653,14 +1653,14 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
     }
   /* Handle secondary reloads for SAR.  These occur when trying to load
      the SAR from memory, FP register, or with a constant.  */
-  else if (GET_CODE (operand0) == REG
+  else if (scratch_reg
+	   && GET_CODE (operand0) == REG
 	   && REGNO (operand0) < FIRST_PSEUDO_REGISTER
 	   && REGNO_REG_CLASS (REGNO (operand0)) == SHIFT_REGS
 	   && (GET_CODE (operand1) == MEM
 	       || GET_CODE (operand1) == CONST_INT
 	       || (GET_CODE (operand1) == REG
-		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1)))))
-	   && scratch_reg)
+		   && FP_REG_CLASS_P (REGNO_REG_CLASS (REGNO (operand1))))))
     {
       /* D might not fit in 14 bits either; for such cases load D into
 	 scratch reg.  */
@@ -1971,16 +1971,19 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	  return 1;
 	}
       else if (GET_CODE (operand1) != CONST_INT
-	       || ! cint_ok_for_move (INTVAL (operand1)))
+	       || !cint_ok_for_move (INTVAL (operand1)))
 	{
-	  rtx extend = NULL_RTX;
-	  rtx temp;
+	  rtx insn, temp;
+	  rtx op1 = operand1;
+	  HOST_WIDE_INT value = INTVAL (operand1);
+	  HOST_WIDE_INT insv = 0;
+	  int insert = 0;
 
-	  if (TARGET_64BIT && GET_CODE (operand1) == CONST_INT
+	  if (TARGET_64BIT
+	      && GET_CODE (operand1) == CONST_INT
 	      && HOST_BITS_PER_WIDE_INT > 32
 	      && GET_MODE_BITSIZE (GET_MODE (operand0)) > 32)
 	    {
-	      HOST_WIDE_INT val = INTVAL (operand1);
 	      HOST_WIDE_INT nval;
 
 	      /* Extract the low order 32 bits of the value and sign extend.
@@ -1988,19 +1991,21 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		 can use the original value as-is.  If the new value is
 		 different, we use it and insert the most-significant 32-bits
 		 of the original value into the final result.  */
-	      nval = ((val & (((HOST_WIDE_INT) 2 << 31) - 1))
+	      nval = ((value & (((HOST_WIDE_INT) 2 << 31) - 1))
 		      ^ ((HOST_WIDE_INT) 1 << 31)) - ((HOST_WIDE_INT) 1 << 31);
-	      if (val != nval)
+	      if (value != nval)
 		{
 #if HOST_BITS_PER_WIDE_INT > 32
-		  extend = GEN_INT (val >> 32);
+		  insv = value >= 0 ? value >> 32 : ~(~value >> 32);
 #endif
+		  insert = 1;
+		  value = nval;
 		  operand1 = GEN_INT (nval);
 		}
 	    }
 
 	  if (reload_in_progress || reload_completed)
-	    temp = operand0;
+	    temp = scratch_reg ? scratch_reg : operand0;
 	  else
 	    temp = gen_reg_rtx (mode);
 
@@ -2008,7 +2013,8 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	     because PLUS uses an 11-bit immediate and the insn sequence
 	     generated is not as efficient as the one using HIGH/LO_SUM.  */
 	  if (GET_CODE (operand1) == CONST_INT
-	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
+	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
+	      && !insert)
 	    {
 	      /* Directly break constant into high and low parts.  This
 		 provides better optimization opportunities because various
@@ -2016,7 +2022,6 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 		 We use a 14-bit signed low part except when the addition
 		 of 0x4000 to the high part might change the sign of the
 		 high part.  */
-	      HOST_WIDE_INT value = INTVAL (operand1);
 	      HOST_WIDE_INT low = value & 0x3fff;
 	      HOST_WIDE_INT high = value & ~ 0x3fff;
 
@@ -2040,11 +2045,60 @@ emit_move_sequence (rtx *operands, enum machine_mode mode, rtx scratch_reg)
 	      operands[1] = gen_rtx_LO_SUM (mode, temp, operand1);
 	    }
 
-	  emit_move_insn (operands[0], operands[1]);
+	  insn = emit_move_insn (operands[0], operands[1]);
 
-	  if (extend != NULL_RTX)
-	    emit_insn (gen_insv (operands[0], GEN_INT (32), const0_rtx,
-				 extend));
+	  /* Now insert the most significant 32 bits of the value
+	     into the register.  When we don't have a second register
+	     available, it could take up to nine instructions to load
+	     a 64-bit integer constant.  Prior to reload, we force
+	     constants that would take more than three instructions
+	     to load to the constant pool.  During and after reload,
+	     we have to handle all possible values.  */
+	  if (insert)
+	    {
+	      /* Use a HIGH/LO_SUM/INSV sequence if we have a second
+		 register and the value to be inserted is outside the
+		 range that can be loaded with three depdi instructions.  */
+	      if (temp != operand0 && (insv >= 16384 || insv < -16384))
+		{
+		  operand1 = GEN_INT (insv);
+
+		  emit_insn (gen_rtx_SET (VOIDmode, temp,
+					  gen_rtx_HIGH (mode, operand1)));
+		  emit_move_insn (temp, gen_rtx_LO_SUM (mode, temp, operand1));
+		  emit_insn (gen_insv (operand0, GEN_INT (32),
+				       const0_rtx, temp));
+		}
+	      else
+		{
+		  int len = 5, pos = 27;
+
+		  /* Insert the bits using the depdi instruction.  */
+		  while (pos >= 0)
+		    {
+		      HOST_WIDE_INT v5 = ((insv & 31) ^ 16) - 16;
+		      HOST_WIDE_INT sign = v5 < 0;
+
+		      /* Left extend the insertion.  */
+		      insv = (insv >= 0 ? insv >> len : ~(~insv >> len));
+		      while (pos > 0 && (insv & 1) == sign)
+			{
+			  insv = (insv >= 0 ? insv >> 1 : ~(~insv >> 1));
+			  len += 1;
+			  pos -= 1;
+			}
+
+		      emit_insn (gen_insv (operand0, GEN_INT (len),
+					   GEN_INT (pos), GEN_INT (v5)));
+
+		      len = pos > 0 && pos < 5 ? pos : 5;
+		      pos -= len;
+		    }
+		}
+	    }
+
+	  REG_NOTES (insn)
+	    = gen_rtx_EXPR_LIST (REG_EQUAL, op1, REG_NOTES (insn));
 
 	  return 1;
 	}
@@ -3334,8 +3388,8 @@ remove_useless_addtr_insns (int check_notes)
 /* Global variables set by output_function_prologue().  */
 /* Size of frame.  Need to know this to emit return insns from
    leaf procedures.  */
-static int actual_fsize;
-static int local_fsize, save_fregs;
+static HOST_WIDE_INT actual_fsize, local_fsize;
+static int save_fregs;
 
 /* Emit RTL to store REG at the memory location specified by BASE+DISP.
    Handle case where DISP > 8k by using the add_high_const patterns.
@@ -3344,7 +3398,7 @@ static int local_fsize, save_fregs;
    in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
 
 static void
-store_reg (int reg, int disp, int base)
+store_reg (int reg, HOST_WIDE_INT disp, int base)
 {
   rtx insn, dest, src, basereg;
 
@@ -3355,11 +3409,33 @@ store_reg (int reg, int disp, int base)
       dest = gen_rtx_MEM (word_mode, plus_constant (basereg, disp));
       insn = emit_move_insn (dest, src);
     }
+  else if (TARGET_64BIT && !VAL_32_BITS_P (disp))
+    {
+      rtx delta = GEN_INT (disp);
+      rtx tmpreg = gen_rtx_REG (Pmode, 1);
+
+      emit_move_insn (tmpreg, delta);
+      emit_move_insn (tmpreg, gen_rtx_PLUS (Pmode, tmpreg, basereg));
+      dest = gen_rtx_MEM (word_mode, tmpreg);
+      insn = emit_move_insn (dest, src);
+      if (DO_FRAME_NOTES)
+	{
+	  REG_NOTES (insn)
+	    = gen_rtx_EXPR_LIST (REG_FRAME_RELATED_EXPR,
+		gen_rtx_SET (VOIDmode,
+			     gen_rtx_MEM (word_mode,
+					  gen_rtx_PLUS (word_mode, basereg,
+							delta)),
+                             src),
+                REG_NOTES (insn));
+	}
+    }
   else
     {
       rtx delta = GEN_INT (disp);
       rtx high = gen_rtx_PLUS (Pmode, basereg, gen_rtx_HIGH (Pmode, delta));
       rtx tmpreg = gen_rtx_REG (Pmode, 1);
+
       emit_move_insn (tmpreg, high);
       dest = gen_rtx_MEM (word_mode, gen_rtx_LO_SUM (Pmode, tmpreg, delta));
       insn = emit_move_insn (dest, src);
@@ -3384,11 +3460,11 @@ store_reg (int reg, int disp, int base)
    add MOD to BASE.  MOD must be <= 8k.  */
 
 static void
-store_reg_modify (int base, int reg, int mod)
+store_reg_modify (int base, int reg, HOST_WIDE_INT mod)
 {
   rtx insn, basereg, srcreg, delta;
 
-  if (! VAL_14_BITS_P (mod))
+  if (!VAL_14_BITS_P (mod))
     abort ();
 
   basereg = gen_rtx_REG (Pmode, base);
@@ -3431,7 +3507,7 @@ store_reg_modify (int base, int reg, int mod)
    There is code in expand_hppa_{prologue,epilogue} that knows about this.  */
 
 static void
-set_reg_plus_d (int reg, int base, int disp, int note)
+set_reg_plus_d (int reg, int base, HOST_WIDE_INT disp, int note)
 {
   rtx insn;
 
@@ -3440,25 +3516,35 @@ set_reg_plus_d (int reg, int base, int disp, int note)
       insn = emit_move_insn (gen_rtx_REG (Pmode, reg),
 			     plus_constant (gen_rtx_REG (Pmode, base), disp));
     }
+  else if (TARGET_64BIT && !VAL_32_BITS_P (disp))
+    {
+      rtx basereg = gen_rtx_REG (Pmode, base);
+      rtx delta = GEN_INT (disp);
+      rtx tmpreg = gen_rtx_REG (Pmode, 1);
+
+      emit_move_insn (tmpreg, delta);
+      insn = emit_move_insn (gen_rtx_REG (Pmode, reg),
+			     gen_rtx_PLUS (Pmode, tmpreg, basereg));
+    }
   else
     {
       rtx basereg = gen_rtx_REG (Pmode, base);
       rtx delta = GEN_INT (disp);
+      rtx tmpreg = gen_rtx_REG (Pmode, 1);
 
-      emit_move_insn (gen_rtx_REG (Pmode, 1),
+      emit_move_insn (tmpreg,
 		      gen_rtx_PLUS (Pmode, basereg,
 				    gen_rtx_HIGH (Pmode, delta)));
       insn = emit_move_insn (gen_rtx_REG (Pmode, reg),
-			     gen_rtx_LO_SUM (Pmode, gen_rtx_REG (Pmode, 1),
-					     delta));
+			     gen_rtx_LO_SUM (Pmode, tmpreg, delta));
     }
 
   if (DO_FRAME_NOTES && note)
     RTX_FRAME_RELATED_P (insn) = 1;
 }
 
-int
-compute_frame_size (int size, int *fregs_live)
+HOST_WIDE_INT
+compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
 {
   int freg_saved = 0;
   int i, j;
@@ -3562,7 +3648,7 @@ pa_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
   /* hppa_expand_prologue does the dirty work now.  We just need
      to output the assembler directives which denote the start
      of a function.  */
-  fprintf (file, "\t.CALLINFO FRAME=%d", actual_fsize);
+  fprintf (file, "\t.CALLINFO FRAME=" HOST_WIDE_INT_PRINT_DEC, actual_fsize);
   if (regs_ever_live[2])
     fputs (",CALLS,SAVE_RP", file);
   else
@@ -3603,8 +3689,9 @@ void
 hppa_expand_prologue (void)
 {
   int merge_sp_adjust_with_store = 0;
-  int size = get_frame_size ();
-  int i, offset;
+  HOST_WIDE_INT size = get_frame_size ();
+  HOST_WIDE_INT offset;
+  int i;
   rtx insn, tmpreg;
 
   gr_saved = 0;
@@ -3668,8 +3755,8 @@ hppa_expand_prologue (void)
 		 So instead use stwm to store at *sp and post-increment the
 		 stack pointer as an atomic operation.  Then increment sp to
 		 finish allocating the new frame.  */
-	      int adjust1 = 8192 - 64;
-	      int adjust2 = actual_fsize - adjust1;
+	      HOST_WIDE_INT adjust1 = 8192 - 64;
+	      HOST_WIDE_INT adjust2 = actual_fsize - adjust1;
 
 	      store_reg_modify (STACK_POINTER_REGNUM, 1, adjust1);
 	      set_reg_plus_d (STACK_POINTER_REGNUM, STACK_POINTER_REGNUM,
@@ -3901,26 +3988,39 @@ hppa_expand_prologue (void)
    Handle case where DISP > 8k by using the add_high_const patterns.  */
 
 static void
-load_reg (int reg, int disp, int base)
+load_reg (int reg, HOST_WIDE_INT disp, int base)
 {
-  rtx src, dest, basereg;
+  rtx dest = gen_rtx_REG (word_mode, reg);
+  rtx basereg = gen_rtx_REG (Pmode, base);
+  rtx src;
 
-  dest = gen_rtx_REG (word_mode, reg);
-  basereg = gen_rtx_REG (Pmode, base);
   if (VAL_14_BITS_P (disp))
+    src = gen_rtx_MEM (word_mode, plus_constant (basereg, disp));
+  else if (TARGET_64BIT && !VAL_32_BITS_P (disp))
     {
-      src = gen_rtx_MEM (word_mode, plus_constant (basereg, disp));
-      emit_move_insn (dest, src);
+      rtx delta = GEN_INT (disp);
+      rtx tmpreg = gen_rtx_REG (Pmode, 1);
+
+      emit_move_insn (tmpreg, delta);
+      if (TARGET_DISABLE_INDEXING)
+	{
+	  emit_move_insn (tmpreg, gen_rtx_PLUS (Pmode, tmpreg, basereg));
+	  src = gen_rtx_MEM (word_mode, tmpreg);
+	}
+      else
+	src = gen_rtx_MEM (word_mode, gen_rtx_PLUS (Pmode, tmpreg, basereg));
     }
   else
     {
       rtx delta = GEN_INT (disp);
       rtx high = gen_rtx_PLUS (Pmode, basereg, gen_rtx_HIGH (Pmode, delta));
       rtx tmpreg = gen_rtx_REG (Pmode, 1);
+
       emit_move_insn (tmpreg, high);
       src = gen_rtx_MEM (word_mode, gen_rtx_LO_SUM (Pmode, tmpreg, delta));
-      emit_move_insn (dest, src);
     }
+
+  emit_move_insn (dest, src);
 }
 
 /* Update the total code bytes output to the text section.  */
@@ -4006,9 +4106,10 @@ void
 hppa_expand_epilogue (void)
 {
   rtx tmpreg;
-  int offset, i;
+  HOST_WIDE_INT offset;
+  HOST_WIDE_INT ret_off = 0;
+  int i;
   int merge_sp_adjust_with_load = 0;
-  int ret_off = 0;
 
   /* We will use this often.  */
   tmpreg = gen_rtx_REG (word_mode, 1);
