@@ -1,5 +1,8 @@
 1998-07-09  Dave Love  <d.love@dl.ac.uk>
 
+	* libU77/Makefile.in (check): Wrap -lg2c ... -lm around $(LIBS) in
+	case of static link.
+
 	* libU77/Version.c, libI77/Version.c: Update version info.
 
 	* libU77/sys_clock_.c: Replace TIMES conditional stuff removed in
