@@ -1,3 +1,8 @@
+2005-04-06  Dorit Naishlos  <dorit@il.ibm.com>
+
+	* tree-vect-analyze.c (vect_analyze_loop_form): Call
+	split_loop_exit_edge instead of loop_split_edge_with. 
+
 2005-04-06  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/rs6000/altivec.md (UNSPEC_VSLW, UNSPEC_SUBS,
