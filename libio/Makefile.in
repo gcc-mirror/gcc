@@ -88,8 +88,12 @@ test: test.o libio.a
 tpipe: tpipe.o libio.a
 	$(CC) $(CFLAGS) -o tpipe tpipe.o libio.a
 
-iostream.list: stamp-picdir $(_G_CONFIG_H) $(LIBIOSTREAM_DEP)
+iostream.list: $(_G_CONFIG_H) $(LIBIOSTREAM_DEP)
 	@echo "$(LIBIOSTREAM_USE)"> iostream.list
+
+# The "pic" subdir must be created before we can put any object
+# files into it.
+$(LIBIOSTREAM_DEP) $(LIBIO_OBJECTS): stamp-picdir
 
 stmp-stdio:
 	@rootme=`pwd`/ ; export rootme; cd stdio ; \
