@@ -1,3 +1,7 @@
+Sat Mar 21 23:52:56 PST 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Mar 22 00:50:42 1998  Nick Clifton  <nickc@cygnus.com>
 			  Geoff Noer	<noer@cygnus.com>
 
