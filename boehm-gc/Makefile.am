@@ -25,8 +25,7 @@ toolexecdir = $(exec_prefix)/$(target_alias)
 toolexeclibdir = $(toolexecdir)/lib$(MULTISUBDIR)
 endif
 
-toolexeclib_LTLIBRARIES = libgcjgc.la
-noinst_LTLIBRARIES = libgcjgc_convenience.la
+noinst_LTLIBRARIES = libgcjgc.la libgcjgc_convenience.la
 
 GC_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
 dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c irix_threads.c \

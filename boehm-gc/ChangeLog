@@ -1,3 +1,10 @@
+2002-04-22  Jeff Sturm  <jsturm@one-point.com>
+
+	* Makefile.am (toolexeclib_LTLIBRARIES): Remove.
+	(noinst_LTLIBRARIES): Add libgcjgc.la.
+
+	* Makefile.in: Rebuild.
+
 2002-04-22  David S. Miller  <davem@redhat.com>
 
 	* include/private/gcconfig.h: Hard-code STACKBOTTOM on
