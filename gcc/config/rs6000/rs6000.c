@@ -7446,7 +7446,7 @@ branch_positive_comparison_operator (rtx op, enum machine_mode mode)
 {
   enum rtx_code code;
 
-  if (! branch_comparison_operator (rtx op, enum machine_mode mode))
+  if (! branch_comparison_operator (op, mode))
     return 0;
 
   code = GET_CODE (op);
