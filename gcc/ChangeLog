@@ -1,3 +1,7 @@
+Wed Jan 28 20:04:43 1998  Ian Lance Taylor  <ian@cygnus.com>
+
+	* i386/t-cygwin32 (LIMITS_H_TEST, LIBGCC2_INCLUDES): Define.
+
 Wed Jan 28 11:45:27 1998  Per Bothner  <bothner@cygnus.com>
 
 	* dbxout.c (dbxout_type):  For a RECORD_TYPE, check that TYPE_BINFO
