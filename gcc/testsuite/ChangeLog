@@ -1,3 +1,8 @@
+2002-04-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.misc-tests/linkage.exp: Update last change to handle
+	sparc*-, not just sparc-.
+
 2002-04-03  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* g77.dg/bprob/bprob.exp: Skip for mmix-*-* and cris-*-*.
