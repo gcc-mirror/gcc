@@ -1,3 +1,8 @@
+2002-10-09  Benjamin Kosnik  <bkoz@redhat.com>	
+
+	* src/locale.cc: Fix comments, move ctors together.
+	* testsuite/22_locale/static_members.cc (test03): Add.
+
 2002-10-08  Jonathan Lennox  <lennox@cs.columbia.edu>
 
 	PR libstdc++/8071, libstdc++/8127, libstdc++/6745
