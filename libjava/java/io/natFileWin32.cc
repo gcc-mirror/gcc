@@ -14,6 +14,7 @@ details.  */
 #include <string.h>
 
 #include <windows.h>
+#undef STRICT
 
 #include <gcj/cni.h>
 #include <jvm.h>
