@@ -1,3 +1,7 @@
+2000-09-05  John David Anglin <dave@hiauly1.hia.nrc.ca>
+
+	* gettext.h (nls_uint32): Choose via INT_MAX instead of UINT_MAX.
+
 2000-08-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* dcgettext.c (find_msg): Initialize act before loop.

@@ -39,30 +39,27 @@
    alternative approach is to use autoconf's AC_CHECK_SIZEOF macro, but
    doing that would require that the configure script compile and *run*
    the resulting executable.  Locally running cross-compiled executables
-   is usually not possible.  */
+   is usually not possible.  We use the maximum values for signed int's
+   for the test to avoid using `U' suffixes.  */
 
-#if __STDC__
-# define UINT_MAX_32_BITS 4294967295U
-#else
-# define UINT_MAX_32_BITS 0xFFFFFFFF
-#endif
+#define INT_MAX_32_BITS 2147483647
 
-/* If UINT_MAX isn't defined, assume it's a 32-bit type.
+/* If INT_MAX isn't defined, assume it's a 32-bit type.
    This should be valid for all systems GNU cares about because
    that doesn't include 16-bit systems, and only modern systems
    (that certainly have <limits.h>) have 64+-bit integral types.  */
 
-#ifndef UINT_MAX
-# define UINT_MAX UINT_MAX_32_BITS
+#ifndef INT_MAX
+# define INT_MAX INT_MAX_32_BITS
 #endif
 
-#if UINT_MAX == UINT_MAX_32_BITS
+#if INT_MAX == INT_MAX_32_BITS
 typedef unsigned nls_uint32;
 #else
-# if USHRT_MAX == UINT_MAX_32_BITS
+# if SHRT_MAX == INT_MAX_32_BITS
 typedef unsigned short nls_uint32;
 # else
-#  if ULONG_MAX == UINT_MAX_32_BITS
+#  if LONG_MAX == INT_MAX_32_BITS
 typedef unsigned long nls_uint32;
 #  else
   /* The following line is intended to throw an error.  Using #error is
