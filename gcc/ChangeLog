@@ -1,3 +1,8 @@
+2004-01-17  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_expect_jump): Fix mistake in my
+	last patch.  Use XEXP (x, 0) to get a LABEL_REF's CODE_LABEL.
+
 2004-01-17  Daniel Jacobowitz  <drow@mvista.com>
 
 	* rtl.h (emit_insn_before_sameloc, emit_jump_insn_before_sameloc)
