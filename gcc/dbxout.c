@@ -1937,7 +1937,7 @@ dbxout_symbol (decl, local)
 
       DECL_RTL (decl) = eliminate_regs (DECL_RTL (decl), 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
-      if (leaf_function)
+      if (current_function_uses_only_leaf_regs)
 	leaf_renumber_regs_insn (DECL_RTL (decl));
 #endif
 
@@ -2259,7 +2259,7 @@ dbxout_parms (parms)
 	  = eliminate_regs (DECL_INCOMING_RTL (parms), 0, NULL_RTX);
 	DECL_RTL (parms) = eliminate_regs (DECL_RTL (parms), 0, NULL_RTX);
 #ifdef LEAF_REG_REMAP
-	if (leaf_function)
+	if (current_function_uses_only_leaf_regs)
 	  {
 	    leaf_renumber_regs_insn (DECL_INCOMING_RTL (parms));
 	    leaf_renumber_regs_insn (DECL_RTL (parms));

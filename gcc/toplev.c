@@ -4089,6 +4089,11 @@ rest_of_compilation (decl)
 	}
     }
 
+  /* Determine if the current function is a leaf before running reload
+     since this can impact optimizations done by the prologue and
+     epilogue thus changing register elimination offsets.  */
+  current_function_is_leaf = leaf_function_p ();
+
   /* Unless we did stupid register allocation,
      allocate pseudo-regs that are used only within 1 basic block. 
 
@@ -4235,9 +4240,8 @@ rest_of_compilation (decl)
     }
 
 #ifdef LEAF_REGISTERS
-  leaf_function = 0;
   if (optimize > 0 && only_leaf_regs_used () && leaf_function_p ())
-    leaf_function = 1;
+    current_function_uses_only_leaf_regs = 1;
 #endif
 
   /* One more attempt to remove jumps to .+1

@@ -140,11 +140,24 @@ int current_function_has_nonlocal_goto;
 
 int current_function_contains_functions;
 
+/* Nonzero if function being compiled doesn't contain any calls
+   (ignoring the prologue and epilogue).  This is set prior to
+   local register allocation and is valid for the remaining
+   compiler passes. */
+
+int current_function_is_leaf;
+
 /* Nonzero if function being compiled doesn't modify the stack pointer
    (ignoring the prologue and epilogue).  This is only valid after
    life_analysis has run. */
 
 int current_function_sp_is_unchanging;
+
+/* Nonzero if the function being compiled is a leaf function which only
+   uses leaf registers.  This is valid after reload (specifically after
+   sched2) and is useful only if the port defines LEAF_REGISTERS.  */
+
+int current_function_uses_only_leaf_regs;
 
 /* Nonzero if the function being compiled issues a computed jump.  */
 
@@ -5897,7 +5910,9 @@ init_function_start (subr, filename, line)
   current_function_has_nonlocal_label = 0;
   current_function_has_nonlocal_goto = 0;
   current_function_contains_functions = 0;
+  current_function_is_leaf = 0;
   current_function_sp_is_unchanging = 0;
+  current_function_uses_only_leaf_regs = 0;
   current_function_has_computed_jump = 0;
   current_function_is_thunk = 0;
 

@@ -2230,7 +2230,7 @@ eligible_for_epilogue_delay (trial, slot)
   /* In the case of a true leaf function, anything can go into the delay slot.
      A delay slot only exists however if the frame size is zero, otherwise
      we will put an insn to adjust the stack after the return.  */
-  if (leaf_function)
+  if (current_function_uses_only_leaf_regs)
     {
       if (leaf_return_peephole_ok ())
 	return ((get_attr_in_uncond_branch_delay (trial)
@@ -4686,7 +4686,7 @@ output_return (operands)
       operands[0] = leaf_label;
       return "b%* %l0%(";
     }
-  else if (leaf_function)
+  else if (current_function_uses_only_leaf_regs)
     {
       /* No delay slot in a leaf function.  */
       if (delay)
@@ -7524,7 +7524,7 @@ sparc_return_peephole_ok (dest, src)
 {
   if (! TARGET_V9)
     return 0;
-  if (leaf_function)
+  if (current_function_uses_only_leaf_regs)
     return 0;
   if (GET_CODE (src) != CONST_INT
       && (GET_CODE (src) != REG || ! IN_OR_GLOBAL_P (src)))

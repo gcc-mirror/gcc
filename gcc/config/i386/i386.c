@@ -1990,6 +1990,11 @@ ix86_compute_frame_size (size, nregs_on_stack)
     if (padding < (((offset + preferred_alignment - 1)
 		    & -preferred_alignment) - offset))
       padding += preferred_alignment;
+
+    /* Don't bother aligning the stack of a leaf function
+       which doesn't allocate any stack slots.  */
+    if (size == 0 && current_function_is_leaf)
+      padding = 0;
   }
 #endif
 

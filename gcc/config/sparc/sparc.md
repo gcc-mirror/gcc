@@ -159,7 +159,7 @@
   [(eq_attr "in_call_delay" "true") (nil) (nil)])
 
 (define_attr "leaf_function" "false,true"
-  (const (symbol_ref "leaf_function")))
+  (const (symbol_ref "current_function_uses_only_leaf_regs")))
 
 (define_attr "in_return_delay" "false,true"
   (if_then_else (and (and (and (eq_attr "type" "move,load,sload,store,binary,ialu")
@@ -7618,7 +7618,8 @@
 
   if (! TARGET_ARCH64)
     {
-      rtx rtnreg = gen_rtx_REG (SImode, (leaf_function ? 15 : 31));
+      rtx rtnreg = gen_rtx_REG (SImode, (current_function_uses_only_leaf_regs
+					 ? 15 : 31));
       rtx value = gen_reg_rtx (SImode);
 
       /* Fetch the instruction where we will return to and see if it's an unimp

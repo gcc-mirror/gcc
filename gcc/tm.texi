@@ -1642,12 +1642,17 @@ treatment of leaf functions, and registers need to be renumbered to do
 this.
 @end table
 
-@findex leaf_function
+@findex current_function_is_leaf
+@findex current_function_uses_only_leaf_regs
 Normally, @code{FUNCTION_PROLOGUE} and @code{FUNCTION_EPILOGUE} must
-treat leaf functions specially.  It can test the C variable
-@code{leaf_function} which is nonzero for leaf functions.  (The variable
-@code{leaf_function} is defined only if @code{LEAF_REGISTERS} is
-defined.)
+treat leaf functions specially.  They can test the C variable
+@code{current_function_is_leaf} which is nonzero for leaf functions.
+@code{current_function_is_leaf} is set prior to local register allocation
+and is valid for the remaining compiler passes.  They can also test the C
+variable @code{current_function_uses_only_leaf_regs} which is nonzero for
+leaf functions which only use leaf registers.
+@code{current_function_uses_only_leaf_regs} is valid after reload and is
+only useful if @code{LEAF_REGISTERS} is defined.
 @c changed this to fix overfull.  ALSO:  why the "it" at the beginning
 @c of the next paragraph?!  --mew 2feb93
 
@@ -3296,7 +3301,7 @@ argument lists of the function.  @xref{Stack Arguments}.
 
 Normally, it is necessary for the macros @code{FUNCTION_PROLOGUE} and
 @code{FUNCTION_EPILOGUE} to treat leaf functions specially.  The C
-variable @code{leaf_function} is nonzero for such a function.
+variable @code{current_function_is_leaf} is nonzero for such a function.
 
 @findex EXIT_IGNORE_STACK
 @item EXIT_IGNORE_STACK
@@ -3346,8 +3351,8 @@ is wanted, the macro can refer to the variable
 a function that needs a frame pointer.
 
 Normally, @code{FUNCTION_PROLOGUE} and @code{FUNCTION_EPILOGUE} must
-treat leaf functions specially.  The C variable @code{leaf_function} is
-nonzero for such a function.  @xref{Leaf Functions}.
+treat leaf functions specially.  The C variable @code{current_function_is_leaf}
+is nonzero for such a function.  @xref{Leaf Functions}.
 
 On some machines, some functions pop their arguments on exit while
 others leave that for the caller to do.  For example, the 68020 when
