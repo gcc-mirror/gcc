@@ -2411,7 +2411,8 @@ subst_constants (loc, insn, map)
 	    && GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) <= UNITS_PER_WORD
 	    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest)))
 		      <= GET_MODE_SIZE (GET_MODE (dest)))
-	    && (tem = gen_lowpart_if_possible (GET_MODE (dest), src)))
+	    && (tem = gen_lowpart_if_possible (GET_MODE (SUBREG_REG (dest)),
+					       src)))
 	  src = tem, dest = SUBREG_REG (dest);
 
 	/* If storing a recognizable value save it for later recording.  */
@@ -2537,11 +2538,29 @@ mark_stores (dest, x)
      rtx dest;
      rtx x;
 {
-  if (GET_CODE (dest) == SUBREG)
-    dest = SUBREG_REG (dest);
+  int regno = -1;
+  enum machine_mode mode;
+
+  /* DEST is always the innermost thing set, except in the case of
+     SUBREGs of hard registers.  */
 
   if (GET_CODE (dest) == REG)
-    global_const_equiv_map[REGNO (dest)] = 0;
+    regno = REGNO (dest), mode = GET_MODE (dest);
+  else if (GET_CODE (dest) == SUBREG && GET_CODE (SUBREG_REG (dest)) == REG)
+    {
+      regno = REGNO (SUBREG_REG (dest)) + SUBREG_WORD (dest);
+      mode = GET_MODE (SUBREG_REG (dest));
+    }
+
+  if (regno >= 0)
+    {
+      int last_reg = (regno >= FIRST_PSEUDO_REGISTER ? regno
+		      : regno + HARD_REGNO_NREGS (regno, mode) - 1);
+      int i;
+
+      for (i = regno; i <= last_reg; i++)
+	global_const_equiv_map[i] = 0;
+    }
 }
 
 /* If any CONST expressions with RTX_INTEGRATED_P are present in the rtx
