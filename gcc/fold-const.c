@@ -2424,7 +2424,7 @@ operand_equal_p (tree arg0, tree arg1, unsigned int flags)
   if (flags & OEP_ONLY_CONST)
     return 0;
 
-/* Define macros to test an operan from arg0 and arg1 for equality and a
+/* Define macros to test an operand from arg0 and arg1 for equality and a
    variant that allows null and views null as being different from any
    non-null value.  In the latter case, if either is null, the both
    must be; otherwise, do the normal comparison.  */
