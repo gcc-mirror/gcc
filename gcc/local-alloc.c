@@ -257,8 +257,6 @@ static int qty_compare    	PROTO((int, int));
 static int qty_compare_1	PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static int combine_regs		PROTO((rtx, rtx, int, int, rtx, int));
 static int reg_meets_class_p	PROTO((int, enum reg_class));
-static int reg_classes_overlap_p PROTO((enum reg_class, enum reg_class,
-					int));
 static void update_qty_class	PROTO((int, int));
 static void reg_is_set		PROTO((rtx, rtx));
 static void reg_is_born		PROTO((rtx, int));
@@ -1745,29 +1743,6 @@ reg_meets_class_p (reg, class)
   register enum reg_class rclass = reg_preferred_class (reg);
   return (reg_class_subset_p (rclass, class)
 	  || reg_class_subset_p (class, rclass));
-}
-
-/* Return 1 if the two specified classes have registers in common.
-   If CALL_SAVED, then consider only call-saved registers.  */
-
-static int
-reg_classes_overlap_p (c1, c2, call_saved)
-     register enum reg_class c1;
-     register enum reg_class c2;
-     int call_saved;
-{
-  HARD_REG_SET c;
-  int i;
-
-  COPY_HARD_REG_SET (c, reg_class_contents[(int) c1]);
-  AND_HARD_REG_SET (c, reg_class_contents[(int) c2]);
-
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (TEST_HARD_REG_BIT (c, i)
-	&& (! call_saved || ! call_used_regs[i]))
-      return 1;
-
-  return 0;
 }
 
 /* Update the class of QTY assuming that REG is being tied to it.  */
