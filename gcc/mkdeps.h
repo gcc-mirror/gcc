@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
@@ -26,16 +26,7 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 /* This is the data structure used by all the functions in mkdeps.c.
    It's quite straightforward, but should be treated as opaque.  */
 
-struct deps
-{
-  const char **targetv;
-  unsigned int ntargets;	/* number of slots actually occupied */
-  unsigned int targets_size;	/* amt of allocated space - in words */
-
-  const char **depv;
-  unsigned int ndeps;
-  unsigned int deps_size;
-};
+struct deps;
 
 /* Create a deps buffer.  */
 extern struct deps *deps_init	PARAMS ((void));
@@ -46,11 +37,9 @@ extern void deps_free		PARAMS ((struct deps *));
 /* Add a target (appears on left side of the colon) to the deps list. */
 extern void deps_add_target	PARAMS ((struct deps *, const char *));
 
-/* Given the name of the primary source file, calculate and add the
-   name of the target.  This is done by locating and stripping the
-   file extension (if any) and adding .o (OBJECT_SUFFIX).  In addition,
-   any directory components of the path are discarded.  */
-extern void deps_calc_target	PARAMS ((struct deps *, const char *));
+/* Sets the default target if none has been given already.  An empty
+   string as the default target in interpreted as stdin.  */
+extern void deps_add_default_target PARAMS ((struct deps *, const char *));
 
 /* Add a dependency (appears on the right side of the colon) to the
    deps list.  Dependencies will be printed in the order that they

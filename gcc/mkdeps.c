@@ -1,5 +1,5 @@
 /* Dependency generator for Makefile fragments.
-   Copyright (C) 2000 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
    Contributed by Zack Weinberg, Mar 2000
 
 This program is free software; you can redistribute it and/or modify it
@@ -24,12 +24,21 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "system.h"
 #include "mkdeps.h"
 
+/* Keep this structure local to this file, so clients don't find it
+   easy to start making assumptions.  */
+struct deps
+{
+  const char **targetv;
+  unsigned int ntargets;	/* number of slots actually occupied */
+  unsigned int targets_size;	/* amt of allocated space - in words */
+
+  const char **depv;
+  unsigned int ndeps;
+  unsigned int deps_size;
+};
+
 static const char *munge	PARAMS ((const char *));
 static const char *base_name	PARAMS ((const char *));
-
-#ifndef OBJECT_SUFFIX
-# define OBJECT_SUFFIX ".o"
-#endif
 
 /* Given a filename, quote characters in that filename which are
    significant to Make.  Note that it's not possible to quote all such
@@ -180,24 +189,39 @@ deps_add_target (d, t)
   d->targetv[d->ntargets++] = t;
 }
 
+/* Sets the default target if none has been given already.  An empty
+   string as the default target in interpreted as stdin.  */
 void
-deps_calc_target (d, t)
+deps_add_default_target (d, tgt)
      struct deps *d;
-     const char *t;
+     const char *tgt;
 {
   char *o, *suffix;
 
-  t = base_name (t);
-  o = (char *) alloca (strlen (t) + 8);
+  /* Only if we have no targets.  */
+  if (d->ntargets)
+    return;
 
-  strcpy (o, t);
-  suffix = strrchr (o, '.');
-  if (suffix)
-    strcpy (suffix, OBJECT_SUFFIX);
+  if (tgt[0] == '\0')
+    deps_add_target (d, "-");
   else
-    strcat (o, OBJECT_SUFFIX);
+    {
+      tgt = base_name (tgt);
+      o = (char *) alloca (strlen (tgt) + 8);
 
-  deps_add_target (d, o);
+      strcpy (o, tgt);
+      suffix = strrchr (o, '.');
+
+#ifndef OBJECT_SUFFIX
+# define OBJECT_SUFFIX ".o"
+#endif
+
+      if (suffix)
+	strcpy (suffix, OBJECT_SUFFIX);
+      else
+	strcat (o, OBJECT_SUFFIX);
+      deps_add_target (d, o);
+    }
 }
 
 void
