@@ -801,7 +801,8 @@ construct_virtual_bases (type, this_ref, this_ptr, init_list, flag)
       exp = build (PLUS_EXPR,
 		   TREE_TYPE (this_ptr),
 		   this_ptr,
-		   fold (build1 (NOP_EXPR, this_ptr, BINFO_OFFSET (vbases))));
+		   fold (build1 (NOP_EXPR, TREE_TYPE (this_ptr),
+				 BINFO_OFFSET (vbases))));
       exp = build1 (NOP_EXPR, 
 		    build_pointer_type (BINFO_TYPE (vbases)), 
 		    exp);
