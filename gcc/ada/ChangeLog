@@ -1,3 +1,8 @@
+2004-03-19  Laurent GUERBY <laurent@guerby.net>
+
+	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of 
+	aggregate, allows bootstrap from 3.3 on powerpc-darwin.
+	
 2004-03-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* ada-tree.h (TYPE_LEFT_JUSTIFIED_MODULAR_P): Add checking.
