@@ -1,3 +1,12 @@
+2001-01-23  Chris Demetriou  <cgd@broadcom.com>
+
+	* exception.cc (__terminate_func): Remove declaration.
+	(__terminate_func_ptr): New typedef.
+	(__terminate, __terminate_set_func): New extern function
+	prototypes.
+	(std::terminate): Use __terminate function.
+	(std::set_terminate): Use __terminate_set_func function.
+
 2000-11-24  Magnus Fromreide <magfr@lysator.liu.se>
 
 	* sstream: Backport libstdc++-V3 sstream to V2.

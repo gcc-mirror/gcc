@@ -38,13 +38,17 @@
 /* Define terminate, unexpected, set_terminate, set_unexpected as
    well as the default terminate func and default unexpected func.  */
 
-extern std::terminate_handler __terminate_func __attribute__((__noreturn__));
+/* __terminate and __terminate_set_func, defined in libgcc2. */
+typedef void (*__terminate_func_ptr)(void) __attribute__ ((__noreturn__));
+extern "C" void __terminate (void) __attribute__ ((__noreturn__));
+extern "C" __terminate_func_ptr __terminate_set_func (__terminate_func_ptr);
+
 using std::terminate;
 
 void
 std::terminate ()
 {
-  __terminate_func ();
+  __terminate ();
 }
 
 void
@@ -59,10 +63,7 @@ static std::unexpected_handler __unexpected_func __attribute__((__noreturn__))
 std::terminate_handler
 std::set_terminate (std::terminate_handler func)
 {
-  std::terminate_handler old = __terminate_func;
-
-  __terminate_func = func;
-  return old;
+  return __terminate_set_func (func);
 }
 
 std::unexpected_handler
