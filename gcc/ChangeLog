@@ -1,3 +1,14 @@
+Sat Oct 30 14:31:48 1999  Richard Henderson  <rth@cygnus.com>
+
+	* ggc-common.c: Update pre-function commentary.
+	* ggc-page.c: Likewise.
+	(poison): Remove.
+	(poison_pages): Use memset directly.
+	(ggc_alloc_obj): Likewise.  Use a different pattern than poison_pages.
+	(ggc_collect): Poison before sweeping.
+	* ggc-simple.c: Update pre-function commentary.
+	(ggc_alloc_obj): Poison non-zeroed memory.
+
 Sat Oct 30 14:28:52 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* ggc-common.c (ggc_print_statistics): Make arguments to fprintf
