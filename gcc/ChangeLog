@@ -1,3 +1,10 @@
+2001-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (constant_call_address_operand): Accept
+	(const (plus (symbol_ref) (const_int))).
+	* config/i386/i386.h (PREDICATE_CODES): Add CONST for
+	constant_call_address_operand.
+
 2001-01-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* libgcc2.h (W_TYPE_SIZE): Fix case where MIN_UNITS_PER_WORD == 1
