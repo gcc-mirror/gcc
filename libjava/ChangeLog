@@ -1,3 +1,9 @@
+2004-01-14  Michael Koch  <konqueror@gmx.de>
+
+	* java/text/MessageFormat.java:
+	Added descriptions to exceptions.
+	This fixes PR libgcj/2429.
+
 2004-01-13  Fernando Nasser  <fnasser@redhat.com>
 
 	* java/awt/EventQueue.java (isDispatchThread): Do check on top of stack.
