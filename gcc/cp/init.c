@@ -1899,9 +1899,9 @@ resolve_offset_ref (exp)
 	/* Pointer to data members are offset by one, so that a null
 	   pointer with a real value of 0 is distinguishable from an
 	   offset of the first member of a structure.  */
-	member = build_binary_op (MINUS_EXPR, member,
-				  cp_convert (ptrdiff_type_node, 
-					      integer_one_node));
+	member = cp_build_binary_op (MINUS_EXPR, member,
+				     cp_convert (ptrdiff_type_node, 
+						 integer_one_node));
 
       return build1 (INDIRECT_REF, type,
 		     build (PLUS_EXPR, build_pointer_type (type),
@@ -2047,7 +2047,7 @@ build_new (placement, decl, init, use_global_new)
 		      nelts = integer_zero_node;
 		    }
 		  else
-		    nelts = build_binary_op (MULT_EXPR, nelts, this_nelts);
+		    nelts = cp_build_binary_op (MULT_EXPR, nelts, this_nelts);
 		}
 	    }
 	  else
@@ -2258,7 +2258,7 @@ build_new_1 (exp)
   while (TREE_CODE (true_type) == ARRAY_TYPE)
     {
       tree this_nelts = array_type_nelts_top (true_type);
-      nelts = build_binary_op (MULT_EXPR, nelts, this_nelts);
+      nelts = cp_build_binary_op (MULT_EXPR, nelts, this_nelts);
       true_type = TREE_TYPE (true_type);
     }
 
@@ -2266,8 +2266,8 @@ build_new_1 (exp)
     return error_mark_node;
 
   if (has_array)
-    size = fold (build_binary_op (MULT_EXPR, size_in_bytes (true_type),
-				  nelts));
+    size = fold (cp_build_binary_op (MULT_EXPR, size_in_bytes (true_type),
+				     nelts));
   else
     size = size_in_bytes (type);
 
@@ -2393,7 +2393,7 @@ build_new_1 (exp)
     {
       tree cookie, exp1;
       rval = convert (string_type_node, rval); /* for ptr arithmetic */
-      rval = save_expr (build_binary_op (PLUS_EXPR, rval, cookie_size));
+      rval = save_expr (cp_build_binary_op (PLUS_EXPR, rval, cookie_size));
       /* Store the number of bytes allocated so that we can know how
 	 many elements to destroy later.  */
       if (flag_new_abi)
@@ -2507,7 +2507,7 @@ build_new_1 (exp)
 	rval = (build_vec_init
 		(NULL_TREE, 
 		 save_expr (rval),
-		 build_binary_op (MINUS_EXPR, nelts, integer_one_node),
+		 cp_build_binary_op (MINUS_EXPR, nelts, integer_one_node),
 		 init,
 		 /*from_array=*/0));
 
@@ -2581,8 +2581,8 @@ build_new_1 (exp)
   if (check_new && alloc_expr)
     {
       /* Did we modify the storage?  */
-      tree ifexp = build_binary_op (NE_EXPR, alloc_node,
-				    integer_zero_node);
+      tree ifexp = cp_build_binary_op (NE_EXPR, alloc_node,
+				       integer_zero_node);
       rval = build_conditional_expr (ifexp, rval, alloc_node);
     }
 
@@ -2690,9 +2690,10 @@ build_vec_delete_1 (base, maxindex, type, auto_delete_vec, use_global_delete)
 	  cookie_size = get_cookie_size (type);
 	  base_tbd 
 	    = cp_convert (ptype,
-			  build_binary_op (MINUS_EXPR,
-					   cp_convert (string_type_node, base),
-					   cookie_size));
+			  cp_build_binary_op (MINUS_EXPR,
+					      cp_convert (string_type_node, 
+							  base),
+					      cookie_size));
 	  /* True size with header.  */
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, cookie_size);
 	}
@@ -3052,8 +3053,8 @@ build_vec_init (decl, base, maxindex, init, from_array)
       finish_compound_stmt (/*has_no_scope=*/1, try_body);
       finish_cleanup_try_block (try_block);
       e = build_vec_delete_1 (rval,
-			      build_binary_op (MINUS_EXPR, maxindex, 
-					       iterator),
+			      cp_build_binary_op (MINUS_EXPR, maxindex, 
+						  iterator),
 			      type,
 			      sfk_base_destructor,
 			      /*use_global_delete=*/0);
@@ -3248,7 +3249,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
 	ifexp = integer_one_node;
       else
 	/* Handle deleting a null pointer.  */
-	ifexp = fold (build_binary_op (NE_EXPR, addr, integer_zero_node));
+	ifexp = fold (cp_build_binary_op (NE_EXPR, addr, integer_zero_node));
 
       if (ifexp != integer_one_node)
 	expr = build (COND_EXPR, void_type_node,

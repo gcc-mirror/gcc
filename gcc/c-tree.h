@@ -83,22 +83,6 @@ extern int pedantic;
    nonzero if the definition of the type has already started.  */
 #define C_TYPE_BEING_DEFINED(type) TYPE_LANG_FLAG_0 (type)
 
-/* C types are partitioned into three subsets: object, function, and
-   incomplete types.  */
-#define C_TYPE_OBJECT_P(type) \
-  (TREE_CODE (type) != FUNCTION_TYPE && TYPE_SIZE (type))
-
-#define C_TYPE_FUNCTION_P(type) \
-  (TREE_CODE (type) == FUNCTION_TYPE)
-
-#define C_TYPE_INCOMPLETE_P(type) \
-  (TREE_CODE (type) != FUNCTION_TYPE && TYPE_SIZE (type) == 0)
-
-/* For convenience we define a single macro to identify the class of
-   object or incomplete types.  */
-#define C_TYPE_OBJECT_OR_INCOMPLETE_P(type) \
-  (!C_TYPE_FUNCTION_P (type))
-
 /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
 struct lang_type
 {
@@ -114,10 +98,6 @@ struct lang_type
    Note that TYPE_SIZE may have simplified to a constant.  */
 #define C_TYPE_VARIABLE_SIZE(type) TYPE_LANG_FLAG_1 (type)
 #define C_DECL_VARIABLE_SIZE(type) DECL_LANG_FLAG_0 (type)
-
-/* Record in each node resulting from a binary operator
-   what operator was specified for it.  */
-#define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
 
 #if 0 /* Not used.  */
 /* Record whether a decl for a function or function pointer has
@@ -251,16 +231,12 @@ extern tree xref_tag                            PARAMS ((enum tree_code, tree));
 /* in c-typeck.c */
 extern tree require_complete_type		PARAMS ((tree));
 extern void incomplete_type_error		PARAMS ((tree, tree));
-/* Given two integer or real types, return the type for their sum.
-   Given two compatible ANSI C types, returns the merged type.  */
-extern tree common_type                         PARAMS ((tree, tree));
 extern int comptypes				PARAMS ((tree, tree));
 extern tree c_sizeof                            PARAMS ((tree));
 extern tree c_sizeof_nowarn                     PARAMS ((tree));
 extern tree c_size_in_bytes                     PARAMS ((tree));
 extern tree c_alignof				PARAMS ((tree));
 extern tree c_alignof_expr			PARAMS ((tree));
-extern tree default_conversion                  PARAMS ((tree));
 extern tree build_component_ref                 PARAMS ((tree, tree));
 extern tree build_indirect_ref                  PARAMS ((tree, const char *));
 extern tree build_array_ref                     PARAMS ((tree, tree));
@@ -268,11 +244,6 @@ extern tree build_external_ref			PARAMS ((tree, int));
 extern tree build_function_call                 PARAMS ((tree, tree));
 extern tree parser_build_binary_op              PARAMS ((enum tree_code,
 							 tree, tree));
-extern tree build_binary_op                     PARAMS ((enum tree_code,
-							 tree, tree, int));
-extern tree build_unary_op                      PARAMS ((enum tree_code,
-							 tree, int));
-extern int lvalue_p				PARAMS ((tree));
 extern int lvalue_or_else			PARAMS ((tree, const char *));
 extern void readonly_warning			PARAMS ((tree, const char *));
 extern int mark_addressable			PARAMS ((tree));
@@ -345,12 +316,6 @@ extern int flag_hosted;
 
 extern int warn_implicit;
 
-/* Nonzero means give string constants the type `const char *'
-   to get extra warnings from them.  These warnings will be too numerous
-   to be useful, except in thoroughly ANSIfied programs.  */
-
-extern int flag_const_strings;
-
 /* Nonzero means warn about sizeof (function) or addition/subtraction
    of function pointers.  */
 
@@ -392,37 +357,17 @@ extern int warn_missing_noreturn;
 
 extern int warn_traditional;
 
-/* Warn about *printf or *scanf format/argument anomalies. */
-
-extern int warn_format;
-
 /* Warn about a subscript that has type char.  */
 
 extern int warn_char_subscripts;
-
-/* Warn if a type conversion is done that might have confusing results.  */
-
-extern int warn_conversion;
 
 /* Warn if main is suspicious. */
 
 extern int warn_main;
 
-/* Nonzero means do some things the same way PCC does.  */
-
-extern int flag_traditional;
-
-/* Nonzero means use the ISO C99 dialect of C.  */
-
-extern int flag_isoc99;
-
 /* Nonzero means to allow single precision math even if we're generally
    being traditional. */
 extern int flag_allow_single_precision;
-
-/* Nonzero means warn about suggesting putting in ()'s.  */
-
-extern int warn_parentheses;
 
 /* Warn if initializer is not completely bracketed.  */
 

@@ -1,3 +1,40 @@
+2000-06-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (flag_const_strings): Remove.
+	(warn_parentheses): Likewise.
+	(warn_format): Likewise.
+	(common_type): Likewise.
+	(default_conversion): Likewise.
+	(build_binary_op): Likewise.
+	(cp_build_binary_op): New macro.
+	* call.c (build_new_op): Use cp_build_binary_op instead of
+	build_binary_op.
+	* class.c (build_vtable_entry_ref): Likewise.
+	* decl.c (expand_static_init): Likewise.
+	(compute_array_index_type): Likewise.
+	(build_enumerator): Likewise.
+	* decl2.c (delete_sanity): Likewise.
+	(start_static_initialization_or_destruction): Likewise.
+	* error.c (dump_type_suffix): Likewise.
+	* init.c (resolve_offset_ref): Likewise.
+	(build_new): Likewise.
+	(build_new_1): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_vec_init): Likewise.
+	(build_delete): Likewise.
+	* rtti.c (synthesize_tinfo_fn): Likewise.
+	(synthesize_tinfo_var): Likewise.
+	* search.c (expand_upcast_fixups): Likewise.
+	(fixup_all_virtual_upcast_offsets): Likewise.
+	* typeck.c (build_array_ref): Likewise.
+	(get_member_function_from_ptrfunc): Likewise.
+	(build_binary_op): Add parameter.
+	(pointer_int_sum): Use cp_build_binary_op.
+	(pointer_diff): Likewise.
+	(build_modify_expr): Likewise.
+	(get_delta_difference): Likewise.
+	(build_ptrmemfunc): Likewise.
+	
 2000-06-29  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cp-tree.h (SET_DECL_ARTIFICIAL): Remove.

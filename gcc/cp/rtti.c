@@ -1217,7 +1217,7 @@ synthesize_tinfo_fn (fndecl)
   if_stmt = begin_if_stmt ();
   tmp = cp_convert (build_pointer_type (ptr_type_node), addr);
   tmp = build_indirect_ref (tmp, 0);
-  tmp = build_binary_op (EQ_EXPR, tmp, integer_zero_node);
+  tmp = cp_build_binary_op (EQ_EXPR, tmp, integer_zero_node);
   finish_if_stmt_cond (tmp, if_stmt);
   then_clause = begin_compound_stmt (/*has_no_scope=*/0);
 
@@ -1651,10 +1651,10 @@ synthesize_tinfo_var (target_type, real_name)
               is_simple = 0;
               
               /* combine offset and flags into one field */
-              offset = build_binary_op (LSHIFT_EXPR, offset,
-                                        build_int_2 (8, 0));
-              offset = build_binary_op (BIT_IOR_EXPR, offset,
-                                        build_int_2 (flags, 0));
+              offset = cp_build_binary_op (LSHIFT_EXPR, offset,
+					   build_int_2 (8, 0));
+              offset = cp_build_binary_op (BIT_IOR_EXPR, offset,
+					   build_int_2 (flags, 0));
               base_init = tree_cons (NULL_TREE, offset, base_init);
               base_init = tree_cons (NULL_TREE, tinfo, base_init);
               base_init = build (CONSTRUCTOR, NULL_TREE, NULL_TREE, base_init);

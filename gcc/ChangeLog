@@ -1,3 +1,39 @@
+2000-06-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c: Include c-common.h, not c-lex.h or c-tree.h.
+	* c-common.h (flag_const_strings): Declare.
+	(warn_format): Likewise.
+	(flag_traditional): Likewise.
+	(flag_isoc99): Likewise.
+	(warn_parentheses): Likewise.
+	(warn_conversion): Likewise.
+	(C_TYPE_OBJECT_P): Likewise.
+	(C_TYPE_INCOMPLETE_P): Likewise.
+	(C_TYPE_FUNCTION_P): Likewise.
+	(C_TYPE_OBJECT_OR_INCOMPLETE_P): Likewise.
+	(C_EXP_ORIGINAL_CODE): Likewise.
+	(build_unary_op): Likewise.
+	(build_binary_op): Likewise.
+	(lvalue_p): Likewise.
+	(default_conversion): Likewise.
+	(common_type): Likewise.
+	* c-tree.h (C_TYPE_OBJECT_P): Remove.
+	(C_TYPE_INCOMPLETE_P): Likewise.
+	(C_TYPE_FUNCTION_P): Likewise.
+	(C_TYPE_OBJECT_OR_INCOMPLETE_P): Likewise.
+	(C_EXP_ORIGINAL_CODE): Likewise.
+	(common_type): Likewise.
+	(default_conversion): Likewise.
+	(build_binary_op): Likewise.
+	(build_unary_op): Likewise.
+	(lvalue_p): Likewise.
+	(flag_const_strings): Likewise.
+	(warn_format): Likewise.
+	(warn_conversion): Likewise.
+	(flag_traditional): Likewise.
+	(flag_isoc99): Likewise.
+	(warn_parentheses): Likewise.
+	
 2000-06-29  James E. Wilson  <wilson@cygnus.com>
 
 	* config/ia64/linux.h (LINK_SPEC): Change so.1 to so.2.

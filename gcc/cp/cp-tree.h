@@ -1086,11 +1086,6 @@ extern int warn_ctor_dtor_privacy;
 
 extern int warn_return_type;
 
-/* Nonzero means give string constants the type `const char *', as mandated
-   by the standard.  */
-
-extern int flag_const_strings;
-
 /* If non-NULL, dump the tree structure for the entire translation
    unit to this file.  */
 
@@ -1105,10 +1100,6 @@ extern int warn_write_strings;
    of function pointers.  */
 
 extern int warn_pointer_arith;
-
-/* Nonzero means warn about suggesting putting in ()'s.  */
-
-extern int warn_parentheses;
 
 /* Nonzero means warn about multiple (redundant) decls for the same single
    variable or function.  */
@@ -1135,10 +1126,6 @@ extern int warn_char_subscripts;
    from the pointer target type.  */
 
 extern int warn_cast_qual;
-
-/* Warn about *printf or *scanf format/argument anomalies.  */
-
-extern int warn_format;
 
 /* Nonzero means warn about non virtual destructors in classes that have
    virtual functions.  */
@@ -4622,7 +4609,6 @@ extern tree complete_type_or_else               PARAMS ((tree, tree));
 extern int type_unknown_p			PARAMS ((tree));
 extern tree commonparms				PARAMS ((tree, tree));
 extern tree original_type			PARAMS ((tree));
-extern tree common_type				PARAMS ((tree, tree));
 extern int comp_except_specs			PARAMS ((tree, tree, int));
 extern int comptypes				PARAMS ((tree, tree, int));
 extern int comp_target_types			PARAMS ((tree, tree, int));
@@ -4639,7 +4625,6 @@ extern tree c_sizeof_nowarn			PARAMS ((tree));
 extern tree c_alignof				PARAMS ((tree));
 extern tree inline_conversion			PARAMS ((tree));
 extern tree decay_conversion			PARAMS ((tree));
-extern tree default_conversion			PARAMS ((tree));
 extern tree build_object_ref			PARAMS ((tree, tree, tree));
 extern tree build_component_ref_1		PARAMS ((tree, tree, int));
 extern tree build_component_ref			PARAMS ((tree, tree, tree, int));
@@ -4654,9 +4639,7 @@ extern tree build_function_call			PARAMS ((tree, tree));
 extern tree build_function_call_maybe		PARAMS ((tree, tree));
 extern tree convert_arguments			PARAMS ((tree, tree, tree, int));
 extern tree build_x_binary_op			PARAMS ((enum tree_code, tree, tree));
-extern tree build_binary_op			PARAMS ((enum tree_code, tree, tree));
 extern tree build_x_unary_op			PARAMS ((enum tree_code, tree));
-extern tree build_unary_op			PARAMS ((enum tree_code, tree, int));
 extern tree unary_complex_lvalue		PARAMS ((enum tree_code, tree));
 extern int mark_addressable			PARAMS ((tree));
 extern tree build_x_conditional_expr		PARAMS ((tree, tree, tree));
@@ -4690,6 +4673,8 @@ extern tree type_after_usual_arithmetic_conversions PARAMS ((tree, tree));
 extern tree composite_pointer_type              PARAMS ((tree, tree, tree, tree,
 						       const char*));
 extern tree check_return_expr                   PARAMS ((tree));
+#define cp_build_binary_op(code, arg1, arg2) \
+  build_binary_op(code, arg1, arg2, 1)
 
 /* in typeck2.c */
 extern tree error_not_base_type			PARAMS ((tree, tree));

@@ -3444,7 +3444,7 @@ builtin:
     case BIT_XOR_EXPR:
     case TRUTH_ANDIF_EXPR:
     case TRUTH_ORIF_EXPR:
-      return build_binary_op (code, arg1, arg2);
+      return cp_build_binary_op (code, arg1, arg2);
 
     case CONVERT_EXPR:
     case NEGATE_EXPR:
