@@ -69,6 +69,9 @@ public class InetSocketAddress extends SocketAddress
   {
     if (port < 0 || port > 65535)
       throw new IllegalArgumentException();
+
+    if (addr == null)
+      addr = InetAddress.ANY_IF;
   
     this.addr = addr;
     this.port = port;
@@ -85,24 +88,8 @@ public class InetSocketAddress extends SocketAddress
   public InetSocketAddress(int port)
     throws IllegalArgumentException
   {
-    if (port < 0 || port > 65535)
-      throw new IllegalArgumentException();
-
-    this.port = port;
-    
-    try
-      {
-	byte[] any = { 0, 0, 0, 0 };
-	this.addr = InetAddress.getByAddress (any);
-	this.hostname = "0.0.0.0";
-      }
-    catch (UnknownHostException e)
-      {
-        this.addr = null;
-	this.hostname = "";
-      }
+    this ((InetAddress) null, port);
   }
-
 
   /**
    * Constructs an InetSocketAddress instance.
@@ -115,7 +102,8 @@ public class InetSocketAddress extends SocketAddress
   public InetSocketAddress(String hostname, int port)
     throws IllegalArgumentException
   {
-    if (port < 0 || port > 65535)
+    if (port < 0 || port > 65535
+	|| hostname == null)
       throw new IllegalArgumentException();
 
     this.port = port;

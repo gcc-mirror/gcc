@@ -37,7 +37,9 @@ exception statement from your version. */
 
 package java.net;
 
-import java.io.*;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.IllegalBlockingModeException;
 
@@ -86,8 +88,6 @@ public class Socket
   SocketChannel ch; // this field must have been set if created by SocketChannel
 
   private boolean closed = false;
-
-  // Constructors
 
   /**
    * Initializes a new instance of <code>Socket</code> object without 
@@ -282,6 +282,9 @@ public class Socket
   {
     this();
 
+    if (raddr == null)
+      throw new NullPointerException ();
+    
     if (impl == null)
       throw new IOException("Cannot initialize Socket implementation");
 
@@ -289,8 +292,12 @@ public class Socket
     if (sm != null)
       sm.checkConnect(raddr.getHostName(), rport);
 
-    // bind/connect socket
-    bind (new InetSocketAddress (laddr, lport));
+    // bind socket
+    SocketAddress bindaddr =
+      laddr == null ? null : new InetSocketAddress (laddr, lport);
+    bind (bindaddr);
+    
+    // connect socket
     connect (new InetSocketAddress (raddr, rport));
 
     // FIXME: JCL p. 1586 says if localPort is unspecified, bind to any port,
