@@ -1,3 +1,7 @@
+2001-02-12  Mark Mitchell  <mark@codesourcery.com>
+
+	Remove old ABI support.
+
 2001-02-11  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl2.c (flag_vtable_thunks): Always set it to 1.

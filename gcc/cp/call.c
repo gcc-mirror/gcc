@@ -2355,9 +2355,7 @@ build_user_type_conversion_1 (totype, expr, flags)
 
   if (IS_AGGR_TYPE (totype))
     ctors = lookup_fnfields (TYPE_BINFO (totype),
-			     (flag_new_abi 
-			      ? complete_ctor_identifier
-			      : ctor_identifier),
+			     complete_ctor_identifier,
 			     0);
 
   if (IS_AGGR_TYPE (fromtype))
@@ -4415,25 +4413,12 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       pretty_name = (constructor_p 
 		     ? constructor_name (basetype) : dtor_identifier);
 
-      if (!flag_new_abi)
-	{
-	  /* Add the in-charge parameter as an implicit first argument.  */
-	  if (!constructor_p
-	      || TYPE_USES_VIRTUAL_BASECLASSES (basetype))
-	    args = tree_cons (NULL_TREE,
-			      in_charge_arg_for_name (name),
-			      args);
-
-	  /* We want to call the normal constructor function under the
-	     old ABI.  */
-	  name = constructor_p ? ctor_identifier : dtor_identifier;
-	}
       /* If we're a call to a constructor or destructor for a
 	 subobject that uses virtual base classes, then we need to
 	 pass down a pointer to a VTT for the subobject.  */
-      else if ((name == base_ctor_identifier
-		|| name == base_dtor_identifier)
-	       && TYPE_USES_VIRTUAL_BASECLASSES (basetype))
+      if ((name == base_ctor_identifier
+	   || name == base_dtor_identifier)
+	  && TYPE_USES_VIRTUAL_BASECLASSES (basetype))
 	{
 	  tree vtt;
 	  tree sub_vtt;

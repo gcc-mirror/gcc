@@ -415,10 +415,6 @@ int flag_new_for_scope = 1;
 
 int flag_weak = 1;
 
-/* Nonzero to enable experimental ABI changes.  */
-
-int flag_new_abi = 1;
-
 /* Nonzero to use __cxa_atexit, rather than atexit, to register
    destructors for local statics and global objects.  */
 
@@ -620,17 +616,6 @@ cxx_decode_option (argc, argv)
           flag_external_templates = 1;
           cp_deprecated ("-fexternal-templates");
         }
-      else if (!strcmp (p, "new-abi"))
-	{
-	  flag_new_abi = 1;
-	  flag_do_squangling = 1;
-	  flag_vtable_thunks = 1;
-	}
-      else if (!strcmp (p, "no-new-abi"))
-	{
-	  flag_new_abi = 0;
-	  flag_do_squangling = 0;
-	}
       else if ((option_value
                 = skip_leading_substring (p, "template-depth-")))
 	max_tinst_depth
@@ -995,7 +980,7 @@ maybe_retrofit_in_chrg (fn)
 
   /* If this is a subobject constructor or destructor, our caller will
      pass us a pointer to our VTT.  */
-  if (flag_new_abi && TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
+  if (TYPE_USES_VIRTUAL_BASECLASSES (DECL_CONTEXT (fn)))
     {
       DECL_VTT_PARM (fn) = build_artificial_parm (vtt_parm_identifier, 
 						  vtt_parm_type);
@@ -1081,12 +1066,7 @@ grokclassfn (ctype, function, flags, quals)
   if (flags == DTOR_FLAG)
     {
       DECL_DESTRUCTOR_P (function) = 1;
-
-      if (flag_new_abi) 
-	set_mangled_name_for_decl (function);
-      else
-	DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
-
+      set_mangled_name_for_decl (function);
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
   else
@@ -1560,11 +1540,7 @@ finish_static_data_member_decl (decl, init, asmspec_tree, flags)
   if (!asmspec && current_class_type)
     {
       DECL_INITIAL (decl) = error_mark_node;
-      if (flag_new_abi)
-	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
-      else
-	DECL_ASSEMBLER_NAME (decl) 
-	  = build_static_name (current_class_type, DECL_NAME (decl));
+      DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
     }
   if (! processing_template_decl)
     {
@@ -1699,13 +1675,7 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	 name for this TYPE_DECL.  */
       DECL_ASSEMBLER_NAME (value) = DECL_NAME (value);
       if (!uses_template_parms (value)) 
-	{
-	  if (flag_new_abi)
-	    DECL_ASSEMBLER_NAME (value) = mangle_type (TREE_TYPE (value));
-	  else
-	    DECL_ASSEMBLER_NAME (value) =
-	      get_identifier (build_overload_name (TREE_TYPE (value), 1, 1));
-	}
+	DECL_ASSEMBLER_NAME (value) = mangle_type (TREE_TYPE (value));
 
       if (processing_template_decl)
 	value = push_template_decl (value);
@@ -1886,10 +1856,7 @@ grokoptypename (declspecs, declarator)
      tree declspecs, declarator;
 {
   tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL_TREE);
-  if (flag_new_abi)
-    return mangle_conv_op_name_for_type (t);
-  else
-    return build_typename_overload (t);
+  return mangle_conv_op_name_for_type (t);
 }
 
 /* When a function is declared with an initializer,
@@ -2757,9 +2724,7 @@ import_export_decl (decl)
       tree ctype = DECL_CONTEXT (decl);
       import_export_class (ctype);
       if (CLASSTYPE_INTERFACE_KNOWN (ctype)
-	  && (flag_new_abi
-	      ? (! DECL_THIS_INLINE (decl))
-	      : (! DECL_ARTIFICIAL (decl) || DECL_VINDEX (decl))))
+	  && ! DECL_THIS_INLINE (decl))
 	{
 	  DECL_NOT_REALLY_EXTERN (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
@@ -2846,23 +2811,7 @@ get_guard (decl)
   tree sname;
   tree guard;
 
-  /* For a local variable, under the old ABI, we do not try to get a
-     unique mangled name for the DECL.  */
-  if (!flag_new_abi && DECL_FUNCTION_SCOPE_P (decl))
-    {
-      guard = get_temp_name (integer_type_node);
-      cp_finish_decl (guard, NULL_TREE, NULL_TREE, 0);
-      return guard;
-    }
-
-  if (!flag_new_abi)
-    /* For struct X foo __attribute__((weak)), there is a counter
-       __snfoo. Since base is already an assembler name, sname should
-       be globally unique */
-    sname = get_id_2 ("__sn", DECL_ASSEMBLER_NAME (decl));
-  else
-    sname = mangle_guard_variable (decl);
-
+  sname = mangle_guard_variable (decl);
   guard = IDENTIFIER_GLOBAL_VALUE (sname);
   if (! guard)
     {
@@ -2870,11 +2819,7 @@ get_guard (decl)
 
       /* Under the new ABI, we use a type that is big enough to
 	 contain a mutex as well as an integer counter.  */
-      if (flag_new_abi)
-	guard_type = long_long_integer_type_node;
-      else
-	guard_type = integer_type_node;
-
+      guard_type = long_long_integer_type_node;
       guard = build_decl (VAR_DECL, sname, guard_type);
       
       /* The guard should have the same linkage as what it guards. */
@@ -2900,9 +2845,6 @@ static tree
 get_guard_bits (guard)
      tree guard;
 {
-  if (!flag_new_abi)
-    return guard;
-
   /* Under the new ABI, we only set the first byte of the guard,
      in order to leave room for a mutex in the high-order bits.  */
   guard = build1 (ADDR_EXPR, 
@@ -3358,7 +3300,7 @@ start_static_initialization_or_destruction (decl, initp)
 
   /* Under the new ABI, we have not already set the GUARD, so we must
      do so now.  */
-  if (guard && initp && flag_new_abi)
+  if (guard && initp)
     finish_expr_stmt (set_guard (guard));
 
   return guard_if_stmt;
@@ -3724,10 +3666,7 @@ finish_file ()
 		 finish_function doesn't clean things up, and we end
 		 up with CURRENT_FUNCTION_DECL set.  */
 	      push_to_top_level ();
-	      if (DECL_TINFO_FN_P (decl))
-		synthesize_tinfo_fn (decl);
-	      else
-		synthesize_method (decl);
+	      synthesize_method (decl);
 	      pop_from_top_level ();
 	      reconsider = 1;
 	    }

@@ -2507,8 +2507,7 @@ expand_upcast_fixups (binfo, addr, orig_addr, vbase, vbase_addr, t,
       *vbase_offsets = delta;
     }
 
-  for (virtuals = BINFO_VIRTUALS (binfo), 
-	 n = first_vfun_index (BINFO_TYPE (binfo));
+  for (virtuals = BINFO_VIRTUALS (binfo), n = 0;
        virtuals;
        virtuals = TREE_CHAIN (virtuals), ++n)
     {

@@ -51,14 +51,9 @@ extern tree global_namespace;
 extern int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree));
 
 #ifndef BOOL_TYPE_SIZE
-#ifdef SLOW_BYTE_ACCESS
 /* In the new ABI, `bool' has size and alignment `1', on all
    platforms.  */
-#define BOOL_TYPE_SIZE \
-  ((SLOW_BYTE_ACCESS && !flag_new_abi) ? (POINTER_SIZE) : (CHAR_TYPE_SIZE))
-#else
 #define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
-#endif
 #endif
 
 static tree grokparms				PARAMS ((tree));
@@ -149,7 +144,7 @@ static void end_cleanup_fn PARAMS ((void));
 static tree cp_make_fname_decl PARAMS ((tree, const char *, int));
 static void initialize_predefined_identifiers PARAMS ((void));
 static tree check_special_function_return_type
-  PARAMS ((special_function_kind, tree, tree, tree));
+  PARAMS ((special_function_kind, tree, tree));
 static tree push_cp_library_fn PARAMS ((enum tree_code, tree));
 static tree build_cp_library_fn PARAMS ((tree, enum tree_code, tree));
 static void store_parm_decls PARAMS ((tree));
@@ -2844,13 +2839,7 @@ pushtag (name, type, globalize)
 	    VARRAY_PUSH_TREE (local_classes, type);
 
 	  if (!uses_template_parms (type))
-	    {
-	      if (flag_new_abi)
-		DECL_ASSEMBLER_NAME (d) = mangle_type (type);
-	      else
-		DECL_ASSEMBLER_NAME (d)
-		  = get_identifier (build_overload_name (type, 1, 1));
-	    }
+	    DECL_ASSEMBLER_NAME (d) = mangle_type (type);
         }
       if (b->parm_flag == 2)
 	{
@@ -6307,8 +6296,8 @@ init_decl_processing ()
 
   /* Check to see that the user did not specify an invalid combination
      of command-line options.  */
-  if (flag_new_abi && !flag_vtable_thunks)
-    error ("the new ABI requires vtable thunks");
+  if (!flag_vtable_thunks)
+    error ("the ABI requires vtable thunks");
 
   /* Create all the identifiers we need.  */
   initialize_predefined_identifiers ();
@@ -6411,17 +6400,8 @@ init_decl_processing ()
   record_builtin_type (RID_MAX, NULL_PTR, string_type_node);
 #endif
 
-  if (flag_new_abi)
-    delta_type_node = ptrdiff_type_node;
-  else if (flag_huge_objects)
-    delta_type_node = long_integer_type_node;
-  else
-    delta_type_node = short_integer_type_node;
-
-  if (flag_new_abi)
-    vtable_index_type = ptrdiff_type_node;
-  else
-    vtable_index_type = delta_type_node;
+  delta_type_node = ptrdiff_type_node;
+  vtable_index_type = ptrdiff_type_node;
 
   vtt_parm_type = build_pointer_type (const_ptr_type_node);
   lang_type_promotes_to = convert_type_from_ellipsis;
@@ -6490,12 +6470,9 @@ init_decl_processing ()
   layout_type (vtbl_ptr_type_node);
   record_builtin_type (RID_MAX, NULL_PTR, vtbl_ptr_type_node);
 
-  if (flag_new_abi)
-    {
-      push_namespace (get_identifier ("__cxxabiv1"));
-      abi_node = current_namespace;
-      pop_namespace ();
-    }
+  push_namespace (get_identifier ("__cxxabiv1"));
+  abi_node = current_namespace;
+  pop_namespace ();
 
   global_type_node = make_node (LANG_TYPE);
   record_unknown_type (global_type_node, "global type");
@@ -6521,10 +6498,7 @@ init_decl_processing ()
   }
 
   abort_fndecl
-    = build_library_fn_ptr ((flag_new_abi
-			     ? "__cxa_pure_virtual"
-			     : "__pure_virtual"),
-			    void_ftype);
+    = build_library_fn_ptr ("__cxa_pure_virtual", void_ftype);
 
   /* Perform other language dependent initializations.  */
   init_class_processing ();
@@ -7534,13 +7508,7 @@ maybe_commonize_var (decl)
 	     which we can't if it has been initialized.  */
 
 	  if (TREE_PUBLIC (decl))
-	    {
-	      if (flag_new_abi)
-		DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
-	      else
-		DECL_ASSEMBLER_NAME (decl)
-		  = build_static_name (current_function_decl, DECL_NAME (decl));
-	    }
+	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
 	  else
 	    {
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
@@ -8977,13 +8945,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       /* DECL_ASSEMBLER_NAME is needed only for full-instantiated
 	 templates.  */
       if (!uses_template_parms (decl))
-	{
-	  if (flag_new_abi)
-	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
-	  else
-	    DECL_ASSEMBLER_NAME (decl) = build_static_name (basetype,
-							    declarator);
-	}
+	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
     }
   else
     {
@@ -9008,13 +8970,7 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
 
       context = DECL_CONTEXT (decl);
       if (declarator && context && current_lang_name != lang_name_c)
-	{
-	  if (flag_new_abi)
-	    DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
-	  else
-	    DECL_ASSEMBLER_NAME (decl)
-	      = build_static_name (context, declarator);
-	}
+	DECL_ASSEMBLER_NAME (decl) = mangle_decl (decl);
     }
 
   if (in_namespace)
@@ -9079,7 +9035,6 @@ build_ptrmemfunc_type (type)
 {
   tree fields[4];
   tree t;
-  tree u;
   tree unqualified_variant = NULL_TREE;
 
   if (type == error_mark_node)
@@ -9104,30 +9059,10 @@ build_ptrmemfunc_type (type)
   /* ... and not really an aggregate.  */
   SET_IS_AGGR_TYPE (t, 0);
 
-  if (!flag_new_abi)
-    {
-      u = make_aggr_type (UNION_TYPE);
-      SET_IS_AGGR_TYPE (u, 0);
-      fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
-      fields[1] = build_decl (FIELD_DECL, delta2_identifier,
-			      delta_type_node);
-      finish_builtin_type (u, "__ptrmemfunc_type", fields, 1, ptr_type_node);
-      TYPE_NAME (u) = NULL_TREE;
-
-      fields[0] = build_decl (FIELD_DECL, delta_identifier,
-			      delta_type_node);
-      fields[1] = build_decl (FIELD_DECL, index_identifier,
-			      delta_type_node);
-      fields[2] = build_decl (FIELD_DECL, pfn_or_delta2_identifier, u);
-      finish_builtin_type (t, "__ptrmemfunc_type", fields, 2, ptr_type_node);
-    }
-  else
-    {
-      fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
-      fields[1] = build_decl (FIELD_DECL, delta_identifier,
-			      delta_type_node);
-      finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
-    }
+  fields[0] = build_decl (FIELD_DECL, pfn_identifier, type);
+  fields[1] = build_decl (FIELD_DECL, delta_identifier,
+			  delta_type_node);
+  finish_builtin_type (t, "__ptrmemfunc_type", fields, 1, ptr_type_node);
 
   /* Zap out the name so that the back-end will give us the debugging
      information for this anonymous RECORD_TYPE.  */
@@ -9399,17 +9334,15 @@ create_array_type_for_decl (name, type, size)
 
 /* Check that it's OK to declare a function with the indicated TYPE.
    SFK indicates the kind of special function (if any) that this
-   function is.  CTYPE is the class of which this function is a
-   member.  OPTYPE is the type given in a conversion operator
+   function is.  OPTYPE is the type given in a conversion operator
    declaration.  Returns the actual return type of the function; that
    may be different than TYPE if an error occurs, or for certain
    special functions.  */
 
 static tree
-check_special_function_return_type (sfk, type, ctype, optype)
+check_special_function_return_type (sfk, type, optype)
      special_function_kind sfk;
      tree type;
-     tree ctype;
      tree optype;
 {
   switch (sfk)
@@ -9418,9 +9351,8 @@ check_special_function_return_type (sfk, type, ctype, optype)
       if (type)
 	cp_error ("return type specification for constructor invalid");
 
-      /* In the old ABI, we return `this'; in the new ABI we don't
-	 bother.  */
-      type = flag_new_abi ? void_type_node : build_pointer_type	(ctype);
+      /* In the new ABI constructors do not return a value.  */
+      type = void_type_node;
       break;
 
     case sfk_destructor:
@@ -10030,7 +9962,6 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
   if (sfk != sfk_none)
     type = check_special_function_return_type (sfk, type,
-					       ctor_return_type,
 					       ctor_return_type);
   else if (type == NULL_TREE)
     {
@@ -11048,24 +10979,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
 	      = TYPE_IDENTIFIER (type);
 
-	  if (flag_new_abi)
-	    DECL_ASSEMBLER_NAME (decl) = mangle_type (type);
-	  else
-	    {
-	      /* XXX Temporarily set the scope.
-		 When returning, start_decl expects it as NULL_TREE,
-		 and will then then set it using pushdecl. */
-	      my_friendly_assert (DECL_CONTEXT (decl) == NULL_TREE, 980404);
-	      if (current_class_type)
-		DECL_CONTEXT (decl) = current_class_type;
-	      else
-		DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
-
-	      DECL_ASSEMBLER_NAME (decl) = DECL_NAME (decl);
-	      DECL_ASSEMBLER_NAME (decl)
-		= get_identifier (build_overload_name (type, 1, 1));
-	      DECL_CONTEXT (decl) = NULL_TREE;
-	    }
+	  DECL_ASSEMBLER_NAME (decl) = mangle_type (type);
 
 	  /* FIXME remangle member functions; member functions of a
 	     type with external linkage have external linkage.  */
@@ -13636,16 +13550,6 @@ start_function (declspecs, declarator, attrs, flags)
     {
       dtor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
       DECL_CONTEXT (dtor_label) = current_function_decl;
-    }
-  /* Under the old ABI we return `this' from constructors, so we make
-     ordinary `return' statements in constructors jump to CTOR_LABEL;
-     from there we return `this'.  Under the new ABI, we don't bother
-     with any of this.  By not setting CTOR_LABEL the remainder of the
-     machinery is automatically disabled.  */
-  else if (!flag_new_abi && DECL_CONSTRUCTOR_P (decl1))
-    {
-      ctor_label = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
-      DECL_CONTEXT (ctor_label) = current_function_decl;
     }
 
   store_parm_decls (current_function_parms);
