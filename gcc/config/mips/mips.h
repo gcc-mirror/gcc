@@ -2423,6 +2423,17 @@ extern enum reg_class mips_char_to_class[256];
 					 RETURN_ADDRESS_POINTER_REGNUM))) \
    : (rtx) 0)
 
+/* Since the mips16 ISA mode is encoded in the least-significant bit
+   of the address, mask it off return addresses for purposes of
+   finding exception handling regions.  */
+
+#define MASK_RETURN_ADDR GEN_INT (-2)
+
+/* Similarly, don't use the least-significant bit to tell pointers to
+   code from vtable index.  */
+
+#define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
+
 /* Structure to be filled in by compute_frame_size with register
    save masks, and offsets for the current function.  */
 
