@@ -1,3 +1,12 @@
+2004-09-23  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/17369
+	* Makefile.in (@set_gcc_lib_path@): Added.
+
+	* configure.ac: Include ../config/gcc-lib-path.m4. Use
+	TL_AC_GNU_MAKE_GCC_LIB_PATH.
+	* configure: Regenerated.
+
 2004-09-23  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/16566

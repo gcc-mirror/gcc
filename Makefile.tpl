@@ -103,6 +103,7 @@ SET_LIB_PATH = @SET_LIB_PATH@
 # Some platforms don't like blank entries, so we remove duplicate,
 # leading and trailing colons.
 REALLY_SET_LIB_PATH = \
+  @SET_GCC_LIB_PATH@ \
   $(RPATH_ENVVAR)=`echo "$(HOST_LIB_PATH):$(TARGET_LIB_PATH):$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR);
 
 # This is the list of directories to be built for the build system.
@@ -973,6 +974,8 @@ ENDIF raw_cxx +]
 	NM="$(NM_FOR_TARGET)"; export NM; \
 	RANLIB="$(RANLIB_FOR_TARGET)"; export RANLIB; \
 	WINDRES="$(WINDRES_FOR_TARGET)"; export WINDRES; \
+	SET_GCC_LIB_PATH_CMD="@SET_GCC_LIB_PATH@"; export SET_GCC_LIB_PATH_CMD; \
+	@SET_GCC_LIB_PATH@ \
 	echo Configuring in $(TARGET_SUBDIR)/[+module+]; \
 	cd "$(TARGET_SUBDIR)/[+module+]" || exit 1; \
 	case $(srcdir) in \
@@ -1095,6 +1098,8 @@ configure-gcc:
 	WINDRES="$(WINDRES)"; export WINDRES; \
 	OBJCOPY="$(OBJCOPY)"; export OBJCOPY; \
 	OBJDUMP="$(OBJDUMP)"; export OBJDUMP; \
+	SET_GCC_LIB_PATH_CMD="@SET_GCC_LIB_PATH@"; export SET_GCC_LIB_PATH_CMD; \
+	@SET_GCC_LIB_PATH@ \
 	echo Configuring in gcc; \
 	cd gcc || exit 1; \
 	case $(srcdir) in \

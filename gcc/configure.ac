@@ -3090,6 +3090,9 @@ AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)
 
+sinclude(../config/gcc-lib-path.m4)
+TL_AC_GNU_MAKE_GCC_LIB_PATH
+
 # If it doesn't already exist, create document directory
 echo "checking for the document directory." 1>&2
 if test -d doc ; then
