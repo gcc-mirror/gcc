@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -516,7 +516,11 @@ package body Namet is
                Name_Buffer (P + 5) := ']';
                P := P + 6;
 
-            elsif Name_Buffer (P) = 'W' then
+            elsif Name_Buffer (P) = 'W'
+              and then P < Name_Len
+              and then Name_Buffer (P + 1) not in 'A' .. 'Z'
+              and then Name_Buffer (P + 1) /= '_'
+            then
                Name_Buffer (P + 8 .. P + Name_Len + 5) :=
                  Name_Buffer (P + 5 .. Name_Len);
                Name_Buffer (P + 5) := Name_Buffer (P + 4);
