@@ -1,3 +1,7 @@
+2004-06-22 Kelley Cook <kcook@gcc.gnu.org>
+
+	* g++.dg/opt/pr15551.C: New testcase.
+
 2004-06-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/14800
