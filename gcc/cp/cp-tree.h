@@ -2011,6 +2011,7 @@ extern tree grokbitfield			PROTO((tree, tree, tree));
 extern tree groktypefield			PROTO((tree, tree));
 extern tree grokoptypename			PROTO((tree, tree));
 extern tree build_push_scope			PROTO((tree, tree));
+extern void cplus_decl_attributes		PROTO((tree, tree, tree)); 
 extern tree constructor_name_full		PROTO((tree));
 extern tree constructor_name			PROTO((tree));
 extern void setup_vtbl_ptr			PROTO((void));

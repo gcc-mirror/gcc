@@ -287,6 +287,7 @@ empty_parms ()
 %{
 /* List of types and structure classes of the current declaration.  */
 static tree current_declspecs;
+static tree prefix_attributes = NULL_TREE;
 
 /* When defining an aggregate, this is the most recent one being defined.  */
 static tree current_aggr;
@@ -504,7 +505,7 @@ template_def:
 		  momentary = suspend_momentary ();
 		  d = start_decl ($<ttype>2, /*current_declspecs*/NULL_TREE, 0,
 				  $3);
-		  cplus_decl_attributes (d, $5);
+		  cplus_decl_attributes (d, $5, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $4, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
@@ -523,7 +524,7 @@ template_def:
 		  momentary = suspend_momentary ();
 		  d = start_decl ($<ttype>3, current_declspecs,
 				  0, $<ttype>4);
-		  cplus_decl_attributes (d, $6);
+		  cplus_decl_attributes (d, $6, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $5, 0, 0);
 		  end_template_decl ($1, d, 0, def);
 		  if (def)
@@ -975,7 +976,7 @@ condition:
 		  current_declspecs = $1;
 		  $<itype>6 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($<ttype>2, current_declspecs, 1, $3);
-		  cplus_decl_attributes ($<ttype>$, $5);
+		  cplus_decl_attributes ($<ttype>$, $5, prefix_attributes);
 		}
 	init
 		{ 
@@ -1724,6 +1725,10 @@ object:	  primary '.'
 		}
 	;
 
+setattrs: /* empty */
+		{ prefix_attributes = $<ttype>0; }
+	;
+
 decl:
 	/* Normal case: make this fast.  */
 	  typespec declarator ';'
@@ -1833,6 +1838,10 @@ reserved_declspecs:
 		    warning ("`%s' is not at beginning of declaration",
 			     IDENTIFIER_POINTER ($2));
 		  $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+	| reserved_declspecs attributes setattrs
+		{ $$ = $1; }
+	| attributes setattrs
+		{ $$ = NULL_TREE; }
 	;
 
 /* List of just storage classes and type modifiers.
@@ -1853,6 +1862,10 @@ declmods:
 			     IDENTIFIER_POINTER ($2));
 		  $$ = decl_tree_cons (NULL_TREE, $2, $$);
 		  TREE_STATIC ($$) = TREE_STATIC ($1); }
+	| declmods attributes setattrs
+		{ $$ = $1; }
+	| attributes setattrs
+		{ $$ = NULL_TREE; }
 	;
 
 
@@ -1968,7 +1981,7 @@ initdcl0:
 		    }
 		  $<itype>5 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1, $2);
-		  cplus_decl_attributes ($<ttype>$, $4); }
+		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
@@ -1987,20 +2000,20 @@ initdcl0:
 		    }
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
-		  cplus_decl_attributes (d, $4);
+		  cplus_decl_attributes (d, $4, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
 initdcl:
 	  declarator exception_specification_opt maybeasm maybe_attribute '='
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1, $2);
-		  cplus_decl_attributes ($<ttype>$, $4); }
+		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING); }
 	| declarator exception_specification_opt maybeasm maybe_attribute
 		{ $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 0, $2);
-		  cplus_decl_attributes ($<ttype>$, $4);
+		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes);
 		  finish_decl ($<ttype>$, NULL_TREE, $3, 0, 0); }
 	;
 
@@ -2009,7 +2022,7 @@ notype_initdcl0:
 		{ current_declspecs = $<ttype>0;
 		  $<itype>5 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($<ttype>1, current_declspecs, 1, $2);
-		  cplus_decl_attributes ($<ttype>$, $4); }
+		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
@@ -2019,7 +2032,7 @@ notype_initdcl0:
 		  current_declspecs = $<ttype>0;
 		  $$ = suspend_momentary ();
 		  d = start_decl ($<ttype>1, current_declspecs, 0, $2);
-		  cplus_decl_attributes (d, $4);
+		  cplus_decl_attributes (d, $4, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
@@ -2028,7 +2041,7 @@ nomods_initdcl0:
 		{ current_declspecs = NULL_TREE;
 		  $<itype>5 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($1, current_declspecs, 1, $2);
-		  cplus_decl_attributes ($<ttype>$, $4); }
+		  cplus_decl_attributes ($<ttype>$, $4, prefix_attributes); }
 	  init
 /* Note how the declaration of the variable is in effect while its init is parsed! */
 		{ finish_decl ($<ttype>6, $7, $3, 0, LOOKUP_ONLYCONVERTING);
@@ -2038,7 +2051,7 @@ nomods_initdcl0:
 		  current_declspecs = NULL_TREE;
 		  $$ = suspend_momentary ();
 		  d = start_decl ($1, current_declspecs, 0, $2);
-		  cplus_decl_attributes (d, $4);
+		  cplus_decl_attributes (d, $4, prefix_attributes);
 		  finish_decl (d, NULL_TREE, $3, 0, 0); }
 	;
 
@@ -2608,7 +2621,7 @@ component_decl_1:
 		}
 	| notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = grokfield ($$, NULL_TREE, $2, $5, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| ':' expr_no_commas
 		{ $$ = grokbitfield (NULL_TREE, NULL_TREE, $2); }
 	| error
@@ -2626,12 +2639,12 @@ component_decl_1:
 		{ $$ = build_parse_node (CALL_EXPR, TREE_VALUE ($1),
 					 $3, $5);
 		  $$ = grokfield ($$, TREE_CHAIN ($1), $6, $9, $7);
-		  cplus_decl_attributes ($$, $8); }
+		  cplus_decl_attributes ($$, $8, prefix_attributes); }
 	| typed_declspecs LEFT_RIGHT type_quals exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = build_parse_node (CALL_EXPR, TREE_VALUE ($1),
 					 empty_parms (), $3);
 		  $$ = grokfield ($$, TREE_CHAIN ($1), $4, $7, $5);
-		  cplus_decl_attributes ($$, $6); }
+		  cplus_decl_attributes ($$, $6, prefix_attributes); }
 	| using_decl
 	;
 
@@ -2680,47 +2693,47 @@ after_type_component_declarator0:
 	  after_type_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ current_declspecs = $<ttype>0;
 		  $$ = grokfield ($$, current_declspecs, $2, $5, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| TYPENAME ':' expr_no_commas maybe_attribute
 		{ current_declspecs = $<ttype>0;
 		  $$ = grokbitfield ($$, current_declspecs, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	;
 
 notype_component_declarator0:
 	  notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ current_declspecs = $<ttype>0;
 		  $$ = grokfield ($$, current_declspecs, $2, $5, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| IDENTIFIER ':' expr_no_commas maybe_attribute
 		{ current_declspecs = $<ttype>0;
 		  $$ = grokbitfield ($$, current_declspecs, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| ':' expr_no_commas maybe_attribute
 		{ current_declspecs = $<ttype>0;
 		  $$ = grokbitfield (NULL_TREE, current_declspecs, $2);
-		  cplus_decl_attributes ($$, $3); }
+		  cplus_decl_attributes ($$, $3, prefix_attributes); }
 	;
 
 after_type_component_declarator:
 	  after_type_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = grokfield ($$, current_declspecs, $2, $5, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| TYPENAME ':' expr_no_commas maybe_attribute
 		{ $$ = grokbitfield ($$, current_declspecs, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	;
 
 notype_component_declarator:
 	  notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
 		{ $$ = grokfield ($$, current_declspecs, $2, $5, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| IDENTIFIER ':' expr_no_commas maybe_attribute
 		{ $$ = grokbitfield ($$, current_declspecs, $3);
-		  cplus_decl_attributes ($$, $4); }
+		  cplus_decl_attributes ($$, $4, prefix_attributes); }
 	| ':' expr_no_commas maybe_attribute
 		{ $$ = grokbitfield (NULL_TREE, current_declspecs, $2);
-		  cplus_decl_attributes ($$, $3); }
+		  cplus_decl_attributes ($$, $3, prefix_attributes); }
 	;
 
 /* We chain the enumerators in reverse order.
