@@ -403,7 +403,6 @@ namespace std
           if (__beg == __end)
             __err |= ios_base::eofbit;
         }
-
       return __beg;
     }
 #endif
@@ -430,7 +429,6 @@ namespace std
         __v = __l;
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -457,7 +455,6 @@ namespace std
         __v = static_cast<unsigned short>(__ul);
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -484,7 +481,6 @@ namespace std
         __v = static_cast<unsigned int>(__ul);
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -510,7 +506,6 @@ namespace std
         __v = __ul;
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -537,7 +532,6 @@ namespace std
         __v = __ll;
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -563,7 +557,6 @@ namespace std
         __v = __ull;
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 #endif
@@ -593,7 +586,6 @@ namespace std
         __v = __f;
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -618,7 +610,6 @@ namespace std
         __v = __d;
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -665,7 +656,6 @@ namespace std
 #endif
       else
         __err |= ios_base::failbit;
-
       return __beg;
     }
 
@@ -1147,7 +1137,6 @@ namespace std
       // Iff valid sequence is not recognized.
       if (!__testvalid || !__units.size())
 	__err |= ios_base::failbit;
-
       return __beg; 
     }
 
