@@ -1,3 +1,69 @@
+2001-04-09  Andrew MacLeod  <amacleod@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* alias.c (get_addr): Externalize.
+	(canon_true_dependence): New function. Behaves like true_dependance
+	except it already assumes a MEM has been canonicalized.
+	* flags.h (flag_gcse_lm, flag_gcse_sm): New optimization flags.
+	* gcse.c (struct ls_expr): Add load/store expressions structure.
+	(modify_mem_list, canon_modify_mem_list): New variable.
+	(gcse_main): Initialize & finalize alias analysis. Use enhanced 
+	load motion and store motion if requested.
+	(alloc_gcse_mem): Allocate space for modify_mem_list array.
+	(free_gcse_mem): Free the modify_mem_list array.
+	(oprs_unchanged_p): Use load_killed_in_block_p.
+	(gcse_mems_conflict_p, gcse_mem_operand): New variables.
+	(mems_conflict_for_gcse_p): New function.  Don't kill loads 
+	with stores to themselves if its in the load/store expression list.
+	(load_killed_in_block_p): New function.
+	(canon_list_insert): New Function.
+	(record_last_mem_set_info): Keep a list of all instructions which
+	can modify memory for each basic block.
+	(compute_hash_table, reset_opr_set_tables): Clear modify_mem_list.
+	(oprs_not_set_p): Use load_killed_in_block_p.
+	(mark_call, mark_set, mark_clobber): Use record_last_mem_set_info.
+	(expr_killed_p): Use load_killed_in_block_p.
+	(compute_transp): Do not pessimize memory references.
+	(pre_edge_insert): Update stores for a load motion expression.
+	(one_pre_gcse_pass): Check loads/stores for extra load motion.
+	(ldst_entry): Find or create a ldst_expr structure.
+	(free_ldst_entry): Free memory for an individual item.
+	(free_ldst_mems): Free entire load/store expression list.
+	(print_ldst_list): Print debug info.
+	(find_rtx_in_ldst): Try to find an rtx expression in the ldst list.
+	(enumerate_ldsts): Assign integer values to each entry in list.
+	(first_ls_expr): First expression in the list.
+	(next_ls_expr): Next expression in the list.
+	(simple_mem): Check if expression qualifies for ld/st expression list.
+	(invalidate_any_buried_refs): Remove from expression list if its
+	used in some other way we dont understand.
+	(compute_ld_motion_mems): Find all potential enhanced load motion
+	expression.
+	(trim_ld_motion_mems): Remove any expressions which are invalid.
+	(update_ld_motion_stores): Copy store values to registers for loads
+	which have been moved.
+	(regvec, st_antloc, num_store): New global statics.
+	(reg_set_info): Marks registers as set.
+	(store_ops_ok): Verfies registers expressions are valid in a block.
+	(find_moveable_store): Look for moveable stores in a pattern.
+	(compute_store_table): Find stores in a function worth moving, maybe.
+	(load_kills_store): Check dependance of a load and store.
+	(find_loads): Find any loads in a pattern.
+	(store_killed_in_insn): Check if a store is killed in an insn.
+	(store_killed_after): Check is store killed after an insn in a block.
+	(store_killed_before): Check is store killed before an insn in a block.
+	(build_store_vectors): Generate the antic and avail vectors.
+	(insert_insn_start_bb): Insert at the start of a BB, update BLOCK_HEAD.
+	(insert_store): Add a store to an edge.
+	(replace_store_insn): Replace a store with a SET insn.
+	(delete_store): Delete a store insn.
+	(free_store_memory): Free memory.
+	(store_motion): Perform store motion.
+	* invoke.texi: Add documentation for -fcse-lm and -fgcse-sm.
+	* rtl.h (get_addr, canon_true_dependence): Add prototypes.
+	* toplev.c (flag_gcse_lm, flag_gcse_sm): New Variables.
+	(f_options): Add gcse-lm and gcse-sm.
+
 Mon Apr  9 16:18:03 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (expand_fp_movcc): Fix condition reversal code.

@@ -611,6 +611,15 @@ extern enum graph_dump_types graph_dump_format;
 
 extern int flag_no_ident;
 
+/* Nonzero if we want to perform enhanced load motion during gcse.  */
+
+extern int flag_gcse_lm;
+
+/* Nonzero if we want to perform store motion after gcse.  */
+
+extern int flag_gcse_sm;
+
+
 /* Nonzero means we should do dwarf2 duplicate elimination.  */
 
 extern int flag_eliminate_dwarf2_dups;

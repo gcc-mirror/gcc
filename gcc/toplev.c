@@ -668,6 +668,18 @@ static int flag_gcse;
 
 static int flag_delete_null_pointer_checks;
 
+/* Nonzero means to do the enhanced load motion during gcse, which trys
+   to hoist loads by not killing them when a store to the same location
+   is seen.  */
+
+int flag_gcse_lm = 1;
+
+/* Nonzero means to perform store motion after gcse, which will try to
+   move stores closer to the exit block.  Its not very effective without
+   flag_gcse_lm.  */
+
+int flag_gcse_sm = 1;
+
 /* Nonzero means to rerun cse after loop optimization.  This increases
    compilation time about 20% and picks up a few more common expressions.  */
 
@@ -1047,6 +1059,10 @@ lang_independent_options f_options[] =
    "Attempt to fill delay slots of branch instructions" },
   {"gcse", &flag_gcse, 1,
    "Perform the global common subexpression elimination" },
+  {"gcse-lm", &flag_gcse_lm, 1,
+   "Perform enhanced load motion during global subexpression elimination" },
+  {"gcse-sm", &flag_gcse_sm, 1,
+   "Perform store motion after global subexpression elimination" },
   {"rerun-cse-after-loop", &flag_rerun_cse_after_loop, 1,
    "Run CSE pass after loop optimisations"},
   {"rerun-loop-opt", &flag_rerun_loop_opt, 1,

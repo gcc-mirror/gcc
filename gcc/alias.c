@@ -87,7 +87,7 @@ typedef struct alias_set_entry
 
 static int rtx_equal_for_memref_p	PARAMS ((rtx, rtx));
 static rtx find_symbolic_term		PARAMS ((rtx));
-static rtx get_addr			PARAMS ((rtx));
+rtx get_addr				PARAMS ((rtx));
 static int memrefs_conflict_p		PARAMS ((int, rtx, int, rtx,
 						 HOST_WIDE_INT));
 static void record_set			PARAMS ((rtx, rtx, void *));
@@ -1340,7 +1340,7 @@ base_alias_check (x, y, x_mode, y_mode)
    it unchanged unless it is a value; in the latter case we call cselib to get
    a more useful rtx.  */
 
-static rtx
+rtx
 get_addr (x)
      rtx x;
 {
@@ -1744,6 +1744,63 @@ true_dependence (mem, mem_mode, x, varies)
   x_addr = canon_rtx (x_addr);
   mem_addr = canon_rtx (mem_addr);
 
+  if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
+			    SIZE_FOR_MODE (x), x_addr, 0))
+    return 0;
+
+  if (aliases_everything_p (x))
+    return 1;
+
+  /* We cannot use aliases_everyting_p to test MEM, since we must look
+     at MEM_MODE, rather than GET_MODE (MEM).  */
+  if (mem_mode == QImode || GET_CODE (mem_addr) == AND)
+    return 1;
+
+  /* In true_dependence we also allow BLKmode to alias anything.  Why
+     don't we do this in anti_dependence and output_dependence?  */
+  if (mem_mode == BLKmode || GET_MODE (x) == BLKmode)
+    return 1;
+
+  return ! fixed_scalar_and_varying_struct_p (mem, x, mem_addr, x_addr,
+					      varies);
+}
+
+/* Canonical true dependence: X is read after store in MEM takes place.
+   Variant of true_dependece which assumes MEM has already been 
+   canonicalized (hence we no longer do that here).  
+   The mem_addr argument has been added, since true_dependence computed 
+   this value prior to canonicalizing.  */
+
+int
+canon_true_dependence (mem, mem_mode, mem_addr, x, varies)
+     rtx mem, mem_addr, x;
+     enum machine_mode mem_mode;
+     int (*varies) PARAMS ((rtx, int));
+{
+  register rtx x_addr;
+
+  if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
+    return 1;
+
+  if (DIFFERENT_ALIAS_SETS_P (x, mem))
+    return 0;
+
+  /* If X is an unchanging read, then it can't possibly conflict with any
+     non-unchanging store.  It may conflict with an unchanging write though,
+     because there may be a single store to this address to initialize it.
+     Just fall through to the code below to resolve the case where we have
+     both an unchanging read and an unchanging write.  This won't handle all
+     cases optimally, but the possible performance loss should be
+     negligible.  */
+  if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
+    return 0;
+
+  x_addr = get_addr (XEXP (x, 0));
+
+  if (! base_alias_check (x_addr, mem_addr, GET_MODE (x), mem_mode))
+    return 0;
+
+  x_addr = canon_rtx (x_addr);
   if (! memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 			    SIZE_FOR_MODE (x), x_addr, 0))
     return 0;
