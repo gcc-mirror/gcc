@@ -1013,7 +1013,7 @@ print_operand (file, x, code)
 }
 
 /* Do what is necessary for `va_start'.  The argument is ignored;
-   We look at the current function to determine if stdargs or varargs
+   We look at the current function to determine if stdarg or varargs
    is used and fill in an initial va_list.  A pointer to this constructor
    is returned.  */
 
@@ -1023,9 +1023,9 @@ alpha_builtin_saveregs (arglist)
 {
   rtx block, addr, argsize;
   tree fntype = TREE_TYPE (current_function_decl);
-  int stdargs = (TYPE_ARG_TYPES (fntype) != 0
-		 && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		     != void_type_node));
+  int stdarg = (TYPE_ARG_TYPES (fntype) != 0
+		&& (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		    != void_type_node));
   int nregs = current_function_args_info;
 
   /* If we have a variable-sized argument already, we will have used all
@@ -1034,27 +1034,22 @@ alpha_builtin_saveregs (arglist)
   if (GET_CODE (current_function_arg_offset_rtx) != CONST_INT)
     {
       argsize = plus_constant (current_function_arg_offset_rtx,
-			       ((6 - stdargs) * UNITS_PER_WORD
-				+ UNITS_PER_WORD - 1));
+			       (6 * UNITS_PER_WORD + UNITS_PER_WORD - 1));
       argsize = expand_shift (RSHIFT_EXPR, Pmode, argsize,
 			      build_int_2 (3, 0), argsize, 0);
     }
   else
     {
-      /* If we are using memory, deduct the stdarg adjustment from it,
-	 otherwise from the number of registers.  Then compute the current
-	 argument number.  */
-
+      /* Compute the number of args in memory and number of arguments already
+	 processed.  Then adjust the number of registers if this is stdarg.  */
       int memargs = ((INTVAL (current_function_arg_offset_rtx)
 		      + UNITS_PER_WORD - 1)
 		     / UNITS_PER_WORD);
 
-      if (memargs)
-	memargs -= stdargs;
-      else
-	nregs -= stdargs;
-
       argsize = GEN_INT (MIN (nregs, 6) + memargs);
+
+      if (nregs <= 6)
+	nregs -= stdarg;
     }
 
   /* Allocate the va_list constructor */
