@@ -2437,13 +2437,22 @@ merge_blocks (e, b, c)
      edge e;
      basic_block b, c;
 {
-  /* If C has a tail recursion label, do not merge.  There is no
-     edge recorded from the call_placeholder back to this label, as
-     that would make optimize_sibling_and_tail_recursive_calls more
-     complex for no gain.  */
-  if (GET_CODE (c->head) == CODE_LABEL
-      && tail_recursion_label_p (c->head))
-    return 0;
+  if (GET_CODE (c->head) == CODE_LABEL)
+    {
+      rtx x;
+
+      /* If C has a tail recursion label, do not merge.  There is no
+	 edge recorded from the call_placeholder back to this label, as
+	 that would make optimize_sibling_and_tail_recursive_calls more
+	 complex for no gain.  */
+      if (tail_recursion_label_p (c->head))
+	return 0;
+
+      /* If C has a nonlocal goto label, do not merge either.  */
+      for (x = nonlocal_goto_handler_labels; x; x = XEXP (x, 1))
+	if (XEXP (x, 0) == c->head)
+	  return 0;
+    }
 
   /* If B has a fallthru edge to C, no need to move anything.  */
   if (e->flags & EDGE_FALLTHRU)

@@ -1,3 +1,8 @@
+2001-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* flow.c (merge_blocks): Don't merge blocks if second block is
+	nonlocal_goto handler.
+
 2001-10-28  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (output_mi_thunk): Fix typo.
