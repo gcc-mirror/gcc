@@ -14070,7 +14070,7 @@ finish_destructor_body ()
   if (DECL_VIRTUAL_P (current_function_decl))
     {
       tree if_stmt;
-      tree virtual_size = c_sizeof (current_class_type);
+      tree virtual_size = cxx_sizeof (current_class_type);
 
       /* [class.dtor]
 

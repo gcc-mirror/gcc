@@ -736,47 +736,6 @@ type_lists_compatible_p (args1, args2)
     }
 }
 
-/* Compute the value of the `sizeof' operator.  */
-
-tree
-c_sizeof (type)
-     tree type;
-{
-  enum tree_code code = TREE_CODE (type);
-  tree size;
-
-  if (code == FUNCTION_TYPE)
-    {
-      if (pedantic || warn_pointer_arith)
-	pedwarn ("sizeof applied to a function type");
-      size = size_one_node;
-    }
-  else if (code == VOID_TYPE)
-    {
-      if (pedantic || warn_pointer_arith)
-	pedwarn ("sizeof applied to a void type");
-      size = size_one_node;
-    }
-  else if (code == ERROR_MARK)
-    size = size_one_node;
-  else if (!COMPLETE_TYPE_P (type))
-    {
-      error ("sizeof applied to an incomplete type");
-      size = size_zero_node;
-    }
-  else
-    /* Convert in case a char is more than one unit.  */
-    size = size_binop (CEIL_DIV_EXPR, TYPE_SIZE_UNIT (type),
-		       size_int (TYPE_PRECISION (char_type_node)
-			         / BITS_PER_UNIT));
-
-  /* SIZE will have an integer type with TYPE_IS_SIZETYPE set.
-     TYPE_IS_SIZETYPE means that certain things (like overflow) will
-     never happen.  However, this node should really have type
-     `size_t', which is just a typedef for an ordinary integer type.  */
-  return fold (build1 (NOP_EXPR, c_size_type_node, size));
-}
-
 tree
 c_sizeof_nowarn (type)
      tree type;

@@ -1,3 +1,17 @@
+2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
+
+	Fix PR/7363:
+	* typeck.c (cxx_sizeof_or_alignof_type): New function.
+	(c_sizeof): Remove definition.
+	(expr_sizeof): Use cxx_sizeof.
+	* decl2.c (build_expr_from_tree): Use cxx_sizeof_or_alignof_type.
+	* decl.c (finish_destructor_body): Use cxx_sizeof.
+	* semantics.c (finish_alignof): Likewise.
+	(finish_alignof): Use cxx_alignof.
+	* cp-tree.h (cxx_sizeof, cxx_alignof): New macros.
+	(cxx_sizeof_or_alignof_type): Declare.
+	(my_friendly_assert): Move to ../c-common.h.
+
 2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* class.c, method.c, pt.c, search.c: Don't define obstack macros.
@@ -30,7 +44,7 @@
 
 2002-07-20  Gabriel Dos Reis  <gdr@nerim.net>
 
-	* spew.c (struct uinparsed_test): Replace 'filename' and 'lineno'
+	* spew.c (struct unparsed_test): Replace 'filename' and 'lineno'
 	members with 'locus'.  Adjust use throughout.
 	(struct feed):  Likewise.
 	(alloc_unparsed_test): Change prototype, take a 'const location_t *'.

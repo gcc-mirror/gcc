@@ -1,3 +1,13 @@
+2002-07-23  Gabriel Dos Reis  <gdr@nerim.net>
+
+	Fix PR/7363:
+	* c-common.c (c_sizeof_or_alignof_type): New function.
+	(c_alignof): Remove definition.
+	* c-common.h (c_sizeof, c_alignof): Define as macros.
+	(c_sizeof_or_alignof_type): Declare.
+	(my_friendly_assert): Moved from cp/cp-tree.h
+	* c-typeck.c (c_sizeof): Remove definition.
+
 2002-07-23  Jan Hubicka  <jh@suse.cz>
 
 	* gcse.c (try_replace_reg): Use num_changes_pending.
