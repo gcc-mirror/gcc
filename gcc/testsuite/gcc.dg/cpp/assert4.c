@@ -78,11 +78,67 @@
 # error
 #endif
 
+#if defined __unix__
+# if !#system(unix)
+#  error
+# endif
+#elif #system(unix)
+# error
+#endif
+
 #if defined __rtems__
 # if !#system(rtems)
 #  error
 # endif
 #elif #system(rtems)
+# error
+#endif
+
+#if defined __vms__
+# if !#system(vms)
+#  error
+# endif
+#elif #system(vms)
+# error
+#endif
+
+#if defined __mvs__
+# if !#system(mvs)
+#  error
+# endif
+#elif #system(mvs)
+# error
+#endif
+
+#if defined __MSDOS__
+# if !#system(msdos)
+#  error
+# endif
+#elif #system(msdos)
+# error
+#endif
+
+#if defined __WINNT__
+# if !#system(winnt)
+#  error
+# endif
+#elif #system(winnt)
+# error
+#endif
+
+#if defined __BEOS__
+# if !#system(beos)
+#  error
+# endif
+#elif #system(beos)
+# error
+#endif
+
+#if defined __netware__
+# if !#system(netware)
+#  error
+# endif
+#elif #system(netware)
 # error
 #endif
 
