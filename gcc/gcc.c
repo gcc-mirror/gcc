@@ -590,19 +590,18 @@ proper position among the other output files.  */
 /* Define ASM_DEBUG_SPEC to be a spec suitable for translating '-g'
    to the assembler.  */
 #ifndef ASM_DEBUG_SPEC
-# if defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
-#  if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO)
-#   define ASM_DEBUG_SPEC					\
+# if defined(DBX_DEBUGGING_INFO) && defined(DWARF2_DEBUGGING_INFO) \
+     && defined(HAVE_AS_GDWARF2_DEBUG_FLAG) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
+#  define ASM_DEBUG_SPEC					\
       (PREFERRED_DEBUGGING_TYPE == DBX_DEBUG			\
        ? "%{gdwarf-2*:--gdwarf2}%{!gdwarf-2*:%{g*:--gstabs}}"	\
        : "%{gstabs*:--gstabs}%{!gstabs*:%{g*:--gdwarf2}}")
-#  else
-#   ifdef DBX_DEBUGGING_INFO
-#    define ASM_DEBUG_SPEC "%{g*:--gstabs}"
-#   endif
-#   ifdef DWARF2_DEBUGGING_INFO
-#    define ASM_DEBUG_SPEC "%{g*:--gdwarf2}"
-#   endif
+# else
+#  if defined(DBX_DEBUGGING_INFO) && defined(HAVE_AS_GSTABS_DEBUG_FLAG)
+#   define ASM_DEBUG_SPEC "%{g*:--gstabs}"
+#  endif
+#  if defined(DWARF2_DEBUGGING_INFO) && defined(HAVE_AS_GDWARF2_DEBUG_FLAG)
+#   define ASM_DEBUG_SPEC "%{g*:--gdwarf2}"
 #  endif
 # endif
 #endif
