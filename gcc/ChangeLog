@@ -1,3 +1,8 @@
+2003-04-09  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Use correct mode to
+	set frame pointer.
+
 2003-04-03  Jason Merrill  <jason@redhat.com>
 
 	PR c/10175

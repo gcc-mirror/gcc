@@ -8898,7 +8898,7 @@ rs6000_emit_prologue ()
   /* Set frame pointer, if needed.  */
   if (frame_pointer_needed)
     {
-      insn = emit_move_insn (gen_rtx_REG (reg_mode, FRAME_POINTER_REGNUM), 
+      insn = emit_move_insn (gen_rtx_REG (Pmode, FRAME_POINTER_REGNUM),
 			     sp_reg_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
