@@ -1,3 +1,7 @@
+2003-12-30  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/i386/i386.h: Remove an unnecessary #undef.
+
 2003-12-30  Roger Sayle  <roger@eyesopen.com>
 
 	* cppfiles.c (pch_open_file): Minor tweak to work-around native
