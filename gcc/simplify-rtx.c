@@ -1413,8 +1413,15 @@ simplify_binary_operation (code, mode, op0, op1)
 	case DIV:
 	  if (trueop1 == CONST1_RTX (mode))
 	    {
+	      /* On some platforms DIV uses narrower mode than its
+		 operands.  */
 	      rtx x = gen_lowpart_common (mode, op0);
-	      return x ? x : op0;
+	      if (x)
+		return x;
+	      else if (mode != GET_MODE (op0) && GET_MODE (op0) != VOIDmode)
+		return gen_lowpart_SUBREG (mode, op0);
+	      else
+		return op0;
 	    }
 
 	  /* In IEEE floating point, 0/x is not always 0.  */

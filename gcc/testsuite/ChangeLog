@@ -2,6 +2,8 @@
 
 	* g++.dg/other/debug2.C: New test.
 
+	* gcc.c-torture/compile/20020103-1.c: New test.
+
 2002-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gnu89-init-1.c: Added new tests.
