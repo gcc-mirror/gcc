@@ -7836,12 +7836,21 @@ gen_method_decl (method, buf)
 
 /* Debug info.  */
 
+
+/* Dump an @interface declaration of the supplied class CHAIN to the
+   supplied file FP.  Used to implement the -gen-decls option (which
+   prints out an @interface declaration of all classes compiled in
+   this run); potentially useful for debugging the compiler too.  */
 static void
 dump_interface (fp, chain)
      FILE *fp;
      tree chain;
 {
-  char *buf = (char *) xmalloc (256);
+  /* FIXME: A heap overflow here whenever a method (or ivar)
+     declaration is so long that it doesn't fit in the buffer.  The
+     code and all the related functions should be rewritten to avoid
+     using fixed size buffers.  */
+  char *buf = (char *) xmalloc (1024 * 10);
   const char *my_name = IDENTIFIER_POINTER (CLASS_NAME (chain));
   tree ivar_decls = CLASS_RAW_IVARS (chain);
   tree nst_methods = CLASS_NST_METHODS (chain);
@@ -7849,14 +7858,26 @@ dump_interface (fp, chain)
 
   fprintf (fp, "\n@interface %s", my_name);
 
+  /* CLASS_SUPER_NAME is used to store the superclass name for 
+     classes, and the category name for categories.  */
   if (CLASS_SUPER_NAME (chain))
     {
-      const char *super_name = IDENTIFIER_POINTER (CLASS_SUPER_NAME (chain));
-      fprintf (fp, " : %s\n", super_name);
+      const char *name = IDENTIFIER_POINTER (CLASS_SUPER_NAME (chain));
+      
+      if (TREE_CODE (chain) == CATEGORY_IMPLEMENTATION_TYPE 
+	  || TREE_CODE (chain) == CATEGORY_INTERFACE_TYPE)
+	{
+	  fprintf (fp, " (%s)\n", name);
+	}
+      else
+	{
+	  fprintf (fp, " : %s\n", name);
+	}
     }
   else
     fprintf (fp, "\n");
 
+  /* FIXME - the following doesn't seem to work at the moment.  */
   if (ivar_decls)
     {
       fprintf (fp, "{\n");
@@ -7880,7 +7901,8 @@ dump_interface (fp, chain)
       fprintf (fp, "+ %s;\n", gen_method_decl (cls_methods, buf));
       cls_methods = TREE_CHAIN (cls_methods);
     }
-  fprintf (fp, "\n@end");
+
+  fprintf (fp, "@end\n");
 }
 
 /* Demangle function for Objective-C */
@@ -8000,7 +8022,16 @@ finish_objc ()
 
       UOBJC_CLASS_decl = impent->class_decl;
       UOBJC_METACLASS_decl = impent->meta_decl;
-
+      
+      /* Dump the @interface of each class as we compile it, if the
+	 -gen-decls option is in use.  TODO: Dump the classes in the
+         order they were found, rather than in reverse order as we
+         are doing now.  */
+      if (flag_gen_declaration)
+	{
+	  dump_interface (gen_declaration_file, objc_implementation_context);
+	}
+      
       if (TREE_CODE (objc_implementation_context) == CLASS_IMPLEMENTATION_TYPE)
 	{
 	  /* all of the following reference the string pool...  */
@@ -8050,12 +8081,6 @@ finish_objc ()
   /* Dump the string table last.  */
 
   generate_strings ();
-
-  if (flag_gen_declaration)
-    {
-      add_class (objc_implementation_context);
-      dump_interface (gen_declaration_file, objc_implementation_context);
-    }
 
   if (warn_selector)
     {
