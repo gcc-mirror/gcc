@@ -36,19 +36,15 @@
    (UNSPEC_CONSTTABLE_FLOAT	 9)
    (UNSPEC_ALIGN		14)
    (UNSPEC_HIGH			17)
-   (UNSPEC_LWL			18)
-   (UNSPEC_LWR			19)
-   (UNSPEC_SWL			20)
-   (UNSPEC_SWR			21)
-   (UNSPEC_LDL			22)
-   (UNSPEC_LDR			23)
-   (UNSPEC_SDL			24)
-   (UNSPEC_SDR			25)
-   (UNSPEC_LOADGP		26)
-   (UNSPEC_LOAD_CALL		27)
-   (UNSPEC_LOAD_GOT		28)
-   (UNSPEC_GP			29)
-   (UNSPEC_MFHILO		30)
+   (UNSPEC_LOAD_LEFT		18)
+   (UNSPEC_LOAD_RIGHT		19)
+   (UNSPEC_STORE_LEFT		20)
+   (UNSPEC_STORE_RIGHT		21)
+   (UNSPEC_LOADGP		22)
+   (UNSPEC_LOAD_CALL		23)
+   (UNSPEC_LOAD_GOT		24)
+   (UNSPEC_GP			25)
+   (UNSPEC_MFHILO		26)
 
    (UNSPEC_ADDRESS_FIRST	100)
 
@@ -296,6 +292,10 @@
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
 ;; 32-bit version and "dsubu" in the 64-bit version.
 (define_mode_attr d [(SI "") (DI "d")])
+
+;; Mode attributes for GPR loads and stores.
+(define_mode_attr load [(SI "lw") (DI "ld")])
+(define_mode_attr store [(SI "sw") (DI "sd")])
 
 ;; The unextended ranges of the MIPS16 addiu and daddiu instructions
 ;; are different.  Some forms of unextended addiu have an 8-bit immediate
@@ -3203,93 +3203,48 @@ beq\t%2,%.,1b\;\
 ;; This allows us to use the standard length calculations for the "load"
 ;; and "store" type attributes.
 
-(define_insn "mov_lwl"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec:SI [(match_operand:BLK 1 "memory_operand" "m")
-		    (match_operand:QI 2 "memory_operand" "m")]
-		   UNSPEC_LWL))]
+(define_insn "mov_<load>l"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(unspec:GPR [(match_operand:BLK 1 "memory_operand" "m")
+		     (match_operand:QI 2 "memory_operand" "m")]
+		    UNSPEC_LOAD_LEFT))]
   "!TARGET_MIPS16"
-  "lwl\t%0,%2"
+  "<load>l\t%0,%2"
   [(set_attr "type" "load")
-   (set_attr "mode" "SI")
+   (set_attr "mode" "<MODE>")
    (set_attr "hazard" "none")])
 
-(define_insn "mov_lwr"
-  [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec:SI [(match_operand:BLK 1 "memory_operand" "m")
-		    (match_operand:QI 2 "memory_operand" "m")
-		    (match_operand:SI 3 "register_operand" "0")]
-		   UNSPEC_LWR))]
+(define_insn "mov_<load>r"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(unspec:GPR [(match_operand:BLK 1 "memory_operand" "m")
+		     (match_operand:QI 2 "memory_operand" "m")
+		     (match_operand:GPR 3 "register_operand" "0")]
+		    UNSPEC_LOAD_RIGHT))]
   "!TARGET_MIPS16"
-  "lwr\t%0,%2"
+  "<load>r\t%0,%2"
   [(set_attr "type" "load")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-
-(define_insn "mov_swl"
+(define_insn "mov_<store>l"
   [(set (match_operand:BLK 0 "memory_operand" "=m")
-	(unspec:BLK [(match_operand:SI 1 "reg_or_0_operand" "dJ")
+	(unspec:BLK [(match_operand:GPR 1 "reg_or_0_operand" "dJ")
 		     (match_operand:QI 2 "memory_operand" "m")]
-		    UNSPEC_SWL))]
+		    UNSPEC_STORE_LEFT))]
   "!TARGET_MIPS16"
-  "swl\t%z1,%2"
+  "<store>l\t%z1,%2"
   [(set_attr "type" "store")
-   (set_attr "mode" "SI")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "mov_swr"
+(define_insn "mov_<store>r"
   [(set (match_operand:BLK 0 "memory_operand" "+m")
-	(unspec:BLK [(match_operand:SI 1 "reg_or_0_operand" "dJ")
+	(unspec:BLK [(match_operand:GPR 1 "reg_or_0_operand" "dJ")
 		     (match_operand:QI 2 "memory_operand" "m")
 		     (match_dup 0)]
-		    UNSPEC_SWR))]
+		    UNSPEC_STORE_RIGHT))]
   "!TARGET_MIPS16"
-  "swr\t%z1,%2"
+  "<store>r\t%z1,%2"
   [(set_attr "type" "store")
-   (set_attr "mode" "SI")])
-
-
-(define_insn "mov_ldl"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(unspec:DI [(match_operand:BLK 1 "memory_operand" "m")
-		    (match_operand:QI 2 "memory_operand" "m")]
-		   UNSPEC_LDL))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "ldl\t%0,%2"
-  [(set_attr "type" "load")
-   (set_attr "mode" "DI")])
-
-(define_insn "mov_ldr"
-  [(set (match_operand:DI 0 "register_operand" "=d")
-	(unspec:DI [(match_operand:BLK 1 "memory_operand" "m")
-		    (match_operand:QI 2 "memory_operand" "m")
-		    (match_operand:DI 3 "register_operand" "0")]
-		   UNSPEC_LDR))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "ldr\t%0,%2"
-  [(set_attr "type" "load")
-   (set_attr "mode" "DI")])
-
-
-(define_insn "mov_sdl"
-  [(set (match_operand:BLK 0 "memory_operand" "=m")
-	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ")
-		     (match_operand:QI 2 "memory_operand" "m")]
-		    UNSPEC_SDL))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "sdl\t%z1,%2"
-  [(set_attr "type" "store")
-   (set_attr "mode" "DI")])
-
-(define_insn "mov_sdr"
-  [(set (match_operand:BLK 0 "memory_operand" "+m")
-	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ")
-		     (match_operand:QI 2 "memory_operand" "m")
-		     (match_dup 0)]
-		    UNSPEC_SDR))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "sdr\t%z1,%2"
-  [(set_attr "type" "store")
-   (set_attr "mode" "DI")])
+   (set_attr "mode" "<MODE>")])
 
 ;; An instruction to calculate the high part of a 64-bit SYMBOL_GENERAL.
 ;; The required value is:
