@@ -376,7 +376,7 @@ dump_cgraph (FILE *f)
       if (node->global.cloned_times > 1)
 	fprintf (f, " cloned %ix", node->global.cloned_times);
 
-      fprintf (f, "\n  called by :");
+      fprintf (f, "\n  called by: ");
       for (edge = node->callers; edge; edge = edge->next_caller)
 	{
 	  fprintf (f, "%s ", cgraph_node_name (edge->caller));
