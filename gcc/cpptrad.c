@@ -802,7 +802,7 @@ recursive_macro (pfile, node)
      cpp_reader *pfile;
      cpp_hashnode *node;
 {
-  bool recursing = node->flags & NODE_DISABLED;
+  bool recursing = !!(node->flags & NODE_DISABLED);
 
   /* Object-like macros that are already expanding are necessarily
      recursive.

@@ -1,3 +1,11 @@
+2002-07-17  Neil Booth  <neil@daikokuya.co.uk>
+
+	* cppexp.c (cpp_interpret_integer, append_digit, parse_defined,
+	eval_token): Clarify and correct use of "bool" variables.
+	* cpplib.h (struct cpp_options): Similarly.
+	* cppmacro.c (parse_params, _cpp_save_parameter): Ditto.
+	* cpptrad.c (recursive_macro): Similarly.
+
 Wed Jul 17 17:08:06 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/lib1funcs.asm (udivsi3_i4): Implement SHcompact version in

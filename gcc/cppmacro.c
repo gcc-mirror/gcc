@@ -69,7 +69,7 @@ static cpp_token *alloc_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static cpp_token *lex_expansion_token PARAMS ((cpp_reader *, cpp_macro *));
 static bool warn_of_redefinition PARAMS ((cpp_reader *, const cpp_hashnode *,
 					  const cpp_macro *));
-static int parse_params PARAMS ((cpp_reader *, cpp_macro *));
+static bool parse_params PARAMS ((cpp_reader *, cpp_macro *));
 static void check_trad_stringification PARAMS ((cpp_reader *,
 						const cpp_macro *,
 						const cpp_string *));
@@ -1245,7 +1245,7 @@ _cpp_save_parameter (pfile, macro, node)
     {
       cpp_error (pfile, DL_ERROR, "duplicate macro parameter \"%s\"",
 		 NODE_NAME (node));
-      return 1;
+      return true;
     }
 
   if (BUFF_ROOM (pfile->a_buff)
@@ -1254,11 +1254,12 @@ _cpp_save_parameter (pfile, macro, node)
 
   ((cpp_hashnode **) BUFF_FRONT (pfile->a_buff))[macro->paramc++] = node;
   node->arg_index = macro->paramc;
-  return 0;
+  return false;
 }
 
-/* Check the syntax of the parameters in a MACRO definition.  */
-static int
+/* Check the syntax of the parameters in a MACRO definition.  Returns
+   false if an error occurs.  */
+static bool
 parse_params (pfile, macro)
      cpp_reader *pfile;
      cpp_macro *macro;
@@ -1281,31 +1282,31 @@ parse_params (pfile, macro)
 	  cpp_error (pfile, DL_ERROR,
 		     "\"%s\" may not appear in macro parameter list",
 		     cpp_token_as_text (pfile, token));
-	  return 0;
+	  return false;
 
 	case CPP_NAME:
 	  if (prev_ident)
 	    {
 	      cpp_error (pfile, DL_ERROR,
 			 "macro parameters must be comma-separated");
-	      return 0;
+	      return false;
 	    }
 	  prev_ident = 1;
 
 	  if (_cpp_save_parameter (pfile, macro, token->val.node))
-	    return 0;
+	    return false;
 	  continue;
 
 	case CPP_CLOSE_PAREN:
 	  if (prev_ident || macro->paramc == 0)
-	    return 1;
+	    return true;
 
 	  /* Fall through to pick up the error.  */
 	case CPP_COMMA:
 	  if (!prev_ident)
 	    {
 	      cpp_error (pfile, DL_ERROR, "parameter name missing");
-	      return 0;
+	      return false;
 	    }
 	  prev_ident = 0;
 	  continue;
@@ -1328,12 +1329,12 @@ parse_params (pfile, macro)
 	  /* We're at the end, and just expect a closing parenthesis.  */
 	  token = _cpp_lex_token (pfile);
 	  if (token->type == CPP_CLOSE_PAREN)
-	    return 1;
+	    return true;
 	  /* Fall through.  */
 
 	case CPP_EOF:
 	  cpp_error (pfile, DL_ERROR, "missing ')' in macro parameter list");
-	  return 0;
+	  return false;
 	}
     }
 }
