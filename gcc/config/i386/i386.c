@@ -42,6 +42,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define AT_BP(mode) (gen_rtx (MEM, (mode), frame_pointer_rtx))
 
+extern rtx gen_push_operand ();
 extern FILE *asm_out_file;
 extern char *strcat ();
 
@@ -243,6 +244,7 @@ output_move_double (operands)
   enum {REGOP, OFFSOP, MEMOP, PUSHOP, POPOP, CNSTOP, RNDOP } optype0, optype1;
   rtx latehalf[2];
   rtx addreg0 = 0, addreg1 = 0;
+  rtx pop_after = 0;
 
   /* First classify both operands.  */
 
@@ -352,6 +354,16 @@ output_move_double (operands)
       && reg_overlap_mentioned_p (stack_pointer_rtx, operands[1]))
     operands[1] = latehalf[1];
 
+  /* For (set (reg:DI N) (mem:DI ... (reg:SI N) ...)),
+     push the first word on the stack, and pop it off afterward.  */
+  if (optype0 == REGOP
+      && refers_to_regno_p (REGNO (operands[0]), REGNO (operands[0]) + 1,
+			    operands[1], 0))
+    {
+      pop_after = operands[0];
+      operands[0] = gen_rtx (MEM, SImode, gen_push_operand ());
+    }
+
   /* If one or both operands autodecrementing,
      do the two words, high-numbered first.  */
 
@@ -401,6 +413,11 @@ output_move_double (operands)
     asm_add (-4, addreg0);
   if (addreg1)
     asm_add (-4, addreg1);
+
+  /* If we diverted a word to the stack, pop it now
+     to the proper register.  */
+  if (pop_after != 0)
+    output_asm_insn ("pop%L0 %0", &pop_after);
 
   return "";
 }
