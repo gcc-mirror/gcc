@@ -1,5 +1,20 @@
 Sun Sep 20 19:01:51 1998  Richard Henderson  <rth@cygnus.com>
 
+	* alpha.c (alpha_sr_alias_set): New variable.
+	(override_options): Set it.
+	(alpha_expand_prologue, alpha_expand_epilogue): Use it.
+	(mode_mask_operand): Fix signed-unsigned comparision warning.
+	(alpha_expand_block_move): Likewise.
+	(print_operand): Likewise.
+	(get_aligned_mem): Use change_address.
+	(alpha_set_memflags, alpha_set_memflags_1): Set the alias set.
+	(alphaev4_insn_pipe, alphaev4_next_group): New functions.
+	(alphaev4_next_nop, alphaev5_next_nop): New functions.
+	(alpha_align_insns): Remade from old alphaev5_align_insns
+	to handle multiple processors.
+	(alpha_reorg): Call alpha_align_insns for both ev4 and ev5.
+	* output.h (label_to_alignment): Prototype.
+
         * tree.c (new_alias_set): New function.
         * tree.h (new_alias_set): Declare it.
         * c-common.c (c_get_alias_set): Use it.
