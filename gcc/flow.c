@@ -1167,7 +1167,7 @@ propagate_block (old, first, last, final, significant, bnum)
      In each element, OFFSET is the byte-number within a regset
      for the register described by the element, and BIT is a mask
      for that register's bit within the byte.  */
-  register struct foo { short offset; short bit; } *regs_sometimes_live;
+  register struct sometimes { short offset; short bit; } *regs_sometimes_live;
   int sometimes_max = 0;
   /* This regset has 1 for each reg that we have seen live so far.
      It and REGS_SOMETIMES_LIVE are updated together.  */
@@ -1206,7 +1206,7 @@ propagate_block (old, first, last, final, significant, bnum)
       maxlive = (regset) alloca (regset_bytes);
       bcopy (old, maxlive, regset_bytes);
       regs_sometimes_live
-	= (struct foo *) alloca (max_regno * sizeof (struct foo));
+	= (struct sometimes *) alloca (max_regno * sizeof (struct sometimes));
 
       /* Process the regs live at the end of the block.
 	 Enter them in MAXLIVE and REGS_SOMETIMES_LIVE.
@@ -1427,7 +1427,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		     must not go in a register clobbered by calls.
 		     Find all regs now live and record this for them.  */
 
-		  register struct foo *p = regs_sometimes_live;
+		  register struct sometimes *p = regs_sometimes_live;
 
 		  for (i = 0; i < sometimes_max; i++, p++)
 		    if (old[p->offset] & (1 << p->bit))
@@ -1461,7 +1461,7 @@ propagate_block (old, first, last, final, significant, bnum)
 		}
 
 	      {
-		register struct foo *p = regs_sometimes_live;
+		register struct sometimes *p = regs_sometimes_live;
 		for (i = 0; i < sometimes_max; i++, p++)
 		  {
 		    if (old[p->offset] & ((REGSET_ELT_TYPE) 1 << p->bit))
