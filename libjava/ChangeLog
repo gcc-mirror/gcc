@@ -1,5 +1,25 @@
 2003-10-11  Michael Koch  <konqueror@gmx.de>
 
+	* java/rmi/activation/ActivationInstantiator.java,
+	java/rmi/activation/ActivationMonitor.java,
+	java/rmi/activation/ActivationSystem.java,
+	java/rmi/activation/Activator.java,
+	java/rmi/dgc/DGC.java,
+	java/rmi/registry/Registry.java,
+	java/rmi/registry/RegistryHandler.java,
+	java/rmi/server/LoaderHandler.java,
+	java/rmi/server/RMIClientSocketFactory.java,
+	java/rmi/server/RMIFailureHandler.java,
+	java/rmi/server/RMIServerSocketFactory.java,
+	java/rmi/server/RemoteCall.java,
+	java/rmi/server/RemoteRef.java,
+	java/rmi/server/ServerRef.java,
+	java/rmi/server/Skeleton.java,
+	java/rmi/server/Unreferenced.java:
+	Removed redundant modifiers.
+
+2003-10-11  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/ContentHandlerFactory.java,
 	java/net/DatagramSocketImplFactory.java,
 	java/net/FileNameMap.java,

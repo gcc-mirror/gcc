@@ -48,11 +48,11 @@ public interface Skeleton
   /**
    * @deprecated
    */
-  public void dispatch (Remote obj, RemoteCall theCall, int opnum, long hash)
+  void dispatch (Remote obj, RemoteCall theCall, int opnum, long hash)
     throws Exception;
 
   /**
    * @deprecated
    */
-  public Operation[] getOperations();
+  Operation[] getOperations();
 }

@@ -37,17 +37,16 @@ exception statement from your version. */
 
 package java.rmi.server;
 
-import java.rmi.server.RemoteStub;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.server.RemoteStub;
 import java.rmi.server.ServerNotActiveException;
 
-public interface ServerRef
-	extends RemoteRef {
+public interface ServerRef extends RemoteRef
+{
+  long serialVersionUID = 0;
 
-public static final long serialVersionUID = 0;
+  RemoteStub exportObject(Remote obj, Object data) throws RemoteException;
 
-public RemoteStub exportObject(Remote obj, Object data) throws RemoteException;
-public String getClientHost() throws ServerNotActiveException;
-
+  String getClientHost() throws ServerNotActiveException;
 }
