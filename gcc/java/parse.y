@@ -1909,7 +1909,7 @@ catch_clause_parameter:
                   tree init;
                   if ($3)
                     {
-                      cppb = enter_block ();
+                      ccpb = enter_block ();
                       init = build_assignment
                         (ASSIGN_TK, $2.location, TREE_PURPOSE ($3),
                          build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
