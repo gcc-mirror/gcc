@@ -1,3 +1,8 @@
+2003-07-17  Geoffrey Keating  <geoffk@apple.com>
+
+	PR 11498
+	* gcc.c-torture/compile/mangle-1.c: New file.
+
 2003-07-17  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/7809

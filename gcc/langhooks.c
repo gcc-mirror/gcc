@@ -32,6 +32,7 @@ Boston, MA 02111-1307, USA.  */
 #include "flags.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "ggc.h"
 
 /* Do nothing; in many cases the default hook.  */
 
@@ -136,6 +137,11 @@ lhd_warn_unused_global_decl (tree decl)
   return true;
 }
 
+/* Number for making the label on the next
+   static variable internal to a function.  */
+
+static GTY(()) int var_labelno;
+
 /* Set the DECL_ASSEMBLER_NAME for DECL.  */
 void
 lhd_set_decl_assembler_name (tree decl)
@@ -149,12 +155,28 @@ lhd_set_decl_assembler_name (tree decl)
 	  && (TREE_STATIC (decl)
 	      || DECL_EXTERNAL (decl)
 	      || TREE_PUBLIC (decl))))
-    /* By default, assume the name to use in assembly code is the
-       same as that used in the source language.  (That's correct
-       for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
-       value as DECL_NAME in build_decl, so this choice provides
-       backwards compatibility with existing front-ends.  */
-    SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+    {
+      /* By default, assume the name to use in assembly code is the
+	 same as that used in the source language.  (That's correct
+	 for C, and GCC used to set DECL_ASSEMBLER_NAME to the same
+	 value as DECL_NAME in build_decl, so this choice provides
+	 backwards compatibility with existing front-ends.  
+
+         Can't use just the variable's own name for a variable whose
+	 scope is less than the whole compilation.  Concatenate a
+	 distinguishing number.  */
+      if (!TREE_PUBLIC (decl) && DECL_CONTEXT (decl))
+	{
+	  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+	  char *label;
+	  
+	  ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
+	  var_labelno++;
+	  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
+	}
+      else
+	SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
+    }
   else
     /* Nobody should ever be asking for the DECL_ASSEMBLER_NAME of
        these DECLs -- unless they're in language-dependent code, in
@@ -456,3 +478,5 @@ write_global_declarations (void)
     /* Clean up.  */
   free (vec);
 }
+
+#include "gt-langhooks.h"

@@ -114,11 +114,6 @@ struct varasm_status GTY(())
 
 static GTY(()) int const_labelno;
 
-/* Number for making the label on the next
-   static variable internal to a function.  */
-
-static GTY(()) int var_labelno;
-
 /* Carry information from ASM_DECLARE_OBJECT_NAME
    to ASM_FINISH_DECLARE_OBJECT.  */
 
@@ -750,11 +745,7 @@ decode_reg_name (const char *asmspec)
 void
 make_decl_rtl (tree decl, const char *asmspec)
 {
-  int top_level = (DECL_CONTEXT (decl) == NULL_TREE
-		   || (TREE_CODE (DECL_CONTEXT (decl))
-		       == TRANSLATION_UNIT_DECL));
   const char *name = 0;
-  const char *new_name = 0;
   int reg_number;
   rtx x;
 
@@ -794,8 +785,6 @@ make_decl_rtl (tree decl, const char *asmspec)
       return;
     }
 
-  new_name = name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
   reg_number = decode_reg_name (asmspec);
   if (reg_number == -2)
     {
@@ -804,8 +793,10 @@ make_decl_rtl (tree decl, const char *asmspec)
       char *starred = alloca (strlen (asmspec) + 2);
       starred[0] = '*';
       strcpy (starred + 1, asmspec);
-      new_name = starred;
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (starred));
     }
+
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
 
   if (TREE_CODE (decl) != FUNCTION_DECL && DECL_REGISTER (decl))
     {
@@ -877,28 +868,6 @@ make_decl_rtl (tree decl, const char *asmspec)
   /* Variables can't be both common and weak.  */
   if (TREE_CODE (decl) == VAR_DECL && DECL_WEAK (decl))
     DECL_COMMON (decl) = 0;
-
-  /* Can't use just the variable's own name for a variable
-     whose scope is less than the whole file, unless it's a member
-     of a local class (which will already be unambiguous).
-     Concatenate a distinguishing number.  */
-  if (!top_level && !TREE_PUBLIC (decl)
-      && ! (DECL_CONTEXT (decl) && TYPE_P (DECL_CONTEXT (decl)))
-      && asmspec == 0
-      && name == IDENTIFIER_POINTER (DECL_NAME (decl)))
-    {
-      char *label;
-
-      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-      var_labelno++;
-      new_name = label;
-    }
-
-  if (name != new_name)
-    {
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (new_name));
-      name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-    }
 
   x = gen_rtx_SYMBOL_REF (Pmode, name);
   SYMBOL_REF_WEAK (x) = DECL_WEAK (decl);
