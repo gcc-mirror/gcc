@@ -56,7 +56,6 @@ struct diagnostic_context;
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
    2: IDENTIFIER_OPNAME_P (in IDENTIFIER_NODE)
-      TYPE_POLYMORPHIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
       STATEMENT_LIST_TRY_BLOCK (in STATEMENT_LIST)
@@ -73,6 +72,7 @@ struct diagnostic_context;
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       DECL_CONSTRUCTION_VTABLE_P (in VAR_DECL)
+      TYPE_MARKED_P (in _TYPE)
 
    Usage of TYPE_LANG_FLAG_?:
    0: TYPE_DEPENDENT_P
@@ -1001,22 +1001,23 @@ struct lang_type_class GTY(())
   unsigned non_zero_init : 1;
   unsigned empty_p : 1;
 
-  unsigned marks: 6;
   unsigned vec_new_uses_cookie : 1;
   unsigned declared_class : 1;
-
+  unsigned diamond_shaped : 1;
+  unsigned repeated_base : 1;
   unsigned being_defined : 1;
   unsigned redefined : 1;
   unsigned debug_requested : 1;
-  unsigned use_template : 2;
   unsigned fields_readonly : 1;
+  
+  unsigned use_template : 2;
   unsigned ptrmemfunc_flag : 1;
   unsigned was_anonymous : 1;
-
   unsigned lazy_default_ctor : 1;
   unsigned lazy_copy_ctor : 1;
   unsigned lazy_assignment_op : 1;
   unsigned has_const_init_ref : 1;
+  
   unsigned has_complex_init_ref : 1;
   unsigned has_complex_assign_ref : 1;
   unsigned non_aggregate : 1;
@@ -1029,7 +1030,7 @@ struct lang_type_class GTY(())
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 8;
+  unsigned dummy : 12;
 
   tree primary_base;
   VEC (tree_pair_s) *vcall_indices;
@@ -1158,6 +1159,19 @@ struct lang_type GTY(())
    convenient, don't reprocess any methods that appear in its redefinition.  */
 #define TYPE_REDEFINED(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->redefined)
 
+/* Mark bits for repeated base checks.  */
+#define TYPE_MARKED_P(NODE) TREE_LANG_FLAG_6 (TYPE_CHECK (NODE))
+
+/* Non-zero if the class NODE has multiple paths to the same (virtual)
+   base object.  */
+#define CLASSTYPE_DIAMOND_SHAPED_P(NODE) \
+  (LANG_TYPE_CLASS_CHECK(NODE)->diamond_shaped)
+
+/* Non-zero if the class NODE has multiple instances of the same base
+   type.  */
+#define CLASSTYPE_REPEATED_BASE_P(NODE) \
+  (LANG_TYPE_CLASS_CHECK(NODE)->repeated_base)
+
 /* The member function with which the vtable will be emitted:
    the first noninline non-pure-virtual member function.  NULL_TREE
    if there is no key function or if this is a class template */
@@ -1202,47 +1216,6 @@ struct lang_type GTY(())
    destructors that take an in-charge parameter.  */
 #define CLASSTYPE_DESTRUCTORS(NODE) \
   (VEC_index (tree, CLASSTYPE_METHOD_VEC (NODE), CLASSTYPE_DESTRUCTOR_SLOT))
-
-/* Mark bits for depth-first and breath-first searches.  */
-
-/* Get the value of the Nth mark bit.  */
-#define CLASSTYPE_MARKED_N(NODE, N)				\
-  (((CLASS_TYPE_P (NODE) ? LANG_TYPE_CLASS_CHECK (NODE)->marks	\
-     : ((unsigned) TYPE_ALIAS_SET (NODE))) & (1 << (N))) != 0)
-
-/* Set the Nth mark bit.  */
-#define SET_CLASSTYPE_MARKED_N(NODE, N)				\
-  (CLASS_TYPE_P (NODE)						\
-   ? (void) (LANG_TYPE_CLASS_CHECK (NODE)->marks |= (1 << (N)))	\
-   : (void) (TYPE_ALIAS_SET (NODE) |= (1 << (N))))
-
-/* Clear the Nth mark bit.  */
-#define CLEAR_CLASSTYPE_MARKED_N(NODE, N)			\
-  (CLASS_TYPE_P (NODE)						\
-   ? (void) (LANG_TYPE_CLASS_CHECK (NODE)->marks &= ~(1 << (N)))	\
-   : (void) (TYPE_ALIAS_SET (NODE) &= ~(1 << (N))))
-
-/* Get the value of the mark bits.  */
-#define CLASSTYPE_MARKED(NODE) CLASSTYPE_MARKED_N (NODE, 0)
-#define CLASSTYPE_MARKED2(NODE) CLASSTYPE_MARKED_N (NODE, 1)
-#define CLASSTYPE_MARKED3(NODE) CLASSTYPE_MARKED_N (NODE, 2)
-#define CLASSTYPE_MARKED4(NODE) CLASSTYPE_MARKED_N (NODE, 3)
-#define CLASSTYPE_MARKED5(NODE) CLASSTYPE_MARKED_N (NODE, 4)
-#define CLASSTYPE_MARKED6(NODE) CLASSTYPE_MARKED_N (NODE, 5)
-
-/* Macros to modify the above flags */
-#define SET_CLASSTYPE_MARKED(NODE)    SET_CLASSTYPE_MARKED_N (NODE, 0)
-#define CLEAR_CLASSTYPE_MARKED(NODE)  CLEAR_CLASSTYPE_MARKED_N (NODE, 0)
-#define SET_CLASSTYPE_MARKED2(NODE)   SET_CLASSTYPE_MARKED_N (NODE, 1)
-#define CLEAR_CLASSTYPE_MARKED2(NODE) CLEAR_CLASSTYPE_MARKED_N (NODE, 1)
-#define SET_CLASSTYPE_MARKED3(NODE)   SET_CLASSTYPE_MARKED_N (NODE, 2)
-#define CLEAR_CLASSTYPE_MARKED3(NODE) CLEAR_CLASSTYPE_MARKED_N (NODE, 2)
-#define SET_CLASSTYPE_MARKED4(NODE)   SET_CLASSTYPE_MARKED_N (NODE, 3)
-#define CLEAR_CLASSTYPE_MARKED4(NODE) CLEAR_CLASSTYPE_MARKED_N (NODE, 3)
-#define SET_CLASSTYPE_MARKED5(NODE)   SET_CLASSTYPE_MARKED_N (NODE, 4)
-#define CLEAR_CLASSTYPE_MARKED5(NODE) CLEAR_CLASSTYPE_MARKED_N (NODE, 4)
-#define SET_CLASSTYPE_MARKED6(NODE)   SET_CLASSTYPE_MARKED_N (NODE, 5)
-#define CLEAR_CLASSTYPE_MARKED6(NODE) CLEAR_CLASSTYPE_MARKED_N (NODE, 5)
 
 /* A dictionary of the nested user-defined-types (class-types, or enums)
    found within this class.  This table includes nested member class

@@ -9228,7 +9228,7 @@ xref_basetypes (tree ref, tree base_list)
 	}
     }
 
-  SET_CLASSTYPE_MARKED (ref);
+  TYPE_MARKED_P (ref) = 1;
 
   /* The binfo slot should be empty, unless this is an (ill-formed)
      redefinition.  */
@@ -9286,7 +9286,7 @@ xref_basetypes (tree ref, tree base_list)
 	  continue;
 	}
 
-      if (CLASSTYPE_MARKED (basetype))
+      if (TYPE_MARKED_P (basetype))
 	{
 	  if (basetype == ref)
 	    error ("recursive type `%T' undefined", basetype);
@@ -9294,7 +9294,7 @@ xref_basetypes (tree ref, tree base_list)
 	    error ("duplicate base type `%T' invalid", basetype);
 	  continue;
 	}
-      SET_CLASSTYPE_MARKED (basetype);
+      TYPE_MARKED_P (basetype) = 1;
 
       if (TYPE_FOR_JAVA (basetype) && (current_lang_depth () == 0))
 	TYPE_FOR_JAVA (ref) = 1;
@@ -9313,6 +9313,10 @@ xref_basetypes (tree ref, tree base_list)
 	    |= TYPE_HAS_ARRAY_NEW_OPERATOR (basetype);
 	  TYPE_GETS_DELETE (ref) |= TYPE_GETS_DELETE (basetype);
 	  TYPE_HAS_CONVERSION (ref) |= TYPE_HAS_CONVERSION (basetype);
+	  CLASSTYPE_DIAMOND_SHAPED_P (ref)
+	    |= CLASSTYPE_DIAMOND_SHAPED_P (basetype);
+	  CLASSTYPE_REPEATED_BASE_P (ref)
+	    |= CLASSTYPE_REPEATED_BASE_P (basetype);
 	}
 
       base_binfo = copy_binfo (base_binfo, basetype, ref,
@@ -9324,10 +9328,36 @@ xref_basetypes (tree ref, tree base_list)
       BINFO_BASE_ACCESS_APPEND (binfo, access);
     }
 
+  if (VEC_space (tree, CLASSTYPE_VBASECLASSES (ref), 1))
+    /* If we have space in the vbase vector, we must have shared at
+       least one of them, and are therefore diamond shaped.  */
+    CLASSTYPE_DIAMOND_SHAPED_P (ref) = 1;
+
   /* Unmark all the types.  */
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
-    CLEAR_CLASSTYPE_MARKED (BINFO_TYPE (base_binfo));
-  CLEAR_CLASSTYPE_MARKED (ref);
+    TYPE_MARKED_P (BINFO_TYPE (base_binfo)) = 0;
+  TYPE_MARKED_P (ref) = 0;
+
+  /* Now see if we have a repeated base type.  */
+  if (!CLASSTYPE_REPEATED_BASE_P (ref))
+    {
+      for (base_binfo = binfo; base_binfo;
+	   base_binfo = TREE_CHAIN (base_binfo))
+	{
+	  if (TYPE_MARKED_P (BINFO_TYPE (base_binfo)))
+	    {
+	      CLASSTYPE_REPEATED_BASE_P (ref) = 1;
+	      break;
+	    }
+	  TYPE_MARKED_P (BINFO_TYPE (base_binfo)) = 1;
+	}
+      for (base_binfo = binfo; base_binfo;
+	   base_binfo = TREE_CHAIN (base_binfo))
+	if (TYPE_MARKED_P (BINFO_TYPE (base_binfo)))
+	  TYPE_MARKED_P (BINFO_TYPE (base_binfo)) = 0;
+	else
+	  break;
+    }
 }
 
 
