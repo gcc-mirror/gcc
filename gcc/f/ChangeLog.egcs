@@ -1,3 +1,7 @@
+Mon Sep 29 10:37:07 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* intdoc.c (main): Remove unused attribute for main's arguments.
+
 Sun Sep 28 01:47:17 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* Make-lang.in (G77_FLAGS_TO_PASS): Pass down RANLIB, RANLIB_TEST
