@@ -1521,7 +1521,7 @@ _mm_cvtss_sd (__m128d __A, __m128d __B)
   return (__m128d)__builtin_ia32_cvtss2sd ((__v2df) __A, (__v4sf)__B);
 }
 
-#define _mm_shuffle_pd(__A, __B, __C) ((__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, (C)))
+#define _mm_shuffle_pd(__A, __B, __C) ((__m128d)__builtin_ia32_shufpd ((__v2df)__A, (__v2df)__B, (__C)))
 
 static __inline __m128d
 _mm_unpackhi_pd (__m128d __A, __m128d __B)
@@ -1536,27 +1536,29 @@ _mm_unpacklo_pd (__m128d __A, __m128d __B)
 }
 
 static __inline __m128d
-_mm_loadh_pd (__m128d __A, __m128d *__B)
+_mm_loadh_pd (__m128d __A, double *__B)
 {
   return (__m128d)__builtin_ia32_loadhpd ((__v2df)__A, (__v2si *)__B);
 }
 
 static __inline void
-_mm_storeh_pd (__m128d *__A, __m128d __B)
+_mm_storeh_pd (__m128d *__A, double __B)
 {
-  __builtin_ia32_storehpd ((__v2si *)__A, (__v2df)__B);
+  __v2df __tmp = __builtin_ia32_loadsd (&__B);
+  __builtin_ia32_storehpd ((__v2si *)__A, __tmp);
 }
 
 static __inline __m128d
-_mm_loadl_pd (__m128d __A, __m128d *__B)
+_mm_loadl_pd (__m128d __A, double *__B)
 {
   return (__m128d)__builtin_ia32_loadlpd ((__v2df)__A, (__v2si *)__B);
 }
 
 static __inline void
-_mm_storel_pd (__m128d *__A, __m128d __B)
+_mm_storel_pd (__m128d *__A, double __B)
 {
-  __builtin_ia32_storelpd ((__v2si *)__A, (__v2df)__B);
+  __v2df __tmp = __builtin_ia32_loadsd (&__B);
+  __builtin_ia32_storelpd ((__v2si *)__A, __tmp);
 }
 
 static __inline int
