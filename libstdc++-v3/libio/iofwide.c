@@ -155,6 +155,7 @@ _IO_fwide (fp, mode)
 	   cares about systems which changing internal charsets they
 	   should come up with a solution for the determination of the
 	   currently used internal character set.  */
+#if 0
 	const char *internal_ccs = _G_INTERNAL_CCS;
 	const char *external_ccs = nl_langinfo(CODESET);
 
@@ -164,6 +165,7 @@ _IO_fwide (fp, mode)
 	cc->__cd_in = iconv_open (internal_ccs, external_ccs);
 	if (cc->__cd_in != (iconv_t) -1)
 	  cc->__cd_out = iconv_open (external_ccs, internal_ccs);
+#endif
       }
 # else
 #  error "somehow determine this from LC_CTYPE"

@@ -120,7 +120,7 @@ void test01()
   const unicode_codecvt&	cvt = use_facet<unicode_codecvt>(loc); 
 
   // in
-  unicode_codecvt::state_type state01("UNICODE", "ISO_8859-1");
+  unicode_codecvt::state_type state01("UNICODE", "ISO-8859-15");
   initialize_state(state01);
   result r1 = cvt.in(state01, e_lit, e_lit + size, efrom_next, 
 		     i_arr, i_arr + size, ito_next);
@@ -130,7 +130,7 @@ void test01()
   VERIFY( ito_next == i_arr + size );
 
   // out
-  unicode_codecvt::state_type state02("UNICODE", "ISO_8859-1");
+  unicode_codecvt::state_type state02("UNICODE", "ISO-8859-15");
   initialize_state(state02);  
   result r2 = cvt.out(state02, i_lit, i_lit + size, ifrom_next, 
 		       e_arr, e_arr + size, eto_next);
@@ -141,7 +141,7 @@ void test01()
 
   // unshift
   ext_traits::copy(e_arr, e_lit, size);
-  unicode_codecvt::state_type state03("UNICODE", "ISO_8859-1");
+  unicode_codecvt::state_type state03("UNICODE", "ISO-8859-15");
   initialize_state(state03);
   result r3 = cvt.unshift(state03, e_arr, e_arr + size, eto_next);
   VERIFY( r3 == codecvt_base::noconv );
@@ -153,7 +153,7 @@ void test01()
 
   VERIFY( !cvt.always_noconv() );
 
-  unicode_codecvt::state_type state04("UNICODE", "ISO_8859-1");
+  unicode_codecvt::state_type state04("UNICODE", "ISO-8859-15");
   initialize_state(state04);
   int j = cvt.length(state03, e_lit, e_lit + size, 5);
   VERIFY( j == 5 );

@@ -45,7 +45,7 @@
 
 namespace std
 {
-  // XXX __enc_traits may need to move up the locale header heirarchy,
+  // XXX __enc_traits may need to move up the locale header hierarchy,
   // depending on if ctype ends up using it.
 #ifdef _GLIBCPP_USE_WCHAR_T
   // Extensions to use icov for dealing with character encodings,
@@ -55,9 +55,10 @@ namespace std
   class __enc_traits
   {
   public:
-    // Types:
-    typedef iconv_t	__conv_type;
-    typedef mbstate_t	__state_type;
+    // Types: 
+    // NB: A conversion descriptor subsumes and enhances the
+    // functionality of a simple state type such as mbstate_t.
+    typedef iconv_t	__desc_type;
     
   protected:
     // Data Members:
@@ -69,9 +70,9 @@ namespace std
     char  	       	__extc_enc[__max_size];
 
     // Conversion descriptor between external encoding to internal encoding.
-    __conv_type		__in_desc;
+    __desc_type		__in_desc;
     // Conversion descriptor between internal encoding to external encoding.
-    __conv_type		__out_desc;
+    __desc_type		__out_desc;
 
   public:
     __enc_traits() : __in_desc(0), __out_desc(0)
@@ -89,8 +90,19 @@ namespace std
     __enc_traits(const char* __int, const char* __ext)
     : __in_desc(0), __out_desc(0)
     {
-      strcpy(__intc_enc, __int);
-      strcpy(__extc_enc, __ext);
+      strncpy(__intc_enc, __int, __max_size);
+      strncpy(__extc_enc, __ext, __max_size);
+    }
+
+    // 21.1.2 traits typedefs
+    // p4
+    // typedef STATE_T state_type
+    // requires: state_type shall meet the requirements of
+    // CopyConstructible types (20.1.3)
+    __enc_traits(const __enc_traits& __obj)
+    {
+      strncpy(__intc_enc, __obj.__intc_enc, __max_size);
+      strncpy(__extc_enc, __obj.__extc_enc, __max_size);
     }
 
     ~__enc_traits()
@@ -118,11 +130,11 @@ namespace std
 	     && __out_desc != iconv_t(-1) && __in_desc != iconv_t(-1);
     }
 
-    const __conv_type* 
+    const __desc_type* 
     _M_get_in_descriptor()
     { return &__in_desc; }
 
-    const __conv_type* 
+    const __desc_type* 
     _M_get_out_descriptor()
     { return &__out_desc; }
 
@@ -133,15 +145,6 @@ namespace std
     const char* 
     _M_get_external_enc()
     { return __extc_enc; }
-
-  protected:
-    // 21.1.2 traits typedefs
-    // p4
-    // typedef STATE_T state_type
-    // requires: state_type shall meet the requirements of
-    // CopyConstructible types (20.1.3)
-    // XXX because of this, these might actually need to be filled out.
-    __enc_traits(const __enc_traits&);
   };
 #endif //_GLIBCPP_USE_WCHAR_T
 
@@ -295,7 +298,7 @@ namespace std
       typedef _InternT 					intern_type;
       typedef _ExternT 					extern_type;
       typedef __enc_traits 				state_type;
-      typedef __enc_traits::__conv_type 		__conv_type;
+      typedef __enc_traits::__desc_type 		__desc_type;
       typedef __enc_traits				__enc_type;
 
       // Data Members:
@@ -360,8 +363,8 @@ namespace std
       result __ret = error;
       if (__state._M_good())
 	{
-	  typedef state_type::__conv_type	__conv_type;
-	  const __conv_type* __desc = __state._M_get_out_descriptor();
+	  typedef state_type::__desc_type	__desc_type;
+	  const __desc_type* __desc = __state._M_get_out_descriptor();
 	  const size_t __fmultiple = sizeof(intern_type) / sizeof(char);
 	  size_t __flen = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(extern_type) / sizeof(char);
@@ -403,8 +406,8 @@ namespace std
       result __ret = error;
       if (__state._M_good())
 	{
-	  typedef state_type::__conv_type	__conv_type;
-	  const __conv_type* __desc = __state._M_get_in_descriptor();
+	  typedef state_type::__desc_type	__desc_type;
+	  const __desc_type* __desc = __state._M_get_in_descriptor();
 	  const size_t __tmultiple = sizeof(intern_type) / sizeof(char);
 	  size_t __tlen = __tmultiple * (__to_end - __to); 
 	  
@@ -440,8 +443,8 @@ namespace std
       result __ret = error;
       if (__state._M_good())
 	{
-	  typedef state_type::__conv_type	__conv_type;
-	  const __conv_type* __desc = __state._M_get_in_descriptor();
+	  typedef state_type::__desc_type	__desc_type;
+	  const __desc_type* __desc = __state._M_get_in_descriptor();
 	  const size_t __fmultiple = sizeof(extern_type) / sizeof(char);
 	  size_t __flen = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(intern_type) / sizeof(char);
