@@ -175,9 +175,7 @@ if $LINKS; then
 	  # root area.
 	  for file2 in $files; do
 	    case $file2 in
-	      $file/.*)
-		;;
-	      *)
+	      $file/./*)
 		dupdir=${LIB}/root$x/`echo $file2 | sed -n "s|^${file}/||p"`
 		echo "Duplicating ${file}'s ${dupdir}"
 		if [ -d ${dupdir} ]
@@ -185,6 +183,8 @@ if $LINKS; then
 		else
 		  mkdir ${dupdir}
 		fi
+		;;
+	      *)
 		;;
 	    esac
           done
