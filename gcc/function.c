@@ -6200,10 +6200,16 @@ void
 diddle_return_value (code)
      enum rtx_code code;
 {
-  rtx return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
+  rtx return_reg;
+  tree decl_result = DECL_RESULT (current_function_decl);
 
-  if (return_reg)
+  if (DECL_RTL (decl_result))
     {
+      /* Use hard_function_value to avoid creating a reference to a BLKmode 
+	 register in the USE/CLOBBER insn.  */
+      return_reg = hard_function_value (TREE_TYPE (decl_result),
+					current_function_decl);
+
       if (GET_CODE (return_reg) == REG
 	  && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
 	emit_insn (gen_rtx_fmt_e (code, VOIDmode, return_reg));
