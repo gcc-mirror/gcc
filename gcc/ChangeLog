@@ -1,3 +1,10 @@
+2002-04-18  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (BRANCH_COST): Define.
+
+	* fold-const.c (BRANCH_COST): Don't provide default here, expr.h
+	does it.
+
 2002-04-18  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* flow.c (update_life_info): Ignore return value of cleanup_cfg.
