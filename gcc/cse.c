@@ -2626,6 +2626,29 @@ cse_rtx_varies_p (rtx x, int from_alias)
   return rtx_varies_p (x, from_alias);
 }
 
+/* Subroutine of canon_reg.  Pass *XLOC through canon_reg, and validate
+   the result if necessary.  INSN is as for canon_reg.  */
+
+static void
+validate_canon_reg (rtx *xloc, rtx insn)
+{
+  rtx new = canon_reg (*xloc, insn);
+  int insn_code;
+
+  /* If replacing pseudo with hard reg or vice versa, ensure the
+     insn remains valid.  Likewise if the insn has MATCH_DUPs.  */
+  if (insn != 0 && new != 0
+      && REG_P (new) && REG_P (*xloc)
+      && (((REGNO (new) < FIRST_PSEUDO_REGISTER)
+	   != (REGNO (*xloc) < FIRST_PSEUDO_REGISTER))
+	  || GET_MODE (new) != GET_MODE (*xloc)
+	  || (insn_code = recog_memoized (insn)) < 0
+	  || insn_data[insn_code].n_dups > 0))
+    validate_change (insn, xloc, new, 1);
+  else
+    *xloc = new;
+}
+
 /* Canonicalize an expression:
    replace each register reference inside it
    with the "oldest" equivalent register.
@@ -2695,25 +2718,10 @@ canon_reg (rtx x, rtx insn)
       int j;
 
       if (fmt[i] == 'e')
-	{
-	  rtx new = canon_reg (XEXP (x, i), insn);
-	  int insn_code;
-
-	  /* If replacing pseudo with hard reg or vice versa, ensure the
-	     insn remains valid.  Likewise if the insn has MATCH_DUPs.  */
-	  if (insn != 0 && new != 0
-	      && REG_P (new) && REG_P (XEXP (x, i))
-	      && (((REGNO (new) < FIRST_PSEUDO_REGISTER)
-		   != (REGNO (XEXP (x, i)) < FIRST_PSEUDO_REGISTER))
-		  || (insn_code = recog_memoized (insn)) < 0
-		  || insn_data[insn_code].n_dups > 0))
-	    validate_change (insn, &XEXP (x, i), new, 1);
-	  else
-	    XEXP (x, i) = new;
-	}
+	validate_canon_reg (&XEXP (x, i), insn);
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  XVECEXP (x, i, j) = canon_reg (XVECEXP (x, i, j), insn);
+	  validate_canon_reg (&XVECEXP (x, i, j), insn);
     }
 
   return x;
