@@ -4941,10 +4941,16 @@ cse_insn (insn, libcall_insn)
       rtx src_const = 0;
       rtx src_related = 0;
       struct table_elt *src_const_elt = 0;
-      int src_cost = MAX_COST, src_eqv_cost = MAX_COST, src_folded_cost = MAX_COST;
-      int src_related_cost = MAX_COST, src_elt_cost = MAX_COST;
-      int src_regcost, src_eqv_regcost, src_folded_regcost;
-      int src_related_regcost, src_elt_regcost;
+      int src_cost = MAX_COST;
+      int src_eqv_cost = MAX_COST;
+      int src_folded_cost = MAX_COST;
+      int src_related_cost = MAX_COST;
+      int src_elt_cost = MAX_COST;
+      int src_regcost = MAX_COST;
+      int src_eqv_regcost = MAX_COST;
+      int src_folded_regcost = MAX_COST;
+      int src_related_regcost = MAX_COST;
+      int src_elt_regcost = MAX_COST;
       /* Set non-zero if we need to call force_const_mem on with the
 	 contents of src_folded before using it.  */
       int src_folded_force_flag = 0;
@@ -5395,7 +5401,7 @@ cse_insn (insn, libcall_insn)
       /* If this was an indirect jump insn, a known label will really be
 	 cheaper even though it looks more expensive.  */
       if (dest == pc_rtx && src_const && GET_CODE (src_const) == LABEL_REF)
-	src_folded = src_const, src_folded_cost = src_folded_regcost -1;
+	src_folded = src_const, src_folded_cost = src_folded_regcost = -1;
 
       /* Terminate loop when replacement made.  This must terminate since
          the current contents will be tested and will always be valid.  */
@@ -5436,8 +5442,9 @@ cse_insn (insn, libcall_insn)
           /* Find cheapest and skip it for the next time.   For items
 	     of equal cost, use this order:
 	     src_folded, src, src_eqv, src_related and hash table entry.  */
-	  if (preferrable (src_folded_cost, src_folded_regcost,
-			   src_cost, src_regcost) <= 0
+	  if (src_folded
+	      && preferrable (src_folded_cost, src_folded_regcost,
+			      src_cost, src_regcost) <= 0
 	      && preferrable (src_folded_cost, src_folded_regcost,
 			      src_eqv_cost, src_eqv_regcost) <= 0
 	      && preferrable (src_folded_cost, src_folded_regcost,
@@ -5449,20 +5456,23 @@ cse_insn (insn, libcall_insn)
 	      if (src_folded_force_flag)
 		trial = force_const_mem (mode, trial);
 	    }
-	  else if (preferrable (src_cost, src_regcost,
-				src_eqv_cost, src_eqv_regcost) <= 0
+	  else if (src
+		   && preferrable (src_cost, src_regcost,
+				   src_eqv_cost, src_eqv_regcost) <= 0
 		   && preferrable (src_cost, src_regcost,
 				   src_related_cost, src_related_regcost) <= 0
 		   && preferrable (src_cost, src_regcost,
 				   src_elt_cost, src_elt_regcost) <= 0)
 	    trial = src, src_cost = MAX_COST;
-	  else if (preferrable (src_eqv_cost, src_eqv_regcost,
-				src_related_cost, src_related_regcost) <= 0
+	  else if (src_eqv_here
+		   && preferrable (src_eqv_cost, src_eqv_regcost,
+				   src_related_cost, src_related_regcost) <= 0
 		   && preferrable (src_eqv_cost, src_eqv_regcost,
 				   src_elt_cost, src_elt_regcost) <= 0)
 	    trial = copy_rtx (src_eqv_here), src_eqv_cost = MAX_COST;
-	  else if (preferrable (src_related_cost, src_related_regcost,
-				src_elt_cost, src_elt_regcost) <= 0)
+	  else if (src_related
+		   && preferrable (src_related_cost, src_related_regcost,
+				   src_elt_cost, src_elt_regcost) <= 0)
   	    trial = copy_rtx (src_related), src_related_cost = MAX_COST;
 	  else
 	    {
