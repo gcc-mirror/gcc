@@ -1,3 +1,8 @@
+2000-07-31  Geoff Keating  <geoffk@cygnus.com>
+
+	* c-parse.in (extdefs): Call ggc_collect between external
+	definitions.
+
 2000-07-30  Michael Hayes  <mhayes@cygnus.com>
 	    Richard Henderson  <rth@cygnus.com>
 
@@ -111,7 +116,8 @@ Sun Jul 30 20:38:26 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
 Sun Jul 30 20:30:41 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
-	* combine.c (if_then_else_cond): Be sure that mode fits in HOST_WIDE_INT
+	* combine.c (if_then_else_cond): Be sure that mode fits in
+	HOST_WIDE_INT.
 
 Sun Jul 30 20:27:36 MET DST 2000  Jan Hubicka  <jh@suse.cz>
 
