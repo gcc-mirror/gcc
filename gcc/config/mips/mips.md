@@ -8796,8 +8796,10 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"1")])
 
 ;; Normal return.
+;; We match any mode for the return address, so that this will work with
+;; both 32 bit and 64 bit targets.
 (define_insn "return_internal"
-  [(use (match_operand:SI 0 "register_operand" ""))
+  [(use (match_operand 0 "register_operand" ""))
    (return)]
   ""
   "*
