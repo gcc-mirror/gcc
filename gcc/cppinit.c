@@ -636,10 +636,10 @@ initialize_dependency_output (pfile)
       /* Output P, but remove known suffixes.  */
       q = p + len;
       /* Point to the filename suffix.  */
-      r = rindex (p, '.');
-      /* Compare against the known suffixes.  */
-      for (x = 0; known_suffixes[x]; x++)
-	{
+      r = strrchr (p, '.');
+      if (r)
+	/* Compare against the known suffixes.  */
+	for (x = 0; known_suffixes[x]; x++)
 	  if (strncmp (known_suffixes[x], r, q - r) == 0)
 	    {
 	      /* Make q point to the bit we're going to overwrite
@@ -647,7 +647,6 @@ initialize_dependency_output (pfile)
 	      q = r;
 	      break;
 	    }
-	}
 
       /* Supply our own suffix.  */
       strcpy (q, OBJECT_SUFFIX);
@@ -804,7 +803,6 @@ cpp_start_read (pfile, fname)
 	  int default_len = sizeof GCC_INCLUDE_DIR - 8;
 	  int specd_len = strlen (specd_prefix);
 
-	  default_len = sizeof GCC_INCLUDE_DIR - 8;
 	  memcpy (default_prefix, GCC_INCLUDE_DIR, default_len);
 	  default_prefix[default_len] = '\0';
 

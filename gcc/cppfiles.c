@@ -1214,7 +1214,7 @@ deps_output (pfile, string, spacer)
     pfile->deps_buffer[pfile->deps_size++] = ' ';
   bcopy (string, &pfile->deps_buffer[pfile->deps_size], size);
   pfile->deps_size += size;
-  pfile->deps_column += size;
+  pfile->deps_column += size + 1;  /* count spacer too */
   if (spacer == ':')
     pfile->deps_buffer[pfile->deps_size++] = ':';
   pfile->deps_buffer[pfile->deps_size] = 0;
