@@ -1,3 +1,7 @@
+2004-06-27  Paul Brook  <paul@codesourcery.com>
+
+	* gfortran.fortran-torture/execute/specfics.f90: Use correct typing.
+
 2004-06-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* g++.old-deja/g++.mike/p7325.C: Remove.
