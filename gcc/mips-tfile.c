@@ -695,12 +695,8 @@ main ()
 #ifndef CROSS_COMPILE
 #include <a.out.h>
 #else
-#include "symconst.h"
-#define LANGUAGE_C
-#include "sym.h"
-#include "filehdr.h"
-#define ST_RFDESCAPE  0xfff
-#endif
+#include "mips/a.out.h"
+#endif /* CROSS_COMPILE */
 
 #if defined (USG) || defined (NO_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
