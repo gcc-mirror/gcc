@@ -3123,7 +3123,7 @@ __terminate ()
 
 extern void longjmp (void *, int);
 
-extern void *__eh_type;
+void *__eh_type;
 
 static void *top_elt[2];
 void **__dynamic_handler_chain = top_elt;
