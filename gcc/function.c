@@ -4590,7 +4590,7 @@ get_arg_pointer_save_area (struct function *f)
       end_sequence ();
 
       push_topmost_sequence ();
-      emit_insn_after (seq, get_insns ());
+      emit_insn_after (seq, entry_of_function ());
       pop_topmost_sequence ();
     }
 
