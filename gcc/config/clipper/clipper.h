@@ -468,7 +468,7 @@ struct _clipper_cum_args { int num; int size; };
    clipper passes the address of a struct in r0, set num = 1 in this case */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME) \
-  ((CUM).num = ((FNTYPE) != 0 && aggregate_value_p (FNTYPE)), \
+  ((CUM).num = ((FNTYPE) != 0 && aggregate_value_p (TREE_TYPE (FNTYPE))), \
    (CUM).size = 0)
 
 /* internal helper : size of an argument */

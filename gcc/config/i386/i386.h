@@ -612,7 +612,7 @@ extern enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
       && (TYPE_ARG_TYPES (FUNTYPE) == 0				\
 	  || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (FUNTYPE)))	\
 	      == void_type_node))) ? (SIZE)			\
-   : (aggregate_value_p (FUNTYPE)) ? GET_MODE_SIZE (Pmode) : 0)
+   : (aggregate_value_p (TREE_TYPE (FUNTYPE))) ? GET_MODE_SIZE (Pmode) : 0)
 
 /* Define how to find the value returned by a function.
    VALTYPE is the data type of the value (as a tree).

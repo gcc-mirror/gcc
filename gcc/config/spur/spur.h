@@ -414,7 +414,7 @@ enum reg_class { NO_REGS, GENERAL_REGS, FP_REGS, ALL_REGS, LIM_REG_CLASSES };
    invisible first argument.  */
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME)	\
- ((CUM) = ((FNTYPE) != 0 && aggregate_value_p ((FNTYPE))))
+ ((CUM) = ((FNTYPE) != 0 && aggregate_value_p (TREE_TYPE ((FNTYPE)))))
 
 /* Update the data in CUM to advance over an argument
    of mode MODE and data type TYPE.
