@@ -1,3 +1,8 @@
+Mon Apr 20 18:19:40 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.c (find_barrier): Fix bug in ADDR_DIFF_VEC handling.
+	(split_branches): Call init_insn_lengths.
+
 Mon Apr 20 07:37:49 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* i386.c: Include expr.h to get the change_address prototype
