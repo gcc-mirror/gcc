@@ -921,11 +921,13 @@ operand_subword (op, i, validate_address, mode)
 
   /* The only remaining cases are when OP is a constant.  If the host and
      target floating formats are the same, handling two-word floating
-     constants are easy.  */
+     constants are easy.  Note that REAL_VALUE_TO_TARGET_{SINGLE,DOUBLE}
+     are defined as returning 32 bit and 64-bit values, respectively,
+     and not values of BITS_PER_WORD and 2 * BITS_PER_WORD bits.  */
 #ifdef REAL_ARITHMETIC
   if ((HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
       && GET_MODE_CLASS (mode) == MODE_FLOAT
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && GET_MODE_BITSIZE (mode) == 64
       && GET_CODE (op) == CONST_DOUBLE)
     {
       HOST_WIDE_INT k[2];
@@ -933,7 +935,19 @@ operand_subword (op, i, validate_address, mode)
 
       REAL_VALUE_FROM_CONST_DOUBLE (rv, op);
       REAL_VALUE_TO_TARGET_DOUBLE (rv, k);
-      return GEN_INT (k[i]);
+
+      /* We handle 32-bit and 64-bit host words here.  Note that the order in
+	 which the words are written depends on the word endianness.
+
+	 ??? This is a potential portability problem and should
+	 be fixed at some point.  */
+      if (HOST_BITS_PER_WIDE_INT == 32)
+	return GEN_INT (k[i]);
+      else if (HOST_BITS_PER_WIDE_INT == 64 && i == 0)
+	return GEN_INT ((k[! WORDS_BIG_ENDIAN] << 32)
+			| k[WORDS_BIG_ENDIAN]);
+      else
+	abort ();
     }
 #else /* no REAL_ARITHMETIC */
   if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
@@ -963,7 +977,7 @@ operand_subword (op, i, validate_address, mode)
 #ifdef REAL_ARITHMETIC
   if ((HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
       && GET_MODE_CLASS (mode) == MODE_FLOAT
-      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
+      && GET_MODE_BITSIZE (mode) == 32
       && GET_CODE (op) == CONST_DOUBLE)
     {
       HOST_WIDE_INT l;
