@@ -3812,13 +3812,7 @@ extern void fixup_anonymous_aggr                (tree);
 extern int check_static_variable_definition     (tree, tree);
 extern tree compute_array_index_type		(tree, tree);
 extern tree check_default_argument              (tree, tree);
-extern int vtable_decl_p                        (tree, void *);
-extern int vtype_decl_p                         (tree, void *);
 extern int sigtable_decl_p                      (tree, void *);
-typedef bool (*walk_globals_pred) (tree, void *);
-typedef bool (*walk_globals_fn) (tree *, void *);
-extern bool walk_globals (walk_globals_pred, walk_globals_fn, void *);
-extern bool walk_vtables (walk_globals_pred, walk_globals_fn, void *);
 typedef int (*walk_namespaces_fn)               (tree, void *);
 extern int walk_namespaces                      (walk_namespaces_fn,
 						       void *);
