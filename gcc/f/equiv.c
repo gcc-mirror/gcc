@@ -1,5 +1,5 @@
 /* equiv.c -- Implementation File (module.c template V1.0)
-   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.org).
 
 This file is part of GNU Fortran.
@@ -698,6 +698,9 @@ again:				/* :::::::::::::::::::: */
 	    subscript = ffebld_head (subscripts);
 	    dim = ffebld_head (dims);
 
+	    if (ffebld_op (subscript) == FFEBLD_opANY)
+	      return FALSE;
+
 	    assert (ffebld_op (subscript) == FFEBLD_opCONTER);
 	    assert (ffeinfo_basictype (ffebld_info (subscript))
 		    == FFEINFO_basictypeINTEGER);
@@ -705,6 +708,9 @@ again:				/* :::::::::::::::::::: */
 		    == FFEINFO_kindtypeINTEGERDEFAULT);
 	    arrayval = ffebld_constant_integerdefault (ffebld_conter
 						       (subscript));
+
+	    if (ffebld_op (dim) == FFEBLD_opANY)
+	      return FALSE;
 
 	    assert (ffebld_op (dim) == FFEBLD_opBOUNDS);
 	    low = ffebld_left (dim);
@@ -714,6 +720,10 @@ again:				/* :::::::::::::::::::: */
 	      lowbound = 1;
 	    else
 	      {
+		if (ffebld_op (low) == FFEBLD_opANY)
+		  return FALSE;
+
+		assert (ffebld_op (low) == FFEBLD_opCONTER);
 		assert (ffeinfo_basictype (ffebld_info (low))
 			== FFEINFO_basictypeINTEGER);
 		assert (ffeinfo_kindtype (ffebld_info (low))
@@ -721,6 +731,9 @@ again:				/* :::::::::::::::::::: */
 		lowbound
 		  = ffebld_constant_integerdefault (ffebld_conter (low));
 	      }
+
+	    if (ffebld_op (high) == FFEBLD_opANY)
+	      return FALSE;
 
 	    assert (ffebld_op (high) == FFEBLD_opCONTER);
 	    assert (ffeinfo_basictype (ffebld_info (high))
@@ -766,6 +779,8 @@ again:				/* :::::::::::::::::::: */
 	ffebld begin = ffebld_head (ffebld_right (expr));
 
 	expr = ffebld_left (expr);
+	if (ffebld_op (expr) == FFEBLD_opANY)
+	  return FALSE;
 	if (ffebld_op (expr) == FFEBLD_opARRAYREF)
 	  sym = ffebld_symter (ffebld_left (expr));
 	else if (ffebld_op (expr) == FFEBLD_opSYMTER)
@@ -781,6 +796,8 @@ again:				/* :::::::::::::::::::: */
 	  value = 0;
 	else
 	  {
+	    if (ffebld_op (begin) == FFEBLD_opANY)
+	      return FALSE;
 	    assert (ffebld_op (begin) == FFEBLD_opCONTER);
 	    assert (ffeinfo_basictype (ffebld_info (begin))
 		    == FFEINFO_basictypeINTEGER);

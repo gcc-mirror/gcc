@@ -1,3 +1,9 @@
+Sat Jul 11 19:24:32 1998  Craig Burley  <burley@gnu.org>
+
+	Fix 980616-0.f:
+	* equiv.c (ffeequiv_offset_): Don't crash on various
+	possible ANY operands.
+
 Sat Jul 11 18:24:37 1998  Craig Burley  <burley@gnu.org>
 
 	* com.c (ffecom_expr_) [FFEBLD_opCONTER]: Die if padding
