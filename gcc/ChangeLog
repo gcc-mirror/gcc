@@ -1,3 +1,8 @@
+2003-03-20  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*insv_si_1_n): New.
+	(*insv_si_1_n_lshiftrt): Likewise.
+
 2003-03-20  Roger Sayle  <roger@eyesopen.com>
 
 	* fold-const.c (fold_mathfn_compare): New function to simplify
