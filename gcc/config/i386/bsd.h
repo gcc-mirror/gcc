@@ -123,6 +123,18 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_OUTPUT_LABELREF(FILE,NAME) fprintf (FILE, "_%s", NAME)
 #endif /* not NO_UNDERSCORES */
 
+/* Output code to add DELTA to the first argument, and then jump to FUNCTION.
+   Used for C++ multiple inheritance.  */
+
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	   \
+do {									   \
+  fprintf (FILE, "\taddl $%d,%s\n\tjmp ", DELTA,			   \
+	 i386_regparm > 0 ? "%eax" : "4(%esp)");			   \
+  assemble_name (FILE, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (FUNCTION))); \
+  fprintf (FILE, "\n");							   \
+} while (0)
+
+
 /* Sequent has some changes in the format of DBX symbols.  */
 #define DBX_NO_XREFS 1
 
