@@ -119,7 +119,6 @@ static void delete_duplicate_fields PARAMS ((tree));
 static void finish_struct_bits PARAMS ((tree));
 static int alter_access PARAMS ((tree, tree, tree));
 static void handle_using_decl PARAMS ((tree, tree));
-static int same_signature_p PARAMS ((tree, tree));
 static int strictly_overrides PARAMS ((tree, tree));
 static void mark_overriders PARAMS ((tree, tree));
 static void check_for_override PARAMS ((tree, tree));
@@ -2460,7 +2459,7 @@ layout_vtable_decl (binfo, n)
 /* True iff FNDECL and BASE_FNDECL (both non-static member functions)
    have the same signature.  */
 
-static int
+int
 same_signature_p (fndecl, base_fndecl)
      tree fndecl, base_fndecl;
 {
@@ -4188,8 +4187,6 @@ build_clone (fn, name)
   DECL_PENDING_INLINE_P (clone) = 0;
   /* And it hasn't yet been deferred.  */
   DECL_DEFERRED_FN (clone) = 0;
-  /* There's no magic VTT parameter in the clone.  */
-  DECL_VTT_PARM (clone) = NULL_TREE;
 
   /* The base-class destructor is not virtual.  */
   if (name == base_dtor_identifier)
@@ -4214,10 +4211,12 @@ build_clone (fn, name)
       parmtypes = TREE_CHAIN (parmtypes);
       /* Skip the in-charge parameter.  */
       parmtypes = TREE_CHAIN (parmtypes);
+      /* And the VTT parm, in a complete [cd]tor.  */
+      if (DECL_HAS_VTT_PARM_P (fn)
+	  && ! DECL_NEEDS_VTT_PARM_P (clone))
+	parmtypes = TREE_CHAIN (parmtypes);
        /* If this is subobject constructor or destructor, add the vtt
 	 parameter.  */
-      if (DECL_NEEDS_VTT_PARM_P (clone))
-	parmtypes = hash_tree_chain (vtt_parm_type, parmtypes);
       TREE_TYPE (clone) 
 	= build_cplus_method_type (basetype,
 				   TREE_TYPE (TREE_TYPE (clone)),
@@ -4227,8 +4226,8 @@ build_clone (fn, name)
 						     exceptions);
     }
 
-  /* Copy the function parameters.  But, DECL_ARGUMENTS aren't
-     function parameters; instead, those are the template parameters.  */
+  /* Copy the function parameters.  But, DECL_ARGUMENTS on a TEMPLATE_DECL
+     aren't function parameters; those are the template parameters.  */
   if (TREE_CODE (clone) != TEMPLATE_DECL)
     {
       DECL_ARGUMENTS (clone) = copy_list (DECL_ARGUMENTS (clone));
@@ -4239,16 +4238,17 @@ build_clone (fn, name)
 	    = TREE_CHAIN (TREE_CHAIN (DECL_ARGUMENTS (clone)));
 	  DECL_HAS_IN_CHARGE_PARM_P (clone) = 0;
 	}
-
-      /* Add the VTT parameter.  */
-      if (DECL_NEEDS_VTT_PARM_P (clone))
+      /* And the VTT parm, in a complete [cd]tor.  */
+      if (DECL_HAS_VTT_PARM_P (fn))
 	{
-	  tree parm;
-
-	  parm = build_artificial_parm (vtt_parm_identifier,
-					vtt_parm_type);
-	  TREE_CHAIN (parm) = TREE_CHAIN (DECL_ARGUMENTS (clone));
-	  TREE_CHAIN (DECL_ARGUMENTS (clone)) = parm;
+	  if (DECL_NEEDS_VTT_PARM_P (clone))
+	    DECL_HAS_VTT_PARM_P (clone) = 1;
+	  else
+	    {
+	      TREE_CHAIN (DECL_ARGUMENTS (clone))
+		= TREE_CHAIN (TREE_CHAIN (DECL_ARGUMENTS (clone)));
+	      DECL_HAS_VTT_PARM_P (clone) = 0;
+	    }
 	}
 
       for (parms = DECL_ARGUMENTS (clone); parms; parms = TREE_CHAIN (parms))
