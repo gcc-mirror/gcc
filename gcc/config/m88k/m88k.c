@@ -38,7 +38,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tree.h"
 #include "c-tree.h"
 #include "expr.h"
-#include "hard-reg-set.h"
 #include "flags.h"
 
 extern char *version_string;
@@ -47,7 +46,7 @@ extern char *ctime ();
 extern int flag_traditional;
 extern FILE *asm_out_file;
 
-static char out_sccs_id[] = "@(#)m88k.c	2.1.2.2 27 Mar 1992 08:37:28";
+static char out_sccs_id[] = "@(#)m88k.c	2.1.3.1 07 Apr 1992 17:23:59";
 static char tm_sccs_id [] = TM_SCCS_ID;
 
 char *m88k_pound_sign = "";	/* Either # for SVR4 or empty for SVR3 */
@@ -1323,8 +1322,10 @@ output_file_start (file, f_options, f_len, W_options, W_len)
 /* Output an ascii string.  */
 
 void
-output_ascii (file, p, size)
+output_ascii (file, opcode, max, p, size)
      FILE *file;
+     char *opcode;
+     int max;
      unsigned char *p;
      int size;
 {
@@ -1332,14 +1333,14 @@ output_ascii (file, p, size)
 
   register int num = 0;
 
-  fprintf (file, "\t%s\t \"", ASCII_DATA_ASM_OP);
+  fprintf (file, "\t%s\t \"", opcode);
   for (i = 0; i < size; i++)
     {
       register int c = p[i];
 
-      if (num > 48)
+      if (num > max)
 	{
-	  fprintf (file, "\"\n\t%s\t \"", ASCII_DATA_ASM_OP);
+	  fprintf (file, "\"\n\t%s\t \"", opcode);
 	  num = 0;
 	}
 
@@ -1364,7 +1365,7 @@ output_ascii (file, p, size)
 	     after three digits, so this is the only way we
 	     can get it to parse the data properly.  */
 	  if (i < size - 1 && p[i + 1] >= '0' && p[i + 1] <= '9')
-	    num = 32767;	/* next pass will start a new string */
+	    num = max + 1;	/* next pass will start a new string */
 	}
     }
   fprintf (file, "\"\n");
@@ -1528,6 +1529,8 @@ m88k_handle_pragma_token (string, token)
         |        [previous frame pointer (r30)]        |
         |==============================================| <- fp
         |       [preserved registers (r25..r14)]       |
+        |----------------------------------------------|
+        |       [preserved registers (x29..x22)]       |
         |==============================================|
         |    [dynamically allocated space (alloca)]    |
         |==============================================|
@@ -1549,6 +1552,7 @@ static void preserve_registers ();
 static void output_tdesc ();
 
 static int  nregs;
+static int  nxregs;
 static char save_regs[FIRST_PSEUDO_REGISTER];
 static int  frame_laid_out;
 static int  frame_size;
@@ -1561,6 +1565,9 @@ extern int  frame_pointer_needed;
 
 #define FIRST_OCS_PRESERVE_REGISTER	14
 #define LAST_OCS_PRESERVE_REGISTER	30
+
+#define FIRST_OCS_EXTENDED_PRESERVE_REGISTER	(32 + 22)
+#define LAST_OCS_EXTENDED_PRESERVE_REGISTER	(32 + 31)
 
 #define STACK_UNIT_BOUNDARY (STACK_BOUNDARY / BITS_PER_UNIT)
 #define ROUND_CALL_BLOCK_SIZE(BYTES) \
@@ -1577,7 +1584,7 @@ m88k_layout_frame ()
   frame_laid_out++;
 
   bzero ((char *) &save_regs[0], sizeof (save_regs));
-  sp_size = nregs = 0;
+  sp_size = nregs = nxregs = 0;
   frame_size = get_frame_size ();
 
   /* Since profiling requires a call, make sure r1 is saved.  */
@@ -1614,6 +1621,15 @@ m88k_layout_frame ()
   if (frame_pointer_needed)
     save_regs[FRAME_POINTER_REGNUM] = save_regs[1] = 1;
 
+  /* Figure out which extended register(s) needs to be saved.  */
+  for (regno = FIRST_EXTENDED_REGISTER + 1; regno < FIRST_PSEUDO_REGISTER;
+       regno++)
+    if (regs_ever_live[regno] && ! call_used_regs[regno])
+      {
+	save_regs[regno] = 1;
+	nxregs++;
+      }
+
   /* Figure out which normal register(s) needs to be saved.  */
   for (regno = 2; regno < FRAME_POINTER_REGNUM; regno++)
     if (regs_ever_live[regno] && ! call_used_regs[regno])
@@ -1628,7 +1644,11 @@ m88k_layout_frame ()
     sp_size += 4;
 
   nregs += save_regs[1] + save_regs[FRAME_POINTER_REGNUM];
+  /* if we need to align extended registers, add a word */
+  if (nxregs > 0 && (nregs & 1) != 0)
+    sp_size +=4;
   sp_size += 4 * nregs;
+  sp_size += 8 * nxregs;
   sp_size += current_function_outgoing_args_size;
 
   /* The first two saved registers are placed above the new frame pointer
@@ -1675,6 +1695,7 @@ null_epilogue ()
     m88k_layout_frame ();
   return (! frame_pointer_needed
 	  && nregs == 0
+	  && nxregs == 0
 	  && m88k_stack_size == 0);
 }
 
@@ -1835,7 +1856,7 @@ m88k_output_prologue (stream, size)
   if (m88k_stack_size)
     output_reg_adjust (stream, 31, 31, -m88k_stack_size, 0);
 
-  if (nregs)
+  if (nregs || nxregs)
     preserve_registers (stream, m88k_fp_offset + 4, 1);
 
   if (frame_pointer_needed)
@@ -1909,7 +1930,7 @@ m88k_output_epilogue (stream, size)
       if (frame_pointer_needed)
 	output_reg_adjust (stream, 31, 30, -m88k_fp_offset, 0);
 
-      if (nregs)
+      if (nregs || nxregs)
 	preserve_registers (stream, m88k_fp_offset + 4, 0);
 
       output_reg_adjust (stream, 31, 31, m88k_stack_size, 1);
@@ -2048,6 +2069,21 @@ preserve_registers (stream, base, store_p)
 	    offset -= 2*4;
 	  }
       }
+
+  /* Walk the extended registers to record all memory operations.  */
+  /*  Be sure the offset is double word aligned.  */
+  offset = (offset - 1) & ~7;
+  for (regno = FIRST_PSEUDO_REGISTER - 1; regno > FIRST_EXTENDED_REGISTER;
+       regno--)
+    if (save_regs[regno])
+      {
+	mo_ptr->nregs = 2;
+	mo_ptr->regno = regno;
+	mo_ptr->offset = offset;
+	mo_ptr++;
+	offset -= 2*4;
+      }
+
   mo_ptr->regno = 0;
 
   /* Output the delay insns interleaved with the memory operations.  */
@@ -2070,10 +2106,12 @@ preserve_registers (stream, base, store_p)
 	    {
 	      if (mo_ptr->nregs)
 		{
+		  int nregs = (mo_ptr->regno < FIRST_EXTENDED_REGISTER
+			       ? mo_ptr->nregs : 1);
 		  rtx ok_insns = delay_insns;
 		  int i;
 
-		  for (i = 0; i < mo_ptr->nregs; i++)
+		  for (i = 0; i < nregs; i++)
 		    epilogue_dead_regs[mo_ptr->regno + i] = 1;
 
 		  while (ok_insns)
@@ -2083,7 +2121,7 @@ preserve_registers (stream, base, store_p)
 
 		      if (! ok_for_epilogue_p (PATTERN (insn)))
 			{
-			  for (i = 0; i < mo_ptr->nregs; i++)
+			  for (i = 0; i < nregs; i++)
 			    epilogue_dead_regs[mo_ptr->regno + i] = 0;
 			  insn = 0;
 			  break; /* foreach delay insn */
@@ -2147,27 +2185,30 @@ m88k_debugger_offset (reg, offset)
 /* Output the 88open OCS proscribed text description information.
    The information is:
         0  8: zero
-	0 22: info-byte-length (16 bytes)
+	0 22: info-byte-length (16 or 20 bytes)
 	0  2: info-alignment (word 2)
-	1 32: info-protocol (version 1)
+	1 32: info-protocol (version 1 or 2(pic))
 	2 32: starting-address (inclusive, not counting prologue)
 	3 32: ending-address (exclusive, not counting epilog)
-	4  8: info-variant (version 1)
+	4  8: info-variant (version 1 or 3(extended registers))
 	4 17: register-save-mask (from register 14 to 30)
 	4  1: zero
 	4  1: return-address-info-discriminant
 	4  5: frame-address-register
 	5 32: frame-address-offset
 	6 32: return-address-info
-	7 32: register-save-offset */
+	7 32: register-save-offset
+	8 16: extended-register-save-mask (x16 - x31)
+	8 16: extended-register-save-offset (WORDS from register-save-offset)  */
 
 static void
 output_tdesc (file, offset)
      FILE *file;
      int offset;
 {
-  int regno, i;
+  int regno, i, j;
   long mask, return_address_info, register_save_offset;
+  long xmask, xregister_save_offset;
   char buf[256];
 
   for (mask = 0, i = 0, regno = FIRST_OCS_PRESERVE_REGISTER;
@@ -2182,9 +2223,21 @@ output_tdesc (file, offset)
 	}
     }
 
+  for (xmask = 0, j = 0, regno = FIRST_OCS_EXTENDED_PRESERVE_REGISTER;
+       regno <= LAST_OCS_EXTENDED_PRESERVE_REGISTER;
+       regno++)
+    {
+      xmask <<= 1;
+      if (save_regs[regno])
+	{
+	  xmask |= 1;
+	  j++;
+	}
+    }
+
   if (save_regs[1])
     {
-      if (nregs > 2 && !save_regs[FRAME_POINTER_REGNUM])
+      if ((nxregs > 0 || nregs > 2) && !save_regs[FRAME_POINTER_REGNUM])
 	offset -= 4;
       return_address_info = - m88k_stack_size + offset;
       register_save_offset = return_address_info - i*4;
@@ -2195,28 +2248,33 @@ output_tdesc (file, offset)
       register_save_offset = - m88k_stack_size + offset + 4 - i*4;
     }
 
+  xregister_save_offset = - (j * 2 + ((register_save_offset >> 2) & 1));
+
   tdesc_section ();
 
-  fprintf (file, "\t%s\t %d", INT_ASM_OP, (16 << 2) | 2 /* 8:0,22:16,2:2 */);
-  fprintf (file, ",%d", flag_pic ? 2 : 1);
+  fprintf (file, "\t%s\t %d,%d", INT_ASM_OP, /* 8:0,22:(20 or 16),2:2 */
+	   (((xmask != 0) ? 20 : 16) << 2) | 2,
+	   flag_pic ? 2 : 1);
 
   ASM_GENERATE_INTERNAL_LABEL (buf, OCS_START_PREFIX, m88k_function_number);
   fprintf (file, ",%s%s", buf+1, flag_pic ? "#rel" : "");
   ASM_GENERATE_INTERNAL_LABEL (buf, OCS_END_PREFIX, m88k_function_number);
   fprintf (file, ",%s%s", buf+1, flag_pic ? "#rel" : "");
 
-  fprintf (file, ",0x%x", /* 8:1,17:0x%.3x,1:0,1:%d,5:%d */
-	   (1 << (17+1+1+5)) |
-	   (mask << (1+1+5)) |
-	   ((!!save_regs[1]) << 5) |
-	   ((frame_pointer_needed
-	      ? FRAME_POINTER_REGNUM
-	      : STACK_POINTER_REGNUM)));
-
-  fprintf (file, ",0x%x", (m88k_stack_size
-			   - (frame_pointer_needed ? m88k_fp_offset : 0)));
-  fprintf (file, ",0x%x", return_address_info);
-  fprintf (file, ",0x%x\n", register_save_offset);
+  fprintf (file, ",0x%x,0x%x,0x%x,0x%x",
+	   /* 8:1,17:0x%.3x,1:0,1:%d,5:%d */
+	   (((xmask ? 3 : 1) << (17+1+1+5))
+	    | (mask << (1+1+5))
+	    | ((!!save_regs[1]) << 5)
+	    | (frame_pointer_needed
+	       ? FRAME_POINTER_REGNUM
+	       : STACK_POINTER_REGNUM)),
+	   (m88k_stack_size - (frame_pointer_needed ? m88k_fp_offset : 0)),
+	   return_address_info,
+	   register_save_offset);
+  if (xmask)
+    fprintf (file, ",0x%x%04x", xmask, (0xffff & xregister_save_offset));
+  fputc ('\n', file);
 
   text_section ();
 }
