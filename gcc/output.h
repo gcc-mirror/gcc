@@ -130,6 +130,11 @@ extern rtx current_function_return_rtx;
 
 extern rtx current_function_epilogue_delay_list;
 
+/* Nonzero means generate position-independent code.
+   This is not fully implemented yet.  */
+
+extern int flag_pic;
+
 /* This is nonzero if the current function uses pic_offset_table_rtx.  */
 extern int current_function_uses_pic_offset_table;
 
