@@ -4502,6 +4502,7 @@ mips_expand_prologue ()
 /* Do any necessary cleanup after a function to restore stack, frame, and regs. */
 
 #define RA_MASK ((long) 0x80000000)	/* 1 << 31 */
+#define PIC_OFFSET_TABLE_MASK (1 << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))
 
 void
 function_epilogue (file, size)
@@ -4610,7 +4611,9 @@ function_epilogue (file, size)
 
       save_restore_insns (FALSE, tmp_rtx, tsize, file);
 
-      load_only_r31 = (current_frame_info.mask == RA_MASK
+      load_only_r31 = (((current_frame_info.mask
+			 & ~ (TARGET_ABICALLS ? PIC_OFFSET_TABLE_MASK : 0))
+			== RA_MASK)
 		       && current_frame_info.fmask == 0);
 
       if (noreorder)
