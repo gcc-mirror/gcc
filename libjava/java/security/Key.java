@@ -62,7 +62,7 @@ import java.io.Serializable;
 public interface Key extends Serializable
 {
   /**
-   * The verion identifier used for serialization.
+   * The version identifier used for serialization.
    */
   long serialVersionUID = 6603384152749567654L;
 
