@@ -852,10 +852,17 @@ AC_TRY_COMPILE([#include <time.h>], [struct tm tim; tim.tm_gmtoff = 0;],
    dnl FIXME: we don't want a link check here because that won't work
    dnl when cross-compiling.  So instead we make an assumption that
    dnl the header file will mention timezone if it exists.
-   AC_TRY_COMPILE([#include <time.h>], [long z2 = timezone;],
+   dnl Don't find the win32 function timezone
+   AC_TRY_COMPILE([#include <time.h>], [void i(){long z2 = 2*timezone;}],
      [AC_DEFINE(HAVE_TIMEZONE)
       AC_MSG_RESULT(yes)],
-     [AC_MSG_RESULT(no)])])
+     [AC_MSG_RESULT(no)
+       AC_MSG_CHECKING([for global _timezone variable])
+       dnl FIXME: As above, don't want link check
+       AC_TRY_COMPILE([#include <time.h>], [long z2 = _timezone;],
+         [AC_DEFINE(HAVE_UNDERSCORE_TIMEZONE)
+          AC_MSG_RESULT(yes)],
+          [AC_MSG_RESULT(no)])])])
 
 AC_FUNC_ALLOCA
 

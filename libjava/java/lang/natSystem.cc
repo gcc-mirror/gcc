@@ -250,6 +250,8 @@ java::lang::System::getSystemTimeZone (void)
 #ifdef STRUCT_TM_HAS_GMTOFF
   // tm_gmtoff is secs EAST of UTC.
   tzoffset = -(tim->tm_gmtoff) + tim->tm_isdst * 3600L;
+#elif HAVE_UNDERSCORE_TIMEZONE
+  tzoffset = _timezone;
 #elif HAVE_TIMEZONE
   // timezone is secs WEST of UTC.
   tzoffset = timezone;	

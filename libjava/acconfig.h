@@ -156,3 +156,9 @@
 
 /* Define if you are using JVMPI.  */
 #undef ENABLE_JVMPI
+
+/* Define if your platform has a working backtrace() function.  */
+#undef HAVE_BACKTRACE
+
+/* Define if your platform has the global _timezone variable.  */
+#undef HAVE_UNDERSCORE_TIMEZONE

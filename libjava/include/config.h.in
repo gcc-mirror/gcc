@@ -174,11 +174,14 @@
 /* Define if you are using JVMPI.  */
 #undef ENABLE_JVMPI
 
+/* Define if your platform has a working backtrace() function.  */
+#undef HAVE_BACKTRACE
+
+/* Define if your platform has the global _timezone variable.  */
+#undef HAVE_UNDERSCORE_TIMEZONE
+
 /* Define if you have the access function.  */
 #undef HAVE_ACCESS
-
-/* Define if you have the backtrace function.  */
-#undef HAVE_BACKTRACE
 
 /* Define if you have the chmod function.  */
 #undef HAVE_CHMOD

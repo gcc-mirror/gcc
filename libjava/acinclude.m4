@@ -144,20 +144,7 @@ AC_PROG_INSTALL
 
 AM_MAINTAINER_MODE
 
-# We need AC_EXEEXT to keep automake happy in cygnus mode.  However,
-# at least currently, we never actually build a program, so we never
-# need to use $(EXEEXT).  Moreover, the test for EXEEXT normally
-# fails, because we are probably configuring with a cross compiler
-# which cant create executables.  So we include AC_EXEEXT to keep
-# automake happy, but we don't execute it, since we don't care about
-# the result.
-if false; then
-  # autoconf 2.50 runs AC_EXEEXT by default, and the macro expands
-  # to nothing, so nothing would remain between `then' and `fi' if it
-  # were not for the `:' below.
-  :
-  AC_EXEEXT
-fi
+AC_EXEEXT
 
 # configure.host sets the following important variables
 #	libgcj_cflags    - host specific C compiler flags
