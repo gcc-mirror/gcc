@@ -49,8 +49,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "diagnostic.h"
 
-extern const struct attribute_spec *lang_attribute_table;
-
 #ifndef BOOL_TYPE_SIZE
 /* `bool' has size and alignment `1', on all platforms.  */
 #define BOOL_TYPE_SIZE CHAR_TYPE_SIZE
@@ -6530,8 +6528,6 @@ cxx_init_decl_processing ()
   push_namespace (std_identifier);
   std_node = current_namespace;
   pop_namespace ();
-
-  lang_attribute_table = cp_attribute_table;
 
   c_common_nodes_and_builtins ();
 

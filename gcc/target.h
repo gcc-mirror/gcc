@@ -144,7 +144,8 @@ struct gcc_target
   /* Given two types, merge their attributes and return the result.  */
   tree (* merge_type_attributes) PARAMS ((tree, tree));
 
-  /* Table of machine attributes and functions to handle them.  */
+  /* Table of machine attributes and functions to handle them.
+     Ignored if NULL.  */
   const struct attribute_spec *attribute_table;
 
   /* Return zero if the attributes on TYPE1 and TYPE2 are incompatible,

@@ -2221,8 +2221,6 @@ struct attribute_spec
 				 int flags, bool *no_add_attrs));
 };
 
-extern const struct attribute_spec default_target_attribute_table[];
-
 /* Flags that may be passed in the third argument of decl_attributes, and
    to handler functions for attributes.  */
 enum attribute_flags
@@ -2925,18 +2923,6 @@ extern int setjmp_call_p		PARAMS ((tree));
    returned to be applied at a later stage (for example, to apply
    a decl attribute to the declaration rather than to its type).  */
 extern tree decl_attributes		PARAMS ((tree *, tree, int));
-
-/* The following function must be provided by front ends
-   using attribs.c.  */
-
-/* Table of machine-independent attributes for checking formats, if used.  */
-extern const struct attribute_spec *format_attribute_table;
-
-/* Table of machine-independent attributes for a particular language.  */
-extern const struct attribute_spec *lang_attribute_table;
-
-/* Flag saying whether common language attributes are to be supported.  */
-extern int lang_attribute_common;
 
 /* In integrate.c */
 extern void save_for_inline		PARAMS ((tree));

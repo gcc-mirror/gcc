@@ -100,6 +100,14 @@ static bool cxx_warn_unused_global_decl PARAMS ((tree));
 #undef LANG_HOOKS_FUNCTION_MARK
 #define LANG_HOOKS_FUNCTION_MARK cxx_mark_function_context
 
+/* Attribute hooks.  */
+#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
+#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table
+#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
+#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
+#undef LANG_HOOKS_ATTRIBUTE_TABLE
+#define LANG_HOOKS_ATTRIBUTE_TABLE cxx_attribute_table
+
 #undef LANG_HOOKS_TREE_INLINING_WALK_SUBTREES
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \
   cp_walk_subtrees

@@ -1,3 +1,13 @@
+2002-04-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cp-lang.c (LANG_HOOKS_COMMON_ATTRIBUTE_TABLE,
+	LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE, LANG_HOOKS_ATTRIBUTE_TABLE):
+	Redefine.
+	* cp-tree.h (cp_attribute_table): Rename.
+	* decl.c (lang_attribute_table): Remove declaration.
+	(cxx_init_decl_processing): Don't set it.
+	* tree.c (cp_attribute_table): Rename.
+
 2002-04-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/6331

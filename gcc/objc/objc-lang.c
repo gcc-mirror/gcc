@@ -80,6 +80,12 @@ static void objc_post_options                   PARAMS ((void));
 #undef LANG_HOOKS_FUNCTION_MARK
 #define LANG_HOOKS_FUNCTION_MARK c_mark_function_context
 
+/* Attribute hooks.  */
+#undef LANG_HOOKS_COMMON_ATTRIBUTE_TABLE
+#define LANG_HOOKS_COMMON_ATTRIBUTE_TABLE c_common_attribute_table
+#undef LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE
+#define LANG_HOOKS_FORMAT_ATTRIBUTE_TABLE c_common_format_attribute_table
+
 /* Inlining hooks same as the C front end.  */
 #undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \

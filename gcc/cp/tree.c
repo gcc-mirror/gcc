@@ -1895,7 +1895,7 @@ pod_type_p (t)
 }
 
 /* Table of valid C++ attributes.  */
-const struct attribute_spec cp_attribute_table[] =
+const struct attribute_spec cxx_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
   { "java_interface", 0, 0, false, false, false, handle_java_interface_attribute },
