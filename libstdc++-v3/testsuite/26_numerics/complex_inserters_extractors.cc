@@ -66,7 +66,7 @@ void test_fail(std::string str)
 }
 
 template<typename R>
-int testall()
+void testall()
 {
   test_good<R>("(-1.1,3.7)#", -1.1, 3.7);
   test_good<R>("(  .7e6  ,  \n-3.1)#", .7e6, -3.1);

@@ -51,6 +51,6 @@ namespace std {
 
   template
     void
-    __sink_unused_warning<size_t>(size_t);
+    __sink_unused_warning<unsigned int>(unsigned int);
 
 } //std
