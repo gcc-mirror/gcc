@@ -369,7 +369,10 @@ store_bit_field (str_rtx, bitsize, bitnum, fieldmode, value, align, total_size)
       && !(bitsize == 1 && GET_CODE (value) == CONST_INT)
       /* Ensure insv's size is wide enough for this field.  */
       && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3])
-	  >= bitsize))
+	  >= bitsize)
+      && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+	    && (bitsize + bitpos
+		> GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_insv][3]))))
     {
       int xbitpos = bitpos;
       rtx value1;
@@ -972,7 +975,10 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 #ifdef HAVE_extzv
       if (HAVE_extzv
 	  && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extzv][0])
-	      >= bitsize))
+	      >= bitsize)
+	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+		&& (bitsize + bitpos
+		    > GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extzv][0]))))
 	{
 	  int xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
@@ -1111,7 +1117,10 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 #ifdef HAVE_extv
       if (HAVE_extv
 	  && (GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extv][0])
-	      >= bitsize))
+	      >= bitsize)
+	  && ! ((GET_CODE (op0) == REG || GET_CODE (op0) == SUBREG)
+		&& (bitsize + bitpos
+		    > GET_MODE_BITSIZE (insn_operand_mode[(int) CODE_FOR_extv][0]))))
 	{
 	  int xbitpos = bitpos, xoffset = offset;
 	  rtx bitsize_rtx, bitpos_rtx;
