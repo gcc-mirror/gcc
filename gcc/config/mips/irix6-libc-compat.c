@@ -73,6 +73,8 @@ extern machreg_t _inet_makeaddr (machreg_t, machreg_t);
 	struct in_addr inet_makeaddr (int, int);		(IRIX 6.2)
 	struct in_addr inet_makeaddr (in_addr_t, in_addr_t);	(IRIX 6.5)  */
 
+extern machreg_t inet_makeaddr (machreg_t, machreg_t);
+
 machreg_t
 inet_makeaddr (machreg_t net, machreg_t lna)
 {

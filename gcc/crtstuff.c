@@ -129,6 +129,7 @@ extern void *__deregister_frame_info (void *)
 				     TARGET_ATTRIBUTE_WEAK;
 extern void *__deregister_frame_info_bases (void *)
 				     TARGET_ATTRIBUTE_WEAK;
+extern void __do_global_ctors_1 (void);
 
 /* Likewise for _Jv_RegisterClasses.  */
 extern void _Jv_RegisterClasses (void *) TARGET_ATTRIBUTE_WEAK;
@@ -510,7 +511,6 @@ asm (TEXT_SECTION_ASM_OP);
 /* This case is used by the Irix 6 port, which supports named sections but
    not an SVR4-style .init section.  __do_global_ctors can be non-static
    in this case because we protect it with -hidden_symbol.  */
-extern void __do_global_ctors_1(void);
 void
 __do_global_ctors (void)
 {
