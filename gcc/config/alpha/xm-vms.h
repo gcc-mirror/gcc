@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for openVMS/Alpha.
-   Copyright (C)  1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Klaus Kaempf (kkaempf@progis.de).
 
 This file is part of GNU CC.
@@ -82,5 +82,3 @@ extern char *alloca (unsigned int);
 
 #define OBJECT_SUFFIX ".obj"
 #define EXECUTABLE_SUFFIX ".exe"
-#define DIR_SEPARATOR ']'
-#define PATH_SEPARATOR ','
