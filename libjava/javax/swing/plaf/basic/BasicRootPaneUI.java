@@ -1,4 +1,4 @@
-/* ToggleButtonModel.java -- 
+/* BasicPanelUI.java
    Copyright (C) 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
@@ -36,20 +36,22 @@ obligated to do so.  If you do not wish to do so, delete this
 exception statement from your version. */
 
 
-package javax.swing;
+package javax.swing.plaf.basic;
 
-public class ToggleButtonModel extends DefaultButtonModel
+import javax.swing.*;
+import javax.swing.plaf.*;
+import java.awt.*;
+
+
+public class BasicRootPaneUI extends RootPaneUI
 {
-    public void setPressed(boolean b)  
+    public static ComponentUI createUI(JComponent x) 
     {
-	if (! isEnabled())
-	    return;
-	
-	if (! b)
-	    {
-		return;
-	    }
-	
-	setSelected(b);
+        return new BasicRootPaneUI();
+    }
+
+    public void installUI(JComponent c)
+    {
+      super.installUI(c);
     }
 }
