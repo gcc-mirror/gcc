@@ -4434,7 +4434,7 @@ for machine in $build $host $target; do
 #		fi
 		;;
 	mips-wrs-vxworks)
-		tm_file="mips/elf.h libgloss.h"
+		tm_file="mips/elf.h libgloss.h mips/vxworks.h"
  		tmake_file=mips/t-ecoff
  		gas=yes
 		gnu_ld=yes
@@ -4841,38 +4841,38 @@ for machine in $build $host $target; do
 		;;
 	mipsel-*-elf*)
 		tm_file="mips/elfl.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tmake_file=mips/t-elf
 		;;
 	mips-*-elf*)
-		tm_file="mips/elf.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tm_file="mips/elf.h"
+		tmake_file=mips/t-elf
 		;;
 	mips64el-*-elf*)
-		tm_file="mips/elfl64.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tm_file="mips/elfl64.h"
+		tmake_file=mips/t-elf
 		;;
 	mips64orionel-*-elf*)
 		tm_file="mips/elforion.h mips/elfl64.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tmake_file=mips/t-elf
 		;;
 	mips64-*-elf*)
-		tm_file="mips/elf64.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tm_file="mips/elf64.h"
+		tmake_file=mips/t-elf
 		;;
 	mips64orion-*-elf*)
 		tm_file="mips/elforion.h mips/elf64.h libgloss.h"
-		tmake_file=mips/t-ecoff
+		tmake_file=mips/t-elf
 		;;
 	mips64orion-*-rtems*)
 		tm_file="mips/elforion.h mips/elf64.h mips/rtems64.h"
 		tmake_file="mips/t-ecoff t-rtems"
 		;;
 	mipstx39el-*-elf*)
-		tm_file="mips/r3900.h mips/elfl.h mips/abi64.h libgloss.h"
+		tm_file="mips/r3900.h mips/elfl.h mips/abi64.h"
 		tmake_file=mips/t-r3900
 		;;
 	mipstx39-*-elf*)
-		tm_file="mips/r3900.h mips/elf.h mips/abi64.h libgloss.h"
+		tm_file="mips/r3900.h mips/elf.h mips/abi64.h"
 		tmake_file=mips/t-r3900
 		# FIXME mips-elf should be fixed to use crtstuff.
 		use_collect2=yes

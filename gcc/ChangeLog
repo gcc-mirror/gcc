@@ -1,3 +1,32 @@
+Wed Apr 14 10:48:03 1999  Catherine Moore  <clm@cygnus.com>
+ 
+        * config/mips/elf.h, config/mips/elf64.h
+        (CTORS_SECTION_ASM_OP): Define.
+        (DTORS_SECTION_ASM_OP): Define.
+        (EXTRA_SECTIONS): Define.
+        (INVOKE__main): Define.
+        (NAME__MAIN): Define.
+        (SYMBOL__MAIN): Define.
+        (EXTRA_SECTIONS_FUNCTIONS): Define.
+        (SECTION_FUNCTION_TEMPLATE): Define.
+        (ASM_OUTPUT_CONSTRUCTOR): Define.
+        (ASM_OUTPUT_DESTRUCTOR): Define.
+        (CTOR_LIST_BEGIN): Define.
+        (CTOR_LIST_END): Define.
+        (DTOR_LIST_BEGIN): Define.
+        (DTOR_LIST_END): Define.
+        (LIB_SPEC): Define.
+        (STARTFILE_SPEC): Define.
+        (ENDFILE_SPEC): Define.
+        * config/mips/linux.h:  Undefine all of the above.
+        * config/mips/rtems64.h: Likewise.
+        * config/mips/t-r3900: Likewise.
+        * config/mips/t-elf: New file.
+        * config/mips/vxworks.h: New file.
+        * configure.in (mips-wrs-vxworks): Use mips/vxworks.h.
+        (mips*-*-*elf*):  Use t-elf instead of t-ecoff.
+        * configure: Regenerate.
+
 Wed Apr 14 09:59:38 1999  Richard Henderson  <rth@cygnus.com>
 
 	* reload1.c (emit_reload_insns): Also find equivalent mems
