@@ -1,3 +1,14 @@
+Wed Mar 21 10:25:13 CET 2001  Jan Hubicka  <jh@use.cz>
+
+	* i386.md (pophi1, popqi1, pushqi1): Remove.
+
+	* expr.c (emit_single_push_insn): New function.
+	(move_by_pieces): Accept NULL as destination for push instructions.
+	(gen_push_operand): Kill.
+	(emit_push_insn): Pass NULL when pushing; avoid updating of
+	stack_pointer_delta.
+	* expr.h (gen_push_operand): Kill.
+
 Tue Mar 20 20:15:06 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* rtl.texi (COMPARE): Clarify documentation and reference section

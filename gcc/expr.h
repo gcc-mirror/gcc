@@ -1040,9 +1040,6 @@ extern rtx emit_move_insn_1 PARAMS ((rtx, rtx));
    and return an rtx to address the beginning of the block.  */
 extern rtx push_block PARAMS ((rtx, int, int));
 
-/* Make an operand to push something on the stack.  */
-extern rtx gen_push_operand PARAMS ((void));
-
 #ifdef TREE_CODE
 /* Generate code to push something onto the stack, given its mode and type.  */
 extern void emit_push_insn PARAMS ((rtx, enum machine_mode, tree, rtx,
