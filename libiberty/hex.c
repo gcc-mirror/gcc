@@ -20,11 +20,40 @@ Boston, MA 02111-1307, USA.  */
 #include <stdio.h>  /* for EOF */
 #include "libiberty.h"
 
-/* Provided for ABI compatibility.  */
-void
-hex_init ()
-{
-}
+/*
+
+@deftypefn Extension void hex_init (void)
+
+Initializes the array mapping the current character set to
+corresponding hex values.  This function must be called before any
+call to @code{hex_p} or @code{hex_value}.  If you fail to call it, a
+default ASCII-based table will normally be used on ASCII systems.
+
+@end deftypefn
+
+@deftypefn Extension int hex_p (int @var{c})
+
+Evaluates to non-zero if the given character is a valid hex character,
+or zero if it is not.  Note that the value you pass will be cast to
+@code{unsigned char} within the macro.
+
+@end deftypefn
+
+@deftypefn Extension int hex_value (int @var{c})
+
+Returns the numeric equivalent of the given character when interpreted
+as a hexidecimal digit.  The result is undefined if you pass an
+invalid hex digit.  Note that the value you pass will be cast to
+@code{unsigned char} within the macro.
+
+@end deftypefn
+
+@undocumented _hex_array_size
+@undocumented _hex_bad
+@undocumented _hex_value
+
+*/
+
 
 /* Are we ASCII? */
 #if '\n' == 0x0A && ' ' == 0x20 && '0' == 0x30 \
@@ -106,6 +135,46 @@ const char _hex_value[_hex_array_size] =
   _hex_bad, _hex_bad, _hex_bad, _hex_bad,
   _hex_bad, _hex_bad, _hex_bad, _hex_bad,
 };
+#define HEX_TABLE_INITIALIZED
+
 #else
- #error "Unsupported host character set"
+
+char _hex_value[_hex_array_size];
+
 #endif /* not ASCII */
+
+void
+hex_init ()
+{
+#ifndef HEX_TABLE_INITIALIZED
+  int i;
+
+  for (i=0; i<_hex_array_size; i++)
+    {
+      switch (i)
+	{
+	case '0': _hex_value[i] = 0; break;
+	case '1': _hex_value[i] = 1; break;
+	case '2': _hex_value[i] = 2; break;
+	case '3': _hex_value[i] = 3; break;
+	case '4': _hex_value[i] = 4; break;
+	case '5': _hex_value[i] = 5; break;
+	case '6': _hex_value[i] = 6; break;
+	case '7': _hex_value[i] = 7; break;
+	case '8': _hex_value[i] = 8; break;
+	case '9': _hex_value[i] = 9; break;
+
+	case 'a': case 'A': _hex_value[i] = 10; break;
+	case 'b': case 'B': _hex_value[i] = 11; break;
+	case 'c': case 'C': _hex_value[i] = 12; break;
+	case 'd': case 'D': _hex_value[i] = 13; break;
+	case 'e': case 'E': _hex_value[i] = 14; break;
+	case 'f': case 'F': _hex_value[i] = 15; break;
+
+	default:
+	  _hex_value[i] = _hex_bad;
+	  break;
+	}
+    }
+#endif
+}

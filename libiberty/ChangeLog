@@ -1,3 +1,10 @@
+2002-03-27  DJ Delorie  <dj@redhat.com>
+
+	* hex.c: Add documentation.
+	(_hex_value): Provide non-ASCII empty table.
+	(hex_init): Initialize the non-ASCII table.
+	* functions.texi: Regenerate.
+
 2002-03-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* dyn-string.c: Add libgcc exception to copyright notice.
