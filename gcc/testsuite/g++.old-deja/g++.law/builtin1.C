@@ -8,10 +8,9 @@
 //  the use of __builtin_alloca, and thus ends up being unresolved.
 // Special g++ Options: 
 
-extern "C" void* alloca( __SIZE_TYPE__ );
 extern "C" int printf (const char *, ...);
 
 void* junk() {
-  return std::alloca(10);
+  return __builtin_alloca(10);
 }
 main() { printf ("PASS\n");}

@@ -55,7 +55,7 @@ check_bits (char *buf,
 #define CHECK_FIELD(AGGREGATE, FIELD, START_BIT, NUM_BITS, RVAL)          \
   do {                                                                    \
     AGGREGATE a__;                                                        \
-    memset (& a__, 0, sizeof (a__));                                      \
+    std::memset (& a__, 0, sizeof (a__));                                 \
     a__.FIELD = -1;                                                       \
     if (! check_bits ((char *) & a__, sizeof (a__), START_BIT, NUM_BITS)) \
       return RVAL;                                                        \

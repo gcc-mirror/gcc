@@ -7,7 +7,6 @@
 namespace std 
 {
   extern "C" void abort (void);
-  extern "C" void *alloca (__SIZE_TYPE__);
 }
 
 int main ()
@@ -15,14 +14,6 @@ int main ()
   using namespace std;
   void *foo;
   
-  foo = alloca (32);
-  if (!foo)
-    abort ();
-
-  foo = std::alloca (32);
-  if (!foo)
-    abort ();
-
   foo = ::__builtin_alloca (32);
   if (!foo)
     abort ();
@@ -30,10 +21,3 @@ int main ()
   return 0;
 }
 
-extern "C"
-{
-  static void * ::alloca (__SIZE_TYPE__)
-  {
-    std::abort ();
-  }
-}

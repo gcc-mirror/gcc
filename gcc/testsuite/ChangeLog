@@ -1,3 +1,18 @@
+2001-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	G++ no longer defines builtins that do not begin with __builtin.
+	* g++.old-deja/g++.abi/bitfields.C: Update accordingly.
+	* g++.old-deja/g++.brendand/misc13.C: Likewise.
+	* g++.old-deja/g++.law/builtin1.C: Likewise.
+	* g++.old-deja/g++.law/cvt2.C: Likewise.
+	* g++.old-deja/g++.mike/net5.C: Likewise.
+	* g++.old-deja/g++.other/builtins1.C: Likewise.
+	* g++.old-deja/g++.other/builtins2.C: Likewise.
+	* g++.old-deja/g++.other/builtins3.C: Likewise.
+	* g++.old-deja/g++.other/builtins4.C: Likewise.
+	* g++.old-deja/g++.other/inline8.C: Likewise.
+	* g++.old-deja/g++.robertl/eb39.C: Likewise.
+
 2001-05-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/using1.C: Adjust.

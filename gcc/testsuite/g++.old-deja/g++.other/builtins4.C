@@ -7,21 +7,12 @@
 namespace std 
 {
   extern "C" void abort (void);
-  extern "C" int printf (const char *, ...);
 }
 
 int main ()
 {
   using namespace std;
   
-  printf ("hello world\n");
-  printf ("\n");
-  printf ("%s\n", "hello world");
-  printf ("%c", '\n');
-  std::printf ("hello world\n");
-  std::printf ("\n");
-  std::printf ("%s\n", "hello world");
-  std::printf ("%c", '\n');
   ::__builtin_printf ("hello world\n");
   ::__builtin_printf ("\n");
   ::__builtin_printf ("%s\n", "hello world");
@@ -30,10 +21,3 @@ int main ()
   return 0;
 }
 
-extern "C"
-{
-  static int ::printf (const char *, ...)
-  {
-    std::abort ();
-  }
-}
