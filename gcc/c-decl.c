@@ -3039,11 +3039,6 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
 	    error ("variable %qD has initializer but incomplete type", decl);
 	    initialized = 0;
 	  }
-	else if (!COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (decl))))
-	  {
-	    error ("elements of array %qD have incomplete type", decl);
-	    initialized = 0;
-	  }
 	else if (C_DECL_VARIABLE_SIZE (decl))
 	  {
 	    /* Although C99 is unclear about whether incomplete arrays
@@ -4148,11 +4143,14 @@ grokdeclarator (const struct c_declarator *declarator,
 		itype = build_range_type (sizetype, size_zero_node, NULL_TREE);
 	      }
 
-	    /* If pedantic, complain about arrays of incomplete types.  */
-	    if (pedantic && !COMPLETE_TYPE_P (type))
-	      pedwarn ("array type has incomplete element type");
-
-	    type = build_array_type (type, itype);
+	     /* Complain about arrays of incomplete types.  */
+	    if (!COMPLETE_TYPE_P (type))
+	      {
+		error ("array type has incomplete element type");
+	        type = error_mark_node;
+	      }
+	    else
+	      type = build_array_type (type, itype);
 
 	    if (size_varies)
 	      C_TYPE_VARIABLE_SIZE (type) = 1;

@@ -4878,7 +4878,8 @@ push_init_level (int implicit)
     }
   else
     {
-      warning_init ("braces around scalar initializer");
+      if (constructor_type != error_mark_node)
+	warning_init ("braces around scalar initializer");
       constructor_fields = constructor_type;
       constructor_unfilled_fields = constructor_type;
     }
@@ -6240,7 +6241,8 @@ process_init_element (struct c_expr value)
 
       /* Handle the sole element allowed in a braced initializer
 	 for a scalar variable.  */
-      else if (constructor_fields == 0)
+      else if (constructor_type != error_mark_node
+	       && constructor_fields == 0)
 	{
 	  pedwarn_init ("excess elements in scalar initializer");
 	  break;

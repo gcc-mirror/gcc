@@ -11,4 +11,4 @@ f (void)
   struct foo { int a; int b; };
 }
 
-struct foo array[5]; /* { dg-error "storage size" } */
+struct foo array[5]; /* { dg-error "array type has incomplete element type" } */
