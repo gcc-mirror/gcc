@@ -596,7 +596,7 @@ combine_strings (strings)
       if (wide_flag)
 	length = length * wchar_bytes + wide_length;
 
-      p = alloca (length);
+      p = xmalloc (length);
 
       /* Copy the individual strings into the new combined string.
 	 If the combined string is wide, convert the chars to ints
@@ -643,6 +643,7 @@ combine_strings (strings)
 	*q = 0;
 
       value = build_string (length, p);
+      free (p);
     }
   else
     {
