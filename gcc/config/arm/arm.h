@@ -126,6 +126,18 @@ enum processor_type
 
 extern enum processor_type arm_cpu;
 
+/* What sort of floating point unit do we have? Hardware or software.  */
+enum floating_point_type
+{
+  FP_HARD,
+  FP_SOFT
+};
+
+/* Recast the floating point class to be the floating point attribute.  */
+#define arm_fpu_attr ((enum attr_fpu) arm_fpu)
+
+extern enum floating_point_type arm_fpu;
+
 #define TARGET_DEFAULT  0
 
 #define TARGET_MEM_FUNCTIONS 1
