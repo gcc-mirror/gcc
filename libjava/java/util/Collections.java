@@ -1,5 +1,5 @@
 /* Collections.java -- Utility class with methods to operate on collections
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -595,7 +595,7 @@ public class Collections
    * of this method is Serializable.
    *
    * @param o the single element.
-   * @returns an immutable Set containing only o.
+   * @return an immutable Set containing only o.
    */
   // It's not serializable because the spec is broken.
   public static Set singleton(final Object o)
@@ -645,7 +645,7 @@ public class Collections
    * of this method is Serializable.
    *
    * @param o the single element.
-   * @returns an immutable List containing only o.
+   * @return an immutable List containing only o.
    */
   // It's not serializable because the spec is broken.
   public static List singletonList(final Object o)
@@ -677,7 +677,7 @@ public class Collections
    *
    * @param key the single key.
    * @param value the single value.
-   * @returns an immutable Map containing only the single key value pair.
+   * @return an immutable Map containing only the single key value pair.
    */
   // It's not serializable because the spec is broken.
   public static Map singletonMap(final Object key, final Object value)
@@ -686,7 +686,7 @@ public class Collections
     {
       public Set entrySet()
       {
-	return singleton(new HashMap.Entry(key, value));
+	return singleton(new BasicMapEntry(key, value));
       }
     };
   }
@@ -1294,7 +1294,11 @@ public class Collections
     }
   }
 
-  private static class SynchronizedCollection implements Collection,
+  /**
+   * Package visible, so that collections such as the one for
+   * Hashtable.values() can specify which object to synchronize on.
+   */
+  static class SynchronizedCollection implements Collection,
     Serializable
   {
     Object sync;
@@ -1522,7 +1526,11 @@ public class Collections
     }
   }
 
-  private static class SynchronizedSet extends SynchronizedCollection
+  /**
+   * Package visible, so that sets such as the one for Hashtable.keySet()
+   * can specify which object to synchronize on.
+   */
+  static class SynchronizedSet extends SynchronizedCollection
     implements Set
   {
     public SynchronizedSet(Object sync, Set s)
