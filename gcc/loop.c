@@ -297,9 +297,6 @@ init_loop ()
 {
   char *free_point = (char *) oballoc (1);
   rtx reg = gen_rtx (REG, word_mode, 0);
-  rtx pow2 = GEN_INT (32);
-  rtx lea;
-  int i;
 
   add_cost = rtx_cost (gen_rtx (PLUS, word_mode, reg, reg), SET);
 
@@ -329,7 +326,6 @@ loop_optimize (f, dumpfile)
 {
   register rtx insn;
   register int i;
-  rtx end;
   rtx last_insn;
 
   loop_dump_stream = dumpfile;
@@ -1241,7 +1237,6 @@ combine_movables (movables, nregs)
       {
 	register struct movable *m1;
 	int regno = m->regno;
-	rtx reg_note, reg_note1;
 
 	bzero (matched_regs, nregs);
 	matched_regs[regno] = 1;
@@ -4504,7 +4499,6 @@ check_final_value (v, loop_start, loop_end)
 {
   struct iv_class *bl;
   rtx final_value = 0;
-  rtx tem;
 
   bl = reg_biv_class[REGNO (v->src_reg)];
 
@@ -5609,7 +5603,6 @@ check_dbra_loop (loop_end, insn_count, loop_start)
   rtx jump_label;
   rtx final_value;
   rtx start_value;
-  enum rtx_code branch_code;
   rtx new_add_val;
   rtx comparison;
   rtx before_comparison;
@@ -5770,8 +5763,6 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      || (bl->giv_count + bl->biv_count + num_mem_sets
 		  + num_movables + 2 == insn_count)))
 	{
-	  rtx condition = get_condition_for_loop (PREV_INSN (loop_end));
-	  int win;
 	  rtx tem;
 
 	  /* Loop can be reversed.  */
@@ -5901,8 +5892,7 @@ maybe_eliminate_biv (bl, loop_start, end, eliminate_p, threshold, insn_count)
      int threshold, insn_count;
 {
   rtx reg = bl->biv->dest_reg;
-  rtx p, set;
-  struct induction *v;
+  rtx p;
 
   /* Scan all insns in the loop, stopping if we find one that uses the
      biv in a way that we cannot eliminate.  */
