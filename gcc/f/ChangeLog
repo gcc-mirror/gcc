@@ -1,3 +1,10 @@
+Wed Apr 12 15:15:26 2000  Mark Mitchell  <mark@codesourcery.com>
+
+	* com.h (FFECOM_f2cINTEGER): Avoid using LONG_TYPE_SIZE as a
+	preprocessor constant.
+	(FFECOM_f2cLOGICAL): Likewise.
+	(FFECOM_f2cLONGINT): Likewise.
+
 Wed Apr  5 17:46:39 2000  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (GGC_H): Add varray.h.

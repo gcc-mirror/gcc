@@ -1,5 +1,5 @@
 /* com.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1996, 1997, 2000 Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
 This file is part of GNU Fortran.
@@ -127,23 +127,21 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define LONG_DOUBLE_TYPE_SIZE (BITS_PER_WORD * 2)
 #endif
 
-#if LONG_TYPE_SIZE == FLOAT_TYPE_SIZE
-#  define FFECOM_f2cINTEGER FFECOM_f2ccodeLONG
-#  define FFECOM_f2cLOGICAL FFECOM_f2ccodeLONG
-#elif INT_TYPE_SIZE == FLOAT_TYPE_SIZE
-#  define FFECOM_f2cINTEGER FFECOM_f2ccodeINT
-#  define FFECOM_f2cLOGICAL FFECOM_f2ccodeINT
-#else
-#  error Cannot find a suitable type for FFECOM_f2cINTEGER
-#endif
+#define FFECOM_f2cINTEGER			\
+  (LONG_TYPE_SIZE == FLOAT_TYPE_SIZE		\
+   ? FFECOM_f2ccodeLONG				\
+   : (INT_TYPE_SIZE == FLOAT_TYPE_SIZE		\
+      ? FFECOM_f2ccodeINT			\
+      : (abort (), -1)))
 
-#if LONG_TYPE_SIZE == (FLOAT_TYPE_SIZE * 2)
-#  define FFECOM_f2cLONGINT FFECOM_f2ccodeLONG
-#elif LONG_LONG_TYPE_SIZE == (FLOAT_TYPE_SIZE * 2)
-#  define FFECOM_f2cLONGINT FFECOM_f2ccodeLONGLONG
-#else
-#  error Cannot find a suitable type for FFECOM_f2cLONGINT
-#endif
+#define FFECOM_f2cLOGICAL FFECOM_f2cINTEGER
+
+#define FFECOM_f2cLONGINT				\
+ (LONG_TYPE_SIZE == (FLOAT_TYPE_SIZE * 2)		\
+  ? FFECOM_f2ccodeLONG					\
+  : (LONG_LONG_TYPE_SIZE == (FLOAT_TYPE_SIZE * 2)	\
+     ? FFECOM_f2ccodeLONGLONG				\
+     : (abort (), -1)))
 
 #define FFECOM_f2cADDRESS FFECOM_f2ccodeCHARPTR
 #define FFECOM_f2cSHORTINT FFECOM_f2ccodeSHORT
