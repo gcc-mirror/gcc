@@ -1828,6 +1828,7 @@ ix86_decompose_address (addr, out)
      Avoid this by transforming to [%esi+0].  */
   if (ix86_cpu == PROCESSOR_K6 && !optimize_size
       && base && !index && !disp
+      && REG_P (base)
       && REGNO_REG_CLASS (REGNO (base)) == SIREG)
     disp = const0_rtx;
 
