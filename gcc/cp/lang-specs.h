@@ -41,6 +41,7 @@ Boston, MA 02111-1307, USA.  */
         %i %{E:%W{o*}}%{M:%W{o*}}%{MM:%W{o*}}\n}\
       %{!E:%{!M:%{!MM:cc1plus %i %1 %2\
                             -lang-c++ %{nostdinc*} %{C} %{A*} %{I*} %{P} %I\
+                            %{MD:-MD %b.d} %{MMD:-MMD %b.d} %{MG}\
                             -undef -D__GNUC__=%v1 -D__GNUG__=%v1 -D__cplusplus\
                             -D__GNUC_MINOR__=%v2\
                             %{ansi:-trigraphs -D__STRICT_ANSI__} %{!undef:%{!ansi:%p} %P}\
