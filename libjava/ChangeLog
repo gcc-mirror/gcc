@@ -1,3 +1,14 @@
+1999-11-18  Tom Tromey  <tromey@cygnus.com>
+
+	* java/lang/natClass.cc (MCACHE_SIZE): Define as a power of 2
+	minus 1.
+	(method_cache): Made larger.
+
+1999-11-11  Tom Tromey  <tromey@cygnus.com>
+
+	* posix-threads.cc (_Jv_MutexInit): Use _Jv_PthreadGetMutex when
+	initializing mutex.  Initialize `count' when required.
+
 1999-11-07  Anthony Green  <green@trip.cygnus.com>
 
 	* java/util/zip/ZipFile.java: Compute the offset of the ZipEntry
