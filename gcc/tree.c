@@ -4449,9 +4449,10 @@ get_callee_fndecl (tree call)
   if (TREE_CODE (addr) == ADDR_EXPR
       && TREE_CODE (TREE_OPERAND (addr, 0)) == FUNCTION_DECL)
     return TREE_OPERAND (addr, 0);
-
-  /* We couldn't figure out what was being called.  */
-  return NULL_TREE;
+  
+  /* We couldn't figure out what was being called.  Maybe the front
+     end has some idea.  */
+  return (*lang_hooks.lang_get_callee_fndecl) (call);
 }
 
 /* Print debugging information about tree nodes generated during the compile,

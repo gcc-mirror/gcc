@@ -378,6 +378,9 @@ struct lang_hooks
      types in C++.  */
   const char *(*decl_printable_name) (tree decl, int verbosity);
 
+  /* Given a CALL_EXPR, return a function decl that is its target.  */
+  tree (*lang_get_callee_fndecl) (tree);
+
   /* Called by report_error_function to print out function name.  */
   void (*print_error_function) (struct diagnostic_context *, const char *);
 
