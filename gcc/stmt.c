@@ -2955,29 +2955,33 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
   if (thisblock->data.block.stack_level != 0
       || thisblock->data.block.cleanups != 0)
     {
-      /* Don't let cleanups affect ({...}) constructs.  */
-      int old_expr_stmts_for_value = expr_stmts_for_value;
-      rtx old_last_expr_value = last_expr_value;
-      tree old_last_expr_type = last_expr_type;
-      expr_stmts_for_value = 0;
-
-      /* Do the cleanups.  */
-      expand_cleanups (thisblock->data.block.cleanups, NULL_TREE);
-      do_pending_stack_adjust ();
-
-      expr_stmts_for_value = old_expr_stmts_for_value;
-      last_expr_value = old_last_expr_value;
-      last_expr_type = old_last_expr_type;
-
-      /* Restore the stack level.  */
-
-      if (thisblock->data.block.stack_level != 0)
+      /* Only clean up here if this point can actually be reached.  */
+      if (GET_CODE (get_last_insn ()) != BARRIER)
 	{
-	  emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
-			      thisblock->data.block.stack_level, NULL_RTX);
-	  if (nonlocal_goto_handler_slot != 0)
-	    emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level,
-			     NULL_RTX);
+	  /* Don't let cleanups affect ({...}) constructs.  */
+	  int old_expr_stmts_for_value = expr_stmts_for_value;
+	  rtx old_last_expr_value = last_expr_value;
+	  tree old_last_expr_type = last_expr_type;
+	  expr_stmts_for_value = 0;
+
+	  /* Do the cleanups.  */
+	  expand_cleanups (thisblock->data.block.cleanups, NULL_TREE);
+	  do_pending_stack_adjust ();
+
+	  expr_stmts_for_value = old_expr_stmts_for_value;
+	  last_expr_value = old_last_expr_value;
+	  last_expr_type = old_last_expr_type;
+
+	  /* Restore the stack level.  */
+
+	  if (thisblock->data.block.stack_level != 0)
+	    {
+	      emit_stack_restore (thisblock->next ? SAVE_BLOCK : SAVE_FUNCTION,
+				  thisblock->data.block.stack_level, NULL_RTX);
+	      if (nonlocal_goto_handler_slot != 0)
+		emit_stack_save (SAVE_NONLOCAL, &nonlocal_goto_stack_level,
+				 NULL_RTX);
+	    }
 	}
 
       /* Any gotos out of this block must also do these things.
