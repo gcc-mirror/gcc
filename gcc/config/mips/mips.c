@@ -9622,7 +9622,7 @@ mips_output_conditional_branch (insn,
   /* The kind of comparison we are doing.  */
   enum rtx_code code = GET_CODE (operands[0]);
   /* Nonzero if the opcode for the comparison needs a `z' indicating
-     that it is a comparision against zero.  */
+     that it is a comparison against zero.  */
   int need_z_p;
   /* A string to use in the assembly output to represent the first
      operand.  */
@@ -9860,7 +9860,7 @@ mips_output_conditional_branch (insn,
 
 	strcpy (buffer, "%(%<%[");
 	c = strchr (buffer, '\0');
-	/* Generate the reversed comparision.  This takes four
+	/* Generate the reversed comparison.  This takes four
 	   bytes.  */
 	if (float_p)
 	  sprintf (c, "%%*b%s\t%%Z2%s",

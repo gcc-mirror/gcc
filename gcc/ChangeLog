@@ -1,3 +1,14 @@
+2003-06-17  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* ChangeLog.3: Fix comment typos.
+	* ChangeLog.6: Likewise.
+	* config/d30v/d30v.c: Likewise.
+	* config/h8300/h8300.md: Likewise.
+	* config/m32r/m32r.md: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mips/mips.md: Likewise.
+	* config/ns32k/NOTES: Likewise.
+
 2003-06-17  Ranjit Mathew  <rmathew@hotmail.com>
             Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
 	

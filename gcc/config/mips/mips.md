@@ -6886,7 +6886,7 @@ move\\t%0,%z4\\n\\
   [(set_attr "type"	"branch")
    (set_attr "mode"	"none")])
 
-;; Conditional branch on equality comparision.
+;; Conditional branch on equality comparison.
 
 (define_insn "branch_equality"
   [(set (pc)

@@ -12,7 +12,7 @@ Ian Dall <ian@beware.dropbear.id.au>
 The ns32x81 fpu handles most operands in hardware, but traps on NaN,
 Inf and Denormalized numbers. The correct behavior can be handled by
 the trap handler. This is mostly transparent to the compiler, but in
-the case of floating point comparisions, the trap handler and the
+the case of floating point comparisons, the trap handler and the
 compiler must co-operate.
 
 Comparing a Nan with anything (including another Nan) is an unordered
@@ -90,7 +90,7 @@ For example the emitted code for the case of RLT is
 
 which is, in effect "branch if not less than and not unordered."
 
-These extra comparisions are safe if the trap handler doesn't set the
+These extra comparisons are safe if the trap handler doesn't set the
 L flag, since in that case the additional "bhi" instructions are never
 taken. Also, these extra branch instructions are controlled by the
 "-mieee-compare" option.
