@@ -23,11 +23,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This file is part of the C front end.
    It contains routines to build C expressions given their operands,
    including computing the types of the result, C-specific error checks,
-   and some optimization.
-
-   There are also routines to build RETURN_STMT nodes and CASE_STMT nodes,
-   and to process initializations in declarations (since they work
-   like a strange sort of assignment).  */
+   and some optimization.  */
 
 #include "config.h"
 #include "system.h"
@@ -6248,12 +6244,11 @@ c_expand_asm_operands (tree string, tree outputs, tree inputs,
   emit_queue ();
 }
 
-/* Expand a C `return' statement.
-   RETVAL is the expression for what to return,
-   or a null pointer for `return;' with no value.  */
+/* Generate a C `return' statement.  RETVAL is the expression for what
+   to return, or a null pointer for `return;' with no value.  */
 
-tree
-c_expand_return (tree retval)
+void
+c_finish_return (tree retval)
 {
   tree valtype = TREE_TYPE (TREE_TYPE (current_function_decl));
 
@@ -6282,7 +6277,7 @@ c_expand_return (tree retval)
 
       current_function_returns_value = 1;
       if (t == error_mark_node)
-	return NULL_TREE;
+	return;
 
       inner = t = convert (TREE_TYPE (res), t);
 
@@ -6340,7 +6335,7 @@ c_expand_return (tree retval)
       retval = build (MODIFY_EXPR, TREE_TYPE (res), res, t);
     }
 
- return add_stmt (build_return_stmt (retval));
+  add_stmt (build_stmt (RETURN_EXPR, retval));
 }
 
 struct c_switch {

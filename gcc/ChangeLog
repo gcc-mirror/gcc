@@ -1,3 +1,22 @@
+2004-06-21  Richard Henderson  <rth@redhat.com>
+
+	* c-common.def (RETURN_STMT): Remove.
+	* c-common.h (RETURN_STMT_EXPR): Remove.
+	(c_expand_return, build_return_stmt): Remove.
+	(c_common_stmt_codes): Remove RETURN_STMT.
+	* c-dump.c (dump_next_stmt): Remove.
+	(c_dump_tree): Remove RETURN_STMT.
+	* c-decl.c (finish_function): Use c_finish_return.
+	* c-parse.in (stmt): Likewise.
+	* c-gimplify.c (gimplify_return_stmt): Remove.
+	(c_gimplify_expr): Remove RETURN_STMT.
+	* c-pretty-print.c (pp_c_statement): Likewise.
+	* c-semantics.c (build_return_stmt): Remove.
+	* c-tree.h (c_finish_return): Declare.
+	* c-typeck.c (c_finish_return): Rename from c_expand_return.
+	Return void.  Build RETURN_EXPR directly.
+	* tree-dump.h (dump_next_stmt): Remove.
+
 2004-06-21  Zack Weinberg  <zack@codesourcery.com>
 
 	* c-decl.c (start_function): Don't call make_decl_rtl.  Don't

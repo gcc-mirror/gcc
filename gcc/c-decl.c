@@ -6242,7 +6242,7 @@ finish_function (void)
 	  DEFAULT_MAIN_RETURN;
 #else
 	  if (flag_isoc99)
-	    c_expand_return (integer_zero_node);
+	    c_finish_return (integer_zero_node);
 #endif
 	}
     }

@@ -7773,8 +7773,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			       (TREE_OPERAND (t, 0), args));
       break;
 
-    case RETURN_STMT:
-      finish_return_stmt (tsubst_expr (RETURN_STMT_EXPR (t),
+    case RETURN_EXPR:
+      finish_return_stmt (tsubst_expr (TREE_OPERAND (t, 0),
 				       args, complain, in_decl));
       break;
 

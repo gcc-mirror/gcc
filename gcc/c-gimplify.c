@@ -2,7 +2,7 @@
    by the C-based front ends.  The structure of gimplified, or
    language-independent, trees is dictated by the grammar described in this
    file.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Lowering of expressions contributed by Sebastian Pop <s.pop@laposte.net>
    Re-written to support lowering of whole function trees, documentation
    and miscellaneous cleanups by Diego Novillo <dnovillo@redhat.com>
@@ -467,17 +467,6 @@ gimplify_switch_stmt (tree *stmt_p)
   return GS_ALL_DONE;
 }
 
-/* Genericize a RETURN_STMT by turning it into a RETURN_EXPR.  */
-
-static enum gimplify_status
-gimplify_return_stmt (tree *stmt_p)
-{
-  tree expr = RETURN_STMT_EXPR (*stmt_p);
-  expr = build1 (RETURN_EXPR, void_type_node, expr);
-  *stmt_p = expr;
-  return GS_OK;
-}
-
 /* Gimplifies a DECL_STMT node *STMT_P by making any necessary allocation
    and initialization explicit.  */
 
@@ -613,9 +602,6 @@ c_gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p ATTRIBUTE_UNUSED)
 
     case EXPR_STMT:
       return gimplify_expr_stmt (expr_p);
-
-    case RETURN_STMT:
-      return gimplify_return_stmt (expr_p);
 
     case DECL_STMT:
       return gimplify_decl_stmt (expr_p);

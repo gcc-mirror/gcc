@@ -3,8 +3,8 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions. 
 
-   Copyright (C) 1998, 1999, 2000, 2001, 2002,
-   2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004
+   Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -667,7 +667,7 @@ finish_return_stmt (tree expr)
 	}
     }
 
-  r = build_stmt (RETURN_STMT, expr);
+  r = build_stmt (RETURN_EXPR, expr);
   r = maybe_cleanup_point_expr (r);
   r = add_stmt (r);
   finish_stmt ();
@@ -3009,8 +3009,8 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
   /* Change all returns to just refer to the RESULT_DECL; this is a nop,
      but differs from using NULL_TREE in that it indicates that we care
      about the value of the RESULT_DECL.  */
-  else if (TREE_CODE (*tp) == RETURN_STMT)
-    RETURN_STMT_EXPR (*tp) = dp->result;
+  else if (TREE_CODE (*tp) == RETURN_EXPR)
+    TREE_OPERAND (*tp, 0) = dp->result;
   /* Change all cleanups for the NRV to only run when an exception is
      thrown.  */
   else if (TREE_CODE (*tp) == CLEANUP_STMT
@@ -3052,7 +3052,7 @@ finalize_nrv_r (tree* tp, int* walk_subtrees, void* data)
 }
 
 /* Called from finish_function to implement the named return value
-   optimization by overriding all the RETURN_STMTs and pertinent
+   optimization by overriding all the RETURN_EXPRs and pertinent
    CLEANUP_STMTs and replacing all occurrences of VAR with RESULT, the
    RESULT_DECL for the function.  */
 

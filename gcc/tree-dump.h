@@ -83,7 +83,6 @@ extern void dump_pointer (dump_info_p, const char *, void *);
 extern void dump_int (dump_info_p, const char *, int);
 extern void dump_string (dump_info_p, const char *);
 extern void dump_stmt (dump_info_p, tree);
-extern void dump_next_stmt (dump_info_p, tree);
 extern void queue_and_dump_index (dump_info_p, const char *, tree, int);
 extern void queue_and_dump_type (dump_info_p, tree);
 extern void dump_function (enum tree_dump_index, tree);
