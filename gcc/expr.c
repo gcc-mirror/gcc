@@ -4304,7 +4304,8 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	    }
 
 	  index = fold (build (MULT_EXPR, index_type, index,
-			       TYPE_SIZE (TREE_TYPE (exp))));
+			       convert (index_type,
+					TYPE_SIZE (TREE_TYPE (exp)))));
 
 	  if (TREE_CODE (index) == INTEGER_CST
 	      && TREE_INT_CST_HIGH (index) == 0)
@@ -5670,10 +5671,13 @@ expand_expr (exp, target, tmode, modifier)
 
 	MEM_IN_STRUCT_P (op0) = 1;
 	MEM_VOLATILE_P (op0) |= volatilep;
-	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode)
+	if (mode == mode1 || mode1 == BLKmode || mode1 == tmode
+	    || modifier == EXPAND_CONST_ADDRESS || modifier == EXPAND_SUM
+	    || modifier == EXPAND_INITIALIZER)
 	  return op0;
-	if (target == 0)
+	else if (target == 0)
 	  target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
+
 	convert_move (target, op0, unsignedp);
 	return target;
       }
