@@ -113,7 +113,7 @@
       when the output stream is, in fact, a terminal and not a file
       or some other device -- and <em>that</em> may not even be true
       since C++ says nothing about files nor terminals.  All of that is
-      system-dependant.  (The &quot;newline-buffer-flushing only occuring
+      system-dependent.  (The &quot;newline-buffer-flushing only occurring
       on terminals&quot; thing is mostly true on Unix systems, though.)
    </p>
    <p>Some people also believe that sending <code>endl</code> down an
@@ -167,7 +167,7 @@
       arguments are the same as those for the Standard C I/O Library
       function (a buffer area followed by its size).
    </p>
-   <p>A great deal of this is implementation-dependant.  For example,
+   <p>A great deal of this is implementation-dependent.  For example,
       <code>streambuf</code> does not specify any actions for its own 
       <code>setbuf()</code>-ish functions; the classes derived from
       <code>streambuf</code> each define behavior that &quot;makes 
@@ -183,7 +183,7 @@
    <p>A last reminder:  there are usually more buffers involved than
       just those at the language/library level.  Kernel buffers, disk
       buffers, and the like will also have an effect.  Inspecting and
-      changing those are system-dependant.
+      changing those are system-dependent.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -445,7 +445,7 @@
       </pre>
    </p>
    <p>You must do this before performing any I/O via the C++ stream objects.
-      Once you call this, the C++ streams will operate independantly of the
+      Once you call this, the C++ streams will operate independently of the
       (unused) C streams.  For GCC 3.0, this means that <code>cout</code> and
       company will become fully buffered on their own.
    </p>

@@ -13,8 +13,8 @@
 <div><div class="legalnotice">
 <p class="legalnotice-title"><b>Legal Notice</b></p>
 <p>
-		This document can be distributed under the FDL
-		(<a href="http://www.gnu.org" target="_top">www.gnu.org</a>)
+	This document can be distributed under the FDL
+	(<a href="http://www.gnu.org" target="_top">www.gnu.org</a>)
       </p>
 </div></div>
 <div><p class="pubdate">Tue Jun  5 20:07:49 2001</p></div>
@@ -32,8 +32,8 @@
 <td align="left">fnatter</td>
 </tr>
 <tr><td align="left" colspan="3">First released version using docbook-xml
-		  + second upload to libstdc++-page.
-		</td></tr>
+	  + second upload to libstdc++-page.
+	</td></tr>
 <tr>
 <td align="left">Revision 0.9</td>
 <td align="left">Wed Sep  6 02:59:32 2000</td>
@@ -46,37 +46,46 @@
 <td align="left">fnatter</td>
 </tr>
 <tr><td align="left" colspan="3">added information about why file-descriptors are not in the
-		  standard</td></tr>
+	  standard</td></tr>
 <tr>
 <td align="left">Revision 0.9.2</td>
 <td align="left">Tue Jun  5 20:07:49 2001</td>
 <td align="left">fnatter</td>
 </tr>
 <tr><td align="left" colspan="3">
-		  a fix, added hint on increased portability of C-shadow-headers,
-		  added autoconf-test HAVE_CONTAINER_AT
-		</td></tr>
+	  a fix, added hint on increased portability of C-shadow-headers,
+	  added autoconf-test HAVE_CONTAINER_AT
+	</td></tr>
 <tr>
 <td align="left">Revision 0.9.3</td>
 <td align="left">Fri Jun 29 16:15:56 2001</td>
 <td align="left">fnatter</td>
 </tr>
 <tr><td align="left" colspan="3">
-			changed signature of nonstandard filebuf-constructor and
-		  update the section on filebuf::attach to point to ../ext/howto.html,
-		  added link to ../21/strings/howto.html
-		  in sec-stringstream, changed &lt;link&gt;-tags to have content
-			(so that these links work),
-		  replace &quot;user-space&quot; by &quot;global namespace&quot;
-			add note about gcc 3.0 and shadow-headers			
-			add section about ostream::form and istream::scan
-			sec-vector-at: remove hint to modify headers
-			fix spelling error in sec-stringstream
-		</td></tr>
+	  changed signature of nonstandard filebuf-constructor and
+	  update the section on filebuf::attach to point to ../ext/howto.html,
+	  added link to ../21/strings/howto.html
+	  in sec-stringstream, changed &lt;link&gt;-tags to have content
+	  (so that these links work),
+	  replace &quot;user-space&quot; by &quot;global namespace&quot;
+	  add note about gcc 3.0 and shadow-headers			
+	  add section about ostream::form and istream::scan
+	  sec-vector-at: remove hint to modify headers
+	  fix spelling error in sec-stringstream
+	</td></tr>
+<tr>
+<td align="left">Revision 0.9.4</td>
+<td align="left">Mon Nov  5 17:01:04 2001</td>
+<td align="left">fnatter</td>
+</tr>
+<tr><td align="left" colspan="3">
+	  rewrite section 1.1.3 because of gnu.gcc.help-post by
+	  Juergen Heinzl
+	</td></tr>
 </table></div></div>
 <div><div class="abstract">
 <p>
-<a name="id2695641"></a><b>Abstract</b>
+<a name="id2697062"></a><b>Abstract</b>
 </p>
 <p>
 	Some notes on porting applications from libstdc++-2.90 (or earlier
@@ -162,19 +171,19 @@
       things:
       <div class="itemizedlist"><ul>
 <li><p>
-<a name="id2695691"></a>wrap your code in <b>namespace std {
+<a name="id2697113"></a>wrap your code in <b>namespace std {
 	      ... }</b> =&gt; This is not an option because only symbols
 	    from the standard c++-library are defined in namespace std::.
 	  </p></li>
 <li><p>
-<a name="id2695698"></a>put a kind of
+<a name="id2697126"></a>put a kind of
 	    <i>using-declaration</i> in your source (either
 	    <b>using namespace std;</b> or i.e. <b>using
 	      std::string;</b>) =&gt; works well for source-files, but
 	    cannot be used in header-files.
 	  </p></li>
 <li><p>
-<a name="id2695717"></a>use a <i>fully qualified name</i> for
+<a name="id2697047"></a>use a <i>fully qualified name</i> for
 	    each libstdc++-symbol (i.e. <b>std::string</b>,
 	    <b>std::cout</b>) =&gt; can always be used
 	  </p></li>
@@ -257,12 +266,32 @@
 <p>
 	If some compilers complain about <b>using
 	  std::string;</b>, and if the &quot;hack&quot; for gtk-- mentioned above
-	does not work, then it might be a good idea to define a macro
-	NS_STD, which is defined to either &quot;&quot; or &quot;std&quot;
-	based on an autoconf-test. Then you should be able to use
-	<b>NS_STD::string</b>, which will evaluate to
-	<b>::string</b> (&quot;string in the global namespace&quot;) on
-	systems that do not put string in std::.  (This is untested)
+	does not work, then I see two solutions:
+	
+	<div class="itemizedlist"><ul>
+<li><p>
+<a name="id2698648"></a>
+	      Define <b>std::</b> as a macro if the compiler
+	      doesn't know about <b>std::</b>.
+	      <pre class="programlisting">
+		#ifdef OLD_COMPILER
+		#define std
+		#endif
+	      </pre>
+	      (thanks to Juergen Heinzl who posted this solution on
+	      gnu.gcc.help)
+	    </p></li>
+<li><p>
+<a name="id2698680"></a>
+	      Define a macro NS_STD, which is defined to
+	      either &quot;&quot; or &quot;std&quot;
+	      based on an autoconf-test. Then you should be able to use
+	      <b>NS_STD::string</b>, which will evaluate to
+	      <b>::string</b> (&quot;string in the global namespace&quot;) on
+	      systems that do not put string in std::.  (This is untested)
+	    </p></li>
+</ul></div>
+	  
       </p>
 </div>
 <div class="section">
@@ -276,7 +305,7 @@
       </p>
 <div class="table">
 <p>
-<a name="id2696268"></a><b>Table 1. Namespace std:: in Open-Source programs</b>
+<a name="id2698746"></a><b>Table 1. Namespace std:: in Open-Source programs</b>
 </p>
 <table summary="Namespace std:: in Open-Source programs" border="1">
 <colgroup>
@@ -310,7 +339,7 @@
 </div>
 <div class="table">
 <p>
-<a name="id2696334"></a><b>Table 2. Notations for categories</b>
+<a name="id2698876"></a><b>Table 2. Notations for categories</b>
 </p>
 <table summary="Notations for categories" border="1">
 <colgroup>
@@ -377,21 +406,21 @@
     </p>
 <p>
       When using libstdc++-v3, you can use
-      <div class="funcsynopsis" id="id2696909">
+      <div class="funcsynopsis" id="id2692860">
 <p>
-<a name="id2696909"></a><pre class="funcsynopsisinfo">
+<a name="id2692860"></a><pre class="funcsynopsisinfo">
 	  #include &lt;fstream&gt;
 	</pre>
 <p><code><code class="funcdef">
-		  <b class="fsfunc">basic_filebuf&lt;...&gt;::basic_filebuf&lt;...&gt;
-			</b>
-		</code>(<var class="pdparam">file</var>, <var class="pdparam">mode</var>, <var class="pdparam">size</var>);<br>__c_file_type* <var class="pdparam">file</var>;<br>ios_base::open_mode <var class="pdparam">mode</var>;<br>int <var class="pdparam">size</var>;</code></p>
+	    <b class="fsfunc">basic_filebuf&lt;...&gt;::basic_filebuf&lt;...&gt;
+	    </b>
+	  </code>(<var class="pdparam">file</var>, <var class="pdparam">mode</var>, <var class="pdparam">size</var>);<br>__c_file_type* <var class="pdparam">file</var>;<br>ios_base::open_mode <var class="pdparam">mode</var>;<br>int <var class="pdparam">size</var>;</code></p>
 <p>
 </div>
       but the the signature of this constructor has changed often, and
       it might change again. For the current state of this, check
-	  <a href="../ext/howto.html" target="_top">the howto for extensions</a>.
-	</p>
+      <a href="../ext/howto.html" target="_top">the howto for extensions</a>.
+    </p>
 <p>
       For a portable solution (among systems which use
       filedescriptors), you need to implement a subclass of
@@ -410,8 +439,8 @@
 	source-code</a>.
     </p>
 <p>
-    The old C++-headers (iostream.h etc.) are available, but gcc generates
-    a warning that you are using deprecated headers.
+      The old C++-headers (iostream.h etc.) are available, but gcc generates
+      a warning that you are using deprecated headers.
     </p>
 <div class="section">
 <a name="sec-cheaders"></a><div class="titlepage"><div><h3 class="title">
@@ -441,7 +470,7 @@
 	For more information on this, and for information on how the
 	GNU C++ implementation might reuse (&quot;shadow&quot;) the C
 	library-functions, have a look at <a href="http://www.cantrip.org/cheaders.html" target="_top">
-	www.cantrip.org</a>.
+	  www.cantrip.org</a>.
       </p>
 </div>
 <div class="section">
@@ -455,8 +484,8 @@
 	In earlier versions of the standard,
 	<tt>&lt;fstream.h&gt;</tt>,
 	<tt>&lt;ostream.h&gt;</tt>
-	 and <tt>&lt;istream.h&gt;</tt>
-	  used to define
+	and <tt>&lt;istream.h&gt;</tt>
+	used to define
 	<b>cout</b>, <b>cin</b> and so on. Because
 	of the templatized iostreams in libstdc++-v3, you need to include
 	<tt>&lt;iostream&gt;</tt>
@@ -473,18 +502,18 @@
       fixes for existing uses of iterators.
       <div class="itemizedlist"><ul>
 <li><p>
-<a name="id2692127"></a>you cannot do
+<a name="id2693156"></a>you cannot do
 	    <b>ostream::operator&lt;&lt;(iterator)</b> to
 	    print the address of the iterator =&gt; use
 	    <b>operator&lt;&lt; &amp;*iterator</b> instead ?
 	  </p></li>
 <li><p>
-<a name="id2697070"></a>you cannot clear an iterator's reference
+<a name="id2693255"></a>you cannot clear an iterator's reference
 	    (<b>iterator = 0</b>) =&gt; use
 	    <b>iterator = iterator_type();</b> ?
 	  </p></li>
 <li><p>
-<a name="id2697221"></a><b>if (iterator)</b> won't work any
+<a name="id2693277"></a><b>if (iterator)</b> won't work any
 	    more =&gt; use <b>if (iterator != iterator_type())</b>
 	    ?</p></li>
 </ul></div>
@@ -501,7 +530,7 @@
       <tt>&lt;ctype.h&gt;</tt>
       -functionality as macros (isspace, isalpha etc.). Libstdc++-v3
       &quot;shadows&quot; these macros as described in the <a href="#sec-cheaders">section about
-      c-headers</a>.
+	c-headers</a>.
     </p>
 <p>
       Older implementations of libstdc++ (g++-2 for egcs 1.x and g++-3
@@ -552,8 +581,8 @@
 	--enable-cshadow-headers is currently broken. As a result, shadow
 	headers are not being searched....
       '
-			This is now outdated, but gcc 3.0 still does not have fully
-			compliant &quot;shadow headers&quot;.
+      This is now outdated, but gcc 3.0 still does not have fully
+      compliant &quot;shadow headers&quot;.
     </p>
 </div>
 <div class="section">
@@ -646,10 +675,10 @@
 <a name="sec-scan-form"></a><span class="label">11.</span> <span class="title">GNU Extensions ostream::form and istream::scan</span>
 </h2></div></div>
 <p>
-		These	are not supported any more - use
-		<a href="#sec-stringstream">
-		stringstreams</a> instead.	
-		</p>
+      These	are not supported any more - use
+      <a href="#sec-stringstream">
+	stringstreams</a> instead.	
+    </p>
 </div>
 <div class="section">
 <a name="sec-stringstream"></a><div class="titlepage"><div><h2 class="title" style="clear: all">
@@ -669,20 +698,20 @@
       </pre>
       <div class="itemizedlist"><ul>
 <li><p>
-<a name="id2692504"></a> <b>strstream</b> is considered to be
+<a name="id2693683"></a> <b>strstream</b> is considered to be
 	    deprecated
 	  </p></li>
 <li><p>
-<a name="id2692452"></a> <b>strstream</b> is limited to
+<a name="id2693629"></a> <b>strstream</b> is limited to
 	    <b>char</b>
 	  </p></li>
 <li><p>
-<a name="id2692539"></a> with <b>ostringstream</b> you don't
+<a name="id2693718"></a> with <b>ostringstream</b> you don't
 	    have to take care of terminating the string or freeing its
 	    memory
 	  </p></li>
 <li><p>
-<a name="id2692552"></a> <b>istringstream</b> can be re-filled
+<a name="id2693735"></a> <b>istringstream</b> can be re-filled
 	    (clear(); str(input);)
 	  </p></li>
 </ul></div>
@@ -739,18 +768,18 @@
 	void fromString(const string&amp; input, X&amp; any)
 	{
 	#ifdef HAVE_SSTREAM
-	  std::istringstream iss(input);
+	std::istringstream iss(input);
 	#else
-	  std::istrstream iss(input.c_str());
+	std::istrstream iss(input.c_str());
 	#endif
-	  X temp;
-	  iss &gt;&gt; temp;
-	  if (iss.fail())
-	    throw runtime_error(..)
-	  any = temp;
+	X temp;
+	iss &gt;&gt; temp;
+	if (iss.fail())
+	throw runtime_error(..)
+	any = temp;
 	}
       </pre>
-	  Another example of using stringstreams is in <a href="../21_strings/howto.html" target="_top">this howto</a>.
+      Another example of using stringstreams is in <a href="../21_strings/howto.html" target="_top">this howto</a>.
     </p>
 <p>
       I have read the Josuttis book on Standard C++, so some information

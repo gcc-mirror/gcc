@@ -958,7 +958,7 @@ T     X* get() const throw();
 T     X* release() throw();
 T     void reset(X* p =0) throw();
 
-      // _lib.auto.ptr.conv_ converions:
+      // _lib.auto.ptr.conv_ conversions:
 X     auto_ptr(auto_ptr_ref<X>) throw();
 X     template<class Y> operator auto_ptr_ref<Y>() throw();
 X     template<class Y> operator auto_ptr<Y>() throw();

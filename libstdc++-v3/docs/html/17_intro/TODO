@@ -152,8 +152,6 @@ sources, with macro-guards.
 
 - write filebuf for wide characters
 
-- replace stl/bits/stl_config 
-
 - add feature-test macros for non-standard extensions
 
 - move major extensions into separate namespace (e.g. stl::)
@@ -165,8 +163,6 @@ sources, with macro-guards.
 - specialize functions that use_facet<> calls on failure for the required 
   facets, and construct them lazily so unused facets need not be constructed 
   when the locale is. 
-
-- get mknumeric_limits coope with 'exotic' OSes.
 
 - <cmath>: provide missing names. 
 

@@ -37,7 +37,7 @@
       CString.  Often programmers realize that a standard portable
       answer is better than a proprietary nonportable one, but in porting
       their application from a Win32 platform, they discover that they
-      are relying on special functons offered by the CString class.
+      are relying on special functions offered by the CString class.
    </p>
    <p>Things are not as bad as they seem.  In
       <a href="http://gcc.gnu.org/ml/gcc/1999-04n/msg00236.html">this
@@ -58,7 +58,7 @@
       stringstream classes.  These are the bridge between the iostream
       hierarchy and the string class, and they operate with regular
       streams seamlessly because they inherit from the iostream
-      heirarchy.  An quick example:
+      hierarchy.  An quick example:
       <pre>
    #include &lt;iostream&gt;
    #include &lt;string&gt;
@@ -315,7 +315,7 @@
    str.erase(notwhite+1); </pre>
       Obviously, the calls to <code>find</code> could be inserted directly
       into the calls to <code>erase</code>, in case your compiler does not
-      optimize named temporaries out of existance.
+      optimize named temporaries out of existence.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.

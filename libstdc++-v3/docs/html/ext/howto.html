@@ -143,8 +143,211 @@
 
 <hr>
 <h2><a name="3">Allocators</a></h2>
-   <p>This will be blank for a while.  It will describe all of the different
-      memory allocators, most inherited from SGI's code.  Input is solicited.
+   <p>Thread-safety, space efficiency, high speed, portability... this is a
+      mess.  Where to begin?
+   </p>
+   <h3>The Rules</h3>
+   <p>The C++ standard only gives a few directives in this area:
+     <ul>
+     <li>When you add elements to a container, and the container must allocate
+         more memory to hold them, the container makes the request via its
+         <code>Allocator</code> template parameter.  This includes adding
+         char's to the string class, which acts as a regular STL container
+         in this respect.
+     <li>The default <code>Allocator</code> of every container-of-T is
+         <code>std::allocator&lt;T&gt;</code>.
+     <li>The interface of the <code>allocator&lt;T&gt;</code> class is
+         extremely simple.  It has about 20 public declarations (nested
+         typedefs, member functions, etc), but the two which concern us most
+         are:
+         <pre>
+      T*    allocate   (size_type n, const void* hint = 0);
+      void  deallocate (T* p, size_type n);</pre>
+         (This is a simplicifcation; the real signatures use nested typedefs.)
+         The <code>&quot;n&quot;</code> arguments in both those functions is a
+         <em>count</em> of the number of T's to allocate space for,
+         <em>not their total size</em>.
+     <li>&quot;The storage is obtained by calling
+         <code>::operator new(size_t)</code>, but it is unspecified when or
+         how often this function is called.  The use of <code>hint</code>
+         is unspecified, but intended as an aid to locality if an
+         implementation so desires.&quot; [20.4.1.1]/6
+     </ul>
+   </p>
+   <h3>Problems and Possibilities</h3>
+   <p>The easiest way of fulfilling the requirements is to call operator new
+      each time a container needs memory, and to call operator delete each
+      time the container releases memory.  <strong>BUT</strong>
+      <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00105.html">this
+      method is horribly slow</a>.
+   </p>
+   <p>Or we can keep old memory around, and reuse it in a pool to save time.
+      The old libstdc++-v2 used a memory pool, and so do we.  As of 3.0,
+      <a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00136.html">it's
+      on by default</a>.  The pool is shared among all the containers in the
+      program:  when your program's std::vector&lt;int&gt; gets cut in half
+      and frees a bunch of its storage, that memory can be reused by the
+      private std::list&lt;WonkyWidget&gt; brought in from a KDE library
+      that you linked against.  And we don't have to call operator's new and
+      delete to pass the memory on, ether, which is a speed bonus.
+      <strong>BUT</strong>...
+   </p>
+   <p>What about threads?  No problem:  in a threadsafe environment, the
+      memory pool is manipulated atomically, so you can grow a container in
+      one thread and shrink it in another, etc.  <strong>BUT</strong> what
+      if threads in libstdc++-v3 aren't set up properly?
+      <a href="../faq/index.html#5_6">That's been answered already</a>.
+   </p>
+   <p><strong>BUT</strong> what if you want to use your own allocator?  What
+      if you plan on using a runtime-loadable version of malloc() which uses
+      shared telepathic anonymous mmap'd sections serializable over a
+      network, so that memory requests <em>should</em> go through malloc?
+      And what if you need to debug it?
+   </p>
+   <p>Well then:
+   </p>
+   <h3>Available allocators in namespace std</h3>
+   <p>First I'll describe the situation as it exists for the code which will
+      be released in GCC 3.1.  This situation is extremely fluid.  Then I'll
+      describe the differences for 3.0.x, which will not change much in
+      this respect.
+   </p>
+   <p>As a general rule of thumb, users are not allowed to use names which
+      begin with an underscore.  This means that to be portable between
+      compilers, none of the following may be used in your program directly.
+      (If you decide to be unportable, then you're free do do what you want,
+      but it's not our fault if stuff breaks.)  They are presented here for
+      information for maintainers and contributors in addition to users, but
+      we will probably make them available for users in 3.1 somehow.
+   </p>
+   <p>These classes are always available:
+     <ul>
+     <li><code>__new_alloc</code> simply wraps <code>::operator new</code>
+         and <code>::operator delete</code>.
+     <li><code>__malloc_alloc_template&lt;int inst&gt;</code> simply wraps
+         <code>malloc</code> and <code>free</code>.  There is also a hook
+         for an out-of-memory handler (for new/delete this is taken care of
+         elsewhere).  The <code>inst</code> parameter is described below.
+         This class was called <code>malloc_alloc</code> in earlier versions.
+     <li><code>allocator&lt;T&gt;</code> has already been described; it is
+         The Standard Allocator for instances of T.  It uses the internal
+         <code>__alloc</code> typedef (see below) to satisy its requests.
+     <li><code>__simple_alloc&lt;T,A&gt;</code> is a wrapper around another
+         allocator, A, which itself is an allocator for instances of T.
+         This is primarily used in an internal &quot;allocator traits&quot;
+         class which helps encapsulate the different styles of allocators.
+     <li><code>__debug_alloc&lt;A&gt;</code> is also a wrapper around an
+         arbitrary allocator A.  It passes on slightly increased size
+         requests to A, and uses the extra memory to store size information.
+         When a pointer is passed to <code>deallocate()</code>, the stored
+         size is checked, and assert() is used to guarantee they match.
+     <li><code>__allocator&lt;T,A&gt;</code> is an adaptor.  Many of these
+         allocator classes have a consistent yet non-standard interface.
+         Such classes can be changed to a conforming interface with this
+         wrapper:  <code>__allocator&lt;T, __alloc&gt;</code> is thus the
+         same as <code>allocator&lt;T&gt;</code>.
+     </ul>
+   </p>
+   <p>An internal typedef, <code> __mem_interface </code>, is defined to be
+      <code>__new_alloc</code> by default.
+   </p>
+   <p>Normally,
+      <code> __default_alloc_template&lt;bool thr, int inst&gt; </code>
+      is also available.  This is the high-speed pool, called the default
+      node allocator.  The reusable memory is shared among identical
+      instantiations of
+      this type.  It calls through <code>__mem_interface</code> to obtain
+      new memory when its lists run out.  If a client container requests a
+      block larger than a certain threshold size, then the pool is bypassed,
+      and the allocate/deallocate request is passed to
+      <code>__mem_interface</code> directly.
+   </p>
+   <p>Its <code>inst</code> parameter is described below.  The
+      <code>thr</code> boolean determines whether the pool should be
+      manipulated atomically or not.  Two typedefs are provided:
+      <code>__alloc</code> is defined as this node allocator with thr=true,
+      and therefore is threadsafe, while <code>__single_client_alloc</code>
+      defines thr=false, and is slightly faster but unsafe for multiple
+      threads.
+   </p>
+   <p>(Note that the GCC thread abstraction layer allows us to provide safe
+      zero-overhead stubs for the threading routines, if threads were
+      disabled at configuration time.  In this situation,
+      <code>__alloc</code> should not be noticably slower than
+      <code>__single_client_alloc</code>.)
+   </p>
+   <p>[Another threadsafe allocator where each thread keeps its own free
+      list, so that no locking is needed, might be described here.]
+   </p>
+   <h3>A cannon to swat a fly:<code>  __USE_MALLOC</code></h3>
+   <p>If you've already read <a href="../23_containers/howto.html#3">this
+      advice</a> and decided to define this macro, then the situation changes
+      thusly:
+     <ol>
+     <li><code>__mem_interface</code>, and
+     <li><code>__alloc</code>, and
+     <li><code>__single_client_alloc</code> are all typedef'd to
+         <code>__malloc_alloc_template</code>.
+     <li><code>__default_alloc_template</code> is no longer available.
+         At all.  Anywhere.  <!-- might change? -->
+     </ol>
+   </p>
+   <h3>Writing your own allocators</h3>
+   <p>Depending on your application (a specific program, a generic library,
+      etc), allocator classes tend to be one of two styles:  &quot;SGI&quot;
+      or &quot;standard&quot;.  See the comments in stl_alloc.h for more
+      information on this crucial difference.
+   </p>
+   <p>At the bottom of that header is a helper type,
+      <code>_Alloc_traits</code>, and various specializations of it.  This
+      allows the container classes to make possible compile-time
+      optimizations based on features of the allocator.  You should provide
+      a specialization of this type for your allocator (doing so takes only
+      two or three statements).
+   </p>
+   <h3>Using non-default allocators</h3>
+   <p>You can specify different memory management schemes on a per-container
+      basis, by overriding the default <code>Allocator</code> template
+      parameter.  For example, an easy
+      (but nonportable)
+      method of specifying that only malloc/free should be used instead of
+      the default node allocator is:
+      <pre>
+    std::list &lt;my_type, std::__malloc_alloc_template&lt;0&gt; &gt;  my_malloc_based_list;</pre>
+      Likewise, a debugging form of whichever allocator is currently in use:
+      <pre>
+    std::deque &lt;my_type, std::__debug_alloc&lt;std::__alloc&gt; &gt;  debug_deque;</pre>
+   </p>
+   <h3><code>inst</code></h3>
+   <p>The <code>__malloc_alloc_template</code> and
+      <code>__default_alloc_template</code> classes take an integer parameter,
+      called inst here.  This number is completely unused.
+   </p>
+   <p>The point of the number is to allow multiple instantiations of the
+      classes without changing the semantics at all.  All three of
+      <pre>
+    typedef  __default_alloc_template&lt;true,0&gt;    normal;
+    typedef  __default_alloc_template&lt;true,1&gt;    private;
+    typedef  __default_alloc_template&lt;true,42&gt;   also_private;</pre>
+      behave exactly the same way.  However, the memory pool for each type
+      (and remember that different instantiations result in different types)
+      remains separate.
+   </p>
+   <p>The library uses <strong>0</strong> in all its instantiations.  If you
+      wish to keep separate free lists for a particular purpose, use a
+      different number.
+   </p>
+   <h3>3.0.x</h3>
+   <p>For 3.0.x, many of the names were incorrectly <em>not</em> prefixed
+      with underscores.  So symbols such as &quot;std::single_client_alloc&quot;
+      are present.  Be very careful to not depend on these names any more
+      than you would depend on implementation-only names.
+   </p>
+   <p>Certain macros like <code>_NOTHREADS</code> and <code>__STL_THREADS</code>
+      can affect the 3.0.x allocators.  Do not use them.  Those macros have
+      been completely removed for 3.1.
+   </p>
+   <p>More notes as we remember them...
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
@@ -173,9 +376,11 @@
    </p>
    <p>Here are the issues which have resulted in code changes to the library.
       The links are to the specific defect reports from a <strong>partial
-      copy </strong> of the
-      Issues List.  You can read the full version online at the ISO C++
-      Committee homepage, linked to on the GCC &quot;Readings&quot; page.  If
+      copy</strong> of the Issues List.  You can read the full version online
+      at the <a href="http://www.dkuug.dk/jtc1/sc22/wg21/">ISO C++
+      Committee homepage</a>, linked to on the
+      <a href="http://gcc.gnu.org/readings.html">GCC &quot;Readings&quot;
+      page</a>.  If
       you spend a lot of time reading the issues, we recommend downloading
       the ZIP file and reading them locally.
    </p>
@@ -194,8 +399,6 @@
       until an issue has reached <a href="lwg-active.html#DR">DR</a> status.
    </p>
    <p><dl>
-<!-- FIXME:  locale_facets.h/tcc has a fix for get/num_get which I can't ID. -->
-
     <dt><a href="lwg-defects.html#5">5</a>:
         <em>string::compare specification questionable</em>
     <dd>This should be two overloaded functions rather than a single function.
@@ -203,6 +406,10 @@
     <dt><a href="lwg-defects.html#17">17</a>:
         <em>Bad bool parsing</em>
     <dd>Apparently extracting Boolean values was messed up...
+
+    <dt><a href="lwg-defects.html#22">22</a>:
+        <em>Member open vs flags</em>
+    <dd>Re-opening a file stream does <em>not</em> clear the state flags.
 
     <dt><a href="lwg-defects.html#25">25</a>:
         <em>String operator&lt;&lt; uses width() value wrong</em>
@@ -246,6 +453,14 @@
     <dd>This was not a const member function.  Note that the DR says to
         replace the function with a const one; we have instead provided an
         overloaded version with identical contents.
+
+    <dt><a href="lwg-defects.html#117">117</a>:
+        <em>basic_ostream uses nonexistent num_put member functions</em>
+    <dd><code>num_put::put()</code> was overloaded on the wrong types.
+
+    <dt><a href="lwg-defects.html#118">118</a>:
+        <em>basic_istream uses nonexistent num_get member functions</em>
+    <dd>Same as 117, but for <code>num_get::get()</code>.
 
     <dt><a href="lwg-defects.html#129">129</a>:
         <em>Need error indication from seekp() and seekg()</em>
@@ -294,6 +509,15 @@
         <em>std::pair::pair() effects overly restrictive</em>
     <dd>The default ctor would build its members from copies of temporaries;
         now it simply uses their respective default ctors.
+
+    <dt><a href="lwg-defects.html#266">266</a>:
+        <em>bad_exception::~bad_exception() missing Effects clause</em>
+    <dd>The <code>bad_</code>* classes no longer have destructors (they
+        are trivial), since no description of them was ever given.
+
+    <dt><a href="lwg-defects.html#275">275</a>:
+        <em>Wrong type in num_get::get() overloads</em>
+    <dd>Similar to 118.
 
 <!--
     <dt><a href="lwg-defects.html#"></a>:

@@ -1,3 +1,21 @@
+2001-12-13  Phil Edwards  <pme@gcc.gnu.org>
+
+	Bulk documentation merge (copy) from trunk.
+	* docs/html/Makefile, docs/html/documentation.html,
+	docs/html/explanations.html, docs/html/17_intro/BUGS,
+	docs/html/17_intro/C++STYLE, docs/html/17_intro/CHECKLIST,
+	docs/html/17_intro/DESIGN, docs/html/17_intro/TODO,
+	docs/html/17_intro/howto.html, docs/html/17_intro/license.html,
+	docs/html/17_intro/porting-howto.html,
+	docs/html/17_intro/porting-howto.xml, docs/html/17_intro/porting.html,
+	docs/html/17_intro/porting.texi, docs/html/18_support/howto.html,
+	docs/html/19_diagnostics/howto.html, docs/html/20_util/howto.html,
+	docs/html/21_strings/howto.html, docs/html/23_containers/howto.html,
+	docs/html/26_numerics/howto.html, docs/html/27_io/howto.html,
+	docs/html/ext/howto.html, docs/html/ext/lwg-active.html,
+	docs/html/ext/lwg-defects.html, docs/html/ext/sgiexts.html,
+	docs/html/faq/index.html, docs/html/faq/index.txt:  Merge from trunk.
+
 2001-12-10  Philip Martin <philip@codematters.co.uk>
 
 	PR libstdc++/3720
