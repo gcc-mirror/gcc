@@ -216,8 +216,8 @@ package body Sem_Ch4 is
      (E : Entity_Id;
       P : Node_Id);
    --  Called when P is the prefix of an implicit dereference, denoting an
-   --  object E. If in semantics only mode (-gnatc), record that is a
-   --  reference to E. Normally, such a reference is generated only when the
+   --  object E. If in semantics only mode (-gnatc or generic), record that is
+   --  a reference to E. Normally, such a reference is generated only when the
    --  implicit dereference is expanded into an explicit one. E may be empty,
    --  in which case this procedure does nothing.
 
@@ -1015,10 +1015,19 @@ package body Sem_Ch4 is
          end if;
 
       else
-         Op_Id  := Get_Name_Entity_Id (Name_Op_Concat);
+         Op_Id := Get_Name_Entity_Id (Name_Op_Concat);
          while Present (Op_Id) loop
             if Ekind (Op_Id) = E_Operator then
-               Find_Concatenation_Types (L, R, Op_Id, N);
+
+               --  Do not consider operators declared in dead code, they can
+               --  not be part of the resolution.
+
+               if Is_Eliminated (Op_Id) then
+                  null;
+               else
+                  Find_Concatenation_Types (L, R, Op_Id, N);
+               end if;
+
             else
                Analyze_User_Defined_Binary_Op (N, Op_Id);
             end if;
@@ -4422,8 +4431,9 @@ package body Sem_Ch4 is
       Ref : Node_Id;
 
    begin
-      if Operating_Mode = Check_Semantics and then Present (E) then
-
+      if Present (E)
+        and then (Operating_Mode = Check_Semantics or else not Expander_Active)
+      then
          --  We create a dummy reference to E to ensure that the reference
          --  is not considered as part of an assignment (an implicit
          --  dereference can never assign to its prefix). The Comes_From_Source
