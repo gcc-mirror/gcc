@@ -10,6 +10,11 @@ $! VAXCRTL, see the notes in gcc.texinfo (or INSTALL) first.
 $!
 $!	Build the GNU "C" compiler on VMS
 $!
+$!  Note:  to build with DEC's VAX C compiler, uncomment the 2nd CC, CFLAGS,
+$!	   and LIBS alternatives, and also execute the following command:
+$!	DEFINE SYS SYS$LIBRARY:
+$!	   After a successful build, restore those items and rebuild with gcc.
+$
 $!	C compiler
 $!
 $ CC	:=	gcc
