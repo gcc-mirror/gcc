@@ -112,14 +112,35 @@ gcov_exit (void)
       int merging = 0;
       long base;
       const struct function_info *fn_info;
+      gcov_type **counters;
       gcov_type *count_ptr;
       gcov_type object_max_one = 0;
+      gcov_type count;
+      unsigned tag, length, flength, checksum;
+      unsigned arc_data_index, f_sect_index, sect_index;
 
       ptr->wkspc = 0;
       if (!ptr->filename)
 	continue;
 
-      for (ix = ptr->n_arc_counts, count_ptr = ptr->arc_counts; ix--;)
+      counters = malloc (sizeof (gcov_type *) * ptr->n_counter_sections);
+      for (ix = 0; ix < ptr->n_counter_sections; ix++)
+	counters[ix] = ptr->counter_sections[ix].counters;
+
+      for (arc_data_index = 0;
+	   arc_data_index < ptr->n_counter_sections
+	   && ptr->counter_sections[arc_data_index].tag != GCOV_TAG_ARC_COUNTS;
+	   arc_data_index++)
+	continue;
+
+      if (arc_data_index == ptr->n_counter_sections)
+	{
+	  /* For now; later we may want to just measure other profiles,
+	     but now I am lazy to check for all consequences.  */
+	  abort ();
+	}
+      for (ix = ptr->counter_sections[arc_data_index].n_counters,
+	   count_ptr = ptr->counter_sections[arc_data_index].counters; ix--;)
 	{
 	  gcov_type count = *count_ptr++;
 
@@ -155,7 +176,6 @@ gcov_exit (void)
       if (merging)
 	{
 	  /* Merge data from file.  */
-	  unsigned tag, length;
 	      
 	  if (gcov_read_unsigned (da_file, &tag) || tag != GCOV_DATA_MAGIC)
 	    {
@@ -173,7 +193,6 @@ gcov_exit (void)
 	    }
 	  
 	  /* Merge execution counts for each function.  */
-	  count_ptr = ptr->arc_counts;
 	  for (ix = ptr->n_functions, fn_info = ptr->functions;
 	       ix--; fn_info++)
 	    {
@@ -194,33 +213,40 @@ gcov_exit (void)
 			   ptr->filename, fn_info->name);
 		  goto read_fatal;
 		}
-	      {
-		unsigned flength, checksum;
-		
-		if (gcov_read_unsigned (da_file, &flength)
-		    || gcov_skip_string (da_file, flength)
-		    || gcov_read_unsigned (da_file, &checksum))
-		  goto read_error;
-		if (flength != strlen (fn_info->name)
-		    || checksum != fn_info->checksum)
-		  goto read_mismatch;
-	      }
-	      /* Check arc counts */
-	      if (gcov_read_unsigned (da_file, &tag)
-		  || gcov_read_unsigned (da_file, &length))
+
+	      if (gcov_read_unsigned (da_file, &flength)
+		  || gcov_skip_string (da_file, flength)
+		  || gcov_read_unsigned (da_file, &checksum))
 		goto read_error;
-	      if (tag != GCOV_TAG_ARC_COUNTS
-		  || length / 8 != fn_info->n_arc_counts)
+	      if (flength != strlen (fn_info->name)
+		  || checksum != fn_info->checksum)
 		goto read_mismatch;
-	      {
-		gcov_type count;
-		
-		for (jx = fn_info->n_arc_counts; jx--; count_ptr++)
-		  if (gcov_read_counter (da_file, &count))
+
+	      /* Counters.  */
+	      for (f_sect_index = 0;
+		   f_sect_index < fn_info->n_counter_sections;
+		   f_sect_index++)
+		{
+		  if (gcov_read_unsigned (da_file, &tag)
+		      || gcov_read_unsigned (da_file, &length))
 		    goto read_error;
-		  else
-		    *count_ptr += count;
-	      }
+		  for (sect_index = 0;
+		       sect_index < ptr->n_counter_sections;
+		       sect_index++)
+		    if (ptr->counter_sections[sect_index].tag == tag)
+		      break;
+		  if (fn_info->counter_sections[f_sect_index].tag != tag
+		      || sect_index == ptr->n_counter_sections
+		      || length / 8 != fn_info->counter_sections[f_sect_index].n_counters)
+		    goto read_mismatch;
+		  
+		  for (jx = fn_info->counter_sections[f_sect_index].n_counters;
+		       jx--; counters[sect_index]++)
+		    if (gcov_read_counter (da_file, &count))
+		      goto read_error;
+		    else
+		      *counters[sect_index] += count;
+		}
 	    }
 
 	  /* Check object summary */
@@ -279,7 +305,7 @@ gcov_exit (void)
 	}
 
       object.runs++;
-      object.arcs = ptr->n_arc_counts;
+      object.arcs = ptr->counter_sections[arc_data_index].n_counters;
       object.arc_sum = 0;
       if (object.arc_max_one < object_max_one)
 	object.arc_max_one = object_max_one;
@@ -299,7 +325,8 @@ gcov_exit (void)
 	}
       
       /* Write execution counts for each function.  */
-      count_ptr = ptr->arc_counts;
+      for (ix = 0; ix < ptr->n_counter_sections; ix++)
+	counters[ix] = ptr->counter_sections[ix].counters;
       for (ix = ptr->n_functions, fn_info = ptr->functions; ix--; fn_info++)
 	{
 	  /* Announce function.  */
@@ -312,24 +339,41 @@ gcov_exit (void)
 	      || gcov_write_unsigned (da_file, fn_info->checksum)
 	      || gcov_write_length (da_file, base))
 	    goto write_error;
-	  
-	  /* arc counts.  */
-	  if (gcov_write_unsigned (da_file, GCOV_TAG_ARC_COUNTS)
-	      || !(base = gcov_reserve_length (da_file)))
-	    goto write_error;
-	  
-	  for (jx = fn_info->n_arc_counts; jx--;)
+
+	  /* counters.  */
+	  for (f_sect_index = 0;
+	       f_sect_index < fn_info->n_counter_sections;
+	       f_sect_index++)
 	    {
-	      gcov_type count = *count_ptr++;
+	      tag = fn_info->counter_sections[f_sect_index].tag;
+	      for (sect_index = 0;
+    		   sect_index < ptr->n_counter_sections;
+		   sect_index++)
+		if (ptr->counter_sections[sect_index].tag == tag)
+		  break;
+	      if (sect_index == ptr->n_counter_sections)
+		abort ();
+
+	      if (gcov_write_unsigned (da_file, tag)
+		  || !(base = gcov_reserve_length (da_file)))
+		goto write_error;
+	  
+    	      for (jx = fn_info->counter_sections[f_sect_index].n_counters; jx--;)
+		{
+		  gcov_type count = *counters[sect_index]++;
 	      
-	      object.arc_sum += count;
-	      if (object.arc_max_sum < count)
-		object.arc_max_sum = count;
-	      if (gcov_write_counter (da_file, count))
-		goto write_error; /* RIP Edsger Dijkstra */
+		  if (tag == GCOV_TAG_ARC_COUNTS)
+		    {
+		      object.arc_sum += count;
+		      if (object.arc_max_sum < count)
+			object.arc_max_sum = count;
+		    }
+		  if (gcov_write_counter (da_file, count))
+		    goto write_error; /* RIP Edsger Dijkstra */
+		}
+	      if (gcov_write_length (da_file, base))
+		goto write_error;
 	    }
-	  if (gcov_write_length (da_file, base))
-	    goto write_error;
 	}
 
       /* Object file summary.  */
@@ -367,11 +411,12 @@ gcov_exit (void)
 	}
       else
 	{
-	  program_arcs += ptr->n_arc_counts;
+	  program_arcs += ptr->counter_sections[arc_data_index].n_counters;
 	  program_sum += object.arc_sum;
 	  if (program_max_sum < object.arc_max_sum)
 	    program_max_sum = object.arc_max_sum;
 	}
+      free(counters);
     }
 
   /* Generate whole program statistics.  */
@@ -465,9 +510,10 @@ __gcov_flush (void)
   gcov_exit ();
   for (ptr = gcov_list; ptr; ptr = ptr->next)
     {
-      unsigned i;
+      unsigned i, j;
       
-      for (i = ptr->n_arc_counts; i--;)
-	ptr->arc_counts[i] = 0;
+      for (j = 0; j < ptr->n_counter_sections; j++)
+	for (i = ptr->counter_sections[j].n_counters; i--;)
+	  ptr->counter_sections[j].counters[i] = 0;
     }
 }

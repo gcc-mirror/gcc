@@ -216,16 +216,33 @@ struct gcov_summary
   gcov_type arc_sum_max;  /* sum of max_one */
 };
 
-#if IN_LIBGCC2
 /* Structures embedded in coveraged program.  The structures generated
    by write_profile must match these.  */
+
+/* Information about section of counters for a function.  */
+struct counter_section
+{
+  unsigned tag;		/* Tag of the section.  */
+  unsigned n_counters;	/* Number of counters in the section.  */
+};
+
+#if IN_LIBGCC2
+/* Information about section of counters for an object file.  */
+struct counter_section_data
+{
+  unsigned tag;		/* Tag of the section.  */
+  unsigned n_counters;	/* Number of counters in the section.  */
+  gcov_type *counters;	/* The data.  */
+};
 
 /* Information about a single function.  */
 struct function_info
 {
   const char *name;	        /* (mangled) name of function */
   unsigned checksum;		/* function checksum */
-  unsigned n_arc_counts;	/* number of instrumented arcs */
+  unsigned n_counter_sections;	/* Number of types of counters */
+  const struct counter_section *counter_sections;
+  				/* The section descriptions */
 };
 
 /* Information about a single object file.  */
@@ -237,11 +254,12 @@ struct gcov_info
   const char *filename;		/* output file name */
   long wkspc;	  	        /* libgcc workspace */
 
-  const struct function_info *functions; /* table of functions */
   unsigned n_functions;             /* number of functions */
+  const struct function_info *functions; /* table of functions */
 
-  gcov_type *arc_counts;	/* table of arc counts */
-  unsigned n_arc_counts;	/* number of arc counts */
+  unsigned n_counter_sections;	/* Number of types of counters */
+  const struct counter_section_data *counter_sections;
+  				/* The data to be put into the sections.  */
 };
 
 /* Register a new object file module.  */

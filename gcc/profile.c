@@ -96,7 +96,9 @@ struct function_list
   struct function_list *next; 	/* next function */
   const char *name; 		/* function name */
   unsigned cfg_checksum;	/* function checksum */
-  unsigned count_edges;	        /* number of intrumented edges  */
+  unsigned n_counter_sections;	/* number of counter sections */
+  struct counter_section counter_sections[MAX_COUNTER_SECTIONS];
+  				/* the sections */
 };
 
 static struct function_list *functions_head = 0;
@@ -156,6 +158,16 @@ static gcov_type * get_exec_counts PARAMS ((void));
 static unsigned compute_checksum PARAMS ((void));
 static basic_block find_group PARAMS ((basic_block));
 static void union_groups PARAMS ((basic_block, basic_block));
+static void set_purpose PARAMS ((tree, tree));
+static rtx label_for_tag PARAMS ((unsigned));
+static tree build_counter_section_fields PARAMS ((void));
+static tree build_counter_section_value PARAMS ((unsigned, unsigned));
+static tree build_counter_section_data_fields PARAMS ((void));
+static tree build_counter_section_data_value PARAMS ((unsigned, unsigned));
+static tree build_function_info_fields PARAMS ((void));
+static tree build_function_info_value PARAMS ((struct function_list *));
+static tree build_gcov_info_fields PARAMS ((tree));
+static tree build_gcov_info_value PARAMS ((void));
 
 
 /* Add edge instrumentation code to the entire insn chain.
@@ -170,6 +182,7 @@ instrument_edges (el)
   int num_instr_edges = 0;
   int num_edges = NUM_EDGES (el);
   basic_block bb;
+  struct section_info *section_info;
   remove_fake_edges ();
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR, NULL, next_bb)
@@ -194,15 +207,14 @@ instrument_edges (el)
 	}
     }
 
-  profile_info.count_edges_instrumented_now = num_instr_edges;
+  section_info = find_counters_section (GCOV_TAG_ARC_COUNTS);
+  section_info->n_counters_now = num_instr_edges;
   total_num_edges_instrumented += num_instr_edges;
-  profile_info.count_instrumented_edges = total_num_edges_instrumented;
+  section_info->n_counters = total_num_edges_instrumented;
 
   total_num_blocks_created += num_edges;
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "%d edges instrumented\n", num_instr_edges);
-
-  commit_edge_insertions_watch_calls ();
 }
 
 struct section_reference
@@ -847,6 +859,7 @@ compute_branch_probabilities ()
   free_aux_for_blocks ();
   if (exec_counts)
     free (exec_counts);
+  find_counters_section (GCOV_TAG_ARC_COUNTS)->present = 1;
 }
 
 /* Compute checksum for the current function.  We generate a CRC32.  */
@@ -908,13 +921,18 @@ void
 branch_prob ()
 {
   basic_block bb;
-  int i;
-  int num_edges, ignored_edges;
+  unsigned i;
+  unsigned num_edges, ignored_edges;
   struct edge_list *el;
   const char *name = IDENTIFIER_POINTER
 		      (DECL_ASSEMBLER_NAME (current_function_decl));
 
   profile_info.current_function_cfg_checksum = compute_checksum ();
+  for (i = 0; i < profile_info.n_sections; i++)
+    {
+      profile_info.section_info[i].n_counters_now = 0;
+      profile_info.section_info[i].present = 0;
+    }
 
   if (rtl_dump_file)
     fprintf (rtl_dump_file, "CFG checksum is %u\n",
@@ -1082,7 +1100,7 @@ branch_prob ()
       if (gcov_write_unsigned (bbg_file, GCOV_TAG_BLOCKS)
 	  || !(offset = gcov_reserve_length (bbg_file)))
 	goto bbg_error;
-      for (i = 0; i != n_basic_blocks + 2; i++)
+      for (i = 0; i != (unsigned) (n_basic_blocks + 2); i++)
 	if (gcov_write_unsigned (bbg_file, 0))
 	  goto bbg_error;
       if (gcov_write_length (bbg_file, offset))
@@ -1118,6 +1136,7 @@ branch_prob ()
 		    goto bbg_error;
 	        }
 	    }
+
 	  if (gcov_write_length (bbg_file, offset))
 	    goto bbg_error;
 	}
@@ -1184,6 +1203,7 @@ branch_prob ()
 		  }
 		insn = NEXT_INSN (insn);
 	      }
+
 	    if (offset)
 	      {
 		if (gcov_write_unsigned (bbg_file, 0)
@@ -1210,6 +1230,9 @@ branch_prob ()
       struct function_list *item;
       
       instrument_edges (el);
+
+      /* Commit changes done by instrumentation.  */
+      commit_edge_insertions_watch_calls ();
       allocate_reg_info (max_reg_num (), FALSE, FALSE);
 
       /* ??? Probably should re-use the existing struct function.  */
@@ -1221,17 +1244,26 @@ branch_prob ()
       item->next = 0;
       item->name = xstrdup (name);
       item->cfg_checksum = profile_info.current_function_cfg_checksum;
-      item->count_edges = profile_info.count_edges_instrumented_now;
+      item->n_counter_sections = 0;
+      for (i = 0; i < profile_info.n_sections; i++)
+	if (profile_info.section_info[i].n_counters_now)
+	  {
+	    item->counter_sections[item->n_counter_sections].tag = 
+		    profile_info.section_info[i].tag;
+	    item->counter_sections[item->n_counter_sections].n_counters =
+		    profile_info.section_info[i].n_counters_now;
+	    item->n_counter_sections++;
+	  }
     }
 
   remove_fake_edges ();
+  free_aux_for_edges ();
   /* Re-merge split basic blocks and the mess introduced by
      insert_insn_on_edge.  */
   cleanup_cfg (profile_arc_flag ? CLEANUP_EXPENSIVE : 0);
   if (rtl_dump_file)
     dump_flow_info (rtl_dump_file);
 
-  free_aux_for_edges ();
   free_edge_list (el);
 }
 
@@ -1477,6 +1509,531 @@ end_branch_prob ()
     }
 }
 
+/* Find (and create if not present) a section with TAG.  */
+struct section_info *
+find_counters_section (tag)
+     unsigned tag;
+{
+  unsigned i;
+
+  for (i = 0; i < profile_info.n_sections; i++)
+    if (profile_info.section_info[i].tag == tag)
+      return profile_info.section_info + i;
+
+  if (i == MAX_COUNTER_SECTIONS)
+    abort ();
+
+  profile_info.section_info[i].tag = tag;
+  profile_info.section_info[i].present = 0;
+  profile_info.section_info[i].n_counters = 0;
+  profile_info.section_info[i].n_counters_now = 0;
+  profile_info.n_sections++;
+
+  return profile_info.section_info + i;
+}
+
+/* Set FIELDS as purpose to VALUE.  */
+static void
+set_purpose (value, fields)
+     tree value;
+     tree fields;
+{
+  tree act_field, act_value;
+  
+  for (act_field = fields, act_value = value;
+       act_field;
+       act_field = TREE_CHAIN (act_field), act_value = TREE_CHAIN (act_value))
+    TREE_PURPOSE (act_value) = act_field;
+}
+
+/* Returns label for base of counters inside TAG section.  */
+static rtx
+label_for_tag (tag)
+     unsigned tag;
+{
+  switch (tag)
+    {
+    case GCOV_TAG_ARC_COUNTS:
+      return profiler_label;
+    default:
+      abort ();
+    }
+}
+
+/* Creates fields of struct counter_section (in gcov-io.h).  */
+static tree
+build_counter_section_fields ()
+{
+  tree field, fields;
+
+  /* tag */
+  fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+
+  /* n_counters */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  return fields;
+}
+
+/* Creates value of struct counter_section (in gcov-io.h).  */
+static tree
+build_counter_section_value (tag, n_counters)
+     unsigned tag;
+     unsigned n_counters;
+{
+  tree value = NULL_TREE;
+
+  /* tag */
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (tag, 0)),
+		     value);
+  
+  /* n_counters */
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (n_counters, 0)),
+		     value);
+
+  return value;
+}
+
+/* Creates fields of struct counter_section_data (in gcov-io.h).  */
+static tree
+build_counter_section_data_fields ()
+{
+  tree field, fields, gcov_type, gcov_ptr_type;
+
+  gcov_type = make_signed_type (GCOV_TYPE_SIZE);
+  gcov_ptr_type =
+	  build_pointer_type (build_qualified_type (gcov_type,
+						    TYPE_QUAL_CONST));
+
+  /* tag */
+  fields = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+
+  /* n_counters */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  /* counters */
+  field = build_decl (FIELD_DECL, NULL_TREE, gcov_ptr_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  return fields;
+}
+
+/* Creates value of struct counter_section_data (in gcov-io.h).  */
+static tree
+build_counter_section_data_value (tag, n_counters)
+     unsigned tag;
+     unsigned n_counters;
+{
+  tree value = NULL_TREE, counts_table, gcov_type, gcov_ptr_type;
+
+  gcov_type = make_signed_type (GCOV_TYPE_SIZE);
+  gcov_ptr_type
+    = build_pointer_type (build_qualified_type
+			  (gcov_type, TYPE_QUAL_CONST));
+
+  /* tag */
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (tag, 0)),
+		     value);
+  
+  /* n_counters */
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (n_counters, 0)),
+		     value);
+
+  /* counters */
+  if (n_counters)
+    {
+      tree gcov_type_array_type =
+	      build_array_type (gcov_type,
+				build_index_type (build_int_2 (n_counters - 1,
+							       0)));
+      counts_table =
+	      build (VAR_DECL, gcov_type_array_type, NULL_TREE, NULL_TREE);
+      TREE_STATIC (counts_table) = 1;
+      DECL_NAME (counts_table) = get_identifier (XSTR (label_for_tag (tag), 0));
+      assemble_variable (counts_table, 0, 0, 0);
+      counts_table = build1 (ADDR_EXPR, gcov_ptr_type, counts_table);
+    }
+  else
+    counts_table = null_pointer_node;
+
+  value = tree_cons (NULL_TREE, counts_table, value);
+
+  return value;
+}
+
+/* Creates fields for struct function_info type (in gcov-io.h).  */
+static tree
+build_function_info_fields ()
+{
+  tree field, fields, counter_section_fields, counter_section_type;
+  tree counter_sections_ptr_type;
+  tree string_type =
+	  build_pointer_type (build_qualified_type (char_type_node,
+						    TYPE_QUAL_CONST));
+  /* name */
+  fields = build_decl (FIELD_DECL, NULL_TREE, string_type);
+
+  /* checksum */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  /* n_counter_sections */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  /* counter_sections */
+  counter_section_fields = build_counter_section_fields ();
+  counter_section_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  finish_builtin_struct (counter_section_type, "__counter_section",
+			 counter_section_fields, NULL_TREE);
+  counter_sections_ptr_type =
+	  build_pointer_type
+	  	(build_qualified_type (counter_section_type,
+				       TYPE_QUAL_CONST));
+  field = build_decl (FIELD_DECL, NULL_TREE, counter_sections_ptr_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  return fields;
+}
+
+/* Creates value for struct function_info (in gcov-io.h).  */
+static tree
+build_function_info_value (function)
+     struct function_list *function;
+{
+  tree value = NULL_TREE;
+  size_t name_len = strlen (function->name);
+  tree fname = build_string (name_len + 1, function->name);
+  tree string_type =
+	  build_pointer_type (build_qualified_type (char_type_node,
+						    TYPE_QUAL_CONST));
+  tree counter_section_fields, counter_section_type, counter_sections_value;
+  tree counter_sections_ptr_type, counter_sections_array_type;
+  unsigned i;
+
+  /* name */
+  TREE_TYPE (fname) =
+	  build_array_type (char_type_node,
+			    build_index_type (build_int_2 (name_len, 0)));
+  value = tree_cons (NULL_TREE,
+		     build1 (ADDR_EXPR,
+			     string_type,
+			     fname),
+		     value);
+
+  /* checksum */
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (function->cfg_checksum, 0)),
+		     value);
+
+  /* n_counter_sections */
+
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (function->n_counter_sections, 0)),
+	    	    value);
+
+  /* counter_sections */
+  counter_section_fields = build_counter_section_fields ();
+  counter_section_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  counter_sections_ptr_type =
+	  build_pointer_type
+	  	(build_qualified_type (counter_section_type,
+				       TYPE_QUAL_CONST));
+  counter_sections_array_type =
+	  build_array_type (counter_section_type,
+			    build_index_type (
+      				build_int_2 (function->n_counter_sections - 1,
+		  			     0)));
+
+  counter_sections_value = NULL_TREE;
+  for (i = 0; i < function->n_counter_sections; i++)
+    {
+      tree counter_section_value =
+	      build_counter_section_value (function->counter_sections[i].tag,
+					   function->counter_sections[i].n_counters);
+      set_purpose (counter_section_value, counter_section_fields);
+      counter_sections_value = tree_cons (NULL_TREE,
+					  build (CONSTRUCTOR,
+						 counter_section_type,
+						 NULL_TREE,
+						 nreverse (counter_section_value)),
+					  counter_sections_value);
+    }
+  finish_builtin_struct (counter_section_type, "__counter_section",
+			 counter_section_fields, NULL_TREE);
+
+  if (function->n_counter_sections)
+    {
+      counter_sections_value = 
+	      build (CONSTRUCTOR,
+ 		     counter_sections_array_type,
+		     NULL_TREE,
+		     nreverse (counter_sections_value)),
+      counter_sections_value = build1 (ADDR_EXPR,
+				       counter_sections_ptr_type,
+				       counter_sections_value);
+    }
+  else
+    counter_sections_value = null_pointer_node;
+
+  value = tree_cons (NULL_TREE, counter_sections_value, value);
+
+  return value;
+}
+
+/* Creates fields of struct gcov_info type (in gcov-io.h).  */
+static tree
+build_gcov_info_fields (gcov_info_type)
+     tree gcov_info_type;
+{
+  tree field, fields;
+  char *filename;
+  int filename_len;
+  tree string_type =
+	  build_pointer_type (build_qualified_type (char_type_node,
+						    TYPE_QUAL_CONST));
+  tree function_info_fields, function_info_type, function_info_ptr_type;
+  tree counter_section_data_fields, counter_section_data_type;
+  tree counter_section_data_ptr_type;
+
+  /* Version ident */
+  fields = build_decl (FIELD_DECL, NULL_TREE, long_unsigned_type_node);
+
+  /* next -- NULL */
+  field = build_decl (FIELD_DECL, NULL_TREE,
+		      build_pointer_type (build_qualified_type (gcov_info_type,
+								TYPE_QUAL_CONST)));
+  TREE_CHAIN (field) = fields;
+  fields = field;
+  
+  /* Filename */
+  filename = getpwd ();
+  filename = (filename && da_file_name[0] != '/'
+	      ? concat (filename, "/", da_file_name, NULL)
+	      : da_file_name);
+  filename_len = strlen (filename);
+  if (filename != da_file_name)
+    free (filename);
+
+  field = build_decl (FIELD_DECL, NULL_TREE, string_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+  
+  /* Workspace */
+  field = build_decl (FIELD_DECL, NULL_TREE, long_integer_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  /* number of functions */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+      
+  /* function_info table */
+  function_info_fields = build_function_info_fields ();
+  function_info_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  finish_builtin_struct (function_info_type, "__function_info",
+			 function_info_fields, NULL_TREE);
+  function_info_ptr_type =
+	  build_pointer_type
+	  	(build_qualified_type (function_info_type,
+				       TYPE_QUAL_CONST));
+  field = build_decl (FIELD_DECL, NULL_TREE, function_info_ptr_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+    
+  /* n_counter_sections  */
+  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+  
+  /* counter sections */
+  counter_section_data_fields = build_counter_section_data_fields ();
+  counter_section_data_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  finish_builtin_struct (counter_section_data_type, "__counter_section_data",
+			 counter_section_data_fields, NULL_TREE);
+  counter_section_data_ptr_type =
+	  build_pointer_type
+	  	(build_qualified_type (counter_section_data_type,
+				       TYPE_QUAL_CONST));
+  field = build_decl (FIELD_DECL, NULL_TREE, counter_section_data_ptr_type);
+  TREE_CHAIN (field) = fields;
+  fields = field;
+
+  return fields;
+}
+
+/* Creates struct gcov_info value (in gcov-io.h).  */
+static tree
+build_gcov_info_value ()
+{
+  tree value = NULL_TREE;
+  tree filename_string;
+  char *filename;
+  int filename_len;
+  unsigned n_functions, i;
+  struct function_list *item;
+  tree string_type =
+	  build_pointer_type (build_qualified_type (char_type_node,
+						    TYPE_QUAL_CONST));
+  tree function_info_fields, function_info_type, function_info_ptr_type;
+  tree functions;
+  tree counter_section_data_fields, counter_section_data_type;
+  tree counter_section_data_ptr_type, counter_sections;
+
+  /* Version ident */
+  value = tree_cons (NULL_TREE,
+		     convert (long_unsigned_type_node,
+			      build_int_2 (GCOV_VERSION, 0)),
+		     value);
+
+  /* next -- NULL */
+  value = tree_cons (NULL_TREE, null_pointer_node, value);
+  
+  /* Filename */
+  filename = getpwd ();
+  filename = (filename && da_file_name[0] != '/'
+	      ? concat (filename, "/", da_file_name, NULL)
+	      : da_file_name);
+  filename_len = strlen (filename);
+  filename_string = build_string (filename_len + 1, filename);
+  if (filename != da_file_name)
+    free (filename);
+  TREE_TYPE (filename_string) =
+	  build_array_type (char_type_node,
+			    build_index_type (build_int_2 (filename_len, 0)));
+  value = tree_cons (NULL_TREE,
+		     build1 (ADDR_EXPR,
+			     string_type,
+		       	     filename_string),
+		     value);
+  
+  /* Workspace */
+  value = tree_cons (NULL_TREE,
+		     convert (long_integer_type_node, integer_zero_node),
+		     value);
+      
+  /* number of functions */
+  n_functions = 0;
+  for (item = functions_head; item != 0; item = item->next, n_functions++)
+    continue;
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (n_functions, 0)),
+		     value);
+
+  /* function_info table */
+  function_info_fields = build_function_info_fields ();
+  function_info_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  function_info_ptr_type =
+	  build_pointer_type (
+		build_qualified_type (function_info_type,
+	       			      TYPE_QUAL_CONST));
+  functions = NULL_TREE;
+  for (item = functions_head; item != 0; item = item->next)
+    {
+      tree function_info_value = build_function_info_value (item);
+      set_purpose (function_info_value, function_info_fields);
+      functions = tree_cons (NULL_TREE,
+    			     build (CONSTRUCTOR,
+			    	    function_info_type,
+				    NULL_TREE,
+				    nreverse (function_info_value)),
+			     functions);
+    }
+  finish_builtin_struct (function_info_type, "__function_info",
+			 function_info_fields, NULL_TREE);
+
+  /* Create constructor for array.  */
+  if (n_functions)
+    {
+      tree array_type;
+
+      array_type = build_array_type (
+			function_info_type,
+   			build_index_type (build_int_2 (n_functions - 1, 0)));
+      functions = build (CONSTRUCTOR,
+      			 array_type,
+			 NULL_TREE,
+			 nreverse (functions));
+      functions = build1 (ADDR_EXPR,
+			  function_info_ptr_type,
+			  functions);
+    }
+  else
+    functions = null_pointer_node;
+
+  value = tree_cons (NULL_TREE, functions, value);
+
+  /* n_counter_sections  */
+  value = tree_cons (NULL_TREE,
+		     convert (unsigned_type_node,
+			      build_int_2 (profile_info.n_sections, 0)),
+		     value);
+  
+  /* counter sections */
+  counter_section_data_fields = build_counter_section_data_fields ();
+  counter_section_data_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  counter_sections = NULL_TREE;
+  for (i = 0; i < profile_info.n_sections; i++)
+    {
+      tree counter_sections_value =
+	      build_counter_section_data_value (
+		profile_info.section_info[i].tag,
+		profile_info.section_info[i].n_counters);
+      set_purpose (counter_sections_value, counter_section_data_fields);
+      counter_sections = tree_cons (NULL_TREE,
+		       		    build (CONSTRUCTOR,
+		       			   counter_section_data_type,
+		       			   NULL_TREE,
+		       			   nreverse (counter_sections_value)),
+		       		    counter_sections);
+    }
+  finish_builtin_struct (counter_section_data_type, "__counter_section_data",
+			 counter_section_data_fields, NULL_TREE);
+  counter_section_data_ptr_type =
+	  build_pointer_type
+	  	(build_qualified_type (counter_section_data_type,
+				       TYPE_QUAL_CONST));
+
+  if (profile_info.n_sections)
+    {
+      counter_sections =
+    	      build (CONSTRUCTOR,
+    		     build_array_type (
+	       			       counter_section_data_type,
+		       		       build_index_type (build_int_2 (profile_info.n_sections - 1, 0))),
+		     NULL_TREE,
+		     nreverse (counter_sections));
+      counter_sections = build1 (ADDR_EXPR,
+				 counter_section_data_ptr_type,
+				 counter_sections);
+    }
+  else
+    counter_sections = null_pointer_node;
+  value = tree_cons (NULL_TREE, counter_sections, value);
+
+  return value;
+}
+
 /* Write out the structure which libgcc uses to locate all the arc
    counters.  The structures used here must match those defined in
    gcov-io.h.  Write out the constructor to call __gcov_init.  */
@@ -1484,191 +2041,38 @@ end_branch_prob ()
 void
 create_profiler ()
 {
-  tree fields, field, value = NULL_TREE;
-  tree ginfo_type;
-  tree string_type;
-  tree gcov_type, gcov_ptr_type;
+  tree gcov_info_fields, gcov_info_type, gcov_info_value, gcov_info;
   char name[20];
   char *ctor_name;
-  tree structure, ctor;
-  rtx structure_address;
+  tree ctor;
+  rtx gcov_info_address;
   int save_flag_inline_functions = flag_inline_functions;
+  unsigned i;
 
-  if (!profile_info.count_instrumented_edges)
+  for (i = 0; i < profile_info.n_sections; i++)
+    if (profile_info.section_info[i].n_counters_now)
+      break;
+  if (i == profile_info.n_sections)
     return;
   
-  string_type = build_pointer_type
-    (build_qualified_type (char_type_node,  TYPE_QUAL_CONST));
-  gcov_type = make_signed_type (GCOV_TYPE_SIZE);
-  gcov_ptr_type
-    = build_pointer_type (build_qualified_type
-			  (gcov_type, TYPE_QUAL_CONST));
-  
-  ginfo_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
-  
+  gcov_info_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
+  gcov_info_fields = build_gcov_info_fields (gcov_info_type);
+  gcov_info_value = build_gcov_info_value ();
+  set_purpose (gcov_info_value, gcov_info_fields);
+  finish_builtin_struct (gcov_info_type, "__gcov_info",
+			 gcov_info_fields, NULL_TREE);
 
-  /* Version ident */
-  fields = build_decl (FIELD_DECL, NULL_TREE, long_unsigned_type_node);
-  value = tree_cons (fields, convert (long_unsigned_type_node, build_int_2
-				      (GCOV_VERSION, 0)), value);
-      
-  /* NULL */
-  field = build_decl (FIELD_DECL, NULL_TREE, build_pointer_type
-		      (build_qualified_type
-		       (ginfo_type, TYPE_QUAL_CONST)));
-  TREE_CHAIN (field) = fields;
-  fields = field;
-  value = tree_cons (fields, null_pointer_node, value);
-  
-  /* Filename */
-  {
-    tree filename_string;
-    char *filename;
-    int filename_len;
-    
-    filename = getpwd ();
-    filename = (filename && da_file_name[0] != '/'
-		? concat (filename, "/", da_file_name, NULL)
-		: da_file_name);
-    filename_len = strlen (filename);
-    filename_string = build_string (filename_len + 1, filename);
-    if (filename != da_file_name)
-      free (filename);
-    TREE_TYPE (filename_string) = build_array_type
-      (char_type_node, build_index_type
-       (build_int_2 (filename_len, 0)));
-    
-    field = build_decl (FIELD_DECL, NULL_TREE, string_type);
-    TREE_CHAIN (field) = fields;
-    fields = field;
-    value = tree_cons (fields, build1 (ADDR_EXPR, string_type,
-				       filename_string), value);
-  }
-  
-  /* Workspace */
-  field = build_decl (FIELD_DECL, NULL_TREE, long_integer_type_node);
-  TREE_CHAIN (field) = fields;
-  fields = field;
-  value = tree_cons (fields,
-		     convert (long_integer_type_node, integer_zero_node),
-		     value);
-      
-  /* function_info table */
-  {
-    struct function_list *item;
-    int num_nodes = 0;
-    tree array_value = NULL_TREE;
-    tree finfo_type, finfo_ptr_type;
-    tree name, checksum, arcs;
-    
-    finfo_type = (*lang_hooks.types.make_type) (RECORD_TYPE);
-    name = build_decl (FIELD_DECL, NULL_TREE, string_type);
-    checksum = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
-    TREE_CHAIN (checksum) = name;
-    arcs = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
-    TREE_CHAIN (arcs) = checksum;
-    finish_builtin_struct (finfo_type, "__function_info",
-			   arcs, NULL_TREE);
-    finfo_ptr_type = build_pointer_type
-      (build_qualified_type (finfo_type, TYPE_QUAL_CONST));
-    
-    for (item = functions_head; item != 0; item = item->next, num_nodes++)
-      {
-	size_t name_len = strlen (item->name);
-	tree finfo_value = NULL_TREE;
-	tree fname = build_string (name_len + 1, item->name);
-	
-	TREE_TYPE (fname) = build_array_type
-	  (char_type_node, build_index_type (build_int_2 (name_len, 0)));
-	finfo_value = tree_cons (name, build1
-				 (ADDR_EXPR, string_type,
-				  fname), finfo_value);
-	finfo_value = tree_cons (checksum, convert
-				 (unsigned_type_node,
-				  build_int_2 (item->cfg_checksum, 0)),
-				 finfo_value);
-	finfo_value = tree_cons (arcs, convert
-				 (unsigned_type_node,
-				  build_int_2 (item->count_edges, 0)),
-				 finfo_value);
-	array_value = tree_cons (NULL_TREE, build
-				 (CONSTRUCTOR, finfo_type, NULL_TREE,
-				  nreverse (finfo_value)), array_value);
-      }
+  gcov_info = build (VAR_DECL, gcov_info_type, NULL_TREE, NULL_TREE);
+  DECL_INITIAL (gcov_info) =
+	  build (CONSTRUCTOR, gcov_info_type, NULL_TREE,
+		 nreverse (gcov_info_value));
 
-    /* Create constructor for array.  */
-    if (num_nodes)
-      {
-	tree array_type;
-
-	array_type = build_array_type (finfo_type, build_index_type
-				       (build_int_2 (num_nodes - 1, 0)));
-	array_value = build (CONSTRUCTOR, array_type,
-			     NULL_TREE, nreverse (array_value));
-	array_value = build1
-	  (ADDR_EXPR, finfo_ptr_type, array_value);
-      }
-    else
-      array_value = null_pointer_node;
-    
-    field = build_decl (FIELD_DECL, NULL_TREE, finfo_ptr_type);
-    TREE_CHAIN (field) = fields;
-    fields = field;
-    value = tree_cons (fields, array_value, value);
-    
-    /* number of functions */
-    field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
-    TREE_CHAIN (field) = fields;
-    fields = field;
-    value = tree_cons (fields, convert (unsigned_type_node, build_int_2
-					(num_nodes, 0)), value);
-  }
-  
-  /* arc count table */
-  {
-    tree counts_table = null_pointer_node;
-    
-    if (profile_info.count_instrumented_edges)
-      {
-	tree gcov_type_array_type
-	  = build_array_type (gcov_type, build_index_type
-			      (build_int_2 (profile_info.
-					    count_instrumented_edges - 1, 0)));
-	/* No values.  */
-	counts_table
-	  = build (VAR_DECL, gcov_type_array_type, NULL_TREE, NULL_TREE);
-	TREE_STATIC (counts_table) = 1;
-	DECL_NAME (counts_table) = get_identifier (XSTR (profiler_label, 0));
-	assemble_variable (counts_table, 0, 0, 0);
-	counts_table = build1 (ADDR_EXPR, gcov_ptr_type, counts_table);
-      }
-    
-    field = build_decl (FIELD_DECL, NULL_TREE, gcov_ptr_type);
-    TREE_CHAIN (field) = fields;
-    fields = field;
-    value = tree_cons (fields, counts_table, value);
-  }
-  
-  /* number of arc counts */
-  field = build_decl (FIELD_DECL, NULL_TREE, unsigned_type_node);
-  TREE_CHAIN (field) = fields;
-  fields = field;
-  value = tree_cons (fields, convert
-		     (unsigned_type_node,
-		      build_int_2 (profile_info
-				   .count_instrumented_edges, 0)),
-		     value);
-  
-  finish_builtin_struct (ginfo_type, "__gcov_info", fields, NULL_TREE);
-  structure = build (VAR_DECL, ginfo_type, NULL_TREE, NULL_TREE);
-  DECL_INITIAL (structure)
-    = build (CONSTRUCTOR, ginfo_type, NULL_TREE, nreverse (value));
-  TREE_STATIC (structure) = 1;
+  TREE_STATIC (gcov_info) = 1;
   ASM_GENERATE_INTERNAL_LABEL (name, "LPBX", 0);
-  DECL_NAME (structure) = get_identifier (name);
+  DECL_NAME (gcov_info) = get_identifier (name);
   
   /* Build structure.  */
-  assemble_variable (structure, 0, 0, 0);
+  assemble_variable (gcov_info, 0, 0, 0);
 
   /* Build the constructor function to invoke __gcov_init.  */
   ctor_name = concat (IDENTIFIER_POINTER (get_file_function_name ('I')),
@@ -1696,12 +2100,14 @@ create_profiler ()
   cfun->arc_profile = 0;
 
   /* Actually generate the code to call __gcov_init.  */
-  structure_address = force_reg (Pmode, gen_rtx_SYMBOL_REF
-				 (Pmode, IDENTIFIER_POINTER
-				  (DECL_NAME (structure))));
+  gcov_info_address = force_reg (Pmode,
+				 gen_rtx_SYMBOL_REF (
+					Pmode,
+					IDENTIFIER_POINTER (
+						DECL_NAME (gcov_info))));
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gcov_init"),
 		     LCT_NORMAL, VOIDmode, 1,
-		     structure_address, Pmode);
+		     gcov_info_address, Pmode);
 
   expand_function_end (input_filename, lineno, 0);
   (*lang_hooks.decls.poplevel) (1, 0, 1);
