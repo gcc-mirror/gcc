@@ -709,6 +709,15 @@ print_operand (file, x, code)
 
   switch (code)
     {
+    case 'k':
+      /* X must be a constant.  Write the 1's complement of the
+	 constant.  */
+      if (! INT_P (x))
+	output_operand_lossage ("invalid %%k value");
+
+      fprintf (file, "%d", ~ INT_LOWPART (x));
+      return;
+
     case 'h':
       /* If constant, output low-order five bits.  Otherwise,
 	 write normally. */
@@ -898,7 +907,7 @@ print_operand (file, x, code)
       return;
 
     case 'U':
-      /* Print `u' is this has an auto-increment or auto-decrement.  */
+      /* Print `u' if this has an auto-increment or auto-decrement.  */
       if (GET_CODE (x) == MEM
 	  && (GET_CODE (XEXP (x, 0)) == PRE_INC
 	      || GET_CODE (XEXP (x, 0)) == PRE_DEC))
@@ -906,7 +915,7 @@ print_operand (file, x, code)
       return;
 
     case 'I':
-      /* Print `i' is this is a constant, else nothing.  */
+      /* Print `i' if this is a constant, else nothing.  */
       if (INT_P (x))
 	fprintf (file, "i");
       return;
