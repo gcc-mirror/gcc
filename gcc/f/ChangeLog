@@ -1,3 +1,7 @@
+Sun Dec 16 16:08:57 2001  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* news.texi: Fix spelling errors.
+
 Sun Dec 16 10:36:51 2001  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Make-lang.in (f/version.o): Depend on f/version.h.
