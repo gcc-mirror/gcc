@@ -1,3 +1,8 @@
+1999-01-18  Andrew Haley  <aph@cygnus.com>
+
+	* parse.y (patch_binop): Do a type conversion from signed to
+	unsigned and then back to signed when a ">>>" is found.
+
 Sun Jan 17 21:55:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (zextract.o): Add dependencies.

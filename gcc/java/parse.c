@@ -2250,7 +2250,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/share/bison.simple"
+#line 3 "/local/aph/tx39/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2443,7 +2443,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/share/bison.simple"
+#line 196 "/local/aph/tx39/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4701,7 +4701,7 @@ case 492:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/share/bison.simple"
+#line 498 "/local/aph/tx39/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -11599,8 +11599,13 @@ patch_binop (node, wfl_op1, wfl_op2)
       /* The >>> operator is a >> operating on unsigned quantities */
       if (code == URSHIFT_EXPR && ! flag_emit_class_files)
 	{
-	  op1 = convert (unsigned_type (prom_type), op1);
+          tree utype = unsigned_type (prom_type);
+          op1 = convert (utype, op1);
 	  TREE_SET_CODE (node, RSHIFT_EXPR);
+          TREE_OPERAND (node, 0) = op1;
+          TREE_OPERAND (node, 1) = op2;
+          TREE_TYPE (node) = utype;
+          return convert (prom_type, node);
 	}
       break;
 

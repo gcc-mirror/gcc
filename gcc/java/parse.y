@@ -8961,8 +8961,13 @@ patch_binop (node, wfl_op1, wfl_op2)
       /* The >>> operator is a >> operating on unsigned quantities */
       if (code == URSHIFT_EXPR && ! flag_emit_class_files)
 	{
-	  op1 = convert (unsigned_type (prom_type), op1);
+          tree utype = unsigned_type (prom_type);
+          op1 = convert (utype, op1);
 	  TREE_SET_CODE (node, RSHIFT_EXPR);
+          TREE_OPERAND (node, 0) = op1;
+          TREE_OPERAND (node, 1) = op2;
+          TREE_TYPE (node) = utype;
+          return convert (prom_type, node);
 	}
       break;
 
