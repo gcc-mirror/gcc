@@ -5348,7 +5348,7 @@ expand_end_case (orig_index)
 	    emit_jump_insn (gen_rtx_ADDR_DIFF_VEC (CASE_VECTOR_MODE,
 						   gen_rtx_LABEL_REF (Pmode, table_label),
 						   gen_rtvec_v (ncases, labelvec),
-						    const0_rtx, const0_rtx, 0));
+						    const0_rtx, const0_rtx));
 	  else
 	    emit_jump_insn (gen_rtx_ADDR_VEC (CASE_VECTOR_MODE,
 					      gen_rtvec_v (ncases, labelvec)));

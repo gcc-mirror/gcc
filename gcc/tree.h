@@ -311,38 +311,84 @@ struct tree_common
 #define TREE_SET_CODE(NODE, VALUE) ((NODE)->common.code = (int) (VALUE))
 
 /* When checking is enabled, errors will be generated if a tree node
-   is accessed incorrectly. The macros abort with a fatal error,
-   except for the *1 variants, which just return 0 on failure.  The
-   latter variants should only be used for combination checks, which
-   succeed when one of the checks succeed. The CHAIN_CHECK macro helps
-   defining such checks.  */
+   is accessed incorrectly. The macros abort with a fatal error.  */
 
 #ifdef ENABLE_CHECKING
-#define DO_CHECK(FUNC, t, param)   FUNC (t, param, __FILE__, __LINE__, 0)
-#define DO_CHECK1(FUNC, t, param)  FUNC (t, param, __FILE__, __LINE__, 1)
-#define CHAIN_CHECK(t, c1, c2)     (c1 (t) ? t : c2 (t))
-#else
-#define DO_CHECK(FUNC, t, param)   (t)
-#define DO_CHECK1(FUNC, t, param)  (t)
-#define CHAIN_CHECK(t, c1, c2)     (t)
-#endif
 
-#define TREE_CHECK(t, code)        DO_CHECK (tree_check, t, code)
-#define TREE_CHECK1(t, code)       DO_CHECK1 (tree_check, t, code)
+#if defined __GNUC__ && (__GNUC__ > 2 || __GNUC_MINOR__ > 6)
+/* This optimization can only be done in stage2/3, because it
+   uses statement expressions.  You might think that you could use
+   conditional (?:) expressions, but you would be wrong: these macros
+   need to evaluate `t' only once.  */
+#define TREE_CHECK(t, code)						\
+({  const tree __t = t;							\
+    if (TREE_CODE(__t) != (code))					\
+      tree_check_failed (__t, code, __FILE__,				\
+			 __LINE__, __PRETTY_FUNCTION__);		\
+    __t; })
+#define TREE_CLASS_CHECK(t, class)					\
+({  const tree __t = t;							\
+    if (TREE_CODE_CLASS(TREE_CODE(__t)) != (class))			\
+      tree_class_check_failed (__t, class, __FILE__,			\
+			       __LINE__, __PRETTY_FUNCTION__);		\
+    __t; })
+
+/* These checks have to be special cased.  */
+#define CST_OR_CONSTRUCTOR_CHECK(t)					\
+({  const tree __t = t;							\
+    enum tree_code __c = TREE_CODE(__t);				\
+    if (__c != CONSTRUCTOR && TREE_CODE_CLASS(__c) != 'c')		\
+      tree_check_failed (__t, CONSTRUCTOR, __FILE__,			\
+			 __LINE__, __PRETTY_FUNCTION__);		\
+    __t; })
+#define EXPR_CHECK(t)							\
+({  const tree __t = t;							\
+    char __c = TREE_CODE_CLASS(TREE_CODE(__t));				\
+    if (__c != 'r' && __c != 's' && __c != '<'				\
+	&& __c != '1' && __c != '2' && __c != 'e')			\
+      tree_class_check_failed(__t, 'e', __FILE__,			\
+			      __LINE__, __PRETTY_FUNCTION__);		\
+    __t; })
+
+extern void tree_check_failed PROTO((const tree, enum tree_code,
+				     const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+extern void tree_class_check_failed PROTO((const tree, char,
+					   const char *, int, const char *))
+    ATTRIBUTE_NORETURN;
+
+#else /* not gcc or old gcc */
+
+#define TREE_CHECK(t, code) \
+	tree_check (t, code, __FILE__, __LINE__)
+#define TREE_CLASS_CHECK(t, code) \
+	tree_class_check (t, code, __FILE__, __LINE__)
+#define CST_OR_CONSTRUCTOR_CHECK(t) \
+	cst_or_constructor_check (t, __FILE__, __LINE__)
+#define EXPR_CHECK(t) \
+	expr_check (t, __FILE__, __LINE__)
+
+extern tree tree_check PROTO((const tree, enum tree_code, const char *, int));
+extern tree tree_class_check PROTO((const tree, char, const char *, int));
+extern tree cst_or_constructor_check PROTO((const tree, const char *, int));
+extern tree expr_check PROTO((const tree, enum tree_code, const char *, int));
+
+#endif /* not gcc or old gcc */
+
+#else /* not ENABLE_CHECKING */
+
+#define TREE_CHECK(t, code)		(t)
+#define TREE_CLASS_CHECK(t, code)	(t)
+#define CST_OR_CONSTRUCTOR_CHECK(t)	(t)
+#define EXPR_CHECK(t)			(t)
+
+#endif
 
 #include "tree-check.h"
 
-#define TYPE_CHECK(tree)       DO_CHECK (tree_class_check, tree, 't')
-#define TYPE_CHECK1(tree)      DO_CHECK1 (tree_class_check, tree, 't')
-#define DECL_CHECK(t)          DO_CHECK (tree_class_check, t, 'd')
-#define DECL_CHECK1(t)         DO_CHECK1 (tree_class_check, t, 'd')
-#define CST_CHECK(t)           DO_CHECK (tree_class_check, t, 'c')
-#define CST_CHECK1(t)          DO_CHECK1 (tree_class_check, t, 'c')
-#define EXPR_CHECK(t)          DO_CHECK (expr_check, t, 0)
-
-/* Chained checks. The last check has to succeed, the others may fail. */
-#define CST_OR_CONSTRUCTOR_CHECK(t) \
-   CHAIN_CHECK (t, CST_CHECK1, CONSTRUCTOR_CHECK)
+#define TYPE_CHECK(tree)	TREE_CLASS_CHECK  (tree, 't')
+#define DECL_CHECK(tree)	TREE_CLASS_CHECK  (tree, 'd')
+#define CST_CHECK(tree)		TREE_CLASS_CHECK  (tree, 'c')
 
 /* In all nodes that are expressions, this is the data type of the expression.
    In POINTER_TYPE nodes, this is the type that the pointer points to.
@@ -2198,12 +2244,6 @@ extern void start_identifier_warnings	PROTO ((void));
 extern void gcc_obstack_init		PROTO ((struct obstack *));
 extern void init_obstacks		PROTO ((void));
 extern void obfree			PROTO ((char *));
-extern tree tree_check                  PROTO ((tree, enum tree_code,
-						const char *, int, int));
-extern tree tree_class_check            PROTO ((tree, char, const char *,
-						int, int));
-extern tree expr_check                  PROTO ((tree, int, const char *,
-						int, int));
 
 /* In function.c */
 extern void setjmp_protect_args		PROTO ((void));

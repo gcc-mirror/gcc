@@ -72,16 +72,10 @@ type_from_format (c)
       return "rtx";
     case 'E':
       return "rtvec";
-    /* ?!? These should be bitmap and tree respectively, but those types
-       are not available in many of the files which include the output
-       of gengenrtl.
-
-       These are only used in prototypes, so I think we can assume that
-       void * is useable.  */
     case 'b':
-      return "void *";
+      return "struct bitmap_head_def *";  /* bitmap - typedef not available */
     case 't':
-      return "void *";
+      return "union tree_node *";  /* tree - typedef not available */
     default:
       abort ();
     }

@@ -55,8 +55,6 @@ int main (argc, argv)
     {
       printf ("#define %s_CHECK(t)\tTREE_CHECK (t, %s)\n",
 	      tree_codes[i], tree_codes[i]);
-      printf ("#define %s_CHECK1(t)\tTREE_CHECK1 (t, %s)\n",
-	      tree_codes[i], tree_codes[i]);
     }
 
   return 0;
