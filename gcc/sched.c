@@ -696,8 +696,11 @@ memrefs_conflict_p (xsize, x, ysize, y, c)
    changed.  A volatile and non-volatile reference can be interchanged
    though. 
 
-   A MEM_IN_STRUCT reference at a varying address can never conflict with a
-   non-MEM_IN_STRUCT reference at a fixed address.  */
+   A MEM_IN_STRUCT reference at a non-QImode varying address can never
+   conflict with a non-MEM_IN_STRUCT reference at a fixed address.   We must
+   allow QImode aliasing because the ANSI C standard allows character
+   pointers to alias anything.  We are assuming that characters are
+   always QImode here.  */
 
 /* Read dependence: X is read after read in MEM takes place.  There can
    only be a dependence here if both reads are volatile.  */
@@ -731,8 +734,10 @@ true_dependence (mem, x)
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
+		    && GET_MODE (mem) != QImode
 		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
 	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
+		    && GET_MODE (x) != QImode
 		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
 }
 
@@ -753,8 +758,10 @@ anti_dependence (mem, x)
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
+		    && GET_MODE (mem) != QImode
 		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
 	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
+		    && GET_MODE (x) != QImode
 		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
 }
 
@@ -769,8 +776,10 @@ output_dependence (mem, x)
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
 	      && ! (MEM_IN_STRUCT_P (mem) && rtx_addr_varies_p (mem)
+		    && GET_MODE (mem) != QImode
 		    && ! MEM_IN_STRUCT_P (x) && ! rtx_addr_varies_p (x))
 	      && ! (MEM_IN_STRUCT_P (x) && rtx_addr_varies_p (x)
+		    && GET_MODE (x) != QImode
 		    && ! MEM_IN_STRUCT_P (mem) && ! rtx_addr_varies_p (mem))));
 }
 
