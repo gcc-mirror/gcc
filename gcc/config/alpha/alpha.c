@@ -134,7 +134,7 @@ override_options ()
   /* 971208 -- EV6 scheduling parameters are still secret, so don't even
      pretend and just schedule for an EV5 for now.  -- r~  */
   alpha_cpu
-    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV5
+    = TARGET_CPU_DEFAULT & MASK_CPU_EV6 ? PROCESSOR_EV6
       : (TARGET_CPU_DEFAULT & MASK_CPU_EV5 ? PROCESSOR_EV5 : PROCESSOR_EV4);
 
   if (alpha_cpu_string)
@@ -169,7 +169,7 @@ override_options ()
       else if (! strcmp (alpha_cpu_string, "ev6")
 	       || ! strcmp (alpha_cpu_string, "21264"))
 	{
-	  alpha_cpu = PROCESSOR_EV5;
+	  alpha_cpu = PROCESSOR_EV6;
 	  target_flags |= MASK_BWX | MASK_CIX | MASK_MAX;
 	}
       else
@@ -274,7 +274,7 @@ override_options ()
 	{
 	  { 3, 30, -1 },	/* ev4 -- Bcache is a guess */
 	  { 2, 12, 38 },	/* ev5 -- Bcache from PC164 LMbench numbers */
-	  { 3, 12, -1 },	/* ev6 -- Ho hum, doesn't exist yet */
+	  { 3, 13, -1 },	/* ev6 -- Ho hum, doesn't exist yet */
 	};
 
 	lat = alpha_mlat_string[1] - '0';
@@ -1291,80 +1291,30 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
   dep_insn_type = get_attr_type (dep_insn);
 
   /* Bring in the user-defined memory latency.  */
-  if (dep_insn_type == TYPE_LD || dep_insn_type == TYPE_LDSYM)
+  if (dep_insn_type == TYPE_ILD
+      || dep_insn_type == TYPE_FLD
+      || dep_insn_type == TYPE_LDSYM)
     cost += alpha_memory_latency-1;
 
-  if (alpha_cpu == PROCESSOR_EV5)
+  switch (alpha_cpu)
     {
-      /* And the lord DEC saith:  "A special bypass provides an effective
-	 latency of 0 cycles for an ICMP or ILOG insn producing the test
-	 operand of an IBR or CMOV insn." */
-      if ((dep_insn_type == TYPE_ICMP
-	   || dep_insn_type == TYPE_ILOG)
-	  && (insn_type == TYPE_IBR
-	      || (insn_type == TYPE_CMOV
-		  && !((set = single_set (dep_insn)) != 0
-		       && GET_CODE (PATTERN (insn)) == SET
-		       && (set_src = SET_SRC (PATTERN (insn)),
-			   GET_CODE (set_src) == IF_THEN_ELSE)
-		       && (set = SET_DEST (set),
-			   rtx_equal_p (set, XEXP (set_src, 1))
-			   || rtx_equal_p (set, XEXP (set_src, 2)))))))
-	return 0;
-
-      /* "The multiplier is unable to receive data from IEU bypass paths.
-	 The instruction issues at the expected time, but its latency is
-	 increased by the time it takes for the input data to become
-	 available to the multiplier" -- which happens in pipeline stage
-	 six, when results are comitted to the register file.  */
-
-      if ((insn_type == TYPE_IMULL
-	   || insn_type == TYPE_IMULQ
-	   || insn_type == TYPE_IMULH)
-	  && (set = single_set (dep_insn)) != 0
-	  && GET_CODE (PATTERN (insn)) == SET
-	  && (set_src = SET_SRC (PATTERN (insn)),
-	      GET_CODE (set_src) == MULT)
-	  && (set = SET_DEST (set),
-	      rtx_equal_p (set, XEXP (set_src, 0))
-	      || rtx_equal_p (set, XEXP (set_src, 1))))
-	{
-	  switch (dep_insn_type)
-	    {
-	    /* These insns produce their results in pipeline stage five.  */
-	    case TYPE_LD:
-	    case TYPE_CMOV:
-	    case TYPE_IMULL:
-	    case TYPE_IMULQ:
-	    case TYPE_IMULH:
-	    case TYPE_MVI:
-	      return cost + 1;
-
-	    /* Other integer insns produce results in pipeline stage four.  */
-	    default:
-	      return cost + 2;
-	    }
-	}
-    }
-  else
-    {
+    case PROCESSOR_EV4:
       /* On EV4, if INSN is a store insn and DEP_INSN is setting the data
 	 being stored, we can sometimes lower the cost.  */
 
-      if (insn_type == TYPE_ST
+      if ((insn_type == TYPE_IST || insn_type == TYPE_FST)
 	  && (set = single_set (dep_insn)) != 0
 	  && GET_CODE (PATTERN (insn)) == SET
 	  && rtx_equal_p (SET_DEST (set), SET_SRC (PATTERN (insn))))
 	{
 	  switch (dep_insn_type)
 	    {
-	    case TYPE_LD:
+	    case TYPE_ILD:
+	    case TYPE_FLD:
 	      /* No savings here.  */
 	      return cost;
 
-	    case TYPE_IMULL:
-	    case TYPE_IMULQ:
-	    case TYPE_IMULH:
+	    case TYPE_IMUL:
 	      /* In these cases, we save one cycle.  */
 	      return cost - 1;
 
@@ -1377,14 +1327,17 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
       /* Another case that needs adjustment is an arithmetic or logical
 	 operation.  It's cost is usually one cycle, but we default it to
 	 two in the MD file.  The only case that it is actually two is
-	 for the address in loads and stores.  */
+	 for the address in loads, stores, and jumps.  */
 
       if (dep_insn_type == TYPE_IADD || dep_insn_type == TYPE_ILOG)
 	{
 	  switch (insn_type)
 	    {
-	    case TYPE_LD:
-	    case TYPE_ST:
+	    case TYPE_ILD:
+	    case TYPE_IST:
+	    case TYPE_FLD:
+	    case TYPE_FST:
+	    case TYPE_JSR:
 	      return cost;
 	    default:
 	      return 1;
@@ -1396,6 +1349,62 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 
       if (dep_insn_type == TYPE_ICMP && insn_type == TYPE_IBR)
 	return 1;
+      break;
+
+    case PROCESSOR_EV5:
+      /* And the lord DEC saith:  "A special bypass provides an effective
+	 latency of 0 cycles for an ICMP or ILOG insn producing the test
+	 operand of an IBR or ICMOV insn." */
+
+      if ((dep_insn_type == TYPE_ICMP || dep_insn_type == TYPE_ILOG)
+	  && (set = single_set (dep_insn)) != 0)
+	{
+	  /* A branch only has one input.  This must be it.  */
+	  if (insn_type == TYPE_IBR)
+	    return 0;
+	  /* A conditional move has three, make sure it is the test.  */
+	  if (insn_type == TYPE_ICMOV
+	      && GET_CODE (set_src = PATTERN (insn)) == SET
+	      && GET_CODE (set_src = SET_SRC (set_src)) == IF_THEN_ELSE
+	      && rtx_equal_p (SET_DEST (set), XEXP (set_src, 0)))
+	    return 0;
+	}
+
+      /* "The multiplier is unable to receive data from IEU bypass paths.
+	 The instruction issues at the expected time, but its latency is
+	 increased by the time it takes for the input data to become
+	 available to the multiplier" -- which happens in pipeline stage
+	 six, when results are comitted to the register file.  */
+
+      if (insn_type == TYPE_IMUL)
+	{
+	  switch (dep_insn_type)
+	    {
+	    /* These insns produce their results in pipeline stage five.  */
+	    case TYPE_ILD:
+	    case TYPE_ICMOV:
+	    case TYPE_IMUL:
+	    case TYPE_MVI:
+	      return cost + 1;
+
+	    /* Other integer insns produce results in pipeline stage four.  */
+	    default:
+	      return cost + 2;
+	    }
+	}
+      break;
+
+    case PROCESSOR_EV6:
+      /* There is additional latency to move the result of (most) FP 
+         operations anywhere but the FP register file.  */
+
+      if ((insn_type == TYPE_FST || insn_type == TYPE_FTOI)
+	  && (dep_insn_type == TYPE_FADD ||
+	      dep_insn_type == TYPE_FMUL ||
+	      dep_insn_type == TYPE_FCMOV))
+        return cost + 2;
+
+      break;
     }
 
   /* Otherwise, return the default cost. */

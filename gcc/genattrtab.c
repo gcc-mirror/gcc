@@ -318,12 +318,12 @@ static int address_used;
 static int length_used;
 static int num_delays;
 static int have_annul_true, have_annul_false;
-static int num_units;
+static int num_units, num_unit_opclasses;
 static int num_insn_ents;
 
 /* Used as operand to `operate_exp':  */
 
-enum operator {PLUS_OP, MINUS_OP, POS_MINUS_OP, EQ_OP, OR_OP, MAX_OP, MIN_OP, RANGE_OP};
+enum operator {PLUS_OP, MINUS_OP, POS_MINUS_OP, EQ_OP, OR_OP, ORX_OP, MAX_OP, MIN_OP, RANGE_OP};
 
 /* Stores, for each insn code, the number of constraint alternatives.  */
 
@@ -381,7 +381,9 @@ static rtx check_attr_value	PROTO((rtx, struct attr_desc *));
 static rtx convert_set_attr_alternative PROTO((rtx, int, int, int));
 static rtx convert_set_attr	PROTO((rtx, int, int, int));
 static void check_defs		PROTO((void));
+#if 0
 static rtx convert_const_symbol_ref PROTO((rtx, struct attr_desc *));
+#endif
 static rtx make_canonical	PROTO((struct attr_desc *, rtx));
 static struct attr_value *get_attr_value PROTO((rtx, struct attr_desc *, int));
 static rtx copy_rtx_unchanging	PROTO((rtx));
@@ -447,6 +449,8 @@ static void write_eligible_delay PROTO((char *));
 static void write_function_unit_info PROTO((void));
 static void write_complex_function PROTO((struct function_unit *, char *,
 					  char *));
+static int write_expr_attr_cache PROTO((rtx, struct attr_desc *));
+static void write_toplevel_expr	PROTO((rtx));
 static int n_comma_elts		PROTO((char *));
 static char *next_comma_elt	PROTO((char **));
 static struct attr_desc *find_attr PROTO((char *, int));
@@ -1052,7 +1056,7 @@ check_attr_test (exp, is_const)
       /* These cases can't be simplified.  */
       RTX_UNCHANGING_P (exp) = 1;
       break;
-
+ 
     case LE:  case LT:  case GT:  case GE:
     case LEU: case LTU: case GTU: case GEU:
     case NE:  case EQ:
@@ -1142,6 +1146,16 @@ check_attr_value (exp, attr)
 				       attr ? attr->is_const : 0);
       XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
       XEXP (exp, 2) = check_attr_value (XEXP (exp, 2), attr);
+      break;
+
+    case IOR:
+    case AND:
+      XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
+      XEXP (exp, 1) = check_attr_value (XEXP (exp, 1), attr);
+      break;
+
+    case FFS:
+      XEXP (exp, 0) = check_attr_value (XEXP (exp, 0), attr);
       break;
 
     case COND:
@@ -1303,6 +1317,7 @@ check_defs ()
     }
 }
 
+#if 0
 /* Given a constant SYMBOL_REF expression, convert to a COND that
    explicitly tests each enumerated value.  */
 
@@ -1353,6 +1368,7 @@ convert_const_symbol_ref (exp, attr)
 
   return condexp;
 }
+#endif
 
 /* Given a valid expression for an attribute value, remove any IF_THEN_ELSE
    expressions by converting them into a COND.  This removes cases from this
@@ -1390,6 +1406,10 @@ make_canonical (attr, exp)
 	 This makes the COND something that won't be considered an arbitrary
 	 expression by walk_attr_value.  */
       RTX_UNCHANGING_P (exp) = 1;
+#if 0
+      /* ??? Why do we do this?  With attribute values { A B C D E }, this
+         tends to generate (!(x==A) && !(x==B) && !(x==C) && !(x==D)) rather
+	 than (x==E). */
       exp = convert_const_symbol_ref (exp, attr);
       RTX_UNCHANGING_P (exp) = 1;
       exp = check_attr_value (exp, attr);
@@ -1397,6 +1417,10 @@ make_canonical (attr, exp)
          new expression is rescanned, all symbol_ref notes are marked as
 	 unchanging.  */
       goto cond;
+#else
+      exp = check_attr_value (exp, attr);
+      break;
+#endif
 
     case IF_THEN_ELSE:
       newexp = rtx_alloc (COND);
@@ -1634,6 +1658,7 @@ operate_exp (op, left, right)
 	      break;
 
 	    case OR_OP:
+	    case ORX_OP:
 	      i = left_value | right_value;
 	      break;
 
@@ -1663,6 +1688,10 @@ operate_exp (op, left, right)
 	      abort ();
 	    }
 
+	  if (i == left_value)
+	    return left;
+	  if (i == right_value)
+	    return right;
 	  return make_numeric_value (i);
 	}
       else if (GET_CODE (right) == IF_THEN_ELSE)
@@ -1713,6 +1742,13 @@ operate_exp (op, left, right)
 	}
       else
 	fatal ("Badly formed attribute value");
+    }
+
+  /* A hack to prevent expand_units from completely blowing up: ORX_OP does
+     not associate through IF_THEN_ELSE.  */
+  else if (op == ORX_OP && GET_CODE (right) == IF_THEN_ELSE)
+    {
+      return attr_rtx (IOR, left, right);
     }
 
   /* Otherwise, do recursion the other way.  */
@@ -1857,18 +1893,48 @@ expand_units ()
   newexp = rtx_alloc (IF_THEN_ELSE);
   XEXP (newexp, 2) = make_numeric_value (0);
 
-  /* Merge each function unit into the unit mask attributes.  */
-  for (unit = units; unit; unit = unit->next)
+  /* If we have just a few units, we may be all right expanding the whole
+     thing.  But the expansion is 2**N in space on the number of opclasses,
+     so we can't do this for very long -- Alpha and MIPS in particular have
+     problems with this.  So in that situation, we fall back on an alternate
+     implementation method.  */
+#define NUM_UNITOP_CUTOFF 20
+
+  if (num_unit_opclasses < NUM_UNITOP_CUTOFF)
     {
-      XEXP (newexp, 0) = unit->condexp;
-      XEXP (newexp, 1) = make_numeric_value (1 << unit->num);
-      unitsmask = operate_exp (OR_OP, unitsmask, newexp);
+      /* Merge each function unit into the unit mask attributes.  */
+      for (unit = units; unit; unit = unit->next)
+        {
+          XEXP (newexp, 0) = unit->condexp;
+          XEXP (newexp, 1) = make_numeric_value (1 << unit->num);
+          unitsmask = operate_exp (OR_OP, unitsmask, newexp);
+        }
+    }
+  else
+    {
+      /* Merge each function unit into the unit mask attributes.  */
+      for (unit = units; unit; unit = unit->next)
+        {
+          XEXP (newexp, 0) = unit->condexp;
+          XEXP (newexp, 1) = make_numeric_value (1 << unit->num);
+          unitsmask = operate_exp (ORX_OP, unitsmask, attr_copy_rtx (newexp));
+        }
     }
 
   /* Simplify the unit mask expression, encode it, and make an attribute
      for the function_units_used function.  */
   unitsmask = simplify_by_exploding (unitsmask);
-  unitsmask = encode_units_mask (unitsmask);
+
+  if (num_unit_opclasses < NUM_UNITOP_CUTOFF)
+    unitsmask = encode_units_mask (unitsmask);
+  else
+    {
+      /* We can no longer encode unitsmask at compile time, so emit code to
+         calculate it at runtime.  Rather, put a marker for where we'd do
+	 the code, and actually output it in write_attr_get().  */
+      unitsmask = attr_rtx (FFS, unitsmask);
+    }
+
   make_internal_attr ("*function_units_used", unitsmask, 2);
 
   /* Create an array of ops for each unit.  Add an extra unit for the
@@ -2736,6 +2802,26 @@ evaluate_eq_attr (exp, value, insn_code, insn_index)
 	newexp = true_rtx;
       else
 	newexp = false_rtx;
+    }
+  else if (GET_CODE (value) == SYMBOL_REF)
+    {
+      char *p, *string;
+
+      if (GET_CODE (exp) != EQ_ATTR)
+	abort();
+
+      string = (char *) alloca (2 + strlen (XSTR (exp, 0))
+				+ strlen (XSTR (exp, 1)));
+      strcpy (string, XSTR (exp, 0));
+      strcat (string, "_");
+      strcat (string, XSTR (exp, 1));
+      for (p = string; *p ; p++)
+	if (*p >= 'a' && *p <= 'z')
+	  *p -= 'a' - 'A';
+      
+      newexp = attr_rtx (EQ, value,
+			 attr_rtx (SYMBOL_REF,
+				   attr_string(string, strlen(string))));
     }
   else if (GET_CODE (value) == COND)
     {
@@ -3694,7 +3780,7 @@ add_values_to_cover (dim)
     abort ();
   else if (nalt == dim->num_values)
     ; /* Ok.  */
-  else if (nalt * 2 < dim->num_values * 3)
+  else if (nalt * 2 >= dim->num_values)
     {
       /* Most all the values of the attribute are used, so add all the unused
 	 values.  */
@@ -4292,6 +4378,7 @@ gen_unit (def)
   op->issue_delay = issue_delay;
   op->next = unit->ops;
   unit->ops = op;
+  num_unit_opclasses++;
 
   /* Set our issue expression based on whether or not an optional conflict
      vector was specified.  */
@@ -4319,14 +4406,18 @@ gen_unit (def)
 }
 
 /* Given a piece of RTX, print a C expression to test it's truth value.
+
    We use AND and IOR both for logical and bit-wise operations, so 
    interpret them as logical unless they are inside a comparison expression.
-   The second operand of this function will be non-zero in that case.  */
+   The first bit of FLAGS will be non-zero in that case.
+
+   Set the second bit of FLAGS to make references to attribute values use
+   a cached local variable instead of calling a function.  */
 
 static void
-write_test_expr (exp, in_comparison)
+write_test_expr (exp, flags)
      rtx exp;
-     int in_comparison;
+     int flags;
 {
   int comparison_operator = 0;
   RTX_CODE code;
@@ -4348,7 +4439,7 @@ write_test_expr (exp, in_comparison)
     case PLUS:   case MINUS:  case MULT:     case DIV:      case MOD:
     case AND:    case IOR:    case XOR:
     case ASHIFT: case LSHIFTRT: case ASHIFTRT:
-      write_test_expr (XEXP (exp, 0), in_comparison || comparison_operator);
+      write_test_expr (XEXP (exp, 0), flags | comparison_operator);
       switch (code)
         {
 	case EQ:
@@ -4397,13 +4488,13 @@ write_test_expr (exp, in_comparison)
 	  printf (" %% ");
 	  break;
 	case AND:
-	  if (in_comparison)
+	  if (flags & 1)
 	    printf (" & ");
 	  else
 	    printf (" && ");
 	  break;
 	case IOR:
-	  if (in_comparison)
+	  if (flags & 1)
 	    printf (" | ");
 	  else
 	    printf (" || ");
@@ -4422,12 +4513,12 @@ write_test_expr (exp, in_comparison)
 	  abort ();
         }
 
-      write_test_expr (XEXP (exp, 1), in_comparison || comparison_operator);
+      write_test_expr (XEXP (exp, 1), flags | comparison_operator);
       break;
 
     case NOT:
       /* Special-case (not (eq_attrq "alternative" "x")) */
-      if (! in_comparison && GET_CODE (XEXP (exp, 0)) == EQ_ATTR
+      if (! (flags & 1) && GET_CODE (XEXP (exp, 0)) == EQ_ATTR
 	  && XSTR (XEXP (exp, 0), 0) == alternative_name)
 	{
 	  printf ("which_alternative != %s", XSTR (XEXP (exp, 0), 1));
@@ -4441,7 +4532,7 @@ write_test_expr (exp, in_comparison)
       switch (code)
 	{
 	case NOT:
-	  if (in_comparison)
+	  if (flags & 1)
 	    printf ("~ ");
 	  else
 	    printf ("! ");
@@ -4456,14 +4547,14 @@ write_test_expr (exp, in_comparison)
 	  abort ();
 	}
 
-      write_test_expr (XEXP (exp, 0), in_comparison);
+      write_test_expr (XEXP (exp, 0), flags);
       break;
 
     /* Comparison test of an attribute with a value.  Most of these will
        have been removed by optimization.   Handle "alternative"
        specially and give error if EQ_ATTR present inside a comparison.  */
     case EQ_ATTR:
-      if (in_comparison)
+      if (flags & 1)
 	fatal ("EQ_ATTR not valid inside comparison");
 
       if (XSTR (exp, 0) == alternative_name)
@@ -4480,18 +4571,22 @@ write_test_expr (exp, in_comparison)
 	{
 	  write_test_expr (evaluate_eq_attr (exp, attr->default_val->value,
 					     -2, -2),
-			   in_comparison);
+			   flags);
 	}
       else
 	{
-	  printf ("get_attr_%s (insn) == ", attr->name);
-	  write_attr_valueq (attr, XSTR (exp, 1)); 
+	  if (flags & 2)
+	    printf ("attr_%s", attr->name);
+	  else
+	    printf ("get_attr_%s (insn)", attr->name);
+	  printf (" == ");
+	  write_attr_valueq (attr, XSTR (exp, 1));
 	}
       break;
 
     /* Comparison test of flags for define_delays.  */
     case ATTR_FLAG:
-      if (in_comparison)
+      if (flags & 1)
 	fatal ("ATTR_FLAG not valid inside comparison");
       printf ("(flags & ATTR_FLAG_%s) != 0", XSTR (exp, 0));
       break;
@@ -4539,6 +4634,18 @@ write_test_expr (exp, in_comparison)
        current insn.  */
     case PC:
       printf ("insn_current_address");
+      break;
+
+    case CONST_STRING:
+      printf ("%s", XSTR (exp, 0));
+      break;
+
+    case IF_THEN_ELSE:
+      write_test_expr (XEXP (exp, 0), flags & 2);
+      printf (" ? ");
+      write_test_expr (XEXP (exp, 1), flags | 1);
+      printf (" : ");
+      write_test_expr (XEXP (exp, 2), flags | 1);
       break;
 
     default:
@@ -4707,17 +4814,40 @@ write_attr_get (attr)
       printf ("}\n\n");
       return;
     }
+
   printf ("     rtx insn;\n");
   printf ("{\n");
-  printf ("  switch (recog_memoized (insn))\n");
-  printf ("    {\n");
 
-  for (av = attr->first_value; av; av = av->next)
-    if (av != common_av)
-      write_attr_case (attr, av, 1, "return", ";", 4, true_rtx);
+  if (GET_CODE (common_av->value) == FFS)
+    {
+      rtx p = XEXP (common_av->value, 0);
 
-  write_attr_case (attr, common_av, 0, "return", ";", 4, true_rtx);
-  printf ("    }\n}\n\n");
+      /* No need to emit code to abort if the insn is unrecognized; the 
+         other get_attr_foo functions will do that when we call them.  */
+
+      write_toplevel_expr (p);
+
+      printf ("\n  if (accum && accum == (accum & -accum))\n");
+      printf ("    {\n");
+      printf ("      int i;\n");
+      printf ("      for (i = 0; accum >>= 1; ++i) continue;\n");
+      printf ("      accum = i;\n");
+      printf ("    }\n  else\n");
+      printf ("    accum = ~accum;\n");
+      printf ("  return accum;\n}\n\n");
+    }
+  else
+    {
+      printf ("  switch (recog_memoized (insn))\n");
+      printf ("    {\n");
+
+      for (av = attr->first_value; av; av = av->next)
+	if (av != common_av)
+	  write_attr_case (attr, av, 1, "return", ";", 4, true_rtx);
+
+      write_attr_case (attr, common_av, 0, "return", ";", 4, true_rtx);
+      printf ("    }\n}\n\n");
+    }
 }
 
 /* Given an AND tree of known true terms (because we are inside an `if' with
@@ -4925,6 +5055,90 @@ write_attr_case (attr, av, write_case_lines, prefix, suffix, indent,
       printf ("break;\n");
     }
   printf ("\n");
+}
+
+/* Search for uses of non-const attributes and write code to cache them.  */
+
+static int
+write_expr_attr_cache (p, attr)
+     rtx p;
+     struct attr_desc *attr;
+{
+  char *fmt;
+  int i, ie, j, je;
+
+  if (GET_CODE (p) == EQ_ATTR)
+    {
+      if (XSTR (p, 0) != attr->name)
+	return 0;
+
+      if (!attr->is_numeric)
+	printf ("  register enum attr_%s ", attr->name);
+      else if (attr->unsigned_p)
+	printf ("  register unsigned int ");
+      else
+	printf ("  register int ");
+
+      printf ("attr_%s = get_attr_%s (insn);\n", attr->name, attr->name);
+      return 1;
+    }
+
+  fmt = GET_RTX_FORMAT (GET_CODE (p));
+  ie = GET_RTX_LENGTH (GET_CODE (p));
+  for (i = 0; i < ie; i++)
+    {
+      switch (*fmt++)
+	{
+	case 'e':
+	  if (write_expr_attr_cache (XEXP (p, i), attr))
+	    return 1;
+	  break;
+
+	case 'E':
+	  je = XVECLEN (p, i);
+	  for (j = 0; j < je; ++j)
+	    if (write_expr_attr_cache (XVECEXP (p, i, j), attr))
+	      return 1;
+	  break;
+	}
+    }
+
+  return 0;
+}
+
+/* Evaluate an expression at top level.  A front end to write_test_expr,
+   in which we cache attribute values and break up excessively large
+   expressions to cater to older compilers.  */
+
+static void
+write_toplevel_expr (p)
+     rtx p;
+{
+  struct attr_desc *attr;
+  int i;
+
+  for (i = 0; i < MAX_ATTRS_INDEX; ++i)
+    for (attr = attrs[i]; attr ; attr = attr->next)
+      if (!attr->is_const)
+	write_expr_attr_cache (p, attr);
+
+  printf("  register unsigned long accum = 0;\n\n");
+
+  while (GET_CODE (p) == IOR)
+    {
+      rtx e;
+      if (GET_CODE (XEXP (p, 0)) == IOR)
+	e = XEXP (p, 1), p = XEXP (p, 0);
+      else
+	e = XEXP (p, 0), p = XEXP (p, 1);
+
+      printf ("  accum |= ");
+      write_test_expr (e, 3);
+      printf (";\n");
+    }
+  printf ("  accum |= ");
+  write_test_expr (p, 3);
+  printf (";\n");
 }
 
 /* Utilities to write names in various forms.  */
@@ -5735,7 +5949,7 @@ from the machine description file `md'.  */\n\n");
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
       {
-	if (! attr->is_special)
+	if (! attr->is_special && ! attr->is_const)
 	  write_attr_get (attr);
       }
 
