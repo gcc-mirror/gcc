@@ -122,32 +122,32 @@ gcov_exit (void)
   struct gcov_info *gi_ptr;
   struct gcov_summary this_program;
   struct gcov_summary all;
+  struct gcov_ctr_summary *cs_ptr;
+  const struct gcov_ctr_info *ci_ptr;
+  unsigned t_ix;
+  gcov_unsigned_t c_num;
 
   memset (&all, 0, sizeof (all));
   /* Find the totals for this execution.  */
   memset (&this_program, 0, sizeof (this_program));
   for (gi_ptr = gcov_list; gi_ptr; gi_ptr = gi_ptr->next)
     {
-      const struct gcov_ctr_info *ci_ptr;
-      struct gcov_ctr_summary *cs_ptr;
-      unsigned t_ix;
-      
-      for (t_ix = 0, ci_ptr = gi_ptr->counts, cs_ptr = this_program.ctrs;
-	   t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++, cs_ptr++)
-	if ((1 << t_ix) & gi_ptr->ctr_mask)
-	  {
-	    const gcov_type *c_ptr;
-	    gcov_unsigned_t c_num;
+      ci_ptr = gi_ptr->counts;
+      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
+	{
+	  if (!((1 << t_ix) & gi_ptr->ctr_mask))
+	    continue;
 
-	    cs_ptr->num += ci_ptr->num;
-	    for (c_num = ci_ptr->num, c_ptr = ci_ptr->values; c_num--; c_ptr++)
-	      {
-		cs_ptr->sum_all += *c_ptr;
-		if (cs_ptr->run_max < *c_ptr)
-		  cs_ptr->run_max = *c_ptr;
-	      }
-	    ci_ptr++;
-	  }
+	  cs_ptr = &this_program.ctrs[t_ix];
+	  cs_ptr->num += ci_ptr->num;
+	  for (c_num = 0; c_num < ci_ptr->num; c_num++)
+	    {
+      	      cs_ptr->sum_all += ci_ptr->values[c_num];
+	      if (cs_ptr->run_max < ci_ptr->values[c_num])
+		cs_ptr->run_max = ci_ptr->values[c_num];
+	    }
+	  ci_ptr++;
+	}
     }
 
   /* Now merge each file.  */
@@ -158,9 +158,7 @@ gcov_exit (void)
       gcov_type *values[GCOV_COUNTERS];
       const struct gcov_fn_info *fi_ptr;
       unsigned fi_stride;
-      unsigned c_ix, t_ix, f_ix;
-      const struct gcov_ctr_info *ci_ptr;
-      struct gcov_ctr_summary *cs_ptr;
+      unsigned c_ix, f_ix, n_counts;
       struct gcov_ctr_summary *cs_obj, *cs_tobj, *cs_prg, *cs_tprg, *cs_all;
       int error = 0;
       gcov_unsigned_t tag, length;
@@ -170,24 +168,30 @@ gcov_exit (void)
       memset (&object, 0, sizeof (object));
       
       /* Totals for this object file.  */
-      for (t_ix = c_ix = 0,
-	     ci_ptr = gi_ptr->counts, cs_ptr = this_object.ctrs;
-	   t_ix != GCOV_COUNTERS_SUMMABLE; t_ix++, cs_ptr++)
+      ci_ptr = gi_ptr->counts;
+      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
+	{
+	  if (!((1 << t_ix) & gi_ptr->ctr_mask))
+	    continue;
+
+	  cs_ptr = &this_program.ctrs[t_ix];
+	  cs_ptr->num += ci_ptr->num;
+	  for (c_num = 0; c_num < ci_ptr->num; c_num++)
+	    {
+	      cs_ptr->sum_all += ci_ptr->values[c_num];
+	      if (cs_ptr->run_max < ci_ptr->values[c_num])
+		cs_ptr->run_max = ci_ptr->values[c_num];
+	    }
+
+	  ci_ptr++;
+	}
+
+      c_ix = 0;
+      for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)
 	if ((1 << t_ix) & gi_ptr->ctr_mask)
 	  {
-	    const gcov_type *c_ptr;
-	    gcov_unsigned_t c_num;
-
-	    cs_ptr->num += ci_ptr->num;
-	    values[c_ix] = ci_ptr->values;
-	    for (c_num = ci_ptr->num, c_ptr = ci_ptr->values; c_num--; c_ptr++)
-	      {
-		cs_ptr->sum_all += *c_ptr;
-		if (cs_ptr->run_max < *c_ptr)
-		  cs_ptr->run_max = *c_ptr;
-	      }
+	    values[c_ix] = gi_ptr->counts[c_ix].values;
 	    c_ix++;
-	    ci_ptr++;
 	  }
 
       /* Calculate the function_info stride. This depends on the
@@ -231,11 +235,10 @@ gcov_exit (void)
 	    }
 	  
 	  /* Merge execution counts for each function.  */
-	  for (f_ix = gi_ptr->n_functions, fi_ptr = gi_ptr->functions;
-	       f_ix--;
-	       fi_ptr = (const struct gcov_fn_info *)
-		 ((const char *) fi_ptr + fi_stride))
+	  for (f_ix = 0; f_ix < gi_ptr->n_functions; f_ix++)
 	    {
+	      fi_ptr = (const struct gcov_fn_info *)
+		      ((const char *) gi_ptr->functions + f_ix * fi_stride);
 	      tag = gcov_read_unsigned ();
 	      length = gcov_read_unsigned ();
 
@@ -252,25 +255,31 @@ gcov_exit (void)
 		  goto read_fatal;
 		}
 
-	      for (c_ix = t_ix = 0; t_ix != GCOV_COUNTERS; t_ix++)
-		if ((1 << t_ix) & gi_ptr->ctr_mask)
-		  {
-		    unsigned n_counts = fi_ptr->n_ctrs[c_ix];
-		    gcov_merge_fn merge = gi_ptr->counts[c_ix].merge;
+	      c_ix = 0;
+	      for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)
+		{
+		  gcov_merge_fn merge;
+
+		  if (!((1 << t_ix) & gi_ptr->ctr_mask))
+		    continue;
+		  
+		  n_counts = fi_ptr->n_ctrs[c_ix];
+		  merge = gi_ptr->counts[c_ix].merge;
 		    
-		    tag = gcov_read_unsigned ();
-		    length = gcov_read_unsigned ();
-		    if (tag != GCOV_TAG_FOR_COUNTER (t_ix)
-			|| length != GCOV_TAG_COUNTER_LENGTH (n_counts))
-		      goto read_mismatch;
-		    (*merge) (values[c_ix], n_counts);
-		    values[c_ix] += n_counts;
-		    c_ix++;
+		  tag = gcov_read_unsigned ();
+		  length = gcov_read_unsigned ();
+		  if (tag != GCOV_TAG_FOR_COUNTER (t_ix)
+		      || length != GCOV_TAG_COUNTER_LENGTH (n_counts))
+		    goto read_mismatch;
+		  (*merge) (values[c_ix], n_counts);
+		  values[c_ix] += n_counts;
+		  c_ix++;
 		}
 	      if ((error = gcov_is_error ()))
 		goto read_error;
 	    }
 
+	  f_ix = ~0u;
 	  /* Check program & object summary */
 	  while (1)
 	    {
@@ -310,13 +319,14 @@ gcov_exit (void)
 
       /* Merge the summaries.  */
       f_ix = ~0u;
-      for (t_ix = c_ix = 0,
-	     cs_obj = object.ctrs, cs_tobj = this_object.ctrs,
-	     cs_prg = program.ctrs, cs_tprg = this_program.ctrs,
-	     cs_all = all.ctrs;
-	   t_ix != GCOV_COUNTERS_SUMMABLE;
-	   t_ix++, cs_obj++, cs_tobj++, cs_prg++, cs_tprg++, cs_all++)
+      for (t_ix = 0; t_ix < GCOV_COUNTERS_SUMMABLE; t_ix++)
 	{
+	  cs_obj = &object.ctrs[t_ix];
+	  cs_tobj = &this_object.ctrs[t_ix];
+	  cs_prg = &program.ctrs[t_ix];
+	  cs_tprg = &program.ctrs[t_ix];
+	  cs_all = &all.ctrs[t_ix];
+
 	  if ((1 << t_ix) & gi_ptr->ctr_mask)
 	    {
 	      if (!cs_obj->runs++)
@@ -336,9 +346,6 @@ gcov_exit (void)
 	      if (cs_prg->run_max < cs_tprg->run_max)
 		cs_prg->run_max = cs_tprg->run_max;
 	      cs_prg->sum_max += cs_tprg->run_max;
-	      
-	      values[c_ix] = gi_ptr->counts[c_ix].values;
-	      c_ix++;
 	    }
 	  else if (cs_obj->num || cs_prg->num)
 	    goto read_mismatch;
@@ -356,6 +363,14 @@ gcov_exit (void)
 	    }
 	}
       
+      c_ix = 0;
+      for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)
+	if ((1 << t_ix) & gi_ptr->ctr_mask)
+	  {
+	    values[c_ix] = gi_ptr->counts[c_ix].values;
+	    c_ix++;
+	  }
+
       program.checksum = gcov_crc32;
       
       /* Write out the data.  */
@@ -363,29 +378,35 @@ gcov_exit (void)
       gcov_write_unsigned (gi_ptr->stamp);
       
       /* Write execution counts for each function.  */
-      for (f_ix = gi_ptr->n_functions, fi_ptr = gi_ptr->functions; f_ix--;
-	   fi_ptr = (const struct gcov_fn_info *)
-	     ((const char *) fi_ptr + fi_stride))
+      for (f_ix = 0; f_ix < gi_ptr->n_functions; f_ix++)
 	{
+	  fi_ptr = (const struct gcov_fn_info *)
+		  ((const char *) gi_ptr->functions + f_ix * fi_stride);
+
 	  /* Announce function.  */
 	  gcov_write_tag_length (GCOV_TAG_FUNCTION, GCOV_TAG_FUNCTION_LENGTH);
 	  gcov_write_unsigned (fi_ptr->ident);
 	  gcov_write_unsigned (fi_ptr->checksum);
 
-	  for (c_ix = t_ix = 0; t_ix != GCOV_COUNTERS; t_ix++)
-	    if ((1 << t_ix) & gi_ptr->ctr_mask)
-	      {
-		unsigned n_counts = fi_ptr->n_ctrs[c_ix];
-		gcov_type *c_ptr;
+	  c_ix = 0;
+	  for (t_ix = 0; t_ix < GCOV_COUNTERS; t_ix++)
+	    {
+	      gcov_type *c_ptr;
+
+	      if (!((1 << t_ix) & gi_ptr->ctr_mask))
+		continue;
+
+	      n_counts = fi_ptr->n_ctrs[c_ix];
 		    
-		gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
-				       GCOV_TAG_COUNTER_LENGTH (n_counts));
-		c_ptr = values[c_ix];
-		while (n_counts--)
-		  gcov_write_counter (*c_ptr++);
-		values[c_ix] = c_ptr;
-		c_ix++;
-	      }
+	      gcov_write_tag_length (GCOV_TAG_FOR_COUNTER (t_ix),
+				     GCOV_TAG_COUNTER_LENGTH (n_counts));
+	      c_ptr = values[c_ix];
+	      while (n_counts--)
+		gcov_write_counter (*c_ptr++);
+
+	      values[c_ix] = c_ptr;
+	      c_ix++;
+	    }
 	}
 
       /* Object file summary.  */
