@@ -1844,22 +1844,6 @@ ffelex_file_fixed (ffewhereFile wf, FILE *f)
   ffelex_current_wc_ = ffewhere_column_unknown ();
   latest_char_in_file = '\n';
 
-  if (ffe_is_null_version ())
-    {
-      /* Just substitute a "program" directly here.  */
-
-      char line[] = "      call g77__fvers;call g77__ivers;call g77__uvers;end";
-      char *p;
-
-      column = 0;
-      for (p = &line[0]; *p != '\0'; ++p)
-	column = ffelex_image_char_ (*p, column);
-
-      c = EOF;
-
-      goto have_line;		/* :::::::::::::::::::: */
-    }
-
   goto first_line;		/* :::::::::::::::::::: */
 
   /* Come here to get a new line. */
@@ -2005,8 +1989,6 @@ ffelex_file_fixed (ffewhereFile wf, FILE *f)
 
       column = ffelex_final_nontab_column_;
     }
-
- have_line:			/* :::::::::::::::::::: */
 
   ffelex_card_image_[column] = '\0';
   ffelex_card_length_ = column;
