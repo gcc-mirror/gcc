@@ -1839,7 +1839,7 @@ alpha_expand_mov (mode, operands)
       || GET_CODE (operands[1]) == CONST_DOUBLE)
     {
       HOST_WIDE_INT i0, i1;
-      rtx temp;
+      rtx temp = NULL_RTX;
 
       if (GET_CODE (operands[1]) == CONST_INT)
 	{

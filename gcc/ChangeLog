@@ -1,3 +1,7 @@
+2001-09-05  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.c (alpha_expand_mov): Initialize temp.
+
 2001-09-05  Zack Weinberg  <zack@codesourcery.com>
 
 	* function.c (ggc_mark_struct_function): Mark f->outer.
