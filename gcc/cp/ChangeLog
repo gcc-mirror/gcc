@@ -1,3 +1,10 @@
+2002-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* semantics.c (finish_alignof): Call complete_type before calling
+	c_alignof.
+	* decl2.c (build_expr_from_tree): Use
+	finish_sizeof/finish_alignof.
+
 2002-10-10  Jim Wilson  <wilson@redhat.com>
 
 	* decl.c (duplicate_decls): Don't call decl_attributes.

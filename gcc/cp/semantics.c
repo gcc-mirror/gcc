@@ -2117,7 +2117,7 @@ finish_alignof (t)
   if (processing_template_decl)
     return build_min_nt (ALIGNOF_EXPR, t);
 
-  return TYPE_P (t) ? c_alignof (t) : c_alignof_expr (t);
+  return TYPE_P (t) ? c_alignof (complete_type (t)) : c_alignof_expr (t);
 }
 
 /* Generate RTL for the statement T, and its substatements, and any

@@ -1,3 +1,7 @@
+2002-10-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* g++.dg/template/alignof1.C: New test.
+
 2002-10-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/20021014-1.c: Bypass errors on solaris2 and irix6.

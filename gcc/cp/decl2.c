@@ -3795,10 +3795,8 @@ build_expr_from_tree (t)
     case ALIGNOF_EXPR:
       {
 	tree r = build_expr_from_tree (TREE_OPERAND (t, 0));
-	if (!TYPE_P (r))
-	  return TREE_CODE (t) == SIZEOF_EXPR ? expr_sizeof (r) : c_alignof_expr (r);
-	else
-	  return TREE_CODE (t) == SIZEOF_EXPR ? c_sizeof (r) : c_alignof (r);
+	return (TREE_CODE (t) == SIZEOF_EXPR
+		? finish_sizeof (r) : finish_alignof (r));
       }
 
     case MODOP_EXPR:
