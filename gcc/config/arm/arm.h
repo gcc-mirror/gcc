@@ -1891,9 +1891,9 @@ typedef struct
    or known to be defined in this file then encode a short call flag.
    This macro is used inside the ENCODE_SECTION macro.  */
 #define ARM_ENCODE_CALL_TYPE(decl)					\
-  if (TREE_CODE (decl) == FUNCTION_DECL)				\
+  if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd')			\
     {									\
-      if (DECL_WEAK (decl))						\
+      if (TREE_CODE (decl) == FUNCTION_DECL && DECL_WEAK (decl))	\
         arm_encode_call_attribute (decl, LONG_CALL_FLAG_CHAR);		\
       else if (! TREE_PUBLIC (decl))        				\
         arm_encode_call_attribute (decl, SHORT_CALL_FLAG_CHAR);		\

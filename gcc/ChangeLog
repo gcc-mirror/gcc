@@ -1,3 +1,12 @@
+2002-02-19  Philip Blundell  <pb@nexus.co.uk>
+
+	* config/arm/arm.c (arm_encode_call_attribute): Operate on any
+	decl, not just FUNCTION_DECL.
+	(legitimize_pic_address): Handle local SYMBOL_REF like LABEL_REF.
+	(arm_assemble_integer): Likewise.
+	* config/arm/arm.h (ARM_ENCODE_CALL_TYPE): Allow any decl to be
+	marked local.
+	
 2002-02-19  matthew green  <mrg@eterna.com.au>
 
 	* config.gcc (sparc-*-netbsdelf*): Enable target.
