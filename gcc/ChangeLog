@@ -1,3 +1,20 @@
+2000-11-25  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.md (GOTaddr2picreg, symGOT2reg, symGOTOFF2reg,
+	symPLT_label2reg, call, call_value): Don't set
+	current_function_uses_pic_offset_table.
+	* config/sh/sh.h (CONDITIONAL_REGISTER_USAGE): Don't mark
+	PIC_OFFSET_TABLE_REGNUM as call_used, so that calc_live_regs
+	takes it into account.
+	(FINALIZE_PIC): Delete, useless.
+	(LEGITIMATE_CONSTANT_P): Delete, unused.
+	* config/sh/sh.c (sh_expand_prologue): Don't use
+	current_function_uses_pic_offset_table.  Don't special-case
+	PIC_OFFSET_TABLE_REGNUM.  Initialize it if it's ever live and
+	PIC is enabled.
+	(sh_expand_epilogue, initial_elimination_offset): Don't
+	special case PIC_OFFSET_TABLE_REGNUM.
+
 2000-11-25  Alexandre Oliva  <aoliva@redhat.com>, NIIBE Yutaka  <gniibe@m17n.org>
 
 	* config/sh/sh-protos.h (symbol_ref_operand): Declare.

@@ -81,10 +81,7 @@ extern int code_for_indirect_jump_scratch;
 	}								\
     }									\
   if (flag_pic)								\
-    {									\
-      fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;				\
-      call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;			\
-    }									\
+    fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;				\
   /* Hitachi saves and restores mac registers on call.  */		\
   if (TARGET_HITACHI && ! TARGET_NOMACSAVE)				\
     {									\
@@ -1781,16 +1778,6 @@ do									\
       }									\
   }									\
 while (0)
-
-#define FINALIZE_PIC							\
-  current_function_uses_pic_offset_table |= profile_flag | profile_block_flag
-
-/* We can't directly access anything that contains a symbol,
-   nor can we indirect via the constant pool.  */
-#define LEGITIMATE_PIC_OPERAND_P(X)				\
-	(! nonpic_symbol_mentioned_p (X)			\
-	 && (! CONSTANT_POOL_ADDRESS_P (X)			\
-	     || ! nonpic_symbol_mentioned_p (get_pool_constant (X))))
 
 #define SYMBOLIC_CONST_P(X)	\
 ((GET_CODE (X) == SYMBOL_REF || GET_CODE (X) == LABEL_REF)	\

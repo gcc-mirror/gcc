@@ -3502,7 +3502,6 @@
       && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF)
     {
       emit_call_insn (gen_call_pcrel (XEXP (operands[0], 0), operands[1]));
-      current_function_uses_pic_offset_table = 1;
       DONE;
     }
   else
@@ -3524,7 +3523,6 @@
     {
       emit_call_insn (gen_call_value_pcrel (operands[0], XEXP (operands[1], 0),
 					    operands[2]));
-      current_function_uses_pic_offset_table = 1;
       DONE;
     }
   else
@@ -3641,7 +3639,6 @@
   "" "
 {
   operands[0] = pic_offset_table_rtx;
-  current_function_uses_pic_offset_table = 1;
   operands[1] = gen_rtx_SYMBOL_REF (VOIDmode, GOT_SYMBOL_NAME);
 }
 ")
@@ -3674,7 +3671,6 @@
   "
 {
   operands[2] = pic_offset_table_rtx;
-  current_function_uses_pic_offset_table = 1;
 }")
 
 (define_expand "symGOTOFF2reg"
@@ -3685,7 +3681,6 @@
   "
 {
   operands[2] = pic_offset_table_rtx;
-  current_function_uses_pic_offset_table = 1;
 }")
 
 (define_expand "symPLT_label2reg"
@@ -3697,23 +3692,20 @@
 		(const (plus:SI
 			(match_operand:SI 2 "" "")
 			(const_int 2))))))
-   (use (match_dup 3))]
-  ;; Even though the PIC register is not really used by the call
-  ;; sequence in which this is expanded, the PLT code assumes the PIC
-  ;; register is set, so we must not skip its initialization.  Since
-  ;; we only use this expand as part of calling sequences, and never
-  ;; to take the address of a function, this is the best point to
-  ;; insert the (use).  Using the PLT to take the address of a
-  ;; function would be wrong, not only because the PLT entry could
-  ;; then be called from a function that doesn't initialize the PIC
-  ;; register to the proper GOT, but also because pointers to the same
-  ;; function might not compare equal, should they be set by different
-  ;; shared libraries.
-  "" "
-{
-  operands[3] = pic_offset_table_rtx;
-  current_function_uses_pic_offset_table = 1;
-}")
+   ;; Even though the PIC register is not really used by the call
+   ;; sequence in which this is expanded, the PLT code assumes the PIC
+   ;; register is set, so we must not skip its initialization.  Since
+   ;; we only use this expand as part of calling sequences, and never
+   ;; to take the address of a function, this is the best point to
+   ;; insert the (use).  Using the PLT to take the address of a
+   ;; function would be wrong, not only because the PLT entry could
+   ;; then be called from a function that doesn't initialize the PIC
+   ;; register to the proper GOT, but also because pointers to the
+   ;; same function might not compare equal, should they be set by
+   ;; different shared libraries.
+   (use (reg:SI PIC_REG))]
+  ""
+  "")
 
 ;; case instruction for switch statements.
 
