@@ -117,6 +117,7 @@ struct function
   int inhibit_defer_pop;
   tree cleanups_this_call;
   rtx saveregs_value;
+  rtx apply_args_value;
   rtx forced_labels;
 
   /* For emit-rtl.c.  */
