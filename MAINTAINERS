@@ -39,12 +39,15 @@ m68hc11 port		Stephane Carrez		Stephane.Carrez@worldnet.fr
 m68k port (?)		Jeff Law		law@redhat.com
 m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 mcore port		Nick Clifton		nickc@redhat.com
+mips port               Eric Christopher        echristo@redhat.com
 mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10200 port		Jeff Law		law@redhat.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 rs6000 port		Geoff Keating		geoffk@redhat.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
+s390 port		Hartmut Penner		hpenner@de.ibm.com
+s390 port		Ulrich Weigand		uweigand@de.ibm.com
 sh port			Joern Rennecke		amylaar@onetel.net.uk
 sh port			Alexandre Oliva		aoliva@redhat.com
 sparc port		Richard Henderson	rth@redhat.com
@@ -63,6 +66,10 @@ sco5, unixware, sco udk	Robert Lipe		robertlipe@usa.net
 
 			Various Maintainers
 
+C front end/ISO C99	Joseph Myers		jsm28@cam.ac.uk
+C front end/ISO C99	Richard Henderson	rth@redhat.com
+Ada front end		Geert Bosch		bosch@gnat.com
+Ada front end		Robert Dewar		dewar@gnat.com
 fortran			Richard Henderson	rth@redhat.com
 fortran			Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
@@ -99,8 +106,6 @@ gcse.c 			Jeff Law		law@redhat.com
 global opt framework	Jeff Law		law@redhat.com
 jump.c			David S. Miller		davem@redhat.com
 web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
-C front end/ISO C99	Joseph Myers		jsm28@cam.ac.uk
-C front end/ISO C99	Richard Henderson	rth@redhat.com
 config.sub/config.guess	Ben Elliston		bje@redhat.com
 basic block reordering	Jason Eckhardt		jle@redhat.com
 i18n			Philipp Thomas		pthomas@suse.de
@@ -114,12 +119,7 @@ build machinery (*.in)	Alexandre Oliva		aoliva@redhat.com
 docs co-maintainer	Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 Pico-Java port		Steve Chamberlain	sac@transmeta.com
 RTEMS Ports		Joel Sherrill
-s390 port		Hartmut Penner		hpenner@de.ibm.com
-s390 port		Ulrich Weigand		uweigand@de.ibm.com
-mips port               Eric Christopher        echristo@redhat.com
 predict.def		Jan Hubicka		jh@suse.cz
-Ada front end		Geert Bosch		bosch@gnat.com
-Ada front end		Robert Dewar		dewar@gnat.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
