@@ -1,5 +1,11 @@
 2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	* config/arc/arc.h (CPP_PREDEFINES): Remove.
+	(CPP_SPEC): Update.
+	(TARGET_CPU_CPP_BUILTINS): New.
+
+2002-05-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* cpphash.h (cpp_macro): Move here, and make expansion a union.
 	* cppmacro.c (cpp_macro): Remove.
 	(enter_macro_context, replace_args, warn_of_redefinition,
