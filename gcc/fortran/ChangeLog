@@ -1,3 +1,8 @@
+2004-09-24  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-types.c (gfc_return_by_reference): Remove superfluous
+	assertion.
+
 2004-09-20  Jan Hubicka  <jh@suse.cz>
 
 	* trans-decl.c (build_entry_thunks): Finalize the function; do not lower

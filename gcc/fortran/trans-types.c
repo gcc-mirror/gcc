@@ -1435,8 +1435,6 @@ gfc_return_by_reference (gfc_symbol * sym)
   if (!sym->attr.function)
     return 0;
 
-  gcc_assert (sym->attr.function);
-
   if (sym->result)
     sym = sym->result;
 
