@@ -553,6 +553,37 @@ fix = {
 
 
 /*
+ *  Fix #defines under Alpha OSF/1:
+ *  The following files contain '#pragma extern_prefix "_FOO"' followed by
+ *  a '#define something(x,y,z) _FOOsomething(x,y,z)'.  The intent of these
+ *  statements is to reduce namespace pollution.  While these macros work
+ *  properly in most cases, they don't allow you to take a pointer to the
+ *  "something" being modified.  To get around this limitation, change these
+ *  statements to be of the form '#define something _FOOsomething'.
+ *
+ *  sed ain't egrep, lesson 2463:  sed can use self-referential
+ *  regular expressions.  In the substitute expression below,
+ *  "\\1" and "\\2" refer to subexpressions found earlier in the
+ *  same match.  So, we continue to use sed.  "extern_prefix" will
+ *  be a rare match anyway...
+ */
+fix = {
+    hackname = alpha_bad_lval;
+
+    select   = "^[ \t]*#[ \t]*pragma[ \t]+extern_prefix";
+    mach      = "alpha*-dec-osf*";
+
+    sed      =
+        "s/^[ \t]*#[ \t]*define[ \t][ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
+               "\\(_.*\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
+
+    test_text = '#pragma extern_prefix "_FOO"'"\n"
+                "#define something(x,y,z) _FOOsomething(x,y,z)\n"
+                "#define mumble _FOOmumble";
+};
+
+
+/*
  *  Fix getopt declarations in stdio.h and stdlib.h on Alpha OSF/1 and AIX.
  */
 fix = {
@@ -711,51 +742,6 @@ fix = {
     c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
 
     test_text = "typedef unsigned short\twchar_t \t; /* wchar_t\n type */";
-};
-
-
-/*
- *  Fix #defines under Alpha OSF/1:
- *  The following files contain '#pragma extern_prefix "_FOO"' followed by
- *  a '#define something(x,y,z) _FOOsomething(x,y,z)'.  The intent of these
- *  statements is to reduce namespace pollution.  While these macros work
- *  properly in most cases, they don't allow you to take a pointer to the
- *  "something" being modified.  To get around this limitation, change these
- *  statements to be of the form '#define something _FOOsomething'.
- *
- *  sed ain't egrep, lesson 2463:  sed can use self-referential
- *  regular expressions.  In the substitute expression below,
- *  "\\1" and "\\2" refer to subexpressions found earlier in the
- *  same match.  So, we continue to use sed.  "extern_prefix" will
- *  be a rare match anyway...
- */
-fix = {
-    hackname = bad_lval;
-
-    select   = "^[ \t]*#[ \t]*pragma[ \t]+extern_prefix";
-
-    files    = libgen.h;
-    files    = dirent.h;
-    files    = ftw.h;
-    files    = grp.h;
-    files    = ndbm.h;
-    files    = pthread.h;
-    files    = pwd.h;
-    files    = signal.h;
-    files    = standards.h;
-    files    = stdlib.h;
-    files    = string.h;
-    files    = stropts.h;
-    files    = time.h;
-    files    = unistd.h;
-
-    sed      =
-        "s/^[ \t]*#[ \t]*define[ \t][ \t]*\\([^(]*\\)\\(([^)]*)\\)[ \t]*"
-               "\\(_.*\\)\\1\\2[ \t]*$/#define \\1 \\3\\1/";
-
-    test_text = '#pragma extern_prefix "_FOO"'"\n"
-                "#define something(x,y,z) _FOOsomething(x,y,z)\n"
-                "#define mumble _FOOmumble";
 };
 
 

@@ -1,3 +1,13 @@
+2004-01-23  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* fixinc/inclhack.def (bad_lval): Renamed to ...
+	(alpha_bad_lval): ... this.
+	Removed file list.
+	Restrict to alpha*-dec-osf*.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/libgen.h: Remove, moving test ...
+	* fixinc/tests/base/testing.h: ... here, reflecting new name.
+
 2004-01-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* doc/invoke.texi (Optimize Options): Note that --param arguments
