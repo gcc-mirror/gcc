@@ -1,3 +1,7 @@
+2001-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu89-init-1.c: New test.
+
 2001-12-12  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.brendan/crash56.C: Adjust implicit typename.

@@ -1649,6 +1649,30 @@ Compound literals for scalar types and union types are is
 also allowed, but then the compound literal is equivalent
 to a cast.
 
+As a GNU extension, GCC allows initialization of objects with static storage
+duration by compound literals (which is not possible in ISO C99, because
+the initializer is not a constant).
+It is handled as if the object was initialized only with the bracket
+enclosed list if compound literal's and object types match.
+The initializer list of the compound literal must be constant.
+If the object being initialized has array type of unknown size, the size is
+determined by compound literal's initializer list, not by the size of the
+compound literal.
+
+@example
+static struct foo x = (struct foo) @{1, 'a', 'b'@};
+static int y[] = (int []) @{1, 2, 3@};
+static int z[] = (int [3]) @{1@};
+@end example
+
+@noindent
+The above lines are equivalent to the following:
+@example
+static struct foo x = @{1, 'a', 'b'@};
+static int y[] = @{1, 2, 3@};
+static int z[] = @{1@};
+@end example
+
 @node Designated Inits
 @section Designated Initializers
 @cindex initializers with labeled elements
