@@ -1,3 +1,9 @@
+2001-05-03  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* jni.cc (_Jv_JNI_GetPrimitiveArrayRegion): Fixed bounds
+	checking.
+	(_Jv_JNI_SetPrimitiveArrayRegion): Likewise.
+
 2001-05-02  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* doc/*.texi: Remove generated documentation.
