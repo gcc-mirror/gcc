@@ -1,3 +1,12 @@
+2003-01-06  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/9151
+	* include/bits/locale_facets.cc (num_put::_M_convert_float):
+	Limit __prec to digits10 + 2, not digits10 + 1, taking into
+	account the possibility of %{g,G} conversion specifiers
+	inside _S_format_float.
+	* testsuite/27_io/ostream_inserter_arith.cc (test06): Add.
+
 2003-01-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init,
