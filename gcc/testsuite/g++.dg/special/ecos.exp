@@ -84,5 +84,22 @@ if [string match "*init_priority*" $lines] then {
 }
 dg-finish
 
+###########
+# initp1.C
+###########
+
+dg-init
+set lines [g++_target_compile "$srcdir/$subdir/initp1.C" "$objdir/a.out" executable ""]
+if [string match "*init_priority*" $lines] then {
+    xfail "initp1.C"
+    file delete $objdir/a.out
+} elseif ![string match "" $lines] then {
+    fail "initp1.C"
+} else {
+    dg-runtest "$srcdir/$subdir/conpr-1.C" "" "" 
+    file delete $objdir/a.out
+}
+dg-finish
+
 
 ### EOF ecos.exp

@@ -1,6 +1,5 @@
-// Test for proper handling of the init_priority attribute.
-// Contributed by Hugo Tyson <hmt@cygnus.co.uk>
-// excess errors test - XFAIL mips*-sgi-irix*
+/* { dg-do run } */
+#include <stdlib.h>
 
 class Two {
 private:
@@ -63,13 +62,13 @@ int main()
     X( koo[0].kay() );
     X( koo[1].kay() );
     X( koo[2].kay() );
-    if ( 0x3f != x ) return 1;
+    if ( 0x3f != x ) abort ();
 
     X( foo.kay() );
-    if ( 0x7f != x ) return 1;
+    if ( 0x7f != x ) abort ();
 
     X( goo.kay() );
-    if ( 0xff != x ) return 1;
+    if ( 0xff != x ) abort ();
 
     X( xoo[0].kay() );
     X( xoo[1].kay() );
@@ -77,7 +76,7 @@ int main()
     X( zoo[0].kay() );
     X( zoo[1].kay() );
     X( zoo[2].kay() );
-    if ( 0x3fff != x ) return 1;
+    if ( 0x3fff != x ) abort ();
 
     X( doo[0].kay() );
     X( doo[1].kay() );
@@ -85,7 +84,7 @@ int main()
     X( hoo[0].kay() );
     X( hoo[1].kay() );
     X( hoo[2].kay() );
-    if ( 0xfffff != x ) return 1;
+    if ( 0xfffff != x ) abort ();
 
-    return 0;
+    exit (0);
 }
