@@ -1,5 +1,11 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/io/RandomAccessFile.java
+	(readLine): Removed wrong @deprecated tag.
+	(getChannel): Made final.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileChannelImpl.java
 	(write): Removed.
 
