@@ -1,3 +1,43 @@
+2004-06-30  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* tree-ssa-loop-ch.c: New file.
+	* Makefile.in (tree-ssa-loop-ch.o): Add.
+	(tree-into-ssa.o): Add GGC_H dependency.
+	* tree-cfg.c (tree_duplicate_bb): Copy virtual arguments.
+	* tree-flow.h (rewrite_into_ssa): Declaration changed.
+	(rewrite_ssa_into_ssa, compute_global_livein, duplicate_ssa_name):
+	Declare.
+	* tree-into-ssa.c: Include ggc.h.
+	(struct def_blocks_d): Add phi_blocks field.
+	(struct mark_def_sites_global_data): Add names_to_rename field.
+	(struct ssa_name_info): New.
+	(compute_global_livein): Export.
+	(set_def_block, insert_phi_nodes, mark_def_sites, set_livein_block,
+	insert_phi_nodes_1, rewrite_finalize_block, insert_phi_nodes_for,
+	register_new_def, get_reaching_def, def_blocks_free,
+	get_def_blocks_for, rewrite_into_ssa): Modified to work with
+	rewrite_ssa_into_ssa.
+	(get_ssa_name_ann, get_phi_state, set_phi_state, get_current_def,
+	set_current_def, ssa_mark_def_sites_initialize_block,
+	ssa_mark_phi_uses, ssa_mark_def_sites, duplicate_ssa_name,
+	ssa_register_new_def, ssa_rewrite_initialize_block,
+	ssa_rewrite_phi_arguments, ssa_rewrite_finalize_block,
+	ssa_rewrite_stmt, rewrite_ssa_into_ssa, rewrite_all_into_ssa): New
+	functions.
+	(pass_build_ssa): Call rewrite_all_into_ssa.
+	* tree-optimize.c (execute_todo, execute_one_pass,
+	tree_rest_of_compilation): Allocate vars_to_rename only once.
+	* tree-ssa-dom.c (tree_ssa_dominator_optimize): Provide parameter
+	to rewrite_into_ssa.
+	* tree-ssa-loop.c (should_duplicate_loop_header_p,
+	mark_defs_for_rewrite, duplicate_blocks, do_while_loop_p,
+	copy_loop_headers, gate_ch, pass_ch): Moved to tree-ssa-loop-ch.c.
+	Use rewrite_ssa_into_ssa.
+	* tree-ssa-operands.c (copy_virtual_operands): New function.
+	* tree-ssa-operands.h (copy_virtual_operands): Declare.
+	* tree.h (struct tree_ssa_name): Add aux field.
+	(SSA_NAME_AUX): New macro to access it.
+
 2004-05-28 Aaron W. LaFramboise <aaronraolete36@aaronwl.com>
 
 	* prefix.c (lookup_key): Cast buffer to LPBYTE.

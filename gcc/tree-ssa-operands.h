@@ -164,5 +164,6 @@ extern void get_stmt_operands (tree);
 extern void remove_vuses (tree);
 extern void remove_v_may_defs (tree);
 extern void remove_v_must_defs (tree);
+extern void copy_virtual_operands (tree, tree);
 
 #endif  /* GCC_TREE_SSA_OPERANDS_H  */
