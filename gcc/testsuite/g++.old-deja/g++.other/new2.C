@@ -1,5 +1,5 @@
 //Build don't link:
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 void *operator new(size_t, unsigned int);
 
 struct X{

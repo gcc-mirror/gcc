@@ -1,12 +1,13 @@
 // Build don't link:
 #include<iostream.h>
+#include<stddef.h>
 
 struct A {
   A() {
     cerr<<"A constructing\n";
     throw 1;
   }
-  void *operator new(unsigned sz) {
+  void *operator new(size_t sz) {
     cerr<<"A allocated\n";
     return ::operator new(sz);
   }
