@@ -21,4 +21,7 @@
 
 /* Whether getenv must be declared even if <stdlib.h> is included.  */
 #undef NEED_DECLARATION_GETENV
+
+/* Whether sbrk must be declared even if <stdlib.h> is included.  */
+#undef NEED_DECLARATION_SBRK
 @TOP@
