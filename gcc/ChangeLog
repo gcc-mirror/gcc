@@ -1,3 +1,10 @@
+2001-11-14  DJ Delorie  <dj@redhat.com>
+
+	* integrate.c (get_hard_reg_initial_reg): New.
+	* integrate.h (get_hard_reg_initial_reg): Prototype.
+	* local-alloc.c (block_alloc): Don't tie pseudos that
+	represent call-saved hard regs' initial values.
+
 2001-11-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* m68k/linux.h: Include <linux.h> not "linux.h" to avoid infinite
