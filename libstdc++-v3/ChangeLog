@@ -1,3 +1,11 @@
+2000-05-16  Phil Edwards  <pme@sourceware.cygnus.com>
+
+	* acinclude.m4 (GLIBCPP_ENABLE_SHADOW):  New macro, stub.
+	* aclocal.m4:  Regenerate.
+	* configure.in:  Call.
+	* configure:  Regenerate.
+	* docs/configopts.html:  Stub documentation.
+
 2000-05-14  Nathan Myers  <ncm@cantrip.org>
 
         * mkcshadow: build in more-correct directory, create cshadow/
