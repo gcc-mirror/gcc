@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the HP Spectrum.
-   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com) of Cygnus Support
    and Tim Moore (moore@defmacro.cs.utah.edu) of the Center for
    Software Science at the University of Utah.
@@ -1847,11 +1847,11 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
 /* Define the .bss section for ASM_OUTPUT_LOCAL to use. */
 
 #ifndef CTORS_SECTION_FUNCTION
-#define EXTRA_SECTIONS in_bss, in_readonly_data
+#define EXTRA_SECTIONS in_readonly_data
 #define CTORS_SECTION_FUNCTION
 #define DTORS_SECTION_FUNCTION
 #else
-#define EXTRA_SECTIONS in_bss, in_readonly_data, in_ctors, in_dtors
+#define EXTRA_SECTIONS in_readonly_data, in_ctors, in_dtors
 #endif
 
 /* Switch into a generic section.
@@ -1896,15 +1896,6 @@ do { fputs ("\t.SPACE $PRIVATE$\n\
    works correctly).  */
 
 #define EXTRA_SECTION_FUNCTIONS						\
-void									\
-bss_section ()								\
-{									\
-  if (in_section != in_bss)						\
-    {									\
-      fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);		\
-      in_section = in_bss;						\
-    }									\
-}									\
 void									\
 readonly_data ()							\
 {									\
