@@ -993,8 +993,8 @@
 (define_insn "ffssi2"
   [(set (match_operand:SI 0 "register_operand" "=&d")
 	(ffs:SI (match_operand:SI 1 "register_operand" "d")))
-   (clobber (match_scratch:SI 2 "d"))
-   (clobber (match_scratch:SI 3 "d"))]
+   (clobber (match_scratch:SI 2 "=&d"))
+   (clobber (match_scratch:SI 3 "=&d"))]
   ""
   "*
 {
