@@ -1,5 +1,14 @@
 2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* config/sparc/sparc.c (function_arg_record_value_1): New fourth
+	parameter packed_p.  Search for a DECL_PACKED field only if
+	packed_p is false.  Pass packed_p recursively.
+	(function_arg_record_value_2): Likewise.
+	(function_arg_record_value): Update calls to
+	function_arg_record_value_1 and function_arg_record_value_2.
+
+2003-10-18  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* cse.c (cse_insn) [src_folded]: Check that the tentative replacement
 	was successfully forced to memory before using the result.
 
