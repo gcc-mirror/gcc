@@ -293,6 +293,11 @@ do {									   \
 #define CTORS_SECTION_ASM_OP    "\t.section\t.ctors,\"aw\""
 #define DTORS_SECTION_ASM_OP    "\t.section\t.dtors,\"aw\""
  
+/* There's no point providing a default definition of __CTOR_LIST__
+   since people are expected either to use crtbegin.o, or an equivalent,
+   or provide their own definition.  */
+#define CTOR_LISTS_DEFINED_EXTERNALLY
+
 /* A list of other sections which the compiler might be "in" at any
    given time.  */
 #undef EXTRA_SECTIONS
