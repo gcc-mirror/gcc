@@ -214,9 +214,9 @@ gfc_conv_intrinsic_conversion (gfc_se * se, gfc_expr * expr)
   se->expr = convert (type, arg);
 }
 
-
-/* This is needed because the gcc backend only implements FIX_TRUNC_EXPR
-   TRUNC(x) = INT(x) <= x ? INT(x) : INT(x) - 1
+/* This is needed because the gcc backend only implements
+   FIX_TRUNC_EXPR, which is the same as INT() in Fortran.
+   FLOOR(x) = INT(x) <= x ? INT(x) : INT(x) - 1
    Similarly for CEILING.  */
 
 static tree

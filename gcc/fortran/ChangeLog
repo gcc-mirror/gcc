@@ -1,3 +1,8 @@
+2004-12-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* trans-intrinsic.c (build_fixbound_expr): Clarify comment, fix
+	comment typo.
+
 2004-12-15  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/18993
