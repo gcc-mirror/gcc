@@ -2792,6 +2792,12 @@ build_array_type (elt_type, index_type)
   TREE_TYPE (t) = elt_type;
   TYPE_DOMAIN (t) = index_type;
 
+  /* The main variant of an array type should always
+     be an array whose element type is the main variant.  */
+  if (elt_type != TYPE_MAIN_VARIANT (elt_type))
+    TYPE_MAIN_VARIANT (t) = build_array_type (TYPE_MAIN_VARIANT (elt_type),
+					      index_type);
+
   if (index_type == 0)
     return t;
 
