@@ -3538,12 +3538,9 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
       /* If the value is already in the stack slot, we are done.  */
       if (current_function_check_memory_usage && GET_CODE (arg->stack) == MEM)
 	{
-	  if (arg->mode == BLKmode)
-	    abort ();
-
 	  emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 			     XEXP (arg->stack, 0), ptr_mode, 
-			     GEN_INT (GET_MODE_SIZE (arg->mode)),
+			     ARGS_SIZE_RTX (arg->size),
 			     TYPE_MODE (sizetype),
 			     GEN_INT (MEMORY_USE_RW),
 			     TYPE_MODE (integer_type_node));
