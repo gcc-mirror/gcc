@@ -1,3 +1,9 @@
+2004-10-29  Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bit/stl_algo.h (find_first_of(,,,,pred)):
+	Remove invalid EqualOpConcept.
+	* testsuite/25_algorithms/find_first_of/concept_check_1.cc: New.
+
 2004-10-29  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/testsuite_allocator.h (check_delete): New.
