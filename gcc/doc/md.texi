@@ -1307,9 +1307,9 @@ identical.  If we are considering an insn of the form
 @noindent
 the first pattern would not apply at all, because this insn does not
 contain two identical subexpressions in the right place.  The pattern would
-say, ``That does not look like an add instruction; try other patterns.''
+say, ``That does not look like an add instruction; try other patterns''.
 The second pattern would say, ``Yes, that's an add instruction, but there
-is something wrong with it.''  It would direct the reload pass of the
+is something wrong with it''.  It would direct the reload pass of the
 compiler to generate additional insns to make the constraint true.  The
 results might look like this:
 

@@ -2860,7 +2860,7 @@ Here is the basic stack layout.
 Define this macro if pushing a word onto the stack moves the stack
 pointer to a smaller address.
 
-When we say, ``define this macro if @dots{},'' it means that the
+When we say, ``define this macro if @dots{}'', it means that the
 compiler checks this macro only with @code{#ifdef} so the precise
 definition used does not matter.
 @end defmac

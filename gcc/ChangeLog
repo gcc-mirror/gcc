@@ -1,3 +1,9 @@
+2004-10-28  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* doc/c-tree.texi, doc/cpp.texi, doc/implement-c.texi,
+	doc/invoke.texi, doc/md.texi, doc/passes.texi, doc/tm.texi: Put
+	punctuation outside quotes.
+
 2004-10-27  David Mosberger  <davidm@hpl.hp.com>
 	    James E Wilson  <wilson@specifixinc.com>
 

@@ -145,7 +145,7 @@ erroneous code, you must be prepared to deal with the
 
 Occasionally, a particular tree slot (like an operand to an expression,
 or a particular field in a declaration) will be referred to as
-``reserved for the back end.''  These slots are used to store RTL when
+``reserved for the back end''.  These slots are used to store RTL when
 the tree is converted to RTL for use by the GCC back end.  However, if
 that process is not taking place (e.g., if the front end is being hooked
 up to an intelligent editor), then those slots may be used by the
@@ -1551,7 +1551,7 @@ returned value for a constructor.  The first argument to the
 argument is the initializer for the object.  The object is initialized
 when the @code{RETURN_INIT} is encountered.  The object referred to is
 the actual object returned; this extension is a manual way of doing the
-``return-value optimization.''  Therefore, the object must actually be
+``return-value optimization''.  Therefore, the object must actually be
 constructed in the place where the object will be returned.
 
 @item RETURN_STMT

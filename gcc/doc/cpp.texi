@@ -510,7 +510,7 @@ However, a few of the keywords of C++ are significant even in the
 preprocessor.  @xref{C++ Named Operators}.
 
 In the 1999 C standard, identifiers may contain letters which are not
-part of the ``basic source character set,'' at the implementation's
+part of the ``basic source character set'', at the implementation's
 discretion (such as accented Latin letters, Greek letters, or Chinese
 ideograms).  This may be done with an extended character set, or the
 @samp{\u} and @samp{\U} escape sequences.  GCC does not presently
@@ -596,7 +596,7 @@ Punctuator:      @{   @}   [   ]   #    ##
 @end smallexample
 
 @cindex other tokens
-Any other single character is considered ``other.'' It is passed on to
+Any other single character is considered ``other''. It is passed on to
 the preprocessor's output unmolested.  The C compiler will almost
 certainly reject source code containing ``other'' tokens.  In ASCII, the
 only other characters are @samp{@@}, @samp{$}, @samp{`}, and control
@@ -1076,7 +1076,7 @@ would have to edit the new headers to match.
 
 There is no way to solve this problem within the C standard, but you can
 use the GNU extension @samp{#include_next}.  It means, ``Include the
-@emph{next} file with this name.''  This directive works like
+@emph{next} file with this name''.  This directive works like
 @samp{#include} except in searching for the specified file: it starts
 searching the list of header file directories @emph{after} the directory
 in which the current file was found.
@@ -4104,7 +4104,7 @@ comma, then @samp{##} behaves as a normal token paste.
 @item @samp{#line} and @samp{#include}
 
 The @samp{#line} directive used to change GCC's notion of the
-``directory containing the current file,'' used by @samp{#include} with
+``directory containing the current file'', used by @samp{#include} with
 a double-quoted header file name.  In 3.0 and later, it does not.
 @xref{Line Control}, for further explanation.
 
