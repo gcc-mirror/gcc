@@ -75,23 +75,4 @@ public class ArrayHelper
       }
     return -1;
   }
-
-  /**
-   * Checks if two arrays are equal.
-   *
-   * @param array1 the first array
-   * @param array2 the second array
-   * @return true if both arrays are equal.
-   */
-  public static boolean equalsArray(Object[] array1, Object[] array2)
-  {
-    if (array1.length != array2.length)
-      return false;
-
-    for (int index = 0; index < array1.length; index++)
-      if (!array1 [index].equals (array2 [index]))
-	return false;
-	
-    return true;
-  }
 }
