@@ -2,6 +2,7 @@ Sun Oct 10 02:41:41 1999  Richard Henderson  <rth@cygnus.com>
 
 	* genrecog.c (add_to_sequence): Move allow_const_int test outside
 	known predicate block; default allow_const_int true.
+	(debug_decision_list): New.
 
 Sun Oct 10 00:43:08 1999  Richard Henderson  <rth@cygnus.com>
 
