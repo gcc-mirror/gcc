@@ -4007,10 +4007,10 @@ create_class (int flags, tree id, tree super, tree interfaces)
   /* If SUPER exists, use it, otherwise use Object */
   if (super)
     {
-      /* Can't extend java.lang.Object */
+      /* java.lang.Object can't extend anything.  */
       if (TREE_TYPE (IDENTIFIER_CLASS_VALUE (class_id)) == object_type_node)
 	{
-	  parse_error_context (id, "Can't extend `java.lang.Object'");
+	  parse_error_context (id, "`java.lang.Object' can't extend anything");
 	  return NULL_TREE;
 	}
 
