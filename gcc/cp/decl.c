@@ -2672,6 +2672,9 @@ duplicate_decls (newdecl, olddecl)
 
 	  if (DECL_THIS_INLINE (newdecl) && ! DECL_THIS_INLINE (olddecl))
 	    {
+#if 0 /* I think this will be correct, but it's really annoying.  We should
+	 fix the compiler to find vtables by indirection so it isn't
+	 necessary.  (jason 8/25/95) */
 	      if (DECL_VINDEX (olddecl) && ! DECL_ABSTRACT_VIRTUAL_P (olddecl))
 		{
 		  cp_pedwarn ("virtual function `%#D' redeclared inline",
@@ -2679,7 +2682,9 @@ duplicate_decls (newdecl, olddecl)
 		  cp_pedwarn_at ("previous non-inline declaration here",
 				 olddecl);
 		}
-	      else if (TREE_ADDRESSABLE (olddecl))
+	      else
+#endif
+	      if (TREE_ADDRESSABLE (olddecl))
 		{
 		  cp_pedwarn ("`%#D' was used before it was declared inline",
 			      newdecl);
