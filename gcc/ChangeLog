@@ -1,3 +1,8 @@
+Wed May 27 02:50:00 1998  Catherine Moore (clm@cygnus.com)
+
+        * config/sparc/lb1spc.asm (.rem and .urem):  Replace 
+        routines.
+
 Wed May 27 02:48:31 1998  Richard Earnshaw (rearnsha@arm.com)
 
 	* arm.c (arm_gen_constant): Rework to eliminate uninitialized
