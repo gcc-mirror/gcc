@@ -2276,8 +2276,22 @@ expand_call (exp, target, ignore)
 #ifdef PREFERRED_STACK_BOUNDARY
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
-  if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
+  if (args_size.constant != unadjusted_args_size)
+    {
+      /* When the stack adjustment is pending,
+	 we get better code by combining the adjustments.  */
+      if (pending_stack_adjust && !is_const)
+	{
+	  args_size.constant = (unadjusted_args_size
+			        + ((pending_stack_adjust + args_size.constant
+				    - unadjusted_args_size)
+			           % (preferred_stack_boundary / BITS_PER_UNIT)));
+	  pending_stack_adjust -= args_size.constant - unadjusted_args_size;
+	  do_pending_stack_adjust ();
+	}
+      else if (argblock == 0)
+	anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
+    }
 #endif
 #endif
 
