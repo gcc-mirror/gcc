@@ -46,7 +46,7 @@
  */
 
 #include <cstdio>     
-#include <iostream>
+#include <ostream>
 #include <bits/functexcept.h>
 
 #include <ext/algorithm> // For copy_n and lexicographical_compare_3way
