@@ -1,5 +1,9 @@
 2003-11-28  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md: Fix a comment typo.
+
+2003-11-28  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*movsf_h8300h): Change to
 	*movsf_h8300hs.
 	(addsi_h8300): Change to *addsi_h8300.
