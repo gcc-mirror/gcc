@@ -1,3 +1,9 @@
+2001-06-04  Jeffrey Oldham  <oldham@codesourcery.com>
+
+	* lib/g++.exp (g++_include_flags): Change `args' to gccpath's value.
+	(g++_link_flags): Likewise.
+	(g++_init): Pass gccpath's value to two previous functions.
+
 2001-06-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.misc-tests/linkage.exp: Use wildcards when matching N32.
