@@ -1,3 +1,8 @@
+2003-11-18  Graydon Hoare  <graydon@redhat.com>
+
+	* java/awt/font/TextLayout.java: Implement simple layouts
+	using attributed strings and glyph vectors.
+
 2003-11-17  Graydon Hoare  <graydon@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkClasspathFontPeerMetrics.java: New file.
