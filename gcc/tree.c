@@ -1,5 +1,5 @@
 /* Language-independent node constructors for parse phase of GNU compiler.
-   Copyright (C) 1987, 88, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -3179,14 +3179,10 @@ build_type_attribute_variant (ttype, attribute)
   if ( ! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
       register int hashcode;
-      register struct obstack *ambient_obstack = current_obstack;
       tree ntype;
 
-      if (ambient_obstack != &permanent_obstack)
-        current_obstack = TYPE_OBSTACK (ttype);
-
+      push_obstacks (TYPE_OBSTACK (ttype), TYPE_OBSTACK (ttype));
       ntype = copy_node (ttype);
-      current_obstack = ambient_obstack;
 
       TYPE_POINTER_TO (ntype) = 0;
       TYPE_REFERENCE_TO (ntype) = 0;
@@ -3222,6 +3218,7 @@ build_type_attribute_variant (ttype, attribute)
       ntype = type_hash_canon (hashcode, ntype);
       ttype = build_type_variant (ntype, TYPE_READONLY (ttype),
 				  TYPE_VOLATILE (ttype));
+      pop_obstacks ();
     }
 
   return ttype;
