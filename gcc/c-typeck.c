@@ -5518,10 +5518,12 @@ output_init_element (value, type, field, pending)
 		       digest_init (type, value, 0, 0),
 		       constructor_pending_elts);
     }
-  else if ((TREE_CODE (constructor_type) == RECORD_TYPE
-	    || TREE_CODE (constructor_type) == UNION_TYPE)
+  else if (TREE_CODE (constructor_type) == RECORD_TYPE
 	   && field != constructor_unfilled_fields)
     {
+      /* We do this for records but not for unions.  In a union,
+	 no matter which field is specified, it can be initialized
+	 right away since it starts at the beginning of the union.  */
       if (!duplicate)
 	constructor_pending_elts
 	  = tree_cons (field,
