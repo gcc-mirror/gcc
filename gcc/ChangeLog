@@ -1,3 +1,8 @@
+2000-03-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* c-common.c (c_expand_expr_stmt): Use COMPLETE_TYPE_OR_VOID_P,
+	not COMPLETE_TYPE_P, to check the type of the expression.
+
 2000-03-21  Michael Meissner  <meissner@redhat.com>
 
 	* config/alpha/alpha.md (floating point insns): Add TARGET_FP to
