@@ -1,3 +1,7 @@
+2000-01-31  Dave Brolley  <brolley@redhat.com>
+
+	* cccp.c (struct argdata): Redeclare 'newlines' field as 'int'.
+
 2000-01-31  Jason Merrill  <jason@casey.cygnus.com>
 
 	* jump.c (redirect_jump): Move a NOTE_INSN_FUNCTION_END to the

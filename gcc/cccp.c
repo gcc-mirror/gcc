@@ -8486,7 +8486,7 @@ struct argdata {
   int stringified_length_bound;
   U_CHAR *free1, *free2;
   U_CHAR *free_ptr;
-  char newlines;
+  int newlines;
   char use_count;
 };
 
