@@ -1,5 +1,11 @@
 2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/s390-protos.h (s390_output_dwarf_dtprel): Declare.
+	* config/s390/s390.c (s390_output_dwarf_dtprel): New function.
+	* config/s390/s390.h (ASM_OUTPUT_DWARF_DTPREL): Define.
+
+2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (s390_function_arg_pass_by_reference): Return
 	true for all arguments larger than 8 bytes, as well as for all vector
 	type arguments.
