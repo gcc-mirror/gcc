@@ -1,6 +1,6 @@
 // 2000-08-22 Benjamin Kosnik <bkoz@cygnus.com>
 
-// Copyright (C) 2000, 2001 Free Software Foundation
+// Copyright (C) 2000, 2001, 2002 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -124,7 +124,7 @@ void test01()
   VERIFY( eto_next == e_arr );
 
   int i = cvt.encoding();
-  VERIFY( i == 0 );
+  VERIFY( i == 2 ); // Target-dependent.
 
   VERIFY( !cvt.always_noconv() );
 
@@ -210,7 +210,7 @@ void test02()
   VERIFY( eto_next == e_arr );
 
   int i = cvt.encoding();
-  VERIFY( i == 0 );
+  VERIFY( i == 2 ); // Target-dependent.
 
   VERIFY( !cvt.always_noconv() );
 

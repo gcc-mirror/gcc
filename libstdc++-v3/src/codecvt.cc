@@ -1,4 +1,4 @@
-// Copyright (C) 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -181,7 +181,7 @@ namespace std
   int 
   codecvt<wchar_t, char, mbstate_t>::
   do_encoding() const throw()
-  { return 0; }
+  { return sizeof(wchar_t); }
   
   bool 
   codecvt<wchar_t, char, mbstate_t>::

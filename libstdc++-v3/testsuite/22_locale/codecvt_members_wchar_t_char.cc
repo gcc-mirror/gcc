@@ -95,7 +95,7 @@ void test01()
   VERIFY( eto_next == e_arr );
 
   int i = cvt->encoding();
-  VERIFY( i == 0 );
+  VERIFY( i == 4 ); // Target-dependent.
 
   VERIFY( !cvt->always_noconv() );
 

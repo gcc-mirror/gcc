@@ -263,14 +263,14 @@
 
   // This adaptor works around the signature problems of the second
   // argument to iconv():  SUSv2 and others use 'const char**', but glibc 2.2
-  // uses 'char**', which is what the standard is (apparently) due to use
-  // in the future.  Using this adaptor, g++ will do the work for us.
+  // uses 'char**', which matches the POSIX 1003.1-2001 standard.
+  // Using this adaptor, g++ will do the work for us.
   template<typename _T>
     inline size_t
-    __iconv_adaptor(size_t(*iconv_func)(iconv_t, _T, size_t*, char**, size_t*),
-                    iconv_t cd, char** inbuf, size_t* inbytesleft,
-                    char** outbuf, size_t* outbytesleft)
-    { return iconv_func(cd, (_T)inbuf, inbytesleft, outbuf, outbytesleft); }
+    __iconv_adaptor(size_t(*__func)(iconv_t, _T, size_t*, char**, size_t*),
+                    iconv_t __cd, char** __inbuf, size_t* __inbytes,
+                    char** __outbuf, size_t* __outbytes)
+    { return __func(__cd, (_T)__inbuf, __inbytes, __outbuf, __outbytes); }
 
   template<typename _InternT, typename _ExternT>
     codecvt_base::result
@@ -286,9 +286,9 @@
 	  typedef state_type::__desc_type	__desc_type;
 	  const __desc_type* __desc = __state._M_get_out_descriptor();
 	  const size_t __fmultiple = sizeof(intern_type) / sizeof(char);
-	  size_t __flen = __fmultiple * (__from_end - __from);
+	  size_t __fbytes = __fmultiple * (__from_end - __from);
 	  const size_t __tmultiple = sizeof(extern_type) / sizeof(char);
-	  size_t __tlen = __tmultiple * (__to_end - __to); 
+	  size_t __tbytes = __tmultiple * (__to_end - __to); 
 	  
 	  // Argument list for iconv specifies a byte sequence. Thus,
 	  // all to/from arrays must be brutally casted to char*.
@@ -310,14 +310,14 @@
 	      char_traits<intern_type>::copy(__cfixed + 1, __from, __size);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
 	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
-                                        &__flen, &__cto, &__tlen); 
+                                        &__fbytes, &__cto, &__tbytes); 
 	    }
 	  else
 	    {
 	      intern_type* __cfixed = const_cast<intern_type*>(__from);
 	      __cfrom = reinterpret_cast<char*>(__cfixed);
-	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom,
-                                       &__flen, &__cto, &__tlen); 
+	      __conv = __iconv_adaptor(iconv, *__desc, &__cfrom, &__fbytes, 
+				       &__cto, &__tbytes); 
 	    }
 
 	  if (__conv != size_t(-1))
@@ -328,7 +328,7 @@
 	    }
 	  else 
 	    {
-	      if (__flen < static_cast<size_t>(__from_end - __from))
+	      if (__fbytes < __fmultiple * (__from_end - __from))
 		{
 		  __from_next = reinterpret_cast<const intern_type*>(__cfrom);
 		  __to_next = reinterpret_cast<extern_type*>(__cto);
@@ -451,7 +451,12 @@
     int 
     codecvt<_InternT, _ExternT, __enc_traits>::
     do_encoding() const throw()
-    { return 0; }
+    {
+      int __ret = 0;
+      if (sizeof(_ExternT) <= sizeof(_InternT))
+	__ret = sizeof(_InternT)/sizeof(_ExternT);
+      return __ret; 
+    }
   
   template<typename _InternT, typename _ExternT>
     bool 

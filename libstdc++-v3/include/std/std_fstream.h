@@ -64,7 +64,7 @@ namespace std
       // Non-standard Types:
       typedef basic_streambuf<char_type, traits_type>  	__streambuf_type;
       typedef basic_filebuf<char_type, traits_type>     __filebuf_type;
-      typedef __basic_file<char_type>		        __file_type;
+      typedef __basic_file<char>		        __file_type;
       typedef typename traits_type::state_type          __state_type;
       typedef codecvt<char_type, char, __state_type>    __codecvt_type;
       typedef typename __codecvt_type::result 	        __res_type;
@@ -111,13 +111,13 @@ namespace std
 
       // Members:
       bool
-      is_open(void) const { return _M_file ? _M_file->is_open() : false; }
+      is_open() const { return _M_file ? _M_file->is_open() : false; }
 
       __filebuf_type*
       open(const char* __s, ios_base::openmode __mode);
 
       __filebuf_type*
-      close(void);
+      close();
 
     protected:
       void
@@ -135,14 +135,14 @@ namespace std
 
       // Overridden virtual functions:
       virtual streamsize
-      showmanyc(void);
+      showmanyc();
 
       // Stroustrup, 1998, p. 628
       // underflow() and uflow() functions are called to get the next
       // charater from the real input source when the buffer is empty.
       // Buffered input uses underflow()
       virtual int_type
-      underflow(void);
+      underflow();
 
       virtual int_type
       pbackfail(int_type __c = _Traits::eof());
@@ -168,6 +168,11 @@ namespace std
       int_type
       _M_really_overflow(int_type __c = _Traits::eof());
 
+      // Convert internal byte sequence to external, char-based
+      // sequence via codecvt.
+      void
+      _M_convert_to_external(char_type*, streamsize, streamsize&, streamsize&);
+
       virtual __streambuf_type*
       setbuf(char_type* __s, streamsize __n);
 
@@ -180,7 +185,7 @@ namespace std
 	      ios_base::openmode __mode = ios_base::in | ios_base::out);
 
       virtual int
-      sync(void)
+      sync()
       {
 	bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
 
@@ -296,7 +301,7 @@ namespace std
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
       bool
-      is_open(void) { return _M_filebuf.is_open(); }
+      is_open() { return _M_filebuf.is_open(); }
 
       void
       open(const char* __s, ios_base::openmode __mode = ios_base::in)
@@ -307,7 +312,7 @@ namespace std
 
       /** Close the file.  */
       void
-      close(void)
+      close()
       {
 	if (!_M_filebuf.close())
 	  this->setstate(ios_base::failbit);
@@ -370,7 +375,7 @@ namespace std
        *  @return Pointer to basic_filebuf.
       */
       __filebuf_type*
-      rdbuf(void) const
+      rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
       /**
@@ -378,7 +383,7 @@ namespace std
        *  @return True if stream is open.
       */
       bool
-      is_open(void) { return _M_filebuf.is_open(); }
+      is_open() { return _M_filebuf.is_open(); }
 
       /**
        *  @brief Specify a file to open for output.
@@ -398,7 +403,7 @@ namespace std
 
       /** Close the file stream.  */
       void
-      close(void)
+      close()
       {
 	if (!_M_filebuf.close())
 	  this->setstate(ios_base::failbit);
@@ -462,7 +467,7 @@ namespace std
        *  @return Pointer to basic_filebuf.
       */
       __filebuf_type*
-      rdbuf(void) const
+      rdbuf() const
       { return const_cast<__filebuf_type*>(&_M_filebuf); }
 
       /**
@@ -470,7 +475,7 @@ namespace std
        *  @return True if stream is open.
       */
       bool
-      is_open(void) { return _M_filebuf.is_open(); }
+      is_open() { return _M_filebuf.is_open(); }
 
       /**
        *  @brief Specify a file to open for input and/or output.
@@ -490,7 +495,7 @@ namespace std
 
       /** Close the file stream.  */
       void
-      close(void)
+      close()
       {
 	if (!_M_filebuf.close())
 	  setstate(ios_base::failbit);
