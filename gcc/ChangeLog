@@ -1,3 +1,7 @@
+Tue Dec  1 11:55:04 1998  Richard Henderson  <rth@cygnus.com>
+
+	* final.c (final_scan_insn): Abort if block_depth falls below 0.
+
 Tue Dec  1 10:23:16 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* config/arm/t-arm-elf (LIBGCC2_CFLAGS): Define inhibit_libc.
