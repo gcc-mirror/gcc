@@ -1328,10 +1328,6 @@ extern int mips_abi;
   mips_debugger_offset (X, (HOST_WIDE_INT) 0)
 #define DEBUGGER_ARG_OFFSET(OFFSET, X)			\
   mips_debugger_offset (X, (HOST_WIDE_INT) OFFSET)
-
-/* Tell collect that the object format is ECOFF */
-#define OBJECT_FORMAT_COFF	/* Object file looks like COFF */
-#define EXTENDED_COFF		/* ECOFF, not normal coff */
 
 /* Target machine storage layout */
 
@@ -3831,19 +3827,6 @@ while (0)
 #ifndef ASM_COMMENT_START
 #define ASM_COMMENT_START " #"
 #endif
-
-
-/* Macros for mips-tfile.c to encapsulate stabs in ECOFF, and for
-   and mips-tdump.c to print them out.
-
-   These must match the corresponding definitions in gdb/mipsread.c.
-   Unfortunately, gcc and gdb do not currently share any directories.  */
-
-#define CODE_MASK 0x8F300
-#define MIPS_IS_STAB(sym) (((sym)->index & 0xFFF00) == CODE_MASK)
-#define MIPS_MARK_STAB(code) ((code)+CODE_MASK)
-#define MIPS_UNMARK_STAB(code) ((code)-CODE_MASK)
-
 
 /* Default definitions for size_t and ptrdiff_t.  We must override the
    definitions from ../svr4.h on mips-*-linux-gnu.  */

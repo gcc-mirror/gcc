@@ -88,9 +88,6 @@ do {								\
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
-/* Required to keep collect2.c happy */
-#undef OBJECT_FORMAT_COFF
-
 /* If we don't set MASK_ABICALLS, we can't default to PIC.  */
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT (MASK_ABICALLS|MASK_GAS)

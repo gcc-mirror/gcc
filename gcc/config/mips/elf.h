@@ -21,9 +21,6 @@ the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
 /* Use ELF.  */
-#undef  OBJECT_FORMAT_COFF
-#undef  EXTENDED_COFF
-
 #define DBX_DEBUGGING_INFO 1
 #define DWARF2_DEBUGGING_INFO 1
 
