@@ -18,7 +18,8 @@ You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#define TARGET_DEFAULT 129	/* TARGET_SNAKE + TARGET_GAS */
+#define TARGET_DEFAULT 0x89	/* TARGET_SNAKE + TARGET_GAS
+				   + TARGET_JUMP_IN_DELAY */
 
 /* This is the same as pa.h, except that we generate snake code by
    default. */
