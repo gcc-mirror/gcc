@@ -1,3 +1,7 @@
+2001-12-21  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.h: Fix comment formatting.
+
 Fri Dec 21 17:30:15 2001  Jeffrey A Law  (law@redhat.com)
 
 	* pa.h (CPP_SPEC): If not in ANSI mode, define _INCLUDE_LONGLONG.
