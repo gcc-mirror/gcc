@@ -3,4 +3,4 @@
 template <typename X> struct foo 
 {
   X y;
-}
+};

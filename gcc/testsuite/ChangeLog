@@ -1,3 +1,7 @@
+2004-04-13  Geoffrey Keating  <geoffk@apple.com>
+
+	* g++.dg/pch/externc-1.C: Add missing semicolon.
+
 2004-04-13  Aldy Hernandez  <aldyh@redhat.com>
 
         * gcc.c-torture/execute/20020720-1.x: XFAIL for powerpc-*-*spe.
