@@ -27,3 +27,14 @@ Reply-To: friedman@gnu.ai.mit.edu
 -mno-dialogue
 -pedophile
 -vomit-frame-pointer
+
+From: Alexandre Oliva <aoliva@redhat.com>
+Date: 06 Jan 2002 17:37:07 -0200
+
+On Jan 2, 2002, in a long, heated thread concerning the interpretation
+of certain passages of the C standard, jtv <jtv@xs4all.nl> wrote:
+
+> (Yes, I'm a pedant.  I'm pining for the day when gcc will support the
+> options "-ffascist -Wanal")
+
+How about introducing the options `-flame -War' :-)
