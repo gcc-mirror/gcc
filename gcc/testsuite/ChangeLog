@@ -1,5 +1,8 @@
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/17751
+	* gcc.dg/ppc64-toc.c: New test.
+
 	* g++.dg/tree-ssa/empty-1.C: New test.
 
 	PR middle-end/19551

@@ -1768,6 +1768,12 @@ rs6000_file_start (void)
       if (*start == '\0')
 	putc ('\n', file);
     }
+
+  if (DEFAULT_ABI == ABI_AIX || (TARGET_ELF && flag_pic == 2))
+    {
+      toc_section ();
+      text_section ();
+    }
 }
 
 
@@ -13294,13 +13300,6 @@ rs6000_emit_load_toc_table (int fromprolog)
 		   : gen_reg_rtx (Pmode));
       rtx symF;
 
-      /* possibly create the toc section */
-      if (! toc_initialized)
-	{
-	  toc_section ();
-	  function_section (current_function_decl);
-	}
-
       if (fromprolog)
 	{
 	  rtx symL;
@@ -18086,7 +18085,6 @@ rs6000_xcoff_file_start (void)
   fputs ("\t.file\t", asm_out_file);
   output_quoted_string (asm_out_file, main_input_filename);
   fputc ('\n', asm_out_file);
-  toc_section ();
   if (write_symbols != NO_DEBUG)
     private_data_section ();
   text_section ();

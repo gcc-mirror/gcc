@@ -1,3 +1,11 @@
+2005-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/17751
+	* config/rs6000/rs6000.c (rs6000_file_start): Create toc section
+	for AIX ABI or ELF -fPIC.
+	(rs6000_emit_load_toc_table): Don't create toc_section here.
+	(rs6000_xcoff_file_start): Nor here.
+
 2005-01-24  J"orn Rennecke <joern.rennecke@st.com>
 
 	* sh.c (ra.h): Don't #include.
