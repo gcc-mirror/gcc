@@ -40,9 +40,7 @@ package java.awt.peer;
 
 public interface DialogPeer extends WindowPeer
 {
-
-public abstract void setResizable(boolean resizeable);
-public abstract void setTitle(String title);
-
+  public void setResizable(boolean resizeable);
+  public void setTitle(String title);
 } // interface DialogPeer 
 

@@ -394,4 +394,67 @@ public class GtkComponentPeer extends GtkGenericPeer
   {
     // FIXME: just a stub for now.
   }
+
+  public boolean isFocusable ()
+  {
+    return false;
+  }
+
+  public boolean requestFocus (Component source, boolean b1, 
+                               boolean b2, long x)
+  {
+    return false;
+  }
+
+  public boolean isObscured ()
+  {
+    return false;
+  }
+
+  public boolean canDetermineObscurity ()
+  {
+    return false;
+  }
+
+  public void coalescePaintEvent (PaintEvent e)
+  {
+    
+  }
+
+  public void updateCursorImmediately ()
+  {
+    
+  }
+
+  public VolatileImage createVolatileImage (int width, int height)
+  {
+    return null;
+  }
+
+  public boolean handlesWheelScrolling ()
+  {
+    return false;
+  }
+
+  public void createBuffers (int x, BufferCapabilities capabilities)
+    throws java.awt.AWTException
+
+  {
+    
+  }
+
+  public Image getBackBuffer ()
+  {
+    return null;
+  }
+
+  public void flip (BufferCapabilities.FlipContents contents)
+  {
+    
+  }
+
+  public void destroyBuffers ()
+  {
+    
+  }
 }

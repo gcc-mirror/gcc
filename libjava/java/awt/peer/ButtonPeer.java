@@ -40,8 +40,6 @@ package java.awt.peer;
 
 public interface ButtonPeer extends ComponentPeer
 {
-
-public abstract void setLabel(String label);
-
+  public void setLabel(String label);
 } // interface ButtonPeer
 

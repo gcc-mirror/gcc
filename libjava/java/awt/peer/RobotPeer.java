@@ -1,5 +1,5 @@
-/* ListPeer.java -- Interface for list box peer
-   Copyright (C) 1999 Free Software Foundation, Inc.
+/* RobotPeer.java -- Interface for programatically driving GUI
+   Copyright (C) 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,25 +38,17 @@ exception statement from your version. */
 
 package java.awt.peer;
 
-import java.awt.Dimension;
+import java.awt.Rectangle;
 
-public interface ListPeer extends ComponentPeer
+public interface RobotPeer
 {
-  
-  public void add(String item, int index);
-  public void addItem(String item, int index);
-  public void clear();
-  public void delItems(int start_index, int end_index);
-  public void deselect(int index);
-  public int[] getSelectedIndexes();
-  public void makeVisible(int index);
-  public Dimension minimumSize(int s);
-  public Dimension preferredSize(int s);
-  public void removeAll();
-  public void select(int index);
-  public void setMultipleMode(boolean multi);
-  public void setMultipleSelections(boolean multi);
-  public Dimension getPreferredSize(int s);
-  public Dimension getMinimumSize(int s);
-} // interface ListPeer 
+  public void mouseMove (int x, int y);
+  public void mousePress (int x);
+  public void mouseRelease (int x);
+  public void mouseWheel (int x);
+  public void keyPress (int x);
+  public void keyRelease (int x);
+  public int getRGBPixel (int x, int y);
+  public int[] getRGBPixels (Rectangle r);
+} // interface RobotPeer
 

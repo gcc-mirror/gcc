@@ -42,13 +42,11 @@ import java.awt.Dimension;
 
 public interface TextFieldPeer extends TextComponentPeer
 {
-
-public abstract Dimension minimumSize(int len);
-public abstract Dimension preferredSize(int len);
-public abstract Dimension getMinimumSize(int len);
-public abstract Dimension getPreferredSize(int len);
-public abstract void setEchoChar(char echo_char);
-public abstract void setEchoCharacter(char echo_char);
-
+  public Dimension minimumSize(int len);
+  public Dimension preferredSize(int len);
+  public Dimension getMinimumSize(int len);
+  public Dimension getPreferredSize(int len);
+  public void setEchoChar(char echo_char);
+  public void setEchoCharacter(char echo_char);  
 } // interface TextFieldPeer 
 

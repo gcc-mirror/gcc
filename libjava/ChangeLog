@@ -1,3 +1,54 @@
+2003-03-01  Tom Tromey  <tromey@redhat.com>
+
+	* gnu/awt/xlib/XPanelPeer.java (beginLayout, endLayout,
+	isPaintPending): New methods.
+	* gnu/awt/xlib/XFramePeer.java (getState, setState,
+	setMaximizedBounds): New methods.
+	(beginLayout, endLayout, isPaintPending): Likewise.
+	* gnu/awt/xlib/XCanvasPeer.java (isFocusable): New method.
+	(requestFocus): Likewise.
+	(isObscured): Likewise.
+	(canDetermineObscurity): Likewise.
+	(coalescePaintEvent): Likewise.
+	(updateCursorImmediately): Likewise.
+	(createVolatileImage): Likewise.
+	(handlesWheelScrolling): Likewise.
+	(createBuffers): Likewise.
+	(getBackBuffer): Likewise.
+	(flip): Likewise.
+	(destroyBuffers): Likewise.
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (awt_java_source_files): Added DropTargetPeer.java,
+	RobotPeer.java.
+	* gnu/java/awt/GLightweightPeer.java,
+	gnu/java/awt/peer/gtk/GtkChoicePeer.java,
+	gnu/java/awt/peer/gtk/GtkComponentPeer.java,
+	gnu/java/awt/peer/gtk/GtkContainerPeer.java,
+	gnu/java/awt/peer/gtk/GtkFramePeer.java,
+	gnu/java/awt/peer/gtk/GtkPopupMenuPeer.java,
+	gnu/java/awt/peer/gtk/GtkTextComponentPeer.java,
+	java/awt/dnd/peer/DragSourceContextPeer.java,
+	java/awt/dnd/peer/DropTargetContextPeer.java,
+	java/awt/peer/ButtonPeer.java,
+	java/awt/peer/CheckboxMenuItemPeer.java,
+	java/awt/peer/CheckboxPeer.java, java/awt/peer/ChoicePeer.java,
+	java/awt/peer/ComponentPeer.java,
+	java/awt/peer/ContainerPeer.java, java/awt/peer/DialogPeer.java,
+	java/awt/peer/FileDialogPeer.java, java/awt/peer/FramePeer.java,
+	java/awt/peer/LabelPeer.java, java/awt/peer/ListPeer.java,
+	java/awt/peer/MenuBarPeer.java,
+	java/awt/peer/MenuComponentPeer.java,
+	java/awt/peer/MenuItemPeer.java, java/awt/peer/MenuPeer.java,
+	java/awt/peer/PopupMenuPeer.java,
+	java/awt/peer/ScrollPanePeer.java,
+	java/awt/peer/ScrollbarPeer.java, java/awt/peer/TextAreaPeer.java,
+	java/awt/peer/TextComponentPeer.java,
+	java/awt/peer/TextFieldPeer.java, java/awt/peer/WindowPeer.java:
+	New versions from Classpath.
+	* java/awt/dnd/peer/DropTargetPeer.java: New file from Classpath.
+	* java/awt/peer/RobotPeer.java: Likewise.
+
 2003-03-01  Mark Wielaard  <mark@klomp.org>
 
 	* java/io/ObjectInputStream.java: Reindent.

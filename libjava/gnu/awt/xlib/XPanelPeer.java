@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2002  Free Software Foundation
+/* Copyright (C) 2000, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -54,4 +54,8 @@ public class XPanelPeer extends XCanvasPeer implements PanelPeer
   {
     // NOP
   }
+
+  public void beginLayout () { }
+  public void endLayout () { }
+  public boolean isPaintPending () { return false; }
 }

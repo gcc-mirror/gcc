@@ -803,6 +803,7 @@ java/awt/Stroke.java \
 java/awt/TexturePaint.java \
 java/awt/dnd/peer/DragSourceContextPeer.java \
 java/awt/dnd/peer/DropTargetContextPeer.java \
+java/awt/dnd/peer/DropTargetPeer.java \
 java/awt/dnd/DnDConstants.java \
 java/awt/dnd/DragGestureEvent.java \
 java/awt/dnd/DragGestureListener.java \
@@ -2598,7 +2599,7 @@ libgcj-test.spec.in libgcj.spec.in
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = tar
+TAR = gtar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -3061,6 +3062,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/dnd/MouseDragGestureRecognizer.P \
 .deps/java/awt/dnd/peer/DragSourceContextPeer.P \
 .deps/java/awt/dnd/peer/DropTargetContextPeer.P \
+.deps/java/awt/dnd/peer/DropTargetPeer.P \
 .deps/java/awt/event/AWTEventListener.P \
 .deps/java/awt/event/AWTEventListenerProxy.P \
 .deps/java/awt/event/ActionEvent.P \

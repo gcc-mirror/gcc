@@ -992,6 +992,7 @@ java/awt/peer/MenuItemPeer.java \
 java/awt/peer/MenuPeer.java \
 java/awt/peer/PanelPeer.java \
 java/awt/peer/PopupMenuPeer.java \
+java/awt/peer/RobotPeer.java \
 java/awt/peer/ScrollPanePeer.java \
 java/awt/peer/ScrollbarPeer.java \
 java/awt/peer/TextAreaPeer.java \
@@ -1034,6 +1035,7 @@ java/awt/Stroke.java \
 java/awt/TexturePaint.java \
 java/awt/dnd/peer/DragSourceContextPeer.java \
 java/awt/dnd/peer/DropTargetContextPeer.java \
+java/awt/dnd/peer/DropTargetPeer.java \
 java/awt/dnd/DnDConstants.java \
 java/awt/dnd/DragGestureEvent.java \
 java/awt/dnd/DragGestureListener.java \

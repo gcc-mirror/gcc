@@ -62,4 +62,9 @@ public class GtkPopupMenuPeer extends GtkMenuPeer
     Point abs = origin.getLocationOnScreen ();
     show (abs.x + x, abs.y + y, 0);
   }
+  
+  public void show (Event e)
+  {
+
+  }
 }

@@ -76,4 +76,19 @@ public class GtkTextComponentPeer extends GtkComponentPeer
     args.add ("text_position", tc.getCaretPosition ());
     args.add ("editable", tc.isEditable ());
   }
+
+  public int getIndexAtPoint(int x, int y)
+  {
+    return 0;  // FIXME
+  }
+
+  public Rectangle getCharacterBounds (int pos)
+  {
+    return null;
+  }
+
+  public long filterEvents (long filter)
+  {
+    return filter;  // FIXME
+  }
 }

@@ -37,6 +37,7 @@ exception statement from your version. */
 package gnu.java.awt;
 
 import java.awt.*;
+import java.awt.event.PaintEvent;
 import java.awt.peer.*;
 import java.awt.image.*;
 
@@ -111,6 +112,11 @@ public class GLightweightPeer implements LightweightPeer
 
   public void hide() {}
 
+  public boolean isFocusable() 
+  {
+    return false;
+  }
+
   public boolean isFocusTraversable()
   {
     return false;
@@ -140,6 +146,8 @@ public class GLightweightPeer implements LightweightPeer
 
   public void requestFocus() {}
 
+  public boolean requestFocus(java.awt.Component source, boolean bool1, boolean bool2, long x) { return false; }
+
   public void reshape(int x, int y, int width, int height) {}
 
   public void setBackground(Color color) {}
@@ -164,4 +172,28 @@ public class GLightweightPeer implements LightweightPeer
   {
     return null;
   }
+
+  public boolean isObscured() { return false; }
+
+  public boolean canDetermineObscurity() { return false; }
+
+  public void coalescePaintEvent(PaintEvent e) { }
+
+  public void updateCursorImmediately() { }
+
+  public VolatileImage createVolatileImage(int width, int height) 
+  { 
+    return null; 
+  }
+
+  public boolean handlesWheelScrolling() { return false; }
+
+  public void createBuffers(int x, java.awt.BufferCapabilities capabilities) 
+    throws java.awt.AWTException { }
+
+  public java.awt.Image getBackBuffer() { return null; }
+
+  public void flip(java.awt.BufferCapabilities.FlipContents contents) { }
+
+  public void destroyBuffers() { }
 }
