@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993 - 1999 Free Software Foundation, Inc.
+;;  Copyright (C) 1993 - 2000 Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -77,6 +77,11 @@
  (const (if_then_else (symbol_ref "TARGET_LITTLE_ENDIAN")
 		      (const_string "little") (const_string "big"))))
 
+;; Indicate if the default fpu mode is single precision.
+(define_attr "fpu_single" "yes,no"
+  (const (if_then_else (symbol_ref "TARGET_FPU_SINGLE")
+                         (const_string "yes") (const_string "no"))))
+
 (define_attr "fmovd" "yes,no"
   (const (if_then_else (symbol_ref "TARGET_FMOVD")
 		       (const_string "yes") (const_string "no"))))
@@ -115,6 +120,10 @@
 (define_attr "type"
  "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,dfp_arith,dfp_cmp,dfp_conv,dfdiv,gp_fpul,nil"
   (const_string "other"))
+
+;; Indicate what precision must be selected in fpscr for this insn, if any.
+
+(define_attr "fp_mode" "single,double,none" (const_string "none"))
 
 ; If a conditional branch destination is within -252..258 bytes away
 ; from the instruction it can be 2 bytes long.  Something in the
@@ -887,6 +896,7 @@
   "TARGET_SH4 && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
+   (set_attr "fp_mode" "double")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "udivsi3_i4_single"
@@ -960,6 +970,7 @@
   "TARGET_SH4 && ! TARGET_FPU_SINGLE"
   "jsr	@%1%#"
   [(set_attr "type" "sfunc")
+   (set_attr "fp_mode" "double")
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "divsi3_i4_single"
@@ -2407,7 +2418,10 @@
       (const_int 4)
       (const_int 8) (const_int 8) ;; these need only 8 bytes for @(r0,rn)
       (const_int 8) (const_int 8)])
-   (set_attr "type" "fmove,move,pcload,load,store,pcload,load,store,load,load")])
+   (set_attr "type" "fmove,move,pcload,load,store,pcload,load,store,load,load")
+   (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
+					   (const_string "double")
+					   (const_string "none")))])
 
 ;; Moving DFmode between fp/general registers through memory
 ;; (the top of the stack) is faster than moving through fpul even for
@@ -2868,8 +2882,10 @@
 	lds	%1,%0
 	! move optimized away"
   [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,gp_fpul,gp_fpul,nil")
-   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,4,2,2,0")])
-
+   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,4,2,2,0")
+   (set (attr "fp_mode") (if_then_else (eq_attr "fmovd" "yes")
+					   (const_string "single")
+					   (const_string "none")))])
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
 	(match_operand:SF 1 "register_operand" ""))
@@ -3144,6 +3160,9 @@
   ""
   "jsr	@%0%#"
   [(set_attr "type" "call")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
    (set_attr "needs_delay_slot" "yes")])
 
 (define_insn "call_valuei"
@@ -3155,6 +3174,9 @@
   ""
   "jsr	@%1%#"
   [(set_attr "type" "call")
+   (set (attr "fp_mode")
+	(if_then_else (eq_attr "fpu_single" "yes")
+		      (const_string "single") (const_string "double")))
    (set_attr "needs_delay_slot" "yes")])
 
 (define_expand "call"
@@ -3858,7 +3880,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fadd	%2,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "subsf3"
   [(match_operand:SF 0 "fp_arith_reg_operand" "")
@@ -3874,7 +3897,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fsub	%2,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 ;; Unfortunately, the combiner is unable to cope with the USE of the FPSCR
 ;; register in feeding fp instructions.  Thus, we cannot generate fmac for
@@ -3902,7 +3926,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fmul	%2,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "mulsf3_ie"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
@@ -3920,7 +3945,8 @@
    (use (match_operand:PSI 4 "fpscr_operand" "c"))]
   "TARGET_SH3E && ! TARGET_SH4"
   "fmac	fr0,%2,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "divsf3"
   [(match_operand:SF 0 "arith_reg_operand" "")
@@ -3936,7 +3962,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fdiv	%2,%0"
-  [(set_attr "type" "fdiv")])
+  [(set_attr "type" "fdiv")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "floatsisf2"
   [(set (reg:SI 22)
@@ -3963,7 +3990,8 @@
    (use (match_operand:PSI 1 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "float	fpul,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "*floatsisf2_ie"
   [(set (match_operand:SF 0 "arith_reg_operand" "=f")
@@ -3995,7 +4023,8 @@
    (use (match_operand:PSI 1 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "ftrc	%0,fpul"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "fix_truncsfsi2_i4_2"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -4004,7 +4033,8 @@
    (clobber (reg:SI 22))]
   "TARGET_SH4"
   "#"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "fp_mode" "single")])
 
 (define_split
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -4028,14 +4058,16 @@
 			   (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "fcmp/gt	%1,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "cmpeqsf_t"
   [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
 			   (match_operand:SF 1 "arith_reg_operand" "f")))]
   "TARGET_SH3E && ! TARGET_SH4"
   "fcmp/eq	%1,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "ieee_ccmpeqsf_t"
   [(set (reg:SI 18) (ior:SI (reg:SI 18)
@@ -4052,7 +4084,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcmp/gt	%1,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "cmpeqsf_t_i4"
   [(set (reg:SI 18) (eq:SI (match_operand:SF 0 "arith_reg_operand" "f")
@@ -4060,7 +4093,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcmp/eq	%1,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "single")])
 
 (define_insn "*ieee_ccmpeqsf_t_4"
   [(set (reg:SI 18) (ior:SI (reg:SI 18)
@@ -4069,7 +4103,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_IEEE && TARGET_SH4"
   "* return output_ieee_ccmpeq (insn, operands);"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "cmpsf"
   [(set (reg:SI 18) (compare (match_operand:SF 0 "arith_operand" "")
@@ -4094,7 +4129,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fneg	%0"
-  [(set_attr "type" "fmove")])
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "sqrtsf2"
   [(match_operand:SF 0 "arith_reg_operand" "")
@@ -4108,7 +4144,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fsqrt	%0"
-  [(set_attr "type" "fdiv")])
+  [(set_attr "type" "fdiv")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "abssf2"
   [(match_operand:SF 0 "arith_reg_operand" "")
@@ -4122,7 +4159,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH3E"
   "fabs	%0"
-  [(set_attr "type" "fmove")])
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "single")])
 
 (define_expand "adddf3"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4138,7 +4176,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fadd	%2,%0"
-  [(set_attr "type" "dfp_arith")])
+  [(set_attr "type" "dfp_arith")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "subdf3"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4154,7 +4193,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fsub	%2,%0"
-  [(set_attr "type" "dfp_arith")])
+  [(set_attr "type" "dfp_arith")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "muldf3"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4170,7 +4210,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fmul	%2,%0"
-  [(set_attr "type" "dfp_arith")])
+  [(set_attr "type" "dfp_arith")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "divdf3"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4186,7 +4227,8 @@
    (use (match_operand:PSI 3 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fdiv	%2,%0"
-  [(set_attr "type" "dfdiv")])
+  [(set_attr "type" "dfdiv")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "floatsidf2"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4205,7 +4247,8 @@
    (use (match_operand:PSI 1 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "float	fpul,%0"
-  [(set_attr "type" "dfp_conv")])
+  [(set_attr "type" "dfp_conv")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "fix_truncdfsi2"
   [(match_operand:SI 0 "arith_reg_operand" "=r")
@@ -4224,7 +4267,8 @@
    (use (match_operand:PSI 1 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "ftrc	%0,fpul"
-  [(set_attr "type" "dfp_conv")])
+  [(set_attr "type" "dfp_conv")
+   (set_attr "fp_mode" "double")])
 
 (define_insn "fix_truncdfsi2_i4"
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -4233,7 +4277,8 @@
    (clobber (reg:SI 22))]
   "TARGET_SH4"
   "#"
-  [(set_attr "length" "4")])
+  [(set_attr "length" "4")
+   (set_attr "fp_mode" "double")])
 
 (define_split
   [(set (match_operand:SI 0 "arith_reg_operand" "=r")
@@ -4251,7 +4296,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcmp/gt	%1,%0"
-  [(set_attr "type" "dfp_cmp")])
+  [(set_attr "type" "dfp_cmp")
+   (set_attr "fp_mode" "double")])
 
 (define_insn "cmpeqdf_t"
   [(set (reg:SI 18) (eq:SI (match_operand:DF 0 "arith_reg_operand" "f")
@@ -4259,7 +4305,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcmp/eq	%1,%0"
-  [(set_attr "type" "dfp_cmp")])
+  [(set_attr "type" "dfp_cmp")
+   (set_attr "fp_mode" "double")])
 
 (define_insn "*ieee_ccmpeqdf_t"
   [(set (reg:SI 18) (ior:SI (reg:SI 18)
@@ -4268,8 +4315,9 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_IEEE && TARGET_SH4"
   "* return output_ieee_ccmpeq (insn, operands);"
-  [(set_attr "length" "4")])
-
+  [(set_attr "length" "4")
+   (set_attr "fp_mode" "double")])
+   
 (define_expand "cmpdf"
   [(set (reg:SI 18) (compare (match_operand:DF 0 "arith_operand" "")
 			     (match_operand:DF 1 "arith_operand" "")))]
@@ -4293,7 +4341,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fneg	%0"
-  [(set_attr "type" "fmove")])
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "sqrtdf2"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4307,7 +4356,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fsqrt	%0"
-  [(set_attr "type" "dfdiv")])
+  [(set_attr "type" "dfdiv")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "absdf2"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4321,7 +4371,8 @@
    (use (match_operand:PSI 2 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fabs	%0"
-  [(set_attr "type" "fmove")])
+  [(set_attr "type" "fmove")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "extendsfdf2"
   [(match_operand:DF 0 "arith_reg_operand" "")
@@ -4341,7 +4392,8 @@
    (use (match_operand:PSI 1 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcnvsd  fpul,%0"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "double")])
 
 (define_expand "truncdfsf2"
   [(match_operand:SF 0 "arith_reg_operand" "")
@@ -4361,7 +4413,8 @@
    (use (match_operand:PSI 1 "fpscr_operand" "c"))]
   "TARGET_SH4"
   "fcnvds  %0,fpul"
-  [(set_attr "type" "fp")])
+  [(set_attr "type" "fp")
+   (set_attr "fp_mode" "double")])
 
 ;; Bit field extract patterns.  These give better code for packed bitfields,
 ;; because they allow auto-increment addresses to be generated.

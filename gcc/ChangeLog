@@ -1,3 +1,7 @@
+Wed Jan 19 19:12:36 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.md (fpu_single, fp_mode): New attributes.
+
 2000-01-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.c (current_loop_info): Renamed from loop_info_data
