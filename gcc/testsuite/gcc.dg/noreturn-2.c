@@ -9,4 +9,4 @@ void
 noreturn (int x)
 {
   abort ();
-} /* { dg-bogus "does return" "noreturn does return" { xfail *-*-* } } */
+} /* { dg-bogus "does return" "noreturn does return" } */
