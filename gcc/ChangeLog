@@ -1,5 +1,18 @@
 2004-06-07  Richard Henderson  <rth@redhat.com>
 
+	* gimple-low.c (struct lower_data): Add the_return_label and
+	one_return_stmt.
+	(lower_function_body): Initialize and use them.
+	(lower_return_expr): New.
+	(lower_stmt): Call it.
+	* gimplify.c (gimplify_return_expr): Force the argument to be either
+	null or a result_decl.
+	* tree-gimple.c: Update gimple grammer to match.
+	* tree-ssa-copyrename.c (copy_rename_partition_coalesce): Deny
+	coalescing of result_decls.
+
+2004-06-07  Richard Henderson  <rth@redhat.com>
+
 	PR rtl-opt/15193
 	* expmed.c (extract_bit_field): Fix vector_extract return.
 

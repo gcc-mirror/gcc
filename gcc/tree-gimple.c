@@ -79,9 +79,7 @@ Boston, MA 02111-1307, USA.  */
        GOTO_EXPR
          op0 -> LABEL_DECL | '*' ID
      | RETURN_EXPR
-         op0 -> modify-stmt | NULL_TREE
-	 (maybe -> RESULT_DECL | NULL_TREE? seems like some of expand_return
-	  depends on getting a MODIFY_EXPR.)
+         op0 -> RESULT_DECL | NULL_TREE
      | THROW_EXPR?  do we need/want such a thing for opts, perhaps
          to generate an ERT_THROW region?  I think so.
 	 Hmm...this would only work at the GIMPLE level, where we know that

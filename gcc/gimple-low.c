@@ -46,11 +46,16 @@ struct lower_data
 {
   /* Block the current statement belongs to.  */
   tree block;
+
+  /* Label that unifies the return statements.  */
+  tree the_return_label;
+  tree one_return_stmt;
 };
 
 static void lower_stmt (tree_stmt_iterator *, struct lower_data *);
 static void lower_bind_expr (tree_stmt_iterator *, struct lower_data *);
 static void lower_cond_expr (tree_stmt_iterator *, struct lower_data *);
+static void lower_return_expr (tree_stmt_iterator *, struct lower_data *);
 static bool expand_var_p (tree);
 
 /* Lowers the body of current_function_decl.  */
@@ -71,10 +76,24 @@ lower_function_body (void)
   BLOCK_CHAIN (data.block) = NULL_TREE;
   TREE_ASM_WRITTEN (data.block) = 1;
 
+  data.the_return_label = NULL_TREE;
+  data.one_return_stmt = NULL_TREE;
+
   *body_p = alloc_stmt_list ();
   i = tsi_start (*body_p);
   tsi_link_after (&i, bind, TSI_NEW_STMT);
   lower_bind_expr (&i, &data);
+
+  /* If we lowered any return statements, emit the representative at the
+     end of the function.  */
+  if (data.one_return_stmt)
+    {
+      tree t;
+      t = build (LABEL_EXPR, void_type_node, data.the_return_label);
+      i = tsi_last (*body_p);
+      tsi_link_after (&i, t, TSI_CONTINUE_LINKING);
+      tsi_link_after (&i, data.one_return_stmt, TSI_CONTINUE_LINKING);
+    }
 
   if (data.block != DECL_INITIAL (current_function_decl))
     abort ();
@@ -136,6 +155,9 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case COND_EXPR:
       lower_cond_expr (tsi, data);
       return;
+    case RETURN_EXPR:
+      lower_return_expr (tsi, data);
+      return;
 
     case TRY_FINALLY_EXPR:
     case TRY_CATCH_EXPR:
@@ -151,7 +173,6 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
       
     case NOP_EXPR:
     case ASM_EXPR:
-    case RETURN_EXPR:
     case MODIFY_EXPR:
     case CALL_EXPR:
     case GOTO_EXPR:
@@ -367,6 +388,22 @@ lower_cond_expr (tree_stmt_iterator *tsi, struct lower_data *data)
 
   tsi_next (tsi);
 }
+
+static void
+lower_return_expr (tree_stmt_iterator *tsi, struct lower_data *data)
+{
+  tree stmt, label = data->the_return_label;
+
+  if (!label)
+    {
+      data->the_return_label = label = create_artificial_label ();
+      data->one_return_stmt = tsi_stmt (*tsi);
+    }
+
+  stmt = build (GOTO_EXPR, void_type_node, label);
+  tsi_link_before (tsi, stmt, TSI_SAME_STMT);
+  tsi_delink (tsi);
+}
 
 
 /* Record the variables in VARS.  */
@@ -468,5 +505,3 @@ struct tree_opt_pass pass_remove_useless_vars =
   0,					/* todo_flags_start */
   TODO_dump_func			/* todo_flags_finish */
 };
-
-
