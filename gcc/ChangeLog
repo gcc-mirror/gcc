@@ -1,3 +1,7 @@
+1999-12-15  David S. Miller  <davem@redhat.com>
+
+	* rtlanal.c (reg_overlap_mentioned_p): Handle CONCAT.
+
 Wed Dec 15 15:05:30 MET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
 	* flow.c (calculate_loop_depth): Make global, remove prototype,
