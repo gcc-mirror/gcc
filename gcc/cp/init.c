@@ -3149,7 +3149,7 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       else
 	passed_auto_delete = auto_delete;
 
-      expr = build_dtor_call (ref, passed_auto_delete, NULL_TREE, flags);
+      expr = build_dtor_call (ref, passed_auto_delete, flags);
       if (do_delete)
 	expr = build (COMPOUND_EXPR, void_type_node, expr, do_delete);
 
