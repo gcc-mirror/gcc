@@ -1844,7 +1844,7 @@ x86_64_sign_extended_value (value)
 	else
 	  {
 	    HOST_WIDE_INT val = trunc_int_for_mode (INTVAL (value), DImode);
-	    return (HOST_WIDE_INT)(int)val == val;
+	    return trunc_int_for_mode (val, SImode) == val;
 	  }
 	break;
 
@@ -6312,6 +6312,9 @@ ix86_expand_fp_movcc (operands)
   if (((TARGET_SSE && GET_MODE (operands[0]) == SFmode)
        || (TARGET_SSE2 && GET_MODE (operands[0]) == DFmode))
       && GET_MODE (ix86_compare_op0) == GET_MODE (operands[0])
+      /* The SSE comparisons does not support the LTGT/UNEQ pair.  */
+      && (!TARGET_IEEE_FP
+	  || (GET_CODE (operands[1]) != LTGT && GET_CODE (operands[1]) != UNEQ))
       /* We may be called from the post-reload splitter.  */
       && (!REG_P (operands[0])
 	  || SSE_REG_P (operands[0])
@@ -6371,8 +6374,10 @@ ix86_expand_fp_movcc (operands)
 					ix86_compare_op1);
 	}
       /* Similary try to manage result to be first operand of conditional
-	 move. */
-      if (rtx_equal_p (operands[0], operands[3]))
+	 move. We also don't support the NE comparison on SSE, so try to
+	 avoid it.  */
+      if (rtx_equal_p (operands[0], operands[3])
+	  || GET_CODE (operands[1]) == NE)
 	{
 	  rtx tmp = operands[2];
 	  operands[2] = operands[3];
