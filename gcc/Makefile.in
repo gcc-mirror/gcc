@@ -1476,7 +1476,7 @@ prefix.o: prefix.c $(CONFIG_H) system.h Makefile prefix.h
 convert.o: convert.c $(CONFIG_H) system.h $(TREE_H) flags.h convert.h toplev.h
 
 tree.o : tree.c $(CONFIG_H) system.h $(TREE_H) flags.h function.h toplev.h \
-   ggc.h
+   ggc.h $(HASHTAB_H)
 print-tree.o : print-tree.c $(CONFIG_H) system.h $(TREE_H) ggc.h
 stor-layout.o : stor-layout.c $(CONFIG_H) system.h $(TREE_H) flags.h \
    function.h $(EXPR_H) $(RTL_H) toplev.h ggc.h

@@ -1,3 +1,18 @@
+2000-03-18  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* Makefile.in (tree.o): Depend on HASHTAB_H.
+	* tree.c: Include hashtab.h.
+	(struct type_hash): Remove next field.
+	(TYPE_HASH_SIZE): Remove.
+	(TYPE_HASH_INITIAL_SIZE): New define.
+	(type_hash_table): Change type to htab_t.
+	(type_hash_eq, type_hash_hash, print_type_hash_statistics,
+	mark_hash_entry): New functions.
+	(init_obstacks): Allocate type hash.
+	(type_hash_lookup): Use htab functions.
+	(type_hash_add, mark_type_hash): Likewise.
+	(dump_tree_statistics): Call print_type_hash_statistics.
+
 2000-03-19  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* rs6000/t-aix41: New file.
