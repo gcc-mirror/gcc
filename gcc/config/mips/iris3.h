@@ -42,15 +42,17 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC "\
 %{!mgas: \
-	%{!mrnames: -nocpp} \
+	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
 	%{pipe: %e-pipe is not supported.} \
+	%{mips1} %{mips2} %{mips3} \
 	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
 	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}} \
 %{G*}"
 
 #define LINK_SPEC "\
 %{G*} \
-%{!mgas: %{bestGnum}}"
+%{!mgas: %{mips1} %{mips2} %{mips3} \
+	 %{bestGnum}}"
 
 /* Always use 1 for .file number.  I [meissner@osf.org] wonder why
    IRIS needs this.  */

@@ -19,16 +19,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define MIPS_SYSV
 
-#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -Dsony -Dsonyrisc -DMIPSEB"
+#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -Dsony -Dsonyrisc -DMIPSEB -DSYSTYPE_SYSV"
 
 #define MD_STARTFILE_PREFIX "/usr/ccs/lib/"
 
 #define CPP_SPEC "\
-%{!ansi: %{!ZBSD43: -DSYSTYPE_SYSV} \
-         %{ZBSD43:  -DSYSTYPE_BSD43 -DSYSTYPE_BSD}} \
-%{!ZBSD43: -D__SYSTYPE_SYSV__} \
-%{ZBSD43:  -D__SYSTYPE_BSD43__ -D__SYSTYPE_BSD__} \
-%{!nostdinc: %{ZBSD43: -I/usr/bsdinclude}} \
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
@@ -38,7 +33,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define LINK_SPEC "\
 %{G*} \
-%{!mgas: %{EB} %{!EB:-EB} %{EL: %e-EL not supported} %{bestGnum}}"
+%{!mgas: %{mips1} %{mips2} %{mips3} \
+	 %{EB} %{!EB:-EB} %{EL: %e-EL not supported} \
+	 %{bestGnum}}"
 		    
 #define LIB_SPEC "\
 %{ZBSD43: -L/usr/ucblib -lucb -lresolv -lsocket -lnsl} \

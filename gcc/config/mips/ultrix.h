@@ -24,10 +24,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define ASM_SPEC "\
 %{!mgas: \
-	%{!mrnames: -nocpp} \
+	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
 	%{pipe:%e:-pipe not supported} \
 	%{EL} %{!EL:-EL} \
 	%{EB: %e-EB not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
 	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}} \
 %{G*}"
@@ -45,6 +46,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{!mgas: \
 	%{EL} %{!EL: -EL} \
 	%{EB: %e-EB not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{bestGnum}}"
 
 #define LIB_SPEC "%{p:-lprof1} %{pg:-lprof1} -lc"

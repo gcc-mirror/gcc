@@ -29,7 +29,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 	%{pipe:%e:-pipe not supported} \
 	%{EL} %{!EL:-EL} \
 	%{EB: %e-EB not supported} \
-	%{!mrnames: -nocpp} \
+	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
+	%{mips1} %{mips2} %{mips3} \
 	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
 	%{g} %{g0} %{g1} %{g2} %{g3} \
 	%{K} %{Q}} \
@@ -57,6 +58,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 %{mmips-as: \
 	%{EL} %{!EL: -EL} \
 	%{EB: %e-EB not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{bestGnum}} \
 %{!mmips-as: \
  	%{v*: -v} \
