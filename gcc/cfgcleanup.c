@@ -1208,7 +1208,7 @@ outgoing_edges_match (mode, bb1, bb2)
 	  /* Fail if the difference in probabilities is greater than 50%.
 	     This rules out two well-predicted branches with opposite
 	     outcomes.  */
-	  if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 5)
+	  if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 2)
 	    {
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file,
