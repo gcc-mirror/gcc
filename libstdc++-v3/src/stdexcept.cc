@@ -1,6 +1,6 @@
 // Methods for Exception Support for -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1999, 2001 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,28 +27,59 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// Written by Mike Stump based upon the specification in the 20 September 1994
-// C++ working paper, ANSI document X3J16/94-0158.
-
 //
 // ISO C++ 14882: 19.1  Exception classes
 //
 
 #include <bits/std_string.h>
 #include <bits/std_stdexcept.h>
+#if 1
 #include <bits/stl_range_errors.h>
+#endif
 
-// To break the circularity with the <stdexcept> and <string> header we
-// define two functions which throw exceptions as a direct call would do.
+namespace std 
+{
+  logic_error::logic_error(const string& __arg) 
+  : exception(), _M_msg(__arg) { }
 
-namespace std {
+  logic_error::~logic_error() throw() { };
 
-  __Named_exception::__Named_exception(const string& __str)
-  {
-    strncpy(_M_name, __str.c_str(), _S_bufsize);
-    _M_name[_S_bufsize - 1] = '\0';
-  }
+  const char*
+  logic_error::what() const throw()
+  { return _M_msg.c_str(); }
 
+  domain_error::domain_error(const string& __arg)
+  : logic_error(__arg) { }
+
+  invalid_argument::invalid_argument(const string& __arg)
+  : logic_error(__arg) { }
+
+  length_error::length_error(const string& __arg)
+  : logic_error(__arg) { }
+
+  out_of_range::out_of_range(const string& __arg)
+  : logic_error(__arg) { }
+
+  runtime_error::runtime_error(const string& __arg) 
+  : exception(), _M_msg(__arg) { }
+
+  runtime_error::~runtime_error() throw() { };
+
+  const char*
+  runtime_error::what() const throw()
+  { return _M_msg.c_str(); }
+
+  range_error::range_error(const string& __arg)
+  : runtime_error(__arg) { }
+
+  overflow_error::overflow_error(const string& __arg)
+  : runtime_error(__arg) { }
+
+  underflow_error::underflow_error(const string& __arg)
+  : runtime_error(__arg) { }
+
+#if 1
+  // XXX need to deal with this.
   void
   __out_of_range(const char *str)
   { throw out_of_range(str); }
@@ -66,8 +97,8 @@ namespace std {
   void 
   __stl_throw_length_error(const char* __msg)
   { throw length_error(__msg); }
-
-} //namespace std
+#endif
+} // namespace std
 
 
 

@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.69 2001/02/06 06:36:18 mmitchel Exp $
+## $Id: Makefile.am,v 1.70 2001/02/07 01:54:21 bkoz Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -66,7 +66,8 @@ INCLUDES = \
 
 base_headers = \
 	bits/cpp_type_traits.h bits/char_traits.h bits/codecvt.h \
-	bits/std_string.h bits/basic_string.h bits/basic_string.tcc \
+	bits/stringfwd.h bits/std_string.h bits/basic_string.h \
+	bits/basic_string.tcc \
 	bits/generic_shadow.h bits/std_utility.h \
 	bits/std_complex.h \
 	bits/valarray_array.h bits/valarray_array.tcc bits/valarray_meta.h \
@@ -94,7 +95,7 @@ base_headers = \
 	bits/stl_multimap.h bits/stl_multiset.h bits/stl_numeric.h \
 	bits/stl_pair.h bits/stl_queue.h bits/stl_raw_storage_iter.h \
 	bits/stl_relops.h bits/stl_set.h \
-	bits/stl_stack.h bits/stl_string_fwd.h bits/stl_tempbuf.h \
+	bits/stl_stack.h bits/stl_tempbuf.h \
 	bits/stl_tree.h bits/stl_uninitialized.h bits/stl_vector.h \
 	bits/type_traits.h bits/stl_range_errors.h bits/std_algorithm.h \
 	bits/concept_checks.h bits/container_concepts.h \

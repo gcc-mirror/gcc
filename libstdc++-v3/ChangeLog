@@ -1,3 +1,20 @@
+2001-02-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	Clean up stdexcept.
+	* include/bits/stringfwd.h: New file.
+	* include/bits/stl_string_fwd.h: Remove.
+	* include/bits/localefwd.h: Remove declaration for allocator.
+	* include/bits/std_iosfwd: Same.
+	* include/bits/std_string.h: Include it.
+	* include/bits/std_ios.h: Remove include.
+	* include/bits/basic_string.h: Tweak.
+	* libsupc++/new: Format.
+	* src/Makefile.am (base_headers): Add stringfwd.h, remove
+	stl_string_fwd.h
+	* src/Makefile.in: Regenerate.
+	* include/bits/std_stdexcept.h: Rewrite.
+	* src/stdexcept.cc: Same.
+	
 2001-02-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Deal with library

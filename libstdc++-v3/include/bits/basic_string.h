@@ -1028,7 +1028,6 @@ namespace std {
     inline basic_istream<_CharT,_Traits>&
     getline(basic_istream<_CharT, _Traits>& __is,
 	    basic_string<_CharT, _Traits, _Alloc>& __str);
-
 } // namespace std
 
 #endif /* _CPP_BITS_STRING_H */

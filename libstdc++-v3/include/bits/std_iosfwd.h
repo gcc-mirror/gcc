@@ -36,13 +36,10 @@
 
 #include <bits/c++config.h>
 #include <bits/std_cwchar.h> // For mbstate_t
+#include <bits/stringfwd.h> // For string forward declarations.
 
-namespace std {
-
-  // Generic declarations.
-  template<typename _CharT> struct char_traits;
-  template<typename _Alloc> class allocator;
-
+namespace std 
+{
   // Forward declarations
   template<> class char_traits<char>;
 #ifdef _GLIBCPP_USE_WCHAR_T
@@ -50,53 +47,53 @@ namespace std {
 #endif
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_ios;
+    class basic_ios;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_streambuf;
+    class basic_streambuf;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_istream;
+    class basic_istream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_ostream;
+    class basic_ostream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_iostream;
+    class basic_iostream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT>,
 	    typename _Alloc = allocator<_CharT> >
-  class basic_stringbuf;
+    class basic_stringbuf;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT>,
 	   typename _Alloc = allocator<_CharT> >
-  class basic_istringstream;
+    class basic_istringstream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT>,
 	   typename _Alloc = allocator<_CharT> >
-  class basic_ostringstream;
+    class basic_ostringstream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT>,
 	   typename _Alloc = allocator<_CharT> >
-  class basic_stringstream;
+    class basic_stringstream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_filebuf;
+    class basic_filebuf;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_ifstream;
+    class basic_ifstream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_ofstream;
+    class basic_ofstream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class basic_fstream;
+    class basic_fstream;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class istreambuf_iterator;
+    class istreambuf_iterator;
 
   template<typename _CharT, typename _Traits = char_traits<_CharT> >
-  class ostreambuf_iterator;
+    class ostreambuf_iterator;
 
 #ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
   // Not included.
@@ -144,14 +141,6 @@ namespace std {
   typedef basic_ofstream<wchar_t> 	wofstream;
   typedef basic_fstream<wchar_t> 	wfstream;
 #endif
-
 } // namespace std
 
 #endif	// _CPP_IOSFWD
-
-
-
-
-
-
-

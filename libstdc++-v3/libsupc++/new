@@ -1,5 +1,6 @@
 // The -*- C++ -*- dynamic memory management header.
-// Copyright (C) 1994, 1996, 1997, 1998, 2000 Free Software Foundation
+
+// Copyright (C) 1994, 1996, 1997, 1998, 2000, 2001 Free Software Foundation
 
 // This file is part of GNU CC.
 //
@@ -36,31 +37,31 @@
 
 extern "C++" {
 
-namespace std {
-
-  class bad_alloc : public exception {
+namespace std 
+{
+  class bad_alloc : public exception 
+  {
   public:
     virtual const char* what() const throw() { return "bad_alloc"; }
   };
 
-  struct nothrow_t {};
+  struct nothrow_t { };
   extern const nothrow_t nothrow;
   typedef void (*new_handler)();
-  new_handler set_new_handler (new_handler);
-
+  new_handler set_new_handler(new_handler);
 } // namespace std
 
-// replaceable signatures
-void *operator new (std::size_t) throw (std::bad_alloc);
-void *operator new[] (std::size_t) throw (std::bad_alloc);
-void operator delete (void *) throw();
-void operator delete[] (void *) throw();
-void *operator new (std::size_t, const std::nothrow_t&) throw();
-void *operator new[] (std::size_t, const std::nothrow_t&) throw();
-void operator delete (void *, const std::nothrow_t&) throw();
-void operator delete[] (void *, const std::nothrow_t&) throw();
+// Replaceable signatures.
+void *operator new(std::size_t) throw (std::bad_alloc);
+void *operator new[](std::size_t) throw (std::bad_alloc);
+void operator delete(void *) throw();
+void operator delete[](void *) throw();
+void *operator new(std::size_t, const std::nothrow_t&) throw();
+void *operator new[](std::size_t, const std::nothrow_t&) throw();
+void operator delete(void *, const std::nothrow_t&) throw();
+void operator delete[](void *, const std::nothrow_t&) throw();
 
-// default placement versions of operator new
+// Default placement versions of operator new.
 inline void *operator new(std::size_t, void *place) throw() { return place; }
 inline void *operator new[](std::size_t, void *place) throw() { return place; }
 } // extern "C++"
