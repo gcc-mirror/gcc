@@ -3,6 +3,10 @@
 	* emit-rtl.c (remove_unnecessary_notes): Verify proper nesting
 	of block notes and exception handling notes.
 
+	* lists.c (init_EXPR_INSN_LIST_cache): Don't check initialized.
+	* toplev.c (rest_of_compilation): Call init_EXPR_INSN_LIST_cache ...
+	(compile_file): ... here.
+
 2001-03-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* fixinc/Makefile.in (FIXINC_DEFS): Add -DHAVE_CONFIG_H.

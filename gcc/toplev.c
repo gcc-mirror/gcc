@@ -2171,6 +2171,7 @@ compile_file (name)
   init_function_once ();
   init_stor_layout_once ();
   init_varasm_once ();
+  init_EXPR_INSN_LIST_cache ();
 
   /* The following initialization functions need to generate rtl, so
      provide a dummy function context for them.  */
@@ -2860,8 +2861,6 @@ rest_of_compilation (decl)
       if (DECL_EXTERNAL (decl))
 	goto exit_rest_of_compilation;
     }
-
-  init_EXPR_INSN_LIST_cache ();
 
   ggc_collect ();
 
