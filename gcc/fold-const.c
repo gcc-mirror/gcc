@@ -4182,8 +4182,12 @@ extract_muldiv_1 (t, c, code, wide_type)
       /* Pass the constant down and see if we can make a simplification.  If
 	 we can, replace this expression with the inner simplification for
 	 possible later conversion to our or some other type.  */
-      if (0 != (t1 = extract_muldiv (op0, convert (TREE_TYPE (op0), c), code,
-				     code == MULT_EXPR ? ctype : NULL_TREE)))
+      if ((t2 = convert (TREE_TYPE (op0), c)) != 0
+	  && TREE_CODE (t2) == INTEGER_CST
+	  && ! TREE_CONSTANT_OVERFLOW (t2)
+	  && (0 != (t1 = extract_muldiv (op0, t2, code,
+					 code == MULT_EXPR
+					 ? ctype : NULL_TREE))))
 	return t1;
       break;
 
@@ -5478,13 +5482,17 @@ fold (expr)
 	      if (TREE_CODE (parg0) == MULT_EXPR
 		  && TREE_CODE (parg1) != MULT_EXPR)
 		return fold (build (PLUS_EXPR, type,
-				    fold (build (PLUS_EXPR, type, parg0, marg)),
-				    parg1));
+				    fold (build (PLUS_EXPR, type, 
+						 convert (type, parg0), 
+						 convert (type, marg))),
+				    convert (type, parg1)));
 	      if (TREE_CODE (parg0) != MULT_EXPR
 		  && TREE_CODE (parg1) == MULT_EXPR)
 		return fold (build (PLUS_EXPR, type,
-				    fold (build (PLUS_EXPR, type, parg1, marg)),
-				    parg0));
+				    fold (build (PLUS_EXPR, type, 
+						 convert (type, parg1), 
+						 convert (type, marg))),
+				    convert (type, parg0)));
 	    }
 
 	  if (TREE_CODE (arg0) == MULT_EXPR && TREE_CODE (arg1) == MULT_EXPR)
@@ -5816,7 +5824,8 @@ fold (expr)
 				TREE_OPERAND (arg0, 1)));
 
 	  if (TREE_CODE (arg1) == INTEGER_CST
-	      && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0), arg1,
+	      && 0 != (tem = extract_muldiv (TREE_OPERAND (t, 0),
+					     convert (type, arg1),
 					     code, NULL_TREE)))
 	    return convert (type, tem);
 
