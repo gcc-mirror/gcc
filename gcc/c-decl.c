@@ -2440,6 +2440,21 @@ shadow_label (name)
 
   if (decl != 0)
     {
+      register tree dup;
+
+      /* Check to make sure that the label hasn't already been declared
+	 at this label scope */
+      for (dup = named_labels; dup; dup = TREE_CHAIN (dup))
+	if (TREE_VALUE (dup) == decl)
+	  {
+	    error ("duplicate label declaration `%s'", 
+		   IDENTIFIER_POINTER (name));
+	    error_with_decl (TREE_VALUE (dup),
+			     "this is a previous declaration");
+	    /* Just use the previous declaration.  */
+	    return lookup_label (name);
+	  }
+
       shadowed_labels = tree_cons (NULL_TREE, decl, shadowed_labels);
       IDENTIFIER_LABEL_VALUE (name) = decl = 0;
     }
