@@ -152,9 +152,6 @@ struct lexer_state
 
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
-
-  /* Nonzero when in a # NUMBER directive.  */
-  unsigned char line_extension;
 };
 
 /* Special nodes - identifiers with predefined significance.  */

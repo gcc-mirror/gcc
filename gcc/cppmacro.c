@@ -64,9 +64,6 @@ static cpp_context *next_context PARAMS ((cpp_reader *));
 static const cpp_token *padding_token
   PARAMS ((cpp_reader *, const cpp_token *));
 static void expand_arg PARAMS ((cpp_reader *, macro_arg *));
-static unsigned char *quote_string PARAMS ((unsigned char *,
-					    const unsigned char *,
-					    unsigned int));
 static const cpp_token *new_string_token PARAMS ((cpp_reader *, U_CHAR *,
 						  unsigned int));
 static const cpp_token *new_number_token PARAMS ((cpp_reader *, unsigned int));
@@ -164,7 +161,7 @@ builtin_macro (pfile, node)
 	name = map->to_file;
 	len = strlen (name);
 	buf = _cpp_unaligned_alloc (pfile, len * 4 + 1);
-	len = quote_string (buf, (const unsigned char *) name, len) - buf;
+	len = cpp_quote_string (buf, (const unsigned char *) name, len) - buf;
 
 	result = new_string_token (pfile, buf, len);
       }
@@ -244,9 +241,10 @@ builtin_macro (pfile, node)
 
 /* Copies SRC, of length LEN, to DEST, adding backslashes before all
    backslashes and double quotes.  Non-printable characters are
-   converted to octal.  DEST must be of sufficient size.  */
-static U_CHAR *
-quote_string (dest, src, len)
+   converted to octal.  DEST must be of sufficient size.  Returns
+   a pointer to the end of the string.  */
+U_CHAR *
+cpp_quote_string (dest, src, len)
      U_CHAR *dest;
      const U_CHAR *src;
      unsigned int len;
@@ -331,7 +329,7 @@ stringify_arg (pfile, arg)
 	  _cpp_buff *buff = _cpp_get_buff (pfile, len);
 	  unsigned char *buf = BUFF_FRONT (buff);
 	  len = cpp_spell_token (pfile, token, buf) - buf;
-	  dest = quote_string (dest, buf, len);
+	  dest = cpp_quote_string (dest, buf, len);
 	  _cpp_release_buff (pfile, buff);
 	}
       else
