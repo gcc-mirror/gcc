@@ -1,3 +1,8 @@
+Sat Jan  8 12:12:46 2000  Nick Clifton  <nickc@cygnus.com>
+
+	* config/v850/v850.c (expand_epilogue): Interrupt functions no
+	longer allocate extra stack for function calls.
+
 2000-01-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.md (*subqf3_set): Fix typo.

@@ -1495,7 +1495,7 @@ expand_prologue ()
 
   actual_fsize = compute_frame_size (size, &reg_saved);
 
-  /* Save/setup global registers for interrupt functions right now */
+  /* Save/setup global registers for interrupt functions right now.  */
   if (interrupt_handler)
     {
 	emit_insn (gen_save_interrupt ());
@@ -1527,7 +1527,7 @@ expand_prologue ()
 	}
     }
 
-  /* Identify all of the saved registers */
+  /* Identify all of the saved registers.  */
   num_save = 0;
   default_stack = 0;
   for (i = 1; i < 31; i++)
@@ -1716,7 +1716,7 @@ expand_epilogue ()
   if (frame_pointer_needed)
     emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
 
-  /* Identify all of the saved registers */
+  /* Identify all of the saved registers.  */
   num_restore = 0;
   default_stack = 0;
   for (i = 1; i < 31; i++)
@@ -1736,7 +1736,9 @@ expand_epilogue ()
   /* See if we have an insn that restores the particular registers we
      want to.  */
   restore_all = NULL_RTX;
-  if (TARGET_PROLOG_FUNCTION && num_restore > 0
+  
+  if (TARGET_PROLOG_FUNCTION
+      && num_restore > 0
       && actual_fsize >= default_stack
       && !interrupt_handler)
     {
@@ -1748,7 +1750,7 @@ expand_epilogue ()
       if (unalloc_stack)
 	restore_func_len += CONST_OK_FOR_J (unalloc_stack) ? 2 : 4;
 
-      /* see if we would have used ep to restore the registers */
+      /* See if we would have used ep to restore the registers.  */
       if (TARGET_EP && num_restore > 3 && (unsigned)actual_fsize < 255)
 	restore_normal_len = (3 * 2) + (2 * num_restore);
       else
@@ -1781,6 +1783,7 @@ expand_epilogue ()
 	    }
 
 	  code = recog (restore_all, NULL_RTX, NULL_PTR);
+	  
 	  if (code >= 0)
 	    {
 	      rtx insn;
@@ -1818,7 +1821,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
     }
 
   /* If no epilog save function is available, restore the registers the
-     old fashioned way (one by one). */
+     old fashioned way (one by one).  */
   if (!restore_all)
     {
       /* If the stack is large, we need to cut it down in 2 pieces.  */
@@ -1827,15 +1830,13 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
       else
 	init_stack_free = actual_fsize;
 
-      /* Deallocate the rest of the stack if it is > 32K or if extra stack
-	 was allocated for an interrupt handler that makes a call.  */
-      if (actual_fsize > init_stack_free
-	  || (interrupt_handler && actual_fsize))
+      /* Deallocate the rest of the stack if it is > 32K.  */
+      if (actual_fsize > init_stack_free)
 	{
 	  int diff;
 
 	  diff = actual_fsize - ((interrupt_handler) ? 0 : init_stack_free);
-	  
+
 	  if (CONST_OK_FOR_K (diff))
 	    emit_insn (gen_addsi3 (stack_pointer_rtx,
 				   stack_pointer_rtx,
@@ -1858,7 +1859,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 	}
       else
 	{
-	  /* Restore registers from the beginning of the stack frame */
+	  /* Restore registers from the beginning of the stack frame.  */
 	  offset = init_stack_free - 4;
 
 	  /* Restore the return pointer first.  */
@@ -1879,6 +1880,7 @@ Saved %d bytes via epilogue function (%d vs. %d) in function %s\n",
 					   plus_constant (stack_pointer_rtx,
 							  offset)));
 
+	      emit_insn (gen_rtx_USE (VOIDmode, restore_regs[i]));
 	      offset -= 4;
 	    }
 
