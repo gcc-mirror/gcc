@@ -306,6 +306,11 @@ static enum deprecated_states deprecated_state = DEPRECATED_NORMAL;
    being flagged as deprecated or reported as using deprecated
    types.  */
 int adding_implicit_members = 0;
+
+/* True if a declaration with an `extern' linkage specifier is being
+   processed.  */
+bool have_extern_spec;
+
 
 /* For each binding contour we allocate a binding_level structure
    which records the names defined in that contour.
@@ -7193,8 +7198,6 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
   tree decl;
   register tree type, tem;
   tree context;
-  extern int have_extern_spec;
-  extern int used_extern_spec;
 
 #if 0
   /* See code below that used this.  */
@@ -7202,11 +7205,11 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 #endif
 
   /* This should only be done once on the top most decl.  */
-  if (have_extern_spec && !used_extern_spec)
+  if (have_extern_spec)
     {
       declspecs = tree_cons (NULL_TREE, get_identifier ("extern"),
 			     declspecs);
-      used_extern_spec = 1;
+      have_extern_spec = false;
     }
 
   /* An object declared as __attribute__((deprecated)) suppresses
@@ -13501,8 +13504,6 @@ start_function (declspecs, declarator, attrs, flags)
   tree ctype = NULL_TREE;
   tree fntype;
   tree restype;
-  extern int have_extern_spec;
-  extern int used_extern_spec;
   int doing_friend = 0;
   struct cp_binding_level *bl;
   tree current_function_parms;
@@ -13512,10 +13513,10 @@ start_function (declspecs, declarator, attrs, flags)
   my_friendly_assert (TREE_CHAIN (void_list_node) == NULL_TREE, 161);
 
   /* This should only be done once on the top most decl.  */
-  if (have_extern_spec && !used_extern_spec)
+  if (have_extern_spec)
     {
       declspecs = tree_cons (NULL_TREE, get_identifier ("extern"), declspecs);
-      used_extern_spec = 1;
+      have_extern_spec = false;
     }
 
   if (flags & SF_PRE_PARSED)

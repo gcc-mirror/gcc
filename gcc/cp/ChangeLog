@@ -1,3 +1,14 @@
+2002-07-08  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (have_extern_spec): Declare it
+	* decl.c (have_extern_spec): Define it.
+	(start_decl): Eliminate use of used_extern_spec.
+	(start_function): Likewise.
+	* parse.y (have_extern_spec): Remove declaration.
+	(used_extern_spec): Likewise.
+	(frob_specs): Eliminate use of used_extern_spec.
+	(.hush_warning): Likewise.
+
 2002-07-07  Mark Mitchell  <mark@codesourcery.com>
 
 	* Make-lang.in (cp/parse.o): Depend on decl.h.
