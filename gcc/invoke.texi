@@ -3317,6 +3317,25 @@ Like @samp{-M}, but mention only the files included with @samp{#include
 "@var{file}"}.  System header files included with @samp{#include
 <@var{file}>} are omitted.
 
+@item -MD
+@findex -MD
+Like @samp{-M} but the dependency information is written to a file
+rather than stdout.  @code{gcc} will use the same file name and
+directory as the object file, but with the suffix ".d" instead.
+
+This is in addition to compiling the main file as specified ---
+@samp{-MD} does not inhibit ordinary compilation the way @samp{-M} does,
+unless you also specify @samp{-MG}.
+
+With Mach, you can use the utility @code{md} to merge multiple
+dependency files into a single dependency file suitable for using with
+the @samp{make} command.
+
+@item -MMD @var{file}
+@findex -MMD
+Like @samp{-MD} except mention only user header files, not system
+-header files.
+
 @item -MF @var{file}
 @findex -MF
 When used with @samp{-M} or @samp{-MM}, specifies a file to write the
