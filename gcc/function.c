@@ -5011,7 +5011,7 @@ bc_expand_function_start (subr, parms_have_cleanups)
 	}
     }
 
-  bc_begin_function (bc_xstrdup (IDENTIFIER_POINTER (DECL_NAME (subr))));
+  bc_begin_function (xstrdup (IDENTIFIER_POINTER (DECL_NAME (subr))));
 
   ASM_GENERATE_INTERNAL_LABEL (label, "LX", nlab);
 
