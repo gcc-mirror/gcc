@@ -1,3 +1,12 @@
+Wed Oct 27 15:21:46 1999  Richard Henderson  <rth@cygnus.com>
+
+	* jump.c (jump_optimize_1): If we did cross-jumping, and
+	the data will matter, rebuild the CFG.
+	* reg-stack.c (reg_to_stack): Only (re)build the CFG if
+	not optimizing.  Don't run shorten_branches.
+	* toplev.c (rest_of_compilation): Run shorten_branches after
+	reg_to_stack.
+
 Wed Oct 27 12:33:40 1999  Mark Mitchell  <mark@codesourcery.com>
 
 	* rtl.h (note_stores): Add additional paramter.

@@ -406,8 +406,7 @@ pop_stack (regstack, regno)
    register file.  FIRST is the first insn in the function, FILE is the
    dump file, if used.
 
-   Construct a CFG and run life analysis.  (When optimizing, the data
-   was corruped by jump2's cross-jumping.)  Then convert each insn one
+   Construct a CFG and run life analysis.  Then convert each insn one
    by one.  Run a last jump_optimize pass, if optimizing, to eliminate
    code duplication created when the converter inserts pop insns on
    the edges.  */
@@ -430,16 +429,19 @@ reg_to_stack (first, file)
   if (i > LAST_STACK_REG)
     return;
 
-  /* Ok, floating point instructions exist.  Rebuild the CFG and run 
-     life analysis.  */
-  find_basic_blocks (first, max_reg_num (), file, 0);
+  /* Ok, floating point instructions exist.  If not optimizing, 
+     build the CFG and run life analysis.  */
+  if (! optimize)
+    {
+      find_basic_blocks (first, max_reg_num (), file, 0);
 
-  blocks = sbitmap_alloc (n_basic_blocks);
-  sbitmap_ones (blocks);
-  count_or_remove_death_notes (blocks, 1);
-  sbitmap_free (blocks);
+      blocks = sbitmap_alloc (n_basic_blocks);
+      sbitmap_ones (blocks);
+      count_or_remove_death_notes (blocks, 1);
+      sbitmap_free (blocks);
 
-  life_analysis (first, max_reg_num (), file, 0);
+      life_analysis (first, max_reg_num (), file, 0);
+    }
 
   /* Set up block info for each basic block.  */
   bi = (block_info) alloca ((n_basic_blocks + 1) * sizeof (*bi));
@@ -488,9 +490,6 @@ reg_to_stack (first, file)
     {
       jump_optimize (first, JUMP_CROSS_JUMP_DEATH_MATTERS,
 		     !JUMP_NOOP_MOVES, !JUMP_AFTER_REGSCAN);
-
-      /* This has the effect of resetting label alignments around loops.  */
-      shorten_branches (get_insns ());
     }
 
   VARRAY_FREE (stack_regs_mentioned_data);

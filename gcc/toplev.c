@@ -4333,12 +4333,6 @@ rest_of_compilation (decl)
      ggc_collect ();
 #endif
 
-  /* Shorten branches.  */
-  TIMEVAR (shorten_branch_time,
-	   {
-	     shorten_branches (get_insns ());
-	   });
-
 #ifdef STACK_REGS
   if (stack_reg_dump)
     open_dump_file (".20.stack", decl_printable_name (decl, 2));
@@ -4355,6 +4349,12 @@ rest_of_compilation (decl)
    if (ggc_p)
      ggc_collect ();
 #endif
+
+  /* Shorten branches.  */
+  TIMEVAR (shorten_branch_time,
+	   {
+	     shorten_branches (get_insns ());
+	   });
 
   /* Now turn the rtl into assembler code.  */
 
