@@ -179,7 +179,6 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       const bool __testin = this->_M_mode & ios_base::in;
-      const bool __testout = this->_M_mode & ios_base::out;
       if (__testin && !_M_writing)
 	{
 	  // Check for pback madness, and if so swich back to the

@@ -4384,14 +4384,15 @@ namespace std
 
       // Returns a locale and codeset-converted string, given a char* message.
       string_type
-      _M_convert_from_char(char* __msg) const
+      _M_convert_from_char(char*) const
       {
+#if 0
 	// Length of message string without terminating null.
 	size_t __len = char_traits<char>::length(__msg) - 1;
 
 	// "everybody can easily convert the string using
 	// mbsrtowcs/wcsrtombs or with iconv()"
-#if 0
+
 	// Convert char* to _CharT in locale used to open catalog.
 	// XXX need additional template parameter on messages class for this..
 	// typedef typename codecvt<char, _CharT, _StateT> __codecvt_type;
