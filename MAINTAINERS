@@ -112,6 +112,7 @@ fortran 95		Steven Bosscher		stevenb@suse.de
 fortran 95		Toon Moene		toon@moene.indiv.nluug.nl
 c++			Jason Merrill		jason@redhat.com
 c++                     Mark Mitchell		mark@codesourcery.com
+c++			Nathan Sidwell		nathan@codesourcery.com
 cpplib			Dave Brolley		brolley@redhat.com
 cpplib			Per Bothner		per@bothner.com
 cpplib			Zack Weinberg		zack@codesourcery.com
@@ -180,6 +181,7 @@ PRE, points-to		Daniel Berlin		dberlin@dberlin.org
 mudflap			Frank Ch. Eigler	fche@redhat.com
 tree browser/unparser	Sebastian Pop		s.pop@laposte.net
 profile feedback	Jan Hubicka		jh@suse.cz
+type-safe vectors	Nathan Sidwell		nathan@codesourcery.com
 
 Note individuals who maintain parts of the compiler need approval to check
 in changes outside of the parts of the compiler they maintain.
