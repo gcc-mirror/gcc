@@ -6873,6 +6873,8 @@ expand_block_move (operands)
   int bytes;
   int offset;
   int move_bytes;
+  rtx stores[MAX_MOVE_REG];
+  int num_reg = 0;
 
   /* If this is not a fixed size move, just call memcpy */
   if (! constp)
@@ -6893,182 +6895,130 @@ expand_block_move (operands)
   if (bytes > (TARGET_POWERPC64 ? 64 : 32))
     return 0;
 
-  if (TARGET_STRING)	/* string instructions are available */
+  for (offset = 0; bytes > 0; offset += move_bytes, bytes -= move_bytes)
     {
-      for (offset = 0; bytes > 0; offset += move_bytes, bytes -= move_bytes)
+      union {
+	rtx (*movstrsi) PARAMS ((rtx, rtx, rtx, rtx));
+	rtx (*mov) PARAMS ((rtx, rtx));
+      } gen_func;
+      enum machine_mode mode = BLKmode;
+      rtx src, dest;
+      
+      if (TARGET_STRING
+	  && bytes > 24		/* move up to 32 bytes at a time */
+	  && ! fixed_regs[5]
+	  && ! fixed_regs[6]
+	  && ! fixed_regs[7]
+	  && ! fixed_regs[8]
+	  && ! fixed_regs[9]
+	  && ! fixed_regs[10]
+	  && ! fixed_regs[11]
+	  && ! fixed_regs[12])
 	{
-	  union {
-	    rtx (*movstrsi) PARAMS ((rtx, rtx, rtx, rtx));
-	    rtx (*mov) PARAMS ((rtx, rtx));
-	  } gen_func;
-	  enum machine_mode mode = BLKmode;
-	  rtx src, dest;
-
-	  if (bytes > 24		/* move up to 32 bytes at a time */
-	      && ! fixed_regs[5]
-	      && ! fixed_regs[6]
-	      && ! fixed_regs[7]
-	      && ! fixed_regs[8]
-	      && ! fixed_regs[9]
-	      && ! fixed_regs[10]
-	      && ! fixed_regs[11]
-	      && ! fixed_regs[12])
-	    {
-	      move_bytes = (bytes > 32) ? 32 : bytes;
-	      gen_func.movstrsi = gen_movstrsi_8reg;
-	    }
-	  else if (bytes > 16	/* move up to 24 bytes at a time */
-		   && ! fixed_regs[5]
-		   && ! fixed_regs[6]
-		   && ! fixed_regs[7]
-		   && ! fixed_regs[8]
-		   && ! fixed_regs[9]
-		   && ! fixed_regs[10])
-	    {
-	      move_bytes = (bytes > 24) ? 24 : bytes;
-	      gen_func.movstrsi = gen_movstrsi_6reg;
-	    }
-	  else if (bytes > 8	/* move up to 16 bytes at a time */
-		   && ! fixed_regs[5]
-		   && ! fixed_regs[6]
-		   && ! fixed_regs[7]
-		   && ! fixed_regs[8])
-	    {
-	      move_bytes = (bytes > 16) ? 16 : bytes;
-	      gen_func.movstrsi = gen_movstrsi_4reg;
-	    }
-	  else if (bytes >= 8 && TARGET_POWERPC64
-		   /* 64-bit loads and stores require word-aligned
-                      displacements.  */
-		   && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
-	    {
-	      move_bytes = 8;
-	      mode = DImode;
-	      gen_func.mov = gen_movdi;
-	    }
-	  else if (bytes > 4 && !TARGET_POWERPC64)
-	    {			/* move up to 8 bytes at a time */
-	      move_bytes = (bytes > 8) ? 8 : bytes;
-	      gen_func.movstrsi = gen_movstrsi_2reg;
-	    }
-	  else if (bytes >= 4 && (align >= 4 || ! STRICT_ALIGNMENT))
-	    {			/* move 4 bytes */
-	      move_bytes = 4;
-	      mode = SImode;
-	      gen_func.mov = gen_movsi;
-	    }
-	  else if (bytes == 2 && (align >= 2 || ! STRICT_ALIGNMENT))
-	    {			/* move 2 bytes */
-	      move_bytes = 2;
-	      mode = HImode;
-	      gen_func.mov = gen_movhi;
-	    }
-	  else if (bytes == 1)	/* move 1 byte */
-	    {
-	      move_bytes = 1;
-	      mode = QImode;
-	      gen_func.mov = gen_movqi;
-	    }
-	  else
-	    {			/* move up to 4 bytes at a time */
-	      move_bytes = (bytes > 4) ? 4 : bytes;
-	      gen_func.movstrsi = gen_movstrsi_1reg;
-	    }
-
-	  src = adjust_address (orig_src, mode, offset);
-	  dest = adjust_address (orig_dest, mode, offset);
-
-	  if (mode == BLKmode)
-	    {
-	      /* Move the address into scratch registers.  The movstrsi
-		 patterns require zero offset.  */
-	      if (!REG_P (XEXP (src, 0)))
-		{
-		  rtx src_reg = copy_addr_to_reg (XEXP (src, 0));
-		  src = replace_equiv_address (src, src_reg);
-		}
-	      set_mem_size (src, GEN_INT (move_bytes));
-
-	      if (!REG_P (XEXP (dest, 0)))
-		{
-		  rtx dest_reg = copy_addr_to_reg (XEXP (dest, 0));
-		  dest = replace_equiv_address (dest, dest_reg);
-		}
-	      set_mem_size (dest, GEN_INT (move_bytes));
-
-	      emit_insn ((*gen_func.movstrsi) (dest, src,
-					       GEN_INT (move_bytes & 31),
-					       align_rtx));
-	    }
-	  else
-	    {
-	      rtx tmp_reg = gen_reg_rtx (mode);
-
-	      emit_insn ((*gen_func.mov) (tmp_reg, src));
-	      emit_insn ((*gen_func.mov) (dest, tmp_reg));
-	    }
+	  move_bytes = (bytes > 32) ? 32 : bytes;
+	  gen_func.movstrsi = gen_movstrsi_8reg;
 	}
-    }
-
-  else			/* string instructions not available */
-    {
-      rtx stores[MAX_MOVE_REG];
-      int num_reg = 0;
-      int i;
-
-      for (offset = 0; bytes > 0; offset += move_bytes, bytes -= move_bytes)
+      else if (TARGET_STRING
+	       && bytes > 16	/* move up to 24 bytes at a time */
+	       && ! fixed_regs[5]
+	       && ! fixed_regs[6]
+	       && ! fixed_regs[7]
+	       && ! fixed_regs[8]
+	       && ! fixed_regs[9]
+	       && ! fixed_regs[10])
 	{
-	  rtx (*gen_mov_func) PARAMS ((rtx, rtx));
-	  enum machine_mode mode;
-	  rtx src, dest, tmp_reg;
-
-	  /* Generate the appropriate load and store, saving the stores
-	     for later.  */
-	  if (bytes >= 8 && TARGET_POWERPC64
-	      /* 64-bit loads and stores require word-aligned
-                 displacements.  */
-	      && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
-	    {
-	      move_bytes = 8;
-	      mode = DImode;
-	      gen_mov_func = gen_movdi;
-	    }
-	  else if (bytes >= 4 && (align >= 4 || ! STRICT_ALIGNMENT))
-	    {
-	      move_bytes = 4;
-	      mode = SImode;
-	      gen_mov_func = gen_movsi;
-	    }
-	  else if (bytes >= 2 && (align >= 2 || ! STRICT_ALIGNMENT))
-	    {
-	      move_bytes = 2;
-	      mode = HImode;
-	      gen_mov_func = gen_movhi;
-	    }
-	  else
-	    {
-	      move_bytes = 1;
-	      mode = QImode;
-	      gen_mov_func = gen_movqi;
-	    }
-
-	  src = adjust_address (orig_src, mode, offset);
-	  dest = adjust_address (orig_dest, mode, offset);
-	  tmp_reg = gen_reg_rtx (mode);
-
-	  emit_insn ((*gen_mov_func) (tmp_reg, src));
-	  stores[num_reg++] = (*gen_mov_func) (dest, tmp_reg);
-
-	  if (num_reg >= MAX_MOVE_REG)
-	    {
-	      for (i = 0; i < num_reg; i++)
-		emit_insn (stores[i]);
-	      num_reg = 0;
-	    }
+	  move_bytes = (bytes > 24) ? 24 : bytes;
+	  gen_func.movstrsi = gen_movstrsi_6reg;
+	}
+      else if (TARGET_STRING
+	       && bytes > 8	/* move up to 16 bytes at a time */
+	       && ! fixed_regs[5]
+	       && ! fixed_regs[6]
+	       && ! fixed_regs[7]
+	       && ! fixed_regs[8])
+	{
+	  move_bytes = (bytes > 16) ? 16 : bytes;
+	  gen_func.movstrsi = gen_movstrsi_4reg;
+	}
+      else if (bytes >= 8 && TARGET_POWERPC64
+	       /* 64-bit loads and stores require word-aligned
+		  displacements.  */
+	       && (align >= 8 || (! STRICT_ALIGNMENT && align >= 4)))
+	{
+	  move_bytes = 8;
+	  mode = DImode;
+	  gen_func.mov = gen_movdi;
+	}
+      else if (TARGET_STRING && bytes > 4 && !TARGET_POWERPC64)
+	{			/* move up to 8 bytes at a time */
+	  move_bytes = (bytes > 8) ? 8 : bytes;
+	  gen_func.movstrsi = gen_movstrsi_2reg;
+	}
+      else if (bytes >= 4 && (align >= 4 || ! STRICT_ALIGNMENT))
+	{			/* move 4 bytes */
+	  move_bytes = 4;
+	  mode = SImode;
+	  gen_func.mov = gen_movsi;
+	}
+      else if (bytes == 2 && (align >= 2 || ! STRICT_ALIGNMENT))
+	{			/* move 2 bytes */
+	  move_bytes = 2;
+	  mode = HImode;
+	  gen_func.mov = gen_movhi;
+	}
+      else if (TARGET_STRING && bytes > 1)
+	{			/* move up to 4 bytes at a time */
+	  move_bytes = (bytes > 4) ? 4 : bytes;
+	  gen_func.movstrsi = gen_movstrsi_1reg;
+	}
+      else /* move 1 byte at a time */
+	{
+	  move_bytes = 1;
+	  mode = QImode;
+	  gen_func.mov = gen_movqi;
+	}
+      
+      src = adjust_address (orig_src, mode, offset);
+      dest = adjust_address (orig_dest, mode, offset);
+      
+      if (mode != BLKmode) 
+	{
+	  rtx tmp_reg = gen_reg_rtx (mode);
+	  
+	  emit_insn ((*gen_func.mov) (tmp_reg, src));
+	  stores[num_reg++] = (*gen_func.mov) (dest, tmp_reg);
 	}
 
-      for (i = 0; i < num_reg; i++)
-	emit_insn (stores[i]);
+      if (mode == BLKmode || num_reg >= MAX_MOVE_REG || bytes == move_bytes)
+	{
+	  int i;
+	  for (i = 0; i < num_reg; i++)
+	    emit_insn (stores[i]);
+	  num_reg = 0;
+	}
+
+      if (mode == BLKmode)
+	{
+	  /* Move the address into scratch registers.  The movstrsi
+	     patterns require zero offset.  */
+	  if (!REG_P (XEXP (src, 0)))
+	    {
+	      rtx src_reg = copy_addr_to_reg (XEXP (src, 0));
+	      src = replace_equiv_address (src, src_reg);
+	    }
+	  set_mem_size (src, GEN_INT (move_bytes));
+	  
+	  if (!REG_P (XEXP (dest, 0)))
+	    {
+	      rtx dest_reg = copy_addr_to_reg (XEXP (dest, 0));
+	      dest = replace_equiv_address (dest, dest_reg);
+	    }
+	  set_mem_size (dest, GEN_INT (move_bytes));
+	  
+	  emit_insn ((*gen_func.movstrsi) (dest, src,
+					   GEN_INT (move_bytes & 31),
+					   align_rtx));
+	}
     }
 
   return 1;
