@@ -1,4 +1,7 @@
-2004-07-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+2004-07-10  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* pa.c (output_indirect_call): Only use %r2 as the link register in
+	indirect calls with the long PA 2.0 pc-relative branch.
 
 	PR target/16459
 	* pa.c (output_indirect_call): Use %r2 as the link register when
