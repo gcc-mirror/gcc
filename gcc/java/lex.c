@@ -72,6 +72,10 @@ java_init_lex ()
     java_lang_id = get_identifier ("java.lang");
   if (!java_lang_cloneable)
     java_lang_cloneable = get_identifier ("java.lang.Cloneable");
+  if (!inst_id)
+    inst_id = get_identifier ("inst$");
+  if (!wpv_id)
+    wpv_id = get_identifier ("write_parm_value$");
 
   if (!java_lang_imported)
     {
@@ -95,9 +99,9 @@ java_init_lex ()
   if (!wfl_to_string)
     wfl_to_string = build_expr_wfl (get_identifier ("toString"), NULL, 0, 0);
 
-  ctxp->static_initialized = ctxp->non_static_initialized = 
-    ctxp->incomplete_class = NULL_TREE;
-  
+  CPC_INITIALIZER_LIST (ctxp) = CPC_STATIC_INITIALIZER_LIST (ctxp) =
+    CPC_INSTANCE_INITIALIZER_LIST (ctxp) = ctxp->incomplete_class = NULL_TREE;
+
   bzero ((PTR) ctxp->modifier_ctx, 11*sizeof (ctxp->modifier_ctx[0]));
   bzero ((PTR) current_jcf, sizeof (JCF));
   ctxp->current_parsed_class = NULL;

@@ -56,7 +56,7 @@ unicode_mangling_length (name, len)
 	need_escapes += num_chars == 0;
       else if (ch == '_')
 	underscores++;
-      else if ((ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z'))
+      else if (ch != '$' && (ch < 'a' || ch > 'z') && (ch < 'A' || ch > 'Z'))
 	need_escapes++;
       num_chars++;
     }

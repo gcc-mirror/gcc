@@ -282,6 +282,7 @@ make_class ()
 #else
   TYPE_BINFO (type) = make_tree_vec (6);
 #endif
+  MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
   pop_obstacks ();
 
   return type;
@@ -395,6 +396,7 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
   if (access_flags & ACC_SUPER)     CLASS_SUPER (class_decl) = 1;
   if (access_flags & ACC_INTERFACE) CLASS_INTERFACE (class_decl) = 1;
   if (access_flags & ACC_ABSTRACT)  CLASS_ABSTRACT (class_decl) = 1;
+  if (access_flags & ACC_STATIC)    CLASS_STATIC (class_decl) = 1;
 }
 
 /* Return length of inheritance chain of CLAS, where java.lang.Object is 0,
@@ -457,6 +459,27 @@ inherits_from_p (type1, type2)
 	return 1;
       type1 = CLASSTYPE_SUPER (type1);
     }
+  return 0;
+}
+
+/* Return a 1 iff TYPE1 is an enclosing context for TYPE2 */
+
+int
+enclosing_context_p (type1, type2)
+     tree type1, type2;
+{
+  if (!INNER_CLASS_TYPE_P (type2))
+    return 0;
+
+  for (type2 = TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type2)));
+       type2; 
+       type2 = (INNER_CLASS_TYPE_P (type2) ?
+		TREE_TYPE (DECL_CONTEXT (TYPE_NAME (type2))) : NULL_TREE))
+    {
+      if (type2 == type1)
+	return 1;
+    }
+
   return 0;
 }
 
@@ -1016,6 +1039,8 @@ get_access_flags_from_decl (decl)
 	access_flags |= ACC_INTERFACE;
       if (CLASS_ABSTRACT (decl))
 	access_flags |= ACC_ABSTRACT;
+      if (CLASS_STATIC (decl))
+	access_flags |= ACC_STATIC;
       return access_flags;
     }
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -1457,8 +1482,7 @@ is_compiled_class (class)
   if (class == current_class)
     return 2;
 
-  seen_in_zip = (TYPE_LANG_SPECIFIC (class) && TYPE_LANG_SPECIFIC (class)->jcf
-		 && TYPE_LANG_SPECIFIC (class)->jcf->seen_in_zip);
+  seen_in_zip = (TYPE_JCF (class) && TYPE_JCF (class)->seen_in_zip);
   if (CLASS_FROM_CURRENTLY_COMPILED_SOURCE_P (class) || seen_in_zip)
     {
       /* The class was seen in the current ZIP file and will be
@@ -1635,6 +1659,9 @@ push_super_field (this_class, super_class)
      tree this_class, super_class;
 {
   tree base_decl;
+  /* Don't insert the field if we're just re-laying the class out. */ 
+  if (TYPE_FIELDS (this_class) && !DECL_NAME (TYPE_FIELDS (this_class)))
+    return;
   push_obstacks (&permanent_obstack, &permanent_obstack);
   base_decl = build_decl (FIELD_DECL, NULL_TREE, super_class);
   pop_obstacks ();
@@ -1668,7 +1695,8 @@ maybe_layout_super_class (super_class, this_class)
 	super_class = TREE_TYPE (super_class);
       else
 	{
-	  super_class = do_resolve_class (super_class, NULL_TREE, this_class);
+	  super_class = do_resolve_class (NULL_TREE, /* FIXME? */
+					  super_class, NULL_TREE, this_class);
 	  if (!super_class)
 	    return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
 	  super_class = TREE_TYPE (super_class);
@@ -1684,8 +1712,36 @@ void
 layout_class (this_class)
      tree this_class;
 {
+  static tree list = NULL_TREE;
   tree super_class = CLASSTYPE_SUPER (this_class);
   tree field;
+  
+  list = tree_cons (this_class, NULL_TREE, list);
+  if (CLASS_BEING_LAIDOUT (this_class))
+    {
+      char buffer [1024];
+      tree current;
+      
+      sprintf (buffer, " with `%s'",
+	       IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class))));
+      obstack_grow (&temporary_obstack, buffer, strlen (buffer));
+
+      for (current = TREE_CHAIN (list); current; 
+	   current = TREE_CHAIN (current))
+	{
+	  tree decl = TYPE_NAME (TREE_PURPOSE (current));
+	  sprintf (buffer, "\n  which inherits from `%s' (%s:%d)",
+		   IDENTIFIER_POINTER (DECL_NAME (decl)),
+		   DECL_SOURCE_FILE (decl),
+		   DECL_SOURCE_LINE (decl));
+	  obstack_grow (&temporary_obstack, buffer, strlen (buffer));
+	}
+      obstack_1grow (&temporary_obstack, '\0');
+      cyclic_inheritance_report = obstack_finish (&temporary_obstack);
+      TYPE_SIZE (this_class) = error_mark_node;
+      return;
+    }
+  CLASS_BEING_LAIDOUT (this_class) = 1;
 
   if (super_class)
     {
@@ -1693,6 +1749,8 @@ layout_class (this_class)
       if (TREE_CODE (TYPE_SIZE (super_class)) == ERROR_MARK)
 	{
 	  TYPE_SIZE (this_class) = error_mark_node;
+	  CLASS_BEING_LAIDOUT (this_class) = 0;
+	  list = TREE_CHAIN (list);
 	  return;
 	}
       if (TYPE_SIZE (this_class) == NULL_TREE)
@@ -1714,6 +1772,9 @@ layout_class (this_class)
   /* Convert the size back to an SI integer value */
   TYPE_SIZE_UNIT (this_class) = 
     fold (convert (int_type_node, TYPE_SIZE_UNIT (this_class)));
+
+  CLASS_BEING_LAIDOUT (this_class) = 0;
+  list = TREE_CHAIN (list);
 }
 
 void
@@ -1772,8 +1833,7 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
   if (method_name_is_wfl)
     method_name = java_get_real_method_name (method_decl);
 
-  if (method_name != init_identifier_node 
-      && method_name != finit_identifier_node)
+  if (!ID_INIT_P (method_name) && !ID_FINIT_P (method_name))
     {
       int encoded_len
 	= unicode_mangling_length (IDENTIFIER_POINTER (method_name), 
@@ -1794,7 +1854,7 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
     }
       
   obstack_grow (&temporary_obstack, "__", 2);
-  if (method_name == finit_identifier_node)
+  if (ID_FINIT_P (method_name))
     obstack_grow (&temporary_obstack, "finit", 5);
   append_gpp_mangled_type (&temporary_obstack, this_class);
   TREE_PUBLIC (method_decl) = 1;
@@ -1856,11 +1916,11 @@ layout_class_method (this_class, super_class, method_decl, dtable_count)
      it's an interface method that isn't clinit. */
   if (! METHOD_ABSTRACT (method_decl) 
       || (CLASS_INTERFACE (TYPE_NAME (this_class)) 
-	  && (IS_CLINIT (method_decl))))
+	  && (DECL_CLINIT_P (method_decl))))
     make_function_rtl (method_decl);
   obstack_free (&temporary_obstack, asm_name);
 
-  if (method_name == init_identifier_node)
+  if (ID_INIT_P (method_name))
     {
       const char *p = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (this_class)));
       for (ptr = p; *ptr; )

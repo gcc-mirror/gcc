@@ -1,6 +1,36 @@
+Mon Mar 13 12:21:13 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (PUSH_CPC): Fixed indentation.
+	(DEBUG_CPC): New macro.
+	(SET_CPC_INITIALIZER_STMT, SET_CPC_STATIC_INITIALIZER_STMT,
+ 	SET_CPC_INSTANCE_INITIALIZER_STMT): New macros.
+	* parse.y (class_body_declaration:): Use
+ 	SET_CPC_INSTANCE_INITIALIZER_STMT.
+	(method_declaration:): Check for null current_function_decl.
+	(static_initializer:): Use SET_CPC_STATIC_INITIALIZER_STMT.
+	(java_parser_context_pop_initialized_field): Better handling of
+ 	empty lists.
+	(maybe_make_nested_class_name): Mark nested class name as
+ 	qualified when necessary.
+	(end_class_declaration): Don't call java_parse_context_resume when
+ 	one or more error occured.
+	(add_inner_class_fields): Use SET_CPC_INITIALIZER_STMT.
+	(register_fields): Use SET_CPC_STATIC_INITIALIZER_STMT and
+ 	SET_CPC_INITIALIZER_STMT.
+	(method_header): Check for inner classes declaring static methods.
+	(resolve_qualified_expression_name): Handle situation where `this'
+ 	is implied.
+
 Mon Mar 13 11:36:51 2000  Hans Boehm <boehm@acm.org>
 
 	* typeck.c (build_prim_array_type): Correctly set the high word too.
+
+2000-03-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_complete_expand_methods): Leave <clinit> out of
+	ordinary methods.
+	(maybe_generate_pre_expand_clinit): Put <clinit> at the end of the
+	list of methods for interfaces.
 
 2000-03-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
@@ -50,6 +80,10 @@ Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	when looking up an interface method. From Godmar Back
 	<gback@cs.utah.edu>
 
+2000-03-06  Tom Tromey  <tromey@cygnus.com>
+
+	* Make-lang.in (JAVA_SRCS): Added boehm.c, lex.c.
+
 2000-03-02  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* java-tree.h (lookup_argument_method2): Declared.
@@ -66,9 +100,13 @@ Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(lookup_java_method): Re-written by calling lookup_do.
 	(lookup_do): New function.
 
-2000-03-06  Tom Tromey  <tromey@cygnus.com>
+Thu Mar  2 15:18:33 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* Make-lang.in (JAVA_SRCS): Added boehm.c, lex.c.
+	* check-init.c (check_init): Removed dead code. Handle (blank)
+ 	final variables.
+	* parse.y (declare_local_variables): New local `final_p', set it
+ 	and use it to initialize LOCAL_FINAL.
+	(check_final_assignment): Only check FIELD_DECLs.
 
 2000-02-17  Tom Tromey  <tromey@cygnus.com>
 
@@ -88,6 +126,36 @@ Mon Mar  6 18:07:07 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2000-03-03  Per Bothner  <per@bothner.com>
 
 	* decl.c (init_decl_processing):  Initialize sizetype properly.
+
+2000-03-01  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (LOCAL_CLASS_P): New flag usage and macro.
+	(PURE_INNER_CLASS_DECL_P, PURE_INNER_CLASS_TYPE_P): New macros.
+	* jcf-dump.c (HANDLE_INNERCLASSES_ATTRIBUTE): New macro.  
+	* jcf-parse.c (HANDLE_INNERCLASSES_ATTRIBUTE): Likewise.
+	(jcf_parse): New local `current'. Load innerclasses seen in outer
+	context being processed.
+	* jcf-reader.c (HANDLE_INNERCLASSES_ATTRIBUTE): New macro.
+	* jcf-write.c (append_innerclasses_attribute): New function.
+	(append_innerclasses_attribute_entry): Likewise.
+	(get_access_flags): Handle static classes. Set anonymous and local
+	classes to be private.
+	(generate_classfile): Attribute count adjusted. Call
+	append_innerclasses_attribute.
+	* parse.h (SKIP_THIS_AND_ARTIFICIAL_PARMS): Use
+	PURE_INNER_CLASS_TYPE_P.
+	* parse.y (parser_qualified_classname): New parameter `is_static',
+	produce non qualified name accordingly.
+	(block_statement:): Set LOCAL_CLASS_P when declaring local class.
+	(create_interface): Added argument to parser_qualified_classname.
+	(create_class): Added argument to parser_qualified_classname. Setup
+	alias for top level classes. Use PURE_INNER_CLASS_DECP_P.
+	(add_inner_class_fields): Fixed indentation.
+	(method_declarator): Use PURE_INNER_CLASS_DECP_P.
+	(method_declarator): Fixed typo in comment.
+	(craft_constructor): Use PURE_INNER_CLASS_DECP_P.
+	(build_current_thisn): Likewise.
+	(patch_method_invocation): Likewise.
 
 2000-03-01  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
@@ -143,6 +211,14 @@ Fri Feb 25 18:00:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
  	argument to resolve_field_access.
 	(resolve_field_access): Removed unecessary code when dealing with
  	static fields.
+
+Wed Feb 23 17:41:50 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (push_super_field): Don't push the field twice.
+	* jcf-parse.c (parse_source_file): Call java_reorder_fields.
+	* parse.h (java_reorder_fields): Prototyped.
+	* parse.y (java_reorder_fields): New function.
+	(java_layout_class): Simplified not to worry about re-ordering.
 
 2000-02-23  Tom Tromey  <tromey@cygnus.com>
 
@@ -210,9 +286,12 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 2000-02-15  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
-	* lex.c (java_parse_doc_section): Alway unget the last unicode
-	when returning 0.
-	(java_lex): Call java_parse_end_comment with fetched unicode.
+	* parse.y (outer_field_access_p): Stop in time when outer contexts
+ 	are exhausted.
+	(resolve_qualified_expression_name): Properly qualify *everything*
+ 	after a package.type to be resoled as expression names.
+	(find_applicable_accessible_methods_list): Save/restore `class' to
+ 	isolate it from a possible outer context search.
 
 2000-02-15  Tom Tromey  <tromey@cygnus.com>
 
@@ -233,6 +312,75 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* jv-scan.c: Likewise.
 
+Sat Feb 12 04:34:04 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (outer_field_access_fix): First parameter now a tree
+	node. Check for assignement to final. First argument to
+	build_outer_field_access_fix modified to accomodate prototype.
+	(build_outer_field_access): Don't check for assignment to final
+	here.
+	(java_complete_lhs): MODIFY_EXPR case: Check for `error_mark_node'
+	possibly returned by outer_field_access_fix. Changed
+	outer_field_access_fix's first argument.
+	(check_final_assignment): $finit$'s context is OK.
+	(patch_unaryop): Use node instead of its line/column value when
+	calling outer_field_access_fix.
+
+Fri Feb 11 17:38:26 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (interface_declaration:): No longer tagged
+ 	<node>. Re-installed default action.
+	(class_member_declaration:): Handle inner interfaces.
+	(interface_member_declaration): Handle inner interfaces and
+ 	classes.
+	(create_interface): Push error if one seen. Suspend parsing
+ 	context when processing an inner interface.
+	(register_fields): Inner class static field limitations not to
+ 	apply to inner interfaces.
+
+Thu Feb 10 22:07:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-parse.c (load_class): Update `java_error_count' when a
+ 	class' file can't be found.
+	(parse.y): Avoid (byte)code generation when errors seen.
+
+Thu Feb 10 20:10:43 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (java_complete_lhs): Handle TRUNC_DIV_EXPR. Ensure `fatal'
+ 	decodes a valid node.
+	(patch_binop): Handle TRUNC_DIV_EXPR.
+
+Thu Feb 10 16:04:26 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (resolve_package): New local `acc.' Try to progressively
+ 	build and guess a package and type name.
+
+Thu Feb 10 12:52:09 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (find_applicable_accessible_methods_list): Load and
+ 	layout the search class if necessary.
+	(java_complete_tree): Keep to original type of the folded initial
+ 	value.
+
+2000-02-09  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * class.c (layout_class): Set and test CLASS_BEING_LAIDOUT.
+        Generate error message if circularity is detected. New static
+        local `list.'
+        * java-tree.h (CLASS_BEING_LAIDOUT): New flag usage, new macro.  *
+        * jcf-write.c (generate_bytecode_insns): Very simply handle
+        SAVE_EXPR.
+        * parse.y (java_check_circular_reference): Use
+        `cyclic_inheritance_report' during report, if necessary.
+        (java_complete_lhs): fixed comment with `THROW_EXPR:' case. Avoid
+        walking NEW_ARRAY_INIT twice.
+
+2000-02-09  Tom Tromey  <tromey@cygnus.com>
+
+        * parse.y (check_class_interface_creation): Allow inner classes to
+        be `private' or `protected', check modifiers' consistency. Prevent
+        block local classes from bearing any modifiers.
+
 2000-02-10  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* except.c (check_start_handlers): Re-add prototype lost in last
@@ -246,6 +394,42 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(force_poplevels): Ditto.
 	(struct binding_level): Add comment.
 	
+2000-02-07  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+        * jcf-write.c (generate_classfile): Don't consider
+        pre-initialization with reference value (use <clinit> instead.)
+        * parse.y (java_fix_constructors): No generated constructor for
+        interfaces.
+        (build_outer_field_access): Removed debug message.
+        (outer_field_expanded_access_p): Adapted to bytecode generation.
+        (build_outer_field_access_method): Use fix_method_argument_names.
+        (build_outer_method_access_method): Fixed indentation. Added
+        comment. Handle access method generation for static and also void
+        methods.
+        (build_access_to_thisn): Inserted debug message.
+        (maybe_build_thisn_access_method): Use fix_method_argument_names.
+        (resolve_qualified_expression_name): Fixed comment.
+        (not_accessible_p): Adapted to bytecode generation. Added comment.
+        (patch_method_invocation): Added comment.
+        (maybe_use_access_method): Fixed leading comment. Handle static
+        methods.
+        (java_complete_lhs): Don't shortcut handling of initialized upon
+        declaration String type static fields when generating bytecode.
+        (patch_unaryop): Handle outer field access when generating
+        bytecode.
+
+Thu Feb  3 20:23:19 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (FIELD_THISN): New macro.
+	* jcf-write.c (append_synthetic_attribute): New function.
+	(generate_classfile): Set "Synthetic" attribute on this$<n>,
+ 	val$<name> fields, access$<n> and $finit$ methods. Fixed indentation.
+	* parse.y (add_inner_class_fields): Set FIELD_THISN for created
+ 	this$<n> fields.
+	(build_outer_field_access): Turned on access functions usage and
+ 	generation when compiling to bytecode.
+	(maybe_use_access_method): Likewise.
+
 2000-01-25  Andrew Haley  <aph@cygnus.com>
 
         * java-except.h (struct eh_range): Add `expanded' field.
@@ -301,6 +485,37 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	assemble doubles correctly when HOST_FLOAT_WORDS_BIG_ENDIAN is
 	defined to be 1.
 
+Wed Feb  2 18:43:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.def (INSTANCE_INITIALIZERS_EXPR): New tree code.
+	* java-tree.h (TYPE_II_STMT_LIST): New macro.
+	(struct lang_type): New field `ii_block'.
+	* lex.c (java_init_lex): Use CPC_INITIALIZER_LIST,
+	CPC_STATIC_INITIALIZER_LIST and CPC_INSTANCE_INITIALIZER_LIST.
+	* parse.h (struct parser_ctxt): New field `instance_initializers'.
+	(CPC_INITIALIZER_LIST, CPC_STATIC_INITIALIZER_LIST,
+	CPC_INSTANCE_INITIALIZER_LIST, CPC_INITIALIZER_STMT,
+	CPC_STATIC_INITIALIZER_STMT, CPC_INSTANCE_INITIALIZER_STMT): New
+	macros.
+	* parse.y (add_instance_initializer): New function.
+	(in_instance_initializer): New static global.
+	(class_body_declaration:): Link instance initializer block.
+	(static_initializer:): Use CPC_STATIC_INITIALIZER_STMT.
+	(array_creation_expression:): Remove unused local.
+	(java_parser_context_push_initialized_field): Fixed leading
+	comment. Use CPC_STATIC_INITIALIZER_LIST, CPC_INITIALIZER_LIST and
+	CPC_INSTANCE_INITIALIZER_LIST.
+	(java_parser_context_pop_initialized_field): Likewise.
+	(add_inner_class_fields): Use CPC_INITIALIZER_STMT.
+	(register_fields): Use CPC_STATIC_INITIALIZER_STMT and
+	CPC_INITIALIZER_STMT.
+	(fix_constructors): New local `class_type'. Use it. Call
+	add_instance_initializer.
+	(java_complete_lhs): New case INSTANCE_INITIALIZERS_EXPR.
+	(patch_return): Forbid return in instance initializers.
+	(patch_throw_statement): Enforce exception handling in the context
+	of instance initializers.
+	
 2000-02-03  Tom Tromey  <tromey@cygnus.com>
 
 	* Make-lang.in (java.mostlyclean): Remove executables in
@@ -363,6 +578,52 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	(main): Use getopt_long_only to parse command line.
 	(usage): Changed message.
 
+Tue Feb  1 22:23:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.def (NEW_ANONYMOUS_ARRAY_EXPR): New tree code.
+	* parse.h (ANONYMOUS_ARRAY_BASE_TYPE, ANONYMOUS_ARRAY_DIMS_SIG,
+	ANONYMOUS_ARRAY_INITIALIZER): New access macros.
+	* parse.y (array_creation_expression:): Handle anonymous arrays.
+	(build_array_from_name): Don't set `ret_name' if null.
+	(resolve_qualified_expression_name): New case NEW_ANONYMOUS_ARRAY_EXPR.
+	(qualify_ambiguous_name): Likewise.
+	(java_complete_expand_class): Likewise.
+
+Tue Feb  1 14:59:35 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.def (SYNCHRONIZED_EXPR): Fixed typo.
+	* parse.h (MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID): New macro.
+	(MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_STR): Likewise.
+	(SKIP_THIS_AND_ARTIFICIAL_PARMS): Use DECL_FINIT_P.
+	(AIPL_FUNCTION_FINIT_INVOCATION): Replaces
+	AIPL_FUNCTION_COMPLETED_INVOCATION.
+	(AIPL_FUNCTION_CTOR_INVOCATION): Replaces 
+	AIPL_FUNCTION_INVOCATION_READY.
+	(AIPL_FUNCTION_DECLARATION): New enum entry.
+	* parse.y (reorder_static_initialized): New function.
+	(java_parser_context_pop_initialized_field): Use it.
+	(add_inner_class_fields): Use
+	MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID. Comment
+	augmented. Install marker after last alias initializer, if any.
+	(generate_finit): Fixed typo. Don't try to retain only the used
+	fields.
+	(method_header): Compute and set DECL_FUNCTION_NAP.
+	(method_declarator): Fixed comment. Insert alias initializer in
+	parameter list.
+	(build_alias_initializer_parameter_list): Fixed leading
+	comment. New case for AIPL_FUNCTION_DECLARATION. Old enum value
+	replaced by new ones. Use MANGLE_ALIAS_INITIALIZER_PARAMETER_NAME_ID.
+	(java_complete_expand_class): Code to retain only used aliases
+	removed.
+	(java_complete_expand_methods): New local `first_decl'. Generate
+	$finit$ first, then expand the constructors, regular methods and
+	<clinit>.
+	(java_complete_expand_method): Don't report error on missing
+	return statement if previously detected bogus.
+	(fix_constructors): Don't patch constructor parameters list.
+	(patch_method_invocation): Use new AIPL enum values. Reverse
+	alias initializer list for anonymous classes.
+	
 2000-01-30  Anthony Green  <green@redhat.com>
 
 	* jcf-write.c (generate_bytecode_insns): Use TYPE_IS_WIDE to
@@ -373,6 +634,72 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* parse.y (formal_parameter:): Set `$$' to NULL_TREE for better
 	error handling/recovery.
 	* java-tree.h (SYNCHRONIZED_EXPR): Fixed typo in comment.
+
+Fri Jan 28 20:10:57 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (ARG_FINAL_P, FIELD_LOCAL_ALIAS,
+ 	FIELD_LOCAL_ALIAS_USED): New macros.
+	(DECL_FUNCTION_NAP): New macro.
+	(struct lang_decl): New field `nap'.
+	(TYPE_FINIT_STMT_LIST, TYPE_CLINIT_STMT_LIST): New macros.
+	(struct lang_type): New fields `finit_stmt_list' and
+ 	`clinit_stmt_list'.
+	(CLASS_HAS_FINIT_P): Defined using TYPE_FINIT_STMT_LIST.
+	* parse.h (MANGLE_OUTER_LOCAL_VARIABLE_NAME): New macro.
+	(SKIP_THIS_AND_ARTIFICIAL_PARMS, MARK_FINAL_PARMS,
+ 	UNMARK_FINAL_PARMS, CRAFTED_PARAM_LIST_FIXUP): New macros.
+	(AIPL_FUNCTION_CREATION, AIPL_FUNCTION_COMPLETED_INVOCATION,
+ 	AIPL_FUNCTION_INVOCATION_READY): New enum fields.
+	(BUILD_THROW): Macro line separator re-indented.
+	* parse.y (end_class_declaration): New function.
+	(maybe_generate_pre_expand_clinit): New name for
+ 	java_pre_expand_clinit. Create <clinit> off TYPE_CLINIT_STMT_LIST,
+ 	pre-expand static fields.
+	(maybe_generate_clinit): Function deleted.
+	(check_for_static_method_reference): Prototype's parameter list
+ 	indented.
+	(generate_finit): New name for maybe_generate_finit. Changed
+ 	leading comment. Function rewritten to use
+ 	TYPE_FINIT_STMT_LIST. Call build_alias_initializer_parameter_list.
+	(build_alias_initializer_parameter_list): New function.
+	(java_parser_context_pop_initialized_field): Likewise.
+	(add_inner_class_fields): Likewise.
+	(type_declaration:): Call end_class_declaration.
+	(class_member_declaration:): Likewise.
+	(formal_parameter_list:): Fixed typos.
+	(formal_parameter:): Use ARG_FINAL_P to mark created tree list
+ 	element. Improved error handling.
+	(block_statement:): Call end_class_declaration.
+	(anonymous_class_creation:): Likewise.
+	(create_anonymous_class): Fixed comments.
+	(create_class): Call add_inner_class_fields.
+	(register_fields): Set FIELD_LOCAL_ALIAS according to ARG_FINAL_P.
+	(method_header): Use MARK_FINAL_PARMS.
+	(finish_method_declaration): Use UNMARK_FINAL_PARMS.
+	(method_declarator): Propagate final argument flag.
+	(craft_constructor): New local `artificial'. Call
+ 	build_alias_initializer_parameter_list. Use
+ 	CRAFTED_PARAM_LIST_FIXUP, assign DECL_FUNCTION_NAP.
+	(source_start_java_method): Mark parm decls with LOCAL_FINAL if
+ 	necessary.
+	(complete_expand_class): Get rid of unused outer context local
+ 	alias fields.
+	(java_complete_expand_methods): Fixed leading
+ 	comment. Generate/pre-expand <clinit> first. Changed method
+ 	expansion order to regular, $finit$, constructors, <clinit>.
+	(java_complete_expand_method): Set current_function_decl.
+	(fix_constructors): Fix constructor parameter list to account for
+ 	outer context local alias initializers.
+	(verify_constructor_super): Use SKIP_THIS_AND_ARTIFICIAL_PARMS.
+	(resolve_expression_name): Lookup outer context local aliases. New
+ 	local `access', use it.
+	(patch_method_invocation): Patch inner class ctor invocation with
+ 	outer context local aliases initialization values. $finit$
+ 	invocation patching now includes things generated with
+ 	build_alias_initializer_parameter_list.
+	(argument_types_convertible): Use SKIP_THIS_AND_ARTIFICIAL_PARMS.
+	(build_super_invocation): Likewise.
+	(patch_assignment): Changed comment.
 
 2000-01-27  Andrew Haley  <aph@cygnus.com>
 
@@ -429,7 +756,62 @@ Thu Feb 17 13:20:58 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 	* xref.h: Likewise.
 	* zextract.c: Likewise.
 	* zipfile.h: Likewise.
+	
+2000-01-18  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
+	* class.c (make_class): Use MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC.
+	(is_compiled_class): Remove test on TYPE_LANG_SPECIFIC, use TYPE_JCF.
+	* constants.c (build_constant_data_ref): Check for cached
+	current_constant_pool_data_ref. Cache current_constant_pool_data_ref
+	in TYPE_CPOOL_DATE_REF.
+	* java-tree.h (TYPE_JCF, TYPE_CPOOL, TYPE_CPOOL_DATA_REF,
+	MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC:) New macros.
+	(struct lang_type): New fields `cpool' and `cpool_data_ref'.
+	(LOCAL_FINAL): New macro.
+	* jcf-parse.c (init_outgoing_cpool): Always allocate new outgoing
+	constant pool -- don't try to reuse.
+	(parse_zip_file_entries): Use TYPE_JCF, don't lazily allocate
+	TYPE_LANG_SPECIFIC.
+	(find_in_current_zip): Use TYPE_JCF.
+	* parse.h (java_check_final): Prototype removed.
+	* parse.y (create_class): Reversed Jan 12, 2000 extra argument patch.
+	(maybe_create_class_interface_decl,
+	check_class_interface_creation): Likewise.
+	(java_expand_finals): Function removed.
+	(class_declaration:): Reversed Jan 12, 2000 extra argument patch.
+	(block_statement:): Fixed comment.
+	(anonymous_class_creation:): Likewise.
+	(check_class_interface_creation): Reversed Jan 12, 2000 extra
+	argument patch.
+	(check_class_interface_creation): Loosened error report on (inner)
+	public class declarations. CPC_INNER_P replaces GET_CPC_LIST.
+	(link_nested_class_to_enclosing): Reversed Jan 12, 2000 patch.
+	(maybe_create_class_interface_decl): Reversed Jan 12, 2000 extra
+	argument patch.
+	(create_interface): Likewise.
+	(anonymous_class_counter): New static global.
+	(create_anonymous_class): Reversed Jan 12, 2000 extra argument
+	patch. Fixed comments.
+	(create_class): Reversed Jan 12, 2000 extra argument patch. Reset
+	anonymous_class_counter when declaring a toplevel class.
+	(craft_constructor): Fixed constructor name when handling
+	anonymous classes. Anonymous class constructors to feature hidden
+	this$<n> parameter.
+	(java_fix_constructors): Added comment.
+	(java_check_final): Function removed.
+	(java_complete_expand_methods): Fixed comment. Don't generate
+	class data, save its outgoing constant pool instead.
+	(verify_constructor_super): Skip anonymous class constructor
+	hidden this$<n> parameter.
+	(java_expand_classes): New local `saved_ctxp'. Removed call to
+	java_expand_finals and java_check_final. Expand anonymous class
+	constructors. Generate class data.
+	(build_super_invocation): Skip anonymous class hidden this$<n>
+	parameter.
+	* typeck.c (build_java_signature): Use TYPE_SIGNATURE and
+	MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC.
+	(set_java_signature): Likewise.
+	
 Mon Jan 18 14:30:09 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* gjavah.c: Delete ACC_VISIBILITY define.
@@ -448,6 +830,235 @@ Mon Jan 17 11:58:17 2000  Joerg Brunsmann  <joerg.brunsmann@fernuni-hagen.de>
 
 	* gjavah.c (print_field_info): Allow non-static final fields.
 
+Fri Jan 14 18:03:41 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.h (enum jdep_code): New entry `JDEP_ANONYMOUS'.
+	* parse.y (patch_anonymous_class): New function.
+	(create_anonymous_class): Register incomplete type when the
+ 	class/interface to extends/implement isn't known yet.
+	(parser_check_super_interface): Simplify argument to CLASS_INTERFACE.
+	(verify_constructor_super): Tuned error message.
+
+Fri Jan 14 00:14:24 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java-tree.h (FOR_LOOP_P): Replaces IS_FOR_LOOP_P.
+	(ANONYMOUS_CLASS_P): New macro.
+	(TYPE_SIGNATURE, TYPE_JCF): New macros.
+	(INNER_CLASS_TYPE_P): Fixed typo in leading comment.
+	* parse.y (create_class): Added leading argument.
+	(maybe_create_class_interface_decl,
+ 	check_class_interface_creation): Likewise.
+	(craft_constructor): New function.
+	(verify_constructor_super): Added argument in prototype.
+	(class_declaration:): Inserted leading argument.
+	(for_begin:): Use FOR_LOOP_P.
+	(anonymous_class_creation): Create WFL of the anonymous class to
+ 	instantiate. Call build_new_invocation. Added comments.
+	(check_class_interface_creation): Handle parameter `anonymous' in
+ 	verbose mode class creation announce.
+	(link_nested_class_to_enclosing): Exclude anonymous classes.
+	(maybe_create_class_interface_decl): Don't set DECL_CONTEXT on
+ 	anonymous class, even though they appear to have an enclosing
+ 	context.
+	(create_interface): Pass extra argument to
+ 	check_class_interface_creation.
+	(create_anonymous_class): Set ANONYMOUS_CLASS_P to 1.
+	(create_class): Call check_class_interface_creation and
+ 	maybe_create_class_interface_decl with extra new argument. Don't
+ 	add private this$<n> to anonymous classes.
+	(method_declarator): Insert hidden this$<n> to anonymous class
+ 	constructors.
+	(java_fix_constructors): Deleted code creating default
+ 	constructor. Call craft_constructor instead.
+	(java_check_regular_methods): Set `saw_constructor' to 1 for
+ 	anonymous classes.
+	(fix_constructors): Pass extra argument to verify_constructor_super.
+	(verify_constructor_super): New local `sdecl', use it. Search for
+ 	matching constructor (possibly featuring arguments) in super
+ 	class.
+	(lookup_method_invoke): Craft constructor according to arguments
+ 	list when dealing with anonymous class constructors.
+	(build_super_invocation): Pass arguments to anonymous class super
+ 	constructors.
+	(search_loop): Use FOR_LOOP_P.
+	(labeled_block_contains_loop_p): Likewise.
+	
+Wed Jan 12 00:38:47 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* class.c (set_super_info): Set CLASS_STATIC when appropriate.
+	(enclosing_context_p): New function.
+	(get_access_flags_from_decl): Handle CLASS_STATIC.
+	(maybe_layout_super_class): Extra first argument passed to
+ 	do_resolve_class.
+	(layout_class_method): Use ID_FINIT_P, DECL_CLINIT_P and
+ 	ID_INIT_P.
+	* decl.c (access0_identifier_node): New global.
+	(init_decl_processing): access0_identifier_node initialized. 
+	(pushdecl): Set DECL_CONTEXT only on non type decls.
+	* expr.c (lookup_field): Lookup inner class fields in enclosing
+ 	contexts.
+	(expand_invoke): Use ID_INIT_P.
+	(expand_java_field_op): Use DECL_CLINIT_P.
+	* java-tree.def (CLASS_LITERAL): New tree code.
+	* java-tree.h (DECL_FUNCTION_ACCESS_DECL,
+ 	DECL_FUNCTION_INNER_ACCESS, FIELD_INNER_ACCESS): New macros.
+	(struct lang_decl): New field `inner_access'.
+	(enclosing_context_p): Prototyped.
+	(DECL_INIT_P, DECL_FINIT_P, DECL_CLINIT_P, ID_INIT_P, ID_FINIT_P,
+ 	ID_CLINIT_P): New macros.
+	(CLASS_STATIC): New macro.
+	(CLASS_ACCESS0_GENERATED_P): New macro.
+	(OUTER_FIELD_ACCESS_IDENTIFIER_P, INNER_CLASS_DECL_P,
+ 	TOPLEVEL_CLASS_DECL_P, INNER_CLASS_TYPE_P, TOPLEVEL_CLASS_TYPE_P,
+ 	INNER_CLASS_P): New macros.
+	(DECL_INNER_CLASS_LIST): New macro.
+	* jcf-parse.c (yyparse): Avoid the use of ANSI string
+ 	concatenation.
+	* jcf-write.c (generate_bytecode_insns): binop: Change the type of
+ 	the shift value to int. Fixed typo in comment.
+	* lex.c (inst_id, wpv_id): Initialize.
+	* mangle.c (unicode_mangling_length): Take `$' into account.
+	* parse.h (DRECOVER, RECOVER): Terminate properly.
+	(IDENTIFIER_INNER_CLASS_OUTER_FIELD_ACCESS): New macro.
+	(typedef struct _jdep): New field `enclosing'.
+	(JDEP_ENCLOSING): New macro.
+	(IS_CLINIT): Deleted (DECL_CLINIT_P replaces it.)
+	(struct parser_ctxt): New fields `marker_beginning', `marked_end'.
+	(GET_CPC_LIST, CPC_INNER_P, GET_CPC, GET_CPC_UN, GET_CPC_UN_MODE,
+ 	GET_CPC_DECL_NODE, GET_ENCLOSING_CPC, GET_NEXT_ENCLOSING_CPC,
+ 	GET_ENCLOSING_CPC_CONTEXT): New macros.
+	(PUSH_CPC, PUSH_ERROR, POP_CPC): New macros.	
+	(do_resolve_class): Added extra argument in prototype.
+	* parse.y (resolve_class): Added extra argument in prototype.
+	(maybe_create_class_interface_decl): Likewise.
+	(maybe_use_access_method, build_wfl_wrap): New functions.
+	(java_complete_expand_classes, java_complete_expand_class):
+ 	Likewise.
+	(java_parser_context_push_initialized_field,
+ 	java_parser_context_suspend, java_parser_context_resume):
+ 	Likewise.
+	(maybe_make_nested_class_name, make_nested_class_name,
+ 	set_nested_class_simple_name_value,
+ 	link_nested_class_to_enclosing, find_as_inner_class,
+ 	find_as_inner_class_do, check_inner_class_redefinition,
+ 	build_thisn_assign, build_current_thisn, build_access_to_thisn,
+ 	maybe_build_thisn_access_method, build_outer_field_access,
+ 	build_outer_field_access_methods, build_outer_field_access_expr,
+ 	build_outer_method_access_method, build_new_access_id,
+ 	build_outer_field_access_method, outer_field_access_p,
+ 	outer_field_expanded_access_p, outer_field_access_fix,
+ 	build_incomplete_class_ref, patch_incomplete_class_ref,
+ 	create_anonymous_class): Likewise.
+	(inst_id, wpv_id): New static global variables.
+	(synchronized:): New rule, tagged <node>.
+	(type_declaration:): No longer tagged <node>. Call POP_CPC in sub
+ 	rules.
+	(anonymous_class_creation:): New rule, tagged <node>.
+	(NEW_TK): Tagged <node>.
+	(type_literals, array_type_literal): New rules, tagged <node>.
+	(class_declaration:): Removed action when reducing by class_body:
+	(class_body:): Set DECL_END_SOURCE_LINE and rule's returned value
+ 	using GET_CPC in sub-rules.
+	(class_member_declaration): Handle inner classes.
+	(method_declaration): When reducing method_header:, reset
+ 	current_function_decl when appropriate.
+	(method_declarator:): Set the number of formal parameter to 0 for
+ 	method declared without arguments.
+	(constructor_declarator:): Likewise.
+	(static_initializer:): List of elements kept in a list.
+	(static:): Rule modifiers: replaces MODIFIER_TK. Enforce correct
+ 	use of the keyword `static' for type declarations.
+	(block_statement:): Handle inner class declarations.
+	(primary_no_new_array:): Use type_literals:. Fixed comment. Handle
+ 	type qualified `this'.
+	(class_instance_creation_expression): Use anonymous_class_creation:
+	to handle inner class instances creation. Handle qualified `new'.
+	(something_dot_new): Added appropriate actions.
+	(create_new_parser_context): New function.
+	(java_push_parser_context, java_parser_context_save_global,
+ 	java_parser_context_suspend): Use create_new_parser_context.
+	(check_modifiers): Changed leading comment.
+	(check_class_interface_creation): Handle interclasses.
+	(add_superinterfaces): Fixed comment.
+	(create_interface): Build qualified name from the raw_name instead
+ 	of its matching WFL. Push the initialized fields list. raw_name added
+ 	as an extra argument to maybe_create_class_interface_decl.
+	(create_class): Build qualified name from the raw_name instead of
+ 	its matching WFL. Removed assignment to	current_parsed_class_un.
+	Call PUSH_ERROR before returning an error. Suspend the current
+ 	parser context when processing an inner class. Push the
+ 	initialized fields list. raw_name added as an extra argument to
+ 	maybe_create_class_interface_decl. Add the private this$<n>
+ 	field. 
+	(duplicate_declaration_error_p): Use GET_CPC when calling find_field.
+	(register_fields): Get the class type from GET_CPC and handle
+ 	previous errors.  Added code to handle the creation of static
+ 	fields in inner classes. Initialized fields initialization
+ 	statements kept in a list of lists.
+	(maybe_generate_finit): Initialized fields initialization
+ 	statements kept in a list of lists. Use GET_CPC.
+	(maybe_generate_clinit): Likewise.
+	(method_header): Use GET_CPC and GET_CPC_UN.
+	(parser_qualified_classname): Handle inner classes.
+	(register_incomplete_type): Set JDEP_ENCLOSING using GET_CPC.
+	(java_fix_constructors): Hide pointer to enclosing context
+ 	instance in constructor list when dealing with inner classes.
+	(jdep_resolve_class): Call resolve_class with extra first argument
+ 	JDEP_ENCLOSING.
+	(resolve_class): Add enclosing context as a first extra argument
+ 	to do_resolve_class.
+	(do_resolve_class): Call find_as_inner_class. Handle WFLs
+ 	properly.
+	(resolve_no_layout): Extra argument added to resolve_class
+ 	invocation.
+	(reset_method_name): Use DECL_CLINIT_P, DECL_FINIT_P.
+	(java_get_real_method_name): Use GET_CPC_UN.
+	(check_abstract_method_definitions): Use DECL_CLINIT_P.
+	(java_check_abstract_methods): Handle static method declared in
+ 	inner classes by an error.
+	(java_check_regular_methods): Use DECL_CLINIT_P.
+	(source_start_java_method): Also set DECL_MAX_LOCALS.
+	(create_artificial_method): Call java_parser_context_save_global
+ 	and java_parser_context_restore_global instead of saving/restoring
+ 	the context by hand.
+	(expand_start_java_method): Improved verbose mode message.
+	(java_complete_expand_methods): Fixed leading comment. Use
+ 	DECL_CLINIT_P.
+	(fix_constructors): Added assignment to this$<n> if necessary.
+	(java_expand_classes): Call java_complete_expand_classes instead
+ 	of java_complete_expand_methods.
+	(make_qualified_primary): Simplified.
+	(merge_qualified_name): Optimized for missing left or right parts.
+	(resolve_expression_name): Handle access to outer class fields from
+ 	interclasses.
+	(resolve_qualified_expression_name): New macro
+ 	RESTORE_THIS_AND_CURRENT_CLASS, used. Handle creation of inner
+ 	classes. Report error on non appropriate qualification of
+ 	`new'. Handle qualified `this'.
+	(not_accessible_p): Allow access to outer class private fields from
+ 	inner classes.
+	(patch_method_invocation): Handle method invocations through
+ 	access methods and inner class constructor invocations.
+	(find_applicable_accessible_methods_list): Search enclosing
+ 	contexts of an inner class.
+	(search_applicable_methods_list): Fixed typo.
+	(argument_types_convertible): Handle inner class constructors'
+ 	hidden outer context reference argument.
+	(qualify_ambiguous_name): Handle qualified `this'.
+	(java_complete_lhs): Handle use of field accessed through
+ 	artificial access methods in various cases of assignments. Handle
+ 	CLASS_LITERAL node.
+	(check_final_assignment): Use DECL_CLINIT_P.
+	(valid_ref_assignconv_cast_p): Handle the destination being an
+ 	enclosing context of the source.
+	(patch_unaryop): Handle use of field accessed through artificial
+ 	access methods.
+	(patch_return): Use DECL_CLINIT_P.
+	(patch_throw_statement): Use DECL_CLINIT_P.
+	(check_thrown_exceptions): Use DECL_FINIT_P and DECL_INIT_P.
+	* verify.c (verify_jvm_instructions): Use ID_CLINIT_P and
+ 	ID_INIT_P.
+	
 2000-01-16  Anthony Green  <green@cygnus.com>
 
 	* parse.y (build_string_concatenation): Only use

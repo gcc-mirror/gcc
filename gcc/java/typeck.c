@@ -611,12 +611,8 @@ build_java_signature (type)
   push_obstacks (&permanent_obstack, &permanent_obstack);
   while (TREE_CODE (type) == POINTER_TYPE)
     type = TREE_TYPE (type);
-  if (TYPE_LANG_SPECIFIC (type) == NULL)
-    {
-      TYPE_LANG_SPECIFIC (type) = (struct lang_type *)
-	perm_calloc (1, sizeof (struct lang_type));
-    }
-  sig = TYPE_LANG_SPECIFIC (type)->signature;
+  MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
+  sig = TYPE_SIGNATURE (type);
   if (sig == NULL_TREE)
     {
       char sg[2];
@@ -682,7 +678,7 @@ build_java_signature (type)
 	default:
 	  fatal ("internal error - build_java_signature passed invalid type");
 	}
-      TYPE_LANG_SPECIFIC (type)->signature = sig;
+      TYPE_SIGNATURE (type) = sig;
     }
   pop_obstacks ();
   return sig;
@@ -698,16 +694,11 @@ set_java_signature (type, sig)
   tree old_sig;
   while (TREE_CODE (type) == POINTER_TYPE)
     type = TREE_TYPE (type);
-  if (TYPE_LANG_SPECIFIC (type) == NULL)
-    {
-      TYPE_LANG_SPECIFIC (type) = (struct lang_type *)
-	perm_calloc (1, sizeof (struct lang_type));
-      
-    }
-  old_sig = TYPE_LANG_SPECIFIC (type)->signature;
+  MAYBE_CREATE_TYPE_TYPE_LANG_SPECIFIC (type);
+  old_sig = TYPE_SIGNATURE (type);
   if (old_sig != NULL_TREE && old_sig != sig)
     fatal ("internal error - set_java_signature");
-  TYPE_LANG_SPECIFIC (type)->signature = sig;
+  TYPE_SIGNATURE (type) = sig;
 #if 0 /* careful about METHOD_TYPE */
   if (IDENTIFIER_SIGNATURE_TYPE (sig) == NULL_TREE && TREE_PERMANENT (type))
     IDENTIFIER_SIGNATURE_TYPE (sig) = type;

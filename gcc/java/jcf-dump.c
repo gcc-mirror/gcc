@@ -294,6 +294,38 @@ DEFUN(utf8_equal_string, (jcf, index, value),
   else \
     JCF_SKIP (jcf, 4 * n); }
 
+#define HANDLE_INNERCLASSES_ATTRIBUTE(COUNT)				    \
+{ int n = (COUNT);							    \
+  COMMON_HANDLE_ATTRIBUTE(jcf, attribute_name, attribute_length);	    \
+  while (n--)								    \
+    {									    \
+      uint16 inner_class_info_index = JCF_readu2 (jcf);			    \
+      uint16 outer_class_info_index = JCF_readu2 (jcf);			    \
+      uint16 inner_name_index = JCF_readu2 (jcf);			    \
+      uint16 inner_class_access_flags = JCF_readu2 (jcf);		    \
+									    \
+      if (flag_print_class_info)					    \
+	{								    \
+	  fprintf (out, "\n  class: ");					    \
+	  if (flag_print_constant_pool)					    \
+	    fprintf (out, "%d=", inner_class_info_index);		    \
+	  print_constant_terse (out, jcf,				    \
+				inner_class_info_index, CONSTANT_Class);    \
+	  fprintf (out, " (%d=", inner_name_index);			    \
+	  print_constant_terse (out, jcf, inner_name_index, CONSTANT_Utf8); \
+	  fprintf (out, "), access flags: 0x%x", inner_class_access_flags); \
+	  print_access_flags (out, inner_class_access_flags, 'c');	    \
+	  fprintf (out, ", outer class: ");				    \
+	  if (flag_print_constant_pool)					    \
+	    fprintf (out, "%d=", outer_class_info_index);		    \
+	  print_constant_terse (out, jcf,				    \
+				outer_class_info_index, CONSTANT_Class);    \
+	}								    \
+    }									    \
+      if (flag_print_class_info)					    \
+	fputc ('\n', out);						    \
+}
+
 #define PROCESS_OTHER_ATTRIBUTE(JCF, INDEX, LENGTH) \
 { COMMON_HANDLE_ATTRIBUTE(JCF, INDEX, LENGTH); \
   fputc ('\n', out); JCF_SKIP (JCF, LENGTH); }

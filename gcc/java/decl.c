@@ -360,7 +360,7 @@ tree length_identifier_node;
 tree this_identifier_node;
 tree super_identifier_node;
 tree continue_identifier_node;
-
+tree access0_identifier_node;	/* 1.1 */
 tree end_params_node;
 
 /* References to internal libjava functions we use. */
@@ -460,6 +460,7 @@ init_decl_processing ()
   error_mark_node = make_node (ERROR_MARK);
   TREE_TYPE (error_mark_node) = error_mark_node;
 
+  initialize_sizetypes ();
   /* Create sizetype first - needed for other types. */
   initialize_sizetypes ();
   set_sizetype (make_unsigned_type (POINTER_SIZE));
@@ -601,6 +602,7 @@ init_decl_processing ()
   this_identifier_node = get_identifier ("this");
   super_identifier_node = get_identifier ("super");
   continue_identifier_node = get_identifier ("continue");
+  access0_identifier_node = get_identifier ("access$0");
 
   /* for lack of a better place to put this stub call */
   init_expr_processing();
@@ -965,8 +967,9 @@ pushdecl (x)
   register tree t;
   register tree name = DECL_NAME (x);
   register struct binding_level *b = current_binding_level;
-
-  DECL_CONTEXT (x) = current_function_decl;
+  
+  if (TREE_CODE (x) != TYPE_DECL)
+    DECL_CONTEXT (x) = current_function_decl;
   if (name)
     {
       const char *file;
@@ -1628,7 +1631,6 @@ build_result_decl (fndecl)
     restype = integer_type_node;
   return (DECL_RESULT (fndecl) = build_decl (RESULT_DECL, NULL_TREE, restype));
 }
-
 
 /* Called for every element in DECL_FUNCTION_INIT_TEST_TABLE in order
    to emit initialization code for each test flag.  */
