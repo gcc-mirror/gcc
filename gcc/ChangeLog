@@ -1,3 +1,8 @@
+2004-09-07  Jan Hubicka  <jh@suse.cz>
+
+	* tree-ssa-loop-ivopts.c (contains_abnormal_ssa_name_p): Deal with '<'
+	class too.
+
 2004-09-07  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* cfganal.c (flow_depth_first_order_compute, dfs_enumerate_from,

@@ -729,6 +729,7 @@ contains_abnormal_ssa_name_p (tree expr)
   switch (class)
     {
     case '2':
+    case '<':
       if (contains_abnormal_ssa_name_p (TREE_OPERAND (expr, 1)))
 	return true;
 
