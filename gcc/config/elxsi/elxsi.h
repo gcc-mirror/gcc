@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.  Elxsi version.
-   Copyright (C) 1987, 1988, 1992, 1995 Free Software Foundation, Inc.
-   This port, done by Mike Stump <mrs@cygnus.com> in 1988, is the first
+   Copyright (C) 1987, 1988, 1992, 1995, 1996 Free Software Foundation, Inc.
+   This port, contributed by Mike Stump <mrs@cygnus.com> in 1988, is the first
    64 bit port of GNU CC.
    Based upon the VAX port.
 
@@ -797,10 +797,9 @@ enum reg_class { NO_REGS, GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES };
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.extdef\t", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
-/* This is how to output a reference to a user-level label named NAME.  */
+/* The prefix to add to user-visible assembler symbols. */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+#define USER_LABEL_PREFIX ""
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */

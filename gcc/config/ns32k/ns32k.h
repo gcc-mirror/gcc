@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  NS32000 version.
-   Copyright (C) 1988, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1364,11 +1364,9 @@ do {									\
 } while (0)
 #endif
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
+/* The prefix to add to user-visible assembler symbols. */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "_%s", NAME)
+#define USER_LABEL_PREFIX "_"
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */

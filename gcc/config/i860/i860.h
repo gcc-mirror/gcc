@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for Intel 860.
-   Copyright (C) 1989, 1991, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1991, 1993, 1995, 1996 Free Software Foundation, Inc.
    Hacked substantially by Ron Guilmette (rfg@segfault.us.com) to cater to
    the whims of the System V Release 4 assembler.
 
@@ -1046,15 +1046,13 @@ struct cumulative_args { int ints, floats; };
 	fputs ("\n", FILE);						\
   } while (0)
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.
+/* The prefix to add to user-visible assembler symbols.
 
    This definition is overridden in i860v4.h because under System V
    Release 4, user-level symbols are *not* prefixed with underscores in
    the generated assembly code.  */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "_%s", NAME)
+#define USER_LABEL_PREFIX "_"
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Tahoe version.
-   Copyright (C) 1989, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -781,10 +781,9 @@ enum reg_class {NO_REGS,GENERAL_REGS,FPP_REG,ALL_REGS,LIM_REG_CLASSES};
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs (".globl ", FILE); assemble_name (FILE, NAME); fputs ("\n", FILE);} while (0)
 
-/* output a label by appending an underscore to it */
+/* The prefix to add to user-visible assembler symbols. */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "_%s", NAME)
+#define USER_LABEL_PREFIX "_"
 
 /* use the standard format for printing internal labels */
 

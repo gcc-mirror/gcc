@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T we32000 version.
-   Copyright (C) 1991, 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
    Contributed by John Wehle (john@feith1.uucp)
 
 This file is part of GNU CC.
@@ -770,11 +770,9 @@ enum reg_class { NO_REGS, GENERAL_REGS,
     fputs ("\n", FILE);			\
   } while (0)
 
-/* This is how to output a reference to a user-level label named NAME.
-   `assemble_name' uses this.  */
+/* The prefix to add to user-visible assembler symbols. */
 
-#define ASM_OUTPUT_LABELREF(FILE,NAME)	\
-  fprintf (FILE, "%s", NAME)
+#define USER_LABEL_PREFIX ""
 
 /* This is how to output an internal numbered label where
    PREFIX is the class of label and NUM is the number within the class.  */
