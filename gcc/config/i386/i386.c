@@ -1318,7 +1318,29 @@ sse_comparison_operator (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   enum rtx_code code = GET_CODE (op);
-  return code == EQ || code == LT || code == LE || code == UNORDERED;
+  switch (code)
+    {
+    /* Operations supported directly.  */
+    case EQ:
+    case LT:
+    case LE:
+    case UNORDERED:
+    case NE:
+    case UNGE:
+    case UNGT:
+    case ORDERED:
+      return 1;
+    /* These are equivalent to ones above in non-IEEE comparisons.  */
+    case UNEQ:
+    case UNLT:
+    case UNLE:
+    case LTGT:
+    case GE:
+    case GT:
+      return !TARGET_IEEE_FP;
+    default:
+      return 0;
+    }
 }
 /* Return 1 if OP is a valid comparison operator in valid mode.  */
 int
@@ -3326,7 +3348,9 @@ print_reg (x, code, file)
    k --  likewise, print the SImode name of the register.
    h --  print the QImode name for a "high" register, either ah, bh, ch or dh.
    y --  print "st(0)" instead of "st" as a register.
-   m --  print "st(n)" as an mmx register.  */
+   m --  print "st(n)" as an mmx register.
+   D -- print condition for SSE cmp instruction.
+ */
 
 void
 print_operand (file, x, code)
@@ -3460,6 +3484,47 @@ print_operand (file, x, code)
 	    }
 	  return;
 
+	case 'D':
+	  /* Little bit of braindamage here.  The SSE compare instructions
+	     does use completely different names for the comparisons that the
+	     fp conditional moves.  */
+	  switch (GET_CODE (x))
+	    {
+	    case EQ:
+	    case UNEQ:
+	      fputs ("eq", file);
+	      break;
+	    case LT:
+	    case UNLT:
+	      fputs ("lt", file);
+	      break;
+	    case LE:
+	    case UNLE:
+	      fputs ("le", file);
+	      break;
+	    case UNORDERED:
+	      fputs ("unord", file);
+	      break;
+	    case NE:
+	    case LTGT:
+	      fputs ("neq", file);
+	      break;
+	    case UNGE:
+	    case GE:
+	      fputs ("nlt", file);
+	      break;
+	    case UNGT:
+	    case GT:
+	      fputs ("nle", file);
+	      break;
+	    case ORDERED:
+	      fputs ("ord", file);
+	      break;
+	    default:
+	      abort ();
+	      break;
+	    }
+	  return;
 	case 'C':
 	  put_condition_code (GET_CODE (x), GET_MODE (XEXP (x, 0)), 0, 0, file);
 	  return;
