@@ -81,7 +81,7 @@ namespace _GLIBCXX_STD
 	_Tp*           _M_start;
 	_Tp*           _M_finish;
 	_Tp*           _M_end_of_storage;
-	_Vector_impl (_Alloc const& __a)
+	_Vector_impl(_Alloc const& __a)
 	: _Alloc(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
       };
@@ -799,7 +799,7 @@ namespace _GLIBCXX_STD
         _M_range_initialize(_InputIterator __first,
 			    _InputIterator __last, input_iterator_tag)
         {
-	  for ( ; __first != __last; ++__first)
+	  for (; __first != __last; ++__first)
 	    push_back(*__first);
 	}
 
@@ -809,7 +809,7 @@ namespace _GLIBCXX_STD
         _M_range_initialize(_ForwardIterator __first,
 			    _ForwardIterator __last, forward_iterator_tag)
         {
-	  size_type __n = std::distance(__first, __last);
+	  const size_type __n = std::distance(__first, __last);
 	  this->_M_impl._M_start = this->_M_allocate(__n);
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
 	  this->_M_impl._M_finish = std::uninitialized_copy(__first, __last,

@@ -419,15 +419,16 @@ namespace _GLIBCXX_STD
     };
 
   template<typename _Tp, typename _Alloc>
-  _Deque_base<_Tp,_Alloc>::~_Deque_base()
-  {
-    if (this->_M_impl._M_map)
+    _Deque_base<_Tp, _Alloc>::
+    ~_Deque_base()
     {
-      _M_destroy_nodes(this->_M_impl._M_start._M_node,
-		       this->_M_impl._M_finish._M_node + 1);
-      _M_deallocate_map(this->_M_impl._M_map, this->_M_impl._M_map_size);
+      if (this->_M_impl._M_map)
+	{
+	  _M_destroy_nodes(this->_M_impl._M_start._M_node,
+			   this->_M_impl._M_finish._M_node + 1);
+	  _M_deallocate_map(this->_M_impl._M_map, this->_M_impl._M_map_size);
+	}
     }
-  }
 
   /**
    *  @if maint
@@ -441,12 +442,14 @@ namespace _GLIBCXX_STD
   */
   template<typename _Tp, typename _Alloc>
     void
-    _Deque_base<_Tp,_Alloc>::_M_initialize_map(size_t __num_elements)
+    _Deque_base<_Tp, _Alloc>::
+    _M_initialize_map(size_t __num_elements)
     {
-      size_t __num_nodes = __num_elements / __deque_buf_size(sizeof(_Tp)) + 1;
+      const size_t __num_nodes = (__num_elements / __deque_buf_size(sizeof(_Tp))
+				  + 1);
 
       this->_M_impl._M_map_size = std::max((size_t) _S_initial_map_size,
-				   size_t(__num_nodes + 2));
+					   size_t(__num_nodes + 2));
       this->_M_impl._M_map = _M_allocate_map(this->_M_impl._M_map_size);
 
       // For "small" maps (needing less than _M_map_size nodes), allocation
@@ -478,7 +481,8 @@ namespace _GLIBCXX_STD
 
   template<typename _Tp, typename _Alloc>
     void
-    _Deque_base<_Tp,_Alloc>::_M_create_nodes(_Tp** __nstart, _Tp** __nfinish)
+    _Deque_base<_Tp, _Alloc>::
+    _M_create_nodes(_Tp** __nstart, _Tp** __nfinish)
     {
       _Tp** __cur;
       try
@@ -495,7 +499,8 @@ namespace _GLIBCXX_STD
 
   template<typename _Tp, typename _Alloc>
     void
-    _Deque_base<_Tp,_Alloc>::_M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
+    _Deque_base<_Tp, _Alloc>::
+    _M_destroy_nodes(_Tp** __nstart, _Tp** __nfinish)
     {
       for (_Tp** __n = __nstart; __n < __nfinish; ++__n)
 	_M_deallocate_node(*__n);
@@ -923,7 +928,10 @@ namespace _GLIBCXX_STD
        */
       reference
       at(size_type __n)
-      { _M_range_check(__n); return (*this)[__n]; }
+      {
+	_M_range_check(__n);
+	return (*this)[__n];
+      }
 
       /**
        *  @brief  Provides access to the data contained in the %deque.

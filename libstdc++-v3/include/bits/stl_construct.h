@@ -117,7 +117,10 @@ namespace std
     inline void
     __destroy_aux(_ForwardIterator __first, _ForwardIterator __last,
 		  __false_type)
-    { for ( ; __first != __last; ++__first) std::_Destroy(&*__first); }
+    {
+      for (; __first != __last; ++__first)
+	std::_Destroy(&*__first);
+    }
 
   /**
    * @if maint
