@@ -1,8 +1,3 @@
-# We don't want to use debugging information on DOS.  Unfortunately,
-# this requires that we set CFLAGS.
-# This used to set -fno-omit-frame-pointer.
-CFLAGS=-O2
-
 # Shorten the target alias so when it is used to set 'libsubdir'
 # the name will work in both short and long filename environments.
 ifeq ($(findstring -pc-msdosdjgpp,$(target_alias)),-pc-msdosdjgpp)
