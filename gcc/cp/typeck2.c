@@ -247,6 +247,10 @@ incomplete_type_error (value, type)
 	  error ("invalid use of member type (did you forget the `&' ?)");
 	  return;
 
+	case TEMPLATE_TYPE_PARM:
+	  error ("invalid use of template type parameter");
+	  return;
+
 	default:
 	  my_friendly_abort (108);
 	}

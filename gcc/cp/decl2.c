@@ -2785,7 +2785,11 @@ import_export_decl (decl)
       if (DECL_IMPLICIT_INSTANTIATION (decl)
 	  && (flag_implicit_templates || DECL_THIS_INLINE (decl)))
 	{
-	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	  if (!TREE_PUBLIC (decl))
+	    /* Templates are allowed to have internal linkage.  See 
+	       [basic.link].  */
+	    ;
+	  else if (TREE_CODE (decl) == FUNCTION_DECL)
 	    comdat_linkage (decl);
 	  else
 	    DECL_COMDAT (decl) = 1;
@@ -3600,9 +3604,20 @@ build_expr_from_tree (t)
       }
 
     case COMPONENT_REF:
-      return build_x_component_ref
-	(build_expr_from_tree (TREE_OPERAND (t, 0)),
-	 TREE_OPERAND (t, 1), NULL_TREE, 1);
+      {
+	tree object = build_expr_from_tree (TREE_OPERAND (t, 0));
+
+	if (object != NULL_TREE 
+	    && TREE_CODE (object) == TEMPLATE_DECL)
+	  {
+	    cp_error ("invalid use of %D", object);
+	    object = error_mark_node;
+	  }
+
+	return build_x_component_ref
+	  (object,
+	   TREE_OPERAND (t, 1), NULL_TREE, 1);
+      }
 
     case THROW_EXPR:
       return build_throw (build_expr_from_tree (TREE_OPERAND (t, 0)));

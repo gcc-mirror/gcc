@@ -1464,7 +1464,11 @@ mapcar (t, func)
     case VAR_DECL:
     case FUNCTION_DECL:
     case CONST_DECL:
-      break;
+      /* Rather than aborting, return error_mark_node.  This allows us
+	 to report a sensible error message on code like this:
+
+	 void g() { int i; f<i>(7); } */
+      return error_mark_node;
 
     case PARM_DECL:
       {

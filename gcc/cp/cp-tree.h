@@ -1539,6 +1539,7 @@ extern tree null_node;
 
 extern tree current_template_parms;
 extern HOST_WIDE_INT processing_template_decl;
+extern tree last_tree;
 
 /* The template currently being instantiated, and where the instantiation
    was triggered.  */
@@ -1983,6 +1984,7 @@ extern void maybe_push_cache_obstack		PROTO((void));
 extern unsigned HOST_WIDE_INT skip_rtti_stuff	PROTO((tree *));
 extern tree build_self_reference		PROTO((void));
 extern void warn_hidden				PROTO((tree));
+extern int is_local_class                       PROTO((tree));
 
 /* in cvt.c */
 extern tree convert_to_reference		PROTO((tree, tree, int, int, tree));
@@ -1998,6 +2000,8 @@ extern tree build_type_conversion		PROTO((enum tree_code, tree, tree, int));
 extern tree build_expr_type_conversion		PROTO((int, tree, int));
 extern int build_default_binary_type_conversion	PROTO((enum tree_code, tree *, tree *));
 extern tree type_promotes_to			PROTO((tree));
+extern tree perform_qualification_conversions   PROTO((tree, tree));
+extern tree perform_array_to_pointer_conversion PROTO((tree));
 
 /* decl.c */
 /* resume_binding_level */
@@ -2317,14 +2321,16 @@ extern void begin_template_parm_list		PROTO((void));
 extern void begin_specialization                PROTO((void));
 extern void reset_specialization                PROTO((void));
 extern void end_specialization                  PROTO((void));
-extern tree determine_explicit_specialization   PROTO((tree, tree, tree *, int, int));
-extern int check_explicit_specialization       PROTO((tree, tree, int, int));
+extern void begin_explicit_instantiation        PROTO((void));
+extern void end_explicit_instantiation          PROTO((void));
+extern tree determine_specialization            PROTO((tree, tree, tree *, int, int));
+extern int check_explicit_specialization        PROTO((tree, tree, int, int));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
 extern void end_template_decl			PROTO((void));
 extern tree current_template_args		PROTO((void));
 extern void push_template_decl			PROTO((tree));
-extern tree lookup_template_class		PROTO((tree, tree, tree));
+extern tree lookup_template_class		PROTO((tree, tree, tree, tree));
 extern tree lookup_template_function            PROTO((tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
@@ -2344,6 +2350,8 @@ extern tree do_poplevel				PROTO((void));
 extern tree get_bindings			PROTO((tree, tree));
 /* CONT ... */
 extern void add_tree				PROTO((tree));
+extern void begin_tree                          PROTO((void));
+extern void end_tree                            PROTO((void));
 extern void add_maybe_template			PROTO((tree, tree));
 extern void pop_tinst_level			PROTO((void));
 extern tree most_specialized			PROTO((tree, tree));
@@ -2351,7 +2359,9 @@ extern tree most_specialized_class		PROTO((tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
+extern int comp_template_parms                  PROTO((tree, tree));
 extern int processing_specialization;
+extern int processing_explicit_instantiation;
 
 /* in repo.c */
 extern void repo_template_used			PROTO((tree));

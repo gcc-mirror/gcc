@@ -1,3 +1,136 @@
+Mon Jan 19 22:40:03 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* decl.c (start_decl): Don't allow duplicate definitions of static
+	data members.
+
+	* call.c (build_user_type_conversion_1): Handle user-defined
+	template conversion operators correctly.
+
+	* decl2.c (build_expr_from_tree): Issue an error message if the
+	object in a COMPONENT_REF is a TEMPLATE_DECL.
+	
+	* typeck.c (incomplete_type_error): Handle TEMPLATE_TYPE_PARMs.
+	
+	* class.c (is_local_class): New function.
+	* cp-tree.h (is_local_class): Declare it.
+	(last_tree): Likewise.
+	(begin_tree): Likewise.
+	(end_tree): Likewise.
+	(lookup_template_class): Change prototype.
+	* decl.c (cp_finish_decl): Check for NULL where necesary.
+	Consider FUNCTION_DECLS to declare objects with top-level binding,
+	when calling make_decl_rtl.
+	(grokdeclarator): Give members of local classes internal linkage.
+	(start_function): Remove declaration of last_tree.
+	(finish_function): Set flag_keep_inline_functions around call to
+	rest_of_compilation if we are processing a member function in a
+	local class.
+	(start_method): Call push_template_decl for member functions of
+	local classes in template functions.
+	* decl2.c (import_export_decl): Don't give external linkage to
+	instantiations of templates with internal linkage.
+	* parse.y (last_tree): Remove declaration.
+	(template_type): Pass extra parameter to lookup_template_class.
+	(self_template_type): Likewise.
+	(structsp): Move call to reset_specialization into left_curly.
+	(left_curly): Call reset_specialization, and begin_tree.
+	* pt.c (saved_trees): New variable.
+	(mangle_class_name_for_template): Change prototype.  Use
+	additional function context to name local classes in templates
+	correctly. 
+	(classtype_mangled_name): Pass the context.
+	(push_template_decl): Handle local classes and templates, and
+	member functions for such classes.
+	(convert_nontype_parameter): Fix handling of pointer-to-member
+	constants. 
+	(lookup_template_class): Handle local classes in templates.
+	(tsubst): Likewise.  Don't assume that template instantiations
+	have external linkage; pay attention to the template declaration. 
+	(mark_decl_instantiated): Likewise.
+	(begin_tree): New function.
+	(end_tree): Likewise.
+	
+	* decl.c (xref_basetypes): Don't call complete_type for basetypes
+	that involve template parameters; that can lead to infinite
+	recursion unnecessarily.
+
+	* pt.c (register_specialization): Do not register specializations
+	that aren't ready to be registered yet.
+	(check_explicit_specialization): Handle explicit specialization of
+	constructors and destructors.
+	(build_template_decl): New function.
+	(push_template_delc): Handle out-of-class specializations of
+	member templates.
+	
+        * pt.c (check_explicit_specialization): Set up the template
+        information before registering the specialization.
+        (coerce_template_parms): Fix thinko.
+        (tsubst): Handle specializations of member templates correctly.
+
+	* class.c (finish_struct_methods): Remove calls to
+	check_explicit_specialization from here.
+	(finish_struct): And insert them here.
+	* cp-tree.h (perform_qualification_conversions): New function.
+	(perform_array_to_pointer_conversion): Likewise.
+	(begin_explicit_instantiation): Likewise.
+	(end_explicit_instantiation): Likewise.
+	(determine_specialization): Renamed from
+	determine_explicit_specialization. 
+	(comp_template_parms): New function.
+	(processing_explicit_instantiation): New variable.
+	* cvt.c (perform_qualification_conversions): New function.
+	(perform_array_to_pointer_conversion): Likewise.
+	* decl.c (duplicate_decls): Don't consider template functions
+	alike unless they have the same parameters.  Refine handling of
+	instantiation/specialization mismatches.
+	(start_decl): Don't call pushdecl for template specializations,
+	since they don't affect overloading.
+	(start_function): Likewise
+	(grokfndecl): Call check_explicit_specialization a little later.
+	Don't call duplicate_decls for memberm template specializations.
+	(grokdeclarator): Don't update template_count for classes that are
+	themselves specializations.  Remove use of `2' as parameter to
+	grokfndecl since that value isn't used.
+	* lex.c (cons_up_default_function): Save and restore
+	processing_explicit_instantiation around calls to grokfield.
+	* parse.y (finish_member_template_decl): New function.
+	(component_decl_1): Use it.
+	(fn.def2): Likewise.
+	(template_arg_list_opt): New nonterminal.	
+	(template_type): Use it.
+	(self_template_type): Likewise.
+	(template_id): Likewise.
+	(object_template_id): Likewise.
+	(notype_template_declarator): Likwise.
+	(begin_explicit_instantiation): Likewise.
+	(end_explicit_instantiation): Likewise.
+	(explicit_instantiation): Use them.
+	* pt.c (coerce_template_parms): Add parameters.
+	(processing_explicit_instantiation): New variable.
+	(convert_nontype_parameter): New function.
+	(determine_overloaded_function): Likewise.
+	(begin_explicit_instantiation): Likewise.
+	(end_explicit_instantiation): Likewise.
+	(retrieve_specialization): Likewise.
+	(register_specialization): Likewise.
+	(processing_explicit_specialization): Removed.
+	(determine_specialization): Handle specializations of member
+	functions of template class instantiations.
+	(check_explicit_specialization): Refine to conform to standard.
+	(comp_template_parms): New function.
+	(coerce_template_parms): Call convert_nontype_parameter.
+	(tsubst): Refine handling of member templates.  Use
+	register_specialization. 
+	(instantiate_template): Use retrieve_specialization.
+	(do_decl_instantiation): Likewise.
+	(instantiate_decl): Likewise.
+	(type_unification): Improve handling of explict template
+	arguments. 
+	* tree.c (mapcar): Return error_mark_node, rather than aborting,
+	on VAR_DECLS, FUNCTION_DECLS, and CONST_DECLS.
+	* typeck.c (build_unary_op): Call determine_specialization, rather
+	than determine_explicit_specialization.
+
 Mon Jan 19 13:18:51 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cvt.c (build_up_reference): A TARGET_EXPR has side effects.

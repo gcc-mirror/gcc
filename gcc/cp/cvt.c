@@ -1682,3 +1682,134 @@ type_promotes_to (type)
 
   return cp_build_type_variant (type, constp, volatilep);
 }
+
+
+/* The routines below this point are carefully written to conform to
+   the standard.  They use the same terminology, and follow the rules
+   closely.  Although they are used only in pt.c at the moment, they
+   should presumably be used everywhere in the future.  */
+
+tree 
+perform_qualification_conversions (type, expr)
+     tree type;
+     tree expr;
+{
+  tree expr_type = TREE_TYPE (expr);
+  tree t1;
+  tree t2;
+  int j;
+  int all_have_const = 1;
+
+  if (comptypes (type, expr_type, 1))
+    /* The two types are already the same, so there is nothing to do.  */
+    return expr;
+
+  j = 0;
+  t1 = expr_type;
+  t2 = type; 
+
+  while (1)
+    {
+      if (TREE_CODE (type) != TREE_CODE (expr_type))
+	return error_mark_node;
+
+      if (j > 0 
+	  && TREE_CODE (type) == POINTER_TYPE)
+	{
+	  if (TYPE_READONLY (t1) > TYPE_READONLY (t2)
+	      || TYPE_VOLATILE (t1) > TYPE_VOLATILE (t2))
+	    /* For every j>0, if const is in cv1,j the const is in
+	       cv2,j, and similarly for volatile.  */
+	    return error_mark_node;
+	}
+
+      if (!all_have_const 
+	  && (TYPE_READONLY (t1) != TYPE_READONLY (t2)
+	      || TYPE_READONLY (t1) != TYPE_READONLY (t2)))
+	/* If the cv1,j and cv2,j are different, then const is in every
+	   cv2,k for 0<k<j.  */
+	return error_mark_node;
+	
+      if (j > 0 && !TYPE_READONLY (t2))
+	all_have_const = 0;
+
+      if (TREE_CODE (type) != POINTER_TYPE)
+	{
+	  if (j == 0)
+	    /* The two things to be converted weren't even pointer
+	       types.  */
+	    return error_mark_node;
+	  
+	  if (TYPE_PTRMEMFUNC_P (type))
+	    {
+	      t1 = TYPE_PTRMEMFUNC_FN_TYPE (t1);
+	      t2 = TYPE_PTRMEMFUNC_FN_TYPE (t2);
+	    }
+
+	  if (comptypes (TYPE_MAIN_VARIANT (t1),
+			 TYPE_MAIN_VARIANT (t2), 1))
+	    return build1 (NOP_EXPR, type, expr);
+	  else
+	    /* The pointers were not similar.  */
+	    return error_mark_node;
+	}
+
+      if (TYPE_PTRMEM_P (type) 
+	  && !comptypes (TYPE_OFFSET_BASETYPE (TREE_TYPE (t1)),
+			 TYPE_OFFSET_BASETYPE (TREE_TYPE (t2)),
+			 1))
+	/* One type is X::* and the other is Y::*.  */
+	return error_mark_node;
+
+      if (TYPE_PTRMEM_P (type))
+	{
+	  t1 = TREE_TYPE (TREE_TYPE (t1));
+	  t2 = TREE_TYPE (TREE_TYPE (t2));
+	}
+      else
+	{
+	  t1 = TREE_TYPE (t1);
+	  t2 = TREE_TYPE (t2);
+	}
+    }
+}
+
+
+/* Perform array-to-pointer conversion on EXPR, if appropriate.
+   Return the converted expression, or EXPR if no
+   conversion was performed, or error_mark_node if the conversion was
+   attempted, but failed.  (For example, if an attempt is made to take
+   the address of a non-addressable object.)  */
+
+tree 
+perform_array_to_pointer_conversion (expr)
+     tree expr;
+{
+  tree result = expr;
+
+  if (TREE_CODE (TREE_TYPE (expr)) == ARRAY_TYPE)
+    {
+      tree type = build_pointer_type (TREE_TYPE (TREE_TYPE (expr)));
+      
+      /* This section is copied from decay_conversion.  */
+      if (TREE_CODE (expr) == VAR_DECL)
+	{
+	  /* ??? This is not really quite correct
+	     in that the type of the operand of ADDR_EXPR
+	     is not the target type of the type of the ADDR_EXPR itself.
+	     Question is, can this lossage be avoided?  */
+	  result = build1 (ADDR_EXPR, type, expr);
+	  if (mark_addressable (expr) == 0)
+	    return error_mark_node;
+	  TREE_CONSTANT (result) = staticp (expr);
+	  TREE_SIDE_EFFECTS (result) = 0; /* Default would be, same as
+					     EXPR.  */ 
+	}
+      else 
+	/* This way is better for a COMPONENT_REF since it can
+	   simplify the offset for a component.  */
+	result = build_unary_op (ADDR_EXPR, expr, 1);
+    }
+
+  return result;
+}
