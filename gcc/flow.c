@@ -6930,7 +6930,6 @@ remove_edge (e)
     dest->pred = e->pred_next;
 
   free (e);
-
 }
 
 /* This routine will remove any fake successor edges for a basic block.
@@ -6966,7 +6965,7 @@ remove_fake_edges ()
       bb = BASIC_BLOCK (x);
       remove_fake_successors (bb);
     }
-  /* we've handled all successors except the entry block's.  */
+  /* We've handled all successors except the entry block's.  */
   remove_fake_successors (ENTRY_BLOCK_PTR);
 }
 
@@ -6974,7 +6973,7 @@ remove_fake_edges ()
    successors, and the exit block. Some data flow equations require these
    edges to exist.  */
 void
-add_fake_exit_edges ()
+add_noreturn_fake_exit_edges ()
 {
   int x;
 
