@@ -27,7 +27,6 @@ integer f_back(alist *a)
 	}
 	if(b->uwrt) {
 		(void) t_runc(a);
-		f = b->ufd;	/* t_runc might change b->ufd */
 		if (f__nowreading(b))
 			err(a->aerr,errno,"backspace");
 		}
