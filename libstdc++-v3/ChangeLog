@@ -1,3 +1,8 @@
+2003-03-04  Alexandre Oliva  <aoliva@redhat.com>
+
+	* src/strstream.cc, include/bits/basic_string.tcc: Remove
+	incorrect whitespace added in my previous change.
+
 2003-03-05  Carlo Wood  <carlo@alinoe.com>
 
         * include/bits/ios_base.h(ios_base::Init::_S_initialized()): Added

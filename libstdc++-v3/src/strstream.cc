@@ -148,7 +148,7 @@ namespace std
     if (pptr() == epptr() && _M_dynamic && !_M_frozen && !_M_constant) 
       {
 	ptrdiff_t old_size = epptr() - pbase();
-	ptrdiff_t new_size = std::max(ptrdiff_t (2 * old_size), ptrdiff_t (1));
+	ptrdiff_t new_size = std::max(ptrdiff_t(2 * old_size), ptrdiff_t(1));
 	
 	char* buf = _M_alloc(new_size);
 	if (buf) 
