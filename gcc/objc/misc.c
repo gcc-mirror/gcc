@@ -1,6 +1,6 @@
 /* GNU Objective C Runtime Miscellaneous 
    Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
-   Contrbuted by Kresten Krab Thorup
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
@@ -144,9 +144,37 @@ objc_free(void *mem)
 ** Users should call the normal objc routines above for
 ** memory allocation and disposal within their programs.
 */
+
+#if OBJC_WITH_GC
+#include <gc.h>
+
+static void *GC_calloc (size_t nelem, size_t size)
+{
+  void* p = GC_malloc (nelem * size);
+  if (!p)
+    objc_error (nil, OBJC_ERR_MEMORY, "Virtual memory exhausted!\n");
+
+  memset (p, 0, nelem * size);
+  return p;
+}
+
+static void noFree (void* p) {}
+
+void *(*_objc_malloc)(size_t) = GC_malloc;
+void *(*_objc_atomic_malloc)(size_t) = GC_malloc_atomic;
+void *(*_objc_valloc)(size_t) = GC_malloc;
+void *(*_objc_realloc)(void *, size_t) = GC_realloc;
+void *(*_objc_calloc)(size_t, size_t) = GC_calloc;
+void (*_objc_free)(void *) = noFree;
+
+#else
+
 void *(*_objc_malloc)(size_t) = malloc;
 void *(*_objc_atomic_malloc)(size_t) = malloc;
 void *(*_objc_valloc)(size_t) = malloc;
 void *(*_objc_realloc)(void *, size_t) = realloc;
 void *(*_objc_calloc)(size_t, size_t) = calloc;
 void (*_objc_free)(void *) = free;
+
+
+#endif

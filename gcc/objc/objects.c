@@ -25,7 +25,12 @@ Boston, MA 02111-1307, USA.  */
    covered by the GNU General Public License.  */
 
 #include "../tconfig.h"         /* include defs of bzero for target */
+#include "objc.h"
 #include "runtime.h"		/* the kitchen sink */
+
+#if OBJC_WITH_GC
+# include <gc.h>
+#endif
 
 id __objc_object_alloc(Class);
 id __objc_object_dispose(id);
@@ -39,8 +44,16 @@ id
 class_create_instance(Class class)
 {
   id new = nil;
+
+#if OBJC_WITH_GC
+  if (CLS_ISCLASS(class))
+    new = (id)GC_malloc_explicitly_typed (class->instance_size,
+					  class->gc_object_type);
+#else
   if (CLS_ISCLASS(class))
     new = (*_objc_object_alloc)(class);
+#endif
+
   if (new!=nil)
     {
       memset (new, 0, class->instance_size);

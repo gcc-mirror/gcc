@@ -59,6 +59,8 @@ struct objc_method_description
 #define _C_UINT     'I'
 #define _C_LNG      'l'
 #define _C_ULNG     'L'
+#define _C_LNG_LNG  'q'
+#define _C_ULNG_LNG 'Q'
 #define _C_FLT      'f'
 #define _C_DBL      'd'
 #define _C_BFLD     'b'
@@ -494,6 +496,17 @@ class_set_version(Class class, long version)
   if (CLS_ISCLASS(class))
     class->version = version;
 }
+
+static inline void *
+class_get_gc_object_type (Class class)
+{
+  return CLS_ISCLASS(class) ? class->gc_object_type : NULL;
+}
+
+/* Mark the instance variable as innaccessible to the garbage collector */
+extern void class_ivar_set_gcinvisible (Class class,
+					const char* ivarname,
+					BOOL gcInvisible);
 
 static inline IMP
 method_get_imp(Method_t method)

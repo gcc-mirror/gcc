@@ -3380,6 +3380,7 @@ build_selector_template ()
        struct objc_class *sibling_class;
      }
      struct objc_protocol_list *protocols;
+     void *gc_object_type;
    };  */
 
 static void
@@ -3515,6 +3516,21 @@ build_class_template ()
 			  decl_specs, NULL_TREE);
   chainon (field_decl_chain, field_decl);
 
+  /* void *sel_id; */
+
+  decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_VOID]);
+  field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("sel_id"));
+  field_decl
+    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  chainon (field_decl_chain, field_decl);
+
+  /* void *gc_object_type; */
+
+  decl_specs = build_tree_list (NULL_TREE, ridpointers[(int) RID_VOID]);
+  field_decl = build1 (INDIRECT_REF, NULL_TREE, get_identifier ("gc_object_type"));
+  field_decl
+    = grokfield (input_filename, lineno, field_decl, decl_specs, NULL_TREE);
+  chainon (field_decl_chain, field_decl);
 
   finish_struct (objc_class_template, field_decl_chain, NULL_TREE);
 }
@@ -4287,6 +4303,7 @@ build_category_initializer (type, cat_name, class_name,
        struct objc_class *sibling_class;
      }
      struct objc_protocol_list *protocols;
+     void *gc_object_type;
    };  */
 
 static tree
@@ -4376,6 +4393,9 @@ build_shared_structure_initializer (type, isa, super, name, size, status,
      TREE_TYPE (expr) = cast_type2;
      initlist = tree_cons (NULL_TREE, expr, initlist);
      }
+
+  /* gc_object_type = NULL */
+  initlist = tree_cons (NULL_TREE, build_int_2 (0, 0), initlist);
 
   return build_constructor (type, nreverse (initlist));
 }
@@ -6819,6 +6839,62 @@ encode_type (type, curtype, format)
 }
 
 static void
+encode_complete_bitfield (int position, tree type, int size)
+{
+  enum tree_code code = TREE_CODE (type);
+  char buffer[40];
+  char charType = '?';
+
+  if (code == INTEGER_TYPE)
+    {
+      if (TREE_INT_CST_LOW (TYPE_MIN_VALUE (type)) == 0
+	  && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (type)) == 0)
+	{
+	  /* Unsigned integer types.  */
+
+	  if (TYPE_MODE (type) == QImode)
+	    charType = 'C';
+	  else if (TYPE_MODE (type) == HImode)
+	    charType = 'S';
+	  else if (TYPE_MODE (type) == SImode)
+	    {
+	      if (type == long_unsigned_type_node)
+		charType = 'L';
+	      else
+		charType = 'I';
+	    }
+	  else if (TYPE_MODE (type) == DImode)
+	    charType = 'Q';
+	}
+
+      else
+	/* Signed integer types.  */
+	{
+	  if (TYPE_MODE (type) == QImode)
+	    charType = 'c';
+	  else if (TYPE_MODE (type) == HImode)
+	    charType = 's';
+	  else if (TYPE_MODE (type) == SImode)
+	    {
+	      if (type == long_integer_type_node)
+		charType = 'l';
+	      else
+		charType = 'i';
+	    }
+
+	  else if (TYPE_MODE (type) == DImode)
+	    charType = 'q';
+	}
+    }
+
+  else
+    abort ();
+
+  sprintf (buffer, "b%d%c%d", position, charType, size);
+  obstack_grow (&util_obstack, buffer, strlen (buffer));
+}
+
+static void
 encode_field_decl (field_decl, curtype, format)
      tree field_decl;
      int curtype;
@@ -6826,18 +6902,36 @@ encode_field_decl (field_decl, curtype, format)
 {
   tree type;
 
- /* If this field is obviously a bitfield, or is a bitfield that has been
+  type = TREE_TYPE (field_decl);
+
+  /* If this field is obviously a bitfield, or is a bitfield that has been
      clobbered to look like a ordinary integer mode, go ahead and generate
      the bitfield typing information.  */
-  type = TREE_TYPE (field_decl);
-  if (DECL_BIT_FIELD (field_decl))
-    encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
-  else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	   && DECL_FIELD_SIZE (field_decl)
-	   && TYPE_MODE (type) > DECL_MODE (field_decl))
-    encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
+  if (flag_next_runtime)
+    {
+      if (DECL_BIT_FIELD (field_decl))
+	encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
+      else if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	       && DECL_FIELD_SIZE (field_decl)
+	       && TYPE_MODE (type) > DECL_MODE (field_decl))
+	encode_bitfield (DECL_FIELD_SIZE (field_decl), format);
+      else
+	encode_type (TREE_TYPE (field_decl), curtype, format);
+    }
   else
-    encode_type (TREE_TYPE (field_decl), curtype, format);
+    {
+      if (DECL_BIT_FIELD (field_decl)
+	  || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	      && DECL_FIELD_SIZE (field_decl)
+	      && TYPE_MODE (type) > DECL_MODE (field_decl)))
+	{
+	  encode_complete_bitfield (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field_decl)),
+				    DECL_BIT_FIELD_TYPE (field_decl),
+				    DECL_FIELD_SIZE (field_decl));
+	}
+      else
+	encode_type (TREE_TYPE (field_decl), curtype, format);
+    }
 }
 
 static tree

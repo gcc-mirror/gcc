@@ -81,8 +81,23 @@ copy-headers:
 Makefile: $(srcdir)/Makefile.in $(srcdir)/../configure
 	cd ..; $(SHELL) config.status
 
+doc: info dvi html
+info: objc-features.info
+dvi: objc-features.dvi
+html: objc-features_toc.html
+
+objc-features.info: $(srcdir)/objc-features.texi
+	makeinfo $(srcdir)/objc-features.texi
+
+objc-features.dvi: $(srcdir)/objc-features.texi
+	texi2dvi $(srcdir)/objc-features.texi
+
+objc-features_toc.html: objc-features.texi
+	texi2html -split_node $(srcdir)/objc-features.texi
+
 mostlyclean:
-	-rm -f *.o libobjc.a xforward fflags
+	-rm -f *.o libobjc* xforward fflags *.aux *.cp *.dvi *.fn *.info \
+		*.ky *.log *.pg *.toc *.tp *.vr *.html
 clean: mostlyclean
 distclean: mostlyclean
 extraclean: mostlyclean
