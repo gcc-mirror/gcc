@@ -5825,7 +5825,7 @@ mips_make_temp_file ()
 
   stream = fopen (temp_filename, "w+");
   if (!stream)
-    pfatal_with_name (temp_filename);
+    fatal_io_error ("can't open %s", temp_filename);
 
 #ifndef __MSDOS__
   /* In MSDOS, we cannot unlink the temporary file until we are finished using
@@ -6075,17 +6075,17 @@ mips_asm_file_end (file)
       fprintf (file, "\n\t.text\n");
       rewind (asm_out_text_file);
       if (ferror (asm_out_text_file))
-	fatal_io_error (temp_filename);
+	fatal_io_error ("can't rewind %s", temp_filename);
 
       while ((len = fread (buffer, 1, sizeof (buffer), asm_out_text_file)) > 0)
 	if ((int) fwrite (buffer, 1, len, file) != len)
-	  pfatal_with_name (asm_file_name);
+	  fatal_io_error ("can't write to %s", asm_file_name);
 
       if (len < 0)
-	pfatal_with_name (temp_filename);
+	fatal_io_error ("can't read from %s", temp_filename);
 
       if (fclose (asm_out_text_file) != 0)
-	pfatal_with_name (temp_filename);
+	fatal_io_error ("can't close %s", temp_filename);
 
 #ifdef __MSDOS__
       unlink (temp_filename);
