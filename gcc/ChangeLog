@@ -1,3 +1,7 @@
+Mon Sep 22 02:10:43 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Sep 21 17:45:45 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* loop.c (loop_number): Delete function.  Change all references
