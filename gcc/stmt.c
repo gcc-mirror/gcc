@@ -2080,8 +2080,16 @@ resolve_operand_names (string, outputs, inputs, pconstraints)
   p = buffer;
   while ((p = strchr (p, '%')) != NULL)
     {
-      if (*++p != '[')
-	continue;
+      if (p[1] == '[')
+	p += 1;
+      else if (ISALPHA (p[1]) && p[2] == '[')
+	p += 2;
+      else
+	{
+	  p += 1;
+	  continue;
+	}
+
       p = resolve_operand_name_1 (p, outputs, inputs);
     }
 
