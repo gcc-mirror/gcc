@@ -1,3 +1,22 @@
+2005-02-01  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cse.c (cse_reg_info): Remove hash_next, next, regno.  Add
+	timestamp.
+	(cse_reg_info_list, cse_reg_info_list_free, REGHASH_SHIFT,
+	REGHASH_SIZE, REGHASH_MASK, reg_hash, REGHASH_FN,
+	cached_cse_reg_info, GET_CSE_REG_INFO): Remove.
+	(cached_regno): Initialize to INVALID_REGNUM.
+	(cse_reg_info_table_size,
+	cse_reg_info_table_first_uninitialized,
+	cse_reg_info_timestamp): New.
+	(REG_TICK, REG_IN_TABLE, SUBREG_TICKED, REG_QTY): Use
+	get_cse_reg_info.
+	(init_cse_reg_info, get_cse_reg_info_1): New.
+	(get_cse_reg_info): Cache the last look-up.
+	(new_basic_block): Update the code to clear mappings from
+	registers to cse_reg_info entries.
+	(cse_main): Call init_cse_reg_info.
+
 2005-01-31  Steven Bosscher  <stevenb@suse.de>
 
 	PR c/19333
