@@ -3784,8 +3784,8 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		remainder = expand_binop (compute_mode, sub_optab, op0, tem,
 					  remainder, 0, OPTAB_LIB_WIDEN);
 	      }
-	    abs_rem = expand_abs (compute_mode, remainder, NULL_RTX, 0, 0);
-	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 0, 0);
+	    abs_rem = expand_abs (compute_mode, remainder, NULL_RTX, 0);
+	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 0);
 	    tem = expand_shift (LSHIFT_EXPR, compute_mode, abs_rem,
 				build_int_2 (1, 0), NULL_RTX, 1);
 	    do_cmp_and_jump (tem, abs_op1, LTU, compute_mode, label);

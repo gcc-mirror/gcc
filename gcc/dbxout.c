@@ -497,7 +497,7 @@ dbxout_typedefs (syms)
 
 void
 dbxout_start_new_source_file (filename)
-     char *filename;
+     char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_USE_BINCL
   struct dbx_file *n = (struct dbx_file *) xmalloc (sizeof *n);
@@ -582,8 +582,8 @@ dbxout_source_line (file, filename, lineno)
 
 void
 dbxout_finish (file, filename)
-     FILE *file;
-     char *filename;
+     FILE *file ATTRIBUTE_UNUSED;
+     char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILE_END
   DBX_OUTPUT_MAIN_SOURCE_FILE_END (file, filename);
@@ -2190,7 +2190,7 @@ dbxout_symbol_name (decl, suffix, letter)
 
 static void
 dbxout_prepare_symbol (decl)
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
 #ifdef WINNING_GDB
   char *filename = DECL_SOURCE_FILE (decl);
@@ -2683,7 +2683,7 @@ dbxout_really_begin_function (decl)
 
 void
 dbxout_begin_function (decl)
-     tree decl;
+     tree decl ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_FUNCTION_FIRST
   dbxout_really_begin_function (decl);

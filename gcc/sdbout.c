@@ -338,7 +338,7 @@ void
 sdbout_init (asm_file, input_file_name, syms)
      FILE *asm_file;
      char *input_file_name;
-     tree syms;
+     tree syms ATTRIBUTE_UNUSED;
 {
 #ifdef MIPS_DEBUGGING_INFO
   current_file = (struct sdb_file *) xmalloc (sizeof *current_file);
@@ -1561,7 +1561,7 @@ void
 sdbout_end_block (file, line, n)
      FILE *file;
      int line;
-     int n;
+     int n ATTRIBUTE_UNUSED;
 {
   MAKE_LINE_SAFE (line);
 

@@ -5576,8 +5576,8 @@ debug_end_source_file (lineno)
 
 void
 debug_define (lineno, buffer)
-     register unsigned lineno;
-     register char *buffer;
+     register unsigned lineno ATTRIBUTE_UNUSED;
+     register char *buffer ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF_DEBUGGING_INFO
   if (debug_info_level == DINFO_LEVEL_VERBOSE
@@ -5597,8 +5597,8 @@ debug_define (lineno, buffer)
 
 void
 debug_undef (lineno, buffer)
-     register unsigned lineno;
-     register char *buffer;
+     register unsigned lineno ATTRIBUTE_UNUSED;
+     register char *buffer ATTRIBUTE_UNUSED;
 {
 #ifdef DWARF_DEBUGGING_INFO
   if (debug_info_level == DINFO_LEVEL_VERBOSE

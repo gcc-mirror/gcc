@@ -7205,7 +7205,7 @@ expand_expr (exp, target, tmode, modifier)
       if (TREE_UNSIGNED (type))
 	return op0;
 
-      return expand_abs (mode, op0, target, unsignedp,
+      return expand_abs (mode, op0, target,
 			 safe_from_p (target, TREE_OPERAND (exp, 0), 1));
 
     case MAX_EXPR:

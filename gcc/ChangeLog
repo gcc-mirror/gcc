@@ -1,3 +1,34 @@
+Fri Mar 19 11:19:31 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* calls.c (initialize_argument_information): Mark parameters
+	`num_actuals' and `n_named_args' with ATTRIBUTE_UNUSED.
+
+	* dbxout.c (dbxout_start_new_source_file): Likewise for parameter
+	`filename'.
+	(dbxout_finish): Likewise for parameters `file' and `filename'.
+	(dbxout_prepare_symbol): Likewise for parameter `decl'.
+	(dbxout_begin_function): Likewise.
+
+	* explow.c (hard_function_value): Likewise for parameter `func'.
+
+	* function.c (locate_and_pad_parm): Likewise for parameter `fndecl'.
+	
+	* expmed.c (expand_divmod): Omit unused argument to `expand_abs'.
+	* expr.c (expand_expr): Likewise.
+	* expr.h (expand_abs): Delete unused argument from prototype.
+	* optabs.c (expand_abs): Remove unused parameter `unsignedp'.
+
+	* sdbout.c (sdbout_init): Mark parameter `syms' with ATTRIBUTE_UNUSED.
+	(sdbout_end_block): Likewise for parameter `n'.
+	
+	* toplev.c (debug_define): Likewise for parameters `lineno' and
+	`buffer'.
+	(debug_undef): Likewise.
+	
+	* varasm.c (named_section): Likewise for parameter 'reloc'.
+	(assemble_external): Likewise for parameter `decl'.
+	(assemble_alias): Likewise for parameter `target'.
+	
 Fri Mar 19 01:54:30 1999  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
 	* toplev.c (read_integral_parameter): Constify.  Better control of

@@ -2109,14 +2109,13 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
    MODE is the mode of the operand; the mode of the result is
    different but can be deduced from MODE.
 
-   UNSIGNEDP is relevant if extension is needed.  */
+ */
 
 rtx
-expand_abs (mode, op0, target, unsignedp, safe)
+expand_abs (mode, op0, target, safe)
      enum machine_mode mode;
      rtx op0;
      rtx target;
-     int unsignedp;
      int safe;
 {
   rtx temp, op1;
