@@ -1387,8 +1387,10 @@ compute_record_mode (type)
       if (bitpos / BITS_PER_WORD
 	  != ((tree_low_cst (DECL_SIZE (field), 1) + bitpos - 1)
 	      / BITS_PER_WORD)
-	  /* But there is no problem if the field is entire words.  */
-	  && tree_low_cst (DECL_SIZE (field), 1) % BITS_PER_WORD != 0)
+	  /* But there is no problem if the field is entire words
+	     or bigger than a word.  */
+	  && ! (tree_low_cst (DECL_SIZE (field), 1) % BITS_PER_WORD == 0
+		|| compare_tree_int (DECL_SIZE (field), BITS_PER_WORD) > 0))
 	return;
 
       /* If this field is the whole struct, remember its mode so
