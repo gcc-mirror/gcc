@@ -33,6 +33,7 @@
 #define _CPP_BITS_LOCFACETS_TCC 1
 
 #include <bits/std_cerrno.h>
+#include <bits/std_clocale.h>   // For localeconv
 #include <bits/std_cstdlib.h>   // For strof, strtold
 #include <bits/std_limits.h>    // For numeric_limits
 #include <bits/std_memory.h>    // For auto_ptr

@@ -28,7 +28,9 @@
 #include <assert.h>
 #include <libioP.h>
 #include <wchar.h>
-#include <gconv.h>
+#ifdef HAVE_GCONV_H
+#  include <gconv.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 

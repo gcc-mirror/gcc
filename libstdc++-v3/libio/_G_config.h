@@ -37,15 +37,15 @@ typedef unsigned int wint_t;
 
 /* For use as part of glibc (native) or as part of libstdc++ (maybe
    not glibc) */
-#ifndef __mbstate_t_defined
-# define __mbstate_t_defined	1
-# ifdef _GLIBCPP_USE_WCHAR_T
+#ifndef __c_mbstate_t_defined
+# define __c_mbstate_t_defined	1
+/*# ifdef _GLIBCPP_USE_WCHAR_T*/
 typedef struct
 {
   int count;
   wint_t value;
-}__mbstate_t;
-# endif
+}__c_mbstate_t;
+/*# endif*/
 #endif
 #undef __need_mbstate_t
 
@@ -56,13 +56,13 @@ typedef size_t _G_size_t;
 typedef struct
 {
   __off_t __pos;
-  __mbstate_t __state;
+  __c_mbstate_t __state;
 } _G_fpos_t;
 
 typedef struct
 {
   __off64_t __pos;
-  __mbstate_t __state;
+  __c_mbstate_t __state;
 } _G_fpos64_t;
 #else
 typedef __off_t _G_fpos_t;

@@ -1,3 +1,17 @@
+2000-10-25  Phil Edwards  <pme@sources.redhat.com>
+
+        * configure.in:  Check for gconv.h.
+        * libio/wfileops.c:  Wrap gconv.h in HAVE_GCONV_H.
+
+        * config/c_io_libio_codecvt.c:  Change __mbstate_t to __c_mbstate_t.
+        * libio/_G_config.h:  And here.
+        * libio/iofwide.c:  And here.
+        * libio/libio.h:  And here.
+
+        * config/os/solaris/solaris2.7/bits/ctype_noninline.h:  Remove
+          exception specification to match declaration.
+        * include/bits/locale_facets.tcc:  Include bits/std_clocale.h.
+
 2000-10-24   Mark Harig <mharig@landmark.com>
 
         * docs/configopts.html: Added documentation for the
