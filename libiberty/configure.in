@@ -83,6 +83,7 @@ funcs="$funcs atexit"
 funcs="$funcs basename"
 funcs="$funcs bcmp"
 funcs="$funcs bcopy"
+funcs="$funcs bsearch"
 funcs="$funcs bzero"
 funcs="$funcs calloc"
 funcs="$funcs clock"
@@ -127,13 +128,13 @@ checkfuncs="getrusage on_exit psignal strerror strsignal sysconf times sbrk gett
 # These are neither executed nor required, but they help keep
 # autoheader happy without adding a bunch of text to acconfig.h.
 if test "x" = "y"; then
-  AC_CHECK_FUNCS(asprintf atexit basename bcmp bcopy bzero calloc clock getcwd)
-  AC_CHECK_FUNCS(getpagesize index insque mkstemps memchr memcmp memcpy memmove)
-  AC_CHECK_FUNCS(memset putenv random rename rindex sigsetmask strcasecmp)
-  AC_CHECK_FUNCS(setenv strchr strdup strncasecmp strrchr strstr strtod strtol)
-  AC_CHECK_FUNCS(strtoul tmpnam vasprintf vfprintf vprintf vsprintf waitpid)
-  AC_CHECK_FUNCS(getrusage on_exit psignal strerror strsignal sysconf times)
-  AC_CHECK_FUNCS(sbrk gettimeofday)
+  AC_CHECK_FUNCS(asprintf atexit basename bcmp bcopy bsearch bzero calloc clock)
+  AC_CHECK_FUNCS(getcwd getpagesize index insque mkstemps memchr memcmp memcpy)
+  AC_CHECK_FUNCS(memmove memset putenv random rename rindex sigsetmask)
+  AC_CHECK_FUNCS(strcasecmp setenv strchr strdup strncasecmp strrchr strstr)
+  AC_CHECK_FUNCS(strtod strtol strtoul tmpnam vasprintf vfprintf vprintf)
+  AC_CHECK_FUNCS(vsprintf waitpid getrusage on_exit psignal strerror strsignal)
+  AC_CHECK_FUNCS(sysconf times sbrk gettimeofday)
   AC_DEFINE(HAVE_SYS_ERRLIST, 1, [Define if you have the sys_errlist variable.])
   AC_DEFINE(HAVE_SYS_NERR,    1, [Define if you have the sys_nerr variable.])
   AC_DEFINE(HAVE_SYS_SIGLIST, 1, [Define if you have the sys_siglist variable.])

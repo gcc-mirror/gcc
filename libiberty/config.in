@@ -67,6 +67,9 @@
 /* Define if you have the bcopy function.  */
 #undef HAVE_BCOPY
 
+/* Define if you have the bsearch function.  */
+#undef HAVE_BSEARCH
+
 /* Define if you have the bzero function.  */
 #undef HAVE_BZERO
 
