@@ -1,3 +1,7 @@
+2002-01-09  Gwenole Beauchesne  <bgeauchesne@mandrakesoft.com>
+
+	* gcc.c-torture/execute/loop-10.c: New test.
+
 2002-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c-torture/compile/20010226-1.c: New test.
