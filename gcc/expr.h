@@ -29,6 +29,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define BRANCH_COST 1
 #endif
 
+/* The default is that we do not promote the mode of an object.  */
+#ifndef PROMOTE_MODE
+#define PROMOTE_MODE(MODE,UNSIGNEDP,TYPE)
+#endif
+
 /* Macros to access the slots of a QUEUED rtx.
    Here rather than in rtl.h because only the expansion pass
    should ever encounter a QUEUED.  */
