@@ -2576,8 +2576,8 @@ gfc_match_end (gfc_statement * st)
       if (!eos_ok)
 	{
 	  /* We would have required END [something]  */
-	  gfc_error ("%s statement expected at %C",
-		     gfc_ascii_statement (*st));
+	  gfc_error ("%s statement expected at %L",
+		     gfc_ascii_statement (*st), &old_loc);
 	  goto cleanup;
 	}
 
