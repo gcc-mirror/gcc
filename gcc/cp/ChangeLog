@@ -1,3 +1,13 @@
+2000-12-15  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_op_delete_call): See through ARRAY_TYPEs.
+
+	* call.c (build_new_function_call): Lose space before paren in
+	error message.
+	(build_new_method_call): Likewise.
+
+	* typeck2.c (build_m_component_ref): Propagate quals from datum.
+
 2000-12-14  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (check_explicit_specialization): Propagate default
