@@ -176,7 +176,8 @@ bin_SCRIPTS = addr2name.awk
 @CANADIAN_TRUE@@NULL_TARGET_TRUE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_TRUE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
 @CANADIAN_TRUE@@NULL_TARGET_FALSE@ZIP = @CANADIAN_TRUE@@NULL_TARGET_FALSE@jar
 @CANADIAN_FALSE@ZIP = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/fastjar/jar
-@CANADIAN_TRUE@GCJH = @CANADIAN_TRUE@gcjh
+@CANADIAN_TRUE@@NULL_TARGET_TRUE@GCJH = @CANADIAN_TRUE@@NULL_TARGET_TRUE@gcjh
+@CANADIAN_TRUE@@NULL_TARGET_FALSE@GCJH = @CANADIAN_TRUE@@NULL_TARGET_FALSE@$(target_alias)-gcjh
 @CANADIAN_FALSE@GCJH = @CANADIAN_FALSE@$(MULTIBUILDTOP)../$(COMPPATH)/gcc/gcjh
 
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8 -Wno-deprecated
@@ -3095,8 +3096,8 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/java/awt/GraphicsConfiguration.P .deps/java/awt/GraphicsDevice.P \
 .deps/java/awt/GraphicsEnvironment.P \
 .deps/java/awt/GridBagConstraints.P .deps/java/awt/GridBagLayout.P \
-.deps/java/awt/GridBagLayoutInfo.P \
-.deps/java/awt/GridLayout.P .deps/java/awt/HeadlessException.P \
+.deps/java/awt/GridBagLayoutInfo.P .deps/java/awt/GridLayout.P \
+.deps/java/awt/HeadlessException.P \
 .deps/java/awt/IllegalComponentStateException.P .deps/java/awt/Image.P \
 .deps/java/awt/ImageCapabilities.P .deps/java/awt/Insets.P \
 .deps/java/awt/ItemSelectable.P .deps/java/awt/JobAttributes.P \
