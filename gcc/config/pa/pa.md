@@ -1529,6 +1529,25 @@
 
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
+	(mem:SI (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"ldwx %1(0,%2),%0\";
+  else
+    return \"ldwx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
 	(mem:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "basereg_operand" "r"))))]
   "! TARGET_DISABLE_INDEXING"
@@ -1851,7 +1870,20 @@
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
-;; This variant of the above insn can occur if the second operand
+; Same thing with zero extension.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:HI
+			  (plus:SI
+			    (mult:SI (match_operand:SI 2 "register_operand" "r")
+				     (const_int 2))
+			 (match_operand:SI 1 "register_operand" "r")))))]
+  "! TARGET_DISABLE_INDEXING"
+  "ldhx,s %2(0,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+;; These variants of the above insns can occur if the second operand
 ;; is the frame pointer.  This is a kludge, but there doesn't
 ;; seem to be a way around it.  Only recognize it while reloading.
 ;; Note how operand 3 uses a predicate of "const_int_operand", but 
@@ -1877,6 +1909,44 @@
   [(set_attr "type" "load")
    (set_attr "length" "8")])
 
+; Now the zero extended variant.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(zero_extend:SI (mem:HI (plus:SI (plus:SI
+			    (mult:SI (match_operand:SI 2 "register_operand" "r")
+				     (const_int 2))
+			    (match_operand:SI 1 "register_operand" "r"))
+			 (match_operand:SI 3 "const_int_operand" "rI")))))]
+  "! TARGET_DISABLE_INDEXING && reload_in_progress"
+  "*
+{
+  if (GET_CODE (operands[3]) == CONST_INT)
+    return \"sh1addl %2,%1,%0\;ldh %3(0,%0),%0\";
+  else
+    return \"sh1addl %2,%1,%0\;ldhx %3(0,%0),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "8")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(mem:HI (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"ldhx %1(0,%2),%0\";
+  else
+    return \"ldhx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "r")
@@ -1896,10 +1966,67 @@
   [(set_attr "type" "load")
    (set_attr "length" "4")])
 
+; Now zero extended variants.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:HI
+			  (plus:SI
+			    (match_operand:SI 1 "basereg_operand" "r")
+			    (match_operand:SI 2 "register_operand" "r")))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"ldhx %1(0,%2),%0\";
+  else
+    return \"ldhx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:HI
+			  (plus:SI
+			     (match_operand:SI 1 "register_operand" "r")
+			     (match_operand:SI 2 "basereg_operand" "r")))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"ldhx %2(0,%1),%0\";
+  else
+    return \"ldhx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
 (define_insn ""
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(mem:HI (plus:SI (match_operand:SI 1 "register_operand" "=r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
+   (set (match_dup 1)
+	(plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "ldhs,mb %2(0,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+; And a zero extended variant.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:HI
+			  (plus:SI
+			    (match_operand:SI 1 "register_operand" "=r")
+			    (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
@@ -1964,8 +2091,112 @@
 
 (define_insn ""
   [(set (match_operand:QI 0 "register_operand" "=r")
+	(mem:QI (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"ldbx %1(0,%2),%0\";
+  else
+    return \"ldbx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:QI 0 "register_operand" "=r")
 	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "basereg_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"ldbx %2(0,%1),%0\";
+  else
+    return \"ldbx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+; Indexed byte load with zero extension to SImode or HImode.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:QI
+			  (plus:SI
+			    (match_operand:SI 1 "basereg_operand" "r")
+			    (match_operand:SI 2 "register_operand" "r")))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"ldbx %1(0,%2),%0\";
+  else
+    return \"ldbx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:QI
+			  (plus:SI
+			    (match_operand:SI 1 "register_operand" "r")
+			    (match_operand:SI 2 "basereg_operand" "r")))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[1] == hard_frame_pointer_rtx
+      || operands[1] == stack_pointer_rtx)
+    return \"ldbx %2(0,%1),%0\";
+  else
+    return \"ldbx %1(0,%2),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(zero_extend:HI (mem:QI
+			  (plus:SI
+			    (match_operand:SI 1 "basereg_operand" "r")
+			    (match_operand:SI 2 "register_operand" "r")))))]
+  "! TARGET_DISABLE_INDEXING"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"ldbx %1(0,%2),%0\";
+  else
+    return \"ldbx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(zero_extend:HI (mem:QI
+			  (plus:SI
+			    (match_operand:SI 1 "register_operand" "r")
+			    (match_operand:SI 2 "basereg_operand" "r")))))]
   "! TARGET_DISABLE_INDEXING"
   "*
 {
@@ -1985,6 +2216,29 @@
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(mem:QI (plus:SI (match_operand:SI 1 "register_operand" "=r")
 			 (match_operand:SI 2 "int5_operand" "L"))))
+   (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "ldbs,mb %2(0,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+; Now the same thing with zero extensions.
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI (mem:QI (plus:SI
+				  (match_operand:SI 1 "register_operand" "=r")
+				  (match_operand:SI 2 "int5_operand" "L")))))
+   (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
+  ""
+  "ldbs,mb %2(0,%1),%0"
+  [(set_attr "type" "load")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:HI 0 "register_operand" "=r")
+	(zero_extend:HI (mem:QI (plus:SI
+				  (match_operand:SI 1 "register_operand" "=r")
+				  (match_operand:SI 2 "int5_operand" "L")))))
    (set (match_dup 1) (plus:SI (match_dup 1) (match_dup 2)))]
   ""
   "ldbs,mb %2(0,%1),%0"
@@ -2227,6 +2481,25 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "register_operand" "=fx")
+	(mem:DF (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"flddx %1(0,%2),%0\";
+  else
+    return \"flddx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:DF 0 "register_operand" "=fx")
 	(mem:DF (plus:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "basereg_operand" "r"))))]
   "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
@@ -2282,6 +2555,25 @@
 }"
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
+
+(define_insn ""
+  [(set (mem:DF (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r")))
+	(match_operand:DF 0 "register_operand" "fx"))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"fstdx %0,%1(0,%2)\";
+  else
+    return \"fstdx %0,%2(0,%1)\";
+}"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "4")])
 
 (define_insn ""
   [(set (mem:DF (plus:SI (match_operand:SI 1 "register_operand" "r")
@@ -2570,6 +2862,25 @@
 
 (define_insn ""
   [(set (match_operand:SF 0 "register_operand" "=fx")
+	(mem:SF (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r"))))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"fldwx %1(0,%2),%0\";
+  else
+    return \"fldwx %2(0,%1),%0\";
+}"
+  [(set_attr "type" "fpload")
+   (set_attr "length" "4")])
+
+(define_insn ""
+  [(set (match_operand:SF 0 "register_operand" "=fx")
 	(mem:SF (plus:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "basereg_operand" "r"))))]
   "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
@@ -2626,6 +2937,25 @@
   [(set_attr "type" "fpstore")
    (set_attr "length" "8")])
 
+(define_insn ""
+  [(set (mem:SF (plus:SI (match_operand:SI 1 "basereg_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r")))
+      (match_operand:SF 0 "register_operand" "fx"))]
+  "! TARGET_DISABLE_INDEXING && ! TARGET_SOFT_FLOAT"
+  "*
+{
+  /* Reload can create backwards (relative to cse) unscaled index
+     address modes when eliminating registers and possibly for
+     pseudos that don't get hard registers.  Deal with it.  */
+  if (operands[2] == hard_frame_pointer_rtx
+      || operands[2] == stack_pointer_rtx)
+    return \"fstwx %0,%1(0,%2)\";
+  else
+    return \"fstwx %0,%2(0,%1)\";
+}"
+  [(set_attr "type" "fpstore")
+   (set_attr "length" "4")])
+
 (define_insn ""
   [(set (mem:SF (plus:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:SI 2 "basereg_operand" "r")))
