@@ -1,3 +1,8 @@
+Wed May 16 13:38:21 2001  Jeffrey A Law  (law@cygnus.com)
+
+	* pa32-regs.h (HARD_REGNO_MODE_OK): Allow TI/TFmode values in
+	GPRs.
+
 2001-05-16  Richard Henderson  <rth@redhat.com>
 
 	* except.c (eh_data_format_name): Move to ...
