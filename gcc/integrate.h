@@ -117,4 +117,9 @@ extern void try_constants PROTO((rtx, struct inline_remap *));
 
 extern void mark_stores PROTO((rtx, rtx));
 
+/* Unfortunately, we need a global copy of const_equiv map for communication
+   with a function called from note_stores.  Be *very* careful that this
+   is used properly in the presence of recursion.  */
+
 extern rtx *global_const_equiv_map;
+extern int global_const_equiv_map_size;
