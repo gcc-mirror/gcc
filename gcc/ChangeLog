@@ -1,3 +1,8 @@
+2004-04-06  Devang Patel  <dpatel@apple.com>
+
+	PR 14467
+	* config/darwin.h (LINK_COMMAND_SPEC): Use c++filt instead of c++filt3.
+	
 2004-04-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* doc/install.texi: Update HP-UX 11 installation procedure.
