@@ -3621,10 +3621,11 @@ expand_expr (exp, target, tmode, modifier)
 		target = gen_reg_rtx (mode);
 	      else
 		{
-		  rtx safe_target = assign_stack_temp (mode, int_size_in_bytes (type), 0);
-		  if (target)
-		    MEM_IN_STRUCT_P (safe_target) = MEM_IN_STRUCT_P (target);
-		  target = safe_target;
+		  enum tree_code c = TREE_CODE (type);
+		  target
+		    = assign_stack_temp (mode, int_size_in_bytes (type), 0);
+		  if (c == RECORD_TYPE || c == UNION_TYPE || c == ARRAY_TYPE)
+		    MEM_IN_STRUCT_P (target) = 1;
 		}
 	    }
 	  store_constructor (exp, target);
