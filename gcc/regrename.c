@@ -1109,7 +1109,7 @@ kill_value (x, vd)
 	{
 	  if (vd->e[j].mode == VOIDmode)
 	    continue;
-	  n = HARD_REGNO_NREGS (regno, vd->e[j].mode);
+	  n = HARD_REGNO_NREGS (j, vd->e[j].mode);
 	  if (j + n > regno)
 	    for (i = 0; i < n; ++i)
 	      kill_value_regno (j + i, vd);
