@@ -564,7 +564,7 @@ static const char *cpp_options =
  %{!undef:%{!ansi:%{!std=*:%p}%{std=gnu*:%p}} %P} %{trigraphs}\
  %c %{Os:-D__OPTIMIZE_SIZE__} %{O*:%{!O0:-D__OPTIMIZE__}}\
  %{ffast-math:-D__FAST_MATH__}\
- %{fshort-wchar:-D__WCHAR_TYPE__=short\\ unsigned\\ int}\
+ %{fshort-wchar:-U__WCHAR_TYPE__ -D__WCHAR_TYPE__=short\\ unsigned\\ int}\
  %{fshow-column} %{fno-show-column}\
  %{fleading-underscore} %{fno-leading-underscore}\
  %{g*} %{W*} %{w} %{pedantic*} %{H} %{d*} %C %{D*} %{U*} %{i*} %Z %i\
