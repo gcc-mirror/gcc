@@ -1,3 +1,8 @@
+2000-07-30  Anthony Green  <green@redhat.com>
+
+	* libjava.compile/PR295.java: New file.
+	See PR gcj/295.
+
 2000-07-11  Andrew Haley  <aph@cygnus.com>
 
 	* libjava.compile/static_init2.java: New file.
