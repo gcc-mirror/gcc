@@ -104,6 +104,7 @@ a register with any other reload.  */
 #include "output.h"
 #include "function.h"
 #include "toplev.h"
+#include "target.h"
 
 #ifndef REGNO_MODE_OK_FOR_BASE_P
 #define REGNO_MODE_OK_FOR_BASE_P(REGNO, MODE) REGNO_OK_FOR_BASE_P (REGNO)
@@ -3369,6 +3370,11 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 		  const_to_mem = 1;
 		  if (this_alternative[i] != (int) NO_REGS)
 		    losers++;
+
+		  /* If constant pool symbols are not valid addresses,
+		     count an extra reload for the address.  */
+		  if (!targetm.direct_pool_load_p (operand_mode[i]))
+		    losers++;
 		}
 
 	      /* If we can't reload this value at all, reject this
@@ -3393,6 +3399,21 @@ find_reloads (rtx insn, int replace, int ind_levels, int live_known,
 	      else if (modified[i] != RELOAD_WRITE && no_input_reloads
 		       && ! const_to_mem)
 		bad = 1;
+
+#ifdef SECONDARY_MEMORY_NEEDED
+	      /* If this alternative would use memory to move a value
+		 between registers, it would need two reloads, one for
+		 the load and one for the store.  Account for the extra
+		 reload here.  */
+	      if (GET_CODE (operand) == REG
+		  && REGNO (operand) < FIRST_PSEUDO_REGISTER
+		  && this_alternative[i] != NO_REGS
+		  && (SECONDARY_MEMORY_NEEDED
+		      (this_alternative[i],
+		       REGNO_REG_CLASS (REGNO (operand)),
+		       GET_MODE (operand))))
+		losers++;
+#endif
 
 	      /* We prefer to reload pseudos over reloading other things,
 		 since such reloads may be able to be eliminated later.

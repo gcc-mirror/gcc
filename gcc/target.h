@@ -370,6 +370,8 @@ struct gcc_target
      invalid addresses.  */
   int (* address_cost) (rtx x);
 
+  bool (* direct_pool_load_p) (enum machine_mode);
+
   /* Given a register, this hook should return a parallel of registers
      to represent where to find the register pieces.  Define this hook
      if the register and its mode are represented in Dwarf in
