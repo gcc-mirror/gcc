@@ -160,6 +160,9 @@ private:
   java::lang::reflect::Method *getPrivateMethod (jstring, JArray<jclass> *);
   java::security::ProtectionDomain *getProtectionDomain0 ();
 
+  java::lang::reflect::Method *_getMethod (jstring, JArray<jclass> *);
+  java::lang::reflect::Method *_getDeclaredMethod (jstring, JArray<jclass> *);
+
 public:
   JArray<java::lang::reflect::Field *> *getFields (void);
 
@@ -167,7 +170,6 @@ public:
 
   void getSignature (java::lang::StringBuffer *buffer);
   static jstring getSignature (JArray<jclass> *, jboolean is_constructor);
-  java::lang::reflect::Method *_getMethod (jstring, JArray<jclass> *);
   JArray<java::lang::reflect::Method *> *getMethods (void);
 
   inline jint getModifiers (void)

@@ -1,3 +1,12 @@
+2002-09-03  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Class.h (_getDeclaredMethod): Declare.
+	(_getMethod): Now private.
+	* java/lang/natClass.cc (_getDeclaredMethod): Renamed from
+	getDeclaredMethod.  Now returns NULL on failure.
+	* java/lang/Class.java (_getDeclaredMethod): Declare.
+	(getDeclaredMethod): No longer native; implements access checks.
+
 2002-09-01  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/gcj/runtime/NameFinder.java (remove_interpreter): New field.

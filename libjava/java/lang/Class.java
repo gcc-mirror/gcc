@@ -65,9 +65,31 @@ public final class Class implements Serializable
   public native Field getDeclaredField (String fieldName)
     throws NoSuchFieldException, SecurityException;
   public native Field[] getDeclaredFields () throws SecurityException;
-  public native Method getDeclaredMethod (String methodName,
-					  Class[] parameterTypes)
-    throws NoSuchMethodException, SecurityException;
+
+  private native Method _getDeclaredMethod (String methodName,
+					    Class[] parameterTypes);
+
+  public Method getDeclaredMethod (String methodName, Class[] parameterTypes)
+    throws NoSuchMethodException, SecurityException
+  {
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      {
+	sm.checkMemberAccess(this, Member.DECLARED);
+	Package p = getPackage();
+	if (p != null)
+	  sm.checkPackageAccess(p.getName());
+      }
+
+    if ("<init>".equals(methodName) || "<clinit>".equals(methodName))
+      throw new NoSuchMethodException(methodName);
+
+    Method m = _getDeclaredMethod(methodName, parameterTypes);
+    if (m == null)
+      throw new NoSuchMethodException (methodName);
+    return m;
+  }
+
   public native Method[] getDeclaredMethods () throws SecurityException;
 
   // This is marked as unimplemented in the JCL book.
