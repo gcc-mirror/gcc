@@ -1,3 +1,8 @@
+2000-05-15  David Edelsohn  <edelsohn@gnu.org>
+
+	Makefile.in: Change "pic" to depend on $(PICFLAG), not
+	on $(enable_shared).
+
 2000-05-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* config.table: Use mh-sparcpic for sparc*-*-*.

@@ -108,8 +108,9 @@ INCDIR=$(srcdir)/$(MULTISRCTOP)../include
 
 COMPILE.c = $(CC) -c @DEFS@ $(LIBCFLAGS) -I. -I$(INCDIR) $(HDEFINES) @ac_libiberty_warn_cflags@
 .c.o:
-	test x"$(enable_shared)" != xyes || \
-	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@
+	if [ x"$(PICFLAG)" != x ]; then \
+	  $(COMPILE.c) $(PICFLAG) $< -o pic/$@; \
+	else true; fi
 	$(COMPILE.c) $<
 
 info: info-subdir
@@ -185,7 +186,7 @@ required-list: Makefile
 	echo $(REQUIRED_OFILES) > required-list
 
 stamp-picdir:
-	if [ x"$(enable_shared)" = xyes ] && [ ! -d pic ]; then \
+	if [ x"$(PICFLAG)" != x ] && [ ! -d pic ]; then \
 	  mkdir pic; \
 	else true; fi
 	touch stamp-picdir
