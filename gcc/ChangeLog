@@ -1,5 +1,7 @@
 2001-01-11  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	* config/mips/vxworks.h: Don't terminate comment before its end.
+
 	* invoke.texi: Update -fvtable-thunks documentation.
 
 	* loop.c (scan_loop): Disable copy propagation if we find a REG_LABEL
