@@ -170,7 +170,13 @@ case $basic_machine in
 		;;
 	iris | iris4d)
 		basic_machine=mips-sgi
-		os=-irix
+		case $os in
+		    -irix*)
+			;;
+		    *)
+			os=-irix4
+			;;
+		esac
 		;;
 	news | news700 | news800 | news900)
 		basic_machine=m68k-sony
