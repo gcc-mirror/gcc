@@ -1597,6 +1597,12 @@ decay_conversion (exp)
       type = TREE_TYPE (exp);
     }
 
+  if (TREE_CODE (exp) == NAMESPACE_DECL)
+    {
+      cp_error ("namespace `%D' used as expression", exp);
+      return error_mark_node;
+    }
+
   /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
      Leave such NOP_EXPRs, since RHS is being used in non-lvalue context.  */
 

@@ -1,3 +1,14 @@
+1998-05-24  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl.c (push_namespace): Namespaces have type void.
+	* typeck2.c (incomplete_type_error): Complain about namespace
+	used as expression.
+	* typeck.c (decay_conversion): Likewise.
+
+1998-05-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* error.c (dump_expr): Support namespaces.
+
 1998-05-23  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* cp-tree.def: Add SRCLOC.
