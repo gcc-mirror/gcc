@@ -1,6 +1,6 @@
 // 2000-06-29 bkoz
 
-// Copyright (C) 2000, 2003 Free Software Foundation
+// Copyright (C) 2000, 2003, 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,24 +25,26 @@
 #include <fstream>
 #include <testsuite_hooks.h>
 
-
 void test01()
 {
   using namespace std;
+  typedef ios::off_type off_type;
   typedef ios::pos_type pos_type;
 
   bool test __attribute__((unused)) = true;
   const char str_lit01[] = "ostream_seeks-1.txt";
 
   // out
-  // test default ctors leave things in the same positions...
   ostringstream ost1;
   pos_type p1 = ost1.tellp();
 
   ofstream ofs1;
   pos_type p2 = ofs1.tellp();
 
-  VERIFY( p1 == p2 );
+  // N.B. We implement the resolution of DR 453 and
+  // ostringstream::tellp() doesn't fail.
+  VERIFY( p1 == pos_type(off_type(0)) );
+  VERIFY( p2 == pos_type(off_type(-1)) );
 
   // out
   // test ctors leave things in the same positions...

@@ -142,8 +142,10 @@ namespace std
       __testin &= !(__mode & ios_base::out);
       __testout &= !(__mode & ios_base::in);
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 453. basic_stringbuf::seekoff need not always fail for an empty stream.
       const char_type* __beg = __testin ? this->eback() : this->pbase();
-      if (__beg && (__testin || __testout || __testboth))
+      if ((__beg || !__off) && (__testin || __testout || __testboth))
 	{
 	  _M_update_egptr();
 
