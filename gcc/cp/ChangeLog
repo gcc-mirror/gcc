@@ -1,3 +1,8 @@
+2004-09-28  Jason Merrill  <jason@redhat.com>
+
+	PR middle-end/17525
+	* class.c (build_base_field): Set TYPE_MODE.
+
 2004-09-28  Roger Sayle  <roger@eyesopen.com>
 
 	PR driver/17537
