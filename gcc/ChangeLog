@@ -1,3 +1,7 @@
+2002-06-04  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/ia64/ia64.c (gen_thread_pointer): Fix variable name.
+
 2002-06-04  Jeff Law <law@redhat.com.
             David Edelsohn <edelsohn@gnu.org>
             Michael Matz <matz@kde.org>
