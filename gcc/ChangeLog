@@ -1,3 +1,8 @@
+Sun Jun  7 14:15:45 1998  John Carr  <jfc@mit.edu>
+
+	* sol2.h (INIT_SUBTARGET_OPTABS): Use Solaris libc float/long long
+	conversion functions.
+
 Sun Jun  7 14:02:58 1998  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (flag_exceptions): Default to 0.
