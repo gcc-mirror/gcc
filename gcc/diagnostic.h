@@ -1,5 +1,5 @@
 /* Various declarations for language-independent diagnostics subroutines.
-   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@codesourcery.com>
 
 This file is part of GCC.
@@ -190,6 +190,9 @@ struct diagnostic_context
      message, usually displayed once per compiler run.  */
   bool warnings_are_errors_message;
 
+  /* True if we should raise a SIGABRT on errors.  */
+  bool abort_on_error;
+
   /* This function is called before any message is printed out.  It is
      responsible for preparing message prefix and such.  For example, it
      might say:
@@ -259,12 +262,16 @@ struct diagnostic_context
 #define diagnostic_set_last_module(DC) \
   (DC)->last_module = input_file_stack_tick
 
+/* Raise SIGABRT on any diagnostic of severity DK_ERROR or higher.  */
+#define diagnostic_abort_on_error(DC) \
+  (DC)->abort_on_error = true
+
 /* This diagnostic_context is used by front-ends that directly output
    diagnostic messages without going through `error', `warning',
    and similar functions.  */
 extern diagnostic_context *global_dc;
 
-/* The total count of a KIND of diagnostics meitted so far.  */
+/* The total count of a KIND of diagnostics emitted so far.  */
 #define diagnostic_kind_count(DC, DK) (DC)->diagnostic_count[(int) (DK)]
 
 /* The number of errors that have been issued so far.  Ideally, these

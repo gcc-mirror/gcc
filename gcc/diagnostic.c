@@ -81,6 +81,7 @@ static void default_diagnostic_finalizer PARAMS ((diagnostic_context *,
 
 static void error_recursion PARAMS ((diagnostic_context *)) ATTRIBUTE_NORETURN;
 static bool text_specifies_location PARAMS ((text_info *, location_t *));
+static void real_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
 
 extern int rtl_dump_and_exit;
 extern int warnings_are_errors;
@@ -1283,6 +1284,8 @@ diagnostic_report_diagnostic (context, diagnostic)
       output_flush (&context->buffer);
     }
 
+  if (context->abort_on_error && diagnostic->kind <= DK_ERROR)
+    real_abort();
   --context->lock;
 }
 
@@ -1458,4 +1461,14 @@ warn_deprecated_use (node)
       else
 	warning ("type is deprecated");
     }
+}
+
+/* Really call the system 'abort'.  This has to go right at the end of
+   this file, so that there are no functions after it that call abort
+   and get the system abort instead of our macro.  */
+#undef abort
+static void 
+real_abort ()
+{
+  abort ();
 }

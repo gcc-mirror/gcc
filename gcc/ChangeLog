@@ -1,3 +1,13 @@
+2003-02-11  Geoffrey Keating  <geoffk@apple.com>
+
+	* diagnostic.c (real_abort): New.
+	(diagnostic_report_diagnostic): Call real_abort on error.
+	* diagnostic.h (diagnostic_abort_on_error): New.
+	(struct diagnostic_context): Add abort_on_error field.
+	* toplev.c (setup_core_dumping): New.
+	(decode_d_option): Handle 'H' case.
+	* doc/invoke.texi (Debugging Options): Document -dH.
+
 2003-02-11  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Remove pointless setting of CXXFLAGS for dejagnu
