@@ -1,3 +1,29 @@
+2000-07-29  Marc Espie <espie@openbsd.org>
+
+	* Makefile.in: Generate objc parser along with the C parser.
+        * objc/Make-lang.in:  Remove generation of objc parser.
+
+2000-07-27  Mark Mitchell  <mark@codesourcery.com>
+
+	Put phi nodes after NOTE_INSN_BASIC_BLOCK.
+	* rtl.h (NOTE_INSN_BASIC_BLOCK_P): New macro.
+	* bb-reorder.c (get_next_bb_note): Use NOTE_INSN_BASIC_BLOCK_P.
+	(get_prev_bb_note): Likewise.
+	(remove_scope_notes): Likewise.
+	* flow.c (commit_one_edge_insertion): Likewise.
+	(merge_blocks_nomove): Likewise.
+	(verify_flow_info): Likewise.
+	* gcse.c (insert_insn_end_bb): Likewise.
+	* reg-stack.c (emit_swap_insn): Likewise.
+	* ssa.c (first_insn_after_basic_block_note): New function.
+	(insert_phi_node): Use it.
+	(rename_block): Likewise.
+	(eliminate_phi): Likewise.
+	(make_regs_equivalent_over_bad_edges): Likewise.
+	(make_equivalent_phi_alternatives_equivalent): Likewise.
+	(for_each_successor_phi): Likewise.
+	(convert_from_ssa): Modify phi-node deletion algorithm.
+	
 2000-07-29  Andreas Jaeger  <aj@suse.de>
 
 	* configure.in (mips*-*-linux*): Use mips*el to check for little
