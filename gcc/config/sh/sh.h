@@ -20,15 +20,12 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-/* Run-time Target Specification.  */
-#define TARGET_SH
-
-#define TARGET_VERSION  \
+#define TARGET_VERSION \
   fputs (" (Hitachi SH)", stderr);
 
 /* Generate SDB debugging information.  */
 
-#define SDB_DEBUGGING_INFO  1
+#define SDB_DEBUGGING_INFO
 
 /* Output DBX (stabs) debugging information if doing -gstabs.  */
 
@@ -51,7 +48,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Show we can debug even without a frame pointer.  */
 #define CAN_DEBUG_WITHOUT_FP
 
-
 #define CONDITIONAL_REGISTER_USAGE				\
   /* Hitachi saves and restores mac registers on call.  */	\
   if (TARGET_HITACHI)						\
@@ -64,22 +60,26 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern int target_flags;
 #define ISIZE_BIT      	(1<<1)
-#define RTL_BIT        	(1<<4)
-#define DT_BIT         	(1<<5)
 #define DALIGN_BIT     	(1<<6)
 #define SH0_BIT	       	(1<<7)
 #define SH1_BIT	       	(1<<8)
 #define SH2_BIT	       	(1<<9)
 #define SH3_BIT	       	(1<<10)
-#define C_BIT	       	(1<<11)
-#define R_BIT     	(1<<12)
 #define SPACE_BIT 	(1<<13)
 #define BIGTABLE_BIT  	(1<<14)
 #define HITACHI_BIT     (1<<22)
 #define PADSTRUCT_BIT  (1<<28)
 #define LITTLE_ENDIAN_BIT (1<<29)
 
+/* Nonzero if we should dump out instruction size info.  */
+#define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
+
+/* Nonzero to align doubles on 64 bit boundaries.  */
+#define TARGET_ALIGN_DOUBLE (target_flags & DALIGN_BIT)
+
 /* Nonzero if we should generate code using type 0 insns.  */
+/* ??? Is there such a thing as SH0?  If not, we should delete all
+   references to it.  */
 #define TARGET_SH0 (target_flags & SH0_BIT)
 
 /* Nonzero if we should generate code using type 1 insns.  */
@@ -94,23 +94,8 @@ extern int target_flags;
 /* Nonzero if we should generate smaller code rather than faster code.  */
 #define TARGET_SMALLCODE   (target_flags & SPACE_BIT)
 
-/* Nonzero if we should dump out instruction size info.  */
-#define TARGET_DUMPISIZE  (target_flags & ISIZE_BIT)
-
-/* Nonzero if we should dump the rtl in the assembly file.  */
-#define TARGET_DUMP_RTL	  (target_flags & RTL_BIT)
-
-/* Nonzero if we should dump the rtl somewher else.  */
-#define TARGET_DUMP_R	  (target_flags & R_BIT)
-
-/* Nonzero to align doubles on 64 bit boundaries.  */
-#define TARGET_ALIGN_DOUBLE (target_flags & DALIGN_BIT)
-
 /* Nonzero to use long jump tables.  */
 #define TARGET_BIGTABLE     (target_flags & BIGTABLE_BIT)
-
-/* Nonzero if combine dumping wanted.  */
-#define TARGET_CDUMP (target_flags & C_BIT)
 
 /* Nonzero if using Hitachi's calling convention.  */
 #define TARGET_HITACHI 		(target_flags & HITACHI_BIT)
@@ -122,25 +107,23 @@ extern int target_flags;
    who are still relying on it.  It may be deleted in the future.  */
 #define TARGET_PADSTRUCT       (target_flags & PADSTRUCT_BIT)
 
+/* Nonzero if generating code for a little endian SH.  */
 #define TARGET_LITTLE_ENDIAN     (target_flags & LITTLE_ENDIAN_BIT)
 
 #define TARGET_SWITCHES  			\
-{ {"0",	        (SH0_BIT) },			\
-  {"1",	        (SH1_BIT) },			\
-  {"2",	        (SH2_BIT) },			\
-  {"3",	        (SH3_BIT|SH2_BIT) },		\
-  {"3l",        (SH3_BIT|SH2_BIT|LITTLE_ENDIAN_BIT)},	\
-  {"R",  	(R_BIT) },			\
-  {"b",		(-LITTLE_ENDIAN_BIT) },  	\
-  {"bigtable", 	(BIGTABLE_BIT)},		\
-  {"c",  	(C_BIT) },			\
-  {"dalign",  	(DALIGN_BIT) },			\
-  {"hitachi",	(HITACHI_BIT) },		\
-  {"isize", 	(ISIZE_BIT) },			\
-  {"l",		(LITTLE_ENDIAN_BIT) },  	\
-  {"padstruct",(PADSTRUCT_BIT) },    		\
-  {"r",  	(RTL_BIT) },			\
-  {"space", 	(SPACE_BIT) },			\
+{ {"0",	        SH0_BIT},			\
+  {"1",	        SH1_BIT},			\
+  {"2",	        SH2_BIT},			\
+  {"3",	        SH3_BIT|SH2_BIT},		\
+  {"3l",        SH3_BIT|SH2_BIT|LITTLE_ENDIAN_BIT},	\
+  {"b",		-LITTLE_ENDIAN_BIT},  		\
+  {"bigtable", 	BIGTABLE_BIT},			\
+  {"dalign",  	DALIGN_BIT},			\
+  {"hitachi",	HITACHI_BIT},			\
+  {"isize", 	ISIZE_BIT},			\
+  {"l",		LITTLE_ENDIAN_BIT},  		\
+  {"padstruct", PADSTRUCT_BIT},    		\
+  {"space", 	SPACE_BIT},			\
   {"",   	TARGET_DEFAULT} 		\
 }
 
@@ -156,18 +139,22 @@ do {								\
   if (TARGET_SH3)						\
     sh_cpu = CPU_SH3;						\
 								\
-  /*  We *MUST* always define optimize since we *HAVE* to run   \
-      shorten branches to get correct code.  */                 \
-                                                                \
-  optimize = 1;                                                 \
+  /* We *MUST* always define optimize since we *HAVE* to run	\
+     shorten branches to get correct code.  */			\
+  /* ??? This is obsolete, since now shorten branches is no	\
+     longer required by the SH, and is always run once even	\
+     when not optimizing.  Changing this now might be		\
+     confusing though.  */					\
+  optimize = 1;							\
   flag_delayed_branch = 1;					\
-  /* But never run scheduling before reload, since than can     \
-     break global alloc, and generates slower code anyway due   \
-     to the pressure on R0.  */                                 \
-  flag_schedule_insns = 0;            				\
+								\
+  /* But never run scheduling before reload, since that can	\
+     break global alloc, and generates slower code anyway due	\
+     to the pressure on R0.  */					\
+  flag_schedule_insns = 0;					\
 } while (0)
 
-/* Target machine storage Layout.  */
+/* Target machine storage layout.  */
 
 /* Define to use software floating point emulator for REAL_ARITHMETIC and
    decimal <-> binary conversion.  */
@@ -178,14 +165,12 @@ do {								\
 
 #define BITS_BIG_ENDIAN  0
 
-
 /* Define this if most significant byte of a word is the lowest numbered.  */
 #define BYTES_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
 
 /* Define this if most significant word of a multiword number is the lowest
    numbered.  */
 #define WORDS_BIG_ENDIAN (TARGET_LITTLE_ENDIAN == 0)
-
 
 /* Define this to set the endianness to use in libgcc2.c, which can
    not depend on target_flags.  */
@@ -233,7 +218,7 @@ do {								\
 #define FASTEST_ALIGNMENT 32
 
 /* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
+#define CONSTANT_ALIGNMENT(EXP, ALIGN)	\
   ((TREE_CODE (EXP) == STRING_CST	\
     && (ALIGN) < FASTEST_ALIGNMENT)	\
     ? FASTEST_ALIGNMENT : (ALIGN))
@@ -259,7 +244,7 @@ do {								\
 
         r0		arg return
 	r1..r3          scratch
-	r4-r7		args in
+	r4..r7		args in
 	r8..r13		call saved
 	r14		frame pointer/call saved
 	r15		stack pointer
@@ -291,13 +276,6 @@ do {								\
    Mach register is fixed 'cause it's only 10 bits wide for SH1.
    It is 32 bits wide for SH2.  */
 
- /*  r0  r1  r2  r3
-     r4  r5  r6  r7
-     r8  r9  r10 r11
-     r12 r13 r14 r15
-     ap  pr  t   gbr
-     mh   ml */
-
 #define FIXED_REGISTERS  	\
   { 0,  0,  0,  0, 		\
     0,  0,  0,  0, 		\
@@ -306,20 +284,12 @@ do {								\
     1,  1,  1,  1, 		\
     1,  1}
 
-
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
    registers that can be used without being saved.
    The latter must include the registers where values are returned
    and the register where structure-value addresses are passed.
    Aside from that, you can include as many other registers as you like.  */
-
- /*  r0  r1  r2  r3
-     r4  r5  r6  r7
-     r8  r9  r10 r11
-     r12 r13 r14 r15
-     ap  pr  t   gbr
-     mh  ml */
 
 #define CALL_USED_REGISTERS 	\
    { 1,  1,  1,  1,		\
@@ -336,14 +306,14 @@ do {								\
 
    On the SH regs are UNITS_PER_WORD bits wide.  */
 
-#define HARD_REGNO_NREGS(REGNO, MODE)  \
+#define HARD_REGNO_NREGS(REGNO, MODE) \
    (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
    We can allow any mode in any general register.  The special registers
    only allow SImode.  Don't allow any mode in the PR.  */
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
+#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
   (SPECIAL_REG (REGNO) ? (MODE) == SImode	\
    : (REGNO) == PR_REG ? 0			\
    : 1)
@@ -391,7 +361,6 @@ do {								\
  { ARG_POINTER_REGNUM,   STACK_POINTER_REGNUM},	\
  { ARG_POINTER_REGNUM,   FRAME_POINTER_REGNUM},}
 
-
 /* Given FROM and TO register numbers, say whether this elimination
    is allowed.  */
 #define CAN_ELIMINATE(FROM, TO) \
@@ -419,7 +388,6 @@ do {								\
    passed as an "invisible" first argument.  */
 
 /*#define STRUCT_VALUE ((rtx)0)*/
-
 
 /* Don't default to pcc-struct-return, because we have already specified
    exactly how to return structures in the RETURN_IN_MEMORY macro.  */
@@ -466,7 +434,7 @@ enum reg_class
 #define N_REG_CLASSES  (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.  */
-#define REG_CLASS_NAMES  \
+#define REG_CLASS_NAMES	\
 {			\
   "NO_REGS",		\
   "R0_REGS",		\
@@ -481,7 +449,7 @@ enum reg_class
    This is an initializer for a vector of HARD_REG_SET
    of length N_REG_CLASSES.  */
 
-#define REG_CLASS_CONTENTS      \
+#define REG_CLASS_CONTENTS	\
 {				\
   0x000000,  /* NO_REGS      */	\
   0x000001,  /* R0_REGS      */	\
@@ -507,7 +475,7 @@ extern int regno_reg_class[];
 #define SMALL_REGISTER_CLASSES
 
 /* The order in which register should be allocated.  */
-#define REG_ALLOC_ORDER  \
+#define REG_ALLOC_ORDER \
   { 1,2,3,7,6,5,4,0,8,9,10,11,12,13,14,15,16,17,18,19,20,21 }
 
 /* The class value for index registers, and the one for base regs.  */
@@ -520,8 +488,7 @@ extern enum reg_class reg_class_from_letter[];
 
 #define REG_CLASS_FROM_LETTER(C) \
    ( (C) >= 'a' && (C) <= 'z' ? reg_class_from_letter[(C)-'a'] : NO_REGS )
-
-
+
 /* The letters I, J, K, L and M in a register constraint string
    can be used to stand for particular ranges of immediate operands.
    This macro defines what the ranges are.
@@ -533,27 +500,23 @@ extern enum reg_class reg_class_from_letter[];
 	M: constant 1
 	N: constant 0  */
 
-
 #define CONST_OK_FOR_I(VALUE) (((int)(VALUE))>= -128 && ((int)(VALUE)) <= 127)
 #define CONST_OK_FOR_K(VALUE) ((VALUE)==1||(VALUE)==2||(VALUE)==8||(VALUE)==16)
 #define CONST_OK_FOR_L(VALUE) (((int)(VALUE))>=    0 && ((int)(VALUE)) <= 255)
 #define CONST_OK_FOR_M(VALUE) ((VALUE)==1)
 #define CONST_OK_FOR_N(VALUE) ((VALUE)==0)
-#define CONST_OK_FOR_LETTER_P(VALUE, C)     \
-     ((C) == 'I' ? CONST_OK_FOR_I (VALUE)   \
-    : (C) == 'K' ? CONST_OK_FOR_K (VALUE)   \
-    : (C) == 'L' ? CONST_OK_FOR_L (VALUE)   \
-    : (C) == 'M' ? CONST_OK_FOR_M (VALUE)   \
-    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)   \
+#define CONST_OK_FOR_LETTER_P(VALUE, C)		\
+     ((C) == 'I' ? CONST_OK_FOR_I (VALUE)	\
+    : (C) == 'K' ? CONST_OK_FOR_K (VALUE)	\
+    : (C) == 'L' ? CONST_OK_FOR_L (VALUE)	\
+    : (C) == 'M' ? CONST_OK_FOR_M (VALUE)	\
+    : (C) == 'N' ? CONST_OK_FOR_N (VALUE)	\
     : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  */
 
-#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) \
-   ((C) == 'G' ? CONST_OK_FOR_I (CONST_DOUBLE_HIGH (VALUE)) \
-	      && CONST_OK_FOR_I (CONST_DOUBLE_LOW (VALUE))  \
-    : 0)
+#define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C) 0
 
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
@@ -566,13 +529,13 @@ extern enum reg_class reg_class_from_letter[];
    needed to represent mode MODE in a register of class CLASS.
 
    On SH this is the size of MODE in words.  */
-#define CLASS_MAX_NREGS(CLASS, MODE)  \
+#define CLASS_MAX_NREGS(CLASS, MODE) \
      ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Stack layout; function entry, exit and calling.  */
 
-/* Define the number of register that can hold parameters.
-   These two macros are used only in other macro definitions below.  */
+/* Define the number of registers that can hold parameters.
+   These three macros are used only in other macro definitions below.  */
 #define NPARM_REGS 4
 #define FIRST_PARM_REG 4
 #define FIRST_RET_REG  0
@@ -615,23 +578,19 @@ extern enum reg_class reg_class_from_letter[];
    otherwise, FUNC is 0.  */
 
 #define FUNCTION_VALUE(VALTYPE, FUNC) \
-  gen_rtx (REG, \
-	   TYPE_MODE (VALTYPE) == BLKmode ? SImode : TYPE_MODE (VALTYPE), \
-	   FIRST_RET_REG)
+  gen_rtx (REG, TYPE_MODE (VALTYPE), FIRST_RET_REG)
 
 /* Define how to find the value returned by a library function
    assuming the value has mode MODE.  */
-#define LIBCALL_VALUE(MODE)  \
-    gen_rtx (REG, MODE, FIRST_RET_REG)
+#define LIBCALL_VALUE(MODE)	gen_rtx (REG, MODE, FIRST_RET_REG)
 
 /* 1 if N is a possible register number for a function value.
    On the SH, only r0 can return results.  */
-#define FUNCTION_VALUE_REGNO_P(REGNO)  \
-	  ((REGNO) == FIRST_RET_REG)
+#define FUNCTION_VALUE_REGNO_P(REGNO)	((REGNO) == FIRST_RET_REG)
 
 /* 1 if N is a possible register number for function argument passing.  */
 
-#define FUNCTION_ARG_REGNO_P(REGNO)  \
+#define FUNCTION_ARG_REGNO_P(REGNO) \
   ((REGNO) >= FIRST_PARM_REG && (REGNO) < (NPARM_REGS + FIRST_PARM_REG))
 
 /* Define a data type for recording info about an argument list
@@ -647,7 +606,7 @@ extern enum reg_class reg_class_from_letter[];
 
 #define CUMULATIVE_ARGS  int
 
-#define ROUND_ADVANCE(SIZE)	\
+#define ROUND_ADVANCE(SIZE) \
   ((SIZE + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* Round a register number up to a proper boundary for an arg of mode
@@ -661,7 +620,6 @@ extern enum reg_class reg_class_from_letter[];
    && GET_MODE_UNIT_SIZE ((MODE)) > UNITS_PER_WORD) 		\
    ? ((X) + ((X) & 1)) : (X))
 
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.
@@ -669,7 +627,7 @@ extern enum reg_class reg_class_from_letter[];
    On SH, the offset always starts at 0: the first parm reg is always
    the same reg.  */
 
-#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME)  \
+#define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME) \
   ((CUM) = 0)
 
 /* Update the data in CUM to advance over an argument
@@ -702,7 +660,7 @@ extern enum reg_class reg_class_from_letter[];
    its data type forbids.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
-    sh_function_arg (CUM, MODE, TYPE, NAMED)
+  sh_function_arg (CUM, MODE, TYPE, NAMED)
 
 extern struct rtx_def *sh_function_arg();
 
@@ -758,7 +716,7 @@ extern int current_function_anonymous_args;
 {						\
   fprintf ((FILE), "	.word	0xd301\n");	\
   fprintf ((FILE), "	.word	0xdd02\n");	\
-  fprintf ((FILE), "	.word	0x4d2b\n");        \
+  fprintf ((FILE), "	.word	0x4d2b\n");	\
   fprintf ((FILE), "	.word	0x200b\n");	\
   fprintf ((FILE), "	.long	0\n");		\
   fprintf ((FILE), "	.long	0\n");		\
@@ -774,7 +732,7 @@ extern int current_function_anonymous_args;
    FNADDR is an RTX for the address of the function's pure code.
    CXT is an RTX for the static chain value for the function.  */
 
-#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)  \
+#define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT)			\
 {									\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 8)),	\
 		  (CXT));						\
@@ -796,9 +754,9 @@ extern int current_function_anonymous_args;
    Since they use reg_renumber, they are safe only once reg_renumber
    has been allocated, which happens in local-alloc.c.  */
 
-#define REGNO_OK_FOR_BASE_P(REGNO)  \
+#define REGNO_OK_FOR_BASE_P(REGNO) \
   ((REGNO) < PR_REG || (unsigned) reg_renumber[(REGNO)] < PR_REG)
-#define REGNO_OK_FOR_INDEX_P(REGNO)   \
+#define REGNO_OK_FOR_INDEX_P(REGNO) \
   ((REGNO) == 0 || (unsigned) reg_renumber[(REGNO)] == 0)
 
 /* Maximum number of registers that can appear in a valid memory
@@ -808,17 +766,15 @@ extern int current_function_anonymous_args;
 
 /* Recognize any constant value that is a valid address.  */
 
-#define CONSTANT_ADDRESS_P(X) 	\
-  (GET_CODE (X) == LABEL_REF)
+#define CONSTANT_ADDRESS_P(X)	(GET_CODE (X) == LABEL_REF)
 
 /* Nonzero if the constant value X is a legitimate general operand.  */
 
 /* ??? Should modify this to accept CONST_DOUBLE, and then modify the
    constant pool table code to fix loads of CONST_DOUBLEs.  If that doesn't
-   work well, then we can at least handle 'G' constraint CONST_DOUBLEs
-   here.  */
-#define LEGITIMATE_CONSTANT_P(X) \
-  (GET_CODE(X) != CONST_DOUBLE /*&& GET_CODE(X) != LABEL_REF*/)
+   work well, then we can at least handle simple CONST_DOUBLEs here
+   such as 0.0.  */
+#define LEGITIMATE_CONSTANT_P(X)	(GET_CODE(X) != CONST_DOUBLE)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.
@@ -836,29 +792,25 @@ extern int current_function_anonymous_args;
    or if it is a pseudo reg.  */
 #define REG_OK_FOR_BASE_P(X) \
   (REGNO (X) <= 16 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
+
 /* Nonzero if X is a hard reg that can be used as an index
    or if it is a pseudo reg.  */
-
 #define REG_OK_FOR_INDEX_P(X) \
   (REGNO (X) == 0 || REGNO(X) >= FIRST_PSEUDO_REGISTER)
 
-#define REG_OK_FOR_PRE_POST_P(X) \
-  	(REG_OK_FOR_BASE_P (X))
-
 #else
+
 /* Nonzero if X is a hard reg that can be used as a base reg.  */
-#define REG_OK_FOR_BASE_P(X)	\
+#define REG_OK_FOR_BASE_P(X) \
 	REGNO_OK_FOR_BASE_P (REGNO (X))
 
 /* Nonzero if X is a hard reg that can be used as an index.  */
-#define REG_OK_FOR_INDEX_P(X) 	\
+#define REG_OK_FOR_INDEX_P(X) \
   	REGNO_OK_FOR_INDEX_P (REGNO (X))
 
-#define REG_OK_FOR_PRE_POST_P(X)  \
-	(REGNO_OK_FOR_BASE_P (REGNO (X)))
 #endif
 
-/* The Q is a pc relative load operand.  */
+/* The 'Q' constraint is a pc relative load operand.  */
 #define EXTRA_CONSTRAINT_Q(OP)                          		\
   (GET_CODE (OP) == MEM && 						\
    ((GET_CODE (XEXP (OP, 0)) == LABEL_REF)				\
@@ -867,16 +819,9 @@ extern int current_function_anonymous_args;
 	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 0)) == LABEL_REF	\
 	&& GET_CODE (XEXP (XEXP (XEXP (OP, 0), 0), 1)) == CONST_INT)))
 
-#define IS_INDEX(OP) 									\
-  ((GET_CODE (OP) == PLUS && 								\
-    (INDEX_REGISTER_RTX_P (XEXP (OP, 0)) && BASE_REGISTER_RTX_P (XEXP (OP, 1))) ||	\
-    (INDEX_REGISTER_RTX_P (XEXP (OP, 1)) && BASE_REGISTER_RTX_P (XEXP (OP, 0)))))
-
-
-
-#define EXTRA_CONSTRAINT(OP, C)   \
-     ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)   \
-    : 0)
+#define EXTRA_CONSTRAINT(OP, C)		\
+  ((C) == 'Q' ? EXTRA_CONSTRAINT_Q (OP)	\
+   : 0)
 
 /* GO_IF_LEGITIMATE_ADDRESS recognizes an RTL expression
    that is a valid memory address for an instruction.
@@ -885,12 +830,17 @@ extern int current_function_anonymous_args;
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS.  */
 
-#define BASE_REGISTER_RTX_P(X)  \
-  (GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))
+#define BASE_REGISTER_RTX_P(X)				\
+  ((GET_CODE (X) == REG && REG_OK_FOR_BASE_P (X))	\
+   || (GET_CODE (X) == SUBREG				\
+       && GET_CODE (SUBREG_REG (X)) == REG		\
+       && REG_OK_FOR_BASE_P (SUBREG_REG (X))))
 
-#define INDEX_REGISTER_RTX_P(X)  \
-  (GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))
-
+#define INDEX_REGISTER_RTX_P(X)				\
+  ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))	\
+   || (GET_CODE (X) == SUBREG				\
+       && GET_CODE (SUBREG_REG (X)) == REG		\
+       && REG_OK_FOR_INDEX_P (SUBREG_REG (X))))
 
 /* Jump to LABEL if X is a valid address RTX.  This must also take
    REG_OK_STRICT into account when deciding about valid registers, but it uses
@@ -906,10 +856,10 @@ extern int current_function_anonymous_args;
    other operand is R0. GCC doesn't handle this very well, so we forgo
    all of that.
 
-   A legitimate index for a QI or HI is 0, SI and above can be any
-   number 0..63.  */
+   A legitimate index for a QI or HI is 0, SI can be any number 0..63,
+   DI can be any number 0..60.  */
 
-#define GO_IF_LEGITIMATE_INDEX(MODE, REGNO, OP, LABEL)  		\
+#define GO_IF_LEGITIMATE_INDEX(MODE, OP, LABEL)  			\
   do {									\
     if (GET_CODE (OP) == CONST_INT) 					\
       {									\
@@ -918,32 +868,27 @@ extern int current_function_anonymous_args;
       }									\
   } while(0)
 
-
-#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)                  \
-{ 								  \
-  if (BASE_REGISTER_RTX_P (X))					  \
-    goto LABEL;							  \
-  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)  \
-	   && GET_CODE (XEXP (X, 0)) == REG			  \
-	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))		  \
-    goto LABEL;							  \
-  else if (GET_CODE (X) == PLUS) 	  			  \
-    {								  \
-      rtx xop0 = XEXP(X,0);					  \
-      rtx xop1 = XEXP(X,1);					  \
-      if (GET_MODE_SIZE(MODE) <= 8 && BASE_REGISTER_RTX_P (xop0)) \
-	GO_IF_LEGITIMATE_INDEX (MODE, REGNO (xop0), xop1, LABEL); \
-      if (GET_MODE_SIZE(MODE)<= 4) {				  \
-	if(BASE_REGISTER_RTX_P(xop1) &&			 	  \
-	   INDEX_REGISTER_RTX_P(xop0)) goto LABEL;		  \
-	if(INDEX_REGISTER_RTX_P(xop1) &&			  \
-	   BASE_REGISTER_RTX_P(xop0)) goto LABEL;		  \
-      }							 	  \
-    }								  \
-  else if ((GET_CODE (X) == PRE_INC || GET_CODE (X) == POST_DEC)  \
-	   && GET_CODE (XEXP (X, 0)) == REG			  \
-	   && REG_OK_FOR_PRE_POST_P (XEXP (X, 0)))		  \
-    goto LABEL;                                                   \
+#define GO_IF_LEGITIMATE_ADDRESS(MODE, X, LABEL)			\
+{									\
+  if (BASE_REGISTER_RTX_P (X))						\
+    goto LABEL;								\
+  else if ((GET_CODE (X) == POST_INC || GET_CODE (X) == PRE_DEC)	\
+	   && BASE_REGISTER_RTX_P (XEXP (X, 0)))			\
+    goto LABEL;								\
+  else if (GET_CODE (X) == PLUS)					\
+    {									\
+      rtx xop0 = XEXP (X, 0);						\
+      rtx xop1 = XEXP (X, 1);						\
+      if (GET_MODE_SIZE (MODE) <= 8 && BASE_REGISTER_RTX_P (xop0))	\
+	GO_IF_LEGITIMATE_INDEX (MODE, xop1, LABEL);			\
+      if (GET_MODE_SIZE (MODE) <= 4)					\
+	{								\
+	  if (BASE_REGISTER_RTX_P (xop1) && INDEX_REGISTER_RTX_P (xop0))\
+	    goto LABEL;							\
+	  if (INDEX_REGISTER_RTX_P (xop1) && BASE_REGISTER_RTX_P (xop0))\
+	    goto LABEL;							\
+	}								\
+    }									\
 }
 
 /* Try machine-dependent ways of modifying an illegitimate address
@@ -963,10 +908,9 @@ extern int current_function_anonymous_args;
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
-#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)  \
+#define GO_IF_MODE_DEPENDENT_ADDRESS(ADDR,LABEL)			\
 {									\
-  if (GET_CODE(ADDR) == PRE_DEC || GET_CODE(ADDR) == POST_DEC		\
-      || GET_CODE(ADDR) == PRE_INC || GET_CODE(ADDR) == POST_INC)	\
+  if (GET_CODE(ADDR) == PRE_DEC || GET_CODE(ADDR) == POST_INC)		\
     goto LABEL;								\
 }
 
@@ -1049,7 +993,7 @@ extern int current_function_anonymous_args;
 /* The relative costs of various types of constants.  Note that cse.c defines
    REG = 1, SUBREG = 2, any node = (2 + sum of subnodes).  */
 
-#define CONST_COSTS(RTX, CODE, OUTER_CODE)      \
+#define CONST_COSTS(RTX, CODE, OUTER_CODE)	\
   case CONST_INT:				\
     if (INTVAL (RTX) == 0)			\
       return 0;					\
@@ -1069,7 +1013,7 @@ extern int current_function_anonymous_args;
 
 #define RTX_COSTS(X, CODE, OUTER_CODE)			\
   case AND:						\
-    return COSTS_N_INSNS (andcosts (X));                \
+    return COSTS_N_INSNS (andcosts (X));		\
   case MULT:						\
     return COSTS_N_INSNS (multcosts (X));		\
   case ASHIFT:						\
@@ -1084,7 +1028,6 @@ extern int current_function_anonymous_args;
   case FLOAT:						\
   case FIX:						\
     return 100;
-
 
 /* The multiply insn on the SH1 and the divide insns on the SH1 and SH2
    are actually function calls with some special constraints on arguments
@@ -1120,7 +1063,7 @@ extern int current_function_anonymous_args;
    On the SH it is hard to move into the T reg, but simple to load
    from it.  */
 
-#define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS)  \
+#define REGISTER_MOVE_COST(SRCCLASS, DSTCLASS) \
 	(((DSTCLASS == T_REGS) || (DSTCLASS == PR_REG)) ? 10 : 1)
 
 /* Assembler output control.  */
@@ -1146,24 +1089,24 @@ extern int current_function_anonymous_args;
 #define DTORS_SECTION_ASM_OP 		"\t.section\t.dtors\n"
 #define INIT_SECTION_ASM_OP  		"\t.section\t.init\n"
 #define EXTRA_SECTIONS 			in_ctors, in_dtors
-#define EXTRA_SECTION_FUNCTIONS                              \
-void							     \
-ctors_section() 					     \
-{							     \
-  if (in_section != in_ctors)				     \
-    {							     \
-      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);  \
-      in_section = in_ctors;				     \
-    }							     \
-}							     \
-void							     \
-dtors_section() 					     \
-{							     \
-  if (in_section != in_dtors)				     \
-    {							     \
-      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);  \
-      in_section = in_dtors;				     \
-    }							     \
+#define EXTRA_SECTION_FUNCTIONS					\
+void								\
+ctors_section()							\
+{								\
+  if (in_section != in_ctors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", CTORS_SECTION_ASM_OP);	\
+      in_section = in_ctors;					\
+    }								\
+}								\
+void								\
+dtors_section()							\
+{								\
+  if (in_section != in_dtors)					\
+    {								\
+      fprintf (asm_out_file, "%s\n", DTORS_SECTION_ASM_OP);	\
+      in_section = in_dtors;					\
+    }								\
 }
 
 /* A C statement to output something to the assembler file to switch to section
@@ -1174,10 +1117,10 @@ dtors_section() 					     \
 #define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
    do { fprintf (FILE, ".section\t%s\n", NAME); } while (0)
 
-#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\
+#define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME) \
    do { ctors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
 
-#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME)	\
+#define ASM_OUTPUT_DESTRUCTOR(FILE,NAME) \
    do {  dtors_section();  fprintf(FILE,"\t.long\t_%s\n", NAME); } while (0)
 
 #undef DO_GLOBAL_CTORS_BODY
@@ -1195,7 +1138,7 @@ dtors_section() 					     \
 }
 
 #undef DO_GLOBAL_DTORS_BODY
-#define DO_GLOBAL_DTORS_BODY                    \
+#define DO_GLOBAL_DTORS_BODY			\
 {						\
   typedef (*pfunc)();				\
   extern pfunc __dtors[];			\
@@ -1207,13 +1150,11 @@ dtors_section() 					     \
     }						\
 }
 
-
 #define ASM_OUTPUT_REG_PUSH(file, v) \
   fprintf (file, "\tmov.l	r%s,-@r15\n", v);
 
 #define ASM_OUTPUT_REG_POP(file, v) \
   fprintf (file, "\tmov.l	@r15+,r%s\n", v);
-
 
 /* The assembler's names for the registers.  RFP need not always be used as
    the Real framepointer; it can also be used as a normal general register.
@@ -1230,9 +1171,8 @@ dtors_section() 					     \
 #define DBX_REGISTER_NUMBER(REGNO)  (REGNO)
 
 /* Output a label definition.  */
-#define ASM_OUTPUT_LABEL(FILE,NAME)  \
+#define ASM_OUTPUT_LABEL(FILE,NAME) \
   do { assemble_name (FILE, NAME); fputs (":\n", FILE); } while (0)
-
 
 /* This is how to output an assembler line
    that says to advance the location counter
@@ -1247,52 +1187,51 @@ dtors_section() 					     \
     ASM_OUTPUT_LABEL(STREAM, NAME)
 
 /* Output a globalising directive for a label.  */
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)  \
-  (fprintf (STREAM, "\t.global\t"),	  \
-   assemble_name (STREAM, NAME),	  \
-   fputc ('\n',STREAM))                   \
+#define ASM_GLOBALIZE_LABEL(STREAM,NAME)	\
+  (fprintf (STREAM, "\t.global\t"),		\
+   assemble_name (STREAM, NAME),		\
+   fputc ('\n',STREAM))
 
 /* Output a reference to a label.  */
-#define ASM_OUTPUT_LABELREF(STREAM,NAME)  \
+#define ASM_OUTPUT_LABELREF(STREAM,NAME) \
   fprintf (STREAM, "_%s", NAME)
 
 /* Make an internal label into a string.  */
-#define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM)  \
+#define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
   sprintf (STRING, "*%s%d", PREFIX, NUM)
 
 /* Output an internal label definition.  */
-#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\
+#define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
   fprintf (FILE, "%s%d:\n", PREFIX, NUM)
 
 /* #define ASM_OUTPUT_CASE_END(STREAM,NUM,TABLE)	    */
 
 /* Construct a private name.  */
-#define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)  \
-  ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),  \
+#define ASM_FORMAT_PRIVATE_NAME(OUTVAR,NAME,NUMBER)	\
+  ((OUTVAR) = (char *) alloca (strlen (NAME) + 10),	\
    sprintf ((OUTVAR), "%s.%d", (NAME), (NUMBER)))
 
 /* Jump tables must be 32 bit aligned, no matter the size of the element.  */
 #define ASM_OUTPUT_CASE_LABEL(STREAM,PREFIX,NUM,TABLE) \
-    fprintf (STREAM, "\t.align 2\n%s%d:\n",  PREFIX, NUM);
+  fprintf (STREAM, "\t.align 2\n%s%d:\n",  PREFIX, NUM);
 
 /* Output a relative address table.  */
 
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,VALUE,REL)  			\
   if (TARGET_BIGTABLE) 							\
-	fprintf (STREAM, "\t.long	L%d-L%d\n", VALUE,REL); 	\
+    fprintf (STREAM, "\t.long	L%d-L%d\n", VALUE,REL); 		\
   else									\
-	fprintf (STREAM, "\t.word	L%d-L%d\n", VALUE,REL); 	\
+    fprintf (STREAM, "\t.word	L%d-L%d\n", VALUE,REL); 		\
 
 /* Output an absolute table element.  */
 
 #define ASM_OUTPUT_ADDR_VEC_ELT(STREAM,VALUE)  				\
   if (TARGET_BIGTABLE) 							\
-	fprintf (STREAM, "\t.long	L%d\n", VALUE); 		\
+    fprintf (STREAM, "\t.long	L%d\n", VALUE); 			\
   else									\
-        fprintf (STREAM, "\t.word	L%d\n", VALUE); 		\
+    fprintf (STREAM, "\t.word	L%d\n", VALUE); 			\
 
 /* Output various types of constants.  */
-
 
 /* This is how to output an assembler line defining a `double'.  */
 
@@ -1302,9 +1241,8 @@ do { char dstr[30];					\
      fprintf (FILE, "\t.double %s\n", dstr);		\
    } while (0)
 
-
 /* This is how to output an assembler line defining a `float' constant.  */
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)		\
+#define ASM_OUTPUT_FLOAT(FILE,VALUE)			\
 do { char dstr[30];					\
      REAL_VALUE_TO_DECIMAL ((VALUE), "%.20e", dstr);	\
      fprintf (FILE, "\t.float %s\n", dstr);		\
@@ -1315,9 +1253,9 @@ do { char dstr[30];					\
    output_addr_const (STREAM, (EXP)),  	\
    fputc ('\n', STREAM))
 
-#define ASM_OUTPUT_SHORT(STREAM, EXP)  \
-  (fprintf (STREAM, "\t.short\t"),     \
-   output_addr_const (STREAM, (EXP)),  \
+#define ASM_OUTPUT_SHORT(STREAM, EXP)	\
+  (fprintf (STREAM, "\t.short\t"),	\
+   output_addr_const (STREAM, (EXP)),	\
    fputc ('\n', STREAM))
 
 #define ASM_OUTPUT_CHAR(STREAM, EXP)  	\
@@ -1331,13 +1269,13 @@ do { char dstr[30];					\
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
 
-#define ASM_OUTPUT_SKIP(FILE,SIZE)  \
+#define ASM_OUTPUT_SKIP(FILE,SIZE) \
   fprintf (FILE, "\t.space %d\n", (SIZE))
 
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
-#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
+#define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
 ( fputs ("\t.comm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
   fprintf ((FILE), ",%d\n", (SIZE)))
@@ -1349,7 +1287,6 @@ do { char dstr[30];					\
 ( fputs ("\t.lcomm ", (FILE)),				\
   assemble_name ((FILE), (NAME)),			\
   fprintf ((FILE), ",%d\n", (SIZE)))
-
 
 /* The assembler's parentheses characters.  */
 #define ASM_OPEN_PAREN "("
@@ -1365,9 +1302,9 @@ do { char dstr[30];					\
 #define TARGET_CR	015
 
 /* Only perform branch elimination (by making instructions conditional) if
-   we're optimising.  Otherwise it's of no use anyway.  */
-#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS)  \
-     final_prescan_insn (INSN, OPVEC, NOPERANDS)
+   we're optimizing.  Otherwise it's of no use anyway.  */
+#define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
+  final_prescan_insn (INSN, OPVEC, NOPERANDS)
 
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
@@ -1385,7 +1322,6 @@ do { char dstr[30];					\
 extern struct rtx_def *sh_compare_op0;
 extern struct rtx_def *sh_compare_op1;
 extern struct rtx_def *prepare_scc_operands();
-
 
 /* Which processor to schedule for.  The elements of the enumeration must
    match exactly the cpu attribute in the sh.md file.  */
@@ -1440,9 +1376,39 @@ extern int pragma_interrupt;
 
 /* Enable a bug fix for the shorten_branches pass.  */
 #define SHORTEN_WITH_ADJUST_INSN_LENGTH
+
+/* Define the codes that are matched by predicates in sh.c.  */
+#define PREDICATE_CODES \
+  {"arith_reg_operand", {SUBREG, REG}},					\
+  {"arith_operand", {SUBREG, REG, CONST_INT}},				\
+  {"arith_reg_or_0_operand", {SUBREG, REG, CONST_INT}},			\
+  {"logical_operand", {SUBREG, REG, CONST_INT}},			\
+  {"general_movsrc_operand", {SUBREG, REG, CONST_INT, MEM}},		\
+  {"general_movdst_operand", {SUBREG, REG, CONST_INT, MEM}},
 
-/* ??? Define CANONICALIZE_COMPARISON?  */
+/* Define this macro if it is advisable to hold scalars in registers
+   in a wider mode than that declared by the program.  In such cases, 
+   the value is constrained to be within the bounds of the declared
+   type, but kept valid in the wider mode.  The signedness of the
+   extension may differ from that of the type.
 
-/* ??? Define PREDICATE_CODES.  */
+   Leaving the unsignedp unchanged gives better code than always setting it
+   to 0.  This is despite the fact that we have only signed char and short
+   load instructions.  */
+#define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE) \
+  if (GET_MODE_CLASS (MODE) == MODE_INT			\
+      && GET_MODE_SIZE (MODE) < UNITS_PER_WORD)		\
+    MODE = SImode;
 
-/* ??? Define PROMOTE_MDOES?  */
+/* PROMOTE_FUNCTION_ARGS and PROMOTE_FUNCTION_RETURN appear to have no
+   effect, because all unprototyped char/shorts are already promoted to
+   int, and because PROMOTE_PROTOTYPES causes all prototypes char/shorts
+   to be promoted to it.  */
+
+/* ??? Define ACCUMULATE_OUTGOING_ARGS?  This is more efficient than pushing
+   and poping arguments.  However, we do have push/pop instructions, and
+   rather limited offsets (4 bits) in load/store instructions, so it isn't
+   clear if this would give better code.  If implemented, should check for
+   compatibility problems.  */
+
+/* ??? Define ADJUST_COSTS?  */
