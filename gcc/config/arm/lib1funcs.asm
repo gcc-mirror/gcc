@@ -436,6 +436,7 @@ Over9:
 	add	dividend, dividend, work
 Over10:
 	pop	{ work }
+	RET
 	
 #else  /* ARM version.  */
 	
