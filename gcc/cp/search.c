@@ -1338,99 +1338,144 @@ lookup_fnfields (tree xbasetype, tree name, int protect)
   return rval;
 }
 
+/* Return the index in the CLASSTYPE_METHOD_VEC for CLASS_TYPE
+   corresponding to "operator TYPE ()", or -1 if there is no such
+   operator.  Only CLASS_TYPE itself is searched; this routine does
+   not scan the base classes of CLASS_TYPE.  */
+
+static int
+lookup_conversion_operator (tree class_type, tree type)
+{
+  int pass;
+  int i;
+
+  tree methods = CLASSTYPE_METHOD_VEC (class_type);
+
+  for (pass = 0; pass < 2; ++pass)
+    for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
+	 i < TREE_VEC_LENGTH (methods);
+	 ++i)
+      {
+	tree fn = TREE_VEC_ELT (methods, i);
+	/* The size of the vector may have some unused slots at the
+	   end.  */
+	if (!fn)
+	  break;
+
+	/* All the conversion operators come near the beginning of the
+	   class.  Therefore, if FN is not a conversion operator, there
+	   is no matching conversion operator in CLASS_TYPE.  */
+	fn = OVL_CURRENT (fn);
+	if (!DECL_CONV_FN_P (fn))
+	  break;
+	
+	if (pass == 0)
+	  {
+	    /* On the first pass we only consider exact matches.  If
+	       the types match, this slot is the one where the right
+	       conversion operators can be found.  */
+	    if (TREE_CODE (fn) != TEMPLATE_DECL
+		&& same_type_p (DECL_CONV_FN_TYPE (fn), type))
+	      return i;
+	  }
+	else
+	  {
+	    /* On the second pass we look for template conversion
+	       operators.  It may be possible to instantiate the
+	       template to get the type desired.  All of the template
+	       conversion operators share a slot.  By looking for
+	       templates second we ensure that specializations are
+	       preferred over templates.  */
+	    if (TREE_CODE (fn) == TEMPLATE_DECL)
+	      return i;
+	  }
+      }
+
+  return -1;
+}
+
 /* TYPE is a class type. Return the index of the fields within
    the method vector with name NAME, or -1 is no such field exists.  */
 
 int
 lookup_fnfields_1 (tree type, tree name)
 {
-  tree method_vec = (CLASS_TYPE_P (type)
-		     ? CLASSTYPE_METHOD_VEC (type)
-		     : NULL_TREE);
+  tree method_vec;
+  tree *methods;
+  tree tmp;
+  int i;
+  int len;
 
-  if (method_vec != 0)
-    {
-      register int i;
-      register tree *methods = &TREE_VEC_ELT (method_vec, 0);
-      int len = TREE_VEC_LENGTH (method_vec);
-      tree tmp;
+  if (!CLASS_TYPE_P (type))
+    return -1;
+
+  method_vec = CLASSTYPE_METHOD_VEC (type);
+
+  if (!method_vec)
+    return -1;
+
+  methods = &TREE_VEC_ELT (method_vec, 0);
+  len = TREE_VEC_LENGTH (method_vec);
 
 #ifdef GATHER_STATISTICS
-      n_calls_lookup_fnfields_1++;
+  n_calls_lookup_fnfields_1++;
 #endif /* GATHER_STATISTICS */
 
-      /* Constructors are first...  */
-      if (name == ctor_identifier)
-	return (methods[CLASSTYPE_CONSTRUCTOR_SLOT] 
-		? CLASSTYPE_CONSTRUCTOR_SLOT : -1);
-      /* and destructors are second.  */
-      if (name == dtor_identifier)
-	return (methods[CLASSTYPE_DESTRUCTOR_SLOT]
-		? CLASSTYPE_DESTRUCTOR_SLOT : -1);
+  /* Constructors are first...  */
+  if (name == ctor_identifier)
+    return (methods[CLASSTYPE_CONSTRUCTOR_SLOT] 
+	    ? CLASSTYPE_CONSTRUCTOR_SLOT : -1);
+  /* and destructors are second.  */
+  if (name == dtor_identifier)
+    return (methods[CLASSTYPE_DESTRUCTOR_SLOT]
+	    ? CLASSTYPE_DESTRUCTOR_SLOT : -1);
+  if (IDENTIFIER_TYPENAME_P (name))
+    return lookup_conversion_operator (type, TREE_TYPE (name));
 
-      for (i = CLASSTYPE_FIRST_CONVERSION_SLOT; 
-	   i < len && methods[i]; 
-	   ++i)
+  /* Skip the conversion operators.  */
+  i = CLASSTYPE_FIRST_CONVERSION_SLOT;
+  while (i < len && methods[i] && DECL_CONV_FN_P (OVL_CURRENT (methods[i])))
+    i++;
+
+  /* If the type is complete, use binary search.  */
+  if (COMPLETE_TYPE_P (type))
+    {
+      int lo = i;
+      int hi = len;
+
+      while (lo < hi)
 	{
+	  i = (lo + hi) / 2;
+
 #ifdef GATHER_STATISTICS
 	  n_outer_fields_searched++;
 #endif /* GATHER_STATISTICS */
 
-	  tmp = OVL_CURRENT (methods[i]);
-	  if (DECL_NAME (tmp) == name)
+	  tmp = methods[i];
+	  /* This slot may be empty; we allocate more slots than we
+	     need.  In that case, the entry we're looking for is
+	     closer to the beginning of the list. */
+	  if (tmp)
+	    tmp = DECL_NAME (OVL_CURRENT (tmp));
+	  if (!tmp || tmp > name)
+	    hi = i;
+	  else if (tmp < name)
+	    lo = i + 1;
+	  else
 	    return i;
-
-	  /* If the type is complete and we're past the conversion ops,
-	     switch to binary search.  */
-	  if (! DECL_CONV_FN_P (tmp)
-	      && COMPLETE_TYPE_P (type))
-	    {
-	      int lo = i + 1, hi = len;
-
-	      while (lo < hi)
-		{
-		  i = (lo + hi) / 2;
-
-#ifdef GATHER_STATISTICS
-		  n_outer_fields_searched++;
-#endif /* GATHER_STATISTICS */
-
-		  tmp = methods[i];
-		  /* This slot may be empty; we allocate more slots
-		     than we need.  In that case, the entry we're
-		     looking for is closer to the beginning of the
-		     list. */
-		  if (tmp)
-		    tmp = DECL_NAME (OVL_CURRENT (tmp));
-		  if (!tmp || tmp > name)
-		    hi = i;
-		  else if (tmp < name)
-		    lo = i + 1;
-		  else
-		    return i;
-		}
-	      break;
-	    }
-	}
-
-      /* If we didn't find it, it might have been a template
-	 conversion operator to a templated type.  If there are any,
-	 such template conversion operators will all be overloaded on
-	 the first conversion slot.  (Note that we don't look for this
-	 case above so that we will always find specializations
-	 first.)  */
-      if (IDENTIFIER_TYPENAME_P (name)) 
-	{
-	  i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	  if (i < len && methods[i])
-	    {
-	      tmp = OVL_CURRENT (methods[i]);
-	      if (TREE_CODE (tmp) == TEMPLATE_DECL
-		  && DECL_TEMPLATE_CONV_FN_P (tmp))
-		return i;
-	    }
 	}
     }
+  else
+    for (; i < len && methods[i]; ++i)
+      {
+#ifdef GATHER_STATISTICS
+	n_outer_fields_searched++;
+#endif /* GATHER_STATISTICS */
+	
+	tmp = OVL_CURRENT (methods[i]);
+	if (DECL_NAME (tmp) == name)
+	  return i;
+      }
 
   return -1;
 }

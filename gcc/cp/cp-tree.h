@@ -1856,6 +1856,11 @@ struct lang_decl GTY(())
 #define DECL_CONV_FN_P(NODE) \
   (IDENTIFIER_TYPENAME_P (DECL_NAME (NODE)))
 
+/* If FN is a conversion operator, the type to which it converts.
+   Otherwise, NULL_TREE.  */
+#define DECL_CONV_FN_TYPE(FN) \
+  (DECL_CONV_FN_P (FN) ? TREE_TYPE (DECL_NAME (FN)) : NULL_TREE)
+
 /* Nonzero if NODE, which is a TEMPLATE_DECL, is a template
    conversion operator to a type dependent on the innermost template
    args.  */

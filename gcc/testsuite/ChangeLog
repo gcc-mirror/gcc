@@ -1,3 +1,12 @@
+2003-06-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11105
+	* g++.dg/abi/conv1.C: Remove it.
+	* g++.dg/template/conv7.C: New test.
+	* g++.dg/template/conv8.C: Likewise.
+	* g++.old-deja/g++.ext/pretty2.C: Do not test __FUNCTION__ for a
+	conversion operator.
+
 2003-06-17  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/compat/compat-common.h (DEBUG_INIT): New.
