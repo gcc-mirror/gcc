@@ -669,20 +669,20 @@ load_class (class_or_name, verbose)
   saved = name;
   while (1)
     {
-      char *dollar;
+      char *separator;
 
       if ((class_loaded = read_class (name)))
 	break;
 
       /* We failed loading name. Now consider that we might be looking
-	 for a inner class but it's only available in source for in
-	 its enclosing context. */
-      if ((dollar = strrchr (IDENTIFIER_POINTER (name), '$')))
+	 for a inner class. */
+      if ((separator = strrchr (IDENTIFIER_POINTER (name), '$'))
+	  || (separator = strrchr (IDENTIFIER_POINTER (name), '.')))
 	{
-	  int c = *dollar;
-	  *dollar = '\0';
+	  int c = *separator;
+	  *separator = '\0';
 	  name = get_identifier (IDENTIFIER_POINTER (name));
-	  *dollar = c;
+	  *separator = c;
 	}
       /* Otherwise, we failed, we bail. */
       else
