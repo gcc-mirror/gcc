@@ -8443,13 +8443,19 @@ output_line_directive (ip, op, conditional, file_change)
    into the macro.  If the actual use count exceeds 10, 
    the value stored is 10.
    `free1' and `free2', if nonzero, point to blocks to be freed
-   when the macro argument data is no longer needed.  */
+   when the macro argument data is no longer needed.
+   `free_ptr', if nonzero, points to a value of instack[i].free_ptr
+   where the raw field points somewhere into this string.  The purpose
+   of this is to hold onto instack[i].buf for macro arguments, even
+   when the element has been popped off the input stack.
+*/
 
 struct argdata {
   U_CHAR *raw, *expanded;
   int raw_length, expand_length, expand_size;
   int stringified_length_bound;
   U_CHAR *free1, *free2;
+  U_CHAR *free_ptr;
   char newlines;
   char use_count;
 };
@@ -8502,6 +8508,7 @@ macroexpand (hp, op)
       args[i].raw_length = args[i].expand_length = args[i].expand_size
 	= args[i].stringified_length_bound = 0;
       args[i].free1 = args[i].free2 = 0;
+      args[i].free_ptr = 0;
       args[i].use_count = 0;
     }
 
@@ -8845,6 +8852,18 @@ macroexpand (hp, op)
       xbuf_len = totlen;
 
       for (i = 0; i < nargs; i++) {
+        if (args[i].free_ptr != 0) {
+          U_CHAR *buf = args[i].free_ptr;
+          int d;
+          for (d = indepth; d >= 0; --d) {
+            if (instack[d].buf == buf) {
+              instack[d].free_ptr = buf; /* Give ownership back to instack */
+              goto no_free;
+            }
+          }
+          free (buf); /* buf is not on the stack; must have been popped */
+        no_free:;
+        }
 	if (args[i].free1 != 0)
 	  free (args[i].free1);
 	if (args[i].free2 != 0)
@@ -8915,6 +8934,11 @@ macarg (argptr, rest_args)
       argptr->raw = ip->bufp;
       argptr->raw_length = bp - ip->bufp;
       argptr->newlines = ip->lineno - lineno0;
+      /* The next two statements transfer ownership of the the buffer
+	 from ip to argptr.  Note that the second statement ensures that
+	 a given free_ptr is owned by at most one macro argument. */
+      argptr->free_ptr = ip->free_ptr;
+      ip->free_ptr     = 0;
     }
     ip->bufp = bp;
   } else {

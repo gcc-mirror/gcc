@@ -1,3 +1,14 @@
+1999-12-02  Mike Karr  <mkarr@mathworks.com>
+
+	* cccp.c (argdata): Added free_ptr member.
+	(macroexpand): Initialize free_ptr of each argument. When an
+	argument's buffers are freed, if the argument's free_ptr corresponds
+	to a buffer on the input stack, then return the free_ptr to that stack
+	frame, otherwise, free it.
+	(macarg): If an argument begins and ends on the same input stack level,
+	then transfer the free_ptr of that buffer to the argument in case
+	the stack is popped during the processing of a subsequent argument.
+
 1999-12-02  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* loop.c (note_reg_stored): New function.
