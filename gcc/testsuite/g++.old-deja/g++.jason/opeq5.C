@@ -1,7 +1,7 @@
 // Testcase for tricky synthesized op= in complex inheritance situation.
-// See discussion in g++int.texi.
-
-// execution test - XFAIL *-*-*
+// This used to test whether the virtual base was copy-assigned only once.
+// That feature is not required by ISO C++, so the test now only checks
+// whether the vbase is assigned at all.
 
 int count = 0;
 extern "C" int printf (const char *, ...);
@@ -20,7 +20,7 @@ int main()
   D a, b;
   a = b;
   printf ("%d\n",count);
-  if (count != 1)
+  if (count == 0)
     return 1;
   return 0;
 }
