@@ -1,3 +1,9 @@
+2004-07-12  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/16477
+	* pa.c (function_arg): Update comment.
+	* pa.h (BLOCK_REG_PADDING): Define.
+
 2004-07-12  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	PR tree-optimization/16461

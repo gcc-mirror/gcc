@@ -8915,21 +8915,9 @@ function_arg (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type,
 	  /* Structures 5 to 8 bytes in size are passed in the general
 	     registers in the same manner as other non floating-point
 	     objects.  The data is right-justified and zero-extended
-	     to 64 bits.
-
-	     This is magic.  Normally, using a PARALLEL results in left
-	     justified data on a big-endian target.  However, using a
-	     single double-word register provides the required right
-	     justification for 5 to 8 byte structures.  This has nothing
-	     to do with the direction of padding specified for the argument.
-	     It has to do with how the data is widened and shifted into
-	     and from the register.
-
-	     Aside from adding load_multiple and store_multiple patterns,
-	     this is the only way that I have found to obtain right
-	     justification of BLKmode data when it has a size greater
-	     than one word.  Splitting the operation into two SImode loads
-	     or returning a DImode REG results in left justified data.  */
+	     to 64 bits.  This is opposite to the normal justification
+	     used on big endian targets and requires special treatment.
+	     We now define BLOCK_REG_PADDING to pad these objects.  */
 	  if (mode == BLKmode)
 	    {
 	      rtx loc = gen_rtx_EXPR_LIST (VOIDmode,
