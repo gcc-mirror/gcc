@@ -1,3 +1,7 @@
+2000-12-22  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* md.texi (Looping Patterns): New node.
+
 2000-12-21  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gcc.texi, cpp.texi: Update last-updated dates.
