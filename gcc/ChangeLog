@@ -1,3 +1,12 @@
+2003-07-17  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	Partial Fix PR/10129
+	* config/darwin.c (machopic_function_base_name): Only Return "<pic base>".
+	(machopic_output_function_base_name): New; print the true pic label.
+	(machopic_classify_ident): Pic Base is always a defined data.
+	* config/darwin.h (ASM_OUTPUT_LABELREF): Support the pic base label.
+	* config/darwin-proto.h (machopic_output_function_base_name): Prototype.
+
 2003-07-16  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcse.c (gcse_constant_p): COMPARE of the same registers is a constant
