@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler, for DEC Alpha.
    Copyright (C) 1992, 1993, 1994 Free Software Foundation, Inc.
-   Contributed by Richard Kenner (kenner@nyu.edu)
+   Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
 
@@ -1901,3 +1901,7 @@ do {							\
 
 #define SHASH_SIZE 511
 #define THASH_SIZE 55
+
+/* Align ecoff symbol tables to avoid OSF1/1.3 nm complaints.  */
+
+#define ALIGN_SYMTABLE_OFFSET(OFFSET) (((OFFSET) + 7) & ~7)
