@@ -41,37 +41,18 @@
 
 namespace std
 {
-
-    //
-    // Implementing a loosened valarray return value is tricky.
-    // First we need to meet 26.3.1/3: we should not add more than
-    // two levels of template nesting. Therefore we resort to template
-    // template to "flatten" loosened return value types.
-    // At some point we use partial specialization to remove one level
-    // template nesting due to _Expr<>
-    //
-    
-
-    // This class is NOT defined. It doesn't need to.
-    template<typename _Tp1, typename _Tp2> class _Constant;
-
-    //
-    // Unary function application closure.
-    //
-    template<class _Dom, typename _Op> class _UnFunBase
-    {
-    public:
-      typedef typename _Dom::value_type value_type;
-      typedef value_type _Vt;
-      
-      explicit _UnFunBase (const _Dom& __e) : _M_expr(__e) {}
-      
-      _Vt operator[] (size_t __i) const { return _Op()(_M_expr[__i]); }
-      size_t size () const { return _M_expr.size(); }
-      
-    private:
-      const _Dom& _M_expr;
-    };
+  //
+  // Implementing a loosened valarray return value is tricky.
+  // First we need to meet 26.3.1/3: we should not add more than
+  // two levels of template nesting. Therefore we resort to template
+  // template to "flatten" loosened return value types.
+  // At some point we use partial specialization to remove one level
+  // template nesting due to _Expr<>
+  //
+  
+  
+  // This class is NOT defined. It doesn't need to.
+  template<typename _Tp1, typename _Tp2> class _Constant;
 
   // Implementations of unary functions applied to valarray<>s.
   // I use hard-coded object functions here instead of a generic
@@ -399,27 +380,6 @@ namespace std
       typedef bool result_type;
     };
 
-  template<template<class, class> class _Meta, class _Dom, typename _Op>
-    class _UnFunClos;
-    
-  template<class _Dom, typename _Op>
-    struct _UnFunClos<_Expr,_Dom, _Op> : _UnFunBase<_Dom, _Op>
-    {
-      typedef _UnFunBase<_Dom, _Op> _Base;
-      typedef typename _Base::value_type value_type;
-
-      explicit _UnFunClos (const _Dom& __e) : _Base (__e) {}
-    };
-    
-  template<typename _Tp, typename _Op>
-    struct _UnFunClos<_ValArray,_Tp, _Op> : _UnFunBase<valarray<_Tp>, _Op>
-    {
-      typedef _UnFunBase<valarray<_Tp>, _Op> _Base;
-      typedef typename _Base::value_type value_type;
-
-      explicit _UnFunClos (const valarray<_Tp>& __v) : _Base (__v) {}
-    };
-
     //
     // Binary function application closure.
     //
@@ -637,41 +597,42 @@ namespace std
     // Unary expression closure.
     //
 
-    template<template<class> class _Oper, typename _Arg>
-    class _UnBase {
+  template<class _Oper, class _Arg>
+    class _UnBase
+    {
     public:
-        typedef _Oper<typename _Arg::value_type> _Op;
-        typedef typename _Op::result_type value_type;
+      typedef typename _Arg::value_type _Vt;
+      typedef typename __fun<_Oper, _Vt>::result_type value_type;
 
-        _UnBase (const _Arg& __e) : _M_expr(__e) {}
-        value_type operator[] (size_t) const;
-        size_t size () const { return _M_expr.size (); }
+      _UnBase(const _Arg& __e) : _M_expr(__e) {}
+
+      value_type operator[](size_t __i) const
+      { return _M_expr[__i]; }
+
+      size_t size() const { return _M_expr.size(); }
 
     private:
-        const _Arg& _M_expr;
+      const _Arg& _M_expr;
     };
 
-    template<template<class> class _Oper, typename _Arg>
-    inline typename _UnBase<_Oper, _Arg>::value_type
-    _UnBase<_Oper, _Arg>::operator[] (size_t __i) const
-    { return _Op() (_M_expr[__i]); }
-    
-    template<template<class> class _Oper, class _Dom>
-    struct _UnClos<_Oper, _Expr, _Dom> :  _UnBase<_Oper, _Dom> {
-        typedef _Dom _Arg;
-        typedef _UnBase<_Oper, _Dom> _Base;
-        typedef typename _Base::value_type value_type;
-        
-        _UnClos (const _Arg& __e) : _Base(__e) {}
+  template<class _Oper, class _Dom>
+    struct _UnClos<_Oper, _Expr, _Dom> :  _UnBase<_Oper, _Dom>
+    {
+      typedef _Dom _Arg;
+      typedef _UnBase<_Oper, _Dom> _Base;
+      typedef typename _Base::value_type value_type;
+      
+      _UnClos(const _Arg& __e) : _Base(__e) {}
     };
 
-    template<template<class> class _Oper, typename _Tp>
-    struct _UnClos<_Oper, _ValArray, _Tp> : _UnBase<_Oper, valarray<_Tp> > {
-        typedef valarray<_Tp> _Arg;
-        typedef _UnBase<_Oper, valarray<_Tp> > _Base;
-        typedef typename _Base::value_type value_type;
-
-        _UnClos (const _Arg& __e) : _Base(__e) {}
+  template<class _Oper, typename _Tp>
+    struct _UnClos<_Oper, _ValArray, _Tp> : _UnBase<_Oper, valarray<_Tp> > 
+    {
+      typedef valarray<_Tp> _Arg;
+      typedef _UnBase<_Oper, valarray<_Tp> > _Base;
+      typedef typename _Base::value_type value_type;
+      
+      _UnClos(const _Arg& __e) : _Base(__e) {}
     };
 
 
@@ -968,153 +929,158 @@ namespace std
                 : _Base (__a, __i) {}
     };
 
-    //
-    // class _Expr
-    //      
-    template<class _Clos, typename _Tp> class _Expr {
+  //
+  // class _Expr
+  //      
+  template<class _Clos, typename _Tp> 
+    class _Expr
+    {
     public:
-        typedef _Tp value_type;
+      typedef _Tp value_type;
+      
+      _Expr(const _Clos&);
+      
+      const _Clos& operator()() const;
         
-        _Expr (const _Clos&);
-        
-        const _Clos& operator() () const;
-        
-        value_type operator[] (size_t) const;
-        valarray<value_type> operator[] (slice) const;
-        valarray<value_type> operator[] (const gslice&) const;
-        valarray<value_type> operator[] (const valarray<bool>&) const;
-        valarray<value_type> operator[] (const valarray<size_t>&) const;
+      value_type operator[](size_t) const;
+      valarray<value_type> operator[](slice) const;
+      valarray<value_type> operator[](const gslice&) const;
+      valarray<value_type> operator[](const valarray<bool>&) const;
+      valarray<value_type> operator[](const valarray<size_t>&) const;
     
-        _Expr<_UnClos<_Unary_plus,std::_Expr,_Clos>, value_type>
-        operator+ () const;
+      _Expr<_UnClos<__unary_plus,std::_Expr,_Clos>, value_type>
+        operator+() const;
 
-        _Expr<_UnClos<negate,std::_Expr,_Clos>, value_type>
-        operator- () const;
+      _Expr<_UnClos<__negate,std::_Expr,_Clos>, value_type>
+        operator-() const;
 
-        _Expr<_UnClos<_Bitwise_not,std::_Expr,_Clos>, value_type>
-        operator~ () const;
+      _Expr<_UnClos<__bitwise_not,std::_Expr,_Clos>, value_type>
+        operator~() const;
 
-        _Expr<_UnClos<logical_not,std::_Expr,_Clos>, bool>
-        operator! () const;
+      _Expr<_UnClos<__logical_not,std::_Expr,_Clos>, bool>
+        operator!() const;
 
-        size_t size () const;
-        value_type sum () const;
+      size_t size() const;
+      value_type sum() const;
         
-        valarray<value_type> shift (int) const;
-        valarray<value_type> cshift (int) const;
+      valarray<value_type> shift(int) const;
+      valarray<value_type> cshift(int) const;
 
       value_type min() const;
       value_type max() const;
 
-      valarray<value_type> apply(value_type (*) (const value_type&)) const;
-      valarray<value_type> apply(value_type (*) (value_type)) const;
+      valarray<value_type> apply(value_type (*)(const value_type&)) const;
+      valarray<value_type> apply(value_type (*)(value_type)) const;
         
     private:
-        const _Clos _M_closure;
+      const _Clos _M_closure;
     };
     
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline
-    _Expr<_Clos,_Tp>::_Expr (const _Clos& __c) : _M_closure(__c) {}
+    _Expr<_Clos,_Tp>::_Expr(const _Clos& __c) : _M_closure(__c) {}
     
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline const _Clos&
-    _Expr<_Clos,_Tp>::operator() () const
+    _Expr<_Clos,_Tp>::operator()() const
     { return _M_closure; }
 
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline _Tp
-    _Expr<_Clos,_Tp>::operator[] (size_t __i) const
+    _Expr<_Clos,_Tp>::operator[](size_t __i) const
     { return _M_closure[__i]; }
 
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline valarray<_Tp>
-    _Expr<_Clos,_Tp>::operator[] (slice __s) const
+    _Expr<_Clos,_Tp>::operator[](slice __s) const
     { return _M_closure[__s]; }
     
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline valarray<_Tp>
-    _Expr<_Clos,_Tp>::operator[] (const gslice& __gs) const
+    _Expr<_Clos,_Tp>::operator[](const gslice& __gs) const
     { return _M_closure[__gs]; }
     
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline valarray<_Tp>
-    _Expr<_Clos,_Tp>::operator[] (const valarray<bool>& __m) const
+    _Expr<_Clos,_Tp>::operator[](const valarray<bool>& __m) const
     { return _M_closure[__m]; }
     
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline valarray<_Tp>
-    _Expr<_Clos,_Tp>::operator[] (const valarray<size_t>& __i) const
+    _Expr<_Clos,_Tp>::operator[](const valarray<size_t>& __i) const
     { return _M_closure[__i]; }
     
-    template<class _Clos, typename _Tp>
+  template<class _Clos, typename _Tp>
     inline size_t
-    _Expr<_Clos,_Tp>::size () const  { return _M_closure.size (); }
+    _Expr<_Clos,_Tp>::size() const  { return _M_closure.size (); }
 
   template<class _Clos, typename _Tp>
-  inline valarray<_Tp>
-  _Expr<_Clos, _Tp>::shift(int __n) const
-  { return valarray<_Tp>(_M_closure).shift(__n); }
+    inline valarray<_Tp>
+    _Expr<_Clos, _Tp>::shift(int __n) const
+    { return valarray<_Tp>(_M_closure).shift(__n); }
 
   template<class _Clos, typename _Tp>
-  inline valarray<_Tp>
-  _Expr<_Clos, _Tp>::cshift(int __n) const
-  { return valarray<_Tp>(_M_closure).cshift(__n); }
+    inline valarray<_Tp>
+    _Expr<_Clos, _Tp>::cshift(int __n) const
+    { return valarray<_Tp>(_M_closure).cshift(__n); }
 
   template<class _Clos, typename _Tp>
-  inline valarray<_Tp>
-  _Expr<_Clos, _Tp>::apply(_Tp __f(const _Tp&)) const
-  { return valarray<_Tp>(_M_closure).apply(__f); }
+    inline valarray<_Tp>
+    _Expr<_Clos, _Tp>::apply(_Tp __f(const _Tp&)) const
+    { return valarray<_Tp>(_M_closure).apply(__f); }
     
   template<class _Clos, typename _Tp>
-  inline valarray<_Tp>
-  _Expr<_Clos, _Tp>::apply(_Tp __f(_Tp)) const
-  { return valarray<_Tp>(_M_closure).apply(__f); }
+    inline valarray<_Tp>
+    _Expr<_Clos, _Tp>::apply(_Tp __f(_Tp)) const
+    { return valarray<_Tp>(_M_closure).apply(__f); }
 
-    // XXX: replace this with a more robust summation algorithm.
-    template<class _Clos, typename _Tp>
+  // XXX: replace this with a more robust summation algorithm.
+  template<class _Clos, typename _Tp>
     inline _Tp
-    _Expr<_Clos,_Tp>::sum () const
+    _Expr<_Clos,_Tp>::sum() const
     {
-        size_t __n = _M_closure.size();
-        if (__n == 0) return _Tp();
-        else {
-            _Tp __s = _M_closure[--__n];
-            while (__n != 0) __s += _M_closure[--__n];
-            return __s;
+      size_t __n = _M_closure.size();
+      if (__n == 0) 
+	return _Tp();
+      else 
+	{
+	  _Tp __s = _M_closure[--__n];
+	  while (__n != 0)
+	    __s += _M_closure[--__n];
+	  return __s;
         }
     }
 
   template<class _Clos, typename _Tp>
-  inline _Tp
-  _Expr<_Clos, _Tp>::min() const
-  { return __valarray_min(_M_closure); }
+    inline _Tp
+    _Expr<_Clos, _Tp>::min() const
+    { return __valarray_min(_M_closure); }
 
   template<class _Clos, typename _Tp>
-  inline _Tp
-  _Expr<_Clos, _Tp>::max() const
-  { return __valarray_max(_M_closure); }
+    inline _Tp
+    _Expr<_Clos, _Tp>::max() const
+    { return __valarray_max(_M_closure); }
     
-    template<class _Dom, typename _Tp>
-    inline _Expr<_UnClos<logical_not,_Expr,_Dom>, bool>
-    _Expr<_Dom,_Tp>::operator! () const
+  template<class _Dom, typename _Tp>
+    inline _Expr<_UnClos<__logical_not,_Expr,_Dom>, bool>
+    _Expr<_Dom,_Tp>::operator!() const
     {
-        typedef _UnClos<logical_not,std::_Expr,_Dom> _Closure;
-        return _Expr<_Closure,_Tp> (_Closure(this->_M_closure));
+        typedef _UnClos<__logical_not,std::_Expr,_Dom> _Closure;
+        return _Expr<_Closure,_Tp>(_Closure(this->_M_closure));
     }
 
 #define _DEFINE_EXPR_UNARY_OPERATOR(_Op, _Name)                         \
 template<class _Dom, typename _Tp>                                      \
 inline _Expr<_UnClos<_Name,std::_Expr,_Dom>,_Tp>                        \
-_Expr<_Dom,_Tp>::operator _Op () const                                 \
+_Expr<_Dom,_Tp>::operator _Op() const                                   \
 {                                                                       \
     typedef _UnClos<_Name,std::_Expr,_Dom> _Closure;                    \
-    return _Expr<_Closure,_Tp> (_Closure (this->_M_closure));           \
+    return _Expr<_Closure,_Tp>(_Closure(this->_M_closure));             \
 }
 
-    _DEFINE_EXPR_UNARY_OPERATOR(+, _Unary_plus)
-    _DEFINE_EXPR_UNARY_OPERATOR(-, negate)
-    _DEFINE_EXPR_UNARY_OPERATOR(~, _Bitwise_not)
+    _DEFINE_EXPR_UNARY_OPERATOR(+, __unary_plus)
+    _DEFINE_EXPR_UNARY_OPERATOR(-, __negate)
+    _DEFINE_EXPR_UNARY_OPERATOR(~, __bitwise_not)
 
 #undef _DEFINE_EXPR_UNARY_OPERATOR
 
@@ -1263,19 +1229,19 @@ operator _Op (const valarray<typename _Dom::value_type>& __v,          \
 
 #define _DEFINE_EXPR_UNARY_FUNCTION(_Name)                              \
 template<class _Dom>                                                    \
-inline _Expr<_UnFunClos<_Expr,_Dom,__##_Name>,typename _Dom::value_type>\
+inline _Expr<_UnClos<__##_Name,_Expr,_Dom>,typename _Dom::value_type>   \
 _Name(const _Expr<_Dom,typename _Dom::value_type>& __e)                 \
 {                                                                       \
     typedef typename _Dom::value_type _Tp;                              \
-    typedef _UnFunClos<_Expr,_Dom,__##_Name> _Closure;                  \
+    typedef _UnClos<__##_Name,_Expr,_Dom> _Closure;                     \
     return _Expr<_Closure,_Tp>(_Closure(__e()));                        \
 }                                                                       \
                                                                         \
 template<typename _Tp>                                                  \
-inline _Expr<_UnFunClos<_ValArray,_Tp,__##_Name>,_Tp>                   \
+inline _Expr<_UnClos<__##_Name,_ValArray,_Tp>,_Tp>                      \
 _Name(const valarray<_Tp>& __v)                                         \
 {                                                                       \
-    typedef _UnFunClos<_ValArray,_Tp,__##_Name> _Closure;               \
+    typedef _UnClos<__##_Name,_ValArray,_Tp> _Closure;                  \
     return _Expr<_Closure,_Tp>(_Closure (__v));                         \
 }
 

@@ -1,3 +1,20 @@
+2002-08-02  Gabriel Dos Reis  <gdr@nerim.net>
+
+	* include/bits/valarray_meta.h (_UnFunBase<>): Remove.
+	(_UnFunClos<>): Same.
+	(_UnBase<>): Reformat.  Make first template-parameter non
+	template. 
+	(_UnClos<>): Likewise.
+	(_Expr<>): Reformate.  Adjust unary member operator return types. 
+	(_DEFINE_EXPR_UNARY_OPERATOR): Adjust definition.
+	(_DEFINE_EXPR_UNARY_FUNCTION): Likewise.
+	* include/std/std_valarray.h (_UnClos<>): Adjust declaration.
+	(valarray<>::_UnaryOp<>):  New nested traits. Adjust unary member
+	operator return types.  Reformat.
+	(_Bitwise_not): Remove.
+	(_DEFINE_VALARRAY_UNARY_OPERATOR): Adjust definition.
+	* testsuite/26_numerics/valarray_name_lookup.C: New test.
+
 2002-08-02  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* config/os/newlib/ctype_inline.h (is): Don't offset _M_table.
