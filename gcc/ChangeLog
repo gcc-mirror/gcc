@@ -1,3 +1,25 @@
+2004-08-04  Mark Mitchell  <mark@codesourcery.com>
+
+	* defaults.h (TARGET_DECLSPEC): New macro.
+	* c-cppbuiltin.c (c_cpp_builtins): Handle TARGET_DECLSPEC.
+	* config/arm/pe.h (SUBTARGET_CPP_SPEC): Remove __declspec support.
+	* config/arm/symbian. (TARGET_DLLIMPORT_DECL_ATTRIBUTES): Define.
+	* config/i386/beof-elf.h (TARGET_OS_CPP_BUILTINS): Remove
+	__declspec support.
+	(TARGET_DECLSPEC): Define.
+	* config/i386/cygming.h (TARGET_OS_CPP_BUILTINS): Remove
+	__declspec support.
+	* config/i386/i386-interix.h (TARGET_OS_CPP_BUILTINS): Remove
+	__declspec support.
+	(TARGET_DECLSPEC): Define.
+	* config/mcore/mcore.h (TARGET_CPU_CPP_BUILTINS): Remove
+	__declspec support.
+	* config/sh/symbian-pre.h (SUBTARGET_CPP_SPEC): Remove __declspec
+	support.
+	* doc/tm.texi (TARGET_DECLSPEC): Document.
+
+	* doc/extend.texi: Fix typo in comment.
+
 2004-08-04  Paul Brook  <paul@codesourcery.com>
 
 	* target-def.h (TARGET_CXX_CDTOR_RETURNS_THIS): Define.

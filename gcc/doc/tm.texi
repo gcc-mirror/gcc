@@ -8346,6 +8346,15 @@ as the expansion of @code{TARGET_MERGE_DECL_ATTRIBUTES}.  This is done
 in @file{i386/cygwin.h} and @file{i386/i386.c}, for example.
 @end deftypefn
 
+@defmac TARGET_DECLSPEC
+Define this macro to a non-zero value if you want to treat
+@code{__declspec(X)} as equivalent to @code{__attribute((X))}.  By
+default, this behavior is enabled only for targets that define
+@code{TARGET_DLLIMPORT_DECL_ATTRIBUTES}.  The current implementation
+of @code{__declspec} is via a built-in macro, but you should not rely
+on this implementation detail.
+@end defmac
+
 @deftypefn {Target Hook} void TARGET_INSERT_ATTRIBUTES (tree @var{node}, tree *@var{attr_ptr})
 Define this target hook if you want to be able to add attributes to a decl
 when it is being created.  This is normally useful for back ends which

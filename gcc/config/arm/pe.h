@@ -42,15 +42,8 @@
    merge_decl_attributes.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES
 
-/* Support the __declspec keyword by turning them into attributes.
-   We currently only support: naked, dllimport, and dllexport.
-   Note that the current way we do this may result in a collision with
-   predefined attributes later on.  This can be solved by using one attribute,
-   say __declspec__, and passing args to it.  The problem with that approach
-   is that args are not accumulated: each new appearance would clobber any
-   existing args.  */
 #undef  SUBTARGET_CPP_SPEC
-#define SUBTARGET_CPP_SPEC "-D__pe__ -D__declspec(x)=__attribute__((x))"
+#define SUBTARGET_CPP_SPEC "-D__pe__"
 
 
 /* Experimental addition for pr 7885.

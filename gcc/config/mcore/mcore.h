@@ -35,19 +35,11 @@
    merge_decl_attributes.  */
 #define TARGET_DLLIMPORT_DECL_ATTRIBUTES
 
-/* Support the __declspec keyword by turning them into attributes.
-   We currently only support: dllexport and dllimport.
-   Note that the current way we do this may result in a collision with
-   predefined attributes later on.  This can be solved by using one attribute,
-   say __declspec__, and passing args to it.  The problem with that approach
-   is that args are not accumulated: each new appearance would clobber any
-   existing args.  */
 #define TARGET_CPU_CPP_BUILTINS()					  \
   do									  \
     {									  \
       builtin_define ("__mcore__");					  \
       builtin_define ("__MCORE__");					  \
-      builtin_define ("__declspec(x)=__attribute__((x))");		  \
       if (TARGET_LITTLE_END)						  \
         builtin_define ("__MCORELE__");					  \
       else								  \

@@ -2177,7 +2177,7 @@ int i __attribute__ ((visibility ("hidden")));
 See the ELF gABI for complete details, but the short story is:
 
 @table @dfn
-@c keep this list of visibilies in alphabetical order.
+@c keep this list of visibilities in alphabetical order.
 
 @item default
 Default visibility is the normal case for ELF.  This value is
