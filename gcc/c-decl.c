@@ -848,7 +848,7 @@ print_lang_identifier (file, node, indent)
 }
 
 /* Hook called at end of compilation to assume 1 elt
-   for a top-level array decl that wasn't complete before.  */
+   for a top-level tentative array defn that wasn't complete before.  */
 
 void
 finish_incomplete_decl (decl)
@@ -859,10 +859,10 @@ finish_incomplete_decl (decl)
       tree type = TREE_TYPE (decl);
       if (type != error_mark_node
 	  && TREE_CODE (type) == ARRAY_TYPE
+	  && ! DECL_EXTERNAL (decl)
 	  && TYPE_DOMAIN (type) == 0)
 	{
-	  if (! DECL_EXTERNAL (decl))
-	    warning_with_decl (decl, "array `%s' assumed to have one element");
+	  warning_with_decl (decl, "array `%s' assumed to have one element");
 
 	  complete_array_type (type, NULL_TREE, 1);
 
