@@ -1902,7 +1902,7 @@
 ;; It must come before the more general movsf pattern.
 (define_insn ""
   [(set (match_operand:SF 0 "general_operand" "=?r,f,m")
-	(match_operand:SF 1 "" "?E,m,G"))]
+	(match_operand:SF 1 "" "?F,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
 {
@@ -1975,7 +1975,7 @@
 
 (define_insn ""
   [(set (match_operand:DF 0 "general_operand" "=?r,e,o")
-	(match_operand:DF 1 "" "?E,m,G"))]
+	(match_operand:DF 1 "" "?F,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
 {
@@ -2090,7 +2090,7 @@
 ;; It must come before the more general movtf pattern.
 (define_insn ""
   [(set (match_operand:TF 0 "general_operand" "=?r,e,o")
-	(match_operand:TF 1 "" "?E,m,G"))]
+	(match_operand:TF 1 "" "?F,m,G"))]
   "TARGET_FPU && GET_CODE (operands[1]) == CONST_DOUBLE"
   "*
 {
