@@ -1861,12 +1861,12 @@ struct lang_decl_flags
 
   unsigned operator_attr : 1;
   unsigned constructor_attr : 1;
+  unsigned destructor_attr : 1;
   unsigned friend_attr : 1;
   unsigned static_function : 1;
-  unsigned const_memfunc : 1;
-  unsigned volatile_memfunc : 1;
   unsigned pure_virtual : 1;
   unsigned has_in_charge_parm_p : 1;
+  unsigned pretty_function_p : 1;
 
   unsigned mutable_flag : 1;
   unsigned deferred : 1;
@@ -1881,8 +1881,7 @@ struct lang_decl_flags
   unsigned pending_inline_p : 1;
   unsigned global_ctor_p : 1;
   unsigned global_dtor_p : 1;
-  unsigned pretty_function_p : 1;
-  unsigned dummy : 2;
+  unsigned dummy : 3;
 
   tree context;
 
@@ -1969,8 +1968,7 @@ struct lang_decl
 /* There ought to be a better way to find out whether or not something is
    a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
-  (DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (NODE))	\
-   && DECL_LANGUAGE (NODE) == lang_cplusplus)
+  (DECL_LANG_SPECIFIC (NODE)->decl_flags.destructor_attr)
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
    specialized in-charge constructor, in-charge deleting constructor,
@@ -2078,11 +2076,10 @@ struct lang_decl
 
 /* Nonzero for FUNCTION_DECL means that this member function
    has `this' as const X *const.  */
-#define DECL_CONST_MEMFUNC_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.const_memfunc)
-
-/* Nonzero for FUNCTION_DECL means that this member function
-   has `this' as volatile X *const.  */
-#define DECL_VOLATILE_MEMFUNC_P(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.volatile_memfunc)
+#define DECL_CONST_MEMFUNC_P(NODE)					 \
+  (DECL_NONSTATIC_MEMBER_FUNCTION_P (NODE)				 \
+   && CP_TYPE_CONST_P (TREE_TYPE (TREE_VALUE 				 \
+				  (TYPE_ARG_TYPES (TREE_TYPE (NODE))))))
 
 /* Nonzero for a DECL means that this member is a non-static member.  */
 #define DECL_NONSTATIC_MEMBER_P(NODE) 		\

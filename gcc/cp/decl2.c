@@ -1037,6 +1037,7 @@ grokclassfn (ctype, function, flags, quals)
 
   if (flags == DTOR_FLAG)
     {
+      DECL_DESTRUCTOR_P (function) = 1;
       DECL_ASSEMBLER_NAME (function) = build_destructor_name (ctype);
       TYPE_HAS_DESTRUCTOR (ctype) = 1;
     }
@@ -1389,7 +1390,7 @@ check_classfn (ctype, function)
 	  && DECL_CONSTRUCTOR_P (function))
 	goto got_it;
       if (*++methods && fn_name == DECL_NAME (OVL_CURRENT (*methods))
-	  && DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function)))
+	  && DECL_DESTRUCTOR_P (function))
 	goto got_it;
 
       while (++methods != end && *methods)
@@ -1410,7 +1411,7 @@ check_classfn (ctype, function)
 		     we can't use this short-cut for them, either.
 		     (It's not legal to declare arguments for a
 		     destructor, but some people try.)  */
-		  if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (function))
+		  if (!DECL_DESTRUCTOR_P (function)
 		      && (DECL_ASSEMBLER_NAME (function)
 			  != DECL_NAME (function))
 		      && (DECL_ASSEMBLER_NAME (fndecl)
@@ -1909,7 +1910,7 @@ grok_function_init (decl, init)
       /* pure virtual destructors must be defined.  */
       /* pure virtual needs to be defined (as abort) only when put in 
 	 vtbl. For wellformed call, it should be itself. pr4737 */
-      if (!DESTRUCTOR_NAME_P (DECL_ASSEMBLER_NAME (decl)))
+      if (!DECL_DESTRUCTOR_P (decl)))
 	{
 	  /* Give this node rtl from `abort'.  */
 	  DECL_RTL (decl) = DECL_RTL (abort_fndecl);
