@@ -672,6 +672,7 @@ static rtx ix86_expand_int_compare PARAMS ((enum rtx_code, rtx, rtx));
 static enum rtx_code ix86_prepare_fp_compare_args PARAMS ((enum rtx_code,
 							   rtx *, rtx *));
 static rtx get_thread_pointer PARAMS ((void));
+static void get_pc_thunk_name PARAMS ((char [32], unsigned int));
 static rtx gen_push PARAMS ((rtx));
 static int memory_address_length PARAMS ((rtx addr));
 static int ix86_flags_dependant PARAMS ((rtx, rtx, enum attr_type));
@@ -3898,7 +3899,28 @@ ix86_setup_frame_addresses ()
   cfun->machine->accesses_prev_frame = 1;
 }
 
+#if defined(HAVE_GAS_HIDDEN) && defined(SUPPORTS_ONE_ONLY)
+# define USE_HIDDEN_LINKONCE 1
+#else
+# define USE_HIDDEN_LINKONCE 0
+#endif
+
 static int pic_labels_used;
+
+/* Fills in the label name that should be used for a pc thunk for
+   the given register.  */
+
+static void
+get_pc_thunk_name (name, regno)
+     char name[32];
+     unsigned int regno;
+{
+  if (USE_HIDDEN_LINKONCE)
+    sprintf (name, "__i686.get_pc_thunk.%s", reg_names[regno]);
+  else
+    ASM_GENERATE_INTERNAL_LABEL (name, "LPR", regno);
+}
+
 
 /* This function generates code for -fpic that loads %ebx with
    the return address of the caller and then returns.  */
@@ -3912,18 +3934,37 @@ ix86_asm_file_end (file)
 
   for (regno = 0; regno < 8; ++regno)
     {
+      char name[32];
+
       if (! ((pic_labels_used >> regno) & 1))
 	continue;
 
-      text_section ();
+      get_pc_thunk_name (name, regno);
 
-      /* This used to call ASM_DECLARE_FUNCTION_NAME() but since it's an
-	 internal (non-global) label that's being emitted, it didn't make
-	 sense to have .type information for local labels.   This caused
-	 the SCO OpenServer 5.0.4 ELF assembler grief (why are you giving
-	 me debug info for a label that you're declaring non-global?) this
-	 was changed to call ASM_OUTPUT_LABEL() instead.  */
-      ASM_OUTPUT_INTERNAL_LABEL (file, "LPR", regno);
+      if (USE_HIDDEN_LINKONCE)
+	{
+	  tree decl;
+
+	  decl = build_decl (FUNCTION_DECL, get_identifier (name),
+			     error_mark_node);
+	  TREE_PUBLIC (decl) = 1;
+	  TREE_STATIC (decl) = 1;
+	  DECL_ONE_ONLY (decl) = 1;
+
+	  (*targetm.asm_out.unique_section) (decl, 0);
+	  named_section (decl, NULL, 0);
+
+	  ASM_GLOBALIZE_LABEL (file, name);
+	  fputs ("\t.hidden\t", file);
+	  assemble_name (file, name);
+	  fputc ('\n', file);
+	  ASM_DECLARE_FUNCTION_NAME (file, name, decl);
+	}
+      else
+	{
+	  text_section ();
+	  ASM_OUTPUT_LABEL (file, name);
+	}
 
       xops[0] = gen_rtx_REG (SImode, regno);
       xops[1] = gen_rtx_MEM (SImode, stack_pointer_rtx);
@@ -3960,11 +4001,11 @@ output_set_got (dest)
     }
   else
     {
-      char pic_label_name[32];
-      ASM_GENERATE_INTERNAL_LABEL (pic_label_name, "LPR", REGNO (dest));
+      char name[32];
+      get_pc_thunk_name (name, REGNO (dest));
       pic_labels_used |= 1 << REGNO (dest);
 
-      xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (pic_label_name));
+      xops[2] = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (name));
       xops[2] = gen_rtx_MEM (QImode, xops[2]);
       output_asm_insn ("call\t%X2", xops);
     }
