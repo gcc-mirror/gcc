@@ -287,16 +287,23 @@ systems' @command{tar} programs will also work, only try GNU
 @heading Tools/packages necessary for modifying GCC
 @table @asis
 
-@item autoconf version 2.13 (NO earlier or later versions) and
+@item autoconf versions 2.13 and 2.57
 @itemx GNU m4 version 1.4 (or later)
 
 Necessary when modifying @file{configure.in}, @file{aclocal.m4}, etc.@:
-to regenerate @file{configure} and @file{config.in} files
+to regenerate @file{configure} and @file{config.in} files.  Most
+directories require autoconf 2.13 (exactly), but @file{libiberty} and
+@file{libstdc++-v3} require autoconf 2.57 (exactly).
 
-@item automake version ???
+@item automake versions 1.4-p? and 1.7.?
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
-associated @file{Makefile.in}
+associated @file{Makefile.in}.  Most directories require a 1.4 series
+automake; @file{libstdc++-v3} requires a 1.7 series automake.
+
+@item gettext version 0.12 (or later)
+
+Needed to regenerate @file{gcc.pot}.
 
 @item gperf version 2.7.2 (or later)
 
@@ -362,8 +369,10 @@ snapshots of the development sources are also available via FTP.
 @item perl version 5.6.1 (or later)
 
 Necessary when regenerating @file{Makefile} dependencies in libiberty.
-Necessary when regenerating something with intl??? (pod2man???)
-Other stuff???
+Necessary when regenerating @file{libiberty/functions.texi}.
+Necessary when generating manpages from Texinfo manuals.
+Used by various scripts to generate some files included in CVS (mainly
+Unicode-related and rarely changing) from source tables.
 
 @item GNU diffutils version 2.7 (or later)
 
