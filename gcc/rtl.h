@@ -1568,7 +1568,6 @@ extern void output_func_start_profiler	PROTO ((void));
 #ifdef BUFSIZ
 extern void reg_to_stack		PROTO ((rtx, FILE *));
 #endif
-extern int stack_regs_mentioned_p	PROTO ((rtx));
 
 /* In fold-const.c */
 extern int add_double		PROTO ((HOST_WIDE_INT, HOST_WIDE_INT,

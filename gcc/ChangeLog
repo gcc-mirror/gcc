@@ -1,3 +1,18 @@
+Wed Sep  1 21:13:48 1999  Richard Henderson  <rth@cygnus.com>
+
+	Merge new ia32 backend from the branch!
+
+	* i386.h, i386.c, i386.md, reg-stack.c, i386/unix.h: Many changes.
+	See ChangeLog.P2 on new_ia32_branch for details.
+
+	* rtl.h (stack_regs_mentioned_p): Delete prototype.
+	* i386/cygwin.h (SUBTARGET_PROLOGUE): No more do_rtl.
+	* i386/win32.h (SUBTARGET_PROLOGUE): Likewise.
+	* i386/gas.h (ASM_FILE_START): Define.
+	* i386/winnt.c (i386_pe_valid_decl_attribute_p): Update
+	for name change of ix86_valid_decl_attribute_p.
+	(i386_pe_valid_type_attribute_p): Similarly.
+
 Wed Sep  1 18:21:23 1999  Richard Henderson  <rth@cygnus.com>
 
 	* emit-rtl.c (init_emit_once): Don't use GET_MODE_WIDER_MODE

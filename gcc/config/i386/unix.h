@@ -22,79 +22,13 @@ Boston, MA 02111-1307, USA.  */
    that are the same for all the i386 Unix systems
    (though they may differ in non-Unix systems).  */
 
-/* Define some concatenation macros to concatenate an opcode
-   and one, two or three operands.  In other assembler syntaxes
-   they may alter the order of ther operands.  */
-
-/* Note that the other files fail to use these
-   in some of the places where they should.  */
-
-#if defined(__STDC__) || defined(ALMOST_STDC)
-#define AS2(a,b,c) #a " " #b "," #c
-#define AS2C(b,c) " " #b "," #c
-#define AS3(a,b,c,d) #a " " #b "," #c "," #d
-#define AS1(a,b) #a " " #b
-#else
-#define AS1(a,b) "a b"
-#define AS2(a,b,c) "a b,c"
-#define AS2C(b,c) " b,c"
-#define AS3(a,b,c,d) "a b,c,d"
-#endif  
+#define DEFAULT_ASSEMBLER_DIALECT 0
 
 /* Define macro used to output shift-double opcodes when the shift
    count is in %cl.  Some assemblers require %cl as an argument;
    some don't.  This macro controls what to do: by default, don't
    print %cl.  */
 #define SHIFT_DOUBLE_OMITS_COUNT 1
-#define AS3_SHIFT_DOUBLE(a,b,c,d) \
-	(SHIFT_DOUBLE_OMITS_COUNT ? AS2 (a,c,d) : AS3 (a,b,c,d))
-
-/* Output the size-letter for an opcode.
-   CODE is the letter used in an operand spec (L, B, W, S or Q).
-   CH is the corresponding lower case letter
-     (except if CODE is `Q' then CH is `l', unless GAS_MNEMONICS).  */
-#define PUT_OP_SIZE(CODE,CH,FILE) putc (CH,(FILE))
-
-/* Opcode suffix for fullword insn.  */
-#define L_SIZE "l"
-
-/* Prefix for register names in this syntax.  */
-#define RP "%"
-
-/* Prefix for immediate operands in this syntax.  */
-#define IP "$"
-
-/* Indirect call instructions should use `*'.  */
-#define USE_STAR 1
-
-/* Prefix for a memory-operand X.  */
-#define PRINT_PTR(X, FILE)
-
-/* Delimiters that surround base reg and index reg.  */
-#define ADDR_BEG(FILE) putc('(', (FILE))
-#define ADDR_END(FILE) putc(')', (FILE))
-
-/* Print an index register (whose rtx is IREG).  */
-#define PRINT_IREG(FILE,IREG) \
-  do								\
-  { fputs (",", (FILE)); PRINT_REG ((IREG), 0, (FILE)); }	\
-  while (0)
-  
-/* Print an index scale factor SCALE.  */
-#define PRINT_SCALE(FILE,SCALE) \
-  if ((SCALE) != 1) fprintf ((FILE), ",%d", (SCALE))
-
-/* Print a base/index combination.
-   BREG is the base reg rtx, IREG is the index reg rtx,
-   and SCALE is the index scale factor (an integer).  */
-
-#define PRINT_B_I_S(BREG,IREG,SCALE,FILE) \
-  { ADDR_BEG (FILE); 				\
-    if (BREG) PRINT_REG ((BREG), 0, (FILE));	\
-    if ((IREG) != 0)				\
-      { PRINT_IREG ((FILE), (IREG));		\
-        PRINT_SCALE ((FILE), (SCALE)); }	\
-    ADDR_END (FILE); }
 
 /* Define the syntax of pseudo-ops, labels and comments.  */
 
@@ -148,43 +82,48 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	      \
-do {									      \
-  tree parm;								      \
-									      \
-  if (i386_regparm > 0)							      \
-    parm = TYPE_ARG_TYPES (TREE_TYPE (function));			      \
-  else									      \
-    parm = NULL_TREE;							      \
-  for (; parm; parm = TREE_CHAIN (parm))				      \
-    if (TREE_VALUE (parm) == void_type_node)				      \
-      break;								      \
-  fprintf (FILE, "\taddl $%d,%s\n", DELTA,				      \
-	   parm ? "%eax"						      \
-	   : aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))) ? "8(%esp)" \
-	   : "4(%esp)");						      \
-									      \
-  if (flag_pic)								      \
-    {									      \
-      rtx xops[2];							      \
-      xops[0] = pic_offset_table_rtx;					      \
-      xops[1] = (rtx) gen_label_rtx ();					      \
-									      \
-      if (i386_regparm > 2)						      \
-	abort ();							      \
-      output_asm_insn ("push%L0 %0", xops);				      \
-      output_asm_insn (AS1 (call,%P1), xops);				      \
-      ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", CODE_LABEL_NUMBER (xops[1]));     \
-      output_asm_insn (AS1 (pop%L0,%0), xops);				      \
-      output_asm_insn ("addl $%__GLOBAL_OFFSET_TABLE_+[.-%P1],%0", xops);     \
-      fprintf (FILE, "\tmovl ");					      \
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	      \
-      fprintf (FILE, "@GOT(%%ebx),%%ecx\n\tpopl %%ebx\n\tjmp *%%ecx\n");      \
-    }									      \
-  else									      \
-    {									      \
-      fprintf (FILE, "\tjmp ");						      \
-      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	      \
-      fprintf (FILE, "\n");						      \
-    }									      \
+#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	    \
+do {									    \
+  tree parm;								    \
+  rtx xops[2];								    \
+									    \
+  if (ix86_regparm > 0)							    \
+    parm = TYPE_ARG_TYPES (TREE_TYPE (function));			    \
+  else									    \
+    parm = NULL_TREE;							    \
+  for (; parm; parm = TREE_CHAIN (parm))				    \
+    if (TREE_VALUE (parm) == void_type_node)				    \
+      break;								    \
+									    \
+  xops[0] = GEN_INT (DELTA);						    \
+  if (parm)								    \
+    xops[1] = gen_rtx_REG (SImode, 0);					    \
+  else if (aggregate_value_p (TREE_TYPE (TREE_TYPE (FUNCTION))))	    \
+    xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 8));   \
+  else									    \
+    xops[1] = gen_rtx_MEM (SImode, plus_constant (stack_pointer_rtx, 4));   \
+  output_asm_insn ("add{l} {%0, %1|%1, %0}", xops);			    \
+									    \
+  if (flag_pic)								    \
+    {									    \
+      xops[0] = pic_offset_table_rtx;					    \
+      xops[1] = gen_label_rtx ();					    \
+									    \
+      if (ix86_regparm > 2)						    \
+	abort ();							    \
+      output_asm_insn ("push{l}\t%0", xops);				    \
+      output_asm_insn ("call\t%P1", xops);				    \
+      ASM_OUTPUT_INTERNAL_LABEL (FILE, "L", CODE_LABEL_NUMBER (xops[1]));   \
+      output_asm_insn ("pop{l}\t%0", xops);				    \
+      output_asm_insn ("add{l}\t$_GLOBAL_OFFSET_TABLE_+[.-%P1], %0", xops); \
+      fprintf (FILE, "\tmovl ");					    \
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
+      fprintf (FILE, "@GOT(%%ebx),%%ecx\n\tpopl %%ebx\n\tjmp *%%ecx\n");    \
+    }									    \
+  else									    \
+    {									    \
+      fprintf (FILE, "\tjmp ");						    \
+      assemble_name (FILE, XSTR (XEXP (DECL_RTL (FUNCTION), 0), 0));	    \
+      fprintf (FILE, "\n");						    \
+    }									    \
 } while (0)

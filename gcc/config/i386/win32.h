@@ -274,8 +274,5 @@ do {								\
       rtx xops[1];							\
       xops[0] = gen_rtx_MEM (FUNCTION_MODE,				\
 			 gen_rtx (SYMBOL_REF, Pmode, "_monstartup"));	\
-      if (do_rtl)							\
-	emit_call_insn (gen_rtx (CALL, VOIDmode, xops[0], const0_rtx));	\
-      else								\
-	output_asm_insn (AS1 (call,%P1), xops);			\
+      emit_call_insn (gen_rtx (CALL, VOIDmode, xops[0], const0_rtx));	\
      }
