@@ -23,10 +23,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* ??? The TARGET_FP_CALL_32 macros are intended to simulate a 32 bit
-   calling convention in 64 bit mode.  It doesn't work though, and should
-   be replaced with something better designed.  */
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -55,14 +51,6 @@ Boston, MA 02111-1307, USA.  */
 #include "target.h"
 #include "target-def.h"
 #include "integrate.h"
-
-#ifdef __GNU_STAB__
-#define STAB_CODE_TYPE enum __stab_debug_code
-#else
-#define STAB_CODE_TYPE int
-#endif
-
-extern tree   lookup_name PARAMS ((tree));
 
 /* Enumeration for all of the relational tests, so that we can build
    arrays indexed by the test type, and not worry about the order
@@ -255,8 +243,6 @@ static void mips_avoid_hazard			PARAMS ((rtx, rtx, int *,
 							 rtx *, rtx));
 static void mips_avoid_hazards			PARAMS ((void));
 static void mips_reorg				PARAMS ((void));
-static void abort_with_insn			PARAMS ((rtx, const char *))
-  ATTRIBUTE_NORETURN;
 static int symbolic_expression_p                PARAMS ((rtx));
 static bool mips_assemble_integer	  PARAMS ((rtx, unsigned int, int));
 static void mips_output_function_epilogue PARAMS ((FILE *, HOST_WIDE_INT));
@@ -517,10 +503,6 @@ const char *mips_tune_string;   /* for -mtune=<xxx> */
 const char *mips_isa_string;	/* for -mips{1,2,3,4} */
 const char *mips_abi_string;	/* for -mabi={32,n32,64,eabi} */
 
-/* Whether we are generating mips16 code.  This is a synonym for
-   TARGET_MIPS16, and exists for use as an attribute.  */
-int mips16;
-
 /* This variable is set by -mno-mips16.  We only care whether
    -mno-mips16 appears or not, and using a string in this fashion is
    just a way to avoid using up another bit in target_flags.  */
@@ -544,9 +526,6 @@ int mips_entry;
 
 /* If TRUE, we split addresses into their high and low parts in the RTL.  */
 int mips_split_addresses;
-
-/* Generating calls to position independent functions?  */
-enum mips_abicalls_type mips_abicalls;
 
 /* Mode used for saving/restoring general purpose registers.  */
 static enum machine_mode gpr_mode;
@@ -699,73 +678,7 @@ const enum reg_class mips_regno_to_class[] =
 };
 
 /* Map register constraint character to register class.  */
-enum reg_class mips_char_to_class[256] =
-{
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-  NO_REGS,	NO_REGS,	NO_REGS,	NO_REGS,
-};
+enum reg_class mips_char_to_class[256];
 
 /* A table describing all the processors gcc knows about.  Names are
    matched in the order listed.  The first mention of an ISA level is
@@ -1423,20 +1336,6 @@ arith_operand (op, mode)
   return const_arith_operand (op, mode) || register_operand (op, mode);
 }
 
-/* Return truth value of whether OP can be used as an operand in a two
-   address arithmetic insn (such as set 123456,%o4) of mode MODE.  */
-
-int
-arith32_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == CONST_INT)
-    return 1;
-
-  return register_operand (op, mode);
-}
-
 /* Return truth value of whether OP is an integer which fits in 16 bits.  */
 
 int
@@ -1445,36 +1344,6 @@ small_int (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return (GET_CODE (op) == CONST_INT && SMALL_INT (op));
-}
-
-/* Return truth value of whether OP is a 32 bit integer which is too big to
-   be loaded with one instruction.  */
-
-int
-large_int (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  HOST_WIDE_INT value;
-
-  if (GET_CODE (op) != CONST_INT)
-    return 0;
-
-  value = INTVAL (op);
-
-  /* ior reg,$r0,value */
-  if ((value & ~ ((HOST_WIDE_INT) 0x0000ffff)) == 0)
-    return 0;
-
-  /* subu reg,$r0,value */
-  if (((unsigned HOST_WIDE_INT) (value + 32768)) <= 32767)
-    return 0;
-
-  /* lui reg,value>>16 */
-  if ((value & 0x0000ffff) == 0)
-    return 0;
-
-  return 1;
 }
 
 /* Return truth value of whether OP is a register or the constant 0.
@@ -1496,27 +1365,6 @@ reg_or_0_operand (op, mode)
     case CONST_DOUBLE:
       if (TARGET_MIPS16)
 	return 0;
-      return op == CONST0_RTX (mode);
-
-    default:
-      return register_operand (op, mode);
-    }
-}
-
-/* Return truth value of whether OP is a register or the constant 0,
-   even in mips16 mode.  */
-
-int
-true_reg_or_0_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  switch (GET_CODE (op))
-    {
-    case CONST_INT:
-      return INTVAL (op) == 0;
-
-    case CONST_DOUBLE:
       return op == CONST0_RTX (mode);
 
     default:
@@ -1697,29 +1545,6 @@ consttable_operand (op, mode)
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   return CONSTANT_P (op);
-}
-
-/* Coprocessor operand; return true if rtx is a REG and refers to a
-   coprocessor.  */
-
-int
-coprocessor_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return (GET_CODE (op) == REG
-	  && COP0_REG_FIRST <= REGNO (op)
-	  && REGNO (op) <= COP3_REG_LAST);
-}
-
-int
-coprocessor2_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return (GET_CODE (op) == REG
-	  && COP2_REG_FIRST <= REGNO (op)
-	  && REGNO (op) <= COP2_REG_LAST);
 }
 
 /* Returns 1 if OP is a symbolic operand, i.e. a symbol_ref or a label_ref,
@@ -3406,7 +3231,7 @@ gen_conditional_branch (operands, test_code)
       break;
 
     default:
-      abort_with_insn (gen_rtx (test_code, VOIDmode, cmp0, cmp1), "bad test");
+      fatal_insn ("bad test", gen_rtx (test_code, VOIDmode, cmp0, cmp1));
     }
 
   /* Generate the branch.  */
@@ -4804,18 +4629,6 @@ mips_va_arg (valist, type)
     }
 }
 
-/* Abort after printing out a specific insn.  */
-
-static void
-abort_with_insn (insn, reason)
-     rtx insn;
-     const char *reason;
-{
-  error (reason);
-  debug_rtx (insn);
-  abort ();
-}
-
 /* Set up globals to generate code for the ISA or processor
    described by INFO.  */
 
@@ -5050,14 +4863,11 @@ override_options ()
      implemented.  */
   if (TARGET_ABICALLS)
     {
-      mips_abicalls = MIPS_ABICALLS_YES;
       if (flag_pic == 0)
 	flag_pic = 1;
       if (mips_section_threshold > 0)
 	warning ("-G is incompatible with PIC code which is the default");
     }
-  else
-    mips_abicalls = MIPS_ABICALLS_NO;
 
   /* The MIPS and SGI o32 assemblers expect small-data variables to
      be declared before they are used.  Although we once had code to
@@ -5171,13 +4981,6 @@ override_options ()
       else
 	mips_entry = 1;
     }
-
-  /* We copy TARGET_MIPS16 into the mips16 global variable, so that
-     attributes can access it.  */
-  if (TARGET_MIPS16)
-    mips16 = 1;
-  else
-    mips16 = 0;
 
   /* When using explicit relocs, we call dbr_schedule from within
      mips_reorg.  */
@@ -5454,7 +5257,8 @@ mips_debugger_offset (addr, offset)
   /* sdbout_parms does not want this to crash for unrecognized cases.  */
 #if 0
   else if (reg != arg_pointer_rtx)
-    abort_with_insn (addr, "mips_debugger_offset called with non stack/frame/arg pointer");
+    fatal_insn ("mips_debugger_offset called with non stack/frame/arg pointer",
+		addr);
 #endif
 
   return offset;
@@ -5671,9 +5475,6 @@ print_operand (file, op, letter)
 
   code = GET_CODE (op);
 
-  if (code == SIGN_EXTEND)
-    op = XEXP (op, 0), code = GET_CODE (op);
-
   if (letter == 'R')
     {
       if (TARGET_ABICALLS && TARGET_NEWABI)
@@ -5707,7 +5508,7 @@ print_operand (file, op, letter)
       case LTU: fputs ("ltu", file); break;
       case LEU: fputs ("leu", file); break;
       default:
-	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%C");
+	fatal_insn ("PRINT_OPERAND, invalid insn for %%C", op);
       }
 
   else if (letter == 'N')
@@ -5724,7 +5525,7 @@ print_operand (file, op, letter)
       case LTU: fputs ("geu", file); break;
       case LEU: fputs ("gtu", file); break;
       default:
-	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%N");
+	fatal_insn ("PRINT_OPERAND, invalid insn for %%N", op);
       }
 
   else if (letter == 'F')
@@ -5733,7 +5534,7 @@ print_operand (file, op, letter)
       case EQ: fputs ("c1f", file); break;
       case NE: fputs ("c1t", file); break;
       default:
-	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%F");
+	fatal_insn ("PRINT_OPERAND, invalid insn for %%F", op);
       }
 
   else if (letter == 'W')
@@ -5742,7 +5543,7 @@ print_operand (file, op, letter)
       case EQ: fputs ("c1t", file); break;
       case NE: fputs ("c1f", file); break;
       default:
-	abort_with_insn (op, "PRINT_OPERAND, invalid insn for %%W");
+	fatal_insn ("PRINT_OPERAND, invalid insn for %%W", op);
       }
 
   else if (letter == 'S')
@@ -7325,7 +7126,7 @@ mips_expand_prologue ()
 	  pattern = RTVEC_ELT (adjust, i);
 	  if (GET_CODE (pattern) != SET
 	      || GET_CODE (SET_SRC (pattern)) != ASHIFT)
-	    abort_with_insn (pattern, "insn is not a shift");
+	    fatal_insn ("insn is not a shift", pattern);
 	  PUT_CODE (SET_SRC (pattern), ASHIFTRT);
 
 	  insn = emit_insn (pattern);
@@ -8260,45 +8061,7 @@ mips_secondary_reload_class (class, mode, x, in_p)
   int regno = -1;
   int gp_reg_p;
 
-  if (GET_CODE (x) == SIGN_EXTEND)
-    {
-      int off = 0;
-
-      x = XEXP (x, 0);
-
-      /* We may be called with reg_renumber NULL from regclass.
-	 ??? This is probably a bug.  */
-      if (reg_renumber)
-	regno = true_regnum (x);
-      else
-	{
-	  while (GET_CODE (x) == SUBREG)
-	    {
-	      off += subreg_regno_offset (REGNO (SUBREG_REG (x)),
-					  GET_MODE (SUBREG_REG (x)),
-					  SUBREG_BYTE (x),
-					  GET_MODE (x));
-	      x = SUBREG_REG (x);
-	    }
-
-	  if (GET_CODE (x) == REG)
-	    regno = REGNO (x) + off;
-	}
-
-      /* 64-bit floating-point registers don't store 32-bit values
-	 in sign-extended form.  The only way we can reload
-	 (sign_extend:DI (reg:SI $f0)) is by moving $f0 into
-	 an integer register using a 32-bit move.  */
-      if (FP_REG_P (regno))
-	return (class == GR_REGS ? NO_REGS : GR_REGS);
-
-      /* For the same reason, we can only reload (sign_extend:DI FOO) into
-	 a floating-point register when FOO is an integer register. */
-      if (class == FP_REGS)
-	return (GP_REG_P (regno) ? NO_REGS : GR_REGS);
-    }
-
-  else if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
+  if (GET_CODE (x) == REG || GET_CODE (x) == SUBREG)
     regno = true_regnum (x);
 
   gp_reg_p = TARGET_MIPS16 ? M16_REG_P (regno) : GP_REG_P (regno);
@@ -9999,95 +9762,6 @@ mips_output_conditional_branch (insn,
 
         return "";
       }
-
-    /* We do not currently use this code.  It handles jumps to
-       arbitrary locations, using `jr', even across a 256MB boundary.
-       We could add a -mhuge switch, and then use this code instead of
-       the `j' alternative above when -mhuge was used.  */
-#if 0
-    case 16:
-    case 20:
-      {
-	/* Generate a reversed conditional branch around a `jr'
-	   instruction:
-
-		 .set noreorder
-		 .set nomacro
-		 .set noat
-		 bc    l
-		 la    $at, target
-		 jr    $at
-		 .set at
-		 .set macro
-		 .set reorder
-	      l:
-
-	   Not pretty, but allows a conditional branch anywhere in the
-	   32-bit address space.  If the original branch is annulled,
-	   then the instruction in the delay slot should be executed
-	   only if the branch is taken.  The la instruction is really
-	   a macro which will usually take eight bytes, but sometimes
-	   takes only four, if the instruction to which we're jumping
-	   gets its own entry in the global pointer table, which will
-	   happen if its a case label.  The assembler will then
-	   generate only a four-byte sequence, rather than eight, and
-	   there seems to be no way to tell it not to.  Thus, we can't
-	   just use a `.+x' addressing form; we don't know what value
-	   to give for `x'.
-
-	   So, we resort to using the explicit relocation syntax
-	   available in the assembler and do:
-
-	      lw $at,%got_page(target)($gp)
-	      daddiu $at,$at,%got_ofst(target)
-
-	   That way, this always takes up eight bytes, and we can use
-	   the `.+x' form.  Of course, these explicit machinations
-	   with relocation will not work with old assemblers.  Then
-	   again, neither do out-of-range branches, so we haven't lost
-	   anything.  */
-
-	/* The target of the reversed branch.  */
-	const char *const target
-	  = ((mips_branch_likely || length == 20) ? ".+20" : ".+16");
-	const char *at_register = mips_reg_names[ASSEMBLER_SCRATCH_REGNUM];
-	const char *gp_register = mips_reg_names[PIC_OFFSET_TABLE_REGNUM];
-	char *c;
-
-	strcpy (buffer, "%(%<%[");
-	c = strchr (buffer, '\0');
-	/* Generate the reversed comparison.  This takes four
-	   bytes.  */
-	if (float_p)
-	  sprintf (c, "%%*b%s\t%%Z2%s",
-		   inverted_p ? comp : inverted_comp,
-		   target);
-	else
-	  sprintf (c, "%%*b%s%s\t%s%s,%s",
-		   inverted_p ? comp : inverted_comp,
-		   need_z_p ? "z" : "",
-		   op1,
-		   op2,
-		   target);
-	c = strchr (buffer, '\0');
-	/* Generate the load-address, and jump.  This takes twelve
-	   bytes, for a total of 16.  */
-	sprintf (c,
-		 "\n\tlw\t%s,%%%%got_page(%%1)(%s)\n\tdaddiu\t%s,%s,%%%%got_ofst(%%1)\n\tjr\t%s",
-		 at_register,
-		 gp_register,
-		 at_register,
-		 at_register,
-		 at_register);
-	if (length == 20)
-	  /* The delay slot was unfilled.  Since we're inside
-	     .noreorder, the assembler will not fill in the NOP for
-	     us, so we must do it ourselves.  */
-	  strcat (buffer, "\n\tnop");
-	strcat (buffer, "%]%>%)");
-	return buffer;
-      }
-#endif
 
     default:
       abort ();

@@ -196,7 +196,7 @@
 ;; ??? Fix everything that tests this attribute.
 (define_attr "cpu"
   "default,4kc,5kc,20kc,m4k,r3000,r3900,r6000,r4000,r4100,r4111,r4120,r4300,r4600,r4650,r5000,r5400,r5500,r7000,r8000,r9000,sb1,sr71000"
-  (const (symbol_ref "mips_cpu_attr")))
+  (const (symbol_ref "mips_tune")))
 
 ;; The type of hardware hazard associated with this instruction.
 ;; DELAY means that the next instruction cannot read the result
@@ -260,7 +260,7 @@
 ;; .........................
 
 (define_delay (and (eq_attr "type" "branch")
-		   (eq (symbol_ref "mips16") (const_int 0)))
+		   (eq (symbol_ref "TARGET_MIPS16") (const_int 0)))
   [(eq_attr "can_delay" "yes")
    (nil)
    (and (eq_attr "branch_likely" "yes")
@@ -320,7 +320,7 @@
 ;; selecting instructions to between the two instructions.
 
 (define_function_unit "imuldiv" 1 0
-  (and (eq_attr "type" "hilo") (ne (symbol_ref "mips16") (const_int 0)))
+  (and (eq_attr "type" "hilo") (ne (symbol_ref "TARGET_MIPS16") (const_int 0)))
   1 5)
 
 (define_function_unit "imuldiv"  1 0

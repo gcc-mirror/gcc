@@ -26,8 +26,6 @@ Boston, MA 02111-1307, USA.  */
 
 /* Standard GCC variables that we reference.  */
 
-extern char	call_used_regs[];
-extern int	may_call_alloca;
 extern int	target_flags;
 
 /* MIPS external variables defined in mips.c.  */
@@ -72,9 +70,6 @@ enum processor_type {
   PROCESSOR_SR71000
 };
 
-/* Recast the cpu class to be the cpu attribute.  */
-#define mips_cpu_attr ((enum attr_cpu)mips_tune)
-
 /* Which ABI to use.  ABI_32 (original 32, or o32), ABI_N32 (n32),
    ABI_64 (n64) are all defined by SGI.  ABI_O64 is o32 extended
    to work on a 64 bit machine.  */
@@ -84,16 +79,6 @@ enum processor_type {
 #define ABI_64  2
 #define ABI_EABI 3
 #define ABI_O64  4
-
-/* Whether to emit abicalls code sequences or not.  */
-
-enum mips_abicalls_type {
-  MIPS_ABICALLS_NO,
-  MIPS_ABICALLS_YES
-};
-
-/* Recast the abicalls class to be the abicalls attribute.  */
-#define mips_abicalls_attr ((enum attr_abicalls)mips_abicalls)
 
 /* Information about one recognized processor.  Defined here for the
    benefit of TARGET_CPU_CPP_BUILTINS.  */
@@ -128,9 +113,7 @@ extern GTY(()) rtx branch_cmp[2];	/* operands for compare */
 extern enum cmp_type branch_type;	/* what type of branch to use */
 extern enum processor_type mips_arch;   /* which cpu to codegen for */
 extern enum processor_type mips_tune;   /* which cpu to schedule for */
-extern enum mips_abicalls_type mips_abicalls;/* for svr4 abi pic calls */
 extern int mips_isa;			/* architectural level */
-extern int mips16;			/* whether generating mips16 code */
 extern int mips16_hard_float;		/* mips16 without -msoft-float */
 extern int mips_entry;			/* generate entry/exit for mips16 */
 extern const char *mips_arch_string;    /* for -march=<xxx> */
@@ -939,19 +922,6 @@ extern const struct mips_cpu_info *mips_tune_info;
    which write to the HI and LO registers.  Most targets require a
    two-instruction gap.  */
 #define ISA_HAS_HILO_INTERLOCKS	(TARGET_MIPS5500 || TARGET_SB1)
-
-/* CC1_SPEC causes -mips3 and -mips4 to set -mfp64 and -mgp64; -mips1 or
-   -mips2 sets -mfp32 and -mgp32.  This can be overridden by an explicit
-   -mfp32, -mfp64, -mgp32 or -mgp64.  -mfp64 sets MASK_FLOAT64 in
-   target_flags, and -mgp64 sets MASK_64BIT.
-
-   Setting MASK_64BIT in target_flags will cause gcc to assume that
-   registers are 64 bits wide.  int, long and void * will be 32 bit;
-   this may be changed with -mint64 or -mlong64.
-
-   The gen* programs link code that refers to MASK_64BIT.  They don't
-   actually use the information in target_flags; they just refer to
-   it.  */
 
 /* Switch  Recognition by gcc.c.  Add -G xx support */
 
@@ -1119,45 +1089,6 @@ extern int mips_abi;
 %(target_asm_spec) \
 %(subtarget_asm_spec)"
 
-/* Specify to run a post-processor, mips-tfile after the assembler
-   has run to stuff the mips debug information into the object file.
-   This is needed because the $#!%^ MIPS assembler provides no way
-   of specifying such information in the assembly file.  If we are
-   cross compiling, disable mips-tfile unless the user specifies
-   -mmips-tfile.  */
-
-#ifndef ASM_FINAL_SPEC
-#if ((TARGET_CPU_DEFAULT | TARGET_DEFAULT) & MASK_GAS) != 0
-/* GAS */
-#define ASM_FINAL_SPEC "\
-%{mmips-as: %{!mno-mips-tfile: \
-	\n mips-tfile %{v*: -v} \
-		%{K: -I %b.o~} \
-		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
-
-#else
-/* not GAS */
-#define ASM_FINAL_SPEC "\
-%{!mgas: %{!mno-mips-tfile: \
-	\n mips-tfile %{v*: -v} \
-		%{K: -I %b.o~} \
-		%{!K: %{save-temps: -I %b.o~}} \
-		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %U.o} \
-		%{.s:%i} %{!.s:%g.s}}}"
-
-#endif
-#endif	/* ASM_FINAL_SPEC */
-
-/* Redefinition of libraries used.  Mips doesn't support normal
-   UNIX style profiling via calling _mcount.  It does offer
-   profiling that samples the PC, so do what we can...  */
-
-#ifndef LIB_SPEC
-#define LIB_SPEC "%{pg:-lprof1} %{p:-lprof1} -lc"
-#endif
-
 /* Extra switches sometimes passed to the linker.  */
 /* ??? The bestGnum will never be passed to the linker, because the gcc driver
   will interpret it as a -b option.  */
@@ -1179,9 +1110,6 @@ extern int mips_abi;
 #endif
 
 /* CC1_SPEC is the set of arguments to pass to the compiler proper.  */
-/* Note, we will need to adjust the following if we ever find a MIPS variant
-   that has 32-bit GPRs and 64-bit FPRs as well as fix all of the reload bugs
-   that show up in this case.  */
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "\
@@ -1239,24 +1167,6 @@ extern int mips_abi;
 
 #ifndef MD_STARTFILE_PREFIX
 #define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
-#endif
-
-
-/* Print subsidiary information on the compiler version in use.  */
-
-#define MIPS_VERSION "[AL 1.1, MM 40]"
-
-#ifndef MACHINE_TYPE
-#define MACHINE_TYPE "BSD Mips"
-#endif
-
-#ifndef TARGET_VERSION_INTERNAL
-#define TARGET_VERSION_INTERNAL(STREAM)					\
-  fprintf (STREAM, " %s %s", MIPS_VERSION, MACHINE_TYPE)
-#endif
-
-#ifndef TARGET_VERSION
-#define TARGET_VERSION TARGET_VERSION_INTERNAL (stderr)
 #endif
 
 
@@ -1793,24 +1703,14 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
    == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||				\
        GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
 
-/* MIPS pc is not overloaded on a register.	*/
-/* #define PC_REGNUM xx				*/
-
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
-
-/* Offset from the stack pointer to the first available location.  Use
-   the default value zero.  */
-/* #define STACK_POINTER_OFFSET 0 */
 
 /* Base register for access to local variables of the function.  We
    pretend that the frame pointer is $1, and then eliminate it to
    HARD_FRAME_POINTER_REGNUM.  We can get away with this because $1 is
    a fixed register, and will not be used for anything else.  */
 #define FRAME_POINTER_REGNUM (GP_REG_FIRST + 1)
-
-/* Temporary scratch register for use by the assembler.  */
-#define ASSEMBLER_SCRATCH_REGNUM (GP_REG_FIRST + 1)
 
 /* $30 is not available on the mips16, so we use $17 as the frame
    pointer.  */
@@ -1828,10 +1728,6 @@ extern char mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 
 /* Register in which static-chain is passed to a function.  */
 #define STATIC_CHAIN_REGNUM (GP_REG_FIRST + 2)
-
-/* If the structure value address is passed in a register, then
-   `STRUCT_VALUE_REGNUM' should be the number of that register.  */
-/* #define STRUCT_VALUE_REGNUM (GP_REG_FIRST + 4) */
 
 /* If the structure value address is not passed in a register, define
    `STRUCT_VALUE' as an expression returning an RTX for the place
@@ -2281,29 +2177,6 @@ extern enum reg_class mips_char_to_class[256];
    + (TARGET_ABICALLS && !TARGET_NEWABI					\
       ? MIPS_STACK_ALIGN (UNITS_PER_WORD) : 0))
 
-/* Offset from the stack pointer register to an item dynamically
-   allocated on the stack, e.g., by `alloca'.
-
-   The default value for this macro is `STACK_POINTER_OFFSET' plus the
-   length of the outgoing arguments.  The default is correct for most
-   machines.  See `function.c' for details.
-
-   The MIPS ABI states that functions which dynamically allocate the
-   stack must not have 0 for STACK_DYNAMIC_OFFSET, since it looks like
-   we are trying to create a second frame pointer to the function, so
-   allocate some stack space to make it happy.
-
-   However, the linker currently complains about linking any code that
-   dynamically allocates stack space, and there seems to be a bug in
-   STACK_DYNAMIC_OFFSET, so don't define this right now.  */
-
-#if 0
-#define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  ((current_function_outgoing_args_size == 0 && current_function_calls_alloca) \
-	? 4*UNITS_PER_WORD						\
-	: current_function_outgoing_args_size)
-#endif
-
 /* The return address for the current frame is in r31 if this is a leaf
    function.  Otherwise, it is on the stack.  It is at a variable offset
    from sp/fp/ap, so we define a fake hard register rap which is a
@@ -2391,12 +2264,6 @@ extern enum reg_class mips_char_to_class[256];
 
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
 	(OFFSET) = mips_initial_elimination_offset ((FROM), (TO))
-
-/* If we generate an insn to push BYTES bytes,
-   this says how many the stack pointer really advances by.
-   On the VAX, sp@- in a byte insn really pushes a word.  */
-
-/* #define PUSH_ROUNDING(BYTES) 0 */
 
 /* If defined, the maximum amount of space required for outgoing
    arguments will be computed and placed into the variable
@@ -3160,11 +3027,8 @@ typedef struct mips_args {
   {"symbolic_operand",		{ CONST, SYMBOL_REF, LABEL_REF }},	\
   {"const_arith_operand",	{ CONST, CONST_INT }},			\
   {"arith_operand",		{ REG, CONST_INT, CONST, SUBREG, ADDRESSOF }},	\
-  {"arith32_operand",		{ REG, CONST_INT, SUBREG, ADDRESSOF }},		\
   {"reg_or_0_operand",		{ REG, CONST_INT, CONST_DOUBLE, SUBREG, ADDRESSOF }}, \
-  {"true_reg_or_0_operand",	{ REG, CONST_INT, CONST_DOUBLE, SUBREG, ADDRESSOF }}, \
   {"small_int",			{ CONST_INT }},				\
-  {"large_int",			{ CONST_INT }},				\
   {"mips_const_double_ok",	{ CONST_DOUBLE }},			\
   {"const_float_1_operand",	{ CONST_DOUBLE }},			\
   {"simple_memory_operand",	{ MEM, SUBREG }},			\
