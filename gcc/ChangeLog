@@ -1,3 +1,15 @@
+2004-01-12  David Mosberger  <davidm@hpl.hp.com>
+	    James E Wilson  <wilson@specifixinc.com>
+
+	PR target/18987
+	* config/ia64/ia64.c (process_set): For alloc insn, only call
+	process_epilogue is !frame_pointer_needed.
+
+	PR target/13158
+	* config/ia64/ia64.c (ia64_expand_epilogue): Set RTX_FRAME_RELATED_P on
+	sibcall alloc instruction.
+	(process_set): Handle sibcall alloc instruction.
+
 2005-01-10  David Edelsohn  <edelsohn@gnu.org>
 
 	PR target/18720
