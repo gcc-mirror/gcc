@@ -1,3 +1,11 @@
+2004-05-30  Steven Bosscher  <stevenb@suse.de>
+
+	* gimplify.c (sort_case_labels): New.  Split out from...
+	(gimplify_switch_expr): ...here.  Use it.
+	* tree-eh.c (lower_try_finally_switch): Sort the labels of
+	the SWITCH_EXPR created here before leaving the function.
+	* tree.c (sort_case_labels): Add prototype.
+
 2004-05-30  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* fold-const.c (fold) [case TRUTH_NOT_EXPR]: Make sure the type is

@@ -3675,6 +3675,7 @@ extern tree create_artificial_label (void);
 extern void gimplify_function_tree (tree);
 extern const char *get_name (tree);
 extern tree unshare_expr (tree);
+extern void sort_case_labels (tree);
 
 /* If KIND=='I', return a suitable global initializer (constructor) name.
    If KIND=='D', return a suitable global clean-up (destructor) name.  */
