@@ -1,3 +1,19 @@
+2004-11-23  Daniel Jacobowitz  <dan@codesourcery.com>
+            Joseph Myers  <joseph@codesourcery.com>
+
+	* config/sol2-c.c (solaris_register_pragmas): Use
+	c_register_pragma_with_expansion.
+	* config/sol2.h (HANDLE_PRAGMA_PACK_WITH_EXPANSION): Define.
+	* c-pragma.c (c_register_pragma): Update call to
+	cpp_register_pragma.
+	(c_register_pragma_with_expansion): New function.
+	(init_pragma): Honor HANDLE_PRAGMA_PACK_WITH_EXPANSION.
+	* c-pragma.h (c_register_pragma_with_expansion): New prototype.
+	* doc/extend.texi (Solaris Pragmas): Mention macro expansion for
+	#pragma align.
+	* doc/tm.texi (c_register_pragma_with_expansion,
+	HANDLE_PRAGMA_PACK_WITH_EXPANSION): Document.
+
 2004-11-23  Richard Henderson  <rth@redhat.com>
 
 	* emit-rtl.c, rtl.h (subreg_hard_regno): Remove.
