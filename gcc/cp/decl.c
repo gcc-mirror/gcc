@@ -4776,11 +4776,51 @@ lookup_namespace_name (namespace, name)
   return error_mark_node;
 }
 
+/* Build a TYPENAME_TYPE.  If the type is `typename T::t', CONTEXT is
+   the type of `T', NAME is the IDENTIFIER_NODE for `t'.  If BASE_TYPE
+   is non-NULL, this type is being created by the implicit typename
+   extension, and BASE_TYPE is a type named `t' in some base class of
+   `T' which depends on template parameters.  
+
+   Returns the new TYPENAME_TYPE.  */
+
+tree
+build_typename_type (context, name, fullname, base_type)
+     tree context;
+     tree name;
+     tree fullname;
+     tree base_type;
+{
+  tree t;
+  tree d;
+
+  if (processing_template_decl)
+    push_obstacks (&permanent_obstack, &permanent_obstack);
+
+  /* Build the TYPENAME_TYPE.  */
+  t = make_lang_type (TYPENAME_TYPE);
+  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
+  TYPENAME_TYPE_FULLNAME (t) = fullname;
+  TREE_TYPE (t) = base_type;
+  CLASSTYPE_GOT_SEMICOLON (t) = 1;
+
+  /* Build the corresponding TYPE_DECL.  */
+  d = build_decl (TYPE_DECL, name, t);
+  TYPE_NAME (TREE_TYPE (d)) = d;
+  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
+  DECL_CONTEXT (d) = FROB_CONTEXT (context);
+
+  if (processing_template_decl)
+    pop_obstacks ();
+
+  return t;
+}
+
 tree
 make_typename_type (context, name)
      tree context, name;
 {
-  tree t, d;
+  tree t;
   tree fullname;
 
   if (TREE_CODE_CLASS (TREE_CODE (name)) == 't')
@@ -4846,22 +4886,8 @@ make_typename_type (context, name)
 	  return TREE_TYPE (t);
 	}
     }
-
-  if (processing_template_decl)
-    push_obstacks (&permanent_obstack, &permanent_obstack);
-  t = make_lang_type (TYPENAME_TYPE);
-  TYPENAME_TYPE_FULLNAME (t) = fullname;
-  d = build_decl (TYPE_DECL, name, t);
-  if (processing_template_decl)
-    pop_obstacks ();
-
-  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
-  TYPE_NAME (TREE_TYPE (d)) = d;
-  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-  DECL_CONTEXT (d) = FROB_CONTEXT (context);
-  CLASSTYPE_GOT_SEMICOLON (t) = 1;
-
-  return t;
+  
+  return build_typename_type (context, name, fullname,  NULL_TREE);
 }
 
 /* Select the right _DECL from multiple choices. */

@@ -1178,7 +1178,14 @@ lookup_field (xbasetype, name, protect, want_type)
       rval = error_mark_node;
     }
 
-  /* Do implicit typename stuff.  */
+  /* Do implicit typename stuff.  This code also handles out-of-class
+     definitions of nested classes whose enclosing class is a
+     template.  For example:
+    
+       template <class T> struct S { struct I { void f(); }; };
+       template <class T> void S<T>::I::f() {}
+
+     will come through here to handle `S<T>::I'.  */
   if (rval && TREE_CODE (rval) == TYPE_DECL
       && processing_template_decl
       && ! currently_open_class (BINFO_TYPE (rval_binfo))
@@ -1191,9 +1198,9 @@ lookup_field (xbasetype, name, protect, want_type)
 		== current_class_type))
 	  break;
 
-      entry = make_typename_type (BINFO_TYPE (binfo), name);
-      TREE_TYPE (entry) = TREE_TYPE (rval);
-      rval = TYPE_MAIN_DECL (entry);
+      entry = build_typename_type (BINFO_TYPE (binfo), name,  name, 
+				   TREE_TYPE (rval));
+      return TYPE_STUB_DECL (entry);
     }
 
   return rval;
