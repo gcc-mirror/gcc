@@ -1,3 +1,8 @@
+2001-12-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* langhooks.c (lhd_staticp): Mark parameter with
+	ATTRIBUTE_UNUSED.
+
 2001-12-06  H.J. Lu <hjl@gnu.org>
 
 	* Makefile.in (.po.gmo): Use "-test -d po || mkdir po" to

@@ -81,7 +81,7 @@ lhd_safe_from_p (x, exp)
 
 int
 lhd_staticp (exp)
-     tree exp;
+     tree exp ATTRIBUTE_UNUSED;
 {
   return 0;
 }
