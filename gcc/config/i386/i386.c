@@ -1545,6 +1545,10 @@ override_options (void)
 	error ("bad value (%s) for -mfpmath= switch", ix86_fpmath_string);
     }
 
+  /* If fpmath doesn't include 387, disable use of x87 intrinsics.  */
+  if (! (ix86_fpmath & FPMATH_387))
+    target_flags |= MASK_NO_FANCY_MATH_387;
+
   /* It makes no sense to ask for just SSE builtins, so MMX is also turned
      on by -msse.  */
   if (TARGET_SSE)
