@@ -432,8 +432,9 @@ expand_builtin_return_addr (fndecl_code, count, tem)
       tem = DYNAMIC_CHAIN_ADDRESS (tem);
 #endif
       tem = memory_address (Pmode, tem);
-      tem = copy_to_reg (gen_rtx_MEM (Pmode, tem));
+      tem = gen_rtx_MEM (Pmode, tem);
       MEM_ALIAS_SET (tem) = get_frame_alias_set ();
+      tem = copy_to_reg (tem);
     }
 
   /* For __builtin_frame_address, return what we've got.  */
