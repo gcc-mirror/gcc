@@ -790,6 +790,11 @@ extern int warn_deprecated;
 
 extern int max_tinst_depth;
 
+/* Nonzero means the expression being parsed will never be evaluated.
+   This is a count, since unevaluated expressions can nest.  */
+
+extern int skip_evaluation;
+
 /* C types are partitioned into three subsets: object, function, and
    incomplete types.  */
 #define C_TYPE_OBJECT_P(type) \

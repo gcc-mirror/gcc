@@ -311,11 +311,6 @@ extern int current_function_returns_null;
 
 extern int current_function_returns_abnormally;
 
-/* Nonzero means the expression being parsed will never be evaluated.
-   This is a count, since unevaluated expressions can nest.  */
-
-extern int skip_evaluation;
-
 /* Nonzero means we are reading code that came from a system header file.  */
 
 extern int system_header_p;
