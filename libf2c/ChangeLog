@@ -12,7 +12,7 @@
 
 	* f2cext.c (system_clock_): Remove (just f90 intrinsic).
 
-	* Makefile.in (F2CEXT): Add datetime, remove sclock.
+	* Makefile.in (F2CEXT): Remove sclock.
 	(UOBJ): Add libU77/datetime_.o.
 
 	* libU77/config.h.in: Add HAVE_GETTIMEOFDAY.
