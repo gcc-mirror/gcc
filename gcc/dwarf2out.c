@@ -1221,7 +1221,7 @@ dwarf2out_frame_debug_expr (expr, label)
           
           if (GET_CODE (x) == SET &&
 	      (RTX_FRAME_RELATED_P (x) || par_index == 0))
-	      dwarf2out_frame_debug_expr (x, label);
+	    dwarf2out_frame_debug_expr (x, label);
         }
       return;
     }
@@ -1244,8 +1244,8 @@ dwarf2out_frame_debug_expr (expr, label)
           if (cfa_reg != (unsigned) REGNO (src))
             abort ();
           if (REGNO (dest) != STACK_POINTER_REGNUM
-      	&& !(frame_pointer_needed
-      	     && REGNO (dest) == HARD_FRAME_POINTER_REGNUM))
+	      && !(frame_pointer_needed
+		   && REGNO (dest) == HARD_FRAME_POINTER_REGNUM))
             abort ();
           cfa_reg = REGNO (dest);
           break;
@@ -1254,83 +1254,83 @@ dwarf2out_frame_debug_expr (expr, label)
         case MINUS:
           if (dest == stack_pointer_rtx)
             {
-      	/* Adjusting SP.  */
-      	switch (GET_CODE (XEXP (src, 1)))
-      	  {
-      	  case CONST_INT:
-      	    offset = INTVAL (XEXP (src, 1));
-      	    break;
-      	  case REG:
-      	    if ((unsigned) REGNO (XEXP (src, 1)) != cfa_temp_reg)
-      	      abort ();
-      	    offset = cfa_temp_value;
-      	    break;
-      	  default:
-      	    abort ();
-      	  }
+	      /* Adjusting SP.  */
+	      switch (GET_CODE (XEXP (src, 1)))
+		{
+		case CONST_INT:
+		  offset = INTVAL (XEXP (src, 1));
+		  break;
+		case REG:
+		  if ((unsigned) REGNO (XEXP (src, 1)) != cfa_temp_reg)
+		    abort ();
+		  offset = cfa_temp_value;
+		  break;
+		default:
+		  abort ();
+		}
 
-      	if (XEXP (src, 0) == hard_frame_pointer_rtx)
-      	  {
-      	    /* Restoring SP from FP in the epilogue.  */
-      	    if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
-      	      abort ();
-      	    cfa_reg = STACK_POINTER_REGNUM;
-      	  }
-      	else if (XEXP (src, 0) != stack_pointer_rtx)
-      	  abort ();
+	      if (XEXP (src, 0) == hard_frame_pointer_rtx)
+		{
+		  /* Restoring SP from FP in the epilogue.  */
+		  if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
+		    abort ();
+		  cfa_reg = STACK_POINTER_REGNUM;
+		}
+	      else if (XEXP (src, 0) != stack_pointer_rtx)
+		abort ();
 
-      	if (GET_CODE (src) == PLUS)
-      	  offset = -offset;
-      	if (cfa_reg == STACK_POINTER_REGNUM)
-      	  cfa_offset += offset;
-      	if (cfa_store_reg == STACK_POINTER_REGNUM)
-      	  cfa_store_offset += offset;
+	      if (GET_CODE (src) == PLUS)
+		offset = -offset;
+	      if (cfa_reg == STACK_POINTER_REGNUM)
+		cfa_offset += offset;
+	      if (cfa_store_reg == STACK_POINTER_REGNUM)
+		cfa_store_offset += offset;
             }
           else if (dest == hard_frame_pointer_rtx)
             {
-      	/* Either setting the FP from an offset of the SP,
-      	   or adjusting the FP */
-      	if (! frame_pointer_needed
-      	    || REGNO (dest) != HARD_FRAME_POINTER_REGNUM)
-      	  abort ();
+	      /* Either setting the FP from an offset of the SP,
+		 or adjusting the FP */
+	      if (! frame_pointer_needed
+		  || REGNO (dest) != HARD_FRAME_POINTER_REGNUM)
+		abort ();
 
-      	if (XEXP (src, 0) == stack_pointer_rtx
-      	    && GET_CODE (XEXP (src, 1)) == CONST_INT)
-      	  {
-      	    if (cfa_reg != STACK_POINTER_REGNUM)
-      	      abort ();
-      	    offset = INTVAL (XEXP (src, 1));
-      	    if (GET_CODE (src) == PLUS)
-      	      offset = -offset;
-      	    cfa_offset += offset;
-      	    cfa_reg = HARD_FRAME_POINTER_REGNUM;
-      	  }
-      	else if (XEXP (src, 0) == hard_frame_pointer_rtx
-      		 && GET_CODE (XEXP (src, 1)) == CONST_INT)
-      	  {
-      	    if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
-      	      abort ();
-      	    offset = INTVAL (XEXP (src, 1));
-      	    if (GET_CODE (src) == PLUS)
-      	      offset = -offset;
-      	    cfa_offset += offset;
-      	  }
+	      if (XEXP (src, 0) == stack_pointer_rtx
+		  && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		{
+		  if (cfa_reg != STACK_POINTER_REGNUM)
+		    abort ();
+		  offset = INTVAL (XEXP (src, 1));
+		  if (GET_CODE (src) == PLUS)
+		    offset = -offset;
+		  cfa_offset += offset;
+		  cfa_reg = HARD_FRAME_POINTER_REGNUM;
+		}
+	      else if (XEXP (src, 0) == hard_frame_pointer_rtx
+		       && GET_CODE (XEXP (src, 1)) == CONST_INT)
+		{
+		  if (cfa_reg != (unsigned) HARD_FRAME_POINTER_REGNUM)
+		    abort ();
+		  offset = INTVAL (XEXP (src, 1));
+		  if (GET_CODE (src) == PLUS)
+		    offset = -offset;
+		  cfa_offset += offset;
+		}
 
-      	else 
-      	  abort();
+	      else 
+		abort();
             }
           else
             {
-      	if (GET_CODE (src) != PLUS
-      	    || XEXP (src, 1) != stack_pointer_rtx)
-      	  abort ();
-      	if (GET_CODE (XEXP (src, 0)) != REG
-      	    || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
-      	  abort ();
-      	if (cfa_reg != STACK_POINTER_REGNUM)
-      	  abort ();
-      	cfa_store_reg = REGNO (dest);
-      	cfa_store_offset = cfa_offset - cfa_temp_value;
+	      if (GET_CODE (src) != PLUS
+		  || XEXP (src, 1) != stack_pointer_rtx)
+		abort ();
+	      if (GET_CODE (XEXP (src, 0)) != REG
+		  || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg)
+		abort ();
+	      if (cfa_reg != STACK_POINTER_REGNUM)
+		abort ();
+	      cfa_store_reg = REGNO (dest);
+	      cfa_store_offset = cfa_offset - cfa_temp_value;
             }
           break;
 
@@ -1341,9 +1341,9 @@ dwarf2out_frame_debug_expr (expr, label)
 
         case IOR:
           if (GET_CODE (XEXP (src, 0)) != REG
-      	|| (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg
-      	|| (unsigned) REGNO (dest) != cfa_temp_reg
-      	|| GET_CODE (XEXP (src, 1)) != CONST_INT)
+	      || (unsigned) REGNO (XEXP (src, 0)) != cfa_temp_reg
+	      || (unsigned) REGNO (dest) != cfa_temp_reg
+	      || GET_CODE (XEXP (src, 1)) != CONST_INT)
             abort ();
           cfa_temp_value |= INTVAL (XEXP (src, 1));
           break;
@@ -1352,61 +1352,61 @@ dwarf2out_frame_debug_expr (expr, label)
           abort ();
         }
       dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
-    break;
+      break;
 
-  case MEM:
-    /* Saving a register to the stack.  Make sure dest is relative to the
-       CFA register.  */
-    if (GET_CODE (src) != REG)
+    case MEM:
+      /* Saving a register to the stack.  Make sure dest is relative to the
+	 CFA register.  */
+      if (GET_CODE (src) != REG)
+	abort ();
+      switch (GET_CODE (XEXP (dest, 0)))
+	{
+	  /* With a push.  */
+	case PRE_INC:
+	case PRE_DEC:
+	  offset = GET_MODE_SIZE (GET_MODE (dest));
+	  if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
+	    offset = -offset;
+
+	  if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
+	      || cfa_store_reg != STACK_POINTER_REGNUM)
+	    abort ();
+	  cfa_store_offset += offset;
+	  if (cfa_reg == STACK_POINTER_REGNUM)
+	    cfa_offset = cfa_store_offset;
+
+	  offset = -cfa_store_offset;
+	  break;
+
+	  /* With an offset.  */
+	case PLUS:
+	case MINUS:
+	  offset = INTVAL (XEXP (XEXP (dest, 0), 1));
+	  if (GET_CODE (XEXP (dest, 0)) == MINUS)
+	    offset = -offset;
+
+	  if (cfa_store_reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
+	    abort ();
+	  offset -= cfa_store_offset;
+	  break;
+
+	  /* Without an offset.  */
+	case REG:
+	  if (cfa_store_reg != (unsigned) REGNO (XEXP (dest, 0)))
+	    abort();
+	  offset = -cfa_store_offset;
+	  break;
+
+	default:
+	  abort ();
+	}
+      dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
+      dwarf2out_reg_save (label, REGNO (src), offset);
+      break;
+
+    default:
       abort ();
-    switch (GET_CODE (XEXP (dest, 0)))
-      {
-        /* With a push.  */
-      case PRE_INC:
-      case PRE_DEC:
-        offset = GET_MODE_SIZE (GET_MODE (dest));
-        if (GET_CODE (XEXP (dest, 0)) == PRE_INC)
-          offset = -offset;
-
-        if (REGNO (XEXP (XEXP (dest, 0), 0)) != STACK_POINTER_REGNUM
-            || cfa_store_reg != STACK_POINTER_REGNUM)
-          abort ();
-        cfa_store_offset += offset;
-        if (cfa_reg == STACK_POINTER_REGNUM)
-          cfa_offset = cfa_store_offset;
-
-        offset = -cfa_store_offset;
-        break;
-
-        /* With an offset.  */
-      case PLUS:
-      case MINUS:
-        offset = INTVAL (XEXP (XEXP (dest, 0), 1));
-        if (GET_CODE (XEXP (dest, 0)) == MINUS)
-          offset = -offset;
-
-        if (cfa_store_reg != (unsigned) REGNO (XEXP (XEXP (dest, 0), 0)))
-          abort ();
-        offset -= cfa_store_offset;
-        break;
-
-        /* Without an offset.  */
-      case REG:
-        if (cfa_store_reg != (unsigned) REGNO (XEXP (dest, 0)))
-          abort();
-        offset = -cfa_store_offset;
-        break;
-
-      default:
-        abort ();
-      }
-    dwarf2out_def_cfa (label, cfa_reg, cfa_offset);
-    dwarf2out_reg_save (label, REGNO (src), offset);
-    break;
-
-  default:
-    abort ();
-  }
+    }
 }
 
 
@@ -8248,7 +8248,7 @@ gen_formal_parameter_die (node, context_die)
 
 static void
 gen_unspecified_parameters_die (decl_or_type, context_die)
-     register tree decl_or_type;
+     register tree decl_or_type ATTRIBUTE_UNUSED;
      register dw_die_ref context_die;
 {
   new_die (DW_TAG_unspecified_parameters, context_die);
@@ -8388,7 +8388,7 @@ gen_subprogram_die (decl, context_die)
 	   || context_die == NULL)
 	  && get_AT_unsigned (old_die, DW_AT_decl_file) == file_index
 	  && (get_AT_unsigned (old_die, DW_AT_decl_line)
-	      == DECL_SOURCE_LINE (decl)))
+	      == (unsigned)DECL_SOURCE_LINE (decl)))
 	{
 	  subr_die = old_die;
 
@@ -8403,7 +8403,7 @@ gen_subprogram_die (decl, context_die)
 	  if (get_AT_unsigned (old_die, DW_AT_decl_file) != file_index)
 	    add_AT_unsigned (subr_die, DW_AT_decl_file, file_index);
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
-	      != DECL_SOURCE_LINE (decl))
+	      != (unsigned)DECL_SOURCE_LINE (decl))
 	    add_AT_unsigned
 	      (subr_die, DW_AT_decl_line, DECL_SOURCE_LINE (decl));
 	}
@@ -8640,7 +8640,7 @@ gen_variable_die (decl, context_die)
 	    add_AT_unsigned (var_die, DW_AT_decl_file, file_index);
 
 	  if (get_AT_unsigned (old_die, DW_AT_decl_line)
-	      != DECL_SOURCE_LINE (decl))
+	      != (unsigned)DECL_SOURCE_LINE (decl))
 
 	    add_AT_unsigned (var_die, DW_AT_decl_line,
 			     DECL_SOURCE_LINE (decl));
@@ -9912,8 +9912,8 @@ dwarf2out_end_source_file ()
 
 void
 dwarf2out_define (lineno, buffer)
-     register unsigned lineno;
-     register char *buffer;
+     register unsigned lineno ATTRIBUTE_UNUSED;
+     register char *buffer ATTRIBUTE_UNUSED;
 {
   static int initialized = 0;
   if (!initialized)

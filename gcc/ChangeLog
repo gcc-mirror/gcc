@@ -1,6 +1,15 @@
+Tue Jun 22 17:14:58 1999  Michael Meissner  <meissner@cygnus.com>
+
+	* dwarf2out.c (dwarf2out_frame_debug_expr): Reformat to match GNU
+	coding standards.
+	(dwarf2out_define): Mark unused parameters appropriately.
+	(gen_unspecified_parameters_die): Ditto.
+	(gen_subprogram_die): Fix signed/unsigned warnings.
+	(gen_variable_die): Ditto.
+	
 1999-06-22  Bruce Korb <ddsinc09@ix.netcom.com>
 
-	*fixinc/inclhack.def(end_else_label): combined else_label
+	* fixinc/inclhack.def(end_else_label): combined else_label
 	and endif_label and fixed the sed expression.
 	*fixinc/{fixincl.x|inclhack.sh}: regen
 
