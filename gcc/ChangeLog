@@ -1,5 +1,10 @@
 2005-02-18  Joseph S. Myers  <joseph@codesourcery.com>
 
+	* except.c (output_function_exception_table): Call
+	assemble_external_libcall (eh_personality_libfunc).
+
+2005-02-18  Joseph S. Myers  <joseph@codesourcery.com>
+
 	PR target/19886
 	* config/ia64/ia64.h (struct machine_function): Add state_num.
 	* config/ia64/ia64.c (process_epilogue,
