@@ -1,3 +1,11 @@
+2003-12-20  Guilhem Lavaux <guilhem@kaffe.org>
+
+	* gnu/java/net/URLParseError.java: New file.
+	* gnu/java/net/protocol/jar/Handler.java
+	(parseURL): Throw URLParseError if needed, fix '/' handling.
+	* java/net/URL.java (URL): Catch URLParseError and
+	transform it into a MalformedURLException.
+
 2003-12-19  Michael Koch  <konqueror@gmx.de>
 
 	* gnu/java/nio/ChannelOutputStream.java: New file.
