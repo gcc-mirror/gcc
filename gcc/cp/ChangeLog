@@ -1,5 +1,12 @@
 2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* class.c (mark_primary_virtual_base): Don't adjust base
+	offsets here.
+	(dfs_unshared_virtual_bases): Adjust them here.
+	(mark_primary_bases): Explain why we adjust at the end.
+
+2001-07-27  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* class.c (finish_struct_1): When copying the primary base's
 	VFIELD, make sure we find it is at offset zero.
 
