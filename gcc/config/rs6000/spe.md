@@ -2457,24 +2457,6 @@
 
 ;; FP comparison stuff.
 
-(define_insn "e500_cceq_ior_compare"
-  [(set (match_operand:CCEQ 0 "cc_reg_operand" "=y,?y")
-        (compare:CCEQ (match_operator:SI 1 "boolean_operator"
-                       [(match_operator:SI 2
-                                     "branch_positive_comparison_operator"
-                                     [(match_operand 3
-                                                     "cc_reg_operand" "y,y")
-                                      (const_int 0)])
-                        (match_operator:SI 4
-                                     "branch_positive_comparison_operator"
-                                     [(match_operand 5
-                                                     "cc_reg_operand" "0,y")
-                                      (const_int 0)])])
-                     (const_int 1)))]
-  "TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS"
-  "cr%q1 %c0,%j2,%j4"
-  [(set_attr "type" "cr_logical,delayed_cr")])
-
 ;; Flip the GT bit.
 (define_insn "e500_flip_gt_bit"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
