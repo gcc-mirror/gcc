@@ -1,3 +1,9 @@
+2000-03-02  Tom Tromey  <tromey@cygnus.com>
+
+	* Makefile.in: Rebuilt.
+	* Makefile.am (TARGET_SRC_IA64): Use `ia64', not `alpha', as
+	directory name.
+
 2000-02-25  Hans Boehm <boehm@acm.org>
 
 	* src/ia64/ffi.c, src/ia64/ia64_flags.h, src/ia64/unix.S: New
