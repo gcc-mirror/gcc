@@ -903,7 +903,7 @@ insn_current_reference_address (branch)
     {
       /* Backward branch. */
       return (insn_current_address
-	      + align_fuzz (seq, branch, length_unit_log, ~0));
+	      + align_fuzz (dest, seq, length_unit_log, ~0));
     }
 }
 #endif /* HAVE_ATTR_length */
