@@ -942,6 +942,7 @@ namespace std
     basic_istream<_CharT, _Traits>::
     tellg(void)
     {
+      // DR60.  Do not change _M_gcount.
       pos_type __ret = pos_type(-1);
       if (!this->fail())
 	__ret = this->rdbuf()->pubseekoff(0, ios_base::cur, ios_base::in);
