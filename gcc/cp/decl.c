@@ -119,6 +119,7 @@ static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
 static tree next_initializable_field (tree);
 static tree reshape_init (tree, tree *);
+static bool reshape_init_array (tree, tree, tree *, tree);
 static tree build_typename_type (tree, tree, tree);
 
 /* Erroneous argument lists can use this *IFF* they do not modify it.  */
@@ -4196,6 +4197,70 @@ next_initializable_field (tree field)
   return field;
 }
 
+/* Subroutine of reshape_init. Reshape the constructor for an array. INITP
+   is the pointer to the old constructor list (to the CONSTRUCTOR_ELTS of
+   the CONSTRUCTOR we are processing), while NEW_INIT is the CONSTRUCTOR we
+   are building.
+   ELT_TYPE is the element type of the array. MAX_INDEX is an INTEGER_CST
+   representing the size of the array minus one (the maximum index), or
+   NULL_TREE if the array was declared without specifying the size.  */
+
+static bool
+reshape_init_array (tree elt_type, tree max_index,
+		    tree *initp, tree new_init)
+{
+  bool sized_array_p = (max_index != NULL_TREE);
+  HOST_WIDE_INT max_index_cst = 0;
+  HOST_WIDE_INT index;
+
+  if (sized_array_p)
+    /* HWI is either 32bit or 64bit, so it must be enough to represent the
+	array size.  */
+    max_index_cst = tree_low_cst (max_index, 1);
+
+  /* Loop until there are no more initializers.  */
+  for (index = 0;
+       *initp && (!sized_array_p || index <= max_index_cst);
+       ++index)
+    {
+      tree element_init;
+      tree designated_index;
+
+      element_init = reshape_init (elt_type, initp);
+      if (element_init == error_mark_node)
+	return false;
+      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
+      CONSTRUCTOR_ELTS (new_init) = element_init;
+      designated_index = TREE_PURPOSE (element_init);
+      if (designated_index)
+	{
+	  /* Handle array designated initializers (GNU extension).  */
+	  if (TREE_CODE (designated_index) == IDENTIFIER_NODE)
+	    {
+	      error ("name `%D' used in a GNU-style designated "
+		    "initializer for an array", designated_index);
+	      TREE_PURPOSE (element_init) = NULL_TREE;
+	    }
+	  else
+	    {
+	      if (TREE_CODE (designated_index) != INTEGER_CST)
+		abort ();
+	      if (sized_array_p
+		  && tree_int_cst_lt (max_index, designated_index))
+		{
+		  error ("Designated initializer `%E' larger than array "
+			 "size", designated_index);
+		  TREE_PURPOSE (element_init) = NULL_TREE;
+		}
+	      else
+		index = tree_low_cst (designated_index, 1);
+	    }
+	}
+    }
+
+  return true;
+}
+
 /* Undo the brace-elision allowed by [dcl.init.aggr] in a
    brace-enclosed aggregate initializer.
 
@@ -4364,38 +4429,15 @@ reshape_init (tree type, tree *initp)
 	}
       else if ((TREE_CODE (type) == ARRAY_TYPE)|| (TREE_CODE (type) == VECTOR_TYPE))
 	{
-	  tree index;
 	  tree max_index;
 
 	  /* If the bound of the array is known, take no more initializers
 	     than are allowed.  */
 	  max_index = ((TYPE_DOMAIN (type) && (TREE_CODE (type) == ARRAY_TYPE))
 		       ? array_type_nelts (type) : NULL_TREE);
-	  /* Loop through the array elements, gathering initializers.  */
-	  for (index = size_zero_node;
-	       *initp && (!max_index || !tree_int_cst_lt (max_index, index));
-	       index = size_binop (PLUS_EXPR, index, size_one_node))
-	    {
-	      tree element_init;
-
-	      element_init = reshape_init (TREE_TYPE (type), initp);
-	      if (element_init == error_mark_node)
-		return error_mark_node;
-	      TREE_CHAIN (element_init) = CONSTRUCTOR_ELTS (new_init);
-	      CONSTRUCTOR_ELTS (new_init) = element_init;
-	      if (TREE_PURPOSE (element_init))
-		{
-		  tree next_index = TREE_PURPOSE (element_init);
-		  if (TREE_CODE (next_index) == IDENTIFIER_NODE)
-		    {
-		      error ("name `%D' used in a GNU-style designated "
-			     "initializer for an array", next_index);
-		      TREE_PURPOSE (element_init) = NULL_TREE;
-		    }
-		  else
-		    index = next_index;
-		}
-	    }
+	  if (!reshape_init_array (TREE_TYPE (type), max_index,
+				   initp, new_init))
+	    return error_mark_node;
 	}
       else
 	abort ();
