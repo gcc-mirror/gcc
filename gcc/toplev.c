@@ -2967,6 +2967,12 @@ rest_of_compilation (decl)
 	      optimize = saved_optimize;
 	    }
 
+	  current_function_nothrow = nothrow_function_p ();
+	  if (current_function_nothrow)
+	    /* Now we know that this can't throw; set the flag for the benefit
+	       of other functions later in this translation unit.  */
+	    TREE_NOTHROW (current_function_decl) = 1;
+
 	  note_deferral_of_defined_inline_function (decl);
 	  TIMEVAR (integration_time, save_for_inline_nocopy (decl));
 	  DECL_SAVED_INSNS (decl)->inlinable = inlinable;

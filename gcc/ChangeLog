@@ -1,3 +1,13 @@
+2000-03-10  Jason Merrill  <jason@casey.cygnus.com>
+
+	* builtins.c (expand_builtin_strlen): Make sure that we have something
+	at the beginning of the sequence.
+
+	* toplev.c (rest_of_compilation): Also set TREE_NOTHROW for
+	deferred inlines.
+
+	* invoke.texi (C++ Dialect Options): Document -fno-enforce-eh-specs.
+
 2000-03-10  Richard Henderson  <rth@cygnus.com>
 
 	* except.c (can_throw): Use INTVAL on a CONST_INT.

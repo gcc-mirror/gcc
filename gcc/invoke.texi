@@ -1064,6 +1064,12 @@ which is only used to initialize another object of the same type.
 Specifying this option disables that optimization, and forces g++ to
 call the copy constructor in all cases.
 
+@item -fno-enforce-eh-specs
+Don't check for violation of exception specifications at runtime.  This
+option violates the C++ standard, but may be useful for reducing code
+size in production builds, much like defining @samp{NDEBUG}.  The compiler
+will still optimize based on the exception specifications.
+
 @item -fexternal-templates
 Cause template instantiations to obey @samp{#pragma interface} and
 @samp{implementation}; template instances are emitted or not according
