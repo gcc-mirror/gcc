@@ -60,7 +60,7 @@ JAVA_TARGET_INDEPENDENT_BIN_TOOLS = gcjh jv-scan jcf-dump
 # Tell GNU make to ignore these if they exist.
 .PHONY: java
 
-jvspec.o: $(srcdir)/java/jvspec.c system.h $(GCC_H)
+jvspec.o: $(srcdir)/java/jvspec.c system.h $(GCC_H) $(CONFIG_H)
 	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) \
 		$(INCLUDES) $(srcdir)/java/jvspec.c $(OUTPUT_OPTION)
 
