@@ -3565,6 +3565,14 @@ init_emit_once (line_numbers)
 #ifdef PIC_OFFSET_TABLE_REGNUM
   pic_offset_table_rtx = gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM);
 #endif
+
+#ifdef INIT_EXPANDERS
+  /* This is to initialize save_machine_status and restore_machine_status before
+     the first call to push_function_context_to.  This is needed by the Chill
+     front end which calls push_function_context_to before the first cal to
+     init_function_start.  */
+  INIT_EXPANDERS;
+#endif
 }
 
 /* Query and clear/ restore no_line_numbers.  This is used by the
