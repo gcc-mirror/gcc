@@ -3547,7 +3547,7 @@ finish_file ()
 	      /* When we call finish_function in expand_body, it will
 		 try to reset DECL_NOT_REALLY_EXTERN so we save and
 		 restore it here.  */
-	      saved_not_really = DECL_NOT_REALLY_EXTERN (decl);
+	      saved_not_really_extern = DECL_NOT_REALLY_EXTERN (decl);
 	      /* Generate RTL for this function now that we know we
 		 need it.  */
 	      expand_body (decl);
