@@ -289,7 +289,7 @@ for machine in $build $host $target; do
  			thread_file='posix'
  		fi
 		;;
-	alpha*-dec-osf[[456789]]*)
+	alpha*-dec-osf*)
 		if [[ x$stabs = xyes ]]
 		then
 			tm_file="${tm_file} dbx.h"
@@ -300,51 +300,19 @@ for machine in $build $host $target; do
 		fi
 		broken_install=yes
 		use_collect2=yes
-		# Some versions of OSF4 (specifically X4.0-9 296.7) have
-		# a broken tar, so we use cpio instead.
 		case $machine in
-		  alpha*-dec-osf4*)
+		  *-*-osf1.2)
+		    tm_file="${tm_file} alpha/osf12.h alpha/osf2or3.h"
+		    ;;
+		  *-*-osf[[23]]*)
+		    tm_file="${tm_file} alpha/osf2or3.h"
+		    ;;
+		  *-*-osf4*)
+		    # Some versions of OSF4 (specifically X4.0-9 296.7) have
+		    # a broken tar, so we use cpio instead.
 		    install_headers_dir=install-headers-cpio
 		    ;;
 		esac
-		;;
-	alpha*-dec-osf[[23]]*)
-		tm_file="${tm_file} alpha/osf2or3.h"
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		broken_install=yes
-		use_collect2=yes
-		;;
-	alpha*-dec-osf1.2)
-		tm_file="${tm_file} alpha/osf12.h"
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		broken_install=yes
-		use_collect2=yes
-		;;
-	alpha*-*-osf*)
-		if [[ x$stabs = xyes ]]
-		then
-			tm_file="${tm_file} dbx.h"
-		fi
-		if [[ x$gas != xyes ]]
-		then
-			extra_passes="mips-tfile mips-tdump"
-		fi
-		broken_install=yes
-		use_collect2=yes
 		;;
 	alpha*-*-winnt3*)
 		tm_file="${tm_file} alpha/win-nt.h"
