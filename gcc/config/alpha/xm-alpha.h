@@ -48,6 +48,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define USE_C_ALLOCA
 #endif
 
+/* The host compiler has problems with enum bitfields since it makes
+   them signed so we can't fit all our codes in.  */
+
+#ifndef __GNUC__
+#define ONLY_INT_FIELDS
+#endif
+
 /* Declare some functions needed for this machine.  We don't want to
    include these in the sources since other machines might define them
    differently.  */
