@@ -2889,22 +2889,17 @@ same column as it did in the original source file.
 
 @item The numeric value of character constants in preprocessor expressions.
 
-The preprocessor interprets character constants in preprocessing
-directives on the host machine.  Expressions outside preprocessing
-directives are compiled to be interpreted on the target machine.  In the
-normal case of a native compiler, these two environments are the same
-and so character constants will be evaluated identically in both cases.
-However, in the case of a cross compiler, the values may be different.
+The preprocessor and compiler interpret character constants in the same
+way; escape sequences such as @code{\a} are given the values they would
+have on the target machine.
 
 Multi-character character constants are interpreted a character at a
 time, shifting the previous result left by the number of bits per
 character on the host, and adding the new character.  For example, 'ab'
 on an 8-bit host would be interpreted as 'a' * 256 + 'b'.  If there are
 more characters in the constant than can fit in the widest native
-integer type on the host, usually a @samp{long}, the behavior is
-undefined.
-
-Evaluation of wide character constants is not properly implemented yet.
+integer type on the host, usually a @samp{long}, the excess characters
+are ignored and a diagnostic is given.
 
 @item Source file inclusion.
 

@@ -1706,46 +1706,48 @@ maybe_read_ucs (pfile, pstr, limit, pc)
 
   if (CPP_WTRADITIONAL (pfile))
     cpp_warning (pfile, "the meaning of '\\%c' varies with -traditional", c);
-  
-  for (length = (c == 'u' ? 4: 8); length; --length)
+
+  length = (c == 'u' ? 4: 8);
+
+  if ((size_t) (limit - p) < length)
     {
-      if (p >= limit)
+      cpp_error (pfile, "incomplete universal-character-name");
+      /* Skip to the end to avoid more diagnostics.  */
+      p = limit;
+    }
+  else
+    {
+      for (; length; length--, p++)
 	{
-	  cpp_error (pfile, "incomplete universal-character-name");
-	  break;
+	  c = *p;
+	  if (ISXDIGIT (c))
+	    code = (code << 4) + hex_digit_value (c);
+	  else
+	    {
+	      cpp_error (pfile,
+			 "non-hex digit '%c' in universal-character-name", c);
+	      /* We shouldn't skip in case there are multibyte chars.  */
+	      break;
+	    }
 	}
-
-      c = *p;
-      if (ISXDIGIT (c))
-	{
-	  code = (code << 4) + hex_digit_value (c);
-	  p++;
-	}
-      else
-	{
-	  cpp_error (pfile,
-		     "non-hex digit '%c' in universal-character-name", c);
-	  break;
-	}
-
     }
 
 #ifdef TARGET_EBCDIC
   cpp_error (pfile, "universal-character-name on EBCDIC target");
   code = 0x3f;  /* EBCDIC invalid character */
 #else
-  if (code > 0x9f && !(code & 0x80000000))
-    ; /* True extended character, OK.  */
-  else if (code >= 0x20 && code < 0x7f)
-    {
-      /* ASCII printable character.  The C character set consists of all of
-	 these except $, @ and `.  We use hex escapes so that this also
-	 works with EBCDIC hosts.  */
-      if (code != 0x24 && code != 0x40 && code != 0x60)
-	cpp_error (pfile, "universal-character-name used for '%c'", code);
-    }
-  else
-    cpp_error (pfile, "invalid universal-character-name");
+ /* True extended characters are OK.  */
+  if (code >= 0xa0
+      && !(code & 0x80000000)
+      && !(code >= 0xD800 && code <= 0xDFFF))
+    ;
+  /* The standard permits $, @ and ` to be specified as UCNs.  We use
+     hex escapes so that this also works with EBCDIC hosts.  */
+  else if (code == 0x24 || code == 0x40 || code == 0x60)
+    ;
+  /* Don't give another error if one occurred above.  */
+  else if (length == 0)
+    cpp_error (pfile, "universal-character-name out of range");
 #endif
 
   *pstr = p;
@@ -1970,7 +1972,7 @@ cpp_interpret_charconst (pfile, token, warn_multi, traditional, pchars_seen)
   else if (chars_seen > max_chars)
     {
       chars_seen = max_chars;
-      cpp_error (pfile, "character constant too long");
+      cpp_warning (pfile, "character constant too long");
     }
   else if (chars_seen > 1 && !traditional && warn_multi)
     cpp_warning (pfile, "multi-character character constant");
