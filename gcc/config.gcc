@@ -1229,7 +1229,7 @@ m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h ${tm_file} m32r/linux.h"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	# We override the tmake_file for linux -- why?
-	tmake_file="m32r/t-linux"
+	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
 	use_fixproto=yes
 	if test x$enable_threads = xyes; then
@@ -1240,7 +1240,7 @@ m32rle-*-linux*)
 	tm_file="dbxelf.h elfos.h svr4.h linux.h m32r/little.h ${tm_file} m32r/linux.h"
 	extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 	# We override the tmake_file for linux -- why?
-	tmake_file="m32r/t-linux"
+	tmake_file="t-slibgcc-elf-ver m32r/t-linux"
 	gnu_ld=yes
 	use_fixproto=yes
 	if test x$enable_threads = xyes; then
