@@ -1,3 +1,8 @@
+2004-09-25  Dale Johannesen  <dalej@apple.com>
+
+	* tree-gimple.c:  Move GIMPLE definition...
+	* doc/tree-ssa.texi:  here.
+
 2004-09-25  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* tree-vectorizer.c: Fix a comment typo.
