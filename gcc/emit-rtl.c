@@ -804,15 +804,19 @@ operand_subword (op, i, validate_address, mode)
       && GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
       && GET_CODE (op) == CONST_DOUBLE)
-    return GEN_INT (i ^ (WORDS_BIG_ENDIAN !=
-/* The constant is stored in the host's word-ordering,
-   but we want to access it in the target's word-ordering.  */
+    {
+      /* The constant is stored in the host's word-ordering,
+	 but we want to access it in the target's word-ordering.  Some
+	 compilers don't like a conditional inside macro args, so we have two
+	 copies of the return.  */
 #ifdef HOST_WORDS_BIG_ENDIAN
-			 1
+      return GEN_INT (i == WORDS_BIG_ENDIAN
+		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
 #else
-			 0
+      return GEN_INT (i != WORDS_BIG_ENDIAN
+		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
 #endif
-			 ) ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
+    }
 
   /* Single word float is a little harder, since single- and double-word
      values often do not have the same high-order bits.  We have already
