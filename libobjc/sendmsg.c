@@ -76,7 +76,7 @@ static id
 __objc_block_forward (id, SEL, ...);
 static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
 Method_t search_for_method_in_list (MethodList_t list, SEL op);
-id nil_method (id, SEL, ...);
+id nil_method (id, SEL);
 
 /* Given a selector, return the proper forwarding implementation. */
 __inline__
@@ -197,7 +197,7 @@ objc_msg_lookup (id receiver, SEL op)
       return result;
     }
   else
-    return nil_method;
+    return (IMP)nil_method;
 }
 
 IMP
@@ -206,7 +206,7 @@ objc_msg_lookup_super (Super_t super, SEL sel)
   if (super->self)
     return get_imp (super->class, sel);
   else
-    return nil_method;
+    return (IMP)nil_method;
 }
 
 int method_get_sizeof_arguments (Method *);
