@@ -1,3 +1,30 @@
+2004-01-24  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.h (assign(const basic_string&,
+	size_type, size_type)): Define inline here.
+	(replace(size_type, size_type, const basic_string&,
+	size_type, size_type)): Ditto.
+	(_M_replace_dispatch(iterator, iterator, _InputIterator,
+	_InputIterator, __false_type)): Only declare.
+	(_M_replace(iterator, iterator, _InputIterator,
+	_InputIterator)): Remove.
+	* include/bits/basic_string.tcc (assign(const basic_string&,
+	size_type, size_type)): Move inline.
+	(replace(size_type, size_type, const basic_string&,
+	size_type, size_type)): Ditto.
+	(_M_replace_dispatch(iterator, iterator, _InputIterator,
+	_InputIterator, __false_type)): Define, now does also what
+	_M_replace did before.
+	* src/string-inst.cc (_M_replace): Don't instantiate.
+
+	* include/bits/basic_string.tcc (find(const _CharT*,
+	size_type, size_type)): Tidy.
+	(rfind(_CharT, size_type)): Ditto.
+	(find_first_not_of(const _CharT*, size_type, size_type)): Ditto.
+	(find_first_not_of(_CharT, size_type)): Ditto.
+	(find_last_not_of(const _CharT*, size_type, size_type)): Ditto.
+	(find_last_not_of(_CharT, size_type)): Ditto.
+
 2004-01-23  Paolo Carlini  <pcarlini@suse.de>
 
 	PR libstdc++/13838
