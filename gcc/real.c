@@ -2,7 +2,7 @@
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999,
    2000, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Stephen L. Moshier (moshier@world.std.com).
-   Re-written by Richard Henderson  <rth@redhat.com>
+   Re-written by Richard Henderson <rth@redhat.com>
 
    This file is part of GCC.
 
@@ -31,7 +31,7 @@
 #include "tm_p.h"
 
 /* The floating point model used internally is not exactly IEEE 754
-   compliant, and close to the description in the ISO C standard,
+   compliant, and close to the description in the ISO C99 standard,
    section 5.2.4.2.2 Characteristics of floating types.
 
    Specifically
@@ -49,21 +49,21 @@
    significand is fractional.  Normalized significands are in the
    range [0.5, 1.0).
 
-   A requirement of the model is that P be larger than than the
-   largest supported target floating-point type by at least 2 bits.
-   This gives us proper rounding when we truncate to the target type.
-   In addition, E must be large enough to hold the smallest supported
-   denormal number in a normalized form.
+   A requirement of the model is that P be larger than the largest
+   supported target floating-point type by at least 2 bits.  This gives
+   us proper rounding when we truncate to the target type.  In addition,
+   E must be large enough to hold the smallest supported denormal number
+   in a normalized form.
 
    Both of these requirements are easily satisfied.  The largest target
    significand is 113 bits; we store at least 160.  The smallest
    denormal number fits in 17 exponent bits; we store 29.
 
    Note that the decimal string conversion routines are sensitive to
-   rounding error.  Since the raw arithmetic routines do not themselves
+   rounding errors.  Since the raw arithmetic routines do not themselves
    have guard digits or rounding, the computation of 10**exp can
    accumulate more than a few digits of error.  The previous incarnation
-   of real.c successfully used a 144 bit fraction; given the current
+   of real.c successfully used a 144-bit fraction; given the current
    layout of REAL_VALUE_TYPE we're forced to expand to at least 160 bits.
 
    Target floating point models that use base 16 instead of base 2

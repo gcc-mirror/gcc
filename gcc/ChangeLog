@@ -1,3 +1,7 @@
+2003-09-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* real.c: Fix several nits in the head comment.
+
 2003-09-21  Richard Henderson  <rth@redhat.com>
 
 	* tree.h c-aux-info.c, c-decl.c, c-parse.in, coverage.c, dbxout.c, 
