@@ -1,3 +1,8 @@
+Wed Jun 20 19:10:48 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Run mark_constant_function
+	before profile-arcs.
+
 Wed Jun 20 19:08:18 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* predict.c (estimate_loops_at_level, propagate_freq
