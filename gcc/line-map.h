@@ -147,7 +147,7 @@ extern void linemap_print_containing_files (struct line_maps *,
 #define LAST_SOURCE_LINE(MAP) \
   SOURCE_LINE (MAP, LAST_SOURCE_LINE_LOCATION (MAP))
 #define LAST_SOURCE_LINE_LOCATION(MAP) \
-  ((((MAP)[1].start_location - 2 - (MAP)->start_location) \
+  ((((MAP)[1].start_location - 1 - (MAP)->start_location) \
     & ~((1 << (MAP)->column_bits) - 1))			  \
    + (MAP)->start_location)
 

@@ -310,9 +310,10 @@ struct cpp_buffer
      buffers.  */
   unsigned int from_stage3 : 1;
 
-  /* Nonzero means that the directory to start searching for ""
-     include files has been calculated and stored in "dir" below.  */
-  unsigned char search_cached;
+  /* At EOF, a buffer is automatically popped.  If RETURN_AT_EOF is
+     true, a CPP_EOF token is then returned.  Otherwise, the next
+     token from the enclosing buffer is returned.  */
+  unsigned int return_at_eof : 1;
 
   /* One for a system header, two for a C system header file that therefore
      needs to be extern "C" protected in C++, and zero otherwise.  */
