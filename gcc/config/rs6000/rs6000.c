@@ -8871,10 +8871,10 @@ rs6000_init_libfuncs (void)
 	}
 
       /* Standard AIX/Darwin/64-bit SVR4 quad floating point routines.  */
-      set_optab_libfunc (add_optab, TFmode, "_xlqadd");
-      set_optab_libfunc (sub_optab, TFmode, "_xlqsub");
-      set_optab_libfunc (smul_optab, TFmode, "_xlqmul");
-      set_optab_libfunc (sdiv_optab, TFmode, "_xlqdiv");
+      set_optab_libfunc (add_optab, TFmode, "__gcc_qadd");
+      set_optab_libfunc (sub_optab, TFmode, "__gcc_qsub");
+      set_optab_libfunc (smul_optab, TFmode, "__gcc_qmul");
+      set_optab_libfunc (sdiv_optab, TFmode, "__gcc_qdiv");
     }
   else
     {
