@@ -1,3 +1,11 @@
+2003-05-19  Andrew Macleod  <amacleod@redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Do
+	not mark assignments to the hard frame pointer as being stack
+	frame related.
+	(xstormy16_expand_epilogue): Mark adjustments to the stack
+	pointer as being stack frame related.
+
 2003-05-19  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.h (ISA_HAS_LOAD_DELAY, ISA_HAS_XFER_DELAY,
