@@ -176,6 +176,7 @@ fi
 # if the host does not provide alloca, we set ALLOCA to alloca.o
 
 setobjs=
+CHECK=
 if test -n "${with_target_subdir}"; then
 
   # We are being configured as a target library.  AC_REPLACE_FUNCS
@@ -210,7 +211,15 @@ if test -n "${with_target_subdir}"; then
     setobjs=yes
 
   fi
+
+else
+
+   # Not a target library, so we set things up to run the test suite.
+   CHECK=check-cplus-dem
+
 fi
+
+AC_SUBST(CHECK)
 
 if test -z "${setobjs}"; then
   case "${host}" in
@@ -321,7 +330,7 @@ fi
 AC_SUBST(INSTALL_DEST)
 
 # We need multilib support, but only if configuring for the target.
-AC_OUTPUT(Makefile,
+AC_OUTPUT(Makefile testsuite/Makefile,
 [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
   if test -n "${with_target_subdir}"; then
