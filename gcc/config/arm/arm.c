@@ -7258,7 +7258,7 @@ push_minipool_fix (rtx insn, HOST_WIDE_INT address, rtx *loc,
   minipool_fix_tail = fix;
 }
 
-/* Return the cost of synthesising the const_double VAL inline.
+/* Return the cost of synthesizing the const_double VAL inline.
    Returns the number of insns needed, or 99 if we don't know how to
    do it.  */
 int

@@ -106,7 +106,7 @@ struct el
 /* We need to efficiently record the unique thread destinations of this
    block and specific information associated with those destinations.  We
    may have many incoming edges threaded to the same outgoing edge.  This
-   can be naturaly implemented with a hash table.  */
+   can be naturally implemented with a hash table.  */
 
 struct redirection_data
 {
@@ -467,7 +467,7 @@ thread_block (basic_block bb)
   bool all = true;
 
   /* To avoid scanning a linear array for the element we need we instead
-     use a hash table.  For normal code there should be no noticable
+     use a hash table.  For normal code there should be no noticeable
      difference.  However, if we have a block with a large number of
      incoming and outgoing edges such linear searches can get expensive.  */
   redirection_data = htab_create (EDGE_COUNT (bb->succs),
