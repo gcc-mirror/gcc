@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.68 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001 Free Software Foundation, Inc.          --
 --                                                                          --
@@ -399,13 +399,15 @@ begin
          Read_ALI (Index);
       end loop;
 
-      --  Warn if -f switch used with static model
+      --  Warn if -f switch used
 
-      if Force_RM_Elaboration_Order
-        and Static_Elaboration_Model_Used
-      then
-         Error_Msg ("?static elaboration model used, but -f specified");
-         Error_Msg ("?may result in missing run-time elaboration checks");
+      if Force_RM_Elaboration_Order then
+         Error_Msg
+           ("?-f is obsolescent and should not be used");
+         Error_Msg
+           ("?may result in missing run-time elaboration checks");
+         Error_Msg
+           ("?use -gnatE, pragma Suppress (Elaboration_Checks) instead");
       end if;
 
       --  Quit if some file needs compiling

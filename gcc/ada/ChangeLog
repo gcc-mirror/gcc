@@ -1,3 +1,16 @@
+2001-10-30  Robert Dewar <dewar@gnat.com>
+	
+	* bindusg.adb: Undocument -f switch.
+	
+	* gnatcmd.adb: Remove /FULL_ELABORATION.
+	
+	* opt.ads (Force_RM_Elaboration_Order): Document that this is 
+	obsolescent.
+	
+	* gnatbind.adb: Output new warning for use of obsolescent -f switch.
+	
+	* gnatbind.adb: Minor update of warning msg.
+
 2001-10-30  Vincent Celier <celier@gnat.com>
 
 	* gnatcmd.adb (MAKE, BIND, LINK, LIST, FIND, XREF): Add translations 

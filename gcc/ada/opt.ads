@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.194 $
+--                            $Revision$
 --                                                                          --
 --          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
 --                                                                          --
@@ -331,6 +331,9 @@ package Opt is
    Force_RM_Elaboration_Order : Boolean := False;
    --  GNATBIND
    --  True if binding with forced RM elaboration order (-f switch set)
+   --  Note: this is considered an obsolescent option, to be removed in
+   --  some future release. it is no longer documented. The proper way
+   --  to get this effect is to use -gnatE and suppress elab checks.
 
    Full_List : Boolean := False;
    --  GNAT
