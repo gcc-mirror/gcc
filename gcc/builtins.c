@@ -1565,7 +1565,7 @@ static rtx
 expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
 {
   optab builtin_optab;
-  rtx op0, insns;
+  rtx op0, insns, before_call;
   tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   enum machine_mode mode;
@@ -1636,49 +1636,93 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   /* Make a suitable register to place result in.  */
   mode = TYPE_MODE (TREE_TYPE (exp));
 
-  /* Before working hard, check whether the instruction is available.  */
-  if (builtin_optab->handlers[(int) mode].insn_code == CODE_FOR_nothing)
-    return 0;
-  target = gen_reg_rtx (mode);
-
   if (! flag_errno_math || ! HONOR_NANS (mode))
     errno_set = false;
 
-  /* Wrap the computation of the argument in a SAVE_EXPR, as we may
-     need to expand the argument again.  This way, we will not perform
-     side-effects more the once.  */
-  narg = save_expr (arg);
-  if (narg != arg)
+  /* Before working hard, check whether the instruction is available.  */
+  if (builtin_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     {
-      arglist = build_tree_list (NULL_TREE, arg);
-      exp = build_function_call_expr (fndecl, arglist);
-    }
+      target = gen_reg_rtx (mode);
 
-  op0 = expand_expr (arg, subtarget, VOIDmode, 0);
+      /* Wrap the computation of the argument in a SAVE_EXPR, as we may
+	 need to expand the argument again.  This way, we will not perform
+	 side-effects more the once.  */
+      narg = save_expr (arg);
+      if (narg != arg)
+	{
+	  arglist = build_tree_list (NULL_TREE, arg);
+	  exp = build_function_call_expr (fndecl, arglist);
+	}
 
-  emit_queue ();
-  start_sequence ();
+      op0 = expand_expr (arg, subtarget, VOIDmode, 0);
 
-  /* Compute into TARGET.
-     Set TARGET to wherever the result comes back.  */
-  target = expand_unop (mode, builtin_optab, op0, target, 0);
+      emit_queue ();
+      start_sequence ();
 
-  /* If we were unable to expand via the builtin, stop the sequence
-     (without outputting the insns) and call to the library function
-     with the stabilized argument list.  */
-  if (target == 0)
-    {
+      /* Compute into TARGET.
+	 Set TARGET to wherever the result comes back.  */
+      target = expand_unop (mode, builtin_optab, op0, target, 0);
+
+      if (target != 0)
+	{
+	  if (errno_set)
+	    expand_errno_check (exp, target);
+
+	  /* Output the entire sequence.  */
+	  insns = get_insns ();
+	  end_sequence ();
+	  emit_insn (insns);
+	  return target;
+	}
+
+      /* If we were unable to expand via the builtin, stop the sequence
+	 (without outputting the insns) and call to the library function
+	 with the stabilized argument list.  */
       end_sequence ();
-      return expand_call (exp, target, target == const0_rtx);
     }
 
-  if (errno_set)
-    expand_errno_check (exp, target);
+  before_call = get_last_insn ();
 
-  /* Output the entire sequence.  */
-  insns = get_insns ();
-  end_sequence ();
-  emit_insn (insns);
+  target = expand_call (exp, target, target == const0_rtx);
+
+  /* If this is a sqrt operation and we don't care about errno, try to
+     attach a REG_EQUAL note with a SQRT rtx to the emitted libcall.
+     This allows the semantics of the libcall to be visible to the RTL
+     optimizers.  */
+  if (builtin_optab == sqrt_optab && !errno_set)
+    {
+      /* Search backwards through the insns emitted by expand_call looking
+	 for the instruction with the REG_RETVAL note.  */
+      rtx last = get_last_insn ();
+      while (last != before_call)
+	{
+	  if (find_reg_note (last, REG_RETVAL, NULL))
+	    {
+	      rtx note = find_reg_note (last, REG_EQUAL, NULL);
+	      /* Check that the REQ_EQUAL note is an EXPR_LIST with
+		 two elements, i.e. symbol_ref(sqrt) and the operand.  */
+	      if (note
+		  && GET_CODE (note) == EXPR_LIST
+		  && GET_CODE (XEXP (note, 0)) == EXPR_LIST
+		  && XEXP (XEXP (note, 0), 1) != NULL_RTX
+		  && XEXP (XEXP (XEXP (note, 0), 1), 1) == NULL_RTX)
+		{
+		  rtx operand = XEXP (XEXP (XEXP (note, 0), 1), 0);
+		  /* Check operand is a register with expected mode.  */
+		  if (operand
+		      && GET_CODE (operand) == REG
+		      && GET_MODE (operand) == mode)
+		    {
+		      /* Replace the REG_EQUAL note with a SQRT rtx.  */
+		      rtx equiv = gen_rtx_SQRT (mode, operand);
+		      set_unique_reg_note (last, REG_EQUAL, equiv);
+		    }
+		}
+	      break;
+	    }
+	  last = PREV_INSN (last);
+	}
+    }
 
   return target;
 }

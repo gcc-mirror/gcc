@@ -1,3 +1,10 @@
+2003-08-25  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (expand_builtin_mathfn):  Rearrange so that we only
+	return 0 for invalid argument types.  Instead drop through to a
+	call of expand_call at the bottom of function.  If op is SQRT,
+	try attaching a SQRT rtx as the REQ_EQUAL note of the libcall.
+
 2003-08-25  Richard Henderson  <rth@redhat.com>
 
 	* config/ia64/ia64.c (ia64_expand_tls_address): Properly truncate
