@@ -227,7 +227,6 @@ EOF
   mips*-*-linux* )
   	sysdeps_dir=mips
   	can_unwind_signal=yes
-	libgcj_flags="${libgcj_flags} -mxgot"
 	DIVIDESPEC=-fno-use-divide-subroutine
 	case "${host}" in
 	    mipsel*-linux* | mipsisa32el*-linux*)
