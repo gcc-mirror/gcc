@@ -6978,6 +6978,7 @@ get_condition (jump, earliest)
   rtx op0, op1;
   int reverse_code = 0;
   int did_reverse_condition = 0;
+  enum machine_mode mode;
 
   /* If this is not a standard conditional jump, we can't parse it.  */
   if (GET_CODE (jump) != JUMP_INSN
@@ -6985,6 +6986,7 @@ get_condition (jump, earliest)
     return 0;
 
   code = GET_CODE (XEXP (SET_SRC (PATTERN (jump)), 0));
+  mode = GET_MODE (XEXP (SET_SRC (PATTERN (jump)), 0));
   op0 = XEXP (XEXP (SET_SRC (PATTERN (jump)), 0), 0);
   op1 = XEXP (XEXP (SET_SRC (PATTERN (jump)), 0), 1);
 
@@ -7051,6 +7053,13 @@ get_condition (jump, earliest)
 	{
 	  enum machine_mode inner_mode = GET_MODE (SET_SRC (set));
 
+	  /* ??? We may not combine comparisons done in a CCmode with
+	     comparisons not done in a CCmode.  This is to aid targets
+	     like Alpha that have an IEEE compliant EQ instruction, and
+	     a non-IEEE compliant BEQ instruction.  The use of CCmode is
+	     actually artificial, simply to prevent the combination, but
+	     should not affect other platforms.  */
+
 	  if ((GET_CODE (SET_SRC (set)) == COMPARE
 	       || (((code == NE
 		     || (code == LT
@@ -7066,7 +7075,9 @@ get_condition (jump, earliest)
 			 && FLOAT_STORE_FLAG_VALUE < 0)
 #endif
 		     ))
-		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<')))
+		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'))
+	      && ((GET_MODE_CLASS (mode) == MODE_CC)
+		  != (GET_MODE_CLASS (inner_mode) == MODE_CC)))
 	    x = SET_SRC (set);
 	  else if (((code == EQ
 		     || (code == GE
@@ -7082,7 +7093,9 @@ get_condition (jump, earliest)
 			 && FLOAT_STORE_FLAG_VALUE < 0)
 #endif
 		     ))
-		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<')
+		   && GET_RTX_CLASS (GET_CODE (SET_SRC (set))) == '<'
+	           && ((GET_MODE_CLASS (mode) == MODE_CC)
+		       != (GET_MODE_CLASS (inner_mode) == MODE_CC)))
 	    {
 	      /* We might have reversed a LT to get a GE here.  But this wasn't
 		 actually the comparison of data, so we don't flag that we

@@ -1,3 +1,15 @@
+Sat May  9 02:02:15 1998  Richard Henderson  <rth@cygnus.com>
+
+	* loop.c (get_condition): Don't combine when either compare is MODE_CC.
+	* alpha.c (alpha_emit_conditional_branch): New function.  Taken from
+	the body of beq; additionally set the mode of the branch to CCmode for
+	FP compares and not fast_math.  
+	(alpha_emit_conditional_move): Always use a compare insn for FP
+	when not fast_math, as well as setting CCmode on the cmov.
+	* alpha.md (beq, bne, blt, et al): Call alpha_emit_conditional_branch.
+
+	* machmode.h (COMPLEX_MODE_P): New macro.
+
 Sat May  9 01:53:23 1998  Richard Henderson  <rth@cygnus.com>
 
 	* haifa-sched.c (print_exp): Fix typo.

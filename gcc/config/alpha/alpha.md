@@ -2855,212 +2855,84 @@
 }")
 
 (define_expand "beq"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  enum machine_mode mode;
-  enum rtx_code compare_code = EQ, branch_code = NE;
-
-  if (alpha_compare_fp_p)
-    mode = DFmode;
-  else
-    {
-      mode = DImode;
-      /* We want to use cmpeq/bne when we can, since there is a zero-delay
-	 bypass between logicals and br/cmov on the 21164.  But we don't
-	 want to force valid immediate constants into registers needlessly.  */
-      if (GET_CODE (alpha_compare_op1) == CONST_INT
-	  && ((INTVAL (alpha_compare_op1) >= -0x8000
-	       && INTVAL (alpha_compare_op1) < 0)
-	      || (INTVAL (alpha_compare_op1) > 0xff
-		  && INTVAL (alpha_compare_op1) < 0x8000)))
-	{
-	  compare_code = PLUS, branch_code = EQ;
-	  alpha_compare_op1 = GEN_INT (- INTVAL (alpha_compare_op1));
-	}
-    }
-
-  operands[1] = gen_reg_rtx (mode);
-  operands[2] = gen_rtx_fmt_ee (compare_code, mode,
-				alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_fmt_ee (branch_code, VOIDmode,
-				operands[1], CONST0_RTX (mode));
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (EQ); }")
 
 (define_expand "bne"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  enum machine_mode mode;
-  enum rtx_code compare_code = EQ, branch_code = EQ;
-
-  if (alpha_compare_fp_p)
-    mode = DFmode;
-  else
-    {
-      mode = DImode;
-      /* We want to use cmpeq/bne when we can, since there is a zero-delay
-	 bypass between logicals and br/cmov on the 21164.  But we don't
-	 want to force valid immediate constants into registers needlessly.  */
-      if (GET_CODE (alpha_compare_op1) == CONST_INT
-	  && ((INTVAL (alpha_compare_op1) >= -0x8000
-	       && INTVAL (alpha_compare_op1) < 0)
-	      || (INTVAL (alpha_compare_op1) > 0xff
-		  && INTVAL (alpha_compare_op1) < 0x8000)))
-	{
-	  compare_code = PLUS, branch_code = NE;
-	  alpha_compare_op1 = GEN_INT (- INTVAL (alpha_compare_op1));
-	}
-    }
-
-  operands[1] = gen_reg_rtx (mode);
-  operands[2] = gen_rtx_fmt_ee (compare_code, mode,
-				alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_fmt_ee (branch_code, VOIDmode,
-				operands[1], CONST0_RTX (mode));
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (NE); }")
 
 (define_expand "blt"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  enum machine_mode mode = alpha_compare_fp_p ? DFmode : DImode;
-  operands[1] = gen_reg_rtx (mode);
-  operands[2] = gen_rtx_LT (mode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_NE (VOIDmode, operands[1], CONST0_RTX (mode));
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (LT); }")
 
 (define_expand "ble"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  enum machine_mode mode = alpha_compare_fp_p ? DFmode : DImode;
-  operands[1] = gen_reg_rtx (mode);
-  operands[2] = gen_rtx_LE (mode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_NE (VOIDmode, operands[1], CONST0_RTX (mode));
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (LE); }")
 
 (define_expand "bgt"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  if (alpha_compare_fp_p)
-    {
-      operands[1] = gen_reg_rtx (DFmode);
-      operands[2] = gen_rtx_LT (DFmode, alpha_compare_op1, alpha_compare_op0);
-      operands[3] = gen_rtx_NE (VOIDmode, operands[1], CONST0_RTX (DFmode));
-    }
-  else
-    {
-      operands[1] = gen_reg_rtx (DImode);
-      operands[2] = gen_rtx_LE (DImode, alpha_compare_op0, alpha_compare_op1);
-      operands[3] = gen_rtx_EQ (VOIDmode, operands[1], const0_rtx);
-    }
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (GT); }")
 
 (define_expand "bge"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  if (alpha_compare_fp_p)
-    {
-      operands[1] = gen_reg_rtx (DFmode);
-      operands[2] = gen_rtx_LE (DFmode, alpha_compare_op1, alpha_compare_op0);
-      operands[3] = gen_rtx_NE (VOIDmode, operands[1], CONST0_RTX (DFmode));
-    }
-  else
-    {
-      operands[1] = gen_reg_rtx (DImode);
-      operands[2] = gen_rtx_LT (DImode, alpha_compare_op0, alpha_compare_op1);
-      operands[3] = gen_rtx_EQ (VOIDmode, operands[1], const0_rtx);
-    }
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (GE); }")
 
 (define_expand "bltu"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  operands[1] = gen_reg_rtx (DImode);
-  operands[2] = gen_rtx_LTU (DImode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_NE (VOIDmode, operands[1], const0_rtx);
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (LTU); }")
 
 (define_expand "bleu"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  operands[1] = gen_reg_rtx (DImode);
-  operands[2] = gen_rtx_LEU (DImode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_NE (VOIDmode, operands[1], const0_rtx);
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (LEU); }")
 
 (define_expand "bgtu"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  operands[1] = gen_reg_rtx (DImode);
-  operands[2] = gen_rtx_LEU (DImode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_EQ (VOIDmode, operands[1], const0_rtx);
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (GTU); }")
 
 (define_expand "bgeu"
-  [(set (match_dup 1) (match_dup 2))
-   (set (pc)
-	(if_then_else (match_dup 3)
+  [(set (pc)
+	(if_then_else (match_dup 1)
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))]
   ""
-  "
-{
-  operands[1] = gen_reg_rtx (DImode);
-  operands[2] = gen_rtx_LTU (DImode, alpha_compare_op0, alpha_compare_op1);
-  operands[3] = gen_rtx_EQ (VOIDmode, operands[1], const0_rtx);
-}")
+  "{ operands[1] = alpha_emit_conditional_branch (GEU); }")
 
 (define_expand "seq"
   [(set (match_operand:DI 0 "register_operand" "")
