@@ -671,7 +671,7 @@ rr_replace_reg (x, reg_use, reg_sub, replace_type, insn, status)
 				       replace_type, insn, status);
       else if (replace_type == SOURCE)
 	{
-	  unsigned int dest_subregno;
+	  unsigned int dest_subregno = 0;
 	  int had_subreg = GET_CODE (SET_DEST (x)) == SUBREG;
 
 	  if (had_subreg)

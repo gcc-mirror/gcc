@@ -2490,8 +2490,8 @@ expand_call (exp, target, ignore)
 	 recursion "call".  That way we know any adjustment after the tail
 	 recursion call can be ignored if we indeed use the tail recursion
 	 call expansion.  */
-      int save_pending_stack_adjust;
-      int save_stack_pointer_delta;
+      int save_pending_stack_adjust = 0;
+      int save_stack_pointer_delta = 0;
       rtx insns;
       rtx before_call, next_arg_reg;
 

@@ -26,6 +26,8 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "input.h"
 #include "toplev.h"
+#include "rtl.h"
+#include "expr.h"
 
 /* Type node for boolean types.  */
 
@@ -288,7 +290,7 @@ incomplete_type_error (value, type)
 
 HOST_WIDE_INT
 lang_get_alias_set (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
   /* ??? Need to figure out what the rules are.  Certainly we'd need
      to handle union-like things, and probably variant records. 

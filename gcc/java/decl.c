@@ -48,6 +48,7 @@ static tree push_promoted_type PARAMS ((const char *, tree));
 static struct binding_level *make_binding_level PARAMS ((void));
 static boolean emit_init_test_initialization PARAMS ((struct hash_entry *,
 						      hash_table_key));
+static tree create_primitive_vtable PARAMS ((const char *));
 
 /* Set to non-zero value in order to emit class initilization code
    before static field references.  */

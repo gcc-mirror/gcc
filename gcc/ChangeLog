@@ -1,3 +1,23 @@
+2000-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* bb-reorder.c (build_scope_forest): Initialize variable
+	`curr_scope'.
+
+	* calls.c (expand_call): Likewise for variables
+	`save_pending_stack_adjust' and `save_stack_pointer_delta'.
+
+	* i386.c (function_arg_advance, function_arg): Cast to avoid
+	signed/unsigned warnings.
+
+	* i386.h (MEMORY_MOVE_COST): Likewise.
+
+	* ifcvt.c (cond_exec_process_if_block): Initialize variables
+	`else_start' and `else_end'.
+
+	* libgcc2.h (__eh_alloc, __eh_free): Prototype.
+
+	* regrename.c (rr_replace_reg): Initialize variable `dest_subregno'.
+
 2000-06-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (libintl.a): Depend on intl.all.

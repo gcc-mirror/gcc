@@ -249,6 +249,7 @@ native: config.status ../cc1chill$(exeext) ../chill
 
 # CHILL language specific files.
 
+EXPR_H = $(srcdir)/../expr.h ../insn-codes.h
 RTL_H = $(srcdir)/../rtl.h $(srcdir)/../rtl.def \
 	$(srcdir)/../machmode.h $(srcdir)/../machmode.def
 TREE_H = $(srcdir)/../tree.h $(srcdir)/../real.h $(srcdir)/../tree.def \
@@ -274,8 +275,7 @@ $(srcdir)/hash.h:
 
 actions.o : actions.c $(CONFIG_H) $(CHILL_TREE_H) actions.h $(RTL_H)	\
 	lex.h $(srcdir)/../flags.h $(srcdir)/../input.h			\
-	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../system.h	\
-	$(srcdir)/../toplev.h
+	$(EXPR_H) $(srcdir)/../system.h $(srcdir)/../toplev.h
 convert.o : convert.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../tree.h $(srcdir)/../system.h $(srcdir)/../toplev.h \
 	$(srcdir)/../convert.h
@@ -284,15 +284,15 @@ decl.o : decl.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h lex.h \
 except.o : except.c $(CONFIG_H) $(srcdir)/../tree.h $(RTL_H) $(CHILL_TREE_H) \
 	$(srcdir)/../system.h $(srcdir)/../toplev.h
 expr.o : expr.c $(CONFIG_H) $(RTL_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
-	$(srcdir)/../expr.h ../insn-codes.h $(srcdir)/../tree.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(EXPR_H) $(srcdir)/../tree.h lex.h $(srcdir)/../system.h \
+	$(srcdir)/../toplev.h
 grant.o: grant.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
 	$(srcdir)/../input.h lex.h actions.h $(srcdir)/../system.h \
 	$(srcdir)/../toplev.h $(srcdir)/../output.h
 inout.o : inout.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../flags.h \
 	$(srcdir)/../input.h $(srcdir)/../system.h $(srcdir)/../toplev.h
 lang.o : lang.c $(CONFIG_H) $(CHILL_TREE_H) $(srcdir)/../input.h lex.h \
-	$(srcdir)/../system.h $(srcdir)/../toplev.h
+	$(srcdir)/../system.h $(srcdir)/../toplev.h $(EXPR_H) $(RTL_H)
 lex.o : lex.c $(CONFIG_H) $(CHILL_TREE_H) $(RTL_H) $(srcdir)/../flags.h \
 	$(srcdir)/../input.h $(srcdir)/parse.h $(srcdir)/../system.h	\
 	$(srcdir)/../toplev.h lex.h $(srcdir)/../dwarfout.h hash.h
