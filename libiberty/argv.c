@@ -35,7 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #include <string.h>
 #include <stdlib.h>
 
-#else	/* !__STDC__ */
+#else	/* !ANSI_PROTOTYPES */
 
 #if !defined _WIN32 || defined __GNUC__
 extern char *memcpy ();		/* Copy memory region */
@@ -46,7 +46,7 @@ extern void free ();		/* Free malloc'd memory */
 extern char *strdup ();		/* Duplicate a string */
 #endif
 
-#endif	/* __STDC__ */
+#endif	/* ANSI_PROTOTYPES */
 
 
 #ifndef NULL

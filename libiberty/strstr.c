@@ -27,8 +27,8 @@ strstr (s1, s2)
   register char *p = s1;
   extern char *strchr ();
   extern int strncmp ();
-#if __GNUC__==2
-  extern __SIZE_TYPE__ strlen ();
+#if __GNUC__ >= 2
+  extern __SIZE_TYPE__ strlen (const char *);
 #endif
   register int len = strlen (s2);
 

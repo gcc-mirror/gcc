@@ -423,7 +423,7 @@ atexit.o: config.h
 basename.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
 bsearch.o: config.h $(INCDIR)/ansidecl.h
-calloc.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+calloc.o: $(INCDIR)/ansidecl.h
 choose-temp.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 clock.o: config.h
 concat.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
@@ -431,7 +431,7 @@ copysign.o: $(INCDIR)/ansidecl.h
 cp-demangle.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/demangle.h \
 	$(INCDIR)/dyn-string.h $(INCDIR)/getopt.h $(INCDIR)/libiberty.h
 cplus-dem.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/demangle.h \
-	$(INCDIR)/getopt.h $(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
+	$(INCDIR)/libiberty.h $(INCDIR)/safe-ctype.h
 dyn-string.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/dyn-string.h \
 	$(INCDIR)/libiberty.h
 fdmatch.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
@@ -451,7 +451,8 @@ hex.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 lbasename.o: $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/safe-ctype.h
 lrealpath.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
-make-relative-prefix.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
+make-relative-prefix.o: config.h $(INCDIR)/ansidecl.h \
+	$(INCDIR)/libiberty.h
 make-temp-file.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 md5.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/md5.h
 memchr.o: $(INCDIR)/ansidecl.h
@@ -464,18 +465,23 @@ objalloc.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/objalloc.h
 obstack.o: config.h $(INCDIR)/obstack.h
 partition.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/partition.h
-pex-djgpp.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
-pex-mpw.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
-pex-msdos.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
-	$(INCDIR)/safe-ctype.h
-pex-os2.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
-pex-unix.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
-pex-win32.o: config.h pex-common.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
-physmem.o: config.h $(INCDIR)/libiberty.h
+pex-djgpp.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/pex-common.h
+pex-mpw.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/pex-common.h
+pex-msdos.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/pex-common.h $(INCDIR)/safe-ctype.h
+pex-os2.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/pex-common.h
+pex-unix.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/pex-common.h
+pex-win32.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
+	$(srcdir)/pex-common.h
+physmem.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 putenv.o: config.h $(INCDIR)/ansidecl.h
 random.o: $(INCDIR)/ansidecl.h
 regex.o: config.h $(INCDIR)/xregex.h $(INCDIR)/xregex2.h
-rename.o: config.h
+rename.o: config.h $(INCDIR)/ansidecl.h
 safe-ctype.o: $(INCDIR)/ansidecl.h $(INCDIR)/safe-ctype.h
 setenv.o: config.h $(INCDIR)/ansidecl.h
 sigsetmask.o: $(INCDIR)/ansidecl.h
@@ -486,6 +492,7 @@ splay-tree.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/splay-tree.h
 strcasecmp.o: $(INCDIR)/ansidecl.h
 strchr.o: $(INCDIR)/ansidecl.h
+strdup.o: $(INCDIR)/ansidecl.h
 strerror.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 strncasecmp.o: $(INCDIR)/ansidecl.h
 strncmp.o: $(INCDIR)/ansidecl.h
@@ -498,6 +505,7 @@ ternary.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h \
 	$(INCDIR)/ternary.h
 vasprintf.o: config.h $(INCDIR)/ansidecl.h $(INCDIR)/libiberty.h
 vfork.o: $(INCDIR)/ansidecl.h
+vfprintf.o: $(INCDIR)/ansidecl.h
 vprintf.o: $(INCDIR)/ansidecl.h
 vsprintf.o: $(INCDIR)/ansidecl.h
 waitpid.o: config.h

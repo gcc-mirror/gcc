@@ -634,9 +634,6 @@ htab_traverse (htab, callback, info)
      htab_trav callback;
      PTR info;
 {
-  PTR *slot;
-  PTR *limit;
-
   if ((htab->n_elements - htab->n_deleted) * 8 < htab->size)
     htab_expand (htab);
 
