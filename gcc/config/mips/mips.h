@@ -258,7 +258,7 @@ extern void		text_section ();
 					/* Bits for real switches */
 #define MASK_INT64	0x00000001	/* ints are 64 bits */
 #define MASK_LONG64	0x00000002	/* longs and pointers are 64 bits */
-#define MASK_UNUSED	0x00000004
+#define MASK_SPLIT_ADDR	0x00000004	/* Address splitting is enabled.  */
 #define MASK_GPOPT	0x00000008	/* Optimize for global pointer */
 #define MASK_GAS	0x00000010	/* Gas used instead of MIPS as */
 #define MASK_NAME_REGS	0x00000020	/* Use MIPS s/w reg name convention */
@@ -298,6 +298,9 @@ extern void		text_section ();
 #define TARGET_LONG64		(target_flags & MASK_LONG64)
 #define TARGET_FLOAT64		(target_flags & MASK_FLOAT64)
 #define TARGET_64BIT		(target_flags & MASK_64BIT)
+
+					/* Mips vs. GNU linker */
+#define TARGET_SPLIT_ADDRESSES	(target_flags & MASK_SPLIT_ADDR)
 
 					/* Mips vs. GNU assembler */
 #define TARGET_GAS		(target_flags & MASK_GAS)
@@ -371,6 +374,8 @@ extern void		text_section ();
 {									\
   {"int64",		  MASK_INT64 | MASK_LONG64},			\
   {"long64",		  MASK_LONG64},					\
+  {"split-addresses",	  MASK_SPLIT_ADDR},				\
+  {"no-split-addresses", -MASK_SPLIT_ADDR},				\
   {"mips-as",		 -MASK_GAS},					\
   {"gas",		  MASK_GAS},					\
   {"rnames",		  MASK_NAME_REGS},				\
