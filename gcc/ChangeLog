@@ -1,3 +1,9 @@
+2004-06-23  Richard Henderson  <rth@redhat.com>
+
+	* c-gimplify.c (gimplify_decl_stmt): Push gimplify_one_sizepos inside
+	non-constant size check.  Gimplify the type too.  Tidy building
+	BUILT_IN_STACK_ALLOC call
+
 2004-06-23  Roger Sayle  <roger@eyesopen.com>
 
 	* c-common.c (expand_unordered_cmp): Delete.

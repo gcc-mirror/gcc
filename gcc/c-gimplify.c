@@ -488,25 +488,25 @@ gimplify_decl_stmt (tree *stmt_p)
     {
       tree init = DECL_INITIAL (decl);
 
-      gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
-      gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
-
       if (!TREE_CONSTANT (DECL_SIZE (decl)))
 	{
 	  /* This is a variable-sized decl.  Simplify its size and mark it
 	     for deferred expansion.  Note that mudflap depends on the format
 	     of the emitted code: see mx_register_decls().  */
 
-	  tree pt_type = build_pointer_type (TREE_TYPE (decl));
-	  tree alloc_stmt
-	    = (build_function_call_expr
-	       (implicit_built_in_decls[BUILT_IN_STACK_ALLOC],
-		tree_cons (NULL_TREE,
-			   build1 (ADDR_EXPR, pt_type, decl),
-			   tree_cons (NULL_TREE, DECL_SIZE_UNIT (decl),
-				      NULL_TREE))));
+	  tree t, args;
 
-	  gimplify_and_add (alloc_stmt, stmt_p);
+	  gimplify_type_sizes (TREE_TYPE (decl), stmt_p);
+	  gimplify_one_sizepos (&DECL_SIZE (decl), stmt_p);
+	  gimplify_one_sizepos (&DECL_SIZE_UNIT (decl), stmt_p);
+
+	  args = tree_cons (NULL, DECL_SIZE_UNIT (decl), NULL);
+	  t = build_fold_addr_expr (decl);
+	  args = tree_cons (NULL, t, args);
+	  t = implicit_built_in_decls[BUILT_IN_STACK_ALLOC];
+	  t = build_function_call_expr (t, args);
+
+	  gimplify_and_add (t, stmt_p);
 	  DECL_DEFER_OUTPUT (decl) = 1;
 	}
 
