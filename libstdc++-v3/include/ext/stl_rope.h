@@ -483,6 +483,7 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
     bool _M_is_balanced:8;
     unsigned char _M_depth;
     __GC_CONST _CharT* _M_c_string;
+    __gthread_mutex_t _M_c_string_lock;
                         /* Flattened version of string, if needed.  */
                         /* typically 0.                             */
                         /* If it's not 0, then the memory is owned  */
@@ -498,7 +499,12 @@ struct _Rope_RopeRep : public _Rope_rep_base<_CharT,_Alloc>
           _Refcount_Base(1),
 #         endif
           _M_tag(__t), _M_is_balanced(__b), _M_depth(__d), _M_c_string(0)
+#ifdef __GTHREAD_MUTEX_INIT
+	  , _M_c_string_lock (__GTHREAD_MUTEX_INIT)
     { }
+#else
+    { __GTHREAD_MUTEX_INIT_FUNCTION (&_M_c_string_lock); }
+#endif
 #   ifdef __GC
         void _M_incr () {}
 #   endif

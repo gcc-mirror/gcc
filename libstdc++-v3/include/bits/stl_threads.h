@@ -97,35 +97,6 @@ namespace std
       return __tmp;
     }
   };
-
-  // Atomic swap on unsigned long
-  // This is guaranteed to behave as though it were atomic only if all
-  // possibly concurrent updates use _Atomic_swap.
-  // In some cases the operation is emulated with a lock.
-#if defined (__GTHREAD_MUTEX_INIT)
-  // This could be optimized to use the atomicity.h abstraction layer.
-  // vyzo: simple _Atomic_swap implementation following the guidelines above
-  // We use a template here only to get a unique initialized instance.
-  template<int __dummy>
-    struct _Swap_lock_struct 
-    { static __gthread_mutex_t _S_swap_lock; };
-
-  template<int __dummy>
-    __gthread_mutex_t
-    _Swap_lock_struct<__dummy>::_S_swap_lock = __GTHREAD_MUTEX_INIT;
-
-  // This should be portable, but performance is expected to be quite
-  // awful.  This really needs platform specific code.
-  inline unsigned long 
-  _Atomic_swap(unsigned long * __p, unsigned long __q) 
-  {
-    __gthread_mutex_lock(&_Swap_lock_struct<0>::_S_swap_lock);
-    unsigned long __result = *__p;
-    *__p = __q;
-    __gthread_mutex_unlock(&_Swap_lock_struct<0>::_S_swap_lock);
-    return __result;
-  }
-#endif
 } //namespace std
 
   // Locking class.  Note that this class *does not have a
