@@ -9175,7 +9175,7 @@
 	     (match_operand:SI 1 "" "")
 	     (match_operand:SI 2 "" ""))]
   "TARGET_ARM && arm_arch5e"
-  "pld\\t[%0]")
+  "pld\\t%a0")
 
 ;; General predication pattern
 
