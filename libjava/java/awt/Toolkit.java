@@ -21,7 +21,6 @@ import gnu.gcj.awt.GLightweightPeer;
 public abstract class Toolkit
 {
   static Toolkit defaultToolkit;
-  static EventQueue systemEventQueue = new EventQueue();
   PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
   Hashtable desktopProperties = new Hashtable();
 
@@ -33,7 +32,7 @@ public abstract class Toolkit
     Class toolkit_class;
     String tk_class_name = System.getProperty("awt.toolkit");
     if (tk_class_name == null)
-      tk_class_name = "gnu.awt.peer.gtk.GTKToolkit";
+      tk_class_name = "gnu.awt.gtk.GtkToolkit";
 
     try
     {

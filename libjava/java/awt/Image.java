@@ -24,7 +24,7 @@ import java.awt.image.ImageProducer;
 
 public abstract class Image extends Object
 {
-  public static final Object UndefinedProperty;
+  public static final Object UndefinedProperty = new Object();
 
   public static final int SCALE_DEFAULT        = 1<<0,
                           SCALE_FAST           = 1<<1,
