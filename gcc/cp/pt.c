@@ -5220,8 +5220,6 @@ tsubst_copy (t, args, in_decl)
 	if (TREE_CODE (name) == BIT_NOT_EXPR)
 	  {
 	    name = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
-	    if (TREE_CODE (name) != IDENTIFIER_NODE)
-	      name = TYPE_MAIN_VARIANT (name);
 	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
 	  }
 	else if (TREE_CODE (name) == SCOPE_REF
@@ -5230,8 +5228,6 @@ tsubst_copy (t, args, in_decl)
 	    tree base = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
 	    name = TREE_OPERAND (name, 1);
 	    name = tsubst_copy (TREE_OPERAND (name, 0), args, in_decl);
-	    if (TREE_CODE (name) != IDENTIFIER_NODE)
-	      name = TYPE_MAIN_VARIANT (name);
 	    name = build1 (BIT_NOT_EXPR, NULL_TREE, name);
 	    name = build_nt (SCOPE_REF, base, name);
 	  }

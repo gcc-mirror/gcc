@@ -327,7 +327,10 @@ yylex ()
 	    case NSNAME:
 	    case PTYPENAME:
 	      lastiddecl = trrr;
-	      if (got_scope)
+
+	      /* If this got special lookup, remember it.  In these cases,
+	         we don't have to worry about being a declarator-id. */
+	      if (got_scope || got_object)
 		tmp_token.yylval.ttype = trrr;
 	      break;
 
@@ -379,7 +382,11 @@ yylex ()
       consume_token ();
     }
 
-  got_object = NULL_TREE;
+  /* class member lookup only applies to the first token after the object
+     expression, except for explicit destructor calls.  */
+  if (tmp_token.yychar != '~')
+    got_object = NULL_TREE;
+
   yylval = tmp_token.yylval;
   yychar = tmp_token.yychar;
   end_of_file = tmp_token.end_of_file;
