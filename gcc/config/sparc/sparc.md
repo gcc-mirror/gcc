@@ -80,23 +80,11 @@
   (cond [(symbol_ref "TARGET_ARCH64") (const_string "arch64bit")]
 	(const_string "arch32bit"))))
 
-;; Insn type.  Used to default other attribute values.
-
-;; type "unary" insns have one input operand (1) and one output operand (0)
-;; type "binary" insns have two input operands (1,2) and one output (0)
-;; type "compare" insns have one or two input operands (0,1) and no output
-;; type "call_no_delay_slot" is a call followed by an unimp instruction.
+;; Insn type.
 
 (define_attr "type"
-  "move,unary,binary,compare,load,sload,store,ialu,shift,uncond_branch,branch,call,sibcall,call_no_delay_slot,return,address,imul,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
-  (const_string "binary"))
-
-;; Set true if insn uses call-clobbered intermediate register.
-(define_attr "use_clobbered" "false,true"
-  (if_then_else (and (eq_attr "type" "address")
-		     (match_operand 0 "clobbered_register" ""))
-	 	(const_string "true")
-		(const_string "false")))
+  "ialu,compare,shift,load,sload,store,uncond_branch,branch,call,sibcall,call_no_delay_slot,return,imul,fpload,fpstore,fp,fpmove,fpcmove,fpcmp,fpmul,fpdivs,fpdivd,fpsqrts,fpsqrtd,cmove,multi,misc"
+  (const_string "ialu"))
 
 ;; Length (in # of insns).
 (define_attr "length" ""
@@ -108,16 +96,14 @@
 	 (if_then_else (match_operand 0 "symbolic_memory_operand" "")
 		       (const_int 2) (const_int 1))
 
-	 (eq_attr "type" "address") (const_int 2)
-
-	 (eq_attr "type" "binary")
+	 (eq_attr "type" "ialu")
 	 (if_then_else (ior (match_operand 2 "arith_operand" "")
 			    (match_operand 2 "arith_double_operand" ""))
 		       (const_int 1) (const_int 3))
 
 	 (eq_attr "type" "multi") (const_int 2)
 
-	 (eq_attr "type" "move,unary")
+	 (eq_attr "type" "ialu")
 	 (if_then_else (ior (match_operand 1 "arith_operand" "")
 			    (match_operand 1 "arith_double_operand" ""))
 		       (const_int 1) (const_int 2))]
@@ -135,10 +121,6 @@
 	 	(const_string "false")
 	 (eq_attr "type" "load,fpload,store,fpstore")
 	 	(if_then_else (eq_attr "length" "1")
-			      (const_string "true")
-			      (const_string "false"))
-	 (eq_attr "type" "address")
-	 	(if_then_else (eq_attr "use_clobbered" "false")
 			      (const_string "true")
 			      (const_string "false"))]
 	(if_then_else (eq_attr "length" "1")
@@ -161,7 +143,7 @@
   (symbol_ref "eligible_for_return_delay (insn)"))
 
 (define_attr "in_return_delay" "false,true"
-  (if_then_else (and (and (and (eq_attr "type" "move,load,sload,store,binary,ialu")
+  (if_then_else (and (and (and (eq_attr "type" "ialu,load,sload,store")
 			       (eq_attr "length" "1"))
 			  (eq_attr "leaf_function" "false"))
 		     (eq_attr "eligible_for_return_delay" "false"))
@@ -221,9 +203,6 @@
 
 ;; On the sparclite, integer multiply takes 1, 3, or 5 cycles depending on
 ;; the inputs.
-
-;; (define_function_unit "alu" 1 0
-;;  (eq_attr "type" "unary,binary,move,address") 1 0)
 
 ;; ---- cypress CY7C602 scheduling:
 ;; Memory with load-delay of 1 (i.e., 2 cycle load).
@@ -459,7 +438,7 @@
 
 (define_function_unit "ieuN" 2 0
   (and (eq_attr "cpu" "ultrasparc")
-    (eq_attr "type" "ialu,binary,move,unary,shift,compare,call,sibcall,call_no_delay_slot,uncond_branch"))
+    (eq_attr "type" "ialu,shift,compare,call,sibcall,call_no_delay_slot,uncond_branch"))
   1 1)
 
 (define_function_unit "ieu0" 1 0
@@ -1157,8 +1136,7 @@
    (clobber (reg:CC 100))]
   "TARGET_ARCH64"
   "#"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1287,8 +1265,7 @@
    (clobber (reg:CC 100))]
   "TARGET_ARCH64"
   "#"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -2094,7 +2071,7 @@
 ;;   [(set (match_operand 0 "register_operand" "=r") (pc))]
 ;;   "TARGET_V9"
 ;;   "rd\\t%%pc, %0"
-;;   [(set_attr "type" "move")])
+;;   [(set_attr "type" "misc")])
 
 
 ;; Move instructions
@@ -2165,7 +2142,7 @@
    mov\\t%1, %0
    ldub\\t%1, %0
    stb\\t%r1, %0"
-  [(set_attr "type" "move,load,store")
+  [(set_attr "type" "*,load,store")
    (set_attr "length" "1")])
 
 (define_expand "movhi"
@@ -2229,8 +2206,7 @@
 	(match_operand:HI 1 "const64_high_operand" ""))]
   "TARGET_ARCH64"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*movhi_insn"
   [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r,m")
@@ -2242,7 +2218,7 @@
    sethi\\t%%hi(%a1), %0
    lduh\\t%1, %0
    sth\\t%r1, %0"
-  [(set_attr "type" "move,move,load,store")
+  [(set_attr "type" "*,*,load,store")
    (set_attr "length" "1")])
 
 ;; We always work with constants here.
@@ -2334,8 +2310,7 @@
 	(match_operand:SI 1 "const64_high_operand" ""))]
   "TARGET_ARCH64"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*movsi_insn"
   [(set (match_operand:SI 0 "nonimmediate_operand" "=r,f,r,r,r,f,m,m,d")
@@ -2352,7 +2327,7 @@
    st\\t%r1, %0
    st\\t%1, %0
    fzeros\\t%0"
-  [(set_attr "type" "move,fpmove,move,move,load,fpload,store,fpstore,fpmove")
+  [(set_attr "type" "*,fpmove,*,*,load,fpload,store,fpstore,fpmove")
    (set_attr "length" "1")])
 
 (define_insn "*movsi_lo_sum"
@@ -2369,8 +2344,7 @@
 	(high:SI (match_operand:SI 1 "immediate_operand" "in")))]
   ""
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 ;; The next two patterns must wrap the SYMBOL_REF in an UNSPEC
 ;; so that CSE won't optimize the address computation away.
@@ -2388,8 +2362,7 @@
         (high:SI (unspec:SI [(match_operand 1 "" "")] 0)))]
   "flag_pic && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_expand "movsi_pic_label_ref"
   [(set (match_dup 3) (high:SI
@@ -2424,8 +2397,7 @@
 		    (match_operand:SI 2 "" "")] 5)))]
   "flag_pic"
   "sethi\\t%%hi(%a2-(%a1-.)), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*movsi_lo_sum_pic_label_ref"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2561,8 +2533,7 @@
   "(TARGET_ARCH64
     && HOST_BITS_PER_WIDE_INT != 64)"
   "mov\\t%1, %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 ;; This is needed to show CSE exactly which bits are set
 ;; in a 64-bit register by sethi instructions.
@@ -2571,8 +2542,7 @@
 	(match_operand:DI 1 "const64_high_operand" ""))]
   "TARGET_ARCH64"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*movdi_insn_sp64_novis"
   [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m")
@@ -2589,7 +2559,7 @@
    fmovd\\t%1, %0
    ldd\\t%1, %0
    std\\t%1, %0"
-  [(set_attr "type" "move,move,move,load,store,fpmove,fpload,fpstore")
+  [(set_attr "type" "*,*,*,load,store,fpmove,fpload,fpstore")
    (set_attr "length" "1")])
 
 (define_insn "*movdi_insn_sp64_vis"
@@ -2608,7 +2578,7 @@
    ldd\\t%1, %0
    std\\t%1, %0
    fzero\\t%0"
-  [(set_attr "type" "move,move,move,load,store,fpmove,fpload,fpstore,fpmove")
+  [(set_attr "type" "*,*,*,load,store,fpmove,fpload,fpstore,fpmove")
    (set_attr "length" "1")])
 
 (define_expand "movdi_pic_label_ref"
@@ -2644,8 +2614,7 @@
                       (match_operand:DI 2 "" "")] 5)))]
   "TARGET_ARCH64 && flag_pic"
   "sethi\\t%%hi(%a2-(%a1-.)), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*movdi_lo_sum_pic_label_ref"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2674,24 +2643,21 @@
         (high:DI (unspec:DI [(match_operand 1 "" "")] 0)))]
   "TARGET_ARCH64 && flag_pic && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*sethi_di_medlow_embmedany_pic"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (match_operand:DI 1 "sp64_medium_pic_operand" "")))]
   "(TARGET_CM_MEDLOW || TARGET_CM_EMBMEDANY) && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*sethi_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (match_operand:DI 1 "symbolic_operand" "")))]
   "TARGET_CM_MEDLOW && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*losum_di_medlow"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2707,8 +2673,7 @@
         (high:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")] 6)))]
   "TARGET_CM_MEDMID"
   "sethi\\t%%h44(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "setm44"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2716,8 +2681,7 @@
                    (unspec:DI [(match_operand:DI 2 "symbolic_operand" "")] 7)))]
   "TARGET_CM_MEDMID"
   "or\\t%1, %%m44(%a2), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "setl44"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2733,16 +2697,14 @@
         (high:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")] 9)))]
   "TARGET_CM_MEDANY"
   "sethi\\t%%hh(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "setlm"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "symbolic_operand" "")] 10)))]
   "TARGET_CM_MEDANY"
   "sethi\\t%%lm(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "sethm"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2767,8 +2729,7 @@
         (high:DI (unspec:DI [(match_operand:DI 1 "data_segment_operand" "")] 11)))]
   "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "embmedany_losum"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -2791,16 +2752,14 @@
         (high:DI (unspec:DI [(match_operand:DI 1 "text_segment_operand" "")] 13)))]
   "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi\\t%%uhi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "embmedany_texthi"
   [(set (match_operand:DI 0 "register_operand" "=r")
         (high:DI (unspec:DI [(match_operand:DI 1 "text_segment_operand" "")] 14)))]
   "TARGET_CM_EMBMEDANY && check_pic (1)"
   "sethi\\t%%hi(%a1), %0"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "embmedany_textulo"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -3038,7 +2997,7 @@
       abort();
     }
 }"
-  [(set_attr "type" "fpmove,move,move,move,*,load,fpload,fpstore,store")
+  [(set_attr "type" "fpmove,*,*,*,*,load,fpload,fpstore,store")
    (set_attr "length" "1")])
 
 (define_insn "*movsf_insn_vis"
@@ -3087,7 +3046,7 @@
       abort();
     }
 }"
-  [(set_attr "type" "fpmove,fpmove,move,move,move,*,load,fpload,fpstore,store")
+  [(set_attr "type" "fpmove,fpmove,*,*,*,*,load,fpload,fpstore,store")
    (set_attr "length" "1")])
 
 ;; Exactly the same as above, except that all `f' cases are deleted.
@@ -3134,7 +3093,7 @@
       abort();
     }
 }"
-  [(set_attr "type" "move,move,move,*,load,store")
+  [(set_attr "type" "*,*,*,*,load,store")
    (set_attr "length" "1")])
 
 (define_insn "*movsf_lo_sum"
@@ -3169,8 +3128,7 @@
   operands[1] = GEN_INT (i);
   return \"sethi\\t%%hi(%1), %0\";
 }"
-  [(set_attr "type" "move")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
@@ -3431,7 +3389,7 @@
   ldx\\t%1, %0
   stx\\t%r1, %0
   #"
-  [(set_attr "type" "fpmove,load,store,move,load,store,*")
+  [(set_attr "type" "fpmove,load,store,*,load,store,*")
    (set_attr "length" "1,1,1,1,1,1,2")])
 
 ;; We have available both v9 double floats and 64-bit
@@ -3454,7 +3412,7 @@
   ldx\\t%1, %0
   stx\\t%r1, %0
   #"
-  [(set_attr "type" "fpmove,fpmove,load,store,move,load,store,*")
+  [(set_attr "type" "fpmove,fpmove,load,store,*,load,store,*")
    (set_attr "length" "1,1,1,1,1,1,1,2")])
 
 (define_insn "*movdf_no_e_insn_sp64"
@@ -3469,7 +3427,7 @@
   mov\\t%1, %0
   ldx\\t%1, %0
   stx\\t%r1, %0"
-  [(set_attr "type" "move,load,store")
+  [(set_attr "type" "*,load,store")
    (set_attr "length" "1")])
 
 (define_split
@@ -4600,7 +4558,7 @@
   "@
    and\\t%1, 0xff, %0
    ldub\\t%1, %0"
-  [(set_attr "type" "unary,load")
+  [(set_attr "type" "ialu,load")
    (set_attr "length" "1")])
 
 (define_expand "zero_extendqisi2"
@@ -4616,7 +4574,7 @@
   "@
    and\\t%1, 0xff, %0
    ldub\\t%1, %0"
-  [(set_attr "type" "unary,load")
+  [(set_attr "type" "ialu,load")
    (set_attr "length" "1")])
 
 (define_expand "zero_extendqidi2"
@@ -4632,7 +4590,7 @@
   "@
    and\\t%1, 0xff, %0
    ldub\\t%1, %0"
-  [(set_attr "type" "unary,load")
+  [(set_attr "type" "ialu,load")
    (set_attr "length" "1")])
 
 (define_expand "zero_extendhidi2"
@@ -4691,8 +4649,7 @@
         (zero_extend:DI (match_operand:SI 1 "register_operand" "r")))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5691,8 +5648,7 @@
 		 (ltu:SI (reg:CC_NOOV 100) (const_int 0))))]
   ""
   "addx\\t%1, %2, %0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*addx_extend_sp32"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -5701,8 +5657,7 @@
                                  (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5753,8 +5708,7 @@
                                   (ltu:SI (reg:CC_NOOV 100) (const_int 0)))))]
   "! TARGET_ARCH64"
   "#"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -5802,8 +5756,7 @@
 		 (match_operand:DI 2 "arith_double_operand" "rHI")))]
   "TARGET_ARCH64"
   "add\\t%1, %2, %0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
@@ -6006,8 +5959,7 @@
 		  (match_operand:DI 2 "arith_double_operand" "rHI")))]
   "TARGET_ARCH64"
   "sub\\t%1, %2, %0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_expand "subsi3"
   [(set (match_operand:SI 0 "register_operand" "=r,d")
@@ -7293,8 +7245,7 @@
    (clobber (reg:CC 100))]
   "TARGET_ARCH32"
   "#"
-  [(set_attr "type" "unary")
-   (set_attr "length" "2")])
+  [(set_attr "length" "2")])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand" "")
@@ -7318,16 +7269,14 @@
 	(neg:DI (match_operand:DI 1 "register_operand" "r")))]
   "TARGET_ARCH64"
   "sub\\t%%g0, %1, %0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "register_operand" "=r")
         (neg:SI (match_operand:SI 1 "arith_operand" "rI")))]
   ""
   "sub\\t%%g0, %1, %0"
-  [(set_attr "type" "unary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*cmp_cc_neg"
   [(set (reg:CC_NOOV 100)
@@ -7384,7 +7333,7 @@
   "@
    #
    fnot1\\t%1, %0"
-  [(set_attr "type" "unary,fp")
+  [(set_attr "type" "*,fp")
    (set_attr "length" "2,1")])
 
 (define_split
@@ -7413,7 +7362,7 @@
   "@
    xnor\\t%%g0, %1, %0
    fnot1\\t%1, %0"
-  [(set_attr "type" "unary,fp")
+  [(set_attr "type" "*,fp")
    (set_attr "length" "1")])
 
 (define_insn "one_cmplsi2"
@@ -7423,7 +7372,7 @@
   "@
   xnor\\t%%g0, %1, %0
   fnot1s\\t%1, %0"
-  [(set_attr "type" "unary,fp")
+  [(set_attr "type" "*,fp")
    (set_attr "length" "1,1")])
 
 (define_insn "*cmp_cc_not"
@@ -8090,8 +8039,7 @@
                    (const_int 1)))]
   ""
   "add\\t%1, %1, %0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_expand "ashldi3"
   [(set (match_operand:DI 0 "register_operand" "=r")
@@ -8117,8 +8065,7 @@
 		   (const_int 1)))]
   "TARGET_ARCH64"
   "add\\t%1, %1, %0"
-  [(set_attr "type" "binary")
-   (set_attr "length" "1")])
+  [(set_attr "length" "1")])
 
 (define_insn "*ashldi3_sp64"
   [(set (match_operand:DI 0 "register_operand" "=r")

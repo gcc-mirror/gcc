@@ -7286,8 +7286,7 @@ ultrasparc_adjust_cost (insn, link, dep_insn, cost)
 	     or the cycle after an instruction which writes any
 	     integer register.  Model this as cost 2 for dependent
 	     instructions.  */
-	  if ((dep_type == TYPE_IALU || dep_type == TYPE_UNARY
-	       || dep_type == TYPE_BINARY)
+	  if (dep_type == TYPE_IALU
 	      && cost < 2)
 	    return 2;
 	  /* Otherwise check as for integer conditional moves. */
@@ -7428,8 +7427,7 @@ ultra_code_from_mask (type_mask)
 			TMASK (TYPE_SIBCALL) |
 			TMASK (TYPE_UNCOND_BRANCH)))
     return IEU1;
-  else if (type_mask & (TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
-			TMASK (TYPE_MOVE) | TMASK (TYPE_UNARY)))
+  else if (type_mask & TMASK (TYPE_IALU))
     return IEUN;
   else if (type_mask & (TMASK (TYPE_LOAD) | TMASK (TYPE_SLOAD) |
 			TMASK (TYPE_STORE) | TMASK (TYPE_FPLOAD) |
@@ -7906,7 +7904,7 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
       {
 	/* If the pipeline is (still) empty and we have any single
 	   group insns, get them out now as this is a good time.  */
-	rtx *ip = ultra_find_type ((TMASK (TYPE_RETURN) | TMASK (TYPE_ADDRESS) |
+	rtx *ip = ultra_find_type ((TMASK (TYPE_RETURN) |
 				    TMASK (TYPE_IMUL) | TMASK (TYPE_CMOVE) |
 				    TMASK (TYPE_MULTI) | TMASK (TYPE_MISC)),
 				   ready, this_insn);
@@ -7960,8 +7958,7 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
     if ((up->free_slot_mask & 0x7) != 0
 	&& up->num_ieu_insns < 2)
       {
-	rtx *ip = ultra_find_type ((TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
-				    TMASK (TYPE_MOVE) | TMASK (TYPE_UNARY) |
+	rtx *ip = ultra_find_type ((TMASK (TYPE_IALU) |
 				    (up->contents[IEU1] == 0 ? TMASK (TYPE_COMPARE) : 0)),
 				   ready, this_insn);
 	if (ip)
@@ -7982,8 +7979,7 @@ ultrasparc_sched_reorder (dump, sched_verbose, ready, n_ready)
 	&& up->num_ieu_insns < 2)
       {
 	rtx *ip;
-	int tmask = (TMASK (TYPE_IALU) | TMASK (TYPE_BINARY) |
-		     TMASK (TYPE_MOVE) | TMASK (TYPE_UNARY));
+	int tmask = TMASK (TYPE_IALU);
 
 	if (!up->contents[IEU1])
 	  tmask |= TMASK (TYPE_COMPARE);
