@@ -90,7 +90,7 @@ cp_convert_to_pointer (type, expr, force)
 	  return error_mark_node;
 	}
 
-      rval = build_type_conversion (type, expr, 1);
+      rval = build_type_conversion (type, expr);
       if (rval)
 	{
 	  if (rval == error_mark_node)
@@ -148,31 +148,33 @@ cp_convert_to_pointer (type, expr, force)
 	{
 	  enum tree_code code = PLUS_EXPR;
 	  tree binfo;
+	  tree intype_class;
+	  tree type_class;
+	  bool same_p;
 
+	  intype_class = TREE_TYPE (intype);
+	  type_class = TREE_TYPE (type);
+
+	  same_p = same_type_p (TYPE_MAIN_VARIANT (intype_class), 
+				TYPE_MAIN_VARIANT (type_class));
+	  binfo = NULL_TREE;
 	  /* Try derived to base conversion.  */
-	  binfo = lookup_base (TREE_TYPE (intype), TREE_TYPE (type),
-			       ba_check, NULL);
-	  if (!binfo)
+	  if (!same_p)
+	    binfo = lookup_base (intype_class, type_class, ba_check, NULL);
+	  if (!same_p && !binfo)
 	    {
 	      /* Try base to derived conversion.  */
-	      binfo = lookup_base (TREE_TYPE (type), TREE_TYPE (intype),
-				   ba_check, NULL);
+	      binfo = lookup_base (type_class, intype_class, ba_check, NULL);
 	      code = MINUS_EXPR;
 	    }
 	  if (binfo == error_mark_node)
 	    return error_mark_node;
-	  if (binfo)
+	  if (binfo || same_p)
 	    {
-	      expr = build_base_path (code, expr, binfo, 0);
+	      if (binfo)
+		expr = build_base_path (code, expr, binfo, 0);
 	      /* Add any qualifier conversions.  */
-	      if (!same_type_p (TREE_TYPE (TREE_TYPE (expr)),
-				TREE_TYPE (type)))
-		{
-		  expr = build1 (NOP_EXPR, type, expr);
-		  TREE_CONSTANT (expr) =
-		    TREE_CONSTANT (TREE_OPERAND (expr, 0));
-		}
-	      return expr;
+	      return build_nop (type, expr);
 	    }
 	}
 
@@ -225,9 +227,7 @@ cp_convert_to_pointer (type, expr, force)
 	  return error_mark_node;
 	}
 
-      rval = build1 (NOP_EXPR, type, expr);
-      TREE_CONSTANT (rval) = TREE_CONSTANT (expr);
-      return rval;
+      return build_nop (type, expr);
     }
   else if (TYPE_PTRMEMFUNC_P (type) && TYPE_PTRMEMFUNC_P (intype))
     return build_ptrmemfunc (TYPE_PTRMEMFUNC_FN_TYPE (type), expr, 0);
@@ -327,14 +327,9 @@ convert_to_pointer_force (type, expr)
 	      /* Add any qualifier conversions.  */
 	      if (!same_type_p (TREE_TYPE (TREE_TYPE (expr)),
 				TREE_TYPE (type)))
-		{
-		  expr = build1 (NOP_EXPR, type, expr);
-		  TREE_CONSTANT (expr) =
-		    TREE_CONSTANT (TREE_OPERAND (expr, 0));
-		}
+		expr = build_nop (type, expr);
 	      return expr;
 	    }
-	  
 	}
     }
 
@@ -357,7 +352,6 @@ build_up_reference (type, arg, flags, decl)
   tree rval;
   tree argtype = TREE_TYPE (arg);
   tree target_type = TREE_TYPE (type);
-  tree stmt_expr = NULL_TREE;
 
   my_friendly_assert (TREE_CODE (type) == REFERENCE_TYPE, 187);
 
@@ -367,25 +361,7 @@ build_up_reference (type, arg, flags, decl)
 	 here because it needs to live as long as DECL.  */
       tree targ = arg;
 
-      arg = build_decl (VAR_DECL, NULL_TREE, argtype);
-      DECL_ARTIFICIAL (arg) = 1;
-      TREE_USED (arg) = 1;
-      TREE_STATIC (arg) = TREE_STATIC (decl);
-
-      if (TREE_STATIC (decl))
-	{
-	  /* Namespace-scope or local static; give it a mangled name.  */
-	  tree name = mangle_ref_init_variable (decl);
-	  DECL_NAME (arg) = name;
-	  SET_DECL_ASSEMBLER_NAME (arg, name);
-	  arg = pushdecl_top_level (arg);
-	}
-      else
-	{
-	  /* Automatic; make sure we handle the cleanup properly.  */
-	  maybe_push_cleanup_level (argtype);
-	  arg = pushdecl (arg);
-	}
+      arg = make_temporary_var_for_ref_to_temp (decl);
 
       /* Process the initializer for the declaration.  */
       DECL_INITIAL (arg) = targ;
@@ -418,16 +394,7 @@ build_up_reference (type, arg, flags, decl)
   else
     rval
       = convert_to_pointer_force (build_pointer_type (target_type), rval);
-  rval = build1 (NOP_EXPR, type, rval);
-  TREE_CONSTANT (rval) = TREE_CONSTANT (TREE_OPERAND (rval, 0));
-
-  /* If we created and initialized a new temporary variable, add the
-     representation of that initialization to the RVAL.  */
-  if (stmt_expr)
-    rval = build (COMPOUND_EXPR, TREE_TYPE (rval), stmt_expr, rval);
-
-  /* And return the result.  */
-  return rval;
+  return build_nop (type, rval);
 }
 
 /* Subroutine of convert_to_reference. REFTYPE is the target reference type.
@@ -509,7 +476,7 @@ convert_to_reference (reftype, expr, convtype, flags, decl)
       /* Look for a user-defined conversion to lvalue that we can use.  */
 
       rval_as_conversion
-	= build_type_conversion (reftype, expr, 1);
+	= build_type_conversion (reftype, expr);
 
       if (rval_as_conversion && rval_as_conversion != error_mark_node
 	  && real_lvalue_p (rval_as_conversion))
@@ -706,7 +673,7 @@ ocp_convert (type, expr, convtype, flags)
       if (IS_AGGR_TYPE (intype))
 	{
 	  tree rval;
-	  rval = build_type_conversion (type, e, 1);
+	  rval = build_type_conversion (type, e);
 	  if (rval)
 	    return rval;
 	  if (flags & LOOKUP_COMPLAIN)
@@ -742,7 +709,7 @@ ocp_convert (type, expr, convtype, flags)
       if (IS_AGGR_TYPE (TREE_TYPE (e)))
 	{
 	  tree rval;
-	  rval = build_type_conversion (type, e, 1);
+	  rval = build_type_conversion (type, e);
 	  if (rval)
 	    return rval;
 	  else
@@ -1022,26 +989,18 @@ convert_force (type, expr, convtype)
    allowed (references private members, etc).
    If no conversion exists, NULL_TREE is returned.
 
-   If (FOR_SURE & 1) is nonzero, then we allow this type conversion
-   to take place immediately.  Otherwise, we build a SAVE_EXPR
-   which can be evaluated if the results are ever needed.
-
-   Changes to this functions should be mirrored in user_harshness.
-
    FIXME: Ambiguity checking is wrong.  Should choose one by the implicit
    object parameter, or by the second standard conversion sequence if
    that doesn't do it.  This will probably wait for an overloading rewrite.
    (jason 8/9/95)  */
 
 tree
-build_type_conversion (xtype, expr, for_sure)
+build_type_conversion (xtype, expr)
      tree xtype, expr;
-     int for_sure;
 {
   /* C++: check to see if we can convert this aggregate type
      into the required type.  */
-  return build_user_type_conversion
-    (xtype, expr, for_sure ? LOOKUP_NORMAL : 0);
+  return build_user_type_conversion (xtype, expr, LOOKUP_NORMAL);
 }
 
 /* Convert the given EXPR to one of a group of types suitable for use in an

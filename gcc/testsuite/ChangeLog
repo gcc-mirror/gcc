@@ -1,3 +1,8 @@
+2003-03-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9878
+	* g++.dg/init/ref1.C: New test.
+
 2003-03-02  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* gcc.c-torture/execute/960312-1.x: New file, must pass -mshort

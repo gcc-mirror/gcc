@@ -1,3 +1,52 @@
+2003-03-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9878
+	* call.c (convert_class_to_reference): Correct conversion
+	sequences.
+	(reference_binding): Add ref_bound_directly_to_rvalue_p parameter.
+	(implicit_conversion): Adjust call to reference_binding.
+	(add_candidate): Change type of candidates parameter.
+	(add_function_candidate): Likewise.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(add_builtin_candidate): Likewise.
+	(add_builtin_candidates): Likewise.
+	(add_template_candidate_real): Likewise.
+	(add_template_candidate): Likewise.
+	(add_template_conv_candidate): Likewise.
+	(build_user_type_conversion_1): Adjust accordingly.
+	(build_object_call): Likewise.
+	(build_conditional_expr): Likewise.
+	(add_candidates): Likewise.
+	(build_new_op): Likewise.
+	(convert_like_real): Use USER_CONV_CAND.  Use build_nop.
+	(build_new_method_call): Adjust calls to add_function_candidate.
+	(make_temporary_var_for_ref_to_temp): New function.
+	(initialize_reference): Add decl parameter.
+	* class.c (build_rtti_vtbl_entries): Use build_address and
+	build_nop.
+	* cp-tree.h (initialize_reference): Change prototype.
+	(make_temporary_var_for_ref_to_temp): New function.
+	(build_type_conversion): Change prototype.
+	(build_address): New function.
+	(build_nop): Likewise.
+	* cvt.c (cp_convert_to_pointer): Adjust call to
+	build_type_conversion.  Avoid indicating redundant NOP_EXPRs.
+	Use build_nop.
+	(convert_to_pointer_force): Use build_nop.
+	(build_up_reference): Use make_temporary_var_for_ref_to_temp.
+	(convert_to_reference): Adjust call to build_type_conversion.
+	(ocp_convert): Likewise.
+	(build_type_conversion): Remove for_sure parameter.
+	* decl.c (grok_reference_init): Use initialize_reference.
+	* typeck.c (build_address): New function.
+	(build_nop): Likewise.
+	(build_unary_op): Use them.
+	(build_ptrmemfunc): Tidy slightly.
+	(convert_for_initialization): Adjust call to
+	initialize_reference.
+	* typeck2.c (store_init_value): Remove #if 0'd code.
+
 2003-03-02  Ashif Harji  <asharji@uwaterloo.ca>
 
 	* lang-specs.h (default_compilers): Add -no-integrated-cpp flag to

@@ -941,6 +941,12 @@ extern GTY(()) tree global_namespace;
 #define ansi_assopname(CODE) \
   (assignment_operator_name_info[(int) (CODE)].identifier)
 
+/* True if NODE is an erroneous expression.  */
+
+#define error_operand_p(NODE)					\
+  ((NODE) == error_mark_node 					\
+   || ((NODE) && TREE_TYPE ((NODE)) == error_mark_node))
+
 /* INTERFACE_ONLY nonzero means that we are in an "interface"
    section of the compiler.  INTERFACE_UNKNOWN nonzero means
    we cannot trust the value of INTERFACE_ONLY.  If INTERFACE_UNKNOWN
@@ -3547,7 +3553,8 @@ extern tree type_passed_as                      PARAMS ((tree));
 extern tree convert_for_arg_passing             PARAMS ((tree, tree));
 extern tree cp_convert_parm_for_inlining        PARAMS ((tree, tree, tree));
 extern int is_properly_derived_from             PARAMS ((tree, tree));
-extern tree initialize_reference                PARAMS ((tree, tree));
+extern tree initialize_reference                PARAMS ((tree, tree, tree));
+extern tree make_temporary_var_for_ref_to_temp  (tree);
 extern tree strip_top_quals                     PARAMS ((tree));
 extern tree perform_implicit_conversion         PARAMS ((tree, tree));
 
@@ -3605,7 +3612,7 @@ extern tree ocp_convert				PARAMS ((tree, tree, int, int));
 extern tree cp_convert				PARAMS ((tree, tree));
 extern tree convert_to_void			PARAMS ((tree, const char */*implicit context*/));
 extern tree convert_force			PARAMS ((tree, tree, int));
-extern tree build_type_conversion		PARAMS ((tree, tree, int));
+extern tree build_type_conversion		PARAMS ((tree, tree));
 extern tree build_expr_type_conversion		PARAMS ((int, tree, int));
 extern tree type_promotes_to			PARAMS ((tree));
 extern tree perform_qualification_conversions   PARAMS ((tree, tree));
@@ -4354,6 +4361,8 @@ extern tree check_return_expr                   PARAMS ((tree));
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, true)
 #define cxx_alignof(T) cxx_sizeof_or_alignof_type (T, ALIGNOF_EXPR, true)
 extern tree build_ptrmemfunc_access_expr       (tree, tree);
+extern tree build_address                       (tree);
+extern tree build_nop                           (tree, tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	PARAMS ((tree, tree));

@@ -8184,22 +8184,20 @@ build_rtti_vtbl_entries (binfo, vid)
 
   /* The second entry is the address of the typeinfo object.  */
   if (flag_rtti)
-    decl = build_unary_op (ADDR_EXPR, get_tinfo_decl (t), 0);
+    decl = build_address (get_tinfo_decl (t));
   else
     decl = integer_zero_node;
   
   /* Convert the declaration to a type that can be stored in the
      vtable.  */
-  init = build1 (NOP_EXPR, vfunc_ptr_type_node, decl);
-  TREE_CONSTANT (init) = 1;
+  init = build_nop (vfunc_ptr_type_node, decl);
   *vid->last_init = build_tree_list (NULL_TREE, init);
   vid->last_init = &TREE_CHAIN (*vid->last_init);
 
   /* Add the offset-to-top entry.  It comes earlier in the vtable that
      the the typeinfo entry.  Convert the offset to look like a
      function pointer, so that we can put it in the vtable.  */
-  init = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
-  TREE_CONSTANT (init) = 1;
+  init = build_nop (vfunc_ptr_type_node, offset);
   *vid->last_init = build_tree_list (NULL_TREE, init);
   vid->last_init = &TREE_CHAIN (*vid->last_init);
 }
