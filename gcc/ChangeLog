@@ -1,8 +1,14 @@
+2004-12-09  Richard Henderson  <rth@redhat.com>
+
+	PR target/17025
+	* config/i386/i386.md (testqi_1_maybe_si, andqi_2_maybe_si): New.
+	(test_qi_1, andqi_2): Do not promote to simode.
+
 2004-12-07  David Mosberger  <davidm@hpl.hp.com>
 
-        PR target/18443
-        * config/ia64/ia64.c (ia64_assemble_integer): Add support for
-        emitting unaligned pointer-sized integers.
+	PR target/18443
+	* config/ia64/ia64.c (ia64_assemble_integer): Add support for
+	emitting unaligned pointer-sized integers.
 
 2004-12-05  Richard Henderson  <rth@redhat.com>
 
