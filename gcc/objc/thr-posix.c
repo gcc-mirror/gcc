@@ -86,7 +86,7 @@ __objc_thread_get_priority(void)
 void
 __objc_thread_yield(void)
 {
-  pthread_yield();
+  sched_yield();
 }
 
 /* Terminate the current thread. */
