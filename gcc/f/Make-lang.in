@@ -159,7 +159,8 @@ $(docobjdir)/g77.info: $(srcdir)/f/g77.texi $(srcdir)/f/bugs.texi \
 		$(srcdir)/f/root.texi $(srcdir)/doc/include/fdl.texi \
 		$(srcdir)/doc/include/gpl.texi \
 		$(srcdir)/doc/include/funding.texi \
-		$(srcdir)/doc/include/gcc-common.texi
+		$(srcdir)/doc/include/gcc-common.texi \
+		stmp-docobjdir
 	if [ x$(BUILD_INFO) = xinfo ]; then \
 	  rm -f $(@)*; \
 	  cd $(srcdir)/f && $(MAKEINFO) -I../doc/include -o $@ g77.texi; \

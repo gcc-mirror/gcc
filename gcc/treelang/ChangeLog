@@ -1,5 +1,8 @@
 2003-10-20  Mark Mitchell  <mark@codesourcery.com>
 
+	* Make-lang.in ($(docobjdir)/treelang/treelang.info): Depend on
+	stmp-docobjdir.
+
 	* Make-lang.in (info): Use docobjdir.
 	($(srcdir)/treelang/treelang.info): Replace with ...
 	($(docobjdir)/treelang/treelang.info): ... this.

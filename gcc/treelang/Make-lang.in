@@ -150,7 +150,8 @@ $(docobjdir)/treelang.info: $(srcdir)/treelang/treelang.texi \
 	 $(srcdir)/doc/include/gcc-common.texi \
 	 $(srcdir)/doc/include/gpl.texi \
 	 $(srcdir)/doc/include/fdl.texi \
-	 $(srcdir)/doc/include/funding.texi
+	 $(srcdir)/doc/include/funding.texi \
+	 stmp-docobjdir
 	cd $(srcdir) && $(MAKEINFO) $(MAKEINFOFLAGS) -Idoc/include \
 	  -o $@ treelang/treelang.texi
 
