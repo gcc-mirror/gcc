@@ -1,3 +1,8 @@
+2002-05-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi (Specific, mips-sgi-irix6): Document need to
+	bootstrap with -mips3.
+
 2002-05-17  David S. Miller  <davem@redhat.com>
 
 	PR c/6689, PR optimization/6615
