@@ -144,6 +144,10 @@ static int cross_compile = 1;
 static int cross_compile = 0;
 #endif
 
+/* The number of errors that have occurred; the link phase will not be
+   run if this is non-zero.  */
+static int error_count = 0;
+
 /* This is the obstack which we use to allocate many strings.  */
 
 static struct obstack obstack;
@@ -2279,8 +2283,16 @@ process_command (argc, argv)
 	}
       else
 	{
-	  infiles[n_infiles].language = spec_lang;
-	  infiles[n_infiles++].name = argv[i];
+	  if (access (argv[i], R_OK) < 0)
+	    {
+	      perror_with_name (argv[i]);
+	      error_count++;
+	    }
+	  else
+	    {
+	      infiles[n_infiles].language = spec_lang;
+	      infiles[n_infiles++].name = argv[i];
+	    }
 	}
     }
 
@@ -3354,7 +3366,6 @@ main (argc, argv)
   register int i;
   int j;
   int value;
-  int error_count = 0;
   int linker_was_run = 0;
   char *explicit_link_files;
   char *specs_file;
