@@ -25,16 +25,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "alloc-pool.h"
 #include "hashtab.h"
 
-/* Redefine abort to report an internal error w/o coredump, and
-   reporting the location of the error in the source file.  This logic
-   is duplicated in rtl.h and tree.h because every file that needs the
-   special abort includes one or both.  toplev.h gets too few files,
-   system.h gets too many.  */
-
-extern void fancy_abort (const char *, int, const char *)
-    ATTRIBUTE_NORETURN;
-#define abort() fancy_abort (__FILE__, __LINE__, __FUNCTION__)
-
 #define align_eight(x) (((x+7) >> 3) << 3)
 
 /* The internal allocation object.  */
@@ -135,8 +125,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
   struct alloc_pool_descriptor *desc;
 #endif
 
-  if (!name)
-    abort ();
+  gcc_assert (name);
 
   /* Make size large enough to store the list header.  */
   if (size < sizeof (alloc_pool_list))
@@ -151,8 +140,7 @@ create_alloc_pool (const char *name, size_t size, size_t num)
 #endif
 
   /* Um, we can't really allocate 0 elements per block.  */
-  if (num == 0)
-    abort ();
+  gcc_assert (num);
 
   /* Find the size of the pool structure, and the name.  */
   pool_size = sizeof (struct alloc_pool_def);
@@ -201,10 +189,7 @@ free_alloc_pool (alloc_pool pool)
   struct alloc_pool_descriptor *desc = alloc_pool_descriptor (pool->name);
 #endif
 
-#ifdef ENABLE_CHECKING
-  if (!pool)
-    abort ();
-#endif
+  gcc_assert (pool);
 
   /* Free each block allocated to the pool.  */
   for (block = pool->block_list; block != NULL; block = next_block)
@@ -234,10 +219,7 @@ pool_alloc (alloc_pool pool)
   desc->allocated+=pool->elt_size;
 #endif
 
-#ifdef ENABLE_CHECKING
-  if (!pool)
-    abort ();
-#endif
+  gcc_assert (pool);
 
   /* If there are no more free elements, make some more!.  */
   if (!pool->free_list)
@@ -296,22 +278,19 @@ pool_free (alloc_pool pool, void *ptr)
 {
   alloc_pool_list header;
 
-#ifdef ENABLE_CHECKING
-  if (!ptr)
-    abort ();
+  gcc_assert (ptr);
 
+#ifdef ENABLE_CHECKING
   memset (ptr, 0xaf, pool->elt_size - offsetof (allocation_object, u.data));
 
   /* Check whether the PTR was allocated from POOL.  */
-  if (pool->id != ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id)
-    abort ();
+  gcc_assert (pool->id == ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id);
 
   /* Mark the element to be free.  */
   ALLOCATION_OBJECT_PTR_FROM_USER_PTR (ptr)->id = 0;
 #else
   /* Check if we free more than we allocated, which is Bad (TM).  */
-  if (pool->elts_free + 1 > pool->elts_allocated)
-    abort ();
+  gcc_assert (pool->elts_free < pool->elts_allocated);
 #endif
 
   header = (alloc_pool_list) ptr;

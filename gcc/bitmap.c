@@ -415,7 +415,7 @@ bitmap_first_set_bit (bitmap a)
   for (word_num = 0; word_num < BITMAP_ELEMENT_WORDS; ++word_num)
     if ((word = ptr->bits[word_num]) != 0)
       goto word_found;
-  abort ();
+  gcc_unreachable ();
  word_found:
 #endif
 
@@ -472,7 +472,7 @@ bitmap_last_set_bit (bitmap a)
   for (word_num = BITMAP_ELEMENT_WORDS; word_num-- > 0; )
     if ((word = ptr->bits[word_num]) != 0)
       goto word_found;
-  abort ();
+  gcc_unreachable ();
  word_found:
 #endif
 
@@ -608,7 +608,7 @@ bitmap_operation (bitmap to, bitmap from1, bitmap from2,
       switch (operation)
 	{
 	default:
-	  abort ();
+	  gcc_unreachable ();
 
 	case BITMAP_AND:
 	  DOIT (&);

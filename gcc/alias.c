@@ -229,7 +229,6 @@ get_alias_set_entry (HOST_WIDE_INT alias_set)
 static inline int
 mems_in_disjoint_alias_sets_p (rtx mem1, rtx mem2)
 {
-#ifdef ENABLE_CHECKING
 /* Perform a basic sanity check.  Namely, that there are no alias sets
    if we're not using strict aliasing.  This helps to catch bugs
    whereby someone uses PUT_CODE, but doesn't clear MEM_ALIAS_SET, or
@@ -237,10 +236,8 @@ mems_in_disjoint_alias_sets_p (rtx mem1, rtx mem2)
    gen_rtx_MEM, and the MEM_ALIAS_SET is not cleared.  If we begin to
    use alias sets to indicate that spilled registers cannot alias each
    other, we might need to remove this check.  */
-  if (! flag_strict_aliasing
-      && (MEM_ALIAS_SET (mem1) != 0 || MEM_ALIAS_SET (mem2) != 0))
-    abort ();
-#endif
+  gcc_assert (flag_strict_aliasing
+	      || (!MEM_ALIAS_SET (mem1) && !MEM_ALIAS_SET (mem2)));
 
   return ! alias_sets_conflict_p (MEM_ALIAS_SET (mem1), MEM_ALIAS_SET (mem2));
 }
@@ -624,8 +621,7 @@ record_alias_subset (HOST_WIDE_INT superset, HOST_WIDE_INT subset)
   if (superset == subset)
     return;
 
-  if (superset == 0)
-    abort ();
+  gcc_assert (superset);
 
   superset_entry = get_alias_set_entry (superset);
   if (superset_entry == 0)
@@ -930,8 +926,7 @@ record_set (rtx dest, rtx set, void *data ATTRIBUTE_UNUSED)
 
   regno = REGNO (dest);
 
-  if (regno >= VARRAY_SIZE (reg_base_value))
-    abort ();
+  gcc_assert (regno < VARRAY_SIZE (reg_base_value));
 
   /* If this spans multiple hard registers, then we must indicate that every
      register has an unusable value.  */
@@ -1307,7 +1302,7 @@ rtx_equal_for_memref_p (rtx x, rtx y)
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   return 1;
@@ -2899,8 +2894,8 @@ init_alias_analysis (void)
 	}
 
       /* Now propagate values from new_reg_base_value to reg_base_value.  */
-      if (maxreg != (unsigned int) max_reg_num())
-	abort ();
+      gcc_assert (maxreg == (unsigned int) max_reg_num());
+      
       for (ui = 0; ui < maxreg; ui++)
 	{
 	  if (new_reg_base_value[ui]

@@ -237,8 +237,8 @@ insn_sets_btr_p (rtx insn, int check_const, int *regno)
       if (REG_P (dest)
 	  && TEST_HARD_REG_BIT (all_btrs, REGNO (dest)))
 	{
-	  if (btr_referenced_p (src, NULL))
-	    abort();
+	  gcc_assert (!btr_referenced_p (src, NULL));
+	  
 	  if (!check_const || CONSTANT_P (src))
 	    {
 	      if (regno)
@@ -875,11 +875,13 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
 
   if (dominated_by_p (CDI_DOMINATORS, new_bb, head_bb))
     *tos++ = new_bb;
-  else if (dominated_by_p (CDI_DOMINATORS, head_bb, new_bb))
+  else
     {
       edge e;
       int new_block = new_bb->index;
 
+      gcc_assert (dominated_by_p (CDI_DOMINATORS, head_bb, new_bb));
+  
       bitmap_set_bit (live_range, new_block);
       if (flag_btr_bb_exclusive)
 	IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[new_block]);
@@ -900,8 +902,6 @@ augment_live_range (bitmap live_range, HARD_REG_SET *btrs_live_in_range,
       for (e = head_bb->pred; e; e = e->pred_next)
 	*tos++ = e->src;
     }
-  else
-    abort();
 
   while (tos != worklist)
     {
@@ -1146,8 +1146,8 @@ move_btr_def (basic_block new_def_bb, int btr, btr_def def, bitmap live_range,
     {
       insp = BB_END (b);
       for (insp = BB_END (b); ! INSN_P (insp); insp = PREV_INSN (insp))
-	if (insp == BB_HEAD (b))
-	  abort ();
+	gcc_assert (insp != BB_HEAD (b));
+      
       if (JUMP_P (insp) || can_throw_internal (insp))
 	insp = PREV_INSN (insp);
     }

@@ -376,8 +376,8 @@ c_readstr (const char *str, enum machine_mode mode)
   HOST_WIDE_INT ch;
   unsigned int i, j;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
-    abort ();
+  gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
+  
   c[0] = 0;
   c[1] = 0;
   ch = 1;
@@ -390,8 +390,8 @@ c_readstr (const char *str, enum machine_mode mode)
 	  && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
-      if (j > 2 * HOST_BITS_PER_WIDE_INT)
-	abort ();
+      gcc_assert (j <= 2 * HOST_BITS_PER_WIDE_INT);
+      
       if (ch)
 	ch = (unsigned char) str[i];
       c[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
@@ -700,8 +700,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
      a second argument of 1, because that is what builtin_setjmp will
      return.  This also makes EH slightly more efficient, since we are no
      longer copying around a value that we don't care about.  */
-  if (value != const1_rtx)
-    abort ();
+  gcc_assert (value == const1_rtx);
 
   current_function_calls_longjmp = 1;
 
@@ -758,8 +757,8 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
      internal exception handling use only.  */
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
-      if (insn == last)
-	abort ();
+      gcc_assert (insn != last);
+      
       if (JUMP_P (insn))
 	{
 	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
@@ -1048,8 +1047,7 @@ apply_args_size (void)
 	  {
 	    mode = reg_raw_mode[regno];
 
-	    if (mode == VOIDmode)
-	      abort ();
+	    gcc_assert (mode != VOIDmode);
 
 	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	    if (size % align != 0)
@@ -1087,8 +1085,7 @@ apply_result_size (void)
 	  {
 	    mode = reg_raw_mode[regno];
 
-	    if (mode == VOIDmode)
-	      abort ();
+	    gcc_assert (mode != VOIDmode);
 
 	    align = GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT;
 	    if (size % align != 0)
@@ -1360,8 +1357,8 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if ((mode = apply_result_mode[regno]) != VOIDmode)
 	  {
-	    if (valreg)
-	      abort (); /* HAVE_untyped_call required.  */
+	    gcc_assert (!valreg); /* HAVE_untyped_call required.  */
+	    
 	    valreg = gen_rtx_REG (mode, regno);
 	  }
 
@@ -1373,7 +1370,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
     }
   else
 #endif
-    abort ();
+    gcc_unreachable ();
 
   /* Find the CALL insn we just emitted, and attach the register usage
      information.  */
@@ -1742,7 +1739,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_NEARBYINTL:
       builtin_optab = nearbyint_optab; break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Make a suitable register to place result in.  */
@@ -1882,7 +1879,7 @@ expand_builtin_mathfn_2 (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_DREML:
       builtin_optab = drem_optab; break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Make a suitable register to place result in.  */
@@ -1982,7 +1979,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
     case BUILT_IN_COSL:
       builtin_optab = sincos_optab; break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Make a suitable register to place result in.  */
@@ -2005,7 +2002,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
       case BUILT_IN_COSL:
 	builtin_optab = cos_optab; break;
       default:
-	abort();
+	gcc_unreachable ();
       }
   }
 
@@ -2032,23 +2029,24 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
 	 Set TARGET to wherever the result comes back.  */
       if (builtin_optab == sincos_optab)
 	{
+	  int result;
+	  
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
 	    case BUILT_IN_SIN:
 	    case BUILT_IN_SINF:
 	    case BUILT_IN_SINL:
-	      if (!expand_twoval_unop (builtin_optab, op0, 0, target, 0))
-		abort();
+	      result = expand_twoval_unop (builtin_optab, op0, 0, target, 0);
 	      break;
 	    case BUILT_IN_COS:
 	    case BUILT_IN_COSF:
 	    case BUILT_IN_COSL:
-	      if (!expand_twoval_unop (builtin_optab, op0, target, 0, 0))
-		abort();
+	      result = expand_twoval_unop (builtin_optab, op0, target, 0, 0);
 	      break;
 	    default:
-	      abort();
+	      gcc_unreachable ();
 	    }
+	  gcc_assert (result);
 	}
       else
 	{
@@ -2665,10 +2663,9 @@ builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
 {
   const char *str = (const char *) data;
 
-  if (offset < 0
-      || ((unsigned HOST_WIDE_INT) offset + GET_MODE_SIZE (mode)
-	  > strlen (str) + 1))
-    abort ();  /* Attempt to read past the end of constant string.  */
+  gcc_assert (offset >= 0
+	      && ((unsigned HOST_WIDE_INT) offset + GET_MODE_SIZE (mode)
+		  <= strlen (str) + 1));
 
   return c_readstr (str + offset, mode);
 }
@@ -3015,8 +3012,7 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 
   insn = data->genfun (end, dest_mem, src_mem);
 
-  if (insn == 0)
-    abort ();
+  gcc_assert (insn);
 
   emit_insn (insn);
 
@@ -3138,8 +3134,7 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 		  ret = emit_move_insn (target,
 					plus_constant (ret,
 						       INTVAL (len_rtx)));
-		  if (! ret)
-		    abort ();
+		  gcc_assert (ret);
 
 		  return target;
 		}
@@ -3532,7 +3527,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 			   GEN_INT (MIN (arg1_align, arg2_align)));
     else
 #endif
-      abort ();
+      gcc_unreachable ();
 
     if (insn)
       emit_insn (insn);
@@ -4125,8 +4120,7 @@ expand_builtin_args_info (tree arglist)
   int nwords = sizeof (CUMULATIVE_ARGS) / sizeof (int);
   int *word_ptr = (int *) &current_function_args_info;
 
-  if (sizeof (CUMULATIVE_ARGS) % sizeof (int) != 0)
-    abort ();
+  gcc_assert (sizeof (CUMULATIVE_ARGS) % sizeof (int) == 0);
 
   if (arglist != 0)
     {
@@ -4296,7 +4290,7 @@ std_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
   /* All of the alignment and movement below is for args-grow-up machines.
      As of 2004, there are only 3 ARGS_GROW_DOWNWARD targets, and they all
      implement their own specialized gimplify_va_arg_expr routines.  */
-  abort ();
+  gcc_unreachable ();
 #endif
 
   indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
@@ -4625,9 +4619,8 @@ expand_builtin_unop (enum machine_mode target_mode, tree arglist, rtx target,
      Set TARGET to wherever the result comes back.  */
   target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
 			op_optab, op0, target, 1);
-  if (target == 0)
-    abort ();
-
+  gcc_assert (target);
+  
   return convert_to_mode (target_mode, target, 0);
 }
 
@@ -4704,7 +4697,7 @@ expand_builtin_fputs (tree arglist, rtx target, bool unlocked)
 	break;
       }
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   return expand_expr (build_function_call_expr (fn, arglist),
@@ -5242,10 +5235,8 @@ expand_builtin_profile_func (bool exitp)
   rtx this, which;
 
   this = DECL_RTL (current_function_decl);
-  if (MEM_P (this))
-    this = XEXP (this, 0);
-  else
-    abort ();
+  gcc_assert (MEM_P (this));
+  this = XEXP (this, 0);
 
   if (exitp)
     which = profile_function_exit_libfunc;
@@ -5480,7 +5471,7 @@ expand_builtin_fork_or_exec (tree fn, tree arglist, rtx target, int ignore)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   decl = build_decl (FUNCTION_DECL, id, TREE_TYPE (fn));
@@ -6813,7 +6804,7 @@ fold_builtin_bitop (tree exp)
 	  break;
 
 	default:
-	  abort();
+	  gcc_unreachable ();
 	}
 
       return build_int_cst (TREE_TYPE (exp), result);
@@ -7740,7 +7731,7 @@ fold_builtin_classify (tree exp, int builtin_index)
       return fold (build2 (UNORDERED_EXPR, type, arg, arg));
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -9158,7 +9149,7 @@ fold_builtin_fputs (tree arglist, bool ignore, bool unlocked, tree len)
 	break;
       }
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* These optimizations are only performed when the result is ignored,
