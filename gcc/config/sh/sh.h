@@ -131,7 +131,7 @@ extern int target_flags;
 #define TARGET_SUPERSCALAR (target_flags & HARD_SH4_BIT)
 
 /* Nonzero if the target has separate instruction and data caches.  */
-#define TARGET_HARWARD (target_flags & HARD_SH4_BIT)
+#define TARGET_HARVARD (target_flags & HARD_SH4_BIT)
 
 /* Nonzero if compiling for SH4 hardware (to be used for insn costs etc.)  */
 #define TARGET_HARD_SH4 (target_flags & HARD_SH4_BIT)
@@ -354,7 +354,7 @@ do {									\
   barrier_align (LABEL_AFTER_BARRIER)
 
 #define LOOP_ALIGN(A_LABEL) \
-  ((! optimize || TARGET_HARWARD || TARGET_SMALLCODE) ? 0 : 2)
+  ((! optimize || TARGET_HARVARD || TARGET_SMALLCODE) ? 0 : 2)
 
 #define LABEL_ALIGN(A_LABEL) \
 (									\
@@ -1123,7 +1123,7 @@ extern int current_function_anonymous_args;
 
 /* Alignment required for a trampoline in bits .  */
 #define TRAMPOLINE_ALIGNMENT \
-  ((CACHE_LOG < 3 || TARGET_SMALLCODE && ! TARGET_HARWARD) ? 32 : 64)
+  ((CACHE_LOG < 3 || TARGET_SMALLCODE && ! TARGET_HARVARD) ? 32 : 64)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1139,7 +1139,7 @@ extern int current_function_anonymous_args;
 		  (CXT));						\
   emit_move_insn (gen_rtx (MEM, SImode, plus_constant ((TRAMP), 12)),	\
 		  (FNADDR));						\
-  if (TARGET_HARWARD)							\
+  if (TARGET_HARVARD)							\
     emit_insn (gen_ic_invalidate_line (TRAMP));				\
 }
 
