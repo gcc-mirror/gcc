@@ -3,7 +3,7 @@
 ;;  Changes by       Michael Meissner, meissner@osf.org
 ;;  64 bit r4000 support by Ian Lance Taylor, ian@cygnus.com, and
 ;;  Brendan Eich, brendan@microunity.com.
-;;  Copyright (C) 1989, 90-97, 1998 Free Software Foundation, Inc.
+;;  Copyright (C) 1989, 90-98, 1999 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
