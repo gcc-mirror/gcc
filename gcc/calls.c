@@ -119,7 +119,7 @@ static sbitmap stored_args_map;
    returns a BLKmode struct) and expand_call must take special action
    to make sure the object being constructed does not overlap the
    argument list for the constructor call.  */
-int stack_arg_under_construction;
+static int stack_arg_under_construction;
 
 static void emit_call_1 (rtx, tree, tree, tree, HOST_WIDE_INT, HOST_WIDE_INT,
 			 HOST_WIDE_INT, rtx, rtx, int, rtx, int,

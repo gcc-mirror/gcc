@@ -3,6 +3,8 @@
 	* bb-reorder.c (max_entry_frequency, max_entry_frequency):
 	Make them static.
 
+	* calls (stack_arg_under_construction): Make it static.
+
 2005-03-07  David Billinghurst <David.Billinghurst@riotinto.com>
 
 	* config/i386/cygwin1.c(mingw_scan): Use xstrdup in calls to putenv.
