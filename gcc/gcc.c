@@ -41,6 +41,8 @@ compilation is specified by a string called a "spec".  */
 #include <sys/file.h>   /* May get R_OK, etc. on some systems.  */
 #else
 #include <process.h>
+int __spawnv ();
+int __spawnvp ();
 #endif
 
 #include "config.h"
@@ -2112,54 +2114,7 @@ pexecute (search_flag, program, argv, not_last)
 
 #endif /* not __MSDOS__ and not OS2 and not _WIN32 */
 
-#if defined(OS2) || defined(_WIN32)
-
-#ifdef _WIN32
-
-/* This is a kludge to get around the Microsoft C spawn functions' propensity
-   to remove the outermost set of double quotes from all arguments.  */
-
-const char * const
-fix_argv (argvec)
-     char **argvec;
-{
-  int i;
-
-  for (i = 1; argvec[i] != 0; i++)
-    {
-      int len, j;
-      char *temp, *newtemp;
-
-      temp = argvec[i];
-      len = strlen (temp);
-      for (j = 0; j < len; j++)
-        {
-          if (temp[j] == '"')
-            {
-              newtemp = xmalloc (len + 2);
-              strncpy (newtemp, temp, j);
-              newtemp [j] = '\\';
-              strncpy (&newtemp [j+1], &temp [j], len-j);
-              newtemp [len+1] = 0;
-              temp = newtemp;
-              len++;
-              j++;
-            }
-        }
-
-        argvec[i] = temp;
-      }
-
-  return (const char* const*) argvec;
-}
-
-#define FIX_ARGV(a) fix_argv(a)
-
-#else
-
-#define FIX_ARGV(a) a
-
-#endif
+#if defined(OS2)
 
 static int
 pexecute (search_flag, program, argv, not_last)
@@ -2168,9 +2123,22 @@ pexecute (search_flag, program, argv, not_last)
      char *argv[];
      int not_last;
 {
-  return (search_flag ? spawnv : spawnvp) (1, program, FIX_ARGV (argv));
+  return (search_flag ? spawnv : spawnvp) (1, program, argv);
 }
-#endif /* OS2 or _WIN32 */
+#endif /* OS2 */
+
+#if defined(_WIN32)
+
+static int
+pexecute (search_flag, program, argv, not_last)
+     int search_flag;
+     char *program;
+     char *argv[];
+     int not_last;
+{
+  return (search_flag ? __spawnv : __spawnvp) (1, program, argv);
+}
+#endif /* _WIN32 */
 
 
 /* Execute the command specified by the arguments on the current line of spec.
