@@ -75,6 +75,9 @@ namespace std
   template
     S::basic_string(C*, C*, const allocator<C>&);
 
+  template
+    S::basic_string(const C*, const C*, const allocator<C>&);
+
   template 
     S::basic_string(S::iterator, S::iterator, const allocator<C>&);
 

@@ -968,7 +968,7 @@ namespace std
     __output_float(_OutIter __s, ios_base& __io, _CharT __fill,
                     const char* __sptr, size_t __slen)
     {
-      // XXX Not currently done: non streambuf_iterator
+      // XXX Not currently done: non-streambuf_iterator
       return __s;
     }
 
@@ -1217,10 +1217,75 @@ namespace std
         __err |= __io.failbit;
       return __out;
     }
-} // std::
 
-#endif /* _CPP_BITS_LOCFACETS_TCC */
+  // Generic version does nothing.
+  template<typename _CharT>
+    int
+    collate<_CharT>::
+    _M_compare_helper(const _CharT*, const _CharT*) const
+    { return 0; }
 
-// Local Variables:
-// mode:c++
-// End:
+  // Generic version does nothing.
+  template<typename _CharT>
+    size_t
+    collate<_CharT>::
+    _M_transform_helper(_CharT*, const _CharT*, size_t) const
+    { return 0; }
+
+  template<typename _CharT>
+    int
+    collate<_CharT>::
+    do_compare(const _CharT* __lo1, const _CharT* __hi1,
+	       const _CharT* __lo2, const _CharT* __hi2) const
+    { 
+      const string_type __one(__lo1, __hi1);
+      const string_type __two(__lo2, __hi2);
+      return _M_compare_helper(__one.c_str(), __two.c_str());
+    }
+
+ template<typename _CharT>
+    collate<_CharT>::string_type
+    collate<_CharT>::
+    do_transform(const _CharT* __lo, const _CharT* __hi) const
+    {
+      string_type __orig(__lo, __hi);
+      string_type __trans(__orig.size(), char_type());
+      size_t __res = _M_transform_helper(__trans.begin().base(), 
+					 __orig.c_str(), __trans.size());
+      while (__res >= __trans.size())
+	{
+	  // Increment size of translated string.
+	  string_type::size_type __newsize = __trans.size() * 2;
+	  __trans.resize(__newsize);
+	  __res = _M_transform_helper(__trans.begin().base(), __orig.c_str(), 
+				      __trans.size());
+	}
+      return __trans;
+    }
+
+ template<typename _CharT>
+    long
+    collate<_CharT>::
+    do_hash(const _CharT* __lo, const _CharT* __hi) const
+    { 
+      unsigned long __val = 0;
+      for (; __lo < __hi; ++__lo)
+	__val = *__lo + ((__val << 7) | 
+		       (__val >> (numeric_limits<unsigned long>::digits - 1)));
+      return static_cast<long>(__val);
+    }
+} // namespace std
+
+#endif // _CPP_BITS_LOCFACETS_TCC
+
+
+
+
+
+
+
+
+
+
+
+
