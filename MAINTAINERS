@@ -87,6 +87,7 @@ web pages		Gerald Pfeifer		pfeifer@dbai.tuwien.ac.at
 C front end/ISO C99	Gavin Romig-Koch	gavin@redhat.com
 config.sub/config.guess	Ben Elliston		bje@redhat.com
 avr port		Denis Chertykov		denisc@overta.ru
+			Marek Michalkiewicz	marekm@linux.org.pl
 basic block reordering	Jason Eckhardt		jle@redhat.com
 i18n			Philipp Thomas		pthomas@suse.de
 diagnostic messages	Gabriel Dos Reis	gdr@codesourcery.com
