@@ -173,7 +173,7 @@ struct lexer_state
   unsigned char poisoned_ok;
 
   /* Nonzero to prevent macro expansion.  */
-  unsigned char prevent_expansion;  
+  unsigned char prevent_expansion;
 
   /* Nonzero when parsing arguments to a function-like macro.  */
   unsigned char parsing_args;
@@ -338,7 +338,7 @@ struct cpp_reader
   /* Call backs.  */
   struct cpp_callbacks cb;
 
-  /* Identifier hash table.  */ 
+  /* Identifier hash table.  */
   struct ht *hash_table;
 
   /* Expression parser stack.  */

@@ -98,7 +98,7 @@ _cpp_begin_message (pfile, code, line, column)
       else if (CPP_OPTION (pfile, inhibit_warnings))
 	return 0;
       break;
-	
+
     case DL_ERROR:
       if (CPP_OPTION (pfile, inhibit_errors))
 	return 0;

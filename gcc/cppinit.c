@@ -303,7 +303,7 @@ remove_dup_dirs (pfile, head)
   for (cur = head; cur; cur = cur->next)
     {
       for (other = head; other != cur; other = other->next)
-        if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
+	if (INO_T_EQ (cur->ino, other->ino) && cur->dev == other->dev)
 	  {
 	    if (cur->sysp && !other->sysp)
 	      {
@@ -419,7 +419,7 @@ set_lang (pfile, lang)
      enum c_lang lang;
 {
   const struct lang_flags *l = &lang_defaults[(int) lang];
-  
+
   CPP_OPTION (pfile, lang) = lang;
 
   CPP_OPTION (pfile, c99)		 = l->c99;
@@ -1013,7 +1013,7 @@ _cpp_maybe_push_include_file (pfile)
   if (pfile->next_include_file)
     {
       struct pending_option *head = *pfile->next_include_file;
-  
+
       while (head && !push_include (pfile, head))
 	head = head->next;
 
@@ -1373,10 +1373,10 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  CPP_OPTION (pfile, help_only) = 1;
 	  break;
 	case OPT_target__help:
-          /* Print if any target specific options. cpplib has none, but
+	  /* Print if any target specific options. cpplib has none, but
 	     make sure help_only gets set.  */
 	  CPP_OPTION (pfile, help_only) = 1;
-          break;
+	  break;
 
 	  /* --version inhibits compilation, -version doesn't. -v means
 	     verbose and -version.  Historical reasons, don't ask.  */
@@ -1415,11 +1415,11 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  CPP_OPTION (pfile, pedantic_errors) = 1;
 	  /* fall through */
 	case OPT_pedantic:
- 	  CPP_OPTION (pfile, pedantic) = 1;
+	  CPP_OPTION (pfile, pedantic) = 1;
 	  CPP_OPTION (pfile, warn_endif_labels) = 1;
 	  break;
 	case OPT_trigraphs:
- 	  CPP_OPTION (pfile, trigraphs) = 1;
+	  CPP_OPTION (pfile, trigraphs) = 1;
 	  break;
 	case OPT_remap:
 	  CPP_OPTION (pfile, remap) = 1;
@@ -1489,13 +1489,13 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  /* Args to -d specify what parts of macros to dump.
 	     Silently ignore unrecognised options; they may
 	     be aimed at the compiler proper.  */
- 	  {
+	  {
 	    char c;
 
 	    while ((c = *arg++) != '\0')
- 	      switch (c)
- 		{
- 		case 'M':
+	      switch (c)
+		{
+		case 'M':
 		  CPP_OPTION (pfile, dump_macros) = dump_only;
 		  break;
 		case 'N':
@@ -1529,7 +1529,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	case OPT_MF:
 	  CPP_OPTION (pfile, deps_file) = arg;
 	  break;
- 	case OPT_MP:
+	case OPT_MP:
 	  CPP_OPTION (pfile, deps_phony_targets) = 1;
 	  break;
 	case OPT_MQ:
@@ -1575,7 +1575,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  break;
 	case OPT_I:           /* Add directory to path for includes.  */
 	  if (!strcmp (arg, "-"))
- 	    {
+	    {
 	      /* -I- means:
 		 Use the preceding -I directories for #include "..."
 		 but not #include <...>.
@@ -1595,8 +1595,8 @@ cpp_handle_option (pfile, argc, argv, ignore)
 		  cpp_error (pfile, DL_FATAL, "-I- specified twice");
 		  return argc;
 		}
- 	    }
- 	  else
+	    }
+	  else
 	    append_include_chain (pfile, xstrdup (arg), BRACKET, 0);
 	  break;
 	case OPT_isystem:
@@ -1701,7 +1701,7 @@ cpp_handle_option (pfile, argc, argv, ignore)
 	  else if (! ignore)
 	    return i;
 	  break;
- 	}
+	}
     }
   return i + 1;
 }

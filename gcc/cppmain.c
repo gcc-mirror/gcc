@@ -78,7 +78,7 @@ cpp_preprocess_file (pfile)
   print.printed = 0;
   print.prev = 0;
   print.map = 0;
-  
+
   /* Open the output now.  We must do so even if no_output is on,
      because there may be other output than from the actual
      preprocessing (e.g. from -dM).  */
@@ -264,7 +264,7 @@ print_line (map, line, special_flags)
       size_t to_file_len = strlen (map->to_file);
       unsigned char *to_file_quoted = alloca (to_file_len * 4 + 1);
       unsigned char *p;
-      
+
       /* cpp_quote_string does not nul-terminate, so we have to do it
 	 ourselves.  */
       p = cpp_quote_string (to_file_quoted,

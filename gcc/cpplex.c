@@ -71,7 +71,7 @@ static void adjust_column PARAMS ((cpp_reader *));
 static int skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
 static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *));
 static uchar *parse_slow PARAMS ((cpp_reader *, const uchar *, int,
-				   unsigned int *));
+				  unsigned int *));
 static void parse_number PARAMS ((cpp_reader *, cpp_string *, int));
 static int unescaped_terminator_p PARAMS ((cpp_reader *, const uchar *));
 static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
@@ -247,7 +247,7 @@ get_effective_char (pfile)
   if (__builtin_expect (next == '?' || next == '\\', 0))
     next = skip_escaped_newlines (pfile);
 
-   return next;
+  return next;
 }
 
 /* Skip a C-style block comment.  We find the end of the comment by
@@ -424,7 +424,7 @@ name_p (pfile, string)
     if (!is_idchar (string->text[i]))
       return 0;
 
-  return 1;  
+  return 1;
 }
 
 /* Parse an identifier, skipping embedded backslash-newlines.  This is
@@ -533,15 +533,15 @@ parse_slow (pfile, cur, number_p, plen)
 
       /* Handle normal identifier characters in this loop.  */
       do
-        {
+	{
 	  prevc = c;
-          obstack_1grow (stack, c);
+	  obstack_1grow (stack, c);
 
-          if (c == '$')
-            saw_dollar++;
+	  if (c == '$')
+	    saw_dollar++;
 
-          c = *buffer->cur++;
-        }
+	  c = *buffer->cur++;
+	}
       while (is_idchar (c));
     }
 
@@ -665,7 +665,7 @@ parse_string (pfile, token, terminator)
       if (char_len == -1)
 	{
 	  cpp_error (pfile, DL_WARNING,
-		       "ignoring invalid multibyte character");
+		     "ignoring invalid multibyte character");
 	  char_len = 1;
 	  c = *buffer->cur++;
 	}
@@ -739,7 +739,7 @@ save_comment (pfile, token, from, type)
 {
   unsigned char *buffer;
   unsigned int len, clen;
-  
+
   len = pfile->buffer->cur - from + 1; /* + 1 for the initial '/'.  */
 
   /* C++ comments probably (not definitely) have moved past a new
@@ -756,7 +756,7 @@ save_comment (pfile, token, from, type)
   clen = (pfile->state.in_directive && type == '/') ? len + 2 : len;
 
   buffer = _cpp_unaligned_alloc (pfile, clen);
-  
+
   token->type = CPP_COMMENT;
   token->val.str.len = clen;
   token->val.str.text = buffer;
@@ -888,7 +888,7 @@ continue_after_nul (pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
   bool more = false;
-  
+
   buffer->saved_flags = BOL;
   if (CPP_OPTION (pfile, traditional))
     more = _cpp_read_logical_line_trad (pfile);
@@ -1029,19 +1029,19 @@ _cpp_lex_direct (pfile)
 
     case 'L':
       /* 'L' may introduce wide characters or strings.  */
-	{
-	  const unsigned char *pos = buffer->cur;
+      {
+	const unsigned char *pos = buffer->cur;
 
-	  c = get_effective_char (pfile);
-	  if (c == '\'' || c == '"')
-	    {
-	      result->type = (c == '"' ? CPP_WSTRING: CPP_WCHAR);
-	      parse_string (pfile, result, c);
-	      break;
-	    }
-	  buffer->cur = pos;
-	}
-	/* Fall through.  */
+	c = get_effective_char (pfile);
+	if (c == '\'' || c == '"')
+	  {
+	    result->type = (c == '"' ? CPP_WSTRING: CPP_WCHAR);
+	    parse_string (pfile, result, c);
+	    break;
+	  }
+	buffer->cur = pos;
+      }
+      /* Fall through.  */
 
     start_ident:
     case '_':
@@ -1091,7 +1091,7 @@ _cpp_lex_direct (pfile)
 	      && ! buffer->warned_cplusplus_comments)
 	    {
 	      cpp_error (pfile, DL_PEDWARN,
-			   "C++ style comments are not allowed in ISO C89");
+			 "C++ style comments are not allowed in ISO C89");
 	      cpp_error (pfile, DL_PEDWARN,
 			 "(this will be reported only once per input file)");
 	      buffer->warned_cplusplus_comments = 1;
@@ -1274,7 +1274,7 @@ _cpp_lex_direct (pfile)
 	  result->type = CPP_AND;
 	}
       break;
-	  
+
     case '|':
       c = get_effective_char (pfile);
       if (c == '|')
@@ -1381,7 +1381,7 @@ cpp_spell_token (pfile, token, buffer)
 	  goto spell_ident;
 	else
 	  spelling = TOKEN_NAME (token);
-	
+
 	while ((c = *spelling++) != '\0')
 	  *buffer++ = c;
       }
@@ -1789,7 +1789,7 @@ cpp_parse_escape (pfile, pstr, limit, wide)
 		   "non-ISO-standard escape sequence, '\\%c'", (int) c);
       c = TARGET_ESC;
       break;
-      
+
     case 'u': case 'U':
       unknown = maybe_read_ucs (pfile, &str, limit, &c);
       break;
@@ -1799,33 +1799,33 @@ cpp_parse_escape (pfile, pstr, limit, wide)
 	cpp_error (pfile, DL_WARNING,
 		   "the meaning of '\\x' is different in traditional C");
 
-	{
-	  cppchar_t i = 0, overflow = 0;
-	  int digits_found = 0;
+      {
+	cppchar_t i = 0, overflow = 0;
+	int digits_found = 0;
 
-	  while (str < limit)
-	    {
-	      c = *str;
-	      if (! ISXDIGIT (c))
-		break;
-	      str++;
-	      overflow |= i ^ (i << 4 >> 4);
-	      i = (i << 4) + hex_digit_value (c);
-	      digits_found = 1;
-	    }
+	while (str < limit)
+	  {
+	    c = *str;
+	    if (! ISXDIGIT (c))
+	      break;
+	    str++;
+	    overflow |= i ^ (i << 4 >> 4);
+	    i = (i << 4) + hex_digit_value (c);
+	    digits_found = 1;
+	  }
 
-	  if (!digits_found)
-	    cpp_error (pfile, DL_ERROR, 
+	if (!digits_found)
+	  cpp_error (pfile, DL_ERROR,
 		       "\\x used with no following hex digits");
 
-	  if (overflow | (i != (i & mask)))
-	    {
-	      cpp_error (pfile, DL_PEDWARN,
-			 "hex escape sequence out of range");
-	      i &= mask;
-	    }
-	  c = i;
-	}
+	if (overflow | (i != (i & mask)))
+	  {
+	    cpp_error (pfile, DL_PEDWARN,
+		       "hex escape sequence out of range");
+	    i &= mask;
+	  }
+	c = i;
+      }
       break;
 
     case '0':  case '1':  case '2':  case '3':
@@ -1949,7 +1949,7 @@ cpp_interpret_charconst (pfile, token, pchars_seen, unsignedp)
       if (ISPRINT (c))
 	c = MAP_CHARACTER (c);
 #endif
-      
+
       chars_seen++;
 
       /* Truncate the character, scale the result and merge the two.  */

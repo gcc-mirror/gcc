@@ -569,7 +569,7 @@ collect_args (pfile, node)
 	 the invocation at all.
 	 e.g. #define debug(format, args...) something
 	 debug("string");
-	 
+
 	 This is exactly the same as if there had been an empty rest
 	 argument - debug("string", ).  */
 
@@ -1035,7 +1035,7 @@ cpp_get_token (pfile)
 
       if (node->type != NT_MACRO || (result->flags & NO_EXPAND))
 	break;
-      
+
       if (!(node->flags & NODE_DISABLED))
 	{
 	  if (!pfile->state.prevent_expansion
@@ -1480,7 +1480,7 @@ check_trad_stringification (pfile, macro, string)
 {
   unsigned int i, len;
   const uchar *p, *q, *limit = string->text + string->len;
-  
+
   /* Loop over the string.  */
   for (p = string->text; p < limit; p = q)
     {
@@ -1584,9 +1584,9 @@ cpp_macro_definition (pfile, node)
 	    }
 
 	  if (i + 1 < macro->paramc)
-            /* Don't emit a space after the comma here; we're trying
-               to emit a Dwarf-friendly definition, and the Dwarf spec
-               forbids spaces in the argument list.  */
+	    /* Don't emit a space after the comma here; we're trying
+	       to emit a Dwarf-friendly definition, and the Dwarf spec
+	       forbids spaces in the argument list.  */
 	    *buffer++ = ',';
 	  else if (macro->variadic)
 	    *buffer++ = '.', *buffer++ = '.', *buffer++ = '.';
