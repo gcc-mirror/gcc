@@ -1,3 +1,24 @@
+2003-05-16  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/compat/struct-by-value-4_main.c: Split into multiple tests.
+	* gcc.dg/compat/struct-by-value-4_x.c: Split into multiple tests.
+	* gcc.dg/compat/struct-by-value-4_y.c: Split into multiple tests.
+	* gcc.dg/compat/struct-by-value-5_main.c: Split into multiple tests.
+	* gcc.dg/compat/struct-by-value-5_x.c: Split into multiple tests.
+	* gcc.dg/compat/struct-by-value-5_y.c: Split into multiple tests.
+	* gcc.dg/compat/struct-by-value-6_main.c: New file.
+	* gcc.dg/compat/struct-by-value-6_x.c: New file.
+	* gcc.dg/compat/struct-by-value-6_y.c: New file.
+	* gcc.dg/compat/struct-by-value-7_main.c: New file.
+	* gcc.dg/compat/struct-by-value-7_x.c: New file.
+	* gcc.dg/compat/struct-by-value-7_y.c: New file.
+	* gcc.dg/compat/struct-by-value-8_main.c: New file.
+	* gcc.dg/compat/struct-by-value-8_x.c: New file.
+	* gcc.dg/compat/struct-by-value-8_y.c: New file.
+	* gcc.dg/compat/struct-by-value-9_main.c: New file.
+	* gcc.dg/compat/struct-by-value-9_x.c: New file.
+	* gcc.dg/compat/struct-by-value-9_y.c: New file.
+
 2003-05-16  Mark Mitchell  <mark@codesourcery.com>
 
 	* lib/gcc-dg.exp (gcc-dg-test): Rename to ...
