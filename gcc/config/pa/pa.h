@@ -1824,8 +1824,14 @@ while (0)
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 1
 
-/* Do not break .stabs pseudos into continuations.  */
-#define DBX_CONTIN_LENGTH 4000
+/* Do not break .stabs pseudos into continuations.
+
+   This used to be zero (no max length), but big enums and such can
+   cause huge strings which killed gas.
+
+   We also have to avoid lossage in dbxout.c -- it does not compute the
+   string size accurately, so we are real conservative here.  */
+#define DBX_CONTIN_LENGTH 3000
 
 /* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
    is done just by pretending it is already truncated.  */

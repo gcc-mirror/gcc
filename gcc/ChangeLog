@@ -1,3 +1,7 @@
+Tue May 12 14:04:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* pa.h (DBX_CONTIN_LENGTH): Reduce to 3000 bytes. 
+
 Tue May 12 15:16:02 1998  Michael Meissner  <meissner@cygnus.com>
 
 	* haifa-sched.c (HAIFA_INLINE): Define to be __inline unless
