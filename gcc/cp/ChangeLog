@@ -1,3 +1,8 @@
+1999-05-20  Mark Mitchell  <mark@codesourcery.com>
+
+ 	* pt.c (for_each_template_parm): Rework to match documentation.
+	Don't be fooled by a COMPONENT_REF with no TREE_TYPE.
+
 1999-05-20  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* class.c (finish_struct_1): Still check for ANON_AGGR_TYPE_P.
@@ -18,6 +23,7 @@
 	(cplus_expand_expr): Here.  Use cplus_expand_constant.
 	(init_cplus_expand): Set lang_expand_constant.
 	* pt.c (convert_nontype_argument): Use make_ptrmem_cst.
+
 	* tree.c (make_ptrmem_cst): Define.
 	* typeck.c (unary_complex_lvalue): Use make_ptrmem_cst.
 	* typeck2.c (initializer_constant_valid_p): Use make_ptrmem_cst.
