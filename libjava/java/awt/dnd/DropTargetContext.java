@@ -1,5 +1,5 @@
 /* DropTargetContext.java --
-   Copyright (C) 2002 Free Software Foundation
+   Copyright (C) 2002, 2003 Free Software Foundation
 
 This file is part of GNU Classpath.
 
@@ -55,7 +55,9 @@ public class DropTargetContext implements Serializable
 {
   static final long serialVersionUID = -634158968993743371L;
 
-  protected class TransferableProxy implements Transferable
+  /** @specnote According to the online documentation, this is
+   * protected, but in reality it is public.  */
+  public class TransferableProxy implements Transferable
   {
     protected boolean isLocal;
     protected Transferable transferable;

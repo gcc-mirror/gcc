@@ -1,5 +1,14 @@
 2003-03-24  Michael Koch  <konqueror@gmx.de>
 
+	* java/awt/dnd/DropTarget.java
+	(DropTargetAutoScroller): According to the online documentation, this
+	is protected, but in reality it is public.
+	* java/awt/dnd/DropTargetContext.java
+	(TransferableProxy): According to the online documentation, this
+        is protected, but in reality it is public.
+
+2003-03-24  Michael Koch  <konqueror@gmx.de>
+
 	* java/io/DataInputStream.java
 	(): Wrapped documentation line.
 	(): Fixed @return tag.

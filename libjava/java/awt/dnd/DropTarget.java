@@ -1,5 +1,5 @@
 /* DropTarget.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -60,7 +60,9 @@ public class DropTarget
    */
   private static final long serialVersionUID = -6283860791671019047L;
 
-  protected static class DropTargetAutoScroller
+  /** @specnote According to the online documentation, this is
+   * protected, but in reality it is public.  */
+  public static class DropTargetAutoScroller
     implements ActionListener
   {
     private Component component;
