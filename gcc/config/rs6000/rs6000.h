@@ -1818,13 +1818,16 @@ toc_section ()						\
 /* This outputs NAME to FILE up to the first null or '['.  */
 
 #define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
-  if ((NAME)[0] == '*')				\
+  if ((NAME)[0] == '*' || (NAME)[strlen (NAME) - 1] != ']') \
     assemble_name (FILE, NAME);  		\
   else						\
     {						\
-      char *_p;					\
-      for (_p = (NAME); *_p && *_p != '['; _p++) \
-        fputc (*_p, FILE);				\
+      int _len = strlen (NAME);			\
+      char *_p = alloca (_len + 1);		\
+						\
+      strcpy (_p, NAME);			\
+      _p[_len - 4] = '\0';			\
+      assemble_name (FILE, _p);			\
     }
 
 /* Output something to declare an external symbol to the assembler.  Most
