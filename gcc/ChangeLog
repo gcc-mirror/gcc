@@ -1,3 +1,7 @@
+Wed Aug 19 08:29:44 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (arm_override_options): Remove lie about ignoring PIC flag.
+
 Wed Aug 19 07:08:15 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
 
 	* config/sparc/sparc.c (finalize_pic): Check for the correct
