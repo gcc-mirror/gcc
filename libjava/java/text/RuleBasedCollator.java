@@ -1,6 +1,6 @@
 /* RuleBasedCollator.java -- Concrete Collator Class
+   Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation, Inc.
 
-/* Copyright (C) 1999, 2000, 2001  Free Software Foundation
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -48,6 +48,91 @@ import java.util.Vector;
  */
 
 /**
+ * This class is a concrete subclass of <code>Collator</code> suitable
+ * for string collation in a wide variety of languages.  An instance of
+ * this class is normally returned by the <code>getInstance</code> method
+ * of <code>Collator</code> with rules predefined for the requested
+ * locale.  However, an instance of this class can be created manually
+ * with any desired rules.
+ * <p>
+ * Rules take the form of a <code>String</code> with the following syntax
+ * <ul>
+ * <li> Modifier: '@' 
+ * <li> Relation: '&lt;' | ';' | ',' | '=' : <text>
+ * <li> Reset: '&amp;' : <text>
+ * </ul>
+ * The modifier character indicates that accents sort backward as is the
+ * case with French.  The relational operators specify how the text 
+ * argument relates to the previous term.  The relation characters have
+ * the following meanings:
+ * <ul>
+ * <li>'&lt;' - The text argument is greater than the prior term at the primary
+ * difference level.
+ * <li>';' - The text argument is greater than the prior term at the secondary
+ * difference level.
+ * <li>',' - The text argument is greater than the prior term at the tertiary
+ * difference level.
+ * <li>'=' - The text argument is equal to the prior term
+ * </ul>
+ * <p>
+ * As for the text argument itself, this is any sequence of Unicode
+ * characters not in the following ranges: 0x0009-0x000D, 0x0020-0x002F,
+ * 0x003A-0x0040, 0x005B-0x0060, and 0x007B-0x007E. If these characters are 
+ * desired, they must be enclosed in single quotes.  If any whitespace is 
+ * encountered, it is ignored.  (For example, "a b" is equal to "ab").  
+ * <p>
+ * The reset operation inserts the following rule at the point where the
+ * text argument to it exists in the previously declared rule string.  This
+ * makes it easy to add new rules to an existing string by simply including
+ * them in a reset sequence at the end.  Note that the text argument, or
+ * at least the first character of it, must be present somewhere in the
+ * previously declared rules in order to be inserted properly.  If this
+ * is not satisfied, a <code>ParseException</code> will be thrown. 
+ * <p>
+ * This system of configuring <code>RuleBasedCollator</code> is needlessly
+ * complex and the people at Taligent who developed it (along with the folks
+ * at Sun who accepted it into the Java standard library) deserve a slow
+ * and agonizing death.
+ * <p>
+ * Here are a couple of example of rule strings:
+ * <p>
+ * "&lt; a &lt; b &lt; c" - This string says that a is greater than b which is 
+ * greater than c, with all differences being primary differences.
+ * <p>
+ * "&lt; a,A &lt; b,B &lt; c,C" - This string says that 'A' is greater than 'a' with
+ * a tertiary strength comparison.  Both 'b' and 'B' are greater than 'a' and
+ * 'A' during a primary strength comparison.  But 'B' is greater than 'b'
+ * under a tertiary strength comparison.
+ * <p>
+ * "&lt; a &lt; c &amp; a &lt; b " - This sequence is identical in function to the 
+ * "&lt; a &lt; b &lt; c" rule string above.  The '&amp;' reset symbol indicates that
+ * the rule "&lt; b" is to be inserted after the text argument "a" in the
+ * previous rule string segment.
+ * <p>
+ * "&lt; a &lt; b &amp; y &lt; z" - This is an error.  The character 'y' does not appear
+ * anywhere in the previous rule string segment so the rule following the
+ * reset rule cannot be inserted.
+ * <p>
+ * For a description of the various comparison strength types, see the
+ * documentation for the <code>Collator</code> class.
+ * <p>
+ * As an additional complication to this already overly complex rule scheme,
+ * if any characters precede the first rule, these characters are considered
+ * ignorable.  They will be treated as if they did not exist during 
+ * comparisons.  For example, "- &lt; a &lt; b ..." would make '-' an ignorable
+ * character such that the strings "high-tech" and "hightech" would
+ * be considered identical.
+ * <p>
+ * A <code>ParseException</code> will be thrown for any of the following
+ * conditions:
+ * <ul>
+ * <li>Unquoted punctuation characters in a text argument.
+ * <li>A relational or reset operator not followed by a text argument
+ * <li>A reset operator where the text argument is not present in
+ * the previous rule string section.
+ * </ul>
+ *
+ * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Tom Tromey <tromey@cygnus.com>
  * @date March 25, 1999
  */

@@ -1,6 +1,6 @@
 /* CollationKey.java -- Precomputed collation value
+   Copyright (C) 1998, 1999, 2000, 2003  Free Software Foundation, Inc.
 
-/* Copyright (C) 1999, 2000  Free Software Foundation
 This file is part of GNU Classpath.
 
 GNU Classpath is free software; you can redistribute it and/or modify
@@ -61,6 +61,7 @@ package java.text;
  *
  * @author Aaron M. Renn <arenn@urbanophile.com>
  * @author Tom Tromey <tromey@cygnus.com>
+ * @date March 25, 1999
  */
 public final class CollationKey implements Comparable
 {
