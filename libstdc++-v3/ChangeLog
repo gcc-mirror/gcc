@@ -1,3 +1,9 @@
+2004-04-19  Paolo Carlini  <pcarlini@suse.de>
+
+	PR libstdc++/15002 (partial)
+	* include/bits/basic_string.h (_M_replace_aux, _M_replace_safe):
+	Special case __n2 == 1, not calling traits_type::assign/copy. 
+
 2004-04-17  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/stl_bvector.h: Use _M_impl._M_start.
