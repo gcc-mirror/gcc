@@ -2,6 +2,7 @@
 
 	* config/arm/arm.c (arm_override_options): Test 'insn_flags' not
 	'tune_flags' for XScale nature.
+	Remove spurious test of HARD_FLOAT and XScale flags. 
 
 	* config/arm/arm.md (umulsidi3adddi): Restore "=&r" register
 	contraint, accidentally changed during XScale contribution.
