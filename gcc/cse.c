@@ -705,6 +705,7 @@ static rtx cse_basic_block	PARAMS ((rtx, rtx, struct branch_path *, int));
 static void count_reg_usage	PARAMS ((rtx, int *, rtx, int));
 extern void dump_class          PARAMS ((struct table_elt*));
 static struct cse_reg_info * get_cse_reg_info PARAMS ((unsigned int));
+static int check_dependence	PARAMS ((rtx *, void *));
 
 static void flush_hash_table	PARAMS ((void));
 
@@ -1721,6 +1722,24 @@ flush_hash_table ()
       }
 }
 
+/* Function called for each rtx to check whether true dependence exist.  */
+struct check_dependence_data
+{
+  enum machine_mode mode;
+  rtx exp;
+};
+static int
+check_dependence (x, data)
+     rtx *x;
+     void *data;
+{
+  struct check_dependence_data *d = (struct check_dependence_data *) data;
+  if (*x && GET_CODE (*x) == MEM)
+    return true_dependence (d->exp, d->mode, *x, cse_rtx_varies_p);
+  else
+    return 0;
+}
+
 /* Remove from the hash table, or mark as invalid, all expressions whose
    values could be altered by storing in X.  X is a register, a subreg, or
    a memory reference with nonvarying address (because, when a memory
@@ -1846,20 +1865,18 @@ invalidate (x, full_mode)
 	      next = p->next_same_hash;
 	      if (p->in_memory)
 		{
-		  if (GET_CODE (p->exp) != MEM)
+		  struct check_dependence_data d;
+
+		  /* Just canonicalize the expression once;
+		     otherwise each time we call invalidate
+		     true_dependence will canonicalize the
+		     expression again.  */
+		  if (!p->canon_exp)
+		    p->canon_exp = canon_rtx (p->exp);
+		  d.exp = x;
+		  d.mode = full_mode;
+		  if (for_each_rtx (&p->canon_exp, check_dependence, &d))
 		    remove_from_table (p, i);
-		  else 
-		    {
-		      /* Just canonicalize the expression once;
-			 otherwise each time we call invalidate
-			 true_dependence will canonicalize the
-			 expression again.  */
-		      if (!p->canon_exp)
-			p->canon_exp = canon_rtx (p->exp);
-		      if (true_dependence (x, full_mode, p->canon_exp,
-					   cse_rtx_varies_p))
-			remove_from_table (p, i);
-		    }
 		}
 	    }
 	}
