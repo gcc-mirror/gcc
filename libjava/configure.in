@@ -275,10 +275,10 @@ AC_LINK_FILES(java/lang/nat${PLATFORM}Process.cc, java/lang/natConcreteProcess.c
 dnl Likewise for natInetAddress.cc, natNetworkInterface.cc, natPlainSocketImpl.cc
 dnl and natPlainDatagramSocketImpl.cc
 test -d java/net || mkdir java/net
-AC_LINK_FILES(java/net/natInetAddress${PLATFORMNET}.cc, java/lang/natInetAddress.cc)
-AC_LINK_FILES(java/net/natNetworkInterface${PLATFORMNET}.cc, java/lang/natNetworkInterface.cc)
-AC_LINK_FILES(java/net/natPlainSocketImpl${PLATFORMNET}.cc, java/lang/natPlainSocketImpl.cc)
-AC_LINK_FILES(java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, java/lang/natPlainDatagramSocketImpl.cc)
+AC_LINK_FILES(java/net/natInetAddress${PLATFORMNET}.cc, java/net/natInetAddress.cc)
+AC_LINK_FILES(java/net/natNetworkInterface${PLATFORMNET}.cc, java/net/natNetworkInterface.cc)
+AC_LINK_FILES(java/net/natPlainSocketImpl${PLATFORMNET}.cc, java/net/natPlainSocketImpl.cc)
+AC_LINK_FILES(java/net/natPlainDatagramSocketImpl${PLATFORMNET}.cc, java/net/natPlainDatagramSocketImpl.cc)
 
 case "${host}" in
     *mingw*)
