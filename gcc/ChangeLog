@@ -1,3 +1,10 @@
+2004-07-14  Richard Sandiford  <rsandifo@redhat.com>
+
+	Revert:
+	2004-07-13  Richard Henderson  <rth@redhat.com>
+	* config/mips/mips.c (mips_pass_by_reference): Handle mode sizes
+	correctly.
+
 2004-07-14  Paolo Bonzini  <bonzini@gnu.org>
 
 	* tree-dfa.c (make_rename_temp): Work just like
