@@ -58,7 +58,8 @@ __eabi:	mflr	0
 
 # Normal program, load up register 2
 
-	lwz	2,.Lgot(11)			# normal GOT address
+	lwz	2,.Lgot(11)			# normal GOT address (obsolete in register 2)
+	mr	13,2				# also same as _SDA_BASE_ (V.4 small data ptr)
 	b	__do_global_ctors		# do any C++ global constructors (which returns to caller)
 
 # We need to relocate the .got2 pointers.  Don't load register 2
