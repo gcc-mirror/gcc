@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for PA-RISC.
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1995 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -63,7 +63,6 @@ Boston, MA 02111-1307, USA.  */
 /* HP's compiler has problems with enum bitfields.  */
 #define ONLY_INT_FIELDS
 
-/* If not compiled with GNU C, use C alloca.  */
-#ifndef __GNUC__
+/* Always claim to use C alloca; this prevents losing if building with
+   gcc -fno-builtin ... "  */
 #define USE_C_ALLOCA
-#endif
