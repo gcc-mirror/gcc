@@ -5,6 +5,9 @@
 	shift_mode.  Remove an extra error check.
 	(emit_a_shift): Adopt to the new calling prototype of
 	get_shift_alg.
+	(function_prologue): Fix code for a monitor
+	function.  Support H8/S.
+	(function_epilogue): Do not output pop for a monitor function.
 
 2001-01-09  Nick Clifton  <nickc@redhat.com>
 

@@ -297,16 +297,29 @@ function_prologue (file, size)
 	  fprintf (file, "\tsubs\t#2,sp\n");
 	  push (file, 0);
 	  fprintf (file, "\tstc\tccr,r0l\n");
+	  fprintf (file, "\tmov.b\tr0l,@(2,sp)\n");
+	  pop (file, 0);
 	  fprintf (file, "\torc\t#128,ccr\n");
-	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
 	}
-      else
+      else if (TARGET_H8300H)
 	{
 	  push (file, 0);
 	  fprintf (file, "\tstc\tccr,r0l\n");
-	  fprintf (file, "\torc\t#128,ccr\n");
 	  fprintf (file, "\tmov.b\tr0l,@(4,sp)\n");
+	  pop (file, 0);
+	  fprintf (file, "\torc\t#128,ccr\n");
 	}
+      else if (TARGET_H8300S)
+	{
+	  fprintf (file, "\tstc\texr,@-sp\n");
+	  push (file, 0);
+	  fprintf (file, "\tstc\tccr,r0l\n");
+	  fprintf (file, "\tmov.b\tr0l,@(6,sp)\n");
+	  pop (file, 0);
+	  fprintf (file, "\torc\t#128,ccr\n");
+	}
+      else
+	abort ();
     }
 
   if (frame_pointer_needed)
@@ -429,11 +442,6 @@ function_epilogue (file, size)
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
     pop (file, FRAME_POINTER_REGNUM);
-
-  /* If this is a monitor function, there is one register still left on
-     the stack.  */
-  if (monitor)
-    pop (file, 0);
 
   if (interrupt_handler)
     fprintf (file, "\trte\n");
