@@ -1,3 +1,9 @@
+2000-07-24  Geoff Keating  <geoffk@cygnus.com>
+
+	* gcc.c-torture/execute/20000722-1.x: New, testcase fails.
+	* gcc.c-torture/execute/20000722-1.c: New.
+	* gcc.c-torture/execute/20000516-1.c: Delete, replaced by 20000722-1.
+
 2000-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/cpp/20000720-1.S: New test.
