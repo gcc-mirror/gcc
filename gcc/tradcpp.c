@@ -647,7 +647,7 @@ main (argc, argv)
 	    int quoted = argv[i][2] == 'Q';
 
 	    if (*tgt == '\0' && i + 1 == argc)
-	      fatal ("Filename missing after %s option", argv[i]);
+	      fatal ("Target missing after %s option", argv[i]);
 	    else
 	      {
 		if (*tgt == '\0')
@@ -2374,7 +2374,7 @@ get_filename:
 
   /* If specified file name is absolute, just open it.  */
 
-  if (*fbeg == '/') {
+  if (IS_ABSOLUTE_PATHNAME (fbeg)) {
     strncpy (fname, (const char *)fbeg, flen);
     fname[flen] = 0;
     f = open (fname, O_RDONLY, 0666);
@@ -2409,7 +2409,7 @@ get_filename:
       else
 	stackp = include;
 
-      if (!system_header_p || *fbeg == '/' || !stackp->fname)
+      if (!system_header_p || IS_ABSOLUTE_PATHNAME (fbeg) || !stackp->fname)
 	deps_add_dep (deps, fname);
       else {
 	char *p;

@@ -430,7 +430,7 @@ cpp_included (pfile, fname)
   char *name;
   splay_tree_node nd;
 
-  if (fname[0] == '/')
+  if (IS_ABSOLUTE_PATHNAME (fname))
     {
       /* Just look it up.  */
       nd = splay_tree_lookup (pfile->all_include_files, (splay_tree_key) fname);
@@ -470,7 +470,7 @@ find_include_file (pfile, fname, search_start)
   char *name;
   struct include_file *file;
 
-  if (fname[0] == '/')
+  if (IS_ABSOLUTE_PATHNAME (fname))
     return open_file (pfile, fname);
       
   /* Search directory path for the file.  */
@@ -648,7 +648,7 @@ _cpp_execute_include (pfile, header, no_reinclude, include_next)
   if (CPP_OPTION (pfile, print_deps_missing_files)
       && PRINT_THIS_DEP (pfile, angle_brackets))
     {
-      if (!angle_brackets || *fname == '/')
+      if (!angle_brackets || IS_ABSOLUTE_PATHNAME (fname))
 	deps_add_dep (pfile->deps, fname);
       else
 	{
@@ -890,7 +890,7 @@ read_name_map (pfile, dirname)
 	  ptr->map_from = from;
 
 	  /* Make the real filename absolute.  */
-	  if (*to == '/')
+	  if (IS_ABSOLUTE_PATHNAME (to))
 	    ptr->map_to = to;
 	  else
 	    {

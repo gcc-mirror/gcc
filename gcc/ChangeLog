@@ -1,3 +1,17 @@
+2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * cppinit.c (cpp_start_read): If -fpreprocessed, ignore
+        -D, -U and -A, and don't initialize the builtins.
+        * cppmain.c (cb_define, cb_undef): Unconditionally process
+        the callback.
+        * tradcpp.c (main): Fix typo.
+
+2000-01-11  Mark Elbrecht  <snowball3@bigfoot.com>
+	  
+	 * cppfiles.c (cpp_included, find_include_file, _cpp_execute_include)
+	   (read_name_map): Use IS_ABSOLUTE_PATH.
+	 * tradcpp.c (get_filename): Likewise.   
+
 2001-01-11  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* config/m68hc11/m68hc11.md (*adcq, *subcq): Fix operand numbers.
