@@ -1,3 +1,7 @@
+2000-12-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* optimize.c (copy_body_r): Set STMT_IS_FULL_EXPR_P on EXPR_STMT.
+
 2000-12-07  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl2.c (lang_decode_option): Handle -Wformat-security.

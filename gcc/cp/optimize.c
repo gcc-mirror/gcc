@@ -289,6 +289,7 @@ copy_body_r (tp, walk_subtrees, data)
 	{
 	  *tp = build_stmt (EXPR_STMT, 
 			    RETURN_EXPR (return_stmt));
+	  STMT_IS_FULL_EXPR_P (*tp) = 1;
 	  /* And then jump to the end of the function.  */
 	  TREE_CHAIN (*tp) = goto_stmt;
 	}
