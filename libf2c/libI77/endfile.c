@@ -132,6 +132,7 @@ done:
 #else  /* !defined(HAVE_FTRUNCATE) */
 	fflush(b->ufd);
 	rc = ftruncate(fileno(b->ufd), loc);
+        FSEEK(bf,loc,SEEK_SET);
 #endif /* !defined(HAVE_FTRUNCATE) */
 	if (rc)
 		err(a->aerr,111,"endfile");
