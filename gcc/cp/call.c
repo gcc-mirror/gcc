@@ -5215,9 +5215,17 @@ joust (cand1, cand2, warn)
       winner = more_specialized
         (TI_TEMPLATE (cand1->template), TI_TEMPLATE (cand2->template),
          DEDUCE_ORDER,
-         /* Never do unification on the 'this' parameter.  */
+	 /* Tell the deduction code how many real function arguments
+ 	    we saw, not counting the implicit 'this' argument.  But,
+ 	    add_function_candidate() suppresses the "this" argument
+ 	    for constructors.
+  
+  	    [temp.func.order]: The presence of unused ellipsis and default
+  	    arguments has no effect on the partial ordering of function
+  	    templates.  */
          TREE_VEC_LENGTH (cand1->convs)
-         - DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn));
+ 	 - (DECL_NONSTATIC_MEMBER_FUNCTION_P (cand1->fn)
+ 	    -DECL_CONSTRUCTOR_P (cand1->fn)));
       if (winner)
         return winner;
     }
