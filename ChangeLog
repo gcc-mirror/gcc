@@ -1,3 +1,7 @@
+Thu Oct 11 21:50:15 2001  J"orn Rennecke <amylaar@onetel.net.uk>
+
+	* MAINTAINERS: Update my email address.
+
 2001-10-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	* configure.in (noconfigdirs) [cris-*-*]: Disable libgcj.
