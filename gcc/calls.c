@@ -3363,10 +3363,6 @@ expand_call (exp, target, ignore)
 	{
 	  tail_call_insns = insns;
 
-	  /* If something prevents making this a sibling call,
-	     zero out the sequence.  */
-	  if (sibcall_failure)
-	    tail_call_insns = NULL_RTX;
 	  /* Restore the pending stack adjustment now that we have
 	     finished generating the sibling call sequence.  */
 
@@ -3385,6 +3381,11 @@ expand_call (exp, target, ignore)
 	}
       else
 	normal_call_insns = insns;
+
+      /* If something prevents making this a sibling call,
+	 zero out the sequence.  */
+      if (sibcall_failure)
+	tail_call_insns = NULL_RTX;
     }
 
   /* The function optimize_sibling_and_tail_recursive_calls doesn't
