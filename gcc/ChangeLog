@@ -1,3 +1,7 @@
+2001-01-16  Tom Tromey  <tromey@redhat.com>
+
+	* gcc.c (cpp_options): Added `*' to specs for -MF, -MQ, and -MT.
+
 2001-01-16  Richard Henderson  <rth@redhat.com>
 
 	* config/i386/i386.h: Fix comment typo.
