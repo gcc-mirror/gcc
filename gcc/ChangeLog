@@ -1,3 +1,11 @@
+Sat Feb 27 19:37:04 1999  Arturo Montes  <mitosys@colomsat.com.co>
+
+	* i386/t-sco5 (crti.o): New target.
+	* i386/sco5.h (STARTFILE_SPEC): Include crti.o when 
+	linking -shared.
+	* configure.in (i[34567]86-*-sco3.2v5*): Add crti.o.
+	* configure: Rebuilt.
+
 Sat Feb 27 19:29:46 1999  Toon Moene  <toon@moene.indiv.nluug.nl>
 			  Mark Mitchell  <mark@markmitchell.com>
 			  Jeffrey A Law  (law@cygnus.com)
