@@ -1,3 +1,18 @@
+2005-03-11  Per Bothner  <per@bothner.com>
+
+	* c-tree.h (struct c_declarator): New id_loc field.
+	* c-pragma.h (c_lex_with_flags): Take position reference.
+	* c-lex.c (c_lex_with_flags): Set passed-in location from cpp token,
+	iff USE_MAPPED_LOCATION. (Type doesn't match otherwise.)
+	(c_lex): Pass dummy location to c_lex_with_flags.
+	* c-parser.c (c_lex_one_token): Set c_token's location using
+	c_lex_with_flags, instead of input_location, which might be "ahead".
+	(c_parser_direct_declarator): Set declarator's id_loc from
+	c_token's id_loc.
+	* c-decl.c (grokdeclarator): Set DECL_SOURCE_LOCATION from
+	declarator's id_loc, rather than probably-imprecise input_location.
+	(build_id_declarator): Initialize c_declarator's id_loc field.
+
 2005-03-11  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/20419

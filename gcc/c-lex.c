@@ -332,7 +332,7 @@ cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
    non-NULL.  */
 
 enum cpp_ttype
-c_lex_with_flags (tree *value, unsigned char *cpp_flags)
+c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags)
 {
   static bool no_more_pch;
   const cpp_token *tok;
@@ -344,6 +344,11 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
   type = tok->type;
   
  retry_after_at:
+#ifdef USE_MAPPED_LOCATION
+  *loc = tok->src_loc;
+#else
+  *loc = input_location;
+#endif
   switch (type)
     {
     case CPP_PADDING:
@@ -487,7 +492,8 @@ c_lex_with_flags (tree *value, unsigned char *cpp_flags)
 enum cpp_ttype
 c_lex (tree *value)
 {
-  return c_lex_with_flags (value, NULL);
+  location_t loc;
+  return c_lex_with_flags (value, &loc, NULL);
 }
 
 /* Returns the narrowest C-visible unsigned type, starting with the
