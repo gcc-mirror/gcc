@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GNU C-Compiler
-   Copyright (C) 1987, 88, 89, 92-97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 89, 92-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1435,6 +1435,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
     {
       char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+
       i = decode_reg_name (regname);
       if (i >= 0 || i == -4)
 	++nclobbers;
@@ -1449,7 +1450,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
       tree val = TREE_VALUE (tail);
       tree type = TREE_TYPE (val);
       tree val1;
-      int j;
+      char *p;
       int found_equal = 0;
       int found_plus = 0;
       int allows_reg = 0;
@@ -1463,8 +1464,8 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	 the worst that happens if we get it wrong is we issue an error
 	 message.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
-	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
+      for (p = TREE_STRING_POINTER (TREE_PURPOSE (tail)); *p != 0; p++)
+	switch (*p)
 	  {
 	  case '+':
 	    /* Make sure we can specify the matching operand.  */
@@ -1475,7 +1476,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	      }
 
 	    /* Replace '+' with '='.  */
-	    TREE_STRING_POINTER (TREE_PURPOSE (tail))[j] = '=';
+	    *p = '=';
 	    found_plus = 1;
 	    break;
 
@@ -1570,7 +1571,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   i = 0;
   for (tail = inputs; tail; tail = TREE_CHAIN (tail))
     {
-      int j;
+      char *p;
       int allows_reg = 0;
 
       /* If there's an erroneous arg, emit no insn,
@@ -1587,12 +1588,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Make sure constraint has neither `=' nor `+'.  */
 
-      for (j = 0; j < TREE_STRING_LENGTH (TREE_PURPOSE (tail)) - 1; j++)
-	switch (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j])
+      for (p = TREE_STRING_POINTER (TREE_PURPOSE (tail)); *p != 0; p++);
+	switch (*p)
 	  {
 	  case '+':   case '=':
-	    error ("input operand constraint contains `%c'",
-		   TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]);
+	    error ("input operand constraint contains `%c'", *p);
 	    return;
 
 	  case '?':  case '!':  case '*':  case '%':  case '&':
@@ -1613,8 +1613,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	       operands to memory.  */
 	  case '0':  case '1':  case '2':  case '3':  case '4':
 	  case '5':  case '6':  case '7':  case '8':  case '9':
-	    if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]
-		>= '0' + noutputs)
+	    if (*p >= '0' + noutputs)
 	      {
 		error
 		  ("matching constraint references invalid operand number");
