@@ -4423,7 +4423,11 @@ assemble_alias (decl, target)
 	ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
 
+#ifdef ASM_OUTPUT_DEF_FROM_DECLS
+  ASM_OUTPUT_DEF_FROM_DECLS (asm_out_file, decl, target);
+#else
   ASM_OUTPUT_DEF (asm_out_file, name, IDENTIFIER_POINTER (target));
+#endif
   TREE_ASM_WRITTEN (decl) = 1;
 #else
 #ifdef ASM_OUTPUT_WEAK_ALIAS

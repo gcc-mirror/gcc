@@ -5763,6 +5763,14 @@ which defines (equates) the symbol @var{name} to have the value @var{value}.
 If SET_ASM_OP is defined, a default definition is provided which is
 correct for most systems.
 
+@findex ASM_OUTPUT_DEF_FROM_DECLS
+@item ASM_OUTPUT_DEF (@var{stream}, @var{decl_of_name}, @var{decl_of_value})
+A C statement to output to the stdio stream @var{stream} assembler code
+which defines (equates) the symbol whoes tree node is @var{decl_of_name}
+to have the value of the tree node @var{decl_of_value}.  This macro will
+be used in preference to @samp{ASM_OUTPUT_DEF} if it is defined and if
+the tree nodes are available.
+
 @findex ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
 @item ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (@var{stream}, @var{symbol}, @var{high}, @var{low})
 A C statement to output to the stdio stream @var{stream} assembler code
