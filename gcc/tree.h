@@ -1,5 +1,5 @@
 /* Front-end tree definitions for GNU compiler.
-   Copyright (C) 1989, 93, 94, 95, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 93-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -353,6 +353,18 @@ struct tree_common
 	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
 	 && (TYPE_MODE (TREE_TYPE (EXP))			\
 	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0)))))	\
+    (EXP) = TREE_OPERAND (EXP, 0);
+
+/* Like STRIP_NOPS, but don't let the signedness change either.  */
+
+#define STRIP_SIGN_NOPS(EXP) \
+  while ((TREE_CODE (EXP) == NOP_EXPR				\
+	  || TREE_CODE (EXP) == CONVERT_EXPR			\
+	  || TREE_CODE (EXP) == NON_LVALUE_EXPR)		\
+	 && (TYPE_MODE (TREE_TYPE (EXP))			\
+	     == TYPE_MODE (TREE_TYPE (TREE_OPERAND (EXP, 0))))	\
+	 && (TREE_UNSIGNED (TREE_TYPE (EXP))			\
+	     == TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (EXP, 0))))) \
     (EXP) = TREE_OPERAND (EXP, 0);
 
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
