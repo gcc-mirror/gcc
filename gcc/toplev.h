@@ -102,6 +102,10 @@ extern const char *asm_file_name;
 extern bool exit_after_options;
 extern bool version_flag;
 
+/* Copy of arguments to toplev_main.  */
+extern int save_argc;
+extern char **save_argv;
+
 extern int target_flags_explicit;
 
 /* See toplev.c.  */

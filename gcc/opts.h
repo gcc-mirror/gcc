@@ -21,8 +21,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #ifndef GCC_OPTS_H
 #define GCC_OPTS_H
 
-extern void handle_options (unsigned int argc, char **argv,
-			    unsigned int lang_mask);
+extern void decode_options (int argc, char **argv);
 
 struct cl_option
 {

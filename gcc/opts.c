@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "params.h"
 #include "diagnostic.h"
+#include "tm_p.h"		/* For OPTIMIZATION_OPTIONS.  */
 
 /* Value of the -G xx switch, and whether it was passed or not.  */
 unsigned HOST_WIDE_INT g_switch_value;
@@ -133,6 +134,7 @@ static unsigned int handle_option (char **argv, unsigned int lang_mask);
 static char *write_langs (unsigned int lang_mask);
 static void complain_wrong_lang (const char *, const struct cl_option *,
 				 unsigned int lang_mask);
+static void handle_options (unsigned int, char **, unsigned int lang_mask);
 
 /* Perform a binary search to find which option the command-line INPUT
    matches.  Returns its index in the option array, and N_OPTS
@@ -404,7 +406,7 @@ handle_option (char **argv, unsigned int lang_mask)
 /* Decode and handle the vector of command line options.  LANG_MASK
    contains has a single bit set representing the current
    language.  */
-void
+static void
 handle_options (unsigned int argc, char **argv, unsigned int lang_mask)
 {
   unsigned int n, i;
@@ -419,6 +421,183 @@ handle_options (unsigned int argc, char **argv, unsigned int lang_mask)
 	  error ("unrecognized command line option \"%s\"", argv[i]);
 	}
     }
+}
+
+/* Parse command line options and set default flag values.  Do minimal
+   options processing.  */
+void
+decode_options (int argc, char **argv)
+{
+  int i, lang_mask;
+
+  /* Save in case md file wants to emit args as a comment.  */
+  save_argc = argc;
+  save_argv = argv;
+
+  /* Perform language-specific options initialization.  */
+  lang_mask = (*lang_hooks.init_options) ();
+
+  /* Scan to see what optimization level has been specified.  That will
+     determine the default value of many flags.  */
+  for (i = 1; i < argc; i++)
+    {
+      if (!strcmp (argv[i], "-O"))
+	{
+	  optimize = 1;
+	  optimize_size = 0;
+	}
+      else if (argv[i][0] == '-' && argv[i][1] == 'O')
+	{
+	  /* Handle -Os, -O2, -O3, -O69, ...  */
+	  char *p = &argv[i][2];
+
+	  if ((p[0] == 's') && (p[1] == 0))
+	    {
+	      optimize_size = 1;
+
+	      /* Optimizing for size forces optimize to be 2.  */
+	      optimize = 2;
+	    }
+	  else
+	    {
+	      const int optimize_val = read_integral_parameter (p, p - 2, -1);
+	      if (optimize_val != -1)
+		{
+		  optimize = optimize_val;
+		  optimize_size = 0;
+		}
+	    }
+	}
+    }
+
+  if (!optimize)
+    {
+      flag_merge_constants = 0;
+    }
+
+  if (optimize >= 1)
+    {
+      flag_defer_pop = 1;
+      flag_thread_jumps = 1;
+#ifdef DELAY_SLOTS
+      flag_delayed_branch = 1;
+#endif
+#ifdef CAN_DEBUG_WITHOUT_FP
+      flag_omit_frame_pointer = 1;
+#endif
+      flag_guess_branch_prob = 1;
+      flag_cprop_registers = 1;
+      flag_loop_optimize = 1;
+      flag_crossjumping = 1;
+      flag_if_conversion = 1;
+      flag_if_conversion2 = 1;
+    }
+
+  if (optimize >= 2)
+    {
+      flag_optimize_sibling_calls = 1;
+      flag_cse_follow_jumps = 1;
+      flag_cse_skip_blocks = 1;
+      flag_gcse = 1;
+      flag_expensive_optimizations = 1;
+      flag_strength_reduce = 1;
+      flag_rerun_cse_after_loop = 1;
+      flag_rerun_loop_opt = 1;
+      flag_caller_saves = 1;
+      flag_force_mem = 1;
+      flag_peephole2 = 1;
+#ifdef INSN_SCHEDULING
+      flag_schedule_insns = 1;
+      flag_schedule_insns_after_reload = 1;
+#endif
+      flag_regmove = 1;
+      flag_strict_aliasing = 1;
+      flag_delete_null_pointer_checks = 1;
+      flag_reorder_blocks = 1;
+      flag_reorder_functions = 1;
+    }
+
+  if (optimize >= 3)
+    {
+      flag_inline_functions = 1;
+      flag_rename_registers = 1;
+      flag_unswitch_loops = 1;
+      flag_unit_at_a_time = 1;
+    }
+
+  if (optimize < 2 || optimize_size)
+    {
+      align_loops = 1;
+      align_jumps = 1;
+      align_labels = 1;
+      align_functions = 1;
+
+      /* Don't reorder blocks when optimizing for size because extra
+	 jump insns may be created; also barrier may create extra padding.
+
+	 More correctly we should have a block reordering mode that tried
+	 to minimize the combined size of all the jumps.  This would more
+	 or less automatically remove extra jumps, but would also try to
+	 use more short jumps instead of long jumps.  */
+      flag_reorder_blocks = 0;
+    }
+
+  /* Initialize whether `char' is signed.  */
+  flag_signed_char = DEFAULT_SIGNED_CHAR;
+#ifdef DEFAULT_SHORT_ENUMS
+  /* Initialize how much space enums occupy, by default.  */
+  flag_short_enums = DEFAULT_SHORT_ENUMS;
+#endif
+
+  /* Initialize target_flags before OPTIMIZATION_OPTIONS so the latter can
+     modify it.  */
+  target_flags = 0;
+  set_target_switch ("");
+
+  /* Unwind tables are always present in an ABI-conformant IA-64
+     object file, so the default should be ON.  */
+#ifdef IA64_UNWIND_INFO
+  flag_unwind_tables = IA64_UNWIND_INFO;
+#endif
+
+#ifdef OPTIMIZATION_OPTIONS
+  /* Allow default optimizations to be specified on a per-machine basis.  */
+  OPTIMIZATION_OPTIONS (optimize, optimize_size);
+#endif
+
+  handle_options (argc, argv, lang_mask);
+
+  if (flag_pie)
+    flag_pic = flag_pie;
+  if (flag_pic && !flag_pie)
+    flag_shlib = 1;
+
+  if (flag_no_inline == 2)
+    flag_no_inline = 0;
+  else
+    flag_really_no_inline = flag_no_inline;
+
+  /* Set flag_no_inline before the post_options () hook.  The C front
+     ends use it to determine tree inlining defaults.  FIXME: such
+     code should be lang-independent when all front ends use tree
+     inlining, in which case it, and this condition, should be moved
+     to the top of process_options() instead.  */
+  if (optimize == 0)
+    {
+      /* Inlining does not work if not optimizing,
+	 so force it not to be done.  */
+      flag_no_inline = 1;
+      warn_inline = 0;
+
+      /* The c_decode_option function and decode_option hook set
+	 this to `2' if -Wall is used, so we can avoid giving out
+	 lots of errors for people who don't realize what -Wall does.  */
+      if (warn_uninitialized == 1)
+	warning ("-Wuninitialized is not supported without -O");
+    }
+
+  if (flag_really_no_inline == 2)
+    flag_really_no_inline = flag_no_inline;
 }
 
 /* Handle target- and language-independent options.  Return zero to
