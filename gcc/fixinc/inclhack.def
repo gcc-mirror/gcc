@@ -432,12 +432,14 @@ fix = {
     /*
      *  Test that the file-to-fix does not from a C++ directory
      *  Also, only accept double slashes that are not part of URL's
+     *  and do not appear to be within a single-line C-style comment
      *  and are not the end of a quoted string.
      */
     test   = ' -z "`echo ${file} | egrep \'(CC|cxx|\+\+)/\'`"';
     select = '(^|[^:])//[^"*]';
     sed    = 's,^//.*$,,';
-    sed    = 's,[^:]//[^"].*$,,';
+    sed    = 's,\(/\*.*\)//\(.*\*/\),\1/ /\2,g';
+    sed    = 's,\([^:]\)//[^"].*$,\1,';
 };
 
 

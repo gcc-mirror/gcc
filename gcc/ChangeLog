@@ -1,3 +1,8 @@
+Tue Aug 17 01:40:54 1999  Loren Rittle  <ljrittle@acm.org>
+
+	* fixinc/inclhack.def (no_double_slash): Do not trash single-line
+	C-style comments.  Do not lose the character before double slash.
+
 Mon Aug 16 18:08:22 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
 
 	* basic-block.h (struct edge_list): Stucture to maintain a vector

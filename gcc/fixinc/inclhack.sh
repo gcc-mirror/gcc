@@ -844,7 +844,8 @@ _EOF_
     else infile=${DESTFILE} ; fi 
 
     sed -e 's,^//.*$,,' \
-        -e 's,[^:]//[^"].*$,,' \
+        -e 's,\(/\*.*\)//\(.*\*/\),\1/ /\2,g' \
+        -e 's,\([^:]\)//[^"].*$,\1,' \
           < $infile > ${DESTDIR}/fixinc.tmp
     rm -f ${DESTFILE}
     mv -f ${DESTDIR}/fixinc.tmp ${DESTFILE}
