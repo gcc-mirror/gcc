@@ -1,3 +1,9 @@
+Thu Sep 11 13:52:01 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* g++.old-deja/g++.brendan/scope4.C: No longer expected to fail.
+	* g++.old-deja/g++.mike/p7325.C: Likewise.
+	* g++.old-deja/g++.mike/eh51.C: No longer expected to fail on the PA.
+
 Thu Sep 11 10:00:03 1997  Alexandre Oliva  (oliva@dcc.unicamp.br)
 
 	* g++.old-deja/g++.brendan/crash20.C: Rework to avoid libg++.

@@ -1,7 +1,6 @@
 // I hate this type of test case.  I'm not sure how to code it better.
 // See the PR for what this tests.
 // prms-id: 7325
-// execution test fails *-*-*
 
 int fail = 0;
 
