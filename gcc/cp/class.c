@@ -4553,7 +4553,13 @@ layout_class_type (tree t, tree *virtuals_p)
              At this point, finish_record_layout will be called, but
 	     S1 is still incomplete.)  */
 	  if (TREE_CODE (field) == VAR_DECL)
-	    maybe_register_incomplete_var (field);
+	    {
+	      maybe_register_incomplete_var (field);
+	      /* The visibility of static data members is determined
+		 at their point of declaration, not their point of
+		 definition.  */
+	      determine_visibility (field);
+	    }
 	  continue;
 	}
 

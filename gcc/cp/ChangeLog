@@ -1,3 +1,9 @@
+2004-12-13  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/18925
+	* class.c (layout_class_type): Determine the visibility of static
+	data members.
+
 2004-12-12  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/12454
