@@ -417,6 +417,9 @@ case $basic_machine in
                 basic_machine=hppa1.1-hp
                 os=-proelf
                 ;;
+      hp3k9[0-9][0-9] | hp9[0-9][0-9])
+		basic_machine=hppa1.0-hp
+		;;
 	hp9k2[0-9][0-9] | hp9k31[0-9])
 		basic_machine=m68000-hp
 		;;
@@ -909,7 +912,7 @@ case $os in
 	      | -ptx* | -coff* | -ecoff* | -winnt* | -domain* | -vsta* \
 	      | -udi* | -eabi* | -lites* | -ieee* | -go32* | -aux* \
 	      | -cygwin32* | -pe* | -psos* | -moss* | -proelf* | -rtems* \
-	      | -mingw32* | -linux-gnu* | -uxpv*)
+            | -mingw32* | -linux-gnu* | -uxpv* | -mpeix*)
 	# Remember, each alternative MUST END IN *, to match a version number.
 		;;
 	# CYGNUS LOCAL
@@ -1161,8 +1164,11 @@ case $basic_machine in
 				vendor=be
 				;;
 			-hpux*)
-				vendor=hp
-				;;
+                              vendor=hp
+                              ;;
+			-mpeix*)
+			      vendor=hp
+			      ;;
 			-hiux*)
 				vendor=hitachi
 				;;
