@@ -1,4 +1,4 @@
-/* Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 2000, 2001, 2003 Free Software Foundation, Inc.
    This file was pretty much copied from newlib.
 
 This file is part of GNU CC.
@@ -116,12 +116,12 @@ start_l:
 	cmp/ge	r0,r1
 	bt	start_l
 
-#if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
+#if defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 	mov.l set_fpscr_k, r1
 	jsr @r1
 	mov #0,r4
 	lds r3,fpscr
-#endif /*  defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+#endif /*  defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
 
 	! arrange for exit to call fini
 	mov.l	atexit_k,r0
@@ -146,10 +146,11 @@ start_l:
 	nop
 
 	.align 2
-#if defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
+#if defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
 set_fpscr_k:
 	.long	___set_fpscr
-#endif /*  defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+#endif /*  defined (__SH2E__) || defined (__SH3E__) || defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__) */
+
 stack_k:
 	.long	_stack	
 edata_k:
