@@ -1,3 +1,8 @@
+Sun Aug 30 16:05:45 1998  Mark Mitchell  <mark@markmitchell.com>
+
+	* convert.c (convert_to_integer): Issue an error on conversions to
+	incomplete types.
+
 Sun Aug 30 16:47:20 1998  Martin von Lvwis  <loewis@informatik.hu-berlin.de>
 
 	* Makefile.in: Add lang_tree_files and gencheck.h.
