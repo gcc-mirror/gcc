@@ -1,3 +1,14 @@
+2002-05-19  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/rs6000.h (FUNCTION_VALUE): Only return vectors in
+        an altivec register if TARGET_ALTIVEC.
+
+        * config/rs600/rs6000.c (rs6000_emit_move): Change VECTOR_MODE_P
+        to ALTIVEC_VECTOR_MODE.
+        (rs6000_va_arg): Only vectors of type AltiVec are 16 byte aligned.
+        (rs6000_va_arg): Vectors may go in registers if they are not
+        altivec vectors.
+
 2002-05-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* protoize.c: Fix formatting.

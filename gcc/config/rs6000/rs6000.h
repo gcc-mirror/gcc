@@ -1460,7 +1460,8 @@ typedef struct rs6000_stack {
 		&& TYPE_PRECISION (VALTYPE) < BITS_PER_WORD)	\
 	       || POINTER_TYPE_P (VALTYPE)			\
 	       ? word_mode : TYPE_MODE (VALTYPE),		\
-	       TREE_CODE (VALTYPE) == VECTOR_TYPE ? ALTIVEC_ARG_RETURN \
+	       TREE_CODE (VALTYPE) == VECTOR_TYPE		\
+	       && TARGET_ALTIVEC ? ALTIVEC_ARG_RETURN		\
 	       : TREE_CODE (VALTYPE) == REAL_TYPE && TARGET_HARD_FLOAT \
                ? FP_ARG_RETURN : GP_ARG_RETURN)
 
