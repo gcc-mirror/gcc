@@ -743,15 +743,6 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
   /* The current type without the type qualifiers */
   const char *type;
 
-#if 1
-  if (layout->prev_type == NULL)
-    {
-      layout->prev_type = layout->type;
-      layout->type = objc_skip_typespec (layout->prev_type);
-      return YES;
-    }
-#endif
-
   /* Add the size of the previous field to the size of the record.  */
   if (layout->prev_type)
     {
@@ -760,7 +751,6 @@ objc_layout_structure_next_member (struct objc_struct_layout *layout)
       if (*type != _C_BFLD)
         layout->record_size += objc_sizeof_type (type) * BITS_PER_UNIT;
       else {
-        desired_align = 1;
         /* Get the bitfield's type */
         for (bfld_type = type + 1;
              isdigit(*bfld_type);

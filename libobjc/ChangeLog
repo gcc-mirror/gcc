@@ -6,6 +6,10 @@
 	* encoding.c (objc_layout_finish_structure): Don't use
 	ROUND_TYPE_ALIGN on sparc.
 
+	* encoding.c (objc_layout_structure_next_member): Do the whole
+	procedure even for the first member, so that we get correct
+	alignment.
+
 2000-03-29  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* objc/Protocol.h, objc/objc-list.h: Change #endif labels to
