@@ -58,10 +58,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "real.h"
 #include "output.h"
 #include "hard-reg-set.h"
-
-#ifndef ASM_STABD_OP
-#define ASM_STABD_OP ".stabd"
-#endif
+#include "defaults.h"
 
 /* Get N_SLINE and N_SOL from stab.h if we can expect the file to exist.  */
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
