@@ -1,5 +1,5 @@
 /* com.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995, 1996, 1997, 2000, 2003
+   Copyright (C) 1995, 1996, 1997, 2000, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by James Craig Burley.
 
@@ -228,7 +228,7 @@ void ffecom_finish_decl (tree decl, tree init, bool is_top_level);
 void ffecom_finish_progunit (void);
 tree ffecom_get_invented_identifier (const char *pattern, ...)
   ATTRIBUTE_PRINTF_1;
-ffeinfoKindtype ffecom_gfrt_basictype (ffecomGfrt ix);
+ffeinfoBasictype ffecom_gfrt_basictype (ffecomGfrt ix);
 ffeinfoKindtype ffecom_gfrt_kindtype (ffecomGfrt ix);
 void ffecom_init_0 (void);
 void ffecom_init_2 (void);

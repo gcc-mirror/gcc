@@ -5265,8 +5265,10 @@ similarity.  Consequently, @code{short *} is not similar to
 @code{short **}.  Furthermore, two types that are typedefed are
 considered compatible if their underlying types are compatible.
 
-An @code{enum} type is considered to be compatible with another
-@code{enum} type.  For example, @code{enum @{foo, bar@}} is similar to
+An @code{enum} type is not considered to be compatible with another
+@code{enum} type even if both are compatible with the same integer
+type; this is what the C standard specifies.
+For example, @code{enum @{foo, bar@}} is not similar to
 @code{enum @{hot, dog@}}.
 
 You would typically use this function in code whose execution varies
