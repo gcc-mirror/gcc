@@ -1,3 +1,11 @@
+Thu Mar 16 16:01:30 MET 2000  Jan Hubicka  <jh@suse.cz>
+
+	* calls.c (expand_call): Do sanity checking on arg_space_so_far.
+	Update arg_space_so_far on stack adjustments.
+	(emit_library_call, emit_library_call_value): Likewise; take into
+	account arg_space_so_far and pending_stack_adjust when calculcating
+	the boundary.
+
 Thu Mar 16 09:02:19 2000  Jason Eckhardt  <jle@cygnus.com>
 
 	* flow.c: Move all basic block reordering code into its own file.

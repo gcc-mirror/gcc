@@ -1707,6 +1707,7 @@ expand_call (exp, target, ignore)
   rtx old_stack_level = 0;
   int old_pending_adj = 0;
   int old_inhibit_defer_pop = inhibit_defer_pop;
+  int old_arg_space_so_far = arg_space_so_far;
   rtx call_fusage = 0;
   register tree p;
   register int i;
@@ -2380,7 +2381,10 @@ expand_call (exp, target, ignore)
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
+    {
+      anti_adjust_stack (GEN_INT (args_size.constant - unadjusted_args_size));
+      arg_space_so_far += args_size.constant - unadjusted_args_size;
+    }
 #endif
 #endif
 
@@ -2431,6 +2435,10 @@ expand_call (exp, target, ignore)
 	       args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       valreg, old_inhibit_defer_pop, call_fusage, is_const, nothrow);
+
+  /* Stack pointer ought to be restored to the value before call.  */
+  if (old_arg_space_so_far != arg_space_so_far)
+    abort();
 
   /* If call is cse'able, make appropriate pair of reg-notes around it.
      Test valreg so we don't crash; may safely ignore `const'
@@ -2740,6 +2748,7 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 	       struct args_size offset; struct args_size size; rtx save_area; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
+  int old_arg_space_so_far = arg_space_so_far;
   rtx call_fusage = 0;
   int reg_parm_stack_space = 0;
   int nothrow;
@@ -2883,8 +2892,14 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 
   original_args_size = args_size;
 #ifdef PREFERRED_STACK_BOUNDARY
-  args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
-			 / STACK_BYTES) * STACK_BYTES);
+  args_size.constant = (((args_size.constant
+			  + arg_space_so_far
+			  + pending_stack_adjust
+			  + STACK_BYTES - 1)
+			 / STACK_BYTES
+			 * STACK_BYTES)
+			- arg_space_so_far
+			- pending_stack_adjust);
 #endif
 
   args_size.constant = MAX (args_size.constant,
@@ -2954,8 +2969,11 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant
-				- original_args_size.constant));
+    {
+      anti_adjust_stack (GEN_INT (args_size.constant
+				  - original_args_size.constant));
+      arg_space_so_far += args_size.constant - original_args_size.constant;
+    }
 #endif
 #endif
 
@@ -3086,6 +3104,7 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
 			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
+	  arg_space_so_far += argvec[argnum].size.constant;
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -3102,8 +3121,11 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant
-				- original_args_size.constant));
+    {
+      anti_adjust_stack (GEN_INT (args_size.constant
+				  - original_args_size.constant));
+      arg_space_so_far += args_size.constant - original_args_size.constant;
+    }
 #endif
 #endif
 
@@ -3173,6 +3195,10 @@ emit_library_call VPARAMS((rtx orgfun, int no_queue, enum machine_mode outmode,
 	       old_inhibit_defer_pop + 1, call_fusage, no_queue, nothrow);
 
   pop_temp_slots ();
+
+  /* Stack pointer ought to be restored to the value before call.  */
+  if (old_arg_space_so_far != arg_space_so_far)
+    abort();
 
   /* Now restore inhibit_defer_pop to its actual original value.  */
   OK_DEFER_POP;
@@ -3259,6 +3285,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 	       struct args_size offset; struct args_size size; rtx save_area; };
   struct arg *argvec;
   int old_inhibit_defer_pop = inhibit_defer_pop;
+  int old_arg_space_so_far = arg_space_so_far;
   rtx call_fusage = 0;
   rtx mem_value = 0;
   int pcc_struct_value = 0;
@@ -3474,8 +3501,14 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 
   original_args_size = args_size;
 #ifdef PREFERRED_STACK_BOUNDARY
-  args_size.constant = (((args_size.constant + (STACK_BYTES - 1))
-			 / STACK_BYTES) * STACK_BYTES);
+  args_size.constant = (((args_size.constant
+			  + arg_space_so_far
+			  + pending_stack_adjust
+			  + STACK_BYTES - 1)
+			 / STACK_BYTES
+			 * STACK_BYTES)
+			- arg_space_so_far
+			- pending_stack_adjust);
 #endif
 
   args_size.constant = MAX (args_size.constant,
@@ -3545,8 +3578,11 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
   /* If we push args individually in reverse order, perform stack alignment
      before the first push (the last arg).  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant
-				- original_args_size.constant));
+    {
+      anti_adjust_stack (GEN_INT (args_size.constant
+				  - original_args_size.constant));
+      arg_space_so_far += args_size.constant - original_args_size.constant;
+    }
 #endif
 #endif
 
@@ -3677,6 +3713,7 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
 	  emit_push_insn (val, mode, NULL_TREE, NULL_RTX, 0, partial, reg, 0,
 			  argblock, GEN_INT (argvec[argnum].offset.constant),
 			  reg_parm_stack_space, ARGS_SIZE_RTX (alignment_pad));
+	  arg_space_so_far += argvec[argnum].size.constant;
 
 #ifdef ACCUMULATE_OUTGOING_ARGS
 	  /* Now mark the segment we just used.  */
@@ -3693,8 +3730,11 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
   /* If we pushed args in forward order, perform stack alignment
      after pushing the last arg.  */
   if (argblock == 0)
-    anti_adjust_stack (GEN_INT (args_size.constant
-				- original_args_size.constant));
+    {
+      anti_adjust_stack (GEN_INT (args_size.constant
+				  - original_args_size.constant));
+      arg_space_so_far += args_size.constant - unadjusted_args_size;
+    }
 #endif
 #endif
 
@@ -3777,6 +3817,10 @@ emit_library_call_value VPARAMS((rtx orgfun, rtx value, int no_queue,
   OK_DEFER_POP;
 
   pop_temp_slots ();
+
+  /* Stack pointer ought to be restored to the value before call.  */
+  if (old_arg_space_so_far != arg_space_so_far)
+    abort();
 
   /* Copy the value to the right place.  */
   if (outmode != VOIDmode)
