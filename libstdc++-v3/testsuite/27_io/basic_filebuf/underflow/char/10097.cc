@@ -20,6 +20,9 @@
 
 // 27.8.1.4 Overridden virtual functions
 
+// XXX cygwin does not support mkfifo
+// { dg-do run { xfail *-*-cygwin* } }
+
 #include <fstream>
 #include <unistd.h>
 #include <signal.h>

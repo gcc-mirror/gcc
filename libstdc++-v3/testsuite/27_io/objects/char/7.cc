@@ -20,6 +20,9 @@
 
 // 27.3 Standard iostream objects
 
+// XXX cygwin does not support mkfifo
+// { dg-do run { xfail *-*-cygwin* } }
+
 #include <fstream>
 #include <iostream>
 #include <unistd.h>

@@ -18,6 +18,9 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+// XXX cygwin does not support mkfifo
+// { dg-do run { xfail *-*-cygwin* } }
+
 #include <testsuite_hooks.h>
 #include <cstdio>
 #include <iostream>
