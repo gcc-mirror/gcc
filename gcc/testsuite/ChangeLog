@@ -1,5 +1,7 @@
 2005-01-24  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/tree-ssa/empty-1.C: New test.
+
 	PR middle-end/19551
 	* gcc.c-torture/execute/20050121-1.c: New test.
 	* gcc.dg/20050121-2.c: New test.
