@@ -125,9 +125,9 @@ static rtx expand_builtin_strspn	PARAMS ((tree, rtx,
 static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree, rtx,
-						 enum machine_mode, int));
-static rtx expand_builtin_mempcpy	PARAMS ((tree, rtx,
 						 enum machine_mode));
+static rtx expand_builtin_mempcpy	PARAMS ((tree, rtx,
+						 enum machine_mode, int));
 static rtx expand_builtin_memmove	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_bcopy		PARAMS ((tree));
@@ -2274,16 +2274,12 @@ builtin_memcpy_read_str (data, offset, mode)
 /* Expand a call to the memcpy builtin, with arguments in ARGLIST.
    Return 0 if we failed, the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
-   mode MODE if that's convenient).  If ENDP is 0 return the
-   destination pointer, if ENDP is 1 return the end pointer ala
-   mempcpy, and if ENDP is 2 return the end pointer minus one ala
-   stpcpy.  */
+   mode MODE if that's convenient).  */
 static rtx
-expand_builtin_memcpy (arglist, target, mode, endp)
+expand_builtin_memcpy (arglist, target, mode)
      tree arglist;
      rtx target;
      enum machine_mode mode;
-     int endp;
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
@@ -2294,7 +2290,6 @@ expand_builtin_memcpy (arglist, target, mode, endp)
       tree src = TREE_VALUE (TREE_CHAIN (arglist));
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
       const char *src_str;
-
       unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
       unsigned int dest_align
 	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
@@ -2331,28 +2326,15 @@ expand_builtin_memcpy (arglist, target, mode, endp)
 	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
 				  (PTR) src_str, dest_align))
 	{
-	  store_by_pieces (dest_mem, INTVAL (len_rtx),
-			   builtin_memcpy_read_str,
-			   (PTR) src_str, dest_align);
+	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
+				      builtin_memcpy_read_str,
+				      (PTR) src_str, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
 	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
 #endif
-	  if (endp)
-	    {
-	      rtx result;
-	      rtx delta = len_rtx;
-
-	      if (endp == 2)
-		delta = GEN_INT (INTVAL (delta) - 1);
-
-	      result = simplify_gen_binary (PLUS, GET_MODE (dest_mem),
-					    dest_mem, delta);
-	      return force_operand (result, NULL_RTX);
-	    }
-	  else
-	    return dest_mem;
+	  return dest_mem;
 	}
 
       src_mem = get_memory_rtx (src);
@@ -2370,61 +2352,112 @@ expand_builtin_memcpy (arglist, target, mode, endp)
 	    dest_addr = convert_memory_address (ptr_mode, dest_addr);
 #endif
 	}
-
-      if (endp)
-        {
-	  rtx result = force_operand (len_rtx, NULL_RTX);
-
-	  if (endp == 2)
-	    {
-	      result = simplify_gen_binary (MINUS, GET_MODE (dest_addr),
-					    result, const1_rtx);
-	      result = force_operand (result, NULL_RTX);
-	    }
-
-	  result = simplify_gen_binary (PLUS, GET_MODE (dest_addr),
-					dest_addr, result);
-	  return force_operand (result, NULL_RTX);
-	}
-      else
-	return dest_addr;
+      return dest_addr;
     }
 }
 
 /* Expand a call to the mempcpy builtin, with arguments in ARGLIST.
    Return 0 if we failed the caller should emit a normal call,
    otherwise try to get the result in TARGET, if convenient (and in
-   mode MODE if that's convenient).  */
+   mode MODE if that's convenient).  If ENDP is 0 return the
+   destination pointer, if ENDP is 1 return the end pointer ala
+   mempcpy, and if ENDP is 2 return the end pointer minus one ala
+   stpcpy.  */
 
 static rtx
-expand_builtin_mempcpy (arglist, target, mode)
+expand_builtin_mempcpy (arglist, target, mode, endp)
      tree arglist;
      rtx target;
      enum machine_mode mode;
+     int endp;
 {
   if (!validate_arglist (arglist,
 			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     return 0;
+  /* If return value is ignored, transform mempcpy into memcpy.  */
+  else if (target == const0_rtx)
+    {
+      tree fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
+
+      if (!fn)
+	return 0;
+
+      return expand_expr (build_function_call_expr (fn, arglist),
+			  target, mode, EXPAND_NORMAL);
+    }
   else
     {
-      /* If return value is ignored, transform mempcpy into memcpy.  */
-      if (target == const0_rtx)
+      tree dest = TREE_VALUE (arglist);
+      tree src = TREE_VALUE (TREE_CHAIN (arglist));
+      tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+      const char *src_str;
+      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+      unsigned int dest_align
+	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+      rtx dest_mem, src_mem, len_rtx;
+
+      /* If DEST is not a pointer type or LEN is not constant,
+	 call the normal function.  */
+      if (dest_align == 0 || !host_integerp (len, 1))
+	return 0;
+
+      /* If the LEN parameter is zero, return DEST.  */
+      if (tree_low_cst (len, 1) == 0)
 	{
-	  tree fn;
-	  rtx ret = expand_builtin_memcpy (arglist, target, mode, /*endp=*/0);
-
-	  if (ret)
-	    return ret;
-
-	  fn = implicit_built_in_decls[BUILT_IN_MEMCPY];
-	  if (!fn)
-	    return 0;
-
-	  return expand_expr (build_function_call_expr (fn, arglist),
-			      target, mode, EXPAND_NORMAL);
+	  /* Evaluate and ignore SRC in case it has side-effects.  */
+	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
 	}
 
-      return expand_builtin_memcpy (arglist, target, mode, /*endp=*/1);
+      /* If either SRC is not a pointer type, don't do this
+         operation in-line.  */
+      if (src_align == 0)
+	return 0;
+
+      len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
+      src_str = c_getstr (src);
+
+      /* If SRC is a string constant and block move would be done
+	 by pieces, we can avoid loading the string from memory
+	 and only stored the computed constants.  */
+      if (src_str
+	  && GET_CODE (len_rtx) == CONST_INT
+	  && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= strlen (src_str) + 1
+	  && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
+				  (PTR) src_str, dest_align))
+	{
+	  dest_mem = get_memory_rtx (dest);
+	  set_mem_align (dest_mem, dest_align);
+	  dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
+				      builtin_memcpy_read_str,
+				      (PTR) src_str, dest_align, endp);
+	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_mem) != ptr_mode)
+	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
+#endif
+	  return dest_mem;
+	}
+
+      if (GET_CODE (len_rtx) == CONST_INT
+	  && can_move_by_pieces (INTVAL (len_rtx),
+				 MIN (dest_align, src_align)))
+	{
+	  dest_mem = get_memory_rtx (dest);
+	  set_mem_align (dest_mem, dest_align);
+	  src_mem = get_memory_rtx (src);
+	  set_mem_align (src_mem, src_align);
+	  dest_mem = move_by_pieces (dest_mem, src_mem, INTVAL (len_rtx),
+				     MIN (dest_align, src_align), endp);
+	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_mem) != ptr_mode)
+	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
+#endif
+	  return dest_mem;
+	}
+
+      return 0;
     }
 }
 
@@ -2563,13 +2596,7 @@ expand_builtin_stpcpy (arglist, target, mode)
       /* If return value is ignored, transform stpcpy into strcpy.  */
       if (target == const0_rtx)
 	{
-	  tree fn;
-	  rtx ret = expand_builtin_strcpy (arglist, target, mode);
-
-	  if (ret)
-	    return ret;
-
-	  fn = implicit_built_in_decls[BUILT_IN_STRCPY];
+	  tree fn = implicit_built_in_decls[BUILT_IN_STRCPY];
 	  if (!fn)
 	    return 0;
 
@@ -2577,7 +2604,7 @@ expand_builtin_stpcpy (arglist, target, mode)
 			      target, mode, EXPAND_NORMAL);
 	}
 
-      /* Ensure we get an actual string who length can be evaluated at
+      /* Ensure we get an actual string whose length can be evaluated at
          compile-time, not an expression containing a string.  This is
          because the latter will potentially produce pessimized code
          when used to produce the return value.  */
@@ -2588,7 +2615,7 @@ expand_builtin_stpcpy (arglist, target, mode)
       len = fold (size_binop (PLUS_EXPR, len, ssize_int (1)));
       newarglist = copy_list (arglist);
       chainon (newarglist, build_tree_list (NULL_TREE, len));
-      return expand_builtin_memcpy (newarglist, target, mode, /*endp=*/2);
+      return expand_builtin_mempcpy (newarglist, target, mode, /*endp=*/2);
     }
 }
 
@@ -2670,7 +2697,7 @@ expand_builtin_strncpy (arglist, target, mode)
 	  dest_mem = get_memory_rtx (dest);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_strncpy_read_str,
-			   (PTR) p, dest_align);
+			   (PTR) p, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -2798,7 +2825,7 @@ expand_builtin_memset (arglist, target, mode)
 	  dest_mem = get_memory_rtx (dest);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_gen_str,
-			   (PTR) val_rtx, dest_align);
+			   (PTR) val_rtx, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -2822,7 +2849,7 @@ expand_builtin_memset (arglist, target, mode)
 	  dest_mem = get_memory_rtx (dest);
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_read_str,
-			   (PTR) &c, dest_align);
+			   (PTR) &c, dest_align, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
 #ifdef POINTERS_EXTEND_UNSIGNED
 	  if (GET_MODE (dest_mem) != ptr_mode)
@@ -4698,13 +4725,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       break;
 
     case BUILT_IN_MEMCPY:
-      target = expand_builtin_memcpy (arglist, target, mode, /*endp=*/0);
+      target = expand_builtin_memcpy (arglist, target, mode);
       if (target)
 	return target;
       break;
 
     case BUILT_IN_MEMPCPY:
-      target = expand_builtin_mempcpy (arglist, target, mode);
+      target = expand_builtin_mempcpy (arglist, target, mode, /*endp=*/ 1);
       if (target)
 	return target;
       break;
