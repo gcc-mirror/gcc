@@ -1811,6 +1811,7 @@ extern int invert_jump_1		PARAMS ((rtx, rtx));
 extern int invert_jump			PARAMS ((rtx, rtx, int));
 extern int rtx_renumbered_equal_p	PARAMS ((rtx, rtx));
 extern int true_regnum			PARAMS ((rtx));
+extern unsigned int reg_or_subregno	PARAMS ((rtx));
 extern int redirect_jump_1		PARAMS ((rtx, rtx));
 extern int redirect_jump		PARAMS ((rtx, rtx, int));
 extern void rebuild_jump_labels		PARAMS ((rtx));

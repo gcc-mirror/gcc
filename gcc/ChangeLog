@@ -1,3 +1,38 @@
+Thu Oct  3 21:35:36 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	* toplev.c (rest_of_compilation): Dump loops before clobbering
+	the structure.
+
+        * expr.c (force_operand): Use expand_simple_* to handle more
+        cases.
+
+	* i386.c (q_regs_operand): Use ANY_QI_REG_P.
+
+	* i386.c (override_options): Fix stack alignment.
+	(classify_argument): Handle variable sized types.
+	(ix86_expand_int_movcc): Avoid RTL sharing problem.
+
+	* i386.md (prefetch_sse_rex, prefetch_3dnow_rex): New.
+	(prefetch): Properly handle 64bit case.
+
+	* i386.c (classify_argument): Properly compute word size of the analyzed object.
+
+	* jump.c (reg_or_subregno): New function.
+	* rtl.h (reg_or_subregno): Declare
+	* unroll.c (find_splittable_givs): Handle subregs.
+
+        Richard Sandiford  <rsandifo@redhat.com>:
+
+        * expr.c (force_operand): Fix reversed move.
+
+	Andreas Jaeger  <aj@suse.de>:
+
+	* config/i386/linux64.h (STARTFILE_PREFIX_SPEC): New.
+
+	Janis Johnson  <janis187@us.ibm.com>:
+
+	* loop.c (emit_prefetch_instructions): Several small fixes.
+
 Thu Sep  5 00:34:33 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* loop.c (scan_loop): Don't mark separate insns out of a libcall

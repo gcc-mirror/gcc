@@ -2871,7 +2871,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		  value = tem;
 		}
 
-	      splittable_regs[REGNO (v->new_reg)] = value;
+	      splittable_regs[reg_or_subregno (v->new_reg)] = value;
 	    }
 	  else
 	    {
@@ -3050,21 +3050,21 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 		 itself does not have to be splittable.  */
 
 	      if (v->same && v->same->giv_type == DEST_REG)
-		addr_combined_regs[REGNO (v->same->new_reg)] = v->same;
+		addr_combined_regs[reg_or_subregno (v->same->new_reg)] = v->same;
 
 	      if (GET_CODE (v->new_reg) == REG)
 		{
 		  /* This giv maybe hasn't been combined with any others.
 		     Make sure that it's giv is marked as splittable here.  */
 
-		  splittable_regs[REGNO (v->new_reg)] = value;
+		  splittable_regs[reg_or_subregno (v->new_reg)] = value;
 
 		  /* Make it appear to depend upon itself, so that the
 		     giv will be properly split in the main loop above.  */
 		  if (! v->same)
 		    {
 		      v->same = v;
-		      addr_combined_regs[REGNO (v->new_reg)] = v;
+		      addr_combined_regs[reg_or_subregno (v->new_reg)] = v;
 		    }
 		}
 
@@ -3101,7 +3101,7 @@ find_splittable_givs (loop, bl, unroll_type, increment, unroll_number)
 	  if (! v->ignore)
 	    count = REG_IV_CLASS (ivs, REGNO (v->src_reg))->biv_count;
 
-	  splittable_regs_updates[REGNO (v->new_reg)] = count;
+	  splittable_regs_updates[reg_or_subregno (v->new_reg)] = count;
 	}
 
       result++;

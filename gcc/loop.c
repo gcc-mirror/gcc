@@ -4112,11 +4112,17 @@ emit_prefetch_instructions (loop)
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 	      rtx loop_start = loop->start;
+	      rtx init_val = info[i].class->initial_value;
 	      rtx add_val = simplify_gen_binary (PLUS, Pmode,
 						 info[i].giv->add_val,
 						 GEN_INT (y * PREFETCH_BLOCK));
 
-	      loop_iv_add_mult_emit_before (loop, info[i].class->initial_value,
+	      /* Functions called by LOOP_IV_ADD_EMIT_BEFORE expect a
+		 non-constant INIT_VAL to have the same mode as REG, which
+		 in this case we know to be Pmode.  */
+	      if (GET_MODE (init_val) != Pmode && !CONSTANT_P (init_val))
+		init_val = convert_to_mode (Pmode, init_val, 0);
+	      loop_iv_add_mult_emit_before (loop, init_val,
 					    info[i].giv->mult_val,
 				            add_val, reg, 0, loop_start);
 	      emit_insn_before (gen_prefetch (reg, GEN_INT (info[i].write),

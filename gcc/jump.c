@@ -2428,3 +2428,15 @@ true_regnum (x)
     }
   return -1;
 }
+
+/* Return regno of the register REG and handle subregs too.  */
+unsigned int
+reg_or_subregno (reg)
+     rtx reg;
+{
+  if (REG_P (reg))
+    return REGNO (reg);
+  if (GET_CODE (reg) == SUBREG)
+    return REGNO (SUBREG_REG (reg));
+  abort ();
+}

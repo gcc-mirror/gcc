@@ -1649,7 +1649,11 @@ classify_argument (mode, type, classes, bit_offset)
 {
   int bytes =
     (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
-  int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int words = (bytes + (bit_offset % 64) / 8 + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+
+  /* Variable sized structures are always passed on the stack.  */
+  if (mode == BLKmode && type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+    return 0;
 
   if (type && AGGREGATE_TYPE_P (type))
     {
@@ -3206,7 +3210,7 @@ q_regs_operand (op, mode)
     return 0;
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
-  return QI_REG_P (op);
+  return ANY_QI_REG_P (op);
 }
 
 /* Return true if op is a NON_Q_REGS class register.  */
@@ -6123,7 +6127,10 @@ print_operand_address (file, addr)
   int scale;
 
   if (! ix86_decompose_address (addr, &parts))
-    abort ();
+    {
+      output_operand_lossage ("Wrong address expression or operand constraint");
+      return;
+    }
 
   base = parts.base;
   index = parts.index;
@@ -8237,7 +8244,7 @@ ix86_expand_int_movcc (operands)
 		  clob = gen_rtx_CLOBBER (VOIDmode, clob);
 
 		  tmp = gen_rtx_SET (VOIDmode, out, tmp);
-		  tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, clob));
+		  tmp = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, copy_rtx (tmp), clob));
 		  emit_insn (tmp);
 		}
 	      else

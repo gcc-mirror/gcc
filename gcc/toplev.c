@@ -3016,12 +3016,12 @@ rest_of_compilation (decl)
 	 block.  The loop infrastructure does the real job for us.  */
       flow_loops_find (&loops, LOOP_TREE);
 
+      if (rtl_dump_file)
+	flow_loops_dump (&loops, rtl_dump_file, NULL, 0);
+
       /* Estimate using heuristics if no profiling info is available.  */
       if (flag_guess_branch_prob)
 	estimate_probability (&loops);
-
-      if (rtl_dump_file)
-	flow_loops_dump (&loops, rtl_dump_file, NULL, 0);
 
       flow_loops_free (&loops);
     }
