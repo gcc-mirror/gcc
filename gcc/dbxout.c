@@ -1707,7 +1707,7 @@ dbxout_symbol (decl, local)
 		/* Do not generate a tag for records of variable size,
 		   since this type can not be properly described in the
 		   DBX format, and it confuses some tools such as objdump.  */
-		&& ! host_integerp (TYPE_SIZE (type), 1))
+		&& host_integerp (TYPE_SIZE (type), 1))
 	      {
 		tree name = TYPE_NAME (type);
 		if (TREE_CODE (name) == TYPE_DECL)
@@ -1758,7 +1758,7 @@ dbxout_symbol (decl, local)
 
 	/* Don't output a tag if this is an incomplete type.  This prevents
 	   the sun4 Sun OS 4.x dbx from crashing.  */
-	
+
 	if (tag_needed && TYPE_NAME (type) != 0
 	    && (TREE_CODE (TYPE_NAME (type)) == IDENTIFIER_NODE
 		|| (DECL_NAME (TYPE_NAME (type)) != 0))

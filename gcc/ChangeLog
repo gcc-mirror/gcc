@@ -1,3 +1,8 @@
+2001-05-25  Geoff Keating  <geoffk@redhat.com>
+
+	* dbxout.c (dbxout_symbol): Invert previous patch, which was
+	outputting a tag only for variable-size records.
+
 2001-05-25  Jeff Knaggs  <jknaggs@redhat.com>
 
 	* config/alpha/alpha.md (movtf_internal): Use reg_overlap_mentioned_p
