@@ -1,3 +1,13 @@
+2002-10-27  Paolo Carlini  <pcarlini@unitus.it>
+
+	PR libstdc++/8347
+	* include/bits/basic_string.tcc
+	(string::_S_construct(_InIter, _InIter, const _Alloc&,
+	forward_iterator_tag)): Do not throw logic error if
+	__beg == NULL && __end == __beg.
+	(string::string(const _CharT*, const _Alloc&)): Tweak.
+	* testsuite/21_strings/ctor_copy_dtor.cc: Add test05 from PR.
+
 2002-10-24  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR other/3337
