@@ -1,5 +1,5 @@
 ;  Subroutines for calling unbound dynamic functions from within GDB for HPPA.
-;  Copyright (C) 1994 Free Software Foundation, Inc.
+;  Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 ;  This file is part of GNU CC.
 
@@ -36,12 +36,28 @@
 	.EXPORT __gcc_plt_call,ENTRY,PRIV_LEV=3,RTNVAL=GR
 __gcc_plt_call
 	.PROC
-	.CALLINFO FRAME=64,CALLS,SAVE_RP
+	.CALLINFO
 	.ENTRY
-	stw %r2,-8(0,%r30)
-	bl $$dyncall,%r31
+	; Our return address comes in %r31, not %r2!
+	stw %r31,-8(0,%r30)
+
+	; An inline version of dyncall so we don't have to worry
+	; about long calls to millicode, PIC and other complexities.
+	bb,>=,n %r22,30,L$foo
+        depi 0,31,2,%r22
+        ldw 4(%r22),%r19
+        ldw 0(%r22),%r22
+L$foo
+        ldsid (%r22),%r1
+        mtsp %r1,%sr0
+        ble 0(%sr0,%r22)
 	copy %r31,%r2
 	ldw -8(0,%r30),%r2
-	bv,n 0(%r2)
+
+	; We're going to be returning to a stack address, so we
+	; need to do an intra-space return.
+	ldsid (%rp),%r1
+	mtsp %r1,%sr0
+	be,n 0(%sr0,%rp)
 	.EXIT
 	.PROCEND
