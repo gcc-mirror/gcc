@@ -61,7 +61,7 @@
 })
 #endif
 
-__inline static const double
+__inline extern double
 sin (double x)
 {
   double value;
@@ -72,7 +72,7 @@ sin (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 cos (double x)
 {
   double value;
@@ -83,7 +83,7 @@ cos (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 tan (double x)
 {
   double value;
@@ -94,7 +94,7 @@ tan (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 asin (double x)
 {
   double value;
@@ -105,7 +105,7 @@ asin (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 acos (double x)
 {
   double value;
@@ -116,7 +116,7 @@ acos (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 atan (double x)
 {
   double value;
@@ -127,7 +127,7 @@ atan (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 atan2 (double y, double x)
 {
   double pi, pi_over_2;
@@ -184,7 +184,7 @@ atan2 (double y, double x)
     }
 }
 
-__inline static const double
+__inline extern double
 sinh (double x)
 {
   double value;
@@ -195,7 +195,7 @@ sinh (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 cosh (double x)
 {
   double value;
@@ -206,7 +206,7 @@ cosh (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 tanh (double x)
 {
   double value;
@@ -217,7 +217,7 @@ tanh (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 atanh (double x)
 {
   double value;
@@ -228,7 +228,7 @@ atanh (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 exp (double x)
 {
   double value;
@@ -239,7 +239,7 @@ exp (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 expm1 (double x)
 {
   double value;
@@ -250,7 +250,7 @@ expm1 (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 log (double x)
 {
   double value;
@@ -261,7 +261,7 @@ log (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 log1p (double x)
 {
   double value;
@@ -272,7 +272,7 @@ log1p (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 log10 (double x)
 {
   double value;
@@ -283,7 +283,7 @@ log10 (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 sqrt (double x)
 {
   double value;
@@ -294,14 +294,14 @@ sqrt (double x)
   return value;
 }
 
-__inline static const double
-hypot (const double x, const double y)
+__inline extern double
+hypot (double x, double y)
 {
   return sqrt (x*x + y*y);
 }
 
-__inline static const double
-pow (const double x, const double y)
+__inline extern double
+pow (double x, double y)
 {
   if (x > 0)
     return exp (y * log (x));
@@ -349,7 +349,7 @@ pow (const double x, const double y)
     }
 }
 
-__inline static const double
+__inline extern double
 fabs (double x)
 {
   double value;
@@ -360,7 +360,7 @@ fabs (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 ceil (double x)
 {
   int rounding_mode, round_up;
@@ -382,7 +382,7 @@ ceil (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 floor (double x)
 {
   int rounding_mode, round_down;
@@ -405,7 +405,7 @@ floor (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 rint (double x)
 {
   int rounding_mode, round_nearest;
@@ -427,7 +427,7 @@ rint (double x)
   return value;
 }
 
-__inline static const double
+__inline extern double
 fmod (double x, double y)
 {
   double value;
@@ -439,7 +439,7 @@ fmod (double x, double y)
   return value;
 }
 
-__inline static const double
+__inline extern double
 drem (double x, double y)
 {
   double value;
@@ -451,7 +451,7 @@ drem (double x, double y)
   return value;
 }
 
-__inline static const double
+__inline extern double
 scalb (double x, int n)
 {
   double value;
@@ -463,7 +463,7 @@ scalb (double x, int n)
   return value;
 }
 
-__inline static double
+__inline extern double
 logb (double x)
 {
   double exponent;
@@ -474,7 +474,7 @@ logb (double x)
   return exponent;
 }
 
-__inline static const double
+__inline extern double
 ldexp (double x, int n)
 {
   double value;
@@ -486,7 +486,7 @@ ldexp (double x, int n)
   return value;
 }
 
-__inline static double
+__inline extern double
 frexp (double x, int *exp)
 {
   double float_exponent;
@@ -511,7 +511,7 @@ frexp (double x, int *exp)
   return mantissa;
 }
 
-__inline static double
+__inline extern double
 modf (double x, double *ip)
 {
   double temp;
