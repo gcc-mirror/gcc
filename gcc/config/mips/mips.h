@@ -346,10 +346,10 @@ extern const struct mips_cpu_info *mips_tune_info;
 
 	t1 = a * b
 	t2 = t1 + c * d
-	t3 = c * d
-	t4 = t3 - c * d
+	t3 = e * f
+	t4 = t3 - g * h
 
-   t1 will have a higher priority and t2 and t3 will have a higher
+   t1 will have a higher priority than t2 and t3 will have a higher
    priority than t4.  However, before reload, there is no dependence
    between t1 and t3, and they can often have similar priorities.
    The scheduler will then tend to prefer:
