@@ -33,6 +33,7 @@
  
 #include "testsuite_abi.h"
 #include <iostream>
+#include <unistd.h>    // for access(2)
 
 int
 main(int argc, char** argv)
