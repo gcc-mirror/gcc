@@ -1569,18 +1569,6 @@ sbss_section ()								\
 #undef  TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION  m32r_select_section
 
-/* A C statement or statements to switch to the appropriate section for
-   output of RTX in mode MODE.  You can assume that RTX
-   is some kind of constant in RTL.  The argument MODE is redundant
-   except in the case of a `const_int' rtx.  Select the section by
-   calling `text_section' or one of the alternatives for other
-   sections.
-
-   Do not define this macro if you put all constants in the read-only
-   data section.  */
-
-#undef SELECT_RTX_SECTION
-
 /* Define this macro if jump tables (for tablejump insns) should be
    output in the text section, along with the assembler instructions.
    Otherwise, the readonly data section is used.

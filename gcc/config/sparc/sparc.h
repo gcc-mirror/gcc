@@ -826,19 +826,6 @@ if (TARGET_ARCH64				\
 #ifndef SUNOS4_SHARED_LIBRARIES
 #define SUNOS4_SHARED_LIBRARIES 0
 #endif
-
-
-/* Use text section for a constant
-   unless we need more alignment than that offers.  */
-/* This is defined differently for v9 in a cover file.  */
-#define SELECT_RTX_SECTION(MODE, X, ALIGN)	\
-{						\
-  if (GET_MODE_BITSIZE (MODE) <= MAX_TEXT_ALIGN \
-      && ! (flag_pic && (symbolic_operand ((X), (MODE)) || SUNOS4_SHARED_LIBRARIES)))  \
-    text_section ();				\
-  else						\
-    data_section ();				\
-}
 
 /* Standard register usage.  */
 

@@ -29,7 +29,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #include "m68k/m68k.h"
-#undef SELECT_RTX_SECTION
 #include "svr3.h"
 
 #undef INT_OP_GROUP
@@ -44,7 +43,6 @@ Boston, MA 02111-1307, USA.  */
 /* Remove handling for a separate constant data section.  We put
    constant data in text_section, which is the default.  */
 #undef TARGET_ASM_SELECT_SECTION
-#undef SELECT_RTX_SECTION
 #undef EXTRA_SECTIONS
 #undef EXTRA_SECTION_FUNCTIONS
 #undef READONLY_DATA_SECTION_ASM_OP

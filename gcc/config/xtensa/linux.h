@@ -57,10 +57,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
 
-/* Don't switch sections in the middle of a literal pool! */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)
-
 /* Always enable "-fpic" for Xtensa Linux.  */
 #define XTENSA_ALWAYS_PIC 1
 

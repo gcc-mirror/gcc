@@ -150,6 +150,8 @@ static void mips_select_section PARAMS ((tree, int, unsigned HOST_WIDE_INT))
 	ATTRIBUTE_UNUSED;
 static void mips_unique_section			PARAMS ((tree, int))
 	ATTRIBUTE_UNUSED;
+static void mips_select_rtx_section PARAMS ((enum machine_mode, rtx,
+					     unsigned HOST_WIDE_INT));
 
 
 struct machine_function {
@@ -572,6 +574,8 @@ enum reg_class mips_char_to_class[256] =
 #define TARGET_ASM_FUNCTION_PROLOGUE mips_output_function_prologue
 #undef TARGET_ASM_FUNCTION_EPILOGUE
 #define TARGET_ASM_FUNCTION_EPILOGUE mips_output_function_epilogue
+#undef TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION mips_select_rtx_section
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST mips_adjust_cost
@@ -7897,10 +7901,11 @@ symbolic_expression_p (x)
 /* Choose the section to use for the constant rtx expression X that has
    mode MODE.  */
 
-void
-mips_select_rtx_section (mode, x)
+static void
+mips_select_rtx_section (mode, x, align)
      enum machine_mode mode;
-     rtx x ATTRIBUTE_UNUSED;
+     rtx x;
+     unsigned HOST_WIDE_INT align;
 {
   if (TARGET_MIPS16)
     {
@@ -7913,26 +7918,26 @@ mips_select_rtx_section (mode, x)
     {
       /* For embedded applications, always put constants in read-only data,
 	 in order to reduce RAM usage.  */
-      readonly_data_section ();
+      mergeable_constant_section (mode, align, 0);
     }
   else
     {
       /* For hosted applications, always put constants in small data if
 	 possible, as this gives the best performance.  */
+      /* ??? Consider using mergable small data sections.  */
 
       if (GET_MODE_SIZE (mode) <= (unsigned) mips_section_threshold
 	  && mips_section_threshold > 0)
 	SMALL_DATA_SECTION ();
       else if (flag_pic && symbolic_expression_p (x))
-	/* Any expression involving a SYMBOL_REF might need a run-time
-	   relocation.  (The symbol might be defined in a shared
-	   library loaded at an unexpected base address.)  So, we must
-	   put such expressions in the data segment (which is
-	   writable), rather than the text segment (which is
-	   read-only).  */
-	data_section ();
+	{
+	  if (targetm.have_named_sections)
+	    named_section (NULL_TREE, ".data.rel.ro", 3);
+	  else
+	    data_section ();
+	}
       else
-	readonly_data_section ();
+	mergeable_constant_section (mode, align, 0);
     }
 }
 

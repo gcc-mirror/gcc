@@ -164,6 +164,11 @@ static int alpha_use_dfa_pipeline_interface
 static int alpha_multipass_dfa_lookahead
   PARAMS ((void));
 
+#ifdef OBJECT_FORMAT_ELF
+static void alpha_elf_select_rtx_section
+  PARAMS ((enum machine_mode, rtx, unsigned HOST_WIDE_INT));
+#endif
+
 #if TARGET_ABI_UNICOSMK
 static void alpha_init_machine_status
   PARAMS ((struct function *p));
@@ -232,6 +237,11 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 #define TARGET_ASM_UNALIGNED_SI_OP "\t.align 0\n\t.long\t"
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP "\t.align 0\n\t.quad\t"
+#endif
+
+#ifdef OBJECT_FORMAT_ELF
+#undef	TARGET_ASM_SELECT_RTX_SECTION
+#define	TARGET_ASM_SELECT_RTX_SECTION  alpha_elf_select_rtx_section
 #endif
 
 #undef TARGET_ASM_FUNCTION_END_PROLOGUE
@@ -4841,7 +4851,6 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
      rtx dep_insn;
      int cost;
 {
-  rtx set, set_src;
   enum attr_type insn_type, dep_insn_type;
 
   /* If the dependence is an anti-dependence, there is no cost.  For an
@@ -8071,6 +8080,26 @@ check_float_value (mode, d, overflow)
 
   return 0;
 }
+
+#ifdef OBJECT_FORMAT_ELF
+
+/* Switch to the section to which we should output X.  The only thing
+   special we do here is to honor small data.  */
+
+static void
+alpha_elf_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align;
+{
+  if (TARGET_SMALL_DATA && GET_MODE_SIZE (mode) <= g_switch_value)
+    /* ??? Consider using mergable sdata sections.  */
+    sdata_section ();
+  else
+    default_elf_select_rtx_section (mode, x, align);
+}
+
+#endif /* OBJECT_FORMAT_ELF */
 
 #if TARGET_ABI_OPEN_VMS
 

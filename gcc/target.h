@@ -98,6 +98,11 @@ struct gcc_target
        the required alignment of the data.  */
     void (* select_section) PARAMS ((tree, int, unsigned HOST_WIDE_INT));
 
+    /* Select and switch to a section for X with MODE.  ALIGN is
+       the desired alignment of the data.  */
+    void (* select_rtx_section) PARAMS ((enum machine_mode, rtx,
+					 unsigned HOST_WIDE_INT));
+
     /* Select a unique section name for DECL.  RELOC is the same as
        for SELECT_SECTION.  */
     void (* unique_section) PARAMS ((tree, int));

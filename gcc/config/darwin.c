@@ -1237,6 +1237,25 @@ machopic_select_section (exp, reloc, align)
     data_section ();
 }
 
+/* This can be called with address expressions as "rtx".
+   They must go in "const". */
+
+void
+machopic_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (GET_MODE_SIZE (mode) == 8)
+    literal8_section ();
+  else if (GET_MODE_SIZE (mode) == 4
+	   && (GET_CODE (x) == CONST_INT
+	       || GET_CODE (x) == CONST_DOUBLE))
+    literal4_section ();
+  else
+    const_section ();
+}
+
 void
 machopic_asm_out_constructor (symbol, priority)
      rtx symbol;

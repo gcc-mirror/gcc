@@ -122,8 +122,6 @@ extern rtx rs6000_legitimize_address PARAMS ((rtx, rtx, enum machine_mode));
 extern rtx rs6000_legitimize_reload_address PARAMS ((rtx, enum machine_mode,
 			    int, int, int, int *));
 extern int rs6000_legitimate_address PARAMS ((enum machine_mode, rtx, int));
-extern void rs6000_select_rtx_section PARAMS ((enum machine_mode, rtx));
-
 extern rtx rs6000_return_addr PARAMS ((int, rtx));
 extern void rs6000_output_symbol_ref PARAMS ((FILE*, rtx));
 

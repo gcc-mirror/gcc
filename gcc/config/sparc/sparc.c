@@ -160,6 +160,9 @@ static void sparc_elf_asm_named_section PARAMS ((const char *, unsigned int));
 static void sparc_aout_select_section PARAMS ((tree, int,
 					       unsigned HOST_WIDE_INT))
      ATTRIBUTE_UNUSED;
+static void sparc_aout_select_rtx_section PARAMS ((enum machine_mode, rtx,
+						   unsigned HOST_WIDE_INT))
+     ATTRIBUTE_UNUSED;
 
 static int sparc_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int sparc_issue_rate PARAMS ((void));
@@ -8054,6 +8057,23 @@ sparc_aout_select_section (t, reloc, align)
      unsigned HOST_WIDE_INT align;
 {
   default_select_section (t, reloc | SUNOS4_SHARED_LIBRARIES, align);
+}
+
+/* Use text section for a constant unless we need more alignment than
+   that offers.  */
+
+static void
+sparc_aout_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align;
+{
+  if (align <= MAX_TEXT_ALIGN
+      && ! (flag_pic && (symbolic_operand (x, mode)
+			 || SUNOS4_SHARED_LIBRARIES)))
+    readonly_data_section ();
+  else
+    data_section ();
 }
 
 int

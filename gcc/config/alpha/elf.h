@@ -258,22 +258,6 @@ void FN ()					\
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 
-/* A C statement or statements to switch to the appropriate
-   section for output of RTX in mode MODE.  RTX is some kind
-   of constant in RTL.  The argument MODE is redundant except
-   in the case of a `const_int' rtx.  Currently, these always
-   go into the const section.  */
-
-#undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
-do {									\
-  if (TARGET_SMALL_DATA && GET_MODE_SIZE (MODE) <= g_switch_value)	\
-     /* ??? Consider .sdata.{lit4,lit8} as SHF_MERGE|SHF_ALPHA_GPREL.  */ \
-    sdata_section ();							\
-  else									\
-    mergeable_constant_section((MODE), (ALIGN), 0);			\
-} while (0)
-
 /* Define the strings used for the special svr4 .type and .size directives.
    These strings generally do not vary from one system running svr4 to
    another, but if a given system (e.g. m88k running svr) needs to use

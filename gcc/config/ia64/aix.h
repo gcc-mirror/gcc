@@ -136,19 +136,8 @@ do {							\
 #define TARGET_ASM_SELECT_SECTION  ia64_aix_select_section
 #undef	TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION  ia64_aix_unique_section
-
-extern unsigned int ia64_section_threshold;
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)			\
-{								\
-  if (GET_MODE_SIZE (MODE) > 0					\
-      && GET_MODE_SIZE (MODE) <= ia64_section_threshold)	\
-    sdata_section ();						\
-  else if (symbolic_operand ((RTX), (MODE)))			\
-    data_section ();						\
-  else								\
-    readonly_data_section ();					\
-}
+#undef	TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION  ia64_aix_select_rtx_section
 
 /* Override ia64/sysv4.h setting with that used by AIX5.  */
 #undef WCHAR_TYPE

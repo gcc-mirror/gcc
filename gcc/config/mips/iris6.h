@@ -251,6 +251,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define BSS_SECTION_ASM_OP	"\t.section\t.bss"
 
+#undef READONLY_DATA_SECTION_ASM_OP
 #define READONLY_DATA_SECTION_ASM_OP_32	"\t.rdata"
 #define READONLY_DATA_SECTION_ASM_OP_64	"\t.section\t.rodata"
 #define READONLY_DATA_SECTION_ASM_OP		\

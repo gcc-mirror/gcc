@@ -443,19 +443,8 @@ objc_section_init ()				\
 
 #undef	TARGET_ASM_SELECT_SECTION
 #define TARGET_ASM_SELECT_SECTION nextstep_select_section
-
-#undef	SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(mode, rtx, align)				\
-  do									\
-    {									\
-      if (GET_MODE_SIZE(mode) == 8)					\
-	literal8_section();						\
-      else if (GET_MODE_SIZE(mode) == 4)				\
-	literal4_section();						\
-      else								\
-	const_section ();						\
-    }									\
-  while (0)
+#undef	TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION nextstep_select_rtx_section
 
 #ifdef ASM_COMMENT_START
 # undef ASM_COMMENT_START

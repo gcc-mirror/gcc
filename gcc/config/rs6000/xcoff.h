@@ -135,11 +135,6 @@ toc_section ()						\
 
 #define READONLY_DATA_SECTION read_only_data_section
 
-/* Select the section for an initialized data object.
-
-   On the RS/6000, we have a special section for all variables except those
-   that are static.  */
-
 #define TARGET_ASM_SELECT_SECTION  rs6000_xcoff_select_section
 
 /* Return non-zero if this entry is to be written into the constant
@@ -172,12 +167,7 @@ toc_section ()						\
    However, if this is being placed in the TOC it must be output as a
    toc entry.  */
 
-#define SELECT_RTX_SECTION(MODE, X, ALIGN)		\
-{ if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (X, MODE))	\
-    toc_section ();					\
-  else							\
-    read_only_private_data_section ();			\
-}
+#define TARGET_ASM_SELECT_RTX_SECTION  rs6000_xcoff_select_rtx_section
 
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate

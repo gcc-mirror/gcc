@@ -166,12 +166,16 @@ static void rs6000_elf_asm_out_destructor PARAMS ((rtx, int));
 static void rs6000_elf_select_section PARAMS ((tree, int,
 						 unsigned HOST_WIDE_INT));
 static void rs6000_elf_unique_section PARAMS ((tree, int));
+static void rs6000_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
+						   unsigned HOST_WIDE_INT));
 #endif
 #ifdef OBJECT_FORMAT_COFF
 static void xcoff_asm_named_section PARAMS ((const char *, unsigned int));
 static void rs6000_xcoff_select_section PARAMS ((tree, int,
 						 unsigned HOST_WIDE_INT));
 static void rs6000_xcoff_unique_section PARAMS ((tree, int));
+static void rs6000_xcoff_select_rtx_section PARAMS ((enum machine_mode, rtx,
+						     unsigned HOST_WIDE_INT));
 #endif
 static int rs6000_adjust_cost PARAMS ((rtx, rtx, rtx, int));
 static int rs6000_adjust_priority PARAMS ((rtx, int));
@@ -10928,6 +10932,8 @@ rs6000_longcall_ref (call_ref)
 }
 
 
+#ifdef USING_ELFOS_H
+
 /* A C statement or statements to switch to the appropriate section
    for output of RTX in mode MODE.  You can assume that RTX is some
    kind of constant in RTL.  The argument MODE is redundant except in
@@ -10937,22 +10943,16 @@ rs6000_longcall_ref (call_ref)
    Do not define this macro if you put all constants in the read-only
    data section.  */
 
-#ifdef USING_ELFOS_H
-
-void
-rs6000_select_rtx_section (mode, x)
+static void
+rs6000_elf_select_rtx_section (mode, x, align)
      enum machine_mode mode;
      rtx x;
+     unsigned HOST_WIDE_INT align;
 {
   if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode))
     toc_section ();
-  else if (flag_pic
-	   && (GET_CODE (x) == SYMBOL_REF
-	       || GET_CODE (x) == LABEL_REF
-	       || GET_CODE (x) == CONST))
-    data_section ();
   else
-    readonly_data_section ();
+    default_elf_select_rtx_section (mode, x, align);
 }
 
 /* A C statement or statements to switch to the appropriate
@@ -11683,4 +11683,16 @@ rs6000_xcoff_unique_section (decl, reloc)
       DECL_SECTION_NAME (decl) = build_string (len, string);
     }
 }
-#endif
+
+static void
+rs6000_xcoff_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (x, mode))
+    toc_section ();
+  else
+    read_only_private_data_section ();
+}
+#endif /* OBJECT_FORMAT_COFF */

@@ -101,10 +101,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    doesn't allow $ in symbol names.  */
 #undef NO_DOLLAR_IN_LABEL
 
-/* Don't switch sections in the middle of a literal pool! */
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE,RTX,ALIGN)
-  
 /* Do not force "-fpic" for this target.  */
 #define XTENSA_ALWAYS_PIC 0
 

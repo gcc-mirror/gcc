@@ -41,6 +41,8 @@ Boston, MA 02111-1307, USA.  */
 
 /* SunOS has on_exit instead of atexit.  */
 /* The man page says it returns int.  */
+#ifdef IN_LIBGCC2
 extern int on_exit PARAMS ((void *, void *));
+#endif
 #define ON_EXIT(FUNC) on_exit ((FUNC), 0)
 #define NEED_ATEXIT

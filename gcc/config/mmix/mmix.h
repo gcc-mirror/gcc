@@ -907,9 +907,6 @@ typedef struct { int regs; int lib; int now_varargs; } CUMULATIVE_ARGS;
 
 #define READONLY_DATA_SECTION_ASM_OP	"\t.section\t.rodata"
 
-#undef  SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN) readonly_data_section ()
-
 #define ENCODE_SECTION_INFO(DECL, FIRST) \
  mmix_encode_section_info (DECL, FIRST)
 

@@ -135,16 +135,16 @@ nextstep_select_section (exp, reloc, align)
 	   || TREE_CODE (exp) == REAL_CST)
     {
       tree size = TYPE_SIZE (TREE_TYPE (exp));
-      HOST_WIDE_INT size_int;
+      HOST_WIDE_INT size_i;
 
       if (TREE_CODE (size) == INTEGER_CST)
-	size_int = tree_low_cst (size, 1);
+	size_i = tree_low_cst (size, 1);
       else
-	size_int = 0;
+	size_i = 0;
 
-      if (size_int == 4)
+      if (size_i == 4)
 	literal4_section ();
-      else if (size_int == 8)
+      else if (size_i == 8)
 	literal8_section ();
       else
 	readonly_data_section ();
@@ -234,4 +234,20 @@ nextstep_select_section (exp, reloc, align)
     }
   else
     readonly_data_section ();
+}
+
+void
+nextstep_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (GET_MODE_SIZE (mode) == 8)
+    literal8_section ();
+  else if (GET_MODE_SIZE (mode) == 4
+	   && (GET_CODE (x) == CONST_INT
+	       || GET_CODE (x) == CONST_DOUBLE))
+    literal4_section ();
+  else
+    const_section ();
 }

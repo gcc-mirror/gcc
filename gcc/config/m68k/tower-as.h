@@ -30,7 +30,6 @@ Boston, MA 02111-1307, USA.  */
    1.37.1 version.  */
 
 #include "m68k/tower.h"
-#undef SELECT_RTX_SECTION
 
 /* Use default settings for system V.3.  */
 

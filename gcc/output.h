@@ -548,7 +548,10 @@ extern void default_select_section PARAMS ((tree, int,
 extern void default_elf_select_section PARAMS ((tree, int,
 						unsigned HOST_WIDE_INT));
 extern void default_unique_section PARAMS ((tree, int));
-
+extern void default_select_rtx_section PARAMS ((enum machine_mode, rtx,
+						unsigned HOST_WIDE_INT));
+extern void default_elf_select_rtx_section PARAMS ((enum machine_mode, rtx,
+						    unsigned HOST_WIDE_INT));
 /* Emit data for vtable gc for GNU binutils.  */
 extern void assemble_vtable_entry PARAMS ((struct rtx_def *, HOST_WIDE_INT));
 extern void assemble_vtable_inherit PARAMS ((struct rtx_def *,

@@ -547,37 +547,11 @@ fini_section ()								\
     }									\
 }
 
-/* A C statement or statements to switch to the appropriate section
-   for output of RTX in mode MODE.  You can assume that RTX is some
-   kind of constant in RTL.  The argument MODE is redundant except in
-   the case of a `const_int' rtx.  Select the section by calling
-   `text_section' or one of the alternatives for other sections.
-
-   Do not define this macro if you put all constants in the read-only
-   data section.  */
-
-/* Override elfos.h definition.  */
-#undef	SELECT_RTX_SECTION
-#define	SELECT_RTX_SECTION(MODE, X, ALIGN) rs6000_select_rtx_section (MODE, X)
-
-/* A C statement or statements to switch to the appropriate
-   section for output of DECL.  DECL is either a `VAR_DECL' node
-   or a constant of some sort.  RELOC indicates whether forming
-   the initial value of DECL requires link-time relocations.  */
-
-/* Override elfos.h definition.  */
+/* Override default elf definitions.  */
+#undef	TARGET_ASM_SELECT_RTX_SECTION
+#define	TARGET_ASM_SELECT_RTX_SECTION rs6000_elf_select_rtx_section
 #undef	TARGET_ASM_SELECT_SECTION
 #define	TARGET_ASM_SELECT_SECTION  rs6000_elf_select_section
-
-/* A C statement to build up a unique section name, expressed as a
-   STRING_CST node, and assign it to DECL_SECTION_NAME (decl).
-   RELOC indicates whether the initial value of EXP requires
-   link-time relocations.  If you do not define this macro, GCC will use
-   the symbol name prefixed by `.' as the section name.  Note - this
-   macro can now be called for uninitialized data items as well as
-   initialised data and functions.  */
-
-/* Override default elf definition.  */
 #define TARGET_ASM_UNIQUE_SECTION  rs6000_elf_unique_section
 
 /* Return non-zero if this entry is to be written into the constant pool

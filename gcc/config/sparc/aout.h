@@ -38,6 +38,7 @@ Boston, MA 02111-1307, USA.  */
   || !strcmp (STR, "target") || !strcmp (STR, "assert"))
 
 #define TARGET_ASM_SELECT_SECTION  sparc_aout_select_section
+#define TARGET_ASM_SELECT_RTX_SECTION  sparc_aout_select_rtx_section
 
 /* Output the label for a function definition.  */
 

@@ -215,15 +215,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)  \
   (fputs (".globl ", FILE), assemble_name (FILE, NAME), fputs ("\n", FILE))
-
-/* Select section for constant in constant pool. 
-   We are in the right section. 
-   undef for 64 bit mode (linux64.h).
- */
-
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, X, ALIGN)
-
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */

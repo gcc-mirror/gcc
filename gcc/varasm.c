@@ -3794,11 +3794,7 @@ output_constant_pool (fnname, fndecl)
 	}
 
       /* First switch to correct section.  */
-#ifdef SELECT_RTX_SECTION
-      SELECT_RTX_SECTION (pool->mode, x, pool->align);
-#else
-      readonly_data_section ();
-#endif
+      (*targetm.asm_out.select_rtx_section) (pool->mode, x, pool->align);
 
 #ifdef ASM_OUTPUT_SPECIAL_POOL_ENTRY
       ASM_OUTPUT_SPECIAL_POOL_ENTRY (asm_out_file, x, pool->mode,
@@ -5494,4 +5490,53 @@ default_unique_section (decl, reloc)
   memcpy (string + plen, name, nlen + 1);
 
   DECL_SECTION_NAME (decl) = build_string (nlen + plen, string);
+}
+
+void
+default_select_rtx_section (mode, x, align)
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+     rtx x;
+     unsigned HOST_WIDE_INT align ATTRIBUTE_UNUSED;
+{
+  if (flag_pic)
+    switch (GET_CODE (x))
+      {
+      case CONST:
+      case SYMBOL_REF:
+      case LABEL_REF:
+	data_section ();
+	return;
+
+      default:
+	break;
+      }
+
+  readonly_data_section ();
+}
+
+void
+default_elf_select_rtx_section (mode, x, align)
+     enum machine_mode mode;
+     rtx x;
+     unsigned HOST_WIDE_INT align;
+{
+  /* ??? Handle small data here somehow.  */
+
+  if (flag_pic)
+    switch (GET_CODE (x))
+      {
+      case CONST:
+      case SYMBOL_REF:
+	named_section (NULL_TREE, ".data.rel.ro", 3);
+	return;
+
+      case LABEL_REF:
+	named_section (NULL_TREE, ".data.rel.ro.local", 1);
+	return;
+
+      default:
+	break;
+      }
+
+  mergeable_constant_section (mode, align, 0);
 }

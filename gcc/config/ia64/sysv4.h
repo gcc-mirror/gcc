@@ -140,20 +140,9 @@ do {									\
   emit_safe_across_calls (STREAM);					\
 } while (0)
 
-/* Similarly for constant pool data.  */
-
-extern unsigned int ia64_section_threshold;
-#undef SELECT_RTX_SECTION
-#define SELECT_RTX_SECTION(MODE, RTX, ALIGN)				\
-{									\
-  if (GET_MODE_SIZE (MODE) > 0						\
-      && GET_MODE_SIZE (MODE) <= ia64_section_threshold)		\
-    sdata_section ();							\
-  else if (flag_pic && symbolic_operand ((RTX), (MODE)))		\
-    data_section ();							\
-  else									\
-    mergeable_constant_section ((MODE), (ALIGN), 0);			\
-}
+/* Override default elf definition.  */
+#undef	TARGET_ASM_SELECT_RTX_SECTION
+#define TARGET_ASM_SELECT_RTX_SECTION  ia64_select_rtx_section
 
 #undef EXTRA_SECTIONS
 #define EXTRA_SECTIONS in_sdata, in_sbss
