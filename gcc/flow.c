@@ -2606,9 +2606,13 @@ life_analysis (f, file, flags)
      Otherwise offsets and such may be incorrect.
 
      Reload will make some registers as live even though they do not
-     appear in the rtl.  */
+     appear in the rtl.  
+
+     We don't want to create new auto-incs after reload, since they
+     are unlikely to be useful and can cause problems with shared
+     stack slots.  */
   if (reload_completed)
-    flags &= ~PROP_REG_INFO;
+    flags &= ~(PROP_REG_INFO | PROP_AUTOINC);
 
   /* We want alias analysis information for local dead store elimination.  */
   if (flags & PROP_SCAN_DEAD_CODE)
@@ -3466,8 +3470,7 @@ propagate_one_insn (pbi, insn)
     register rtx x = single_set (insn);
 
     /* Does this instruction increment or decrement a register?  */
-    if (!reload_completed
-	&& (flags & PROP_AUTOINC)
+    if ((flags & PROP_AUTOINC)
 	&& x != 0
 	&& GET_CODE (SET_DEST (x)) == REG
 	&& (GET_CODE (SET_SRC (x)) == PLUS
@@ -5254,7 +5257,7 @@ mark_used_regs (pbi, x, cond, insn)
 	}
 
 #ifdef AUTO_INC_DEC
-      if (! reload_completed && (flags & PROP_AUTOINC))
+      if (flags & PROP_AUTOINC)
         find_auto_inc (pbi, x, insn);
 #endif
       break;
@@ -5287,7 +5290,7 @@ mark_used_regs (pbi, x, cond, insn)
 	if (GET_CODE (testreg) == MEM)
 	  {
 #ifdef AUTO_INC_DEC
-	    if (! reload_completed && (flags & PROP_AUTOINC))
+	    if (flags & PROP_AUTOINC)
 	      find_auto_inc (pbi, testreg, insn);
 #endif
 	    mark_used_regs (pbi, XEXP (testreg, 0), cond, insn);

@@ -1,3 +1,9 @@
+2000-06-12  Richard Earnshaw <rearnsha@arm.com>
+
+	* flow.c (mark_used_regs): Revert last change.
+	(life_analysis): Remove PROP_AUTOINC if running after reload.
+	(propagate_one_insn): PROP_AUTOINC is always off after reload.
+
 2000-06-11  Richard Earnshaw <rearnsha@arm.com>
 
 	* flow.c (mark_used_regs): Don't call find_auto_inc after reload
