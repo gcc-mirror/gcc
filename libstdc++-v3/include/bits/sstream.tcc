@@ -127,7 +127,7 @@ namespace std
 
       if (_M_string.capacity() && (__testin || __testout || __testboth))
 	{
-	  char_type* __beg = this->_M_buf;
+	  char_type* __beg = __testin ? this->_M_in_beg : this->_M_out_beg;
 	  char_type* __curi = NULL;
 	  char_type* __curo = NULL;
 	  char_type* __endi = NULL;

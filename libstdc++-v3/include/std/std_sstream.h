@@ -229,7 +229,6 @@ namespace std
 	    _M_string = __string_type(__s, __n);
 	    
 	    // Step 2: Use the external array.
-	    this->_M_buf = __s;
 	    _M_really_sync(__s, 0, 0);
 	  }
 	return this;
@@ -263,9 +262,8 @@ namespace std
 	const bool __testout = this->_M_mode & ios_base::out;
 	__size_type __len = _M_string.size();
 
-	this->_M_buf = __base;
 	if (__testin)
-	    this->setg(__base, __base + __i, __base + __len);
+	  this->setg(__base, __base + __i, __base + __len);
 	if (__testout)
 	  {
 	    this->setp(__base, __base + _M_string.capacity());
