@@ -27,6 +27,9 @@ echo "s/`echo \$(srcdir)\///g				">> config.sed
 echo "s/ | sed 's,\^\\\.\/,,'`//g			">> config.sed
 echo "s/^	cd \$(srcdir)[ 	]*;//			">> config.sed
 
+echo "/^# USE_HOST_OBSTACK/ i\				">> config.sed
+echo "USE_HOST_OBSTACK=obstack.o			">> config.sed
+
 echo "/^stamp-attrtab/,/update/ {			">> config.sed
 echo "  /\\/d						">> config.sed
 echo "  /fi/d						">> config.sed
