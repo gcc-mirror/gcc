@@ -1,5 +1,5 @@
 /* Startup code for M68HC11.
-   Copyright (C) 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002 Free Software Foundation, Inc.
 
 This file is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -36,6 +36,17 @@ Boston, MA 02111-1307, USA.  */
 ;-----------------------------------------
 	.file	"crt0.s"
 
+#ifdef __HAVE_SHORT_INT__
+	.mode mshort
+#else
+	.mode mlong
+#endif
+
+#if defined(__USE_RTC__) && defined(mc68hc12)
+	.macro jsr name
+	call	\name
+	.endm
+#endif
 ;; 
 ;; 
 ;; The linker concatenate the .install* sections in the following order:
