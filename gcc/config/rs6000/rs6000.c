@@ -8594,16 +8594,18 @@ includes_rldicr_lshift_p (rtx shiftop, rtx andop)
 }
 
 /* Return 1 if REGNO (reg1) == REGNO (reg2) - 1 making them candidates
-   for lfq and stfq insns.
-
-   Note reg1 and reg2 *must* be hard registers.  To be sure we will
-   abort if we are passed pseudo registers.  */
+   for lfq and stfq insns iff the registers are hard registers.   */
 
 int
 registers_ok_for_quad_peep (rtx reg1, rtx reg2)
 {
   /* We might have been passed a SUBREG.  */
   if (GET_CODE (reg1) != REG || GET_CODE (reg2) != REG) 
+    return 0;
+    
+  /* We might have been passed non floating point registers.  */
+  if (!FP_REGNO_P (REGNO (reg1))
+      || !FP_REGNO_P (REGNO (reg2)))
     return 0;
 
   return (REGNO (reg1) == REGNO (reg2) - 1);
@@ -8614,10 +8616,18 @@ registers_ok_for_quad_peep (rtx reg1, rtx reg2)
    (addr2 == addr1 + 8).  */
 
 int
-addrs_ok_for_quad_peep (rtx addr1, rtx addr2)
+mems_ok_for_quad_peep (rtx mem1, rtx mem2)
 {
+  rtx addr1, addr2;
   unsigned int reg1;
   int offset1;
+
+  /* The mems cannot be volatile.  */
+  if (MEM_VOLATILE_P (mem1) || MEM_VOLATILE_P (mem2))
+    return 0;
+  
+  addr1 = XEXP (mem1, 0);
+  addr2 = XEXP (mem2, 0);
 
   /* Extract an offset (if used) from the first addr.  */
   if (GET_CODE (addr1) == PLUS)
