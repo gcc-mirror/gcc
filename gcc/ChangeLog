@@ -1,3 +1,24 @@
+2000-06-05  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* tree.h (VOID_TYPE_P): New macro.
+	(COMPLETE_OR_VOID_TYPE_P): Use VOID_TYPE_P.
+	* c-decl.c (grokdeclarator): Use VOID_TYPE_P.
+	(get_parm_info): Likewise.
+	(store_parm_decls): Likewise.
+	(combine_parm_decls): Likewise.
+	(finish_function): Likewise.
+	* c-typeck.c (build_function_call): Likewise.
+	(build_binary_op): Likewise.
+	(build_conditional_expr): Likewise.
+	(internal_build_compound_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	* stmt.c (expend_expr_stmt): Likewise.
+	(warn_if_unused_value): Likewise.
+	(expand_return): Likewise.
+	* c-parse.in (primary): Likewise.
+	* c-parse.y, c-parse.c, c-parse.h: Regenerate.
+	* objc/objc-parse.y, objc/objc-parse.c: Regenerate.
+
 Mon Jun  5 06:46:28 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (get_alias_set): If compnent is addressable, use alias

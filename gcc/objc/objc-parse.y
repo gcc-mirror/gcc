@@ -706,8 +706,7 @@ primary:
 				     IDENTIFIER_POINTER (DECL_NAME ($$)));
 			  else if ((TYPE_MODE (TREE_TYPE (TREE_TYPE ($$)))
 				    != TYPE_MODE (integer_type_node))
-				   && (TREE_TYPE (TREE_TYPE ($$))
-				       != void_type_node))
+				   && !VOID_TYPE_P (TREE_TYPE (TREE_TYPE ($$))))
 			    pedwarn ("type mismatch in implicit declaration for built-in function `%s'",
 				     IDENTIFIER_POINTER (DECL_NAME ($$)));
 			  /* If it really returns void, change that to int.  */

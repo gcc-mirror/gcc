@@ -1467,7 +1467,7 @@ build_function_call (function, params)
 		  function, coerced_params, NULL_TREE);
 
   TREE_SIDE_EFFECTS (result) = 1;
-  if (TREE_TYPE (result) == void_type_node)
+  if (VOID_TYPE_P (TREE_TYPE (result)))
     return result;
   return require_complete_type (result);
 }
@@ -2099,7 +2099,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     and both must be object or both incomplete.  */
 	  if (comp_target_types (type0, type1))
 	    result_type = common_type (type0, type1);
-	  else if (TYPE_MAIN_VARIANT (tt0) == void_type_node)
+	  else if (VOID_TYPE_P (tt0))
 	    {
 	      /* op0 != orig_op0 detects the case of something
 		 whose value is 0 but which isn't a valid null ptr const.  */
@@ -2107,7 +2107,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 		  && TREE_CODE (tt1) == FUNCTION_TYPE)
 		pedwarn ("ANSI C forbids comparison of `void *' with function pointer");
 	    }
-	  else if (TYPE_MAIN_VARIANT (tt1) == void_type_node)
+	  else if (VOID_TYPE_P (tt1))
 	    {
 	      if (pedantic && (!integer_zerop (op1) || op1 != orig_op1)
 		  && TREE_CODE (tt0) == FUNCTION_TYPE)
@@ -3408,13 +3408,13 @@ build_conditional_expr (ifexp, op1, op2)
       else if (integer_zerop (op2) && TREE_TYPE (type2) == void_type_node
 	       && TREE_CODE (orig_op2) != NOP_EXPR)
 	result_type = qualify_type (type1, type2);
-      else if (TYPE_MAIN_VARIANT (TREE_TYPE (type1)) == void_type_node)
+      else if (VOID_TYPE_P (TREE_TYPE (type1)))
 	{
 	  if (pedantic && TREE_CODE (TREE_TYPE (type2)) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C forbids conditional expr between `void *' and function pointer");
 	  result_type = qualify_type (type1, type2);
 	}
-      else if (TYPE_MAIN_VARIANT (TREE_TYPE (type2)) == void_type_node)
+      else if (VOID_TYPE_P (TREE_TYPE (type2)))
 	{
 	  if (pedantic && TREE_CODE (TREE_TYPE (type1)) == FUNCTION_TYPE)
 	    pedwarn ("ANSI C forbids conditional expr between `void *' and function pointer");
@@ -3533,7 +3533,7 @@ internal_build_compound_expr (list, first_p)
 	 any side-effects, unless it was explicitly cast to (void).  */
       if ((extra_warnings || warn_unused_value)
            && ! (TREE_CODE (TREE_VALUE (list)) == CONVERT_EXPR
-                && TREE_TYPE (TREE_VALUE (list)) == void_type_node))
+                && VOID_TYPE_P (TREE_TYPE (TREE_VALUE (list)))))
         warning ("left-hand operand of comma expression has no effect");
 
       /* When pedantic, a compound expression can be neither an lvalue
@@ -4010,8 +4010,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 		 and vice versa; otherwise, targets must be the same.
 		 Meanwhile, the lhs target must have all the qualifiers of
 		 the rhs.  */
-	      if (TYPE_MAIN_VARIANT (ttl) == void_type_node
-		  || TYPE_MAIN_VARIANT (ttr) == void_type_node
+	      if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
 		  || comp_target_types (memb_type, rhstype))
 		{
 		  /* If this type won't generate any warnings, use it.  */
@@ -4086,17 +4085,15 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
       /* Any non-function converts to a [const][volatile] void *
 	 and vice versa; otherwise, targets must be the same.
 	 Meanwhile, the lhs target must have all the qualifiers of the rhs.  */
-      if (TYPE_MAIN_VARIANT (ttl) == void_type_node
-	  || TYPE_MAIN_VARIANT (ttr) == void_type_node
+      if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
 	  || comp_target_types (type, rhstype)
 	  || (unsigned_type (TYPE_MAIN_VARIANT (ttl))
 	      == unsigned_type (TYPE_MAIN_VARIANT (ttr))))
 	{
 	  if (pedantic
-	      && ((TYPE_MAIN_VARIANT (ttl) == void_type_node
-		   && TREE_CODE (ttr) == FUNCTION_TYPE)
+	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)
 		  ||
-		  (TYPE_MAIN_VARIANT (ttr) == void_type_node
+		  (VOID_TYPE_P (ttr)
 		   /* Check TREE_CODE to catch cases like (void *) (char *) 0
 		      which are not ANSI null ptr constants.  */
 		   && (!integer_zerop (rhs) || TREE_CODE (rhs) == NOP_EXPR)
@@ -4113,8 +4110,7 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 				     errtype, funname, parmnum);
 	      /* If this is not a case of ignoring a mismatch in signedness,
 		 no warning.  */
-	      else if (TYPE_MAIN_VARIANT (ttl) == void_type_node
-		       || TYPE_MAIN_VARIANT (ttr) == void_type_node
+	      else if (VOID_TYPE_P (ttl) || VOID_TYPE_P (ttr)
 		       || comp_target_types (type, rhstype))
 		;
 	      /* If there is a mismatch, do warn.  */

@@ -1860,7 +1860,7 @@ expand_expr_stmt (exp)
       if (! TREE_SIDE_EFFECTS (exp)
 	  && (extra_warnings || warn_unused_value)
 	  && !(TREE_CODE (exp) == CONVERT_EXPR
-	       && TREE_TYPE (exp) == void_type_node))
+	       && VOID_TYPE_P (TREE_TYPE (exp))))
 	warning_with_file_and_line (emit_filename, emit_lineno,
 				    "statement with no effect");
       else if (warn_unused_value)
@@ -1970,7 +1970,7 @@ warn_if_unused_value (exp)
     case CONVERT_EXPR:
     case NON_LVALUE_EXPR:
       /* Don't warn about values cast to void.  */
-      if (TREE_TYPE (exp) == void_type_node)
+      if (VOID_TYPE_P (TREE_TYPE (exp)))
 	return 0;
       /* Don't warn about conversions not explicit in the user's program.  */
       if (TREE_NO_UNUSED_WARNING (exp))
@@ -2849,7 +2849,7 @@ expand_return (retval)
   else if ((TREE_CODE (retval) == MODIFY_EXPR || TREE_CODE (retval) == INIT_EXPR)
 	   && TREE_CODE (TREE_OPERAND (retval, 0)) == RESULT_DECL)
     retval_rhs = TREE_OPERAND (retval, 1);
-  else if (TREE_TYPE (retval) == void_type_node)
+  else if (VOID_TYPE_P (TREE_TYPE (retval)))
     /* Recognize tail-recursive call to void function.  */
     retval_rhs = retval;
   else
@@ -3074,7 +3074,7 @@ expand_return (retval)
     }
   else if (cleanups
       && retval_rhs != 0
-      && TREE_TYPE (retval_rhs) != void_type_node
+      && !VOID_TYPE_P (TREE_TYPE (retval_rhs))
       && (GET_CODE (result_rtl) == REG
 	  || (GET_CODE (result_rtl) == PARALLEL)))
     {
