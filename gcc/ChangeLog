@@ -1,3 +1,7 @@
+Sun Sep  7 22:56:56 1997  Weiwen Liu  (liu@hepvms.physics.yale.edu)
+
+	* Makefile.in (sdbout.o): Depend on insn-config.h.
+
 Sun Sep  7 18:44:50 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* m68k/m68k.h (TARGET_SWITCHES): For 68000, 68302, subtract MASK_68881.
