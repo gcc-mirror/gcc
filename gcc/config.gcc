@@ -212,6 +212,7 @@ case ${target} in
  | *-*-linux*oldld*			\
  | *-*-rtemsaout*			\
  | *-*-rtemscoff*			\
+ | vax-*-vms*				\
  )
 	echo "*** Configuration ${target} not supported" 1>&2
 	exit 1
@@ -2149,10 +2150,6 @@ vax-*-openbsd*)
 	;;
 vax-*-ultrix*)			# VAXen running ultrix
 	tm_file="${tm_file} vax/ultrix.h"
-	;;
-vax-*-vms*)			# VAXen running VMS
-	echo "Configuration ${target} no longer supported" 1>&2
-	exit 1
 	;;
 vax-*-*)			# VAX default entry
 	;;
