@@ -1,3 +1,7 @@
+Sat Sep  5 14:23:31 1998  Torbjorn Granlund <tege@matematik.su.se>
+
+	* m68k.md (zero_extendsidi2): Fix typo.
+
 Sat Sep  5 13:40:24 1998  Krister Walfridsson  <cato@df.lth.se>
 
 	* configure.in: Removed references to the removed file
