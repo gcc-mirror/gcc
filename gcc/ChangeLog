@@ -1,5 +1,7 @@
 Mon Apr 20 20:44:25 1998  Jim Wilson  <wilson@cygnus.com>
 
+	* frame.c (heapsort): Rename to frame_heapsort.
+
 	* gcc.c (do_spec_1, case '['): Move flag out of loop and initialize it.
 
 Mon Apr 20 12:43:09 1998  Doug Evans  <devans@canuck.cygnus.com>

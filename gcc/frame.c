@@ -269,9 +269,10 @@ fde_split (fde_vector *linear, fde_vector *erratic)
   linear->count = j;
 }
 
-/* This is O(n log(n)). */
+/* This is O(n log(n)).  BSD/OS defines heapsort in stdlib.h, so we must
+   use a name that does not conflict.  */
 static inline void
-heapsort (fde_vector *erratic)
+frame_heapsort (fde_vector *erratic)
 {
   /* For a description of this algorithm, see:
      Samuel P. Harbison, Guy L. Steele Jr.: C, a reference manual, 2nd ed.,
@@ -366,7 +367,7 @@ end_fde_sort (fde_accumulator *accu, size_t count)
   fde_split (&accu->linear, &accu->erratic);
   if (accu->linear.count + accu->erratic.count != count)
     abort ();
-  heapsort (&accu->erratic);
+  frame_heapsort (&accu->erratic);
   fde_merge (&accu->linear, &accu->erratic);
   free (accu->erratic.array);
   return accu->linear.array;
