@@ -337,6 +337,10 @@ struct named_label_list
 
 tree current_function_return_value;
 
+/* Nonzero means use the ISO C94 dialect of C.  */
+
+int flag_isoc94;
+
 /* Nonzero means use the ISO C99 dialect of C.  */
 
 int flag_isoc99;

@@ -1,3 +1,7 @@
+2000-08-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl.c (flag_isoc94): New variable.
+
 2000-08-02  Jason Merrill  <jason@redhat.com>
 
 	* pt.c (do_type_instantiation): Add complain parm; don't complain

@@ -330,6 +330,10 @@ int flag_no_nonansi_builtin;
 
 int flag_traditional;
 
+/* Nonzero means enable C89 Amendment 1 features, other than digraphs.  */
+
+int flag_isoc94 = 0;
+
 /* Nonzero means use the ISO C99 dialect of C.  */
 
 int flag_isoc99 = 0;
@@ -541,6 +545,7 @@ c_decode_option (argc, argv)
 	{
 	iso_1990:
 	  flag_digraphs = 0;
+	  flag_isoc94 = 0;
 	iso_1990_digraphs:
 	  flag_traditional = 0;
 	  flag_writable_strings = 0;
@@ -551,7 +556,7 @@ c_decode_option (argc, argv)
       else if (!strcmp (argstart, "iso9899:199409"))
 	{
 	  flag_digraphs = 1;
-	  /* ??? The other changes since ISO C 1990 are not supported.  */
+	  flag_isoc94 = 1;
 	  goto iso_1990_digraphs;
 	}
       else if (!strcmp (argstart, "iso9899:199x")
@@ -565,6 +570,7 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 1;
 	  flag_isoc99 = 1;
 	  flag_digraphs = 1;
+	  flag_isoc94 = 1;
 	}
       else if (!strcmp (argstart, "gnu89"))
 	{
@@ -574,6 +580,7 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 0;
 	  flag_isoc99 = 0;
 	  flag_digraphs = 1;
+	  flag_isoc94 = 0;
 	}
       else if (!strcmp (argstart, "gnu9x") || !strcmp (argstart, "gnu99"))
 	{
@@ -583,6 +590,7 @@ c_decode_option (argc, argv)
 	  flag_no_nonansi_builtin = 0;
 	  flag_isoc99 = 1;
 	  flag_digraphs = 1;
+	  flag_isoc94 = 1;
 	}
       else
 	error ("unknown C standard `%s'", argstart);
