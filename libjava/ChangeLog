@@ -1,3 +1,12 @@
+2001-08-05  Tom Tromey  <tromey@redhat.com>
+
+	* java/io/StringWriter.java: Merged with Classpath.
+	* java/io/InputStream.java: Merged with Classpath.
+	* java/io/OutputStream.java: Merged with Classpath.
+	* java/io/PushbackInputStream.java: Merged with Classpath.
+	* java/io/CharArrayReader.java: Merged with Classpath.
+	* java/io/CharArrayWriter.java: Merged with Classpath.
+
 2001-08-02  Tom Tromey  <tromey@redhat.com>
 
 	* prims.cc (JNI_OnLoad): Don't declare.
