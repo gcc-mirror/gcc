@@ -8353,7 +8353,14 @@ tsubst_copy_and_build (tree t,
 	  (RECUR (TREE_OPERAND (t, 0)),
 	   TREE_CODE (TREE_OPERAND (t, 1)),
 	   RECUR (TREE_OPERAND (t, 2)));
-	TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
+	/* TREE_NO_WARNING must be set if either the expression was
+	   parenthesized or it uses an operator such as >>= rather
+	   than plain assignment.  In the former case, it was already
+	   set and must be copied.  In the latter case,
+	   build_x_modify_expr sets it and it must not be reset
+	   here.  */
+	if (TREE_NO_WARNING (t))
+	  TREE_NO_WARNING (r) = TREE_NO_WARNING (t);
 	return r;
       }
 

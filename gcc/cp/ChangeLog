@@ -1,3 +1,9 @@
+2004-08-21  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c++/17120
+	* pt.c (tsubst_copy_and_build): Avoid clearing TREE_NO_WARNING for
+	MODOP_EXPR.
+
 2004-08-20  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* pt.c (register_specialization): Check DECL_TEMPLATE_SPECIALIZATION
