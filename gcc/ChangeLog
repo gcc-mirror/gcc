@@ -1,3 +1,15 @@
+2001-03-16  Richard Henderson  <rth@redhat.com>
+
+	* dwarf2out.c: Revert most of 2000-11-25 and 2001-01-24 changes.
+	(LN_PROLOG_AS_LABEL, LN_PROLOG_END_LABEL): New.
+	(size_of_line_prolog): Remove.
+	(output_line_info): Compute prologue size via label difference.
+	(lookup_filename): Return "unspecified" for <internal> and <built-in>.
+
+	* configure.in (HAVE_AS_DWARF2_DEBUG_LINE): Require that the
+	assembler error when redefining file numbers.
+	* config.in, configure: Rebuild.
+
 2001-03-16  Michael Meissner  <meissner@redhat.com>
 
 	* mips.h (BITMASK_HIGH): Replacement for 0x80000000 that avoids
