@@ -3824,6 +3824,7 @@ typedef struct mips_args {
 				  REG, SIGN_EXTEND }},			\
   {"consttable_operand",	{ LABEL_REF, SYMBOL_REF, CONST_INT,	\
 				  CONST_DOUBLE, CONST }},		\
+  {"fcc_register_operand",	{ REG, SUBREG }},			\
   {"extend_operator",           { SIGN_EXTEND, ZERO_EXTEND }},          \
   {"highpart_shift_operator",   { ASHIFTRT, LSHIFTRT, ROTATERT, ROTATE }},
 
