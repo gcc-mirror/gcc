@@ -1,3 +1,8 @@
+2004-02-22  James E Wilson  <wilson@specifixinc.com>
+
+	PR target/13918
+	* sched-ebb.c (ebb_sched_info): Disable use of cselib.
+
 2004-02-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/14209
