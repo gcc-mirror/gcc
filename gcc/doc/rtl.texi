@@ -1558,6 +1558,10 @@ a unit of memory is accessed.  @var{alias} specifies an alias set for the
 reference.  In general two items are in different alias sets if they cannot
 reference the same memory address.
 
+The construct @code{(mem:BLK (scratch))} is considered to alias all
+other memories.  Thus it may be used as a memory barrier in epilogue
+stack deallocation patterns.
+
 @findex addressof
 @item (addressof:@var{m} @var{reg})
 This RTX represents a request for the address of register @var{reg}.  Its mode

@@ -1,3 +1,7 @@
+2002-04-05  Richard Henderson  <rth@redhat.com>
+
+	* doc/rtl.texi (Regs and Memory): Document (mem:BLK (scratch)).
+
 2002-04-05  Jakub Jeilnek  <jakub@redhat.com>
 
 	* mklibgcc.in: Use $tmpmapfile, not tmp-$@.
