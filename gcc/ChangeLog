@@ -1,3 +1,13 @@
+2003-06-22  Neil Booth  <neil@daikokuya.co.uk>
+
+	* common.opt: More -f switches.
+	* opts.c (common_handle_options): Handle them.
+	* toplev.c (time_report): Make extern.
+	(f_options): USe flag_dummy.
+	(decode_f_option): No need to use f_options now.
+	* toplev.h (flag_cprop_registers, flag_ssa, flag_ssa_ccp,
+	flag_ssa_dce, time_report, flag_new_regalloc): Make extern.
+
 2003-06-22  Andreas Jaeger  <aj@suse.de>
 
 	* c-lex.c: Convert to ISO C90.

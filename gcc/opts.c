@@ -516,20 +516,60 @@ common_handle_option (size_t scode, const char *arg,
       dump_base_name = arg;
       break;
 
+    case OPT_fPIC:
+      flag_pic = value + value;
+      break;
+
+    case OPT_fPIE:
+      flag_pie = value + value;
+      break;
+
+    case OPT_falign_functions:
     case OPT_falign_functions_:
       align_functions = value;
       break;
 
+    case OPT_falign_jumps:
     case OPT_falign_jumps_:
       align_jumps = value;
       break;
 
+    case OPT_falign_labels:
     case OPT_falign_labels_:
       align_labels = value;
       break;
 
+    case OPT_falign_loops:
     case OPT_falign_loops_:
       align_loops = value;
+      break;
+
+    case OPT_fargument_alias:
+      flag_argument_noalias = !value;
+      break;
+
+    case OPT_fargument_noalias:
+      flag_argument_noalias = value;
+      break;
+
+    case OPT_fargument_noalias_global:
+      flag_argument_noalias = value + value;
+      break;
+
+    case OPT_fasynchronous_unwind_tables:
+      flag_asynchronous_unwind_tables = value;
+      break;
+
+    case OPT_fbounds_check:
+      flag_bounds_check = value;
+      break;
+
+    case OPT_fbranch_count_reg:
+      flag_branch_on_count_reg = value;
+      break;
+
+    case OPT_fbranch_probabilities:
+      flag_branch_probabilities = value;
       break;
 
     case OPT_fbranch_target_load_optimize:
@@ -552,6 +592,14 @@ common_handle_option (size_t scode, const char *arg,
       flag_caller_saves = value;
       break;
 
+    case OPT_fcommon:
+      flag_no_common = !value;
+      break;
+
+    case OPT_fcprop_registers:
+      flag_cprop_registers = value;
+      break;
+
     case OPT_fcrossjumping:
       flag_crossjumping = value;
       break;
@@ -562,6 +610,10 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fcse_skip_blocks:
       flag_cse_skip_blocks = value;
+      break;
+
+    case OPT_fdata_sections:
+      flag_data_sections = value;
       break;
 
     case OPT_fdefer_pop:
@@ -586,6 +638,10 @@ common_handle_option (size_t scode, const char *arg,
 	return 0;
       break;
 
+    case OPT_fdump_unnumbered:
+      flag_dump_unnumbered = value;
+      break;
+
     case OPT_feliminate_dwarf2_dups:
       flag_eliminate_dwarf2_dups = value;
       break;
@@ -594,12 +650,20 @@ common_handle_option (size_t scode, const char *arg,
       flag_eliminate_unused_debug_types = value;
       break;
 
+    case OPT_fexceptions:
+      flag_exceptions = value;
+      break;
+
     case OPT_fexpensive_optimizations:
       flag_expensive_optimizations = value;
       break;
 
     case OPT_ffast_math:
       set_fast_math_flags (value);
+      break;
+
+    case OPT_ffinite_math_only:
+      flag_finite_math_only = value;
       break;
 
     case OPT_ffixed_:
@@ -622,6 +686,10 @@ common_handle_option (size_t scode, const char *arg,
       flag_force_mem = value;
       break;
 
+    case OPT_ffunction_sections:
+      flag_function_sections = value;
+      break;
+
     case OPT_fgcse:
       flag_gcse = value;
       break;
@@ -634,12 +702,28 @@ common_handle_option (size_t scode, const char *arg,
       flag_gcse_sm = value;
       break;
 
+    case OPT_fgnu_linker:
+      flag_gnu_linker = value;
+      break;
+
+    case OPT_fguess_branch_probability:
+      flag_guess_branch_prob = value;
+      break;
+
+    case OPT_fident:
+      flag_no_ident = !value;
+      break;
+
     case OPT_fif_conversion:
       flag_if_conversion = value;
       break;
 
     case OPT_fif_conversion2:
       flag_if_conversion2 = value;
+      break;
+
+    case OPT_finhibit_size_directive:
+      flag_inhibit_size_directive = value;
       break;
 
     case OPT_finline:
@@ -650,6 +734,10 @@ common_handle_option (size_t scode, const char *arg,
       flag_inline_functions = value;
       break;
 
+    case OPT_finstrument_functions:
+      flag_instrument_function_entry_exit = value;
+      break;
+
     case OPT_fkeep_inline_functions:
       flag_keep_inline_functions =value;
       break;
@@ -658,8 +746,28 @@ common_handle_option (size_t scode, const char *arg,
       flag_keep_static_consts = value;
       break;
 
+    case OPT_fleading_underscore:
+      flag_leading_underscore = value;
+      break;
+
     case OPT_floop_optimize:
       flag_loop_optimize = value;
+      break;
+
+    case OPT_fmath_errno:
+      flag_errno_math = value;
+      break;
+
+    case OPT_fmem_report:
+      mem_report = value;
+      break;
+
+    case OPT_fmerge_all_constants:
+      flag_merge_constants = value + value;
+      break;
+
+    case OPT_fmerge_constants:
+      flag_merge_constants = value;
       break;
 
     case OPT_fmessage_length_:
@@ -668,6 +776,14 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fmove_all_movables:
       flag_move_all_movables = value;
+      break;
+
+    case OPT_fnew_ra:
+      flag_new_regalloc = value;
+      break;
+
+    case OPT_fnon_call_exceptions:
+      flag_non_call_exceptions = value;
       break;
 
     case OPT_fold_unroll_all_loops:
@@ -682,8 +798,16 @@ common_handle_option (size_t scode, const char *arg,
       flag_omit_frame_pointer = value;
       break;
 
+    case OPT_foptimize_register_move:
+      flag_regmove = value;
+      break;
+
     case OPT_foptimize_sibling_calls:
       flag_optimize_sibling_calls = value;
+      break;
+
+    case OPT_fpack_struct:
+      flag_pack_struct = value;
       break;
 
     case OPT_fpeel_loops:
@@ -698,8 +822,28 @@ common_handle_option (size_t scode, const char *arg,
       flag_no_peephole = !value;
       break;
 
+    case OPT_fpeephole2:
+      flag_peephole2 = value;
+      break;
+
+    case OPT_fpic:
+      flag_pic = value;
+      break;
+
+    case OPT_fpie:
+      flag_pie = value;
+      break;
+
     case OPT_fprefetch_loop_arrays:
       flag_prefetch_loop_arrays = value;
+      break;
+
+    case OPT_fprofile:
+      profile_flag = value;
+      break;
+
+    case OPT_fprofile_arcs:
+      profile_arc_flag = value;
       break;
 
     case OPT_frandom_seed:
@@ -721,12 +865,44 @@ common_handle_option (size_t scode, const char *arg,
       flag_pcc_struct_return = !value;
       break;
 
+    case OPT_fregmove:
+      flag_regmove = value;
+      break;
+
+    case OPT_frename_registers:
+      flag_rename_registers = value;
+      break;
+
+    case OPT_freorder_blocks:
+      flag_reorder_blocks = value;
+      break;
+
+    case OPT_freorder_functions:
+      flag_reorder_functions = value;
+      break;
+
     case OPT_frerun_cse_after_loop:
       flag_rerun_cse_after_loop = value;
       break;
 
     case OPT_frerun_loop_opt:
       flag_rerun_loop_opt = value;
+      break;
+
+    case OPT_fsched_interblock:
+      flag_schedule_interblock= value;
+      break;
+
+    case OPT_fsched_spec:
+      flag_schedule_speculative = value;
+      break;
+
+    case OPT_fsched_spec_load:
+      flag_schedule_speculative_load = value;
+      break;
+
+    case OPT_fsched_spec_load_dangerous:
+      flag_schedule_speculative_load_dangerous = value;
       break;
 
     case OPT_fsched_verbose_:
@@ -736,6 +912,14 @@ common_handle_option (size_t scode, const char *arg,
 #else
       return 0;
 #endif
+
+    case OPT_fsched2_use_superblocks:
+      flag_sched2_use_superblocks = value;
+      break;
+
+    case OPT_fsched2_use_traces:
+      flag_sched2_use_traces = value;
+      break;
 
     case OPT_fschedule_insns:
       flag_schedule_insns = value;
@@ -747,6 +931,30 @@ common_handle_option (size_t scode, const char *arg,
 
     case OPT_fshared_data:
       flag_shared_data = value;
+      break;
+
+    case OPT_fsignaling_nans:
+      flag_signaling_nans = value;
+      break;
+
+    case OPT_fsingle_precision_constant:
+      flag_single_precision_constant = value;
+      break;
+
+    case OPT_fssa:
+      flag_ssa = value;
+      break;
+
+    case OPT_fssa_ccp:
+      flag_ssa_ccp = value;
+      break;
+
+    case OPT_fssa_dce:
+      flag_ssa_dce = value;
+      break;
+
+    case OPT_fstack_check:
+      flag_stack_check = value;
       break;
 
     case OPT_fstack_limit:
@@ -774,13 +982,24 @@ common_handle_option (size_t scode, const char *arg,
       flag_strength_reduce = value;
       break;
 
+    case OPT_fstrict_aliasing:
+      flag_strict_aliasing = value;
+      break;
+
     case OPT_fsyntax_only:
       flag_syntax_only = value;
+      break;
+
+    case OPT_ftest_coverage:
+      flag_test_coverage = value;
       break;
 
     case OPT_fthread_jumps:
       flag_thread_jumps = value;
       break;
+
+    case OPT_ftime_report:
+      time_report = value;
 
     case OPT_ftls_model_:
       if (!strcmp (arg, "global-dynamic"))
@@ -799,6 +1018,14 @@ common_handle_option (size_t scode, const char *arg,
       flag_tracer = value;
       break;
 
+    case OPT_ftrapping_math:
+      flag_trapping_math = value;
+      break;
+
+    case OPT_ftrapv:
+      flag_trapv = value;
+      break;
+
     case OPT_funit_at_a_time:
       flag_unit_at_a_time = value;
       break;
@@ -811,12 +1038,32 @@ common_handle_option (size_t scode, const char *arg,
       flag_unroll_loops = value;
       break;
 
+    case OPT_funsafe_math_optimizations:
+      flag_unsafe_math_optimizations = value;
+      break;
+
     case OPT_funswitch_loops:
       flag_unswitch_loops = value;
       break;
 
+    case OPT_funwind_tables:
+      flag_unwind_tables = value;
+      break;
+
+    case OPT_fverbose_asm:
+      flag_verbose_asm = value;
+      break;
+      
+    case OPT_fwrapv:
+      flag_wrapv = value;
+      break;
+
     case OPT_fwritable_strings:
       flag_writable_strings = value;
+      break;
+
+    case OPT_fzero_initialized_in_bss:
+      flag_zero_initialized_in_bss = value;
       break;
 
     case OPT_g:
