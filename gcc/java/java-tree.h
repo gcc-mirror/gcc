@@ -280,7 +280,6 @@ enum java_tree_index
   JTI_LONG_ZERO_NODE,
   JTI_FLOAT_ZERO_NODE,
   JTI_DOUBLE_ZERO_NODE,
-  JTI_INTEGER_NEGATIVE_ONE_NODE,
   JTI_INTEGER_TWO_NODE,
   JTI_INTEGER_FOUR_NODE,
   JTI_EMPTY_STMT_NODE,
@@ -480,8 +479,6 @@ extern tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_FLOAT_ZERO_NODE]
 #define double_zero_node \
   java_global_trees[JTI_DOUBLE_ZERO_NODE]
-#define integer_negative_one_node \
-  java_global_trees[JTI_INTEGER_NEGATIVE_ONE_NODE]
 #define integer_two_node \
   java_global_trees[JTI_INTEGER_TWO_NODE]
 #define integer_four_node \
