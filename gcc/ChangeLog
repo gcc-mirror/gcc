@@ -1,5 +1,21 @@
 2004-12-01  Richard Henderson  <rth@redhat.com>
 
+	PR rtl-opt/15289
+	* emit-rtl.c (gen_complex_constant_part): Remove.
+	(gen_realpart, gen_imagpart): Remove.
+	* rtl.h (gen_realpart, gen_imagpart): Remove.
+	* expmed.c (extract_bit_field): Remove CONCAT hack catering to
+	gen_realpart/gen_imagpart.
+	* expr.c (write_complex_part, read_complex_part): New.
+	(emit_move_via_alt_mode, emit_move_via_integer, emit_move_resolve_push,
+	emit_move_complex_push, emit_move_complex, emit_move_ccmode, 
+	emit_move_multi_word): Split out from ...
+	(emit_move_insn_1): ... here.
+	(expand_expr_real_1) <COMPLEX_EXPR>: Use write_complex_part.
+	<REALPART_EXPR, IMAGPART_EXPR>: Use read_complex_part.
+	* function.c (assign_parm_setup_reg): Hard-code transformations
+	instead of using gen_realpart/gen_imagpart.
+
 	* expr.c (optimize_bitfield_assignment_op): Split out from ... 
 	(expand_assignment): ... here.  Use handled_component_p to gate
 	get_inner_reference code.  Simplify MEM handling.  Special case
