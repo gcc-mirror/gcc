@@ -610,9 +610,9 @@ initialize_builtins (pfile)
 
 	  if (b->flags & VERS)
 	    {
-	      /* Allocate enough space for 'name="value"\0'.  */
-	      str = xmalloc (b->len + strlen (version_string) + 4);
-	      sprintf (str, "%s=\"%s\"", b->name, version_string);
+	      /* Allocate enough space for 'name "value"\n\0'.  */
+	      str = alloca (b->len + strlen (version_string) + 5);
+	      sprintf (str, "%s \"%s\"\n", b->name, version_string);
 	    }
 	  else
 	    {
@@ -621,13 +621,12 @@ initialize_builtins (pfile)
 	      else
 		val = b->value;
 
-	      /* Allocate enough space for "name=value\0".  */
-	      str = xmalloc (b->len + strlen (val) + 2);
-	      sprintf(str, "%s=%s", b->name, val);
+	      /* Allocate enough space for "name value\n\0".  */
+	      str = alloca (b->len + strlen (val) + 3);
+	      sprintf(str, "%s %s\n", b->name, val);
 	    }
 
-	  cpp_define (pfile, str);
-	  free (str);
+	  _cpp_define_builtin (pfile, str);
 	}
       else
 	{

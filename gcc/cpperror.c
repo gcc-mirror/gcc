@@ -91,17 +91,15 @@ print_file_and_line (filename, line, column)
      const char *filename;
      unsigned int line, column;
 {
-  if (line == 0)
-    fputs (_("<command line>: "), stderr);
+  if (filename == 0 || *filename == '\0')
+    filename = "<stdin>";
+
+  if (line == (unsigned int)-1)
+    fprintf (stderr, "%s: ", filename);
+  else if (column > 0)
+    fprintf (stderr, "%s:%u:%u: ", filename, line, column);
   else
-    {
-      if (filename == 0 || *filename == '\0')
-	filename = "<stdin>";
-      if (column > 0)
-	fprintf (stderr, "%s:%u:%u: ", filename, line, column);
-      else
-	fprintf (stderr, "%s:%u: ", filename, line);
-    }
+    fprintf (stderr, "%s:%u: ", filename, line);
 }
 
 /* Set up for an error message: print the file and line, bump the error

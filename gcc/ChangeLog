@@ -1,3 +1,19 @@
+2000-08-29  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* cpperror.c (print_file_and_line): If line is (unsigned int)-1,
+	print just the filename.
+	* cpplex.c (_cpp_run_directive): Add additional argument, the
+	name to give the synthetic buffer.  This defaults to
+	translated "<command line>".
+	* cpplib.c (cpp_define, cpp_undef, cpp_assert, cpp_unassert):
+	Adjust to match.
+	(_cpp_define_builtin): New function.
+	* cppinit.c (initialize_builtins): Use _cpp_define_builtin.
+	* cpphash.h: Update prototypes.
+
+	* tradcpp.c (main): Process -D and -U simultaneously, in the
+	order they appeared on the command line.
+
 2000-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* c-decl.c (define_label): Call warning_with_file_and_line and

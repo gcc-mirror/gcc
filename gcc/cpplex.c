@@ -3565,15 +3565,22 @@ _cpp_skip_rest_of_line (pfile)
 /* Directive handler wrapper used by the command line option
    processor.  */
 void
-_cpp_run_directive (pfile, dir, buf, count)
+_cpp_run_directive (pfile, dir, buf, count, name)
      cpp_reader *pfile;
      const struct directive *dir;
      const char *buf;
      size_t count;
+     const char *name;
 {
   if (cpp_push_buffer (pfile, (const U_CHAR *)buf, count) != NULL)
     {
       unsigned int prev_lvl = 0;
+
+      if (name)
+	CPP_BUFFER (pfile)->nominal_fname = name;
+      else
+	CPP_BUFFER (pfile)->nominal_fname = _("<command line>");
+      CPP_BUFFER (pfile)->lineno = (unsigned int)-1;
 
       /* Scan the line now, else prevent_macro_expansion won't work.  */
       lex_next (pfile, 1);
