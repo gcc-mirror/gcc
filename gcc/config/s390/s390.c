@@ -6127,7 +6127,7 @@ s390_function_value (tree type, enum machine_mode mode)
 {
   if (type)
     {
-      int unsignedp = TREE_UNSIGNED (type);
+      int unsignedp = TYPE_UNSIGNED (type);
       mode = promote_mode (type, TYPE_MODE (type), &unsignedp, 1);
     }
 

@@ -912,7 +912,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	  if (tree_type
 	      && GET_MODE_CLASS (TYPE_MODE (tree_type)) == MODE_INT
 	      && TYPE_PRECISION (tree_type) < TYPE_PRECISION (sizetype))
-	    tree_type_x = (TREE_UNSIGNED (tree_type) ? usizetype : ssizetype);
+	    tree_type_x = (TYPE_UNSIGNED (tree_type) ? usizetype : ssizetype);
 
 	  if (TREE_TYPE (min) != tree_type_x)
 	    min = convert (tree_type_x, min);
@@ -958,7 +958,7 @@ ffecom_arrayref_ (tree item, ffebld expr, int want_ptr)
 	  if (tree_type
 	      && GET_MODE_CLASS (TYPE_MODE (tree_type)) == MODE_INT
 	      && TYPE_PRECISION (tree_type) < TYPE_PRECISION (sizetype))
-	    tree_type_x = (TREE_UNSIGNED (tree_type) ? usizetype : ssizetype);
+	    tree_type_x = (TYPE_UNSIGNED (tree_type) ? usizetype : ssizetype);
 
 	  element = convert (tree_type_x, element);
 
@@ -2955,7 +2955,7 @@ ffecom_expr_ (ffebld expr, tree dest_tree, ffebld dest, bool *dest_used,
   if (widenp && tree_type
       && GET_MODE_CLASS (TYPE_MODE (tree_type)) == MODE_INT
       && TYPE_PRECISION (tree_type) < TYPE_PRECISION (sizetype))
-    tree_type_x = (TREE_UNSIGNED (tree_type) ? usizetype : ssizetype);
+    tree_type_x = (TYPE_UNSIGNED (tree_type) ? usizetype : ssizetype);
 
   switch (ffebld_op (expr))
     {

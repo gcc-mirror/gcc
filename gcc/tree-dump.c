@@ -409,7 +409,7 @@ dequeue_and_dump (dump_info_p di)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       dump_int (di, "prec", TYPE_PRECISION (t));
-      if (TREE_UNSIGNED (t))
+      if (TYPE_UNSIGNED (t))
 	dump_string (di, "unsigned");
       dump_child ("min", TYPE_MIN_VALUE (t));
       dump_child ("max", TYPE_MAX_VALUE (t));

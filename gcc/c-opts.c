@@ -1193,7 +1193,7 @@ c_common_init (void)
   cpp_opts->char_precision = TYPE_PRECISION (char_type_node);
   cpp_opts->int_precision = TYPE_PRECISION (integer_type_node);
   cpp_opts->wchar_precision = TYPE_PRECISION (wchar_type_node);
-  cpp_opts->unsigned_wchar = TREE_UNSIGNED (wchar_type_node);
+  cpp_opts->unsigned_wchar = TYPE_UNSIGNED (wchar_type_node);
   cpp_opts->bytes_big_endian = BYTES_BIG_ENDIAN;
 
   /* This can't happen until after wchar_precision and bytes_big_endian

@@ -2118,7 +2118,7 @@ gnat_signed_type (tree type_node)
 tree
 gnat_signed_or_unsigned_type (int unsignedp, tree type)
 {
-  if (! INTEGRAL_TYPE_P (type) || TREE_UNSIGNED (type) == unsignedp)
+  if (! INTEGRAL_TYPE_P (type) || TYPE_UNSIGNED (type) == unsignedp)
     return type;
   else
     return gnat_type_for_size (TYPE_PRECISION (type), unsignedp);
@@ -2355,19 +2355,19 @@ build_vms_descriptor (tree type, Mechanism_Type mech, Entity_Id gnat_entity)
 	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
 	  {
 	  case 8:
-	    dtype = TREE_UNSIGNED (type) ? 2 : 6;
+	    dtype = TYPE_UNSIGNED (type) ? 2 : 6;
 	    break;
 	  case 16:
-	    dtype = TREE_UNSIGNED (type) ? 3 : 7;
+	    dtype = TYPE_UNSIGNED (type) ? 3 : 7;
 	    break;
 	  case 32:
-	    dtype = TREE_UNSIGNED (type) ? 4 : 8;
+	    dtype = TYPE_UNSIGNED (type) ? 4 : 8;
 	    break;
 	  case 64:
-	    dtype = TREE_UNSIGNED (type) ? 5 : 9;
+	    dtype = TYPE_UNSIGNED (type) ? 5 : 9;
 	    break;
 	  case 128:
-	    dtype = TREE_UNSIGNED (type) ? 25 : 26;
+	    dtype = TYPE_UNSIGNED (type) ? 25 : 26;
 	    break;
 	  }
       break;
@@ -3388,15 +3388,15 @@ unchecked_convert (tree type, tree expr, int notrunc_p)
       && 0 != compare_tree_int (TYPE_RM_SIZE (type),
 				GET_MODE_BITSIZE (TYPE_MODE (type)))
       && ! (INTEGRAL_TYPE_P (etype)
-	    && TREE_UNSIGNED (type) == TREE_UNSIGNED (etype)
+	    && TYPE_UNSIGNED (type) == TYPE_UNSIGNED (etype)
 	    && operand_equal_p (TYPE_RM_SIZE (type),
 				(TYPE_RM_SIZE (etype) != 0
 				 ? TYPE_RM_SIZE (etype) : TYPE_SIZE (etype)),
 				0))
-      && ! (TREE_UNSIGNED (type) && TREE_UNSIGNED (etype)))
+      && ! (TYPE_UNSIGNED (type) && TYPE_UNSIGNED (etype)))
     {
       tree base_type = gnat_type_for_mode (TYPE_MODE (type),
-					   TREE_UNSIGNED (type));
+					   TYPE_UNSIGNED (type));
       tree shift_expr
 	= convert (base_type,
 		   size_binop (MINUS_EXPR,

@@ -761,7 +761,7 @@ expand_inline_function (tree fndecl, tree parms, rtx target, int ignore,
 	{
 	  if (GET_MODE (loc) != TYPE_MODE (TREE_TYPE (arg)))
 	    {
-	      int unsignedp = TREE_UNSIGNED (TREE_TYPE (formal));
+	      int unsignedp = TYPE_UNSIGNED (TREE_TYPE (formal));
 	      enum machine_mode pmode = TYPE_MODE (TREE_TYPE (formal));
 
 	      pmode = promote_mode (TREE_TYPE (formal), pmode,

@@ -1195,7 +1195,7 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	}
 
       mode = TYPE_MODE (type);
-      unsignedp = TREE_UNSIGNED (type);
+      unsignedp = TYPE_UNSIGNED (type);
 
       if (targetm.calls.promote_function_args (fndecl ? TREE_TYPE (fndecl) : 0))
 	mode = promote_mode (type, mode, &unsignedp, 1);
@@ -3346,7 +3346,7 @@ expand_call (tree exp, rtx target, int ignore)
 	  && GET_MODE (target) != TYPE_MODE (TREE_TYPE (exp)))
 	{
 	  tree type = TREE_TYPE (exp);
-	  int unsignedp = TREE_UNSIGNED (type);
+	  int unsignedp = TYPE_UNSIGNED (type);
 	  int offset = 0;
 
 	  /* If we don't promote as expected, something is wrong.  */

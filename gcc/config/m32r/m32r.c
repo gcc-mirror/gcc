@@ -2758,13 +2758,13 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "memcpy"), 0,
 		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
-				      TREE_UNSIGNED (sizetype)),
+				      TYPE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
 #else
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "bcopy"), 0,
 		     VOIDmode, 3, src_reg, Pmode, dest_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (integer_type_node), bytes_rtx,
-				      TREE_UNSIGNED (integer_type_node)),
+				      TYPE_UNSIGNED (integer_type_node)),
 		     TYPE_MODE (integer_type_node));
 #endif
 }

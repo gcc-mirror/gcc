@@ -347,7 +347,7 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
       if (same_type_p (TYPE_MAIN_VARIANT (t1), long_long_integer_type_node)
 	  || same_type_p (TYPE_MAIN_VARIANT (t2), long_long_integer_type_node))
 	{
-	  tree t = ((TREE_UNSIGNED (t1) || TREE_UNSIGNED (t2))
+	  tree t = ((TYPE_UNSIGNED (t1) || TYPE_UNSIGNED (t2))
 		    ? long_long_unsigned_type_node 
 		    : long_long_integer_type_node);
 	  return build_type_attribute_variant (t, attributes);
@@ -361,12 +361,12 @@ type_after_usual_arithmetic_conversions (tree t1, tree t2)
       if (same_type_p (TYPE_MAIN_VARIANT (t1), long_integer_type_node)
 	  || same_type_p (TYPE_MAIN_VARIANT (t2), long_integer_type_node))
 	{
-	  tree t = ((TREE_UNSIGNED (t1) || TREE_UNSIGNED (t2))
+	  tree t = ((TYPE_UNSIGNED (t1) || TYPE_UNSIGNED (t2))
 		    ? long_unsigned_type_node : long_integer_type_node);
 	  return build_type_attribute_variant (t, attributes);
 	}
       /* Otherwise prefer the unsigned one.  */
-      if (TREE_UNSIGNED (t1))
+      if (TYPE_UNSIGNED (t1))
 	return build_type_attribute_variant (t1, attributes);
       else
 	return build_type_attribute_variant (t2, attributes);
@@ -2872,7 +2872,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	       point, so we have to dig out the original type to find out if
 	       it was unsigned.  */
 	    shorten = ((TREE_CODE (op0) == NOP_EXPR
-			&& TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+			&& TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
 		       || (TREE_CODE (op1) == INTEGER_CST
 			   && ! integer_all_onesp (op1)));
 
@@ -2901,7 +2901,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	     quotient can't be represented in the computation mode.  We shorten
 	     only if unsigned or if dividing by something we know != -1.  */
 	  shorten = ((TREE_CODE (op0) == NOP_EXPR
-		      && TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
+		      && TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (op0, 0))))
 		     || (TREE_CODE (op1) == INTEGER_CST
 			 && ! integer_all_onesp (op1)));
 	  common = 1;
@@ -3160,7 +3160,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  tree arg0 = get_narrower (op0, &unsigned0);
 	  tree arg1 = get_narrower (op1, &unsigned1);
 	  /* UNS is 1 if the operation to be done is an unsigned one.  */
-	  int uns = TREE_UNSIGNED (result_type);
+	  int uns = TYPE_UNSIGNED (result_type);
 	  tree type;
 
 	  final_type = result_type;
@@ -3169,9 +3169,9 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	     but it *requires* conversion to FINAL_TYPE.  */
 
 	  if (op0 == arg0 && TREE_TYPE (op0) != final_type)
-	    unsigned0 = TREE_UNSIGNED (TREE_TYPE (op0));
+	    unsigned0 = TYPE_UNSIGNED (TREE_TYPE (op0));
 	  if (op1 == arg1 && TREE_TYPE (op1) != final_type)
-	    unsigned1 = TREE_UNSIGNED (TREE_TYPE (op1));
+	    unsigned1 = TYPE_UNSIGNED (TREE_TYPE (op1));
 
 	  /* Now UNSIGNED0 is 1 if ARG0 zero-extends to FINAL_TYPE.  */
 
@@ -3223,7 +3223,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  final_type = result_type;
 
 	  if (arg0 == op0 && final_type == TREE_TYPE (op0))
-	    unsigned_arg = TREE_UNSIGNED (TREE_TYPE (op0));
+	    unsigned_arg = TYPE_UNSIGNED (TREE_TYPE (op0));
 
 	  if (TYPE_PRECISION (TREE_TYPE (arg0)) < TYPE_PRECISION (result_type)
 	      /* We can shorten only if the shift count is less than the
@@ -3236,7 +3236,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 		 ones made by sign-extension and bring in zeros.
 		 We can't optimize that case at all, but in most machines
 		 it never happens because available widths are 2**N.  */
-	      && (!TREE_UNSIGNED (final_type)
+	      && (!TYPE_UNSIGNED (final_type)
 		  || unsigned_arg
 		  || (((unsigned) 2 * TYPE_PRECISION (TREE_TYPE (arg0)))
 		      <= TYPE_PRECISION (result_type))))
@@ -3278,8 +3278,8 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	     bound the ranges of the arguments until that point.  */
 	  && !processing_template_decl)
 	{
-	  int op0_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op0));
-	  int op1_signed = ! TREE_UNSIGNED (TREE_TYPE (orig_op1));
+	  int op0_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op0));
+	  int op1_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op1));
 
 	  int unsignedp0, unsignedp1;
 	  tree primop0 = get_narrower (op0, &unsignedp0);
@@ -3303,7 +3303,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 	  /* Do not warn if the comparison is being done in a signed type,
 	     since the signed type will only be chosen if it can represent
 	     all the values of the unsigned type.  */
-	  if (! TREE_UNSIGNED (result_type))
+	  if (!TYPE_UNSIGNED (result_type))
 	    /* OK */;
 	  /* Do not warn if both operands are unsigned.  */
 	  else if (op0_signed == op1_signed)
@@ -5557,10 +5557,9 @@ dubious_conversion_warnings (tree type, tree expr,
     }
   /* And warn about assigning a negative value to an unsigned
      variable.  */
-  else if (TREE_UNSIGNED (type) && TREE_CODE (type) != BOOLEAN_TYPE)
+  else if (TYPE_UNSIGNED (type) && TREE_CODE (type) != BOOLEAN_TYPE)
     {
-      if (TREE_CODE (expr) == INTEGER_CST
-	  && TREE_NEGATED_INT (expr))
+      if (TREE_CODE (expr) == INTEGER_CST && TREE_NEGATED_INT (expr))
 	{
 	  if (fndecl)
 	    warning ("passing negative value `%E' for %s %P of `%D'",

@@ -1693,11 +1693,11 @@ write_builtin_type (tree type)
 	  if (itk == itk_none)
 	    {
 	      tree t = c_common_type_for_mode (TYPE_MODE (type),
-					       TREE_UNSIGNED (type));
+					       TYPE_UNSIGNED (type));
 	      if (type == t)
 		{
 		  if (TYPE_PRECISION (type) == 128)
-		    write_char (TREE_UNSIGNED (type) ? 'o' : 'n');
+		    write_char (TYPE_UNSIGNED (type) ? 'o' : 'n');
 		  else
 		    /* Couldn't find this type.  */
 		    abort ();

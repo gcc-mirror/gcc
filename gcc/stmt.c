@@ -3002,7 +3002,7 @@ expand_value_return (rtx val)
       tree type = TREE_TYPE (DECL_RESULT (current_function_decl));
       if (targetm.calls.promote_function_return (TREE_TYPE (current_function_decl)))
       {
-	int unsignedp = TREE_UNSIGNED (type);
+	int unsignedp = TYPE_UNSIGNED (type);
 	enum machine_mode old_mode
 	  = DECL_MODE (DECL_RESULT (current_function_decl));
 	enum machine_mode mode
@@ -3359,7 +3359,7 @@ tail_recursion_args (tree actuals, tree formals)
       else
 	{
 	  rtx tmp = argvec[i];
-	  int unsignedp = TREE_UNSIGNED (TREE_TYPE (TREE_VALUE (a)));
+	  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_VALUE (a)));
 	  promote_mode(TREE_TYPE (TREE_VALUE (a)), GET_MODE (tmp),
 		       &unsignedp, 0);
 	  if (DECL_MODE (f) != GET_MODE (DECL_RTL (f)))
@@ -3945,7 +3945,7 @@ expand_decl (tree decl)
 	   && (DECL_REGISTER (decl) || DECL_ARTIFICIAL (decl) || optimize))
     {
       /* Automatic variable that can go in a register.  */
-      int unsignedp = TREE_UNSIGNED (type);
+      int unsignedp = TYPE_UNSIGNED (type);
       enum machine_mode reg_mode
 	= promote_mode (type, DECL_MODE (decl), &unsignedp, 0);
 
@@ -5344,7 +5344,7 @@ expand_end_case_type (tree orig_index, tree orig_type)
 
   index_expr = thiscase->data.case_stmt.index_expr;
   index_type = TREE_TYPE (index_expr);
-  unsignedp = TREE_UNSIGNED (index_type);
+  unsignedp = TYPE_UNSIGNED (index_type);
   if (orig_type == NULL)
     orig_type = TREE_TYPE (orig_index);
 
@@ -6145,7 +6145,7 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 		 tree index_type)
 {
   /* If INDEX has an unsigned type, we must make unsigned branches.  */
-  int unsignedp = TREE_UNSIGNED (index_type);
+  int unsignedp = TYPE_UNSIGNED (index_type);
   enum machine_mode mode = GET_MODE (index);
   enum machine_mode imode = TYPE_MODE (index_type);
 

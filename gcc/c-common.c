@@ -1248,7 +1248,7 @@ unsigned_conversion_warning (tree result, tree operand)
 
   if (TREE_CODE (operand) == INTEGER_CST
       && TREE_CODE (type) == INTEGER_TYPE
-      && TREE_UNSIGNED (type)
+      && TYPE_UNSIGNED (type)
       && skip_evaluation == 0
       && !int_fits_type_p (operand, type))
     {
@@ -1292,13 +1292,13 @@ convert_and_check (tree type, tree expr)
 	  TREE_CONSTANT_OVERFLOW (t) = TREE_CONSTANT_OVERFLOW (expr);
 
 	  /* No warning for converting 0x80000000 to int.  */
-	  if (!(TREE_UNSIGNED (type) < TREE_UNSIGNED (TREE_TYPE (expr))
+	  if (!(TYPE_UNSIGNED (type) < TYPE_UNSIGNED (TREE_TYPE (expr))
 		&& TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
 		&& TYPE_PRECISION (type) == TYPE_PRECISION (TREE_TYPE (expr))))
 	    /* If EXPR fits in the unsigned version of TYPE,
 	       don't warn unless pedantic.  */
 	    if ((pedantic
-		 || TREE_UNSIGNED (type)
+		 || TYPE_UNSIGNED (type)
 		 || ! constant_fits_type_p (expr,
 					    c_common_unsigned_type (type)))
 	        && skip_evaluation == 0)
@@ -1963,7 +1963,7 @@ tree
 c_common_signed_or_unsigned_type (int unsignedp, tree type)
 {
   if (! INTEGRAL_TYPE_P (type)
-      || TREE_UNSIGNED (type) == unsignedp)
+      || TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
   /* Must check the mode of the types, not the precision.  Enumeral types
@@ -2148,9 +2148,9 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
      but it *requires* conversion to FINAL_TYPE.  */
 
   if (op0 == primop0 && TREE_TYPE (op0) != *restype_ptr)
-    unsignedp0 = TREE_UNSIGNED (TREE_TYPE (op0));
+    unsignedp0 = TYPE_UNSIGNED (TREE_TYPE (op0));
   if (op1 == primop1 && TREE_TYPE (op1) != *restype_ptr)
-    unsignedp1 = TREE_UNSIGNED (TREE_TYPE (op1));
+    unsignedp1 = TYPE_UNSIGNED (TREE_TYPE (op1));
 
   /* If one of the operands must be floated, we cannot optimize.  */
   real1 = TREE_CODE (TREE_TYPE (primop0)) == REAL_TYPE;
@@ -2222,7 +2222,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       int min_gt, max_gt, min_lt, max_lt;
       tree maxval, minval;
       /* 1 if comparison is nominally unsigned.  */
-      int unsignedp = TREE_UNSIGNED (*restype_ptr);
+      int unsignedp = TYPE_UNSIGNED (*restype_ptr);
       tree val;
 
       type = c_common_signed_or_unsigned_type (unsignedp0,
@@ -2379,7 +2379,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
     {
       type = common_type (TREE_TYPE (primop0), TREE_TYPE (primop1));
       type = c_common_signed_or_unsigned_type (unsignedp0
-					       || TREE_UNSIGNED (*restype_ptr),
+					       || TYPE_UNSIGNED (*restype_ptr),
 					       type);
       /* Make sure shorter operand is extended the right way
 	 to match the longer operand.  */
@@ -2401,7 +2401,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
       primop1 = op1;
 
       if (!real1 && !real2 && integer_zerop (primop1)
-	  && TREE_UNSIGNED (*restype_ptr))
+	  && TYPE_UNSIGNED (*restype_ptr))
 	{
 	  tree value = 0;
 	  switch (code)
@@ -2502,7 +2502,7 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
       /* If the constant is unsigned, and smaller than the pointer size,
 	 then we must skip this optimization.  This is because it could cause
 	 an overflow error if the constant is negative but INTOP is not.  */
-      && (! TREE_UNSIGNED (TREE_TYPE (intop))
+      && (! TYPE_UNSIGNED (TREE_TYPE (intop))
 	  || (TYPE_PRECISION (TREE_TYPE (intop))
 	      == TYPE_PRECISION (TREE_TYPE (ptrop)))))
     {
@@ -2522,9 +2522,9 @@ pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
      so the multiply won't overflow spuriously.  */
 
   if (TYPE_PRECISION (TREE_TYPE (intop)) != TYPE_PRECISION (sizetype)
-      || TREE_UNSIGNED (TREE_TYPE (intop)) != TREE_UNSIGNED (sizetype))
+      || TYPE_UNSIGNED (TREE_TYPE (intop)) != TYPE_UNSIGNED (sizetype))
     intop = convert (c_common_type_for_size (TYPE_PRECISION (sizetype),
-					     TREE_UNSIGNED (sizetype)), intop);
+					     TYPE_UNSIGNED (sizetype)), intop);
 
   /* Replace the integer argument with a suitable product by the object size.
      Do this multiplication as signed, then convert to the appropriate
@@ -2821,7 +2821,7 @@ c_common_get_alias_set (tree t)
   /* The C standard specifically allows aliasing between signed and
      unsigned variants of the same type.  We treat the signed
      variant as canonical.  */
-  if (TREE_CODE (t) == INTEGER_TYPE && TREE_UNSIGNED (t))
+  if (TREE_CODE (t) == INTEGER_TYPE && TYPE_UNSIGNED (t))
     {
       tree t1 = c_common_signed_type (t);
 
@@ -3220,7 +3220,7 @@ c_common_nodes_and_builtins (void)
   wchar_type_size = TYPE_PRECISION (wchar_type_node);
   if (c_dialect_cxx ())
     {
-      if (TREE_UNSIGNED (wchar_type_node))
+      if (TYPE_UNSIGNED (wchar_type_node))
 	wchar_type_node = make_unsigned_type (wchar_type_size);
       else
 	wchar_type_node = make_signed_type (wchar_type_size);
@@ -4608,7 +4608,7 @@ handle_mode_attribute (tree *node, tree name, tree args ATTRIBUTE_UNUSED,
 	  warning ("use __attribute__ ((vector_size)) instead");
 	}
 
-      typefm = lang_hooks.types.type_for_mode (mode, TREE_UNSIGNED (type));
+      typefm = lang_hooks.types.type_for_mode (mode, TYPE_UNSIGNED (type));
       if (typefm == NULL_TREE)
 	error ("no data type for mode `%s'", p);
 

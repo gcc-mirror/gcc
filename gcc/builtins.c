@@ -3166,7 +3166,7 @@ expand_builtin_memcmp (tree exp ATTRIBUTE_UNUSED, tree arglist, rtx target,
 			       XEXP (arg1_rtx, 0), Pmode,
 			       XEXP (arg2_rtx, 0), Pmode,
 			       convert_to_mode (TYPE_MODE (sizetype), arg3_rtx,
-						TREE_UNSIGNED (sizetype)),
+						TYPE_UNSIGNED (sizetype)),
 			       TYPE_MODE (sizetype));
 
     /* Return the value in the proper mode for this function.  */

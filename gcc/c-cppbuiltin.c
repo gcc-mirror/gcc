@@ -401,7 +401,7 @@ c_cpp_builtins (cpp_reader *pfile)
   if (!flag_signed_char)
     cpp_define (pfile, "__CHAR_UNSIGNED__");
 
-  if (c_dialect_cxx () && TREE_UNSIGNED (wchar_type_node))
+  if (c_dialect_cxx () && TYPE_UNSIGNED (wchar_type_node))
     cpp_define (pfile, "__WCHAR_UNSIGNED__");
 
   /* Make the choice of ObjC runtime visible to source code.  */
@@ -581,8 +581,8 @@ builtin_define_type_max (const char *macro, tree type, int is_long)
     default:    abort ();
     }
 
-  value = values[idx + TREE_UNSIGNED (type)];
-  suffix = suffixes[is_long * 2 + TREE_UNSIGNED (type)];
+  value = values[idx + TYPE_UNSIGNED (type)];
+  suffix = suffixes[is_long * 2 + TYPE_UNSIGNED (type)];
 
   buf = alloca (strlen (macro) + 1 + strlen (value) + strlen (suffix) + 1);
   sprintf (buf, "%s=%s%s", macro, value, suffix);

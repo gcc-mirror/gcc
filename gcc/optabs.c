@@ -3644,7 +3644,7 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
       result_mode = TYPE_MODE (integer_type_node);
       cmp_mode = TYPE_MODE (length_type);
       size = convert_to_mode (TYPE_MODE (length_type), size,
-			      TREE_UNSIGNED (length_type));
+			      TYPE_UNSIGNED (length_type));
 
       result = emit_library_call_value (libfunc, 0, LCT_PURE_MAKE_BLOCK,
 					result_mode, 3,

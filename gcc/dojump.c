@@ -642,7 +642,7 @@ do_jump (tree exp, rtx if_false_label, rtx if_true_label)
 		temp = copy_to_reg (temp);
 	    }
 	  do_compare_rtx_and_jump (temp, CONST0_RTX (GET_MODE (temp)),
-				   NE, TREE_UNSIGNED (TREE_TYPE (exp)),
+				   NE, TYPE_UNSIGNED (TREE_TYPE (exp)),
 				   GET_MODE (temp), NULL_RTX,
 				   if_false_label, if_true_label);
 	}
@@ -672,9 +672,10 @@ do_jump_by_parts_greater (tree exp, int swap, rtx if_false_label,
   rtx op0 = expand_expr (TREE_OPERAND (exp, swap), NULL_RTX, VOIDmode, 0);
   rtx op1 = expand_expr (TREE_OPERAND (exp, !swap), NULL_RTX, VOIDmode, 0);
   enum machine_mode mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 0)));
-  int unsignedp = TREE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
+  int unsignedp = TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (exp, 0)));
 
-  do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label, if_true_label);
+  do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label,
+				if_true_label);
 }
 
 /* Compare OP0 with OP1, word at a time, in mode MODE.
@@ -747,7 +748,7 @@ do_jump_by_parts_equality (tree exp, rtx if_false_label, rtx if_true_label)
   for (i = 0; i < nwords; i++)
     do_compare_rtx_and_jump (operand_subword_force (op0, i, mode),
                              operand_subword_force (op1, i, mode),
-                             EQ, TREE_UNSIGNED (TREE_TYPE (exp)),
+                             EQ, TYPE_UNSIGNED (TREE_TYPE (exp)),
                              word_mode, NULL_RTX, if_false_label, NULL_RTX);
 
   if (if_true_label)
@@ -1017,7 +1018,7 @@ do_compare_and_jump (tree exp, enum rtx_code signed_code,
       type = TREE_TYPE (TREE_OPERAND (exp, 1));
       mode = TYPE_MODE (type);
     }
-  unsignedp = TREE_UNSIGNED (type);
+  unsignedp = TYPE_UNSIGNED (type);
   code = unsignedp ? unsigned_code : signed_code;
 
 #ifdef HAVE_canonicalize_funcptr_for_compare

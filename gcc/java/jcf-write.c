@@ -2241,7 +2241,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 		    /* Already converted to int, if needed. */
 		    if (TYPE_PRECISION (dst_type) <= 8)
 		      OP1 (OPCODE_i2b);
-		    else if (TREE_UNSIGNED (dst_type))
+		    else if (TYPE_UNSIGNED (dst_type))
 		      OP1 (OPCODE_i2c);
 		    else
 		      OP1 (OPCODE_i2s);

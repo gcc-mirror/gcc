@@ -1221,7 +1221,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      = TYPE_MODULAR_P (gnu_type)
 		? gnu_high : TYPE_MAX_VALUE (gnu_type);
 	    TYPE_PRECISION (gnu_subtype) = esize;
-	    TREE_UNSIGNED (gnu_subtype) = 1;
+	    TYPE_UNSIGNED (gnu_subtype) = 1;
 	    TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
 	    TYPE_PACKED_ARRAY_TYPE_P (gnu_subtype)
 	      = Is_Packed_Array_Type (gnat_entity);
@@ -1299,8 +1299,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      /* This should be an unsigned type if the lower bound is constant
 	 and non-negative or if the base type is unsigned; a signed type
 	 otherwise.    */
-      TREE_UNSIGNED (gnu_type)
-	= (TREE_UNSIGNED (TREE_TYPE (gnu_type))
+      TYPE_UNSIGNED (gnu_type)
+	= (TYPE_UNSIGNED (TREE_TYPE (gnu_type))
 	   || (TREE_CODE (TYPE_MIN_VALUE (gnu_type)) == INTEGER_CST
 	       && TREE_INT_CST_HIGH (TYPE_MIN_VALUE (gnu_type)) >= 0)
 	   || TYPE_BIASED_REPRESENTATION_P (gnu_type)
@@ -1806,7 +1806,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	      else if (TREE_CODE (gnu_high) == INTEGER_CST
 		       && TREE_OVERFLOW (gnu_high))
 		gnu_high = gnu_max;
-	      else if (TREE_UNSIGNED (gnu_base_subtype)
+	      else if (TYPE_UNSIGNED (gnu_base_subtype)
 		       || TREE_CODE (gnu_high) == INTEGER_CST)
 		gnu_high = size_binop (MAX_EXPR, gnu_max, gnu_high);
 	      else
@@ -2081,8 +2081,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			= TYPE_MAX_VALUE (gnu_inner_type);
 		      TYPE_PRECISION (gnu_subtype)
 			= TYPE_PRECISION (gnu_inner_type);
-		      TREE_UNSIGNED (gnu_subtype)
-			= TREE_UNSIGNED (gnu_inner_type);
+		      TYPE_UNSIGNED (gnu_subtype)
+			= TYPE_UNSIGNED (gnu_inner_type);
 		      TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
 		      layout_type (gnu_subtype);
 
@@ -6010,8 +6010,8 @@ make_type_from_size (tree type, tree size_tree, int biased_p)
 	= ((TREE_CODE (type) == INTEGER_TYPE
 	    && TYPE_BIASED_REPRESENTATION_P (type))
 	   || biased_p);
-      TREE_UNSIGNED (new_type)
-	= TREE_UNSIGNED (type) | TYPE_BIASED_REPRESENTATION_P (new_type);
+      TYPE_UNSIGNED (new_type)
+	= TYPE_UNSIGNED (type) | TYPE_BIASED_REPRESENTATION_P (new_type);
       TYPE_RM_SIZE_INT (new_type) = bitsize_int (size);
       return new_type;
 

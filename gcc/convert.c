@@ -397,7 +397,7 @@ convert_to_integer (tree type, tree expr)
 	     conversion necessitates an explicit sign-extension.  In
 	     the signed-to-unsigned case the high-order bits have to
 	     be cleared.  */
-	  if (TREE_UNSIGNED (type) != TREE_UNSIGNED (TREE_TYPE (expr))
+	  if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (TREE_TYPE (expr))
 	      && (TYPE_PRECISION (TREE_TYPE (expr))
 		  != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (expr)))))
 	    code = CONVERT_EXPR;
@@ -415,7 +415,7 @@ convert_to_integer (tree type, tree expr)
 	       || outprec != GET_MODE_BITSIZE (TYPE_MODE (type)))
 	return build1 (NOP_EXPR, type,
 		       convert (lang_hooks.types.type_for_mode
-				(TYPE_MODE (type), TREE_UNSIGNED (type)),
+				(TYPE_MODE (type), TYPE_UNSIGNED (type)),
 				expr));
 
       /* Here detect when we can distribute the truncation down past some
@@ -456,7 +456,7 @@ convert_to_integer (tree type, tree expr)
 	     the target type is unsigned.  */
 	  if (TREE_CODE (TREE_OPERAND (expr, 1)) == INTEGER_CST
 	      && tree_int_cst_sgn (TREE_OPERAND (expr, 1)) >= 0
-	      && TREE_UNSIGNED (type)
+	      && TYPE_UNSIGNED (type)
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      /* If shift count is less than the width of the truncated type,
@@ -498,8 +498,8 @@ convert_to_integer (tree type, tree expr)
 		&& outprec >= TYPE_PRECISION (TREE_TYPE (arg1))
 		/* If signedness of arg0 and arg1 don't match,
 		   we can't necessarily find a type to compare them in.  */
-		&& (TREE_UNSIGNED (TREE_TYPE (arg0))
-		    == TREE_UNSIGNED (TREE_TYPE (arg1))))
+		&& (TYPE_UNSIGNED (TREE_TYPE (arg0))
+		    == TYPE_UNSIGNED (TREE_TYPE (arg1))))
 	      goto trunc1;
 	    break;
 	  }
@@ -527,7 +527,7 @@ convert_to_integer (tree type, tree expr)
 		   so use an integer type that will hold the values.  */
 		if (TREE_CODE (typex) == ENUMERAL_TYPE)
 		  typex = lang_hooks.types.type_for_size
-		    (TYPE_PRECISION (typex), TREE_UNSIGNED (typex));
+		    (TYPE_PRECISION (typex), TYPE_UNSIGNED (typex));
 
 		/* But now perhaps TYPEX is as wide as INPREC.
 		   In that case, do nothing special here.
@@ -545,9 +545,9 @@ convert_to_integer (tree type, tree expr)
 		       signed-overflow undefinedness.
 		       And we may need to do it as unsigned
 		       if we truncate to the original size.  */
-		    if (TREE_UNSIGNED (TREE_TYPE (expr))
-			|| (TREE_UNSIGNED (TREE_TYPE (arg0))
-			    && (TREE_UNSIGNED (TREE_TYPE (arg1))
+		    if (TYPE_UNSIGNED (TREE_TYPE (expr))
+			|| (TYPE_UNSIGNED (TREE_TYPE (arg0))
+			    && (TYPE_UNSIGNED (TREE_TYPE (arg1))
 				|| ex_form == LSHIFT_EXPR
 				|| ex_form == RSHIFT_EXPR
 				|| ex_form == LROTATE_EXPR
@@ -576,7 +576,7 @@ convert_to_integer (tree type, tree expr)
 	       so use an integer type that will hold the values.  */
 	    if (TREE_CODE (typex) == ENUMERAL_TYPE)
 	      typex = lang_hooks.types.type_for_size
-		(TYPE_PRECISION (typex), TREE_UNSIGNED (typex));
+		(TYPE_PRECISION (typex), TYPE_UNSIGNED (typex));
 
 	    /* But now perhaps TYPEX is as wide as INPREC.
 	       In that case, do nothing special here.
@@ -585,7 +585,7 @@ convert_to_integer (tree type, tree expr)
 	      {
 		/* Don't do unsigned arithmetic where signed was wanted,
 		   or vice versa.  */
-		if (TREE_UNSIGNED (TREE_TYPE (expr)))
+		if (TYPE_UNSIGNED (TREE_TYPE (expr)))
 		  typex = lang_hooks.types.unsigned_type (typex);
 		else
 		  typex = lang_hooks.types.signed_type (typex);

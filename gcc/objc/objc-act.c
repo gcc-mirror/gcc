@@ -7342,16 +7342,16 @@ encode_type (tree type, int curtype, int format)
     {
       switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
 	{
-	case 8:  c = TREE_UNSIGNED (type) ? 'C' : 'c'; break;
-	case 16: c = TREE_UNSIGNED (type) ? 'S' : 's'; break;
+	case 8:  c = TYPE_UNSIGNED (type) ? 'C' : 'c'; break;
+	case 16: c = TYPE_UNSIGNED (type) ? 'S' : 's'; break;
 	case 32: 
 	  if (type == long_unsigned_type_node
 	      || type == long_integer_type_node)
-	         c = TREE_UNSIGNED (type) ? 'L' : 'l';
+	         c = TYPE_UNSIGNED (type) ? 'L' : 'l';
 	  else
-	         c = TREE_UNSIGNED (type) ? 'I' : 'i';
+	         c = TYPE_UNSIGNED (type) ? 'I' : 'i';
 	  break;
-	case 64: c = TREE_UNSIGNED (type) ? 'Q' : 'q'; break;
+	case 64: c = TYPE_UNSIGNED (type) ? 'Q' : 'q'; break;
 	default: abort ();
 	}
       obstack_1grow (&util_obstack, c);

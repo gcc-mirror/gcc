@@ -4176,8 +4176,9 @@ make_tree (tree type, rtx x)
     {
     case CONST_INT:
       t = build_int_2 (INTVAL (x),
-		       (TREE_UNSIGNED (type)
-			&& (GET_MODE_BITSIZE (TYPE_MODE (type)) < HOST_BITS_PER_WIDE_INT))
+		       (TYPE_UNSIGNED (type)
+			&& (GET_MODE_BITSIZE (TYPE_MODE (type))
+			    < HOST_BITS_PER_WIDE_INT))
 		       || INTVAL (x) >= 0 ? 0 : -1);
       TREE_TYPE (t) = type;
       return t;
