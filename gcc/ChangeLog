@@ -1,3 +1,7 @@
+2002-10-08  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips.md (define_attr cpu): Add r4111.
+
 2002-10-08  Anthony Green  <green@redhat.com> 
 
 	* bitmap.c (bitmap_equal_p): Clear all bitmap_head fields. 
