@@ -1,3 +1,8 @@
+2002-08-23  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* ns32k.c (ns32k_globalize_label): Delete.
+	* ns32k.h (ASM_OUTPUT_LABEL, TARGET_ASM_GLOBALIZE_LABEL): Delete.
+
 2002-08-23  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (output_mi_thunk): Don't determine insns
