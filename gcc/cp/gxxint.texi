@@ -1684,14 +1684,14 @@ as a @samp{Z} followed by the encoding of the type.
 
 A function template specialization (either an instantiation or an
 explicit specialization) is encoded by an @samp{H} followed by the
-encoding of the template parameters, as described above, followed by 
-an @samp{_}, the encoding of the argument types template function (not the
-specialization), another @samp{_}, and the return type.  (Like the
-argument types, the return type is the return type of the function
+encoding of the template parameters, as described above, followed by an
+@samp{_}, the encoding of the argument types to the template function
+(not the specialization), another @samp{_}, and the return type.  (Like
+the argument types, the return type is the return type of the function
 template, not the specialization.)  Template parameters in the argument
 and return types are encoded by an @samp{X} for type parameters, or a
-@samp{Y} for constant parameters, and an index indicating their position
-in the template parameter list declaration.
+@samp{Y} for constant parameters, an index indicating their position
+in the template parameter list declaration, and their template depth.
 
 @subsection Arrays
 

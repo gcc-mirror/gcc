@@ -2311,47 +2311,15 @@ decls_match (newdecl, olddecl)
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL
 	   && TREE_CODE (olddecl) == TEMPLATE_DECL)
     {
-	tree newargs = DECL_TEMPLATE_PARMS (newdecl);
-	tree oldargs = DECL_TEMPLATE_PARMS (olddecl);
-	int i;
-
-	/* Run through all the levels of template parameters, checking
-	   that they match.  */
-	while (newargs && oldargs) 
-	  {
-	    int len = TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS (newargs));
-
-	    if (TREE_VEC_LENGTH (INNERMOST_TEMPLATE_PARMS (oldargs)) != len)
-	      return 0;
-	    
-	    for (i = 0; i < len; i++)
-	      {
-		tree newarg = 
-		  TREE_VALUE (TREE_VEC_ELT 
-			      (INNERMOST_TEMPLATE_PARMS (newargs), i));
-		tree oldarg = 
-		  TREE_VALUE (TREE_VEC_ELT 
-			      (INNERMOST_TEMPLATE_PARMS (oldargs), i));
-		if (TREE_CODE (newarg) != TREE_CODE (oldarg))
-		  return 0;
-		else if (TREE_CODE (newarg) == TYPE_DECL)
-		  /* continue */;
-		else if (! comptypes (TREE_TYPE (newarg), TREE_TYPE (oldarg), 1))
-		  return 0;
-	      }
-	    newargs = TREE_CHAIN (newargs);
-	    oldargs = TREE_CHAIN (oldargs);
-	  }
-
-	if ((newargs == NULL_TREE) != (oldargs == NULL_TREE))
-	  /* One declaration has more levels that the other. */
-	  return 0;
-
-	if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
-	  types_match = 1;
-	else
-	  types_match = decls_match (DECL_TEMPLATE_RESULT (olddecl),
-				     DECL_TEMPLATE_RESULT (newdecl));
+      if (!comp_template_parms (DECL_TEMPLATE_PARMS (newdecl),
+				DECL_TEMPLATE_PARMS (olddecl)))
+	return 0;
+      
+      if (TREE_CODE (DECL_TEMPLATE_RESULT (newdecl)) == TYPE_DECL)
+	types_match = 1;
+      else
+	types_match = decls_match (DECL_TEMPLATE_RESULT (olddecl),
+				   DECL_TEMPLATE_RESULT (newdecl));
     }
   else
     {
@@ -2760,6 +2728,7 @@ duplicate_decls (newdecl, olddecl)
 	    cp_error ("invalid redeclaration of %D", newdecl);
 	  TREE_TYPE (olddecl) = TREE_TYPE (DECL_TEMPLATE_RESULT (olddecl));
 	  DECL_TEMPLATE_PARMS (olddecl) = DECL_TEMPLATE_PARMS (newdecl);
+	  DECL_TEMPLATE_INFO (olddecl) = DECL_TEMPLATE_INFO (newdecl);
 	}
       return 1;
     }
@@ -4504,7 +4473,10 @@ make_implicit_typename (context, t)
 
    If PREFER_TYPE is > 0, we prefer TYPE_DECLs.
    If PREFER_TYPE is -2, we're being called from yylex(). (UGLY)
-   Otherwise we prefer non-TYPE_DECLs.  */
+   Otherwise we prefer non-TYPE_DECLs.  
+
+   If NONCLASS is non-zero, we don't look for the NAME in class scope,
+   using IDENTIFIER_CLASS_VALUE.  */
 
 static tree
 lookup_name_real (name, prefer_type, nonclass)
@@ -7461,8 +7433,15 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
   if (friendp && 
       TREE_CODE (orig_declarator) == TEMPLATE_ID_EXPR)
-    /* A friend declaration of the form friend void f<>().  */
-    SET_DECL_IMPLICIT_INSTANTIATION (decl);
+    {
+      /* A friend declaration of the form friend void f<>().  Record
+	 the information in the TEMPLATE_ID_EXPR.  */
+      SET_DECL_IMPLICIT_INSTANTIATION (decl);
+      DECL_TEMPLATE_INFO (decl) 
+	= perm_tree_cons (TREE_OPERAND (orig_declarator, 0),
+			  TREE_OPERAND (orig_declarator, 1),
+			  NULL_TREE);
+    }
 
   /* Caller will do the rest of this.  */
   if (check < 0)
@@ -7485,8 +7464,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
       decl = check_explicit_specialization (orig_declarator, decl,
 					    template_count, 
-					    funcdef_flag ? 2 : 
-					    (friendp ? 3 : 0));
+					    2 * (funcdef_flag != 0) + 
+					    4 * (friendp != 0));
 
       if (check)
 	{
@@ -7532,8 +7511,8 @@ grokfndecl (ctype, type, declarator, orig_declarator, virtualp, flags, quals,
 
       decl = check_explicit_specialization (orig_declarator, decl,
 					    template_count, 
-					    funcdef_flag ? 2 : 
-					    (friendp ? 3 : 0));
+					    2 * (funcdef_flag != 0) + 
+					    4 * (friendp != 0));
 
       if (ctype != NULL_TREE && check)
 	{
@@ -7952,10 +7931,10 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
 		if (TREE_CODE (fns) == IDENTIFIER_NODE)
 		  dname = fns;
-		else if (really_overloaded_fn (fns))
+		else if (is_overloaded_fn (fns))
 		  dname = DECL_NAME (get_first_fn (fns));
 		else
-		  dname = DECL_NAME (fns);
+		  my_friendly_abort (0);
 	      }
 	  /* fall through */
 

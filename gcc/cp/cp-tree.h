@@ -47,6 +47,17 @@ typedef struct
   int new_type_flag;
 } flagged_type_tree;
 
+typedef struct 
+{
+  char common[sizeof (struct tree_common)];
+  struct rtx_def *rtl;	/* Unused, but required to match up with what
+			   the middle-end expects.  */
+  HOST_WIDE_INT index;
+  HOST_WIDE_INT level;
+  HOST_WIDE_INT orig_level;
+  tree decl;
+} template_parm_index;
+
 /* To identify to the debug emitters if it should pay attention to the
    flag `-Wtemplate-debugging'.  */
 #define HAVE_TEMPLATES 1
@@ -1340,6 +1351,18 @@ extern int flag_new_for_scope;
 #define TYPE_WAS_ANONYMOUS(NODE) (TYPE_LANG_SPECIFIC (NODE)->type_flags.was_anonymous)
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
+
+/* The format of each node in the DECL_FRIENDLIST is as follows:
+
+   The TREE_PURPOSE will be the name of a function, i.e., an
+   IDENTIFIER_NODE.  The TREE_VALUE will be itself a TREE_LIST, the
+   list of functions with that name which are friends.  The
+   TREE_PURPOSE of each node in this sublist will be error_mark_node,
+   if the function was declared a friend individually, in which case
+   the TREE_VALUE will be the function_decl.  If, however, all
+   functions with a given name in a class were declared to be friends,
+   the TREE_PUROSE will be the class type, and the TREE_VALUE will be
+   NULL_TREE.  */
 #define DECL_FRIENDLIST(NODE)		(DECL_INITIAL (NODE))
 
 /* The DECL_ACCESS is used to record under which context
@@ -1352,6 +1375,17 @@ extern int flag_new_for_scope;
 #define SET_DECL_REFERENCE_SLOT(NODE,VAL) ((NODE)->decl.arguments=VAL)
 
 /* Accessor macros for C++ template decl nodes.  */
+
+/* The DECL_TEMPLATE_PARMS are a list.  The TREE_PURPOSE of each node
+   indicates the level of the template parameters, with 1 being the
+   outermost set of template parameters.  The TREE_VALUE is a vector,
+   whose elements are the template parameters at each level.  Each
+   element in the vector is a TREE_LIST, whose TREE_VALUE is a
+   PARM_DECL (if the parameter is a non-type parameter), or a
+   TYPE_DECL (if the parameter is a type parameter).  The TREE_PURPOSE
+   is the default value, if any.  The TEMPLATE_PARM_INDEX for the
+   parameter is avilable as the DECL_INITIAL (for a PARM_DECL) or as
+   the TREE_TYPE (for a TYPE_DECL).  */
 #define DECL_TEMPLATE_PARMS(NODE)       DECL_ARGUMENTS(NODE)
 #define DECL_INNERMOST_TEMPLATE_PARMS(NODE) \
    INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (NODE))
@@ -1374,6 +1408,12 @@ extern int flag_new_for_scope;
   (TREE_CODE (NODE) == TEMPLATE_DECL \
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == FUNCTION_DECL)
 
+/* A `primary' template is one which depends on no tbemplate parameters
+   except those specified in its parameter list.  So, a template
+   member of a non-template class is primary, and every global
+   function template is primary, but a member function of a template
+   class is not primary, neither is a member template of a template
+   class.  */
 #define PRIMARY_TEMPLATE_P(NODE) \
   (TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)) == (NODE))
 
@@ -1934,24 +1974,27 @@ extern tree current_class_type;	/* _TYPE: the type of the current class */
 
 #define WANT_ARITH	(WANT_INT | WANT_FLOAT)
 
-/* Anatomy of a DECL_FRIENDLIST (which is a TREE_LIST):
-   purpose = friend name (IDENTIFIER_NODE);
-   value = TREE_LIST of FUNCTION_DECLS;
-   chain, type = EMPTY;  */
 #define FRIEND_NAME(LIST) (TREE_PURPOSE (LIST))
 #define FRIEND_DECLS(LIST) (TREE_VALUE (LIST))
 
+/* These macros are used to access a TEMPLATE_PARM_INDEX.  */
+#define TEMPLATE_PARM_IDX(NODE) (((template_parm_index*) NODE)->index)
+#define TEMPLATE_PARM_LEVEL(NODE) (((template_parm_index*) NODE)->level)
+#define TEMPLATE_PARM_DESCENDANTS(NODE) (TREE_CHAIN (NODE))
+#define TEMPLATE_PARM_ORIG_LEVEL(NODE) (((template_parm_index*) NODE)->orig_level)
+#define TEMPLATE_PARM_DECL(NODE) (((template_parm_index*) NODE)->decl)
+
 /* These macros are for accessing the fields of TEMPLATE_TYPE_PARM 
    and TEMPLATE_TEMPLATE_PARM nodes.  */
-#define TEMPLATE_TYPE_IDX(NODE) TREE_INT_CST_LOW (TYPE_FIELDS (NODE))
-#define TEMPLATE_TYPE_LEVEL(NODE) TREE_INT_CST_HIGH (TYPE_FIELDS (NODE))
-#define TEMPLATE_TYPE_SET_INFO(NODE,I,L) \
-  (TYPE_FIELDS (NODE) = build_int_2 (I, L))
-/* These macros are for accessing the fields of TEMPLATE_CONST_PARM nodes.  */
-#define TEMPLATE_CONST_IDX(NODE) (TREE_INT_CST_LOW(NODE))
-#define TEMPLATE_CONST_LEVEL(NODE) (TREE_INT_CST_HIGH(NODE))
-#define TEMPLATE_CONST_SET_INFO(NODE,I,L) \
-  (TEMPLATE_CONST_IDX (NODE) = I, TEMPLATE_CONST_LEVEL (NODE) = L)
+#define TEMPLATE_TYPE_PARM_INDEX(NODE) (TYPE_FIELDS (NODE))
+#define TEMPLATE_TYPE_IDX(NODE) \
+  (TEMPLATE_PARM_IDX (TEMPLATE_TYPE_PARM_INDEX (NODE)))
+#define TEMPLATE_TYPE_LEVEL(NODE) \
+  (TEMPLATE_PARM_LEVEL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
+#define TEMPLATE_TYPE_ORIG_LEVEL(NODE) \
+  (TEMPLATE_PARM_ORIG_LEVEL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
+#define TEMPLATE_TYPE_DECL(NODE) \
+  (TEMPLATE_PARM_DECL (TEMPLATE_TYPE_PARM_INDEX (NODE)))
 
 /* in lex.c  */
 /* Indexed by TREE_CODE, these tables give C-looking names to
@@ -2336,8 +2379,8 @@ extern tree tsubst				PROTO ((tree, tree, int, tree));
 extern tree tsubst_expr				PROTO ((tree, tree, int, tree));
 extern tree tsubst_copy				PROTO ((tree, tree, int, tree));
 extern tree tsubst_chain			PROTO((tree, tree));
-extern void begin_member_template_processing    PROTO((tree));
-extern void end_member_template_processing      PROTO((void));
+extern void maybe_begin_member_template_processing PROTO((tree));
+extern void maybe_end_member_template_processing PROTO((tree));
 extern tree finish_member_template_decl         PROTO((tree, tree));
 extern void begin_template_parm_list		PROTO((void));
 extern void begin_specialization                PROTO((void));
@@ -2382,6 +2425,7 @@ extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
 extern int is_member_template                   PROTO((tree));
 extern int comp_template_parms                  PROTO((tree, tree));
+extern int template_class_depth                 PROTO((tree));
 extern int processing_specialization;
 extern int processing_explicit_instantiation;
 

@@ -329,7 +329,7 @@ yylex ()
 	    }
 	}
       else
-	lastiddecl = trrr;
+	lastiddecl = NULL_TREE;
       got_scope = NULL_TREE;
       /* and fall through to...  */
     case IDENTIFIER_DEFN:

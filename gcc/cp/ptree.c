@@ -66,9 +66,13 @@ print_lang_type (file, node, indent)
      register tree node;
      int indent;
 {
-  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM)
+  if (TREE_CODE (node) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (node) == TEMPLATE_TEMPLATE_PARM)
     {
-      print_node (file, "tinfo", TYPE_VALUES (node), indent + 4);
+      indent_to (file, indent + 3);
+      fprintf (file, "index %d level %d orig_level %d",
+	       TEMPLATE_TYPE_IDX (node), TEMPLATE_TYPE_LEVEL (node),
+	       TEMPLATE_TYPE_ORIG_LEVEL (node));
       return;
     }
 

@@ -1213,8 +1213,7 @@ do_pending_inlines ()
   context = hack_decl_function_context (t->fndecl);
   if (context)
     push_cp_function_context (context);
-  if (is_member_template (t->fndecl))
-    begin_member_template_processing (t->fndecl);
+  maybe_begin_member_template_processing (t->fndecl);
   if (t->len > 0)
     {
       feed_input (t->buf, t->len);
@@ -1252,8 +1251,7 @@ process_next_inline (t)
   tree context;
   struct pending_inline *i = (struct pending_inline *) TREE_PURPOSE (t);
   context = hack_decl_function_context (i->fndecl);  
-  if (is_member_template (i->fndecl))
-    end_member_template_processing ();
+  maybe_end_member_template_processing (i->fndecl);
   if (context)
     pop_cp_function_context (context);
   i = i->next;
@@ -1276,8 +1274,7 @@ process_next_inline (t)
       context = hack_decl_function_context (i->fndecl);
       if (context)
 	push_cp_function_context (context);
-      if (is_member_template (i->fndecl))
-	begin_member_template_processing (i->fndecl);
+      maybe_begin_member_template_processing (i->fndecl);
       feed_input (i->buf, i->len);
       lineno = i->lineno;
       input_filename = i->filename;
@@ -1891,8 +1888,7 @@ do_pending_defargs ()
 	{
 	  push_nested_class (TREE_PURPOSE (defarg_fns), 1);
 	  pushlevel (0);
-	  if (is_member_template (defarg_fn))
-	    begin_member_template_processing (defarg_fn);
+	  maybe_begin_member_template_processing (defarg_fn);
 
 	  if (TREE_CODE (defarg_fn) == FUNCTION_DECL)
 	    {
@@ -1920,8 +1916,7 @@ do_pending_defargs ()
 	    return;
 	  }
 
-      if (is_member_template (defarg_fn))
-	end_member_template_processing ();
+      maybe_end_member_template_processing (defarg_fn);
       poplevel (0, 0, 0);
       pop_nested_class (1);
     }
@@ -2946,7 +2941,7 @@ do_identifier (token, parsing)
 	}
       if (! processing_template_decl
 	  || (DECL_INITIAL (id)
-	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_CONST_PARM))
+	      && TREE_CODE (DECL_INITIAL (id)) == TEMPLATE_PARM_INDEX))
 	id = DECL_INITIAL (id);
     }
   else

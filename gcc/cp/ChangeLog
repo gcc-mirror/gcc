@@ -1,3 +1,105 @@
+Mon Feb 23 03:04:14 1998  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* typeck.c (build_x_function_call): Handle static member function
+	templates like non-templates.  Handle friend templates like normal
+	function templates.
+	* pt.c (tsubst, *_PARM): Don't use orig_level.
+	(get_bindings): Don't call add_to_template_args.
+	(instantiate_template): Likewise.
+	(tsubst, FUNCTION_DECL): Call add_to_template_args as appropriate.
+	* ptree.c (print_lang_type): Print index/level for template parms.
+
+Mon Feb 23 02:52:29 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* Make-lang.in (cc1plus): Note that cc1plus depends on
+	cp/cp-tree.h and cp/cp-tree.def.
+	
+	* cp-tree.def (TEMPLATE_CONST_PARM): Remove.
+	(TEMPLATE_PARM_INDEX): New tree code, used to indicate a
+	position in a template parameter list.
+	* cp-tree.h (template_parm_index): New structure, used as the tree
+	structure for a TEMPLATE_PARM_INDEX.
+	(TEMPLATE_PARM_IDX): New macro.
+	(TEMPLATE_PARM_LEVEL): Likewise.
+	(TEMPLATE_PARM_DESCENDANTS): Likewise.
+	(TEMPLATE_PARM_ORIG_LEVEL): Likewise.
+	(TEMPLATE_PARM_DECL): Likewise.
+	(TEMPLATE_TYPE_PARM_INDEX): Likewise.
+	(TEMPLATE_TYPE_ORIG_LEVEL): Likewise.
+	(TEMPLATE_TYPE_DECL): Likewise.
+	(TEMPLATE_CONST_IDX): Remove.
+	(TEMPLATE_CONST_LEVEL): Likewise.
+	(TEMPLATE_CONST_SET_INFO): Likewise.
+	(TEMPLATE_TYPE_SET_INFO): Likewise.
+	(TEMPLATE_TYPE_IDX): Redefine in terms of TEMPLATE_PARM_INDEX
+	node.
+	(TEMPLATE_TYPE_LEVEL): Likewise.
+	* decl.c (decls_match): Call comp_template_parms, rather than
+	expanding it inline.
+	(duplicate_decls): If two template declarations are being merged,
+	then their TEMPLATE_INFOs should be merged as well.
+	(grokfndecl): Save template-id information when declaring a friend
+	with explicit template arguments.  Pass arguments to
+	check_explicit_specialization via correct convention; at some
+	point check_explicit_specialization changed, but these call-sites
+	did not.
+	(grokdeclarator): Tidy up slightly.
+	* decl2.c (check_classfn): Tidy up slightly.  Don't assume that
+	two template functions with the same DECL_ASSEMBLER_NAME the same,
+	since the names are not yet mangled.
+	* error.c (dump_decl): Use TEMPLATE_PARM_INDEX instead of
+	TEMPLATE_CONST_PARM. 
+	(dump_expr): Likewise.  Use the TEMPLATE_PARM_DECL to get at the
+	decl for a non-type parameter, rather than printing `<tparm ...>'.
+	* friend.c (is_friend): Handle TEMPLATE_DECL friends.
+	(do_friend): Deal with template friends.
+	* lex.c (do_pending_inlines): Call
+	maybe_begin_member_template_processing, rather than
+	conditionally calling begin_member_template_processing.
+	(process_next_inline): Likewise.  Call
+	maybe_end_member_template_processing, rather than
+	conditionally calling end_member_template_processing.
+	(do_pending_defargs): Likewise.
+	(do_identifier): Use TEMPLATE_PARM_INDEX instead of
+	TEMPLATE_CONST_PARM.  
+	* method.c (build_mangled_template_parm_index): New function.
+	(build_overload_value): Use it.
+	(build_overload_name): Likewise.
+	* pt.c (finish_member_template_decl): Allow friend declarations.
+	(template_class_depth): New function.
+	(is_member_template): Rename, and modify, to become...
+	(is_member_or_friend_template): New function.
+	(end_member_template_processing): Rename, and modify, to become...
+	(maybe_end_member_template_processing).
+	(build_template_parm_index): New function.
+	(reduce_template_parm_level): New function.
+	(process_template_parm): Modify to use build_template_parm_index.
+	(current_template_args): Change name to current_template_parms.
+	(push_template_decl): Deal with friend templates.
+	(uses_template_parms): Use TEMPLATE_PARM_INDEX instead of
+	TEMPLATE_CONST_PARM.
+	(tsubst_friend_function): New function.
+	(instantiate_class_template): Generate the DECL_FRIENDLIST
+	for a new instantiation by using tsubst_friend_function rather
+	than just tsubst.
+	(tsubst): Don't tsubst into a type which is a TEMPLATE_DECL.
+	Use TEMPLATE_PARM_INDEX instead of TEMPLATE_CONST_PARM, and the
+	appropriate new macros.  Use reduce_template_parm_level to
+	generate lower-level template parameters.  Handle tsubst'ing into
+	TEMPLATE_DECLS that declare TEMPLATE_TEMPLATE_PARMS.  Don't forget
+	to tsubst the DECL_CONTEXT and DECL_CLASS_CONTEXT of newly created
+	templates.  Similarly for the template parameters for a new
+	template.
+	(tsubst_copy): Tidy up slightly.  Use TEMPLATE_PARM_INDEX instead
+	of TEMPLATE_CONST_PARM.  Handle TYPE_DECLs by tsubsting into them.
+	(unify): Use TEMPLATE_PARM_INDEX instead of TEMPLATE_CONST_PARM.  
+	(get_bindings): Call add_to_template_args if necessary.
+	(instantiate_decl): Handle instantiations of friend templates.
+	* search.c (lookup_field_1): Don't treat the TYPE_FIELDS of a
+	TEMPLATE_TYPE_PARM as a list of fields; it's not!
+	* spew.c (yylex): Do a little manual constant propogation to
+	clarify the code.
+	
 Sun Feb 22 19:53:29 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* error.c: Include sys/types.h.

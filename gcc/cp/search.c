@@ -794,7 +794,17 @@ static tree
 lookup_field_1 (type, name)
      tree type, name;
 {
-  register tree field = TYPE_FIELDS (type);
+  register tree field;
+
+  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
+      || TREE_CODE (type) == TEMPLATE_TEMPLATE_PARM)
+    /* The TYPE_FIELDS of a TEMPLATE_TYPE_PARM are not fields at all;
+       instead TYPE_FIELDS is the TEMPLATE_PARM_INDEX.  (Miraculously,
+       the code often worked even when we treated the index as a list
+       of fields!)  */
+    return NULL_TREE;
+
+  field = TYPE_FIELDS (type);
 
 #ifdef GATHER_STATISTICS
   n_calls_lookup_field_1++;
@@ -804,6 +814,7 @@ lookup_field_1 (type, name)
 #ifdef GATHER_STATISTICS
       n_fields_searched++;
 #endif /* GATHER_STATISTICS */
+      my_friendly_assert (TREE_CODE_CLASS (TREE_CODE (field)) == 'd', 0);
       if (DECL_NAME (field) == NULL_TREE
 	  && TREE_CODE (TREE_TYPE (field)) == UNION_TYPE)
 	{

@@ -2367,10 +2367,16 @@ build_x_function_call (function, params, decl)
 	       || TREE_CODE (type) == METHOD_TYPE
 	       || TYPE_PTRMEMFUNC_P (type));
 
-  if (TREE_CODE (function) == FUNCTION_DECL
-      && DECL_STATIC_FUNCTION_P (function))
+  if ((TREE_CODE (function) == FUNCTION_DECL
+       && DECL_STATIC_FUNCTION_P (function))
+      || (TREE_CODE (function) == TEMPLATE_DECL
+	  && DECL_STATIC_FUNCTION_P (DECL_RESULT (function))))
     return build_member_call
       (DECL_CONTEXT (function), DECL_NAME (function), params);
+
+  /* A friend template.  Make it look like a toplevel declaration.  */
+  if (! is_method && TREE_CODE (function) == TEMPLATE_DECL)
+    function = build_scratch_list (NULL_TREE, function);
 
   /* Handle methods, friends, and overloaded functions, respectively.  */
   if (is_method)

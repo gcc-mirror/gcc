@@ -2070,9 +2070,9 @@ cp_tree_equal (t1, t2)
     case FUNCTION_DECL:
       return 0;
 
-    case TEMPLATE_CONST_PARM:
-      return TEMPLATE_CONST_IDX (t1) == TEMPLATE_CONST_IDX (t2)
-	&& TEMPLATE_CONST_LEVEL (t1) == TEMPLATE_CONST_LEVEL (t2);
+    case TEMPLATE_PARM_INDEX:
+      return TEMPLATE_PARM_IDX (t1) == TEMPLATE_PARM_IDX (t2)
+	&& TEMPLATE_PARM_LEVEL (t1) == TEMPLATE_PARM_LEVEL (t2);
 
     case SIZEOF_EXPR:
     case ALIGNOF_EXPR:
