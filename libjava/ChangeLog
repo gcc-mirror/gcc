@@ -1,3 +1,12 @@
+2000-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (GCJCOMPILE, JCFLAGS, JF1CLAGS, jv_convert_LINK,
+	gij_LINK, libgcj.zip, .java=.class): Move -L option out of FLAGS.
+	(libgcj_la_LDFLAGS): Add -L../libstdc++ for in-gcc builds.
+	(jv_convert_LDFLAGS, gij_LDFLAGS): Add `pwd`/../libstdc++ to
+	-rpath for in-gcc builds.
+	* Makefile.in: Rebuilt.
+
 2000-04-28  Tom Tromey  <tromey@cygnus.com>
 
 	* libgcj.spec.in (*jc1): Added -fasynchronous-exceptions.

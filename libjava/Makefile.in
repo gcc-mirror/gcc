@@ -157,7 +157,7 @@ data_DATA = libgcj.zip
 @CANADIAN_FALSE@expanded = \
 @CANADIAN_FALSE@`cd $(MULTIBUILDTOP)../$(COMPPATH)/gcc && pwd`
 
-GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled $(JC1FLAGS) -c
+GCJCOMPILE = CLASSPATH=$(here) $(LIBTOOL) --mode=compile $(GCJ) -fassume-compiled -L$(here) $(JC1FLAGS) -c
 
 JAVAC = $(GCJ) -C
 
@@ -172,8 +172,8 @@ AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
 @USING_GCC_FALSE@AM_CFLAGS = \
 @USING_GCC_FALSE@@LIBGCJ_CFLAGS@
 
-JCFLAGS = -g -L$(here)
-JC1FLAGS = -g -L$(here) @LIBGCJ_JAVAFLAGS@
+JCFLAGS = -g
+JC1FLAGS = -g @LIBGCJ_JAVAFLAGS@
 
 LIBFFIINCS = -I$(top_srcdir)/../libffi/include -I$(MULTIBUILDTOP)../libffi/include
 
@@ -204,7 +204,7 @@ libgcj_la_DEPENDENCIES = libgcj.zip $(javao_files) $(nat_files) \
 libgcj_la_LIBADD = $(javao_files) $(nat_files) $(c_files) $(GCOBJS) \
 	$(THREADOBJS) $(libffi_files) $(LIBLTDL)
 
-libgcj_la_LDFLAGS = -rpath $(toolexeclibdir) \
+libgcj_la_LDFLAGS = -L../libstdc++ -rpath $(toolexeclibdir) \
 	-version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 
@@ -240,9 +240,9 @@ CONVERT_DIR = gnu/gcj/convert
 jv_convert_SOURCES = 
 EXTRA_jv_convert_SOURCES = $(convert_source_files)
 jv_convert_LDFLAGS = --main=gnu.gcj.convert.Convert \
-	-rpath $(toolexeclibdir)
+	-rpath `if test -d ../libstdc++; then cd ../libstdc++; pwd; fi` -rpath $(toolexeclibdir)
 
-jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+jv_convert_LINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) \
 	-o jv-convert
 
 jv_convert_LDADD = $(convert_source_files:.java=.lo) libgcj.la \
@@ -253,8 +253,8 @@ jv_convert_DEPENDENCIES = $(convert_source_files:.java=.lo) \
 
 
 gij_SOURCES = gij.cc
-gij_LDFLAGS = -rpath $(toolexeclibdir)
-gij_LINK = $(LIBTOOL) --mode=link $(GCJ) $(JC1FLAGS) $(LDFLAGS) \
+gij_LDFLAGS = -rpath `if test -d ../libstdc++; then cd ../libstdc++; pwd; fi` -rpath $(toolexeclibdir)
+gij_LINK = $(LIBTOOL) --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) \
 	-o gij
 
 gij_LDADD = libgcj.la $(GCLIBS) $(THREADLIBS) $(ZLIBS) -L$(here)/.libs
@@ -1671,13 +1671,13 @@ $(awt_java_source_files:.java=.class): libgcj.zip
 
 $(built_java_source_files:.java=.class): $(built_java_source_files)
 	javac="$(JAVAC)"; \
-	$$javac $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
+	$$javac -L$(here) $(JCFLAGS) -classpath $(here):`cd $(srcdir) && /bin/pwd` \
 	  -d $(here) $?
 
 libgcj.zip: $(java_source_files) $(cond_awt_java_source_files)
 	$(MAKE) $(built_java_source_files:.java=.class)
 	javac="$(JAVAC)"; cd $(srcdir); \
-	  $$javac $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
+	  $$javac -L$(here) $(JCFLAGS) -classpath $(here):`/bin/pwd` -d $(here) \
 	    $(subst $(srcdir)/,,$?)
 	-@rm -f libgcj.zip
 	$(ZIP) -r libgcj java gnu -n .class -i '*.class' -i '*/'
