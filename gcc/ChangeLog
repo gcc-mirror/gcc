@@ -1,3 +1,40 @@
+Sun Mar 25 14:25:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movstrsi): Move offline.
+	(movstrdi): New.
+	(strmovdi_rex64): New.
+	(strmov?i): Accept 64bit.
+	(strmov?i_rex64): New.
+	(strmov?i_rex_1): New.
+	(strmov?i_1): Disable for 64bit.
+	(rep_mov?i_rex64): New.
+	(rep_mov?i): Disable for 64bit.
+	(clrstrsi): Move offline.
+	(strset?i_rex64): New.
+	(strset?i: Accept 64bit.
+	(rep_stos?i): Disable for 64bit.
+	(rep_stos?i_rex64): New.
+	(strset?i_rex_1): New.
+	(strset?i_1): Disable for 64bit.
+	(cmpstrsi): Accept 64bit.
+	(cmpstrsi_nz_1): Rename to cmpstrqi_nz_1; Disable for 64bit.
+	(cmpstrqi_nz_rex_1): New.
+	(cmpstrsi_1): Rename to cmpstrqi_1; Disable for 64bit.
+	(strlensi): Move offline.
+	(strlendi): New.
+	(strlenqi_1): Disable for 64bit; fix constraints.
+	(strlenqi_rex_1): New.
+	* i386.c (ix86_adjust_counter): New static function.
+	(ix86_zero_extend_to_Pmode): Likewise.
+	(ix86_expand_aligntest): Likweise.
+	(ix86_expand_strlensi_unroll_1): Make static; update for 64bit.
+	(ix86_expand_movstr): New global function.
+	(ix86_expand_clrstr): New global function.
+	(ix86_expand_strlen): New global function.
+	* i386-protos.h (ix86_expand_movstr, ix86_expand_clrstr,
+	ix86_expand_strlen): Declare.
+	(ix86_expand_strlensi_unroll_1): Delete.
+
 Sat Mar 24 23:15:19 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (cmpdi): Fix operand predicates.
