@@ -2604,12 +2604,18 @@ instantiate_virtual_regs_1 (loc, object, extra_insns)
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	  || temp == arg_pointer_rtx
 #endif
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	  || temp == hard_frame_pointer_rtx
+#endif
 	  || temp == frame_pointer_rtx)
 	return 1;
 
       if (GET_CODE (temp) == PLUS
 	  && CONSTANT_ADDRESS_P (XEXP (temp, 1))
 	  && (XEXP (temp, 0) == frame_pointer_rtx
+#if HARD_FRAME_POINTER_REGNUM != FRAME_POINTER_REGNUM
+	      || XEXP (temp, 0) == hard_frame_pointer_rtx
+#endif
 #if FRAME_POINTER_REGNUM != ARG_POINTER_REGNUM
 	      || XEXP (temp, 0) == arg_pointer_rtx
 #endif
