@@ -1,3 +1,9 @@
+2003-05-03  Falk Hueffner <falk.hueffner@student.uni-tuebingen.de>
+	    Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/contrib.texi (Contributors): Add Zdenek Dvorak, Aldy
+	Hernandez, and Kazu Hirata.  Update Richard Henderson.
+
 2003-05-02  Geoffrey Keating  <geoffk@apple.com>
 
 	* config/rs6000/rs6000.c (rs6000_attribute_table): Add 'extern'
