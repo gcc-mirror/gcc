@@ -1,3 +1,8 @@
+2000-05-22  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	Test for PR gcj/232:
+	* libjava.compile/PR232.java: New file.
+
 2000-05-18  Tom Tromey  <tromey@cygnus.com>
 
 	* lib/libjava.exp (bytecompile_file): Use exec, not system.
