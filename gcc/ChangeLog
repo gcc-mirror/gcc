@@ -1,3 +1,8 @@
+Fri Nov 27 08:07:53 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* Makefile.in (STAGESTUFF): Remove s-ver.
+	(s-ver): Remove rule and revert back to version.c as target.
+
 Fri Nov 27 02:39:36 1998  Paul Eggert  <eggert@twinsun.com>
 
 	* cccp.c (main): Make `-I -' equivalent to `-I-'.
