@@ -5,12 +5,6 @@
 
 #define TARGET_VERSION fprintf (stderr, " (IA-64) ELF");
 
-/* Define this to be a string constant containing `-D' options to define the
-   predefined macros that identify this machine and system.  These macros will
-   be predefined unless the `-ansi' option is specified.  */
-/* ??? This is undefed in svr4.h.  */
-#define CPP_PREDEFINES "-Dia64 -Amachine=ia64"
-
 /* A C string constant that tells the GNU CC driver program options to pass to
    the assembler.  It can also specify how to translate options you give to GNU
    CC into options for GNU CC to pass to the assembler.  */
