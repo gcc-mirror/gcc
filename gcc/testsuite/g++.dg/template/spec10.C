@@ -9,19 +9,19 @@ template<int b>
 class o
 {
 public:
-	template<typename T> static void do_add(T* p, T v);
+  template<typename T> static void do_add(T* p, T v);
 };
 
 template<>
 template<typename T>
 inline void o<32>::do_add(T* p, T v)
 {
-	*p += v;
+  *p += v;
 }
 
 int main()
 {
-	int a = 0x1000;
-	o<32>().do_add<int>(&a, 0x2000);
-	return a;
+  int a = 0x1000;
+  o<32>().do_add<int>(&a, 0x2000);
+  return (a != 0x3000);
 }
