@@ -1,3 +1,7 @@
+2002-06-13  David S. Miller  <davem@redhat.com>
+
+	* expmed.c (init_expmed): Remove duplicate init of 'reg'.
+
 2002-06-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* cpplib.c (end_directive): Handle line skipping.  Only remove
