@@ -1,5 +1,10 @@
 2003-09-29  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/bits/stl_algo.h (search_n): Improve the previous
+	fix as suggested by Martin.
+
+2003-09-29  Paolo Carlini  <pcarlini@unitus.it>
+
 	PR libstdc++/12296
 	* include/bits/istream.tcc (peek): Set eofbit if sgetc
 	returns eof.
