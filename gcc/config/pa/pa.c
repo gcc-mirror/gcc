@@ -5960,14 +5960,6 @@ hppa_gimplify_va_arg_expr (tree valist, tree type, tree *pre_p, tree *post_p)
 
   if (TARGET_64BIT)
     {
-      /* Every argument in PA64 is supposed to be passed by value
-	 (including large structs).  However, as a GCC extension, we
-	 pass zero and variable sized arguments by reference.  Empty
-	 structures are a GCC extension not supported by the HP
-	 compilers.  Thus, passing them by reference isn't likely
-	 to conflict with the ABI.  For variable sized arguments,
-	 GCC doesn't have the infrastructure to allocate these to
-	 registers.  */
       /* Args grow upward.  We can use the generic routines.  */
 
       if (indirect)
