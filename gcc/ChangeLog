@@ -1,5 +1,9 @@
 Wed Aug  4 13:12:17 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* pa.md (divsi3, udivsi3, modsi3, umodsi3 expanders): Clobber a new
+	dummy operand.  Allocate a new pseudo for the dummy operand.
+	(divsi3, udivsi3, modis3, umodsi3 patterns): Corresponding changes.
+
 	* pa.md (movqi, movhi patterns): Do not expose FP regs to regclass.
 
 Wed Aug  4 11:53:55 1999  Tom Tromey  <tromey@cygnus.com>
