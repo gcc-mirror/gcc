@@ -1,5 +1,8 @@
 Fri Jun  8 14:16:33 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
+	* function.c (clobber_return_register): Clobber the pseudo return
+	register too.
+
 	* sibcall.c (skip_unreturned_value): New function.
 	(call_ends_block_p): Use it.
 
