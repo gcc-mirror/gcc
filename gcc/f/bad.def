@@ -702,6 +702,8 @@ FFEBAD_MSGS1 (FFEBAD_SFUNC_UNUSED, WARN,
 "Statement function `%A' defined at %0 is not used")
 FFEBAD_MSGS1 (FFEBAD_INTRINSIC_Y2KBAD, WARN,
 "Intrinsic `%A', invoked at %0, known to be non-Y2K-compliant [info -f g77 M Y2KBAD]")
+FFEBAD_MSGS1 (FFEBAD_NOCANDO, DISASTER,
+"Internal compiler error -- cannot perform operation")
 
 #undef INFORM
 #undef TRIVIAL

@@ -989,7 +989,11 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define ffetarget_convert_complex1_integer1 ffetarget_convert_complex1_integer
 #define ffetarget_convert_complex1_integer2 ffetarget_convert_complex1_integer
 #define ffetarget_convert_complex1_integer3 ffetarget_convert_complex1_integer
+#ifdef REAL_ARITHMETIC
+#define ffetarget_convert_complex1_integer4(res,l) FFEBAD_NOCANDO
+#else
 #define ffetarget_convert_complex1_integer4 ffetarget_convert_complex1_integer
+#endif
 #ifdef REAL_ARITHMETIC
 #define ffetarget_convert_complex1_real1(res,l) \
   ((res)->real = (l), \
@@ -1041,7 +1045,11 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
 #define ffetarget_convert_complex2_integer1 ffetarget_convert_complex2_integer
 #define ffetarget_convert_complex2_integer2 ffetarget_convert_complex2_integer
 #define ffetarget_convert_complex2_integer3 ffetarget_convert_complex2_integer
+#ifdef REAL_ARITHMETIC
+#define ffetarget_convert_complex2_integer4(res,l) FFEBAD_NOCANDO
+#else
 #define ffetarget_convert_complex2_integer4 ffetarget_convert_complex2_integer
+#endif
 #ifdef REAL_ARITHMETIC
 #define ffetarget_convert_complex2_real1(res,l) \
   ({ REAL_VALUE_TYPE lr; \
@@ -1111,10 +1119,15 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_integer1_typeless(res,l)
 #define ffetarget_convert_integer4_character1(res,l) \
         ffetarget_convert_integer1_character1(res,l)
+#ifdef REAL_ARITHMETIC
+#define ffetarget_convert_integer4_complex1(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_integer4_complex2(res,l) FFEBAD_NOCANDO
+#else
 #define ffetarget_convert_integer4_complex1(res,l) \
         ffetarget_convert_integer1_complex1(res,l)
 #define ffetarget_convert_integer4_complex2(res,l) \
         ffetarget_convert_integer1_complex2(res,l)
+#endif
 #define ffetarget_convert_integer4_hollerith(res,l) \
         ffetarget_convert_integer1_hollerith(res,l)
 #define ffetarget_convert_integer4_integer1(res,l) (*(res) = (l), FFEBAD)
@@ -1128,10 +1141,15 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_integer1_logical1(res,l)
 #define ffetarget_convert_integer4_logical4(res,l) \
         ffetarget_convert_integer1_logical1(res,l)
+#ifdef REAL_ARITHMETIC
+#define ffetarget_convert_integer4_real1(res,l) FFEBAD_NOCANDO
+#define ffetarget_convert_integer4_real2(res,l) FFEBAD_NOCANDO
+#else
 #define ffetarget_convert_integer4_real1(res,l) \
         ffetarget_convert_integer1_real1(res,l)
 #define ffetarget_convert_integer4_real2(res,l) \
         ffetarget_convert_integer1_real2(res,l)
+#endif
 #define ffetarget_convert_integer4_typeless(res,l) \
         ffetarget_convert_integer1_typeless(res,l)
 #define ffetarget_convert_logical1_character1(res,l) \
@@ -1238,8 +1256,12 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_real1_integer1(res,l)
 #define ffetarget_convert_real1_integer3(res,l) \
         ffetarget_convert_real1_integer1(res,l)
+#ifdef REAL_ARITHMETIC
+#define ffetarget_convert_real1_integer4(res,l) FFEBAD_NOCANDO
+#else
 #define ffetarget_convert_real1_integer4(res,l) \
         ffetarget_convert_real1_integer1(res,l)
+#endif
 #define ffetarget_convert_real1_typeless(res,l) \
   ffetarget_convert_any_typeless_ ((char *) (res), sizeof(*(res)), l)
 #define ffetarget_convert_real1_complex1(res,l) (*(res) = (l).real, FFEBAD)
@@ -1272,8 +1294,12 @@ void *ffetarget_memcpy_ (void *dst, void *src, size_t len);
         ffetarget_convert_real2_integer1(res,l)
 #define ffetarget_convert_real2_integer3(res,l) \
         ffetarget_convert_real2_integer1(res,l)
+#ifdef REAL_ARITHMETIC
+#define ffetarget_convert_real2_integer4(res,l) FFEBAD_NOCANDO
+#else
 #define ffetarget_convert_real2_integer4(res,l) \
         ffetarget_convert_real2_integer1(res,l)
+#endif
 #define ffetarget_convert_real2_typeless(res,l) \
   ffetarget_convert_any_typeless_ ((char *) (res), sizeof(*(res)), l)
 #define ffetarget_convert_real2_complex1(res,l) \
