@@ -1,3 +1,7 @@
+Tue Feb  8 15:51:50 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* stmt.c (expand_decl): Do set RTX_UNCHANGING_P for TREE_READONLY.
+
 2000-02-08  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* Makefile.in (GEN_PROTOS_OBJS): Remove libcpp.a.

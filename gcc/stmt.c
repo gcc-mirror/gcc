@@ -3868,15 +3868,9 @@ expand_decl (decl)
 
   if (TREE_THIS_VOLATILE (decl))
     MEM_VOLATILE_P (DECL_RTL (decl)) = 1;
-#if 0 /* A variable is not necessarily unchanging
-	 just because it is const.  RTX_UNCHANGING_P
-	 means no change in the function,
-	 not merely no change in the variable's scope.
-	 It is correct to set RTX_UNCHANGING_P if the variable's scope
-	 is the whole function.  There's no convenient way to test that.  */
+
   if (TREE_READONLY (decl))
     RTX_UNCHANGING_P (DECL_RTL (decl)) = 1;
-#endif
 }
 
 /* Emit code to perform the initialization of a declaration DECL.  */
