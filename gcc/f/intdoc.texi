@@ -7615,7 +7615,7 @@ Intrinsic groups: (standard FORTRAN 77).
 Description:
 
 Returns the common logarithm (base 10) of @var{X}, which must
-be greater than zero or.
+be greater than zero.
 
 The inverse of this function is @samp{10. ** LOG10(@var{X})}.
 
