@@ -1,3 +1,10 @@
+2004-01-28  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/13736
+	* parser.c (cp_parser_direct_declarator): Do not prevent
+	backtracking inside a parenthesized declarator.
+	(cp_parser_parameter_declaration): Fix typo in comment.
+
 2004-01-26  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* cp-tree.h (language_function, lang_type_header): Use
