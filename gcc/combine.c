@@ -3057,6 +3057,9 @@ simplify_rtx (x, op0_mode, last, in_dest)
 	  rtx cop1 = const0_rtx;
 	  enum rtx_code cond_code = simplify_comparison (NE, &cond, &cop1);
 
+	  if (cond_code == NE && GET_RTX_CLASS (GET_CODE (cond)) == '<')
+	    return x;
+
 	  /* Simplify the alternative arms; this may collapse the true and 
 	     false arms to store-flag values.  */
 	  true = subst (true, pc_rtx, pc_rtx, 0, 0);
