@@ -465,10 +465,6 @@ int sdb_label_count = 0;
 /* Next label # for each statement for Silicon Graphics IRIS systems.  */
 int sym_lineno = 0;
 
-/* Nonzero if inside of a function, because the stupid MIPS asm can't
-   handle .files inside of functions.  */
-int inside_function = 0;
-
 /* Linked list of all externals that are to be emitted when optimizing
    for the global pointer if they haven't been declared by the end of
    the program with an appropriate .comm or initialization.  */
@@ -484,14 +480,6 @@ static GTY (()) struct extern_list *extern_head = 0;
 
 /* Name of the file containing the current function.  */
 const char *current_function_file = "";
-
-/* Warning given that Mips ECOFF can't support changing files
-   within a function.  */
-int file_in_function_warning = FALSE;
-
-/* Whether to suppress issuing .loc's because the user attempted
-   to change the filename within a function.  */
-int ignore_line_number = FALSE;
 
 /* Number of nested .set noreorder, noat, nomacro, and volatile requests.  */
 int set_noreorder;
@@ -5972,8 +5960,7 @@ mips_output_external_libcall (file, name)
 }
 #endif
 
-/* Emit a new filename to a stream.  If this is MIPS ECOFF, watch out
-   for .file's that start within a function.  If we are smuggling stabs, try to
+/* Emit a new filename to a stream.  If we are smuggling stabs, try to
    put out a MIPS ECOFF file and a stab.  */
 
 void
@@ -6007,23 +5994,11 @@ mips_output_filename (stream, name)
     }
 
   else if (name != current_function_file
-      && strcmp (name, current_function_file) != 0)
+	   && strcmp (name, current_function_file) != 0)
     {
-      if (inside_function && !TARGET_GAS)
-	{
-	  if (!file_in_function_warning)
-	    {
-	      file_in_function_warning = 1;
-	      ignore_line_number = 1;
-	      warning ("MIPS ECOFF format does not allow changing filenames within functions with #line");
-	    }
-	}
-      else
-	{
-	  SET_FILE_NUMBER ();
-	  current_function_file = name;
-	  ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
-	}
+      SET_FILE_NUMBER ();
+      current_function_file = name;
+      ASM_OUTPUT_FILENAME (stream, num_source_filenames, name);
     }
 }
 
@@ -6046,10 +6021,7 @@ mips_output_lineno (stream, line)
     }
   else
     {
-      fprintf (stream, "\n\t%s.loc\t%d %d\n",
-	       (ignore_line_number) ? "#" : "",
-	       num_source_filenames, line);
-
+      fprintf (stream, "\n\t.loc\t%d %d\n", num_source_filenames, line);
       LABEL_AFTER_LOC (stream);
     }
 }
@@ -6935,8 +6907,6 @@ mips_output_function_prologue (file, size)
       && current_function_args_info.fp_code != 0)
     build_mips16_function_stub (file);
 
-  inside_function = 1;
-
 #ifndef FUNCTION_NAME_ALREADY_DECLARED
   /* Get the function name the same way that toplev.c does before calling
      assemble_start_function.  This is needed so that the name used here
@@ -7541,10 +7511,6 @@ mips_output_function_epilogue (file, size)
       fputs ("\n", file);
     }
 #endif
-
-  /* Reset state info for each function.  */
-  inside_function = 0;
-  ignore_line_number = 0;
 
   while (string_constants != NULL)
     {

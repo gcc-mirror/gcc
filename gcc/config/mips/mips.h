@@ -114,9 +114,6 @@ extern char mips_reg_names[][8];	/* register names (a0 vs. $4).  */
 extern char mips_print_operand_punct[256]; /* print_operand punctuation chars */
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
-extern int inside_function;		/* != 0 if inside of a function */
-extern int ignore_line_number;		/* != 0 if we are to ignore next .loc */
-extern int file_in_function_warning;	/* warning given about .file in func */
 extern int mips_section_threshold;	/* # bytes of data/sdata cutoff */
 extern int sym_lineno;			/* sgi next label # for each stmt */
 extern int set_noreorder;		/* # of nested .set noreorder's  */
@@ -3570,12 +3567,7 @@ do									\
 while (0)
 
 
-/* How to tell the debugger about changes of source files.  Note, the
-   mips ECOFF format cannot deal with changes of files inside of
-   functions, which means the output of parser generators like bison
-   is generally not debuggable without using the -l switch.  Lose,
-   lose, lose.  Silicon graphics seems to want all .file's hardwired
-   to 1.  */
+/* How to tell the debugger about changes of source files.  */
 
 #ifndef SET_FILE_NUMBER
 #define SET_FILE_NUMBER() ++num_source_filenames
