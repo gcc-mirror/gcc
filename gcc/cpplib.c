@@ -39,8 +39,8 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #include "cpplib.h"
 #include "cpphash.h"
 
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#ifndef GET_ENV_PATH_LIST
+#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
 extern char *update_path PARAMS ((char *, char *));
@@ -5710,7 +5710,7 @@ cpp_start_read (pfile, fname)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
-  GET_ENVIRONMENT (p, "CPATH");
+  GET_ENV_PATH_LIST (p, "CPATH");
   if (p != 0 && ! opts->no_standard_includes)
     path_include (pfile, p);
 
@@ -5840,16 +5840,16 @@ cpp_start_read (pfile, fname)
     switch ((opts->objc << 1) + opts->cplusplus)
       {
       case 0:
-	GET_ENVIRONMENT (epath, "C_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "C_INCLUDE_PATH");
 	break;
       case 1:
-	GET_ENVIRONMENT (epath, "CPLUS_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "CPLUS_INCLUDE_PATH");
 	break;
       case 2:
-	GET_ENVIRONMENT (epath, "OBJC_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "OBJC_INCLUDE_PATH");
 	break;
       case 3:
-	GET_ENVIRONMENT (epath, "OBJCPLUS_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "OBJCPLUS_INCLUDE_PATH");
 	break;
       }
     /* If the environment var for this language is set,

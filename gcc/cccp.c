@@ -45,8 +45,8 @@ typedef unsigned char U_CHAR;
 #include <locale.h>
 #endif /* MULTIBYTE_CHARS */
 
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#ifndef GET_ENV_PATH_LIST
+#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
 #ifndef STANDARD_INCLUDE_DIR
@@ -1310,7 +1310,7 @@ main (argc, argv)
 #ifdef MULTIBYTE_CHARS
   /* Change to the native locale for multibyte conversions.  */
   setlocale (LC_CTYPE, "");
-  GET_ENVIRONMENT (literal_codeset, "LANG");
+  literal_codeset = getenv ("LANG");
 #endif
 
   /* Process switches and find input file name.  */
@@ -1742,7 +1742,7 @@ main (argc, argv)
   /* Some people say that CPATH should replace the standard include dirs,
      but that seems pointless: it comes before them, so it overrides them
      anyway.  */
-  GET_ENVIRONMENT (cp, "CPATH");
+  GET_ENV_PATH_LIST (cp, "CPATH");
   if (cp && ! no_standard_includes)
     path_include (cp);
 
@@ -1926,16 +1926,16 @@ main (argc, argv)
     switch ((objc << 1) + cplusplus)
       {
       case 0:
-	GET_ENVIRONMENT (epath, "C_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "C_INCLUDE_PATH");
 	break;
       case 1:
-	GET_ENVIRONMENT (epath, "CPLUS_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "CPLUS_INCLUDE_PATH");
 	break;
       case 2:
-	GET_ENVIRONMENT (epath, "OBJC_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "OBJC_INCLUDE_PATH");
 	break;
       case 3:
-	GET_ENVIRONMENT (epath, "OBJCPLUS_INCLUDE_PATH");
+	GET_ENV_PATH_LIST (epath, "OBJCPLUS_INCLUDE_PATH");
 	break;
       }
     /* If the environment var for this language is set,

@@ -32,22 +32,22 @@ Boston, MA 02111-1307, USA. */
 
 /* If we allow both '/' and '\' as dir separators, then
    allow both unix and win32 PATH syntax */
-#undef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME)                   \
-{                                                             \
-  char *epath;                                                \
-  char *win32epath;                                           \
-                                                              \
-  epath = win32epath = getenv (ENV_NAME);                     \
-  /* if we have a posix path list, convert to win32 path list */ \
-  if (epath != NULL && *epath != 0 && cygwin32_posix_path_list_p (epath)) \
-    {                                                         \
-      win32epath = (char *) xmalloc                           \
-      (cygwin32_posix_to_win32_path_list_buf_size (epath));   \
-      cygwin32_posix_to_win32_path_list (epath, win32epath);  \
-    }                                                         \
-   ENV_VALUE = win32epath;                                    \
-}
+#undef GET_ENV_PATH_LIST
+#define GET_ENV_PATH_LIST(VAR,NAME)					\
+do {									\
+  char *_epath;								\
+  char *_win32epath;							\
+  _epath = _win32epath = getenv (NAME);					\
+  /* if we have a posix path list, convert to win32 path list */	\
+  if (_epath != NULL && *_epath != 0					\
+      && cygwin32_posix_path_list_p (_epath))				\
+    {									\
+      _win32epath = (char *) xmalloc					\
+	(cygwin32_posix_to_win32_path_list_buf_size (_epath));		\
+      cygwin32_posix_to_win32_path_list (_epath, _win32epath);		\
+    }									\
+  (VAR) = _win32epath;							\
+} while (0)
 
 #define PATH_SEPARATOR ';'
 

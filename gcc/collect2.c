@@ -233,8 +233,8 @@ extern int prepends_underscore;
 
 extern FILE *fdopen ();
 
-#ifndef GET_ENVIRONMENT
-#define GET_ENVIRONMENT(ENV_VALUE,ENV_NAME) ENV_VALUE = getenv (ENV_NAME)
+#ifndef GET_ENV_PATH_LIST
+#define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
 /* Structure to hold all the directories in which to search for files to
@@ -862,7 +862,7 @@ prefix_from_env (env, pprefix)
      struct path_prefix *pprefix;
 {
   char *p;
-  GET_ENVIRONMENT (p, env);
+  GET_ENV_PATH_LIST (p, env);
 
   if (p)
     prefix_from_string (p, pprefix);
