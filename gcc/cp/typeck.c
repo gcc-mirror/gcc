@@ -900,11 +900,8 @@ comptypes (tree t1, tree t2, int strict)
   if (t1 == t2)
     return true;
 
-  /* This should never happen.  */
-  my_friendly_assert (t1 != error_mark_node, 307);
-
   /* Suppress errors caused by previously reported errors */
-  if (t2 == error_mark_node)
+  if (t1 == error_mark_node || t2 == error_mark_node)
     return false;
   
   my_friendly_assert (TYPE_P (t1) && TYPE_P (t2), 20030623);
@@ -1170,7 +1167,7 @@ compparms (tree parms1, tree parms2)
 	 they fail to match.  */
       if (!t1 || !t2)
 	return false;
-      if (!same_type_p (TREE_VALUE (t2), TREE_VALUE (t1)))
+      if (!same_type_p (TREE_VALUE (t1), TREE_VALUE (t2)))
 	return false;
     }
   return true;
