@@ -1,3 +1,7 @@
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* gcc.dg/asm-names.c: New test.
+
 2000-09-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* gcc.dg/cpp/tr-warn6.c: New test

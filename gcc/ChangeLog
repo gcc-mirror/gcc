@@ -1,5 +1,10 @@
 2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* varasm.c (make_decl_rtl): Restore leading star on
+	DECL_ASSEMBLER_NAME set for decls with an asmspec. 
+
+2000-09-10  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* c-pragma.c (handle_pragma_pack): Correct parsing logic so it
 	won't give a spurious error for '#pragma pack()'.  Simplify
 	control flow for readability.  'reset' action is not necessary.
