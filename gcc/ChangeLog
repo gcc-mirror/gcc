@@ -1,3 +1,14 @@
+Mon Sep 28 07:54:03 1998  Catherine Moore  <clm@cygnus.com>
+ 
+        * flags.h:  Add flag_data_sections.
+        * toplev.c:  Add option -fdata-sections.  Add flag_data_sections.
+        (compile_file):  Error if flag_data_sections not supported.
+        * varasm.c (assemble_variable):  Handle flag_data_sections.
+        * config/svr4.h:  Modify prefixes for UNIQUE_SECTION_NAME.
+        * config/mips/elf.h:  Likewise.
+        * config/mips/elf64.h:  Likewise.
+        * invoke.texi:  Describe -fdata-sections.
+ 
 Mon Sep 28 04:15:44 1998  Craig Burley  <burley@melange.gnu.org>
 
 	* invoke.texi (-ffloat-store): Clarify that this option

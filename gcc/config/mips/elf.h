@@ -169,3 +169,64 @@ do {									 \
   fputc ('\n', FILE);				\
  } while (0)
 
+#define UNIQUE_SECTION(DECL,RELOC)					   \
+do {									   \
+  int len, size, sec;							   \
+  char *name, *string, *prefix;						   \
+  static char *prefixes[4][2] = {					   \
+    { ".text.", ".gnu.linkonce.t." },					   \
+    { ".rodata.", ".gnu.linkonce.r." },					   \
+    { ".data.", ".gnu.linkonce.d." },					   \
+    { ".sdata.", ".gnu.linkonce.s." }					   \
+  };									   \
+									   \
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (DECL));		   \
+  size = int_size_in_bytes (TREE_TYPE (decl));				   \
+									   \
+  /* Determine the base section we are interested in:			   \
+     0=text, 1=rodata, 2=data, 3=sdata.  */				   \
+  if (TREE_CODE (DECL) == FUNCTION_DECL)				   \
+    sec = 0;								   \
+  else if ((TARGET_EMBEDDED_PIC || TARGET_MIPS16)			   \
+      && TREE_CODE (decl) == STRING_CST					   \
+      && !flag_writable_strings)					   \
+    {									   \
+      /* For embedded position independent code, put constant strings	   \
+	 in the text section, because the data section is limited to	   \
+	 64K in size.  For mips16 code, put strings in the text		   \
+	 section so that a PC relative load instruction can be used to	   \
+	 get their address.  */						   \
+      sec = 0;								   \
+    }									   \
+  else if (TARGET_EMBEDDED_DATA)					   \
+    {									   \
+      /* For embedded applications, always put an object in read-only data \
+	 if possible, in order to reduce RAM usage.  */			   \
+									   \
+      if (DECL_READONLY_SECTION (DECL, RELOC))				   \
+	sec = 1;							   \
+      else if (size > 0 && size <= mips_section_threshold)		   \
+	sec = 3;							   \
+      else								   \
+	sec = 2;							   \
+    }									   \
+  else									   \
+    {									   \
+      /* For hosted applications, always put an object in small data if	   \
+	 possible, as this gives the best performance.  */		   \
+									   \
+      if (size > 0 && size <= mips_section_threshold)			   \
+	sec = 3;							   \
+      else if (DECL_READONLY_SECTION (DECL, RELOC))			   \
+	sec = 1;							   \
+      else								   \
+	sec = 2;							   \
+    }									   \
+									   \
+  prefix = prefixes[sec][DECL_ONE_ONLY (DECL)];				   \
+  len = strlen (name) + strlen (prefix);				   \
+  string = alloca (len + 1);						   \
+  sprintf (string, "%s%s", prefix, name);				   \
+									   \
+  DECL_SECTION_NAME (DECL) = build_string (len, string);		   \
+} while (0)
