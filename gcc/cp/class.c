@@ -2205,6 +2205,8 @@ duplicate_tag_error (t)
       tree binfo = TYPE_BINFO (t);
       int interface_only = CLASSTYPE_INTERFACE_ONLY (t);
       int interface_unknown = CLASSTYPE_INTERFACE_UNKNOWN (t);
+      tree template_info = CLASSTYPE_TEMPLATE_INFO (t);
+      int use_template = CLASSTYPE_USE_TEMPLATE (t);
 
       bzero ((char *) TYPE_LANG_SPECIFIC (t), sizeof (struct lang_type));
       BINFO_BASETYPES(binfo) = NULL_TREE;
@@ -2213,6 +2215,8 @@ duplicate_tag_error (t)
       CLASSTYPE_INTERFACE_ONLY (t) = interface_only;
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, interface_unknown);
       TYPE_REDEFINED (t) = 1;
+      CLASSTYPE_TEMPLATE_INFO (t) = template_info;
+      CLASSTYPE_USE_TEMPLATE (t) = use_template;
     }
   TYPE_SIZE (t) = NULL_TREE;
   TYPE_MODE (t) = VOIDmode;
