@@ -1692,7 +1692,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (binoptab->handlers[(int) mode].libfunc,
-				       NULL_RTX, 1, mode, 2,
+				       NULL_RTX, LCT_CONST, mode, 2,
 				       op0, mode, op1x, op1_mode);
 
       insns = get_insns ();
@@ -2175,7 +2175,7 @@ expand_unop (mode, unoptab, op0, target, unsignedp)
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (unoptab->handlers[(int) mode].libfunc,
-				       NULL_RTX, 1, mode, 1, op0, mode);
+				       NULL_RTX, LCT_CONST, mode, 1, op0, mode);
       insns = get_insns ();
       end_sequence ();
 
@@ -2493,7 +2493,7 @@ expand_complex_abs (mode, op0, target, unsignedp)
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (abs_optab->handlers[(int) mode].libfunc,
-				       NULL_RTX, 1, submode, 1, op0, mode);
+				       NULL_RTX, LCT_CONST, submode, 1, op0, mode);
       insns = get_insns ();
       end_sequence ();
 
@@ -3033,14 +3033,14 @@ prepare_cmp_insn (px, py, pcomparison, size, pmode, punsignedp, align,
 #endif
 	{
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcmp_libfunc, 2,
+	  emit_library_call (memcmp_libfunc, LCT_PURE_MAKE_BLOCK,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     convert_to_mode (TYPE_MODE (sizetype), size,
 					      TREE_UNSIGNED (sizetype)),
 			     TYPE_MODE (sizetype));
 #else
-	  emit_library_call (bcmp_libfunc, 2,
+	  emit_library_call (bcmp_libfunc, LCT_PURE_MAKE_BLOCK,
 			     TYPE_MODE (integer_type_node), 3,
 			     XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
 			     convert_to_mode (TYPE_MODE (integer_type_node),
@@ -3487,7 +3487,8 @@ prepare_float_lib_cmp (px, py, pcomparison, pmode, punsignedp)
   if (libfunc == 0)
     abort ();
 
-  emit_library_call (libfunc, 1, word_mode, 2, x, mode, y, mode);
+  emit_library_call (libfunc, LCT_CONST_MAKE_BLOCK, word_mode, 2, x, mode, y,
+		     mode);
 
   /* Immediately move the result of the libcall into a pseudo
      register so reload doesn't clobber the value if it needs
@@ -4111,9 +4112,9 @@ expand_float (to, from, unsignedp)
 
       start_sequence ();
 
-      value = emit_library_call_value (libfcn, NULL_RTX, 1,
-				       GET_MODE (to),
-				       1, from, GET_MODE (from));
+      value = emit_library_call_value (libfcn, NULL_RTX, LCT_CONST,
+				       GET_MODE (to), 1, from,
+				       GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
@@ -4345,9 +4346,9 @@ expand_fix (to, from, unsignedp)
 
       start_sequence ();
 
-      value = emit_library_call_value (libfcn, NULL_RTX, 1, GET_MODE (to),
-
-				       1, from, GET_MODE (from));
+      value = emit_library_call_value (libfcn, NULL_RTX, LCT_CONST,
+				       GET_MODE (to), 1, from,
+				       GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 

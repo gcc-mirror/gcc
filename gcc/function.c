@@ -1453,8 +1453,8 @@ put_var_into_stack (decl)
     return;
 
   if (current_function_check_memory_usage)
-    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-		       XEXP (reg, 0), Pmode,
+    emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK, VOIDmode,
+		       3, XEXP (reg, 0), Pmode,
 		       GEN_INT (GET_MODE_SIZE (GET_MODE (reg))),
 		       TYPE_MODE (sizetype),
 		       GEN_INT (MEMORY_USE_RW),
@@ -4684,7 +4684,8 @@ assign_parms (fndecl)
 	      store_expr (parm, copy, 0);
 	      emit_move_insn (parmreg, XEXP (copy, 0));
 	      if (current_function_check_memory_usage)
-		emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+		emit_library_call (chkr_set_right_libfunc,
+				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
 				   XEXP (copy, 0), Pmode,
 				   GEN_INT (int_size_in_bytes (type)),
 				   TYPE_MODE (sizetype),
@@ -4848,8 +4849,8 @@ assign_parms (fndecl)
 	  if (current_function_check_memory_usage)
 	    {
 	      push_to_sequence (conversion_insns);
-	      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-				 XEXP (stack_parm, 0), Pmode,
+	      emit_library_call (chkr_set_right_libfunc, LCT_CONST_MAKE_BLOCK,
+				 VOIDmode, 3, XEXP (stack_parm, 0), Pmode,
 				 GEN_INT (GET_MODE_SIZE (GET_MODE
 							 (entry_parm))),
 				 TYPE_MODE (sizetype),

@@ -812,7 +812,7 @@ convert_move (to, from, unsignedp)
 	abort ();
 
       start_sequence ();
-      value = emit_library_call_value (libcall, NULL_RTX, 1, to_mode,
+      value = emit_library_call_value (libcall, NULL_RTX, LCT_CONST, to_mode,
 				       1, from, from_mode);
       insns = get_insns ();
       end_sequence ();
@@ -1785,7 +1785,7 @@ emit_block_move (x, y, size, align)
 
       retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 #else
-      emit_library_call (bcopy_libfunc, 0,
+      emit_library_call (bcopy_libfunc, LCT_NORMAL,
 			 VOIDmode, 3, y, Pmode, x, Pmode,
 			 convert_to_mode (TYPE_MODE (integer_type_node), size,
 					  TREE_UNSIGNED (integer_type_node)),
@@ -2556,7 +2556,7 @@ clear_storage (object, size, align)
 
 	  retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 #else
-	  emit_library_call (bzero_libfunc, 0,
+	  emit_library_call (bzero_libfunc, LCT_NORMAL,
 			     VOIDmode, 2, object, Pmode, size,
 			     TYPE_MODE (integer_type_node));
 #endif
@@ -3060,15 +3060,15 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      in_check_memory_usage = 1;
 	      temp = get_push_address (INTVAL (size) - used);
 	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
-		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-				   temp, Pmode,
-				   XEXP (xinner, 0), Pmode,
+		emit_library_call (chkr_copy_bitmap_libfunc,
+				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3, temp,
+				   Pmode, XEXP (xinner, 0), Pmode,
 				   GEN_INT (INTVAL (size) - used),
 				   TYPE_MODE (sizetype));
 	      else
-		emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-				   temp, Pmode,
-			 	   GEN_INT (INTVAL (size) - used),
+		emit_library_call (chkr_set_right_libfunc,
+				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3, temp,
+				   Pmode, GEN_INT (INTVAL (size) - used),
 				   TYPE_MODE (sizetype),
 				   GEN_INT (MEMORY_USE_RW),
 				   TYPE_MODE (integer_type_node));
@@ -3117,12 +3117,14 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	      in_check_memory_usage = 1;
 	      target = copy_to_reg (temp);
 	      if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
-		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
+		emit_library_call (chkr_copy_bitmap_libfunc,
+				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
 				   target, Pmode,
 				   XEXP (xinner, 0), Pmode,
 				   size, TYPE_MODE (sizetype));
 	      else
-	        emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+	        emit_library_call (chkr_set_right_libfunc,
+				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
 				   target, Pmode,
 			 	   size, TYPE_MODE (sizetype),
 				   GEN_INT (MEMORY_USE_RW),
@@ -3209,13 +3211,13 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	     to force it to pop the bcopy-arguments right away.  */
 	  NO_DEFER_POP;
 #ifdef TARGET_MEM_FUNCTIONS
-	  emit_library_call (memcpy_libfunc, 0,
+	  emit_library_call (memcpy_libfunc, LCT_NORMAL,
 			     VOIDmode, 3, temp, Pmode, XEXP (xinner, 0), Pmode,
 			     convert_to_mode (TYPE_MODE (sizetype),
 					      size, TREE_UNSIGNED (sizetype)),
 			     TYPE_MODE (sizetype));
 #else
-	  emit_library_call (bcopy_libfunc, 0,
+	  emit_library_call (bcopy_libfunc, LCT_NORMAL,
 			     VOIDmode, 3, XEXP (xinner, 0), Pmode, temp, Pmode,
 			     convert_to_mode (TYPE_MODE (integer_type_node),
 					      size,
@@ -3339,15 +3341,15 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	    target = get_push_address (GET_MODE_SIZE (mode));
 
 	  if (GET_CODE (x) == MEM && type && AGGREGATE_TYPE_P (type))
-	    emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			       target, Pmode,
-			       XEXP (x, 0), Pmode,
+	    emit_library_call (chkr_copy_bitmap_libfunc,
+			       LCT_CONST_MAKE_BLOCK, VOIDmode, 3, target,
+			       Pmode, XEXP (x, 0), Pmode,
 			       GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype));
 	  else
-	    emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
-			       target, Pmode,
-			       GEN_INT (GET_MODE_SIZE (mode)),
+	    emit_library_call (chkr_set_right_libfunc,
+			       LCT_CONST_MAKE_BLOCK, VOIDmode, 3, target,
+			       Pmode, GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_RW),
 			       TYPE_MODE (integer_type_node));
@@ -3548,8 +3550,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  /* Check the access right of the pointer.  */
 	  in_check_memory_usage = 1;
 	  if (size)
-	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			       to_addr, Pmode,
+	    emit_library_call (chkr_check_addr_libfunc, LCT_CONST_MAKE_BLOCK,
+			       VOIDmode, 3, to_addr, Pmode,
 			       GEN_INT (size), TYPE_MODE (sizetype),
 			       GEN_INT (MEMORY_USE_WO),
 			       TYPE_MODE (integer_type_node));
@@ -3692,22 +3694,22 @@ expand_assignment (to, from, want_value, suggest_reg)
 
       /* Copy the rights of the bitmap.  */
       if (current_function_check_memory_usage)
-	emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			   XEXP (to_rtx, 0), Pmode,
+	emit_library_call (chkr_copy_bitmap_libfunc, LCT_CONST_MAKE_BLOCK,
+			   VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
 			   XEXP (from_rtx, 0), Pmode,
 			   convert_to_mode (TYPE_MODE (sizetype),
 					    size, TREE_UNSIGNED (sizetype)),
 			   TYPE_MODE (sizetype));
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, 0,
+      emit_library_call (memcpy_libfunc, LCT_NORMAL,
 			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
 			 XEXP (from_rtx, 0), Pmode,
 			 convert_to_mode (TYPE_MODE (sizetype),
 					  size, TREE_UNSIGNED (sizetype)),
 			 TYPE_MODE (sizetype));
 #else
-      emit_library_call (bcopy_libfunc, 0,
+      emit_library_call (bcopy_libfunc, LCT_NORMAL,
 			 VOIDmode, 3, XEXP (from_rtx, 0), Pmode,
 			 XEXP (to_rtx, 0), Pmode,
 			 convert_to_mode (TYPE_MODE (integer_type_node),
@@ -3932,13 +3934,13 @@ store_expr (exp, target, want_value)
     {
       in_check_memory_usage = 1;
       if (GET_CODE (temp) == MEM)
-	emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
-			   XEXP (target, 0), Pmode,
+	emit_library_call (chkr_copy_bitmap_libfunc, LCT_CONST_MAKE_BLOCK,
+			   VOIDmode, 3, XEXP (target, 0), Pmode,
 			   XEXP (temp, 0), Pmode,
 			   expr_size (exp), TYPE_MODE (sizetype));
       else
-	emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-			   XEXP (target, 0), Pmode,
+	emit_library_call (chkr_check_addr_libfunc, LCT_CONST_MAKE_BLOCK,
+			   VOIDmode, 3, XEXP (target, 0), Pmode,
 			   expr_size (exp), TYPE_MODE (sizetype),
 			   GEN_INT (MEMORY_USE_WO),
 			   TYPE_MODE (integer_type_node));
@@ -4052,7 +4054,8 @@ store_expr (exp, target, want_value)
 		  /* Be sure we can write on ADDR.  */
 		  in_check_memory_usage = 1;
 		  if (current_function_check_memory_usage)
-		    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+		    emit_library_call (chkr_check_addr_libfunc,
+				       LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
 				       addr, Pmode,
 				       size, TYPE_MODE (sizetype),
  				       GEN_INT (MEMORY_USE_WO),
@@ -4795,7 +4798,7 @@ store_constructor (exp, target, align, cleared, size)
 	      && (startb = TREE_INT_CST_LOW (startbit)) % BITS_PER_UNIT == 0
 	      && (endb = TREE_INT_CST_LOW (endbit) + 1) % BITS_PER_UNIT == 0)
 	    {
-	      emit_library_call (memset_libfunc, 0,
+	      emit_library_call (memset_libfunc, LCT_NORMAL,
 				 VOIDmode, 3,
 				 plus_constant (XEXP (targetx, 0),
 						startb / BITS_PER_UNIT),
@@ -4807,8 +4810,8 @@ store_constructor (exp, target, align, cleared, size)
 	  else
 #endif
 	    emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__setbits"),
-			       0, VOIDmode, 4, XEXP (targetx, 0), Pmode,
-			       bitlength_rtx, TYPE_MODE (sizetype),
+			       LCT_NORMAL, VOIDmode, 4, XEXP (targetx, 0),
+			       Pmode, bitlength_rtx, TYPE_MODE (sizetype),
 			       startbit_rtx, TYPE_MODE (sizetype),
 			       endbit_rtx, TYPE_MODE (sizetype));
 
@@ -6006,7 +6009,8 @@ expand_expr (exp, target, tmode, modifier)
 
 	  in_check_memory_usage = 1;
 	  if (memory_usage != MEMORY_USE_DONT)
-	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+	    emit_library_call (chkr_check_addr_libfunc,
+			       LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
 			       XEXP (DECL_RTL (exp), 0), Pmode,
 			       GEN_INT (int_size_in_bytes (type)),
 			       TYPE_MODE (sizetype),
@@ -6524,9 +6528,9 @@ expand_expr (exp, target, tmode, modifier)
             if (memory_usage != MEMORY_USE_DONT)
 	      {
 		in_check_memory_usage = 1;
-		emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				   op0, Pmode,
-				   GEN_INT (int_size_in_bytes (type)),
+		emit_library_call (chkr_check_addr_libfunc,
+				   LCT_CONST_MAKE_BLOCK, VOIDmode, 3, op0,
+				   Pmode, GEN_INT (int_size_in_bytes (type)),
 				   TYPE_MODE (sizetype),
 				   GEN_INT (memory_usage),
 				   TYPE_MODE (integer_type_node));
@@ -6837,9 +6841,9 @@ expand_expr (exp, target, tmode, modifier)
         	/* Check the access right of the pointer.  */
 		in_check_memory_usage = 1;
 		if (size > BITS_PER_UNIT)
-		  emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
-				     to, Pmode,
-				     GEN_INT (size / BITS_PER_UNIT),
+		  emit_library_call (chkr_check_addr_libfunc,
+				     LCT_CONST_MAKE_BLOCK, VOIDmode, 3, to,
+				     Pmode, GEN_INT (size / BITS_PER_UNIT),
 				     TYPE_MODE (sizetype),
 				     GEN_INT (memory_usage),
 				     TYPE_MODE (integer_type_node));
@@ -8805,7 +8809,8 @@ expand_expr_unaligned (exp, palign)
 	    /* Check the access right of the pointer.  */
 	    in_check_memory_usage = 1;
 	    if (size > BITS_PER_UNIT)
-	      emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
+	      emit_library_call (chkr_check_addr_libfunc,
+				 LCT_CONST_MAKE_BLOCK, VOIDmode, 3,
 				 to, ptr_mode, GEN_INT (size / BITS_PER_UNIT),
 				 TYPE_MODE (sizetype),
 				 GEN_INT (MEMORY_USE_RO),

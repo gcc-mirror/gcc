@@ -1363,7 +1363,7 @@ start_dynamic_handler ()
   buf = plus_constant (XEXP (arg, 0), GET_MODE_SIZE (Pmode)*2);
 
 #ifdef DONT_USE_BUILTIN_SETJMP
-  x = emit_library_call_value (setjmp_libfunc, NULL_RTX, 1,
+  x = emit_library_call_value (setjmp_libfunc, NULL_RTX, LCT_CONST,
 			       TYPE_MODE (integer_type_node), 1,
 			       buf, Pmode);
   /* If we come back here for a catch, transfer control to the handler.  */
@@ -1761,7 +1761,8 @@ start_catch_handler (rtime)
 
       /* Now issue the call, and branch around handler if needed */
       call_rtx = emit_library_call_value (eh_rtime_match_libfunc, NULL_RTX, 
-                                          0, TYPE_MODE (integer_type_node),
+                                          LCT_NORMAL,
+					  TYPE_MODE (integer_type_node),
 				          1, rtime_address, Pmode);
 
       /* Did the function return true? */
