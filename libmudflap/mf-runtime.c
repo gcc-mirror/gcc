@@ -737,6 +737,8 @@ void __mfu_check (void *ptr, size_t sz, int type, const char *location)
   switch (__mf_opts.mudflap_mode)
     {
     case mode_nop:
+      entry->low = MINPTR;
+      entry->high = MAXPTR;
       judgement = 1;
       break;
 

@@ -1,5 +1,5 @@
 
-libmudflap-init [find_gcc]
+libmudflap-init c
 
 dg-init
 
