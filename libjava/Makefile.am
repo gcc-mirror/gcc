@@ -25,8 +25,11 @@ endif
 
 if XLIB_AWT
 cond_x_ltlibrary = libgcjx.la
+## We require libstdc++-v3 to be in the same build tree.
+xlib_includes = -I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_alias) -I$(srcdir)/../libstdc++-v3/libsupc++
 else
 cond_x_ltlibrary =
+xlib_includes =
 endif
 
 toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la $(cond_x_ltlibrary)
@@ -107,9 +110,8 @@ JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
 LIBFFIINCS = @LIBFFIINCS@
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
-	$(GCINCS) $(THREADINCS) $(INCLTDL) \
+	$(GCINCS) $(THREADINCS) $(INCLTDL) $(xlib_includes) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
-
 
 ## ################################################################
 

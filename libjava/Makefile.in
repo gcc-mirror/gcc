@@ -136,6 +136,8 @@ AUTOMAKE_OPTIONS = foreign
 @USE_LIBDIR_FALSE@toolexecdir = @USE_LIBDIR_FALSE@$(exec_prefix)/$(target_alias)
 @XLIB_AWT_TRUE@cond_x_ltlibrary = @XLIB_AWT_TRUE@libgcjx.la
 @XLIB_AWT_FALSE@cond_x_ltlibrary = 
+@XLIB_AWT_TRUE@xlib_includes = @XLIB_AWT_TRUE@-I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_alias) -I$(srcdir)/../libstdc++-v3/libsupc++
+@XLIB_AWT_FALSE@xlib_includes = 
 
 toolexeclib_LTLIBRARIES = libgcj.la lib-org-xml-sax.la lib-org-w3c-dom.la $(cond_x_ltlibrary)
 toolexeclib_DATA = libgcj.spec
@@ -182,7 +184,7 @@ JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
 LIBFFIINCS = @LIBFFIINCS@
 
 INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
-	$(GCINCS) $(THREADINCS) $(INCLTDL) \
+	$(GCINCS) $(THREADINCS) $(INCLTDL) $(xlib_includes) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 
