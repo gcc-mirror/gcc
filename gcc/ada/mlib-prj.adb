@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---              Copyright (C) 2001-2003, Ada Core Technologies, Inc.        --
+--              Copyright (C) 2001-2004, Ada Core Technologies, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,6 +39,7 @@ with Prj.Env;  use Prj.Env;
 with Prj.Util; use Prj.Util;
 with Sinput.P;
 with Snames;   use Snames;
+with Switch;   use Switch;
 with Table;
 with Types;    use Types;
 
@@ -353,6 +354,9 @@ package body MLib.Prj is
       Copy_Dir : Name_Id;
       --  Directory where to copy ALI files and possibly interface sources
 
+      First_ALI : Name_Id := No_Name;
+      --  Store the ALI file name of a source of the library (the first found)
+
       procedure Add_ALI_For (Source : Name_Id);
       --  Add the name of the ALI file corresponding to Source to the
       --  Arguments.
@@ -386,14 +390,27 @@ package body MLib.Prj is
 
       procedure Add_ALI_For (Source : Name_Id) is
          ALI : constant String := ALI_File_Name (Get_Name_String (Source));
+         ALI_Id : Name_Id;
       begin
-         Add_Argument (ALI);
-
-         --  Add the ALI file name to the library ALIs
+         if Bind then
+            Add_Argument (ALI);
+         end if;
 
          Name_Len := 0;
          Add_Str_To_Name_Buffer (S => ALI);
-         Library_ALIs.Set (Name_Find, True);
+         ALI_Id := Name_Find;
+
+         --  Add the ALI file name to the library ALIs
+
+         if Bind then
+            Library_ALIs.Set (ALI_Id, True);
+         end if;
+
+         --  Set First_ALI, if not already done
+
+         if First_ALI = No_Name then
+            First_ALI := ALI_Id;
+         end if;
       end Add_ALI_For;
 
       ---------------
@@ -850,59 +867,111 @@ package body MLib.Prj is
                   end;
                end if;
             end;
+         end if;
 
-            --  Get all the ALI files of the project file
+         --  Get all the ALI files of the project file. We do that even if
+         --  Bind is False, so that First_ALI is set.
 
-            declare
-               Unit : Unit_Data;
+         declare
+            Unit : Unit_Data;
 
-            begin
-               Library_ALIs.Reset;
-               Interface_ALIs.Reset;
-               Processed_ALIs.Reset;
-               for Source in 1 .. Com.Units.Last loop
-                  Unit := Com.Units.Table (Source);
+         begin
+            Library_ALIs.Reset;
+            Interface_ALIs.Reset;
+            Processed_ALIs.Reset;
+            for Source in 1 .. Com.Units.Last loop
+               Unit := Com.Units.Table (Source);
 
-                  if Unit.File_Names (Body_Part).Name /= No_Name
-                    and then Unit.File_Names (Body_Part).Path /= Slash
+               if Unit.File_Names (Body_Part).Name /= No_Name
+                 and then Unit.File_Names (Body_Part).Path /= Slash
+               then
+                  if
+                    Check_Project (Unit.File_Names (Body_Part).Project)
                   then
-                     if
-                       Check_Project (Unit.File_Names (Body_Part).Project)
-                     then
-                        if Unit.File_Names (Specification).Name = No_Name then
-                           declare
-                              Src_Ind : Source_File_Index;
+                     if Unit.File_Names (Specification).Name = No_Name then
+                        declare
+                           Src_Ind : Source_File_Index;
 
-                           begin
-                              Src_Ind := Sinput.P.Load_Project_File
-                                (Get_Name_String
-                                   (Unit.File_Names
-                                      (Body_Part).Path));
+                        begin
+                           Src_Ind := Sinput.P.Load_Project_File
+                             (Get_Name_String
+                                (Unit.File_Names
+                                   (Body_Part).Path));
 
-                              --  Add the ALI file only if it is not a subunit
+                           --  Add the ALI file only if it is not a subunit
 
-                              if
-                              not Sinput.P.Source_File_Is_Subunit (Src_Ind)
-                              then
-                                 Add_ALI_For
-                                   (Unit.File_Names (Body_Part).Name);
-                              end if;
-                           end;
+                           if
+                           not Sinput.P.Source_File_Is_Subunit (Src_Ind)
+                           then
+                              Add_ALI_For
+                                (Unit.File_Names (Body_Part).Name);
+                              exit when not Bind;
+                           end if;
+                        end;
 
-                        else
-                           Add_ALI_For (Unit.File_Names (Body_Part).Name);
-                        end if;
+                     else
+                        Add_ALI_For (Unit.File_Names (Body_Part).Name);
+                        exit when not Bind;
                      end if;
-
-                  elsif Unit.File_Names (Specification).Name /= No_Name
-                    and then Unit.File_Names (Specification).Path /= Slash
-                    and then Check_Project
-                      (Unit.File_Names (Specification).Project)
-                  then
-                     Add_ALI_For (Unit.File_Names (Specification).Name);
                   end if;
-               end loop;
-            end;
+
+               elsif Unit.File_Names (Specification).Name /= No_Name
+                 and then Unit.File_Names (Specification).Path /= Slash
+                 and then Check_Project
+                   (Unit.File_Names (Specification).Project)
+               then
+                  Add_ALI_For (Unit.File_Names (Specification).Name);
+                  exit when not Bind;
+               end if;
+            end loop;
+
+         end;
+
+         --  Continue setup and call gnatbind if Bind is True
+
+         if Bind then
+            --  Get an eventual --RTS from the ALI file
+
+            if First_ALI /= No_Name then
+               declare
+                  use Types;
+                  T : Text_Buffer_Ptr;
+                  A : ALI_Id;
+
+               begin
+                  --  Load the ALI file
+
+                  T := Read_Library_Info (First_ALI, True);
+
+                  --  Read it
+
+                  A := Scan_ALI
+                         (First_ALI, T, Ignore_ED => False, Err => False);
+
+                  if A /= No_ALI_Id then
+                     for Index in
+                       ALI.Units.Table
+                         (ALI.ALIs.Table (A).First_Unit).First_Arg ..
+                       ALI.Units.Table
+                         (ALI.ALIs.Table (A).First_Unit).Last_Arg
+                     loop
+                        --  Look for --RTS. If found, add the switch to call
+                        --  gnatbind.
+
+                        declare
+                           Arg : String_Ptr renames Args.Table (Index);
+                        begin
+                           if
+                             Arg (Arg'First + 2 .. Arg'First + 5) = "RTS="
+                           then
+                              Add_Argument (Arg.all);
+                              exit;
+                           end if;
+                        end;
+                     end loop;
+                  end if;
+               end;
+            end if;
 
             --  Set the paths
 
@@ -957,6 +1026,52 @@ package body MLib.Prj is
             if PIC_Option /= "" then
                Add_Argument (PIC_Option);
             end if;
+
+            --  Get the back-end switches and --RTS from the ALI file
+
+            if First_ALI /= No_Name then
+               declare
+                  use Types;
+                  T : Text_Buffer_Ptr;
+                  A : ALI_Id;
+
+               begin
+                  --  Load the ALI file
+
+                  T := Read_Library_Info (First_ALI, True);
+
+                  --  Read it
+
+                  A := Scan_ALI
+                         (First_ALI, T, Ignore_ED => False, Err => False);
+
+                  if A /= No_ALI_Id then
+                     for Index in
+                       ALI.Units.Table
+                         (ALI.ALIs.Table (A).First_Unit).First_Arg ..
+                       ALI.Units.Table
+                         (ALI.ALIs.Table (A).First_Unit).Last_Arg
+                     loop
+                        --  Do not compile with the front end switches except
+                        --  for --RTS.
+
+                        declare
+                           Arg : String_Ptr renames Args.Table (Index);
+                        begin
+                           if not Is_Front_End_Switch (Arg.all)
+                             or else
+                               Arg (Arg'First + 2 .. Arg'First + 5) = "RTS="
+                           then
+                              Add_Argument (Arg.all);
+                           end if;
+                        end;
+                     end loop;
+                  end if;
+               end;
+            end if;
+
+            --  Now that all the arguments are set, compile the binder
+            --  generated file.
 
             Display (Gcc);
             GNAT.OS_Lib.Spawn

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1179,6 +1179,49 @@ package body Sem_Eval is
    begin
       null;
    end Eval_Character_Literal;
+
+   ---------------
+   -- Eval_Call --
+   ---------------
+
+   --  Static function calls are either calls to predefined operators
+   --  with static arguments, or calls to functions that rename a literal.
+   --  Only the latter case is handled here, predefined operators are
+   --  constant-folded elsewhere.
+   --  If the function is itself inherited (see 7423-001) the literal of
+   --  the parent type must be explicitly converted to the return type
+   --  of the function.
+
+   procedure Eval_Call (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+      Typ : constant Entity_Id  := Etype (N);
+      Lit : Entity_Id;
+
+   begin
+      if Nkind (N) = N_Function_Call
+        and then No (Parameter_Associations (N))
+        and then Is_Entity_Name (Name (N))
+        and then Present (Alias (Entity (Name (N))))
+        and then Is_Enumeration_Type (Base_Type (Typ))
+      then
+         Lit := Alias (Entity (Name (N)));
+
+         while Present (Alias (Lit)) loop
+            Lit := Alias (Lit);
+         end loop;
+
+         if Ekind (Lit) = E_Enumeration_Literal then
+            if Base_Type (Etype (Lit)) /= Base_Type (Typ) then
+               Rewrite
+                 (N, Convert_To (Typ, New_Occurrence_Of (Lit, Loc)));
+            else
+               Rewrite (N, New_Occurrence_Of (Lit, Loc));
+            end if;
+
+            Resolve (N, Typ);
+         end if;
+      end if;
+   end Eval_Call;
 
    ------------------------
    -- Eval_Concatenation --

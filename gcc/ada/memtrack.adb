@@ -235,6 +235,7 @@ package body System.Memory is
 
    procedure Free (Ptr : System.Address) is
       Addr : aliased constant System.Address := Ptr;
+
    begin
       Lock_Task.all;
 
@@ -265,7 +266,6 @@ package body System.Memory is
          c_free (Ptr);
 
          First_Call := True;
-
       end if;
 
       Unlock_Task.all;
@@ -280,10 +280,12 @@ package body System.Memory is
       if Needs_Init then
          Needs_Init := False;
          Gmemfile := fopen (Gmemfname, "wb" & ASCII.NUL);
+
          if Gmemfile = System.Null_Address then
             Put_Line ("Couldn't open gnatmem log file for writing");
             OS_Exit (255);
          end if;
+
          fwrite ("GMEM DUMP" & ASCII.LF, 10, 1, Gmemfile);
       end if;
    end Gmem_Initialize;
@@ -296,6 +298,7 @@ package body System.Memory is
      (Ptr : System.Address; Size : size_t) return System.Address
    is
       Result : System.Address;
+
    begin
       if Size = size_t'Last then
          Raise_Exception (Storage_Error'Identity, "object too large");

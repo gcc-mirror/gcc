@@ -3807,8 +3807,7 @@ package body Sem_Res is
          Check_Intrinsic_Call (N);
       end if;
 
-      --  If we fall through we definitely have a non-static call
-
+      Eval_Call (N);
       Check_Elab_Call (N);
    end Resolve_Call;
 

@@ -4464,8 +4464,8 @@ package body Sem_Attr is
         and then Raises_Constraint_Error (N)
       then
          Rewrite (N,
-            Make_Raise_Program_Error (Loc,
-              Reason => PE_Accessibility_Check_Failed));
+           Make_Raise_Program_Error (Loc,
+             Reason => PE_Accessibility_Check_Failed));
          Set_Etype (N, C_Type);
          return;
 
