@@ -4894,6 +4894,10 @@ fmpyaddoperands (operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
 
+  /* Must be a floating point mode.  */
+  if (mode != SFmode && mode != DFmode)
+    return 0;
+
   /* All modes must be the same.  */
   if (! (mode == GET_MODE (operands[1])
 	 && mode == GET_MODE (operands[2])
@@ -4902,9 +4906,12 @@ fmpyaddoperands (operands)
 	 && mode == GET_MODE (operands[5])))
     return 0;
 
-  /* Both DFmode and SFmode should work.  But using SFmode makes the
-     assembler complain.  Just turn it off for now.  */
-  if (mode != DFmode)
+  /* All operands must be registers.  */
+  if (! (GET_CODE (operands[1]) == REG
+	 && GET_CODE (operands[2]) == REG
+	 && GET_CODE (operands[3]) == REG
+	 && GET_CODE (operands[4]) == REG
+	 && GET_CODE (operands[5]) == REG))
     return 0;
 
   /* Only 2 real operands to the addition.  One of the input operands must
@@ -4924,6 +4931,16 @@ fmpyaddoperands (operands)
       || rtx_equal_p (operands[5], operands[0]))
     return 0;
 
+  /* SFmode limits the registers to the upper 32 of the 32bit FP regs.  */
+  if (mode == SFmode
+      && (REGNO (operands[0]) < 57
+	  || REGNO (operands[1]) < 57
+	  || REGNO (operands[2]) < 57
+	  || REGNO (operands[3]) < 57
+	  || REGNO (operands[4]) < 57
+	  || REGNO (operands[5]) < 57))
+    return 0;
+
   /* Passed.  Operands are suitable for fmpyadd.  */
   return 1;
 }
@@ -4936,6 +4953,10 @@ fmpysuboperands (operands)
 {
   enum machine_mode mode = GET_MODE (operands[0]);
 
+  /* Must be a floating point mode.  */
+  if (mode != SFmode && mode != DFmode)
+    return 0;
+
   /* All modes must be the same.  */
   if (! (mode == GET_MODE (operands[1])
 	 && mode == GET_MODE (operands[2])
@@ -4944,9 +4965,12 @@ fmpysuboperands (operands)
 	 && mode == GET_MODE (operands[5])))
     return 0;
 
-  /* Both DFmode and SFmode should work.  But using SFmode makes the
-     assembler complain.  Just turn it off for now.  */
-  if (mode != DFmode)
+  /* All operands must be registers.  */
+  if (! (GET_CODE (operands[1]) == REG
+	 && GET_CODE (operands[2]) == REG
+	 && GET_CODE (operands[3]) == REG
+	 && GET_CODE (operands[4]) == REG
+	 && GET_CODE (operands[5]) == REG))
     return 0;
 
   /* Only 2 real operands to the subtraction.  Subtraction is not a commutative
@@ -4962,6 +4986,16 @@ fmpysuboperands (operands)
   if (rtx_equal_p (operands[3], operands[0])
      || rtx_equal_p (operands[3], operands[1])
      || rtx_equal_p (operands[3], operands[2]))
+    return 0;
+
+  /* SFmode limits the registers to the upper 32 of the 32bit FP regs.  */
+  if (mode == SFmode
+      && (REGNO (operands[0]) < 57
+	  || REGNO (operands[1]) < 57
+	  || REGNO (operands[2]) < 57
+	  || REGNO (operands[3]) < 57
+	  || REGNO (operands[4]) < 57
+	  || REGNO (operands[5]) < 57))
     return 0;
 
   /* Passed.  Operands are suitable for fmpysub.  */
