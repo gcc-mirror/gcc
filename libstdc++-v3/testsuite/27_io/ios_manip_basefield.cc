@@ -1,6 +1,6 @@
 // 981027 ncm work with libstdc++v3
 
-// Copyright (C) 1997, 1998, 1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,7 +27,6 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-#include <iostream>
 #include <sstream>
 #include <locale>
 #include <iomanip>
@@ -45,31 +44,36 @@ char   MyNP::do_thousands_sep() const { return ' '; }
 int
 test01()
 {
-  std::cout.imbue(std::locale(std::locale(), new MyNP));
-  std::cout << std::oct << std::showbase;
-  std::cout << -0123456l << std::endl;
+  bool test = true;
+  const char lit[] = "-0 123 456\n:-01 234 567:\n:-0 123 456 :"
+                     "\n:   -012 345:\n:-    01 234:\n0x000012 345 678";
+  std::ostringstream oss;
+  oss.imbue(std::locale(std::locale(), new MyNP));
+  oss << std::oct << std::showbase;
+  oss << -0123456l << std::endl;
 
-  std::cout << ":" << std::setw(11);
-  std::cout << -01234567l << ":" << std::endl;
+  oss << ":" << std::setw(11);
+  oss << -01234567l << ":" << std::endl;
 
-  std::cout << ":" << std::setw(11) << std::left;
-  std::cout << -0123456l << ":" << std::endl;
+  oss << ":" << std::setw(11) << std::left;
+  oss << -0123456l << ":" << std::endl;
 
-  std::cout << ":" << std::setw(11) << std::right;
-  std::cout << -012345l << ":" << std::endl;
+  oss << ":" << std::setw(11) << std::right;
+  oss << -012345l << ":" << std::endl;
 
-  std::cout << ":" << std::setw(11) << std::internal;
-  std::cout << -01234l << ":" << std::endl;
+  oss << ":" << std::setw(11) << std::internal;
+  oss << -01234l << ":" << std::endl;
 
-  std::cout << std::hex;
-  std::cout << std::setfill('0');
-  std::cout << std::internal;
-  std::cout << std::showbase;
-  std::cout << std::setw(16);
-  std::cout << 0x12345678l << std::endl;
-#ifdef DEBUG_ASSERT
-  assert (std::cout.good());
-#endif
+  oss << std::hex;
+  oss << std::setfill('0');
+  oss << std::internal;
+  oss << std::showbase;
+  oss << std::setw(16);
+  oss << 0x12345678l << std::endl;
+
+  VERIFY( oss.good() );
+  VERIFY( oss.str() == lit );
+
   return 0;
 }
 
@@ -94,14 +98,13 @@ test02()
   VERIFY( strbuf.str() == "cisco " ); 
   strbuf.str(str_blank);
 
-#ifdef DEBUG_ASSERT
-  assert (test);
-#endif
+  VERIFY( test );
   return 0;
 }
 
 int 
-main() {
+main() 
+{
   test01();
   test02();
   return 0;
@@ -116,3 +119,4 @@ main() {
 :-    01 234:
 0x000012 345 678
 */
+
