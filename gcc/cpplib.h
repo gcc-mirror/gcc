@@ -713,6 +713,7 @@ extern void cpp_message PVPROTO ((cpp_reader *, int, const char *, ...))
 extern void cpp_pfatal_with_name PROTO ((cpp_reader *, const char *));
 extern void cpp_file_line_for_message PROTO ((cpp_reader *, char *, int, int));
 extern void cpp_print_containing_files PROTO ((cpp_reader *));
+extern void cpp_notice VPROTO ((const char *msgid, ...));
 
 /* In cppfiles.c */
 extern void append_include_chain	PROTO ((cpp_reader *,
