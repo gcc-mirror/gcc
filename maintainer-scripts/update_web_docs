@@ -74,9 +74,6 @@ fi
 
 if [ -z "$RELEASE" ]; then
   RELEASE=HEAD
-  DO_THANKS_HTML=y
-else
-  DO_THANKS_HTML=n
 fi
 
 WORKDIR=/tmp/gcc-doc-update.$$
@@ -142,7 +139,6 @@ done
 
 news_file=g77/News.html
 bugs_file=g77/Trouble.html
-contrib_file=gcc/Contributors.html
 
 cd $DOCSDIR
 
@@ -154,14 +150,6 @@ ln $news_file g77_news.html
 ln $bugs_file g77_bugs.html
 ln ${news_file}.gz g77_news.html.gz
 ln ${bugs_file}.gz g77_bugs.html.gz
-
-if [ "$DO_THANKS_HTML" = y ]; then
-  cd $WWWBASE
-  rm -f thanks.html
-  rm -f thanks.html.gz
-  ln onlinedocs/$contrib_file thanks.html
-  ln onlinedocs/${contrib_file}.gz thanks.html.gz
-fi
 
 # Finally, generate the installation documentation (but only for CVS HEAD).
 if [ "$RELEASE" = "HEAD" ]; then
