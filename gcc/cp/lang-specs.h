@@ -38,14 +38,12 @@ Boston, MA 02111-1307, USA.  */
     "%{E|M|MM:cpp0 -lang-c++ %{!no-gcc:-D__GNUG__=%v1}\
        %{!Wno-deprecated:-D__DEPRECATED}\
        %{!fno-exceptions:-D__EXCEPTIONS}\
-       -D__GXX_ABI_VERSION=100\
        %{ansi:-D__STRICT_ANSI__ -trigraphs -$} %(cpp_options)}\
      %{!E:%{!M:%{!MM:\
        %{save-temps|no-integrated-cpp:cpp0 -lang-c++ \
 		    %{!no-gcc:-D__GNUG__=%v1}\
        		    %{!Wno-deprecated:-D__DEPRECATED}\
 		    %{!fno-exceptions:-D__EXCEPTIONS}\
-		    -D__GXX_ABI_VERSION=100\
 		    %{ansi:-D__STRICT_ANSI__ -trigraphs -$}\
 		    %(cpp_options) %{save-temps:%b.ii} %{!save-temps:%g.ii} \n}\
       cc1plus %{save-temps|no-integrated-cpp:-fpreprocessed %{save-temps:%b.ii} %{!save-temps:%g.ii}}\
@@ -53,7 +51,6 @@ Boston, MA 02111-1307, USA.  */
 			    %{!no-gcc:-D__GNUG__=%v1} \
        			    %{!Wno-deprecated:-D__DEPRECATED}\
 			    %{!fno-exceptions:-D__EXCEPTIONS}\
-			    -D__GXX_ABI_VERSION=100\
 			    %{ansi:-D__STRICT_ANSI__}}}\
        %{ansi:-trigraphs -$}\
        %(cc1_options) %2 %{+e1*}\

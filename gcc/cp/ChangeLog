@@ -1,3 +1,7 @@
+2002-07-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* lang-specs.h: Remove __GXX_ABI_VERSION, moved to gcc.c.
+
 2002-07-17  Scott Snyder <snyder@fnal.gov>
 
 	PR c++/7320

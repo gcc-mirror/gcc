@@ -1,3 +1,7 @@
+2002-07-30  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c (cpp_unique_options): Define __GXX_ABI_VERSION, bump it to 101.
+
 2002-07-24  Frank van der Linden  <fvdl@wasabisystems.com>
 
 	PR optimization/7291
