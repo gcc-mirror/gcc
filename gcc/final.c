@@ -1,6 +1,6 @@
 /* Convert RTL to assembler code and output it, for GNU compiler.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
-   1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1591,17 +1591,16 @@ final (rtx first, FILE *file, int optimize, int prescan)
 const char *
 get_insn_template (int code, rtx insn)
 {
-  const void *output = insn_data[code].output;
   switch (insn_data[code].output_format)
     {
     case INSN_OUTPUT_FORMAT_SINGLE:
-      return (const char *) output;
+      return insn_data[code].output.single;
     case INSN_OUTPUT_FORMAT_MULTI:
-      return ((const char *const *) output)[which_alternative];
+      return insn_data[code].output.multi[which_alternative];
     case INSN_OUTPUT_FORMAT_FUNCTION:
       if (insn == NULL)
 	abort ();
-      return (*(insn_output_fn) output) (recog_data.operand, insn);
+      return (*insn_data[code].output.function) (recog_data.operand, insn);
 
     default:
       abort ();

@@ -1,6 +1,6 @@
 /* Implements exception handling.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -2430,14 +2430,14 @@ void
 for_each_eh_label (void (*callback) (rtx))
 {
   htab_traverse (cfun->eh->exception_handler_label_map, for_each_eh_label_1,
-		 (void *)callback);
+		 (void *) &callback);
 }
 
 static int
 for_each_eh_label_1 (void **pentry, void *data)
 {
   struct ehl_map_entry *entry = *(struct ehl_map_entry **)pentry;
-  void (*callback) (rtx) = (void (*) (rtx)) data;
+  void (*callback) (rtx) = *(void (**) (rtx)) data;
 
   (*callback) (entry->label);
   return 1;
