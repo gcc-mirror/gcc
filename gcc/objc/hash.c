@@ -23,8 +23,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    This exception does not however invalidate any other reasons why
    the executable file might be covered by the GNU General Public License.  */
 
-#include "config.h"
+#include "tconfig.h"
 #include "gstddef.h"
+#include "gstdarg.h"
 #include "assert.h"
 
 #include "hash.h"
