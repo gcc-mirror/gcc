@@ -83,9 +83,6 @@ extern int target_flags;
       flag_force_mem = 1;		\
     }					\
 }
-
-/* Match <sys/types.h>'s definition.  */
-#define SIZE_TYPE "long int"
 
 /* target machine storage layout */
 
