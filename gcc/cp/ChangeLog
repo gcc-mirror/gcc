@@ -1,3 +1,8 @@
+1999-10-31  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (finish_function): Call free_after_parsing for functions
+	we are not immediately turning into RTL.
+
 1999-10-31  Brendan Kehoe  <brendan@cygnus.com>
 
 	* cp-tree.h (flag_dump_translation_unit): Add decl.
