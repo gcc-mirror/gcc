@@ -1,3 +1,13 @@
+2003-03-03  Jason Merrill  <jason@redhat.com>
+
+	* tree-inline.c (find_builtin_longjmp_call): Save and restore
+	lineno and input_filename.
+	(find_alloca_call): Likewise.
+	(inlinable_function_p): Run the langhook earlier.
+
+	* calls.c (compute_argument_addresses): Give the new MEMs a
+	minimum alignment of PARM_BOUNDARY.
+
 Mon Mar  3 20:45:25 2003  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* config/sh/sh.h (EXTRA_SPECS): Add subtarget_asm_relax_spec and

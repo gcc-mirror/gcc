@@ -1,3 +1,10 @@
+2003-03-03  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (start_function): Clear DECL_NUM_STMTS.
+
+	* class.c (get_vtable_decl): Use vtbl_type_node.
+	(build_primary_vtable): Check for it.
+
 2003-03-02  Aldy Hernandez  <aldyh@redhat.com>
 
         * decl.c (check_initializer): Check for vector_opaque_p.

@@ -895,7 +895,12 @@ static tree
 find_alloca_call (exp)
      tree exp;
 {
-  return walk_tree (&exp, find_alloca_call_1, NULL, NULL);
+  int line = lineno;
+  const char *file = input_filename;
+  tree ret = walk_tree (&exp, find_alloca_call_1, NULL, NULL);
+  lineno = line;
+  input_filename = file;
+  return ret;
 }
 
 static tree
@@ -921,7 +926,12 @@ static tree
 find_builtin_longjmp_call (exp)
      tree exp;
 {
-  return walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
+  int line = lineno;
+  const char *file = input_filename;
+  tree ret = walk_tree (&exp, find_builtin_longjmp_call_1, NULL, NULL);
+  lineno = line;
+  input_filename = file;
+  return ret;
 }
 
 /* Returns nonzero if FN is a function that can be inlined into the
@@ -940,6 +950,11 @@ inlinable_function_p (fn, id)
   /* If we've already decided this function shouldn't be inlined,
      there's no need to check again.  */
   if (DECL_UNINLINABLE (fn))
+    return 0;
+
+  /* Check this now so that we instantiate C++ templates before reading
+     DECL_NUM_STMTS.  */
+  if ((*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn))
     return 0;
 
   /* Assume it is not inlinable.  */
@@ -1021,9 +1036,6 @@ inlinable_function_p (fn, id)
 	    inlinable = 0;
 	}
     }
-
-  if (inlinable && (*lang_hooks.tree_inlining.cannot_inline_tree_fn) (&fn))
-    inlinable = 0;
 
   /* If we don't have the function body available, we can't inline
      it.  */

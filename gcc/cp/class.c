@@ -533,7 +533,7 @@ get_vtable_decl (tree type, int complete)
   if (CLASSTYPE_VTABLES (type))
     return CLASSTYPE_VTABLES (type);
   
-  decl = build_vtable (type, get_vtable_name (type), void_type_node);
+  decl = build_vtable (type, get_vtable_name (type), vtbl_type_node);
   CLASSTYPE_VTABLES (type) = decl;
 
   /* At one time the vtable info was grabbed 2 words at a time.  This
@@ -594,8 +594,7 @@ build_primary_vtable (tree binfo, tree type)
     }
   else
     {
-      my_friendly_assert (TREE_CODE (TREE_TYPE (decl)) == VOID_TYPE,
-                          20000118);
+      my_friendly_assert (TREE_TYPE (decl) == vtbl_type_node, 20000118);
       virtuals = NULL_TREE;
     }
 

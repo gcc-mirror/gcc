@@ -1634,6 +1634,7 @@ compute_argument_addresses (args, argblock, num_actuals)
 
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack = gen_rtx_MEM (args[i].mode, addr);
+	  set_mem_align (args[i].stack, PARM_BOUNDARY);
 	  set_mem_attributes (args[i].stack,
 			      TREE_TYPE (args[i].tree_value), 1);
 
@@ -1644,6 +1645,7 @@ compute_argument_addresses (args, argblock, num_actuals)
 
 	  addr = plus_constant (addr, arg_offset);
 	  args[i].stack_slot = gen_rtx_MEM (args[i].mode, addr);
+	  set_mem_align (args[i].stack_slot, PARM_BOUNDARY);
 	  set_mem_attributes (args[i].stack_slot,
 			      TREE_TYPE (args[i].tree_value), 1);
 
@@ -4577,7 +4579,6 @@ store_one_arg (arg, argblock, flags, variable_size, reg_parm_stack_space)
 
   return sibcall_failure;
 }
-
 
 /* Nonzero if we do not know how to pass TYPE solely in registers.
    We cannot do so in the following cases:
