@@ -33,6 +33,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "output.h"
 #include "defaults.h"
 
+#ifndef DWARF_VERSION
+#define DWARF_VERSION 1
+#endif
+
 /* #define NDEBUG 1 */
 #include <assert.h>
 
@@ -314,8 +318,8 @@ static unsigned lookup_filename ();
 #ifndef ASM_BYTE_OP
 #define ASM_BYTE_OP		".byte"
 #endif
-#ifndef DEF_ASM_OP
-#define DEF_ASM_OP		".set"
+#ifndef SET_ASM_OP
+#define SET_ASM_OP		".set"
 #endif
 
 /* Pseudo-ops for pushing the current section onto the section stack (and
@@ -323,7 +327,7 @@ static unsigned lookup_filename ();
    section we were in immediately before this one.  Note that most svr4
    assemblers only maintain a one level stack... you can push all the
    sections you want, but you can only pop out one level.  (The sparc
-   svr4 assembler might be an exception to this general rule.)  That's
+   svr4 assembler is an exception to this general rule.)  That's
    OK because we only use at most one level of the section stack herein.  */
 
 #ifndef PUSHSECTION_ASM_OP
@@ -390,13 +394,14 @@ static unsigned lookup_filename ();
    but typically, you should never need to override these.
 
    These labels have been hacked (temporarily) so that they all begin with
-   a `.L' sequence so as to appease the sparc/svr4 assmebler (which needs
-   to see .L at the start of a label in order to prevent that label from
-   going into the linker symbol table).  When I get time, I'll have to
-   fix this the right way so that we use ASM_GENERATE_INTERNAL_LABEL and
-   ASM_OUTPUT_INTERNAL_LABEL throughout dwarfout.c, but that will require
-   a rather massive set of changes.  For the moment, the following definitions
-   out to produce the right results for all svr4 and svr3 assemblers. -- rfg
+   a `.L' sequence so as to appease the stock sparc/svr4 assembler and the
+   stock m88k/svr4 assembler, both of which need to see .L at the start of
+   a label in order to prevent that label from going into the linker symbol
+   table).  When I get time, I'll have to fix this the right way so that we
+   will use ASM_GENERATE_INTERNAL_LABEL and ASM_OUTPUT_INTERNAL_LABEL herein,
+   but that will require a rather massive set of changes.  For the moment,
+   the following definitions out to produce the right results for all svr4
+   and svr3 assemblers. -- rfg
 */
 
 #ifndef TEXT_BEGIN_LABEL
@@ -544,9 +549,9 @@ static unsigned lookup_filename ();
    output operations.
 
    If necessary, these may be overridden from within your tm.h file,
-   but typically, you shouldn't need to override these.  Two known
-   exceptions are the ASM_OUTPUT_PUSH_SECTION and ASM_OUTPUT_POP_SECTION
-   definitions, which need to be somewhat special for a sparc running svr4.
+   but typically, you shouldn't need to override these.  One known
+   exception is ASM_OUTPUT_DEF which has to be different for stock
+   sparc/svr4 assemblers.
 */
 
 #ifndef ASM_OUTPUT_PUSH_SECTION
@@ -566,7 +571,7 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DEF
 #define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2)				\
- do {	fprintf ((FILE), "\t%s\t", DEF_ASM_OP);				\
+ do {	fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
 	assemble_name (FILE, LABEL1);					\
 	fprintf (FILE, ",");						\
 	assemble_name (FILE, LABEL2);					\
@@ -621,7 +626,7 @@ static unsigned lookup_filename ();
 #ifndef ASM_OUTPUT_DWARF_STACK_OP
 #define ASM_OUTPUT_DWARF_STACK_OP(FILE,OP)				\
   do {									\
-    fprintf ((FILE), "%s\t0x%x", ASM_BYTE_OP, (unsigned) OP);		\
+    fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) OP);		\
     if (flag_verbose_asm)						\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_stack_op_name (OP));	\
@@ -644,7 +649,7 @@ static unsigned lookup_filename ();
 #ifndef ASM_OUTPUT_DWARF_FMT_BYTE
 #define ASM_OUTPUT_DWARF_FMT_BYTE(FILE,FMT)				\
   do {									\
-    fprintf ((FILE), "%s\t0x%x", ASM_BYTE_OP, (unsigned) FMT);		\
+    fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) FMT);	\
     if (flag_verbose_asm)						\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_fmt_byte_name (FMT));	\
@@ -655,7 +660,7 @@ static unsigned lookup_filename ();
 #ifndef ASM_OUTPUT_DWARF_TYPE_MODIFIER
 #define ASM_OUTPUT_DWARF_TYPE_MODIFIER(FILE,MOD)			\
   do {									\
-    fprintf ((FILE), "%s\t0x%x", ASM_BYTE_OP, (unsigned) MOD);		\
+    fprintf ((FILE), "\t%s\t0x%x", ASM_BYTE_OP, (unsigned) MOD);	\
     if (flag_verbose_asm)						\
       fprintf ((FILE), "\t%s %s",					\
 		       ASM_COMMENT_START, dwarf_typemod_name (MOD));	\
@@ -673,9 +678,11 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_ADDR_CONST
 #define ASM_OUTPUT_DWARF_ADDR_CONST(FILE,RTX)				\
-  fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			\
-  output_addr_const ((FILE), (RTX));					\
-  fputc ('\n', (FILE))
+  do {									\
+    fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);			\
+    output_addr_const ((FILE), (RTX));					\
+    fputc ('\n', (FILE));						\
+  } while (0)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_REF
@@ -688,7 +695,7 @@ static unsigned lookup_filename ();
 
 #ifndef ASM_OUTPUT_DWARF_DATA1
 #define ASM_OUTPUT_DWARF_DATA1(FILE,VALUE) \
-  fprintf ((FILE), "%s\t0x%x\n", ASM_BYTE_OP, VALUE)
+  fprintf ((FILE), "\t%s\t0x%x\n", ASM_BYTE_OP, VALUE)
 #endif
 
 #ifndef ASM_OUTPUT_DWARF_DATA2
@@ -732,6 +739,15 @@ xstrdup (s)
 
   strcpy (p, s);
   return p;
+}
+
+inline int
+is_pseudo_reg (rtl)
+     register rtx rtl;
+{
+  return (((GET_CODE (rtl) == REG) && (REGNO (rtl) >= FIRST_PSEUDO_REGISTER))
+          || ((GET_CODE (rtl) == SUBREG)
+	      && (REGNO (XEXP (rtl, 0)) >= FIRST_PSEUDO_REGISTER)));
 }
 
 static char *
@@ -1506,9 +1522,7 @@ location_attribute (rtl)
      thing entirely different... i.e. that the DIE represents an object
      declaration, but not a definition.  So sayeth the PLSIG.  */
 
-  if (((GET_CODE (rtl) != REG) || (REGNO (rtl) < FIRST_PSEUDO_REGISTER))
-      && ((GET_CODE (rtl) != SUBREG)
-	  || (REGNO (XEXP (rtl, 0)) < FIRST_PSEUDO_REGISTER)))
+  if (! is_pseudo_reg (rtl))
     output_loc_descriptor (eliminate_regs (rtl, 0, 0));
 
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
@@ -1540,12 +1554,13 @@ data_member_location_attribute (decl)
 {
   char begin_label[MAX_ARTIFICIAL_LABEL_BYTES];
   char end_label[MAX_ARTIFICIAL_LABEL_BYTES];
-  register unsigned containing_object_size_in_bytes;
-  register unsigned containing_object_size_in_bits;
-  register unsigned member_offset_in_objects;
-  register unsigned member_offset_in_bytes;
+  register unsigned type_align_in_bytes;
+  register unsigned type_align_in_bits;
+  register unsigned offset_in_align_units;
+  register unsigned offset_in_bytes;
   register tree type;
-  register tree bitpos = DECL_FIELD_BITPOS (decl);
+  register tree bitpos_tree = DECL_FIELD_BITPOS (decl);
+  register unsigned bitpos_int;
 
   if (TREE_CODE (decl) == ERROR_MARK)
     return;
@@ -1563,8 +1578,9 @@ data_member_location_attribute (decl)
      it into a member-style AT_location descriptor, but that'll be
      tough to do.  -- rfg  */
 
-  if (TREE_CODE (bitpos) != INTEGER_CST)
+  if (TREE_CODE (bitpos_tree) != INTEGER_CST)
     return;
+  bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
 
   ASM_OUTPUT_DWARF_ATTRIBUTE (asm_out_file, AT_location);
   sprintf (begin_label, LOC_BEGIN_LABEL_FMT, current_dienum);
@@ -1577,47 +1593,100 @@ data_member_location_attribute (decl)
   if (type == NULL)
     type = TREE_TYPE (decl);
 
-  containing_object_size_in_bytes = int_size_in_bytes (type);
-  containing_object_size_in_bits
-    = containing_object_size_in_bytes * BITS_PER_UNIT;
+  type_align_in_bits = TYPE_ALIGN (type);
+  type_align_in_bytes = type_align_in_bits / BITS_PER_UNIT;
 
   /* WARNING!  Note that the GCC front-end doesn't make any attempt to
      keep track of the starting bit offset (relative to the start of
      the containing structure type) of the hypothetical "containing
      object" for a bit-field.  (See the comments at the start of this
-     function.)  Thus, when computing the  byte offset value for a
+     function.)  Thus, when computing the byte offset value for a
      bit-field, all we can do is to divide the starting bit offset of
-     the bit-field by the size of the hypothetical "containing object"
-     (which we can easily find).
+     the bit-field by the alignment of the hypothetical "containing
+     object" (which we can easily find) and then multiply by the number
+     of bytes of that alignment.
 
-     This solution only works right as long as the alignment used by the
-     compiler for the declared type of the bit-field is the same as the
-     size of that type.
+     This solution only yields an unambiguously correct result when
+     the size of the bit-field is strictly larger than the size of the
+     declared type minus the alignment of the declared type.  When this
+     condition is not satisfied, it means that there is at least an
+     "alignment unit's" worth of other slop which co-resides within the
+     hypothetical "containing object" with the bit field, and this other
+     slop could be either to the left of the bit-field or to the right
+     of the bit-field. (We have no way of knowing which.)
 
-     Since GCC allows type `long long' to be the declared type for a
-     bit-field, and since some target configurations only align
-     `long longs' to 4-byte boundaries, we have to check here to see
-     that the alignment of the containing object is the same as the
-     size of that object.  If it isn't, and if the field in question
-     is a bit-field, then we may be about to generate bogus Dwarf
-     output, so we need to warn the user about that.
+     It also means that we cannot unambiguously tell exactly where the
+     hypothetical "containing object" begins within the containing struct
+     type.  We only know the precise position of the bit-field which is
+     contained therein, and that the hypothetical containing object must
+     be aligned as required for its type.  But when there is at least an
+     alignment unit's worth of slop co-resident in the containing object
+     with the actual bit-field, the actual start of the containing object
+     is ambiguous and thus, we cannot unambiguously determine the "correct"
+     byte offset to put into the AT_location attribute for the bit-field
+     itself.
 
-     Of course it would be nice to actually solve this problem, but
-     that would require a lot of changes elsewhere in the compiler
-     which could be quite painful, so for now we'll just live with
-     this minor annoyance.
+     This whole thing is a non-issue for the majority of targets, because
+     (for most GCC targets) the alignment of each supported integral type
+     is the same as the size of that type, and thus (size - alignment) for
+     the declared type of any bit-field yields zero, and the size (in bits)
+     of any bit-field must be bigger than zero, so there is never any
+     ambiguity about the starting positions of the containing objects of
+     bit-fields for most GCC targets.
+
+     An exception arises however for some machines (e.g. i386) which have
+     BIGGEST_ALIGNMENT set to something less than the size of type `long
+     long' (i.e. 64) and when we are confronted with something like:
+
+		struct S {
+			int		field1;
+			long long	field2:31;
+		};
+
+     Here it is ambiguous (going by DWARF rules anyway) whether the con-
+     taining `long long' object for `field2' should be said to occupy the
+     first and second (32-bit) words of the containing struct type, or
+     whether it should be said to occupy the second and third words of
+     the struct type.
+
+     Currently, GCC allocates 8 bytes (for an i386 target) for each object
+     of the above type.  This is probably a bug however, and GCC should
+     probably be allocating 12 bytes for each such structure (for the i386
+     target).
+
+     Assuming this bug gets fixed, one would have a strong case for saying
+     that the containing `long long' object for `field2' occupies the second
+     and third words of the above structure type, and that `field2' itself
+     occupies the first 31 bits of that containing object.  However consider:
+
+		struct S {
+			int		field1;
+			long long	field2:31;
+			long long	field3:2;
+			long long	field4:31;
+		};
+
+     Even if the current "member allocation" bug in GCC is fixed, this ex-
+     ample would still illustrate a case in which the starting point of the
+     containing `long long' object for `field4' would be ambiguous, even
+     though we know the exact starting bit offset (within the structure) of
+     the `field4' bit-field itself.
+
+     We essentially just ignore this whole issue here and always act as if
+     most of the slop which co-resides in a containing object along with a
+     bit-field appears in that containing object *AFTER* the bit field.
+     Thus, for the above example, we say that the containing object for
+     `field4' occupies the third and fourth words of the structure type,
+     even though objects of the type only occupy three words.  As long
+     as the debugger understands that the compiler uses this disambiguation
+     rule, the debugger should easily be able to do the Right Thing in all
+     cases.
   */
 
-  if ((GET_MODE_ALIGNMENT (TYPE_MODE (type)) != containing_object_size_in_bits)
-      && (DECL_BIT_FIELD_TYPE (type) != NULL))
-    warning_with_decl (decl, "debugging info won't necessarily be reliable");
+  offset_in_align_units = bitpos_int / type_align_in_bits;
+  offset_in_bytes = offset_in_align_units * type_align_in_bytes;
 
-  member_offset_in_objects
-    = (unsigned) TREE_INT_CST_LOW (bitpos) / containing_object_size_in_bits;
-  member_offset_in_bytes
-    = member_offset_in_objects * containing_object_size_in_bytes;
-
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, member_offset_in_bytes);
+  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, offset_in_bytes);
   ASM_OUTPUT_DWARF_STACK_OP (asm_out_file, OP_ADD);
   ASM_OUTPUT_LABEL (asm_out_file, end_label);
 }
@@ -1723,21 +1792,63 @@ location_or_const_value_attribute (decl)
     abort ();
 
   /* Existing Dwarf debuggers need and expect the location descriptors for
-     formal parameters to reflect the place where the parameter are passed,
-     as opposed to the places where they might reside during the execution
-     of the function.  This isn't clearly spelled out in the current Dwarf
+     formal parameters to reflect either the place where the parameters get
+     passed (if they are passed on the stack and in memory) or else the
+     (preserved) registers which the paramaters get copied to during the
+     function prologue.
+
+     At least this is the way things are for most common CISC machines
+     (e.g. x86 and m68k) where parameters are passed in the stack, and for
+     most common RISC machines (e.g. i860 and m88k) where parameters are
+     passed in registers.
+
+     The rules for Sparc are a little weird for some reason.  The DWARF
+     generated by the USL C compiler for the Sparc/svr4 reference port says
+     that the parameters are passed in the stack.  I haven't figured out
+     how to duplicate that behavior here (for the Sparc) yet, or even if
+     I really need to.
+
+     Note that none of this is clearly spelled out in the current Dwarf
      version 1 specification, but it's obvious if you look at the output of
      the CI5 compiler, or if you try to use the svr4 SDB debugger.  Hopefully,
      a later version of the Dwarf specification will clarify this.  For now,
      we just need to generate the right thing.  Note that Dwarf version 2
      will provide us with a means to describe *all* of the locations in which
      a given variable or parameter resides (and the PC ranges over which it
-     occupies each one), but for now we can only describe the "passing"
-     location.  */
+     occupies each one), but for now we can only describe one "location"
+     for each formal parameter passed, and so we just try to mimic existing
+     practice as much as possible.
+  */
 
-  rtl = (TREE_CODE (decl) == PARM_DECL)
-	 ? DECL_INCOMING_RTL (decl)
-	 : DECL_RTL (decl);
+  if (TREE_CODE (decl) != PARM_DECL)
+    /*  If this decl is not a formal parameter, just use DECL_RTL.  */
+    rtl = DECL_RTL (decl);
+  else
+    {
+      if (GET_CODE (DECL_INCOMING_RTL (decl)) == MEM)
+        /* Parameter was passed in memory, so say that's where it lives.  */
+	rtl = DECL_INCOMING_RTL (decl);
+      else
+	{
+          /* Parameter was passed in a register, so say it lives in the
+	     register it will be copied to during the prologue.  */
+          rtl = DECL_RTL (decl);
+
+	  /* Note that in cases where the formal parameter is never used
+	     and where this compilation is done with -O, the copying of
+	     of an incoming register parameter to another register (in
+	     the prologue) can be totally optimized away.  (In such cases
+	     the DECL_RTL will indicate a pseudo-register.)  We could just
+	     use the DECL_RTL (as we normally do for register parameters)
+	     in these cases, but if we did that, we would end up generating
+	     a null location descriptor.  (See `location_attribute' above.)
+	     That would be acceptable (according to the DWARF spec) but it
+	     is probably more useful to say that the formal resides where
+	     it was passed instead of saying that it resides nowhere.  */
+	  if (is_pseudo_reg (rtl))
+	    rtl = DECL_INCOMING_RTL (decl);
+	}
+    }
 
   if (rtl == NULL)
     return;
@@ -2013,10 +2124,9 @@ bit_offset_attribute (decl)
     register tree decl;
 {
   register tree type = DECL_BIT_FIELD_TYPE (decl);
-  register unsigned containing_object_size_in_bits;
   register unsigned dwarf_bit_offset;
   register tree bitpos_tree = DECL_FIELD_BITPOS (decl);
-  register unsigned bitpos;
+  register unsigned bitpos_int;
 
   assert (TREE_CODE (decl) == FIELD_DECL);	/* Must be a field.  */
   assert (type);				/* Must be a bit field.	 */
@@ -2030,63 +2140,29 @@ bit_offset_attribute (decl)
      given as the DECL_FIELD_BITPOS and see if we can factor out just
      the (constant) bit offset part of that expression.  -- rfg  */
 
-  if (TREE_CODE (bitpos_tree) != CONST_INT)
+  if (TREE_CODE (bitpos_tree) != INTEGER_CST)
     return;
+  bitpos_int = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
 
-  containing_object_size_in_bits = int_size_in_bytes (type) * BITS_PER_UNIT;
-
-  /* WARNING!  Note that the GCC front-end doesn't make any attempt to
-     keep track of the starting bit offset (relative to the start of
-     the containing structure type) of the hypothetical "containing
-     object" for a bit-field.  (See the comments at the start of this
-     function.)  Thus, when computing the AT_bit_offset value for a
-     bit-field, all we can do is to divide the starting bit offset of
-     the bit-field by the size of the hypothetical "containing object"
-     (which we can easily find) and then get the remainder.
-
-     This solution only works right as long as the alignment used by the
-     compiler for the declared type of the bit-field is the same as the
-     size of that type.
-
-     Since GCC allows type `long long' to be the declared type for a
-     bit-field, and since some target configurations only align
-     `long longs' to 4-byte boundaries, we really should check here
-     to see that the alignment of the containing object is the same
-     as the size of that object and issue a warning if it isn't but
-     since we will also be generating an AT_location attribute for
-     the bit-field, and sinec it will generat a warning for this
-     condition we do not need to do it again here.  That would just
-     cause the user to see two redundant warnings for the same single
-     bit-field declaration.
-
-     Of course it would be nice to actually solve this problem, but
-     that would require a lot of changes elsewhere in the compiler
-     which could be quite painful, so for now we'll just live with
-     this minor annoyance.
-  */
-
-#if 0
-  if (GET_MODE_ALIGNMENT (TYPE_MODE (type)) != containing_object_size_in_bits)
-    warning_with_decl (decl, "debugging info won't necessarily be reliable");
-#endif
-
-  bitpos = (unsigned) TREE_INT_CST_LOW (bitpos_tree);
+  /* For a detailed description of how the AT_bit_offset attribute value
+     is calculated, see the comments in `data_member_location_attribute'
+     above.  */
 
 #if (BYTES_BIG_ENDIAN == 1)
-  {
-    register unsigned high_order_bitpos = bitpos;
-
-    dwarf_bit_offset = high_order_bitpos % containing_object_size_in_bits;
-  }
+  dwarf_bit_offset = bitpos_int % TYPE_ALIGN (type);
 #else
   {
-    register unsigned low_order_bitpos = bitpos;
-    register unsigned field_width
-      = (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl));
-    register unsigned high_order_bitpos = low_order_bitpos + field_width;
+    register unsigned high_order_bitpos
+      = bitpos_int + (unsigned) TREE_INT_CST_LOW (DECL_SIZE (decl));
+    register tree type_size_tree = TYPE_SIZE (type);
+    register unsigned type_size_in_bits;
 
-    dwarf_bit_offset = containing_object_size_in_bits
-			- (high_order_bitpos % containing_object_size_in_bits);
+    if (TREE_CODE (type_size_tree) != INTEGER_CST)
+      abort ();
+    type_size_in_bits = (unsigned) TREE_INT_CST_LOW (type_size_tree);
+
+    dwarf_bit_offset = type_size_in_bits
+			- (high_order_bitpos % TYPE_ALIGN (type));
   }
 #endif
 
@@ -3666,10 +3742,15 @@ output_decl (decl, containing_scope)
 
     case FUNCTION_DECL:
       /* If we are in terse mode, don't output any DIEs to represent
+	 mere external function declarations.  Also, if we are conforming
+	 to the DWARF version 1 specification, don't output DIEs for
 	 mere external function declarations.  */
 
-      if (TREE_EXTERNAL (decl) && debug_info_level <= DINFO_LEVEL_TERSE)
-	break;
+      if (TREE_EXTERNAL (decl))
+#if (DWARF_VERSION > 1)
+	if (debug_info_level <= DINFO_LEVEL_TERSE)
+#endif
+	  break;
 
       /* Before we describe the FUNCTION_DECL itself, make sure that we
 	 have described its return type.  */
@@ -3927,6 +4008,14 @@ output_decl (decl, containing_scope)
       break;
 
     case VAR_DECL:
+      /* If we are conforming to the DWARF version 1 specification, don't
+	 generated any DIEs to represent mere external object declarations.  */
+
+#if (DWARF_VERSION <= 1)
+      if (TREE_EXTERNAL (decl) && ! TREE_PUBLIC (decl))
+	break;
+#endif
+
       /* If we are in terse mode, don't generate any DIEs to represent
 	 any variable declarations or definitions.  */
 

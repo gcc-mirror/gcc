@@ -1589,7 +1589,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define IDENT_ASM_OP		"ident"
 #define FILE_ASM_OP		"file"
 #define SECTION_ASM_OP		"section"
-#define DEF_ASM_OP		"def"
+#define SET_ASM_OP		"def"
 #define GLOBAL_ASM_OP		"global"
 #define ALIGN_ASM_OP		"align"
 #define SKIP_ASM_OP		"zero"
