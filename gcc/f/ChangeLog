@@ -1,3 +1,8 @@
+2000-08-14  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* target.h (FFETARGET_32bit_longs): Don't define
+	for 64-bit S/390.
+
 2001-07-20  Toon Moene  <toon@moene.indiv.nluug.nl>
 
 	* com.c (ffecom_expr_intrinsic_):
