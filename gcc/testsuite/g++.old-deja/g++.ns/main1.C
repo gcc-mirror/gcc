@@ -4,8 +4,6 @@
 
 // submitted by Gerald Gutierrez <gutier@intergate.bc.ca>
 
-// excess errors test - XFAIL *-*-*
-
 namespace A { void main () { } }
 namespace B { void main () { } }
 namespace C {
