@@ -1340,6 +1340,9 @@ available on some particular machines.
 @item f
 Floating-point register
 
+@item w
+VFP floating-point register
+
 @item F
 One of the floating-point constants 0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0
 or 10.0
@@ -1375,6 +1378,9 @@ An item in the constant pool
 @item S
 A symbol in the text segment of the current file
 @end table
+
+@item U
+A memory reference suitable for VFP load/store insns (reg+constant offset)
 
 @item AVR family---@file{avr.h}
 @table @code

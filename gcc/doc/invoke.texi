@@ -375,9 +375,9 @@ in the following sections.
 -msched-prolog  -mno-sched-prolog @gol
 -mlittle-endian  -mbig-endian  -mwords-little-endian @gol
 -malignment-traps  -mno-alignment-traps @gol
--msoft-float  -mhard-float  -mfpe @gol
+-mfloat-abi=@var{name}  soft-float  -mhard-float  -mfpe @gol
 -mthumb-interwork  -mno-thumb-interwork @gol
--mcpu=@var{name}  -march=@var{name}  -mfpe=@var{name}  @gol
+-mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  @gol
 -mstructure-size-boundary=@var{n} @gol
 -mabort-on-noreturn @gol
 -mlong-calls  -mno-long-calls @gol
@@ -6497,6 +6497,16 @@ this option.  In particular, you need to compile @file{libgcc.a}, the
 library that comes with GCC, with @option{-msoft-float} in order for
 this to work.
 
+@item -mfloat-abi=@var{name}
+@opindex mfloat-abi
+Specifies which ABI to use for floating point values.  Permissible values
+are: @samp{soft}, @samp{softfp} and @samp{hard}.
+
+@samp{soft} and @samp{hard} are equivalent to @option{-msoft-float}
+and @option{-mhard-float} respectively.  @samp{softfp} allows the generation
+of floating point instructions, but still uses the soft-float calling
+conventions.
+
 @item -mlittle-endian
 @opindex mlittle-endian
 Generate code for a processor running in little-endian mode.  This is
@@ -6595,16 +6605,23 @@ name to determine what kind of instructions it can emit when generating
 assembly code.  This option can be used in conjunction with or instead
 of the @option{-mcpu=} option.  Permissible names are: @samp{armv2},
 @samp{armv2a}, @samp{armv3}, @samp{armv3m}, @samp{armv4}, @samp{armv4t},
-@samp{armv5}, @samp{armv5t}, @samp{armv5te}, @samp{armv6j},
+@samp{armv5}, @samp{armv5t}, @samp{armv5te}, @samp{armv6}, @samp{armv6j},
 @samp{iwmmxt}, @samp{ep9312}.
 
-@item -mfpe=@var{number}
+@item -mfpu=@var{name}
+@itemx -mfpe=@var{number}
 @itemx -mfp=@var{number}
+@opindex mfpu
 @opindex mfpe
 @opindex mfp
-This specifies the version of the floating point emulation available on
-the target.  Permissible values are 2 and 3.  @option{-mfp=} is a synonym
-for @option{-mfpe=}, for compatibility with older versions of GCC@.
+This specifies what floating point hardware (or hardware emulation) is
+available on the target.  Permissible names are: @samp{fpa}, @samp{fpe2},
+@samp{fpe3}, @samp{maverick}, @samp{vfp}.  @option{-mfp} and @option{-mfpe}
+are synonyms for @option{-mpfu}=@samp{fpe}@var{number}, for compatibility
+with older versions of GCC@.
+
+If @option{-msoft-float} is specified this specifies the format of
+floating point values.
 
 @item -mstructure-size-boundary=@var{n}
 @opindex mstructure-size-boundary
