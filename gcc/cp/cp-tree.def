@@ -200,9 +200,6 @@ DEFTREECODE (WRAPPER, "wrapper", 'x', 1)
    unused.  */
 DEFTREECODE (LOOKUP_EXPR, "lookup_expr", 'e', 1)
 
-/* Used to represent __PRETTY_FUNCTION__ in template bodies.  */
-DEFTREECODE (FUNCTION_NAME, "function_name", 'e', 0)
-
 /* A whole bunch of tree codes for the initial, superficial parsing of
    templates.  */
 DEFTREECODE (MODOP_EXPR, "modop_expr", 'e', 3)

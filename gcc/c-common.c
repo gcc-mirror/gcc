@@ -164,11 +164,17 @@ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
 
 	tree void_list_node;
 
-  The identifiers __FUNCTION__, __PRETTY_FUNCTION__, and __func__.
+  The lazily created VAR_DECLS for __FUNCTION__, __PRETTY_FUNCTION__,
+  and __func__. (C doesn't generate __FUNCTION__ and__PRETTY_FUNCTION__
+  VAR_DECLS, but C++ does.)
 
-	tree function_id_node;
-	tree pretty_function_id_node;
-	tree func_id_node;
+	tree function_name_decl_node;
+	tree pretty_function_name_declnode;
+	tree c99_function_name_decl_node;
+
+  Stack of nested function name VAR_DECLs.
+  
+	tree saved_function_name_decls;
 
 */
 
@@ -204,7 +210,7 @@ int warn_sequence_point;
    type names and storage classes.  It is indexed by a RID_... value.  */
 tree *ridpointers;
 
-tree (*make_fname_decl)                PARAMS ((tree, const char *, int));
+tree (*make_fname_decl)                PARAMS ((tree, int));
 
 /* If non-NULL, the address of a language-specific function that
    returns 1 for language-specific statement codes.  */
@@ -227,6 +233,27 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 	    A_CONSTRUCTOR, A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED,
 	    A_UNUSED, A_FORMAT, A_FORMAT_ARG, A_WEAK, A_ALIAS, A_MALLOC,
 	    A_NO_LIMIT_STACK, A_PURE};
+
+/* Information about how a function name is generated. */
+struct fname_var_t
+{
+  tree *decl;	/* pointer to the VAR_DECL. */
+  unsigned rid;	/* RID number for the identifier. */
+  int pretty;	/* How pretty is it? */
+};
+
+/* The three ways of getting then name of the current function. */
+
+const struct fname_var_t fname_vars[] =
+{
+  /* C99 compliant __func__, must be first. */
+  {&c99_function_name_decl_node, RID_C99_FUNCTION_NAME, 0},
+  /* GCC __FUNCTION__ compliant. */
+  {&function_name_decl_node, RID_FUNCTION_NAME, 0},
+  /* GCC __PRETTY_FUNCTION__ compliant. */
+  {&pretty_function_name_decl_node, RID_PRETTY_FUNCTION_NAME, 1},
+  {NULL, 0, 0},
+};
 
 static void add_attribute		PARAMS ((enum attrs, const char *,
 						 int, int, int));
@@ -344,34 +371,157 @@ c_finish_else ()
   RECHAIN_STMTS (if_stmt, ELSE_CLAUSE (if_stmt));
 }
 
-/* Make bindings for __FUNCTION__, __PRETTY_FUNCTION__, and __func__.  */
+/* Push current bindings for the function name VAR_DECLS. */
 
 void
-declare_function_name ()
+start_fname_decls ()
 {
-  const char *name, *printable_name;
-
-  if (current_function_decl == NULL)
+  unsigned ix;
+  tree saved = NULL_TREE;
+  
+  for (ix = 0; fname_vars[ix].decl; ix++)
     {
-      name = "";
-      printable_name = "top level";
+      tree decl = *fname_vars[ix].decl;
+
+      if (decl)
+	{
+	  saved = tree_cons (decl, build_int_2 (ix, 0), saved);
+	  *fname_vars[ix].decl = NULL_TREE;
+	}
     }
-  else
-    {
-      /* Allow functions to be nameless (such as artificial ones).  */
-      if (DECL_NAME (current_function_decl))
-        name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
-      else
-	name = "";
-      printable_name = (*decl_printable_name) (current_function_decl, 2);
+  if (saved || saved_function_name_decls)
+    /* Normally they'll have been NULL, so only push if we've got a
+       stack, or they are non-NULL.  */
+    saved_function_name_decls = tree_cons (saved, NULL_TREE,
+					   saved_function_name_decls);
+}
 
-      /* ISO C99 defines __func__, which is a variable, not a string
-	 constant, and which is not a defined symbol at file scope.  */
-      (*make_fname_decl) (func_id_node, name, 0);
+/* Finish up the current bindings, adding them into the
+   current function's statement tree. This is done by wrapping the
+   function's body in a COMPOUND_STMT containing these decls too. This
+   must be done _before_ finish_stmt_tree is called. If there is no
+   current function, we must be at file scope and no statements are
+   involved. Pop the previous bindings. */
+
+void
+finish_fname_decls ()
+{
+  unsigned ix;
+  tree body = NULL_TREE;
+  tree stack = saved_function_name_decls;
+
+  for (; stack && TREE_VALUE (stack); stack = TREE_CHAIN (stack))
+    body = chainon (TREE_VALUE (stack), body);
+  
+  if (body)
+    {
+      /* They were called into existance, so add to statement tree. */
+      body = chainon (body,
+		      TREE_CHAIN (DECL_SAVED_TREE (current_function_decl)));
+      body = build_stmt (COMPOUND_STMT, body);
+      
+      COMPOUND_STMT_NO_SCOPE (body) = 1;
+      TREE_CHAIN (DECL_SAVED_TREE (current_function_decl)) = body;
     }
   
-  (*make_fname_decl) (function_id_node, name, 0);
-  (*make_fname_decl) (pretty_function_id_node, printable_name, 1);
+  for (ix = 0; fname_vars[ix].decl; ix++)
+    *fname_vars[ix].decl = NULL_TREE;
+  
+  if (stack)
+    {
+      /* We had saved values, restore them. */
+      tree saved;
+
+      for (saved = TREE_PURPOSE (stack); saved; saved = TREE_CHAIN (saved))
+	{
+	  tree decl = TREE_PURPOSE (saved);
+	  unsigned ix = TREE_INT_CST_LOW (TREE_VALUE (saved));
+	  
+	  *fname_vars[ix].decl = decl;
+	}
+      stack = TREE_CHAIN (stack);
+    }
+  saved_function_name_decls = stack;
+}
+
+/* Return the text name of the current function, suitable prettified
+   by PRETTY_P. */
+
+const char *
+fname_as_string (pretty_p)
+     int pretty_p;
+{
+  const char *name = NULL;
+  
+  if (pretty_p)
+    name = (current_function_decl
+	    ? (*decl_printable_name) (current_function_decl, 2)
+	    : "top level");
+  else if (current_function_decl && DECL_NAME (current_function_decl))
+    name = IDENTIFIER_POINTER (DECL_NAME (current_function_decl));
+  else
+    name = "";
+  return name;
+}
+
+/* Return the text name of the current function, formatted as
+   required by the supplied RID value.  */
+
+const char *
+fname_string (rid)
+     unsigned rid;
+{
+  unsigned ix;
+  
+  for (ix = 0; fname_vars[ix].decl; ix++)
+    if (fname_vars[ix].rid == rid)
+      break;
+  return fname_as_string (fname_vars[ix].pretty);
+}
+
+/* Return the VAR_DECL for a const char array naming the current
+   function. If the VAR_DECL has not yet been created, create it
+   now. RID indicates how it should be formatted and IDENTIFIER_NODE
+   ID is its name (unfortunately C and C++ hold the RID values of
+   keywords in different places, so we can't derive RID from ID in
+   this language independant code.  */
+
+tree
+fname_decl (rid, id)
+     unsigned rid;
+     tree id;
+{
+  unsigned ix;
+  tree decl = NULL_TREE;
+
+  for (ix = 0; fname_vars[ix].decl; ix++)
+    if (fname_vars[ix].rid == rid)
+      break;
+
+  decl = *fname_vars[ix].decl;
+  if (!decl)
+    {
+      tree saved_last_tree = last_tree;
+      
+      decl = (*make_fname_decl) (id, fname_vars[ix].pretty);
+      if (last_tree != saved_last_tree)
+	{
+	  /* We created some statement tree for the decl. This belongs
+	     at the start of the function, so remove it now and reinsert
+	     it after the function is complete. */
+	  tree stmts = TREE_CHAIN (saved_last_tree);
+
+	  TREE_CHAIN (saved_last_tree) = NULL_TREE;
+	  last_tree = saved_last_tree;
+	  saved_function_name_decls = tree_cons (decl, stmts,
+						 saved_function_name_decls);
+	}
+      *fname_vars[ix].decl = decl;
+    }
+  if (!ix && !current_function_decl)
+    pedwarn_with_decl (decl, "`%s' is not defined outside of function scope");
+  
+  return decl;
 }
 
 /* Given a chain of STRING_CST nodes,

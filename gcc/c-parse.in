@@ -124,6 +124,9 @@ end ifc
 %token REALPART IMAGPART VA_ARG
 %token PTR_VALUE PTR_BASE PTR_EXTENT
 
+/* function name can be a string const or a var decl. */
+%token STRING_FUNC_NAME VAR_FUNC_NAME
+
 /* Add precedence rules to solve dangling else s/r conflict */
 %nonassoc IF
 %nonassoc ELSE
@@ -298,7 +301,10 @@ program: /* empty */
 		     get us back to the global binding level.  */
 		  while (! global_bindings_p ())
 		    poplevel (0, 0, 0);
-		  finish_file ();
+ifc
+		  finish_fname_decls ();
+end ifc
+                  finish_file ();
 		}
 	;
 
@@ -631,6 +637,8 @@ primary:
 	| CONSTANT
 	| string
 		{ $$ = combine_strings ($1); }
+	| VAR_FUNC_NAME
+		{ $$ = fname_decl (C_RID_CODE ($$), $$); }
 	| '(' typename ')' '{' 
 		{ start_init (NULL_TREE, NULL, 0);
 		  $2 = groktypename ($2);
@@ -2884,6 +2892,8 @@ static const struct resword reswords[] =
 {
   { "_Bool",		RID_BOOL,	0 },
   { "_Complex",		RID_COMPLEX,	0 },
+  { "__FUNCTION__",	RID_FUNCTION_NAME, 0 },
+  { "__PRETTY_FUNCTION__", RID_PRETTY_FUNCTION_NAME, 0 },
   { "__alignof",	RID_ALIGNOF,	0 },
   { "__alignof__",	RID_ALIGNOF,	0 },
   { "__asm",		RID_ASM,	0 },
@@ -2898,6 +2908,7 @@ static const struct resword reswords[] =
   { "__const",		RID_CONST,	0 },
   { "__const__",	RID_CONST,	0 },
   { "__extension__",	RID_EXTENSION,	0 },
+  { "__func__",		RID_C99_FUNCTION_NAME, 0 },
   { "__imag",		RID_IMAGPART,	0 },
   { "__imag__",		RID_IMAGPART,	0 },
   { "__inline",		RID_INLINE,	0 },
@@ -3057,6 +3068,10 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_PTREXTENT */	PTR_EXTENT,
   /* RID_PTRVALUE */	PTR_VALUE,
 
+  /* RID_FUNCTION_NAME */		STRING_FUNC_NAME,
+  /* RID_PRETTY_FUNCTION_NAME */	STRING_FUNC_NAME,
+  /* RID_C99_FUNCTION_NAME */		VAR_FUNC_NAME,
+
   /* C++ */
   /* RID_BOOL */	TYPESPEC,
   /* RID_WCHAR */	0,
@@ -3098,7 +3113,7 @@ static const short rid_to_yy[RID_MAX] =
   /* RID_BITAND */	0,
   /* RID_BITOR */	0,
   /* RID_COMPL */	0,
-
+  
   /* Objective C */
   /* RID_ID */			OBJECTNAME,
   /* RID_AT_ENCODE */		ENCODE,
@@ -3226,9 +3241,22 @@ yylexname ()
   if (C_IS_RESERVED_WORD (yylval.ttype))
     {
       enum rid rid_code = C_RID_CODE (yylval.ttype);
+      int yycode = rid_to_yy[(int) rid_code];
+
+      if (yycode == STRING_FUNC_NAME)
+	{
+	   /* __FUNCTION__ and __PRETTY_FUNCTION__ get converted
+	      to string constants.  */
+	  const char *name = fname_string (rid_code);
+	  
+	  yylval.ttype = build_string (strlen (name) + 1, name);
+	  last_token = CPP_STRING;  /* so yyerror won't choke */
+	  return STRING;
+	}
+      
       /* Return the canonical spelling for this keyword.  */
       yylval.ttype = ridpointers[(int) rid_code];
-      return rid_to_yy[(int) rid_code];
+      return yycode;
     }
 
   decl = lookup_name (yylval.ttype);
@@ -3236,23 +3264,6 @@ yylexname ()
     {
       if (TREE_CODE (decl) == TYPE_DECL)
 	return TYPENAME;
-      /* A user-invisible read-only initialized variable
-	 should be replaced by its value.
-	 We handle only strings since that's the only case used in C.  */
-      else if (TREE_CODE (decl) == VAR_DECL
-	       && DECL_IGNORED_P (decl)
-	       && TREE_READONLY (decl)
-	       && DECL_INITIAL (decl) != 0
-	       && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST)
-	{
-	  tree stringval = DECL_INITIAL (decl);
-
-	  /* Copy the string value so that we won't clobber anything
-	     if we put something in the TREE_CHAIN of this one.  */
-	  yylval.ttype = build_string (TREE_STRING_LENGTH (stringval),
-				       TREE_STRING_POINTER (stringval));
-	  return STRING;
-	}
     }
   else if (doing_objc_thang)
     {

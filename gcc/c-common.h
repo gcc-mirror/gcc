@@ -75,6 +75,9 @@ enum rid
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_PTRBASE,
   RID_PTREXTENT, RID_PTRVALUE,
 
+  /* Too many ways of getting the name of a function as a string */
+  RID_FUNCTION_NAME, RID_PRETTY_FUNCTION_NAME, RID_C99_FUNCTION_NAME,
+
   /* C++ */
   RID_BOOL,     RID_WCHAR,    RID_CLASS,
   RID_PUBLIC,   RID_PRIVATE,  RID_PROTECTED,
@@ -154,11 +157,12 @@ enum c_tree_index
     CTI_G77_LONGINT_TYPE,
     CTI_G77_ULONGINT_TYPE,
 
-    /* These are not types, but we have to look them up all the time.  */
-    CTI_FUNCTION_ID,
-    CTI_PRETTY_FUNCTION_ID,
-    CTI_FUNC_ID,
-
+    /* These are not types, but we have to look them up all the time. */
+    CTI_FUNCTION_NAME_DECL,
+    CTI_PRETTY_FUNCTION_NAME_DECL,
+    CTI_C99_FUNCTION_NAME_DECL,
+    CTI_SAVED_FUNCTION_NAME_DECLS,
+    
     CTI_VOID_ZERO,
 
     CTI_MAX
@@ -202,9 +206,10 @@ enum c_tree_index
 #define g77_longint_type_node		c_global_trees[CTI_G77_LONGINT_TYPE]
 #define g77_ulongint_type_node		c_global_trees[CTI_G77_ULONGINT_TYPE]
 
-#define function_id_node		c_global_trees[CTI_FUNCTION_ID]
-#define pretty_function_id_node		c_global_trees[CTI_PRETTY_FUNCTION_ID]
-#define func_id_node			c_global_trees[CTI_FUNC_ID]
+#define function_name_decl_node		c_global_trees[CTI_FUNCTION_NAME_DECL]
+#define pretty_function_name_decl_node	c_global_trees[CTI_PRETTY_FUNCTION_NAME_DECL]
+#define c99_function_name_decl_node		c_global_trees[CTI_C99_FUNCTION_NAME_DECL]
+#define saved_function_name_decls	c_global_trees[CTI_SAVED_FUNCTION_NAME_DECLS]
 
 /* A node for `((void) 0)'.  */
 #define void_zero_node                  c_global_trees[CTI_VOID_ZERO]
@@ -260,9 +265,6 @@ struct language_function {
   struct stmt_tree_s x_stmt_tree;
   /* The stack of SCOPE_STMTs for the current function.  */
   tree x_scope_stmt_stack;
-  /* Nonzero if __FUNCTION__ and its ilk have been declared in this
-     function.  */
-  int x_function_name_declared_p;
 };
 
 /* When building a statement-tree, this is the last statement added to
@@ -468,19 +470,22 @@ extern int warn_long_long;
    what operator was specified for it.  */
 #define C_EXP_ORIGINAL_CODE(exp) ((enum tree_code) TREE_COMPLEXITY (exp))
 
-/* Pointer to function to generate the VAR_DECL for __FUNCTION__ etc.
+/* Pointer to function to lazily generate the VAR_DECL for __FUNCTION__ etc.
    ID is the identifier to use, NAME is the string.
    TYPE_DEP indicates whether it depends on type of the function or not
    (i.e. __PRETTY_FUNCTION__).  */
 
-extern tree (*make_fname_decl)                  PARAMS ((tree, const char *, int));
+extern tree (*make_fname_decl)                  PARAMS ((tree, int));
 
 extern tree identifier_global_value		PARAMS ((tree));
 extern void record_builtin_type			PARAMS ((enum rid,
 							 const char *, tree));
 extern tree build_void_list_node		PARAMS ((void));
-
-extern void declare_function_name		PARAMS ((void));
+extern void start_fname_decls			PARAMS ((void));
+extern void finish_fname_decls			PARAMS ((void));
+extern const char *fname_as_string		PARAMS ((int));
+extern tree fname_decl				PARAMS ((unsigned, tree));
+extern const char *fname_string			PARAMS ((unsigned));
 extern void decl_attributes			PARAMS ((tree, tree, tree));
 extern void init_function_format_info		PARAMS ((void));
 extern void check_function_format		PARAMS ((int *, tree, tree, tree));

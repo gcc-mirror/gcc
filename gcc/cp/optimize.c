@@ -1123,7 +1123,6 @@ maybe_clone_body (fn)
       VARRAY_FREE (id.fns);
 
       /* Now, expand this function into RTL, if appropriate.  */
-      function_name_declared_p = 1;
       finish_function (0);
       BLOCK_ABSTRACT_ORIGIN (DECL_INITIAL (clone)) = DECL_INITIAL (fn);
       expand_body (clone);

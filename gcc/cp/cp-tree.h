@@ -968,12 +968,6 @@ struct cp_language_function
 
 #define in_function_try_handler cp_function_chain->in_function_try_handler
 
-/* Nonzero if __FUNCTION__ and its ilk have been declared in this
-   function.  */
-
-#define function_name_declared_p \
-  (cp_function_chain->base.x_function_name_declared_p)
-
 extern tree current_function_return_value;
 extern tree global_namespace;
 
@@ -3911,6 +3905,7 @@ extern int nonstatic_local_decl_p               PARAMS ((tree));
 extern tree declare_global_var                  PARAMS ((tree, tree));
 extern void register_dtor_fn                    PARAMS ((tree));
 extern tmpl_spec_kind current_tmpl_spec_kind    PARAMS ((int));
+extern tree cp_fname_init			PARAMS ((const char *));
 
 /* in decl2.c */
 extern void init_decl2				PARAMS ((void));

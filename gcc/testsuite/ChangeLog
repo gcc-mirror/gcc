@@ -1,3 +1,9 @@
+2001-04-24  Nathan Sidwell <nathan@codesourcery.com>
+
+	* gcc.dg/c99-func-2.c: Remove xfail.
+	* gcc.dg/c99-func-3.c: Remove xfail.
+	* gcc.dg/c99-func-4.c: Remove xfail.
+
 2001-04-23  Zack Weinberg  <zackw@stanford.edu>
 
 	* gcc.c-torture/execute/20010124-1.c: No longer expected to fail.
