@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for mc680x0 running System V.4
-   Copyright (C) 1991, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com) and Fred Fish (fnf@cygnus.com).
 
@@ -113,6 +113,13 @@ while (0)
 #undef STRUCT_VALUE_REGNUM
 #define STRUCT_VALUE_REGNUM 8
 
+/* Register in which static-chain is passed to a function.  The
+   default in m68k.h is a0, but that is already the struct value
+   regnum.  Make it a1 instead.  */
+
+#undef STATIC_CHAIN_REGNUM
+#define STATIC_CHAIN_REGNUM 9
+
 #define ASM_COMMENT_START "#"
 
 #undef TYPE_OPERAND_FMT
@@ -186,7 +193,8 @@ do {									\
 
 #undef LIBCALL_VALUE
 #define LIBCALL_VALUE(MODE)						\
-  (((MODE) == SFmode || (MODE) == DFmode) && TARGET_68881		\
+  ((((MODE) == SFmode || (MODE) == DFmode || (MODE) == XFmode)		\
+    && TARGET_68881)							\
    ? gen_rtx (REG, (MODE), 16)						\
    : gen_rtx (REG, (MODE), 0))
 
@@ -301,4 +309,22 @@ int switch_table_difference_label_flag;
   if (flag_pic) flag_no_function_cse = 1; \
   if (! TARGET_68020 && flag_pic == 2)	\
     error("-fPIC is not currently supported on the 68000 or 68010\n");	\
+}
+
+/* Output assembler code for a block containing the constant parts
+   of a trampoline, leaving space for the variable parts.  */
+
+/* On m68k svr4, the trampoline is different from the generic version
+   in that we use a1 as the static call chain.  */
+
+#undef TRAMPOLINE_TEMPLATE
+#define TRAMPOLINE_TEMPLATE(FILE)					\
+{									\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x207b));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x2f3a));	\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 8));		\
+  ASM_OUTPUT_SHORT (FILE, gen_rtx (CONST_INT, VOIDmode, 0x4e75));	\
+  ASM_OUTPUT_INT (FILE, const0_rtx);					\
+  ASM_OUTPUT_INT (FILE, const0_rtx);					\
 }
