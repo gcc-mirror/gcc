@@ -1,3 +1,8 @@
+2004-11-23  Ben Elliston  <bje@au.ibm.com>
+
+	* gjavah.c (output_directory): Make static.
+	(temp_directory): Likewise.
+	
 2004-11-15  Tom Tromey  <tromey@redhat.com>
 
 	* decl.c (instn_ptr_type_node): Removed.
