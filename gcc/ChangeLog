@@ -1,3 +1,7 @@
+1999-09-09  Scott Bambrough <scottb@netwinder.org>
+ 
+	* config/arm/linux-elf.h: define NO_IMPLICIT_EXTERN_C
+
 Thu Sep  9 01:55:21 1999  Richard Henderson  <rth@cygnus.com>
 
 	* toplev.c (main): Always init_ggc.
