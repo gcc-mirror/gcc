@@ -733,11 +733,19 @@ c4x_gimplify_va_arg_expr (tree valist, tree type,
 			  tree *post_p ATTRIBUTE_UNUSED)
 {
   tree t;
+  bool indirect;
+
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
 
   t = build (PREDECREMENT_EXPR, TREE_TYPE (valist), valist,
 	     build_int_2 (int_size_in_bytes (type), 0));
   t = fold_convert (build_pointer_type (type), t);
   t = build_fold_indirect_ref (t);
+
+  if (indirect)
+    t = build_fold_indirect_ref (t);
 
   return t;
 }

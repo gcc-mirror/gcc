@@ -5451,29 +5451,20 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   tree f_gpr, f_fpr, f_res, f_ovf, f_sav;
   tree gpr, fpr, ovf, sav, reg, t, u;
-  int indirect_p, size, rsize, n_reg, sav_ofs, sav_scale;
+  int size, rsize, n_reg, sav_ofs, sav_scale;
   tree lab_false, lab_over, addr;
   int align;
   tree ptrtype = build_pointer_type (type);
 
+  if (pass_by_reference (NULL, TYPE_MODE (type), type, false))
+    {
+      t = rs6000_gimplify_va_arg (valist, ptrtype, pre_p, post_p);
+      return build_fold_indirect_ref (t);
+    }
+
   if (DEFAULT_ABI != ABI_V4)
     {
-      /* Variable sized types are passed by reference, as are AltiVec
-	 vectors when 32-bit and not using the AltiVec ABI extension.  */
-      if (int_size_in_bytes (type) < 0
-	  || (TARGET_32BIT
-	      && !TARGET_ALTIVEC_ABI
-	      && ALTIVEC_VECTOR_MODE (TYPE_MODE (type))))
-	{
-	  /* Args grow upward.  */
-	  t = build2 (POSTINCREMENT_EXPR, TREE_TYPE (valist), valist,
-		      size_int (POINTER_SIZE / BITS_PER_UNIT));
-	  t = build1 (NOP_EXPR, build_pointer_type (ptrtype), t);
-	  t = build_fold_indirect_ref (t);
-	  return build_fold_indirect_ref (t);
-	}
-      if (targetm.calls.split_complex_arg
-	  && TREE_CODE (type) == COMPLEX_TYPE)
+      if (targetm.calls.split_complex_arg && TREE_CODE (type) == COMPLEX_TYPE)
 	{
 	  tree elem_type = TREE_TYPE (type);
 	  enum machine_mode elem_mode = TYPE_MODE (elem_type);
@@ -5517,25 +5508,10 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   rsize = (size + 3) / 4;
   align = 1;
 
-  if (AGGREGATE_TYPE_P (type)
-      || TYPE_MODE (type) == TFmode
-      || (!TARGET_ALTIVEC_ABI && ALTIVEC_VECTOR_MODE (TYPE_MODE (type))))
-    {
-      /* Aggregates, long doubles, and AltiVec vectors are passed by
-	 reference.  */
-      indirect_p = 1;
-      reg = gpr;
-      n_reg = 1;
-      sav_ofs = 0;
-      sav_scale = 4;
-      size = 4;
-      rsize = 1;
-    }
-  else if (TARGET_HARD_FLOAT && TARGET_FPRS
-	   && (TYPE_MODE (type) == SFmode || TYPE_MODE (type) == DFmode))
+  if (TARGET_HARD_FLOAT && TARGET_FPRS
+      && (TYPE_MODE (type) == SFmode || TYPE_MODE (type) == DFmode))
     {
       /* FP args go in FP registers, if present.  */
-      indirect_p = 0;
       reg = fpr;
       n_reg = 1;
       sav_ofs = 8*4;
@@ -5546,7 +5522,6 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   else
     {
       /* Otherwise into GP registers.  */
-      indirect_p = 0;
       reg = gpr;
       n_reg = rsize;
       sav_ofs = 0;
@@ -5637,14 +5612,7 @@ rs6000_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
       append_to_statement_list (t, pre_p);
     }
 
-  if (indirect_p)
-    {
-      addr = fold_convert (build_pointer_type (ptrtype), addr);
-      addr = build_fold_indirect_ref (addr);
-    }
-  else
-    addr = fold_convert (ptrtype, addr);
-
+  addr = fold_convert (ptrtype, addr);
   return build_fold_indirect_ref (addr);
 }
 

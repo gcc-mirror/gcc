@@ -6239,7 +6239,6 @@ static tree
 alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
 {
   tree type_size, ptr_type, addend, t, addr, internal_post;
-  bool indirect;
 
   /* If the type could not be passed in registers, skip the block
      reserved for the registers.  */
@@ -6253,15 +6252,8 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
 
   addend = offset;
   ptr_type = build_pointer_type (type);
-  indirect = false;
 
-  if (TYPE_MODE (type) == TFmode || TYPE_MODE (type) == TCmode)
-    {
-      type = ptr_type;
-      ptr_type = build_pointer_type (type);
-      indirect = true;
-    }
-  else if (TREE_CODE (type) == COMPLEX_TYPE)
+  if (TREE_CODE (type) == COMPLEX_TYPE)
     {
       tree real_part, imag_part, real_temp;
 
@@ -6292,8 +6284,6 @@ alpha_gimplify_va_arg_1 (tree type, tree base, tree offset, tree *pre_p)
   /* Build the final address and force that value into a temporary.  */
   addr = build (PLUS_EXPR, ptr_type, fold_convert (ptr_type, base),
 	        fold_convert (ptr_type, addend));
-  if (indirect)
-    addr = build (INDIRECT_REF, type, addr);
   internal_post = NULL;
   gimplify_expr (&addr, pre_p, &internal_post, is_gimple_val, fb_rvalue);
   append_to_statement_list (internal_post, pre_p);
@@ -6320,6 +6310,7 @@ static tree
 alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
 {
   tree offset_field, base_field, offset, base, t, r;
+  bool indirect;
 
   if (TARGET_ABI_OPEN_VMS || TARGET_ABI_UNICOSMK)
     return std_gimplify_va_arg_expr (valist, type, pre_p, post_p);
@@ -6339,6 +6330,10 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   t = fold_convert (lang_hooks.types.type_for_size (64, 0), offset_field);
   offset = get_initialized_tmp_var (t, pre_p, NULL);
 
+  indirect = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect)
+    type = build_pointer_type (type);
+
   /* Find the value.  Note that this will be a stable indirection, or
      a composite of stable indirections in the case of complex.  */
   r = alpha_gimplify_va_arg_1 (type, base, offset, pre_p);
@@ -6347,6 +6342,9 @@ alpha_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   t = build (MODIFY_EXPR, void_type_node, offset_field,
 	     fold_convert (TREE_TYPE (offset_field), offset));
   gimplify_and_add (t, pre_p);
+
+  if (indirect)
+    r = build_fold_indirect_ref (r);
 
   return r;
 }

@@ -3281,14 +3281,10 @@ ix86_gimplify_va_arg (tree valist, tree type, tree *pre_p, tree *post_p)
   ovf = build (COMPONENT_REF, TREE_TYPE (f_ovf), valist, f_ovf, NULL_TREE);
   sav = build (COMPONENT_REF, TREE_TYPE (f_sav), valist, f_sav, NULL_TREE);
 
+  indirect_p = pass_by_reference (NULL, TYPE_MODE (type), type, false);
+  if (indirect_p)
+    type = build_pointer_type (type);
   size = int_size_in_bytes (type);
-  if (size == -1)
-    {
-      /* Variable-size types are passed by reference.  */
-      indirect_p = 1;
-      type = build_pointer_type (type);
-      size = int_size_in_bytes (type);
-    }
   rsize = (size + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   container = construct_container (TYPE_MODE (type), type, 0,
