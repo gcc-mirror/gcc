@@ -1,5 +1,13 @@
 2004-10-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	PR target/16815
+	* function.c (assign_parm_setup_block_p): Tighten BLOCK_REG_PADDING
+	check.
+	* config/pa/pa.h (BLOCK_REG_PADDING): Define in terms of
+	function_arg_padding.
+
+2004-10-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR bootstrap/17857
 	* Makefile.in (stmp-fixproto): Pass FIX_HEADER=build/... to fixproto.
 
