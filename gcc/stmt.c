@@ -1000,13 +1000,23 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
   rtx body;
   int ninputs = list_length (inputs);
   int noutputs = list_length (outputs);
-  int nclobbers = list_length (clobbers);
+  int nclobbers;
   tree tail;
   register int i;
   /* Vector of RTX's of evaluated output operands.  */
   rtx *output_rtx = (rtx *) alloca (noutputs * sizeof (rtx));
   /* The insn we have emitted.  */
   rtx insn;
+
+  /* Count the number of meaningful clobbered registers, ignoring what
+     we would ignore later.  */
+  nclobbers = 0;
+  for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
+    {
+      char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
+      if (decode_reg_name (regname) >= 0)
+	++nclobbers;
+    }
 
   last_expr_type = 0;
 
@@ -1168,7 +1178,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 
       /* Store (clobber REG) for each clobbered register specified.  */
 
-      for (tail = clobbers; tail; tail = TREE_CHAIN (tail), i++)
+      for (tail = clobbers; tail; tail = TREE_CHAIN (tail))
 	{
 	  char *regname = TREE_STRING_POINTER (TREE_VALUE (tail));
 	  int j = decode_reg_name (regname);
@@ -1183,7 +1193,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	    }
 
 	  /* Use QImode since that's guaranteed to clobber just one reg.  */
-	  XVECEXP (body, 0, i)
+	  XVECEXP (body, 0, i++)
 	    = gen_rtx (CLOBBER, VOIDmode, gen_rtx (REG, QImode, j));
 	}
 
