@@ -1,3 +1,8 @@
+Thu Oct  1 19:05:20 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/compile/981001-2.c: New test.
+	* gcc.c-torture/compile/981001-3.c: New test.
+
 1998-10-01  Robert Lipe  <robertl@dgii.com>
 
 	* lib/objc.exp (objc_target_compile): Add -L during compiles for
