@@ -463,7 +463,6 @@ extern rtx expand_abs (enum machine_mode, rtx, rtx, int, int);
 
 /* Expand the copysign operation.  */
 extern rtx expand_copysign (rtx, rtx, rtx);
-extern rtx expand_copysign_absneg (enum machine_mode, rtx, rtx, rtx, int, bool);
 
 /* Generate an instruction with a given INSN_CODE with an output and
    an input.  */

@@ -1,3 +1,9 @@
+2005-03-16  Roger Sayle  <roger@eyesopen.com>
+
+	* optabs.c (expand_copysign_absneg): Make static.
+	* optabs.h (expand_copysign_absneg): Delete prototype.
+	* config/rs6000/rs6000.md (copysigntf3): Delete pattern.
+
 2005-03-16  Richard Henderson  <rth@redhat.com>
 
 	PR middle-end/15700
