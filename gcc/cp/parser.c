@@ -1514,7 +1514,7 @@ static bool cp_parser_ctor_initializer_opt_and_function_body
 /* Classes [gram.class] */
 
 static tree cp_parser_class_name
-  (cp_parser *, bool, bool, bool, bool, bool, bool);
+  (cp_parser *, bool, bool, enum tag_types, bool, bool, bool);
 static tree cp_parser_class_specifier
   (cp_parser *);
 static tree cp_parser_class_head
@@ -1623,7 +1623,7 @@ static void cp_parser_label_declaration
 /* Utility Routines */
 
 static tree cp_parser_lookup_name
-  (cp_parser *, tree, bool, bool, bool, bool, bool *);
+  (cp_parser *, tree, enum tag_types, bool, bool, bool, bool *);
 static tree cp_parser_lookup_name_simple
   (cp_parser *, tree);
 static tree cp_parser_maybe_treat_template_as_class
@@ -1713,7 +1713,7 @@ static bool cp_parser_simulate_error
 static void cp_parser_check_type_definition
   (cp_parser *);
 static void cp_parser_check_for_definition_in_return_type
-  (cp_declarator *, int);
+  (cp_declarator *, tree);
 static void cp_parser_check_for_invalid_template_id
   (cp_parser *, tree);
 static bool cp_parser_non_integral_constant_expression
@@ -1861,14 +1861,14 @@ cp_parser_check_type_definition (cp_parser* parser)
     error ("%s", parser->type_definition_forbidden_message);
 }
 
-/* This function is called when a declaration is parsed.  If
-   DECLARATOR is a function declarator and DECLARES_CLASS_OR_ENUM
-   indicates that a type was defined in the decl-specifiers for DECL,
-   then an error is issued.  */
+/* This function is called when the DECLARATOR is processed.  The TYPE
+   was a type definied in the decl-specifiers.  If it is invalid to
+   define a type in the decl-specifiers for DECLARATOR, an error is
+   issued.  */
 
 static void
 cp_parser_check_for_definition_in_return_type (cp_declarator *declarator,
-					       int declares_class_or_enum)
+					       tree type)
 {
   /* [dcl.fct] forbids type definitions in return types.
      Unfortunately, it's not easy to know whether or not we are
@@ -1879,9 +1879,12 @@ cp_parser_check_for_definition_in_return_type (cp_declarator *declarator,
 	     || declarator->kind == cdk_ptrmem))
     declarator = declarator->declarator;
   if (declarator
-      && declarator->kind == cdk_function
-      && declares_class_or_enum & 2)
-    error ("new types may not be defined in a return type");
+      && declarator->kind == cdk_function)
+    {
+      error ("new types may not be defined in a return type");
+      inform ("(perhaps a semicolon is missing after the definition of %qT)",
+	      type);
+    }
 }
 
 /* A type-specifier (TYPE) has been parsed which cannot be followed by
@@ -2295,12 +2298,13 @@ cp_parser_make_typename_type (cp_parser *parser, tree scope, tree id)
   tree result;
   if (TREE_CODE (id) == IDENTIFIER_NODE)
     {
-      result = make_typename_type (scope, id, /*complain=*/0);
+      result = make_typename_type (scope, id, typename_type,
+				   /*complain=*/0);
       if (result == error_mark_node)
 	cp_parser_diagnose_invalid_type_name (parser, scope, id);
       return result;
     }
-  return make_typename_type (scope, id, tf_error);
+  return make_typename_type (scope, id, typename_type, tf_error);
 }
 
 
@@ -2831,7 +2835,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    bool ambiguous_p;
 
 	    decl = cp_parser_lookup_name (parser, id_expression,
-					  /*is_type=*/false,
+					  none_type,
 					  /*is_template=*/false,
 					  /*is_namespace=*/false,
 					  /*check_dependency=*/true,
@@ -3164,7 +3168,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    type_decl = cp_parser_class_name (parser,
 					      /*typename_keyword_p=*/false,
 					      /*template_keyword_p=*/false,
-					      /*type_p=*/false,
+					      none_type,
 					      /*check_dependency=*/false,
 					      /*class_head_p=*/false,
 					      declarator_p);
@@ -3182,7 +3186,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      /*type_p=*/false,
+				      none_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -3200,7 +3204,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	      = cp_parser_class_name (parser,
 				      /*typename_keyword_p=*/false,
 				      /*template_keyword_p=*/false,
-				      /*type_p=*/false,
+				      none_type,
 				      /*check_dependency=*/false,
 				      /*class_head_p=*/false,
 				      declarator_p);
@@ -3215,7 +3219,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	  = cp_parser_class_name (parser,
 				  /*typename_keyword_p=*/false,
 				  /*template_keyword_p=*/false,
-				  /*type_p=*/false,
+				  none_type,
 				  /*check_dependency=*/false,
 				  /*class_head_p=*/false,
 				  declarator_p);
@@ -3579,7 +3583,7 @@ cp_parser_class_or_namespace_name (cp_parser *parser,
   scope = cp_parser_class_name (parser,
 				typename_keyword_p,
 				template_keyword_p,
-				type_p,
+				type_p ? class_type : none_type,
 				check_dependency_p,
 				/*class_head_p=*/false,
 				is_declaration);
@@ -3815,6 +3819,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p)
 	   functional cast is being performed.  */
 	else
 	  type = make_typename_type (parser->scope, id,
+				     typename_type,
 				     /*complain=*/1);
 
 	postfix_expression = cp_parser_functional_cast (parser, type);
@@ -4275,18 +4280,28 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
       if (parser->scope)
 	*idk = CP_ID_KIND_QUALIFIED;
 
-      if (name != error_mark_node && !BASELINK_P (name) && parser->scope)
+      /* If the name is a template-id that names a type, we will get a
+	 TYPE_DECL here.  That is invalid code.  */
+      if (TREE_CODE (name) == TYPE_DECL)
 	{
-	  name = build_nt (SCOPE_REF, parser->scope, name);
-	  parser->scope = NULL_TREE;
-	  parser->qualifying_scope = NULL_TREE;
-	  parser->object_scope = NULL_TREE;
+	  error ("invalid use of %qD", name);
+	  postfix_expression = error_mark_node;
 	}
-      if (scope && name && BASELINK_P (name))
-	adjust_result_of_qualified_name_lookup
-	  (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
-      postfix_expression
-	= finish_class_member_access_expr (postfix_expression, name);
+      else
+	{
+	  if (name != error_mark_node && !BASELINK_P (name) && parser->scope)
+	    {
+	      name = build_nt (SCOPE_REF, parser->scope, name);
+	      parser->scope = NULL_TREE;
+	      parser->qualifying_scope = NULL_TREE;
+	      parser->object_scope = NULL_TREE;
+	    }
+	  if (scope && name && BASELINK_P (name))
+	    adjust_result_of_qualified_name_lookup
+	      (name, BINFO_TYPE (BASELINK_BINFO (name)), scope);
+	  postfix_expression
+	    = finish_class_member_access_expr (postfix_expression, name);
+	}
     }
 
   /* We no longer need to look up names in the scope of the object on
@@ -7659,7 +7674,7 @@ cp_parser_mem_initializer_id (cp_parser* parser)
     return cp_parser_class_name (parser,
 				 /*typename_keyword_p=*/true,
 				 /*template_keyword_p=*/template_p,
-				 /*type_p=*/false,
+				 none_type,
 				 /*check_dependency_p=*/true,
 				 /*class_head_p=*/false,
 				 /*is_declaration=*/true);
@@ -7669,7 +7684,7 @@ cp_parser_mem_initializer_id (cp_parser* parser)
   id = cp_parser_class_name (parser,
 			     /*typename_keyword_p=*/true,
 			     /*template_keyword_p=*/false,
-			     /*type_p=*/false,
+			     none_type,
 			     /*check_dependency_p=*/true,
 			     /*class_head_p=*/false,
 			     /*is_declaration=*/true);
@@ -8223,11 +8238,11 @@ cp_parser_type_parameter (cp_parser* parser)
 	      /* Look up the name.  */
 	      default_argument
 		= cp_parser_lookup_name (parser, default_argument,
-					/*is_type=*/false,
-					/*is_template=*/is_template,
-					/*is_namespace=*/false,
-					/*check_dependency=*/true,
-					/*ambiguous_p=*/NULL);
+					 none_type,
+					 /*is_template=*/is_template,
+					 /*is_namespace=*/false,
+					 /*check_dependency=*/true,
+					 /*ambiguous_p=*/NULL);
 	    /* See if the default argument is valid.  */
 	    default_argument
 	      = check_template_template_default_arg (default_argument);
@@ -8578,7 +8593,7 @@ cp_parser_template_name (cp_parser* parser,
 
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
-				/*is_type=*/false,
+				none_type,
 				/*is_template=*/false,
 				/*is_namespace=*/false,
 				check_dependency_p,
@@ -8769,7 +8784,7 @@ cp_parser_template_argument (cp_parser* parser)
 	 at this point in that case.  */
       if (TREE_CODE (argument) != TYPE_DECL)
 	argument = cp_parser_lookup_name (parser, argument,
-					  /*is_type=*/false,
+					  none_type,
 					  /*is_template=*/template_p,
 					  /*is_namespace=*/false,
 					  /*check_dependency=*/true,
@@ -8971,8 +8986,9 @@ cp_parser_explicit_instantiation (cp_parser* parser)
 				/*ctor_dtor_or_conv_p=*/NULL,
 				/*parenthesized_p=*/NULL,
 				/*member_p=*/false);
-      cp_parser_check_for_definition_in_return_type (declarator,
-						     declares_class_or_enum);
+      if (declares_class_or_enum & 2)
+	cp_parser_check_for_definition_in_return_type (declarator,
+						       decl_specifiers.type);
       if (declarator != cp_error_declarator)
 	{
 	  decl = grokdeclarator (declarator, &decl_specifiers,
@@ -9460,7 +9476,7 @@ cp_parser_type_name (cp_parser* parser)
   type_decl = cp_parser_class_name (parser,
 				    /*typename_keyword_p=*/false,
 				    /*template_keyword_p=*/false,
-				    /*type_p=*/false,
+				    none_type,
 				    /*check_dependency_p=*/true,
 				    /*class_head_p=*/false,
 				    /*is_declaration=*/false);
@@ -9612,6 +9628,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
       else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
 	       && tag_type == typename_type)
 	type = make_typename_type (parser->scope, decl,
+				   typename_type,
 				   /*complain=*/1);
       else
 	type = TREE_TYPE (decl);
@@ -9641,7 +9658,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	     types, so we set IS_TYPE to TRUE when calling
 	     cp_parser_lookup_name.  */
 	  decl = cp_parser_lookup_name (parser, identifier,
-					/*is_type=*/true,
+					tag_type,
 					/*is_template=*/false,
 					/*is_namespace=*/false,
 					/*check_dependency=*/true,
@@ -9929,7 +9946,7 @@ cp_parser_namespace_name (cp_parser* parser)
      function if the token after the name is the scope resolution
      operator.)  */
   namespace_decl = cp_parser_lookup_name (parser, identifier,
-					  /*is_type=*/false,
+					  none_type,
 					  /*is_template=*/false,
 					  /*is_namespace=*/true,
 					  /*check_dependency=*/true,
@@ -10416,8 +10433,9 @@ cp_parser_init_declarator (cp_parser* parser,
   if (declarator == cp_error_declarator)
     return error_mark_node;
 
-  cp_parser_check_for_definition_in_return_type (declarator,
-						 declares_class_or_enum);
+  if (declares_class_or_enum & 2)
+    cp_parser_check_for_definition_in_return_type (declarator,
+						   decl_specifiers->type);
 
   /* Figure out what scope the entity declared by the DECLARATOR is
      located in.  `grokdeclarator' sometimes changes the scope, so
@@ -12100,11 +12118,10 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
    to indicate that names looked up in dependent types should be
    assumed to be types.  TEMPLATE_KEYWORD_P is true iff the `template'
    keyword has been used to indicate that the name that appears next
-   is a template.  TYPE_P is true iff the next name should be treated
-   as class-name, even if it is declared to be some other kind of name
-   as well.  If CHECK_DEPENDENCY_P is FALSE, names are looked up in
-   dependent scopes.  If CLASS_HEAD_P is TRUE, this class is the class
-   being defined in a class-head.
+   is a template.  TAG_TYPE indicates the explicit tag given before
+   the type name, if any.  If CHECK_DEPENDENCY_P is FALSE, names are
+   looked up in dependent scopes.  If CLASS_HEAD_P is TRUE, this class
+   is the class being defined in a class-head.
 
    Returns the TYPE_DECL representing the class.  */
 
@@ -12112,7 +12129,7 @@ static tree
 cp_parser_class_name (cp_parser *parser,
 		      bool typename_keyword_p,
 		      bool template_keyword_p,
-		      bool type_p,
+		      enum tag_types tag_type,
 		      bool check_dependency_p,
 		      bool class_head_p,
 		      bool is_declaration)
@@ -12168,10 +12185,10 @@ cp_parser_class_name (cp_parser *parser,
 	     resolution operator, object, function, and enumerator
 	     names are ignored.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_SCOPE))
-	    type_p = true;
+	    tag_type = typename_type;
 	  /* Look up the name.  */
 	  decl = cp_parser_lookup_name (parser, identifier,
-					type_p,
+					tag_type,
 					/*is_template=*/false,
 					/*is_namespace=*/false,
 					check_dependency_p,
@@ -12193,7 +12210,7 @@ cp_parser_class_name (cp_parser *parser,
   /* If this is a typename, create a TYPENAME_TYPE.  */
   if (typename_p && decl != error_mark_node)
     {
-      decl = make_typename_type (scope, decl, /*complain=*/1);
+      decl = make_typename_type (scope, decl, typename_type, /*complain=*/1);
       if (decl != error_mark_node)
 	decl = TYPE_NAME (decl);
     }
@@ -12212,7 +12229,7 @@ cp_parser_class_name (cp_parser *parser,
        standard does not seem to be definitive, but there is no other
        valid interpretation of the following `::'.  Therefore, those
        names are considered class-names.  */
-    decl = TYPE_NAME (make_typename_type (scope, decl, tf_error));
+    decl = TYPE_NAME (make_typename_type (scope, decl, tag_type, tf_error));
   else if (decl == error_mark_node
 	   || TREE_CODE (decl) != TYPE_DECL
 	   || !IS_AGGR_TYPE (TREE_TYPE (decl)))
@@ -12500,7 +12517,7 @@ cp_parser_class_head (cp_parser* parser,
       type = cp_parser_class_name (parser,
 				   /*typename_keyword_p=*/false,
 				   /*template_keyword_p=*/false,
-				   /*type_p=*/true,
+				   class_type,
 				   /*check_dependency_p=*/false,
 				   /*class_head_p=*/true,
 				   /*is_declaration=*/false);
@@ -13058,8 +13075,9 @@ cp_parser_member_declaration (cp_parser* parser)
 		  return;
 		}
 
-	      cp_parser_check_for_definition_in_return_type
-		(declarator, declares_class_or_enum);
+	      if (declares_class_or_enum & 2)
+		cp_parser_check_for_definition_in_return_type
+		  (declarator, decl_specifiers.type);
 
 	      /* Look for an asm-specification.  */
 	      asm_specification = cp_parser_asm_specification_opt (parser);
@@ -13414,7 +13432,7 @@ cp_parser_base_specifier (cp_parser* parser)
   cp_parser_nested_name_specifier_opt (parser,
 				       /*typename_keyword_p=*/true,
 				       /*check_dependency_p=*/true,
-				       /*type_p=*/true,
+				       typename_type,
 				       /*is_declaration=*/true);
   /* If the base class is given by a qualified name, assume that names
      we see are type names or templates, as appropriate.  */
@@ -13425,7 +13443,7 @@ cp_parser_base_specifier (cp_parser* parser)
   type = cp_parser_class_name (parser,
 			       class_scope_p,
 			       template_p,
-			       /*type_p=*/true,
+			       typename_type,
 			       /*check_dependency_p=*/true,
 			       /*class_head_p=*/false,
 			       /*is_declaration=*/true);
@@ -14049,8 +14067,9 @@ cp_parser_label_declaration (cp_parser* parser)
    If there was no entity with the indicated NAME, the ERROR_MARK_NODE
    is returned.
 
-   If IS_TYPE is TRUE, bindings that do not refer to types are
-   ignored.
+   If TAG_TYPE is not NONE_TYPE, it inidcates an explicit type keyword
+   (e.g., "struct") that was used.  In that case bindings that do not
+   refer to types are ignored.
 
    If IS_TEMPLATE is TRUE, bindings that do not refer to templates are
    ignored.
@@ -14066,7 +14085,8 @@ cp_parser_label_declaration (cp_parser* parser)
 
 static tree
 cp_parser_lookup_name (cp_parser *parser, tree name,
-		       bool is_type, bool is_template, bool is_namespace,
+		       enum tag_types tag_type,
+		       bool is_template, bool is_namespace,
 		       bool check_dependency,
 		       bool *ambiguous_p)
 {
@@ -14144,13 +14164,21 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       if ((check_dependency || !CLASS_TYPE_P (parser->scope))
 	   && dependent_p)
 	{
-	  if (is_type)
-	    /* The resolution to Core Issue 180 says that `struct A::B'
-	       should be considered a type-name, even if `A' is
-	       dependent.  */
-	    decl = TYPE_NAME (make_typename_type (parser->scope,
-						  name,
-						  /*complain=*/1));
+	  if (tag_type)
+	    {
+	      tree type;
+
+	      /* The resolution to Core Issue 180 says that `struct
+		 A::B' should be considered a type-name, even if `A'
+		 is dependent.  */
+	      type = make_typename_type (parser->scope, name, tag_type,
+					 /*complain=*/1);
+	      if (tag_type == enum_type)
+		TYPENAME_IS_ENUM_P (type) = 1;
+	      else if (tag_type != typename_type)
+		TYPENAME_IS_CLASS_P (type) = 1;
+	      decl = TYPE_NAME (type);
+	    }
 	  else if (is_template)
 	    decl = make_unbound_class_template (parser->scope,
 						name, NULL_TREE,
@@ -14173,7 +14201,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	     may be instantiated during name lookup.  In that case,
 	     errors may be issued.  Even if we rollback the current
 	     tentative parse, those errors are valid.  */
-	  decl = lookup_qualified_name (parser->scope, name, is_type,
+	  decl = lookup_qualified_name (parser->scope, name, 
+					tag_type != none_type, 
 					/*complain=*/true);
 	  if (pop_p)
 	    pop_scope (parser->scope);
@@ -14193,9 +14222,11 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	   parse, those errors are valid.  */
 	object_decl = lookup_member (object_type,
 				     name,
-				     /*protect=*/0, is_type);
+				     /*protect=*/0, 
+				     tag_type != none_type);
       /* Look it up in the enclosing context, too.  */
-      decl = lookup_name_real (name, is_type, /*nonclass=*/0,
+      decl = lookup_name_real (name, tag_type != none_type, 
+			       /*nonclass=*/0,
 			       /*block_p=*/true, is_namespace,
 			       /*flags=*/0);
       parser->object_scope = object_type;
@@ -14205,7 +14236,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
     }
   else
     {
-      decl = lookup_name_real (name, is_type, /*nonclass=*/0,
+      decl = lookup_name_real (name, tag_type != none_type, 
+			       /*nonclass=*/0,
 			       /*block_p=*/true, is_namespace,
 			       /*flags=*/0);
       parser->qualifying_scope = NULL_TREE;
@@ -14261,7 +14293,7 @@ static tree
 cp_parser_lookup_name_simple (cp_parser* parser, tree name)
 {
   return cp_parser_lookup_name (parser, name,
-				/*is_type=*/false,
+				none_type,
 				/*is_template=*/false,
 				/*is_namespace=*/false,
 				/*check_dependency=*/true,
@@ -14519,7 +14551,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
       type_decl = cp_parser_class_name (parser,
 					/*typename_keyword_p=*/false,
 					/*template_keyword_p=*/false,
-					/*type_p=*/false,
+					none_type,
 					/*check_dependency_p=*/false,
 					/*class_head_p=*/false,
 					/*is_declaration=*/false);

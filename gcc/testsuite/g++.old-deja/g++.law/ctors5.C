@@ -20,7 +20,7 @@ class Y
   public:
     Y();
 }
-X::X( int xi ) // { dg-error "return type|X::X" }
+X::X( int xi ) // { dg-error "return type|X::X|semicolon" }
 {
     x = xi;
 }

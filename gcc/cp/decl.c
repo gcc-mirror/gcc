@@ -121,7 +121,6 @@ static void initialize_local_var (tree, tree);
 static void expand_static_init (tree, tree);
 static tree next_initializable_field (tree);
 static tree reshape_init (tree, tree *);
-static tree build_typename_type (tree, tree, tree);
 
 /* Erroneous argument lists can use this *IFF* they do not modify it.  */
 tree error_mark_list;
@@ -2538,83 +2537,101 @@ typename_hash (const void* k)
   return hash;
 }
 
+typedef struct typename_info {
+  tree scope;
+  tree name;
+  tree template_id;
+  bool enum_p;
+  bool class_p;
+} typename_info;
+
 /* Compare two TYPENAME_TYPEs.  K1 and K2 are really of type `tree'.  */
 
 static int
 typename_compare (const void * k1, const void * k2)
 {
   tree t1;
-  tree t2;
-  tree d1;
-  tree d2;
+  const typename_info *t2;
 
   t1 = (tree) k1;
-  t2 = (tree) k2;
-  d1 = TYPE_NAME (t1);
-  d2 = TYPE_NAME (t2);
+  t2 = (const typename_info *) k2;
 
-  return (DECL_NAME (d1) == DECL_NAME (d2)
-	  && TYPE_CONTEXT (t1) == TYPE_CONTEXT (t2)
-	  && ((TREE_TYPE (t1) != NULL_TREE)
-	      == (TREE_TYPE (t2) != NULL_TREE))
-	  && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2))
-	  && TYPENAME_TYPE_FULLNAME (t1) == TYPENAME_TYPE_FULLNAME (t2));
+  return (DECL_NAME (TYPE_NAME (t1)) == t2->name
+	  && TYPE_CONTEXT (t1) == t2->scope
+	  && TYPENAME_TYPE_FULLNAME (t1) == t2->template_id
+	  && TYPENAME_IS_ENUM_P (t1) == t2->enum_p
+	  && TYPENAME_IS_CLASS_P (t1) == t2->class_p);
 }
 
 /* Build a TYPENAME_TYPE.  If the type is `typename T::t', CONTEXT is
-   the type of `T', NAME is the IDENTIFIER_NODE for `t'.  If BASE_TYPE
-   is non-NULL, this type is being created by the implicit typename
-   extension, and BASE_TYPE is a type named `t' in some base class of
-   `T' which depends on template parameters.
-
+   the type of `T', NAME is the IDENTIFIER_NODE for `t'.
+ 
    Returns the new TYPENAME_TYPE.  */
 
 static GTY ((param_is (union tree_node))) htab_t typename_htab;
 
 static tree
-build_typename_type (tree context, tree name, tree fullname)
+build_typename_type (tree context, tree name, tree fullname,
+		     enum tag_types tag_type)
 {
   tree t;
   tree d;
+  typename_info ti;
   void **e;
+  hashval_t hash;
 
   if (typename_htab == NULL)
-    {
-      typename_htab = htab_create_ggc (61, &typename_hash,
-				       &typename_compare, NULL);
-    }
+    typename_htab = htab_create_ggc (61, &typename_hash,
+				     &typename_compare, NULL);
 
-  /* Build the TYPENAME_TYPE.  */
-  t = make_aggr_type (TYPENAME_TYPE);
-  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
-  TYPENAME_TYPE_FULLNAME (t) = fullname;
-
-  /* Build the corresponding TYPE_DECL.  */
-  d = build_decl (TYPE_DECL, name, t);
-  TYPE_NAME (TREE_TYPE (d)) = d;
-  TYPE_STUB_DECL (TREE_TYPE (d)) = d;
-  DECL_CONTEXT (d) = FROB_CONTEXT (context);
-  DECL_ARTIFICIAL (d) = 1;
+  ti.scope = FROB_CONTEXT (context); 
+  ti.name = name;
+  ti.template_id = fullname;
+  ti.enum_p = tag_type == enum_type;
+  ti.class_p = (tag_type == class_type
+		|| tag_type == record_type
+		|| tag_type == union_type);
+  hash =  (htab_hash_pointer (ti.scope)
+	   ^ htab_hash_pointer (ti.name));
 
   /* See if we already have this type.  */
-  e = htab_find_slot (typename_htab, t, INSERT);
+  e = htab_find_slot_with_hash (typename_htab, &ti, hash, INSERT);
   if (*e)
     t = (tree) *e;
   else
-    *e = t;
+    {
+      /* Build the TYPENAME_TYPE.  */
+      t = make_aggr_type (TYPENAME_TYPE);
+      TYPE_CONTEXT (t) = ti.scope;
+      TYPENAME_TYPE_FULLNAME (t) = ti.template_id;
+      TYPENAME_IS_ENUM_P (t) = ti.enum_p;
+      TYPENAME_IS_CLASS_P (t) = ti.class_p;
+      
+      /* Build the corresponding TYPE_DECL.  */
+      d = build_decl (TYPE_DECL, name, t);
+      TYPE_NAME (TREE_TYPE (d)) = d;
+      TYPE_STUB_DECL (TREE_TYPE (d)) = d;
+      DECL_CONTEXT (d) = FROB_CONTEXT (context);
+      DECL_ARTIFICIAL (d) = 1;
 
+      /* Store it in the hash table.  */
+      *e = t;
+    }
+      
   return t;
 }
 
-/* Resolve `typename CONTEXT::NAME'.  Returns an appropriate type,
-   unless an error occurs, in which case error_mark_node is returned.
-   If we locate a non-artificial TYPE_DECL and TF_KEEP_TYPE_DECL is
-   set, we return that, rather than the _TYPE it corresponds to, in
-   other cases we look through the type decl.  If TF_ERROR is set,
-   complain about errors, otherwise be quiet.  */
+/* Resolve `typename CONTEXT::NAME'.  TAG_TYPE indicates the tag
+   provided to name the type.  Returns an appropriate type, unless an
+   error occurs, in which case error_mark_node is returned.  If we
+   locate a non-artificial TYPE_DECL and TF_KEEP_TYPE_DECL is set, we
+   return that, rather than the _TYPE it corresponds to, in other
+   cases we look through the type decl.  If TF_ERROR is set, complain
+   about errors, otherwise be quiet.  */
 
 tree
-make_typename_type (tree context, tree name, tsubst_flags_t complain)
+make_typename_type (tree context, tree name, enum tag_types tag_type,
+		    tsubst_flags_t complain)
 {
   tree fullname;
 
@@ -2728,7 +2745,7 @@ make_typename_type (tree context, tree name, tsubst_flags_t complain)
       return error_mark_node;
     }
 
-  return build_typename_type (context, name, fullname);
+  return build_typename_type (context, name, fullname, tag_type);
 }
 
 /* Resolve `CONTEXT::template NAME'.  Returns a TEMPLATE_DECL if the name

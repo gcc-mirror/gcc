@@ -6,7 +6,7 @@ public:
       Graph(void) {}; // { dg-error "previously defined here" }
 }
 
-Graph::Graph(void)    // { dg-error "return type|redefinition" }
+Graph::Graph(void)    // { dg-error "return type|redefinition|semicolon" }
 {    N = 10;
 }
 
