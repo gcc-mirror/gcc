@@ -284,9 +284,8 @@ init_reg_sets (void)
 
   /* Sanity check: make sure the target macros FIXED_REGISTERS and
      CALL_USED_REGISTERS had the right number of initializers.  */
-  if (sizeof fixed_regs != sizeof initial_fixed_regs
-      || sizeof call_used_regs != sizeof initial_call_used_regs)
-    abort();
+  gcc_assert (sizeof fixed_regs == sizeof initial_fixed_regs);
+  gcc_assert (sizeof call_used_regs == sizeof initial_call_used_regs);
 
   memcpy (fixed_regs, initial_fixed_regs, sizeof fixed_regs);
   memcpy (call_used_regs, initial_call_used_regs, sizeof call_used_regs);
@@ -427,15 +426,11 @@ init_reg_sets_1 (void)
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-#ifdef ENABLE_CHECKING
       /* call_used_regs must include fixed_regs.  */
-      if (fixed_regs[i] && !call_used_regs[i])
-	abort ();
+      gcc_assert (!fixed_regs[i] || call_used_regs[i]);
 #ifdef CALL_REALLY_USED_REGISTERS
       /* call_used_regs must include call_really_used_regs.  */
-      if (call_really_used_regs[i] && !call_used_regs[i])
-	abort ();
-#endif
+      gcc_assert (!call_really_used_regs[i] || call_used_regs[i]);
 #endif
 
       if (fixed_regs[i])
@@ -656,7 +651,7 @@ memory_move_secondary_cost (enum machine_mode mode, enum reg_class class, int in
        what it is, so MEMORY_MOVE_COST really ought not to be calling
        here in that case.
 
-       I'm tempted to put in an abort here, but returning this will
+       I'm tempted to put in an assert here, but returning this will
        probably only give poor estimates, which is what we would've
        had before this code anyways.  */
     return partial_cost;

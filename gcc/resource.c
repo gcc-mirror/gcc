@@ -233,8 +233,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	  unsigned int last_regno
 	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
-	  if (last_regno > FIRST_PSEUDO_REGISTER)
-	    abort ();
+	  gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
 	  for (r = regno; r < last_regno; r++)
 	    SET_HARD_REG_BIT (res->regs, r);
 	}
@@ -246,8 +245,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	  unsigned int last_regno
 	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
-	  if (last_regno > FIRST_PSEUDO_REGISTER)
-	    abort ();
+	  gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
 	  for (r = regno; r < last_regno; r++)
 	    SET_HARD_REG_BIT (res->regs, r);
 	}
@@ -340,8 +338,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 	    {
 	      sequence = PATTERN (NEXT_INSN (insn));
 	      seq_size = XVECLEN (sequence, 0);
-	      if (GET_CODE (sequence) != SEQUENCE)
-		abort ();
+	      gcc_assert (GET_CODE (sequence) == SEQUENCE);
 	    }
 
 	  res->memory = 1;
@@ -771,8 +768,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	      unsigned int last_regno
 		= regno + hard_regno_nregs[regno][GET_MODE (x)];
 
-	      if (last_regno > FIRST_PSEUDO_REGISTER)
-		abort ();
+	      gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
 	      for (r = regno; r < last_regno; r++)
 		SET_HARD_REG_BIT (res->regs, r);
 	    }
@@ -786,8 +782,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 	  unsigned int last_regno
 	    = regno + hard_regno_nregs[regno][GET_MODE (x)];
 
-	  if (last_regno > FIRST_PSEUDO_REGISTER)
-	    abort ();
+	  gcc_assert (last_regno <= FIRST_PSEUDO_REGISTER);
 	  for (r = regno; r < last_regno; r++)
 	    SET_HARD_REG_BIT (res->regs, r);
 	}

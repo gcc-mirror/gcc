@@ -221,9 +221,11 @@ static int
 first_hard_reg (HARD_REG_SET rs)
 {
   int c;
-  for (c = 0; c < FIRST_PSEUDO_REGISTER && !TEST_HARD_REG_BIT (rs, c); c++)
-  if (c == FIRST_PSEUDO_REGISTER)
-    abort();
+  
+  for (c = 0; c < FIRST_PSEUDO_REGISTER; c++)
+    if (TEST_HARD_REG_BIT (rs, c))
+      break;
+  gcc_assert (c < FIRST_PSEUDO_REGISTER);
   return c;
 }
 
@@ -291,8 +293,7 @@ create_insn_info (struct df *df)
       act_refs += n;
       insn_df[uid].num_uses = n;
     }
-  if (refs_for_insn_df + (df->def_id + df->use_id) < act_refs)
-    abort ();
+  gcc_assert (refs_for_insn_df + (df->def_id + df->use_id) >= act_refs);
 }
 
 /* Free the insn_df structures.  */
@@ -315,8 +316,7 @@ struct web *
 find_subweb (struct web *web, rtx reg)
 {
   struct web *w;
-  if (GET_CODE (reg) != SUBREG)
-    abort ();
+  gcc_assert (GET_CODE (reg) == SUBREG);
   for (w = web->subreg_next; w; w = w->subreg_next)
     if (GET_MODE (w->orig_x) == GET_MODE (reg)
 	&& SUBREG_BYTE (w->orig_x) == SUBREG_BYTE (reg))
@@ -577,8 +577,7 @@ init_ra (void)
        an_unusable_color++)
     if (TEST_HARD_REG_BIT (never_use_colors, an_unusable_color))
       break;
-  if (an_unusable_color == FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (an_unusable_color != FIRST_PSEUDO_REGISTER);
 
   orig_max_uid = get_max_uid ();
   compute_bb_for_insn ();
@@ -589,7 +588,7 @@ init_ra (void)
   gcc_obstack_init (&ra_obstack);
 }
 
-/* Check the consistency of DF.  This aborts if it violates some
+/* Check the consistency of DF.  This asserts if it violates some
    invariances we expect.  */
 
 static void
@@ -620,19 +619,21 @@ check_df (struct df *df)
       {
 	bitmap_clear (b);
 	for (link = DF_INSN_DEFS (df, insn); link; link = link->next)
-	  if (!link->ref || bitmap_bit_p (empty_defs, DF_REF_ID (link->ref))
-	      || bitmap_bit_p (b, DF_REF_ID (link->ref)))
-	    abort ();
-	  else
+	  {
+	    gcc_assert (link->ref);
+	    gcc_assert (!bitmap_bit_p (empty_defs, DF_REF_ID (link->ref)));
+	    gcc_assert (!bitmap_bit_p (b, DF_REF_ID (link->ref)));
 	    bitmap_set_bit (b, DF_REF_ID (link->ref));
+	  }
 
 	bitmap_clear (b);
 	for (link = DF_INSN_USES (df, insn); link; link = link->next)
-	  if (!link->ref || bitmap_bit_p (empty_uses, DF_REF_ID (link->ref))
-	      || bitmap_bit_p (b, DF_REF_ID (link->ref)))
-	    abort ();
-	  else
+	  {
+	    gcc_assert (link->ref);
+	    gcc_assert (!bitmap_bit_p (empty_uses, DF_REF_ID (link->ref)));
+	    gcc_assert (!bitmap_bit_p (b, DF_REF_ID (link->ref)));
 	    bitmap_set_bit (b, DF_REF_ID (link->ref));
+	  }
       }
 
   /* Now the same for the chains per register number.  */
@@ -640,19 +641,21 @@ check_df (struct df *df)
     {
       bitmap_clear (b);
       for (link = df->regs[regno].defs; link; link = link->next)
-	if (!link->ref || bitmap_bit_p (empty_defs, DF_REF_ID (link->ref))
-	    || bitmap_bit_p (b, DF_REF_ID (link->ref)))
-	  abort ();
-	else
+	{
+	  gcc_assert (link->ref);
+	  gcc_assert (!bitmap_bit_p (empty_defs, DF_REF_ID (link->ref)));
+	  gcc_assert (!bitmap_bit_p (b, DF_REF_ID (link->ref)));
 	  bitmap_set_bit (b, DF_REF_ID (link->ref));
+	}
 
       bitmap_clear (b);
       for (link = df->regs[regno].uses; link; link = link->next)
-	if (!link->ref || bitmap_bit_p (empty_uses, DF_REF_ID (link->ref))
-	    || bitmap_bit_p (b, DF_REF_ID (link->ref)))
-	  abort ();
-	else
+	{
+	  gcc_assert (link->ref);
+	  gcc_assert (!bitmap_bit_p (empty_uses, DF_REF_ID (link->ref)));
+	  gcc_assert (!bitmap_bit_p (b, DF_REF_ID (link->ref)));
 	  bitmap_set_bit (b, DF_REF_ID (link->ref));
+	}
     }
 
   BITMAP_XFREE (empty_uses);

@@ -577,7 +577,7 @@ do_add (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Swap the arguments such that A has the larger exponent.  */
@@ -708,7 +708,7 @@ do_multiply (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (r == a || r == b)
@@ -850,7 +850,7 @@ do_divide (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (r == a || r == b)
@@ -929,7 +929,7 @@ do_compare (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (a->sign != b->sign)
@@ -967,7 +967,7 @@ do_fix_trunc (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *a)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1031,7 +1031,7 @@ real_arithmetic (REAL_VALUE_TYPE *r, int icode, const REAL_VALUE_TYPE *op0,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1084,7 +1084,7 @@ real_compare (int icode, const REAL_VALUE_TYPE *op0,
       return do_compare (op0, op1, 0) != 0;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1103,7 +1103,7 @@ real_exponent (const REAL_VALUE_TYPE *r)
     case rvc_normal:
       return REAL_EXP (r);
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1131,7 +1131,7 @@ real_ldexp (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *op0, int exp)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1199,7 +1199,7 @@ real_identical (const REAL_VALUE_TYPE *a, const REAL_VALUE_TYPE *b)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   for (i = 0; i < SIGSZ; ++i)
@@ -1279,14 +1279,13 @@ real_to_integer (const REAL_VALUE_TYPE *r)
 
       if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
 	i = r->sig[SIGSZ-1];
-      else if (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG)
+      else 
 	{
+	  gcc_assert (HOST_BITS_PER_WIDE_INT == 2 * HOST_BITS_PER_LONG);
 	  i = r->sig[SIGSZ-1];
 	  i = i << (HOST_BITS_PER_LONG - 1) << 1;
 	  i |= r->sig[SIGSZ-2];
 	}
-      else
-	abort ();
 
       i >>= HOST_BITS_PER_WIDE_INT - REAL_EXP (r);
 
@@ -1295,7 +1294,7 @@ real_to_integer (const REAL_VALUE_TYPE *r)
       return i;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -1346,8 +1345,9 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 	  high = t.sig[SIGSZ-1];
 	  low = t.sig[SIGSZ-2];
 	}
-      else if (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG)
+      else 
 	{
+	  gcc_assert (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG);
 	  high = t.sig[SIGSZ-1];
 	  high = high << (HOST_BITS_PER_LONG - 1) << 1;
 	  high |= t.sig[SIGSZ-2];
@@ -1356,8 +1356,6 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 	  low = low << (HOST_BITS_PER_LONG - 1) << 1;
 	  low |= t.sig[SIGSZ-4];
 	}
-      else
-	abort ();
 
       if (r->sign)
 	{
@@ -1369,7 +1367,7 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   *plow = low;
@@ -1446,7 +1444,7 @@ real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig, size_t buf_size,
       strcpy (str, (r.sign ? "-NaN" : "+NaN"));
       return;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* Bound the number of digits printed by the size of the representation.  */
@@ -1463,8 +1461,7 @@ real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig, size_t buf_size,
 
   /* Bound the number of digits printed by the size of the output buffer.  */
   max_digits = buf_size - 1 - 1 - 2 - max_digits - 1;
-  if (max_digits > buf_size)
-    abort ();
+  gcc_assert (max_digits <= buf_size);
   if (digits > max_digits)
     digits = max_digits;
 
@@ -1607,8 +1604,7 @@ real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig, size_t buf_size,
       do_multiply (&r, &r, ten);
       digit = rtd_divmod (&r, &pten);
       dec_exp -= 1;
-      if (digit == 0)
-	abort ();
+      gcc_assert (digit != 0);
     }
 
   /* ... or overflow.  */
@@ -1619,10 +1615,11 @@ real_to_decimal (char *str, const REAL_VALUE_TYPE *r_orig, size_t buf_size,
 	*p++ = '0';
       dec_exp += 1;
     }
-  else if (digit > 10)
-    abort ();
   else
-    *p++ = digit + '0';
+    {
+      gcc_assert (digit <= 10);
+      *p++ = digit + '0';
+    }
 
   /* Generate subsequent digits.  */
   while (--digits > 0)
@@ -1713,7 +1710,7 @@ real_to_hexadecimal (char *str, const REAL_VALUE_TYPE *r, size_t buf_size,
       strcpy (str, (r->sign ? "-NaN" : "+NaN"));
       return;
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (digits == 0)
@@ -1723,8 +1720,7 @@ real_to_hexadecimal (char *str, const REAL_VALUE_TYPE *r, size_t buf_size,
 
   sprintf (exp_buf, "p%+d", exp);
   max_digits = buf_size - strlen (exp_buf) - r->sign - 4 - 1;
-  if (max_digits > buf_size)
-    abort ();
+  gcc_assert (max_digits <= buf_size);
   if (digits > max_digits)
     digits = max_digits;
 
@@ -1982,8 +1978,9 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	  r->sig[SIGSZ-2] = low;
 	  memset (r->sig, 0, sizeof(long)*(SIGSZ-2));
 	}
-      else if (HOST_BITS_PER_LONG*2 == HOST_BITS_PER_WIDE_INT)
+      else
 	{
+	  gcc_assert (HOST_BITS_PER_LONG*2 == HOST_BITS_PER_WIDE_INT);
 	  r->sig[SIGSZ-1] = high >> (HOST_BITS_PER_LONG - 1) >> 1;
 	  r->sig[SIGSZ-2] = high;
 	  r->sig[SIGSZ-3] = low >> (HOST_BITS_PER_LONG - 1) >> 1;
@@ -1991,8 +1988,6 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	  if (SIGSZ > 4)
 	    memset (r->sig, 0, sizeof(long)*(SIGSZ-4));
 	}
-      else
-	abort ();
 
       normalize (r);
     }
@@ -2008,8 +2003,8 @@ ten_to_ptwo (int n)
 {
   static REAL_VALUE_TYPE tens[EXP_BITS];
 
-  if (n < 0 || n >= EXP_BITS)
-    abort ();
+  gcc_assert (n >= 0);
+  gcc_assert (n < EXP_BITS);
 
   if (tens[n].cl == rvc_zero)
     {
@@ -2040,8 +2035,8 @@ ten_to_mptwo (int n)
 {
   static REAL_VALUE_TYPE tens[EXP_BITS];
 
-  if (n < 0 || n >= EXP_BITS)
-    abort ();
+  gcc_assert (n >= 0);
+  gcc_assert (n < EXP_BITS);
 
   if (tens[n].cl == rvc_zero)
     do_divide (&tens[n], real_digit (1), ten_to_ptwo (n));
@@ -2056,8 +2051,8 @@ real_digit (int n)
 {
   static REAL_VALUE_TYPE num[10];
 
-  if (n < 0 || n > 9)
-    abort ();
+  gcc_assert (n >= 0);
+  gcc_assert (n <= 9);
 
   if (n > 0 && num[n].cl == rvc_zero)
     real_from_integer (&num[n], VOIDmode, n, 0, 1);
@@ -2111,8 +2106,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
   const struct real_format *fmt;
 
   fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL)
-    abort ();
+  gcc_assert (fmt);
 
   if (*str == 0)
     {
@@ -2163,7 +2157,7 @@ real_nan (REAL_VALUE_TYPE *r, const char *str, int quiet,
 	      add_significands (r, r, &u);
 	      break;
 	    default:
-	      abort ();
+	      gcc_unreachable ();
 	    }
 
 	  get_zero (&u, 0);
@@ -2201,8 +2195,7 @@ real_maxval (REAL_VALUE_TYPE *r, int sign, enum machine_mode mode)
   int np2;
 
   fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL)
-    abort ();
+  gcc_assert (fmt);
 
   r->cl = rvc_normal;
   r->sign = sign;
@@ -2271,7 +2264,7 @@ round_for_format (const struct real_format *fmt, REAL_VALUE_TYPE *r)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   /* If we're not base2, normalize the exponent to a multiple of
@@ -2375,8 +2368,7 @@ real_convert (REAL_VALUE_TYPE *r, enum machine_mode mode,
   const struct real_format *fmt;
 
   fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL)
-    abort ();
+  gcc_assert (fmt);
 
   *r = *a;
   round_for_format (fmt, r);
@@ -2437,8 +2429,7 @@ real_to_target (long *buf, const REAL_VALUE_TYPE *r, enum machine_mode mode)
   const struct real_format *fmt;
 
   fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL)
-    abort ();
+  gcc_assert (fmt);
 
   return real_to_target_fmt (buf, r, fmt);
 }
@@ -2462,8 +2453,7 @@ real_from_target (REAL_VALUE_TYPE *r, const long *buf, enum machine_mode mode)
   const struct real_format *fmt;
 
   fmt = REAL_MODE_FORMAT (mode);
-  if (fmt == NULL)
-    abort ();
+  gcc_assert (fmt);
 
   (*fmt->decode) (fmt, r, buf);
 }
@@ -2512,7 +2502,7 @@ real_hash (const REAL_VALUE_TYPE *r)
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (sizeof(unsigned long) > sizeof(unsigned int))
@@ -2596,7 +2586,7 @@ encode_ieee_single (const struct real_format *fmt, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   buf[0] = image;
@@ -2781,7 +2771,7 @@ encode_ieee_double (const struct real_format *fmt, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3004,8 +2994,7 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
 	else
 	  {
 	    exp += 16383 - 1;
-	    if (exp < 0)
-	      abort ();
+	    gcc_assert (exp >= 0);
 	  }
 	image_hi |= exp;
 
@@ -3024,7 +3013,7 @@ encode_ieee_extended (const struct real_format *fmt, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   buf[0] = sig_lo, buf[1] = sig_hi, buf[2] = image_hi;
@@ -3521,7 +3510,7 @@ encode_ieee_quad (const struct real_format *fmt, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3738,7 +3727,7 @@ encode_vax_f (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   buf[0] = image;
@@ -3809,7 +3798,7 @@ encode_vax_d (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -3909,7 +3898,7 @@ encode_vax_g (const struct real_format *fmt ATTRIBUTE_UNUSED, long *buf,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -4060,7 +4049,7 @@ encode_i370_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   buf[0] = image;
@@ -4129,7 +4118,7 @@ encode_i370_double (const struct real_format *fmt ATTRIBUTE_UNUSED,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   if (FLOAT_WORDS_BIG_ENDIAN)
@@ -4272,7 +4261,7 @@ encode_c4x_single (const struct real_format *fmt ATTRIBUTE_UNUSED,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   image = ((exp & 0xff) << 24) | (sig & 0xffffff);
@@ -4350,7 +4339,7 @@ encode_c4x_extended (const struct real_format *fmt ATTRIBUTE_UNUSED,
       break;
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 
   exp = (exp & 0xff) << 24;

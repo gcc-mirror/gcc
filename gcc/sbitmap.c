@@ -301,8 +301,7 @@ sbitmap_difference (sbitmap dst, sbitmap a, sbitmap b)
   sbitmap_ptr bp = b->elms;
 
   /* A should be at least as large as DEST, to have a defined source.  */
-  if (a->size < dst_size)
-    abort ();
+  gcc_assert (a->size >= dst_size);
   /* If minuend is smaller, we simply pretend it to be zero bits, i.e.
      only copy the subtrahend into dest.  */
   if (b->size < min_size)

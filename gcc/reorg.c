@@ -253,7 +253,7 @@ stop_search_p (rtx insn, int labels_p)
 	      || asm_noperands (PATTERN (insn)) >= 0);
 
     default:
-      abort ();
+      gcc_unreachable ();
     }
 }
 
@@ -564,8 +564,7 @@ emit_delay_sequence (rtx insn, rtx list, int length)
   if (had_barrier)
     emit_barrier_after (seq_insn);
 
-  if (i != length + 1)
-    abort ();
+  gcc_assert (i == length + 1);
 
   return seq_insn;
 }
@@ -887,7 +886,7 @@ get_jump_flags (rtx insn, rtx label)
 	  break;
 
 	default:
-	  abort ();
+	  gcc_unreachable ();
 	}
     }
   else
@@ -2549,9 +2548,8 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
   int flags;
 
   /* Validate our arguments.  */
-  if ((condition == const_true_rtx && ! thread_if_true)
-      || (! own_thread && ! thread_if_true))
-    abort ();
+  gcc_assert(condition != const_true_rtx || thread_if_true);
+  gcc_assert(own_thread || thread_if_true);
 
   flags = get_jump_flags (insn, JUMP_LABEL (insn));
 
@@ -2921,8 +2919,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
     {
       rtx label;
 
-      if (! thread_if_true)
-	abort ();
+      gcc_assert (thread_if_true);
 
       if (new_thread && JUMP_P (new_thread)
 	  && (simplejump_p (new_thread)
@@ -3228,8 +3225,7 @@ relax_delay_slots (rtx first)
 
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
-	  if (GET_CODE (pat) != SEQUENCE)
-	    abort ();
+	  gcc_assert (GET_CODE (pat) == SEQUENCE);
 	  after = trial;
 	  for (i = 0; i < XVECLEN (pat, 0); i++)
 	    {
@@ -3347,8 +3343,7 @@ relax_delay_slots (rtx first)
 
 	  trial = PREV_INSN (insn);
 	  delete_related_insns (insn);
-	  if (GET_CODE (pat) != SEQUENCE)
-	    abort ();
+	  gcc_assert (GET_CODE (pat) == SEQUENCE);
 	  after = trial;
 	  for (i = 0; i < XVECLEN (pat, 0); i++)
 	    {

@@ -517,9 +517,7 @@ debug_regions (void)
 	{
 	  current_blocks = RGN_BLOCKS (rgn);
 
-	  if (bb != BLOCK_TO_BB (BB_TO_BLOCK (bb)))
-	    abort ();
-
+	  gcc_assert (bb == BLOCK_TO_BB (BB_TO_BLOCK (bb)));
 	  fprintf (sched_dump, " %d/%d ", bb, BB_TO_BLOCK (bb));
 	}
 
@@ -1211,8 +1209,7 @@ compute_trg_info (int trg)
 	  sp->update_bbs.nr_members = update_idx;
 
 	  /* Make sure we didn't overrun the end of bblst_table.  */
-	  if (bblst_last > bblst_size)
-	    abort ();
+	  gcc_assert (bblst_last <= bblst_size);
 	}
       else
 	{
@@ -2501,8 +2498,7 @@ schedule_region (int rgn)
     }
 
   /* Sanity check: verify that all region insns were scheduled.  */
-  if (sched_rgn_n_insns != rgn_n_insns)
-    abort ();
+  gcc_assert (sched_rgn_n_insns == rgn_n_insns);
 
   /* Restore line notes.  */
   if (write_symbols != NO_DEBUG)
@@ -2708,9 +2704,8 @@ schedule_insns (FILE *dump_file)
 	    sbitmap_zero (blocks);
 	    SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn)]);
 
-	    if (deaths_in_region[rgn]
-		!= count_or_remove_death_notes (blocks, 0))
-	      abort ();
+	    gcc_assert (deaths_in_region[rgn]
+			== count_or_remove_death_notes (blocks, 0));
 	  }
       free (deaths_in_region);
     }
@@ -2733,10 +2728,7 @@ schedule_insns (FILE *dump_file)
 		   nr_inter, nr_spec);
 	}
       else
-	{
-	  if (nr_inter > 0)
-	    abort ();
-	}
+	gcc_assert (nr_inter <= 0);
       fprintf (sched_dump, "\n\n");
     }
 

@@ -119,8 +119,8 @@ spill_coalescing (sbitmap coalesce, sbitmap spilled)
 	       T from the web which was coalesced into T, which at the time
 	       of combine() were not already on the SELECT stack or were
 	       itself coalesced to something other.  */
-	    if (t->type != SPILLED || s->type != SPILLED)
-	      abort ();
+	    gcc_assert (t->type == SPILLED
+			&& s->type == SPILLED);
 	    remove_list (t->dlink, &WEBS(SPILLED));
 	    put_web (t, COALESCED);
 	    t->alias = s;
@@ -570,8 +570,7 @@ slots_overlap_p (rtx s1, rtx s2)
 	return 0;
       return 1;
     }
-  if (!MEM_P (s1) || GET_CODE (s2) != MEM)
-    abort ();
+  gcc_assert (MEM_P (s1) && GET_CODE (s2) == MEM);
   s1 = XEXP (s1, 0);
   s2 = XEXP (s2, 0);
   if (GET_CODE (s1) != PLUS || !REG_P (XEXP (s1, 0))
@@ -873,8 +872,7 @@ emit_loads (struct rewrite_info *ri, int nl_first_reload, rtx last_block_insn)
       if (!web)
 	continue;
       supweb = find_web_for_subweb (web);
-      if (supweb->regno >= max_normal_pseudo)
-	abort ();
+      gcc_assert (supweb->regno < max_normal_pseudo);
       /* Check for web being a spilltemp, if we only want to
 	 load spilltemps.  Also remember, that we emitted that
 	 load, which we don't need to do when we have a death,
@@ -900,14 +898,12 @@ emit_loads (struct rewrite_info *ri, int nl_first_reload, rtx last_block_insn)
 	     (at least then disallow spilling them, which we already ensure
 	     when flag_ra_break_aliases), or not take the pattern but a
 	     stackslot.  */
-	  if (aweb != supweb)
-	    abort ();
+	  gcc_assert (aweb == supweb);
 	  slot = copy_rtx (supweb->pattern);
 	  reg = copy_rtx (supweb->orig_x);
 	  /* Sanity check.  orig_x should be a REG rtx, which should be
 	     shared over all RTL, so copy_rtx should have no effect.  */
-	  if (reg != supweb->orig_x)
-	    abort ();
+	  gcc_assert (reg == supweb->orig_x);
 	}
       else
 	{
@@ -1022,8 +1018,7 @@ reloads_to_loads (struct rewrite_info *ri, struct ref **refs,
 	    {
 	      struct web *web2 = ID2WEB (j);
 	      struct web *aweb2 = alias (find_web_for_subweb (web2));
-	      if (spill_is_free (&(ri->colors_in_use), aweb2) == 0)
-		abort ();
+	      gcc_assert (spill_is_free (&(ri->colors_in_use), aweb2) != 0);
 	      if (spill_same_color_p (supweb, aweb2)
 		  /* && interfere (web, web2) */)
 		{
@@ -1396,8 +1391,7 @@ rewrite_program2 (bitmap new_deaths)
 
       ri.need_load = 1;
       emit_loads (&ri, nl_first_reload, last_block_insn);
-      if (ri.nl_size != 0 /*|| ri.num_reloads != 0*/)
-	abort ();
+      gcc_assert (ri.nl_size == 0);
       if (!insn)
 	break;
     }
@@ -1677,8 +1671,8 @@ emit_colors (struct df *df)
 	continue;
       if (web->type == COALESCED && alias (web)->type == COLORED)
 	continue;
-      if (web->reg_rtx || web->regno < FIRST_PSEUDO_REGISTER)
-	abort ();
+      gcc_assert (!web->reg_rtx);
+      gcc_assert (web->regno >= FIRST_PSEUDO_REGISTER);
 
       if (web->regno >= max_normal_pseudo)
 	{

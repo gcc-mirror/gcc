@@ -252,8 +252,8 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
     {
       enum reg_note present_dep_type = 0;
 
-      if (anti_dependency_cache == NULL || output_dependency_cache == NULL)
-	abort ();
+      gcc_assert (anti_dependency_cache);
+      gcc_assert (output_dependency_cache);
       if (bitmap_bit_p (&true_dependency_cache[INSN_LUID (insn)],
 			INSN_LUID (elem)))
 	/* Do nothing (present_set_type is already 0).  */
@@ -281,15 +281,21 @@ add_dependence (rtx insn, rtx elem, enum reg_note dep_type)
              may be changed.  */
 	  if (true_dependency_cache != NULL)
 	    {
-	      if (REG_NOTE_KIND (link) == REG_DEP_ANTI)
-		bitmap_clear_bit (&anti_dependency_cache[INSN_LUID (insn)],
-				  INSN_LUID (elem));
-	      else if (REG_NOTE_KIND (link) == REG_DEP_OUTPUT
-		       && output_dependency_cache)
-		bitmap_clear_bit (&output_dependency_cache[INSN_LUID (insn)],
-				  INSN_LUID (elem));
-	      else
-		abort ();
+	      enum reg_note kind = REG_NOTE_KIND (link);
+	      switch (kind)
+		{
+		case REG_DEP_ANTI:
+		  bitmap_clear_bit (&anti_dependency_cache[INSN_LUID (insn)],
+				    INSN_LUID (elem));
+		  break;
+		case REG_DEP_OUTPUT:
+		  gcc_assert (output_dependency_cache);
+		  bitmap_clear_bit (&output_dependency_cache[INSN_LUID (insn)],
+				    INSN_LUID (elem));
+		  break;
+		default:
+		  gcc_unreachable ();
+		}
 	    }
 #endif
 
@@ -518,9 +524,8 @@ sched_analyze_1 (struct deps *deps, rtx x, rtx insn)
 	 purpose already.  */
       else if (regno >= deps->max_reg)
 	{
-	  if (GET_CODE (PATTERN (insn)) != USE
-	      && GET_CODE (PATTERN (insn)) != CLOBBER)
-	    abort ();
+	  gcc_assert (GET_CODE (PATTERN (insn)) == USE
+		      || GET_CODE (PATTERN (insn)) == CLOBBER);
 	}
       else
 	{
@@ -659,9 +664,8 @@ sched_analyze_2 (struct deps *deps, rtx x, rtx insn)
 	   purpose already.  */
 	else if (regno >= deps->max_reg)
 	  {
-	    if (GET_CODE (PATTERN (insn)) != USE
-		&& GET_CODE (PATTERN (insn)) != CLOBBER)
-	      abort ();
+	    gcc_assert (GET_CODE (PATTERN (insn)) == USE
+			|| GET_CODE (PATTERN (insn)) == CLOBBER);
 	  }
 	else
 	  {
@@ -1363,7 +1367,7 @@ sched_analyze (struct deps *deps, rtx head, rtx tail)
 	  return;
 	}
     }
-  abort ();
+  gcc_unreachable ();
 }
 
 
@@ -1382,14 +1386,15 @@ add_forward_dependence (rtx from, rtx to, enum reg_note dep_type)
 
      However, if we have enabled checking we might as well go
      ahead and verify that add_dependence worked properly.  */
-  if (NOTE_P (from)
-      || INSN_DELETED_P (from)
-      || (forward_dependency_cache != NULL
-	  && bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],
-			   INSN_LUID (to)))
-      || (forward_dependency_cache == NULL
-	  && find_insn_list (to, INSN_DEPEND (from))))
-    abort ();
+  gcc_assert (!NOTE_P (from));
+  gcc_assert (!INSN_DELETED_P (from));
+  if (forward_dependency_cache)
+    gcc_assert (!bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],
+			       INSN_LUID (to)));
+  else
+    gcc_assert (!find_insn_list (to, INSN_DEPEND (from)));
+
+  /* ??? If bitmap_bit_p is a predicate, what is this supposed to do? */
   if (forward_dependency_cache != NULL)
     bitmap_bit_p (&forward_dependency_cache[INSN_LUID (from)],
 		  INSN_LUID (to));

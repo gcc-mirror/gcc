@@ -566,8 +566,7 @@ print_pattern (char *buf, rtx x, int verbose)
       break;
     case SEQUENCE:
       /* Should never see SEQUENCE codes until after reorg.  */
-      abort ();
-      break;
+      gcc_unreachable ();
     case ASM_INPUT:
       sprintf (buf, "asm {%s}", XSTR (x, 0));
       break;

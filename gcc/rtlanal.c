@@ -1123,8 +1123,8 @@ insn_dependent_p (rtx x, rtx y)
 {
   rtx tmp;
 
-  if (! INSN_P (x) || ! INSN_P (y))
-    abort ();
+  gcc_assert (INSN_P (x));
+  gcc_assert (INSN_P (y));
 
   tmp = PATTERN (y);
   note_stores (PATTERN (x), insn_dependent_p_1, &tmp);
@@ -1578,11 +1578,7 @@ reg_overlap_mentioned_p (rtx x, rtx in)
       }
 
     default:
-#ifdef ENABLE_CHECKING
-      if (!CONSTANT_P (x))
-	abort ();
-#endif
-
+      gcc_assert (CONSTANT_P (x));
       return 0;
     }
 }
@@ -1744,8 +1740,7 @@ dead_or_set_p (rtx insn, rtx x)
   if (GET_CODE (x) == CC0)
     return 1;
 
-  if (!REG_P (x))
-    abort ();
+  gcc_assert (REG_P (x));
 
   regno = REGNO (x);
   last_regno = (regno >= FIRST_PSEUDO_REGISTER ? regno
@@ -1927,8 +1922,7 @@ find_reg_fusage (rtx insn, enum rtx_code code, rtx datum)
   if (!CALL_P (insn))
     return 0;
 
-  if (! datum)
-    abort ();
+  gcc_assert (datum);
 
   if (!REG_P (datum))
     {
@@ -2040,7 +2034,7 @@ remove_note (rtx insn, rtx note)
 	return;
       }
 
-  abort ();
+  gcc_unreachable ();
 }
 
 /* Search LISTP (an EXPR_LIST) for an entry whose first operand is NODE and
@@ -2520,8 +2514,7 @@ replace_rtx (rtx x, rtx from, rtx to)
 	  x = simplify_subreg (GET_MODE (x), new,
 			       GET_MODE (SUBREG_REG (x)),
 			       SUBREG_BYTE (x));
-	  if (! x)
-	    abort ();
+	  gcc_assert (x);
 	}
       else
 	SUBREG_REG (x) = new;
@@ -2536,8 +2529,7 @@ replace_rtx (rtx x, rtx from, rtx to)
 	{
 	  x = simplify_unary_operation (ZERO_EXTEND, GET_MODE (x),
 					new, GET_MODE (XEXP (x, 0)));
-	  if (! x)
-	    abort ();
+	  gcc_assert (x);
 	}
       else
 	XEXP (x, 0) = new;
@@ -3189,11 +3181,10 @@ subreg_lsb_1 (enum machine_mode outer_mode,
   if (WORDS_BIG_ENDIAN != BYTES_BIG_ENDIAN)
     /* If the subreg crosses a word boundary ensure that
        it also begins and ends on a word boundary.  */
-    if ((subreg_byte % UNITS_PER_WORD
-	 + GET_MODE_SIZE (outer_mode)) > UNITS_PER_WORD
-	&& (subreg_byte % UNITS_PER_WORD
-	    || GET_MODE_SIZE (outer_mode) % UNITS_PER_WORD))
-	abort ();
+    gcc_assert (!((subreg_byte % UNITS_PER_WORD
+		  + GET_MODE_SIZE (outer_mode)) > UNITS_PER_WORD
+		  && (subreg_byte % UNITS_PER_WORD
+		      || GET_MODE_SIZE (outer_mode) % UNITS_PER_WORD)));
 
   if (WORDS_BIG_ENDIAN)
     word = (GET_MODE_SIZE (inner_mode)
@@ -3236,8 +3227,7 @@ subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
   int mode_multiple, nregs_multiple;
   int y_offset;
 
-  if (xregno >= FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
   nregs_xmode = hard_regno_nregs[xregno][xmode];
   nregs_ymode = hard_regno_nregs[xregno][ymode];
@@ -3256,8 +3246,7 @@ subreg_regno_offset (unsigned int xregno, enum machine_mode xmode,
 
   /* size of ymode must not be greater than the size of xmode.  */
   mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);
-  if (mode_multiple == 0)
-    abort ();
+  gcc_assert (mode_multiple != 0);
 
   y_offset = offset / GET_MODE_SIZE (ymode);
   nregs_multiple =  nregs_xmode / nregs_ymode;
@@ -3279,8 +3268,7 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
   int mode_multiple, nregs_multiple;
   int y_offset;
 
-  if (xregno >= FIRST_PSEUDO_REGISTER)
-    abort ();
+  gcc_assert (xregno < FIRST_PSEUDO_REGISTER);
 
   nregs_xmode = hard_regno_nregs[xregno][xmode];
   nregs_ymode = hard_regno_nregs[xregno][ymode];
@@ -3296,15 +3284,12 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
   if (offset == subreg_lowpart_offset (ymode, xmode))
     return true;
 
-#ifdef ENABLE_CHECKING
   /* This should always pass, otherwise we don't know how to verify the
      constraint.  These conditions may be relaxed but subreg_offset would
      need to be redesigned.  */
-  if (GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)
-      || GET_MODE_SIZE (ymode) % nregs_ymode
-      || nregs_xmode % nregs_ymode)
-    abort ();
-#endif
+  gcc_assert ((GET_MODE_SIZE (xmode) % GET_MODE_SIZE (ymode)) == 0);
+  gcc_assert ((GET_MODE_SIZE (ymode) % nregs_ymode) == 0);
+  gcc_assert ((nregs_xmode % nregs_ymode) == 0);
 
   /* The XMODE value can be seen as a vector of NREGS_XMODE
      values.  The subreg must represent a lowpart of given field.
@@ -3316,16 +3301,14 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 
   /* size of ymode must not be greater than the size of xmode.  */
   mode_multiple = GET_MODE_SIZE (xmode) / GET_MODE_SIZE (ymode);
-  if (mode_multiple == 0)
-    abort ();
+  gcc_assert (mode_multiple != 0);
 
   y_offset = offset / GET_MODE_SIZE (ymode);
   nregs_multiple =  nregs_xmode / nregs_ymode;
-#ifdef ENABLE_CHECKING
-  if (offset % GET_MODE_SIZE (ymode)
-      || mode_multiple % nregs_multiple)
-    abort ();
-#endif
+
+  gcc_assert ((offset % GET_MODE_SIZE (ymode)) == 0);
+  gcc_assert ((mode_multiple % nregs_multiple) == 0);
+
   return (!(y_offset % (mode_multiple / nregs_multiple)));
 }
 
@@ -3380,8 +3363,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
     if (GET_CODE (XEXP (p, 0)) == USE
 	&& REG_P (XEXP (XEXP (p, 0), 0)))
       {
-	if (REGNO (XEXP (XEXP (p, 0), 0)) >= FIRST_PSEUDO_REGISTER)
-	  abort ();
+	gcc_assert (REGNO (XEXP (XEXP (p, 0), 0)) < FIRST_PSEUDO_REGISTER);
 
 	/* We only care about registers which can hold function
 	   arguments.  */
@@ -3409,8 +3391,7 @@ find_first_parameter_load (rtx call_insn, rtx boundary)
          CODE_LABEL.  */
       if (LABEL_P (before))
 	{
-	  if (before != boundary)
-	    abort ();
+	  gcc_assert (before == boundary);
 	  break;
 	}
 
@@ -3571,7 +3552,7 @@ can_hoist_insn_p (rtx insn, rtx val, regset live)
 	}
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
   return true;
 }
@@ -3603,8 +3584,7 @@ hoist_update_store (rtx insn, rtx *xp, rtx val, rtx new)
       x = *xp;
     }
 
-  if (!REG_P (x))
-    abort ();
+  gcc_assert (REG_P (x));
 
   /* We've verified that hard registers are dead, so we may keep the side
      effect.  Otherwise replace it by new pseudo.  */
@@ -3623,6 +3603,7 @@ hoist_insn_after (rtx insn, rtx after, rtx val, rtx new)
   rtx pat;
   int i;
   rtx note;
+  int applied;
 
   insn = emit_copy_of_insn_after (insn, after);
   pat = PATTERN (insn);
@@ -3673,10 +3654,10 @@ hoist_insn_after (rtx insn, rtx after, rtx val, rtx new)
 	}
       break;
     default:
-      abort ();
+      gcc_unreachable ();
     }
-  if (!apply_change_group ())
-    abort ();
+  applied = apply_change_group ();
+  gcc_assert (applied);
 
   return insn;
 }
@@ -3688,8 +3669,7 @@ hoist_insn_to_edge (rtx insn, edge e, rtx val, rtx new)
 
   /* We cannot insert instructions on an abnormal critical edge.
      It will be easier to find the culprit if we die now.  */
-  if ((e->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (e))
-    abort ();
+  gcc_assert (!(e->flags & EDGE_ABNORMAL) || !EDGE_CRITICAL_P (e));
 
   /* Do not use emit_insn_on_edge as we want to preserve notes and similar
      stuff.  We also emit CALL_INSNS and firends.  */
@@ -4178,7 +4158,7 @@ nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
 	    result_low = MIN (low0, low1);
 	    break;
 	  default:
-	    abort ();
+	    gcc_unreachable ();
 	  }
 
 	if (result_width < mode_width)

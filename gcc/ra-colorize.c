@@ -105,8 +105,8 @@ static struct dlist *mv_frozen, *mv_active;
 static void
 push_list (struct dlist *x, struct dlist **list)
 {
-  if (x->next || x->prev)
-    abort ();
+  gcc_assert (!x->next);
+  gcc_assert (!x->prev);
   x->next = *list;
   if (*list)
     (*list)->prev = x;
@@ -116,8 +116,8 @@ push_list (struct dlist *x, struct dlist **list)
 static void
 push_list_end (struct dlist *x, struct dlist **list)
 {
-  if (x->prev || x->next)
-    abort ();
+  gcc_assert (!x->prev);
+  gcc_assert (!x->next);
   if (!*list)
     {
       *list = x;
@@ -195,7 +195,7 @@ put_web (struct web *web, enum ra_node_type type)
 	  push_list (web->dlink, &WEBS(SIMPLIFY));
 	break;
       default:
-	abort ();
+	gcc_unreachable ();
     }
   web->type = type;
 }
@@ -211,9 +211,13 @@ reset_lists (void)
 {
   struct dlist *d;
   unsigned int i;
-  if (WEBS(SIMPLIFY) || WEBS(SIMPLIFY_SPILL) || WEBS(SIMPLIFY_FAT)
-      || WEBS(FREEZE) || WEBS(SPILL) || WEBS(SELECT))
-    abort ();
+
+  gcc_assert (!WEBS(SIMPLIFY));
+  gcc_assert (!WEBS(SIMPLIFY_SPILL));
+  gcc_assert (!WEBS(SIMPLIFY_FAT));
+  gcc_assert (!WEBS(FREEZE));
+  gcc_assert (!WEBS(SPILL));
+  gcc_assert (!WEBS(SELECT));
 
   while ((d = pop_list (&WEBS(COALESCED))) != NULL)
     {
@@ -243,13 +247,16 @@ reset_lists (void)
       web->useless_conflicts = NULL;
     }
 
-  /* Sanity check, that we only have free, initial or precolored webs.  */
+#ifdef ENABLE_CHECKING
+  /* Sanity check, that we only have free, initial or precolored webs. */
   for (i = 0; i < num_webs; i++)
     {
       struct web *web = ID2WEB (i);
-      if (web->type != INITIAL && web->type != FREE && web->type != PRECOLORED)
-	abort ();
+      
+      gcc_assert (web->type == INITIAL || web->type == FREE
+		  || web->type == PRECOLORED);
     }
+#endif
   free_dlist (&mv_worklist);
   free_dlist (&mv_coalesced);
   free_dlist (&mv_constrained);
@@ -265,8 +272,8 @@ put_web_at_end (struct web *web, enum ra_node_type type)
 {
   if (type == PRECOLORED)
     type = INITIAL;
-  else if (type == SIMPLIFY)
-    abort ();
+  else
+    gcc_assert (type != SIMPLIFY);
   push_list_end (web->dlink, &WEBS(type));
   web->type = type;
 }
@@ -306,7 +313,7 @@ put_move (struct move *move, enum move_type type)
 	push_list (move->dlink, &mv_active);
 	break;
       default:
-	abort ();
+	gcc_unreachable ();
     }
   move->type = type;
 }
@@ -501,8 +508,7 @@ remove_move (struct web *web, struct move *move)
   struct move_list *ml;
   remove_move_1 (web, move);
   for (ml = web->moves; ml; ml = ml->next)
-    if (ml->move == move)
-      abort ();
+    gcc_assert (ml->move != move);
 }
 
 /* Merge the moves for the two webs into the first web's movelist.  */
@@ -696,10 +702,10 @@ combine (struct web *u, struct web *v)
 {
   int i;
   struct conflict_link *wl;
-  if (u == v || v->type == COALESCED)
-    abort ();
-  if ((u->regno >= max_normal_pseudo) != (v->regno >= max_normal_pseudo))
-    abort ();
+  gcc_assert (u != v);
+  gcc_assert (v->type != COALESCED);
+  gcc_assert ((u->regno >= max_normal_pseudo)
+	      == (v->regno >= max_normal_pseudo));
   remove_web_from_list (v);
   put_web (v, COALESCED);
   v->alias = u;
@@ -793,10 +799,9 @@ combine (struct web *u, struct web *v)
      conflicts.  */
   u->num_freedom = hard_regs_count (u->usable_regs);
   u->num_freedom -= u->add_hardregs;
-  /* The next would mean an invalid coalesced move (both webs have no
-     possible hardreg in common), so abort.  */
-  if (!u->num_freedom)
-    abort();
+  /* The next checks for an invalid coalesced move (both webs must have
+     possible hardregs in common).  */
+  gcc_assert (u->num_freedom);
 
   if (u->num_conflicts >= NUM_REGS (u)
       && (u->type == FREEZE || simplify_p (u->type)))
@@ -970,8 +975,7 @@ select_spill (void)
       bestd = bestd2;
       best = best2;
     }
-  if (!bestd)
-    abort ();
+  gcc_assert (bestd);
 
   /* Note the potential spill.  */
   DLIST_WEB (bestd)->was_spilled = 1;
@@ -1429,7 +1433,7 @@ colorize_one_web (struct web *web, int hard)
   if (c < 0)
     {
       /* Guard against a simplified node being spilled.  */
-      /* Don't abort.  This can happen, when e.g. enough registers
+      /* Don't assert.  This can happen, when e.g. enough registers
 	 are available in colors, but they are not consecutive.  This is a
 	 very serious issue if this web is a short live one, because
 	 even if we spill this one here, the situation won't become better
@@ -1440,8 +1444,7 @@ colorize_one_web (struct web *web, int hard)
 	 again.  That's why we try to find a neighbor, which spans more
 	 instructions that ourself, and got a color, and try to spill _that_.
 
-	 if (DLIST_WEB (d)->was_spilled < 0)
-	 abort (); */
+	 gcc_assert (DLIST_WEB (d)->was_spilled >= 0);  */
       if (hard && (!web->was_spilled || web->spill_temp))
 	{
 	  unsigned int loop;
@@ -1536,8 +1539,7 @@ colorize_one_web (struct web *web, int hard)
 	      int old_c = try->color;
 	      if (try->type == COALESCED)
 		{
-		  if (alias (try)->type != PRECOLORED)
-		    abort ();
+		  gcc_assert (alias (try)->type == PRECOLORED);
 		  ra_debug_msg (DUMP_COLORIZE, "  breaking alias %d -> %d\n",
 			     try->id, alias (try)->id);
 		  break_precolored_alias (try);
@@ -1800,9 +1802,8 @@ try_recolor_web (struct web *web)
          above what happens, when wide webs are involved, and why in that
          case there might actually be some webs spilled although thought to
          be colorable.  */
-      if (cost > cost_neighbors[newcol]
-	  && nregs == 1 && !TEST_HARD_REG_BIT (wide_seen, newcol))
-	abort ();
+      gcc_assert (cost <= cost_neighbors[newcol]
+		  || nregs != 1 || TEST_HARD_REG_BIT (wide_seen, newcol));
       /* But if the new spill-cost is higher than our own, then really loose.
 	 Respill us and recolor neighbors as before.  */
       if (cost > web->spill_cost)
@@ -1817,26 +1818,29 @@ try_recolor_web (struct web *web)
 	      struct web *web2 = alias (wl->t);
 	      if (old_colors[web2->id])
 		{
-		  if (web2->type == SPILLED)
+		  switch (web2->type)
 		    {
+		    case SPILLED:
 		      remove_list (web2->dlink, &WEBS(SPILLED));
 		      web2->color = old_colors[web2->id] - 1;
 		      put_web (web2, COLORED);
+		      break;
+		    case COLORED:
+		      web2->color = old_colors[web2->id] - 1;
+		      break;
+		    case SELECT:
+		      /* This means, that WEB2 once was a part of a coalesced
+			web, which got spilled in the above colorize_one_web()
+			call, and whose parts then got split and put back
+			onto the SELECT stack.  As the cause for that splitting
+			(the coloring of WEB) was worthless, we should again
+			coalesce the parts, as they were before.  For now we
+			simply leave them SELECTed, for our caller to take
+			care.  */
+		      break;
+		    default:
+		      gcc_unreachable ();
 		    }
-		  else if (web2->type == COLORED)
-		    web2->color = old_colors[web2->id] - 1;
-		  else if (web2->type == SELECT)
-		    /* This means, that WEB2 once was a part of a coalesced
-		       web, which got spilled in the above colorize_one_web()
-		       call, and whose parts then got split and put back
-		       onto the SELECT stack.  As the cause for that splitting
-		       (the coloring of WEB) was worthless, we should again
-		       coalesce the parts, as they were before.  For now we
-		       simply leave them SELECTed, for our caller to take
-		       care.  */
-		    ;
-		  else
-		    abort ();
 		}
 	    }
 	}
@@ -1878,16 +1882,16 @@ insert_coalesced_conflicts (void)
 		 when first some webs were coalesced and conflicts
 		 propagated, then some combining narrowed usable_regs and
 		 further coalescing ignored those conflicts.  Now there are
-		 some edges to COALESCED webs but not to it's alias.
-		 So abort only when they really should conflict.  */
-	      if ((!(tweb->type == PRECOLORED
-		     || TEST_BIT (sup_igraph, tweb->id * num_webs + wl->t->id))
-		   || !(wl->t->type == PRECOLORED
-		        || TEST_BIT (sup_igraph,
-				     wl->t->id * num_webs + tweb->id)))
-		  && hard_regs_intersect_p (&tweb->usable_regs,
-					    &wl->t->usable_regs))
-		abort ();
+		 some edges to COALESCED webs but not to its alias.
+		 So assert they really don not conflict.  */
+	      gcc_assert (((tweb->type == PRECOLORED
+			    || TEST_BIT (sup_igraph,
+					 tweb->id * num_webs + wl->t->id))
+			   && (wl->t->type == PRECOLORED
+			       || TEST_BIT (sup_igraph,
+					    wl->t->id * num_webs + tweb->id)))
+			  || !hard_regs_intersect_p (&tweb->usable_regs,
+						     &wl->t->usable_regs));
 	      /*if (wl->sub == NULL)
 		record_conflict (tweb, wl->t);
 	      else
@@ -1970,18 +1974,32 @@ check_colors (void)
       struct web *aweb = alias (web);
       struct conflict_link *wl;
       int nregs, c;
-      if (aweb->type == SPILLED || web->regno >= max_normal_pseudo)
+
+      if (web->regno >= max_normal_pseudo)
 	continue;
-      else if (aweb->type == COLORED)
-	nregs = hard_regno_nregs[aweb->color][GET_MODE (web->orig_x)];
-      else if (aweb->type == PRECOLORED)
-	nregs = 1;
-      else
-	abort ();
+      
+      switch (aweb->type)
+	{
+	case SPILLED:
+	  continue;
+
+	case COLORED:
+	  nregs = hard_regno_nregs[aweb->color][GET_MODE (web->orig_x)];
+	  break;
+
+	case PRECOLORED:
+	  nregs = 1;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+
+#ifdef ENABLE_CHECKING
       /* The color must be valid for the original usable_regs.  */
       for (c = 0; c < nregs; c++)
-	if (!TEST_HARD_REG_BIT (web->usable_regs, aweb->color + c))
-	  abort ();
+	gcc_assert (TEST_HARD_REG_BIT (web->usable_regs, aweb->color + c));
+#endif
       /* Search the original (pre-coalesce) conflict list.  In the current
 	 one some imprecise conflicts may be noted (due to combine() or
 	 insert_coalesced_conflicts() relocating partial conflicts) making
@@ -2002,10 +2020,9 @@ check_colors (void)
 	      nregs2 = 1;
 	    else
 	      continue;
-	    if (aweb->color >= web2->color + nregs2
-	        || web2->color >= aweb->color + nregs)
-	      continue;
-	    abort ();
+	    gcc_assert (aweb->color >= web2->color + nregs2
+			|| web2->color >= aweb->color + nregs);
+	    continue;
 	  }
 	else
 	  {
@@ -2026,10 +2043,9 @@ check_colors (void)
 		    && GET_MODE_SIZE (GET_MODE (sl->s->orig_x))
 		       >= UNITS_PER_WORD)
 		  sofs = (SUBREG_BYTE (sl->s->orig_x) / UNITS_PER_WORD);
-		if ((tcol + tofs >= scol + sofs + ssize)
-		    || (scol + sofs >= tcol + tofs + tsize))
-		  continue;
-		abort ();
+		gcc_assert ((tcol + tofs >= scol + sofs + ssize)
+			    || (scol + sofs >= tcol + tofs + tsize));
+		continue;
 	      }
 	  }
     }
@@ -2070,8 +2086,7 @@ static void
 break_aliases_to_web (struct web *web)
 {
   struct dlist *d, *d_next;
-  if (web->type != SPILLED)
-    abort ();
+  gcc_assert (web->type == SPILLED);
   for (d = WEBS(COALESCED); d; d = d_next)
     {
       struct web *other = DLIST_WEB (d);
@@ -2115,8 +2130,7 @@ break_precolored_alias (struct web *web)
   struct conflict_link *wl;
   unsigned int c = pre->color;
   unsigned int nregs = hard_regno_nregs[c][GET_MODE (web->orig_x)];
-  if (pre->type != PRECOLORED)
-    abort ();
+  gcc_assert (pre->type == PRECOLORED);
   unalias_web (web);
   /* Now we need to look at each conflict X of WEB, if it conflicts
      with [PRE, PRE+nregs), and remove such conflicts, of X has not other
@@ -2208,13 +2222,12 @@ restore_conflicts_from_coalesce (struct web *web)
 	  struct sub_conflict *sl;
 	  wl = *pcl;
 	  *pcl = wl->next;
-	  if (!other->have_orig_conflicts && other->type != PRECOLORED)
-	    abort ();
+	  gcc_assert (other->have_orig_conflicts
+		      || other->type == PRECOLORED);
 	  for (owl = other->orig_conflict_list; owl; owl = owl->next)
 	    if (owl->t == web)
 	      break;
-	  if (owl)
-	    abort ();
+	  gcc_assert (!owl);
 	  opcl = &(other->conflict_list);
 	  while (*opcl)
 	    {
@@ -2229,8 +2242,7 @@ restore_conflicts_from_coalesce (struct web *web)
 		  opcl = &((*opcl)->next);
 		}
 	    }
-	  if (!owl && other->type != PRECOLORED)
-	    abort ();
+	  gcc_assert (owl || other->type == PRECOLORED);
 	  /* wl and owl contain the edge data to be deleted.  */
 	  RESET_BIT (sup_igraph, web->id * num_webs + other->id);
 	  RESET_BIT (sup_igraph, other->id * num_webs + web->id);
@@ -2429,8 +2441,7 @@ sort_and_combine_web_pairs (int for_move)
   sorted = xmalloc (num_web_pairs * sizeof (sorted[0]));
   for (p = web_pair_list, i = 0; p; p = p->next_list)
     sorted[i++] = p;
-  if (i != num_web_pairs)
-    abort ();
+  gcc_assert (i == num_web_pairs);
   qsort (sorted, num_web_pairs, sizeof (sorted[0]), comp_web_pairs);
 
   /* After combining one pair, we actually should adjust the savings
@@ -2624,17 +2635,16 @@ check_uncoalesced_moves (void)
 	    s = t;
 	    t = h;
 	  }
-	if (s != t
-	    && m->type != CONSTRAINED
-	    /* Following can happen when a move was coalesced, but later
-	       broken up again.  Then s!=t, but m is still MV_COALESCED.  */
-	    && m->type != MV_COALESCED
-	    && t->type != PRECOLORED
-	    && ((s->type == PRECOLORED && ok (t, s))
-		|| s->type != PRECOLORED)
-	    && !TEST_BIT (sup_igraph, s->id * num_webs + t->id)
-	    && !TEST_BIT (sup_igraph, t->id * num_webs + s->id))
-	  abort ();
+	gcc_assert (s == t
+		    || m->type == CONSTRAINED
+		    /* Following can happen when a move was coalesced, but
+		       later broken up again.  Then s!=t, but m is still
+		       MV_COALESCED.  */
+		    || m->type == MV_COALESCED
+		    || t->type == PRECOLORED
+		    || (s->type == PRECOLORED && !ok (t, s))
+		    || TEST_BIT (sup_igraph, s->id * num_webs + t->id)
+		    || TEST_BIT (sup_igraph, t->id * num_webs + s->id));
       }
 }
 
