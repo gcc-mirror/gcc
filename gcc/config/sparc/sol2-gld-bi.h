@@ -1,4 +1,4 @@
-/* Definitions of target machine for GNU compiler, for bi-arch SPARC
+/* Definitions of target machine for GCC, for bi-arch SPARC
    running Solaris 2 using the GNU linker.  */
 
 #undef LINK_ARCH_SPEC

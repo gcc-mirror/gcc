@@ -1,5 +1,16 @@
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/sparc/aout.h, config/sparc/biarch64.h, config/sparc/elf.h,
+	config/sparc/freebsd.h, config/sparc/linux.h, config/sparc/linux64.h,
+	config/sparc/lite.h, config/sparc/litecoff.h, config/sparc/liteelf.h,
+	config/sparc/netbsd-elf.h, config/sparc/openbsd.h, 
+	config/sparc/rtemself.h, config/sparc/sol2-64.h,
+	config/sparc/sol2-bi.h, config/sparc/sol2-gas-bi.h,
+	config/sparc/sol2-gld-bi.h, config/sparc/sol2-gld.h,
+	config/sparc/sol2.h, config/sparc/sp64-aout.h, 
+	config/sparc/sp64-elf.h, config/sparc/sp86x-elf.h,
+	config/sparc/sparc-protos.h, config/sparc/sysv4-only.h: Replace
+	"GNU compiler", "GNU CC" with "GCC".
 	* config/sparc/cypress.md, config/sparc/hypersparc.md,
 	config/sparc/sparc-modes.def, config/sparc/sparc.c,
 	config/sparc/sparc.md, config/sparc/sparclet.md,

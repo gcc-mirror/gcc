@@ -1,4 +1,4 @@
-/* Target macros for GNU compiler for SPARC running System V.4
+/* Target macros for GCC for SPARC running System V.4
    Copyright (C) 2003
    Free Software Foundation, Inc.
 
