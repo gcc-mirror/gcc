@@ -1252,6 +1252,9 @@ determine_lsm (struct loops *loops)
   struct loop *loop;
   basic_block bb;
 
+  if (!loops->tree_root->inner)
+    return;
+
   /* Create a UID for each statement in the function.  Ordering of the
      UIDs is not important for this pass.  */
   max_stmt_uid = 0;
