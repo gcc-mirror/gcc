@@ -269,6 +269,7 @@ in the following sections.
 -mstructure-size-boundary=
 -mbsd -mxopen -mno-symrename
 -mabort-on-noreturn
+-mlong-calls -mno-long-calls
 -mnop-fun-dllimport -mno-nop-fun-dllimport
 -msingle-pic-base -mno-single-pic-base
 -mpic-register=
@@ -4607,6 +4608,32 @@ value as future versions of the toolchain may default to this value.
 @kindex -mnoabort-on-noreturn
 Generate a call to the function abort at the end of a noreturn function.
 It will be executed if the function tries to return.
+
+@item -mlong-calls
+@itemx -mno-long-calls
+Tells the compiler to perform function calls by first loading the
+address of the function into a register and then performing a subroutine
+call on this register.  This switch is needed if the target function
+will lie outside of the 64 megabyte addressing range of the offset based
+version of subroutine call instruction. 
+
+Even if this switch is enabled, not all function calls will be turned
+into long calls.  The heuristic is that static functions, functions
+which have the @samp{short-call} attribute, functions that are inside
+the scope of a @samp{#pragma no_long_calls} directive and functions whose
+definitions have already been compiled within the current compilation
+unit, will not be turned into long calls.  The exception to this rule is
+that weak function defintions, functions with the @samp{long-call}
+attribute or the @samp{section} attribute, and functions that are within
+the scope of a @samp{#pragma long_calls} directive, will always be
+turned into long calls.
+
+This feature is not enabled by default.  Specifying
+@samp{--no-long-calls} will restore the default behaviour, as will
+placing the function calls within the scope of a @samp{#pragma
+long_calls_off} directive.  Note these switches have no effect on how
+the compiler generates code to handle function calls via function
+pointers.  
 
 @item -mnop-fun-dllimport
 @kindex -mnop-fun-dllimport

@@ -4514,18 +4514,24 @@
   ""
   "
   {
-    rtx callee = XEXP (operands[0], 0);
+    rtx callee;
     
-    /* Decide if we need to generate an indirect call by loading the 32 bit
-       address of the callee into a register and then jumping to the contents
-       of that register.  operands[2] contains the long_call / short_call
-       attribute.  The third parameter to arm_is_longcall_p tells it that it
-       is being passed a (MEM) and not a SYMREF().  */
-     
     /* In an untyped call, we can get NULL for operand 2.  */
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
       
+    /* This is to decide if we should generate indirect calls by loading the
+       32 bit address of the callee into a register before performing the
+       branch and link.  operand[2] encodes the long_call/short_call
+       attribute of the function being called.  This attribute is set whenever
+       __attribute__((long_call/short_call)) or #pragma long_call/no_long_call
+       is used, and the short_call attribute can also be set if function is
+       declared as static or if it has already been defined in the current
+       compilation unit.  See arm.c and arm.h for info about this.  The third
+       parameter to arm_is_longcall_p is used to tell it which pattern
+       invoked it.  */
+    callee  = XEXP (operands[0], 0);
+    
     if (GET_CODE (callee) != REG
        && arm_is_longcall_p (operands[0], INTVAL (operands[2]), 0))
       XEXP (operands[0], 0) = force_reg (Pmode, callee);
@@ -4575,7 +4581,7 @@
     /* See the comment in define_expand \"call\".  */
     if (GET_CODE (callee) != REG
 	&& arm_is_longcall_p (operands[1], INTVAL (operands[3]), 0))
-       XEXP (operands[1], 0) = force_reg (Pmode, callee);
+      XEXP (operands[1], 0) = force_reg (Pmode, callee);
   }"
 )
 
@@ -4613,8 +4619,8 @@
 	 (match_operand:SI 1 "general_operand" "g"))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI 14))]
-  "! arm_is_longcall_p (operands[0], INTVAL (operands[2]), 1)
-   && GET_CODE (operands[0]) == SYMBOL_REF"
+  "(GET_CODE (operands[0]) == SYMBOL_REF)
+   && ! arm_is_longcall_p (operands[0], INTVAL (operands[2]), 1)"
   "*
   {
     return NEED_PLT_RELOC ? \"bl%?\\t%a0(PLT)\" : \"bl%?\\t%a0\";
@@ -4627,8 +4633,8 @@
 	(match_operand:SI 2 "general_operand" "g")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI 14))]
-  "! arm_is_longcall_p (operands[1], INTVAL (operands[3]), 1)
-   && GET_CODE (operands[1]) == SYMBOL_REF"
+  "(GET_CODE (operands[1]) == SYMBOL_REF)
+   && ! arm_is_longcall_p (operands[1], INTVAL (operands[3]), 1)"
   "*
   {
     return NEED_PLT_RELOC ? \"bl%?\\t%a1(PLT)\" : \"bl%?\\t%a1\";

@@ -1613,6 +1613,17 @@ compiler to always call the function via a pointer, so that functions
 which reside further than 64 megabytes (67,108,864 bytes) from the
 current location can be called.
 
+@item long_call/short_call
+@cindex indirect calls on ARM
+This attribute allows to specify how to call a particular function on
+ARM.  Both attributes override the @code{-mlong-calls} (@pxref{ARM Options})
+command line switch and @code{#pragma long_calls} settings.  The
+@code{long_call} attribute causes the compiler to always call the
+function by first loading its address into a register and then using the
+contents of that register.   The @code{short_call} attribute always places
+the offset to the function from the call site into the @samp{BL}
+instruction directly.
+
 @item dllimport
 @cindex functions which are imported from a dll on PowerPC Windows NT
 On the PowerPC running Windows NT, the @code{dllimport} attribute causes

@@ -40,19 +40,13 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "recog.h"
 #include "ggc.h"
-#include "arm-protos.h"
-
-/* The maximum number of insns skipped which will be conditionalised if
-   possible.  */
-static int max_insns_skipped = 5;
-
-extern FILE * asm_out_file;
-/* Some function declarations.  */
+#include "tm_p.h"
 
 #ifndef Mmode
 #define Mmode enum machine_mode
 #endif
 
+/* Some function declarations.  */
 static HOST_WIDE_INT int_log2 		PARAMS ((HOST_WIDE_INT));
 static char * output_multi_immediate 	PARAMS ((rtx *, char *, char *, int, HOST_WIDE_INT));
 static int arm_gen_constant 		PARAMS ((enum rtx_code, Mmode, HOST_WIDE_INT, rtx, rtx, int, int));
@@ -75,6 +69,12 @@ static void emit_sfm 			PARAMS ((int, int));
 static enum arm_cond_code get_arm_condition_code PARAMS ((rtx));
 static int const_ok_for_op 		PARAMS ((HOST_WIDE_INT, enum rtx_code));
 static void arm_add_gc_roots 		PARAMS ((void));
+
+/* The maximum number of insns skipped which will be conditionalised if
+   possible.  */
+static int max_insns_skipped = 5;
+
+extern FILE * asm_out_file;
 
 /* True if we are currently building a constant table. */
 int making_const_table;
@@ -1487,9 +1487,8 @@ arm_init_cumulative_args (pcum, fntype, libname, indirect)
      int indirect ATTRIBUTE_UNUSED;
 {
   /* On the ARM, the offset starts at 0.  */
-  pcum->nregs = ((fntype && aggregate_value_p (TREE_TYPE (fntype)))
-		 ? 1 : 0);
-
+  pcum->nregs = ((fntype && aggregate_value_p (TREE_TYPE (fntype))) ? 1 : 0);
+  
   pcum->call_cookie = CALL_NORMAL;
 
   if (TARGET_LONG_CALLS)
@@ -1534,73 +1533,37 @@ arm_function_arg (pcum, mode, type, named)
   
   return gen_rtx_REG (mode, pcum->nregs);
 }
-
 
-/* Return 1 if the operand is a SYMBOL_REF for a function
-   known to be defined in the current compilation unit.  */
-static int
-current_file_function_operand (sym_ref)
-  rtx sym_ref;
+/* Encode the current state of the #pragma [no_]long_calls.  */
+typedef enum
 {
-  /* XXX FIXME - we need some way to determine if SYMREF has already been
-     compiled.  We wanted to used SYMBOL_REF_FLAG but this is already in use
-     by the constant pool generation code.  */
-  return
-    GET_CODE (sym_ref) == SYMBOL_REF
-    && sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
-    && ! DECL_WEAK (current_function_decl);
-}
+  OFF,		/* No #pramgma [no_]long_calls is in effect.  */
+  LONG,		/* #pragma long_calls is in effect.  */
+  SHORT		/* #pragma no_long_calls is in effect.  */
+} arm_pragma_enum;
 
-/* Return non-zero if a 32 bit "long call" should be generated for this
-   call.
+static arm_pragma_enum arm_pragma_long_calls = OFF;
 
-   We generate a long call if the function is not declared
-   __attribute__ ((short_call),
-
-   AND:
-   
-     (1)  the function is declared __attribute__ ((long_call))
-
-   OR
-
-     (2) -mlong-calls is enabled and we don't know whether the target
-         function is declared in this file.
-	 
-   This function will typically be called by C fragments in the machine
-   description file.  CALL_REF is the matched rtl operand.  CALL_COOKIE
-   describes the value of the long_call and short_call attributes for
-   the called functiion.  CALL_SYMBOL is used to distinguish between
-   two different callers of the function.  It is set to 1 in the "call_symbol"
-   and "call_symbol_value" patterns in arm.md and to 0 in the "call" and
-   "call_value" patterns.  This is because of the difference of SYM_REFs passed
-   from "call_symbol" and "call"  patterns.  */
+/* Handle pragmas for compatibility with Intel's compilers.
+   FIXME: This is incomplete, since it does not handle all
+   the pragmas that the Intel compilers understand.  */
 int
-arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
-  rtx sym_ref;
-  int call_cookie;
-  int call_symbol;
+arm_process_pragma (p_getc, p_ungetc, pname)
+     int (*  p_getc)   PARAMS ((void)) ATTRIBUTE_UNUSED;
+     void (* p_ungetc) PARAMS ((int))  ATTRIBUTE_UNUSED;
+     char *  pname;
 {
-  if (! call_symbol)
-    {
-      if (GET_CODE (sym_ref) != MEM)
-	return 0;
-
-      sym_ref = XEXP (sym_ref, 0);
-    }
-
-  if (GET_CODE (sym_ref) != SYMBOL_REF)
-    return 0;
-
-  if (call_cookie & CALL_SHORT)
-    return 0;
-
-  if (TARGET_LONG_CALLS && flag_function_sections)
-    return 1;
-  
-  if (current_file_function_operand (sym_ref, VOIDmode))
+  /* Should be pragma 'far' or equivalent for callx/balx here.  */
+  if (strcmp (pname, "long_calls") == 0)
+    arm_pragma_long_calls = LONG;
+  else if (strcmp (pname, "no_long_calls") == 0)
+    arm_pragma_long_calls = SHORT;
+  else if (strcmp (pname, "long_calls_off") == 0)
+    arm_pragma_long_calls = OFF;
+  else
     return 0;
   
-  return (call_cookie & CALL_LONG) || TARGET_LONG_CALLS;
+  return 1;
 }
 
 /* Return nonzero if IDENTIFIER with arguments ARGS is a valid machine specific
@@ -1624,7 +1587,7 @@ arm_valid_type_attribute_p (type, attributes, identifier, args)
      call.  */
   if (is_attribute_p ("long_call", identifier))
     return (args == NULL_TREE);
-
+  
   /* Whereas these functions are always known to reside within the 26 bit
      addressing range.  */
   if (is_attribute_p ("short_call", identifier))
@@ -1668,6 +1631,136 @@ arm_comp_type_attributes (type1, type2)
   return 1;
 }
 
+/*  Encode long_call or short_call attribute by prefixing
+    symbol name in DECL with a special character FLAG.  */
+void
+arm_encode_call_attribute (decl, flag)
+  tree decl;
+  char flag;
+{
+  char * str = XSTR (XEXP (DECL_RTL (decl), 0), 0);
+  int    len = strlen (str);
+  char * newstr;
+
+  if (TREE_CODE (decl) != FUNCTION_DECL)
+    return;
+
+  /* Do not allow weak functions to be treated as short call.  */
+  if (DECL_WEAK (decl) && flag == SHORT_CALL_FLAG_CHAR)
+    return;
+  
+  if (ggc_p)
+    newstr = ggc_alloc_string (NULL, len + 2);
+  else
+    newstr = permalloc (len + 2);
+
+  sprintf (newstr, "%c%s", flag, str);
+
+  XSTR (XEXP (DECL_RTL (decl), 0), 0) = newstr;
+}
+
+/*  Assigns default attributes to newly defined type.  This is used to
+    set short_call/long_call attributes for function types of
+    functions defined inside corresponding #pragma scopes.  */
+void
+arm_set_default_type_attributes (type)
+  tree type;
+{
+  /* Add __attribute__ ((long_call)) to all functions, when
+     inside #pragma long_calls or __attribute__ ((short_call)),
+     when inside #pragma no_long_calls.  */
+  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+    {
+      tree type_attr_list, attr_name;
+      type_attr_list = TYPE_ATTRIBUTES (type);
+
+      if (arm_pragma_long_calls == LONG)
+ 	attr_name = get_identifier ("long_call");
+      else if (arm_pragma_long_calls == SHORT)
+ 	attr_name = get_identifier ("short_call");
+      else
+ 	return;
+
+      type_attr_list = tree_cons (attr_name, NULL_TREE, type_attr_list);
+      TYPE_ATTRIBUTES (type) = type_attr_list;
+    }
+}
+
+/* Return 1 if the operand is a SYMBOL_REF for a function known to be
+   defined within the current compilation unit.  If this caanot be
+   determined, then 0 is returned.  */
+static int
+current_file_function_operand (sym_ref)
+  rtx sym_ref;
+{
+  /* This is a bit of a fib.  A function will have a short call flag
+     applied to its name if it has the short call attribute, or it has
+     already been defined within the current compilation unit.  */
+  if (ENCODED_SHORT_CALL_ATTR_P (XSTR (sym_ref, 0)))
+    return 1;
+
+  /* The current funciton is always defined within the current compilation
+     unit.  if it s a weak defintion however, then this may not be the real
+     defintion of the function, and so we have to say no.  */
+  if (sym_ref == XEXP (DECL_RTL (current_function_decl), 0)
+      && ! DECL_WEAK (current_function_decl))
+    return 1;
+
+  /* We cannot make the determination - default to returning 0.  */
+  return 0;
+}
+
+/* Return non-zero if a 32 bit "long_call" should be generated for
+   this call.  We generate a long_call if the function:
+
+        a.  has an __attribute__((long call))
+     or b.  is within the scope of a #pragma long_calls
+     or c.  the -mlong-calls command line switch has been specified
+
+   However we do not generate a long call if the function:
+   
+        d.  has an __attribute__ ((short_call))
+     or e.  is inside the scope of a #pragma no_long_calls
+     or f.  has an __attribute__ ((section))
+     or g.  is defined within the current compilation unit.
+   
+   This function will be called by C fragments contained in the machine
+   description file.  CALL_REF and CALL_COOKIE correspond to the matched
+   rtl operands.  CALL_SYMBOL is used to distinguish between
+   two different callers of the function.  It is set to 1 in the
+   "call_symbol" and "call_symbol_value" patterns and to 0 in the "call"
+   and "call_value" patterns.  This is because of the difference in the
+   SYM_REFs passed by these patterns.  */
+int
+arm_is_longcall_p (sym_ref, call_cookie, call_symbol)
+  rtx sym_ref;
+  int call_cookie;
+  int call_symbol;
+{
+  if (! call_symbol)
+    {
+      if (GET_CODE (sym_ref) != MEM)
+	return 0;
+
+      sym_ref = XEXP (sym_ref, 0);
+    }
+
+  if (GET_CODE (sym_ref) != SYMBOL_REF)
+    return 0;
+
+  if (call_cookie & CALL_SHORT)
+    return 0;
+
+  if (TARGET_LONG_CALLS && flag_function_sections)
+    return 1;
+  
+  if (current_file_function_operand (sym_ref, VOIDmode))
+    return 0;
+  
+  return (call_cookie & CALL_LONG)
+    || ENCODED_LONG_CALL_ATTR_P (XSTR (sym_ref, 0))
+    || TARGET_LONG_CALLS;
+}
 
 int
 legitimate_pic_operand_p (x)
@@ -6986,6 +7079,31 @@ arm_final_prescan_insn (insn)
 	 call recog direct).  */
       recog (PATTERN (insn), insn, NULL_PTR);
     }
+}
+
+/* Return the length of a function name prefix
+    that starts with the character 'c'.  */
+static int
+arm_get_strip_length (char c)
+{
+  switch (c)
+    {
+    ARM_NAME_ENCODING_LENGTHS
+      default: return 0; 
+    }
+}
+
+/* Return a pointer to a function's name with any
+   and all prefix encodings stripped from it.  */
+const char *
+arm_strip_name_encoding (const char * name)
+{
+  int skip;
+  
+  while ((skip = arm_get_strip_length (* name)))
+    name += skip;
+
+  return name;
 }
 
 #ifdef AOF_ASSEMBLER

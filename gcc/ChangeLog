@@ -1,3 +1,72 @@
+2000-02-28  Dmitri Makarov  <dim@windriver.com>
+
+	* extend.texi: Document ARM's support for long/short calls.
+
+	* invoke.texi: Document ARM's -mlong-calls command line switch.
+	
+	* config/arm/arm-protos.h (arm_is_longcall_p): Add prototype.
+	(arm_encode_call_attribute): Add prototype.
+	(arm_set_default_type_attribute): Add prototype.
+	(arm_strip_name_encoding): Add prototype.
+
+	* config/arm/arm.c (arm_init_cumulative_args): replace
+	initialisation og 'long_calls' field with initialisation of
+	'call_cookie' field.
+	(enum arm_pragma_enum): New enum.
+	(arm_pragma_long_calls): New static variable.
+	(arm_process_pragma): Also process "#pragma long_calls_off".
+	(arm_valid_type_attribute_p): Accept short_call attribute.
+	(arm_comp_type_attributes): Check long/short call attributes.
+	(arm_encode_call_attribute):  New function:  Encode long_call
+	or short_call attribute in function name.
+	(arm_set_default_type_attributes): New function: Assign
+	default attributes to newly defined type.
+	(current_file_function_operand): New function: Return true if
+	the symbol is a function which has already been compiled.
+	(arm_is_longcall_p): New function: Return true if the
+	indicated function should be called via a long call.
+	(arm_get_strip_length): New function.  Returns number of
+	prefix characters to be stripped from a function's name.
+	(arm_strip_name_encoding): New function.  Strip prefix characters
+	from a function's name.
+
+	* config/arm/arm.h (CUMULATIVE_ARGS): Replace 'long_call' field
+	with 'call_cookie'.
+	(SHORT_CALL_FAG_CHAR): Define.
+	(LONG_CALL_FAG_CHAR): Define.
+	(ENCODED_SHORT_CALL_ATTR_P): Define.
+	(ENCODED_LONG_CALL_ATTR_P): Define.
+	(ARM_NAME_ENCODING_LENGTHS): Define.
+	(STRIP_NAME_ENCODING): Define.
+	(ASM_OUTPUT_LABELREF): Define, and use to strip name encoding.
+	(ARM_ENCODE_CALL_TYPE): Define.
+	(ENCODE_SECTION): Invoke ARM_ENCODE_CALL_TYPE.
+	(ARM_DECLARE_FUNCTION_SIZE): Define.
+	(SET_DEFAULT_TYPE_ATTRIBUTES): Define.
+
+	* config/arm/arm.md (call): Call arm_is_longcall_p to decide
+        if a long call is needed.
+	(call_value): Ditto.
+	(call_symbol): Ditto.
+
+	* config/arm/elf.h (ASM_DECLARE_FUNCTION_SIZE): Add invocation of
+	ARM_DECLARE_FUNCTION_SIZE.
+
+	* config/arm/pe.h (ARM_PE_FLAG_CHAR): Define.
+	(SUBTARGET_NAME_ENCODING_LENGTHS): Define.
+	(ARM_STRIP_NAME_ENCODING): Undefine.
+	(STRIP_NAME_ENCODING): Undefine.
+	(ASM_OUTPUT_LABELREF): Use arm_strip_name_encoding.
+	(ASM_DECLARE_FUNCTION_NAME): Ditto.
+	(ASM_OUTPUT_COMMON): Ditto.
+	(ASM_DECLARE_OBJECT_NAME): Ditto.
+
+	* config/arm/pe.c (arm_dllexport_name_p): Check for
+	ARM_PE_FLAG_CHAR.
+	(arm_dllimport_name_p): Ditto.
+	(arm_mark_dllexport): Use ARM_PE_FLAG_CHAR.
+	(arm_mark_dllimport): Ditto.
+	
 Mon Feb 28 22:11:12 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* sh.h (DWARF_LINE_MIN_INSTR_LENGTH): Define.
