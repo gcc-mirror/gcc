@@ -22,6 +22,30 @@ Thu Feb  4 15:12:41 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
 	* cpperror.c (cpp_print_containing_files): Fix formatting 
 	bug induced by merge.
 
+1999-02-04 14:33 -0500	Zack Weinberg  <zack@rabi.phys.columbia.edu>
+
+	* cpplib.c (initialize_char_syntax): Move to cppinit.c.
+	(cpp_define): Remove redundant syntax checks.
+	(make_assertion): Rename cpp_assert, remove redundant syntax
+	checks, export.
+	(cpp_options_init): Don't init things to zero twice.
+	(cpp_expand_to_buffer): Use memcpy, not a char-by-char loop.
+	(do_include): Kill excessively verbose #import warning that
+	snuck back in in the gcc2 merge.
+	(convert_string): Removed.
+	(do_line): Rewrite with simple last-name-used cache instead of
+	private hashtable.
+	(cpp_start_read): Call initialize_char_syntax here, not...
+	(cpp_reader_init): ...here.
+	(cpp_handle_options): Support the -std switch.
+	* cpplib.h (cpp_buffer): Add last_nominal_fname member.
+	(cpp_options): Add c9x flag.
+	Declare all the is_* tables and trigraph table here, as const.
+	Prototype cpp_assert and initialize_char_syntax.
+	* cppinit.c: New file.
+	* cppfiles.c (read_and_prescan): Optimize.
+	* Makefile.in (LIBCPP_OBJS): Add cppinit.o.
+
 Thu Feb  4 10:46:30 1999  Gavin Romig-Koch  <gavin@cygnus.com>
 
        * config/mips/mips.md ([u]divmodsi4,[u]divmoddi4,[u]divsi3,[u]divdi3,
