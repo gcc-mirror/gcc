@@ -414,12 +414,12 @@ static void e64toasc	PROTO((unsigned EMUSHORT *, char *, int));
 static void e113toasc	PROTO((unsigned EMUSHORT *, char *, int));
 #endif /* 0 */
 static void etoasc	PROTO((unsigned EMUSHORT *, char *, int));
-static void asctoe24	PROTO((char *, unsigned EMUSHORT *));
-static void asctoe53	PROTO((char *, unsigned EMUSHORT *));
-static void asctoe64	PROTO((char *, unsigned EMUSHORT *));
-static void asctoe113	PROTO((char *, unsigned EMUSHORT *));
-static void asctoe	PROTO((char *, unsigned EMUSHORT *));
-static void asctoeg	PROTO((char *, unsigned EMUSHORT *, int));
+static void asctoe24	PROTO((const char *, unsigned EMUSHORT *));
+static void asctoe53	PROTO((const char *, unsigned EMUSHORT *));
+static void asctoe64	PROTO((const char *, unsigned EMUSHORT *));
+static void asctoe113	PROTO((const char *, unsigned EMUSHORT *));
+static void asctoe	PROTO((const char *, unsigned EMUSHORT *));
+static void asctoeg	PROTO((const char *, unsigned EMUSHORT *, int));
 static void efloor	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 #if 0
 static void efrexp	PROTO((unsigned EMUSHORT *, int *,
@@ -431,7 +431,7 @@ static void eremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *,
 			       unsigned EMUSHORT *));
 #endif
 static void eiremain	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
-static void mtherr	PROTO((char *, int));
+static void mtherr	PROTO((const char *, int));
 #ifdef DEC
 static void dectoe	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
 static void etodec	PROTO((unsigned EMUSHORT *, unsigned EMUSHORT *));
@@ -691,7 +691,7 @@ etruncui (x)
 
 REAL_VALUE_TYPE
 ereal_atof (s, t)
-     char *s;
+     const char *s;
      enum machine_mode t;
 {
   unsigned EMUSHORT tem[NE], e[NE];
@@ -5006,7 +5006,7 @@ etoasc (x, string, ndigs)
 
 static void
 asctoe24 (s, y)
-     char *s;
+     const char *s;
      unsigned EMUSHORT *y;
 {
   asctoeg (s, y, 24);
@@ -5017,7 +5017,7 @@ asctoe24 (s, y)
 
 static void
 asctoe53 (s, y)
-     char *s;
+     const char *s;
      unsigned EMUSHORT *y;
 {
 #if defined(DEC) || defined(IBM)
@@ -5036,7 +5036,7 @@ asctoe53 (s, y)
 
 static void
 asctoe64 (s, y)
-     char *s;
+     const char *s;
      unsigned EMUSHORT *y;
 {
   asctoeg (s, y, 64);
@@ -5046,7 +5046,7 @@ asctoe64 (s, y)
 
 static void
 asctoe113 (s, y)
-     char *s;
+     const char *s;
      unsigned EMUSHORT *y;
 {
   asctoeg (s, y, 113);
@@ -5056,7 +5056,7 @@ asctoe113 (s, y)
 
 static void
 asctoe (s, y)
-     char *s;
+     const char *s;
      unsigned EMUSHORT *y;
 {
   asctoeg (s, y, NBITS);
@@ -5067,7 +5067,7 @@ asctoe (s, y)
 
 static void
 asctoeg (ss, y, oprec)
-     char *ss;
+     const char *ss;
      unsigned EMUSHORT *y;
      int oprec;
 {
@@ -5082,12 +5082,11 @@ asctoeg (ss, y, oprec)
   /* Copy the input string.  */
   lstr = (char *) alloca (strlen (ss) + 1);
 
-  s = ss;
-  while (*s == ' ')		/* skip leading spaces */
-    ++s;
+  while (*ss == ' ')		/* skip leading spaces */
+    ++ss;
 
   sp = lstr;
-  while ((*sp++ = *s++) != '\0')
+  while ((*sp++ = *ss++) != '\0')
     ;
   s = lstr;
 
@@ -5664,7 +5663,7 @@ extern int merror;
 
 static void
 mtherr (name, code)
-     char *name;
+     const char *name;
      int code;
 {
   /* The string passed by the calling program is supposed to be the

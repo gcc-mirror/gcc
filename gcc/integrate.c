@@ -110,7 +110,7 @@ get_label_from_map (map, i)
    Nonzero means value is a warning msgid with a single %s
    for the function's name.  */
 
-char *
+const char *
 function_cannot_inline_p (fndecl)
      register tree fndecl;
 {

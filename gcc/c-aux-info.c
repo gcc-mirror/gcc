@@ -1,7 +1,7 @@
 /* Generate information regarding function declarations and definitions based
    on information stored in GCC's tree structure.  This code implements the
    -aux-info option.
-   Copyright (C) 1989, 91, 94, 95, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 94, 95, 97-98, 1999 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@segfault.us.com).
 
 This file is part of GNU CC.
@@ -35,14 +35,14 @@ enum formals_style_enum {
 typedef enum formals_style_enum formals_style;
 
 
-static char *data_type;
+static const char *data_type;
 
-static char *affix_data_type		PROTO((char *));
-static char *gen_formal_list_for_type	PROTO((tree, formals_style));
+static char *affix_data_type		PROTO((const char *));
+static const char *gen_formal_list_for_type PROTO((tree, formals_style));
 static int   deserves_ellipsis		PROTO((tree));
-static char *gen_formal_list_for_func_def PROTO((tree, formals_style));
-static char *gen_type			PROTO((char *, tree, formals_style));
-static char *gen_decl			PROTO((tree, int, formals_style));
+static const char *gen_formal_list_for_func_def PROTO((tree, formals_style));
+static const char *gen_type		PROTO((const char *, tree, formals_style));
+static const char *gen_decl		PROTO((tree, int, formals_style));
 
 /* Concatenate a sequence of strings, returning the result.
 
@@ -120,13 +120,16 @@ concat VPROTO((const char *first, ...))
    that look as expected.  */
 
 static char *
-affix_data_type (type_or_decl)
-     char *type_or_decl;
+affix_data_type (param)
+     const char *param;
 {
+  char *type_or_decl = (char *) alloca (strlen (param) + 1);
   char *p = type_or_decl;
   char *qualifiers_then_data_type;
   char saved;
 
+  strcpy (type_or_decl, param);
+  
   /* Skip as many leading const's or volatile's as there are.  */
 
   for (;;)
@@ -164,12 +167,12 @@ affix_data_type (type_or_decl)
    we are currently aiming for is non-ansi, then we just return a pair
    of empty parens here.  */
 
-static char *
+static const char *
 gen_formal_list_for_type (fntype, style)
      tree fntype;
      formals_style style;
 {
-  char *formal_list = "";
+  const char *formal_list = "";
   tree formal_type;
 
   if (style != ansi)
@@ -178,7 +181,7 @@ gen_formal_list_for_type (fntype, style)
   formal_type = TYPE_ARG_TYPES (fntype);
   while (formal_type && TREE_VALUE (formal_type) != void_type_node)
     {
-      char *this_type;
+      const char *this_type;
 
       if (*formal_list)
         formal_list = concat (formal_list, ", ", NULL_PTR);
@@ -284,18 +287,18 @@ deserves_ellipsis (fntype)
    This routine returns a string which is the source form for the entire
    function formal parameter list.  */
 
-static char *
+static const char *
 gen_formal_list_for_func_def (fndecl, style)
      tree fndecl;
      formals_style style;
 {
-  char *formal_list = "";
+  const char *formal_list = "";
   tree formal_decl;
 
   formal_decl = DECL_ARGUMENTS (fndecl);
   while (formal_decl)
     {
-      char *this_formal;
+      const char *this_formal;
 
       if (*formal_list && ((style == ansi) || (style == k_and_r_names)))
         formal_list = concat (formal_list, ", ", NULL_PTR);
@@ -359,9 +362,9 @@ gen_formal_list_for_func_def (fndecl, style)
    to do at this point is for the initial caller to prepend the "data_type"
    string onto the returned "seed".  */
 
-static char *
+static const char *
 gen_type (ret_val, t, style)
-     char *ret_val;
+     const char *ret_val;
      tree t;
      formals_style style;
 {
@@ -533,13 +536,13 @@ gen_type (ret_val, t, style)
    associated with a function definition.  In this case, we can assume that
    an attached list of DECL nodes for function formal arguments is present.  */
 
-static char *
+static const char *
 gen_decl (decl, is_func_definition, style)
      tree decl;
      int is_func_definition;
      formals_style style;
 {
-  char *ret_val;
+  const char *ret_val;
 
   if (DECL_NAME (decl))
     ret_val = IDENTIFIER_POINTER (DECL_NAME (decl));

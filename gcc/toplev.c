@@ -3497,7 +3497,7 @@ rest_of_compilation (decl)
   if (DECL_SAVED_INSNS (decl) == 0)
     {
       int inlinable = 0;
-      char *lose;
+      const char *lose;
 
       /* If requested, consider whether to make this function inline.  */
       if (DECL_INLINE (decl) || flag_inline_functions)

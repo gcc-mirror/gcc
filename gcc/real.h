@@ -1,5 +1,5 @@
 /* Definitions of floating-point access for GNU compiler.
-   Copyright (C) 1989, 91, 94, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1989, 91, 94, 96-98, 1999 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -132,7 +132,7 @@ extern void earith		PROTO((REAL_VALUE_TYPE *, int,
 				       REAL_VALUE_TYPE *, REAL_VALUE_TYPE *));
 extern REAL_VALUE_TYPE etrunci	PROTO((REAL_VALUE_TYPE));
 extern REAL_VALUE_TYPE etruncui	PROTO((REAL_VALUE_TYPE));
-extern REAL_VALUE_TYPE ereal_atof PROTO((char *, enum machine_mode));
+extern REAL_VALUE_TYPE ereal_atof PROTO((const char *, enum machine_mode));
 extern REAL_VALUE_TYPE ereal_negate PROTO((REAL_VALUE_TYPE));
 extern HOST_WIDE_INT efixi	PROTO((REAL_VALUE_TYPE));
 extern unsigned HOST_WIDE_INT efixui PROTO((REAL_VALUE_TYPE));

@@ -306,7 +306,7 @@ struct nesting
 	  /* Number of range exprs in case statement.  */
 	  int num_ranges;
 	  /* Name of this kind of statement, for warnings.  */
-	  char *printname;
+	  const char *printname;
 	  /* Used to save no_line_numbers till we see the first case label.
 	     We set this to -1 when we see the first case label in this
 	     case statement.  */
@@ -425,7 +425,7 @@ struct label_chain
 static int using_eh_for_cleanups_p = 0;
 
 
-static int n_occurrences		PROTO((int, char *));
+static int n_occurrences		PROTO((int, const char *));
 static void expand_goto_internal	PROTO((tree, rtx, rtx));
 static int expand_fixup			PROTO((tree, rtx, rtx));
 static rtx expand_nl_handler_label	PROTO((rtx, rtx));
@@ -1120,7 +1120,7 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 static int
 n_occurrences (c, s)
      int c;
-     char *s;
+     const char *s;
 {
   int n = 0;
   while (*s)
@@ -4172,7 +4172,7 @@ expand_start_case (exit_flag, expr, type, printname)
      int exit_flag;
      tree expr;
      tree type;
-     char *printname;
+     const char *printname;
 {
   register struct nesting *thiscase = ALLOC_NESTING ();
 

@@ -1,5 +1,5 @@
 /* Parse C expressions for CCCP.
-   Copyright (C) 1987, 92, 94, 95, 96, 97, 1998 Free Software Foundation.
+   Copyright (C) 1987, 92, 94-98, 1999 Free Software Foundation.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -50,7 +50,8 @@ struct arglist {
 HOST_WIDEST_INT parse_c_expression PROTO((char *, int));
 
 static int yylex PROTO((void));
-static void yyerror PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+static void yyerror PVPROTO((const char *, ...))
+  ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
 static HOST_WIDEST_INT expression_value;
 #ifdef TEST_EXP_READER
 static int expression_signedp;
@@ -135,9 +136,9 @@ struct constant;
 HOST_WIDEST_INT parse_escape PROTO((char **, HOST_WIDEST_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
-void error PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
-void pedwarn PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
-void warning PVPROTO((char *, ...)) ATTRIBUTE_PRINTF_1;
+void error PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void pedwarn PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
+void warning PVPROTO((const char *, ...)) ATTRIBUTE_PRINTF_1;
 
 static int parse_number PROTO((int));
 static HOST_WIDEST_INT left_shift PROTO((struct constant *, unsigned HOST_WIDEST_INT));
@@ -494,7 +495,7 @@ parse_number (olen)
 }
 
 struct token {
-  char *operator;
+  const char *operator;
   int token;
 };
 
@@ -1001,17 +1002,17 @@ parse_c_expression (string, warn_undefined)
 }
 
 static void
-yyerror VPROTO ((char * msgid, ...))
+yyerror VPROTO ((const char * msgid, ...))
 {
 #ifndef ANSI_PROTOTYPES
-  char * msgid;
+  const char * msgid;
 #endif
   va_list args;
 
   VA_START (args, msgid);
 
 #ifndef ANSI_PROTOTYPES
-  msgid = va_arg (args, char *);
+  msgid = va_arg (args, const char *);
 #endif
 
   fprintf (stderr, "error: ");

@@ -60,8 +60,8 @@ enum attrs {A_PACKED, A_NOCOMMON, A_COMMON, A_NORETURN, A_CONST, A_T_UNION,
 enum format_type { printf_format_type, scanf_format_type,
 		   strftime_format_type };
 
-static void declare_hidden_char_array	PROTO((char *, char *));
-static void add_attribute		PROTO((enum attrs, char *,
+static void declare_hidden_char_array	PROTO((const char *, const char *));
+static void add_attribute		PROTO((enum attrs, const char *,
 					       int, int, int));
 static void init_attributes		PROTO((void));
 static void record_function_format	PROTO((tree, tree, enum format_type,
@@ -78,7 +78,7 @@ typedef struct
 {
   int compstmt_count;
   int line;
-  char *file;
+  const char *file;
   int needs_warning;
 } if_elt;
 static void tfaff			PROTO((void));
@@ -170,7 +170,7 @@ c_expand_start_else ()
 void
 declare_function_name ()
 {
-  char *name, *printable_name;
+  const char *name, *printable_name;
 
   if (current_function_decl == NULL)
     {
@@ -196,7 +196,7 @@ declare_function_name ()
 
 static void
 declare_hidden_char_array (name, value)
-     char *name, *value;
+     const char *name, *value;
 {
   tree decl, type, init;
   int vlen;
@@ -355,7 +355,7 @@ static int attrtab_idx = 0;
 static void
 add_attribute (id, string, min_len, max_len, decl_req)
      enum attrs id;
-     char *string;
+     const char *string;
      int min_len, max_len;
      int decl_req;
 {
@@ -587,7 +587,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	  else
 	    {
 	      int j;
-	      char *p = IDENTIFIER_POINTER (TREE_VALUE (args));
+	      const char *p = IDENTIFIER_POINTER (TREE_VALUE (args));
 	      int len = strlen (p);
 	      enum machine_mode mode = VOIDmode;
 	      tree typefm;
@@ -719,7 +719,7 @@ decl_attributes (node, attributes, prefix_attributes)
 	      }
 	    else
 	      {
-		char *p = IDENTIFIER_POINTER (format_type_id);
+		const char *p = IDENTIFIER_POINTER (format_type_id);
 		
 		if (!strcmp (p, "printf") || !strcmp (p, "__printf__"))
 		  format_type = printf_format_type;
@@ -1099,7 +1099,7 @@ strip_attrs (specs_attrs)
 #define T_ST    &sizetype
 
 typedef struct {
-  char *format_chars;
+  const char *format_chars;
   int pointer_count;
   /* Type of argument if no length modifier is used.  */
   tree *nolen;
@@ -1122,7 +1122,7 @@ typedef struct {
      If NULL, then this modifier is not allowed.  */
   tree *zlen;
   /* List of other modifier characters allowed with these options.  */
-  char *flag_chars;
+  const char *flag_chars;
 } format_char_info;
 
 static format_char_info print_char_table[] = {
@@ -1376,7 +1376,7 @@ check_format_info (info, params)
   tree cur_type;
   tree wanted_type;
   tree first_fillin_param;
-  char *format_chars;
+  const char *format_chars;
   format_char_info *fci = NULL;
   char flag_chars[8];
   int has_operand_number = 0;
@@ -1540,7 +1540,7 @@ check_format_info (info, params)
 	     it is an operand number, so set PARAMS to that operand.  */
 	  if (*format_chars >= '0' && *format_chars <= '9')
 	    {
-	      char *p = format_chars;
+	      const char *p = format_chars;
 
 	      while (*p >= '0' && *p++ <= '9')
 		;
@@ -1899,8 +1899,8 @@ check_format_info (info, params)
 		&& (TYPE_MAIN_VARIANT (cur_type) == signed_char_type_node
 		    || TYPE_MAIN_VARIANT (cur_type) == unsigned_char_type_node)))
 	{
-	  register char *this;
-	  register char *that;
+	  register const char *this;
+	  register const char *that;
 
 	  this = IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (wanted_type)));
 	  that = 0;
@@ -2230,7 +2230,7 @@ void
 binary_op_error (code)
      enum tree_code code;
 {
-  register char *opname;
+  register const char *opname;
 
   switch (code)
     {
