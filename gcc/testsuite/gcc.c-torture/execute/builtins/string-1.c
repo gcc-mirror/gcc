@@ -1,4 +1,4 @@
-/* Copyright (C) 2000  Free Software Foundation.
+/* Copyright (C) 2000, 2003  Free Software Foundation.
 
    Ensure all expected transformations of builtin strlen, strcmp,
    strrchr and rindex occur and perform correctly.
@@ -14,7 +14,8 @@ extern char *rindex (const char *, int);
 int x = 6;
 char *bar = "hi world";
 
-int main()
+void
+main_test (void)
 {
   const char *const foo = "hello world";
 
@@ -83,45 +84,4 @@ int main()
     abort ();
   if (__builtin_strcmp (foo, "hello") <= 0)
     abort ();
-
-  return 0;
 }
-
-static char *
-rindex (const char *s, int c)
-{
-  /* For systems which don't have rindex, we ensure no link failures
-     occur by always providing a backup definition.  During
-     optimization this function aborts to catch errors.  */
-#ifdef __OPTIMIZE__
-  abort ();
-#else
-  return strrchr(s, c);
-#endif
-}
-
-#ifdef __OPTIMIZE__
-/* When optimizing, all the above cases should be transformed into
-   something else.  So any remaining calls to the original function
-   should abort.  */
-__attribute__ ((noinline))
-static __SIZE_TYPE__
-strlen (const char *s)
-{
-  abort ();
-}
-
-__attribute__ ((noinline))
-static int
-strcmp (const char *s1, const char *s2)
-{
-  abort ();
-}
-
-__attribute__ ((noinline))
-static char *
-strrchr (const char *s, int c)
-{
-  abort ();
-}
-#endif

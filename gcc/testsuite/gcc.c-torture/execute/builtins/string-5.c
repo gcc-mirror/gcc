@@ -54,7 +54,8 @@ static const struct bar
 
 static const int baz[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 0 };
 
-int main()
+void
+main_test (void)
 {
   const char *s;
   struct foo f1[sizeof foo/sizeof*foo];
@@ -86,40 +87,4 @@ int main()
   __builtin_bcopy ("ABCDE", p + 4, 1);
   if (memcmp (p, "abfgAi", 7))
     abort ();
-
-  return 0;
-}
-
-/* When optimizing, all the above cases should be transformed into
-   something else.  So any remaining calls to the original function
-   should abort.  When not optimizing, provide memmove/bcopy implementation
-   just in case target lacks these in its libc.  */
-__attribute__ ((noinline))
-static void *
-memmove (void *d, const void *s, size_t n)
-{
-#ifdef __OPTIMIZE__
-  abort ();
-#else
-  char *dst = (char *) d;
-  const char *src = (const char *) s;
-  if (src < dst)
-    {
-      dst += n;
-      src += n;
-      while (n--)
-        *--dst = *--src;
-    }
-  else
-    while (n--)
-      *dst++ = *src++;
-  return (char *) d;
-#endif
-}
-
-__attribute__ ((noinline))
-static void
-bcopy (const void *s, void *d, size_t n)
-{
-  memmove (d, s, n);
 }

@@ -1,4 +1,4 @@
-/* Copyright (C) 2002  Free Software Foundation.
+/* Copyright (C) 2002, 2003  Free Software Foundation.
 
    Ensure that builtin memset operations for constant length and
    non-constant assigned value don't cause compiler problems.
@@ -10,9 +10,10 @@ typedef __SIZE_TYPE__ size_t;
 extern void *memset (void *, int, size_t);
 
 char buffer[32];
+int argc = 1;
 
-int
-main (int argc)
+void
+main_test (void)
 {
   memset (buffer, argc, 0);
   memset (buffer, argc, 1);
@@ -32,20 +33,4 @@ main (int argc)
   memset (buffer, argc, 15);
   memset (buffer, argc, 16);
   memset (buffer, argc, 17);
-
-  return 0;
 }
-
-#ifdef __OPTIMIZE__
-/* When optimizing, most of the above cases should be transformed into
-   something else.  So any remaining calls to the original function
-   for short lengths should abort.  */
-__attribute__ ((noinline))
-static void *
-memset (void *dst, int c, size_t len)
-{
-  if (len < 2)
-    abort ();
-}
-#endif
-
