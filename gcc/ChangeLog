@@ -1,5 +1,12 @@
 2002-09-20  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Update for change
+	to load_macho_picbase.
+	* config/rs6000/rs6000.md: Document Darwin-specific unspec IDs.
+	(load_macho_picbase): Take the symbol to use as a parameter.
+	(macho_correct_pic): New insn.
+	(builtin_setjmp_reciever): On Darwin, restore the PIC register.
+
 	* config/rs6000/rs6000.h (ELIMINABLE_REGS): Use
 	RS6000_PIC_OFFSET_TABLE_REGNUM rather than hardcoding 30.
 	(CAN_ELIMINATE): Likewise.
