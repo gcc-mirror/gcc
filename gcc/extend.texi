@@ -3219,6 +3219,7 @@ Predefined Macros,cpp.info,The C Preprocessor}).
 * Naming Results::      Giving a name to C++ function return values.
 * Min and Max::		C++ Minimum and maximum operators.
 * Volatiles::		What constitutes an access to a volatile object.
+* Restricted Pointers:: C9X restricted pointers and references.
 * C++ Interface::       You can use a single C++ header file for both
                          declarations and definitions.
 * Template Instantiation:: Methods for ensuring that exactly one copy of
@@ -3465,6 +3466,55 @@ becomes difficult to determine where volatile access occur, and not
 possible to ignore the return value from functions returning volatile
 references. Again, if you wish to force a read, cast the reference to
 an rvalue.
+
+@node Restricted Pointers
+@section Restricting Pointer Aliasing
+@cindex restricted pointers
+@cindex restricted references
+@cindex restricted this pointer
+
+As with gcc, g++ understands the C9X proposal of restricted pointers,
+specified with the @code{__restrict__}, or @code{__restrict} type
+qualifier. Because you cannot compile C++ by specifying the -flang-isoc9x
+language flag, @code{restrict} is not a keyword in C++.
+
+In addition to allowing restricted pointers, you can specify restricted
+references, which indicate that the reference is not aliased in the local
+context.
+
+@example
+void fn (int *__restrict__ rptr, int &__restrict__ rref)
+@{
+  @dots{}
+@}
+@end example
+
+@noindent
+In the body of @code{fn}, @var{rptr} points to an unaliased integer and
+@var{rref} refers to a (different) unaliased integer.
+
+You may also specify whether a member function's @var{this} pointer is
+unaliased by using @code{__restrict__} as a member function qualifier.
+
+@example
+void T::fn () __restrict__
+@{
+  @dots{}
+@}
+@end example
+
+@noindent
+Within the body of @code{T::fn}, @var{this} will have the effective
+definition @code{T *__restrict__ const this}. Notice that the
+interpretation of a @code{__restrict__} member function qualifier is
+different to that of @code{const} or @code{volatile} qualifier, in that it
+is applied to the pointer rather than the object. This is consistent with
+other compilers which implement restricted pointers.
+
+As with all outermost parameter qualifiers, @code{__restrict__} is
+ignored in function definition matching. This means you only need to
+specify @code{__restrict__} in a function definition, rather than
+in a function prototype as well.
 
 @node C++ Interface
 @section Declarations and Definitions in One Header

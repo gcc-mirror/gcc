@@ -8919,7 +8919,8 @@ create_array_type_for_decl (name, type, size)
    is erroneous, NULL_TREE is returned.
 
    QUALS is used only for FUNCDEF and MEMFUNCDEF cases.  For a member
-   function, these are the qualifiers to give to the `this' pointer.
+   function, these are the qualifiers to give to the `this' pointer. We
+   apply TYPE_QUAL_RESTRICT to the this ptr, not the object.
 
    May return void_type_node if the declarator turned out to be a friend.
    See grokfield for details.  */
@@ -9836,8 +9837,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	  if (ctype != NULL_TREE)
 	    {
 	      tree dummy = build_decl (TYPE_DECL, NULL_TREE, type);
-	      ctype = grok_method_quals (ctype, dummy, quals);
+	      grok_method_quals (ctype, dummy, quals);
 	      type = TREE_TYPE (dummy);
+	      ctype = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (type)));
 	      quals = NULL_TREE;
 	    }
 	}

@@ -780,9 +780,11 @@ lang_decode_option (argc, argv)
 
 /* Incorporate `const' and `volatile' qualifiers for member functions.
    FUNCTION is a TYPE_DECL or a FUNCTION_DECL.
-   QUALS is a list of qualifiers.  */
+   QUALS is a list of qualifiers.  Returns any explicit
+   top-level qualifiers of the method's this pointer, anything other than
+   TYPE_UNQUALIFIED will be an extension.  */
 
-tree
+int
 grok_method_quals (ctype, function, quals)
      tree ctype, function, quals;
 {
@@ -790,13 +792,16 @@ grok_method_quals (ctype, function, quals)
   tree raises = TYPE_RAISES_EXCEPTIONS (fntype);
   int type_quals = TYPE_UNQUALIFIED;
   int dup_quals = TYPE_UNQUALIFIED;
+  int this_quals = TYPE_UNQUALIFIED;
 
   do
     {
       int tq = cp_type_qual_from_rid (TREE_VALUE (quals));
       
-      if (type_quals & tq)
+      if ((type_quals | this_quals) & tq)
 	dup_quals |= tq;
+      else if (tq & TYPE_QUAL_RESTRICT)
+        this_quals |= tq;
       else
 	type_quals |= tq;
       quals = TREE_CHAIN (quals);
@@ -817,7 +822,7 @@ grok_method_quals (ctype, function, quals)
     fntype = build_exception_variant (fntype, raises);
 
   TREE_TYPE (function) = fntype;
-  return ctype;
+  return this_quals;
 }
 
 /* Warn when -fexternal-templates is used and #pragma
@@ -961,9 +966,7 @@ grokclassfn (ctype, function, flags, quals)
      tree quals;
 {
   tree fn_name = DECL_NAME (function);
-  tree arg_types;
-  tree parm;
-  tree qualtype;
+  int this_quals = TYPE_UNQUALIFIED;
 
   if (fn_name == NULL_TREE)
     {
@@ -973,26 +976,23 @@ grokclassfn (ctype, function, flags, quals)
     }
 
   if (quals)
-    qualtype = grok_method_quals (ctype, function, quals);
-  else
-    qualtype = ctype;
+    this_quals = grok_method_quals (ctype, function, quals);
 
-  arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
   if (TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
     {
       /* Must add the class instance variable up front.  */
       /* Right now we just make this a pointer.  But later
 	 we may wish to make it special.  */
-      tree type = TREE_VALUE (arg_types);
+      tree type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (function)));
 
-      parm = build_decl (PARM_DECL, this_identifier, type);
+      tree parm = build_decl (PARM_DECL, this_identifier,
+                         cp_build_qualified_type (type, this_quals | TYPE_QUAL_CONST));
       /* Mark the artificial `this' parameter as "artificial".  */
       SET_DECL_ARTIFICIAL (parm);
       DECL_ARG_TYPE (parm) = type;
       /* We can make this a register, so long as we don't
 	 accidentally complain if someone tries to take its address.  */
       DECL_REGISTER (parm) = 1;
-      TREE_READONLY (parm) = 1;
       TREE_CHAIN (parm) = last_function_parms;
       last_function_parms = parm;
     }
@@ -1003,10 +1003,7 @@ grokclassfn (ctype, function, flags, quals)
   DECL_CLASS_CONTEXT (function) = ctype;
 
   if (flags == DTOR_FLAG || DECL_CONSTRUCTOR_P (function))
-    {
-      maybe_retrofit_in_chrg (function);
-      arg_types = TYPE_ARG_TYPES (TREE_TYPE (function));
-    }
+    maybe_retrofit_in_chrg (function);
 
   if (flags == DTOR_FLAG)
     {

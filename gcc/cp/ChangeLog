@@ -1,3 +1,12 @@
+1999-11-19  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (grok_method_quals): Return this pointer qualifiers.
+	* decl.c (grokdeclarator): Adjust calls to grok_method_quals.
+	* decl2.c (grok_method_quals): Accept `restrict' as applying to
+	the object pointer. Return such qualifiers.
+	(grokclassfn): Apply this pointer qualifiers. Cleanup unused
+	variables.
+
 1999-11-18  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (expand_end_catch_block): Fix typo.

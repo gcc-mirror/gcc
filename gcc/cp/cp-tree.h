@@ -3529,7 +3529,7 @@ extern void make_rtl_for_local_static           PROTO((tree));
 extern void init_decl2				PROTO((void));
 extern int check_java_method			PROTO((tree));
 extern int lang_decode_option			PROTO((int, char **));
-extern tree grok_method_quals			PROTO((tree, tree, tree));
+extern int grok_method_quals			PROTO((tree, tree, tree));
 extern void warn_if_unknown_interface		PROTO((tree));
 extern void grok_x_components			PROTO((tree));
 extern void maybe_retrofit_in_chrg		PROTO((tree));
