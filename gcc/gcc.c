@@ -464,7 +464,7 @@ proper position among the other output files.  */
 /* config.h can define STARTFILE_SPEC to override the default crt0 files.  */
 #ifndef STARTFILE_SPEC
 #define STARTFILE_SPEC  \
-  "%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}"
+  "%{!shared:%{pg:gcrt0.o%s}%{!pg:%{p:mcrt0.o%s}%{!p:crt0.o%s}}}"
 #endif
 
 /* config.h can define SWITCHES_NEED_SPACES to control passing -o and -L.
