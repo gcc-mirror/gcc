@@ -4124,6 +4124,7 @@
       if ((val & (mask << i)) == val)
         break;
 
+    /* Shouldn't happen, but we don't want to split if the shift is zero.  */
     if (i == 0)
       FAIL;
 

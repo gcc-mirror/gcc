@@ -1,5 +1,11 @@
 2002-03-15  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/5170
+	* arm.md (split pattern for thumb shiftable immediates): Add comment
+	explaining non-obvious test.
+
+2002-03-15  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR target/5712
 	* arm.md (movaddr, movaddr_insn): Delete.
 
