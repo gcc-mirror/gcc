@@ -1,3 +1,10 @@
+Sat Jan 15 15:41:14 EST 2000  John Wehle  (john@feith.com)
+
+	* gcse.c (insert_insn_end_bb): Use emit_block_insn_before
+	instead of emit_insn_before.  Also handle NOTE_INSN_BASIC_BLOCK
+	when walking backwards to find all the parameter loads when
+	the basic block ends in a call.
+
 2000-01-15  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.c (this_loop_info): Delete.
