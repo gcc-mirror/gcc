@@ -102,10 +102,14 @@ find_base_value (src)
       if (REGNO (src) < FIRST_PSEUDO_REGISTER && copying_arguments)
 	return new_reg_base_value[REGNO (src)];
 
-      /* If this REG is related to a known base value, return it.
-	 This must happen after the arg register check above to avoid
-	 circular set chains.  */
-      if (reg_base_value[REGNO (src)])
+      /* If a pseudo has a known base value, return it.  Do not do this
+	 for hard regs since it can result in a circular dependency
+	 chain for registers which have values at function entry.
+
+	 The test above is not sufficient because the scheduler may move
+	 a copy out of an arg reg past the NOTE_INSN_FUNCTION_BEGIN.  */
+      if (REGNO (src) >= FIRST_PSEUDO_REGISTER
+	  && reg_base_value[REGNO (src)])
 	return reg_base_value[REGNO (src)];
 
       return src;

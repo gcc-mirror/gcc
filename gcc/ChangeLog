@@ -1,3 +1,8 @@
+Wed Nov  5 14:26:05 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (find_base_value): Only return the known base value for
+	pseudo registers.
+
 Wed Nov  5 11:27:14 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* i386.c (load_pic_register): Call prologue_get_pc_and_set_got.
