@@ -1043,6 +1043,9 @@ compile_file (void)
      expander can also generate them.  */
   process_pending_assemble_externals ();
 
+  /* Flush any pending equate directives.  */
+  process_pending_assemble_output_defs ();
+
   /* Attach a special .ident directive to the end of the file to identify
      the version of GCC which compiled this code.  The format of the .ident
      string is patterned after the ones produced by native SVR4 compilers.  */
