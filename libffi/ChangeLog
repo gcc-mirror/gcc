@@ -1,3 +1,14 @@
+2003-09-18  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* src/sh/ffi.c (ffi_prep_args): Take account into the alignement
+	for the register size.
+	(ffi_closure_helper_SYSV): Handle the structure return value
+	address correctly.
+	(ffi_closure_helper_SYSV): Return the appropriate type when
+	the registers are used for the structure return value.
+	* src/sh/sysv.S (ffi_closure_SYSV): Fix the stack layout for
+	the 64-bit return value.  Update copyright years.
+
 2003-09-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/lib/libffi-dg.exp (libffi_target_compile): Search in

@@ -220,7 +220,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 	    greg += n;
 #endif
 	  memcpy (argp, *p_argv, z);
-	  argp += z;
+	  argp += n * sizeof (int);
 	}
     }
 
@@ -315,7 +315,7 @@ void ffi_prep_args(char *stack, extended_cif *ecif)
 	    }
 #endif
 	  memcpy (argp, *p_argv, z);
-	  argp += z;
+	  argp += n * sizeof (int);
 	}
     }
 
@@ -533,10 +533,10 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 
   /* Copy the caller's structure return value address so that the closure
      returns the data directly to the caller.  */
-  if (cif->rtype->type == FFI_TYPE_STRUCT)
+  if (cif->rtype->type == FFI_TYPE_STRUCT && STRUCT_VALUE_ADDRESS_WITH_ARG)
     {
       rvalue = *pgr++;
-      ireg = STRUCT_VALUE_ADDRESS_WITH_ARG ? 1 : 0;
+      ireg = 1;
     }
   else
     ireg = 0;
@@ -717,6 +717,6 @@ ffi_closure_helper_SYSV (ffi_closure *closure, void *rvalue,
 
   (closure->fun) (cif, rvalue, avalue, closure->user_data);
 
-  /* Tell ffi_closure_osf how to perform return type promotions.  */
-  return cif->rtype->type;
+  /* Tell ffi_closure_SYSV how to perform return type promotions.  */
+  return return_type (cif->rtype);
 }
