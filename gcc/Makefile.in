@@ -636,6 +636,7 @@ TREE_H = tree.h tree.def $(MACHMODE_H) tree-check.h version.h builtins.def \
           location.h
 BASIC_BLOCK_H = basic-block.h bitmap.h sbitmap.h varray.h $(PARTITION_H) \
           hard-reg-set.h
+COVERAGE_H = coverage.h gcov-io.h gcov-iov.h
 DEMANGLE_H = $(srcdir)/../include/demangle.h
 RECOG_H = recog.h
 EXPR_H = expr.h
@@ -803,8 +804,8 @@ C_OBJS = c-parse.o c-lang.o c-pretty-print.o $(C_AND_OBJC_OBJS)
 OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  cfg.o cfganal.o cfgbuild.o cfgcleanup.o cfglayout.o cfgloop.o		   \
  cfgloopanal.o cfgloopmanip.o loop-init.o loop-unswitch.o loop-unroll.o	   \
- cfgrtl.o combine.o conflict.o convert.o cse.o cselib.o dbxout.o	   \
- debug.o df.o diagnostic.o dojump.o doloop.o dominance.o		         \
+ cfgrtl.o combine.o conflict.o convert.o coverage.o cse.o cselib.o 	   \
+ dbxout.o debug.o df.o diagnostic.o dojump.o doloop.o dominance.o	   \
  dwarf2asm.o dwarf2out.o dwarfout.o emit-rtl.o except.o explow.o	   \
  expmed.o expr.o final.o flow.o fold-const.o function.o gcse.o		   \
  genrtl.o ggc-common.o global.o graph.o gtype-desc.o			   \
@@ -1584,6 +1585,10 @@ cgraph.o : cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h tree-inline.h toplev.h flags.h ggc.h  $(TARGET_H) cgraph.h gt-cgraph.h
 cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    langhooks.h tree-inline.h toplev.h flags.h ggc.h  $(TARGET_H) cgraph.h
+coverage.o : coverage.c gcov-io.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+   $(TM_H) $(RTL_H) $(TREE_H) flags.h output.h $(REGS_H) $(EXPR_H) function.h \
+   toplev.h $(GGC_H) $(TARGET_H) langhooks.h $(COVERAGE_H) libfuncs.h \
+   gt-coverage.h $(HASHTAB_H)
 cselib.o : cselib.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(REGS_H) \
    hard-reg-set.h flags.h real.h insn-config.h $(RECOG_H) $(EXPR_H) toplev.h \
    output.h function.h cselib.h $(GGC_H) $(TM_P_H) gt-cselib.h
@@ -1615,10 +1620,9 @@ df.o : df.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) df.h $(FIBHEAP_H)
 conflict.o : conflict.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OBSTACK_H) \
    $(HASHTAB_H) $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
-profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
-   flags.h insn-config.h output.h $(REGS_H) $(EXPR_H) function.h \
-   gcov-io.h gcov-iov.h toplev.h $(GGC_H) hard-reg-set.h $(BASIC_BLOCK_H) \
-   $(TARGET_H) langhooks.h profile.h libfuncs.h gt-profile.h $(HASHTAB_H)
+profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+   $(TREE_H) flags.h output.h $(REGS_H) $(EXPR_H) function.h \
+   toplev.h $(BASIC_BLOCK_H) $(COVERAGE_H)
 loop.o : loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h $(LOOP_H) \
    insn-config.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) \
    real.h $(PREDICT_H) $(BASIC_BLOCK_H) function.h cfgloop.h \
@@ -1656,7 +1660,7 @@ cfgloopanal.o : cfgloopanal.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
 cfgloopmanip.o : cfgloopmanip.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h output.h coretypes.h $(TM_H)
 loop-init.o : loop-init.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) \
-   $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h profile.h \
+   $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h \
    coretypes.h $(TM_H)
 loop-unswitch.o : loop-unswitch.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TM_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h cfgloop.h cfglayout.h params.h \
@@ -1728,7 +1732,7 @@ sched-rgn.o : sched-rgn.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H) $(TARGET_H)
 sched-ebb.o : sched-ebb.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    sched-int.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h flags.h insn-config.h function.h \
-   $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H) $(PARAMS_H) profile.h
+   $(INSN_ATTR_H) toplev.h $(RECOG_H) except.h $(TM_P_H) $(PARAMS_H)
 sched-vis.o : sched-vis.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    sched-int.h hard-reg-set.h $(BASIC_BLOCK_H) $(INSN_ATTR_H) $(REGS_H) $(TM_P_H) \
    $(TARGET_H) real.h
@@ -1747,14 +1751,14 @@ sreal.o: sreal.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) sreal.h
 predict.o: predict.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    flags.h insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
    $(RECOG_H) function.h except.h $(EXPR_H) $(TM_P_H) $(PREDICT_H) sreal.h \
-   $(PARAMS_H) $(TARGET_H) cfgloop.h
+   $(PARAMS_H) $(TARGET_H) cfgloop.h $(COVERAGE_H)
 lists.o: lists.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(BASIC_BLOCK_H) flags.h output.h cfglayout.h $(FIBHEAP_H) \
    $(TARGET_H)
 tracer.o : tracer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) $(TREE_H) \
    $(BASIC_BLOCK_H) hard-reg-set.h output.h cfglayout.h flags.h \
-   $(PARAMS_H) profile.h
+   $(PARAMS_H) $(COVERAGE_H)
 cfglayout.o : cfglayout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(TREE_H) insn-config.h $(BASIC_BLOCK_H) hard-reg-set.h output.h \
    function.h cfglayout.h cfgloop.h $(TARGET_H)
@@ -1966,10 +1970,10 @@ s-preds: genpreds$(build_exeext) $(srcdir)/move-if-change
 
 GTFILES = $(srcdir)/location.h $(srcdir)/coretypes.h $(srcdir)/cpplib.h \
   $(host_xm_file_list) $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) \
-  $(srcdir)/bitmap.h $(srcdir)/function.h  $(srcdir)/rtl.h $(srcdir)/optabs.h \
-  $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h $(srcdir)/real.h \
-  $(srcdir)/varray.h $(srcdir)/ssa.h $(srcdir)/insn-addr.h $(srcdir)/cselib.h \
-  $(srcdir)/basic-block.h $(srcdir)/location.h \
+  $(srcdir)/bitmap.h $(srcdir)/coverage.c $(srcdir)/function.h  $(srcdir)/rtl.h \
+  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(srcdir)/hashtable.h \
+  $(srcdir)/real.h $(srcdir)/varray.h $(srcdir)/ssa.h $(srcdir)/insn-addr.h \
+  $(srcdir)/cselib.h $(srcdir)/basic-block.h $(srcdir)/location.h \
   $(srcdir)/c-common.h $(srcdir)/c-tree.h \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
   $(srcdir)/dbxout.c $(srcdir)/dwarf2out.c $(srcdir)/dwarf2asm.c \
@@ -1988,14 +1992,15 @@ GTFILES_FILES_FILES = @all_gtfiles_files_files@
 GTFILES_LANG_DIR_NAMES = @subdirs@
 GTFILES_SRCDIR = @srcdir@
 
-gt-cgraph.h gtype-desc.h gtype-desc.c gt-except.h gt-function.h : s-gtype; @true
-gt-integrate.h gt-stmt.h gt-tree.h gt-varasm.h gt-emit-rtl.h : s-gtype; @true
-gt-explow.h gt-stor-layout.h gt-regclass.h gt-lists.h : s-gtype; @true
-gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h gt-profile.h : s-gtype; @true
-gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h gt-dwarf2out.h : s-gtype ; @true
-gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h gt-dbxout.h : s-gtype ; @true
-gt-c-common.h gt-c-decl.h gt-c-parse.h gt-c-pragma.h : s-gtype; @true
-gt-c-objc-common.h gtype-c.h gt-location.h gt-stringpool.h : s-gtype ; @true
+gt-cgraph.h gt-coverage.h gtype-desc.h gtype-desc.c gt-except.h \
+gt-function.h gt-integrate.h gt-stmt.h gt-tree.h gt-varasm.h \
+gt-emit-rtl.h gt-explow.h gt-stor-layout.h gt-regclass.h \
+gt-lists.h gt-alias.h gt-cselib.h gt-fold-const.h gt-gcse.h \
+gt-expr.h gt-sdbout.h gt-optabs.h gt-bitmap.h \
+gt-dwarf2out.h gt-ra-build.h gt-reg-stack.h gt-dwarf2asm.h \
+gt-dbxout.h gt-c-common.h gt-c-decl.h gt-c-parse.h \
+gt-c-pragma.h gt-c-objc-common.h gtype-c.h gt-location.h \
+gt-stringpool.h : s-gtype ; @true
 
 gtyp-gen.h: Makefile
 	echo "/* This file is machine generated.  Do not edit.  */" > tmp-gtyp.h

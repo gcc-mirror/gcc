@@ -1,6 +1,6 @@
 /* The tracer pass for the GNU compiler.
    Contributed by Jan Hubicka, SuSE Labs.
-   Copyright (C) 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2001, 2002, 2003 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -46,7 +46,7 @@
 #include "fibheap.h"
 #include "flags.h"
 #include "params.h"
-#include "profile.h"
+#include "coverage.h"
 
 static int count_insns		PARAMS ((basic_block));
 static bool ignore_bb_p		PARAMS ((basic_block));

@@ -2210,11 +2210,15 @@ extern void dump_local_alloc		PARAMS ((FILE *));
 extern int local_alloc			PARAMS ((void));
 extern int function_invariant_p		PARAMS ((rtx));
 
+/* In coverage.c */
+extern void coverage_init (const char *);
+extern void coverage_finish (void);
+extern void coverage_end_function (void);
+
 /* In profile.c */
-extern void init_branch_prob		PARAMS ((const char *));
+extern void init_branch_prob		PARAMS ((void));
 extern void branch_prob			PARAMS ((void));
 extern void end_branch_prob		PARAMS ((void));
-extern void create_profiler		PARAMS ((void));
 
 /* In reg-stack.c */
 #ifdef BUFSIZ

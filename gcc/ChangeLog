@@ -1,3 +1,34 @@
+2003-04-21  Nathan Sidwell  <nathan@codesourcery.com>
+
+        Break out coverage routines to new file.
+        * Makefile.in (COVERAGE_H): New variable
+        (C_OBJS): Add coverage.o
+        (coverage.o): New target.
+        (profile.o, loop-init.o, sched-ebb.o, predict.o, tracer.o): Adjust
+        dependencies.
+        (GTFILES): Adjust.
+        (gt-coverage.h): New target.
+        (gt-profile.h): Remove.
+        * profile.h: Remove. Move to ...
+        * coverage.h: ... here. New. #include gcov-io.h.
+        * gcov-io.h: Move function definitions to ...
+        * gcov-io.c: ... here. New.
+        * profile.c: Move coverage routines to coverage.c.
+        (instrument_edges, get_exec_counts, branch_prob, init_branch_prob,
+        end_branch_prob): Adjust.
+        * coverage.c: New. Coverage routines from profile.c
+        (coverage_counter_ref, coverage_init, coverage_finish,
+        coverage_end_function, coverage_begin_output,
+        coverage_counter_ref, get_coverage_counts): Define.
+        * gcov-dump.c, gcov.c: #include gcov-io.c.
+        * libgcov.c: Likewise. Adjust.
+        * loop-init.c: Don't #include profile.h
+        * tracer.c, predict.c, sched-ebb.c: Adjust #includes.
+        * rtl.h: Add coverage prototypes.
+        * toplev.c (compile_file): Init coverage, not branch_prob.
+        Always call coverage_finish.
+        (rest_of_compilation): Call coverage_end_function.
+
 2003-04-21  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* config/rs6000/rs6000.md (*movsf_softfloat): Add "h" <- "0" case.
@@ -417,12 +448,14 @@ Sat Apr 19 14:56:17 CEST 2003  Jan Hubicka  <jh@suse.cz>
 Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* gcov-dump.c (tag_summary): Remove max_sum
-	* gcov-io.h (gcov_summary, gcov_write_summary, gcov_read_summary): Kill
-	max_sum.
-	* libgcov.c (gcov_exit): Do one pass over the data.  Make error message
-	more verbose.
+	* gcov-io.h (gcov_summary, gcov_write_summary,
+	gcov_read_summary): Kill max_sum.
+	* libgcov.c (gcov_exit): Do one pass over the data.  Make error
+	message more verbose.
 
-	* emit-rtl.c (subreg_hard_regno):  Check that register is representable.
+	* emit-rtl.c (subreg_hard_regno):  Check that register is
+	representable.
+	
 	* reload.c (reload_inner_reg_of_subreg):  When register is not
 	representable, reload the whole thing.
 	(find_reloads): Likewsie.
@@ -430,7 +463,8 @@ Fri Apr 18 01:28:51 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	* profile.c (compute_branch_probabilities):  Cleanup sanity checking;
 	allow negative probabilities for edges from the call to exit.
-	(branch_prob): Do not add fake edges for functions that may return twice
+	(branch_prob): Do not add fake edges for functions that may return
+	twice.
 
 2003-04-17  DJ Delorie  <dj@redhat.com>
 
