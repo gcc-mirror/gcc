@@ -59,7 +59,7 @@ GCC_EXTRAS = -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
 TREE_GENERATED = $(srcdir)/treelang/lex.c $(srcdir)/treelang/parse.c\
 	$(srcdir)/treelang/parse.h $(srcdir)/treelang/parse.output $(srcdir)/treelang/TAGS
 
-TREE_SOURCE = ${srcdir}/treelang/parse.y ${srcdir}/treelang/lex.l ${srcdir}/treelang/tree1.c ${srcdir}/treelang/treelang.h ${srcdir}/treelang/treetree.c $(srcdir)/treelang/treetree.h
+TREE_SOURCE = ${srcdir}/treelang/parse.y ${srcdir}/treelang/lex.l ${srcdir}/treelang/tree1.c ${srcdir}/treelang/treelang.h ${srcdir}/treelang/treetree.c $(srcdir)/treelang/treetree.h ${srcdir}/treelang/opts.h
 
 TREE_EXES = tree1$(exeext)
 
