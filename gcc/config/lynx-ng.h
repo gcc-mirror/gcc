@@ -54,6 +54,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* We want to output DBX debugging information.  */
 
 #define DBX_DEBUGGING_INFO
+#undef PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
 
 /* We optionally want to be able to produce SDB debugging output so that
