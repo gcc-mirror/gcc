@@ -694,6 +694,17 @@ lang_decode_option (p)
 
   return 1;
 }
+
+/* used by print-tree.c */
+
+void
+lang_print_xnode (file, node, indent)
+     FILE *file;
+     tree node;
+     int indent;
+{
+}
+
 
 static tree
 define_decl (declarator, declspecs)
