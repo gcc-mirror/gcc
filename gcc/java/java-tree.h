@@ -604,7 +604,7 @@ extern struct CPool *outgoing_cpool;
 #define wfl_operator \
   java_global_trees[JTI_WFL_OPERATOR]
 
-extern char *cyclic_inheritance_report;
+extern const char *cyclic_inheritance_report;
 
 struct lang_identifier
 {
