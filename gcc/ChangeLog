@@ -1,3 +1,14 @@
+2003-12-13  Steven Bosscher  <stevenb@suse.de>
+
+	* ggc-zone.c (struct alloc_zone): Don't pre-declare, it already
+	comes in with ggc.h.  Add a new bool field `dead'.
+	(destroy_ggc_zone): Don't destroy a zone at once.  Instead, only
+	set the `dead' flag for the dead zone.  Wrap a sanity check in
+	ENABLE_CHECKING.
+	(ggc_collect_1): Always mark and sweep if a zone has the `dead'
+	flag set.
+	(ggc_collect): Free dead zones after collecting.
+ 
 2003-12-13  Jan Hubicka  <jh@suse.cz>
 
 	* coverage.c (get_coverage_counts):  Use inform instead of warning
