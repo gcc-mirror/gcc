@@ -1,4 +1,4 @@
-/* Copyright (C) 2002-2003 Free Software Foundation, Inc.
+/* Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).
@@ -27,19 +27,19 @@ Boston, MA 02111-1307, USA.  */
 
 
 /* List directed input.  Several parsing subroutines are practically
- * reimplemented from formatted input, the reason being that there are
- * all kinds of small differences between formatted and list directed
- * parsing. */
+   reimplemented from formatted input, the reason being that there are
+   all kinds of small differences between formatted and list directed
+   parsing.  */
 
 
 /* Subroutines for reading characters from the input.  Because a
- * repeat count is ambiguous with an integer, we have to read the
- * whole digit string before seeing if there is a '*' which signals
- * the repeat count.  Since we can have a lot of potential leading
- * zeros, we have to be able to back up by arbitrary amount.  Because
- * the input might not be seekable, we have to buffer the data
- * ourselves.  Data is buffered in scratch[] until it becomes too
- * large, after which we start allocating memory on the heap.  */
+   repeat count is ambiguous with an integer, we have to read the
+   whole digit string before seeing if there is a '*' which signals
+   the repeat count.  Since we can have a lot of potential leading
+   zeros, we have to be able to back up by arbitrary amount.  Because
+   the input might not be seekable, we have to buffer the data
+   ourselves.  Data is buffered in scratch[] until it becomes too
+   large, after which we start allocating memory on the heap.  */
 
 static int repeat_count, saved_length, saved_used, input_complete, at_eol;
 static int comma_flag, namelist_mode;
@@ -50,7 +50,7 @@ static bt saved_type;
 
 
 /* Storage area for values except for strings.  Must be large enough
- * to hold a complex value (two reals) of the largest kind */
+   to hold a complex value (two reals) of the largest kind.  */
 
 static char value[20];
 
@@ -59,18 +59,17 @@ static char value[20];
 
 #define CASE_SEPARATORS  case ' ': case ',': case '/': case '\n': case '\t'
 
-/* This macro assumes that we're operating on a variable */
+/* This macro assumes that we're operating on a variable.  */
 
 #define is_separator(c) (c == '/' ||  c == ',' || c == '\n' || c == ' ' \
                          || c == '\t')
 
-/* Maximum repeat count.  Less than ten times the maximum signed int32. */
+/* Maximum repeat count.  Less than ten times the maximum signed int32.  */
 
 #define MAX_REPEAT 200000000
 
 
-/* push_char()-- Save a character to a string buffer, enlarging it as
- * necessary. */
+/* Save a character to a string buffer, enlarging it as necessary.  */
 
 static void
 push_char (char c)
@@ -103,7 +102,7 @@ push_char (char c)
 }
 
 
-/* free_saved()-- Free the input buffer if necessary. */
+/* Free the input buffer if necessary.  */
 
 static void
 free_saved (void)
@@ -152,7 +151,7 @@ done:
 }
 
 
-/* unget_char()-- Push a character back onto the input */
+/* Push a character back onto the input.  */
 
 static void
 unget_char (char c)
@@ -162,9 +161,8 @@ unget_char (char c)
 }
 
 
-/* eat_spaces()-- Skip over spaces in the input.  Returns the nonspace
- * character that terminated the eating and also places it back on the
- * input. */
+/* Skip over spaces in the input.  Returns the nonspace character that
+   terminated the eating and also places it back on the input.  */
 
 static char
 eat_spaces (void)
@@ -182,17 +180,16 @@ eat_spaces (void)
 }
 
 
-/* eat_separator()-- Skip over a separator.  Technically, we don't
- * always eat the whole separator.  This is because if we've processed
- * the last input item, then a separator is unnecessary.  Plus the
- * fact that operating systems usually deliver console input on a line
- * basis.
- *
- * The upshot is that if we see a newline as part of reading a
- * separator, we stop reading.  If there are more input items, we
- * continue reading the separator with finish_separator() which takes
- * care of the fact that we may or may not have seen a comma as part
- * of the separator. */
+/* Skip over a separator.  Technically, we don't always eat the whole
+   separator.  This is because if we've processed the last input item,
+   then a separator is unnecessary.  Plus the fact that operating
+   systems usually deliver console input on a line basis.
+
+   The upshot is that if we see a newline as part of reading a
+   separator, we stop reading.  If there are more input items, we
+   continue reading the separator with finish_separator() which takes
+   care of the fact that we may or may not have seen a comma as part
+   of the separator.  */
 
 static void
 eat_separator (void)
@@ -220,7 +217,7 @@ eat_separator (void)
 
     case '!':
       if (namelist_mode)
-	{			/* Eat a namelist comment */
+	{			/* Eat a namelist comment.  */
 	  do
 	    c = next_char ();
 	  while (c != '\n');
@@ -228,7 +225,7 @@ eat_separator (void)
 	  break;
 	}
 
-      /* Fall Through */
+      /* Fall Through...  */
 
     default:
       unget_char (c);
@@ -237,9 +234,9 @@ eat_separator (void)
 }
 
 
-/* finish_separator()-- Finish processing a separator that was
- * interrupted by a newline.  If we're here, then another data item is
- * present, so we finish what we started on the previous line. */
+/* Finish processing a separator that was interrupted by a newline.
+   If we're here, then another data item is present, so we finish what
+   we started on the previous line.  */
 
 static void
 finish_separator (void)
@@ -289,10 +286,9 @@ restart:
 }
 
 
-/* convert_integer()-- Convert an unsigned string to an integer.  The
- * length value is -1 if we are working on a repeat count.  Returns
- * nonzero if we have a range problem.  As a side effect, frees the
- * saved_string. */
+/* Convert an unsigned string to an integer.  The length value is -1
+   if we are working on a repeat count.  Returns nonzero if we have a
+   range problem.  As a side effect, frees the saved_string.  */
 
 static int
 convert_integer (int length, int negative)
@@ -363,9 +359,9 @@ overflow:
 }
 
 
-/* parse_repeat()-- Parse a repeat count for logical and complex
- * values which cannot begin with a digit.  Returns nonzero if we are
- * done, zero if we should continue on. */
+/* Parse a repeat count for logical and complex values which cannot
+   begin with a digit.  Returns nonzero if we are done, zero if we
+   should continue on.  */
 
 static int
 parse_repeat (void)
@@ -441,7 +437,7 @@ bad_repeat:
 }
 
 
-/* read_logical()-- Read a logical character on the input */
+/* Read a logical character on the input.  */
 
 static void
 read_logical (int length)
@@ -485,7 +481,7 @@ read_logical (int length)
     CASE_SEPARATORS:
       unget_char (c);
       eat_separator ();
-      return;			/* Null value */
+      return;			/* Null value.  */
 
     default:
       goto bad_logical;
@@ -494,8 +490,7 @@ read_logical (int length)
   saved_type = BT_LOGICAL;
   saved_length = length;
 
-  /* Eat trailing garbage */
-
+  /* Eat trailing garbage.  */
   do
     {
       c = next_char ();
@@ -517,10 +512,10 @@ bad_logical:
 }
 
 
-/* read_integer()-- Reading integers is tricky because we can actually
- * be reading a repeat count.  We have to store the characters in a
- * buffer because we could be reading an integer that is larger than the
- * default int used for repeat counts.  */
+/* Reading integers is tricky because we can actually be reading a
+   repeat count.  We have to store the characters in a buffer because
+   we could be reading an integer that is larger than the default int
+   used for repeat counts.  */
 
 static void
 read_integer (int length)
@@ -535,13 +530,13 @@ read_integer (int length)
     {
     case '-':
       negative = 1;
-      /* Fall through */
+      /* Fall through...  */
 
     case '+':
       c = next_char ();
       goto get_integer;
 
-    CASE_SEPARATORS:		/* Single null */
+    CASE_SEPARATORS:		/* Single null.  */
       unget_char (c);
       eat_separator ();
       return;
@@ -554,7 +549,7 @@ read_integer (int length)
       goto bad_integer;
     }
 
-  /* Take care of what may be a repeat count */
+  /* Take care of what may be a repeat count.  */
 
   for (;;)
     {
@@ -569,7 +564,7 @@ read_integer (int length)
 	  push_char ('\0');
 	  goto repeat;
 
-	CASE_SEPARATORS:	/* Not a repeat count */
+	CASE_SEPARATORS:	/* Not a repeat count.  */
 	  goto done;
 
 	default:
@@ -581,7 +576,7 @@ repeat:
   if (convert_integer (-1, 0))
     return;
 
-/* Get the real integer */
+  /* Get the real integer.  */
 
   c = next_char ();
   switch (c)
@@ -596,7 +591,7 @@ repeat:
 
     case '-':
       negative = 1;
-      /* Fall through */
+      /* Fall through...  */
 
     case '+':
       c = next_char ();
@@ -649,14 +644,14 @@ done:
 }
 
 
-/* read_character()-- Read a character variable */
+/* Read a character variable.  */
 
 static void
 read_character (int length)
 {
   char c, quote, message[100];
 
-  quote = ' ';			/* Space means no quote character */
+  quote = ' ';			/* Space means no quote character.  */
 
   c = next_char ();
   switch (c)
@@ -666,7 +661,7 @@ read_character (int length)
       break;
 
     CASE_SEPARATORS:
-      unget_char (c);		/* NULL value */
+      unget_char (c);		/* NULL value.  */
       eat_separator ();
       return;
 
@@ -680,7 +675,7 @@ read_character (int length)
       goto get_string;
     }
 
-/* Deal with a possible repeat count */
+  /* Deal with a possible repeat count.  */
 
   for (;;)
     {
@@ -693,7 +688,7 @@ read_character (int length)
 
 	CASE_SEPARATORS:
 	  unget_char (c);
-	  goto done;		/* String was only digits! */
+	  goto done;		/* String was only digits!  */
 
 	case '*':
 	  push_char ('\0');
@@ -701,7 +696,7 @@ read_character (int length)
 
 	default:
 	  push_char (c);
-	  goto get_string;	/* Not a repeat count after all */
+	  goto get_string;	/* Not a repeat count after all.  */
 	}
     }
 
@@ -709,13 +704,13 @@ got_repeat:
   if (convert_integer (-1, 0))
     return;
 
-  /* Now get the real string */
+  /* Now get the real string.  */
 
   c = next_char ();
   switch (c)
     {
     CASE_SEPARATORS:
-      unget_char (c);		/* repeated NULL values */
+      unget_char (c);		/* Repeated NULL values.  */
       eat_separator ();
       return;
 
@@ -743,7 +738,8 @@ get_string:
 	      break;
 	    }
 
-	  /* See if we have a doubled quote character or the end of the string */
+	  /* See if we have a doubled quote character or the end of
+	     the string.  */
 
 	  c = next_char ();
 	  if (c == quote)
@@ -772,7 +768,8 @@ get_string:
 	}
     }
 
-/* At this point, we have to have a separator, or else the string is invalid */
+/* At this point, we have to have a separator, or else the string is
+   invalid.  */
 
 done:
   c = next_char ();
@@ -791,9 +788,8 @@ done:
 }
 
 
-/* parse_real()-- Parse a component of a complex constant or a real
- * number that we are sure is already there.  This is a straight real
- * number parser. */
+/* Parse a component of a complex constant or a real number that we
+   are sure is already there.  This is a straight real number parser.  */
 
 static int
 parse_real (void *buffer, int length)
@@ -906,8 +902,8 @@ bad:
 }
 
 
-/* read_complex()-- Reading a complex number is straightforward
- * because we can tell what it is right away. */
+/* Reading a complex number is straightforward because we can tell
+   what it is right away.  */
 
 static void
 read_complex (int length)
@@ -968,7 +964,7 @@ bad_complex:
 }
 
 
-/* read_real()-- Parse a real number with a possible repeat count. */
+/* Parse a real number with a possible repeat count.  */
 
 static void
 read_real (int length)
@@ -995,7 +991,7 @@ read_real (int length)
       goto got_sign;
 
     CASE_SEPARATORS:
-      unget_char (c);		/* Single null */
+      unget_char (c);		/* Single null.  */
       eat_separator ();
       return;
 
@@ -1003,7 +999,7 @@ read_real (int length)
       goto bad_real;
     }
 
-  /* Get the digit string that might be a repeat count */
+  /* Get the digit string that might be a repeat count.  */
 
   for (;;)
     {
@@ -1041,7 +1037,7 @@ read_real (int length)
 
 	CASE_SEPARATORS:
           if (c != '\n')
-            unget_char (c);        /* Real number that is just a digit-string */
+            unget_char (c);    /* Real number that is just a digit-string.  */
 	  goto done;
 
 	default:
@@ -1053,11 +1049,11 @@ got_repeat:
   if (convert_integer (-1, 0))
     return;
 
-/* Now get the number itself */
+  /* Now get the number itself.  */
 
   c = next_char ();
   if (is_separator (c))
-    {				/* Repeated null value */
+    {				/* Repeated null value.  */
       unget_char (c);
       eat_separator ();
       return;
@@ -1178,8 +1174,8 @@ bad_real:
 }
 
 
-/* check_type()-- Check the current type against the saved type to
- * make sure they are compatible.  Returns nonzero if incompatible.  */
+/* Check the current type against the saved type to make sure they are
+   compatible.  Returns nonzero if incompatible.  */
 
 static int
 check_type (bt type, int len)
@@ -1211,11 +1207,10 @@ check_type (bt type, int len)
 }
 
 
-/* list_formatted_read()-- Top level data transfer subroutine for list
- * reads.  Because we have to deal with repeat counts, the data item
- * is always saved after reading, usually in the value[] array.  If a
- * repeat count is greater than one, we copy the data item multiple
- * times. */
+/* Top level data transfer subroutine for list reads.  Because we have
+   to deal with repeat counts, the data item is always saved after
+   reading, usually in the value[] array.  If a repeat count is
+   greater than one, we copy the data item multiple times.  */
 
 void
 list_formatted_read (bt type, void *p, int len)
@@ -1240,7 +1235,7 @@ list_formatted_read (bt type, void *p, int len)
 
       c = eat_spaces ();
       if (is_separator (c))
-	{			/* Found a null value */
+	{			/* Found a null value.  */
 	  eat_separator ();
 	  repeat_count = 0;
 	  if (at_eol)
@@ -1304,7 +1299,7 @@ set_value:
     {
     case BT_COMPLEX:
       len = 2 * len;
-      /* Fall through */
+      /* Fall through.  */
 
     case BT_INTEGER:
     case BT_REAL:
@@ -1318,7 +1313,8 @@ set_value:
           m = (len < saved_used) ? len : saved_used;
           memcpy (p, saved_string, m);
        }
-      else    /* just delimiters encountered, nothing to copy but SPACE */
+      else    
+	/* Just delimiters encountered, nothing to copy but SPACE.  */
         m = 0;
 
       if (m < len)
@@ -1339,7 +1335,7 @@ init_at_eol()
   at_eol = 0;
 }
 
-/* finish_list_read()-- Finish a list read */
+/* Finish a list read.  */
 
 void
 finish_list_read (void)
@@ -1386,7 +1382,7 @@ match_namelist_name (char *name, int len)
   char * namelist_name = name;
 
   name_len = 0;
-  /* Match the name of the namelist */
+  /* Match the name of the namelist.  */
 
   if (tolower (next_char ()) != tolower (namelist_name[name_len++]))
     {
@@ -1408,8 +1404,9 @@ match_namelist_name (char *name, int len)
       Namelist reads
 ********************************************************************/
 
-/* namelist_read()-- Process a namelist read.  This subroutine
- * initializes things, positions to the first element and */
+/* Process a namelist read.  This subroutine initializes things,
+   positions to the first element and 
+   FIXME: was this comment ever complete?  */
 
 void
 namelist_read (void)
@@ -1449,10 +1446,10 @@ restart:
       return;
     }
 
-  /* Match the name of the namelist */
+  /* Match the name of the namelist.  */
   match_namelist_name(ioparm.namelist_name, ioparm.namelist_name_len);
 
-  /* Ready to read namelist elements */
+  /* Ready to read namelist elements.  */
   while (!input_complete)
     {
       c = next_char ();
@@ -1509,7 +1506,7 @@ restart:
             {
             case BT_COMPLEX:
               len = 2 * len;
-              /* Fall through */
+              /* Fall through...  */
 
             case BT_INTEGER:
             case BT_REAL:
@@ -1537,4 +1534,3 @@ restart:
         }
    }
 }
-
