@@ -517,8 +517,8 @@ fix = {
 
 
 /*
- *  sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the definition
- *  of struct rusage, so the prototype (added by fixproto) causes havoc.
+ *  sys/wait.h on AIX 3.2.5 puts the declaration of wait3 before the
+ *  definition of struct rusage, so the prototype added by fixproto fails.
  */
 fix = {
     hackname  = aix_syswait;
@@ -527,7 +527,9 @@ fix = {
     select    = "bos325,";
     c_fix     = format;
     c_fix_arg = "struct rusage;\n%0";
-    test_text = "/* bos325, */\nextern pid_t wait3();";
+    test_text = "/* bos325, */\n"
+    "extern pid_t wait3();\n"
+    "\t/* pid_t wait3(int *, int, struct rusage *); */";
 };
 
 
@@ -541,8 +543,8 @@ fix = {
     hackname  = aix_volatile;
     files     = sys/signal.h;
     select    = "typedef volatile int sig_atomic_t";
-    sed      = "s/typedef volatile int sig_atomic_t"
-                "/typedef int sig_atomic_t/";
+    c_fix     = format;
+    c_fix_arg = "typedef int sig_atomic_t";
     test_text = "typedef volatile int sig_atomic_t;";
 };
 
@@ -555,8 +557,8 @@ fix = {
     files     = "stdio.h";
     files     = "stdlib.h";
     select    = 'getopt\(int, char \*\[\], *char \*\)';
-    sed    = 's/getopt(int, char \*\[\],[ ]*char \*)/'
-               'getopt(int, char *const[], const char *)/';
+    c_fix     = format;
+    c_fix_arg = "getopt(int, char *const[], const char *)";
     test_text = 'extern int getopt(int, char *[], char *);';
 };
 
@@ -568,7 +570,8 @@ fix = {
     hackname  = alpha_parens;
     files     = sym.h;
     select    = '#ifndef\(__mips64\)';
-    sed      = "s/#ifndef(__mips64)/#ifndef __mips64/";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __mips64";
     test_text = "#ifndef(__mips64) /* bogus */\nextern int foo;\n#endif";
 };
 
@@ -580,7 +583,8 @@ fix = {
     hackname = alpha_sbrk;
     files    = unistd.h;
     select   = "char[ \t]*\\*[\t ]*sbrk[ \t]*\\(";
-    sed  = "s/char\\([ \t]*\\*[\t ]*sbrk[ \t]*(\\)/void\\1/";
+    c_fix     = format;
+    c_fix_arg = "void *sbrk(";
     test_text = "extern char* sbrk(ptrdiff_t increment);";
 };
 
@@ -968,59 +972,71 @@ fix = {
 };
 
 /*
- *  Fix various macros used to define ioctl numbers.  The traditional
- *  syntax was
- *  #define _IO(n, x) (('n'<<8)+x)
- *  #define TIOCFOO _IO(T, 1)
+ *  Fix various macros used to define ioctl numbers.
+ *  The traditional syntax was:
+ *
+ *    #define _IO(n, x) (('n'<<8)+x)
+ *    #define TIOCFOO _IO(T, 1)
+ *
  *  but this does not work with the C standard, which disallows macro
  *  expansion inside strings.  We have to rewrite it thus:
- *  #define _IO(n, x) ((n<<8)+x)
- *  #define TIOCFOO  _IO('T', 1)
+ *
+ *    #define _IO(n, x) ((n<<8)+x)
+ *    #define TIOCFOO  _IO('T', 1)
+ *
  *  The select expressions match too much, but the c_fix code is cautious.
  *
  *  _IO might be: _IO DESIO BSD43__IO with W, R, WR, C, ... suffixes.
  */
+fix = {
+    hackname  = io_quotes_def;
+    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
+    c_fix     = char_macro_def;
+    c_fix_arg = "IO";
+    test_text = "#define BSD43__IOWR(n, x) (('n'<<8)+x)";
+};
+
 fix = {
     hackname  = io_quotes_use;
     select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*"
                 "\\( *[^,']";
     c_fix     = char_macro_use;
     c_fix_arg = "IO";
-};
-
-fix = {
-    hackname  = io_quotes_def;
-    select    = "define[ \t]+[A-Z0-9_]+IO[A-Z]*\\(([a-zA-Z]).*'\\1'";
-    c_fix     = char_macro_def;
-    c_fix_arg = "IO";
+    test_text = "#define TIOCFOO BSD43__IOWR(T, 1)";
 };
  
  
 /*
- *  Fix various macros used to define ioctl numbers.  The traditional
- *  syntax was
- *  #define _CTRL(n, x) (('n'<<8)+x)
- *  #define TIOCFOO _CTRL(T, 1)
+ *  Fix various macros used to define ioctl numbers.
+ *  The traditional syntax was:
+ *
+ *    #define _CTRL(n, x) (('n'<<8)+x)
+ *    #define TCTRLCFOO _CTRL(T, 1)
+ *
  *  but this does not work with the C standard, which disallows macro
  *  expansion inside strings.  We have to rewrite it thus:
- *  #define _CTRL(n, x) ((n<<8)+x)
- *  #define TIOCFOO  _CTRL('T', 1)
+ *
+ *    #define _CTRL(n, x) ((n<<8)+x)
+ *    #define TCTRLCFOO  _CTRL('T', 1)
+ *
  *  The select expressions match too much, but the c_fix code is cautious.
  *
  *  CTRL might be: CTRL _CTRL ISCTRL BSD43_CTRL ...
  */
 fix = {
-    hackname  = ctrl_quotes_use;
-    select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
-    c_fix     = char_macro_use;
-    c_fix_arg = "CTRL";
-};
-  
-fix = {
     hackname  = ctrl_quotes_def;
     select    = "define[ \t]+[A-Z0-9_]+CTRL\\(([a-zA-Z]).*'\\1'";
     c_fix     = char_macro_def;
     c_fix_arg = "CTRL";
+    test_text = "#define BSD43_CTRL(n, x) (('n'<<8)+x)";
+};
+
+fix = {
+    hackname  = ctrl_quotes_use;
+    select    = "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
+    c_fix     = char_macro_use;
+    c_fix_arg = "CTRL";
+    test_text = "#define TIOCFOO BSD43_CTRL(T, 1)";
 };
 
 
@@ -1293,9 +1309,11 @@ fix = {
  *  Fix non-ansi machine name defines
  */
 fix = {
-    hackname = machine_name;
-    c_test   = machine_name;
-    c_fix    = machine_name;
+    hackname  = machine_name;
+    c_test    = machine_name;
+    c_fix     = machine_name;
+    test_text = "#ifdef i386 /* no uniform machine_name test, so\n"
+                "               this only works on i?86 machines */";
 };
 
 
@@ -2459,14 +2477,19 @@ fix = {
 
 
 /*
- *  Fix multiple defines for NULL
+ *  Fix multiple defines for NULL.  Sometimes, we stumble into \r\n
+ *  terminated lines, so accommodate these.  Test both ways.
  */
 fix = {
-    hackname = undefine_null;
-    select = "^#[ \t]*define[ \t]*[ \t]NULL[ \t\r]";
-    bypass = "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t\r])";
-    sed    = "/^#[ \t]*define[ \t][ \t]*NULL[ \t\r]/i\\\n"
-                "#undef NULL\n";
+    hackname  = undefine_null;
+    select    = "^#[ \t]*define[ \t]+NULL[ \t]";
+    bypass    = "#[ \t]*(ifn|un)def[ \t]+NULL($|[ \t\r])";
+
+    c_fix     = format;
+    c_fix_arg = "#ifndef NULL%2\n#define NULL%1%2\n#endif%2\n";
+    c_fix_arg = "^#[ \t]*define[ \t]*[ \t]NULL([^\r\n]+)([\r]*)\n";
+
+    test_text = "#define NULL 0UL\r\n#define NULL\t((void*)0)\n";
 };
 
 

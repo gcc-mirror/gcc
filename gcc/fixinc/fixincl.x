@@ -803,8 +803,9 @@ tTestDesc aAix_VolatileTests[] = {
 /*
  *  Fix Command Arguments for Aix_Volatile
  */
-const char* apzAix_VolatilePatch[] = { "sed",
-    "-e", "s/typedef volatile int sig_atomic_t/typedef int sig_atomic_t/",
+const char* apzAix_VolatilePatch[] = {
+    "format",
+    "typedef int sig_atomic_t",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -838,8 +839,9 @@ tTestDesc aAlpha_GetoptTests[] = {
 /*
  *  Fix Command Arguments for Alpha_Getopt
  */
-const char* apzAlpha_GetoptPatch[] = { "sed",
-    "-e", "s/getopt(int, char \\*\\[\\],[ ]*char \\*)/getopt(int, char *const[], const char *)/",
+const char* apzAlpha_GetoptPatch[] = {
+    "format",
+    "getopt(int, char *const[], const char *)",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -873,8 +875,9 @@ tTestDesc aAlpha_ParensTests[] = {
 /*
  *  Fix Command Arguments for Alpha_Parens
  */
-const char* apzAlpha_ParensPatch[] = { "sed",
-    "-e", "s/#ifndef(__mips64)/#ifndef __mips64/",
+const char* apzAlpha_ParensPatch[] = {
+    "format",
+    "#ifndef __mips64",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -908,8 +911,9 @@ tTestDesc aAlpha_SbrkTests[] = {
 /*
  *  Fix Command Arguments for Alpha_Sbrk
  */
-const char* apzAlpha_SbrkPatch[] = { "sed",
-    "-e", "s/char\\([ \t]*\\*[\t ]*sbrk[ \t]*(\\)/void\\1/",
+const char* apzAlpha_SbrkPatch[] = {
+    "format",
+    "void *sbrk(",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -1659,44 +1663,9 @@ const char* apzIsc_Omits_With_StdcPatch[] = { "sed",
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Io_Quotes_Use fix
- */
-#define IO_QUOTES_USE_FIXIDX             38
-tSCC zIo_Quotes_UseName[] =
-     "io_quotes_use";
-
-/*
- *  File name selection pattern
- */
-#define zIo_Quotes_UseList (char*)NULL
-/*
- *  Machine/OS name selection pattern
- */
-#define apzIo_Quotes_UseMachs (const char**)NULL
-
-/*
- *  content selection pattern - do fix if pattern found
- */
-tSCC zIo_Quotes_UseSelect0[] =
-       "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*\\( *[^,']";
-
-#define    IO_QUOTES_USE_TEST_CT  1
-tTestDesc aIo_Quotes_UseTests[] = {
-  { TT_EGREP,    zIo_Quotes_UseSelect0, (regex_t*)NULL }, };
-
-/*
- *  Fix Command Arguments for Io_Quotes_Use
- */
-const char* apzIo_Quotes_UsePatch[] = {
-    "char_macro_use",
-    "IO",
-    (char*)NULL };
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * *
- *
  *  Description of Io_Quotes_Def fix
  */
-#define IO_QUOTES_DEF_FIXIDX             39
+#define IO_QUOTES_DEF_FIXIDX             38
 tSCC zIo_Quotes_DefName[] =
      "io_quotes_def";
 
@@ -1729,44 +1698,44 @@ const char* apzIo_Quotes_DefPatch[] = {
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
- *  Description of Ctrl_Quotes_Use fix
+ *  Description of Io_Quotes_Use fix
  */
-#define CTRL_QUOTES_USE_FIXIDX           40
-tSCC zCtrl_Quotes_UseName[] =
-     "ctrl_quotes_use";
+#define IO_QUOTES_USE_FIXIDX             39
+tSCC zIo_Quotes_UseName[] =
+     "io_quotes_use";
 
 /*
  *  File name selection pattern
  */
-#define zCtrl_Quotes_UseList (char*)NULL
+#define zIo_Quotes_UseList (char*)NULL
 /*
  *  Machine/OS name selection pattern
  */
-#define apzCtrl_Quotes_UseMachs (const char**)NULL
+#define apzIo_Quotes_UseMachs (const char**)NULL
 
 /*
  *  content selection pattern - do fix if pattern found
  */
-tSCC zCtrl_Quotes_UseSelect0[] =
-       "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
+tSCC zIo_Quotes_UseSelect0[] =
+       "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+IO[A-Z]*[ \t]*\\( *[^,']";
 
-#define    CTRL_QUOTES_USE_TEST_CT  1
-tTestDesc aCtrl_Quotes_UseTests[] = {
-  { TT_EGREP,    zCtrl_Quotes_UseSelect0, (regex_t*)NULL }, };
+#define    IO_QUOTES_USE_TEST_CT  1
+tTestDesc aIo_Quotes_UseTests[] = {
+  { TT_EGREP,    zIo_Quotes_UseSelect0, (regex_t*)NULL }, };
 
 /*
- *  Fix Command Arguments for Ctrl_Quotes_Use
+ *  Fix Command Arguments for Io_Quotes_Use
  */
-const char* apzCtrl_Quotes_UsePatch[] = {
+const char* apzIo_Quotes_UsePatch[] = {
     "char_macro_use",
-    "CTRL",
+    "IO",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
  *
  *  Description of Ctrl_Quotes_Def fix
  */
-#define CTRL_QUOTES_DEF_FIXIDX           41
+#define CTRL_QUOTES_DEF_FIXIDX           40
 tSCC zCtrl_Quotes_DefName[] =
      "ctrl_quotes_def";
 
@@ -1794,6 +1763,41 @@ tTestDesc aCtrl_Quotes_DefTests[] = {
  */
 const char* apzCtrl_Quotes_DefPatch[] = {
     "char_macro_def",
+    "CTRL",
+    (char*)NULL };
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * *
+ *
+ *  Description of Ctrl_Quotes_Use fix
+ */
+#define CTRL_QUOTES_USE_FIXIDX           41
+tSCC zCtrl_Quotes_UseName[] =
+     "ctrl_quotes_use";
+
+/*
+ *  File name selection pattern
+ */
+#define zCtrl_Quotes_UseList (char*)NULL
+/*
+ *  Machine/OS name selection pattern
+ */
+#define apzCtrl_Quotes_UseMachs (const char**)NULL
+
+/*
+ *  content selection pattern - do fix if pattern found
+ */
+tSCC zCtrl_Quotes_UseSelect0[] =
+       "define[ \t]+[A-Z0-9_]+[ \t]+[A-Z0-9_]+CTRL[ \t]*\\( *[^,']";
+
+#define    CTRL_QUOTES_USE_TEST_CT  1
+tTestDesc aCtrl_Quotes_UseTests[] = {
+  { TT_EGREP,    zCtrl_Quotes_UseSelect0, (regex_t*)NULL }, };
+
+/*
+ *  Fix Command Arguments for Ctrl_Quotes_Use
+ */
+const char* apzCtrl_Quotes_UsePatch[] = {
+    "char_macro_use",
     "CTRL",
     (char*)NULL };
 
@@ -4206,13 +4210,13 @@ tSCC zUndefine_NullName[] =
  *  content selection pattern - do fix if pattern found
  */
 tSCC zUndefine_NullSelect0[] =
-       "^#[ \t]*define[ \t]*[ \t]NULL[ \t\r]";
+       "^#[ \t]*define[ \t]+NULL[ \t]";
 
 /*
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zUndefine_NullBypass0[] =
-       "#[ \t]*(ifn|un)def[ \t]*[ \t]NULL($|[ \t\r])";
+       "#[ \t]*(ifn|un)def[ \t]+NULL($|[ \t\r])";
 
 #define    UNDEFINE_NULL_TEST_CT  2
 tTestDesc aUndefine_NullTests[] = {
@@ -4222,9 +4226,13 @@ tTestDesc aUndefine_NullTests[] = {
 /*
  *  Fix Command Arguments for Undefine_Null
  */
-const char* apzUndefine_NullPatch[] = { "sed",
-    "-e", "/^#[ \t]*define[ \t][ \t]*NULL[ \t\r]/i\\\n\
-#undef NULL\n",
+const char* apzUndefine_NullPatch[] = {
+    "format",
+    "#ifndef NULL%2\n\
+#define NULL%1%2\n\
+#endif%2\n",
+    "^#[ \t]*define[ \t]*[ \t]NULL([^\r\n\
+]+)([\r]*)\n",
     (char*)NULL };
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -4763,22 +4771,22 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zAix_VolatileName,    zAix_VolatileList,
      apzAix_VolatileMachs,
-     AIX_VOLATILE_TEST_CT, FD_MACH_ONLY,
+     AIX_VOLATILE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAix_VolatileTests,   apzAix_VolatilePatch },
 
   {  zAlpha_GetoptName,    zAlpha_GetoptList,
      apzAlpha_GetoptMachs,
-     ALPHA_GETOPT_TEST_CT, FD_MACH_ONLY,
+     ALPHA_GETOPT_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha_GetoptTests,   apzAlpha_GetoptPatch },
 
   {  zAlpha_ParensName,    zAlpha_ParensList,
      apzAlpha_ParensMachs,
-     ALPHA_PARENS_TEST_CT, FD_MACH_ONLY,
+     ALPHA_PARENS_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha_ParensTests,   apzAlpha_ParensPatch },
 
   {  zAlpha_SbrkName,    zAlpha_SbrkList,
      apzAlpha_SbrkMachs,
-     ALPHA_SBRK_TEST_CT, FD_MACH_ONLY,
+     ALPHA_SBRK_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aAlpha_SbrkTests,   apzAlpha_SbrkPatch },
 
   {  zArm_Norcroft_HintName,    zArm_Norcroft_HintList,
@@ -4881,25 +4889,25 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
      ISC_OMITS_WITH_STDC_TEST_CT, FD_MACH_ONLY,
      aIsc_Omits_With_StdcTests,   apzIsc_Omits_With_StdcPatch },
 
-  {  zIo_Quotes_UseName,    zIo_Quotes_UseList,
-     apzIo_Quotes_UseMachs,
-     IO_QUOTES_USE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aIo_Quotes_UseTests,   apzIo_Quotes_UsePatch },
-
   {  zIo_Quotes_DefName,    zIo_Quotes_DefList,
      apzIo_Quotes_DefMachs,
      IO_QUOTES_DEF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aIo_Quotes_DefTests,   apzIo_Quotes_DefPatch },
 
-  {  zCtrl_Quotes_UseName,    zCtrl_Quotes_UseList,
-     apzCtrl_Quotes_UseMachs,
-     CTRL_QUOTES_USE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
-     aCtrl_Quotes_UseTests,   apzCtrl_Quotes_UsePatch },
+  {  zIo_Quotes_UseName,    zIo_Quotes_UseList,
+     apzIo_Quotes_UseMachs,
+     IO_QUOTES_USE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aIo_Quotes_UseTests,   apzIo_Quotes_UsePatch },
 
   {  zCtrl_Quotes_DefName,    zCtrl_Quotes_DefList,
      apzCtrl_Quotes_DefMachs,
      CTRL_QUOTES_DEF_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aCtrl_Quotes_DefTests,   apzCtrl_Quotes_DefPatch },
+
+  {  zCtrl_Quotes_UseName,    zCtrl_Quotes_UseList,
+     apzCtrl_Quotes_UseMachs,
+     CTRL_QUOTES_USE_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
+     aCtrl_Quotes_UseTests,   apzCtrl_Quotes_UsePatch },
 
   {  zIp_Missing_SemiName,    zIp_Missing_SemiList,
      apzIp_Missing_SemiMachs,
@@ -5223,7 +5231,7 @@ tFixDesc fixDescList[ FIX_COUNT ] = {
 
   {  zUndefine_NullName,    zUndefine_NullList,
      apzUndefine_NullMachs,
-     UNDEFINE_NULL_TEST_CT, FD_MACH_ONLY,
+     UNDEFINE_NULL_TEST_CT, FD_MACH_ONLY | FD_SUBROUTINE,
      aUndefine_NullTests,   apzUndefine_NullPatch },
 
   {  zUnixware7_Byteorder_FixName,    zUnixware7_Byteorder_FixList,
