@@ -5965,18 +5965,17 @@ hppa_encode_label (sym)
      rtx sym;
 {
   const char *str = XSTR (sym, 0);
-  int len = strlen (str);
-  char *newstr = alloca (len + 1);
+  int len = strlen (str) + 1;
+  char *newstr, *p;
 
+  p = newstr = alloca (len + 1);
   if (str[0] == '*')
-    *newstr++ = *str++;
-  strcpy (newstr + 1, str);
-  *newstr = '@';
-
-  /* Prepending '@' increases the length of the string.  That's important
-     to note since we're going to allocate persistent storage for the
-     new string.  */
-  len++;
+    {
+      str++;
+      len--;
+    }
+  *p++ = '@';
+  strcpy (p, str);
 
   XSTR (sym,0) = ggc_alloc_string (newstr, len);
 }
