@@ -2075,7 +2075,7 @@ special_symbol (hp, op)
 	  sprintf (buf, "\"%s\"", string);
 	}
       else
-	strcpy (buf, "\"\"");
+	buf = (char *) "";
 
       break;
     }

@@ -1,5 +1,10 @@
 2000-11-06  Neil Booth  <neilb@earthling.net>
 
+        * tradcpp.c (special_symbol): Assign an null string rather
+	than writing to an unallocated buffer.
+
+2000-11-06  Neil Booth  <neilb@earthling.net>
+
 	* cpplex.c (_cpp_equiv_tokens): Check arg_no in the
 	CPP_MACRO_ARG case.
 
