@@ -7,7 +7,7 @@ struct B
 };
   
 class C 
-{ // { dg-error "" }  warning
+{
   int g();
 };
 

@@ -1,3 +1,10 @@
+2003-05-12  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.old-deja/g++.brendan/ns1.C: Remove private member warning.
+	* g++.old-deja/g++.robertl/eb71.C: Likewise.
+	* g++.old-deja/g++.brendan/warnings1.C: Add -Wctor-dtor-privacy.
+	* g++.old-deja/g++.other/warn3.C: Likewise.
+
 2003-05-11  Roger Sayle  <roger@eyesopen.com>
 
 	* gcc.dg/i386-387-1.c: Update to also test log.

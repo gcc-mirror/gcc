@@ -15,7 +15,7 @@ friend class   D;
   unsigned      counter;
 };
 
-class   D {		//{ dg-warning "" } only private members
+class   D {
 
   int                   ins( B*&);
 };
