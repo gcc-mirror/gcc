@@ -700,7 +700,7 @@ execute_cfa_program (const unsigned char *insn_ptr,
   /* Don't allow remember/restore between CIE and FDE programs.  */
   fs->regs.prev = NULL;
 
-  while (insn_ptr < insn_end && fs->pc < context->ra)
+  while (insn_ptr < insn_end && fs->pc <= context->ra)
     {
       unsigned char insn = *insn_ptr++;
       _Unwind_Word reg, utmp;
