@@ -1898,7 +1898,7 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_iushr:
       {
 	jint shift = (POPI() & 0x1f);
-	UINT32 value = (UINT32) POPI();
+	_Jv_uint value = (_Jv_uint) POPI();
 	PUSHI ((jint) (value >> shift));
       }
       NEXT_INSN;
@@ -1906,8 +1906,8 @@ _Jv_InterpMethod::run (void *retp, ffi_raw *args)
     insn_lushr:
       {
 	jint shift = (POPI() & 0x3f);
-	UINT64 value = (UINT64) POPL();
-	PUSHL ((value >> shift));
+	_Jv_ulong value = (_Jv_ulong) POPL();
+	PUSHL ((jlong) (value >> shift));
       }
       NEXT_INSN;
 
