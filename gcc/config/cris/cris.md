@@ -58,6 +58,11 @@
 ;; UNSPEC Usage:
 ;; 0 PLT reference from call expansion: operand 0 is the address,
 ;;   the mode is VOIDmode.  Always wrapped in CONST.
+;; 1 Stack frame deallocation barrier.
+
+(define_constants
+  [(CRIS_UNSPEC_PLT 0)
+   (CRIS_UNSPEC_FRAME_DEALLOC 1)])
 
 
 ;; Register numbers.
@@ -1381,6 +1386,24 @@
    move %1,%0
    move %1,%0"
   [(set_attr "slottable" "yes,yes,yes,yes,yes,no,no,no,yes,yes,yes,no,yes,no")])
+
+;; Note that the order of the registers is the reverse of that of the
+;; standard pattern "load_multiple".
+(define_insn "*cris_load_multiple"
+  [(match_parallel 0 "cris_load_multiple_op"
+		   [(set (match_operand:SI 1 "register_operand" "=r,r")
+			 (match_operand:SI 2 "memory_operand" "Q,m"))])]
+  ""
+  "movem %O0,%o0"
+  [(set_attr "cc" "none")
+   (set_attr "slottable" "yes,no")
+   ;; Not true, but setting the length to 0 causes return sequences (ret
+   ;; movem) to have the cost they had when (return) included the movem
+   ;; and reduces the performance penalty taken for needing to emit an
+   ;; epilogue (in turn copied by bb-reorder) instead of return patterns.
+   ;; FIXME: temporary change until all insn lengths are correctly
+   ;; described.  FIXME: have better target control over bb-reorder.
+   (set_attr "length" "0")])
 
 
 ;; Sign- and zero-extend insns with standard names.
@@ -3467,69 +3490,37 @@
   "jump %0")
 
 ;; Return insn.  Used whenever the epilogue is very simple; if it is only
-;; a single ret or jump [sp+] or a contiguous sequence of movem:able saved
-;; registers.  No allocated stack space is allowed.
+;; a single ret or jump [sp+].  No allocated stack space or saved
+;; registers are allowed.
 ;; Note that for this pattern, although named, it is ok to check the
 ;; context of the insn in the test, not only compiler switches.
 
-(define_insn "return"
+(define_expand "return"
   [(return)]
   "cris_simple_epilogue ()"
-  "*
+  "cris_expand_return (cris_return_address_on_stack ()); DONE;")
+
+(define_insn "*return_expanded"
+  [(return)]
+  ""
 {
-  int i;
-
-  /* Just needs to hold a 'movem [sp+],rN'.  */
-  char rd[sizeof (\"movem [$sp+],$r99\")];
-
-  *rd = 0;
-
-  /* Start from the last call-saved register.  We know that we have a
-     simple epilogue, so we just have to find the last register in the
-     movem sequence.  */
-  for (i = 8; i >= 0; i--)
-    if (regs_ever_live[i]
-	|| (i == PIC_OFFSET_TABLE_REGNUM
-	    && current_function_uses_pic_offset_table))
-      break;
-
-  if (i >= 0)
-    sprintf (rd, \"movem [$sp+],$%s\", reg_names [i]);
-
-  if (regs_ever_live[CRIS_SRP_REGNUM]
-      || cris_return_address_on_stack ())
-    {
-      if (*rd)
-	output_asm_insn (rd, operands);
-      return \"jump [$sp+]\";
-    }
-
-  if (*rd)
-    {
-      output_asm_insn (\"reT\", operands);
-      output_asm_insn (rd, operands);
-      return \"\";
-    }
-
-  return \"ret%#\";
-}"
+  return cris_return_address_on_stack_for_return ()
+    ? "jump [$sp+]" : "ret%#";
+}
   [(set (attr "slottable")
-	(if_then_else
-	 (ne (symbol_ref
-	      "(regs_ever_live[CRIS_SRP_REGNUM]
-	        || cris_return_address_on_stack ())")
-	     (const_int 0))
-	 (const_string "no")	     ; If jump then not slottable.
-	 (if_then_else
-	  (ne (symbol_ref
-	       "(regs_ever_live[0]
-		 || (flag_pic != 0 && regs_ever_live[1])
-		 || (PIC_OFFSET_TABLE_REGNUM == 0
-		     && cris_cfun_uses_pic_table ()))")
-	      (const_int 0))
-	  (const_string "no") ; ret+movem [sp+],rx: slot already filled.
-	  (const_string "has_slot")))) ; If ret then need to fill a slot.
-   (set_attr "cc" "none")])
+ 	(if_then_else
+ 	 (ne (symbol_ref
+	      "(cris_return_address_on_stack_for_return ())")
+ 	     (const_int 0))
+ 	 (const_string "no")
+	 (const_string "has_slot")))])
+
+;; Note that the (return) from the expander itself is always the last
+;; insn in the epilogue.
+(define_expand "epilogue"
+  [(const_int 0)]
+  ""
+  "cris_expand_epilogue (); DONE;")
 
 ;; Conditional branches.
 
@@ -3929,7 +3920,8 @@
 			     gen_rtx_CONST
 			     (VOIDmode,
 			      gen_rtx_UNSPEC (VOIDmode,
-					      gen_rtvec (1, op0), 0)));
+					      gen_rtvec (1, op0),
+					      CRIS_UNSPEC_PLT)));
 	  else
 	    abort ();
 
@@ -3994,7 +3986,8 @@
 			     gen_rtx_CONST
 			     (VOIDmode,
 			      gen_rtx_UNSPEC (VOIDmode,
-					      gen_rtvec (1, op1), 0)));
+					      gen_rtvec (1, op1),
+					      CRIS_UNSPEC_PLT)));
 	  else
 	    abort ();
 
@@ -4040,6 +4033,20 @@
   "nop"
   [(set_attr "cc" "none")])
 
+;; We need to stop accesses to the stack after the memory is
+;; deallocated.  Unfortunately, reorg doesn't look at naked clobbers,
+;; e.g. (insn ... (clobber (mem:BLK (stack_pointer_rtx)))) and we don't
+;; want to use a naked (unspec_volatile) as that would stop any
+;; scheduling in the epilogue.  Hence we model it as a "real" insn that
+;; sets the memory in an unspecified manner.  FIXME: Unfortunately it
+;; still has the effect of an unspec_volatile.
+(define_insn "cris_frame_deallocated_barrier"
+  [(set (mem:BLK (reg:SI CRIS_SP_REGNUM))
+	(unspec:BLK [(const_int 0)] CRIS_UNSPEC_FRAME_DEALLOC))]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
 ;; We expand on casesi so we can use "bound" and "add offset fetched from
 ;; a table to pc" (adds.w [pc+%0.w],pc).
 

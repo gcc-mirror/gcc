@@ -1627,6 +1627,8 @@ struct cum_args {int regs;};
   {PLUS, UMIN}},					\
  {"cris_mem_op",					\
   {MEM}},						\
+ {"cris_load_multiple_op",				\
+  {PARALLEL}},						\
  {"cris_bdap_operand",					\
   {SUBREG, REG, LABEL_REF, SYMBOL_REF, MEM, CONST_INT,	\
    CONST_DOUBLE, CONST, SIGN_EXTEND}},			\
