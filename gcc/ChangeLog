@@ -1,3 +1,12 @@
+Tue May  5 10:50:39 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
+
+	* config/m68k/m68k.h: Declare functions from m68k.c used in
+	macros and machine description.
+	(ASM_OUTPUT_LONG_DOUBLE): Always use `l' flag in print format for
+	long values.
+	(ASM_OUTPUT_FLOAT): Likewise.
+	(ASM_OUTPUT_FLOAT_OPERAND): Likewise.
+
 Tue May  5 01:28:12 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.def: Add NAMESPACE_DECL.
