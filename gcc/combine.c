@@ -7830,6 +7830,7 @@ simplify_and_const_int (x, mode, varop, constop)
 
   else
     {
+      constop = trunc_int_for_mode (constop, mode);
       if (GET_CODE (XEXP (x, 1)) != CONST_INT
 	  || (unsigned HOST_WIDE_INT) INTVAL (XEXP (x, 1)) != constop)
 	SUBST (XEXP (x, 1), GEN_INT (constop));
