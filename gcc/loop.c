@@ -6118,6 +6118,8 @@ basic_induction_var (x, mode, dest_reg, p, inc_val, mult_val, location)
 	       || (GET_CODE (SET_DEST (set)) == SUBREG
 		   && (GET_MODE_SIZE (GET_MODE (SET_DEST (set)))
 		       <= UNITS_PER_WORD)
+		   && (GET_MODE_CLASS (GET_MODE (SET_DEST (set)))
+		       == MODE_INT)
 		   && SUBREG_REG (SET_DEST (set)) == x))
 	      && basic_induction_var (SET_SRC (set),
 				      (GET_MODE (SET_SRC (set)) == VOIDmode
