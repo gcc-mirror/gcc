@@ -44,7 +44,7 @@ extern int register_operand		PROTO((rtx, enum machine_mode));
 extern int scratch_operand		PROTO((rtx, enum machine_mode));
 extern int immediate_operand		PROTO((rtx, enum machine_mode));
 extern int const_int_operand		PROTO((rtx, enum machine_mode));
-extern int cosnt_double_operand		PROTO((rtx, enum machine_mode));
+extern int const_double_operand		PROTO((rtx, enum machine_mode));
 extern int nonimmediate_operand		PROTO((rtx, enum machine_mode));
 extern int nonmemory_operand		PROTO((rtx, enum machine_mode));
 extern int push_operand			PROTO((rtx, enum machine_mode));

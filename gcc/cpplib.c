@@ -377,7 +377,7 @@ static int do_warning PARAMS ((cpp_reader *, struct directive *, U_CHAR *, U_CHA
    The initialize_builtins function assumes #define is the very first.  */
 
 static struct directive directive_table[] = {
-  {  6, do_define, "define", T_DEFINE},
+  {  6, do_define, "define", T_DEFINE, 0},
   {  5, do_xifdef, "ifdef", T_IFDEF, 1},
   {  6, do_xifdef, "ifndef", T_IFNDEF, 1},
   {  7, do_include, "include", T_INCLUDE, 1},
@@ -387,18 +387,18 @@ static struct directive directive_table[] = {
   {  4, do_else, "else", T_ELSE, 1},
   {  2, do_if, "if", T_IF, 1},
   {  4, do_elif, "elif", T_ELIF, 1},
-  {  5, do_undef, "undef", T_UNDEF},
-  {  5, do_error, "error", T_ERROR},
-  {  7, do_warning, "warning", T_WARNING},
-  {  6, do_pragma, "pragma", T_PRAGMA},
+  {  5, do_undef, "undef", T_UNDEF, 0},
+  {  5, do_error, "error", T_ERROR, 0},
+  {  7, do_warning, "warning", T_WARNING, 0},
+  {  6, do_pragma, "pragma", T_PRAGMA, 0},
   {  4, do_line, "line", T_LINE, 1},
   {  5, do_ident, "ident", T_IDENT, 1},
 #ifdef SCCS_DIRECTIVE
-  {  4, do_sccs, "sccs", T_SCCS},
+  {  4, do_sccs, "sccs", T_SCCS, 0},
 #endif
   {  6, do_assert, "assert", T_ASSERT, 1},
   {  8, do_unassert, "unassert", T_UNASSERT, 1},
-  {  -1, 0, "", T_UNUSED},
+  {  -1, 0, "", T_UNUSED, 0},
 };
 
 /* table to tell if char can be part of a C identifier.  */
@@ -5642,7 +5642,7 @@ finclude (pfile, f, fname, system_header_p, dirptr)
        First read the entire file into heap and
        copy them into buffer on stack.  */
 
-    int bsize = 2000;
+    size_t bsize = 2000;
 
     st_size = 0;
     fp->buf = (U_CHAR *) xmalloc (bsize + 2);

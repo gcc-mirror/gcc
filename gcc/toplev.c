@@ -4179,7 +4179,7 @@ check_lang_option (option, lang_option)
      -fpack-struct.  */
   
   /* An exact match is OK  */
-  if (strlen (option) == len)
+  if ((int) strlen (option) == len)
     return 1;
   
   /* If it is not an -f or -W option allow the match */
