@@ -865,6 +865,49 @@ if [ -r ${LIB}/$file ]; then
   fi
 fi
 
+# In limits.h, put #ifndefs around things that are supposed to be defined
+# in float.h to avoid redefinition errors if float.h is included first.
+file=limits.h
+if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+  cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+  chmod +w ${LIB}/$file 2>/dev/null
+  chmod a+r ${LIB}/$file 2>/dev/null
+fi
+
+if [ -r ${LIB}/$file ]; then
+  echo Fixing $file
+  sed -e '/[ 	]FLT_MIN[ 	]/i\
+#ifndef FLT_MIN'\
+      -e '/[ 	]FLT_MIN[ 	]/a\
+#endif'\
+      -e '/[ 	]FLT_MAX[ 	]/i\
+#ifndef FLT_MAX'\
+      -e '/[ 	]FLT_MAX[ 	]/a\
+#endif'\
+      -e '/[ 	]FLT_DIG[ 	]/i\
+#ifndef FLT_DIG'\
+      -e '/[ 	]FLT_DIG[ 	]/a\
+#endif'\
+      -e '/[ 	]DBL_MIN[ 	]/i\
+#ifndef DBL_MIN'\
+      -e '/[ 	]DBL_MIN[ 	]/a\
+#endif'\
+      -e '/[ 	]DBL_MAX[ 	]/i\
+#ifndef DBL_MAX'\
+      -e '/[ 	]DBL_MAX[ 	]/a\
+#endif'\
+      -e '/[ 	]DBL_DIG[ 	]/i\
+#ifndef DBL_DIG'\
+      -e '/[ 	]DBL_DIG[ 	]/a\
+#endif'\
+    ${LIB}/$file > ${LIB}/${file}.sed
+  rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+  if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+    echo Deleting ${LIB}/$file\; no fixes were needed.
+    rm -f ${LIB}/$file
+  fi
+fi
+
 # These two files on SunOS 4 are included by other files
 # in the same directory, using "...".  So we must make sure they exist
 # in the same directory as the other fixed files.
