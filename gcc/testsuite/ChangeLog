@@ -1,5 +1,9 @@
 2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* g++.old-deja/g++.pt/instantiate8.C: New test.
+
+2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* g++.old-deja/g++.other/incomplete.C: Add more tests.
 	* g++.old-deja/g++.pt/crash9.C: Mark new expected error.
 

@@ -7150,6 +7150,9 @@ tsubst_expr (t, args, complain, in_decl)
 	    init = tsubst_expr (init, args, complain, in_decl);
 	    if (decl != error_mark_node)
 	      {
+                if (TREE_CODE (decl) != TYPE_DECL)
+                  /* Make sure the type is instantiated now. */
+                  complete_type (type);
 	        if (init)
 	          DECL_INITIAL (decl) = error_mark_node;
 	        /* By marking the declaration as instantiated, we avoid
