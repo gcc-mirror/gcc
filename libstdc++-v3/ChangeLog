@@ -1,3 +1,13 @@
+2004-03-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/ext/mt_allocator.h: Uglify consistently names of
+	variables, members and classes; tidy.
+
+2004-03-27  Dhruv Matani  <dhruvbird@gmx.net>
+
+	* include/ext/mt_allocator.h (__mt_alloc<>::deallocate):
+	Deallocation loop rewrote.
+
 2004-03-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/ext/mt_allocator.h (__mt_alloc<>::allocate,
