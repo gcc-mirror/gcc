@@ -2,6 +2,30 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
+@ignore
+@c man begin COPYRIGHT
+Copyright @copyright{} 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided also that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be included in translations
+approved by the Free Software Foundation instead of in the original
+English.
+@c man end
+@c Set file name and title for the man page.
+@setfilename gcov
+@settitle coverage testing tool
+@end ignore
+
 @node Gcov
 @chapter @code{gcov}: a Test Coverage Program
 
@@ -19,6 +43,7 @@ This chapter describes version 1.5 of @code{gcov}.
 
 @node Gcov Intro
 @section Introduction to @code{gcov}
+@c man begin DESCRIPTION
 
 @code{gcov} is a test coverage program.  Use it in concert with @sc{gnu}
 CC to analyze your programs to help create more efficient, faster
@@ -77,6 +102,8 @@ timing information you can use along with the information you get from
 @code{gcov} works only on code compiled with @sc{gnu} CC.  It is not
 compatible with any other profiling or test coverage mechanism.
 
+@c man end
+
 @node Invoking Gcov
 @section Invoking gcov
 
@@ -84,8 +111,18 @@ compatible with any other profiling or test coverage mechanism.
 gcov [-b] [-c] [-v] [-n] [-l] [-f] [-o directory] @var{sourcefile}
 @end smallexample
 
+@ignore
+@c man begin SYNOPSIS
+gcov [@samp{-b}] [@samp{-c}] [@samp{-v}] [@samp{-n}] [@samp{-l}] [@samp{-f}] [@samp{-o} @var{directory}] @var{sourcefile}
+@c man end
+@c man begin SEEALSO
+gcc(1) and the Info entry for @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin OPTIONS
 @table @code
-@item -b 
+@item -b
 Write branch frequencies to the output file, and write branch summary
 info to the standard output.  This option allows you to see how often
 each branch in your program was taken.
@@ -273,6 +310,7 @@ executed 100 times.  In one sense this result is correct, because there
 was only one instruction representing all four of these lines.  However,
 the output does not indicate how many times the result was 0 and how
 many times the result was 1.
+@c man end
 
 @node Gcov Data Files
 @section Brief description of @code{gcov} data files

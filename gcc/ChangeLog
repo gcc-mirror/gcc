@@ -1,3 +1,9 @@
+2000-11-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcov.texi: Add magic comments for texi2pod.pl.
+	* Makefile.in: Add rules to generate and install gcov.1.
+	* gcov.1: New (generated) file.
+
 2000-11-21  Richard Henderson  <rth@redhat.com>
 
 	* regrename.c (scan_rtx_reg): Terminate the chain rather than

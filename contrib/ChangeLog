@@ -1,3 +1,7 @@
+2000-11-22  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc_update: Add gcov.1 to the list of generated files.
+
 2000-11-21  Mark Mitchell  <mark@codesourcery.com>
 
 	* gcc_build: Remove code to put information in a log file.
