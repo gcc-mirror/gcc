@@ -1079,6 +1079,8 @@ main (argc, argv)
       exit (FATAL_EXIT_CODE);
     }
 
+  cpp_init ();			/* Initialize cpplib.   */
+
   inc_filename = argv[1];
   inc_filename_length = strlen (inc_filename);
 
