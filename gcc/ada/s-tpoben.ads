@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,31 +83,49 @@ package System.Tasking.Protected_Objects.Entries is
       --  Note that you should never (un)lock Object.L directly, but instead
       --  use Lock_Entries/Unlock_Entries.
 
-      Compiler_Info     : System.Address;
-      Call_In_Progress  : Entry_Call_Link;
-      Ceiling           : System.Any_Priority;
-      Old_Base_Priority : System.Any_Priority;
-      Pending_Action    : Boolean;
-      --  Flag indicating that priority has been dipped temporarily
-      --  in order to avoid violating the priority ceiling of the lock
-      --  associated with this protected object, in Lock_Server.
-      --  The flag tells Unlock_Server or Unlock_And_Update_Server to
-      --  restore the old priority to Old_Base_Priority. This is needed
-      --  because of situations (bad language design?) where one
-      --  needs to lock a PO but to do so would violate the priority
-      --  ceiling.  For example, this can happen when an entry call
-      --  has been requeued to a lower-priority object, and the caller
-      --  then tries to cancel the call while its own priority is higher
-      --  than the ceiling of the new PO.
-      Finalized         : Boolean := False;
-      --  Set to True by Finalize to make this routine idempotent.
+      Compiler_Info : System.Address;
+      --  Pointer to compiler-generated record representing protected object
 
-      Entry_Bodies      : Protected_Entry_Body_Access;
+      Call_In_Progress : Entry_Call_Link;
+      --  Pointer to the entry call being executed (if any)
+
+      Ceiling : System.Any_Priority;
+      --  Ceiling priority associated with the protected object
+
+      Owner : Task_Id;
+      --  This field contains the protected object's owner. Null_Task
+      --  indicates that the protected object is not currently being used.
+      --  This information is used for detecting the type of potentially
+      --  blocking operations described in the ARM 9.5.1, par. 15 (external
+      --  calls on a protected subprogram with the same target object as that
+      --  of the protected action).
+
+      Old_Base_Priority : System.Any_Priority;
+      --  Task's base priority when the protected operation was called
+
+      Pending_Action  : Boolean;
+      --  Flag indicating that priority has been dipped temporarily in order
+      --  to avoid violating the priority ceiling of the lock associated with
+      --  this protected object, in Lock_Server. The flag tells Unlock_Server
+      --  or Unlock_And_Update_Server to restore the old priority to
+      --  Old_Base_Priority. This is needed because of situations (bad
+      --  language design?) where one needs to lock a PO but to do so would
+      --  violate the priority ceiling. For example, this can happen when an
+      --  entry call has been requeued to a lower-priority object, and the
+      --  caller then tries to cancel the call while its own priority is
+      --  higher than the ceiling of the new PO.
+
+      Finalized : Boolean := False;
+      --  Set to True by Finalize to make this routine idempotent
+
+      Entry_Bodies : Protected_Entry_Body_Access;
+      --  Pointer to an array containing the executable code for all entry
+      --  bodies of a protected type.
 
       --  The following function maps the entry index in a call (which denotes
       --  the queue to the proper entry) into the body of the entry.
 
-      Find_Body_Index   : Find_Body_Index_Access;
+      Find_Body_Index : Find_Body_Index_Access;
       Entry_Queues      : Protected_Entry_Queue_Array (1 .. Num_Entries);
    end record;
 
@@ -141,11 +159,11 @@ package System.Tasking.Protected_Objects.Entries is
    --  to keep track of the runtime state of a protected object.
 
    procedure Lock_Entries (Object : Protection_Entries_Access);
-   --  Lock a protected object for write access. Upon return, the caller
-   --  owns the lock to this object, and no other call to Lock or
-   --  Lock_Read_Only with the same argument will return until the
-   --  corresponding call to Unlock has been made by the caller.
-   --  Program_Error is raised in case of ceiling violation.
+   --  Lock a protected object for write access. Upon return, the caller owns
+   --  the lock to this object, and no other call to Lock or Lock_Read_Only
+   --  with the same argument will return until the corresponding call to
+   --  Unlock has been made by the caller. Program_Error is raised in case of
+   --  ceiling violation.
 
    procedure Lock_Entries
      (Object : Protection_Entries_Access; Ceiling_Violation : out Boolean);
@@ -153,24 +171,24 @@ package System.Tasking.Protected_Objects.Entries is
    --  raising Program_Error.
 
    procedure Lock_Read_Only_Entries (Object : Protection_Entries_Access);
-   --  Lock a protected object for read access. Upon return, the caller
-   --  owns the lock for read access, and no other calls to Lock with the
-   --  same argument will return until the corresponding call to Unlock
-   --  has been made by the caller. Other calls to Lock_Read_Only may (but
-   --  need not) return before the call to Unlock, and the corresponding
-   --  callers will also own the lock for read access.
+   --  Lock a protected object for read access. Upon return, the caller owns
+   --  the lock for read access, and no other calls to Lock with the same
+   --  argument will return until the corresponding call to Unlock has been
+   --  made by the caller. Other calls to Lock_Read_Only may (but need not)
+   --  return before the call to Unlock, and the corresponding callers will
+   --  also own the lock for read access.
    --
-   --  Note: we are not currently using this interface, it is provided
-   --  for possible future use. At the current time, everyone uses Lock
-   --  for both read and write locks.
+   --  Note: we are not currently using this interface, it is provided for
+   --  possible future use. At the current time, everyone uses Lock for both
+   --  read and write locks.
 
    procedure Unlock_Entries (Object : Protection_Entries_Access);
-   --  Relinquish ownership of the lock for the object represented by
-   --  the Object parameter. If this ownership was for write access, or
-   --  if it was for read access where there are no other read access
-   --  locks outstanding, one (or more, in the case of Lock_Read_Only)
-   --  of the tasks waiting on this lock (if any) will be given the
-   --  lock and allowed to return from the Lock or Lock_Read_Only call.
+   --  Relinquish ownership of the lock for the object represented by the
+   --  Object parameter. If this ownership was for write access, or if it was
+   --  for read access where there are no other read access locks outstanding,
+   --  one (or more, in the case of Lock_Read_Only) of the tasks waiting on
+   --  this lock (if any) will be given the lock and allowed to return from
+   --  the Lock or Lock_Read_Only call.
 
 private
 

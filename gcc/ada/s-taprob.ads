@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -206,13 +206,24 @@ package System.Tasking.Protected_Objects is
 
 private
    type Protection is record
-      L       : aliased Task_Primitives.Lock;
+      L : aliased Task_Primitives.Lock;
+      --  Lock used to ensure mutual exclusive access to the protected object
+
       Ceiling : System.Any_Priority;
+      --  Ceiling priority associated to the protected object
+
+      Owner : Task_Id;
+      --  This field contains the protected object's owner. Null_Task
+      --  indicates that the protected object is not currently being used.
+      --  This information is used for detecting the type of potentially
+      --  blocking operations described in the ARM 9.5.1, par. 15 (external
+      --  calls on a protected subprogram with the same target object as that
+      --  of the protected action).
    end record;
 
    procedure Finalize_Protection (Object : in out Protection);
-   --  Clean up a Protection object; in particular, finalize the associated
-   --  Lock object. The compiler generates automatically calls to this
+   --  Clean up a Protection object (in particular, finalize the associated
+   --  Lock object). The compiler generates calls automatically to this
    --  procedure
 
 end System.Tasking.Protected_Objects;

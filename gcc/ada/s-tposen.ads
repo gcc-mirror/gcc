@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -277,12 +277,33 @@ package System.Tasking.Protected_Objects.Single_Entry is
 
 private
    type Protection_Entry is record
-      L                 : aliased Task_Primitives.Lock;
-      Compiler_Info     : System.Address;
-      Call_In_Progress  : Entry_Call_Link;
-      Ceiling           : System.Any_Priority;
-      Entry_Body        : Entry_Body_Access;
-      Entry_Queue       : Entry_Call_Link;
+      L : aliased Task_Primitives.Lock;
+      --  The underlying lock associated with a Protection_Entries. Note that
+      --  you should never (un)lock Object.L directly, but instead use
+      --  Lock_Entry/Unlock_Entry.
+
+      Compiler_Info : System.Address;
+      --  Pointer to compiler-generated record representing protected object
+
+      Call_In_Progress : Entry_Call_Link;
+      --  Pointer to the entry call being executed (if any)
+
+      Ceiling : System.Any_Priority;
+      --  Ceiling priority associated to the protected object
+
+      Owner : Task_Id;
+      --  This field contains the protected object's owner. Null_Task
+      --  indicates that the protected object is not currently being used.
+      --  This information is used for detecting the type of potentially
+      --  blocking operations described in the ARM 9.5.1, par. 15 (external
+      --  calls on a protected subprogram with the same target object as that
+      --  of the protected action).
+
+      Entry_Body : Entry_Body_Access;
+      --  Pointer to executable code for the entry body of the protected type
+
+      Entry_Queue : Entry_Call_Link;
+      --  Place to store the waiting entry call (if any)
    end record;
 
 end System.Tasking.Protected_Objects.Single_Entry;
