@@ -93,7 +93,7 @@ enum optab_index
   /* Arithmetic shift left */
   OTI_ashl,
   /* Logical shift right */
-  OTI_lshr,  
+  OTI_lshr,
   /* Arithmetic shift right */
   OTI_ashr,
   /* Rotate left */
@@ -168,7 +168,7 @@ enum optab_index
   OTI_cbranch,
   OTI_cmov,
   OTI_cstore,
-    
+
   /* Push instruction.  */
   OTI_push,
 
@@ -269,7 +269,7 @@ extern enum insn_code reload_out_optab[NUM_MACHINE_MODES];
 extern GTY(()) optab code_to_optab[NUM_RTX_CODE + 1];
 
 
-typedef rtx (*rtxfun) PARAMS ((rtx));
+typedef rtx (*rtxfun) (rtx);
 
 /* Indexed by the rtx-code for a conditional (eg. EQ, LT,...)
    gives the gen_function to make a branch to test that condition.  */
@@ -298,43 +298,43 @@ extern enum insn_code clrstr_optab[NUM_MACHINE_MODES];
 /* Define functions given in optabs.c.  */
 
 /* Expand a binary operation given optab and rtx operands.  */
-extern rtx expand_binop PARAMS ((enum machine_mode, optab, rtx, rtx, rtx,
-				 int, enum optab_methods));
+extern rtx expand_binop (enum machine_mode, optab, rtx, rtx, rtx, int,
+			 enum optab_methods);
 
 /* Expand a binary operation with both signed and unsigned forms.  */
-extern rtx sign_expand_binop PARAMS ((enum machine_mode, optab, optab, rtx,
-				      rtx, rtx, int, enum optab_methods));
+extern rtx sign_expand_binop (enum machine_mode, optab, optab, rtx, rtx,
+			      rtx, int, enum optab_methods);
 
 /* Generate code to perform an operation on two operands with two results.  */
-extern int expand_twoval_binop PARAMS ((optab, rtx, rtx, rtx, rtx, int));
+extern int expand_twoval_binop (optab, rtx, rtx, rtx, rtx, int);
 
 /* Expand a unary arithmetic operation given optab rtx operand.  */
-extern rtx expand_unop PARAMS ((enum machine_mode, optab, rtx, rtx, int));
+extern rtx expand_unop (enum machine_mode, optab, rtx, rtx, int);
 
 /* Expand the absolute value operation.  */
-extern rtx expand_abs_nojump PARAMS ((enum machine_mode, rtx, rtx, int));
-extern rtx expand_abs PARAMS ((enum machine_mode, rtx, rtx, int, int));
+extern rtx expand_abs_nojump (enum machine_mode, rtx, rtx, int);
+extern rtx expand_abs (enum machine_mode, rtx, rtx, int, int);
 
 /* Expand the complex absolute value operation.  */
-extern rtx expand_complex_abs PARAMS ((enum machine_mode, rtx, rtx, int));
+extern rtx expand_complex_abs (enum machine_mode, rtx, rtx, int);
 
 /* Generate an instruction with a given INSN_CODE with an output and
    an input.  */
-extern void emit_unop_insn PARAMS ((int, rtx, rtx, enum rtx_code));
+extern void emit_unop_insn (int, rtx, rtx, enum rtx_code);
 
 /* Emit code to perform a series of operations on a multi-word quantity, one
    word at a time.  */
-extern rtx emit_no_conflict_block PARAMS ((rtx, rtx, rtx, rtx, rtx));
+extern rtx emit_no_conflict_block (rtx, rtx, rtx, rtx, rtx);
 
 /* Emit one rtl instruction to store zero in specified rtx.  */
-extern void emit_clr_insn PARAMS ((rtx));
+extern void emit_clr_insn (rtx);
 
 /* Emit one rtl insn to store 1 in specified rtx assuming it contains 0.  */
-extern void emit_0_to_1_insn PARAMS ((rtx));
+extern void emit_0_to_1_insn (rtx);
 
 /* Emit one rtl insn to compare two rtx's.  */
-extern void emit_cmp_insn PARAMS ((rtx, rtx, enum rtx_code, rtx,
-				   enum machine_mode, int));
+extern void emit_cmp_insn (rtx, rtx, enum rtx_code, rtx, enum machine_mode,
+			   int);
 
 /* The various uses that a comparison can have; used by can_compare_p:
    jumps, conditional moves, store flag operations.  */
@@ -347,30 +347,29 @@ enum can_compare_purpose
 
 /* Nonzero if a compare of mode MODE can be done straightforwardly
    (without splitting it into pieces).  */
-extern int can_compare_p PARAMS ((enum rtx_code, enum machine_mode,
-				  enum can_compare_purpose));
+extern int can_compare_p (enum rtx_code, enum machine_mode,
+			  enum can_compare_purpose);
 
-extern rtx prepare_operand PARAMS ((int, rtx, int, enum machine_mode,
-				    enum machine_mode, int));
+extern rtx prepare_operand (int, rtx, int, enum machine_mode,
+			    enum machine_mode, int);
 
 /* Return the INSN_CODE to use for an extend operation.  */
-extern enum insn_code can_extend_p PARAMS ((enum machine_mode,
-					    enum machine_mode, int));
+extern enum insn_code can_extend_p (enum machine_mode, enum machine_mode, int);
 
 /* Generate the body of an insn to extend Y (with mode MFROM)
    into X (with mode MTO).  Do zero-extension if UNSIGNEDP is nonzero.  */
-extern rtx gen_extend_insn PARAMS ((rtx, rtx, enum machine_mode,
-				    enum machine_mode, int));
+extern rtx gen_extend_insn (rtx, rtx, enum machine_mode,
+			    enum machine_mode, int);
 
 /* Initialize the tables that control conversion between fixed and
    floating values.  */
-extern void init_fixtab PARAMS ((void));
-extern void init_floattab PARAMS ((void));
+extern void init_fixtab (void);
+extern void init_floattab (void);
 
 /* Generate code for a FLOAT_EXPR.  */
-extern void expand_float PARAMS ((rtx, rtx, int));
+extern void expand_float (rtx, rtx, int);
 
 /* Generate code for a FIX_EXPR.  */
-extern void expand_fix PARAMS ((rtx, rtx, int));
+extern void expand_fix (rtx, rtx, int);
 
 #endif /* GCC_OPTABS_H */

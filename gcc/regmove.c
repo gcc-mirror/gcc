@@ -53,11 +53,11 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define STACK_GROWS_DOWNWARD 0
 #endif
 
-static int perhaps_ends_bb_p	PARAMS ((rtx));
-static int optimize_reg_copy_1	PARAMS ((rtx, rtx, rtx));
-static void optimize_reg_copy_2	PARAMS ((rtx, rtx, rtx));
-static void optimize_reg_copy_3	PARAMS ((rtx, rtx, rtx));
-static void copy_src_to_dest	PARAMS ((rtx, rtx, rtx, int));
+static int perhaps_ends_bb_p (rtx);
+static int optimize_reg_copy_1 (rtx, rtx, rtx);
+static void optimize_reg_copy_2 (rtx, rtx, rtx);
+static void optimize_reg_copy_3 (rtx, rtx, rtx);
+static void copy_src_to_dest (rtx, rtx, rtx, int);
 static int *regmove_bb_head;
 
 struct match {
@@ -67,26 +67,24 @@ struct match {
   int early_clobber[MAX_RECOG_OPERANDS];
 };
 
-static rtx discover_flags_reg PARAMS ((void));
-static void mark_flags_life_zones PARAMS ((rtx));
-static void flags_set_1 PARAMS ((rtx, rtx, void *));
+static rtx discover_flags_reg (void);
+static void mark_flags_life_zones (rtx);
+static void flags_set_1 (rtx, rtx, void *);
 
-static int try_auto_increment PARAMS ((rtx, rtx, rtx, rtx, HOST_WIDE_INT, int));
-static int find_matches PARAMS ((rtx, struct match *));
-static void replace_in_call_usage PARAMS ((rtx *, unsigned int, rtx, rtx));
-static int fixup_match_1 PARAMS ((rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *))
-;
-static int reg_is_remote_constant_p PARAMS ((rtx, rtx, rtx));
-static int stable_and_no_regs_but_for_p PARAMS ((rtx, rtx, rtx));
-static int regclass_compatible_p PARAMS ((int, int));
-static int replacement_quality PARAMS ((rtx));
-static int fixup_match_2 PARAMS ((rtx, rtx, rtx, rtx, FILE *));
+static int try_auto_increment (rtx, rtx, rtx, rtx, HOST_WIDE_INT, int);
+static int find_matches (rtx, struct match *);
+static void replace_in_call_usage (rtx *, unsigned int, rtx, rtx);
+static int fixup_match_1 (rtx, rtx, rtx, rtx, rtx, int, int, int, FILE *);
+static int reg_is_remote_constant_p (rtx, rtx, rtx);
+static int stable_and_no_regs_but_for_p (rtx, rtx, rtx);
+static int regclass_compatible_p (int, int);
+static int replacement_quality (rtx);
+static int fixup_match_2 (rtx, rtx, rtx, rtx, FILE *);
 
 /* Return nonzero if registers with CLASS1 and CLASS2 can be merged without
    causing too much register allocation problems.  */
 static int
-regclass_compatible_p (class0, class1)
-     int class0, class1;
+regclass_compatible_p (int class0, int class1)
 {
   return (class0 == class1
 	  || (reg_class_subset_p (class0, class1)
@@ -100,10 +98,8 @@ regclass_compatible_p (class0, class1)
    Iff INC_INSN_SET is nonzero, inc_insn has a destination different from src.
    Return nonzero for success.  */
 static int
-try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
-     rtx reg, insn, inc_insn ,inc_insn_set;
-     HOST_WIDE_INT increment;
-     int pre;
+try_auto_increment (rtx insn, rtx inc_insn, rtx inc_insn_set, rtx reg,
+		    HOST_WIDE_INT increment, int pre)
 {
   enum rtx_code inc_code;
 
@@ -167,7 +163,7 @@ try_auto_increment (insn, inc_insn, inc_insn_set, reg, increment, pre)
    if no flags were found.  Return pc_rtx if we got confused.  */
 
 static rtx
-discover_flags_reg ()
+discover_flags_reg (void)
 {
   rtx tmp;
   tmp = gen_rtx_REG (word_mode, 10000);
@@ -220,8 +216,7 @@ static rtx flags_set_1_rtx;
 static int flags_set_1_set;
 
 static void
-mark_flags_life_zones (flags)
-     rtx flags;
+mark_flags_life_zones (rtx flags)
 {
   int flags_regno;
   int flags_nregs;
@@ -319,9 +314,7 @@ mark_flags_life_zones (flags)
 /* A subroutine of mark_flags_life_zones, called through note_stores.  */
 
 static void
-flags_set_1 (x, pat, data)
-     rtx x, pat;
-     void *data ATTRIBUTE_UNUSED;
+flags_set_1 (rtx x, rtx pat, void *data ATTRIBUTE_UNUSED)
 {
   if (GET_CODE (pat) == SET
       && reg_overlap_mentioned_p (x, flags_set_1_rtx))
@@ -336,8 +329,7 @@ static int *regno_src_regno;
    a candidate for tying to a hard register, since the output might in
    turn be a candidate to be tied to a different hard register.  */
 static int
-replacement_quality (reg)
-     rtx reg;
+replacement_quality (rtx reg)
 {
   int src_regno;
 
@@ -402,10 +394,7 @@ static int perhaps_ends_bb_p (insn)
    register-register copy.  */
 
 static int
-optimize_reg_copy_1 (insn, dest, src)
-     rtx insn;
-     rtx dest;
-     rtx src;
+optimize_reg_copy_1 (rtx insn, rtx dest, rtx src)
 {
   rtx p, q;
   rtx note;
@@ -601,10 +590,7 @@ optimize_reg_copy_1 (insn, dest, src)
    this for hard registers since the substitutions we may make might fail.  */
 
 static void
-optimize_reg_copy_2 (insn, dest, src)
-     rtx insn;
-     rtx dest;
-     rtx src;
+optimize_reg_copy_2 (rtx insn, rtx dest, rtx src)
 {
   rtx p, q;
   rtx set;
@@ -662,10 +648,7 @@ optimize_reg_copy_2 (insn, dest, src)
    the remaining accesses to use the appropriate SUBREG.  This allows
    SRC and DEST to be tied later.  */
 static void
-optimize_reg_copy_3 (insn, dest, src)
-     rtx insn;
-     rtx dest;
-     rtx src;
+optimize_reg_copy_3 (rtx insn, rtx dest, rtx src)
 {
   rtx src_reg = XEXP (src, 0);
   int src_no = REGNO (src_reg);
@@ -750,11 +733,7 @@ optimize_reg_copy_3 (insn, dest, src)
    instead moving the value to dest directly before the operation.  */
 
 static void
-copy_src_to_dest (insn, src, dest, old_max_uid)
-     rtx insn;
-     rtx src;
-     rtx dest;
-     int old_max_uid;
+copy_src_to_dest (rtx insn, rtx src, rtx dest, int old_max_uid)
 {
   rtx seq;
   rtx link;
@@ -871,10 +850,7 @@ copy_src_to_dest (insn, src, dest, old_max_uid)
    the first insn in the function.  */
 
 static int
-reg_is_remote_constant_p (reg, insn, first)
-     rtx reg;
-     rtx insn;
-     rtx first;
+reg_is_remote_constant_p (rtx reg, rtx insn, rtx first)
 {
   rtx p;
 
@@ -939,9 +915,7 @@ reg_is_remote_constant_p (reg, insn, first)
    hard register as ultimate source, like the frame pointer.  */
 
 static int
-fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
-     rtx insn, dst, src, offset;
-     FILE *regmove_dump_file;
+fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset, FILE *regmove_dump_file)
 {
   rtx p, dst_death = 0;
   int length, num_calls = 0;
@@ -1063,10 +1037,7 @@ fixup_match_2 (insn, dst, src, offset, regmove_dump_file)
    (or 0 if none should be output).  */
 
 void
-regmove_optimize (f, nregs, regmove_dump_file)
-     rtx f;
-     int nregs;
-     FILE *regmove_dump_file;
+regmove_optimize (rtx f, int nregs, FILE *regmove_dump_file)
 {
   int old_max_uid = get_max_uid ();
   rtx insn;
@@ -1543,9 +1514,7 @@ regmove_optimize (f, nregs, regmove_dump_file)
    Initialize the info in MATCHP based on the constraints.  */
 
 static int
-find_matches (insn, matchp)
-     rtx insn;
-     struct match *matchp;
+find_matches (rtx insn, struct match *matchp)
 {
   int likely_spilled[MAX_RECOG_OPERANDS];
   int op_no;
@@ -1633,11 +1602,7 @@ find_matches (insn, matchp)
    assumed to be in INSN.  */
 
 static void
-replace_in_call_usage (loc, dst_reg, src, insn)
-     rtx *loc;
-     unsigned int dst_reg;
-     rtx src;
-     rtx insn;
+replace_in_call_usage (rtx *loc, unsigned int dst_reg, rtx src, rtx insn)
 {
   rtx x = *loc;
   enum rtx_code code;
@@ -1676,11 +1641,9 @@ replace_in_call_usage (loc, dst_reg, src, insn)
    Return nonzero for success.  */
 
 static int
-fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
-	       match_number, regmove_dump_file)
-     rtx insn, set, src, src_subreg, dst;
-     int backward, operand_number, match_number;
-     FILE *regmove_dump_file;
+fixup_match_1 (rtx insn, rtx set, rtx src, rtx src_subreg, rtx dst,
+	       int backward, int operand_number, int match_number,
+	       FILE *regmove_dump_file)
 {
   rtx p;
   rtx post_inc = 0, post_inc_set = 0, search_end = 0;
@@ -2079,8 +2042,7 @@ fixup_match_1 (insn, set, src, src_subreg, dst, backward, operand_number,
    leave the burden to update REG_DEAD / REG_UNUSED notes, so we don't
    want any registers but SRC and DST.  */
 static int
-stable_and_no_regs_but_for_p (x, src, dst)
-     rtx x, src, dst;
+stable_and_no_regs_but_for_p (rtx x, rtx src, rtx dst)
 {
   RTX_CODE code = GET_CODE (x);
   switch (GET_RTX_CLASS (code))
@@ -2140,21 +2102,21 @@ struct csa_memlist
   struct csa_memlist *next;
 };
 
-static int stack_memref_p		PARAMS ((rtx));
-static rtx single_set_for_csa		PARAMS ((rtx));
-static void free_csa_memlist		PARAMS ((struct csa_memlist *));
-static struct csa_memlist *record_one_stack_memref
-  PARAMS ((rtx, rtx *, struct csa_memlist *));
-static int try_apply_stack_adjustment
-  PARAMS ((rtx, struct csa_memlist *, HOST_WIDE_INT, HOST_WIDE_INT));
-static void combine_stack_adjustments_for_block PARAMS ((basic_block));
-static int record_stack_memrefs	PARAMS ((rtx *, void *));
+static int stack_memref_p (rtx);
+static rtx single_set_for_csa (rtx);
+static void free_csa_memlist (struct csa_memlist *);
+static struct csa_memlist *record_one_stack_memref (rtx, rtx *,
+						    struct csa_memlist *);
+static int try_apply_stack_adjustment (rtx, struct csa_memlist *,
+				       HOST_WIDE_INT, HOST_WIDE_INT);
+static void combine_stack_adjustments_for_block (basic_block);
+static int record_stack_memrefs (rtx *, void *);
 
 
 /* Main entry point for stack adjustment combination.  */
 
 void
-combine_stack_adjustments ()
+combine_stack_adjustments (void)
 {
   basic_block bb;
 
@@ -2165,8 +2127,7 @@ combine_stack_adjustments ()
 /* Recognize a MEM of the form (sp) or (plus sp const).  */
 
 static int
-stack_memref_p (x)
-     rtx x;
+stack_memref_p (rtx x)
 {
   if (GET_CODE (x) != MEM)
     return 0;
@@ -2186,8 +2147,7 @@ stack_memref_p (x)
    tying fp and sp adjustments.  */
 
 static rtx
-single_set_for_csa (insn)
-     rtx insn;
+single_set_for_csa (rtx insn)
 {
   int i;
   rtx tmp = single_set (insn);
@@ -2221,8 +2181,7 @@ single_set_for_csa (insn)
 /* Free the list of csa_memlist nodes.  */
 
 static void
-free_csa_memlist (memlist)
-     struct csa_memlist *memlist;
+free_csa_memlist (struct csa_memlist *memlist)
 {
   struct csa_memlist *next;
   for (; memlist ; memlist = next)
@@ -2236,9 +2195,7 @@ free_csa_memlist (memlist)
    It is already known that the memory is stack_memref_p.  */
 
 static struct csa_memlist *
-record_one_stack_memref (insn, mem, next_memlist)
-     rtx insn, *mem;
-     struct csa_memlist *next_memlist;
+record_one_stack_memref (rtx insn, rtx *mem, struct csa_memlist *next_memlist)
 {
   struct csa_memlist *ml;
 
@@ -2260,10 +2217,8 @@ record_one_stack_memref (insn, mem, next_memlist)
    as each of the memories in MEMLIST.  Return true on success.  */
 
 static int
-try_apply_stack_adjustment (insn, memlist, new_adjust, delta)
-     rtx insn;
-     struct csa_memlist *memlist;
-     HOST_WIDE_INT new_adjust, delta;
+try_apply_stack_adjustment (rtx insn, struct csa_memlist *memlist, HOST_WIDE_INT new_adjust,
+			    HOST_WIDE_INT delta)
 {
   struct csa_memlist *ml;
   rtx set;
@@ -2299,9 +2254,7 @@ struct record_stack_memrefs_data
 };
 
 static int
-record_stack_memrefs (xp, data)
-     rtx *xp;
-     void *data;
+record_stack_memrefs (rtx *xp, void *data)
 {
   rtx x = *xp;
   struct record_stack_memrefs_data *d =
@@ -2343,8 +2296,7 @@ record_stack_memrefs (xp, data)
 /* Subroutine of combine_stack_adjustments, called for each basic block.  */
 
 static void
-combine_stack_adjustments_for_block (bb)
-     basic_block bb;
+combine_stack_adjustments_for_block (basic_block bb)
 {
   HOST_WIDE_INT last_sp_adjust = 0;
   rtx last_sp_set = NULL_RTX;

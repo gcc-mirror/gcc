@@ -1,5 +1,5 @@
 /* Machine mode definitions for GCC; included by rtl.h and tree.h.
-   Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2001
+   Copyright (C) 1991, 1993, 1994, 1996, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -136,28 +136,27 @@ extern const unsigned char mode_wider_mode[NUM_MACHINE_MODES];
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  */
 
-extern enum machine_mode mode_for_size PARAMS ((unsigned int,
-						enum mode_class, int));
+extern enum machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
 /* Similar, but find the smallest mode for a given width.  */
 
-extern enum machine_mode smallest_mode_for_size 
-				PARAMS ((unsigned int, enum mode_class));
+extern enum machine_mode smallest_mode_for_size (unsigned int,
+						 enum mode_class);
 
 
 /* Return an integer mode of the exact same size as the input mode,
    or BLKmode on failure.  */
 
-extern enum machine_mode int_mode_for_mode PARAMS ((enum machine_mode));
+extern enum machine_mode int_mode_for_mode (enum machine_mode);
 
 /* Find the best mode to use to access a bit field.  */
 
-extern enum machine_mode get_best_mode PARAMS ((int, int, unsigned int,
-						enum machine_mode, int));
+extern enum machine_mode get_best_mode (int, int, unsigned int,
+					enum machine_mode, int);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
-extern unsigned get_mode_alignment PARAMS ((enum machine_mode));
+extern unsigned get_mode_alignment (enum machine_mode);
 
 #define GET_MODE_ALIGNMENT(MODE) get_mode_alignment (MODE)
 

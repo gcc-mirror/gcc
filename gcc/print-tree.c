@@ -47,8 +47,7 @@ static struct bucket **table;
    down to a depth of six.  */
 
 void
-debug_tree (node)
-     tree node;
+debug_tree (tree node)
 {
   table = (struct bucket **) xcalloc (HASH_SIZE, sizeof (struct bucket *));
   print_node (stderr, "", node, 0);
@@ -60,11 +59,7 @@ debug_tree (node)
 /* Print a node in brief fashion, with just the code, address and name.  */
 
 void
-print_node_brief (file, prefix, node, indent)
-     FILE *file;
-     const char *prefix;
-     tree node;
-     int indent;
+print_node_brief (FILE *file, const char *prefix, tree node, int indent)
 {
   char class;
 
@@ -141,9 +136,7 @@ print_node_brief (file, prefix, node, indent)
 }
 
 void
-indent_to (file, column)
-     FILE *file;
-     int column;
+indent_to (FILE *file, int column)
 {
   int i;
 
@@ -158,11 +151,7 @@ indent_to (file, column)
    starting in column INDENT.  */
 
 void
-print_node (file, prefix, node, indent)
-     FILE *file;
-     const char *prefix;
-     tree node;
-     int indent;
+print_node (FILE *file, const char *prefix, tree node, int indent)
 {
   int hash;
   struct bucket *b;

@@ -31,8 +31,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* Initialize loop optimizer.  */
 
 struct loops *
-loop_optimizer_init (dumpfile)
-     FILE *dumpfile;
+loop_optimizer_init (FILE *dumpfile)
 {
   struct loops *loops = xcalloc (1, sizeof (struct loops));
   edge e;
@@ -91,9 +90,7 @@ loop_optimizer_init (dumpfile)
 
 /* Finalize loop optimizer.  */
 void
-loop_optimizer_finalize (loops, dumpfile)
-     struct loops *loops;
-     FILE *dumpfile;
+loop_optimizer_finalize (struct loops *loops, FILE *dumpfile)
 {
   basic_block bb;
 
@@ -109,7 +106,7 @@ loop_optimizer_finalize (loops, dumpfile)
   /* Clean up.  */
   flow_loops_free (loops);
   free (loops);
- 
+
   /* Finalize changes.  */
   cfg_layout_finalize ();
 
@@ -118,4 +115,3 @@ loop_optimizer_finalize (loops, dumpfile)
   verify_flow_info ();
 #endif
 }
-

@@ -45,9 +45,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "timevar.h"
 
-static void init_reg_sets_1	PARAMS ((void));
-static void init_reg_modes	PARAMS ((void));
-static void init_reg_autoinc	PARAMS ((void));
+static void init_reg_sets_1 (void);
+static void init_reg_modes (void);
+static void init_reg_autoinc (void);
 
 /* If we have auto-increment or auto-decrement and we can have secondary
    reloads, we are not allowed to use classes requiring secondary
@@ -261,7 +261,7 @@ static int no_global_reg_vars = 0;
    Once this is done, various switches may override.  */
 
 void
-init_reg_sets ()
+init_reg_sets (void)
 {
   int i, j;
 
@@ -296,7 +296,7 @@ init_reg_sets ()
    `fixed_regs' and `call_used_regs', convert them to HARD_REG_SETs.  */
 
 static void
-init_reg_sets_1 ()
+init_reg_sets_1 (void)
 {
   unsigned int i, j;
   unsigned int /* enum machine_mode */ m;
@@ -547,7 +547,7 @@ init_reg_sets_1 ()
    (as opposed to a multi-register mode).  */
 
 static void
-init_reg_modes ()
+init_reg_modes (void)
 {
   int i;
 
@@ -569,7 +569,7 @@ init_reg_modes ()
    initialize the register modes.  */
 
 void
-init_regs ()
+init_regs (void)
 {
   /* This finishes what was started by init_reg_sets, but couldn't be done
      until after register usage was specified.  */
@@ -584,7 +584,7 @@ init_regs ()
    memory_move_secondary_cost.  */
 
 void
-init_fake_stack_mems ()
+init_fake_stack_mems (void)
 {
 #ifdef HAVE_SECONDARY_RELOADS
   {
@@ -602,10 +602,7 @@ init_fake_stack_mems ()
    Only needed if secondary reloads are required for memory moves.  */
 
 int
-memory_move_secondary_cost (mode, class, in)
-     enum machine_mode mode;
-     enum reg_class class;
-     int in;
+memory_move_secondary_cost (enum machine_mode mode, enum reg_class class, int in)
 {
   enum reg_class altclass;
   int partial_cost = 0;
@@ -659,9 +656,8 @@ memory_move_secondary_cost (mode, class, in)
    enough to save nregs.  If we can't find one, return VOIDmode.  */
 
 enum machine_mode
-choose_hard_reg_mode (regno, nregs)
-     unsigned int regno ATTRIBUTE_UNUSED;
-     unsigned int nregs;
+choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
+		      unsigned int nregs)
 {
   unsigned int /* enum machine_mode */ m;
   enum machine_mode found_mode = VOIDmode, mode;
@@ -728,9 +724,7 @@ choose_hard_reg_mode (regno, nregs)
    call-used register if CALL_USED.  */
 
 void
-fix_register (name, fixed, call_used)
-     const char *name;
-     int fixed, call_used;
+fix_register (const char *name, int fixed, int call_used)
 {
   int i;
 
@@ -774,8 +768,7 @@ fix_register (name, fixed, call_used)
 /* Mark register number I as global.  */
 
 void
-globalize_reg (i)
-     int i;
+globalize_reg (int i)
 {
   if (fixed_regs[i] == 0 && no_global_reg_vars)
     error ("global register variable follows a function definition");
@@ -854,27 +847,25 @@ static struct reg_pref *reg_pref_buffer;
 
 static int frequency;
 
-static rtx scan_one_insn	PARAMS ((rtx, int));
-static void record_operand_costs PARAMS ((rtx, struct costs *, struct reg_pref *));
-static void dump_regclass	PARAMS ((FILE *));
-static void record_reg_classes	PARAMS ((int, int, rtx *, enum machine_mode *,
-				       const char **, rtx,
-				       struct costs *, struct reg_pref *));
-static int copy_cost		PARAMS ((rtx, enum machine_mode,
-				       enum reg_class, int));
-static void record_address_regs	PARAMS ((rtx, enum reg_class, int));
+static rtx scan_one_insn (rtx, int);
+static void record_operand_costs (rtx, struct costs *, struct reg_pref *);
+static void dump_regclass (FILE *);
+static void record_reg_classes (int, int, rtx *, enum machine_mode *,
+				const char **, rtx, struct costs *,
+				struct reg_pref *);
+static int copy_cost (rtx, enum machine_mode, enum reg_class, int);
+static void record_address_regs (rtx, enum reg_class, int);
 #ifdef FORBIDDEN_INC_DEC_CLASSES
-static int auto_inc_dec_reg_p	PARAMS ((rtx, enum machine_mode));
+static int auto_inc_dec_reg_p (rtx, enum machine_mode);
 #endif
-static void reg_scan_mark_refs	PARAMS ((rtx, rtx, int, unsigned int));
+static void reg_scan_mark_refs (rtx, rtx, int, unsigned int);
 
 /* Return the reg_class in which pseudo reg number REGNO is best allocated.
    This function is sometimes called before the info has been computed.
    When that happens, just return GENERAL_REGS, which is innocuous.  */
 
 enum reg_class
-reg_preferred_class (regno)
-     int regno;
+reg_preferred_class (int regno)
 {
   if (reg_pref == 0)
     return GENERAL_REGS;
@@ -882,8 +873,7 @@ reg_preferred_class (regno)
 }
 
 enum reg_class
-reg_alternate_class (regno)
-     int regno;
+reg_alternate_class (int regno)
 {
   if (reg_pref == 0)
     return ALL_REGS;
@@ -894,7 +884,7 @@ reg_alternate_class (regno)
 /* Initialize some global data for this pass.  */
 
 void
-regclass_init ()
+regclass_init (void)
 {
   int i;
 
@@ -912,8 +902,7 @@ regclass_init ()
 
 /* Dump register costs.  */
 static void
-dump_regclass (dump)
-     FILE *dump;
+dump_regclass (FILE *dump)
 {
   static const char *const reg_class_names[] = REG_CLASS_NAMES;
   int i;
@@ -945,10 +934,8 @@ dump_regclass (dump)
 /* Calculate the costs of insn operands.  */
 
 static void
-record_operand_costs (insn, op_costs, reg_pref)
-     rtx insn;
-     struct costs *op_costs;
-     struct reg_pref *reg_pref;
+record_operand_costs (rtx insn, struct costs *op_costs,
+		      struct reg_pref *reg_pref)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
   enum machine_mode modes[MAX_RECOG_OPERANDS];
@@ -1018,9 +1005,7 @@ record_operand_costs (insn, op_costs, reg_pref)
    there.  */
 
 static rtx
-scan_one_insn (insn, pass)
-     rtx insn;
-     int pass;
+scan_one_insn (rtx insn, int pass)
 {
   enum rtx_code code = GET_CODE (insn);
   enum rtx_code pat_code;
@@ -1147,7 +1132,7 @@ scan_one_insn (insn, pass)
    pseudos that are auto-incremented or auto-decremented.  */
 
 static void
-init_reg_autoinc ()
+init_reg_autoinc (void)
 {
 #ifdef FORBIDDEN_INC_DEC_CLASSES
   int i;
@@ -1203,10 +1188,7 @@ init_reg_autoinc ()
    This pass comes just before local register allocation.  */
 
 void
-regclass (f, nregs, dump)
-     rtx f;
-     int nregs;
-     FILE *dump;
+regclass (rtx f, int nregs, FILE *dump)
 {
   rtx insn;
   int i;
@@ -1395,16 +1377,10 @@ regclass (f, nregs, dump)
    alternatives.  */
 
 static void
-record_reg_classes (n_alts, n_ops, ops, modes,
-		    constraints, insn, op_costs, reg_pref)
-     int n_alts;
-     int n_ops;
-     rtx *ops;
-     enum machine_mode *modes;
-     const char **constraints;
-     rtx insn;
-     struct costs *op_costs;
-     struct reg_pref *reg_pref;
+record_reg_classes (int n_alts, int n_ops, rtx *ops,
+		    enum machine_mode *modes, const char **constraints,
+		    rtx insn, struct costs *op_costs,
+		    struct reg_pref *reg_pref)
 {
   int alt;
   int i, j;
@@ -1886,11 +1862,8 @@ record_reg_classes (n_alts, n_ops, ops, modes,
    X must not be a pseudo.  */
 
 static int
-copy_cost (x, mode, class, to_p)
-     rtx x;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     enum reg_class class;
-     int to_p ATTRIBUTE_UNUSED;
+copy_cost (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED,
+	   enum reg_class class, int to_p ATTRIBUTE_UNUSED)
 {
 #ifdef HAVE_SECONDARY_RELOADS
   enum reg_class secondary_class = NO_REGS;
@@ -1951,10 +1924,7 @@ copy_cost (x, mode, class, to_p)
    can represent half-cost adjustments).  */
 
 static void
-record_address_regs (x, class, scale)
-     rtx x;
-     enum reg_class class;
-     int scale;
+record_address_regs (rtx x, enum reg_class class, int scale)
 {
   enum rtx_code code = GET_CODE (x);
 
@@ -2135,9 +2105,7 @@ record_address_regs (x, class, scale)
    to an object of MODE.  */
 
 static int
-auto_inc_dec_reg_p (reg, mode)
-     rtx reg;
-     enum machine_mode mode;
+auto_inc_dec_reg_p (rtx reg, enum machine_mode mode)
 {
   if (HAVE_POST_INCREMENT
       && memory_address_p (mode, gen_rtx_POST_INC (Pmode, reg)))
@@ -2171,10 +2139,7 @@ static unsigned int reg_n_max;
    RENUMBER_P is nonzero, allocate the reg_renumber array also.  */
 
 void
-allocate_reg_info (num_regs, new_p, renumber_p)
-     size_t num_regs;
-     int new_p;
-     int renumber_p;
+allocate_reg_info (size_t num_regs, int new_p, int renumber_p)
 {
   size_t size_info;
   size_t size_renumber;
@@ -2278,7 +2243,7 @@ allocate_reg_info (num_regs, new_p, renumber_p)
 
 /* Free up the space allocated by allocate_reg_info.  */
 void
-free_reg_info ()
+free_reg_info (void)
 {
   if (reg_n_info)
     {
@@ -2324,10 +2289,7 @@ int max_parallel;
 static int max_set_parallel;
 
 void
-reg_scan (f, nregs, repeat)
-     rtx f;
-     unsigned int nregs;
-     int repeat ATTRIBUTE_UNUSED;
+reg_scan (rtx f, unsigned int nregs, int repeat ATTRIBUTE_UNUSED)
 {
   rtx insn;
 
@@ -2362,10 +2324,7 @@ reg_scan (f, nregs, repeat)
    such a REG.  We only update information for those.  */
 
 void
-reg_scan_update (first, last, old_max_regno)
-     rtx first;
-     rtx last;
-     unsigned int old_max_regno;
+reg_scan_update (rtx first, rtx last, unsigned int old_max_regno)
 {
   rtx insn;
 
@@ -2392,11 +2351,7 @@ reg_scan_update (first, last, old_max_regno)
    greater than or equal to MIN_REGNO.  */
 
 static void
-reg_scan_mark_refs (x, insn, note_flag, min_regno)
-     rtx x;
-     rtx insn;
-     int note_flag;
-     unsigned int min_regno;
+reg_scan_mark_refs (rtx x, rtx insn, int note_flag, unsigned int min_regno)
 {
   enum rtx_code code;
   rtx dest;
@@ -2573,9 +2528,7 @@ reg_scan_mark_refs (x, insn, note_flag, min_regno)
    is also in C2.  */
 
 int
-reg_class_subset_p (c1, c2)
-     enum reg_class c1;
-     enum reg_class c2;
+reg_class_subset_p (enum reg_class c1, enum reg_class c2)
 {
   if (c1 == c2) return 1;
 
@@ -2591,9 +2544,7 @@ reg_class_subset_p (c1, c2)
 /* Return nonzero if there is a register that is in both C1 and C2.  */
 
 int
-reg_classes_intersect_p (c1, c2)
-     enum reg_class c1;
-     enum reg_class c2;
+reg_classes_intersect_p (enum reg_class c1, enum reg_class c2)
 {
 #ifdef HARD_REG_SET
   register
@@ -2618,7 +2569,7 @@ reg_classes_intersect_p (c1, c2)
 /* Release any memory allocated by register sets.  */
 
 void
-regset_release_memory ()
+regset_release_memory (void)
 {
   bitmap_release_memory ();
 }
@@ -2628,10 +2579,8 @@ regset_release_memory ()
    their mode from FROM to any mode in which REGNO was encountered.  */
 
 void
-cannot_change_mode_set_regs (used, from, regno)
-     HARD_REG_SET *used;
-     enum machine_mode from;
-     unsigned int regno;
+cannot_change_mode_set_regs (HARD_REG_SET *used, enum machine_mode from,
+			     unsigned int regno)
 {
   enum machine_mode to;
   int n, i;
@@ -2652,10 +2601,8 @@ cannot_change_mode_set_regs (used, from, regno)
    mode.  */
 
 bool
-invalid_mode_change_p (regno, class, from_mode)
-     unsigned int regno;
-      enum reg_class class;
-     enum machine_mode from_mode;
+invalid_mode_change_p (unsigned int regno, enum reg_class class,
+		       enum machine_mode from_mode)
 {
   enum machine_mode to_mode;
   int n;

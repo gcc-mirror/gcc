@@ -1,5 +1,5 @@
 /* Specific flags and argument handling of the C front-end.
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -26,10 +26,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 /* Filter argc and argv before processing by the gcc driver proper.  */
 void
-lang_specific_driver (in_argc, in_argv, in_added_libraries)
-     int *in_argc ATTRIBUTE_UNUSED;
-     const char *const **in_argv ATTRIBUTE_UNUSED;
-     int *in_added_libraries ATTRIBUTE_UNUSED;
+lang_specific_driver (int *in_argc ATTRIBUTE_UNUSED,
+		      const char *const **in_argv ATTRIBUTE_UNUSED,
+		      int *in_added_libraries ATTRIBUTE_UNUSED)
 {
 #ifdef ENABLE_SHARED_LIBGCC
   int i;
@@ -96,7 +95,7 @@ lang_specific_driver (in_argc, in_argv, in_added_libraries)
 
 /* Called before linking.  Returns 0 on success and -1 on failure.  */
 int
-lang_specific_pre_link ()
+lang_specific_pre_link (void)
 {
   return 0;  /* Not used for C.  */
 }
@@ -104,7 +103,7 @@ lang_specific_pre_link ()
 /* Number of extra output files that lang_specific_pre_link may generate.  */
 int lang_specific_extra_outfiles = 0;  /* Not used for C.  */
 
-/* Table of language-specific spec functions.  */ 
+/* Table of language-specific spec functions.  */
 const struct spec_function lang_specific_spec_functions[] =
 {
   { 0, 0 }

@@ -1,5 +1,6 @@
 /* Generic partial redundancy elimination with lazy code motion support.
-   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -70,32 +71,22 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "insn-attr.h"
 
 /* Edge based LCM routines.  */
-static void compute_antinout_edge	PARAMS ((sbitmap *, sbitmap *,
-						 sbitmap *, sbitmap *));
-static void compute_earliest		PARAMS ((struct edge_list *, int,
-						 sbitmap *, sbitmap *,
-						 sbitmap *, sbitmap *,
-						 sbitmap *));
-static void compute_laterin		PARAMS ((struct edge_list *, sbitmap *,
-						 sbitmap *, sbitmap *,
-						 sbitmap *));
-static void compute_insert_delete	PARAMS ((struct edge_list *edge_list,
-						 sbitmap *, sbitmap *,
-						 sbitmap *, sbitmap *,
-						 sbitmap *));
+static void compute_antinout_edge (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
+static void compute_earliest (struct edge_list *, int, sbitmap *, sbitmap *,
+			      sbitmap *, sbitmap *, sbitmap *);
+static void compute_laterin (struct edge_list *, sbitmap *, sbitmap *,
+			     sbitmap *, sbitmap *);
+static void compute_insert_delete (struct edge_list *edge_list, sbitmap *,
+				   sbitmap *, sbitmap *, sbitmap *, sbitmap *);
 
 /* Edge based LCM routines on a reverse flowgraph.  */
-static void compute_farthest		PARAMS ((struct edge_list *, int,
-						 sbitmap *, sbitmap *,
-						 sbitmap*, sbitmap *,
-						 sbitmap *));
-static void compute_nearerout		PARAMS ((struct edge_list *, sbitmap *,
-						 sbitmap *, sbitmap *,
-						 sbitmap *));
-static void compute_rev_insert_delete	PARAMS ((struct edge_list *edge_list,
-						 sbitmap *, sbitmap *,
-						 sbitmap *, sbitmap *,
-						 sbitmap *));
+static void compute_farthest (struct edge_list *, int, sbitmap *, sbitmap *,
+			      sbitmap*, sbitmap *, sbitmap *);
+static void compute_nearerout (struct edge_list *, sbitmap *, sbitmap *,
+			       sbitmap *, sbitmap *);
+static void compute_rev_insert_delete (struct edge_list *edge_list, sbitmap *,
+				       sbitmap *, sbitmap *, sbitmap *,
+				       sbitmap *);
 
 /* Edge based lcm routines.  */
 
@@ -104,11 +95,8 @@ static void compute_rev_insert_delete	PARAMS ((struct edge_list *edge_list,
    Other than that, its pretty much identical to compute_antinout.  */
 
 static void
-compute_antinout_edge (antloc, transp, antin, antout)
-     sbitmap *antloc;
-     sbitmap *transp;
-     sbitmap *antin;
-     sbitmap *antout;
+compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
+		       sbitmap *antout)
 {
   basic_block bb;
   edge e;
@@ -189,10 +177,9 @@ compute_antinout_edge (antloc, transp, antin, antout)
 /* Compute the earliest vector for edge based lcm.  */
 
 static void
-compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
-     struct edge_list *edge_list;
-     int n_exprs;
-     sbitmap *antin, *antout, *avout, *kill, *earliest;
+compute_earliest (struct edge_list *edge_list, int n_exprs, sbitmap *antin,
+		  sbitmap *antout, sbitmap *avout, sbitmap *kill,
+		  sbitmap *earliest)
 {
   sbitmap difference, temp_bitmap;
   int x, num_edges;
@@ -258,9 +245,8 @@ compute_earliest (edge_list, n_exprs, antin, antout, avout, kill, earliest)
      to compute it.  */
 
 static void
-compute_laterin (edge_list, earliest, antloc, later, laterin)
-     struct edge_list *edge_list;
-     sbitmap *earliest, *antloc, *later, *laterin;
+compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
+		 sbitmap *antloc, sbitmap *later, sbitmap *laterin)
 {
   int num_edges, i;
   edge e;
@@ -361,10 +347,9 @@ compute_laterin (edge_list, earliest, antloc, later, laterin)
 /* Compute the insertion and deletion points for edge based LCM.  */
 
 static void
-compute_insert_delete (edge_list, antloc, later, laterin,
-		       insert, delete)
-     struct edge_list *edge_list;
-     sbitmap *antloc, *later, *laterin, *insert, *delete;
+compute_insert_delete (struct edge_list *edge_list, sbitmap *antloc,
+		       sbitmap *later, sbitmap *laterin, sbitmap *insert,
+		       sbitmap *delete)
 {
   int x;
   basic_block bb;
@@ -388,15 +373,9 @@ compute_insert_delete (edge_list, antloc, later, laterin,
    map the insert vector to what edge an expression should be inserted on.  */
 
 struct edge_list *
-pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
-     FILE *file ATTRIBUTE_UNUSED;
-     int n_exprs;
-     sbitmap *transp;
-     sbitmap *avloc;
-     sbitmap *antloc;
-     sbitmap *kill;
-     sbitmap **insert;
-     sbitmap **delete;
+pre_edge_lcm (FILE *file ATTRIBUTE_UNUSED, int n_exprs, sbitmap *transp,
+	      sbitmap *avloc, sbitmap *antloc, sbitmap *kill,
+	      sbitmap **insert, sbitmap **delete)
 {
   sbitmap *antin, *antout, *earliest;
   sbitmap *avin, *avout;
@@ -491,8 +470,8 @@ pre_edge_lcm (file, n_exprs, transp, avloc, antloc, kill, insert, delete)
    Return the number of passes we performed to iterate to a solution.  */
 
 void
-compute_available (avloc, kill, avout, avin)
-     sbitmap *avloc, *kill, *avout, *avin;
+compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
+		   sbitmap *avin)
 {
   edge e;
   basic_block *worklist, *qin, *qout, *qend, bb;
@@ -573,11 +552,9 @@ compute_available (avloc, kill, avout, avin)
 /* Compute the farthest vector for edge based lcm.  */
 
 static void
-compute_farthest (edge_list, n_exprs, st_avout, st_avin, st_antin,
-		  kill, farthest)
-     struct edge_list *edge_list;
-     int n_exprs;
-     sbitmap *st_avout, *st_avin, *st_antin, *kill, *farthest;
+compute_farthest (struct edge_list *edge_list, int n_exprs,
+		  sbitmap *st_avout, sbitmap *st_avin, sbitmap *st_antin,
+		  sbitmap *kill, sbitmap *farthest)
 {
   sbitmap difference, temp_bitmap;
   int x, num_edges;
@@ -619,9 +596,8 @@ compute_farthest (edge_list, n_exprs, st_avout, st_avin, st_antin,
    implementation can be found before compute_laterin.  */
 
 static void
-compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
-     struct edge_list *edge_list;
-     sbitmap *farthest, *st_avloc, *nearer, *nearerout;
+compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
+		   sbitmap *st_avloc, sbitmap *nearer, sbitmap *nearerout)
 {
   int num_edges, i;
   edge e;
@@ -702,10 +678,9 @@ compute_nearerout (edge_list, farthest, st_avloc, nearer, nearerout)
 /* Compute the insertion and deletion points for edge based LCM.  */
 
 static void
-compute_rev_insert_delete (edge_list, st_avloc, nearer, nearerout,
-			   insert, delete)
-     struct edge_list *edge_list;
-     sbitmap *st_avloc, *nearer, *nearerout, *insert, *delete;
+compute_rev_insert_delete (struct edge_list *edge_list, sbitmap *st_avloc,
+			   sbitmap *nearer, sbitmap *nearerout,
+			   sbitmap *insert, sbitmap *delete)
 {
   int x;
   basic_block bb;
@@ -729,16 +704,9 @@ compute_rev_insert_delete (edge_list, st_avloc, nearer, nearerout,
    an expression should be inserted on.  */
 
 struct edge_list *
-pre_edge_rev_lcm (file, n_exprs, transp, st_avloc, st_antloc, kill,
-		  insert, delete)
-     FILE *file ATTRIBUTE_UNUSED;
-     int n_exprs;
-     sbitmap *transp;
-     sbitmap *st_avloc;
-     sbitmap *st_antloc;
-     sbitmap *kill;
-     sbitmap **insert;
-     sbitmap **delete;
+pre_edge_rev_lcm (FILE *file ATTRIBUTE_UNUSED, int n_exprs, sbitmap *transp,
+		  sbitmap *st_avloc, sbitmap *st_antloc, sbitmap *kill,
+		  sbitmap **insert, sbitmap **delete)
 {
   sbitmap *st_antin, *st_antout;
   sbitmap *st_avout, *st_avin, *farthest;
@@ -887,11 +855,11 @@ static sbitmap *comp;
 static sbitmap *delete;
 static sbitmap *insert;
 
-static struct seginfo * new_seginfo PARAMS ((int, rtx, int, HARD_REG_SET));
-static void add_seginfo PARAMS ((struct bb_info *, struct seginfo *));
-static void reg_dies PARAMS ((rtx, HARD_REG_SET));
-static void reg_becomes_live PARAMS ((rtx, rtx, void *));
-static void make_preds_opaque PARAMS ((basic_block, int));
+static struct seginfo * new_seginfo (int, rtx, int, HARD_REG_SET);
+static void add_seginfo (struct bb_info *, struct seginfo *);
+static void reg_dies (rtx, HARD_REG_SET);
+static void reg_becomes_live (rtx, rtx, void *);
+static void make_preds_opaque (basic_block, int);
 #endif
 
 #ifdef OPTIMIZE_MODE_SWITCHING
@@ -900,11 +868,7 @@ static void make_preds_opaque PARAMS ((basic_block, int));
    with the MODE, INSN, and basic block BB parameters.  */
 
 static struct seginfo *
-new_seginfo (mode, insn, bb, regs_live)
-     int mode;
-     rtx insn;
-     int bb;
-     HARD_REG_SET regs_live;
+new_seginfo (int mode, rtx insn, int bb, HARD_REG_SET regs_live)
 {
   struct seginfo *ptr;
   ptr = xmalloc (sizeof (struct seginfo));
@@ -921,9 +885,7 @@ new_seginfo (mode, insn, bb, regs_live)
    INFO is the structure to be linked in.  */
 
 static void
-add_seginfo (head, info)
-     struct bb_info *head;
-     struct seginfo *info;
+add_seginfo (struct bb_info *head, struct seginfo *info)
 {
   struct seginfo *ptr;
 
@@ -945,9 +907,7 @@ add_seginfo (head, info)
    we are currently handling mode-switching for.  */
 
 static void
-make_preds_opaque (b, j)
-     basic_block b;
-     int j;
+make_preds_opaque (basic_block b, int j)
 {
   edge e;
 
@@ -966,9 +926,7 @@ make_preds_opaque (b, j)
 /* Record in LIVE that register REG died.  */
 
 static void
-reg_dies (reg, live)
-     rtx reg;
-     HARD_REG_SET live;
+reg_dies (rtx reg, HARD_REG_SET live)
 {
   int regno, nregs;
 
@@ -986,10 +944,7 @@ reg_dies (reg, live)
    This is called via note_stores.  */
 
 static void
-reg_becomes_live (reg, setter, live)
-     rtx reg;
-     rtx setter ATTRIBUTE_UNUSED;
-     void *live;
+reg_becomes_live (rtx reg, rtx setter ATTRIBUTE_UNUSED, void *live)
 {
   int regno, nregs;
 
@@ -1010,8 +965,7 @@ reg_becomes_live (reg, setter, live)
    necessary mode switches.  Return true if we did work.  */
 
 int
-optimize_mode_switching (file)
-     FILE *file;
+optimize_mode_switching (FILE *file)
 {
   rtx insn;
   int e;

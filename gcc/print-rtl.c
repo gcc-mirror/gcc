@@ -58,7 +58,7 @@ static int sawclose = 0;
 
 static int indent;
 
-static void print_rtx		PARAMS ((rtx));
+static void print_rtx (rtx);
 
 /* String printed at beginning of each RTL when it is dumped.
    This string is set to ASM_COMMENT_START when the RTL is dumped in
@@ -80,9 +80,7 @@ int dump_for_graph;
 static int debug_call_placeholder_verbose;
 
 void
-print_mem_expr (outfile, expr)
-     FILE *outfile;
-     tree expr;
+print_mem_expr (FILE *outfile, tree expr)
 {
   if (TREE_CODE (expr) == COMPONENT_REF)
     {
@@ -111,8 +109,7 @@ print_mem_expr (outfile, expr)
 /* Print IN_RTX onto OUTFILE.  This is the recursive part of printing.  */
 
 static void
-print_rtx (in_rtx)
-     rtx in_rtx;
+print_rtx (rtx in_rtx)
 {
   int i = 0;
   int j;
@@ -638,10 +635,7 @@ print_rtx (in_rtx)
    characters.  */
 
 void
-print_inline_rtx (outf, x, ind)
-     FILE *outf;
-     rtx x;
-     int ind;
+print_inline_rtx (FILE *outf, rtx x, int ind)
 {
   int oldsaw = sawclose;
   int oldindent = indent;
@@ -657,8 +651,7 @@ print_inline_rtx (outf, x, ind)
 /* Call this function from the debugger to see what X looks like.  */
 
 void
-debug_rtx (x)
-     rtx x;
+debug_rtx (rtx x)
 {
   outfile = stderr;
   sawclose = 0;
@@ -678,9 +671,7 @@ int debug_rtx_count = 0;	/* 0 is treated as equivalent to 1 */
    EG: -5 prints 2 rtx's on either side (in addition to the specified rtx).  */
 
 void
-debug_rtx_list (x, n)
-     rtx x;
-     int n;
+debug_rtx_list (rtx x, int n)
 {
   int i,count;
   rtx insn;
@@ -707,8 +698,7 @@ debug_rtx_list (x, n)
 /* Call this function to print an rtx list from START to END inclusive.  */
 
 void
-debug_rtx_range (start, end)
-     rtx start, end;
+debug_rtx_range (rtx start, rtx end)
 {
   while (1)
     {
@@ -725,9 +715,7 @@ debug_rtx_range (start, end)
    The found insn is returned to enable further debugging analysis.  */
 
 rtx
-debug_rtx_find (x, uid)
-     rtx x;
-     int uid;
+debug_rtx_find (rtx x, int uid)
 {
   while (x != 0 && INSN_UID (x) != uid)
     x = NEXT_INSN (x);
@@ -750,9 +738,7 @@ debug_rtx_find (x, uid)
    If RTX_FIRST is not an insn, then it alone is printed, with no newline.  */
 
 void
-print_rtl (outf, rtx_first)
-     FILE *outf;
-     rtx rtx_first;
+print_rtl (FILE *outf, rtx rtx_first)
 {
   rtx tmp_rtx;
 
@@ -793,9 +779,7 @@ print_rtl (outf, rtx_first)
 /* Return nonzero if we actually printed anything.  */
 
 int
-print_rtl_single (outf, x)
-     FILE *outf;
-     rtx x;
+print_rtl_single (FILE *outf, rtx x)
 {
   outfile = outf;
   sawclose = 0;
@@ -815,9 +799,7 @@ print_rtl_single (outf, x)
    if RTX is a CONST_INT then print in decimal format.  */
 
 void
-print_simple_rtl (outf, x)
-     FILE *outf;
-     rtx x;
+print_simple_rtl (FILE *outf, rtx x)
 {
   flag_simple = 1;
   print_rtl (outf, x);

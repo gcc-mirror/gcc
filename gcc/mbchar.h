@@ -1,5 +1,5 @@
 /* Various declarations for functions found in mbchar.c
-   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,9 +31,9 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define ISEUCJP(c)   ((c) >= 0xa1 && (c) <= 0xfe)
 #define ISJIS(c)     ((c) >= 0x21 && (c) <= 0x7e)
 
-extern int local_mbtowc     PARAMS ((wchar_t *, const char *, size_t));
-extern int local_mblen      PARAMS ((const char *, size_t));
-extern int local_mb_cur_max PARAMS ((void));
+extern int local_mbtowc (wchar_t *, const char *, size_t);
+extern int local_mblen (const char *, size_t);
+extern int local_mb_cur_max (void);
 
 /* The locale being used for multibyte characters in string/char literals.  */
 extern const char *literal_codeset;

@@ -56,10 +56,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #endif
 #endif
 
-static void validate_replace_rtx_1	PARAMS ((rtx *, rtx, rtx, rtx));
-static rtx *find_single_use_1		PARAMS ((rtx, rtx *));
-static void validate_replace_src_1 	PARAMS ((rtx *, void *));
-static rtx split_insn			PARAMS ((rtx));
+static void validate_replace_rtx_1 (rtx *, rtx, rtx, rtx);
+static rtx *find_single_use_1 (rtx, rtx *);
+static void validate_replace_src_1 (rtx *, void *);
+static rtx split_insn (rtx);
 
 /* Nonzero means allow operands to be volatile.
    This should be 0 if you are generating rtl, such as if you are calling
@@ -96,13 +96,13 @@ int epilogue_completed;
    before any insn recognition may be done in the function.  */
 
 void
-init_recog_no_volatile ()
+init_recog_no_volatile (void)
 {
   volatile_ok = 0;
 }
 
 void
-init_recog ()
+init_recog (void)
 {
   volatile_ok = 1;
 }
@@ -117,8 +117,7 @@ init_recog ()
    through this one.  (The only exception is in combine.c.)  */
 
 int
-recog_memoized_1 (insn)
-     rtx insn;
+recog_memoized_1 (rtx insn)
 {
   if (INSN_CODE (insn) < 0)
     INSN_CODE (insn) = recog (PATTERN (insn), insn, 0);
@@ -129,8 +128,7 @@ recog_memoized_1 (insn)
    and that the operands mentioned in it are legitimate.  */
 
 int
-check_asm_operands (x)
-     rtx x;
+check_asm_operands (rtx x)
 {
   int noperands;
   rtx *operands;
@@ -206,11 +204,7 @@ static int num_changes = 0;
    Otherwise, perform the change and return 1.  */
 
 int
-validate_change (object, loc, new, in_group)
-    rtx object;
-    rtx *loc;
-    rtx new;
-    int in_group;
+validate_change (rtx object, rtx *loc, rtx new, int in_group)
 {
   rtx old = *loc;
 
@@ -264,8 +258,7 @@ validate_change (object, loc, new, in_group)
    were valid; i.e. whether INSN can still be recognized.  */
 
 int
-insn_invalid_p (insn)
-     rtx insn;
+insn_invalid_p (rtx insn)
 {
   rtx pat = PATTERN (insn);
   int num_clobbers = 0;
@@ -315,7 +308,7 @@ insn_invalid_p (insn)
 
 /* Return number of changes made and not validated yet.  */
 int
-num_changes_pending ()
+num_changes_pending (void)
 {
   return num_changes;
 }
@@ -324,7 +317,7 @@ num_changes_pending ()
    Return 1 if all changes are valid, zero otherwise.  */
 
 int
-apply_change_group ()
+apply_change_group (void)
 {
   int i;
   rtx last_validated = NULL_RTX;
@@ -425,7 +418,7 @@ apply_change_group ()
 /* Return the number of changes so far in the current group.  */
 
 int
-num_validated_changes ()
+num_validated_changes (void)
 {
   return num_changes;
 }
@@ -433,8 +426,7 @@ num_validated_changes ()
 /* Retract the changes numbered NUM and up.  */
 
 void
-cancel_changes (num)
-     int num;
+cancel_changes (int num)
 {
   int i;
 
@@ -453,9 +445,7 @@ cancel_changes (num)
    validate_change passing OBJECT.  */
 
 static void
-validate_replace_rtx_1 (loc, from, to, object)
-     rtx *loc;
-     rtx from, to, object;
+validate_replace_rtx_1 (rtx *loc, rtx from, rtx to, rtx object)
 {
   int i, j;
   const char *fmt;
@@ -636,8 +626,7 @@ validate_replace_rtx_1 (loc, from, to, object)
    if INSN is still valid.  */
 
 int
-validate_replace_rtx_subexp (from, to, insn, loc)
-     rtx from, to, insn, *loc;
+validate_replace_rtx_subexp (rtx from, rtx to, rtx insn, rtx *loc)
 {
   validate_replace_rtx_1 (loc, from, to, insn);
   return apply_change_group ();
@@ -647,8 +636,7 @@ validate_replace_rtx_subexp (from, to, insn, loc)
    changes have been made, validate by seeing if INSN is still valid.  */
 
 int
-validate_replace_rtx (from, to, insn)
-     rtx from, to, insn;
+validate_replace_rtx (rtx from, rtx to, rtx insn)
 {
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn);
   return apply_change_group ();
@@ -657,8 +645,7 @@ validate_replace_rtx (from, to, insn)
 /* Try replacing every occurrence of FROM in INSN with TO.  */
 
 void
-validate_replace_rtx_group (from, to, insn)
-     rtx from, to, insn;
+validate_replace_rtx_group (rtx from, rtx to, rtx insn)
 {
   validate_replace_rtx_1 (&PATTERN (insn), from, to, insn);
 }
@@ -672,9 +659,7 @@ struct validate_replace_src_data
 };
 
 static void
-validate_replace_src_1 (x, data)
-     rtx *x;
-     void *data;
+validate_replace_src_1 (rtx *x, void *data)
 {
   struct validate_replace_src_data *d
     = (struct validate_replace_src_data *) data;
@@ -686,8 +671,7 @@ validate_replace_src_1 (x, data)
    SET_DESTs.  */
 
 void
-validate_replace_src_group (from, to, insn)
-     rtx from, to, insn;
+validate_replace_src_group (rtx from, rtx to, rtx insn)
 {
   struct validate_replace_src_data d;
 
@@ -700,8 +684,7 @@ validate_replace_src_group (from, to, insn)
 /* Same as validate_replace_src_group, but validate by seeing if
    INSN is still valid.  */
 int
-validate_replace_src (from, to, insn)
-     rtx from, to, insn;
+validate_replace_src (rtx from, rtx to, rtx insn)
 {
   validate_replace_src_group (from, to, insn);
   return apply_change_group ();
@@ -713,8 +696,7 @@ validate_replace_src (from, to, insn)
    EQ and NE tests do not count.  */
 
 int
-next_insn_tests_no_inequality (insn)
-     rtx insn;
+next_insn_tests_no_inequality (rtx insn)
 {
   rtx next = next_cc0_user (insn);
 
@@ -735,9 +717,7 @@ next_insn_tests_no_inequality (insn)
    DEST that are being used to totally replace it are not counted.  */
 
 static rtx *
-find_single_use_1 (dest, loc)
-     rtx dest;
-     rtx *loc;
+find_single_use_1 (rtx dest, rtx *loc)
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
@@ -848,10 +828,7 @@ find_single_use_1 (dest, loc)
    and last insn referencing DEST.  */
 
 rtx *
-find_single_use (dest, insn, ploc)
-     rtx dest;
-     rtx insn;
-     rtx *ploc;
+find_single_use (rtx dest, rtx insn, rtx *ploc)
 {
   rtx next;
   rtx *result;
@@ -914,9 +891,7 @@ find_single_use (dest, insn, ploc)
    class NO_REGS, see the comment for `register_operand'.  */
 
 int
-general_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+general_operand (rtx op, enum machine_mode mode)
 {
   enum rtx_code code = GET_CODE (op);
 
@@ -971,7 +946,7 @@ general_operand (op, mode)
 	return 0;
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
- 	 create such rtl, and we must reject it.  */
+	 create such rtl, and we must reject it.  */
       if (GET_MODE_CLASS (GET_MODE (op)) == MODE_FLOAT
 	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
 	return 0;
@@ -1018,9 +993,7 @@ general_operand (op, mode)
    expressions in the machine description.  */
 
 int
-address_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+address_operand (rtx op, enum machine_mode mode)
 {
   return memory_address_p (mode, op);
 }
@@ -1040,9 +1013,7 @@ address_operand (op, mode)
    it is most consistent to keep this function from accepting them.  */
 
 int
-register_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+register_operand (rtx op, enum machine_mode mode)
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return 0;
@@ -1093,9 +1064,7 @@ register_operand (op, mode)
 /* Return 1 for a register in Pmode; ignore the tested mode.  */
 
 int
-pmode_register_operand (op, mode)
-     rtx op;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
+pmode_register_operand (rtx op, enum machine_mode mode ATTRIBUTE_UNUSED)
 {
   return register_operand (op, Pmode);
 }
@@ -1104,9 +1073,7 @@ pmode_register_operand (op, mode)
    or a hard register.  */
 
 int
-scratch_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+scratch_operand (rtx op, enum machine_mode mode)
 {
   if (GET_MODE (op) != mode && mode != VOIDmode)
     return 0;
@@ -1122,9 +1089,7 @@ scratch_operand (op, mode)
    expressions in the machine description.  */
 
 int
-immediate_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+immediate_operand (rtx op, enum machine_mode mode)
 {
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
@@ -1156,9 +1121,7 @@ immediate_operand (op, mode)
 /* Returns 1 if OP is an operand that is a CONST_INT.  */
 
 int
-const_int_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+const_int_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) != CONST_INT)
     return 0;
@@ -1174,9 +1137,7 @@ const_int_operand (op, mode)
    floating-point number.  */
 
 int
-const_double_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+const_double_operand (rtx op, enum machine_mode mode)
 {
   /* Don't accept CONST_INT or anything similar
      if the caller wants something floating.  */
@@ -1193,9 +1154,7 @@ const_double_operand (op, mode)
 /* Return 1 if OP is a general operand that is not an immediate operand.  */
 
 int
-nonimmediate_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+nonimmediate_operand (rtx op, enum machine_mode mode)
 {
   return (general_operand (op, mode) && ! CONSTANT_P (op));
 }
@@ -1203,9 +1162,7 @@ nonimmediate_operand (op, mode)
 /* Return 1 if OP is a register reference or immediate value of mode MODE.  */
 
 int
-nonmemory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+nonmemory_operand (rtx op, enum machine_mode mode)
 {
   if (CONSTANT_P (op))
     {
@@ -1259,9 +1216,7 @@ nonmemory_operand (op, mode)
    expressions in the machine description.  */
 
 int
-push_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+push_operand (rtx op, enum machine_mode mode)
 {
   unsigned int rounded_size = GET_MODE_SIZE (mode);
 
@@ -1307,9 +1262,7 @@ push_operand (op, mode)
    expressions in the machine description.  */
 
 int
-pop_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+pop_operand (rtx op, enum machine_mode mode)
 {
   if (GET_CODE (op) != MEM)
     return 0;
@@ -1328,9 +1281,7 @@ pop_operand (op, mode)
 /* Return 1 if ADDR is a valid memory address for mode MODE.  */
 
 int
-memory_address_p (mode, addr)
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     rtx addr;
+memory_address_p (enum machine_mode mode ATTRIBUTE_UNUSED, rtx addr)
 {
   if (GET_CODE (addr) == ADDRESSOF)
     return 1;
@@ -1349,9 +1300,7 @@ memory_address_p (mode, addr)
    expressions in the machine description.  */
 
 int
-memory_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+memory_operand (rtx op, enum machine_mode mode)
 {
   rtx inner;
 
@@ -1374,9 +1323,7 @@ memory_operand (op, mode)
    that is, a memory reference whose address is a general_operand.  */
 
 int
-indirect_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
+indirect_operand (rtx op, enum machine_mode mode)
 {
   /* Before reload, a SUBREG isn't in memory (see memory_operand, above).  */
   if (! reload_completed
@@ -1409,9 +1356,7 @@ indirect_operand (op, mode)
    MATCH_OPERATOR to recognize all the branch insns.  */
 
 int
-comparison_operator (op, mode)
-    rtx op;
-    enum machine_mode mode;
+comparison_operator (rtx op, enum machine_mode mode)
 {
   return ((mode == VOIDmode || GET_MODE (op) == mode)
 	  && GET_RTX_CLASS (GET_CODE (op)) == '<');
@@ -1422,8 +1367,7 @@ comparison_operator (op, mode)
    Otherwise return -1.  */
 
 int
-asm_noperands (body)
-     rtx body;
+asm_noperands (rtx body)
 {
   switch (GET_CODE (body))
     {
@@ -1507,12 +1451,8 @@ asm_noperands (body)
    we don't store that info.  */
 
 const char *
-decode_asm_operands (body, operands, operand_locs, constraints, modes)
-     rtx body;
-     rtx *operands;
-     rtx **operand_locs;
-     const char **constraints;
-     enum machine_mode *modes;
+decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
+		     const char **constraints, enum machine_mode *modes)
 {
   int i;
   int noperands;
@@ -1644,9 +1584,7 @@ decode_asm_operands (body, operands, operand_locs, constraints, modes)
    Return > 0 if ok, = 0 if bad, < 0 if inconclusive.  */
 
 int
-asm_operand_ok (op, constraint)
-     rtx op;
-     const char *constraint;
+asm_operand_ok (rtx op, const char *constraint)
 {
   int result = 0;
 
@@ -1861,8 +1799,7 @@ asm_operand_ok (op, constraint)
    Otherwise, return a null pointer.  */
 
 rtx *
-find_constant_term_loc (p)
-     rtx *p;
+find_constant_term_loc (rtx *p)
 {
   rtx *tem;
   enum rtx_code code = GET_CODE (*p);
@@ -1915,8 +1852,7 @@ find_constant_term_loc (p)
    don't use it before reload.  */
 
 int
-offsettable_memref_p (op)
-     rtx op;
+offsettable_memref_p (rtx op)
 {
   return ((GET_CODE (op) == MEM)
 	  && offsettable_address_p (1, GET_MODE (op), XEXP (op, 0)));
@@ -1926,8 +1862,7 @@ offsettable_memref_p (op)
    consider pseudo-regs valid as index or base regs.  */
 
 int
-offsettable_nonstrict_memref_p (op)
-     rtx op;
+offsettable_nonstrict_memref_p (rtx op)
 {
   return ((GET_CODE (op) == MEM)
 	  && offsettable_address_p (0, GET_MODE (op), XEXP (op, 0)));
@@ -1944,16 +1879,13 @@ offsettable_nonstrict_memref_p (op)
    for the sake of use in reload.c.  */
 
 int
-offsettable_address_p (strictp, mode, y)
-     int strictp;
-     enum machine_mode mode;
-     rtx y;
+offsettable_address_p (int strictp, enum machine_mode mode, rtx y)
 {
   enum rtx_code ycode = GET_CODE (y);
   rtx z;
   rtx y1 = y;
   rtx *y2;
-  int (*addressp) PARAMS ((enum machine_mode, rtx)) =
+  int (*addressp) (enum machine_mode, rtx) =
     (strictp ? strict_memory_address_p : memory_address_p);
   unsigned int mode_sz = GET_MODE_SIZE (mode);
 
@@ -2019,8 +1951,7 @@ offsettable_address_p (strictp, mode, y)
    because the amount of the increment depends on the mode.  */
 
 int
-mode_dependent_address_p (addr)
-  rtx addr ATTRIBUTE_UNUSED; /* Maybe used in GO_IF_MODE_DEPENDENT_ADDRESS.  */
+mode_dependent_address_p (rtx addr ATTRIBUTE_UNUSED /* Maybe used in GO_IF_MODE_DEPENDENT_ADDRESS. */)
 {
   GO_IF_MODE_DEPENDENT_ADDRESS (addr, win);
   return 0;
@@ -2034,8 +1965,7 @@ mode_dependent_address_p (addr)
    valid information.  This is used primary by gen_attr infrastructure that
    often does extract insn again and again.  */
 void
-extract_insn_cached (insn)
-     rtx insn;
+extract_insn_cached (rtx insn)
 {
   if (recog_data.insn == insn && INSN_CODE (insn) >= 0)
     return;
@@ -2045,8 +1975,7 @@ extract_insn_cached (insn)
 /* Do cached extract_insn, constrain_operand and complain about failures.
    Used by insn_attrtab.  */
 void
-extract_constrain_insn_cached (insn)
-     rtx insn;
+extract_constrain_insn_cached (rtx insn)
 {
   extract_insn_cached (insn);
   if (which_alternative == -1
@@ -2055,8 +1984,7 @@ extract_constrain_insn_cached (insn)
 }
 /* Do cached constrain_operand and complain about failures.  */
 int
-constrain_operands_cached (strict)
-	int strict;
+constrain_operands_cached (int strict)
 {
   if (which_alternative == -1)
     return constrain_operands (strict);
@@ -2067,8 +1995,7 @@ constrain_operands_cached (strict)
 /* Analyze INSN and fill in recog_data.  */
 
 void
-extract_insn (insn)
-     rtx insn;
+extract_insn (rtx insn)
 {
   int i;
   int icode;
@@ -2167,7 +2094,7 @@ extract_insn (insn)
    information from the constraint strings into a more usable form.
    The collected data is stored in recog_op_alt.  */
 void
-preprocess_constraints ()
+preprocess_constraints (void)
 {
   int i;
 
@@ -2326,8 +2253,7 @@ struct funny_match
 };
 
 int
-constrain_operands (strict)
-     int strict;
+constrain_operands (int strict)
 {
   const char *constraints[MAX_RECOG_OPERANDS];
   int matching_operands[MAX_RECOG_OPERANDS];
@@ -2616,7 +2542,7 @@ constrain_operands (strict)
 		      /* Every memory operand can be reloaded to fit.  */
 		      if (strict < 0 && GET_CODE (op) == MEM)
 			win = 1;
-	
+
 		      /* Before reload, accept what reload can turn into mem.  */
 		      if (strict < 0 && CONSTANT_P (op))
 			win = 1;
@@ -2704,11 +2630,8 @@ constrain_operands (strict)
    If REG occupies multiple hard regs, all of them must be in CLASS.  */
 
 int
-reg_fits_class_p (operand, class, offset, mode)
-     rtx operand;
-     enum reg_class class;
-     int offset;
-     enum machine_mode mode;
+reg_fits_class_p (rtx operand, enum reg_class class, int offset,
+		  enum machine_mode mode)
 {
   int regno = REGNO (operand);
   if (regno < FIRST_PSEUDO_REGISTER
@@ -2731,8 +2654,7 @@ reg_fits_class_p (operand, class, offset, mode)
 /* Split single instruction.  Helper function for split_all_insns.
    Return last insn in the sequence if successful, or NULL if unsuccessful.  */
 static rtx
-split_insn (insn)
-     rtx insn;
+split_insn (rtx insn)
 {
   rtx set;
   if (!INSN_P (insn))
@@ -2787,8 +2709,7 @@ split_insn (insn)
 /* Split all insns in the function.  If UPD_LIFE, update life info after.  */
 
 void
-split_all_insns (upd_life)
-     int upd_life;
+split_all_insns (int upd_life)
 {
   sbitmap blocks;
   bool changed;
@@ -2852,7 +2773,7 @@ split_all_insns (upd_life)
    Used by machine dependent reorg passes.  */
 
 void
-split_all_insns_noflow ()
+split_all_insns_noflow (void)
 {
   rtx next, insn;
 
@@ -2884,8 +2805,7 @@ static int peep2_current;
    in a multi-insn pattern.  */
 
 rtx
-peep2_next_insn (n)
-     int n;
+peep2_next_insn (int n)
 {
   if (n >= MAX_INSNS_PER_PEEP2 + 1)
     abort ();
@@ -2903,9 +2823,7 @@ peep2_next_insn (n)
    after `current'.  */
 
 int
-peep2_regno_dead_p (ofs, regno)
-     int ofs;
-     int regno;
+peep2_regno_dead_p (int ofs, int regno)
 {
   if (ofs >= MAX_INSNS_PER_PEEP2 + 1)
     abort ();
@@ -2923,9 +2841,7 @@ peep2_regno_dead_p (ofs, regno)
 /* Similarly for a REG.  */
 
 int
-peep2_reg_dead_p (ofs, reg)
-     int ofs;
-     rtx reg;
+peep2_reg_dead_p (int ofs, rtx reg)
 {
   int regno, n;
 
@@ -2959,11 +2875,8 @@ peep2_reg_dead_p (ofs, reg)
    returned.  */
 
 rtx
-peep2_find_free_register (from, to, class_str, mode, reg_set)
-     int from, to;
-     const char *class_str;
-     enum machine_mode mode;
-     HARD_REG_SET *reg_set;
+peep2_find_free_register (int from, int to, const char *class_str,
+			  enum machine_mode mode, HARD_REG_SET *reg_set)
 {
   static int search_ofs;
   enum reg_class class;
@@ -3061,8 +2974,7 @@ peep2_find_free_register (from, to, class_str, mode, reg_set)
 /* Perform the peephole2 optimization pass.  */
 
 void
-peephole2_optimize (dump_file)
-     FILE *dump_file ATTRIBUTE_UNUSED;
+peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 {
   regset_head rs_heads[MAX_INSNS_PER_PEEP2 + 2];
   rtx insn, prev;
@@ -3352,8 +3264,7 @@ peephole2_optimize (dump_file)
    SETs inside.  */
 
 int
-store_data_bypass_p (out_insn, in_insn)
-     rtx out_insn, in_insn;
+store_data_bypass_p (rtx out_insn, rtx in_insn)
 {
   rtx out_set, in_set;
 
@@ -3403,8 +3314,7 @@ store_data_bypass_p (out_insn, in_insn)
    of insn categorization may be any JUMP or CALL insn.  */
 
 int
-if_test_bypass_p (out_insn, in_insn)
-     rtx out_insn, in_insn;
+if_test_bypass_p (rtx out_insn, rtx in_insn)
 {
   rtx out_set, in_set;
 

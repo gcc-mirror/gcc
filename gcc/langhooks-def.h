@@ -1,5 +1,5 @@
 /* Default macros to initialize the lang_hooks data structure.
-   Copyright 2001, 2002 Free Software Foundation, Inc.
+   Copyright 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -28,7 +28,7 @@ struct diagnostic_context;
 
 /* Provide a hook routine for alias sets that always returns 1.  This is
    used by languages that haven't deal with alias sets yet.  */
-extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
+extern HOST_WIDE_INT hook_get_alias_set_0 (tree);
 
 /* Note to creators of new hooks:
 
@@ -39,50 +39,48 @@ extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
 
 /* See langhooks.h for the definition and documentation of each hook.  */
 
-extern void lhd_do_nothing PARAMS ((void));
-extern void lhd_do_nothing_t PARAMS ((tree));
-extern void lhd_do_nothing_i PARAMS ((int));
-extern void lhd_do_nothing_f PARAMS ((struct function *));
-extern bool lhd_post_options PARAMS ((const char **));
-extern HOST_WIDE_INT lhd_get_alias_set PARAMS ((tree));
-extern tree lhd_return_tree PARAMS ((tree));
-extern tree lhd_return_null_tree PARAMS ((tree));
-extern int lhd_safe_from_p PARAMS ((rtx, tree));
-extern int lhd_staticp PARAMS ((tree));
-extern int lhd_unsafe_for_reeval PARAMS ((tree));
-extern void lhd_clear_binding_stack PARAMS ((void));
-extern void lhd_print_tree_nothing PARAMS ((FILE *, tree, int));
-extern const char *lhd_decl_printable_name PARAMS ((tree, int));
-extern rtx lhd_expand_expr PARAMS ((tree, rtx, enum machine_mode, int));
-extern void lhd_print_error_function PARAMS ((struct diagnostic_context *,
-					      const char *));
-extern void lhd_set_decl_assembler_name PARAMS ((tree));
-extern bool lhd_can_use_bit_fields_p PARAMS ((void));
-extern bool lhd_warn_unused_global_decl PARAMS ((tree));
-extern void lhd_incomplete_type_error PARAMS ((tree, tree));
-extern tree lhd_type_promotes_to PARAMS ((tree));
-extern bool lhd_decl_ok_for_sibcall PARAMS ((tree));
-extern tree lhd_expr_size PARAMS ((tree));
-extern size_t lhd_tree_size PARAMS ((enum tree_code));
+extern void lhd_do_nothing (void);
+extern void lhd_do_nothing_t (tree);
+extern void lhd_do_nothing_i (int);
+extern void lhd_do_nothing_f (struct function *);
+extern bool lhd_post_options (const char **);
+extern HOST_WIDE_INT lhd_get_alias_set (tree);
+extern tree lhd_return_tree (tree);
+extern tree lhd_return_null_tree (tree);
+extern int lhd_safe_from_p (rtx, tree);
+extern int lhd_staticp (tree);
+extern int lhd_unsafe_for_reeval (tree);
+extern void lhd_clear_binding_stack (void);
+extern void lhd_print_tree_nothing (FILE *, tree, int);
+extern const char *lhd_decl_printable_name (tree, int);
+extern rtx lhd_expand_expr (tree, rtx, enum machine_mode, int);
+extern void lhd_print_error_function (struct diagnostic_context *,
+				      const char *);
+extern void lhd_set_decl_assembler_name (tree);
+extern bool lhd_can_use_bit_fields_p (void);
+extern bool lhd_warn_unused_global_decl (tree);
+extern void lhd_incomplete_type_error (tree, tree);
+extern tree lhd_type_promotes_to (tree);
+extern bool lhd_decl_ok_for_sibcall (tree);
+extern tree lhd_expr_size (tree);
+extern size_t lhd_tree_size (enum tree_code);
 
 /* Declarations of default tree inlining hooks.  */
-tree lhd_tree_inlining_walk_subtrees		PARAMS ((tree *, int *,
-							 walk_tree_fn,
-							 void *, void *));
-int lhd_tree_inlining_cannot_inline_tree_fn	PARAMS ((tree *));
-int lhd_tree_inlining_disregard_inline_limits	PARAMS ((tree));
-tree lhd_tree_inlining_add_pending_fn_decls	PARAMS ((void *, tree));
-int lhd_tree_inlining_tree_chain_matters_p	PARAMS ((tree));
-int lhd_tree_inlining_auto_var_in_fn_p		PARAMS ((tree, tree));
-tree lhd_tree_inlining_copy_res_decl_for_inlining PARAMS ((tree, tree,
-							   tree, void *,
-							   int *, tree));
-int lhd_tree_inlining_anon_aggr_type_p		PARAMS ((tree));
-int lhd_tree_inlining_start_inlining		PARAMS ((tree));
-void lhd_tree_inlining_end_inlining		PARAMS ((tree));
-tree lhd_tree_inlining_convert_parm_for_inlining PARAMS ((tree, tree, tree));
+extern tree lhd_tree_inlining_walk_subtrees (tree *, int *, walk_tree_fn,
+					     void *, void *);
+extern int lhd_tree_inlining_cannot_inline_tree_fn (tree *);
+extern int lhd_tree_inlining_disregard_inline_limits (tree);
+extern tree lhd_tree_inlining_add_pending_fn_decls (void *, tree);
+extern int lhd_tree_inlining_tree_chain_matters_p (tree);
+extern int lhd_tree_inlining_auto_var_in_fn_p (tree, tree);
+extern tree lhd_tree_inlining_copy_res_decl_for_inlining (tree, tree, tree,
+							  void *, int *, tree);
+extern int lhd_tree_inlining_anon_aggr_type_p (tree);
+extern int lhd_tree_inlining_start_inlining (tree);
+extern void lhd_tree_inlining_end_inlining (tree);
+extern tree lhd_tree_inlining_convert_parm_for_inlining (tree, tree, tree);
 
-void write_global_declarations PARAMS ((void));
+extern void write_global_declarations (void);
 
 #define LANG_HOOKS_NAME			"GNU unknown"
 #define LANG_HOOKS_IDENTIFIER_SIZE	sizeof (struct lang_identifier)
@@ -184,8 +182,8 @@ void write_global_declarations PARAMS ((void));
 }
 
 /* Tree dump hooks.  */
-bool lhd_tree_dump_dump_tree 			PARAMS ((void *, tree));
-int lhd_tree_dump_type_quals			PARAMS ((tree));
+extern bool lhd_tree_dump_dump_tree (void *, tree);
+extern int lhd_tree_dump_type_quals (tree);
 
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN lhd_tree_dump_dump_tree
 #define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN lhd_tree_dump_type_quals

@@ -1,5 +1,5 @@
 /* Loop optimization definitions for GCC
-   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1991, 1995, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -398,34 +398,31 @@ extern FILE *loop_dump_stream;
 
 /* Forward declarations for non-static functions declared in loop.c and
    unroll.c.  */
-int loop_invariant_p PARAMS ((const struct loop *, rtx));
-rtx get_condition_for_loop PARAMS ((const struct loop *, rtx));
-void loop_iv_add_mult_hoist PARAMS ((const struct loop *, rtx, rtx, rtx, rtx));
-void loop_iv_add_mult_sink PARAMS ((const struct loop *, rtx, rtx, rtx, rtx));
-void loop_iv_add_mult_emit_before PARAMS ((const struct loop *, rtx,
-					   rtx, rtx, rtx,
-					   basic_block, rtx));
-rtx express_from PARAMS ((struct induction *, struct induction *));
-rtx extend_value_for_giv PARAMS ((struct induction *, rtx));
+extern int loop_invariant_p (const struct loop *, rtx);
+extern rtx get_condition_for_loop (const struct loop *, rtx);
+extern void loop_iv_add_mult_hoist (const struct loop *, rtx, rtx, rtx, rtx);
+extern void loop_iv_add_mult_sink (const struct loop *, rtx, rtx, rtx, rtx);
+extern void loop_iv_add_mult_emit_before (const struct loop *, rtx, rtx,
+					  rtx, rtx, basic_block, rtx);
+extern rtx express_from (struct induction *, struct induction *);
+extern rtx extend_value_for_giv (struct induction *, rtx);
 
-void unroll_loop PARAMS ((struct loop *, int, int));
-rtx biv_total_increment PARAMS ((const struct iv_class *));
-unsigned HOST_WIDE_INT loop_iterations PARAMS ((struct loop *));
-int precondition_loop_p PARAMS ((const struct loop *,
-				 rtx *, rtx *, rtx *,
-				 enum machine_mode *mode));
-rtx final_biv_value PARAMS ((const struct loop *, struct iv_class *));
-rtx final_giv_value PARAMS ((const struct loop *, struct induction *));
-void emit_unrolled_add PARAMS ((rtx, rtx, rtx));
-int back_branch_in_range_p PARAMS ((const struct loop *, rtx));
+extern void unroll_loop (struct loop *, int, int);
+extern rtx biv_total_increment (const struct iv_class *);
+extern unsigned HOST_WIDE_INT loop_iterations (struct loop *);
+extern int precondition_loop_p (const struct loop *, rtx *, rtx *, rtx *,
+				enum machine_mode *mode);
+extern rtx final_biv_value (const struct loop *, struct iv_class *);
+extern rtx final_giv_value (const struct loop *, struct induction *);
+extern void emit_unrolled_add (rtx, rtx, rtx);
+extern int back_branch_in_range_p (const struct loop *, rtx);
 
-int loop_insn_first_p PARAMS ((rtx, rtx));
-typedef rtx (*loop_insn_callback) PARAMS ((struct loop *, rtx, int, int));
-void for_each_insn_in_loop PARAMS ((struct loop *, loop_insn_callback));
-rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block,
-				  rtx, rtx));
-rtx loop_insn_sink PARAMS((const struct loop *, rtx));
-rtx loop_insn_hoist PARAMS((const struct loop *, rtx));
+extern int loop_insn_first_p (rtx, rtx);
+typedef rtx (*loop_insn_callback) (struct loop *, rtx, int, int);
+extern void for_each_insn_in_loop (struct loop *, loop_insn_callback);
+extern rtx loop_insn_emit_before (const struct loop *, basic_block, rtx, rtx);
+extern rtx loop_insn_sink (const struct loop *, rtx);
+extern rtx loop_insn_hoist (const struct loop *, rtx);
 
 /* Forward declarations for non-static functions declared in doloop.c.  */
-int doloop_optimize PARAMS ((const struct loop *));
+extern int doloop_optimize (const struct loop *);

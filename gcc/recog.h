@@ -1,5 +1,5 @@
 /* Declarations for interface to insn recognizer and insn-output.c.
-   Copyright (C) 1987, 1996, 1997, 1998, 1999, 2000, 2001
+   Copyright (C) 1987, 1996, 1997, 1998, 1999, 2000, 2001, 2003
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -54,9 +54,9 @@ struct operand_alternative
   /* Nonzero if '&' was found in the constraint string.  */
   unsigned int earlyclobber:1;
   /* Nonzero if 'm' was found in the constraint string.  */
-  unsigned int memory_ok:1;  
+  unsigned int memory_ok:1;
   /* Nonzero if 'o' was found in the constraint string.  */
-  unsigned int offmem_ok:1;  
+  unsigned int offmem_ok:1;
   /* Nonzero if 'V' was found in the constraint string.  */
   unsigned int nonoffmem_ok:1;
   /* Nonzero if '<' was found in the constraint string.  */
@@ -71,75 +71,73 @@ struct operand_alternative
 };
 
 
-extern void init_recog			PARAMS ((void));
-extern void init_recog_no_volatile	PARAMS ((void));
-extern int recog_memoized_1		PARAMS ((rtx));
-extern int check_asm_operands		PARAMS ((rtx));
-extern int asm_operand_ok		PARAMS ((rtx, const char *));
-extern int validate_change		PARAMS ((rtx, rtx *, rtx, int));
-extern int insn_invalid_p		PARAMS ((rtx));
-extern int apply_change_group		PARAMS ((void));
-extern int num_validated_changes	PARAMS ((void));
-extern void cancel_changes		PARAMS ((int));
-extern int constrain_operands		PARAMS ((int));
-extern int constrain_operands_cached	PARAMS ((int));
-extern int memory_address_p		PARAMS ((enum machine_mode, rtx));
-extern int strict_memory_address_p	PARAMS ((enum machine_mode, rtx));
-extern int validate_replace_rtx_subexp	PARAMS ((rtx, rtx, rtx, rtx *));
-extern int validate_replace_rtx		PARAMS ((rtx, rtx, rtx));
-extern void validate_replace_rtx_group	PARAMS ((rtx, rtx, rtx));
-extern int validate_replace_src		PARAMS ((rtx, rtx, rtx));
-extern void validate_replace_src_group	PARAMS ((rtx, rtx, rtx));
-extern int num_changes_pending		PARAMS ((void));
+extern void init_recog (void);
+extern void init_recog_no_volatile (void);
+extern int recog_memoized_1 (rtx);
+extern int check_asm_operands (rtx);
+extern int asm_operand_ok (rtx, const char *);
+extern int validate_change (rtx, rtx *, rtx, int);
+extern int insn_invalid_p (rtx);
+extern int apply_change_group (void);
+extern int num_validated_changes (void);
+extern void cancel_changes (int);
+extern int constrain_operands (int);
+extern int constrain_operands_cached (int);
+extern int memory_address_p (enum machine_mode, rtx);
+extern int strict_memory_address_p (enum machine_mode, rtx);
+extern int validate_replace_rtx_subexp (rtx, rtx, rtx, rtx *);
+extern int validate_replace_rtx (rtx, rtx, rtx);
+extern void validate_replace_rtx_group (rtx, rtx, rtx);
+extern int validate_replace_src (rtx, rtx, rtx);
+extern void validate_replace_src_group (rtx, rtx, rtx);
+extern int num_changes_pending (void);
 #ifdef HAVE_cc0
-extern int next_insn_tests_no_inequality PARAMS ((rtx));
+extern int next_insn_tests_no_inequality (rtx);
 #endif
-extern int reg_fits_class_p		PARAMS ((rtx, enum reg_class, int,
-					       enum machine_mode));
-extern rtx *find_single_use		PARAMS ((rtx, rtx, rtx *));
+extern int reg_fits_class_p (rtx, enum reg_class, int, enum machine_mode);
+extern rtx *find_single_use (rtx, rtx, rtx *);
 
-extern int general_operand		PARAMS ((rtx, enum machine_mode));
-extern int address_operand		PARAMS ((rtx, enum machine_mode));
-extern int register_operand		PARAMS ((rtx, enum machine_mode));
-extern int pmode_register_operand	PARAMS ((rtx, enum machine_mode));
-extern int scratch_operand		PARAMS ((rtx, enum machine_mode));
-extern int immediate_operand		PARAMS ((rtx, enum machine_mode));
-extern int const_int_operand		PARAMS ((rtx, enum machine_mode));
-extern int const_double_operand		PARAMS ((rtx, enum machine_mode));
-extern int nonimmediate_operand		PARAMS ((rtx, enum machine_mode));
-extern int nonmemory_operand		PARAMS ((rtx, enum machine_mode));
-extern int push_operand			PARAMS ((rtx, enum machine_mode));
-extern int pop_operand			PARAMS ((rtx, enum machine_mode));
-extern int memory_operand		PARAMS ((rtx, enum machine_mode));
-extern int indirect_operand		PARAMS ((rtx, enum machine_mode));
-extern int comparison_operator		PARAMS ((rtx, enum machine_mode));
+extern int general_operand (rtx, enum machine_mode);
+extern int address_operand (rtx, enum machine_mode);
+extern int register_operand (rtx, enum machine_mode);
+extern int pmode_register_operand (rtx, enum machine_mode);
+extern int scratch_operand (rtx, enum machine_mode);
+extern int immediate_operand (rtx, enum machine_mode);
+extern int const_int_operand (rtx, enum machine_mode);
+extern int const_double_operand (rtx, enum machine_mode);
+extern int nonimmediate_operand (rtx, enum machine_mode);
+extern int nonmemory_operand (rtx, enum machine_mode);
+extern int push_operand (rtx, enum machine_mode);
+extern int pop_operand (rtx, enum machine_mode);
+extern int memory_operand (rtx, enum machine_mode);
+extern int indirect_operand (rtx, enum machine_mode);
+extern int comparison_operator (rtx, enum machine_mode);
 
-extern int offsettable_memref_p		PARAMS ((rtx));
-extern int offsettable_nonstrict_memref_p	PARAMS ((rtx));
-extern int offsettable_address_p	PARAMS ((int, enum machine_mode, rtx));
-extern int mode_dependent_address_p	PARAMS ((rtx));
+extern int offsettable_memref_p (rtx);
+extern int offsettable_nonstrict_memref_p (rtx);
+extern int offsettable_address_p (int, enum machine_mode, rtx);
+extern int mode_dependent_address_p (rtx);
 
-extern int recog			PARAMS ((rtx, rtx, int *));
-extern void add_clobbers		PARAMS ((rtx, int));
-extern int added_clobbers_hard_reg_p	PARAMS ((int));
-extern void insn_extract		PARAMS ((rtx));
-extern void extract_insn		PARAMS ((rtx));
-extern void extract_constrain_insn_cached PARAMS ((rtx));
-extern void extract_insn_cached		PARAMS ((rtx));
-extern void preprocess_constraints	PARAMS ((void));
-extern rtx peep2_next_insn		PARAMS ((int));
-extern int peep2_regno_dead_p		PARAMS ((int, int));
-extern int peep2_reg_dead_p		PARAMS ((int, rtx));
+extern int recog (rtx, rtx, int *);
+extern void add_clobbers (rtx, int);
+extern int added_clobbers_hard_reg_p (int);
+extern void insn_extract (rtx);
+extern void extract_insn (rtx);
+extern void extract_constrain_insn_cached (rtx);
+extern void extract_insn_cached (rtx);
+extern void preprocess_constraints (void);
+extern rtx peep2_next_insn (int);
+extern int peep2_regno_dead_p (int, int);
+extern int peep2_reg_dead_p (int, rtx);
 #ifdef CLEAR_HARD_REG_SET
-extern rtx peep2_find_free_register	PARAMS ((int, int, const char *,
-						 enum machine_mode,
-						 HARD_REG_SET *));
+extern rtx peep2_find_free_register (int, int, const char *,
+				     enum machine_mode, HARD_REG_SET *);
 #endif
-extern void peephole2_optimize		PARAMS ((FILE *));
-extern rtx peephole2_insns		PARAMS ((rtx, rtx, int *));
+extern void peephole2_optimize (FILE *);
+extern rtx peephole2_insns (rtx, rtx, int *);
 
-extern int store_data_bypass_p		PARAMS ((rtx, rtx));
-extern int if_test_bypass_p		PARAMS ((rtx, rtx));
+extern int store_data_bypass_p (rtx, rtx);
+extern int if_test_bypass_p (rtx, rtx);
 
 /* Nonzero means volatile operands are recognized.  */
 extern int volatile_ok;
@@ -182,7 +180,7 @@ struct recog_data
   char dup_num[MAX_DUP_OPERANDS];
 
   /* ??? Note that these are `char' instead of `unsigned char' to (try to)
-     avoid certain lossage from K&R C, wherein `unsigned char' default 
+     avoid certain lossage from K&R C, wherein `unsigned char' default
      promotes to `unsigned int' instead of `int' as in ISO C.  As of 1999,
      the most common places to bootstrap from K&R C are SunOS and HPUX,
      both of which have signed characters by default.  The only other
@@ -213,9 +211,9 @@ extern struct operand_alternative recog_op_alt[MAX_RECOG_OPERANDS][MAX_RECOG_ALT
 /* A table defined in insn-output.c that give information about
    each insn-code value.  */
 
-typedef int (*insn_operand_predicate_fn) PARAMS ((rtx, enum machine_mode));
-typedef const char * (*insn_output_fn) PARAMS ((rtx *, rtx));
-typedef rtx (*insn_gen_fn) PARAMS ((rtx, ...));
+typedef int (*insn_operand_predicate_fn) (rtx, enum machine_mode);
+typedef const char * (*insn_output_fn) (rtx *, rtx);
+typedef rtx (*insn_gen_fn) (rtx, ...);
 
 struct insn_operand_data
 {

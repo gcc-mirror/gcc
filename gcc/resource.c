@@ -1,5 +1,6 @@
 /* Definitions for computing resource usage of specific insns.
-   Copyright (C) 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -78,21 +79,18 @@ static HARD_REG_SET current_live_regs;
 
 static HARD_REG_SET pending_dead_regs;
 
-static void update_live_status		PARAMS ((rtx, rtx, void *));
-static int find_basic_block		PARAMS ((rtx, int));
-static rtx next_insn_no_annul		PARAMS ((rtx));
-static rtx find_dead_or_set_registers	PARAMS ((rtx, struct resources*,
-						rtx*, int, struct resources,
-						struct resources));
+static void update_live_status (rtx, rtx, void *);
+static int find_basic_block (rtx, int);
+static rtx next_insn_no_annul (rtx);
+static rtx find_dead_or_set_registers (rtx, struct resources*,
+				       rtx*, int, struct resources,
+				       struct resources);
 
 /* Utility function called from mark_target_live_regs via note_stores.
    It deadens any CLOBBERed registers and livens any SET registers.  */
 
 static void
-update_live_status (dest, x, data)
-     rtx dest;
-     rtx x;
-     void *data ATTRIBUTE_UNUSED;
+update_live_status (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
 {
   int first_regno, last_regno;
   int i;
@@ -131,9 +129,7 @@ update_live_status (dest, x, data)
    correct.  */
 
 static int
-find_basic_block (insn, search_limit)
-     rtx insn;
-     int search_limit;
+find_basic_block (rtx insn, int search_limit)
 {
   basic_block bb;
 
@@ -170,8 +166,7 @@ find_basic_block (insn, search_limit)
    an annulled branch.  */
 
 static rtx
-next_insn_no_annul (insn)
-     rtx insn;
+next_insn_no_annul (rtx insn)
 {
   if (insn)
     {
@@ -210,10 +205,8 @@ next_insn_no_annul (insn)
    CALL_INSNs.  */
 
 void
-mark_referenced_resources (x, res, include_delayed_effects)
-     rtx x;
-     struct resources *res;
-     int include_delayed_effects;
+mark_referenced_resources (rtx x, struct resources *res,
+			   int include_delayed_effects)
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
@@ -443,12 +436,9 @@ mark_referenced_resources (x, res, include_delayed_effects)
    number of unconditional branches.  */
 
 static rtx
-find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
-     rtx target;
-     struct resources *res;
-     rtx *jump_target;
-     int jump_count;
-     struct resources set, needed;
+find_dead_or_set_registers (rtx target, struct resources *res,
+			    rtx *jump_target, int jump_count,
+			    struct resources set, struct resources needed)
 {
   HARD_REG_SET scratch;
   rtx insn, next;
@@ -638,11 +628,8 @@ find_dead_or_set_registers (target, res, jump_target, jump_count, set, needed)
    our computation and thus may be placed in a delay slot.  */
 
 void
-mark_set_resources (x, res, in_dest, mark_type)
-     rtx x;
-     struct resources *res;
-     int in_dest;
-     enum mark_resource_type mark_type;
+mark_set_resources (rtx x, struct resources *res, int in_dest,
+		    enum mark_resource_type mark_type)
 {
   enum rtx_code code;
   int i, j;
@@ -902,10 +889,7 @@ mark_set_resources (x, res, in_dest, mark_type)
    init_resource_info () was invoked before we are called.  */
 
 void
-mark_target_live_regs (insns, target, res)
-     rtx insns;
-     rtx target;
-     struct resources *res;
+mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 {
   int b = -1;
   unsigned int i;
@@ -1172,8 +1156,7 @@ mark_target_live_regs (insns, target, res)
    This should be invoked before the first call to mark_target_live_regs.  */
 
 void
-init_resource_info (epilogue_insn)
-     rtx epilogue_insn;
+init_resource_info (rtx epilogue_insn)
 {
   int i;
 
@@ -1249,7 +1232,7 @@ init_resource_info (epilogue_insn)
    should be invoked after the last call to mark_target_live_regs ().  */
 
 void
-free_resource_info ()
+free_resource_info (void)
 {
   if (target_hash_table != NULL)
     {
@@ -1281,8 +1264,7 @@ free_resource_info ()
 /* Clear any hashed information that we have stored for INSN.  */
 
 void
-clear_hashed_info_for_insn (insn)
-     rtx insn;
+clear_hashed_info_for_insn (rtx insn)
 {
   struct target_info *tinfo;
 
@@ -1301,8 +1283,7 @@ clear_hashed_info_for_insn (insn)
 /* Increment the tick count for the basic block that contains INSN.  */
 
 void
-incr_ticks_for_insn (insn)
-     rtx insn;
+incr_ticks_for_insn (rtx insn)
 {
   int b = find_basic_block (insn, MAX_DELAY_SLOT_LIVE_SEARCH);
 
@@ -1313,9 +1294,7 @@ incr_ticks_for_insn (insn)
 /* Add TRIAL to the set of resources used at the end of the current
    function.  */
 void
-mark_end_of_function_resources (trial, include_delayed_effects)
-     rtx trial;
-     int include_delayed_effects;
+mark_end_of_function_resources (rtx trial, int include_delayed_effects)
 {
   mark_referenced_resources (trial, &end_of_function_needs,
 			     include_delayed_effects);

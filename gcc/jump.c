@@ -63,24 +63,23 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    or even change what is live at any point.
    So perhaps let combiner do it.  */
 
-static rtx next_nonnote_insn_in_loop	PARAMS ((rtx));
-static void init_label_info		PARAMS ((rtx));
-static void mark_all_labels		PARAMS ((rtx));
-static int duplicate_loop_exit_test	PARAMS ((rtx));
-static void delete_computation		PARAMS ((rtx));
-static void redirect_exp_1		PARAMS ((rtx *, rtx, rtx, rtx));
-static int redirect_exp			PARAMS ((rtx, rtx, rtx));
-static void invert_exp_1		PARAMS ((rtx));
-static int invert_exp			PARAMS ((rtx));
-static int returnjump_p_1	        PARAMS ((rtx *, void *));
-static void delete_prior_computation    PARAMS ((rtx, rtx));
+static rtx next_nonnote_insn_in_loop (rtx);
+static void init_label_info (rtx);
+static void mark_all_labels (rtx);
+static int duplicate_loop_exit_test (rtx);
+static void delete_computation (rtx);
+static void redirect_exp_1 (rtx *, rtx, rtx, rtx);
+static int redirect_exp (rtx, rtx, rtx);
+static void invert_exp_1 (rtx);
+static int invert_exp (rtx);
+static int returnjump_p_1 (rtx *, void *);
+static void delete_prior_computation (rtx, rtx);
 
 /* Alternate entry into the jump optimizer.  This entry point only rebuilds
    the JUMP_LABEL field in jumping insns and REG_LABEL notes in non-jumping
    instructions.  */
 void
-rebuild_jump_labels (f)
-     rtx f;
+rebuild_jump_labels (rtx f)
 {
   rtx insn;
 
@@ -107,7 +106,7 @@ rebuild_jump_labels (f)
    old code is happy.
  */
 void
-cleanup_barriers ()
+cleanup_barriers (void)
 {
   rtx insn, next, prev;
   for (insn = get_insns (); insn; insn = next)
@@ -129,8 +128,7 @@ cleanup_barriers ()
    This routine does not look inside SEQUENCEs.  */
 
 static rtx
-next_nonnote_insn_in_loop (insn)
-     rtx insn;
+next_nonnote_insn_in_loop (rtx insn)
 {
   while (insn)
     {
@@ -146,8 +144,7 @@ next_nonnote_insn_in_loop (insn)
 }
 
 void
-copy_loop_headers (f)
-     rtx f;
+copy_loop_headers (rtx f)
 {
   rtx insn, next;
   /* Now iterate optimizing jumps until nothing changes over one pass.  */
@@ -176,8 +173,7 @@ copy_loop_headers (f)
 }
 
 void
-purge_line_number_notes (f)
-     rtx f;
+purge_line_number_notes (rtx f)
 {
   rtx last_note = 0;
   rtx insn;
@@ -213,8 +209,7 @@ purge_line_number_notes (f)
    notes whose labels don't occur in the insn any more.  Returns the
    largest INSN_UID found.  */
 static void
-init_label_info (f)
-     rtx f;
+init_label_info (rtx f)
 {
   rtx insn;
 
@@ -241,8 +236,7 @@ init_label_info (f)
    Combine consecutive labels, and count uses of labels.  */
 
 static void
-mark_all_labels (f)
-     rtx f;
+mark_all_labels (rtx f)
 {
   rtx insn;
 
@@ -306,8 +300,7 @@ mark_all_labels (f)
    values of regno_first_uid and regno_last_uid.  */
 
 static int
-duplicate_loop_exit_test (loop_start)
-     rtx loop_start;
+duplicate_loop_exit_test (rtx loop_start)
 {
   rtx insn, set, reg, p, link;
   rtx copy = 0, first_copy = 0;
@@ -541,9 +534,7 @@ duplicate_loop_exit_test (loop_start)
    Return true if there were only such notes and no real instructions.  */
 
 bool
-squeeze_notes (startp, endp)
-     rtx* startp;
-     rtx* endp;
+squeeze_notes (rtx* startp, rtx* endp)
 {
   rtx start = *startp;
   rtx end = *endp;
@@ -595,8 +586,7 @@ squeeze_notes (startp, endp)
 /* Return the label before INSN, or put a new label there.  */
 
 rtx
-get_label_before (insn)
-     rtx insn;
+get_label_before (rtx insn)
 {
   rtx label;
 
@@ -618,8 +608,7 @@ get_label_before (insn)
 /* Return the label after INSN, or put a new label there.  */
 
 rtx
-get_label_after (insn)
-     rtx insn;
+get_label_after (rtx insn)
 {
   rtx label;
 
@@ -643,9 +632,7 @@ get_label_after (insn)
    description should define REVERSIBLE_CC_MODE and REVERSE_CONDITION macros
    to help this function avoid overhead in these cases.  */
 enum rtx_code
-reversed_comparison_code_parts (code, arg0, arg1, insn)
-     rtx insn, arg0, arg1;
-     enum rtx_code code;
+reversed_comparison_code_parts (enum rtx_code code, rtx arg0, rtx arg1, rtx insn)
 {
   enum machine_mode mode;
 
@@ -759,8 +746,7 @@ reversed_comparison_code_parts (code, arg0, arg1, insn)
 /* A wrapper around the previous function to take COMPARISON as rtx
    expression.  This simplifies many callers.  */
 enum rtx_code
-reversed_comparison_code (comparison, insn)
-     rtx comparison, insn;
+reversed_comparison_code (rtx comparison, rtx insn)
 {
   if (GET_RTX_CLASS (GET_CODE (comparison)) != '<')
     return UNKNOWN;
@@ -778,8 +764,7 @@ reversed_comparison_code (comparison, insn)
    Use reversed_comparison_code instead.  */
 
 enum rtx_code
-reverse_condition (code)
-     enum rtx_code code;
+reverse_condition (enum rtx_code code)
 {
   switch (code)
     {
@@ -826,8 +811,7 @@ reverse_condition (code)
    that the target will support them too...  */
 
 enum rtx_code
-reverse_condition_maybe_unordered (code)
-     enum rtx_code code;
+reverse_condition_maybe_unordered (enum rtx_code code)
 {
   switch (code)
     {
@@ -869,8 +853,7 @@ reverse_condition_maybe_unordered (code)
    This IS safe for IEEE floating-point.  */
 
 enum rtx_code
-swap_condition (code)
-     enum rtx_code code;
+swap_condition (enum rtx_code code)
 {
   switch (code)
     {
@@ -917,8 +900,7 @@ swap_condition (code)
    CODE is returned.  */
 
 enum rtx_code
-unsigned_condition (code)
-     enum rtx_code code;
+unsigned_condition (enum rtx_code code)
 {
   switch (code)
     {
@@ -947,8 +929,7 @@ unsigned_condition (code)
 /* Similarly, return the signed version of a comparison.  */
 
 enum rtx_code
-signed_condition (code)
-     enum rtx_code code;
+signed_condition (enum rtx_code code)
 {
   switch (code)
     {
@@ -978,8 +959,7 @@ signed_condition (code)
    truth of CODE1 implies the truth of CODE2.  */
 
 int
-comparison_dominates_p (code1, code2)
-     enum rtx_code code1, code2;
+comparison_dominates_p (enum rtx_code code1, enum rtx_code code2)
 {
   /* UNKNOWN comparison codes can happen as a result of trying to revert
      comparison codes.
@@ -1060,8 +1040,7 @@ comparison_dominates_p (code1, code2)
 /* Return 1 if INSN is an unconditional jump and nothing else.  */
 
 int
-simplejump_p (insn)
-     rtx insn;
+simplejump_p (rtx insn)
 {
   return (GET_CODE (insn) == JUMP_INSN
 	  && GET_CODE (PATTERN (insn)) == SET
@@ -1076,8 +1055,7 @@ simplejump_p (insn)
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int
-condjump_p (insn)
-     rtx insn;
+condjump_p (rtx insn)
 {
   rtx x = PATTERN (insn);
 
@@ -1107,8 +1085,7 @@ condjump_p (insn)
    branch and compare insns.  Use any_condjump_p instead whenever possible.  */
 
 int
-condjump_in_parallel_p (insn)
-     rtx insn;
+condjump_in_parallel_p (rtx insn)
 {
   rtx x = PATTERN (insn);
 
@@ -1139,8 +1116,7 @@ condjump_in_parallel_p (insn)
 /* Return set of PC, otherwise NULL.  */
 
 rtx
-pc_set (insn)
-     rtx insn;
+pc_set (rtx insn)
 {
   rtx pat;
   if (GET_CODE (insn) != JUMP_INSN)
@@ -1161,8 +1137,7 @@ pc_set (insn)
    possibly bundled inside a PARALLEL.  */
 
 int
-any_uncondjump_p (insn)
-     rtx insn;
+any_uncondjump_p (rtx insn)
 {
   rtx x = pc_set (insn);
   if (!x)
@@ -1180,8 +1155,7 @@ any_uncondjump_p (insn)
    Note that unlike condjump_p it returns false for unconditional jumps.  */
 
 int
-any_condjump_p (insn)
-     rtx insn;
+any_condjump_p (rtx insn)
 {
   rtx x = pc_set (insn);
   enum rtx_code a, b;
@@ -1201,8 +1175,7 @@ any_condjump_p (insn)
 /* Return the label of a conditional jump.  */
 
 rtx
-condjump_label (insn)
-     rtx insn;
+condjump_label (rtx insn)
 {
   rtx x = pc_set (insn);
 
@@ -1223,9 +1196,7 @@ condjump_label (insn)
 /* Return true if INSN is a (possibly conditional) return insn.  */
 
 static int
-returnjump_p_1 (loc, data)
-     rtx *loc;
-     void *data ATTRIBUTE_UNUSED;
+returnjump_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
 {
   rtx x = *loc;
 
@@ -1234,8 +1205,7 @@ returnjump_p_1 (loc, data)
 }
 
 int
-returnjump_p (insn)
-     rtx insn;
+returnjump_p (rtx insn)
 {
   if (GET_CODE (insn) != JUMP_INSN)
     return 0;
@@ -1246,8 +1216,7 @@ returnjump_p (insn)
    nothing more.  */
 
 int
-onlyjump_p (insn)
-     rtx insn;
+onlyjump_p (rtx insn)
 {
   rtx set;
 
@@ -1271,8 +1240,7 @@ onlyjump_p (insn)
    and has no side effects.  */
 
 int
-only_sets_cc0_p (x)
-     rtx x;
+only_sets_cc0_p (rtx x)
 {
   if (! x)
     return 0;
@@ -1289,8 +1257,7 @@ only_sets_cc0_p (x)
    but also does other things.  */
 
 int
-sets_cc0_p (x)
-     rtx x;
+sets_cc0_p (rtx x)
 {
   if (! x)
     return 0;
@@ -1329,8 +1296,7 @@ sets_cc0_p (x)
    a USE or CLOBBER.  */
 
 rtx
-follow_jumps (label)
-     rtx label;
+follow_jumps (rtx label)
 {
   rtx insn;
   rtx next;
@@ -1393,10 +1359,7 @@ follow_jumps (label)
    that loop-optimization is done with.  */
 
 void
-mark_jump_label (x, insn, in_mem)
-     rtx x;
-     rtx insn;
-     int in_mem;
+mark_jump_label (rtx x, rtx insn, int in_mem)
 {
   RTX_CODE code = GET_CODE (x);
   int i;
@@ -1501,8 +1464,7 @@ mark_jump_label (x, insn, in_mem)
    if that's what the previous thing was.  */
 
 void
-delete_jump (insn)
-     rtx insn;
+delete_jump (rtx insn)
 {
   rtx set = single_set (insn);
 
@@ -1513,8 +1475,7 @@ delete_jump (insn)
 /* Verify INSN is a BARRIER and delete it.  */
 
 void
-delete_barrier (insn)
-     rtx insn;
+delete_barrier (rtx insn)
 {
   if (GET_CODE (insn) != BARRIER)
     abort ();
@@ -1527,9 +1488,7 @@ delete_barrier (insn)
    which is a REG_DEAD note associated with INSN.  */
 
 static void
-delete_prior_computation (note, insn)
-     rtx note;
-     rtx insn;
+delete_prior_computation (rtx note, rtx insn)
 {
   rtx our_prev;
   rtx reg = XEXP (note, 0);
@@ -1655,8 +1614,7 @@ delete_prior_computation (note, insn)
    delete the insn that set it.  */
 
 static void
-delete_computation (insn)
-     rtx insn;
+delete_computation (rtx insn)
 {
   rtx note, next;
 
@@ -1708,8 +1666,7 @@ delete_computation (insn)
    subsequent cfg_cleanup pass to delete unreachable code if needed.  */
 
 rtx
-delete_related_insns (insn)
-     rtx insn;
+delete_related_insns (rtx insn)
 {
   int was_code_label = (GET_CODE (insn) == CODE_LABEL);
   rtx note;
@@ -1837,8 +1794,7 @@ delete_related_insns (insn)
    peephole insn that will replace them.  */
 
 void
-delete_for_peephole (from, to)
-     rtx from, to;
+delete_for_peephole (rtx from, rtx to)
 {
   rtx insn = from;
 
@@ -1882,8 +1838,7 @@ delete_for_peephole (from, to)
    spurious warnings from this.  */
 
 void
-never_reached_warning (avoided_insn, finish)
-     rtx avoided_insn, finish;
+never_reached_warning (rtx avoided_insn, rtx finish)
 {
   rtx insn;
   rtx a_line_note = NULL;
@@ -1946,10 +1901,7 @@ never_reached_warning (avoided_insn, finish)
    NLABEL as a return.  Accrue modifications into the change group.  */
 
 static void
-redirect_exp_1 (loc, olabel, nlabel, insn)
-     rtx *loc;
-     rtx olabel, nlabel;
-     rtx insn;
+redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx insn)
 {
   rtx x = *loc;
   RTX_CODE code = GET_CODE (x);
@@ -2004,9 +1956,7 @@ redirect_exp_1 (loc, olabel, nlabel, insn)
 /* Similar, but apply the change group and report success or failure.  */
 
 static int
-redirect_exp (olabel, nlabel, insn)
-     rtx olabel, nlabel;
-     rtx insn;
+redirect_exp (rtx olabel, rtx nlabel, rtx insn)
 {
   rtx *loc;
 
@@ -2027,8 +1977,7 @@ redirect_exp (olabel, nlabel, insn)
    not see how to do that.  */
 
 int
-redirect_jump_1 (jump, nlabel)
-     rtx jump, nlabel;
+redirect_jump_1 (rtx jump, rtx nlabel)
 {
   int ochanges = num_validated_changes ();
   rtx *loc;
@@ -2053,9 +2002,7 @@ redirect_jump_1 (jump, nlabel)
    (this can only occur for NLABEL == 0).  */
 
 int
-redirect_jump (jump, nlabel, delete_unused)
-     rtx jump, nlabel;
-     int delete_unused;
+redirect_jump (rtx jump, rtx nlabel, int delete_unused)
 {
   rtx olabel = JUMP_LABEL (jump);
   rtx note;
@@ -2113,8 +2060,7 @@ redirect_jump (jump, nlabel, delete_unused)
    Accrue the modifications into the change group.  */
 
 static void
-invert_exp_1 (insn)
-     rtx insn;
+invert_exp_1 (rtx insn)
 {
   RTX_CODE code;
   rtx x = pc_set (insn);
@@ -2162,8 +2108,7 @@ invert_exp_1 (insn)
    matches a pattern.  */
 
 static int
-invert_exp (insn)
-     rtx insn;
+invert_exp (rtx insn)
 {
   invert_exp_1 (insn);
   if (num_validated_changes () == 0)
@@ -2178,8 +2123,7 @@ invert_exp (insn)
    inversion and redirection.  */
 
 int
-invert_jump_1 (jump, nlabel)
-     rtx jump, nlabel;
+invert_jump_1 (rtx jump, rtx nlabel)
 {
   int ochanges;
 
@@ -2195,9 +2139,7 @@ invert_jump_1 (jump, nlabel)
    NLABEL instead of where it jumps now.  Return true if successful.  */
 
 int
-invert_jump (jump, nlabel, delete_unused)
-     rtx jump, nlabel;
-     int delete_unused;
+invert_jump (rtx jump, rtx nlabel, int delete_unused)
 {
   /* We have to either invert the condition and change the label or
      do neither.  Either operation could fail.  We first try to invert
@@ -2241,8 +2183,7 @@ invert_jump (jump, nlabel, delete_unused)
    case when the PLUS is inside a MEM.  */
 
 int
-rtx_renumbered_equal_p (x, y)
-     rtx x, y;
+rtx_renumbered_equal_p (rtx x, rtx y)
 {
   int i;
   RTX_CODE code = GET_CODE (x);
@@ -2429,8 +2370,7 @@ rtx_renumbered_equal_p (x, y)
    return -1.  Any rtx is valid for X.  */
 
 int
-true_regnum (x)
-     rtx x;
+true_regnum (rtx x)
 {
   if (GET_CODE (x) == REG)
     {
@@ -2451,8 +2391,7 @@ true_regnum (x)
 
 /* Return regno of the register REG and handle subregs too.  */
 unsigned int
-reg_or_subregno (reg)
-     rtx reg;
+reg_or_subregno (rtx reg)
 {
   if (REG_P (reg))
     return REGNO (reg);

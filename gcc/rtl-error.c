@@ -33,19 +33,17 @@ Boston, MA 02111-1307, USA.  */
 #include "intl.h"
 #include "diagnostic.h"
 
-static location_t location_for_asm PARAMS ((rtx));
-static void diagnostic_for_asm PARAMS ((rtx, const char *, va_list *,
-                                        diagnostic_t));
+static location_t location_for_asm (rtx);
+static void diagnostic_for_asm (rtx, const char *, va_list *, diagnostic_t);
 
 /* Figure the location of the given INSN.  */
 static location_t
-location_for_asm (insn)
-     rtx insn;
+location_for_asm (rtx insn)
 {
   rtx body = PATTERN (insn);
   rtx asmop;
   location_t loc;
-  
+
   /* Find the (or one of the) ASM_OPERANDS in the insn.  */
   if (GET_CODE (body) == SET && GET_CODE (SET_SRC (body)) == ASM_OPERANDS)
     asmop = SET_SRC (body);
@@ -74,14 +72,11 @@ location_for_asm (insn)
    of the insn INSN.  This is used only when INSN is an `asm' with operands,
    and each ASM_OPERANDS records its own source file and line.  */
 static void
-diagnostic_for_asm (insn, msg, args_ptr, kind)
-     rtx insn;
-     const char *msg;
-     va_list *args_ptr;
-     diagnostic_t kind;
+diagnostic_for_asm (rtx insn, const char *msg, va_list *args_ptr,
+		    diagnostic_t kind)
 {
   diagnostic_info diagnostic;
-  
+
   diagnostic_set_info (&diagnostic, msg, args_ptr,
 		       location_for_asm (insn), kind);
   report_diagnostic (&diagnostic);
@@ -91,7 +86,7 @@ void
 error_for_asm (rtx insn, const char *msgid, ...)
 {
   va_list ap;
-  
+
   va_start (ap, msgid);
   diagnostic_for_asm (insn, msgid, &ap, DK_ERROR);
   va_end (ap);
@@ -101,19 +96,15 @@ void
 warning_for_asm (rtx insn, const char *msgid, ...)
 {
   va_list ap;
-  
+
   va_start (ap, msgid);
   diagnostic_for_asm (insn, msgid, &ap, DK_WARNING);
   va_end (ap);
 }
 
 void
-_fatal_insn (msgid, insn, file, line, function)
-     const char *msgid;
-     rtx insn;
-     const char *file;
-     int line;
-     const char *function;
+_fatal_insn (const char *msgid, rtx insn, const char *file, int line,
+	     const char *function)
 {
   error ("%s", _(msgid));
 
@@ -126,11 +117,8 @@ _fatal_insn (msgid, insn, file, line, function)
 }
 
 void
-_fatal_insn_not_found (insn, file, line, function)
-     rtx insn;
-     const char *file;
-     int line;
-     const char *function;
+_fatal_insn_not_found (rtx insn, const char *file, int line,
+		       const char *function)
 {
   if (INSN_CODE (insn) < 0)
     _fatal_insn ("unrecognizable insn:", insn, file, line, function);
@@ -138,4 +126,3 @@ _fatal_insn_not_found (insn, file, line, function)
     _fatal_insn ("insn does not satisfy its constraints:",
 		insn, file, line, function);
 }
-
