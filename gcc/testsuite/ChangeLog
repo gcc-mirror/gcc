@@ -1,3 +1,10 @@
+2001-07-24  David Billinghurst <David.Billinghurst@riotinto.com>
+
+	* g77.f-torture/execute/intrinsic-unix-bessel.f: New test
+	* g77.f-torture/execute/intrinsic-unix-erf.f: New test
+	* g77.f-torture/execute/intrinsic-vax-cd.f: New test
+	* g77.f-torture/execute/intrinsic-f2c-z.f: New test
+
 Mon Jul 23 10:14:17 2001  Jeffrey A Law  (law@cygnus.com)
 
 	* gcc.c-torture/execute/20010723-1.c: New test.
