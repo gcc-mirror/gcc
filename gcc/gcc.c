@@ -4778,6 +4778,7 @@ next_member:
 		  && check_live_switch (i, hard_match_len))
 		{
 		  present = 1;
+		  break;
 		}
 	    }
 	}

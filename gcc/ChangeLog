@@ -1,3 +1,8 @@
+2000-03-27  Tom Tromey  <tromey@cygnus.com>
+
+	* gcc.c (handle_braces): In {x*...} case, break out of loop if
+	switch is found.
+
 Tue Mar 28 11:55:48 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* expr.c (store_constructor): SIZE now signed.
