@@ -1500,12 +1500,12 @@ cpp_handle_option (pfile, argc, argv)
 	if (!strcmp (argv[i], "--help"))
 	  print_help ();
 	else if (!strcmp (argv[i], "--version"))
-	  cpp_notice ("GNU CPP version %s\n", version_string);
+	  cpp_notice ("GNU CPP version %s (cpplib)\n", version_string);
 	exit (0);  /* XXX */
 	break;
 	
       case 'v':
-	cpp_notice ("GNU CPP version %s", version_string);
+	cpp_notice ("GNU CPP version %s (cpplib)", version_string);
 #ifdef TARGET_VERSION
 	TARGET_VERSION;
 #endif
