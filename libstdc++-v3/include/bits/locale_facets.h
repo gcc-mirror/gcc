@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -1612,13 +1612,13 @@ namespace std
       // "C" locale, this is "-+xX0123456789abcdef0123456789ABCDEF".
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      _CharT                    	_M_atoms_out[__num_base::_S_oend + 1];
+      _CharT                    	_M_atoms_out[__num_base::_S_oend];
 
       // A list of valid numeric literals for input: in the standard
       // "C" locale, this is "-+xX0123456789abcdefABCDEF"
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
-      _CharT                    	_M_atoms_in[__num_base::_S_iend + 1];
+      _CharT                    	_M_atoms_in[__num_base::_S_iend];
 
       bool				_M_allocated;
 
@@ -1668,10 +1668,8 @@ namespace std
       const ctype<_CharT>& __ct = use_facet<ctype<_CharT> >(__loc);
       __ct.widen(__num_base::_S_atoms_out, 
 		 __num_base::_S_atoms_out + __num_base::_S_oend, _M_atoms_out);
-      _M_atoms_out[__num_base::_S_oend] = _CharT();
       __ct.widen(__num_base::_S_atoms_in, 
 		 __num_base::_S_atoms_in + __num_base::_S_iend, _M_atoms_in);
-      _M_atoms_in[__num_base::_S_iend] = _CharT();
     }
 
   template<typename _CharT>
