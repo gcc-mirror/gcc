@@ -448,10 +448,6 @@ make_decl_rtl (decl, asmspec, top_level)
   register char *name = 0;
   int reg_number;
 
-#ifdef MODIFY_ASSEMBLER_NAME
-  DECL_ASSEMBLER_NAME (decl) = MODIFY_ASSEMBLER_NAME (decl);
-#endif
-
   if (output_bytecode)
     {
       bc_make_decl_rtl (decl, asmspec, top_level);
