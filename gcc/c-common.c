@@ -28,7 +28,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 extern struct obstack permanent_obstack;
 
-static void declare_hidden_char_array PROTO((char *, char *));
+enum attrs {A_PACKED, A_NORETURN, A_CONST, A_T_UNION, A_CONSTRUCTOR,
+	    A_DESTRUCTOR, A_MODE, A_SECTION, A_ALIGNED, A_FORMAT};
+
+static void declare_hidden_char_array	PROTO((char *, char *));
+static void add_attribute		PROTO((enum attrs, char *,
+					       int, int, int));
+static void init_attributes		PROTO((void));
 
 /* Make bindings for __FUNCTION__ and __PRETTY_FUNCTION__.  */
 
@@ -199,318 +205,400 @@ combine_strings (strings)
   return value;
 }
 
+/* To speed up processing of attributes, we maintain an array of
+   IDENTIFIER_NODES and the corresponding attribute types.  */
+
+/* Array to hold attribute information.  */
+
+static struct {enum attrs id; tree name; int min, max, decl_req;} attrtab[50];
+
+static int attrtab_idx = 0;
+
+/* Add an entry to the attribute table above.  */
+
+static void
+add_attribute (id, string, min_len, max_len, decl_req)
+     enum attrs id;
+     char *string;
+     int min_len, max_len;
+     int decl_req;
+{
+  char buf[100];
+
+  attrtab[attrtab_idx].id = id;
+  attrtab[attrtab_idx].name = get_identifier (string);
+  attrtab[attrtab_idx].min = min_len;
+  attrtab[attrtab_idx].max = max_len;
+  attrtab[attrtab_idx++].decl_req = decl_req;
+
+  sprintf (buf, "__%s__", string);
+
+  attrtab[attrtab_idx].id = id;
+  attrtab[attrtab_idx].name = get_identifier (buf);
+  attrtab[attrtab_idx].min = min_len;
+  attrtab[attrtab_idx].max = max_len;
+  attrtab[attrtab_idx++].decl_req = decl_req;
+}
+
+/* Initialize attribute table.  */
+
+static void
+init_attributes ()
+{
+  add_attribute (A_PACKED, "packed", 0, 0, 1);
+  add_attribute (A_NORETURN, "noreturn", 0, 0, 1);
+  add_attribute (A_NORETURN, "volatile", 0, 0, 1);
+  add_attribute (A_CONST, "const", 0, 0, 1);
+  add_attribute (A_T_UNION, "transparent_union", 0, 0, 0);
+  add_attribute (A_CONSTRUCTOR, "constructor", 0, 0, 1);
+  add_attribute (A_DESTRUCTOR, "destructor", 0, 0, 1);
+  add_attribute (A_MODE, "mode", 1, 1, 1);
+  add_attribute (A_SECTION, "section", 1, 1, 1);
+  add_attribute (A_ALIGNED, "aligned", 0, 1, 0);
+  add_attribute (A_FORMAT, "format", 3, 3, 0);
+}
+
 /* Process the attributes listed in ATTRIBUTES and PREFIX_ATTRIBUTES
-   and install them in DECL.  PREFIX_ATTRIBUTES can appear after the
-   declaration specifiers and declaration modifiers but before the
-   declaration proper. */
+   and install them in NODE, which is either a DECL (including a TYPE_DECL)
+   or a TYPE.  PREFIX_ATTRIBUTES can appear after the declaration specifiers
+   and declaration modifiers but before the declaration proper. */
 
 void
-decl_attributes (decl, attributes, prefix_attributes)
-     tree decl, attributes, prefix_attributes;
+decl_attributes (node, attributes, prefix_attributes)
+     tree node, attributes, prefix_attributes;
 {
-  tree a, name, args, type;
+  tree decl = 0, type;
+  int is_type;
+  tree a;
 
-  type = TREE_TYPE (decl);
+  if (attrtab_idx == 0)
+    init_attributes ();
+
+  if (TREE_CODE_CLASS (TREE_CODE (node)) == 'd')
+    {
+      decl = node;
+      type = TREE_TYPE (decl);
+      is_type = TREE_CODE (node) == TYPE_DECL;
+    }
+  else if (TREE_CODE_CLASS (TREE_CODE (node)) == 't')
+    type = node, is_type = 1;
+
   attributes = chainon (prefix_attributes, attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
-    if (!(name = TREE_VALUE (a)))
-	continue;
-    else if (name == get_identifier ("packed")
-	     || name == get_identifier ("__packed__"))
-      {
-	if (TREE_CODE (decl) == FIELD_DECL)
-	  DECL_PACKED (decl) = 1;
-	/* We can't set DECL_PACKED for a VAR_DECL, because the bit is
-	   used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
-	else
-	  warning_with_decl (decl, "`packed' attribute ignored");
-      }
-    else if (name == get_identifier ("noreturn")
-	     || name == get_identifier ("__noreturn__")
-	     || name == get_identifier ("volatile")
-	     || name == get_identifier ("__volatile__"))
-      {
-	if (TREE_CODE (decl) == FUNCTION_DECL)
-	  TREE_THIS_VOLATILE (decl) = 1;
-	else if (TREE_CODE (type) == POINTER_TYPE
-		 && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
-	  TREE_TYPE (decl) = type 
-	    = build_pointer_type
-	      (build_type_variant (TREE_TYPE (type),
-				   TREE_READONLY (TREE_TYPE (type)), 1));
-	else
-	  warning_with_decl (decl,
-			     (IDENTIFIER_POINTER (name)[0] == 'n'
-			      || IDENTIFIER_POINTER (name)[2] == 'n')
-			     ? "`noreturn' attribute ignored"
-			     : "`volatile' attribute ignored");
-      }
-    else if (name == get_identifier ("const")
-	     || name == get_identifier ("__const__"))
-      {
-	if (TREE_CODE (decl) == FUNCTION_DECL)
-	  TREE_READONLY (decl) = 1;
-	else if (TREE_CODE (type) == POINTER_TYPE
-		 && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
-	  TREE_TYPE (decl) = type
-	    = build_pointer_type
-	      (build_type_variant (TREE_TYPE (type), 1,
-				   TREE_THIS_VOLATILE (TREE_TYPE (type))));
-	else
-	  warning_with_decl (decl, "`const' attribute ignored");
-      }
-    else if (name == get_identifier ("transparent_union")
-	     || name == get_identifier ("__transparent_union__"))
-      {
-	if (TREE_CODE (decl) == PARM_DECL
-	    && TREE_CODE (type) == UNION_TYPE
-	    && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
-	  DECL_TRANSPARENT_UNION (decl) = 1;
-	else if (TREE_CODE (decl) == TYPE_DECL
-		 && TREE_CODE (type) == UNION_TYPE
-		 && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
-	  TYPE_TRANSPARENT_UNION (type) = 1;
-	else
-	  warning_with_decl (decl, "`transparent_union' attribute ignored");
-      }
-    else if (name == get_identifier ("constructor")
-	     || name == get_identifier ("__constructor__"))
-      {
-	if (TREE_CODE (decl) != FUNCTION_DECL
-	    || TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
-	    || decl_function_context (decl))
-	  {
-	    error_with_decl (decl,
-		    "`constructor' attribute meaningless for non-function %s");
-	    continue;
-	  }
-	DECL_STATIC_CONSTRUCTOR (decl) = 1;
-      }
-    else if (name == get_identifier ("destructor")
-	     || name == get_identifier ("__destructor__"))
-      {
-	if (TREE_CODE (decl) != FUNCTION_DECL
-	    || TREE_CODE (TREE_TYPE (decl)) != FUNCTION_TYPE
-	    || decl_function_context (decl))
-	  {
-	    error_with_decl (decl,
-		    "`destructor' attribute meaningless for non-function %s");
-	    continue;
-	  }
-	DECL_STATIC_DESTRUCTOR (decl) = 1;
-      }
-    else if ((args = TREE_CHAIN (name)) != 0
-	     && (name == get_identifier ("mode")
-		 || name == get_identifier ("__mode__"))
-	     && list_length (args) == 1
-	     && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
-      {
-	int i;
-	char *specified_name = IDENTIFIER_POINTER (TREE_VALUE (args));
-	enum machine_mode mode = VOIDmode;
-	tree typefm;
+    {
+      tree name = TREE_PURPOSE (a);
+      tree args = TREE_VALUE (a);
+      int i;
+      enum attrs id;
+      
+      for (i = 0; i < attrtab_idx; i++)
+	if (attrtab[i].name == name)
+	  break;
 
-	/* Give this decl a type with the specified mode.
-	   First check for the special modes.  */
-	if (! strcmp (specified_name, "byte")
-	    || ! strcmp (specified_name, "__byte__"))
-	  mode = byte_mode;
-	else if (!strcmp (specified_name, "word")
-		 || ! strcmp (specified_name, "__word__"))
-	  mode = word_mode;
-	else if (! strcmp (specified_name, "pointer")
-		 || !strcmp (specified_name, "__pointer__"))
-	  mode = ptr_mode;
-	else
-	  for (i = 0; i < NUM_MACHINE_MODES; i++)
-	    if (!strcmp (specified_name, GET_MODE_NAME (i)))
-	      mode = (enum machine_mode) i;
+      if (i == attrtab_idx
+	  && ! valid_machine_attribute (name, args, decl, type))
+	{
+	  warning ("`%s' attribute directive ignored",
+		   IDENTIFIER_POINTER (name));
+	  continue;
+	}
+      else if (attrtab[i].decl_req && decl == 0)
+	{
+	  warning ("`%s' attribute does not apply to types",
+		   IDENTIFIER_POINTER (name));
+	  continue;
+	}
+      else if (list_length (args) < attrtab[i].min
+	       || list_length (args) > attrtab[i].max)
+	{
+	  error ("wrong number of arguments specified for `%s' attribute",
+		 IDENTIFIER_POINTER (name));
+	  continue;
+	}
 
-	if (mode == VOIDmode)
-	  error ("unknown machine mode `%s'", specified_name);
-	else if ((typefm = type_for_mode (mode, TREE_UNSIGNED (type))) == 0)
-	  error ("no data type for mode `%s'", specified_name);
-	else
-	  {
-	    TREE_TYPE (decl) = type = typefm;
-	    DECL_SIZE (decl) = 0;
-	    layout_decl (decl, 0);
-	  }
-      }
-    else if ((!strcmp (IDENTIFIER_POINTER (name), "section")
-	      || !strcmp (IDENTIFIER_POINTER (name), "__section__"))
-	     && list_length (args) == 1
-	     && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
-      {
+      id = attrtab[i].id;
+      switch (id)
+	{
+	case A_PACKED:
+	  if (TREE_CODE (decl) == FIELD_DECL)
+	    DECL_PACKED (decl) = 1;
+	  /* We can't set DECL_PACKED for a VAR_DECL, because the bit is
+	     used for DECL_REGISTER.  It wouldn't mean anything anyway.  */
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_NORETURN:
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    TREE_THIS_VOLATILE (decl) = 1;
+	  else if (TREE_CODE (type) == POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+	    TREE_TYPE (decl) = type 
+	      = build_pointer_type
+		(build_type_variant (TREE_TYPE (type),
+				     TREE_READONLY (TREE_TYPE (type)), 1));
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_CONST:
+	  if (TREE_CODE (decl) == FUNCTION_DECL)
+	    TREE_READONLY (decl) = 1;
+	  else if (TREE_CODE (type) == POINTER_TYPE
+		   && TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
+	    TREE_TYPE (decl) = type
+	      = build_pointer_type
+		(build_type_variant (TREE_TYPE (type), 1,
+				     TREE_THIS_VOLATILE (TREE_TYPE (type))));
+	  else
+	    warning ( "`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_T_UNION:
+	  if (decl != 0 && TREE_CODE (decl) == PARM_DECL
+	      && TREE_CODE (type) == UNION_TYPE
+	      && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
+	    DECL_TRANSPARENT_UNION (decl) = 1;
+	  else if (is_type
+		   && TREE_CODE (type) == UNION_TYPE
+		   && TYPE_MODE (type) == DECL_MODE (TYPE_FIELDS (type)))
+	    TYPE_TRANSPARENT_UNION (type) = 1;
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_CONSTRUCTOR:
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && TREE_CODE (type) == FUNCTION_TYPE
+	      && decl_function_context (decl) == 0)
+	    DECL_STATIC_CONSTRUCTOR (decl) = 1;
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_DESTRUCTOR:
+	  if (TREE_CODE (decl) == FUNCTION_DECL
+	      && TREE_CODE (type) == FUNCTION_TYPE
+	      && decl_function_context (decl) == 0)
+	    DECL_STATIC_DESTRUCTOR (decl) = 1;
+	  else
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  break;
+
+	case A_MODE:
+	  if (TREE_CODE (TREE_VALUE (args)) != IDENTIFIER_NODE)
+	    warning ("`%s' attribute ignored", IDENTIFIER_POINTER (name));
+	  else
+	    {
+	      int j;
+	      char *p = IDENTIFIER_POINTER (TREE_VALUE (args));
+	      int len = strlen (p);
+	      enum machine_mode mode = VOIDmode;
+	      tree typefm;
+
+	      if (len > 4 && p[0] == '_' && p[1] == '_'
+		  && p[len - 1] == '_' && p[len - 2] == '_')
+		{
+		  char *newp = (char *) alloca (len - 2);
+
+		  strcpy (newp, &p[2]);
+		  newp[len - 4] = '\0';
+		  p = newp;
+		}
+
+	      /* Give this decl a type with the specified mode.
+		 First check for the special modes.  */
+	      if (! strcmp (p, "byte"))
+		mode = byte_mode;
+	      else if (!strcmp (p, "word"))
+		mode = word_mode;
+	      else if (! strcmp (p, "pointer"))
+		mode = ptr_mode;
+	      else
+		for (j = 0; j < NUM_MACHINE_MODES; j++)
+		  if (!strcmp (p, GET_MODE_NAME (j)))
+		    mode = (enum machine_mode) j;
+
+	      if (mode == VOIDmode)
+		error ("unknown machine mode `%s'", p);
+	      else if (0 == (typefm = type_for_mode (mode,
+						     TREE_UNSIGNED (type))))
+		error ("no data type for mode `%s'", p);
+	      else
+		{
+		  TREE_TYPE (decl) = type = typefm;
+		  DECL_SIZE (decl) = 0;
+		  layout_decl (decl, 0);
+		}
+	    }
+	  break;
+
+	case A_SECTION:
 #ifdef ASM_OUTPUT_SECTION_NAME
-	if (TREE_CODE (decl) == FUNCTION_DECL || TREE_CODE (decl) == VAR_DECL)
-	  {
-	    if (TREE_CODE (decl) == VAR_DECL 
-                && current_function_decl != NULL_TREE)
-	      error_with_decl (decl,
-			       "section attribute cannot be specified for local variables");
-	    /* The decl may have already been given a section attribute from
-	       a previous declaration.  Ensure they match.  */
-	    else if (DECL_SECTION_NAME (decl) != NULL_TREE
-		     && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
-				TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
-	      error_with_decl (decl,
-			       "section of `%s' conflicts with previous declaration");
-	    else
-	      DECL_SECTION_NAME (decl) = TREE_VALUE (args);
-	  }
-	else
-	  error_with_decl (decl,
+	  if ((TREE_CODE (decl) == FUNCTION_DECL
+	       || TREE_CODE (decl) == VAR_DECL)
+	      && TREE_CODE (TREE_VALUE (args)) == STRING_CST)
+	    {
+	      if (TREE_CODE (decl) == VAR_DECL 
+		  && current_function_decl != NULL_TREE)
+		error_with_decl (decl,
+		  "section attribute cannot be specified for local variables");
+	      /* The decl may have already been given a section attribute from
+		 a previous declaration.  Ensure they match.  */
+	      else if (DECL_SECTION_NAME (decl) != NULL_TREE
+		       && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
+				  TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
+		error_with_decl (node,
+				 "section of `%s' conflicts with previous declaration");
+	      else
+		DECL_SECTION_NAME (decl) = TREE_VALUE (args);
+	    }
+	  else
+	    error_with_decl (node,
 			   "section attribute not allowed for `%s'");
 #else
-	error_with_decl (decl, "section attributes are not supported for this target");
+	  error_with_decl (node,
+		  "section attributes are not supported for this target");
 #endif
-      }
-    else if ((!strcmp (IDENTIFIER_POINTER (name), "aligned")
-	      || !strcmp (IDENTIFIER_POINTER (name), "__aligned__"))
-	     && list_length (args) == 1
-	     && TREE_CODE (TREE_VALUE (args)) == INTEGER_CST)
-      {
-	tree align_expr = TREE_VALUE (args);
-	int align;
+	  break;
 
-	/* Strip any NOPs of any kind.  */
-	while (TREE_CODE (align_expr) == NOP_EXPR
-	       || TREE_CODE (align_expr) == CONVERT_EXPR
-	       || TREE_CODE (align_expr) == NON_LVALUE_EXPR)
-	  align_expr = TREE_OPERAND (align_expr, 0);
-
-	if (TREE_CODE (align_expr) != INTEGER_CST)
+	case A_ALIGNED:
 	  {
-	    error_with_decl (decl,
-			     "requested alignment of `%s' is not a constant");
-	    continue;
-	  }
+	    tree align_expr
+	      = args ? TREE_VALUE (args) : size_int (BIGGEST_ALIGNMENT);
+	    int align;
 
-	align = TREE_INT_CST_LOW (align_expr) * BITS_PER_UNIT;
-	
-	if (exact_log2 (align) == -1)
-	  error_with_decl (decl,
-			   "requested alignment of `%s' is not a power of 2");
-	else if (TREE_CODE (decl) == TYPE_DECL)
-	  TYPE_ALIGN (TREE_TYPE (decl)) = align;
-	else if (TREE_CODE (decl) != VAR_DECL
-		 && TREE_CODE (decl) != FIELD_DECL)
-	  error_with_decl (decl,
-			   "alignment may not be specified for `%s'");
-	else
-	  DECL_ALIGN (decl) = align;
-      }
-    else if ((!strcmp (IDENTIFIER_POINTER (name), "format")
-	      || !strcmp (IDENTIFIER_POINTER (name), "__format__"))
-	     && list_length (args) == 3
-	     && TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE
-	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (args))) == INTEGER_CST
-	     && TREE_CODE (TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)))) 
-                == INTEGER_CST )
-      {
-        tree format_type = TREE_VALUE (args);
-	tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
-	tree first_arg_num_expr = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
-	int format_num;
-	int first_arg_num;
-	int is_scan;
-	tree argument;
-	int arg_num;
-	
-	if (TREE_CODE (decl) != FUNCTION_DECL)
-	  {
-	    error_with_decl (decl,
-			     "argument format specified for non-function `%s'");
-	    continue;
-	  }
-	
-	if (!strcmp (IDENTIFIER_POINTER (format_type), "printf")
-	    || !strcmp (IDENTIFIER_POINTER (format_type), "__printf__"))
-	  is_scan = 0;
-	else if (!strcmp (IDENTIFIER_POINTER (format_type), "scanf")
-		 || !strcmp (IDENTIFIER_POINTER (format_type), "__scanf__"))
-	  is_scan = 1;
-	else
-	  {
-	    error_with_decl (decl, "unrecognized format specifier for `%s'");
-	    continue;
-	  }
-	
-	/* Strip any conversions from the string index and first arg number
-	   and verify they are constants.  */
-	while (TREE_CODE (format_num_expr) == NOP_EXPR
-	       || TREE_CODE (format_num_expr) == CONVERT_EXPR
-	       || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
-	  format_num_expr = TREE_OPERAND (format_num_expr, 0);
-
-	while (TREE_CODE (first_arg_num_expr) == NOP_EXPR
-	       || TREE_CODE (first_arg_num_expr) == CONVERT_EXPR
-	       || TREE_CODE (first_arg_num_expr) == NON_LVALUE_EXPR)
-	  first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
-
-	if (TREE_CODE (format_num_expr) != INTEGER_CST
-	    || TREE_CODE (first_arg_num_expr) != INTEGER_CST)
-	  {
-	    error_with_decl (decl,
-		   "format string for `%s' has non-constant operand number");
-	    continue;
-	  }
-
-	format_num = TREE_INT_CST_LOW (format_num_expr);
-	first_arg_num = TREE_INT_CST_LOW (first_arg_num_expr);
-	if (first_arg_num != 0 && first_arg_num <= format_num)
-	  {
-	    error_with_decl (decl,
-	      "format string arg follows the args to be formatted, for `%s'");
-	    continue;
-	  }
-
-	/* If a parameter list is specified, verify that the format_num
-	   argument is actually a string, in case the format attribute
-	   is in error.  */
-	argument = TYPE_ARG_TYPES (type);
-	if (argument)
-	  {
-	    for (arg_num = 1; ; ++arg_num)
+	    /* Strip any NOPs of any kind.  */
+	    while (TREE_CODE (align_expr) == NOP_EXPR
+		   || TREE_CODE (align_expr) == CONVERT_EXPR
+		   || TREE_CODE (align_expr) == NON_LVALUE_EXPR)
+	      align_expr = TREE_OPERAND (align_expr, 0);
+	  
+	    if (TREE_CODE (align_expr) != INTEGER_CST)
 	      {
-		if (argument == 0 || arg_num == format_num)
-		  break;
-		argument = TREE_CHAIN (argument);
-	      }
-	    if (! argument
-		|| TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
-		|| (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
-		    != char_type_node))
-	      {
-		error_with_decl (decl,
-			     "format string arg not a string type, for `%s'");
+		error ("requested alignment is not a constant");
 		continue;
 	      }
-	    if (first_arg_num != 0)
+
+	    align = TREE_INT_CST_LOW (align_expr) * BITS_PER_UNIT;
+
+	    if (exact_log2 (align) == -1)
+	      error ("requested alignment is not a power of 2");
+	    else if (is_type)
+	      TYPE_ALIGN (TREE_TYPE (decl)) = align;
+	    else if (TREE_CODE (decl) != VAR_DECL
+		     && TREE_CODE (decl) != FIELD_DECL)
+	      error_with_decl (decl,
+			       "alignment may not be specified for `%s'");
+	    else
+	      DECL_ALIGN (decl) = align;
+	  }
+	  break;
+
+	case A_FORMAT:
+	  {
+	    tree format_type = TREE_VALUE (args);
+	    tree format_num_expr = TREE_VALUE (TREE_CHAIN (args));
+	    tree first_arg_num_expr
+	      = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (args)));
+	    int format_num;
+	    int first_arg_num;
+	    int is_scan;
+	    tree argument;
+	    int arg_num;
+	
+	    if (TREE_CODE (decl) != FUNCTION_DECL)
 	      {
-		/* Verify that first_arg_num points to the last arg, the ... */
-		while (argument)
-		  arg_num++, argument = TREE_CHAIN (argument);
-		if (arg_num != first_arg_num)
+		error_with_decl (decl,
+			 "argument format specified for non-function `%s'");
+		continue;
+	      }
+	
+	    if (TREE_CODE (format_type) == IDENTIFIER_NODE
+		&& (!strcmp (IDENTIFIER_POINTER (format_type), "printf")
+		    || !strcmp (IDENTIFIER_POINTER (format_type),
+				"__printf__")))
+	      is_scan = 0;
+	    else if (TREE_CODE (format_type) == IDENTIFIER_NODE
+		     && (!strcmp (IDENTIFIER_POINTER (format_type), "scanf")
+			 || !strcmp (IDENTIFIER_POINTER (format_type),
+				     "__scanf__")))
+	      is_scan = 1;
+	    else
+	      {
+		error ("unrecognized format specifier for `%s'");
+		continue;
+	      }
+
+	    /* Strip any conversions from the string index and first arg number
+	       and verify they are constants.  */
+	    while (TREE_CODE (format_num_expr) == NOP_EXPR
+		   || TREE_CODE (format_num_expr) == CONVERT_EXPR
+		   || TREE_CODE (format_num_expr) == NON_LVALUE_EXPR)
+	      format_num_expr = TREE_OPERAND (format_num_expr, 0);
+
+	    while (TREE_CODE (first_arg_num_expr) == NOP_EXPR
+		   || TREE_CODE (first_arg_num_expr) == CONVERT_EXPR
+		   || TREE_CODE (first_arg_num_expr) == NON_LVALUE_EXPR)
+	      first_arg_num_expr = TREE_OPERAND (first_arg_num_expr, 0);
+
+	    if (TREE_CODE (format_num_expr) != INTEGER_CST
+		|| TREE_CODE (first_arg_num_expr) != INTEGER_CST)
+	      {
+		error ("format string has non-constant operand number");
+		continue;
+	      }
+
+	    format_num = TREE_INT_CST_LOW (format_num_expr);
+	    first_arg_num = TREE_INT_CST_LOW (first_arg_num_expr);
+	    if (first_arg_num != 0 && first_arg_num <= format_num)
+	      {
+		error ("format string arg follows the args to be formatted");
+		continue;
+	      }
+
+	    /* If a parameter list is specified, verify that the format_num
+	       argument is actually a string, in case the format attribute
+	       is in error.  */
+	    argument = TYPE_ARG_TYPES (type);
+	    if (argument)
+	      {
+		for (arg_num = 1; ; ++arg_num)
 		  {
-		    error_with_decl (decl,
-				 "args to be formatted is not ..., for `%s'");
+		    if (argument == 0 || arg_num == format_num)
+		      break;
+		    argument = TREE_CHAIN (argument);
+		  }
+		if (! argument
+		    || TREE_CODE (TREE_VALUE (argument)) != POINTER_TYPE
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_VALUE (argument)))
+		      != char_type_node))
+		  {
+		    error ("format string arg not a string type");
 		    continue;
 		  }
+		if (first_arg_num != 0)
+		  {
+		    /* Verify that first_arg_num points to the last arg,
+		       the ... */
+		    while (argument)
+		      arg_num++, argument = TREE_CHAIN (argument);
+		  if (arg_num != first_arg_num)
+		    {
+		      error ("args to be formatted is not ...");
+		      continue;
+		    }
+		  }
 	      }
+
+	    record_function_format (DECL_NAME (decl),
+				    DECL_ASSEMBLER_NAME (decl),
+				    is_scan, format_num, first_arg_num);
+	    break;
 	  }
-
-	record_function_format (DECL_NAME (decl), DECL_ASSEMBLER_NAME (decl),
-				is_scan, format_num, first_arg_num);
-      }
-    else if (valid_machine_attribute (name, decl, type))
-      ;
-    else
-      warning ("`%s' attribute directive ignored",
-	       IDENTIFIER_POINTER (name));
-
+	}
+    }
 }
 
 /* Check a printf/fprintf/sprintf/scanf/fscanf/sscanf format against
