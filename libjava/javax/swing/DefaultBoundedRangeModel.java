@@ -334,5 +334,14 @@ public class DefaultBoundedRangeModel implements BoundedRangeModel, Serializable
 		return listenerList.getListeners(c);
 	} // getListeners()
 
+	/**
+	 * getChangeListeners
+	 */
+	public ChangeListener[] getChangeListeners()
+	{
+	  // FIXME: implement this
+	  return null;
+	}
+
 
 } // DefaultBoundedRangeModel

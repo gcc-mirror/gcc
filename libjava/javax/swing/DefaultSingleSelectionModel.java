@@ -175,5 +175,14 @@ public class DefaultSingleSelectionModel implements
 		return listenerList.getListeners(listenerClass);
 	} // getListeners()
 
+	/**
+	 * getChangeListeners
+	 */
+	public ChangeListener[] getChangeListeners()
+	{
+	  // FIXME: implement this
+	  return null;
+	}
+
 
 } // DefaultSingleSelectionModel
