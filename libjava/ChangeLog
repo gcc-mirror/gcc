@@ -1,3 +1,8 @@
+2001-02-14  Andrew Haley  <aph@redhat.com>
+
+	* include/i386-signal.h (INIT_SEGV): Use a direct system call to
+	set the handler.
+
 2001-02-15  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* gnu/awt/j2d/DirectRasterGraphics.java (clone): Hoist to public.
