@@ -2,6 +2,12 @@ dnl Process this with autoconf to create configure
 AC_INIT(fficonfig.h.in)
 AM_CONFIG_HEADER(fficonfig.h)
 
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.
+ORIGINAL_LD_FOR_MULTILIBS=$LD
+
 dnl Default to --enable-multilib
 AC_ARG_ENABLE(multilib,
 [  --enable-multilib       build many library versions (default)],
@@ -156,6 +162,7 @@ fi
 AC_OUTPUT(include/Makefile include/ffi.h Makefile,
 [
 if test -n "$CONFIG_FILES"; then
+   LD="${ORIGINAL_LD_FOR_MULTILIBS}"
    ac_file=Makefile . ${libffi_basedir}/../config-ml.in
 fi
 ],

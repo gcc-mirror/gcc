@@ -1,5 +1,5 @@
 # Process this file with autoconf to produce a configure script.
-#   Copyright (C) 1995, 1997, 1998, 1999 Free Software Foundation, Inc.
+#   Copyright (C) 1995, 1997, 1998, 1999, 2002 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -21,6 +21,12 @@
 
 AC_PREREQ(2.13)
 AC_INIT(libF77/Version.c)
+
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.
+ORIGINAL_LD_FOR_MULTILIBS=$LD
 
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$target}
@@ -113,6 +119,7 @@ AC_CONFIG_SUBDIRS(libU77 libI77 libF77)
 AC_OUTPUT(Makefile g2c.h:g2c.hin,
  [test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
 if test -n "$CONFIG_FILES"; then
+  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
   if test -n "${with_target_subdir}"; then
     # FIXME: We shouldn't need to set ac_file
     ac_file=Makefile

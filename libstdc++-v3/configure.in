@@ -4,6 +4,12 @@
 AC_PREREQ(2.13)
 AC_INIT(src/ios.cc)
 
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.
+ORIGINAL_LD_FOR_MULTILIBS=$LD
+
 PACKAGE=libstdc++
 AC_SUBST(PACKAGE)
 # For typical GNU versioning info, format is MAJOR.MINOR.MICRO
@@ -347,6 +353,7 @@ AC_OUTPUT(Makefile \
     libmath/Makefile libio/Makefile libsupc++/Makefile \
     po/Makefile testsuite/Makefile mkcheck testsuite_flags,
 [if test -n "$CONFIG_FILES"; then
+  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile
   grep '^MULTISUBDIR =' Makefile >> libsupc++/Makefile

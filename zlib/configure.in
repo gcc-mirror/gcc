@@ -2,6 +2,12 @@ dnl Process this with autoconf to create configure
 
 AC_INIT(zlib.h)
 
+# This works around the fact that libtool configuration may change LD
+# for this particular configuration, but some shells, instead of
+# keeping the changes in LD private, export them just because LD is
+# exported.
+ORIGINAL_LD_FOR_MULTILIBS=$LD
+
 dnl We may get other options which we dont document:
 dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
 
@@ -118,6 +124,7 @@ fi
 
 AC_OUTPUT(Makefile,
 [if test -n "$CONFIG_FILES"; then
+  LD="${ORIGINAL_LD_FOR_MULTILIBS}"
   ac_file=Makefile . ${zlib_basedir}/../config-ml.in
 fi],
 srcdir=${srcdir}
