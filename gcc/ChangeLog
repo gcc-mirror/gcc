@@ -1,3 +1,19 @@
+2003-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.in (--enable-checking): Add fold category.
+	(ENABLE_FOLD_CHECKING): Define if requested.
+	* configure: Rebuilt.
+	* config.in: Rebuilt.
+	* doc/install.texi: Document it.
+	* fold-const.c: Include md5.h.
+	[ENABLE_FOLD_CHECKING] (fold): Define to fold_1.
+	[ENABLE_FOLD_CHECKING] (fold, fold_checksum_tree, fold_check_failed,
+	print_fold_checksum): New functions.
+
+	* fold-const.c (fold): Never modify argument passed to fold, instead
+	change a copy and return it.
+	* convert.c (convert_to_integer): Likewise.
+
 2003-07-27  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* fixinc/fixinc.svr4: Remove dead code.  Remove now-unnecessary 

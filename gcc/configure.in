@@ -318,7 +318,7 @@ AC_ARG_ENABLE(checking,
 [  --enable-checking[=LIST]
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: misc,tree,rtl,rtlflag,gc,gcac;
+			  Categories are: misc,tree,rtl,rtlflag,gc,gcac,fold;
 			  default is misc,tree,gc,rtlflag],
 [ac_checking=
 ac_tree_checking=
@@ -326,6 +326,7 @@ ac_rtl_checking=
 ac_rtlflag_checking=
 ac_gc_checking=
 ac_gc_always_collect=
+ac_fold_checking=
 case "${enableval}" in
 yes)	ac_checking=1 ; ac_tree_checking=1 ; ac_gc_checking=1 ;
 	ac_rtlflag_checking=1 ;;
@@ -342,6 +343,7 @@ no)	;;
 		rtl)	ac_rtl_checking=1 ;;
 		gc)	ac_gc_checking=1 ;;
 		gcac)	ac_gc_always_collect=1 ;;
+		fold)	ac_fold_checking=1 ;;
 		valgrind)	ac_checking_valgrind=1 ;;
 		*)	AC_MSG_ERROR(unknown check category $check) ;;
 		esac
@@ -387,6 +389,11 @@ if test x$ac_gc_always_collect != x ; then
 [Define if you want the garbage collector to operate in maximally
    paranoid mode, validating the entire heap and collecting garbage at
    every opportunity.  This is extremely expensive.])
+fi
+if test x$ac_fold_checking != x ; then
+  AC_DEFINE(ENABLE_FOLD_CHECKING, 1,
+[Define if you want fold checked that it never destructs its argument.
+   This is quite expensive.])
 fi
 valgrind_path_defines=
 valgrind_command=

@@ -56,6 +56,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "hashtab.h"
 #include "langhooks.h"
+#include "md5.h"
 
 static void encode (HOST_WIDE_INT *, unsigned HOST_WIDE_INT, HOST_WIDE_INT);
 static void decode (HOST_WIDE_INT *, unsigned HOST_WIDE_INT *, HOST_WIDE_INT *);
@@ -4921,7 +4922,7 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
     }
   return NULL_TREE;
 }
- 
+
 /* Perform constant folding and related simplification of EXPR.
    The related simplifications include x*1 => x, x*0 => 0, etc.,
    and application of the associative law.
@@ -4930,10 +4931,15 @@ fold_single_bit_test (enum tree_code code, tree arg0, tree arg1,
    We cannot simplify through a CONVERT_EXPR, FIX_EXPR or FLOAT_EXPR,
    but we can constant-fold them if they have constant operands.  */
 
+#ifdef ENABLE_FOLD_CHECKING
+# define fold(x) fold_1 (x)
+static tree fold_1 (tree);
+static
+#endif
 tree
 fold (tree expr)
 {
-  tree t = expr;
+  tree t = expr, orig_t;
   tree t1 = NULL_TREE;
   tree tem;
   tree type = TREE_TYPE (expr);
@@ -4957,6 +4963,7 @@ fold (tree expr)
 #ifdef MAX_INTEGER_COMPUTATION_MODE
   check_max_integer_computation_mode (expr);
 #endif
+  orig_t = t;
 
   if (code == NOP_EXPR || code == FLOAT_EXPR || code == CONVERT_EXPR)
     {
@@ -5028,12 +5035,15 @@ fold (tree expr)
   if ((code == PLUS_EXPR || code == MULT_EXPR || code == MIN_EXPR
        || code == MAX_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR
        || code == BIT_AND_EXPR)
-      && (TREE_CODE (arg0) == INTEGER_CST || TREE_CODE (arg0) == REAL_CST))
+      && ((TREE_CODE (arg0) == INTEGER_CST && TREE_CODE (arg1) != INTEGER_CST)
+	  || (TREE_CODE (arg0) == REAL_CST && TREE_CODE (arg1) != REAL_CST)))
     {
       tem = arg0; arg0 = arg1; arg1 = tem;
 
-      tem = TREE_OPERAND (t, 0); TREE_OPERAND (t, 0) = TREE_OPERAND (t, 1);
-      TREE_OPERAND (t, 1) = tem;
+      if (t == orig_t)
+	t = copy_node (t);
+      TREE_OPERAND (t, 0) = arg0;
+      TREE_OPERAND (t, 1) = arg1;
     }
 
   /* Now WINS is set as described above,
@@ -5282,6 +5292,8 @@ fold (tree expr)
 	  /* Don't leave an assignment inside a conversion
 	     unless assigning a bitfield.  */
 	  tree prev = TREE_OPERAND (t, 0);
+	  if (t == orig_t)
+	    t = copy_node (t);
 	  TREE_OPERAND (t, 0) = TREE_OPERAND (prev, 1);
 	  /* First do the assignment, then return converted constant.  */
 	  t = build (COMPOUND_EXPR, TREE_TYPE (t), prev, fold (t));
@@ -5334,7 +5346,12 @@ fold (tree expr)
 
       if (!wins)
 	{
-	  TREE_CONSTANT (t) = TREE_CONSTANT (arg0);
+	  if (TREE_CONSTANT (t) != TREE_CONSTANT (arg0))
+	    {
+	      if (t == orig_t)
+		t = copy_node (t);
+	      TREE_CONSTANT (t) = TREE_CONSTANT (arg0);
+	    }
 	  return t;
 	}
       return fold_convert (t, arg0);
@@ -5356,7 +5373,12 @@ fold (tree expr)
       return t;
 
     case RANGE_EXPR:
-      TREE_CONSTANT (t) = wins;
+      if (TREE_CONSTANT (t) != wins)
+	{
+	  if (t == orig_t)
+	    t = copy_node (t);
+	  TREE_CONSTANT (t) = wins;
+	}
       return t;
 
     case NEGATE_EXPR:
@@ -6379,6 +6401,8 @@ fold (tree expr)
 	 RROTATE_EXPR by a new constant.  */
       if (code == LROTATE_EXPR && TREE_CODE (arg1) == INTEGER_CST)
 	{
+	  if (t == orig_t)
+	    t = copy_node (t);
 	  TREE_SET_CODE (t, RROTATE_EXPR);
 	  code = RROTATE_EXPR;
 	  TREE_OPERAND (t, 1) = arg1
@@ -6591,6 +6615,8 @@ fold (tree expr)
 	  || (TREE_CODE (arg0) == REAL_CST
 	      && TREE_CODE (arg0) != REAL_CST))
 	{
+	  if (t == orig_t)
+	    t = copy_node (t);
 	  TREE_OPERAND (t, 0) = arg1;
 	  TREE_OPERAND (t, 1) = arg0;
 	  arg0 = TREE_OPERAND (t, 0);
@@ -6907,6 +6933,8 @@ fold (tree expr)
 					   arg0);
 		case GE_EXPR:
 		  code = EQ_EXPR;
+		  if (t == orig_t)
+		    t = copy_node (t);
 		  TREE_SET_CODE (t, EQ_EXPR);
 		  break;
 		case LE_EXPR:
@@ -6915,6 +6943,8 @@ fold (tree expr)
 					   arg0);
 		case LT_EXPR:
 		  code = NE_EXPR;
+		  if (t == orig_t)
+		    t = copy_node (t);
 		  TREE_SET_CODE (t, NE_EXPR);
 		  break;
 
@@ -6951,6 +6981,8 @@ fold (tree expr)
 					   arg0);
 		case LE_EXPR:
 		  code = EQ_EXPR;
+		  if (t == orig_t)
+		    t = copy_node (t);
 		  TREE_SET_CODE (t, EQ_EXPR);
 		  break;
 
@@ -6960,6 +6992,8 @@ fold (tree expr)
 					   arg0);
 		case GT_EXPR:
 		  code = NE_EXPR;
+		  if (t == orig_t)
+		    t = copy_node (t);
 		  TREE_SET_CODE (t, NE_EXPR);
 		  break;
 
@@ -7185,6 +7219,8 @@ fold (tree expr)
 		  || ! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
 		return constant_boolean_node (1, type);
 	      code = EQ_EXPR;
+	      if (t == orig_t)
+		t = copy_node (t);
 	      TREE_SET_CODE (t, code);
 	      break;
 
@@ -7901,6 +7937,199 @@ fold (tree expr)
       return t;
     } /* switch (code) */
 }
+
+#ifdef ENABLE_FOLD_CHECKING
+#undef fold
+
+static void fold_checksum_tree (tree, struct md5_ctx *, htab_t);
+static void fold_check_failed (tree, tree);
+void print_fold_checksum (tree);
+
+/* When --enable-checking=fold, compute a digest of expr before
+   and after actual fold call to see if fold did not accidentally
+   change original expr.  */
+
+tree
+fold (tree expr)
+{
+  tree ret;
+  struct md5_ctx ctx;
+  unsigned char checksum_before[16], checksum_after[16];
+  htab_t ht;
+
+  ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (expr, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_before);
+  htab_empty (ht);
+
+  ret = fold_1 (expr);
+
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (expr, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum_after);
+  htab_delete (ht);
+
+  if (memcmp (checksum_before, checksum_after, 16))
+    fold_check_failed (expr, ret);
+
+  return ret;
+}
+
+void
+print_fold_checksum (tree expr)
+{
+  struct md5_ctx ctx;
+  unsigned char checksum[16], cnt;
+  htab_t ht;
+
+  ht = htab_create (32, htab_hash_pointer, htab_eq_pointer, NULL);
+  md5_init_ctx (&ctx);
+  fold_checksum_tree (expr, &ctx, ht);
+  md5_finish_ctx (&ctx, checksum);
+  htab_delete (ht);
+  for (cnt = 0; cnt < 16; ++cnt)
+    fprintf (stderr, "%02x", checksum[cnt]);
+  putc ('\n', stderr);
+}
+
+static void
+fold_check_failed (tree expr ATTRIBUTE_UNUSED, tree ret ATTRIBUTE_UNUSED)
+{
+  internal_error ("fold check: original tree changed by fold");
+}
+
+static void
+fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
+{
+  void **slot;
+  enum tree_code code;
+  char buf[sizeof (struct tree_decl)];
+  int i, len;
+
+  if (sizeof (struct tree_exp) + 5 * sizeof (tree)
+      > sizeof (struct tree_decl)
+      || sizeof (struct tree_type) > sizeof (struct tree_decl))
+    abort ();
+  if (expr == NULL)
+    return;
+  slot = htab_find_slot (ht, expr, INSERT);
+  if (*slot != NULL)
+    return;
+  *slot = expr;
+  code = TREE_CODE (expr);
+  if (code == SAVE_EXPR && SAVE_EXPR_NOPLACEHOLDER (expr))
+    {
+      /* Allow SAVE_EXPR_NOPLACEHOLDER flag to be modified.  */
+      memcpy (buf, expr, tree_size (expr));
+      expr = (tree) buf;
+      SAVE_EXPR_NOPLACEHOLDER (expr) = 0;
+    }
+  else if (TREE_CODE_CLASS (code) == 'd' && DECL_ASSEMBLER_NAME_SET_P (expr))
+    {
+      /* Allow DECL_ASSEMBLER_NAME to be modified.  */
+      memcpy (buf, expr, tree_size (expr));
+      expr = (tree) buf;
+      SET_DECL_ASSEMBLER_NAME (expr, NULL);
+    }
+  else if (TREE_CODE_CLASS (code) == 't'
+	   && (TYPE_POINTER_TO (expr) || TYPE_REFERENCE_TO (expr)))
+    {
+      /* Allow TYPE_POINTER_TO and TYPE_REFERENCE_TO to be modified.  */
+      memcpy (buf, expr, tree_size (expr));
+      expr = (tree) buf;
+      TYPE_POINTER_TO (expr) = NULL;
+      TYPE_REFERENCE_TO (expr) = NULL;
+    }
+  md5_process_bytes (expr, tree_size (expr), ctx);
+  fold_checksum_tree (TREE_TYPE (expr), ctx, ht);
+  if (TREE_CODE_CLASS (code) != 't' && TREE_CODE_CLASS (code) != 'd')
+    fold_checksum_tree (TREE_CHAIN (expr), ctx, ht);
+  len = TREE_CODE_LENGTH (code);
+  switch (TREE_CODE_CLASS (code))
+    {
+    case 'c':
+      switch (code)
+	{
+	case STRING_CST:
+	  md5_process_bytes (TREE_STRING_POINTER (expr),
+			     TREE_STRING_LENGTH (expr), ctx);
+	  break;
+	case COMPLEX_CST:
+	  fold_checksum_tree (TREE_REALPART (expr), ctx, ht);
+	  fold_checksum_tree (TREE_IMAGPART (expr), ctx, ht);
+	  break;
+	case VECTOR_CST:
+	  fold_checksum_tree (TREE_VECTOR_CST_ELTS (expr), ctx, ht);
+	  break;
+	default:
+	  break;
+	}
+      break;
+    case 'x':
+      switch (code)
+	{
+	case TREE_LIST:
+	  fold_checksum_tree (TREE_PURPOSE (expr), ctx, ht);
+	  fold_checksum_tree (TREE_VALUE (expr), ctx, ht);
+	  break;
+	case TREE_VEC:
+	  for (i = 0; i < TREE_VEC_LENGTH (expr); ++i)
+	    fold_checksum_tree (TREE_VEC_ELT (expr, i), ctx, ht);
+	  break;
+	default:
+	  break;
+	}
+      break;
+    case 'e':
+      switch (code)
+	{
+	case SAVE_EXPR: len = 2; break;
+	case GOTO_SUBROUTINE_EXPR: len = 0; break;
+	case RTL_EXPR: len = 0; break;
+	case WITH_CLEANUP_EXPR: len = 2; break;
+	default: break;
+	}
+      /* FALLTHROUGH */
+    case 'r':
+    case '<':
+    case '1':
+    case '2':
+    case 's':
+      for (i = 0; i < len; ++i)
+	fold_checksum_tree (TREE_OPERAND (expr, i), ctx, ht);
+      break;
+    case 'd':
+      fold_checksum_tree (DECL_SIZE (expr), ctx, ht);
+      fold_checksum_tree (DECL_SIZE_UNIT (expr), ctx, ht);
+      fold_checksum_tree (DECL_NAME (expr), ctx, ht);
+      fold_checksum_tree (DECL_CONTEXT (expr), ctx, ht);
+      fold_checksum_tree (DECL_ARGUMENTS (expr), ctx, ht);
+      fold_checksum_tree (DECL_RESULT_FLD (expr), ctx, ht);
+      fold_checksum_tree (DECL_INITIAL (expr), ctx, ht);
+      fold_checksum_tree (DECL_ABSTRACT_ORIGIN (expr), ctx, ht);
+      fold_checksum_tree (DECL_SECTION_NAME (expr), ctx, ht);
+      fold_checksum_tree (DECL_ATTRIBUTES (expr), ctx, ht);
+      fold_checksum_tree (DECL_VINDEX (expr), ctx, ht);
+      break;
+    case 't':
+      fold_checksum_tree (TYPE_VALUES (expr), ctx, ht);
+      fold_checksum_tree (TYPE_SIZE (expr), ctx, ht);
+      fold_checksum_tree (TYPE_SIZE_UNIT (expr), ctx, ht);
+      fold_checksum_tree (TYPE_ATTRIBUTES (expr), ctx, ht);
+      fold_checksum_tree (TYPE_NAME (expr), ctx, ht);
+      fold_checksum_tree (TYPE_MIN_VALUE (expr), ctx, ht);
+      fold_checksum_tree (TYPE_MAX_VALUE (expr), ctx, ht);
+      fold_checksum_tree (TYPE_MAIN_VARIANT (expr), ctx, ht);
+      fold_checksum_tree (TYPE_BINFO (expr), ctx, ht);
+      fold_checksum_tree (TYPE_CONTEXT (expr), ctx, ht);
+      break;
+    default:
+      break;
+    }
+}
+
+#endif
 
 /* Perform constant folding and related simplification of intializer
    expression EXPR.  This behaves identically to "fold" but ignores

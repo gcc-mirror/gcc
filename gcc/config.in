@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
+/* config.in.  Generated automatically from configure.in by autoheader.  */
 
 /* Define to the type of elements in the array set by `getgroups'.
    Usually this is either `int' or `gid_t'.  */
@@ -235,6 +235,10 @@
    paranoid mode, validating the entire heap and collecting garbage at
    every opportunity.  This is extremely expensive. */
 #undef ENABLE_GC_ALWAYS_COLLECT
+
+/* Define if you want fold checked that it never destructs its argument.
+   This is quite expensive. */
+#undef ENABLE_FOLD_CHECKING
 
 /* Define if you want to run subprograms and generated programs
    through valgrind (a memory checker).  This is extremely expensive. */

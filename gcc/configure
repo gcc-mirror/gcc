@@ -34,7 +34,7 @@ ac_help="$ac_help
   --enable-checking[=LIST]
 			  enable expensive run-time checks.  With LIST,
 			  enable only specific categories of checks.
-			  Categories are: misc,tree,rtl,rtlflag,gc,gcac;
+			  Categories are: misc,tree,rtl,rtlflag,gc,gcac,fold;
 			  default is misc,tree,gc,rtlflag"
 ac_help="$ac_help
   --enable-coverage[=LEVEL]
@@ -1933,6 +1933,7 @@ ac_rtl_checking=
 ac_rtlflag_checking=
 ac_gc_checking=
 ac_gc_always_collect=
+ac_fold_checking=
 case "${enableval}" in
 yes)	ac_checking=1 ; ac_tree_checking=1 ; ac_gc_checking=1 ;
 	ac_rtlflag_checking=1 ;;
@@ -1949,6 +1950,7 @@ no)	;;
 		rtl)	ac_rtl_checking=1 ;;
 		gc)	ac_gc_checking=1 ;;
 		gcac)	ac_gc_always_collect=1 ;;
+		fold)	ac_fold_checking=1 ;;
 		valgrind)	ac_checking_valgrind=1 ;;
 		*)	{ echo "configure: error: unknown check category $check" 1>&2; exit 1; } ;;
 		esac
@@ -1997,6 +1999,12 @@ fi
 if test x$ac_gc_always_collect != x ; then
   cat >> confdefs.h <<\EOF
 #define ENABLE_GC_ALWAYS_COLLECT 1
+EOF
+
+fi
+if test x$ac_fold_checking != x ; then
+  cat >> confdefs.h <<\EOF
+#define ENABLE_FOLD_CHECKING 1
 EOF
 
 fi
