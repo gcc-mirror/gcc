@@ -20,22 +20,32 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
+#define TARGET_OS_CPP_BUILTINS()			\
+  do							\
+    {							\
+      NETBSD_OS_CPP_BUILTINS_ELF();			\
+      if (TARGET_ARCH64)				\
+	{						\
+	  NETBSD_OS_CPP_BUILTINS_LP64();		\
+	  builtin_define ("__sparc64__");		\
+	  builtin_define ("__sparc_v9__");		\
+	}						\
+      else						\
+	builtin_define ("__sparc");			\
+      builtin_define ("__sparc__");			\
+    }							\
+  while (0)
+
 /* Make sure these are undefined.  */
 #undef MD_EXEC_PREFIX
 #undef MD_STARTFILE_PREFIX
 
+/* Make sure this is undefined.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__sparc__ -D__NetBSD__ -D__ELF__ \
--Asystem=unix -Asystem=NetBSD"
 
-/* CPP defines used for 64 bit code.  */
-#undef CPP_SUBTARGET_SPEC64
-#define CPP_SUBTARGET_SPEC64 \
-  "-D__sparc64__ -D__sparc_v9__ -D_LP64 %{posix:-D_POSIX_SOURCE}"
-
-/* CPP defines used for 32 bit code.  */
-#undef CPP_SUBTARGET_SPEC32
-#define CPP_SUBTARGET_SPEC32 "-D__sparc %{posix:-D_POSIX_SOURCE}"
+/* CPP defines used by all NetBSD targets.  */
+#undef CPP_SUBTARGET_SPEC
+#define CPP_SUBTARGET_SPEC "%(netbsd_cpp_spec)"
 
 /* SIZE_TYPE and PTRDIFF_TYPE are wrong from sparc/sparc.h.  */
 #undef SIZE_TYPE
@@ -230,8 +240,7 @@ Boston, MA 02111-1307, USA.  */
   { "link_arch64",		LINK_ARCH64_SPEC }, \
   { "link_arch_default",	LINK_ARCH_DEFAULT_SPEC }, \
   { "link_arch",		LINK_ARCH_SPEC }, \
-  { "cpp_subtarget_spec32",	CPP_SUBTARGET_SPEC32 }, \
-  { "cpp_subtarget_spec64",	CPP_SUBTARGET_SPEC64 },
+  { "netbsd_cpp_spec",		NETBSD_CPP_SPEC },
 
 
 /* What extra switches do we need?  */
@@ -270,15 +279,6 @@ Boston, MA 02111-1307, USA.  */
 #define MULTILIB_DEFAULTS { "m64" }
 #endif
 
-#undef CPP_SUBTARGET_SPEC
-#if DEFAULT_ARCH32_P
-#define CPP_SUBTARGET_SPEC \
-  "%{m64:%(cpp_subtarget_spec64)}%{!m64:%(cpp_subtarget_spec32)}"
-#else
-#define CPP_SUBTARGET_SPEC \
-  "%{!m32:%(cpp_subtarget_spec64)}%{m32:%(cpp_subtarget_spec32)}"
-#endif
-
 /* Name the port. */
 #undef TARGET_NAME
 #define TARGET_NAME     (DEFAULT_ARCH32_P ? TARGET_NAME32 : TARGET_NAME64)
@@ -300,9 +300,6 @@ Boston, MA 02111-1307, USA.  */
 #undef  CC1_SPEC
 #define CC1_SPEC CC1_SPEC64
 
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC CPP_SUBTARGET_SPEC64
-
 #undef TARGET_NAME
 #define TARGET_NAME     TARGET_NAME64
 
@@ -320,9 +317,6 @@ Boston, MA 02111-1307, USA.  */
 
 #undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
-
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC CPP_SUBTARGET_SPEC32
 
 #undef  CC1_SPEC
 #define CC1_SPEC CC1_SPEC32

@@ -1,10 +1,23 @@
-/* Names to predefine in the preprocessor for this target machine.  */
+#define TARGET_OS_CPP_BUILTINS()			\
+  do							\
+    {							\
+      NETBSD_OS_CPP_BUILTINS_AOUT();			\
+      builtin_define_std ("sparc");			\
+      builtin_assert ("cpu=sparc");			\
+      builtin_assert ("machine=sparc");			\
+    }							\
+  while (0)
 
+/* Make sure this is undefined.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dunix -Dsparc -D__NetBSD__ -Asystem=unix -Asystem=NetBSD -Acpu=sparc -Amachine=sparc"
+
+/* What extra spec entries do we need?  */
+#undef SUBTARGET_EXTRA_SPECS
+#define SUBTARGET_EXTRA_SPECS \
+  { "netbsd_cpp_spec",          NETBSD_CPP_SPEC },
 
 #undef CPP_SPEC
-#define CPP_SPEC "%(cpp_cpu) %{posix:-D_POSIX_SOURCE}"
+#define CPP_SPEC "%(cpp_cpu) %(netbsd_cpp_spec)"
 
 /* Make gcc agree with <machine/ansi.h> */
 

@@ -1,3 +1,17 @@
+2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
+
+	* config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES): Make sure this is undefined.
+	(CPP_SUBTARGET_SPEC64, CPP_SUBTARGET_SPEC32): Remove.
+	(CPP_SUBTARGET_SPEC): Don't provide different versions for
+	default-32 and default-64.  Just always use %(netbsd_cpp_spec).
+	(SUBTARGET_EXTRA_SPECS): Remove cpp_subtarget_spec32 and
+	cpp_subtarget_spec64.  Add netbsd_cpp_spec.
+	* config/sparc/netbsd.h (TARGET_OS_CPP_BUILTINS): Define.
+	(CPP_PREDEFINES): Make sure this is undefined.
+	(SUBTARGET_EXTRA_SPECS): Define.
+	(CPP_SPEC): Use %(netbsd_cpp_spec).
+
 2002-05-29  Jeff Law <law@redhat.com>
 
 	* flow.c (propagate_one_insn): Do not remove a dead insn if it
