@@ -4820,15 +4820,23 @@ fold_inf_compare (code, type, arg0, arg1)
      enum tree_code code;
      tree type, arg0, arg1;
 {
+  enum machine_mode mode;
+  REAL_VALUE_TYPE max;
+  tree temp;
+  bool neg;
+
+  mode = TYPE_MODE (TREE_TYPE (arg0));
+
   /* For negative infinity swap the sense of the comparison.  */
-  if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1)))
+  neg = REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1));
+  if (neg)
     code = swap_tree_comparison (code);
 
   switch (code)
     {
     case GT_EXPR:
       /* x > +Inf is always false, if with ignore sNANs.  */
-      if (HONOR_SNANS (TYPE_MODE (TREE_TYPE (arg0))))
+      if (HONOR_SNANS (mode))
         return NULL_TREE;
       return omit_one_operand (type,
 			       convert (type, integer_zero_node),
@@ -4836,7 +4844,7 @@ fold_inf_compare (code, type, arg0, arg1)
 
     case LE_EXPR:
       /* x <= +Inf is always true, if we don't case about NaNs.  */
-      if (! HONOR_NANS (TYPE_MODE (TREE_TYPE (arg0))))
+      if (! HONOR_NANS (mode))
 	return omit_one_operand (type,
 				 convert (type, integer_one_node),
 				 arg0);
@@ -4850,10 +4858,28 @@ fold_inf_compare (code, type, arg0, arg1)
 	}
       break;
 
-    case EQ_EXPR:  /* ??? x == +Inf is x > DBL_MAX  */
-    case GE_EXPR:  /* ??? x >= +Inf is x > DBL_MAX  */
-    case LT_EXPR:  /* ??? x < +Inf is x <= DBL_MAX  */
-    case NE_EXPR:  /* ??? x != +Inf is !(x > DBL_MAX)  */
+    case EQ_EXPR:
+    case GE_EXPR:
+      /* x == +Inf and x >= +Inf are always equal to x > DBL_MAX.  */
+      real_maxval (&max, neg, mode);
+      return fold (build (neg ? LT_EXPR : GT_EXPR, type,
+			  arg0, build_real (TREE_TYPE (arg0), max)));
+
+    case LT_EXPR:
+      /* x < +Inf is always equal to x <= DBL_MAX.  */
+      real_maxval (&max, neg, mode);
+      return fold (build (neg ? GE_EXPR : LE_EXPR, type,
+			  arg0, build_real (TREE_TYPE (arg0), max)));
+
+    case NE_EXPR:
+      /* x != +Inf is always equal to !(x > DBL_MAX).  */
+      real_maxval (&max, neg, mode);
+      if (! HONOR_NANS (mode))
+	return fold (build (neg ? GE_EXPR : LE_EXPR, type,
+			    arg0, build_real (TREE_TYPE (arg0), max)));
+      temp = fold (build (neg ? LT_EXPR : GT_EXPR, type,
+			  arg0, build_real (TREE_TYPE (arg0), max)));
+      return fold (build1 (TRUTH_NOT_EXPR, type, temp));
 
     default:
       break;

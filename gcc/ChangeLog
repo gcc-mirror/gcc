@@ -1,3 +1,11 @@
+2003-05-22  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_maxval): New function to return the largest finite
+	value representable in a given mode (i.e. FLT_MAX and DBL_MAX).
+	* real.h (real_maxval): Prototype here.
+	* fold-const.c (fold_inf_compare): Transform comparisons against
+	+-Infinity into comparisons against DBL_MAX (or equivalent).
+
 2003-05-22  Mike Stump  <mrs@apple.com>
 
 	* config.gcc (*-*-darwin*): Remove use_collect2=no, as it is the
