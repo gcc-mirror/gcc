@@ -2087,13 +2087,10 @@ generate_local_decl (gfc_symbol * sym)
     {
       if (sym->attr.referenced)
         gfc_get_symbol_decl (sym);
-      else if (sym->attr.dummy)
-        {
-          if (warn_unused_parameter)
+      else if (sym->attr.dummy && warn_unused_parameter)
             warning ("unused parameter `%s'", sym->name);
-        }
       /* Warn for unused variables, but not if they're inside a common
-	 block or are use_associated.  */
+	 block or are use-associated.  */
       else if (warn_unused_variable
 	       && !(sym->attr.in_common || sym->attr.use_assoc))
 	warning ("unused variable `%s'", sym->name); 
@@ -2231,7 +2228,7 @@ gfc_generate_function_code (gfc_namespace * ns)
 
   if (TREE_TYPE (DECL_RESULT (fndecl)) != void_type_node)
     {
-      if (sym->attr.subroutine ||sym == sym->result)
+      if (sym->attr.subroutine || sym == sym->result)
 	{
 	  result = current_fake_result_decl;
 	  current_fake_result_decl = NULL_TREE;
