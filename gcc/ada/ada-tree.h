@@ -182,7 +182,7 @@ struct lang_type GTY(())
 #define TYPE_DIGITS_VALUE(NODE)  \
   ((long) TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)))
 #define SET_TYPE_DIGITS_VALUE(NODE, X)  \
-  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *)(X))
+  (TYPE_LANG_SPECIFIC (INTEGER_TYPE_CHECK (NODE)) = (struct lang_type *)(size_t)(X))
 
 /* For INTEGER_TYPE, stores the RM_Size of the type.  */
 #define TYPE_RM_SIZE_INT(NODE)	TYPE_VALUES (INTEGER_TYPE_CHECK (NODE))
