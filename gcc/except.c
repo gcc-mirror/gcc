@@ -2168,3 +2168,109 @@ expand_builtin_set_eh_regs (handler, offset)
   emit_insn (gen_rtx_USE (VOIDmode, reg1));
   emit_insn (gen_rtx_USE (VOIDmode, reg2));
 }
+
+
+
+/* This contains the code required to verify whether arbitrary instructions
+   are in the same exception region. */
+
+static int *insn_eh_region = (int *)0;
+static int maximum_uid;
+
+static void set_insn_eh_region (first, region_num)
+     rtx *first;
+     int region_num;
+{
+  rtx insn;
+  int rnum;
+
+  for (insn = *first; insn; insn = NEXT_INSN (insn))
+    {
+      if ((GET_CODE (insn) == NOTE) && 
+                        (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_BEG))
+        {
+          rnum = NOTE_BLOCK_NUMBER (insn);
+          insn_eh_region[INSN_UID (insn)] =  rnum;
+          insn = NEXT_INSN (insn);
+          set_insn_eh_region (&insn, rnum);
+          /* Upon return, insn points to the EH_REGION_END of nested region */
+          continue;
+        }
+      insn_eh_region[INSN_UID (insn)] = region_num;
+      if ((GET_CODE (insn) == NOTE) && 
+            (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END))
+        break;
+    }
+  *first = insn;
+}
+
+/* Free the insn table, an make sure it cannot be used again. */
+
+void free_insn_eh_region () 
+{
+  if (!doing_eh (0))
+    return;
+
+  if (insn_eh_region)
+    {
+      free (insn_eh_region);
+      insn_eh_region = (int *)0;
+    }
+}
+
+/* Initialize the table. max_uid must be calculated and handed into 
+   this routine. If it is unavailable, passing a value of 0 will 
+   cause this routine to calculate it as well. */
+
+void init_insn_eh_region (first, max_uid)
+     rtx first;
+     int max_uid;
+{
+  rtx insn;
+
+  if (!doing_eh (0))
+    return;
+
+  if (insn_eh_region)
+    free_insn_eh_region();
+
+  if (max_uid == 0) 
+    for (insn = first; insn; insn = NEXT_INSN (insn))
+      if (INSN_UID (insn) > max_uid)       /* find largest UID */
+        max_uid = INSN_UID (insn);
+
+  maximum_uid = max_uid;
+  insn_eh_region = (int *) malloc ((max_uid + 1) * sizeof (int));
+  insn = first;
+  set_insn_eh_region (&insn, 0);
+}
+
+
+/* Check whether 2 instructions are within the same region. */
+
+int in_same_eh_region(insn1, insn2) 
+     rtx insn1,insn2;
+{
+  int ret, uid1, uid2;
+
+  /* If no exceptions, instructions are always in same region. */
+  if (!doing_eh (0))
+    return 1;
+
+  /* If the table isn't allocated, assume the worst. */
+  if (!insn_eh_region)  
+    return 0;
+
+  uid1 = INSN_UID (insn1);
+  uid2 = INSN_UID (insn2);
+
+  /* if instructions have been allocated beyond the end, either
+     the table is out of date, or this is a late addition, or
+     something... Assume the worst. */
+  if (uid1 > maximum_uid || uid2 > maximum_uid)
+    return 0;
+
+  ret = (insn_eh_region[uid1] == insn_eh_region[uid2]);
+  return ret;
+}
+
