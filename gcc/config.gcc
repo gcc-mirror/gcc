@@ -1248,7 +1248,7 @@ ip2k-*-elf)
 m32r-*-elf*)
 	tm_file="dbxelf.h elfos.h svr4.h ${tm_file}"
 	extra_parts="crtinit.o crtfini.o m32rx/crtinit.o m32rx/crtfini.o"
- 	;;	;;
+ 	;;
 # m68hc11 and m68hc12 share the same machine description.
 m68hc11-*-*|m6811-*-*)
 	tm_file="dbxelf.h elfos.h m68hc11/m68hc11.h"
