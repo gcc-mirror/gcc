@@ -608,8 +608,8 @@ strings will be the same as the ones used by @code{perror}.
 
 If the supplied error number is within the valid range of indices for
 the @code{sys_errlist}, but no message is available for the particular
-error number, then returns the string @samp{"Error NUM"}, where NUM is
-the error number.
+error number, then returns the string @samp{"Error @var{num}"}, where
+@var{num} is the error number.
 
 If the supplied error number is not a valid index into
 @code{sys_errlist}, returns NULL.
@@ -675,14 +675,14 @@ symbolic name of that error number, as found in @file{errno.h}.
 
 If the supplied error number is within the valid range of indices for
 symbolic names, but no name is available for the particular error
-number, then returns the string @samp{"Error NUM"}, where NUM is the
-error number.
+number, then returns the string @samp{"Error @var{num}"}, where @var{num}
+is the error number.
 
 If the supplied error number is not within the range of valid
 indices, then returns NULL.
 
 The contents of the location pointed to are only guaranteed to be
-valid until the next call to strerrno.
+valid until the next call to @code{strerrno}.
 
 @end deftypefn
 
