@@ -822,7 +822,7 @@ libgcc2.a: libgcc2.c libgcc2.ready $(CONFIG_H) $(LIB2FUNCS_EXTRA) \
 # These lines were deleted from above the mv command
 # because ranlibing libgcc.a itself should suffice.
 #	-if [ x${HPUX_GAS} = x ] ; then \
-#	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc2.a; else true; fi \
+#	  if $(RANLIB_TEST) ; then $(RANLIB) tmplibgcc2.a; else true; fi; \
 #	else true; fi
 
 # Combine the various libraries into a single library, libgcc.a.
