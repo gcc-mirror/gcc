@@ -45,12 +45,12 @@ namespace std
 
   template
     streamsize
-    __copy_streambufs(basic_ios<char>&, basic_streambuf<char>*,
+    __copy_streambufs(basic_streambuf<char>*,
 		      basic_streambuf<char>*); 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template
     streamsize
-    __copy_streambufs(basic_ios<wchar_t>&, basic_streambuf<wchar_t>*,
+    __copy_streambufs(basic_streambuf<wchar_t>*,
 		      basic_streambuf<wchar_t>*); 
 #endif
 } //std

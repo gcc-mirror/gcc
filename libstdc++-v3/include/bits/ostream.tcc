@@ -304,7 +304,7 @@ namespace std
 	{
 	  try
 	    {
-	      if (!__copy_streambufs(*this, __sbin, this->rdbuf()))
+	      if (!__copy_streambufs(__sbin, this->rdbuf()))
 		__err |= ios_base::failbit;
 	    }
 	  catch(...)
