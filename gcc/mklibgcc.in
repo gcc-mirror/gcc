@@ -420,7 +420,7 @@ dirs=libgcc
 for ml in $MULTILIBS; do
   dir=`echo ${ml} | sed -e 's/;.*$//' -e 's/=/$(EQ)/g'`
   if [ $dir != . ]; then
-    dirs="$dirs libgcc/${dir}"
+    dirs="$dirs ${dir} libgcc/${dir}"
   fi
 done
 echo ''
