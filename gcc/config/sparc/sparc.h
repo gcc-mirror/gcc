@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* Special flags to the Sun-4 assembler when using pipe for input.  */
 
-#define ASM_SPEC " %{pipe:-} %{fpic:-k} %{fPIC:-k}"
+#define ASM_SPEC " %| %{fpic:-k} %{fPIC:-k}"
 
 /* Define macros to distinguish architectures.  */
 #define CPP_SPEC "%{msparclite:-D__sparclite__} %{mv8:-D__sparc_v8__}"
