@@ -1,3 +1,8 @@
+2004-05-05  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* osint.adb (Find_Program_Name): Fix handling of VMS version
+	number.
+
 2004-05-05  Emmanuel Briot  <briot@act-europe.fr>
 
 	* g-os_lib.ads (Invalid_Time): New constant
