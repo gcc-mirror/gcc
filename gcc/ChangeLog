@@ -1,3 +1,11 @@
+Thu Jan  4 21:09:47 2001  J"orn Rennecke <amylaar@redhat.com>
+
+	* integrate.c (expand_inline_function): Don't put a virtual
+	register into the reg map.
+
+	* function.c (fixup_var_refs_1): If force_operand didn't put
+	the address into the target, move it there.
+
 2001-01-04  Mark Mitchell  <mark@codesourcery.com>
 
 	Special-case tree_decl/tree_list allocations.

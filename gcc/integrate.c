@@ -1,6 +1,6 @@
 /* Procedure integration for GNU CC.
    Copyright (C) 1988, 1991, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -989,6 +989,15 @@ expand_inline_function (fndecl, parms, target, ignore, type,
 	    {
 	      temp = force_operand (structure_value_addr, NULL_RTX);
 	      temp = force_reg (Pmode, temp);
+	      /* A virtual register might be invalid in an insn, because
+		 it can cause trouble in reload.  Since we don't have access
+		 to the expanders at map translation time, make sure we have
+		 a proper register now.
+		 If a virtual register is actually valid, cse or combine
+		 can put it into the mapped insns.  */
+	      if (REGNO (temp) >= FIRST_VIRTUAL_REGISTER
+		  && REGNO (temp) <= LAST_VIRTUAL_REGISTER)
+	      temp = copy_to_mode_reg (Pmode, temp);
 	      map->reg_map[REGNO (XEXP (loc, 0))] = temp;
 
 	      if (CONSTANT_P (structure_value_addr)
