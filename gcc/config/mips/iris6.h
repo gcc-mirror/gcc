@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Iris version 6.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -57,12 +57,6 @@ Boston, MA 02111-1307, USA.  */
 
 #define POPSECTION_ASM_OP	".popsection"
 
-/* To enable use of init and fini sections.  */
-#define INIT_SECTION_ASM_OP	".section\t.init"
-#undef LD_INIT_SWITCH
-#undef LD_FINI_SWITCH
-#undef HAS_INIT_SECTION
-
 #define DEBUG_SECTION		".debug,1,0,0,1"
 #define LINE_SECTION		".line,1,0,0,1"
 #define SFNAMES_SECTION		".debug_sfnames,1,0,0,1"
@@ -110,6 +104,12 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 /* Stuff for constructors.  Start here.  */
+
+/* The assembler now accepts .section pseudo-ops, but it does not allow
+   one to change the section in the middle of a function.  crtstuff relies
+   on this hack, and thus crtstuff won't work here.  So, we do init and
+   fini sections exactly the same way as they are done for Irix 5, and
+   we ifdef out the ASM_OUTPUT_{CON,DE}STRUCTOR macros below.  */
 
 #define CONST_SECTION_ASM_OP_32	"\t.rdata"
 #define CONST_SECTION_ASM_OP_64	".section\t.rodata"
@@ -185,6 +185,8 @@ dtors_section ()							\
     }									\
 }
 
+#if 0
+
 /* A C statement (sans semicolon) to output an element in the table of
    global constructors.  */
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)				\
@@ -204,6 +206,8 @@ dtors_section ()							\
     assemble_name (FILE, NAME);              				\
     fprintf (FILE, "\n");						\
   } while (0)
+
+#endif
 
 /* Stuff for constructors.  End here.  */
 
