@@ -406,7 +406,9 @@ record_label_references (insn, pat)
 
       /* Don't make a duplicate in the code_label's chain. */
 
-      for (ref = LABEL_REFS (label); ref != label; ref = LABEL_NEXTREF (ref))
+      for (ref = LABEL_REFS (label);
+	   ref && ref != label;
+	   ref = LABEL_NEXTREF (ref))
 	if (CONTAINING_INSN (ref) == insn)
 	  return;
 
