@@ -34,7 +34,8 @@ if [ "${shared}" = "yes" ]; then
     alpha*-*-linux*)	frag=mh-elfalphapic ;;
     arm*-*-*)		frag=mh-armpic ;;
     hppa*-*-*)		frag=mh-papic ;;
-    i[3456]86-*-*)	frag=mh-x86pic ;;
+    i[3456]86-*-* | x86_64-*-*)
+			frag=mh-x86pic ;;
     powerpc*-*-aix*)	;;
     powerpc*-*-*)	frag=mh-ppcpic ;;
     sparc*-*-*)		frag=mh-sparcpic ;;

@@ -1,3 +1,7 @@
+2002-05-13  Andreas Schwab  <schwab@suse.de>
+
+	* config.table: Use mh-x86pic also for x86-64.
+
 2002-05-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (ORIGINAL_LD_FOR_MULTILIBS): Preserve LD at
