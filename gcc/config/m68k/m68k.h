@@ -143,6 +143,30 @@ extern int target_flags;
 #define MASK_NO_STRICT_ALIGNMENT 16384
 #define TARGET_STRICT_ALIGNMENT  (~target_flags & MASK_NO_STRICT_ALIGNMENT)
 
+/* Build for ColdFire v3 */
+#define MASK_CFV3	0x8000
+#define TARGET_CFV3	(target_flags & MASK_CFV3)
+
+/* Build for ColdFire v4 */
+#define MASK_CFV4	0x10000
+#define TARGET_CFV4	(target_flags & MASK_CFV4)
+
+/* Divide support for ColdFire */
+#define MASK_CF_HWDIV	0x40000
+#define TARGET_CF_HWDIV	(target_flags & MASK_CF_HWDIV)
+
+/* Compile for mcf582 */
+#define MASK_528x	0x80000
+#define TARGET_528x (target_flags & MASK_528x)
+
+
+/* Is the target a coldfire */
+#define MASK_COLDFIRE	(MASK_5200|MASK_528x|MASK_CFV3|MASK_CFV4)
+#define TARGET_COLDFIRE	(target_flags & MASK_COLDFIRE)
+
+/* Which bits can be set by specifying a coldfire */
+#define MASK_ALL_CF_BITS	(MASK_COLDFIRE|MASK_CF_HWDIV)
+
 /* Macro to define tables used to set the flags.
    This is a list in braces of pairs in braces,
    each pair being { "NAME", VALUE }
@@ -150,16 +174,16 @@ extern int target_flags;
    An empty string NAME is used to identify the default VALUE.  */
 
 #define TARGET_SWITCHES							\
-  { { "68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
+  { { "68020", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
       N_("Generate code for a 68020") },				\
-    { "c68020", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
+    { "c68020", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
       N_("Generate code for a 68020") },				\
     { "68020", (MASK_68020|MASK_BITFIELD), "" },			\
     { "c68020", (MASK_68020|MASK_BITFIELD), "" },			\
-    { "68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+    { "68000", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY	\
 		|MASK_68020|MASK_BITFIELD|MASK_68881),			\
       N_("Generate code for a 68000") },				\
-    { "c68000", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+    { "c68000", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY	\
 		|MASK_68020|MASK_BITFIELD|MASK_68881),			\
       N_("Generate code for a 68000") },				\
     { "bitfield", MASK_BITFIELD,					\
@@ -177,40 +201,56 @@ extern int target_flags;
     { "68881", MASK_68881, "" },					\
     { "soft-float", - (MASK_68040_ONLY|MASK_68881),			\
       N_("Generate code with library calls for floating point") },	\
-    { "68020-40", -(MASK_5200|MASK_68060|MASK_68040_ONLY),		\
+    { "68020-40", -(MASK_ALL_CF_BITS|MASK_68060|MASK_68040_ONLY),		\
       N_("Generate code for a 68040, without any new instructions") },	\
     { "68020-40", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040), ""},\
-    { "68020-60", -(MASK_5200|MASK_68040_ONLY),				\
+    { "68020-60", -(MASK_ALL_CF_BITS|MASK_68040_ONLY),				\
       N_("Generate code for a 68060, without any new instructions") },	\
     { "68020-60", (MASK_BITFIELD|MASK_68881|MASK_68020|MASK_68040	\
 		   |MASK_68060), "" },					\
-    { "68030", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
+    { "68030", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY),	\
       N_("Generate code for a 68030") },				\
     { "68030", (MASK_68020|MASK_BITFIELD), "" },			\
-    { "68040", - (MASK_5200|MASK_68060),				\
+    { "68040", - (MASK_ALL_CF_BITS|MASK_68060),				\
       N_("Generate code for a 68040") },				\
     { "68040", (MASK_68020|MASK_68881|MASK_BITFIELD			\
 		|MASK_68040_ONLY|MASK_68040), "" },			\
-    { "68060", - (MASK_5200|MASK_68040),				\
+    { "68060", - (MASK_ALL_CF_BITS|MASK_68040),				\
       N_("Generate code for a 68060") },				\
     { "68060", (MASK_68020|MASK_68881|MASK_BITFIELD			\
 		|MASK_68040_ONLY|MASK_68060), "" },			\
-    { "5200", - (MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
+    { "5200", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
 		|MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a 520X") },					\
     { "5200", (MASK_5200), "" },					\
+    { "5206e", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
+		|MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a 5206e") },					\
+    { "5206e", (MASK_5200|MASK_CF_HWDIV), "" },					\
+    { "528x", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
+		|MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a 528x") },					\
+    { "528x", (MASK_528x|MASK_CF_HWDIV), "" },					\
+    { "5307", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
+		|MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a 5307") },					\
+    { "5307", (MASK_CFV3|MASK_CF_HWDIV), "" },					\
+    { "5407", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY|MASK_68020	\
+		|MASK_BITFIELD|MASK_68881),				\
+      N_("Generate code for a 5407") },					\
+    { "5407", (MASK_CFV4|MASK_CF_HWDIV), "" },					\
     { "68851", 0,							\
       N_("Generate code for a 68851") },				\
     { "no-68851", 0,							\
       N_("Do no generate code for a 68851") },				\
-    { "68302", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+    { "68302", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY	\
 		  |MASK_68020|MASK_BITFIELD|MASK_68881),		\
       N_("Generate code for a 68302") },				\
-    { "68332", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+    { "68332", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY	\
 		  |MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a 68332") },				\
     { "68332", MASK_68020, "" },					\
-    { "cpu32", - (MASK_5200|MASK_68060|MASK_68040|MASK_68040_ONLY	\
+    { "cpu32", - (MASK_ALL_CF_BITS|MASK_68060|MASK_68040|MASK_68040_ONLY	\
 		  |MASK_BITFIELD|MASK_68881),				\
       N_("Generate code for a cpu32") },				\
     { "cpu32", MASK_68020, "" },					\
@@ -688,12 +728,12 @@ enum reg_class {
    this says how many the stack pointer really advances by.
    On the 68000, sp@- in a byte insn really pushes a word.
    On the 5200 (coldfire), sp@- in a byte insn pushes just a byte.  */
-#define PUSH_ROUNDING(BYTES) (TARGET_5200 ? BYTES : ((BYTES) + 1) & ~1)
+#define PUSH_ROUNDING(BYTES) (TARGET_COLDFIRE ? BYTES : ((BYTES) + 1) & ~1)
 
 /* We want to avoid trying to push bytes.  */
 #define MOVE_BY_PIECES_P(SIZE, ALIGN) \
   (move_by_pieces_ninsns (SIZE, ALIGN) < MOVE_RATIO \
-    && (((SIZE) >=16 && (ALIGN) >= 16) || (TARGET_5200)))
+    && (((SIZE) >=16 && (ALIGN) >= 16) || (TARGET_COLDFIRE)))
 
 /* Offset of first parameter from the argument pointer register value.  */
 #define FIRST_PARM_OFFSET(FNDECL) 8
@@ -1122,7 +1162,7 @@ __transfer_from_trampoline ()					\
 /* coldfire/5200 does not allow HImode index registers.  */
 #define LEGITIMATE_INDEX_REG_P(X)   \
   ((GET_CODE (X) == REG && REG_OK_FOR_INDEX_P (X))	\
-   || (! TARGET_5200					\
+   || (! TARGET_COLDFIRE					\
        && GET_CODE (X) == SIGN_EXTEND			\
        && GET_CODE (XEXP (X, 0)) == REG			\
        && GET_MODE (XEXP (X, 0)) == HImode		\
@@ -1133,12 +1173,12 @@ __transfer_from_trampoline ()					\
 
 #define LEGITIMATE_INDEX_P(X)   \
    (LEGITIMATE_INDEX_REG_P (X)				\
-    || ((TARGET_68020 || TARGET_5200) && GET_CODE (X) == MULT \
+    || ((TARGET_68020 || TARGET_COLDFIRE) && GET_CODE (X) == MULT \
 	&& LEGITIMATE_INDEX_REG_P (XEXP (X, 0))		\
 	&& GET_CODE (XEXP (X, 1)) == CONST_INT		\
 	&& (INTVAL (XEXP (X, 1)) == 2			\
 	    || INTVAL (XEXP (X, 1)) == 4		\
-	    || (INTVAL (XEXP (X, 1)) == 8 && !TARGET_5200))))
+	    || (INTVAL (XEXP (X, 1)) == 8 && !TARGET_COLDFIRE))))
 
 /* If pic, we accept INDEX+LABEL, which is what do_tablejump makes.  */
 #define GO_IF_LEGITIMATE_ADDRESS(MODE, X, ADDR)				\
