@@ -148,6 +148,7 @@ struct function
   rtx saveregs_value;
   rtx apply_args_value;
   rtx forced_labels;
+  int check_memory_usage;
 
   /* For emit-rtl.c.  */
   int reg_rtx_no;
