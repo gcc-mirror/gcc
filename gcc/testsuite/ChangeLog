@@ -1,3 +1,52 @@
+2004-07-21  David Billinghurst (David.Billinghurst@riotinto.com)
+
+	Copy cases from g77.f-torture/execute and add dg-run
+	directive.  Other changes as noted.    
+	* gfortran.dg/g77/13037.f
+	* gfortran.dg/g77/1832.f
+	* gfortran.dg/g77/19981119-0.f
+	* gfortran.dg/g77/19990313-0.f
+	* gfortran.dg/g77/19990313-1.f
+	* gfortran.dg/g77/19990313-2.f
+	* gfortran.dg/g77/19990313-3.f
+	* gfortran.dg/g77/19990419-1.f
+	* gfortran.dg/g77/19990826-0.f
+	* gfortran.dg/g77/19990826-2.f
+	* gfortran.dg/g77/20000503-1.f
+	* gfortran.dg/g77/20001111.f
+	* gfortran.dg/g77/20010116.f
+	* gfortran.dg/g77/20010426-1.f: Renamed from 20010426-1.f
+	* gfortran.dg/g77/20010430.f
+	* gfortran.dg/g77/6177.f
+	* gfortran.dg/g77/947.f
+	* gfortran.dg/g77/970816-3.f
+	* gfortran.dg/g77/971102-1.f
+	* gfortran.dg/g77/980520-1.f
+	* gfortran.dg/g77/980628-0.f
+	* gfortran.dg/g77/980628-1.f
+	* gfortran.dg/g77/980628-10.f
+	* gfortran.dg/g77/980628-2.f
+	* gfortran.dg/g77/980628-3.f
+	* gfortran.dg/g77/980628-7.f
+	* gfortran.dg/g77/980628-8.f
+	* gfortran.dg/g77/980628-9.f
+	* gfortran.dg/g77/980701-0.f
+	* gfortran.dg/g77/980701-1.f
+	* gfortran.dg/g77/cabs.f
+	* gfortran.dg/g77/claus.f
+	* gfortran.dg/g77/complex_1.f
+	* gfortran.dg/g77/cpp3.F: Renamed from cpp3.F
+	* gfortran.dg/g77/dcomplex.f
+	* gfortran.dg/g77/dnrm2.f: Add dg-warnings as required.
+	* gfortran.dg/g77/f90-intrinsic-mathematical.f
+	* gfortran.dg/g77/f90-intrinsic-numeric.f
+	* gfortran.dg/g77/int8421.f
+	* gfortran.dg/g77/labug1.f
+	* gfortran.dg/g77/large_vec.f
+	* gfortran.dg/g77/le.f
+	* gfortran.dg/g77/short.f
+	* gfortran.dg/g77/README: Update
+
 2004-07-20  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/16637
