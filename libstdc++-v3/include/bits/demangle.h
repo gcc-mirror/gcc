@@ -148,7 +148,7 @@ namespace __gnu_cxx
 	{ }
 
 	qualifier(int start_pos,
-	          cv_qualifier_nt cv_qualifier,
+	          cv_qualifier_nt,
 		  char const* start,
 		  int count,
 		  int inside_substitution)

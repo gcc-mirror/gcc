@@ -1,3 +1,10 @@
+2003-09-22  Carlo Wood  <carlo@alinoe.com>
+
+	PR libstdc++/12365
+	* include/bits/demangle.h (qualifier(int, cv_qualifier_nt,
+	char const*, int, int)):  Remove unused identifier
+	cv_qualifier for overloaded constructor.
+
 2003-09-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	PR libstdc++/11504
