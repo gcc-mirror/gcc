@@ -21,29 +21,33 @@
 
 #### Start of system configuration section. ####
 
-# $(srcdir) must be set to the g77 runtime libF77 source directory
-# (g77/f/runtime/libF77).
-
+# $(srcdir) must be set to the g77 runtime libU77 source directory
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-# gcc/f/runtime/configure sets this to all the -D options appropriate
-# for the configuration.
+# configure sets this to all the -D options appropriate for the
+# configuration.
 DEFS = @DEFS@
 LIBS = @LIBS@
 
+LIBG2C = ../libg2c.a
+
+F2C_H_DIR = @srcdir@/..
+G2C_H_DIR = ..
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+AR = @AR@
+ARFLAGS = rc
+@SET_MAKE@
+
+SHELL = /bin/sh
+
 #### End of system configuration section. ####
 
-# Must be passed in explicitly.  Sample values are shown below.
-#CC = /gcc-build-dir/xgcc -B/gcc-build-dir/
-#CFLAGS = -O -g
-#CPPFLAGS = 
-#F2C_H_DIR = /gcc-source-dir/f/runtime
-#G2C_H_DIR = /gcc-build-dir/f/runtime
-#GCC_H_DIR = /gcc-build-dir/include
-
 # fio.h is in libI77.  config.h is in `.'.
-ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR)/libI77 -I$(F2C_H_DIR)/libI77 -I$(G2C_H_DIR) -I$(F2C_H_DIR) -I$(GCC_H_DIR) $(CPPFLAGS) $(DEFS) $(CFLAGS)
+ALL_CFLAGS = -I. -I$(srcdir) -I$(F2C_H_DIR)/libI77 -I$(G2C_H_DIR) \
+             $(CPPFLAGS) $(DEFS) $(CFLAGS)
 
 # This could probably be done more elegantly, but it's currently
 # just for running the u77-test test.
@@ -76,7 +80,34 @@ SRCS =  Version.c gerror_.c perror_.c ierrno_.c itime_.c time_.c \
 	umask_.c sys_clock_.c date_.c second_.c flush1_.c mclock_.c \
 	alarm_.c datetime_.c
 
-all: $(OBJS)
+all: ../stamp-libu77
+
+../stamp-libu77: $(OBJS)
+	echo timestamp > ../stamp-libu77
+
+archive:
+	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJS)
+
+Makefile: Makefile.in config.status
+	$(SHELL) config.status
+
+config.status: configure
+	rm -f config.cache
+	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
+	  CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
+
+${srcdir}/configure: configure.in
+	cd ${srcdir} && autoconf
+
+${srcdir}/config.h.in: stamp-h.in
+${srcdir}/stamp-h.in: configure.in acconfig.h
+	cd ${srcdir} && autoheader
+	echo timestamp > ${srcdir}/stamp-h.in
+
+config.h: stamp-h
+stamp-h: config.h.in config.status
+	$(SHELL) config.status
+	echo timestamp > stamp-h
 
 VersionU.o: Version.c
 	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
@@ -139,11 +170,23 @@ mclock_.o: mclock_.c
 alarm_.o: alarm_.c
 datetime_.o: datetime_.c
 
-lint:
-	lint $(ALL_CFLAGS) $(SRCS)
-
 check:
 	-$(G77DIR)g77 -B$(G77DIR) -L.. -g $(srcdir)/u77-test.f -lg2c $(LIBS) -lm && ./a.out
 	rm -f a.out
 
-.PHONY: lint check all
+install uninstall install-strip dist installcheck installdirs:
+
+mostlyclean:
+	rm -f *.o a.out
+
+clean: mostlyclean
+	rm -f config.log
+
+distclean: clean
+	rm -f config.cache config.status Makefile config.h stamp.h \
+	  ../stamp-libu77 configure
+
+maintainer-clean:
+
+.PHONY: mostlyclean clean distclean maintainer-clean all check uninstall \
+        install-strip dist installcheck installdirs archive

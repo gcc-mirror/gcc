@@ -23,27 +23,31 @@
 
 #### Start of system configuration section. ####
 
-# $(srcdir) must be set to the g77 runtime libF77 source directory
-# (g77/f/runtime/libF77).
-
+# $(srcdir) must be set to the g77 runtime libI77 source directory.
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-# gcc/f/runtime/configure sets this to all the -D options appropriate
-# for the configuration.
+# configure sets this to all the -D options appropriate for the
+# configuration.
 DEFS = @DEFS@
+
+LIBG2C = ../libg2c.a
+
+F2C_H_DIR = @srcdir@/..
+G2C_H_DIR = ..
+CC = @CC@
+CFLAGS = @CFLAGS@
+CPPFLAGS = @CPPFLAGS@
+AR = @AR@
+ARFLAGS = rc
+@SET_MAKE@
+
+SHELL = /bin/sh
 
 #### End of system configuration section. ####
 
-# Must be passed in explicitly.  Sample values are shown below.
-#CC = /gcc-build-dir/xgcc -B/gcc-build-dir/
-#CFLAGS = -O -g
-#CPPFLAGS = 
-#F2C_H_DIR = /gcc-source-dir/f/runtime
-#G2C_H_DIR = /gcc-build-dir/f/runtime
-#GCC_H_DIR = /gcc-build-dir/include
-
-ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) -I$(GCC_H_DIR) $(CPPFLAGS) $(DEFS) $(CFLAGS)
+ALL_CFLAGS = -I. -I$(srcdir) -I$(G2C_H_DIR) -I$(F2C_H_DIR) $(CPPFLAGS) \
+             $(DEFS) $(CFLAGS)
 
 .SUFFIXES:
 .SUFFIXES: .c .o
@@ -57,7 +61,25 @@ OBJ =	VersionI.o backspace.o close.o dfe.o dolio.o due.o endfile.o err.o \
 	util.o wref.o wrtfmt.o wsfe.o wsle.o wsne.o xwsne.o \
 	ftell_.o
 
-all: $(OBJ)
+all: ../stamp-libi77
+
+../stamp-libi77: $(OBJ)
+	echo timestamp > ../stamp-libi77
+
+archive:
+	$(AR) $(ARFLAGS) $(LIBG2C) $(OBJ)
+
+Makefile: Makefile.in config.status
+	$(SHELL) config.status
+
+config.status: configure
+	rm -f config.cache
+	CONFIG_SITE=no-such-file CC='$(CC)' AR='$(AR)' CFLAGS='$(CFLAGS)' \
+	  CPPFLAGS='$(CPPFLAGS)' $(SHELL) config.status --recheck
+
+${srcdir}/configure: configure.in
+	rm -f config.cache
+	cd ${srcdir} && autoconf
 
 VersionI.o: Version.c
 	$(CC) -c $(ALL_CFLAGS) -o $@ $(srcdir)/Version.c
@@ -118,4 +140,18 @@ xwsne.o:	fmt.h
 # May be pessimistic:
 $(OBJ): $(F2C_H_DIR)/f2c.h $(G2C_H_DIR)/g2c.h
 
-.PHONY: all
+check install uninstall install-strip dist installcheck installdirs:
+
+mostlyclean:
+	rm -f *.o
+
+clean: mostlyclean
+	rm -f config.log
+
+distclean: clean
+	rm -f config.cache config.status Makefile ../stamp-libi77 configure
+
+maintainer-clean:
+
+.PHONY: mostlyclean clean distclean maintainer-clean all check uninstall \
+        install-strip dist installcheck installdirs archive

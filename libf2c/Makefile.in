@@ -1,5 +1,5 @@
 # Makefile for GNU F77 compiler runtime.
-#   Copyright (C) 1995-1997 Free Software Foundation, Inc.
+#   Copyright (C) 1995-1998 Free Software Foundation, Inc.
 #   Contributed by Dave Love (d.love@dl.ac.uk).
 #
 #This file is part of GNU Fortran.
@@ -24,119 +24,46 @@ SHELL = /bin/sh
 #### Start of system configuration section. ####
 
 srcdir = @srcdir@
+VPATH = @srcdir@
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 target_alias = @target_alias@
 gcc_version = @gcc_version@
 gcc_version_trigger = @gcc_version_trigger@
 
-bindir = $(exec_prefix)/bin
 libdir = $(exec_prefix)/lib
-datadir = $(prefix)/lib
-mandir = $(prefix)/man
-infodir = $(prefix)/info
-includedir = $(prefix)/include
-docdir = $(datadir)/doc
 libsubdir = $(libdir)/gcc-lib/$(target_alias)/$(gcc_version)
 
-TO_TOPDIR = ..
+# Not configured per top-level version, since that doesn't get passed
+# down at configure time, but overrridden by the top-level install
+# target.
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
 
-INSTALL = $(srcdir)/$(TO_TOPDIR)/install-sh -c
-INSTALL_PROGRAM = $(INSTALL)
-INSTALL_DATA = $(INSTALL)
-
-AR = `if test -f $(TO_TOPDIR)/binutils/ar; then \
-   echo $(TO_TOPDIR)/binutils/ar; else echo ar; fi`
+AR = @AR@
 AR_FLAGS = rc
 
-RANLIB = `if test -f $(TO_TOPDIR)/binutils/ranlib; then \
-   echo $(TO_TOPDIR)/binutils/ranlib; else echo ranlib; fi`
+RANLIB = @RANLIB@
 
-MAKEINFO = `if test -f $(TO_TOPDIR)/texinfo/C/makeinfo; then \
-   echo $(TO_TOPDIR)/texinfo/C/makeinfo; else echo makeinfo; fi`
+CC = @CC@
+CFLAGS = @CFLAGS@
 
-CC = gcc
-CFLAGS = -g
-LIBCFLAGS = $(CFLAGS)
-
-# List of variables to pass to sub-makes.  This should not be needed'
-# by GNU make or Sun make (both of which pass command-line variable'
-# overrides thouh $(MAKE)) but may be needed by older versions.'
-
+# List of variables to pass to sub-makes.
+# Quote this way so that it can be used to set shell variables too.
+# Currently no use for PICFLAG, RUNTESTFLAGS -- check usage.
 FLAGS_TO_PASS= \
-	"CC=$(CC)" \
-	"CFLAGS=$(CFLAGS)" \
-	"F2C_H_DIR=$(s)/libf2c" \
-	"G2C_H_DIR=$(r)/$(TARGET_SUBDIR)/libf2c" \
-	"GCC_H_DIR=$(s)/include" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"RUNTESTFLAGS=$(RUNTESTFLAGS)"
+	CC='$(CC)' \
+	CFLAGS='$(CFLAGS)' \
+	CPPFLAGS='$(CPPFLAGS)' \
+	AR='$(AR)' \
+	RANLIB='$(RANLIB)'
+	PICFLAG='$(PICFLAG)' \
+	RUNTESTFLAGS='$(RUNTESTFLAGS)'
 
 LIBG2C = libg2c.a
 
-MISC =	libF77/F77_aloc.o libF77/VersionF.o libF77/main.o libF77/s_rnge.o \
-	libF77/abort_.o libF77/getarg_.o libF77/iargc_.o libF77/getenv_.o \
-	libF77/signal_.o libF77/s_stop.o libF77/s_paus.o libF77/system_.o \
-	libF77/cabs.o libF77/derf_.o libF77/derfc_.o libF77/erf_.o \
-	libF77/erfc_.o libF77/sig_die.o libF77/exit_.o \
-	libF77/setarg.o libF77/setsig.o
-POW =	libF77/pow_ci.o libF77/pow_dd.o libF77/pow_di.o libF77/pow_hh.o \
-	libF77/pow_ii.o  libF77/pow_ri.o libF77/pow_zi.o libF77/pow_zz.o \
-	libF77/pow_qq.o
-CX =	libF77/c_abs.o libF77/c_cos.o libF77/c_div.o libF77/c_exp.o \
-	libF77/c_log.o libF77/c_sin.o libF77/c_sqrt.o
-DCX =	libF77/z_abs.o libF77/z_cos.o libF77/z_div.o libF77/z_exp.o \
-	libF77/z_log.o libF77/z_sin.o libF77/z_sqrt.o
-REAL =	libF77/r_abs.o libF77/r_acos.o libF77/r_asin.o libF77/r_atan.o \
-	libF77/r_atn2.o libF77/r_cnjg.o libF77/r_cos.o libF77/r_cosh.o \
-	libF77/r_dim.o libF77/r_exp.o libF77/r_imag.o libF77/r_int.o \
-	libF77/r_lg10.o libF77/r_log.o libF77/r_mod.o libF77/r_nint.o \
-	libF77/r_sign.o libF77/r_sin.o libF77/r_sinh.o libF77/r_sqrt.o \
-	libF77/r_tan.o libF77/r_tanh.o
-DBL =	libF77/d_abs.o libF77/d_acos.o libF77/d_asin.o libF77/d_atan.o \
-	libF77/d_atn2.o libF77/d_cnjg.o libF77/d_cos.o libF77/d_cosh.o \
-	libF77/d_dim.o libF77/d_exp.o libF77/d_imag.o libF77/d_int.o \
-	libF77/d_lg10.o libF77/d_log.o libF77/d_mod.o libF77/d_nint.o \
-	libF77/d_prod.o libF77/d_sign.o libF77/d_sin.o libF77/d_sinh.o \
-	libF77/d_sqrt.o libF77/d_tan.o libF77/d_tanh.o
-INT =	libF77/i_abs.o libF77/i_dim.o libF77/i_dnnt.o libF77/i_indx.o \
-	libF77/i_len.o libF77/i_mod.o libF77/i_nint.o libF77/i_sign.o
-HALF =	libF77/h_abs.o libF77/h_dim.o libF77/h_dnnt.o libF77/h_indx.o \
-	libF77/h_len.o libF77/h_mod.o  libF77/h_nint.o libF77/h_sign.o
-CMP =	libF77/l_ge.o libF77/l_gt.o libF77/l_le.o libF77/l_lt.o \
-	libF77/hl_ge.o libF77/hl_gt.o libF77/hl_le.o libF77/hl_lt.o
-EFL =	libF77/ef1asc_.o libF77/ef1cmc_.o
-CHAR =	libF77/s_cat.o libF77/s_cmp.o libF77/s_copy.o
-F90BIT = libF77/lbitbits.o libF77/lbitshft.o libF77/qbitbits.o \
-	libF77/qbitshft.o
-FOBJ = $(MISC) $(POW) $(CX) $(DCX) $(REAL) $(DBL) $(INT) $(HALF) $(CMP) \
- $(EFL) $(CHAR) $(F90BIT)
-
-IOBJ =	libI77/VersionI.o libI77/backspace.o libI77/close.o libI77/dfe.o \
-	libI77/dolio.o libI77/due.o libI77/endfile.o libI77/err.o \
-	libI77/fmt.o libI77/fmtlib.o libI77/iio.o libI77/ilnw.o \
-	libI77/inquire.o libI77/lread.o libI77/lwrite.o libI77/open.o \
-	libI77/rdfmt.o libI77/rewind.o libI77/rsfe.o libI77/rsli.o \
-	libI77/rsne.o libI77/sfe.o libI77/sue.o libI77/typesize.o \
-	libI77/uio.o libI77/util.o libI77/wref.o libI77/wrtfmt.o \
-	libI77/wsfe.o libI77/wsle.o libI77/wsne.o libI77/xwsne.o \
-	libI77/ftell_.o
-
-UOBJ =  libU77/VersionU.o libU77/gerror_.o libU77/perror_.o libU77/ierrno_.o \
-	libU77/itime_.o libU77/time_.o libU77/unlink_.o libU77/fnum_.o \
-	libU77/getpid_.o libU77/getuid_.o libU77/getgid_.o libU77/kill_.o \
-	libU77/rand_.o libU77/srand_.o libU77/irand_.o libU77/sleep_.o \
-	libU77/idate_.o libU77/ctime_.o libU77/etime_.o libU77/dtime_.o \
-	libU77/isatty_.o libU77/ltime_.o libU77/fstat_.o libU77/stat_.o \
-	libU77/lstat_.o libU77/access_.o libU77/link_.o libU77/getlog_.o \
-	libU77/ttynam_.o libU77/getcwd_.o libU77/vxttime_.o \
-	libU77/vxtidate_.o libU77/gmtime_.o libU77/fdate_.o libU77/secnds_.o \
-	libU77/bes.o libU77/dbes.o libU77/chdir_.o libU77/chmod_.o \
-	libU77/lnblnk_.o libU77/hostnm_.o libU77/rename_.o libU77/fgetc_.o \
-	libU77/fputc_.o libU77/umask_.o libU77/sys_clock_.o libU77/date_.o \
-	libU77/second_.o libU77/flush1_.o libU77/alarm_.o libU77/mclock_.o \
-	libU77/symlnk_.o libU77/datetime_.o
+SUBDIRS = libI77 libF77 libU77
 
 F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	signal system flush ftell fseek access besj0 besj1 besjn besy0 besy1 \
@@ -147,34 +74,34 @@ F2CEXT = abort derf derfc ef1asc ef1cmc erf erfc exit getarg getenv iargc \
 	secnds second sleep srand stat symlnk time ttynam umask unlink \
 	vxtidt vxttim alarm
 
-all: g2c.h $(LIBG2C)
+# These dependencies can be satisfied in parallel.  They update stamp
+# files which the $(LIBG2C) target checks in the sub-make.  (Probably
+# only one stamp file is really needed.)
+all: i77 f77 u77 e77
+	make $(FLAGS_TO_PASS) $(LIBG2C)
 
-$(LIBG2C): stamp-libf77 stamp-libi77 stamp-libu77 stamp-libe77
+i77 f77 u77: g2c.h
+
+$(LIBG2C): stamp-libi77 stamp-libf77 stamp-libu77 stamp-libe77
 	rm -f $(LIBG2C)
-	$(AR) $(AR_FLAGS) $(LIBG2C) $(FOBJ)
-	$(AR) $(AR_FLAGS) $(LIBG2C) $(IOBJ)
-	$(AR) $(AR_FLAGS) $(LIBG2C) $(UOBJ)
+	set -e; \
+	for i in $(SUBDIRS); \
+	  do (cd $$i && $(MAKE) $(FLAGS_TO_PASS) LIBG2C=../$(LIBG2C) archive); \
+	done
 	objs=""; for i in $(F2CEXT); do objs="$$objs libE77/L$$i.o"; done; \
 	  $(AR) $(AR_FLAGS) $(LIBG2C) $$objs
 	$(RANLIB) $(LIBG2C)
 
-stamp-libi77: libI77/Makefile
-	rm -f stamp-libi77
+i77:
 	cd libI77; $(MAKE) $(FLAGS_TO_PASS) all
-	touch stamp-libi77
 
-stamp-libf77: libF77/Makefile
-	rm -f stamp-libf77
+f77:
 	cd libF77; $(MAKE) $(FLAGS_TO_PASS) all
-	touch stamp-libf77
 
-stamp-libu77: libU77/Makefile
-	rm -f stamp-libu77
+u77:
 	cd libU77; $(MAKE) $(FLAGS_TO_PASS) all
-	touch stamp-libu77
 
 stamp-libe77: $(srcdir)/f2cext.c
-	rm -f stamp-libe77
 	if [ -d libE77 ]; then rm -f libE77/*.o; else mkdir libE77; fi
 	for name in $(F2CEXT); \
 	do \
@@ -184,25 +111,38 @@ stamp-libe77: $(srcdir)/f2cext.c
 	    -o libE77/L$${name}.o; \
 	  if [ $$? -eq 0 ] ; then true; else exit 1; fi; \
 	done
-	touch stamp-libe77
+	echo timestamp >stamp-libe77
 
 ${srcdir}/configure: ${srcdir}/configure.in
-	rm -f config.cache Makefile g2c.h \
-	  && cd $(srcdir) && autoconf && rm -f config.cache
-${srcdir}/libU77/configure: ${srcdir}/libU77/configure.in
-	rm -f libU77/config.cache libU77/Makefile && \
-	  cd $(srcdir)/libU77 && autoconf && rm -f config.cache
-g2c.h Makefile: $(srcdir)/g2c.h.in $(srcdir)/Makefile.in config.status
-	$(SHELL) config.status
-config.status: $(srcdir)/configure $(gcc_version_trigger)
-	$(SHELL) config.status --recheck
+	rm -f config.cache
+	cd $(srcdir) && autoconf
 
-info install-info clean-info dvi:
+# Dependence on Makefile serializes for parallel make.
+g2c.h: $(srcdir)/g2c.h.in config.status Makefile
+# Might try to avoid rebuilding everything if Makefile or configure
+# changes and g2c.h doesn't; see also the Makefile rule.  Should
+# depend on another stamp file rather than using the commented-out
+# lines below, since g2c.h isn't necessarily brought up to date.
+#	mv g2c.h g2c.x
+	$(SHELL) config.status
+#	$(srcdir)/../move-if-change g2c.h g2c.x && mv g2c.x g2c.h
+
+Makefile: $(srcdir)/Makefile.in config.status
+# Autoconf doc uses `./config.status'.  Is there a good reason to use 
+	  $(SHELL) config.status
+
+config.status: $(srcdir)/configure $(gcc_version_trigger)
+# Make sure we don't pick up a site config file and that configure
+# gets run with correct values of variables such as CC.
+	CONFIG_SITE=no-such-file $(FLAGS_TO_PASS) \
+	  $(SHELL) config.status --recheck
+
+info install-info clean-info dvi TAGS dist installcheck installdirs:
 
 check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
-install:
+install: all
 	$(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(LIBG2C).n
 	( cd $(libsubdir) ; $(RANLIB) $(LIBG2C).n )
 	mv -f $(libsubdir)/$(LIBG2C).n $(libsubdir)/$(LIBG2C)
@@ -217,24 +157,29 @@ install:
 	  echo ''; \
 	fi
 
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
+
+uninstall:
+	rm -f $(libsubdir)/include/g2c.h $(libsubdir)/$(LIBG2C)
+
 mostlyclean:
-	rm -f stamp-* $(LIBG2C)
-	rm -f libF77/*.o
-	rm -f libI77/*.o
-	rm -f libU77/*.o
+	rm -f $(LIBG2C)
+	for i in $(SUBDIRS); do (cd $$i && $(MAKE) mostlyclean); done
 	rm -fr libE77
 
-clean:
-	rm -f config.log libU77/config.log libU77/a.out
+clean: mostlyclean
+	rm -f config.log
+	for i in $(SUBDIRS); do (cd $$i && $(MAKE) clean); done
 
-distclean:
-	rm -f Makefile config.cache config.status g2c.h
-	rm -f lib?77/Makefile lib?77/config.status
-	rm -f lib?77/config.cache lib?77/config.h
+distclean: clean
+	rm -f Makefile config.cache config.status g2c.h stamp-libe77
+	for i in $(SUBDIRS); do (cd $$i && $(MAKE) distclean); done
 
 maintainer-clean:
-	rm -f $(srcdir)/configure $(srcdir)/libU77/configure
 
-rebuilt: ${srcdir}/configure ${srcdir}/libU77/configure
+rebuilt: ${srcdir}/configure
 
-.PHONY: rebuilt mostlyclean clean distclean maintainer-clean all
+.PHONY: rebuilt mostlyclean clean distclean maintainer-clean all \
+        i77 f77 u77 e77 check uninstall install-strip dist \
+        installcheck installdirs

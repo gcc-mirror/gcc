@@ -1,3 +1,21 @@
+1998-07-10  Dave Love  <d.love@dl.ac.uk>
+
+	* Makefile.in: Re-write build procedure mainly to honour
+	dependencies correctly but also allow making in the build
+	directory by configuring the relevant variables.  The lib[FIU]77
+	subdirs do dependency checking of their objects.  Stamp files
+	dictate when to run (new) archive targets in subdirs.  Some
+	tidying of variables.  Supply full set of standard targets.
+
+	* configure.in: Move much of testing to new configures in
+	subdirs.  Tidy up handling of RANLIB etc.
+
+	* stamp-h.in, libF77/configure.in, libI77/configure.in,
+	libF77/configure, libI77/configure: New files.
+
+	* libF77/Makefile.in, libI77/Makefile.in, libU77/Makefile.in:
+	Change in step with libf2c/Makefile.in.
+
 1998-07-09  Dave Love  <d.love@dl.ac.uk>
 
 	* libU77/Makefile.in (check): Wrap -lg2c ... -lm around $(LIBS) in
