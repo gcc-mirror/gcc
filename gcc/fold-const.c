@@ -2000,9 +2000,19 @@ operand_equal_p (arg0, arg1, only_const)
 	}
 
     case 'e':
-      if (TREE_CODE (arg0) == RTL_EXPR)
-	return rtx_equal_p (RTL_EXPR_RTL (arg0), RTL_EXPR_RTL (arg1));
-      return 0;
+      switch (TREE_CODE (arg0))
+	{
+	case ADDR_EXPR:
+	case TRUTH_NOT_EXPR:
+	  return operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), 0);
+
+	case RTL_EXPR:
+	  return rtx_equal_p (RTL_EXPR_RTL (arg0), RTL_EXPR_RTL (arg1));
+
+	default:
+	  return 0;
+	}
 
     default:
       return 0;
