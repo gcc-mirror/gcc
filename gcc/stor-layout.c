@@ -1237,7 +1237,7 @@ place_field (rli, field)
       rli->offset
 	= size_binop (PLUS_EXPR, rli->offset, DECL_SIZE_UNIT (field));
       rli->bitpos = bitsize_zero_node;
-      rli->offset_align = MIN (rli->offset_align, DECL_ALIGN (field));
+      rli->offset_align = MIN (rli->offset_align, desired_align);
     }
   else
     {
