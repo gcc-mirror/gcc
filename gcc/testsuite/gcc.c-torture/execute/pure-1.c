@@ -17,20 +17,13 @@ extern int func0 (int) __attribute__ ((__pure__));
 extern int func1 (int) __attribute__ ((__const__));
 
 /* GCC should automatically detect attributes for these functions.
-   Don't allow -O3 to inline them.  */
-#define ANI __attribute__ ((__noinline__))
-
-/* ??? If we mark these static, then -O3 will defer them to the end of
-   compilation, and we won't have detected anything about them at the
-   point main is compiled.  Leaving them public works until someone runs
-   the testsuite with -fpic, or has an OS for which targetm.binds_local_p
-   returns false for some reason.  */
-int ANI func2 (int a) { return i + a; } /* pure */
-int ANI func3 (int a) { return a * 3; } /* const */
-int ANI func4 (int a) { return func0(a) + a; } /* pure */
-int ANI func5 (int a) { return a + func1(a); } /* const */
-int ANI func6 (int a) { return func2(a) + a; } /* pure */
-int ANI func7 (int a) { return a + func3(a); } /* const */
+   At -O3 They'll be inlined, but that's ok.  */
+static int func2 (int a) { return i + a; } /* pure */
+static int func3 (int a) { return a * 3; } /* const */
+static int func4 (int a) { return func0(a) + a; } /* pure */
+static int func5 (int a) { return a + func1(a); } /* const */
+static int func6 (int a) { return func2(a) + a; } /* pure */
+static int func7 (int a) { return a + func3(a); } /* const */
 
 int main ()
 {

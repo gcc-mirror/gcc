@@ -1,3 +1,8 @@
+2002-06-18  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/pure-1.c: Make functions static again.
+	Don't use attribute `noinline'.
+
 2002-06-18  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.c-torture/execute/20020615-1.c: Fix typo in comment.
