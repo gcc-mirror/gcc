@@ -2182,22 +2182,24 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
          a different name.  In that case we also want to output
          that.  */
 
-      if ((TREE_CODE (t) == RECORD_TYPE
+      if (TREE_CODE (t) == RECORD_TYPE
            || TREE_CODE (t) == UNION_TYPE
            || TREE_CODE (t) == QUAL_UNION_TYPE
            || TREE_CODE (t) == ENUMERAL_TYPE)
-          && TYPE_STUB_DECL (t)
-          && TYPE_STUB_DECL (t) != decl
-          && DECL_P (TYPE_STUB_DECL (t))
-          && ! DECL_IGNORED_P (TYPE_STUB_DECL (t)))
         {
-          debug_queue_symbol (TYPE_STUB_DECL (t));
-          if (TYPE_NAME (t)
-              && TYPE_NAME (t) != TYPE_STUB_DECL (t)
-              && TYPE_NAME (t) != decl
-              && DECL_P (TYPE_NAME (t)))
-            debug_queue_symbol (TYPE_NAME (t));
-        }
+	    if (TYPE_STUB_DECL (t)
+		&& TYPE_STUB_DECL (t) != decl
+		&& DECL_P (TYPE_STUB_DECL (t))
+		&& ! DECL_IGNORED_P (TYPE_STUB_DECL (t)))
+	    {
+	      debug_queue_symbol (TYPE_STUB_DECL (t));
+	      if (TYPE_NAME (t)
+		  && TYPE_NAME (t) != TYPE_STUB_DECL (t)
+		  && TYPE_NAME (t) != decl
+		  && DECL_P (TYPE_NAME (t)))
+		debug_queue_symbol (TYPE_NAME (t));
+	    }
+	}
       else if (TYPE_NAME (t)
 	       && TYPE_NAME (t) != decl
 	       && DECL_P (TYPE_NAME (t)))
