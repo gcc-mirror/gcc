@@ -1,3 +1,8 @@
+2004-05-07  Uros Bizjak  <uros@kss-loka.si>
+
+	* config/i386/i386.c (ix86_emit_fp_unordered_jump): Use
+	testb $4, %ah insn instead of sahf insn if !TARGET_USE_SAHF.
+
 2004-05-07  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* loop-doloop.c (doloop_valid_p): Make sure that body
@@ -75,6 +80,7 @@
 	(STACK_BOUNDARY): Delete.
 
 2004-05-06  Stuart Hastings  <stuart@apple.com>
+
 	* gcc/doc/invoke.texi: Restore -fgcse-after-reload doc from 1.421,
 	mistakenly clobbered by 1.423.
 
