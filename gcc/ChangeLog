@@ -1,3 +1,10 @@
+2003-04-12  Stephane Carrez  <stcarrez@nerim.fr>
+
+	* config/m68hc11/larith.asm (memcpy): Use ARG macro to access stack
+	parameters so that offsets are valid for far definition.
+	(__mulsi3): Likewise and use ret to return.
+	(___adddi3, ___subdi3, ___notdi2, ): Don't use it to save the result.
+
 2003-04-12  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (rs6000_hash_constant): Skip '0' fields.

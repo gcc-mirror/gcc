@@ -289,8 +289,8 @@ Done:
 #else
 	xgdy
 	tsx
-	ldd	4,x
-	ldx	2,x		; SRC = X, DST = Y
+	ldd	ARG(4),x
+	ldx	ARG(2),x	; SRC = X, DST = Y
 	cpd	#0
 	beq	End
 	pshy
@@ -365,85 +365,85 @@ End:
 #endif
 
 #ifdef L_adddi3
-       declare	___adddi3
+	declare	___adddi3
 
 	tsx
 	xgdy
 	ldd	ARG(8),x		; Add LSB
 	addd	ARG(16),x
-	std	ARG(6),y		; Save (carry preserved)
+	std	6,y		; Save (carry preserved)
 
 	ldd	ARG(6),x
 	adcb	ARG(15),x
 	adca	ARG(14),x
-	std	ARG(4),y
+	std	4,y
 
 	ldd	ARG(4),x
 	adcb	ARG(13),x
 	adca	ARG(12),x
-	std	ARG(2),y
+	std	2,y
 	
 	ldd	ARG(2),x
 	adcb	ARG(11),x		; Add MSB
 	adca	ARG(10),x
-	std	ARG(0),y
+	std	0,y
 
 	xgdy
 	ret
 #endif
 
 #ifdef L_subdi3
-       declare	___subdi3
+	declare	___subdi3
 
 	tsx
 	xgdy
 	ldd	ARG(8),x		; Subtract LSB
 	subd	ARG(16),x
-	std	ARG(6),y		; Save, borrow preserved
+	std	6,y			; Save, borrow preserved
 
 	ldd	ARG(6),x
 	sbcb	ARG(15),x
 	sbca	ARG(14),x
-	std	ARG(4),y
+	std	4,y
 
 	ldd	ARG(4),x
 	sbcb	ARG(13),x
 	sbca	ARG(12),x
-	std	ARG(2),y
+	std	2,y
 	
 	ldd	ARG(2),x		; Subtract MSB
 	sbcb	ARG(11),x
 	sbca	ARG(10),x
-	std	ARG(0),y
+	std	0,y
 
 	xgdy			;
 	ret
 #endif
 	
 #ifdef L_notdi2
-        declare	___notdi2
+	declare	___notdi2
 
 	tsy
 	xgdx
 	ldd	ARG(8),y
 	coma
 	comb
-	std	ARG(6),x
+	std	6,x
 	
 	ldd	ARG(6),y
 	coma
 	comb
-	std	ARG(4),x
+	std	4,x
 
 	ldd	ARG(4),y
 	coma
 	comb
-	std	ARG(2),x
+	std	2,x
 
 	ldd	ARG(2),y
 	coma
 	comb
-	std	ARG(0),x
+	std	0,x
 	xgdx
 	ret
 #endif
@@ -966,8 +966,8 @@ Ret:
 	exg	d,y
 	ret
 #else
-B_low	=	8
-B_high	=	6
+B_low	=	ARG(8)
+B_high	=	ARG(6)
 A_low	=	0
 A_high	=	2
 	pshx
@@ -1015,7 +1015,7 @@ Return:
 	ins
 	ins
 	ins
-	rts
+	ret
 ;
 ; 
 ; A_low_zero_non_optimized:
