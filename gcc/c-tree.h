@@ -91,6 +91,11 @@ struct lang_type
 /* Record whether a typedef for type `int' was actually `signed int'.  */
 #define C_TYPEDEF_EXPLICITLY_SIGNED(exp) DECL_LANG_FLAG_1 ((exp))
 
+/* Nonzero for a declaration of a built in function if there has been no
+   occasion that would declare the function in ordinary C.
+   Using the function draws a pedantic warning in this case.  */
+#define C_DECL_ANTICIPATED(exp) DECL_LANG_FLAG_3 ((exp))
+
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
    without prototypes.  */
