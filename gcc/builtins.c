@@ -7385,6 +7385,11 @@ fold_builtin_strncpy (tree exp, tree slen)
   if (integer_zerop (len))
     return omit_one_operand (TREE_TYPE (exp), dest, src);
 
+  /* We can't compare slen with len as constants below if len is not a
+     constant.  */
+  if (len == 0 || TREE_CODE (len) != INTEGER_CST)
+    return 0;
+
   if (!slen)
     slen = c_strlen (src, 1);
 
