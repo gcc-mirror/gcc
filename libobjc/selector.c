@@ -38,7 +38,7 @@ static cache_ptr      __objc_selector_hash  = 0; /* name -> uid !T:MUTEX */
 /* Number of selectors stored in each of the above tables */
 unsigned int __objc_selector_max_index = 0;     /* !T:MUTEX */
 
-void __objc_init_selector_tables ()
+void __objc_init_selector_tables (void)
 {
   __objc_selector_array = sarray_new (SELECTOR_HASH_SIZE, 0);
   __objc_selector_names = sarray_new (SELECTOR_HASH_SIZE, 0);

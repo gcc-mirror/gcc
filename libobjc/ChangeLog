@@ -1,3 +1,8 @@
+2004-12-12  Alexander Malmberg  <alexander@malmberg.org>
+
+	* selector.c (__objc_init_selector_tables): Add missing void to
+	definition.
+
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
