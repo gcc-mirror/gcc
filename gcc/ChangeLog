@@ -1,3 +1,9 @@
+2004-02-10  Paolo Bonzini  <bonzini@gnu.org>
+
+	PR c/14092
+	* fold-const.c (fold) <NEGATE_EXPR>: Convert result of
+	negate_expr back to the original type.
+
 2004-02-10  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Don't
