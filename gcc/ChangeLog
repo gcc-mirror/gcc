@@ -1,5 +1,11 @@
 2002-06-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR optimization/6759
+	* cse.c (cse_insn): Fold src_eqv just once, store it folded back into
+	the REQ_EQUAL note.
+
+2002-06-10  Jakub Jelinek  <jakub@redhat.com>
+
 	PR c/6660
 	* c-decl.c (grokfield): Allow user defined types if they declare
 	structs or unions for unnamed fields.

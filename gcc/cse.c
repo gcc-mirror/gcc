@@ -4915,7 +4915,10 @@ cse_insn (insn, libcall_insn)
       && (tem = find_reg_note (insn, REG_EQUAL, NULL_RTX)) != 0
       && (! rtx_equal_p (XEXP (tem, 0), SET_SRC (sets[0].rtl))
 	  || GET_CODE (SET_DEST (sets[0].rtl)) == STRICT_LOW_PART))
-    src_eqv = canon_reg (XEXP (tem, 0), NULL_RTX);
+    {
+      src_eqv = fold_rtx (canon_reg (XEXP (tem, 0), NULL_RTX), insn);
+      XEXP (tem, 0) = src_eqv;
+    }
 
   /* Canonicalize sources and addresses of destinations.
      We do this in a separate pass to avoid problems when a MATCH_DUP is
@@ -5019,7 +5022,6 @@ cse_insn (insn, libcall_insn)
 	    eqvmode = GET_MODE (SUBREG_REG (XEXP (dest, 0)));
 	  do_not_record = 0;
 	  hash_arg_in_memory = 0;
-	  src_eqv = fold_rtx (src_eqv, insn);
 	  src_eqv_hash = HASH (src_eqv, eqvmode);
 
 	  /* Find the equivalence class for the equivalent expression.  */
