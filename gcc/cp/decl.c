@@ -4289,8 +4289,22 @@ reshape_init (tree type, tree *initp)
 
 	  /* If the bound of the array is known, take no more initializers
 	     than are allowed.  */
-	  max_index = ((TYPE_DOMAIN (type) && (TREE_CODE (type) == ARRAY_TYPE))
-		       ? array_type_nelts (type) : NULL_TREE);
+	  max_index = NULL_TREE;
+	  if (TREE_CODE (type) == ARRAY_TYPE)
+	    {
+	      if (TYPE_DOMAIN (type))
+		max_index = array_type_nelts (type);
+	    }
+	  else
+	    {
+	      /* For a vector, the representation type is a struct
+		 containing a single member which is an array of the
+		 appropriate size.  */
+	      tree rtype = TYPE_DEBUG_REPRESENTATION_TYPE (type);
+	      if (rtype && TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (rtype))))
+		max_index = array_type_nelts (TREE_TYPE (TYPE_FIELDS (rtype)));
+	    }
+
 	  /* Loop through the array elements, gathering initializers.  */
 	  for (index = size_zero_node;
 	       *initp && (!max_index || !tree_int_cst_lt (max_index, index));
