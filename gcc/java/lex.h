@@ -1,5 +1,5 @@
 /* Language lexer definitions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
    Contributed by Alexandre Petit-Bianco (apbianco@cygnus.com)
 
 This file is part of GNU CC.
@@ -35,7 +35,7 @@ extern int   lineno;
 /* A Unicode character, as read from the input file  */
 typedef unsigned short unicode_t;
 
-#ifdef HAVE_ICONV_H
+#ifdef HAVE_ICONV
 #include <iconv.h>
 #endif /* HAVE_ICONV */
 
