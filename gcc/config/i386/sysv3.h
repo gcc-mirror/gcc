@@ -98,6 +98,21 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef FRAME_POINTER_REQUIRED
 #define FRAME_POINTER_REQUIRED \
   (current_function_calls_setjmp || current_function_calls_longjmp)
+
+/* Modify ASM_OUTPUT_LOCAL slightly to test -msvr3-shlib.  */
+#undef ASM_OUTPUT_LOCAL
+#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
+  do {							\
+    int align = exact_log2 (ROUNDED);			\
+    if (align > 2) align = 2;				\
+    if (TARGET_SVR3_SHLIB)				\
+      data_section ();					\
+    else						\
+      bss_section ();					\
+    ASM_OUTPUT_ALIGN ((FILE), align == -1 ? 2 : align);	\
+    ASM_OUTPUT_LABEL ((FILE), (NAME));			\
+    fprintf ((FILE), "\t.set .,.+%u\n", (ROUNDED));	\
+  } while (0)
 
 /* Define a few machine-specific details of the implementation of
    constructors.
