@@ -1,3 +1,7 @@
+2003-06-16  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* (REG_CLASS_FROM_CONSTRAINT): Only define if not already defined.
+
 2003-06-15  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* function.h (struct emit_status): Remove x_last_linenum,
