@@ -6403,9 +6403,9 @@ cse_insn (insn, in_libcall_block)
 	    trial = src, src_cost = 10000;
           else if (src_eqv_cost <= src_related_cost
 	           && src_eqv_cost <= src_elt_cost)
-	    trial = src_eqv_here, src_eqv_cost = 10000;
+	    trial = copy_rtx (src_eqv_here), src_eqv_cost = 10000;
           else if (src_related_cost <= src_elt_cost)
-	    trial = src_related, src_related_cost = 10000;
+	    trial = copy_rtx (src_related), src_related_cost = 10000;
           else
 	    {
 	      trial = copy_rtx (elt->exp);
