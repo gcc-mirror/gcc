@@ -1,38 +1,32 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
-@node Config
-@chapter The Configuration File
+@node Host Config
+@chapter Host Configuration Headers
 @cindex configuration file
 @cindex @file{xm-@var{machine}.h}
 
-The configuration file @file{xm-@var{machine}.h} contains macro
-definitions that describe the machine and system on which the compiler
-is running, unlike the definitions in @file{@var{machine}.h}, which
-describe the machine for which the compiler is producing output.  Most
-of the values in @file{xm-@var{machine}.h} are actually the same on all
-machines that GCC runs on, so large parts of all configuration files
-are identical.  But there are some macros that vary:
+Host configuration headers contain macro definitions that describe the
+machine and system on which the compiler is running.  They are usually
+unnecessary.  Most of the things GCC needs to know about the host
+system can be deduced by the @command{configure} script.
 
-@table @code
-@findex USG
-@item USG
-Define this macro if the host system is System V@.
+If your host does need a special configuration header, it should be
+named @file{xm-@var{machine}.h}, where @var{machine} is a short mnemonic
+for the machine.  Here are some macros which this header can define.
 
-@findex VMS
+@ftable @code
 @item VMS
 Define this macro if the host system is VMS@.
 
-@findex FATAL_EXIT_CODE
 @item FATAL_EXIT_CODE
 A C expression for the status code to be returned when the compiler
 exits after serious errors.  The default is the system-provided macro
 @samp{EXIT_FAILURE}, or @samp{1} if the system doesn't define that
 macro.  Define this macro only if these defaults are incorrect.
 
-@findex SUCCESS_EXIT_CODE
 @item SUCCESS_EXIT_CODE
 A C expression for the status code to be returned when the compiler
 exits without serious errors.  (Warnings are not serious errors.)  The
@@ -40,189 +34,66 @@ default is the system-provided macro @samp{EXIT_SUCCESS}, or @samp{0} if
 the system doesn't define that macro.  Define this macro only if these
 defaults are incorrect.
 
-@findex HOST_WORDS_BIG_ENDIAN
-@item HOST_WORDS_BIG_ENDIAN
-Defined if the host machine stores words of multi-word values in
-big-endian order.  (GCC does not depend on the host byte ordering
-within a word.)
-
-@findex HOST_FLOAT_WORDS_BIG_ENDIAN
-@item HOST_FLOAT_WORDS_BIG_ENDIAN
-Define this macro to be 1 if the host machine stores @code{DFmode},
-@code{XFmode} or @code{TFmode} floating point numbers in memory with the
-word containing the sign bit at the lowest address; otherwise, define it
-to be zero.
-
-This macro need not be defined if the ordering is the same as for
-multi-word integers.
-
-@findex HOST_FLOAT_FORMAT
-@item HOST_FLOAT_FORMAT
-A numeric code distinguishing the floating point format for the host
-machine.  See @code{TARGET_FLOAT_FORMAT} in @ref{Storage Layout} for the
-alternatives and default.
-
-@findex HOST_BITS_PER_CHAR
-@item HOST_BITS_PER_CHAR
-A C expression for the number of bits in @code{char} on the host
-machine.
-
-@findex HOST_BITS_PER_SHORT
-@item HOST_BITS_PER_SHORT
-A C expression for the number of bits in @code{short} on the host
-machine.
-
-@findex HOST_BITS_PER_INT
-@item HOST_BITS_PER_INT
-A C expression for the number of bits in @code{int} on the host
-machine.
-
-@findex HOST_BITS_PER_LONG
-@item HOST_BITS_PER_LONG
-A C expression for the number of bits in @code{long} on the host
-machine.
-
-@findex HOST_BITS_PER_LONGLONG
-@item HOST_BITS_PER_LONGLONG
-A C expression for the number of bits in @code{long long} on the host
-machine.
-
-@findex ONLY_INT_FIELDS
-@item ONLY_INT_FIELDS
-Define this macro to indicate that the host compiler only supports
-@code{int} bit-fields, rather than other integral types, including
-@code{enum}, as do most C compilers.
-
-@findex OBSTACK_CHUNK_SIZE
-@item OBSTACK_CHUNK_SIZE
-A C expression for the size of ordinary obstack chunks.
-If you don't define this, a usually-reasonable default is used.
-
-@findex OBSTACK_CHUNK_ALLOC
-@item OBSTACK_CHUNK_ALLOC
-The function used to allocate obstack chunks.
-If you don't define this, @code{xmalloc} is used.
-
-@findex OBSTACK_CHUNK_FREE
-@item OBSTACK_CHUNK_FREE
-The function used to free obstack chunks.
-If you don't define this, @code{free} is used.
-
-@findex USE_C_ALLOCA
 @item USE_C_ALLOCA
-Define this macro to indicate that the compiler is running with the
-@code{alloca} implemented in C@.  This version of @code{alloca} can be
-found in the file @file{alloca.c}; to use it, you must also alter the
-@file{Makefile} variable @code{ALLOCA}.  (This is done automatically
-for the systems on which we know it is needed.)
+Define this macro if GCC should use the C implementation of @code{alloca}
+provided by @file{libiberty.a}.  This only affects how some parts of the
+compiler itself allocate memory.  It does not change code generation.
 
-If you do define this macro, you should probably do it as follows:
+When GCC is built with a compiler other than itself, the C @code{alloca}
+is always used.  This is because most other implementations have serious
+bugs.  You should define this macro only on a system where no
+stack-based @code{alloca} can possibly work.  For instance, if a system
+has a small limit on the size of the stack, GCC's builtin @code{alloca}
+will not work reliably.
 
-@example
-#ifndef __GNUC__
-#define USE_C_ALLOCA
-#else
-#define alloca __builtin_alloca
-#endif
-@end example
+@item HAVE_DOS_BASED_FILE_SYSTEM
+Define this macro if the host file system obeys the semantics defined by
+MS-DOS instead of Unix.  DOS file systems are case insensitive, file
+specifications may begin with a drive letter, and both forward slash and
+backslash (@samp{/} and @samp{\}) are directory separators.  If you
+define this macro, you probably need to define the next three macros too.
 
-@noindent
-so that when the compiler is compiled with GCC it uses the more
-efficient built-in @code{alloca} function.
-
-@item FUNCTION_CONVERSION_BUG
-@findex FUNCTION_CONVERSION_BUG
-Define this macro to indicate that the host compiler does not properly
-handle converting a function value to a pointer-to-function when it is
-used in an expression.
-
-@findex MULTIBYTE_CHARS
-@item MULTIBYTE_CHARS
-Define this macro to enable support for multibyte characters in the
-input to GCC@.  This requires that the host system support the ISO C
-library functions for converting multibyte characters to wide
-characters.
-
-@findex POSIX
-@item POSIX
-Define this if your system is POSIX.1 compliant.
-
-@findex PATH_SEPARATOR
 @item PATH_SEPARATOR
-Define this macro to be a C character constant representing the
-character used to separate components in paths.  The default value is
-the colon character
+If defined, this macro should expand to a character constant specifying
+the separator for elements of search paths.  The default value is a
+colon (@samp{:}).  DOS-based systems usually use semicolon (@samp{;}).
 
-@findex DIR_SEPARATOR
 @item DIR_SEPARATOR
-If your system uses some character other than slash to separate
-directory names within a file specification, define this macro to be a C
-character constant specifying that character.  When GCC displays file
-names, the character you specify will be used.  GCC will test for
-both slash and the character you specify when parsing filenames.
+@itemx DIR_SEPARATOR_2
+If defined, these macros expand to character constants specifying
+separators for directory names within a file specification.  They are
+used somewhat inconsistently throughout the compiler.  If your system
+behaves like Unix (only forward slash separates pathnames), define
+neither of them.  If your system behaves like DOS (both forward and
+backward slash can be used), define @code{DIR_SEPARATOR} to @samp{/}
+and @code{DIR_SEPARATOR_2} to @samp{\}.
 
-@findex DIR_SEPARATOR_2
-@item DIR_SEPARATOR_2
-If your system uses an alternative character other than
-@samp{DIR_SEPARATOR} to separate directory names within a file
-specification, define this macro to be a C character constant specifying
-that character.  If you define this macro, GCC will test for slash,
-@samp{DIR_SEPARATOR}, and @samp{DIR_SEPARATOR_2} when parsing filenames.
-
-@findex TARGET_OBJECT_SUFFIX
-@item TARGET_OBJECT_SUFFIX
-Define this macro to be a C string representing the suffix for object
-files on your target machine.  If you do not define this macro, GCC will
-use @samp{.o} as the suffix for object files.
-
-@findex TARGET_EXECUTABLE_SUFFIX
-@item TARGET_EXECUTABLE_SUFFIX
-Define this macro to be a C string representing the suffix to be
-automatically added to executable files on your target machine.  If you
-do not define this macro, GCC will use the null string as the suffix for
-executable files.
-
-@findex HOST_OBJECT_SUFFIX
 @item HOST_OBJECT_SUFFIX
 Define this macro to be a C string representing the suffix for object
-files on your host machine (@samp{xm-*.h}).  If you do not define this
-macro, GCC will use @samp{.o} as the suffix for object files.
+files on your host machine.  If you do not define this macro, GCC will
+use @samp{.o} as the suffix for object files.
 
-@findex HOST_EXECUTABLE_SUFFIX
 @item HOST_EXECUTABLE_SUFFIX
 Define this macro to be a C string representing the suffix for
-executable files on your host machine (@samp{xm-*.h}).  If you do not
-define this macro, GCC will use the null string as the suffix for
-executable files.
+executable files on your host machine.  If you do not define this macro,
+GCC will use the null string as the suffix for executable files.
 
-@findex HOST_BIT_BUCKET
 @item HOST_BIT_BUCKET
-The name of a file or file-like object on the host system which acts as
-a ``bit bucket''.  If you do not define this macro, GCC will use
-@samp{/dev/null} as the bit bucket.  If the target does not support a
-bit bucket, this should be defined to the null string, or some other
-invalid filename.  If the bit bucket is not writable, GCC will use a
-temporary file instead.
+A pathname defined by the host operating system, which can be opened as
+a file and written to, but all the information written is discarded.
+This is commonly known as a @dfn{bit bucket} or @dfn{null device}.  If
+you do not define this macro, GCC will use @samp{/dev/null} as the bit
+bucket.  If the host does not support a bit bucket, define this macro to
+an invalid filename.
 
-@findex COLLECT_EXPORT_LIST
-@item COLLECT_EXPORT_LIST
-If defined, @code{collect2} will scan the individual object files
-specified on its command line and create an export list for the linker.
-Define this macro for systems like AIX, where the linker discards
-object files that are not referenced from @code{main} and uses export
-lists.
-
-@findex COLLECT2_HOST_INITIALIZATION
 @item COLLECT2_HOST_INITIALIZATION
 If defined, a C statement (sans semicolon) that performs host-dependent
 initialization when @code{collect2} is being initialized.
 
-@findex GCC_DRIVER_HOST_INITIALIZATION
 @item GCC_DRIVER_HOST_INITIALIZATION
 If defined, a C statement (sans semicolon) that performs host-dependent
 initialization when a compilation driver is being initialized.
 
-@findex UPDATE_PATH_HOST_CANONICALIZE
 @item UPDATE_PATH_HOST_CANONICALIZE (@var{path})
 If defined, a C statement (sans semicolon) that performs host-dependent
 canonicalization when a path used in a compilation driver or
@@ -231,19 +102,29 @@ canonicalized.  If the C statement does canonicalize @var{path} into a
 different buffer, the old path should be freed and the new buffer should
 have been allocated with malloc.
 
-@findex DUMPFILE_FORMAT
 @item DUMPFILE_FORMAT
-Define this macro to be a C string representing the format to use
-for constructing the index part of the dump file name on your host machine.
-If you do not define this macro, GCC will use @samp{.%02d.}.  The full
-filename will be the prefix of the assembler file name concatenated with
-the string resulting from applying this format concatenated with a string
+Define this macro to be a C string representing the format to use for
+constructing the index part of debugging dump file names.  The resultant
+string must fit in fifteen bytes.  The full filename will be the
+concatenation of: the prefix of the assembler file name, the string
+resulting from applying this format to an index number, and a string
 unique to each dump file kind, e.g. @samp{rtl}.
-@end table
 
-@findex bzero
-@findex bcmp
-In addition, configuration files for system V define @code{bcopy},
-@code{bzero} and @code{bcmp} as aliases.  Some files define @code{alloca}
-as a macro when compiled with GCC, in order to take advantage of the
-benefit of GCC's built-in @code{alloca}.
+If you do not define this macro, GCC will use @samp{.%02d.}.  You should
+define this macro if using the default will create an invalid file name.
+
+@item SMALL_ARG_MAX
+Define this macro if the host system has a small limit on the total
+size of an argument vector.  This causes the driver to take more care
+not to pass unnecessary arguments to subprocesses.
+@end ftable
+
+In addition, if @command{configure} generates an incorrect definition of
+any of the macros in @file{auto-host.h}, you can override that
+definition in a host configuration header.  If you need to do this,
+first see if it is possible to fix @command{configure}.
+
+If you need to define only a few of these macros, and they have simple
+definitions, consider using the @code{xm_defines} variable in your
+@file{config.gcc} entry instead of creating a host configuration header.
+@xref{System Config}.
