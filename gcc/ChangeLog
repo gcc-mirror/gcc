@@ -1,3 +1,9 @@
+1999-12-18  David S. Miller  <davem@redhat.com>
+
+	* toplev.c (rest_of_compilation): Restore BLOCK tree
+	reconstruction and branch shortening changes lost in
+	December 18th change.
+
 Sat Dec 18 05:29:29 1999  Scott Bambrough  <scottb@netwinder.org>
 
 	* config/arm/linux-elf.h: Change all instances of 
