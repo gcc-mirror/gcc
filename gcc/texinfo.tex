@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.247 1998/06/29 14:05:28 karl Exp $
+% $Id: texinfo.tex,v 2.249 1998/06/29 21:46:34 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -58,7 +58,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.247 $
+\deftexinfoversion$Revision: 2.249 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -1793,11 +1793,6 @@ July\or August\or September\or October\or November\or December\fi
   \itemindex{#1}%
   \nobreak % This prevents a break before @itemx.
   %
-  % Be sure we are not still in the middle of a paragraph.
-  %{\parskip = 0in
-  %\par
-  %}%
-  %
   % If the item text does not fit in the space we have, put it on a line
   % by itself, and do not allow a page break either before or after that
   % line.  We do not start a paragraph here because then if the next
@@ -1830,9 +1825,15 @@ July\or August\or September\or October\or November\or December\fi
     % text will be indented by \tableindent, we make the item text be in
     % a zero-width box.
     \noindent
-    \rlap{\hskip -\tableindent\box0}\ignorespaces%
-    \endgroup%
-    \itemxneedsnegativevskiptrue%
+    % Do this with kerns and \unhbox so that if there is a footnote in
+    % the item text, it can migrate to the main vertical list and
+    % eventually be printed.
+    \nobreak\kern-\tableindent
+    \dimen0 = \itemmax  \advance\dimen0 by -\wd0
+    \unhbox0
+    \nobreak\kern\dimen0
+    \endgroup
+    \itemxneedsnegativevskiptrue
   \fi
 }
 
@@ -1843,9 +1844,10 @@ July\or August\or September\or October\or November\or December\fi
 \def\xitem{\errmessage{@xitem while not in a table}}
 \def\xitemx{\errmessage{@xitemx while not in a table}}
 
-%% Contains a kludge to get @end[description] to work
+% Contains a kludge to get @end[description] to work.
 \def\description{\tablez{\dontindex}{1}{}{}{}{}}
 
+% @table, @ftable, @vtable.
 \def\table{\begingroup\inENV\obeylines\obeyspaces\tablex}
 {\obeylines\obeyspaces%
 \gdef\tablex #1^^M{%
@@ -4623,10 +4625,16 @@ width0pt\relax} \fi
 \def\appendixnoderef{%
   \ifx\lastnode\relax\else
     \expandafter\expandafter\expandafter\setref{\lastnode}%
-      {Yappendixletterandtype}
+      {Yappendixletterandtype}%
     \global\let\lastnode=\relax
   \fi
 }
+
+
+% @anchor{NAME} -- define xref target at arbitrary point.
+% 
+\def\anchor#1{\setref{#1}{Ynothing}}
+
 
 % \setref{NAME}{SNT} defines a cross-reference point NAME, namely
 % NAME-title, NAME-pg, and NAME-SNT.  Called from \foonoderef.  We have
@@ -4691,8 +4699,15 @@ width0pt\relax} \fi
     % into the usual \leavevmode...\vrule stuff for purposes of
     % printing. So we \turnoffactive for the \refx-snt, back on for the
     % printing, back off for the \refx-pg.
-    {\normalturnoffactive \refx{#1-snt}{}}%
-    \space [\printednodename],\space
+    {\normalturnoffactive
+     % Only output a following space if the -snt ref is nonempty; for
+     % @unnumbered and @anchor, it won't be.
+     \setbox2 = \hbox{\ignorespaces \refx{#1-snt}{}}%
+     \ifdim \wd2 > 0pt \refx{#1-snt}\space\fi
+    }%
+    % `mynode, '
+    [\printednodename],\space
+    % `page 3'.
     \turnoffactive \putwordpage\tie\refx{#1-pg}{}%
   \fi
 \endgroup}
