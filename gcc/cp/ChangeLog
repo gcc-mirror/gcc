@@ -1,5 +1,10 @@
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* semantics.c (RECHAIN_STMTS): Remove `last' parameter.
+	(RECHAIN_STMTS_FROM_LAST): Remove.  Replace all uses with
+	RECHAIN_STMTS. 
+	(RECHAIN_STMST_FROM_CHAIN): Likewise.
+
 	* parse.y (simple_stmt): Fix typo in last change.
 
 	* cp-tree.h (EXPR_STMT_ASSIGNS_THIS): New macro.

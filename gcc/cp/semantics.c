@@ -53,25 +53,19 @@ static tree expand_cond PROTO((tree));
    bottom-up.  This macro makes LAST_TREE the indicated SUBSTMT of
    STMT.  */
 
-#define RECHAIN_STMTS(stmt, substmt, last)	\
-  do {						\
-    substmt = last;			        \
-    TREE_CHAIN (stmt) = NULL_TREE;		\
-    last_tree = stmt;				\
+#define RECHAIN_STMTS(stmt, substmt)	\
+  do {					\
+    substmt = TREE_CHAIN (stmt);	\
+    TREE_CHAIN (stmt) = NULL_TREE;	\
+    last_tree = stmt;			\
   } while (0)
-
-#define RECHAIN_STMTS_FROM_LAST(stmt, substmt)	\
-  RECHAIN_STMTS (stmt, substmt, last_tree)
-
-#define RECHAIN_STMTS_FROM_CHAIN(stmt, substmt)	\
-  RECHAIN_STMTS (stmt, substmt, TREE_CHAIN (stmt))
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
 #define FINISH_COND(cond, stmt, substmt) 	\
   do {						\
     if (last_tree != stmt)			\
-      RECHAIN_STMTS_FROM_LAST (stmt, substmt);	\
+      RECHAIN_STMTS (stmt, substmt);	        \
     else					\
       substmt = cond;				\
   } while (0)
@@ -196,8 +190,7 @@ finish_then_clause (if_stmt)
 {
   if (building_stmt_tree ())
     {
-      RECHAIN_STMTS_FROM_CHAIN (if_stmt, 
-				THEN_CLAUSE (if_stmt));
+      RECHAIN_STMTS (if_stmt, THEN_CLAUSE (if_stmt));
       last_tree = if_stmt;
       return if_stmt;
     }
@@ -222,7 +215,7 @@ finish_else_clause (if_stmt)
      tree if_stmt;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (if_stmt, ELSE_CLAUSE (if_stmt));
+    RECHAIN_STMTS (if_stmt, ELSE_CLAUSE (if_stmt));
 }
 
 /* Finsh an if-statement.  */
@@ -298,7 +291,7 @@ finish_while_stmt (while_stmt)
   do_poplevel ();
 
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (while_stmt, WHILE_BODY (while_stmt));
+    RECHAIN_STMTS (while_stmt, WHILE_BODY (while_stmt));
   else
     expand_end_loop ();
   finish_stmt ();
@@ -332,7 +325,7 @@ finish_do_body (do_stmt)
      tree do_stmt;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (do_stmt, DO_BODY (do_stmt));
+    RECHAIN_STMTS (do_stmt, DO_BODY (do_stmt));
   else
     expand_loop_continue_here ();
 }
@@ -411,7 +404,7 @@ finish_for_init_stmt (for_stmt)
   if (building_stmt_tree ())
     {
       if (last_tree != for_stmt)
-	RECHAIN_STMTS_FROM_CHAIN (for_stmt, FOR_INIT_STMT (for_stmt));
+	RECHAIN_STMTS (for_stmt, FOR_INIT_STMT (for_stmt));
     }
   else
     {
@@ -479,7 +472,7 @@ finish_for_stmt (expr, for_stmt)
   do_poplevel ();
 
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (for_stmt, FOR_BODY (for_stmt));
+    RECHAIN_STMTS (for_stmt, FOR_BODY (for_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
@@ -577,7 +570,7 @@ finish_switch_stmt (cond, switch_stmt)
      tree switch_stmt;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (switch_stmt, SWITCH_BODY (switch_stmt));
+    RECHAIN_STMTS (switch_stmt, SWITCH_BODY (switch_stmt));
   else
     expand_end_case (cond);
   pop_momentary ();
@@ -676,7 +669,7 @@ finish_try_block (try_block)
      tree try_block;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_LAST (try_block, TRY_STMTS (try_block));
+    RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
   else
     expand_start_all_catch ();  
 }
@@ -705,7 +698,7 @@ finish_function_try_block (try_block)
      tree try_block; 
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_LAST (try_block, TRY_STMTS (try_block));
+    RECHAIN_STMTS (try_block, TRY_STMTS (try_block));
   else
     {
       end_protect_partials ();
@@ -722,7 +715,7 @@ finish_handler_sequence (try_block)
      tree try_block;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (try_block, TRY_HANDLERS (try_block));
+    RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
   else
     expand_end_all_catch ();
 }
@@ -734,7 +727,7 @@ finish_function_handler_sequence (try_block)
      tree try_block;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (try_block, TRY_HANDLERS (try_block));
+    RECHAIN_STMTS (try_block, TRY_HANDLERS (try_block));
   else
     {
       in_function_try_handler = 0;
@@ -770,7 +763,7 @@ finish_handler_parms (handler)
      tree handler;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (handler, HANDLER_PARMS (handler));
+    RECHAIN_STMTS (handler, HANDLER_PARMS (handler));
 }
 
 /* Finish a handler, which may be given by HANDLER.  */
@@ -780,7 +773,7 @@ finish_handler (handler)
      tree handler;
 {
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (handler, HANDLER_BODY (handler));
+    RECHAIN_STMTS (handler, HANDLER_BODY (handler));
   else
     expand_end_catch_block ();
 
@@ -840,10 +833,9 @@ finish_compound_stmt (has_no_scope, compound_stmt)
     r = NULL_TREE;
 
   if (building_stmt_tree ())
-    RECHAIN_STMTS_FROM_CHAIN (compound_stmt, 
-			      COMPOUND_BODY (compound_stmt));
+    RECHAIN_STMTS (compound_stmt, COMPOUND_BODY (compound_stmt));
 
-  /* When we call finish_stmt we will lost LAST_EXPR_TYPE.  But, since
+  /* When we call finish_stmt we will lose LAST_EXPR_TYPE.  But, since
      the precise purpose of that variable is store the type of the
      last expression statement within the last compound statement, we
      preserve the value.  */
