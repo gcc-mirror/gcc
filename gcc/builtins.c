@@ -78,8 +78,10 @@ static rtx expand_builtin_next_arg	PROTO((tree));
 static rtx expand_builtin_va_start	PROTO((int, tree));
 static rtx expand_builtin_va_end	PROTO((tree));
 static rtx expand_builtin_va_copy	PROTO((tree));
+#ifdef HAVE_cmpstrsi
 static rtx expand_builtin_memcmp	PROTO((tree, tree, rtx));
 static rtx expand_builtin_strcmp	PROTO((tree, rtx));
+#endif
 static rtx expand_builtin_memcpy	PROTO((tree));
 static rtx expand_builtin_strcpy	PROTO((tree));
 static rtx expand_builtin_memset	PROTO((tree));

@@ -1195,7 +1195,6 @@ operand_subword (op, i, validate_address, mode)
 {
   HOST_WIDE_INT val;
   int size_ratio = HOST_BITS_PER_WIDE_INT / BITS_PER_WORD;
-  int bits_per_word = BITS_PER_WORD;
 
   if (mode == VOIDmode)
     mode = GET_MODE (op);
