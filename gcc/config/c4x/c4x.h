@@ -79,14 +79,6 @@
     }						\
   while (0)
 
-/* Name of the c4x assembler.  */
-
-#define ASM_PROG "c4x-as"
-
-/* Name of the c4x linker.  */
-
-#define LD_PROG "c4x-ld"
-
 /* Define assembler options.  */
 
 #define ASM_SPEC "\
