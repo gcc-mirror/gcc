@@ -2675,10 +2675,6 @@ all_lang_makefiles=
 all_headers=
 all_lib2funcs=
 
-rm -f Make-host Make-target Make-hooks
-touch Make-host
-touch Make-target
-touch Make-hooks
 host_overrides="Make-host"
 target_overrides="Make-target"
 cross_overrides="/dev/null"
@@ -2719,6 +2715,10 @@ do
 	test -d $subdir || mkdir $subdir
 	cd $subdir
 
+	rm -f Make-host Make-target Make-hooks
+	touch Make-host
+	touch Make-target
+	touch Make-hooks
 	# Conditionalize the makefile for this host machine.
 	dep_host_xmake_file=
 	merged_frags=
