@@ -4833,11 +4833,18 @@ do_local_using_decl (decl)
     {
       if (is_overloaded_fn (newval))
 	{
-	  tree fn;
+	  tree fn, term;
 
 	  /* We only need to push declarations for those functions
-	     that were not already bound in the current level.  */
-	  for (fn = newval; fn != oldval; fn = OVL_NEXT (fn))
+	     that were not already bound in the current level.
+	     The old value might be NULL_TREE, it might be a single
+	     function, or an OVERLOAD.  */
+	  if (oldval && TREE_CODE (oldval) == OVERLOAD)
+	    term = OVL_FUNCTION (oldval);
+	  else
+	    term = oldval;
+	  for (fn = newval; fn && OVL_CURRENT (fn) != term; 
+	       fn = OVL_NEXT (fn))
 	    push_overloaded_decl (OVL_CURRENT (fn), 
 				  PUSH_LOCAL | PUSH_USING);
 	}
