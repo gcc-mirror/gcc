@@ -1,3 +1,10 @@
+2004-04-07  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* fixinc/inclhack.def (rpc_xdr_lvalue_cast_a,
+	rpc_xdr_lvalue_cast_b): New fixes.
+	* fixinc/fixincl.x: Regenerate.
+	* fixinc/tests/base/rpc/xdr.h: Add new tests.
+
 2004-04-07  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/rs6000.c (processor_target_table): Add MASK_MFCRF
