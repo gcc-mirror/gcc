@@ -9402,6 +9402,8 @@ gen_rtx_combine VPROTO((enum rtx_code code, enum machine_mode mode, ...))
       args[j] = va_arg (p, rtx);
     }
 
+  va_end (p);
+
   /* See if this is in undobuf.  Be sure we don't use objects that came
      from another insn; this could produce circular rtl structures.  */
 

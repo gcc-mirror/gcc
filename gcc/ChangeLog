@@ -1,3 +1,11 @@
+Sun Sep 26 07:37:11 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* combine.c (gen_rtx_combine): Add missing call to va_end().
+
+	* final.c (asm_fprintf): Likewise.
+
+	* genattrtab.c (attr_rtx): Likewise.
+
 Sat Sep 25 13:11:07 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* cse.c: Update comments.

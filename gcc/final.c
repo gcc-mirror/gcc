@@ -3883,6 +3883,7 @@ asm_fprintf VPROTO((FILE *file, const char *p, ...))
       default:
 	fputc (c, file);
       }
+  va_end (argptr);
 }
 
 /* Split up a CONST_DOUBLE or integer constant rtx
