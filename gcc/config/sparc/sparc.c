@@ -506,6 +506,7 @@ enum processor_type sparc_cpu;
 #undef TARGET_RELAXED_ORDERING
 #define TARGET_RELAXED_ORDERING SPARC_RELAXED_ORDERING
 
+#undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END sparc_file_end
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -1,3 +1,8 @@
+2005-04-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/sparc/sparc.c (TARGET_ASM_FILE_END): Undefine before
+	overriding.
+
 2005-04-05  Paolo Bonzini  <bonzini@gnu.org>
 
 	* system.h: Fix typo.
