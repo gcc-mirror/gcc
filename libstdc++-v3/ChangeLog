@@ -1,3 +1,9 @@
+2001-06-11  Matthias Klose  <doko@debian.org>
+            Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/doxygen/run_doxygen (find_doxygen):  Tweak version check.
+	(main script):  Echo more information.
+
 2001-06-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/c_std/bits/std_cwchar.h: Alphabetize.
