@@ -2874,25 +2874,31 @@ finish_decl (decl, init, asmspec_tree)
      was a normal built-in.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && asmspec)
     {
+      /* ASMSPEC is given, and not the name of a register.  Mark the
+      name with a star so assemble_name won't munge it.  */
+      char *starred = alloca (strlen (asmspec) + 2);
+      starred[0] = '*';
+      strcpy (starred + 1, asmspec);
+
       if (DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
 	{
 	  tree builtin = built_in_decls [DECL_FUNCTION_CODE (decl)];
 	  SET_DECL_RTL (builtin, NULL_RTX);
-	  SET_DECL_ASSEMBLER_NAME (builtin, get_identifier (asmspec));
+	  SET_DECL_ASSEMBLER_NAME (builtin, get_identifier (starred));
 #ifdef TARGET_MEM_FUNCTIONS
 	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMCPY)
-	    init_block_move_fn (asmspec);
+	    init_block_move_fn (starred);
 	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_MEMSET)
-	    init_block_clear_fn (asmspec);
+	    init_block_clear_fn (starred);
 #else
 	  if (DECL_FUNCTION_CODE (decl) == BUILT_IN_BCOPY)
-	    init_block_move_fn (asmspec);
+	    init_block_move_fn (starred);
 	  else if (DECL_FUNCTION_CODE (decl) == BUILT_IN_BZERO)
-	    init_block_clear_fn (asmspec);
+	    init_block_clear_fn (starred);
 #endif
 	}
       SET_DECL_RTL (decl, NULL_RTX);
-      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (asmspec));
+      SET_DECL_ASSEMBLER_NAME (decl, get_identifier (starred));
     }
 
   /* Output the assembler code and/or RTL code for variables and functions,
