@@ -544,8 +544,9 @@ static void
 parse_spec_module (label)
      tree label;
 {
-  tree module_name = push_module (set_module_name (label), 1);
   int save_ignoring = ignoring;
+
+  push_module (set_module_name (label), 1);
   ignoring = pass == 2;
   FORWARD_TOKEN(); /* SKIP SPEC */
   expect (MODULE, "expected 'MODULE' here");
@@ -3144,7 +3145,7 @@ parse_operand6 ()
 {
   if (check_token (RECEIVE))
     {
-      tree location = parse_primval ();
+      tree location ATTRIBUTE_UNUSED = parse_primval ();
       sorry ("RECEIVE expression");
       return integer_one_node;
     }
