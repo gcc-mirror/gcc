@@ -1515,7 +1515,7 @@ reload1.o : reload1.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) real.h flags.h \
    except.h
 caller-save.o : caller-save.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) flags.h \
    $(REGS_H) hard-reg-set.h insn-config.h $(BASIC_BLOCK_H) function.h \
-   $(RECOG_H) reload.h $(EXPR_H) insn-codes.h toplev.h $(TM_P_H)
+   $(RECOG_H) reload.h $(EXPR_H) toplev.h $(TM_P_H)
 reorg.o : reorg.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) $(REGS_H) insn-config.h $(INSN_ATTR_H) \
    $(RECOG_H) function.h flags.h output.h $(EXPR_H) toplev.h $(PARAMS_H) $(TM_P_H)
@@ -2377,7 +2377,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 # that don't exist in the distribution.
 INTL_CLEAN = intl.clean
 clean: mostlyclean $(INTL_CLEAN) lang.clean
-	-rm -f libgcc.a libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).0
+	-rm -f libgcc.a libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
 	-rm -f config.h tconfig.h hconfig.h tm_p.h
 	-rm -f cs-*
 	-rm -rf libgcc

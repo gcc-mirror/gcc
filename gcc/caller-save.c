@@ -31,7 +31,6 @@ Boston, MA 02111-1307, USA.  */
 #include "reload.h"
 #include "function.h"
 #include "expr.h"
-#include "insn-codes.h"
 #include "toplev.h"
 #include "tm_p.h"
 
@@ -65,9 +64,9 @@ static rtx
    when we emit them, the addresses might not be valid, so they might not
    be recognized.  */
 
-static enum insn_code 
+static int
   reg_save_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
-static enum insn_code 
+static int 
   reg_restore_code[FIRST_PSEUDO_REGISTER][MAX_MACHINE_MODE];
 
 /* Set of hard regs currently residing in save area (during insn scan).  */
@@ -95,7 +94,7 @@ static int insert_save			PARAMS ((struct insn_chain *, int, int,
 static int insert_restore		PARAMS ((struct insn_chain *, int, int,
 						 int, enum machine_mode *));
 static struct insn_chain *insert_one_insn PARAMS ((struct insn_chain *, int,
-						   enum insn_code, rtx));
+						   int, rtx));
 static void add_stored_regs		PARAMS ((rtx, rtx, void *));
 
 /* Initialize for caller-save.
@@ -199,8 +198,8 @@ init_caller_save ()
 
 	  /* Now extract both insns and see if we can meet their
              constraints.  */
-	  ok = (reg_save_code[i][mode] != (enum insn_code)-1
-		&& reg_restore_code[i][mode] != (enum insn_code)-1);
+	  ok = (reg_save_code[i][mode] != -1
+		&& reg_restore_code[i][mode] != -1);
 	  if (ok)
 	    {
 	      extract_insn (saveinsn);
@@ -211,18 +210,18 @@ init_caller_save ()
 
 	  if (! ok)
 	    {
-	      reg_save_code[i][mode] = (enum insn_code) -1;
-	      reg_restore_code[i][mode] = (enum insn_code) -1;
+	      reg_save_code[i][mode] = -1;
+	      reg_restore_code[i][mode] = -1;
 	    }
         }
       else
 	{
-	  reg_save_code[i][mode] = (enum insn_code) -1;
-	  reg_restore_code[i][mode] = (enum insn_code) -1;
+	  reg_save_code[i][mode] = -1;
+	  reg_restore_code[i][mode] = -1;
 	}
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 1; j <= MOVE_MAX_WORDS; j++)
-      if (reg_save_code [i][regno_save_mode[i][j]] == (enum insn_code) -1)
+      if (reg_save_code [i][regno_save_mode[i][j]] == -1)
 	{
 	  regno_save_mode[i][j] = VOIDmode;
 	  if (j == 1)
@@ -630,7 +629,7 @@ insert_restore (chain, before_p, regno, maxrestore, save_mode)
 {
   int i, k;
   rtx pat = NULL_RTX;
-  enum insn_code code = CODE_FOR_nothing;
+  int code;
   unsigned int numregs = 0;
   struct insn_chain *new;
   rtx mem;
@@ -708,7 +707,7 @@ insert_save (chain, before_p, regno, to_save, save_mode)
   int i;
   unsigned int k;
   rtx pat = NULL_RTX;
-  enum insn_code code = CODE_FOR_nothing;
+  int code;
   unsigned int numregs = 0;
   struct insn_chain *new;
   rtx mem;
@@ -776,7 +775,7 @@ static struct insn_chain *
 insert_one_insn (chain, before_p, code, pat)
      struct insn_chain *chain;
      int before_p;
-     enum insn_code code;
+     int code;
      rtx pat;
 {
   rtx insn = chain->insn;
