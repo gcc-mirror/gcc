@@ -1,3 +1,8 @@
+Tue Dec 19 00:37:08 2000  J"orn Rennecke <amylaar@redhat.com>
+
+	* reload.c (push_reload): When using a dying register for the reload
+	register in an in-out reload, use outmode if wider than inmode.
+
 2000-12-19  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* config/d30v/d30v.h (EXIT_BODY): Update comment.

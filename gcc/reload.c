@@ -1451,6 +1451,10 @@ push_reload (in, out, inloc, outloc, class,
     {
       rtx note;
       int regno;
+      enum machine_mode rel_mode = inmode;
+
+      if (out && GET_MODE_SIZE (outmode) > GET_MODE_SIZE (inmode))
+	rel_mode = outmode;
 
       for (note = REG_NOTES (this_insn); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_DEAD
@@ -1460,7 +1464,7 @@ push_reload (in, out, inloc, outloc, class,
 	    && ! refers_to_regno_for_reload_p (regno,
 					       (regno
 						+ HARD_REGNO_NREGS (regno,
-								    inmode)),
+								    rel_mode)),
 					       PATTERN (this_insn), inloc)
 	    /* If this is also an output reload, IN cannot be used as
 	       the reload register if it is set in this insn unless IN
@@ -1469,7 +1473,7 @@ push_reload (in, out, inloc, outloc, class,
 		|| ! hard_reg_set_here_p (regno,
 					  (regno
 					   + HARD_REGNO_NREGS (regno,
-							       inmode)),
+							       rel_mode)),
 					  PATTERN (this_insn)))
 	    /* ??? Why is this code so different from the previous?
 	       Is there any simple coherent way to describe the two together?
@@ -1481,9 +1485,9 @@ push_reload (in, out, inloc, outloc, class,
 			== ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			     + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))))
 	    /* Make sure the operand fits in the reg that dies.  */
-	    && GET_MODE_SIZE (inmode) <= GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
+	    && (GET_MODE_SIZE (rel_mode)
+		<= GET_MODE_SIZE (GET_MODE (XEXP (note, 0))))
 	    && HARD_REGNO_MODE_OK (regno, inmode)
-	    && GET_MODE_SIZE (outmode) <= GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
 	    && HARD_REGNO_MODE_OK (regno, outmode))
 	  {
 	    unsigned int offs;
@@ -1498,7 +1502,7 @@ push_reload (in, out, inloc, outloc, class,
 
 	    if (offs == nregs)
 	      {
-		rld[i].reg_rtx = gen_rtx_REG (inmode, regno);
+		rld[i].reg_rtx = gen_rtx_REG (rel_mode, regno);
 		break;
 	      }
 	  }
