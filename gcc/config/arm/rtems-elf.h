@@ -29,3 +29,11 @@
 	builtin_define ("__rtems__");		\
 	builtin_assert ("system=rtems");	\
     } while (0)
+
+/*
+ * The default in gcc now is soft-float, but gcc misses it to 
+ * pass it to the assembler.
+ */
+#undef SUBTARGET_EXTRA_ASM_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC "\
+  %{!mhard-float: %{!msoft-float:-mfpu=softfpa}}"
