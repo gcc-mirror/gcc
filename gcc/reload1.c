@@ -5650,6 +5650,7 @@ emit_reload_insns (insn)
   rtx output_address_reload_insns[MAX_RECOG_OPERANDS];
   rtx operand_reload_insns = 0;
   rtx other_operand_reload_insns = 0;
+  rtx other_output_reload_insns = 0;
   rtx following_insn = NEXT_INSN (insn);
   rtx before_insn = insn;
   int special;
@@ -6288,7 +6289,10 @@ emit_reload_insns (insn)
 	  if (GET_CODE (insn) == JUMP_INSN)
 	    abort ();
 
-	  push_to_sequence (output_reload_insns[reload_opnum[j]]);
+	  if (reload_when_needed[j] == RELOAD_OTHER)
+	    push_to_sequence (other_output_reload_insns);
+	  else
+	    push_to_sequence (output_reload_insns[reload_opnum[j]]);
 
 	  /* Determine the mode to reload in.
 	     See comments above (for input reloading).  */
@@ -6432,7 +6436,11 @@ emit_reload_insns (insn)
 		  new_spill_reg_store[reload_spill_index[j]] = p;
 	      }
 
-	  output_reload_insns[reload_opnum[j]] = get_insns ();
+	  if (reload_when_needed[j] == RELOAD_OTHER)
+	    other_output_reload_insns = get_insns ();
+	  else
+	    output_reload_insns[reload_opnum[j]] = get_insns ();
+
 	  end_sequence ();
 	}
     }
@@ -6455,7 +6463,9 @@ emit_reload_insns (insn)
      After the insn being reloaded, we write the following:
 
      For each operand, any RELOAD_FOR_OUTPUT_ADDRESS reload followed by
-     the RELOAD_FOR_OUTPUT reload for that operand.  */
+     the RELOAD_FOR_OUTPUT reload for that operand.
+
+     Any RELOAD_OTHER output reloads.  */
 
   emit_insns_before (other_input_address_reload_insns, before_insn);
   emit_insns_before (other_input_reload_insns, before_insn);
@@ -6474,6 +6484,8 @@ emit_reload_insns (insn)
       emit_insns_before (output_address_reload_insns[j], following_insn);
       emit_insns_before (output_reload_insns[j], following_insn);
     }
+
+  emit_insns_before (other_output_reload_insns, following_insn);
 
   /* Move death notes from INSN
      to output-operand-address and output reload insns.  */
