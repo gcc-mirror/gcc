@@ -7,33 +7,30 @@ program intrinsic_associated
 end
  
 subroutine pointer_to_section ()
-   integer, dimension(100, 100), target :: xy
+   integer, dimension(5, 5), target :: xy
    integer, dimension(:, :), pointer :: window
-   integer i, j, k, m, n
-   data xy /10000*0/
+   data xy /25*0/
    logical t
 
-   window => xy(10:50, 30:60)
+   window => xy(2:4, 3:4)
    window = 10
    window (1, 1) = 0101
-   window (41, 31) = 4161
-   window (41, 1) = 4101
-   window (1, 31) = 0161
+   window (3, 2) = 4161
+   window (3, 1) = 4101
+   window (1, 2) = 0161
 
-   t = associated (window, xy(10:50, 30:60))
+   t = associated (window, xy(2:4, 3:4))
    if (.not.t) call abort ()
-   if (window(1, 1) .ne. xy(10, 30)) call abort ()
-   if (window(41, 31) .ne. xy(50, 60)) call abort ()
-   if (window(1, 31) .ne. xy(10, 60)) call abort ()
-   if (window(41, 1) .ne. xy(50, 30)) call abort ()
-   if (xy(9, 29) .ne. 0) call abort ()
-   if (xy(51,29 ) .ne. 0) call abort ()
-   if (xy(9, 60) .ne. 0) call abort ()
-   if (xy(51, 60) .ne. 0) call abort ()
-   if (xy(11, 31) .ne. 10) call abort ()
-   if (xy(49, 59) .ne. 10) call abort ()
-   if (xy(11, 59) .ne. 10) call abort ()
-   if (xy(49, 31) .ne. 10) call abort ()
+   ! Check that none of the array got mangled
+   if ((xy(2, 3) .ne. 0101) .or. (xy (4, 4) .ne. 4161) &
+       .or. (xy(4, 3) .ne. 4101) .or. (xy (2, 4) .ne. 0161)) call abort ()
+   if (any (xy(:, 1:2) .ne. 0)) call abort ()
+   if (any (xy(:, 5) .ne. 0)) call abort ()
+   if (any (xy (1, 3:4) .ne. 0)) call abort ()
+   if (any (xy (5, 3:4) .ne. 0)) call abort ()
+   if (xy(3, 3) .ne. 10) call abort ()
+   if (xy(3, 4) .ne. 10) call abort ()
+   if (any (xy(2:4, 3:4) .ne. window)) call abort ()
 end
 
 subroutine sub1 (a, ap)
