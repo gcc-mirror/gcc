@@ -1,3 +1,8 @@
+Tue Nov 17 22:25:16 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (reload_reg_free_for_value_p): When considered reload
+	has an output, matching inputs are not sufficient to avoid conflict.
+
 Tue Nov 17 11:51:16 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* hash.h (hash_table_key): New type.

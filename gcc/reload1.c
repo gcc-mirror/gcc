@@ -5152,7 +5152,7 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 	  && i != reloadnum)
 	{
 	  if (! reload_in[i] || ! rtx_equal_p (reload_in[i], value)
-	      || reload_out[i])
+	      || reload_out[i] || out)
 	    {
 	      int time2;
 	      switch (reload_when_needed[i])
@@ -5246,8 +5246,10 @@ reload_reg_free_for_value_p (regno, opnum, type, value, out, reloadnum,
 		default:
 		  return 0;
 		}
-	      if (time1 >= time2
-		  || (out && time2 >= MAX_RECOG_OPERANDS * 4 + 4))
+	      if ((time1 >= time2
+		   && (! reload_in[i] || reload_out[i]
+		       || ! rtx_equal_p (reload_in[i], value)))
+		  || (out && time2 >= MAX_RECOG_OPERANDS * 4 + 3))
 		return 0;
 	    }
 	}
