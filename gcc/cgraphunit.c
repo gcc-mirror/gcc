@@ -190,9 +190,8 @@ cgraph_finalize_compilation_unit (void)
       cgraph_create_edges (decl, DECL_SAVED_TREE (decl));
 
       node->local.inlinable = tree_inlinable_function_p (decl, 1);
-      if (!DECL_ESTIMATED_INSNS (decl))
-	DECL_ESTIMATED_INSNS (decl)
-          = (*lang_hooks.tree_inlining.estimate_num_insns) (decl);
+      DECL_ESTIMATED_INSNS (decl)
+        = (*lang_hooks.tree_inlining.estimate_num_insns) (decl);
       node->local.self_insns = DECL_ESTIMATED_INSNS (decl);
       if (node->local.inlinable)
 	node->local.disgread_inline_limits
