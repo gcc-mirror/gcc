@@ -3407,7 +3407,7 @@ convert_for_assignment (tree type, tree rhs, const char *errtype,
       return rhs;
     }
   /* Some types can interconvert without explicit casts.  */
-  else if (codel == VECTOR_TYPE
+  else if (codel == VECTOR_TYPE && coder == VECTOR_TYPE
            && vector_types_convertible_p (type, TREE_TYPE (rhs)))
     return convert (type, rhs);
   /* Arithmetic types all interconvert, and enum is treated like int.  */
@@ -4082,6 +4082,7 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
      vector constructor is not constant (e.g. {1,2,3,foo()}) then punt
      below and handle as a constructor.  */
     if (code == VECTOR_TYPE
+	&& TREE_CODE (TREE_TYPE (inside_init)) == VECTOR_TYPE
         && vector_types_convertible_p (TREE_TYPE (inside_init), type)
         && TREE_CONSTANT (inside_init))
       {
@@ -4188,7 +4189,10 @@ digest_init (tree type, tree init, bool strict_string, int require_constant)
 	= convert_for_assignment (type, init, _("initialization"),
 				  NULL_TREE, NULL_TREE, 0);
 
-      if (require_constant && ! TREE_CONSTANT (inside_init))
+      /* Check to see if we have already given an error message.  */
+      if (inside_init == error_mark_node)
+	;
+      else if (require_constant && ! TREE_CONSTANT (inside_init))
 	{
 	  error_init ("initializer element is not constant");
 	  inside_init = error_mark_node;
