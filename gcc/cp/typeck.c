@@ -1058,6 +1058,11 @@ comptypes (tree t1, tree t2, int strict)
     case COMPLEX_TYPE:
       return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
 
+    case VECTOR_TYPE:
+      return TYPE_VECTOR_SUBPARTS (t1) == TYPE_VECTOR_SUBPARTS (t2)
+	     && same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
+      break;
+
     default:
       break;
     }
@@ -5600,8 +5605,7 @@ convert_for_assignment (tree type, tree rhs,
   coder = TREE_CODE (rhstype);
 
   if (TREE_CODE (type) == VECTOR_TYPE && coder == VECTOR_TYPE
-      && ((*targetm.vector_opaque_p) (type)
-	  || (*targetm.vector_opaque_p) (rhstype)))
+      && vector_types_convertible_p (type, rhstype))
     return convert (type, rhs);
 
   if (rhs == error_mark_node || rhstype == error_mark_node)
