@@ -1,3 +1,8 @@
+2003-10-16  Paolo Carlini  <pcarlini@suse.de>
+
+	* src/locale.cc (locale::locale(const char*)): ... one
+	more comparison missed in the previous commit.
+
 2003-10-16  Benjamin Kosnik  <bkoz@redhat.com>
 
         * acconfig.h: Add HAVE_DRAND48 and HAVE_ISATTY.
