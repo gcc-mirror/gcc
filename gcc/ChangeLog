@@ -1,3 +1,8 @@
+2002-04-26  Alexandre Oliva  <aoliva@redhat.com>
+
+	* tree.c (tree_int_cst_lt): Compare constants whose types differ
+	in unsigned-ness correctly.
+
 2002-04-26  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa.h (FUNCTION_OK_FOR_SIBCALL): Don't do sibcalls when using the
