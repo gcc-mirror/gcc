@@ -1,3 +1,16 @@
+Wed Aug 26 05:09:27 1998  Jakub Jelinek  <jj@sunsite.ms.mff.cuni.cz>
+
+	* config/sparc/sparc.c (sparc_override_options): If not
+	TARGET_FPU, turn off TARGET_VIS.
+	* config/sparc/sparc.h (TARGET_SWITCHES): Add no-vis.
+	(LEGITIMATE_CONSTANT_P): Allow SF/DF mode zero when TARGET_VIS.
+	* config/sparc/sparc.md (movsi_insn): Use fzeros not fzero.
+	(movdi_insn_sp64): Add VIS fzero alternative.
+	(clear_sf, clear_df): New VIS patterns.
+	(movsf, movdf expanders): Allow fp_zero_operand flat out when
+	TARGET_VIS.
+	(one_cmpldi2_sp64): Provide new fnot1 VIS alternative.
+	
 Tue Aug 25 10:57:41 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* loop.c (n_times_set, n_times_used, may_not_optimize,

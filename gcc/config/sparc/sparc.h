@@ -501,6 +501,7 @@ extern int target_flags;
     {"v8plus", MASK_V8PLUS},		\
     {"no-v8plus", -MASK_V8PLUS},	\
     {"vis", MASK_VIS},			\
+    {"no-vis", -MASK_VIS},		\
     /* ??? These are deprecated, coerced to -mcpu=.  Delete in 2.9.  */ \
     {"cypress", 0},			\
     {"sparclite", 0},			\
@@ -2266,10 +2267,13 @@ extern struct rtx_def *sparc_builtin_saveregs ();
 #define LEGITIMATE_PIC_OPERAND_P(X)  (! pic_address_needs_scratch (X))
 
 /* Nonzero if the constant value X is a legitimate general operand.
-   Anything can be made to work except floating point constants.  */
+   Anything can be made to work except floating point constants.
+   If TARGET_VIS, 0.0 can be made to work as well.  */
 
-#define LEGITIMATE_CONSTANT_P(X) \
-  (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode)
+#define LEGITIMATE_CONSTANT_P(X) 					\
+  (GET_CODE (X) != CONST_DOUBLE || GET_MODE (X) == VOIDmode || 		\
+   (TARGET_VIS && (GET_MODE (X) == SFmode || GET_MODE (X) == DFmode) &&	\
+    fp_zero_operand (X)))
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

@@ -287,6 +287,10 @@ sparc_override_options ()
   /* Don't use stack biasing in 32 bit mode.  */
   if (TARGET_ARCH32)
     target_flags &= ~MASK_STACK_BIAS;
+    
+  /* Don't allow -mvis if FPU is disabled.  */
+  if (! TARGET_FPU)
+    target_flags &= ~MASK_VIS;
 
   /* Validate -malign-loops= value, or provide default.  */
   if (sparc_align_loops_string)
