@@ -1,5 +1,12 @@
 2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	PR target/13380.
+	* config/m32r/m32r.md: Replace (reg:SI 17) with (reg:CC 17)
+	or (ne:SI (reg:CC 17) (const_int 0)).
+	Be specific about modes wherever possible.
+
+2004-01-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/m32r/m32r.c (m32r_expand_block_move): Call
 	gen_movestrsi_internal with two more arguments.
 	(m32r_output_block_move): Adjust operand numbers.
