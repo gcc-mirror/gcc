@@ -4750,30 +4750,33 @@ reposition_prologue_and_epilogue_notes (f)
 	     reorg has run.  */
 	  for (len = 0; prologue[len]; len++)
 	    ;
-	  for (insn = f; insn; insn = NEXT_INSN (insn))
-	    if (GET_CODE (insn) == NOTE)
-	      {
-		if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
-		  note = insn;
-	      }
-	    else if ((len -= contains (insn, prologue)) == 0)
-	      {
-		/* Find the prologue-end note if we haven't already, and
-		   move it to just after the last prologue insn.  */
-		if (note == 0)
-		  for (note = insn; note = NEXT_INSN (note);)
-		    if (GET_CODE (note) == NOTE
-			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
-		      break;
-		next = NEXT_INSN (note);
-		prev = PREV_INSN (note);
-		if (prev)
-		  NEXT_INSN (prev) = next;
-		if (next)
-		  PREV_INSN (next) = prev;
-		add_insn_after (note, insn);
-		break;
-	      }
+	  for (insn = f; len && insn; insn = NEXT_INSN (insn))
+	    {
+	      if (GET_CODE (insn) == NOTE)
+		{
+		  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_PROLOGUE_END)
+		    note = insn;
+		}
+	      else if ((len -= contains (insn, prologue)) == 0)
+		{
+		  /* Find the prologue-end note if we haven't already, and
+		     move it to just after the last prologue insn.  */
+		  if (note == 0)
+		    {
+		      for (note = insn; note = NEXT_INSN (note);)
+			if (GET_CODE (note) == NOTE
+			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_PROLOGUE_END)
+			  break;
+		    }
+		  next = NEXT_INSN (note);
+		  prev = PREV_INSN (note);
+		  if (prev)
+		    NEXT_INSN (prev) = next;
+		  if (next)
+		    PREV_INSN (next) = prev;
+		  add_insn_after (note, insn);
+		}
+	    }
 	}
 
       if (epilogue)
@@ -4785,30 +4788,33 @@ reposition_prologue_and_epilogue_notes (f)
 	     reorg has run.  */
 	  for (len = 0; epilogue[len]; len++)
 	    ;
-	  for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
-	    if (GET_CODE (insn) == NOTE)
-	      {
-		if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
-		  note = insn;
-	      }
-	    else if ((len -= contains (insn, epilogue)) == 0)
-	      {
-		/* Find the epilogue-begin note if we haven't already, and
-		   move it to just before the first epilogue insn.  */
-		if (note == 0)
-		  for (note = insn; note = PREV_INSN (note);)
-		    if (GET_CODE (note) == NOTE
-			&& NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
-		      break;
-		next = NEXT_INSN (note);
-		prev = PREV_INSN (note);
-		if (prev)
-		  NEXT_INSN (prev) = next;
-		if (next)
-		  PREV_INSN (next) = prev;
-		add_insn_after (note, PREV_INSN (insn));
-		break;
-	      }
+	  for (insn = get_last_insn (); len && insn; insn = PREV_INSN (insn))
+	    {
+	      if (GET_CODE (insn) == NOTE)
+		{
+		  if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EPILOGUE_BEG)
+		    note = insn;
+		}
+	      else if ((len -= contains (insn, epilogue)) == 0)
+		{
+		  /* Find the epilogue-begin note if we haven't already, and
+		     move it to just before the first epilogue insn.  */
+		  if (note == 0)
+		    {
+		      for (note = insn; note = PREV_INSN (note);)
+			if (GET_CODE (note) == NOTE
+			    && NOTE_LINE_NUMBER (note) == NOTE_INSN_EPILOGUE_BEG)
+			  break;
+		    }
+		  next = NEXT_INSN (note);
+		  prev = PREV_INSN (note);
+		  if (prev)
+		    NEXT_INSN (prev) = next;
+		  if (next)
+		    PREV_INSN (next) = prev;
+		  add_insn_after (note, PREV_INSN (insn));
+		}
+	    }
 	}
     }
 #endif /* HAVE_prologue or HAVE_epilogue */
