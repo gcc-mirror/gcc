@@ -5,6 +5,11 @@ Sat Sep 19 07:33:36 1998  Richard Earnshaw (rearnsha@arm.com)
 	(arm_reorg): Handle cases where we need the address of an item in
 	the pool.
 
+	* arm.c (bad_signed_byte_operand): Check both arms of a sum in
+	a memory address.
+	* arm.md (splits for *extendqihi_insn and *extendqisi_insn): Handle
+	memory addresses that are not in standard canonical form.
+
 Sat Sep 19 01:00:32 1998  Michael Hayes  (mph@elec.canterbury.ac.nz)
 
 	* README.C4X: New file with information about the c4x ports.
