@@ -1,3 +1,8 @@
+2001-01-21  Phil Edwards  <pme@sources.redhat.com>
+
+	* docs/html/configopts.html:  Update for current status.  Fix HTML.
+	* docs/html/install.html:  Update for current status.
+
 2001-01-20  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	* testsuite/libstdc++.tests/tests.exp: New file.

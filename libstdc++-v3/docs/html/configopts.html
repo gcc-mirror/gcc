@@ -7,7 +7,7 @@
    <META NAME="GENERATOR" CONTENT="vi and eight fingers">
    <TITLE>libstdc++-v3 configure options</TITLE>
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: configopts.html,v 1.2 2001/01/02 22:52:51 bkoz Exp $ -->
+<!-- $Id: configopts.html,v 1.3 2001/01/03 15:53:27 bkoz Exp $ -->
 </HEAD>
 <BODY>
 
@@ -55,7 +55,7 @@ options</A></H1>
         inside GDB.
      </P>
 
- <DT><TT>--enable-cstdio  </TT>[default]
+ <DT><TT>--enable-cstdio  </TT>
  <DD><P>This is an abbreviated form of <TT>'--enable-cstdio=stdio'</TT>
         (described next).
      </P>
@@ -65,7 +65,8 @@ options</A></H1>
         snapshot 2.91, the choices are 'libio' to specify the GNU
         I/O package (from
         <A HREF="http://sources.redhat.com/glibc/">glibc</A>, the
-        GNU C library), or 'stdio' to use a generic "C" abstraction.
+        GNU C library), or 'stdio' to use a generic &quot;C&quot;
+	abstraction.  The default is 'stdio'.
      </P>
 
  <DT><TT>--enable-long-long  </TT>
@@ -73,11 +74,11 @@ options</A></H1>
         provided as a GNU extension to C++98 in g++.  This flag builds
         support for &quot;long long&quot; into the library
         (specialized templates and the like). This option is off by
-        default: if enabled, users will have to either use the
-        new-style "C" headers by default (ie cmath not math.h) or add
-        appropriate compile-time flags to all compile lines to allow
-        "C" visibility of this feature (on gnu-linux, the flag is
-        -D_ISOC99_SOURCE). 
+        default:  if enabled, users will have to either use the
+        new-style &quot;C&quot; headers by default (ie cmath not math.h)
+        or add appropriate compile-time flags to all compile lines to
+        allow &quot;C&quot; visibility of this feature (on GNU/Linux,
+        the flag is -D_ISOC99_SOURCE).
      </P>
 
  <DT><TT>--enable-cheaders=OPTION  </TT>
@@ -106,7 +107,7 @@ options</A></H1>
      </P>
      <P>All of this is currently undergoing a lot of changes.  As of
         2.91, 'single' and 'posix' are the only implemented
-        models. Default is off.
+        models.  Default is single.
      </P>
 
  <DT><TT>--enable-version-specific-runtime-libs  </TT>
@@ -177,7 +178,7 @@ options</A></H1>
 
 <HR>
 <P CLASS="fineprint"><EM>
-$Id: configopts.html,v 1.2 2000/12/21 22:52:51 bkoz Exp $
+$Id: configopts.html,v 1.3 2001/01/03 15:53:27 bkoz Exp $
 </EM></P>
 
 
