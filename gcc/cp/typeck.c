@@ -1844,7 +1844,7 @@ build_object_ref (datum, basetype, field)
     {
       tree binfo = NULL_TREE;
       datum = build_scoped_ref (datum, basetype, &binfo);
-      return build_x_component_ref (datum, field, binfo, 1);
+      return build_x_component_ref (datum, field, binfo);
     }
   return error_mark_node;
 }
@@ -2256,11 +2256,11 @@ invalid offsetof from non-POD type `%#T'; use pointer to member instead",
    never have REFERENCE_TYPE.  */
 
 tree
-build_x_component_ref (datum, component, basetype_path, protect)
+build_x_component_ref (datum, component, basetype_path)
      tree datum, component, basetype_path;
-     int protect;
 {
-  tree t = build_component_ref (datum, component, basetype_path, protect);
+  tree t = build_component_ref (datum, component, basetype_path, 
+				/*protect=*/1);
 
   if (! processing_template_decl)
     t = convert_from_reference (t);

@@ -1,3 +1,27 @@
+2002-06-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (xref_tag): Change prototype.
+	(handle_class_head): Likewise.
+	(build_x_component_ref): Likewise.
+	* decl.c (cxx_init_decl_processing): Adjust call to xref_tag.
+	(xref_tag): Take attributes as a separate parameter.
+	(xref_tag_from_type): Adjust call to xref_tag.
+	* decl2.c (build_expr_from_tree): Adjust call to
+	build_x_component_ref.
+	(handle_class_head): Take attributes as a separate parameter.
+	* parse.y (parse_xref_tag): New function.
+	(parse_handle_class_head): Likewise.
+	(primary): Use parse_xref_tag.
+	(class_head_decl): Use parse_handle_class_head.
+	(class_head_defn): Likewise.
+	* rtti.c (init_rtti_processing): Adjust call to xref_tag.
+	(build_dynamic_cast_1): Likewise.
+	(create_pseudo_type_info): Likewise.
+	(emit_support_tinfos): Likewise.
+	* typeck.c (build_object_ref): Adjust call to
+	build_x_component_ref.
+	(build_x_component_ref): Remove protect parameter.
+	
 2002-06-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* call.c (build_op_delete_call): Use BASELINK_FUNCTIONS.

@@ -3919,8 +3919,7 @@ build_expr_from_tree (t)
 				   TREE_OPERAND (field, 0),
 				   TREE_OPERAND (field, 1));
 	else
-	  return build_x_component_ref (object, field,
-					NULL_TREE, 1);
+	  return build_x_component_ref (object, field, NULL_TREE);
       }
 
     case THROW_EXPR:
@@ -5194,8 +5193,9 @@ mark_used (decl)
    Return a TYPE_DECL for the type declared by ID in SCOPE.  */
 
 tree
-handle_class_head (aggr, scope, id, defn_p, new_type_p)
-     tree aggr, scope, id;
+handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
+     enum tag_types tag_kind;
+     tree scope, id, attributes;
      int defn_p;
      int *new_type_p;
 {
@@ -5244,7 +5244,7 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
   
   if (!decl)
     {
-      decl = TYPE_MAIN_DECL (xref_tag (aggr, id, !defn_p));
+      decl = TYPE_MAIN_DECL (xref_tag (tag_kind, id, attributes, !defn_p));
       xrefd_p = true;
     }
 
@@ -5271,7 +5271,7 @@ handle_class_head (aggr, scope, id, defn_p, new_type_p)
 	/* It is legal to define a class with a different class key,
 	   and this changes the default member access.  */
 	CLASSTYPE_DECLARED_CLASS (TREE_TYPE (decl))
-	  = aggr == class_type_node;
+	  = (tag_kind == class_type);
 	
       if (!xrefd_p && PROCESSING_REAL_TEMPLATE_DECL_P ())
 	decl = push_template_decl (decl);
