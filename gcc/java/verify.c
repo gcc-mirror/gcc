@@ -348,9 +348,43 @@ start_pc_cmp (xp, yp)
 #define VERIFICATION_ERROR(MESSAGE) \
   do { message = MESSAGE;  goto verify_error; } while (0)
 
+/* Recursive helper function to pop argument types during verifiation.
+   ARG_TYPES is the list of formal parameter types.
+   Return NULL on success and a freshly malloc'd error message on failure. */
+
+static char *
+pop_argument_types (arg_types)
+     tree arg_types;
+{
+  if (arg_types == end_params_node)
+    return NULL;
+  if (TREE_CODE (arg_types) == TREE_LIST)
+    {
+      char *message = pop_argument_types (TREE_CHAIN (arg_types));
+      if (message == NULL)
+	pop_type_0 (TREE_VALUE (arg_types), &message);
+      return message;
+    }
+  abort ();
+}
+
+#define POP_TYPE(TYPE, MESSAGE) \
+  do { pmessage = NULL;  pop_type_0 (TYPE, &pmessage); \
+       if (pmessage != NULL) goto pop_type_error; \
+  } while (0)
+
+#define POP_TYPE_CONV(TYPE, POPPED_TYPE, MESSAGE) \
+  do { pmessage = NULL;  POPPED_TYPE = pop_type_0 (TYPE, &pmessage); \
+       if (pmessage != NULL) goto pop_type_error; \
+  } while (0)
+
+#define PUSH_TYPE(TYPE) \
+  do { if (! push_type_0 (TYPE)) { goto stack_overflow; }} while (0)
+
 #define PUSH_PENDING(LABEL) \
-     do { if ((message = check_pending_block (LABEL)) != NULL) \
-             goto verify_error; } while (0)
+     do { tree tmplab = LABEL; \
+          if ((message = check_pending_block (tmplab)) != NULL) \
+            { oldpc = LABEL_PC (tmplab); goto verify_error; }} while (0)
 
 #ifdef __GNUC__
 #define CHECK_PC_IN_RANGE(PC) ({if (PC < 0 || PC > length) goto bad_pc; (void)1;})
@@ -376,6 +410,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   int oldpc = 0; /* PC of start of instruction. */
   int prevpc = 0;  /* If >= 0, PC of previous instruction. */
   const char *message;
+  char *pmessage;
   int i;
   register unsigned char *p;
   struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
@@ -559,13 +594,13 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  if (byte_ops[PC] == OPCODE_newarray
 	      || byte_ops[PC] == OPCODE_newarray)
 	    int_value = i;
-	  push_type (int_type_node);  break;
+	  PUSH_TYPE (int_type_node);  break;
 	case OPCODE_lconst_0:	case OPCODE_lconst_1:
-	  push_type (long_type_node);  break;
+	  PUSH_TYPE (long_type_node);  break;
 	case OPCODE_fconst_0:	case OPCODE_fconst_1:	case OPCODE_fconst_2:
-	  push_type (float_type_node);  break;
+	  PUSH_TYPE (float_type_node);  break;
 	case OPCODE_dconst_0:	case OPCODE_dconst_1:
-	  push_type (double_type_node);  break;
+	  PUSH_TYPE (double_type_node);  break;
 	case OPCODE_bipush:
 	  i = IMMEDIATE_s1;
 	  goto push_int;
@@ -616,13 +651,13 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		? (! INTEGRAL_TYPE_P (tmp) || TYPE_PRECISION (tmp) > 32)
 		: type != tmp))
 	  VERIFICATION_ERROR("invalid local variable type in load");
-	push_type (tmp);
+	PUSH_TYPE (tmp);
 	goto note_used;
 	case OPCODE_istore:  type = int_type_node;  goto general_store;
 	case OPCODE_lstore:  type = long_type_node;  goto general_store;
 	case OPCODE_fstore:  type = float_type_node;  goto general_store;
 	case OPCODE_dstore:  type = double_type_node;  goto general_store;
-	case OPCODE_astore:  type = ptr_type_node;  goto general_store;
+	case OPCODE_astore:  type = object_ptr_type_node;  goto general_store;
 	general_store:
 	index = wide ? IMMEDIATE_u2 : IMMEDIATE_u1;
 	wide = 0;
@@ -655,7 +690,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    VERIFICATION_ERROR ("invalid local variable index in store");
 	    return 0;
 	  }
-	type = pop_type (type);
+	POP_TYPE_CONV (type, type, NULL);
 	type_map[index] = type;
 
 	/* If local variable changed, we need to reconsider eh handlers. */
@@ -723,19 +758,19 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  type = double_type_node;  goto unop;
 	unop:
 	  pop_type (type);
-	  push_type (type);
+	  PUSH_TYPE (type);
 	  break;
 	binop:
 	  pop_type (type);
 	  pop_type (type);
-	  push_type (type);
+	  PUSH_TYPE (type);
 	  break;
 	case OPCODE_lshl:
 	case OPCODE_lshr:
 	case OPCODE_lushr:
 	  pop_type (int_type_node);
 	  pop_type (long_type_node);
-	  push_type (long_type_node);
+	  PUSH_TYPE (long_type_node);
 	  break;
 	case OPCODE_iinc:
 	  index = wide ? IMMEDIATE_u2 : IMMEDIATE_u1;
@@ -744,33 +779,34 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  if (index < 0 || index >= DECL_MAX_LOCALS (current_function_decl))
 	    VERIFICATION_ERROR ("invalid local variable index in iinc");
 	  tmp = type_map[index];
-	  if (! INTEGRAL_TYPE_P (tmp) || TYPE_PRECISION (tmp) > 32)
+	  if (tmp == NULL_TREE
+	      || ! INTEGRAL_TYPE_P (tmp) || TYPE_PRECISION (tmp) > 32)
 	    VERIFICATION_ERROR ("invalid local variable type in iinc");
 	  break;
 	case OPCODE_i2l:
-	  pop_type (int_type_node);    push_type (long_type_node);   break;
+	  pop_type (int_type_node);    PUSH_TYPE (long_type_node);   break;
 	case OPCODE_i2f:
-	  pop_type (int_type_node);    push_type (float_type_node);  break;
+	  pop_type (int_type_node);    PUSH_TYPE (float_type_node);  break;
 	case OPCODE_i2d:
-	  pop_type (int_type_node);    push_type (double_type_node); break;
+	  pop_type (int_type_node);    PUSH_TYPE (double_type_node); break;
 	case OPCODE_l2i:
-	  pop_type (long_type_node);   push_type (int_type_node);    break;
+	  pop_type (long_type_node);   PUSH_TYPE (int_type_node);    break;
 	case OPCODE_l2f:
-	  pop_type (long_type_node);   push_type (float_type_node);  break;
+	  pop_type (long_type_node);   PUSH_TYPE (float_type_node);  break;
 	case OPCODE_l2d:
-	  pop_type (long_type_node);   push_type (double_type_node); break;
+	  pop_type (long_type_node);   PUSH_TYPE (double_type_node); break;
 	case OPCODE_f2i:
-	  pop_type (float_type_node);  push_type (int_type_node);    break;
+	  pop_type (float_type_node);  PUSH_TYPE (int_type_node);    break;
 	case OPCODE_f2l:
-	  pop_type (float_type_node);  push_type (long_type_node);   break;
+	  pop_type (float_type_node);  PUSH_TYPE (long_type_node);   break;
 	case OPCODE_f2d:
-	  pop_type (float_type_node);  push_type (double_type_node); break;
+	  pop_type (float_type_node);  PUSH_TYPE (double_type_node); break;
 	case OPCODE_d2i:
-	  pop_type (double_type_node); push_type (int_type_node);    break;
+	  pop_type (double_type_node); PUSH_TYPE (int_type_node);    break;
 	case OPCODE_d2l:
-	  pop_type (double_type_node); push_type (long_type_node);   break;
+	  pop_type (double_type_node); PUSH_TYPE (long_type_node);   break;
 	case OPCODE_d2f:
-	  pop_type (double_type_node); push_type (float_type_node);  break;
+	  pop_type (double_type_node); PUSH_TYPE (float_type_node);  break;
 	case OPCODE_lcmp:
 	  type = long_type_node;  goto compare;
 	case OPCODE_fcmpl:
@@ -781,7 +817,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  type = double_type_node;  goto compare;
 	compare:
 	  pop_type (type);  pop_type (type);
-	  push_type (int_type_node);  break;
+	  PUSH_TYPE (int_type_node);  break;
 	case OPCODE_ifeq:
 	case OPCODE_ifne:
 	case OPCODE_iflt:
@@ -848,10 +884,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  if (type != return_type)
 	    VERIFICATION_ERROR ("incorrect ?return opcode");
 	  if (type != void_type_node)
-	    {
-	      if (pop_type_0 (type) == NULL_TREE)
-		VERIFICATION_ERROR ("return value has wrong type");
-	    }
+	    POP_TYPE(type, "return value has wrong type");
 	  INVALIDATE_PC;
 	  break;
 	case OPCODE_getstatic: is_putting = 0;  is_static = 1;  goto field;
@@ -864,22 +897,21 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
 	    tree field_type = get_type_from_signature (field_signature);
 	    if (is_putting)
-	      pop_type (field_type);
+	      POP_TYPE (field_type, "incorrect type for field");
 	    if (! is_static)
 	      {
 		int clindex = COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool,
 							index);
 		tree self_type = get_class_constant (current_jcf, clindex);
 		/* Defer actual checking until next pass. */
-		if (pop_type_0 (self_type) == NULL_TREE)
-		  VERIFICATION_ERROR ("incorrect type for field reference");
+		POP_TYPE(self_type, "incorrect type for field reference");
 	      }
 	    if (! is_putting)
-	      push_type (field_type);
+	      PUSH_TYPE (field_type);
 	    break;
 	  }
 	case OPCODE_new:
-	  push_type (get_class_constant (jcf, IMMEDIATE_u2));
+	  PUSH_TYPE (get_class_constant (jcf, IMMEDIATE_u2));
 	  break;
 	case OPCODE_dup:     type_stack_dup (1, 0);  break;
 	case OPCODE_dup_x1:  type_stack_dup (1, 1);  break;
@@ -934,7 +966,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	      i = TREE_INT_CST_LOW (get_constant (current_jcf, index));
 	      goto push_int;
 	    }
-	  push_type (type);
+	  PUSH_TYPE (type);
 	  break;
 
 	case OPCODE_invokevirtual:
@@ -953,7 +985,12 @@ verify_jvm_instructions (jcf, byte_ops, length)
 						  IDENTIFIER_LENGTH (sig));
 	    if (TREE_CODE (method_type) != FUNCTION_TYPE)
 	      VERIFICATION_ERROR ("bad method signature");
-	    pop_argument_types (TYPE_ARG_TYPES (method_type));
+	    pmessage = pop_argument_types (TYPE_ARG_TYPES (method_type));
+	    if (pmessage != NULL)
+	      {
+		message = "invalid argument type";
+		goto pop_type_error;
+	      }
 
 	    /* Can't invoke <clinit> */
 	    if (ID_CLINIT_P (method_name))
@@ -963,7 +1000,8 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	      VERIFICATION_ERROR ("invoke opcode can't invoke <init>");
 
 	    if (op_code != OPCODE_invokestatic)
-	      pop_type (self_type);
+	      POP_TYPE (self_type,
+			"stack type not subclass of invoked method's class");
 
 	    switch (op_code)
 	      {
@@ -980,14 +1018,14 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	      }
 
 	    if (TREE_TYPE (method_type) != void_type_node)
-	      push_type (TREE_TYPE (method_type));
+	      PUSH_TYPE (TREE_TYPE (method_type));
 	    break;
 	  }
 
 	case OPCODE_arraylength:
 	    /* Type checking actually made during code generation */
 	    pop_type( ptr_type_node );
-	    push_type( int_type_node );
+	    PUSH_TYPE( int_type_node );
 	    break;
 	    
         /* Q&D verification *or* more checking done during code generation
@@ -1025,7 +1063,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    type = TYPE_ARRAY_ELEMENT (TREE_TYPE (tmp));
 	  else if (tmp != TYPE_NULL)
 	    VERIFICATION_ERROR ("array load from non-array type");
-	  push_type (type);
+	  PUSH_TYPE (type);
 	  break;
 
 	case OPCODE_anewarray:
@@ -1061,7 +1099,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    int_value = -1;
 	  type = build_java_array_type (type, int_value);
 	  pop_type (int_type_node);
-	  push_type (type);
+	  PUSH_TYPE (type);
 	  break;
 
 	case OPCODE_multianewarray:
@@ -1075,12 +1113,12 @@ verify_jvm_instructions (jcf, byte_ops, length)
 
 	    for( i = 0; i < ndim; i++ )
 	      pop_type (int_type_node);
-	    push_type (get_class_constant (current_jcf, index));
+	    PUSH_TYPE (get_class_constant (current_jcf, index));
 	    break;
 	  }
 
 	case OPCODE_aconst_null:
-	  push_type (ptr_type_node);
+	  PUSH_TYPE (ptr_type_node);
 	  break;
 
 	case OPCODE_athrow:
@@ -1092,12 +1130,12 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	case OPCODE_checkcast:
 	  pop_type (ptr_type_node);
 	  type = get_class_constant (current_jcf, IMMEDIATE_u2);
-	  push_type (type);
+	  PUSH_TYPE (type);
 	  break;
 	case OPCODE_instanceof:
 	  pop_type (ptr_type_node);
 	  get_class_constant (current_jcf, IMMEDIATE_u2);
-	  push_type (int_type_node);
+	  PUSH_TYPE (int_type_node);
 	  break;
 
 	case OPCODE_tableswitch:
@@ -1170,7 +1208,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  {
 	    tree target = lookup_label (oldpc + IMMEDIATE_s2);
 	    tree return_label = lookup_label (PC);
-	    push_type (return_address_type_node);
+	    PUSH_TYPE (return_address_type_node);
 	    /* The return label chain will be null if this is the first
 	       time we've seen this jsr target.  */
             if (LABEL_RETURN_LABEL (target) == NULL_TREE)
@@ -1358,6 +1396,16 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	}
     }
   return 1;
+ pop_type_error:
+  error ("verification error at PC=%d", oldpc);
+  if (message != NULL)
+    error ("%s", message);
+  error ("%s", pmessage);
+  free (pmessage);
+  return 0;
+ stack_overflow:
+  message = "stack overflow";
+  goto verify_error;
  bad_pc:
   message = "program counter out of range";
   goto verify_error;

@@ -978,9 +978,8 @@ extern tree build_java_array_type PARAMS ((tree, HOST_WIDE_INT));
 extern int is_compiled_class PARAMS ((tree));
 extern tree mangled_classname PARAMS ((const char*, tree));
 extern tree lookup_label PARAMS ((int));
-extern tree pop_type_0 PARAMS ((tree));
+extern tree pop_type_0 PARAMS ((tree, char**));
 extern tree pop_type PARAMS ((tree));
-extern void pop_argument_types PARAMS ((tree));
 extern tree decode_newarray_type PARAMS ((int));
 extern tree lookup_field PARAMS ((tree*, tree));
 extern int is_array_type_p PARAMS ((tree));
@@ -1057,6 +1056,7 @@ extern int process_jvm_instruction PARAMS ((int, const unsigned char *, long));
 extern int maybe_adjust_start_pc PARAMS ((struct JCF *, int, int, int));
 extern void set_local_type PARAMS ((int, tree));
 extern int merge_type_state PARAMS ((tree));
+extern int push_type_0 PARAMS ((tree));
 extern void push_type PARAMS ((tree));
 extern void load_type_state PARAMS ((tree));
 extern void add_interface PARAMS ((tree, tree));
@@ -1243,6 +1243,12 @@ extern int linenumber_count;
 /* In a subroutine's return type map, indicates that the slot was neither
    used nor set in the subroutine. */
 #define TYPE_UNUSED error_mark_node
+
+/* When returned from pop_type_0, indicates stack underflow. */
+#define TYPE_UNDERFLOW integer_zero_node
+
+/* When returned from pop_type_0, indicates a type mismatch. */
+#define TYPE_UNEXPECTED NULL_TREE
 
 /* A array mapping variable/stack slot index to the type current
    in that variable/stack slot.
