@@ -2721,7 +2721,7 @@ simplify_subreg (outermode, op, innermode, byte)
 	      /* This might fail, e.g. if taking a subreg from a SYMBOL_REF.  */
 	      /* ??? It would be nice if we could actually make such subregs
 		 on targets that allow such relocations.  */
-	      if (byte >= GET_MODE_UNIT_SIZE (innermode))
+	      if (byte >= GET_MODE_SIZE (innermode))
 		elt = CONST0_RTX (submode);
 	      else
 	        elt = simplify_subreg (submode, op, innermode, byte);
