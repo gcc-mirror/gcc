@@ -3925,6 +3925,20 @@ print_operand (file, x, code)
       else
 	output_operand_lossage ("Invalid %%Y operand");
       return;
+    case 'L':
+      /* Print out the low order register name of a register pair.  */
+      if (WORDS_BIG_ENDIAN)
+	fputs (reg_names[REGNO (x)+1], file);
+      else
+	fputs (reg_names[REGNO (x)], file);
+      return;
+    case 'H':
+      /* Print out the high order register name of a register pair.  */
+      if (WORDS_BIG_ENDIAN)
+	fputs (reg_names[REGNO (x)], file);
+      else
+	fputs (reg_names[REGNO (x)+1], file);
+      return;
     case 'R':
       /* Print out the second register name of a register pair or quad.
 	 I.e., R (%o0) => %o1.  */
