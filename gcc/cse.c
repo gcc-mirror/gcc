@@ -2660,9 +2660,21 @@ find_best_addr (insn, loc)
      sometimes simplify the expression.  Many simplifications
      will not be valid, but some, usually applying the associative rule, will
      be valid and produce better code.  */
-  if (GET_CODE (addr) != REG
-      && validate_change (insn, loc, fold_rtx (addr, insn), 0))
-    addr = *loc;
+  if (GET_CODE (addr) != REG)
+    {
+      rtx folded = fold_rtx (copy_rtx (addr), NULL_RTX);
+
+      if (1
+#ifdef ADDRESS_COST
+	  && (ADDRESS_COST (folded) < ADDRESS_COST (addr)
+	      || (ADDRESS_COST (folded) == ADDRESS_COST (addr)
+		  && rtx_cost (folded) > rtx_cost (addr)))
+#else
+	  && rtx_cost (folded) < rtx_cost (addr)
+#endif
+	  && validate_change (insn, loc, folded, 0))
+	addr = folded;
+    }
 	
   /* If this address is not in the hash table, we can't look for equivalences
      of the whole address.  Also, ignore if volatile.  */
