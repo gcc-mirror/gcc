@@ -683,7 +683,7 @@ namespace std
       const __size_type __len = _Traits::length(__lhs);
       __string_type __str;
       __str.reserve(__len + __rhs.size());
-      __str.append(__lhs, __lhs + __len);
+      __str.append(__lhs, __len);
       __str.append(__rhs);
       return __str;
     }
