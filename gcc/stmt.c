@@ -2204,7 +2204,7 @@ expand_value_return (val)
 	}
 
       if (GET_MODE (val) != VOIDmode && GET_MODE (val) != mode)
-	convert_to_mode (return_reg, val, unsignedp);
+	convert_move (return_reg, val, unsignedp);
       else
 #endif
 	emit_move_insn (return_reg, val);
