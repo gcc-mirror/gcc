@@ -1596,20 +1596,6 @@ make_aggr_type (code)
   return t;
 }
 
-void
-compiler_error VPARAMS ((const char *msg, ...))
-{
-  char buf[1024];
-
-  VA_OPEN (ap, msg);
-  VA_FIXEDARG (ap, const char *, msg);
-
-  vsprintf (buf, msg, ap);
-  VA_CLOSE (ap);
-
-  error_with_file_and_line (input_filename, lineno, "%s (compiler error)", buf);
-}
-
 /* Return the type-qualifier corresponding to the identifier given by
    RID.  */
 
