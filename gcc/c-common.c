@@ -2784,6 +2784,9 @@ static tree builtin_function_2 (const char *, const char *, tree, tree,
 tree
 c_build_qualified_type (tree type, int type_quals)
 {
+  if (type == error_mark_node)
+    return type;
+  
   if (TREE_CODE (type) == ARRAY_TYPE)
     return build_array_type (c_build_qualified_type (TREE_TYPE (type),
 						     type_quals),
@@ -2809,6 +2812,9 @@ void
 c_apply_type_quals_to_decl (int type_quals, tree decl)
 {
   tree type = TREE_TYPE (decl);
+  
+  if (type == error_mark_node)
+    return;
 
   if (((type_quals & TYPE_QUAL_CONST)
        || (type && TREE_CODE (type) == REFERENCE_TYPE))
