@@ -67,7 +67,7 @@ struct hashnode
     struct hashnode *aschain;		/* #assert */
   } value;
 
-  const U_CHAR *name;
+  const U_CHAR name[1];			/* name[length] */
 };
 
 /* List of directories to look for include files in. */
