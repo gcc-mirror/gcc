@@ -643,6 +643,7 @@ write_encoding (decl)
       write_bare_function_type (fn_type, 
 				(!DECL_CONSTRUCTOR_P (decl)
 				 && !DECL_DESTRUCTOR_P (decl)
+				 && !DECL_CONV_FN_P (decl)
 				 && decl_is_template_id (decl, NULL)));
     }
 }

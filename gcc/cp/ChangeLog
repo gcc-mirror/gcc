@@ -1,3 +1,9 @@
+2000-08-25  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (grokfndecl): Require that `main' return an `int'.
+	* mangle.c (write_encoding): Don't mangle return types for
+	conversion functions.
+
 2000-08-25  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* error.c (tree_formatting_info): New data type.
