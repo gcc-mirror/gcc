@@ -6956,24 +6956,31 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #endif
       }
 
-      /* Return the address of the first anonymous stack arg.  */
+      /* Return the address of the first anonymous stack arg.
+	 This should only be used for stdarg functions.  */
     case BUILT_IN_NEXT_ARG:
       {
-	tree parm;
 	tree fntype = TREE_TYPE (current_function_decl);
-	tree fnargs = DECL_ARGUMENTS (current_function_decl);
-	if (!(TYPE_ARG_TYPES (fntype) != 0
-	      && (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
-		  != void_type_node))
-	    && !(fnargs
-		 && (parm = tree_last (fnargs)) != 0
-		 && DECL_NAME (parm)
-		 && (! strcmp (IDENTIFIER_POINTER (DECL_NAME (parm)),
-			       "__builtin_va_alist"))))
+	tree last_parm = tree_last (DECL_ARGUMENTS (current_function_decl));
+	tree arg;
+
+	if (TYPE_ARG_TYPES (fntype) == 0
+	    || (TREE_VALUE (tree_last (TYPE_ARG_TYPES (fntype)))
+		== void_type_node))
 	  {
 	    error ("`va_start' used in function with fixed args");
 	    return const0_rtx;
 	  }
+
+	arg = TREE_VALUE (arglist);
+	/* Strip off all nops for the sake of the comparison.  This is not
+	   quite the same as STRIP_NOPS.  It does more.  */
+	while (TREE_CODE (arg) == NOP_EXPR
+	       || TREE_CODE (arg) == CONVERT_EXPR
+	       || TREE_CODE (arg) == NON_LVALUE_EXPR)
+	  arg = TREE_OPERAND (arg, 0);
+	if (arg != last_parm)
+	  warning ("second parameter of `va_start' not last named argument");
       }
 
       return expand_binop (Pmode, add_optab,
