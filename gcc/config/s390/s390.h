@@ -1035,10 +1035,23 @@ CUMULATIVE_ARGS;
 
 #define DEFAULT_SIGNED_CHAR 0
 
-/* Max number of bytes we can move from memory to memory in one reasonably
-   fast instruction.  */
+/* The maximum number of bytes that a single instruction can move quickly
+   between memory and registers or between two memory locations. */
 
-#define MOVE_MAX 256
+#define MOVE_MAX (TARGET_64BIT ? 16 : 8)
+#define MAX_MOVE_MAX 16
+
+/* Determine whether to use move_by_pieces or block move insn.  */
+
+#define MOVE_BY_PIECES_P(SIZE, ALIGN)		\
+  ( (SIZE) == 1 || (SIZE) == 2 || (SIZE) == 4	\
+    || (TARGET_64BIT && (SIZE) == 8) )
+
+/* Determine whether to use clear_by_pieces or block clear insn.  */
+
+#define CLEAR_BY_PIECES_P(SIZE, ALIGN)		\
+  ( (SIZE) == 1 || (SIZE) == 2 || (SIZE) == 4	\
+    || (TARGET_64BIT && (SIZE) == 8) )
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 

@@ -1,3 +1,10 @@
+2002-09-10  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390.h (MOVE_MAX): Define to correct value.
+	(MAX_MOVE_MAX): Define.
+	(MOVE_BY_PIECES_P): Define.
+	(CLEAR_BY_PIECES_P): Define.
+
 2002-09-10  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md (movstrhi): Use right operands for conversion.
