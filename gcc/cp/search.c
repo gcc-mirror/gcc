@@ -261,12 +261,8 @@ my_tree_cons (purpose, value, chain)
      tree purpose, value, chain;
 {
   tree p = (tree)obstack_alloc (&type_obstack_entries, sizeof (struct tree_list));
+  bzero ((char *)p, sizeof (struct tree_list));
   ++my_tree_node_counter;
-  TREE_TYPE (p) = NULL_TREE;
-  /* The type of the last on the LHS of this statement must be a pointer
-     to the same type as the bitfields in struct tree_common.  Otherwise
-     we may write beyond our intended area.  */
-  ((unsigned *)p)[2] = 0;
   TREE_SET_CODE (p, TREE_LIST);
   TREE_PURPOSE (p) = purpose;
   TREE_VALUE (p) = value;
