@@ -1,3 +1,11 @@
+2003-06-04  Daniel Jacobowitz  <drow@mvista.com>
+
+	* config.gcc: Reorganize --with-cpu section.  Remove an
+	obsolete comment about the default CPU for x86-64.  Fix
+	a typo for the ep9312.  Update the list of supported PowerPC
+	CPUs.  Support a limited set of new --with-cpu options
+	for i386.
+
 2003-06-04  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_complex_function_value): Unpack
