@@ -1,3 +1,8 @@
+2005-02-23  Michael Beach  <michaelb@ieee.org>
+
+	PR target/20159
+	* config/sparc/t-elf (startup files): Assemble with CPP.
+
 2005-02-11  John David Anglin  <dave.anglin@nrc-crnc.gc.ca>
 
         PR middle-end/19697
