@@ -305,6 +305,10 @@ java::io::FileDescriptor::read(jbyteArray buffer, jint offset, jint count)
   if (offset < 0 || count < 0 || offset + count > bsize)
     throw new java::lang::ArrayIndexOutOfBoundsException;
 
+  // Must return 0 if an attempt is made to read 0 bytes.
+  if (count == 0)
+    return 0;
+
   jbyte *bytes = elements (buffer) + offset;
 
   DWORD read;
