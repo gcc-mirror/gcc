@@ -1,5 +1,11 @@
 2004-03-01  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/locale_facets.tcc (money_get<>::_M_extract):
+	Fix thinkos in the switch from string_type& to string& as last
+	argument.
+
+2004-03-01  Paolo Carlini  <pcarlini@suse.de>
+
 	* include/bits/locale_facets.tcc (num_get<>::_M_extract_float):
 	Also when parsing exponent sign, first look for thousands_sep
 	and decimal_point; tweak a bit.
