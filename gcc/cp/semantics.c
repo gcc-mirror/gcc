@@ -214,9 +214,6 @@ finish_expr_stmt (expr)
       if (stmts_are_full_exprs_p ())
 	expr = convert_to_void (expr, "statement");
       
-      if (!processing_template_decl)
-	expr = break_out_cleanups (expr);
-      
       r = add_stmt (build_stmt (EXPR_STMT, expr));
     }
 

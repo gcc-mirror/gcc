@@ -3056,6 +3056,8 @@ typename_sub1:
 		{
 		  if (TREE_CODE ($1) == IDENTIFIER_NODE)
 		    cp_error ("`%T' is not a class or namespace", $1);
+		  else if (TREE_CODE ($1) == TYPE_DECL)
+		    $$ = TREE_TYPE ($1);
 		}
 	| typename_sub1 typename_sub2
 		{
@@ -3078,24 +3080,26 @@ typename_sub1:
 		    = make_typename_type ($1, $3, /*complain=*/1); }
 	;
 
+/* This needs to return a TYPE_DECL for simple names so that we don't
+   forget what name was used.  */
 typename_sub2:
 	  TYPENAME SCOPE
 		{
-		  if (TREE_CODE ($1) != IDENTIFIER_NODE)
-		    $1 = lastiddecl;
+		  if (TREE_CODE ($1) != TYPE_DECL)
+		    $$ = lastiddecl;
 
 		  /* Retrieve the type for the identifier, which might involve
 		     some computation. */
-		  got_scope = $$ = complete_type (IDENTIFIER_TYPE_VALUE ($1));
+		  got_scope = complete_type (TREE_TYPE ($$));
 
 		  if ($$ == error_mark_node)
 		    cp_error ("`%T' is not a class or namespace", $1);
 		}
 	| SELFNAME SCOPE
 		{
-		  if (TREE_CODE ($1) != IDENTIFIER_NODE)
+		  if (TREE_CODE ($1) != TYPE_DECL)
 		    $$ = lastiddecl;
-		  got_scope = $$ = complete_type (TREE_TYPE ($$));
+		  got_scope = complete_type (TREE_TYPE ($$));
 		}
 	| template_type SCOPE
 		{ got_scope = $$ = complete_type (TREE_TYPE ($$)); }

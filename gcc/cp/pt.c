@@ -5715,7 +5715,7 @@ tsubst_decl (t, args, type, in_decl)
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     /*complain=*/1, t);
-	DECL_TEMPLATE_RESULT (r) = NULL_TREE;
+	DECL_RESULT (r) = NULL_TREE;
 
 	TREE_STATIC (r) = 0;
 	TREE_PUBLIC (r) = TREE_PUBLIC (t);

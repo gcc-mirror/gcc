@@ -4401,7 +4401,6 @@ extern int lvalue_p				PARAMS ((tree));
 extern int lvalue_or_else			PARAMS ((tree, const char *));
 extern tree build_cplus_new			PARAMS ((tree, tree));
 extern tree get_target_expr			PARAMS ((tree));
-extern tree break_out_cleanups			PARAMS ((tree));
 extern tree break_out_calls			PARAMS ((tree));
 extern tree build_cplus_method_type		PARAMS ((tree, tree, tree));
 extern tree build_cplus_staticfn_type		PARAMS ((tree, tree, tree));

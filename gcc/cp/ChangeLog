@@ -1,3 +1,29 @@
+2000-12-20  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (tsubst_decl): A FUNCTION_DECL has DECL_RESULT, not
+	DECL_TEMPLATE_RESULT.
+
+	* search.c (lookup_field_r): Call lookup_fnfields_1, not
+	lookup_fnfields_here.
+
+	* parse.y (typename_sub2): Return the TYPE_DECL, not the type.
+
+	* call.c (build_object_call): Also allow conversions that return
+	reference to pointer to function.
+	(add_conv_candidate): Handle totype being ref to ptr to fn.
+	(build_field_call): Also allow members of type reference to function.
+	Lose support for calling pointer to METHOD_TYPE fields.
+
+	* error.c (dump_expr): Handle *_CAST_EXPR.
+
+	* typeck2.c (build_scoped_ref): Always convert to the naming class.
+
+	* tree.c (break_out_cleanups): Lose.
+	* cp-tree.h: Remove prototype.
+	* typeck.c (build_component_ref): Don't break_out_cleanups.
+	(build_compound_expr): Likewise.
+	* semantics.c (finish_expr_stmt): Likewise.
+
 2000-12-20  Richard Henderson  <rth@redhat.com>
 
 	* cp-tree.h: Update declarations.

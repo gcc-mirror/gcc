@@ -9,5 +9,5 @@ struct B : public A {
 struct C : public A {
 };
 struct D : public C, public B {
-        void fun() { C::aa = 10; } // ERROR - conversion to A is ambiguous
+        void fun() { C::aa = 10; }
 };

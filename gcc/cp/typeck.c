@@ -2278,8 +2278,7 @@ build_component_ref (datum, component, basetype_path, protect)
       field_type = cp_build_qualified_type (field_type, type_quals);
     }
 
-  ref = fold (build (COMPONENT_REF, field_type,
-		     break_out_cleanups (datum), field));
+  ref = fold (build (COMPONENT_REF, field_type, datum, field));
 
   /* Mark the expression const or volatile, as appropriate.  Even
      though we've dealt with the type above, we still have to mark the
@@ -5039,8 +5038,7 @@ build_compound_expr (list)
   if (! TREE_SIDE_EFFECTS (first) && ! pedantic)
     return rest;
 
-  return build (COMPOUND_EXPR, TREE_TYPE (rest),
-		break_out_cleanups (first), rest);
+  return build (COMPOUND_EXPR, TREE_TYPE (rest), first, rest);
 }
 
 tree
