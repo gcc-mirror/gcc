@@ -3130,23 +3130,27 @@ op_error (enum tree_code code, enum tree_code code2,
   switch (code)
     {
     case COND_EXPR:
-      error ("%s for `%T ? %T : %T' operator", problem,
-		error_type (arg1), error_type (arg2), error_type (arg3));
+      error ("%s for ternary 'operator?:' in '%E ? %E : %E'",
+             problem, arg1, arg2, arg3);
       break;
+      
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      error ("%s for `%T %s' operator", problem, error_type (arg1), opname);
+      error ("%s for 'operator%s' in '%E%s'", problem, opname, arg1, opname);
       break;
+      
     case ARRAY_REF:
-      error ("%s for `%T [%T]' operator", problem,
-		error_type (arg1), error_type (arg2));
+      error ("%s for 'operator[]' in '%E[%E]'", problem, arg1, arg2);
       break;
+      
     default:
       if (arg2)
-	error ("%s for `%T %s %T' operator", problem,
-		  error_type (arg1), opname, error_type (arg2));
+	error ("%s for 'operator%s' in '%E %s %E'",
+               problem, opname, arg1, opname, arg2);
       else
-	error ("%s for `%s %T' operator", problem, opname, error_type (arg1));
+	error ("%s for 'operator%s' in '%s%E'",
+               problem, opname, opname, arg1);
+      break;
     }
 }
 
