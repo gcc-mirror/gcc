@@ -226,11 +226,12 @@ fi
 # place. To work around this not being passed down from config-ml.in
 # -> top_srcdir/Makefile.am -> top_srcdir/src/Makefile.am, manually
 # append it here.
-AC_OUTPUT(mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile,
+AC_OUTPUT(tests_flags mkcheck Makefile src/Makefile libmath/Makefile libio/Makefile libsupc++/Makefile,
 [if test -n "$CONFIG_FILES"; then
   ac_file=Makefile . ${glibcpp_basedir}/../config-ml.in
   grep '^MULTISUBDIR =' Makefile >> src/Makefile
 fi
+chmod +x tests_flags
 chmod +x mkcheck
 ],
 srcdir=${srcdir}
