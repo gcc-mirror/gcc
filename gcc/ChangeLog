@@ -1,3 +1,10 @@
+2002-04-18  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.c (ia64_function_arg_pass_by_reference): Don't
+	crash with no type for by-mode libcalls.
+
+	* config/ia64/ia64.md (conditional_trap): Fix predicate polarity.
+
 2002-04-18  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.h (BRANCH_COST): Define.

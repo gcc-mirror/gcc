@@ -3196,7 +3196,7 @@ ia64_function_arg_pass_by_reference (cum, mode, type, named)
      tree type;
      int named ATTRIBUTE_UNUSED;
 {
-  return TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
+  return type && TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST;
 }
 
 /* Implement va_start.  */
