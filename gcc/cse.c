@@ -1817,12 +1817,12 @@ canon_hash (x, mode)
       /* Assume there is only one rtx object for any given label.  */
     case LABEL_REF:
       /* Use `and' to ensure a positive number.  */
-      return (hash + ((int) LABEL_REF << 7)
-	      + ((int) XEXP (x, 0) & ((1 << HASHBITS) - 1)));
+      return (hash + ((HOST_WIDE_INT) LABEL_REF << 7)
+	      + ((HOST_WIDE_INT) XEXP (x, 0) & ((1 << HASHBITS) - 1)));
 
     case SYMBOL_REF:
-      return (hash + ((int) SYMBOL_REF << 7)
-	      + ((int) XEXP (x, 0) & ((1 << HASHBITS) - 1)));
+      return (hash + ((HOST_WIDE_INT) SYMBOL_REF << 7)
+	      + ((HOST_WIDE_INT) XEXP (x, 0) & ((1 << HASHBITS) - 1)));
 
     case MEM:
       if (MEM_VOLATILE_P (x))
