@@ -1,3 +1,16 @@
+2001-03-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips-tfile.c: Cast arg to PTR when specifier is HOST_PTR_PRINTF.
+	(__proto, PTR_T, CPTR_T): Delete, use PARAMS/PTR instead.
+	(local_index, local_rindex): Delete, use strchr/strrchr instead.
+	(copy_object): Fix format specifier vs argument mismatch.
+
+	* mips-tdump.c: Make local functions static.
+	(rindex): Don't #undef.
+	(__proto, PTR_T, CPTR_T): Delete, use PARAMS/PTR instead.
+	(fatal, fancy_abort): Delete.
+	(read_seek): Avoid signed/unsigned compare.
+
 Sun Mar 11 17:01:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (try_combine): Fix error in change to try original
