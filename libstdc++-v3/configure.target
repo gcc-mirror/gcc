@@ -16,17 +16,8 @@
 #   target_optspace       --enable-target-optspace ("yes", "no", "")
 
 # It possibly modifies the following shell variables:
-#   glibcpp_cflags         Special CFLAGS to use when building
-#   glibcpp_cxxflags       Special CXXFLAGS to use when building
 #   cpu_include_dir        CPU-specific include directory, relative to srcdir
 #   os_include_dir         OS-specific include directory, relative to srcdir
-# The first two are set in configure.host and modified here.
-
-
-# These are "local" and should be set in the switch statements below.  They
-# will be appended to their real conterparts once the dust settles.
-l_glibcpp_cflags=
-l_glibcpp_cxxflags=
 
 
 # Set any CPU dependent compiler flags.
@@ -132,10 +123,4 @@ case "${target}" in
      ;;
 esac
     
-
-# Okay, folks, show's over.  Move along, move along.
-
-glibcpp_cflags="${glibcpp_cflags} ${libgcj_flags} ${l_glibcpp_cflags}"
-glibcpp_cxxflags="${glibcpp_cxxflags} ${libgcj_flags} ${l_glibcpp_cxxflags}"
-
 
