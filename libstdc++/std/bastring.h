@@ -213,6 +213,9 @@ public:
 #endif
     { return replace (iend (), iend (), first, last); }
 
+  void push_back(charT __c)
+  { append(1, __c); }
+
   basic_string& assign (const basic_string& str, size_type pos = 0,
 			size_type n = npos)
     { return replace (0, npos, str, pos, n); }
