@@ -1,3 +1,11 @@
+2001-03-05  scott snyder  <snyder@fnal.gov>
+
+	libstdc++/2190
+        * include/c_std/bits/std_cmath.h: Move abs(long), div(long,long)
+        from here...
+        * include/c_std/bits/std_cstdlib.h: ... to here.
+	* testsuite/17_intro/header_cstdlib.cc: Add test.
+	
 2001-03-05  Stephen M. Webb  <stephen.webb@cybersafe.com>
 
 	* libsupc++/vec.cc (__cxxa_vec_new2): Qualify size_t.

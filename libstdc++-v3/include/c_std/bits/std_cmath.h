@@ -80,12 +80,6 @@ namespace std
       return __x < _Tp() ? -__x : __x;
     }
 
-  inline long 
-  abs(long __i) { return ::labs(__i); }
-
-  inline ldiv_t
-  div(long __i, long __j) { return ::ldiv(__i, __j); }
-
 #if _GLIBCPP_HAVE___BUILTIN_FABSF
   inline float 
   abs(float __x) { return __builtin_fabsf(__x); }
