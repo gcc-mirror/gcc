@@ -496,18 +496,18 @@ do {									 \
          %{!pg:%{p:/usr/lib32/mips3/nonshared/mcrt1.o%s \
              /usr/lib32/mips3/nonshared/libprof1.a%s} \
            %{!p:/usr/lib32/mips3/nonshared/crt1.o%s}}}}}} \
-   %{mabi=n32: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
+   crtbegin.o%s"
+
+#undef LIB_SPEC
+#define LIB_SPEC \
+  "%{mabi=n32: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
      -L/usr/lib32} \
    %{mabi=64: %{mips4:-L/usr/lib64/mips4} %{!mips4:-L/usr/lib64/mips3} \
      -L/usr/lib64} \
    %{!mabi*: %{mips4:-L/usr/lib32/mips4} %{!mips4:-L/usr/lib32/mips3} \
      -L/usr/lib32} \
-   crtbegin.o%s"
-
-#undef LIB_SPEC
-#define LIB_SPEC "\
-%{!shared: \
-  -dont_warn_unused %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc -warn_unused}"
+   %{!shared: \
+     -dont_warn_unused %{p:libprof1.a%s}%{pg:libprof1.a%s} -lc -warn_unused}"
 
 /* Avoid getting two warnings for libgcc.a everytime we link.  */
 #undef LIBGCC_SPEC
