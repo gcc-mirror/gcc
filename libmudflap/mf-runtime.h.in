@@ -187,6 +187,16 @@ extern int __mf_set_options (const char *opts);
 #pragma redefine_extname __ctype_b_loc __mfwrap___ctype_b_loc
 #pragma redefine_extname __ctype_toupper_loc __mfwrap___ctype_toupper_loc
 #pragma redefine_extname __ctype_tolower_loc __mfwrap___ctype_tolower_loc
+#pragma redefine_extname getlogin __mfwrap_getlogin
+#pragma redefine_extname cuserid __mfwrap_cuserid
+#pragma redefine_extname getpwnam __mfwrap_getpwnam
+#pragma redefine_extname getpwuid __mfwrap_getpwuid
+#pragma redefine_extname getgrnam __mfwrap_getgrnam
+#pragma redefine_extname getgrgid __mfwrap_getgrgid
+#pragma redefine_extname getservent __mfwrap_getservent
+#pragma redefine_extname getservbyname __mfwrap_getservbyname
+#pragma redefine_extname getservbyport __mfwrap_getservbyport
+#pragma redefine_extname gai_strerror __mfwrap_gai_strerror
 
 /* Disable glibc macros.  */
 #define __NO_STRING_INLINES
