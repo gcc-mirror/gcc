@@ -1277,6 +1277,7 @@ extern struct rtx_def *legitimize_pic_address ();
    in one reasonably fast instruction.  */
 #define MOVE_MAX 8
 
+#if 0 /* Sun 4 has matherr, so this is no good.  */
 /* This is the value of the error code EDOM for this machine,
    used by the sqrt instruction.  */
 #define TARGET_EDOM 33
@@ -1284,6 +1285,7 @@ extern struct rtx_def *legitimize_pic_address ();
 /* This is how to refer to the variable errno.  */
 #define GEN_ERRNO_RTX \
   gen_rtx (MEM, SImode, gen_rtx (SYMBOL_REF, Pmode, "errno"))
+#endif /* 0 */
 
 /* Define if normal loads of shorter-than-word items from memory clears
    the rest of the bigs in the register.  */
