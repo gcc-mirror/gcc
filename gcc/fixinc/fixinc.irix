@@ -232,6 +232,43 @@ fi
 
 done
 
+# Don't use or define the name va_list in stdio.h.
+# This is for ANSI and also to interoperate properly with gcc's varargs.h.
+# Arrange for stdio.h to use stdarg.h to define __gnuc_va_list
+file=stdio.h
+base=`basename $file`
+if [ -r ${LIB}/$file ]; then
+  file_to_fix=${LIB}/$file
+else
+  if [ -r ${INPUT}/$file ]; then
+    file_to_fix=${INPUT}/$file
+  else
+    file_to_fix=""
+  fi
+fi
+if [ \! -z "$file_to_fix" ]; then
+  echo Fixing $file_to_fix
+  echo "#define __need___va_list" > /tmp/$base
+  echo "#include <stdarg.h>" >> /tmp/$base
+
+  sed -e 's@ va_list @ __gnuc_va_list @' \
+      -e 's@ va_list)@ __gnuc_va_list)@' \
+      -e 's@ _BSD_VA_LIST_))@ __gnuc_va_list))@' \
+      -e 's@ _VA_LIST_));@ __gnuc_va_list));@' \
+      -e 's@ va_list@ __va_list__@' \
+      -e 's@\*va_list@*__va_list__@' \
+      -e 's@ __va_list)@ __gnuc_va_list)@' \
+      -e 's@GNUC_VA_LIST@GNUC_Va_LIST@' \
+      -e 's@_NEED___VA_LIST@_NEED___Va_LIST@' \
+      -e 's@VA_LIST@DUMMY_VA_LIST@' \
+      -e 's@_Va_LIST@_VA_LIST@' $file_to_fix >> /tmp/$base
+  echo Fixed $file_to_fix
+  rm -f ${LIB}/$file
+  cp /tmp/$base ${LIB}/$file
+  chmod a+r ${LIB}/$file
+  rm -f /tmp/$base
+fi
+
 if [ x${INSTALL_ASSERT_H} != x ]
 then
   cd ${ORIG_DIR}
