@@ -107,16 +107,26 @@ am__objects_1 = gnu/gcj/xlib/Clip.lo gnu/gcj/xlib/Colormap.lo \
 	gnu/awt/xlib/XGraphicsConfiguration.lo \
 	gnu/awt/xlib/XOffScreenImage.lo gnu/awt/xlib/XPanelPeer.lo \
 	gnu/awt/xlib/XFontPeer.lo gnu/awt/xlib/XToolkit.lo
-am__objects_2 = gnu/gcj/xlib/natClip.lo gnu/gcj/xlib/natColormap.lo \
-	gnu/gcj/xlib/natDisplay.lo gnu/gcj/xlib/natDrawable.lo \
-	gnu/gcj/xlib/natFont.lo gnu/gcj/xlib/natGC.lo \
-	gnu/gcj/xlib/natPixmap.lo gnu/gcj/xlib/natScreen.lo \
-	gnu/gcj/xlib/natVisual.lo gnu/gcj/xlib/natWMSizeHints.lo \
-	gnu/gcj/xlib/natWindow.lo gnu/gcj/xlib/natWindowAttributes.lo \
-	gnu/gcj/xlib/natXAnyEvent.lo gnu/gcj/xlib/natXButtonEvent.lo \
-	gnu/gcj/xlib/natXColor.lo gnu/gcj/xlib/natXConfigureEvent.lo \
-	gnu/gcj/xlib/natXException.lo gnu/gcj/xlib/natXExposeEvent.lo \
-	gnu/gcj/xlib/natXImage.lo gnu/gcj/xlib/natXUnmapEvent.lo
+am__objects_2 = gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo \
+	gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo
 am_lib_gnu_awt_xlib_la_OBJECTS = $(am__objects_1) $(am__objects_2)
 lib_gnu_awt_xlib_la_OBJECTS = $(am_lib_gnu_awt_xlib_la_OBJECTS)
 @XLIB_AWT_TRUE@am_lib_gnu_awt_xlib_la_rpath = -rpath $(toolexeclibdir)
@@ -503,7 +513,7 @@ am__libgcj_la_SOURCES_DIST = prims.cc jni.cc exception.cc resolve.cc \
 	java/io/StringBufferInputStream.java java/io/StringReader.java \
 	java/io/StringWriter.java java/io/SyncFailedException.java \
 	java/io/UTFDataFormatException.java \
-	java/io/UnsupportedEncodingException.java \
+	java/io/UnsupportedEncodingException.java java/io/VMFile.java \
 	java/io/VMObjectStreamClass.java \
 	java/io/WriteAbortedException.java java/io/Writer.java \
 	java/util/AbstractCollection.java java/util/AbstractList.java \
@@ -2265,7 +2275,7 @@ am__objects_9 = java/lang/AbstractMethodError.lo \
 	java/io/StringBufferInputStream.lo java/io/StringReader.lo \
 	java/io/StringWriter.lo java/io/SyncFailedException.lo \
 	java/io/UTFDataFormatException.lo \
-	java/io/UnsupportedEncodingException.lo \
+	java/io/UnsupportedEncodingException.lo java/io/VMFile.lo \
 	java/io/VMObjectStreamClass.lo \
 	java/io/WriteAbortedException.lo java/io/Writer.lo \
 	java/util/AbstractCollection.lo java/util/AbstractList.lo \
@@ -4114,8 +4124,6 @@ ACLOCAL_AMFLAGS = -I .
 write_entries_to_file = $(shell rm -f $(2) || :) $(shell touch $(2)) $(foreach object,$(1),$(shell echo $(object) >> $(2)))
 @XLIB_AWT_FALSE@cond_xlib_ltlibrary = 
 @XLIB_AWT_TRUE@cond_xlib_ltlibrary = lib-gnu-awt-xlib.la
-@XLIB_AWT_FALSE@xlib_includes = 
-@XLIB_AWT_TRUE@xlib_includes = -I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_noncanonical) -I$(srcdir)/../libstdc++-v3/libsupc++
 @GTK_AWT_FALSE@cond_gtk_ltlibrary = 
 @GTK_AWT_TRUE@cond_gtk_ltlibrary = lib-gnu-java-awt-peer-gtk.la
 toolexeclib_LTLIBRARIES = libgcj.la libgij.la lib-org-xml-sax.la lib-org-w3c-dom.la \
@@ -4161,8 +4169,8 @@ AM_GCJFLAGS = \
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 JCFLAGS = -g
 JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
-INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
-	$(GCINCS) $(THREADINCS) $(INCLTDL) $(xlib_includes) \
+AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
+	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 libgij_la_SOURCES = gij.cc
@@ -4380,6 +4388,11 @@ lib_gnu_awt_xlib_la_SOURCES = \
 
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 lib_gnu_awt_xlib_la_LIBADD = $(xlib_javao_files)
+lib_gnu_awt_xlib_la_CPPFLAGS = \
+	-I../libstdc++-v3/include \
+	-I../libstdc++-v3/include/$(target_noncanonical) \
+	-I$(srcdir)/../libstdc++-v3/libsupc++
+
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
         -rpath $(toolexeclibdir) \
@@ -5775,6 +5788,7 @@ java/io/StringWriter.java \
 java/io/SyncFailedException.java \
 java/io/UTFDataFormatException.java \
 java/io/UnsupportedEncodingException.java \
+java/io/VMFile.java \
 java/io/VMObjectStreamClass.java \
 java/io/WriteAbortedException.java \
 java/io/Writer.java \
@@ -6854,45 +6868,65 @@ gnu/awt/xlib/XFontPeer.lo: gnu/awt/xlib/$(am__dirstamp) \
 	gnu/awt/xlib/$(DEPDIR)/$(am__dirstamp)
 gnu/awt/xlib/XToolkit.lo: gnu/awt/xlib/$(am__dirstamp) \
 	gnu/awt/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natClip.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natColormap.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natDisplay.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natDrawable.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natFont.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natGC.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natPixmap.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natScreen.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natVisual.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natWMSizeHints.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natWindow.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natWindowAttributes.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXAnyEvent.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXButtonEvent.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXColor.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXConfigureEvent.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXException.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXExposeEvent.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXImage.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
-gnu/gcj/xlib/natXUnmapEvent.lo: gnu/gcj/xlib/$(am__dirstamp) \
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo:  \
+	gnu/gcj/xlib/$(am__dirstamp) \
 	gnu/gcj/xlib/$(DEPDIR)/$(am__dirstamp)
 gnu/java/awt/peer/gtk/$(am__dirstamp):
 	@$(mkdir_p) gnu/java/awt/peer/gtk
@@ -7964,6 +7998,8 @@ java/io/SyncFailedException.lo: java/io/$(am__dirstamp) \
 java/io/UTFDataFormatException.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/UnsupportedEncodingException.lo: java/io/$(am__dirstamp) \
+	java/io/$(DEPDIR)/$(am__dirstamp)
+java/io/VMFile.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
 java/io/VMObjectStreamClass.lo: java/io/$(am__dirstamp) \
 	java/io/$(DEPDIR)/$(am__dirstamp)
@@ -13402,46 +13438,46 @@ mostlyclean-compile:
 	-rm -f gnu/gcj/xlib/XImage.lo
 	-rm -f gnu/gcj/xlib/XUnmapEvent.$(OBJEXT)
 	-rm -f gnu/gcj/xlib/XUnmapEvent.lo
-	-rm -f gnu/gcj/xlib/natClip.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natClip.lo
-	-rm -f gnu/gcj/xlib/natColormap.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natColormap.lo
-	-rm -f gnu/gcj/xlib/natDisplay.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natDisplay.lo
-	-rm -f gnu/gcj/xlib/natDrawable.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natDrawable.lo
-	-rm -f gnu/gcj/xlib/natFont.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natFont.lo
-	-rm -f gnu/gcj/xlib/natGC.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natGC.lo
-	-rm -f gnu/gcj/xlib/natPixmap.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natPixmap.lo
-	-rm -f gnu/gcj/xlib/natScreen.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natScreen.lo
-	-rm -f gnu/gcj/xlib/natVisual.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natVisual.lo
-	-rm -f gnu/gcj/xlib/natWMSizeHints.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natWMSizeHints.lo
-	-rm -f gnu/gcj/xlib/natWindow.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natWindow.lo
-	-rm -f gnu/gcj/xlib/natWindowAttributes.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natWindowAttributes.lo
-	-rm -f gnu/gcj/xlib/natXAnyEvent.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXAnyEvent.lo
-	-rm -f gnu/gcj/xlib/natXButtonEvent.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXButtonEvent.lo
-	-rm -f gnu/gcj/xlib/natXColor.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXColor.lo
-	-rm -f gnu/gcj/xlib/natXConfigureEvent.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXConfigureEvent.lo
-	-rm -f gnu/gcj/xlib/natXException.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXException.lo
-	-rm -f gnu/gcj/xlib/natXExposeEvent.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXExposeEvent.lo
-	-rm -f gnu/gcj/xlib/natXImage.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXImage.lo
-	-rm -f gnu/gcj/xlib/natXUnmapEvent.$(OBJEXT)
-	-rm -f gnu/gcj/xlib/natXUnmapEvent.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.$(OBJEXT)
+	-rm -f gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo
 	-rm -f gnu/java/awt/BitMaskExtent.$(OBJEXT)
 	-rm -f gnu/java/awt/BitMaskExtent.lo
 	-rm -f gnu/java/awt/BitwiseXORComposite.$(OBJEXT)
@@ -15070,6 +15106,8 @@ mostlyclean-compile:
 	-rm -f java/io/UTFDataFormatException.lo
 	-rm -f java/io/UnsupportedEncodingException.$(OBJEXT)
 	-rm -f java/io/UnsupportedEncodingException.lo
+	-rm -f java/io/VMFile.$(OBJEXT)
+	-rm -f java/io/VMFile.lo
 	-rm -f java/io/VMObjectStreamClass.$(OBJEXT)
 	-rm -f java/io/VMObjectStreamClass.lo
 	-rm -f java/io/WriteAbortedException.$(OBJEXT)
@@ -17991,26 +18029,26 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/XID.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/XImage.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/XUnmapEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natClip.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natColormap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natDisplay.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natDrawable.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natFont.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natGC.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natPixmap.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natScreen.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natVisual.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natWMSizeHints.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natWindow.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natWindowAttributes.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXAnyEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXButtonEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXColor.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXConfigureEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXException.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXExposeEvent.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXImage.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/natXUnmapEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natClip.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natColormap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDisplay.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDrawable.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natFont.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natGC.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natPixmap.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natScreen.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natVisual.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWMSizeHints.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindow.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindowAttributes.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXAnyEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXButtonEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXColor.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXConfigureEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXExposeEvent.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXImage.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXUnmapEvent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/$(DEPDIR)/BitMaskExtent.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/$(DEPDIR)/BitwiseXORComposite.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@gnu/java/awt/$(DEPDIR)/Buffers.Plo@am__quote@
@@ -18825,6 +18863,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/SyncFailedException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/UTFDataFormatException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/UnsupportedEncodingException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/VMFile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/VMObjectStreamClass.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/WriteAbortedException.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@java/io/$(DEPDIR)/Writer.Plo@am__quote@
@@ -20569,6 +20608,146 @@ jni/classpath/lib_gnu_java_awt_peer_gtk_la-primlib.lo: jni/classpath/primlib.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo: gnu/gcj/xlib/natClip.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natClip.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo `test -f 'gnu/gcj/xlib/natClip.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natClip.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natClip.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natClip.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natClip.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natClip.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natClip.lo `test -f 'gnu/gcj/xlib/natClip.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natClip.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo: gnu/gcj/xlib/natColormap.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natColormap.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo `test -f 'gnu/gcj/xlib/natColormap.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natColormap.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natColormap.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natColormap.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natColormap.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natColormap.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natColormap.lo `test -f 'gnu/gcj/xlib/natColormap.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natColormap.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo: gnu/gcj/xlib/natDisplay.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDisplay.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo `test -f 'gnu/gcj/xlib/natDisplay.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natDisplay.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDisplay.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDisplay.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDisplay.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natDisplay.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDisplay.lo `test -f 'gnu/gcj/xlib/natDisplay.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natDisplay.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo: gnu/gcj/xlib/natDrawable.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDrawable.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo `test -f 'gnu/gcj/xlib/natDrawable.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natDrawable.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDrawable.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDrawable.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natDrawable.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natDrawable.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natDrawable.lo `test -f 'gnu/gcj/xlib/natDrawable.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natDrawable.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo: gnu/gcj/xlib/natFont.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natFont.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo `test -f 'gnu/gcj/xlib/natFont.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natFont.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natFont.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natFont.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natFont.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natFont.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natFont.lo `test -f 'gnu/gcj/xlib/natFont.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natFont.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo: gnu/gcj/xlib/natGC.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natGC.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo `test -f 'gnu/gcj/xlib/natGC.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natGC.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natGC.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natGC.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natGC.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natGC.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natGC.lo `test -f 'gnu/gcj/xlib/natGC.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natGC.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo: gnu/gcj/xlib/natPixmap.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natPixmap.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo `test -f 'gnu/gcj/xlib/natPixmap.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natPixmap.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natPixmap.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natPixmap.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natPixmap.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natPixmap.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natPixmap.lo `test -f 'gnu/gcj/xlib/natPixmap.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natPixmap.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo: gnu/gcj/xlib/natScreen.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natScreen.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo `test -f 'gnu/gcj/xlib/natScreen.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natScreen.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natScreen.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natScreen.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natScreen.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natScreen.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natScreen.lo `test -f 'gnu/gcj/xlib/natScreen.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natScreen.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo: gnu/gcj/xlib/natVisual.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natVisual.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo `test -f 'gnu/gcj/xlib/natVisual.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natVisual.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natVisual.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natVisual.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natVisual.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natVisual.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natVisual.lo `test -f 'gnu/gcj/xlib/natVisual.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natVisual.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo: gnu/gcj/xlib/natWMSizeHints.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWMSizeHints.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo `test -f 'gnu/gcj/xlib/natWMSizeHints.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natWMSizeHints.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWMSizeHints.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWMSizeHints.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWMSizeHints.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natWMSizeHints.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWMSizeHints.lo `test -f 'gnu/gcj/xlib/natWMSizeHints.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natWMSizeHints.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo: gnu/gcj/xlib/natWindow.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindow.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo `test -f 'gnu/gcj/xlib/natWindow.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natWindow.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindow.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindow.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindow.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natWindow.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindow.lo `test -f 'gnu/gcj/xlib/natWindow.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natWindow.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo: gnu/gcj/xlib/natWindowAttributes.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindowAttributes.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo `test -f 'gnu/gcj/xlib/natWindowAttributes.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natWindowAttributes.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindowAttributes.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindowAttributes.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natWindowAttributes.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natWindowAttributes.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natWindowAttributes.lo `test -f 'gnu/gcj/xlib/natWindowAttributes.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natWindowAttributes.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo: gnu/gcj/xlib/natXAnyEvent.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXAnyEvent.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo `test -f 'gnu/gcj/xlib/natXAnyEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXAnyEvent.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXAnyEvent.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXAnyEvent.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXAnyEvent.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXAnyEvent.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXAnyEvent.lo `test -f 'gnu/gcj/xlib/natXAnyEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXAnyEvent.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo: gnu/gcj/xlib/natXButtonEvent.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXButtonEvent.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo `test -f 'gnu/gcj/xlib/natXButtonEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXButtonEvent.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXButtonEvent.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXButtonEvent.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXButtonEvent.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXButtonEvent.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXButtonEvent.lo `test -f 'gnu/gcj/xlib/natXButtonEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXButtonEvent.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo: gnu/gcj/xlib/natXColor.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXColor.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo `test -f 'gnu/gcj/xlib/natXColor.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXColor.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXColor.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXColor.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXColor.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXColor.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXColor.lo `test -f 'gnu/gcj/xlib/natXColor.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXColor.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo: gnu/gcj/xlib/natXConfigureEvent.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXConfigureEvent.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo `test -f 'gnu/gcj/xlib/natXConfigureEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXConfigureEvent.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXConfigureEvent.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXConfigureEvent.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXConfigureEvent.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXConfigureEvent.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXConfigureEvent.lo `test -f 'gnu/gcj/xlib/natXConfigureEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXConfigureEvent.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo: gnu/gcj/xlib/natXException.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXException.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo `test -f 'gnu/gcj/xlib/natXException.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXException.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXException.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXException.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXException.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXException.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXException.lo `test -f 'gnu/gcj/xlib/natXException.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXException.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo: gnu/gcj/xlib/natXExposeEvent.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXExposeEvent.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo `test -f 'gnu/gcj/xlib/natXExposeEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXExposeEvent.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXExposeEvent.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXExposeEvent.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXExposeEvent.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXExposeEvent.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXExposeEvent.lo `test -f 'gnu/gcj/xlib/natXExposeEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXExposeEvent.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo: gnu/gcj/xlib/natXImage.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXImage.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo `test -f 'gnu/gcj/xlib/natXImage.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXImage.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXImage.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXImage.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXImage.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXImage.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXImage.lo `test -f 'gnu/gcj/xlib/natXImage.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXImage.cc
+
+gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo: gnu/gcj/xlib/natXUnmapEvent.cc
+@am__fastdepCXX_TRUE@	if $(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo -MD -MP -MF "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXUnmapEvent.Tpo" -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo `test -f 'gnu/gcj/xlib/natXUnmapEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXUnmapEvent.cc; \
+@am__fastdepCXX_TRUE@	then mv -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXUnmapEvent.Tpo" "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXUnmapEvent.Plo"; else rm -f "gnu/gcj/xlib/$(DEPDIR)/lib_gnu_awt_xlib_la-natXUnmapEvent.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='gnu/gcj/xlib/natXUnmapEvent.cc' object='gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lib_gnu_awt_xlib_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gnu/gcj/xlib/lib_gnu_awt_xlib_la-natXUnmapEvent.lo `test -f 'gnu/gcj/xlib/natXUnmapEvent.cc' || echo '$(srcdir)/'`gnu/gcj/xlib/natXUnmapEvent.cc
 
 .java.o:
 @am__fastdepGCJ_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`; \

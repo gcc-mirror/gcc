@@ -89,11 +89,8 @@ target_noncanonical = @target_noncanonical@
 
 if XLIB_AWT
 cond_xlib_ltlibrary = lib-gnu-awt-xlib.la
-## We require libstdc++-v3 to be in the same build tree.
-xlib_includes = -I../libstdc++-v3/include -I../libstdc++-v3/include/$(target_noncanonical) -I$(srcdir)/../libstdc++-v3/libsupc++
 else
 cond_xlib_ltlibrary =
-xlib_includes =
 endif
 
 if GTK_AWT
@@ -174,21 +171,21 @@ AM_GCJFLAGS = \
 	-Wno-deprecated
 
 if USING_GCC
-AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
+AM_CFLAGS = @LIBGCJ_HOST_CFLAGS@ $(WARNINGS)
 else
-AM_CFLAGS = @LIBGCJ_CFLAGS@
+AM_CFLAGS = @LIBGCJ_HOST_CFLAGS@
 endif
 
 ## Extra CFLAGS used for JNI C sources shared with GNU Classpath.
 PEDANTIC_CFLAGS = -ansi -pedantic -Wall -Wno-long-long
 
 JCFLAGS = -g
-JC1FLAGS = @LIBGCJ_JAVAFLAGS@ $(GCJFLAGS)
+JC1FLAGS = @LIBGCJ_HOST_JAVAFLAGS@ $(GCJFLAGS)
 
 LIBFFIINCS = @LIBFFIINCS@
 
-INCLUDES = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
-	$(GCINCS) $(THREADINCS) $(INCLTDL) $(xlib_includes) \
+AM_CPPFLAGS = -I$(top_srcdir) -Iinclude -I$(top_srcdir)/include \
+	$(GCINCS) $(THREADINCS) $(INCLTDL) \
 	$(GCC_UNWIND_INCLUDE) $(ZINCS) $(LIBFFIINCS)
 
 ## ################################################################
@@ -428,6 +425,11 @@ lib_gnu_awt_xlib_la_SOURCES = \
 	$(xlib_nat_source_files)
 lib_gnu_awt_xlib_la_DEPENDENCIES = libgcj-@gcc_version@.jar libgcj.la libgcj.spec
 lib_gnu_awt_xlib_la_LIBADD = $(xlib_javao_files)
+## We require libstdc++-v3 to be in the same build tree.
+lib_gnu_awt_xlib_la_CPPFLAGS = \
+	-I../libstdc++-v3/include \
+	-I../libstdc++-v3/include/$(target_noncanonical) \
+	-I$(srcdir)/../libstdc++-v3/libsupc++
 ## The mysterious backslash in the grep pattern is consumed by make.
 lib_gnu_awt_xlib_la_LDFLAGS = ../libstdc++-v3/src/libstdc++.la \
 	@X_PRE_LIBS@ @X_LIBS@ -lX11 @X_EXTRA_LIBS@ \
@@ -455,7 +457,7 @@ propertyo_files = $(property_files:.properties=.properties.lo)
 %.properties.lo: %.properties
 	$(LTGCJCOMPILE) -o $@ -c $< -Wc,--resource,`echo $@ | sed "s/\.lo$$//"`
 
-if ONESTEP
+if BUILD_CLASS_FILES_AT_ONCE
 
 # Compile all classfiles in one go.
 
@@ -476,7 +478,7 @@ libgcj-@gcc_version@.jar: $(all_java_source_files)
 # is built.
 $(all_java_class_files): libgcj-@gcc_version@.jar
 
-else # !ONESTEP
+else # ! BUILD_CLASS_FILES_AT_ONCE
 
 # Compile each classfile individually.
 
@@ -490,7 +492,7 @@ libgcj-@gcc_version@.jar: $(all_java_class_files)
 	  sed -e '/\/\./d' -e '/\/xlib/d' | \
 	  $(ZIP) cfM0E@ $@
 
-endif
+endif # !BUILD_CLASS_FILES_AT_ONCE
 
 # Note: The libtool objects are removed by mostlyclean-local
 # because of command-line-length issues.
@@ -501,6 +503,7 @@ CLEANFILES = libgcj-@gcc_version@.jar
 mostlyclean-local:
 ## Use libtool rm to remove each libtool object
 	find . -name '*.lo' -print | xargs $(LIBTOOL) rm -f
+## FIXME: Wouldn't it be better to add the files to delete to some CLEAN variable ?
 
 clean-local:
 ## Remove every .class file that was created.
@@ -509,6 +512,7 @@ clean-local:
 distclean-local:
 ## Remove every .d file that was created.
 	find . -name '*.d' -print | xargs rm -f
+## FIXME: Is this really still needed ?
 
 # Just remove the objects from C++ sources, for testing the C++ compiler.
 clean-nat:
@@ -523,6 +527,7 @@ $(filter-out gnu/gcj/runtime/StackTrace.lo, $(javao_files)) $(xlib_javao_files) 
 
 $(gtk_awt_peer_sources:.java=.lo): %.lo: %.java
 	$(LTGCJCOMPILE) -fjni -o $@ -c $<
+## FIXME: Is this really still needed ?
 
 ## A special case.  The sibcall optimization can change the number of
 ## frames on the stack, and StackTrace makes assumptions about this
@@ -698,6 +703,7 @@ install-data-local:
 	-@rm -f tmp-ilist
 ## FIXME: the obvious approach using lib_DATA doesn't work with
 ## automake 1.4.
+## FIXME: Use lib_DATA
 	$(mkinstalldirs) $(DESTDIR)$(secdir)
 	@for f in classpath.security libgcj.security; do \
 	  echo " $(INSTALL_DATA) $(srcdir)/java/security/$$f $(DESTDIR)$(secdir)/$$f"; \
@@ -790,6 +796,8 @@ $(srcdir)/gnu/gcj/convert/JIS0212_to_Unicode.cc: ./gen-from-JIS$(EXEEXT)
 
 $(srcdir)/gnu/gcj/convert/Unicode_to_JIS.cc: ./gen-from-JIS$(EXEEXT)
 	 ./gen-from-JIS toJIS >$(srcdir)/gnu/gcj/convert/Unicode_to_JIS.cc
+
+## FIXME: Do we really want these rules for external files ?
 
 # The Unicode consortium does not permit re-distributing the file JIS0201.TXT.
 # You can get it from
@@ -2047,7 +2055,6 @@ javax/transaction/TransactionRequiredException.java \
 javax/transaction/TransactionRolledbackException.java \
 javax/transaction/UserTransaction.java
 
-
 ## Java files which are created by configure and thus are in the build
 ## directory.
 built_java_source_files = java/lang/ConcreteProcess.java \
@@ -2210,6 +2217,7 @@ java/io/StringWriter.java \
 java/io/SyncFailedException.java \
 java/io/UTFDataFormatException.java \
 java/io/UnsupportedEncodingException.java \
+java/io/VMFile.java \
 java/io/VMObjectStreamClass.java \
 java/io/WriteAbortedException.java \
 java/io/Writer.java \
@@ -2957,7 +2965,6 @@ $(awt_java_source_files) \
 $(convert_source_files) \
 $(javax_source_files)
 
-
 java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
 
 ## Math library: C, not C++
@@ -2975,7 +2982,6 @@ math_c_source_files = \
   java/lang/e_scalb.c     java/lang/s_rint.c      java/lang/w_sqrt.c      \
   java/lang/e_sqrt.c      java/lang/s_scalbn.c    java/lang/sf_rint.c     \
   java/lang/k_cos.c       java/lang/s_sin.c       java/lang/sf_fabs.c
-
 
 ## This lists all the C++ source files in subdirectories.
 nat_source_files = \
@@ -3104,6 +3110,8 @@ gnu/gcj/xlib/natXUnmapEvent.cc
 
 TexinfoDoclet.class: $(srcdir)/scripts/TexinfoDoclet.java
 	javac -d . $(srcdir)/scripts/TexinfoDoclet.java
+## FIXME: AAARGH, we depend on SUN javac here ?
+
 
 texinfo: TexinfoDoclet.class
 	langsource=`ls $(srcdir)/java/lang/*.java`; \
@@ -3133,6 +3141,7 @@ texinfo: TexinfoDoclet.class
 	javadoc -outfile $(srcdir)/doc/java-util.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/*.java
 	javadoc -outfile $(srcdir)/doc/java-util-jar.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/jar/*.java
 	javadoc -outfile $(srcdir)/doc/java-util-zip.texi -doclet TexinfoDoclet -sourcepath .:$(srcdir) $(srcdir)/java/util/zip/*.java
+## FIXME: Do we really wanna use javadoc ?
 
 ## ################################################################
 
