@@ -644,16 +644,16 @@ push_reload (in, out, inloc, outloc, class,
 	  || (((GET_CODE (SUBREG_REG (in)) == REG
 		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
 	       || GET_CODE (SUBREG_REG (in)) == MEM)
+	      && ((GET_MODE_SIZE (inmode)
+		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
 #ifdef LOAD_EXTEND_OP
-	      && GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
-	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) <= UNITS_PER_WORD
-	      && (GET_MODE_SIZE (inmode)
-		  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
-#else
-	      && (GET_MODE_SIZE (inmode)
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))))
+		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
+		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
+			  <= UNITS_PER_WORD)
+		      && (GET_MODE_SIZE (inmode)
+			  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))))
 #endif
-	      )
+		  ))
 	  || (GET_CODE (SUBREG_REG (in)) == REG
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
 	      /* The case where out is nonzero
@@ -727,16 +727,16 @@ push_reload (in, out, inloc, outloc, class,
 	  || (((GET_CODE (SUBREG_REG (out)) == REG
 		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
 	       || GET_CODE (SUBREG_REG (out)) == MEM)
+	      && ((GET_MODE_SIZE (outmode)
+		   > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
 #ifdef LOAD_EXTEND_OP
-	      && GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
-	      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))) <= UNITS_PER_WORD
-	      && (GET_MODE_SIZE (outmode)
-		  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
-#else
-	      && (GET_MODE_SIZE (outmode)
-		  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (out))))
+		  || (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
+		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
+			  <= UNITS_PER_WORD)
+		      && (GET_MODE_SIZE (outmode)
+			  != GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))))
 #endif
-	      )
+		  ))
 	  || (GET_CODE (SUBREG_REG (out)) == REG
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
 	      && ((GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
@@ -2609,22 +2609,33 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
 		 be a problem accessing OPERAND in the outer mode.  */
 	      if (CONSTANT_P (operand)
 		  || GET_CODE (operand) == PLUS
-#ifdef LOAD_EXTEND_OP
-		  /* If we have a SUBREG where both the inner and outer
-		     modes are different size but no wider than a word,
-		     combine.c has made assumptions about the behavior of
-		     the machine in such register access.  If the data is,
-		     in fact, in memory we must always load using the size
-		     assumed to be in the register and let the insn do the
-		     different-sized accesses.  */
+		  /* We must force a reload of paradoxical SUBREGs
+		     of a MEM because the alignment of the inner value
+		     may not be enough to do the outer reference.
+
+		     On machines that extend byte operations and we have a
+		     SUBREG where both the inner and outer modes are different
+		     size but no wider than a word, combine.c has made
+		     assumptions about the behavior of the machine in such
+		     register access.  If the data is, in fact, in memory we
+		     must always load using the size assumed to be in the
+		     register and let the insn do the different-sized 
+		     accesses.  */
 		  || ((GET_CODE (operand) == MEM
 		       || (GET_CODE (operand)== REG
 			   && REGNO (operand) >= FIRST_PSEUDO_REGISTER))
-		      && GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
-		      && GET_MODE_SIZE (GET_MODE (operand)) <= UNITS_PER_WORD
-		      && (GET_MODE_SIZE (operand_mode[i])
-			  != GET_MODE_SIZE (GET_MODE (operand))))
+		      && (((GET_MODE_BITSIZE (GET_MODE (operand))
+			    < BIGGEST_ALIGNMENT)
+			   && (GET_MODE_SIZE (operand_mode[i])
+			       > GET_MODE_SIZE (GET_MODE (operand))))
+#ifdef LOAD_EXTEND_OP
+			  || (GET_MODE_SIZE (operand_mode[i]) <= UNITS_PER_WORD
+			      && (GET_MODE_SIZE (GET_MODE (operand))
+				  <= UNITS_PER_WORD)
+			      && (GET_MODE_SIZE (operand_mode[i])
+				  != GET_MODE_SIZE (GET_MODE (operand))))
 #endif
+			  ))
 		  /* Subreg of a hard reg which can't handle the subreg's mode
 		     or which would handle that mode in the wrong number of
 		     registers for subregging to work.  */
