@@ -1,3 +1,7 @@
+2002-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gnu89-init-2.c: New test.
+
 2002-07-21  Gabriel Dos Reis  <gdr@nerim.net>
 
 	* gcc.dg/c90-arraydecl-1.c: Change C89 too C90.

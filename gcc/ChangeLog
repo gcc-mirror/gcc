@@ -1,3 +1,8 @@
+2002-07-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.c (build_compound_literal): Defer compound literal decls
+	until until file end to emit them only if they are actually used.
+
 2002-07-21  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* ra-build.c (check_conflict_numbers): Hide unused function.
