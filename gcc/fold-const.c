@@ -1357,7 +1357,7 @@ size_binop (code, arg0, arg1)
 	  && TREE_INT_CST_HIGH (arg0) == 0)
 	return arg1;
       /* Handle general case of two integer constants.  */
-      return const_binop (code, arg0, arg1, 1);
+      return const_binop (code, arg0, arg1, 0);
     }
 
   if (arg0 == error_mark_node || arg1 == error_mark_node)
