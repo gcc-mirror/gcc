@@ -5292,7 +5292,7 @@ compute_code_hoist_data ()
   compute_local_properties (transp, comp, antloc, 0);
   compute_transpout ();
   compute_code_hoist_vbeinout ();
-  compute_flow_dominators (dominators, NULL);
+  calculate_dominance_info (NULL, dominators, CDI_DOMINATORS);
   if (gcse_file)
     fprintf (gcse_file, "\n");
 }

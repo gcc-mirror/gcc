@@ -735,7 +735,7 @@ OBJS = diagnostic.o version.o tree.o print-tree.o stor-layout.o fold-const.o  \
  profile.o insn-attrtab.o $(out_object_file) $(EXTRA_OBJS) convert.o	      \
  mbchar.o splay-tree.o graph.o sbitmap.o resource.o hash.o predict.o	      \
  lists.o ggc-common.o $(GGC) simplify-rtx.o ssa.o bb-reorder.o		      \
- sibcall.o conflict.o timevar.o ifcvt.o dependence.o dce.o
+ sibcall.o conflict.o timevar.o ifcvt.o dominance.o dependence.o dce.o
 
 BACKEND = toplev.o libbackend.a
 
@@ -1403,6 +1403,8 @@ unroll.o : unroll.c $(CONFIG_H) system.h $(RTL_H) insn-config.h function.h \
 flow.o : flow.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h $(RECOG_H) \
    insn-flags.h function.h except.h $(EXPR_H) ssa.h $(GGC_H)
+dominance.o : dominance.c $(CONFIG_H) system.h $(RTL_H) hard-reg-set.h \
+   $(BASIC_BLOCK_H)
 combine.o : combine.c $(CONFIG_H) system.h $(RTL_H) flags.h function.h \
    insn-config.h insn-flags.h insn-codes.h $(INSN_ATTR_H) $(REGS_H) $(EXPR_H) \
    $(BASIC_BLOCK_H) $(RECOG_H) real.h hard-reg-set.h toplev.h

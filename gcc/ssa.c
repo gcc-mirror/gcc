@@ -1148,7 +1148,6 @@ convert_to_ssa ()
   sbitmap *evals;
 
   /* Dominator bitmaps.  */
-  sbitmap *dominators;
   sbitmap *dfs;
   sbitmap *idfs;
 
@@ -1164,15 +1163,9 @@ convert_to_ssa ()
   /* Need global_live_at_{start,end} up to date.  */
   life_analysis (get_insns (), NULL, PROP_KILL_DEAD_CODE | PROP_SCAN_DEAD_CODE);
 
-  /* Compute dominators.  */
-  dominators = sbitmap_vector_alloc (n_basic_blocks, n_basic_blocks);
-  compute_flow_dominators (dominators, NULL);
-
   idom = (int *) alloca (n_basic_blocks * sizeof (int));
   memset ((void *)idom, -1, (size_t)n_basic_blocks * sizeof (int));
-  compute_immediate_dominators (idom, dominators);
-
-  sbitmap_vector_free (dominators);
+  calculate_dominance_info (idom, NULL, CDI_DOMINATORS);
 
   if (rtl_dump_file)
     {

@@ -7001,10 +7001,8 @@ schedule_insns (dump_file)
 	     so may even be beneficial.  */
 	  edge_list = create_edge_list ();
 
-	  /* Compute the dominators and post dominators.  We don't
-	     currently use post dominators, but we should for
-	     speculative motion analysis.  */
-	  compute_flow_dominators (dom, NULL);
+	  /* Compute the dominators and post dominators.  */
+	  calculate_dominance_info (NULL, dom, CDI_DOMINATORS);
 
 	  /* build_control_flow will return nonzero if it detects unreachable
 	     blocks or any other irregularity with the cfg which prevents

@@ -1,3 +1,23 @@
+2000-11-14  Michael Matz  <matzmich@cs.tu-berlin.de>
+
+	* dominance.c: New file.
+	* Makefile.in (OBJS): Add dominance.o.
+
+	* flow.c (compute_flow_dominators): Remove.
+	(compute_immediate_dominators): Remove.
+	(compute_immediate_postdominators): Remove.
+	* basic-block.h: Remove their prototypes.
+	(calculate_dominance_info): Add prototype.
+
+	* dce.c (eliminate_dead_code): Change calls to above functions.
+	Don't compute dominators but only immediate dominators.
+	* flow.c (flow_loops_find): Change callers.
+	* gcse.c (compute_code_hoist_data): Likewise.
+	* haifa-sched.c (schedule_insns): Likewise.
+	* ifcvt.c (if_convert): Likewise.
+	* ssa.c (convert_to_ssa): Likewise, and only compute immediate
+	dominators.
+
 2000-11-14  Richard Henderson  <rth@redhat.com>
 
 	* stmt.c (warn_if_unused_value): Don't warn if the expression
