@@ -1,3 +1,9 @@
+2004-11-29  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR c/7544
+	* Make-lang.in (cp/decl2.o): Update dependencies.
+	* decl2.c (finish_file): Call maybe_apply_pending_pragma_weaks.
+
 2004-11-29  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/18652

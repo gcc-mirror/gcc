@@ -1,3 +1,12 @@
+2004-11-29  Daniel Jacobowitz  <dan@codesourcery.com>
+
+	PR c/7544
+	* Makefile.in (c-lang.o): Update dependencies.
+	* c-lang.c: Include "c-pragma.h".
+	(finish_file): Call maybe_apply_pending_pragma_weaks.
+	* c-pragma.c (maybe_apply_pending_pragma_weaks): New function.
+	* c-pragma.h (maybe_apply_pending_pragma_weaks): New prototype.
+
 2004-11-29  Richard Henderson  <rth@redhat.com>
 
 	PR target/17224

@@ -34,6 +34,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "diagnostic.h"
 #include "c-pretty-print.h"
 #include "c-objc-common.h"
+#include "c-pragma.h"
 
 enum c_language_kind c_language = clk_c;
 
@@ -88,6 +89,7 @@ const char *const tree_code_name[] = {
 void
 finish_file (void)
 {
+  maybe_apply_pending_pragma_weaks ();
 }
 
 #include "gtype-c.h"
