@@ -24,6 +24,8 @@
 
 	* tree-eh.c (tree_could_trap_p): Remove idx.
 
+	* tree-into-ssa.c (ann): Remove ann.
+
 2005-03-08  Jeff Law  <law@redhat.com>
 
 	* tree-cfg.c (cleanup_control_flow): If removal of a computed
