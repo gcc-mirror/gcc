@@ -1,6 +1,6 @@
 /* Reload pseudo regs into hard regs for insns that require hard regs.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -81,7 +81,7 @@ Boston, MA 02111-1307, USA.  */
    into the reload registers.  */
 
 #ifndef REGISTER_MOVE_COST
-#define REGISTER_MOVE_COST(x, y) 2
+#define REGISTER_MOVE_COST(m, x, y) 2
 #endif
 
 #ifndef LOCAL_REGNO
@@ -5396,7 +5396,7 @@ choose_reload_regs (chain)
 			     register, we might use it for reload_override_in,
 			     if copying it to the desired class is cheap
 			     enough.  */
-			  || ((REGISTER_MOVE_COST (last_class, class)
+			  || ((REGISTER_MOVE_COST (mode, last_class, class)
 			       < MEMORY_MOVE_COST (mode, class, 1))
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
 			      && (SECONDARY_INPUT_RELOAD_CLASS (class, mode,
@@ -6113,7 +6113,7 @@ emit_input_reload_insns (chain, rl, old, j)
 
       if (oldequiv != 0
 	  && ((REGNO_REG_CLASS (regno) != rl->class
-	       && (REGISTER_MOVE_COST (REGNO_REG_CLASS (regno),
+	       && (REGISTER_MOVE_COST (mode, REGNO_REG_CLASS (regno),
 				       rl->class)
 		   >= MEMORY_MOVE_COST (mode, rl->class, 1)))
 #ifdef SECONDARY_INPUT_RELOAD_CLASS
@@ -8106,7 +8106,8 @@ reload_cse_simplify_set (set, insn)
   else if (CONSTANT_P (src))
     old_cost = rtx_cost (src, SET);
   else if (GET_CODE (src) == REG)
-    old_cost = REGISTER_MOVE_COST (REGNO_REG_CLASS (REGNO (src)), dclass);
+    old_cost = REGISTER_MOVE_COST (GET_MODE (src),
+				   REGNO_REG_CLASS (REGNO (src)), dclass);
   else
     /* ???   */
     old_cost = rtx_cost (src, SET);
@@ -8120,7 +8121,8 @@ reload_cse_simplify_set (set, insn)
       if (CONSTANT_P (l->loc) && ! references_value_p (l->loc, 0))
 	this_cost = rtx_cost (l->loc, SET);
       else if (GET_CODE (l->loc) == REG)
-	this_cost = REGISTER_MOVE_COST (REGNO_REG_CLASS (REGNO (l->loc)),
+	this_cost = REGISTER_MOVE_COST (GET_MODE (l->loc),
+					REGNO_REG_CLASS (REGNO (l->loc)),
 					dclass);
       else
 	continue;

@@ -1,6 +1,6 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
    Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -104,7 +104,7 @@ a register with any other reload.  */
 #include "toplev.h"
 
 #ifndef REGISTER_MOVE_COST
-#define REGISTER_MOVE_COST(x, y) 2
+#define REGISTER_MOVE_COST(m, x, y) 2
 #endif
 
 #ifndef REGNO_MODE_OK_FOR_BASE_P
@@ -2467,7 +2467,8 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
       && REGNO (SET_DEST (body)) < FIRST_PSEUDO_REGISTER
       && GET_CODE (SET_SRC (body)) == REG
       && REGNO (SET_SRC (body)) < FIRST_PSEUDO_REGISTER
-      && REGISTER_MOVE_COST (REGNO_REG_CLASS (REGNO (SET_SRC (body))),
+      && REGISTER_MOVE_COST (GET_MODE (SET_SRC (body)),
+			     REGNO_REG_CLASS (REGNO (SET_SRC (body))),
 			     REGNO_REG_CLASS (REGNO (SET_DEST (body)))) == 2)
     return 0;
 
