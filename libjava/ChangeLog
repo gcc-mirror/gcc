@@ -1,5 +1,7 @@
 2002-06-16  Tom Tromey  <tromey@redhat.com>
 
+	* java/io/LineNumberInputStream.java: Merged with Classpath.
+
 	* java/lang/RuntimeException.java: Re-merge with Classpath.
 	* java/util/ArrayList.java: Likewise.
 	* java/util/Arrays.java: Likewise.
