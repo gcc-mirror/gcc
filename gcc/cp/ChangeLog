@@ -1,3 +1,9 @@
+1999-04-16  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (warn_about_implicit_typename_lookup): New function.
+	(lookup_name_real): Use it.  Rework handling of implicit typename
+	extension.
+
 1999-04-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (lookup_nested_field): Remove.
