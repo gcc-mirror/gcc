@@ -1045,6 +1045,7 @@ enum reg_class
    K is for signed imm8 operands.
    L is for andsi as zero-extending move.
    M is for shifts that can be executed by the "lea" opcode.
+   N is for immedaite operands for out/in instructions (0-255)
    */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)				\
@@ -1053,6 +1054,7 @@ enum reg_class
    : (C) == 'K' ? (VALUE) >= -128 && (VALUE) <= 127		\
    : (C) == 'L' ? (VALUE) == 0xff || (VALUE) == 0xffff		\
    : (C) == 'M' ? (VALUE) >= 0 && (VALUE) <= 3			\
+   : (C) == 'N' ? (VALUE) >= 0 && (VALUE) <= 255		\
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.

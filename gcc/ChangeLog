@@ -1,3 +1,7 @@
+Thu Oct 19 14:25:11 MET DST 2000  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (CONST_OK_FOR_LETTER): Re-add 'N'; document.
+
 2000-10-18  Chandrakala Chavva  <cchavva@redhat.com>
 
         * expmed.c (expand_mult): Don't do synth_mult optimization for -ftrapv.
@@ -120,7 +124,7 @@
 	* emit-rtl.c (init_emit_once): Initialize the const_int_htab
 	earlier.
 	
-2000-10-18  Jan Hubikca  <jh@suse.cz>
+2000-10-18  Jan Hubicka  <jh@suse.cz>
 
         * i386.c (ix86_comparison_operator, put_condition_code,
         ix86_match_ccmode, ix86_cc_mode): Handle CCRCmode.
