@@ -1,3 +1,10 @@
+2003-08-02  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	* config/sh/linux.h (SUBTARGET_LINK_SPEC): Don't set rpath.
+	(LIB_SPEC): Set -lpthread always when -pthread set.  Set -lieee
+	when -mieee-fp set and -shared not set.
+	(SH_FALLBACK_FRAME_FLOAT_STATE): Don't define for SH5.
+
 2003-08-02  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cppfiles.c (struct _cpp_file): Rename once_only_next to
