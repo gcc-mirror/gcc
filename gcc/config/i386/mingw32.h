@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define TARGET_EXECUTABLE_SUFFIX ".exe"
 
-/* See i386/crtdll.h for an altervative definition.  */
+/* See i386/crtdll.h for an alternative definition.  */
 #define EXTRA_OS_CPP_BUILTINS()					\
   do								\
     {								\
@@ -102,7 +102,7 @@ Boston, MA 02111-1307, USA.  */
 #define MATH_LIBRARY ""
 
 /* Output STRING, a string representing a filename, to FILE.
-   We canonicalize it to be in Unix format (backslashe are replaced
+   We canonicalize it to be in Unix format (backslashes are replaced
    forward slashes.  */
 #undef OUTPUT_QUOTED_STRING
 #define OUTPUT_QUOTED_STRING(FILE, STRING)               \
@@ -129,6 +129,6 @@ do {						         \
   putc ('\"', asm_file);			         \
 } while (0)
 
-/* Define as short unsigned for compatability with MS runtime.  */
+/* Define as short unsigned for compatibility with MS runtime.  */
 #undef WINT_TYPE
 #define WINT_TYPE "short unsigned int"

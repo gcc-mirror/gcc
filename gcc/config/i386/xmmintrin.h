@@ -37,10 +37,10 @@
 /* We need type definitions from the MMX header file.  */
 #include <mmintrin.h>
 
-/* The data type indended for user use.  */
+/* The data type intended for user use.  */
 typedef int __m128 __attribute__ ((__mode__(__V4SF__)));
 
-/* Internal data types for implementing the instrinsics.  */
+/* Internal data types for implementing the intrinsics.  */
 typedef int __v4sf __attribute__ ((__mode__(__V4SF__)));
 typedef int __v4si __attribute__ ((__mode__(__V4SI__)));
 
@@ -1047,7 +1047,7 @@ _mm_stream_ps (float *__P, __m128 __A)
   __builtin_ia32_movntps (__P, (__v4sf)__A);
 }
 
-/* Guarantees that every preceeding store is globally visible before
+/* Guarantees that every preceding store is globally visible before
    any subsequent store.  */
 static __inline void
 _mm_sfence (void)
@@ -1114,21 +1114,21 @@ _mm_load_pd1 (double const *__P)
   return _mm_load1_pd (__P);
 }
 
-/* Load two DPFP values from P.  The addresd must be 16-byte aligned.  */
+/* Load two DPFP values from P.  The address must be 16-byte aligned.  */
 static __inline __m128d
 _mm_load_pd (double const *__P)
 {
   return (__m128d) __builtin_ia32_loadapd (__P);
 }
 
-/* Load two DPFP values from P.  The addresd need not be 16-byte aligned.  */
+/* Load two DPFP values from P.  The address need not be 16-byte aligned.  */
 static __inline __m128d
 _mm_loadu_pd (double const *__P)
 {
   return (__m128d) __builtin_ia32_loadupd (__P);
 }
 
-/* Load two DPFP values in reverse order.  The addresd must be aligned.  */
+/* Load two DPFP values in reverse order.  The address must be aligned.  */
 static __inline __m128d
 _mm_loadr_pd (double const *__P)
 {
@@ -1208,21 +1208,21 @@ _mm_store_pd1 (double *__P, __m128d __A)
   _mm_store1_pd (__P, __A);
 }
 
-/* Store two DPFP values.  The addresd must be 16-byte aligned.  */
+/* Store two DPFP values.  The address must be 16-byte aligned.  */
 static __inline void
 _mm_store_pd (double *__P, __m128d __A)
 {
   __builtin_ia32_storeapd (__P, (__v2df)__A);
 }
 
-/* Store two DPFP values.  The addresd need not be 16-byte aligned.  */
+/* Store two DPFP values.  The address need not be 16-byte aligned.  */
 static __inline void
 _mm_storeu_pd (double *__P, __m128d __A)
 {
   __builtin_ia32_storeupd (__P, (__v2df)__A);
 }
 
-/* Store two DPFP values in reverse order.  The addresd must be aligned.  */
+/* Store two DPFP values in reverse order.  The address must be aligned.  */
 static __inline void
 _mm_storer_pd (double *__P, __m128d __A)
 {
