@@ -1981,7 +1981,12 @@ expand_builtin_memcpy (arglist, target, mode)
 	  store_by_pieces (dest_mem, INTVAL (len_rtx),
 			   builtin_memcpy_read_str,
 			   (PTR) src_str, dest_align);
-	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_mem) != ptr_mode)
+	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
+#endif
+	  return dest_mem;
 	}
 
       src_mem = get_memory_rtx (src);
@@ -1991,7 +1996,13 @@ expand_builtin_memcpy (arglist, target, mode)
       dest_addr = emit_block_move (dest_mem, src_mem, len_rtx);
 
       if (dest_addr == 0)
-	dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	{
+	  dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_addr) != ptr_mode)
+	    dest_addr = convert_memory_address (ptr_mode, dest_addr);
+#endif
+	}
 
       return dest_addr;
     }
@@ -2107,7 +2118,12 @@ expand_builtin_strncpy (arglist, target, mode)
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_strncpy_read_str,
 			   (PTR) p, dest_align);
-	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_mem) != ptr_mode)
+	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
+#endif
+	  return dest_mem;
 	}
 
       /* OK transform into builtin memcpy.  */
@@ -2232,7 +2248,12 @@ expand_builtin_memset (exp, target, mode)
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_gen_str,
 			   (PTR)val_rtx, dest_align);
-	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_mem) != ptr_mode)
+	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
+#endif
+	  return dest_mem;
 	}
 
       if (target_char_cast (val, &c))
@@ -2251,7 +2272,12 @@ expand_builtin_memset (exp, target, mode)
 	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
 			   builtin_memset_read_str,
 			   (PTR) &c, dest_align);
-	  return force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	  dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_mem) != ptr_mode)
+	    dest_mem = convert_memory_address (ptr_mode, dest_mem);
+#endif
+	  return dest_mem;
 	}
 
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
@@ -2261,7 +2287,13 @@ expand_builtin_memset (exp, target, mode)
       dest_addr = clear_storage (dest_mem, len_rtx);
 
       if (dest_addr == 0)
-	dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+	{
+	  dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
+#ifdef POINTERS_EXTEND_UNSIGNED
+	  if (GET_MODE (dest_addr) != ptr_mode)
+	    dest_addr = convert_memory_address (ptr_mode, dest_addr);
+#endif
+	}
 
       return dest_addr;
     }
