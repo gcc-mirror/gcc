@@ -1433,6 +1433,29 @@ gfc_resolve_ubound (gfc_expr * f, gfc_expr * array,
 }
 
 
+/* Resolve the g77 compatibility function UMASK.  */
+
+void
+gfc_resolve_umask (gfc_expr * f, gfc_expr * n)
+{
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = n->ts.kind;
+  f->value.function.name = gfc_get_string (PREFIX("umask_i%d"), n->ts.kind);
+}
+
+
+/* Resolve the g77 compatibility function UNLINK.  */
+
+void
+gfc_resolve_unlink (gfc_expr * f, gfc_expr * n ATTRIBUTE_UNUSED)
+{
+
+  f->ts.type = BT_INTEGER;
+  f->ts.kind = 4;
+  f->value.function.name = gfc_get_string (PREFIX("unlink"));
+}
+
 void
 gfc_resolve_unpack (gfc_expr * f, gfc_expr * vector, gfc_expr * mask,
 		    gfc_expr * field ATTRIBUTE_UNUSED)
@@ -1638,6 +1661,58 @@ gfc_resolve_system_clock (gfc_code * c)
   name = gfc_get_string (PREFIX("system_clock_%d"), kind);
   c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
 }
+
+/* Resolve the EXIT intrinsic subroutine.  */
+
+void
+gfc_resolve_exit (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  if (c->ext.actual->expr != NULL)
+    kind = c->ext.actual->expr->ts.kind;
+  else
+    kind = gfc_default_integer_kind;
+
+  name = gfc_get_string (PREFIX("exit_i%d"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve the UMASK intrinsic subroutine.  */
+
+void
+gfc_resolve_umask_sub (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  if (c->ext.actual->next->expr != NULL)
+    kind = c->ext.actual->next->expr->ts.kind;
+  else
+    kind = gfc_default_integer_kind;
+
+  name = gfc_get_string (PREFIX("umask_i%d_sub"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
+/* Resolve the UNLINK intrinsic subroutine.  */
+
+void
+gfc_resolve_unlink_sub (gfc_code * c)
+{
+  const char *name;
+  int kind;
+
+  if (c->ext.actual->next->expr != NULL)
+    kind = c->ext.actual->next->expr->ts.kind;
+  else
+    kind = gfc_default_integer_kind;
+
+  name = gfc_get_string (PREFIX("unlink_i%d_sub"), kind);
+  c->resolved_sym = gfc_get_intrinsic_sub_symbol (name);
+}
+
 
 void
 gfc_iresolve_init_1 (void)

@@ -1,3 +1,20 @@
+2004-11-20  Steven G. Kargl  <kargls@comcast.net>
+
+	* check.c (gfc_check_getcwd_sub): Fix seg fault.
+
+	* check.c (gfc_check_exit,gfc_check_umask,gfc_check_umask_sub,
+	gfc_check_unlink,gfc_check_unlink_sub): New functions
+	* gfortran.h (GFC_ISYM_UMASK,GFC_ISYM_UNLINK): New symbols
+	* intrinsic.c (add_functions,add_subroutines): Add umask, unlink,
+	exit to intrinsics symbol tables.
+	* intrinsic.h (gfc_check_umask,gfc_check_unlink,gfc_check_exit,
+	gfc_check_umask_sub,gfc_check_unlink_sub,gfc_resolve_umask,
+	gfc_resolve_unlink,gfc_resolve_exit,gfc_resolve_umask_sub,
+	gfc_resolve_unlink_sub): Add and sort prototypes.
+	* iresolve.c (gfc_resolve_umask,gfc_resolve_unlink,gfc_resolve_exit,
+	gfc_resolve_umask_sub,gfc_resolve_unlink_sub): New functions
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Use symbols
+
 2004-11-16  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/13010

@@ -2108,6 +2108,94 @@ gfc_check_getcwd_sub (gfc_expr * cwd, gfc_expr * status)
   if (type_check (cwd, 0, BT_CHARACTER) == FAILURE)
     return FAILURE;
 
+  if (status == NULL)
+    return SUCCESS;
+
+  if (scalar_check (status, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (status, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_exit (gfc_expr * status)
+{
+  
+  if (status == NULL)
+  return SUCCESS;
+
+  if (type_check (status, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (status, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_umask (gfc_expr * mask)
+{
+
+  if (type_check (mask, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (mask, 0) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_umask_sub (gfc_expr * mask, gfc_expr * old)
+{
+
+  if (type_check (mask, 0, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  if (scalar_check (mask, 0) == FAILURE)
+    return FAILURE;
+
+  if (old == NULL)
+    return SUCCESS;
+
+  if (scalar_check (old, 1) == FAILURE)
+    return FAILURE;
+
+  if (type_check (old, 1, BT_INTEGER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_unlink (gfc_expr * name)
+{
+
+  if (type_check (name, 0, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  return SUCCESS;
+}
+
+
+try
+gfc_check_unlink_sub (gfc_expr * name, gfc_expr * status)
+{
+
+  if (type_check (name, 0, BT_CHARACTER) == FAILURE)
+    return FAILURE;
+
+  if (status == NULL)
+    return SUCCESS;
+
   if (scalar_check (status, 1) == FAILURE)
     return FAILURE;
 

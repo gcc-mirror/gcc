@@ -100,6 +100,8 @@ try gfc_check_transfer (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_transpose (gfc_expr *);
 try gfc_check_trim (gfc_expr *);
 try gfc_check_ubound (gfc_expr *, gfc_expr *);
+try gfc_check_umask (gfc_expr *);
+try gfc_check_unlink (gfc_expr *);
 try gfc_check_unpack (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_verify (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_x (gfc_expr *);
@@ -109,6 +111,7 @@ try gfc_check_x (gfc_expr *);
 try gfc_check_cpu_time (gfc_expr *);
 try gfc_check_system_clock (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_date_and_time (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
+try gfc_check_exit (gfc_expr *);
 try gfc_check_mvbits (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
 		      gfc_expr *);
 try gfc_check_random_number (gfc_expr *);
@@ -116,6 +119,8 @@ try gfc_check_random_seed (gfc_expr *, gfc_expr *, gfc_expr *);
 try gfc_check_etime_sub (gfc_expr *, gfc_expr *);
 try gfc_check_getcwd_sub (gfc_expr *, gfc_expr *);
 try gfc_check_system_sub (gfc_expr *, gfc_expr *);
+try gfc_check_umask_sub (gfc_expr *, gfc_expr *);
+try gfc_check_unlink_sub (gfc_expr *, gfc_expr *);
 
 
 /* Simplification functions.  */
@@ -319,21 +324,26 @@ void gfc_resolve_transfer (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_transpose (gfc_expr *, gfc_expr *);
 void gfc_resolve_trim (gfc_expr *, gfc_expr *);
 void gfc_resolve_ubound (gfc_expr *, gfc_expr *, gfc_expr *);
+void gfc_resolve_umask (gfc_expr *, gfc_expr *);
+void gfc_resolve_unlink (gfc_expr *, gfc_expr *);
 void gfc_resolve_unpack (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_verify (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *);
 
 
 /* Intrinsic subroutine resolution.  */
 void gfc_resolve_cpu_time (gfc_code *);
-void gfc_resolve_system_sub (gfc_code *);
-void gfc_resolve_system_clock (gfc_code *);
-void gfc_resolve_mvbits (gfc_code *);
-void gfc_resolve_random_number (gfc_code *);
+void gfc_resolve_exit (gfc_code *);
 void gfc_resolve_getarg (gfc_code *);
 void gfc_resolve_getcwd_sub (gfc_code *);
 void gfc_resolve_get_command (gfc_code *);
 void gfc_resolve_get_command_argument (gfc_code *);
 void gfc_resolve_get_environment_variable (gfc_code *);
+void gfc_resolve_mvbits (gfc_code *);
+void gfc_resolve_random_number (gfc_code *);
+void gfc_resolve_system_clock (gfc_code *);
+void gfc_resolve_system_sub (gfc_code *);
+void gfc_resolve_umask_sub (gfc_code *);
+void gfc_resolve_unlink_sub (gfc_code *);
 
 
 /* The mvbits() subroutine requires the most arguments: five.  */
