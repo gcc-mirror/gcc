@@ -124,7 +124,7 @@ int stack_arg_under_construction;
 
 static int calls_function	PROTO((tree, int));
 static int calls_function_1	PROTO((tree, int));
-static void emit_call_1		PROTO((rtx, tree, int, int, rtx, rtx, int,
+static void emit_call_1		PROTO((rtx, tree, tree, int, int, rtx, rtx, int,
 				       rtx, int));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
 					tree, int));
@@ -301,6 +301,9 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    and optionally pop the results.
    The CALL_INSN is the first insn generated.
 
+   FNDECL is the declaration node of the function.  This is given ot the
+   macro RETURN_POPS_ARGS to determine whether this function pops its own args.
+
    FUNTYPE is the data type of the function, or, for a library call,
    the identifier for the name of the call.  This is given to the
    macro RETURN_POPS_ARGS to determine whether this function pops its own args.
@@ -334,9 +337,11 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    IS_CONST is true if this is a `const' call.  */
 
 static void
-emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
+emit_call_1 (funexp, fndecl, funtype, stack_size, struct_value_size, 
+             next_arg_reg,
 	     valreg, old_inhibit_defer_pop, call_fusage, is_const)
      rtx funexp;
+     tree fndecl;
      tree funtype;
      int stack_size;
      int struct_value_size;
@@ -360,13 +365,15 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
 #ifndef ACCUMULATE_OUTGOING_ARGS
 #if defined (HAVE_call_pop) && defined (HAVE_call_value_pop)
   if (HAVE_call_pop && HAVE_call_value_pop
-      && (RETURN_POPS_ARGS (funtype, stack_size) > 0 || stack_size == 0))
+      && (RETURN_POPS_ARGS (fndecl, funtype, stack_size) > 0 
+          || stack_size == 0))
     {
-      rtx n_pop = GEN_INT (RETURN_POPS_ARGS (funtype, stack_size));
+      rtx n_pop = GEN_INT (RETURN_POPS_ARGS (fndecl, funtype, stack_size));
       rtx pat;
 
       /* If this subroutine pops its own args, record that in the call insn
 	 if possible, for the sake of frame pointer elimination.  */
+
       if (valreg)
 	pat = gen_call_value_pop (valreg,
 				  gen_rtx (MEM, FUNCTION_MODE, funexp),
@@ -439,14 +446,14 @@ emit_call_1 (funexp, funtype, stack_size, struct_value_size, next_arg_reg,
      If returning from the subroutine does pop the args, indicate that the
      stack pointer will be changed.  */
 
-  if (stack_size != 0 && RETURN_POPS_ARGS (funtype, stack_size) > 0)
+  if (stack_size != 0 && RETURN_POPS_ARGS (fndecl, funtype, stack_size) > 0)
     {
       if (!already_popped)
 	CALL_INSN_FUNCTION_USAGE (call_insn) =
 	   gen_rtx (EXPR_LIST, VOIDmode,
 		    gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx),
 		    CALL_INSN_FUNCTION_USAGE (call_insn));
-      stack_size -= RETURN_POPS_ARGS (funtype, stack_size);
+      stack_size -= RETURN_POPS_ARGS (fndecl, funtype, stack_size);
       stack_size_rtx = GEN_INT (stack_size);
     }
 
@@ -1892,7 +1899,7 @@ expand_call (exp, target, ignore)
   /* All arguments and registers used for the call must be set up by now!  */
 
   /* Generate the actual call instruction.  */
-  emit_call_1 (funexp, funtype, args_size.constant, struct_value_size,
+  emit_call_1 (funexp, fndecl, funtype, args_size.constant, struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       valreg, old_inhibit_defer_pop, call_fusage, is_const);
 
@@ -2446,7 +2453,9 @@ emit_library_call VPROTO((rtx orgfun, int no_queue, enum machine_mode outmode,
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
 
-  emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
+  emit_call_1 (fun, 
+               get_identifier (XSTR (orgfun, 0)), 
+               get_identifier (XSTR (orgfun, 0)), args_size.constant, 0,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       outmode != VOIDmode ? hard_libcall_value (outmode) : NULL_RTX,
 	       old_inhibit_defer_pop + 1, call_fusage, no_queue);
@@ -2807,7 +2816,9 @@ emit_library_call_value VPROTO((rtx orgfun, rtx value, int no_queue,
   /* We pass the old value of inhibit_defer_pop + 1 to emit_call_1, which
      will set inhibit_defer_pop to that value.  */
 
-  emit_call_1 (fun, get_identifier (XSTR (orgfun, 0)), args_size.constant,
+  emit_call_1 (fun, 
+               get_identifier (XSTR (orgfun, 0)),
+               get_identifier (XSTR (orgfun, 0)), args_size.constant,
 	       struct_value_size,
 	       FUNCTION_ARG (args_so_far, VOIDmode, void_type_node, 1),
 	       (outmode != VOIDmode && mem_value == 0
