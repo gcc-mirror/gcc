@@ -1,3 +1,15 @@
+2002-03-15  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
+
+	* config/m68hc11/m68hc11.c (m6812_cost): Make cost of add higher
+	than a shift to avoid adding a register with itself.
+	(m68hc11_memory_move_cost): Take into account NO_REGS.
+	(m68hc11_register_move_cost): Update and use memory move cost
+	for soft registers.
+	(m68hc11_address_cost): Make cost of valid offset not 0 so that
+	it gives more opportunities to cse to optimize.
+	* config/m68hc11/m68hc11.h (REGISTER_MOVE_COST): Pass the mode.
+	* config/m68hc11/m68hc11-protos.h (m68hc11_register_move_cost): Update.
+
 2002-03-15  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (statement_code_p): Handle CLEANUP_STMT.
