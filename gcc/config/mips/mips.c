@@ -3914,7 +3914,7 @@ save_restore (file, gp_op, gp_2word_op, fp_op)
   unsigned long fmask	  = current_frame_info.fmask;
   unsigned long gp_offset;
   unsigned long fp_offset;
-  unsigned long max_offset;
+  unsigned long min_offset;
   char *base_reg;
 
   if (mask == 0 && fmask == 0)
@@ -3923,17 +3923,17 @@ save_restore (file, gp_op, gp_2word_op, fp_op)
   base_reg   = reg_names[STACK_POINTER_REGNUM];
   gp_offset  = current_frame_info.gp_sp_offset;
   fp_offset  = current_frame_info.fp_sp_offset;
-  max_offset = (gp_offset > fp_offset) ? gp_offset : fp_offset;
+  min_offset = (gp_offset < fp_offset && mask != 0) ? gp_offset : fp_offset;
 
   /* Deal with calling functions with a large structure.  */
-  if (max_offset >= 32768)
+  if (min_offset >= 32768)
     {
       char *temp = reg_names[MIPS_TEMP2_REGNUM];
-      fprintf (file, "\tli\t%s,%ld\n", temp, max_offset);
+      fprintf (file, "\tli\t%s,%ld\n", temp, min_offset);
       fprintf (file, "\taddu\t%s,%s,%s\n", temp, temp, base_reg);
       base_reg = temp;
-      gp_offset = max_offset - gp_offset;
-      fp_offset = max_offset - fp_offset;
+      gp_offset = min_offset - gp_offset;
+      fp_offset = min_offset - fp_offset;
     }
 
   /* Save registers starting from high to low.  The debuggers prefer
@@ -3982,28 +3982,28 @@ save_restore_insns (store_p)
      int store_p;		/* true if this is prologue */
 {
   int regno;
-  rtx base_reg_rtx	  = stack_pointer_rtx;
-  unsigned long mask	  = current_frame_info.mask;
-  unsigned long fmask	  = current_frame_info.fmask;
+  rtx base_reg_rtx		= stack_pointer_rtx;
+  unsigned long mask		= current_frame_info.mask;
+  unsigned long fmask		= current_frame_info.fmask;
   unsigned long gp_offset;
   unsigned long fp_offset;
-  unsigned long max_offset;
+  unsigned long min_offset;
 
   if (mask == 0 && fmask == 0)
     return;
 
   gp_offset  = current_frame_info.gp_sp_offset;
   fp_offset  = current_frame_info.fp_sp_offset;
-  max_offset = (gp_offset > fp_offset) ? gp_offset : fp_offset;
+  min_offset = (gp_offset < fp_offset && mask != 0) ? gp_offset : fp_offset;
 
   /* Deal with calling functions with a large structure.  */
-  if (max_offset >= 32768)
+  if (min_offset >= 32768)
     {
       base_reg_rtx = gen_rtx (REG, Pmode, MIPS_TEMP2_REGNUM);
-      emit_move_insn (base_reg_rtx, GEN_INT (max_offset));
+      emit_move_insn (base_reg_rtx, GEN_INT (min_offset));
       emit_insn (gen_addsi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
-      gp_offset = max_offset - gp_offset;
-      fp_offset = max_offset - fp_offset;
+      gp_offset = min_offset - gp_offset;
+      fp_offset = min_offset - fp_offset;
     }
 
   /* Save registers starting from high to low.  The debuggers prefer
