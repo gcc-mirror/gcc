@@ -1,0 +1,3 @@
+# On x86-64 we do not need any exports for glibc, override the settings
+# from t-slibgcc-elf-ver and t-linux
+SHLIB_MAPFILES = $(srcdir)/libgcc-std.ver
