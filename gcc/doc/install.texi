@@ -1029,7 +1029,7 @@ use DWARF 2 debugging information as the default.
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
 @itemx --disable-win32-registry
-The @option{--enable-win32-registry} option enables Windows-hosted GCC
+The @option{--enable-win32-registry} option enables Microsoft Windows-hosted GCC
 to look up installations paths in the registry using the following key:
 
 @smallexample
@@ -3222,13 +3222,13 @@ Embedded PowerPC system in little endian mode.
 <hr />
 @end html
 @heading @anchor{s390-*-linux*}s390-*-linux*
-S/390 system running Linux for S/390@.
+S/390 system running GNU/Linux for S/390@.
 
 @html
 <hr />
 @end html
 @heading @anchor{s390x-*-linux*}s390x-*-linux*
-zSeries system (64-bit) running Linux for zSeries@.
+zSeries system (64-bit) running GNU/Linux for zSeries@.
 
 @html
 <hr />

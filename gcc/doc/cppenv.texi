@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001, 2002
+@c Copyright (c) 1999, 2000, 2001, 2002, 2004
 @c Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
@@ -20,7 +20,7 @@
 Each variable's value is a list of directories separated by a special
 character, much like @env{PATH}, in which to look for header files.
 The special character, @code{PATH_SEPARATOR}, is target-dependent and
-determined at GCC build time.  For Windows-based targets it is a
+determined at GCC build time.  For Microsoft Windows-based targets it is a
 semicolon, and for almost all other targets it is a colon.
 
 @env{CPATH} specifies a list of directories to be searched as if

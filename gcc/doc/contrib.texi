@@ -1,5 +1,5 @@
 @c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,
-@c 2001,2002,2003 Free Software Foundation, Inc.
+@c 2001,2002,2003,2004 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -55,7 +55,7 @@ Scott Bambrough for help porting the Java compiler.
 Wolfgang Bangerth for processing tons of bug reports.
 
 @item
-Jon Beniston for his Windows port of Java.
+Jon Beniston for his Microsoft Windows port of Java.
 
 @item
 Daniel Berlin for better DWARF2 support, faster/better optimizations,
@@ -417,7 +417,7 @@ head maintainer of GCC for several years.
 
 @item
 Mumit Khan for various contributions to the Cygwin and Mingw32 ports and
-maintaining binary releases for Windows hosts, and for massive libstdc++
+maintaining binary releases for Microsoft Windows hosts, and for massive libstdc++
 porting work to Cygwin/Mingw32.
 
 @item
@@ -515,7 +515,7 @@ for Java test code.
 Bryce McKinlay for numerous GCJ and libgcj fixes and improvements.
 
 @item
-Adam Megacz for his work on the Windows port of GCJ.
+Adam Megacz for his work on the Microsoft Windows port of GCJ.
 
 @item
 Michael Meissner for LRS framework, ia32, m32r, v850, m88k, MIPS,
@@ -745,7 +745,7 @@ the LWG (thereby keeping us in line with updates from the ISO).
 
 @item
 Franz Sirl for his ongoing work with making the PPC port stable
-for linux.
+for GNU/Linux.
 
 @item
 Andrey Slepuhin for assorted AIX hacking.
