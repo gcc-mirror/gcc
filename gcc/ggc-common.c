@@ -588,7 +588,7 @@ gt_pch_restore (FILE *f)
 			  fileno (f), mmi.offset);
 
       /* The file might not be mmap-able.  */
-      needs_read = mmap_result == MAP_FAILED;
+      needs_read = mmap_result == (void *) MAP_FAILED;
 
       /* Sanity check for broken MAP_FIXED.  */
       if (! needs_read && mmap_result != mmi.preferred_base)

@@ -1,3 +1,7 @@
+2003-08-01  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* ggc-common.c (gt_pch_restore): Case MAP_FAILED to void *.
+
 2003-08-01  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* except.c (sjlj_emit_dispatch_table): Use ptr_mode, not Pmode,
