@@ -4102,12 +4102,18 @@ expand_expr (exp, target, tmode, modifier)
 	 if this is a non-BLKmode mode, let it store a field at a time
 	 since that should make a CONST_INT or CONST_DOUBLE when we
 	 fold.  Likewise, if we have a target we can use, it is best to
-	 store directly into the target.  If we are making an initializer and
+	 store directly into the target unless the type is large enough
+	 that memcpy will be used.  If we are making an initializer and
 	 all operands are constant, put it in memory as well.  */
       else if ((TREE_STATIC (exp)
 		&& ((mode == BLKmode
 		     && ! (target != 0 && safe_from_p (target, exp)))
-		    || TREE_ADDRESSABLE (exp)))
+		    || TREE_ADDRESSABLE (exp)
+		    || (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+			&& (move_by_pieces_ninsns
+			    (TREE_INT_CST_LOW (TYPE_SIZE (type)),
+			     TYPE_ALIGN (type))
+			    > MOVE_RATIO))))
 	       || (modifier == EXPAND_INITIALIZER && TREE_CONSTANT (exp)))
 	{
 	  rtx constructor = output_constant_def (exp);
