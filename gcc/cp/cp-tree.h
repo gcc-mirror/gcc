@@ -1684,6 +1684,7 @@ extern tree current_class_type;
 extern tree current_class_ptr;
 extern tree previous_class_type;
 extern tree current_class_ref;
+extern int current_class_depth;
 
 extern tree current_lang_name, lang_name_cplusplus, lang_name_c;
 
@@ -2580,6 +2581,22 @@ extern void finish_handler                      PROTO((tree));
 extern tree begin_compound_stmt                 PROTO((int));
 extern tree finish_compound_stmt                PROTO((int, tree));
 extern void finish_asm_stmt                     PROTO((tree, tree, tree, tree, tree));
+extern tree finish_parenthesized_expr           PROTO((tree));
+extern tree begin_stmt_expr                     PROTO((void));
+extern tree finish_stmt_expr                    PROTO((tree, tree));
+extern tree finish_call_expr                    PROTO((tree, tree));
+extern tree finish_increment_expr               PROTO((tree, enum tree_code));
+extern tree finish_this_expr                    PROTO((void));
+extern tree finish_object_call_expr             PROTO((tree, tree, tree));
+extern tree finish_qualified_object_call_expr   PROTO((tree, tree, tree));
+extern tree finish_pseudo_destructor_call_expr  PROTO((tree, tree, tree));
+extern tree finish_globally_qualified_member_call_expr PROTO ((tree, tree));
+extern tree finish_label_address_expr           PROTO((tree));
+extern int begin_function_definition            PROTO((tree, tree));
+extern tree begin_constructor_declarator        PROTO((tree, tree));
+extern tree finish_template_type_parm           PROTO((tree, tree));
+extern tree finish_template_template_parm       PROTO((tree, tree));
+
 /* in sig.c */
 extern tree build_signature_pointer_type	PROTO((tree, int, int));
 extern tree build_signature_reference_type	PROTO((tree, int, int));
