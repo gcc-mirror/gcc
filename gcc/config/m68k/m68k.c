@@ -1508,7 +1508,7 @@ const_method (rtx constant)
 
   if (TARGET_CFV4)
     {
-      /* Try using MVZ/MVS with an immedaite value to load constants.   */
+      /* Try using MVZ/MVS with an immediate value to load constants.  */
       if (i >= 0 && i <= 65535)
 	return MVZ;
       if (i >= -32768 && i <= 32767)
