@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@
 --  tasking implementation to be linked and elaborated.
 
 with System.Tasking;
---  used for Task_ID
+--  used for Task_Id
 
 with System.Tasking.Protected_Objects.Entries;
 --  used for Protection_Entries
@@ -131,11 +131,11 @@ package System.Interrupts is
    --  already attached will raise a Program_Error.
 
    procedure Bind_Interrupt_To_Entry
-     (T       : System.Tasking.Task_ID;
+     (T       : System.Tasking.Task_Id;
       E       : System.Tasking.Task_Entry_Index;
       Int_Ref : System.Address);
 
-   procedure Detach_Interrupt_Entries (T : System.Tasking.Task_ID);
+   procedure Detach_Interrupt_Entries (T : System.Tasking.Task_Id);
    --  This procedure detaches all the Interrupt Entries bound to a task.
 
    -------------------------------
@@ -151,7 +151,7 @@ package System.Interrupts is
 
    function Unblocked_By
      (Interrupt   : Interrupt_ID)
-      return System.Tasking.Task_ID;
+      return System.Tasking.Task_Id;
    --  It returns the ID of the last Task which Unblocked this Interrupt.
    --  It returns Null_Task if no tasks have ever requested the
    --  Unblocking operation or the Interrupt is currently Blocked.

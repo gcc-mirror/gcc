@@ -86,6 +86,13 @@ DEFTREECODE (GNAT_LOOP_ID, "gnat_loop_id", 'x', 0)
    the expression (such as a MODIFY_EXPR) and discarding its result.  */
 DEFTREECODE (EXPR_STMT, "expr_stmt", 's', 1)
 
+/* This is a null statement.  The intent is for it not to survive very far.  */
+DEFTREECODE (NULL_STMT, "null_stmt", 's', 0)
+
+/* This defines the variable in DECL_STMT_VAR and performs any initialization
+   in DECL_INITIAL.  */
+DEFTREECODE (DECL_STMT, "decl_stmt", 's', 1)
+
 /* This represents a list of statements.  BLOCK_STMT_LIST is a list
    statement tree, chained via TREE_CHAIN.  */
 DEFTREECODE (BLOCK_STMT, "block_stmt", 's', 1)

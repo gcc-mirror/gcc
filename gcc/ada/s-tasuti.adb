@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,7 +92,7 @@ package body System.Tasking.Utilities is
    --    (2) may be called for tasks that have not yet been activated
    --    (3) always aborts whole task
 
-   procedure Abort_One_Task (Self_ID : Task_ID; T : Task_ID) is
+   procedure Abort_One_Task (Self_ID : Task_Id; T : Task_Id) is
    begin
       if Parameters.Runtime_Traces then
          Send_Trace_Info (T_Abort, Self_ID, T);
@@ -126,9 +126,9 @@ package body System.Tasking.Utilities is
    --  Abort_Signal special exception.
 
    procedure Abort_Tasks (Tasks : Task_List) is
-      Self_Id : constant Task_ID := STPO.Self;
-      C       : Task_ID;
-      P       : Task_ID;
+      Self_Id : constant Task_Id := STPO.Self;
+      C       : Task_Id;
+      P       : Task_Id;
 
    begin
       Initialization.Defer_Abort_Nestable (Self_Id);
@@ -178,12 +178,12 @@ package body System.Tasking.Utilities is
    --  This should only be called by T, unless T is a terminated previously
    --  unactivated task.
 
-   procedure Cancel_Queued_Entry_Calls (T : Task_ID) is
+   procedure Cancel_Queued_Entry_Calls (T : Task_Id) is
       Next_Entry_Call : Entry_Call_Link;
       Entry_Call      : Entry_Call_Link;
-      Self_Id         : constant Task_ID := STPO.Self;
+      Self_Id         : constant Task_Id := STPO.Self;
 
-      Caller : Task_ID;
+      Caller : Task_Id;
       pragma Unreferenced (Caller);
       --  Should this be removed ???
 
@@ -230,7 +230,7 @@ package body System.Tasking.Utilities is
    --  In any case, reset Self_Id.Aborting, to allow re-raising of
    --  Abort_Signal.
 
-   procedure Exit_One_ATC_Level (Self_ID : Task_ID) is
+   procedure Exit_One_ATC_Level (Self_ID : Task_Id) is
    begin
       Self_ID.ATC_Nesting_Level := Self_ID.ATC_Nesting_Level - 1;
 
@@ -263,9 +263,9 @@ package body System.Tasking.Utilities is
    ----------------------
 
    procedure Make_Independent is
-      Self_Id               : constant Task_ID := STPO.Self;
-      Environment_Task      : constant Task_ID := STPO.Environment_Task;
-      Parent                : constant Task_ID := Self_Id.Common.Parent;
+      Self_Id               : constant Task_Id := STPO.Self;
+      Environment_Task      : constant Task_Id := STPO.Environment_Task;
+      Parent                : constant Task_Id := Self_Id.Common.Parent;
       Parent_Needs_Updating : Boolean := False;
       Master_of_Task        : Integer;
 
@@ -347,9 +347,9 @@ package body System.Tasking.Utilities is
    -- Make_Passive --
    ------------------
 
-   procedure Make_Passive (Self_ID : Task_ID; Task_Completed : Boolean) is
-      C : Task_ID := Self_ID;
-      P : Task_ID := C.Common.Parent;
+   procedure Make_Passive (Self_ID : Task_Id; Task_Completed : Boolean) is
+      C : Task_Id := Self_ID;
+      P : Task_Id := C.Common.Parent;
 
       Master_Completion_Phase : Integer;
 

@@ -59,7 +59,7 @@ package body System.Interrupt_Management.Operations is
    use System.Tasking;
    use type unsigned_short;
 
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
+   function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
    package POP renames System.Task_Primitives.Operations;
 
    ----------------------------
@@ -122,7 +122,7 @@ package body System.Interrupt_Management.Operations is
    function Interrupt_Wait (Mask : access Interrupt_Mask)
      return Interrupt_ID
    is
-      Self_ID : constant Task_ID := Self;
+      Self_ID : constant Task_Id := Self;
       Iosb    : IO_Status_Block_Type := (0, 0, 0);
       Status  : Cond_Value_Type;
 

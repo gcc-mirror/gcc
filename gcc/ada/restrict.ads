@@ -200,6 +200,12 @@ package Restrict is
    --  handlers are present. This function is called by Gigi when it needs to
    --  expand an AT END clean up identifier with no exception handler.
 
+   function Process_Restriction_Synonyms (Id : Name_Id) return Name_Id;
+   --  Id is the name of a restriction. If it is one of synonyms that we
+   --  allow for historical purposes (for list see System.Rident), then
+   --  the proper official name is returned. Otherwise the argument is
+   --  returned unchanged.
+
    function Restriction_Active (R : All_Restrictions) return Boolean;
    pragma Inline (Restriction_Active);
    --  Determines if a given restriction is active. This call should only be

@@ -44,7 +44,7 @@ package body Specific is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Environment_Task : Task_ID) is
+   procedure Initialize (Environment_Task : Task_Id) is
       pragma Warnings (Off, Environment_Task);
       Result : Interfaces.C.int;
 
@@ -66,7 +66,7 @@ package body Specific is
    -- Set --
    ---------
 
-   procedure Set (Self_Id : Task_ID) is
+   procedure Set (Self_Id : Task_Id) is
       Result : Interfaces.C.int;
    begin
       Result := pthread_setspecific (ATCB_Key, To_Address (Self_Id));
@@ -90,7 +90,7 @@ package body Specific is
    --  hierarchy, much like the existing implicitly created signal-server
    --  tasks.
 
-   function Self return Task_ID is
+   function Self return Task_Id is
       Result : System.Address;
 
    begin
@@ -99,7 +99,7 @@ package body Specific is
       --  If the key value is Null, then it is a non-Ada task.
 
       if Result /= System.Null_Address then
-         return To_Task_ID (Result);
+         return To_Task_Id (Result);
       else
          return Register_Foreign_Thread;
       end if;

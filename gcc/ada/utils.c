@@ -84,7 +84,7 @@ static GTY(()) tree pending_elaborations;
 /* This stack allows us to momentarily switch to generating elaboration
    lists for an inner context.  */
 
-struct e_stack GTY(()) {
+struct e_stack GTY((chain_next ("%h.next"))) {
   struct e_stack *next;
   tree elab_list;
 };
@@ -110,36 +110,22 @@ static GTY(()) tree float_types[NUM_MACHINE_MODES];
 
    Binding contours are used to create GCC tree BLOCK nodes.  */
 
-struct binding_level GTY(())
+struct ada_binding_level GTY((chain_next ("%h.chain")))
 {
-  /* A chain of ..._DECL nodes for all variables, constants, functions,
-     parameters and type declarations.  These ..._DECL nodes are chained
-     through the TREE_CHAIN field. Note that these ..._DECL nodes are stored
-     in the reverse of the order supplied to be compatible with the
-     back-end.  */
-  tree names;
-  /* For each level (except the global one), a chain of BLOCK nodes for all
-     the levels that were entered and exited one level down from this one.  */
-  tree blocks;
-  /* The BLOCK node for this level, if one has been preallocated.
-     If 0, the BLOCK is allocated (if needed) when the level is popped.  */
-  tree this_block;
   /* The binding level containing this one (the enclosing binding level). */
-  struct binding_level *level_chain;
+  struct ada_binding_level *chain;
+  /* The BLOCK node for this level.  */
+  tree block;
 };
 
 /* The binding level currently in effect.  */
-static GTY(()) struct binding_level *current_binding_level;
+static GTY(()) struct ada_binding_level *current_binding_level;
 
-/* A chain of binding_level structures awaiting reuse.  */
-static GTY((deletable (""))) struct binding_level *free_binding_level;
+/* A chain of ada_binding_level structures awaiting reuse.  */
+static GTY((deletable)) struct ada_binding_level *free_binding_level;
 
-/* The outermost binding level. This binding level is created when the
-   compiler is started and it will exist through the entire compilation.  */
-static struct binding_level *global_binding_level;
-
-/* Binding level structures are initialized by copying this one.  */
-static struct binding_level clear_binding_level = {NULL, NULL, NULL, NULL};
+/* A chain of unused BLOCK nodes. */
+static GTY((deletable)) tree free_block_chain;
 
 struct language_function GTY(())
 {
@@ -219,8 +205,7 @@ present_gnu_tree (Entity_Id gnat_entity)
 int
 global_bindings_p (void)
 {
-  return (force_global != 0 || current_binding_level == global_binding_level
-	  ? -1 : 0);
+  return (force_global != 0 || current_binding_level->chain == 0 ? -1 : 0);
 }
 
 /* Return the list of declarations in the current level. Note that this list
@@ -229,163 +214,102 @@ global_bindings_p (void)
 tree
 getdecls (void)
 {
-  return current_binding_level->names;
+  return BLOCK_VARS (current_binding_level->block);
 }
 
-/* Nonzero if the current level needs to have a BLOCK made.  */
-
-int
-kept_level_p (void)
-{
-  return (current_binding_level->names != 0);
-}
-
-/* Enter a new binding level. The input parameter is ignored, but has to be
-   specified for back-end compatibility.  */
+/* Enter a new binding level. */
 
 void
-pushlevel (int ignore ATTRIBUTE_UNUSED)
+gnat_pushlevel ()
 {
-  struct binding_level *newlevel = NULL;
+  struct ada_binding_level *newlevel = NULL;
 
   /* Reuse a struct for this binding level, if there is one.  */
   if (free_binding_level)
     {
       newlevel = free_binding_level;
-      free_binding_level = free_binding_level->level_chain;
+      free_binding_level = free_binding_level->chain;
     }
   else
     newlevel
-      = (struct binding_level *) ggc_alloc (sizeof (struct binding_level));
+      = (struct ada_binding_level *)
+	ggc_alloc (sizeof (struct ada_binding_level));
 
-  *newlevel = clear_binding_level;
+  /* Use a free BLOCK, if any; otherwise, allocate one.  */
+  if (free_block_chain)
+    {
+      newlevel->block = free_block_chain;
+      free_block_chain = TREE_CHAIN (free_block_chain);
+      TREE_CHAIN (newlevel->block) = NULL_TREE;
+    }
+  else
+    newlevel->block = make_node (BLOCK);
+
+  /* Point the BLOCK we just made to its parent.  */
+  if (current_binding_level)
+    BLOCK_SUPERCONTEXT (newlevel->block) = current_binding_level->block;
+
+  BLOCK_VARS (newlevel->block) = BLOCK_SUBBLOCKS (newlevel->block) = NULL_TREE;
 
   /* Add this level to the front of the chain (stack) of levels that are
      active.  */
-  newlevel->level_chain = current_binding_level;
+  newlevel->chain = current_binding_level;
   current_binding_level = newlevel;
 }
 
-/* Exit a binding level.
-   Pop the level off, and restore the state of the identifier-decl mappings
-   that were in effect when this level was entered.
+/* Exit a binding level.  */
 
-   If KEEP is nonzero, this level had explicit declarations, so
-   and create a "block" (a BLOCK node) for the level
-   to record its declarations and subblocks for symbol table output.
-
-   If FUNCTIONBODY is nonzero, this level is the body of a function,
-   so create a block as if KEEP were set and also clear out all
-   label names.
-
-   If REVERSE is nonzero, reverse the order of decls before putting
-   them into the BLOCK.  */
-
-tree
-poplevel (int keep, int reverse, int functionbody)
+void
+gnat_poplevel ()
 {
-  /* Points to a GCC BLOCK tree node. This is the BLOCK node construted for the
-     binding level that we are about to exit and which is returned by this
-     routine.  */
-  tree block = NULL_TREE;
-  tree decl_chain;
-  tree decl_node;
-  tree subblock_chain = current_binding_level->blocks;
-  tree subblock_node;
-  int block_previously_created;
+  struct ada_binding_level *level = current_binding_level;
+  tree block = level->block;
+  tree decl;
 
-  /* Reverse the list of XXXX_DECL nodes if desired.  Note that the ..._DECL
-     nodes chained through the `names' field of current_binding_level are in
-     reverse order except for PARM_DECL node, which are explicitly stored in
-     the right order.  */
-  current_binding_level->names
-    = decl_chain = (reverse) ? nreverse (current_binding_level->names)
-      : current_binding_level->names;
+  BLOCK_VARS (block) = nreverse (BLOCK_VARS (block));
+  BLOCK_SUBBLOCKS (block) = nreverse (BLOCK_SUBBLOCKS (block));
 
   /* Output any nested inline functions within this block which must be
      compiled because their address is needed. */
-  for (decl_node = decl_chain; decl_node; decl_node = TREE_CHAIN (decl_node))
-    if (TREE_CODE (decl_node) == FUNCTION_DECL
-	&& ! TREE_ASM_WRITTEN (decl_node) && TREE_ADDRESSABLE (decl_node)
-	&& DECL_INITIAL (decl_node) != 0)
+  for (decl =  BLOCK_VARS (block); decl; decl = TREE_CHAIN (decl))
+    if (TREE_CODE (decl) == FUNCTION_DECL
+	&& ! TREE_ASM_WRITTEN (decl) && TREE_ADDRESSABLE (decl)
+	&& DECL_INITIAL (decl) != 0)
       {
 	push_function_context ();
 	/* ??? This is temporary.  */
 	ggc_push_context ();
-	output_inline_function (decl_node);
+	output_inline_function (decl);
 	ggc_pop_context ();
 	pop_function_context ();
       }
 
-  block = 0;
-  block_previously_created = (current_binding_level->this_block != 0);
-  if (block_previously_created)
-    block = current_binding_level->this_block;
-  else if (keep || functionbody)
-    block = make_node (BLOCK);
-  if (block != 0)
+  /* If this is a function-level BLOCK don't do anything.  Otherwise, if there
+     are no variables free the block and merge its subblocks into those of its
+     parent block. Otherwise, add it to the list of its parent.  */
+  if (TREE_CODE (BLOCK_SUPERCONTEXT (block)) == FUNCTION_DECL)
+    ;
+  else if (BLOCK_VARS (block) == 0)
     {
-      BLOCK_VARS (block) = keep ? decl_chain : 0;
-      BLOCK_SUBBLOCKS (block) = subblock_chain;
+      BLOCK_SUBBLOCKS (level->chain->block)
+	= chainon (BLOCK_SUBBLOCKS (block),
+		   BLOCK_SUBBLOCKS (level->chain->block));
+      TREE_CHAIN (block) = free_block_chain;
+      free_block_chain = block;
+    }
+  else
+    {
+      TREE_CHAIN (block) = BLOCK_SUBBLOCKS (level->chain->block);
+      BLOCK_SUBBLOCKS (level->chain->block) = block;
+      TREE_USED (block) = 1;
     }
 
-  /* Record the BLOCK node just built as the subblock its enclosing scope.  */
-  for (subblock_node = subblock_chain; subblock_node;
-       subblock_node = TREE_CHAIN (subblock_node))
-    BLOCK_SUPERCONTEXT (subblock_node) = block;
-
-  /* Clear out the meanings of the local variables of this level.  */
-
-  for (subblock_node = decl_chain; subblock_node;
-       subblock_node = TREE_CHAIN (subblock_node))
-    if (DECL_NAME (subblock_node) != 0)
-      /* If the identifier was used or addressed via a local extern decl,
-	 don't forget that fact.   */
-      if (DECL_EXTERNAL (subblock_node))
-	{
-	  if (TREE_USED (subblock_node))
-	    TREE_USED (DECL_NAME (subblock_node)) = 1;
-	  if (TREE_ADDRESSABLE (subblock_node))
-	    TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (subblock_node)) = 1;
-	}
-
-  {
-    /* Pop the current level, and free the structure for reuse.  */
-    struct binding_level *level = current_binding_level;
-    current_binding_level = current_binding_level->level_chain;
-    level->level_chain = free_binding_level;
-    free_binding_level = level;
-  }
-
-  if (functionbody)
-    {
-      /* This is the top level block of a function. The ..._DECL chain stored
-	 in BLOCK_VARS are the function's parameters (PARM_DECL nodes). Don't
-	 leave them in the BLOCK because they are found in the FUNCTION_DECL
-	 instead.  */
-      DECL_INITIAL (current_function_decl) = block;
-      BLOCK_VARS (block) = 0;
-    }
-  else if (block)
-    {
-      if (!block_previously_created)
-	current_binding_level->blocks
-	  = chainon (current_binding_level->blocks, block);
-    }
-
-  /* If we did not make a block for the level just exited, any blocks made for
-     inner levels (since they cannot be recorded as subblocks in that level)
-     must be carried forward so they will later become subblocks of something
-     else.  */
-  else if (subblock_chain)
-    current_binding_level->blocks
-      = chainon (current_binding_level->blocks, subblock_chain);
-  if (block)
-    TREE_USED (block) = 1;
-
-  return block;
+  /* Free this binding structure.  */
+  current_binding_level = level->chain;
+  level->chain = free_binding_level;
+  free_binding_level = level;
 }
-
+
 /* Insert BLOCK at the end of the list of subblocks of the
    current binding level.  This is used when a BIND_EXPR is expanded,
    to handle the BLOCK node inside the BIND_EXPR.  */
@@ -394,55 +318,42 @@ void
 insert_block (tree block)
 {
   TREE_USED (block) = 1;
-  current_binding_level->blocks
-    = chainon (current_binding_level->blocks, block);
+  TREE_CHAIN (block) = BLOCK_SUBBLOCKS (current_binding_level->block);
+  BLOCK_SUBBLOCKS (current_binding_level->block) = block;
 }
 
-/* Set the BLOCK node for the innermost scope
-   (the one we are currently in).  */
+/* Return nonzero if the current binding has any variables.  This means
+   it will have a BLOCK node.  */
 
-void
-set_block (tree block)
+int
+block_has_vars ()
 {
-  current_binding_level->this_block = block;
-  current_binding_level->names = chainon (current_binding_level->names,
-					  BLOCK_VARS (block));
-  current_binding_level->blocks = chainon (current_binding_level->blocks,
-					   BLOCK_SUBBLOCKS (block));
+  return BLOCK_VARS (current_binding_level->block) != 0;
 }
-
+
 /* Records a ..._DECL node DECL as belonging to the current lexical scope.
    Returns the ..._DECL node. */
 
 tree
 pushdecl (tree decl)
 {
-  struct binding_level *b;
-
   /* If at top level, there is no context. But PARM_DECLs always go in the
      level of its function. */
   if (global_bindings_p () && TREE_CODE (decl) != PARM_DECL)
-    {
-      b = global_binding_level;
-      DECL_CONTEXT (decl) = 0;
-    }
+    DECL_CONTEXT (decl) = 0;
   else
-    {
-      b = current_binding_level;
-      DECL_CONTEXT (decl) = current_function_decl;
-    }
+    DECL_CONTEXT (decl) = current_function_decl;
 
   /* Put the declaration on the list.  The list of declarations is in reverse
-     order. The list will be reversed later if necessary.  This needs to be
-     this way for compatibility with the back-end.
+     order. The list will be reversed later.
 
      Don't put TYPE_DECLs for UNCONSTRAINED_ARRAY_TYPE into the list.  They
      will cause trouble with the debugger and aren't needed anyway.  */
   if (TREE_CODE (decl) != TYPE_DECL
       || TREE_CODE (TREE_TYPE (decl)) != UNCONSTRAINED_ARRAY_TYPE)
     {
-      TREE_CHAIN (decl) = b->names;
-      b->names = decl;
+      TREE_CHAIN (decl) = BLOCK_VARS (current_binding_level->block);
+      BLOCK_VARS (current_binding_level->block) = decl;
     }
 
   /* For the declaration of a type, set its name if it either is not already
@@ -478,8 +389,7 @@ gnat_init_decl_processing (void)
   current_function_decl = 0;
   current_binding_level = 0;
   free_binding_level = 0;
-  pushlevel (0);
-  global_binding_level = current_binding_level;
+  gnat_pushlevel ();
 
   build_common_tree_nodes (0);
 
@@ -1294,15 +1204,9 @@ create_type_decl (tree type_name,
    it indicates whether to always allocate storage to the variable.   */
 
 tree
-create_var_decl (tree var_name,
-                 tree asm_name,
-                 tree type,
-                 tree var_init,
-                 int const_flag,
-                 int public_flag,
-                 int extern_flag,
-                 int static_flag,
-                 struct attrib *attr_list)
+create_var_decl (tree var_name, tree asm_name, tree type, tree var_init,
+                 int const_flag, int public_flag, int extern_flag,
+                 int static_flag, struct attrib *attr_list)
 {
   int init_const
     = (var_init == 0
@@ -1321,7 +1225,6 @@ create_var_decl (tree var_name,
 		   && 0 >= compare_tree_int (TYPE_SIZE_UNIT (type),
 					     GET_MODE_SIZE (DCmode)))
 		  ? CONST_DECL : VAR_DECL, var_name, type);
-  tree assign_init = 0;
 
   /* If this is external, throw away any initializations unless this is a
      CONST_DECL (meaning we have a constant); they will be done elsewhere.  If
@@ -1346,7 +1249,7 @@ create_var_decl (tree var_name,
 	   && ((TYPE_MAIN_VARIANT (TREE_TYPE (var_init))
 		!= TYPE_MAIN_VARIANT (type))
 	       || (static_flag && ! init_const)))
-    assign_init = var_init, var_init = 0;
+    DECL_INIT_BY_ASSIGN_P (var_decl) = 1;
 
   DECL_INITIAL  (var_decl) = var_init;
   TREE_READONLY (var_decl) = const_flag;
@@ -1369,31 +1272,12 @@ create_var_decl (tree var_name,
   /* Add this decl to the current binding level and generate any
      needed code and RTL. */
   var_decl = pushdecl (var_decl);
-  expand_decl (var_decl);
 
-  if (DECL_CONTEXT (var_decl) != 0)
-    expand_decl_init (var_decl);
-
-  /* If this is volatile, force it into memory.  */
   if (TREE_SIDE_EFFECTS (var_decl))
-    gnat_mark_addressable (var_decl);
+    TREE_ADDRESSABLE (var_decl) = 1;
 
   if (TREE_CODE (var_decl) != CONST_DECL)
     rest_of_decl_compilation (var_decl, 0, global_bindings_p (), 0);
-
-  if (assign_init != 0)
-    {
-      /* If VAR_DECL has a padded type, convert it to the unpadded
-	 type so the assignment is done properly.  */
-      tree lhs = var_decl;
-
-      if (TREE_CODE (TREE_TYPE (lhs)) == RECORD_TYPE
-	  && TYPE_IS_PADDING_P (TREE_TYPE (lhs)))
-	lhs = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (lhs))), lhs);
-
-      expand_expr_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, lhs,
-					 assign_init));
-    }
 
   return var_decl;
 }
@@ -1859,8 +1743,7 @@ begin_subprog_body (tree subprog_decl)
   announce_function (subprog_decl);
 
   /* Make this field nonzero so further routines know that this is not
-     tentative. error_mark_node is replaced below (in poplevel) with the
-     adequate BLOCK.  */
+     tentative. error_mark_node is replaced below with the adequate BLOCK.  */
   DECL_INITIAL (subprog_decl)  = error_mark_node;
 
   /* This function exists in static storage. This does not mean `static' in
@@ -1870,7 +1753,7 @@ begin_subprog_body (tree subprog_decl)
   /* Enter a new binding level and show that all the parameters belong to
      this function.  */
   current_function_decl = subprog_decl;
-  pushlevel (0);
+  gnat_pushlevel ();
 
   for (param_decl = DECL_ARGUMENTS (subprog_decl); param_decl;
        param_decl = TREE_CHAIN (param_decl))
@@ -1896,9 +1779,12 @@ end_subprog_body (void)
   tree decl;
   tree cico_list;
 
-  poplevel (1, 0, 1);
-  BLOCK_SUPERCONTEXT (DECL_INITIAL (current_function_decl))
-    = current_function_decl;
+  /* Mark the BLOCK for this level as being for this function and pop the
+     level.  Since the vars in it are the parameters, clear them.  */
+  BLOCK_VARS (current_binding_level->block) = 0;
+  BLOCK_SUPERCONTEXT (current_binding_level->block) = current_function_decl;
+  DECL_INITIAL (current_function_decl) = current_binding_level->block;
+  gnat_poplevel ();
 
   /* Mark the RESULT_DECL as being in this subprogram. */
   DECL_CONTEXT (DECL_RESULT (current_function_decl)) = current_function_decl;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2002, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ pragma Polling (Off);
 
 with System.Tasking;
 --  used for Ada_Task_Control_Block
---           Task_ID
+--           Task_Id
 
 with System.Error_Reporting;
 --  used for Shutdown
@@ -59,7 +59,7 @@ package body System.Task_Primitives.Operations is
    -- Stack_Guard --
    -----------------
 
-   procedure Stack_Guard (T : ST.Task_ID; On : Boolean) is
+   procedure Stack_Guard (T : ST.Task_Id; On : Boolean) is
    begin
       null;
    end Stack_Guard;
@@ -68,7 +68,7 @@ package body System.Task_Primitives.Operations is
    -- Get_Thread_Id  --
    --------------------
 
-   function Get_Thread_Id (T : ST.Task_ID) return OSI.Thread_Id is
+   function Get_Thread_Id (T : ST.Task_Id) return OSI.Thread_Id is
    begin
       return OSI.Thread_Id (T.Common.LL.Thread);
    end Get_Thread_Id;
@@ -77,7 +77,7 @@ package body System.Task_Primitives.Operations is
    -- Self --
    ----------
 
-   function Self return Task_ID is
+   function Self return Task_Id is
    begin
       return Null_Task;
    end Self;
@@ -130,7 +130,7 @@ package body System.Task_Primitives.Operations is
       null;
    end Write_Lock;
 
-   procedure Write_Lock (T : Task_ID) is
+   procedure Write_Lock (T : Task_Id) is
    begin
       null;
    end Write_Lock;
@@ -158,7 +158,7 @@ package body System.Task_Primitives.Operations is
       null;
    end Unlock;
 
-   procedure Unlock (T : Task_ID) is
+   procedure Unlock (T : Task_Id) is
    begin
       null;
    end Unlock;
@@ -167,7 +167,7 @@ package body System.Task_Primitives.Operations is
    -- Sleep --
    -----------
 
-   procedure Sleep (Self_ID : Task_ID; Reason  : System.Tasking.Task_States) is
+   procedure Sleep (Self_ID : Task_Id; Reason  : System.Tasking.Task_States) is
    begin
       null;
    end Sleep;
@@ -177,7 +177,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Sleep
-     (Self_ID  : Task_ID;
+     (Self_ID  : Task_Id;
       Time     : Duration;
       Mode     : ST.Delay_Modes;
       Reason   : System.Tasking.Task_States;
@@ -193,7 +193,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Timed_Delay
-     (Self_ID : Task_ID;
+     (Self_ID : Task_Id;
       Time    : Duration;
       Mode    : ST.Delay_Modes) is
    begin
@@ -222,7 +222,7 @@ package body System.Task_Primitives.Operations is
    -- Wakeup --
    ------------
 
-   procedure Wakeup (T : Task_ID; Reason : System.Tasking.Task_States) is
+   procedure Wakeup (T : Task_Id; Reason : System.Tasking.Task_States) is
    begin
       null;
    end Wakeup;
@@ -232,7 +232,7 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    procedure Set_Priority
-     (T                   : Task_ID;
+     (T                   : Task_Id;
       Prio                : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False) is
    begin
@@ -243,7 +243,7 @@ package body System.Task_Primitives.Operations is
    -- Get_Priority --
    ------------------
 
-   function Get_Priority (T : Task_ID) return System.Any_Priority is
+   function Get_Priority (T : Task_Id) return System.Any_Priority is
    begin
       return 0;
    end Get_Priority;
@@ -252,7 +252,7 @@ package body System.Task_Primitives.Operations is
    -- Enter_Task --
    ----------------
 
-   procedure Enter_Task (Self_ID : Task_ID) is
+   procedure Enter_Task (Self_ID : Task_Id) is
    begin
       null;
    end Enter_Task;
@@ -261,7 +261,7 @@ package body System.Task_Primitives.Operations is
    -- New_ATCB --
    --------------
 
-   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_ID is
+   function New_ATCB (Entry_Num : Task_Entry_Index) return Task_Id is
    begin
       return new Ada_Task_Control_Block (Entry_Num);
    end New_ATCB;
@@ -279,7 +279,7 @@ package body System.Task_Primitives.Operations is
    -- Register_Foreign_Thread --
    -----------------------------
 
-   function Register_Foreign_Thread return Task_ID is
+   function Register_Foreign_Thread return Task_Id is
    begin
       return null;
    end Register_Foreign_Thread;
@@ -288,7 +288,7 @@ package body System.Task_Primitives.Operations is
    --  Initialize_TCB  --
    ----------------------
 
-   procedure Initialize_TCB (Self_ID : Task_ID; Succeeded : out Boolean) is
+   procedure Initialize_TCB (Self_ID : Task_Id; Succeeded : out Boolean) is
    begin
       Succeeded := False;
    end Initialize_TCB;
@@ -298,7 +298,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    procedure Create_Task
-     (T          : Task_ID;
+     (T          : Task_Id;
       Wrapper    : System.Address;
       Stack_Size : System.Parameters.Size_Type;
       Priority   : System.Any_Priority;
@@ -311,7 +311,7 @@ package body System.Task_Primitives.Operations is
    -- Finalize_TCB --
    ------------------
 
-   procedure Finalize_TCB (T : Task_ID) is
+   procedure Finalize_TCB (T : Task_Id) is
    begin
       null;
    end Finalize_TCB;
@@ -329,7 +329,7 @@ package body System.Task_Primitives.Operations is
    -- Abort_Task --
    ----------------
 
-   procedure Abort_Task (T : Task_ID) is
+   procedure Abort_Task (T : Task_Id) is
    begin
       null;
    end Abort_Task;
@@ -350,7 +350,7 @@ package body System.Task_Primitives.Operations is
    --  Dummy versions.  The only currently working versions is for solaris
    --  (native).
 
-   function Check_Exit (Self_ID : ST.Task_ID) return Boolean is
+   function Check_Exit (Self_ID : ST.Task_Id) return Boolean is
    begin
       return True;
    end Check_Exit;
@@ -359,7 +359,7 @@ package body System.Task_Primitives.Operations is
    -- Check_No_Locks --
    --------------------
 
-   function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean is
+   function Check_No_Locks (Self_ID : ST.Task_Id) return Boolean is
    begin
       return True;
    end Check_No_Locks;
@@ -368,7 +368,7 @@ package body System.Task_Primitives.Operations is
    -- Environment_Task --
    ----------------------
 
-   function Environment_Task return Task_ID is
+   function Environment_Task return Task_Id is
    begin
       return null;
    end Environment_Task;
@@ -396,7 +396,7 @@ package body System.Task_Primitives.Operations is
    ------------------
 
    function Suspend_Task
-     (T           : ST.Task_ID;
+     (T           : ST.Task_Id;
       Thread_Self : OSI.Thread_Id)
       return        Boolean
    is
@@ -409,7 +409,7 @@ package body System.Task_Primitives.Operations is
    -----------------
 
    function Resume_Task
-     (T           : ST.Task_ID;
+     (T           : ST.Task_Id;
       Thread_Self : OSI.Thread_Id)
       return        Boolean
    is
@@ -421,7 +421,7 @@ package body System.Task_Primitives.Operations is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Environment_Task : Task_ID) is
+   procedure Initialize (Environment_Task : Task_Id) is
    begin
       null;
    end Initialize;

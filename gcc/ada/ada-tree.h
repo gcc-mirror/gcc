@@ -238,6 +238,9 @@ struct lang_type GTY(())
    discriminant.  */
 #define DECL_STUBBED_P(NODE) DECL_LANG_FLAG_0 (FUNCTION_DECL_CHECK (NODE))
 
+/* Nonzero in a VAR_DECL if it needs to be initialized by an assignment.  */
+#define DECL_INIT_BY_ASSIGN_P(NODE) DECL_LANG_FLAG_0 (VAR_DECL_CHECK (NODE))
+
 /* Nonzero if this decl is always used by reference; i.e., an INDIRECT_REF
    is needed to access the object.  */
 #define DECL_BY_REF_P(NODE) DECL_LANG_FLAG_1 (NODE)
@@ -295,6 +298,7 @@ struct lang_type GTY(())
 #define TREE_SLOC(NODE)		TREE_COMPLEXITY (STMT_CHECK (NODE))
 
 #define EXPR_STMT_EXPR(NODE)	TREE_OPERAND_CHECK_CODE (NODE, EXPR_STMT, 0)
+#define DECL_STMT_VAR(NODE)	TREE_OPERAND_CHECK_CODE (NODE, DECL_STMT, 0)
 #define BLOCK_STMT_LIST(NODE)	TREE_OPERAND_CHECK_CODE (NODE, BLOCK_STMT, 0)
 #define IF_STMT_COND(NODE)	TREE_OPERAND_CHECK_CODE (NODE, IF_STMT, 0)
 #define IF_STMT_TRUE(NODE)	TREE_OPERAND_CHECK_CODE (NODE, IF_STMT, 1)

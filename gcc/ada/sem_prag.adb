@@ -3250,6 +3250,10 @@ package body Sem_Prag is
          procedure Set_Warning (R : All_Restrictions);
          --  If this is a Restriction_Warnings pragma, set warning flag
 
+         -----------------
+         -- Set_Warning --
+         -----------------
+
          procedure Set_Warning (R : All_Restrictions) is
          begin
             if Prag_Id = Pragma_Restriction_Warnings then
@@ -3269,119 +3273,45 @@ package body Sem_Prag is
             Id := Chars (Arg);
             Expr := Expression (Arg);
 
-            --  Case of no restriction identifier
+            --  Case of no restriction identifier present
 
             if Id = No_Name then
                if Nkind (Expr) /= N_Identifier then
                   Error_Pragma_Arg
                     ("invalid form for restriction", Arg);
-
-               --  Deal with synonyms. This should be done more cleanly ???
-
-               else
-                  --  Boolean_Entry_Barriers is a synonym of Simple_Barriers
-
-                  if Chars (Expr) = Name_Boolean_Entry_Barriers then
-                     Check_Restriction
-                       (No_Implementation_Restrictions, Arg);
-                     Set_Restriction (Simple_Barriers, N);
-                     Set_Warning (Simple_Barriers);
-
-                  --  Max_Entry_Queue_Depth is a synonym of
-                  --  Max_Entry_Queue_Length
-
-                  elsif Chars (Expr) = Name_Max_Entry_Queue_Depth then
-                     Analyze_And_Resolve (Expr, Any_Integer);
-
-                     if not Is_OK_Static_Expression (Expr) then
-                        Flag_Non_Static_Expr
-                          ("value must be static expression!", Expr);
-                        raise Pragma_Exit;
-
-                     elsif not Is_Integer_Type (Etype (Expr))
-                       or else Expr_Value (Expr) < 0
-                     then
-                        Error_Pragma_Arg
-                          ("value must be non-negative integer", Arg);
-
-                     --  Restriction pragma is active
-
-                     else
-                        Val := Expr_Value (Expr);
-
-                        if not UI_Is_In_Int_Range (Val) then
-                           Error_Pragma_Arg
-                             ("pragma ignored, value too large?", Arg);
-                        else
-                           Set_Restriction (Max_Entry_Queue_Length, N,
-                                            Integer (UI_To_Int (Val)));
-                           Set_Warning (Max_Entry_Queue_Length);
-                        end if;
-                     end if;
-
-                  --  No_Dynamic_Interrupts is a synonym for
-                  --  No_Dynamic_Attachment
-
-                  elsif Chars (Expr) = Name_No_Dynamic_Interrupts then
-                     Check_Restriction
-                       (No_Implementation_Restrictions, Arg);
-                     Set_Restriction (No_Dynamic_Attachment, N);
-                     Set_Warning (No_Dynamic_Attachment);
-
-                  --  No_Requeue is a synonym for No_Requeue_Statements
-
-                  elsif Chars (Expr) = Name_No_Requeue then
-                     Check_Restriction
-                       (No_Implementation_Restrictions, Arg);
-                     Set_Restriction (No_Requeue_Statements, N);
-                     Set_Warning (No_Requeue_Statements);
-
-                  --  No_Task_Attributes is a synonym for
-                  --  No_Task_Attributes_Package
-
-                  elsif Chars (Expr) = Name_No_Task_Attributes then
-                     Check_Restriction
-                       (No_Implementation_Restrictions, Arg);
-                     Set_Restriction (No_Task_Attributes_Package, N);
-                     Set_Warning (No_Task_Attributes_Package);
-
-                  --  Normal processing for all other cases
-
-                  else
-                     R_Id := Get_Restriction_Id (Chars (Expr));
-
-                     if R_Id not in All_Boolean_Restrictions then
-                        Error_Pragma_Arg
-                          ("invalid restriction identifier", Arg);
-
-                     --  Restriction is active
-
-                     else
-                        if Implementation_Restriction (R_Id) then
-                           Check_Restriction
-                             (No_Implementation_Restrictions, Arg);
-                        end if;
-
-                        Set_Restriction (R_Id, N);
-                        Set_Warning (R_Id);
-
-                        --  A very special case that must be processed here:
-                        --  pragma Restrictions (No_Exceptions) turns off
-                        --  all run-time checking. This is a bit dubious in
-                        --  terms of the formal language definition, but it
-                        --  is what is intended by RM H.4(12).
-
-                        if R_Id = No_Exceptions then
-                           Scope_Suppress := (others => True);
-                        end if;
-                     end if;
-                  end if;
                end if;
 
-               --  Case of restriction identifier present
+               R_Id :=
+                 Get_Restriction_Id
+                   (Process_Restriction_Synonyms (Chars (Expr)));
+
+               if R_Id not in All_Boolean_Restrictions then
+                  Error_Pragma_Arg
+                    ("invalid restriction identifier", Arg);
+               end if;
+
+               if Implementation_Restriction (R_Id) then
+                  Check_Restriction
+                    (No_Implementation_Restrictions, Arg);
+               end if;
+
+               Set_Restriction (R_Id, N);
+               Set_Warning (R_Id);
+
+               --  A very special case that must be processed here:
+               --  pragma Restrictions (No_Exceptions) turns off
+               --  all run-time checking. This is a bit dubious in
+               --  terms of the formal language definition, but it
+               --  is what is intended by RM H.4(12).
+
+               if R_Id = No_Exceptions then
+                  Scope_Suppress := (others => True);
+               end if;
+
+            --  Case of restriction identifier present
 
             else
-               R_Id := Get_Restriction_Id (Id);
+               R_Id := Get_Restriction_Id (Process_Restriction_Synonyms (Id));
                Analyze_And_Resolve (Expr, Any_Integer);
 
                if R_Id not in All_Parameter_Restrictions then

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,7 @@ package body System.Tasking.Queuing is
    Priority_Queuing : constant Boolean := Queuing_Policy = 'P';
 
    procedure Send_Program_Error
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link);
    --  Raise Program_Error in the caller of the specified entry call
 
@@ -74,7 +74,7 @@ package body System.Tasking.Queuing is
    -----------------------------
 
    procedure Broadcast_Program_Error
-     (Self_ID      : Task_ID;
+     (Self_ID      : Task_Id;
       Object       : Protection_Entries_Access;
       Pending_Call : Entry_Call_Link;
       RTS_Locked   : Boolean := False)
@@ -469,7 +469,7 @@ package body System.Tasking.Queuing is
    --  queuing policy being used.
 
    procedure Select_Protected_Entry_Call
-     (Self_ID : Task_ID;
+     (Self_ID : Task_Id;
       Object  : Protection_Entries_Access;
       Call    : out Entry_Call_Link)
    is
@@ -547,7 +547,7 @@ package body System.Tasking.Queuing is
    --  being used.
 
    procedure Select_Task_Entry_Call
-     (Acceptor         : Task_ID;
+     (Acceptor         : Task_Id;
       Open_Accepts     : Accept_List_Access;
       Call             : out Entry_Call_Link;
       Selection        : out Select_Index;
@@ -618,10 +618,10 @@ package body System.Tasking.Queuing is
    ------------------------
 
    procedure Send_Program_Error
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link)
    is
-      Caller : Task_ID;
+      Caller : Task_Id;
    begin
       Caller := Entry_Call.Self;
       Entry_Call.Exception_To_Raise := Program_Error'Identity;

@@ -116,13 +116,13 @@ package System.Tasking.Task_Attributes is
    --  A linked list of all indirectly access attributes,
    --  which includes all those that require finalization.
 
-   procedure Initialize_Attributes (T : Task_ID);
+   procedure Initialize_Attributes (T : Task_Id);
    --  Initialize all attributes created via Ada.Task_Attributes for T.
    --  This must be called by the creator of the task, inside Create_Task,
    --  via soft-link Initialize_Attributes_Link. On entry, abortion must
    --  be deferred and the caller must hold no locks
 
-   procedure Finalize_Attributes (T : Task_ID);
+   procedure Finalize_Attributes (T : Task_Id);
    --  Finalize all attributes created via Ada.Task_Attributes for T.
    --  This is to be called by the task after it is marked as terminated
    --  (and before it actually dies), inside Vulnerable_Free_Task, via the

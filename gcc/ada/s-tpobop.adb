@@ -120,7 +120,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --  It returns with the PO's lock still held.
 
    procedure Requeue_Call
-     (Self_Id    : Task_ID;
+     (Self_Id    : Task_Id;
       Object     : Protection_Entries_Access;
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean);
@@ -292,7 +292,7 @@ package body System.Tasking.Protected_Objects.Operations is
    --------------------
 
    procedure PO_Do_Or_Queue
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Object     : Protection_Entries_Access;
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean)
@@ -382,12 +382,12 @@ package body System.Tasking.Protected_Objects.Operations is
    ------------------------
 
    procedure PO_Service_Entries
-     (Self_ID       : Task_ID;
+     (Self_ID       : Task_Id;
       Object        : Entries.Protection_Entries_Access;
       Unlock_Object : Boolean := True)
    is
       E          : Protected_Entry_Index;
-      Caller     : Task_ID;
+      Caller     : Task_Id;
       Entry_Call : Entry_Call_Link;
 
    begin
@@ -519,7 +519,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Mode                : Call_Modes;
       Block               : out Communication_Block)
    is
-      Self_ID             : constant Task_ID  := STPO.Self;
+      Self_ID             : constant Task_Id  := STPO.Self;
       Entry_Call          : Entry_Call_Link;
       Initially_Abortable : Boolean;
       Ceiling_Violation   : Boolean;
@@ -653,7 +653,7 @@ package body System.Tasking.Protected_Objects.Operations is
    ------------------
 
    procedure Requeue_Call
-     (Self_Id    : Task_ID;
+     (Self_Id    : Task_Id;
       Object     : Protection_Entries_Access;
       Entry_Call : Entry_Call_Link;
       With_Abort : Boolean)
@@ -739,7 +739,7 @@ package body System.Tasking.Protected_Objects.Operations is
    ----------------------------
 
    function Protected_Entry_Caller
-     (Object : Protection_Entries'Class) return Task_ID is
+     (Object : Protection_Entries'Class) return Task_Id is
    begin
       return Object.Call_In_Progress.Self;
    end Protected_Entry_Caller;
@@ -837,7 +837,7 @@ package body System.Tasking.Protected_Objects.Operations is
       E          : Protected_Entry_Index;
       With_Abort : Boolean)
    is
-      Self_ID    : constant Task_ID := STPO.Self;
+      Self_ID    : constant Task_Id := STPO.Self;
       Entry_Call : constant Entry_Call_Link := Self_ID.Common.Call;
 
    begin
@@ -859,7 +859,7 @@ package body System.Tasking.Protected_Objects.Operations is
    ---------------------
 
    procedure Service_Entries (Object : Protection_Entries_Access) is
-      Self_ID : constant Task_ID := STPO.Self;
+      Self_ID : constant Task_Id := STPO.Self;
    begin
       PO_Service_Entries (Self_ID, Object);
    end Service_Entries;
@@ -878,7 +878,7 @@ package body System.Tasking.Protected_Objects.Operations is
       Mode                  : Delay_Modes;
       Entry_Call_Successful : out Boolean)
    is
-      Self_Id           : constant Task_ID  := STPO.Self;
+      Self_Id           : constant Task_Id  := STPO.Self;
       Entry_Call        : Entry_Call_Link;
       Ceiling_Violation : Boolean;
       Yielded           : Boolean;

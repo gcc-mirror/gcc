@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 1992-2001, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -45,7 +45,7 @@ with System.Task_Primitives.Operations;
 --           Self
 
 with System.Tasking;
---  used for Task_ID
+--  used for Task_Id
 
 with Ada.Exceptions;
 --  used for Raise_Exception
@@ -68,7 +68,7 @@ package body Ada.Dynamic_Priorities is
 
    function Convert_Ids is new
      Unchecked_Conversion
-       (Task_Identification.Task_Id, System.Tasking.Task_ID);
+       (Task_Identification.Task_Id, System.Tasking.Task_Id);
 
    ------------------
    -- Get_Priority --
@@ -78,10 +78,9 @@ package body Ada.Dynamic_Priorities is
 
    function Get_Priority
      (T : Ada.Task_Identification.Task_Id :=
-          Ada.Task_Identification.Current_Task)
-      return System.Any_Priority is
-
-      Target : constant Task_ID := Convert_Ids (T);
+        Ada.Task_Identification.Current_Task) return System.Any_Priority
+   is
+      Target : constant Task_Id := Convert_Ids (T);
       Error_Message : constant String := "Trying to get the priority of a ";
 
    begin
@@ -106,11 +105,11 @@ package body Ada.Dynamic_Priorities is
 
    procedure Set_Priority
      (Priority : System.Any_Priority;
-      T : Ada.Task_Identification.Task_Id :=
-          Ada.Task_Identification.Current_Task)
+      T        : Ada.Task_Identification.Task_Id :=
+                   Ada.Task_Identification.Current_Task)
    is
-      Target  : constant Task_ID := Convert_Ids (T);
-      Self_ID : constant Task_ID := STPO.Self;
+      Target  : constant Task_Id := Convert_Ids (T);
+      Self_ID : constant Task_Id := STPO.Self;
       Error_Message : constant String := "Trying to set the priority of a ";
 
    begin
@@ -142,13 +141,15 @@ package body Ada.Dynamic_Priorities is
             STPO.Unlock_RTS;
          end if;
 
-         STPO.Yield;
          --  Yield is needed to enforce FIFO task dispatching.
-         --  LL Set_Priority is made while holding the RTS lock so that
-         --  it is inheriting high priority until it release all the RTS
-         --  locks.
+
+         --  LL Set_Priority is made while holding the RTS lock so that it
+         --  is inheriting high priority until it release all the RTS locks.
+
          --  If this is used in a system where Ceiling Locking is
          --  not enforced we may end up getting two Yield effects.
+
+         STPO.Yield;
 
       else
          Target.New_Base_Priority := Priority;
@@ -156,6 +157,7 @@ package body Ada.Dynamic_Priorities is
          Target.Pending_Action := True;
 
          STPO.Wakeup (Target, Target.Common.State);
+
          --  If the task is suspended, wake it up to perform the change.
          --  check for ceiling violations ???
 

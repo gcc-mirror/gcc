@@ -53,7 +53,7 @@ package body GNAT.Threads is
 
    function To_Addr is new Unchecked_Conversion (Task_Id, Address);
    function To_Id   is new Unchecked_Conversion (Address, Task_Id);
-   function To_Id   is new Unchecked_Conversion (Address, Tasking.Task_ID);
+   function To_Id   is new Unchecked_Conversion (Address, Tasking.Task_Id);
    function To_Tid  is new Unchecked_Conversion
      (Address, Ada.Task_Identification.Task_Id);
    function To_Thread is new Unchecked_Conversion (Address, Thread_Id_Ptr);
@@ -112,7 +112,7 @@ package body GNAT.Threads is
    -----------------------
 
    procedure Unregister_Thread is
-      Self_Id : constant Tasking.Task_ID := Task_Primitives.Operations.Self;
+      Self_Id : constant Tasking.Task_Id := Task_Primitives.Operations.Self;
    begin
       Self_Id.Common.State := Tasking.Terminated;
       Destroy_TSD (Self_Id.Common.Compiler_Data);
@@ -125,9 +125,9 @@ package body GNAT.Threads is
 
    procedure Unregister_Thread_Id (Thread : System.Address) is
       Thr : constant Thread_Id := To_Thread (Thread).all;
-      T   : Tasking.Task_ID;
+      T   : Tasking.Task_Id;
 
-      use type Tasking.Task_ID;
+      use type Tasking.Task_Id;
 
    begin
       STPO.Lock_RTS;

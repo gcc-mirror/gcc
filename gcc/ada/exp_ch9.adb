@@ -2794,7 +2794,7 @@ package body Exp_Ch9 is
                   Decl := Make_Object_Declaration (Loc,
                      Defining_Identifier => T_Self,
                      Object_Definition =>
-                       New_Occurrence_Of (RTE (RO_ST_Task_ID), Loc),
+                       New_Occurrence_Of (RTE (RO_ST_Task_Id), Loc),
                      Expression =>
                        Make_Function_Call (Loc,
                          Name => New_Reference_To (RTE (RE_Self), Loc)));
@@ -7223,7 +7223,7 @@ package body Exp_Ch9 is
           Component_Definition =>
             Make_Component_Definition (Loc,
               Aliased_Present    => False,
-              Subtype_Indication => New_Reference_To (RTE (RO_ST_Task_ID),
+              Subtype_Indication => New_Reference_To (RTE (RO_ST_Task_Id),
                                     Loc))));
 
       --  Add components for entry families

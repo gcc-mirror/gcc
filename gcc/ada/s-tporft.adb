@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---          Copyright (C) 2002-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 2002-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,9 @@ with System.Soft_Links;
 --  used to initialize TSD for a C thread, in function Self
 
 separate (System.Task_Primitives.Operations)
-function Register_Foreign_Thread (Thread : Thread_Id) return Task_ID is
+function Register_Foreign_Thread (Thread : Thread_Id) return Task_Id is
    Local_ATCB : aliased Ada_Task_Control_Block (0);
-   Self_Id    : Task_ID;
+   Self_Id    : Task_Id;
    Succeeded  : Boolean;
 
    use type Interfaces.C.unsigned;
@@ -51,7 +51,7 @@ begin
    --  immediately, we fake one, so that it is then possible to e.g allocate
    --  memory (which might require accessing self).
 
-   --  Record this as the Task_ID for the thread
+   --  Record this as the Task_Id for the thread
 
    Local_ATCB.Common.LL.Thread := Thread;
    Local_ATCB.Common.Current_Priority := System.Priority'First;

@@ -79,11 +79,11 @@ package body System.AST_Handling is
    --  from all other AST tasks.  It is only used by Lock_AST and
    --  Unlock_AST.
 
-   procedure Lock_AST (Self_ID : ST.Task_ID);
+   procedure Lock_AST (Self_ID : ST.Task_Id);
    --  Locks out other AST tasks. Preceding a section of code by Lock_AST and
    --  following it by Unlock_AST creates a critical region.
 
-   procedure Unlock_AST (Self_ID : ST.Task_ID);
+   procedure Unlock_AST (Self_ID : ST.Task_Id);
    --  Releases lock previously set by call to Lock_AST.
    --  All nested locks must be released before other tasks competing for the
    --  tasking lock are released.
@@ -92,7 +92,7 @@ package body System.AST_Handling is
    -- Lock_AST --
    --------------
 
-   procedure Lock_AST (Self_ID : ST.Task_ID) is
+   procedure Lock_AST (Self_ID : ST.Task_Id) is
    begin
       STI.Defer_Abort_Nestable (Self_ID);
       STPO.Write_Lock (AST_Lock'Access, Global_Lock => True);
@@ -102,7 +102,7 @@ package body System.AST_Handling is
    -- Unlock_AST --
    ----------------
 
-   procedure Unlock_AST (Self_ID : ST.Task_ID) is
+   procedure Unlock_AST (Self_ID : ST.Task_Id) is
    begin
       STPO.Unlock (AST_Lock'Access, Global_Lock => True);
       STI.Undefer_Abort_Nestable (Self_ID);
@@ -287,7 +287,7 @@ package body System.AST_Handling is
    Is_Waiting : array (1 .. Max_AST_Servers) of Boolean := (others => False);
    --  An array of flags showing which AST server tasks are currently waiting
 
-   AST_Task_Ids : array (1 .. Max_AST_Servers) of ST.Task_ID;
+   AST_Task_Ids : array (1 .. Max_AST_Servers) of ST.Task_Id;
    --  Task Id's of allocated AST server tasks
 
    task type AST_Server_Task (Num : Natural) is
@@ -344,7 +344,7 @@ package body System.AST_Handling is
       Taskid  : ATID.Task_Id;
       Entryno : Natural;
       Param   : aliased Long_Integer;
-      Self_Id : constant ST.Task_ID := ST.Self;
+      Self_Id : constant ST.Task_Id := ST.Self;
 
       pragma Volatile (Param);
 
@@ -421,7 +421,7 @@ package body System.AST_Handling is
                P : AA := Param'Unrestricted_Access;
 
                function To_ST_Task_Id is new Ada.Unchecked_Conversion
-                 (ATID.Task_Id, ST.Task_ID);
+                 (ATID.Task_Id, ST.Task_Id);
 
             begin
                Unlock_AST (Self_Id);
@@ -546,7 +546,7 @@ package body System.AST_Handling is
       --  from which we can obtain the task and entry number information.
 
       function To_Address is new Ada.Unchecked_Conversion
-        (ST.Task_ID, System.Address);
+        (ST.Task_Id, System.Address);
 
    begin
       System.Machine_Code.Asm

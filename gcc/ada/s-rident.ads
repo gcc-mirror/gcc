@@ -152,13 +152,14 @@ package System.Rident is
 
       Not_A_Restriction_Id);
 
-   --  Synonyms permitted for historical purposes of compatibility
+   --  Synonyms permitted for historical purposes of compatibility.
+   --  Must be coordinated with Restrict.Process_Restriction_Synonym.
 
-   --   Boolean_Entry_Barriers synonym for Simple_Barriers
-   --   Max_Entry_Queue_Depth  synonym for Max_Entry_Queue_Length
-   --   No_Dynamic_Interrupts  synonym for No_Dynamic_Attachment
-   --   No_Requeue             synonym for No_Requeue_Statements
-   --   No_Task_Attributes     synonym for No_Task_Attributes_Package
+   Boolean_Entry_Barriers : Restriction_Id renames Simple_Barriers;
+   Max_Entry_Queue_Depth  : Restriction_Id renames Max_Entry_Queue_Length;
+   No_Dynamic_Interrupts  : Restriction_Id renames No_Dynamic_Attachment;
+   No_Requeue             : Restriction_Id renames No_Requeue_Statements;
+   No_Task_Attributes     : Restriction_Id renames No_Task_Attributes_Package;
 
    subtype All_Restrictions is Restriction_Id range
      Simple_Barriers .. Max_Storage_At_Blocking;

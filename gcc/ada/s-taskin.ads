@@ -109,24 +109,24 @@ package System.Tasking is
    --    the parent always has a lower serial number than the activator.
 
    ---------------------------------
-   -- Task_ID related definitions --
+   -- Task_Id related definitions --
    ---------------------------------
 
    type Ada_Task_Control_Block;
 
-   type Task_ID is access all Ada_Task_Control_Block;
+   type Task_Id is access all Ada_Task_Control_Block;
 
-   Null_Task : constant Task_ID;
+   Null_Task : constant Task_Id;
 
-   type Task_List is array (Positive range <>) of Task_ID;
+   type Task_List is array (Positive range <>) of Task_Id;
 
-   function Self return Task_ID;
+   function Self return Task_Id;
    pragma Inline (Self);
    --  This is the compiler interface version of this function. Do not call
    --  from the run-time system.
 
-   function To_Task_ID is new Unchecked_Conversion (System.Address, Task_ID);
-   function To_Address is new Unchecked_Conversion (Task_ID, System.Address);
+   function To_Task_Id is new Unchecked_Conversion (System.Address, Task_Id);
+   function To_Address is new Unchecked_Conversion (Task_Id, System.Address);
 
    -----------------------
    -- Enumeration types --
@@ -301,7 +301,7 @@ package System.Tasking is
    --      async. select statement does not need to lock anything.
 
    type Restricted_Entry_Call_Record is record
-      Self : Task_ID;
+      Self : Task_Id;
       --  ID of the caller
 
       Mode : Call_Modes;
@@ -388,7 +388,7 @@ package System.Tasking is
       --  and whether it is terminated.
       --  Protection: Self.L.
 
-      Parent : Task_ID;
+      Parent : Task_Id;
       --  The task on which this task depends.
       --  See also Master_Level and Master_Within.
 
@@ -461,15 +461,15 @@ package System.Tasking is
       --  per-task structures.
       --  Protection: Only accessed by Self.
 
-      All_Tasks_Link : Task_ID;
+      All_Tasks_Link : Task_Id;
       --  Used to link this task to the list of all tasks in the system.
       --  Protection: RTS_Lock.
 
-      Activation_Link : Task_ID;
+      Activation_Link : Task_Id;
       --  Used to link this task to a list of tasks to be activated.
       --  Protection: Only used by Activator.
 
-      Activator : Task_ID;
+      Activator : Task_Id;
       --  The task that created this task, either by declaring it as a task
       --  object or by executing a task allocator.
       --  The value is null iff Self has completed activation.
@@ -542,16 +542,16 @@ package System.Tasking is
    end record;
    pragma Suppress_Initialization (Restricted_Ada_Task_Control_Block);
 
-   Interrupt_Manager_ID : Task_ID;
+   Interrupt_Manager_ID : Task_Id;
    --  This task ID is declared here to break circular dependencies.
-   --  Also declare Interrupt_Manager_ID after Task_ID is known, to avoid
+   --  Also declare Interrupt_Manager_ID after Task_Id is known, to avoid
    --  generating unneeded finalization code.
 
    -----------------------
    -- List of all Tasks --
    -----------------------
 
-   All_Tasks_List : Task_ID;
+   All_Tasks_List : Task_Id;
    --  Global linked list of all tasks.
 
    ------------------------------------------
@@ -633,7 +633,7 @@ package System.Tasking is
    ----------------------------------
 
    type Entry_Call_Record is record
-      Self  : Task_ID;
+      Self  : Task_Id;
       --  ID of the caller
 
       Mode : Call_Modes;
@@ -679,7 +679,7 @@ package System.Tasking is
       --  They are gathered together to allow for compilers that lay records
       --  out contiguously, to allow for such packing.
 
-      Called_Task : Task_ID;
+      Called_Task : Task_Id;
       pragma Atomic (Called_Task);
       --  Use for task entry calls.
       --  The value is null if the call record is not in use.
@@ -953,25 +953,25 @@ package System.Tasking is
    ---------------------
 
    procedure Initialize_ATCB
-     (Self_ID          : Task_ID;
+     (Self_ID          : Task_Id;
       Task_Entry_Point : Task_Procedure_Access;
       Task_Arg         : System.Address;
-      Parent           : Task_ID;
+      Parent           : Task_Id;
       Elaborated       : Access_Boolean;
       Base_Priority    : System.Any_Priority;
       Task_Info        : System.Task_Info.Task_Info_Type;
       Stack_Size       : System.Parameters.Size_Type;
-      T                : in out Task_ID;
+      T                : in out Task_Id;
       Success          : out Boolean);
    --  Initialize fields of a TCB and link into global TCB structures
    --  Call this only with abort deferred and holding RTS_Lock.
 
 private
 
-   Null_Task : constant Task_ID := null;
+   Null_Task : constant Task_Id := null;
 
    type Activation_Chain is record
-      T_ID : Task_ID;
+      T_ID : Task_Id;
    end record;
    pragma Volatile (Activation_Chain);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1998-2001 Free Software Foundation, Inc.          --
+--          Copyright (C) 1998-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -117,7 +117,7 @@ package System.Tasking.Async_Delays is
 private
 
    type Delay_Block is record
-      Self_Id     : Task_ID;
+      Self_Id     : Task_Id;
       --  ID of the calling task
 
       Level       : ATC_Level_Base;

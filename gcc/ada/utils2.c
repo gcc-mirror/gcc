@@ -1990,7 +1990,6 @@ gnat_mark_addressable (tree expr_node)
       case PARM_DECL:
       case RESULT_DECL:
 	put_var_into_stack (expr_node, true);
-	TREE_ADDRESSABLE (expr_node) = 1;
 	return true;
 
       case FUNCTION_DECL:

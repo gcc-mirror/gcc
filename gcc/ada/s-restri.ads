@@ -61,7 +61,8 @@ package System.Restrictions is
    function Tasking_Allowed return Boolean;
    pragma Inline (Tasking_Allowed);
    --  Tests to see if tasking operations are allowed by the current
-   --  restrictions settings. For tasking to be allowed Max_Tasks must
+   --  restrictions settings. For taskikng to be allowed, No_Tasking
+   --  must be False, and Max_Tasks must not be set to zero.
 
 end System.Restrictions;
 

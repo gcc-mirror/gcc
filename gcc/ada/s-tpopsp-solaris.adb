@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2003, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2004, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,7 +40,7 @@ package body Specific is
    -- Initialize --
    ----------------
 
-   procedure Initialize (Environment_Task : Task_ID) is
+   procedure Initialize (Environment_Task : Task_Id) is
       Result : Interfaces.C.int;
    begin
       Result := thr_setspecific (ATCB_Key, To_Address (Environment_Task));
@@ -64,7 +64,7 @@ package body Specific is
    -- Set --
    ---------
 
-   procedure Set (Self_Id : Task_ID) is
+   procedure Set (Self_Id : Task_Id) is
       Result : Interfaces.C.int;
    begin
       Result := thr_setspecific (ATCB_Key, To_Address (Self_Id));
@@ -90,7 +90,7 @@ package body Specific is
    --  master hierarchy, much like the existing implicitly created
    --  signal-server tasks.
 
-   function Self return Task_ID is
+   function Self return Task_Id is
       Result  : Interfaces.C.int;
       Self_Id : aliased System.Address;
    begin
@@ -100,7 +100,7 @@ package body Specific is
       if Self_Id = System.Null_Address then
          return Register_Foreign_Thread;
       else
-         return To_Task_ID (Self_Id);
+         return To_Task_Id (Self_Id);
       end if;
    end Self;
 

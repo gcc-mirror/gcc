@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2002, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,7 +38,7 @@ with System.Parameters;
 --  used for Size_Type
 
 with System.Tasking;
---  used for Task_ID
+--  used for Task_Id
 
 with System.OS_Interface;
 --  used for Thread_Id
@@ -49,19 +49,19 @@ package System.Task_Primitives.Operations is
    package ST renames System.Tasking;
    package OSI renames System.OS_Interface;
 
-   procedure Initialize (Environment_Task : ST.Task_ID);
+   procedure Initialize (Environment_Task : ST.Task_Id);
    pragma Inline (Initialize);
    --  This must be called once, before any other subprograms of this
    --  package are called.
 
    procedure Create_Task
-     (T          : ST.Task_ID;
+     (T          : ST.Task_Id;
       Wrapper    : System.Address;
       Stack_Size : System.Parameters.Size_Type;
       Priority   : System.Any_Priority;
       Succeeded  : out Boolean);
    pragma Inline (Create_Task);
-   --  Create a new low-level task with ST.Task_ID T and place other needed
+   --  Create a new low-level task with ST.Task_Id T and place other needed
    --  information in the ATCB.
    --
    --  A new thread of control is created, with a stack of at least Stack_Size
@@ -69,7 +69,7 @@ package System.Task_Primitives.Operations is
    --  of control. If Stack_Size = Unspecified_Storage_Size, choose a default
    --  stack size; this may be effectively "unbounded" on some systems.
    --
-   --  The newly created low-level task is associated with the ST.Task_ID T
+   --  The newly created low-level task is associated with the ST.Task_Id T
    --  such that any subsequent call to Self from within the context of the
    --  low-level task returns T.
    --
@@ -80,7 +80,7 @@ package System.Task_Primitives.Operations is
    --  Succeeded is set to true unless creation of the task failed,
    --  as it may if there are insufficient resources to create another task.
 
-   procedure Enter_Task (Self_ID : ST.Task_ID);
+   procedure Enter_Task (Self_ID : ST.Task_Id);
    pragma Inline (Enter_Task);
    --  Initialize data structures specific to the calling task.
    --  Self must be the ID of the calling task.
@@ -96,15 +96,15 @@ package System.Task_Primitives.Operations is
    --  The effects of further calls to operations defined below
    --  on the task are undefined thereafter.
 
-   function New_ATCB (Entry_Num : ST.Task_Entry_Index) return ST.Task_ID;
+   function New_ATCB (Entry_Num : ST.Task_Entry_Index) return ST.Task_Id;
    pragma Inline (New_ATCB);
    --  Allocate a new ATCB with the specified number of entries.
 
-   procedure Initialize_TCB (Self_ID : ST.Task_ID; Succeeded : out Boolean);
+   procedure Initialize_TCB (Self_ID : ST.Task_Id; Succeeded : out Boolean);
    pragma Inline (Initialize_TCB);
    --  Initialize all fields of the TCB
 
-   procedure Finalize_TCB (T : ST.Task_ID);
+   procedure Finalize_TCB (T : ST.Task_Id);
    pragma Inline (Finalize_TCB);
    --  Finalizes Private_Data of ATCB, and then deallocates it.
    --  This is also responsible for recovering any storage or other resources
@@ -113,7 +113,7 @@ package System.Task_Primitives.Operations is
    --  After it is called there should be no further
    --  reference to the ATCB that corresponds to T.
 
-   procedure Abort_Task (T : ST.Task_ID);
+   procedure Abort_Task (T : ST.Task_Id);
    pragma Inline (Abort_Task);
    --  Abort the task specified by T (the target task). This causes
    --  the target task to asynchronously raise Abort_Signal if
@@ -128,7 +128,7 @@ package System.Task_Primitives.Operations is
 
    --  ??? modify GNARL to skip wakeup and always call Abort_Task
 
-   function Self return ST.Task_ID;
+   function Self return ST.Task_Id;
    pragma Inline (Self);
    --  Return a pointer to the Ada Task Control Block of the calling task.
 
@@ -172,7 +172,7 @@ package System.Task_Primitives.Operations is
 
    procedure Write_Lock (L : access Lock; Ceiling_Violation : out Boolean);
    procedure Write_Lock (L : access RTS_Lock; Global_Lock : Boolean := False);
-   procedure Write_Lock (T : ST.Task_ID);
+   procedure Write_Lock (T : ST.Task_Id);
    pragma Inline (Write_Lock);
    --  Lock a lock object for write access. After this operation returns,
    --  the calling task holds write permission for the lock object. No other
@@ -188,7 +188,7 @@ package System.Task_Primitives.Operations is
    --  For the operation on RTS_Lock, Global_Lock should be set to True
    --  if L is a global lock (Single_RTS_Lock, Global_Task_Lock).
    --
-   --  For the operation on ST.Task_ID, the lock is the special lock object
+   --  For the operation on ST.Task_Id, the lock is the special lock object
    --  associated with that task's ATCB. This lock has effective ceiling
    --  priority high enough that it is safe to call by a task with any
    --  priority in the range System.Priority. It is implicitly initialized
@@ -212,7 +212,7 @@ package System.Task_Primitives.Operations is
    --  Write_Lock. This simplifies the implementation, but reduces the level
    --  of concurrency that can be achieved.
    --
-   --  Note that Read_Lock is not defined for RT_Lock and ST.Task_ID.
+   --  Note that Read_Lock is not defined for RT_Lock and ST.Task_Id.
    --  That is because (1) so far Read_Lock has always been implemented
    --  the same as Write_Lock, (2) most lock usage inside the RTS involves
    --  potential write access, and (3) implementations of priority ceiling
@@ -220,7 +220,7 @@ package System.Task_Primitives.Operations is
 
    procedure Unlock (L : access Lock);
    procedure Unlock (L : access RTS_Lock; Global_Lock : Boolean := False);
-   procedure Unlock (T : ST.Task_ID);
+   procedure Unlock (T : ST.Task_Id);
    pragma Inline (Unlock);
    --  Unlock a locked lock object.
    --
@@ -295,7 +295,7 @@ package System.Task_Primitives.Operations is
    --  ones.
 
    procedure Set_Priority
-     (T : ST.Task_ID;
+     (T : ST.Task_Id;
       Prio : System.Any_Priority;
       Loss_Of_Inheritance : Boolean := False);
    pragma Inline (Set_Priority);
@@ -311,7 +311,7 @@ package System.Task_Primitives.Operations is
    --  Loss_Of_Inheritance helps the underlying implementation to do it
    --  right when the OS doesn't.
 
-   function Get_Priority (T : ST.Task_ID) return System.Any_Priority;
+   function Get_Priority (T : ST.Task_Id) return System.Any_Priority;
    pragma Inline (Get_Priority);
    --  Returns the priority last set by Set_Priority for this task.
 
@@ -335,7 +335,7 @@ package System.Task_Primitives.Operations is
    --  Pending priority changes are handled internally.
 
    procedure Sleep
-     (Self_ID : ST.Task_ID;
+     (Self_ID : ST.Task_Id;
       Reason  : System.Tasking.Task_States);
    pragma Inline (Sleep);
    --  Wait until the current task, T,  is signaled to wake up.
@@ -358,7 +358,7 @@ package System.Task_Primitives.Operations is
    --  a Wakeup operation is performed for the same task.
 
    procedure Timed_Sleep
-     (Self_ID  : ST.Task_ID;
+     (Self_ID  : ST.Task_Id;
       Time     : Duration;
       Mode     : ST.Delay_Modes;
       Reason   : System.Tasking.Task_States;
@@ -367,34 +367,34 @@ package System.Task_Primitives.Operations is
    --  Combination of Sleep (above) and Timed_Delay
 
    procedure Timed_Delay
-     (Self_ID : ST.Task_ID;
+     (Self_ID : ST.Task_Id;
       Time    : Duration;
       Mode    : ST.Delay_Modes);
    --  Implement the semantics of the delay statement. It is assumed that
    --  the caller is not abort-deferred and does not hold any locks.
 
    procedure Wakeup
-     (T      : ST.Task_ID;
+     (T      : ST.Task_Id;
       Reason : System.Tasking.Task_States);
    pragma Inline (Wakeup);
    --  Wake up task T if it is waiting on a Sleep call (of ordinary
    --  or timed variety), making it ready for execution once again.
    --  If the task T is not waiting on a Sleep, the operation has no effect.
 
-   function Environment_Task return ST.Task_ID;
+   function Environment_Task return ST.Task_Id;
    pragma Inline (Environment_Task);
    --  Return the task ID of the environment task
    --  Consider putting this into a variable visible directly
    --  by the rest of the runtime system. ???
 
-   function Get_Thread_Id (T : ST.Task_ID) return OSI.Thread_Id;
+   function Get_Thread_Id (T : ST.Task_Id) return OSI.Thread_Id;
    --  Return the thread id of the specified task
 
    function Is_Valid_Task return Boolean;
    pragma Inline (Is_Valid_Task);
    --  Does the calling thread have an ATCB?
 
-   function Register_Foreign_Thread return ST.Task_ID;
+   function Register_Foreign_Thread return ST.Task_Id;
    --  Allocate and initialize a new ATCB for the current thread
 
    -----------------------
@@ -439,7 +439,7 @@ package System.Task_Primitives.Operations is
    --  the guard page ourselves, and the procedure Stack_Guard is provided
    --  for this purpose.
 
-   procedure Stack_Guard (T : ST.Task_ID; On : Boolean);
+   procedure Stack_Guard (T : ST.Task_Id; On : Boolean);
    --  Ensure guard page is set if one is needed and the underlying thread
    --  system does not provide it. The procedure is as follows:
    --
@@ -467,16 +467,16 @@ package System.Task_Primitives.Operations is
    --  These interfaces have been added to assist in debugging the
    --  tasking runtime system.
 
-   function Check_Exit (Self_ID : ST.Task_ID) return Boolean;
+   function Check_Exit (Self_ID : ST.Task_Id) return Boolean;
    pragma Inline (Check_Exit);
    --  Check that the current task is holding only Global_Task_Lock.
 
-   function Check_No_Locks (Self_ID : ST.Task_ID) return Boolean;
+   function Check_No_Locks (Self_ID : ST.Task_Id) return Boolean;
    pragma Inline (Check_No_Locks);
    --  Check that current task is holding no locks.
 
    function Suspend_Task
-     (T           : ST.Task_ID;
+     (T           : ST.Task_Id;
       Thread_Self : OSI.Thread_Id)
       return        Boolean;
    --  Suspend a specific task when the underlying thread library provides
@@ -485,7 +485,7 @@ package System.Task_Primitives.Operations is
    --  Return True is the operation is successful
 
    function Resume_Task
-     (T           : ST.Task_ID;
+     (T           : ST.Task_Id;
       Thread_Self : OSI.Thread_Id)
       return        Boolean;
    --  Resume a specific task when the underlying thread library provides

@@ -489,7 +489,7 @@ package Rtsfind is
 
      RE_Abort_Task,                      -- Ada.Task_Identification
      RE_Current_Task,                    -- Ada.Task_Identification
-     RO_AT_Task_ID,                      -- Ada.Task_Identification
+     RO_AT_Task_Id,                      -- Ada.Task_Identification
 
      RO_CA_Time,                         -- Ada.Calendar
 
@@ -1256,7 +1256,7 @@ package Rtsfind is
 
      RE_Task_Procedure_Access,           -- System.Tasking
 
-     RO_ST_Task_ID,                      -- System.Tasking
+     RO_ST_Task_Id,                      -- System.Tasking
 
      RE_Call_Modes,                      -- System.Tasking
      RE_Simple_Call,                     -- System.Tasking
@@ -1561,7 +1561,7 @@ package Rtsfind is
 
      RE_Abort_Task                       => Ada_Task_Identification,
      RE_Current_Task                     => Ada_Task_Identification,
-     RO_AT_Task_ID                       => Ada_Task_Identification,
+     RO_AT_Task_Id                       => Ada_Task_Identification,
 
      RO_CA_Time                          => Ada_Calendar,
      RO_CA_Delay_For                     => Ada_Calendar_Delays,
@@ -2326,7 +2326,7 @@ package Rtsfind is
 
      RE_Task_Procedure_Access            => System_Tasking,
 
-     RO_ST_Task_ID                       => System_Tasking,
+     RO_ST_Task_Id                       => System_Tasking,
 
      RE_Call_Modes                       => System_Tasking,
      RE_Simple_Call                      => System_Tasking,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1992-2002 Free Software Foundation, Inc.         --
+--           Copyright (C) 1992-2004 Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -55,8 +55,8 @@ package body Ada.Task_Identification is
    -- Local Subprograms --
    -----------------------
 
-   function Convert_Ids (T : Task_Id) return System.Tasking.Task_ID;
-   function Convert_Ids (T : System.Tasking.Task_ID) return Task_Id;
+   function Convert_Ids (T : Task_Id) return System.Tasking.Task_Id;
+   function Convert_Ids (T : System.Tasking.Task_Id) return Task_Id;
    pragma Inline (Convert_Ids);
    --  Conversion functions between different forms of Task_Id
 
@@ -87,12 +87,12 @@ package body Ada.Task_Identification is
    -- Convert_Ids --
    -----------------
 
-   function Convert_Ids (T : Task_Id) return System.Tasking.Task_ID is
+   function Convert_Ids (T : Task_Id) return System.Tasking.Task_Id is
    begin
-      return System.Tasking.Task_ID (T);
+      return System.Tasking.Task_Id (T);
    end Convert_Ids;
 
-   function Convert_Ids (T : System.Tasking.Task_ID) return Task_Id is
+   function Convert_Ids (T : System.Tasking.Task_Id) return Task_Id is
    begin
       return Task_Id (T);
    end Convert_Ids;

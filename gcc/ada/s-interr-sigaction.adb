@@ -87,13 +87,13 @@ package body System.Interrupts is
    subtype int is Interfaces.C.int;
 
    function To_System is new Unchecked_Conversion
-     (Ada.Task_Identification.Task_Id, Task_ID);
+     (Ada.Task_Identification.Task_Id, Task_Id);
 
    type Handler_Kind is (Unknown, Task_Entry, Protected_Procedure);
 
    type Handler_Desc is record
       Kind   : Handler_Kind := Unknown;
-      T      : Task_ID;
+      T      : Task_Id;
       E      : Task_Entry_Index;
       H      : Parameterless_Handler;
       Static : Boolean := False;
@@ -106,7 +106,7 @@ package body System.Interrupts is
    type Server_Task_Access is access Server_Task;
 
    Attached_Interrupts : array (Interrupt_ID) of Boolean;
-   Handlers            : array (Interrupt_ID) of Task_ID;
+   Handlers            : array (Interrupt_ID) of Task_Id;
    Descriptors         : array (Interrupt_ID) of Handler_Desc;
    Interrupt_Count     : array (Interrupt_ID) of Integer := (others => 0);
 
@@ -150,7 +150,7 @@ package body System.Interrupts is
    function TISR is new Unchecked_Conversion (Handler_Ptr, isr_address);
 
    procedure Signal_Handler (Sig : Interrupt_ID) is
-      Handler : Task_ID renames Handlers (Sig);
+      Handler : Task_Id renames Handlers (Sig);
    begin
       if Intr_Attach_Reset and then
         intr_attach (int (Sig), TISR (Signal_Handler'Access)) = FUNC_ERR
@@ -215,7 +215,7 @@ package body System.Interrupts is
    -- Unblocked_By --
    ------------------
 
-   function Unblocked_By (Interrupt : Interrupt_ID) return Task_ID is
+   function Unblocked_By (Interrupt : Interrupt_ID) return Task_Id is
    begin
       raise Program_Error;
       return Null_Task;
@@ -532,7 +532,7 @@ package body System.Interrupts is
    -----------------------------
 
    procedure Bind_Interrupt_To_Entry
-     (T       : Task_ID;
+     (T       : Task_Id;
       E       : Task_Entry_Index;
       Int_Ref : System.Address)
    is
@@ -580,7 +580,7 @@ package body System.Interrupts is
    -- Detach_Interrupt_Entries --
    ------------------------------
 
-   procedure Detach_Interrupt_Entries (T : Task_ID) is
+   procedure Detach_Interrupt_Entries (T : Task_Id) is
    begin
       for I in Interrupt_ID loop
          if not Is_Reserved (I) then
@@ -631,7 +631,7 @@ package body System.Interrupts is
 
    task body Server_Task is
       Desc    : Handler_Desc renames Descriptors (Interrupt);
-      Self_Id : constant Task_ID := STPO.Self;
+      Self_Id : constant Task_Id := STPO.Self;
       Temp    : Parameterless_Handler;
 
    begin

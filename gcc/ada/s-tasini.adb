@@ -116,7 +116,7 @@ package body System.Tasking.Initialization is
    --  Get the exception stack for the current task
 
    procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address);
-   --  Self_ID is the Task_ID of the task that gets the exception stack.
+   --  Self_ID is the Task_Id of the task that gets the exception stack.
    --  For Self_ID = Null_Address, the current task gets the exception stack.
 
    function  Get_Machine_State_Addr return Address;
@@ -143,7 +143,7 @@ package body System.Tasking.Initialization is
    --  Local Subprograms --
    ------------------------
 
-   procedure Do_Pending_Action (Self_ID : Task_ID);
+   procedure Do_Pending_Action (Self_ID : Task_Id);
    --  This is introduced to allow more efficient
    --  in-line expansion of Undefer_Abort.
 
@@ -171,7 +171,7 @@ package body System.Tasking.Initialization is
 
    --  Call only with abort deferred and holding Self_ID locked.
 
-   procedure Change_Base_Priority (T : Task_ID) is
+   procedure Change_Base_Priority (T : Task_Id) is
    begin
       if T.Common.Base_Priority /= T.New_Base_Priority then
          T.Common.Base_Priority := T.New_Base_Priority;
@@ -184,7 +184,7 @@ package body System.Tasking.Initialization is
    ------------------------
 
    function Check_Abort_Status return Integer is
-      Self_ID : constant Task_ID := Self;
+      Self_ID : constant Task_Id := Self;
    begin
       if Self_ID /= null and then Self_ID.Deferral_Level = 0
         and then Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level
@@ -199,7 +199,7 @@ package body System.Tasking.Initialization is
    -- Defer_Abort --
    -----------------
 
-   procedure Defer_Abort (Self_ID : Task_ID) is
+   procedure Defer_Abort (Self_ID : Task_Id) is
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -240,7 +240,7 @@ package body System.Tasking.Initialization is
    -- Defer_Abort_Nestable --
    --------------------------
 
-   procedure Defer_Abort_Nestable (Self_ID : Task_ID) is
+   procedure Defer_Abort_Nestable (Self_ID : Task_Id) is
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -261,7 +261,7 @@ package body System.Tasking.Initialization is
    --------------------
 
    procedure Defer_Abortion is
-      Self_ID : Task_ID;
+      Self_ID : Task_Id;
 
    begin
       if No_Abort and then not Dynamic_Priority_Support then
@@ -278,7 +278,7 @@ package body System.Tasking.Initialization is
 
    --  Call only when holding no locks
 
-   procedure Do_Pending_Action (Self_ID : Task_ID) is
+   procedure Do_Pending_Action (Self_ID : Task_Id) is
       use type Ada.Exceptions.Exception_Id;
 
    begin
@@ -353,7 +353,7 @@ package body System.Tasking.Initialization is
    --  not make any reference to the ATCB after the lock is released.
    --  See also comments on Terminate_Task and Unlock.
 
-   procedure Final_Task_Unlock (Self_ID : Task_ID) is
+   procedure Final_Task_Unlock (Self_ID : Task_Id) is
    begin
       pragma Assert (Self_ID.Global_Task_Lock_Nesting = 1);
       Unlock (Global_Task_Lock'Access, Global_Lock => True);
@@ -364,7 +364,7 @@ package body System.Tasking.Initialization is
    --------------
 
    procedure Init_RTS is
-      Self_Id : Task_ID;
+      Self_Id : Task_Id;
 
    begin
       --  Terminate run time (regular vs restricted) specific initialization
@@ -490,8 +490,8 @@ package body System.Tasking.Initialization is
    --  for this case is done in Terminate_Task.
 
    procedure Locked_Abort_To_Level
-     (Self_ID : Task_ID;
-      T       : Task_ID;
+     (Self_ID : Task_Id;
+      T       : Task_Id;
       L       : ATC_Level)
    is
    begin
@@ -590,7 +590,7 @@ package body System.Tasking.Initialization is
    --  In this version, we check if the task is held too because
    --  doing this only in Do_Pending_Action is not enough.
 
-   procedure Poll_Base_Priority_Change (Self_ID : Task_ID) is
+   procedure Poll_Base_Priority_Change (Self_ID : Task_Id) is
    begin
       if Dynamic_Priority_Support and then Self_ID.Pending_Priority_Change then
 
@@ -636,9 +636,9 @@ package body System.Tasking.Initialization is
    -- Remove_From_All_Tasks_List --
    --------------------------------
 
-   procedure Remove_From_All_Tasks_List (T : Task_ID) is
-      C        : Task_ID;
-      Previous : Task_ID;
+   procedure Remove_From_All_Tasks_List (T : Task_Id) is
+      C        : Task_Id;
+      Previous : Task_Id;
 
    begin
       pragma Debug
@@ -670,7 +670,7 @@ package body System.Tasking.Initialization is
    -- Task_Lock --
    ---------------
 
-   procedure Task_Lock (Self_ID : Task_ID) is
+   procedure Task_Lock (Self_ID : Task_Id) is
    begin
       Self_ID.Global_Task_Lock_Nesting := Self_ID.Global_Task_Lock_Nesting + 1;
 
@@ -690,7 +690,7 @@ package body System.Tasking.Initialization is
    ---------------
 
    function Task_Name return String is
-      Self_Id : constant Task_ID := STPO.Self;
+      Self_Id : constant Task_Id := STPO.Self;
 
    begin
       return Self_Id.Common.Task_Image (1 .. Self_Id.Common.Task_Image_Len);
@@ -700,7 +700,7 @@ package body System.Tasking.Initialization is
    -- Task_Unlock --
    -----------------
 
-   procedure Task_Unlock (Self_ID : Task_ID) is
+   procedure Task_Unlock (Self_ID : Task_Id) is
    begin
       pragma Assert (Self_ID.Global_Task_Lock_Nesting > 0);
       Self_ID.Global_Task_Lock_Nesting := Self_ID.Global_Task_Lock_Nesting - 1;
@@ -729,7 +729,7 @@ package body System.Tasking.Initialization is
    --  The priority change has to occur before abortion. Otherwise, it would
    --  take effect no earlier than the next abortion completion point.
 
-   procedure Undefer_Abort (Self_ID : Task_ID) is
+   procedure Undefer_Abort (Self_ID : Task_Id) is
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -765,7 +765,7 @@ package body System.Tasking.Initialization is
    --  as entry to the scope of a region with a finalizer and entry into the
    --  body of an accept-procedure.
 
-   procedure Undefer_Abort_Nestable (Self_ID : Task_ID) is
+   procedure Undefer_Abort_Nestable (Self_ID : Task_Id) is
    begin
       if No_Abort and then not Dynamic_Priority_Support then
          return;
@@ -793,7 +793,7 @@ package body System.Tasking.Initialization is
    --  to reduce overhead due to multiple calls to Self.
 
    procedure Undefer_Abortion is
-      Self_ID : Task_ID;
+      Self_ID : Task_Id;
 
    begin
       if No_Abort and then not Dynamic_Priority_Support then
@@ -823,7 +823,7 @@ package body System.Tasking.Initialization is
    procedure Update_Exception
      (X : AE.Exception_Occurrence := Current_Target_Exception)
    is
-      Self_Id : constant Task_ID := Self;
+      Self_Id : constant Task_Id := Self;
       use Ada.Exceptions;
 
    begin
@@ -885,11 +885,11 @@ package body System.Tasking.Initialization is
    --    if Entry_Call.State >= Was_Abortable.
 
    procedure Wakeup_Entry_Caller
-     (Self_ID    : Task_ID;
+     (Self_ID    : Task_Id;
       Entry_Call : Entry_Call_Link;
       New_State  : Entry_Call_State)
    is
-      Caller : constant Task_ID := Entry_Call.Self;
+      Caller : constant Task_Id := Entry_Call.Self;
 
    begin
       pragma Debug (Debug.Trace
@@ -951,7 +951,7 @@ package body System.Tasking.Initialization is
    end Get_Stack_Info;
 
    procedure Set_Exc_Stack_Addr (Self_ID : Address; Addr : Address) is
-      Me : Task_ID := To_Task_ID (Self_ID);
+      Me : Task_Id := To_Task_Id (Self_ID);
    begin
       if Me = Null_Task then
          Me := STPO.Self;
@@ -989,14 +989,14 @@ package body System.Tasking.Initialization is
    --  links will be redirected to the real subprogram by elaboration of
    --  the subprogram body where the real subprogram is declared.
 
-   procedure Finalize_Attributes (T : Task_ID) is
+   procedure Finalize_Attributes (T : Task_Id) is
       pragma Warnings (Off, T);
 
    begin
       null;
    end Finalize_Attributes;
 
-   procedure Initialize_Attributes (T : Task_ID) is
+   procedure Initialize_Attributes (T : Task_Id) is
       pragma Warnings (Off, T);
 
    begin

@@ -34,6 +34,7 @@ with Prj.Com;  use Prj.Com;
 with Prj.Err;  use Prj.Err;
 with Prj.Ext;  use Prj.Ext;
 with Prj.Nmsc; use Prj.Nmsc;
+with Snames;
 
 with GNAT.Case_Util; use GNAT.Case_Util;
 with GNAT.HTable;
@@ -1847,11 +1848,10 @@ package body Prj.Proc is
 
       else
          declare
-            Processed_Data   : Project_Data := Empty_Project;
-            Imported         : Project_List := Empty_Project_List;
-            Declaration_Node : Project_Node_Id := Empty_Node;
-            Name             : constant Name_Id :=
-                                 Name_Of (From_Project_Node);
+            Processed_Data   : Project_Data     := Empty_Project;
+            Imported         : Project_List     := Empty_Project_List;
+            Declaration_Node : Project_Node_Id  := Empty_Node;
+            Name             : constant Name_Id := Name_Of (From_Project_Node);
 
          begin
             Project := Processed_Projects.Get (Name);
@@ -1958,7 +1958,8 @@ package body Prj.Proc is
 
             --  If it is an extending project, inherit all packages
             --  from the extended project that are not explicitely defined
-            --  or renamed.
+            --  or renamed. Also inherit the languages, if attribute Languages
+            --  is not explicitely defined.
 
             if Processed_Data.Extends /= No_Project then
                Processed_Data := Projects.Table (Project);
@@ -1971,6 +1972,10 @@ package body Prj.Proc is
                   Element     : Package_Element;
                   First       : constant Package_Id :=
                                   Processed_Data.Decl.Packages;
+                  Attribute1  : Variable_Id;
+                  Attribute2  : Variable_Id;
+                  Attr_Value1 : Variable;
+                  Attr_Value2  : Variable;
 
                begin
                   while Extended_Pkg /= No_Package loop
@@ -1998,6 +2003,52 @@ package body Prj.Proc is
 
                      Extended_Pkg := Element.Next;
                   end loop;
+
+                  --  Check if attribute Languages is declared in the
+                  --  extending project.
+
+                  Attribute1 := Processed_Data.Decl.Attributes;
+                  while Attribute1 /= No_Variable loop
+                     Attr_Value1 := Variable_Elements.Table (Attribute1);
+                     exit when Attr_Value1.Name = Snames.Name_Languages;
+                     Attribute1 := Attr_Value1.Next;
+                  end loop;
+
+                  if Attribute1 = No_Variable or else
+                     Attr_Value1.Value.Default
+                  then
+                     --  Attribute Languages is not declared in the extending
+                     --  project. Check if it is declared in the project being
+                     --  extended.
+
+                     Attribute2 :=
+                       Projects.Table (Processed_Data.Extends).Decl.Attributes;
+
+                     while Attribute2 /= No_Variable loop
+                        Attr_Value2 := Variable_Elements.Table (Attribute2);
+                        exit when Attr_Value2.Name = Snames.Name_Languages;
+                        Attribute2 := Attr_Value2.Next;
+                     end loop;
+
+                     if Attribute2 /= No_Variable and then
+                        not Attr_Value2.Value.Default
+                     then
+                        --  As attribute Languages is declared in the project
+                        --  being extended, copy its value for the extending
+                        --  project.
+
+                        if Attribute1 = No_Variable then
+                           Variable_Elements.Increment_Last;
+                           Attribute1 := Variable_Elements.Last;
+                           Attr_Value1.Next := Processed_Data.Decl.Attributes;
+                           Processed_Data.Decl.Attributes := Attribute1;
+                        end if;
+
+                        Attr_Value1.Name := Snames.Name_Languages;
+                        Attr_Value1.Value := Attr_Value2.Value;
+                        Variable_Elements.Table (Attribute1) := Attr_Value1;
+                     end if;
+                  end if;
                end;
 
                Projects.Table (Project) := Processed_Data;

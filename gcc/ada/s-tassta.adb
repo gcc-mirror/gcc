@@ -130,40 +130,40 @@ package body System.Tasking.Stages is
    -- Local Subprograms --
    -----------------------
 
-   procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_ID);
+   procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_Id);
    --  This procedure outputs the task specific message for exception
    --  tracing purposes.
 
-   procedure Task_Wrapper (Self_ID : Task_ID);
+   procedure Task_Wrapper (Self_ID : Task_Id);
    --  This is the procedure that is called by the GNULL from the
    --  new context when a task is created. It waits for activation
    --  and then calls the task body procedure. When the task body
    --  procedure completes, it terminates the task.
 
-   procedure Vulnerable_Complete_Task (Self_ID : Task_ID);
+   procedure Vulnerable_Complete_Task (Self_ID : Task_Id);
    --  Complete the calling task.
    --  This procedure must be called with abort deferred.
    --  It should only be called by Complete_Task and
    --  Finalizate_Global_Tasks (for the environment task).
 
-   procedure Vulnerable_Complete_Master (Self_ID : Task_ID);
+   procedure Vulnerable_Complete_Master (Self_ID : Task_Id);
    --  Complete the current master of the calling task.
    --  This procedure must be called with abort deferred.
    --  It should only be called by Vulnerable_Complete_Task and
    --  Complete_Master.
 
-   procedure Vulnerable_Complete_Activation (Self_ID : Task_ID);
+   procedure Vulnerable_Complete_Activation (Self_ID : Task_Id);
    --  Signal to Self_ID's activator that Self_ID has
    --  completed activation.
    --
    --  Call this procedure with abort deferred.
 
-   procedure Abort_Dependents (Self_ID : Task_ID);
+   procedure Abort_Dependents (Self_ID : Task_Id);
    --  Abort all the direct dependents of Self at its current master
    --  nesting level, plus all of their dependents, transitively.
    --  RTS_Lock should be locked by the caller.
 
-   procedure Vulnerable_Free_Task (T : Task_ID);
+   procedure Vulnerable_Free_Task (T : Task_Id);
    --  Recover all runtime system storage associated with the task T.
    --  This should only be called after T has terminated and will no
    --  longer be referenced.
@@ -181,9 +181,9 @@ package body System.Tasking.Stages is
    -- Abort_Dependents --
    ----------------------
 
-   procedure Abort_Dependents (Self_ID : Task_ID) is
-      C : Task_ID;
-      P : Task_ID;
+   procedure Abort_Dependents (Self_ID : Task_Id) is
+      C : Task_Id;
+      P : Task_Id;
 
    begin
       C := All_Tasks_List;
@@ -251,10 +251,10 @@ package body System.Tasking.Stages is
    --  operation is done in a separate pass over the activation chain.
 
    procedure Activate_Tasks (Chain_Access : Activation_Chain_Access) is
-      Self_ID        : constant Task_ID := STPO.Self;
-      P              : Task_ID;
-      C              : Task_ID;
-      Next_C, Last_C : Task_ID;
+      Self_ID        : constant Task_Id := STPO.Self;
+      P              : Task_Id;
+      C              : Task_Id;
+      Next_C, Last_C : Task_Id;
       Activate_Prio  : System.Any_Priority;
       Success        : Boolean;
       All_Elaborated : Boolean := True;
@@ -426,7 +426,7 @@ package body System.Tasking.Stages is
    -------------------------
 
    procedure Complete_Activation is
-      Self_ID : constant Task_ID := STPO.Self;
+      Self_ID : constant Task_Id := STPO.Self;
    begin
       Initialization.Defer_Abort_Nestable (Self_ID);
 
@@ -455,7 +455,7 @@ package body System.Tasking.Stages is
    ---------------------
 
    procedure Complete_Master is
-      Self_ID : constant Task_ID := STPO.Self;
+      Self_ID : constant Task_Id := STPO.Self;
 
    begin
       pragma Assert (Self_ID.Deferral_Level > 0);
@@ -470,7 +470,7 @@ package body System.Tasking.Stages is
    --  See comments on Vulnerable_Complete_Task for details
 
    procedure Complete_Task is
-      Self_ID  : constant Task_ID := STPO.Self;
+      Self_ID  : constant Task_Id := STPO.Self;
    begin
       pragma Assert (Self_ID.Deferral_Level > 0);
 
@@ -498,10 +498,10 @@ package body System.Tasking.Stages is
       Elaborated    : Access_Boolean;
       Chain         : in out Activation_Chain;
       Task_Image    : String;
-      Created_Task  : out Task_ID)
+      Created_Task  : out Task_Id)
    is
-      T, P          : Task_ID;
-      Self_ID       : constant Task_ID := STPO.Self;
+      T, P          : Task_Id;
+      Self_ID       : constant Task_Id := STPO.Self;
       Success       : Boolean;
       Base_Priority : System.Any_Priority;
       Len           : Natural;
@@ -639,7 +639,7 @@ package body System.Tasking.Stages is
    ------------------
 
    procedure Enter_Master is
-      Self_ID : constant Task_ID := STPO.Self;
+      Self_ID : constant Task_Id := STPO.Self;
 
    begin
       Self_ID.Master_Within := Self_ID.Master_Within + 1;
@@ -652,10 +652,10 @@ package body System.Tasking.Stages is
    --  See procedure Close_Entries for the general case.
 
    procedure Expunge_Unactivated_Tasks (Chain : in out Activation_Chain) is
-      Self_ID : constant Task_ID := STPO.Self;
-      C       : Task_ID;
+      Self_ID : constant Task_Id := STPO.Self;
+      C       : Task_Id;
       Call    : Entry_Call_Link;
-      Temp    : Task_ID;
+      Temp    : Task_Id;
 
    begin
       pragma Debug
@@ -714,7 +714,7 @@ package body System.Tasking.Stages is
    --  using the global finalization chain.
 
    procedure Finalize_Global_Tasks is
-      Self_ID : constant Task_ID := STPO.Self;
+      Self_ID : constant Task_Id := STPO.Self;
       Ignore  : Boolean;
 
    begin
@@ -813,8 +813,8 @@ package body System.Tasking.Stages is
    -- Free_Task --
    ---------------
 
-   procedure Free_Task (T : Task_ID) is
-      Self_Id : constant Task_ID := Self;
+   procedure Free_Task (T : Task_Id) is
+      Self_Id : constant Task_Id := Self;
 
    begin
       if T.Common.State = Terminated then
@@ -851,7 +851,7 @@ package body System.Tasking.Stages is
    --  data. Task finalization is done by Complete_Task, which is called from
    --  an at-end handler that the compiler generates.
 
-   procedure Task_Wrapper (Self_ID : Task_ID) is
+   procedure Task_Wrapper (Self_ID : Task_Id) is
       use type System.Parameters.Size_Type;
       use type SSE.Storage_Offset;
       use System.Standard_Library;
@@ -973,8 +973,8 @@ package body System.Tasking.Stages is
    --  overwriting the data of the new task that reused the ATCB! To solve
    --  this problem, we introduced the new operation Final_Task_Unlock.
 
-   procedure Terminate_Task (Self_ID : Task_ID) is
-      Environment_Task : constant Task_ID := STPO.Environment_Task;
+   procedure Terminate_Task (Self_ID : Task_Id) is
+      Environment_Task : constant Task_Id := STPO.Environment_Task;
       Master_of_Task   : Integer;
 
    begin
@@ -1045,8 +1045,8 @@ package body System.Tasking.Stages is
    -- Terminated --
    ----------------
 
-   function Terminated (T : Task_ID) return Boolean is
-      Self_ID : constant Task_ID := STPO.Self;
+   function Terminated (T : Task_Id) return Boolean is
+      Self_ID : constant Task_Id := STPO.Self;
       Result  : Boolean;
 
    begin
@@ -1072,7 +1072,7 @@ package body System.Tasking.Stages is
    -- Trace_Unhandled_Exception_In_Task --
    ----------------------------------------
 
-   procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_ID) is
+   procedure Trace_Unhandled_Exception_In_Task (Self_Id : Task_Id) is
       procedure To_Stderr (S : String);
       pragma Import (Ada, To_Stderr, "__gnat_to_stderr");
 
@@ -1081,7 +1081,7 @@ package body System.Tasking.Stages is
       use System.Standard_Library;
 
       function To_Address is new
-        Unchecked_Conversion (Task_ID, System.Address);
+        Unchecked_Conversion (Task_Id, System.Address);
 
       function Tailored_Exception_Information
         (E : Exception_Occurrence) return String;
@@ -1121,8 +1121,8 @@ package body System.Tasking.Stages is
    --  ordering policy, since the activated task must be created after the
    --  activator.
 
-   procedure Vulnerable_Complete_Activation (Self_ID : Task_ID) is
-      Activator : constant Task_ID := Self_ID.Common.Activator;
+   procedure Vulnerable_Complete_Activation (Self_ID : Task_Id) is
+      Activator : constant Task_Id := Self_ID.Common.Activator;
 
    begin
       pragma Debug (Debug.Trace (Self_ID, "V_Complete_Activation", 'C'));
@@ -1175,13 +1175,13 @@ package body System.Tasking.Stages is
    -- Vulnerable_Complete_Master --
    --------------------------------
 
-   procedure Vulnerable_Complete_Master (Self_ID : Task_ID) is
-      C      : Task_ID;
-      P      : Task_ID;
+   procedure Vulnerable_Complete_Master (Self_ID : Task_Id) is
+      C      : Task_Id;
+      P      : Task_Id;
       CM     : constant Master_Level := Self_ID.Master_Within;
-      T      : aliased Task_ID;
+      T      : aliased Task_Id;
 
-      To_Be_Freed : Task_ID;
+      To_Be_Freed : Task_Id;
       --  This is a list of ATCBs to be freed, after we have released
       --  all RTS locks. This is necessary because of the locking order
       --  rules, since the storage manager uses Global_Task_Lock.
@@ -1478,7 +1478,7 @@ package body System.Tasking.Stages is
                --  Be sure to update this value when changing
                --  Interrupt_Manager specs.
 
-               type Param_Type is access all Task_ID;
+               type Param_Type is access all Task_Id;
 
                Param : aliased Param_Type := T'Access;
 
@@ -1546,7 +1546,7 @@ package body System.Tasking.Stages is
    --  to test Self_ID.Common.Activator. That value should only be read and
    --  modified by Self.
 
-   procedure Vulnerable_Complete_Task (Self_ID : Task_ID) is
+   procedure Vulnerable_Complete_Task (Self_ID : Task_Id) is
    begin
       pragma Assert (Self_ID.Deferral_Level > 0);
       pragma Assert (Self_ID = Self);
@@ -1607,7 +1607,7 @@ package body System.Tasking.Stages is
    --  It is also called from Unchecked_Deallocation, for objects that
    --  are or contain tasks.
 
-   procedure Vulnerable_Free_Task (T : Task_ID) is
+   procedure Vulnerable_Free_Task (T : Task_Id) is
    begin
       pragma Debug (Debug.Trace (Self, "Vulnerable_Free_Task", 'C', T));
 

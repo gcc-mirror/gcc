@@ -342,6 +342,7 @@ package body Snames is
      "link_name#" &
      "lowercase#" &
      "max_entry_queue_depth#" &
+     "max_entry_queue_length#" &
      "max_size#" &
      "mechanism#" &
      "mixedcase#" &
@@ -352,9 +353,12 @@ package body Snames is
      "on#" &
      "parameter_types#" &
      "reference#" &
+     "no_dynamic_attachment#" &
      "no_dynamic_interrupts#" &
      "no_requeue#" &
+     "no_requeue_statements#" &
      "no_task_attributes#" &
+     "no_task_attributes_package#" &
      "restricted#" &
      "result_mechanism#" &
      "result_type#" &
@@ -363,6 +367,7 @@ package body Snames is
      "secondary_stack_size#" &
      "section#" &
      "semaphore#" &
+     "simple_barriers#" &
      "spec_file_name#" &
      "static#" &
      "stack_size#" &

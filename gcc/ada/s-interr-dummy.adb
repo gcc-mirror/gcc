@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+--             Copyright (C) 1995-2004, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -71,7 +71,7 @@ package body System.Interrupts is
    -----------------------------
 
    procedure Bind_Interrupt_To_Entry
-     (T       : Task_ID;
+     (T       : Task_Id;
       E       : Task_Entry_Index;
       Int_Ref : System.Address)
    is
@@ -117,7 +117,7 @@ package body System.Interrupts is
    -- Detach_Interrupt_Entries --
    ------------------------------
 
-   procedure Detach_Interrupt_Entries (T : Task_ID) is
+   procedure Detach_Interrupt_Entries (T : Task_Id) is
    begin
       Unimplemented;
    end Detach_Interrupt_Entries;
@@ -278,7 +278,7 @@ package body System.Interrupts is
    ------------------
 
    function Unblocked_By (Interrupt : Interrupt_ID)
-     return System.Tasking.Task_ID is
+     return System.Tasking.Task_Id is
    begin
       Unimplemented;
       return null;

@@ -282,6 +282,7 @@ package body ALI is
          loop
             if C = CR or else C = LF then
                Skip_Line;
+               C := Nextc;
 
             elsif C = EOF then
                return;
@@ -788,6 +789,7 @@ package body ALI is
                Fatal_Error;
             else
                Skip_Line;
+               C := Nextc;
             end if;
          else
             Fatal_Error;
@@ -948,6 +950,7 @@ package body ALI is
                Fatal_Error;
             else
                Skip_Line;
+               C := Nextc;
             end if;
          else
             Fatal_Error;
