@@ -1,3 +1,11 @@
+Tue Mar 28 08:29:46 2000  Jan Hubicka  <jh@suse.cz>
+
+	* regmove.c (struct csa_memlist): Make mem field rtx *.
+	(record_one_stack_ref): Accept rtx * instead of rtx as parameter.
+	(try_apply_stack_adjustment): Replace whole MEM rtx.
+	(combine_stack_adjustments_for_block): Update calls
+	to record_one_stack_ref.
+
 2000-03-28  Neil Booth  <NeilB@earthling.net>
 
         * (cpplex.c) _cpp_read_and_prescan.  Mark end of input buffer with
