@@ -1,3 +1,8 @@
+2000-11-08  Nick Clifton  <nickc@redhat.com>
+
+	* gcc.c-torture/execute/20001108-1.c: New test case.  Checks
+	mulsidi3adddi patterns.
+
 2000-11-08  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/crash36.C: New test.

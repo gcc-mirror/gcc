@@ -1,5 +1,6 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright (C) 1991, 93-98, 1999 Free Software Foundation, Inc.
+;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000
+;;  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -339,7 +340,8 @@
 	(plus:DI (match_operand:DI 1 "s_register_operand" "")
 		 (match_operand:DI 2 "s_register_operand" "")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed
+  "
   [(parallel [(set (reg:CC_C 24)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
@@ -366,7 +368,8 @@
 	(plus:DI (sign_extend:DI (match_operand:SI 2 "s_register_operand" ""))
 		 (match_operand:DI 1 "s_register_operand" "")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed
+  "
   [(parallel [(set (reg:CC_C 24)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
@@ -394,7 +397,8 @@
 	(plus:DI (zero_extend:DI (match_operand:SI 2 "s_register_operand" ""))
 		 (match_operand:DI 1 "s_register_operand" "")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM && reload_completed"
+  "TARGET_ARM && reload_completed
+  "
   [(parallel [(set (reg:CC_C 24)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
@@ -447,7 +451,8 @@
 	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0")
 		 (match_operand:DI 2 "s_register_operand" "r,  0")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM"
+  "TARGET_ARM
+  "
   "#"
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
@@ -459,7 +464,8 @@
 		  (match_operand:SI 2 "s_register_operand" "r,r"))
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))]
-  "TARGET_ARM"
+  "TARGET_ARM
+  "
   "#"
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
@@ -472,7 +478,8 @@
 		 (match_operand:DI 1 "s_register_operand" "r,0")))
    (clobber (reg:CC 24))
   ]
-  "TARGET_ARM"
+  "TARGET_ARM
+  "
   "#"
   [(set_attr "conds" "clob")
    (set_attr "length" "8")]
@@ -1256,7 +1263,7 @@
 ;; Unnamed template to match long long multiply-accumlate (smlal)
 
 (define_insn "*mulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r,&r")
+  [(set (match_operand:DI 0 "s_register_operand" "+&r,&r,&r")
 	(plus:DI
 	 (mult:DI
 	  (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r,0,1"))
@@ -1293,7 +1300,7 @@
 ;; Unnamed template to match long long unsigned multiply-accumlate (umlal)
 
 (define_insn "*umulsidi3adddi"
-  [(set (match_operand:DI 0 "s_register_operand" "=&r,&r,&r")
+  [(set (match_operand:DI 0 "s_register_operand" "+&r,&r,&r")
 	(plus:DI
 	 (mult:DI
 	  (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r,0,1"))
@@ -2117,7 +2124,8 @@
 		(match_operand:SI           1 "s_register_operand"  "r")))]
   "TARGET_ARM"
   "bic%?\\t%0, %1, %2%S4"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   ]
 )
 
 (define_insn "*andsi_notsi_si_compare0"
@@ -2607,7 +2615,8 @@
 	  (match_operand:SI 2 "reg_or_int_operand" "rM")]))]
   "TARGET_ARM"
   "mov%?\\t%0, %1%S3"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   ]
 )
 
 (define_insn "*shiftsi3_compare0"
@@ -2620,7 +2629,8 @@
 	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))]
   "TARGET_ARM"
   "mov%?s\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*shiftsi3_compare0_scratch"
@@ -2632,7 +2642,8 @@
    (clobber (match_scratch:SI 0 "=r"))]
   "TARGET_ARM"
   "mov%?s\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*notsi_shiftsi"
@@ -2642,7 +2653,8 @@
 		  (match_operand:SI 2 "arm_rhs_operand" "rM")])))]
   "TARGET_ARM"
   "mvn%?\\t%0, %1%S3"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   ]
 )
 
 (define_insn "*notsi_shiftsi_compare0"
@@ -2655,7 +2667,8 @@
 	(not:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])))]
   "TARGET_ARM"
   "mvn%?s\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*not_shiftsi_compare0_scratch"
@@ -2667,7 +2680,8 @@
    (clobber (match_scratch:SI 0 "=r"))]
   "TARGET_ARM"
   "mvn%?s\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 ;; We don't really have extzv, but defining this using shifts helps
@@ -3933,7 +3947,8 @@
 (define_insn "*arm_movdi"
   [(set (match_operand:DI 0 "nonimmediate_di_operand" "=r, r, o<>")
 	(match_operand:DI 1 "di_operand"              "rIK,mi,r"))]
-  "TARGET_ARM"
+  "TARGET_ARM
+  "
   "*
   return (output_move_double (operands));
   "
@@ -4748,7 +4763,8 @@
 	(match_operand:HI     1 "register_operand" "l"))
    (clobber (match_operand:SI 2 "register_operand" "=&l"))]
   "TARGET_THUMB"
-  "Hi Nick"
+  "*
+  abort ();"
 )
 	
 ;; We use a DImode scratch because we may occasionally need an additional
@@ -5092,7 +5108,8 @@
 (define_insn "*movdf_soft_insn"
   [(set (match_operand:DF 0 "nonimmediate_soft_df_operand" "=r,r,m")
 	(match_operand:DF 1 "soft_df_operand" "r,mF,r"))]
-  "TARGET_ARM && TARGET_SOFT_FLOAT"
+  "TARGET_ARM && TARGET_SOFT_FLOAT
+  "
   "* return output_move_double (operands);"
   [(set_attr "length" "8,8,8")
    (set_attr "type" "*,load,store2")
@@ -5553,7 +5570,8 @@
 		      (match_operand:SI 2 "arm_rhs_operand"    "rM")])))]
   "TARGET_ARM"
   "cmp%?\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*cmpsi_shiftsi_swp"
@@ -5564,7 +5582,8 @@
 			(match_operand:SI 0 "s_register_operand" "r")))]
   "TARGET_ARM"
   "cmp%?\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*cmpsi_neg_shiftsi"
@@ -5575,7 +5594,8 @@
 			      (match_operand:SI 2 "arm_rhs_operand" "rM")]))))]
   "TARGET_ARM"
   "cmn%?\\t%0, %1%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*cmpsf_insn"
@@ -6803,7 +6823,8 @@
            (match_operand:SI 2 "s_register_operand" "r")]))]
   "TARGET_ARM"
   "%i1%?\\t%0, %2, %4%S3"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   ]
 )
 
 (define_insn "*arith_shiftsi_compare0"
@@ -6819,7 +6840,8 @@
 			 (match_dup 2)]))]
   "TARGET_ARM"
   "%i1%?s\\t%0, %2, %4%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*arith_shiftsi_compare0_scratch"
@@ -6833,7 +6855,8 @@
    (clobber (match_scratch:SI 0 "=r"))]
   "TARGET_ARM"
   "%i1%?s\\t%0, %2, %4%S3"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*sub_shiftsi"
@@ -6844,7 +6867,8 @@
 		    (match_operand:SI 4 "reg_or_int_operand" "rM")])))]
   "TARGET_ARM"
   "sub%?\\t%0, %1, %3%S2"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   ]
 )
 
 (define_insn "*sub_shiftsi_compare0"
@@ -6860,7 +6884,8 @@
 						 (match_dup 4)])))]
   "TARGET_ARM"
   "sub%?s\\t%0, %1, %3%S2"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 (define_insn "*sub_shiftsi_compare0_scratch"
@@ -6874,7 +6899,8 @@
    (clobber (match_scratch:SI 0 "=r"))]
   "TARGET_ARM"
   "sub%?s\\t%0, %1, %3%S2"
-  [(set_attr "conds" "set")]
+  [(set_attr "conds" "set")
+   ]
 )
 
 ;; These variants of the above insns can occur if the first operand is the
@@ -8387,7 +8413,8 @@
 	(match_operand:SI 1 "s_register_operand" "r"))
    (set (reg:CC 24)
 	(compare:CC (match_dup 1) (const_int 0)))]
-  "TARGET_ARM"
+  "TARGET_ARM
+  "
   "sub%?s\\t%0, %1, #0"
   [(set_attr "conds" "set")]
 )
