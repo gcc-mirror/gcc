@@ -1,6 +1,5 @@
 // Build don't link:
 // Special g++ Options:
-// excess errors test - XFAIL *-*-*
 
 template <class T, int I>
 struct S {
@@ -13,4 +12,4 @@ S<T,I>::X f(T, U)
   S<T, I>::X();
 }
 
-template S<int, double>::X f<int, double, 3>(int, double);
+template S<int, 3>::X f<int, double, 3>(int, double);
