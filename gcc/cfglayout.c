@@ -665,8 +665,7 @@ fixup_reorder_chain (void)
 	    {
 	      /* If the old fallthru is still next, nothing to do.  */
 	      if (bb->rbi->next == e_fall->dest
-	          || (!bb->rbi->next
-		      && e_fall->dest == EXIT_BLOCK_PTR))
+	          || e_fall->dest == EXIT_BLOCK_PTR)
 		continue;
 
 	      /* The degenerated case of conditional jump jumping to the next
