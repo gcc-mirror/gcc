@@ -1,3 +1,7 @@
+Sun Jul 25 21:41:37 1999  Jeffrey A Law  (law@cygnus.com)
+
+        * README: More listname related changes.
+
 1999-06-05  Craig Burley  <craig@jcb-sc.com>
 
 	* g77.f-torture/compile/19990502-0.f: Replace with new,
