@@ -1,5 +1,8 @@
 Fri Dec 19 09:50:30 1997  Bernd Schmidt <crux@ohara.Informatik.RWTH-Aachen.DE>
 
+	* combine.c (simplify_rtx, case ABS): Don't get confused by a
+	VOIDmode operand.
+
 	* i386.c (notice_update_cc): Remove bogus pentium GCC code.
 
 Fri Dec 19 09:39:48 1997  Jeffrey A Law  (law@cygnus.com)
