@@ -696,14 +696,6 @@ static void generate_macinfo_entry	PROTO((char *, char *));
   fprintf ((FILE), "\t%s\n", POPSECTION_ASM_OP)
 #endif
 
-#ifndef ASM_OUTPUT_SOURCE_FILENAME
-#define ASM_OUTPUT_SOURCE_FILENAME(FILE,NAME) \
-  do {	fprintf (FILE, "\t%s\t", FILE_ASM_OP);				\
-	output_quoted_string (FILE, NAME);				\
-	fputc ('\n', FILE);						\
-  } while (0)
-#endif
-
 #ifndef ASM_OUTPUT_DWARF_DELTA2
 #define ASM_OUTPUT_DWARF_DELTA2(FILE,LABEL1,LABEL2)			\
  do {	fprintf ((FILE), "\t%s\t", UNALIGNED_SHORT_ASM_OP);		\
