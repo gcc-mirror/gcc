@@ -1624,8 +1624,7 @@ is_undefined_value (tree expr)
   return (TREE_CODE (expr) == SSA_NAME
           && IS_EMPTY_STMT (SSA_NAME_DEF_STMT (expr))
 	  /* PARM_DECLs and hard registers are always defined.  */
-	  && TREE_CODE (SSA_NAME_VAR (expr)) != PARM_DECL
-	  && !DECL_HARD_REGISTER (SSA_NAME_VAR (expr)));
+	  && TREE_CODE (SSA_NAME_VAR (expr)) != PARM_DECL);
 }
 
 

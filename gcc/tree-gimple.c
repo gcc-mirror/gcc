@@ -282,12 +282,35 @@ is_gimple_reg (tree t)
   if (TREE_CODE (t) == SSA_NAME)
     t = SSA_NAME_VAR (t);
 
-  return (is_gimple_variable (t)
-	  && is_gimple_reg_type (TREE_TYPE (t))
-	  /* A volatile decl is not acceptable because we can't reuse it as
-	     needed.  We need to copy it into a temp first.  */
-	  && ! TREE_THIS_VOLATILE (t)
-	  && ! needs_to_live_in_memory (t));
+  if (!is_gimple_variable (t))
+    return false;
+  if (!is_gimple_reg_type (TREE_TYPE (t)))
+    return false;
+
+  /* A volatile decl is not acceptable because we can't reuse it as
+     needed.  We need to copy it into a temp first.  */
+  if (TREE_THIS_VOLATILE (t))
+    return false;
+
+  /* We define "registers" as things that can be renamed as needed,
+     which with our infrastructure does not apply to memory.  */
+  if (needs_to_live_in_memory (t))
+    return false;
+
+  /* Hard register variables are an interesting case.  For those that
+     are call-clobbered, we don't know where all the calls are, since
+     we don't (want to) take into account which operations will turn
+     into libcalls at the rtl level.  For those that are call-saved,
+     we don't currently model the fact that calls may in fact change
+     global hard registers, nor do we examine ASM_CLOBBERS at the tree
+     level, and so miss variable changes that might imply.  All around,
+     it seems safest to not do too much optimization with these at the
+     tree level at all.  We'll have to rely on the rtl optimizers to
+     clean this up, as there we've got all the appropriate bits exposed.  */
+  if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
+    return false;
+
+  return true;
 }
 
 /* Returns true if T is a GIMPLE formal temporary variable.  */
@@ -349,6 +372,16 @@ is_gimple_val (tree t)
   return (is_gimple_variable (t) || is_gimple_min_invariant (t));
 }
 
+/* Similarly, but accept hard registers as inputs to asm statements.  */
+
+bool
+is_gimple_asm_val (tree t)
+{
+  if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
+    return true;
+
+  return is_gimple_val (t);
+}
 
 /* Return true if T is a GIMPLE minimal lvalue.  */
 

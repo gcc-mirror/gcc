@@ -2123,7 +2123,7 @@ struct tree_binfo GTY (())
 
 /* In a VAR_DECL, nonzero if the decl is a register variable with
    an explicit asm specification.  */
-#define DECL_HARD_REGISTER(NODE)  (DECL_CHECK (NODE)->decl.inline_flag)
+#define DECL_HARD_REGISTER(NODE)  (VAR_DECL_CHECK (NODE)->decl.inline_flag)
 
 /* Value of the decls's visibility attribute */
 #define DECL_VISIBILITY(NODE) (DECL_CHECK (NODE)->decl.visibility)

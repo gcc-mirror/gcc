@@ -1566,6 +1566,14 @@ print_declaration (pretty_printer *buffer, tree t, int spc, int flags)
       dump_generic_node (buffer, t, spc, flags, false);
     }
 
+  if (TREE_CODE (t) == VAR_DECL && DECL_HARD_REGISTER (t))
+    {
+      pp_string (buffer, " __asm__ ");
+      pp_character (buffer, '(');
+      dump_generic_node (buffer, DECL_ASSEMBLER_NAME (t), spc, flags, false);
+      pp_character (buffer, ')');
+    }
+
   /* The initial value of a function serves to determine wether the function
      is declared or defined.  So the following does not apply to function
      nodes.  */
