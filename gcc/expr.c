@@ -6968,8 +6968,6 @@ expand_expr (exp, target, tmode, modifier)
       if (modifier == EXPAND_SUM || modifier == EXPAND_INITIALIZER
 	  || mode == ptr_mode)
 	{
-	  rtx constant_part;
-
 	  if (TREE_CODE (TREE_OPERAND (exp, 0)) == INTEGER_CST
 	      && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT
 	      && TREE_CONSTANT (TREE_OPERAND (exp, 1)))
