@@ -514,6 +514,9 @@ find_symbolic_term (x)
    Nice to notice that varying addresses cannot conflict with fp if no
    local variables had their addresses taken, but that's too hard now.  */
 
+/* ??? In Fortran, references to a array parameter can never conflict with
+   another array parameter.  */
+
 static int
 memrefs_conflict_p (xsize, x, ysize, y, c)
      rtx x, y;
@@ -2306,6 +2309,8 @@ adjust_priority (prev)
       rtx note;
       int n_deaths = 0;
 
+      /* ??? This code has no effect, because REG_DEAD notes are removed
+	 before we ever get here.  */
       for (note = REG_NOTES (prev); note; note = XEXP (note, 1))
 	if (REG_NOTE_KIND (note) == REG_DEAD)
 	  n_deaths += 1;
