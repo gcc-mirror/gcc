@@ -1828,6 +1828,9 @@ language_as_string (c, v)
     case lang_cplusplus:
       return "C++";
 
+    case lang_java:
+      return "Java";
+
     default:
       my_friendly_abort (355);
       return 0;
