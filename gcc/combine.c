@@ -12008,7 +12008,6 @@ distribute_notes (notes, from_insn, i3, i2, elim_i2, elim_i1)
 	    abort ();
 	  break;
 
-	case REG_EH_RETHROW:
 	case REG_NORETURN:
 	case REG_SETJMP:
 	  /* These notes must remain with the call.  It should not be
