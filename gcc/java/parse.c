@@ -2251,7 +2251,7 @@ static const short yycheck[] = {     3,
 #define YYPURE 1
 
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/share/misc/bison.simple"
+#line 3 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -2268,7 +2268,7 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
@@ -2444,7 +2444,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/share/misc/bison.simple"
+#line 196 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -4702,7 +4702,7 @@ case 492:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/share/misc/bison.simple"
+#line 498 "/usr/cygnus/gnupro-98r2/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -11232,24 +11232,22 @@ static int
 valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type)
      tree lhs_type, rhs_type;
 {
-  int all_primitive;
-
+  /* 5.1.1: This is the identity conversion part. */
   if (lhs_type == rhs_type)
     return 1;
 
   /* Sometimes, instead of passing a type, we pass integer_zero_node
-     so we know that an integral type can accomodate it */
-  if (JINTEGRAL_TYPE_P (lhs_type) && (rhs_type == integer_zero_node))
+     so we know that a numeric type can accomodate it */
+  if (JNUMERIC_TYPE_P (lhs_type) && (rhs_type == integer_zero_node))
     return 1;
 
-  all_primitive = 
-    JPRIMITIVE_TYPE_P (lhs_type) && JPRIMITIVE_TYPE_P (rhs_type);
-
-  if (!all_primitive)
+  /* Reject non primitive types */
+  if (!JPRIMITIVE_TYPE_P (lhs_type) || !JPRIMITIVE_TYPE_P (rhs_type))
     return 0;
 
-  /* byte, even if it's smaller than a char can't be converted into a
-     char. Short can't too, but the < test below takes care of that */
+  /* 5.1.2: widening primitive conversion. byte, even if it's smaller
+     than a char can't be converted into a char. Short can't too, but
+     the < test below takes care of that */
   if (lhs_type == char_type_node && rhs_type == byte_type_node)
     return 0;
 
@@ -11263,13 +11261,13 @@ valid_builtin_assignconv_identity_widening_p (lhs_type, rhs_type)
 	  || rhs_type == promoted_boolean_type_node))
     return 1;
 
-  if (JINTEGRAL_TYPE_P (rhs_type)
-      && ((TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type))
-	  || (JFLOAT_TYPE_P (lhs_type) &&
-	      TYPE_PRECISION (rhs_type) == TYPE_PRECISION (lhs_type))))
-    return 1;
-  else if (JFLOAT_TYPE_P (rhs_type)
-	   && (TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type)))
+  /* From here, an integral is widened if its precision is smaller
+     than the precision of the LHS or if the LHS is a floating point
+     type, or the RHS is a float and the RHS a double. */
+  if ((JINTEGRAL_TYPE_P (rhs_type) && JINTEGRAL_TYPE_P (lhs_type) 
+       && (TYPE_PRECISION (rhs_type) < TYPE_PRECISION (lhs_type)))
+      || (JINTEGRAL_TYPE_P (rhs_type) && JFLOAT_TYPE_P (lhs_type))
+      || (rhs_type == float_type_node && lhs_type == double_type_node))
     return 1;
 
   return 0;
@@ -11418,16 +11416,18 @@ do_unary_numeric_promotion (arg)
   return arg;
 }
 
+/* Return a non zero value if SOURCE can be converted into DEST using
+   the method invocation conversion rule (5.3).  */
 static int
 valid_method_invocation_conversion_p (dest, source)
      tree dest, source;
 {
   return (((JPRIMITIVE_TYPE_P (source) || (source == integer_zero_node))
-	    && JPRIMITIVE_TYPE_P (dest)
-	    && valid_builtin_assignconv_identity_widening_p (dest, source))
-	   || ((JREFERENCE_TYPE_P (source) || JNULLP_TYPE_P (source))
-	       && (JREFERENCE_TYPE_P (dest) || JNULLP_TYPE_P (dest))
-	       && valid_ref_assignconv_cast_p (source, dest, 0)));
+	   && JPRIMITIVE_TYPE_P (dest)
+	   && valid_builtin_assignconv_identity_widening_p (dest, source))
+	  || ((JREFERENCE_TYPE_P (source) || JNULLP_TYPE_P (source))
+	      && (JREFERENCE_TYPE_P (dest) || JNULLP_TYPE_P (dest))
+	      && valid_ref_assignconv_cast_p (source, dest, 0)));
 }
 
 /* Build an incomplete binop expression. */
@@ -11937,12 +11937,25 @@ build_string_concatenation (op1, op2)
   if ((result = string_constant_concatenation (op1, op2)))
     return result;
 
-  /* If operands are string constant, turn then into object references */
+  /* Discard null constants on either sides of the expression */
+  if (TREE_CODE (op1) == STRING_CST && !TREE_STRING_LENGTH (op1))
+    {
+      op1 = op2;
+      op2 = NULL_TREE;
+    }
+  else if (TREE_CODE (op2) == STRING_CST && !TREE_STRING_LENGTH (op2))
+    op2 = NULL_TREE;
 
+  /* If operands are string constant, turn then into object references */
   if (TREE_CODE (op1) == STRING_CST)
     op1 = patch_string_cst (op1);
-  if (TREE_CODE (op2) == STRING_CST)
+  if (op2 && TREE_CODE (op2) == STRING_CST)
     op2 = patch_string_cst (op2);
+
+  /* If either one of the constant is null and the other non null
+     operand is a String object, return it. */
+  if (JSTRING_TYPE_P (TREE_TYPE (op1)) && !op2)
+    return op1;
 
   /* If OP1 isn't already a StringBuffer, create and
      initialize a new one */
@@ -11950,7 +11963,7 @@ build_string_concatenation (op1, op2)
     {
       /* Two solutions here: 
 	 1) OP1 is a string reference, we call new StringBuffer(OP1)
-	 2) Op2 is something else, we call new StringBuffer().append(OP1). */
+	 2) OP1 is something else, we call new StringBuffer().append(OP1). */
       if (JSTRING_TYPE_P (TREE_TYPE (op1)))
 	op1 = BUILD_STRING_BUFFER (op1);
       else
@@ -11960,10 +11973,15 @@ build_string_concatenation (op1, op2)
 	}
     }
 
-  /* No longer the last node holding a crafted StringBuffer */
-  IS_CRAFTED_STRING_BUFFER_P (op1) = 0;
-  /* Create a node for `{new...,xxx}.append (op2)' */
-  op1 = make_qualified_primary (op1, BUILD_APPEND (op2), 0);
+  if (op2)
+    {
+      /* OP1 is no longer the last node holding a crafted StringBuffer */
+      IS_CRAFTED_STRING_BUFFER_P (op1) = 0;
+      /* Create a node for `{new...,xxx}.append (op2)' */
+      if (op2)
+	op1 = make_qualified_primary (op1, BUILD_APPEND (op2), 0);
+    }
+
   /* Mark the last node holding a crafted StringBuffer */
   IS_CRAFTED_STRING_BUFFER_P (op1) = 1;
   
