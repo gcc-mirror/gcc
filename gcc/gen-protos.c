@@ -65,8 +65,8 @@ main (argc, argv)
   int i, i0;
 
   i = strlen (argv[0]);
-  while (i > 0 && argv[i-1] != '/') --i;
-  progname = &argv[i];
+  while (i > 0 && argv[0][i-1] != '/') --i;
+  progname = &argv[0][i];
 
   fprintf (outf, "struct fn_decl std_protos[] = {\n");
 
