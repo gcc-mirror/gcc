@@ -36,6 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #include "toplev.h"
 #include "expr.h"
 #include "diagnostic.h"
+#include "intl.h"
 
 extern int inhibit_warnings;
 
@@ -56,8 +57,7 @@ static void op_error (enum tree_code, enum tree_code, tree, tree,
 static tree build_object_call (tree, tree);
 static tree resolve_args (tree);
 static struct z_candidate *build_user_type_conversion_1 (tree, tree, int);
-static void print_z_candidate (const char *msgid, struct z_candidate *,
-			       void (*)(const char *, ...));
+static void print_z_candidate (const char *, struct z_candidate *);
 static void print_z_candidates (struct z_candidate *);
 static tree build_this (tree);
 static struct z_candidate *splice_viable (struct z_candidate *, bool, bool *);
@@ -2437,34 +2437,39 @@ equal_functions (tree fn1, tree fn2)
   return fn1 == fn2;
 }
 
-/* Print information about one overload candidate CANDIDATE.  STR is the
-   text to print before the candidate itself and ERRFN is the routine
-   (i.e. error, warning or pedwarn) used to do the printing.  */
+/* Print information about one overload candidate CANDIDATE.  MSGSTR
+   is the text to print before the candidate itself.
+
+   NOTE: Unlike most diagnostic functions in GCC, MSGSTR is expected
+   to have been run through gettext by the caller.  This wart makes
+   life simpler in print_z_candidates and for the translators.  */
 
 static void
-print_z_candidate (const char *msgid, struct z_candidate *candidate,
-		   void (*errfn)(const char *, ...))
+print_z_candidate (const char *msgstr, struct z_candidate *candidate)
 {
   if (TREE_CODE (candidate->fn) == IDENTIFIER_NODE)
     {
       if (TREE_VEC_LENGTH (candidate->convs) == 3)
-	errfn ("%s %D(%T, %T, %T) <built-in>", msgid, candidate->fn,
-	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
-	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)),
-	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 2)));
+	inform ("%s %D(%T, %T, %T) <built-in>", msgstr, candidate->fn,
+		TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
+		TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)),
+		TREE_TYPE (TREE_VEC_ELT (candidate->convs, 2)));
       else if (TREE_VEC_LENGTH (candidate->convs) == 2)
-	errfn ("%s %D(%T, %T) <built-in>", msgid, candidate->fn,
-	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
-	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)));
+	inform ("%s %D(%T, %T) <built-in>", msgstr, candidate->fn,
+		TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)),
+		TREE_TYPE (TREE_VEC_ELT (candidate->convs, 1)));
       else
-	errfn ("%s %D(%T) <built-in>", msgid, candidate->fn,
-	       TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)));
+	inform ("%s %D(%T) <built-in>", msgstr, candidate->fn,
+		TREE_TYPE (TREE_VEC_ELT (candidate->convs, 0)));
     }
   else if (TYPE_P (candidate->fn))
-    errfn ("%s %T <conversion>", msgid, candidate->fn);
+    inform ("%s %T <conversion>", msgstr, candidate->fn);
+  else if (candidate->viable == -1)
+    inform ("%H%s %+#D <near match>",
+	    &DECL_SOURCE_LOCATION (candidate->fn), msgstr, candidate->fn);
   else
-    errfn ("%H%s %+#D%s", &DECL_SOURCE_LOCATION (candidate->fn), msgid,
-	   candidate->fn, candidate->viable == -1 ? " <near match>" : "");
+    inform ("%H%s %+#D",
+	    &DECL_SOURCE_LOCATION (candidate->fn), msgstr, candidate->fn);
 }
 
 static void
@@ -2496,11 +2501,27 @@ print_z_candidates (struct z_candidate *candidates)
 	}
     }
 
-  str = "candidates are:";
-  for (; candidates; candidates = candidates->next)
+  if (!candidates)
+    return;
+
+  str = _("candidates are:");
+  print_z_candidate (str, candidates);
+  if (candidates->next)
     {
-      print_z_candidate (str, candidates, error);
-      str = "               "; 
+      /* Indent successive candidates by the length of the translation of
+	 the above string.  */
+      size_t len = strlen (str) + 1;
+      char *spaces = alloca (len);
+      memset (spaces, ' ', len-1);
+      spaces[len] = '\0';
+
+      candidates = candidates->next;
+      do
+	{
+	  print_z_candidate (spaces, candidates);
+	  candidates = candidates->next;
+	}
+      while (candidates);
     }
 }
 
@@ -5866,12 +5887,12 @@ tweak:
         {
 	  if (warn)
 	    {
-	      print_z_candidate ("ISO C++ says that ", w, pedwarn);
-	      /* Translators note: This message is a continuation of the
-	         previous one, aligned on the right.  */
-	      print_z_candidate ("              and ", l, pedwarn);
-	      pedwarn ("are ambiguous even though the worst conversion \
-for the former is better than the worst conversion for the latter");
+	      pedwarn ("\
+ISO C++ says that these are ambiguous, even \
+though the worst conversion for the first is better than \
+the worst conversion for the second:");
+	      print_z_candidate (_("candidate 1:"), w);
+	      print_z_candidate (_("candidate 2:"), l);
 	    }
 	  else
 	    add_warning (w, l);
