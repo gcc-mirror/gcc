@@ -1,3 +1,11 @@
+2004-11-09  Jeff Law  <law@redhat.com>
+
+	* cfganal.c (flow_dfs_compute_reverse_execute): Accept new
+	argument holding last unvisited block.  Start search for
+	unvisited blocks at LAST_UNVISITED rather than EXIT_BLOCK.
+	(connect_infinite_loops_to_exit): Supply last unvisited block
+	to flow_dfs_compute_reverse_execute.
+
 2004-10-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* config/rs6000/rs6000.md (fix_truncdfsi2): Handle e500
