@@ -671,14 +671,9 @@ package body MLib.Prj is
             if not Processed_Projects.Get (Data.Name) then
                Processed_Projects.Set (Data.Name, True);
 
-               --  If it is a library project, add it to Library_Projs
-
-               if Project /= For_Project and then Data.Library then
-                  Library_Projs.Increment_Last;
-                  Library_Projs.Table (Library_Projs.Last) := Project;
-               end if;
-
-               --  Call Process_Project recursively for any imported project
+               --  Call Process_Project recursively for any imported project.
+               --  We first process the imported projects to guarantee that
+               --  we have a proper reverse order for the libraries.
 
                while Imported /= Empty_Project_List loop
                   Element := Project_Lists.Table (Imported);
@@ -689,69 +684,40 @@ package body MLib.Prj is
 
                   Imported := Element.Next;
                end loop;
+
+               --  If it is a library project, add it to Library_Projs
+
+               if Project /= For_Project and then Data.Library then
+                  Library_Projs.Increment_Last;
+                  Library_Projs.Table (Library_Projs.Last) := Project;
+               end if;
+
             end if;
          end Process_Project;
 
       --  Start of processing for Process_Imported_Libraries
 
       begin
-         --  Build list of library projects imported directly or indirectly
+         --  Build list of library projects imported directly or indirectly,
+         --  in the reverse order.
 
          Process_Project (For_Project);
 
-         --  If there are more that one library project file, make sure
-         --  that if libA depends on libB, libB is first in order.
+         --  Add the -L and -l switches and, if the Rpath option is supported,
+         --  add the directory to the Rpath.
+         --  As the library projects are in the wrong order, process from the
+         --  last to the first.
 
-         if Library_Projs.Last > 1 then
-            declare
-               Index : Integer := 1;
-               Proj1 : Project_Id;
-               Proj2 : Project_Id;
-               List  : Project_List := Empty_Project_List;
-
-            begin
-               Library_Loop : while Index < Library_Projs.Last loop
-                  Proj1 := Library_Projs.Table (Index);
-                  List  := Projects.Table (Proj1).Imported_Projects;
-
-                  List_Loop : while List /= Empty_Project_List loop
-                     Proj2 := Project_Lists.Table (List).Project;
-
-                     for J in Index + 1 .. Library_Projs.Last loop
-                        if Proj2 = Library_Projs.Table (J) then
-                           Library_Projs.Table (J) := Proj1;
-                           Library_Projs.Table (Index) := Proj2;
-                           exit List_Loop;
-                        end if;
-                     end loop;
-
-                     List := Project_Lists.Table (List).Next;
-                  end loop List_Loop;
-
-                  if List = Empty_Project_List then
-                     Index := Index + 1;
-                  end if;
-               end loop Library_Loop;
-            end;
-         end if;
-
-         --  Now that we have a correct order, add the -L and -l switches and,
-         --  if the Rpath option is supported, add the directory to the Rpath.
-
-         for Index in 1 .. Library_Projs.Last loop
+         for Index in reverse 1 .. Library_Projs.Last loop
             Current := Library_Projs.Table (Index);
 
+            Get_Name_String (Projects.Table (Current).Library_Dir);
             Opts.Increment_Last;
             Opts.Table (Opts.Last) :=
-              new String'
-                ("-L" &
-                 Get_Name_String
-                   (Projects.Table (Current).Library_Dir));
+              new String'("-L" & Name_Buffer (1 .. Name_Len));
 
             if Path_Option /= null then
-               Add_Rpath
-                  (Get_Name_String
-                     (Projects.Table (Current).Library_Dir));
+               Add_Rpath (Name_Buffer (1 .. Name_Len));
             end if;
 
             Opts.Increment_Last;

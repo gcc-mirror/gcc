@@ -57,17 +57,19 @@ extern Boolean Debug_Flag_NN;
    Present_Expr for N_Variant nodes.  */
 
 #define Set_Alignment			einfo__set_alignment
-#define Set_Esize			einfo__set_esize
-#define Set_RM_Size			einfo__set_rm_size
 #define Set_Component_Bit_Offset	einfo__set_component_bit_offset
 #define Set_Component_Size		einfo__set_component_size
+#define Set_Esize			einfo__set_esize
+#define Set_Mechanism			einfo__set_mechanism
+#define Set_RM_Size			einfo__set_rm_size
 #define Set_Present_Expr		sinfo__set_present_expr
 
 extern void Set_Alignment		(Entity_Id, Uint);
+extern void Set_Component_Bit_Offset	(Entity_Id, Uint);
 extern void Set_Component_Size		(Entity_Id, Uint);
 extern void Set_Esize			(Entity_Id, Uint);
+extern void Set_Mechanism		(Entity_Id, Mechanism_Type);
 extern void Set_RM_Size			(Entity_Id, Uint);
-extern void Set_Component_Bit_Offset	(Entity_Id, Uint);
 extern void Set_Present_Expr		(Node_Id, Uint);
 
 /* Test if the node N is the name of an entity (i.e. is an identifier,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1049,6 +1049,7 @@ package Rtsfind is
      RE_Shared_Var_WOpen,                -- System.Shared_Storage
 
      RE_Abort_Undefer_Direct,            -- System.Standard_Library
+     RE_Exception_Code,                  -- System.Standard_Library
      RE_Exception_Data_Ptr,              -- System.Standard_Library
 
      RE_Integer_Address,                 -- System.Storage_Elements
@@ -1989,6 +1990,7 @@ package Rtsfind is
      RE_Shared_Var_WOpen                 => System_Shared_Storage,
 
      RE_Abort_Undefer_Direct             => System_Standard_Library,
+     RE_Exception_Code                   => System_Standard_Library,
      RE_Exception_Data_Ptr               => System_Standard_Library,
 
      RE_Integer_Address                  => System_Storage_Elements,

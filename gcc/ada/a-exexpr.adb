@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,11 +145,6 @@ package body Exception_Propagation is
       --  routine to determine if the context it examines contains a
       --  handler for the exception beeing propagated.
 
-      Handled_By_Others : Boolean;
-      --  Is this exception handled by "when others" ? This is used by the
-      --  personality routine to determine if an "others" handler in the
-      --  context it examines may catch the exception beeing propagated.
-
       N_Cleanups_To_Trigger : Integer;
       --  Number of cleanup only frames encountered in SEARCH phase.
       --  This is used to control the forced unwinding triggered when
@@ -174,8 +169,7 @@ package body Exception_Propagation is
 
    function Remove
      (Top   : EOA;
-      Excep : GNAT_GCC_Exception_Access)
-      return  Boolean;
+      Excep : GNAT_GCC_Exception_Access) return Boolean;
    --  Remove Excep from the stack starting at Top.
    --  Return True if Excep was found and removed, false otherwise.
 
@@ -195,8 +189,7 @@ package body Exception_Propagation is
       UW_Eclass    : Exception_Class;
       UW_Exception : access GNAT_GCC_Exception;
       UW_Context   : System.Address;
-      UW_Argument  : System.Address)
-      return         Unwind_Reason_Code;
+      UW_Argument  : System.Address) return Unwind_Reason_Code;
    --  Hook called at each step of the forced unwinding we perform to
    --  trigger cleanups found during the propagation of an unhandled
    --  exception.
@@ -215,14 +208,32 @@ package body Exception_Propagation is
       UW_Argument  : System.Address);
    pragma Import (C, Unwind_ForcedUnwind, "__gnat_Unwind_ForcedUnwind");
 
+   ------------------------------------------------------------
+   -- Accessors to basic components of a GNAT exception data --
+   ------------------------------------------------------------
+
+   --  As of today, these are only used by the C implementation of the
+   --  propagation personality routine to avoid having to rely on a C
+   --  counterpart of the whole exception_data structure, which is both
+   --  painful and error prone. These subprograms could be moved to a
+   --  more widely visible location if need be.
+
+   function Is_Handled_By_Others (E : Exception_Data_Ptr) return Boolean;
+   pragma Export (C, Is_Handled_By_Others, "__gnat_is_handled_by_others");
+
+   function Language_For (E : Exception_Data_Ptr) return Character;
+   pragma Export (C, Language_For, "__gnat_language_for");
+
+   function Import_Code_For (E : Exception_Data_Ptr) return Exception_Code;
+   pragma Export (C, Import_Code_For, "__gnat_import_code_for");
+
    ------------
    -- Remove --
    ------------
 
    function Remove
      (Top   : EOA;
-      Excep : GNAT_GCC_Exception_Access)
-      return  Boolean
+      Excep : GNAT_GCC_Exception_Access) return Boolean
    is
       Prev          : GNAT_GCC_Exception_Access := null;
       Iter          : EOA := Top;
@@ -285,8 +296,7 @@ package body Exception_Propagation is
       UW_Eclass    : Exception_Class;
       UW_Exception : access GNAT_GCC_Exception;
       UW_Context   : System.Address;
-      UW_Argument  : System.Address)
-      return         Unwind_Reason_Code
+      UW_Argument  : System.Address) return Unwind_Reason_Code
    is
    begin
       --  Terminate as soon as we know there is nothing more to run. The
@@ -401,7 +411,6 @@ package body Exception_Propagation is
       --  frame via Unwind_RaiseException below.
 
       GCC_Exception.Id := Excep.Id;
-      GCC_Exception.Handled_By_Others := not Excep.Id.Not_Handled_By_Others;
       GCC_Exception.N_Cleanups_To_Trigger := 0;
 
       --  Compute the backtrace for this occurrence if the corresponding
@@ -458,6 +467,39 @@ package body Exception_Propagation is
 
       Unhandled_Exception_Terminate;
    end Propagate_Exception;
+
+   ---------------------
+   -- Import_Code_For --
+   ---------------------
+
+   function Import_Code_For
+     (E : SSL.Exception_Data_Ptr) return Exception_Code
+   is
+   begin
+      return E.all.Import_Code;
+   end Import_Code_For;
+
+   --------------------------
+   -- Is_Handled_By_Others --
+   --------------------------
+
+   function Is_Handled_By_Others
+     (E : SSL.Exception_Data_Ptr) return Boolean
+   is
+   begin
+      return not E.all.Not_Handled_By_Others;
+   end Is_Handled_By_Others;
+
+   ------------------
+   -- Language_For --
+   ------------------
+
+   function Language_For
+     (E : SSL.Exception_Data_Ptr) return Character
+   is
+   begin
+      return E.all.Lang;
+   end Language_For;
 
    -----------
    -- Notes --

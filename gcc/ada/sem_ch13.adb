@@ -3852,15 +3852,16 @@ package body Sem_Ch13 is
          end if;
       end if;
 
-      --  In GNAT mode, if target is an access type, access type must be
-      --  declared in the same source unit as the unchecked conversion.
+      --  If unchecked conversion to access type, and access type is
+      --  declared in the same unit as the unchecked conversion, then
+      --  set the No_Strict_Aliasing flag (no strict aliasing is
+      --  implicit in this situation).
 
---      if GNAT_Mode and then Is_Access_Type (Target) then
---         if not In_Same_Source_Unit (Target, N) then
---            Error_Msg_NE
---              ("unchecked conversion not in same unit as&", N, Target);
---         end if;
---      end if;
+      if Is_Access_Type (Target) and then
+        In_Same_Source_Unit (Target, N)
+      then
+         Set_No_Strict_Aliasing (Implementation_Base_Type (Target));
+      end if;
 
       --  Generate N_Validate_Unchecked_Conversion node for back end in
       --  case the back end needs to perform special validation checks.

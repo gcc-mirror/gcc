@@ -478,7 +478,29 @@ package body Exp_Ch5 is
          end if;
       end if;
 
-      --  Come here to compelete the analysis
+      --  If the right-hand side is a string literal, introduce a temporary
+      --  for it, for use in the generated loop that will follow.
+
+      if Nkind (Rhs) = N_String_Literal then
+         declare
+            Temp : constant Entity_Id :=
+                     Make_Defining_Identifier (Loc, Name_T);
+            Decl : Node_Id;
+
+         begin
+            Decl :=
+              Make_Object_Declaration (Loc,
+                 Defining_Identifier => Temp,
+                 Object_Definition => New_Occurrence_Of (L_Type, Loc),
+                 Expression => Relocate_Node (Rhs));
+
+            Insert_Action (N, Decl);
+            Rewrite (Rhs, New_Occurrence_Of (Temp, Loc));
+            R_Type := Etype (Temp);
+         end;
+      end if;
+
+      --  Come here to complete the analysis
 
       --    Loop_Required: Set to True if we know that a loop is required
       --                   regardless of overlap considerations.

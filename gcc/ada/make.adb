@@ -180,7 +180,6 @@ package body Make is
      Table_Name           => "Make.Q");
    --  This is the actual Q.
 
-
    --  Package Mains is used to store the mains specified on the command line
    --  and to retrieve them when a project file is used, to verify that the
    --  files exist and that they belong to a project file.
@@ -4345,39 +4344,6 @@ package body Make is
                Name_Len := Linker_Switches.Table (J + 1)'Length;
                Name_Buffer (1 .. Name_Len) :=
                  Linker_Switches.Table (J + 1).all;
-
-               --  Put in canonical case to detect suffixs such as ".EXE" on
-               --  Windows or VMS.
-
-               Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-
-               --  If target has an executable suffix and it has not been
-               --  specified then it is added here.
-
-               if Executable_Suffix'Length /= 0
-                 and then Name_Buffer
-                          (Name_Len - Executable_Suffix'Length + 1 .. Name_Len)
-                             /= Executable_Suffix
-               then
-                  --  Get back the original name to keep the case on Windows
-
-                  Name_Buffer (1 .. Name_Len) :=
-                    Linker_Switches.Table (J + 1).all;
-
-                  --  Add the executable suffix
-
-                  Name_Buffer (Name_Len + 1 ..
-                                       Name_Len + Executable_Suffix'Length) :=
-                      Executable_Suffix;
-                  Name_Len := Name_Len + Executable_Suffix'Length;
-
-               else
-                  --  Get back the original name to keep the case on Windows
-
-                  Name_Buffer (1 .. Name_Len) :=
-                    Linker_Switches.Table (J + 1).all;
-               end if;
-
                Executable := Name_Enter;
 
                Verbose_Msg (Executable, "final executable");
@@ -6493,18 +6459,30 @@ package body Make is
             --  Automatically add the executable suffix if it has not been
             --  specified explicitly.
 
-            if Executable_Suffix'Length /= 0
-              and then (Argv'Length <= Executable_Suffix'Length
-                        or else Argv (Argv'Last - Executable_Suffix'Length + 1
-                                        .. Argv'Last) /= Executable_Suffix)
-            then
-               Add_Switch
-                 (Argv & Executable_Suffix,
-                  Linker,
-                  And_Save => And_Save);
-            else
-               Add_Switch (Argv, Linker, And_Save => And_Save);
-            end if;
+            declare
+               Canonical_Argv : String := Argv;
+            begin
+               --  Get the file name in canonical case to accept as is
+               --  names ending with ".EXE" on VMS and Windows.
+
+               Canonical_Case_File_Name (Canonical_Argv);
+
+               if Executable_Suffix'Length /= 0
+                 and then (Canonical_Argv'Length <= Executable_Suffix'Length
+                        or else Canonical_Argv
+                                  (Canonical_Argv'Last -
+                                   Executable_Suffix'Length + 1
+                                   .. Canonical_Argv'Last)
+                                /= Executable_Suffix)
+               then
+                  Add_Switch
+                    (Argv & Executable_Suffix,
+                     Linker,
+                     And_Save => And_Save);
+               else
+                  Add_Switch (Argv, Linker, And_Save => And_Save);
+               end if;
+            end;
          end if;
 
       --  If the previous switch has set the Object_Directory_Present flag

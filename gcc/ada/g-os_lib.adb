@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 1995-2003 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1995-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -659,6 +659,23 @@ package body GNAT.OS_Lib is
       C_Name (C_Name'Last)      := ASCII.NUL;
       return Create_New_File (C_Name (C_Name'First)'Address, Fmode);
    end Create_New_File;
+
+   -----------------------------
+   -- Create_Output_Text_File --
+   -----------------------------
+
+   function Create_Output_Text_File (Name  : String) return File_Descriptor is
+      function C_Create_File
+        (Name  : C_File_Name) return File_Descriptor;
+      pragma Import (C, C_Create_File, "__gnat_create_output_file");
+
+      C_Name : String (1 .. Name'Length + 1);
+
+   begin
+      C_Name (1 .. Name'Length) := Name;
+      C_Name (C_Name'Last)      := ASCII.NUL;
+      return C_Create_File (C_Name (C_Name'First)'Address);
+   end Create_Output_Text_File;
 
    ----------------------
    -- Create_Temp_File --

@@ -2142,6 +2142,10 @@ package body Sem_Ch3 is
       Set_Is_First_Subtype (T);
       Make_Class_Wide_Type (T);
 
+      if Unknown_Discriminants_Present (N) then
+         Set_Discriminant_Constraint (T, No_Elist);
+      end if;
+
       Build_Derived_Record_Type (N, Parent_Type, T);
    end Analyze_Private_Extension_Declaration;
 
@@ -6575,6 +6579,7 @@ package body Sem_Ch3 is
       if Ekind (Full_Base) = E_Record_Type
         and then Has_Discriminants (Full_Base)
         and then Has_Discriminants (Priv) -- might not, if errors
+        and then not Has_Unknown_Discriminants (Priv)
         and then not Is_Empty_Elmt_List (Discriminant_Constraint (Priv))
       then
          Create_Constrained_Components

@@ -34,14 +34,17 @@
 --  This package provides facilities to register a thread to the runtime,
 --  and allocate its task specific datas.
 
---  pragma Thread_Body is currently supported for:
---  VxWorks AE653 with the restricted / cert runtime
+--  This package is currently implemented for:
+--  VxWorks AE653 rts-cert
+--  VxWorks AE653 rts-full (not rts-kernel)
 
 with Ada.Exceptions;
 --  used for Exception_Occurrence
 
 with System.Soft_Links;
 --  used for TSD
+
+with Unchecked_Conversion;
 
 package System.Threads is
 
@@ -54,6 +57,7 @@ package System.Threads is
    --  by the GNAT runtime.
 
    type ATSD_Access is access ATSD;
+   function From_Address is new Unchecked_Conversion (Address, ATSD_Access);
 
    --  Get/Set for the attributes of the current thread
 

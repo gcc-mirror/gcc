@@ -667,7 +667,7 @@ package body Prj.Nmsc is
                if Element.Value /= No_Name then
                   declare
                      Source_Directory : constant String :=
-                       Get_Name_String (Element.Value);
+                       Get_Name_String (Element.Display_Value);
 
                   begin
                      if Current_Verbosity = High then
@@ -690,9 +690,6 @@ package body Prj.Nmsc is
                         end if;
 
                         exit when Name_Len = 0;
-
-                        --  Canonical_Case_File_Name
-                        --    (Name_Buffer (1 .. Name_Len));
 
                         declare
                            File_Name : constant Name_Id := Name_Find;
@@ -2721,15 +2718,6 @@ package body Prj.Nmsc is
       begin
          if Current_Verbosity = High then
             Write_Str ("Find_Source_Dirs (""");
-         end if;
-
-         Get_Name_String (From);
-         Canonical_Case_File_Name (Name_Buffer (1 .. Name_Len));
-
-         --  Directory    := Name_Buffer (1 .. Name_Len);
-         --  Why is above line commented out ???
-
-         if Current_Verbosity = High then
             Write_Str (Directory);
             Write_Line (""")");
          end if;

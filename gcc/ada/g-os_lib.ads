@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1995-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1995-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -191,7 +191,12 @@ pragma Elaborate_Body (OS_Lib);
       Fmode : Mode) return File_Descriptor;
    --  Creates new file with given name for writing, returning file descriptor
    --  for subsequent use in Write calls. File descriptor returned is
-   --  Invalid_FD if file cannot be successfully created
+   --  Invalid_FD if file cannot be successfully created.
+
+   function Create_Output_Text_File (Name  : String) return File_Descriptor;
+   --  Creates new text file with given name suitable to redirect standard
+   --  output, returning file descriptor. File descriptor returned is
+   --  Invalid_FD if file cannot be successfully created.
 
    function Create_New_File
      (Name  : String;

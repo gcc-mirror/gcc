@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -150,9 +150,9 @@ package GNAT.Sockets.Constants is
    SO_LINGER          : constant :=          128; --  Defer close to flush data
    SO_ERROR           : constant :=         4103; --  Get/clear error status
    SO_BROADCAST       : constant :=           32; --  Can send broadcast msgs
-   IP_ADD_MEMBERSHIP  : constant :=           35; --  Join a multicast group
-   IP_DROP_MEMBERSHIP : constant :=           36; --  Leave a multicast group
-   IP_MULTICAST_TTL   : constant :=           33; --  Set/get multicast TTL
-   IP_MULTICAST_LOOP  : constant :=           34; --  Set/get mcast loopback
+   IP_ADD_MEMBERSHIP  : constant :=           12; --  Join a multicast group
+   IP_DROP_MEMBERSHIP : constant :=           13; --  Leave a multicast group
+   IP_MULTICAST_TTL   : constant :=           10; --  Set/get multicast TTL
+   IP_MULTICAST_LOOP  : constant :=           11; --  Set/get mcast loopback
 
 end GNAT.Sockets.Constants;

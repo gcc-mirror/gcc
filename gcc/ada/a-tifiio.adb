@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -432,7 +432,6 @@ package body Ada.Text_IO.Fixed_IO is
                             + Boolean'Pos (not Exact)
                                 * (Scale - 1);
 
-
       procedure Put_Character (C : Character);
       pragma Inline (Put_Character);
       --  Add C to the output string To, updating Last
@@ -550,7 +549,6 @@ package body Ada.Text_IO.Fixed_IO is
          E       : Integer)
       is
          N  : constant Natural := (A + Max_Digits - 1) / Max_Digits + 1;
-         pragma Debug (Put_Line ("N =" & N'Img));
          Q  : array (1 .. N) of Int64 := (others => 0);
 
          XX : Int64 := X;

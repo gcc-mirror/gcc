@@ -154,8 +154,9 @@ package body Exp_Ch4 is
    --  local access type to have a usable finalization list.
 
    procedure Insert_Dereference_Action (N : Node_Id);
-   --  N is an expression whose type is an access. When the type is derived
-   --  from Checked_Pool, expands a call to the primitive 'dereference'.
+   --  N is an expression whose type is an access. When the type of the
+   --  associated storage pool is derived from Checked_Pool, generate a
+   --  call to the 'Dereference' primitive operation.
 
    function Make_Array_Comparison_Op
      (Typ : Entity_Id;
@@ -1401,7 +1402,8 @@ package body Exp_Ch4 is
             Eq_Op := Node (Prim);
             exit when Chars (Eq_Op) = Name_Op_Eq
               and then Etype (First_Formal (Eq_Op)) =
-                       Etype (Next_Formal (First_Formal (Eq_Op)));
+                       Etype (Next_Formal (First_Formal (Eq_Op)))
+              and then Base_Type (Etype (Eq_Op)) = Standard_Boolean;
             Next_Elmt (Prim);
             pragma Assert (Present (Prim));
          end loop;
@@ -2968,12 +2970,6 @@ package body Exp_Ch4 is
       --  was necessary, but it cleans up the code to do it all the time.
 
       if Is_Access_Type (T) then
-
-         --  Check whether the prefix comes from a debug pool, and generate
-         --  the check before rewriting.
-
-         Insert_Dereference_Action (P);
-
          Rewrite (P,
            Make_Explicit_Dereference (Sloc (N),
              Prefix => Relocate_Node (P)));
@@ -5124,6 +5120,7 @@ package body Exp_Ch4 is
 
       if Is_Access_Type (Ptyp) then
          Insert_Explicit_Dereference (P);
+         Analyze_And_Resolve (P, Designated_Type (Ptyp));
 
          if Ekind (Etype (P)) = E_Private_Subtype
            and then Is_For_Access_Subtype (Etype (P))
@@ -5396,23 +5393,13 @@ package body Exp_Ch4 is
 
       if Is_Access_Type (Ptp) then
 
-         --  Check for explicit dereference required for checked pool
-
-         Insert_Dereference_Action (Pfx);
-
-         --  If we have an access to a packed array type, then put in an
-         --  explicit dereference. We do this in case the slice must be
-         --  expanded, and we want to make sure we get an access check.
-
          Ptp := Designated_Type (Ptp);
 
-         if Is_Array_Type (Ptp) and then Is_Packed (Ptp) then
-            Rewrite (Pfx,
-              Make_Explicit_Dereference (Sloc (N),
-                Prefix => Relocate_Node (Pfx)));
+         Rewrite (Pfx,
+           Make_Explicit_Dereference (Sloc (N),
+            Prefix => Relocate_Node (Pfx)));
 
-            Analyze_And_Resolve (Pfx, Ptp);
-         end if;
+         Analyze_And_Resolve (Pfx, Ptp);
       end if;
 
       --  Range checks are potentially also needed for cases involving
@@ -6532,6 +6519,7 @@ package body Exp_Ch4 is
       Loc  : constant Source_Ptr := Sloc (N);
       Typ  : constant Entity_Id  := Etype (N);
       Pool : constant Entity_Id  := Associated_Storage_Pool (Typ);
+      Pnod : constant Node_Id    := Parent (N);
 
       function Is_Checked_Storage_Pool (P : Entity_Id) return Boolean;
       --  Return true if type of P is derived from Checked_Pool;
@@ -6563,7 +6551,17 @@ package body Exp_Ch4 is
    --  Start of processing for Insert_Dereference_Action
 
    begin
-      if not Comes_From_Source (Parent (N)) then
+      pragma Assert (Nkind (Pnod) = N_Explicit_Dereference);
+
+      --  Do not recursively add a dereference check for the
+      --  attribute references contained within the generated check.
+
+      if not Comes_From_Source (Pnod)
+        and then Nkind (Pnod) = N_Explicit_Dereference
+        and then Nkind (Parent (Pnod)) = N_Attribute_Reference
+        and then (Attribute_Name (Parent (Pnod)) = Name_Size
+          or else Attribute_Name (Parent (Pnod)) = Name_Alignment)
+      then
          return;
 
       elsif not Is_Checked_Storage_Pool (Pool) then

@@ -34,6 +34,7 @@
 #include "convert.h"
 #include "ggc.h"
 #include "obstack.h"
+#include "target.h"
 
 #include "ada.h"
 #include "types.h"
@@ -2801,6 +2802,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	int got_fat_p = 0;
 	int made_dummy = 0;
 	tree gnu_desig_type = 0;
+	enum machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
+
+	if (!targetm.valid_pointer_mode (p_mode))
+	  p_mode = ptr_mode;
 
 	if (No (gnat_desig_full)
 	    && (Ekind (gnat_desig_type) == E_Class_Wide_Type
@@ -2950,7 +2955,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	  }
 	else if (gnat_desig_type == gnat_entity)
 	  {
-	    gnu_type = build_pointer_type (make_node (VOID_TYPE));
+	    gnu_type = build_pointer_type_for_mode (make_node (VOID_TYPE),
+						    p_mode);
 	    TREE_TYPE (gnu_type) = TYPE_POINTER_TO (gnu_type) = gnu_type;
 	  }
 	else
@@ -3002,7 +3008,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  }
 	      }
 
-	    gnu_type = build_pointer_type (gnu_desig_type);
+	    gnu_type = build_pointer_type_for_mode (gnu_desig_type, p_mode);
 	  }
 
 	/* If we are not defining this object and we made a dummy pointer,
@@ -5794,12 +5800,8 @@ compute_field_positions (tree gnu_type,
    it means that a size of zero should be treated as an unspecified size.  */
 
 static tree
-validate_size (Uint uint_size,
-               tree gnu_type,
-               Entity_Id gnat_object,
-               enum tree_code kind,
-               int component_p,
-               int zero_ok)
+validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
+               enum tree_code kind, int component_p, int zero_ok)
 {
   Node_Id gnat_error_node;
   tree type_size
@@ -5870,6 +5872,20 @@ validate_size (Uint uint_size,
     type_size = max_size (type_size, 1);
   else if (TYPE_FAT_POINTER_P (gnu_type))
     type_size = bitsize_int (POINTER_SIZE);
+
+  /* If this is an access type, the minimum size is that given by the smallest
+     integral mode that's valid for pointers.  */
+  if (TREE_CODE (gnu_type) == POINTER_TYPE)
+    {
+      enum machine_mode p_mode;
+
+      for (p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   !targetm.valid_pointer_mode (p_mode);
+	   p_mode = GET_MODE_WIDER_MODE (p_mode))
+	;
+
+      type_size = bitsize_int (GET_MODE_BITSIZE (p_mode));
+    }
 
   /* If the size of the object is a constant, the new size must not be
      smaller.  */

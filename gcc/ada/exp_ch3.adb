@@ -4184,23 +4184,35 @@ package body Exp_Ch3 is
             --  (usually the inherited primitive address is inserted in the
             --  DT by Inherit_DT)
 
-            if Is_CPP_Class (Etype (Def_Id)) then
-               declare
-                  Elmt : Elmt_Id := First_Elmt (Primitive_Operations (Def_Id));
-                  Subp : Entity_Id;
+            --  Similarly, if this is an inherited operation whose parent
+            --  is not frozen yet, it is not in the DT of the parent, and
+            --  we generate an explicit freeze node for the inherited
+            --  operation, so that it is properly inserted in the DT of the
+            --  current type.
 
-               begin
-                  while Present (Elmt) loop
-                     Subp := Node (Elmt);
+            declare
+               Elmt : Elmt_Id := First_Elmt (Primitive_Operations (Def_Id));
+               Subp : Entity_Id;
 
-                     if Present (Alias (Subp)) then
+            begin
+               while Present (Elmt) loop
+                  Subp := Node (Elmt);
+
+                  if Present (Alias (Subp)) then
+                     if Is_CPP_Class (Etype (Def_Id)) then
+                        Set_Has_Delayed_Freeze (Subp);
+
+                     elsif Has_Delayed_Freeze (Alias (Subp))
+                       and then not Is_Frozen (Alias (Subp))
+                     then
+                        Set_Is_Frozen (Subp, False);
                         Set_Has_Delayed_Freeze (Subp);
                      end if;
+                  end if;
 
-                     Next_Elmt (Elmt);
-                  end loop;
-               end;
-            end if;
+                  Next_Elmt (Elmt);
+               end loop;
+            end;
 
             if Underlying_Type (Etype (Def_Id)) = Def_Id then
                Expand_Tagged_Root (Def_Id);
@@ -5275,6 +5287,7 @@ package body Exp_Ch3 is
                                             N_Subprogram_Renaming_Declaration)
               and then Etype (First_Formal (Node (Prim))) =
                          Etype (Next_Formal (First_Formal (Node (Prim))))
+              and then Base_Type (Etype (Node (Prim))) = Standard_Boolean
 
             then
                Eq_Needed := False;

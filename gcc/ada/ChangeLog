@@ -1,3 +1,203 @@
+2004-03-15  Jerome Guitton  <guitton@act-europe.fr>
+
+	* 3zsoccon.ads: Fix multicast options.
+
+	* s-thread.ads: Move unchecked conversion from ATSD_Access to Address
+	in the spec.
+
+2004-03-15  Robert Dewar  <dewar@gnat.com>
+
+	* sem_prag.adb: Make sure No_Strict_Aliasing flag is set right when
+	pragma used for a private type.
+
+	* lib-xref.adb (Generate_Reference): Do not generate warning if
+	reference is in a different unit from the pragma Unreferenced.
+
+	* 5vtpopde.adb: Minor reformatting
+	Fix casing of To_Task_ID
+
+	* sem_ch13.adb (Validate_Unchecked_Conversion): Set No_Strict_Aliasing
+	flag if we have an unchecked conversion to an access type in the same
+	unit.
+
+2004-03-15  Geert Bosch  <bosch@gnat.com>
+
+	* a-ngcoty.adb (Modulus): In alternate formula for large real or
+	imaginary parts, use Double precision throughout.
+
+	* a-tifiio.adb (Put_Scaled): Remove remaining pragma Debug. Not only
+	we want to be able to compile run-time with -gnata for testing, but
+	this may also be instantiated in user code that is compiled with -gnata.
+
+2004-03-15  Olivier Hainque  <hainque@act-europe.fr>
+
+	* s-stalib.ads (Exception_Code): New type, to represent Import/Export
+	codes. Having a separate type for this is useful to enforce consistency
+	throughout the various run-time units.
+	(Exception_Data): Use Exception_Code for Import_Code.
+
+	* s-vmextra.ads, s-vmexta.adb: Use Exception_Code instead of a mix of
+	Natural and Integer in various places.
+	(Register_VMS_Exception): Use Base_Code_In to compute the exception code
+	with the severity bits masked off.
+	(Register_VMS_Exception): Handle the additional exception data pointer
+	argument.
+
+	* raise.c (_GNAT_Exception structure): Remove the handled_by_others
+	component, now reflected by an exported accessor.
+	(is_handled_by): New routine to compute whether the propagated
+	occurrence matches some handler choice specification. Extracted out of
+	get_action_description_for, and expanded to take care of the VMS
+	specifities.
+	(get_action_description_for): Use is_handled_by instead of an explicit
+	complex condition to decide if the current choice at hand catches the
+	propagated occurrence.
+
+	* raise.h (Exception_Code): New type for C.
+
+	* rtsfind.ads (RE_Id, RE_Unit_Table): Add
+	System.Standard_Library.Exception_Code, to allow references from the
+	pragma import/export expander.
+
+	* a-exexpr.adb (Is_Handled_By_Others, Language_For, Import_Code_For):
+	New accessors to allow easy access to GNAT exception data
+	characteristics.
+	(GNAT_GCC_Exception record, Propagate_Exception): Get rid of the
+	redundant Handled_By_Others component, helper for the personality
+	routine which will now be able to call the appropriate exception data
+	accessor instead.
+
+	* cstand.adb (Create_Standard): Adjust the type of the Import_Code
+	component of Standard_Exception_Type to be the closest possible to
+	Exception_Code in System.Standard_Library, that we cannot get at this
+	point. Expand a ??? comment to notify that this type node should
+	probably be rewritten later on.
+
+	* exp_prag.adb (Expand_Pragma_Import_Export_Exception): Adjust the
+	registration call to include a pointer to the exception object in the
+	arguments.
+
+	* init.c (__gnat_error_handler): Use Exception_Code and Base_Code_In
+	instead of int and explicit bitmasks.
+
+2004-03-15  Vincent Celier  <celier@gnat.com>
+
+	* vms_data.ads: Add new GNAT BIND qualifier /STATIC. Makes /NOSHARED
+	equivalent to /STATIC and /NOSTATIC equivalent to /SHARED.
+
+	* a-tasatt.adb (To_Access_Code): Remove this UC instantiation, no
+	longer needed now that it is in the spec of
+	System.Tasking.Task_Attributes.
+
+	* adaint.h, adaint.c: (__gnat_create_output_file): New function
+
+	* gnatcmd.adb: Fix bug introduced in previous rev: /= instead of =
+
+	* g-os_lib.ads, g-os_lib.adb (Create_Output_Text_File): New function.
+
+	* make.adb (Gnatmake): Do not check the executable suffix; it is being
+	taken care of in Scan_Make_Arg.
+	(Scan_Make_Arg): Add the executable suffix only if the argument
+	following -o, in canonical case, does not end with the executable
+	suffix.  When in verbose mode and executable file name does not end
+	with executable suffix, output the executable name, in canonical case.
+
+	* s-tataat.ads (Access_Dummy_Wrapper): Add pragma No_Strict_Aliasing
+	to avoid warnings when instantiating Ada.Task_Attributes.
+	Minor reformating.
+
+	* mlib-prj.adb (Process_Imported_Libraries): Get the imported libraries
+	in the correct order.
+
+	* prj-makr.adb (Process_Directory): No longer use GNAT.Expect, but
+	redirect standard output and error to a file for the invocation of the
+	compiler, then read the file.
+
+	* prj-nmsc.adb (Find_Sources): Use the Display_Value for each
+	directory, instead of the Value.
+	(Find_Source_Dirs): Remove useless code & comments.
+
+2004-03-15  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch3.adb (Freeze_Record_Type): If a primitive operation of a
+	tagged type is inherited, and the parent operation is not frozen yet,
+	force generation of a freeze node for the inherited operation, so the
+	corresponding dispatch entry is properly initialized.
+	(Make_Predefined_Primitive_Specs): Check that return type is Boolean
+	when looking for user-defined equality operation.
+
+	* exp_ch4.adb (Expand_Composite_Equality): Check that return type is
+	boolean when locating primitive equality of tagged component.
+
+	* exp_ch5.adb (Expand_Assign_Array): If the left-hand side is a
+	bit-aligned field and the right-hand side a string literal, introduce
+	a temporary before expanding assignment into a loop.
+
+	* exp_ch9.adb (Expand_N_Task_Type_Declaration): Copy expression for
+	priority in full, to ensure that any expanded subepxressions of it are
+	elaborated in the scope of the init_proc.
+
+	* exp_prag.adb (Expand_Pragma_Import): Search for initialization call
+	after object declaration, skipping over code that may have been
+	generated for validity checks.
+
+	* sem_ch12.adb (Validate_Private_Type_Instance): If type has unknown
+	discriminants, ignore the known discriminants of its full view, if
+	any, to check legality.
+
+	* sem_ch3.adb (Complete_Private_Subtype): Do not create constrained
+	component if type has unknown discriminants.
+	(Analyze_Private_Extension_Declaration): Discriminant constraint is
+	null if type has unknown discriminants.
+
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body): Generate reference
+	for end label when present.
+
+	* s-fileio.adb (Open): When called with a C_Stream, use given name for
+	temporary file, rather than an empty string.
+
+2004-03-15  Ed Falis  <falis@gnat.com>
+
+	* s-thread.adb: Removed, no longer used.
+
+2004-03-15  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* decl.c (target.h): Now include.
+	(gnat_to_gnu_entity, case E_Access_Type): Use mode derived from ESIZE
+	in new build_pointer_from_mode calls for non-fat/non-thin pointer.
+	(validate_size): For POINTER_TYPE, get smallest size permitted on
+	machine.
+
+	* fe.h: Sort Einfo decls and add Set_Mechanism.
+
+	* Makefile.in: (LIBGNAT_SRCS): Remove types.h.
+	(ada/decl.o): Depends on target.h.
+
+	* trans.c (tree_transform, N_Unchecked_Type_Conversion): Do not use
+	FUNCTION_BOUNDARY; always use TYPE_ALIGN.
+
+2004-03-15  Thomas Quinot  <quinot@act-europe.fr>
+
+	* 5ztpopsp.adb, 56tpopsp.adb: Fix spelling of Task_ID.
+
+	* exp_ch4.adb (Expand_N_Indexed_Component): Do not call
+	Insert_Dereference_Action when rewriting an implicit dereference into
+	an explicit one, this will be taken care of during expansion of the
+	explicit dereference.
+	(Expand_N_Slice): Same. Always do the rewriting, even for the case
+	of non-packed slices, since the dereference action generated by
+	expansion of the explicit dereference is needed in any case.
+	(Expand_N_Selected_Component): When rewriting an implicit dereference,
+	analyze and resolve the rewritten explicit dereference so it is seen
+	by the expander.
+	(Insert_Dereference_Action): This procedure is now called only for the
+	expansion of an N_Explcit_Dereference_Node. Do insert a check even for
+	dereferences that do not come from source (including explicit
+	dereferences resulting from rewriting implicit ones), but do not
+	recursively insert a check for the dereference nodes contained within
+	the check.
+	(Insert_Dereference_Action): Clarify and correct comment.
+
 2004-03-08  Paolo Bonzini  <bonzini@gnu.org>
 
 	PR ada/14131

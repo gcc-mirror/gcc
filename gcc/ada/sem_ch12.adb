@@ -7892,6 +7892,7 @@ package body Sem_Ch12 is
             --  actual must correspond to a discriminant of the formal.
 
             elsif Has_Discriminants (Act_T)
+              and then not Has_Unknown_Discriminants (Act_T)
               and then Has_Discriminants (Ancestor)
             then
                Actual_Discr   := First_Discriminant (Act_T);
@@ -7923,7 +7924,9 @@ package body Sem_Ch12 is
             --  for constrainedness, but the check here is added for
             --  completeness.
 
-            elsif Has_Discriminants (Act_T) then
+            elsif Has_Discriminants (Act_T)
+              and then not Has_Unknown_Discriminants (Act_T)
+            then
                Error_Msg_NE
                  ("actual for & must not have discriminants", Actual, Gen_T);
                Abandon_Instantiation (Actual);

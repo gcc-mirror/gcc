@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+--             Copyright (C) 1995-2004, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -321,10 +321,6 @@ package body Ada.Task_Attributes is
    function To_Access_Address is new Unchecked_Conversion
      (Access_Node, Access_Address);
    --  To store pointer to list of indirect attributes
-
-   function To_Access_Node is new Unchecked_Conversion
-     (Access_Address, Access_Node);
-   --  To fetch pointer to list of indirect attributes
 
    pragma Warnings (Off);
    function To_Access_Wrapper is new Unchecked_Conversion

@@ -7237,7 +7237,7 @@ package body Exp_Ch9 is
                Expr := Expression (Expr);
             end if;
 
-            Expr := New_Copy (Expr);
+            Expr := New_Copy_Tree (Expr);
 
             --  Add conversion to proper type to do range check if required
             --  Note that for runtime units, we allow out of range interrupt

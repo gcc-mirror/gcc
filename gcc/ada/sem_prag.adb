@@ -7508,7 +7508,7 @@ package body Sem_Prag is
                   Error_Pragma_Arg ("pragma% requires access type", Arg1);
                end if;
 
-               Set_No_Strict_Aliasing (Base_Type (E_Id));
+               Set_No_Strict_Aliasing (Implementation_Base_Type (E_Id));
             end if;
          end No_Strict_Alias;
 
