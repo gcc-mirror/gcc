@@ -428,65 +428,6 @@ do {									\
   } while (0)
 
 
-#undef ASM_OUTPUT_DOUBLE
-#define ASM_OUTPUT_DOUBLE(FILE,VALUE)					\
-do {									\
-  long value[2];							\
-  REAL_VALUE_TO_TARGET_DOUBLE ((VALUE), value);				\
-  if (TARGET_ELF) {							\
-     if (sizeof (int) == sizeof (long))					\
-       {								\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[0]);		\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value[1]);		\
-       }								\
-     else								\
-       {								\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[0]);		\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value[1]);		\
-       }								\
-  } else {								\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (FILE, "%s 0x%x,0x%x\n", ASM_LONG, value[0], value[1]);	\
-     else								\
-       fprintf (FILE, "%s 0x%lx,0x%lx\n", ASM_LONG,value[0],value[1]);}	\
-} while (0)
-
-#undef ASM_OUTPUT_FLOAT
-#define ASM_OUTPUT_FLOAT(FILE,VALUE)					\
-do {									\
-  long value;								\
-  REAL_VALUE_TO_TARGET_SINGLE ((VALUE), value);				\
-  if (sizeof (int) == sizeof (long))					\
-     fprintf((FILE), "%s\t0x%x\n", ASM_LONG, value);			\
-  else									\
-     fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, value);			\
-} while (0)
-
-#undef ASM_OUTPUT_LONG_DOUBLE
-#define ASM_OUTPUT_LONG_DOUBLE(FILE,VALUE)				\
-do {									\
-  long l[3];								\
-  REAL_VALUE_TO_TARGET_LONG_DOUBLE ((VALUE), l);			\
-  if (TARGET_ELF) {							\
-     if (sizeof (int) == sizeof (long))					\
-       {								\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, l[0]);			\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, l[1]);			\
-         fprintf((FILE), "%s\t0x%x\n", ASM_LONG, l[2]);			\
-       }								\
-     else								\
-       {								\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, l[0]);		\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, l[1]);		\
-         fprintf((FILE), "%s\t0x%lx\n", ASM_LONG, l[2]);		\
-       }								\
-  } else {								\
-     if (sizeof (int) == sizeof (long))					\
-       fprintf (FILE, "%s 0x%x,0x%x,0x%x\n", ASM_LONG, l[0], l[1], l[2]); \
-     else								\
-       fprintf (FILE, "%s 0x%lx,0x%lx,0x%lx\n", ASM_LONG,l[0],l[1],l[2]);} \
-} while (0)
-
 #undef ASM_OUTPUT_IDENT
 #define ASM_OUTPUT_IDENT(FILE, NAME) \
   fprintf (FILE, "%s\t\"%s\"\n", IDENT_ASM_OP, NAME);

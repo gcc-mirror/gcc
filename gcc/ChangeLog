@@ -1,3 +1,8 @@
+Tue Feb 17 23:56:50 1998   Robert Lipe  <robertl@dgii.com>
+        * sco5.h (ASM_OUTPUT_DOUBLE, ASM_OUTPUT_FLOAT,
+        ASM_OUTPUT_LONG_DOUBLE): Delete.   Use the ones from i386.h
+        instead.
+
 Tue Feb 17 22:56:14 1998  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (simplify_rtx): Obey CLASS_CANNOT_CHANGE_SIZE when
