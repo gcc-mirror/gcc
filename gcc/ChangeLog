@@ -1,3 +1,7 @@
+Mon Sep 21 01:39:03 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Mon Sep 21 01:53:05 1998  Felix Lee  <flee@cygnus.com>
 
 	* c-lex.c (init_lex): Use getenv ("LANG"), not GET_ENVIRONMENT ().
