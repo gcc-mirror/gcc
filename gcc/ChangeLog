@@ -1,3 +1,9 @@
+2003-08-19  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* config/i386/i386.c (legitimate_pic_address_disp_p): Change the
+	strstr with $pb to a strcompare with "<pic base>"
+	(ix86_output_addr_diff_elt): Output the real pic base.
+
 2003-08-19  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* langhooks-def.h (LANG_HOOKS_INITIALIZE_DIAGNOSTICS): Fix spelling.

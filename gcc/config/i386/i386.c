@@ -5715,7 +5715,7 @@ legitimate_pic_address_disp_p (register rtx disp)
         if (GET_CODE (XEXP (disp, 1)) == SYMBOL_REF)
           {
             const char *sym_name = XSTR (XEXP (disp, 1), 0);
-            if (strstr (sym_name, "$pb") != 0)
+            if (! strcmp (sym_name, "<pic base>"))
               return 1;
           }
     }
@@ -8027,8 +8027,11 @@ ix86_output_addr_diff_elt (FILE *file, int value, int rel)
     fprintf (file, "%s%s%d@GOTOFF\n", ASM_LONG, LPREFIX, value);
 #if TARGET_MACHO
   else if (TARGET_MACHO)
-    fprintf (file, "%s%s%d-%s\n", ASM_LONG, LPREFIX, value,
-	     machopic_function_base_name () + 1);
+    {
+      fprintf (file, "%s%s%d-", ASM_LONG, LPREFIX, value);
+      machopic_output_function_base_name (file);
+      fprintf(file, "\n");
+    }
 #endif
   else
     asm_fprintf (file, "%s%U%s+[.-%s%d]\n",
