@@ -868,6 +868,10 @@ static int errors = 0;			/* Error counter for exit code */
 /* Name of output file, for error messages.  */
 static char *out_fname;
 
+/* Nonzero to ignore \ in string constants.  Use to treat #line 1 "A:\file.h
+   as a non-form feed.  If you want it to be a form feed, you must use
+   # 1 "\f".  */
+static int ignore_escape_flag = 1;
 
 /* Stack of conditionals currently in progress
    (including both successful and failing conditionals).  */
@@ -3806,6 +3810,8 @@ handle_directive (ip, op)
   /* Record where the directive started.  do_xifdef needs this.  */
   directive_start = bp - 1;
 
+  ignore_escape_flag = 1;
+
   /* Skip whitespace and \-newline.  */
   while (1) {
     if (is_hor_space[*bp]) {
@@ -3868,6 +3874,7 @@ handle_directive (ip, op)
 	pedwarn ("`#' followed by integer");
       after_ident = ident;
       kt = line_directive_table;
+      ignore_escape_flag = 0;
       goto old_linenum;
     }
 
@@ -6940,15 +6947,16 @@ do_line (buf, limit, op, keyword)
 	return 0;
 
       case '\\':
-	{
-	  char *bpc = (char *) bp;
-	  HOST_WIDE_INT c = parse_escape (&bpc, (HOST_WIDE_INT) (U_CHAR) (-1));
-	  bp = (U_CHAR *) bpc;
-	  if (c < 0)
-	    p--;
-	  else
-	    p[-1] = c;
-	}
+	if (! ignore_escape_flag)
+	  {
+	    char *bpc = (char *) bp;
+	    HOST_WIDE_INT c = parse_escape (&bpc, (HOST_WIDE_INT) (U_CHAR) (-1));
+	    bp = (U_CHAR *) bpc;
+	    if (c < 0)
+	      p--;
+	    else
+	      p[-1] = c;
+	  }
 	break;
 
       case '\"':

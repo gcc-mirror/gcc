@@ -1,3 +1,12 @@
+Mon Dec  7 17:55:06 1998  Mike Stump  <mrs@wrs.com>
+
+	* cccp.c (ignore_escape_flag): Add support for \ as `natural'
+	characters in file names in #line to be consistent with #include
+	handling.  We support escape prcessing in the # 1 "..." version of
+	the command.  See also support in cp/lex.c.
+	(handle_directive): Likewise.
+	(do_line): Likewise.
+	
 1998-12-07  Zack Weinberg  <zack@rabi.phys.columbia.edu>
 
 	* cpplib.c (initialize_char_syntax): Use ISALPHA and ISALNUM
