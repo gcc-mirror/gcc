@@ -590,11 +590,11 @@ struct ix86_frame
 const char *ix86_debug_arg_string, *ix86_debug_addr_string;
 /* Code model option as passed by user.  */
 const char *ix86_cmodel_string;
-/* Asm dialect.  */
-const char *ix86_asm_string;
-enum cmodel ix86_asm_dialect = ASM_ATT;
 /* Parsed value.  */
 enum cmodel ix86_cmodel;
+/* Asm dialect.  */
+const char *ix86_asm_string;
+enum asm_dialect ix86_asm_dialect = ASM_ATT;
 
 /* which cpu are we scheduling for */
 enum processor_type ix86_cpu;
@@ -1062,7 +1062,6 @@ override_options ()
     }
 
   /* Default align_* from the processor table.  */
-#define abs(n) (n < 0 ? -n : n)
   if (align_loops == 0)
     {
       align_loops = processor_target_table[ix86_cpu].align_loop;
@@ -5288,11 +5287,11 @@ output_pic_addr_const (file, x, code)
       break;
 
     case MINUS:
-      putc (ASSEMBLER_DIALECT ? '(' : '[', file);
+      putc (ASSEMBLER_DIALECT == ASM_INTEL ? '(' : '[', file);
       output_pic_addr_const (file, XEXP (x, 0), code);
       putc ('-', file);
       output_pic_addr_const (file, XEXP (x, 1), code);
-      putc (ASSEMBLER_DIALECT ? ')' : ']', file);
+      putc (ASSEMBLER_DIALECT == ASM_INTEL ? ')' : ']', file);
       break;
 
      case UNSPEC:
@@ -5488,7 +5487,7 @@ print_reg (x, code, file)
       || REGNO (x) == FPSR_REG)
     abort ();
 
-  if (ASSEMBLER_DIALECT == 0 || USER_LABEL_PREFIX[0] == 0)
+  if (ASSEMBLER_DIALECT == ASM_ATT  || USER_LABEL_PREFIX[0] == 0)
     putc ('%', file);
 
   if (code == 'w' || MMX_REG_P (x))
@@ -5600,14 +5599,14 @@ print_operand (file, x, code)
       switch (code)
 	{
 	case '*':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('*', file);
 	  return;
 
 	case 'A':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('*', file);
-	  else if (ASSEMBLER_DIALECT == 1)
+	  else if (ASSEMBLER_DIALECT == ASM_INTEL)
 	    {
 	      /* Intel syntax. For absolute addresses, registers should not
 		 be surrounded by braces.  */
@@ -5619,38 +5618,40 @@ print_operand (file, x, code)
 		  return;
 		}
 	    }
+	  else
+	    abort ();
 
 	  PRINT_OPERAND (file, x, 0);
 	  return;
 
 
 	case 'L':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('l', file);
 	  return;
 
 	case 'W':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('w', file);
 	  return;
 
 	case 'B':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('b', file);
 	  return;
 
 	case 'Q':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('l', file);
 	  return;
 
 	case 'S':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('s', file);
 	  return;
 
 	case 'T':
-	  if (ASSEMBLER_DIALECT == 0)
+	  if (ASSEMBLER_DIALECT == ASM_ATT)
 	    putc ('t', file);
 	  return;
 
@@ -5833,7 +5834,7 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == MEM)
     {
       /* No `byte ptr' prefix for call instructions.  */
-      if (ASSEMBLER_DIALECT != 0 && code != 'X' && code != 'P')
+      if (ASSEMBLER_DIALECT == ASM_INTEL && code != 'X' && code != 'P')
 	{
 	  const char * size;
 	  switch (GET_MODE_SIZE (GET_MODE (x)))
@@ -5879,7 +5880,7 @@ print_operand (file, x, code)
       REAL_VALUE_FROM_CONST_DOUBLE (r, x);
       REAL_VALUE_TO_TARGET_SINGLE (r, l);
 
-      if (ASSEMBLER_DIALECT == 0)
+      if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('$', file);
       fprintf (file, "0x%lx", l);
     }
@@ -5911,13 +5912,13 @@ print_operand (file, x, code)
 	{
 	  if (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
 	    {
-	      if (ASSEMBLER_DIALECT == 0)
+	      if (ASSEMBLER_DIALECT == ASM_ATT)
 		putc ('$', file);
 	    }
 	  else if (GET_CODE (x) == CONST || GET_CODE (x) == SYMBOL_REF
 		   || GET_CODE (x) == LABEL_REF)
 	    {
-	      if (ASSEMBLER_DIALECT == 0)
+	      if (ASSEMBLER_DIALECT == ASM_ATT)
 		putc ('$', file);
 	      else
 		fputs ("OFFSET FLAT:", file);
@@ -5957,7 +5958,7 @@ print_operand_address (file, addr)
 
       if (GET_CODE (disp) == CONST_INT)
 	{
-	  if (ASSEMBLER_DIALECT != 0)
+	  if (ASSEMBLER_DIALECT == ASM_INTEL)
 	    {
 	      if (USER_LABEL_PREFIX[0] == 0)
 		putc ('%', file);
@@ -5976,7 +5977,7 @@ print_operand_address (file, addr)
     }
   else
     {
-      if (ASSEMBLER_DIALECT == 0)
+      if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
 	  if (disp)
 	    {

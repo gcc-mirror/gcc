@@ -3118,8 +3118,8 @@ enum asm_dialect {
   ASM_INTEL
 };
 extern const char *ix86_asm_string;
-extern enum cmodel ix86_asm_dialect;
-/* Valud of -mcmodel specified by user.  */
+extern enum asm_dialect ix86_asm_dialect;
+/* Value of -mcmodel specified by user.  */
 extern const char *ix86_cmodel_string;
 extern enum cmodel ix86_cmodel;
 
