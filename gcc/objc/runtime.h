@@ -1,22 +1,21 @@
 /* GNU Objective C Runtime internal declarations
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify it under the
-   terms of the GNU General Public License as published by the Free Software
-   Foundation; either version 2, or (at your option) any later version.
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-   details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
 
 You should have received a copy of the GNU General Public License along with
-   GNU CC; see the file COPYING.  If not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU CC; see the file COPYING.  If not, write to the Free Software
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, if you link this library with files compiled with
    GCC to produce an executable, this does not cause the resulting executable
@@ -41,15 +40,15 @@ You should have received a copy of the GNU General Public License along with
 #include "objc/hash.h"		/* hash structures */
 #include "objc/list.h"		/* linear lists */
 
-extern void __objc_add_class_to_hash(Class*); /* (objc-class.c) */
+extern void __objc_add_class_to_hash(Class);   /* (objc-class.c) */
 extern void __objc_init_selector_tables();     /* (objc-sel.c) */
-extern void __objc_init_class_tables();     /* (objc-class.c) */
+extern void __objc_init_class_tables();        /* (objc-class.c) */
 extern void __objc_init_dispatch_tables();     /* (objc-dispatch.c) */
-extern void __objc_install_premature_dtable(Class*); /* (objc-dispatch.c) */
-extern void __objc_resolve_class_links(); /* (objc-class.c) */
-extern void __objc_register_selectors_from_class(Class*); /* (objc-sel.c) */
-extern void __objc_update_dispatch_table_for_class (Class*);/* (objc-msg.c) */
-extern void class_add_method_list(Class*, MethodList_t);
+extern void __objc_install_premature_dtable(Class); /* (objc-dispatch.c) */
+extern void __objc_resolve_class_links();      /* (objc-class.c) */
+extern void __objc_register_selectors_from_class(Class); /* (objc-sel.c) */
+extern void __objc_update_dispatch_table_for_class (Class);/* (objc-msg.c) */
+extern void class_add_method_list(Class, MethodList_t);
 
 extern void objc_error(id object, const char* fmt, va_list);
 extern void (*_objc_error)(id, const char*, va_list);

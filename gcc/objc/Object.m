@@ -1,5 +1,5 @@
 /* The implementation of class Object for Objective-C.
-   Copyright (C) 1993, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -81,17 +81,17 @@ extern int errno;
   return [self copy];
 }
 
-- (Class*)class
+- (Class)class
 {
   return object_get_class(self);
 }
 
-- (Class*)superClass
+- (Class)superClass
 {
   return object_get_super_class(self);
 }
 
-- (MetaClass*)metaClass
+- (MetaClass)metaClass
 {
   return object_get_meta_class(self);
 }
@@ -143,9 +143,9 @@ extern int errno;
   return object_is_instance(self);
 }
 
-- (BOOL)isKindOf:(Class*)aClassObject
+- (BOOL)isKindOf:(Class)aClassObject
 {
-  Class* class;
+  Class class;
 
   for (class = self->isa; class!=Nil; class = class_get_super_class(class))
     if (class==aClassObject)
@@ -153,14 +153,14 @@ extern int errno;
   return NO;
 }
 
-- (BOOL)isMemberOf:(Class*)aClassObject
+- (BOOL)isMemberOf:(Class)aClassObject
 {
   return self->isa==aClassObject;
 }
 
 - (BOOL)isKindOfClassNamed:(const char *)aClassName
 {
-  Class* class;
+  Class class;
 
   if (aClassName!=NULL)
     for (class = self->isa; class!=Nil; class = class_get_super_class(class))
@@ -204,7 +204,7 @@ extern int errno;
   struct objc_protocol_list* proto_list;
   id parent;
 
-  for (proto_list = ((Class*)self)->protocols;
+  for (proto_list = ((Class)self)->protocols;
        proto_list; proto_list = proto_list->next)
     {
       for (i=0; i < proto_list->count; i++)
@@ -280,19 +280,19 @@ extern int errno;
   return objc_msg_sendv(self, aSel, argFrame);
 }
 
-+ poseAs:(Class*)aClassObject
++ poseAs:(Class)aClassObject
 {
   return class_pose_as(self, aClassObject);
 }
 
-- (Class*)transmuteClassTo:(Class*)aClassObject
+- (Class)transmuteClassTo:(Class)aClassObject
 {
   if (object_is_instance(self))
     if (class_is_class(aClassObject))
       if (class_get_instance_size(aClassObject)==class_get_instance_size(isa))
         if ([self isKindOf:aClassObject])
           {
-            Class* old_isa = isa;
+            Class old_isa = isa;
             isa = aClassObject;
             return old_isa;
           }

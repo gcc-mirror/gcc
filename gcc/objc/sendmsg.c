@@ -1,22 +1,21 @@
 /* GNU Objective C Runtime message lookup 
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify it under the
-   terms of the GNU General Public License as published by the Free Software
-   Foundation; either version 2, or (at your option) any later version.
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-   details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
 
 You should have received a copy of the GNU General Public License along with
-   GNU CC; see the file COPYING.  If not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU CC; see the file COPYING.  If not, write to the Free Software
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, if you link this library with files compiled with
    GCC to produce an executable, this does not cause the resulting executable
@@ -43,9 +42,9 @@ You should have received a copy of the GNU General Public License along with
 struct sarray* __objc_uninstalled_dtable = 0;
 
 /* Send +initialize to class */
-static void __objc_send_initialize(Class*);
+static void __objc_send_initialize(Class);
 
-static void __objc_install_dispatch_table_for_class (Class*);
+static void __objc_install_dispatch_table_for_class (Class);
 
 /* Forward declare some functions */
 static void __objc_init_install_dtable(id, SEL);
@@ -57,7 +56,7 @@ static __big
 static id
 #endif
 __objc_block_forward(id, SEL, ...);
-static Method_t search_for_method_in_hierarchy (Class* class, SEL sel);
+static Method_t search_for_method_in_hierarchy (Class class, SEL sel);
 static Method_t search_for_method_in_list(MethodList_t list, SEL op);
 id nil_method(id, SEL, ...);
 
@@ -70,7 +69,7 @@ nil_method(id receiver, SEL op, ...)
 /* Given a class and selector, return the selector's implementation.  */
 __inline__
 IMP
-get_imp (Class* class, SEL sel)
+get_imp (Class class, SEL sel)
 {
   IMP impl;
   void* res = sarray_get (class->dtable, (size_t) sel->sel_id);
@@ -187,16 +186,16 @@ static void __objc_init_install_dtable(id receiver, SEL op)
   else
     {
       /* receiver is a class object */
-      assert(CLS_ISCLASS((Class*)receiver));
+      assert(CLS_ISCLASS((Class)receiver));
       assert(CLS_ISMETA(receiver->class_pointer));
 
       /* Install real dtable for factory methods */
       __objc_install_dispatch_table_for_class (receiver->class_pointer);
 
       if (strcmp (sel_get_name (op), "initialize"))
-	__objc_send_initialize((Class*)receiver);
+	__objc_send_initialize((Class)receiver);
       else
-	CLS_SETINITIALIZED((Class*)receiver);
+	CLS_SETINITIALIZED((Class)receiver);
     }
 
 allready_initialized:
@@ -215,14 +214,14 @@ allready_initialized:
 
 /* Install dummy table for class which causes the first message to
    that class (or instances hereof) to be initialized properly */
-void __objc_install_premature_dtable(Class* class)
+void __objc_install_premature_dtable(Class class)
 {
   assert(__objc_uninstalled_dtable);
   class->dtable = __objc_uninstalled_dtable;
 }   
 
 /* Send +initialize to class if not already done */
-static void __objc_send_initialize(Class* class)
+static void __objc_send_initialize(Class class)
 {
   /* This *must* be a class object */
   assert(CLS_ISCLASS(class));
@@ -264,9 +263,9 @@ static void __objc_send_initialize(Class* class)
 }  
 
 static void
-__objc_install_dispatch_table_for_class (Class* class)
+__objc_install_dispatch_table_for_class (Class class)
 {
-  Class* super;
+  Class super;
   MethodList_t mlist;
   int counter;
 
@@ -302,9 +301,9 @@ __objc_install_dispatch_table_for_class (Class* class)
     }
 }
 
-void __objc_update_dispatch_table_for_class (Class* class)
+void __objc_update_dispatch_table_for_class (Class class)
 {
-  Class* next;
+  Class next;
 
   /* not yet installed -- skip it */
   if (class->dtable == __objc_uninstalled_dtable) 
@@ -329,7 +328,7 @@ void __objc_update_dispatch_table_for_class (Class* class)
    methods installed rightaway, and their selectors are made into
    SEL's by the function __objc_register_selectors_from_class. */ 
 void
-class_add_method_list (Class* class, MethodList_t list)
+class_add_method_list (Class class, MethodList_t list)
 {
   int i;
   static SEL initialize_sel = 0;
@@ -370,13 +369,13 @@ class_add_method_list (Class* class, MethodList_t list)
 
 
 Method_t
-class_get_instance_method(Class* class, SEL op)
+class_get_instance_method(Class class, SEL op)
 {
   return search_for_method_in_hierarchy(class, op);
 }
 
 Method_t
-class_get_class_method(MetaClass* class, SEL op)
+class_get_class_method(MetaClass class, SEL op)
 {
   return search_for_method_in_hierarchy(class, op);
 }
@@ -387,10 +386,10 @@ class_get_class_method(MetaClass* class, SEL op)
    otherwise. */   
 
 static Method_t
-search_for_method_in_hierarchy (Class* cls, SEL sel)
+search_for_method_in_hierarchy (Class cls, SEL sel)
 {
   Method_t method = NULL;
-  Class* class;
+  Class class;
 
   if (! sel_is_mapped (sel))
     return NULL;

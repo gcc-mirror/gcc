@@ -1,22 +1,21 @@
 /* GNU Objective C Runtime archiving
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
 GNU CC is free software; you can redistribute it and/or modify it under the
-   terms of the GNU General Public License as published by the Free Software
-   Foundation; either version 2, or (at your option) any later version.
+terms of the GNU General Public License as published by the Free Software
+Foundation; either version 2, or (at your option) any later version.
 
 GNU CC is distributed in the hope that it will be useful, but WITHOUT ANY
-   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-   FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-   details.
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+details.
 
 You should have received a copy of the GNU General Public License along with
-   GNU CC; see the file COPYING.  If not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU CC; see the file COPYING.  If not, write to the Free Software
+Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, if you link this library with files compiled with
    GCC to produce an executable, this does not cause the resulting executable
@@ -45,7 +44,7 @@ extern int fflush(FILE*);
 /* Declare some functions... */
 
 static int
-objc_read_class (struct objc_typed_stream* stream, Class** class);
+objc_read_class (struct objc_typed_stream* stream, Class* class);
 
 int objc_sizeof_type(const char* type);
 
@@ -796,7 +795,7 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 
       if (buf[0] == (_B_EXT | _BX_OBJECT))
 	{
-	  Class* class;
+	  Class class;
 
 	  /* get class */
 	  len = objc_read_class (stream, &class);
@@ -849,7 +848,7 @@ objc_read_object (struct objc_typed_stream* stream, id* object)
 }
 
 static int
-objc_read_class (struct objc_typed_stream* stream, Class** class)
+objc_read_class (struct objc_typed_stream* stream, Class* class)
 {
   unsigned char buf[sizeof (unsigned int)];
   int len;
@@ -958,7 +957,7 @@ objc_write_type(TypedStream* stream, const char* type, const void* data)
     break;
 
   case _C_CLASS:
-    return objc_write_class (stream, *(Class**)data);
+    return objc_write_class (stream, *(Class*)data);
     break;
 
   case _C_SEL:
@@ -1052,7 +1051,7 @@ objc_read_type(TypedStream* stream, const char* type, void* data)
     break;
 
   case _C_CLASS:
-    return objc_read_class (stream, (Class**)data);
+    return objc_read_class (stream, (Class*)data);
     break;
 
   case _C_SEL:
@@ -1153,7 +1152,7 @@ objc_write_types (TypedStream* stream, const char* type, ...)
 	break;
 
       case _C_CLASS:
-	res = objc_write_class (stream, *va_arg(args, Class**));
+	res = objc_write_class (stream, *va_arg(args, Class*));
 	break;
 
       case _C_SEL:
@@ -1252,7 +1251,7 @@ objc_read_types(TypedStream* stream, const char* type, ...)
 	break;
 
       case _C_CLASS:
-	res = objc_read_class(stream, va_arg(args, Class**));
+	res = objc_read_class(stream, va_arg(args, Class*));
 	break;
 
       case _C_SEL:
@@ -1589,7 +1588,7 @@ objc_flush_typed_stream (TypedStream* stream)
 }
 
 long
-objc_get_stream_class_version (TypedStream* stream, Class* class)
+objc_get_stream_class_version (TypedStream* stream, Class class)
 {
   if (stream->class_table)
     return PTR2LONG(hash_value_for_key (stream->class_table, class->name));

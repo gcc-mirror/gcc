@@ -1,7 +1,6 @@
 /* Encoding of types for Objective C.
-   Copyright (C) 1993 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Copyright (C) 1993, 1995 Free Software Foundation, Inc.
+   Contributed by Kresten Krab Thorup
 
 This file is part of GNU CC.
 
@@ -64,7 +63,7 @@ objc_sizeof_type(const char* type)
     break;
 
   case _C_CLASS:
-    return sizeof(Class*);
+    return sizeof(Class);
     break;
 
   case _C_SEL:
@@ -171,7 +170,7 @@ objc_alignof_type(const char* type)
     break;
 
   case _C_CLASS:
-    return __alignof__(Class*);
+    return __alignof__(Class);
     break;
     
   case _C_SEL:
