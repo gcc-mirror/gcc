@@ -1,5 +1,12 @@
 2001-11-03  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* dwarf2asm.c (dw2_asm_output_pcrel): Mark parameters with
+	ATTRIBUTE_UNUSED.
+	* final.c (final_scan_insn): Add brackets around body of if-stmt.
+	* gcc.c (convert_filename): Add static prototype.  Const-ify.
+	Wrap variable in macros controlling its use.
+	* output.h (sdata_section): Add prototype.
+
 	* 1750a.h (EXTRA_SECTION_FUNCTIONS): Add prototype.
 	(ASM_OUTPUT_ASCII): Avoid signed/unsigned warning.
 	* c4x.h (INIT_SECTION_FUNCTION): Add prototype.

@@ -318,6 +318,9 @@ static void init_gcc_specs              PARAMS ((struct obstack *,
 						 const char *,
 						 const char *));
 #endif
+#if defined(HAVE_TARGET_OBJECT_SUFFIX) || defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
+static const char *convert_filename	PARAMS ((const char *, int));
+#endif
 
 /* The Specs Language
 
@@ -2900,12 +2903,14 @@ static int *warn_std_ptr = 0;
 /* Convert NAME to a new name if it is the standard suffix.  DO_EXE
    is true if we should look for an executable suffix as well.  */
 
-static char *
+static const char *
 convert_filename (name, do_exe)
-     char *name;
-     int do_exe;
+     const char *name;
+     int do_exe ATTRIBUTE_UNUSED;
 {
+#if defined(HAVE_TARGET_EXECUTABLE_SUFFIX)
   int i;
+#endif
   int len;
 
   if (name == NULL)
