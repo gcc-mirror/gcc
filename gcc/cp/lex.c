@@ -615,6 +615,8 @@ init_lex ()
   IDENTIFIER_OPNAME_P (ansi_opname[(int) MAX_EXPR]) = 1;
   ansi_opname[(int) COND_EXPR] = get_identifier ("__cn");
   IDENTIFIER_OPNAME_P (ansi_opname[(int) COND_EXPR]) = 1;
+  ansi_opname[(int) SIZEOF_EXPR] = get_identifier ("__sz");
+  IDENTIFIER_OPNAME_P (ansi_opname[(int) SIZEOF_EXPR]) = 1;
 
   init_method ();
   init_error ();
