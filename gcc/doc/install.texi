@@ -1880,12 +1880,14 @@ can also be obtained from:
 
 @itemize @bullet
 @item
+@uref{http://www.openavr.org,,http://www.openavr.org}
+@item
 @uref{http://home.overta.ru/users/denisc,,http://home.overta.ru/users/denisc}
 @item
 @uref{http://www.amelek.gda.pl/avr,,http://www.amelek.gda.pl/avr}
 @end itemize
 
-We @emph{strongly} recommend using binutils 2.11 or newer.
+We @emph{strongly} recommend using binutils 2.13 or newer.
 
 The following error:
 @example
