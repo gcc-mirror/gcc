@@ -166,7 +166,7 @@ struct _Bit_iterator : public _Bit_iterator_base
   _Bit_iterator(_Bit_type * __x, unsigned int __y) 
     : _Bit_iterator_base(__x, __y) {}
 
-  reference operator*() const { return reference(_M_p, 1U << _M_offset); }
+  reference operator*() const { return reference(_M_p, 1UL << _M_offset); }
   iterator& operator++() {
     _M_bump_up();
     return *this;
@@ -223,7 +223,7 @@ struct _Bit_const_iterator : public _Bit_iterator_base
     : _Bit_iterator_base(__x._M_p, __x._M_offset) {}
 
   const_reference operator*() const {
-    return _Bit_reference(_M_p, 1U << _M_offset);
+    return _Bit_reference(_M_p, 1UL << _M_offset);
   }
   const_iterator& operator++() {
     _M_bump_up();
