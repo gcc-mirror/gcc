@@ -212,6 +212,11 @@ static char *last_filename = 0;
 char *regno_pointer_flag;
 int regno_pointer_flag_length;
 
+/* Indexed by pseudo register number, if nonzero gives the known alignment
+   for that pseudo (if regno_pointer_flag is set).
+   Allocated in parallel with regno_pointer_flag.  */
+char *regno_pointer_align;
+
 /* Indexed by pseudo register number, gives the rtx for that pseudo.
    Allocated in parallel with regno_pointer_flag.  */
 
@@ -506,12 +511,17 @@ gen_reg_rtx (mode)
     {
       rtx *new1;
       char *new =
-	(char *) oballoc (regno_pointer_flag_length * 2);
+	(char *) savealloc (regno_pointer_flag_length * 2);
       bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
       bzero (&new[regno_pointer_flag_length], regno_pointer_flag_length);
       regno_pointer_flag = new;
 
-      new1 = (rtx *) oballoc (regno_pointer_flag_length * 2 * sizeof (rtx));
+      new = (char *) savealloc (regno_pointer_flag_length * 2);
+      bcopy (regno_pointer_align, new, regno_pointer_flag_length);
+      bzero (&new[regno_pointer_flag_length], regno_pointer_flag_length);
+      regno_pointer_align = new;
+
+      new1 = (rtx *) savealloc (regno_pointer_flag_length * 2 * sizeof (rtx));
       bcopy ((char *) regno_reg_rtx, (char *) new1,
 	     regno_pointer_flag_length * sizeof (rtx));
       bzero ((char *) &new1[regno_pointer_flag_length],
@@ -526,13 +536,18 @@ gen_reg_rtx (mode)
   return val;
 }
 
-/* Identify REG as a probable pointer register.  */
+/* Identify REG as a probable pointer register and show its alignment
+   as ALIGN, if nonzero.  */
 
 void
-mark_reg_pointer (reg)
+mark_reg_pointer (reg, align)
      rtx reg;
+     int align;
 {
   REGNO_POINTER_FLAG (REGNO (reg)) = 1;
+
+  if (align)
+    REGNO_POINTER_ALIGN (REGNO (reg)) = align;
 }
 
 /* Return 1 plus largest pseudo reg number used in the current function.  */
@@ -1355,7 +1370,8 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
 		       last_labelno, max_parm_regnum, max_regnum, args_size,
 		       pops_args, stack_slots, forced_labels, function_flags,
 		       outgoing_args_size, original_arg_vector,
-		       original_decl_initial)
+		       original_decl_initial, regno_rtx, regno_flag,
+		       regno_align)
      rtx first_insn, first_parm_insn;
      int first_labelno, last_labelno, max_parm_regnum, max_regnum, args_size;
      int pops_args;
@@ -1365,6 +1381,9 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
      int outgoing_args_size;
      rtvec original_arg_vector;
      rtx original_decl_initial;
+     rtvec regno_rtx;
+     char *regno_flag;
+     char *regno_align;
 {
   rtx header = gen_rtx (INLINE_HEADER, VOIDmode,
 			cur_insn_uid++, NULL_RTX,
@@ -1372,20 +1391,30 @@ gen_inline_header_rtx (first_insn, first_parm_insn, first_labelno,
 			first_labelno, last_labelno,
 			max_parm_regnum, max_regnum, args_size, pops_args,
 			stack_slots, forced_labels, function_flags,
-			outgoing_args_size,
-			original_arg_vector, original_decl_initial);
+			outgoing_args_size, original_arg_vector,
+			original_decl_initial,
+			regno_rtx, regno_flag, regno_align);
   return header;
 }
 
 /* Install new pointers to the first and last insns in the chain.
+   Also, set cur_insn_uid to one higher than the last in use.
    Used for an inline-procedure after copying the insn chain.  */
 
 void
 set_new_first_and_last_insn (first, last)
      rtx first, last;
 {
+  rtx insn;
+
   first_insn = first;
   last_insn = last;
+  cur_insn_uid = 0;
+
+  for (insn = first; insn; insn = NEXT_INSN (insn))
+    cur_insn_uid = MAX (cur_insn_uid, INSN_UID (insn));
+
+  cur_insn_uid++;
 }
 
 /* Set the range of label numbers found in the current function.
@@ -1417,6 +1446,7 @@ save_emit_status (p)
   p->last_linenum = last_linenum;
   p->last_filename = last_filename;
   p->regno_pointer_flag = regno_pointer_flag;
+  p->regno_pointer_align = regno_pointer_align;
   p->regno_pointer_flag_length = regno_pointer_flag_length;
   p->regno_reg_rtx = regno_reg_rtx;
 }
@@ -1441,6 +1471,7 @@ restore_emit_status (p)
   last_linenum = p->last_linenum;
   last_filename = p->last_filename;
   regno_pointer_flag = p->regno_pointer_flag;
+  regno_pointer_align = p->regno_pointer_align;
   regno_pointer_flag_length = p->regno_pointer_flag_length;
   regno_reg_rtx = p->regno_reg_rtx;
 
@@ -3091,145 +3122,6 @@ gen_sequence ()
   return result;
 }
 
-/* Set up regno_reg_rtx, reg_rtx_no and regno_pointer_flag
-   according to the chain of insns starting with FIRST.
-
-   Also set cur_insn_uid to exceed the largest uid in that chain.
-
-   This is used when an inline function's rtl is saved
-   and passed to rest_of_compilation later.  */
-
-static void restore_reg_data_1 ();
-
-void
-restore_reg_data (first)
-     rtx first;
-{
-  register rtx insn;
-  int i;
-  register int max_uid = 0;
-
-  for (insn = first; insn; insn = NEXT_INSN (insn))
-    {
-      if (INSN_UID (insn) >= max_uid)
-	max_uid = INSN_UID (insn);
-
-      switch (GET_CODE (insn))
-	{
-	case NOTE:
-	case CODE_LABEL:
-	case BARRIER:
-	  break;
-
-	case JUMP_INSN:
-	case CALL_INSN:
-	case INSN:
-	  restore_reg_data_1 (PATTERN (insn));
-	  break;
-	}
-    }
-
-  /* Don't duplicate the uids already in use.  */
-  cur_insn_uid = max_uid + 1;
-
-  /* If any regs are missing, make them up.  
-
-     ??? word_mode is not necessarily the right mode.  Most likely these REGs
-     are never used.  At some point this should be checked.  */
-
-  for (i = FIRST_PSEUDO_REGISTER; i < reg_rtx_no; i++)
-    if (regno_reg_rtx[i] == 0)
-      regno_reg_rtx[i] = gen_rtx (REG, word_mode, i);
-}
-
-static void
-restore_reg_data_1 (orig)
-     rtx orig;
-{
-  register rtx x = orig;
-  register int i;
-  register enum rtx_code code;
-  register char *format_ptr;
-
-  code = GET_CODE (x);
-
-  switch (code)
-    {
-    case QUEUED:
-    case CONST_INT:
-    case CONST_DOUBLE:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-    case PC:
-    case CC0:
-    case LABEL_REF:
-      return;
-
-    case REG:
-      if (REGNO (x) >= FIRST_PSEUDO_REGISTER)
-	{
-	  /* Make sure regno_pointer_flag and regno_reg_rtx are large
-	     enough to have an element for this pseudo reg number.  */
-	  if (REGNO (x) >= reg_rtx_no)
-	    {
-	      reg_rtx_no = REGNO (x);
-
-	      if (reg_rtx_no >= regno_pointer_flag_length)
-		{
-		  int newlen = MAX (regno_pointer_flag_length * 2,
-				    reg_rtx_no + 30);
-		  rtx *new1;
-		  char *new = (char *) oballoc (newlen);
-		  bzero (new, newlen);
-		  bcopy (regno_pointer_flag, new, regno_pointer_flag_length);
-
-		  new1 = (rtx *) oballoc (newlen * sizeof (rtx));
-		  bzero ((char *) new1, newlen * sizeof (rtx));
-		  bcopy ((char *) regno_reg_rtx, (char *) new1,
-			 regno_pointer_flag_length * sizeof (rtx));
-
-		  regno_pointer_flag = new;
-		  regno_reg_rtx = new1;
-		  regno_pointer_flag_length = newlen;
-		}
-	      reg_rtx_no ++;
-	    }
-	  regno_reg_rtx[REGNO (x)] = x;
-	}
-      return;
-
-    case MEM:
-      if (GET_CODE (XEXP (x, 0)) == REG)
-	mark_reg_pointer (XEXP (x, 0));
-      restore_reg_data_1 (XEXP (x, 0));
-      return;
-    }
-
-  /* Now scan the subexpressions recursively.  */
-
-  format_ptr = GET_RTX_FORMAT (code);
-
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
-    {
-      switch (*format_ptr++)
-	{
-	case 'e':
-	  restore_reg_data_1 (XEXP (x, i));
-	  break;
-
-	case 'E':
-	  if (XVEC (x, i) != NULL)
-	    {
-	      register int j;
-
-	      for (j = 0; j < XVECLEN (x, i); j++)
-		restore_reg_data_1 (XVECEXP (x, i, j));
-	    }
-	  break;
-	}
-    }
-}
-
 /* Initialize data structures and variables in this file
    before generating rtl for each function.  */
 
@@ -3259,11 +3151,15 @@ init_emit ()
   regno_pointer_flag_length = LAST_VIRTUAL_REGISTER + 101;
 
   regno_pointer_flag 
-    = (char *) oballoc (regno_pointer_flag_length);
+    = (char *) savealloc (regno_pointer_flag_length);
   bzero (regno_pointer_flag, regno_pointer_flag_length);
 
+  regno_pointer_align
+    = (char *) savealloc (regno_pointer_flag_length);
+  bzero (regno_pointer_align, regno_pointer_flag_length);
+
   regno_reg_rtx 
-    = (rtx *) oballoc (regno_pointer_flag_length * sizeof (rtx));
+    = (rtx *) savealloc (regno_pointer_flag_length * sizeof (rtx));
   bzero ((char *) regno_reg_rtx, regno_pointer_flag_length * sizeof (rtx));
 
   /* Put copies of all the virtual register rtx into regno_reg_rtx.  */
@@ -3283,6 +3179,23 @@ init_emit ()
   REGNO_POINTER_FLAG (VIRTUAL_STACK_VARS_REGNUM) = 1;
   REGNO_POINTER_FLAG (VIRTUAL_STACK_DYNAMIC_REGNUM) = 1;
   REGNO_POINTER_FLAG (VIRTUAL_OUTGOING_ARGS_REGNUM) = 1;
+
+#ifdef STACK_BOUNDARY
+  REGNO_POINTER_ALIGN (STACK_POINTER_REGNUM) = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (FRAME_POINTER_REGNUM) = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (HARD_FRAME_POINTER_REGNUM)
+    = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (ARG_POINTER_REGNUM) = STACK_BOUNDARY / BITS_PER_UNIT;
+
+  REGNO_POINTER_ALIGN (VIRTUAL_INCOMING_ARGS_REGNUM)
+    = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (VIRTUAL_STACK_VARS_REGNUM)
+    = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (VIRTUAL_STACK_DYNAMIC_REGNUM)
+    = STACK_BOUNDARY / BITS_PER_UNIT;
+  REGNO_POINTER_ALIGN (VIRTUAL_OUTGOING_ARGS_REGNUM)
+    = STACK_BOUNDARY / BITS_PER_UNIT;
+#endif
 
 #ifdef INIT_EXPANDERS
   INIT_EXPANDERS;
