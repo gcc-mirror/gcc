@@ -1,3 +1,7 @@
+Sun Mar 14 07:28:32 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* rtl.c (read_rtx): Call fatal if bad RTL code; check for bad mode.
+
 Sat Mar 13 20:56:00 1999  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* recog.c (nonmemory_operand): Accept ADDRESSOF.
