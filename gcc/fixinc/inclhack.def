@@ -3147,6 +3147,9 @@ fix = {
 
     select    =
     'profil\(unsigned short \*, unsigned int, unsigned int, unsigned int\)';
+    /* The fix is wrong on IRIX 5/6 and creates a conflict with another
+       prototype in <sys/profil.h>.  */
+    bypass    = 'Silicon Graphics';
     c_fix     = format;
     c_fix_arg = 'profil(unsigned short *, size_t, int, unsigned int)';
 
