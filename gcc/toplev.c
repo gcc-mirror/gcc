@@ -2270,7 +2270,9 @@ compile_file (name)
     }
   else
     {
+#ifdef ASM_FILE_START
       ASM_FILE_START (asm_out_file);
+#endif
 
 #ifdef ASM_COMMENT_START
       if (flag_verbose_asm)
