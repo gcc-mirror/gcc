@@ -1,7 +1,7 @@
 # classes.pl - A perl program to generate most of the contents of
 # javaprims.h automatically.
 
-# Copyright (C) 1998, 1999  Cygnus Solutions
+# Copyright (C) 1998, 1999  Red Hat, Inc.
 #
 # This file is part of libjava.
 #

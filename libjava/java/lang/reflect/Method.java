@@ -1,6 +1,6 @@
 // Method.java - Represent method of class or interface.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 1999, 2000  Cygnus Solutions
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 

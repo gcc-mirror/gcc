@@ -1,7 +1,7 @@
 // HttpURLConnection.java - Subclass of communications links using
 //			Hypertext Transfer Protocol.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

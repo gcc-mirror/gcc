@@ -1,6 +1,6 @@
 // CharConversionException.java - Problem converting char to byte encoding.
 
-/* Copyright (C) 1998, 1999  Cygnus Solutions
+/* Copyright (C) 1998, 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 

@@ -1,6 +1,6 @@
 // URL.java - A Uniform Resource Locator.
 
-/* Copyright (C) 1999  Cygnus Solutions
+/* Copyright (C) 1999  Red Hat, Inc.
 
    This file is part of libgcj.
 
