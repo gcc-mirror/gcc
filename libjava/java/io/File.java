@@ -195,11 +195,6 @@ public class File implements Serializable, Comparable
 					     FileFilter fileFilter,
 					     Class result_type);
 
-  // Arguments for the performList function. Specifies whether we want
-  // File objects or path strings in the returned object array.
-  private final static int OBJECTS = 0;
-  private final static int STRINGS = 1;
-
   public String[] list (FilenameFilter filter)
   {
     checkRead();
@@ -435,25 +430,23 @@ public class File implements Serializable, Comparable
     return performSetLastModified(time);
   }
 
-  public static final String separator = null;
-  public static final String pathSeparator = null;
-  static final String tmpdir = null;
+  public static final String pathSeparator
+    = System.getProperty("path.separator");
+  public static final char pathSeparatorChar = pathSeparator.charAt(0);
+  public static final String separator = System.getProperty("file.separator");
+  public static final char separatorChar = separator.charAt(0);
+
+  static final String tmpdir = System.getProperty("java.io.tmpdir");
   static int maxPathLen;
   static boolean caseSensitive;
-  
-  public static final char separatorChar;
-  public static final char pathSeparatorChar;
   
   static
   {
     init_native();
-    pathSeparatorChar = pathSeparator.charAt(0);
-    separatorChar = separator.charAt(0);
   }
   
   // Native function called at class initialization. This should should
-  // set the separator, pathSeparator, tmpdir, maxPathLen, and caseSensitive
-  // variables.
+  // set the maxPathLen and caseSensitive variables.
   private static native void init_native();
 
   // The path.

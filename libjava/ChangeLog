@@ -1,3 +1,12 @@
+2001-04-02  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/natSystem.cc (init_properties): Revert yesterday's changes
+	to "file.separator", "path.separator", and "java.io.tmpdir" property
+	initialization.
+	* java/io/File.java: Likewise.
+	* java/io/natFile.cc (init_native): Likewise.
+	* java/io/natFileWin32.cc (init_native): Likewise.
+
 2001-04-01  Per Bothner  <per@bothner.com>
 
 	* java/lang/natString.cc (intern):  If string's data does not point to

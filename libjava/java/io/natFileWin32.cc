@@ -248,9 +248,6 @@ java::io::File::performDelete ()
 void
 java::io::File::init_native ()
 {
-  separator = JvNewStringLatin1 ("\\");
-  pathSeparator = JvNewStringLatin1 (";");
-  tmpdir = JvNewStringLatin1 ("C:\\temp"); // FIXME?
   maxPathLen = MAX_PATH;
   caseSensitive = false;
 }
