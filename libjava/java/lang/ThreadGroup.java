@@ -1,212 +1,437 @@
-// ThreadGroup.java - ThreadGroup class.
-
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
-
-   This file is part of libgcj.
+/* java.lang.ThreadGroup
+   Copyright (C) 1998, 2000 Free Software Foundation, Inc.
+ 
+This file is part of libgcj.
 
 This software is copyrighted work licensed under the terms of the
 Libgcj License.  Please consult the file "LIBGCJ_LICENSE" for
 details.  */
-
+ 
 package java.lang;
 
-import java.util.Enumeration;
 import java.util.Vector;
-
-/**
- * @author Tom Tromey <tromey@cygnus.com>
- * @date August 25, 1998 
- */
+import java.util.Enumeration;
 
 /* Written using "Java Class Libraries", 2nd edition, ISBN 0-201-31002-3
  * "The Java Language Specification", ISBN 0-201-63451-1
  * plus online API docs for JDK 1.2 beta from http://www.javasoft.com.
- * Status:  Complete for 1.1.  Parts from the JDK 1.0 spec only are
- * not implemented.  Parts of the 1.2 spec are also not implemented.
+ * Status:  Complete for 1.2.  Parts from the JDK 1.0 spec only are
+ * not implemented. 
+ */
+ 
+/**
+ * ThreadGroup allows you to group Threads together.  There is a
+ * hierarchy of ThreadGroups, and only the initial ThreadGroup has
+ * no parent.  A Thread may access information about its own
+ * ThreadGroup, but not its parents or others outside the tree.
+ *
+ * @author John Keiser
+ * @author Tom Tromey
+ * @version 1.2.0, June 20, 2000
+ * @since JDK1.0
  */
 
 public class ThreadGroup
 {
-  public int activeCount ()
+  /* The Initial, top-level ThreadGroup. */
+  static ThreadGroup root = new ThreadGroup();
+
+  private ThreadGroup parent;
+  private String name;
+  private Vector threads = new Vector();
+  private Vector groups = new Vector();
+  private boolean daemon_flag = false;
+  private boolean destroyed_flag = false;
+
+  int maxpri = Thread.MAX_PRIORITY;
+
+  private ThreadGroup()
   {
-    int ac = threads.size();
-    Enumeration e = groups.elements();
-    while (e.hasMoreElements())
+    name = "main";    
+  }
+
+  /** Create a new ThreadGroup using the given name and the
+   *  current thread's ThreadGroup as a parent.
+   *  @param name the name to use for the ThreadGroup.
+   */
+  public ThreadGroup(String name)
+  {
+    this (Thread.currentThread().getThreadGroup(), name);
+  }
+
+  /** Create a new ThreadGroup using the given name and
+   *  parent group.
+   *  @param name the name to use for the ThreadGroup.
+   *  @param parent the ThreadGroup to use as a parent.
+   *  @exception NullPointerException if parent is null.
+   *  @exception SecurityException if you cannot change
+   *             the intended parent group.
+   */
+  public ThreadGroup(ThreadGroup parent, String name)
+  {
+    parent.checkAccess();
+    this.parent = parent;
+    if (parent.destroyed_flag)
+      throw new IllegalArgumentException ();
+    this.name = name;
+    maxpri = parent.maxpri;
+    daemon_flag = parent.daemon_flag;
+    parent.add(this);
+  }
+
+  /** Get the name of this ThreadGroup.
+   *  @return the name of this ThreadGroup.
+   */
+  public final String getName()
+  {
+    return name;
+  }
+
+  /** Get the parent of this ThreadGroup.
+   *  @return the parent of this ThreadGroup.
+   */
+  public final ThreadGroup getParent()
+  {
+    return parent;
+  }
+
+  /** Set the maximum priority for Threads in this ThreadGroup. setMaxPriority
+   *  can only be used to reduce the current maximum. If maxpri
+   *  is greater than the current Maximum, the current value is not changed.
+   *  Calling this does not effect threads already in this ThreadGroup.
+   *  @param maxpri the new maximum priority for this ThreadGroup.
+   *  @exception SecurityException if you cannoy modify this ThreadGroup.
+   */
+  public final void setMaxPriority(int maxpri)
+  {
+    checkAccess();
+    if (maxpri < this.maxpri
+        && maxpri >= Thread.MIN_PRIORITY
+	&& maxpri <= Thread.MAX_PRIORITY)
       {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	ac += g.activeCount();
-      }
-    return ac;
+	this.maxpri = maxpri;        
+      }  
   }
 
-  public int activeGroupCount ()
+  /** Get the maximum priority of Threads in this ThreadGroup.
+   *  @return the maximum priority of Threads in this ThreadGroup.
+   */
+  public final int getMaxPriority()
   {
-    int ac = groups.size();
-    Enumeration e = groups.elements();
-    while (e.hasMoreElements())
+    return maxpri;
+  }
+
+  /** Set whether this ThreadGroup is a daemon group.  A daemon
+   *  group will be destroyed when its last thread is stopped and
+   *  its last thread group is destroyed.
+   *  @specnote The Java API docs indicate that the group is destroyed
+   * 		when either of those happen, but that doesn't make
+   * 		sense.
+   *  @param daemon whether this ThreadGroup should be a daemon group.
+   *  @exception SecurityException if you cannoy modify this ThreadGroup.
+   */
+  public final void setDaemon (boolean daemon)
+  {
+    checkAccess();
+    daemon_flag = daemon;
+  }
+   
+  /** Tell whether this ThreadGroup is a daemon group.  A daemon
+    * group will be destroyed when its last thread is stopped and
+    * its last thread group is destroyed.
+    * @specnote The Java API docs indicate that the group is destroyed
+    *		when either of those happen, but that doesn't make
+    *		sense.
+    * @return whether this ThreadGroup is a daemon group.
+    */
+  public final boolean isDaemon()
+  {
+    return daemon_flag;
+  }
+
+  /** Tell whether this ThreadGroup has been destroyed or not.
+    * @return whether this ThreadGroup has been destroyed or not.
+    */
+  public boolean isDestroyed()
+  {
+    return destroyed_flag;
+  }
+
+  /** Check whether this ThreadGroup is an ancestor of the
+    * specified ThreadGroup, or if they are the same.
+    *
+    * @param g the group to test on.
+    * @return whether this ThreadGroup is a parent of the
+    *	      specified group.
+    */
+  public final boolean parentOf(ThreadGroup tg)
+  {
+    while (tg != null)
       {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	ac += g.activeGroupCount();
+        if (tg == this)
+          return true;
+        tg = tg.parent;
       }
-    return ac;
+    return false;
   }
 
-  // Deprecated in 1.2.
-  public boolean allowThreadSuspension (boolean allow)
+  /** Return the total number of active threads in this ThreadGroup
+    * and all its descendants.<P>
+    *
+    * This cannot return an exact number, since the status of threads
+    * may change after they were counted.  But it should be pretty
+    * close.<P>
+    *
+    * @return the number of active threads in this ThreadGroup and
+    *	      its descendants.
+    */
+  public synchronized int activeCount()
   {
-    // There is no way for a Java program to determine whether this
-    // has any effect whatsoever.  We don't need it.
-    return true;
-  }
-
-  public final void checkAccess ()
-  {
-    SecurityManager s = System.getSecurityManager();
-    if (s != null)
-      s.checkAccess(this);
-  }
-
-  // This is called to remove a ThreadGroup from our internal list.
-  private final void remove (ThreadGroup g)
-  {
-    groups.removeElement(g);
-    if (daemon_flag && groups.size() == 0 && threads.size() == 0)
+    int total = threads.size();
+    for (int i=0; i < groups.size(); i++)
       {
-	// We inline destroy to avoid the access check.
-	destroyed_flag = true;
-	if (parent != null)
-	  parent.remove(this);
+        ThreadGroup g = (ThreadGroup) groups.elementAt(i);
+        total += g.activeCount();
       }
+    return total;
   }
 
-  // This is called by the Thread code to remove a Thread from our
-  // internal list.
-  final void remove (Thread t)
+  /** Get the number of active groups in this ThreadGroup.  This group
+    * itself is not included in the count.
+    * @specnote it is unclear what exactly constitutes an
+    *		active ThreadGroup.  Currently we assume that
+    *		all sub-groups are active.
+    * @return the number of active groups in this ThreadGroup.
+    */
+  public int activeGroupCount()
   {
-    threads.removeElement(t);
-    if (daemon_flag && groups.size() == 0 && threads.size() == 0)
+    int total = groups.size();
+    for (int i=0; i < groups.size(); i++)
       {
-	// We inline destroy to avoid the access check.
-	destroyed_flag = true;
-	if (parent != null)
-	  parent.remove(this);
-      }
+	ThreadGroup g = (ThreadGroup) groups.elementAt(i);
+	total += g.activeGroupCount();
+      }      
+    return total;
   }
 
-  // This is called by the Thread code to add a Thread to our internal
-  // list.
-  final void add (Thread t)
+  /** Copy all of the active Threads from this ThreadGroup and
+    * its descendants into the specified array.  If the array is
+    * not big enough to hold all the Threads, extra Threads will
+    * simply not be copied.
+    *
+    * @param threads the array to put the threads into.
+    * @return the number of threads put into the array.
+    */
+  public int enumerate(Thread[] threads)
   {
-    if (destroyed_flag)
-      throw new IllegalThreadStateException ();
-
-    threads.addElement(t);
+    return enumerate(threads, true);
   }
 
-  // This is a helper that is used to implement the destroy method.
-  private final boolean canDestroy ()
+  /** Copy all of the active Threads from this ThreadGroup and,
+    * if desired, from its descendants, into the specified array.
+    * If the array is not big enough to hold all the Threads,
+    * extra Threads will simply not be copied.
+    *
+    * @param threads the array to put the threads into.
+    * @param useDescendants whether to count Threads in this
+    *	     ThreadGroup's descendants or not.
+    * @return the number of threads put into the array.
+    */
+  public int enumerate(Thread[] threads, boolean useDescendants)
   {
-    if (! threads.isEmpty())
-      return false;
-    Enumeration e = groups.elements();
-    while (e.hasMoreElements())
-      {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	if (! g.canDestroy())
-	  return false;
-      }
-    return true;
-  }
-
-  public final void destroy ()
-  {
-    checkAccess ();
-    if (! canDestroy ())
-      throw new IllegalThreadStateException ();
-    destroyed_flag = true;
-    if (parent != null)
-      parent.remove(this);
+    return enumerate(threads, 0, useDescendants);
   }
 
   // This actually implements enumerate.
-  private final int enumerate (Thread[] ts, int next_index, boolean recurse)
+  private int enumerate (Thread[] list, int next_index, boolean recurse)
   {
     Enumeration e = threads.elements();
-    while (e.hasMoreElements() && next_index < ts.length)
-      ts[next_index++] = (Thread) e.nextElement();
-    if (recurse && next_index != ts.length)
+    while (e.hasMoreElements() && next_index < list.length)
+      list[next_index++] = (Thread) e.nextElement();
+    if (recurse && next_index != list.length)
       {
 	e = groups.elements();
-	while (e.hasMoreElements() && next_index < ts.length)
+	while (e.hasMoreElements() && next_index < list.length)
 	  {
 	    ThreadGroup g = (ThreadGroup) e.nextElement();
-	    next_index = g.enumerate(ts, next_index, true);
+	    next_index = g.enumerate(list, next_index, true);
 	  }
       }
     return next_index;
   }
 
-  public int enumerate (Thread[] ts)
+  /** Copy all active ThreadGroups that are descendants of this
+    * ThreadGroup into the specified array.  If the array is not
+    * large enough to hold all active ThreadGroups, extra
+    * ThreadGroups simply will not be copied.
+    *
+    * @param groups the array to put the ThreadGroups into.
+    * @return the number of ThreadGroups copied into the array.
+    */
+  public int enumerate(ThreadGroup[] groups)
   {
-    return enumerate (ts, 0, true);
+    return enumerate(groups, false);
   }
 
-  public int enumerate (Thread[] ts, boolean recurse)
+  /** Copy all active ThreadGroups that are children of this
+    * ThreadGroup into the specified array, and if desired, also
+    * copy all active descendants into the array.  If the array
+    * is not large enough to hold all active ThreadGroups, extra
+    * ThreadGroups simply will not be copied.
+    *
+    * @param groups the array to put the ThreadGroups into.
+    * @param useDescendants whether to include all descendants
+    *	     of this ThreadGroup's children in determining
+    *	     activeness.
+    * @return the number of ThreadGroups copied into the array.
+    */
+  public int enumerate(ThreadGroup[] groups, boolean useDescendants)
   {
-    return enumerate (ts, 0, recurse);
+    return enumerate(groups, 0, useDescendants);
   }
 
   // This actually implements enumerate.
-  private final int enumerate (ThreadGroup[] ts, int next_index,
-			       boolean recurse)
+  private int enumerate (ThreadGroup[] list, int next_index, boolean recurse)
   {
     Enumeration e = groups.elements();
-    while (e.hasMoreElements() && next_index < ts.length)
+    while (e.hasMoreElements() && next_index < list.length)
       {
 	ThreadGroup g = (ThreadGroup) e.nextElement();
-	ts[next_index++] = g;
-	if (recurse && next_index != ts.length)
-	  next_index = g.enumerate(ts, next_index, true);
+	list[next_index++] = g;
+	if (recurse && next_index != list.length)
+	  next_index = g.enumerate(list, next_index, true);
       }
     return next_index;
   }
 
-  public int enumerate (ThreadGroup[] gs)
+  /** Interrupt all Threads in this ThreadGroup and its sub-groups.
+    * @exception SecurityException if you cannot modify this
+    *		 ThreadGroup or any of its Threads or children
+    *		 ThreadGroups.
+    * @since JDK1.2
+    */
+  public final void interrupt()
   {
-    return enumerate (gs, 0, true);
+    checkAccess();
+    for (int i=0; i < threads.size(); i++)
+      {
+        Thread t = (Thread) threads.elementAt(i);
+        t.interrupt();
+      }
+    for (int i=0; i < groups.size(); i++)
+      {
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+        tg.interrupt();
+      }
   }
 
-  public int enumerate (ThreadGroup[] gs, boolean recurse)
+  /** Stop all Threads in this ThreadGroup and its descendants.
+    * @exception SecurityException if you cannot modify this
+    *		 ThreadGroup or any of its Threads or children
+    *		 ThreadGroups.
+    * @deprecated This method calls Thread.stop(), which is dangerous.
+    */
+  public final void stop()
   {
-    return enumerate (gs, 0, recurse);
+    checkAccess();
+    for (int i=0; i<threads.size(); i++)
+      {
+        Thread t = (Thread) threads.elementAt(i);
+	t.stop();
+      }
+    for (int i=0; i < groups.size(); i++)
+      {
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+        tg.stop();
+      }
   }
 
-  public final int getMaxPriority ()
+  /** Suspend all Threads in this ThreadGroup and its descendants.
+    * @exception SecurityException if you cannot modify this
+    *		 ThreadGroup or any of its Threads or children
+    *		 ThreadGroups.
+    * @deprecated This method calls Thread.suspend(), which is dangerous.
+    */
+  public final void suspend()
   {
-    return maxpri;
+    checkAccess();
+    for (int i=0; i<threads.size(); i++)
+      {
+        Thread t = (Thread) threads.elementAt(i);
+        t.suspend();
+      }
+    for (int i=0; i < groups.size(); i++)
+      {
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+        tg.suspend();
+      }
   }
 
-  public final String getName ()
+  /** Resume all Threads in this ThreadGroup and its descendants.
+    * @exception SecurityException if you cannot modify this
+    *		 ThreadGroup or any of its Threads or children
+    *		 ThreadGroups.
+    * @deprecated This method relies on Thread.suspend(), which is dangerous.
+    */
+  public final void resume()
   {
-    return name;
+    checkAccess();
+    for (int i=0; i < threads.size(); i++)
+      {
+        Thread t = (Thread) threads.elementAt(i);
+	t.resume();
+      }
+    for (int i=0; i < groups.size(); i++)
+      {
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+        tg.resume();
+      }
   }
 
-  public final ThreadGroup getParent ()
+  // This is a helper that is used to implement the destroy method.
+  private final void checkDestroy ()
   {
-    return parent;
+    if (! threads.isEmpty())
+      throw new IllegalThreadStateException ("ThreadGroup has threads");
+    for (int i=0; i < groups.size(); i++)
+      {
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+	tg.checkDestroy();
+      }
   }
 
-  // JDK 1.2.
-  // public void interrupt ();
-
-  public final boolean isDaemon ()
+  /** Destroy this ThreadGroup.  There can be no Threads in it,
+    * and none of its descendants (sub-groups) may have Threads in them.
+    * All its descendants will be destroyed as well.
+    * @exception IllegalThreadStateException if the ThreadGroup or
+    *		 its descendants have Threads remaining in them, or
+    *		 if the ThreadGroup in question is already destroyed.
+    * @exception SecurityException if you cannot modify this
+    *		 ThreadGroup or any of its descendants.
+    */
+  public final void destroy()
   {
-    return daemon_flag;
+    checkAccess();
+    if (destroyed_flag)
+      throw new IllegalThreadStateException("Already destroyed.");
+    checkDestroy ();
+    if (parent != null)
+      parent.remove(this);
+    destroyed_flag = true;
+    parent = null;
+
+    for (int i=0; i < groups.size(); i++)
+      {
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+	tg.destroy();
+      }
   }
-
-  public synchronized boolean isDestroyed ()
+  
+  /** Print out information about this ThreadGroup to System.out.
+    */
+  public void list()
   {
-    return destroyed_flag;
+    list("");
   }
 
   private final void list (String indentation)
@@ -214,189 +439,124 @@ public class ThreadGroup
     System.out.print(indentation);
     System.out.println(toString ());
     String sub = indentation + "    ";
-    Enumeration e = threads.elements();
-    while (e.hasMoreElements())
+    for (int i=0; i < threads.size(); i++)
       {
-	Thread t = (Thread) e.nextElement();
+        Thread t = (Thread) threads.elementAt(i);
 	System.out.print(sub);
 	System.out.println(t.toString());
       }
-    e = groups.elements();
-    while (e.hasMoreElements())
+    for (int i=0; i < groups.size(); i++)
       {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	g.list(sub);
+        ThreadGroup tg = (ThreadGroup) groups.elementAt(i);
+	tg.list(sub);
       }
   }
 
-  public void list ()
+  /** When a Thread in this ThreadGroup does not catch an exception,
+    * this method of the ThreadGroup is called.<P>
+    *
+    * ThreadGroup's implementation does the following:<BR>
+    * <OL>
+    * <LI>If there is a parent ThreadGroup, call uncaughtException()
+    *	  in the parent.</LI>
+    * <LI>If the Throwable passed is a ThreadDeath, don't do
+    *	  anything.</LI>
+    * <LI>Otherwise, call <CODE>exception.printStackTrace().</CODE></LI>
+    * </OL>
+    *
+    * @param thread the thread that exited.
+    * @param exception the uncaught exception.
+    */
+  public void uncaughtException(Thread thread, Throwable t)
   {
-    list ("");
+    if (parent != null)
+      parent.uncaughtException (thread, t);
+    else if (! (t instanceof ThreadDeath))
+      t.printStackTrace();
   }
 
-  public final boolean parentOf (ThreadGroup g)
+  /** Tell the VM whether it may suspend Threads in low memory
+    * situations.
+    * @deprecated This method is unimplemented, because it would rely on
+    *		  suspend(), which is deprecated. There is no way for a Java
+    *		  program to determine whether this has any effect whatsoever,
+    *		  so we don't need it.
+    * @return false
+    */
+  public boolean allowThreadSuspension(boolean allow)
   {
-    while (g != null)
-      {
-	if (this == g)
-	  return true;
-	g = g.parent;
-      }
     return false;
   }
 
-  // Deprecated in 1.2.
-  public final void resume ()
-  {
-    checkAccess ();
-    Enumeration e = threads.elements();
-    while (e.hasMoreElements())
-      {
-	Thread t = (Thread) e.nextElement();
-	t.resume();
-      }
-    e = groups.elements();
-    while (e.hasMoreElements())
-      {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	g.resume();
-      }
-  }
-
-  public final void setDaemon (boolean daemon)
-  {
-    checkAccess ();
-    daemon_flag = daemon;
-    // FIXME: the docs don't say you are supposed to do this.  But
-    // they don't say you aren't, either.
-    if (groups.size() == 0 && threads.size() == 0)
-      destroy ();
-  }
-
-  public final void setMaxPriority (int pri)
-  {
-    checkAccess ();
-
-    // FIXME: JDK 1.2 behaviour is different: if the newMaxPriority
-    // argument is < MIN_PRIORITY or > MAX_PRIORITY an
-    // IllegalArgumentException should be thrown.
-    if (pri >= Thread.MIN_PRIORITY && pri <= maxpri)
-      {
-	maxpri = pri;
-	
-	Enumeration e = groups.elements();
-	while (e.hasMoreElements())
-	  {
-	    ThreadGroup g = (ThreadGroup) e.nextElement();
-	    g.setMaxPriority (maxpri);
-	  }
-      }
-  }
-
-  // Deprecated in 1.2.
-  public final void stop ()
-  {
-    checkAccess ();
-    Enumeration e = threads.elements();
-    while (e.hasMoreElements())
-      {
-	Thread t = (Thread) e.nextElement();
-	t.stop();
-      }
-    e = groups.elements();
-    while (e.hasMoreElements())
-      {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	g.stop();
-      }
-  }
-
-  // Deprecated in 1.2.
-  public final void suspend ()
-  {
-    checkAccess ();
-    Enumeration e = threads.elements();
-    while (e.hasMoreElements())
-      {
-	Thread t = (Thread) e.nextElement();
-	t.suspend();
-      }
-    e = groups.elements();
-    while (e.hasMoreElements())
-      {
-	ThreadGroup g = (ThreadGroup) e.nextElement();
-	g.suspend();
-      }
-  }
-
-  // This constructor appears in the Class Libraries book but in
-  // neither the Language Spec nor the 1.2 docs.
-  public ThreadGroup ()
-  {
-    this (Thread.currentThread().getThreadGroup(), null);
-  }
-
-  public ThreadGroup (String n)
-  {
-    this (Thread.currentThread().getThreadGroup(), n);
-  }
-
-  public ThreadGroup (ThreadGroup p, String n)
-  {
-    checkAccess ();
-    if (p.destroyed_flag)
-      throw new IllegalArgumentException ();
-
-    parent = p;
-    name = n;
-    maxpri = p.maxpri;
-    threads = new Vector ();
-    groups = new Vector ();
-    daemon_flag = p.daemon_flag;
-    destroyed_flag = false;
-    p.groups.addElement(this);
-  }
-
-  // This is the constructor that is used when creating the very first
-  // ThreadGroup.  We have an arbitrary argument here just to
-  // differentiate this constructor from the others.
-  ThreadGroup (int dummy)
-  {
-    parent = null;
-    name = "main";
-    maxpri = Thread.MAX_PRIORITY;
-    threads = new Vector ();
-    groups = new Vector ();
-    daemon_flag = false;
-    destroyed_flag = false;
-  }
-
+  /** Get a human-readable representation of this ThreadGroup.
+    * @return a String representing this ThreadGroup.
+    * @specnote Language Spec and Class Libraries book disagree a bit here.
+    *		We follow the Spec, but add "ThreadGroup" per the book.  We
+    *		include "java.lang" based on the list() example in the Class
+    *		Libraries book.
+    */
   public String toString ()
   {
-    // Language Spec and Class Libraries book disagree a bit here.  We
-    // follow the Spec, but add "ThreadGroup" per the book.  We
-    // include "java.lang" based on the list() example in the Class
-    // Libraries book.
-    return "java.lang.ThreadGroup[name=" + name + ",maxpri=" + maxpri + "]";
+    return "java.lang.ThreadGroup[name=" + name + 
+           ",maxpri=" + maxpri + "]";
   }
 
-  public void uncaughtException (Thread thread, Throwable e)
+  /** Find out if the current Thread can modify this ThreadGroup.
+    * Calls the current SecurityManager's checkAccess() method to
+    * find out.  If there is none, it assumes everything's OK.
+    * @exception SecurityException if the current Thread cannot
+    *		 modify this ThreadGroup.
+    */
+  public final void checkAccess()
   {
-    // FIXME: in 1.2, this has different semantics.  In particular if
-    // this group has a parent, the exception is passed upwards and
-    // not processed locally.
-    if (! (e instanceof ThreadDeath))
+    SecurityManager sm = System.getSecurityManager();
+    if (sm != null)
+      sm.checkAccess(this);
+  }
+
+  // This is called to add a Thread to our internal list.
+  final void add(Thread t)
+  {
+    if (destroyed_flag)
+      throw new IllegalThreadStateException ("ThreadGroup is destroyed");
+  
+    threads.addElement(t);
+  }
+
+  // This is called to remove a Thread from our internal list.
+  final void remove(Thread t)
+  {
+    if (destroyed_flag)
+      throw new IllegalThreadStateException ();
+  
+    threads.removeElement(t);
+    // Daemon groups are automatically destroyed when all their threads die.
+    if (daemon_flag && groups.size() == 0 && threads.size() == 0)
       {
-	e.printStackTrace();
+	// We inline destroy to avoid the access check.
+	if (parent != null)
+	  parent.remove(this);
+	destroyed_flag = true;
       }
   }
 
-  // Private data.
-  private ThreadGroup parent;
-  private String name;
-  private int maxpri;
-  private Vector threads;
-  private Vector groups;
-  private boolean daemon_flag;
-  private boolean destroyed_flag;
+  // This is called to add a ThreadGroup to our internal list.
+  final void add(ThreadGroup g)
+  {
+    groups.addElement(g);
+  }
+
+  // This is called to remove a ThreadGroup from our internal list.
+  final void remove(ThreadGroup g)
+  {
+    groups.removeElement(g);
+    // Daemon groups are automatically destroyed when all their threads die.
+    if (daemon_flag && groups.size() == 0 && threads.size() == 0)
+      {
+	// We inline destroy to avoid the access check.
+	if (parent != null)
+	  parent.remove(this);	
+	destroyed_flag = true;
+      }
+  }
 }

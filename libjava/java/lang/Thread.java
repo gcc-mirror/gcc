@@ -198,19 +198,21 @@ public class Thread implements Runnable
 
   public Thread (ThreadGroup g, Runnable r, String n)
   {
-    // Note that CURRENT can be null when we are creating the very
-    // first thread.  That's why we check it below.
     Thread current = currentThread ();
-
-    if (g != null)
+          
+    if (g == null)
       {
-	// If CURRENT is null, then we are creating the first thread.
-	// In this case we don't do the security check.
-	if (current != null)
-	  g.checkAccess();
+	// If CURRENT is null, then we are bootstrapping the first thread. 
+	// Use ThreadGroup.root, the main threadgroup.
+	if (current == null)
+	  group = ThreadGroup.root;
+	else
+	  group = current.getThreadGroup();
       }
     else
-      g = current.getThreadGroup();
+      group = g;
+      
+    group.checkAccess();
 
     // The Class Libraries book says ``threadName cannot be null''.  I
     // take this to mean NullPointerException.
@@ -218,8 +220,7 @@ public class Thread implements Runnable
       throw new NullPointerException ();
 
     name = n;
-    group = g;
-    g.add(this);
+    group.add(this);
     runnable = r;
 
     data = null;
@@ -230,7 +231,9 @@ public class Thread implements Runnable
     if (current != null)
       {
 	daemon_flag = current.isDaemon();
-	priority = current.getPriority();
+        int gmax = group.getMaxPriority();
+	int pri = current.getPriority();
+	priority = (gmax < pri ? gmax : pri);
       }
     else
       {

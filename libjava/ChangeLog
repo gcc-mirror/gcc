@@ -1,3 +1,13 @@
+2000-06-20  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/lang/ThreadGroup.java: Merged with classpath.
+	* prims.cc (_Jv_RunMain): Don't use `main_group'.
+	* gnu/gcj/runtime/FirstThread.java: Remove ThreadGroup constructor
+	argument.
+	* java/lang/Thread.java (Thread): Bootstrap initial thread from 
+	ThreadGroup.root if Thread.currentThread is null. Honour the 
+	ThreadGroup's max priority setting.
+
 2000-06-18  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natClass.cc (forName): Removed dead code.  Initialize

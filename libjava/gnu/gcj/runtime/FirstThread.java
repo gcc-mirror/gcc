@@ -21,17 +21,17 @@ final class FirstThread extends Thread
 {
   public native void run ();
 
-  public FirstThread (ThreadGroup g, Class k, Object o)
+  public FirstThread (Class k, Object o)
   {
-    super (g, null, "main");
+    super (null, null, "main");
     klass = k;
     klass_name = null;
     args = o;
   }
 
-  public FirstThread (ThreadGroup g, String class_name, Object o)
+  public FirstThread (String class_name, Object o)
   {
-    super (g, null, "main");
+    super (null, null, "main");
     klass = null;
     klass_name = class_name;
     args = o;
