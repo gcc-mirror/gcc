@@ -422,6 +422,12 @@ reg_referenced_p (x, body)
 	  return 1;
       return 0;
       
+    case CLOBBER:
+      if (GET_CODE (XEXP (body, 0)) == MEM)
+	if (reg_overlap_mentioned_p (x, XEXP (XEXP (body, 0), 0)))
+	  return 1;
+      return 0;
+
     default:
       return 0;
     }

@@ -1,3 +1,8 @@
+2000-01-19  Geoff Keating  <geoffk@cygnus.com>
+
+	* rtlanal.c (reg_referenced_p): A CLOBBER of a MEM uses any REGs
+	inside the MEM.
+
 2000-01-20  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* loop.c (loop_optimize): Allocate loop_info structure for each loop
