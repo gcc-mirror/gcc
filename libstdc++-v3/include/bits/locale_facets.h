@@ -439,6 +439,12 @@ namespace std
     // Construct and return valid scanf format for integer types.
     static void
     _S_format_int(const ios_base& __io, char* __fptr, char __mod, char __modl);
+
+    // Used to establish gating factor for base 16 input.
+    static const double _S_scale_hex;
+    
+    // Used to establish gating factor for base 8 input.
+    static const double _S_scale_oct;
   };
 
   template<typename _CharT>

@@ -1,3 +1,13 @@
+2001-12-09  Benjamin Kosnik  <bkoz@redhat.com>
+	    Philip Martin <pmartin@uklinux.net>
+	
+	* include/bits/locale_facets.h (__num_base::_S_scale_hex): Add.
+	(__num_base::_S_scale_oct): Add.
+	* src/locale.cc: Add definitions.
+	* testsuite/27_io/istream_extractor_arith.cc (main): Call test13.
+
+	* testsuite/testsuite_hooks.h: Remove duplicate VERIFY define.
+	
 2001-12-07  Nathan Myers  <ncm@cantrip.org>
 	    Loren Rittle <ljrittle@acm.org>
 

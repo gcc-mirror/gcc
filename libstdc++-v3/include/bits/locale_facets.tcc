@@ -35,7 +35,7 @@
 #include <bits/std_cerrno.h>
 #include <bits/std_clocale.h>   // For localeconv
 #include <bits/std_cstdlib.h>   // For strof, strtold
-#include <bits/std_cmath.h>   // For ceil
+#include <bits/std_cmath.h>     // For ceil
 #include <bits/std_limits.h>    // For numeric_limits
 #include <bits/std_memory.h>    // For auto_ptr
 #include <bits/streambuf_iterator.h>     // For streambuf_iterators
@@ -299,11 +299,13 @@ namespace std
       // Figure out the maximum number of digits that can be extracted
       // for the given type, using the determined base.
       int __max_digits;
-      if (__base != 10)
-	__max_digits = static_cast<int>(ceil(__max * log(10.0)
-					   /log(static_cast<double>(__base))));
-      else 
+      if (__base == 10)
 	__max_digits = __max;
+      else if (__base == 16)
+	__max_digits = static_cast<int>(ceil(__max * _S_scale_hex));
+      else if (__base == 8)
+      __max_digits = static_cast<int>(ceil(__max * _S_scale_oct));
+
       // Add in what's already been extracted.
       __max_digits += __pos;
 
