@@ -150,7 +150,7 @@ bin_SCRIPTS = addr2name.awk
 
 GCJ_WITH_FLAGS = $(GCJ) --encoding=UTF-8
 
-GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fbootclasspath=$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
+GCJCOMPILE = $(LIBTOOL) --tag=GCJ --mode=compile $(GCJ_WITH_FLAGS) -fclasspath= -fbootclasspath=$(here) $(JC1FLAGS) -MD -MT $@ -MF $(@:.lo=.d) -c
 GCJLINK = $(LIBTOOL) --tag=GCJ --mode=link $(GCJ) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 LIBLINK = $(LIBTOOL) --tag=CXX --mode=link $(CXX) -L$(here) $(JC1FLAGS) $(LDFLAGS) -o $@
 
@@ -1717,9 +1717,8 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(data_DATA) $(toolexeclib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acconfig.h acinclude.m4 aclocal.m4 configure configure.in \
-gcj/libgcj-config.h.in gcj/stamp-h2.in include/config.h.in \
-include/stamp-h1.in libgcj-test.spec.in libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 configure configure.in \
+libgcj-test.spec.in libgcj.spec.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -2705,53 +2704,6 @@ config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
 $(srcdir)/configure: @MAINTAINER_MODE_TRUE@$(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
-
-include/config.h: include/stamp-h1
-	@if test ! -f $@; then \
-		rm -f include/stamp-h1; \
-		$(MAKE) include/stamp-h1; \
-	else :; fi
-include/stamp-h1: $(srcdir)/include/config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=include/config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > include/stamp-h1 2> /dev/null
-$(srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/include/stamp-h1.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/include/stamp-h1.in; \
-		$(MAKE) $(srcdir)/include/stamp-h1.in; \
-	else :; fi
-$(srcdir)/include/stamp-h1.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/include/stamp-h1.in 2> /dev/null
-
-gcj/libgcj-config.h: gcj/stamp-h2
-	@if test ! -f $@; then \
-		rm -f gcj/stamp-h2; \
-		$(MAKE) gcj/stamp-h2; \
-	else :; fi
-gcj/stamp-h2: $(srcdir)/gcj/libgcj-config.h.in $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES= CONFIG_HEADERS=gcj/libgcj-config.h \
-	     $(SHELL) ./config.status
-	@echo timestamp > gcj/stamp-h2 2> /dev/null
-$(srcdir)/gcj/libgcj-config.h.in: @MAINTAINER_MODE_TRUE@$(srcdir)/gcj/stamp-h2.in
-	@if test ! -f $@; then \
-		rm -f $(srcdir)/gcj/stamp-h2.in; \
-		$(MAKE) $(srcdir)/gcj/stamp-h2.in; \
-	else :; fi
-$(srcdir)/gcj/stamp-h2.in: $(top_srcdir)/configure.in $(ACLOCAL_M4) acconfig.h
-	cd $(top_srcdir) && $(AUTOHEADER)
-	@echo timestamp > $(srcdir)/gcj/stamp-h2.in 2> /dev/null
-
-mostlyclean-hdr:
-
-clean-hdr:
-
-distclean-hdr:
-	-rm -f include/config.h gcj/libgcj-config.h
-
-maintainer-clean-hdr:
 libgcj.spec: $(top_builddir)/config.status libgcj.spec.in
 	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 libgcj-test.spec: $(top_builddir)/config.status libgcj-test.spec.in
@@ -3186,32 +3138,29 @@ distclean-generic:
 	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-mostlyclean-am:  mostlyclean-hdr mostlyclean-toolexeclibLTLIBRARIES \
-		mostlyclean-compile mostlyclean-libtool \
-		mostlyclean-binPROGRAMS mostlyclean-noinstPROGRAMS \
-		mostlyclean-tags mostlyclean-depend mostlyclean-generic
+mostlyclean-am:  mostlyclean-toolexeclibLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-binPROGRAMS \
+		mostlyclean-noinstPROGRAMS mostlyclean-tags \
+		mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-recursive
 
-clean-am:  clean-hdr clean-toolexeclibLTLIBRARIES clean-compile \
-		clean-libtool clean-binPROGRAMS clean-noinstPROGRAMS \
-		clean-tags clean-depend clean-generic mostlyclean-am \
-		clean-local
+clean-am:  clean-toolexeclibLTLIBRARIES clean-compile clean-libtool \
+		clean-binPROGRAMS clean-noinstPROGRAMS clean-tags \
+		clean-depend clean-generic mostlyclean-am clean-local
 
 clean: clean-recursive
 
-distclean-am:  distclean-hdr distclean-toolexeclibLTLIBRARIES \
-		distclean-compile distclean-libtool \
-		distclean-binPROGRAMS distclean-noinstPROGRAMS \
-		distclean-tags distclean-depend distclean-generic \
-		clean-am
+distclean-am:  distclean-toolexeclibLTLIBRARIES distclean-compile \
+		distclean-libtool distclean-binPROGRAMS \
+		distclean-noinstPROGRAMS distclean-tags \
+		distclean-depend distclean-generic clean-am
 	-rm -f libtool
 
 distclean: distclean-recursive
 	-rm -f config.status
 
-maintainer-clean-am:  maintainer-clean-hdr \
-		maintainer-clean-toolexeclibLTLIBRARIES \
+maintainer-clean-am:  maintainer-clean-toolexeclibLTLIBRARIES \
 		maintainer-clean-compile maintainer-clean-libtool \
 		maintainer-clean-binPROGRAMS \
 		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
@@ -3223,9 +3172,9 @@ maintainer-clean-am:  maintainer-clean-hdr \
 maintainer-clean: maintainer-clean-recursive
 	-rm -f config.status
 
-.PHONY: mostlyclean-hdr distclean-hdr clean-hdr maintainer-clean-hdr \
-mostlyclean-toolexeclibLTLIBRARIES distclean-toolexeclibLTLIBRARIES \
-clean-toolexeclibLTLIBRARIES maintainer-clean-toolexeclibLTLIBRARIES \
+.PHONY: mostlyclean-toolexeclibLTLIBRARIES \
+distclean-toolexeclibLTLIBRARIES clean-toolexeclibLTLIBRARIES \
+maintainer-clean-toolexeclibLTLIBRARIES \
 uninstall-toolexeclibLTLIBRARIES install-toolexeclibLTLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile mostlyclean-libtool distclean-libtool \
@@ -3268,8 +3217,8 @@ libgcj.jar: $(built_java_source_files) $(java_source_files) $(x_java_source_file
 	@set fnord $(MAKEFLAGS); amf=$$2; fail=no; \
 	javac="$(JAVAC)"; \
 	cat tmp-list | (while read f; do \
-	  echo $$javac $(JCFLAGS) -bootclasspath $(here):$(srcdir) -d $(here) $$f; \
-	  $$javac $(JCFLAGS) -bootclasspath $(here):$(srcdir) -d $(here) $$f \
+	  echo $$javac $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $$f; \
+	  $$javac $(JCFLAGS) -classpath '' -bootclasspath $(here):$(srcdir) -d $(here) $$f \
 	    || case "$$amf" in *=*) exit 1;; *k*) fail=yes ;; *) exit 1;; esac; \
 	done; \
 	test "$$fail" = no)
@@ -3316,18 +3265,18 @@ libgcjx.la: $(libgcjx_la_OBJECTS) $(libgcjx_la_DEPENDENCIES)
 	-rpath $(toolexeclibdir) $(libgcjx_la_LDFLAGS) $(LIBS)
 
 .class.h:
-	$(GCJH) -bootclasspath $(top_builddir) $(basename $<)
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) $(basename $<)
 
 $(ordinary_nat_headers) $(x_nat_headers): %.h: %.class
 
 java/lang/ClassLoader.h: java/lang/ClassLoader.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 		-friend 'jclass _Jv_FindClass (_Jv_Utf8Const *name, java::lang::ClassLoader *loader);' \
 		-friend 'void _Jv_RunMain (jclass klass, const char *name, int argc, const char **argv, bool is_jar);' \
 		$(basename $<)
 
 java/lang/Thread.h: java/lang/Thread.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 		-prepend 'class _Jv_JNIEnv;' \
 		-prepend '#define _JV_NOT_OWNER 1' \
 		-prepend '#define _JV_INTERRUPTED 2' \
@@ -3340,7 +3289,7 @@ java/lang/Thread.h: java/lang/Thread.class
 		$(basename $<)
 
 java/lang/String.h: java/lang/String.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'jchar* _Jv_GetStringChars (jstring str);' \
 	    -friend 'jstring* _Jv_StringFindSlot (jchar*, jint, jint);' \
 	    -friend 'jstring* _Jv_StringGetSlot (jstring);' \
@@ -3350,21 +3299,21 @@ java/lang/String.h: java/lang/String.class
 	    $(basename $<)
 
 java/lang/reflect/Constructor.h: java/lang/reflect/Constructor.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedConstructor (java::lang::reflect::Constructor *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'jobject _Jv_JNI_ToReflectedMethod (_Jv_JNIEnv *, jclass, jmethodID, jboolean);' \
 	    $(basename $<)
 
 java/lang/reflect/Field.h: java/lang/reflect/Field.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'jfieldID _Jv_FromReflectedField (java::lang::reflect::Field *);' \
 	    -friend 'jobject _Jv_JNI_ToReflectedField (_Jv_JNIEnv*, jclass, jfieldID, jboolean);' \
 	    -friend 'class java::lang::Class;' \
 	    $(basename $<)
 
 java/lang/reflect/Method.h: java/lang/reflect/Method.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'jmethodID _Jv_FromReflectedMethod (java::lang::reflect::Method *);' \
 	    -friend 'class java::lang::Class;' \
 	    -friend 'class java::io::ObjectInputStream;' \
@@ -3372,16 +3321,16 @@ java/lang/reflect/Method.h: java/lang/reflect/Method.class
 	    $(basename $<)
 
 gnu/gcj/runtime/VMClassLoader.h: gnu/gcj/runtime/VMClassLoader.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	    -friend 'class ::java::lang::ClassLoader;' \
 	    $(basename $<)
 
 java/io/ObjectInputStream$$GetField.h: java/io/ObjectInputStream.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'java/io/ObjectInputStream$$GetField'
 
 java/io/ObjectOutputStream$$PutField.h: java/io/ObjectOutputStream.class
-	$(GCJH) -bootclasspath $(top_builddir) \
+	$(GCJH) -classpath '' -bootclasspath $(top_builddir) \
 	'java/io/ObjectOutputStream$$PutField'
 
 $(extra_headers):

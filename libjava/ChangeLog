@@ -1,3 +1,8 @@
+2002-03-16  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* Makefile.am: Use empty -classpath flag in addition to -bootclasspath.
+	* Makefile.in: Rebuilt.
+
 2002-03-15  Anthony Green  <green@redhat.com>
 
 	* configure.host (FILE): New macro for specifing File
