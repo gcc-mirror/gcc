@@ -84,8 +84,12 @@ case "${target_os}" in
   linux* | gnu*)
     os_include_dir="config/os/gnu-linux"
     ;;
-  irix6.5*)
-    os_include_dir="config/os/irix"
+  irix[1-6] | irix[1-5].* | irix6.[0-4])
+   # This is known to work on at least IRIX 5.2 and 6.3.
+   os_include_dir="config/os/irix/irix5.2"
+   ;;
+  irix6.5)
+    os_include_dir="config/os/irix/irix6.5"
     ;;
   netbsd*)
     os_include_dir="config/os/bsd/netbsd"
