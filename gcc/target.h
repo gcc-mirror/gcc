@@ -130,12 +130,6 @@ struct gcc_target
     int (* reorder)  PARAMS ((FILE *, int, rtx *, int *, int));
     int (* reorder2) PARAMS ((FILE *, int, rtx *, int *, int));
 
-    /* cycle_display is a pointer to a function which can emit
-       data into the assembly stream about the current cycle.
-       Arguments are CLOCK, the data to emit, and LAST, the last
-       insn in the new chain we're building.  Returns a new LAST.
-       The default is to do nothing.  */
-    rtx (* cycle_display) PARAMS ((int clock, rtx last));
     /* The following member value is a pointer to a function returning
        nonzero if we should use DFA based scheduling.  The default is
        to use the old pipeline scheduler.  */
