@@ -739,24 +739,41 @@
   ""
   "mcomb %1, %0")
 
+;; test instruction
+
+;; We don't want to allow a constant operand for test insns because
+;; (set (cc0) (const_int foo)) has no mode information.  Such insns will
+;; be folded while optimizing anyway.
+
+(define_insn "tstsi"
+  [(set (cc0) (match_operand:SI 0 "nonimmediate_operand" "mr"))]
+  ""
+  "TSTW %0")
+
+(define_insn "tsthi"
+  [(set (cc0) (match_operand:HI 0 "nonimmediate_operand" "mr"))]
+  ""
+  "TSTH %0")
+
+(define_insn "tstqi"
+  [(set (cc0) (match_operand:QI 0 "nonimmediate_operand" "mr"))]
+  ""
+  "TSTB {sbyte}%0")
+
 ;; compare instruction
 
 (define_insn "cmpsi"
-  [(set (cc0) (compare (match_operand:SI 0 "general_operand" "mri")
+  [(set (cc0) (compare (match_operand:SI 0 "nonimmediate_operand" "mr")
                        (match_operand:SI 1 "general_operand" "mri")))]
   ""
   "CMPW %1, %0")
 
 (define_insn "cmphi"
-  [(set (cc0) (compare (match_operand:HI 0 "general_operand" "mri")
+  [(set (cc0) (compare (match_operand:HI 0 "nonimmediate_operand" "mr")
                        (match_operand:HI 1 "general_operand" "mri")))]
   ""
   "*
   {
-
-  if (GET_CODE (operands[0]) == CONST_INT && 
-    ((unsigned long)INTVAL (operands[0]) & 0x8000L))
-    operands[0] = gen_rtx(CONST_INT, SImode, INTVAL(operands[0]) | 0xffff0000L);
 
   if (GET_CODE (operands[1]) == CONST_INT &&
     ((unsigned long)INTVAL (operands[1]) & 0x8000L))
@@ -768,58 +785,17 @@
   }")
 
 (define_insn "cmpqi"
-  [(set (cc0) (compare (match_operand:QI 0 "general_operand" "mri")
+  [(set (cc0) (compare (match_operand:QI 0 "nonimmediate_operand" "mr")
                        (match_operand:QI 1 "general_operand" "mri")))]
   ""
   "*
   {
-
-  if (GET_CODE (operands[0]) == CONST_INT && 
-    ((unsigned long)INTVAL (operands[0]) & 0x80L))
-    operands[0] = gen_rtx(CONST_INT, SImode, INTVAL(operands[0]) | 0xffffff00L);
 
   if (GET_CODE (operands[1]) == CONST_INT &&
     ((unsigned long)INTVAL (operands[1]) & 0x80L))
     operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) | 0xffffff00L);
 
   output_asm_insn(\"CMPB {sbyte}%1, {sbyte}%0\",operands);
-
-  return \"\";
-  }")
-
-;; test instruction
-
-(define_insn "tstsi"
-  [(set (cc0) (match_operand:SI 0 "general_operand" "mri"))]
-  ""
-  "TSTW %0")
-
-(define_insn "tsthi"
-  [(set (cc0) (match_operand:HI 0 "general_operand" "mri"))]
-  ""
-  "*
-  {
-
-  if (GET_CODE (operands[0]) == CONST_INT &&
-    ((unsigned long)INTVAL (operands[0]) & 0x8000L))
-    operands[0] = gen_rtx(CONST_INT, SImode, INTVAL(operands[0]) | 0xffff0000L);
-
-  output_asm_insn(\"TSTH %0\",operands);
-
-  return \"\";
-  }")
-
-(define_insn "tstqi"
-  [(set (cc0) (match_operand:QI 0 "general_operand" "mri"))]
-  ""
-  "*
-  {
-
-  if (GET_CODE (operands[0]) == CONST_INT &&
-    ((unsigned long)INTVAL (operands[0]) & 0x80L))
-    operands[0] = gen_rtx(CONST_INT, SImode, INTVAL(operands[0]) | 0xffffff00L);
-
-  output_asm_insn(\"TSTB {sbyte}%0\",operands);
 
   return \"\";
   }")
@@ -928,21 +904,95 @@
 
 ;; bit field instructions
 
-;; (define_insn "extzv"
-;;   [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
-;;         (zero_extract:SI (match_operand:SI 1 "register_operand" "mr")
-;;                          (match_operand:SI 2 "general_operand" "mri")
-;;                          (match_operand:SI 3 "general_operand" "mri")))]
-;;   ""
-;;   "EXTFW %2, %3, %1, %0")
+(define_insn "extzv"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
+        (zero_extract:SI (match_operand:SI 1 "general_operand" "mri")
+                         (match_operand:SI 2 "immediate_operand" "i")
+                         (match_operand:SI 3 "general_operand" "mri")))]
+  ""
+  "*
+  {
 
-;; (define_insn "insv"
-;;   [(set (zero_extract:SI (match_operand:SI 0 "register_operand" "+mr")
-;;                          (match_operand:SI 1 "general_operand" "mri")
-;;                          (match_operand:SI 2 "general_operand" "mri"))
-;;         (match_operand:SI 3 "general_operand" "mri"))]
-;;   ""
-;;   "INSFW %1, %2, %3, %0")
+  operands[2] = gen_rtx(CONST_INT, SImode, INTVAL(operands[2]) - 1);
+  output_asm_insn(\"EXTFW %2, %3, %1, %0\",operands);
+
+  return \"\";
+  }")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
+        (zero_extract:SI (match_operand:HI 1 "general_operand" "mri")
+                         (match_operand:SI 2 "immediate_operand" "i")
+                         (match_operand:SI 3 "general_operand" "mri")))]
+  ""
+  "*
+  {
+
+  operands[2] = gen_rtx(CONST_INT, SImode, INTVAL(operands[2]) - 1);
+  output_asm_insn(\"EXTFH %2, %3, {uhalf}%1, {uword}%0\",operands);
+
+  return \"\";
+  }")
+
+(define_insn ""
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=mr")
+        (zero_extract:SI (match_operand:QI 1 "general_operand" "mri")
+                         (match_operand:SI 2 "immediate_operand" "i")
+                         (match_operand:SI 3 "general_operand" "mri")))]
+  ""
+  "*
+  {
+
+  operands[2] = gen_rtx(CONST_INT, SImode, INTVAL(operands[2]) - 1);
+  output_asm_insn(\"EXTFB %2, %3, {ubyte}%1, {uword}%0\",operands);
+
+  return \"\";
+  }")
+
+(define_insn "insv"
+  [(set (zero_extract:SI (match_operand:SI 0 "nonimmediate_operand" "+mr")
+                         (match_operand:SI 1 "immediate_operand" "i")
+                         (match_operand:SI 2 "general_operand" "mri"))
+        (match_operand:SI 3 "general_operand" "mri"))]
+  ""
+  "*
+  {
+
+  operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) - 1);
+  output_asm_insn(\"INSFW %1, %2, %3, %0\",operands);
+
+  return \"\";
+  }")
+
+(define_insn ""
+  [(set (zero_extract:SI (match_operand:HI 0 "nonimmediate_operand" "+mr")
+                         (match_operand:SI 1 "immediate_operand" "i")
+                         (match_operand:SI 2 "general_operand" "mri"))
+        (match_operand:SI 3 "general_operand" "mri"))]
+  ""
+  "*
+  {
+
+  operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) - 1);
+  output_asm_insn(\"INSFH %1, %2, {uword}%3, {uhalf}%0\",operands);
+
+  return \"\";
+  }")
+
+(define_insn ""
+  [(set (zero_extract:SI (match_operand:QI 0 "nonimmediate_operand" "+mr")
+                         (match_operand:SI 1 "immediate_operand" "i")
+                         (match_operand:SI 2 "general_operand" "mri"))
+        (match_operand:SI 3 "general_operand" "mri"))]
+  ""
+  "*
+  {
+
+  operands[1] = gen_rtx(CONST_INT, SImode, INTVAL(operands[1]) - 1);
+  output_asm_insn(\"INSFB %1, %2, {uword}%3, {ubyte}%0\",operands);
+
+  return \"\";
+  }")
 
 ;; conditional branch instructions
 
