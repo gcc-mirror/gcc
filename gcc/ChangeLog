@@ -1,5 +1,11 @@
 2000-03-02  Jason Merrill  <jason@casey.cygnus.com>
 
+	* cpplib.h (CPP_PEDANTIC): Only true if system_header_p is not set
+	for the buffer.
+	(SET_CPP_PEDANTIC): New macro.
+	* cpplib.c (do_include): Don't bother checking system_header_p.
+	(do_warning, do_ident, do_assert, do_unassert): Likewise.
+
 	* function.h (struct expr_status): Add x_arg_space_so_far.
 	(arg_space_so_far): New macro.
 	* expr.c (init_expr): Initialize it.
