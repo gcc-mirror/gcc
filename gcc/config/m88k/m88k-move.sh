@@ -3,7 +3,7 @@
 #	If your shell doesn't support functions (true for some BSD users),
 #	you might try using GNU's bash.
 #
-#ident "@(#) m88k-move.sh 3-Jan-92"
+#ident "@(#) m88k-move.sh 1-Sep-92"
 #
 #	This file provided by Data General, February 1990.
 #
@@ -31,6 +31,7 @@
 #
 #.Revision History
 #
+#	 1-Sep-92   Stan Cox   Added moveDI96x, moveDI41x through moveDI47x.
 #	 2-Jan-92   Tom Wood   Renamed files to comply with SVR3 14 char limit.
 #	26-Oct-90   Tom Wood   Delete movstr.h; moved to out-m88k.c.
 #	17-Oct-90   Tom Wood   Files are named *.asm rather than *.s.
@@ -61,14 +62,17 @@ usage() {
 
 awk_flag="-F:";
 awk_begin="BEGIN { "
+ps=""; us="_"; tf="x"; la="@L"; fb="8"; nt="";
 do_file() {
     echo "	file	 $1";
 }
 
 while [ $# -gt 0 ] ; do
     case $1 in
-	-no-tdesc) awk_begin="$awk_begin no_tdesc=1;";;
+	-no-tdesc) awk_begin="$awk_begin no_tdesc=1;"
+	      nt=";";;
 	-abi) awk_begin="$awk_begin abi=1;"
+	      ps="#"; us=""; tf="a"; la=".L"; fb="16";
 	      do_file() {
 		echo '	version	 "03.00"';
 		echo "	file	 $1";
@@ -99,9 +103,9 @@ rm -f move?I*[xn].s move?I*[xn].asm
 gen_movstrN() {
   awk $awk_flag "$awk_begin"'
     if (abi) {
-      ps="#"; us=""; tf="a";
+      ps="#"; us=""; tf="a"; la=".L"; fb=16;
     } else {
-      ps=""; us="_"; tf="x";
+      ps=""; us="_"; tf="x"; la="@L"; fb=8;
     }
   }
   NR == 1 && NF == 4 {
@@ -110,8 +114,8 @@ gen_movstrN() {
 
     printf "; The following was calculated using awk.\n";
     printf "\ttext\n";
-    printf "\talign\t16\n";
-    printf "loop%s%d:\n", mode, count * align;
+    printf "\talign\t%d\n", fb;
+    printf "%sloop%s%d:\n", la, mode, count * align;
     printf "\taddu\t%sr3,%sr3,%d\n", ps, ps, count * align;
     printf "\taddu\t%sr2,%sr2,%d\n", ps, ps, count * align;
     printf "\tsubu\t%sr6,%sr6,1\n", ps, ps;
@@ -127,7 +131,7 @@ gen_movstrN() {
         printf "\tst%s\t%sr%d,%sr2,%d\n", suffix, ps, 5 - evenp, ps, st;
       } else if (r == 2) {
 	printf "\tld%s\t%sr%d,%sr3,%d\n", suffix, ps, 4 + evenp, ps, ld;
-	printf "\tbcnd.n\t%sgt0,%sr6,loop%s%d\n", ps, ps, mode, count * align;
+	printf "\tbcnd.n\t%sgt0,%sr6,%sloop%s%d\n", ps, ps, la, mode, count * align;
         printf "\tst%s\t%sr%d,%sr2,%d\n", suffix, ps, 5 - evenp, ps, st;
         printf "\tjmp.n\t%sr1\n", ps;
       } else {
@@ -136,16 +140,11 @@ gen_movstrN() {
       ld += align; st += align;
     }
     if (!no_tdesc) {
-      printf "end%s%d:\n", mode, count * align;
+      printf "%send%s%d:\n", la, mode, count * align;
       printf "\tsection\t.tdesc,\"%s\"\n", tf;
-      printf "\tword\t0x42\n";
-      printf "\tword\t1\n";
-      printf "\tword\tloop%s%d\n", mode, count * align;
-      printf "\tword\tend%s%d\n", mode, count * align;
-      printf "\tword\t0x0100001f\n";
-      printf "\tword\t0\n";
-      printf "\tword\t1\n";
-      printf "\tword\t0\n";
+      printf "\tword\t0x42,1,%sloop%s%d", la, mode, count * align;
+      printf ",%send%s%d\n", la, mode, count * align;
+      printf "\tword\t0x0100001f,0,1,0\n";
       printf "\ttext\n";
     }
     printf "; End of awk generated code.\n";
@@ -175,17 +174,18 @@ gen_movstrN() {
 gen_movstrX0() {
     awk $awk_flag "$awk_begin"'
       if (abi) {
-	ps="#"; us=""; tf="a";
+	ps="#"; us=""; tf="a"; la=".L"; fb=16;
       } else {
-	ps=""; us="_"; tf="x";
+	ps=""; us="_"; tf="x"; la="@L"; fb=8;
       }
     }
     NR == 1 && NF == 4 {
     mode = $1; suffix = $2; align = $3; bytes = $4;
     ld = align; st = 0; count = bytes / align;
+    reg[0] = 4; if (align == 8) reg[1] = 6; else reg[1] = 5;
     printf "; The following was calculated using awk.\n";
     printf "\ttext\n";
-    printf "\talign\t16\n";
+    printf "\talign\t%d\n", fb;
     for (r = count; r >= 1; r--) {
       evenp = r % 2;
       name = sprintf("__%smovstr%s%dx%d", us, mode, count * align, r * align);
@@ -196,21 +196,16 @@ gen_movstrX0() {
       if (r == 1)
         printf "\tjmp.n\t%sr1\n", ps;
       else
-        printf "\tld%s\t%sr%d,%sr3,%d\n", suffix, ps, 4 + evenp, ps, ld;
-      printf "\tst%s\t%sr%d,%sr2,%d\n", suffix, ps, 5 - evenp, ps, st;
+        printf "\tld%s\t%sr%d,%sr3,%d\n", suffix, ps, reg[evenp], ps, ld;
+      printf "\tst%s\t%sr%d,%sr2,%d\n", suffix, ps, reg[1-evenp], ps, st;
       ld += align; st += align;
     }
     if (!no_tdesc) {
-      printf "end%s%dx:\n", mode, count * align;
+      printf "%send%s%dx:\n", la, mode, count * align;
       printf "\tsection\t.tdesc,\"%s\"\n", tf;
-      printf "\tword\t0x42\n";
-      printf "\tword\t1\n";
-      printf "\tword\t__%smovstr%s%dx%d\n", us, mode, count * align, count * align;
-      printf "\tword\tend%s%dx\n", mode, count * align;
-      printf "\tword\t0x0100001f\n";
-      printf "\tword\t0\n";
-      printf "\tword\t1\n";
-      printf "\tword\t0\n";
+      printf "\tword\t0x42,1,__%smovstr%s%dx%d", us, mode, count * align, count * align;
+      printf ",%send%s%dx\n", la, mode, count * align;
+      printf "\tword\t0x0100001f,0,1,0\n";
       printf "\ttext\n";
     }
     printf "; End of awk generated code.\n"
@@ -224,6 +219,8 @@ gen_movstrX0() {
  echo 'HI:.h:2:48' | gen_movstrX0) > moveHI48x.asm
 (do_file '"movstrSI96x.s"';
  echo 'SI::4:96'   | gen_movstrX0) > moveSI96x.asm
+(do_file '"movstrDI96x.s"';
+ echo 'DI:.d:8:96'   | gen_movstrX0) > moveDI96x.asm
 
 #.Implementation_continued[=-----------------------------------------------
 #
@@ -235,24 +232,26 @@ gen_movstrX0() {
 gen_movstrXr() {
     awk $awk_flag "$awk_begin"'
       if (abi) {
-	ps="#"; us=""; tf="a";
+	ps="#"; us=""; tf="a"; la=".L"; fb=16;
       } else {
-	ps=""; us="_"; tf="x";
+	ps=""; us="_"; tf="x"; la="@L"; fb=8;
       }
     }
     NR == 1 && NF == 4 {
     mode = $1; rem = $2; most = $3; count = $4;
-    suffix[1] = ".b"; suffix[2] = ".h"; suffix[4] = "";
+    suffix[1] = ".b"; suffix[2] = ".h"; suffix[4] = ""; suffix[8] = ".d";
 
     prev = align = most;
     ld = align; st = 0; total = count - rem - most;
     evenp = int(total/align) % 2;
+    reg[0] = 4; if (align == 8) reg[1] = 6; else reg[1] = 5;
     printf "; The following was calculated using awk.\n";
     printf "\ttext\n";
-    printf "\talign\t16\n";
+    printf "\talign\t%d\n", fb;
     for (bytes = total; bytes >= 0; bytes -= align) {
       if (bytes < align) {
-	if (bytes >= 2) align = 2;
+	if (bytes >= 4) align = 4;
+	else if (bytes >= 2) align = 2;
 	else align = 1;
       }
       name = sprintf("__%smovstr%s%dx%d", us, mode, total + most, bytes + most);
@@ -263,25 +262,17 @@ gen_movstrXr() {
       if (bytes == 0)
 	printf "\tjmp.n\t%sr1\n", ps;
       else
-	printf "\tld%s\t%sr%d,%sr3,%d\n", suffix[align], ps, 4 + evenp, ps, ld;
-      printf "\tst%s\t%sr%d,%sr2,%d\n", suffix[prev], ps, 5 - evenp, ps, st;
+	printf "\tld%s\t%sr%d,%sr3,%d\n", suffix[align], ps, reg[evenp], ps, ld;
+      printf "\tst%s\t%sr%d,%sr2,%d\n", suffix[prev], ps, reg[1-evenp], ps, st;
       ld += align; st += prev; prev = align;
-      if (evenp)
-	evenp = 0;
-      else
-	evenp = 1;
+      evenp = 1 - evenp;
     }
     if (!no_tdesc) {
-      printf "end%s%dx:\n", mode, total + most;
+      printf "%send%s%dx:\n", la, mode, total + most;
       printf "\tsection\t.tdesc,\"%s\"\n", tf;
-      printf "\tword\t0x42\n";
-      printf "\tword\t1\n";
-      printf "\tword\t__%smovstr%s%dx%d\n", us, mode, total + most, total + most;
-      printf "\tword\tend%s%dx\n", mode, total + most;
-      printf "\tword\t0x0100001f\n";
-      printf "\tword\t0\n";
-      printf "\tword\t1\n";
-      printf "\tword\t0\n";
+      printf "\tword\t0x42,1,__%smovstr%s%dx%d", us, mode, total + most, total + most;
+      printf ",%send%s%dx\n", la, mode, total + most;
+      printf "\tword\t0x0100001f,0,1,0\n";
       printf "\ttext\n";
     }
     printf "; End of awk generated code.\n"
@@ -289,11 +280,27 @@ gen_movstrXr() {
   }'
 }
 
+(do_file '"movstrDI47x.s"';
+ echo 'DI:1:8:48' | gen_movstrXr) > moveDI47x.asm
+(do_file '"movstrDI46x.s"';
+ echo 'DI:2:8:48' | gen_movstrXr) > moveDI46x.asm
+(do_file '"movstrDI45x.s"';
+ echo 'DI:3:8:48' | gen_movstrXr) > moveDI45x.asm
+(do_file '"movstrDI44x.s"';
+ echo 'DI:4:8:48' | gen_movstrXr) > moveDI44x.asm
+(do_file '"movstrDI43x.s"';
+ echo 'DI:5:8:48' | gen_movstrXr) > moveDI43x.asm
+(do_file '"movstrDI42x.s"';
+ echo 'DI:6:8:48' | gen_movstrXr) > moveDI42x.asm
+(do_file '"movstrDI41x.s"';
+ echo 'DI:7:8:48' | gen_movstrXr) > moveDI41x.asm
+
 (do_file '"movstrSI47x.s"';
  echo 'SI:1:4:48' | gen_movstrXr) > moveSI47x.asm
 (do_file '"movstrSI46x.s"';
  echo 'SI:2:4:48' | gen_movstrXr) > moveSI46x.asm
 (do_file '"movstrSI45x.s"';
  echo 'SI:3:4:48' | gen_movstrXr) > moveSI45x.asm
+
 (do_file '"movstrHI15x.s"';
  echo 'HI:1:2:16' | gen_movstrXr) > moveHI15x.asm
