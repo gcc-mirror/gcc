@@ -408,6 +408,8 @@ static void dump_edge_info		PARAMS ((FILE *, edge, int));
 
 static void invalidate_mems_from_autoinc PARAMS ((struct propagate_block_info *,
 						  rtx));
+static void invalidate_mems_from_set	PARAMS ((struct propagate_block_info *,
+						 rtx));
 static void remove_fake_successors	PARAMS ((basic_block));
 static void flow_nodes_print		PARAMS ((const char *, const sbitmap, 
 						 FILE *));
@@ -4352,6 +4354,39 @@ invalidate_mems_from_autoinc (pbi, insn)
     }
 }
 
+/* EXP is either a MEM or a REG.  Remove any dependant entries
+   from pbi->mem_set_list.  */
+
+static void
+invalidate_mems_from_set (pbi, exp)
+     struct propagate_block_info *pbi;
+     rtx exp;
+{
+  rtx temp = pbi->mem_set_list;
+  rtx prev = NULL_RTX;
+  rtx next;
+
+  while (temp)
+    {
+      next = XEXP (temp, 1);
+      if ((GET_CODE (exp) == MEM
+	   && output_dependence (XEXP (temp, 0), exp))
+	  || (GET_CODE (exp) == REG
+	      && reg_overlap_mentioned_p (exp, XEXP (temp, 0))))
+	{
+	  /* Splice this entry out of the list.  */
+	  if (prev)
+	    XEXP (prev, 1) = next;
+	  else
+	    pbi->mem_set_list = next;
+	  free_EXPR_LIST_node (temp);
+	}
+      else
+	prev = temp;
+      temp = next;
+    }
+}
+
 /* Process the registers that are set within X.  Their bits are set to
    1 in the regset DEAD, because they are dead prior to this insn.
 
@@ -4533,31 +4568,7 @@ mark_set_1 (pbi, code, reg, cond, insn, flags)
   if (optimize && (flags & PROP_SCAN_DEAD_CODE))
     {
       if (GET_CODE (reg) == MEM || GET_CODE (reg) == REG)
-	{
-	  rtx temp = pbi->mem_set_list;
-	  rtx prev = NULL_RTX;
-	  rtx next;
-
-	  while (temp)
-	    {
-	      next = XEXP (temp, 1);
-	      if ((GET_CODE (reg) == MEM
-		   && output_dependence (XEXP (temp, 0), reg))
-		  || (GET_CODE (reg) == REG
-		      && reg_overlap_mentioned_p (reg, XEXP (temp, 0))))
-		{
-		  /* Splice this entry out of the list.  */
-		  if (prev)
-		    XEXP (prev, 1) = next;
-		  else
-		    pbi->mem_set_list = next;
-		  free_EXPR_LIST_node (temp);
-		}
-	      else
-		prev = temp;
-	      temp = next;
-	    }
-	}
+	invalidate_mems_from_set (pbi, reg);
 
       /* If the memory reference had embedded side effects (autoincrement
 	 address modes.  Then we may need to kill some entries on the
@@ -5763,22 +5774,24 @@ try_pre_increment_1 (pbi, insn)
       && ! dead_or_set_p (y, SET_DEST (x))
       && try_pre_increment (y, SET_DEST (x), amount))
     {
-      /* We have found a suitable auto-increment
-	 and already changed insn Y to do it.
-	 So flush this increment-instruction.  */
-      PUT_CODE (insn, NOTE);
-      NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
-      NOTE_SOURCE_FILE (insn) = 0;
-      /* Count a reference to this reg for the increment
-	 insn we are deleting.  When a reg is incremented.
-	 spilling it is worse, so we want to make that
-	 less likely.  */
+      /* We have found a suitable auto-increment and already changed
+	 insn Y to do it.  So flush this increment instruction.  */
+      propagate_block_delete_insn (pbi->bb, insn);
+
+      /* Count a reference to this reg for the increment insn we are
+	 deleting.  When a reg is incremented, spilling it is worse,
+	 so we want to make that less likely.  */
       if (regno >= FIRST_PSEUDO_REGISTER)
 	{
 	  REG_N_REFS (regno) += (optimize_size ? 1
 				 : pbi->bb->loop_depth + 1);
 	  REG_N_SETS (regno)++;
 	}
+
+      /* Flush any remembered memories depending on the value of
+	 the incremented register.  */
+      invalidate_mems_from_set (pbi, SET_DEST (x));
+
       return 1;
     }
   return 0;
