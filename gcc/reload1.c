@@ -286,9 +286,6 @@ char *reload_firstobj;
 
 /* List of labels that must never be deleted.  */
 extern rtx forced_labels;
-
-/* Allocation number table from global register allocation.  */
-extern int *reg_allocno;
 
 /* This structure is used to record information about register eliminations.
    Each array entry describes one possible way of eliminating a register
@@ -374,7 +371,7 @@ static void mark_not_eliminable		PROTO((rtx, rtx));
 static int spill_hard_reg		PROTO((int, int, FILE *, int));
 static void scan_paradoxical_subregs	PROTO((rtx));
 static int hard_reg_use_compare		PROTO((const GENERIC_PTR, const GENERIC_PTR));
-static void order_regs_for_reload	PROTO((int));
+static void order_regs_for_reload	PROTO((void));
 static int compare_spill_regs		PROTO((const GENERIC_PTR, const GENERIC_PTR));
 static void reload_as_needed		PROTO((rtx, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
@@ -853,7 +850,7 @@ reload (first, global, dumpfile)
   /* Compute the order of preference for hard registers to spill.
      Store them by decreasing preference in potential_reload_regs.  */
 
-  order_regs_for_reload (global);
+  order_regs_for_reload ();
 
   /* So far, no hard regs have been spilled.  */
   n_spills = 0;
@@ -3926,8 +3923,7 @@ hard_reg_use_compare (p1p, p2p)
    Store them in order of decreasing preference in potential_reload_regs.  */
 
 static void
-order_regs_for_reload (global)
-     int global;
+order_regs_for_reload ()
 {
   register int i;
   register int o = 0;
@@ -3956,15 +3952,7 @@ order_regs_for_reload (global)
 	{
 	  int lim = regno + HARD_REGNO_NREGS (regno, PSEUDO_REGNO_MODE (i));
 	  while (regno < lim)
-	    {
-	      /* If allocated by local-alloc, show more uses since
-		 we're not going to be able to reallocate it, but
-		 we might if allocated by global alloc.  */
-	      if (global && reg_allocno[i] < 0)
-		hard_reg_n_uses[regno].uses += (REG_N_REFS (i) + 1) / 2;
-
-	      hard_reg_n_uses[regno++].uses += REG_N_REFS (i);
-	    }
+	    hard_reg_n_uses[regno++].uses += REG_N_REFS (i);
 	}
       large += REG_N_REFS (i);
     }

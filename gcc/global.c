@@ -78,7 +78,7 @@ static int max_allocno;
 /* Indexed by (pseudo) reg number, gives the allocno, or -1
    for pseudo registers which are not to be allocated.  */
 
-int *reg_allocno;
+static int *reg_allocno;
 
 /* Indexed by allocno, gives the reg number.  */
 
