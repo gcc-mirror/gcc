@@ -1887,7 +1887,10 @@ the quotient.
 @item (smin:@var{m} @var{x} @var{y})
 @itemx (smax:@var{m} @var{x} @var{y})
 Represents the smaller (for @code{smin}) or larger (for @code{smax}) of
-@var{x} and @var{y}, interpreted as signed integers in mode @var{m}.
+@var{x} and @var{y}, interpreted as signed values in mode @var{m}.
+When used with floating point, if both operands are zeros, or if either
+operand is @code{NaN}, then it is unspecified which of the two operands
+is returned as the result.
 
 @findex umin
 @findex umax
