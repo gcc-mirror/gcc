@@ -217,7 +217,7 @@ ffi_java_ptrarray_to_raw (ffi_cif *cif, void **args, ffi_raw *raw)
 
 	default:
 #if FFI_SIZEOF_ARG == 8
-	  FFI_ASSERT(FALSE);	/* Should have covered all cases */
+	  FFI_ASSERT(0);	/* Should have covered all cases */
 #else	
 	  memcpy ((void*) raw->data, (void*)*args, (*tp)->size);
 	  raw += ALIGN ((*tp)->size, FFI_SIZEOF_ARG) / FFI_SIZEOF_ARG;
