@@ -1,3 +1,10 @@
+2004-12-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/18731
+	* g++.dg/parser/struct-1.C: New test.
+	* g++.dg/parser/struct-2.C: New test.
+	* g++.dg/parser/struct-3.C: New test.
+
 2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/16681

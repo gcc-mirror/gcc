@@ -1,3 +1,8 @@
+2004-12-10  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/18731
+	* parser.c (cp_parser_class_head): Reject typedef-name in class head.
+
 2004-12-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/16681
