@@ -1,3 +1,9 @@
+2004-12-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR 18458
+	* Makefile.in (install): Add @EXEEXT@ to the end of the program name,
+	fixincl.
+
 2004-12-02  Richard Sandiford  <rsandifo@redhat.com>
 
 	* configure.ac: Use TL_AC_GCC_VERSION to set gcc_version.
