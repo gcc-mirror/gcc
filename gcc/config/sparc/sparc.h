@@ -710,12 +710,14 @@ extern int sparc_mode_class[];
    Zero means the frame pointer need not be set up (and parms
    may be accessed via the stack pointer) in functions that seem suitable.
    This is computed in `reload', in reload1.c.
+   Used in flow.c, global.c, and reload1.c.
 
-   Used in flow.c, global.c, and reload1.c.  */
-extern int leaf_function;
-
+   Being a non-leaf function does not mean a frame pointer is needed in the
+   flat window model.  However, the debugger won't be able to backtrace through
+   us with out it.  */
 #define FRAME_POINTER_REQUIRED \
-  (TARGET_FRW ? (current_function_calls_alloca || current_function_varargs) \
+  (TARGET_FRW ? (current_function_calls_alloca || current_function_varargs \
+		 || !leaf_function_p ()) \
    : ! (leaf_function_p () && only_leaf_regs_used ()))
 
 /* C statement to store the difference between the frame pointer
@@ -1515,6 +1517,7 @@ do {									\
    to do a "save" insn.  The decision about whether or not
    to do this is made in regclass.c.  */
 
+extern int leaf_function;
 #define FUNCTION_PROLOGUE(FILE, SIZE)				\
   (TARGET_FRW ? sparc_flat_output_function_prologue (FILE, SIZE) \
    : output_function_prologue (FILE, SIZE, leaf_function))
