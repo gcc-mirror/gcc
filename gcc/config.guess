@@ -79,6 +79,11 @@ case "${UNAME_MACHINE}:${UNAME_SYSTEM}:${UNAME_RELEASE}:${UNAME_VERSION}" in
 	echo sparc-sun-solaris3`echo ${UNAME_RELEASE}|sed -e 's/[^.]*//'`
 	exit 0 ;;
     sun4*:SunOS:*:*)
+	case "`/usr/bin/arch -k`" in
+	    Series*|S4*)
+		UNAME_RELEASE=`uname -v`
+		;;
+	esac
 	# Japanese Language versions have a version number like `4.1.3-JL'.
 	echo sparc-sun-sunos`echo ${UNAME_RELEASE}|sed -e 's/-/_/'`
 	exit 0 ;;
