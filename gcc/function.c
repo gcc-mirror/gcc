@@ -4530,7 +4530,7 @@ assign_parms (tree fndecl)
 
 		 Internally, gcc assumes that the argument pointer is
 		 aligned to STACK_BOUNDARY bits.  This is used both for
-		 alignment optimisations (see init_emit) and to locate
+		 alignment optimizations (see init_emit) and to locate
 		 arguments that are aligned to more than PARM_BOUNDARY
 		 bits.  We must preserve this invariant by rounding
 		 CURRENT_FUNCTION_PRETEND_ARGS_SIZE up to a stack

@@ -1724,7 +1724,7 @@ function_arg_advance (CUMULATIVE_ARGS *cum, enum machine_mode mode, tree type)
 
 
 /* Return an RTL expression containing the register for the given mode,
-   or 0 if the argument is to be passed on the stack.  INCOMING_P is non-zero
+   or 0 if the argument is to be passed on the stack.  INCOMING_P is nonzero
    if this is an incoming argument to the current function.  */
 
 rtx

@@ -476,7 +476,7 @@
 ;
 ; C4x FUNCTIONAL UNITS
 ;
-; Define functional units for instruction scheduling to minimise
+; Define functional units for instruction scheduling to minimize
 ; pipeline conflicts.
 ;
 ; With the C3x, an external memory write (with no wait states) takes

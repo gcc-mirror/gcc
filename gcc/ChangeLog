@@ -1,5 +1,16 @@
 2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* fold-const.c: Follow spelling conventions.
+	* function.c: Likewise.
+	* config/c4x/c4x.h: Likewise.
+	* config/c4x/c4x.md: Likewise.
+	* config/frv/frv.md: Likewise.
+	* config/rs6000/aix.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
+2003-10-05  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* c-pretty-print.c: Fix comment formatting.
 	* cfglayout.c: Likewise.
 	* cfgloopanal.c: Likewise.

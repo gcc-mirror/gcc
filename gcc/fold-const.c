@@ -3098,7 +3098,7 @@ make_range (tree exp, int *pin_p, tree *plow, tree *phigh)
 
 	      in_p = n_in_p, low = n_low, high = n_high;
 
-	      /* If the high bound is missing, but we have a non-zero low
+	      /* If the high bound is missing, but we have a nonzero low
 		 bound, reverse the range so it goes from zero to the low bound
 		 minus 1.  */
 	      if (high == 0 && low && ! integer_zerop (low))

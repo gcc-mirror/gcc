@@ -777,7 +777,7 @@ enum reg_class
    the register arguments (R2,R3), respectively.  I'm reluctant to define
    this macro since it stomps on many potential optimizations.  Ideally
    it should have a register class argument so that not all the register
-   classes gets penalised for the sake of a naughty few...  For long
+   classes gets penalized for the sake of a naughty few...  For long
    double arithmetic we need two additional registers that we can use as
    spill registers.  */
 
