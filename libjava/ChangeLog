@@ -1,5 +1,9 @@
 2002-12-19  Tom Tromey  <tromey@redhat.com>
 
+	* libtool-version: Increased `current'.
+
+2002-12-19  Tom Tromey  <tromey@redhat.com>
+
 	* java/lang/natClassLoader.cc (defineClass0): Removed erroneous
 	comment.
 	* java/lang/ClassLoader.java (defineClass): Use chained
