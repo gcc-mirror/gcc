@@ -1,3 +1,7 @@
+2001-10-31  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.md (two anonymous patterns): New.
+
 2001-10-31  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree.h (tree_index): Add support for V16QI and V8HI.
