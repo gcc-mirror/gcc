@@ -1,5 +1,11 @@
 2004-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
+	* builtins.c (expand_builtin_mempcpy): Move tree handling code to
+	fold_builtin_mempcpy.  Accept a type parameter.  Delete duplicate
+	code.
+	(expand_builtin_strcat): Accept a type parameter.
+	(fold_builtin_mempcpy): Accept a type and endp parameter.
+
 	* builtins.c (expand_builtin_strncpy): Delete duplicate code.
 	Accept an `exp' instead of an `arglist'.
 
