@@ -470,11 +470,11 @@ split_nonconstant_init_1 (tree dest, tree init)
 	  if (TREE_CODE (value) == CONSTRUCTOR)
 	    {
 	      if (array_type_p)
-	        sub = build (ARRAY_REF, inner_type, dest, field_index,
-			     NULL_TREE, NULL_TREE);
+	        sub = build4 (ARRAY_REF, inner_type, dest, field_index,
+			      NULL_TREE, NULL_TREE);
 	      else
-	        sub = build (COMPONENT_REF, inner_type, dest, field_index,
-			     NULL_TREE);
+	        sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
+			      NULL_TREE);
 
 	      split_nonconstant_init_1 (sub, value);
 	    }
@@ -483,13 +483,13 @@ split_nonconstant_init_1 (tree dest, tree init)
 	      *pelt = TREE_CHAIN (elt);
 
 	      if (array_type_p)
-	        sub = build (ARRAY_REF, inner_type, dest, field_index,
-			     NULL_TREE, NULL_TREE);
+	        sub = build4 (ARRAY_REF, inner_type, dest, field_index,
+			      NULL_TREE, NULL_TREE);
 	      else
-	        sub = build (COMPONENT_REF, inner_type, dest, field_index,
-			     NULL_TREE);
+	        sub = build3 (COMPONENT_REF, inner_type, dest, field_index,
+			      NULL_TREE);
 
-	      code = build (MODIFY_EXPR, inner_type, sub, value);
+	      code = build2 (MODIFY_EXPR, inner_type, sub, value);
 	      code = build_stmt (EXPR_STMT, code);
 	      add_stmt (code);
 	      continue;
@@ -503,7 +503,7 @@ split_nonconstant_init_1 (tree dest, tree init)
       if (!initializer_constant_valid_p (init, type))
 	{
 	  CONSTRUCTOR_ELTS (init) = NULL;
-	  code = build (MODIFY_EXPR, type, dest, init);
+	  code = build2 (MODIFY_EXPR, type, dest, init);
 	  code = build_stmt (EXPR_STMT, code);
 	  add_stmt (code);
 	}
@@ -533,7 +533,7 @@ split_nonconstant_init (tree dest, tree init)
       TREE_READONLY (dest) = 0;
     }
   else
-    code = build (INIT_EXPR, TREE_TYPE (dest), dest, init);
+    code = build2 (INIT_EXPR, TREE_TYPE (dest), dest, init);
 
   return code;
 }
@@ -609,7 +609,7 @@ store_init_value (tree decl, tree init)
      constructing never make it into DECL_INITIAL, and passes 'init' to
      build_aggr_init without checking DECL_INITIAL.  So just return.  */
   else if (TYPE_NEEDS_CONSTRUCTING (type))
-    return build (INIT_EXPR, type, decl, value);
+    return build2 (INIT_EXPR, type, decl, value);
   else if (TREE_STATIC (decl)
 	   && (! TREE_CONSTANT (value)
 	       || ! initializer_constant_valid_p (value, TREE_TYPE (value))))
@@ -1369,12 +1369,12 @@ build_m_component_ref (tree datum, tree component)
       
       /* Build an expression for "object + offset" where offset is the
 	 value stored in the pointer-to-data-member.  */
-      datum = build (PLUS_EXPR, build_pointer_type (type),
-		     datum, build_nop (ptrdiff_type_node, component));
+      datum = build2 (PLUS_EXPR, build_pointer_type (type),
+		      datum, build_nop (ptrdiff_type_node, component));
       return build_indirect_ref (datum, 0);
     }
   else
-    return build (OFFSET_REF, type, datum, component);
+    return build2 (OFFSET_REF, type, datum, component);
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */

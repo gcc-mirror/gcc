@@ -4497,7 +4497,7 @@ check_initializer (tree decl, tree init, int flags, tree *cleanup)
     check_for_uninitialized_const_var (decl);
 
   if (init && init != error_mark_node)
-    init_code = build (INIT_EXPR, type, decl, init);
+    init_code = build2 (INIT_EXPR, type, decl, init);
 
   return init_code;
 }
@@ -10076,8 +10076,8 @@ finish_constructor_body (void)
       add_stmt (build_stmt (LABEL_EXPR, cdtor_label));
 
       val = DECL_ARGUMENTS (current_function_decl);
-      val = build (MODIFY_EXPR, TREE_TYPE (val),
-		   DECL_RESULT (current_function_decl), val);
+      val = build2 (MODIFY_EXPR, TREE_TYPE (val),
+		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
       exprstmt = build_stmt (RETURN_EXPR, val);
       add_stmt (exprstmt);
@@ -10160,9 +10160,9 @@ finish_destructor_body (void)
 	 /*global_p=*/false, NULL_TREE);
 
       if_stmt = begin_if_stmt ();
-      finish_if_stmt_cond (build (BIT_AND_EXPR, integer_type_node,
-				  current_in_charge_parm,
-				  integer_one_node),
+      finish_if_stmt_cond (build2 (BIT_AND_EXPR, integer_type_node,
+				   current_in_charge_parm,
+				   integer_one_node),
 			   if_stmt);
       finish_expr_stmt (exprstmt);
       finish_then_clause (if_stmt);
@@ -10174,8 +10174,8 @@ finish_destructor_body (void)
       tree val;
 
       val = DECL_ARGUMENTS (current_function_decl);
-      val = build (MODIFY_EXPR, TREE_TYPE (val),
-		   DECL_RESULT (current_function_decl), val);
+      val = build2 (MODIFY_EXPR, TREE_TYPE (val),
+		    DECL_RESULT (current_function_decl), val);
       /* Return the address of the object.  */
       exprstmt = build_stmt (RETURN_EXPR, val);
       add_stmt (exprstmt);

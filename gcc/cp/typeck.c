@@ -1385,8 +1385,8 @@ decay_conversion (tree exp)
       if (TREE_CODE (exp) == COMPOUND_EXPR)
 	{
 	  tree op1 = decay_conversion (TREE_OPERAND (exp, 1));
-	  return build (COMPOUND_EXPR, TREE_TYPE (op1),
-			TREE_OPERAND (exp, 0), op1);
+	  return build2 (COMPOUND_EXPR, TREE_TYPE (op1),
+			 TREE_OPERAND (exp, 0), op1);
 	}
 
       if (!lvalue_p (exp)
@@ -1658,7 +1658,7 @@ build_class_member_access_expr (tree object, tree member,
       result = member;
       /* If OBJECT has side-effects, they are supposed to occur.  */
       if (TREE_SIDE_EFFECTS (object))
-	result = build (COMPOUND_EXPR, TREE_TYPE (result), object, result);
+	result = build2 (COMPOUND_EXPR, TREE_TYPE (result), object, result);
     }
   else if (TREE_CODE (member) == FIELD_DECL)
     {
@@ -1755,8 +1755,8 @@ build_class_member_access_expr (tree object, tree member,
 	  member_type = cp_build_qualified_type (member_type, type_quals);
 	}
 
-      result = fold (build (COMPONENT_REF, member_type, object, member,
-			    NULL_TREE));
+      result = fold (build3 (COMPONENT_REF, member_type, object, member,
+			     NULL_TREE));
 
       /* Mark the expression const or volatile, as appropriate.  Even
 	 though we've dealt with the type above, we still have to mark the
@@ -1783,7 +1783,7 @@ build_class_member_access_expr (tree object, tree member,
 	type = unknown_type_node;
       /* Note that we do not convert OBJECT to the BASELINK_BINFO
 	 base.  That will happen when the function is called.  */
-      result = build (COMPONENT_REF, type, object, member, NULL_TREE);
+      result = build3 (COMPONENT_REF, type, object, member, NULL_TREE);
     }
   else if (TREE_CODE (member) == CONST_DECL)
     {
@@ -1791,8 +1791,8 @@ build_class_member_access_expr (tree object, tree member,
       result = member;
       /* If OBJECT has side-effects, they are supposed to occur.  */
       if (TREE_SIDE_EFFECTS (object))
-	result = build (COMPOUND_EXPR, TREE_TYPE (result),
-			object, result);
+	result = build2 (COMPOUND_EXPR, TREE_TYPE (result),
+			 object, result);
     }
   else
     {
@@ -1833,8 +1833,8 @@ lookup_destructor (tree object, tree scope, tree dtor_name)
       return error_mark_node;
     }
   if (!TYPE_HAS_DESTRUCTOR (dtor_type))
-    return build (PSEUDO_DTOR_EXPR, void_type_node, object, scope,
-		  dtor_type);
+    return build3 (PSEUDO_DTOR_EXPR, void_type_node, object, scope,
+		   dtor_type);
   expr = lookup_member (dtor_type, complete_dtor_identifier,
 			/*protect=*/1, /*want_type=*/false);
   expr = (adjust_result_of_qualified_name_lookup
@@ -2037,7 +2037,8 @@ build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
 			  /*want_type=*/false);
   member_type = cp_build_qualified_type (TREE_TYPE (member),
 					 cp_type_quals (ptrmem_type));
-  return fold (build (COMPONENT_REF, member_type, ptrmem, member, NULL_TREE));
+  return fold (build3 (COMPONENT_REF, member_type,
+		       ptrmem, member, NULL_TREE));
 }
 
 /* Given an expression PTR for a pointer, return an expression
@@ -2171,8 +2172,8 @@ build_array_ref (tree array, tree idx)
     case COMPOUND_EXPR:
       {
 	tree value = build_array_ref (TREE_OPERAND (array, 1), idx);
-	return build (COMPOUND_EXPR, TREE_TYPE (value),
-		      TREE_OPERAND (array, 0), value);
+	return build2 (COMPOUND_EXPR, TREE_TYPE (value),
+		       TREE_OPERAND (array, 0), value);
       }
 
     case COND_EXPR:
@@ -2253,7 +2254,7 @@ build_array_ref (tree array, tree idx)
 	}
 
       type = TREE_TYPE (TREE_TYPE (array));
-      rval = build (ARRAY_REF, type, array, idx, NULL_TREE, NULL_TREE);
+      rval = build4 (ARRAY_REF, type, array, idx, NULL_TREE, NULL_TREE);
       /* Array ref is const/volatile if the array elements are
 	 or if the array is..  */
       TREE_READONLY (rval)
@@ -2372,8 +2373,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       if (instance_ptr == error_mark_node)
 	return error_mark_node;
       /* ...and then the delta in the PMF.  */
-      instance_ptr = build (PLUS_EXPR, TREE_TYPE (instance_ptr),
-			    instance_ptr, delta);
+      instance_ptr = build2 (PLUS_EXPR, TREE_TYPE (instance_ptr),
+			     instance_ptr, delta);
 
       /* Hand back the adjusted 'this' argument to our caller.  */
       *instance_ptrptr = instance_ptr;
@@ -2384,7 +2385,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       vtbl = build_indirect_ref (vtbl, NULL);
 
       /* Finally, extract the function pointer from the vtable.  */
-      e2 = fold (build (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, idx));
+      e2 = fold (build2 (PLUS_EXPR, TREE_TYPE (vtbl), vtbl, idx));
       e2 = build_indirect_ref (e2, NULL);
       TREE_CONSTANT (e2) = 1;
       TREE_INVARIANT (e2) = 1;
@@ -2401,8 +2402,8 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function)
       /* Make sure this doesn't get evaluated first inside one of the
 	 branches of the COND_EXPR.  */
       if (instance_save_expr)
-	e1 = build (COMPOUND_EXPR, TREE_TYPE (e1),
-		    instance_save_expr, e1);
+	e1 = build2 (COMPOUND_EXPR, TREE_TYPE (e1),
+		     instance_save_expr, e1);
 
       function = e1;
     }
@@ -3082,7 +3083,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
 				   cp_convert (TREE_TYPE (pfn0),
 					       integer_zero_node));
 	  e1 = cp_build_binary_op (TRUTH_ORIF_EXPR, e1, e2);
-	  e2 = build (EQ_EXPR, boolean_type_node, pfn0, pfn1);
+	  e2 = build2 (EQ_EXPR, boolean_type_node, pfn0, pfn1);
 	  e = cp_build_binary_op (TRUTH_ANDIF_EXPR, e2, e1);
 	  if (code == EQ_EXPR)
 	    return e;
@@ -3451,7 +3452,7 @@ build_binary_op (enum tree_code code, tree orig_op0, tree orig_op1,
     build_type = result_type;
 
   {
-    tree result = fold (build (resultcode, build_type, op0, op1));
+    tree result = fold (build2 (resultcode, build_type, op0, op1));
     if (final_type != 0)
       result = cp_convert (final_type, result);
     return result;
@@ -3516,7 +3517,7 @@ pointer_diff (tree op0, tree op1, tree ptrtype)
 
   /* Do the division.  */
 
-  result = build (EXACT_DIV_EXPR, restype, op0, cp_convert (restype, op1));
+  result = build2 (EXACT_DIV_EXPR, restype, op0, cp_convert (restype, op1));
   return fold (result);
 }
 
@@ -3605,9 +3606,9 @@ build_x_unary_op (enum tree_code code, tree xarg)
 	    {
 	      /* A single non-static member, make sure we don't allow a
                  pointer-to-member.  */
-	      xarg = build (OFFSET_REF, TREE_TYPE (xarg),
-			    TREE_OPERAND (xarg, 0),
-			    ovl_cons (TREE_OPERAND (xarg, 1), NULL_TREE));
+	      xarg = build2 (OFFSET_REF, TREE_TYPE (xarg),
+			     TREE_OPERAND (xarg, 0),
+			     ovl_cons (TREE_OPERAND (xarg, 1), NULL_TREE));
 	      PTRMEM_OK_P (xarg) = ptrmem;
 	    }	      
         }
@@ -3799,8 +3800,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	  arg = stabilize_reference (arg);
 	  real = build_unary_op (REALPART_EXPR, arg, 1);
 	  imag = build_unary_op (IMAGPART_EXPR, arg, 1);
-	  return build (COMPLEX_EXPR, TREE_TYPE (arg),
-			build_unary_op (code, real, 1), imag);
+	  return build2 (COMPLEX_EXPR, TREE_TYPE (arg),
+			 build_unary_op (code, real, 1), imag);
 	}
 
       /* Report invalid types.  */
@@ -3885,13 +3886,14 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 		value = arg;
 	      else
 		value = save_expr (arg);
-	      incremented = build (((code == PREINCREMENT_EXPR
-				     || code == POSTINCREMENT_EXPR)
-				    ? PLUS_EXPR : MINUS_EXPR),
-				   argtype, value, inc);
+	      incremented = build2 (((code == PREINCREMENT_EXPR
+				      || code == POSTINCREMENT_EXPR)
+				     ? PLUS_EXPR : MINUS_EXPR),
+				    argtype, value, inc);
 
 	      modify = build_modify_expr (arg, NOP_EXPR, incremented);
-	      compound = build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
+	      compound = build2 (COMPOUND_EXPR, TREE_TYPE (arg),
+				 modify, value);
 
 	      /* Eliminate warning about unused result of + or -.  */
 	      TREE_NO_WARNING (compound) = 1;
@@ -3919,7 +3921,7 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    val = boolean_increment (code, arg);
 	  }
 	else
-	  val = build (code, TREE_TYPE (arg), arg, inc);
+	  val = build2 (code, TREE_TYPE (arg), arg, inc);
 
 	TREE_SIDE_EFFECTS (val) = 1;
 	return cp_convert (result_type, val);
@@ -4096,8 +4098,8 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    addr = build_address (fn);
 	    if (TREE_SIDE_EFFECTS (TREE_OPERAND (arg, 0)))
 	      /* Do not lose object's side effects.  */
-	      addr = build (COMPOUND_EXPR, TREE_TYPE (addr),
-			    TREE_OPERAND (arg, 0), addr);
+	      addr = build2 (COMPOUND_EXPR, TREE_TYPE (addr),
+			     TREE_OPERAND (arg, 0), addr);
 	  }
 	else if (DECL_C_BIT_FIELD (TREE_OPERAND (arg, 1)))
 	  {
@@ -4118,8 +4120,9 @@ build_unary_op (enum tree_code code, tree xarg, int noconvert)
 	    
 	    rval = build_base_path (PLUS_EXPR, rval, binfo, 1);
 	    rval = build_nop (argtype, rval);
-	    addr = fold (build (PLUS_EXPR, argtype, rval,
-				cp_convert (argtype, byte_position (field))));
+	    addr = fold (build2 (PLUS_EXPR, argtype, rval,
+				 cp_convert (argtype,
+					     byte_position (field))));
 	  }
 
 	if (TREE_CODE (argtype) == POINTER_TYPE
@@ -4160,8 +4163,8 @@ unary_complex_lvalue (enum tree_code code, tree arg)
   if (TREE_CODE (arg) == COMPOUND_EXPR)
     {
       tree real_result = build_unary_op (code, TREE_OPERAND (arg, 1), 0);
-      return build (COMPOUND_EXPR, TREE_TYPE (real_result),
-		    TREE_OPERAND (arg, 0), real_result);
+      return build2 (COMPOUND_EXPR, TREE_TYPE (real_result),
+		     TREE_OPERAND (arg, 0), real_result);
     }
 
   /* Handle (a ? b : c) used as an "lvalue".  */
@@ -4178,11 +4181,11 @@ unary_complex_lvalue (enum tree_code code, tree arg)
       if (TREE_SIDE_EFFECTS (lvalue))
 	{
 	  lvalue = stabilize_reference (lvalue);
-	  arg = build (TREE_CODE (arg), TREE_TYPE (arg),
-		       lvalue, TREE_OPERAND (arg, 1));
+	  arg = build2 (TREE_CODE (arg), TREE_TYPE (arg),
+			lvalue, TREE_OPERAND (arg, 1));
 	}
       return unary_complex_lvalue
-	(code, build (COMPOUND_EXPR, TREE_TYPE (lvalue), arg, lvalue));
+	(code, build2 (COMPOUND_EXPR, TREE_TYPE (lvalue), arg, lvalue));
     }
 
   if (code != ADDR_EXPR)
@@ -4193,7 +4196,8 @@ unary_complex_lvalue (enum tree_code code, tree arg)
       || TREE_CODE (arg) == INIT_EXPR)
     {
       tree real_result = build_unary_op (code, TREE_OPERAND (arg, 0), 0);
-      arg = build (COMPOUND_EXPR, TREE_TYPE (real_result), arg, real_result);
+      arg = build2 (COMPOUND_EXPR, TREE_TYPE (real_result),
+		    arg, real_result);
       TREE_NO_WARNING (arg) = 1;
       return arg;
     }
@@ -4266,7 +4270,7 @@ unary_complex_lvalue (enum tree_code code, tree arg)
       }
 
     if (TREE_CODE (arg) == SAVE_EXPR && TREE_CODE (targ) == INDIRECT_REF)
-      return build (SAVE_EXPR, build_pointer_type (TREE_TYPE (arg)),
+      return build3 (SAVE_EXPR, build_pointer_type (TREE_TYPE (arg)),
 		     TREE_OPERAND (targ, 0), current_function_decl, NULL);
   }
 
@@ -4440,13 +4444,13 @@ build_compound_expr (tree lhs, tree rhs)
 	 helps the compiler to eliminate unnecessary temporaries.  */
       tree init = TREE_OPERAND (rhs, 1);
       
-      init = build (COMPOUND_EXPR, TREE_TYPE (init), lhs, init);
+      init = build2 (COMPOUND_EXPR, TREE_TYPE (init), lhs, init);
       TREE_OPERAND (rhs, 1) = init;
       
       return rhs;
     }
   
-  return build (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
+  return build2 (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
 }
 
 /* Issue an error message if casting from SRC_TYPE to DEST_TYPE casts
@@ -5013,13 +5017,13 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     case PREDECREMENT_EXPR:
     case PREINCREMENT_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
-	lhs = build (TREE_CODE (lhs), TREE_TYPE (lhs),
-		     stabilize_reference (TREE_OPERAND (lhs, 0)),
-		     TREE_OPERAND (lhs, 1));
-      return build (COMPOUND_EXPR, lhstype,
-		    lhs,
-		    build_modify_expr (TREE_OPERAND (lhs, 0),
-				       modifycode, rhs));
+	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
+		      stabilize_reference (TREE_OPERAND (lhs, 0)),
+		      TREE_OPERAND (lhs, 1));
+      return build2 (COMPOUND_EXPR, lhstype,
+		     lhs,
+		     build_modify_expr (TREE_OPERAND (lhs, 0),
+					modifycode, rhs));
 
       /* Handle (a, b) used as an "lvalue".  */
     case COMPOUND_EXPR:
@@ -5027,18 +5031,18 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 				  modifycode, rhs);
       if (newrhs == error_mark_node)
 	return error_mark_node;
-      return build (COMPOUND_EXPR, lhstype,
-		    TREE_OPERAND (lhs, 0), newrhs);
+      return build2 (COMPOUND_EXPR, lhstype,
+		     TREE_OPERAND (lhs, 0), newrhs);
 
     case MODIFY_EXPR:
       if (TREE_SIDE_EFFECTS (TREE_OPERAND (lhs, 0)))
-	lhs = build (TREE_CODE (lhs), TREE_TYPE (lhs),
-		     stabilize_reference (TREE_OPERAND (lhs, 0)),
-		     TREE_OPERAND (lhs, 1));
+	lhs = build2 (TREE_CODE (lhs), TREE_TYPE (lhs),
+		      stabilize_reference (TREE_OPERAND (lhs, 0)),
+		      TREE_OPERAND (lhs, 1));
       newrhs = build_modify_expr (TREE_OPERAND (lhs, 0), modifycode, rhs);
       if (newrhs == error_mark_node)
 	return error_mark_node;
-      return build (COMPOUND_EXPR, lhstype, lhs, newrhs);
+      return build2 (COMPOUND_EXPR, lhstype, lhs, newrhs);
 
       /* Handle (a ? b : c) used as an "lvalue".  */
     case COND_EXPR:
@@ -5070,7 +5074,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	/* Make sure the code to compute the rhs comes out
 	   before the split.  */
 	if (preeval)
-	  cond = build (COMPOUND_EXPR, TREE_TYPE (lhs), preeval, cond);
+	  cond = build2 (COMPOUND_EXPR, TREE_TYPE (lhs), preeval, cond);
 	return cond;
       }
       
@@ -5085,7 +5089,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	  if (! same_type_p (TREE_TYPE (rhs), lhstype))
 	    /* Call convert to generate an error; see PR 11063.  */
 	    rhs = convert (lhstype, rhs);
-	  result = build (INIT_EXPR, lhstype, lhs, rhs);
+	  result = build2 (INIT_EXPR, lhstype, lhs, rhs);
 	  TREE_SIDE_EFFECTS (result) = 1;
 	  return result;
 	}
@@ -5249,15 +5253,15 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 	 accidental self-initialization.  So we force the TARGET_EXPR to be
 	 expanded without a target.  */
       if (TREE_CODE (newrhs) == TARGET_EXPR)
-	newrhs = build (COMPOUND_EXPR, TREE_TYPE (newrhs), newrhs,
-			TREE_OPERAND (newrhs, 0));
+	newrhs = build2 (COMPOUND_EXPR, TREE_TYPE (newrhs), newrhs,
+			 TREE_OPERAND (newrhs, 0));
     }
 
   if (newrhs == error_mark_node)
     return error_mark_node;
 
-  result = build (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
-		  lhstype, lhs, newrhs);
+  result = build2 (modifycode == NOP_EXPR ? MODIFY_EXPR : INIT_EXPR,
+		   lhstype, lhs, newrhs);
 
   TREE_SIDE_EFFECTS (result) = 1;
   if (!plain_assign)
@@ -5272,7 +5276,7 @@ build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
     return result;
   if (olhs)
     {
-      result = build (COMPOUND_EXPR, olhstype, result, olhs);
+      result = build2 (COMPOUND_EXPR, olhstype, result, olhs);
       TREE_NO_WARNING (result) = 1;
       return result;
     }
@@ -5524,28 +5528,28 @@ expand_ptrmemfunc_cst (tree cst, tree *delta, tree *pfn)
          fn; the call will do the opposite adjustment.  */
       tree orig_class = DECL_CONTEXT (fn);
       tree binfo = binfo_or_else (orig_class, fn_class);
-      *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
-			    *delta, BINFO_OFFSET (binfo)));
+      *delta = fold (build2 (PLUS_EXPR, TREE_TYPE (*delta),
+			     *delta, BINFO_OFFSET (binfo)));
 
       /* We set PFN to the vtable offset at which the function can be
 	 found, plus one (unless ptrmemfunc_vbit_in_delta, in which
 	 case delta is shifted left, and then incremented).  */
       *pfn = DECL_VINDEX (fn);
-      *pfn = fold (build (MULT_EXPR, integer_type_node, *pfn,
-			  TYPE_SIZE_UNIT (vtable_entry_type)));
+      *pfn = fold (build2 (MULT_EXPR, integer_type_node, *pfn,
+			   TYPE_SIZE_UNIT (vtable_entry_type)));
 
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
 	case ptrmemfunc_vbit_in_pfn:
-	  *pfn = fold (build (PLUS_EXPR, integer_type_node, *pfn,
-			      integer_one_node));
+	  *pfn = fold (build2 (PLUS_EXPR, integer_type_node, *pfn,
+			       integer_one_node));
 	  break;
 
 	case ptrmemfunc_vbit_in_delta:
-	  *delta = fold (build (LSHIFT_EXPR, TREE_TYPE (*delta),
-				*delta, integer_one_node));
-	  *delta = fold (build (PLUS_EXPR, TREE_TYPE (*delta),
-				*delta, integer_one_node));
+	  *delta = fold (build2 (LSHIFT_EXPR, TREE_TYPE (*delta),
+				 *delta, integer_one_node));
+	  *delta = fold (build2 (PLUS_EXPR, TREE_TYPE (*delta),
+				 *delta, integer_one_node));
 	  break;
 
 	default:
@@ -6055,15 +6059,15 @@ check_return_expr (tree retval)
       else if (! current_function_returns_struct
 	       && TREE_CODE (retval) == TARGET_EXPR
 	       && TREE_CODE (TREE_OPERAND (retval, 1)) == AGGR_INIT_EXPR)
-	retval = build (COMPOUND_EXPR, TREE_TYPE (retval), retval,
-			TREE_OPERAND (retval, 0));
+	retval = build2 (COMPOUND_EXPR, TREE_TYPE (retval), retval,
+			 TREE_OPERAND (retval, 0));
       else
 	maybe_warn_about_returning_address_of_local (retval);
     }
   
   /* Actually copy the value returned into the appropriate location.  */
   if (retval && retval != result)
-    retval = build (INIT_EXPR, TREE_TYPE (result), result, retval);
+    retval = build2 (INIT_EXPR, TREE_TYPE (result), result, retval);
 
   return retval;
 }

@@ -234,8 +234,8 @@ build_target_expr (tree decl, tree value)
 {
   tree t;
 
-  t = build (TARGET_EXPR, TREE_TYPE (decl), decl, value,
-	     cxx_maybe_build_cleanup (decl), NULL_TREE);
+  t = build4 (TARGET_EXPR, TREE_TYPE (decl), decl, value,
+	      cxx_maybe_build_cleanup (decl), NULL_TREE);
   /* We always set TREE_SIDE_EFFECTS so that expand_expr does not
      ignore the TARGET_EXPR.  If there really turn out to be no
      side-effects, then the optimizer should be able to get rid of
@@ -300,8 +300,8 @@ build_cplus_new (tree type, tree init)
      type, don't mess with AGGR_INIT_EXPR.  */
   if (is_ctor || TREE_ADDRESSABLE (type))
     {
-      rval = build (AGGR_INIT_EXPR, void_type_node, fn,
-		    TREE_OPERAND (init, 1), slot);
+      rval = build3 (AGGR_INIT_EXPR, void_type_node, fn,
+		     TREE_OPERAND (init, 1), slot);
       TREE_SIDE_EFFECTS (rval) = 1;
       AGGR_INIT_VIA_CTOR_P (rval) = is_ctor;
     }
@@ -1154,9 +1154,9 @@ cxx_print_statistics (void)
 tree
 array_type_nelts_top (tree type)
 {
-  return fold (build (PLUS_EXPR, sizetype,
-		      array_type_nelts (type),
-		      integer_one_node));
+  return fold (build2 (PLUS_EXPR, sizetype,
+		       array_type_nelts (type),
+		       integer_one_node));
 }
 
 /* Return, as an INTEGER_CST node, the number of elements for TYPE
@@ -1171,7 +1171,7 @@ array_type_nelts_total (tree type)
   while (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree n = array_type_nelts_top (type);
-      sz = fold (build (MULT_EXPR, sizetype, sz, n));
+      sz = fold (build2 (MULT_EXPR, sizetype, sz, n));
       type = TREE_TYPE (type);
     }
   return sz;
@@ -2403,7 +2403,7 @@ stabilize_call (tree call, tree *initp)
 	if (!init)
 	  /* Nothing.  */;
 	else if (inits)
-	  inits = build (COMPOUND_EXPR, void_type_node, inits, init);
+	  inits = build2 (COMPOUND_EXPR, void_type_node, inits, init);
 	else
 	  inits = init;
       }

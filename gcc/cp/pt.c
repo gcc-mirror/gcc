@@ -4147,10 +4147,10 @@ lookup_template_function (tree fns, tree arglist)
 
   if (BASELINK_P (fns))
     {
-      BASELINK_FUNCTIONS (fns) = build (TEMPLATE_ID_EXPR,
-					unknown_type_node,
-					BASELINK_FUNCTIONS (fns),
-					arglist);
+      BASELINK_FUNCTIONS (fns) = build2 (TEMPLATE_ID_EXPR,
+					 unknown_type_node,
+					 BASELINK_FUNCTIONS (fns),
+					 arglist);
       return fns;
     }
 
@@ -4158,7 +4158,7 @@ lookup_template_function (tree fns, tree arglist)
   if (TREE_CODE (fns) == OVERLOAD || !type)
     type = unknown_type_node;
   
-  return build (TEMPLATE_ID_EXPR, type, fns, arglist);
+  return build2 (TEMPLATE_ID_EXPR, type, fns, arglist);
 }
 
 /* Within the scope of a template class S<T>, the name S gets bound
@@ -7161,7 +7161,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e1 == error_mark_node || e2 == error_mark_node)
 	  return error_mark_node;
 
-	return fold (build (TREE_CODE (t), TREE_TYPE (t), e1, e2));
+	return fold (build2 (TREE_CODE (t), TREE_TYPE (t), e1, e2));
       }
 
     case NEGATE_EXPR:
@@ -7171,7 +7171,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (e == error_mark_node)
 	  return error_mark_node;
 
-	return fold (build (TREE_CODE (t), TREE_TYPE (t), e));
+	return fold (build1 (TREE_CODE (t), TREE_TYPE (t), e));
       }
 
     case TYPENAME_TYPE:
@@ -8175,8 +8175,8 @@ tsubst_copy_and_build (tree t,
 	template = lookup_template_function (template, targs);
 	
 	if (object)
-	  return build (COMPONENT_REF, TREE_TYPE (template), 
-			object, template, NULL_TREE);
+	  return build3 (COMPONENT_REF, TREE_TYPE (template), 
+			 object, template, NULL_TREE);
 	else
 	  return template;
       }
@@ -10093,7 +10093,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict)
 	  t1 = TREE_OPERAND (parm, 0);
 	  t2 = TREE_OPERAND (parm, 1);
 
-	  t = fold (build (PLUS_EXPR, integer_type_node, arg, t2));
+	  t = fold (build2 (PLUS_EXPR, integer_type_node, arg, t2));
 
 	  return unify (tparms, targs, t1, t, strict);
 	}
@@ -12173,19 +12173,19 @@ build_non_dependent_expr (tree expr)
     return expr;
 
   if (TREE_CODE (expr) == COND_EXPR)
-    return build (COND_EXPR,
-		  TREE_TYPE (expr),
-		  TREE_OPERAND (expr, 0),
-		  (TREE_OPERAND (expr, 1) 
-		   ? build_non_dependent_expr (TREE_OPERAND (expr, 1))
-		   : build_non_dependent_expr (TREE_OPERAND (expr, 0))),
-		  build_non_dependent_expr (TREE_OPERAND (expr, 2)));
+    return build3 (COND_EXPR,
+		   TREE_TYPE (expr),
+		   TREE_OPERAND (expr, 0),
+		   (TREE_OPERAND (expr, 1) 
+		    ? build_non_dependent_expr (TREE_OPERAND (expr, 1))
+		    : build_non_dependent_expr (TREE_OPERAND (expr, 0))),
+		   build_non_dependent_expr (TREE_OPERAND (expr, 2)));
   if (TREE_CODE (expr) == COMPOUND_EXPR
       && !COMPOUND_EXPR_OVERLOADED (expr))
-    return build (COMPOUND_EXPR,
-		  TREE_TYPE (expr),
-		  TREE_OPERAND (expr, 0),
-		  build_non_dependent_expr (TREE_OPERAND (expr, 1)));
+    return build2 (COMPOUND_EXPR,
+		   TREE_TYPE (expr),
+		   TREE_OPERAND (expr, 0),
+		   build_non_dependent_expr (TREE_OPERAND (expr, 1)));
       
   /* Otherwise, build a NON_DEPENDENT_EXPR.  
 
