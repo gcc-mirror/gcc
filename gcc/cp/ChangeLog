@@ -1,5 +1,17 @@
 2000-01-10  Mark Mitchell  <mitchell@dumbledore.codesourcery.com>
 
+	* cp-tree.h (expand_direct_vtbls_init): Remove declaration.
+	(initialize_vtbl_ptrs): New function.
+	(expand_indirect_vtbls_init): Change prototype.
+	(convert_pointer_to_vbase): Declare.
+	* init.c (expand_direct_vtbls_init): Remove.
+	(dfs_initialize_vtbl_ptrs): New function.
+	(initialize_vtbl_ptrs): Likewise.
+	(emit_base_init): Use initialize_vtbl_ptrs.
+	* search.c (convert_pointer_to_vbase): Make it global.
+	(expand_indirect_vtbls_init): Remove vtable initialization code.
+	* semantics.c (setup_vtbl_ptr): Use initialize_vtbl_ptrs.
+	
 	* class.c (dfs_finish_vtbls): New function.
 	(finish_vtbls): Use it.
 	(dump_class_hierarchy): New function.

@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions. 
 
-   Copyright (C) 1998, 1999 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.  
 
@@ -1245,7 +1245,6 @@ setup_vtbl_ptr ()
   else if (DECL_DESTRUCTOR_P (current_function_decl)
 	   && !processing_template_decl)
     {
-      tree binfo = TYPE_BINFO (current_class_type);
       tree if_stmt;
       tree compound_stmt;
       int saved_cfnd;
@@ -1279,11 +1278,8 @@ setup_vtbl_ptr ()
       /* Make all virtual function table pointers in non-virtual base
 	 classes point to CURRENT_CLASS_TYPE's virtual function
 	 tables.  */
-      expand_direct_vtbls_init (binfo, binfo, 1, 0, current_class_ptr);
-
-      if (TYPE_USES_VIRTUAL_BASECLASSES (current_class_type))
-	expand_indirect_vtbls_init (binfo, current_class_ref, 
-				    current_class_ptr);
+      initialize_vtbl_ptrs (current_class_type,
+			    current_class_ptr);
 
       finish_compound_stmt (/*has_no_scope=*/0, compound_stmt);
       finish_then_clause (if_stmt);
