@@ -1329,6 +1329,7 @@ funcs="$funcs bsearch"
 funcs="$funcs bzero"
 funcs="$funcs calloc"
 funcs="$funcs clock"
+funcs="$funcs ffs"
 funcs="$funcs getcwd"
 funcs="$funcs getpagesize"
 funcs="$funcs index"
@@ -1700,7 +1701,7 @@ else
 fi
 done
 
-  for ac_func in sysconf times sbrk gettimeofday
+  for ac_func in sysconf times sbrk gettimeofday ffs
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
 echo "configure:1707: checking for $ac_func" >&5

@@ -122,7 +122,7 @@ dvi: dvi-subdir
 # configure.in.
 CFILES = asprintf.c alloca.c argv.c atexit.c basename.c bcmp.c bcopy.c	      \
 	bzero.c calloc.c choose-temp.c clock.c concat.c cplus-dem.c	      \
-        cp-demangle.c dyn-string.c fdmatch.c fnmatch.c getcwd.c		      \
+        cp-demangle.c dyn-string.c fdmatch.c fnmatch.c ffs.c getcwd.c	      \
 	getpwd.c getopt.c getopt1.c getpagesize.c getruntime.c		      \
 	floatformat.c hashtab.c hex.c index.c insque.c lbasename.c            \
 	md5.c make-temp-file.c memchr.c					      \
