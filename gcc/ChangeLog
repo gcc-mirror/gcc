@@ -1,3 +1,7 @@
+Wed Jul  8 15:08:29 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* configure.in (mips64orion-*-rtems*): Use elf64.h not elfl64.h.
+
 1998-07-08  Vladimir N. Makarov  <vmakarov@cygnus.com>
 
 	* config/fp-bit.c (__gexf2, __fixxfsi, __floatsixf): Add function
