@@ -1,5 +1,11 @@
 2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
+	* config/s390/linux.h (MD_FALLBACK_FRAME_STATE_FOR): For SIGSEGV and 
+	SIGBUS signal frames, the PSW address points *to* the faulting
+	instruction, not after it.
+
+2004-07-11  Ulrich Weigand  <uweigand@de.ibm.com>
+
 	* config/s390/s390.c (legitimize_tls_address): Handle constant offsets
 	added to TLS symbol addresses.
 

@@ -113,6 +113,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       } __attribute__ ((__aligned__ (8))) sigregs_;			\
 									\
     sigregs_ *regs_;							\
+    int *signo_ = NULL;							\
 									\
     /* svc $__NR_sigreturn or svc $__NR_rt_sigreturn  */		\
     if (pc_[0] != 0x0a || (pc_[1] != 119 && pc_[1] != 173))		\
@@ -133,6 +134,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 	  } *uc_ = (CONTEXT)->cfa + 8 + 128;				\
 									\
 	regs_ = &uc_->uc_mcontext;					\
+	signo_ = (CONTEXT)->cfa + sizeof(long);				\
       }									\
 									\
     /* Old-style RT frame and all non-RT frames:			\
@@ -141,6 +143,12 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
     else								\
       {									\
 	regs_ = *(sigregs_ **)((CONTEXT)->cfa + 8);			\
+									\
+	/* Recent kernels store the signal number immediately after	\
+	   the sigregs; old kernels have the return trampoline at	\
+	   this location.  */						\
+	if ((void *)(regs_ + 1) != (CONTEXT)->ra)			\
+	  signo_ = (int *)(regs_ + 1);					\
       }									\
       									\
     new_cfa_ = regs_->gprs[15] + 16*sizeof(long) + 32;			\
@@ -163,9 +171,30 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       }									\
 									\
     /* Load return addr from PSW into dummy register 32.  */		\
+									\
     (FS)->regs.reg[32].how = REG_SAVED_OFFSET;				\
     (FS)->regs.reg[32].loc.offset = (long)&regs_->psw_addr - new_cfa_;	\
     (FS)->retaddr_column = 32;						\
+									\
+    /* If we got a SIGSEGV or a SIGBUS, the PSW address points *to*	\
+       the faulting instruction, not after it.  This causes the logic	\
+       in unwind-dw2.c that decrements the RA to determine the correct	\
+       CFI region to get confused.  To fix that, we *increment* the RA	\
+       here in that case.  Note that we cannot modify the RA in place,	\
+       and the frame state wants a *pointer*, not a value; thus we put	\
+       the modified RA value into the unused register 33 slot of FS and	\
+       have the register 32 save address point to that slot.		\
+									\
+       Unfortunately, for regular signals on old kernels, we don't know	\
+       the signal number.  We default to not fiddling with the RA; 	\
+       that can fail in rare cases.  Upgrade your kernel.  */		\
+									\
+    if (signo_ && (*signo_ == 11 || *signo_ == 7))			\
+      {									\
+	(FS)->regs.reg[33].loc.exp = regs_->psw_addr + 1;		\
+	(FS)->regs.reg[32].loc.offset = 				\
+		(long)&(FS)->regs.reg[33].loc.exp - new_cfa_;		\
+      }									\
 									\
     goto SUCCESS;							\
   } while (0)

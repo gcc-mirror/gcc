@@ -20,18 +20,11 @@ details.  */
 #undef HANDLE_FPE
 
 #define SIGNAL_HANDLER(_name)	\
-static void _name (int /* _signal */, struct sigcontext _sc)
+static void _name (int, siginfo_t *, void *)
 
-#define MAKE_THROW_FRAME(_exception)					\
-do									\
-{									\
-  /* Advance the program counter so that it is after the start of the	\
-     instruction:  the s390 exception handler expects the PSW to point 	\
-     to the instruction after a call. */				\
-  _sc.sregs->regs.psw.addr += 2;					\
-									\
-}									\
-while (0)
+/* We no longer need to fiddle with the PSW address in the signal handler;
+   this is now all handled correctly in MD_FALLBACK_FRAME_STATE_FOR.  */
+#define MAKE_THROW_FRAME(_exception)
 
 
 /* For an explanation why we cannot simply use sigaction to
@@ -43,7 +36,7 @@ while (0)
    visible to us in a header file so we define it here.  */
 
 struct old_s390_kernel_sigaction {
-	void (*k_sa_handler) (int, struct sigcontext);
+	void (*k_sa_handler) (int, siginfo_t *, void *);
 	unsigned long k_sa_mask;
 	unsigned long k_sa_flags;
 	void (*sa_restorer) (void);
@@ -55,7 +48,7 @@ do							\
     struct old_s390_kernel_sigaction kact;		\
     kact.k_sa_handler = catch_segv;			\
     kact.k_sa_mask = 0;					\
-    kact.k_sa_flags = 0;				\
+    kact.k_sa_flags = SA_SIGINFO;			\
     syscall (SYS_sigaction, SIGSEGV, &kact, NULL);	\
   }							\
 while (0)  
@@ -66,7 +59,7 @@ do								\
     struct old_s390_kernel_sigaction kact;			\
     kact.k_sa_handler = catch_fpe;				\
     kact.k_sa_mask = 0;						\
-    kact.k_sa_flags = 0;					\
+    kact.k_sa_flags = SA_SIGINFO;				\
     syscall (SYS_sigaction, SIGFPE, &kact, NULL);		\
   }								\
 while (0)  
