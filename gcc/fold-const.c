@@ -3204,7 +3204,7 @@ simple_operand_p (exp)
    try to change a logical combination of comparisons into a range test.
 
    For example, both
-   	X == 2 && X == 3 && X == 4 && X == 5
+   	X == 2 || X == 3 || X == 4 || X == 5
    and
    	X >= 2 && X <= 5
    are converted to
@@ -3299,7 +3299,7 @@ range_binop (code, type, arg0, upper0_p, arg1, upper1_p)
       
 /* Given EXP, a logical expression, set the range it is testing into
    variables denoted by PIN_P, PLOW, and PHIGH.  Return the expression
-   actually being tested.  *PLOW and *PHIGH will have be made the same type
+   actually being tested.  *PLOW and *PHIGH will be made of the same type
    as the returned expression.  If EXP is not a comparison, we will most
    likely not be returning a useful value and range.  */
 
@@ -3894,7 +3894,7 @@ fold_truthop (code, truth_type, lhs, rhs)
      enum tree_code code;
      tree truth_type, lhs, rhs;
 {
-  /* If this is the "or" of two comparisons, we can do something if we
+  /* If this is the "or" of two comparisons, we can do something if
      the comparisons are NE_EXPR.  If this is the "and", we can do something
      if the comparisons are EQ_EXPR.  I.e., 
      	(a->b == 2 && a->c == 4) can become (a->new == NEW).

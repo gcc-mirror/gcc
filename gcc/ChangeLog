@@ -1,3 +1,7 @@
+2000-07-17  Kazu Hirata  <kazu@hxi.com>
+
+	* fold-const.c: Fix comment typos.
+
 2000-07-16  Laurynas Biveinis  <lauras@softhome.net>
 
 	* cppfiles.c (read_name_map): Set map_list_ptr->map_list_map to NULL.
