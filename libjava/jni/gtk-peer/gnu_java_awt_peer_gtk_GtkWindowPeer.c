@@ -190,11 +190,8 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectJObject
 
   children = gtk_container_get_children(GTK_CONTAINER(ptr));
   vbox = children->data;
+  g_assert (GTK_IS_VBOX(vbox));
 
-  if(!GTK_IS_VBOX(vbox))
-    {
-      printf("*** this is not a vbox\n");
-    }
   children = gtk_container_get_children(GTK_CONTAINER(vbox));
   do
   {
@@ -202,11 +199,7 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectJObject
     children = children->next;
   }
   while (!GTK_IS_LAYOUT (layout) && children != NULL);
-
-  if(!GTK_IS_LAYOUT(layout))
-    {
-      printf("*** widget is not a layout ***");
-    }
+  g_assert (GTK_IS_LAYOUT(layout));
 
   gtk_widget_realize (layout);
 
@@ -215,9 +208,6 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectJObject
   gtk_widget_realize (ptr);
 
   connect_awt_hook (env, obj, 1, GTK_WIDGET (ptr)->window);
-
-  g_signal_connect (G_OBJECT (ptr), "property-notify-event",
-		    G_CALLBACK (window_property_changed_cb), obj);
 
   gdk_threads_leave ();
 }
@@ -239,10 +229,16 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
   /* Receive events from the GtkLayout too */
   children = gtk_container_get_children(GTK_CONTAINER(ptr));
   vbox = children->data;  
-  g_assert(GTK_IS_VBOX(vbox));
+  g_assert (GTK_IS_VBOX (vbox));
+
   children = gtk_container_get_children(GTK_CONTAINER(vbox));
-  layout = children->data;  
-  g_assert(GTK_IS_LAYOUT(layout));
+  do
+  {
+    layout = children->data;
+    children = children->next;
+  }
+  while (!GTK_IS_LAYOUT (layout) && children != NULL);
+  g_assert (GTK_IS_LAYOUT (layout));
 
   g_signal_connect (GTK_OBJECT (layout), "event", 
 		    G_CALLBACK (pre_event_handler), *gref);
@@ -265,6 +261,9 @@ Java_gnu_java_awt_peer_gtk_GtkWindowPeer_connectSignals
 
   g_signal_connect (G_OBJECT (ptr), "window-state-event",
 		    G_CALLBACK (window_window_state_cb), *gref);
+
+  g_signal_connect (G_OBJECT (ptr), "property-notify-event",
+		    G_CALLBACK (window_property_changed_cb), *gref);
 
   gdk_threads_leave ();
 
