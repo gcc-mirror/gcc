@@ -1,3 +1,8 @@
+Mon Mar  8 16:04:44 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* unroll.c (loop_iterations): Only call loop_find_equiv_value if we
+	have a REG or SUBREG.
+
 Mon Mar  8 15:27:42 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* flow.c (merge_blocks_nomove): For HAVE_cc0 targets, make sure

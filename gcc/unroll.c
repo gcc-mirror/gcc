@@ -3830,7 +3830,11 @@ loop_iterations (loop_start, loop_end, loop_info)
 
   if (GET_CODE (increment) != CONST_INT)
     {
-      increment = loop_find_equiv_value (loop_start, increment);
+      /* If we have a REG, check to see if REG holds a constant value.  */
+      /* ??? Other RTL, such as (neg (reg)) is possible here, but it isn't
+	 clear if it is worthwhile to try to handle such RTL.  */
+      if (GET_CODE (increment) == REG || GET_CODE (increment) == SUBREG)
+	increment = loop_find_equiv_value (loop_start, increment);
 
       if (GET_CODE (increment) != CONST_INT)
 	{
