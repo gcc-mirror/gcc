@@ -5866,9 +5866,9 @@ final_prescan_insn (insn, opvec, noperands)
 	      /* Instructions using or affecting the condition codes make it
 		 fail.  */
 	      scanbody = PATTERN (this_insn);
-	      if ((GET_CODE (scanbody) == SET
-		   || GET_CODE (scanbody) == PARALLEL)
-		  && get_attr_conds (this_insn) != CONDS_NOCOND)
+	      if (! (GET_CODE (scanbody) == SET
+		     || GET_CODE (scanbody) == PARALLEL)
+		  || get_attr_conds (this_insn) != CONDS_NOCOND)
 		fail = TRUE;
 	      break;
 

@@ -1,3 +1,9 @@
+Mon Nov  9 23:05:51 1998  Richard Earnshaw (rearnsha@arm.com)
+
+	* arm.c (final_prescan_insn, case INSN): If an insn doesn't 
+	contain a SET or a PARALLEL, don't consider it for conditional
+	execution.
+
 Mon Nov  9 22:43:57 1998  Jean-Pierre Radley <jpr@jpr.com>
 
         * fixinc.sco: Paramaterize #include_next values.
