@@ -1,3 +1,24 @@
+2001-12-17  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* Makefile.in: Update dependencies.
+	* c-lang.c: Remove unnecessary includes.
+	(deferred_fns, start_cdtor, finish_cdtor, defer_fn): Move to
+	c-objc-common.c.
+	(finish_file): Move body to c_common_finish_file.
+	* c-objc-common.c: Include varray.h and ggc.h.
+	(deferred_fns, start_cdtor, finish_cdtor, defer_fn,
+	expand_deferred_fns, c_objc_common_finish_file): Moved from c-lang.c.
+	(c_objc_common_init): Initialize deferred function array.
+	* c-tree.h (c_objc_common_finish_file,
+	static_ctors, static_dtors): New.
+objc:
+	* Make-lang.in: Update dependencies.
+	* objc/objc-act.c: Don't include varray.h.
+	(defer_fn, deferred_fns): Move to c-objc-common.c.
+	(objc_init): Similarly for initialization of it.
+	(finish_file): Move some to c-objc-common.c, use
+	c_objc_common_finish_file.
+
 2001-12-17  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c: Remove is_gpr_return_reg prototype.
