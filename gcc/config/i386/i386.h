@@ -3203,7 +3203,11 @@ do {						\
   {"global_dynamic_symbolic_operand", {SYMBOL_REF}},			\
   {"local_dynamic_symbolic_operand", {SYMBOL_REF}},			\
   {"initial_exec_symbolic_operand", {SYMBOL_REF}},			\
-  {"local_exec_symbolic_operand", {SYMBOL_REF}},
+  {"local_exec_symbolic_operand", {SYMBOL_REF}},			\
+  {"any_fp_register_operand", {REG}},					\
+  {"register_and_not_any_fp_reg_operand", {REG}},			\
+  {"fp_register_operand", {REG}},					\
+  {"register_and_not_fp_reg_operand", {REG}},				\
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */
