@@ -94,9 +94,6 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define STRUCTURE_SIZE_BOUNDARY 16
 
-/* Allow folding division by zero.  */
-#define REAL_INFINITY
-
 /* GCC is the primary compiler for VxWorks, so we don't need this.  */
 #undef PCC_STATIC_STRUCT_RETURN
 

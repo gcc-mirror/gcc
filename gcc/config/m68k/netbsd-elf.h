@@ -34,10 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #if TARGET_DEFAULT == 0
 #undef LONG_DOUBLE_TYPE_SIZE
 #define LONG_DOUBLE_TYPE_SIZE 64
-
-/* Use software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion.  */
-#define REAL_ARITHMETIC
 #endif
 
 #ifdef __mc68010__

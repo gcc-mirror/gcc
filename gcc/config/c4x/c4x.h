@@ -360,11 +360,6 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
 #define BITS_PER_HIGH 16
 #define BITS_PER_LO_SUM 16
 
-/* Use the internal floating point stuff in the compiler and not the
-   host floating point stuff.  */
-
-#define REAL_ARITHMETIC
-
 /* Define register numbers.  */
 
 /* Extended-precision registers.  */

@@ -1746,10 +1746,6 @@ call_ ## FUNC (void)						\
 /* Node: SDB and DWARF */
 /* (no definitions) */
 
-/* Node: Cross-compilation */
-#define REAL_ARITHMETIC
-
-
 /* Node: Misc */
 
 /* FIXME: Check this one more time.  */

@@ -205,9 +205,3 @@ do									\
       }									\
   }									\
 while (0)
-
-#if defined (CROSS_COMPILE) && defined (HOST_BITS_PER_INT) && defined (HOST_BITS_PER_LONG) && defined (HOST_BITS_PER_LONGLONG)
-#if (HOST_BITS_PER_INT==32) && (HOST_BITS_PER_LONG==64) && (HOST_BITS_PER_LONGLONG==64)
-#define REAL_ARITHMETIC
-#endif
-#endif

@@ -887,94 +887,7 @@ gen_lowpart_common (mode, x)
 	}
     }
 
-#ifndef REAL_ARITHMETIC
-  /* If X is an integral constant but we want it in floating-point, it
-     must be the case that we have a union of an integer and a floating-point
-     value.  If the machine-parameters allow it, simulate that union here
-     and return the result.  The two-word and single-word cases are
-     different.  */
-
-  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-	    || flag_pretend_float)
-	   && GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-	   && GET_CODE (x) == CONST_INT
-	   && sizeof (float) * HOST_BITS_PER_CHAR == HOST_BITS_PER_WIDE_INT)
-    {
-      union {HOST_WIDE_INT i; float d; } u;
-
-      u.i = INTVAL (x);
-      return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
-    }
-  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-	    || flag_pretend_float)
-	   && GET_MODE_CLASS (mode) == MODE_FLOAT
-	   && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
-	   && (GET_CODE (x) == CONST_INT || GET_CODE (x) == CONST_DOUBLE)
-	   && GET_MODE (x) == VOIDmode
-	   && (sizeof (double) * HOST_BITS_PER_CHAR
-	       == 2 * HOST_BITS_PER_WIDE_INT))
-    {
-      union {HOST_WIDE_INT i[2]; double d; } u;
-      HOST_WIDE_INT low, high;
-
-      if (GET_CODE (x) == CONST_INT)
-	low = INTVAL (x), high = low >> (HOST_BITS_PER_WIDE_INT -1);
-      else
-	low = CONST_DOUBLE_LOW (x), high = CONST_DOUBLE_HIGH (x);
-#ifdef HOST_WORDS_BIG_ENDIAN
-      u.i[0] = high, u.i[1] = low;
-#else
-      u.i[0] = low, u.i[1] = high;
-#endif
-      return CONST_DOUBLE_FROM_REAL_VALUE (u.d, mode);
-    }
-
-  /* Similarly, if this is converting a floating-point value into a
-     single-word integer.  Only do this is the host and target parameters are
-     compatible.  */
-
-  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-	    || flag_pretend_float)
-	   && (GET_MODE_CLASS (mode) == MODE_INT
-	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
-	   && GET_CODE (x) == CONST_DOUBLE
-	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
-	   && GET_MODE_BITSIZE (mode) == BITS_PER_WORD)
-    return constant_subword (x, (offset / UNITS_PER_WORD), GET_MODE (x));
-
-  /* Similarly, if this is converting a floating-point value into a
-     two-word integer, we can do this one word at a time and make an
-     integer.  Only do this is the host and target parameters are
-     compatible.  */
-
-  else if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	     && HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-	    || flag_pretend_float)
-	   && (GET_MODE_CLASS (mode) == MODE_INT
-	       || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
-	   && GET_CODE (x) == CONST_DOUBLE
-	   && GET_MODE_CLASS (GET_MODE (x)) == MODE_FLOAT
-	   && GET_MODE_BITSIZE (mode) == 2 * BITS_PER_WORD)
-    {
-      rtx lowpart, highpart;
-
-      lowpart = constant_subword (x,
-				  (offset / UNITS_PER_WORD) + WORDS_BIG_ENDIAN,
-				  GET_MODE (x));
-      highpart = constant_subword (x,
-				   (offset / UNITS_PER_WORD) + (! WORDS_BIG_ENDIAN),
-				   GET_MODE (x));
-      if (lowpart && GET_CODE (lowpart) == CONST_INT
-	  && highpart && GET_CODE (highpart) == CONST_INT)
-	return immed_double_const (INTVAL (lowpart), INTVAL (highpart), mode);
-    }
-#else /* ifndef REAL_ARITHMETIC */
-
-  /* When we have a FP emulator, we can handle all conversions between
+  /* The floating-point emulator can handle all conversions between
      FP and integer operands.  This simplifies reload because it
      doesn't have to deal with constructs like (subreg:DI
      (const_double:SF ...)) or (subreg:DF (const_int ...)).  */
@@ -1076,7 +989,6 @@ gen_lowpart_common (mode, x)
 				 mode);
 #endif
     }
-#endif /* ifndef REAL_ARITHMETIC */
 
   /* Otherwise, we can't do this.  */
   return 0;
@@ -1310,7 +1222,6 @@ constant_subword (op, offset, mode)
       && GET_MODE_SIZE (mode) == UNITS_PER_WORD)
     return op;
 
-#ifdef REAL_ARITHMETIC
   /* The output is some bits, the width of the target machine's word.
      A wider-word host can surely hold them in a CONST_INT. A narrower-word
      host can't.  */
@@ -1389,32 +1300,10 @@ constant_subword (op, offset, mode)
       else
 	abort ();
     }
-#else /* no REAL_ARITHMETIC */
-  if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-       || flag_pretend_float)
-      && GET_MODE_CLASS (mode) == MODE_FLOAT
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
-      && GET_CODE (op) == CONST_DOUBLE)
-    {
-      /* The constant is stored in the host's word-ordering,
-	 but we want to access it in the target's word-ordering.  Some
-	 compilers don't like a conditional inside macro args, so we have two
-	 copies of the return.  */
-#ifdef HOST_WORDS_BIG_ENDIAN
-      return GEN_INT (offset == WORDS_BIG_ENDIAN
-		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
-#else
-      return GEN_INT (offset != WORDS_BIG_ENDIAN
-		      ? CONST_DOUBLE_HIGH (op) : CONST_DOUBLE_LOW (op));
-#endif
-    }
-#endif /* no REAL_ARITHMETIC */
 
   /* Single word float is a little harder, since single- and double-word
      values often do not have the same high-order bits.  We have already
      verified that we want the only defined word of the single-word value.  */
-#ifdef REAL_ARITHMETIC
   if (GET_MODE_CLASS (mode) == MODE_FLOAT
       && GET_MODE_BITSIZE (mode) == 32
       && GET_CODE (op) == CONST_DOUBLE)
@@ -1438,40 +1327,6 @@ constant_subword (op, offset, mode)
 
       return GEN_INT (val);
     }
-#else
-  if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-       || flag_pretend_float)
-      && sizeof (float) * 8 == HOST_BITS_PER_WIDE_INT
-      && GET_MODE_CLASS (mode) == MODE_FLOAT
-      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-      && GET_CODE (op) == CONST_DOUBLE)
-    {
-      double d;
-      union {float f; HOST_WIDE_INT i; } u;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-
-      u.f = d;
-      return GEN_INT (u.i);
-    }
-  if (((HOST_FLOAT_FORMAT == TARGET_FLOAT_FORMAT
-	&& HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
-       || flag_pretend_float)
-      && sizeof (double) * 8 == HOST_BITS_PER_WIDE_INT
-      && GET_MODE_CLASS (mode) == MODE_FLOAT
-      && GET_MODE_SIZE (mode) == UNITS_PER_WORD
-      && GET_CODE (op) == CONST_DOUBLE)
-    {
-      double d;
-      union {double d; HOST_WIDE_INT i; } u;
-
-      REAL_VALUE_FROM_CONST_DOUBLE (d, op);
-
-      u.d = d;
-      return GEN_INT (u.i);
-    }
-#endif /* no REAL_ARITHMETIC */
 
   /* The only remaining cases that we can handle are integers.
      Convert to proper endianness now since these cases need it.

@@ -669,8 +669,6 @@ extern int ix86_arch;
 /* target machine storage layout */
 
 /* Define for XFmode or TFmode extended real floating point support.
-   This will automatically cause REAL_ARITHMETIC to be defined.
- 
    The XFmode is specified by i386 ABI, while TFmode may be faster
    due to alignment and simplifications in the address calculations.
  */
@@ -701,11 +699,6 @@ extern int ix86_arch;
 #define MAX_BITS_PER_WORD 32
 #define MAX_LONG_TYPE_SIZE 32
 #endif
-
-/* Define if you don't want extended real, but do want to use the
-   software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion.  */
-/* #define REAL_ARITHMETIC */
 
 /* Define this if most significant byte of a word is the lowest numbered.  */
 /* That is true on the 80386.  */

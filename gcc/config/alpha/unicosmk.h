@@ -35,13 +35,6 @@ Boston, MA 02111-1307, USA.  */
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-D__unix=1 -D_UNICOS=205 -D_CRAY=1 -D_CRAYT3E=1 -D_CRAYMPP=1 -D_CRAYIEEE=1 -D_ADDR64=1 -D_LD64=1 -D__UNICOSMK__ -D__INT_MAX__=9223372036854775807 -D__SHRT_MAX__=2147483647"
 
-/* Disable software floating point emulation because it requires a 16-bit
-   type which we do not have.  */
-
-#ifndef __GNUC__
-#undef REAL_ARITHMETIC
-#endif
-
 #define SHORT_TYPE_SIZE 32
 
 #undef INT_TYPE_SIZE
@@ -568,14 +561,6 @@ ssib_section ()			\
 #undef ASM_OUTPUT_MAX_SKIP_ALIGN
 #define ASM_OUTPUT_MAX_SKIP_ALIGN(STREAM,POWER,MAXSKIP)
 
-/* We have to define these because we do not use the floating-point
-   emulation. Unfortunately, atof does not accept hex literals.  */ 
-
-#ifndef REAL_ARITHMETIC
-#define REAL_VALUE_ATOF(x,s) atof(x)
-#define REAL_VALUE_HTOF(x,s) atof(x)
-#endif
-
 #undef NM_FLAGS
 
 #undef OBJECT_FORMAT_COFF

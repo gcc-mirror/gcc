@@ -647,8 +647,6 @@ extern int arm_is_6_or_7;
 /* This is required to ensure that push insns always push a word.  */
 #define PROMOTE_FUNCTION_ARGS
 
-/* Define for XFmode extended real floating point support.
-   This will automatically cause REAL_ARITHMETIC to be defined.  */
 /* For the ARM:
    I think I have added all the code to make this work.  Unfortunately,
    early releases of the floating point emulation code on RISCiX used a
@@ -662,12 +660,6 @@ extern int arm_is_6_or_7;
 
 /* Disable XFmode patterns in md file */
 #define ENABLE_XF_PATTERNS 0
-
-/* Define if you don't want extended real, but do want to use the
-   software floating point emulator for REAL_ARITHMETIC and
-   decimal <-> binary conversion. */
-/* See comment above */
-#define REAL_ARITHMETIC
 
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */

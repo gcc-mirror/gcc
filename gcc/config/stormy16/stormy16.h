@@ -2808,30 +2808,6 @@ do {							\
    is treated as a logical line separator.  */
 #define IS_ASM_LOGICAL_LINE_SEPARATOR(C) ((C) == '|')
 
-/* These macros are provided by `real.h' for writing the definitions of
-   `ASM_OUTPUT_DOUBLE' and the like: */
-
-/* These translate X, of type `REAL_VALUE_TYPE', to the target's floating point
-   representation, and store its bit pattern in the array of `long int' whose
-   address is L.  The number of elements in the output array is determined by
-   the size of the desired target floating point data type: 32 bits of it go in
-   each `long int' array element.  Each array element holds 32 bits of the
-   result, even if `long int' is wider than 32 bits on the host machine.
-
-   The array element values are designed so that you can print them out using
-   `fprintf' in the order they should appear in the target machine's memory.  */
-/* #define REAL_VALUE_TO_TARGET_SINGLE(X, L) */
-/* #define REAL_VALUE_TO_TARGET_DOUBLE(X, L) */
-/* #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(X, L) */
-
-/* This macro converts X, of type `REAL_VALUE_TYPE', to a decimal number and
-   stores it as a string into STRING.  You must pass, as STRING, the address of
-   a long enough block of space to hold the result.
-
-   The argument FORMAT is a `printf'-specification that serves as a suggestion
-   for how to format the output string.  */
-/* #define REAL_VALUE_TO_DECIMAL(X, FORMAT, STRING) */
-
 
 /* Output of Uninitialized Variables.  */
 
@@ -3858,10 +3834,6 @@ do {									\
 
 
 /* Miscellaneous Parameters.  */
-
-/* Define REAL_ARITHMETIC to use a software emulator for the target floating
-   point mode.  Otherwise the host floating point mode is used.  */
-#define REAL_ARITHMETIC
 
 /* Define this if you have defined special-purpose predicates in the file
    `MACHINE.c'.  This macro is called within an initializer of an array of

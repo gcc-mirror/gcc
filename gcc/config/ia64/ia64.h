@@ -2277,12 +2277,6 @@ do {									\
     fputc (')', FILE);					\
   } while (0)
 
-/* Cross Compilation and Floating Point.  */
-
-/* Define to enable software floating point emulation.  */
-#define REAL_ARITHMETIC
-
-
 /* Register Renaming Parameters.  */
 
 /* A C expression that is nonzero if hard register number REGNO2 can be

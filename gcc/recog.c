@@ -1716,16 +1716,6 @@ asm_operand_ok (op, constraint)
 	  break;
 
 	case 'E':
-#ifndef REAL_ARITHMETIC
-	  /* Match any floating double constant, but only if
-	     we can examine the bits of it reliably.  */
-	  if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-	       || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
-	      && GET_MODE (op) != VOIDmode && ! flag_pretend_float)
-	    break;
-#endif
-	  /* FALLTHRU */
-
 	case 'F':
 	  if (GET_CODE (op) == CONST_DOUBLE)
 	    return 1;
@@ -2492,18 +2482,6 @@ constrain_operands (strict)
 		break;
 
 	      case 'E':
-#ifndef REAL_ARITHMETIC
-		/* Match any CONST_DOUBLE, but only if
-		   we can examine the bits of it reliably.  */
-		if ((HOST_FLOAT_FORMAT != TARGET_FLOAT_FORMAT
-		     || HOST_BITS_PER_WIDE_INT != BITS_PER_WORD)
-		    && GET_MODE (op) != VOIDmode && ! flag_pretend_float)
-		  break;
-#endif
-		if (GET_CODE (op) == CONST_DOUBLE)
-		  win = 1;
-		break;
-
 	      case 'F':
 		if (GET_CODE (op) == CONST_DOUBLE)
 		  win = 1;

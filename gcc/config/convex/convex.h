@@ -409,18 +409,6 @@ extern int target_flags;
 
 #define LINK_LIBGCC_SPECIAL_1
 
-/* Since IEEE support was added to gcc, most things seem to like it
-   better if we disable exceptions and check afterward for infinity.  */
-
-#if __convex__
-#if _IEEE_FLOAT_
-#define REAL_VALUE_ISNAN(x) 0
-#define REAL_VALUE_ISINF(x) ((*(short *) &(x) & 0x7ff0) == 0x7ff0)
-#else
-#define REAL_VALUE_ISNAN(x) 0
-#define REAL_VALUE_ISINF(x) ((*(short *) &(x) & 0xfff0) == 0x8000)
-#endif
-#endif
 
 /* Target machine storage layout */
 
@@ -1088,9 +1076,6 @@ enum reg_class {
 /* Convex uses VAX or IEEE floats.
    Follow the host format.  */
 #define TARGET_FLOAT_FORMAT HOST_FLOAT_FORMAT
-
-/* But must prevent real.c from constructing VAX dfloats */
-#define REAL_VALUE_ATOF(X,S) atof (X)
 
 /* Check a `double' value for validity for a particular machine mode.  */
 #define CHECK_FLOAT_VALUE(MODE, D, OVERFLOW) \

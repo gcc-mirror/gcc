@@ -73,6 +73,3 @@ Boston, MA 02111-1307, USA.  */
 /* Don't default to pcc-struct-return, because gcc is the only compiler.  */
 #undef PCC_STATIC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 0
-
-/* Allow folding division by zero.  */
-#define REAL_INFINITY

@@ -409,9 +409,6 @@ extern const char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 /* target machine storage layout */
 
-/* Define to enable software floating point emulation.  */
-#define REAL_ARITHMETIC
-
 /* Define the size of `int'.  The default is the same as the word size.  */
 #define INT_TYPE_SIZE 32
 

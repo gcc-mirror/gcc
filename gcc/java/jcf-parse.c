@@ -306,13 +306,7 @@ get_constant (jcf, index)
       {
 	jint num = JPOOL_INT(jcf, index);
 	REAL_VALUE_TYPE d;
-#ifdef REAL_ARITHMETIC
 	d = REAL_VALUE_FROM_TARGET_SINGLE (num);
-#else
-	union { float f;  jint i; } u;
-	u.i = num;
-	d = u.f;
-#endif
 	value = build_real (float_type_node, d);
 	break;
       }
@@ -343,16 +337,7 @@ get_constant (jcf, index)
 	    num[0] = lo;
 	    num[1] = hi;
 	  }
-#ifdef REAL_ARITHMETIC
 	d = REAL_VALUE_FROM_TARGET_DOUBLE (num);
-#else
-	{
-	  union { double d;  jint i[2]; } u;
-	  u.i[0] = (jint) num[0];
-	  u.i[1] = (jint) num[1];
-	  d = u.d;
-	}
-#endif
 	value = build_real (double_type_node, d);
 	break;
       }

@@ -221,10 +221,6 @@ extern unsigned xtensa_current_frame_size;
 
 /* Target machine storage layout */
 
-/* Define in order to support both big and little endian float formats
-   in the same gcc binary.  */
-#define REAL_ARITHMETIC
-
 /* Define this if most significant bit is lowest numbered
    in instructions that operate on numbered bit-fields.  */
 #define BITS_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)

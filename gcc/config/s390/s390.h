@@ -78,7 +78,7 @@ extern int target_flags;
 #define OVERRIDE_OPTIONS override_options ()
 
 
-/* Defines for REAL_ARITHMETIC.  */
+/* Defines for real.c.  */
 #define IEEE_FLOAT 1
 #define TARGET_IBM_FLOAT           0
 #define TARGET_IEEE_FLOAT          1 
@@ -200,10 +200,6 @@ if (INTEGRAL_MODE_P (MODE) &&	        	    	\
    unaligned data.  */
 
 #define STRICT_ALIGNMENT 0
-
-/* real arithmetic */
-
-#define REAL_ARITHMETIC
 
 /* Define target floating point format.  */
 

@@ -124,7 +124,6 @@ print_node_brief (file, prefix, node, indent)
       if (TREE_OVERFLOW (node))
 	fprintf (file, " overflow");
 
-#if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
       d = TREE_REAL_CST (node);
       if (REAL_VALUE_ISINF (d))
 	fprintf (file, " Inf");
@@ -137,16 +136,6 @@ print_node_brief (file, prefix, node, indent)
 	  REAL_VALUE_TO_DECIMAL (d, "%e", string);
 	  fprintf (file, " %s", string);
 	}
-#else
-      {
-	int i;
-	unsigned char *p = (unsigned char *) &TREE_REAL_CST (node);
-	fprintf (file, " 0x");
-	for (i = 0; i < sizeof TREE_REAL_CST (node); i++)
-	  fprintf (file, "%02x", *p++);
-	fprintf (file, "");
-      }
-#endif
     }
 
   fprintf (file, ">");
@@ -681,7 +670,6 @@ print_node (file, prefix, node, indent)
 	    if (TREE_OVERFLOW (node))
 	      fprintf (file, " overflow");
 
-#if !defined(REAL_IS_NOT_DOUBLE) || defined(REAL_ARITHMETIC)
 	    d = TREE_REAL_CST (node);
 	    if (REAL_VALUE_ISINF (d))
 	      fprintf (file, " Inf");
@@ -694,16 +682,6 @@ print_node (file, prefix, node, indent)
 		REAL_VALUE_TO_DECIMAL (d, "%e", string);
 		fprintf (file, " %s", string);
 	      }
-#else
-	    {
-	      int i;
-	      unsigned char *p = (unsigned char *) &TREE_REAL_CST (node);
-	      fprintf (file, " 0x");
-	      for (i = 0; i < sizeof TREE_REAL_CST (node); i++)
-		fprintf (file, "%02x", *p++);
-	      fprintf (file, "");
-	    }
-#endif
 	  }
 	  break;
 

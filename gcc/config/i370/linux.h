@@ -28,14 +28,6 @@ Boston, MA 02111-1307, USA.  */
 #define TARGET_ELF_ABI
 #define LINUX_DEFAULT_ELF
 
-
-/* hack alert define to get dbx/gdb/dwarf to compile  */
-/* problem is that host float format is not target float format.  */
-/* define REAL_ARITHMETIC for software emulation of float to
- * int conversion.  This seems to have somethings to do with 
- * cross-compiling ...  */
-#define REAL_ARITHMETIC
-
 /* Include system common definitions */
 /* TODO: convert include to ${tm_file} list in config.gcc.  */
 #include "i370/i370.h"
