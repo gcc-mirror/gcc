@@ -1,3 +1,24 @@
+2003-02-06  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
+
+	PR c++/8785
+	* g++.dg/parse/fused-params1.C: New test.
+
+	PR c++/8857
+	* g++.dg/parse/tmpl-tmpl-operator1.C: New test.
+
+	PR c++/8921
+	* g++.dg/parse/non-dependent1.C: New test.
+
+	PR c++/8928
+	* g++.dg/parse/dupl-tmpl-args1.C: New test.
+
+	PR c++/9228
+	* g++.dg/parse/undefined7.C: New test.
+	* g++.dg/parse/non-templ1.C: New test.
+
+	PR c++/9229
+	* g++.dg/parse/too-many-tmpl-args1.C: New test.
+
 2003-02-06  Eric Botcazou <ebotcazou@libertysurf.fr>
 
 	* gcc.c-torture/compile/20030206-1.c: New test.
