@@ -388,6 +388,12 @@ char *cplus_tree_code_name[] = {
 void
 lang_init_options ()
 {
+#if USE_CPPLIB
+  cpp_reader_init (&parse_in);
+  parse_in.opts = &parse_options;
+  cpp_options_init (&parse_options);
+#endif
+
   /* Default exceptions on.  */
   flag_exceptions = 1;
 }
