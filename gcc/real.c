@@ -102,6 +102,7 @@ static void neg_significand PARAMS ((REAL_VALUE_TYPE *,
 				     const REAL_VALUE_TYPE *));
 static int cmp_significands PARAMS ((const REAL_VALUE_TYPE *,
 				     const REAL_VALUE_TYPE *));
+static int cmp_significand_0 PARAMS ((const REAL_VALUE_TYPE *));
 static void set_significand_bit PARAMS ((REAL_VALUE_TYPE *, unsigned int));
 static void clear_significand_bit PARAMS ((REAL_VALUE_TYPE *, unsigned int));
 static bool test_significand_bit PARAMS ((REAL_VALUE_TYPE *, unsigned int));
@@ -121,10 +122,13 @@ static void do_divide PARAMS ((REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *,
 			       const REAL_VALUE_TYPE *));
 static int do_compare PARAMS ((const REAL_VALUE_TYPE *,
 			       const REAL_VALUE_TYPE *, int));
-static void do_fix_trunc PARAMS ((REAL_VALUE_TYPE *,
-				  const REAL_VALUE_TYPE *));
+static void do_fix_trunc PARAMS ((REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *));
+
+static unsigned long rtd_divmod PARAMS ((REAL_VALUE_TYPE *,
+					 REAL_VALUE_TYPE *));
 
 static const REAL_VALUE_TYPE * ten_to_ptwo PARAMS ((int));
+static const REAL_VALUE_TYPE * ten_to_mptwo PARAMS ((int));
 static const REAL_VALUE_TYPE * real_digit PARAMS ((int));
 static void times_pten PARAMS ((REAL_VALUE_TYPE *, int));
 
@@ -311,11 +315,11 @@ add_significands (r, a, b)
 
       if (carry)
 	{
-          carry = ri < ai;
+	  carry = ri < ai;
 	  carry |= ++ri == 0;
 	}
       else
-        carry = ri < ai;
+	carry = ri < ai;
 
       r->sig[i] = ri;
     }
@@ -341,11 +345,11 @@ sub_significands (r, a, b)
 
       if (carry)
 	{
-          carry = ri > ai;
+	  carry = ri > ai;
 	  carry |= ~--ri == 0;
 	}
       else
-        carry = ri > ai;
+	carry = ri > ai;
 
       r->sig[i] = ri;
     }
@@ -402,6 +406,21 @@ cmp_significands (a, b)
       if (ai < bi)
 	return -1;
     }
+
+  return 0;
+}
+
+/* Return true if A is non-zero.  */
+
+static inline int 
+cmp_significand_0 (a)
+     const REAL_VALUE_TYPE *a;
+{
+  int i;
+
+  for (i = SIGSZ - 1; i >= 0; --i)
+    if (a->sig[i])
+      return 1;
 
   return 0;
 }
@@ -466,31 +485,21 @@ div_significands (r, a, b)
      const REAL_VALUE_TYPE *a, *b;
 {
   REAL_VALUE_TYPE u;
-  int bit = SIGNIFICAND_BITS - 1;
-  int i;
-  long inexact;
+  int i, bit = SIGNIFICAND_BITS - 1;
+  unsigned long msb, inexact;
 
   u = *a;
   memset (r->sig, 0, sizeof (r->sig));
 
+  msb = 0;
   goto start;
   do
     {
-      if ((u.sig[SIGSZ-1] & SIG_MSB) == 0)
+      msb = u.sig[SIGSZ-1] & SIG_MSB;
+      lshift_significand_1 (&u, &u);
+    start:
+      if (msb || cmp_significands (&u, b) >= 0)
 	{
-	  lshift_significand_1 (&u, &u);
-	start:
-	  if (cmp_significands (&u, b) >= 0)
-	    {
-	      sub_significands (&u, &u, b);
-	      set_significand_bit (r, bit);
-	    }
-	}
-      else
-	{
-	  /* We lose a bit here, and thus know the next quotient bit
-	     will be one.  */
-	  lshift_significand_1 (&u, &u);
 	  sub_significands (&u, &u, b);
 	  set_significand_bit (r, bit);
 	}
@@ -757,7 +766,7 @@ do_multiply (r, a, b)
 		 A  B  C  D
 	      *  E  F  G  H
 	     --------------
-                DE DF DG DH
+	        DE DF DG DH
 	     CE CF CG CH
 	  BE BF BG BH
        AE AF AG AH
@@ -972,7 +981,7 @@ do_fix_trunc (r, a)
 {
   *r = *a;
 
-  switch (a->class)
+  switch (r->class)
     {
     case rvc_zero:
     case rvc_inf:
@@ -1396,6 +1405,43 @@ real_to_integer2 (plow, phigh, r)
   *phigh = high;
 }
 
+/* A subroutine of real_to_decimal.  Compute the quotient and remainder
+   of NUM / DEN.  Return the quotient and place the remainder in NUM.
+   It is expected that NUM / DEN are close enough that the quotient is
+   small.  */
+
+static unsigned long
+rtd_divmod (num, den)
+     REAL_VALUE_TYPE *num, *den;
+{
+  unsigned long q, msb;
+  int expn = num->exp, expd = den->exp;
+
+  if (expn < expd)
+    return 0;
+
+  q = msb = 0;
+  goto start;
+  do
+    {
+      msb = num->sig[SIGSZ-1] & SIG_MSB;
+      q <<= 1;
+      lshift_significand_1 (num, num);
+    start:
+      if (msb || cmp_significands (num, den) >= 0)
+	{
+	  sub_significands (num, num, den);
+	  q |= 1;
+	}
+    }
+  while (--expn >= expd);
+
+  num->exp = expd;
+  normalize (num);
+
+  return q;
+}
+
 /* Render R as a decimal floating point constant.  Emit DIGITS significant
    digits in the result, bounded by BUF_SIZE.  If DIGITS is 0, choose the
    maximum for the representation.  If CROP_TRAILING_ZEROS, strip trailing
@@ -1410,12 +1456,11 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
      size_t buf_size, digits;
      int crop_trailing_zeros;
 {
-  REAL_VALUE_TYPE r;
   const REAL_VALUE_TYPE *one, *ten;
-  int dec_exp, d, cmp_half;
+  REAL_VALUE_TYPE r, pten, u, v;
+  int dec_exp, cmp_one, digit;
   size_t max_digits;
   char *p, *first, *last;
-  char exp_buf[16];
   bool sign;
 
   r = *r_orig;
@@ -1437,29 +1482,131 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
       abort ();
     }
 
+  /* Estimate the decimal exponent, and compute the length of the string it
+     will print as.  Be conservative and add one to account for possible
+     overflow or rounding error.  */
+  dec_exp = r.exp * M_LOG10_2;
+  for (max_digits = 1; dec_exp ; max_digits++)
+    dec_exp /= 10;
+
+  /* Bound the number of digits printed by the size of the output buffer.  */
+  max_digits = buf_size - 1 - 1 - 2 - max_digits - 1;
+  if (max_digits > buf_size)
+    abort ();
+  if (digits > max_digits)
+    digits = max_digits;
+
+  /* Bound the number of digits printed by the size of the representation.  */
+  max_digits = SIGNIFICAND_BITS * M_LOG10_2;
+  if (digits == 0 || digits > max_digits)
+    digits = max_digits;
+
   one = real_digit (1);
   ten = ten_to_ptwo (0);
 
   sign = r.sign;
   r.sign = 0;
 
-  /* Estimate the decimal exponent.  */
-  dec_exp = r.exp * M_LOG10_2;
-  
-  /* Scale the number such that it is in [1, 10).  */
-  times_pten (&r, (dec_exp > 0 ? -dec_exp : -(--dec_exp)));
+  dec_exp = 0;
+  pten = *one;
 
-  /* Assert that the number is in the proper range.  Round-off can
-     prevent the above from working exactly.  */
-  if (do_compare (&r, one, -1) < 0)
+  cmp_one = do_compare (&r, one, 0);
+  if (cmp_one > 0)
     {
-      do_multiply (&r, &r, ten);
-      dec_exp--;
+      int m;
+
+      /* Number is greater than one.  Convert significand to an integer
+	 and strip trailing decimal zeros.  */
+
+      u = r;
+      u.exp = SIGNIFICAND_BITS - 1;
+
+      /* Largest M, such that 10**2**M fits within SIGNIFICAND_BITS.  */
+      m = floor_log2 (max_digits);
+
+      /* Iterate over the bits of the possible powers of 10 that might
+	 be present in U and eliminate them.  That is, if we find that
+	 10**2**M divides U evenly, keep the division and increase 
+	 DEC_EXP by 2**M.  */
+      do
+	{
+	  REAL_VALUE_TYPE t;
+
+	  do_divide (&t, &u, ten_to_ptwo (m));
+	  do_fix_trunc (&v, &t);
+	  if (cmp_significands (&v, &t) == 0)
+	    {
+	      u = t;
+	      dec_exp += 1 << m;
+	    }
+	}
+      while (--m >= 0);
+
+      /* Revert the scaling to integer that we performed earlier.  */
+      u.exp += r.exp - (SIGNIFICAND_BITS - 1);
+      r = u;
+
+      /* Find power of 10.  Do this by dividing out 10**2**M when
+	 this is larger than the current remainder.  Fill PTEN with 
+	 the power of 10 that we compute.  */
+      m = floor_log2 ((int)(r.exp * M_LOG10_2)) + 1;
+      do
+	{
+	  const REAL_VALUE_TYPE *ptentwo = ten_to_ptwo (m);
+	  if (do_compare (&u, ptentwo, 0) >= 0)
+	    {
+	      do_divide (&u, &u, ptentwo);
+	      do_multiply (&pten, &pten, ptentwo);
+	      dec_exp += 1 << m;
+	    }
+	}
+      while (--m >= 0);
     }
-  else if (do_compare (&r, ten, 1) >= 0)
+  else if (cmp_one < 0)
     {
-      do_divide (&r, &r, ten);
-      dec_exp++;
+      int m;
+
+      /* Number is less than one.  Pad significand with leading
+	 decimal zeros.  */
+
+      v = r;
+      while (1)
+	{
+	  /* Stop if we'd shift bits off the bottom.  */
+	  if (v.sig[0] & 7)
+	    break;
+
+	  do_multiply (&u, &v, ten);
+
+	  /* Stop if we're now >= 1.  */
+	  if (u.exp > 0)
+	    break;
+
+	  v = u;
+	  dec_exp -= 1;
+	}
+      r = v;
+
+      /* Find power of 10.  Do this by multiplying in P=10**2**M when
+	 the current remainder is smaller than 1/P.  Fill PTEN with the
+	 power of 10 that we compute.  */
+      m = floor_log2 ((int)(-r.exp * M_LOG10_2)) + 1;
+      do
+	{
+	  const REAL_VALUE_TYPE *ptentwo = ten_to_ptwo (m);
+	  const REAL_VALUE_TYPE *ptenmtwo = ten_to_mptwo (m);
+
+	  if (do_compare (&v, ptenmtwo, 0) <= 0)
+	    {
+	      do_multiply (&v, &v, ptentwo);
+	      do_multiply (&pten, &pten, ptentwo);
+	      dec_exp -= 1 << m;
+	    }
+	}
+      while (--m >= 0);
+
+      /* Invert the positive power of 10 that we've collected so far.  */
+      do_divide (&pten, one, &pten);
     }
 
   p = str;
@@ -1467,52 +1614,80 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
     *p++ = '-';
   first = p++;
 
-  sprintf (exp_buf, "e%+d", dec_exp);
+  /* At this point, PTEN should contain the nearest power of 10 smaller
+     than R, such that this division produces the first digit.
 
-  /* Bound the number of digits printed by the size of the representation.  */
-  max_digits = SIGNIFICAND_BITS * M_LOG10_2;
-  if (digits == 0 || digits > max_digits)
-    digits = max_digits;
+     Using a divide-step primitive that returns the complete integral
+     remainder avoids the rounding error that would be produced if
+     we were to use do_divide here and then simply multiply by 10 for
+     each subsequent digit.  */
 
-  /* Bound the number of digits printed by the size of the output buffer.  */
-  max_digits = buf_size - strlen (exp_buf) - sign - 1;
-  if (max_digits > buf_size)
-    abort ();
-  if (digits > max_digits)
-    digits = max_digits;
+  digit = rtd_divmod (&r, &pten);
 
-  while (1)
+  /* Be prepared for error in that division via underflow ... */
+  if (digit == 0 && cmp_significand_0 (&r))
     {
-      d = real_to_integer ((const REAL_VALUE_TYPE *) &r);
-      do_add (&r, &r, real_digit (d), 1);
-
-      *p++ = d + '0';
-      if (--digits == 0)
-	break;
+      /* Multiply by 10 and try again.  */
       do_multiply (&r, &r, ten);
+      digit = rtd_divmod (&r, &pten);
+      dec_exp -= 1;
+      if (digit == 0)
+	abort ();
+    }
+
+  /* ... or overflow.  */
+  if (digit == 10)
+    {
+      *p++ = '1';
+      if (--digits > 0)
+	*p++ = '0';
+      dec_exp += 1;
+    }
+  else if (digit > 10)
+    abort ();
+  else
+    *p++ = digit + '0';
+
+  /* Generate subsequent digits.  */
+  while (--digits > 0)
+    {
+      do_multiply (&r, &r, ten);
+      digit = rtd_divmod (&r, &pten);
+      *p++ = digit + '0';
     }
   last = p;
 
-  /* Round the result.  Compare R vs 0.5 by doing R*2 vs 1.0.  */
-  r.exp += 1;
-  cmp_half = do_compare (&r, one, -1);
-  if (cmp_half == 0)
-    /* Round to even.  */
-    cmp_half += d & 1;
-  if (cmp_half > 0)
+  /* Generate one more digit with which to do rounding.  */
+  do_multiply (&r, &r, ten);
+  digit = rtd_divmod (&r, &pten);
+
+  /* Round the result.  */
+  if (digit == 5)
+    {
+      /* Round to nearest.  If R is non-zero there are additional
+	 non-zero digits to be extracted.  */
+      if (cmp_significand_0 (&r))
+	digit++;
+      /* Round to even.  */
+      else if ((p[-1] - '0') & 1)
+	digit++;
+    }
+  if (digit > 5)
     {
       while (p > first)
 	{
-	  d = *--p;
-	  if (d == '9')
+	  digit = *--p;
+	  if (digit == '9')
 	    *p = '0';
 	  else
 	    {
-	      *p = d + 1;
+	      *p = digit + 1;
 	      break;
 	    }
 	}
 
+      /* Carry out of the first digit.  This means we had all 9's and
+	 now have all 0's.  "Prepend" a 1 by overwriting the first 0.  */
       if (p == first)
 	{
 	  first[1] = '1';
@@ -1520,14 +1695,17 @@ real_to_decimal (str, r_orig, buf_size, digits, crop_trailing_zeros)
 	}
     }
   
+  /* Insert the decimal point.  */
   first[0] = first[1];
   first[1] = '.';
 
+  /* If requested, drop trailing zeros.  Never crop past "1.0".  */
   if (crop_trailing_zeros)
     while (last > first + 3 && last[-1] == '0')
       last--;
 
-  strcpy (last, exp_buf);
+  /* Append the exponent.  */
+  sprintf (last, "e%+d", dec_exp);
 }
 
 /* Render R as a hexadecimal floating point constant.  Emit DIGITS
@@ -1774,7 +1952,7 @@ real_from_string (r, str)
 	}
 
       if (exp)
-        times_pten (r, exp);
+	times_pten (r, exp);
     }
 
   r->sign = sign;
@@ -1857,7 +2035,7 @@ real_from_integer (r, mode, low, high, unsigned_p)
     real_convert (r, mode, r);
 }
 
-/* Returns 10**2**n.  */
+/* Returns 10**2**N.  */
 
 static const REAL_VALUE_TYPE *
 ten_to_ptwo (n)
@@ -1886,6 +2064,23 @@ ten_to_ptwo (n)
 	  do_multiply (&tens[n], t, t);
 	}
     }
+
+  return &tens[n];
+}
+
+/* Returns 10**(-2**N).  */
+
+static const REAL_VALUE_TYPE *
+ten_to_mptwo (n)
+     int n;
+{
+  static REAL_VALUE_TYPE tens[EXP_BITS];
+
+  if (n < 0 || n >= EXP_BITS)
+    abort ();
+
+  if (tens[n].class == rvc_zero)
+    do_divide (&tens[n], real_digit (1), ten_to_ptwo (n));
 
   return &tens[n];
 }
@@ -2159,10 +2354,10 @@ round_for_format (fmt, r)
 	  if (diff > p2)
 	    goto underflow;
 
-          /* De-normalize the significand.  */
-          sticky_rshift_significand (r, r, diff);
-          r->exp += diff;
-        }
+	  /* De-normalize the significand.  */
+	  sticky_rshift_significand (r, r, diff);
+	  r->exp += diff;
+	}
     }
 
   /* There are P2 true significand bits, followed by one guard bit,
