@@ -2947,7 +2947,7 @@
     return \"#\";
 }"
   [(set_attr "type" "move")
-   (set_attr "length" "1")])
+   (set_attr "length" "1,2,2")])
 
 ;; ?? This and split disabled on sparc64... When I change the destination
 ;; ?? reg to be DImode to emit the constant formation code, the instruction
