@@ -14144,7 +14144,7 @@ start_method (declspecs, declarator, attrlist)
     return NULL_TREE;
 
   if (attrlist)
-    cplus_decl_attributes (&fndecl, attrlist, 0);
+    cplus_decl_attributes (fndecl, attrlist, 0);
 
   /* Pass friends other than inline friend functions back.  */
   if (fndecl == void_type_node)
