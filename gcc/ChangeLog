@@ -1,3 +1,9 @@
+2003-09-18  Danny Smith  <dannysmith@users.sourceforge.net>
+
+	* config/i386/winnt.c (gen_stdcall_suffix): Quit summation of
+	total parm size if a parm has incomplete type.
+	(gen_fastcall_suffix): Likewise.
+
 2003-09-18  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* except.c (output_function_exception_table): Adjust last change
