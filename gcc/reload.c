@@ -214,7 +214,7 @@ struct decomposition
   int safe;		/* Nonzero if this can't conflict with anything. */
   rtx base;		/* Base address for MEM. */
   HOST_WIDE_INT start;	/* Starting offset or register number. */
-  HOST_WIDE_INT end;	/* Endinf offset or register number.  */
+  HOST_WIDE_INT end;	/* Ending offset or register number.  */
 };
 
 /* MEM-rtx's created for pseudo-regs in stack slots not directly addressable;
