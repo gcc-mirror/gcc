@@ -1,6 +1,6 @@
 // -*- C++ -*- forwarding header.
 
-// Copyright (C) 1997-1999, 2000 Free Software Foundation, Inc.
+// Copyright (C) 2000 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,33 +41,4 @@
 #pragma GCC system_header
 #include <string.h>
 
-namespace std 
-{
-  extern "C" void* memcpy(void*, const void*, size_t); 
-  extern "C" void* memmove(void*, const void*, size_t); 
-  extern "C" char* strcpy(char*, const char*); 
-  extern "C" char* strncpy(char*, const char*, size_t); 
-  extern "C" char* strcat(char*, const char*); 
-  extern "C" char* strncat(char*, const char*, size_t); 
-  extern "C" int memcmp(const void*, const void*, size_t); 
-  extern "C" int strcmp(const char*, const char*); 
-  extern "C" int strcoll(const char*, const char*); 
-  extern "C" int strncmp(const char*, const char*, size_t); 
-  extern "C" size_t strxfrm(char*, const char*, size_t); 
-  extern "C" void* memchr(const void*, int, size_t); 
-  extern "C" char* strchr(const char*, int); 
-  extern "C" size_t strcspn(const char*, const char*); 
-  extern "C" char* strpbrk(const char*, const char*); 
-  extern "C" char* strrchr(const char*, int); 
-  extern "C" size_t strspn(const char*, const char*); 
-  extern "C" char* strstr(const char*, const char*); 
-  extern "C" char* strtok(char*, const char*); 
-  extern "C" void* memset(void*, int, size_t); 
-  extern "C" char* strerror(int); 
-  extern "C" size_t strlen(const char*);
-}
-
 #endif
-
-
-
