@@ -1485,7 +1485,6 @@ extern rtx gen_highpart_mode (enum machine_mode, enum machine_mode, rtx);
 extern rtx gen_realpart (enum machine_mode, rtx);
 extern rtx gen_imagpart (enum machine_mode, rtx);
 extern rtx operand_subword (rtx, unsigned int, int, enum machine_mode);
-extern rtx constant_subword (rtx, int, enum machine_mode);
 
 /* In emit-rtl.c */
 extern rtx operand_subword_force (rtx, unsigned int, enum machine_mode);
@@ -1507,10 +1506,10 @@ extern void push_to_sequence (rtx);
 extern void end_sequence (void);
 extern void push_to_full_sequence (rtx, rtx);
 extern void end_full_sequence (rtx*, rtx*);
-
-/* In varasm.c  */
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
+
+/* In varasm.c  */
 extern rtx force_const_mem (enum machine_mode, rtx);
 
 /* In varasm.c  */

@@ -5,6 +5,14 @@
 
 2004-01-06  Geoffrey Keating  <geoffk@apple.com>
 
+	* emit-rtl.c (gen_lowpart_common): Use simplify_gen_subreg
+	for constants.
+	(constant_subword): Delete.
+	* rtl.h (constant_subword): Delete prototype.
+	(immed_double_const): Is not in varasm.c.
+	* simplify-rtx.c (simplify_immed_subreg): New.
+	(simplify_subreg): Use simplify_immed_subreg.
+
 	* config/rs6000/rs6000.md (floatsitf2): Use expand_float rather
 	than trying to generate RTL directly.
 	(fix_trunctfsi2): Use expand_fix rather than trying to generate
