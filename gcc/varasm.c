@@ -1050,7 +1050,8 @@ notice_global_symbol (tree decl)
 	  && (TREE_CODE (decl) != VAR_DECL
 	      || (DECL_COMMON (decl)
 		  && (DECL_INITIAL (decl) == 0
-		      || DECL_INITIAL (decl) == error_mark_node)))))
+		      || DECL_INITIAL (decl) == error_mark_node))))
+      || GET_CODE (DECL_RTL (decl)) != MEM)
     return;
 
   /* We win when global object is found, but it is usefull to know about weak
