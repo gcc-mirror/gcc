@@ -1,3 +1,11 @@
+2004-02-24  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/spe.md (spe_fix_truncsfsi2): Delete.
+        (spe_fixuns_truncsfsi2): Delete.
+
+        * config/rs6000/rs6000.md (fix_truncsfsi2): Delete.
+        (fixuns_truncsfsi2): Delete.
+
 2004-02-24  Josef Zlomek  <zlomekj@suse.cz>
 
 	PR/14240
