@@ -293,7 +293,7 @@
 	("*andqi_lowpart", "iorsi3", "iorhi3", "iorqi3", "uminsi3"):
 	Insert spaces in constraints to align alternatives vertically for
 	readability.
-	("cmphi"): Ditto.  Add separate alternative for operand 0 "Q>",
+	("cmphi"): Ditto.  Add separate alternative for operand 0 "r",
 	operand 1: "M".
 
 2005-02-27  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
