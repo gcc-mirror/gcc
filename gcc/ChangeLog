@@ -1,4 +1,13 @@
-2004-04-19  Richard Henderson  <rth@redhat.com>
+2004-06-19  Roger Sayle  <roger@eyesopen.com>
+
+	* builtins.c (fold_builtin_unordered_cmp): Take an EXP argument
+	instead of both an ARGLIST and a result TYPE.  Handle these C99
+	comparison functions as "polymorphic" builtins.  Also handle
+	lowering of BUILT_IN_ISUNORDERED to an UNORDERED_EXPR tree node.
+	(fold_builtin_1): Update calls to fold_builtin_unordered_cmp.
+	Move handling of BUILT_IN_ISUNORDERED from here to there.
+
+2004-06-19  Richard Henderson  <rth@redhat.com>
 
 	* c-common.c, c-common.h (lang_gimplify_stmt): Remove.
 	* c-gimplify.c: Remove unnecessary prototypes.
