@@ -16,9 +16,7 @@ public interface ComponentPeer
   int checkImage(Image img, int width, int height, ImageObserver o);
   Image createImage(ImageProducer prod);
   Image createImage(int width, int height);
-  void disable();
   void dispose();
-  void enable();
 
   /** 
    * Get the graphics configuration of the component. The color model
@@ -33,16 +31,12 @@ public interface ComponentPeer
   Dimension getPreferredSize();
   Toolkit getToolkit();
   void handleEvent(AWTEvent e);
-  void hide();
   boolean isFocusTraversable();
-  Dimension minimumSize();
-  Dimension preferredSize();
   void paint(Graphics graphics);
   boolean prepareImage(Image img, int width, int height, ImageObserver o);
   void print(Graphics graphics);
   void repaint(long tm, int x, int y, int width, int height);
   void requestFocus();
-  void reshape(int x, int y, int width, int height);
   void setBackground(Color color);
   void setBounds(int x, int y, int width, int height);
   void setCursor(Cursor cursor);
@@ -51,5 +45,4 @@ public interface ComponentPeer
   void setFont(Font font);
   void setForeground(Color color);
   void setVisible(boolean visible);
-  void show();
 }

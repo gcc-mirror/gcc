@@ -13,6 +13,6 @@ import java.awt.Menu;
 public interface MenuBarPeer extends MenuComponentPeer
 {
   void addHelpMenu(Menu menu);
-  void addMenu(Menu menu);
-  void delMenu(int index);
+  void add(Menu menu);
+  void remove(int index);
 }

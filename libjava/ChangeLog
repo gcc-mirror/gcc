@@ -1,3 +1,36 @@
+2000-10-11  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/awt/peer/ChoicePeer.java (addItem): Removed.
+	* java/awt/peer/ComponentPeer.java (disable): Removed.
+	(enable): Removed.
+	(hide): Removed.
+	(minimumSize): Removed.
+	(preferredSize): Removed.
+	(reshape): Removed.
+	(show): Removed.
+	* java/awt/peer/ListPeer.java (addItem): Removed.
+	(clear): Removed.
+	(minimumSize): Removed.
+	(preferredSize): Removed.
+	(setMultipleSelections): Removed.
+	* java/awt/peer/MenuBarPeer.java (add): Renamed from addMenu.
+	(remove): Renamed from removeMenu.
+	* java/awt/peer/MenuItemPeer.java (disable): Removed.
+	(enable): Removed.
+	* java/awt/peer/MenuPeer.java (add): Renamed from addItem.
+	(remove): Renamed from removeItem.
+	* java/awt/peer/TextAreaPeer.java (insertText): Removed.
+	(getMinimumSize): Removed.
+	(getPreferredSize): Removed.
+	(minimumSize): Removed.
+	(preferredSize): Removed.
+	(replaceText): Removed.
+	* java/awt/peer/TextFieldPeer.java (minimumSize): Removed.
+	(preferredSize): Removed.
+	(getMinimumSize): Removed.
+	(getPreferredSize): Removed.
+	(setEchoCharacter): Removed.
+
 2000-10-10  Warren Levy  <warrenl@cygnus.com>
 
 	* gnu/gcj/text/LocaleData_en.java (monetarySeparator): Added.
