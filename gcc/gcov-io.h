@@ -448,6 +448,7 @@ extern void __gcov_merge_single (gcov_type *, unsigned);
    consecutive values.  */
 extern void __gcov_merge_delta (gcov_type *, unsigned);
 
+#ifndef inhibit_libc
 /* The wrappers around some library functions..  */
 extern pid_t __gcov_fork (void);
 extern int __gcov_execl (const char *, const char *, ...);
@@ -456,6 +457,7 @@ extern int __gcov_execle (const char *,  const char *, ...);
 extern int __gcov_execv (const char *, char *const []);
 extern int __gcov_execvp (const char *, char *const []);
 extern int __gcov_execve (const char *, char  *const [], char *const []);
+#endif
 
 #endif /* IN_LIBGCOV */
 

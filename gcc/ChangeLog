@@ -1,3 +1,9 @@
+2004-03-25  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcov-io.h (__gcov_fork, __gcov_execl, __gcov_execlp, __gcov_execle,
+	__gcov_execv, __gcov_execvp, __gcov_execve): Do not declare when
+	inhibit_libc is defined.
+
 2004-04-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips-protos.h (mips_linked_macc_p): Declare.
