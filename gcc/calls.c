@@ -1626,8 +1626,8 @@ compute_argument_addresses (args, argblock, num_actuals)
 	     outgoing arguments and we cannot allow reordering of reads
 	     from function arguments with stores to outgoing arguments
 	     of sibling calls.  */
-	  MEM_ALIAS_SET (args[i].stack) = 0;
-	  MEM_ALIAS_SET (args[i].stack_slot) = 0;
+	  set_mem_alias_set (args[i].stack, 0);
+	  set_mem_alias_set (args[i].stack_slot, 0);
 	}
     }
 }

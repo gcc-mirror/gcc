@@ -1861,9 +1861,10 @@ rs6000_emit_move (dest, source, mode)
 			get_pool_constant (XEXP (operands[1], 0)),
 			get_pool_mode (XEXP (operands[1], 0))))
 	    {
-	      operands[1] = gen_rtx_MEM (mode,
-					 create_TOC_reference (XEXP (operands[1], 0)));
-	      MEM_ALIAS_SET (operands[1]) = get_TOC_alias_set ();	
+	      operands[1]
+		= gen_rtx_MEM (mode,
+			       create_TOC_reference (XEXP (operands[1], 0)));
+	      set_mem_alias_set (operands[1], get_TOC_alias_set ());
 	      RTX_UNCHANGING_P (operands[1]) = 1;
 	    }
 	}
@@ -2355,7 +2356,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       mem = gen_rtx_MEM (BLKmode,
 		         plus_constant (save_area,
 					first_reg_offset * reg_size)),
-      MEM_ALIAS_SET (mem) = set;
+      set_mem_alias_set (mem, set);
 
       move_block_from_reg
 	(GP_ARG_MIN_REG + first_reg_offset, mem,
@@ -2387,7 +2388,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       while (fregno <= FP_ARG_V4_MAX_REG)
 	{
 	  mem = gen_rtx_MEM (DFmode, plus_constant (save_area, off));
-          MEM_ALIAS_SET (mem) = set;
+          set_mem_alias_set (mem, set);
 	  emit_move_insn (mem, gen_rtx_REG (DFmode, fregno));
 	  fregno++;
 	  off += 8;
@@ -2692,7 +2693,7 @@ rs6000_va_arg (valist, type)
   if (indirect_p)
     {
       r = gen_rtx_MEM (Pmode, addr_rtx);
-      MEM_ALIAS_SET (r) = get_varargs_alias_set ();
+      set_mem_alias_set (r, get_varargs_alias_set ());
       emit_move_insn (addr_rtx, r);
     }
 
@@ -5673,7 +5674,7 @@ rs6000_emit_eh_toc_restore (stacksize)
   rtx loop_exit = gen_label_rtx ();
   
   mem = gen_rtx_MEM (Pmode, hard_frame_pointer_rtx);
-  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+  set_mem_alias_set (mem, rs6000_sr_alias_set);
   emit_move_insn (bottom_of_stack, mem);
 
   top_of_stack = expand_binop (Pmode, add_optab, 
@@ -5707,7 +5708,7 @@ rs6000_emit_eh_toc_restore (stacksize)
 			   loop_exit);
 
   mem = gen_rtx_MEM (Pmode, bottom_of_stack);
-  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+  set_mem_alias_set (mem, rs6000_sr_alias_set);
   emit_move_insn (bottom_of_stack, mem);
   
   mem = gen_rtx_MEM (Pmode, 
@@ -5723,15 +5724,15 @@ rs6000_emit_eh_toc_restore (stacksize)
 }
 #endif /* TARGET_AIX */
 
-/* This ties together stack memory 
-   (MEM with an alias set of rs6000_sr_alias_set)
-   and the change to the stack pointer.  */
+/* This ties together stack memory (MEM with an alias set of
+   rs6000_sr_alias_set) and the change to the stack pointer.  */
+
 static void
 rs6000_emit_stack_tie ()
 {
-  rtx mem;
-  mem = gen_rtx_MEM (BLKmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
-  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+  rtx mem = gen_rtx_MEM (BLKmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM));
+
+  set_mem_alias_set (mem, rs6000_sr_alias_set);
   emit_insn (gen_stack_tie (mem));
 }
 
@@ -5972,7 +5973,7 @@ rs6000_emit_prologue ()
 					  + sp_offset 
 					  + 8*i));
 	    mem = gen_rtx_MEM (DFmode, addr);
-	    MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	    set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	    insn = emit_move_insn (mem, reg);
 	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
@@ -6004,7 +6005,7 @@ rs6000_emit_prologue ()
 			       GEN_INT (info->fp_save_offset 
 					+ sp_offset + 8*i));
 	  mem = gen_rtx_MEM (DFmode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  RTVEC_ELT (p, i + 2) = gen_rtx_SET (VOIDmode, mem, reg);
 	}
@@ -6030,7 +6031,7 @@ rs6000_emit_prologue ()
 					+ sp_offset 
 					+ reg_size * i));
 	  mem = gen_rtx_MEM (reg_mode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  RTVEC_ELT (p, i) = gen_rtx_SET (VOIDmode, mem, reg);
 	}
@@ -6057,7 +6058,7 @@ rs6000_emit_prologue ()
 					  + sp_offset 
 					  + reg_size * i));
 	    mem = gen_rtx_MEM (reg_mode, addr);
-	    MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	    set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	    insn = emit_move_insn (mem, reg);
 	    rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
@@ -6084,7 +6085,7 @@ rs6000_emit_prologue ()
 				info->ehrd_offset + sp_offset
 				+ reg_size * (int) i);
 	  mem = gen_rtx_MEM (reg_mode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  insn = emit_move_insn (mem, reg);
 	  rs6000_frame_related (insn, frame_ptr_rtx, info->total_size, 
@@ -6113,7 +6114,8 @@ rs6000_emit_prologue ()
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->cr_save_offset + sp_offset));
       rtx mem = gen_rtx_MEM (SImode, addr);
-      MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
 
       /* If r12 was used to hold the original sp, copy cr into r0 now
 	 that it's free.  */
@@ -6304,7 +6306,8 @@ rs6000_emit_epilogue (sibcall)
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->lr_save_offset + sp_offset));
       rtx mem = gen_rtx_MEM (Pmode, addr);
-      MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
 
       emit_move_insn (gen_rtx_REG (Pmode, 0), mem);
     }
@@ -6315,7 +6318,8 @@ rs6000_emit_epilogue (sibcall)
       rtx addr = gen_rtx_PLUS (Pmode, frame_reg_rtx,
 			       GEN_INT (info->cr_save_offset + sp_offset));
       rtx mem = gen_rtx_MEM (SImode, addr);
-      MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+      set_mem_alias_set (mem, rs6000_sr_alias_set);
 
       emit_move_insn (gen_rtx_REG (SImode, 12), mem);
     }
@@ -6342,7 +6346,7 @@ rs6000_emit_epilogue (sibcall)
 				info->ehrd_offset + sp_offset
 				+ reg_size * (int) i);
 	  mem = gen_rtx_MEM (reg_mode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  emit_move_insn (gen_rtx_REG (reg_mode, regno), mem);
 	}
@@ -6361,7 +6365,8 @@ rs6000_emit_epilogue (sibcall)
 					    + sp_offset 
 					    + reg_size * i));
 	  rtx mem = gen_rtx_MEM (reg_mode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  RTVEC_ELT (p, i) = 
 	    gen_rtx_SET (VOIDmode,
@@ -6385,7 +6390,8 @@ rs6000_emit_epilogue (sibcall)
 					    + sp_offset 
 					    + reg_size * i));
 	  rtx mem = gen_rtx_MEM (reg_mode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  emit_move_insn (gen_rtx_REG (reg_mode, 
 				       info->first_gp_reg_save + i),
@@ -6404,7 +6410,7 @@ rs6000_emit_epilogue (sibcall)
 					+ sp_offset 
 					+ 8*i));
 	  mem = gen_rtx_MEM (DFmode, addr);
-	  MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	  set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	  emit_move_insn (gen_rtx_REG (DFmode, 
 				       info->first_fp_reg_save + i),
@@ -6526,7 +6532,7 @@ rs6000_emit_epilogue (sibcall)
 	      addr = gen_rtx_PLUS (Pmode, sp_reg_rtx,
 				   GEN_INT (info->fp_save_offset + 8*i));
 	      mem = gen_rtx_MEM (DFmode, addr);
-	      MEM_ALIAS_SET (mem) = rs6000_sr_alias_set;
+	      set_mem_alias_set (mem, rs6000_sr_alias_set);
 
 	      RTVEC_ELT (p, i+3) = 
 		gen_rtx_SET (VOIDmode,

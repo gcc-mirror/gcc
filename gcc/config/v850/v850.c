@@ -2791,7 +2791,7 @@ v850_va_arg (valist, type)
     {
       addr_rtx = force_reg (Pmode, addr_rtx);
       addr_rtx = gen_rtx_MEM (Pmode, addr_rtx);
-      MEM_ALIAS_SET (addr_rtx) = get_varargs_alias_set ();
+      set_mem_alias_set (addr_rtx, get_varargs_alias_set ());
     }
 
   return addr_rtx;

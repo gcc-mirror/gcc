@@ -3421,7 +3421,7 @@ legitimize_pic_address (orig, reg)
       new = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, new);
       new = gen_rtx_MEM (Pmode, new);
       RTX_UNCHANGING_P (new) = 1;
-      MEM_ALIAS_SET (new) = ix86_GOT_alias_set ();
+      set_mem_alias_set (new, ix86_GOT_alias_set ());
 
       if (reg == 0)
 	reg = gen_reg_rtx (Pmode);

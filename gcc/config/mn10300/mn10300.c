@@ -869,12 +869,12 @@ mn10300_builtin_saveregs ()
     offset = current_function_arg_offset_rtx;
 
   mem = gen_rtx_MEM (SImode, current_function_internal_arg_pointer);
-  MEM_ALIAS_SET (mem) = set;
+  set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (SImode, 0));
 
   mem = gen_rtx_MEM (SImode,
 		     plus_constant (current_function_internal_arg_pointer, 4));
-  MEM_ALIAS_SET (mem) = set;
+  set_mem_alias_set (mem, set);
   emit_move_insn (mem, gen_rtx_REG (SImode, 1));
 
   return copy_to_reg (expand_binop (Pmode, add_optab,

@@ -2612,15 +2612,13 @@ m88k_builtin_saveregs ()
   variable_args_p = 1;
 
   fixed = 0;
-  if (CONSTANT_P (current_function_arg_offset_rtx))
-    {
-      fixed = (XINT (current_function_arg_offset_rtx, 0)
-	       + argadj) / UNITS_PER_WORD;
-    }
+  if (GET_CODE (current_function_arg_offset_rtx) == CONST_INT)
+    fixed = ((INTVAL (current_function_arg_offset_rtx) + argadj)
+	     / UNITS_PER_WORD);
 
   /* Allocate the register space, and store it as the __va_reg member.  */
   addr = assign_stack_local (BLKmode, 8 * UNITS_PER_WORD, -1);
-  MEM_ALIAS_SET (addr) = get_varargs_alias_set ();
+  set_mem_alias_set (addr, get_varargs_alias_set ());
   RTX_UNCHANGING_P (addr) = 1;
   RTX_UNCHANGING_P (XEXP (addr, 0)) = 1;
 

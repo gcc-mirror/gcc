@@ -427,7 +427,7 @@ expand_builtin_return_addr (fndecl_code, count, tem)
 #endif
       tem = memory_address (Pmode, tem);
       tem = gen_rtx_MEM (Pmode, tem);
-      MEM_ALIAS_SET (tem) = get_frame_alias_set ();
+      set_mem_alias_set (tem, get_frame_alias_set ());
       tem = copy_to_reg (tem);
     }
 
@@ -443,7 +443,7 @@ expand_builtin_return_addr (fndecl_code, count, tem)
   tem = memory_address (Pmode,
 			plus_constant (tem, GET_MODE_SIZE (Pmode)));
   tem = gen_rtx_MEM (Pmode, tem);
-  MEM_ALIAS_SET (tem) = get_frame_alias_set ();
+  set_mem_alias_set (tem, get_frame_alias_set ());
 #endif
   return tem;
 }
@@ -484,11 +484,11 @@ expand_builtin_setjmp_setup (buf_addr, receiver_label)
 #endif
 
   mem = gen_rtx_MEM (Pmode, buf_addr);
-  MEM_ALIAS_SET (mem) = setjmp_alias_set;
+  set_mem_alias_set (mem, setjmp_alias_set);
   emit_move_insn (mem, BUILTIN_SETJMP_FRAME_VALUE);
 
   mem = gen_rtx_MEM (Pmode, plus_constant (buf_addr, GET_MODE_SIZE (Pmode))),
-  MEM_ALIAS_SET (mem) = setjmp_alias_set;
+  set_mem_alias_set (mem, setjmp_alias_set);
 
   emit_move_insn (validize_mem (mem),
 		  force_reg (Pmode, gen_rtx_LABEL_REF (Pmode, receiver_label)));
@@ -496,7 +496,7 @@ expand_builtin_setjmp_setup (buf_addr, receiver_label)
   stack_save = gen_rtx_MEM (sa_mode,
 			    plus_constant (buf_addr,
 					   2 * GET_MODE_SIZE (Pmode)));
-  MEM_ALIAS_SET (stack_save) = setjmp_alias_set;
+  set_mem_alias_set (stack_save, setjmp_alias_set);
   emit_stack_save (SAVE_NONLOCAL, &stack_save, NULL_RTX);
 
   /* If there is further processing to do, do it.  */
@@ -685,8 +685,9 @@ expand_builtin_longjmp (buf_addr, value)
 
       stack = gen_rtx_MEM (sa_mode, plus_constant (buf_addr,
 						   2 * GET_MODE_SIZE (Pmode)));
-      MEM_ALIAS_SET (fp) = MEM_ALIAS_SET (lab) = MEM_ALIAS_SET (stack)
-	= setjmp_alias_set;
+      set_mem_alias_set (fp, setjmp_alias_set);
+      set_mem_alias_set (lab, setjmp_alias_set);
+      set_mem_alias_set (stack, setjmp_alias_set);
 
       /* Pick up FP, label, and SP from the block and jump.  This code is
 	 from expand_goto in stmt.c; see there for detailed comments.  */
@@ -756,9 +757,8 @@ get_memory_rtx (exp)
     return mem;
 
   set_mem_attributes (mem, exp, 0);
-
   /* memcpy, memset and other builtin stringops can alias with anything. */
-  MEM_ALIAS_SET (mem) = 0;
+  set_mem_alias_set (mem, 0);
   return mem;
 }
 
@@ -2965,7 +2965,7 @@ expand_builtin_va_arg (valist, type)
     }
 
   result = gen_rtx_MEM (TYPE_MODE (type), addr);
-  MEM_ALIAS_SET (result) = get_varargs_alias_set ();
+  set_mem_alias_set (result, get_varargs_alias_set ());
 
   return result;
 }
@@ -3025,9 +3025,9 @@ expand_builtin_va_copy (arglist)
 
       /* "Dereference" to BLKmode memories.  */
       dstb = gen_rtx_MEM (BLKmode, dstb);
-      MEM_ALIAS_SET (dstb) = get_alias_set (TREE_TYPE (TREE_TYPE (dst)));
+      set_mem_alias_set (dstb, get_alias_set (TREE_TYPE (TREE_TYPE (dst))));
       srcb = gen_rtx_MEM (BLKmode, srcb);
-      MEM_ALIAS_SET (srcb) = get_alias_set (TREE_TYPE (TREE_TYPE (src)));
+      set_mem_alias_set (srcb, get_alias_set (TREE_TYPE (TREE_TYPE (src))));
 
       /* Copy.  */
       emit_block_move (dstb, srcb, size, TYPE_ALIGN (va_list_type_node));

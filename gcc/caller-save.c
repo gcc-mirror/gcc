@@ -342,7 +342,7 @@ setup_save_areas ()
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = MOVE_MAX_WORDS; j > 0; j--)
       if (regno_save_mem[i][j] != 0)
-	MEM_ALIAS_SET (regno_save_mem[i][j]) = get_frame_alias_set ();
+	set_mem_alias_set (regno_save_mem[i][j], get_frame_alias_set ());
 }
 
 /* Find the places where hard regs are live across calls and save them.  */

@@ -1102,7 +1102,7 @@ get_aligned_mem (ref, paligned_mem, pbitnum)
 
   /* Sadly, we cannot use alias sets here because we may overlap other
      data in a different alias set.  */
-  MEM_ALIAS_SET (*paligned_mem) = 0;
+  set_mem_alias_set (*paligned_mem, 0);
 
   *pbitnum = GEN_INT ((offset & 3) * 8);
 }
@@ -1229,7 +1229,6 @@ alpha_set_memflags_1 (x, in_struct_p, volatile_p, unchanging_p)
 	 are the only thing we would be able to differentiate anyway,
 	 there does not seem to be any point in convoluting the early
 	 out of the alias check.  */
-      /* MEM_ALIAS_SET (x) = alias_set; */
       break;
 
     default:
@@ -2519,7 +2518,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
 			gen_rtx_AND (DImode, 
 				     plus_constant (XEXP (mem, 0), ofs),
 				     GEN_INT (-8)));
-  MEM_ALIAS_SET (tmp) = 0;
+  set_mem_alias_set (tmp, 0);
   emit_move_insn (meml, tmp);
 
   tmp = change_address (mem, DImode,
@@ -2527,7 +2526,7 @@ alpha_expand_unaligned_load (tgt, mem, size, ofs, sign)
 				     plus_constant (XEXP (mem, 0),
 						    ofs + size - 1),
 				     GEN_INT (-8)));
-  MEM_ALIAS_SET (tmp) = 0;
+  set_mem_alias_set (tmp, 0);
   emit_move_insn (memh, tmp);
 
   if (sign && size == 2)
@@ -2600,14 +2599,14 @@ alpha_expand_unaligned_store (dst, src, size, ofs)
 			 gen_rtx_AND (DImode, 
 				      plus_constant (XEXP (dst, 0), ofs),
 				      GEN_INT (-8)));
-  MEM_ALIAS_SET (meml) = 0;
+  set_mem_alias_set (meml, 0);
 
   memh = change_address (dst, DImode,
 			 gen_rtx_AND (DImode, 
 				      plus_constant (XEXP (dst, 0),
 						     ofs+size-1),
 				      GEN_INT (-8)));
-  MEM_ALIAS_SET (memh) = 0;
+  set_mem_alias_set (memh, 0);
 
   emit_move_insn (dsth, memh);
   emit_move_insn (dstl, meml);
@@ -2705,7 +2704,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
 			    gen_rtx_AND (DImode,
 					 plus_constant (XEXP(smem,0), 8*i),
 					 im8));
-      MEM_ALIAS_SET (tmp) = 0;
+      set_mem_alias_set (tmp, 0);
       emit_move_insn (data_regs[i], tmp);
     }
 
@@ -2713,7 +2712,7 @@ alpha_expand_unaligned_load_words (out_regs, smem, words, ofs)
 			gen_rtx_AND (DImode,
 				     plus_constant (XEXP(smem,0), 8*words - 1),
 				     im8));
-  MEM_ALIAS_SET (tmp) = 0;
+  set_mem_alias_set (tmp, 0);
   emit_move_insn (data_regs[words], tmp);
 
   /* Extract the half-word fragments.  Unfortunately DEC decided to make
@@ -2779,13 +2778,13 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 					   plus_constant (XEXP(dmem,0),
 							  words*8 - 1),
 				       im8));
-  MEM_ALIAS_SET (st_addr_2) = 0;
+  set_mem_alias_set (st_addr_2, 0);
 
   st_addr_1 = change_address (dmem, DImode,
 			      gen_rtx_AND (DImode, 
 					   XEXP (dmem, 0),
 					   im8));
-  MEM_ALIAS_SET (st_addr_1) = 0;
+  set_mem_alias_set (st_addr_1, 0);
 
   /* Load up the destination end bits.  */
   emit_move_insn (st_tmp_2, st_addr_2);
@@ -2828,7 +2827,7 @@ alpha_expand_unaligned_store_words (data_regs, dmem, words, ofs)
 				gen_rtx_AND (DImode,
 					     plus_constant(XEXP (dmem,0), i*8),
 					     im8));
-      MEM_ALIAS_SET (tmp) = 0;
+      set_mem_alias_set (tmp, 0);
       emit_move_insn (tmp, data_regs ? ins_tmps[i-1] : const0_rtx);
     }
   emit_move_insn (st_addr_1, st_tmp_1);
@@ -3253,7 +3252,7 @@ alpha_expand_block_clear (operands)
 	  HOST_WIDE_INT mask;
 
 	  mem = adjust_address (orig_dst, mode, ofs - inv_alignofs);
-	  MEM_ALIAS_SET (mem) = 0;
+	  set_mem_alias_set (mem, 0);
 
 	  mask = ~(~(HOST_WIDE_INT)0 << (inv_alignofs * 8));
 	  if (bytes < alignofs)
@@ -3333,13 +3332,13 @@ alpha_expand_block_clear (operands)
       words = bytes / 8;
       for (i = 0; i < words; ++i)
 	{
-	  rtx mem;
-	  mem = change_address (orig_dst, DImode,
-				gen_rtx_AND (DImode,
-					     plus_constant (XEXP (orig_dst, 0),
-							    ofs + i*8),
-					     GEN_INT (-8)));
-	  MEM_ALIAS_SET (mem) = 0;
+	  rtx mem
+	    = change_address (orig_dst, DImode,
+			      gen_rtx_AND (DImode,
+					   plus_constant (XEXP (orig_dst, 0),
+							  ofs + i*8),
+					   GEN_INT (-8)));
+	  set_mem_alias_set (mem, 0);
 	  emit_move_insn (mem, const0_rtx);
 	}
 
@@ -3398,7 +3397,7 @@ alpha_expand_block_clear (operands)
 	  HOST_WIDE_INT mask;
 
 	  mem = adjust_address (orig_dst, DImode, ofs);
-	  MEM_ALIAS_SET (mem) = 0;
+	  set_mem_alias_set (mem, 0);
 
 	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
 
@@ -3414,7 +3413,7 @@ alpha_expand_block_clear (operands)
 	  HOST_WIDE_INT mask;
 
 	  mem = adjust_address (orig_dst, SImode, ofs);
-	  MEM_ALIAS_SET (mem) = 0;
+	  set_mem_alias_set (mem, 0);
 
 	  mask = ~(HOST_WIDE_INT)0 << (bytes * 8);
 
@@ -4741,7 +4740,7 @@ alpha_expand_prologue ()
   if (TARGET_OPEN_VMS && vms_is_stack_procedure)
     {
       mem = gen_rtx_MEM (DImode, stack_pointer_rtx);
-      MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+      set_mem_alias_set (mem, alpha_sr_alias_set);
       FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_PV)));
     }
 
@@ -4749,7 +4748,7 @@ alpha_expand_prologue ()
   if (imask & (1L << REG_RA))
     {
       mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-      MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+      set_mem_alias_set (mem, alpha_sr_alias_set);
       FRP (emit_move_insn (mem, gen_rtx_REG (DImode, REG_RA)));
       imask &= ~(1L << REG_RA);
       reg_offset += 8;
@@ -4760,7 +4759,7 @@ alpha_expand_prologue ()
     if (imask & (1L << i))
       {
 	mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
-	MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	set_mem_alias_set (mem, alpha_sr_alias_set);
 	FRP (emit_move_insn (mem, gen_rtx_REG (DImode, i)));
 	reg_offset += 8;
       }
@@ -4769,7 +4768,7 @@ alpha_expand_prologue ()
     if (fmask & (1L << i))
       {
 	mem = gen_rtx_MEM (DFmode, plus_constant (sa_reg, reg_offset));
-	MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	set_mem_alias_set (mem, alpha_sr_alias_set);
 	FRP (emit_move_insn (mem, gen_rtx_REG (DFmode, i+32)));
 	reg_offset += 8;
       }
@@ -5104,7 +5103,7 @@ alpha_expand_epilogue ()
 
       mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, reg_offset));
       if (! eh_ofs)
-        MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+        set_mem_alias_set (mem, alpha_sr_alias_set);
       FRP (emit_move_insn (gen_rtx_REG (DImode, REG_RA), mem));
 
       reg_offset += 8;
@@ -5118,7 +5117,7 @@ alpha_expand_epilogue ()
 	    else
 	      {
 		mem = gen_rtx_MEM (DImode, plus_constant(sa_reg, reg_offset));
-		MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+		set_mem_alias_set (mem, alpha_sr_alias_set);
 		FRP (emit_move_insn (gen_rtx_REG (DImode, i), mem));
 	      }
 	    reg_offset += 8;
@@ -5128,7 +5127,7 @@ alpha_expand_epilogue ()
 	if (fmask & (1L << i))
 	  {
 	    mem = gen_rtx_MEM (DFmode, plus_constant(sa_reg, reg_offset));
-	    MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	    set_mem_alias_set (mem, alpha_sr_alias_set);
 	    FRP (emit_move_insn (gen_rtx_REG (DFmode, i+32), mem));
 	    reg_offset += 8;
 	  }
@@ -5186,7 +5185,7 @@ alpha_expand_epilogue ()
 	{
 	  emit_insn (gen_blockage ());
 	  mem = gen_rtx_MEM (DImode, plus_constant (sa_reg, fp_offset));
-	  MEM_ALIAS_SET (mem) = alpha_sr_alias_set;
+	  set_mem_alias_set (mem, alpha_sr_alias_set);
 	  FRP (emit_move_insn (hard_frame_pointer_rtx, mem));
 	}
       else if (TARGET_OPEN_VMS)

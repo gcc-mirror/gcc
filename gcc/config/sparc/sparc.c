@@ -4929,10 +4929,10 @@ sparc_va_arg (valist, type)
 
       addr_rtx = force_reg (Pmode, addr_rtx);
       addr_rtx = gen_rtx_MEM (BLKmode, addr_rtx);
-      MEM_ALIAS_SET (addr_rtx) = get_varargs_alias_set ();
+      set_mem_alias_set (addr_rtx, get_varargs_alias_set ());
       tmp = shallow_copy_rtx (tmp);
       PUT_MODE (tmp, BLKmode);
-      MEM_ALIAS_SET (tmp) = 0;
+      set_mem_alias_set (tmp, 0);
       
       dest_addr = emit_block_move (tmp, addr_rtx, GEN_INT (rsize), 
 				   BITS_PER_WORD);
@@ -4946,7 +4946,7 @@ sparc_va_arg (valist, type)
     {
       addr_rtx = force_reg (Pmode, addr_rtx);
       addr_rtx = gen_rtx_MEM (Pmode, addr_rtx);
-      MEM_ALIAS_SET (addr_rtx) = get_varargs_alias_set ();
+      set_mem_alias_set (addr_rtx, get_varargs_alias_set ());
     }
 
   return addr_rtx;

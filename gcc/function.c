@@ -808,10 +808,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
   /* If we know the alias set for the memory that will be used, use
      it.  If there's no TYPE, then we don't know anything about the
      alias set for the memory.  */
-  if (type)
-    MEM_ALIAS_SET (p->slot) = get_alias_set (type);
-  else
-    MEM_ALIAS_SET (p->slot) = 0;
+  set_mem_alias_set (p->slot, type ? get_alias_set (type) : 0);
 
   /* If a type is specified, set the relevant flags. */
   if (type != 0)
@@ -1499,7 +1496,7 @@ put_reg_into_stack (function, reg, type, promoted_mode, decl_mode, volatile_p,
     {
       MEM_SET_IN_STRUCT_P (reg,
 			   AGGREGATE_TYPE_P (type) || MEM_IN_STRUCT_P (new));
-      MEM_ALIAS_SET (reg) = get_alias_set (type);
+      set_mem_alias_set (reg, get_alias_set (type));
     }
   if (used_p)
     schedule_fixup_var_refs (function, reg, type, promoted_mode, ht);
@@ -2876,7 +2873,7 @@ gen_mem_addressof (reg, decl)
       PUT_MODE (reg, decl_mode);
       MEM_VOLATILE_P (reg) = TREE_SIDE_EFFECTS (decl);
       MEM_SET_IN_STRUCT_P (reg, AGGREGATE_TYPE_P (type));
-      MEM_ALIAS_SET (reg) = get_alias_set (decl);
+      set_mem_alias_set (reg, get_alias_set (decl));
 
       if (TREE_USED (decl) || DECL_INITIAL (decl) != 0)
 	fixup_var_refs (reg, GET_MODE (reg), TREE_UNSIGNED (type), 0);
@@ -2884,7 +2881,7 @@ gen_mem_addressof (reg, decl)
   else
     {
       /* We have no alias information about this newly created MEM.  */
-      MEM_ALIAS_SET (reg) = 0;
+      set_mem_alias_set (reg, 0);
 
       fixup_var_refs (reg, GET_MODE (reg), 0, 0);
     }

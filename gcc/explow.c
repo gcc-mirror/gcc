@@ -661,7 +661,7 @@ set_mem_attributes (ref, t, objectp)
      here, because, in C and C++, the fact that a location is accessed
      through a const expression does not mean that the value there can
      never change.  */
-  MEM_ALIAS_SET (ref) = get_alias_set (t);
+  set_mem_alias_set (ref, get_alias_set (t));
   MEM_VOLATILE_P (ref) = TYPE_VOLATILE (type);
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
 

@@ -1157,7 +1157,7 @@ reload (first, global)
 	      MEM_SCALAR_P (reg) = is_scalar;
 	      /* We have no alias information about this newly created
 		 MEM.  */
-	      MEM_ALIAS_SET (reg) = 0;
+	      set_mem_alias_set (reg, 0);
 	    }
 	  else if (reg_equiv_mem[i])
 	    XEXP (reg_equiv_mem[i], 0) = addr;
@@ -1988,7 +1988,7 @@ alter_reg (i, from_reg)
 	  RTX_UNCHANGING_P (x) = RTX_UNCHANGING_P (regno_reg_rtx[i]);
 
 	  /* Nothing can alias this slot except this pseudo.  */
-	  MEM_ALIAS_SET (x) = new_alias_set ();
+	  set_mem_alias_set (x, new_alias_set ());
 	}
 
       /* Reuse a stack slot if possible.  */
@@ -2022,9 +2022,9 @@ alter_reg (i, from_reg)
 
 	  /* All pseudos mapped to this slot can alias each other.  */
 	  if (spill_stack_slot[from_reg])
-	    MEM_ALIAS_SET (x) = MEM_ALIAS_SET (spill_stack_slot[from_reg]);
+	    set_mem_alias_set (x, MEM_ALIAS_SET (spill_stack_slot[from_reg]));
 	  else
-	    MEM_ALIAS_SET (x) = new_alias_set ();
+	    set_mem_alias_set (x, new_alias_set ());
 
 	  if (BYTES_BIG_ENDIAN)
 	    {

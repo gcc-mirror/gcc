@@ -3181,7 +3181,7 @@ emit_single_push_insn (mode, x, type)
          outgoing arguments and we cannot allow reordering of reads
          from function arguments with stores to outgoing arguments
          of sibling calls.  */
-      MEM_ALIAS_SET (dest) = 0;
+      set_mem_alias_set (dest, 0);
     }
   emit_move_insn (dest, x);
 #else
@@ -3399,7 +3399,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		 outgoing arguments and we cannot allow reordering of reads
 		 from function arguments with stores to outgoing arguments
 		 of sibling calls.  */
-	      MEM_ALIAS_SET (target) = 0;
+	      set_mem_alias_set (target, 0);
 	    }
 
 	  /* TEMP is the address of the block.  Copy the data there.  */
@@ -3582,7 +3582,7 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		 outgoing arguments and we cannot allow reordering of reads
 		 from function arguments with stores to outgoing arguments
 		 of sibling calls.  */
-	      MEM_ALIAS_SET (dest) = 0;
+	      set_mem_alias_set (dest, 0);
 	    }
 
 	  emit_move_insn (dest, x);
@@ -3906,7 +3906,7 @@ expand_assignment (to, from, want_value, suggest_reg)
     {
       to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
       if (GET_CODE (to_rtx) == MEM)
-	MEM_ALIAS_SET (to_rtx) = get_alias_set (to);
+	set_mem_alias_set (to_rtx, get_alias_set (to));
     }
 
   /* Don't move directly into a return register.  */
@@ -4478,7 +4478,7 @@ store_constructor_field (target, bitsize, bitpos,
       if (bitpos != 0)
 	align = MIN (align, (unsigned int) bitpos & - bitpos);
       if (GET_CODE (target) == MEM)
-	MEM_ALIAS_SET (target) = alias_set;
+	set_mem_alias_set (target, alias_set);
 
       store_constructor (exp, target, align, cleared, bitsize / BITS_PER_UNIT);
     }
@@ -5334,10 +5334,9 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	 at the same location.  We will give the structures alias set
 	 zero; here we must be careful not to give non-zero alias sets
 	 to their fields.  */
-      if (!rtx_varies_p (addr, /*for_alias=*/0))
-	MEM_ALIAS_SET (to_rtx) = alias_set;
-      else
-	MEM_ALIAS_SET (to_rtx) = 0;
+      set_mem_alias_set (to_rtx,
+			 rtx_varies_p (addr, /*for_alias=*/0)
+			 ? 0 : alias_set);
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
     }
@@ -9141,7 +9140,7 @@ expand_expr_unaligned (exp, palign)
 	  /* Get a reference to just this component.  */
 	  op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
 
-	MEM_ALIAS_SET (op0) = get_alias_set (exp);
+	set_mem_alias_set (op0, get_alias_set (exp));
 
 	/* Adjust the alignment in case the bit position is not
 	   a multiple of the alignment of the inner object.  */
