@@ -1,5 +1,7 @@
 Sun Jan 24 08:07:59 1999  Jeffrey A Law  (law@cygnus.com)
 
+        * stmt.c (stmt_loop_nest_empty): New function.
+        * tree.h (stmt_loop_nest_empty): Declare it.
 	* rtl.def (CALL_PLACEHOLDER): New rtx code.
 
 Sun Jan 24 21:24:43 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>

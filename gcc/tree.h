@@ -1952,6 +1952,7 @@ extern int pushcase_range			PROTO((tree, tree,
 						       tree (*) (tree, tree),
 						       tree, tree *));
 extern void using_eh_for_cleanups		PROTO((void));
+extern int stmt_loop_nest_empty			PROTO((void));
 
 /* In fold-const.c */
 

@@ -2345,6 +2345,14 @@ expand_exit_loop_if_false (whichloop, cond)
   return 1;
 }
 
+/* Return nonzero if the loop nest is empty.  Else return zero.  */
+
+int
+stmt_loop_nest_empty ()
+{
+  return (loop_stack == NULL);
+}
+
 /* Return non-zero if we should preserve sub-expressions as separate
    pseudos.  We never do so if we aren't optimizing.  We always do so
    if -fexpensive-optimizations.
