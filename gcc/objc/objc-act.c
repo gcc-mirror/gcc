@@ -1825,6 +1825,7 @@ build_ivar_list_initializer (field_decl, size)
 
       /* set type */
       encode_field_decl (field_decl, OBJC_ENCODE_DONT_INLINE_DEFS);
+      obstack_1grow (&util_obstack, 0);    /* null terminate string */
       offset = add_objc_string (get_identifier (obstack_finish (&util_obstack)));
       obstack_free (&util_obstack, util_firstobj);
 
@@ -4434,6 +4435,7 @@ encode_method_def (func_decl)
       obstack_grow (&util_obstack, buffer, strlen (buffer));
     }
 
+  obstack_1grow (&util_obstack, 0);    /* null terminate string */
   result = get_identifier (obstack_finish (&util_obstack));
   obstack_free (&util_obstack, util_firstobj);
   return result;
