@@ -349,7 +349,7 @@
        (eq_attr "cpu" "power4"))
   "vq_power4")
 
-(define_insn_reservation "power4-veccomplex" 2
+(define_insn_reservation "power4-veccomplex" 5
   (and (eq_attr "type" "veccomplex")
        (eq_attr "cpu" "power4"))
   "vq_power4")
@@ -372,7 +372,8 @@
 
 (define_bypass 4 "power4-vecload" "power4-vecperm")
 
-(define_bypass 3 "power4-vecsimple,power4-veccomplex" "power4-vecperm")
+(define_bypass 3 "power4-vecsimple" "power4-vecperm")
+(define_bypass 6 "power4-veccomplex" "power4-vecperm")
 (define_bypass 3 "power4-vecperm"
 		 "power4-vecsimple,power4-veccomplex,power4-vecfloat")
 (define_bypass 9 "power4-vecfloat" "power4-vecperm")
