@@ -2311,10 +2311,15 @@ expand_builtin_memcpy (arglist, target, mode, endp)
 #endif
 	  if (endp)
 	    {
-	      rtx result = gen_rtx_PLUS (GET_MODE (dest_mem), dest_mem, len_rtx);
+	      rtx result;
+	      rtx delta = len_rtx;
+
 	      if (endp == 2)
-		result = simplify_gen_binary (MINUS, GET_MODE (result), result, const1_rtx);
-	      return result;
+		delta = GEN_INT (INTVAL (delta) - 1);
+
+	      result = simplify_gen_binary (PLUS, GET_MODE (dest_mem),
+					    dest_mem, delta);
+	      return force_operand (result, NULL_RTX);
 	    }
 	  else
 	    return dest_mem;
@@ -2338,10 +2343,18 @@ expand_builtin_memcpy (arglist, target, mode, endp)
 
       if (endp)
         {
-	  rtx result = gen_rtx_PLUS (GET_MODE (dest_addr), dest_addr, len_rtx);
+	  rtx result = force_operand (len_rtx, NULL_RTX);
+
 	  if (endp == 2)
-	    result = simplify_gen_binary (MINUS, GET_MODE (result), result, const1_rtx);
-	  return result;
+	    {
+	      result = simplify_gen_binary (MINUS, GET_MODE (result),
+					    result, const1_rtx);
+	      result = force_operand (result, NULL_RTX);
+	    }
+
+	  result = simplify_gen_binary (PLUS, GET_MODE (dest_addr),
+					dest_addr, result);
+	  return force_operand (result, NULL_RTX);
 	}
       else
 	return dest_addr;
