@@ -1,3 +1,11 @@
+2004-02-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in: Move target, host overrides after per-language
+	fragments.
+
+	* config/mips/t-iris5-as (FORCE_DEBUG_ADAFLAGS): Clear.
+	(GNATLIBCFLAGS): Remove -g.
+
 2004-02-04  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.c (function_arg_pass_by_reference): Return 1

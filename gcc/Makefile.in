@@ -2,7 +2,7 @@
 # Run 'configure' to generate Makefile from Makefile.in
 
 # Copyright (C) 1987, 1988, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-# 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+# 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -684,16 +684,6 @@ PRETTY_PRINT_H = pretty-print.h input.h $(OBSTACK_H)
 DIAGNOSTIC_H = diagnostic.h diagnostic.def $(PRETTY_PRINT_H)
 C_PRETTY_PRINT_H = $(PRETTY_PRINT_H) $(C_COMMON_H) $(TREE_H)
 
-# target overrides
-ifneq ($(tmake_file),)
-include $(tmake_file)
-endif
-
-# host overrides
-ifneq ($(xmake_file),)
-include $(xmake_file)
-endif
-
 #
 # Now figure out from those variables how to compile and link.
 
@@ -951,6 +941,19 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _udivdi3 _umoddi3 _udiv_w_sdiv _udivmoddi4
 # per-language makefile fragments
 ifneq ($(LANG_MAKEFRAGS),)
 include $(LANG_MAKEFRAGS)
+endif
+
+# target and host overrides must follow the per-language makefile fragments
+# so they can override or augment language-specific variables
+
+# target overrides
+ifneq ($(tmake_file),)
+include $(tmake_file)
+endif
+
+# host overrides
+ifneq ($(xmake_file),)
+include $(xmake_file)
 endif
 
 #
