@@ -3586,7 +3586,6 @@ extern tree build_functional_cast		PROTO((tree, tree));
 extern char *enum_name_string			PROTO((tree, tree));
 extern void report_case_error			PROTO((int, tree, tree, tree));
 extern void check_for_new_type			PROTO((const char *, flagged_type_tree));
-extern tree initializer_constant_valid_p	PROTO((tree, tree));
 
 /* in xref.c */
 extern void GNU_xref_begin			PROTO((const char *));
