@@ -1,3 +1,8 @@
+2001-01-11  Alan Lehotsky  <lehotsky@tiac.net>
+
+	* builtins.c (std_expand_builtin_va_start): Handle varargs when
+	sizeof (int) is larger than sizeof(__word__).
+	
 2001-01-11  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppinit.c (do_includes): Fix typo.

@@ -2801,8 +2801,13 @@ std_expand_builtin_va_start (stdarg_p, valist, nextarg)
 
   if (! stdarg_p)
     {
+      /* The dummy named parameter is declared as a 'word' sized
+	 object, but if a 'word' is smaller than an 'int', it would
+	 have been promoted to int when it was added to the arglist.  */
       int align = PARM_BOUNDARY / BITS_PER_UNIT;
-      int offset = (((UNITS_PER_WORD + align - 1) / align) * align);
+      int size = MAX (UNITS_PER_WORD,
+		      GET_MODE_SIZE (TYPE_MODE (integer_type_node)));
+      int offset = ((size + align - 1) / align) * align;
       nextarg = plus_constant (nextarg, -offset);
     }
 
