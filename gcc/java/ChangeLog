@@ -1,3 +1,8 @@
+Mon Apr 12 18:27:32 1999  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (patch_unaryop): Fix ++ operator check on array
+ 	references.
+
 Tue Apr  6 23:15:52 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (TREE_H): Add tree-check.h.
