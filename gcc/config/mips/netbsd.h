@@ -158,7 +158,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef SUBTARGET_ASM_SPEC
 #define SUBTARGET_ASM_SPEC						\
-  "%{fpic:-KPIC} %{fPIC:-KPIC}"
+  "%{!fno-PIC:%{!fno-pic:-KPIC}}"
 
 
 /* -G is incompatible with -KPIC which is the default, so only allow objects
