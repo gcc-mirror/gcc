@@ -35,7 +35,7 @@ The Chill run-time system is in the runtime sub-directory.
 Notice rts.c contains a poor main's implementation of Chill
 "processes" (threads).  It is not added to libchill.a.
 We only use it for testing.  (Our customer uses a different
-implementation for product work.)
+implementation for production work.)
 
 The GNU Chill implementation was primarily written by
 Per Bothner, along with Bill Cox, Wilfried Moser, Michael
