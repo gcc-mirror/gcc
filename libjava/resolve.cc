@@ -32,6 +32,8 @@ details.  */
 #include <java/lang/IncompatibleClassChangeError.h>
 #include <java/lang/reflect/Modifier.h>
 
+using namespace gcj;
+
 void
 _Jv_ResolveField (_Jv_Field *field, java::lang::ClassLoader *loader)
 {
@@ -64,9 +66,6 @@ _Jv_BuildResolvedMethod (_Jv_Method*,
 			 jboolean,
 			 jint);
 
-
-// We need to know the name of a constructor.
-static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
 
 static void throw_incompatible_class_change_error (jstring msg)
 {

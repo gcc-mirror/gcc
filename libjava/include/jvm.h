@@ -124,6 +124,15 @@ extern jboolean _Jv_equaln (_Jv_Utf8Const *, jstring, jint);
 // FIXME: remove this define.
 #define StringClass java::lang::String::class$
 
+namespace gcj
+{
+  /* Some constants used during lookup of special class methods.  */
+  extern _Jv_Utf8Const *void_signature; /* "()V" */
+  extern _Jv_Utf8Const *clinit_name;    /* "<clinit>" */
+  extern _Jv_Utf8Const *init_name;      /* "<init>" */
+  extern _Jv_Utf8Const *finit_name;     /* "finit$", */
+};
+
 /* Type of pointer used as finalizer.  */
 typedef void _Jv_FinalizerFunc (jobject);
 

@@ -37,7 +37,7 @@ details.  */
 
 #include <stdlib.h>
 
-static _Jv_Utf8Const *init_name = _Jv_makeUtf8Const ("<init>", 6);
+using namespace gcj;
 
 static void throw_internal_error (char *msg)
   __attribute__ ((__noreturn__));
