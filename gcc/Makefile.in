@@ -867,7 +867,7 @@ expmed.o : expmed.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
 explow.o : explow.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h hard-reg-set.h \
    insn-config.h expr.h recog.h insn-flags.h insn-codes.h
 optabs.o : optabs.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h  \
-   insn-flags.h insn-config.h insn-codes.h expr.h recog.h
+   insn-flags.h insn-config.h insn-codes.h expr.h recog.h reload.h
 dbxout.o : dbxout.c $(CONFIG_H) $(TREE_H) $(RTL_H) flags.h regs.h \
    insn-config.h reload.h gstab.h xcoffout.h defaults.h output.h
 sdbout.o : sdbout.c $(CONFIG_H) $(TREE_H) $(RTL_H) gsyms.h flags.h \
