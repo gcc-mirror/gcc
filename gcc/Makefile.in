@@ -742,7 +742,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	\
  sbitmap.o sched-deps.o sched-ebb.o sched-rgn.o sched-vis.o sdbout.o	\
  sibcall.o simplify-rtx.o splay-tree.o ssa.o ssa-ccp.o ssa-dce.o stmt.o	\
  stor-layout.o stringpool.o timevar.o toplev.o tree.o tree-inline.o 	\
- unroll.o varasm.o varray.o version.o xcoffout.o			\
+ unroll.o varasm.o varray.o version.o xcoffout.o cfglayout.o		\
  $(GGC) $(out_object_file) $(EXTRA_OBJS)
 
 BACKEND = main.o libbackend.a
@@ -1578,8 +1578,10 @@ predict.o: predict.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
    $(RECOG_H) function.h except.h $(EXPR_H) $(TM_P_H) $(PREDICT_H)
 lists.o: lists.c $(CONFIG_H) $(SYSTEM_H) toplev.h $(RTL_H) $(GGC_H)
 bb-reorder.o : bb-reorder.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) flags.h \
-   insn-config.h $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h toplev.h \
-   $(RECOG_H) function.h except.h $(EXPR_H) $(TM_P_H)
+   $(BASIC_BLOCK_H) hard-reg-set.h output.h cfglayout.h
+cfglayout.o : cfglayout.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) $(TREE_H) \
+   insn-config.h $(BASIC_BLOCK_H) hard-reg-set.h output.h function.h \
+   cfglayout.h
 timevar.o : timevar.c $(CONFIG_H) $(SYSTEM_H) $(TIMEVAR_H) flags.h intl.h
 regrename.o : regrename.c $(CONFIG_H) $(SYSTEM_H) $(RTL_H) insn-config.h \
    $(BASIC_BLOCK_H) $(REGS_H) hard-reg-set.h output.h $(RECOG_H) function.h \

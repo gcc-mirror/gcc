@@ -1,3 +1,11 @@
+Mon Nov  5 16:15:25 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (bb-reoder.o): Add depdendency on cfglayout.h;
+	remove unneded depdendencies;
+	(cfglayout.o): New.
+	* cfglayout.c, cfglayout.h: New files; break out from ...
+	* bb-reorder.c: ... here; Remove unneeded includes; 
+
 2001-11-04  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.md (load_toc_aix_{si,di}): Mark r2 as used.
