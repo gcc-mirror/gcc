@@ -13,6 +13,16 @@
 	* Makefile.in (CFILES): Add make-temp-file.c.
 	(REQUIRED_OFILES): Add make-temp-file.o.
 
+2001-03-20  Jim Blandy  <jimb@redhat.com>
+
+	* cp-demangle.c (struct demangling_def): New fields:
+	is_constructor and is_destructor.
+	(demangling_new): Initialize them.
+	(demangle_ctor_dtor_name): Set them, if we detect a constructor
+	or destructor.
+	(demangle_v3_with_details, is_gnu_v3_mangled_ctor,
+	is_gnu_v3_mangled_dtor): New functions.
+
 2001-03-20  Jason Merrill  <jason@redhat.com>
 
 	* cplus-dem.c (main): Skip initial $.
