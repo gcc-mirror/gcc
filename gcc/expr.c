@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -6459,6 +6459,31 @@ expand_expr (exp, target, tmode, modifier)
 			  VOIDmode, 0);
 
     case COND_EXPR:
+      /* If we would have a "singleton" (see below) were it not for a
+	 conversion in each arm, bring that conversion back out.  */
+      if (TREE_CODE (TREE_OPERAND (exp, 1)) == NOP_EXPR
+	  && TREE_CODE (TREE_OPERAND (exp, 2)) == NOP_EXPR
+	  && (TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 1), 0))
+	      == TREE_TYPE (TREE_OPERAND (TREE_OPERAND (exp, 2), 0))))
+	{
+	  tree true = TREE_OPERAND (TREE_OPERAND (exp, 1), 0);
+	  tree false = TREE_OPERAND (TREE_OPERAND (exp, 2), 0);
+
+	  if ((TREE_CODE_CLASS (TREE_CODE (true)) == '2'
+	       && operand_equal_p (false, TREE_OPERAND (true, 0), 0))
+	      || (TREE_CODE_CLASS (TREE_CODE (false)) == '2'
+		  && operand_equal_p (true, TREE_OPERAND (false, 0), 0))
+	      || (TREE_CODE_CLASS (TREE_CODE (true)) == '1'
+		  && operand_equal_p (false, TREE_OPERAND (true, 0), 0))
+	      || (TREE_CODE_CLASS (TREE_CODE (false)) == '1'
+		  && operand_equal_p (true, TREE_OPERAND (false, 0), 0)))
+	    return expand_expr (build1 (NOP_EXPR, type,
+					build (COND_EXPR, TREE_TYPE (true),
+					       TREE_OPERAND (exp, 0),
+					       true, false)),
+				target, tmode, modifier);
+	}
+
       {
 	rtx flag = NULL_RTX;
 	tree left_cleanups = NULL_TREE;
@@ -6506,11 +6531,11 @@ expand_expr (exp, target, tmode, modifier)
 	    return target;
 	  }
 
-	/* Check for X ? A + B : A.  If we have this, we can copy
-	   A to the output and conditionally add B.  Similarly for unary
-	   operations.  Don't do this if X has side-effects because
-	   those side effects might affect A or B and the "?" operation is
-	   a sequence point in ANSI.  (We test for side effects later.)  */
+	/* Check for X ? A + B : A.  If we have this, we can copy A to the
+	   output and conditionally add B.  Similarly for unary operations.
+	   Don't do this if X has side-effects because those side effects
+	   might affect A or B and the "?" operation is a sequence point in
+	   ANSI.  (operand_equal_p tests for side effects.)  */
 
 	if (TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 1))) == '2'
 	    && operand_equal_p (TREE_OPERAND (exp, 2),
@@ -6550,16 +6575,17 @@ expand_expr (exp, target, tmode, modifier)
 	else
 	  temp = assign_temp (type, 0, 0, 1);
 
-	/* If we had X ? A + 1 : A and we can do the test of X as a store-flag
-	   operation, do this as A + (X != 0).  Similarly for other simple
-	   binary operators.  */
+	/* If we had X ? A + C : A, with C a constant power of 2, and we can
+	   do the test of X as a store-flag operation, do this as
+	   A + ((X != 0) << log C).  Similarly for other simple binary
+	   operators.  Only do for C == 1 if BRANCH_COST is low.  */
 	if (temp && singleton && binary_op
-	    && ! TREE_SIDE_EFFECTS (TREE_OPERAND (exp, 0))
 	    && (TREE_CODE (binary_op) == PLUS_EXPR
 		|| TREE_CODE (binary_op) == MINUS_EXPR
 		|| TREE_CODE (binary_op) == BIT_IOR_EXPR
 		|| TREE_CODE (binary_op) == BIT_XOR_EXPR)
-	    && integer_onep (TREE_OPERAND (binary_op, 1))
+	    && (BRANCH_COST >= 3 ? integer_pow2p (TREE_OPERAND (binary_op, 1))
+		: integer_onep (TREE_OPERAND (binary_op, 1)))
 	    && TREE_CODE_CLASS (TREE_CODE (TREE_OPERAND (exp, 0))) == '<')
 	  {
 	    rtx result;
@@ -6583,6 +6609,15 @@ expand_expr (exp, target, tmode, modifier)
 				    (safe_from_p (temp, singleton)
 				     ? temp : NULL_RTX),
 				    mode, BRANCH_COST <= 1);
+
+	    if (result != 0 && ! integer_onep (TREE_OPERAND (binary_op, 1)))
+	      result = expand_shift (LSHIFT_EXPR, mode, result,
+				     build_int_2 (tree_log2
+						  (TREE_OPERAND
+						   (binary_op, 1)),
+						  0),
+				     (safe_from_p (temp, singleton)
+				      ? temp : NULL_RTX), 0);
 
 	    if (result)
 	      {
