@@ -1,5 +1,11 @@
 2002-08-28  Michael Koch <konqueror@gmx.de>
 
+	* java/net/InetSocketAddress.java: Added some documentation and argument
+	checks for the port numbers.
+	* java/net/DatagramSocketImplFactory.java: New file.
+
+2002-08-28  Michael Koch <konqueror@gmx.de>
+
 	* java/net/Authenticator.java: added some documentation.
 
 2002-08-27  Tom Tromey  <tromey@redhat.com>
