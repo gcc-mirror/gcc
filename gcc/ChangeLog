@@ -1,3 +1,8 @@
+Thu Jul  8 09:22:06 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/elf.h (ASM_OUTPUT_INTERNAL_LABEL): Fixed typo
+	introduced in previous delta.
+
 Wed Jul  7 02:00:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
 	* reload1.c (gen_reload): When synthesizing a 3 operand add
