@@ -1,5 +1,7 @@
 Sun Dec  2 09:22:25 2001  Douglas B. Rupp  <rupp@gnat.com>
 
+	* config/x-interix3 (SYSTEM_HEADER_DIR): Put back default.
+
 	* config/alpha/vms.h (VMS_DEBUGGING_INFO): New macro.
 	(PREFERRED_DEBUGGING_TYPE): Define as VMS_AND_DWARF2_DEBUG.
 	(ASM_SPEC): Don't redefine.
