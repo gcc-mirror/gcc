@@ -631,10 +631,8 @@ DEF_RTL_EXPR(CODE_LABEL, "code_label", "iuuB00is", 'x')
    Operand:
    5: filename, if line number > 0, note-specific data otherwise.
    6: line number if > 0, enum note_insn otherwise.
-   7: unique number if line number == note_insn_deleted_label.
-   8-9: padding so that notes and insns are the same size, and thus
-         allocated from the same page ordering.  */
-DEF_RTL_EXPR(NOTE, "note", "iuuB0ni00", 'x')
+   7: unique number if line number == note_insn_deleted_label.  */
+DEF_RTL_EXPR(NOTE, "note", "iuuB0ni", 'x')
 
 /* ----------------------------------------------------------------------
    Top level constituents of INSN, JUMP_INSN and CALL_INSN.

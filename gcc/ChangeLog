@@ -1,3 +1,7 @@
+2003-07-11  Dan Nicolaescu  <dann@ics.uci.edu>
+
+	* rtl.def (NOTE): Do not use padding.
+
 2003-07-11  Dara Hazeghi  <dhazeghi@yahoo.com>
 
 	* doc/install.tex: Update required binutils for i?86-*-linux*
