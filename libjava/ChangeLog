@@ -1,3 +1,9 @@
+2003-10-22  Michael Koch  <konqueror@gmx.de>
+
+	* java/io/File.java
+	(equals): Removed redundant obj == null check.
+	(createTempFile): Merged comments from classpath.
+
 2003-10-21  Sascha Brawer  <brawer@dandelis.ch>
 
 	Fix for bug #2944, reported by David Holmes <dholmes@dltech.com.au>
