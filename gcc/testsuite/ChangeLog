@@ -1,3 +1,13 @@
+2001-09-14  Janis Johnson  <janis187@us.ibm.com>
+
+	* g77.dg/bprob: New directory.
+	* g77.dg/bprob/bprob.exp: New file.
+	* g77.dg/bprob/bprob-1.f: New test.
+	* g77.dg/gcov: New directory.
+	* g77.dg/gcov/gcov.exp: New file.
+	* g77.dg/gcov/gcov-1.f: New test.
+	* g77.dg/gcov/gcov-1.x: New file.
+
 2001-09-13  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* gcc.dg/cpp/directiv.c: Update.
