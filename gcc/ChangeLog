@@ -1,3 +1,9 @@
+2004-11-30  Ira Rosen  <irar@il.ibm.com>
+
+	PR tree-opt/18607
+	* tree-vectorizer.c (vect_analyze_data_refs): Use temporary
+	variable for data_reference when looking for memtag. 
+
 2004-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-opts.c (check_deps_environment_vars): If spec != NULL, set

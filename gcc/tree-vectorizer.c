@@ -4899,7 +4899,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
   int nbbs = loop->num_nodes;
   block_stmt_iterator si;
   int j;
-  struct data_reference *dr;
+  struct data_reference *dr, *tmp_dr;
   tree tag;
   tree address_base;
   bool base_aligned_p;
@@ -5013,9 +5013,9 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo)
 	      switch (TREE_CODE (address_base))
 		{
 		case ARRAY_REF:
-		  dr = analyze_array (stmt, TREE_OPERAND (symbl, 0), 
-				      DR_IS_READ(dr));
-		  tag = vect_get_base_and_bit_offset (dr, DR_BASE_NAME (dr), 
+		  tmp_dr = analyze_array (stmt, TREE_OPERAND (symbl, 0), 
+					  DR_IS_READ (tmp_dr));
+		  tag = vect_get_base_and_bit_offset (tmp_dr, DR_BASE_NAME (tmp_dr), 
 			   NULL_TREE, loop_vinfo, &offset, &base_aligned_p);
 		  if (!tag)
 		    {
