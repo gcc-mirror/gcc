@@ -32,20 +32,10 @@ Boston, MA 02111-1307, USA.  */
 #define _STDBOOL_H
 
 #ifndef __cplusplus
-/* The type `_Bool' must promote to `int' or `unsigned int'.  The constants
-   `true' and `false' must have the value 0 and 1 respectively.  */
-typedef enum
-  {
-    false = 0,
-    true = 1
-  } _Bool;
 
-/* The names `true' and `false' must also be made available as macros.  */
-#define false	false
-#define true	true
-
-/* The macro `bool', which may be undefined, expands to _Bool.  */
-#define bool _Bool
+#define bool	_Bool
+#define true	1
+#define false	0
 
 #else /* __cplusplus */
 

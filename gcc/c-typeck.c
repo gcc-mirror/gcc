@@ -947,6 +947,9 @@ default_conversion (exp)
       return convert (integer_type_node, exp);
     }
 
+  if (code == BOOLEAN_TYPE)
+    return convert (integer_type_node, exp);
+
   if (flag_traditional && !flag_allow_single_precision
       && TYPE_MAIN_VARIANT (type) == float_type_node)
     return convert (double_type_node, exp);
@@ -1733,7 +1736,8 @@ convert_arguments (typelist, values, name, fundecl)
 	      
 	      if (PROMOTE_PROTOTYPES
 		  && (TREE_CODE (type) == INTEGER_TYPE
-		      || TREE_CODE (type) == ENUMERAL_TYPE)
+		      || TREE_CODE (type) == ENUMERAL_TYPE
+		      || TREE_CODE (type) == BOOLEAN_TYPE)
 		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
 		parmval = default_conversion (parmval);
 	    }
@@ -2790,7 +2794,7 @@ build_unary_op (code, xarg, noconvert)
 
   if (typecode == ERROR_MARK)
     return error_mark_node;
-  if (typecode == ENUMERAL_TYPE)
+  if (typecode == ENUMERAL_TYPE || typecode == BOOLEAN_TYPE)
     typecode = INTEGER_TYPE;
 
   switch (code)
@@ -2985,18 +2989,23 @@ build_unary_op (code, xarg, noconvert)
 	      else
 		{
 		  tree incremented, modify, value;
-		  arg = stabilize_reference (arg);
-		  if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
-		    value = arg;
+		  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
+		    value = boolean_increment (code, arg);
 		  else
-		    value = save_expr (arg);
-		  incremented = build (((code == PREINCREMENT_EXPR
-					 || code == POSTINCREMENT_EXPR)
-					? PLUS_EXPR : MINUS_EXPR),
-				       argtype, value, inc);
-		  TREE_SIDE_EFFECTS (incremented) = 1;
-		  modify = build_modify_expr (arg, NOP_EXPR, incremented);
-		  value = build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
+		    {
+		      arg = stabilize_reference (arg);
+		      if (code == PREINCREMENT_EXPR || code == PREDECREMENT_EXPR)
+			value = arg;
+		      else
+			value = save_expr (arg);
+		      incremented = build (((code == PREINCREMENT_EXPR
+					     || code == POSTINCREMENT_EXPR)
+					    ? PLUS_EXPR : MINUS_EXPR),
+					   argtype, value, inc);
+		      TREE_SIDE_EFFECTS (incremented) = 1;
+		      modify = build_modify_expr (arg, NOP_EXPR, incremented);
+		      value = build (COMPOUND_EXPR, TREE_TYPE (arg), modify, value);
+		    }
 		  TREE_USED (value) = 1;
 		  return value;
 		}
@@ -3021,7 +3030,10 @@ build_unary_op (code, xarg, noconvert)
 			      || code == POSTINCREMENT_EXPR)
 			     ? "increment" : "decrement"));
 
-	val = build (code, TREE_TYPE (arg), arg, inc);
+	if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE)
+	  val = boolean_increment (code, arg);
+	else
+	  val = build (code, TREE_TYPE (arg), arg, inc);
 	TREE_SIDE_EFFECTS (val) = 1;
 	val = convert (result_type, val);
 	if (TREE_CODE (val) != code)
@@ -3969,6 +3981,7 @@ build_modify_expr (lhs, modifycode, rhs)
 
   if (TREE_CODE (lhs) == COMPONENT_REF
       && (TREE_CODE (lhstype) == INTEGER_TYPE
+	  || TREE_CODE (lhstype) == BOOLEAN_TYPE
 	  || TREE_CODE (lhstype) == REAL_TYPE
 	  || TREE_CODE (lhstype) == ENUMERAL_TYPE))
     lhstype = TREE_TYPE (get_unwidened (lhs, 0));
@@ -4084,9 +4097,11 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
     }
   /* Arithmetic types all interconvert, and enum is treated like int.  */
   else if ((codel == INTEGER_TYPE || codel == REAL_TYPE 
-	    || codel == ENUMERAL_TYPE || codel == COMPLEX_TYPE)
+	    || codel == ENUMERAL_TYPE || codel == COMPLEX_TYPE
+	    || codel == BOOLEAN_TYPE)
 	   && (coder == INTEGER_TYPE || coder == REAL_TYPE 
-	       || coder == ENUMERAL_TYPE || coder == COMPLEX_TYPE))
+	       || coder == ENUMERAL_TYPE || coder == COMPLEX_TYPE
+	       || coder == BOOLEAN_TYPE))
     return convert_and_check (type, rhs);
 
   /* Conversion to a transparent union from its member types.
@@ -4266,6 +4281,8 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 			   errtype, funname, parmnum);
       return convert (type, rhs);
     }
+  else if (codel == BOOLEAN_TYPE && coder == POINTER_TYPE)
+    return convert (type, rhs);
 
   if (!errtype)
     {
