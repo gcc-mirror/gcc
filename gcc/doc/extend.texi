@@ -1764,10 +1764,11 @@ start with the third argument, so the correct parameters for the format
 attribute are 2 and 3.
 
 @opindex ffreestanding
+@opindex fno-builtin
 The @code{format} attribute allows you to identify your own functions
 which take format strings as arguments, so that GCC can check the
 calls to these functions for errors.  The compiler always (unless
-@option{-ffreestanding} is used) checks formats
+@option{-ffreestanding} or @option{-fno-builtin} is used) checks formats
 for the standard library functions @code{printf}, @code{fprintf},
 @code{sprintf}, @code{scanf}, @code{fscanf}, @code{sscanf}, @code{strftime},
 @code{vprintf}, @code{vfprintf} and @code{vsprintf} whenever such
@@ -1824,7 +1825,8 @@ type function whose operands are a call to one of your own function.
 The compiler always treats @code{gettext}, @code{dgettext}, and
 @code{dcgettext} in this manner except when strict ISO C support is
 requested by @option{-ansi} or an appropriate @option{-std} option, or
-@option{-ffreestanding} is used.  @xref{C Dialect Options,,Options
+@option{-ffreestanding} or @option{-fno-builtin}
+is used.  @xref{C Dialect Options,,Options
 Controlling C Dialect}.
 
 @item function_vector

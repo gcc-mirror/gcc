@@ -1173,7 +1173,14 @@ instructions that adjust the stack directly, and calls to @code{memcpy}
 may become inline copy loops.  The resulting code is often both smaller
 and faster, but since the function calls no longer appear as such, you
 cannot set a breakpoint on those calls, nor can you change the behavior
-of the functions by linking with a different library.
+of the functions by linking with a different library.  In addition,
+when a function is recognized as a built-in function, GCC may use
+information about that function to warn about problems with calls to
+that function, or to generate more efficient code, even if the
+resulting code still contains calls to that function.  For example,
+warnings are given with @option{-Wformat} for bad calls to
+@code{printf}, when @code{printf} is built in, and @code{strlen} is
+known not to modify global memory.
 
 With the @option{-fno-builtin-@var{function}} option
 only the built-in function @var{function} is
@@ -2161,6 +2168,8 @@ messages.
 
 @item -Wformat
 @opindex Wformat
+@opindex ffreestanding
+@opindex fno-builtin
 Check calls to @code{printf} and @code{scanf}, etc., to make sure that
 the arguments supplied have types appropriate to the format string
 specified, and that the conversions specified in the format string make
@@ -2168,6 +2177,10 @@ sense.  This includes standard functions, and others specified by format
 attributes (@pxref{Function Attributes}), in the @code{printf},
 @code{scanf}, @code{strftime} and @code{strfmon} (an X/Open extension,
 not in the C standard) families (or other target-specific families).
+Which functions are checked without format attributes having been
+specified depends on the standard version selected, and such checks of
+functions without the attribute specified are disabled by
+@option{-ffreestanding} or @option{-fno-builtin}.
 
 The formats are checked against the format features supported by GNU
 libc version 2.2.  These include all ISO C90 and C99 features, as well

@@ -1,3 +1,11 @@
+2004-09-23  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	PR c/16833
+	* doc/extend.texi, doc/invoke.texi: Document interaction of
+	-fno-builtin with format checks.  Note that built-in functions
+	have effects beyond generating code that avoids calls to those
+	functions.
+
 2004-09-23  Frank Ch. Eigler <fche@redhat.com>
 
 	PR tree-optimization/17533
