@@ -1510,6 +1510,19 @@ print_rtl_with_bb (outf, rtx_first)
     }
 }
 
+void
+update_br_prob_note (bb)
+     basic_block bb;
+{
+  rtx note;
+  if (GET_CODE (bb->end) != JUMP_INSN)
+    return;
+  note = find_reg_note (bb->end, REG_BR_PROB, NULL_RTX);
+  if (!note || INTVAL (XEXP (note, 0)) == BRANCH_EDGE (bb)->probability)
+    return;
+  XEXP (note, 0) = GEN_INT (BRANCH_EDGE (bb)->probability);
+}
+
 /* Verify the CFG consistency.  This function check some CFG invariants and
    aborts when something is wrong.  Hope that this function will help to
    convert many optimization passes to preserve CFG consistent.

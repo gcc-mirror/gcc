@@ -2657,6 +2657,7 @@ dead_or_predicable (test_bb, merge_bb, other_bb, new_dest, reversep)
       probability = BRANCH_EDGE (test_bb)->probability;
       BRANCH_EDGE (test_bb)->probability = FALLTHRU_EDGE (test_bb)->probability;
       FALLTHRU_EDGE (test_bb)->probability = probability;
+      update_br_prob_note (test_bb);
     }
 
   /* Move the insns out of MERGE_BB to before the branch.  */

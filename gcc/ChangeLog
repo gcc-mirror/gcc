@@ -1,3 +1,21 @@
+Thu Jan 10 22:35:54 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (update_br_prob_note): Declare.
+	* cfgcleanup.c (try_simplify_condjump): Call update_br_prob_note.
+	(try_forward_edges): Care negative frequencies and update note.
+	(outgoing_edges_match): Tweek conditional merging heuristics.
+	(try_crossjump_to_edge): use update_br_prob_note.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	* cfrtl.c (update_br_prob_note): New.
+	* ifcvt.c (dead_or_predicable): Call update_br_prob_note.
+
+	* i386.c (ix86_decompose_address): Return -1 if address contains
+	shift.
+	(legitimate_address_p): Require ix86_decompose_address to return 1.
+
+	* gcse.c (hash_scan_set): Use CONSTANT_INSN_P.
+	(cprop_insn): Likewise.
+
 2002-01-10  Kazu Hirata  <kazu@hxi.com>
 
 	* toplev.c: Fix formatting.
