@@ -1004,11 +1004,12 @@ struct tree_type
 #define BINFO_VIRTUALS(NODE) TREE_VEC_ELT ((NODE), 3)
 #define TYPE_BINFO_VIRTUALS(NODE) BINFO_VIRTUALS (TYPE_BINFO (NODE))
 
-/* A vector of additional binfos for the types inherited by this basetype.
+/* A vector of binfos for the direct basetypes inherited by this
+   basetype.
 
-   If this basetype describes type D as inherited in C,
-   and if the basetypes of D are E anf F,
-   then this vector contains binfos for inheritance of E and F by C.
+   If this basetype describes type D as inherited in C, and if the
+   basetypes of D are E and F, then this vector contains binfos for
+   inheritance of E and F by C.
 
    ??? This could probably be done by just allocating the
    base types at the end of this TREE_VEC (instead of using
