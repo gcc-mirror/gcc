@@ -1497,7 +1497,7 @@ baseargs=`echo "${arguments}" | \
 # For the build-side libraries, we just need to pretend we're native,
 # and not use the same cache file.  Multilibs are neither needed nor
 # desired.
-buildargs="--cache-file=../config.cache --build=${build_alias} --host=${build_alias} ${baseargs}"
+build_configargs="--cache-file=../config.cache --build=${build_alias} --host=${build_alias} ${baseargs}"
 
 # For host modules, accept cache file option, or specification as blank.
 case "${cache_file}" in
@@ -1509,9 +1509,9 @@ case "${cache_file}" in
   cache_file_option="--cache-file=../${cache_file}" ;;
 esac
 
-hostargs="${cache_file_option} ${buildopt} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
+host_configargs="${cache_file_option} ${buildopt} --host=${host_alias} --target=${target_alias} ${extra_host_args} ${baseargs}"
 
-targargs=${baseargs}
+target_configargs=${baseargs}
 
 # Passing a --with-cross-host argument lets the target libraries know
 # whether they are being built with a cross-compiler or being built
@@ -1519,22 +1519,22 @@ targargs=${baseargs}
 # sorts of decisions they want to make on this basis.  Please consider
 # this option to be deprecated.  FIXME.
 if test x${is_cross_compiler} = xyes ; then
-  targargs="--with-cross-host=${host_alias} ${targargs}"
+  target_configargs="--with-cross-host=${host_alias} ${target_configargs}"
 fi
 
 # Default to --enable-multilib.
 if test x${enable_multilib} = x ; then
-  targargs="--enable-multilib ${targargs}"
+  target_configargs="--enable-multilib ${target_configargs}"
 fi
 
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
 # changed from the earlier setting of with_newlib.
 if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " newlib " > /dev/null 2>&1 && test -d ${srcdir}/newlib ; then
-  targargs="--with-newlib ${targargs}"
+  target_configargs="--with-newlib ${target_configargs}"
 fi
 
 # Pass the appropriate --host, --build, and --cache-file arguments.
-targargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${targargs}"
+target_configargs="--cache-file=../config.cache --host=${target_alias} --build=${build_alias} ${target_configargs}"
 
 # provide a proper gxx_include_dir.
 # Note, if you change the default, make sure to fix both here and in
@@ -1568,7 +1568,7 @@ fi
 FLAGS_FOR_TARGET=
 case " $target_configdirs " in
  *" newlib "*)
-  case " $targargs " in
+  case " $target_configargs " in
   *" --with-newlib "*)
    case "$target" in
    *-cygwin*)
@@ -1703,6 +1703,14 @@ qRAW_CXX_FOR_TARGET=`echo "$RAW_CXX_FOR_TARGET" | sed 's,[&%],\\\&,g'`
 qqCXX_FOR_TARGET=`echo "$qCXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 qqRAW_CXX_FOR_TARGET=`echo "$qRAW_CXX_FOR_TARGET" | sed -e 's,[$][$],$$$$,g'`
 
+# Wrap CC_FOR_TARGET and friends, for certain types of builds.
+CC_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}"
+GCJ_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}"
+CXX_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}"
+RAW_CXX_FOR_TARGET="\$(STAGE_CC_WRAPPER) ${qRAW_CXX_FOR_TARGET}"
+CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}"
+RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE="\$(STAGE_CC_WRAPPER) ${qqRAW_CXX_FOR_TARGET}"
+
 sedtemp=sed.$$
 cat >$sedtemp <<EOF
 s%@GDB_TK@%${GDB_TK}%
@@ -1718,20 +1726,20 @@ s%@all_target_modules@%${all_target_modules}%
 s%@check_target_modules@%${check_target_modules}%
 s%@install_target_modules@%${install_target_modules}%
 s:@target_configdirs@:${target_configdirs}:
-s%@target_configargs@%${targargs}%
+s%@target_configargs@%${target_configargs}%
 s%@FLAGS_FOR_TARGET@%${FLAGS_FOR_TARGET}%
-s%@CC_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${CC_FOR_TARGET}%
-s%@GCJ_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${GCJ_FOR_TARGET}%
-s%@CXX_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${qCXX_FOR_TARGET}%
-s%@RAW_CXX_FOR_TARGET@%\$(STAGE_CC_WRAPPER) ${qRAW_CXX_FOR_TARGET}%
-s%@CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%\$(STAGE_CC_WRAPPER) ${qqCXX_FOR_TARGET}%
-s%@RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%\$(STAGE_CC_WRAPPER) ${qqRAW_CXX_FOR_TARGET}%
+s%@CC_FOR_TARGET@%${CC_FOR_TARGET}%
+s%@GCJ_FOR_TARGET@%${GCJ_FOR_TARGET}%
+s%@CXX_FOR_TARGET@%${CXX_FOR_TARGET}%
+s%@RAW_CXX_FOR_TARGET@%${RAW_CXX_FOR_TARGET}%
+s%@CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%${CXX_FOR_TARGET_FOR_RECURSIVE_MAKE}%
+s%@RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE@%${RAW_CXX_FOR_TARGET_FOR_RECURSIVE_MAKE}%
 s%@target_subdir@%${target_subdir}%
 s%@build_subdir@%${build_subdir}%
-s%@build_configargs@%${buildargs}%
+s%@build_configargs@%${build_configargs}%
 s%@gxx_include_dir@%${gxx_include_dir}%
 s%@libstdcxx_incdir@%${libstdcxx_incdir}%
-s%@host_configargs@%${hostargs}%
+s%@host_configargs@%${host_configargs}%
 EOF
 sed -f $sedtemp Makefile > Makefile.tem
 rm -f Makefile $sedtemp
