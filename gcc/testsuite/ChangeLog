@@ -1,3 +1,7 @@
+2001-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/20010329-1.c: New test.
+
 2001-03-28  Loren J. Rittle  <ljrittle@acm.org>
 
 	* g++.old-deja/g++.other/eh4.C: Fix typo.
