@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifdef __STDC__
 #include <stdarg.h>
 #else
-#include <gvarargs.h>
+#include <varargs.h>
 #endif
 #include "machmode.h"
 #include "rtl.h"
