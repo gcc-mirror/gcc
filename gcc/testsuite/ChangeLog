@@ -1,3 +1,8 @@
+2004-07-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* g77.dg: Removed.
+	* g77.f-torture: Ditto.
+
 2004-07-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* gcc.dg/Wparentheses-2.c, gcc.dg/Wparentheses-3.c,
