@@ -10800,7 +10800,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
 
 	  if (note != 0 && regno < FIRST_PSEUDO_REGISTER
 	      && (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
-		  != GET_MODE_SIZE (GET_MODE (x))))
+		  > GET_MODE_SIZE (GET_MODE (x))))
 	    {
 	      int deadregno = REGNO (XEXP (note, 0));
 	      int deadend
@@ -10816,18 +10816,28 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
 			       gen_rtx (REG, reg_raw_mode[i], i),
 			       REG_NOTES (where_dead));
 	    }
-	  /* If we didn't find any note, and we have a multi-reg hard
+	  /* If we didn't find any note, or if we found a REG_DEAD note that
+	     covers only part of the given reg, and we have a multi-reg hard
 	     register, then to be safe we must check for REG_DEAD notes
 	     for each register other than the first.  They could have
 	     their own REG_DEAD notes lying around.  */
-	  else if (note == 0 && regno < FIRST_PSEUDO_REGISTER
+	  else if ((note == 0
+		    || (note != 0
+			&& (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
+			    < GET_MODE_SIZE (GET_MODE (x)))))
+		   && regno < FIRST_PSEUDO_REGISTER
 		   && HARD_REGNO_NREGS (regno, GET_MODE (x)) > 1)
 	    {
 	      int ourend = regno + HARD_REGNO_NREGS (regno, GET_MODE (x));
-	      int i;
+	      int i, offset;
 	      rtx oldnotes = 0;
 
-	      for (i = regno + 1; i < ourend; i++)
+	      if (note)
+		offset = HARD_REGNO_NREGS (regno, GET_MODE (XEXP (note, 0)));
+	      else
+		offset = 1;
+
+	      for (i = regno + offset; i < ourend; i++)
 		move_deaths (gen_rtx (REG, reg_raw_mode[i], i),
 			     maybe_kill_insn, from_cuid, to_insn, &oldnotes);
 	    }
