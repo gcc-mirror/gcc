@@ -1,4 +1,4 @@
-/* config.in.  Generated automatically from configure.in by autoheader.  */
+/* config.in.  Generated automatically from configure.in by autoheader 2.13.  */
 
 /* Define if using alloca.c.  */
 #undef C_ALLOCA
@@ -141,9 +141,6 @@
 /* Define if you have the getgid function.  */
 #undef HAVE_GETGID
 
-/* Define if you have the getpagesize function.  */
-#undef HAVE_GETPAGESIZE
-
 /* Define if you have the getrlimit function.  */
 #undef HAVE_GETRLIMIT
 
@@ -164,6 +161,9 @@
 
 /* Define if you have the mempcpy function.  */
 #undef HAVE_MEMPCPY
+
+/* Define if you have the mmap function.  */
+#undef HAVE_MMAP
 
 /* Define if you have the munmap function.  */
 #undef HAVE_MUNMAP
@@ -254,6 +254,9 @@
 
 /* Define if you have the <sys/file.h> header file.  */
 #undef HAVE_SYS_FILE_H
+
+/* Define if you have the <sys/mman.h> header file.  */
+#undef HAVE_SYS_MMAN_H
 
 /* Define if you have the <sys/param.h> header file.  */
 #undef HAVE_SYS_PARAM_H
@@ -390,14 +393,14 @@
 /* Define if printf supports %p. */
 #undef HAVE_PRINTF_PTR
 
-/* Define if mmap can get us zeroed pages from /dev/zero. */
-#undef HAVE_MMAP_DEV_ZERO
-
-/* Define if mmap can get us zeroed pages using MAP_ANON(YMOUS). */
-#undef HAVE_MMAP_ANON
-
 /* Define if read-only mmap of a plain file works. */
 #undef HAVE_MMAP_FILE
+
+/* Define if mmap of /dev/zero works. */
+#undef HAVE_MMAP_DEV_ZERO
+
+/* Define if mmap with MAP_ANON(YMOUS) works. */
+#undef HAVE_MMAP_ANON
 
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV

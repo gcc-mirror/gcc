@@ -1262,7 +1262,7 @@ init_ggc ()
 #ifdef HAVE_MMAP_DEV_ZERO
   G.dev_zero_fd = open ("/dev/zero", O_RDONLY);
   if (G.dev_zero_fd == -1)
-    abort ();
+    fatal_io_error ("open /dev/zero");
 #endif
 
 #if 0
