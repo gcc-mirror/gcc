@@ -132,6 +132,7 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
+check_msgfmt = @check_msgfmt@
 enable_shared = @enable_shared@
 enable_static = @enable_static@
 glibcpp_CXX = @glibcpp_CXX@
