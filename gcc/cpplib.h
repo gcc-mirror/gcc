@@ -457,7 +457,7 @@ struct lexer_state
      all directives apart from #define.  */
   unsigned char save_comments;
 
-  /* Nonzero to get force the lexer to skip newlines.  */
+  /* Nonzero to force the lexer to skip newlines.  */
   unsigned char skip_newlines;
 
   /* Nonzero if we're in the subroutine lex_line.  */

@@ -52,7 +52,7 @@ static void push_conditional	PARAMS ((cpp_reader *, int, int,
 static int  read_line_number	PARAMS ((cpp_reader *, int *));
 static int  strtoul_for_line	PARAMS ((const U_CHAR *, unsigned int,
 					 unsigned long *));
-
+static void do_diagnostic	PARAMS ((cpp_reader *, enum error_type));
 static const cpp_hashnode *
 	    parse_ifdef		PARAMS ((cpp_reader *, const U_CHAR *));
 static const cpp_hashnode *
@@ -583,16 +583,16 @@ do_line (pfile)
 }
 
 /*
- * Report an error detected by the program we are processing.
- * Use the text of the line in the error message.
- * (We use error because it prints the filename & line#.)
+ * Report a warning or error detected by the program we are
+ * processing.  Use the directive's tokens in the error message.
  */
 
 static void
-do_error (pfile)
+do_diagnostic (pfile, code)
      cpp_reader *pfile;
+     enum error_type code;
 {
-  if (_cpp_begin_message (pfile, ERROR, NULL, 0, 0))
+  if (_cpp_begin_message (pfile, code, NULL, 0, 0))
     {
       cpp_output_list (pfile, stderr, &pfile->token_list,
 		       pfile->first_directive_token);
@@ -600,21 +600,18 @@ do_error (pfile)
     }
 }
 
-/*
- * Report a warning detected by the program we are processing.
- * Use the text of the line in the warning message, then continue.
- */
+static void
+do_error (pfile)
+     cpp_reader *pfile;
+{
+  do_diagnostic (pfile, ERROR);
+}
 
 static void
 do_warning (pfile)
      cpp_reader *pfile;
 {
-  if (_cpp_begin_message (pfile, WARNING, NULL, 0, 0))
-    {
-      cpp_output_list (pfile, stderr, &pfile->token_list,
-		       pfile->first_directive_token);
-      putc ('\n', stderr);
-    }
+  do_diagnostic (pfile, WARNING);
 }
 
 /* Report program identification.  */

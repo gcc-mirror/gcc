@@ -1,3 +1,11 @@
+Sun 24-Sep-2000 11:40:23 BST  Neil Booth  <NeilB@earthling.net>
+
+	* cpplex.c: Update TODO comment.
+	* cpplib.c (do_error, do_warning): Merge common code of
+	do_error and do_warning	into do_diagnostic.  Use it.
+	(do_diagnostic): New function.
+	* cpplib.h: Fix comment typo.
+
 2000-09-24  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* c-common.c (check_format_info): Warn for a wide character string
