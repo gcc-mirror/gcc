@@ -1,3 +1,10 @@
+2002-12-02  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.c (dosize): Replace argument op with
+	sign.
+	(h8300_output_function_prologue): Update the call to dosize.
+	(h8300_output_function_epilogue): Likewise.
+
 2002-12-02  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.h: Delete ifndefs with nothing inside them.

@@ -48,7 +48,7 @@ static const char *byte_reg PARAMS ((rtx, int));
 static int h8300_interrupt_function_p PARAMS ((tree));
 static int h8300_monitor_function_p PARAMS ((tree));
 static int h8300_os_task_function_p PARAMS ((tree));
-static void dosize PARAMS ((FILE *, const char *, unsigned int));
+static void dosize PARAMS ((FILE *, int, unsigned int));
 static int round_frame_size PARAMS ((int));
 static unsigned int compute_saved_regs PARAMS ((void));
 static void push PARAMS ((FILE *, int));
@@ -393,9 +393,9 @@ byte_reg (x, b)
    SIZE to adjust the stack pointer.  */
 
 static void
-dosize (file, op, size)
+dosize (file, sign, size)
      FILE *file;
-     const char *op;
+     int sign;
      unsigned int size;
 {
   /* On the H8/300H and H8S, for sizes <= 8 bytes, it is as good or
@@ -409,8 +409,9 @@ dosize (file, op, size)
       || ((TARGET_H8300H || TARGET_H8300S) && size <= 8)
       || (TARGET_H8300 && interrupt_handler)
       || (TARGET_H8300 && current_function_needs_context
-	  && ! strcmp (op, "sub")))
+	  && sign < 0))
     {
+      const char *op = (sign > 0) ? "add" : "sub";
       unsigned HOST_WIDE_INT amount;
 
       /* Try different amounts in descending order.  */
@@ -429,9 +430,13 @@ dosize (file, op, size)
   else
     {
       if (TARGET_H8300)
-	fprintf (file, "\tmov.w\t#%d,r3\n\t%s.w\tr3,r7\n", size, op);
+	{
+	  fprintf (file, "\tmov.w\t#%d,r3\n\tadd.w\tr3,r7\n", sign * size);
+	}
       else
-	fprintf (file, "\t%s.l\t#%d,er7\n", op, size);
+	{
+	  fprintf (file, "\tadd.l\t#%d,er7\n", sign * size);
+	}
     }
 }
 
@@ -586,7 +591,7 @@ h8300_output_function_prologue (file, size)
     }
 
   /* Leave room for locals.  */
-  dosize (file, "sub", fsize);
+  dosize (file, -1, fsize);
 
   /* Push the rest of the registers in ascending order.  */
   saved_regs = compute_saved_regs ();
@@ -611,12 +616,29 @@ h8300_output_function_prologue (file, size)
 		n_regs = 2;
 	    }
 
-	  if (n_regs == 1)
-	    push (file, regno);
-	  else
-	    fprintf (file, "\tstm.l\t%s-%s,@-er7\n",
-		     h8_reg_names[regno],
-		     h8_reg_names[regno + (n_regs - 1)]);
+	  switch (n_regs)
+	    {
+	    case 1:
+	      push (file, regno);
+	      break;
+	    case 2:
+	      fprintf (file, "\tstm.l\t%s-%s,@-er7\n",
+		       h8_reg_names[regno],
+		       h8_reg_names[regno + 1]);
+	      break;
+	    case 3:
+	      fprintf (file, "\tstm.l\t%s-%s,@-er7\n",
+		       h8_reg_names[regno],
+		       h8_reg_names[regno + 2]);
+	      break;
+	    case 4:
+	      fprintf (file, "\tstm.l\t%s-%s,@-er7\n",
+		       h8_reg_names[regno],
+		       h8_reg_names[regno + 3]);
+	      break;
+	    default:
+	      abort ();
+	    }
 	}
     }
 }
@@ -677,17 +699,34 @@ h8300_output_function_epilogue (file, size)
 		n_regs = 2;
 	    }
 
-	  if (n_regs == 1)
-	    pop (file, regno);
-	  else
-	    fprintf (file, "\tldm.l\t@er7+,%s-%s\n",
-		     h8_reg_names[regno - (n_regs - 1)],
-		     h8_reg_names[regno]);
+	  switch (n_regs)
+	    {
+	    case 1:
+	      pop (file, regno);
+	      break;
+	    case 2:
+	      fprintf (file, "\tldm.l\t@er7+,%s-%s\n",
+		       h8_reg_names[regno - 1],
+		       h8_reg_names[regno]);
+	      break;
+	    case 3:
+	      fprintf (file, "\tldm.l\t@er7+,%s-%s\n",
+		       h8_reg_names[regno - 2],
+		       h8_reg_names[regno]);
+	      break;
+	    case 4:
+	      fprintf (file, "\tldm.l\t@er7+,%s-%s\n",
+		       h8_reg_names[regno - 3],
+		       h8_reg_names[regno]);
+	      break;
+	    default:
+	      abort ();
+	    }
 	}
     }
 
   /* Deallocate locals.  */
-  dosize (file, "add", fsize);
+  dosize (file, 1, fsize);
 
   /* Pop frame pointer if we had one.  */
   if (frame_pointer_needed)
