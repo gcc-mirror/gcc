@@ -837,7 +837,7 @@ label_to_block (tree dest)
 static void
 make_goto_expr_edges (basic_block bb)
 {
-  tree goto_t, dest;
+  tree goto_t;
   basic_block target_bb;
   int for_call;
   block_stmt_iterator last = bsi_last (bb);
@@ -848,13 +848,10 @@ make_goto_expr_edges (basic_block bb)
      CALL_EXPR or MODIFY_EXPR), then the edge is an abnormal edge resulting
      from a nonlocal goto.  */
   if (TREE_CODE (goto_t) != GOTO_EXPR)
-    {
-      dest = error_mark_node;
-      for_call = 1;
-    }
+    for_call = 1;
   else
     {
-      dest = GOTO_DESTINATION (goto_t);
+      tree dest = GOTO_DESTINATION (goto_t);
       for_call = 0;
 
       /* A GOTO to a local label creates normal edges.  */

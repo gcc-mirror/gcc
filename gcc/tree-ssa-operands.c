@@ -998,10 +998,6 @@ get_stmt_operands (tree stmt)
      _DECL.  This indicates a bug in the gimplifier.  */
   gcc_assert (!SSA_VAR_P (stmt));
 
-  /* Ignore error statements.  */
-  if (TREE_CODE (stmt) == ERROR_MARK)
-    return;
-
   ann = get_stmt_ann (stmt);
 
   /* If the statement has not been modified, the operands are still valid.  */
@@ -1037,7 +1033,7 @@ get_expr_operands (tree stmt, tree *expr_p, int flags)
   tree expr = *expr_p;
   stmt_ann_t s_ann = stmt_ann (stmt);
 
-  if (expr == NULL || expr == error_mark_node)
+  if (expr == NULL)
     return;
 
   code = TREE_CODE (expr);
