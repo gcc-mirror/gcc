@@ -1,3 +1,7 @@
+2000-10-14  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi (Contributing): Update.
+
 2000-10-13  Alexandre Oliva  <aoliva@redhat.com>
 
 	* c-common.c (c_expand_builtin): PARAMS-ize prototype.
