@@ -1,61 +1,18 @@
-\input texinfo
+@c Copyright (c) 1999, 2000, 2001 Free Software Foundation, Inc.
+@c Free Software Foundation, Inc.
+@c This is part of the GCC manual.
+@c For copying conditions, see the file gcc.texi.
 
 @c ---------------------------------------------------------------------
-@c Prologue
+@c Trees
 @c ---------------------------------------------------------------------
 
-@setfilename c-tree.info
-@settitle C/C++ Internal Representation
-@setchapternewpage on
+@node Trees
+@chapter Trees: The intermediate representation used by the C and C++ front-ends
+@cindex Trees
+@cindex C/C++ Internal Representation
 
-@ifinfo
-@dircategory Programming
-@direntry
-* c-tree: (c-tree).            C/C++ Internal Representation
-@end direntry
-This manual documents the internal representation used by GCC to represent
-C and C++ source programs.
-
-Copyright (c) 1999, 2000, 2001 Free Software Foundation, Inc.
-@end ifinfo
-
-@c ---------------------------------------------------------------------
-@c Title page
-@c ---------------------------------------------------------------------
-
-@titlepage
-@title C/C++ Internal Representation
-@author CodeSourcery, LLC <info@@codesourcery.com>
-@page
-@vskip 0pt plus 1filll
-Copyright @copyright{} 1999, 2000, 2001 Free Software Foundation, Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with no
-invariant sections, the Front-Cover texts being (a) (see below), and
-with the Back-Cover Texts being (b) (see below).  A copy of the license
-is included in the section entitled ``GNU Free Documentation License''.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
-@end titlepage
-
-@c ---------------------------------------------------------------------
-@c Top
-@c ---------------------------------------------------------------------
-
-@node Top
-@top C/C++ Internal Representation
-
-This manual documents the internal representation used by GCC and C++ to
+This chapter documents the internal representation used by GCC and C++ to
 represent C and C++ source programs.  When presented with a C or C++
 source program, GCC parses the program, performs semantic analysis
 (including the generation of error messages), and then produces the
@@ -67,10 +24,15 @@ used in the creation of source browsers, intelligent editors, automatic
 documentation generators, interpreters, and any other programs needing
 the ability to process C or C++ code.
 
-This manual explains the internal representation.  In particular, this
-manual documents the internal representation for C and C++ source
+This chapter explains the internal representation.  In particular, it
+documents the internal representation for C and C++ source
 constructs, and the macros, functions, and variables that can be used to
-access these constructs.
+access these constructs.  The C++ representation which is largely a superset
+of the representation used in the C front-end.  There is only one
+construct used in C that does not appear in the C++ front-end and that
+is the GNU ``nested function'' extension.  Many of the macros documented
+here do not apply in C because the corresponding language constructs do
+not appear in C.
 
 If you are developing a ``back-end'', be it is a code-generator or some
 other tool, that uses this representation, you may occasionally find
@@ -84,25 +46,14 @@ yourself writing functions that do not deal directly with your back-end,
 but instead might be useful to other people using the GCC front-end, you
 should submit your patches for inclusion in GCC.
 
-This manual documents the C++ representation which is largely a superset
-of the representation used in the C front-end.  There is only one
-construct used in C that does not appear in the C++ front-end and that
-is the GNU ``nested function'' extension.  Many of the macros documented
-here do not apply in C because the corresponding language constructs do
-not appear in C.
-
 @menu
 * Deficiencies::        Topics net yet covered in this document.
-* Overview::            All about @code{tree}s.
+* Tree overview::       All about @code{tree}s.
 * Types::               Fundamental and aggregate types.        
 * Scopes::              Namespaces and classes.
 * Functions::           Overloading, function bodies, and linkage.
 * Declarations::        Type declarations and variables.
-* Expressions::         From @code{typeid} to @code{throw}.
-* GNU Free Documentation License:: How you can copy and share this manual.
-* Node Index::          The various types of tree nodes.
-* Function Index::      Functions and macros described in this manual.
-* Concept Index::       Index.
+* Expression trees::    From @code{typeid} to @code{throw}.
 @end menu
 
 @c ---------------------------------------------------------------------
@@ -110,7 +61,7 @@ not appear in C.
 @c ---------------------------------------------------------------------
 
 @node Deficiencies
-@chapter Deficiencies
+@section Deficiencies
 
 There are many places in which this document is incomplet and incorrekt.
 It is, as of yet, only @emph{preliminary} documentation.
@@ -119,8 +70,8 @@ It is, as of yet, only @emph{preliminary} documentation.
 @c Overview
 @c ---------------------------------------------------------------------
 
-@node Overview
-@chapter Overview
+@node Tree overview
+@section Overview
 @cindex tree
 @findex TREE_CODE
 
@@ -207,7 +158,7 @@ the documentation.  Please report these bugs as you would any other
 bug.
 
 @menu
-* Trees::               Macros and functions that can be used with all trees.
+* Macros and Functions::Macros and functions that can be used with all trees.
 * Identifiers::         The names of things.
 * Containers::          Lists and vectors.
 @end menu
@@ -216,8 +167,8 @@ bug.
 @c Trees
 @c ---------------------------------------------------------------------
 
-@node Trees
-@section Trees
+@node Macros and Functions
+@subsection Trees
 @cindex tree
 
 This section is not here yet.
@@ -227,7 +178,7 @@ This section is not here yet.
 @c ---------------------------------------------------------------------
 
 @node Identifiers
-@section Identifiers
+@subsection Identifiers
 @cindex identifier
 @cindex name
 @tindex IDENTIFIER_NODE
@@ -273,7 +224,7 @@ operator converts.
 @c ---------------------------------------------------------------------
 
 @node Containers
-@section Containers
+@subsection Containers
 @cindex container
 @cindex list
 @cindex vector
@@ -308,7 +259,7 @@ The elements are indexed from zero.
 @c ---------------------------------------------------------------------
 
 @node Types
-@chapter Types
+@section Types
 @cindex type
 @cindex pointer
 @cindex reference
@@ -633,7 +584,7 @@ in hand, using @code{same_type_p}.
 @c ---------------------------------------------------------------------
 
 @node Scopes
-@chapter Scopes
+@section Scopes
 @cindex namespace, class, scope
 
 The root of the entire intermediate representation is the variable
@@ -657,7 +608,7 @@ keywords.)
 @c ---------------------------------------------------------------------
 
 @node Namespaces
-@section Namespaces
+@subsection Namespaces
 @cindex namespace
 @tindex NAMESPACE_DECL
 
@@ -749,7 +700,7 @@ This function cannot be used with namespaces that have
 @c ---------------------------------------------------------------------
 
 @node Classes
-@section Classes
+@subsection Classes
 @cindex class
 @tindex RECORD_TYPE
 @tindex UNION_TYPE
@@ -876,7 +827,7 @@ overloaded.
 @c ---------------------------------------------------------------------
 
 @node Declarations
-@chapter Declarations
+@section Declarations
 @cindex declaration
 @cindex variable
 @cindex type declaration
@@ -897,7 +848,7 @@ overloaded.
 @findex DECL_ALIGN
 @findex DECL_EXTERNAL
 
-This chapter covers the various kinds of declarations that appear in the
+This section covers the various kinds of declarations that appear in the
 internal representation, except for declarations of functions
 (represented by @code{FUNCTION_DECL} nodes), which are described in
 @ref{Functions}.
@@ -1051,7 +1002,7 @@ Back-ends can safely ignore these nodes.
 @c ---------------------------------------------------------------------
 
 @node Functions
-@chapter Functions
+@section Functions
 @cindex function
 @tindex FUNCTION_DECL
 @tindex OVERLOAD
@@ -1113,7 +1064,7 @@ function, and the back-end must take appropriate action.
 @c ---------------------------------------------------------------------
 
 @node Function Basics
-@section Function Basics
+@subsection Function Basics
 @cindex constructor
 @cindex destructor
 @cindex copy constructor
@@ -1316,7 +1267,7 @@ This predicate holds if the function an overloaded
 @c ---------------------------------------------------------------------
 
 @node Function Bodies
-@section Function Bodies
+@subsection Function Bodies
 @cindex function body
 @cindex statements
 @tindex ASM_STMT
@@ -1385,7 +1336,7 @@ function.  This node will usually be a @code{COMPOUND_STMT} representing
 the outermost block of the function, but it may also be a
 @code{TRY_BLOCK}, a @code{RETURN_INIT}, or any other valid statement.
 
-@subsection Statements
+@subsubsection Statements
 
 There are tree nodes corresponding to all of the source-level statement
 constructs.  These are enumerated here, together with a list of the
@@ -1710,8 +1661,8 @@ The @code{WHILE_BODY} is the body of the loop.
 @c Expressions
 @c ---------------------------------------------------------------------
 
-@node Expressions
-@chapter Expressions
+@node Expression trees
+@section Expressions
 @cindex expression
 @findex TREE_OPERAND
 @tindex INTEGER_CST
@@ -2279,45 +2230,3 @@ given by the third operand to the @code{AGGR_INIT_EXPR}; constructors do
 not return a value.
 
 @end table
-
-@c ---------------------------------------------------------------------
-@c GFDL
-@c ---------------------------------------------------------------------
-
-@include fdl.texi
-
-@c ---------------------------------------------------------------------
-@c Node Index
-@c ---------------------------------------------------------------------
-
-@node Node Index
-@unnumbered Node Index
-
-@printindex tp
-
-@c ---------------------------------------------------------------------
-@c Function Index
-@c ---------------------------------------------------------------------
-
-@node Function Index
-@unnumbered Function Index
-
-@printindex fn
-
-@c ---------------------------------------------------------------------
-@c Concept Index
-@c ---------------------------------------------------------------------
-
-@node Concept Index
-@unnumbered Concept Index
-
-@printindex cp
-
-@c ---------------------------------------------------------------------
-@c Epilogue
-@c ---------------------------------------------------------------------
-
-@summarycontents
-@contents
-@contents
-@bye
