@@ -2146,6 +2146,7 @@ delete_barrier_successors (f)
 		  rtx next1 = next_nonnote_insn (insn);
 		  rtx next2 = next1 ? next_nonnote_insn (next1) : 0;
 		  if (next2 && GET_CODE (next1) == CODE_LABEL
+		      && GET_CODE (next2) == JUMP_INSN
 		      && (GET_CODE (PATTERN (next2)) == ADDR_VEC
 			  || GET_CODE (PATTERN (next2)) == ADDR_DIFF_VEC))
 		    {

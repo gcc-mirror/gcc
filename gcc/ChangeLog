@@ -1,3 +1,7 @@
+2001-03-30  Bernd Schmidt  <bernds@redhat.com>
+
+	* jump.c (delete_barrier_successors): Fix error in last change.
+
 2001-03-28  Bernd Schmidt  <bernds@redhat.com>
 
 	* flow.c (propagate_block): When trying to delete a case vector, cope
