@@ -1,3 +1,9 @@
+2001-01-24  Alexandre Oliva  <aoliva@redhat.com>
+
+	* calls.c (emit_library_call_value_1): Memory slot for
+	pass-by-reference argument should have the mode of the argument,
+	not of the pointer to it.
+
 2001-01-24  Tom Tromey  <tromey@redhat.com>
 
 	* gcc.texi (G++ and GCC): Mention gcj manual.
