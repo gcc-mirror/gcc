@@ -60,7 +60,7 @@
 
 (define_function_unit "ppro_p0" 1 0
   (and (eq_attr "cpu" "pentiumpro")
-       (eq_attr "type" "ishift,rotate,lea,ibr,cld"))
+       (eq_attr "type" "ishift,rotate,ishift1,rotate1,lea,ibr,cld"))
   1 1)
 
 (define_function_unit "ppro_p0" 1 0

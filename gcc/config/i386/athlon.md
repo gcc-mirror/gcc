@@ -63,7 +63,7 @@
 
 (define_function_unit "athlon_ieu" 3 0
   (and (eq_attr "cpu" "athlon")
-       (eq_attr "type" "alu1,negnot,alu,icmp,test,imov,imovx,lea,incdec,ishift,rotate,ibr,call,callv,icmov,cld,pop,setcc,push,pop"))
+       (eq_attr "type" "alu1,negnot,alu,icmp,test,imov,imovx,lea,incdec,ishift,ishift1,rotate,rotate1,ibr,call,callv,icmov,cld,pop,setcc,push,pop"))
   1 1)
 
 (define_function_unit "athlon_ieu" 3 0
