@@ -1188,6 +1188,7 @@ else
 	saved_CFLAGS="${CFLAGS}"
 	CC="${CC_FOR_BUILD}" CFLAGS="${CFLAGS_FOR_BUILD}" \
 	${realsrcdir}/configure \
+		--enable-languages=${enable_languages} \
 		--target=$target_alias --host=$build_alias --build=$build_alias
 	CFLAGS="${saved_CFLAGS}"
 
@@ -1622,7 +1623,7 @@ if test "x$gcc_cv_as" = x; then
 	if test "x$program_prefix" != xNONE; then
 		gcc_cv_as=${program_prefix}as$host_exeext
 	else
-		gcc_cv_as=`echo as | sed ${program_transform_name}`$host_exeext
+		gcc_cv_as=`echo as | sed "${program_transform_name}"`$host_exeext
 	fi
 
 	test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
@@ -1740,7 +1741,7 @@ if test "x$gcc_cv_ld" = x; then
 	if test "x$program_prefix" != xNONE; then
 		gcc_cv_ld=${program_prefix}ld$host_exeext
 	else
-		gcc_cv_ld=`echo ld | sed ${program_transform_name}`$host_exeext
+		gcc_cv_ld=`echo ld | sed "${program_transform_name}"`$host_exeext
 	fi
 
 	test_dirs="$test_prefix/libexec/gcc/$target_noncanonical/$gcc_version \
@@ -1796,7 +1797,7 @@ elif test -f $gcc_cv_binutils_srcdir/configure.in \
 elif test "x$program_prefix" != xNONE; then
 	gcc_cv_nm=${program_prefix}nm$host_exeext
 else
-	gcc_cv_nm=`echo nm | sed ${program_transform_name}`$host_exeext
+	gcc_cv_nm=`echo nm | sed "${program_transform_name}"`$host_exeext
 fi
 case $in_tree_nm in
   yes) AC_MSG_RESULT("newly built nm") ;;
@@ -1820,7 +1821,7 @@ elif test "x$program_prefix" != xNONE; then
 	gcc_cv_objdump=${program_prefix}objdump$host_exeext
 else
 	gcc_cv_objdump=`echo objdump | \
-		sed ${program_transform_name}`$host_exeext
+		sed "${program_transform_name}"`$host_exeext
 fi
 case $in_tree_objdump in
   yes) AC_MSG_RESULT("newly built objdump") ;;
