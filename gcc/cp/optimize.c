@@ -130,6 +130,11 @@ maybe_clone_body (tree fn)
   /* Emit the DWARF1 abstract instance.  */
   (*debug_hooks->deferred_inline_function) (fn);
 
+  /* Our caller does not expect collection to happen, which it might if
+     we decide to compile the function to rtl now.  Arrange for a new
+     gc context to be created if so.  */
+  function_depth++;
+
   /* We know that any clones immediately follow FN in the TYPE_METHODS
      list.  */
   for (clone = TREE_CHAIN (fn);
@@ -252,6 +257,8 @@ maybe_clone_body (tree fn)
       expand_or_defer_fn (clone);
       pop_from_top_level ();
     }
+
+  function_depth--;
 
   /* We don't need to process the original function any further.  */
   return 1;
