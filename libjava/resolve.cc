@@ -1,6 +1,6 @@
 // resolve.cc - Code for linking and resolving classes and pool entries.
 
-/* Copyright (C) 1999, 2000, 2001 , 2002 Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003 Free Software Foundation
 
    This file is part of libgcj.
 
@@ -947,7 +947,10 @@ _Jv_InterpMethod::ncode ()
     }
   else
     {
-      fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal;
+      if (staticp)
+	fun = (ffi_closure_fun)&_Jv_InterpMethod::run_class;
+      else
+	fun = (ffi_closure_fun)&_Jv_InterpMethod::run_normal;
     }
 
   FFI_PREP_RAW_CLOSURE (&closure->closure,
@@ -958,7 +961,6 @@ _Jv_InterpMethod::ncode ()
   self->ncode = (void*)closure;
   return self->ncode;
 }
-
 
 void *
 _Jv_JNIMethod::ncode ()

@@ -1,6 +1,6 @@
 // defineclass.cc - defining a class from .class format.
 
-/* Copyright (C) 1999, 2000, 2001, 2002  Free Software Foundation
+/* Copyright (C) 1999, 2000, 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -1267,6 +1267,15 @@ void _Jv_ClassReader::handleCodeAttribute
 	  code_length);
 
   def->interpreted_methods[method_index] = method;
+
+  if ((method->self->accflags & java::lang::reflect::Modifier::STATIC))
+    {
+      // Precompute the ncode field for a static method.  This lets us
+      // call a static method of an interpreted class from precompiled
+      // code without first resolving the class (that will happen
+      // during class initialization instead).
+      method->self->ncode = method->ncode ();
+    }
 }
 
 void _Jv_ClassReader::handleExceptionTableEntry
@@ -1302,6 +1311,16 @@ void _Jv_ClassReader::handleMethodsEnd ()
 	      m->self = method;
 	      m->function = NULL;
 	      def->interpreted_methods[i] = m;
+
+	      if ((method->accflags & Modifier::STATIC))
+		{
+		  // Precompute the ncode field for a static method.
+		  // This lets us call a static method of an
+		  // interpreted class from precompiled code without
+		  // first resolving the class (that will happen
+		  // during class initialization instead).
+		  method->ncode = m->ncode ();
+		}
 	    }
 	}
       else if ((method->accflags & Modifier::ABSTRACT) != 0)
