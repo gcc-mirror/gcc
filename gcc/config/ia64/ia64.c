@@ -1878,6 +1878,17 @@ ia64_compute_frame_size (size)
 	  spill_size += 8;
 	  n_spilled += 1;
 	}
+
+      if (regs_ever_live[AR_PFS_REGNUM])
+	{
+	  SET_HARD_REG_BIT (mask, AR_PFS_REGNUM);
+	  current_frame_info.reg_save_ar_pfs = find_gr_spill (1);
+	  if (current_frame_info.reg_save_ar_pfs == 0)
+	    {
+	      extra_spill_size += 8;
+	      n_spilled += 1;
+	    }
+	}
     }
 
   /* Unwind descriptor hackery: things are most efficient if we allocate
@@ -1916,8 +1927,10 @@ ia64_compute_frame_size (size)
     }
 
   /* If we're forced to use st8.spill, we're forced to save and restore
-     ar.unat as well.  */
-  if (spilled_gr_p || cfun->machine->n_varargs)
+     ar.unat as well.  The check for existing liveness allows inline asm
+     to touch ar.unat.  */
+  if (spilled_gr_p || cfun->machine->n_varargs
+      || regs_ever_live[AR_UNAT_REGNUM])
     {
       regs_ever_live[AR_UNAT_REGNUM] = 1;
       SET_HARD_REG_BIT (mask, AR_UNAT_REGNUM);
@@ -2378,7 +2391,8 @@ ia64_expand_prologue ()
   /* We don't need an alloc instruction if we've used no outputs or locals.  */
   if (current_frame_info.n_local_regs == 0
       && current_frame_info.n_output_regs == 0
-      && current_frame_info.n_input_regs <= current_function_args_info.int_regs)
+      && current_frame_info.n_input_regs <= current_function_args_info.int_regs
+      && !TEST_HARD_REG_BIT (current_frame_info.mask, AR_PFS_REGNUM))
     {
       /* If there is no alloc, but there are input registers used, then we
 	 need a .regstk directive.  */
@@ -2540,8 +2554,8 @@ ia64_expand_prologue ()
   /* The alloc insn already copied ar.pfs into a general register.  The
      only thing we have to do now is copy that register to a stack slot
      if we'd not allocated a local register for the job.  */
-  if (current_frame_info.reg_save_ar_pfs == 0
-      && ! current_function_is_leaf)
+  if (TEST_HARD_REG_BIT (current_frame_info.mask, AR_PFS_REGNUM)
+      && current_frame_info.reg_save_ar_pfs == 0)
     {
       reg = gen_rtx_REG (DImode, AR_PFS_REGNUM);
       do_spill (gen_movdi_x, ar_pfs_save_reg, cfa_off, reg);
