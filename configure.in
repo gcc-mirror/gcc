@@ -1778,7 +1778,7 @@ fi
 
 case "$enable_bootstrap" in
   yes)
-    default_target=new-bootstrap
+    default_target=bootstrap
     extrasub="$extrasub
 /^@if gcc-bootstrap\$/d
 /^@endif gcc-bootstrap\$/d" ;;
