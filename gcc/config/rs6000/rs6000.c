@@ -1828,7 +1828,7 @@ rs6000_va_start (stdarg_p, valist, nextarg)
       return;
     }
 
-  f_gpr = TYPE_FIELDS (va_list_type_node);
+  f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = TREE_CHAIN (f_gpr);
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);
@@ -1888,7 +1888,7 @@ rs6000_va_arg (valist, type)
   if (DEFAULT_ABI != ABI_V4 && DEFAULT_ABI != ABI_SOLARIS)
     return std_expand_builtin_va_arg (valist, type);
 
-  f_gpr = TYPE_FIELDS (va_list_type_node);
+  f_gpr = TYPE_FIELDS (TREE_TYPE (va_list_type_node));
   f_fpr = TREE_CHAIN (f_gpr);
   f_ovf = TREE_CHAIN (f_fpr);
   f_sav = TREE_CHAIN (f_ovf);

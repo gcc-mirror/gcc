@@ -1974,14 +1974,33 @@ expand_builtin_va_arg (valist, type)
      tree valist, type;
 {
   rtx addr, result;
-  tree promoted_type;
+  tree promoted_type, want_va_type, have_va_type;
 
-  if (TYPE_MAIN_VARIANT (TREE_TYPE (valist))
-      != TYPE_MAIN_VARIANT (va_list_type_node))
+  /* Verify that valist is of the proper type.  */
+
+  want_va_type = va_list_type_node;
+  have_va_type = TREE_TYPE (valist);
+  if (TREE_CODE (want_va_type) == ARRAY_TYPE)
+    {
+      /* If va_list is an array type, the argument may have decayed 
+	 to a pointer type, e.g. by being passed to another function.
+         In that case, unwrap both types so that we can compare the
+	 underlying records.  */
+      if (TREE_CODE (have_va_type) == ARRAY_TYPE
+	  || TREE_CODE (have_va_type) == POINTER_TYPE)
+	{
+	  want_va_type = TREE_TYPE (want_va_type);
+	  have_va_type = TREE_TYPE (have_va_type);
+	}
+    }
+  if (TYPE_MAIN_VARIANT (want_va_type) != TYPE_MAIN_VARIANT (have_va_type))
     {
       error ("first argument to `va_arg' not of type `va_list'");
       addr = const0_rtx;
     }
+
+  /* Generate a diagnostic for requesting data of a type that cannot
+     be passed through `...' due to type promotion at the call site.  */
   else if ((promoted_type = (*lang_type_promotes_to) (type)) != NULL_TREE)
     {
       const char *name = "<anonymous type>", *pname;

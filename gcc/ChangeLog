@@ -1,3 +1,10 @@
+Fri Sep 10 14:04:07 1999  Richard Henderson  <rth@cygnus.com>
+
+	* builtins.c (expand_builtin_va_arg): Cope with an array-type
+	va_list decomposing to pointer-type.
+	* rs6000.c (rs6000_va_start) Unwrap the ARRAY_TYPE to get at fields.
+	(rs6000_va_arg): Likewise.
+
 Fri Sep 10 13:21:21 1999  Jim Wilson  <wilson@cygnus.com>
 
 	* except.c (start_dynamic_handler): Compute size using
