@@ -1,3 +1,25 @@
+Tue Sep 21 15:38:10 BST 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/dyncast1.C: New test.
+	* g++.old-deja/g++.other/dyncast2.C: New test.
+	* g++.old-deja/g++.other/dyncast3.C: New test.
+	* g++.old-deja/g++.other/dyncast4.C: New test.
+	* g++.old-deja/g++.other/dyncast5.C: New test.
+	* g++.old-deja/g++.eh/catch3.C: New test.
+	* g++.old-deja/g++.eh/catch3p.C: New test.
+	* g++.old-deja/g++.eh/catch4.C: New test.
+	* g++.old-deja/g++.eh/catch4p.C: New test.
+	* g++.old-deja/g++.eh/catch5.C: New test.
+	* g++.old-deja/g++.eh/catch5p.C: New test.
+	* g++.old-deja/g++.eh/catch6.C: New test.
+	* g++.old-deja/g++.eh/catch6p.C: New test.
+	* g++.old-deja/g++.eh/catch7.C: New test.
+	* g++.old-deja/g++.eh/catch7p.C: New test.
+	* g++.old-deja/g++.eh/catch8.C: New test.
+	* g++.old-deja/g++.eh/catch8p.C: New test.
+	* g++.old-deja/g++.eh/catch9.C: New test.
+	* g++.old-deja/g++.eh/catch9p.C: New test.
+
 Mon Sep 13 14:14:21 BST 1999  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.other/sizeof3.C: Remove XFAILS.
