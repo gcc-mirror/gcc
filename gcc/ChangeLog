@@ -1,3 +1,13 @@
+2001-12-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* m68k/3b1.h (ASM_OUTPUT_ALIGN): Wrap in do-while(0).
+	* m68k/amix.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* m68k/atari.h (ASM_GENERATE_INTERNAL_LABEL): Likewise.
+	* m68k/hp320.h (ASM_OUTPUT_ALIGN): Likewise.
+	* m68k/m68kelf.h (ASM_OUTPUT_ALIGN): Likewise.
+	* m68k/sgs.h (ASM_OUTPUT_ALIGN): Likewise.
+	* m68k/tower-as.h (ASM_OUTPUT_ALIGN): Likewise.
+
 2001-12-08  Tom Rix  <trix@redhat.com>
 
 	* config/rs6000/aix43.h (NON_POWERPC_MASKS): Delete MASK_STRING.

@@ -98,10 +98,12 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_OUTPUT_ALIGN
 #define ASM_OUTPUT_ALIGN(FILE,LOG)				\
+do {								\
   if ((LOG) > 0)						\
     fprintf ((FILE), "%s%u\n", ALIGN_ASM_OP, 1 << (LOG));	\
   else if ((LOG) > 31)						\
-    abort ();
+    abort ();							\
+} while (0)
 
 /* Use proper assembler syntax for these macros.  */
 #undef ASM_OUTPUT_REG_PUSH

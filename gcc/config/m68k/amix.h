@@ -136,10 +136,12 @@ do {								\
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(LABEL,PREFIX,NUM)	\
+do {							\
   if (flag_pic && !strcmp(PREFIX,"LC"))			\
-    sprintf (LABEL, "*%s%%%ld", PREFIX, (long)(NUM));		\
+    sprintf (LABEL, "*%s%%%ld", PREFIX, (long)(NUM));	\
   else							\
-    sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM))
+    sprintf (LABEL, "*%s%s%ld", LOCAL_LABEL_PREFIX, PREFIX, (long)(NUM)); \
+} while (0)
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM)	\

@@ -151,10 +151,12 @@ do { long l;					\
    } while (0)
 
 #define ASM_OUTPUT_ALIGN(FILE,LOG)	\
+do {					\
   if ((LOG) == 1)			\
     fprintf (FILE, "\teven\n");	\
   else if ((LOG) != 0)			\
-    abort ();
+    abort ();				\
+} while (0)
 
 /* This is how to output an assembler line
    that says to advance the location counter by SIZE bytes.  */
