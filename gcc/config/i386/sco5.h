@@ -730,8 +730,9 @@ dtors_section ()							\
 #undef HANDLE_SYSV_PRAGMA
 #define HANDLE_SYSV_PRAGMA 1
 
-/* Though OpenServer support .weak in COFF, g++ doesn't play nice with it
- * so we'll punt on it for now
+/* Though OpenServer supports .weak in COFF, we don't use it.
+ * G++ will frequently emit a symol as .weak and then (in the same .s 
+ * file) declare it global.   The COFF assembler finds this unamusing.
  */
 #define SUPPORTS_WEAK (TARGET_ELF)
 #define ASM_WEAKEN_LABEL(FILE,NAME) \
