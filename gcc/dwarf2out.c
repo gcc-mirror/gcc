@@ -5397,7 +5397,7 @@ static void
 compute_section_prefix (unit_die)
      dw_die_ref unit_die;
 {
-  char *p, *name;
+  char *name;
   int i;
   unsigned char checksum[16];
   struct md5_ctx ctx;
@@ -5406,18 +5406,22 @@ compute_section_prefix (unit_die)
   die_checksum (unit_die, &ctx);
   md5_finish_ctx (&ctx, checksum);
 
-  p = lbasename (get_AT_string (unit_die, DW_AT_name));
-  name = (char *) alloca (strlen (p) + 64);
-  sprintf (name, "%s.", p);
+  {
+    const char *p = lbasename (get_AT_string (unit_die, DW_AT_name));
+    name = (char *) alloca (strlen (p) + 64);
+    sprintf (name, "%s.", p);
+  }
 
   clean_symbol_name (name);
 
-  p = name + strlen (name);
-  for (i = 0; i < 4; ++i)
-    {
-      sprintf (p, "%.2x", checksum[i]);
-      p += 2;
-    }
+  {
+    char *p = name + strlen (name);
+    for (i = 0; i < 4; ++i)
+      {
+	sprintf (p, "%.2x", checksum[i]);
+	p += 2;
+      }
+  }
 
   comdat_symbol_id = unit_die->die_symbol = xstrdup (name);
   comdat_symbol_number = 0;

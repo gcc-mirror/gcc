@@ -191,7 +191,7 @@ deps_add_default_target (d, tgt)
 #ifndef TARGET_OBJECT_SUFFIX
 # define TARGET_OBJECT_SUFFIX ".o"
 #endif
-      char *start = lbasename (tgt);
+      const char *start = lbasename (tgt);
       char *o = (char *) alloca (strlen (start) + strlen (TARGET_OBJECT_SUFFIX) + 1);
       char *suffix;
 
