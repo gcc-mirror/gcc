@@ -1,5 +1,5 @@
-/* Define to "%p" if printf supports it, else machmode.h will define it.  */
-#undef HOST_PTR_PRINTF
+/* Define if printf supports "%p".  */
+#undef HAVE_PRINTF_PTR
 
 /* Define if you want expensive run-time checks. */
 #undef ENABLE_CHECKING

@@ -78,7 +78,7 @@ main()
 	gcc_cv_func_printf_ptr=no)
 rm -f core core.* *.core])
 if test $gcc_cv_func_printf_ptr = yes ; then
-  AC_DEFINE(HOST_PTR_PRINTF, "%p")
+  AC_DEFINE(HAVE_PRINTF_PTR)
 fi
 ])
 

@@ -1,3 +1,18 @@
+Mon Jul  6 21:07:14 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* aclocal.m4 (GCC_FUNC_PRINTF_PTR): Don't define HOST_PTR_PRINTF.
+  	Instead, define a new macro HAVE_PRINTF_PTR which only signifies
+	whether we have the %p format specifier or not.
+
+	* acconfig.h: Delete stub for HOST_PTR_PRINTF, add HAVE_PRINTF_PTR.
+	
+	* machmode.h (HOST_PTR_PRINTF): When determining the definition,
+ 	check HAVE_PRINTF_PTR to see whether "%p" is okay.
+
+	* mips-tfile.c: Include machmode.h to get HOST_PTR_PRINTF.
+
+	* Makefile.in (mips-tfile.o): Depend on machmode.h.
+
 Mon Jul  6 10:42:05 1998  Mark Mitchell  <mark@markmitchell.com>
 
 	* jump.c (duplicate_loop_exit_test): Don't refuse to copy a
