@@ -1,5 +1,14 @@
 2003-06-23  Jakub Jelinek  <jakub@redhat.com>
 
+	* mangle.c: Include ggc.h, gt-cp-mangle.h.
+	(mangle_conv_op_name_for_type): Use htab_create_ggc instead of
+	htab_create.
+	* config-lang.in (gtfiles): Add cp/mangle.c.
+	* Make-lang.in (gt-cp-mangle.h): Depend on s-gtype.
+	(cp/mangle.o): Depend on gt-cp-mangle.h.
+
+2003-06-23  Jakub Jelinek  <jakub@redhat.com>
+
 	* mangle.c (hash_type): val is the TREE_LIST itself, not a pointer
 	to it.
 

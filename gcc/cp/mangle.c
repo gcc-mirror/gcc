@@ -56,6 +56,7 @@
 #include "obstack.h"
 #include "toplev.h"
 #include "varray.h"
+#include "ggc.h"
 
 /* Debugging support.  */
 
@@ -2649,7 +2650,7 @@ mangle_conv_op_name_for_type (const tree type)
   char buffer[64];
   
   if (conv_type_names == NULL) 
-    conv_type_names = htab_create (31, &hash_type, &compare_type, NULL);
+    conv_type_names = htab_create_ggc (31, &hash_type, &compare_type, NULL);
 
   slot = htab_find_slot_with_hash (conv_type_names, type, 
 				   htab_hash_pointer (type), INSERT);
@@ -2729,3 +2730,4 @@ write_java_integer_type_codes (type)
     abort ();
 }
 
+#include "gt-cp-mangle.h"

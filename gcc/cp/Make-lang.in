@@ -116,7 +116,7 @@ $(srcdir)/cp/parse.c: $(srcdir)/cp/parse.y
 
 gtype-cp.h gt-cp-call.h gt-cp-decl.h gt-cp-decl2.h : s-gtype; @true
 gt-cp-parse.h gt-cp-pt.h gt-cp-repo.h gt-cp-spew.h : s-gtype; @true
-gt-cp-tree.h : s-gtype; @true
+gt-cp-tree.h gt-cp-mangle.h : s-gtype; @true
 
 #
 # Build hooks:
@@ -275,7 +275,7 @@ cp/semantics.o: cp/semantics.c $(CXX_TREE_H) cp/lex.h except.h toplev.h \
 cp/dump.o: cp/dump.c $(CXX_TREE_H) tree-dump.h
 cp/optimize.o: cp/optimize.c $(CXX_TREE_H) rtl.h integrate.h insn-config.h \
   input.h $(PARAMS_H) debug.h tree-inline.h
-cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h $(TM_P_H)
+cp/mangle.o: cp/mangle.c $(CXX_TREE_H) toplev.h real.h gt-cp-mangle.h $(TM_P_H)
 
 cp/parse.o: cp/parse.c $(CXX_TREE_H) flags.h cp/lex.h except.h output.h \
 	cp/decl.h $(SYSTEM_H) toplev.h $(GGC_H) gt-cp-parse.h
