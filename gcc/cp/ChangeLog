@@ -1,5 +1,10 @@
 2003-08-01  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* parser.c (cp_parser_init_declarator,
+	cp_paser_member_declaration): Reformat.
+	* pt.c (lookup_template_class, type_unification_real, unify,
+	type_dependent_expression_p): Reformat.
+
 	PR c++/11295
 	* cp-tree.h (tubst_flags_t): Add tf_stmt_expr_cmpd,
 	tf_stmt_expr_body.

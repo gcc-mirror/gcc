@@ -9268,8 +9268,7 @@ cp_parser_init_declarator (cp_parser* parser,
   friend_p = cp_parser_friend_p (decl_specifiers);
 
   /* Check that the number of template-parameter-lists is OK.  */
-  if (!cp_parser_check_declarator_template_parameters (parser, 
-						       declarator))
+  if (!cp_parser_check_declarator_template_parameters (parser, declarator))
     return error_mark_node;
 
   /* Enter the newly declared entry in the symbol table.  If we're
@@ -9284,11 +9283,8 @@ cp_parser_init_declarator (cp_parser* parser,
 				       decl_specifiers);
 	  have_extern_spec = false;
 	}
-      decl = start_decl (declarator,
-			 decl_specifiers,
-			 is_initialized,
-			 attributes,
-			 prefix_attributes);
+      decl = start_decl (declarator, decl_specifiers,
+			 is_initialized, attributes, prefix_attributes);
     }
 
   /* Enter the SCOPE.  That way unqualified names appearing in the
@@ -11850,10 +11846,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      else
 		{
 		  /* Create the declaration.  */
-		  decl = grokfield (declarator, 
-				    decl_specifiers, 
-				    initializer,
-				    asm_specification,
+		  decl = grokfield (declarator, decl_specifiers, 
+				    initializer, asm_specification,
 				    attributes);
 		  /* Any initialization must have been from a
 		     constant-expression.  */
