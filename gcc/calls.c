@@ -134,8 +134,6 @@ static int calls_function_1	PROTO ((tree, int));
 static void emit_call_1		PROTO ((rtx, tree, tree, HOST_WIDE_INT,
 					HOST_WIDE_INT, HOST_WIDE_INT, rtx,
 					rtx, int, rtx, int));
-static void special_function_p	PROTO ((char *, tree, int *, int *,
-					int *, int *));
 static void precompute_register_parameters	PROTO ((int, struct arg_data *,
 							int *));
 static void store_one_arg	PROTO ((struct arg_data *, rtx, int, int,
@@ -534,10 +532,9 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
    Set MAY_BE_ALLOCA for any memory allocation function that might allocate
    space from the stack such as alloca.  */
 
-static void
-special_function_p (name, fndecl, returns_twice, is_longjmp,
+void
+special_function_p (fndecl, returns_twice, is_longjmp,
 		    is_malloc, may_be_alloca)
-     char *name;
      tree fndecl;
      int *returns_twice;
      int *is_longjmp;
@@ -551,14 +548,15 @@ special_function_p (name, fndecl, returns_twice, is_longjmp,
   /* The function decl may have the `malloc' attribute.  */
   *is_malloc = fndecl && DECL_IS_MALLOC (fndecl);
 
-  if (! is_malloc 
-      && name != 0 
+  if (! *is_malloc 
+      && fndecl && DECL_NAME (fndecl)
       && IDENTIFIER_LENGTH (DECL_NAME (fndecl)) <= 17
       /* Exclude functions not at the file scope, or not `extern',
 	 since they are not the magic functions we would otherwise
 	 think they are.  */
       && DECL_CONTEXT (fndecl) == NULL_TREE && TREE_PUBLIC (fndecl))
     {
+      char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
       char *tname = name;
 
       /* We assume that alloca will always be called by name.  It
@@ -1880,7 +1878,7 @@ expand_call (exp, target, ignore)
 
   /* See if this is a call to a function that can return more than once
      or a call to longjmp or malloc.  */
-  special_function_p (name, fndecl, &returns_twice, &is_longjmp,
+  special_function_p (fndecl, &returns_twice, &is_longjmp,
 		      &is_malloc, &may_be_alloca);
 
   if (may_be_alloca)
