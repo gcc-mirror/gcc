@@ -548,6 +548,13 @@ dequeue_and_dump (di)
       dump_next_stmt (di, t);
       break;
 
+    case CLEANUP_STMT:
+      dump_stmt (di, t);
+      dump_child ("decl", CLEANUP_DECL (t));
+      dump_child ("expr", CLEANUP_EXPR (t));
+      dump_next_stmt (di, t);
+      break;
+
     case COMPOUND_STMT:
       dump_stmt (di, t);
       dump_child ("body", COMPOUND_BODY (t));

@@ -480,6 +480,7 @@ initialize_inlined_parameters (id, args, fn)
       tree init_stmt;
       tree var;
       tree value;
+      tree cleanup;
 
       /* Find the initializer.  */
       value = a ? TREE_VALUE (a) : NULL_TREE;
@@ -558,16 +559,26 @@ initialize_inlined_parameters (id, args, fn)
 	  TREE_CHAIN (init_stmt) = init_stmts;
 	  init_stmts = init_stmt;
 	}
+
+      /* See if we need to clean up the declaration.  */
+      cleanup = maybe_build_cleanup (var);
+      if (cleanup) 
+	{
+	  tree cleanup_stmt;
+	  /* Build the cleanup statement.  */
+	  cleanup_stmt = build_stmt (CLEANUP_STMT, var, cleanup);
+	  /* Add it to the *front* of the list; the list will be
+	     reversed below.  */
+	  TREE_CHAIN (cleanup_stmt) = init_stmts;
+	  init_stmts = cleanup_stmt;
+	}
     }
 
   /* Evaluate trailing arguments.  */
   for (; a; a = TREE_CHAIN (a))
     {
       tree init_stmt;
-      tree value;
-
-      /* Find the initializer.  */
-      value = a ? TREE_VALUE (a) : NULL_TREE;
+      tree value = TREE_VALUE (a);
 
       if (! value || ! TREE_SIDE_EFFECTS (value))
 	continue;

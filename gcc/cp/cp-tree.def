@@ -230,10 +230,6 @@ DEFTREECODE (SUBOBJECT, "subobject", 'e', 1)
    the cleanups associated with any SUBOBJECT_CLEANUPS need no longer
    be run.  */
 DEFTREECODE (CTOR_STMT, "ctor_stmt", 'e', 0)
-/* A CLEANUP_STMT marks the point at which a declaration is fully
-   constructed.  If, after this point, the CLEANUP_DECL goes out of
-   scope, the CLEANUP_EXPR must be run.  */
-DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 2)
 /* CTOR_INITIALIZER is a placeholder in template code for a call to
    setup_vtbl_pointer (and appears in all functions, not just ctors).  */
 DEFTREECODE (CTOR_INITIALIZER, "ctor_initializer", 'e', 2)

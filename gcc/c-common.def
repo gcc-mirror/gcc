@@ -113,6 +113,11 @@ DEFTREECODE (STMT_EXPR, "stmt_expr", 'e', 1)
    the compound literal.  */
 DEFTREECODE (COMPOUND_LITERAL_EXPR, "compound_literal_expr", 'e', 1)
 
+/* A CLEANUP_STMT marks the point at which a declaration is fully
+   constructed.  If, after this point, the CLEANUP_DECL goes out of
+   scope, the CLEANUP_EXPR must be run.  */
+DEFTREECODE (CLEANUP_STMT, "cleanup_stmt", 'e', 2)
+
 /*
 Local variables:
 mode:c

@@ -1031,7 +1031,6 @@ cp_statement_code_p (code)
   switch (code)
     {
     case SUBOBJECT:
-    case CLEANUP_STMT:
     case CTOR_STMT:
     case CTOR_INITIALIZER:
     case RETURN_INIT:
