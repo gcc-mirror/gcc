@@ -1,3 +1,11 @@
+2002-01-28  Jason Merrill  <jason@redhat.com>
+
+	* dwarf2out.c (dwarf_cfi_name): Add other DWARF 3 codes.
+	(output_cfi): Likewise. Disable DW_CFA_GNU_negative_offset_extended.
+	(reg_save): Use DW_CFA_offset_extended_sf instead.
+
+	* dwarf2out.c (dwarf2out_finish): Don't abort if there were errors.
+
 2002-01-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* cselib.c (cselib_record_sets): Use IF_THEN_ELSE result
@@ -150,8 +158,7 @@ objc:
 
 2002-01-28  Jason Merrill  <jason@redhat.com>
 
-	* dwarf2.h (enum dwarf_call_frame_info): Add other DWARF 3 codes.
-	Sync with src version.
+	* dwarf2.h: Sync with src version.
 
 2002-01-28  Paul Koning  <pkoning@equallogic.com>
 
