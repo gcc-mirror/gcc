@@ -1,3 +1,14 @@
+2004-05-18  Andrew Pinski  <pinskia@physics.uc.edu>
+	    Jeff Law <law@redhat.com>
+
+	* Makefile.in (tree-ssa-phiopt.o): Depends on flags.h.
+	* tree-ssa-phiopt.c: Include flags.h.
+	(conditional_replacement): Remove argument names from prototype.
+	Minor formatting and comment fixes.
+	(tree_ssa_phiopt): If conditional_replacement returns false, then
+	call value_replacement.
+	(value_replacement): New function.
+
 2004-05-18  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-phiopt.c (replace_phi_with_stmt): New function extracted

@@ -26,6 +26,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "ggc.h"
 #include "tree.h"
 #include "rtl.h"
+#include "flags.h"
 #include "tm_p.h"
 #include "basic-block.h"
 #include "timevar.h"
@@ -36,15 +37,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "langhooks.h"
 
 static void tree_ssa_phiopt (void);
-static bool conditional_replacement (basic_block bb, tree phi, tree arg0,
-				     tree arg1);			    
+static bool conditional_replacement (basic_block, tree, tree, tree);
+static bool value_replacement (basic_block, tree, tree, tree);
 static void replace_phi_with_stmt (block_stmt_iterator, basic_block,
 				   basic_block, tree, tree);
 static bool candidate_bb_for_phi_optimization (basic_block,
 					       basic_block *,
 					       basic_block *);
 
-				  
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  ie if we have something
    like:
@@ -64,7 +64,25 @@ static bool candidate_bb_for_phi_optimization (basic_block,
 
    bb1 will become unreachable and bb0 and bb2 will almost always
    be merged into a single block.  This occurs often due to gimplification
-   of conditionals.  */
+    of conditionals. 
+   
+   Also done is the following optimization:
+
+     bb0:
+      if (a != b) goto bb2; else goto bb1;
+     bb1:
+     bb2:
+      x = PHI (a (bb1), b (bb0))
+
+   We can rewrite that as:
+
+     bb0:
+     bb1:
+     bb2:
+      x = b;
+
+   This can sometimes occur as a result of other optimizations.  A
+   similar transformation is done by the ifcvt RTL optimizer.  */
    
 static void
 tree_ssa_phiopt (void)
@@ -77,7 +95,6 @@ tree_ssa_phiopt (void)
     {
       tree arg0, arg1, phi;
 
-
       /* We're searching for blocks with one PHI node which has two
 	 arguments.  */
       phi = phi_nodes (bb);
@@ -88,12 +105,13 @@ tree_ssa_phiopt (void)
 	  arg1 = PHI_ARG_DEF (phi, 1);
 	    
 	  /* Do the replacement of conditional if it can be done.  */
-	  if (conditional_replacement (bb, phi, arg0, arg1))
-	    {
-	      /* We have done the replacement so we need to rebuild the cfg.  */
-	      removed_phis = true;
-	      continue;
-	    }
+	    if (conditional_replacement (bb, phi, arg0, arg1)
+		|| value_replacement (bb, phi, arg0, arg1))
+	      {
+		/* We have done the replacement so we need to rebuild the
+		   cfg when this pass is complete.  */
+		removed_phis = true;
+	      }
 	}
     }
 
@@ -294,8 +312,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 		    TREE_OPERAND (old_result, 0),
 		    TREE_OPERAND (old_result, 1));
       
-      new1 = build (MODIFY_EXPR, TREE_TYPE (result),
-		    new_var, new1);
+      new1 = build (MODIFY_EXPR, TREE_TYPE (result), new_var, new1);
       bsi_insert_after (&bsi, new1, BSI_NEW_STMT);
     }
   
@@ -330,7 +347,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       
       cond = cond1;
       /* If what we get back is a conditional expression, there is no
-	 way that is can be gimple.   */
+	  way that it can be gimple.  */
       if (TREE_CODE (cond) == COND_EXPR)
 	return false; 
 
@@ -358,6 +375,76 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 
   /* Note that we optimized this PHI.  */
   return true;
+}
+
+/*  The function value_replacement does the main work of doing the value
+    replacement.  Return true if the replacement is done.  Otherwise return
+    false.
+    BB is the basic block where the replacement is going to be done on.  ARG0
+    is argument 0 from the PHI.  Likewise for ARG1.   */
+
+static bool
+value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
+{
+  tree result;
+  basic_block other_block = NULL;
+  basic_block cond_block = NULL;
+  tree new, cond;
+  edge true_edge, false_edge;
+
+  /* If the type says honor signed zeros we cannot do this
+     optimization.   */
+  if (HONOR_SIGNED_ZEROS (TYPE_MODE (TREE_TYPE (arg1))))
+    return false;
+
+  if (!candidate_bb_for_phi_optimization (bb, &cond_block, &other_block))
+    return false;
+
+  cond = COND_EXPR_COND (last_stmt (cond_block));
+  result = PHI_RESULT (phi);
+
+  /* This transformation is only valid for equality comparisons.  */
+  if (TREE_CODE (cond) != NE_EXPR && TREE_CODE (cond) != EQ_EXPR)
+    return false;
+
+  /* We need to know which is the true edge and which is the false
+      edge so that we know if have abs or negative abs.  */
+  extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
+
+  /* At this point we know we have a COND_EXPR with two successors.
+     One successor is BB, the other successor is an empty block which
+     falls through into BB.
+
+     The condition for the COND_EXPR is known to be NE_EXPR or EQ_EXPR.
+
+     There is a single PHI node at the join point (BB) with two arguments.
+
+     We now need to verify that the two arguments in the PHI node match
+     the two arguments to the equality comparison.  */
+  
+  if ((operand_equal_p (arg0, TREE_OPERAND (cond, 0), 0)
+       && operand_equal_p (arg1, TREE_OPERAND (cond, 1), 0))
+      || (operand_equal_p (arg1, TREE_OPERAND (cond, 0), 0)
+	  && operand_equal_p (arg0, TREE_OPERAND (cond, 1), 0)))
+    {
+      edge e;
+      tree arg;
+
+      e = (TREE_CODE (cond) == NE_EXPR ? true_edge : false_edge);
+      if (PHI_ARG_EDGE (phi, 0) == e)
+	arg = arg0;
+      else
+	arg = arg1;
+
+      /* Build the new assignment.  */
+      new = build (MODIFY_EXPR, TREE_TYPE (result), result, arg);
+
+      replace_phi_with_stmt (bsi_start (bb), bb, cond_block, phi, new);
+
+      /* Note that we optimized this PHI.  */
+      return true;
+    }
+  return false;
 }
 
 
