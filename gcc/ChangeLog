@@ -1,3 +1,8 @@
+2000-06-14  Geoff Keating  <geoffk@cygnus.com>
+
+	* rs6000.c (toc_hash_eq): Use CODE_LABEL_NUMBER to compare
+	LABEL_REFs.
+
 2000-06-14  Richard Henderson  <rth@cygnus.com>
 
 	* conflict.c (conflict_graph_compute): Don't look for REG_INC.
@@ -285,7 +290,7 @@ Mon Jun  12  9:44:00 2000  Mark Klein  <mklein@dis.com>
 	(CPP_SPEC): Change mthreads to pthread.
 	(LIB_SPEC): Likewise.
 	(STARTFILE_SPEC): Likewise.
-	* aix43.h (SUBTARGET_SWITCHES): Delete thread.
+	* aix43.h (SUBTARGET_SWITCHES): Delete threads.
 	(CPP_SPEC): Change mthreads to pthread.
 	(LIB_SPEC): Likewise.
 	(STARTFILE_SPEC): Likewise.
