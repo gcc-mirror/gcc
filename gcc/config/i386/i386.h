@@ -296,35 +296,27 @@ extern int ix86_arch;
 #ifndef CC1_CPU_SPEC
 #define CC1_CPU_SPEC "\
 %{!mcpu*: \
-%{m386:-mcpu=i386 -march=i386} \
-%{mno-486:-mcpu=i386 -march=i386} \
-%{m486:-mcpu=i486 -march=i486} \
-%{mno-386:-mcpu=i486 -march=i486} \
-%{mno-pentium:-mcpu=i486 -march=i486} \
+%{m386:-mcpu=i386} \
+%{m486:-mcpu=i486} \
 %{mpentium:-mcpu=pentium} \
-%{mno-pentiumpro:-mcpu=pentium} \
 %{mpentiumpro:-mcpu=pentiumpro}}"
 #endif
 
-#define CPP_486_SPEC "%{!ansi:-Di486} -D__i486 -D__i486__"
-#define CPP_586_SPEC "%{!ansi:-Di586 -Dpentium} \
-	-D__i586 -D__i586__ -D__pentium -D__pentium__"
-#define CPP_686_SPEC "%{!ansi:-Di686 -Dpentiumpro} \
-	-D__i686 -D__i686__ -D__pentiumpro -D__pentiumpro__"
-
 #ifndef CPP_CPU_DEFAULT_SPEC
 #if TARGET_CPU_DEFAULT == 1
-#define CPP_CPU_DEFAULT_SPEC "%(cpp_486)"
-#else
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i486__"
+#endif
 #if TARGET_CPU_DEFAULT == 2
-#define CPP_CPU_DEFAULT_SPEC "%(cpp_586)"
-#else
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentium__"
+#endif
 #if TARGET_CPU_DEFAULT == 3
-#define CPP_CPU_DEFAULT_SPEC "%(cpp_686)"
-#else
-#define CPP_CPU_DEFAULT_SPEC ""
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentiumpro__"
 #endif
+#if TARGET_CPU_DEFAULT == 4
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__"
 #endif
+#ifndef CPP_CPU_DEFAULT_SPEC
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i386__"
 #endif
 #endif /* CPP_CPU_DEFAULT_SPEC */
 
@@ -332,10 +324,19 @@ extern int ix86_arch;
 #define CPP_CPU_SPEC "\
 -Acpu(i386) -Amachine(i386) \
 %{!ansi:-Di386} -D__i386 -D__i386__ \
-%{mcpu=i486:%(cpp_486)} %{m486:%(cpp_486)} \
-%{mpentium:%(cpp_586)} %{mcpu=pentium:%(cpp_586)} \
-%{mpentiumpro:%(cpp_686)} %{mcpu=pentiumpro:%(cpp_686)} \
-%{!mcpu*:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}"
+%{march=i386:%{!mcpu*:-D__tune_i386__ }}\
+%{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\
+%{march=pentium|march=i586:-D__pentium -D__pentium__ \
+  %{!mcpu*:-D__tune_pentium__ }}\
+%{march=pentiumpro|march=i686:-D__pentiumpro -D__pentiumpro__ \
+  %{!mcpu*:-D__tune_pentiumpro__ }}\
+%{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
+%{m386|mcpu=i386:-D__tune_i386__ }\
+%{m486|mcpu=i486:-D__tune_i486__ }\
+%{mpentium|mcpu=pentium|mcpu=i586:-D__tune_pentium__ }\
+%{mpentiumpro|mcpu=pentiumpro|mcpu=i686:-D__tune_pentiumpro__ }\
+%{mcpu=k6:-D__tune_k6__ }\
+%{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 #endif
 
 #ifndef CC1_SPEC
@@ -357,9 +358,6 @@ extern int ix86_arch;
 #endif
 
 #define EXTRA_SPECS							\
-  { "cpp_486", CPP_486_SPEC},						\
-  { "cpp_586", CPP_586_SPEC},						\
-  { "cpp_686", CPP_686_SPEC},						\
   { "cpp_cpu_default",	CPP_CPU_DEFAULT_SPEC },				\
   { "cpp_cpu",	CPP_CPU_SPEC },						\
   { "cc1_cpu",  CC1_CPU_SPEC },						\

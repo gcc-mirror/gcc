@@ -306,9 +306,6 @@ override_options ()
       {"pentium", PROCESSOR_PENTIUM},
       {"i686", PROCESSOR_PENTIUMPRO},
       {"pentiumpro", PROCESSOR_PENTIUMPRO},
-      {"ppro", PROCESSOR_PENTIUMPRO},
-      {"pentium2", PROCESSOR_PENTIUMPRO},
-      {"p2", PROCESSOR_PENTIUMPRO},
       {"k6", PROCESSOR_K6},
     };
 
@@ -318,7 +315,7 @@ override_options ()
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  ix86_arch = PROCESSOR_PENTIUM;
+  ix86_arch = PROCESSOR_I386;
   ix86_cpu = (enum processor_type) TARGET_CPU_DEFAULT;
 
   if (ix86_arch_string != 0)

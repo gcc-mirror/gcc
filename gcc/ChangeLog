@@ -1,3 +1,14 @@
+Thu Sep  9 16:42:06 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386.c (override_options): Remove ppro, pentium2, and p2 as aliases.
+	Default ix86_arch to PROCESSOR_I386.
+	* i386.h (CC1_CPU_SPEC): Don't add -march=foo.  Remove -mno-foo.
+	(CPP_486_SPEC, CPP_586_SPEC, CPP_686_SPEC): Delete.
+	(CPP_CPU_DEFAULT_SPEC): Define to __tune_foo__.
+	(CC1_CPU_SPEC): Make -march=foo define __foo__, and provide 
+	__tune_foo__ if no -mcpu.  Make -mcpu=bar define __tune_bar__.
+	(EXTRA_SPECS): Remove deleted specs.
+
 Thu Sep  9 16:03:06 1999  Richard Henderson  <rth@cygnus.com>
 
 	* function.c (assign_stack_local_1): Allocate from
