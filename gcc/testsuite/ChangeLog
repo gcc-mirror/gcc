@@ -1,3 +1,8 @@
+2003-09-28  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.dg/template/friend19.C: Fix typo.
+	* g++.old-deja/g++.other/crash31.C: Adjust expected error.
+
 2003-09-28  Richard Sandiford  <rsandifo@redhat.com>
 
 	* gcc.c-torture/execute/20030928-1.c: New test.

@@ -2,7 +2,7 @@
 
 // Origin: Benjamin Li <benxbli@yahoo.com>
 
-// PR c++/11030: Template substition of friend class that is
+// PR c++/11030: Template substitution of friend class that is
 // a specialization.
 
 template <int S>
