@@ -1133,12 +1133,20 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 	      continue;
 	    }
 
-	  if (*p == '%')
-	    p++;
-
 	  /* If this alternative is only relevant when this operand
 	     matches a previous operand, we do different things depending
-	     on whether this operand is a pseudo-reg or not.  */
+	     on whether this operand is a pseudo-reg or not.  We must process
+	     any modifiers for the operand before we can make this test.  */
+
+	  while (*p == '%' || *p == '=' || *p == '+' || *p == '&')
+	    {
+	      if (*p == '=')
+		op_types[i] = OP_WRITE;
+	      else if (*p == '+')
+		op_types[i] = OP_READ_WRITE;
+
+	      p++;
+	    }
 
 	  if (p[0] >= '0' && p[0] <= '0' + i && (p[1] == ',' || p[1] == 0))
 	    {
@@ -1200,30 +1208,20 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		}
 	    }
 
-	  /* Scan all the constraint letters.  See if the operand matches
-	     any of the constraints.  Collect the valid register classes
-	     and see if this operand accepts memory.  */
+	  /* Scan all the remaining constraint letters.  See if the operand
+	     matches any of the constraints.  Collect the valid register
+	     classes and see if this operand accepts memory.  */
 
 	  classes[i] = NO_REGS;
 	  while (*p && (c = *p++) != ',')
 	    switch (c)
 	      {
-	      case '=':
-		op_types[i] = OP_WRITE;
-		break;
-
-	      case '+':
-		op_types[i] = OP_READ_WRITE;
-		break;
-
 	      case '*':
 		/* Ignore the next letter for this pass.  */
 		p++;
 		break;
 
-	      case '%':
 	      case '?':  case '!':  case '#':
-	      case '&':
 	      case '0':  case '1':  case '2':  case '3':  case '4':
 	      case 'p':
 		break;
@@ -1464,7 +1462,8 @@ record_reg_classes (n_alts, n_ops, ops, modes, constraints, insn)
 		    {
 		      for (nr = 0; nr < HARD_REGNO_NREGS(regno, mode); nr++)
 			{
-			  if (!TEST_HARD_REG_BIT (reg_class_contents[class], regno + nr))
+			  if (! TEST_HARD_REG_BIT (reg_class_contents[class],
+						   regno + nr))
 			    break;
 			}
 
