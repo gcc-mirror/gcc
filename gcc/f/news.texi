@@ -10,7 +10,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995,1996,1997,1998,1999,2000,2001,2002,2003
 
-@set last-update-news 2003-03-24
+@set last-update-news 2003-04-11
 
 @ifset DOC-NEWS
 @include root.texi
@@ -157,6 +157,8 @@ The following information was last updated on @value{last-update-news}:
 @item
 Problem Reports fixed (in chronological order of submission):
 @table @code
+@item 1832
+-list directed i/o overflow hangs, -fbounds-check doesn't detect
 @item 3924
 g77 generates code which is rejected by GAS if COFF debugging info is
 requested
@@ -184,6 +186,8 @@ Incorrect output with 0-based array of characters
 Double complex zero ** double precision number -> NaN instead of zero
 @item 9038
 -ffixed-line-length-none -x f77-cpp-input gives: Warning: unknown register name line-length-none
+@item 9263
+ICE caused by invalid PARAMETER in implied DO loop
 @item 10197
 Direct access files not unformatted by default
 @end table

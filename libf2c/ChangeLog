@@ -1,3 +1,9 @@
+2003-04-11  Bud Davis <bdavis9659@comcast.net>
+
+	PR Fortran/1832
+	* libf2c/libI77/iio.c (z_putc): Check for overflowing length
+	of output string.
+
 2003-03-24  Bud Davis  <bdavis9659@comcast.net>
 
 	PR fortran/10197
