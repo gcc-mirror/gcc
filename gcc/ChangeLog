@@ -1,5 +1,10 @@
 2003-07-17  Roger Sayle  <roger@eyesopen.com>
 
+	* cse.c (fold_rtx): Use swap_commutative_operands_p to determine
+	whether to reorder the operands of a commutative binary operator.
+
+2003-07-17  Roger Sayle  <roger@eyesopen.com>
+
 	* fold-const.c (const_binop): Avoid performing the FP operation at
 	compile-time, if either operand is NaN and we honor signaling NaNs,
 	or if we're dividing by zero and either flag_trapping_math is set
