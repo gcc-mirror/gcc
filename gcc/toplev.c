@@ -2348,6 +2348,7 @@ rest_of_compilation (decl)
   int failure = 0;
   int rebuild_label_notes_after_reload;
   int register_life_up_to_date;
+  int cleanup_crossjump;
 
   timevar_push (TV_REST_OF_COMPILATION);
 
@@ -3268,9 +3269,21 @@ rest_of_compilation (decl)
      scheduling to operate in the epilogue.  */
   thread_prologue_and_epilogue_insns (insns);
 
+  /* Cross-jumping is O(N^3) on the number of edges, thus trying to
+     perform cross-jumping on flow graphs which have a high connectivity
+     will take a long time.  This is similar to the test to disable GCSE.  */
+  cleanup_crossjump = CLEANUP_CROSSJUMP;
+  if (n_basic_blocks > 1000 && n_edges / n_basic_blocks >= 20)
+    {
+      if (optimize && warn_disabled_optimization)
+	warning ("crossjump disabled: %d > 1000 basic blocks and %d >= 20 edges/basic block",
+                 n_basic_blocks, n_edges / n_basic_blocks);
+      cleanup_crossjump = 0;
+    }
+
   if (optimize)
     {
-      cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_CROSSJUMP);
+      cleanup_cfg (CLEANUP_EXPENSIVE | cleanup_crossjump);
       life_analysis (insns, rtl_dump_file, PROP_FINAL);
 
       /* This is kind of a heuristic.  We need to run combine_stack_adjustments
@@ -3376,7 +3389,7 @@ rest_of_compilation (decl)
       /* Last attempt to optimize CFG, as life analyzis possibly removed
 	 some instructions.  */
       cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_POST_REGSTACK
-		   | CLEANUP_CROSSJUMP);
+		   | cleanup_crossjump);
       if (flag_reorder_blocks)
 	{
 	  reorder_basic_blocks ();
