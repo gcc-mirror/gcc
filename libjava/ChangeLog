@@ -1,3 +1,33 @@
+2000-04-10  Warren Levy  <warrenl@cygnus.com>
+
+	* java/io/ObjectStreamException.java: New file.
+	* java/io/OptionalDataException.java: New file.
+	* java/io/StreamCorruptedException.java: New file.
+	* java/math/BigDecimal.java: New file.
+	* java/sql/CallableStatement.java: New file.
+	* java/sql/Connection.java: New file.
+	* java/sql/DataTruncation.java: New file.
+	* java/sql/DatabaseMetaData.java: New file.
+	* java/sql/Date.java: New file.
+	* java/sql/Driver.java: New file.
+	* java/sql/DriverManager.java: New file.
+	* java/sql/DriverPropertyInfo.java: New file.
+	* java/sql/PreparedStatement.java: New file.
+	* java/sql/ResultSet.java: New file.
+	* java/sql/ResultSetMetaData.java: New file.
+	* java/sql/SQLException.java: New file.
+	* java/sql/SQLWarning.java: New file.
+	* java/sql/Statement.java: New file.
+	* java/sql/Time.java: New file.
+	* java/sql/Timestamp.java: New file.
+	* java/sql/Types.java: New file.
+	* Makefile.am: Added above new files.
+	* Makefile.in: Rebuilt.
+
+	* mauve-libgcj: Turned on java.math, java.sql and java.security tests.
+	* java/net/MulticastSocket.java (MulticastSocket): Pass values a la
+	DatagramSocket constructor instead of null.
+
 2000-04-08  Anthony Green  <green@cygnus.com>
 
 	* include/posix-threads.h (_Jv_MutexUnlock): Replace
