@@ -1,3 +1,16 @@
+2001-01-20  Marek Michalkiewicz  <marekm@linux.org.pl>
+
+	* config/avr/avr.h (INIT_TARGET_OPTABS): Remove most of it, was
+	the same as the default library function names.
+	* config/avr/avr.md: Document special characters after '%'.
+	(mulqi3, mulhi3, mulsi3): Call libgcc.S functions ourselves,
+	knowing which of the call-used registers are really clobbered.
+	(divmodqi4, udivmodqi4, divmodhi4, udivmodhi4, divmodsi4, udivmodsi4):
+	New.  Both quotient and remainder from one libgcc.S call.
+	* config/avr/libgcc.S: Optimize mul/divmod for the new insns above,
+	clobber as few registers as possible.
+	* config/avr/t-avr (LIB1ASMFUNCS): Adjust for the above changes.
+
 2001-01-20  Neil Booth  <neil@daikokuya.demon.co.uk>
 
         * cppmacro.c (funlike_invocation_p): Don't move back up to the

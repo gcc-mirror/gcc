@@ -3228,50 +3228,6 @@ valid_machine_decl_attribute (DECL, ATTRIBUTES, IDENTIFIER, ARGS)
 
 #define INIT_TARGET_OPTABS				\
 {							\
-  smul_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__mulqi3");		\
-							\
-  sdiv_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__divqi3");		\
-							\
-  smod_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__modqi3");		\
-							\
-  udiv_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__udivqi3");		\
-							\
-  umod_optab->handlers[(int) QImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__umodqi3");		\
-							\
-  smul_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__mulhi3");		\
-							\
-  sdiv_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__divhi3");		\
-							\
-  smod_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__modhi3");		\
-							\
-  udiv_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__udivhi3");		\
-							\
-  umod_optab->handlers[(int) HImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__umodhi3");		\
-							\
-  smul_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__mulsi3");		\
-							\
-  sdiv_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__divsi3");		\
-							\
-  smod_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__modsi3");		\
-							\
-  udiv_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__udivsi3");		\
-							\
-  umod_optab->handlers[(int) SImode].libfunc		\
-    = gen_rtx (SYMBOL_REF, Pmode, "__umodsi3");		\
   avr_init_once ();					\
 }
 
