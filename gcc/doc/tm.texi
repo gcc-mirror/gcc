@@ -6586,6 +6586,7 @@ You may wish to use @code{ASM_OUTPUT_SIZE_DIRECTIVE} and/or
 This target hook is a function to output to the stdio stream
 @var{stream} some commands that will make the label @var{name} global;
 that is, available for reference from other files.
+@end deftypefn
 
 The default implementation relies on a proper definition of
 @code{GLOBAL_ASM_OP}.

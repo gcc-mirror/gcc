@@ -1,5 +1,7 @@
 2002-08-20  Geoffrey Keating  <geoffk@redhat.com>
 
+	* doc/tm.texi (Label Output): Add missing '@end deftypefn'.
+
 	* unroll.c (biv_total_increment): Don't try to compute the total
 	increment for FP BIVs.
 
