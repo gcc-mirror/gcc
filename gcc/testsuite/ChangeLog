@@ -1,3 +1,9 @@
+2005-03-09  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.dg/builtins-10.c: Reactivate disabled test.
+	* gcc.dg/torture/builtin-power-1.c: Likewise.  Also add tests for
+	new cbrt transformations.
+
 2005-03-09  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/20208

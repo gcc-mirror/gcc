@@ -22,6 +22,7 @@
   extern float FN##f(float, float); \
   extern long double FN##l(long double, long double);
 
+PROTOTYPE(fabs)
 PROTOTYPE(sqrt)
 PROTOTYPE(cbrt)
 PROTOTYPE2(pow)
@@ -32,39 +33,45 @@ void test(double d1, double d2, double d3,
 {
   /* Test N1root(N2root(x)) -> pow(x,1/(N1*N2)).  */
   /* E.g. sqrt(cbrt(x)) -> pow(x,1/6).  */
-#define ROOT_ROOT(FN1,N1,FN2,N2) \
+  /* The `ABS' argument is `fabs' when the transformation only works
+     for nonnegative arguments.  Otherwise it's blank.  */
+#define ROOT_ROOT(FN1,N1,FN2,N2,ABS) \
  extern void link_failure_##FN1##_##FN2(void); \
- if (FN1(FN2(d1)) != pow(d1,1.0/(N1*N2)) \
-     || C99CODE (FN1##f(FN2##f(f1)) != powf(f1,1.0F/(N1*N2))) \
-     || C99CODE (FN1##l(FN2##l(ld1)) != powl(ld1,1.0L/(N1*N2)))) \
+ if (FN1(FN2(ABS(d1))) != pow(ABS(d1),1.0/(N1*N2)) \
+     || C99CODE (FN1##f(FN2##f(ABS(f1))) != powf(ABS(f1),1.0F/(N1*N2))) \
+     || C99CODE (FN1##l(FN2##l(ABS(ld1))) != powl(ABS(ld1),1.0L/(N1*N2)))) \
     link_failure_##FN1##_##FN2()
 
-  ROOT_ROOT(sqrt,2,sqrt,2);
-  ROOT_ROOT(sqrt,2,cbrt,3);
-  ROOT_ROOT(cbrt,3,sqrt,2);
-  /*ROOT_ROOT(cbrt,3,cbrt,3); Intentionally not implemented.  */
+  ROOT_ROOT(sqrt,2,sqrt,2,);
+  ROOT_ROOT(sqrt,2,cbrt,3,);
+  ROOT_ROOT(cbrt,3,sqrt,2,);
+  ROOT_ROOT(cbrt,3,cbrt,3,fabs);
 
   /* Test pow(Nroot(x),y) -> pow(x,y/N).  */
-#define POW_ROOT(FN,N) \
+  /* The `ABS' argument is `fabs' when the transformation only works
+     for nonnegative arguments.  Otherwise it's blank.  */
+#define POW_ROOT(FN,N,ABS) \
  extern void link_failure_pow_##FN(void); \
- if (pow(FN(d1), d2) != pow(d1,d2/N) \
-     || powf(FN##f(f1),f2) != powf(f1,f2/N) \
-     || powl(FN##l(ld1),ld2) != powl(ld1,ld2/N)) \
+ if (pow(FN(ABS(d1)), d2) != pow(ABS(d1),d2/N) \
+     || powf(FN##f(ABS(f1)),f2) != powf(ABS(f1),f2/N) \
+     || powl(FN##l(ABS(ld1)),ld2) != powl(ABS(ld1),ld2/N)) \
     link_failure_pow_##FN()
 
-  POW_ROOT(sqrt,2);
-  /*POW_ROOT(cbrt,3); Intentionally not implemented.  */
+  POW_ROOT(sqrt,2,);
+  POW_ROOT(cbrt,3,fabs);
 
   /* Test Nroot(pow(x,y)) -> pow(x,y/N).  */
-#define ROOT_POW(FN,N) \
+  /* The `ABS' argument is `fabs' when the transformation only works
+     for nonnegative arguments.  Otherwise it's blank.  */
+#define ROOT_POW(FN,N,ABS) \
  extern void link_failure_##FN##_pow(void); \
- if (FN(pow(d1, d2)) != pow(d1,d2/N) \
-     || FN##f(powf(f1,f2)) != powf(f1,f2/N) \
-     || FN##l(powl(ld1,ld2)) != powl(ld1,ld2/N)) \
+ if (FN(pow(ABS(d1), d2)) != pow(ABS(d1),d2/N) \
+     || FN##f(powf(ABS(f1),f2)) != powf(ABS(f1),f2/N) \
+     || FN##l(powl(ABS(ld1),ld2)) != powl(ABS(ld1),ld2/N)) \
     link_failure_##FN##_pow()
 
-  /*ROOT_POW(sqrt,2); Invalid. */
-  /*ROOT_POW(cbrt,3); Intentionally not implemented.  */
+  ROOT_POW(sqrt,2,fabs);
+  ROOT_POW(cbrt,3,fabs);
 
   /* Test pow(pow(x,y),z) -> pow(x,y*z).  */
 #define POW_POW \
