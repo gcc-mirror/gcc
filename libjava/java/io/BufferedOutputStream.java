@@ -42,6 +42,7 @@ public class BufferedOutputStream extends FilterOutputStream
 
   public synchronized void write (int b) throws IOException
   {
+    // Flush output on overflow though JDK (1.2) doc may infer to flush on fill.
     if (count < buf.length)
       buf[count++] = (byte) b;
     else
@@ -55,8 +56,10 @@ public class BufferedOutputStream extends FilterOutputStream
   public synchronized void write (byte[] b, int off, int len)
     throws IOException, NullPointerException, IndexOutOfBoundsException
   {
+    // Flush output on overflow though JDK (1.2) doc may infer to flush on fill.
+
     // If LEN < 0 then the downstream write will fail for us.
-    if (len >= 0 && count + len < buf.length)
+    if (len >= 0 && count + len <= buf.length)
       {
 	System.arraycopy(b, off, buf, count, len);
 	count += len;

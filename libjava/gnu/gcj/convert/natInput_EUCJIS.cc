@@ -17,12 +17,12 @@ extern unsigned short JIS0212_to_Unicode[76][94];
 
 jint
 gnu::gcj::convert::Input_EUCJIS::read(jcharArray outbuffer, jint outpos,
-				      jint outlength)
+				      jint count)
 {
   jint start_outpos = outpos;
   for (;;)
     {
-      if (outpos >= outlength)
+      if (outpos - start_outpos >= count)
 	break;
       if (inpos >= inlength)
 	break;

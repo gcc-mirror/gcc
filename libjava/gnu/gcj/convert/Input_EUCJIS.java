@@ -21,5 +21,5 @@ public class Input_EUCJIS extends BytesToUnicode
   int codeset = 0;
   int first_byte;
 
-  public native int read (char[] outbuffer, int outpos, int outlength);
+  public native int read (char[] outbuffer, int outpos, int count);
 }

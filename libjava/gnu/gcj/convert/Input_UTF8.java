@@ -11,7 +11,7 @@ package gnu.gcj.convert;
 /**
  * Convert UTF8 to Unicode.
  * @author Per Bothner <bothner@cygnus.com>
- * @date Match 1999.
+ * @date March 1999.
  */
 
 public class Input_UTF8 extends BytesToUnicode
@@ -22,12 +22,12 @@ public class Input_UTF8 extends BytesToUnicode
   int partial_bytes_expected = 0;
   //int suggogate_second = -1;
 
-  public int read (char[] outbuffer, int outpos, int outlength)
+  public int read (char[] outbuffer, int outpos, int count)
   {
     int origpos = outpos;
     for (;;)
       {
-	if (outpos >= outlength)
+	if (outpos - origpos >= count)
 	  break;
 	if (inpos >= inlength)
 	  break;

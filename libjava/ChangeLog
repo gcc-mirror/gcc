@@ -1,3 +1,23 @@
+1999-07-01  Warren Levy  <warrenl@cygnus.com>
+
+	* gnu/gcj/convert/BytesToUnicode.java (read): Changed outlength
+	to count and revised comments to match.
+	* gnu/gcj/convert/Input_EUCJIS.java (read): Same as Input_8859_1.java.
+	* gnu/gcj/convert/Input_JavaSrc.java (read): ditto.
+	* gnu/gcj/convert/Input_SJIS.java (read): ditto.
+	* gnu/gcj/convert/Input_UTF8.java (read): ditto.
+	* gnu/gcj/convert/natInput_EUCJIS.cc (read): ditto.
+	* gnu/gcj/convert/natInput_SJIS.cc (read): ditto.
+
+1999-07-01  John-Marc Chandonia  <jmc@cmpharm.ucsf.edu>
+
+	* gnu/gcj/convert/Input_8859_1.java (read): Use 3rd parameter
+	properly as count rather than outlength.
+	* java/io/BufferedOutputStream.java (write(byte[],int,int): Flush
+	output on overflow rather than buffer fill.
+	* java/io/BufferedReader.java (fill): Don't clear out the buffer
+	if markPos is 0 and there is still room in the buffer.
+
 1999-07-01  Andrew Haley  <aph@cygnus.com>
 
 	* include/i386-signal.h: Replace sigaction () with __sigaction ().
