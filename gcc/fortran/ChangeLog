@@ -1,3 +1,9 @@
+2004-07-11  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/15455
+	* module.c (gfc_dump_module, gfc_use_module): Print locus
+	when opening of module file fails.
+
 2004-07-11  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* f95-lang.c (set_block): Remove.

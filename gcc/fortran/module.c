@@ -3415,7 +3415,7 @@ gfc_dump_module (const char *name, int dump_flag)
 
   module_fp = fopen (filename, "w");
   if (module_fp == NULL)
-    gfc_fatal_error ("Can't open module file '%s' for writing: %s",
+    gfc_fatal_error ("Can't open module file '%s' for writing at %C: %s",
 		     filename, strerror (errno));
 
   now = time (NULL);
@@ -3459,7 +3459,7 @@ gfc_use_module (void)
 
   module_fp = gfc_open_included_file (filename);
   if (module_fp == NULL)
-    gfc_fatal_error ("Can't open module file '%s' for reading: %s",
+    gfc_fatal_error ("Can't open module file '%s' for reading at %C: %s",
 		     filename, strerror (errno));
 
   iomode = IO_INPUT;
