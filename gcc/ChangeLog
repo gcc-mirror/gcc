@@ -1,3 +1,8 @@
+Sun Sep 21 17:45:45 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* loop.c (fix_bct_param): Delete unused function.
+	(check_bct_param): Likewise.
+
 Sat Sep 20 16:22:06 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* frame.c (__deregister_frame): Check properly for initialized object.

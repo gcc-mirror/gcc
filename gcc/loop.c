@@ -109,11 +109,6 @@ rtx *loop_increment;
 rtx *loop_comparison_value;
 rtx *loop_start_value;
 enum rtx_code *loop_comparison_code;
-
-/* for debugging: selects sub-range of loops for which the bct optimization
-   is invoked.  The numbering is per compilation-unit.  */
-int dbg_bct_min = -1;
-int dbg_bct_max = -1;
 #endif  /* HAIFA */
 
 
@@ -340,10 +335,6 @@ int indirect_jump_in_function = 0;
 static int indirect_jump_in_function_p ();
 
 int loop_number ();
-
-/* Debugging functions.  */
-int fix_bct_param ();
-static int check_bct_param ();
 #endif  /* HAIFA */
 
 
@@ -7633,32 +7624,6 @@ indirect_jump_in_function_p (start)
     }
   }
   return is_indirect_jump;
-}
-
-/* debugging: fix_bct_param () is called from toplev.c upon detection
-   of the -fbct-***-N options.  */
-int
-fix_bct_param (param, val)
-     char *param, *val;
-{
-  if ( !strcmp (param, "max") )
-    dbg_bct_max = atoi (val);
-  else if ( !strcmp (param, "min") )
-    dbg_bct_min = atoi (val);
-}
-
-/* debugging: return 1 if the loop should be instrumented,
-   according to bct-min/max.  */
-static int
-check_bct_param ()
-{
-  static int dbg_bct_num = 0;
-
-  dbg_bct_num++;
-  if (dbg_bct_num > dbg_bct_min || dbg_bct_min == -1)
-    if (dbg_bct_num <= dbg_bct_max || dbg_bct_max == -1)
-      return 1;
-  return 0;
 }
 #endif	/* HAIFA */
 /* END CYGNUS LOCAL haifa */
