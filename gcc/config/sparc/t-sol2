@@ -11,14 +11,14 @@ INSTALL_TARGET = install-cross
 LIBGCC1 = libgcc1.null
 
 # gmon build rule:
-gmon.o:	$(srcdir)/config/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
+gmon.o:	$(srcdir)/config/sparc/gmon-sol2.c $(GCC_PASSES) $(CONFIG_H)
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) \
-		-c $(srcdir)/config/gmon-sol2.c -o gmon.o
+		-c $(srcdir)/config/sparc/gmon-sol2.c -o gmon.o
 
 # Assemble startup files.
-crt1.o: $(srcdir)/config/sol2-c1.asm
-	$(AS) -o crt1.o $(srcdir)/config/sol2-c1.asm
-crti.o: $(srcdir)/config/sol2-ci.asm
-	$(AS) -o crti.o $(srcdir)/config/sol2-ci.asm
-crtn.o: $(srcdir)/config/sol2-cn.asm
-	$(AS) -o crtn.o $(srcdir)/config/sol2-cn.asm
+crt1.o: $(srcdir)/config/sparc/sol2-c1.asm
+	$(AS) -o crt1.o $(srcdir)/config/sparc/sol2-c1.asm
+crti.o: $(srcdir)/config/sparc/sol2-ci.asm
+	$(AS) -o crti.o $(srcdir)/config/sparc/sol2-ci.asm
+crtn.o: $(srcdir)/config/sparc/sol2-cn.asm
+	$(AS) -o crtn.o $(srcdir)/config/sparc/sol2-cn.asm

@@ -46,7 +46,7 @@ static char sccsid[] = "@(#)gmon.c	5.3 (Berkeley) 5/22/91";
 #endif
 
 #if 0
-#include "gmon.h"
+#include "sparc/gmon.h"
 #else
 struct phdr {
   char *lpc;
