@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Intel 80386 running GO32.
-   Copyright (C) 1988, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1996, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -26,3 +26,4 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use semicolons to separate elements of a path.  */
 #define PATH_SEPARATOR ';'
+#define EXECUTABLE_SUFFIX ".exe"
