@@ -1905,15 +1905,24 @@ catch_clause_parameter:
 		     formal_parameter (CCBP). The formal parameter is
 		     declared initialized by the appropriate function
 		     call */
-		  tree ccpb = enter_block ();
-		  tree init = build_assignment
-		    (ASSIGN_TK, $2.location, TREE_PURPOSE ($3),
-		     build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
-		  declare_local_variables (0, TREE_VALUE ($3),
-					   build_tree_list (TREE_PURPOSE ($3),
-							    init));
-		  $$ = build1 (CATCH_EXPR, NULL_TREE, ccpb);
-		  EXPR_WFL_LINECOL ($$) = $1.location;
+                  tree ccpb;
+                  tree init;
+                  if ($3)
+                    {
+                      cppb = enter_block ();
+                      init = build_assignment
+                        (ASSIGN_TK, $2.location, TREE_PURPOSE ($3),
+                         build (JAVA_EXC_OBJ_EXPR, ptr_type_node));
+                      declare_local_variables (0, TREE_VALUE ($3),
+                                               build_tree_list 
+					       (TREE_PURPOSE ($3), init));
+                      $$ = build1 (CATCH_EXPR, NULL_TREE, ccpb);
+                      EXPR_WFL_LINECOL ($$) = $1.location;
+                    }
+                  else
+                    {
+                      $$ = error_mark_node;
+                    }
 		}
 |	CATCH_TK error
 		{yyerror ("'(' expected"); RECOVER; $$ = NULL_TREE;}

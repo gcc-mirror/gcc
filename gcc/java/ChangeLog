@@ -1,3 +1,9 @@
+2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR java/13404
+	* parse.y: (catch_clause_parameter): Return early if $3, aka 
+	formal_parameter, is null.
+
 2003-12-20  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* class.c: Remove uses of "register" specifier in
