@@ -1,3 +1,9 @@
+2003-01-31  Tom Tromey  <tromey@redhat.com>
+
+	* aclocal.m4, configure, include/config.h.in: Rebuilt.
+	* acinclude.m4 (CHECK_FOR_BROKEN_MINGW_LD): Moved from
+	aclocal.m4.
+
 2003-01-31  Julian Dolby  <dolby@us.ibm.com>
 
 	* java/util/Properties.java (load): Ignore backslash before EOF.
