@@ -91,7 +91,7 @@ public abstract class BytesToUnicode
    * bytes start at inbuffer[inpos], and end at inbuffer[inlength-1].
    * @param outbuffer buffer for the converted character
    * @param outpos position in buffer to start putting converted characters
-   * @param outlength the maximum number of characters to read
+   * @param outlength the maximum number of characters to convert
    * @return number of chars placed in outbuffer.
    * Also, this.inpos is incremented by the number of bytes consumed.
    *
