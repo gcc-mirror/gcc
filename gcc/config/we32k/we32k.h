@@ -60,7 +60,7 @@ extern int target_flags;
    since there are no machine instructions for them.  */
 #define WORDS_BIG_ENDIAN 1
 
-/* number of bits in an addressible storage unit */
+/* number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
