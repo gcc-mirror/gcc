@@ -1,3 +1,20 @@
+2000-06-12  David Edelsohn  <edelsohn@gnu.org>
+
+	* aix41.h (SUBTARGET_SWITCHES): Delete threads.
+	(CPP_SPEC): Change mthreads to pthread.
+	(LIB_SPEC): Likewise.
+	(STARTFILE_SPEC): Likewise.
+	* aix43.h (SUBTARGET_SWITCHES): Delete thread.
+	(CPP_SPEC): Change mthreads to pthread.
+	(LIB_SPEC): Likewise.
+	(STARTFILE_SPEC): Likewise.
+	* rs6000-protos.h (reg_or_arith_cint_operand): New.
+	* rs6000.c (reg_or_arith_cint_operand): New.
+	(num_insns_constant_wide): Decorate unsigned constant.
+	* rs6000.h (PREDICATE_CODES): Add reg_or_arith_cint_operand.
+	* rs6000.md (addsi3): Use new predicate.
+	(subsi3, adddi3, subdi3): Likewise.
+
 2000-06-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* c-common.c (lang_get_alias_set): Fix typo.

@@ -27,9 +27,7 @@ Boston, MA 02111-1307, USA.  */
 
 #undef  SUBSUBTARGET_SWITCHES
 #define SUBSUBTARGET_SWITCHES		\
-  {"threads",		0,						\
-   "Use the thread library and reentrant C library" },			\
-  {"pe",		0,						\
+  {"pe",		0,					\
    "Support message passing with the Parallel Environment" },
 
 #undef ASM_SPEC
@@ -46,7 +44,7 @@ Boston, MA 02111-1307, USA.  */
 #define CPP_SPEC "%{posix: -D_POSIX_SOURCE}\
    %{ansi: -D_ANSI_C_SOURCE}\
    %{mpe: -I/usr/lpp/ppe.poe/include}\
-   %{mthreads: -D_THREAD_SAFE}\
+   %{pthread: -D_THREAD_SAFE}\
    %(cpp_cpu)"
 
 #undef	CPP_DEFAULT_SPEC
@@ -74,8 +72,8 @@ Boston, MA 02111-1307, USA.  */
 #define LIB_SPEC "%{pg:-L/lib/profiled -L/usr/lib/profiled}\
    %{p:-L/lib/profiled -L/usr/lib/profiled} %{!shared:%{g*:-lg}}\
    %{mpe:-L/usr/lpp/ppe.poe/lib -lmpi -lvtd}\
-   %{mthreads: -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
-   %{!mthreads: -lc}"
+   %{pthread: -L/usr/lib/threads -lpthreads -lc_r /usr/lib/libc.a}\
+   %{!pthread: -lc}"
 
 #undef LINK_SPEC
 #define LINK_SPEC "-bpT:0x10000000 -bpD:0x20000000 %{!r:-btextro} -bnodelcsect\
@@ -88,8 +86,8 @@ Boston, MA 02111-1307, USA.  */
          %{!pg:%{p:/usr/lpp/ppe.poe/lib/mcrt0.o}\
                %{!p:/usr/lpp/ppe.poe/lib/crt0.o}}}\
    %{!mpe:\
-     %{mthreads:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
-     %{!mthreads:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
+     %{pthread:%{pg:gcrt0_r%O%s}%{!pg:%{p:mcrt0_r%O%s}%{!p:crt0_r%O%s}}}\
+     %{!pthread:%{pg:gcrt0%O%s}%{!pg:%{p:mcrt0%O%s}%{!p:crt0%O%s}}}}}"
 
 /* AIX 4 uses PowerPC nop (ori 0,0,0) instruction as call glue for PowerPC
    and "cror 31,31,31" for POWER architecture.  */

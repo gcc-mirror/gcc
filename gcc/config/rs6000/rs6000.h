@@ -2713,6 +2713,7 @@ do {									\
   {"reg_or_neg_short_operand", {SUBREG, REG, CONST_INT}},	\
   {"reg_or_u_short_operand", {SUBREG, REG, CONST_INT}}, 	\
   {"reg_or_cint_operand", {SUBREG, REG, CONST_INT}}, 		\
+  {"reg_or_arith_cint_operand", {SUBREG, REG, CONST_INT}}, 	\
   {"reg_or_logical_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},		\
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},		\
