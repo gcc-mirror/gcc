@@ -1,12 +1,11 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++">
-   <meta name="DESCRIPTION" content="README for the GNU libstdc++ effort.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++" />
+   <meta name="DESCRIPTION" content="README for the GNU libstdc++ effort." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 Installation Instructions</title>
-<link rel="StyleSheet" href="lib3styles.css">
+<link rel="StyleSheet" href="lib3styles.css" />
 </head>
 <body>
 
@@ -18,21 +17,22 @@
 </p>
 
 <p>To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
+</p>
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h2>Contents</h2>
 <ul>
-   <li><a href="#prereqs">Tools you will need beforehand</a>
-   <li><a href="#srcsetup">Setting up the source directories</a>
-   <li><a href="#config">Configuring</a>
-   <li><a href="#install">Building and installing the library</a>
-   <li><a href="#postinstall">Post-installation</a>
-   <li><a href="#usage">Using the library</a>
+   <li><a href="#prereqs">Tools you will need beforehand</a></li>
+   <li><a href="#srcsetup">Setting up the source directories</a></li>
+   <li><a href="#config">Configuring</a></li>
+   <li><a href="#install">Building and installing the library</a></li>
+   <li><a href="#postinstall">Post-installation</a></li>
+   <li><a href="#usage">Using the library</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -88,8 +88,8 @@
       features if the underlying support is present.
    </p>
 
-    <p>Finally, a few system-specific requirements: </p>
-    <dl>
+   <p>Finally, a few system-specific requirements: </p>
+   <dl>
       <dt> linux </dt>
 
       <dd>If you are using gcc 3.1 or later on linux, and are using
@@ -119,9 +119,9 @@
         </li>
       </ul>
       </dd>
-    </dl>
+   </dl>
 
-<hr>
+<hr />
 
 <h2><a name="srcsetup">Setting up the source directories</a></h2>
    <p>The following definitions will be used throughout the rest of this
@@ -131,15 +131,20 @@
          <li><em>gccsrcdir</em>:  The directory holding the source of the
                  compiler.  It should have several subdirectories like
                  <em>gccsrcdir</em>/libiberty and <em>gccsrcdir</em>/gcc.
+         </li>
          <li><em>libsrcdir</em>:  The directory holding the source of the
                  C++ library.
+         </li>
          <li><em>gccbuilddir</em>:  The build directory for the compiler
                  in <em>gccsrcdir</em>.  GCC requires that it be built in
                  a different directory than its sources.
+         </li>
          <li><em>libbuilddir</em>:  The build directory for libstdc++.
+         </li>
          <li><em>destdir</em>:  The eventual installation directory for
                  the compiler/libraries, set with the --prefix option to
                  the configure script.
+         </li>
       </ul>
       <p> Note: </p>
       <ol>
@@ -147,10 +152,12 @@
              library that comes with the compiler, so <em>libsrcdir</em>
              and <em>libbuilddir</em> must be contained under
              <em>gccsrcdir</em> and <em>gccbuilddir</em>, respectively.
+         </li>
          <li>The source, build, and installation directories should
              not be parents of one another; i.e., these should all be
              separate directories. Please don't build out of the
              source directory.
+         </li>
       </ol>
 
    <p>Check out or download the GCC sources: the resulting source directory
@@ -175,7 +182,7 @@
    mv <em>libsrcdir</em> libstdc++-v3</pre>
 
 
-<hr>
+<hr />
 <h2><a name="config">Configuring</a></h2>
    <p>If you have never done this before, you should read the basic
       <a href="http://gcc.gnu.org/install/">GCC Installation
@@ -196,7 +203,7 @@
    <em>gccsrcdir</em>/configure --prefix=<em>destdir</em> --other-opts...</pre>
 
 
-<hr>
+<hr />
 <h2><a name="install">Building and installing the library</a></h2>
    <p>Now you have a few options:</p>
    <h3>[re]building <em>everything</em></h3>
@@ -236,7 +243,7 @@
    make install-target-libstdc++-v3</pre>
 
 
-<hr>
+<hr />
 <h2><a name="postinstall">Post-installation</a></h2>
    <p>Installation will create the <em>destdir</em> directory and
       populate it with subdirectories:
@@ -266,7 +273,7 @@
    </p>
 
 
-<hr>
+<hr />
 <h2><a name="usage">Using the library</a></h2>
    <h3>Find the new library at runtime (shared linking only)</h3>
        <p>If you only built a static library (libstdc++.a), or if you
@@ -279,23 +286,25 @@
           the usual ones are printed to the screen during installation.
           They include:
        </p>
-          <ul>
+       <ul>
           <li>At runtime set LD_LIBRARY_PATH in your environment correctly,
               so that the shared library for libstdc++ can be found and
               loaded.  Be certain that you understand all of the other
               implications and behavior of LD_LIBRARY_PATH first (few
               people do, and they get into trouble).
+          </li>
           <li>Compile the path to find the library at runtime into the
               program.  This can be done by passing certain options to g++,
               which will in turn pass them on to the linker.  The exact
               format of the options is dependent on which linker you use:
               <ul>
-  <li>GNU ld (default on Linux):<code>  -Wl,--rpath,<em>destdir</em>/lib</code>
-  <li>IRIX ld:<code>  -Wl,-rpath,<em>destdir</em>/lib</code>
-  <li>Solaris ld:<code>  -Wl,-R<em>destdir</em>/lib</code>
-  <li>More...?  Let us know!
+  <li>GNU ld (default on Linux):<code>  -Wl,--rpath,<em>destdir</em>/lib</code></li>
+  <li>IRIX ld:<code>  -Wl,-rpath,<em>destdir</em>/lib</code></li>
+  <li>Solaris ld:<code>  -Wl,-R<em>destdir</em>/lib</code></li>
+  <li>More...?  Let us know!</li>
               </ul>
-          </ul>
+          </li>
+       </ul>
        <p>Use the <code>ldd(1)</code> utility to show which library the system
           thinks it will get at runtime.
        </p>
@@ -306,7 +315,7 @@
 
 
 <!--
-<hr>
+<hr />
 <h2><a name=""></a></h2>
    <p>
    </p>
@@ -315,7 +324,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

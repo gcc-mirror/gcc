@@ -1,13 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)">
-   <meta name="KEYWORDS" content="HOWTO, libstdc++, gcc, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="HOWTO for libstdc++ chapter 17.">
-   <meta name="GENERATOR" content="vi and eight fingers">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="AUTHOR" content="pme@gcc.gnu.org (Phil Edwards)" />
+   <meta name="KEYWORDS" content="HOWTO, libstdc++, gcc, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="HOWTO for libstdc++ chapter 17." />
+   <meta name="GENERATOR" content="vi and eight fingers" />
    <title>libstdc++-v3 HOWTO:  Chapter 17</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 </head>
 <body>
 
@@ -21,18 +20,18 @@
 
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Contents</h1>
 <ul>
-   <li><a href="#2">The Standard C++ header files</a>
-   <li><a href="#3">The Standard C++ library and multithreading</a>
-   <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a>
-   <li><a href="porting-howto.html">Porting HOWTO</a>
-   <li><a href="#5">Behavior specific to libstdc++-v3</a>
-   <li><a href="#6">Preprocessor macros controlling the library</a>
+   <li><a href="#2">The Standard C++ header files</a></li>
+   <li><a href="#3">The Standard C++ library and multithreading</a></li>
+   <li><a href="#4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a></li>
+   <li><a href="porting-howto.html">Porting HOWTO</a></li>
+   <li><a href="#5">Behavior specific to libstdc++-v3</a></li>
+   <li><a href="#6">Preprocessor macros controlling the library</a></li>
 </ul>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -51,7 +50,7 @@
       all compile and run.
    </p>
 
-<hr>
+<hr />
 <h2><a name="3">The Standard C++ library and multithreading</a></h2>
    <p>This section discusses issues surrounding the proper compilation
       of multithreaded applications which use the Standard C++
@@ -129,16 +128,17 @@
       relevant message in the thread; from there you can use
       &quot;Thread Next&quot; to move down the thread.  This farm is in
       latest-to-oldest order.
+   </p>
       <ul>
         <li>Our threading expert Loren gives a breakdown of
         <a href="http://gcc.gnu.org/ml/libstdc++/2001-10/msg00024.html">the
-        six situations involving threads</a> for the 3.0 release series.
+        six situations involving threads</a> for the 3.0 release series.</li>
         <li><a href="http://gcc.gnu.org/ml/libstdc++/2001-05/msg00384.html">
         This message</a> inspired a recent updating of issues with threading
         and the SGI STL library.  It also contains some example
-        POSIX-multithreaded STL code.
+        POSIX-multithreaded STL code.</li>
       </ul>
-      (A large selection of links to older messages has been removed; many
+   <p> (A large selection of links to older messages has been removed; many
       of the messages from 1999 were lost in a disk crash, and the few
       people with access to the backup tapes have been too swamped with work
       to restore them.  Many of the points have been superseded anyhow.)
@@ -150,7 +150,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="4"><code>&lt;foo&gt;</code> vs <code>&lt;foo.h&gt;</code></a></h2>
    <p>The new-style headers are fully supported in libstdc++-v3.  The compiler
       itself fully supports namespaces, including <code>std::</code>.
@@ -164,16 +164,18 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="5">Behavior specific to libstdc++-v3</a></h2>
    <p>The ISO standard defines the following phrase:
+   </p>
      <blockquote><dl>
-     <dt><code>[1.3.5] implementation-defined behavior</code>
+     <dt><code>[1.3.5] implementation-defined behavior</code></dt>
      <dd>behavior, for a well-formed program construct and correct data, that
          depends on the implementation <strong>and that each implementation
          shall document</strong>.
+     </dd>
      </dl></blockquote>
-      We do so here, for the C++ library only.  Behavior of the compiler,
+   <p>We do so here, for the C++ library only.  Behavior of the compiler,
       linker, runtime loader, and other elements of &quot;the
       implementation&quot; are documented elsewhere.  Everything listed in
       Annex B, Implemenation Qualities, are also part of the compiler, not
@@ -196,10 +198,10 @@
       sections, libstdc++-v3 has zero control over what the cleanup code hands
       back to the runtime loader.  Talk to the compiler people.  :-)
    </p>
-   <p><strong>[18.4.2.1]/5</strong> (bad_alloc),<br>
-      <strong>[18.5.2]/5</strong> (bad_cast),<br>
-      <strong>[18.5.3]/5</strong> (bad_typeid),<br>
-      <strong>[18.6.1]/8</strong> (exception),<br>
+   <p><strong>[18.4.2.1]/5</strong> (bad_alloc),<br />
+      <strong>[18.5.2]/5</strong> (bad_cast),<br />
+      <strong>[18.5.3]/5</strong> (bad_typeid),<br />
+      <strong>[18.6.1]/8</strong> (exception),<br />
       <strong>[18.6.2.1]/5</strong> (bad_exception):  The <code>what()</code>
       member function of class <code>std::exception</code>, and these other
       classes publicly derived from it, simply returns the name of the
@@ -225,10 +227,10 @@
       have any allocators which compare non-equal, so we can't describe how
       they behave.
    </p>
-   <p><strong>[21.1.3.1]/3,4</strong>,<br>
-      <strong>[21.1.3.2]/2</strong>,<br>
-      <strong>[23.*]'s foo::iterator</strong>,<br>
-      <strong>[27.*]'s foo::*_type</strong>,<br>
+   <p><strong>[21.1.3.1]/3,4</strong>,<br />
+      <strong>[21.1.3.2]/2</strong>,<br />
+      <strong>[23.*]'s foo::iterator</strong>,<br />
+      <strong>[27.*]'s foo::*_type</strong>,<br />
       <strong>others...</strong>
       Nope, these types are called implementation-defined because you
       shouldn't be taking advantage of their underlying types.  Listing them
@@ -257,7 +259,7 @@
       than the minimum required.  I don't think we're currently taking
       advantage of this yet.
    </p>
-   <p><strong>[27.7.1.3]/16</strong>,<br>
+   <p><strong>[27.7.1.3]/16</strong>,<br />
       <strong>[27.8.1.4]/10</strong>
       The effects of <code>pubsetbuf/setbuf</code> are described
       <a href="../27_io/howto.html#2">in this chapter</a>.
@@ -269,7 +271,7 @@
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
 
-<hr>
+<hr />
 <h2><a name="6">Preprocessor macros controlling the library</a></h2>
    <p>Some of the semantics of the libstdc++-v3 implementation are
       controlled by preprocessor macros, both during build/installation and
@@ -297,6 +299,7 @@
       The default state of the symbol is listed.  &quot;Configurable&quot;
       (or &quot;Not configurable&quot;) means that the symbol is initially
       chosen (or not) based on --enable/--disable options at configure time.
+   </p>
     <dl>
     <dt><code>_GLIBCPP_DEPRECATED</code></dt>
     <dd>Undefined by default.  Not configurable.  Turning this on enables
@@ -329,7 +332,6 @@
     </dd>
     -->
     </dl>
-   </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
    </p>
@@ -338,7 +340,7 @@
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to

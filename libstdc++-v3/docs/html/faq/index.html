@@ -1,10 +1,10 @@
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++, libg++, STL">
-   <meta name="DESCRIPTION" content="FAQ for the GNU libstdc++ effort.">
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+   <meta name="KEYWORDS" content="libstdc++, libstdc++-v3, GCC, g++, libg++, STL" />
+   <meta name="DESCRIPTION" content="FAQ for the GNU libstdc++ effort." />
    <title>libstdc++-v3 FAQ</title>
-<link rel="StyleSheet" href="../lib3styles.css">
+<link rel="StyleSheet" href="../lib3styles.css" />
 <!-- 
   ** Locations of "the most recent snapshot is the Nth" text are 
   ** answers 1_1, 1_4, 4_1.
@@ -23,84 +23,92 @@
 </p>
 
 <p>To the <a href="http://gcc.gnu.org/libstdc++/">libstdc++-v3 homepage</a>.
+</p>
 
 <!-- ####################################################### -->
-<hr>
+<hr />
 <h1>Questions</h1>
 <ol>
    <li><a href="#1_0">General Information</a>
    <!-- I suspect these will mostly be links to/into existing documents. -->
    <ol>
-      <li><a href="#1_1">What is libstdc++-v3?</a>
-      <li><a href="#1_2">Why should I use libstdc++?</a>
-      <li><a href="#1_3">Who's in charge of it?</a>
-      <li><a href="#1_4">How do I get libstdc++?</a>
-      <li><a href="#1_5">When is libstdc++ going to be finished?</a>
-      <li><a href="#1_6">How do I contribute to the effort?</a>
-      <li><a href="#1_7">What happened to libg++?  I need that!</a>
-      <li><a href="#1_8">What if I have more questions?</a>
-      <li><a href="#1_9">What are the license terms for libstdc++-v3?</a>
+      <li><a href="#1_1">What is libstdc++-v3?</a> </li>
+      <li><a href="#1_2">Why should I use libstdc++?</a> </li>
+      <li><a href="#1_3">Who's in charge of it?</a> </li>
+      <li><a href="#1_4">How do I get libstdc++?</a> </li>
+      <li><a href="#1_5">When is libstdc++ going to be finished?</a> </li>
+      <li><a href="#1_6">How do I contribute to the effort?</a> </li>
+      <li><a href="#1_7">What happened to libg++?  I need that!</a> </li>
+      <li><a href="#1_8">What if I have more questions?</a> </li>
+      <li><a href="#1_9">What are the license terms for libstdc++-v3?</a> </li>
    </ol>
+   </li>
 
    <li><a href="#2_0">Installation</a>
       <ol>
-         <li><a href="#2_1">How do I install libstdc++-v3?</a>
-         <li><a href="#2_2">[removed]</a>
+         <li><a href="#2_1">How do I install libstdc++-v3?</a> </li>
+         <li><a href="#2_2">[removed]</a> </li>
          <li><a href="#2_3">What is this CVS thing that you keep 
-                            mentioning?</a>
-         <li><a href="#2_4">How do I know if it works?</a>
-         <li><a href="#2_5">This library is HUGE!  And what's libsupc++?</a>
+                            mentioning?</a> </li>
+         <li><a href="#2_4">How do I know if it works?</a> </li>
+         <li><a href="#2_5">This library is HUGE!  And what's libsupc++?</a> </li>
       </ol>
+   </li>
 
    <li><a href="#3_0">Platform-Specific Issues</a>
       <ol>
          <li><a href="#3_1">Can libstdc++-v3 be used with &lt;my
-                            favorite compiler&gt;?</a>
-         <li><a href="#3_2">[removed]</a>
-         <li><a href="#3_3">[removed]</a>
-         <li><a href="#3_4">I can't use 'long long' on Solaris</a>
+                            favorite compiler&gt;?</a> </li>
+         <li><a href="#3_2">[removed]</a> </li>
+         <li><a href="#3_3">[removed]</a> </li>
+         <li><a href="#3_4">I can't use 'long long' on Solaris</a> </li>
          <li><a href="#3_5"><code>_XOPEN_SOURCE</code> /
                             <code>_GNU_SOURCE</code> / etc is always defined</a>
-         <li><a href="#3_6">OS X ctype.h is broken!  How can I hack it?</a>
+         </li>
+         <li><a href="#3_6">OS X ctype.h is broken!  How can I hack it?</a> </li>
       </ol>
+   </li>
 
    <li><a href="#4_0">Known Bugs and Non-Bugs</a>
       <ol>
-         <li><a href="#4_1">What works already?</a>
-         <li><a href="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</a>
-         <li><a href="#4_3">Bugs in the C++ language/lib specification</a>
+         <li><a href="#4_1">What works already?</a> </li>
+         <li><a href="#4_2">Bugs in gcc/g++ (not libstdc++-v3)</a> </li>
+         <li><a href="#4_3">Bugs in the C++ language/lib specification</a> </li>
          <li><a href="#4_4">Things in libstdc++ that only look like bugs</a><ul>
-           <li><a href="#4_4_iostreamclear">reopening a stream fails</a>
-           <li><a href="#4_4_Weff">-Weffc++ complains too much</a>
+           <li><a href="#4_4_iostreamclear">reopening a stream fails</a> </li>
+           <li><a href="#4_4_Weff">-Weffc++ complains too much</a> </li>
            <li><a href="#4_4_rel_ops">&quot;ambiguous overloads&quot;
-                               after including an old-style header</a>
+                               after including an old-style header</a> </li>
            <li><a href="#4_4_interface">The g++-3 headers are
-                               <strong>not ours</strong></a>
-           <li><a href="#4_4_glibc">compilation errors from streambuf.h</a>
+                               <strong>not ours</strong></a> </li>
+           <li><a href="#4_4_glibc">compilation errors from streambuf.h</a> </li>
            <li><a href="#4_4_checks">errors about <em>*Concept</em> and
-                               <em>constraints</em> in the STL...</a>
+                               <em>constraints</em> in the STL...</a> </li>
            <li><a href="#4_4_dlsym">program crashes when using library code
-                               in a dynamically-loaded library</a>
+                               in a dynamically-loaded library</a> </li>
          </ul>
-         <li><a href="#4_5">Aw, that's easy to fix!</a>
+         </li>
+         <li><a href="#4_5">Aw, that's easy to fix!</a> </li>
       </ol>
+   </li>
 
    <li><a href="#5_0">Miscellaneous</a>
       <ol>
          <li><a href="#5_1">string::iterator is not char*;
-                            vector&lt;T&gt;::iterator is not T*</a>
-         <li><a href="#5_2">What's next after libstdc++-v3?</a>
-         <li><a href="#5_3">What about the STL from SGI?</a>
-         <li><a href="#5_4">Extensions and Backward Compatibility</a>
-         <li><a href="#5_5">[removed]</a>
-         <li><a href="#5_6">Is libstdc++-v3 thread-safe?</a>
-         <li><a href="#5_7">How do I get a copy of the ISO C++ Standard?</a>
-         <li><a href="#5_8">What's an ABI and why is it so messy?</a>
+                            vector&lt;T&gt;::iterator is not T*</a> </li>
+         <li><a href="#5_2">What's next after libstdc++-v3?</a> </li>
+         <li><a href="#5_3">What about the STL from SGI?</a> </li>
+         <li><a href="#5_4">Extensions and Backward Compatibility</a> </li>
+         <li><a href="#5_5">[removed]</a> </li>
+         <li><a href="#5_6">Is libstdc++-v3 thread-safe?</a> </li>
+         <li><a href="#5_7">How do I get a copy of the ISO C++ Standard?</a> </li>
+         <li><a href="#5_8">What's an ABI and why is it so messy?</a> </li>
       </ol>
+   </li>
 
 </ol>
 
-<hr>
+<hr />
 
 <!-- ####################################################### -->
 
@@ -127,7 +135,7 @@
          official <a href="../17_intro/DESIGN">design document</a>. 
       </p>
 
-<hr>
+<hr />
    <h2><a name="1_2">1.2 Why should I use libstdc++?</a></h2>
       <p>The completion of the ISO C++ standardization gave the
          C++ community a powerful set of reuseable tools in the form
@@ -153,7 +161,7 @@
          nor be worried about platform-specific incompatibilities.
       </p>
 
-<hr>
+<hr />
    <h2><a name="1_3">1.3 Who's in charge of it?</a></h2>
       <p>The libstdc++ project is contributed to by several developers
          all over the world, in the same way as GCC or Linux.
@@ -168,7 +176,7 @@
          If you have questions, ideas, code, or are just curious, sign up!
       </p>
 
-<hr>
+<hr />
    <h2><a name="1_4">1.4 How do I get libstdc++?</a></h2>
       <p>The fourteenth (and latest) snapshot of libstdc++-v3 is
          <a href="http://gcc.gnu.org/libstdc++/index.html#download">available
@@ -183,9 +191,9 @@
          of the SGI STL.
       </p> 
 
-<hr>
+<hr />
    <h2><a name="1_5">1.5 When is libstdc++ going to be finished?</a></h2>
-<!--      <p>Nathan Myers gave the best of all possible answers in <A 
+<!--      <p>Nathan Myers gave the best of all possible answers in <a 
          href="http://www.deja.com/getdoc.xp?AN=469581698&fmt=text">a 
          Usenet article</a>.</p>
 which is no longer available, thanks deja...-->
@@ -193,7 +201,7 @@ which is no longer available, thanks deja...-->
          Usenet article asking this question:  <em>Sooner, if you help.</em>
       </p>
 
-<hr>
+<hr />
    <h2><a name="1_6">1.6 How do I contribute to the effort?</a></h2>
       <p>Here is <a href="../17_intro/contribute.html">a
          page devoted to this topic</a>.  Subscribing to the mailing
@@ -205,7 +213,7 @@ which is no longer available, thanks deja...-->
          we all thought was working, is more than welcome!
       </p> 
 
-<hr>
+<hr />
    <h2><a name="1_7">1.7 What happened to libg++?  I need that!</a></h2>
       <p>The most recent libg++ README states that libg++ is no longer
          being actively maintained.  It should not be used for new
@@ -244,7 +252,7 @@ which is no longer available, thanks deja...-->
          describes where to find the last libg++ source.
       </p>
 
-<hr>
+<hr />
    <h2><a name="1_8">1.8 What if I have more questions?</a></h2>
       <p>If you have read the README and RELEASE-NOTES files, and your
          question remains unanswered, then just ask the mailing list.
@@ -260,13 +268,13 @@ which is no longer available, thanks deja...-->
          or <a href="mailto:gdr@gcc.gnu.org">Gabriel Dos Reis</a>.
       </p>
 
-<hr>
+<hr />
    <h2><a name="1_9">1.9 What are the license terms for libstdc++-v3?</a></h2>
       <p>See <a href="../17_intro/license.html">our license description</a>
          for these and related questions.
       </p>
 
-<hr>
+<hr />
 <h1><a name="2_0">2.0 Installation</a></h1>
    <h2><a name="2_1">2.1 How do I install libstdc++-v3?</a></h2>
       <p>Complete instructions are not given here (this is a FAQ, not
@@ -277,9 +285,12 @@ which is no longer available, thanks deja...-->
                  easier and more automated than building the GCC 2.[78]
                  series was.  If you are using GCC 2.95, you can still
                  build earlier snapshots of libstdc++.
+            </li>
             <li> GNU Make is recommended, but should not be required.
+            </li>
             <li> The GNU Autotools are needed if you are messing with
                  the configury or makefiles.
+            </li>
          </ul>
       <p>The file <a href="../documentation.html">documentation.html</a>
          provides a good overview of the steps necessary to build, install,
@@ -295,18 +306,18 @@ which is no longer available, thanks deja...-->
          &quot;.../docs/17_intro/&quot; directory of the distribution.
       </p> 
 
-<hr>
+<hr />
    <h2><a name="2_2">2.2 [removed]</a></h2>
       <p>This question has become moot and has been removed.  The stub
          is here to preserve numbering (and hence links/bookmarks).
       </p>
 
-<hr>
+<hr />
    <h2><a name="2_3">2.3 What is this CVS thing that you
                          keep mentioning?</a></h2>
       <p>The <em>Concurrent Versions System</em> is one of several revision
          control packages.  It was selected for GNU projects because it's
-         free (speech), free (beer), and very high quality.  The <A
+         free (speech), free (beer), and very high quality.  The <a
          href="http://www.gnu.org/software/cvs/cvs.html">CVS entry in
          the GNU software catalogue</a> has a better description as 
          well as a
@@ -321,7 +332,7 @@ which is no longer available, thanks deja...-->
          <!-- wonder how long that'll live -->
       </p>
 
-<hr>
+<hr />
    <h2><a name="2_4">2.4 How do I know if it works?</a></h2>
       <p>libstdc++-v3 comes with its own testsuite.  You do not need
          to actually install the library (&quot;<code>make
@@ -337,7 +348,7 @@ which is no longer available, thanks deja...-->
          <strong>please</strong> write up your idea and send it to the list!
       </p>
 
-<hr>
+<hr />
    <h2><a name="2_5">2.4 This library is HUGE!  And what's libsupc++?</a></h2>
       <p>Usually the size of libraries on disk isn't noticeable.  When a
          link editor (or simply &quot;linker&quot;) pulls things from a
@@ -387,7 +398,7 @@ which is no longer available, thanks deja...-->
          when building the library.
       </p>
 
-<hr>
+<hr />
 <h1><a name="3_0">3.0 Platform-Specific Issues</a></h1>
    <h2><a name="3_1">3.1 Can libstdc++-v3 be used with &lt;my
                          favorite compiler&gt;?</a></h2>
@@ -409,19 +420,19 @@ which is no longer available, thanks deja...-->
          GCC/g++, however.
       </p> 
 
-<hr>
+<hr />
    <h2><a name="3_2">3.2 [removed]</a></h2>
       <p>This question has become moot and has been removed.  The stub
          is here to preserve numbering (and hence links/bookmarks).
       </p>
 
-<hr>
+<hr />
    <h2><a name="3_3">3.3 [removed]</a></h2>
       <p>This question has become moot and has been removed.  The stub
          is here to preserve numbering (and hence links/bookmarks).
       </p>
 
-<hr>
+<hr />
    <h2><a name="3_4">3.4 I can't use 'long long' on Solaris</a></h2>
       <p>By default we try to support the C99 <code>long long</code> type.
          This requires that certain functions from your C library be present.
@@ -433,7 +444,7 @@ which is no longer available, thanks deja...-->
       <p>This has been fixed for 3.0.3 and onwards.
       </p>
 
-<hr>
+<hr />
    <h2><a name="3_5">3.5 <code>_XOPEN_SOURCE</code> / <code>_GNU_SOURCE</code>
                          / etc is always defined</a></h2>
       <p>On Solaris, g++ (but not gcc) always defines the preprocessor
@@ -465,13 +476,13 @@ which is no longer available, thanks deja...-->
          a list of predefined macros for any particular installation.
       </p>
       <p>This has been discussed on the mailing lists
-         <a href="http://gcc.gnu.org/cgi-bin/htsearch?method=and&format=builtin-long&sort=score&words=_XOPEN_SOURCE+Solaris">quite a bit</a>.
+         <a href="http://gcc.gnu.org/cgi-bin/htsearch?method=and&amp;format=builtin-long&amp;sort=score&amp;words=_XOPEN_SOURCE+Solaris">quite a bit</a>.
       </p>
       <p>This method is something of a wart.  We'd like to find a cleaner
          solution, but nobody yet has contributed the time.
       </p>
 
-<hr>
+<hr />
    <h2><a name="3_6">3.6 OS X ctype.h is broken!  How can I hack it?</a></h2>
       <p>This is a long-standing bug in the OS X support.  Fortunately,
          the patch is quite simple, and well-known.
@@ -479,7 +490,7 @@ which is no longer available, thanks deja...-->
          link to the solution.</a>
       </p>
 
-<hr>
+<hr />
 <h1><a name="4_0">4.0 Known Bugs and Non-Bugs</a></h1>
    <em>Note that this section can get rapdily outdated -- such is the
    nature of an open-source project.  For the latest information, join
@@ -571,7 +582,7 @@ New:
 </pre>
 
 
-<hr>
+<hr />
    <h2><a name="4_2">4.2 Bugs in gcc/g++ (not libstdc++-v3)</a></h2>
       <p>This is by no means meant to be complete nor exhaustive, but
          mentions some problems that users may encounter when building
@@ -596,7 +607,7 @@ New:
              experiences.  :-)</li>
       </ul>
 
-<hr>
+<hr />
    <h2><a name="4_3">4.3 Bugs in the C++ language/lib specification</a></h2>
       <p>Yes, unfortunately, there are some.  In a
          <a href="http://gcc.gnu.org/ml/libstdc++/1998/msg00006.html">message
@@ -615,28 +626,26 @@ New:
          Some of these have resulted in <a href="#5_2">code changes</a>.
       </p>
 
-<hr>
+<hr />
    <h2><a name="4_4">4.4 Things in libstdc++ that only look like bugs</a></h2>
       <p>There are things which are not bugs in the compiler (4.2) nor
          the language specification (4.3), but aren't really bugs in
          libstdc++, either.  Really!  Please do not report these as bugs.
       </p>
-      <a name="4_4_Weff">
-        <p><strong>-Weffc++</strong>
-           The biggest of these is the quadzillions of warnings about the
-           library headers emitted when <code>-Weffc++</code> is used.  Making
-           libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
-           for a few reasons.  Mainly, that option tries to enforce
-           object-oriented programming, while the Standard Library isn't
-           necessarily trying to be OO.
-        </p>
-      </a>
-      <a name="4_4_iostreamclear">
-        <p><strong>reopening a stream fails</strong>
-           Did I just say that -Weffc++ was our biggest false-bug report?  I
-           lied.  (It used to be.)  Today it seems to be reports that after
-           executing a sequence like
-           <pre>
+      <p><a name="4_4_Weff"><strong>-Weffc++</strong></a>
+         The biggest of these is the quadzillions of warnings about the
+         library headers emitted when <code>-Weffc++</code> is used.  Making
+         libstdc++ &quot;-Weffc++-clean&quot; is not a goal of the project,
+         for a few reasons.  Mainly, that option tries to enforce
+         object-oriented programming, while the Standard Library isn't
+         necessarily trying to be OO.
+      </p>
+      <p><a name="4_4_iostreamclear"><strong>reopening a stream fails</strong>
+         </a> Did I just say that -Weffc++ was our biggest false-bug report?
+	 I lied.  (It used to be.)  Today it seems to be reports that after
+	 executing a sequence like
+      </p>
+      <pre>
     #include &lt;fstream&gt;
     ...
     std::fstream  fs(&quot;a_file&quot;);
@@ -645,59 +654,54 @@ New:
     // .
     fs.close();
     fs.open(&quot;a_new_file&quot;);</pre>
-           all operations on the re-opened <code>fs</code> will fail, or at
-           least act very strangely.  Yes, they often will, especially if
-           <code>fs</code> reached the EOF state on the previous file.  The
-           reason is that the state flags are <strong>not</strong> cleared
-           on a successful call to open().  The standard unfortunately did
-           not specify behavior in this case, and to everybody's great sorrow,
-           the <a href="../ext/howto.html#5">proposed LWG resolution</a> (see
-           DR #22) is to leave the flags unchanged.  You must insert a call
-           to <code>fs.clear()</code> between the calls to close() and open(),
-           and then everything will work like we all expect it to work.
-        </p>
-      </a>
-      <a name="4_4_rel_ops">
-        <p><strong>rel_ops</strong>
-           Another is the <code>rel_ops</code> namespace and the template
-           comparison operator functions contained therein.  If they become
-           visible in the same namespace as other comparison functions
-           (e.g., '<code>using</code>' them and the &lt;iterator&gt; header),
-           then you will suddenly be faced with huge numbers of ambiguity
-           errors.  This was discussed on the -v3 list; Nathan Myers
-           <a href="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
-           things up here</a>.  The collisions with vector/string iterator
-           types have been fixed for 3.1.  <!-- more links to email here -->
-        </p>
-      </a>
-      <a name="4_4_interface"><h3>The g++-3 headers are
-                                      <em>not ours</em></h3>
-        <p>If you have found an extremely broken header file which is
-           causing problems for you, look carefully before submitting a
-           &quot;high&quot; priority bug report (which you probably shouldn't
-           do anyhow; see the last paragraph of the page describing
+      <p>all operations on the re-opened <code>fs</code> will fail, or at
+         least act very strangely.  Yes, they often will, especially if
+         <code>fs</code> reached the EOF state on the previous file.  The
+         reason is that the state flags are <strong>not</strong> cleared
+         on a successful call to open().  The standard unfortunately did
+         not specify behavior in this case, and to everybody's great sorrow,
+         the <a href="../ext/howto.html#5">proposed LWG resolution</a> (see
+         DR #22) is to leave the flags unchanged.  You must insert a call
+         to <code>fs.clear()</code> between the calls to close() and open(),
+         and then everything will work like we all expect it to work.
+      </p>
+      <p><a name="4_4_rel_ops"><strong>rel_ops</strong></a>
+         Another is the <code>rel_ops</code> namespace and the template
+         comparison operator functions contained therein.  If they become
+         visible in the same namespace as other comparison functions
+         (e.g., '<code>using</code>' them and the &lt;iterator&gt; header),
+         then you will suddenly be faced with huge numbers of ambiguity
+         errors.  This was discussed on the -v3 list; Nathan Myers
+         <a href="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
+         things up here</a>.  The collisions with vector/string iterator
+         types have been fixed for 3.1.  <!-- more links to email here -->
+      </p>
+      <h3><a name="4_4_interface">The g++-3 headers are <em>not ours</em></a></h3>
+      <p>If you have found an extremely broken header file which is
+         causing problems for you, look carefully before submitting a
+         &quot;high&quot; priority bug report (which you probably shouldn't
+         do anyhow; see the last paragraph of the page describing
          <a href="http://gcc.gnu.org/gnatswrite.html">the GCC bug database</a>).
-        </p>
-        <p>If the headers are in <code>${prefix}/include/g++-3</code>, or if
-           the installed library's name looks like <code>libstdc++-2.10.a</code>
-           or <code>libstdc++-libc6-2.10.so</code>,
-           then you are using the old libstdc++-v2 library, which is nonstandard
-           and unmaintained.  Do not report problems with -v2 to the -v3
-           mailing list.
-        </p>
-        <p>Currently our header files are installed in
-           <code>${prefix}/include/g++-v3</code> (see the 'v'?).  This may
-           change with the next release of GCC, as it may be too confusing,
-           but <a href="http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html">the
-           question has not yet been decided</a>.
-        </p>
-      </a>
-      <a name="4_4_glibc">
-        <p><strong>glibc</strong>
-           If you're on a GNU/Linux system and have just upgraded to
-           glibc 2.2, but are still using gcc 2.95.2, then you should have
-           read the glibc FAQ, specifically 2.34:
-   <pre>
+      </p>
+      <p>If the headers are in <code>${prefix}/include/g++-3</code>, or if
+         the installed library's name looks like <code>libstdc++-2.10.a</code>
+         or <code>libstdc++-libc6-2.10.so</code>,
+         then you are using the old libstdc++-v2 library, which is nonstandard
+         and unmaintained.  Do not report problems with -v2 to the -v3
+         mailing list.
+      </p>
+      <p>Currently our header files are installed in
+         <code>${prefix}/include/g++-v3</code> (see the 'v'?).  This may
+         change with the next release of GCC, as it may be too confusing,
+         but <a href="http://gcc.gnu.org/ml/gcc/2000-10/msg00732.html">the
+         question has not yet been decided</a>.
+      </p>
+      <p><a name="4_4_glibc"><strong>glibc</strong></a>
+         If you're on a GNU/Linux system and have just upgraded to
+         glibc 2.2, but are still using gcc 2.95.2, then you should have
+         read the glibc FAQ, specifically 2.34:
+      </p>
+      <pre>
 2.34.   When compiling C++ programs, I get a compilation error in streambuf.h.
 
 {BH} You are using g++ 2.95.2? After upgrading to glibc 2.2, you need to
@@ -705,34 +709,31 @@ apply a patch to the include files in /usr/include/g++, because the fpos_t
 type has changed in glibc 2.2.  The patch is at
 http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
    </pre>
-           Note that 2.95.x shipped with the
-           <a href="#4_4_interface">old v2 library</a> which is no longer
-           maintained.  Also note that gcc 2.95.3 fixes this problem, but
-           requires a separate patch for libstdc++-v3.
-        </p>
-      </a>
-      <a name="4_4_checks">
-        <p><strong>concept checks</strong>
-           If you see compilation errors containing messages about
-           <code> <em>foo</em>Concept </code>and a<code> constraints </code>
-           member function, then most likely you have violated one of the
-           requirements for types used during instantiation of template
-           containers and functions.  For example, EqualityComparableConcept
-           appears if your types must be comparable with == and you have not
-           provided this capability (a typo, or wrong visibility, or you
-           just plain forgot, etc).
-        </p>
-        <p>More information, including how to optionally enable/disable the
-           checks, is available
-           <a href="../19_diagnostics/howto.html#3">here</a>.
-        </p>
-      </a>
-      <a name="4_4_dlsym">
-        <p><strong>dlopen/dlsym</strong>
-           If you are using the C++ library across dynamically-loaded
-           objects, make certain that you are passing the correct options
-           when compiling and linking:
-           <pre>
+      <p>Note that 2.95.x shipped with the
+         <a href="#4_4_interface">old v2 library</a> which is no longer
+         maintained.  Also note that gcc 2.95.3 fixes this problem, but
+         requires a separate patch for libstdc++-v3.
+      </p>
+      <p><a name="4_4_checks"><strong>concept checks</strong></a>
+	 If you see compilation errors containing messages about
+	 <code> <em>foo</em>Concept </code>and a<code> constraints </code>
+	 member function, then most likely you have violated one of the
+	 requirements for types used during instantiation of template
+	 containers and functions.  For example, EqualityComparableConcept
+	 appears if your types must be comparable with == and you have not
+	 provided this capability (a typo, or wrong visibility, or you
+	 just plain forgot, etc).
+      </p>
+      <p>More information, including how to optionally enable/disable the
+	 checks, is available
+	 <a href="../19_diagnostics/howto.html#3">here</a>.
+      </p>
+      <p><a name="4_4_dlsym"><strong>dlopen/dlsym</strong></a>
+	 If you are using the C++ library across dynamically-loaded
+	 objects, make certain that you are passing the correct options
+	 when compiling and linking:
+      </p>
+      <pre>
     // compile the library components
     g++ -fPIC -c a.cc
     g++ -fPIC -c b.cc
@@ -743,10 +744,9 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
     g++ -fPIC -shared -rdynamic -o libfoo.so a.o b.o ... z.o
 
     // link the executable
-    g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</pre></p>
-      </a>
+    g++ -fPIC -rdynamic -o foo ... -L. -lfoo -ldl</pre>
 
-<hr>
+<hr />
    <h2><a name="4_5">4.5 Aw, that's easy to fix!</a></h2>
       <p>If you have found a bug in the library and you think you have
          a working fix, then send it in!  The main GCC site has a page
@@ -765,7 +765,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          <a href="#2_4">testsuite</a> -- but only if such a test exists.
       </p>
 
-<hr>
+<hr />
 <h1><a name="5_0">5.0 Miscellaneous</a></h1>
    <h2><a name="5_1">5.1 string::iterator is not char*;
                      vector&lt;T&gt;::iterator is not T*</a></h2>
@@ -786,7 +786,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          vector&lt;&gt; (but not for basic_string&lt;&gt;).
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_2">5.2 What's next after libstdc++-v3?</a></h2>
       <p>Hopefully, not much.  The goal of libstdc++-v3 is to produce
          a fully-compliant, fully-portable Standard Library.  After that,
@@ -802,16 +802,16 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          we add code to the library based on what the current proposed
          resolution specifies.  Those additions are listed in
          <a href="../ext/howto.html#5">the extensions page</a>.
-      </p>
+      </p></li>
       <li><p>Performance tuning.  Lots of performance tuning.  This too is
          already underway for post-3.0 releases, starting with memory
          expansion in container classes and buffer usage in synchronized
          stream objects.
-      </p>
+      </p></li>
       <li><p>An ABI for libstdc++ is being developed, so that
          multiple binary-incompatible copies of the library can be replaced
          with a single backwards-compatible library, like libgcc_s.so is.
-      </p>
+      </p></li>
       <li><p>The current libstdc++ contains extensions to the Library which
          must be explicitly requested by client code (for example, the
          hash tables from SGI).  Other extensions may be added to
@@ -819,7 +819,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          (For example, the &quot;long long&quot; type from C99.)
          Bugfixes and rewrites (to improve or fix thread safety, for
          instance) will of course be a continuing task.
-      </p>
+      </p></li>
       </ol>
       <p><a href="http://gcc.gnu.org/ml/libstdc++/1999/msg00080.html">This
          question</a> about the next libstdc++ prompted some brief but
@@ -827,7 +827,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          <a href="http://gcc.gnu.org/ml/libstdc++/1999/msg00084.html">speculation</a>.
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_3">5.3 What about the STL from SGI?</a></h2>
       <p>The <a href="http://www.sgi.com/Technology/STL/">STL from SGI</a>,
          version 3.3, was the most recent merge of the STL codebase.  The
@@ -844,14 +844,15 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          recommended reading.
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_4">5.4 Extensions and Backward Compatibility</a></h2>
       <p>Headers in the <code>ext</code> and <code>backward</code>
          subdirectories should be referred to by their relative paths:
          <!-- Careful, the leading spaces in PRE show up directly. -->
-         <pre>
+      </p>
+      <pre>
       #include &lt;ext/hash_map&gt; </pre>
-         rather than using <code>-I</code> or other options.  This is more
+      <p>rather than using <code>-I</code> or other options.  This is more
          portable and forward-compatible.  (The situation is the same as
          that of other headers whose directories are not searched directly,
          e.g., <code>&lt;sys/stat.h&gt;</code>, <code>&lt;X11/Xlib.h&gt;</code>.
@@ -860,13 +861,13 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          <a href="../ext/howto.html">their own page</a>.
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_5">5.5 [removed]</a></h2>
       <p>This question has become moot and has been removed.  The stub
          is here to preserve numbering (and hence links/bookmarks).
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_6">5.6 Is libstdc++-v3 thread-safe?</a></h2>
       <p>When the system's libc is itself thread-safe, a non-generic
          implementation of atomicity.h exists for the architecture, and gcc
@@ -877,7 +878,8 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          what object locks must be held based on the objects referenced in
          a method call.  Without getting into great detail, here is an
          example which requires user-level locks:
-         <pre>
+      </p>
+      <pre>
      library_class_a shared_object_a;
 
      thread_main () {
@@ -887,18 +889,17 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
      }
 
      // Multiple copies of thread_main() are started in independent threads.</pre>
-      </p>
       <p>Under the assumption that object_a and object_b are never exposed to
          another thread, here is an example that should not require any
          user-level locks:
-         <pre>
+      </p>
+      <pre>
      thread_main () {
        library_class_a object_a;
        library_class_b *object_b = new library_class_b;
        object_a.add_b (object_b);
        object_a.mutate ();
      } </pre>
-      </p>
       <p>All library objects are safe to use in a multithreaded program as
          long as each thread carefully locks out access by any other thread
          while it uses any object visible to another thread.  In general,
@@ -913,7 +914,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          more information.
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_7">5.7 How do I get a copy of the ISO C++ Standard?</a></h2>
       <p>Copies of the full ISO 14882 standard are available on line via the
          ISO mirror site for committee members.  Non-members, or those who
@@ -931,7 +932,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
          <a href="http://www.iso.ch/">ISO homepage</a> and find out!
       </p>
 
-<hr>
+<hr />
    <h2><a name="5_8">5.8 What's an ABI and why is it so messy?</a></h2>
       <p>&quot;ABI&quot; stands for &quot;Application Binary Interface.&quot;
          Conventionally, it refers to a great mass of details about how
@@ -980,7 +981,7 @@ http://clisp.cons.org/~haible/gccinclude-glibc-2.2-compat.diff
 
 <!-- ####################################################### -->
 
-<hr>
+<hr />
 <p class="fineprint"><em>
 See <a href="../17_intro/license.html">license.html</a> for copying conditions.
 Comments and suggestions are welcome, and may be sent to
