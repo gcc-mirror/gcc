@@ -22,12 +22,25 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 #ifndef __GCC_CPPHASH__
 #define __GCC_CPPHASH__
 
+struct directive;		/* These are deliberately incomplete.  */
+struct htab;
+
 /* Test if a sign is valid within a preprocessing number.  */
 #define VALID_SIGN(c, prevc) \
   (((c) == '+' || (c) == '-') && \
    ((prevc) == 'e' || (prevc) == 'E' \
     || (((prevc) == 'p' || (prevc) == 'P') \
         && CPP_OPTION (pfile, extended_numbers))))
+
+#define CPP_OPTION(PFILE, OPTION) ((PFILE)->opts.OPTION)
+#define CPP_BUFFER(PFILE) ((PFILE)->buffer)
+#define CPP_BUF_LINE(BUF) ((BUF)->lineno)
+#define CPP_BUF_COLUMN(BUF, CUR) ((CUR) - (BUF)->line_base + (BUF)->col_adjust)
+#define CPP_BUF_COL(BUF) CPP_BUF_COLUMN(BUF, (BUF)->cur)
+
+/* Maximum nesting of cpp_buffers.  We use a static limit, partly for
+   efficiency, and partly to limit runaway recursion.  */
+#define CPP_STACK_MAX 200
 
 /* Memory pools.  */
 #define ALIGN(size, align) (((size) + ((align) - 1)) & ~((align) - 1))
@@ -49,6 +62,15 @@ struct cpp_chunk
   unsigned char *base;
 };
 
+typedef struct cpp_pool cpp_pool;
+struct cpp_pool
+{
+  struct cpp_chunk *cur, *locked;
+  unsigned char *pos;		/* Current position.  */
+  unsigned int align;
+  unsigned int locks;
+};
+
 /* List of directories to look for include files in. */
 struct file_name_list
 {
@@ -67,6 +89,76 @@ struct file_name_list
   /* Mapping of file names for this directory.
      Only used on MS-DOS and related platforms. */
   struct file_name_map *name_map;
+};
+
+/* Multiple-include optimisation.  */
+enum mi_state {MI_FAILED = 0, MI_OUTSIDE};
+enum mi_ind {MI_IND_NONE = 0, MI_IND_NOT};
+
+typedef struct toklist toklist;
+struct toklist
+{
+  cpp_token *first;
+  cpp_token *limit;
+};
+
+typedef struct cpp_context cpp_context;
+struct cpp_context
+{
+  /* Doubly-linked list.  */
+  cpp_context *next, *prev;
+
+  /* Contexts other than the base context are contiguous tokens.
+     e.g. macro expansions, expanded argument tokens.  */
+  struct toklist list;
+
+  /* For a macro context, these are the macro and its arguments.  */
+  cpp_macro *macro;
+};
+
+struct lexer_state
+{
+  /* Nonzero if first token on line is CPP_HASH.  */
+  unsigned char in_directive;
+
+  /* Nonzero if in a directive that takes angle-bracketed headers.  */
+  unsigned char angled_headers;
+
+  /* Nonzero to save comments.  Turned off if discard_comments, and in
+     all directives apart from #define.  */
+  unsigned char save_comments;
+
+  /* If nonzero the next token is at the beginning of the line.  */
+  unsigned char next_bol;
+
+  /* Nonzero if we're mid-comment.  */
+  unsigned char lexing_comment;
+
+  /* Nonzero if lexing __VA_ARGS__ is valid.  */
+  unsigned char va_args_ok;
+
+  /* Nonzero if lexing poisoned identifiers is valid.  */
+  unsigned char poisoned_ok;
+
+  /* Nonzero to prevent macro expansion.  */
+  unsigned char prevent_expansion;  
+
+  /* Nonzero when parsing arguments to a function-like macro.  */
+  unsigned char parsing_args;
+
+  /* Nonzero when in a # NUMBER directive.  */
+  unsigned char line_extension;
+};
+
+/* Special nodes - identifiers with predefined significance.  */
+struct spec_nodes
+{
+  cpp_hashnode *n_L;			/* L"str" */
+  cpp_hashnode *n_defined;		/* defined operator */
+  cpp_hashnode *n__Pragma;		/* _Pragma operator */
+  cpp_hashnode *n__STRICT_ANSI__;	/* STDC_0_IN_SYSTEM_HEADERS */
+  cpp_hashnode *n__CHAR_UNSIGNED__;	/* plain char is unsigned */
+  cpp_hashnode *n__VA_ARGS__;		/* C99 vararg macros */
 };
 
 struct cpp_buffer
@@ -129,6 +221,122 @@ struct cpp_buffer
 
   /* Buffer type.  */
   ENUM_BITFIELD (cpp_buffer_type) type : 8;
+};
+
+/* A cpp_reader encapsulates the "state" of a pre-processor run.
+   Applying cpp_get_token repeatedly yields a stream of pre-processor
+   tokens.  Usually, there is only one cpp_reader object active.  */
+
+struct cpp_reader
+{
+  /* Top of buffer stack.  */
+  cpp_buffer *buffer;
+
+  /* Lexer state.  */
+  struct lexer_state state;
+
+  /* The position of the last lexed token and last lexed directive.  */
+  cpp_lexer_pos lexer_pos;
+  cpp_lexer_pos directive_pos;
+
+  /* Memory pools.  */
+  cpp_pool ident_pool;		/* For all identifiers, and permanent
+				   numbers and strings.  */
+  cpp_pool macro_pool;		/* For macro definitions.  Permanent.  */
+  cpp_pool argument_pool;	/* For macro arguments.  Temporary.   */
+
+  /* Context stack.  */
+  struct cpp_context base_context;
+  struct cpp_context *context;
+
+  /* If in_directive, the directive if known.  */
+  const struct directive *directive;
+
+  /* Multiple inlcude optimisation.  */
+  enum mi_state mi_state;
+  enum mi_ind mi_if_not_defined;
+  unsigned int mi_lexed;
+  const cpp_hashnode *mi_cmacro;
+  const cpp_hashnode *mi_ind_cmacro;
+
+  /* Token lookahead.  */
+  struct cpp_lookahead *la_read;	/* Read from this lookahead.  */
+  struct cpp_lookahead *la_write;	/* Write to this lookahead.  */
+  struct cpp_lookahead *la_unused;	/* Free store.  */
+  struct cpp_lookahead *la_saved;	/* Backup when entering directive.  */
+
+  /* Error counter for exit code.  */
+  unsigned int errors;
+
+  /* Line and column where a newline was first seen in a string
+     constant (multi-line strings).  */
+  cpp_lexer_pos mlstring_pos;
+
+  /* Buffer to hold macro definition string.  */
+  unsigned char *macro_buffer;
+  unsigned int macro_buffer_len;
+
+  /* Current depth in #include directives that use <...>.  */
+  unsigned int system_include_depth;
+
+  /* Current depth of buffer stack.  */
+  unsigned int buffer_stack_depth;
+
+  /* Current depth in #include directives.  */
+  unsigned int include_depth;
+
+  /* Hash table of macros and assertions.  See cpphash.c.  */
+  struct htab *hashtab;
+
+  /* Tree of other included files.  See cppfiles.c.  */
+  struct splay_tree_s *all_include_files;
+
+  /* Chain of `actual directory' file_name_list entries, for ""
+     inclusion.  */
+  struct file_name_list *actual_dirs;
+
+  /* Current maximum length of directory names in the search path
+     for include files.  (Altered as we get more of them.)  */
+  unsigned int max_include_len;
+
+  /* Date and time tokens.  Calculated together if either is requested.  */
+  cpp_token date;
+  cpp_token time;
+
+  /* Opaque handle to the dependencies of mkdeps.c.  Used by -M etc.  */
+  struct deps *deps;
+
+  /* Obstack holding all macro hash nodes.  This never shrinks.
+     See cpphash.c */
+  struct obstack *hash_ob;
+
+  /* Obstack holding buffer and conditional structures.  This is a
+     real stack.  See cpplib.c */
+  struct obstack *buffer_ob;
+
+  /* Pragma table - dynamic, because a library user can add to the
+     list of recognized pragmas.  */
+  struct pragma_entry *pragmas;
+
+  /* Call backs.  */
+  struct cpp_callbacks cb;
+
+  /* User visible options.  */
+  struct cpp_options opts;
+
+  /* Special nodes - identifiers with predefined significance to the
+     preprocessor.  */
+  struct spec_nodes spec_nodes;
+
+  /* We're printed a warning recommending against using #import.  */
+  unsigned char import_warning;
+
+  /* True after cpp_start_read completes.  Used to inhibit some
+     warnings while parsing the command line.  */
+  unsigned char done_initializing;
+
+  /* True if we are skipping a failed conditional group.  */
+  unsigned char skipping;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.
@@ -239,5 +447,63 @@ extern void _cpp_do_file_change PARAMS ((cpp_reader *, enum cpp_fc_reason,
 #define xnewvec(T, N)	(T *) xmalloc (sizeof(T) * (N))
 #define xcnewvec(T, N)	(T *) xcalloc (N, sizeof(T))
 #define xobnew(O, T)	(T *) obstack_alloc (O, sizeof(T))
+
+/* These are inline functions instead of macros so we can get type
+   checking.  */
+typedef unsigned char U_CHAR;
+#define U (const U_CHAR *)  /* Intended use: U"string" */
+
+static inline int ustrcmp	PARAMS ((const U_CHAR *, const U_CHAR *));
+static inline int ustrncmp	PARAMS ((const U_CHAR *, const U_CHAR *,
+					 size_t));
+static inline size_t ustrlen	PARAMS ((const U_CHAR *));
+static inline U_CHAR *uxstrdup	PARAMS ((const U_CHAR *));
+static inline U_CHAR *ustrchr	PARAMS ((const U_CHAR *, int));
+static inline int ufputs	PARAMS ((const U_CHAR *, FILE *));
+
+static inline int
+ustrcmp (s1, s2)
+     const U_CHAR *s1, *s2;
+{
+  return strcmp ((const char *)s1, (const char *)s2);
+}
+
+static inline int
+ustrncmp (s1, s2, n)
+     const U_CHAR *s1, *s2;
+     size_t n;
+{
+  return strncmp ((const char *)s1, (const char *)s2, n);
+}
+
+static inline size_t
+ustrlen (s1)
+     const U_CHAR *s1;
+{
+  return strlen ((const char *)s1);
+}
+
+static inline U_CHAR *
+uxstrdup (s1)
+     const U_CHAR *s1;
+{
+  return (U_CHAR *) xstrdup ((const char *)s1);
+}
+
+static inline U_CHAR *
+ustrchr (s1, c)
+     const U_CHAR *s1;
+     int c;
+{
+  return (U_CHAR *) strchr ((const char *)s1, c);
+}
+
+static inline int
+ufputs (s, f)
+     const U_CHAR *s;
+     FILE *f;
+{
+  return fputs ((const char *)s, f);
+}
 
 #endif
