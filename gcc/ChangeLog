@@ -1,3 +1,7 @@
+2001-11-21  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (cmptf_internal1): Replace %$ with $.
+
 Wed Nov 21 16:44:01 2001  Douglas B. Rupp  <rupp@gnat.com>
 
 	* cppfiles.c (STAT_SIZE_TOO_BIG): Define.
