@@ -1,3 +1,7 @@
+Tue Jan  5 22:11:25 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * Make-lang.in (g++.o): Depend on prefix.h.
+
 1999-01-04  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* tree.c (bound_pmf_p): New fn.
