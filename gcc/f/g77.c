@@ -72,7 +72,7 @@ g77: `f77' language not included in list of languages\n\
 
 #else	/* LANGUAGE_F77 == 1 */
 #include "config.j"
-#include "zzz.h"
+#include "version.h"
 #include <sys/types.h>
 #include <errno.h>
 
@@ -1264,7 +1264,7 @@ main (argc, argv)
 
 	case OPTION_v:
 	  if (!verbose)
-	    fprintf (stderr, "g77 version %s\n", ffezzz_version_string);
+	    fprintf (stderr, "g77 version %s\n", ffe_version_string);
 	  verbose = 1;
 	  break;
 
@@ -1291,7 +1291,7 @@ You may redistribute copies of GNU Fortran\n\
 under the terms of the GNU General Public License.\n\
 For more information about these matters, see the file named COPYING\n\
 or type the command `info -f g77 Copying'.\n\
-", ffezzz_version_string);
+", ffe_version_string);
 	  exit (0);
 	  break;
 

@@ -1,5 +1,5 @@
-/* zzz.h -- Public #include File (module.h template V1.0)
-   Copyright (C) 1995 Free Software Foundation, Inc.
+/* version.c -- Implementation File (module.c template V1.0)
+   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
    Contributed by James Craig Burley (burley@gnu.ai.mit.edu).
 
 This file is part of GNU Fortran.
@@ -19,17 +19,16 @@ along with GNU Fortran; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.
 
-   Owning Modules:
-      zzz.c
+   Related Modules:
+      None
+
+   Description:
+      Has the version number for the front end.	 Makes it easier to
+      tell how consistently patches have been applied, etc.
 
    Modifications:
 */
 
-#ifndef _H_f_zzz
-#define _H_f_zzz
+#include "version.h"
 
-extern char *ffezzz_version_string;
-extern char *ffezzz_date;
-extern char *ffezzz_time;
-
-#endif
+char *ffe_version_string = "0.5.21-19970811";

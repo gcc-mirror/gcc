@@ -207,18 +207,6 @@ their systems had a complete, working one.  Unfortunately, this meant
 inconveniencing users of systems not having `strtoul()', but they're
 using obsolete (and generally unsupported) systems anyway.
 
-Object File Differences
-.......................
-
-   A comparison of object files after building Stage 3 during a
-bootstrap build will result in `gcc/f/zzz.o' being flagged as different
-from the Stage 2 version.  That is because it contains a string with an
-expansion of the `__TIME__' macro, which expands to the current time of
-day.  It is nothing to worry about, since `gcc/f/zzz.c' doesn't contain
-any actual code.  It does allow you to override its use of `__DATE__'
-and `__TIME__' by defining macros for the compilation--see the source
-code for details.
-
 Cleanup Kills Stage Directories
 ...............................
 

@@ -195,8 +195,6 @@ These problems can occur on most or all systems.
 * Building GNU CC Necessary::  Why you can't build @emph{just} Fortran.
 * Missing strtoul::	       If linking @code{f771} fails due to an
                                 unresolved reference to @code{strtoul}.
-* Object File Differences::    It's okay that @samp{make compare} will
-                                flag @file{f/zzz.o}.
 * Cleanup Kills Stage Directories::  A minor nit for @code{g77} developers.
 * Missing gperf?::             When building requires @code{gperf}.
 @end menu
@@ -287,26 +285,6 @@ when their systems had a complete, working one.
 Unfortunately, this meant inconveniencing users of systems not
 having @code{strtoul()}, but they're using obsolete (and generally
 unsupported) systems anyway.
-
-@node Object File Differences
-@subsubsection Object File Differences
-@cindex zzz.o
-@cindex zzz.c
-@cindex object file, differences
-@cindex differences between object files
-@cindex make compare
-
-A comparison of object files after building Stage 3 during a
-bootstrap build will result in @file{gcc/f/zzz.o} being flagged
-as different from the Stage 2 version.
-That is because it
-contains a string with an expansion of the @code{__TIME__} macro,
-which expands to the current time of day.
-It is nothing to worry about, since
-@file{gcc/f/zzz.c} doesn't contain any actual code.
-It does allow you to override its use of @code{__DATE__} and
-@code{__TIME__} by defining macros for the compilation---see the
-source code for details.
 
 @node Cleanup Kills Stage Directories
 @subsubsection Cleanup Kills Stage Directories
@@ -750,11 +728,8 @@ sh[12]# @kbd{make bootstrap}
 [This takes a long time, and is where most problems occur.]
 @set build-gcc 12
 sh[13]# @kbd{make compare}
-[This verifies that the compiler is `sane'.  Only
-the file `f/zzz.o' (aka `tmp-foo1' and `tmp-foo2')
-should be in the list of object files this command
-prints as having different contents.  If other files
-are printed, you have likely found a g77 bug.]
+[This verifies that the compiler is `sane'.
+If any files are printed, you have likely found a g77 bug.]
 @set compare-gcc 13
 sh[14]# @kbd{rm -fr stage1}
 @set rm-stage1 14
@@ -894,8 +869,8 @@ information on this step.
 
 @item Step @value{compare-gcc}: @kbd{make compare}
 @xref{Bug Lists,,Where to Port Bugs}, for information
-on where to report that you observed more than
-@file{f/zzz.o} having different contents during this
+on where to report that you observed files
+having different contents during this
 phase.
 
 @xref{Bug Reporting,,How to Report Bugs}, for
