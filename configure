@@ -993,27 +993,34 @@ for subdir in . ${subdirs} ; do
                 set ${links}; link=$1; shift; links=$*
 
                 if [ ! -r ${srcdir}/${file} ] ; then
+                  if [ ! -r ${file} ] ; then
+		    
                         echo '***' "${progname}: cannot create a link \"${link}\"," 1>&2
                         echo '***' "since the file \"${srcdir}/${file}\" does not exist." 1>&2
                         exit 1
+		  else
+			srcfile=${file}
+		  fi
+		else
+			srcfile=${srcdir}/${file}
                 fi
 
                 ${remove} -f ${link}
 		# Make a symlink if possible, otherwise try a hard link
-		if ${symbolic_link} ${srcdir}/${file} ${link} >/dev/null 2>&1 ; then
+		if ${symbolic_link} ${srcfile} ${link} >/dev/null 2>&1 ; then
 			true
 		else
 			# We need to re-remove the file because Lynx leaves a 
 			# very strange directory there when it fails an NFS symlink.
 			${remove} -r -f ${link}
-			${hard_link} ${srcdir}/${file} ${link}
+			${hard_link} ${srcfile} ${link}
 		fi
                 if [ ! -r ${link} ] ; then
-                        echo '***' "${progname}: unable to link \"${link}\" to \"${srcdir}/${file}\"." 1>&2
+                        echo '***' "${progname}: unable to link \"${link}\" to \"${srcfile}\"." 1>&2
                         exit 1
                 fi
 
-                echo "Linked \"${link}\" to \"${srcdir}/${file}\"."
+                echo "Linked \"${link}\" to \"${srcfile}\"."
         done
 
         # Create a .gdbinit file which runs the one in srcdir
