@@ -3632,10 +3632,18 @@ assign_parms (fndecl, second_time)
       tree nominal_type = TREE_TYPE (parm);
 
       /* Set LAST_NAMED if this is last named arg before some
-	 anonymous args.  We treat it as if it were anonymous too.  */
+	 anonymous args.  */
       int last_named = ((TREE_CHAIN (parm) == 0
 			 || DECL_NAME (TREE_CHAIN (parm)) == 0)
 			&& (stdarg || current_function_varargs));
+      /* Set NAMED_ARG if this arg should be treated as a named arg.  For
+	 most machines, if this is a varargs/stdarg function, then we treat
+	 the last named arg as if it were anonymous too.  */
+#ifdef STRICT_ARGUMENT_NAMING
+      int named_arg = 1;
+#else
+      int named_arg = ! last_name;
+#endif
 
       if (TREE_TYPE (parm) == error_mark_node
 	  /* This can happen after weird syntax errors
@@ -3684,7 +3692,7 @@ assign_parms (fndecl, second_time)
 	  || TREE_ADDRESSABLE (passed_type)
 #ifdef FUNCTION_ARG_PASS_BY_REFERENCE
 	  || FUNCTION_ARG_PASS_BY_REFERENCE (args_so_far, passed_mode,
-					      passed_type, ! last_named)
+					      passed_type, named_arg)
 #endif
 	  )
 	{
@@ -3704,10 +3712,10 @@ assign_parms (fndecl, second_time)
 	 0 means it arrives on the stack.  */
 #ifdef FUNCTION_INCOMING_ARG
       entry_parm = FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
-					  passed_type, ! last_named);
+					  passed_type, named_arg);
 #else
       entry_parm = FUNCTION_ARG (args_so_far, promoted_mode,
-				 passed_type, ! last_named);
+				 passed_type, named_arg);
 #endif
 
       if (entry_parm == 0)
@@ -3753,12 +3761,12 @@ assign_parms (fndecl, second_time)
 #ifdef FUNCTION_INCOMING_ARG
 			   FUNCTION_INCOMING_ARG (args_so_far, promoted_mode,
 						  passed_type,
-						  (! last_named
+						  (named_arg
 						   || varargs_setup)) != 0,
 #else
 			   FUNCTION_ARG (args_so_far, promoted_mode,
 					 passed_type,
-					 ! last_named || varargs_setup) != 0,
+					 named_arg || varargs_setup) != 0,
 #endif
 #endif
 			   fndecl, &stack_args_size, &stack_offset, &arg_size);
@@ -3799,7 +3807,7 @@ assign_parms (fndecl, second_time)
       if (entry_parm)
 	{
 	  int nregs = FUNCTION_ARG_PARTIAL_NREGS (args_so_far, promoted_mode,
-						  passed_type, ! last_named);
+						  passed_type, named_arg);
 
 	  if (nregs > 0)
 	    {
@@ -3864,7 +3872,7 @@ assign_parms (fndecl, second_time)
       /* Update info on where next arg arrives in registers.  */
 
       FUNCTION_ARG_ADVANCE (args_so_far, promoted_mode,
-			    passed_type, ! last_named);
+			    passed_type, named_arg);
 
       /* If this is our second time through, we are done with this parm.  */
       if (second_time)
@@ -4106,7 +4114,7 @@ assign_parms (fndecl, second_time)
 		   && FUNCTION_ARG_CALLEE_COPIES (args_so_far,
 						  TYPE_MODE (DECL_ARG_TYPE (parm)),
 						  DECL_ARG_TYPE (parm),
-						  ! last_named)
+						  named_arg)
 		   && ! TREE_ADDRESSABLE (DECL_ARG_TYPE (parm)))
 	    {
 	      rtx copy;
