@@ -738,6 +738,19 @@ extern enum reg_class regno_reg_class[];
    (C) == 'H' ? (TARGET_FPA && standard_sun_fpa_constant_p (VALUE)) : 0)
 #endif /* defined SUPPORT_SUN_FPA */
 
+/* A C expression that defines the optional machine-dependent constraint
+   letters that can be used to segregate specific types of operands,  
+   usually memory references, for the target machine.  It should return 1 if
+   VALUE corresponds to the operand type represented by the constraint letter
+   C.  If C is not defined as an extra constraint, the value returned should 
+   be 0 regardless of VALUE.  */
+
+/* For the m68k, `Q' means address register indirect addressing mode. */
+
+#define EXTRA_CONSTRAINT(OP, C)	\
+  ((C) == 'Q' ? (GET_CODE (OP) == MEM && GET_CODE (XEXP (OP, 0)) == REG) : \
+   0 )
+
 /* Given an rtx X being reloaded into a reg required to be
    in class CLASS, return the class of reg to actually use.
    In general this is just CLASS; but on some machines
