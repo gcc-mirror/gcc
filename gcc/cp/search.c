@@ -3250,20 +3250,33 @@ types_overlap_p (empty_type, next_type)
   return oi.found_overlap;
 }
 
-/* Given a vtable VAR, determine which binfo it comes from.
+/* Given a vtable VAR, determine which of the inherited classes the vtable
+   inherits (in a loose sense) functions from.
 
-   FIXME What about secondary vtables?  */
+   FIXME: This does not work with the new ABI.  */
 
 tree
 binfo_for_vtable (var)
      tree var;
 {
-  tree binfo = TYPE_BINFO (DECL_CONTEXT (var));
+  tree main_binfo = TYPE_BINFO (DECL_CONTEXT (var));
+  tree binfos = TYPE_BINFO_BASETYPES (BINFO_TYPE (main_binfo));
+  int n_baseclasses = CLASSTYPE_N_BASECLASSES (BINFO_TYPE (main_binfo));
+  int i;
 
-  while (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (binfo)))
-    binfo = get_primary_binfo (binfo);
+  for (i = 0; i < n_baseclasses; i++)
+    {
+      tree base_binfo = TREE_VEC_ELT (binfos, i);
+      if (base_binfo != NULL_TREE && BINFO_VTABLE (base_binfo) == var)
+	return base_binfo;
+    }
 
-  return binfo;
+  /* If no secondary base classes matched, return the primary base, if
+     there is one.   */
+  if (CLASSTYPE_HAS_PRIMARY_BASE_P (BINFO_TYPE (main_binfo)))
+    return get_primary_binfo (main_binfo);
+
+  return main_binfo;
 }
 
 /* Returns the binfo of the first direct or indirect virtual base from
