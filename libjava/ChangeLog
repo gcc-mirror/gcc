@@ -1,5 +1,8 @@
 2004-06-17  Anthony Green  <green@redhat.com>
 
+	* java/util/zip/ZipFile.java (getInputStream): Return null if
+	entry not found.
+
 	* gnu/gcj/runtime/VMClassLoader.java (init): Add extension
 	directory contents to the class path.
 

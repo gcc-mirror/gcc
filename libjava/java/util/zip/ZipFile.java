@@ -408,8 +408,18 @@ public class ZipFile implements ZipConstants
    * uncompressed data.  Normally zip entry should be an entry
    * returned by getEntry() or entries().
    *
+   * This implementation returns null if the requested entry does not
+   * exist.  This decision is not obviously correct, however, it does
+   * appear to mirror Sun's implementation, and it is consistant with
+   * their javadoc.  On the other hand, the old JCL book, 2nd Edition,
+   * claims that this should return a "non-null ZIP entry".  We have
+   * chosen for now ignore the old book, as modern versions of Ant (an
+   * important application) depend on this behaviour.  See discussion
+   * in this thread:
+   * http://gcc.gnu.org/ml/java-patches/2004-q2/msg00602.html
+   *
    * @param entry the entry to create an InputStream for.
-   * @return the input stream.
+   * @return the input stream, or null if the requested entry does not exist.
    *
    * @exception IOException if a i/o error occured.
    * @exception ZipException if the Zip archive is malformed.  
@@ -420,7 +430,7 @@ public class ZipFile implements ZipConstants
     String name = entry.getName();
     ZipEntry zipEntry = (ZipEntry) entries.get(name);
     if (zipEntry == null)
-      throw new NoSuchElementException(name);
+      return null;
 
     long start = checkLocalHeader(zipEntry);
     int method = zipEntry.getMethod();
