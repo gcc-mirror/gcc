@@ -1,5 +1,28 @@
 2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* default.h (PROMOTE_PROTOTYPES): Remove.
+	* system.h (PROMOTE_FUNCTION_RETURN, PROMOTE_PROTOTYPES,
+	STRUCT_VALUE_REGNUM, SETUP_INCOMING_VARARGS,
+	EXPAND_BUILTIN_SAVEREGS): Poison.
+	* target-def.h (TARGET_PROMOTE_FUNCTION_RETURN): Define as
+	hook_bool_tree_false.
+	(TARGET_PROMOTE_PROTOTYPES): Likewise.
+	* target.h: Replace SETUP_INCOMING_VARARGS with
+	targetm.calls.setup_incoming_varargs().
+	* targhooks.c (default_promote_function_return): Remove.
+	(default_promote_prototypes): Likewise.
+	(default_struct_value_rtx): Always abort().
+	(default_expand_builtin_saveregs): Always print an error
+	message.
+	(default_setup_incoming_varargs): Do nothing.
+	(default_pretend_outgoing_varargs_named): Don't depend on
+	SETUP_INCOMING_VARARGS.
+	* targhooks.h: Remove the prototype for
+	default_promote_function_return and
+	default_promote_prototypes.
+
+2004-02-07  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* system.h (SHARED_SECTION_ASM_OP): Poison.
 	* varasm.c (data_section): Don't use SHARED_SECTION_ASM_OP.
 	* doc/tm.texi (SHARED_SECTION_ASM_OP): Remove.
