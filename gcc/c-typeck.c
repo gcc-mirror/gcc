@@ -6862,9 +6862,9 @@ simple_asm_stmt (expr)
     {
       tree stmt;
 
-      stmt = add_stmt (build_stmt (ASM_STMT, NULL_TREE, expr,
-				   NULL_TREE, NULL_TREE,
-				   NULL_TREE));
+      /* Simple asm statements are treated as volatile.  */
+      stmt = add_stmt (build_stmt (ASM_STMT, ridpointers[(int) RID_VOLATILE],
+				   expr, NULL_TREE, NULL_TREE, NULL_TREE));
       ASM_INPUT_P (stmt) = 1;
       return stmt;
     }

@@ -2138,7 +2138,6 @@ volatile_insn_p (x)
     case REG:
     case SCRATCH:
     case CLOBBER:
-    case ASM_INPUT:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
     case CALL:
@@ -2149,6 +2148,7 @@ volatile_insn_p (x)
  /* case TRAP_IF: This isn't clear yet.  */
       return 1;
 
+    case ASM_INPUT:
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
@@ -2205,7 +2205,6 @@ volatile_refs_p (x)
     case REG:
     case SCRATCH:
     case CLOBBER:
-    case ASM_INPUT:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       return 0;
@@ -2214,6 +2213,7 @@ volatile_refs_p (x)
       return 1;
 
     case MEM:
+    case ASM_INPUT:
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
@@ -2269,7 +2269,6 @@ side_effects_p (x)
     case PC:
     case REG:
     case SCRATCH:
-    case ASM_INPUT:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       return 0;
@@ -2292,6 +2291,7 @@ side_effects_p (x)
       return 1;
 
     case MEM:
+    case ASM_INPUT:
     case ASM_OPERANDS:
       if (MEM_VOLATILE_P (x))
 	return 1;
