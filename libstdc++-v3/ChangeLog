@@ -1,6 +1,7 @@
 2001-02-05   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h (class moneypunct): Fix typos.
+	* libsupc++/pure.cc: Revert.
 
 2001-02-05   Benjamin Kosnik  <bkoz@redhat.com>
 
