@@ -1,3 +1,8 @@
+2002-07-11  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7224
+	* g++.dg/overload/error1.C: New test.
+	
 2002-07-11  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* gcc.misc-tests/linkage.exp: Handle mips-sgi-irix6*o32
