@@ -41,8 +41,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
+ * This filter stream is used to compress a stream into a "GZIP" stream. 
+ * The "GZIP" format is described in RFC 1952.
+ *
+ * @author John Leuner
  * @author Tom Tromey
- * @date May 17, 1999
+ * @since JDK 1.1
  */
 
 /* Written using on-line Java Platform 1.2 API Specification
@@ -52,75 +56,91 @@ import java.io.OutputStream;
 
 public class GZIPOutputStream extends DeflaterOutputStream
 {
-  public void close () throws IOException
+  /**
+   * CRC-32 value for uncompressed data
+   */
+  protected CRC32 crc;
+
+  /**
+   * Creates a GZIPOutputStream with the default buffer size
+   *
+   * @param out The stream to read data (to be compressed) from 
+   * 
+   */
+  public GZIPOutputStream(OutputStream out) throws IOException
   {
-    finish ();
-    out.close ();
+    this(out, 512);
   }
 
-  public void finish () throws IOException
+  /**
+   * Creates a GZIPOutputStream with the specified buffer size
+   *
+   * @param out The stream to read compressed data from 
+   * @param size Size of the buffer to use 
+   */
+  public GZIPOutputStream(OutputStream out, int size) throws IOException
   {
-    super.finish();
-    put4 ((int) crc.getValue());
-    put4 (def.getTotalIn());
-  }
-
-  public GZIPOutputStream (OutputStream out) throws IOException
-  {
-    this (out, 512);
-  }
-
-  public GZIPOutputStream (OutputStream out, int readsize) throws IOException
-  {
-    super (out, new Deflater (Deflater.DEFAULT_COMPRESSION, true), readsize);
-
-    put2 (GZIPInputStream.GZIP_MAGIC);
-    out.write (GZIPInputStream.Z_DEFLATED);
+    super(out, new Deflater(Deflater.DEFAULT_COMPRESSION, true), size);
+    crc = new CRC32();
+    put2(GZIPInputStream.GZIP_MAGIC);
+    out.write(GZIPInputStream.Z_DEFLATED);
     // No flags for now.
-    out.write (0);
+    out.write(0);
     // No time either.
-    put2 (0);
-    put2 (0);
+    put2(0);
+    put2(0);
     // No xflags either.
-    out.write (0);
+    out.write(0);
     // FIXME: unknown OS.
-    out.write (255);
-
-    crc = new CRC32 ();
+    out.write(255);
   }
 
-  public synchronized void write (int bval) throws IOException
+  public synchronized void write(int bval) throws IOException
   {
-    super.write (bval);
-    crc.update (bval);
+    super.write(bval);
+    crc.update(bval);
   }
 
-  public synchronized void write (byte[] buf) throws IOException
+  public synchronized void write(byte[] buf) throws IOException
   {
-    write (buf, 0, buf.length);
+    write(buf, 0, buf.length);
   }
 
-  public synchronized void write (byte[] buf, int off, int len)
+  public synchronized void write(byte[] buf, int off, int len)
     throws IOException
   {
     super.write(buf, off, len);
     crc.update(buf, off, len);
   }
 
-  private final void put2 (int i) throws IOException
+  /**
+   * Writes remaining compressed output data to the output stream
+   * and closes it.
+   */
+  public void close() throws IOException
   {
-    out.write (i);
-    out.write (i >> 8);
+    finish();
+    out.close();
+  }
+
+  public void finish() throws IOException
+  {
+    super.finish();
+    put4((int) crc.getValue());
+    put4(def.getTotalIn());
+  }
+
+  private final void put2(int i) throws IOException
+  {
+    out.write(i);
+    out.write(i >> 8);
   }
 
   private final void put4 (int i) throws IOException
   {
-    out.write (i);
-    out.write (i >> 8);
-    out.write (i >> 16);
-    out.write (i >> 24);
+    out.write(i);
+    out.write(i >> 8);
+    out.write(i >> 16);
+    out.write(i >> 24);
   }
-
-  // Checksum used by this stream.
-  protected CRC32 crc;
 }
