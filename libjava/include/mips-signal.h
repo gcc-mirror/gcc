@@ -54,7 +54,9 @@ struct kernel_sigaction {
 
 
 #define SIGNAL_HANDLER(_name) \
-static void _name (int _dummy, siginfo_t *_info, sig_ucontext_t *_arg)
+static void _name (int _dummy __attribute__ ((__unused__)), \
+		   siginfo_t *_info __attribute__ ((__unused__)), \
+		   sig_ucontext_t *_arg __attribute__ ((__unused__)))
 
 /*
  *  MIPS leaves pc pointing at the faulting instruction, but the

@@ -18,7 +18,9 @@ details.  */
 #define HANDLE_FPE 1
 
 #define SIGNAL_HANDLER(_name) 						\
-static void _name (int _dummy, siginfo_t *_info, void *arg)
+static void _name (int _dummy __attribute__ ((__unused__)), \
+		   siginfo_t *_info __attribute__ ((__unused__)), \
+		   void *arg __attribute__ ((__unused__)))
 
 #ifdef __arch64__
 #define FLUSH_REGISTER_WINDOWS					\

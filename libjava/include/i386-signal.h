@@ -20,7 +20,7 @@ details.  */
 #define HANDLE_FPE 1
 
 #define SIGNAL_HANDLER(_name)	\
-static void _name (int _dummy)
+static void _name (int _dummy __attribute__ ((__unused__)))
 
 #define MAKE_THROW_FRAME(_exception)					\
 do									\

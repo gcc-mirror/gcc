@@ -1,5 +1,16 @@
 2004-09-26  Per Bothner  <per@bothner.com>
 
+	* prims.cc (unblock_signal): Annotate signum with __unused__ to
+	avoid warnings in the non-POSIX_VERSION case.
+	Also, we only need this function if either HANDLE_SEGV or HANDLE_FPE,
+	so place it inside an #if block.
+	* include/default-signal.h (SIGNAL_HANDLER): Parameters are __unused__.
+	* include/i386-signal.h (SIGNAL_HANDLER):  Likewise
+	* include/mips-signal.h (SIGNAL_HANDLER):  Likewise
+	* include/sparc-signal.h (SIGNAL_HANDLER):  Likewise
+
+2004-09-26  Per Bothner  <per@bothner.com>
+
 	* prims.cc (process_gcj_properties):  Optimization.
 
 2004-09-26  Per Bothner  <per@bothner.com>
