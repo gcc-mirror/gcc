@@ -1,5 +1,11 @@
 2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
 
+	PR c/4988
+	* (process_command): Don't add a preprocessor option for
+	--help and --target-help; cc1 is enough.
+
+2001-12-03  Neil Booth  <neil@daikokuya.demon.co.uk>
+
 	* c-decl.c (grokdeclarator): Use ISO word.
 	* cppinit.c: Remove leading capital from diagnostic messages, as
 	per GNU coding standards.
