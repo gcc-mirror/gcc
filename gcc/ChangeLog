@@ -1,3 +1,7 @@
+2001-07-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* config/ia64/ia64.h (STRIP_NAME_ENCODING): Strip out '*' as well.
+
 2001-07-25  Jan Hubicka  <jh@suse.cz>
 	    Richard Henderson  <rth@redhat.com>
 
