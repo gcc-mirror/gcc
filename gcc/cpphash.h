@@ -183,22 +183,6 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 
 /* Macros.  */
 
-/* Make sure PFILE->token_buffer has space for at least N more characters. */
-#define CPP_RESERVE(PFILE, N) \
-  (CPP_WRITTEN (PFILE) + (size_t)(N) > (PFILE)->token_buffer_size \
-   && (_cpp_grow_token_buffer (PFILE, N), 0))
-
-/* Append string STR (of length N) to PFILE's output buffer.
-   Assume there is enough space. */
-#define CPP_PUTS_Q(PFILE, STR, N) \
-  (memcpy ((PFILE)->limit, STR, (N)), (PFILE)->limit += (N))
-/* Append string STR (of length N) to PFILE's output buffer.  Make space. */
-#define CPP_PUTS(PFILE, STR, N) CPP_RESERVE(PFILE, N), CPP_PUTS_Q(PFILE, STR,N)
-/* Append character CH to PFILE's output buffer.  Assume sufficient space. */
-#define CPP_PUTC_Q(PFILE, CH) (*(PFILE)->limit++ = (CH))
-/* Append character CH to PFILE's output buffer.  Make space if need be. */
-#define CPP_PUTC(PFILE, CH) (CPP_RESERVE (PFILE, 1), CPP_PUTC_Q (PFILE, CH))
-
 #define CPP_PREV_BUFFER(BUFFER) ((BUFFER)->prev)
 #define CPP_PRINT_DEPS(PFILE) CPP_OPTION (PFILE, print_deps)
 #define CPP_IN_SYSTEM_HEADER(PFILE) \
@@ -212,10 +196,6 @@ extern unsigned char _cpp_trigraph_map[UCHAR_MAX + 1];
 /* Hash step.  The hash calculation is duplicated in cpp_lookup and
    parse_name.  */
 #define HASHSTEP(r, c) ((r) * 67 + (c - 113));
-
-/* Flags for _cpp_init_toklist.  */
-#define DUMMY_TOKEN     0
-#define NO_DUMMY_TOKEN	1
 
 /* In cpperror.c  */
 enum error_type { WARNING = 0, PEDWARN, ERROR, FATAL, ICE };

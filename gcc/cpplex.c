@@ -103,7 +103,7 @@ static cppchar_t skip_escaped_newlines PARAMS ((cpp_buffer *, cppchar_t));
 static cppchar_t get_effective_char PARAMS ((cpp_buffer *));
 
 static int skip_block_comment PARAMS ((cpp_reader *));
-static int skip_line_comment PARAMS ((cpp_buffer *));
+static int skip_line_comment PARAMS ((cpp_reader *));
 static void adjust_column PARAMS ((cpp_reader *));
 static void skip_whitespace PARAMS ((cpp_reader *, cppchar_t));
 static cpp_hashnode *parse_identifier PARAMS ((cpp_reader *, cppchar_t));
@@ -112,11 +112,9 @@ static void parse_string PARAMS ((cpp_reader *, cpp_token *, cppchar_t));
 static void unterminated PARAMS ((cpp_reader *, unsigned int, int));
 static int trigraph_ok PARAMS ((cpp_reader *, cppchar_t));
 static void save_comment PARAMS ((cpp_reader *, cpp_token *, const U_CHAR *));
+static void lex_percent PARAMS ((cpp_buffer *, cpp_token *));
+static void lex_dot PARAMS ((cpp_reader *, cpp_token *));
 static void lex_line PARAMS ((cpp_reader *, cpp_toklist *));
-static void check_long_token PARAMS ((cpp_buffer *,
-				      cpp_token *,
-				      cppchar_t,
-				      enum cpp_ttype));
 static void lex_token PARAMS ((cpp_reader *, cpp_token *));
 static int lex_next PARAMS ((cpp_reader *, int));
 
@@ -453,50 +451,35 @@ _cpp_expand_token_space (list, count)
      cpp_toklist *list;
      unsigned int count;
 {
-  unsigned int n;
-
   list->tokens_cap += count;
-  n = list->tokens_cap;
-  if (list->flags & LIST_OFFSET)
-    list->tokens--, n++;
   list->tokens = (cpp_token *)
-    xrealloc (list->tokens, n * sizeof (cpp_token));
-  if (list->flags & LIST_OFFSET)
-    list->tokens++;		/* Skip the dummy.  */
+    xrealloc (list->tokens, list->tokens_cap * sizeof (cpp_token));
 }
 
-/* Initialize a token list.  If flags is DUMMY_TOKEN, we allocate
-   an extra token in front of the token list, as this allows the lexer
-   to always peek at the previous token without worrying about
-   underflowing the list, and some initial space.  Otherwise, no
-   token- or name-space is allocated, and there is no dummy token.  */
+/* Initialize a token list.  If EMPTY is false, some token and name
+   space is provided.  */
 void
-_cpp_init_toklist (list, flags)
+_cpp_init_toklist (list, empty)
      cpp_toklist *list;
-     int flags;
+     int empty;
 {
-  if (flags == NO_DUMMY_TOKEN)
+  if (empty)
     {
       list->tokens_cap = 0;
       list->tokens = 0;
       list->name_cap = 0;
       list->namebuf = 0;
-      list->flags = 0;
     }
   else
     {
-      /* Initialize token space.  Put a dummy token before the start
-	 that will fail matches.  */
+      /* Initialize token space.  */
       list->tokens_cap = 256;	/* 4K's worth.  */
       list->tokens = (cpp_token *)
 	xmalloc ((list->tokens_cap + 1) * sizeof (cpp_token));
-      list->tokens[0].type = CPP_EOF;
-      list->tokens++;
 
       /* Initialize name space.  */
       list->name_cap = 1024;
       list->namebuf = (unsigned char *) xmalloc (list->name_cap);
-      list->flags = LIST_OFFSET;
     }
 
   _cpp_clear_toklist (list);
@@ -512,7 +495,7 @@ _cpp_clear_toklist (list)
   list->directive = 0;
   list->paramc = 0;
   list->params_len = 0;
-  list->flags &= LIST_OFFSET;  /* clear all but that one */
+  list->flags = 0;
 }
 
 /* Free a token list.  Does not free the list itself, which may be
@@ -521,10 +504,7 @@ void
 _cpp_free_toklist (list)
      const cpp_toklist *list;
 {
-  if (list->flags & LIST_OFFSET)
-    free (list->tokens - 1);	/* Backup over dummy token.  */
-  else
-    free (list->tokens);
+  free (list->tokens);
   free (list->namebuf);
 }
 
@@ -633,7 +613,8 @@ trigraph_ok (pfile, from_char)
 {
   int accept = CPP_OPTION (pfile, trigraphs);
   
-  if (CPP_OPTION (pfile, warn_trigraphs))
+  /* Don't warn about trigraphs in comments.  */
+  if (CPP_OPTION (pfile, warn_trigraphs) && !pfile->state.lexing_comment)
     {
       cpp_buffer *buffer = pfile->buffer;
       if (accept)
@@ -768,6 +749,7 @@ skip_block_comment (pfile)
   cpp_buffer *buffer = pfile->buffer;
   cppchar_t c = EOF, prevc;
 
+  pfile->state.lexing_comment = 1;
   while (buffer->cur != buffer->rlimit)
     {
       prevc = c, c = *buffer->cur++;
@@ -812,6 +794,7 @@ skip_block_comment (pfile)
 	adjust_column (pfile);
     }
 
+  pfile->state.lexing_comment = 0;
   buffer->read_ahead = EOF;
   return c != '/' || prevc != '*';
 }
@@ -820,12 +803,14 @@ skip_block_comment (pfile)
    non-zero if a multiline comment.  The following new line, if any,
    is left in buffer->read_ahead.  */
 static int
-skip_line_comment (buffer)
-     cpp_buffer *buffer;
+skip_line_comment (pfile)
+     cpp_reader *pfile;
 {
+  cpp_buffer *buffer = pfile->buffer;
   unsigned int orig_lineno = buffer->lineno;
   cppchar_t c;
 
+  pfile->state.lexing_comment = 1;
   do
     {
       c = EOF;
@@ -838,6 +823,7 @@ skip_line_comment (buffer)
     }
   while (!is_vspace (c));
 
+  pfile->state.lexing_comment = 0;
   buffer->read_ahead = c;	/* Leave any newline for caller.  */
   return orig_lineno != buffer->lineno;
 }
@@ -966,11 +952,15 @@ parse_number (pfile, number, c)
   cpp_buffer *buffer = pfile->buffer;
   unsigned int orig_used = pfile->token_list.name_used;
 
+  /* Reserve space for a leading period.  */
+  if (pfile->state.seen_dot)
+    pfile->token_list.name_used++;
+
   do
     {
       do
 	{
-	  if (pfile->token_list.name_used == pfile->token_list.name_cap)
+	  if (pfile->token_list.name_used >= pfile->token_list.name_cap)
 	    _cpp_expand_name_space (&pfile->token_list,
 				    pfile->token_list.name_used + 256);
 	  pfile->token_list.namebuf[pfile->token_list.name_used++] = c;
@@ -990,6 +980,10 @@ parse_number (pfile, number, c)
       c = skip_escaped_newlines (buffer, c);
     }
   while (is_numchar (c) || c == '.' || VALID_SIGN (c, prevc));
+
+  /* Put any leading period in place, now we have the room.  */
+  if (pfile->state.seen_dot)
+    pfile->token_list.namebuf[orig_used] = '.';
 
   /* Remember the next character.  */
   buffer->read_ahead = c;
@@ -1144,27 +1138,99 @@ save_comment (pfile, token, from)
   memcpy (buffer, from, len - COMMENT_START_LEN);
 }
 
-/* A helper routine for lex_token.  With some long tokens, we need
-   to read ahead to see if that is the token we have, but back-track
-   if not.  */
+/* Subroutine of lex_token to handle '%'.  A little tricky, since we
+   want to avoid stepping back when lexing %:%X.  */
 static void
-check_long_token (buffer, result, wanted, type)
+lex_percent (buffer, result)
      cpp_buffer *buffer;
      cpp_token *result;
-     cppchar_t wanted;
-     enum cpp_ttype type;
 {
-  const unsigned char *saved_cur;
-  cppchar_t c = buffer->read_ahead;
+  cppchar_t c;
 
-  SAVE_STATE ();
-  if (get_effective_char (buffer) == wanted)
-    ACCEPT_CHAR (type);
+  result->type = CPP_MOD;
+  /* Parsing %:%X could leave an extra character.  */
+  if (buffer->extra_char == EOF)
+    c = get_effective_char (buffer);
   else
     {
-      /* Restore state.  */
-      RESTORE_STATE ();
-      buffer->read_ahead = c;
+      c = buffer->read_ahead = buffer->extra_char;
+      buffer->extra_char = EOF;
+    }
+
+  if (c == '=')
+    ACCEPT_CHAR (CPP_MOD_EQ);
+  else if (CPP_OPTION (buffer->pfile, digraphs))
+    {
+      if (c == ':')
+	{
+	  result->flags |= DIGRAPH;
+	  ACCEPT_CHAR (CPP_HASH);
+	  if (get_effective_char (buffer) == '%')
+	    {
+	      buffer->extra_char = get_effective_char (buffer);
+	      if (buffer->extra_char == ':')
+		{
+		  buffer->extra_char = EOF;
+		  ACCEPT_CHAR (CPP_PASTE);
+		}
+	      else
+		/* We'll catch the extra_char when we're called back.  */
+		buffer->read_ahead = '%';
+	    }
+	}
+      else if (c == '>')
+	{
+	  result->flags |= DIGRAPH;
+	  ACCEPT_CHAR (CPP_CLOSE_BRACE);
+	}
+    }
+}
+
+/* Subroutine of lex_token to handle '.'.  This is tricky, since we
+   want to avoid stepping back when lexing '...' or '.123'.  In the
+   latter case we should also set a flag for parse_number.  */
+static void
+lex_dot (pfile, result)
+     cpp_reader *pfile;
+     cpp_token *result;
+{
+  cpp_buffer *buffer = pfile->buffer;
+  cppchar_t c;
+
+  /* Parsing ..X could leave an extra character.  */
+  if (buffer->extra_char == EOF)
+    c = get_effective_char (buffer);
+  else
+    {
+      c = buffer->read_ahead = buffer->extra_char;
+      buffer->extra_char = EOF;
+    }
+
+  /* All known character sets have 0...9 contiguous.  */
+  if (c >= '0' && c <= '9')
+    {
+      result->type = CPP_NUMBER;
+      buffer->pfile->state.seen_dot = 1;
+      parse_number (pfile, &result->val.str, c);
+      buffer->pfile->state.seen_dot = 0;
+    }
+  else
+    {
+      result->type = CPP_DOT;
+      if (c == '.')
+	{
+	  buffer->extra_char = get_effective_char (buffer);
+	  if (buffer->extra_char == '.')
+	    {
+	      buffer->extra_char = EOF;
+	      ACCEPT_CHAR (CPP_ELLIPSIS);
+	    }
+	  else
+	    /* We'll catch the extra_char when we're called back.  */
+	    buffer->read_ahead = '.';
+	}
+      else if (c == '*' && CPP_OPTION (pfile, cplusplus))
+	ACCEPT_CHAR (CPP_DOT_STAR);
     }
 }
 
@@ -1245,7 +1311,6 @@ lex_token (pfile, result)
       }
       break;
 
-    make_number:
     case '0': case '1': case '2': case '3': case '4':
     case '5': case '6': case '7': case '8': case '9':
       result->type = CPP_NUMBER;
@@ -1342,7 +1407,7 @@ lex_token (pfile, result)
 	      comment_start = buffer->cur;
 
 	      /* Skip_line_comment updates buffer->read_ahead.  */
-	      if (skip_line_comment (buffer))
+	      if (skip_line_comment (pfile))
 		cpp_warning_with_line (pfile, result->line, result->col,
 				       "multi-line comment");
 
@@ -1413,57 +1478,12 @@ lex_token (pfile, result)
 	}
       break;
 
-    case '.':
-      {
-	const unsigned char *saved_cur;
-	cppchar_t c1;
-
-	/* Save state to avoid needing to pass 2 chars to parse_number.  */
-	SAVE_STATE ();
-	c1 = get_effective_char (buffer);
-	/* All known character sets have 0...9 contiguous.  */
-	if (c1 >= '0' && c1 <= '9')
-	  {
-	    RESTORE_STATE ();
-	    goto make_number;
-	  }
-
-	result->type = CPP_DOT;
-	if (c1 == '.')
-	  {
-	    if (get_effective_char (buffer) == '.')
-	      ACCEPT_CHAR (CPP_ELLIPSIS);
-	    else
-	      {
-		buffer->read_ahead = EOF;
-		RESTORE_STATE ();
-	      }
-	  }
-	else if (c1 == '*' && CPP_OPTION (pfile, cplusplus))
-	  ACCEPT_CHAR (CPP_DOT_STAR);
-      }
+    case '%':
+      lex_percent (buffer, result);
       break;
 
-    case '%':
-      result->type = CPP_MOD;
-      c = get_effective_char (buffer);
-      if (c == '=')
-	ACCEPT_CHAR (CPP_MOD_EQ);
-      else if (CPP_OPTION (pfile, digraphs))
-	{
-	  if (c == ':')
-	    {
-	      result->flags |= DIGRAPH;
-	      ACCEPT_CHAR (CPP_HASH);
-	      if (get_effective_char (buffer) == '%')
-		check_long_token (buffer, result, ':', CPP_PASTE);
-	    }
-	  else if (c == '>')
-	    {
-	      result->flags |= DIGRAPH;
-	      ACCEPT_CHAR (CPP_CLOSE_BRACE);
-	    }
-	}
+    case '.':
+      lex_dot (pfile, result);
       break;
 
     case '+':
@@ -1609,9 +1629,6 @@ lex_line (pfile, list)
   unsigned int first_token;
   cpp_token *cur_token, *first;
   cpp_buffer *buffer = pfile->buffer;
-
-  if (!(list->flags & LIST_OFFSET))
-    (abort) ();
 
   pfile->state.in_lex_line = 1;
   if (pfile->buffer->cur == pfile->buffer->buf)
@@ -3397,7 +3414,7 @@ _cpp_init_input_buffer (pfile)
 {
   cpp_context *base;
 
-  _cpp_init_toklist (&pfile->token_list, DUMMY_TOKEN);
+  _cpp_init_toklist (&pfile->token_list, 0);
   pfile->no_expand_level = UINT_MAX;
   pfile->context_cap = 20;
   pfile->cur_context = 0;

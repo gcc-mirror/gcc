@@ -1247,7 +1247,7 @@ _cpp_parse_assertion (pfile, answerp)
   /* Allocate a struct answer, and copy the answer to it.  */
   answer = (struct answer *) xmalloc (sizeof (struct answer));
   list = &answer->list;
-  _cpp_init_toklist (list, NO_DUMMY_TOKEN);
+  _cpp_init_toklist (list, 1);	/* Empty.  */
 
   for (;;)
     {
@@ -1516,7 +1516,9 @@ cpp_push_buffer (pfile, buffer, length)
   new->rlimit = buffer + length;
   new->prev = buf;
   new->pfile = pfile;
+  /* No read ahead or extra char initially.  */
   new->read_ahead = EOF;
+  new->extra_char = EOF;
 
   CPP_BUFFER (pfile) = new;
   return new;
