@@ -92,7 +92,7 @@ namespace std {
     : _M_references(__refs - 1)
     //  , _M_facets(other._M_facets)
     //  , _M_category_names(other._M_category_names)
-    , _M_has_name(__other._M_has_name), _M_name(__other._M_name)
+    , _M_has_name(__name != "*"), _M_name(__name)
   {
 #if 1
     typedef vector<facet*, allocator<facet*> > __vec_facet;
