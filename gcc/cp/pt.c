@@ -638,7 +638,7 @@ begin_specialization ()
   check_specialization_scope ();
 }
 
-/* Called at then end of processing a declaration preceeded by
+/* Called at then end of processing a declaration preceded by
    template<>.  */
 
 void 
@@ -746,7 +746,7 @@ retrieve_specialization (tmpl, args)
   return NULL_TREE;
 }
 
-/* Like retrieve_speciailization, but for local declarations.  */
+/* Like retrieve_specialization, but for local declarations.  */
 
 static tree
 retrieve_local_specialization (tmpl)
@@ -1507,7 +1507,7 @@ check_explicit_specialization (declarator, decl, template_count, flags)
 		  /* If TMPL is not the most general template (for
 		     example, if TMPL is a friend template that is
 		     injected into namespace scope), then there will
-		     be too many levels fo TARGS.  Remove some of them
+		     be too many levels of TARGS.  Remove some of them
 		     here.  */
 		  int i;
 		  tree new_targs;
@@ -2415,7 +2415,7 @@ push_template_decl_real (decl, is_friend)
        it is defined.  */
     ctx = CP_DECL_CONTEXT (decl);
   else
-    /* Otherwise, if we're currently definining some class, the DECL
+    /* Otherwise, if we're currently defining some class, the DECL
        is assumed to be a member of the class.  */
     ctx = current_scope ();
 
@@ -2701,7 +2701,7 @@ redeclare_class_template (type, parms)
 
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
-   converted value.  If the conversion is unsuccesful, return
+   converted value.  If the conversion is unsuccessful, return
    NULL_TREE if we issued an error message, or error_mark_node if we
    did not.  We issue error messages for out-and-out bad template
    parameters, but not simply because the conversion failed, since we
@@ -3333,7 +3333,7 @@ convert_template_argument (parm, arg, args, complain, i, in_decl)
 	   the standard.  Accepting this is not merely an
 	   extension, since deciding whether or not these
 	   conversions can occur is part of determining which
-	   function template to call, or whether a given epxlicit
+	   function template to call, or whether a given explicit
 	   argument specification is legal.  */
 	val = convert_nontype_argument (t, arg);
       else
@@ -3908,7 +3908,7 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	      
 	      /* Note that we use DECL_CONTEXT, rather than
 		 CP_DECL_CONTEXT, so that the termination test is
-		 always just `ctx'.  We're not interested in namepace
+		 always just `ctx'.  We're not interested in namespace
 		 scopes.  */
 	      for (ctx = current_class_type; 
 		   ctx; 
@@ -4396,7 +4396,7 @@ tinst_for_decl ()
 /* DECL is a friend FUNCTION_DECL or TEMPLATE_DECL.  ARGS is the
    vector of template arguments, as for tsubst.
 
-   Returns an appropriate tsbust'd friend declaration.  */
+   Returns an appropriate tsubst'd friend declaration.  */
 
 static tree
 tsubst_friend_function (decl, args)
@@ -4628,7 +4628,7 @@ tsubst_friend_function (decl, args)
 /* FRIEND_TMPL is a friend TEMPLATE_DECL.  ARGS is the vector of
    template arguments, as for tsubst.
 
-   Returns an appropriate tsbust'd friend type or error_mark_node on
+   Returns an appropriate tsubst'd friend type or error_mark_node on
    failure.  */
 
 static tree
@@ -4914,7 +4914,7 @@ instantiate_class_template (type)
 
 	  pbase = TREE_VEC_ELT (pbases, i);
 
-	  /* Substitue to figure out the base class.  */
+	  /* Substitute to figure out the base class.  */
 	  base = tsubst (BINFO_TYPE (pbase), args, 
 			 /*complain=*/1, NULL_TREE);
 	  if (base == error_mark_node)
@@ -4959,7 +4959,7 @@ instantiate_class_template (type)
 
   /* Now that our base classes are set up, enter the scope of the
      class, so that name lookups into base classes, etc. will work
-     corectly.  This is precisely analagous to what we do in
+     correctly.  This is precisely analogous to what we do in
      begin_class_definition when defining an ordinary non-template
      class.  */
   pushclass (type, 1);
@@ -5133,7 +5133,7 @@ instantiate_class_template (type)
   if (!PRIMARY_TEMPLATE_P (template))
     for (t = TYPE_METHODS (type); t; t = TREE_CHAIN (t))
       if (TREE_CODE (t) == FUNCTION_DECL 
-	  /* Implicitly generated member functions will not have tmplate
+	  /* Implicitly generated member functions will not have template
 	     information; they are not instantiations, but instead are
 	     created "fresh" for each instantiation.  */
 	  && DECL_TEMPLATE_INFO (t))
@@ -5285,7 +5285,7 @@ tsubst_template_parms (parms, args, complain)
    type T.  If T is not an aggregate or enumeration type, it is
    handled as if by tsubst.  IN_DECL is as for tsubst.  If
    ENTERING_SCOPE is non-zero, T is the context for a template which
-   we are presently tsubst'ing.  Return the subsituted value.  */
+   we are presently tsubst'ing.  Return the substituted value.  */
 
 static tree
 tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
@@ -5588,7 +5588,7 @@ tsubst_decl (t, args, type, in_decl)
 	         template <class T> struct S { template <class U> void f(); }
 		 template <> template <class U> void S<int>::f(U); 
 
-	       Here, we'll be subtituting into the specialization,
+	       Here, we'll be substituting into the specialization,
 	       because that's where we can find the code we actually
 	       want to generate, but we'll have enough arguments for
 	       the most general template.	       
@@ -7664,7 +7664,7 @@ fn_type_unification (fn, explicit_targs, targs, args, return_type,
    sections are symmetric.  PARM is the type of a function parameter
    or the return type of the conversion function.  ARG is the type of
    the argument passed to the call, or the type of the value
-   intialized with the result of the conversion function.  */
+   initialized with the result of the conversion function.  */
 
 static void
 maybe_adjust_types_for_deduction (strict, parm, arg)
@@ -7733,7 +7733,7 @@ maybe_adjust_types_for_deduction (strict, parm, arg)
     *parm = TREE_TYPE (*parm);
 }
 
-/* Like type_unfication.
+/* Like type_unification.
 
    If SUBR is 1, we're being called recursively (to unify the
    arguments of a function or method parameter of a function
@@ -8099,7 +8099,7 @@ try_class_unification (tparms, targs, parm, arg)
 }
 
 /* Subroutine of get_template_base.  RVAL, if non-NULL, is a base we
-   have alreay discovered to be satisfactory.  ARG_BINFO is the binfo
+   have already discovered to be satisfactory.  ARG_BINFO is the binfo
    for the base class of ARG that we are currently examining.  */
 
 static tree
@@ -8246,7 +8246,7 @@ check_cv_quals_for_unify (strict, arg, parm)
 }
 
 /* Takes parameters as for type_unification.  Returns 0 if the
-   type deduction suceeds, 1 otherwise.  The parameter STRICT is a
+   type deduction succeeds, 1 otherwise.  The parameter STRICT is a
    bitwise or of the following flags:
 
      UNIFY_ALLOW_NONE:
@@ -8635,7 +8635,7 @@ unify (tparms, targs, parm, arg, strict)
 	       Then, we should unify `int' and `U'.  */
 	    t = arg;
 	  else
-	    /* There's no chance of unication succeeding.  */
+	    /* There's no chance of unification succeeding.  */
 	    return 1;
 
 	  return unify (tparms, targs, CLASSTYPE_TI_ARGS (parm),
@@ -8936,7 +8936,7 @@ get_class_bindings (tparms, parms, args)
 /* In INSTANTIATIONS is a list of <INSTANTIATION, TEMPLATE> pairs.
    Pick the most specialized template, and return the corresponding
    instantiation, or if there is no corresponding instantiation, the
-   template itself.  EXPLICIT_ARGS is any template arguments explicity
+   template itself.  EXPLICIT_ARGS is any template arguments explicitly
    mentioned in a template-id.  If there is no most specialized
    template, error_mark_node is returned.  If there are no templates
    at all, NULL_TREE is returned.  */
@@ -9130,7 +9130,7 @@ do_decl_instantiation (declspecs, declarator, storage)
   int extern_p = 0;
 
   if (!decl)
-    /* An error ocurred, for which grokdeclarator has already issued
+    /* An error occurred, for which grokdeclarator has already issued
        an appropriate message.  */
     return;
   else if (! DECL_LANG_SPECIFIC (decl))
@@ -9188,7 +9188,7 @@ do_decl_instantiation (declspecs, declarator, storage)
 	 We check DECL_INTERFACE_KNOWN so as not to complain when the first
 	 instantiation was `extern' and the second is not, and EXTERN_P for
 	 the opposite case.  If -frepo, chances are we already got marked
-	 as an explicit instantion because of the repo file.  */
+	 as an explicit instantiation because of the repo file.  */
       if (DECL_INTERFACE_KNOWN (result) && !extern_p && !flag_use_repository)
 	cp_pedwarn ("duplicate explicit instantiation of `%#D'", result);
 
@@ -9368,7 +9368,7 @@ do_type_instantiation (t, storage, complain)
 
        Of course, we can't instantiate member template classes, since
        we don't have any arguments for them.  Note that the standard
-       is unclear on whether the instatiation of the members are
+       is unclear on whether the instantiation of the members are
        *explicit* instantiations or not.  We choose to be generous,
        and not set DECL_EXPLICIT_INSTANTIATION.  Therefore, we allow
        the explicit instantiation of a class where some of the members
@@ -9528,7 +9528,7 @@ instantiate_decl (d, defer_ok)
 
   if (DECL_TEMPLATE_INSTANTIATED (d))
     /* D has already been instantiated.  It might seem reasonable to
-       check whether or not D is an explict instantiation, and, if so,
+       check whether or not D is an explicit instantiation, and, if so,
        stop here.  But when an explicit instantiation is deferred
        until the end of the compilation, DECL_EXPLICIT_INSTANTIATION
        is set, even though we still need to do the instantiation.  */
@@ -9573,7 +9573,7 @@ instantiate_decl (d, defer_ok)
 	      S<int>::f<U> say, is not an instantiation of S<T>::f<U>,
 	      so far as the language is concerned, but that's still
 	      where we get the pattern for the instantiation from.  On
-	      ther hand, if the definition comes outside the class, say:
+	      other hand, if the definition comes outside the class, say:
 
 		template <class T> struct S { 
 		  template <class U> friend void f();
@@ -9982,7 +9982,7 @@ get_mostly_instantiated_function_type (decl, contextp, tparmsp)
       tree partial_args;
 
       /* Replace the innermost level of the TARGS with NULL_TREEs to
-	 let tsubst know not to subsitute for those parameters.  */
+	 let tsubst know not to substitute for those parameters.  */
       partial_args = make_tree_vec (TREE_VEC_LENGTH (targs));
       for (i = 1; i < TMPL_ARGS_DEPTH (targs); ++i)
 	SET_TMPL_ARGS_LEVEL (partial_args, i,
@@ -10108,7 +10108,7 @@ set_mangled_name_for_template_decl (decl)
 }
 
 /* Return truthvalue if we're processing a template different from
-   the last one involved in diagnotics.  */
+   the last one involved in diagnostics.  */
 int
 problematic_instantiation_changed ()
 {

@@ -1,3 +1,7 @@
+2000-12-01  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* pt.c: Fix typo in comment.
+
 2000-12-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* decl2.c (warn_format): Remove definition.
