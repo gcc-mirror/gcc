@@ -1,5 +1,5 @@
 /* Functions related to building classes and their related objects.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -1866,8 +1866,19 @@ maybe_layout_super_class (super_class, this_class)
 	super_class = TREE_TYPE (super_class);
       else
 	{
+	  /* do_resolve_class expects an EXPR_WITH_FILE_LOCATION, so
+	     we give it one.  */
+	  tree this_wrap = NULL_TREE;
+
+	  if (this_class)
+	    {
+	      tree this_decl = TYPE_NAME (this_class);
+	      this_wrap = build_expr_wfl (this_class,
+					  DECL_SOURCE_FILE (this_decl),
+					  DECL_SOURCE_LINE (this_decl), 0);
+	    }
 	  super_class = do_resolve_class (NULL_TREE, /* FIXME? */
-					  super_class, NULL_TREE, this_class);
+					  super_class, NULL_TREE, this_wrap);
 	  if (!super_class)
 	    return NULL_TREE;	/* FIXME, NULL_TREE not checked by caller. */
 	  super_class = TREE_TYPE (super_class);
