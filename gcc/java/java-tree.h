@@ -473,7 +473,7 @@ extern tree get_constant PROTO ((struct JCF*, int));
 extern tree get_name_constant PROTO ((struct JCF*, int));
 extern tree get_class_constant PROTO ((struct JCF*, int));
 extern tree parse_signature PROTO ((struct JCF *jcf, int sig_index));
-extern int jcf_parse PROTO ((struct JCF*));
+extern void jcf_parse PROTO ((struct JCF*));
 extern tree add_field PROTO ((tree, tree, tree, int));
 extern tree add_method PROTO ((tree, int, tree, tree));
 extern tree add_method_1 PROTO ((tree, int, tree, tree));
