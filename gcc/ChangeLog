@@ -1,3 +1,10 @@
+Mon Jul 27 14:51:33 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mn10300.h (DEBUGGER_AUTO_OFFSET): Define.
+	(DEBUGGER_ARG_OFFSET): Likewise.
+
+	* mn10300.md (movsf): Remove last change.  Not needed.
+
 Mon Jul 27 14:22:36 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* c-lex.c (yylex): Fix boundary conditions in character literal and
