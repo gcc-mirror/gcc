@@ -112,6 +112,8 @@ AC_SUBST_FILE(host_makefile_frag)
 AC_CHECK_HEADERS(sys/file.h sys/param.h stdlib.h string.h unistd.h strings.h sys/time.h sys/resource.h sys/stat.h sys/mman.h fcntl.h)
 AC_HEADER_SYS_WAIT
 
+libiberty_AC_DECLARE_ERRNO
+
 # This is the list of functions which libiberty will provide if they
 # are not available on the host.
 
