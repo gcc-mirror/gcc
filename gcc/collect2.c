@@ -1993,7 +1993,7 @@ scan_prog_file (prog_name, which_pass)
 #include <link.h>
 #include <sys/mman.h>
 #include <sys/param.h>
-#include <sys/unistd.h>
+#include <unistd.h>
 #include <sys/dir.h>
 
 /* pointers to the object file */
