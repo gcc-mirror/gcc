@@ -1,3 +1,7 @@
+2003-08-08  Geoffrey Keating  <geoffk@apple.com>
+
+	* config.gcc (powerpc-*-darwin*): Don't build a soft-float multilib.
+
 2003-08-08  Roger Sayle  <roger@eyesopen.com>
 
 	* tree.h (get_identifier) Define a macro form of get_identifier
