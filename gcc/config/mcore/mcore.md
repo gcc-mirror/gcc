@@ -1,5 +1,6 @@
 ;;  Machine description the Motorola MCore
-;;  Copyright (C) 1993, 1999, 2000, 2004 Free Software Foundation, Inc.
+;;  Copyright (C) 1993, 1999, 2000, 2004, 2005
+;;  Free Software Foundation, Inc.
 ;;  Contributed by Motorola.
 
 ;; This file is part of GCC.
@@ -52,6 +53,8 @@
 (define_insn_reservation "memory" 2
 			 (eq_attr "type" "load")
 			 "nothing")
+
+(include "predicates.md")
 
 ;; -------------------------------------------------------------------------
 ;; Test and bit test
