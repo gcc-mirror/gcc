@@ -1,3 +1,10 @@
+2003-12-21  Roger Sayle  <roger@eyesopen.com>
+
+	PR middle-end/13400
+	* ifcvt.c (noce_process_if_block): Disable unconditional write
+	optimizations if we could introduce a store to trapping memory
+	that wasn't present previously.
+
 2003-12-20  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/13031

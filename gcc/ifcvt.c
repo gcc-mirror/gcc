@@ -1871,6 +1871,25 @@ noce_process_if_block (ce_info)
       goto success;
     }
 
+  /* Disallow the "if (...) x = a;" form (with an implicit "else x = x;")
+     for most optimizations if writing to x may trap, i.e. its a memory
+     other than a static var or a stack slot.  */
+  if (! set_b
+      && GET_CODE (orig_x) == MEM
+      && ! MEM_NOTRAP_P (orig_x)
+      && rtx_addr_can_trap_p (XEXP (orig_x, 0)))
+    {
+      if (HAVE_conditional_move)
+	{
+	  if (noce_try_cmove (&if_info))
+	    goto success;
+	  if (! HAVE_conditional_execution
+	      && noce_try_cmove_arith (&if_info))
+	    goto success;
+	}
+      return FALSE;
+    }
+
   if (noce_try_store_flag (&if_info))
     goto success;
   if (noce_try_minmax (&if_info))
