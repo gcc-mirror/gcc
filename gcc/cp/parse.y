@@ -1396,6 +1396,8 @@ primary:
 		  $$ = get_typeid (TYPE_MAIN_VARIANT (type)); }
 	| global_scope IDENTIFIER
 		{ $$ = do_scoped_id ($2, 1); }
+	| global_scope template_id
+		{ $$ = $2; }
 	| global_scope operator_name
 		{
 		  got_scope = NULL_TREE;
