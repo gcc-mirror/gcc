@@ -52,8 +52,8 @@ namespace std
       typedef _StateT __state_type;
 
     private:
-      __state_type 	_M_st;
       streamoff 	_M_off;
+      __state_type 	_M_st;
 
     public:
       __state_type
@@ -64,10 +64,10 @@ namespace std
 
       // NB: The standard defines only the implicit copy ctor and the
       // previous two members.  The rest is a "conforming extension".
-      fpos(): _M_st(__state_type()), _M_off(streamoff()) { }
+      fpos(): _M_off(streamoff()), _M_st(__state_type()) { }
 
       fpos(streamoff __off, __state_type __st = __state_type())
-      : _M_st(__st), _M_off(__off) { }
+      :  _M_off(__off), _M_st(__st) { }
 
       operator streamoff() const { return _M_off; }
 
@@ -77,18 +77,20 @@ namespace std
       fpos& 
       operator-=(streamoff __off) { _M_off -= __off; return *this; }
 
-      fpos& 
+      fpos 
       operator+(streamoff __off) 
       { 
-	fpos t(*this); 
-	return t += __off; 
+	fpos __t(*this); 
+	__t += __off;
+	return __t;
       }
 
-      fpos&      
+      fpos      
       operator-(streamoff __off) 
       { 
-	fpos t(*this); 
-	return t -= __off; 
+	fpos __t(*this); 
+	__t -= __off; 
+	return __t;
       }
 
       bool  
