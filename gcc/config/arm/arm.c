@@ -142,9 +142,11 @@ const_ok_for_arm (i)
 
   do
     {
-      if ((i & mask & 0xffffffffu) == 0)
+      if ((i & mask & (unsigned HOST_WIDE_INT) 0xffffffff) == 0)
         return(TRUE);
-      mask = (mask << 2) | ((mask & 0xffffffffu) >> (32 - 2)) | ~0xffffffffu;
+      mask =
+	  (mask << 2) | ((mask & (unsigned HOST_WIDE_INT) 0xffffffff)
+			 >> (32 - 2)) | ~((unsigned HOST_WIDE_INT) 0xffffffff);
     } while (mask != ~0xFF);
 
   return (FALSE);
@@ -1727,6 +1729,9 @@ output_prologue (f, frame_size)
      they were passed there.  */
   int store_arg_regs = 0;
 
+  if (arm_ccfsm_state || arm_target_insn)
+    abort ();					/* Sanity check */
+  
   return_used_this_function = 0;
   lr_save_eliminated = 0;
   
@@ -1833,7 +1838,7 @@ output_epilogue (f, frame_size)
      FILE *f;
      int frame_size;
 {
-  int reg, live_regs_mask = 0, code_size = 0, fp_needed = 0;
+  int reg, live_regs_mask = 0, code_size = 0;
   /* If we need this then it will always be at lesat this much */
   int floats_offset = 24;
   rtx operands[3];
@@ -2235,7 +2240,10 @@ final_prescan_insn (insn, opvec, noperands)
   if (arm_ccfsm_state == 4)
     {
       if (insn == arm_target_insn)
+      {
+	arm_target_insn = NULL;
 	arm_ccfsm_state = 0;
+      }
       return;
     }
 
@@ -2463,6 +2471,7 @@ final_prescan_insn (insn, opvec, noperands)
 		  /* Oh, dear! we ran off the end.. give up */
 		  recog (PATTERN (insn), insn, NULL_PTR);
 		  arm_ccfsm_state = 0;
+		  arm_target_insn = NULL;
 		  return;
 	        }
 	      arm_target_insn = this_insn;
