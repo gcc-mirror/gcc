@@ -14,9 +14,9 @@ C  -ffast-math ICE provoked by this conditional
 C
 C        code for both increments equal to 1
 C
-	      do i= 1,n
-		sy(i)= sy(i)+sa*sx(i)
-		enddo
-	endif
+         do i= 1,n
+           sy(i)= sy(i)+sa*sx(i)
+         enddo
+      endif
       return
       end

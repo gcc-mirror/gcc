@@ -1,3 +1,27 @@
+2005-03-06  Steven G. Kargl  <kargls@comcast.net>
+
+	* gfortran.dg/g77/19990313-1.f: Replace tabs with spaces.
+	* gfortran.dg/g77/19990313-2.f: ditto
+	* gfortran.dg/g77/19990313-3.f: ditto
+	* gfortran.dg/g77/19990525-0.f: ditto
+	* gfortran.dg/g77/19990826-0.f: ditto
+	* gfortran.dg/g77/19990826-2.f: ditto
+	* gfortran.dg/g77/19990826-3.f: ditto
+	* gfortran.dg/g77/20000511-1.f: ditto
+	* gfortran.dg/g77/20000511-2.f: ditto
+	* gfortran.dg/g77/970625-2.f: ditto
+	* gfortran.dg/g77/980310-2.f: ditto
+	* gfortran.dg/g77/980310-3.f: ditto
+	* gfortran.dg/g77/980310-8.f: ditto
+	* gfortran.dg/g77/980519-2.f: ditto
+	* gfortran.dg/g77/alpha1.f: ditto
+	* gfortran.dg/g77/claus.f: ditto
+	* gfortran.dg/g77/erfc.f: ditto
+	* gfortran.dg/g77/short.f: ditto
+	* gfortran.fortran-torture/execute/data.f90: ditto
+	* gfortran.fortran-torture/execute/integer_select.f90: ditto
+	* gfortran.fortran-torture/execute/integer_select_1.f90: ditto
+
 2005-03-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* lib/file-format.exp (gcc_target_object_format): Add check for som

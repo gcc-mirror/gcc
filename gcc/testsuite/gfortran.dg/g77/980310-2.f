@@ -33,12 +33,12 @@ C doesn't exist in the g77 runtime)
 C 
 C RND - Return a random integer mod n
 C
-	INTEGER FUNCTION RND (N)
-	IMPLICIT INTEGER (A-Z)
-	REAL RAND
-	COMMON /SEED/ RNSEED
+      INTEGER FUNCTION RND (N)
+      IMPLICIT INTEGER (A-Z)
+      REAL RAND
+      COMMON /SEED/ RNSEED
 
-	RND = RAND(RNSEED)*FLOAT(N)
-	RETURN
+      RND = RAND(RNSEED)*FLOAT(N)
+      RETURN
 
-	END
+      END

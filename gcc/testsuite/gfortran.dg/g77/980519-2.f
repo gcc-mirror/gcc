@@ -40,10 +40,10 @@ c   Next declaration added on transfer to gfortran testsuite
       common /Idim/ nlay, nlayz
       common /Idim/ n_work
       common /Idim/ nb_calls
-	
-      real     Xsp, Ysp, Xrcv, Yrcv
-      real     in( jT_f-hd_T : jT_l )
-	
+
+      real Xsp, Ysp, Xrcv, Yrcv
+      real in( jT_f-hd_T : jT_l )
+
       in( jT_f-hd_T     ) = Xsp
       in( jT_f-hd_T + 1 ) = Ysp 
       in( jT_f-hd_T + 2 ) = Xrcv

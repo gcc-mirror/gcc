@@ -15,24 +15,24 @@ c { dg-do compile }
 * 
 * Run the following through g77:
 * 
-	subroutine	a
-	character*2	string1
-	character*2	string2
-	character*4	string3
-	string1 = 's1'
-	string2 = 's2'
+      subroutine a
+      character*2 string1
+      character*2 string2
+      character*4 string3
+      string1 = 's1'
+      string2 = 's2'
 c
 c the next 2 lines are ok.
-	string3 = (string1 // string2)
-	call b(string1//string2)
+      string3 = (string1 // string2)
+      call b(string1//string2)
 c
 c this line gives gcc/f/com.c:10660: failed assertion `hook'
-	call b((string1//string2))
-	end
+      call b((string1//string2))
+      end
 * 
 * the output from:
 * 
-* 	/usr/local/egcs-19990418/bin/g77 --verbose -c D.f
+* /usr/local/egcs-19990418/bin/g77 --verbose -c D.f
 * 
 * is:
 * 

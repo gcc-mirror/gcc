@@ -38,16 +38,16 @@ c  a four-way average of rhobar
 
 c  another four-way average of rhobar
       do 270  k=0,N
-	rtmp1 = z(2,2,k)
-	rtmp2 = z(1,2,k)
-	rtmp3 = z(2,1,k)
-	rtmp4 = z(1,1,k)
-        yzin2(k) = 0.25 * 
+         rtmp1 = z(2,2,k)
+         rtmp2 = z(1,2,k)
+         rtmp3 = z(2,1,k)
+         rtmp4 = z(1,1,k)
+         yzin2(k) = 0.25 * 
      &       ( rtmp1 + rtmp2 + rtmp3 + rtmp4 )
   270       continue
 
       do k=0,N
-	if (yzin1(k) .ne. yzin2(k)) call abort
+         if (yzin1(k) .ne. yzin2(k)) call abort
       enddo
       if (yzin1(0) .ne. -1371.) call abort
       if (yzin1(1) .ne. -685.5) call abort

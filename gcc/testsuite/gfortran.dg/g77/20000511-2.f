@@ -47,16 +47,16 @@ C           Multiply by inv(L).
 C
       do j= 1,n-1
 C the following min() intrinsic provokes this bug
-	  lm= min(kl,n-j)
-	  jp= ipiv(j)
-	  t= work(jp)
-	  if(jp.ne.j)then
+         lm= min(kl,n-j)
+         jp= ipiv(j)
+         t= work(jp)
+         if(jp.ne.j)then
 C but only when combined with this if block
-	      work(jp)= work(j)
-	      work(j)= t
-	    endif
+            work(jp)= work(j)
+            work(j)= t
+         endif
 C and this subroutine call
-	  call saxpy(lm,-t,ab(kd+1,j),1,work(j+1),1)
-	enddo
+         call saxpy(lm,-t,ab(kd+1,j),1,work(j+1),1)
+      enddo
       return
       end
