@@ -116,6 +116,14 @@ typedef unsigned char U_CHAR;
 char *getenv ();
 #endif
 
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+
 #if STDC_HEADERS
 # include <string.h>
 # ifndef bcmp
