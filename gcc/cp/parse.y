@@ -222,7 +222,8 @@ empty_parms ()
 %type <ttype> template_id do_id object_template_id notype_template_declarator
 %type <ttype> overqualified_id notype_qualified_id any_id
 %type <ttype> complex_direct_notype_declarator functional_cast
-%type <ttype> complex_parmlist parms_comma
+%type <ttype> complex_parmlist parms_comma 
+%type <ttype> namespace_qualifier namespace_using_decl
 
 %type <ftype> type_id new_type_id typed_typespecs typespec typed_declspecs
 %type <ftype> typed_declspecs1 type_specifier_seq nonempty_cv_qualifiers
@@ -437,6 +438,29 @@ using_decl:
 	| USING global_scope unqualified_id
 		{ $$ = $3; }
 	;
+
+namespace_using_decl:
+	  USING namespace_qualifier identifier
+	        { $$ = build_parse_node (SCOPE_REF, $2, $3); }
+	| USING global_scope identifier
+	        { $$ = build_parse_node (SCOPE_REF, global_namespace, $3); }
+	| USING global_scope namespace_qualifier identifier
+	        { $$ = build_parse_node (SCOPE_REF, $3, $4); }
+	;
+
+namespace_qualifier:
+	  NSNAME SCOPE
+		{
+		  if (TREE_CODE ($$) == IDENTIFIER_NODE)
+		    $$ = lastiddecl;
+		  got_scope = $$;
+		}
+	| namespace_qualifier NSNAME SCOPE
+		{
+		  if (TREE_CODE ($$) == IDENTIFIER_NODE)
+		    $$ = lastiddecl;
+		  got_scope = $$;
+		}
 
 any_id:
 	  unqualified_id
@@ -3244,6 +3268,14 @@ simple_stmt:
 	| ';'
 		{ finish_stmt (); }
 	| try_block
+	| USING NAMESPACE any_id ';'
+		{ 
+		  if (TREE_CODE ($3) == IDENTIFIER_NODE && lastiddecl)
+		    $3 = lastiddecl;
+		  do_using_directive ($3); 
+		}
+	| namespace_using_decl
+	        { do_local_using_decl ($1); }
 	;
 
 function_try_block:

@@ -3940,32 +3940,24 @@ ambiguous_decl (name, old, new)
 }
 
 /* Add the bindings of name in used namespaces to val.
-   The using list is defined by current, and the lookup goes to scope.
+   The using list is defined by usings, and the lookup goes to scope.
    Returns zero on errors. */
 
 int
-lookup_using_namespace (name, val, current, scope)
-     tree name, val, current, scope;
+lookup_using_namespace (name, val, usings, scope)
+     tree name, val, usings, scope;
 {
   tree iter;
   tree val1;
-  /* Iterate over all namespaces from current to scope. */
-  while (val != error_mark_node)
-    {
-      /* Iterate over all used namespaces in current, searching for
-	 using directives of scope. */
-      for (iter = DECL_NAMESPACE_USING (current); 
-	   iter; iter = TREE_CHAIN (iter))
-	if (TREE_VALUE (iter) == scope)
-	  {
-	    val1 = binding_for_name (name, TREE_PURPOSE (iter));
-	    /* Resolve ambiguities. */
-	    val = ambiguous_decl (name, val, val1);
-	  }
-      if (current == scope)
-	break;
-      current = CP_DECL_CONTEXT (current);
-    }
+  /* Iterate over all used namespaces in current, searching for using
+     directives of scope. */
+  for (iter = usings; iter; iter = TREE_CHAIN (iter))
+    if (TREE_VALUE (iter) == scope)
+      {
+	val1 = binding_for_name (name, TREE_PURPOSE (iter));
+	/* Resolve ambiguities. */
+	val = ambiguous_decl (name, val, val1);
+      }
   return val != error_mark_node;
 }
 
@@ -4405,39 +4397,49 @@ do_namespace_alias (alias, namespace)
     }
 }
 
-/* Process a using-declaration not appearing in class or local scope. */
+/* Check a non-member using-declaration. Return the name and scope
+   being used, and the USING_DECL, or NULL_TREE on failure. */
 
-void
-do_toplevel_using_decl (decl)
+static tree
+validate_nonmember_using_decl (decl, scope, name)
      tree decl;
+     tree *scope;
+     tree *name;
 {
-  tree scope, name, binding, decls, newval, newtype;
-  struct tree_binding _decls;
-
   if (TREE_CODE (decl) == SCOPE_REF
       && TREE_OPERAND (decl, 0) == std_node)
-    return;
+    return NULL_TREE;
   if (TREE_CODE (decl) == SCOPE_REF)
     {
-      scope = TREE_OPERAND (decl, 0);
-      name = TREE_OPERAND (decl, 1);
+      *scope = TREE_OPERAND (decl, 0);
+      *name = TREE_OPERAND (decl, 1);
     }
   else if (TREE_CODE (decl) == IDENTIFIER_NODE
            || TREE_CODE (decl) == TYPE_DECL)
     {
-      scope = global_namespace;
-      name = decl;
+      *scope = global_namespace;
+      *name = decl;
     }
   else
     my_friendly_abort (382);
-  if (TREE_CODE_CLASS (TREE_CODE (name)) == 'd')
-    name = DECL_NAME (name);
+  if (TREE_CODE_CLASS (TREE_CODE (*name)) == 'd')
+    *name = DECL_NAME (*name);
   /* Make a USING_DECL. */
-  decl = push_using_decl (scope, name);
-  if (!decl)
-    return;
-  
-  binding = binding_for_name (name, current_namespace);
+  return push_using_decl (*scope, *name);
+}
+
+/* Process local and global using-declarations. */
+
+static void
+do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
+     tree scope, name;
+     tree oldval, oldtype;
+     tree *newval, *newtype;
+{
+  tree decls;
+  struct tree_binding _decls;
+
+  *newval = *newtype = NULL_TREE;
   decls = binding_init (&_decls);
   if (!qualified_lookup_using_namespace (name, scope, decls))
     /* Lookup error */
@@ -4448,14 +4450,12 @@ do_toplevel_using_decl (decl)
       cp_error ("`%D' not declared", name);
       return;
     }
-  newval = newtype = NULL_TREE;
 
   /* Check for using functions. */
   if (BINDING_VALUE (decls) && is_overloaded_fn (BINDING_VALUE (decls)))
     {
-      tree oldval = BINDING_VALUE (binding);
       tree tmp, tmp1;
-      newval = oldval;
+      *newval = oldval;
       for (tmp = BINDING_VALUE (decls); tmp; tmp = OVL_NEXT (tmp))
 	{
 
@@ -4473,33 +4473,77 @@ do_toplevel_using_decl (decl)
 	  if (tmp1)
 	    continue;
 	    
-	  newval = build_overload (OVL_CURRENT (tmp), newval);
-	  if (TREE_CODE (newval) != OVERLOAD)
-	    newval = ovl_cons (newval, NULL_TREE);
-	  OVL_USED (newval) = 1;
+	  *newval = build_overload (OVL_CURRENT (tmp), *newval);
+	  if (TREE_CODE (*newval) != OVERLOAD)
+	    *newval = ovl_cons (*newval, NULL_TREE);
+	  OVL_USED (*newval) = 1;
 	}
     }
   else 
     {
-      tree oldval = BINDING_VALUE (binding);
-      newval = BINDING_VALUE (decls);
-      if (oldval && oldval != newval && !duplicate_decls (newval, oldval))
-	newval = oldval;
+      *newval = BINDING_VALUE (decls);
+      if (oldval && oldval != *newval && !duplicate_decls (*newval, oldval))
+	*newval = oldval;
     } 
 
-  newtype = BINDING_TYPE (decls);
-  if (BINDING_TYPE (binding) && newtype && BINDING_TYPE (binding) != newtype)
+  *newtype = BINDING_TYPE (decls);
+  if (oldtype && *newtype && oldtype != *newtype)
     {
       cp_error ("using directive `%D' introduced ambiguous type `%T'",
-		name, BINDING_TYPE (decls));
+		name, oldtype);
       return;
     }
+}
+
+/* Process a using-declaration not appearing in class or local scope. */
+
+void
+do_toplevel_using_decl (decl)
+     tree decl;
+{
+  tree scope, name, binding;
+  tree oldval, oldtype, newval, newtype;
+
+  decl = validate_nonmember_using_decl (decl, &scope, &name);
+  if (decl == NULL_TREE)
+    return;
+  
+  binding = binding_for_name (name, current_namespace);
+
+  oldval = BINDING_VALUE (binding);
+  oldtype = BINDING_TYPE (binding);
+
+  do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
+
   /* Copy declarations found. */
   if (newval)
     BINDING_VALUE (binding) = newval;
   if (newtype)
     BINDING_TYPE (binding) = newtype;
   return;
+}
+
+void
+do_local_using_decl (decl)
+     tree decl;
+{
+  tree scope, name;
+  tree oldval, oldtype, newval, newtype;
+  decl = validate_nonmember_using_decl (decl, &scope, &name);
+  if (decl == NULL_TREE)
+    return;
+
+  /* XXX nested values */
+  oldval = IDENTIFIER_LOCAL_VALUE (name);
+  /* XXX get local type */
+  oldtype = NULL_TREE;
+
+  do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
+
+  if (newval)
+    /* XXX update bindings */
+    IDENTIFIER_LOCAL_VALUE (name) = newval;
+  /* XXX type */
 }
 
 tree
@@ -4534,11 +4578,6 @@ do_using_directive (namespace)
 {
   if (namespace == std_node)
     return;
-  if (!toplevel_bindings_p ())
-    {
-      sorry ("using directives inside functions");
-      return;
-    }
   /* using namespace A::B::C; */
   if (TREE_CODE (namespace) == SCOPE_REF)
       namespace = TREE_OPERAND (namespace, 1);
@@ -4554,8 +4593,13 @@ do_using_directive (namespace)
       return;
     }
   namespace = ORIGINAL_NAMESPACE (namespace);
-  /* direct usage */
-  add_using_namespace (current_namespace, namespace, 0);
+  if (!toplevel_bindings_p ())
+    push_using_directive
+      (namespace, namespace_ancestor (current_decl_namespace(), 
+				      current_namespace));
+  else
+    /* direct usage */
+    add_using_namespace (current_namespace, namespace, 0);
 }
 
 void

@@ -1,5 +1,22 @@
 1998-07-12  Martin von Löwis  <loewis@informatik.hu-berlin.de>
 
+	* decl.c (struct binding_level): New field using_directives.
+	(push_using_decl): Not sorry anymore.
+	(push_using_directive): New function.
+	(lookup_tag): Use CP_DECL_CONTEXT to iterate.
+	(unqualified_namespace_lookup): New function, code from ...
+	(lookup_name_real): ... here.
+	* decl2.c (lookup_using_namespace): Pass using list instead of
+	initial scope.
+	(validate_nonmember_using_decl): New function.
+	(do_nonmember_using_decl): New function.
+	(do_toplevel_using_decl): Use them.
+	(do_local_using_decl): New function.
+	(do_using_directive): Support block-level directives.
+	* parse.y (simple_stmt): Support using declarations and
+	directives.
+	(namespace_qualifier, namespace_using_decl): New non-terminals.
+
 	* xref.c (classname): New function.
 	(GNU_xref_hier): Change class and base parameters to tree.
 	* decl.c (xref_baseypes): Change caller.
