@@ -4313,7 +4313,7 @@ check_for_full_enumeration_handling (type)
 
   if (size > 0 && size < 600000
       /* We deliberately use malloc here - not xmalloc. */
-      && (cases_seen = (char*) malloc (bytes_needed)) != NULL)
+      && (cases_seen = (unsigned char *) malloc (bytes_needed)) != NULL)
     {
       long i;
       tree v = TYPE_VALUES (type);
