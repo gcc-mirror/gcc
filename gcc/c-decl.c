@@ -4133,14 +4133,9 @@ grokdeclarator (const struct c_declarator *declarator,
 	       zero.  */
 	    if (size && integer_zerop (size))
 	      {
-		layout_type (type);
 		TYPE_SIZE (type) = bitsize_zero_node;
 		TYPE_SIZE_UNIT (type) = size_zero_node;
 	      }
-	    else if (declarator->kind == cdk_pointer)
-	      /* We can never complete an array type which is the
-	         target of a pointer, so go ahead and lay it out.  */
-	      layout_type (type);
 
 	    if (decl_context != PARM
 		&& (array_ptr_quals != TYPE_UNQUALIFIED

@@ -7214,13 +7214,6 @@ grokdeclarator (const cp_declarator *declarator,
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
 					     declarator->u.array.bounds);
-	  if (inner_declarator
-	      && (inner_declarator->kind == cdk_pointer
-		  || inner_declarator->kind == cdk_reference
-		  || inner_declarator->kind == cdk_ptrmem))
-	    /* We can never complete an array type which is the
-	       target of a pointer, so go ahead and lay it out.  */
-	    layout_type (type);
 	  break;
 
 	case cdk_function:
