@@ -27,10 +27,10 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #ifdef TARGET_LITTLE_ENDIAN_DEFAULT
 #define CPP_SPEC        "%{mb:-D__BIG_ENDIAN__ }%{!mb:-D__LITTLE_ENDIAN__ }" 
-#define ASM_SPEC        "%{mb:-mb }%{!mb:-ml }"
+#define ASM_SPEC        "%{mb:-EB }%{!mb:-EL }"
 #else
 #define CPP_SPEC        "%{ml:-D__LITTLE_ENDIAN__ }%{!ml:-D__BIG_ENDIAN__}"
-#define ASM_SPEC        "%{ml:-ml } %{!ml:-mb }"
+#define ASM_SPEC        "%{ml:-EL } %{!ml:-EB }"
 #endif
 
 #ifndef CPP_PREDEFINES
@@ -234,7 +234,7 @@ enum
   LAST_O_REG=OSC_REG,
   LAST_R_REG=R31_REG,
   LAST_I_REG=ISC_REG,
-  LAST_S_REG=P7_REG,
+  LAST_S_REG=P7_REG
 
 };
 
@@ -445,7 +445,7 @@ enum reg_class
   SRC_REGS,         /* All registers valid as a source.  */
   DST_REGS,         /* All registers valid as a destination.  */
   ALL_REGS,
-  LIM_REG_CLASSES,
+  LIM_REG_CLASSES
 };
 
 #define GENERAL_REGS SRC_REGS
@@ -460,7 +460,7 @@ enum reg_class
   "ARG_REGS",             \
   "SRC_REGS",             \
   "DST_REGS",             \
-  "ALL_REGS",             \
+  "ALL_REGS"              \
 }
 
 /* Define which registers fit in which classes.
