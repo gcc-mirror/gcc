@@ -1,3 +1,9 @@
+2004-06-06  Stephane Carrez  <stcarrez@nerim.fr>
+
+	PR target/14542
+	* config/m68hc11/m68hc11.md (move peephole2): Emit a use note to avoid
+	a live change of a register after peephole replacement.
+
 2004-06-06  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	PR c/13519
