@@ -1,3 +1,22 @@
+2005-01-07  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* acinclude.m4: Remove CCODECVT_H.
+	* configure: Regenerate.
+	* include/Makefile.am (host_headers_extra): Move to...
+	(ext_headers): ...here.
+	* include/Makefile.in: Regenerate.
+	* include/ext/enc_filebuf: Remove enc_filebuf, consolidate
+	enc_traits to...
+	* config/locale/ieee_1003.1-2001/codecvt_specializations.h: Move...
+	* include/ext/codecvt_specializations.h: ...here. Remove
+	_GLIBCXX_USE___ENC_TRAITS. 
+	(__enc_traits): To __encoding_state, put in __gnu_cxx namespace.
+	(enc_char_traits): To __encoding_char_traits, put in __gnu_cxx
+	namespace.
+	* config/locale/generic/codecvt_specializations.h: Remove.
+	* include/bits/codecvt.h: Remove codecvt_specializations.h include.
+	* src/codecvt.cc: Remove __enc_traits::_S_max_size.
+
 2005-01-06  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/fstream.tcc: Remove unnecessary qualifications for

@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2002, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -25,7 +25,7 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-// Written by Benjamin Kosnik <bkoz@cygnus.com>
+// Written by Benjamin Kosnik <bkoz@redhat.com>
 
 #include <locale>
 
@@ -37,11 +37,6 @@ namespace std
 #ifdef _GLIBCXX_USE_WCHAR_T  
   locale::id codecvt<wchar_t, char, mbstate_t>::id;
 #endif
-
-#ifdef _GLIBCXX_USE___ENC_TRAITS
-  // Definitions for static const data members of __enc_traits.
-  const int __enc_traits::_S_max_size;
-#endif 
 
   codecvt<char, char, mbstate_t>::
   codecvt(size_t __refs)

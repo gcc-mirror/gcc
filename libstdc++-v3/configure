@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CCODECVT_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_THREAD_TRUE GLIBCXX_TEST_THREAD_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS libtool_VERSION multi_basedir build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar glibcxx_builddir glibcxx_srcdir toplevel_srcdir CC ac_ct_CC EXEEXT OBJEXT CXX ac_ct_CXX CFLAGS CXXFLAGS LN_S AS ac_ct_AS AR ac_ct_AR RANLIB ac_ct_RANLIB MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT LIBTOOL CXXCPP CPPFLAGS enable_shared enable_static GLIBCXX_HOSTED_TRUE GLIBCXX_HOSTED_FALSE GLIBCXX_BUILD_PCH_TRUE GLIBCXX_BUILD_PCH_FALSE glibcxx_PCHFLAGS CSTDIO_H BASIC_FILE_H BASIC_FILE_CC CPP EGREP check_msgfmt glibcxx_MOFILES glibcxx_POFILES glibcxx_localedir USE_NLS CLOCALE_H CMESSAGES_H CCODECVT_CC CCOLLATE_CC CCTYPE_CC CMESSAGES_CC CMONEY_CC CNUMERIC_CC CTIME_H CTIME_CC CLOCALE_CC CLOCALE_INTERNAL_H ALLOCATOR_H ALLOCATOR_NAME C_INCLUDE_DIR GLIBCXX_C_HEADERS_C_TRUE GLIBCXX_C_HEADERS_C_FALSE GLIBCXX_C_HEADERS_C_STD_TRUE GLIBCXX_C_HEADERS_C_STD_FALSE GLIBCXX_C_HEADERS_COMPATIBILITY_TRUE GLIBCXX_C_HEADERS_COMPATIBILITY_FALSE glibcxx_thread_h DEBUG_FLAGS GLIBCXX_BUILD_DEBUG_TRUE GLIBCXX_BUILD_DEBUG_FALSE EXTRA_CXX_FLAGS WERROR SECTION_FLAGS SECTION_LDFLAGS OPT_LDFLAGS LIBMATHOBJS LIBICONV SYMVER_MAP port_specific_symbol_files GLIBCXX_BUILD_VERSIONED_SHLIB_TRUE GLIBCXX_BUILD_VERSIONED_SHLIB_FALSE baseline_dir GLIBCXX_TEST_WCHAR_T_TRUE GLIBCXX_TEST_WCHAR_T_FALSE GLIBCXX_TEST_THREAD_TRUE GLIBCXX_TEST_THREAD_FALSE GLIBCXX_TEST_ABI_TRUE GLIBCXX_TEST_ABI_FALSE ATOMICITY_SRCDIR ATOMIC_WORD_SRCDIR ABI_TWEAKS_SRCDIR OS_INC_SRCDIR glibcxx_prefixdir gxx_include_dir glibcxx_toolexecdir glibcxx_toolexeclibdir GLIBCXX_INCLUDES TOPLEVEL_INCLUDES OPTIMIZE_CXXFLAGS WARN_FLAGS LIBSUPCXX_PICFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -5811,7 +5811,6 @@ echo "${ECHO_T}generic" >&6
 
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
-      CCODECVT_H=config/locale/generic/codecvt_specializations.h
       CCODECVT_CC=config/locale/generic/codecvt_members.cc
       CCOLLATE_CC=config/locale/generic/collate_members.cc
       CCTYPE_CC=config/locale/generic/ctype_members.cc
@@ -5829,7 +5828,6 @@ echo "${ECHO_T}darwin" >&6
 
       CLOCALE_H=config/locale/generic/c_locale.h
       CLOCALE_CC=config/locale/generic/c_locale.cc
-      CCODECVT_H=config/locale/generic/codecvt_specializations.h
       CCODECVT_CC=config/locale/generic/codecvt_members.cc
       CCOLLATE_CC=config/locale/generic/collate_members.cc
       CCTYPE_CC=config/locale/darwin/ctype_members.cc
@@ -5901,7 +5899,6 @@ fi
 
       CLOCALE_H=config/locale/gnu/c_locale.h
       CLOCALE_CC=config/locale/gnu/c_locale.cc
-      CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
       CCODECVT_CC=config/locale/gnu/codecvt_members.cc
       CCOLLATE_CC=config/locale/gnu/collate_members.cc
       CCTYPE_CC=config/locale/gnu/ctype_members.cc
@@ -5919,7 +5916,6 @@ echo "${ECHO_T}IEEE 1003.1" >&6
 
       CLOCALE_H=config/locale/ieee_1003.1-2001/c_locale.h
       CLOCALE_CC=config/locale/ieee_1003.1-2001/c_locale.cc
-      CCODECVT_H=config/locale/ieee_1003.1-2001/codecvt_specializations.h
       CCODECVT_CC=config/locale/generic/codecvt_members.cc
       CCOLLATE_CC=config/locale/generic/collate_members.cc
       CCTYPE_CC=config/locale/generic/ctype_members.cc
@@ -6237,7 +6233,6 @@ fi
 _ACEOF
 
   fi
-
 
 
 
@@ -98509,7 +98504,6 @@ s,@glibcxx_POFILES@,$glibcxx_POFILES,;t t
 s,@glibcxx_localedir@,$glibcxx_localedir,;t t
 s,@USE_NLS@,$USE_NLS,;t t
 s,@CLOCALE_H@,$CLOCALE_H,;t t
-s,@CCODECVT_H@,$CCODECVT_H,;t t
 s,@CMESSAGES_H@,$CMESSAGES_H,;t t
 s,@CCODECVT_CC@,$CCODECVT_CC,;t t
 s,@CCOLLATE_CC@,$CCOLLATE_CC,;t t

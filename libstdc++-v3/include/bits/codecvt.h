@@ -1,6 +1,7 @@
 // Locale support (codecvt) -*- C++ -*-
 
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005
+//  Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -31,7 +32,7 @@
 // ISO C++ 14882: 22.2.1.5 Template class codecvt
 //
 
-// Written by Benjamin Kosnik <bkoz@cygnus.com>
+// Written by Benjamin Kosnik <bkoz@redhat.com>
 
 /** @file bits/codecvt.h
  *  This is an internal header file, included by other library headers.
@@ -465,11 +466,5 @@
       virtual
       ~codecvt_byname() { }
     };
-
-  // Include host and configuration specific partial specializations
-  // with additional functionality, if possible.
-#ifdef _GLIBCXX_USE_WCHAR_T
-  #include <bits/codecvt_specializations.h>
-#endif
 
 #endif // _CODECVT_H

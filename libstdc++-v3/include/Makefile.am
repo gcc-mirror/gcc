@@ -203,8 +203,8 @@ ext_headers = \
 	${ext_srcdir}/algorithm \
 	${ext_srcdir}/array_allocator.h \
 	${ext_srcdir}/bitmap_allocator.h \
+	${ext_srcdir}/codecvt_specializations.h \
 	${ext_srcdir}/debug_allocator.h \
-	${ext_srcdir}/enc_filebuf.h \
 	${ext_srcdir}/stdio_filebuf.h \
 	${ext_srcdir}/stdio_sync_filebuf.h \
 	${ext_srcdir}/functional \
@@ -366,8 +366,7 @@ host_headers_extra = \
 	${host_builddir}/c++io.h \
 	${host_builddir}/c++locale.h \
 	${host_builddir}/messages_members.h \
-	${host_builddir}/time_members.h \
-	${host_builddir}/codecvt_specializations.h
+	${host_builddir}/time_members.h 
 
 thread_host_headers = \
 	${host_builddir}/gthr.h \
