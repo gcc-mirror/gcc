@@ -1,8 +1,3 @@
-Tue Sep 27 10:18:57 1994  Brendan Kehoe  (brendan@lisa.cygnus.com)
-
-	* search.c (lookup_field): Return a NULL_TREE if XBASETYPE is
-	itself null.
-
 Wed Sep 14 10:17:27 1994  Michael I Bushnell  <mib@churchy.gnu.ai.mit.edu>
 
 	* g++.c: Include <sys/errno.h> in case `errno' is a macro

@@ -1031,10 +1031,6 @@ lookup_field (xbasetype, name, protect, want_type)
      accurate error messages for access control.  */
   int index = MEMOIZED_HASH_FN (name);
 
-  /* We sometimes go looking with XBASETYPE pre-set to null.  */
-  if (xbasetype == NULL_TREE)
-    return NULL_TREE;
-
   /* If we are looking for a constructor in a templated type, use the
      unspecialized name, as that is how we store it.  */
   if (IDENTIFIER_TEMPLATE (name))
