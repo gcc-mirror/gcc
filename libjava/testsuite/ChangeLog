@@ -1,5 +1,11 @@
 2000-03-05  Anthony Green  <green@redhat.com>
 
+	* libjava.lang/PR141.java: New file.
+	* libjava.lang/PR141.out: New file.
+	For PR java.io/141.
+
+2000-03-05  Anthony Green  <green@redhat.com>
+
 	* libjava.compile/PR129_B.java: New file.
 	* libjava.compile/support/PR129_A.java: New file.
 	For PR gcj/129.
