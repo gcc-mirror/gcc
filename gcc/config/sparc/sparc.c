@@ -2083,6 +2083,8 @@ output_function_prologue (file, size, leaf_function)
      int size;
      int leaf_function;
 {
+  /* ??? This should be %sp+actual_fsize for a leaf function.  I think it
+     works only because it is never used.  */
   if (leaf_function)
     frame_base_name = "%sp+80";
   else
@@ -2143,6 +2145,7 @@ output_function_prologue (file, size, leaf_function)
     {
       int offset, n_fregs = num_fregs;
 
+      /* ??? This should always be -apparent_fsize.  */
       if (! leaf_function)
 	offset = -apparent_fsize;
       else
@@ -2186,6 +2189,7 @@ output_function_epilogue (file, size, leaf_function)
     {
       int offset, n_fregs = num_fregs;
 
+      /* ??? This should always be -apparent_fsize.  */
       if (! leaf_function)
 	offset = -apparent_fsize;
       else
@@ -3294,6 +3298,9 @@ sparc_frw_output_function_prologue (file, size, ignored)
   extern char call_used_regs[];
   int tsize;
   char *sp_str = reg_names[STACK_POINTER_REGNUM];
+
+  /* ??? This should be %sp+actual_fsize for a leaf function.  I think it
+     works only because it is never used.  */
   frame_base_name
     = (!frame_pointer_needed) ? "%sp+80" : reg_names[FRAME_POINTER_REGNUM];
 
