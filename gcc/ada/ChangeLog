@@ -1,3 +1,9 @@
+2004-01-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Make-lang.in: Revert stamp-xgnatug change from 2003-12-18. 
+	Update comment and copyright date.
+	* stamp-xgnatug: Delete.
+
 2004-01-05  Robert Dewar  <dewar@gnat.com>
 
 	* 1ssecsta.ads: Default_Secondary_Stack is not a constant since it may

@@ -1,3 +1,7 @@
+2004-01-05  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* gcc_update (files_generated): Revert 2003-12-18 change.
+
 2004-01-03  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc_update (files_and_dependencies): For gcc directory,
