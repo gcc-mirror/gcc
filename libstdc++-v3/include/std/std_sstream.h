@@ -133,11 +133,17 @@ namespace std
       __string_type
       str() const
       {
-	__string_type __ret = _M_string;
 	const bool __testout = this->_M_mode & ios_base::out;
-	if (__testout && this->_M_out_beg < this->_M_out_lim)
-	  __ret = __string_type(this->_M_out_beg, this->_M_out_lim);
-	return __ret;
+	if (__testout)
+	  {
+	    // The current egptr() may not be the actual string end.
+	    if (this->pptr() > this->egptr())
+	      return __string_type(this->pbase(), this->pptr());
+	    else
+ 	      return __string_type(this->pbase(), this->egptr());
+	  }
+	else
+	  return _M_string;
       }
 
       /**
@@ -173,18 +179,18 @@ namespace std
 	_M_sync(const_cast<char_type*>(_M_string.data()), 0, __len);
       }
 
-      // Overridden virtual functions:
+      int_type
+      _M_underflow(bool __bump);
+
       // [documentation is inherited]
       virtual int_type
       underflow()
-      {
-	int_type __ret;
-	if (this->_M_in_cur < this->_M_in_end)
-	  __ret = traits_type::to_int_type(*this->_M_in_cur);
-	else
-	  __ret = traits_type::eof();
-	return __ret;
-      }
+      { return _M_underflow(false); }
+
+      // [documentation is inherited]
+      virtual int_type
+      uflow()
+      { return _M_underflow(true); }
 
       // [documentation is inherited]
       virtual int_type
@@ -250,17 +256,36 @@ namespace std
       {
 	const bool __testin = this->_M_mode & ios_base::in;
 	const bool __testout = this->_M_mode & ios_base::out;
-	__size_type __len = _M_string.size();
+	const __size_type __len = _M_string.size();
 
 	if (__testin)
 	  this->setg(__base, __base + __i, __base + __len);
 	if (__testout)
 	  {
 	    this->setp(__base, __base + _M_string.capacity());
-	    // _M_out_lim points to the string end.
-	    this->_M_out_lim += __len;
-	    this->_M_out_cur += __o;
+	    this->pbump(__o);
+	    // We need a pointer to the string end anyway, even when
+	    // !__testin: in that case, however, for the correct
+	    // functioning of the streambuf inlines all the get area
+	    // pointers must be identical.
+	    if (!__testin)
+	      this->setg(__base + __len, __base + __len, __base + __len);
 	  }
+      }
+
+      // Internal function for correctly updating egptr() to the actual
+      // string end.
+      void
+      _M_update_egptr()
+      {
+	const bool __testin = this->_M_mode & ios_base::in;
+	const bool __testout = this->_M_mode & ios_base::out;
+
+	if (__testout && this->pptr() > this->egptr())
+	  if (__testin)
+	    this->setg(this->eback(), this->gptr(), this->pptr());
+	  else
+	    this->setg(this->pptr(), this->pptr(), this->pptr());
       }
     };
 

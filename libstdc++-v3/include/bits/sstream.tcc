@@ -49,11 +49,11 @@ namespace std
       int_type __ret = traits_type::eof();
       const bool __testeof = traits_type::eq_int_type(__c, __ret);
       
-      if (this->_M_in_beg < this->_M_in_cur)
+      if (this->eback() < this->gptr())
 	{
 	  const bool __testeq = traits_type::eq(traits_type::to_char_type(__c),
-						this->_M_in_cur[-1]);
-	  --this->_M_in_cur;
+						this->gptr()[-1]);
+	  this->gbump(-1);
 
 	  // Try to put back __c into input sequence in one of three ways.
 	  // Order these tests done in is unspecified by the standard.
@@ -63,7 +63,7 @@ namespace std
 	    __ret = traits_type::not_eof(__c);
 	  else
 	    {
-	      *this->_M_in_cur = traits_type::to_char_type(__c);
+	      *this->gptr() = traits_type::to_char_type(__c);
 	      __ret = __c;
 	    }
 	}
@@ -88,9 +88,9 @@ namespace std
       // experimental value (pronounced "arbitrary" in some of the
       // hipper english-speaking countries), and can be changed to
       // suit particular needs.
-      __size_type __len = std::max(__size_type(_M_string.capacity() + 1),
-				   __size_type(512));
-      const bool __testput = this->_M_out_cur < this->_M_out_end;
+      const __size_type __len = std::max(__size_type(_M_string.capacity() + 1),
+					 __size_type(512));
+      const bool __testput = this->pptr() < this->epptr();
       if (__builtin_expect(!__testput && __len > _M_string.max_size(), false))
 	return traits_type::eof();
 
@@ -103,16 +103,35 @@ namespace std
 	  // growth policy builtin into basic_string.
 	  __string_type __tmp;
 	  __tmp.reserve(__len);
-	  __tmp.assign(_M_string.data(),
-		       this->_M_out_end - this->_M_out_beg);
+	  __tmp.assign(_M_string.data(), this->epptr() - this->pbase());
 	  _M_string.swap(__tmp);
-	  // Just to be sure...
-	  _M_string.reserve(__len);
 	  _M_sync(const_cast<char_type*>(_M_string.data()),
-		  this->_M_in_cur - this->_M_in_beg, 
-		  this->_M_out_cur - this->_M_out_beg);
+		  this->gptr() - this->eback(), 
+		  this->pptr() - this->pbase());
 	}
       return this->sputc(traits_type::to_char_type(__c));
+    }
+
+  template <class _CharT, class _Traits, class _Alloc>
+    typename basic_stringbuf<_CharT, _Traits, _Alloc>::int_type 
+    basic_stringbuf<_CharT, _Traits, _Alloc>::
+    _M_underflow(bool __bump)
+    {
+      int_type __ret = traits_type::eof();
+      const bool __testin = this->_M_mode & ios_base::in;
+      if (__testin)
+	{
+	  // Update egptr() to match the actual string end.
+	  _M_update_egptr();
+
+	  if (this->gptr() < this->egptr())
+	    {
+	      __ret = traits_type::to_int_type(*this->gptr());
+	      if (__bump)
+		this->gbump(1);
+	    }
+	}
+      return __ret;
     }
 
   template <class _CharT, class _Traits, class _Alloc>
@@ -129,35 +148,32 @@ namespace std
 
       if (_M_string.capacity() && (__testin || __testout || __testboth))
 	{
-	  char_type* __beg = __testin ? this->_M_in_beg : this->_M_out_beg;
+	  char_type* __beg = __testin ? this->eback() : this->pbase();
+
+	  _M_update_egptr();
 
 	  off_type __newoffi = 0;
 	  off_type __newoffo = 0;
 	  if (__way == ios_base::cur)
 	    {
-	      __newoffi = this->_M_in_cur - __beg;
-	      __newoffo = this->_M_out_cur - __beg;
+	      __newoffi = this->gptr() - __beg;
+	      __newoffo = this->pptr() - __beg;
 	    }
 	  else if (__way == ios_base::end)
-	    {
-	      __newoffi = this->_M_in_end - __beg;
-	      // Due to the resolution of DR169, ios_base::end
-	      // is this->_M_out_lim, not _M_out_end.
-	      __newoffo = this->_M_out_lim - __beg;
-	    }
+	    __newoffo = __newoffi = this->egptr() - __beg;
 
 	  if ((__testin || __testboth)
 	      && __newoffi + __off >= 0 
-	      && this->_M_in_end - __beg >= __newoffi + __off)
+	      && this->egptr() - __beg >= __newoffi + __off)
 	    {
-	      this->_M_in_cur = __beg + __newoffi + __off;
+	      this->gbump((__beg + __newoffi + __off) - this->gptr());
 	      __ret = pos_type(__newoffi);
 	    }
 	  if ((__testout || __testboth)
 	      && __newoffo + __off >= 0 
-	      && this->_M_out_lim - __beg >= __newoffo + __off)
+	      && this->egptr() - __beg >= __newoffo + __off)
 	    {
-	      this->_M_out_cur = __beg + __newoffo + __off;
+	      this->pbump((__beg + __newoffo + __off) - this->pptr());
 	      __ret = pos_type(__newoffo);
 	    }
 	}
@@ -176,23 +192,18 @@ namespace std
 	  off_type __pos = __sp; // Use streamoff operator to do conversion.
 	  const bool __testin = (ios_base::in & this->_M_mode & __mode) != 0;
 	  const bool __testout = (ios_base::out & this->_M_mode & __mode) != 0;
-	  char_type* __beg = __testin ? this->_M_in_beg : this->_M_out_beg;
+	  char_type* __beg = __testin ? this->eback() : this->pbase();
 	  
-	  // NB: Ordered.
-	  bool __testposi = false;
-	  bool __testposo = false;
-	  if (__testin && 0 <= __pos
-	      && __pos <=  this->_M_in_end - __beg)
-	    __testposi = true;
-	  if (__testout && 0 <= __pos
-	      && __pos <=  this->_M_out_lim - __beg)
-	    __testposo = true;
-	  if (__testposi || __testposo)
+	  _M_update_egptr();
+
+	  const bool __testpos = 0 <= __pos
+	                         && __pos <=  this->egptr() - __beg;
+	  if ((__testin || __testout) && __testpos)
 	    {
-	      if (__testposi)
-		this->_M_in_cur = __beg + __pos;
-	      if (__testposo)
-	        this->_M_out_cur = __beg + __pos;
+	      if (__testin)
+		this->gbump((__beg + __pos) - this->gptr());
+	      if (__testout)
+                this->pbump((__beg + __pos) - this->pptr());
 	      __ret = pos_type(off_type(__pos));
 	    }
 	}

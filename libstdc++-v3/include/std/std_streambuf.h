@@ -238,17 +238,19 @@ namespace std
       void 
       _M_move_out_cur(off_type __n) // argument needs to be +-
       {
-	const bool __testin = _M_in_cur;
-
 	_M_out_cur += __n;
-	if (__testin && _M_buf_unified)
-	  _M_in_cur += __n;
-	if (_M_out_cur > _M_out_lim)
+	if (__builtin_expect(_M_buf_unified, false))
 	  {
-	    _M_out_lim = _M_out_cur;
-	    // NB: in | out buffers drag the _M_in_end pointer along...
+	    const bool __testin = _M_in_cur;
 	    if (__testin)
-	      _M_in_end += __n;
+	      _M_in_cur += __n;
+	    if (_M_out_cur > _M_out_lim)
+	      {
+		_M_out_lim = _M_out_cur;
+		// NB: in | out buffers drag the _M_in_end pointer along...
+		if (__testin)
+		  _M_in_end += __n;
+	      }
 	  }
       }
 
