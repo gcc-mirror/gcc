@@ -1712,9 +1712,6 @@ emit_move_insn (x, y)
      rtx x, y;
 {
   enum machine_mode mode = GET_MODE (x);
-  enum machine_mode submode;
-  enum mode_class class = GET_MODE_CLASS (mode);
-  int i;
 
   x = protect_from_queue (x, 1);
   y = protect_from_queue (y, 0);
@@ -1759,19 +1756,17 @@ emit_move_insn_1 (x, y)
   enum mode_class class = GET_MODE_CLASS (mode);
   int i;
 
-  if (class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
-    submode = mode_for_size (GET_MODE_UNIT_SIZE (mode) * BITS_PER_UNIT,
-			     (class == MODE_COMPLEX_INT
-			      ? MODE_INT : MODE_FLOAT),
-			     0);
-
   if (mov_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
     return
       emit_insn (GEN_FCN (mov_optab->handlers[(int) mode].insn_code) (x, y));
 
   /* Expand complex moves by moving real part and imag part, if possible.  */
   else if ((class == MODE_COMPLEX_FLOAT || class == MODE_COMPLEX_INT)
-	   && submode != BLKmode
+	   && BLKmode != (submode = mode_for_size ((GET_MODE_UNIT_SIZE (mode)
+						    * BITS_PER_UNIT),
+						   (class == MODE_COMPLEX_INT
+						    ? MODE_INT : MODE_FLOAT),
+						   0))
 	   && (mov_optab->handlers[(int) submode].insn_code
 	       != CODE_FOR_nothing))
     {
@@ -6849,7 +6844,6 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	   call to the first insn of this function.  */
 	rtx temp;
 	rtx seq;
-	rtx valreg, saved_valreg;
 
 	/* Now really call the function.  `expand_call' does not call
 	   expand_builtin, so there is no danger of infinite recursion here.  */
@@ -6862,18 +6856,19 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	/* The register where the function returns its value
 	   is likely to have something else in it, such as an argument.
 	   So preserve that register around the call.  */
+
 	if (value_mode != VOIDmode)
 	  {
-	    valreg = hard_libcall_value (value_mode);
-	    saved_valreg = gen_reg_rtx (value_mode);
+	    rtx valreg = hard_libcall_value (value_mode);
+	    rtx saved_valreg = gen_reg_rtx (value_mode);
+
 	    emit_move_insn (saved_valreg, valreg);
+	    temp = expand_call (exp, target, ignore);
+	    emit_move_insn (valreg, saved_valreg);
 	  }
-
-	/* Generate the call, putting the value in a pseudo.  */
-	temp = expand_call (exp, target, ignore);
-
-	if (value_mode != VOIDmode)
-	  emit_move_insn (valreg, saved_valreg);
+	else
+	  /* Generate the call, putting the value in a pseudo.  */
+	  temp = expand_call (exp, target, ignore);
 #endif
 
 	seq = get_insns ();
