@@ -2210,7 +2210,9 @@ build_new_1 (exp)
     {
       tree extra = BI_header_size;
 
+      susp = suspend_momentary ();
       size = size_binop (PLUS_EXPR, size, extra);
+      resume_momentary (susp);
     }
 
   if (has_array)
