@@ -228,7 +228,9 @@ main (void)
     abort ();
   if ((u |= 2) != 1)
     abort ();
-  if ((u ^= 3) != 1)
+  /* ??? A bit queer, since this gets optimized to ((u = (u != 3)) != 1)
+     early in semantic analysis, which then yields the warning below.  */
+  if ((u ^= 3) != 1)	/* { dg-warning "always true due to limited range" } */
     abort ();
   /* Test comma expressions.  */
   u = 1;
