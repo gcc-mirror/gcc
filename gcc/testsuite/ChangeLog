@@ -1,3 +1,7 @@
+2004-05-17  Steven Bosscher  <stevenb@suse.de>
+
+	* gcc.dg/tree-ssa/20040517-1.c: New test.
+
 2004-05-15  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* gcc.dg/tree-ssa/20040514-1.c: Add '}' that was forgotten.
