@@ -3964,8 +3964,8 @@ __cxa_demangle (mangled_name, output_buffer, length, status)
      internal built-in type names are a single lower case character.
      Frankly, this simplistic disambiguation doesn't make sense to me,
      but it is documented, so we implement it here.  */
-  if (mangled_name[1] == '\0'
-      && IS_LOWER (mangled_name[0])
+  if (IS_LOWER (mangled_name[0])
+      && mangled_name[1] == '\0'
       && cplus_demangle_builtin_types[mangled_name[0] - 'a'].name != NULL)
     {
       if (status != NULL)

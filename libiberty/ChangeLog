@@ -1,5 +1,8 @@
 2004-02-23  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* cp-demangle.c (__cxa_demangle): Adjust last patch to handle
+	empty string correctly.
+
 	* cp-demangle.c (__cxa_demangle): It is not an error if status is
 	not NULL.  It is an error if the mangled name is the same as a
 	built-in type name.
