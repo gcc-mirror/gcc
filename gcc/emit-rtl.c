@@ -237,7 +237,11 @@ const_double_htab_hash (x)
   if (GET_MODE (value) == VOIDmode)
     h = CONST_DOUBLE_LOW (value) ^ CONST_DOUBLE_HIGH (value);
   else
-    h = real_hash (CONST_DOUBLE_REAL_VALUE (value));
+    {
+      h = real_hash (CONST_DOUBLE_REAL_VALUE (value));	
+      /* MODE is used in the comparison, so it should be in the hash.  */
+      h ^= GET_MODE (value);
+    }
   return h;
 }
 
