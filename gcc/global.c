@@ -154,12 +154,15 @@ do {									\
     }									\
 } while (0)
 
+/* This doesn't work for non-GNU C due to the way CODE is macro expanded.  */
+#if 0
 /* For any allocno that conflicts with IN_ALLOCNO, set OUT_ALLOCNO to
    the conflicting allocno, and execute CODE.  This macro assumes that
    mirror_conflicts has been run.  */
 #define EXECUTE_IF_CONFLICT(IN_ALLOCNO, OUT_ALLOCNO, CODE)\
   EXECUTE_IF_SET_IN_ALLOCNO_SET (conflicts + (IN_ALLOCNO) * allocno_row_words,\
 				 OUT_ALLOCNO, (CODE))
+#endif
 
 /* Set of hard regs currently live (during scan of all insns).  */
 
@@ -931,7 +934,8 @@ prune_preferences ()
       CLEAR_HARD_REG_SET (temp);
       CLEAR_HARD_REG_SET (temp2);
 
-      EXECUTE_IF_CONFLICT (allocno, allocno2,
+      EXECUTE_IF_SET_IN_ALLOCNO_SET (conflicts + allocno * allocno_row_words,
+				     allocno2,
 	{
 	  if (allocno_to_order[allocno2] > i)
 	    {
@@ -1261,7 +1265,7 @@ find_reg (allocno, losers, alt_regs_p, accept_call_clobbered, retrying)
       /* For each other pseudo-reg conflicting with this one,
 	 mark it as conflicting with the hard regs this one occupies.  */
       lim = allocno;
-      EXECUTE_IF_CONFLICT (lim, j,
+      EXECUTE_IF_SET_IN_ALLOCNO_SET (conflicts + lim * allocno_row_words, j,
 	{
 	  IOR_HARD_REG_SET (hard_reg_conflicts[j], this_reg);
 	});
