@@ -555,7 +555,7 @@
 	* typeck.c (require_complete_type): Return error_mark_node if
 	value's type is an error_mark_node.
 
-2005-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
+2004-05-20  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* optimize.c (calls_setjmp_r): Remove.
 	(calls_setjmp_p): Remove.
@@ -1478,13 +1478,13 @@
 
 	* rtti.c: Update copyright.
 
-2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+2004-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14033
 	* decl.c (require_complete_types_for_parms): Do not insert
 	error_mark_node in the parameter list.
 
-2003-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+2004-02-06  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14028
 	* parser.c (cp_parser_enclosed_template_argument_list): Emit straight
@@ -1518,7 +1518,7 @@
 	* tree.c (cp_cannot_inline_tree_fn):  Allow inlining of comdat
 	functions.
 
-2003-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+2004-02-05  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14008
 	* parser.c (cp_parser_diagnose_invalid_typename): Removed parsing
@@ -1576,7 +1576,7 @@
 	* method.c (use_thunk): Set CALL_FROM_THUNK on the call to the
 	actual function.
 
-2003-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+2004-02-04  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/13997
 	* pt.c (more_specialized_class): Increase processing_template_decl
@@ -1961,7 +1961,7 @@
 	PR c++/13474
 	* pt.c (tsubst) <INTEGER_TYPE>: Remove obsolete array index tweaking.
 
-2003-01-12  Steven Bosscher  <stevenb@suse.de>
+2004-01-12  Steven Bosscher  <stevenb@suse.de>
 
 	PR c++/13558
 	* parser.c (cp_parser_member_declaration): Any non-type is also

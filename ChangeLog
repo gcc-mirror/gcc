@@ -95,7 +95,7 @@
 	targets.
 	* Makefile.in: Regenerate.
 
-2005-05-24  Paolo Bonzini <bonzini@gnu.org>
+2004-05-24  Paolo Bonzini <bonzini@gnu.org>
 
 	* configure.in: Test the ability to symlink directories.
 	* configure: Regenerate.
