@@ -1,3 +1,7 @@
+2002-07-21  Andreas Jaeger  <aj@suse.de>
+
+        * reload1.c (fixup_abnormal_edges): Remove unused variable.
+
 2002-07-21  Bernd Schmidt  <bernds@redhat.com>
 
 	Improvements for the ifcvt pass from Michael Meissner, with patches
