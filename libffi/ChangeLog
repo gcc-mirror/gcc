@@ -1,3 +1,7 @@
+2003-10-22  Andreas Schwab  <schwab@suse.de>
+
+	* src/ia64/ffi.c: Replace FALSE/TRUE with false/true.
+
 2003-10-21  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* configure.in: AC_LINK_FILES(ffitarget.h).
