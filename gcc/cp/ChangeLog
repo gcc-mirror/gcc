@@ -1,5 +1,9 @@
 2003-12-15  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/13269
+	* parser.c (cp_parser_function_definition_after_declarator): Stop
+	scanning tokens when reaching EOF.
+
 	PR c++/12989
 	* typeck.c (cxx_sizeof_or_alignof_expr): Robustify.
 
