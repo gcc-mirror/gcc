@@ -1,3 +1,10 @@
+Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (AC_EXEEXT): Remove call.  
+	(compiler_name): Explicitly check with no extension and .exe
+	extension.
+	* configure: Regenerate.
+
 Mon May 10 17:33:45 1999  Craig Burley  <craig@jcb-sc.com>
 
 	Update to Netlib version of 1999-05-10:

@@ -1,3 +1,10 @@
+Thu May 20 03:20:59 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in (AC_EXEEXT): Remove call.
+	(compiler_name): Explicitly check with no extension and .exe
+	extension.
+	* configure: Regenerate.
+
 Wed Mar 24 22:41:28 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* configure.in (AC_PREREQ): Update to 2.13.

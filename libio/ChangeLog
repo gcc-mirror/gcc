@@ -1,3 +1,7 @@
+1999-05-20  Angela Marie Thomas <angela@cygnus.com>
+
+	* configure.in: Test for ${compiler_name}.exe as well.
+
 1999-05-17  Mark Kettenis  <kettenis@gnu.org>
 
 	* libioP.h: Only include libc-lock.h if _IO_MTSAFE_IO is defined.
