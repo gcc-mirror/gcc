@@ -2283,7 +2283,7 @@ process_command (argc, argv)
 	}
       else
 	{
-	  if ((argv[i][0] != '-' || argv[i][0] != 'l')
+	  if ((argv[i][0] != '-' || argv[i][1] != 'l')
 	      && access (argv[i], R_OK) < 0)
 	    {
 	      perror_with_name (argv[i]);
