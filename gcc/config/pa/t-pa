@@ -1,4 +1,3 @@
 LIBGCC1=libgcc1.null
 CROSS_LIBGCC1=libgcc1.null
-INSTALLED_H = float.h stdarg.h varargs.h $(USER_H) limits.h
 ADA_CFLAGS=-mdisable-indexing
