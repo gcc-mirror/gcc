@@ -1,3 +1,9 @@
+Fri Jan 30 09:08:16 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Check for declaration of abort.
+	* toplev.c: Use NEED_DECLARATION_ABORT to determine if abort should
+	be declared.
+
 Thu Jan 29 20:26:12 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* genattrtab.c (optimize): Define in case PRESERVE_DEATH_INFO_REGNO_P

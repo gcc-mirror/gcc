@@ -192,9 +192,6 @@ void pedwarn_with_file_and_line PVPROTO((char *file, int line, char *s, ...));
 void sorry PVPROTO((char *s, ...));
 void really_sorry PVPROTO((char *s, ...));
 void fancy_abort ();
-#ifndef abort
-void abort ();
-#endif
 void set_target_switch ();
 static char *decl_name ();
 
@@ -203,6 +200,10 @@ int print_single_switch ();
 void print_switch_values ();
 /* Length of line when printing switch values.  */
 #define MAX_LINE 75
+
+#ifdef NEED_DECLARATION_ABORT
+void abort ();
+#endif
 
 #ifdef NEED_DECLARATION_SBRK
 extern char *sbrk ();
