@@ -14469,7 +14469,7 @@ cp_parser_late_parsing_for_member (parser, member_function)
       
       /* Set the current source position to be the location of the first
 	 token in the saved inline body.  */
-      (void) cp_lexer_peek_token (parser->lexer);
+      cp_lexer_peek_token (parser->lexer);
       
       /* Let the front end know that we going to be defining this
 	 function.  */
@@ -14522,7 +14522,7 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 
        /* Set the current source position to be the location of the
      	  first token in the default argument.  */
-      (void) cp_lexer_peek_token (parser->lexer);
+      cp_lexer_peek_token (parser->lexer);
 
        /* Local variable names (and the `this' keyword) may not appear
      	  in a default argument.  */
