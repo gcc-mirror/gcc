@@ -1,3 +1,17 @@
+2002-03-10  Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/Win32Process.java: Added comment.
+	* include/posix.h (_Jv_platform_close_on_exec): New function.
+	Include fcntl.h.
+	* include/win32.h (_Jv_platform_close_on_exec): New function.
+	* java/net/natPlainSocketImpl.cc (create): Set close-on-exec
+	flag.
+	(accept): Likewise.
+	* java/net/natPlainDatagramSocketImpl.cc (create): Set
+	close-on-exec flag.
+	* java/io/natFileDescriptorPosix.cc (open): Set close-on-exec
+	flag.
+
 2002-03-09  Tom Tromey  <tromey@redhat.com>
 
 	* verify.cc (state::NO_STACK): New constant.

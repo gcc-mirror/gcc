@@ -17,7 +17,6 @@ details.  */
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/param.h>
-#include <fcntl.h>
 
 #ifdef HAVE_SYS_IOCTL_H
 #define BSD_COMP /* Get FIONREAD on Solaris2. */
@@ -122,6 +121,9 @@ java::io::FileDescriptor::open (jstring path, jint jflags)
       sprintf (msg, "%s (%s)", buf, strerror (errno));
       throw new FileNotFoundException (JvNewStringLatin1 (msg));
     }
+
+  _Jv_platform_close_on_exec (fd);
+
   return fd;
 }
 
