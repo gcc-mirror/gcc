@@ -442,7 +442,7 @@ build_cplus_array_type_1 (elt_type, index_type)
 
   push_obstacks_nochange ();
 
-  /* We need a new one.  If both ELT_TYPE and INDEX_TYPE are permanent,
+  /* If both ELT_TYPE and INDEX_TYPE are permanent,
      make this permanent too.  */
   if (TREE_PERMANENT (elt_type)
       && (index_type == 0 || TREE_PERMANENT (index_type)))
@@ -1533,8 +1533,7 @@ copy_template_template_parm (t)
   tree t2;
 
   /* Make sure these end up on the permanent_obstack.  */
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
+  push_permanent_obstack ();
   
   t2 = make_lang_type (TEMPLATE_TEMPLATE_PARM);
   template = copy_node (template);
@@ -2086,11 +2085,8 @@ copy_to_permanent (t)
   if (t == NULL_TREE || TREE_PERMANENT (t))
     return t;
 
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
-
+  push_permanent_obstack ();
   t = mapcar (t, perm_manip);
-
   pop_obstacks ();
 
   return t;
@@ -2620,6 +2616,17 @@ push_expression_obstack ()
 {
   push_obstacks_nochange ();
   current_obstack = expression_obstack;
+}
+
+/* Begin allocating on the permanent obstack.  When you're done
+   allocating there, call pop_obstacks to return to the previous set
+   of obstacks.  */
+
+void
+push_permanent_obstack ()
+{
+  push_obstacks_nochange ();
+  end_temporary_allocation ();
 }
 
 /* The type of ARG when used as an lvalue.  */

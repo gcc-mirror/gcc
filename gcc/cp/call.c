@@ -3787,30 +3787,7 @@ convert_default_arg (type, arg, fn)
      tree fn;
 {
   if (fn && DECL_TEMPLATE_INFO (fn))
-    {
-      /* This default argument came from a template.  Instantiate the
-	 default argument here, not in tsubst.  In the case of
-	 something like: 
-
-	   template <class T>
-	   struct S {
-	     static T t();
-	     void f(T = t());
-	   };
-
-	 we must be careful to do name lookup in the scope of S<T>,
-	 rather than in the current class.  */
-      if (DECL_CLASS_SCOPE_P (fn))
-	pushclass (DECL_REAL_CONTEXT (fn), 2);
-
-      arg = tsubst_expr (arg, DECL_TI_ARGS (fn), /*complain=*/1, NULL_TREE);
-
-      if (DECL_CLASS_SCOPE_P (fn))
-	popclass ();
-
-      /* Make sure the default argument is reasonable.  */
-      arg = check_default_argument (type, arg);
-    }
+    arg = tsubst_default_argument (fn, type, arg);
 
   arg = break_out_target_exprs (arg);
 

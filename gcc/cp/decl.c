@@ -923,9 +923,7 @@ declare_namespace_level ()
 int
 pseudo_global_level_p ()
 {
-  struct binding_level *b = innermost_nonclass_level ();
-
-  return b->pseudo_global;
+  return current_binding_level->pseudo_global;
 }
 
 void
@@ -1018,8 +1016,7 @@ push_binding (id, decl, level)
   if (!free_binding_nodes)
     {
       /* There are no free nodes, so we must build one here.  */
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
       binding = make_node (CPLUS_BINDING);
       pop_obstacks ();
     }
@@ -2761,6 +2758,29 @@ maybe_process_template_type_declaration (type, globalize, b)
   return decl;
 }
 
+/* In C++, you don't have to write `struct S' to refer to `S'; you
+   can just use `S'.  We accomplish this by creating a TYPE_DECL as
+   if the user had written `typedef struct S S'.  Create and return
+   the TYPE_DECL for TYPE.  */
+
+tree
+create_implicit_typedef (name, type)
+     tree name;
+     tree type;
+{
+  tree decl;
+
+  decl = build_decl (TYPE_DECL, name, type);
+  SET_DECL_ARTIFICIAL (decl);
+  /* There are other implicit type declarations, like the one *within*
+     a class that allows you to write `S::S'.  We must distinguish
+     amongst these.  */
+  SET_DECL_IMPLICIT_TYPEDEF_P (decl);
+  TYPE_NAME (type) = decl;
+
+  return decl;
+}
+
 /* Push a tag name NAME for struct/class/union/enum type TYPE.
    Normally put it into the inner-most non-tag-transparent scope,
    but if GLOBALIZE is true, put it in the inner-most non-class scope.
@@ -2790,9 +2810,8 @@ pushtag (name, type, globalize)
         {
           register tree d = NULL_TREE;
 	  int in_class = 0;
-	  tree context;
+	  tree context = TYPE_CONTEXT (type);
 
-	  context = type ? TYPE_CONTEXT (type) : NULL_TREE;
 	  if (! context)
 	    {
 	      tree cs = current_scope ();
@@ -2813,15 +2832,13 @@ pushtag (name, type, globalize)
 	      || b->parm_flag == 2)
 	    in_class = 1;
 
-	  d = build_decl (TYPE_DECL, name, type);
 	  if (current_lang_name == lang_name_java)
 	    TYPE_FOR_JAVA (type) = 1;
-	  SET_DECL_ARTIFICIAL (d);
+
+	  d = create_implicit_typedef (name, type);
+	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
 	  if (! in_class)
 	    set_identifier_type_value_with_scope (name, type, b);
-
-	  TYPE_NAME (type) = d;
-	  DECL_CONTEXT (d) = FROB_CONTEXT (context);
 
 	  d = maybe_process_template_type_declaration (type,
 						       globalize, b);
@@ -3449,10 +3466,7 @@ duplicate_decls (newdecl, olddecl)
       if (oldtype)
 	push_obstacks (TYPE_OBSTACK (oldtype), TYPE_OBSTACK (oldtype));
       else
-	{
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
-	}
+	push_permanent_obstack ();
 
       /* Merge the data types specified in the two decls.  */
       newtype = common_type (TREE_TYPE (newdecl), TREE_TYPE (olddecl));
@@ -3733,14 +3747,13 @@ duplicate_decls (newdecl, olddecl)
 	{
 	  if (DECL_MAIN_VARIANT (olddecl) == olddecl)
 	    {
-	      /* Save these lang_decls that would otherwise be lost.  */
-	      extern tree free_lang_decl_chain;
-	      tree free_lang_decl = (tree) ol;
+	      struct lang_decl *free_lang_decl = ol;
 
+	      /* Save these lang_decls that would otherwise be lost.  */
 	      if (DECL_LANG_SPECIFIC (olddecl) == ol)
 		abort ();
 
-	      TREE_CHAIN (free_lang_decl) = free_lang_decl_chain;
+	      free_lang_decl->u.next = free_lang_decl_chain;
 	      free_lang_decl_chain = free_lang_decl;
 	    }
 	  else
@@ -4308,6 +4321,35 @@ pushdecl_class_level (x)
 	   f = TREE_CHAIN (f))
 	pushdecl_class_level (f);
     }
+}
+
+/* Enter DECL into the symbol table, if that's appropriate.  Returns
+   DECL, or a modified version thereof.  */
+
+tree
+maybe_push_decl (decl)
+     tree decl;
+{
+  tree type = TREE_TYPE (decl);
+
+  /* Add this decl to the current binding level, but not if it comes
+     from another scope, e.g. a static member variable.  TEM may equal
+     DECL or it may be a previous decl of the same name.  */
+  if ((TREE_CODE (decl) != PARM_DECL 
+       && DECL_CONTEXT (decl) != NULL_TREE 
+       /* Definitions of namespace members outside their namespace are
+	  possible. */
+       && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+      || (TREE_CODE (decl) == TEMPLATE_DECL && !namespace_bindings_p ())
+      || TREE_CODE (type) == UNKNOWN_TYPE
+      /* The declaration of template specializations does not affect
+	 the functions available for overload resolution, so we do not
+	 call pushdecl.  */
+      || (TREE_CODE (decl) == FUNCTION_DECL
+	  && DECL_TEMPLATE_SPECIALIZATION (decl)))
+    return decl;
+  else
+    return pushdecl (decl);
 }
 
 #if 0
@@ -6987,34 +7029,22 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 		    decl);
     }
 
-  /* Add this decl to the current binding level, but not if it
-     comes from another scope, e.g. a static member variable.
-     TEM may equal DECL or it may be a previous decl of the same name.  */
-  
-  if ((TREE_CODE (decl) != PARM_DECL && DECL_CONTEXT (decl) != NULL_TREE 
-       /* Definitions of namespace members outside their namespace are
-	  possible. */
-       && TREE_CODE (DECL_CONTEXT (decl)) != NAMESPACE_DECL)
-      || (TREE_CODE (decl) == TEMPLATE_DECL && !namespace_bindings_p ())
-      || TREE_CODE (type) == LANG_TYPE
-      /* The declaration of template specializations does not affect
-	 the functions available for overload resolution, so we do not
-	 call pushdecl.  */
-      || (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_TEMPLATE_SPECIALIZATION (decl)))
-    tem = decl;
-  else
-    tem = pushdecl (decl);
+  /* Enter this declaration into the symbol table.  */
+  tem = maybe_push_decl (decl);
 
   if (processing_template_decl)
     {
-      if (! current_function_decl)
-	tem = push_template_decl (tem);
-      else
-	DECL_VINDEX (tem)
-	    = build_min_nt (DECL_STMT, copy_to_permanent (declarator),
-			    copy_to_permanent (declspecs),
-			    NULL_TREE);
+      if (at_function_scope_p ())
+	push_permanent_obstack ();
+
+      tem = push_template_decl (tem);
+      /* In a a local scope, add a representation of this declaration
+	 to the statement tree.  */
+      if (at_function_scope_p ())
+	{
+	  add_decl_stmt (decl);
+	  pop_obstacks ();
+	}
     }
 
 
@@ -7032,32 +7062,6 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
 
   /* Corresponding pop_obstacks is done in `cp_finish_decl'.  */
   push_obstacks_nochange ();
-
-#if 0
-  /* We have no way of knowing whether the initializer will need to be
-     evaluated at run-time or not until we've parsed it, so let's just put
-     it in the permanent obstack.  (jason) */
-  if (init_written
-      && ! (TREE_CODE (tem) == PARM_DECL
-	    || (TREE_READONLY (tem)
-		&& (TREE_CODE (tem) == VAR_DECL
-		    || TREE_CODE (tem) == FIELD_DECL))))
-    {
-      /* When parsing and digesting the initializer,
-	 use temporary storage.  Do this even if we will ignore the value.  */
-      if (toplevel_bindings_p () && debug_temp_inits)
-	{
-	  if (processing_template_decl
-	      || TYPE_NEEDS_CONSTRUCTING (type)
-	      || TREE_CODE (type) == REFERENCE_TYPE)
-	    /* In this case, the initializer must lay down in permanent
-	       storage, since it will be saved until `finish_file' is run.   */
-	    ;
-	  else
-	    temporary_allocation ();
-	}
-    }
-#endif
 
   return tem;
 }
@@ -7129,23 +7133,6 @@ start_decl_1 (decl)
 	  initialized = TYPE_NEEDS_CONSTRUCTING (type);
 	}
     }
-
-#if 0
-  /* We don't do this yet for GNU C++.  */
-  /* For a local variable, define the RTL now.  */
-  if (! toplevel_bindings_p ()
-      /* But not if this is a duplicate decl
-	 and we preserved the rtl from the previous one
-	 (which may or may not happen).  */
-      && DECL_RTL (tem) == NULL_RTX)
-    {
-      if (TYPE_SIZE (TREE_TYPE (tem)) != NULL_TREE)
-	expand_decl (tem);
-      else if (TREE_CODE (TREE_TYPE (tem)) == ARRAY_TYPE
-	       && DECL_INITIAL (tem) != NULL_TREE)
-	expand_decl (tem);
-    }
-#endif
 
   if (! initialized)
     DECL_INITIAL (decl) = NULL_TREE;
@@ -7380,22 +7367,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   if (processing_template_decl)
     {
       if (init && DECL_INITIAL (decl))
-	DECL_INITIAL (decl) = init;
-      if (current_function_decl && ! DECL_ARTIFICIAL (decl))
-	{
-	  tree stmt = DECL_VINDEX (decl);
-	  /* If the decl is declaring a member of a local class (in a
-	     template function), the DECL_VINDEX will either be NULL,
-	     or it will be an actual virtual function index, not a
-	     DECL_STMT.  */
-	  if (stmt != NULL_TREE && TREE_CODE (stmt) == DECL_STMT)
-	    {
-	      DECL_VINDEX (decl) = NULL_TREE;
-	      TREE_OPERAND (stmt, 2) = copy_to_permanent (init);
-	      add_tree (stmt);
-	    }
-	}
-
+	DECL_INITIAL (decl) = copy_to_permanent (init);
       goto finish_end0;
     }
 
@@ -7466,9 +7438,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   else if (TREE_CODE (type) == REFERENCE_TYPE)
     {
       if (TREE_STATIC (decl))
-	make_decl_rtl (decl, NULL_PTR,
-		       toplevel_bindings_p ()
-		       || pseudo_global_level_p ());
+	make_decl_rtl (decl, NULL_PTR, toplevel_bindings_p ());
       grok_reference_init (decl, type, init);
       init = NULL_TREE;
     }
@@ -7678,7 +7648,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
       || TREE_CODE (decl) == RESULT_DECL)
     {
       /* ??? FIXME: What about nested classes?  */
-      int toplev = toplevel_bindings_p () || pseudo_global_level_p ();
+      int toplev = toplevel_bindings_p ();
       int was_temp
 	= (TREE_STATIC (decl) && TYPE_NEEDS_DESTRUCTOR (type)
 	   && allocation_temporary_p ());
@@ -8647,7 +8617,17 @@ grokvardecl (type, declarator, specbits_in, initialized, constp, in_namespace)
       else
 	context = NULL_TREE;
 
-      decl = build_decl (VAR_DECL, declarator, complete_type (type));
+      if (processing_template_decl) 
+	{
+	  /* If we're in a template, we need DECL_LANG_SPECIFIC so that
+	     we can call push_template_decl.  */
+	  push_permanent_obstack ();
+	  decl = build_lang_field_decl (VAR_DECL, declarator,
+					complete_type (type));
+	  pop_obstacks ();
+	}
+      else
+	decl = build_decl (VAR_DECL, declarator, complete_type (type));
 
       if (context)
 	set_decl_namespace (decl, context, 0);
@@ -9259,8 +9239,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 
      We also want to avoid calling this a PARM if it is in a namespace.  */
 
-  if (decl_context == NORMAL && ! namespace_bindings_p ()
-      && ! pseudo_global_level_p ())
+  if (decl_context == NORMAL && !toplevel_bindings_p ())
     {
       struct binding_level *b = current_binding_level;
       current_binding_level = b->level_chain;
@@ -10568,15 +10547,18 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	     since it might be used as a template parameter. */
 	  if (type != error_mark_node)
 	    push_obstacks (TYPE_OBSTACK (type), TYPE_OBSTACK (type));
-	  decl = build_decl (TYPE_DECL, declarator, type);
+	  if (processing_template_decl)
+	    decl = build_lang_field_decl (TYPE_DECL, declarator, type);
+	  else
+	    decl = build_decl (TYPE_DECL, declarator, type);
 	  if (type != error_mark_node)
 	    pop_obstacks ();
 	}
 
-      /* If the user declares "struct {...} foo" then `foo' will have
-	 an anonymous name.  Fill that name in now.  Nothing can
-	 refer to it, so nothing needs know about the name change.
-	 The TYPE_NAME field was filled in by build_struct_xref.  */
+      /* If the user declares "typedef struct {...} foo" then the
+	 struct will have an anonymous name.  Fill that name in now.
+	 Nothing can refer to it, so nothing needs know about the name
+	 change.  */
       if (type != error_mark_node
 	  && TYPE_NAME (type)
 	  && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
@@ -11039,7 +11021,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	      {
 		/* C++ allows static class members.
 		   All other work for this is done by grokfield.
-		   This VAR_DCL is built by build_lang_field_decl.
+		   This VAR_DECL is built by build_lang_field_decl.
 		   All other VAR_DECLs are built by build_decl.  */
 		decl = build_lang_field_decl (VAR_DECL, declarator, type);
 		TREE_STATIC (decl) = 1;
@@ -12913,6 +12895,31 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
   if (pre_parsed_p == 2)
     maybe_begin_member_template_processing (decl1);
 
+  /* Effective C++ rule 15.  See also c_expand_return.  */
+  if (warn_ecpp
+      && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
+      && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
+    cp_warning ("`operator=' should return a reference to `*this'");
+
+  /* Make the init_value nonzero so pushdecl knows this is not tentative.
+     error_mark_node is replaced below (in poplevel) with the BLOCK.  */
+  DECL_INITIAL (decl1) = error_mark_node;
+
+#ifdef SET_DEFAULT_DECL_ATTRIBUTES
+  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
+#endif
+  
+  /* This function exists in static storage.
+     (This does not mean `static' in the C sense!)  */
+  TREE_STATIC (decl1) = 1;
+
+  /* We must call push_template_decl after current_class_type is set
+     up.  (If we are processing inline definitions after exiting a
+     class scope, current_class_type will be NULL_TREE until set above
+     by push_nested_class.)  */
+  if (processing_template_decl)
+    decl1 = push_template_decl (decl1);
+
   /* We are now in the scope of the function being defined.  */
   current_function_decl = decl1;
 
@@ -12954,31 +12961,6 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
 
       abstract_virtuals_error (decl1, TREE_TYPE (fntype));
     }
-
-  /* Effective C++ rule 15.  See also c_expand_return.  */
-  if (warn_ecpp
-      && DECL_NAME (decl1) == ansi_opname[(int) MODIFY_EXPR]
-      && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
-    cp_warning ("`operator=' should return a reference to `*this'");
-
-  /* Make the init_value nonzero so pushdecl knows this is not tentative.
-     error_mark_node is replaced below (in poplevel) with the BLOCK.  */
-  DECL_INITIAL (decl1) = error_mark_node;
-
-#ifdef SET_DEFAULT_DECL_ATTRIBUTES
-  SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
-#endif
-  
-  /* This function exists in static storage.
-     (This does not mean `static' in the C sense!)  */
-  TREE_STATIC (decl1) = 1;
-
-  /* We must call push_template_decl after current_class_type is set
-     up.  (If we are processing inline definitions after exiting a
-     class scope, current_class_type will be NULL_TREE until set above
-     by push_nested_class.)  */
-  if (processing_template_decl)
-    decl1 = push_template_decl (decl1);
 
   /* Record the decl so that the function name is defined.
      If we already have a decl for this name, and it is a FUNCTION_DECL,

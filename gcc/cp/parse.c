@@ -4444,7 +4444,7 @@ case 12:
     break;}
 case 13:
 #line 386 "parse.y"
-{ if (! toplevel_bindings_p () && ! pseudo_global_level_p())
+{ if (! toplevel_bindings_p ())
 		  pop_everything (); ;
     break;}
 case 14:

@@ -1154,8 +1154,7 @@ void
 add_method (type, fields, method)
      tree type, *fields, method;
 {
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
+  push_permanent_obstack ();
 
   /* Setting the DECL_CONTEXT and DECL_CLASS_CONTEXT here is probably
      redundant.  */
@@ -5378,6 +5377,9 @@ build_self_reference ()
   DECL_CONTEXT (value) = current_class_type;
   DECL_CLASS_CONTEXT (value) = current_class_type;
   DECL_ARTIFICIAL (value) = 1;
+
+  if (processing_template_decl)
+    value = push_template_decl (value);
 
   saved_cas = current_access_specifier;
   current_access_specifier = access_public_node;

@@ -123,7 +123,9 @@ static tree build_template_parm_index PROTO((int, int, int, tree, tree));
 static int inline_needs_template_parms PROTO((tree));
 static void push_inline_template_parms_recursive PROTO((tree, int));
 static tree retrieve_specialization PROTO((tree, tree));
+static tree retrieve_local_specialization PROTO((tree, tree));
 static tree register_specialization PROTO((tree, tree, tree));
+static tree register_local_specialization PROTO((tree, tree, tree));
 static int unregister_specialization PROTO((tree, tree));
 static tree reduce_template_parm_level PROTO((tree, tree, int));
 static tree build_template_decl PROTO((tree, tree));
@@ -160,6 +162,7 @@ static int coerce_template_template_parms PROTO((tree, tree, int,
 static tree determine_specialization PROTO((tree, tree, tree *, int));
 static int template_args_equal PROTO((tree, tree));
 static void print_template_context PROTO((int));
+static void tsubst_default_arguments PROTO((tree));
 
 /* We use TREE_VECs to hold template arguments.  If there is only one
    level of template arguments, then the TREE_VEC contains the
@@ -756,6 +759,18 @@ retrieve_specialization (tmpl, args)
   return NULL_TREE;
 }
 
+/* Like retrieve_speciailization, but for local declarations.  FN is
+   the function in which we are looking for an instantiation.  */
+
+static tree
+retrieve_local_specialization (tmpl, fn)
+     tree tmpl;
+     tree fn;
+{
+  tree s = purpose_member (fn, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+  return s ? TREE_VALUE (s) : NULL_TREE;
+}
+
 /* Returns non-zero iff DECL is a specialization of TMPL.  */
 
 int
@@ -909,6 +924,22 @@ unregister_specialization (spec, tmpl)
       }
 
   return 0;
+}
+
+/* Like register_specialization, but for local declarations.  FN is
+   the function in which we are registering SPEC, an instantiation of
+   TMPL.  */
+
+static tree
+register_local_specialization (spec, tmpl, fn)
+     tree spec;
+     tree tmpl;
+     tree fn;
+{
+  DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
+     = perm_tree_cons (fn, spec, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
+
+  return spec;
 }
 
 /* Print the list of candidate FNS in an error message.  */
@@ -2350,7 +2381,7 @@ push_template_decl_real (decl, is_friend)
   int is_partial;
 
   /* See if this is a partial specialization.  */
-  is_partial = (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl)
+  is_partial = (DECL_IMPLICIT_TYPEDEF_P (decl)
 		&& TREE_CODE (TREE_TYPE (decl)) != ENUMERAL_TYPE
 		&& CLASSTYPE_TEMPLATE_SPECIALIZATION (TREE_TYPE (decl)));
 
@@ -2368,7 +2399,7 @@ push_template_decl_real (decl, is_friend)
   else
     /* Otherwise, if we're currently definining some class, the DECL
        is assumed to be a member of the class.  */
-    ctx = current_class_type;
+    ctx = current_scope ();
 
   if (ctx && TREE_CODE (ctx) == NAMESPACE_DECL)
     ctx = NULL_TREE;
@@ -2376,22 +2407,8 @@ push_template_decl_real (decl, is_friend)
   if (!DECL_CONTEXT (decl))
     DECL_CONTEXT (decl) = FROB_CONTEXT (current_namespace);
 
-  /* For determining whether this is a primary template or not, we're really
-     interested in the lexical context, not the true context.  */
-  if (is_friend)
-    info = current_class_type;
-  else
-    info = ctx;
-
   /* See if this is a primary template.  */
-  if (info && TREE_CODE (info) == FUNCTION_DECL)
-    primary = 0;
-  /* Note that template_class_depth returns 0 if given NULL_TREE, so
-     this next line works even when we are at global scope.  */
-  else if (processing_template_decl > template_class_depth (info))
-    primary = 1;
-  else
-    primary = 0;
+  primary = pseudo_global_level_p ();
 
   if (primary)
     {
@@ -2546,7 +2563,7 @@ push_template_decl_real (decl, is_friend)
 
   info = perm_tree_cons (tmpl, args, NULL_TREE);
 
-  if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+  if (DECL_IMPLICIT_TYPEDEF_P (decl))
     {
       SET_TYPE_TEMPLATE_INFO (TREE_TYPE (tmpl), info);
       if ((!ctx || TREE_CODE (ctx) != FUNCTION_DECL)
@@ -3932,16 +3949,13 @@ lookup_template_class (d1, arglist, in_decl, context, entering_scope)
 	{
 	  TYPE_CONTEXT (t) = FROB_CONTEXT (context);
 	  
-	  /* Create a stub TYPE_DECL for it.  */
-	  type_decl = build_decl (TYPE_DECL, DECL_NAME (template), t);
-	  SET_DECL_ARTIFICIAL (type_decl);
+	  type_decl = create_implicit_typedef (DECL_NAME (template), t);
 	  DECL_CONTEXT (type_decl) = TYPE_CONTEXT (t);
-	  
+	  TYPE_STUB_DECL (t) = type_decl;
 	  DECL_SOURCE_FILE (type_decl) 
 	    = DECL_SOURCE_FILE (TYPE_STUB_DECL (template_type));
 	  DECL_SOURCE_LINE (type_decl) 
 	    = DECL_SOURCE_LINE (TYPE_STUB_DECL (template_type));
-	  TYPE_STUB_DECL (t) = TYPE_NAME (t) = type_decl;
 	}
       else
 	type_decl = TYPE_NAME (t);
@@ -5193,6 +5207,18 @@ instantiate_class_template (type)
   TYPE_BEING_DEFINED (type) = 0;
   repo_template_used (type);
 
+  /* Now that the class is complete, instantiate default arguments for
+     any member functions.  We don't do this earlier because the
+     default arguments may reference members of the class.  */
+  if (!PRIMARY_TEMPLATE_P (template))
+    for (t = TYPE_METHODS (type); t; t = TREE_CHAIN (t))
+      if (TREE_CODE (t) == FUNCTION_DECL 
+	  /* Implicitly generated member functions will not have tmplate
+	     information; they are not instantiations, but instead are
+	     created "fresh" for each instantiation.  */
+	  && DECL_TEMPLATE_INFO (t))
+	tsubst_default_arguments (t);
+
   popclass ();
   pop_from_top_level ();
   pop_tinst_level ();
@@ -5415,6 +5441,66 @@ tsubst_aggr_type (t, args, complain, in_decl, entering_scope)
     default:
       return tsubst (t, args, complain, in_decl);
     }
+}
+
+/* Substitute into the default argument ARG (a default argument for
+   FN), which has the indicated TYPE.  */
+
+tree
+tsubst_default_argument (fn, type, arg)
+     tree fn;
+     tree type;
+     tree arg;
+{
+  /* This default argument came from a template.  Instantiate the
+     default argument here, not in tsubst.  In the case of
+     something like: 
+     
+       template <class T>
+       struct S {
+	 static T t();
+	 void f(T = t());
+       };
+     
+     we must be careful to do name lookup in the scope of S<T>,
+     rather than in the current class.  */
+  if (DECL_CLASS_SCOPE_P (fn))
+    pushclass (DECL_REAL_CONTEXT (fn), 2);
+
+  arg = tsubst_expr (arg, DECL_TI_ARGS (fn), /*complain=*/1, NULL_TREE);
+  
+  if (DECL_CLASS_SCOPE_P (fn))
+    popclass ();
+
+  /* Make sure the default argument is reasonable.  */
+  arg = check_default_argument (type, arg);
+
+  return arg;
+}
+
+/* Substitute into all the default arguments for FN.  */
+
+static void
+tsubst_default_arguments (fn)
+     tree fn;
+{
+  tree arg;
+  tree tmpl_args;
+
+  tmpl_args = DECL_TI_ARGS (fn);
+
+  /* If this function is not yet instantiated, we certainly don't need
+     its default arguments.  */
+  if (uses_template_parms (tmpl_args))
+    return;
+
+  for (arg = TYPE_ARG_TYPES (TREE_TYPE (fn)); 
+       arg; 
+       arg = TREE_CHAIN (arg))
+    if (TREE_PURPOSE (arg))
+      TREE_PURPOSE (arg) = tsubst_default_argument (fn, 
+						    TREE_VALUE (arg),
+						    TREE_PURPOSE (arg));
 }
 
 /* Substitute the ARGS into the T, which is a _DECL.  TYPE is the
@@ -5804,6 +5890,22 @@ tsubst_decl (t, args, type, in_decl)
 		&& (IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r)) 
 		    == NULL_TREE))
 	      SET_IDENTIFIER_GLOBAL_VALUE (DECL_ASSEMBLER_NAME (r), r);
+
+	    /* We're not supposed to instantiate default arguments
+	       until they are called, for a template.  But, for a
+	       declaration like:
+
+	         template <class T> void f () 
+                 { extern void g(int i = T()); }
+		 
+	       we should do the substitution when the template is
+	       instantiated.  We handle the member function case in
+	       instantiate_class_template since the default arguments
+	       might refer to other members of the class.  */
+	    if (!member
+		&& !PRIMARY_TEMPLATE_P (gen_tmpl)
+		&& !uses_template_parms (argvec))
+	      tsubst_default_arguments (r);
 	  }
 
 	/* Copy the list of befriending classes.  */
@@ -5877,26 +5979,56 @@ tsubst_decl (t, args, type, in_decl)
       }
       break;
 
+    case TYPE_DECL:
+      if (DECL_IMPLICIT_TYPEDEF_P (t))
+	{
+	  /* For an implicit typedef, we just want the implicit
+	     typedef for the tsubst'd type.  We've already got the
+	     tsubst'd type, as TYPE, so we just need it's associated
+	     declaration.  */
+	  r = TYPE_NAME (type);
+	  break;
+	}
+      else if (!DECL_LANG_SPECIFIC (t))
+	{
+	  /* For a template type parameter, we don't have to do
+	     anything special.  */
+	  r= TYPE_NAME (type);
+	  break;
+	}
+
+      /* Fall through.  */
+
     case VAR_DECL:
       {
 	tree argvec;
 	tree gen_tmpl;
 	tree spec;
 	tree tmpl;
-	tree ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
-				     /*complain=*/1,
-				     in_decl, /*entering_scope=*/1);
-	
+	tree ctx;
+
 	/* Nobody should be tsubst'ing into non-template variables.  */
 	my_friendly_assert (DECL_LANG_SPECIFIC (t) 
 			    && DECL_TEMPLATE_INFO (t) != NULL_TREE, 0);
+
+	if (TYPE_P (DECL_CONTEXT (t)))
+	  ctx = tsubst_aggr_type (DECL_CONTEXT (t), args, 
+				  /*complain=*/1,
+				  in_decl, /*entering_scope=*/1);
+	else
+	  /* Subsequent calls to pushdecl will fill this in.  */
+	  ctx = NULL_TREE;
 
 	/* Check to see if we already have this specialization.  */
 	tmpl = DECL_TI_TEMPLATE (t);
 	gen_tmpl = most_general_template (tmpl);
 	argvec = tsubst (DECL_TI_ARGS (t), args, /*complain=*/1, in_decl);
-	spec = retrieve_specialization (gen_tmpl, argvec);
-	
+	if (ctx)
+	  spec = retrieve_specialization (gen_tmpl, argvec);
+	else
+	  spec = retrieve_local_specialization (gen_tmpl,
+						current_function_decl);
+
 	if (spec)
 	  {
 	    r = spec;
@@ -5923,24 +6055,16 @@ tsubst_decl (t, args, type, in_decl)
 
 	DECL_TEMPLATE_INFO (r) = perm_tree_cons (tmpl, argvec, NULL_TREE);
 	SET_DECL_IMPLICIT_INSTANTIATION (r);
-	register_specialization (r, gen_tmpl, argvec);
+	if (ctx)
+	  register_specialization (r, gen_tmpl, argvec);
+	else
+	  register_local_specialization (r, gen_tmpl,
+					 current_function_decl);
 
 	TREE_CHAIN (r) = NULL_TREE;
-	if (TREE_CODE (type) == VOID_TYPE)
+	if (TREE_CODE (r) == VAR_DECL && TREE_CODE (type) == VOID_TYPE)
 	  cp_error_at ("instantiation of `%D' as type void", r);
       }
-      break;
-
-    case TYPE_DECL:
-      if (t == TYPE_NAME (TREE_TYPE (t)))
-	r = TYPE_NAME (type);
-      else
-	{
-	  r = copy_node (t);
-	  TREE_TYPE (r) = type;
-	  DECL_CONTEXT (r) = current_class_type;
-	  TREE_CHAIN (r) = NULL_TREE;
-	}
       break;
 
     default:
@@ -6759,15 +6883,15 @@ tsubst_copy (t, args, complain, in_decl)
 	  return t;
 
 	/* Unfortunately, we cannot just call lookup_name here.
-	 Consider:
-
-	 template <int I> int f() {
-	   enum E { a = I };
-	   struct S { void g() { E e = a; } };
-	 };
-
-	 When we instantiate f<7>::S::g(), say, lookup_name is not
-	 clever enough to find f<7>::a.  */
+	   Consider:
+	   
+	     template <int I> int f() {
+	     enum E { a = I };
+	     struct S { void g() { E e = a; } };
+	     };
+	   
+	   When we instantiate f<7>::S::g(), say, lookup_name is not
+	   clever enough to find f<7>::a.  */
 	enum_type 
 	  = tsubst_aggr_type (TREE_TYPE (t), args, complain, in_decl, 
 			      /*entering_scope=*/0);

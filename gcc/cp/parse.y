@@ -383,7 +383,7 @@ asm_keyword:
 lang_extdef:
 		{ if (pending_lang_change) do_pending_lang_change(); }
 	  extdef
-		{ if (! toplevel_bindings_p () && ! pseudo_global_level_p())
+		{ if (! toplevel_bindings_p ())
 		  pop_everything (); }
 	;
 

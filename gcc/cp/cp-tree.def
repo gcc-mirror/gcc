@@ -217,7 +217,7 @@ DEFTREECODE (TYPEID_EXPR, "typeid_expr", 'e', 1)
 
 DEFTREECODE (EXPR_STMT, "expr_stmt", 'e', 1)
 DEFTREECODE (COMPOUND_STMT, "compound_stmt", 'e', 1)
-DEFTREECODE (DECL_STMT, "decl_stmt", 'e', 3)
+DEFTREECODE (DECL_STMT, "decl_stmt", 'e', 1)
 DEFTREECODE (IF_STMT, "if_stmt", 'e', 3)
 DEFTREECODE (FOR_STMT, "for_stmt", 'e', 4)
 DEFTREECODE (WHILE_STMT, "while_stmt", 'e', 2)

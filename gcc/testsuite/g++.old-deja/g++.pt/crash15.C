@@ -6,5 +6,5 @@ struct A { // ERROR - too many template parameter lists
 public:
   A() {}
 
-  A(const A<T>& b) {} // ERROR - invalid use of template
+  A(const A<T>& b) {}
 };

@@ -240,8 +240,7 @@ call_eh_info ()
 
       /* Declare cp_eh_info * __start_cp_handler (void),
 	 as defined in exception.cc. */
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
 
       /* struct cp_eh_info.  This must match exception.cc.  Note that this
 	 type is not pushed anywhere.  */
@@ -422,8 +421,7 @@ build_eh_type_type_ref (type)
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);
 
-  push_obstacks_nochange ();
-  end_temporary_allocation ();
+  push_permanent_obstack ();
 
   if (flag_rtti)
     {
@@ -502,8 +500,7 @@ do_pop_exception ()
     {
       /* Declare void __cp_pop_exception (void *),
 	 as defined in exception.cc. */
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
       fn = build_lang_decl
 	(FUNCTION_DECL, fn,
 	 build_function_type (void_type_node, tree_cons
@@ -773,8 +770,7 @@ expand_end_eh_spec (raises)
     fn = IDENTIFIER_GLOBAL_VALUE (fn);
   else
     {
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
 
       tmp = tree_cons
 	(NULL_TREE, integer_type_node, tree_cons
@@ -920,8 +916,7 @@ alloc_eh_object (type)
     {
       /* Declare __eh_alloc (size_t), as defined in exception.cc.  */
       tree tmp;
-      push_obstacks_nochange ();
-      end_temporary_allocation ();
+      push_permanent_obstack ();
       tmp = tree_cons (NULL_TREE, sizetype, void_list_node);
       fn = build_lang_decl (FUNCTION_DECL, fn,
 			    build_function_type (ptr_type_node, tmp));
@@ -973,8 +968,7 @@ expand_throw (exp)
 	 the internal type of a destructor. */
       if (cleanup_type == NULL_TREE)
 	{
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
+	  push_permanent_obstack ();
 	  cleanup_type = build_pointer_type
 	    (build_function_type
 	     (void_type_node, tree_cons
@@ -1074,8 +1068,7 @@ expand_throw (exp)
 	  /* Declare __cp_push_exception (void*, void*, void (*)(void*, int)),
 	     as defined in exception.cc.  */
 	  tree tmp;
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
+	  push_permanent_obstack ();
 	  tmp = tree_cons
 	    (NULL_TREE, ptr_type_node, tree_cons
 	     (NULL_TREE, ptr_type_node, tree_cons
@@ -1108,8 +1101,7 @@ expand_throw (exp)
 	{
 	  /* Declare void __uncatch_exception (void)
 	     as defined in exception.cc. */
-	  push_obstacks_nochange ();
-	  end_temporary_allocation ();
+	  push_permanent_obstack ();
 	  fn = build_lang_decl (FUNCTION_DECL, fn,
 				build_function_type (void_type_node,
 						     void_list_node));

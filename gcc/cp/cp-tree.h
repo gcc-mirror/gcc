@@ -77,6 +77,7 @@ Boston, MA 02111-1307, USA.  */
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
+      DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_MAYBE_TEMPLATE.
    5: DECL_INTERFACE_KNOWN.
@@ -1192,11 +1193,8 @@ struct lang_decl_flags
   tree access;
   tree context;
 
-  /* In a template FUNCTION_DECL, this is DECL_SAVED_TREE.  */
-  tree saved_tree;
-
   union {
-    /* In a FUNCTION_DECL, this is DECL_TEMPLATE_INFO.  */
+    /* In a FUNCTION_DECL or a VAR_DECL, this is DECL_TEMPLATE_INFO.  */
     tree template_info;
 
     /* In a NAMESPACE_DECL, this is NAMESPACE_LEVEL.  */
@@ -1210,10 +1208,17 @@ struct lang_decl
 
   tree main_decl_variant;
   tree befriending_classes;
+
+  /* In a FUNCTION_DECL, this is DECL_SAVED_TREE.  */
+  tree saved_tree;
+
   union
   {
     tree sorted_fields;
     struct pending_inline *pending_inline_info;
+    /* The lang_decls on the free_lang_decl_chain are chained together
+       through this pointer.  */
+    struct lang_decl *next;
   } u;
 };
 
@@ -1502,7 +1507,7 @@ struct lang_decl
 /* In a template FUNCTION_DECL, the tree structure that will be
    substituted into to obtain instantiations.  */
 #define DECL_SAVED_TREE(NODE) \
-  (DECL_LANG_SPECIFIC ((NODE))->decl_flags.saved_tree)
+  (DECL_LANG_SPECIFIC ((NODE))->saved_tree)
 
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
 #define NEW_EXPR_USE_GLOBAL(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -1984,6 +1989,18 @@ extern int flag_new_for_scope;
 #define DECL_DECLARES_TYPE_P(NODE) \
   (TREE_CODE (NODE) == TYPE_DECL || DECL_CLASS_TEMPLATE_P (NODE))
 
+/* Nonzero if NODE is the typedef implicitly generated for a type when
+   the type is declared.  (In C++, `struct S {};' is roughly equivalent
+   to `struct S {}; typedef struct S S;' in C.  This macro will hold
+   for the typedef indicated in this example.  Note that in C++, there
+   is a second implicit typedef for each class, in the scope of `S'
+   itself, so that you can `S::S'.  This macro does *not* hold for
+   those typedefs.  */
+#define DECL_IMPLICIT_TYPEDEF_P(NODE) \
+  (TREE_CODE ((NODE)) == TYPE_DECL && DECL_LANG_FLAG_2 ((NODE)))
+#define SET_DECL_IMPLICIT_TYPEDEF_P(NODE) \
+  (DECL_LANG_FLAG_2 ((NODE)) = 1)
+
 /* A `primary' template is one that has its own template header.  A
    member function of a class template is a template, but not primary.
    A member template is primary.  Friend templates are primary, too.  */
@@ -2120,6 +2137,7 @@ extern int flag_new_for_scope;
 #define ASM_OUTPUTS(NODE)       TREE_OPERAND (NODE, 2)
 #define ASM_INPUTS(NODE)        TREE_OPERAND (NODE, 3)
 #define ASM_CLOBBERS(NODE)      TREE_OPERAND (NODE, 4)
+#define DECL_STMT_DECL(NODE)    TREE_OPERAND (NODE, 0)
 
 /* Nonzero for an ASM_STMT if the assembly statement is volatile.  */
 #define ASM_VOLATILE_P(NODE)			\
@@ -2936,6 +2954,8 @@ extern int walk_namespaces                      PROTO((walk_namespaces_fn,
 						       void *));
 extern int wrapup_globals_for_namespace         PROTO((tree, void *));
 extern tree cp_namespace_decls                  PROTO((tree));
+extern tree create_implicit_typedef             PROTO((tree, tree));
+extern tree maybe_push_decl                     PROTO((tree));
 
 /* in decl2.c */
 extern int check_java_method			PROTO((tree));
@@ -3191,7 +3211,6 @@ extern void do_type_instantiation		PROTO((tree, tree));
 extern tree instantiate_decl			PROTO((tree));
 extern tree do_poplevel				PROTO((void));
 extern tree get_bindings			PROTO((tree, tree, tree));
-/* CONT ... */
 extern void add_tree				PROTO((tree));
 extern void begin_tree                          PROTO((void));
 extern void end_tree                            PROTO((void));
@@ -3210,6 +3229,7 @@ extern void maybe_check_template_type           PROTO((tree));
 extern tree most_specialized_instantiation      PROTO((tree, tree));
 extern void print_candidates                    PROTO((tree));
 extern int instantiate_pending_templates        PROTO((void));
+extern tree tsubst_default_argument             PROTO((tree, tree, tree));
 
 extern int processing_specialization;
 extern int processing_explicit_instantiation;
@@ -3257,6 +3277,7 @@ extern void print_search_statistics		PROTO((void));
 extern void init_search_processing		PROTO((void));
 extern void reinit_search_statistics		PROTO((void));
 extern tree current_scope			PROTO((void));
+extern int at_function_scope_p                  PROTO((void));
 extern tree lookup_conversions			PROTO((tree));
 extern tree binfo_for_vtable			PROTO((tree));
 extern int  binfo_from_vbase			PROTO((tree));
@@ -3342,6 +3363,7 @@ extern tree finish_base_specifier               PROTO((tree, tree));
 extern void finish_member_declaration           PROTO((tree));
 extern void check_multiple_declarators          PROTO((void));
 extern tree finish_typeof			PROTO((tree));
+extern void add_decl_stmt                       PROTO((tree));
 
 /* in spew.c */
 extern void init_spew				PROTO((void));
@@ -3420,6 +3442,7 @@ extern tree mapcar				PROTO((tree, tree (*) (tree)));
 extern tree no_linkage_check			PROTO((tree));
 extern void debug_binfo				PROTO((tree));
 extern void push_expression_obstack		PROTO((void));
+extern void push_permanent_obstack              PROTO((void));
 extern tree build_dummy_object			PROTO((tree));
 extern tree maybe_dummy_object			PROTO((tree, tree *));
 extern int is_dummy_object			PROTO((tree));
