@@ -1,5 +1,5 @@
 /* Process expressions for the GNU compiler for the Java(TM) language.
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -1511,17 +1511,18 @@ build_field_ref (tree self_value, tree self_class, tree name)
       if (base_type != TREE_TYPE (self_value))
 	self_value = fold (build1 (NOP_EXPR, base_type, self_value));
       if (flag_indirect_dispatch
-	  && current_class != self_class)
-	/* FIXME: current_class != self_class is not exactly the right
+	  && output_class != self_class)
+	/* FIXME: output_class != self_class is not exactly the right
 	   test.  What we really want to know is whether self_class is
-	   in the same translation unit as current_class.  If it is,
+	   in the same translation unit as output_class.  If it is,
 	   we can make a direct reference.  */
 	{
-	  tree otable_index 
-	    = build_int_2 
-	    (get_symbol_table_index (field_decl, &otable_methods), 0);
-	  tree field_offset = build (ARRAY_REF, integer_type_node, otable_decl, 
-				     otable_index);
+	  tree otable_index =
+	    build_int_2 (get_symbol_table_index 
+			 (field_decl, &TYPE_OTABLE_METHODS (output_class)), 0);
+	  tree field_offset = 
+	    build (ARRAY_REF, integer_type_node, TYPE_OTABLE_DECL (output_class), 
+		   otable_index);
 	  tree address 
 	    = fold (build (PLUS_EXPR, 
 			   build_pointer_type (TREE_TYPE (field_decl)),
@@ -1771,10 +1772,12 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
 	}
       else
 	{
-	  tree table_index = build_int_2 (get_symbol_table_index 
-					  (method, &atable_methods), 0);
-	  func = build (ARRAY_REF,  method_ptr_type_node, atable_decl, 
-			table_index);
+	  tree table_index = 
+	    build_int_2 (get_symbol_table_index 
+			 (method, &TYPE_ATABLE_METHODS (output_class)), 0);
+	  func = 
+	    build (ARRAY_REF,  method_ptr_type_node, 
+		   TYPE_ATABLE_DECL (output_class), table_index);
 	}
     }
   else
@@ -1893,8 +1896,10 @@ build_invokevirtual (tree dtable, tree method)
   if (flag_indirect_dispatch)
     {
       otable_index 
-	= build_int_2 (get_symbol_table_index (method, &otable_methods), 0);
-      method_index = build (ARRAY_REF, integer_type_node, otable_decl, 
+	= build_int_2 (get_symbol_table_index 
+		       (method, &TYPE_OTABLE_METHODS (output_class)), 0);
+      method_index = build (ARRAY_REF, integer_type_node, 
+			    TYPE_OTABLE_DECL (output_class), 
 			    otable_index);
     }
   else
@@ -1957,9 +1962,12 @@ build_invokeinterface (tree dtable, tree method)
   
   if (flag_indirect_dispatch)
     {
-      otable_index 
-	= build_int_2 (get_symbol_table_index (method, &otable_methods), 0);
-      idx = build (ARRAY_REF, integer_type_node, otable_decl, otable_index);
+      otable_index =
+	build_int_2 (get_symbol_table_index 
+		     (method, &TYPE_OTABLE_METHODS (output_class)), 0);
+      idx = 
+	build (ARRAY_REF, integer_type_node, TYPE_OTABLE_DECL (output_class),
+	       otable_index);
     }
   else
     {
@@ -2605,7 +2613,7 @@ java_expand_expr (tree exp, rtx target, enum machine_mode tmode,
 	  tree decl = BLOCK_EXPR_DECLS (catch);
 	  tree type = (decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE);
 
-	  expand_start_catch (type);
+	  expand_start_catch (prepare_eh_table_type (type));
 	  expand_expr_stmt (TREE_OPERAND (current, 0));
 	  expand_end_catch ();
 	}

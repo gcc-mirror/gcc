@@ -1,3 +1,65 @@
+2004-01-09  Andrew Haley  <aph@redhat.com>
+
+	PR java/12755:
+	* parse.y (java_fix_constructors):  Set output_class.
+	(java_reorder_fields): Likewise.
+	(java_layout_classes): Likewise.
+	(java_expand_classes): Generate indirect dispatch tables.
+	(java_expand_classes): Set output_class.
+	(java_finish_classes): Likewise.
+	* lang.c (java_init): Turn on always_initialize_class_p if we're
+	using indirect dis[atch.
+	(java_decl_ok_for_sibcall): Use output_class, not current_class.
+	(java_get_callee_fndecl): Use class local atable.
+	* jcf-parse.c 
+	(always_initialize_class_p): Decl moved to java-tree.h.
+	(HANDLE_CLASS_INFO): Set output_class.
+	(read_class): Likewise.
+	(parse_class_file): Call gen_indirect_dispatch_tables.
+	(parse_zip_file_entries): Set output_class.
+	(java_parse_file): Set output_class.  Don't emit symbol tables.
+	* java-tree.h (output_class): New.
+	Remove global declarations for otable, atable, and ctable.
+	(always_initialize_class_p): moved here from decl.c.
+	(DECL_OWNER): New.
+	(TYPE_ATABLE_METHODS, TYPE_ATABLE_SYMS_DECL, TYPE_ATABLE_DECL,
+	TYPE_OTABLE_METHODS, TYPE_OTABLE_SYMS_DECL, TYPE_OTABLE_DECL,
+	TYPE_CTABLE_DECL, TYPE_CATCH_CLASSES): New.
+	(struct lang_type): Add otable_methods, otable_decl,
+	otable_syms_decl, atable_methods, atable_decl, atable_syms_decl,
+	ctable_decl, catch_classes, type_to_runtime_map.
+	* expr.c (build_field_ref): Make otable, atable, and ctable class
+	local rather than global.
+	(build_known_method_ref): Likewise.
+	(build_invokeinterface): Likewise.
+	(java_expand_expr): Pass runtime type (rather than actual type) to
+	expand_start_catch.
+	* except.c (prepare_eh_table_type): Create TYPE_TO_RUNTIME_MAP for
+	this class.  Look up each class in that map to delete duplicates.
+	(expand_end_java_handler): Pass runtime type (rather than actual
+	type) to expand_start_catch.
+	* decl.c: (always_initialize_class_p): Decl moved to java-tree.h.
+	(do_nothing): New.
+	(java_init_decl_processing): Rearrange things.  Remove global
+	declarations of otable, atable, and ctable.
+	(java_init_decl_processing): Make lang_eh_runtime_type do_nothing.
+	(java_expand_body): Set output_class.
+	* constants.c (build_constant_data_ref): Use output_class, not
+	current_class.
+	(alloc_name_constant): Likewise.
+	* class.c (gen_indirect_dispatch_tables): New.
+	(build_class_ref): Generate hard reference to superclass, even if
+	using indirect dispatch.
+	(build_static_field_ref): Use class local atable.
+	(make_class_data): Generate hard reference to superclass, even if
+	using indirect dispatch.
+	Generate symbolic references to interfaces when using indirect
+	dispatch.
+	(make_class_data): Emit otable, atable, and ctable.
+	Make otable, atable, and ctable class local rather than global.
+	(emit_catch_table): Make otable, atable, and ctable class local
+	rather than global.
+		
 2003-12-25  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* parse.y (catch_clause_parameter): Fix typo.

@@ -1,5 +1,5 @@
 /* Handle the constant pool of the Java(TM) Virtual Machine.
-   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -351,7 +351,7 @@ cpool_for_class (tree class)
 int
 alloc_name_constant (int tag, tree name)
 {
-  CPool *outgoing_cpool = cpool_for_class (current_class);
+  CPool *outgoing_cpool = cpool_for_class (output_class);
   return find_tree_constant (outgoing_cpool, tag, name);
 }
 
@@ -393,19 +393,19 @@ build_constant_data_ref (void)
 {
   tree cpool_data_ref = NULL_TREE;
 
-  if (TYPE_CPOOL_DATA_REF (current_class))
-    cpool_data_ref = TYPE_CPOOL_DATA_REF (current_class);
+  if (TYPE_CPOOL_DATA_REF (output_class))
+    cpool_data_ref = TYPE_CPOOL_DATA_REF (output_class);
 
   if (cpool_data_ref == NULL_TREE)
     {
       tree decl;
-      tree decl_name = mangled_classname ("_CD_", current_class);
+      tree decl_name = mangled_classname ("_CD_", output_class);
       decl = build_decl (VAR_DECL, decl_name,
 			 build_array_type (ptr_type_node,
 					   one_elt_array_domain_type));
       TREE_STATIC (decl) = 1;
       make_decl_rtl (decl, NULL);
-      TYPE_CPOOL_DATA_REF (current_class) = cpool_data_ref
+      TYPE_CPOOL_DATA_REF (output_class) = cpool_data_ref
 	= build1 (ADDR_EXPR, ptr_type_node, decl);
     }
   return cpool_data_ref;
