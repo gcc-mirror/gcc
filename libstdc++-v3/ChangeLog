@@ -1,3 +1,11 @@
+2003-06-02  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR libstdc++/9815
+	* config/cpu/i386/atomicity.h (__exchange_and_add): add intel
+	asm case to asm.
+	* config/cpu/i486/atomicity.h (__exchange_and_add): Likewise.
+	(__atomic_add): likewise.
+
 2003-06-02  Richard Kreckel  <Richard.Kreckel@GiNaC.DE>
 
 	PR libstdc++/11062
