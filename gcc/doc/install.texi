@@ -1131,8 +1131,7 @@ contact their makers.
 AIX:
 @itemize
 @item
-@uref{http://www-frec.bull.com/docs/download.htm,,Bull's Freeware and
-Shareware Archive for AIX};
+@uref{http://freeware.bull.net,,Bull's Freeware and Shareware Archive for AIX};
 
 @item
 @uref{http://aixpdslib.seas.ucla.edu,,UCLA Software Library for AIX};
@@ -1721,7 +1720,7 @@ At this time, @option{--enable-threads} is not compatible with
 @end html
 @heading @anchor{elxsi-elxsi-bsd}elxsi-elxsi-bsd
 The Elxsi's C compiler has known limitations that prevent it from
-compiling GCC@.  Please contact @email{mrs@@cygnus.com} for more details.
+compiling GCC@.  Please contact @email{mrs@@wrs.com} for more details.
 
 @html
 </p>
