@@ -4682,7 +4682,7 @@ reload_reg_free_before_p (regno, opnum, type)
 	 the first place, since we know that it was allocated.  */
 
     case RELOAD_FOR_OUTPUT_ADDRESS:
-      /* Earlier reloads include RELOAD_FOR_INPADDR_ADDRESS reloads.  */
+      /* Earlier reloads include RELOAD_FOR_OUTADDR_ADDRESS reloads.  */
       if (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
 	return 0;
       /* ... fall through ...  */
