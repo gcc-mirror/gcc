@@ -749,7 +749,18 @@ reg_or_logical_cint_operand (op, mode)
     return gpc_reg_operand (op, mode);
 }
 
-/* Return 1 if the operand is an operand that can be loaded via the GOT */
+/* Return 1 if the operand is valid for SCC eq.  */
+
+int
+scc_eq_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (short_cint_operand (op, mode)
+	  || reg_or_logical_cint_operand (op, mode));
+}
+
+/* Return 1 if the operand is an operand that can be loaded via the GOT.  */
 
 int
 got_operand (op, mode)

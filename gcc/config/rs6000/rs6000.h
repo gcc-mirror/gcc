@@ -2678,6 +2678,7 @@ do {									\
   {"reg_or_add_cint64_operand", {SUBREG, REG, CONST_INT}},		   \
   {"reg_or_sub_cint64_operand", {SUBREG, REG, CONST_INT}},		   \
   {"reg_or_logical_cint_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}}, \
+  {"scc_eq_operand", {SUBREG, REG, CONST_INT, CONST_DOUBLE}},		   \
   {"got_operand", {SYMBOL_REF, CONST, LABEL_REF}},			   \
   {"got_no_const_operand", {SYMBOL_REF, LABEL_REF}},			   \
   {"easy_fp_constant", {CONST_DOUBLE}},					   \

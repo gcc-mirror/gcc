@@ -45,6 +45,7 @@ extern int reg_or_arith_cint_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_add_cint64_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_sub_cint64_operand PARAMS ((rtx, enum machine_mode));
 extern int reg_or_logical_cint_operand PARAMS ((rtx, enum machine_mode));
+extern int scc_eq_operand PARAMS ((rtx, enum machine_mode));
 extern int got_operand PARAMS ((rtx, enum machine_mode));
 extern int got_no_const_operand PARAMS ((rtx, enum machine_mode));
 extern int num_insns_constant PARAMS ((rtx, enum machine_mode));
