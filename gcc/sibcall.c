@@ -693,7 +693,7 @@ optimize_sibling_and_tail_recursive_calls ()
 	      || current_function_calls_setjmp
 	      /* Can't if more than one successor or single successor is not
 		 exit block.  These two tests prevent tail call optimization
-		 in the presense of active exception handlers.  */
+		 in the presence of active exception handlers.  */
 	      || call_block->succ == NULL
 	      || call_block->succ->succ_next != NULL
 	      || (call_block->succ->dest != EXIT_BLOCK_PTR

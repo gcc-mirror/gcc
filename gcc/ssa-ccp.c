@@ -815,7 +815,7 @@ optimize_unexecutable_edges (edges, executable_edges)
 	  && bb->succ && bb->succ->succ_next == NULL)
 	{
 	  /* If the fallthru edge is the executable edge, then turn
-	     this jump into a nop jump, otherwise make it an unconditinoal
+	     this jump into a nop jump, otherwise make it an unconditional
 	     jump to its target.  */
 	  if (edge->flags & EDGE_FALLTHRU)
 	    {

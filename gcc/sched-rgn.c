@@ -276,7 +276,7 @@ static void compute_dom_prob_ps PARAMS ((int));
 #define INSN_BB(INSN) (BLOCK_TO_BB (BLOCK_NUM (INSN)))
 
 /* Parameters affecting the decision of rank_for_schedule().
-   ??? Nope.  But MIN_PROBABILITY is used in copmute_trg_info.  */
+   ??? Nope.  But MIN_PROBABILITY is used in compute_trg_info.  */
 #define MIN_PROBABILITY 40
 
 /* Speculative scheduling functions.  */
@@ -802,7 +802,7 @@ find_rgns (edge_list, dom)
       if (no_loops)
 	SET_BIT (header, 0);
 
-      /* Second travsersal:find reducible inner loops and topologically sort
+      /* Second traversal:find reducible inner loops and topologically sort
 	 block of each region.  */
 
       queue = (int *) xmalloc (n_basic_blocks * sizeof (int));
@@ -1291,7 +1291,7 @@ debug_candidates (trg)
     debug_candidate (i);
 }
 
-/* Functions for speculative scheduing.  */
+/* Functions for speculative scheduling.  */
 
 /* Return 0 if x is a set of a register alive in the beginning of one
    of the split-blocks of src, otherwise return 1.  */
@@ -2531,7 +2531,7 @@ propagate_deps (bb, pred_deps)
 /* Compute backward dependences inside bb.  In a multiple blocks region:
    (1) a bb is analyzed after its predecessors, and (2) the lists in
    effect at the end of bb (after analyzing for bb) are inherited by
-   bb's successrs.
+   bb's successors.
 
    Specifically for reg-reg data dependences, the block insns are
    scanned by sched_analyze () top-to-bottom.  Two lists are
@@ -2712,7 +2712,7 @@ schedule_region (rgn)
 
   init_deps_global ();
 
-  /* Initializations for region data dependence analyisis.  */
+  /* Initializations for region data dependence analysis.  */
   bb_deps = (struct deps *) xmalloc (sizeof (struct deps) * current_nr_blocks);
   for (bb = 0; bb < current_nr_blocks; bb++)
     init_deps (bb_deps + bb);

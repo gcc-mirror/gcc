@@ -1533,7 +1533,7 @@ free_deps (deps)
 }
 
 /* If it is profitable to use them, initialize caches for tracking
-   dependency informatino.  LUID is the number of insns to be scheduled,
+   dependency information.  LUID is the number of insns to be scheduled,
    it is used in the estimate of profitability.  */
 
 void

@@ -1362,7 +1362,7 @@ save_expr (expr)
   /* If we have simple operations applied to a SAVE_EXPR or to a SAVE_EXPR and
      a constant, it will be more efficient to not make another SAVE_EXPR since
      it will allow better simplification and GCSE will be able to merge the
-     computations if they actualy occur.  */
+     computations if they actually occur.  */
   inner = t;
   while (1)
     {

@@ -343,7 +343,7 @@ pfgets (stream)
 
 /* Subroutine of read_repo_file.  We are reading the repo file for file F,
    which is coming in on STREAM, and the symbol that comes next in STREAM
-   is offerred, chosen or provided if CHOSEN is 0, 1 or 2, respectively.
+   is offered, chosen or provided if CHOSEN is 0, 1 or 2, respectively.
 
    XXX "provided" is unimplemented, both here and in the compiler.  */
 

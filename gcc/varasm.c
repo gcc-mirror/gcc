@@ -3864,7 +3864,7 @@ initializer_constant_valid_p (value, endtype)
 	  op1 = TREE_OPERAND (value, 1);
 
 	  /* Like STRIP_NOPS except allow the operand mode to widen.
-	     This works around a feature of fold that simplfies
+	     This works around a feature of fold that simplifies
 	     (int)(p1 - p2) to ((int)p1 - (int)p2) under the theory
 	     that the narrower operation is cheaper.  */
 
@@ -3938,7 +3938,7 @@ output_constant (exp, size, align)
   enum tree_code code;
   HOST_WIDE_INT thissize;
 
-  /* Some front-ends use constants other than the standard language-indepdent
+  /* Some front-ends use constants other than the standard language-independent
      varieties, but which may still be output directly.  Give the front-end a
      chance to convert EXP to a language-independent representation.  */
   exp = (*lang_hooks.expand_constant) (exp);

@@ -1245,7 +1245,7 @@ init_resource_info (epilogue_insn)
   bb_ticks = (int *) xcalloc (last_basic_block, sizeof (int));
 }
 
-/* Free up the resources allcated to mark_target_live_regs ().  This
+/* Free up the resources allocated to mark_target_live_regs ().  This
    should be invoked after the last call to mark_target_live_regs ().  */
 
 void

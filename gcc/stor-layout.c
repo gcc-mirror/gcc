@@ -1001,10 +1001,10 @@ place_field (rli, field)
 	used in the record, and any additional adjacent long bitfields are
 	packed into the same chunk of 32 bits. However, if the size
 	changes, a new field of that size is allocated.)  In an unpacked
-	record, this is the same as using alignment, but not eqivalent
+	record, this is the same as using alignment, but not equivalent
 	when packing.
 
-     Note: for compatability, we use the type size, not the type alignment
+     Note: for compatibility, we use the type size, not the type alignment
      to determine alignment, since that matches the documentation */
 
   if ((* targetm.ms_bitfield_layout_p) (rli->t)
@@ -1103,7 +1103,7 @@ place_field (rli, field)
 	              TYPE_SIZE (TREE_TYPE (prev_saved)))
 	       : !integer_zerop (DECL_SIZE (field)) ))
 	{
-	  unsigned int type_align = 8;  /* Never below 8 for compatability */
+	  unsigned int type_align = 8;  /* Never below 8 for compatibility */
 
 	  /* (When not a bitfield), we could be seeing a flex array (with
 	     no DECL_SIZE).  Since we won't be using remaining_in_alignment
@@ -1197,7 +1197,7 @@ place_field (rli, field)
 
 /* Assuming that all the fields have been laid out, this function uses
    RLI to compute the final TYPE_SIZE, TYPE_ALIGN, etc. for the type
-   inidicated by RLI.  */
+   indicated by RLI.  */
 
 static void
 finalize_record_size (rli)
