@@ -1,5 +1,13 @@
 2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md (*seq_[sd]i, *seq_[sd]i_mips16, *sne_[sd]i)
+	(*sgt_[sd]i, *sgt_[sd]i_mips16, *sge_[sd]i, *slt_[sd]i)
+	(*slt_[sd]i_mips16, *sle_[sd]i, *sle_[sd]i_mips16, *sgtu_[sd]i)
+	(*sgtu_[sd]i_mips16, *sge_[sd]i, *sltu_[sd]i, *sltu_[sd]i_mips16)
+	(*sleu_[sd]i, *sleu_[sd]i_mips16): Redefine using :GPR.
+
+2004-08-24  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (cmpsi, cmpdi): Redefine using :GPR.
 	(*branch_zero[sd]i): Renamed from branch_zero{,_di}.  Redefine
 	using :GPR.
