@@ -8904,7 +8904,7 @@ get_class_bindings (tparms, parms, args)
    instantiation, or if there is no corresponding instantiation, the
    template itself.  EXPLICIT_ARGS is any template arguments explicity
    mentioned in a template-id.  If there is no most specialized
-   tempalte, error_mark_node is returned.  If there are no templates
+   template, error_mark_node is returned.  If there are no templates
    at all, NULL_TREE is returned.  */
 
 tree
