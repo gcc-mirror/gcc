@@ -2201,7 +2201,7 @@ fix = {
     files     = math.h;
 
     /*  If matherr has a prototype already, the header needs no fix.  */
-    bypass    = 'matherr.*struct exception';
+    bypass    = 'matherr.*(struct exception|__MATH_EXCEPTION)';
     select    = matherr;
 
     c_fix     = wrap;
