@@ -1,3 +1,10 @@
+2002-07-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (movqi): If optimizing and we can create pseudos, use
+	a ZERO_EXTEND to load from memory, then copy the result into the
+	target.
+	(movhi): Likewise, but only for ARMv4.
+
 2002-07-22  Neil Booth  <neil@daikokuya.co.uk>
 
 	* ssa-ccp.c (PHI_PARMS): Remove.
