@@ -3737,9 +3737,25 @@ output_float_compare (insn, operands)
 	 `fcompp' float compare */
 
       if (unordered_compare)
-	output_asm_insn ("fucompp", operands);
+	if (cc_status.flags & CC_FCOMI)
+	  {
+	    output_asm_insn (AS2 (fucomip,%y1,%0), operands);
+	    output_asm_insn (AS1 (fstp, %y0), operands);
+	    RET;
+	  }
+	else
+	  output_asm_insn ("fucompp", operands);
       else
-	output_asm_insn ("fcompp", operands);
+	{
+	if (cc_status.flags & CC_FCOMI)
+	  {
+	    output_asm_insn (AS2 (fcomip, %y1,%0), operands);
+	    output_asm_insn (AS1 (fstp, %y0), operands);
+	    RET;
+	  }
+	else
+	  output_asm_insn ("fcompp", operands);
+	}
     }
   else
     {
@@ -3764,13 +3780,7 @@ output_float_compare (insn, operands)
 	output_op_from_reg (operands[1], strcat (buf, AS1 (%z0,%1)));
       else if (cc_status.flags & CC_FCOMI) 
 	{
-	  rtx xops[3];
-	  
- 	  xops[0] = operands[0];
- 	  xops[1] = operands[1];
- 	  xops[2] = operands[0];
-	  
-	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%2)), xops);
+	  output_asm_insn (strcat (buf, AS2 (%z1,%y1,%0)), operands);
 	  RET;
 	}
       else
