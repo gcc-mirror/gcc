@@ -114,11 +114,11 @@ _FOR fix "\n\n" =]
     sed [=
         _FOR sed =]-e [=sed _shrstr=] \
         [=
-        /sed=]  < $infile > ${DESTFILE}.[=
+        /sed=]  < $infile > ${DESTDIR}/fixinc.tmp[=
 
 
     _ELIF shell _exist =]
-    ( [=shell=] ) < $infile > ${DESTDIR}/FIXINC.tmp
+    ( [=shell=] ) < $infile > ${DESTDIR}/fixinc.tmp
 
     #  Shell scripts have the potential of removing the output
     #  We interpret that to mean the file is not to be altered
