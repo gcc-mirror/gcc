@@ -22,10 +22,7 @@ case $machine in
 		;;
 
 	i?86-*-sysv5* | \
-	i?86-*-udk* | \
-	i?86-*-solaris2.[0-4] | \
-	powerpcle-*-solaris2.[0-4] | \
-	sparc-*-solaris2.[0-4] )
+	i?86-*-udk*)
 		fixincludes=fixinc.svr4
 		;;
 
@@ -36,11 +33,7 @@ case $machine in
 
 	*-*-netbsd* | \
 	alpha*-*-linux*libc1* | \
-	i?86-*-openbsd* | \
-	i?86-*-solaris2* | \
-	sparcv9-*-solaris2* | \
-	powerpcle-*-solaris2*  | \
-	sparc-*-solaris2* )
+	i?86-*-openbsd*)
 		fixincludes=fixinc.wrap
 		;;
 
