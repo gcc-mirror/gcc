@@ -871,7 +871,7 @@ real_value_truncate (mode, arg)
       break;
 
     case SImode:
-      r = etrunci (e);
+      r = etrunci (arg);
       return (r);
 
     default:
