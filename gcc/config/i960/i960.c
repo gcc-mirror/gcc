@@ -1199,19 +1199,18 @@ i960_function_epilogue (file, size)
 /* Output code for a call insn.  */
 
 char *
-i960_output_call_insn (target, argsize_rtx, arg_pointer, scratch_reg, insn)
-     register rtx target, argsize_rtx, arg_pointer, scratch_reg, insn;
+i960_output_call_insn (target, argsize_rtx, arg_pointer, insn)
+     register rtx target, argsize_rtx, arg_pointer, insn;
 {
   int argsize = INTVAL (argsize_rtx);
   rtx nexti = next_real_insn (insn);
-  rtx operands[3];
+  rtx operands[2];
 
   operands[0] = target;
   operands[1] = arg_pointer;
-  operands[2] = scratch_reg;
 
   if (current_function_args_size != 0)
-    output_asm_insn ("mov	g14,%2", operands);
+    output_asm_insn ("mov	g14,r3", operands);
 
   if (argsize > 48)
     output_asm_insn ("lda	%a1,g14", operands);
@@ -1237,7 +1236,7 @@ i960_output_call_insn (target, argsize_rtx, arg_pointer, scratch_reg, insn)
   output_asm_insn ("callx	%0", operands);
 
   if (current_function_args_size != 0)
-    output_asm_insn ("mov	%2,g14", operands);
+    output_asm_insn ("mov	r3,g14", operands);
 
   return "";
 }
