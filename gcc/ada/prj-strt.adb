@@ -106,8 +106,10 @@ package body Prj.Strt is
    --  Add one single names to table Names
 
    procedure External_Reference
-     (In_Tree        : Project_Node_Tree_Ref;
-      External_Value : out Project_Node_Id);
+     (In_Tree         : Project_Node_Tree_Ref;
+      Current_Project : Project_Node_Id;
+      Current_Package : Project_Node_Id;
+      External_Value  : out Project_Node_Id);
    --  Parse an external reference. Current token is "external".
 
    procedure Attribute_Reference
@@ -341,8 +343,10 @@ package body Prj.Strt is
    ------------------------
 
    procedure External_Reference
-     (In_Tree        : Project_Node_Tree_Ref;
-      External_Value : out Project_Node_Id)
+     (In_Tree         : Project_Node_Tree_Ref;
+      Current_Project : Project_Node_Id;
+      Current_Package : Project_Node_Id;
+      External_Value  : out Project_Node_Id)
    is
       Field_Id : Project_Node_Id := Empty_Node;
 
@@ -397,24 +401,31 @@ package body Prj.Strt is
 
                Scan (In_Tree);
 
-               Expect (Tok_String_Literal, "literal string");
+               --  Get the string expression for the default
 
-               --  Get the default
+               declare
+                  Loc : constant Source_Ptr := Token_Ptr;
 
-               if Token = Tok_String_Literal then
-                  Field_Id :=
-                    Default_Project_Node
-                      (Of_Kind       => N_Literal_String,
-                       In_Tree       => In_Tree,
-                       And_Expr_Kind => Single);
-                  Set_String_Value_Of (Field_Id, In_Tree, To => Token_Name);
-                  Set_External_Default_Of
-                    (External_Value, In_Tree, To => Field_Id);
-                  Scan (In_Tree);
-                  Expect (Tok_Right_Paren, "`)`");
-               end if;
+               begin
+                  Parse_Expression
+                    (In_Tree         => In_Tree,
+                     Expression      => Field_Id,
+                     Current_Project => Current_Project,
+                     Current_Package => Current_Package,
+                     Optional_Index  => False);
+
+                  if Expression_Kind_Of (Field_Id, In_Tree) = List then
+                     Error_Msg ("expression must be a single string", Loc);
+                  else
+                     Set_External_Default_Of
+                       (External_Value, In_Tree, To => Field_Id);
+                  end if;
+               end;
+
+               Expect (Tok_Right_Paren, "`)`");
 
                --  Scan past the right parenthesis
+
                if Token = Tok_Right_Paren then
                   Scan (In_Tree);
                end if;
@@ -1417,7 +1428,10 @@ package body Prj.Strt is
             end if;
 
             External_Reference
-              (In_Tree => In_Tree, External_Value => Reference);
+              (In_Tree         => In_Tree,
+               Current_Project => Current_Project,
+               Current_Package => Current_Package,
+               External_Value  => Reference);
             Set_Current_Term (Term, In_Tree, To => Reference);
 
          when others =>
