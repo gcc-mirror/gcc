@@ -1508,7 +1508,6 @@ extern void reposition_prologue_and_epilogue_notes	PARAMS ((rtx));
 extern void thread_prologue_and_epilogue_insns		PARAMS ((rtx));
 extern int prologue_epilogue_contains			PARAMS ((rtx));
 extern HOST_WIDE_INT get_frame_size			PARAMS ((void));
-extern void preserve_rtl_expr_result			PARAMS ((rtx));
 extern void mark_temp_addr_taken			PARAMS ((rtx));
 extern void update_temp_slot_address			PARAMS ((rtx, rtx));
 extern void purge_addressof				PARAMS ((rtx));
