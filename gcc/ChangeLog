@@ -1,3 +1,8 @@
+2004-11-18  Jon Grimm <jgrimm2@us.ibm.com>
+
+	* Makefile.in (macro_list): Depend on s-macro_list.
+	(s-macro_list): New target.
+
 2004-11-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR target/17107
