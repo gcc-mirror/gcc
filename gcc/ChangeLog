@@ -1,3 +1,15 @@
+2004-05-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* global.c (global_alloc): Call make_accurate_live_analysis.
+	(record_one_conflict): Remove dead code.
+	(mark_reg_clobber): Remove ATTRIBUTE_UNUSED for parameter data.
+	(bb_info): New structure.
+	(BB_INFO, BB_INFO_BY_INDEX): New macros.
+	(allocate_bb_info, free_bb_info, mark_reg_change,
+	calculate_local_reg_bb_info, set_up_bb_rts_numbers, rpost_cmp,
+	modify_bb_reg_pav, calculate_reg_pav,
+	make_accurate_live_analysis): New functions.
+	
 2004-05-25  Devang Patel  <dpatel@apple.com>
 
 	* alias.c (init_alias_analysis): Use ggc_calloc instead of
