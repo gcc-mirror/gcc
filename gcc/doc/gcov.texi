@@ -184,9 +184,10 @@ included file names will be complete path names.
 @itemx --preserve-paths
 Preserve complete path information in the names of generated
 @file{.gcov} files. Without this option, just the filename component is
-used. With this option, all directories are used, with '/' characters
-translated to '#' characters, '.' directory components removed and '..'
-components renamed to '^'. This is useful if sourcefiles are in several
+used. With this option, all directories are used, with @samp{/} characters
+translated to @samp{#} characters, @file{.} directory components
+removed and @file{..}
+components renamed to @samp{^}. This is useful if sourcefiles are in several
 different directories. It also affects the @samp{-l} option.
 
 @item -f
@@ -222,7 +223,7 @@ of the output file name is usually simply the source file name, but can
 be something more complicated if the @samp{-l} or @samp{-p} options are
 given. Refer to those options for details.
 
-The @file{.gcov} files contain the ':' separated fields along with
+The @file{.gcov} files contain the @samp{:} separated fields along with
 program source code. The format is
 
 @smallexample

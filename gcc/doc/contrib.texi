@@ -215,15 +215,15 @@ Arnaud Desitter for helping to debug gfortran.
 @item
 Gabriel Dos Reis for contributions to G++, contributions and
 maintenance of GCC diagnostics infrastructure, libstdc++-v3,
-including valarray<>, complex<>, maintaining the numerics library
-(including that pesky <limits> :-) and keeping up-to-date anything
+including @code{valarray<>}, @code{complex<>}, maintaining the numerics library
+(including that pesky @code{<limits>} :-) and keeping up-to-date anything
 to do with numbers.
 
 @item
 Ulrich Drepper for his work on glibc, testing of GCC using glibc, ISO C99
 support, CFG dumping support, etc., plus support of the C++ runtime
 libraries including for all kinds of C interface issues, contributing and
-maintaining complex<>, sanity checking and disbursement, configuration
+maintaining @code{complex<>}, sanity checking and disbursement, configuration
 architecture, libio maintenance, and early math work.
 
 @item
@@ -582,7 +582,7 @@ maintenance, and his ongoing work to make us make Fortran run fast.
 Jason Molenda for major help in the care and feeding of all the services
 on the gcc.gnu.org (formerly egcs.cygnus.com) machine---mail, web
 services, ftp services, etc etc.  Doing all this work on scrap paper and
-the backs of envelopes would have been... difficult.
+the backs of envelopes would have been@dots{} difficult.
 
 @item
 Catherine Moore for fixing various ugly problems we have sent her
@@ -767,9 +767,9 @@ work in the reload pass as well a serving as release manager for
 GCC 2.95.3.
 
 @item
-Peter Schmid for constant testing of libstdc++ -- especially application
+Peter Schmid for constant testing of libstdc++---especially application
 testing, going above and beyond what was requested for the release
-criteria -- and libstdc++ header file tweaks.
+criteria---and libstdc++ header file tweaks.
 
 @item
 Jason Schroeder for jcf-dump patches.

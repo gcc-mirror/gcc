@@ -3811,7 +3811,7 @@ declaration node of the function.  @var{fndecl} is also set when
 being compiled.  @var{n_named_args} is set to the number of named
 arguments, including a structure return address if it is passed as a
 parameter, when making a call.  When processing incoming arguments,
-@var{n_named_args} is set to -1.
+@var{n_named_args} is set to @minus{}1.
 
 When processing a call to a compiler support library function,
 @var{libname} identifies which one.  It is a @code{symbol_ref} rtx which
@@ -4830,7 +4830,7 @@ functions (like @code{__cmpdi2}) return 0 to indicate that the first
 operand is smaller than the second, 1 to indicate that they are equal,
 and 2 to indicate that the first operand is greater than the second.
 If this macro evalutes to @code{false} the comparison functions return
--1, 0, and 1 instead of 0, 1, and 2.  If the target uses the routines
+@minus{}1, 0, and 1 instead of 0, 1, and 2.  If the target uses the routines
 in @file{libgcc.a}, you do not need to define this macro.
 @end defmac
 
@@ -5829,7 +5829,7 @@ where (a) it's practically hopeless to predict the actual data/resource
 delays, however: (b) there's a better chance to predict the actual grouping
 that will be formed, and (c) correctly emulating the grouping can be very
 important.  In such targets one may want to allow issuing dependent insns
-closer to one another - i.e, closer than the dependence distance;  however,
+closer to one another---i.e., closer than the dependence distance;  however,
 not in cases of "costly dependences", which this hooks allows to define.
 @end deftypefn
 
@@ -8360,8 +8360,8 @@ If you define @code{OPTIMIZE_MODE_SWITCHING}, you have to define this as
 initializer for an array of integers.  Each initializer element
 N refers to an entity that needs mode switching, and specifies the number
 of different modes that might need to be set for this entity.
-The position of the initializer in the initializer - starting counting at
-zero - determines the integer that is used to refer to the mode-switched
+The position of the initializer in the initializer---starting counting at
+zero---determines the integer that is used to refer to the mode-switched
 entity in question.
 In macros that take mode arguments / yield a mode result, modes are
 represented as numbers 0 @dots{} N @minus{} 1.  N is used to specify that no mode
@@ -8599,7 +8599,7 @@ array cookies.  The default is to return @code{false}.
 @deftypefn {Target Hook} int TARGET_CXX_IMPORT_EXPORT_CLASS (tree  @var{type}, int @var{import_export})
 If defined by a backend this hook allows the decision made to export
 class @var{type} to be overruled.  Upon entry @var{import_export}
-will contain 1 if the class is going to be exported, -1 if it is going
+will contain 1 if the class is going to be exported, @minus{}1 if it is going
 to be imported and 0 otherwise.  This function should return the
 modified value and perform any other actions necessary to support the
 backend's targeted operating system.

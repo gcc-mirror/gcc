@@ -901,7 +901,7 @@ This has two effects.  First, directories appearing before the
 quote marks.  Directories after @option{-I-} are searched for all
 headers.  Second, the directory containing the current file is not
 searched for anything, unless it happens to be one of the directories
-named by an @option{-I} switch.  @option{-I-} is deprecated, -iquote
+named by an @option{-I} switch.  @option{-I-} is deprecated, @option{-iquote}
 should be used instead.
 
 @option{-I. -I-} is not the same as no @option{-I} options at all, and does
@@ -3807,10 +3807,10 @@ characters in the constant than would fit in the target @code{int} the
 compiler issues a warning, and the excess leading characters are
 ignored.
 
-For example, 'ab' for a target with an 8-bit @code{char} would be
-interpreted as @w{(int) ((unsigned char) 'a' * 256 + (unsigned char)
-'b')}, and '\234a' as @w{(int) ((unsigned char) '\234' * 256 + (unsigned
-char) 'a')}.
+For example, @code{'ab'} for a target with an 8-bit @code{char} would be
+interpreted as @w{@samp{(int) ((unsigned char) 'a' * 256 + (unsigned char)
+'b')}}, and @code{'\234a'} as @w{@samp{(int) ((unsigned char) '\234' *
+256 + (unsigned char) 'a')}}.
 
 @item Source file inclusion.
 

@@ -1667,7 +1667,7 @@ attribute is ignored for virtual methods to allow creation of vtables
 using thunks.
 
 On the SH Symbian OS target the @code{dllimport} attribute also has
-another affect - it can cause the vtable and run-time type information
+another affect---it can cause the vtable and run-time type information
 for a class to be exported.  This happens when the class has a
 dllimport'ed constructor or a non-inline, non-pure virtual function
 and, for either of those two conditions, the class also has a inline
@@ -2780,7 +2780,7 @@ return normally.
 @opindex fno-common
 The @code{common} attribute requests GCC to place a variable in
 ``common'' storage.  The @code{nocommon} attribute requests the
-opposite -- to allocate space for it directly.
+opposite---to allocate space for it directly.
 
 These attributes override the default chosen by the
 @option{-fno-common} and @option{-fcommon} flags respectively.
@@ -3159,7 +3159,7 @@ attribute on all @code{enum} definitions.
 
 In the following example @code{struct my_packed_struct}'s members are
 packed closely together, but the internal layout of its @code{s} member
-is not packed -- to do that, @code{struct my_unpacked_struct} would need to
+is not packed---to do that, @code{struct my_unpacked_struct} would need to
 be packed too.
 
 @smallexample

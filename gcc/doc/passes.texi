@@ -151,7 +151,7 @@ Its job is to run all of the individual passes in the correct order,
 and take care of standard bookkeeping that applies to every pass.
 
 The theory of operation is that each pass defines a structure that
-represents everything we need to know about that pass --- when it
+represents everything we need to know about that pass---when it
 should be run, how it should be run, what intermediate language 
 form or on-the-side data structures it needs.  We register the pass
 to be run in some particular order, and the pass manager arranges

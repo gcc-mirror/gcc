@@ -1962,7 +1962,7 @@ Floating-point constant 0.0 or 1.0
 The constant zero
 
 @item P
-0 or -1 for @code{dep} instruction
+0 or @minus{}1 for @code{dep} instruction
 
 @item Q
 Non-volatile memory for floating-point loads and stores
@@ -2103,7 +2103,7 @@ Non-pointer registers (not @samp{SP}, @samp{DP}, @samp{IP})
 Non-SP registers (everything except @samp{SP})
 
 @item R
-Indirect through @samp{IP} - Avoid this except for @code{QImode}, since we
+Indirect through @samp{IP}---Avoid this except for @code{QImode}, since we
 can't access extra bytes
 
 @item S
@@ -2234,13 +2234,13 @@ Floating point constant that is not a 68881 constant
 @item Motorola 68HC11 & 68HC12 families---@file{m68hc11.h}
 @table @code
 @item a
-Register 'a'
+Register `a'
 
 @item b
-Register 'b'
+Register `b'
 
 @item d
-Register 'd'
+Register `d'
 
 @item q
 An 8-bit register
@@ -2255,13 +2255,13 @@ A soft register _.d1 to _.d31
 Stack pointer register
 
 @item x
-Register 'x'
+Register `x'
 
 @item y
-Register 'y'
+Register `y'
 
 @item z
-Pseudo register 'z' (replaced by 'x' or 'y' at the end)
+Pseudo register `z' (replaced by `x' or `y' at the end)
 
 @item A
 An address register: x, y or z
@@ -2495,7 +2495,7 @@ Multiple letter constraint followed by 4 parameter letters.
          @item D,S,H:
          mode of the containing operand
          @item 0,F:
-         value of the other parts (F - all bits set)
+         value of the other parts (F---all bits set)
 @end table
 The constraint matches if the specified part of a constant
 has a value different from it's other parts.
