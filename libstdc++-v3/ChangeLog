@@ -1,3 +1,8 @@
+2001-12-27  Phil Edwards  <pme@gcc.gnu.org>
+
+	* testsuite/testsuite_hooks.h (gnu_counting_struct):  Add.
+	* testsuite/23_containers/deque_ctor.cc:  New file.
+
 2001-12-27  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/locale_facets.tcc (collate::do_transform):
