@@ -1,5 +1,13 @@
 2002-04-21  Florian Weimer  <fw@deneb.enyo.de>
 
+	* gnat_rm.texi: Do not include texiplus.texi.  Include fdl.texi
+	instead of gfdl.texi
+
+	* xgnatug.adb, ug_words: New files.
+
+	* Makefile.in (doc, dvi): New targets.  Build gnat_ug_*,
+        gnat_rm and gnat-style manuals.
+
 	* adaint.c (__gnat_tmp_name): Remove buffer overflow bug on
         GNU/Linux.
 

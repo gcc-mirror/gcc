@@ -1,5 +1,4 @@
 \input texinfo   @c -*-texinfo-*-
-@input texiplus
 
 @c %**start of header
 
@@ -9,7 +8,7 @@
 @c                                                                            o
 @c                              G N A T _ RM                                  o
 @c                                                                            o
-@c                            $Revision$
+@c                            $Revision: 1.3 $
 @c                                                                            o
 @c          Copyright (C) 1992-2001 Ada Core Technologies, Inc.               o
 @c                                                                            o
@@ -39,8 +38,8 @@
 @title GNAT Reference Manual
 @subtitle GNAT, The GNU Ada 95 Compiler
 @subtitle Version 3.15w
-@subtitle Document revision level $Revision$
-@subtitle Date: $Date$
+@subtitle Document revision level $Revision: 1.3 $
+@subtitle Date: $Date: 2001/12/18 00:03:37 $
 @author Ada Core Technologies, Inc.
 
 @page
@@ -84,7 +83,7 @@ GNAT, The GNU Ada 95 Compiler
 
 Version 3.14a
 
-Date: $Date$
+Date: $Date: 2001/12/18 00:03:37 $
 
 Ada Core Technologies, Inc.
 
@@ -11785,7 +11784,7 @@ attributes are recognized, although only a subset of them can sensibly
 be implemented. The description of pragmas in this reference manual
 indicates whether or not they are applicable to non-VMS systems.
 
-@include gfdl.texi
+@include fdl.texi
 @c GNU Free Documentation License
 
 @node Index,,GNU Free Documentation License, Top
