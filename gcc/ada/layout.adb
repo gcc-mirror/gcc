@@ -993,6 +993,12 @@ package body Layout is
                Decl := Parent (Parent (Entity (N)));
                Size := (Discrim, Size.Nod);
                Vtyp := Defining_Identifier (Decl);
+
+               --  Ensure that we get a private type's full type
+
+               if Present (Underlying_Type (Vtyp)) then
+                  Vtyp := Underlying_Type (Vtyp);
+               end if;
             end if;
 
             Typ := Etype (N);

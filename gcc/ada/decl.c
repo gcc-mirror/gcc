@@ -1060,10 +1060,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		|| Address_Taken (gnat_entity)
 		|| Is_Aliased (gnat_entity)
 		|| Is_Aliased (Etype (gnat_entity))))
-	  SET_DECL_CONST_CORRESPONDING_VAR (gnu_decl,
-	      create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
-			       gnu_expr, 0, Is_Public (gnat_entity), 0,
-			       static_p, 0));
+	  SET_DECL_CONST_CORRESPONDING_VAR
+	    (gnu_decl,
+	     create_var_decl (gnu_entity_id, gnu_ext_name, gnu_type,
+			      gnu_expr, 0, Is_Public (gnat_entity), 0,
+			      static_p, 0));
 
 	/* If this is declared in a block that contains an block with an
 	   exception handler, we must force this variable in memory to
@@ -4407,8 +4408,15 @@ maybe_variable (tree gnu_operand, Node_Id gnat_node)
   set_lineno (gnat_node, 1);
 
   if (TREE_CODE (gnu_operand) == UNCONSTRAINED_ARRAY_REF)
-    return build1 (UNCONSTRAINED_ARRAY_REF, TREE_TYPE (gnu_operand),
-		   variable_size (TREE_OPERAND (gnu_operand, 0)));
+    {
+      tree gnu_result = build1 (UNCONSTRAINED_ARRAY_REF,
+				TREE_TYPE (gnu_operand),
+				variable_size (TREE_OPERAND (gnu_operand, 0)));
+
+      TREE_READONLY (gnu_result) = TREE_STATIC (gnu_result)
+	= TYPE_READONLY (TREE_TYPE (TREE_TYPE (gnu_operand)));
+      return gnu_result;
+    }
   else
     return variable_size (gnu_operand);
 }
@@ -4600,8 +4608,10 @@ make_packable_type (tree type)
   TYPE_LEFT_JUSTIFIED_MODULAR_P (new_type)
     = TYPE_LEFT_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
-  TYPE_IS_PADDING_P (new_type) = TYPE_IS_PADDING_P (type);
-  if (TREE_CODE (type) == QUAL_UNION_TYPE)
+
+  if (TREE_CODE (type) == RECORD_TYPE)
+    TYPE_IS_PADDING_P (new_type) = TYPE_IS_PADDING_P (type);
+  else if (TREE_CODE (type) == QUAL_UNION_TYPE)
     {
       TYPE_SIZE (new_type) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (new_type) = TYPE_SIZE_UNIT (type);

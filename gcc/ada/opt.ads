@@ -526,6 +526,10 @@ package Opt is
    --  then elaboration flag checks are to be generated in the binder
    --  generated file.
 
+   Follow_Links : Boolean := False;
+   --  GNATMAKE
+   --  Set to True (-eL) to process the project files in trusted mode
+
    Front_End_Inlining : Boolean := False;
    --  GNAT
    --  Set True to activate inlining by front-end expansion.

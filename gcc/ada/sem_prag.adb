@@ -1693,6 +1693,7 @@ package body Sem_Prag is
          Id        : Node_Id;
          E1        : Entity_Id;
          Cname     : Name_Id;
+         Comp_Unit : Unit_Number_Type;
 
          procedure Set_Convention_From_Pragma (E : Entity_Id);
          --  Set convention in entity E, and also flag that the entity has a
@@ -1907,9 +1908,11 @@ package body Sem_Prag is
             end if;
 
          --  For the subprogram case, set proper convention for all homonyms
-         --  in same scope.
+         --  in same scope and the same declarative part, i.e. the same
+         --  compilation unit.
 
          else
+            Comp_Unit := Get_Source_Unit (E);
             Set_Convention_From_Pragma (E);
 
             --  Treat a pragma Import as an implicit body, for GPS use.
@@ -1928,6 +1931,7 @@ package body Sem_Prag is
                --  than one Rep_Item chain, to be fixed later ???
 
                if Comes_From_Source (E1)
+                 and then Comp_Unit = Get_Source_Unit (E1)
                  and then Nkind (Original_Node (Parent (E1))) /=
                    N_Full_Type_Declaration
                then
@@ -3556,10 +3560,11 @@ package body Sem_Prag is
                Set_Is_Statically_Allocated (E);
 
                --  Warn if the corresponding W flag is set and the pragma
-               --  comes from source. The latter may be not be true e.g. on
+               --  comes from source. The latter may not be true e.g. on
                --  VMS where we expand export pragmas for exception codes
-               --  associated with imported or exported exceptions. We don't
-               --  want the user to be warned about something he didn't write.
+               --  associated with imported or exported exceptions. We do
+               --  not want to generate a warning for something that the
+               --  user did not write.
 
                if Warn_On_Export_Import
                  and then Comes_From_Source (Arg)
@@ -5405,12 +5410,24 @@ package body Sem_Prag is
          --    [,[Entity          =>]  IDENTIFIER |
          --                            SELECTED_COMPONENT |
          --                            STRING_LITERAL]
-         --    [,[Parameter_Types =>]  PARAMETER_TYPES]
-         --    [,[Result_Type     =>]  result_SUBTYPE_NAME]
-         --    [,[Homonym_Number  =>]  INTEGER_LITERAL]);
+         --    [,]OVERLOADING_RESOLUTION);
+
+         --  OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
+         --                             SOURCE_LOCATION
+
+         --  PARAMETER_AND_RESULT_TYPE_PROFILE ::= PROCEDURE_PROFILE |
+         --                                        FUNCTION_PROFILE
+
+         --  PROCEDURE_PROFILE ::= Parameter_Types => PARAMETER_TYPES
+
+         --  FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
+         --                       Result_Type => result_SUBTYPE_NAME]
 
          --  PARAMETER_TYPES ::= (SUBTYPE_NAME {, SUBTYPE_NAME})
          --  SUBTYPE_NAME    ::= STRING_LITERAL
+
+         --  SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
+         --  SOURCE_TRACE    ::= STRING_LITERAL
 
          when Pragma_Eliminate => Eliminate : declare
             Args  : Args_List (1 .. 5);
@@ -5419,13 +5436,13 @@ package body Sem_Prag is
                       Name_Entity,
                       Name_Parameter_Types,
                       Name_Result_Type,
-                      Name_Homonym_Number);
+                      Name_Source_Location);
 
             Unit_Name       : Node_Id renames Args (1);
             Entity          : Node_Id renames Args (2);
             Parameter_Types : Node_Id renames Args (3);
             Result_Type     : Node_Id renames Args (4);
-            Homonym_Number  : Node_Id renames Args (5);
+            Source_Location : Node_Id renames Args (5);
 
          begin
             GNAT_Pragma;
@@ -5441,9 +5458,20 @@ package body Sem_Prag is
                           or else
                         Present (Result_Type)
                           or else
-                        Present (Homonym_Number))
+                        Present (Source_Location))
             then
                Error_Pragma ("missing Entity argument for pragma%");
+            end if;
+
+            if (Present (Parameter_Types)
+                       or else
+                Present (Result_Type))
+              and then
+                Present (Source_Location)
+            then
+               Error_Pragma
+                 ("parameter profile and source location can not " &
+                  "be used together in pragma%");
             end if;
 
             Process_Eliminate_Pragma
@@ -5452,7 +5480,7 @@ package body Sem_Prag is
                Entity,
                Parameter_Types,
                Result_Type,
-               Homonym_Number);
+               Source_Location);
          end Eliminate;
 
          --------------------------

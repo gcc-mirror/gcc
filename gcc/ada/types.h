@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2003, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2004, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -357,10 +357,11 @@ typedef Int Mechanism_Type;
 #define PE_Potentially_Blocking_Operation  21
 #define PE_Stubbed_Subprogram_Called       22
 #define PE_Unchecked_Union_Restriction     23
-#define SE_Empty_Storage_Pool              24
-#define SE_Explicit_Raise                  25
-#define SE_Infinite_Recursion              26
-#define SE_Object_Too_Large                27
-#define SE_Restriction_Violation           28
+#define PE_Illegal_RACW_E_4_18             24
+#define SE_Empty_Storage_Pool              25
+#define SE_Explicit_Raise                  26
+#define SE_Infinite_Recursion              27
+#define SE_Object_Too_Large                28
+#define SE_Restriction_Violation           29
 
-#define LAST_REASON_CODE                   28
+#define LAST_REASON_CODE                   29

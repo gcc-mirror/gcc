@@ -37,8 +37,11 @@ with Opt;         use Opt;
 with Osint;       use Osint;
 with Osint.L;     use Osint.L;
 with Output;      use Output;
+with Rident;      use Rident;
 with Targparm;    use Targparm;
 with Types;       use Types;
+
+with GNAT.Case_Util; use GNAT.Case_Util;
 
 procedure Gnatls is
    pragma Ident (Gnat_Static_Version_String);
@@ -147,7 +150,7 @@ procedure Gnatls is
    --  Print out FS either in a coded form if verbose is false or in an
    --  expanded form otherwise.
 
-   procedure Output_Unit (U_Id : Unit_Id);
+   procedure Output_Unit (ALI : ALI_Id; U_Id : Unit_Id);
    --  Print out information on the unit when requested
 
    procedure Reset_Print;
@@ -158,6 +161,9 @@ procedure Gnatls is
 
    procedure Usage;
    --  Print usage message
+
+   function Image (Restriction : Restriction_Id) return String;
+   --  Returns the capitalized image of Restriction
 
    -----------------
    -- Add_Lib_Dir --
@@ -361,6 +367,31 @@ procedure Gnatls is
       end if;
    end Find_Status;
 
+   -----------
+   -- Image --
+   -----------
+
+   function Image (Restriction : Restriction_Id) return String is
+      Result : String := Restriction'Img;
+      Skip   : Boolean := True;
+
+   begin
+      for J in Result'Range loop
+         if Skip then
+            Skip := False;
+            Result (J) := To_Upper (Result (J));
+
+         elsif Result (J) = '_' then
+            Skip := True;
+
+         else
+            Result (J) := To_Lower (Result (J));
+         end if;
+      end loop;
+
+      return Result;
+   end Image;
+
    -------------------
    -- Output_Object --
    -------------------
@@ -480,7 +511,7 @@ procedure Gnatls is
    -- Output_Unit --
    -----------------
 
-   procedure Output_Unit (U_Id : Unit_Id) is
+   procedure Output_Unit (ALI : ALI_Id; U_Id : Unit_Id) is
       Kind : Character;
       U    : Unit_Record renames Units.Table (U_Id);
 
@@ -604,6 +635,35 @@ procedure Gnatls is
                end if;
 
             end if;
+
+            declare
+               Restrictions : constant Restrictions_Info :=
+                                ALIs.Table (ALI).Restrictions;
+            begin
+               --  If the source was compiled with pragmas Restrictions,
+               --  Display these restrictions.
+
+               if Restrictions.Set /= (All_Restrictions => False) then
+                  Write_Eol; Write_Str ("     Restrictions  =>");
+
+                  --  For boolean restrictions, just display the name of the
+                  --  restriction; for valued restrictions, also display the
+                  --  restriction value.
+
+                  for Restriction in All_Restrictions loop
+                     if Restrictions.Set (Restriction) then
+                        Write_Eol;
+                        Write_Str ("       ");
+                        Write_Str (Image (Restriction));
+
+                        if Restriction in All_Parameter_Restrictions then
+                           Write_Str (" =>");
+                           Write_Str (Restrictions.Value (Restriction)'Img);
+                        end if;
+                     end if;
+                  end loop;
+               end if;
+            end;
          end if;
 
          if Print_Source then
@@ -1049,7 +1109,7 @@ begin
                   Write_Eol;
                end if;
 
-               Output_Unit (U);
+               Output_Unit (Id, U);
 
                --  Output source now, unless if it will be done as part of
                --  outputing dependencies.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1996-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -913,12 +913,7 @@ package body Exp_Dbug is
 
          --  If we exit the loop then suffix must be output
 
-         if No_Dollar_In_Label then
-            Add_Str_To_Name_Buffer ("__");
-         else
-            Add_Char_To_Name_Buffer ('$');
-         end if;
-
+         Add_Str_To_Name_Buffer ("__");
          Add_Str_To_Name_Buffer (Homonym_Numbers (1 .. Homonym_Len));
          Homonym_Len := 0;
       end if;
@@ -1310,54 +1305,28 @@ package body Exp_Dbug is
 
       --  Search for and strip homonym numbers suffix
 
-      --  Case of __ used for homonym numbers suffix
-
-      if No_Dollar_In_Label then
-         for J in reverse 2 .. Name_Len - 2 loop
-            if Name_Buffer (J) = '_'
-              and then Name_Buffer (J + 1) = '_'
-            then
-               if Name_Buffer (J + 2) in '0' .. '9' then
-                  if Homonym_Len > 0 then
-                     Homonym_Len := Homonym_Len + 1;
-                     Homonym_Numbers (Homonym_Len) := '-';
-                  end if;
-
-                  SL := Name_Len - (J + 1);
-
-                  Homonym_Numbers (Homonym_Len + 1 .. Homonym_Len + SL) :=
-                    Name_Buffer (J + 2 .. Name_Len);
-                  Name_Len := J - 1;
-                  Homonym_Len := Homonym_Len + SL;
+      for J in reverse 2 .. Name_Len - 2 loop
+         if Name_Buffer (J) = '_'
+           and then Name_Buffer (J + 1) = '_'
+         then
+            if Name_Buffer (J + 2) in '0' .. '9' then
+               if Homonym_Len > 0 then
+                  Homonym_Len := Homonym_Len + 1;
+                  Homonym_Numbers (Homonym_Len) := '-';
                end if;
 
-               exit;
+               SL := Name_Len - (J + 1);
+
+               Homonym_Numbers (Homonym_Len + 1 .. Homonym_Len + SL) :=
+                 Name_Buffer (J + 2 .. Name_Len);
+               Name_Len := J - 1;
+               Homonym_Len := Homonym_Len + SL;
             end if;
-         end loop;
 
-      --  Case of $ used for homonym numbers suffix
+            exit;
+         end if;
+      end loop;
 
-      else
-         for J in reverse 2 .. Name_Len - 1 loop
-            if Name_Buffer (J) = '$' then
-               if Name_Buffer (J + 1) in '0' .. '9' then
-                  if Homonym_Len > 0 then
-                     Homonym_Len := Homonym_Len + 1;
-                     Homonym_Numbers (Homonym_Len) := '-';
-                  end if;
-
-                  SL := Name_Len - J;
-
-                  Homonym_Numbers (Homonym_Len + 1 .. Homonym_Len + SL) :=
-                    Name_Buffer (J + 1 .. Name_Len);
-                  Name_Len := J - 1;
-                  Homonym_Len := Homonym_Len + SL;
-               end if;
-
-               exit;
-            end if;
-         end loop;
-      end if;
    end Strip_Suffixes;
 
 end Exp_Dbug;

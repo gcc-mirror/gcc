@@ -101,11 +101,6 @@ package MLib.Tgt is
    function Is_Archive_Ext (Ext : String) return Boolean;
    --  Returns True iff Ext is an extension for a library
 
-   function Linker_Library_Path_Option return String_Access;
-   --  Linker option to specify to the linker the library directory path.
-   --  If non null, the library directory path is to be appended.
-   --  Should be deallocated by the caller, when no longer needed.
-
    procedure Build_Dynamic_Library
      (Ofiles       : Argument_List;
       Foreign      : Argument_List;

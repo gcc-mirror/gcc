@@ -1472,6 +1472,20 @@ __gnat_set_writable (char *name)
 }
 
 void
+__gnat_set_executable (char *name)
+{
+#ifndef __vxworks
+  struct stat statbuf;
+
+  if (stat (name, &statbuf) == 0)
+  {
+    statbuf.st_mode = statbuf.st_mode | S_IXUSR;
+    chmod (name, statbuf.st_mode);
+  }
+#endif
+}
+
+void
 __gnat_set_readonly (char *name)
 {
 #ifndef __vxworks

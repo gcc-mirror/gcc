@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---           Copyright (C) 1999-2003, Ada Core Technologies, Inc.           --
+--           Copyright (C) 1999-2004, Ada Core Technologies, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -64,6 +64,11 @@ package MLib is
       Interfaces : String_List);
    --  Copy all ALI files Files to directory To.
    --  Mark Interfaces ALI files as interfaces, if any.
+
+   function Linker_Library_Path_Option return String_Access;
+   --  Linker option to specify to the linker the library directory path.
+   --  If non null, the library directory path is to be appended.
+   --  Should be deallocated by the caller, when no longer needed.
 
 private
 

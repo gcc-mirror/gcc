@@ -101,9 +101,12 @@ DEFTREECODE (IF_STMT, "if_stmt", 's', 4)
 /* A goto just points to the label: GOTO_STMT_LABEL.  */
 DEFTREECODE (GOTO_STMT, "goto_stmt", 's', 1)
 
-/* A label: LABEL_STMT_LABEL is the label and LABEL_STMT_FIRST_IN_EH is set
-   if this is the first label of an exception handler.  */
+/* A label: LABEL_STMT_LABEL is the label.  */
 DEFTREECODE (LABEL_STMT, "label_stmt", 's', 1)
 
 /* A "return".  RETURN_STMT_EXPR is the value to return if non-null.  */
 DEFTREECODE (RETURN_STMT, "return_stmt", 's', 1)
+
+/* An "asm" statement.  The operands are ASM_STMT_TEMPLATE, ASM_STMT_OUTPUT,
+   ASM_STMT_ORIG_OUT, ASM_STMT_INPUT, and ASM_STMT_CLOBBER.  */
+DEFTREECODE (ASM_STMT, "asm_stmt", 's', 5)

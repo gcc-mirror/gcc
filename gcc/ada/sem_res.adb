@@ -3730,6 +3730,7 @@ package body Sem_Res is
                --  we will try later to detect some cases here at run time by
                --  expanding checking code (see Detect_Infinite_Recursion in
                --  package Exp_Ch6).
+
                --  If the recursive call is within a handler we do not emit a
                --  warning, because this is a common idiom: loop until input
                --  is correct, catch illegal input in handler and restart.
@@ -6866,6 +6867,12 @@ package body Sem_Res is
       elsif Is_Numeric_Type (Target_Type)  then
          if Opnd_Type = Universal_Fixed then
             return True;
+
+         elsif (In_Instance or else In_Inlined_Body)
+           and then not Comes_From_Source (N)
+         then
+            return True;
+
          else
             return Conversion_Check (Is_Numeric_Type (Opnd_Type),
                              "illegal operand for numeric conversion");

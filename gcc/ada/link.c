@@ -147,7 +147,7 @@ const char *object_library_extension = ".olb";
 
 #elif defined (sun)
 const char *object_file_option = "";
-const char *run_path_option = "-R";
+const char *run_path_option = "-Wl,-R,";
 char shared_libgnat_default = STATIC;
 int link_max = 2147483647;
 unsigned char objlist_file_supported = 0;

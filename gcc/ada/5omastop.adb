@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                            (Version for x86)                             --
 --                                                                          --
---           Copyright (C) 1999-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1999-2004 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,6 +42,12 @@ with System.Machine_Code; use System.Machine_Code;
 with System.Memory;
 
 package body System.Machine_State_Operations is
+
+   function "+" (Left, Right : Address) return Address;
+   pragma Import (Intrinsic, "+");
+   --  Provide addition operation on type Address (this may not be directly
+   --  available if type System.Address is non-private and the operations on
+   --  the type are made abstract to hide them from public users of System).
 
    use System.Exceptions;
 

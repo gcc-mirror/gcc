@@ -66,6 +66,10 @@ package Eval_Fat is
 
    function Leading_Part      (RT : R; X : T; Radix_Digits : UI)    return T;
 
+   function Machine_Mantissa  (RT : R)                              return Nat;
+
+   function Machine_Radix     (RT : R)                              return Nat;
+
    function Model             (RT : R; X : T)                       return T;
 
    function Pred              (RT : R; X : T)                       return T;

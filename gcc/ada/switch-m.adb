@@ -551,6 +551,27 @@ package body Switch.M is
 
             return;
 
+         --  Processing for e switch
+
+         when 'e' =>
+            Ptr := Ptr + 1;
+
+            if Ptr > Max then
+               raise Bad_Switch;
+            end if;
+
+            case Switch_Chars (Ptr) is
+
+               --  processing for eL switch
+
+               when 'L' =>
+                  Ptr := Ptr + 1;
+                  Follow_Links := True;
+
+               when others =>
+                  raise Bad_Switch;
+            end case;
+
          --  Processing for f switch
 
          when 'f' =>

@@ -683,10 +683,16 @@ package body Sem_Ch8 is
          T := Entity (Subtype_Mark (N));
          Analyze_And_Resolve (Nam, T);
 
-      --  Ada 0Y (AI-230): Access renaming
+      --  Ada 0Y (AI-230/AI-254): Access renaming
 
       elsif Present (Access_Definition (N)) then
-         Find_Type (Subtype_Mark (Access_Definition (N)));
+
+         if Null_Exclusion_Present (Access_Definition (N)) then
+            Error_Msg_N ("(Ada 0Y): null-excluding attribute ignored "
+                         & "('R'M 8.5.1(6))?", N);
+            Set_Null_Exclusion_Present (Access_Definition (N), False);
+         end if;
+
          T := Access_Definition
                 (Related_Nod => N,
                  N           => Access_Definition (N));

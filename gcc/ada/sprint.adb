@@ -693,14 +693,27 @@ package body Sprint is
 
          when N_Access_Definition =>
 
-            --  Ada 0Y (AI-231)
+            --  Ada 0Y (AI-254)
 
-            if Null_Exclusion_Present (Node) then
-               Write_Str ("not null ");
+            if Present (Access_To_Subprogram_Definition (Node)) then
+               Sprint_Node (Access_To_Subprogram_Definition (Node));
+            else
+               --  Ada 0Y (AI-231)
+
+               if Null_Exclusion_Present (Node) then
+                  Write_Str ("not null ");
+               end if;
+
+               Write_Str_With_Col_Check_Sloc ("access ");
+
+               if All_Present (Node) then
+                  Write_Str ("all ");
+               elsif Constant_Present (Node) then
+                  Write_Str ("constant ");
+               end if;
+
+               Sprint_Node (Subtype_Mark (Node));
             end if;
-
-            Write_Str_With_Col_Check_Sloc ("access ");
-            Sprint_Node (Subtype_Mark (Node));
 
          when N_Access_Function_Definition =>
 

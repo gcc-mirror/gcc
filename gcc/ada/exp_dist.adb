@@ -80,6 +80,10 @@ package body Exp_Dist is
    -- Local subprograms --
    -----------------------
 
+   function Get_Subprogram_Id (E : Entity_Id) return Int;
+   --  Given a subprogram defined in a RCI package, get its subprogram id
+   --  which will be used for remote calls.
+
    procedure Build_General_Calling_Stubs
      (Decls                     : in List_Id;
       Statements                : in List_Id;
@@ -2749,6 +2753,18 @@ package body Exp_Dist is
             Make_Handled_Sequence_Of_Statements (Loc, Statements));
    end Build_Subprogram_Calling_Stubs;
 
+   -------------------------
+   -- Build_Subprogram_Id --
+   -------------------------
+
+   function Build_Subprogram_Id
+     (Loc : Source_Ptr;
+      E   : Entity_Id) return Node_Id
+   is
+   begin
+      return Make_Integer_Literal (Loc, Get_Subprogram_Id (E));
+   end Build_Subprogram_Id;
+
    --------------------------------------
    -- Build_Subprogram_Receiving_Stubs --
    --------------------------------------
@@ -2789,7 +2805,7 @@ package body Exp_Dist is
       Excep_Code    : List_Id;
 
       Parameter_List : constant List_Id := New_List;
-      --  List of parameters to be passed to the subprogram.
+      --  List of parameters to be passed to the subprogram
 
       Current_Parameter : Node_Id;
 
@@ -3468,6 +3484,47 @@ package body Exp_Dist is
       Store_String_Chars (Val);
       return End_String;
    end Get_String_Id;
+
+   -----------------------
+   -- Get_Subprogram_Id --
+   -----------------------
+
+   function Get_Subprogram_Id (E : Entity_Id) return Int is
+      Current_Declaration : Node_Id;
+      Result              : Int := 0;
+
+   begin
+      pragma Assert
+        (Is_Remote_Call_Interface (Scope (E))
+           and then
+             (Nkind (Parent (E)) = N_Procedure_Specification
+                or else
+              Nkind (Parent (E)) = N_Function_Specification));
+
+      Current_Declaration :=
+        First (Visible_Declarations
+          (Package_Specification_Of_Scope (Scope (E))));
+
+      while Current_Declaration /= Empty loop
+         if Nkind (Current_Declaration) = N_Subprogram_Declaration
+           and then Comes_From_Source (Current_Declaration)
+         then
+            if Defining_Unit_Name
+                 (Specification (Current_Declaration)) = E
+            then
+               return Result;
+            end if;
+
+            Result := Result + 1;
+         end if;
+
+         Next (Current_Declaration);
+      end loop;
+
+      --  Error if we do not find it
+
+      raise Program_Error;
+   end Get_Subprogram_Id;
 
    ----------
    -- Hash --

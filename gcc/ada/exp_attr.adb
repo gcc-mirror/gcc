@@ -3625,8 +3625,8 @@ package body Exp_Attr is
          --     type(X)'Pos (X) >= 0
 
          --  We can't quite generate it that way because of the requirement
-         --  for the non-standard second argument of False, so we have to
-         --  explicitly create:
+         --  for the non-standard second argument of False in the resulting
+         --  rep_to_pos call, so we have to explicitly create:
 
          --     _rep_to_pos (X, False) >= 0
 
@@ -3635,7 +3635,7 @@ package body Exp_Attr is
 
          --    _rep_to_pos (X, False) >= 0
          --      and then
-         --     (X >= type(X)'First and then type(X)'Last <= X)
+         --       (X >= type(X)'First and then type(X)'Last <= X)
 
          elsif Is_Enumeration_Type (Ptyp)
            and then Present (Enum_Pos_To_Rep (Base_Type (Ptyp)))
@@ -3710,7 +3710,7 @@ package body Exp_Attr is
 
          --  But that's precisely what won't work because of possible
          --  unwanted optimization (and indeed the basic motivation for
-         --  the Valid attribute -is exactly that this test does not work.
+         --  the Valid attribute is exactly that this test does not work!)
          --  What will work is:
 
          --     Btyp!(X) >= Btyp!(type(X)'First)

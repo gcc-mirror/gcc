@@ -92,6 +92,9 @@ package body Snames is
      "finalize#" &
      "next#" &
      "prev#" &
+     "_typecode#" &
+     "_from_any#" &
+     "_to_any#" &
      "allocate#" &
      "deallocate#" &
      "dereference#" &
@@ -120,16 +123,25 @@ package body Snames is
      "async#" &
      "get_active_partition_id#" &
      "get_rci_package_receiver#" &
+     "get_rci_package_ref#" &
      "origin#" &
      "params#" &
      "partition#" &
      "partition_interface#" &
      "ras#" &
+     "call#" &
      "rci_name#" &
      "receiver#" &
      "result#" &
      "rpc#" &
      "subp_id#" &
+     "operation#" &
+     "argument#" &
+     "arg_modes#" &
+     "handler#" &
+     "target#" &
+     "req#" &
+     "obj_typecode#" &
      "Oabs#" &
      "Oand#" &
      "Omod#" &

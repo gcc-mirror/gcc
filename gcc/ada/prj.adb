@@ -41,8 +41,6 @@ package body Prj is
 
    The_Empty_String : Name_Id;
 
-   Ada_Language     : constant Name_Id := Name_Ada;
-
    subtype Known_Casing is Casing_Type range All_Upper_Case .. Mixed_Case;
 
    The_Casing_Images : constant array (Known_Casing) of String_Access :=
@@ -74,7 +72,9 @@ package body Prj is
       Implementation_Exceptions => No_Array_Element);
 
    Project_Empty : constant Project_Data :=
-     (First_Referred_By              => No_Project,
+     (Languages                      => No_Languages,
+      Impl_Suffixes                  => No_Impl_Suffixes,
+      First_Referred_By              => No_Project,
       Name                           => No_Name,
       Path_Name                      => No_Name,
       Virtual                        => False,
@@ -99,6 +99,11 @@ package body Prj is
       Symbol_Data                    => No_Symbols,
       Sources_Present                => True,
       Sources                        => Nil_String,
+      First_Other_Source             => No_Other_Source,
+      Last_Other_Source              => No_Other_Source,
+      Imported_Directories_Switches  => null,
+      Include_Path                   => null,
+      Include_Data_Set               => False,
       Source_Dirs                    => Nil_String,
       Known_Order_Of_Source_Dirs     => True,
       Object_Directory               => No_Name,
@@ -247,11 +252,21 @@ package body Prj is
          Name_Len := 1;
          Name_Buffer (1) := '/';
          Slash := Name_Find;
+
+         for Lang in Programming_Language loop
+            Name_Len := Lang_Names (Lang)'Length;
+            Name_Buffer (1 .. Name_Len) := Lang_Names (Lang).all;
+            Lang_Name_Ids (Lang) := Name_Find;
+            Name_Len := Lang_Suffixes (Lang)'Length;
+            Name_Buffer (1 .. Name_Len) := Lang_Suffixes (Lang).all;
+            Lang_Suffix_Ids (Lang) := Name_Find;
+         end loop;
+
          Std_Naming_Data.Current_Spec_Suffix := Default_Ada_Spec_Suffix;
          Std_Naming_Data.Current_Body_Suffix := Default_Ada_Body_Suffix;
          Std_Naming_Data.Separate_Suffix     := Default_Ada_Body_Suffix;
          Register_Default_Naming_Scheme
-           (Language            => Ada_Language,
+           (Language            => Name_Ada,
             Default_Spec_Suffix => Default_Ada_Spec_Suffix,
             Default_Body_Suffix => Default_Ada_Body_Suffix);
          Prj.Env.Initialize;

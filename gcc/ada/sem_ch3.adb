@@ -677,6 +677,16 @@ package body Sem_Ch3 is
          Error_Msg_N ("task entries cannot have access parameters", N);
       end if;
 
+      --  Ada 0Y (AI-254): In case of anonymous access to subprograms
+      --  call the corresponding semantic routine
+
+      if Present (Access_To_Subprogram_Definition (N)) then
+         Access_Subprogram_Declaration
+           (T_Name => Anon_Type,
+            T_Def  => Access_To_Subprogram_Definition (N));
+         return Anon_Type;
+      end if;
+
       Find_Type (Subtype_Mark (N));
       Desig_Type := Entity (Subtype_Mark (N));
 
@@ -818,6 +828,37 @@ package body Sem_Ch3 is
 
       Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
 
+      --  -------------------------------------------------------------------
+      --  I assume that the following statements should also be here.
+      --  Need some tests to check it. Detected by comparison with the
+      --  access_definition subprogram???
+      --  -------------------------------------------------------------------
+
+      --  The anonymous access type is as public as the discriminated type or
+      --  subprogram that defines it. It is imported (for back-end purposes)
+      --  if the designated type is.
+
+--      Set_Is_Public (T_Name, Is_Public (Scope (T_Name)));
+
+      --  Ada 0Y (AI-50217): Propagate the attribute that indicates that the
+      --  designated type comes from the limited view (for back-end purposes).
+
+--      Set_From_With_Type (T_Name, From_With_Type (Desig_Type));
+
+      --  The context is either a subprogram declaration or an access
+      --  discriminant, in a private or a full type declaration. In
+      --  the case of a subprogram, If the designated type is incomplete,
+      --  the operation will be a primitive operation of the full type, to
+      --  be updated subsequently.
+
+--        if Ekind (Desig_Type) = E_Incomplete_Type
+--          and then Is_Overloadable (Current_Scope)
+--        then
+--           Append_Elmt (Current_Scope, Private_Dependents (Desig_Type));
+--           Set_Has_Delayed_Freeze (Current_Scope);
+--        end if;
+      --  ---------------------------------------------------------------
+
       Check_Restriction (No_Access_Subprograms, T_Def);
    end Access_Subprogram_Declaration;
 
@@ -942,6 +983,17 @@ package body Sem_Ch3 is
          T := Access_Definition
                 (Related_Nod => N,
                  N => Access_Definition (Component_Definition (N)));
+
+         --  Ada 0Y (AI-254)
+
+         if Present (Access_To_Subprogram_Definition
+                      (Access_Definition (Component_Definition (N))))
+           and then Protected_Present (Access_To_Subprogram_Definition
+                                        (Access_Definition
+                                          (Component_Definition (N))))
+         then
+            T := Replace_Anonymous_Access_To_Protected_Subprogram (N);
+         end if;
 
       else
          pragma Assert (False);
@@ -2932,6 +2984,17 @@ package body Sem_Ch3 is
                            (Related_Nod => Related_Id,
                             N           => Access_Definition (Component_Def));
 
+         --  Ada 0Y (AI-254)
+
+         if Present (Access_To_Subprogram_Definition
+                     (Access_Definition (Component_Def)))
+           and then Protected_Present (Access_To_Subprogram_Definition
+                                       (Access_Definition (Component_Def)))
+         then
+            Element_Type :=
+              Replace_Anonymous_Access_To_Protected_Subprogram (Def);
+         end if;
+
       else
          pragma Assert (False);
          null;
@@ -3073,6 +3136,93 @@ package body Sem_Ch3 is
       end if;
 
    end Array_Type_Declaration;
+
+   ------------------------------------------------------
+   -- Replace_Anonymous_Access_To_Protected_Subprogram --
+   ------------------------------------------------------
+
+   function Replace_Anonymous_Access_To_Protected_Subprogram
+     (N : Node_Id) return Entity_Id
+   is
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Curr_Scope : constant Scope_Stack_Entry :=
+                     Scope_Stack.Table (Scope_Stack.Last);
+
+      Anon : constant Entity_Id :=
+               Make_Defining_Identifier (Loc,
+                 Chars => New_Internal_Name ('S'));
+
+      Acc  : Node_Id;
+      Comp : Node_Id;
+      Decl : Node_Id;
+      P    : Node_Id := Parent (N);
+
+   begin
+      Set_Is_Internal (Anon);
+
+      case Nkind (N) is
+         when N_Component_Declaration       |
+           N_Unconstrained_Array_Definition |
+           N_Constrained_Array_Definition   =>
+            Comp := Component_Definition (N);
+            Acc  := Access_Definition (Component_Definition (N));
+
+         when N_Discriminant_Specification =>
+            Comp := Discriminant_Type (N);
+            Acc  := Discriminant_Type (N);
+
+         when N_Parameter_Specification =>
+            Comp := Parameter_Type (N);
+            Acc  := Parameter_Type (N);
+
+         when others =>
+            null;
+            pragma Assert (False);
+      end case;
+
+      Decl := Make_Full_Type_Declaration (Loc,
+                Defining_Identifier => Anon,
+                Type_Definition   =>
+                  Access_To_Subprogram_Definition (Acc));
+
+      Mark_Rewrite_Insertion (Decl);
+
+      --  Insert the new declaration in the nearest enclosing scope
+
+      while not Has_Declarations (P) loop
+         P := Parent (P);
+      end loop;
+
+      Prepend (Decl, Declarations (P));
+
+      --  Replace the anonymous type with an occurrence of the new declaration.
+      --  In all cases the rewriten node does not have the null-exclusion
+      --  attribute because (if present) it was already inherited by the
+      --  anonymous entity (Anon). Thus, in case of components we do not
+      --  inherit this attribute.
+
+      if Nkind (N) = N_Parameter_Specification then
+         Rewrite (Comp, New_Occurrence_Of (Anon, Loc));
+         Set_Etype (Defining_Identifier (N), Anon);
+         Set_Null_Exclusion_Present (N, False);
+      else
+         Rewrite (Comp,
+           Make_Component_Definition (Loc,
+             Subtype_Indication => New_Occurrence_Of (Anon, Loc)));
+      end if;
+
+      Mark_Rewrite_Insertion (Comp);
+
+      --  Temporarily remove the current scope from the stack to add the new
+      --  declarations to the enclosing scope
+
+      Scope_Stack.Decrement_Last;
+      Analyze (Decl);
+      Scope_Stack.Append (Curr_Scope);
+
+      return Anon;
+   end Replace_Anonymous_Access_To_Protected_Subprogram;
 
    -------------------------------
    -- Build_Derived_Access_Type --
@@ -3425,6 +3575,7 @@ package body Sem_Ch3 is
       else
          Set_First_Entity (Derived_Type, First_Entity (Parent_Type));
          if Has_Discriminants (Parent_Type) then
+            Set_Is_Constrained (Derived_Type, Is_Constrained (Parent_Type));
             Set_Discriminant_Constraint (
               Derived_Type, Discriminant_Constraint (Parent_Type));
          end if;
@@ -3917,10 +4068,12 @@ package body Sem_Ch3 is
 
                --  Copy declaration for subsequent analysis, to
                --  provide a completion for what is a private
-               --  declaration.
+               --  declaration. Indicate that the full type is
+               --  internally generated.
 
                Full_Decl := New_Copy_Tree (N);
                Full_Der  := New_Copy (Derived_Type);
+               Set_Comes_From_Source (Full_Decl, False);
 
                Insert_After (N, Full_Decl);
 
@@ -7916,10 +8069,9 @@ package body Sem_Ch3 is
       Suffix       : Character;
       Suffix_Index : Nat)
    is
-      Def_Id     : Entity_Id;
-      R          : Node_Id := Empty;
-      Checks_Off : Boolean := False;
-      T          : constant Entity_Id := Etype (Index);
+      Def_Id : Entity_Id;
+      R      : Node_Id := Empty;
+      T      : constant Entity_Id := Etype (Index);
 
    begin
       if Nkind (S) = N_Range
@@ -7933,21 +8085,7 @@ package body Sem_Ch3 is
          Set_Etype (S, T);
          R := S;
 
-         --  ??? Why on earth do we turn checks of in this very specific case ?
-
-         --  From the revision history: (Constrain_Index): Call
-         --  Process_Range_Expr_In_Decl with range checking off for range
-         --  bounds that are attributes. This avoids some horrible
-         --  constraint error checks.
-
-         if Nkind (R) = N_Range
-           and then Nkind (Low_Bound (R)) = N_Attribute_Reference
-           and then Nkind (High_Bound (R)) = N_Attribute_Reference
-         then
-            Checks_Off := True;
-         end if;
-
-         Process_Range_Expr_In_Decl (R, T, Empty_List, Checks_Off);
+         Process_Range_Expr_In_Decl (R, T, Empty_List);
 
          if not Error_Posted (S)
            and then
@@ -9274,7 +9412,7 @@ package body Sem_Ch3 is
       elsif Is_Unchecked_Union (Parent_Type) then
          Error_Msg_N ("cannot derive from Unchecked_Union type", N);
 
-      --  Ada 0Y (AI-231)
+      --  Ada 0Y (AI-231): Static check
 
       elsif Is_Access_Type (Parent_Type)
         and then Null_Exclusion_Present (Type_Definition (N))
@@ -11467,6 +11605,17 @@ package body Sem_Ch3 is
          if Nkind (Discriminant_Type (Discr)) = N_Access_Definition then
             Discr_Type := Access_Definition (N, Discriminant_Type (Discr));
 
+            --  Ada 0Y (AI-254)
+
+            if Present (Access_To_Subprogram_Definition
+                         (Discriminant_Type (Discr)))
+              and then Protected_Present (Access_To_Subprogram_Definition
+                                           (Discriminant_Type (Discr)))
+            then
+               Discr_Type :=
+                 Replace_Anonymous_Access_To_Protected_Subprogram (Discr);
+            end if;
+
          else
             Find_Type (Discriminant_Type (Discr));
             Discr_Type := Etype (Discriminant_Type (Discr));
@@ -11514,7 +11663,13 @@ package body Sem_Ch3 is
                  ("discriminant defaults not allowed for formal type",
                   Expression (Discr));
 
-            elsif Is_Tagged_Type (Current_Scope) then
+            --  Tagged types cannot have defaulted discriminants, but a
+            --  non-tagged private type with defaulted discriminants
+            --   can have a tagged completion.
+
+            elsif Is_Tagged_Type (Current_Scope)
+              and then Comes_From_Source (N)
+            then
                Error_Msg_N
                  ("discriminants of tagged type cannot have defaults",
                   Expression (Discr));
@@ -12310,7 +12465,7 @@ package body Sem_Ch3 is
          Find_Type (S);
          Check_Incomplete (S);
 
-         --  Ada 0Y (AI-231)
+         --  Ada 0Y (AI-231): Static check
 
          if Extensions_Allowed
            and then Present (Parent (S))

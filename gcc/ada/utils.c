@@ -310,7 +310,10 @@ poplevel (int keep, int reverse, int functionbody)
 	&& DECL_INITIAL (decl_node) != 0)
       {
 	push_function_context ();
+	/* ??? This is temporary.  */
+	ggc_push_context ();
 	output_inline_function (decl_node);
+	ggc_pop_context ();
 	pop_function_context ();
       }
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1997-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,7 +39,7 @@ package Sem_Elim is
       Arg_Entity          : Node_Id;
       Arg_Parameter_Types : Node_Id;
       Arg_Result_Type     : Node_Id;
-      Arg_Homonym_Number  : Node_Id);
+      Arg_Source_Location : Node_Id);
    --  Process eliminate pragma (given by Pragma_Node). The number of
    --  arguments has been checked, as well as possible optional identifiers,
    --  but no other checks have been made. This subprogram completes the

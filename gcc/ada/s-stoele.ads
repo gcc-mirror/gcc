@@ -51,12 +51,8 @@ pragma Pure (Storage_Elements);
 --  and it would be unsafe to treat such functions as pure.
 
    type Storage_Offset is range
-     -(2 ** (Standard."-" (Standard'Address_Size, 1))) ..
-     +(2 ** (Standard."-" (Standard'Address_Size, 1))) - 1;
-
-   --  Note: the reason for the qualification of "-" here by Standard is
-   --  that we have a current bug in GNAT that otherwise causes a bogus
-   --  ambiguity when this unit is analyzed in an Rtsfind context.
+     -(2 ** (Integer'(Standard'Address_Size) - 1)) ..
+     +(2 ** (Integer'(Standard'Address_Size) - 1)) - Long_Long_Integer'(1);
 
    subtype Storage_Count is Storage_Offset range 0 .. Storage_Offset'Last;
 

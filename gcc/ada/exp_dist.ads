@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-1998 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -77,5 +77,10 @@ package Exp_Dist is
    procedure Build_Passive_Partition_Stub (U : Node_Id);
    --  Build stub for a shared passive package. U is the analyzed
    --  compilation unit for a package declaration.
+
+   function Build_Subprogram_Id
+     (Loc : Source_Ptr;
+      E   : Entity_Id) return Node_Id;
+   --  Build a literal representing the remote subprogram identifier of E
 
 end Exp_Dist;

@@ -374,6 +374,7 @@ package body Exp_Ch4 is
 
          --  We analyze by hand the new internal allocator to avoid
          --  any recursion and inappropriate call to Initialize
+
          if not Aggr_In_Place then
             Remove_Side_Effects (Exp);
          end if;
@@ -2698,10 +2699,11 @@ package body Exp_Ch4 is
    -----------------
 
    procedure Expand_N_In (N : Node_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Rtyp : constant Entity_Id  := Etype (N);
-      Lop  : constant Node_Id    := Left_Opnd (N);
-      Rop  : constant Node_Id    := Right_Opnd (N);
+      Loc    : constant Source_Ptr := Sloc (N);
+      Rtyp   : constant Entity_Id  := Etype (N);
+      Lop    : constant Node_Id    := Left_Opnd (N);
+      Rop    : constant Node_Id    := Right_Opnd (N);
+      Static : constant Boolean    := Is_OK_Static_Expression (N);
 
    begin
       --  If we have an explicit range, do a bit of optimization based
@@ -2717,11 +2719,14 @@ package body Exp_Ch4 is
          begin
             --  If either check is known to fail, replace result
             --  by False, since the other check does not matter.
+            --  Preserve the static flag for legality checks, because
+            --  we are constant-folding beyond RM 4.9.
 
             if Lcheck = LT or else Ucheck = GT then
                Rewrite (N,
                  New_Reference_To (Standard_False, Loc));
                Analyze_And_Resolve (N, Rtyp);
+               Set_Is_Static_Expression (N, Static);
                return;
 
             --  If both checks are known to succeed, replace result
@@ -2731,6 +2736,7 @@ package body Exp_Ch4 is
                Rewrite (N,
                  New_Reference_To (Standard_True, Loc));
                Analyze_And_Resolve (N, Rtyp);
+               Set_Is_Static_Expression (N, Static);
                return;
 
             --  If lower bound check succeeds and upper bound check is

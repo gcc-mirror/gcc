@@ -2095,8 +2095,22 @@ package body Sem_Ch4 is
                         then
                            Error_Msg_NE
                              ("  =='> in call to &#(inherited)!", Actual, Nam);
+
+                        elsif Ekind (Nam) = E_Subprogram_Type then
+                           declare
+                              Access_To_Subprogram_Typ :
+                                constant Entity_Id :=
+                                  Defining_Identifier
+                                    (Associated_Node_For_Itype (Nam));
+                           begin
+                              Error_Msg_NE (
+                                "  =='> in call to dereference of &#!",
+                                Actual, Access_To_Subprogram_Typ);
+                           end;
+
                         else
                            Error_Msg_NE ("  =='> in call to &#!", Actual, Nam);
+
                         end if;
                      end if;
                   end if;

@@ -2674,6 +2674,23 @@ package body Sem_Util is
       return Task_Body_Procedure (Declaration_Node (Root_Type (E)));
    end Get_Task_Body_Procedure;
 
+   ----------------------
+   -- Has_Declarations --
+   ----------------------
+
+   function Has_Declarations (N : Node_Id) return Boolean is
+      K : constant Node_Kind := Nkind (N);
+   begin
+      return    K = N_Accept_Statement
+        or else K = N_Block_Statement
+        or else K = N_Compilation_Unit_Aux
+        or else K = N_Entry_Body
+        or else K = N_Package_Body
+        or else K = N_Protected_Body
+        or else K = N_Subprogram_Body
+        or else K = N_Task_Body;
+   end Has_Declarations;
+
    --------------------
    -- Has_Infinities --
    --------------------

@@ -37,15 +37,17 @@ package Prj.Proc is
       Success           : out Boolean;
       From_Project_Node : Project_Node_Id;
       Report_Error      : Put_Line_Access;
-      Trusted_Mode      : Boolean := False);
+      Process_Languages : Languages_Processed := Ada_Language;
+      Follow_Links      : Boolean := True);
    --  Process a project file tree into project file data structures.
    --  If Report_Error is null, use the error reporting mechanism.
    --  Otherwise, report errors using Report_Error.
    --
-   --  If Trusted_Mode is True, it is assumed that the project doesn't contain
+   --  If Follow_Links is False, it is assumed that the project doesn't contain
    --  any file duplicated through symbolic links (although the latter are
    --  still valid if they point to a file which is outside of the project),
    --  and that no directory has a name which is a valid source name.
+   --
    --  Process is a bit of a junk name, how about Process_Project_Tree???
 
 end Prj.Proc;

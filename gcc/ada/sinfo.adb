@@ -126,6 +126,14 @@ package body Sinfo is
       return Node3 (N);
    end Access_Definition;
 
+   function Access_To_Subprogram_Definition
+     (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Access_Definition);
+      return Node3 (N);
+   end Access_To_Subprogram_Definition;
+
    function Access_Types_To_Process
       (N : Node_Id) return Elist_Id is
    begin
@@ -2611,6 +2619,14 @@ package body Sinfo is
         or else NT (N).Nkind = N_Object_Renaming_Declaration);
       Set_Node3_With_Parent (N, Val);
    end Set_Access_Definition;
+
+   procedure Set_Access_To_Subprogram_Definition
+     (N : Node_Id; Val : Node_Id) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Access_Definition);
+      Set_Node3_With_Parent (N, Val);
+   end Set_Access_To_Subprogram_Definition;
 
    procedure Set_Access_Types_To_Process
       (N : Node_Id; Val : Elist_Id) is

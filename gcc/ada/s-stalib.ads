@@ -97,7 +97,7 @@ package System.Standard_Library is
    type Exception_Data_Ptr is access all Exception_Data;
    --  An equivalent of Exception_Id that is public
 
-   type Exception_Code is mod 2 ** 32;
+   type Exception_Code is mod 2 ** Integer'Size;
    --  A scalar value bound to some exception data. Typically used for
    --  imported or exported exceptions on VMS. Having a separate type for this
    --  is useful to enforce consistency throughout the various run-time units

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2002-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2002-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,6 +36,21 @@ with System.Storage_Elements; use System.Storage_Elements;
 with Ada.Unchecked_Conversion; use Ada;
 
 package body System.Generic_Vector_Operations is
+
+   --  Provide arithmetic operations on type Address (these may not be
+   --  directly available if type System.Address is non-private and the
+   --  operations on the type are made abstract to hide them from public
+   --  users of System.
+
+   function "mod" (Left, Right : Address) return Address;
+   pragma Import (Intrinsic, "mod");
+
+   function "+" (Left, Right : Address) return Address;
+   pragma Import (Intrinsic, "+");
+
+   function "-" (Left, Right : Address) return Address;
+   pragma Import (Intrinsic, "-");
+
    VU : constant Address := Vectors.Vector'Size / Storage_Unit;
    EU : constant Address := Element_Array'Component_Size / Storage_Unit;
 

@@ -741,10 +741,8 @@ package body Ch3 is
          Scan; -- past NEW
       end if;
 
-      if Extensions_Allowed then                      --  Ada 0Y (AI-231)
-         Not_Null_Present := P_Null_Exclusion;
-         Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
-      end if;
+      Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+      Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
       Set_Subtype_Indication
         (Decl_Node, P_Subtype_Indication (Not_Null_Present));
@@ -1293,7 +1291,6 @@ package body Ch3 is
 
             else
                Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
-               Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
                Set_Constant_Present (Decl_Node, True);
 
                if Token_Name = Name_Aliased then
@@ -1312,10 +1309,8 @@ package body Ch3 is
                     (Decl_Node, P_Array_Type_Definition);
 
                else
-                  if Extensions_Allowed then              --  Ada 0Y (AI-231)
-                     Not_Null_Present := P_Null_Exclusion;
-                     Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
-                  end if;
+                  Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+                  Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
                   Set_Object_Definition (Decl_Node,
                      P_Subtype_Indication (Not_Null_Present));
@@ -1351,7 +1346,6 @@ package body Ch3 is
             Scan; -- past ALIASED
             Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
             Set_Aliased_Present (Decl_Node, True);
-            Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
 
             if Token = Tok_Constant then
                Scan; -- past CONSTANT
@@ -1363,11 +1357,8 @@ package body Ch3 is
                  (Decl_Node, P_Array_Type_Definition);
 
             else
-               if Extensions_Allowed then               --  Ada 0Y (AI-231)
-                  Not_Null_Present := P_Null_Exclusion;
-                  Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
-               end if;
-
+               Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+               Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
                Set_Object_Definition (Decl_Node,
                   P_Subtype_Indication (Not_Null_Present));
             end if;
@@ -1377,6 +1368,74 @@ package body Ch3 is
          elsif Token = Tok_Array then
             Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
             Set_Object_Definition (Decl_Node, P_Array_Type_Definition);
+
+         --  Ada 0Y (AI-254)
+
+         elsif Token = Tok_Not then
+
+            --  OBJECT_DECLARATION ::=
+            --    DEFINING_IDENTIFIER_LIST : [aliased] [constant]
+            --      [NULL_EXCLUSION] SUBTYPE_INDICATION [:= EXPRESSION];
+
+            --  OBJECT_RENAMING_DECLARATION ::=
+            --    ...
+            --  | DEFINING_IDENTIFIER : ACCESS_DEFINITION renames object_NAME;
+
+            Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+
+            if Token = Tok_Access then
+               if not Extensions_Allowed then
+                  Error_Msg_SP
+                    ("generalized use of anonymous access types " &
+                     "is an Ada 0Y extension");
+                  Error_Msg_SP ("\unit must be compiled with -gnatX switch");
+               end if;
+
+               Acc_Node := P_Access_Definition (Not_Null_Present);
+
+               if Token /= Tok_Renames then
+                  Error_Msg_SC ("'RENAMES' expected");
+                  raise Error_Resync;
+               end if;
+
+               Scan; --  past renames
+               No_List;
+               Decl_Node :=
+                 New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
+               Set_Access_Definition (Decl_Node, Acc_Node);
+               Set_Name (Decl_Node, P_Name);
+
+            else
+               Type_Node := P_Subtype_Mark;
+
+               --  Object renaming declaration
+
+               if Token_Is_Renames then
+                  Error_Msg_SP ("(Ada 0Y) null-exclusion not allowed in "
+                                & "object renamings");
+                  raise Error_Resync;
+
+               --  Object declaration
+
+               else
+                  Decl_Node := New_Node (N_Object_Declaration, Ident_Sloc);
+                  Set_Null_Exclusion_Present (Decl_Node, Not_Null_Present);
+                  Set_Object_Definition
+                    (Decl_Node,
+                     P_Subtype_Indication (Type_Node, Not_Null_Present));
+
+                  --  RENAMES at this point means that we had the combination
+                  --  of a constraint on the Type_Node and renames, which is
+                  --  illegal
+
+                  if Token_Is_Renames then
+                     Error_Msg_N ("constraint not allowed in object renaming "
+                                  & "declaration",
+                                  Constraint (Object_Definition (Decl_Node)));
+                     raise Error_Resync;
+                  end if;
+               end if;
+            end if;
 
          --  Ada 0Y (AI-230): Access Definition case
 
@@ -1388,7 +1447,7 @@ package body Ch3 is
                Error_Msg_SP ("\unit must be compiled with -gnatX switch");
             end if;
 
-            Acc_Node := P_Access_Definition;
+            Acc_Node := P_Access_Definition (Null_Exclusion_Present => False);
 
             if Token /= Tok_Renames then
                Error_Msg_SC ("'RENAMES' expected");
@@ -1405,20 +1464,11 @@ package body Ch3 is
          --  Subtype indication case
 
          else
-            if Extensions_Allowed then                   --  Ada 0Y (AI-231)
-               Not_Null_Present := P_Null_Exclusion;
-            end if;
-
             Type_Node := P_Subtype_Mark;
 
             --  Object renaming declaration
 
             if Token_Is_Renames then
-               if Not_Null_Present then
-                  Error_Msg_SP
-                    ("(Ada 0Y) null-exclusion not allowed in renamings");
-               end if;
-
                No_List;
                Decl_Node :=
                  New_Node (N_Object_Renaming_Declaration, Ident_Sloc);
@@ -1551,11 +1601,8 @@ package body Ch3 is
          Scan;
       end if;
 
-      if Extensions_Allowed then                         --  Ada 0Y (AI-231)
-         Not_Null_Present := P_Null_Exclusion;
-         Set_Null_Exclusion_Present (Typedef_Node, Not_Null_Present);
-      end if;
-
+      Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231)
+      Set_Null_Exclusion_Present (Typedef_Node, Not_Null_Present);
       Set_Subtype_Indication (Typedef_Node,
          P_Subtype_Indication (Not_Null_Present));
 
@@ -2130,6 +2177,7 @@ package body Ch3 is
       Not_Null_Present : Boolean := False;
       Subs_List        : List_Id;
       Scan_State       : Saved_Scan_State;
+      Aliased_Present  : Boolean := False;
 
    begin
       Array_Loc := Token_Ptr;
@@ -2189,6 +2237,17 @@ package body Ch3 is
 
       CompDef_Node := New_Node (N_Component_Definition, Token_Ptr);
 
+      if Token_Name = Name_Aliased then
+         Check_95_Keyword (Tok_Aliased, Tok_Identifier);
+      end if;
+
+      if Token = Tok_Aliased then
+         Aliased_Present := True;
+         Scan; -- past ALIASED
+      end if;
+
+      Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231/AI-254)
+
       --  Ada 0Y (AI-230): Access Definition case
 
       if Token = Tok_Access then
@@ -2199,28 +2258,21 @@ package body Ch3 is
             Error_Msg_SP ("\unit must be compiled with -gnatX switch");
          end if;
 
-         Set_Subtype_Indication (CompDef_Node, Empty);
-         Set_Aliased_Present    (CompDef_Node, False);
-         Set_Access_Definition  (CompDef_Node, P_Access_Definition);
+         if Aliased_Present then
+            Error_Msg_SP ("ALIASED not allowed here");
+         end if;
+
+         Set_Subtype_Indication     (CompDef_Node, Empty);
+         Set_Aliased_Present        (CompDef_Node, False);
+         Set_Access_Definition      (CompDef_Node,
+           P_Access_Definition (Not_Null_Present));
       else
-         Set_Access_Definition  (CompDef_Node, Empty);
 
-         if Token_Name = Name_Aliased then
-            Check_95_Keyword (Tok_Aliased, Tok_Identifier);
-         end if;
-
-         if Token = Tok_Aliased then
-            Set_Aliased_Present (CompDef_Node, True);
-            Scan; -- past ALIASED
-         end if;
-
-         if Extensions_Allowed then                       --  Ada 0Y (AI-231)
-            Not_Null_Present := P_Null_Exclusion;
-            Set_Null_Exclusion_Present (CompDef_Node, Not_Null_Present);
-         end if;
-
-         Set_Subtype_Indication (CompDef_Node,
-            P_Subtype_Indication (Not_Null_Present));
+         Set_Access_Definition      (CompDef_Node, Empty);
+         Set_Aliased_Present        (CompDef_Node, Aliased_Present);
+         Set_Null_Exclusion_Present (CompDef_Node, Not_Null_Present);
+         Set_Subtype_Indication     (CompDef_Node,
+           P_Subtype_Indication (Not_Null_Present));
       end if;
 
       Set_Component_Definition (Def_Node, CompDef_Node);
@@ -2444,7 +2496,6 @@ package body Ch3 is
                Specification_Node :=
                  New_Node (N_Discriminant_Specification, Ident_Sloc);
                Set_Defining_Identifier (Specification_Node, Idents (Ident));
-
                Not_Null_Present := P_Null_Exclusion;       --  Ada 0Y (AI-231)
 
                if Token = Tok_Access then
@@ -2454,11 +2505,10 @@ package body Ch3 is
                   end if;
 
                   Set_Discriminant_Type
-                    (Specification_Node, P_Access_Definition);
-                  Set_Null_Exclusion_Present               --  Ada 0Y (AI-231)
-                    (Discriminant_Type (Specification_Node),
-                     Not_Null_Present);
+                    (Specification_Node,
+                     P_Access_Definition (Not_Null_Present));
                else
+
                   Set_Discriminant_Type
                     (Specification_Node, P_Subtype_Mark);
                   No_Constraint;
@@ -2876,6 +2926,7 @@ package body Ch3 is
    --  items, do we need to add this capability sometime in the future ???
 
    procedure P_Component_Items (Decls : List_Id) is
+      Aliased_Present  : Boolean := False;
       CompDef_Node     : Node_Id;
       Decl_Node        : Node_Id;
       Scan_State       : Saved_Scan_State;
@@ -2935,6 +2986,19 @@ package body Ch3 is
 
             CompDef_Node := New_Node (N_Component_Definition, Token_Ptr);
 
+            if Token_Name = Name_Aliased then
+               Check_95_Keyword (Tok_Aliased, Tok_Identifier);
+            end if;
+
+            if Token = Tok_Aliased then
+               Aliased_Present := True;
+               Scan; -- past ALIASED
+            end if;
+
+            Not_Null_Present := P_Null_Exclusion; --  Ada 0Y (AI-231/AI-254)
+
+            --  Ada 0Y (AI-230): Access Definition case
+
             if Token = Tok_Access then
                if not Extensions_Allowed then
                   Error_Msg_SP
@@ -2943,21 +3007,19 @@ package body Ch3 is
                   Error_Msg_SP ("\unit must be compiled with -gnatX switch");
                end if;
 
+               if Aliased_Present then
+                  Error_Msg_SP ("ALIASED not allowed here");
+               end if;
+
                Set_Subtype_Indication (CompDef_Node, Empty);
                Set_Aliased_Present    (CompDef_Node, False);
-               Set_Access_Definition  (CompDef_Node, P_Access_Definition);
+               Set_Access_Definition  (CompDef_Node,
+                 P_Access_Definition (Not_Null_Present));
             else
 
-               Set_Access_Definition (CompDef_Node, Empty);
-
-               if Token_Name = Name_Aliased then
-                  Check_95_Keyword (Tok_Aliased, Tok_Identifier);
-               end if;
-
-               if Token = Tok_Aliased then
-                  Scan; -- past ALIASED
-                  Set_Aliased_Present (CompDef_Node, True);
-               end if;
+               Set_Access_Definition      (CompDef_Node, Empty);
+               Set_Aliased_Present        (CompDef_Node, Aliased_Present);
+               Set_Null_Exclusion_Present (CompDef_Node, Not_Null_Present);
 
                if Token = Tok_Array then
                   Error_Msg_SC
@@ -2965,13 +3027,8 @@ package body Ch3 is
                   raise Error_Resync;
                end if;
 
-               if Extensions_Allowed then                 --  Ada 0Y (AI-231)
-                  Not_Null_Present := P_Null_Exclusion;
-                  Set_Null_Exclusion_Present (CompDef_Node, Not_Null_Present);
-               end if;
-
                Set_Subtype_Indication (CompDef_Node,
-                  P_Subtype_Indication (Not_Null_Present));
+                 P_Subtype_Indication (Not_Null_Present));
             end if;
 
             Set_Component_Definition (Decl_Node, CompDef_Node);
@@ -3231,15 +3288,18 @@ package body Ch3 is
 
    --  PARAMETER_AND_RESULT_PROFILE ::= [FORMAL_PART] RETURN SUBTYPE_MARK
 
-   --  The caller has checked that the initial token is ACCESS
+   --  Ada 0Y (AI-254): If Header_Already_Parsed then the caller has already
+   --  parsed the null_exclusion part and has also removed the ACCESS token;
+   --  otherwise the caller has just checked that the initial token is ACCESS
 
    --  Error recovery: can raise Error_Resync
 
-   function P_Access_Type_Definition return Node_Id is
-      Prot_Flag        : Boolean;
-      Access_Loc       : Source_Ptr;
-      Not_Null_Present : Boolean := False;
-      Type_Def_Node    : Node_Id;
+   function P_Access_Type_Definition
+     (Header_Already_Parsed : Boolean := False) return Node_Id is
+      Access_Loc            : constant Source_Ptr := Token_Ptr;
+      Prot_Flag             : Boolean;
+      Not_Null_Present      : Boolean := False;
+      Type_Def_Node         : Node_Id;
 
       procedure Check_Junk_Subprogram_Name;
       --  Used in access to subprogram definition cases to check for an
@@ -3266,12 +3326,10 @@ package body Ch3 is
    --  Start of processing for P_Access_Type_Definition
 
    begin
-      if Extensions_Allowed then                          --  Ada 0Y (AI-231)
-         Not_Null_Present := P_Null_Exclusion;
+      if not Header_Already_Parsed then
+         Not_Null_Present := P_Null_Exclusion;         --  Ada 0Y (AI-231)
+         Scan; -- past ACCESS
       end if;
-
-      Access_Loc := Token_Ptr;
-      Scan; -- past ACCESS
 
       if Token_Name = Name_Protected then
          Check_95_Keyword (Tok_Protected, Tok_Procedure);
@@ -3366,33 +3424,74 @@ package body Ch3 is
 
    --  ACCESS_DEFINITION ::=
    --    [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
+   --  | ACCESS_TO_SUBPROGRAM_DEFINITION
+   --
+   --  ACCESS_TO_SUBPROGRAM_DEFINITION
+   --    [NULL_EXCLUSION] access [protected] procedure PARAMETER_PROFILE
+   --  | [NULL_EXCLUSION] access [protected] function
+   --    PARAMETER_AND_RESULT_PROFILE
 
-   --  The caller has checked that the initial token is ACCESS
+   --  The caller has parsed the null-exclusion part and it has also checked
+   --  that the next token is ACCESS
 
    --  Error recovery: cannot raise Error_Resync
 
-   function P_Access_Definition return Node_Id is
-      Def_Node : Node_Id;
+   function P_Access_Definition
+     (Null_Exclusion_Present : Boolean) return Node_Id is
+      Def_Node  : Node_Id;
+      Subp_Node : Node_Id;
 
    begin
       Def_Node := New_Node (N_Access_Definition, Token_Ptr);
       Scan; -- past ACCESS
 
-      --  Ada 0Y (AI-231)
+      --  Ada 0Y (AI-254/AI-231)
 
       if Extensions_Allowed then
-         if Token = Tok_All then
-            Scan; -- past ALL
-            Set_All_Present (Def_Node);
 
-         elsif Token = Tok_Constant then
-            Scan; -- past CONSTANT
-            Set_Constant_Present (Def_Node);
+         --  Ada 0Y (AI-254): Access_To_Subprogram_Definition
+
+         if Token = Tok_Protected
+           or else Token = Tok_Procedure
+           or else Token = Tok_Function
+         then
+            Subp_Node :=
+              P_Access_Type_Definition (Header_Already_Parsed => True);
+            Set_Null_Exclusion_Present (Subp_Node, Null_Exclusion_Present);
+            Set_Access_To_Subprogram_Definition (Def_Node, Subp_Node);
+
+         --  Ada 0Y (AI-231)
+         --  [NULL_EXCLUSION] access [GENERAL_ACCESS_MODIFIER] SUBTYPE_MARK
+
+         else
+            Set_Null_Exclusion_Present (Def_Node, Null_Exclusion_Present);
+
+            if Token = Tok_All then
+               Scan; -- past ALL
+               Set_All_Present (Def_Node);
+
+            elsif Token = Tok_Constant then
+               Scan; -- past CONSTANT
+               Set_Constant_Present (Def_Node);
+            end if;
+
+            Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
+            No_Constraint;
          end if;
+
+      --  Ada 95
+
+      else
+         --  Ada 0Y (AI-254): The null-exclusion present is never present
+         --  in Ada 83 and Ada 95
+
+         pragma Assert (Null_Exclusion_Present = False);
+
+         Set_Null_Exclusion_Present (Def_Node, False);
+         Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
+         No_Constraint;
       end if;
 
-      Set_Subtype_Mark (Def_Node, P_Subtype_Mark);
-      No_Constraint;
       return Def_Node;
    end P_Access_Definition;
 

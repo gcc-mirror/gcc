@@ -572,7 +572,9 @@ package body Prj.Env is
       --  For call to Close
 
       procedure Check (Project : Project_Id);
-      --  ??? requires a comment
+      --  Recursive procedure that put in the config pragmas file any non
+      --  standard naming schemes, if it is not already in the file, then call
+      --  itself for any imported project.
 
       procedure Check_Temp_File;
       --  Check that a temporary file has been opened.

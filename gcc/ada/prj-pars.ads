@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2000-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 2000-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,8 @@ package Prj.Pars is
    procedure Parse
      (Project           : out Project_Id;
       Project_File_Name : String;
-      Packages_To_Check : String_List_Access := All_Packages);
+      Packages_To_Check : String_List_Access := All_Packages;
+      Process_Languages : Languages_Processed := Ada_Language);
    --  Parse a project files and all its imported project files.
    --  If parsing is successful, Project_Id is the project ID
    --  of the main project file; otherwise, Project_Id is set

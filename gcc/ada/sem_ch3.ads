@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2003 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2004 Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -205,6 +205,13 @@ package Sem_Ch3  is
    --  Process the discriminants contained in an N_Full_Type_Declaration or
    --  N_Incomplete_Type_Decl node N. If the declaration is a completion,
    --  Prev is entity on the partial view, on which references are posted.
+
+   function Replace_Anonymous_Access_To_Protected_Subprogram
+     (N : Node_Id) return Entity_Id;
+   --  Ada 0Y (AI-254): Create and decorate an internal full type declaration
+   --  in the enclosing scope corresponding to an anonymous access to protected
+   --  subprogram. In addition, replace the anonymous access by an occurrence
+   --  of this internal type. Return the entity of this type declaration.
 
    procedure Set_Completion_Referenced (E : Entity_Id);
    --  If E is the completion of a private or incomplete  type declaration,

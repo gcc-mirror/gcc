@@ -963,8 +963,8 @@ package body Ch6 is
                      Error_Msg_SC ("(Ada 83) access parameters not allowed");
                   end if;
 
-                  Set_Parameter_Type
-                    (Specification_Node, P_Access_Definition);
+                  Set_Parameter_Type (Specification_Node,
+                    P_Access_Definition (Not_Null_Present));
 
                else
                   if Token = Tok_In or else Token = Tok_Out then

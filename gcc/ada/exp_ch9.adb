@@ -3282,10 +3282,11 @@ package body Exp_Ch9 is
           Defining_Identifier => D_T2,
           Type_Definition => Def1);
 
+      Analyze (Decl1);
       Insert_After (N, Decl1);
 
       --  Create Equivalent_Type, a record with two components for an
-      --  an access to object an an access to subprogram.
+      --  access to object and an access to subprogram.
 
       Comps := New_List (
         Make_Component_Declaration (Loc,
@@ -3314,6 +3315,7 @@ package body Exp_Ch9 is
                 Make_Component_List (Loc,
                   Component_Items => Comps)));
 
+      Analyze (Decl2);
       Insert_After (Decl1, Decl2);
       Set_Equivalent_Type (T, E_T);
    end Expand_Access_Protected_Subprogram_Type;

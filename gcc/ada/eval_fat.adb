@@ -83,9 +83,6 @@ package body Eval_Fat is
    function Machine_Emin (RT : R) return Int;
    --  Return value of the Machine_Emin attribute
 
-   function Machine_Mantissa (RT : R) return Nat;
-   --  Return value of the Machine_Mantissa attribute
-
    --------------
    -- Adjacent --
    --------------
@@ -705,6 +702,16 @@ package body Eval_Fat is
 
       return Mant;
    end Machine_Mantissa;
+
+   -------------------
+   -- Machine_Radix --
+   -------------------
+
+   function Machine_Radix (RT : R) return Nat is
+      pragma Warnings (Off, RT);
+   begin
+      return Radix;
+   end Machine_Radix;
 
    -----------
    -- Model --

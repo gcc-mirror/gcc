@@ -655,7 +655,7 @@ begin
                if Nast /= 1 then
                   Error_Msg_N
                     ("file name pattern must have exactly one * character",
-                     Arg2);
+                     Arg1);
                   return Pragma_Node;
                end if;
 

@@ -1,4 +1,367 @@
-2004-04-17  Laurent GUERBY <laurent@guerby.net>
+2004-04-19  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 5isystem.ads: Removed, unused.
+
+	* gnat_rm.texi: Redo 1.13 change.
+
+2004-04-19  Robert Dewar  <dewar@gnat.com>
+
+	* s-stoele.ads: Clean up definition of Storage_Offset (the new
+	definition is cleaner, avoids the kludge of explicit Standard operator
+	references, and also is consistent with a visible System.Address with
+	no visible operations.
+
+	* s-geveop.adb: Add declarations to avoid assumption of visible
+	operations on type System.Address (since these might not be available
+	if Address is a non-private type for which the operations
+	are made abstract).
+
+	* sem_eval.adb: Minor reformatting
+
+	* s-carsi8.ads, s-carun8.ads, s-casi16.ads, s-casi32.ads,
+	s-casi64.ads, s-caun16.ads, s-caun32.ads, s-caun64.ads: Minor
+	reformatting (new function spec format).
+
+	* s-auxdec.adb, s-carsi8.adb, s-carun8.adb, s-casi16.adb,
+	s-casi32.adb, s-casi64.adb, s-caun16.adb, s-caun32.adb,
+	s-caun64.adb: Add declarations to avoid assumption of visible
+	operations on type System.Address (since these might not be available
+	if Address is a non-private type for which the operations are made
+	abstract).
+
+	* lib.ads, lib.adb (Synchronize_Serial_Number): New procedure.
+
+	* exp_intr.adb: Minor comment update
+
+	* exp_aggr.adb, exp_attr.adb, exp_ch13.adb: Minor reformatting.
+
+	* 5omastop.adb: Add declarations to avoid assumption of visible
+	operations on type System.Address (since these might not be available
+	if Address is a non-private type for which the operations
+	are made abstract).
+
+2004-04-19  Vincent Celier  <celier@gnat.com>
+
+	* switch-m.adb: (Scan_Make_Switches): Process new switch -eL
+
+	* prj-pars.ads (Parse): New Boolean parameter Process_Languages,
+	defaulted to Ada.
+
+	* prj-proc.adb (Process): New Boolean parameter Process_Languages,
+	defaulted to Ada.
+	Call Check with Process_Languages.
+	(Check): New Boolean parameter Process_Languages. Call Recursive_Check
+	with Process_Languages.
+	(Recursive_Check): New Boolean parameter Process_Languages. Call
+	Nmsc.Ada_Check or Nmsc.Other_Languages_Check according to
+	Process_Languages.
+
+	* prj-proc.ads (Process): New Boolean parameter Process_Languages,
+
+	* prj-util.ads, prj-util.adb (Executable_Of): New Boolean
+	parameter Ada_Main, defaulted to True.
+	Check for Ada specific characteristics only when Ada_Main is True.
+
+	* opt.ads: (Follow_Links): New Boolean flag for gnatmake
+
+	* prj.adb: (Project_Empty): Add new Project_Data components.
+
+	* prj.ads: New types and tables for non Ada languages.
+	(Project_Data): New components Languages, Impl_Suffixes,
+	First_Other_Source, Last_Other_Source, Imported_Directories_Switches,
+	Include_Path, Include_Data_Set.
+
+	* prj-env.ads, prj-env.adb: Minor reformatting
+
+	* prj-nmsc.ads, prj-nmsc.adb: (Other_Languages_Check): New procedure
+	Put subprograms in alphabetical order
+
+	* prj-pars.adb (Parse): New Boolean parameter Process_Languages,
+	defaulted to Ada; Call Prj.Proc.Process with Process_Languages and
+	Opt.Follow_Links.
+
+	* mlib-prj.adb: Back out modification in last version, as they are
+	incorrect.
+	(Build_Library.Check_Libs): Remove useless pragma Warnings (Off)
+
+	* make.adb: (Mains): Moved to package Makeutl
+	(Linker_Opts): Moved to package Makeutl
+	(Is_External_Assignment): Moved to package Makeutl
+	(Test_If_Relative_Path): Moved to package Makeutl
+	(Gnatmake): Move sorting of linker options to function
+	Makeutl.Linker_Options_Switches.
+
+	* Makefile.in: Add makeutl.o to the object files for gnatmake
+
+	* makeusg.adb: Add line for new switch -eL.
+
+	* gnatls.adb (Image): New function.
+	(Output_Unit): If in verbose mode, output the list of restrictions
+	specified by pragmas Restrictions.
+
+	* 5bml-tgt.adb, 5vml-tgt.adb (Build_Dynamic_Library): Do not use
+	Text_IO.
+
+	* a-calend.adb (Split): Shift the date by multiple of 56 years, if
+	needed, to put it in the range 1970 (included) - 2026 (excluded).
+	(Time_Of): Do not shift Unix_Min_Year (1970).
+	Shift the date by multiple of 56 years, if needed, to put it in the
+	range 1970 (included) - 2026 (excluded).
+
+	* adaint.h, adaint.c (__gnat_set_executable): New function.
+
+2004-04-19  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (tree_transform, case N_Subprogram_Body): Temporarily push
+	and pop GC context.
+	(tree_transform, case N_Procedure_Call): Fix typo in setting TREE_TYPE.
+	(tree_transform, case N_Label): Don't set LABEL_STMT_FIRST_IN_EH.
+	(tree_transform, case N_Procedure_Call_Statement): Build a tree.
+	(tree_transform, case N_Code_Statement): Likewise.
+	(gnat_expand_stmt, case LABEL_STMT): Don't look at
+	LABEL_STMT_FIRST_IN_EH.
+	(gnat_expand_stmt, case ASM_STMT): New case.
+
+	* utils2.c (build_unary_op): Properly set TREE_READONLY of
+	UNCONSTRAINED_ARRAY_REF.
+
+	* utils.c (poplevel): Temporarily push/pop GC context around inline
+	function expansion.
+
+	* decl.c (maybe_variable): Properly set TREE_READONLY of
+	UNCONSTRAINED_ARRAY_REF.
+	(make_packable_type): Only reference TYPE_IS_PADDING_P for RECORD_TYPE.
+
+	* ada-tree.def: (ASM_STMT): New.
+
+	* ada-tree.h: (LABEL_STMT_FIRST_IN_EH): Deleted.
+	(ASM_STMT_TEMPLATE, ASM_STMT_OUTPUT, ASM_STMT_ORIG_OUT,
+	ASM_STMT_INPUT): New.
+	(ASM_STMT_CLOBBER): Likewise.
+
+2004-04-19  Thomas Quinot  <quinot@act-europe.fr>
+
+	* a-except.adb, s-parint.ads, s-parint.adb, types.ads, types.h: Use
+	general rcheck mechanism to raise Program_Error for E.4(18), instead
+	of a custom raiser in System.Partition_Interface.
+	Part of general cleanup work before PolyORB integration.
+
+	* snames.ads, snames.adb: Add new runtime library entities and names
+	for PolyORB DSA.
+
+	* sem_dist.ads, sem_dist.adb (Get_Subprogram_Id): Move from sem_dist to
+	exp_dist.
+	(Build_Subprogram_Id): New subprogram provided by exp_dist
+	Code reorganisation in preparation for PolyORB integration.
+
+	* exp_dist.ads, exp_dist.adb (Get_Subprogram_Id): Move from sem_dist to
+	exp_dist.
+	(Build_Subprogram_Id): New subprogram provided by exp_dist
+
+	* sem_ch4.adb (Analyze_One_Call): Fix error message for mismatch in
+	actual parameter types for call to dereference of an
+	access-to-subprogram type.
+
+	* rtsfind.ads: Add new runtime library entities and names for PolyORB
+	DSA.
+
+	* gnatlink.adb (Value): Remove. Use Interfaces.C.Strings.Value
+	instead, which has the same behaviour here since we never pass it a
+	NULL pointer.
+
+	* link.c (run_path_option, Solaris case): Use -Wl, as for other
+	platforms.
+
+	* Makefile.in: adjust object file lists for gnatlink and gnatmake
+	to account for new dependency upon Interfaces.C.Strings + link.o
+	For x86 FreeBSD, use 86numaux.
+
+	* make.adb, gnatcmd.adb: Linker_Library_Path_Option has been moved up
+	from Mlib.Tgt to Mlib.
+
+	* mlib.ads, mlib.adb (Linker_Library_Path_Option): New subprogram, now
+	target-independent.
+
+	* mlib-tgt.ads, mlib-tgt.adb (Linker_Library_Path_Option): Remove
+	target-specific versions of this subprogram, now implemented as a
+	target-independent function in Mlib.
+
+	* 5aml-tgt.adb, 5bml-tgt.adb, 5gml-tgt.adb, 5hml-tgt.adb, 5lml-tgt.adb,
+	5sml-tgt.adb, 5vml-tgt.adb, 5zml-tgt.adb, 5wml-tgt.adb
+	(Linker_Library_Path_Option): Remove target-specific versions of this
+	subprogram, now implemented as a target-independent function in Mlib.
+
+	* atree.adb: (Allocate_Initialize_Node): New subprogram.
+	Factors out node table slots allocation.
+	(Fix_Parents): New subprogram.
+	Encapsulate the pattern of fixing up parent pointers for syntactic
+	children of a rewritten node.
+	(New_Copy_Tree): Use New_Copy to copy non-entity nodes.
+	(Rewrite): Use New_Copy when creating saved copy of original node.
+	(Replace): Use Copy_Node to copy nodes.
+
+2004-04-19  Javier Miranda  <miranda@gnat.com>
+
+	* sprint.adb (Sprint_Node_Actual): Give support to the new
+	Access_To_Subprogram node available in Access_Definition nodes. In
+	addition, give support to the AI-231 node fields: null-exclusion,
+	all-present, constant-present.
+
+	* sem_util.ads, sem_util.adb: (Has_Declarations): New subprogram
+
+	* sinfo.ads, sinfo.adb: 
+	New field Access_To_Subprogram_Definition in Access_Definition nodes
+
+	* sem_ch6.adb (Process_Formals): Move here the code that creates and
+	decorates internal subtype declaration corresponding to the
+	null-excluding formal. This code was previously in Set_Actual_Subtypes.
+	In addition, carry out some code cleanup on this code. In case of
+	access to protected subprogram call
+	Replace_Anonymous_Access_To_Protected_Subprogram.
+	(Set_Actual_Subtypes): Code cleanup.
+
+	* sem_ch8.adb (Analyze_Object_Renaming): Remove un-necessary call to
+	Find_Type in case of anonymous access renamings. Add warning in case of
+	null-excluding attribute used in anonymous access renaming.
+
+	* sem_ch3.ads (Replace_Anonymous_Access_To_Protected_Subprogram): New
+	subprogram
+
+	* sem_ch3.adb (Replace_Anonymous_Access_To_Protected_Subprogram): New
+	subprogram.
+	(Access_Definition): In case of anonymous access to subprograms call
+	the corresponding semantic routine to decorate the node.
+	(Access_Subprogram_Declaration): Addition of some comments indicating
+	some code that probably should be added here. Detected by comparison
+	with the access_definition subprogram.
+	(Analyze_Component_Declaration): In case of access to protected
+	subprogram call Replace_Anonymous_Access_To_Protected.
+	(Array_Type_Declaration): In case of access to protected subprogram call
+	Replace_Anonymous_Access_To_Protected_Subprogram.
+	(Process_Discriminants): In case of access to protected subprogram call
+	Replace_Anonymous_Access_To_Protected_Subprogram.
+
+	* par.adb (P_Access_Definition): New formal that indicates if the
+	null-exclusion part was present.
+	(P_Access_Type_Definition): New formal that indicates if the caller has
+	already parsed the null-excluding part.
+
+	* par-ch3.adb (P_Subtype_Declaration): Code cleanup.
+	(P_Identifier_Declarations): Code cleanup and give support to renamings
+	of anonymous access to subprogram types.
+	(P_Derived_Type_Def_Or_Private_Ext_Decl): Code cleanup.
+	(P_Array_Type_Definition): Give support to AI-254.
+	(P_Component_Items): Give support to AI-254.
+	(P_Access_Definition): New formal that indicates if the header was
+	already parsed by the caller.
+	(P_Access_Type_Definition): New formal that indicates if the caller has
+	already parsed the null-excluding part.
+
+	* par-ch6.adb (P_Formal_Part): Add the null-excluding parameter to the
+	call to P_Access_Definition.
+
+2004-04-19  Geert Bosch  <bosch@gnat.com>
+
+	* checks.adb (Apply_Float_Conversion_Check): New procedure to implement
+	the delicate semantics of floating-point to integer conversion.
+	(Apply_Type_Conversion_Checks): Use Apply_Float_Conversion_Check.
+
+	* eval_fat.adb (Machine_Mantissa): Moved to spec.
+	(Machine_Radix): New function.
+
+	* eval_fat.ads (Machine_Mantissa): Moved from body for use in
+	conversion checks.
+	(Machine_Radix): New function also for use in conversion checks.
+
+2004-04-19  Ed Schonberg  <schonberg@gnat.com>
+
+	* par-prag.adb (Source_File_Name_Project): Fix typo in error message.
+
+	* exp_ch9.adb (Expand_Access_Protected_Subprogram_Type): Call analyze
+	to decorate the access-to-protected subprogram and the equivalent type.
+
+	* checks.adb (Null_Exclusion_Static_Checks): Code cleanup. Give support
+	to anonymous access to subprogram types.
+
+	* exp_ch4.adb (Expand_N_In): Preserve Static flag before
+	constant-folding, for legality checks in contexts that require an RM
+	static expression.
+
+	* exp_ch6.adb (Expand_N_Function_Call): If call may generate large
+	temporary but stack checking is not enabled, increment serial number
+	to so that symbol generation is consistent with and without stack
+	checking.
+
+	* exp_util.ads, exp_util.adb (May_Generate_Large_Temp): Predicate is
+	independent on whether stack checking is enabled, caller must check
+	the corresponding flag.
+
+	* sem_ch3.adb (Constrain_Index): Index bounds given by attributes need
+	range checks.
+	(Build_Derived_Concurrent_Type): Inherit Is_Constrained flag from
+	parent if it has discriminants.
+	(Build_Derived_Private_Type): Constructed full view does
+	not come from source.
+	(Process_Discriminants): Default discriminants on a tagged type are
+	legal if this is the internal completion of a private untagged
+	derivation.
+
+	* sem_ch6.adb (Set_Actual_Subtypes): The generated declaration needs
+	no constraint checks, because it corresponds to an existing object.
+
+	* sem_prag.adb (Process_Convention): Pragma applies
+	only to subprograms in the same declarative part, i.e. the same unit,
+	not the same scope.
+
+	* sem_res.adb (Valid_Conversion): In an instance or inlined body,
+	ignore type mismatch on a numeric conversion if expression comes from
+	expansion.
+
+2004-04-19  Sergey Rybin  <rybin@act-europe.fr>
+
+	* sem_elim.adb (Process_Eliminate_Pragma): Remove the processing for
+	Homonym_Number parameter, add processing for Source_Location parameter
+	corresponding.
+	(Check_Eliminated): Remove the check for homonym numbers, add the check
+	for source location traces.
+
+	* sem_elim.ads (Process_Eliminate_Pragma): Replace Arg_Homonym_Number
+	with Arg_Source_Location corresponding to the changes in the format of
+	the pragma.
+
+	* sem_prag.adb: (Analyze_Pragma): Changes in the processing of
+	Eliminate pragma corresponding to the changes in the format of the
+	pragma: Homonym_Number is replaced with Source_Location, two ways of
+	distinguishing homonyms are mutially-exclusive.
+
+2004-04-19  Joel Brobecker  <brobecker@gnat.com>
+
+	* get_targ.ads (Get_No_Dollar_In_Label): Remove.
+
+	* exp_dbug.adb (Output_Homonym_Numbers_Suffix): Remove use of
+	No_Dollar_In_Label, no longer necessary, as it is always True.
+	(Strip_Suffixes): Likewise.
+
+2004-04-19  Gary Dismukes  <dismukes@gnat.com>
+
+	* s-stalib.ads (type Exception_Code): Use Integer'Size for exponent of
+	modulus for compatibility with size clause on targets with 16-bit
+	Integer.
+
+	* layout.adb (Discrimify): In the case of private types, set Vtyp to
+	full type to fix type mismatches on calls to size functions for
+	discriminant-dependent array components.
+
+2004-04-19  Jerome Guitton  <guitton@act-europe.fr>
+
+	* Makefile.in (gnatlib-zcx): New target, for building a ZCX run-time
+	lib.
+
+2004-04-19  Pascal Obry  <obry@gnat.com>
+
+	* mdll-utl.adb (Locate): New version is idempotent.
+
+2004-04-17  Laurent Guerby <laurent@guerby.net>
 
 	PR ada/14988 (partial)
 	* impunit.adb: Fix typo.
@@ -692,7 +1055,7 @@
 	(gnat_to_gnu_entity, case E_Array_Type): Don't set and clear it.
 	* misc.c (LANG_HOOK_HASH_TYPE): Redefine.
 
-2004-03-19  Laurent GUERBY <laurent@guerby.net>
+2004-03-19  Laurent Guerby <laurent@guerby.net>
 
 	* sem_prag.adb (Suppress_Unsuppress_Echeck): use loop instead of 
 	aggregate, allows bootstrap from 3.3 on powerpc-darwin.
