@@ -993,7 +993,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:HI 0 "register_operand" "=r"))
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "+r"))
 	(plus:HI (match_operand:HI 1 "general_operand" "0")
 		 (match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1021,7 +1021,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:QI 0 "register_operand" "=r"))
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "+r"))
 	(plus:QI (match_operand:QI 1 "general_operand" "0")
 		 (match_operand:QI 2 "general_operand" "g")))]
   ""
@@ -1136,7 +1136,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:HI 0 "register_operand" "=r"))
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "+r"))
 	(minus:HI (match_operand:HI 1 "general_operand" "0")
 		  (match_operand:HI 2 "general_operand" "g")))]
   ""
@@ -1165,7 +1165,7 @@
 }")
 
 (define_insn ""
-  [(set (strict_low_part (match_operand:QI 0 "register_operand" "=r"))
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "+r"))
 	(minus:QI (match_operand:QI 1 "general_operand" "0")
 		  (match_operand:QI 2 "general_operand" "g")))]
   ""

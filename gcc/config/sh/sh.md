@@ -2351,7 +2351,7 @@
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
-  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "=r,r,r,r,r,m,r"))
+  [(set (strict_low_part (match_operand:SI 0 "general_movdst_operand" "+r,r,r,r,r,m,r"))
 	(match_operand:SI 1 "general_movsrc_operand" "Q,rI,mr,xl,t,r,i"))]
    "register_operand (operands[0], SImode)
     || register_operand (operands[1], SImode)"

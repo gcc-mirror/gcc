@@ -257,7 +257,7 @@
 }")
 
 (define_insn "movstricthi"
-  [(set (strict_low_part (match_operand:HI 0 "register_operand" "=g"))
+  [(set (strict_low_part (match_operand:HI 0 "register_operand" "+g"))
 	(match_operand:HI 1 "general_operand" "g"))]
   ""
   "*
@@ -307,7 +307,7 @@
 }")
 
 (define_insn "movstrictqi"
-  [(set (strict_low_part (match_operand:QI 0 "register_operand" "=g"))
+  [(set (strict_low_part (match_operand:QI 0 "register_operand" "+g"))
 	(match_operand:QI 1 "general_operand" "g"))]
   ""
   "*
