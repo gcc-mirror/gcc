@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on AMD Am29000.
-   Copyright (C) 1987, 88, 90, 91, 92, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu)
 
 This file is part of GNU CC.
@@ -1031,7 +1031,16 @@ print_operand (file, x, code)
       output_addr_const (file, x);
       if (dbr_sequence_length () == 0)
 	{
-	  if (GET_CODE (x) == SYMBOL_REF
+	  /* If this doesn't have its delay slot filled, see if we need to
+	     put the last insn of the prolog in it.  If not, see if this is
+	     a recursive call.  If so, we can put the first insn of its
+	     prolog in the delay slot.  Otherwise, write a nop.  */
+	  if (a29k_last_prologue_insn)
+	    {
+	      fprintf (file, "\n\t%s", a29k_last_prologue_insn);
+	      a29k_last_prologue_insn = 0;
+	    }
+	  else if (GET_CODE (x) == SYMBOL_REF
 	      && ! strcmp (XSTR (x, 0), current_function_name))
 	    fprintf (file, "+4\n\t%s,%d",
 		     a29k_regstack_size >= 64 ? "const gr121" : "sub gr1,gr1",
