@@ -7846,65 +7846,6 @@ to @var{stream}.  @var{function} is the @code{FUNCTION_DECL} node for
 the function.
 @end defmac
 
-@defmac DBX_OUTPUT_STANDARD_TYPES (@var{syms})
-Define this macro if you need to control the order of output of the
-standard data types at the beginning of compilation.  The argument
-@var{syms} is a @code{tree} which is a chain of all the predefined
-global symbols, including names of data types.
-
-Normally, DBX output starts with definitions of the types for integers
-and characters, followed by all the other predefined types of the
-particular language in no particular order.
-
-On some machines, it is necessary to output different particular types
-first.  To do this, define @code{DBX_OUTPUT_STANDARD_TYPES} to output
-those symbols in the necessary order.  Any predefined types that you
-don't explicitly output will be output afterward in no particular order.
-
-Be careful not to define this macro so that it works only for C@.  There
-are no global variables to access most of the built-in types, because
-another language may have another set of types.  The way to output a
-particular type is to look through @var{syms} to see if you can find it.
-Here is an example:
-
-@smallexample
-@{
-  tree decl;
-  for (decl = syms; decl; decl = TREE_CHAIN (decl))
-    if (!strcmp (IDENTIFIER_POINTER (DECL_NAME (decl)),
-                 "long int"))
-      dbxout_symbol (decl);
-  @dots{}
-@}
-@end smallexample
-
-@noindent
-This does nothing if the expected type does not exist.
-
-See the function @code{init_decl_processing} in @file{c-decl.c} to find
-the names to use for all the built-in C types.
-
-Here is another way of finding a particular type:
-
-@c this is still overfull.  --mew 10feb93
-@smallexample
-@{
-  tree decl;
-  for (decl = syms; decl; decl = TREE_CHAIN (decl))
-    if (TREE_CODE (decl) == TYPE_DECL
-        && (TREE_CODE (TREE_TYPE (decl))
-            == INTEGER_CST)
-        && TYPE_PRECISION (TREE_TYPE (decl)) == 16
-        && TYPE_UNSIGNED (TREE_TYPE (decl)))
-@group
-      /* @r{This must be @code{unsigned short}.}  */
-      dbxout_symbol (decl);
-  @dots{}
-@}
-@end group
-@end smallexample
-@end defmac
-
 @defmac NO_DBX_FUNCTION_END
 Some stabs encapsulation formats (in particular ECOFF), cannot handle the
 @code{.stabs "",N_FUN,,0,0,Lscope-function-1} gdb dbx extension construct.
