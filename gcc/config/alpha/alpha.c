@@ -1505,6 +1505,7 @@ alpha_emit_set_long_const (target, c1, c2)
 
 	itoft	$16,$f11
 	lda	$2,LC0
+	cmplt	$16,0,$1
 	cpyse	$f11,$f31,$f10
 	cpyse	$f31,$f11,$f11
 	s4addq	$1,$2,$1
@@ -1540,6 +1541,7 @@ alpha_emit_floatuns (operands)
 
   emit_insn (gen_rtx_SET (VOIDmode, out, gen_rtx_FLOAT (mode, in)));
   emit_jump_insn (gen_jump (donelab));
+  emit_barrier ();
 
   emit_label (neglab);
 
