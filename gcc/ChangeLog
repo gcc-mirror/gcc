@@ -1,8 +1,7 @@
 Wed Jul 28 13:18:35 1999  Jeffrey A Law  (law@cygnus.com)
 
-	* pa.md (reload_indi, reload_outdi): Scratch register should
-	be a DImode register.
-	(call, call_value): Use "word_mode" instead of "SImode" as needed.
+	* pa.md (call, call_value): Use "word_mode" instead of "SImode" as
+	needed.
 
 Wed Jul 28 11:28:04 1999  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
