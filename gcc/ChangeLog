@@ -1,5 +1,11 @@
 2004-01-11  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_symbolic_constant_p): Don't allow
+	out-of-bounds accesses to string constants.  Simplify mips16
+	case accordingly.
+
+2004-01-11  Richard Sandiford  <rsandifo@redhat.com>
+
 	PR optimization/13469
 	* toplev.c (rest_of_compilation): Call purge_all_dead_edges after
 	reload_cse_regs (-fnon-call-exceptions only).
