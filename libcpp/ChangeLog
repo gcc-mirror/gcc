@@ -1,3 +1,9 @@
+2004-10-27  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 18075
+	* directives.c (do_pragma): Do not defer pragmas which are unknown.
+	(cpp_handle_deferred_pragma): Add cast to silence warning.
+
 2004-10-14  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* errors.c (_cpp_begin_message): Print "error: " for errors.

@@ -1167,37 +1167,41 @@ do_pragma (cpp_reader *pfile)
 	}
     }
 
-  if (p && (p->is_internal || !CPP_OPTION (pfile, defer_pragmas)))
+  if (p)
     {
-      /* Since the handler below doesn't get the line number, that it
-	 might need for diagnostics, make sure it has the right
-	 numbers in place.  */
-      if (pfile->cb.line_change)
-	(*pfile->cb.line_change) (pfile, pragma_token, false);
-      (*p->u.handler) (pfile);
-    }
-  else if (CPP_OPTION (pfile, defer_pragmas))
-    {
-      /* Squirrel away the pragma text.  Pragmas are newline-terminated. */
-      const uchar *line_end;
-      uchar *s;
-      cpp_string body;
-      cpp_token *ptok;
+      if (p->is_internal || !CPP_OPTION (pfile, defer_pragmas))
+	{
+	  /* Since the handler below doesn't get the line number, that it
+	     might need for diagnostics, make sure it has the right
+	     numbers in place.  */
+	  if (pfile->cb.line_change)
+	    (*pfile->cb.line_change) (pfile, pragma_token, false);
+	  (*p->u.handler) (pfile);
+	}
+      else
+	{
+	  /* Squirrel away the pragma text.  Pragmas are
+	     newline-terminated. */
+	  const uchar *line_end;
+	  uchar *s;
+	  cpp_string body;
+	  cpp_token *ptok;
 
-      line_end = ustrchr (line_start, '\n');
+	  line_end = ustrchr (line_start, '\n');
 
-      body.len = (line_end - line_start) + 1;
-      s = _cpp_unaligned_alloc (pfile, body.len + 1);
-      memcpy (s, line_start, body.len);
-      s[body.len] = '\0';
-      body.text = s;
+	  body.len = (line_end - line_start) + 1;
+	  s = _cpp_unaligned_alloc (pfile, body.len + 1);
+	  memcpy (s, line_start, body.len);
+	  s[body.len] = '\0';
+	  body.text = s;
 
-      /* Create a CPP_PRAGMA token.  */
-      ptok = &pfile->directive_result;
-      ptok->src_loc = pragma_token->src_loc;
-      ptok->type = CPP_PRAGMA;
-      ptok->flags = pragma_token->flags | NO_EXPAND;
-      ptok->val.str = body;
+	  /* Create a CPP_PRAGMA token.  */
+	  ptok = &pfile->directive_result;
+	  ptok->src_loc = pragma_token->src_loc;
+	  ptok->type = CPP_PRAGMA;
+	  ptok->flags = pragma_token->flags | NO_EXPAND;
+	  ptok->val.str = body;
+	}
     }
   else if (pfile->cb.def_pragma)
     {
@@ -1428,7 +1432,7 @@ cpp_handle_deferred_pragma (cpp_reader *pfile, const cpp_string *s)
   pfile->cb.line_change = NULL;
   CPP_OPTION (pfile, defer_pragmas) = false;
 
-  run_directive (pfile, T_PRAGMA, s->text, s->len);
+  run_directive (pfile, T_PRAGMA, (const char *)s->text, s->len);
 
   XDELETE (pfile->context);
   pfile->context = saved_context;
