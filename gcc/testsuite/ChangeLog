@@ -1,3 +1,7 @@
+2002-07-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/ppc-spe.c: New.
+
 2002-07-24  Geoffrey Keating  <geoffk@redhat.com>
 
 	* g++.dg/other/ptrmem4.C: New testcase.
