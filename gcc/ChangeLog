@@ -1,3 +1,9 @@
+Tue Feb 16 15:31:39 1999  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* objc/objc-act.c (encode_type): Encode the type instead of
+ 	encoding the mode of the type (patch from Richard Frith-Macdonald
+ 	<richard@brainstorm.co.uk>).
+
 Tue Feb 16 10:53:51 1999  Richard Earnshaw (rearnsha@arm.com)
 
 	* config/arm/arm.md (*zeroextractqi_compare0_scratch): Re-add load
