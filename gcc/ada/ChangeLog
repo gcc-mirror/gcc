@@ -1,3 +1,45 @@
+2004-02-23  Ed Schonberg  <schonberg@gnat.com>
+
+	* exp_ch6.adb (Expand_N_Subprogram_Declaration): Do not create
+	protected operations if original subprogram is flagged as eliminated.
+	(Expand_N_Subprogram_Body): For a protected operation, create
+	discriminals for next operation before checking whether the operation
+	is eliminated.
+
+	* exp_ch9.adb (Expand_N_Protected_Body,
+	Expand_N_Protected_Type_Declaration): Do not generate specs and bodies
+	for internal protected operations if the original subprogram is
+	eliminated.
+
+	* sem_elim.adb (Check_Eliminated): Handle properly protected operations
+	declared in a single protected object.
+
+2004-02-23  Vincent Celier  <celier@gnat.com>
+
+	* prj-attr.adb: Make attribute Builder'Executable an associative array,
+	case insensitive if file names are case insensitive, instead of a
+	standard associative array.
+
+	* prj-attr.adb (Initialize): For 'b' associative arrays, do not set
+	them as case insensitive on platforms where the file names are case
+	sensitive.
+
+	* prj-part.adb (Parse_Single_Project): Make sure, when checking if
+	project file has already been parsed that canonical path are compared.
+
+2004-02-23  Robert Dewar  <dewar@gnat.com>
+
+	* sinput-c.ads: Correct bad unit title in header
+
+	* freeze.adb: Minor reformatting
+
+2004-02-23  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* trans.c (tree_transform, case N_Procedure_Call_Statement): For
+	nonaddressable COMPONENT_REF that is removing padding that we are
+	taking the address of, take the address of the padded record instead
+	if item is variable size.
+
 2004-02-20  Robert Dewar  <dewar@gnat.com>
 
 	* bld.adb, exp_util.adb, gprcmd.adb: Minor reformatting

@@ -3191,6 +3191,34 @@ package body Exp_Ch6 is
          end;
       end if;
 
+      Scop := Scope (Spec_Id);
+
+      --  Add discriminal renamings to protected subprograms.
+      --  Install new discriminals for expansion of the next
+      --  subprogram of this protected type, if any.
+
+      if Is_List_Member (N)
+        and then Present (Parent (List_Containing (N)))
+        and then Nkind (Parent (List_Containing (N))) = N_Protected_Body
+      then
+         Add_Discriminal_Declarations
+           (Declarations (N), Scop, Name_uObject, Loc);
+         Add_Private_Declarations (Declarations (N), Scop, Name_uObject, Loc);
+
+         --  Associate privals and discriminals with the next protected
+         --  operation body to be expanded. These are used to expand
+         --  references to private data objects and discriminants,
+         --  respectively.
+
+         Next_Op := Next_Protected_Operation (N);
+
+         if Present (Next_Op) then
+            Dec := Parent (Base_Type (Scop));
+            Set_Privals (Dec, Next_Op, Loc);
+            Set_Discriminals (Dec);
+         end if;
+      end if;
+
       --  Clear out statement list for stubbed procedure
 
       if Present (Corresponding_Spec (N)) then
@@ -3207,8 +3235,6 @@ package body Exp_Ch6 is
             return;
          end if;
       end if;
-
-      Scop := Scope (Spec_Id);
 
       --  Returns_By_Ref flag is normally set when the subprogram is frozen
       --  but subprograms with no specs are not frozen
@@ -3296,32 +3322,6 @@ package body Exp_Ch6 is
             Analyze (Rais);
             Pop_Scope;
          end;
-      end if;
-
-      --  Add discriminal renamings to protected subprograms.
-      --  Install new discriminals for expansion of the next
-      --  subprogram of this protected type, if any.
-
-      if Is_List_Member (N)
-        and then Present (Parent (List_Containing (N)))
-        and then Nkind (Parent (List_Containing (N))) = N_Protected_Body
-      then
-         Add_Discriminal_Declarations
-           (Declarations (N), Scop, Name_uObject, Loc);
-         Add_Private_Declarations (Declarations (N), Scop, Name_uObject, Loc);
-
-         --  Associate privals and discriminals with the next protected
-         --  operation body to be expanded. These are used to expand
-         --  references to private data objects and discriminants,
-         --  respectively.
-
-         Next_Op := Next_Protected_Operation (N);
-
-         if Present (Next_Op) then
-            Dec := Parent (Base_Type (Scop));
-            Set_Privals (Dec, Next_Op, Loc);
-            Set_Discriminals (Dec);
-         end if;
       end if;
 
       --  If subprogram contains a parameterless recursive call, then we may
@@ -3420,14 +3420,17 @@ package body Exp_Ch6 is
       Prot_Id   : Entity_Id;
 
    begin
-      --  Deal with case of protected subprogram
+      --  Deal with case of protected subprogram. Do not generate
+      --  protected operation if operation is flagged as eliminated.
 
       if Is_List_Member (N)
         and then Present (Parent (List_Containing (N)))
         and then Nkind (Parent (List_Containing (N))) = N_Protected_Body
         and then Is_Protected_Type (Scop)
       then
-         if No (Protected_Body_Subprogram (Subp)) then
+         if No (Protected_Body_Subprogram (Subp))
+           and then not Is_Eliminated (Subp)
+         then
             Prot_Decl :=
               Make_Subprogram_Declaration (Loc,
                 Specification =>

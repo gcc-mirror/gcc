@@ -1479,6 +1479,10 @@ package body Freeze is
          --  might otherwise be frozen in the wrong scope, and a freeze node
          --  on subtype has no effect.
 
+         -----------------
+         -- Check_Itype --
+         -----------------
+
          procedure Check_Itype (Desig : Entity_Id) is
          begin
             if not Is_Frozen (Desig)
@@ -1522,11 +1526,10 @@ package body Freeze is
             then
                Set_First_Entity (Rec, First_Entity (Base_Type (Rec)));
 
-            --  If this is an internal type without a declaration, as for
-            --  a record component, the base type may not yet be frozen,
-            --  and its controller has not been created. Add an explicit
-            --  freeze node for the itype, so it will be frozen after the
-            --  base type.
+            --  If this is an internal type without a declaration, as for a
+            --  record component, the base type may not yet be frozen, and its
+            --  controller has not been created. Add an explicit freeze node
+            --  for the itype, so it will be frozen after the base type.
 
             elsif Is_Itype (Rec)
               and then Has_Delayed_Freeze (Base_Type (Rec))
@@ -1997,7 +2000,6 @@ package body Freeze is
                   --  Loop through formals
 
                   Formal := First_Formal (E);
-
                   while Present (Formal) loop
                      F_Type := Etype (Formal);
                      Freeze_And_Append (F_Type, Loc, Result);

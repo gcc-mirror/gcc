@@ -4885,7 +4885,9 @@ package body Exp_Ch9 is
 
                --  Exclude functions created to analyze defaults.
 
-               if not Is_Eliminated (Defining_Entity (Op_Body)) then
+               if not Is_Eliminated (Defining_Entity (Op_Body))
+                 and then not Is_Eliminated (Corresponding_Spec (Op_Body))
+               then
                   New_Op_Body :=
                     Build_Unprotected_Subprogram_Body (Op_Body, Pid);
 
@@ -5372,14 +5374,17 @@ package body Exp_Ch9 is
       --  subprogram; one to call from outside the object and one to
       --  call from inside. Build a barrier function and an entry
       --  body action procedure specification for each protected entry.
-      --  Initialize the entry body array.
+      --  Initialize the entry body array. If subprogram is flagged as
+      --  eliminated, do not generate any internal operations.
 
       E_Count := 0;
 
       Comp := First (Visible_Declarations (Pdef));
 
       while Present (Comp) loop
-         if Nkind (Comp) = N_Subprogram_Declaration then
+         if Nkind (Comp) = N_Subprogram_Declaration
+           and then not Is_Eliminated (Defining_Entity (Comp))
+         then
             Sub :=
               Make_Subprogram_Declaration (Loc,
                 Specification =>
