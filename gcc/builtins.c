@@ -145,7 +145,6 @@ static bool integer_valued_real_p (tree);
 static tree fold_trunc_transparent_mathfn (tree);
 static bool readonly_data_expr (tree);
 static rtx expand_builtin_fabs (tree, rtx, rtx);
-static rtx expand_builtin_cabs (tree, rtx);
 static rtx expand_builtin_signbit (tree, rtx);
 static tree fold_builtin_cabs (tree, tree);
 static tree fold_builtin_trunc (tree);
@@ -377,7 +376,7 @@ c_readstr (const char *str, enum machine_mode mode)
   unsigned int i, j;
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
-  
+
   c[0] = 0;
   c[1] = 0;
   ch = 1;
@@ -391,7 +390,7 @@ c_readstr (const char *str, enum machine_mode mode)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
       gcc_assert (j <= 2 * HOST_BITS_PER_WIDE_INT);
-      
+
       if (ch)
 	ch = (unsigned char) str[i];
       c[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
@@ -758,7 +757,7 @@ expand_builtin_longjmp (rtx buf_addr, rtx value)
   for (insn = get_last_insn (); insn; insn = PREV_INSN (insn))
     {
       gcc_assert (insn != last);
-      
+
       if (JUMP_P (insn))
 	{
 	  REG_NOTES (insn) = alloc_EXPR_LIST (REG_NON_LOCAL_GOTO, const0_rtx,
@@ -1358,7 +1357,7 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
 	if ((mode = apply_result_mode[regno]) != VOIDmode)
 	  {
 	    gcc_assert (!valreg); /* HAVE_untyped_call required.  */
-	    
+
 	    valreg = gen_rtx_REG (mode, regno);
 	  }
 
@@ -2030,7 +2029,7 @@ expand_builtin_mathfn_3 (tree exp, rtx target, rtx subtarget)
       if (builtin_optab == sincos_optab)
 	{
 	  int result;
-	  
+
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
 	    case BUILT_IN_SIN:
@@ -4620,7 +4619,7 @@ expand_builtin_unop (enum machine_mode target_mode, tree arglist, rtx target,
   target = expand_unop (TYPE_MODE (TREE_TYPE (TREE_VALUE (arglist))),
 			op_optab, op0, target, 1);
   gcc_assert (target);
-  
+
   return convert_to_mode (target_mode, target, 0);
 }
 
@@ -4895,30 +4894,6 @@ expand_builtin_fabs (tree arglist, rtx target, rtx subtarget)
   mode = TYPE_MODE (TREE_TYPE (arg));
   op0 = expand_expr (arg, subtarget, VOIDmode, 0);
   return expand_abs (mode, op0, target, 0, safe_from_p (target, arg, 1));
-}
-
-/* Expand a call to cabs, cabsf or cabsl with arguments ARGLIST.
-   Return 0 if a normal call should be emitted rather than expanding
-   the function inline.  If convenient, the result should be placed
-   in target.  */
-
-static rtx
-expand_builtin_cabs (tree arglist, rtx target)
-{
-  enum machine_mode mode;
-  tree arg;
-  rtx op0;
-
-  if (arglist == 0 || TREE_CHAIN (arglist))
-    return 0;
-  arg = TREE_VALUE (arglist);
-  if (TREE_CODE (TREE_TYPE (arg)) != COMPLEX_TYPE
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != REAL_TYPE)
-    return 0;
-
-  mode = TYPE_MODE (TREE_TYPE (arg));
-  op0 = expand_expr (arg, NULL_RTX, VOIDmode, 0);
-  return expand_complex_abs (mode, op0, target, 0);
 }
 
 /* Create a new constant string literal and return a char* pointer to it.
@@ -5550,15 +5525,11 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
         return target;
       break;
 
+      /* Just do a normal library call if we were unable to fold
+	 the values.  */
     case BUILT_IN_CABS:
     case BUILT_IN_CABSF:
     case BUILT_IN_CABSL:
-      if (flag_unsafe_math_optimizations)
-	{
-	  target = expand_builtin_cabs (arglist, target);
-	  if (target)
-	    return target;
-	}
       break;
 
     case BUILT_IN_EXP:
@@ -6518,7 +6489,9 @@ fold_builtin_cabs (tree arglist, tree type)
       && real_zerop (TREE_OPERAND (arg, 1)))
     return fold (build1 (ABS_EXPR, type, TREE_OPERAND (arg, 0)));
 
-  if (flag_unsafe_math_optimizations)
+  /* Don't do this when optimizing for size.  */
+  if (flag_unsafe_math_optimizations
+      && optimize && !optimize_size)
     {
       tree sqrtfn = mathfn_built_in (type, BUILT_IN_SQRT);
 

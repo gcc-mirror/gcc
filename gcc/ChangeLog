@@ -1,3 +1,19 @@
+2004-09-02  Eric Christopher  <echristo@redhat.com>
+
+	* builtins.c (expand_builtin_cabs): Delete.
+	(expand_builtin): If unable to fold the values do a normal
+	library call for builtin_cab*.
+	(fold_builtin_cabs): Depend on optimize and optimize_size.
+	* optabs.c (expand_cmplxdiv_straight): Delete.
+	(expand_cmplxdiv_wide): Ditto.
+	(expand_vector_binop): Ditto.
+	(expand_vector_unop): Ditto.
+	(expand_complex_abs): Delete.
+	(expand_binop): Remove calls to above functions.
+	Remove open coding of complex arithmetic.
+	(expand_unop): Ditto.
+	* optabs.h: Remove prototypes.
+
 2004-09-02  Ziemowit Laski  <zlaski@apple.com>
 
 	* c-decl.c (store_parm_decls_newstyle): Make externally visible.
@@ -133,7 +149,7 @@
 	(struct algorithm): Change type of cost field to be mult_cost.
 	(synth_mult): Change type of cost_limit argument to be a
 	pointer to a mult_cost.  Update all cost comparisons to use the
-	new mult_cost infrastructure.  For alg_add_factor and 
+	new mult_cost infrastructure.  For alg_add_factor and
 	alg_sub_factor operations, latency is lower than the rtx_cost.
 	(choose_mult_variant):  Update calls to synth_mult.  Perform
 	cost comparisons using the new mult_cost infrastructure.
@@ -343,7 +359,7 @@
 	* config/arm/arm.c (arm_cxx_export_class_data): New function.
 	(TARGET_CXX_EXPORT_CLASS_DATA): Use it.
 	* doc/tm.texi (TARGET_CXX_EXPORT_CLASS_DATA): Document it.
-	
+
 2004-08-31  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* config/sh/sh.c (output_branch): Check the insn length possibly
@@ -384,7 +400,7 @@
 	(TARGET_CXX_KEY_METHOD_MAY_BE_INLINE): New macro.
 	* config/arm/bpabi.h: Use __THUMB_INTERWORK__ instead of
 	__THUMB_INTERWORK.
-	
+
 2004-08-31  Denis Chertykov  <denisc@overta.ru>
 
 	PR target/15417
@@ -401,7 +417,7 @@
 
 	* config/darwin.c (darwin_make_decl_one_only): Allocate section
 	names once per compilation, instead of once per symbol.
-	
+
 2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in (build_subdir): New substitution.
@@ -420,7 +436,7 @@
 	* fixinc.in: New, from fixinc/fixincl.sh.
 
 	* fixinc/*: Removed.
-	
+
 2004-08-31  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* attribs.c (strip_attrs): Remove.
@@ -450,12 +466,12 @@
 
 2004-08-30  Andrew Pinski  <apinski@apple.com>
 
-	* hard-reg-set.h: 
+	* hard-reg-set.h:
 	s/HOST_BITS_PER_WIDES_FAST_INT/HOST_BITS_PER_WIDEST_FAST_INT.
 	* ChangeLog: Fix previous ChangeLog entry.
 
 	PR rtl-opt/13987
-	* config.host (use_long_long_for_widest_fast_int): New, default is 
+	* config.host (use_long_long_for_widest_fast_int): New, default is
 	off.
 	(ia64-*-hpux*): Enable use_long_long_for_widest_fast_int.
 	* configure.ac: If use_long_long_for_widest_fast_int, then
@@ -468,7 +484,7 @@
 	* sbitmap.h (SBITMAP_ELT_BITS): Define based on
 	HOST_BITS_PER_WIDEST_FAST_INT.
 	(SBITMAP_ELT_TYPE): Define based on HOST_WIDEST_FAST_INT.
-	* hard-reg-set.h (HARD_REG_ELT_TYPE): Define based on 
+	* hard-reg-set.h (HARD_REG_ELT_TYPE): Define based on
 	HOST_WIDEST_FAST_INT
 	instead of HOST_WIDE_INT.
 	(HARD_REG_SET_LONGS): Likewise.
@@ -515,7 +531,7 @@
 
 2004-08-30  Richard Henderson  <rth@redhat.com>
 
-	* c-typeck.c (build_unary_op): Don't expand ADDR_EXPR of a 
+	* c-typeck.c (build_unary_op): Don't expand ADDR_EXPR of a
 	COMPONENT_REF to pointer arithmetic.
 	* varasm.c (initializer_constant_valid_p): Allow "&(*c).f", for
 	constant "c" as a valid constant initializer.  Allow narrowing of
@@ -769,7 +785,7 @@
 
 2004-08-29  Chao-ying Fu  <fu@mips.com>
 	    James E Wilson  <wilson@specifixinc.com>
-	
+
 	* config/mips/mips-modes.def (V2SF, CCV2, CCV4): New modes. Give CCV2
 	8 byte size and alignment.  Give CCV4 16 byte size and alignment.
 	* config/mips/mips-ps-3d.md: New file.
@@ -811,7 +827,7 @@
 	(enum mips_builtins): New for MIPS builtin functions.
 	(enum mips_function_type): New for the types of MIPS builtin functions.
 	(enum mips_cmp_choice): New for the MIPS comparison builtin functions.
-	* config/mips/mips.md: New constants for paired single and MIPS-3D 
+	* config/mips/mips.md: New constants for paired single and MIPS-3D
 	instructions.  Include the new mips-ps-3d.md file.
 	(addv2sf3, subv2sf3, mulv2sf3, absv2sf2, negv2sf2, movv2sf,
 	movv2sf_hardfloat_64bit): New named patterns.
@@ -976,7 +992,7 @@
 
 2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
 
-	* config/rs6000/rs6000.h (HARD_REGNO_CALL_PART_CLOBBERED): Added 
+	* config/rs6000/rs6000.h (HARD_REGNO_CALL_PART_CLOBBERED): Added
 	TFmode as additional register mode cloberred by call.
 
 2004-08-26  Fariborz Jahanian  <fjahanian@apple.com>
@@ -997,7 +1013,7 @@
 	target mode.
 	* config/rs6000/rs6000.md (movdi_update): Changed to movdi_<mode>_update,
 	to generate two versions.
- 
+
 2004-08-26  Daniel Berlin  <dberlin@dberlin.org>
 
 	* Makefile.in (lambda-code.o): New.
@@ -1016,11 +1032,11 @@
 	* lambda-mat.c: Include tree.h
 
 2004-08-26  Daniel Berlin <dberlin@dberlin.org>
-	    Sebastian Pop  <pop@cri.ensmp.fr>	
-	
-	* tree-data-ref.h: Include lambda.h	
+	    Sebastian Pop  <pop@cri.ensmp.fr>
+
+	* tree-data-ref.h: Include lambda.h
 	(free_dependence_relation): Declared here.
-	(free_dependence_relations): Ditto.	
+	(free_dependence_relations): Ditto.
 	(free_data_refs): Ditto.
 	* tree-data-ref.c (free_dependence_relation): New function.
 	(free_dependence_relations): Ditto.
@@ -1038,7 +1054,7 @@
 	and classic_dist vectors.
 	(analyze_all_data_dependences): Adjusted for using the new interface of
 	compute_data_dependences_for_loop.  Remove the statistics dump.
-	
+
 2004-08-26  Bob Wilson  <bob.wilson@acm.org>
 
 	* config/xtensa/xtensa.c (xtensa_ld_opcodes, xtensa_st_opcodes): Delete.
@@ -1064,7 +1080,7 @@
 	if the constant satisfies add_operand.
 
 2004-08-25  Richard Henderson  <rth@redhat.com>
- 
+
 	PR debug/10695
 	* config/alpha/alpha.c (emit_frame_store_1, emit_frame_store): New.
 	(alpha_expand_prologue): Handle >32-bit frames.  Generate proper
@@ -1134,7 +1150,7 @@
 	(FOR_EACH_SSA_USE_OPERAND): New.  Iterate over operands as uses.
 	(FOR_EACH_SSA_DEF_OPERAND): New.  Iterate over operands as defs.
 	(FOR_EACH_SSA_MAYDEF_OPERAND): New.  Iterate over V_MAY_DEFs.
-	* tree-ssa-operands.c (NULL_DEF_OPERAND_P, NULL_USE_OPERAND_P): New. 
+	* tree-ssa-operands.c (NULL_DEF_OPERAND_P, NULL_USE_OPERAND_P): New.
 	Empty operand pointers.
 	* tree-flow-inline.h (op_iter_done): New.  Return true if finished.
 	(op_iter_next_use): New.  Return next use_operand_p.
@@ -1145,10 +1161,10 @@
 	(op_iter_init_def): New.  Initialize structure and get the first def.
 	(op_iter_init_tree): New.  Initialize structure and get the first tree.
 	(op_iter_next_maydef): New.  Return next V_MAY_DEF operands.
-	(op_iter_init_maydef): New.  Initialize structure and get the first 
+	(op_iter_init_maydef): New.  Initialize structure and get the first
 	V_MAY_DEF operands.
 	* tree-cfg.c (tree_duplicate_bb): Use new operand iterator.
-	* tree-dfa.c (compute_immediate_uses_for_stmt, 
+	* tree-dfa.c (compute_immediate_uses_for_stmt,
 	redirect_immediate_uses): Use new operand iterator.
 	(v_may_defs_disappeared_p, v_must_defs_disappeared_p): Delete.
 	(mark_new_vars_to_rename): Use new operand iterator.  Count virtual
@@ -1159,12 +1175,12 @@
 	rewrite_trees): Use new operand iterator.
 	* tree-pretty-print.c (dump_vops): Use new operand iterator.
 	* tree-sra.c (mark_all_v_defs): Use new operand iterator.
-	* tree-ssa-alias.c (compute_points_to_and_addr_escape, 
+	* tree-ssa-alias.c (compute_points_to_and_addr_escape,
 	dump_points_to_info): Use new operand iterator.
-	* tree-ssa-ccp.c (cp_lattice_meet, visit_stmt, initialize, 
-	replace_uses_in, replace_vuse_in, likely_value, set_rhs): Use new 
+	* tree-ssa-ccp.c (cp_lattice_meet, visit_stmt, initialize,
+	replace_uses_in, replace_vuse_in, likely_value, set_rhs): Use new
 	operand iterator.
-	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary, 
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary,
 	propagate_necessity): Use new operand iterator.
 	* tree-ssa-dom.c (cprop_into_stmt, optimize_stmt): Use operand iterator.
 	(register_definitions_for_stmt): Use new operand iterator.  Take stmt as
@@ -1173,7 +1189,7 @@
 	build_tree_conflict_graph): Use new operand iterator.
 	* tree-ssa-loop-im.c (determine_max_movement, single_reachable_address,
 	rewrite_mem_refs): Use new operand iterator.
-	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt, 
+	* tree-ssa-loop-manip.c (find_uses_to_rename_stmt,
 	check_loop_closed_ssa_use): Use new operand iterator.
 	* tree-ssa.c (verify_ssa, replace_immediate_uses): Use operand iterator.
 	* tree-ssanames.c (release_defs): Use new operand iterator.
@@ -1203,19 +1219,19 @@
 	to comments at start of function.
 	* cfgbuild.c (make_edges):  Add more details to hot/cold partitioning
 	comment.
-	* cfgcleanup.c (try_simplify_condjump, try_forward_edges, 
-	merge_blocks_move_predecessor_nojumps, 
-	merge_blocks_move_successor_nojumps, merge_blocks_move, 
+	* cfgcleanup.c (try_simplify_condjump, try_forward_edges,
+	merge_blocks_move_predecessor_nojumps,
+	merge_blocks_move_successor_nojumps, merge_blocks_move,
 	try_crossjump_to_edge, try_crossjump_bb): Likewise.
 	* cfglayout.c (fixup_reorder_chain): Likewise.
 	* cfgrtl.c (rtl_can_merge_blocks, try_redirect_by_replacing_jump,
 	cfg_layout_can_merge_blocks_p):  Likewise.
 	* ifcvt.c (find_if_case_1, find_if_case_2): Likewise.
-	* passes.c (rest_of_compilation): Update comments for calling 
+	* passes.c (rest_of_compilation): Update comments for calling
 	optimization that partitions hot/cold basic blocks.
-	* doc/invoke.texi:  Update documentation of 
+	* doc/invoke.texi:  Update documentation of
 	freorder-blocks-and-partition flag.
-	
+
 2004-08-25  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md (reg): Renamed mode attribute from ccreg.
@@ -1246,7 +1262,7 @@
 	PR libstdc++/17005 (fix for HP-UX 11.11)
 	* config.gcc (hppa*-*-*): Move MASK_BIG_SWITCH to target_cpu_default2.
 	(hppa*-*-hpux*): Consolidate hppa1.0-*-* code.  Rework handling of
-	tm_file including pa-hpux1010.h or pa-hpux1111.h when appropriate.  
+	tm_file including pa-hpux1010.h or pa-hpux1111.h when appropriate.
 	* config/pa/pa-hpux1010.h, config/pa/pa-hpux1111.h: New files.
 	* config/pa/pa-hpux.h (TARGET_HPUX): Define.
 	(LINK_SPEC): Handle march=1.0 option.
@@ -1377,7 +1393,7 @@
 	Likewise.
 	* config/xtensa/xtensa.c (xtensa_va_start,
 	xtensa_gimplify_va_arg_expr): Likewise.
-	
+
 	* objc/objc-act.c (build_objc_string_object,
 	build_objc_symtab_template, init_def_list, init_objc_symtab,
 	init_module_descriptor, generate_static_references,
