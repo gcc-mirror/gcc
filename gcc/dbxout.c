@@ -93,6 +93,17 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "xcoffout.h"
 #endif
 
+extern int flag_debug_only_used_symbols;
+
+#undef DBXOUT_DECR_NESTING
+#define DBXOUT_DECR_NESTING \
+  if (--debug_nesting == 0 && symbol_queue_index > 0) \
+    debug_flush_symbol_queue ()
+
+#undef DBXOUT_DECR_NESTING_AND_RETURN
+#define DBXOUT_DECR_NESTING_AND_RETURN(x) \
+  do {--debug_nesting; return (x);} while (0)
+
 #ifndef ASM_STABS_OP
 #define ASM_STABS_OP "\t.stabs\t"
 #endif
@@ -505,9 +516,6 @@ dbxout_init (input_file_name)
 
 #ifdef DBX_OUTPUT_STANDARD_TYPES
   DBX_OUTPUT_STANDARD_TYPES (syms);
-#else
-  dbxout_symbol (TYPE_NAME (integer_type_node), 0);
-  dbxout_symbol (TYPE_NAME (char_type_node), 0);
 #endif
 
   /* Get all permanent types that have typedef names,
@@ -705,7 +713,12 @@ dbxout_global_decl (decl)
   if (TREE_CODE (decl) == VAR_DECL
       && ! DECL_EXTERNAL (decl)
       && DECL_RTL_SET_P (decl))	/* Not necessary?  */
-    dbxout_symbol (decl, 0);
+    {
+      int saved_tree_used = TREE_USED (decl);
+      TREE_USED (decl) = 1;
+      dbxout_symbol (decl, 0);
+      TREE_USED (decl) = saved_tree_used;
+    }
 }
 
 /* At the end of compilation, finish writing the symbol table.
@@ -719,6 +732,8 @@ dbxout_finish (filename)
 #ifdef DBX_OUTPUT_MAIN_SOURCE_FILE_END
   DBX_OUTPUT_MAIN_SOURCE_FILE_END (asmfile, filename);
 #endif /* DBX_OUTPUT_MAIN_SOURCE_FILE_END */
+
+  debug_free_queue ();
 }
 
 /* Output floating point type values used by the 'R' stab letter.
@@ -1125,6 +1140,7 @@ dbxout_range_type (type)
     }
 }
 
+
 /* Output a reference to a type.  If the type has not yet been
    described in the dbx output, output its definition now.
    For a type already defined, just refer to its definition
@@ -1200,6 +1216,21 @@ dbxout_type (type, full)
 #endif
     }
 
+  if (flag_debug_only_used_symbols)
+    {
+      if ((TREE_CODE (type) == RECORD_TYPE
+	   || TREE_CODE (type) == UNION_TYPE
+	   || TREE_CODE (type) == QUAL_UNION_TYPE
+	   || TREE_CODE (type) == ENUMERAL_TYPE)
+	  && TYPE_STUB_DECL (type)
+	  && TREE_CODE_CLASS (TREE_CODE (TYPE_STUB_DECL (type))) == 'd'
+	  && ! DECL_IGNORED_P (TYPE_STUB_DECL (type)))
+	debug_queue_symbol (TYPE_STUB_DECL (type));
+      else if (TYPE_NAME (type)
+	       && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL)
+	debug_queue_symbol (TYPE_NAME (type));
+    }
+  
   /* Output the number of this type, to refer to it.  */
   dbxout_type_index (type);
 
@@ -1283,6 +1314,18 @@ dbxout_type (type, full)
     }
   else if (main_variant != TYPE_MAIN_VARIANT (type))
     {
+      if (flag_debug_only_used_symbols)
+        {
+          tree orig_type = DECL_ORIGINAL_TYPE (TYPE_NAME (type));
+
+          if ((TREE_CODE (orig_type) == RECORD_TYPE  
+               || TREE_CODE (orig_type) == UNION_TYPE
+               || TREE_CODE (orig_type) == QUAL_UNION_TYPE
+               || TREE_CODE (orig_type) == ENUMERAL_TYPE)
+              && TYPE_STUB_DECL (orig_type)
+              && ! DECL_IGNORED_P (TYPE_STUB_DECL (orig_type)))
+            debug_queue_symbol (TYPE_STUB_DECL (orig_type));
+        }
       /* 'type' is a typedef; output the type it refers to.  */
       dbxout_type (DECL_ORIGINAL_TYPE (TYPE_NAME (type)), 0);
       return;
@@ -1992,6 +2035,9 @@ dbxout_symbol (decl, local)
   tree context = NULL_TREE;
   int result = 0;
 
+  /* "Intercept" dbxout_symbol() calls like we do all debug_hooks.  */
+  ++debug_nesting;
+
   /* Cast avoids warning in old compilers.  */
   current_sym_code = (STAB_CODE_TYPE) 0;
   current_sym_value = 0;
@@ -2001,7 +2047,62 @@ dbxout_symbol (decl, local)
 
   if ((DECL_NAME (decl) == 0 && TREE_CODE (decl) != TYPE_DECL)
       || DECL_IGNORED_P (decl))
-    return 0;
+    DBXOUT_DECR_NESTING_AND_RETURN (0);
+
+  /* If we are to generate only the symbols actualy used then such
+     symbol nodees are flagged with TREE_USED.  Ignore any that
+     aren't flaged as TREE_USED.  */
+    
+  if (flag_debug_only_used_symbols)
+    {
+      tree t;
+
+      if (!TREE_USED (decl)
+          && (TREE_CODE (decl) != VAR_DECL || !DECL_INITIAL (decl)))
+        DBXOUT_DECR_NESTING_AND_RETURN (0);
+
+      /* We now have a used symbol.  We need to generate the info for
+         the symbol's type in addition to the symbol itself.  These
+         type symbols are queued to be generated after were done with
+         the symbol itself (done because the symbol's info is generated
+         with fprintf's, etc. as it determines what's needed).
+
+         Note, because the TREE_TYPE(type) might be something like a
+         pointer to a named type we need to look for the first name
+         we see following the TREE_TYPE chain.  */
+
+      t = type;    
+      while (POINTER_TYPE_P (t))
+        t = TREE_TYPE (t);
+
+      /* RECORD_TYPE, UNION_TYPE, QUAL_UNION_TYPE, and ENUMERAL_TYPE
+         need special treatment.  The TYPE_STUB_DECL field in these
+         types generally represents the tag name type we want to
+         output.  In addition there  could be a typedef type with
+         a different name.  In that case we also want to output
+         that.  */
+
+      if ((TREE_CODE (t) == RECORD_TYPE
+           || TREE_CODE (t) == UNION_TYPE
+           || TREE_CODE (t) == QUAL_UNION_TYPE
+           || TREE_CODE (t) == ENUMERAL_TYPE)
+          && TYPE_STUB_DECL (t)
+          && TYPE_STUB_DECL (t) != decl
+          && TREE_CODE_CLASS (TREE_CODE (TYPE_STUB_DECL (t))) == 'd'
+          && ! DECL_IGNORED_P (TYPE_STUB_DECL (t)))
+        {
+          debug_queue_symbol (TYPE_STUB_DECL (t));
+          if (TYPE_NAME (t)
+              && TYPE_NAME (t) != TYPE_STUB_DECL (t)
+              && TYPE_NAME (t) != decl
+              && TREE_CODE_CLASS (TREE_CODE (TYPE_NAME (t))) == 'd')
+            debug_queue_symbol (TYPE_NAME (t));
+        }
+      else if (TYPE_NAME (t)
+	       && TYPE_NAME (t) != decl
+	       && TREE_CODE_CLASS (TREE_CODE (TYPE_NAME (t))) == 'd')
+        debug_queue_symbol (TYPE_NAME (t));
+    }
 
   dbxout_prepare_symbol (decl);
 
@@ -2019,7 +2120,7 @@ dbxout_symbol (decl, local)
 
     case FUNCTION_DECL:
       if (DECL_RTL (decl) == 0)
-	return 0;
+	DBXOUT_DECR_NESTING_AND_RETURN (0);
       if (DECL_EXTERNAL (decl))
 	break;
       /* Don't mention a nested function under its parent.  */
@@ -2056,22 +2157,10 @@ dbxout_symbol (decl, local)
       break;
 
     case TYPE_DECL:
-#if 0
-      /* This seems all wrong.  Outputting most kinds of types gives no name
-	 at all.  A true definition gives no name; a cross-ref for a
-	 structure can give the tag name, but not a type name.
-	 It seems that no typedef name is defined by outputting a type.  */
-
-      /* If this typedef name was defined by outputting the type,
-	 don't duplicate it.  */
-      if (typevec[TYPE_SYMTAB_ADDRESS (type)].status == TYPE_DEFINED
-	  && TYPE_NAME (TREE_TYPE (decl)) == decl)
-	return 0;
-#endif
       /* Don't output the same typedef twice.
          And don't output what language-specific stuff doesn't want output.  */
       if (TREE_ASM_WRITTEN (decl) || TYPE_DECL_SUPPRESS_DEBUG (decl))
-	return 0;
+	DBXOUT_DECR_NESTING_AND_RETURN (0);
 
       FORCE_TEXT;
       result = 1;
@@ -2097,6 +2186,8 @@ dbxout_symbol (decl, local)
 		/* Distinguish the implicit typedefs of C++
 		   from explicit ones that might be found in C.  */
 		&& DECL_ARTIFICIAL (decl)
+                /* Do not generate a tag for incomplete records.  */
+                && COMPLETE_TYPE_P (type)
 		/* Do not generate a tag for records of variable size,
 		   since this type can not be properly described in the
 		   DBX format, and it confuses some tools such as objdump.  */
@@ -2218,7 +2309,7 @@ dbxout_symbol (decl, local)
       /* Named return value, treat like a VAR_DECL.  */
     case VAR_DECL:
       if (! DECL_RTL_SET_P (decl))
-	return 0;
+	DBXOUT_DECR_NESTING_AND_RETURN (0);
       /* Don't mention a variable that is external.
 	 Let the file that defines it describe it.  */
       if (DECL_EXTERNAL (decl))
@@ -2245,6 +2336,7 @@ dbxout_symbol (decl, local)
 		  fprintf (asmfile, "%s\"%s:c=i" HOST_WIDE_INT_PRINT_DEC
 			   "\",0x%x,0,0,0\n",
 			   ASM_STABS_OP, name, ival, N_LSYM);
+		  DBXOUT_DECR_NESTING;
 		  return 1;
 		}
 	      else if (TREE_CODE (TREE_TYPE (decl)) == REAL_TYPE)
@@ -2268,6 +2360,7 @@ dbxout_symbol (decl, local)
     default:
       break;
     }
+  DBXOUT_DECR_NESTING;
   return result;
 }
 
@@ -2604,6 +2697,8 @@ void
 dbxout_parms (parms)
      tree parms;
 {
+  ++debug_nesting;
+
   for (; parms; parms = TREE_CHAIN (parms))
     if (DECL_NAME (parms) && TREE_TYPE (parms) != error_mark_node)
       {
@@ -2861,6 +2956,7 @@ dbxout_parms (parms)
 	    dbxout_finish_symbol (parms);
 	  }
       }
+  DBXOUT_DECR_NESTING;
 }
 
 /* Output definitions for the places where parms live during the function,
@@ -2878,6 +2974,8 @@ void
 dbxout_reg_parms (parms)
      tree parms;
 {
+  ++debug_nesting;
+
   for (; parms; parms = TREE_CHAIN (parms))
     if (DECL_NAME (parms) && PARM_PASSED_IN_MEMORY (parms))
       {
@@ -2898,6 +2996,7 @@ dbxout_reg_parms (parms)
 	  dbxout_symbol_location (parms, TREE_TYPE (parms),
 				  0, DECL_RTL (parms));
       }
+  DBXOUT_DECR_NESTING;
 }
 
 /* Given a chain of ..._TYPE nodes (as come in a parameter list),
@@ -3035,7 +3134,19 @@ static void
 dbxout_begin_function (decl)
      tree decl;
 {
-  dbxout_symbol (decl, 0);
+  int saved_tree_used1 = TREE_USED (decl);
+  TREE_USED (decl) = 1;
+  if (DECL_NAME (DECL_RESULT (decl)) != 0)
+    {
+      int saved_tree_used2 = TREE_USED (DECL_RESULT (decl));       
+      TREE_USED (DECL_RESULT (decl)) = 1;
+      dbxout_symbol (decl, 0);
+      TREE_USED (DECL_RESULT (decl)) = saved_tree_used2;
+    }
+  else
+    dbxout_symbol (decl, 0);
+  TREE_USED (decl) = saved_tree_used1;
+
   dbxout_parms (DECL_ARGUMENTS (decl));
   if (DECL_NAME (DECL_RESULT (decl)) != 0)
     dbxout_symbol (DECL_RESULT (decl), 1);

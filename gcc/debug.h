@@ -146,4 +146,10 @@ extern void dwarf2out_frame_finish	PARAMS ((void));
    translation unit.  */
 extern int dwarf2out_do_frame		PARAMS ((void));
 
+extern void debug_flush_symbol_queue    PARAMS ((void));
+extern void debug_queue_symbol          PARAMS ((tree));
+extern void debug_free_queue            PARAMS ((void));
+extern int debug_nesting;
+extern int symbol_queue_index;
+
 #endif /* !GCC_DEBUG_H  */
