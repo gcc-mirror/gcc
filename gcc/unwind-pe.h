@@ -40,12 +40,13 @@
 #define DW_EH_PE_textrel        0x20
 #define DW_EH_PE_datarel        0x30
 #define DW_EH_PE_funcrel        0x40
+#define DW_EH_PE_aligned        0x50
 
 #define DW_EH_PE_indirect	0x80
 
 
 /* Given an encoding, return the number of bytes the format occupies.
-   This is only defined for fixed-size encodings, and so does not 
+   This is only defined for fixed-size encodings, and so does not
    include leb128.  */
 
 static unsigned int
@@ -69,7 +70,7 @@ size_of_encoded_value (unsigned char encoding)
 }
 
 /* Given an encoding and an _Unwind_Context, return the base to which
-   the encoding is relative.  This base may then be passed to 
+   the encoding is relative.  This base may then be passed to
    read_encoded_value_with_base for use when the _Unwind_Context is
    not available.  */
 
@@ -83,6 +84,7 @@ base_of_encoded_value (unsigned char encoding, struct _Unwind_Context *context)
     {
     case DW_EH_PE_absptr:
     case DW_EH_PE_pcrel:
+    case DW_EH_PE_aligned:
       return 0;
 
     case DW_EH_PE_textrel:
@@ -117,83 +119,94 @@ read_encoded_value_with_base (unsigned char encoding, _Unwind_Ptr base,
   union unaligned *u = (union unaligned *) p;
   _Unwind_Ptr result;
 
-  switch (encoding & 0x0f)
+  if (encoding == DW_EH_PE_aligned)
     {
-    case DW_EH_PE_absptr:
-      result = (_Unwind_Ptr) u->ptr;
-      p += sizeof (void *);
-      break;
-
-    case DW_EH_PE_uleb128:
-      {
-	unsigned int shift = 0;
-	unsigned char byte;
-
-	result = 0;
-	do
-	  {
-	    byte = *p++;
-	    result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
-	    shift += 7;
-	  }
-	while (byte & 0x80);
-      }
-      break;
-
-    case DW_EH_PE_sleb128:
-      {
-	unsigned int shift = 0;
-	unsigned char byte;
-
-	result = 0;
-	do
-	  {
-	    byte = *p++;
-	    result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
-	    shift += 7;
-	  }
-	while (byte & 0x80);
-
-	if (shift < 8 * sizeof(result) && (byte & 0x40) != 0)
-	  result |= -(1L << shift);
-      }
-      break;
-
-    case DW_EH_PE_udata2:
-      result = u->u2;
-      p += 2;
-      break;
-    case DW_EH_PE_udata4:
-      result = u->u4;
-      p += 4;
-      break;
-    case DW_EH_PE_udata8:
-      result = u->u8;
-      p += 8;
-      break;
-
-    case DW_EH_PE_sdata2:
-      result = u->s2;
-      p += 2;
-      break;
-    case DW_EH_PE_sdata4:
-      result = u->s4;
-      p += 4;
-      break;
-    case DW_EH_PE_sdata8:
-      result = u->s8;
-      p += 8;
-      break;
-
-    default:
-      abort ();
+      _Unwind_Ptr a = (_Unwind_Ptr)p;
+      a = (a + sizeof (void *) - 1) & - sizeof(void *);
+      result = *(_Unwind_Ptr *) a;
+      p = (const unsigned char *)(a + sizeof (void *));
     }
-
-  if (result != 0)
+  else
     {
-      result += ((encoding & 0x70) == DW_EH_PE_pcrel ? (_Unwind_Ptr)u : base);
-      if (encoding & DW_EH_PE_indirect)
-	result = *(_Unwind_Ptr *)result;
+      switch (encoding & 0x0f)
+	{
+	case DW_EH_PE_absptr:
+	  result = (_Unwind_Ptr) u->ptr;
+	  p += sizeof (void *);
+	  break;
+
+	case DW_EH_PE_uleb128:
+	  {
+	    unsigned int shift = 0;
+	    unsigned char byte;
+
+	    result = 0;
+	    do
+	      {
+		byte = *p++;
+		result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
+		shift += 7;
+	      }
+	    while (byte & 0x80);
+	  }
+	  break;
+
+	case DW_EH_PE_sleb128:
+	  {
+	    unsigned int shift = 0;
+	    unsigned char byte;
+
+	    result = 0;
+	    do
+	      {
+		byte = *p++;
+		result |= (_Unwind_Ptr)(byte & 0x7f) << shift;
+		shift += 7;
+	      }
+	    while (byte & 0x80);
+
+	    if (shift < 8 * sizeof(result) && (byte & 0x40) != 0)
+	      result |= -(1L << shift);
+	  }
+	  break;
+
+	case DW_EH_PE_udata2:
+	  result = u->u2;
+	  p += 2;
+	  break;
+	case DW_EH_PE_udata4:
+	  result = u->u4;
+	  p += 4;
+	  break;
+	case DW_EH_PE_udata8:
+	  result = u->u8;
+	  p += 8;
+	  break;
+
+	case DW_EH_PE_sdata2:
+	  result = u->s2;
+	  p += 2;
+	  break;
+	case DW_EH_PE_sdata4:
+	  result = u->s4;
+	  p += 4;
+	  break;
+	case DW_EH_PE_sdata8:
+	  result = u->s8;
+	  p += 8;
+	  break;
+
+	default:
+	  abort ();
+	}
+
+      if (result != 0)
+	{
+	  result += ((encoding & 0x70) == DW_EH_PE_pcrel
+		     ? (_Unwind_Ptr)u : base);
+	  if (encoding & DW_EH_PE_indirect)
+	    result = *(_Unwind_Ptr *)result;
+	}
     }
 
   *val = result;
@@ -207,7 +220,7 @@ static inline const unsigned char *
 read_encoded_value (struct _Unwind_Context *context, unsigned char encoding,
 		    const unsigned char *p, _Unwind_Ptr *val)
 {
-  return read_encoded_value_with_base (encoding, 
+  return read_encoded_value_with_base (encoding,
 		base_of_encoded_value (encoding, context),
 		p, val);
 }
