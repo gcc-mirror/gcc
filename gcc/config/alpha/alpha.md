@@ -955,7 +955,7 @@
   [(set (match_operand:DI 0 "register_operand" "=f")
 	(fix:DI (match_operand:DF 1 "reg_or_fp0_operand" "fG")))]
   "TARGET_FP"
-  "cvttq %R1,%0"
+  "cvttqc %R1,%0"
   [(set_attr "type" "fpop")])
 
 (define_insn "fix_truncsfdi2"
@@ -963,7 +963,7 @@
 	(fix:DI (float_extend:DF
 		 (match_operand:SF 1 "reg_or_fp0_operand" "fG"))))]
   "TARGET_FP"
-  "cvttq %R1,%0"
+  "cvttqc %R1,%0"
   [(set_attr "type" "fpop")])
 
 (define_insn "floatdisf2"
