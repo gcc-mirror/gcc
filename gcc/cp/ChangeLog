@@ -1,3 +1,11 @@
+2002-04-12  Richard Sandiford  <rsandifo@redhat.com>
+
+	* decl.c (duplicate_decls): Don't try to unify an implicit typedef
+	with an explicit one.
+	(follow_tag_typedef): New.
+	(lookup_tag): Use it to extract the tag of an explicit typedef.
+	(xref_tag): Likewise.
+
 2002-04-11  Andrew Haley  <aph@redhat.com>
 
 	* typeck.c (type_after_usual_arithmetic_conversions):
