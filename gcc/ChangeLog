@@ -1,3 +1,8 @@
+2000-12-26  Kazu Hirata  <kazu@hxi.com>
+
+	* config/h8300/h8300.c (get_shift_alg): Fix a typo in the assembly
+	code for 12-bit ASHIFTRT in HImode.
+
 2000-12-23  Marek Michalkiewicz  <marekm@linux.org.pl>
 
 	* config/avr/avr.c (out_movqi_r_mr, out_movhi_r_mr, out_movsi_r_mr,
