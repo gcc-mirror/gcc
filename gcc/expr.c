@@ -3738,24 +3738,12 @@ expand_assignment (tree to, tree from)
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
 
-   If WANT_VALUE & 1 is nonzero, return a copy of the value
-   not in TARGET, so that we can be sure to use the proper
-   value in a containing expression even if TARGET has something
-   else stored in it.  If possible, we copy the value through a pseudo
-   and return that pseudo.  Or, if the value is constant, we try to
-   return the constant.  In some cases, we return a pseudo
-   copied *from* TARGET.
-
    If the mode is BLKmode then we may return TARGET itself.
    It turns out that in BLKmode it doesn't cause a problem.
    because C has no operators that could combine two different
    assignments into the same BLKmode object with different values
    with no sequence point.  Will other languages need this to
    be more thorough?
-
-   If WANT_VALUE & 1 is 0, we return NULL, to make sure
-   to catch quickly any cases where the caller uses the value
-   and fails to set WANT_VALUE.
 
    If WANT_VALUE & 2 is set, this is a store into a call param on the
    stack, and block moves may need to be treated specially.  */
@@ -3767,6 +3755,10 @@ store_expr (tree exp, rtx target, int want_value)
   rtx alt_rtl = NULL_RTX;
   int dont_return_target = 0;
   int dont_store_target = 0;
+
+  /* The bit 0 of WANT_VALUE used to be used to request a value of the
+     expression.  This feature has been removed.  */
+  gcc_assert ((want_value & 1) == 0);
 
   if (VOID_TYPE_P (TREE_TYPE (exp)))
     {
@@ -3805,32 +3797,7 @@ store_expr (tree exp, rtx target, int want_value)
       emit_label (lab2);
       OK_DEFER_POP;
 
-      return want_value & 1 ? target : NULL_RTX;
-    }
-  else if ((want_value & 1) != 0
-	   && MEM_P (target)
-	   && ! MEM_VOLATILE_P (target)
-	   && GET_MODE (target) != BLKmode)
-    /* If target is in memory and caller wants value in a register instead,
-       arrange that.  Pass TARGET as target for expand_expr so that,
-       if EXP is another assignment, WANT_VALUE will be nonzero for it.
-       We know expand_expr will not use the target in that case.
-       Don't do this if TARGET is volatile because we are supposed
-       to write it and then read it.  */
-    {
-      temp = expand_expr (exp, target, GET_MODE (target),
-			  want_value & 2 ? EXPAND_STACK_PARM : EXPAND_NORMAL);
-      if (GET_MODE (temp) != BLKmode && GET_MODE (temp) != VOIDmode)
-	{
-	  /* If TEMP is already in the desired TARGET, only copy it from
-	     memory and don't store it there again.  */
-	  if (temp == target
-	      || (rtx_equal_p (temp, target)
-		  && ! side_effects_p (temp) && ! side_effects_p (target)))
-	    dont_store_target = 1;
-	  temp = copy_to_reg (temp);
-	}
-      dont_return_target = 1;
+      return NULL_RTX;
     }
   else if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
     /* If this is a scalar in a register that is stored in a wider mode
@@ -3840,14 +3807,13 @@ store_expr (tree exp, rtx target, int want_value)
     {
       rtx inner_target = 0;
 
-      /* If we don't want a value, we can do the conversion inside EXP,
-	 which will often result in some optimizations.  Do the conversion
-	 in two steps: first change the signedness, if needed, then
-	 the extend.  But don't do this if the type of EXP is a subtype
-	 of something else since then the conversion might involve
-	 more than just converting modes.  */
-      if ((want_value & 1) == 0
-	  && INTEGRAL_TYPE_P (TREE_TYPE (exp))
+      /* We can do the conversion inside EXP, which will often result
+	 in some optimizations.  Do the conversion in two steps: first
+	 change the signedness, if needed, then the extend.  But don't
+	 do this if the type of EXP is a subtype of something else
+	 since then the conversion might involve more than just
+	 converting modes.  */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (exp))
 	  && TREE_TYPE (TREE_TYPE (exp)) == 0
 	  && (!lang_hooks.reduce_bit_field_operations
 	      || (GET_MODE_PRECISION (GET_MODE (target))
@@ -3870,14 +3836,6 @@ store_expr (tree exp, rtx target, int want_value)
       temp = expand_expr (exp, inner_target, VOIDmode,
 			  want_value & 2 ? EXPAND_STACK_PARM : EXPAND_NORMAL);
 
-      /* If TEMP is a MEM and we want a result value, make the access
-	 now so it gets done only once.  Strictly speaking, this is
-	 only necessary if the MEM is volatile, or if the address
-	 overlaps TARGET.  But not performing the load twice also
-	 reduces the amount of rtl we generate and then have to CSE.  */
-      if (MEM_P (temp) && (want_value & 1) != 0)
-	temp = copy_to_reg (temp);
-
       /* If TEMP is a VOIDmode constant, use convert_modes to make
 	 sure that we properly convert it.  */
       if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
@@ -3892,26 +3850,7 @@ store_expr (tree exp, rtx target, int want_value)
       convert_move (SUBREG_REG (target), temp,
 		    SUBREG_PROMOTED_UNSIGNED_P (target));
 
-      /* If we promoted a constant, change the mode back down to match
-	 target.  Otherwise, the caller might get confused by a result whose
-	 mode is larger than expected.  */
-
-      if ((want_value & 1) != 0 && GET_MODE (temp) != GET_MODE (target))
-	{
-	  if (GET_MODE (temp) != VOIDmode)
-	    {
-	      temp = gen_lowpart_SUBREG (GET_MODE (target), temp);
-	      SUBREG_PROMOTED_VAR_P (temp) = 1;
-	      SUBREG_PROMOTED_UNSIGNED_SET (temp,
-		SUBREG_PROMOTED_UNSIGNED_P (target));
-	    }
-	  else
-	    temp = convert_modes (GET_MODE (target),
-				  GET_MODE (SUBREG_REG (target)),
-				  temp, SUBREG_PROMOTED_UNSIGNED_P (target));
-	}
-
-      return want_value & 1 ? temp : NULL_RTX;
+      return NULL_RTX;
     }
   else
     {
@@ -3930,7 +3869,7 @@ store_expr (tree exp, rtx target, int want_value)
 	    && REGNO (target) < FIRST_PSEUDO_REGISTER)
 	  && !(MEM_P (target) && MEM_VOLATILE_P (target))
 	  && ! rtx_equal_p (temp, target)
-	  && (CONSTANT_P (temp) || (want_value & 1) != 0))
+	  && CONSTANT_P (temp))
 	dont_return_target = 1;
     }
 
@@ -4077,24 +4016,7 @@ store_expr (tree exp, rtx target, int want_value)
 	}
     }
 
-  /* If we don't want a value, return NULL_RTX.  */
-  if ((want_value & 1) == 0)
-    return NULL_RTX;
-
-  /* If we are supposed to return TEMP, do so as long as it isn't a MEM.
-     ??? The latter test doesn't seem to make sense.  */
-  else if (dont_return_target && !MEM_P (temp))
-    return temp;
-
-  /* Return TARGET itself if it is a hard register.  */
-  else if ((want_value & 1) != 0
-	   && GET_MODE (target) != BLKmode
-	   && ! (REG_P (target)
-		 && REGNO (target) < FIRST_PSEUDO_REGISTER))
-    return copy_to_reg (target);
-
-  else
-    return target;
+  return NULL_RTX;
 }
 
 /* Examine CTOR.  Discover how many scalar fields are set to nonzero
