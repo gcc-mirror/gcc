@@ -3188,20 +3188,33 @@ move\\t%0,%z4\\n\\
 (define_insn "truncdihi2"
   [(set (match_operand:HI 0 "register_operand" "=d")
 	(truncate:HI (match_operand:DI 1 "se_register_operand" "d")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "andi\\t%0,%1,0xffff"
+  "TARGET_64BIT"
+  "*
+{
+  if (TARGET_MIPS16)
+    return \"dsll\\t%0,%1,48\;dsra\\t%0,48\";
+  return \"andi\\t%0,%1,0xffff\";
+}"
   [(set_attr "type"	"darith")
    (set_attr "mode"	"HI")
-   (set_attr "length"	"1")])
-
+   (set (attr "length")	(if_then_else (eq (symbol_ref "mips16") (const_int 0))
+				      (const_int 1)
+				      (const_int 4)))])
 (define_insn "truncdiqi2"
   [(set (match_operand:QI 0 "register_operand" "=d")
 	(truncate:QI (match_operand:DI 1 "se_register_operand" "d")))]
-  "TARGET_64BIT && !TARGET_MIPS16"
-  "andi\\t%0,%1,0x00ff"
+  "TARGET_64BIT"
+  "*
+{
+  if (TARGET_MIPS16)
+    return \"dsll\\t%0,%1,56\;dsra\\t%0,56\";
+  return \"andi\\t%0,%1,0x00ff\"; 
+}"
   [(set_attr "type"	"darith")
    (set_attr "mode"	"QI")
-   (set_attr "length"	"1")])
+   (set (attr "length")	(if_then_else (eq (symbol_ref "mips16") (const_int 0))
+				      (const_int 1)
+				      (const_int 4)))])
 
 ;; Combiner patterns to optimize shift/truncate combinations.
 (define_insn ""
