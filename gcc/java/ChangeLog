@@ -1,3 +1,8 @@
+2003-01-30  Tom Tromey  <tromey@redhat.com>
+
+	* jcf-parse.c (read_class): Update identifier's class value if it
+	changed during parsing.
+
 2003-01-30  Loren James Rittle  <ljrittle@acm.org>
 
 	* Make-lang.in (po-generated): Find the targets in $(parsedir).
