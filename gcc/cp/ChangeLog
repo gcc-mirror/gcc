@@ -1,3 +1,7 @@
+2000-04-25  Martin v. Löwis  <loewis@informatik.hu-berlin.de>
+
+	* decl.c (grokdeclarator): Reject VLAs as members.
+
 2000-04-24  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* call.c (standard_conversion): Accept conversion between

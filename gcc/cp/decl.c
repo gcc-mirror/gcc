@@ -10352,6 +10352,20 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    declarator = TREE_OPERAND (declarator, 0);
 
 	    type = create_array_type_for_decl (dname, type, size);
+
+	    /* VLAs never work as fields. */
+	    if (decl_context == FIELD && !processing_template_decl 
+		&& TREE_CODE (type) == ARRAY_TYPE
+		&& TYPE_DOMAIN (type) != NULL_TREE
+		&& !TREE_CONSTANT (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+	      {
+		cp_error ("size of member `%D' is not constant", dname);
+		/* Proceed with arbitrary constant size, so that offset
+		   computations don't get confused. */
+		type = create_array_type_for_decl (dname, TREE_TYPE (type),
+						   integer_one_node);
+	      }
+
 	    ctype = NULL_TREE;
 	  }
 	  break;
