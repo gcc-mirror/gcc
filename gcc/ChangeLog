@@ -1,5 +1,9 @@
 Tue Jul 10 07:27:53 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* expr.c (expand_expr, case COMPONENT_REF): Don't force using bitfield
+	extraction if no direct load if either EXPAND_CONST_ADDRESS or
+	EXPAND_INITIALIZER.
+
 	* emit-rtl.c (adjust_address, adjust_address_nv): Change criteria for
 	whether can put offset inside LO_SUM to check mode alignment, not size.
 
