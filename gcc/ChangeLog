@@ -1,3 +1,10 @@
+2003-10-27  Falk Hueffner  <falk@debian.org>
+
+	PR target/12654
+	* config/alpha/alpha.c (alpha_emit_conditional_branch): Don't do
+	comparison against constant by adjusting the argument except for
+	EQ and NE.
+
 2003-10-26  Ottavio Campana <ottavio@campana.vi.it>
 
 	PR target/12690
