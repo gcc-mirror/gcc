@@ -1781,7 +1781,7 @@
   [(set (match_operand:DF 0 "register_operand" "=fx")
 	(abs:DF (match_operand:DF 1 "register_operand" "fx")))]
   ""
-  "fabs,dbl %0,%0"
+  "fabs,dbl %1,%0"
   [(set_attr "type" "fpalu")])
 
 (define_insn "abssf2"
