@@ -66,3 +66,13 @@ Boston, MA 02111-1307, USA.  */
     fprintf (FILE, "\n.LM%d:\n", sym_lineno);			\
     sym_lineno += 1;						\
   } }
+
+/* When generating stabs debugging, use N_BINCL entries.  */
+
+#define DBX_USE_BINCL
+
+/* There is no limit to the length of stabs strings.  */
+
+#ifndef DBX_CONTIN_LENGTH
+#define DBX_CONTIN_LENGTH 0
+#endif
