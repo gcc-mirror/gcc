@@ -3762,7 +3762,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, gfc_ss * ss, int g77)
       if (!sym->attr.pointer && sym->as->type != AS_ASSUMED_SHAPE 
           && !sym->attr.allocatable)
         {
-	  /* Some variables are declared directly, others are declard as
+	  /* Some variables are declared directly, others are declared as
 	     pointers and allocated on the heap.  */
           if (sym->attr.dummy || POINTER_TYPE_P (TREE_TYPE (tmp)))
             se->expr = tmp;
