@@ -21,6 +21,16 @@
 ;; the Free Software Foundation, 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
+;; Special characters after '%':
+;;  A  No effect (add 0).
+;;  B  Add 1 to REG number, MEM address or CONST_INT.
+;;  C  Add 2.
+;;  D  Add 3.
+;;  j  Branch condition.
+;;  k  Reverse branch condition.
+;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
+;;  ~  Output 'r' if not AVR_MEGA.
+
 ;; UNSPEC usage:
 ;;  0  Length of a string, see "strlenhi".
 ;;  1  Read from a word address in program memory, see "casesi".
@@ -634,7 +644,20 @@
 ;******************************************************************************
 ; mul
 
-(define_insn "mulqi3"
+(define_expand "mulqi3"
+  [(set (match_operand:QI 0 "register_operand" "")
+	(mult:QI (match_operand:QI 1 "register_operand" "")
+		 (match_operand:QI 2 "register_operand" "")))]
+  ""
+  "{
+  if (!AVR_ENHANCED)
+    {
+      emit_insn (gen_mulqi3_call (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+}")
+
+(define_insn "*mulqi3_enh"
   [(set (match_operand:QI 0 "register_operand" "=r")
 	(mult:QI (match_operand:QI 1 "register_operand" "r")
 		 (match_operand:QI 2 "register_operand" "r")))]
@@ -643,6 +666,25 @@
 	mov %0,r0
 	clr r1"
   [(set_attr "length" "3")
+   (set_attr "cc" "clobber")])
+
+(define_expand "mulqi3_call"
+  [(set (reg:QI 24) (match_operand:QI 1 "register_operand" ""))
+   (set (reg:QI 22) (match_operand:QI 2 "register_operand" ""))
+   (parallel [(set (reg:QI 24) (mult:QI (reg:QI 24) (reg:QI 22)))
+	      (clobber (reg:QI 22))])
+   (set (match_operand:QI 0 "register_operand" "") (reg:QI 24))]
+  ""
+  "")
+
+(define_insn "*mulqi3_call"
+  [(set (reg:QI 24) (mult:QI (reg:QI 24) (reg:QI 22)))
+   (clobber (reg:QI 22))]
+  "!AVR_ENHANCED"
+  "%~call __mulqi3"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
    (set_attr "cc" "clobber")])
 
 (define_insn "mulqihi3"
@@ -667,7 +709,21 @@
   [(set_attr "length" "3")
    (set_attr "cc" "clobber")])
 
-(define_insn "mulhi3"
+(define_expand "mulhi3"
+  [(set (match_operand:HI 0 "register_operand" "")
+	(mult:HI (match_operand:HI 1 "register_operand" "")
+		 (match_operand:HI 2 "register_operand" "")))]
+  ""
+  "
+{
+  if (!AVR_ENHANCED)
+    {
+      emit_insn (gen_mulhi3_call (operands[0], operands[1], operands[2]));
+      DONE;
+    }
+}")
+
+(define_insn "*mulhi3_enh"
   [(set (match_operand:HI 0 "register_operand" "=&r")
 	(mult:HI (match_operand:HI 1 "register_operand" "r")
 		 (match_operand:HI 2 "register_operand" "r")))]
@@ -680,6 +736,200 @@
 	add %B0,r0
 	clr r1"
   [(set_attr "length" "7")
+   (set_attr "cc" "clobber")])
+
+(define_expand "mulhi3_call"
+  [(set (reg:HI 24) (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 22) (match_operand:HI 2 "register_operand" ""))
+   (parallel [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+	      (clobber (reg:HI 22))
+	      (clobber (reg:QI 21))])
+   (set (match_operand:HI 0 "register_operand" "") (reg:HI 24))]
+  ""
+  "")
+
+(define_insn "*mulhi3_call"
+  [(set (reg:HI 24) (mult:HI (reg:HI 24) (reg:HI 22)))
+   (clobber (reg:HI 22))
+   (clobber (reg:QI 21))]
+  "!AVR_ENHANCED"
+  "%~call __mulhi3"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+;; Operand 2 (reg:SI 18) not clobbered on the enhanced core.
+;; All call-used registers clobbered otherwise - normal library call.
+(define_expand "mulsi3"
+  [(set (reg:SI 22) (match_operand:SI 1 "register_operand" ""))
+   (set (reg:SI 18) (match_operand:SI 2 "register_operand" ""))
+   (parallel [(set (reg:SI 22) (mult:SI (reg:SI 22) (reg:SI 18)))
+	      (clobber (reg:HI 26))
+	      (clobber (reg:HI 30))])
+   (set (match_operand:SI 0 "register_operand" "") (reg:SI 22))]
+  "AVR_ENHANCED"
+  "")
+
+(define_insn "*mulsi3_call"
+  [(set (reg:SI 22) (mult:SI (reg:SI 22) (reg:SI 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))]
+  "AVR_ENHANCED"
+  "%~call __mulsi3"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+; / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / % / %
+; divmod
+
+;; Generate libgcc.S calls ourselves, because:
+;;  - we know exactly which registers are clobbered (for QI and HI
+;;    modes, some of the call-used registers are preserved)
+;;  - we get both the quotient and the remainder at no extra cost
+
+(define_expand "divmodqi4"
+  [(set (reg:QI 24) (match_operand:QI 1 "register_operand" ""))
+   (set (reg:QI 22) (match_operand:QI 2 "register_operand" ""))
+   (parallel [(set (reg:QI 24) (div:QI (reg:QI 24) (reg:QI 22)))
+	      (set (reg:QI 25) (mod:QI (reg:QI 24) (reg:QI 22)))
+	      (clobber (reg:QI 22))
+	      (clobber (reg:QI 23))])
+   (set (match_operand:QI 0 "register_operand" "") (reg:QI 24))
+   (set (match_operand:QI 3 "register_operand" "") (reg:QI 25))]
+  ""
+  "")
+
+(define_insn "*divmodqi4_call"
+  [(set (reg:QI 24) (div:QI (reg:QI 24) (reg:QI 22)))
+   (set (reg:QI 25) (mod:QI (reg:QI 24) (reg:QI 22)))
+   (clobber (reg:QI 22))
+   (clobber (reg:QI 23))]
+  ""
+  "%~call __divmodqi4"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+(define_expand "udivmodqi4"
+  [(set (reg:QI 24) (match_operand:QI 1 "register_operand" ""))
+   (set (reg:QI 22) (match_operand:QI 2 "register_operand" ""))
+   (parallel [(set (reg:QI 24) (udiv:QI (reg:QI 24) (reg:QI 22)))
+	      (set (reg:QI 25) (umod:QI (reg:QI 24) (reg:QI 22)))
+	      (clobber (reg:QI 23))])
+   (set (match_operand:QI 0 "register_operand" "") (reg:QI 24))
+   (set (match_operand:QI 3 "register_operand" "") (reg:QI 25))]
+  ""
+  "")
+
+(define_insn "*udivmodqi4_call"
+  [(set (reg:QI 24) (udiv:QI (reg:QI 24) (reg:QI 22)))
+   (set (reg:QI 25) (umod:QI (reg:QI 24) (reg:QI 22)))
+   (clobber (reg:QI 23))]
+  ""
+  "%~call __udivmodqi4"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+(define_expand "divmodhi4"
+  [(set (reg:HI 24) (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 22) (match_operand:HI 2 "register_operand" ""))
+   (parallel [(set (reg:HI 22) (div:HI (reg:HI 24) (reg:HI 22)))
+	      (set (reg:HI 24) (mod:HI (reg:HI 24) (reg:HI 22)))
+	      (clobber (reg:HI 26))
+	      (clobber (reg:QI 21))])
+   (set (match_operand:HI 0 "register_operand" "") (reg:HI 22))
+   (set (match_operand:HI 3 "register_operand" "") (reg:HI 24))]
+  ""
+  "")
+
+(define_insn "*divmodhi4_call"
+  [(set (reg:HI 22) (div:HI (reg:HI 24) (reg:HI 22)))
+   (set (reg:HI 24) (mod:HI (reg:HI 24) (reg:HI 22)))
+   (clobber (reg:HI 26))
+   (clobber (reg:QI 21))]
+  ""
+  "%~call __divmodhi4"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+(define_expand "udivmodhi4"
+  [(set (reg:HI 24) (match_operand:HI 1 "register_operand" ""))
+   (set (reg:HI 22) (match_operand:HI 2 "register_operand" ""))
+   (parallel [(set (reg:HI 22) (udiv:HI (reg:HI 24) (reg:HI 22)))
+	      (set (reg:HI 24) (umod:HI (reg:HI 24) (reg:HI 22)))
+	      (clobber (reg:HI 26))
+	      (clobber (reg:QI 21))])
+   (set (match_operand:HI 0 "register_operand" "") (reg:HI 22))
+   (set (match_operand:HI 3 "register_operand" "") (reg:HI 24))]
+  ""
+  "")
+
+(define_insn "*udivmodhi4_call"
+  [(set (reg:HI 22) (udiv:HI (reg:HI 24) (reg:HI 22)))
+   (set (reg:HI 24) (umod:HI (reg:HI 24) (reg:HI 22)))
+   (clobber (reg:HI 26))
+   (clobber (reg:QI 21))]
+  ""
+  "%~call __udivmodhi4"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+(define_expand "divmodsi4"
+  [(set (reg:SI 22) (match_operand:SI 1 "register_operand" ""))
+   (set (reg:SI 18) (match_operand:SI 2 "register_operand" ""))
+   (parallel [(set (reg:SI 18) (div:SI (reg:SI 22) (reg:SI 18)))
+	      (set (reg:SI 22) (mod:SI (reg:SI 22) (reg:SI 18)))
+	      (clobber (reg:HI 26))
+	      (clobber (reg:HI 30))])
+   (set (match_operand:SI 0 "register_operand" "") (reg:SI 18))
+   (set (match_operand:SI 3 "register_operand" "") (reg:SI 22))]
+  ""
+  "")
+
+(define_insn "*divmodsi4_call"
+  [(set (reg:SI 18) (div:SI (reg:SI 22) (reg:SI 18)))
+   (set (reg:SI 22) (mod:SI (reg:SI 22) (reg:SI 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))]
+  ""
+  "%~call __divmodsi4"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
+   (set_attr "cc" "clobber")])
+
+(define_expand "udivmodsi4"
+  [(set (reg:SI 22) (match_operand:SI 1 "register_operand" ""))
+   (set (reg:SI 18) (match_operand:SI 2 "register_operand" ""))
+   (parallel [(set (reg:SI 18) (udiv:SI (reg:SI 22) (reg:SI 18)))
+	      (set (reg:SI 22) (umod:SI (reg:SI 22) (reg:SI 18)))
+	      (clobber (reg:HI 26))
+	      (clobber (reg:HI 30))])
+   (set (match_operand:SI 0 "register_operand" "") (reg:SI 18))
+   (set (match_operand:SI 3 "register_operand" "") (reg:SI 22))]
+  ""
+  "")
+
+(define_insn "*udivmodsi4_call"
+  [(set (reg:SI 18) (udiv:SI (reg:SI 22) (reg:SI 18)))
+   (set (reg:SI 22) (umod:SI (reg:SI 22) (reg:SI 18)))
+   (clobber (reg:HI 26))
+   (clobber (reg:HI 30))]
+  ""
+  "%~call __udivmodsi4"
+  [(set (attr "length") (if_then_else (eq_attr "mcu_mega" "no")
+				      (const_int 1)
+				      (const_int 2)))
    (set_attr "cc" "clobber")])
 
 ;&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1794,9 +2044,7 @@
 		AS2 (mov, r31, %B0) CR_TAB
 		\"icall\");
     }
-  else if (!AVR_MEGA)
-     return AS1(rcall,%c0);   
-  return AS1(call,%c0);
+  return AS1(%~call,%c0);
 }"
   [(set_attr "cc" "clobber,clobber,clobber")
    (set_attr_alternative "length"
@@ -1829,9 +2077,7 @@
 		AS2 (mov, r31, %B1) CR_TAB
 		\"icall\");
     }
-  else if (!AVR_MEGA)
-     return AS1(rcall,%c1);   
-  return AS1(call,%c1);
+  return AS1(%~call,%c1);
 }"
   [(set_attr "cc" "clobber,clobber,clobber")
    (set_attr_alternative "length"

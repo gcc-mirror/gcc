@@ -32,7 +32,28 @@ Boston, MA 02111-1307, USA.  */
 #define __SP_H__ 0x3e
 #define __SP_L__ 0x3d
 
+/* Most of the functions here are called directly from avr.md
+   patterns, instead of using the standard libcall mechanisms.
+   This can make better code because GCC knows exactly which
+   of the call-used registers (not all of them) are clobbered.  */
+
 	.section .text.libgcc, "ax", @progbits
+
+	.macro	mov_l  r_dest, r_src
+#if defined (__AVR_ENHANCED__)
+	movw	\r_dest, \r_src
+#else
+	mov	\r_dest, \r_src
+#endif
+	.endm
+
+	.macro	mov_h  r_dest, r_src
+#if defined (__AVR_ENHANCED__)
+	; empty
+#else
+	mov	\r_dest, \r_src
+#endif
+	.endm
 
 /* Note: mulqi3, mulhi3 are open-coded on the enhanced core.  */
 #if !defined (__AVR_ENHANCED__)
@@ -67,6 +88,29 @@ __mulqi3_exit:
 .endfunc
 #endif 	/* defined (L_mulqi3) */
 
+#if defined (L_mulqihi3)
+	.global	__mulqihi3
+	.func	__mulqihi3
+__mulqihi3:
+	clr	r25
+	sbrc	r24, 7
+	dec	r25
+	clr	r23
+	sbrc	r22, 7
+	dec	r22
+	rjmp	__mulhi3
+	.endfunc
+#endif /* defined (L_mulqihi3) */
+
+#if defined (L_umulqihi3)
+	.global	__umulqihi3
+	.func	__umulqihi3
+__umulqihi3:
+	clr	r25
+	clr	r23
+	rjmp	__mulhi3
+	.endfunc
+#endif /* defined (L_umulqihi3) */
 
 /*******************************************************
                Multiplication  16 x 16
@@ -76,7 +120,7 @@ __mulqi3_exit:
 #define	r_arg1H	r25		/* multiplier High */
 #define	r_arg2L	r22		/* multiplicand Low */
 #define	r_arg2H	r23		/* multiplicand High */
-#define r_resL	r20		/* result Low */
+#define r_resL	__tmp_reg__	/* result Low */
 #define r_resH  r21		/* result High */
 
 	.global	__mulhi3
@@ -115,6 +159,38 @@ __mulhi3_exit:
 .endfunc
 #endif /* defined (L_mulhi3) */
 #endif /* !defined (__AVR_ENHANCED__) */
+
+#if defined (L_mulhisi3)
+	.global	__mulhisi3
+	.func	__mulhisi3
+__mulhisi3:
+	mov_l	r18, r24
+	mov_h	r19, r25
+	clr	r24
+	sbrc	r23, 7
+	dec	r24
+	mov	r25, r24
+	clr	r20
+	sbrc	r19, 7
+	dec	r20
+	mov	r21, r20
+	rjmp	__mulsi3
+	.endfunc
+#endif /* defined (L_mulhisi3) */
+
+#if defined (L_umulhisi3)
+	.global	__umulhisi3
+	.func	__umulhisi3
+__umulhisi3:
+	mov_l	r18, r24
+	mov_h	r19, r25
+	clr	r24
+	clr	r25
+	clr	r20
+	clr	r21
+	rjmp	__mulsi3
+	.endfunc
+#endif /* defined (L_umulhisi3) */
 
 #if defined (L_mulsi3)
 /*******************************************************
@@ -227,81 +303,54 @@ __mulsi3_exit:
 /*******************************************************
        Division 8 / 8 => (result + remainder)
 *******************************************************/
-#define	r_rem	r26	/* remainder */
-#define	r_arg1	r24	/* dividend */
+#define	r_rem	r25	/* remainder */
+#define	r_arg1	r24	/* dividend, quotient */
 #define	r_arg2	r22	/* divisor */
-#define	r_cnt	r27	/* loop count */
+#define	r_cnt	r23	/* loop count */
 
-#if defined (L_umodqi3)
-
-	.global	__umodqi3
-	.func	__umodqi3
-__umodqi3:
-	clt
-	rcall	__udivqi3
-	mov	r24,r_rem
+#if defined (L_udivmodqi4)
+	.global	__udivmodqi4
+	.func	__udivmodqi4
+__udivmodqi4:
+	sub	r_rem,r_rem	; clear remainder and carry
+	ldi	r_cnt,9		; init loop counter
+	rjmp	__udivmodqi4_ep	; jump to entry point
+__udivmodqi4_loop:
+	rol	r_rem		; shift dividend into remainder
+	cp	r_rem,r_arg2	; compare remainder & divisor
+	brcs	__udivmodqi4_ep	; remainder <= divisor
+	sub	r_rem,r_arg2	; restore remainder
+__udivmodqi4_ep:
+	rol	r_arg1		; shift dividend (with CARRY)
+	dec	r_cnt		; decrement loop counter
+	brne	__udivmodqi4_loop
+	com	r_arg1		; complement result 
+				; because C flag was complemented in loop
 	ret
-.endfunc
-#endif /* defined (L_umodqi3) */
-	
-#if defined (L_udivqi3)
+	.endfunc
+#endif /* defined (L_udivmodqi4) */
 
-	.global	__udivqi3
-	.func	__udivqi3
-__udivqi3:
-	clr	__tmp_reg__
-	rjmp	__divqi_raw
-.endfunc
-#endif /* defined (L_udivqi3) */
-
-#if defined (L_modqi3)
-	
-	.global	__modqi3
-	.func	__modqi3
-__modqi3:
-	rcall	__divqi3
-	mov	r24,r_rem
-	ret
-.endfunc
-#endif /* defined (L_modqi3) */
-
-#if defined (L_divqi3)
-
-	.global	__divqi3
-	.func	__divqi3
-__divqi3:
-        bst     r_arg1,7	; store sign of divident
+#if defined (L_divmodqi4)
+	.global	__divmodqi4
+	.func	__divmodqi4
+__divmodqi4:
+        bst     r_arg1,7	; store sign of dividend
         mov     __tmp_reg__,r_arg1
         eor     __tmp_reg__,r_arg2; r0.7 is sign of result
         sbrc	r_arg1,7
-        neg     r_arg1		; divident negative : negate
+	neg     r_arg1		; dividend negative : negate
         sbrc	r_arg2,7
-        neg     r_arg2		; divisor negative : negate
-	.global	__divqi_raw
-__divqi_raw:	
-	sub	r_rem,r_rem	; clear remainder and carry
-	ldi	r_cnt,9		; init loop counter
-	rjmp	__divqi3_ep	; jump to entry point
-__divqi3_loop:
-        rol	r_rem		; shift dividend into remainder
-        cp	r_rem,r_arg2	; compare remainder & divisor
-        brcs	__divqi3_ep	; remainder <= divisor
-        sub	r_rem,r_arg2	; restore remainder
-__divqi3_ep:
-        rol	r_arg1		; shift dividend (with CARRY)
-        dec	r_cnt		; decrement loop counter
-        brne	__divqi3_loop	; loop
-	com	r_arg1		; complement result 
-				; because C flag was complemented in loop
-	brtc	__divqi3_1
+	neg     r_arg2		; divisor negative : negate
+	rcall	__udivmodqi4	; do the unsigned div/mod
+	brtc	__divmodqi4_1
 	neg	r_rem		; correct remainder sign
-__divqi3_1:
+__divmodqi4_1:
 	sbrc	__tmp_reg__,7
 	neg	r_arg1		; correct result sign
-__divqi3_exit:
-	ret			; result already in r24 (r_arg1)
-.endfunc
-#endif /* defined (L_divqi3) */
+__divmodqi4_exit:
+	ret
+	.endfunc
+#endif /* defined (L_divmodqi4) */
 
 #undef r_rem
 #undef r_arg1
@@ -314,113 +363,80 @@ __divqi3_exit:
 *******************************************************/
 #define	r_remL	r26	/* remainder Low */
 #define	r_remH	r27	/* remainder High */
-	
+
+/* return: remainder */
 #define	r_arg1L	r24	/* dividend Low */
 #define	r_arg1H	r25	/* dividend High */
-	
+
+/* return: quotient */
 #define	r_arg2L	r22	/* divisor Low */
 #define	r_arg2H	r23	/* divisor High */
 	
 #define	r_cnt	r21	/* loop count */
-#if defined (L_umodhi3)
-	.global	__umodhi3
-	.func	__umodhi3
-__umodhi3:
-	clt
-	rcall	__udivhi3
-	.global	__umodhi3_ret
-__umodhi3_ret:
-#if defined (__AVR_ENHANCED__)
-	movw	r24, r_remL
-#else
-	mov	r24,r_remL
-	mov	r25,r_remH
-#endif
-	ret
-.endfunc
-#endif /* defined (L_umodhi3) */
-	
-#if defined (L_udivhi3)
-	
-	.global	__udivhi3
-	.func	__udivhi3
-__udivhi3:
-	clr	__tmp_reg__
-	rjmp	__divhi_raw
-.endfunc
-#endif /* defined (L_udivhi3) */
 
-#if defined (L_modhi3)
-	.global	__modhi3
-	.func	__modhi3
-__modhi3:
-	.global	_div
-_div:
-	rcall	__divhi3
-#if defined (__AVR_ENHANCED__)
-	movw	r22, r24
-#else
-	mov	r22,r24		; needed for div () function
-	mov	r23,r25
-#endif
-	rjmp	__umodhi3_ret
-.endfunc
-#endif /* defined (L_modhi3) */
-	
-	
-#if defined (L_divhi3)
-	.global	__divhi3
-	.func	__divhi3
-__divhi3:
-        bst     r_arg1H,7	; store sign of divident
-        mov     __tmp_reg__,r_arg1H
-        eor     __tmp_reg__,r_arg2H   ; r0.7 is sign of result
-	brtc	__divhi3_skip1
-	com	r_arg1H
-        neg     r_arg1L		; divident negative : negate
-	sbci	r_arg1H,0xff
-__divhi3_skip1:
-        tst	r_arg2H
-	brpl	__divhi3_skip2
-	com	r_arg2H
-        neg     r_arg2L		; divisor negative : negate
-	sbci	r_arg2H,0xff
-__divhi3_skip2:
-	.global	__divhi_raw
-__divhi_raw:
+#if defined (L_udivmodhi4)
+	.global	__udivmodhi4
+	.func	__udivmodhi4
+__udivmodhi4:
 	sub	r_remL,r_remL
-	sub	r_remH,r_remH		; clear remainder and carry
+	sub	r_remH,r_remH	; clear remainder and carry
 	ldi	r_cnt,17	; init loop counter
-	rjmp	__divhi3_ep	; jump to entry point
-__divhi3_loop:
+	rjmp	__udivmodhi4_ep	; jump to entry point
+__udivmodhi4_loop:
         rol	r_remL		; shift dividend into remainder
 	rol	r_remH
         cp	r_remL,r_arg2L	; compare remainder & divisor
 	cpc	r_remH,r_arg2H
-        brcs	__divhi3_ep	; remainder < divisor
+        brcs	__udivmodhi4_ep	; remainder < divisor
         sub	r_remL,r_arg2L	; restore remainder
         sbc	r_remH,r_arg2H
-__divhi3_ep:
+__udivmodhi4_ep:
         rol	r_arg1L		; shift dividend (with CARRY)
         rol	r_arg1H
         dec	r_cnt		; decrement loop counter
-        brne	__divhi3_loop	; loop
-	brtc	__divhi3_1
-	com	r_remH
-	neg	r_remL		; correct remainder sign
-	sbci	r_remH,0xff
-__divhi3_1:
-	tst	__tmp_reg__
-	brpl	__divhi3_exit
-	adiw	r_arg1L,1	; correct result sign
-	ret
-__divhi3_exit:
+        brne	__udivmodhi4_loop
 	com	r_arg1L
 	com	r_arg1H
+; div/mod results to return registers, as for the div() function
+	mov_l	r_arg2L, r_arg1L	; quotient
+	mov_h	r_arg2H, r_arg1H
+	mov_l	r_arg1L, r_remL		; remainder
+	mov_h	r_arg1H, r_remH
 	ret
-.endfunc
-#endif /* defined (L_divhi3) */
-	
+	.endfunc
+#endif /* defined (L_udivmodhi4) */
+
+#if defined (L_divmodhi4)
+	.global	__divmodhi4
+	.func	__divmodhi4
+__divmodhi4:
+	.global	_div
+_div:
+        bst     r_arg1H,7	; store sign of dividend
+        mov     __tmp_reg__,r_arg1H
+        eor     __tmp_reg__,r_arg2H   ; r0.7 is sign of result
+	rcall	__divmodhi4_neg1 ; dividend negative : negate
+	sbrc	r_arg2H,7
+	rcall	__divmodhi4_neg2 ; divisor negative : negate
+	rcall	__udivmodhi4	; do the unsigned div/mod
+	rcall	__divmodhi4_neg1 ; correct remainder sign
+	tst	__tmp_reg__
+	brpl	__divmodhi4_exit
+__divmodhi4_neg2:
+	com	r_arg2H
+	neg	r_arg2L		; correct divisor/result sign
+	sbci	r_arg2H,0xff
+__divmodhi4_exit:
+	ret
+__divmodhi4_neg1:
+	brtc	__divmodhi4_exit
+	com	r_arg1H
+	neg	r_arg1L		; correct dividend/remainder sign
+	sbci	r_arg1H,0xff
+	ret
+	.endfunc
+#endif /* defined (L_divmodhi4) */
+
 #undef r_remH  
 #undef r_remL  
              
@@ -439,12 +455,14 @@ __divhi3_exit:
 #define	r_remHL	r30
 #define	r_remH	r27
 #define	r_remL	r26	/* remainder Low */
-	
+
+/* return: remainder */
 #define	r_arg1HH r25	/* dividend High */
 #define	r_arg1HL r24
 #define	r_arg1H  r23
 #define	r_arg1L  r22	/* dividend Low */
-	
+
+/* return: quotient */
 #define	r_arg2HH r21	/* divisor High */
 #define	r_arg2HL r20
 #define	r_arg2H  r19
@@ -452,100 +470,18 @@ __divhi3_exit:
 	
 #define	r_cnt __zero_reg__  /* loop count (0 after the loop!) */
 
-#if defined (L_umodsi3)
-
-	.global	__umodsi3
-	.func	__umodsi3
-__umodsi3:
-	clt
-	rcall	__udivsi3
-	.global	__umodsi3_ret
-__umodsi3_ret:
-#if defined (__AVR_ENHANCED__)
-	movw	r24, r_remHL
-	movw	r22, r_remL
-#else
-	mov	r25,r_remHH
-	mov	r24,r_remHL
-	mov	r23,r_remH
-	mov	r22,r_remL
-#endif
-	ret
-.endfunc
-#endif /* defined (L_umodsi3) */
-	
-#if defined (L_udivsi3)
-
-	.global	__udivsi3
-	.func	__udivsi3
-__udivsi3:
-	clr	__tmp_reg__
-	rjmp	__divsi_raw
-.endfunc
-#endif /* defined (L_udivsi3) */
-
-#if defined (L_modsi3)
-	
-	.global	__modsi3
-	.func	__modsi3
-__modsi3:
-	.global	_ldiv
-_ldiv:
-	rcall	__divsi3
-#if defined (__AVR_ENHANCED__)
-	movw	r18, r22
-	movw	r20, r24
-#else
-	mov	r18,r22		/* Needed for ldiv */
-	mov	r19,r23
-	mov	r20,r24
-	mov	r21,r25
-#endif
-	rjmp	__umodsi3_ret
-.endfunc
-#endif /* defined (L_modsi3) */
-
-#if defined (L_divsi3)
-
-	.global	__divsi3
-	.func	__divsi3
-__divsi3:
-        bst     r_arg1HH,7	; store sign of divident
-        mov     __tmp_reg__,r_arg1HH
-        eor     __tmp_reg__,r_arg2HH   ; r0.7 is sign of result
-	brtc	__divsi3_skip1
-	com	r_arg1HH
-	com	r_arg1HL
-	com	r_arg1H
-        neg     r_arg1L		; divident negative : negate
-	sbci	r_arg1H, 0xff
-	sbci	r_arg1HL,0xff
-	sbci	r_arg1HH,0xff
-__divsi3_skip1:
-        tst	r_arg2HH
-	brpl	__divsi3_skip2
-	com	r_arg2HH
-	com	r_arg2HL
-	com	r_arg2H
-        neg     r_arg2L		; divisor negative : negate
-	sbci	r_arg2H, 0xff
-	sbci	r_arg2HL,0xff
-	sbci	r_arg2HH,0xff
-__divsi3_skip2:
-	.global	__divsi_raw
-__divsi_raw:
+#if defined (L_udivmodsi4)
+	.global	__udivmodsi4
+	.func	__udivmodsi4
+__udivmodsi4:
 	ldi	r_remL, 33	; init loop counter
 	mov	r_cnt, r_remL
 	sub	r_remL,r_remL
-	sub	r_remH,r_remH
-#if defined (__AVR_ENHANCED__)
-	movw	r_remHL, r_remL
-#else
-	sub	r_remHL,r_remHL
-	sub	r_remHH,r_remHH	; clear remainder and carry
-#endif
-	rjmp	__divsi3_ep	; jump to entry point
-__divsi3_loop:
+	sub	r_remH,r_remH	; clear remainder and carry
+	mov_l	r_remHL, r_remL
+	mov_h	r_remHH, r_remH
+	rjmp	__udivmodsi4_ep	; jump to entry point
+__udivmodsi4_loop:
         rol	r_remL		; shift dividend into remainder
 	rol	r_remH
 	rol	r_remHL
@@ -554,43 +490,72 @@ __divsi3_loop:
 	cpc	r_remH,r_arg2H
 	cpc	r_remHL,r_arg2HL
 	cpc	r_remHH,r_arg2HH
-        brcs	__divsi3_ep	; remainder <= divisor
+	brcs	__udivmodsi4_ep	; remainder <= divisor
         sub	r_remL,r_arg2L	; restore remainder
         sbc	r_remH,r_arg2H
         sbc	r_remHL,r_arg2HL
         sbc	r_remHH,r_arg2HH
-__divsi3_ep:
+__udivmodsi4_ep:
         rol	r_arg1L		; shift dividend (with CARRY)
         rol	r_arg1H
         rol	r_arg1HL
         rol	r_arg1HH
         dec	r_cnt		; decrement loop counter
-        brne	__divsi3_loop	; loop
+        brne	__udivmodsi4_loop
 				; __zero_reg__ now restored (r_cnt == 0)
-	brtc	__divsi3_1
-	com	r_remHH
-	com	r_remHL
-	com	r_remH
-	neg	r_remL		; correct remainder sign
-	sbci	r_remH, 0xff
-	sbci	r_remHL,0xff
-	sbci	r_remHH,0xff
-__divsi3_1:
-	rol	__tmp_reg__
-	brcc	__divsi3_exit
-	adc	r_arg1L,__zero_reg__; correct result sign
-	adc	r_arg1H,__zero_reg__
-	adc	r_arg1HL,__zero_reg__
-	adc	r_arg1HH,__zero_reg__
-	ret
-__divsi3_exit:
 	com	r_arg1L
 	com	r_arg1H
 	com	r_arg1HL
 	com	r_arg1HH
+; div/mod results to return registers, as for the ldiv() function
+	mov_l	r_arg2L,  r_arg1L	; quotient
+	mov_h	r_arg2H,  r_arg1H
+	mov_l	r_arg2HL, r_arg1HL
+	mov_h	r_arg2HH, r_arg1HH
+	mov_l	r_arg1L,  r_remL	; remainder
+	mov_h	r_arg1H,  r_remH
+	mov_l	r_arg1HL, r_remHL
+	mov_h	r_arg1HH, r_remHH
 	ret
-.endfunc
-#endif /* defined (L_divsi3) */
+	.endfunc
+#endif /* defined (L_udivmodsi4) */
+
+#if defined (L_divmodsi4)
+	.global	__divmodsi4
+	.func	__divmodsi4
+__divmodsi4:
+        bst     r_arg1HH,7	; store sign of dividend
+        mov     __tmp_reg__,r_arg1HH
+        eor     __tmp_reg__,r_arg2HH   ; r0.7 is sign of result
+	rcall	__divmodsi4_neg1 ; dividend negative : negate
+	sbrc	r_arg2HH,7
+	rcall	__divmodsi4_neg2 ; divisor negative : negate
+	rcall	__udivmodsi4	; do the unsigned div/mod
+	rcall	__divmodsi4_neg1 ; correct remainder sign
+	rol	__tmp_reg__
+	brcc	__divmodsi4_exit
+__divmodsi4_neg2:
+	com	r_arg2HH
+	com	r_arg2HL
+	com	r_arg2H
+	neg	r_arg2L		; correct divisor/quotient sign
+	sbci	r_arg2H,0xff
+	sbci	r_arg2HL,0xff
+	sbci	r_arg2HH,0xff
+__divmodsi4_exit:
+	ret
+__divmodsi4_neg1:
+	brtc	__divmodsi4_exit
+	com	r_arg1HH
+	com	r_arg1HL
+	com	r_arg1H
+	neg	r_arg1L		; correct dividend/remainder sign
+	sbci	r_arg1H, 0xff
+	sbci	r_arg1HL,0xff
+	sbci	r_arg1HH,0xff
+	ret
+	.endfunc
+#endif /* defined (L_divmodsi4) */
 
 /**********************************
  * This is a prologue subroutine
@@ -664,12 +629,8 @@ __epilogue_restores__:
 	out	__SP_H__,r29
 	out	__SREG__,__tmp_reg__
 	out	__SP_L__,r28
-#if defined (__AVR_ENHANCED__)
-	movw	r28, r26
-#else
-	mov	r28,r26
-	mov	r29,r27
-#endif
+	mov_l	r28, r26
+	mov_h	r29, r27
 	ret
 .endfunc
 #endif /* defined (L_epilogue) */
@@ -708,7 +669,7 @@ __tablejump2__:
 	lpm
 	push	r0
 	ret
-.endfunc
 #endif
+.endfunc
 #endif /* defined (L_tablejump) */
 
