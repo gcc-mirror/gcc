@@ -1,3 +1,8 @@
+1998-12-15  Mark Mitchell  <mark@markmitchell.com>
+
+	* decl.c (finish_function): Undo inadvertant change in previous
+	patch.
+
 1998-12-14  Mark Mitchell  <mark@markmitchell.com>
 
 	* class.c (pushclass): Tweak handling of class-level bindings.
