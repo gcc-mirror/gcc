@@ -5094,6 +5094,7 @@ check_final_value (loop, v)
         or all uses follow that insn in the same basic block),
      - its final value can be calculated (this condition is different
        than the one above in record_giv)
+     - it's not used before the it's set
      - no assignments to the biv occur during the giv's lifetime.  */
 
 #if 0
@@ -5105,7 +5106,7 @@ check_final_value (loop, v)
   if ((final_value = final_giv_value (loop, v))
       && (v->always_computable || last_use_this_basic_block (v->dest_reg, v->insn)))
     {
-      int biv_increment_seen = 0;
+      int biv_increment_seen = 0, before_giv_insn = 0;
       rtx p = v->insn;
       rtx last_giv_use;
 
@@ -5135,7 +5136,10 @@ check_final_value (loop, v)
 	{
 	  p = NEXT_INSN (p);
 	  if (p == loop->end)
-	    p = NEXT_INSN (loop->start);
+	    {
+	      before_giv_insn = 1;
+	      p = NEXT_INSN (loop->start);
+	    }
 	  if (p == v->insn)
 	    break;
 
@@ -5153,7 +5157,7 @@ check_final_value (loop, v)
 
 	      if (reg_mentioned_p (v->dest_reg, PATTERN (p)))
 		{
-		  if (biv_increment_seen)
+		  if (biv_increment_seen || before_giv_insn)
 		    {
 		      v->replaceable = 0;
 		      v->not_replaceable = 1;
@@ -5438,14 +5442,13 @@ basic_induction_var (loop, x, mode, dest_reg, p, inc_val, mult_val, location)
 		       <= UNITS_PER_WORD)
 		   && (GET_MODE_CLASS (GET_MODE (SET_DEST (set)))
 		       == MODE_INT)
-		   && SUBREG_REG (SET_DEST (set)) == x))
-	      && basic_induction_var (loop, SET_SRC (set),
-				      (GET_MODE (SET_SRC (set)) == VOIDmode
-				       ? GET_MODE (x)
-				       : GET_MODE (SET_SRC (set))),
-				      dest_reg, insn,
-				      inc_val, mult_val, location))
-	    return 1;
+		   && SUBREG_REG (SET_DEST (set)) == x)))
+	      return basic_induction_var (loop, SET_SRC (set),
+					  (GET_MODE (SET_SRC (set)) == VOIDmode
+					   ? GET_MODE (x)
+					   : GET_MODE (SET_SRC (set))),
+					  dest_reg, insn,
+					  inc_val, mult_val, location);
 	}
       /* Fall through.  */
 
