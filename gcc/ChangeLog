@@ -1,5 +1,9 @@
 2003-09-14  Richard Sandiford  <rsandifo@redhat.com>
 
+	* Makefile.in (%.dvi): Remove excess $(docdir).
+
+2003-09-14  Richard Sandiford  <rsandifo@redhat.com>
+
 	* function.c (STACK_BYTES): Move definition to head of file.
 	(assign_parms): Don't pass current_function_pretend_args_size
 	directly to SETUP_INCOMING_VARARGS.  For partial register arguments,
