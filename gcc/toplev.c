@@ -3305,7 +3305,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
   if (write_symbols == DWARF_DEBUG
       && strcmp (language_string, "GNU C++") == 0)
     {
-      warning ("-g option for g++ on SVR4 systems: -g disabled");
+      warning ("-g option not supported for C++ on SVR4 systems");
       write_symbols = NO_DEBUG;
     }
 #endif /* defined(DWARF_DEBUGGING_INFO) */
