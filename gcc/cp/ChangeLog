@@ -1,3 +1,9 @@
+2004-02-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14278
+	* parser.c (cp_parser_parameter_declaration_list): Commit
+	to fewer tentative parses.
+
 2004-02-26  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14246

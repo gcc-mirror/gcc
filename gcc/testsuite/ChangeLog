@@ -1,3 +1,8 @@
+2004-02-26  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/14278
+	* g++.dg/parse/comma1.C: New test.
+
 2004-02-26  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* gcc.dg/builtins-config.h: Use #elif.

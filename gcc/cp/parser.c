@@ -11034,6 +11034,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser)
 	     cannot use this technique when inside a template argument
 	     list.  */
 	  if (!parser->in_template_argument_list_p
+	      && !parser->in_type_id_in_expr_p
 	      && cp_parser_parsing_tentatively (parser)
 	      && !cp_parser_committed_to_tentative_parse (parser)
 	      /* However, a parameter-declaration of the form
