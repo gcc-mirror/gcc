@@ -4980,7 +4980,10 @@ expand_expr (exp, target, tmode, modifier)
 	int old_temp_level = target_temp_slot_level;
 	push_temp_slots ();
 	target_temp_slot_level = temp_slot_level;
-	op0 = expand_expr (TREE_OPERAND (exp, 0), target, VOIDmode, modifier);
+	op0 = expand_expr (TREE_OPERAND (exp, 0), target, tmode, modifier);
+	/* If we're going to use this value, load it up now.  */
+	if (! ignore)
+	  op0 = force_not_mem (op0);
 	expand_cleanups_to (old_cleanups);
 	preserve_temp_slots (op0);
 	free_temp_slots ();
