@@ -1,3 +1,19 @@
+2004-02-13  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* config/s390/s390-protos.h (s390_output_symbolic_const): Remove.
+	(s390_output_addr_const_extra): Declare.
+	(s390_output_pool_entry): Remove FILE * argument.
+	* config/s390/s390.c (s390_output_symbolic_const): Remove.
+	(s390_output_addr_const_extra): New function.
+	(print_operand_address): Call output_addr_const instead of
+	s390_output_symbolic_const.
+	(print_operand): Likewise.
+	(s390_output_pool_entry): Use assemble_integer for symbolic constants.
+	Remove FILE * argument.
+	* config/s390/s390.h (OUTPUT_ADDR_CONST_EXTRA): Define.
+	* config/s390/s390.md ("*pool_entry"): Adapt s390_output_pool_entry
+	call.
+
 2004-02-13  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* cfgloopanal.c (mark_irreducible_loops): Rewriten.

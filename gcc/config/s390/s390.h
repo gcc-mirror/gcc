@@ -970,6 +970,13 @@ extern int flag_pic;
 #define PRINT_OPERAND(FILE, X, CODE) print_operand (FILE, X, CODE)
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR) print_operand_address (FILE, ADDR)
 
+/* Output machine-dependent UNSPECs in address constants.  */
+#define OUTPUT_ADDR_CONST_EXTRA(FILE, X, FAIL)		\
+do {							\
+  if (!s390_output_addr_const_extra (FILE, (X)))	\
+    goto FAIL;						\
+} while (0);
+
 /* Output an element of a case-vector that is absolute.  */
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE)				\
 do {									\
