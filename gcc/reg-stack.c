@@ -1186,8 +1186,16 @@ static rtx
 stack_result (decl)
      tree decl;
 {
-  rtx result = DECL_RTL (DECL_RESULT (decl));
+  rtx result;
 
+  /* If the value is supposed to be returned in memory, then clearly
+     it is not returned in a stack register.  */
+  if (aggregate_value_p (DECL_RESULT (decl)))
+    return 0;
+
+  result = DECL_RTL (DECL_RESULT (decl));
+  /* ?!?  What is this code supposed to do?  Can this code actually
+     trigger if we kick out aggregates above?  */
   if (result != 0
       && ! (GET_CODE (result) == REG
 	    && REGNO (result) < FIRST_PSEUDO_REGISTER))

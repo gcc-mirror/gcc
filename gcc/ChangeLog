@@ -1,3 +1,8 @@
+Tue Oct 19 02:03:00 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* reg-stack.c (stack_result): Aggregates are not returned in
+	stack registers.
+
 Mon Oct 18 01:41:35 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* combine.c (get_last_value): If the last set of a register
