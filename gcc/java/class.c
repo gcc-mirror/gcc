@@ -400,6 +400,7 @@ set_super_info (access_flags, this_class, super_class, interfaces_count)
   if (access_flags & ACC_INTERFACE) CLASS_INTERFACE (class_decl) = 1;
   if (access_flags & ACC_ABSTRACT)  CLASS_ABSTRACT (class_decl) = 1;
   if (access_flags & ACC_STATIC)    CLASS_STATIC (class_decl) = 1;
+  if (access_flags & ACC_PRIVATE)   CLASS_PRIVATE (class_decl) = 1;
 }
 
 /* Return length of inheritance chain of CLAS, where java.lang.Object is 0,
