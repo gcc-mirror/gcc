@@ -71,6 +71,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 /* Every structure or union's size must be a multiple of 2 bytes.  */
 
 #define STRUCTURE_SIZE_BOUNDARY 16
+  
+/* Allocation boundary (in *bits*) for storing arguments in argument list.  */
+/* Be compatible with native compiler.  */
+#undef PARM_BOUNDARY
+#define PARM_BOUNDARY 16
 
 /* cpp has to support a #sccs directive for the /usr/include files */
 
@@ -80,12 +85,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SDB_DEBUGGING_INFO
 
+#undef REGISTER_PREFIX
+#define REGISTER_PREFIX "%"
+
+#undef IMMEDIATE_PREFIX
+#define IMMEDIATE_PREFIX "&"
+
 #undef REGISTER_NAMES
 #define REGISTER_NAMES \
 {"%d0", "%d1", "%d2", "%d3", "%d4", "%d5", "%d6", "%d7",	\
  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%fp", "%sp",	\
  "%fp0", "%fp1", "%fp2", "%fp3", "%fp4", "%fp5", "%fp6", "%fp7"}
 
+#if 0 /* phdm@info.ucl.ac.be says the standard ones work.  */
 #undef FUNCTION_PROLOGUE
 #define FUNCTION_PROLOGUE(FILE, SIZE)     \
 { register int regno;						\
@@ -113,11 +125,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   if (exact_log2 (mask) >= 0)					\
     fprintf (FILE, "\tmov.l %s,-(%%sp)\n", reg_names[15 - exact_log2 (mask)]);  \
   else if (mask) fprintf (FILE, "\tmovm.l &0x%x,-(%%sp)\n", mask); }
+#endif /* 0 */
 
 #undef FUNCTION_PROFILER
 #define FUNCTION_PROFILER(FILE, LABEL_NO)	\
     fprintf (FILE, "\tmov.l &LP%%%d,%%a0\n\tjsr mcount%%\n", (LABEL_NO))
 
+#if 0 /* phdm@info.ucl.ac.be says the standard ones work.  */
 #undef FUNCTION_EPILOGUE
 #define FUNCTION_EPILOGUE(FILE, SIZE) \
 { register int regno;						\
@@ -174,6 +188,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
   if (current_function_pops_args)				\
     fprintf (FILE, "\trtd &%d\n", current_function_pops_args);	\
   else fprintf (FILE, "\trts\n"); }
+#endif /* 0 */
 
 /* This is how to output an insn to push a register on the stack.
    It need not be very fast code.  */
@@ -220,6 +235,7 @@ output_file_directive ((FILE), main_input_filename)
 #undef CPP_PREDEFINES
 #define CPP_PREDEFINES "-Dm68k -Dunix -DsysV68 -D__motorola__ -Asystem(unix) -Asystem(svr3) -Acpu(m68k) -Amachine(m68k)"
 
+#if 0 /* phdm@info.ucl.ac.be says the right way is with PARM_BOUNDARY.  */
 /* Specify how to pad function arguments.
    Value should be `upward', `downward' or `none'.
    Same as the default, except no padding for large or variable-size args.  */
@@ -230,6 +246,7 @@ output_file_directive ((FILE), main_input_filename)
        && int_size_in_bytes (TYPE) < PARM_BOUNDARY / BITS_PER_UNIT)	\
     : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)				\
    ? downward : none)
+#endif /* 0 */
 
 /* Override part of the obstack macros.  */
 
@@ -735,6 +752,8 @@ int switch_table_difference_label_flag;
       fprintf ((FILE), "jmp 8("); }			\
 }
 
+/* phdm@info.ucl.ac.be says to pass SIZE, not ROUNDED.  */
+
 /* This says how to output an assembler line
    to define a global common symbol.  */
 
@@ -742,7 +761,7 @@ int switch_table_difference_label_flag;
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (SIZE)))
 
 /* This says how to output an assembler line
    to define a local common symbol.  */
@@ -751,7 +770,7 @@ int switch_table_difference_label_flag;
 #define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)  \
 ( fputs ("\tlcomm ", (FILE)),			\
   assemble_name ((FILE), (NAME)),		\
-  fprintf ((FILE), ",%u\n", (ROUNDED)))
+  fprintf ((FILE), ",%u\n", (SIZE)))
 
 
 /* Override usual definitions of SDB output macros.
