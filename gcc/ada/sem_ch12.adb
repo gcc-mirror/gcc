@@ -7175,6 +7175,7 @@ package body Sem_Ch12 is
       Act_Body_Id   : Entity_Id;
       Pack_Body     : Node_Id;
       Prev_Formal   : Entity_Id;
+      Ret_Expr      : Node_Id;
       Unit_Renaming : Node_Id;
 
       Parent_Installed : Boolean := False;
@@ -7351,6 +7352,13 @@ package body Sem_Ch12 is
                              PE_Access_Before_Elaboration))));
 
          else
+            Ret_Expr :=
+              Make_Raise_Program_Error (Loc,
+                Reason => PE_Access_Before_Elaboration);
+
+            Set_Etype (Ret_Expr, (Etype (Anon_Id)));
+            Set_Analyzed (Ret_Expr);
+
             Act_Body :=
               Make_Subprogram_Body (Loc,
                 Specification =>
@@ -7365,12 +7373,8 @@ package body Sem_Ch12 is
                   Declarations               => Empty_List,
                   Handled_Statement_Sequence =>
                     Make_Handled_Sequence_Of_Statements (Loc,
-                      Statements => New_List (
-                        Make_Return_Statement (Loc,
-                          Expression =>
-                            Make_Raise_Program_Error (Loc,
-                              Reason =>
-                                PE_Access_Before_Elaboration)))));
+                      Statements =>
+                        New_List (Make_Return_Statement (Loc, Ret_Expr))));
          end if;
 
          Pack_Body := Make_Package_Body (Loc,
@@ -8209,6 +8213,7 @@ package body Sem_Ch12 is
 
             elsif Nkind (True_Parent) = N_Package_Declaration
               and then Present (Generic_Parent (Specification (True_Parent)))
+              and then Nkind (Parent (True_Parent)) /= N_Compilation_Unit
             then
                --  Parent is an instantiation within another specification.
                --  Declaration for instance has been inserted before original

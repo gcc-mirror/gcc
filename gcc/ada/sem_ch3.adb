@@ -734,6 +734,11 @@ package body Sem_Ch3 is
       if Nkind (T_Def) = N_Access_Function_Definition then
          Analyze (Subtype_Mark (T_Def));
          Set_Etype (Desig_Type, Entity (Subtype_Mark (T_Def)));
+
+         if not (Is_Type (Etype (Desig_Type))) then
+            Error_Msg_N
+             ("expect type in function specification", Subtype_Mark (T_Def));
+         end if;
       else
          Set_Etype (Desig_Type, Standard_Void_Type);
       end if;

@@ -1,6 +1,51 @@
 2003-10-22  Arnaud Charlet  <charlet@act-europe.fr>
 
 	* mingw32.h: New file.
+	* gnat_wrapper.adb: New file.
+
+2003/10/22  Jerome Roussel  <roussel@act-europe.fr>
+
+	* g-regpat.ads, g-regpat.adb (Match): new function, to know if a
+	string match a pre compiled regular expression (the corresponding
+	version of the function working on a raw regular expression)
+	Fix typos in various comments
+	Update copyright notice in spec
+
+2003/10/21  Gary Dismukes  <dismukes@gnat.com>
+
+	* exp_ch3.adb: 
+	(Component_Needs_Simple_Initialization): Return False when the type is a
+	packed bit array. Revise spec comments to document this case.
+
+	* exp_prag.adb: 
+	(Expand_Pragma_Import): Set any expression on the imported object to
+	empty to avoid initializing imported objects (in particular this
+	covers the case of zero-initialization of bit arrays).
+	Update copyright notice.
+
+2003/10/21  Ed Schonberg  <schonberg@gnat.com>
+
+	* sem_ch12.adb: 
+	(Load_Parent_Of_Generic): If parent is compilation unit, stop search,
+	a subunit is missing.
+	(Instantiate_Subprogram_Body): If body of function is missing, set type
+	of return expression explicitly in dummy body, to prevent cascaded
+	errors when a subunit is missing.
+	Fixes PR 5677.
+
+	* sem_ch3.adb: 
+	(Access_Subprogram_Declaration): Verify that return type is valid.
+	Fixes PR 8693.
+
+	* sem_elab.adb: 
+	(Check_Elab_Calls): Do not apply elaboration checks if the main unit is
+	generic.
+	Fixes PR 12318.
+
+	* sem_util.adb: 
+	(Corresponding_Discriminant): If the scope of the discriminant is a
+	private type without discriminant, use its full view.
+	Fixes PR 8247.
 
 2003-10-21  Arnaud Charlet  <charlet@act-europe.fr>
 

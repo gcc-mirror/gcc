@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---           Copyright (C) 1996-2002 Ada Core Technologies, Inc.            --
+--           Copyright (C) 1996-2003 Ada Core Technologies, Inc.            --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -475,7 +475,7 @@ pragma Preelaborate (Regpat);
      (Expression : String;
       Data       : String;
       Size       : Program_Size := 0;
-      Data_First : Integer := -1;
+      Data_First : Integer  := -1;
       Data_Last  : Positive := Positive'Last)
       return       Natural;
    --  Return the position where Data matches, or (Data'First - 1) if
@@ -492,7 +492,7 @@ pragma Preelaborate (Regpat);
      (Expression : String;
       Data       : String;
       Size       : Program_Size := 0;
-      Data_First : Integer := -1;
+      Data_First : Integer  := -1;
       Data_Last  : Positive := Positive'Last)
       return       Boolean;
    --  Return True if Data matches Expression. Match raises Storage_Error
@@ -517,10 +517,20 @@ pragma Preelaborate (Regpat);
       Data       : String;
       Data_First : Integer  := -1;
       Data_Last  : Positive := Positive'Last)
-      return Natural;
+     return Natural;
+   --  Match Data using the given pattern matcher.
    --  Return the position where Data matches, or (Data'First - 1) if there is
-   --  no match. Raises Expression_Error if Expression is not a legal regular
-   --  expression.
+   --  no match.
+   --
+   --  See description of Data_First and Data_Last above.
+
+   function  Match
+     (Self       : Pattern_Matcher;
+      Data       : String;
+      Data_First : Integer  := -1;
+      Data_Last  : Positive := Positive'Last)
+     return Boolean;
+   --  Return True if Data matches using the given pattern matcher.
    --
    --  See description of Data_First and Data_Last above.
 
@@ -534,7 +544,6 @@ pragma Preelaborate (Regpat);
       Data_First : Integer  := -1;
       Data_Last  : Positive := Positive'Last);
    --  Match Data using the given pattern matcher and store result in Matches.
-   --  Raises Expression_Error if Expression is not a legal regular expression.
    --  The expression matches if Matches (0) /= No_Match.
    --
    --  At most Matches'Length parenthesis are returned.
