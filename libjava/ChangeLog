@@ -1,5 +1,10 @@
 2003-06-27  Michael Koch  <konqueror@gmx.de>
 
+	* java/text/Format.java
+	(serialVersionUID): Fixed value.
+
+2003-06-27  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/Inet4Address.java
 	(Inet4Address): Made package-private.
 	* java/net/Inet6Address.java
