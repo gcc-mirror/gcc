@@ -338,81 +338,92 @@ extern void rtvec_check_failed_bounds PARAMS ((rtvec, int,
 #define RTX_FLAG(RTX, FLAG)	((RTX)->FLAG)
 
 #if defined ENABLE_RTL_FLAG_CHECKING
-#define RTL_FLAG_CHECK1(RTX, C1) __extension__			\
+#define RTL_FLAG_CHECK1(NAME, RTX, C1) __extension__			\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1)						\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
+      			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK2(RTX, C1, C2) __extension__		\
+#define RTL_FLAG_CHECK2(NAME, RTX, C1, C2) __extension__		\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2)			\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME,_rtx, __FILE__, __LINE__,		\
+      			      __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK3(RTX, C1, C2, C3) __extension__		\
+#define RTL_FLAG_CHECK3(NAME, RTX, C1, C2, C3) __extension__		\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2 			\
        && GET_CODE(_rtx) != C3)						\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
+      			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK4(RTX, C1, C2, C3, C4) __extension__	\
+#define RTL_FLAG_CHECK4(NAME, RTX, C1, C2, C3, C4) __extension__	\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4)			\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
+      			      __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK5(RTX, C1, C2, C3, C4, C5) __extension__	\
+#define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5) __extension__	\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5)						\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
+       			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK6(RTX, C1, C2, C3, C4, C5, C6) __extension__	\
+#define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		\
+  __extension__								\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6)			\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME,_rtx, __FILE__, __LINE__,		\
+      			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK7(RTX, C1, C2, C3, C4, C5, C6, C7) __extension__	\
+#define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		\
+  __extension__								\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6			\
        && GET_CODE(_rtx) != C7)						\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
+       			     __FUNCTION__);				\
    _rtx; })
 
-#define RTL_FLAG_CHECK8(RTX, C1, C2, C3, C4, C5, C6, C7, C8) __extension__ \
+#define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	\
+  __extension__								\
 ({ rtx const _rtx = (RTX);						\
    if (GET_CODE(_rtx) != C1 && GET_CODE(_rtx) != C2	 		\
        && GET_CODE(_rtx) != C3 && GET_CODE(_rtx) != C4			\
        && GET_CODE(_rtx) != C5 && GET_CODE(_rtx) != C6			\
        && GET_CODE(_rtx) != C7 && GET_CODE(_rtx) != C8)			\
-     rtl_check_failed_flag  (_rtx, __FILE__, __LINE__, __FUNCTION__);	\
+     rtl_check_failed_flag  (NAME, _rtx, __FILE__, __LINE__,		\
+       			     __FUNCTION__);				\
    _rtx; })
 
-extern void rtl_check_failed_flag PARAMS ((rtx, const char *, int,
-      					 const char *))
+extern void rtl_check_failed_flag PARAMS ((const char *, rtx, const char *,
+      					   int, const char *))
     ATTRIBUTE_NORETURN
     ;
 
 #else	/* not ENABLE_RTL_FLAG_CHECKING */
 
-#define RTL_FLAG_CHECK1(RTX, C1)			(RTX)
-#define RTL_FLAG_CHECK2(RTX, C1, C2)			(RTX)
-#define RTL_FLAG_CHECK3(RTX, C1, C2, C3)		(RTX)
-#define RTL_FLAG_CHECK4(RTX, C1, C2, C3, C4)		(RTX)
-#define RTL_FLAG_CHECK5(RTX, C1, C2, C3, C4, C5)  	(RTX)
-#define RTL_FLAG_CHECK6(RTX, C1, C2, C3, C4, C5, C6)	(RTX)
-#define RTL_FLAG_CHECK7(RTX, C1, C2, C3, C4, C5, C6, C7) (RTX)
-#define RTL_FLAG_CHECK8(RTX, C1, C2, C3, C4, C5, C6, C7, C8) (RTX)
+#define RTL_FLAG_CHECK1(NAME, RTX, C1)					(RTX)
+#define RTL_FLAG_CHECK2(NAME, RTX, C1, C2)				(RTX)
+#define RTL_FLAG_CHECK3(NAME, RTX, C1, C2, C3)				(RTX)
+#define RTL_FLAG_CHECK4(NAME, RTX, C1, C2, C3, C4)			(RTX)
+#define RTL_FLAG_CHECK5(NAME, RTX, C1, C2, C3, C4, C5)  		(RTX)
+#define RTL_FLAG_CHECK6(NAME, RTX, C1, C2, C3, C4, C5, C6)		(RTX)
+#define RTL_FLAG_CHECK7(NAME, RTX, C1, C2, C3, C4, C5, C6, C7)		(RTX)
+#define RTL_FLAG_CHECK8(NAME, RTX, C1, C2, C3, C4, C5, C6, C7, C8)	(RTX)
 #endif
 
 #define CLEAR_RTX_FLAGS(RTX)	\
@@ -504,39 +515,47 @@ do {				\
    They are always in the same basic block as this insn.  */
 #define LOG_LINKS(INSN)	XEXP(INSN, 5)
 
-#define RTX_INTEGRATED_P(RTX)	\
-  (RTL_FLAG_CHECK8((RTX), INSN, CALL_INSN, JUMP_INSN, INSN_LIST,	\
-		   BARRIER, CODE_LABEL, CONST, NOTE)->integrated)
-#define RTX_UNCHANGING_P(RTX)		\
-  (RTL_FLAG_CHECK3((RTX), REG, MEM, CONCAT)->unchanging)
-#define RTX_FRAME_RELATED_P(RTX)	\
-  (RTL_FLAG_CHECK5((RTX), INSN, CALL_INSN, JUMP_INSN, BARRIER,	\
-		   SET)->frame_related)
+#define RTX_INTEGRATED_P(RTX)						\
+  (RTL_FLAG_CHECK8("RTX_INTEGRATED_P", (RTX), INSN, CALL_INSN,		\
+		   JUMP_INSN, INSN_LIST, BARRIER, CODE_LABEL, CONST,	\
+		   NOTE)->integrated)
+#define RTX_UNCHANGING_P(RTX)						\
+  (RTL_FLAG_CHECK3("RTX_UNCHANGING_P", (RTX), REG, MEM, CONCAT)->unchanging)
+#define RTX_FRAME_RELATED_P(RTX)					\
+  (RTL_FLAG_CHECK5("RTX_FRAME_RELATED_P", (RTX), INSN, CALL_INSN,	\
+		   JUMP_INSN, BARRIER, SET)->frame_related)
 
-/* 1 if insn has been deleted.  */
-#define INSN_DELETED_P(RTX)	\
-  (RTL_FLAG_CHECK6((RTX), INSN, CALL_INSN, JUMP_INSN, CODE_LABEL,	\
-		   BARRIER, NOTE)->volatil)
+/* 1 if RTX is an insn that has been deleted.  */
+#define INSN_DELETED_P(RTX)						\
+  (RTL_FLAG_CHECK6("INSN_DELETED_P", (RTX), INSN, CALL_INSN, JUMP_INSN,	\
+		   CODE_LABEL, BARRIER, NOTE)->volatil)
 
-/* 1 if insn is a call to a const or pure function.  */
-#define CONST_OR_PURE_CALL_P(RTX)	\
-  (RTL_FLAG_CHECK3((RTX), CALL_INSN, NOTE, EXPR_LIST)->unchanging)
+/* 1 if RTX is a call to a const or pure function.  */
+#define CONST_OR_PURE_CALL_P(RTX)					\
+  (RTL_FLAG_CHECK3("CONST_OR_PURE_CALL_P", (RTX), CALL_INSN, NOTE,	\
+		   EXPR_LIST)->unchanging)
 
-/* 1 if insn (assumed to be a CALL_INSN) is a sibling call.  */
-#define SIBLING_CALL_P(INSN) (RTL_FLAG_CHECK1((INSN), CALL_INSN)->jump)
+/* 1 if RTX is a call_insn for a sibling call.  */
+#define SIBLING_CALL_P(RTX)						\
+  (RTL_FLAG_CHECK1("SIBLING_CALL_P", (RTX), CALL_INSN)->jump)
 
-/* 1 in an INSN in the delay slot of a branch insn if an annulling branch
-   should be used.  */
-#define INSN_ANNULLED_BRANCH_P(RTX) (RTL_FLAG_CHECK1((RTX), INSN)->unchanging)
+/* 1 if RTX is an insn in the delay slot of a branch insn for which an
+   annulling branch should be used.  */
+#define INSN_ANNULLED_BRANCH_P(RTX)					\
+  (RTL_FLAG_CHECK2("INSN_ANNULLED_BRANCH_P", (RTX), INSN,		\
+		   JUMP_INSN)->unchanging)
 
-/* 1 if insn is a dead code.  Valid only for dead-code elimination phase.  */
-#define INSN_DEAD_CODE_P(RTX) (RTL_FLAG_CHECK1((RTX), INSN)->in_struct)
+/* 1 if RTX is an insn that is dead code.  Valid only for dead-code
+   elimination phase.  */
+#define INSN_DEAD_CODE_P(RTX)						\
+  (RTL_FLAG_CHECK1("INSN_DEAD_CODE_P", (RTX), INSN)->in_struct)
 
-/* 1 if insn is in a delay slot and is from the target of the branch.  If
-   the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be
+/* 1 if RTX is an insn in a delay slot and is from the target of the branch.
+   If the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be
    executed if the branch is taken.  For annulled branches with this bit
    clear, the insn should be executed only if the branch is not taken.  */
-#define INSN_FROM_TARGET_P(RTX) (RTL_FLAG_CHECK1((RTX), INSN)->in_struct)
+#define INSN_FROM_TARGET_P(RTX)						\
+  (RTL_FLAG_CHECK2("INSN_FROM_TARGET_P", (RTX), INSN, JUMP_INSN)->in_struct)
 
 #define ADDR_DIFF_VEC_FLAGS(RTX) X0ADVFLAGS(RTX, 4)
 
@@ -902,16 +921,17 @@ extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 #define REGNO(RTX) XCUINT (RTX, 0, REG)
 #define ORIGINAL_REGNO(RTX) X0UINT (RTX, 1)
 
-/* For a REG rtx, REG_FUNCTION_VALUE_P is nonzero if the reg
-   is the current function's return value.  */
+/* 1 if RTX is a reg that is the current function's return value.  */
+#define REG_FUNCTION_VALUE_P(RTX)					\
+  (RTL_FLAG_CHECK1("REG_FUNCTION_VALUE_P", (RTX), REG)->integrated)
 
-#define REG_FUNCTION_VALUE_P(RTX) (RTL_FLAG_CHECK1((RTX), REG)->integrated)
+/* 1 if RTX is a reg that corresponds to a variable declared by the user.  */
+#define REG_USERVAR_P(RTX)						\
+  (RTL_FLAG_CHECK1("REG_USERVAR_P", (RTX), REG)->volatil)
 
-/* 1 in a REG rtx if it corresponds to a variable declared by the user.  */
-#define REG_USERVAR_P(RTX) (RTL_FLAG_CHECK1((RTX), REG)->volatil)
-
-/* 1 in a REG rtx if the register is a pointer.  */
-#define REG_POINTER(RTX) (RTL_FLAG_CHECK1((RTX), REG)->frame_related)
+/* 1 if RTX is a reg that holds a pointer value.  */
+#define REG_POINTER(RTX)						\
+  (RTL_FLAG_CHECK1("REG_POINTER", (RTX), REG)->frame_related)
 
 /* 1 if the given register REG corresponds to a hard register.  */
 #define HARD_REGISTER_P(REG) (HARD_REGISTER_NUM_P (REGNO (REG)))
@@ -956,27 +976,30 @@ extern unsigned int subreg_regno_offset 	PARAMS ((unsigned int,
 							 enum machine_mode));
 extern unsigned int subreg_regno 	PARAMS ((rtx));
 
-/* 1 if the REG contained in SUBREG_REG is already known to be
-   sign- or zero-extended from the mode of the SUBREG to the mode of
+/* 1 if RTX is a subreg containing a reg that is already known to be
+   sign- or zero-extended from the mode of the subreg to the mode of
    the reg.  SUBREG_PROMOTED_UNSIGNED_P gives the signedness of the
    extension.
 
    When used as a LHS, is means that this extension must be done
    when assigning to SUBREG_REG.  */
 
-#define SUBREG_PROMOTED_VAR_P(RTX) (RTL_FLAG_CHECK1((RTX), SUBREG)->in_struct)
-#define SUBREG_PROMOTED_UNSIGNED_SET(RTX, VAL)	\
-do {						\
-  RTL_FLAG_CHECK1((RTX), SUBREG);		\
-  if ((VAL) < 0)				\
-    (RTX)->volatil = 1;				\
-  else {					\
-    (RTX)->volatil = 0;				\
-    (RTX)->unchanging = (VAL);			\
-  }						\
+#define SUBREG_PROMOTED_VAR_P(RTX)					\
+  (RTL_FLAG_CHECK1("SUBREG_PROMOTED", (RTX), SUBREG)->in_struct)
+
+#define SUBREG_PROMOTED_UNSIGNED_SET(RTX, VAL)				\
+do {									\
+  RTL_FLAG_CHECK1("SUBREG_PROMOTED_UNSIGNED_SET", (RTX), SUBREG);	\
+  if ((VAL) < 0)							\
+    (RTX)->volatil = 1;							\
+  else {								\
+    (RTX)->volatil = 0;							\
+    (RTX)->unchanging = (VAL);						\
+  }									\
 } while (0)
 #define SUBREG_PROMOTED_UNSIGNED_P(RTX)	\
-  ((RTL_FLAG_CHECK1((RTX), SUBREG)->volatil) ? -1 : (RTX)->unchanging)
+  ((RTL_FLAG_CHECK1("SUBREG_PROMOTED_UNSIGNED_P", (RTX), SUBREG)->volatil) \
+     ? -1 : (RTX)->unchanging)
 
 /* Access various components of an ASM_OPERANDS rtx.  */
 
@@ -996,23 +1019,27 @@ do {						\
 #define ASM_OPERANDS_SOURCE_FILE(RTX) XCSTR (RTX, 5, ASM_OPERANDS)
 #define ASM_OPERANDS_SOURCE_LINE(RTX) XCINT (RTX, 6, ASM_OPERANDS)
 
-/* For a MEM RTX, 1 if we should keep the alias set for this mem
+/* 1 if RTX is a mem and we should keep the alias set for this mem
    unchanged when we access a component.  Set to 1, or example, when we
    are already in a non-addressable component of an aggregate.  */
-#define MEM_KEEP_ALIAS_SET_P(RTX) (RTL_FLAG_CHECK1((RTX), MEM)->jump)
+#define MEM_KEEP_ALIAS_SET_P(RTX)					\
+  (RTL_FLAG_CHECK1("MEM_KEEP_ALIAS_SET_P", (RTX), MEM)->jump)
 
-/* For a MEM rtx, 1 if it's a volatile reference.
-   Also in an ASM_OPERANDS rtx.  */
-#define MEM_VOLATILE_P(RTX) (RTL_FLAG_CHECK2((RTX), MEM, ASM_OPERANDS)->volatil)
+/* 1 if RTX is a mem or asm_operand for a volatile reference.  */
+#define MEM_VOLATILE_P(RTX)						\
+  (RTL_FLAG_CHECK3("MEM_VOLATILE_P", (RTX), MEM, ASM_OPERANDS,		\
+		   ASM_INPUT)->volatil)
 
-/* For a MEM rtx, 1 if it refers to an aggregate, either to the
+/* 1 if RTX is a mem that refers to an aggregate, either to the
    aggregate itself of to a field of the aggregate.  If zero, RTX may
    or may not be such a reference.  */
-#define MEM_IN_STRUCT_P(RTX) (RTL_FLAG_CHECK1((RTX), MEM)->in_struct)
+#define MEM_IN_STRUCT_P(RTX)						\
+  (RTL_FLAG_CHECK1("MEM_IN_STRUCT_P", (RTX), MEM)->in_struct)
 
-/* For a MEM rtx, 1 if it refers to a scalar.  If zero, RTX may or may
+/* 1 if RTX is a mem that refers to a scalar.  If zero, RTX may or may
    not refer to a scalar.  */
-#define MEM_SCALAR_P(RTX) (RTL_FLAG_CHECK1((RTX), MEM)->frame_related)
+#define MEM_SCALAR_P(RTX)						\
+  (RTL_FLAG_CHECK1("MEM_SCALAR_P", (RTX), MEM)->frame_related)
 
 /* If VAL is non-zero, set MEM_IN_STRUCT_P and clear MEM_SCALAR_P in
    RTX.  Otherwise, vice versa.  Use this macro only when you are
@@ -1078,33 +1105,37 @@ do {						\
    MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
-/* For a LABEL_REF, 1 means that this reference is to a label outside the
-   loop containing the reference.  */
-#define LABEL_OUTSIDE_LOOP_P(RTX) (RTL_FLAG_CHECK1((RTX), LABEL_REF)->in_struct)
+/* 1 if RTX is a label_ref to a label outside the loop containing the
+   reference.  */
+#define LABEL_OUTSIDE_LOOP_P(RTX)					\
+  (RTL_FLAG_CHECK1("LABEL_OUTSIDE_LOOP_P", (RTX), LABEL_REF)->in_struct)
 
-/* For a LABEL_REF, 1 means it is for a nonlocal label.  */
-/* Likewise in an EXPR_LIST for a REG_LABEL note.  */
-#define LABEL_REF_NONLOCAL_P(RTX)	\
-  (RTL_FLAG_CHECK2((RTX), LABEL_REF, REG_LABEL)->volatil)
+/* 1 if RTX is a label_ref for a nonlocal label.  */
+/* Likewise in an expr_list for a reg_label note.  */
+#define LABEL_REF_NONLOCAL_P(RTX)					\
+  (RTL_FLAG_CHECK2("LABEL_REF_NONLOCAL_P", (RTX), LABEL_REF,		\
+		   REG_LABEL)->volatil)
 
-/* For a CODE_LABEL, 1 means always consider this label to be needed.  */
-#define LABEL_PRESERVE_P(RTX) \
-  (RTL_FLAG_CHECK2((RTX), CODE_LABEL, NOTE)->in_struct)
+/* 1 if RTX is a code_label that should always be considered to be needed.  */
+#define LABEL_PRESERVE_P(RTX)						\
+  (RTL_FLAG_CHECK2("LABEL_PRESERVE_P", (RTX), CODE_LABEL, NOTE)->in_struct)
 
-/* For a REG, 1 means the register is used only in an exit test of a loop.  */
-#define REG_LOOP_TEST_P(RTX) (RTL_FLAG_CHECK1((RTX), REG)->in_struct)
+/* 1 if RTX is a reg that is used only in an exit test of a loop.  */
+#define REG_LOOP_TEST_P(RTX)						\
+  (RTL_FLAG_CHECK1("REG_LOOP_TEST_P", (RTX), REG)->in_struct)
 
-/* During sched, for an insn, 1 means that the insn must be scheduled together
+/* During sched, 1 if RTX is an insn that must be scheduled together
    with the preceding insn.  */
-#define SCHED_GROUP_P(RTX)	\
-  (RTL_FLAG_CHECK6((RTX), INSN, JUMP_INSN, CALL_INSN, CODE_LABEL, \
-		          BARRIER, NOTE)->in_struct)
+#define SCHED_GROUP_P(RTX)						\
+  (RTL_FLAG_CHECK6("SCHED_GROUP_P", (RTX), INSN, JUMP_INSN, CALL_INSN,	\
+		          CODE_LABEL, BARRIER, NOTE)->in_struct)
 
 /* For a SET rtx, SET_DEST is the place that is set
    and SET_SRC is the value it is set to.  */
 #define SET_DEST(RTX) XC2EXP(RTX, 0, SET, CLOBBER)
 #define SET_SRC(RTX) XCEXP(RTX, 1, SET)
-#define SET_IS_RETURN_P(RTX) (RTL_FLAG_CHECK1((RTX), SET)->jump)
+#define SET_IS_RETURN_P(RTX)						\
+  (RTL_FLAG_CHECK1("SET_IS_RETURN_P", (RTX), SET)->jump)
 
 /* For a TRAP_IF rtx, TRAP_CONDITION is an expression.  */
 #define TRAP_CONDITION(RTX) XCEXP (RTX, 0, TRAP_IF)
@@ -1116,22 +1147,27 @@ do {						\
 #define COND_EXEC_TEST(RTX) XCEXP (RTX, 0, COND_EXEC)
 #define COND_EXEC_CODE(RTX) XCEXP (RTX, 1, COND_EXEC)
 
-/* 1 in a SYMBOL_REF if it addresses this function's constants pool.  */
-#define CONSTANT_POOL_ADDRESS_P(RTX)	\
-  (RTL_FLAG_CHECK1((RTX), SYMBOL_REF)->unchanging)
+/* 1 if RTX is a symbol_ref that addresses this function's constants pool.  */
+#define CONSTANT_POOL_ADDRESS_P(RTX)					\
+  (RTL_FLAG_CHECK1("CONSTANT_POOL_ADDRESS_P", (RTX), SYMBOL_REF)->unchanging)
 
-/* 1 in a SYMBOL_REF if it addresses this function's string constant pool.  */
-#define STRING_POOL_ADDRESS_P(RTX)	\
-  (RTL_FLAG_CHECK1((RTX), SYMBOL_REF)->frame_related)
+/* 1 if RTX is a symbol_ref that addresses this function's string constant
+   pool  */
+#define STRING_POOL_ADDRESS_P(RTX)					\
+  (RTL_FLAG_CHECK1("STRING_POOL_ADDRESS_P", (RTX), SYMBOL_REF)->frame_related)
 
-/* Flag in a SYMBOL_REF for machine-specific purposes.  */
-#define SYMBOL_REF_FLAG(RTX) (RTL_FLAG_CHECK1((RTX), SYMBOL_REF)->volatil)
+/* Used if RTX is a symbol_ref, for machine-specific purposes.  */
+#define SYMBOL_REF_FLAG(RTX)						\
+  (RTL_FLAG_CHECK1("SYMBOL_REF_FLAG", (RTX), SYMBOL_REF)->volatil)
 
-/* 1 means a SYMBOL_REF has been the library function in emit_library_call.  */
-#define SYMBOL_REF_USED(RTX) (RTL_FLAG_CHECK1((RTX), SYMBOL_REF)->used)
+/* 1 if RTX is a symbol_ref that has been the library function in
+   emit_library_call.  */
+#define SYMBOL_REF_USED(RTX)						\
+  (RTL_FLAG_CHECK1("SYMBOL_REF_USED", (RTX), SYMBOL_REF)->used)
 
-/* 1 means a SYMBOL_REF is weak.  */
-#define SYMBOL_REF_WEAK(RTX) (RTL_FLAG_CHECK1((RTX), SYMBOL_REF)->integrated)
+/* 1 if RTX is a symbol_ref for a weak symbol.  */
+#define SYMBOL_REF_WEAK(RTX)						\
+  (RTL_FLAG_CHECK1("SYMBOL_REF_WEAK", (RTX), SYMBOL_REF)->integrated)
 
 /* Define a macro to look for REG_INC notes,
    but save time on machines where they never exist.  */
