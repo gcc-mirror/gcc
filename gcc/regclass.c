@@ -974,7 +974,7 @@ scan_one_insn (insn, pass)
       return PREV_INSN (newinsn);
     }
 
-  record_operand_costs(insn, op_costs, reg_pref);
+  record_operand_costs (insn, op_costs, reg_pref);
 
   /* Now add the cost for each operand to the total costs for
      its register.  */
@@ -1126,7 +1126,7 @@ regclass (f, nregs, dump)
       if (dump)
         {
 	  dump_regclass (dump);
-	  fprintf(dump,"\n");
+	  fprintf (dump,"\n");
 	}
       for (i = FIRST_PSEUDO_REGISTER; i < nregs; i++)
 	{
@@ -1187,7 +1187,7 @@ regclass (f, nregs, dump)
 		  || reg_pref[i].altclass != (int) alt))
 	    {
 	      static const char *const reg_class_names[] = REG_CLASS_NAMES;
-	      fprintf(dump, "  Register %i", i);
+	      fprintf (dump, "  Register %i", i);
 	      if (alt == ALL_REGS || best == ALL_REGS)
 		fprintf (dump, " pref %s\n", reg_class_names[(int) best]);
 	      else if (alt == NO_REGS)
