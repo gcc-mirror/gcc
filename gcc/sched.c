@@ -1474,13 +1474,7 @@ priority (insn)
 	     insn_cost of the current instruction to its priority (e.g.
 	     move the insn_cost call down to the end).  */
 
-	  if (REG_NOTE_KIND (prev) == 0)
-	    /* Data dependence.  */
-	    prev_priority = priority (x) + insn_cost (x, prev, insn) - 1;
-	  else
-	    /* Anti or output dependence.  Don't add the latency of this
-	       insn's result, because it isn't being used.  */
-	    prev_priority = priority (x);
+	  prev_priority = priority (x) + insn_cost (x, prev, insn) - 1;
 
 	  if (prev_priority > max_priority)
 	    max_priority = prev_priority;
