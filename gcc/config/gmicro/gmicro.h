@@ -1,8 +1,7 @@
 /* Definitions of target machine for GNU compiler.  Gmicro (TRON) version.
-   Ported by Masanobu Yuhara, Fujitsu Laboratories LTD.
-   (yuhara@flab.fujitsu.co.jp)
-
    Copyright (C) 1987, 1988, 1989 Free Software Foundation, Inc.
+   Contributed by Masanobu Yuhara, Fujitsu Laboratories LTD.
+   (yuhara@flab.fujitsu.co.jp)
 
 This file is part of GNU CC.
 
@@ -16,13 +15,9 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
-Among other things, the copyright
-notice and this notice must be preserved on all copies.
-
 You should have received a copy of the GNU General Public License
 along with GNU CC; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
-*/
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.   */
 
 
 /* Note that some other tm.h files include this one and then override
@@ -1584,7 +1579,7 @@ myprcode(GET_CODE(X)); */	\
 	ASM_OUTPUT_FLOAT_OPERAND (FILE, u1.f);				\
       else								\
 	fprintf (FILE, "#h'%x", u1.i); }				\
-  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) != DImode)	\
+  else if (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == DFmode)	\
     { union { double d; int i[2]; } u;					\
       u.i[0] = CONST_DOUBLE_LOW (X); u.i[1] = CONST_DOUBLE_HIGH (X);	\
       ASM_OUTPUT_DOUBLE_OPERAND (FILE, u.d); }				\
