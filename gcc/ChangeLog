@@ -1,3 +1,13 @@
+2004-07-27  Nick Clifton  <nickc@redhat.com>
+
+	* config/m32r/m32r.c: Include integrate.h in order to get the
+	prototype for get_hard_reg_initial_val().
+
+	* config/m32r/m32r.md (m32rpipeline): Remove unused value "m32r"
+	and tidy up indentation.
+	(final_presence_set): Use absence_set instead, so that if there is
+	nothing in the "o" pipe the "s" pipe can be scheduled.
+
 2004-07-27  Diego Novillo  <dnovillo@redhat.com>
 
 	* tree-ssa-alias.c (create_name_tags): Ignore pointers that
