@@ -474,8 +474,8 @@ depend.new:
 	  >depend.new
 	$(CXX) -M $(CXXINCLUDES) $(DEPEND_SOURCES) \
 	| sed -e 's|$(srcdir)/|$$(srcdir)/|g' \
-	      -e 's| [^ ]_G_config.h| $$(_G_CONFIG_H)|g' \
-	      -e 's| /[^ ]*||g' \
+	      -e 's| [^ ]*_G_config.h| $$(_G_CONFIG_H)|g' \
+	      -e 's| /[^ ]*||g' -e 's| libc-lock\.h||' \
 	      -e '/^[ 	]*\\$$/d' -e 's/^[ 	]*$$//' \
 	| sed -e 's|$$(srcdir)/[.][.]|$$(srcdir)/$$(MULTISRCTOP)..|g' \
 	      -e 's|$$(srcdir)/\([^/]*[.]c\)|\1|' \
