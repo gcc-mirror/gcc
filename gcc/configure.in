@@ -1083,6 +1083,7 @@ changequote([,])dnl
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.wrap
+		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
 		tmake_file=i386/t-freebsd
 		gas=yes
 		gnu_ld=yes

@@ -1,3 +1,7 @@
+Wed Dec 30 23:00:28 1998  David O'Brien <obrien@NUXI.com>
+
+	* configure.in (FreeBSD ELF): Needs special crt files.
+
 Wed Dec 30 22:50:13 1998  Geoffrey Noer  <noer@cygnus.com>
 
 	* i386/xm-cygwin.h: change DIR_SEPARATOR to forward slash.
