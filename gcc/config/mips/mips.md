@@ -1916,10 +1916,10 @@ move\\t%0,%z4\\n\\
 (define_insn "movstrsi_internal"
   [(set (match_operand:BLK 0 "memory_operand" "=Ro")
 	(match_operand:BLK 1 "memory_operand" "Ro"))
-   (clobber (match_scratch:SI 4 "=d"))
-   (clobber (match_scratch:SI 5 "=d"))
-   (clobber (match_scratch:SI 6 "=d"))
-   (clobber (match_scratch:SI 7 "=d"))
+   (clobber (match_scratch:SI 4 "=&d"))
+   (clobber (match_scratch:SI 5 "=&d"))
+   (clobber (match_scratch:SI 6 "=&d"))
+   (clobber (match_scratch:SI 7 "=&d"))
    (use (match_operand:SI 2 "small_int" "I"))
    (use (match_operand:SI 3 "small_int" "I"))]
   ""
