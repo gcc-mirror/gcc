@@ -2591,6 +2591,10 @@ Prim.i(int, boolean, byte, double, float, char, java.lang.String, short, long)
 _ZN4java4util14Map__U24_Entry11class__U24_E
 java.util.Map$Entry.class$
 #
+--format=java
+_ZN3org7eclipse3cdt5debug8internal4core5model9CVariable6sizeof$Ev
+org.eclipse.cdt.debug.internal.core.model.CVariable.sizeof()
+#
 --format=hp
 _Utf58_0_1__1_2147483647__2147483648
 _Utf58_0_1__1_2147483647__2147483648

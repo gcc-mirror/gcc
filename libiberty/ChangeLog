@@ -1,3 +1,9 @@
+2003-12-20  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* cp-demangle.c (d_identifier): In Java mode, skip an optional '$'
+	after the identifier.
+	* testsuite/demangle-expected: Add test case.
+
 2003-12-19  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	Fix for PR c++/13447:
