@@ -1,3 +1,8 @@
+2004-02-04  Paolo Bonzini  <bonzini@gnu.org>
+
+	* gcc.dg/noncompile/20001228-1.c: Fix for new
+	error message.
+
 2004-02-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR target/9348
