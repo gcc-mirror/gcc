@@ -1,4 +1,4 @@
-This is Info file cpp.info, produced by Makeinfo version 1.67 from the
+This is Info file cpp.info, produced by Makeinfo version 1.68 from the
 input file cpp.texi.
 
    This file documents the GNU C Preprocessor.
@@ -69,7 +69,7 @@ Node: Combining Sources85575
 Node: Other Directives88486
 Node: Output89940
 Node: Invocation91249
-Node: Concept Index103346
-Node: Index106199
+Node: Concept Index103767
+Node: Index106620
 
 End Tag Table

@@ -176,7 +176,7 @@ DEC Alpha Options
      Normally GNU CC examines a 32- or 64-bit integer constant to see
      if it can construct it from smaller constants in two or three
      instructions.  If it cannot, it will output the constant as a
-     literal and generate code to load it from the data segement at
+     literal and generate code to load it from the data segment at
      runtime.
 
      Use this option to require GNU CC to construct *all* integer
@@ -187,6 +187,60 @@ DEC Alpha Options
      dynamic loader.  Itself a shared library, it must relocate itself
      in memory before it can find the variables and constants in its
      own data segment.
+
+`-malpha-as'
+`-mgas'
+     Select whether to generate code to be assembled by the
+     vendor-supplied assembler (`-malpha-as') or by the GNU assembler
+     `-mgas'.
+
+`-mbwx'
+`-mno-bwx'
+`-mcix'
+`-mno-cix'
+`-mmax'
+`-mno-max'
+     Indicate whether GNU CC should generate code to use the optional
+     BWX, CIX, and MAX instruction sets.  The default is to use the
+     instruction sets supported by the CPU type specified via `-mcpu='
+     option or that of the CPU on which GNU CC was built if none was
+     specified.
+
+`-mcpu=CPU TYPE'
+
+`-mcpu=CPU_TYPE'
+     Set the instruction set, register set, and instruction scheduling
+     parameters for machine type CPU_TYPE.  You can specify either the
+     `EV' style name or the corresponding chip number.  GNU CC supports
+     scheduling parameters for the EV4 and EV5 family of processors and
+     will choose the default values for the instruction set from the
+     processor you specify.  If you do not specify a processor type,
+     GNU CC will default to the processor on which the compiler was
+     built.
+
+     Supported values for CPU_TYPE are
+
+    `ev4'
+    `21064'
+          Schedules as an EV4 and has no instruction set extensions.
+
+    `ev5'
+    `21164'
+          Schedules as an EV5 and has no instruction set extensions.
+
+    `ev56'
+    `21164a'
+          Schedules as an EV5 and supports the BWX extension.
+
+    `pca56'
+    `21164PC'
+          Schedules as an EV5 and supports the BWX and MAX extensions.
+
+    `ev6'
+    `21264'
+          Schedules as an EV5 (until Digital releases the scheduling
+          parameters for the EV6) and supports the BWX, CIX, and MAX
+          extensions.
 
 
 File: gcc.info,  Node: Clipper Options,  Next: H8/300 Options,  Prev: DEC Alpha Options,  Up: Submodel Options
@@ -361,6 +415,17 @@ of `-ffoo' would be `-fno-foo'.  In the table below, only one of the
 forms is listed--the one which is not the default.  You can figure out
 the other form by either removing `no-' or adding it.
 
+`-fexceptions'
+     Enable exception handling, and generate extra code needed to
+     propagate exceptions.  If you do not specify this option, GNU CC
+     enables it by default for languages like C++ that normally require
+     exception handling, and disabled for languages like C that do not
+     normally require it.  However, when compiling C code that needs to
+     interoperate properly with exception handlers written in C++, you
+     may need to enable this option.  You may also wish to disable this
+     option is you are compiling older C++ programs that don't use
+     exception handling.
+
 `-fpcc-struct-return'
      Return "short" `struct' and `union' values in memory like longer
      ones, rather than in registers.  This convention is less
@@ -490,7 +555,7 @@ the other form by either removing `no-' or adding it.
      three-way choice.
 
 `-fcall-used-REG'
-     Treat the register named REG as an allocatable register that is
+     Treat the register named REG as an allocable register that is
      clobbered by function calls.  It may be allocated for temporaries
      or variables that do not live across a call.  Functions compiled
      this way will not save and restore the register REG.
@@ -503,7 +568,7 @@ the other form by either removing `no-' or adding it.
      three-way choice.
 
 `-fcall-saved-REG'
-     Treat the register named REG as an allocatable register saved by
+     Treat the register named REG as an allocable register saved by
      functions.  It may be allocated even for temporaries or variables
      that live across a call.  Functions compiled this way will save
      and restore the register REG if they use it.
@@ -531,7 +596,7 @@ the other form by either removing `no-' or adding it.
      not use the `asm' or `__asm__' keywords.
 
      You must also specify this option when you compile functions you
-     call that have side effects.  If you do not, you may get erronous
+     call that have side effects.  If you do not, you may get erroneous
      messages from the detector.  Normally,  you should compile all
      your code with this option.  If you use functions from a library
      that have side-effects (such as `read'), you may not be able to

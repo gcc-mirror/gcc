@@ -1008,6 +1008,17 @@ Output and Generation of Labels
      If SET_ASM_OP is defined, a default definition is provided which is
      correct for most systems.
 
+`ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (STREAM, SYMBOL, HIGH, LOW)'
+     A C statement to output to the stdio stream STREAM assembler code
+     which defines (equates) the symbol SYMBOL to have a value equal to
+     the difference of the two symbols HIGH and LOW, i.e.  HIGH minus
+     LOW.  GNU CC guarantees that the symbols HIGH and LOW are already
+     known by the assembler so that the difference resolves into a
+     constant.
+
+     If SET_ASM_OP is defined, a default definition is provided which is
+     correct for most systems.
+
 `ASM_OUTPUT_WEAK_ALIAS (STREAM, NAME, VALUE)'
      A C statement to output to the stdio stream STREAM assembler code
      which defines (equates) the weak symbol NAME to have the value

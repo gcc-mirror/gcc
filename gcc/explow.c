@@ -79,10 +79,15 @@ plus_constant_wide (x, c)
       if (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))
 	{
+	  /* Any rtl we create here must go in a saveable obstack, since
+	     we might have been called from within combine.  */
+	  push_obstacks_nochange ();
+	  rtl_in_saveable_obstack ();
 	  tem
 	    = force_const_mem (GET_MODE (x),
 			       plus_constant (get_pool_constant (XEXP (x, 0)),
 					      c));
+	  pop_obstacks ();
 	  if (memory_address_p (GET_MODE (tem), XEXP (tem, 0)))
 	    return tem;
 	}
@@ -339,7 +344,7 @@ convert_memory_address (to_mode, x)
     case PLUS:
     case MULT:
       /* For addition the second operand is a small constant, we can safely
-	 permute the converstion and addition operation.  We can always safely
+	 permute the conversion and addition operation.  We can always safely
 	 permute them if we are making the address narrower.  In addition,
 	 always permute the operations if this is a constant.  */
       if (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)

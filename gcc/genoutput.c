@@ -526,6 +526,7 @@ scan_operands (part, this_address_p, this_strict_low)
     switch (*format_ptr++)
       {
       case 'e':
+      case 'u':
 	scan_operands (XEXP (part, i), 0, 0);
 	break;
       case 'E':

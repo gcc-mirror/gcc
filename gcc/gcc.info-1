@@ -37,7 +37,7 @@ Introduction
 
    This manual documents how to run, install and port the GNU compiler,
 as well as its new features and incompatibilities, and how to report
-bugs.  It corresponds to GNU CC version 2.7.2.
+bugs.  It corresponds to GNU CC version 2.8.0.
 
 * Menu:
 
@@ -224,7 +224,7 @@ are in the following sections.
           -Wimplicit-function-declarations -Wimport  -Winline
           -Wlarger-than-LEN  -Wmain  -Wmissing-declarations
           -Wmissing-prototypes  -Wnested-externs
-          -Wno-import  -Woverloaded-virtual  -Wparentheses
+          -Wno-import  -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
           -Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type  -Wshadow
           -Wsign-compare  -Wstrict-prototypes  -Wswitch  -Wsynth
           -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
@@ -331,6 +331,10 @@ are in the following sections.
           -msoft-float  -mhard-float
           -mbsd  -mxopen  -mno-symrename
           
+          *MN10300 Options*
+          -mmult-bug
+          -mno-mult-bug
+          
           *M32R/D Options*
           -mcode-model=MODEL TYPE  -msdata=SDATA TYPE
           -G NUM
@@ -387,7 +391,9 @@ are in the following sections.
           -mstats  -EL  -EB  -G NUM  -nocpp
           
           *i386 Options*
-          -m486  -m386  -mieee-fp  -mno-fancy-math-387
+          -mcpu=CPU TYPE
+          -march=CPU TYPE
+          -mieee-fp  -mno-fancy-math-387
           -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib
           -mno-wide-multiply  -mrtd  -malign-double
           -mreg-alloc=LIST  -mregparm=NUM
@@ -416,11 +422,13 @@ are in the following sections.
           -mtail-call
           
           *DEC Alpha Options*
-          -mfp-regs  -mno-fp-regs
-          -mno-soft-float  -msoft-float
+          -mfp-regs  -mno-fp-regs -mno-soft-float  -msoft-float
+          -malpha-as -mgas
           -mieee  -mieee-with-inexact  -mieee-conformant
-          -mfp-trap-mode  -mfp-rounding-mode  -mtrap-precision
-          -mbuild-constants
+          -mfp-trap-mode=MODE  -mfp-rounding-mode=MODE
+          -mtrap-precision=MODE  -mbuild-constants
+          -mcpu=CPU TYPE
+          -mbwx -mno-bwx -mcix -mno-cix -mmax -mno-max
           
           *Clipper Options*
           -mc300  -mc400
@@ -446,9 +454,9 @@ are in the following sections.
           -ffixed-REG  -finhibit-size-directive
           -fcheck-memory-usage  -fprefix-function-name
           -fno-common  -fno-ident  -fno-gnu-linker
-          -fpcc-struct-return  -fpic  -fPIC
-          -freg-struct-return  -fshared-data  -fshort-enums
-          -fshort-double  -fvolatile  -fvolatile-global
+          -fpcc-struct-return  -freg-struct-return
+          -fshared-data  -fpic  -fPIC  -fexceptions
+          -fshort-enums  -fshort-double  -fvolatile  -fvolatile-global
           -fverbose-asm  -fpack-struct  -fstack-check  +e0  +e1
 
 * Menu:
@@ -1138,6 +1146,7 @@ have meanings only for C++ programs:
      Do not assume `inline' for functions defined inside a class scope.
      *Note Options That Control Optimization: Optimize Options.
 
+`-Wold-style-cast'
 `-Woverloaded-virtual'
 `-Wtemplate-debugging'
      Warnings that apply only to C++ programs.  *Note Options to

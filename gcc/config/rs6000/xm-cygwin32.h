@@ -1,6 +1,6 @@
 /* Configuration for GNU C-compiler for hosting on Windows NT.
    using a unix style C library.
-   Copyright (C) 1995 Free Software Foundation, Inc.
+   Copyright (C) 1995, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -23,6 +23,4 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "rs6000/xm-rs6000.h"
 
-#define HAVE_RUSAGE
-#define HAVE_FILE_H
 #define EXECUTABLE_SUFFIX ".exe"

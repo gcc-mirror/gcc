@@ -129,6 +129,31 @@ enum __va_type_classes {
    in the stack are made to be word-aligned; for an aggregate that is
    not word-aligned, we advance the pointer to the first non-reg slot.  */
 
+  /* When this is a smaller-than-int integer, using
+     auto-increment in the promoted (SImode) is fastest;
+     however, there is no way to express that is C.  Therefore,
+     we use an asm.
+     We want the MEM_IN_STRUCT_P bit set in the emitted RTL, therefore we
+     use unions even when it would otherwise be unnecessary.  */
+
+#define __va_arg_sh1(AP, TYPE) __extension__ 				\
+__extension__								\
+({(sizeof (TYPE) == 1							\
+   ? ({union {TYPE t; char c;} __t;					\
+       asm(""								\
+	   : "=r" (__t.c)						\
+	   : "0" ((((union { int i, j; } *) (AP))++)->i));		\
+       __t.t;})								\
+   : sizeof (TYPE) == 2							\
+   ? ({union {TYPE t; short s;} __t;					\
+       asm(""								\
+	   : "=r" (__t.s)						\
+	   : "0" ((((union { int i, j; } *) (AP))++)->i));		\
+       __t.t;})								\
+   : sizeof (TYPE) >= 4 || __LITTLE_ENDIAN_P				\
+   ? (((union { TYPE t; int i;} *) (AP))++)->t				\
+   : ((union {TYPE t;TYPE u;}*) ((char *)++(int *)(AP) - sizeof (TYPE)))->t);})
+
 #ifdef __SH3E__
 
 #define __PASS_AS_FLOAT(TYPE_CLASS,SIZE) \
@@ -153,39 +178,18 @@ __extension__							\
 	  <= pvar.__va_next_o_limit) 				\
 	__result_p = &pvar.__va_next_o;				\
       else							\
-	__result_p = &pvar.__va_next_stack;			\
+	{							\
+	  if (sizeof (TYPE) > 4)				\
+	    pvar.__va_next_o = pvar.__va_next_o_limit;		\
+								\
+	  __result_p = &pvar.__va_next_stack;			\
+	}							\
     } 								\
-  /* When this is a smaller-than-int integer, using		\
-     auto-increment in the promoted (SImode) is fastest;	\
-     however, we must convert all alternatives to TYPE;		\
-     a conversion using an ordinary cast fails for aggregates,	\
-     and for big endian, a conversion using a union works only	\
-     if the types involved have the same size.			\
-     ??? The emitted rtl still does unnecessary sign extends.  */\
-  (sizeof (TYPE) < 4 && __LITTLE_ENDIAN_P			\
-   ? ((union { TYPE t; int i;} )*(*(int **) __result_p)++).t	\
-   : sizeof (TYPE) == 1						\
-   ? ((union { TYPE t; char i;} )(char)*(*(int **) __result_p)++).t\
-   : sizeof (TYPE) == 2						\
-   ? ((union { TYPE t; short i;} )(short)*(*(int **) __result_p)++).t\
-   : sizeof (TYPE) < 4						\
-   ? *(TYPE *) ((char *) ++*(int **) __result_p - sizeof (TYPE))\
-   : *(*(TYPE **) __result_p)++);})
+  __va_arg_sh1(*(void **)__result_p, TYPE);})
 
 #else /* ! SH3E */
 
-#define va_arg(AP, TYPE) __extension__ 				\
-__extension__							\
-({int __type = __builtin_classify_type (* (TYPE *) 0);		\
-  (sizeof (TYPE) < 4 && __LITTLE_ENDIAN_P			\
-   ? ((union { TYPE t; int i;} )*((int *) (AP))++).t		\
-   : sizeof (TYPE) == 1						\
-   ? ((union { TYPE t; char i;} )(char)*((int *) (AP))++).t	\
-   : sizeof (TYPE) == 2						\
-   ? ((union { TYPE t; short i;} )(short)*((int *) (AP))++).t	\
-   : sizeof (TYPE) < 4						\
-   ? *(TYPE *) ((char *) ++(int *) (AP) - sizeof (TYPE))	\
-   : *((TYPE *) (AP))++);})
+#define va_arg(AP, TYPE) __va_arg_sh1((AP), TYPE)
 
 #endif /* SH3E */
 

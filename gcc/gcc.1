@@ -3998,7 +3998,7 @@ three-way choice.
 .BI "\-fcall\-used\-" "reg"
 Treat the register named \c
 .I reg\c
-\& as an allocatable register that is
+\& as an allocable register that is
 clobbered by function calls.  It may be allocated for temporaries or
 variables that do not live across a call.  Functions compiled this way
 will not save and restore the register \c
@@ -4015,7 +4015,7 @@ three-way choice.
 .BI "\-fcall\-saved\-" "reg"
 Treat the register named \c
 .I reg\c
-\& as an allocatable register saved by
+\& as an allocable register saved by
 functions.  It may be allocated even for temporaries or variables that
 live across a call.  Functions compiled this way will save and restore
 the register \c

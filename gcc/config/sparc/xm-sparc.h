@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for Sun Sparc.
-   Copyright (C) 1988, 1993, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1993, 1995, 1997 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com).
 
 This file is part of GNU CC.
@@ -42,8 +42,6 @@ Boston, MA 02111-1307, USA.  */
 /* Arguments to use with `exit'.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
-
-#define HAVE_POPEN
 
 /* If compiled with Sun CC, the use of alloca requires this #include.  */
 #ifndef __GNUC__

@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler. 
-   NEC V850 series
+/* Definitions of target machine for GNU compiler. NEC V850 series
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -20,10 +19,14 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include "svr4.h"
+#include "svr4.h"	/* Automatically does #undef CPP_PREDEFINES */
 
 #undef ASM_SPEC
 #define ASM_SPEC "%{mv*:-mv%*}"
+
+#ifndef CPP_SPEC
+#define CPP_SPEC "-D__v850__"
+#endif
 
 #undef ASM_FINAL_SPEC
 #undef LIB_SPEC
@@ -32,10 +35,7 @@ Boston, MA 02111-1307, USA.  */
 #undef STARTFILE_SPEC
 
 /* Names to predefine in the preprocessor for this target machine.  */
-
-#ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__v850__ -D__v851__ -D__v850"
-#endif
+#define CPP_PREDEFINES "-D__v851__ -D__v850"
 
 /* Print subsidiary information on the compiler version in use.  */
 
@@ -82,7 +82,7 @@ extern int target_flags;
 
      * Passing/returning of large structures probably isn't the same
      as GHS.  We don't have enough documentation on their conventions
-     to be compatable.
+     to be compatible.
 
      * Tests of SETUP_INCOMING_VARARGS need to be made runtime checks
      since it depends on TARGET_GHS.  */
@@ -347,7 +347,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
 
    On the 850, we make the return registers first, then all of the volatile
    registers, then the saved registers in reverse order to better save the
-   registers with an out of line function , and finnally the fixed
+   registers with an out of line function, and finally the fixed
    registers.  */
 
 #define REG_ALLOC_ORDER							\
@@ -1006,7 +1006,7 @@ do {									\
    switch on CODE. 
 
    There aren't DImode MOD, DIV or MULT operations, so call them
-   very expensive.  Everything else is pretty much a costant cost.  */
+   very expensive.  Everything else is pretty much a constant cost.  */
 
 #define RTX_COSTS(RTX,CODE,OUTER_CODE)					\
   case MOD:								\
@@ -1295,7 +1295,7 @@ do { char dstr[30];					\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* We don't have to worry about dbx compatability for the v850.  */
+/* We don't have to worry about dbx compatibility for the v850.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use stabs debugging info by default.  */

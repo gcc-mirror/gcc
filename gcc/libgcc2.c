@@ -46,6 +46,13 @@ Boston, MA 02111-1307, USA.  */
 #define WEAK_ALIAS
 #endif
 
+/* In a cross-compilation situation, default to inhibiting compilation
+   of routines that use libc.  */
+
+#ifdef CROSS_COMPILE
+#define inhibit_libc
+#endif
+
 /* Permit the tm.h file to select the endianness to use just for this
    file.  This is used when the endianness is determined when the
    compiler is run.  */
@@ -1530,7 +1537,7 @@ __bb_exit_func (void)
 	      continue;
 	    }
 
-	  /* ??? Should first write a header to the file.  Perferably, a 4 byte
+	  /* ??? Should first write a header to the file.  Preferably, a 4 byte
 	     magic number, 4 bytes containing the time the program was
 	     compiled, 4 bytes containing the last modification time of the
 	     source file, and 4 bytes indicating the compiler options used.
@@ -3109,7 +3116,9 @@ int _exit_dummy_decl = 0;	/* prevent compiler & linker warnings */
 
 /* Shared exception handling support routines.  */
 
-extern void *__eh_type;
+/* Language-specific information about the active exception(s).  If there
+   are no active exceptions, it is set to 0.  */
+void *__eh_info;
 
 void
 __default_terminate ()
@@ -3224,7 +3233,7 @@ __sjthrow ()
   /* We must call terminate if we try and rethrow an exception, when
      there is no exception currently active and when there are no
      handlers left.  */
-  if (! __eh_type || (*dhc) == top_elt)
+  if (! __eh_info || (*dhc) == top_elt)
     __terminate ();
     
   /* Find the jmpbuf associated with the top element of the dynamic
@@ -3307,7 +3316,7 @@ __sjpopnthrow ()
 /* This value identifies the place from which an exception is being
    thrown.  */
 
-extern void *__eh_pc;
+void *__eh_pc;
 
 #ifdef EH_TABLE_LOOKUP
 
@@ -3652,7 +3661,7 @@ __throw ()
   /* This is required for C++ semantics.  We must call terminate if we
      try and rethrow an exception, when there is no exception currently
      active.  */
-  if (! __eh_type)
+  if (! __eh_info)
     __terminate ();
     
   /* Start at our stack frame.  */
@@ -3679,6 +3688,7 @@ label:
   /* Now reset pc to the right throw point.  */
   pc = __eh_pc;
 
+  handler = 0;
   for (;;)
     { 
       frame_state *p = udata;

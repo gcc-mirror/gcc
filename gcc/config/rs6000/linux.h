@@ -28,7 +28,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef LINK_SPEC
 #define LINK_SPEC "-m elf32ppc %{shared:-shared} \
   %{!shared: \
-    %{!static: %{rdynamic:-export-dynamic}} \
+    %{!static: \
+      %{rdynamic:-export-dynamic} \
+      %{!dynamic-linker:-dynamic-linker /lib/ld.so.1}} \
     %{static:-static}}"
 
 #undef	LIB_DEFAULT_SPEC
@@ -47,7 +49,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LINK_OS_DEFAULT_SPEC "%(link_os_linux)"
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (PowerPC Linux)");
+#define TARGET_VERSION fprintf (stderr, " (PowerPC GNU/Linux)");
 
 /* Define this macro as a C expression for the initializer of an
    array of string to tell the driver program which options are
@@ -60,3 +62,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mbig", "mcall-linux" }
+
+#undef DEFAULT_VTABLE_THUNKS
+#define DEFAULT_VTABLE_THUNKS 1

@@ -164,7 +164,7 @@ Order of Allocation of Registers
      registers must always be saved and the save-multiple-registers
      instruction supports only sequences of consecutive registers.  On
      such machines, define `REG_ALLOC_ORDER' to be an initializer that
-     lists the highest numbered allocatable register first.
+     lists the highest numbered allocable register first.
 
 `ORDER_REGS_FOR_LOCAL_ALLOC'
      A C statement (sans semicolon) to choose the order in which to
@@ -265,13 +265,13 @@ consecutive registers are needed for a given mode.
 
 `MODES_TIEABLE_P (MODE1, MODE2)'
      A C expression that is nonzero if a value of mode MODE1 is
-     accessable in mode MODE2 without copying.
+     accessible in mode MODE2 without copying.
 
      If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
      MODE2)' are always the same for any R, then `MODES_TIEABLE_P
      (MODE1, MODE2)' should be nonzero.  If they differ for any R, you
      should define this macro to return zero unless some other
-     mechanism ensures the accessability of the value in a narrower
+     mechanism ensures the accessibility of the value in a narrower
      mode.
 
      You should define this macro to return nonzero in as many cases as
@@ -778,16 +778,17 @@ constraint letters.
 
 `CONST_OK_FOR_LETTER_P (VALUE, C)'
      A C expression that defines the machine-dependent operand
-     constraint letters that specify particular ranges of integer
-     values.  If C is one of those letters, the expression should check
-     that VALUE, an integer, is in the appropriate range and return 1
-     if so, 0 otherwise.  If C is not one of those letters, the value
-     should be 0 regardless of VALUE.
+     constraint letters (`I', `J', `K', ... `P') that specify
+     particular ranges of integer values.  If C is one of those
+     letters, the expression should check that VALUE, an integer, is in
+     the appropriate range and return 1 if so, 0 otherwise.  If C is
+     not one of those letters, the value should be 0 regardless of
+     VALUE.
 
 `CONST_DOUBLE_OK_FOR_LETTER_P (VALUE, C)'
      A C expression that defines the machine-dependent operand
      constraint letters that specify particular ranges of
-     `const_double' values.
+     `const_double' values (`G' or `H').
 
      If C is one of those letters, the expression should check that
      VALUE, an RTX of code `const_double', is in the appropriate range
@@ -801,13 +802,16 @@ constraint letters.
 
 `EXTRA_CONSTRAINT (VALUE, C)'
      A C expression that defines the optional machine-dependent
-     constraint letters that can be used to segregate specific types of
-     operands, usually memory references, for the target machine.
-     Normally this macro will not be defined.  If it is required for a
-     particular target machine, it should return 1 if VALUE corresponds
-     to the operand type represented by the constraint letter C.  If C
-     is not defined as an extra constraint, the value returned should
-     be 0 regardless of VALUE.
+     constraint letters (
+
+``Q', `R', `S', `T', `U') that can'
+     be used to segregate specific types of operands, usually memory
+     references, for the target machine.  Normally this macro will not
+     be defined.  If it is required for a particular target machine, it
+     should return 1 if VALUE corresponds to the operand type
+     represented by the constraint letter C.  If C is not defined as an
+     extra constraint, the value returned should be 0 regardless of
+     VALUE.
 
      For example, on the ROMP, load instructions cannot have their
      output in r0 if the memory reference contains a symbolic address.

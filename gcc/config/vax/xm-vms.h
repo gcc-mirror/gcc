@@ -22,6 +22,11 @@ Boston, MA 02111-1307, USA.  */
 #define FALSE 0
 #define TRUE 1
 
+/* Other configurations get these via autoconfig.  */
+#define STDC_HEADERS 1
+#define HAVE_STDLIB_H 1
+#define HAVE_STRING_H 1
+
 #if defined(VAXC) || defined(__DECC)
 /* if compiling with VAXC, need to fix problem with <stdio.h>
    which defines a macro called FILE_TYPE that breaks "tree.h".
@@ -134,12 +139,6 @@ Boston, MA 02111-1307, USA.  */
 #define QSORT_WORKAROUND	/* do not use VAXCRTL's qsort */
 
 /* use ANSI/SYSV style byte manipulation routines instead of BSD ones */
-#define bcopy(s,d,n)	memcpy((d),(s),(n))
-#define bzero(d,n)	memset((d),0,(n))
-#define bcmp(l,r,n)	memcmp((l),(r),(n))
-#define index	strchr
-#define rindex	strrchr
-
 /* rename all too-long external symbol names to avoid warnings */
 #define bc_check_for_full_enumeration_handling	bc_check_for_full_enum_handling
 #define check_for_full_enumeration_handling	check_for_full_enum_handling
@@ -162,6 +161,7 @@ Boston, MA 02111-1307, USA.  */
 #define get_dynamic_handler_chain_libfunc	get_dynamic_hndlr_chain_libfunc
 #define lookup_name_current_level_global	lookup_name_current_level_gbl
 #define maybe_building_objc_message_expr	maybe_building_objc_msg_expr
+#define mesg_implicit_function_declaration	mesg_implicit_func_declaration
 #define output_deferred_addressed_constants	output_deferred_addr_constants
 #define protect_cleanup_actions_with_terminate  protect_cleanup_act_w_terminate
 #define reg_overlap_mentioned_for_reload_p	reg_overlap_mtnd_for_reload_p

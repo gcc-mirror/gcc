@@ -5072,7 +5072,7 @@
   /* Must import the magic millicode routine.  */
   output_asm_insn (\".IMPORT $$sh_func_adrs,MILLICODE\", NULL);
 
-  /* This is absolutely fucking amazing.
+  /* This is absolutely amazing.
 
      First, copy our input parameter into %r29 just in case we don't
      need to call $$sh_func_adrs.  */
@@ -5128,7 +5128,7 @@
                      (const_int 0)))
             (const_int 32)
 
-;; PORTABLE_RUTNIME
+;; PORTABLE_RUNTIME
 	    (ne (symbol_ref "TARGET_PORTABLE_RUNTIME")
 		(const_int 0))
 	    (const_int 40)]

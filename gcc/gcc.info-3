@@ -523,6 +523,7 @@ that macro, which enables you to change the defaults.
 * Convex Options::
 * AMD29K Options::
 * ARM Options::
+* MN10300 Options::
 * M32R/D Options::
 * M88K Options::
 * RS/6000 and PowerPC Options::
@@ -812,16 +813,33 @@ SPARC Options
      They have been replaced with `-mcpu=xxx'.
 
 `-mcpu=CPU_TYPE'
-     Set architecture type and instruction scheduling parameters for
-     machine type CPU_TYPE.  Supported values for CPU_TYPE are `v7',
-     `cypress', `v8', `supersparc', `sparclite', `f930', `f934',
-     `sparclet', `tsc701', `v8plus', `v9', and `ultrasparc'.
+     Set the instruction set, register set, and instruction scheduling
+     parameters for machine type CPU_TYPE.  Supported values for
+     CPU_TYPE are `v7', `cypress', `v8', `supersparc', `sparclite',
+     `f930', `f934', `sparclet', `tsc701', `v9', and `ultrasparc'.
+
+     Default instruction scheduling parameters are used for values that
+     select an architecture and not an implementation.  These are `v7',
+     `v8', `sparclite', `sparclet', `v9'.
+
+     Here is a list of each supported architecture and their supported
+     implementations.
+
+              v7:             cypress
+              v8:             supersparc
+              sparclite:      f930, f934
+              sparclet:       tsc701
+              v9:             ultrasparc
 
 `-mtune=CPU_TYPE'
      Set the instruction scheduling parameters for machine type
-     CPU_TYPE, but do not set the architecture type as the option
-     `-mcpu='CPU_TYPE would.  The same values for `-mcpu='CPU_TYPE are
-     used for `-mtune='CPU_TYPE.
+     CPU_TYPE, but do not set the instruction set or register set that
+     the option `-mcpu='CPU_TYPE would.
+
+     The same values for `-mcpu='CPU_TYPE are used for
+     `-mtune='CPU_TYPE, though the only useful values are those that
+     select a particular cpu implementation: `cypress', `supersparc',
+     `f930', `f934', `tsc701', `ultrasparc'.
 
 `-malign-loops=NUM'
      Align loops to a 2 raised to a NUM byte boundary.  If
@@ -1051,7 +1069,7 @@ AMD29K Options
      functions for cross-compilation.
 
 
-File: gcc.info,  Node: ARM Options,  Next: M32R/D Options,  Prev: AMD29K Options,  Up: Submodel Options
+File: gcc.info,  Node: ARM Options,  Next: MN10300 Options,  Prev: AMD29K Options,  Up: Submodel Options
 
 ARM Options
 -----------
@@ -1138,7 +1156,23 @@ architectures:
      compiler is built for cross-compilation.
 
 
-File: gcc.info,  Node: M32R/D Options,  Next: M88K Options,  Prev: ARM Options,  Up: Submodel Options
+File: gcc.info,  Node: MN10300 Options,  Next: M32R/D Options,  Prev: ARM Options,  Up: Submodel Options
+
+MN10300 Options
+---------------
+
+   These `-m' options are defined for Matsushita MN10300 architectures:
+
+`-mmult-bug'
+     Generate code to avoid bugs in the multiply instructions for the
+     MN10300 processors.  This is the default.
+
+`-mno-mult-bug'
+     Do not generate code to avoid bugs in the multiply instructions
+     for the MN10300 processors.
+
+
+File: gcc.info,  Node: M32R/D Options,  Next: M88K Options,  Prev: MN10300 Options,  Up: Submodel Options
 
 M32R/D Options
 --------------

@@ -1,5 +1,5 @@
 ;; Machine description for GNU compiler, Tahoe version
-;; Copyright (C) 1989, 1994, 1996 Free Software Foundation, Inc.
+;; Copyright (C) 1989, 1994, 1996, 1997 Free Software Foundation, Inc.
 
 ;; This file is part of GNU CC.
 
@@ -1143,7 +1143,7 @@
 
 (define_insn "tsthi"
   [(set (cc0)
-	(match_operand:HI 0 "extendable_operand" "m,!r"))]
+	(match_operand:HI 0 "extensible_operand" "m,!r"))]
   "GET_MODE (operands[0]) != VOIDmode"
   "*
 {
@@ -1179,7 +1179,7 @@
 
 (define_insn "tstqi"
   [(set (cc0)
-	(match_operand:QI 0 "extendable_operand" "m,!r"))]
+	(match_operand:QI 0 "extensible_operand" "m,!r"))]
   "GET_MODE (operands[0]) != VOIDmode"
   "*
 {

@@ -67,3 +67,7 @@ $(T)scrtn$(objext): scrtn.S
 
 $(T)scrt0$(objext): scrt0.c
 	$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -c scrt0.c -o $(T)scrt0$(objext)
+
+# It is important that crtbegin.o, etc., aren't surprised by stuff in .sdata.
+CRTSTUFF_T_CFLAGS = -msdata=none
+CRTSTUFF_T_CFLAGS_S = -fpic -msdata=none

@@ -4,7 +4,6 @@ Sun Mar 31 05:10:10 1996  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 	if the mode of the field type is not MODE_INT.
 
 	* sched.c (schedule_block): CALL_INSNs don't affect fixed regs.
-
 	* flow.c (propagate_block): CALL_INSNs don't kill fixed regs.
 
 Sat Mar 30 03:32:48 1996  Torbjorn Granlund  <tege@noisy.tmg.se>
@@ -33,7 +32,7 @@ Fri Mar 29 09:37:52 1996  Jeffrey A. Law  <law@cygnus.com>
 	(emit_library_call_value): Likewise.
 	* expr.c (expand_builtin): Likewise.
 	* function.c (assign_parms): Likewise.
-	* config/pa/pa.h (hppa_args): New field "indirect".
+	* pa.h (hppa_args): New field "indirect".
 	(INIT_CUMULATIVE_ARGS): Initialize "indirect" field.
 	(FUNCTION_ARG): Check "indirect" field, rather than
 	"current_call_is_indirect".
@@ -79,7 +78,7 @@ Thu Mar 28 16:50:10 1996  Doug Evans  <dje@cygnus.com>
 
 Thu Mar 28 12:07:31 1996  Jeffrey A. Law  <law@cygnus.com>
 
-	* ginclude/va-h8300.h (va_arg): Don't assume sizeof (int) == 4.
+	* va-h8300.h (va_arg): Don't assume sizeof (int) == 4.
 
 	* pa.c (hppa_legitimize_address): Don't lose for
 	(plus (plus (mult (A) (shadd_const)) (B)) (C)) if
@@ -218,15 +217,15 @@ Wed Mar 20 17:07:45 1996  Doug Evans  <dje@cygnus.com>
 
 	* sparc/sol2.h (ASM_CPU_SPEC): Recognize -mcpu=v8plus, not v9.
 	Fix typo in ultrasparc entry.
-	* sparc/sparc.h (CPP_CPU_SPEC): Add v8plus entry.
+	* sparc.h (CPP_CPU_SPEC): Add v8plus entry.
 	(ASM_CPU_SPEC): Likewise.
 
-	* sparc/sparc.c (fcc_reg_operand): Ensure correct mode.
+	* sparc.c (fcc_reg_operand): Ensure correct mode.
 	(icc_or_fcc_reg_operand): Likewise.
 	(gen_v9_scc): IF_THEN_ELSE must have a mode.
 	(print_operand): New operand code `x' for all condition codes.
 	New operand codes `c,d' for reversed conditional moves.
-	* sparc/sparc.md (movqicc,movhicc): New named patterns.
+	* sparc.md (movqicc,movhicc): New named patterns.
 	(movdicc): if_then_else must have a mode.
 	(movsicc,movsfcc,movdfcc,movtfcc): Likewise.
 	Change condition to TARGET_V9, not TARGET_ARCH64.
@@ -489,7 +488,7 @@ Tue Mar 12 13:54:15 1996  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 Tue Mar 12 12:43:27 1996  Jim Wilson  <wilson@cygnus.com>
 
-	* i960/i960.h (ROUND_TPE_SIZE): Return round_up result instead of
+	* i960.h (ROUND_TYPE_SIZE): Return round_up result instead of
 	COMPUTED.
 
 	* expr.c (expand_expr, case COMPONENT_REF): For unaligned object in
@@ -504,16 +503,16 @@ Mon Mar 11 19:07:50 1996  Jeffrey A. Law  <law@cygnus.com>
 
 Mon Mar 11 16:06:13 1996  Doug Evans  <dje@cygnus.com>
 
-	* h8300/h8300.h (SP_AND_G_REGS): Renamed from SP_AND_G_REG.
+	* h8300.h (SP_AND_G_REGS): Renamed from SP_AND_G_REG.
 	(CC_DONE_CBIT): Delete.
 	(CC_OVERFLOW_0,CC_OVERFLOW_UNUSABLE,CC_NO_CARRY): Define.
-	* h8300/h8300.c (cond_string): Delete CC_DONE_CBIT handling.
+	* h8300.c (cond_string): Delete CC_DONE_CBIT handling.
 	(notice_update_cc): Delete CC_CBIT, CC_WHOOPS.  Add CC_SET_ZN_C0.
 	(restore_compare_p): New function.
 	(shift_one): Use shll instead of shal so overflow bit is usable.
 	Set cc_valid bits to cc_status.flags values.
 	(emit_a_shift): Set cc_status.flags.
-	* h8300/h8300.md (attr cc): Delete whoops,cbit.  Add set_zn_c0.
+	* h8300.md (attr cc): Delete whoops,cbit.  Add set_zn_c0.
 	(all patterns) Update cc attr setting.
 	(tstqi,tsthi,tstsi): Delete CC_DONE_CBIT handling.
 	(addhi3,subhi3): Change define_expand to define_insn.
@@ -559,7 +558,7 @@ Fri Mar  8 15:37:31 1996  Mike Stump  <mrs@cygnus.com>
 
 Fri Mar  8 16:14:51 1996  J"orn Rennecke (amylaar@meolyon.hanse.de)
 
-        * i386.c (ix86_binary_operator_ok): one memory operand is OK.
+        * i386.c (ix86_binary_operator_ok): One memory operand is OK.
         This is independent of commutativity.
 
 Fri Mar  8 14:07:43 1996  Jim Wilson  <wilson@cygnus.com>
@@ -586,7 +585,7 @@ Thu Mar  7 19:14:21 1996  Doug Evans  <dje@cygnus.com>
 	* sparc/splet.h: New file.
 	* configure (sparclet-*-aout*): Use them.
 
-	* sparc/sparc.h (MASK_LIVE_G0,TARGET_LIVE_G0): Define.
+	* sparc.h (MASK_LIVE_G0,TARGET_LIVE_G0): Define.
 	(FIRST_PSEUDO_REGISTER): Add 1 for %icc (now 101).
 	(FIXED_REGISTERS,CALL_USED_REGISTERS): Update.
 	(FIXED_REGISTERS): %g0 is fixed by default.
@@ -601,7 +600,7 @@ Thu Mar  7 19:14:21 1996  Doug Evans  <dje@cygnus.com>
 	(REG_OK_FOR_{BASE,INDEX}_P,EXTRA_CONSTRAINT): Likewise.
 	(REGISTER_NAMES): Add %icc.
 	(ADDITIONAL_REGISTER_NAMES): Use SPARC_ICC_REG.
-	* sparc/sparc.c (leaf_reg_remap): Add %icc=100.
+	* sparc.c (leaf_reg_remap): Add %icc=100.
 	(reg_or_0_operand): Don't allow 0 if TARGET_LIVE_G0.
 	(fcc_reg_operand): Renamed from ccfp_reg_operand.
 	Use SPARC_FCC_REG.  Don't treat reg 0 as an fcc reg.  Don't match
@@ -624,7 +623,7 @@ Thu Mar  7 19:14:21 1996  Doug Evans  <dje@cygnus.com>
 	(print_operand, MEM op): Don't print "%g0+" if TARGET_LIVE_G0.
 	(sparc_flat_eligible_for_epilogue_delay): Don't allow anything if
 	TARGET_LIVE_G0.
-	* sparc/sparc.md (live_g0): New attribute.
+	* sparc.md (live_g0): New attribute.
 	(*): Integer condition code register is now reg 100.
 	Use SPARC_ICC_REG instead of hardcoding reg 100 where possible.
 	Non-v9 floating point condition code register is now reg 96.
@@ -986,7 +985,7 @@ Thu Feb 29 17:33:12 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
 
 Thu Feb 29 13:59:27 1996  Doug Evans  <dje@charmed.cygnus.com>
 
-	* h8300/h8300.h (ASM_OUTPUT_BSS): Define.
+	* h8300.h (ASM_OUTPUT_BSS): Define.
 	* m68k/coff.h (BSS_SECTION_ASM_OP): Define.
 	(ASM_OUTPUT_ALIGNED_BSS): Define.
 	* m68k/m68k-aout.h (BSS_SECTION_ASM_OP): Define.
@@ -1009,9 +1008,9 @@ Thu Feb 29 13:14:14 1996  Jeffrey A. Law  <law@cygnus.com>
 
 Thu Feb 29 11:39:30 1996  Stan Cox  <coxs@dg-rtp.dg.com>
 
-	* i386/i386.md (cmpxf*): XF compare cannot have mem operands.
+	* i386.md (cmpxf*): XF compare cannot have mem operands.
 	(casesi expand): Put (minus:SI..) into subsi3 format.
-	* i386/i386.c (i386_return_pops_args): Cleanup extra argument
+	* i386.c (i386_return_pops_args): Cleanup extra argument
 	used as address of a returned structure.
 
 Wed Feb 28 22:24:28 1996  Doug Evans  <dje@cygnus.com>
@@ -1028,10 +1027,10 @@ Wed Feb 28 22:24:28 1996  Doug Evans  <dje@cygnus.com>
 	(EXTRA_SECTION_FUNCTIONS): Delete BSS_SECTION_FUNCTION.
 	* svr3.h (EXTRA_SECTIONS): Likewise.
 	(BSS_SECTION_FUNCTION): Delete.
-	* convex/convex.h (EXTRA_SECTIONS,EXTRA_SECTIONS_FUNCTIONS): Delete.
-	* dsp16xx/dsp16xx.h (EXTRA_SECTIONS): Delete in_bss.
+	* convex.h (EXTRA_SECTIONS,EXTRA_SECTIONS_FUNCTIONS): Delete.
+	* dsp16xx.h (EXTRA_SECTIONS): Delete in_bss.
 	(EXTRA_SECTION_FUNCTIONS): Delete bss_section.
-	* gmicro/gmicro.h (EXTRA_SECTIONS,EXTRA_SECTIONS_FUNCTIONS): Delete.
+	* gmicro.h (EXTRA_SECTIONS,EXTRA_SECTIONS_FUNCTIONS): Delete.
 	* i386/aix386ng.h (EXTRA_SECTION_FUNCTIONS): Delete
 	BSS_SECTION_FUNCTION.
 	* i386/att.h (BSS_SECTION_FUNCTION): Delete.
@@ -1047,7 +1046,7 @@ Wed Feb 28 22:24:28 1996  Doug Evans  <dje@cygnus.com>
 	(BSS_SECTION_ASM_OP): Define.
 	* m68k/m68k.h (BC_OUTPUT_BSS): Define.
 	* mips/iris6.h (EXTRA_SECTIONS): Delete in_bss.
-	* pa/pa.h (EXTRA_SECTIONS): Delete in_bss.
+	* pa.h (EXTRA_SECTIONS): Delete in_bss.
 	(EXTRA_SECTION_FUNCTIONS): Delete bss_section.
 	* sparc/litecoff.h (EXTRA_SECTIONS): Delete in_bss.
 
@@ -1059,9 +1058,9 @@ Wed Feb 28 14:12:25 1996  Jim Wilson  <wilson@chestnut.cygnus.com>
 
 Wed Feb 28 12:03:26 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* rs6000.c (rs6000_trampoline_{template,size}): Change the Windows
-	NT trampoline template so that it doesn't require making the stack
-	executable.  Add support for 64 bit systems.
+	* rs6000.c (rs6000_trampoline_{template,size}): Change Windows NT
+	trampoline template so it doesn't require making stack executable.
+	Add support for 64 bit systems.
 	(rs6000_initialize_trampoline): Ditto.
 
 Tue Feb 27 16:42:00 1996  David Edelsohn  <edelsohn@mhpcc.edu>
@@ -1074,7 +1073,7 @@ Tue Feb 27 16:42:00 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
 Tue Feb 27 15:02:17 1996  Doug Evans  <dje@cygnus.com>
 
-	* sh/sh.h (HANDLE_PRAGMA): Delete `return'.
+	* sh.h (HANDLE_PRAGMA): Delete `return'.
 
 Tue Feb 27 08:18:12 1996  Richard Earnshaw (rearnsha@armltd.co.uk)
 
@@ -1139,7 +1138,7 @@ Tue Feb 27 08:18:12 1996  Richard Earnshaw (rearnsha@armltd.co.uk)
 
 Mon Feb 26 17:26:13 1996  Doug Evans  <dje@cygnus.com>
 
-	* sparc/sparc.md: Add sparclet scheduling parameters.
+	* sparc.md: Add sparclet scheduling parameters.
 	(compare define_insn's): Move closer to compare define_expand's.
 	(32 bit multiply patterns): Use for TARGET_SPARCLET.
 	(*smacsi,*smacdi,*umacdi): Multiply/accumulate patterns for the
@@ -1180,7 +1179,7 @@ Thu Feb 22 17:45:12 1996  Doug Evans  <dje@cygnus.com>
 Wed Feb 21 20:39:53 1996  Doug Evans  <dje@cygnus.com>
 
 	* configure (sparc64-*-solaris2*): Merge with sparc-*-solaris2*.
-	* sparc/sparc.h (enum processor_type): Declare.
+	* sparc.h (enum processor_type): Declare.
 	(sparc_cpu_attr): Define.
 	(TARGET_OPTIONS): Add -mtune=.
 	(sparc_select): Declare.
@@ -1195,13 +1194,13 @@ Wed Feb 21 20:39:53 1996  Doug Evans  <dje@cygnus.com>
 	(REG_ALLOC_ORDER,REG_LEAF_ALLOC_ORDER,LEAF_REGISTERS): Likewise.
 	(FP_REG_CLASS_P,SPARC_REGISTER_NAMES): Likewise.
 	(REG_CLASS_FROM_LETTER): Test TARGET_V9 at runtime.
-	* sparc/sparc.c (sparc_cpu_string): Delete.
+	* sparc.c (sparc_cpu_string): Delete.
 	(sparc_select): New global.
 	(sparc_override_options): Handle -mtune=xxx.
-	* sparc/sparc.md (cpu attr): Add sparc{lite,let} implementations.
+	* sparc.md (cpu attr): Add sparc{lite,let} implementations.
 	* sparc/sp64-sol2.h: Deleted.
 
-	* arm/arm.md (consttable_end): Delete call to text_section.
+	* arm.md (consttable_end): Delete call to text_section.
 	(align_4): Delete call to readonly_data_section.
 
 Wed Feb 21 14:29:06 1996  Ian Lance Taylor  <ian@cygnus.com>
@@ -1221,7 +1220,7 @@ Wed Feb 21 12:42:52 1996  Jeffrey A. Law  <law@cygnus.com>
 
 Wed Feb 21 11:49:58 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
-	* rs6000/rs6000.h (ASM_OUTPUT_EXTERNAL): Append section info
+	* rs6000.h (ASM_OUTPUT_EXTERNAL): Append section info
 	even when verbatim symbol prefix '*' present.
 	* rs6000/aix3newas.h (ASM_OUTPUT_EXTERNAL): Same.
 	* rs6000/aix41.h (ASM_OUTPUT_EXTERNAL): Same.
@@ -1234,10 +1233,8 @@ Wed Feb 21 03:55:32 1996  Paul Eggert  <eggert@twinsun.com>
 	Handle multiple adjacent backslash-newlines correctly.
 	Accept a new parameter LIMIT to specify end of input;
 	this prevents confusion when the input contains '\0' characters.
-
 	(collect_expansion): Fix off-by-1 error when searching for `*/'
 	at end of a comment used for traditional token concatenation.
-
 	(macarg1): Fix off-by-1 error when skipping past `*/'
 	at end of comment.
 
@@ -1254,7 +1251,7 @@ Tue Feb 20 14:21:16 1996  Jeffrey A. Law  <law@cygnus.com>
 
 Mon Feb 19 19:42:15 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
-	* sparc/sparc.h (TARGET_SWITCHES): Add -m{,no-}impure-text.
+	* sparc.h (TARGET_SWITCHES): Add -m{,no-}impure-text.
 	(MASK_IMPURE_TEXT, TARGET_IMPURE_TEXT): Define.
 	(LINK_SPEC): Only add `-assert pure-text' if -mimpure-text wasn't used.
 
@@ -1266,7 +1263,7 @@ Mon Feb 19 19:20:15 1996  Doug Evans  <dje@canuck.cygnus.com>
 	Don't set use_collect2.
 	(target_cpu_default): Set to TARGET_CPU_<cpu> for sparc.
 
-	* sparc/sparc.h (TARGET_CPU_sparc{,let,lite,64}): Define.
+	* sparc.h (TARGET_CPU_sparc{,let,lite,64}): Define.
 	({CPP,ASM}_DEFAULT_SPEC): Set from TARGET_CPU_foo.
 	(SPARC_ARCH64 CPP_PREDEFINES): Define __arch64__.
 	(CPP_SPEC): Add %(cpp_cpu).
@@ -1288,7 +1285,7 @@ Mon Feb 19 19:20:15 1996  Doug Evans  <dje@canuck.cygnus.com>
 	Don't set call_used_regs[48..80] for sparc64 in 32 bit mode.
 	Don't clobber fixed_regs[234] if -ffixed- was passed.
 	(ADJUST_COST): Change test for supersparc.
-	* sparc/sparc.c (sparc_cpu_string,sparc_cpu): New globals.
+	* sparc.c (sparc_cpu_string,sparc_cpu): New globals.
 	(sparc_override_options): Set ISA and CPU from sparc_cpu_string.
 	Delete tests for v9 only switches if not v9.
 	Error if -mcpu=v9 and v9 support not compiled in.
@@ -1299,7 +1296,7 @@ Mon Feb 19 19:20:15 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* sparc/t-sparcbare (MULTILIB_*): -mv8 renamed to -mcpu=v8.
 	* sparc/t-sparclite (MULTILIB_*): Delete msoft-float and mno-flat,
 	they're the defaults.  Add -mcpu=f934 as synonym for -mfpu.
-	* ginclude/va-sparc.h (__arch64__): Renamed from __sparc_v9__.
+	* va-sparc.h (__arch64__): Renamed from __sparc_v9__.
 
 	* sparc/lite.h: #include aoutos.h.
 	(TARGET_DEFAULT): Use MASK_FOO values.
@@ -1311,13 +1308,13 @@ Mon Feb 19 19:20:15 1996  Doug Evans  <dje@canuck.cygnus.com>
 	* sparc/sp64-sol2.h (TARGET_DEFAULT, SUBTARGET_SWITCHES): Delete.
 	(ASM_SPEC): Delete.
 
-	* sparc/sparc.h ({MASK,TARGET}_FRW): Delete.
+	* sparc.h ({MASK,TARGET}_FRW): Delete.
 	(FRAME_POINTER_REQUIRED,INITIAL_FRAME_POINTER_OFFSET,
 	BASE_{INCOMING_ARG,OUTGOING_VALUE}_REG,INCOMING_REGNO,OUTGOING_REGNO,
 	FUNCTION_{PROLOGUE,EPILOGUE},DELAY_SLOTS_FOR_EPILOGUE): TARGET_FRW
 	renamed to TARGET_FLAT.
 
-	* sparc/sparc.md (cpu attr): Add all cpu variants.
+	* sparc.md (cpu attr): Add all cpu variants.
 	(negtf2,negdf2,abstf2,absdf2): Use isa attr, not arch attr, in
 	determining insn lengths.
 
@@ -1327,7 +1324,7 @@ Mon Feb 19 19:20:15 1996  Doug Evans  <dje@canuck.cygnus.com>
 
 Mon Feb 19 17:49:08 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
-	* rs6000.md (movsf split): Use SUBREG not operand_subword.
+	* rs6000.md (movsf split): Use SUBREG, not operand_subword.
 	(movdf split): operand_subword TARGET_32BIT and new split using
 	SUBREG for TARGET_64BIT.
 	* rs6000.c (easy_fp_constant): Rewrite to not use operand_subword.
@@ -1342,14 +1339,14 @@ Mon Feb 19 13:38:00 1996  Lee Iverson  <leei@Canada.AI.SRI.COM>
 
 Mon Feb 19 08:19:00 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* hard-reg-set.h (HARD_REG macros): If there are more than
+	* hard-reg-set.h (HARD_REG macros): If more than
 	HOST_BITS_PER_WIDE_INT hard registers and less than or equal to
-	4*HOST_BITS_PER_WIDE_INT hard registers, unroll the loops by hand.
+	4*HOST_BITS_PER_WIDE_INT hard registers, unroll loops by hand.
 
 Mon Feb 19 07:35:07 1996  Torbjorn Granlund  <tege@tmg.se>
 
 	* rs6000.md (not:SI with assign and compare): Fix typo.
-	* (not:DI with assign and compare): Likewise.
+	(not:DI with assign and compare): Likewise.
 
 Mon Feb 19 07:17:25 1996  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
@@ -1421,7 +1418,6 @@ Fri Feb 16 20:13:23 1996  Paul Eggert  <eggert@twinsun.com>
 	* c-typeck.c (convert_for_assignment):
 	Bring back conversion to union without a cast,
 	undoing the Jan 16 change, but with the following differences:
-
 	- The union must have the transparent_union attribute.
 	- The conversion must be for a function argument.
 	- Warn consistently about such conversions if pedantic.
@@ -1461,8 +1457,7 @@ Thu Feb 15 18:26:04 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 	byte boundary.
 
 	* rs6000.md (allocate_stack): On Windows NT, call set_sp to
-	indicate to CSE that the stack pointer changes with the call to
-	__allocate_stack.
+	indicate to CSE  stack pointer changes with  call to __allocate_stack.
 	(set_sp): New pattern.
 
 Thu Feb 15 16:49:15 1996  Jim Wilson  <wilson@cygnus.com>
@@ -1651,7 +1646,7 @@ Mon Feb 12 14:43:50 1996  Per Bothner  <bothner@cygnus.com>
 
 Mon Feb 12 12:01:16 1996  Richard Earnshaw (rearnsha@armltd.co.uk)
 
-	* arm/arm.h: (CPP_SPEC): Define __ARMEB__, __ARMEL__, and
+	* arm.h: (CPP_SPEC): Define __ARMEB__, __ARMEL__, and
 	__ARMWEL__ depending on the endian flags passed to the compiler.
 	(ARM_FLAG_LITTLE_WORDS): Define.
 	(TARGET_SWITCHES): Add option -mwords-little-endian.
@@ -1659,13 +1654,13 @@ Mon Feb 12 12:01:16 1996  Richard Earnshaw (rearnsha@armltd.co.uk)
 	(WORDS_BIG_ENDIAN): Select based on the endian switches.
 	(LIBGCC2_WORDS_BIG_ENDIAN): Define based on run-time endian
 	defines.
-	* arm/arm.c (output_move_double): Cope with both word-endian
+	* arm.c (output_move_double): Cope with both word-endian
 	alternatives.  Remove extraneous parameters from calls to
 	output_mov_immediate.
 	(arm_print_operand): New print code 'Q' for the least significant
 	register of a DImode operand.  Make code 'R' always print the
 	most significant register, rather than the highest numbered.
-	* arm/arm.md (all DImode output patterns): Use print code
+	* arm.md (all DImode output patterns): Use print code
 	'Q' to access the least significant word.  Make sure the
 	patterns are fully aware of the word endianness.
 
@@ -1684,29 +1679,12 @@ Mon Feb 12 10:15:29 1996  Ian Lance Taylor  <ian@cygnus.com>
 	handle --with-stabs by adding dbx.h to tm_file, rather than using
 	a different tm_file.
 	* dbx.h: New file.
-	* alpha/gdb-osf2.h: Remove.
-	* alpha/gdb-osf12.h: Remove.
-	* alpha/gdb.h: Remove.
-	* i386/sysv4gdb.h: Remove.
-	* mips/iris5gdb.h: Remove.
-	* mips/iris4gl.h: Remove.
-	* mips/iris4gdb.h: Remove.
-	* mips/iris3gdb.h: Remove.
-	* mips/dec-gosf1.h: Remove.
-	* mips/news4-gdb.h: Remove.
-	* mips/news5-gdb.h: Remove.
-	* mips/svr4-t-gdb.h: Remove.
-	* mips/ultrix-gdb.h: Remove.
-	* mips/bsd-5-gdb.h: Remove.
-	* mips/bsd-4-gdb.h: Remove.
-	* mips/svr4-5-gdb.h: Remove.
-	* mips/svr4-4-gdb.h: Remove.
-	* mips/svr3-5-gdb.h: Remove.
-	* mips/svr3-4-gdb.h: Remove.
-	* mips/mips-5-gdb.h: Remove.
-	* mips/ecoffl-gdb.h: Remove.
-	* mips/ecoff-gdb.h: Remove.
-	* mips/mips-4-gdb.h: Remove.
+	* alpha/gdb-osf2.h, alpha/gdb-osf12.h, alpha/gdb.h: Deleted.
+	* i386/sysv4gdb.h, mips/iris{5gdb,4gl,4gdb,3gdb}.h: Likewise.
+	* mips/dec-gosf1.h, mips/news{4,5}-gdb.h, mips/svr4-t-gdb.h: Likewise.
+	* mips/ultrix-gdb.h, mips/bsd-{4,5}-gdb.h: Likewise.
+	* mips/svr{4-5,4-4,3-5,3-4}-gdb.h, mips/mips-5-gdb.h: Likewise.
+	* mips/ecoff{,l}-gdb.h, mips/mips-4-gdb.h: Likewise.
 
 Mon Feb 12 07:22:20 1996  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
@@ -1790,7 +1768,7 @@ Fri Feb  9 16:10:04 1996  Stan Cox  (coxs@dg-rtp.dg.com)
 	str_immediate_operand, is_fp_insn, is_fp_dest, is_fp_store,
 	agi_dependent, reg_mentioned_in_mem): New functions.
 
-	* i386/i386.h (OPTIMIZATION_OPTIONS, ALIGN_DFmode, IS_STACK_MODE,
+	* i386.h (OPTIMIZATION_OPTIONS, ALIGN_DFmode, IS_STACK_MODE,
 	IX86_EXPAND_BINARY_OPERATOR): New macros.
 	(RTX_COSTS, REGISTER_MOVE_COST, ADJUST_BLOCKAGE) Changed for pentium.
 
@@ -1878,10 +1856,10 @@ Fri Feb  2 19:44:10 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Thu Feb  1 09:10:02 1996  Steve Chamberlain  <sac@slash.cygnus.com>
 
-	* config/{i386,rs6000}/cygwin32.{asm,h}: New templates.
-	* config/{i386,rs6000}/{t,x}-cygwin32: Ditto.
-	* config/{i386,rs6000}/xm-cygwin32.h: Ditto.
-	* configure.in (powerpcle-*-cygwin32, i[3456]86-*-cygwin32): New.
+	* {i386,rs6000}/cygwin32.{asm,h}: New templates.
+	* {i386,rs6000}/{t,x}-cygwin32: Ditto.
+	* {i386,rs6000}/xm-cygwin32.h: Ditto.
+	* configure (powerpcle-*-cygwin32, i[3456]86-*-cygwin32): New.
 
 Fri Feb  2 17:42:40 1996  Paul Eggert  <eggert@twinsun.com>
 
@@ -1893,8 +1871,7 @@ Fri Feb  2 17:42:40 1996  Paul Eggert  <eggert@twinsun.com>
 
 Fri Feb  2 11:05:27 1996  Doug Evans  <dje@cygnus.com>
 
-	* h8300/h8300.h (TARGET_ALIGN_300): Renamed from
-	TARGET_ALIGN_STRUCT_300.
+	* h8300.h (TARGET_ALIGN_300): Renamed from TARGET_ALIGN_STRUCT_300.
 	(TARGET_SWITCHES): Rename -malign-struct-300 to -malign-300.
 	(BIGGEST_ALIGNMENT): Use TARGET_ALIGN_300.
 
@@ -1917,9 +1894,9 @@ Thu Feb  1 21:49:02 1996  Jeffrey A. Law  <law@cygnus.com>
 Thu Feb  1 17:50:02 1996  Doug Evans  <dje@cygnus.com>
 
 	* c-lex.c (check_newline): Return result of HANDLE_PRAGMA.
-	* h8300/h8300.h (HANDLE_PRAGMA): Pass result back to caller.
+	* h8300.h (HANDLE_PRAGMA): Pass result back to caller.
 	* i960/i960.h (HANDLE_PRAGMA): Likewise.
-	* sh/sh.h (HANDLE_PRAGMA): Likewise.
+	* sh.h (HANDLE_PRAGMA): Likewise.
 	* nextstep.h (HANDLE_PRAGMA): Likewise.
 
 Wed Jan 31 19:26:03 1996  Doug Evans  <dje@cygnus.com>
@@ -1938,10 +1915,8 @@ Wed Jan 31 15:10:59 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
 Wed Jan 31 09:46:11 1996  Richard Earnshaw (rearnshaw@armltd.co.uk)
 
-	* regs.h (regno_pointer_align, REGNO_POINTER_ALIGN): Delete from
-	here...
-	* rtl.h (regno_pointer_align, REGNO_POINTER_ALIGN): ... and put
-	them here.
+	* regs.h (regno_pointer_align, REGNO_POINTER_ALIGN): Delete from here.
+	* rtl.h (regno_pointer_align, REGNO_POINTER_ALIGN): Put them here.
 
 Wed Jan 31 08:26:12 1996  Andreas Schwab  (schwab@issan.informatik.uni-dortmund.de)
 
@@ -1988,8 +1963,8 @@ Wed Jan 31 07:15:23 1996  Philippe De Muyter (phdm@info.ucl.ac.be)
 
 Tue Jan 30 13:29:05 1996  Ian Lance Taylor  <ian@cygnus.com>
 
-	* dbxout.c: Don't include <string.h>.  Don't compare strchr result
-	to NULL.
+	* dbxout.c: Don't include <string.h>.
+	Don't compare strchr result to NULL.
 
 	* config/svr4.h (ASM_FINAL_SPEC): Use %|, not ${pipe:-}.
 
@@ -2112,7 +2087,7 @@ Thu Jan 25 10:03:34 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 Thu Jan 25 09:16:34 1996  Doug Evans  <dje@cygnus.com>
 
 	* configure (sparc64-*-solaris2*): New target.
-	* sparc/sparc.h (SPARC_{V9,ARCH64}): Default value is 0.
+	* sparc.h (SPARC_{V9,ARCH64}): Default value is 0.
 	(*): Replace SPARCV9 with SPARC_{V9,ARCH64}.
 	(MASK_CPUS): Define.
 	({MASK,TARGET}_ENV32): Delete.
@@ -2130,16 +2105,16 @@ Thu Jan 25 09:16:34 1996  Doug Evans  <dje@cygnus.com>
 	(ENDFILE_SPEC): No longer need to check for -nostartfiles.
 	(ASM_IDENTIFY_GCC): Define as empty.
 	* sparc/sp64-sol2.h: New file.
-	* sparc/sparc.c (*): Replace TARGET_V9 with TARGET_ARCH64.
+	* sparc.c (*): Replace TARGET_V9 with TARGET_ARCH64.
 	(hard_32bit_mode_classes): Add v9 regs.
 	(gen_v9_scc): Handle 32 bit v9 case.  Call v9_regcmp_p.
-	* sparc/sparc.md (*): Replace TARGET_V9 with TARGET_ARCH64 in places
+	* sparc.md (*): Replace TARGET_V9 with TARGET_ARCH64 in places
 	requiring 64 bit environment.
 	(multf3_extend): Require TARGET_HARD_QUAD.
 
 Thu Jan 25 00:33:25 1996  Ian Lance Taylor  <ian@cygnus.com>
 
-	* config/dbxcoff.h (DBX_USE_BINCL): Define.
+	* dbxcoff.h (DBX_USE_BINCL): Define.
 	(DBX_CONTIN_LENGTH): Define if not defined.
 
 Wed Jan 24 18:00:12 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
@@ -2231,7 +2206,7 @@ Wed Jan 24 15:18:15 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Wed Jan 24 15:18:15 1996  Kim Knuttila  <krk@cygnus.com>
 
-	* config/rs6000/win-nt.h (LIB_SPEC): Change options to GNU ld style.
+	* rs6000/win-nt.h (LIB_SPEC): Change options to GNU ld style.
 	(From Jason Molenda)
 
 Wed Jan 24 14:32:48 1996  Jim Wilson  <wilson@cygnus.com>
@@ -2279,7 +2254,7 @@ Mon Jan 22 18:39:21 1996  Per Bothner  <bothner@cygnus.com>
 
 Mon Jan 22 16:53:48 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
-	* rs6000/rs6000.h (BIGGEST_ALIGNMENT): Increase to 64 always.
+	* rs6000.h (BIGGEST_ALIGNMENT): Increase to 64 always.
 	(BIGGEST_FIELD_ALIGNMENT): Define.
 	(GO_IF_LEGITIMATE_ADDRESS): Merge PRE_INC and PRE_DEC cases.
 	(LEGITIMIZE_ADDRESS): Use Pmode not SImode.
@@ -2287,7 +2262,7 @@ Mon Jan 22 16:53:48 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 	(ASM_OUTPUT_COMMON): Delete.
 	(ASM_OUTPUT_ALIGNED_COMMON): Define.
 	* rs6000/sysv4.h (BIGGEST_FIELD_ALIGNMENT): Undefine.
-	* rs6000/rs6000.md (adddi3, subdi3, negsi2): New PowerPC64 patterns.
+	* rs6000.md (adddi3, subdi3, negsi2): New PowerPC64 patterns.
 	(ashldi3, lshrdi3, ashrdi3, anddi3, iordi3, xordi3): Same.
 	(moddi3, cmpdi, tablejump matchers): Same.
 	(divdi3): Update PowerPC64 patterns.
@@ -2394,9 +2369,7 @@ Thu Jan 18 10:07:33 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 	defines.
 	(set_spec): If EXTRA_SPECS is defined, handle the extra
 	specifications.
-	(process_command): Ditto.
-	(main): Ditto.
-	(validate_all_switches): Ditto.
+	(process_command, main, validate_all_switches): Likewise.
 
 	* rs6000/{rs6000.h,powerpc.h,aix41.h} ({CPP,ASM}_SPEC): Use common
 	specs with EXTRA_SPECS, only modifying things in the target that
@@ -2482,14 +2455,10 @@ Tue Jan 16 12:18:56 1996  Doug Evans  <dje@cygnus.com>
 
 Tue Jan 16 11:42:09 1996  Ian Lance Taylor  <ian@cygnus.com>
 
-	* config/dbxcoff.h: New file for stabs in COFF support.
-	* config/a29k/a29k-udi.h: Use dbxcoff.h.
-	* config/h8300/h8300.h: Likewise.
-	* config/i960/i960-coff.h: Likewise.
-	* config/m68k/coff.h: Likewise.
-	* config/m88k/m88k-coff.h: Likewise.
-	* config/sh/sh.h: Likewise.
-	* config/sparc/litecoff.h: Likewise.
+	* dbxcoff.h: New file for stabs in COFF support.
+	* a29k/a29k-udi.h: Use dbxcoff.h.
+	* h8300.h, i960/i960-coff.h, m68k/coff.h, m88k/m88k-coff.h: Likewise.
+	* sh.h, sparc/litecoff.h: Likewise.
 
 Tue Jan 16 08:21:45 1996  Hans-Peter Nilsson  <Hans-Peter.Nilsson@axis.se>
 
@@ -2586,17 +2555,17 @@ Mon Jan 15 17:01:16 1996  Doug Evans  <dje@cygnus.com>
 	* c-lex.c (check_newline): Pass character after `#pragma' to
 	HANDLE_PRAGMA.  Don't call get_directive_line if at end of line.
 	* c-common.c (get_directive_line): Watch for EOF.
-	* h8300/h8300.h (HANDLE_PRAGMA): New argument `c'.
+	* h8300.h (HANDLE_PRAGMA): New argument `c'.
 	Must issue `return' now.
-	* i960/i960.h (HANDLE_PRAGMA): Likewise.
-	* sh/sh.h (HANDLE_PRAGMA): Likewise.
+	* i960.h (HANDLE_PRAGMA): Likewise.
+	* sh.h (HANDLE_PRAGMA): Likewise.
 	* nextstep.h (HANDLE_PRAGMA): Likewise.
-	* h8300/h8300.c (handle_pragma): New argument `ch'.
+	* h8300.c (handle_pragma): New argument `ch'.
 	Simplify pragma processing.  Delete support for `#pragma section'.
-	* i960/i960.c (process_pragma): New argument `c'.  Change result to
+	* i960.c (process_pragma): New argument `c'.  Change result to
 	terminating character.
 	* nextstep.c (handle_pragma): Likewise.
-	* sh/sh.c (handle_pragma): Likewise.  Also simplified.
+	* sh.c (handle_pragma): Likewise.  Also simplified.
 
 	* sched.c (reemit_notes): Add prototype.
 	(sched_analyze_2): Reorganize comments.  Call prev_nonnote_insn.
@@ -2759,13 +2728,13 @@ Thu Jan 11 19:41:07 1996  Per Bothner  <bothner@cygnus.edu>
 
 Thu Jan 11 18:33:50 1996  Doug Evans  <dje@cygnus.com>
 
-	* h8300/h8300.h (TARGET_ALIGN_STRUCT_300): New macro.
+	* h8300.h (TARGET_ALIGN_STRUCT_300): New macro.
 	(TARGET_SWITCHES): Add -malign-struct-300.
 	(BIGGEST_FIELD_ALIGNMENT): Update.
 
 Thu Jan 11 12:07:44 1996  J.T. Conklin  <jtc@cygnus.com>
 
-	* h8300/h8300.h (CPP_PREDEFINES): Delete -D_DOUBLE_IS_32BITS.
+	* h8300.h (CPP_PREDEFINES): Delete -D_DOUBLE_IS_32BITS.
 
 Thu Jan 11 11:09:33 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
@@ -2798,8 +2767,8 @@ Wed Jan 10 11:27:28 1996  Michael Meissner  <meissner@tiktok.cygnus.com>
 	files.
 
 	* rs6000/t-{eabi,eabigas,ppc,ppcgas} (MULTILIB_MATCHES): Drop
-	support for obsolete -mcpu=mpc403.  Add -mcpu=821 and -mcpu=860 to
-	soft-float defaults.
+	support for obsolete -mcpu=mpc403.
+	Add -mcpu=821 and -mcpu=860 to soft-float defaults.
 
 	* rs6000/t-eabi{,gas} (LIBGCC): Add stmp-crt.
 	(INSTALL_LIBGCC): Add install-crt.
@@ -2827,8 +2796,7 @@ Sun Jan  7 17:11:11 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
 Sun Jan  7 16:56:56 1996  Michael Meissner  <meissner@wombat.gnu.ai.mit.edu>
 
-	* {svr4,mips/elf{,64}}.h (MAX_OFILE_ALIGNMENT):  Define as
-	32768*8.
+	* {svr4,mips/elf{,64}}.h (MAX_OFILE_ALIGNMENT):  Define as 32768*8.
 
 Sat Jan  6 15:52:36 1996  Doug Evans  <dje@cygnus.com>
 
@@ -2889,7 +2857,7 @@ Fri Jan  5 10:40:37 1996  David Edelsohn  <edelsohn@mhpcc.edu>
 
 Fri Jan  5 00:32:49 1996  Doug Evans  <dje@cygnus.com>
 
-	* sparc/sparc.h (MACHINE_STATE_RESTORE): Add missing .align.
+	* sparc.h (MACHINE_STATE_RESTORE): Add missing .align.
 
 Wed Jan  3 18:29:32 1996  Doug Evans  <dje@cygnus.com>
 
@@ -3032,28 +3000,23 @@ Fri Dec 29 12:41:47 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Thu Dec 28 22:24:53 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* rs6000.h: (reg_class): Undo 12/27 changes, except for
-	formatting.
-	(REG_NAMES): Ditto.
-	(REG_CLASS_CONTENTS): Ditto.
-	(REGNO_REG_CLASS): Ditto.
-	(REG_CLASS_FROM_LETTER): Ditto.
+	* rs6000.h: (reg_class): Undo 12/27 changes, except for formatting.
+	(REG_NAMES, REG_CLASS_CONTENTS, REGNO_REG_CLASS): Likewise.
+	(REG_CLASS_FROM_LETTER): Likewie.
 	(PREDICATE_CODES): Delete predicate functions.
 	(gpc_reg{0,3,4,34}_operand): Delete declaration.
-	(cc_reg{0,1}_operand): Ditto.
-
+	(cc_reg{0,1}_operand): Likewise.
 	* rs6000.c (gpc_reg{0,3,4}_operand): Delete.
-	(cc_reg{0,1}_operand): Ditto.
+	(cc_reg{0,1}_operand): Likewise.
 
-	* rs6000.md (common mode functions): Undo 12/27 changes, and add
-	the appropriate clobbers for common mode calls.  Keep the
-	define_splits for powerpc SI*SI->DI.
+	* rs6000.md (common mode functions): Undo 12/27 changes,and add
+	 appropriate clobbers for common mode calls.  Keep define_splits for
+	 powerpc SI*SI->DI.
 
 Thu Dec 28 11:08:11 1995  Mike Stump  <mrs@cygnus.com>
 
-        * sparc.h (RETURN_ADDR_OFFSET): Rename from
-        NORMAL_RETURN_ADDR_OFFSET, returns the offset for the current
-        function specifically.
+        * sparc.h (RETURN_ADDR_OFFSET): Rename from NORMAL_RETURN_ADDR_OFFSET;
+	returns offset for the current function specifically.
 
 Thu Dec 28 07:07:14 1995  Paul Eggert  <eggert@twinsun.com>
 
@@ -3158,7 +3121,7 @@ Wed Dec 27 11:38:20 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	mode multiplies.
 
 	* rs6000.c (gpc_reg34_operand): Delete unused function.
-	* rs6000.h (gpc_reg34_operand): Ditto.
+	* rs6000.h (gpc_reg34_operand): Likewise.
 
 	* rs6000.c (gpc_reg{3,4}_operand): Reorganize code and don't allow
 	SUBREG's.
@@ -3167,25 +3130,22 @@ Wed Dec 27 11:38:20 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	little endian PowerPC's.
 	(gpc_reg{0,3,4,34}_operand): New functions to match a specific
 	register.
-	(cc_reg{0,1}_operand): Ditto.
+	(cc_reg{0,1}_operand): Likewise.
 
 	* rs6000.h (reg_class): Add register classes for register 3 by
 	itself, register 4 by itself, registers 3&4, and CR1.
 	(REG_NAMES): Add support for new register classes.
-	(REG_CLASS_CONTENTS): Ditto.
-	(REGNO_REG_CLASS): Ditto.
-	(REG_CLASS_FROM_LETTER): Ditto.
+	(REG_CLASS_CONTENTS, REGNO_REG_CLASS, REG_CLASS_FROM_LETTER): Likewise.
 	(PREDICATE_CODES): Add new predicate functions.
 	(gpc_reg{0,3,4,34}_operand): Add declaration.
-	(cc_reg{0,1}_operand): Ditto.
+	(cc_reg{0,1}_operand): Likewise.
 
-	* rs6000.md (common mode multiplication/division): Move/rename the
-	common mode calls so that they are closer to the define_expands
-	that call them.  Set attribute type to be jmpreg, rather than
-	integer, so optimizer knows the branch processing unit is used.
-	Make SI*SI->DI multiplier use register classes instead of
-	hardwired registers.  Add the appropriate clobbers of CR0/CR1 as
-	mandated by the PowerOpen spec.
+	* rs6000.md (common mode multiplication/division): Move/rename common
+	mode calls so they are closer to define_expands that call them.
+	Set attribute type to be jmpreg, rather than integer, so optimizer
+	knows branch processing unit is used; make SI*SI->DI multiplier use
+	register classes instead of hardwired registers. 
+	Add appropriate clobbers of CR0/CR1 as mandated by PowerOpen spec.
 	(PowerPC SI*SI->DI multipliers): Add appropriate define_splits.
 
 	* rs6000/t-{,x}newas (MULTILIB*): Don't build power2 or 601
@@ -3281,8 +3241,7 @@ Sat Dec 23 12:21:53 1995  Jeffrey A. Law  <law@cygnus.com>
 
 	* pa.c (output_move_double): Correctly identify and handle
 	overlapping moves.
-	* pa.md (movdi patterns): Eliminate earlyclobbers in mem<->gr
-	cases.
+	* pa.md (movdi patterns): Eliminate earlyclobbers in mem<->gr cases.
 	(movdf patterns): Likewise.
 
 Fri Dec 22 17:29:42 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
@@ -3313,20 +3272,18 @@ Fri Dec 22 15:55:00 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
 Fri Dec 22 15:13:47 1995  Stan Cox  <coxs@dg-rtp.dg.com>
 
-	* i386.h: (TARGET_UNROLL_STRLEN): New macro.
-	* i386.c: (output_strlen_unroll): New function.
-	* i386.md: (strlensi): New pattern.
+	* i386.h (TARGET_UNROLL_STRLEN): New macro.
+	* i386.c (output_strlen_unroll): New function.
+	* i386.md (strlensi): New pattern.
 
 Thu Dec 21 18:53:31 1995  Roland McGrath  <roland@churchy.gnu.ai.mit.edu>
 
-	* config/gnu.h (GNU_CPP_PREDEFINES): Add missing space after
-	-Amachine(CPU).
+	* /gnu.h (GNU_CPP_PREDEFINES): Add missing space after -Amachine(CPU).
 
 Thu Dec 21 12:23:42 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* configure ({powerpc,rs6000}*): Change --enable-cpu to
-	--with-cpu.
-	* rs6000.c (rs6000_select): Ditto.
+	* configure ({powerpc,rs6000}*): Change --enable-cpu to --with-cpu.
+	* rs6000.c (rs6000_select): Likewise.
 
 	* rs6000/aix41.h (LINK_SPEC): Do not pass -bexport to the linker
 	if -g and -shared.
@@ -3338,13 +3295,11 @@ Wed Dec 20 11:23:39 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	({powerpc,rs6000}*): Add support for --enable-cpu=<value> to
 	select the default cpu to compile for.
 
-	* rs6000/aix41.h (TARGET_DEFAULT): Make -mcpu=common the default
-	behavior.
-	(PROCESSOR_DEFAULT): Ditto.
+	* rs6000/aix41.h (TARGET_DEFAULT): Make -mcpu=common default behavior.
+	(PROCESSOR_DEFAULT): Likewise.
 	(MULTILIB_DEFAULTS): Set mcpu=common.
 
-	* rs6000/rs6000.h (TARGET_CPU_DEFAULT): Define to be NULL if not
-	defined.  This is used for the --enable-cpu=<value> switch.
+	* rs6000.h (TARGET_CPU_DEFAULT): Define to be NULL if not defined.
 	(PROCESSOR_COMMON): Set this to PROCESSOR_601.
 	(PROCESSOR_POWERPC): Set this to PROCESSOR_604.
 	(TARGET_OPTIONS): Add -mtune= switch.
@@ -3353,18 +3308,18 @@ Wed Dec 20 11:23:39 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	(OVERRIDE_OPTIONS): Pass TARGET_CPU_DEFAULT to
 	rs6000_override_options.
 
-	* rs6000/rs6000.c (rs6000_cpu_string): Delete global variable.
+	* rs6000.c (rs6000_cpu_string): Delete global variable.
 	(rs6000_select): Define new global variable.
 	(rs6000_override_options): Take default_cpu argument, and provide
 	support for it and -mtune= in addition to -mcpu=.
 
 	* rs6000/{aix{3newas,41},lynx,netware,powerpc}.h (ASM_SPEC): Add
 	support for -mcpu=power2.
-	* rs6000/{rs6000,sysv4}.h (ASM_SPEC): Ditto.
+	* rs6000/{rs6000,sysv4}.h (ASM_SPEC): Likewise.
 
 	* rs6000/{aix41,eabiaix,eabile,lynx,powerpc}.h (CPP_SPEC): Make
 	sure all -mcpu=xxx targets are supports.
-	* rs6000/{rs6000,sysv4,sysv4le}.h (CPP_SPEC): Ditto.
+	* rs6000/{rs6000,sysv4,sysv4le}.h (CPP_SPEC): Likewise.
 
 	* rs6000/t-x{newas,rs6000}: New files to be used when making a
 	cross compiler, to prevent libgcc1-test from being made.
@@ -3394,8 +3349,7 @@ Tue Dec 19 15:08:31 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
 Tue Dec 19 10:57:23 1995  Kim Knuttila  <krk@cygnus.com>
 
-	* ginclude/ppc-asm.h: Do not compile the register macros under
-	winnt.
+	* ppc-asm.h: Do not compile the register macros under winnt.
 
 Mon Dec 18 19:31:23 1995  Adam Fedor  <fedor@wilma.Colorado.EDU>
 
@@ -3413,10 +3367,10 @@ Mon Dec 18 18:40:34 1995  Jim Wilson  <wilson@chestnut.cygnus.com>
 	(clear_storage, store_expr): Likewise for memset and bzero.
 	(store_constructor): Likewise for memset.
 	* optabs.c (emit_cmp_insn): Likewise for memcmp and bcmp.
-	* convex/convex.c (expand_movstr_call): Likewise for memcpy.
-	* m88k/m88k.c (expand_block_move): Likewise for memcpy and bcopy.
-	* mips/mips.c (block_move_call): Likewise for memcpy and bcopy.
-	* mips/mips.h (INITIALIZE_TRAMPOLINE): Likewise for cacheflush.
+	* convex.c (expand_movstr_call): Likewise for memcpy.
+	* m88k.c (expand_block_move): Likewise for memcpy and bcopy.
+	* mips.c (block_move_call): Likewise for memcpy and bcopy.
+	* mips.h (INITIALIZE_TRAMPOLINE): Likewise for cacheflush.
 
 	* c-common.c (WCHAR_TYPE_SIZE): Add a default definition.
 
@@ -3424,8 +3378,7 @@ Mon Dec 18 18:40:34 1995  Jim Wilson  <wilson@chestnut.cygnus.com>
 	instead of DECL_EXTERNAL to identify declarations.
 
         * svr4.h (ASM_IDENTIFY_GCC): Don't output stab here.
-	(ASM_IDENTIFY_GCC_AFTER_SOURCE): Output stab here instead of
-	above.
+	(ASM_IDENTIFY_GCC_AFTER_SOURCE): Output stab here instead of above.
 
 	* stmt.c (expand_asm_operands): Handle numeric constraints in
 	with the default case.
@@ -3442,9 +3395,8 @@ Mon Dec 18 16:39:41 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 Mon Dec 18 16:22:46 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* rs6000.h (ASM_GENERATE_INTERNAL_LABEL): Put a leading '*'
-	in the label string so as to not confuse dbxout.c which believes
-	it can skip the leading character of the string.
+	* rs6000.h (ASM_GENERATE_INTERNAL_LABEL): Put leading '*' in label
+	string so as to not confuse dbxout.c.
 
 Mon Dec 18 09:44:56 1995  Mike Stump  <mrs@cygnus.com>
 
@@ -3452,10 +3404,7 @@ Mon Dec 18 09:44:56 1995  Mike Stump  <mrs@cygnus.com>
 	defaulting cleanup actions.
 
 	* tree.c (save_tree_status, restore_tree_status): Save and restore
-	temporary_firstobj, so that in progress objects that live on the
-	temporary obstack are not reallocated, if we save and restore the
-	tree status in their lifetime.
-
+	temporary_firstobj.
 
 Mon Dec 18 07:49:34 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
@@ -3465,7 +3414,7 @@ Mon Dec 18 07:49:34 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 Sun Dec 17 12:14:37 1995  Jeffrey A. Law  <law@cygnus.com>
 
 	* pa.h (ASM_OUTPUT_FUNCTION_PREFIX): Don't surround section names
-	with '$'.  That confuses collect2.
+	with '$'; that confuses collect2.
 	(ASM_OUTPUT_SECTION_NAME): Likewise.
 
 	* sched.c (canon_rtx): Recursively look for equivalences;
@@ -3517,43 +3466,34 @@ Sun Dec 17 06:57:02 1995  Paul Eggert  <eggert@twinsun.com>
 	Simplify include file names so that they are more likely to match.
 	E.g. simplify "./a//b" to "a/b".  Represent directories with simplified
 	prefixes, e.g. replace "./a//b" with "a/b/", and "." with "".
-
 	(absolute_filename): New function.
 	(do_include): Use it.
 	(read_name_map): Likewise; this makes things more consistent for DOS.
-
 	(main, do_include, open_include_file): -M output now contains
 	operands of -imacros and -include.
-
 	(skip_to_end_of_comment): When copying a // comment, don't try to
 	change it to a /* comment.
 	(rescan, skip_if_group, skip_to_end_of_comment, macarg1): Tune.
-
 	(rescan, skip_if_group, skip_to_end_of_comment, macarg1):
 	If warn_comments is nonzero, warn if backslash-newline appears
 	in a // comment.  Simplify method for finding /* /* */ comment.
 	(skip_if_group): Optionally warn if /* /* */ appears between # and
 	a directive inside a skipped if group.
 	(macarg): Optionally warn if /* /* */ appears in a macro argument.
-
 	(strncat, VMS_strncat, vms_ino_t, ino_t): Remove.
 	(INCLUDE_LEN_FUDGE): Add 2 if VMS, for trailing ".h".
 	(INO_T_EQ, INO_T_HASH): New macros.
-
 	(struct file_buf): New member `inc'.
 	(expand_to_temp_buffer): Initialize it.
-
 	(struct file_name_list): New member `inc'.
 	(struct file_name_list): New member `st'.
 	c_system_include_path is now 1 if not 0.
 	fname is now an array, not a pointer.
 	(struct include_file): New members `next_ino', `deps_output', `st'.
 	Remove members `inode' and `dev'; they are now in `st'.
-
 	(INCLUDE_HASHSIZE): Rename from INCLUDE_HASH_SIZE.
 	(include_hashtab): Rename from include_hash_table.
 	(include_ino_hashtab): New variable.
-
 	(main): Store file status in struct stat, not in long and int pieces.
 	Use base_name to strip prefixes from file names.
 	When printing directory prefixes, omit trailing / and print "" as ".".
@@ -3561,7 +3501,6 @@ Sun Dec 17 06:57:02 1995  Paul Eggert  <eggert@twinsun.com>
 	(main, path_include): Regularize operands of -include, -imacros,
 	-isystem, -iwithprefix, and -iwithprefixbefore.
 	Regularize default include directories.
-
 	(do_include):
 	Allocate dsp with alloca, since fname is now dynamically allocated.
 	Use -3 to represent a never-opened file descriptor.
@@ -3579,35 +3518,27 @@ Sun Dec 17 06:57:02 1995  Paul Eggert  <eggert@twinsun.com>
 	Fatal error if fstat fails.
 	Use new deps_output member to avoid printing dependencies twice.
 	(bypass_hashtab): New variable.
-
 	(do_include, open_control_file, record_control_macro): New convention:
 	control_macro is "" if the file was imported or had #pragma once.
 	(pragma_once_marker): Remove.
-
 	(redundant_include_p, include_hash, lookup_include, lookup_import,
 	add_import, file_size_and_mode): Remove; subsumed by open_include_file.
 	(skip_redundant_dir_prefix): Remove; subsumed by simplify_filename.
-
 	(is_system_include, read_name_map, remap_include_file):
 	Assume arg is a directory prefix.
-
 	(base_name, simplify_filename, remap_include_file,
 	lookup_ino_include, new_include_prefix): New functions.
-
 	(open_include_file): New arguments `importing' and `pinc'.
 	Move filename mapping into new remap_include_file function.
 	First try to find file by name in include_hashtab;
 	if that doesn't work, open and fstat it and try to find it
 	by inode and dev in include_ino_hashtab.
-
 	(finclude): Get file status from inc->st instead of invoking fstat.
 	Store inc into fp->inc so that record_control_macro doesn't
 	need to do a table lookup.
 	(finclude, record_control_macro): Accept struct include_file *
 	instead of char * to identify include file.  All callers changed.
-
 	(check_precompiled): Get file status from new argument `st'.
-
 	(do_pragma): Output at most one warning about #pragma implementation.
 	Always return 0 instead of returning garbage sometimes.
 	(do_pragma, hack_vms_include_specification):
@@ -3776,7 +3707,7 @@ Thu Dec 14 18:08:59 1995  Torbjorn Granlund  <tege@noisy.tmg.se>
 
 Thu Dec 14 17:22:14 1995  Richard Earnshaw (rearnsha@armltd.co.uk)
 
-	* arm/arm.c (output_move_double): Extract DFmode constants using
+	* arm.c (output_move_double): Extract DFmode constants using
 	REAL_VALUE_TO_TARGET_DOUBLE.
 
 Thu Dec 14 15:05:13 1995  Doug Evans  <dje@cygnus.com>
@@ -3807,11 +3738,9 @@ Wed Dec 13 19:05:47 1995  Alan Modra  (alan@spri.levels.unisa.edu.au)
 
 Wed Dec 13 15:40:30 1995  Mike Stump  <mrs@cygnus.com>
 
-	* function.c (identify_blocks): Start with a chain of BLOCKs to
-	match the rest of the backend (dbxout.c), instead of just one
-	BLOCK.
-	(reorder_blocks): Ditto.
-	(all_blocks): Ditto.
+	* function.c (identify_blocks): Start with chain of BLOCKs to match
+	rest of backend (dbxout.c), instead of just one BLOCK.
+	(reorder_blocks, all_blocks): Likewise.
 
 	* stmt.c (find_loop_tree_blocks): Pass the toplevel list of
 	blocks, not just the first subblock.
@@ -3838,8 +3767,8 @@ Wed Dec 13 15:02:39 1995  Ian Lance Taylor  <ian@cygnus.com>
 	* c-lex.c (check_newline): If DBX_DEBUGGING_INFO and write_symbols
 	== DBX_DEBUG, call dbxout_start_new_source_file and
 	dbxout_resume_previous_source_file when appropriate.
-	* config/sparc/sunos4.h (DBX_USE_BINCL): Define.
-	* config/svr4.h (DBX_USE_BINCL): Define.
+	* sparc/sunos4.h (DBX_USE_BINCL): Define.
+	* svr4.h (DBX_USE_BINCL): Define.
 
 Wed Dec 13 06:52:40 1995  Michael Meissner  <meissner@cygnus.com>
 
@@ -3859,7 +3788,7 @@ Tue Dec 12 15:37:48 1995  David Edelsohn  <edelsohn@mhpcc.edu>
 
 Tue Dec 12 13:58:57 1995  Doug Evans  <dje@cygnus.com>
 
-	* h8300/t-h8300 (MULTILIB_{OPTIONS,DIRNAMES}): Add -mint32 support.
+	* t-h8300 (MULTILIB_{OPTIONS,DIRNAMES}): Add -mint32 support.
 
 Sun Dec 10 18:51:21 1995  Torbjorn Granlund  <tege@noisy.tmg.se>
 
@@ -3890,7 +3819,7 @@ Sat Dec  9 18:05:03 1995  Jim Wilson  <wilson@cygnus.com>
 
 Fri Dec  8 19:17:30 1995  Mike Meissner  <meissner@beauty.cygnus.com>
 
-	* rs6000/rs6000.c (input_operand): Allow any integer constant, not
+	* rs6000.c (input_operand): Allow any integer constant, not
 	just integers that fit in 1 instruction.
 
 Fri Dec  8 10:45:07 1995  Richard Earnshaw (rearnsha@armltd.co.uk)
@@ -4043,8 +3972,7 @@ Mon Dec  4 22:17:37 1995  Jason Merrill  <jason@yorick.cygnus.com>
 
 Mon Dec  4 21:30:37 1995  Jim Wilson  <wilson@mole.gnu.ai.mit.edu>
 
-	* sh/sh.c (shiftcosts): For SH3, max cost of arithmetic right
-	shift is 3.
+	* sh.c (shiftcosts): For SH3, max cost of arithmetic right shift is 3.
 	(expand_ashiftrt): For SH3, if shift cost is more than 3, then
 	call gen_ashrsi3_d to use shad instruction.
 
@@ -4059,8 +3987,7 @@ Mon Dec  4 15:28:02 1995  Richard Kenner  (kenner@vlsi1.ultra.nyu.edu)
 
 Mon Dec  4 12:59:33 1995  Ian Lance Taylor  <ian@cygnus.com>
 
-	* config/sparc/t-sol2 (CRTSTUFF_T_CFLAGS): Use -fPIC
-	unconditionally, since binutils 2.6 supports it.
+	* sparc/t-sol2 (CRTSTUFF_T_CFLAGS): Use -fPIC unconditionally.
 
 Sun Dec  3 20:55:43 1995  Jeffrey A. Law  <law@cygnus.com>
 
@@ -4079,19 +4006,19 @@ Sat Dec  2 22:19:16 1995  Jeffrey A. Law  (law@cygnus.com)
 
 Sat Dec  2 07:52:46 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* rs6000/rs6000.md (movsi): Don't split large constants in the
+	* rs6000.md (movsi): Don't split large constants in the
 	movsi pattern, let the define_split split it later as needed.
 
 Fri Dec  1 16:00:42 1995  Brendan Kehoe  <brendan@cygnus.com>
 
-	* sparc/sparc.c (output_double_int): Handle CODE_LABEL's if v9.
+	* sparc.c (output_double_int): Handle CODE_LABEL's if v9.
 
 Fri Dec  1 09:13:23 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 
-	* m68k/m68k.md (decrement_and_branch_until_zero): Split into a
+	* m68k.md (decrement_and_branch_until_zero): Split into a
 	define_expand and an anonymous define_insn.
-	* fx80/fx80.md (decrement_and_branch_until_zero): Ditto.
-	* m88k/m88k.md (decrement_and_branch_until_zero): Ditto.
+	* fx80.md (decrement_and_branch_until_zero): Ditto.
+	* m88k.md (decrement_and_branch_until_zero): Ditto.
 
 Thu Nov 30 15:02:16 1995  Jim Wilson  <wilson@mole.gnu.ai.mit.edu>
 
@@ -4102,14 +4029,14 @@ Thu Nov 30 15:02:16 1995  Jim Wilson  <wilson@mole.gnu.ai.mit.edu>
 	(RELAX_BIT, TARGET_RELAX): New macros.
 	(TARGET_SWITCHES): Add -mrelax.
 
-	* sh/sh.c (insn-attr.h): Include.
+	* sh.c (insn-attr.h): Include.
 	(pragma_nosave_low_regs): New global variable.
 	(calc_live_regs): If SH3 and pragma_nosave_low_regs, then don't
 	save registers r0 through r7 for interrupt functions.
 	(function_epilogue): Clear pragma_nosave_low_regs.
 	(handle_pragma): Set pragma_nosave_low_regs if see pragma for it.
 
-	* sh/sh.h (FUNCTION_PROFILER): Use trap #33 instead of trap #5.
+	* sh.h (FUNCTION_PROFILER): Use trap #33 instead of trap #5.
 	Put additional .align before trapa instruction.
 
 Thu Nov 30 14:45:13 1995  Doug Evans  <dje@canuck.cygnus.com>
@@ -4172,7 +4099,7 @@ Thu Nov 30 12:27:22 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	anymore.
 	(STRIP_NAME_ENCODING): Undef.
 
-	* rs6000/rs6000.c (rs6000_save_toc_p, rs6000_abi): New globals.
+	* rs6000.c (rs6000_save_toc_p, rs6000_abi): New globals.
 	(rs6000_override_options): Add 602, 603e, and 620 support.
 	(count_register_operand): New function to return true if operand
 	is the count register.
@@ -4210,10 +4137,9 @@ Thu Nov 30 12:27:22 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	common trampoline support for all ABI's.
 	(rs6000_initialize_trampoline): Ditto.
 
-	* rs6000/rs6000.h (TARGET_{WINDOWS_NT,AIX,MACOS}): Define.
+	* rs6000.h (TARGET_{WINDOWS_NT,AIX,MACOS}): Define.
 	(processor_type): Add 602.
-	(PROCESSOR_COMMON): Assume the current processor is a 604, not a
-	601.
+	(PROCESSOR_COMMON): Assume current processor is a 604, not a 601.
 	(SUBTARGET_OPTIONS): Define if not defined.
 	(TARGET_OPTIONS): Include SUBTARGET_OPTIONS.
 	(COUNT_REGISTER_REGNUM): Define as 66.
@@ -4231,16 +4157,15 @@ Thu Nov 30 12:27:22 1995  Michael Meissner  <meissner@tiktok.cygnus.com>
 	(MACHINE_issue_rate): Define.
 	(function decls): Add new function decls from rs6000.c.
 
-	* rs6000/rs6000.md (cpu attribute): Add 602.
+	* rs6000.md (cpu attribute): Add 602.
 	(function units): Update to match reality better.
 	(calls through pointer): Rework to support Windows NT.
 	(movsi): Add Windows NT support.
 	(movstrsi): Remove match_operand predicates, since
 	expand_block_move does the checking.
 	(sync_isync): Delete.
-	(icbi, dcbst, sync, isync): New insns to generate the named
-	instruction for making trampolines on eabi/V.4 properly flush the
-	caches.
+	(icbi, dcbst, sync, isync): New insns to generate named instruction
+	for making trampolines on eabi/V.4 properly flush the caches.
 	(decrement_and_branch_on_count): Rename from
 	decrement_and_branchsi.  Add update of count in insn pattern.
 
@@ -8466,7 +8391,7 @@ Thu Apr 27 14:22:50 1995  Michael Meissner  <meissner@cygnus.com>
 
 	* i386/linux-oldld.h: New file, that is cloned from linux-aout.h,
 	except that it does not pass -m i386linux to the linker.  This is
-	to support the original Linux ld that is on most distributions.
+	to support the original GNU/Linux ld that is on most distributions.
 
 	* configure (i[345]86-*-linux*oldld*): Use i386/linux-oldld.h as
 	the target file.

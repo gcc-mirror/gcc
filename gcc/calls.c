@@ -1859,7 +1859,8 @@ expand_call (exp, target, ignore)
 			   VOIDmode, 3,
 			   structure_value_addr, ptr_mode, 
 			   GEN_INT (struct_value_size), TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_WO), QImode);
+			   GEN_INT (MEMORY_USE_WO),
+			   TYPE_MODE (integer_type_node));
 
       if (GET_CODE (struct_value_rtx) == REG)
 	  use_reg (&call_fusage, struct_value_rtx);
@@ -3564,7 +3565,8 @@ store_one_arg (arg, argblock, may_be_alloca, variable_size, fndecl,
 			     XEXP (arg->stack, 0), ptr_mode, 
 			     GEN_INT (GET_MODE_SIZE (arg->mode)),
 			     TYPE_MODE (sizetype),
-			     GEN_INT (MEMORY_USE_RW), QImode);
+			     GEN_INT (MEMORY_USE_RW),
+			     TYPE_MODE (integer_type_node));
 	}
     }
   else if (arg->mode != BLKmode)

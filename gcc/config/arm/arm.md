@@ -1,7 +1,7 @@
 ;;- Machine description for Advanced RISC Machines' ARM for GNU compiler
 ;;  Copyright (C) 1991, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
-;;             and Martin Simmons (@harleqn.co.uk).
+;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rwe11@cl.cam.ac.uk)
 
 ;; This file is part of GNU CC.
@@ -1208,7 +1208,21 @@
   "
 {
   HOST_WIDE_INT mask = (((HOST_WIDE_INT)1) << INTVAL (operands[1])) - 1;
+  rtx target, subtarget;
 
+  target = operands[0];
+  /* Avoid using a subreg as a subtarget, and avoid writing a paradoxical 
+     subreg as the final target.  */
+  if (GET_CODE (target) == SUBREG)
+    {
+      subtarget = gen_reg_rtx (SImode);
+      if (GET_MODE_SIZE (GET_MODE (SUBREG_REG (target)))
+	  < GET_MODE_SIZE (SImode))
+        target = SUBREG_REG (target);
+    }
+  else
+    subtarget = target;    
+    
   if (GET_CODE (operands[3]) == CONST_INT)
     {
       /* Since we are inserting a known constant, we may be able to
@@ -1219,7 +1233,7 @@
 			     << INTVAL (operands[2]));
 
       emit_insn (gen_andsi3 (op1, operands[0], GEN_INT (~mask2)));
-      emit_insn (gen_iorsi3 (operands[0], op1,
+      emit_insn (gen_iorsi3 (subtarget, op1,
 			     GEN_INT (INTVAL (operands[3])
 				      << INTVAL (operands[2]))));
     }
@@ -1240,7 +1254,7 @@
       emit_insn (gen_iorsi3 (op1, gen_rtx (LSHIFTRT, SImode, operands[0],
 					   operands[1]),
 			     op0));
-      emit_insn (gen_rotlsi3 (operands[0], op1, operands[1]));
+      emit_insn (gen_rotlsi3 (subtarget, op1, operands[1]));
     }
   else if ((INTVAL (operands[1]) + INTVAL (operands[2]) == 32)
 	   && ! (const_ok_for_arm (mask)
@@ -1254,8 +1268,9 @@
       emit_insn (gen_ashlsi3 (op0, operands[3],
 			      GEN_INT (32 - INTVAL (operands[1]))));
       emit_insn (gen_ashlsi3 (op1, operands[0], operands[1]));
-      emit_insn (gen_iorsi3 (operands[0], gen_rtx (LSHIFTRT, SImode, op1,
-						   operands[1]), op0));
+      emit_insn (gen_iorsi3 (subtarget,
+			     gen_rtx (LSHIFTRT, SImode, op1,
+				      operands[1]), op0));
     }
   else
     {
@@ -1298,7 +1313,17 @@
       if (INTVAL (operands[2]) != 0)
 	op1 = gen_rtx (ASHIFT, SImode, op1, operands[2]);
 
-      emit_insn (gen_iorsi3 (operands[0], op1, op2));
+      emit_insn (gen_iorsi3 (subtarget, op1, op2));
+    }
+
+  if (subtarget != target)
+    {
+      /* If TARGET is still a SUBREG, then it must be wider than a word,
+	 so we must be careful only to set the subword we were asked to. */
+      if (GET_CODE (target) == SUBREG)
+	emit_move_insn (target, subtarget);
+      else
+	emit_move_insn (target, gen_lowpart (GET_MODE (target), subtarget));
     }
 
   DONE;
@@ -2579,23 +2604,24 @@
 
 (define_expand "storehi"
   [;; store the low byte
-   (set (mem:QI (match_operand:SI 1 "" "")) (match_dup 3))
+   (set (match_operand 1 "" "") (match_dup 3))
    ;; extract the high byte
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
    ;; store the high byte
-   (set (mem:QI (match_dup 4))
-	(subreg:QI (match_dup 2) 0))]	;explicit subreg safe
+   (set (match_dup 4) (subreg:QI (match_dup 2) 0))]	;explicit subreg safe
   ""
   "
 {
-  enum rtx_code code = GET_CODE (operands[1]);
+  rtx addr = XEXP (operands[1], 0);
+  enum rtx_code code = GET_CODE (addr);
 
-  if ((code == PLUS || code == MINUS)
-      && (GET_CODE (XEXP (operands[1], 1)) == REG
-	  || GET_CODE (XEXP (operands[1], 0)) != REG))
-    operands[1] = force_reg (SImode, operands[1]);
-  operands[4] = plus_constant (operands[1], 1);
+  if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
+      || code == MINUS)
+    addr = force_reg (SImode, addr);
+
+  operands[4] = change_address (operands[1], QImode, plus_constant (addr, 1));
+  operands[1] = change_address (operands[1], QImode, NULL_RTX);
   operands[3] = gen_lowpart (QImode, operands[0]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[2] = gen_reg_rtx (SImode); 
@@ -2603,21 +2629,22 @@
 ")
 
 (define_expand "storehi_bigend"
-  [(set (mem:QI (match_dup 4)) (match_dup 3))
+  [(set (match_dup 4) (match_dup 3))
    (set (match_dup 2)
 	(ashiftrt:SI (match_operand 0 "" "") (const_int 8)))
-   (set (mem:QI (match_operand 1 "" ""))
-	(subreg:QI (match_dup 2) 0))]
+   (set (match_operand 1 "" "")	(subreg:QI (match_dup 2) 0))]
   ""
   "
 {
-  enum rtx_code code = GET_CODE (operands[1]);
-  if ((code == PLUS || code == MINUS)
-      && (GET_CODE (XEXP (operands[1], 1)) == REG
-	  || GET_CODE (XEXP (operands[1], 0)) != REG))
-    operands[1] = force_reg (SImode, operands[1]);
+  rtx addr = XEXP (operands[1], 0);
+  enum rtx_code code = GET_CODE (addr);
 
-  operands[4] = plus_constant (operands[1], 1);
+  if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
+      || code == MINUS)
+    addr = force_reg (SImode, addr);
+
+  operands[4] = change_address (operands[1], QImode, plus_constant (addr, 1));
+  operands[1] = change_address (operands[1], QImode, NULL_RTX);
   operands[3] = gen_lowpart (QImode, operands[0]);
   operands[0] = gen_lowpart (SImode, operands[0]);
   operands[2] = gen_reg_rtx (SImode);
@@ -2626,19 +2653,19 @@
 
 ;; Subroutine to store a half word integer constant into memory.
 (define_expand "storeinthi"
-  [(set (mem:QI (match_operand:SI 0 "" ""))
+  [(set (match_operand 0 "" "")
 	(subreg:QI (match_operand 1 "" "") 0))
-   (set (mem:QI (match_dup 3)) (subreg:QI (match_dup 2) 0))]
+   (set (match_dup 3) (subreg:QI (match_dup 2) 0))]
   ""
   "
 {
   HOST_WIDE_INT value = INTVAL (operands[1]);
-  enum rtx_code code = GET_CODE (operands[0]);
+  rtx addr = XEXP (operands[0], 0);
+  enum rtx_code code = GET_CODE (addr);
 
-  if ((code == PLUS || code == MINUS)
-      && (GET_CODE (XEXP (operands[0], 1)) == REG
-	  || GET_CODE (XEXP (operands[0], 0)) != REG))
-  operands[0] = force_reg (SImode, operands[0]);
+  if ((code == PLUS && GET_CODE (XEXP (addr, 1)) != CONST_INT)
+      || code == MINUS)
+    addr = force_reg (SImode, addr);
 
   operands[1] = gen_reg_rtx (SImode);
   if (BYTES_BIG_ENDIAN)
@@ -2664,7 +2691,8 @@
 	}
     }
 
-  operands[3] = plus_constant (operands[0], 1);
+  operands[3] = change_address (operands[0], QImode, plus_constant (addr, 1));
+  operands[0] = change_address (operands[0], QImode, NULL_RTX);
 }
 ")
 
@@ -2695,16 +2723,15 @@
 	      DONE;
 	    }
 	  if (GET_CODE (operands[1]) == CONST_INT)
-	    emit_insn (gen_storeinthi (XEXP (operands[0], 0), operands[1]));
+	    emit_insn (gen_storeinthi (operands[0], operands[1]));
 	  else
 	    {
 	      if (GET_CODE (operands[1]) == MEM)
 		operands[1] = force_reg (HImode, operands[1]);
 	      if (BYTES_BIG_ENDIAN)
-		emit_insn (gen_storehi_bigend (operands[1],
-					       XEXP (operands[0], 0)));
+		emit_insn (gen_storehi_bigend (operands[1], operands[0]));
 	      else
-		emit_insn (gen_storehi (operands[1], XEXP (operands[0], 0)));
+		emit_insn (gen_storehi (operands[1], operands[0]));
 	    }
 	  DONE;
 	}
@@ -3917,57 +3944,77 @@
 }")
 
 (define_insn "*movsicc_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r,r,r")
 	(if_then_else:SI
 	 (match_operator 3 "comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
-	 (match_operand:SI 1 "arm_not_operand" "0,0,?rI,?rI,K,K")
-	 (match_operand:SI 2 "arm_not_operand" "rI,K,rI,K,rI,K")))]
+	 (match_operand:SI 1 "arm_not_operand" "0,0,rI,K,rI,rI,K,K")
+	 (match_operand:SI 2 "arm_not_operand" "rI,K,0,0,rI,K,rI,K")))]
   ""
   "@
    mov%D3\\t%0, %2
    mvn%D3\\t%0, #%B2
+   mov%d3\\t%0, %1
+   mvn%d3\\t%0, #%B1
    mov%d3\\t%0, %1\;mov%D3\\t%0, %2
    mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
    mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
    mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2"
-  [(set_attr "length" "4,4,8,8,8,8")
+  [(set_attr "length" "4,4,4,4,8,8,8,8")
    (set_attr "conds" "use")])
 
 (define_insn "*movsfcc_hard_insn"
-  [(set (match_operand:SF 0 "s_register_operand" "=f,f")
-	(if_then_else:SF (match_operator 3 "comparison_operator" 
-			  [(match_operand 4 "cc_register" "") (const_int 0)])
-			 (match_operand:SF 1 "s_register_operand" "0,0")
-			 (match_operand:SF 2 "fpu_add_operand" "fG,H")))]
+  [(set (match_operand:SF 0 "s_register_operand" "=f,f,f,f,f,f,f,f")
+	(if_then_else:SF
+	 (match_operator 3 "comparison_operator" 
+	  [(match_operand 4 "cc_register" "") (const_int 0)])
+	 (match_operand:SF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
+	 (match_operand:SF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
   "TARGET_HARD_FLOAT"
   "@
    mvf%D3s\\t%0, %2
-   mnf%D3s\\t%0, #%N2"
-  [(set_attr "type" "ffarith")
+   mnf%D3s\\t%0, #%N2
+   mvf%d3s\\t%0, %1
+   mnf%d3s\\t%0, #%N1
+   mvf%d3s\\t%0, %1\;mvf%D3s\\t%0, %2
+   mvf%d3s\\t%0, %1\;mnf%D3s\\t%0, #%N2
+   mnf%d3s\\t%0, #%N1\;mvf%D3s\\t%0, %2
+   mnf%d3s\\t%0, #%N1\;mnf%D3s\\t%0, #%N2"
+  [(set_attr "length" "4,4,4,4,8,8,8,8")
+   (set_attr "type" "ffarith")
    (set_attr "conds" "use")])
 
 (define_insn "*movsfcc_soft_insn"
-  [(set (match_operand:SF 0 "s_register_operand" "=r")
+  [(set (match_operand:SF 0 "s_register_operand" "=r,r")
 	(if_then_else:SF (match_operator 3 "comparison_operator"
 			  [(match_operand 4 "cc_register" "") (const_int 0)])
-			 (match_operand:SF 1 "s_register_operand" "0")
-			 (match_operand:SF 2 "s_register_operand" "r")))]
+			 (match_operand:SF 1 "s_register_operand" "0,r")
+			 (match_operand:SF 2 "s_register_operand" "r,0")))]
   "TARGET_SOFT_FLOAT"
-  "mov%D3\\t%0, %2"
+  "@
+   mov%D3\\t%0, %2
+   mov%d3\\t%0, %1"
   [(set_attr "conds" "use")])
 
 (define_insn "*movdfcc_insn"
-  [(set (match_operand:DF 0 "s_register_operand" "=f,f")
-	(if_then_else:DF (match_operator 3 "comparison_operator"
-			  [(match_operand 4 "cc_register" "") (const_int 0)])
-			 (match_operand:DF 1 "s_register_operand" "0,0")
-			 (match_operand:DF 2 "fpu_add_operand" "fG,H")))]
+  [(set (match_operand:DF 0 "s_register_operand" "=f,f,f,f,f,f,f,f")
+	(if_then_else:DF
+	 (match_operator 3 "comparison_operator"
+	  [(match_operand 4 "cc_register" "") (const_int 0)])
+	 (match_operand:DF 1 "fpu_add_operand" "0,0,fG,H,fG,fG,H,H")
+	 (match_operand:DF 2 "fpu_add_operand" "fG,H,0,0,fG,H,fG,H")))]
   "TARGET_HARD_FLOAT"
   "@
    mvf%D3d\\t%0, %2
-   mnf%D3d\\t%0, #%N2"
-  [(set_attr "type" "ffarith")
+   mnf%D3d\\t%0, #%N2
+   mvf%d3d\\t%0, %1
+   mnf%d3d\\t%0, #%N1
+   mvf%d3d\\t%0, %1\;mvf%D3d\\t%0, %2
+   mvf%d3d\\t%0, %1\;mnf%D3d\\t%0, #%N2
+   mnf%d3d\\t%0, #%N1\;mvf%D3d\\t%0, %2
+   mnf%d3d\\t%0, #%N1\;mnf%D3d\\t%0, #%N2"
+  [(set_attr "length" "4,4,4,4,8,8,8,8")
+   (set_attr "type" "ffarith")
    (set_attr "conds" "use")])
 
 ;; Jump and linkage insns
@@ -4194,14 +4241,17 @@
   DONE;
 }")
 
+;; The USE in this pattern is needed to tell flow analysis that this is
+;; a CASESI insn.  It has no other purpose.
 (define_insn "casesi_internal"
-  [(set (pc)
-	(if_then_else
-	 (leu (match_operand:SI 0 "s_register_operand" "r")
-	      (match_operand:SI 1 "arm_rhs_operand" "rI"))
-	 (mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
-			  (label_ref (match_operand 2 "" ""))))
-	 (label_ref (match_operand 3 "" ""))))]
+  [(parallel [(set (pc)
+	       (if_then_else
+		(leu (match_operand:SI 0 "s_register_operand" "r")
+		     (match_operand:SI 1 "arm_rhs_operand" "rI"))
+		(mem:SI (plus:SI (mult:SI (match_dup 0) (const_int 4))
+				 (label_ref (match_operand 2 "" ""))))
+		(label_ref (match_operand 3 "" ""))))
+	      (use (label_ref (match_dup 2)))])]
   ""
   "*
   if (flag_pic)

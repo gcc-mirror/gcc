@@ -1,5 +1,5 @@
-/* Definitions of target machine for GNU compiler.  Sun 2 running Sunos 4.
-   Copyright (C) 1987, 1988, 1993, 1996 Free Software Foundation, Inc.
+/* Definitions of target machine for GNU compiler.  Sun 2 running SunOS 4.
+   Copyright (C) 1987, 1988, 1993, 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 

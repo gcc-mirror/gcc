@@ -61,7 +61,7 @@ Generating Code for Profiling
      A C statement or compound statement to output to FILE some
      assembler code to initialize basic-block profiling for the current
      object module.  The global compile flag `profile_block_flag'
-     distingishes two profile modes.
+     distinguishes two profile modes.
 
     `profile_block_flag != 2'
           Output code to call the subroutine `__bb_init_func' once per
@@ -113,7 +113,7 @@ Generating Code for Profiling
      A C statement or compound statement to output to FILE some
      assembler code to increment the count associated with the basic
      block number BLOCKNO.  The global compile flag
-     `profile_block_flag' distingishes two profile modes.
+     `profile_block_flag' distinguishes two profile modes.
 
     `profile_block_flag != 2'
           Output code to increment the counter directly.  Basic blocks

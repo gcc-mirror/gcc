@@ -76,6 +76,16 @@ Boston, MA 02111-1307, USA.  */
 #undef GLOBAL_ASM_OP
 #define GLOBAL_ASM_OP			"\t.globl"
 
+#undef EH_FRAME_SECTION_ASM_OP
+#define EH_FRAME_SECTION_ASM_OP_COFF	"\t.section\t.ehfram, \"x\""
+#define EH_FRAME_SECTION_ASM_OP_ELF	"\t.section\t.eh_frame, \"aw\""
+#define EH_FRAME_SECTION_ASM_OP	\
+  ((TARGET_ELF) ? EH_FRAME_SECTION_ASM_OP_ELF : EH_FRAME_SECTION_ASM_OP_COFF)
+
+/* Avoid problems (long section names, forward assembler refs) with DWARF
+   exception unwinding when we're generating COFF */
+#define DWARF2_UNWIND_INFO ((TARGET_ELF) ? 1 : 0 )  
+
 #undef CONST_SECTION_ASM_OP
 #define CONST_SECTION_ASM_OP_COFF	"\t.section\t.rodata, \"x\""
 #define CONST_SECTION_ASM_OP_ELF	"\t.section\t.rodata"
@@ -273,6 +283,14 @@ do {									\
    }									\
 } while (0)
 
+/* A C statement (sans semicolon) to output to the stdio stream
+   FILE the assembler definition of uninitialized global DECL named
+   NAME whose size is SIZE bytes and alignment is ALIGN bytes.
+   Try to use asm_output_aligned_bss to implement this macro.  */
+
+#define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN) \
+asm_output_aligned_bss (FILE, DECL, NAME, SIZE, ALIGN)
+
 #undef ESCAPES
 #define ESCAPES \
 "\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\
@@ -355,6 +373,19 @@ do {									\
       if (bytes_in_chunk > 0)						\
         fprintf ((FILE), "\n");						\
 } while (0) 
+
+/* Must use data section for relocatable constants when pic.  */
+#undef SELECT_RTX_SECTION
+#define SELECT_RTX_SECTION(MODE,RTX)					\
+{									\
+  if (TARGET_ELF) {							\
+    if (flag_pic && symbolic_operand (RTX))				\
+      data_section ();							\
+    else								\
+      const_section ();							\
+  } else								\
+    readonly_data_section();						\
+}
 
 #undef ASM_OUTPUT_CASE_LABEL
 #define ASM_OUTPUT_CASE_LABEL(FILE,PREFIX,NUM,JUMPTABLE)		\
@@ -559,6 +590,7 @@ do {									\
 
 #define DWARF_DEBUGGING_INFO 1
 #define SDB_DEBUGGING_INFO   1
+#define DBX_DEBUGGING_INFO   1
 #define PREFERRED_DEBUGGING_TYPE					\
   ((TARGET_ELF) ? DWARF_DEBUG: SDB_DEBUG)
 
@@ -661,7 +693,7 @@ dtors_section ()							\
 #undef NO_IMPLICIT_EXTERN_C
 #define NO_IMPLICIT_EXTERN_C 1
 
-/* JKJ FIXME - examine the rammifications of RETURN_IN_MEMORY and
+/* JKJ FIXME - examine the ramifications of RETURN_IN_MEMORY and
    RETURN_POPS_ARGS */
 
 #undef RETURN_POPS_ARGS
@@ -871,7 +903,11 @@ dtors_section ()							\
 
 #undef LIB_SPEC
 #define LIB_SPEC \
- "%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
+ "%{shared:pic/libgcc.a%s}%{!shared:%{!symbolic:-lcrypt -lgen -lc}}"
+
+#undef LIBGCC_SPEC
+#define LIBGCC_SPEC \
+ "%{!shared:-lgcc}"
 
 #define MASK_COFF     		010000000000	/* Mask for elf generation */
 #define TARGET_COFF             (target_flags & MASK_COFF)
@@ -901,6 +937,7 @@ compiler at the end of the day. Onward we go ...
 # undef FINI_SECTION_ASM_OP
 # undef CTORS_SECTION_ASM_OP
 # undef DTORS_SECTION_ASM_OP
+# undef EH_FRAME_SECTION_ASM_OP
 # undef CTOR_LIST_BEGIN
 # undef CTOR_LIST_END
 # undef DO_GLOBAL_CTORS_BODY
@@ -912,11 +949,13 @@ compiler at the end of the day. Onward we go ...
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_ELF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_ELF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_ELF
+#  define EH_FRAME_SECTION_ASM_OP EH_FRAME_SECTION_ASM_OP_ELF
 # else /* ! _SCO_ELF */
 #  define INIT_SECTION_ASM_OP INIT_SECTION_ASM_OP_COFF
 #  define FINI_SECTION_ASM_OP FINI_SECTION_ASM_OP_COFF
 #  define DTORS_SECTION_ASM_OP DTORS_SECTION_ASM_OP_COFF
 #  define CTORS_SECTION_ASM_OP CTORS_SECTION_ASM_OP_COFF
+#  define EH_FRAME_SECTION_ASM_OP ""
 #  define CTOR_LIST_BEGIN asm (INIT_SECTION_ASM_OP); asm ("pushl $0")
 #  define CTOR_LIST_END CTOR_LIST_BEGIN
 #  define DO_GLOBAL_CTORS_BODY						\
@@ -927,4 +966,3 @@ do {									\
 } while (0)
 # endif /* ! _SCO_ELF */
 #endif /* CRT_BEGIN !! CRT_END */
-

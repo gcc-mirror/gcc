@@ -576,7 +576,7 @@ object_is_meta_class(id object)
 }
 
 struct sarray* 
-objc_get_uninstalled_dtable();
+objc_get_uninstalled_dtable(void);
 
 #endif /* not __objc_api_INCLUDE_GNU */
 

@@ -1,4 +1,4 @@
-This is Info file cpp.info, produced by Makeinfo version 1.67 from the
+This is Info file cpp.info, produced by Makeinfo version 1.68 from the
 input file cpp.texi.
 
    This file documents the GNU C Preprocessor.
@@ -164,6 +164,14 @@ compiler.
      Do not search for header files in the C++-specific standard
      directories, but do still search the other standard directories.
      (This option is used when building libg++.)
+
+`-remap'
+     When searching for a header file in a directory, remap file names
+     if a file named `header.gcc' exists in that directory.  This can
+     be used to work around limitations of file systems with file name
+     restrictions.  The `header.gcc' file should contain a series of
+     lines with two tokens on each line: the first token is the name to
+     map, and the second token is the actual name to use.
 
 `-D NAME'
      Predefine NAME as a macro, with definition `1'.
@@ -433,6 +441,7 @@ Index of Directives, Macros and Options
 * -P:                                    Invocation.
 * -pedantic:                             Invocation.
 * -pedantic-errors:                      Invocation.
+* -remap:                                Invocation.
 * -traditional:                          Invocation.
 * -trigraphs:                            Invocation.
 * -U:                                    Invocation.

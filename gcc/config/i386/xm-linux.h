@@ -1,5 +1,5 @@
-/* Configuration for GCC for Intel i386 running Linux.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+/* Configuration for GCC for Intel i386 running Linux-based GNU systems.
+   Copyright (C) 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
 This file is part of GNU CC.

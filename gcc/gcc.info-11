@@ -571,11 +571,11 @@ CC.
      GNU CC.  The fix is to get rid of the file `real-ld' which purify
      installs--so that GNU CC won't try to use it.
 
-   * On Linux SLS 1.01, there is a problem with `libc.a': it does not
-     contain the obstack functions.  However, GNU CC assumes that the
-     obstack functions are in `libc.a' when it is the GNU C library.
-     To work around this problem, change the `__GNU_LIBRARY__'
-     conditional around line 31 to `#if 1'.
+   * On GNU/Linux SLS 1.01, there is a problem with `libc.a': it does
+     not contain the obstack functions.  However, GNU CC assumes that
+     the obstack functions are in `libc.a' when it is the GNU C
+     library.  To work around this problem, change the
+     `__GNU_LIBRARY__' conditional around line 31 to `#if 1'.
 
    * On some 386 systems, building the compiler never finishes because
      `enquire' hangs due to a hardware problem in the motherboard--it

@@ -37,7 +37,7 @@
   (const_string "iadd"))
 
 ;; The TRAP_TYPE attribute marks instructions that may generate traps
-;; (which are imprecise and may need a trapb if software complention
+;; (which are imprecise and may need a trapb if software completion
 ;; is desired).
 (define_attr "trap" "yes,no" (const_string "no"))
 

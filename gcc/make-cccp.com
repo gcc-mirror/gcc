@@ -93,8 +93,9 @@ $skip_yacc:
 $ echo " (Ignore any warning about not finding file ""bison.simple"".)"
 $ set verify
 $ 'CC''CFLAGS' cexp.c
+$ 'CC''CFLAGS'/Define="PREFIX=""_dummy_""" prefix.c
 $!'f$verify(0)
-$ 
+$
 $! In case there's no builtin alloca support, use the C simulation.
 $ if f$locate("alloca.obj",f$edit(LIBS,"lowercase")).lt.f$length(LIBS)
 $ then
@@ -108,7 +109,7 @@ $Link:
 $ echo " Linking the preprocessor."
 $ set verify
 $ 'LINK''LDFLAGS'/Exe=gcc-cpp.exe -
-	  cccp.obj,cexp.obj,version.obj,version.opt/Opt,-
+	  cccp.obj,cexp.obj,prefix.obj,version.obj,version.opt/Opt,-
 	  'LIBS'
 $!'f$verify(0)
 $!

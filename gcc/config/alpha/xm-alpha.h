@@ -65,14 +65,6 @@ extern void *malloc (), *realloc (), *calloc ();
 #include "string.h"
 #endif
 
-/* OSF/1 has vprintf.  */
-
-#define HAVE_VPRINTF
-
-/* OSF/1 has putenv.  */
-
-#define HAVE_PUTENV
-
 /* OSF/1 is POSIX.1 compliant.  */
 
 #define POSIX

@@ -1618,7 +1618,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	  case '5':  case '6':  case '7':  case '8':  case '9':
 	    if (TREE_STRING_POINTER (TREE_PURPOSE (tail))[j]
 		>= '0' + noutputs)
-	      error ("matching constraint references invalid operand number");
+	      {
+		error
+		  ("matching constraint references invalid operand number");
+		return;
+	      }
 
 	    /* ... fall through ... */
 
@@ -1751,7 +1755,7 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 		  continue;
 		}
 
-	      /* Ignore unknown register, error already signalled.  */
+	      /* Ignore unknown register, error already signaled.  */
 	      continue;
 	    }
 
@@ -3411,10 +3415,10 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       emit_label (afterward);
     }
 
-  /* Don't allow jumping into a block that has cleanups or a stack level.  */
+  /* Don't allow jumping into a block that has a stack level.
+     Cleanups are allowed, though.  */
   if (dont_jump_in
-      || thisblock->data.block.stack_level != 0
-      || thisblock->data.block.cleanups != 0)
+      || thisblock->data.block.stack_level != 0)
     {
       struct label_chain *chain;
 
@@ -3425,7 +3429,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
 	  DECL_TOO_LATE (chain->label) = 1;
 	  /* If any goto without a fixup came to this label,
 	     that must be an error, because gotos without fixups
-	     come from outside all saved stack-levels and all cleanups.  */
+	     come from outside all saved stack-levels.  */
 	  if (TREE_ADDRESSABLE (chain->label))
 	    error_with_decl (chain->label,
 			     "label `%s' used before containing binding contour");
@@ -3992,6 +3996,8 @@ expand_decl_cleanup (decl, cleanup)
       if (! using_eh_for_cleanups_p
 	  || expand_eh_region_start_tree (decl, cleanup))
 	TREE_ADDRESSABLE (t) = 1;
+      /* If that started a new EH region, we're in a new block.  */
+      thisblock = block_stack;
 
       if (cond_context)
 	{
@@ -4010,6 +4016,19 @@ expand_decl_cleanup (decl, cleanup)
 	}
     }
   return 1;
+}
+
+/* Like expand_decl_cleanup, but suppress generating an exception handler
+   to perform the cleanup.  */
+
+int
+expand_decl_cleanup_no_eh (decl, cleanup)
+     tree decl, cleanup;
+{
+  int save_eh = using_eh_for_cleanups_p;
+  using_eh_for_cleanups_p = 0;
+  expand_decl_cleanup (decl, cleanup);
+  using_eh_for_cleanups_p = save_eh;
 }
 
 /* Arrange for the top element of the dynamic cleanup chain to be
@@ -4055,7 +4074,7 @@ expand_dcc_cleanup (decl)
 
 /* Arrange for the top element of the dynamic handler chain to be
    popped if we exit the current binding contour.  DECL is the
-   assciated declaration, if any, otherwise NULL_TREE.  If the current
+   associated declaration, if any, otherwise NULL_TREE.  If the current
    contour is left via an exception, then __sjthrow will pop the top
    element off the dynamic handler chain.  The code that avoids doing
    the action we push into the handler chain in the exceptional case
@@ -4225,10 +4244,10 @@ expand_cleanups (list, dont_do, in_fixup, reachable)
    context, so that any cleanup actions we register with
    expand_decl_init will be properly conditionalized when those
    cleanup actions are later performed.  Must be called before any
-   expression (tree) is expanded that is within a contidional context.  */
+   expression (tree) is expanded that is within a conditional context.  */
 
 void
-start_cleanup_deferal ()
+start_cleanup_deferral ()
 {
   /* block_stack can be NULL if we are inside the parameter list.  It is
      OK to do nothing, because cleanups aren't possible here.  */
@@ -4237,12 +4256,12 @@ start_cleanup_deferal ()
 }
 
 /* Mark the end of a conditional region of code.  Because cleanup
-   deferals may be nested, we may still be in a conditional region
+   deferrals may be nested, we may still be in a conditional region
    after we end the currently deferred cleanups, only after we end all
    deferred cleanups, are we back in unconditional code.  */
 
 void
-end_cleanup_deferal ()
+end_cleanup_deferral ()
 {
   /* block_stack can be NULL if we are inside the parameter list.  It is
      OK to do nothing, because cleanups aren't possible here.  */
@@ -4355,7 +4374,7 @@ expand_start_case (exit_flag, expr, type, printname)
 
   thiscase->data.case_stmt.start = get_last_insn ();
 
-  start_cleanup_deferal ();
+  start_cleanup_deferral ();
 }
 
 
@@ -4408,7 +4427,7 @@ expand_start_case_dummy ()
   thiscase->data.case_stmt.num_ranges = 0;
   case_stack = thiscase;
   nesting_stack = thiscase;
-  start_cleanup_deferal ();
+  start_cleanup_deferral ();
 }
 
 /* End a dummy case statement.  */
@@ -4416,7 +4435,7 @@ expand_start_case_dummy ()
 void
 expand_end_case_dummy ()
 {
-  end_cleanup_deferal ();
+  end_cleanup_deferral ();
   POPSTACK (case_stack);
 }
 
@@ -4523,11 +4542,14 @@ pushcase (value, converter, label, duplicate)
   return 0;
 }
 
-/* Like pushcase but this case applies to all values
-   between VALUE1 and VALUE2 (inclusive).
-   The return value is the same as that of pushcase
-   but there is one additional error code:
-   4 means the specified range was empty.  */
+/* Like pushcase but this case applies to all values between VALUE1 and
+   VALUE2 (inclusive).  If VALUE1 is NULL, the range starts at the lowest
+   value of the index type and ends at VALUE2.  If VALUE2 is NULL, the range
+   starts at VALUE1 and ends at the highest value of the index type.
+   If both are NULL, this case applies to all values.
+
+   The return value is the same as that of pushcase but there is one
+   additional error code: 4 means the specified range was empty.  */
 
 int
 pushcase_range (value1, value2, converter, label, duplicate)
@@ -4544,10 +4566,6 @@ pushcase_range (value1, value2, converter, label, duplicate)
   /* Fail if not inside a real case statement.  */
   if (! (case_stack && case_stack->data.case_stmt.start))
     return 1;
-
-  /* Fail if the range is empty.  */
-  if (tree_int_cst_lt (value2, value1))
-    return 4;
 
   if (stack_block_stack
       && stack_block_stack->depth > case_stack->depth)
@@ -4581,20 +4599,28 @@ pushcase_range (value1, value2, converter, label, duplicate)
     }
   case_stack->data.case_stmt.seenlabel = 1;
 
-  /* Convert VALUEs to type in which the comparisons are nominally done.  */
-  if (value1 == 0)  /* Negative infinity.  */
+  /* Convert VALUEs to type in which the comparisons are nominally done
+     and replace any unspecified value with the corresponding bound.  */
+  if (value1 == 0)
     value1 = TYPE_MIN_VALUE (index_type);
-  value1 = (*converter) (nominal_type, value1);
-
-  if (value2 == 0)  /* Positive infinity.  */
+  if (value2 == 0)
     value2 = TYPE_MAX_VALUE (index_type);
+
+  /* Fail if the range is empty.  Do this before any conversion since
+     we want to allow out-of-range empty ranges.  */
+  if (tree_int_cst_lt (value2, value1))
+    return 4;
+
+  value1 = (*converter) (nominal_type, value1);
   value2 = (*converter) (nominal_type, value2);
 
   /* Fail if these values are out of range.  */
-  if (! int_fits_type_p (value1, index_type))
+  if (TREE_CONSTANT_OVERFLOW (value1)
+      || ! int_fits_type_p (value1, index_type))
     return 3;
 
-  if (! int_fits_type_p (value2, index_type))
+  if (TREE_CONSTANT_OVERFLOW (value2)
+      || ! int_fits_type_p (value2, index_type))
     return 3;
 
   return add_case_node (value1, value2, label, duplicate);
@@ -5410,7 +5436,7 @@ expand_end_case (orig_index)
       if (count != 0)
 	range = fold (build (MINUS_EXPR, index_type, maxval, minval));
 
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
 
       if (count == 0)
 	{
@@ -5680,7 +5706,7 @@ expand_end_case (orig_index)
 		     thiscase->data.case_stmt.start);
     }
   else
-    end_cleanup_deferal ();
+    end_cleanup_deferral ();
 
   if (thiscase->exit_label)
     emit_label (thiscase->exit_label);

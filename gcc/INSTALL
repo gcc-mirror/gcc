@@ -610,8 +610,7 @@ special things you must know:
 `alpha-*-osf1'
      Systems using processors that implement the DEC Alpha architecture
      and are running the DEC Unix (OSF/1) operating system, for example
-     the DEC Alpha AXP systems.  (VMS on the Alpha is not currently
-     supported by GNU CC.)
+     the DEC Alpha AXP systems.CC.)
 
      GNU CC writes a `.verstamp' directive to the assembler output file
      unless it is built as a cross-compiler.  It gets the version to
@@ -675,7 +674,7 @@ special things you must know:
 `arm-*-linuxaout'
      Any of the ARM family processors running the Linux-based GNU
      system with the `a.out' binary format (ELF is not yet supported).
-     You must use version 2.8.1.0.7 or later of the Linux binutils,
+     You must use version 2.8.1.0.7 or later of the GNU/Linux binutils,
      which you can download from `sunsite.unc.edu:/pub/Linux/GCC' and
      other mirror sites for Linux-based GNU systems.
 
@@ -827,9 +826,7 @@ special things you must know:
      version 2.2 or later.
 
 `i386-sequent-bsd'
-     Go to the Berkeley universe before compiling.  In addition, you
-     probably need to create a file named `string.h' containing just
-     one line: `#include <strings.h>'.
+     Go to the Berkeley universe before compiling.
 
 `i386-sequent-ptx1*'
      Sequent DYNIX/ptx 1.x.
@@ -1181,9 +1178,7 @@ special things you must know:
      Emacs.
 
 `ns32k-sequent'
-     Go to the Berkeley universe before compiling.  In addition, you
-     probably need to create a file named `string.h' containing just
-     one line: `#include <strings.h>'.
+     Go to the Berkeley universe before compiling.
 
 `ns32k-utek'
      UTEK ns32000 system ("merlin").  The C compiler that comes with

@@ -440,23 +440,37 @@ clipper_builtin_saveregs (arglist)
 
   if (flag_check_memory_usage)
     {
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, addr,
-			 ptr_mode, GEN_INT (5 * GET_MODE_SIZE (SImode)),
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 addr, ptr_mode,
+			 GEN_INT (5 * GET_MODE_SIZE (SImode)),
 			 TYPE_MODE (sizetype),
-			 GEN_INT (MEMORY_USE_RW), QImode);
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
 
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, f0_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (DFmode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, f1_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (DFmode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, r0_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (SImode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
-      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3, r1_addr,
-			 ptr_mode, GEN_INT (GET_MODE_SIZE (SImode)),
-			 TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 f0_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (DFmode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW), 
+			 TYPE_MODE (integer_type_node));
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 f1_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (DFmode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW), 
+			 TYPE_MODE (integer_type_node));
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 r0_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (SImode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
+      emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
+			 r1_addr, ptr_mode,
+			 GEN_INT (GET_MODE_SIZE (SImode)),
+			 TYPE_MODE (sizetype),
+			 GEN_INT (MEMORY_USE_RW),
+			 TYPE_MODE (integer_type_node));
     }
 
   /* Return the address of the va_list constructor, but don't put it in a

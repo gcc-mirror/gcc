@@ -213,7 +213,7 @@ extern int errno;
       }
     }
 
-  if (parent = [self superClass])
+  if ((parent = [self superClass]))
     return [parent conformsTo: aProtocol];
   else
     return NO;

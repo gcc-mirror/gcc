@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler. 
-   Matsushita MN10300 series
+/* Definitions of target machine for GNU compiler. Matsushita MN10300 series
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -49,11 +48,15 @@ extern struct rtx_def *zero_areg;
    where VALUE is the bits to set or minus the bits to clear.
    An empty string NAME is used to identify the default VALUE.  */
 
+/* Generate code to work around mul/mulq bugs on the mn10300.  */
+#define TARGET_MULT_BUG			(target_flags & 0x1)
 #define TARGET_SWITCHES  \
-  {{ "", TARGET_DEFAULT}}
+  {{ "mult-bug",	0x1},	\
+   { "no-mult-bug", 	-0x1},	\
+   { "", TARGET_DEFAULT}}
 
 #ifndef TARGET_DEFAULT
-#define TARGET_DEFAULT 0
+#define TARGET_DEFAULT 0x1
 #endif
 
 /* Print subsidiary information on the compiler version in use.  */
@@ -635,7 +638,18 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
 
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
    except for CONSTANT_ADDRESS_P which is actually
-   machine-independent.  */
+   machine-independent.
+
+   On the mn10300, the value in the address register must be
+   in the same memory space/segment as the effective address.
+
+   This is problematical for reload since it does not understand
+   that base+index != index+base in a memory reference.
+
+   Note it is still possible to use reg+reg addressing modes,
+   it's just much more difficult.  For a discussion of a possible
+   workaround and solution, see the comments in pa.c before the
+   function record_unscaled_index_insn_codes.  */
 
 /* Accept either REG or SUBREG where a register is valid.  */
   
@@ -661,11 +675,7 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
 	base = XEXP (X, 1), index = XEXP (X, 0);	\
       if (base != 0 && index != 0)			\
 	{						\
-	  if (CONSTANT_ADDRESS_P (index))		\
-	    goto ADDR;					\
-	  if (REG_P (index)				\
-	      && REG_OK_FOR_INDEX_P (index)		\
-	      && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode)) \
+	  if (GET_CODE (index) == CONST_INT)		\
 	    goto ADDR;					\
 	}						\
     }							\
@@ -685,7 +695,12 @@ extern struct rtx_def *mn10300_builtin_saveregs ();
    It is always safe for this macro to do nothing.  It exists to recognize
    opportunities to optimize the output.   */
 
-#define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)  {}
+extern struct rtx_def *legitimize_address ();
+#define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN)  \
+{ rtx orig_x = (X);				\
+  (X) = legitimize_address (X, OLDX, MODE);	\
+  if ((X) != orig_x && memory_address_p (MODE, X)) \
+    goto WIN; }
 
 /* Go to LABEL if ADDR (a legitimate address expression)
    has an effect that depends on the machine mode it is used for.  */
@@ -921,7 +936,7 @@ do { char dstr[30];					\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* We don't have to worry about dbx compatability for the mn10300.  */
+/* We don't have to worry about dbx compatibility for the mn10300.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use stabs debugging info by default.  */
@@ -998,3 +1013,4 @@ extern int impossible_plus_operand ();
 extern enum reg_class secondary_reload_class ();
 extern int initial_offset ();
 extern char *output_tst ();
+int symbolic_operand ();

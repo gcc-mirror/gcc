@@ -1,7 +1,7 @@
 /* This file contains the definitions and documentation for the
    Register Transfer Expressions (rtx's) that make up the
    Register Transfer Language (rtl) used in the Back End of the GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 94, 95, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -102,7 +102,7 @@ DEF_RTL_EXPR(INSN_LIST, "insn_list", "ue", 'x')
    '=' to indicate the operand is only written to.
    '+' to indicate the operand is both read and written to.
 
-   Each character in the string represents an allocatable class for an operand.
+   Each character in the string represents an allocable class for an operand.
    'g' indicates the operand can be any valid class.
    'i' indicates the operand can be immediate (in the instruction) data.
    'r' indicates the operand can be in a register.
@@ -257,7 +257,7 @@ DEF_RTL_EXPR(DEFINE_DELAY, "define_delay", "eE", 'x')
 		unit with no issue constraints.  If only one operation can
 		be executed a time and the unit is busy for the entire time,
 		the 3rd operand should be specified as 1, the 6th operand
-		sould be specified as 0, and the 7th operand should not
+		should be specified as 0, and the 7th operand should not
 		be specified.
 
 		If this operand is specified, it is a list of attribute

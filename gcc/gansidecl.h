@@ -1,4 +1,4 @@
-/* ANSI and traditional C compatability macros.
+/* ANSI and traditional C compatibility macros.
    Copyright (C) 1996, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
@@ -76,5 +76,25 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #endif /* ! __STDC__ */
+
+#ifndef HAVE_BCOPY
+#define bcopy(src,dst,len) memcpy ((dst),(src),(len))
+#endif
+
+#ifndef HAVE_BZERO
+#define bzero(dst,len) memset ((dst),0,(len))
+#endif
+
+#ifndef HAVE_BCMP
+#define bcmp(left,right,len) memcmp ((left),(right),(len))
+#endif
+
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
 
 #endif /* ANSIDECL_H */

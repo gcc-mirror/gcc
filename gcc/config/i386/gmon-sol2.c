@@ -58,7 +58,7 @@
  *
  * Notes
  *
- * This code could easily be integrated with the orginal gmon.c and perhaps
+ * This code could easily be integrated with the original gmon.c and perhaps
  * should be.
  */
 
@@ -90,7 +90,7 @@ struct phdr {
 #define HASHFRACTION 1
 #define ARCDENSITY 2
 #define MINARCS 50
-#define BASEADDRESS 0x8000000 /* On Solaris 2 X86 all excutables start here
+#define BASEADDRESS 0x8000000 /* On Solaris 2 X86 all executables start here
 				 and not at 0 */ 
 
 struct tostruct {

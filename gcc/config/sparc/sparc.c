@@ -3334,8 +3334,8 @@ output_function_prologue (file, size, leaf_function)
   else if (! leaf_function && TARGET_BROKEN_SAVERESTORE)
     {
       /* We assume the environment will properly handle or otherwise avoid
-	 trouble associated with an interrupt occuring after the `save' or
-	 trap occuring during it.  */
+	 trouble associated with an interrupt occurring after the `save' or
+	 trap occurring during it.  */
       fprintf (file, "\tsave\n");
 
       if (actual_fsize <= 4096)
@@ -3830,7 +3830,7 @@ function_arg (cum, mode, type, named, incoming_p)
 	  /* ??? This will cause the value to be passed in the fp reg and
 	     in the stack.  When a prototype exists we want to pass the
 	     value in the reg but reserve space on the stack.  That's an
-	     optimization, and is defered [for a bit].  */
+	     optimization, and is deferred [for a bit].  */
 	  if ((regno - SPARC_FP_ARG_FIRST) >= SPARC_INT_ARG_MAX * 2)
 	    return gen_rtx (PARALLEL, mode,
 			    gen_rtvec (2,
@@ -4246,7 +4246,8 @@ sparc_builtin_saveregs (arglist)
 		       address, ptr_mode,
 		       GEN_INT (UNITS_PER_WORD 
 			 	* (NPARM_REGS (word_mode) - first_reg)),
-		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW), QImode);
+		       TYPE_MODE (sizetype), GEN_INT (MEMORY_USE_RW),
+		       TYPE_MODE (integer_type_node));
 
   return address;
 }

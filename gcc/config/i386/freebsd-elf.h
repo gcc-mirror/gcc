@@ -2,7 +2,7 @@
    Copyright (C) 1996 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
-   Adapted from Linux version by John Polstra.
+   Adapted from GNU/Linux version by John Polstra.
 
 This file is part of GNU CC.
 

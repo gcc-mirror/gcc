@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the the GNU compiler.
-   Copyright (C) 1987, 1992, 1994 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -84,6 +84,8 @@ DEF_MACHMODE (XFmode, "XF", MODE_FLOAT, 12, 12, TFmode)   /* IEEE extended */
 DEF_MACHMODE (TFmode, "TF", MODE_FLOAT, 16, 16, VOIDmode)
 
 /* Complex modes.  */
+DEF_MACHMODE (QCmode, "QC", MODE_COMPLEX_FLOAT, 2, 1, HCmode)
+DEF_MACHMODE (HCmode, "HC", MODE_COMPLEX_FLOAT, 4, 2, SCmode)
 DEF_MACHMODE (SCmode, "SC", MODE_COMPLEX_FLOAT, 8, 4, DCmode)
 DEF_MACHMODE (DCmode, "DC", MODE_COMPLEX_FLOAT, 16, 8, XCmode)
 DEF_MACHMODE (XCmode, "XC", MODE_COMPLEX_FLOAT, 24, 12, TCmode)

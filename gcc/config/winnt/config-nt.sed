@@ -13,7 +13,7 @@ s/$(srcdir)\/c-gperf/c-gperf/g
 /^lang_specs_files=/ d
 /^lang_options_files=/ d
 /^version=/ c\
-version=2.7.2
+version=2.8.0
 s/CC = cc/CC = cl/
 s/^SHELL =.*/SHELL =/
 s/CFLAGS = -g/CFLAGS =/

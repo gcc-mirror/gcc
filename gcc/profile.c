@@ -427,7 +427,7 @@ output_gcov_string (string, delimiter)
    the flow graph that are needed to reconstruct the dynamic behavior of the
    flow graph.
 
-   When FLAG_BRANCH_PROBABILITIES is nonzero, this function reads auxilliary
+   When FLAG_BRANCH_PROBABILITIES is nonzero, this function reads auxiliary
    information from a data file containing arc count information from previous
    executions of the function being compiled.  In this case, the flow graph is
    annotated with actual execution counts, which are later propagated into the
@@ -861,7 +861,7 @@ branch_prob (f, dump_file)
      Note that the spanning tree is considered undirected, so that as many
      must-split arcs as possible can be put on it.
 
-     Fallthough arcs which are crowded should not be chosen on the first
+     Fallthrough arcs which are crowded should not be chosen on the first
      pass, since they do not require creating a new basic block.  These
      arcs will have fall_through set.  */
 

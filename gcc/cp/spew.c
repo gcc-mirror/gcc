@@ -189,6 +189,8 @@ scan_tokens (n)
     }
 }
 
+/* Like _obstack_allocated_p, but stop after checking NLEVELS chunks.  */
+
 static int
 probe_obstack (h, obj, nlevels)
      struct obstack *h;
@@ -316,6 +318,7 @@ yylex ()
 	      if (got_scope)
 		tmp_token.yylval.ttype = trrr;
 	      break;
+	    case PFUNCNAME:
 	    case IDENTIFIER:
 	      lastiddecl = trrr;
 	      break;
@@ -377,6 +380,10 @@ yylex ()
   if (spew_debug)
     debug_yychar (yychar);
 #endif
+
+  if (yychar == PFUNCNAME)
+    yylval.ttype = do_identifier (yylval.ttype, 1);
+
   return yychar;
 }
 

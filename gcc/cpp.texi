@@ -2689,6 +2689,15 @@ Do not search for header files in the C++-specific standard directories,
 but do still search the other standard directories.
 (This option is used when building libg++.)
 
+@item -remap
+@findex -remap
+When searching for a header file in a directory, remap file names if a
+file named @file{header.gcc} exists in that directory.  This can be used
+to work around limitations of file systems with file name restrictions.
+The @file{header.gcc} file should contain a series of lines with two
+tokens on each line: the first token is the name to map, and the second
+token is the actual name to use.
+
 @item -D @var{name}
 @findex -D
 Predefine @var{name} as a macro, with definition @samp{1}.

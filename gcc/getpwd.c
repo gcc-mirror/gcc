@@ -32,7 +32,7 @@ extern char *getcwd ();
 char *getenv ();
 char *xmalloc ();
 
-#ifndef VMS
+#if !(defined (VMS) || (defined(_WIN32) && !defined(__CYGWIN32__)))
 
 /* Get the working directory.  Use the PWD environment variable if it's
    set correctly, since this is faster and gives more uniform answers
@@ -80,7 +80,7 @@ getpwd ()
   return p;
 }
 
-#else	/* VMS */
+#else	/* VMS || _WIN32 && !__CYGWIN32__ */
 
 #ifndef MAXPATHLEN
 #define MAXPATHLEN 255
@@ -91,8 +91,13 @@ getpwd ()
 {
   static char *pwd = 0;
 
-  if (!pwd) pwd = getcwd (xmalloc (MAXPATHLEN+1), MAXPATHLEN+1);
+  if (!pwd)
+    pwd = getcwd (xmalloc (MAXPATHLEN + 1), MAXPATHLEN + 1
+#ifdef VMS
+		  , 0
+#endif
+		  );
   return pwd;
 }
 
-#endif	/* VMS */
+#endif	/* VMS || _WIN32 && !__CYGWIN32__ */

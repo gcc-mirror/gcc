@@ -36,21 +36,31 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include <sys/stat.h>
 
-#ifndef _WIN32
-#ifdef USG
 #undef FLOAT
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
-/* This is for hpux.  It is a real screw.  They should change hpux.  */
-#undef FLOAT
-#include <sys/times.h>
-#include <time.h>   /* Correct for hpux at least.  Is it good on other USG?  */
+#endif
+
+#undef FLOAT /* This is for hpux. They should change hpux.  */
 #undef FFS  /* Some systems define this in param.h.  */
+
+#ifdef TIME_WITH_SYS_TIME
+# include <sys/time.h>
+# include <time.h>
 #else
-#ifndef VMS
-#include <sys/time.h>
-#include <sys/resource.h>
+# if HAVE_SYS_TIME_H
+# include <sys/time.h>
+# else
+#  include <time.h>
 #endif
 #endif
+
+#ifdef HAVE_SYS_RESOURCE_H
+# include <sys/resource.h>
+#endif
+
+#ifdef HAVE_SYS_TIMES_H
+# include <sys/times.h>
 #endif
 
 #include "input.h"
@@ -541,7 +551,7 @@ int flag_pic;
 /* Nonzero means generate extra code for exception handling and enable
    exception handling.  */
 
-int flag_exceptions = 1;
+int flag_exceptions = 2;
 
 /* Nonzero means don't place uninitialized global data in common storage
    by default.  */
@@ -781,6 +791,7 @@ char *lang_options[] =
   "-Wno-selector",
   "-Wprotocol",
   "-Wno-protocol",
+  "-print-objc-runtime-info",
 
 #include "options.h"
   0
@@ -2303,10 +2314,32 @@ compile_file (name)
   input_file_stack->next = 0;
   input_file_stack->name = input_filename;
 
+  /* Gross. Gross.  lang_init is (I think) the first callback into
+     the language front end, and is thus the first opportunity to
+     have the selected language override the default value for any
+     -f option.
+
+     So the default value for flag_exceptions is 2 (uninitialized).
+     If we encounter -fno-exceptions or -fexceptions, then flag_exceptions
+     will be set to zero or one respectively.
+
+     flag_exceptions can also be set by lang_init to something other
+     than the default "uninitialized" value of 2.
+
+     After lang_init, if the value is still 2, then we default to
+     -fno-exceptions (value will be reset to zero).
+
+     When our EH mechanism is low enough overhead that we can enable
+     it by default for languages other than C++, then all this braindamage
+     will go away.  */
+  
   /* Perform language-specific initialization.
      This may set main_input_filename.  */
   lang_init ();
 
+  if (flag_exceptions == 2)
+    flag_exceptions = 0;
+     
   /* If the input doesn't start with a #line, use the input name
      as the official input file name.  */
   if (main_input_filename == 0)
@@ -2918,7 +2951,7 @@ rest_of_compilation (decl)
 
   if (DECL_SAVED_INSNS (decl) == 0)
     {
-      int inlineable = 0;
+      int inlinable = 0;
       char *lose;
 
       /* If requested, consider whether to make this function inline.  */
@@ -2945,7 +2978,7 @@ rest_of_compilation (decl)
 			like "inline" was specified for a function if we choose
 			to inline it.  This isn't quite right, but it's
 			probably not worth the trouble to fix.  */
-		     inlineable = DECL_INLINE (decl) = 1;
+		     inlinable = DECL_INLINE (decl) = 1;
 		 });
 
       insns = get_insns ();
@@ -2975,7 +3008,7 @@ rest_of_compilation (decl)
 	 finish compiling ourselves.  Otherwise, wait until EOF.
 	 We have to do this because the purge_addressof transformation
 	 changes the DECL_RTL for many variables, which confuses integrate.  */
-      if (inlineable)
+      if (inlinable)
 	{
 	  if (decl_function_context (decl))
 	    purge_addressof (insns);
@@ -3018,14 +3051,14 @@ rest_of_compilation (decl)
 		}
 #endif
 	      TIMEVAR (integration_time, save_for_inline_nocopy (decl));
-	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
+	      RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
 	      goto exit_rest_of_compilation;
 	    }
 	}
 
       /* If we have to compile the function now, save its rtl and subdecls
 	 so that its compilation will not affect what others get.  */
-      if (inlineable || DECL_DEFER_OUTPUT (decl))
+      if (inlinable || DECL_DEFER_OUTPUT (decl))
 	{
 #ifdef DWARF_DEBUGGING_INFO
 	  /* Generate the DWARF info for the "abstract" instance of
@@ -3054,7 +3087,7 @@ rest_of_compilation (decl)
 	  saved_block_tree = DECL_INITIAL (decl);
 	  saved_arguments = DECL_ARGUMENTS (decl);
 	  TIMEVAR (integration_time, save_for_inline_copying (decl));
-	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlineable;
+	  RTX_INTEGRATED_P (DECL_SAVED_INSNS (decl)) = inlinable;
 	}
 
       /* If specified extern inline but we aren't inlining it, we are
@@ -4098,7 +4131,16 @@ main (argc, argv, envp)
 		      while (*q && (*q >= '0' && *q <= '9'))
 			q++;
 		      if (*p)
-			level = atoi (p);
+			{
+			  level = atoi (p);
+			  if (len > 1 && !strncmp (str, "gdwarf", len))
+			    {
+			      error ("use -gdwarf -g%d for DWARF v1, level %d",
+				       level, level);
+			      if (level == 2)
+				error ("use -gdwarf-2   for DWARF v2");
+			    }
+			}
 		      else
 			level = 2;	/* default debugging info level */
 		      if (*q || level > 3)

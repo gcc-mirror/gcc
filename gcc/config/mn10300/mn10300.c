@@ -254,6 +254,18 @@ print_operand (file, x, code)
 	output_address (GEN_INT ((~INTVAL (x)) & 0xff));
 	break;
 
+      /* For shift counts.  The hardware ignores the upper bits of
+	 any immediate, but the assembler will flag an out of range
+	 shift count as an error.  So we mask off the high bits
+	 of the immediate here.  */
+      case 'S':
+	if (GET_CODE (x) == CONST_INT)
+	  {
+	    fprintf (file, "%d", INTVAL (x) & 0x1f);
+	    break;
+	  }
+	/* FALL THROUGH */
+
       default:
 	switch (GET_CODE (x))
 	  {
@@ -535,7 +547,21 @@ expand_epilogue ()
   size = get_frame_size () + current_function_outgoing_args_size;
   size += (current_function_outgoing_args_size ? 4 : 0);
 
-  /* Cut back the stack.  */
+  /* Maybe cut back the stack, except for the register save area.
+
+     If the frame pointer exists, then use the frame pointer to
+     cut back the stack.
+
+     If the stack size + register save area is more than 255 bytes,
+     then the stack must be cut back here since the size + register
+     save size is too big for a ret/retf instruction. 
+
+     Else leave it alone, it will be cut back as part of the
+     ret/retf instruction, or there wasn't any stack to begin with.
+
+     Under no circumstances should the register save area be
+     deallocated here, that would leave a window where an interrupt
+     could occur and trash the register save area.  */
   if (frame_pointer_needed)
     {
       emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
@@ -543,7 +569,7 @@ expand_epilogue ()
     }
   else if ((regs_ever_live[2] || regs_ever_live[3]
 	    || regs_ever_live[6] || regs_ever_live[7])
-	   && size > 255)
+	   && size + 16 > 255)
     {
       emit_insn (gen_addsi3 (stack_pointer_rtx,
 			     stack_pointer_rtx,
@@ -555,11 +581,11 @@ expand_epilogue ()
      the stack with one instruction.
 
      ?!? Only save registers which are actually used.  Reduces
-     stack requireents and is faster.  */
+     stack requirements and is faster.  */
   if (regs_ever_live[2] || regs_ever_live[3]
       || regs_ever_live[6] || regs_ever_live[7]
       || frame_pointer_needed)
-    emit_jump_insn (gen_return_internal_regs (GEN_INT (size)));
+    emit_jump_insn (gen_return_internal_regs (GEN_INT (size + 16)));
   else
     {
       if (size)
@@ -962,4 +988,78 @@ impossible_plus_operand (op, mode)
     return 1;
 
   return 0;
+}
+
+/* Return 1 if X contains a symbolic expression.  We know these
+   expressions will have one of a few well defined forms, so
+   we need only check those forms.  */
+int
+symbolic_operand (op, mode)
+     register rtx op;
+     enum machine_mode mode;
+{
+  switch (GET_CODE (op))
+    {
+    case SYMBOL_REF:
+    case LABEL_REF:
+      return 1;
+    case CONST:
+      op = XEXP (op, 0);
+      return ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
+               || GET_CODE (XEXP (op, 0)) == LABEL_REF)
+              && GET_CODE (XEXP (op, 1)) == CONST_INT);
+    default:
+      return 0;
+    }
+}
+
+/* Try machine dependent ways of modifying an illegitimate address
+   to be legitimate.  If we find one, return the new valid address.
+   This macro is used in only one place: `memory_address' in explow.c.
+
+   OLDX is the address as it was before break_out_memory_refs was called.
+   In some cases it is useful to look at this to decide what needs to be done.
+
+   MODE and WIN are passed so that this macro can use
+   GO_IF_LEGITIMATE_ADDRESS.
+
+   Normally it is always safe for this macro to do nothing.  It exists to
+   recognize opportunities to optimize the output.
+
+   But on a few ports with segmented architectures and indexed addressing
+   (mn10300, hppa) it is used to rewrite certain problematical addresses.  */
+rtx
+legitimize_address (x, oldx, mode)
+     rtx x;
+     rtx oldx;
+     enum machine_mode mode;
+{
+  /* Uh-oh.  We might have an address for x[n-100000].  This needs
+     special handling to avoid creating an indexed memory address
+     with x-100000 as the base.  */
+  if (GET_CODE (x) == PLUS
+      && symbolic_operand (XEXP (x, 1), VOIDmode))
+    {
+      /* Ugly.  We modify things here so that the address offset specified
+         by the index expression is computed first, then added to x to form
+         the entire address.  */
+
+      rtx regx1, regx2, regy1, regy2, y;
+
+      /* Strip off any CONST.  */
+      y = XEXP (x, 1);
+      if (GET_CODE (y) == CONST)
+        y = XEXP (y, 0);
+
+      if (GET_CODE (y) == PLUS || GET_CODE (y) == MINUS)
+	{
+	  regx1 = force_reg (Pmode, force_operand (XEXP (x, 0), 0));
+	  regy1 = force_reg (Pmode, force_operand (XEXP (y, 0), 0));
+	  regy2 = force_reg (Pmode, force_operand (XEXP (y, 1), 0));
+	  regx1 = force_reg (Pmode,
+			     gen_rtx (GET_CODE (y), Pmode, regx1, regy2));
+	  return force_reg (Pmode, gen_rtx (PLUS, Pmode, regx1, regy1));
+	}
+    }
+  return x;
 }

@@ -1,7 +1,7 @@
 /* Configuration for GNU compiler
    for an Intel i386 or later processor running OS/2 2.x.
-   Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
-   Contributed by Samuel Figueroa (figueroa@cs.nyu.edu)
+   Copyright (C) 1993, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Contributed by Samuel Figueroa (figueroa@apple.com)
 
 This file is part of GNU CC.
 
@@ -28,13 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include <stdlib.h> /* this defines alloca */
 #define USG
 #define ONLY_INT_FIELDS
-#define HAVE_PUTENV
 #define USE_PROTOTYPES 1
-#define bcmp(a,b,c) memcmp (a,b,c)
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define index  strchr
-#define rindex strrchr
 #define strcasecmp stricmp
 #define kill(a,b) raise(b)
 #define mktemp tmpnam

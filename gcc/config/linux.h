@@ -1,4 +1,4 @@
-/* Definitions for Linux with ELF format
+/* Definitions for Linux-based GNU systems with ELF format
    Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Eric Youngdale.
    Modified for stabs-in-ELF by H.J. Lu.
@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #undef HAVE_ATEXIT
 #define HAVE_ATEXIT
 
-/* Linux uses ctype from glibc.a. I am not sure how complete it is.
+/* GNU/Linux uses ctype from glibc.a. I am not sure how complete it is.
    For now, we play safe. It may change later. */
 
 #if 0
@@ -59,8 +59,8 @@ Boston, MA 02111-1307, USA.  */
 	fprintf (FILE, "\t.version\t\"01.01\"\n");			\
   } while (0)
 
-/* Provide a STARTFILE_SPEC appropriate for Linux.  Here we add
-   the Linux magical crtbegin.o file (see crtstuff.c) which
+/* Provide a STARTFILE_SPEC appropriate for GNU/Linux.  Here we add
+   the GNU/Linux magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'. */
    
@@ -72,11 +72,11 @@ Boston, MA 02111-1307, USA.  */
 			 %{!profile:crt1.o%s}}}} \
    crti.o%s %{!shared:crtbegin.o%s} %{shared:crtbeginS.o%s}"
 
-/* Provide a ENDFILE_SPEC appropriate for Linux.  Here we tack on
-   the Linux magical crtend.o file (see crtstuff.c) which
+/* Provide a ENDFILE_SPEC appropriate for GNU/Linux.  Here we tack on
+   the GNU/Linux magical crtend.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main', followed by a normal
-   Linux "finalizer" file, `crtn.o'.  */
+   GNU/Linux "finalizer" file, `crtn.o'.  */
 
 #undef	ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -93,9 +93,8 @@ Boston, MA 02111-1307, USA.  */
 
 #undef	LIB_SPEC
 /* We no longer link with libc_p.a or libg.a by default. If you
- * want to profile or debug the Linux C library, please add
- * -profile or -ggdb to LDFLAGS at the link time, respectively.
- */
+   want to profile or debug the GNU/Linux C library, please add
+   -profile or -ggdb to LDFLAGS at the link time, respectively. */
 #if 1
 #ifdef USE_GNULIBC_1
 #define LIB_SPEC \

@@ -74,6 +74,18 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <setjmp.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
 #include "gansidecl.h"
 
 /* Include getopt.h for the sake of getopt_long.
@@ -173,18 +185,12 @@ typedef char * const_pointer_type;
 /* Declaring stat or __flsbuf with a prototype
    causes conflicts with system headers on some systems.  */
 
-#ifndef abort
-typedef void voidfn ();
-extern VOLATILE voidfn abort;
-#endif
 extern int creat ();
 #if 0 /* These conflict with stdio.h on some systems.  */
 extern int fprintf (FILE *, const char *, ...);
 extern int printf (const char *, ...);
 extern int open (const char *, int, ...);
 #endif /* 0 */
-extern void exit ();
-extern void free ();
 extern int read ();
 extern int write ();
 extern int close ();
@@ -212,7 +218,9 @@ extern size_t   strlen ()
 
 #endif /* !defined (POSIX) */
 
+#ifdef NEED_DECLARATION_RINDEX
 extern char *rindex ();
+#endif
 
 /* Look for these where the `const' qualifier is intentionally cast aside.  */
 
@@ -300,39 +308,41 @@ static const int hash_mask = (HASH_TABLE_SIZE - 1);
 #define LOCAL_INCLUDE_DIR "/usr/local/include"
 #endif
 
-struct default_include { const char *fname; int x1, x2; } include_defaults[]
+struct default_include { const char *fname; 
+			 const char *component;
+			 int x1, x2; } include_defaults[]
 #ifdef INCLUDE_DEFAULTS
   = INCLUDE_DEFAULTS;
 #else
   = {
     /* Pick up GNU C++ specific include files.  */
-    { GPLUSPLUS_INCLUDE_DIR, 1, 1 },
+    { GPLUSPLUS_INCLUDE_DIR, "G++", 1, 1 },
 #ifdef CROSS_COMPILE
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* For cross-compilation, this dir name is generated
        automatically in Makefile.in.  */
-    { CROSS_INCLUDE_DIR, 0, 0 },
+    { CROSS_INCLUDE_DIR, 0, 0, 0 },
     /* This is another place that the target system's headers might be.  */
-    { TOOL_INCLUDE_DIR, 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
 #else /* not CROSS_COMPILE */
     /* This should be /use/local/include and should come before
        the fixincludes-fixed header files.  */
-    { LOCAL_INCLUDE_DIR, 0, 1 },
+    { LOCAL_INCLUDE_DIR, 0, 0, 1 },
     /* This is here ahead of GCC_INCLUDE_DIR because assert.h goes here.
        Likewise, behind LOCAL_INCLUDE_DIR, where glibc puts its assert.h.  */
-    { TOOL_INCLUDE_DIR, 0, 0 },
+    { TOOL_INCLUDE_DIR, "BINUTILS", 0, 0 },
     /* This is the dir for fixincludes.  Put it just before
        the files that we fix.  */
-    { GCC_INCLUDE_DIR, 0, 0 },
+    { GCC_INCLUDE_DIR, "GCC", 0, 0 },
     /* Some systems have an extra dir of include files.  */
 #ifdef SYSTEM_INCLUDE_DIR
-    { SYSTEM_INCLUDE_DIR, 0, 0 },
+    { SYSTEM_INCLUDE_DIR, 0, 0, 0 },
 #endif
-    { STANDARD_INCLUDE_DIR, 0, 0},
+    { STANDARD_INCLUDE_DIR, 0, 0, 0},
 #endif /* not CROSS_COMPILE */
-    { 0, 0, 0}
+    { 0, 0, 0, 0}
     };
 #endif /* no INCLUDE_DEFAULTS */
 

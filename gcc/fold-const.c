@@ -480,7 +480,7 @@ div_and_round_double (code, uns,
   int overflow = 0;
 
   if ((hden == 0) && (lden == 0))
-    abort ();
+    overflow = 1, lden = 1;
 
   /* calculate quotient sign and convert operands to unsigned.  */
   if (!uns) 
@@ -1795,8 +1795,8 @@ operand_equal_p (arg0, arg1, only_const)
       case REAL_CST:
 	return (! TREE_CONSTANT_OVERFLOW (arg0)
 		&& ! TREE_CONSTANT_OVERFLOW (arg1)
-		&& REAL_VALUES_EQUAL (TREE_REAL_CST (arg0),
-				      TREE_REAL_CST (arg1)));
+		&& REAL_VALUES_IDENTICAL (TREE_REAL_CST (arg0),
+					  TREE_REAL_CST (arg1)));
 
       case COMPLEX_CST:
 	return (operand_equal_p (TREE_REALPART (arg0), TREE_REALPART (arg1),
@@ -2671,13 +2671,13 @@ simple_operand_p (exp)
    are converted to
 	(unsigned) (X - 2) <= 3
 
-   We decribe each set of comparisons as being either inside or outside
+   We describe each set of comparisons as being either inside or outside
    a range, using a variable named like IN_P, and then describe the
    range with a lower and upper bound.  If one of the bounds is omitted,
    it represents either the highest or lowest value of the type.
 
    In the comments below, we represent a range by two numbers in brackets
-   preceeded by a "+" to designate being inside that range, or a "-" to
+   preceded by a "+" to designate being inside that range, or a "-" to
    designate being outside that range, so the condition can be inverted by
    flipping the prefix.  An omitted bound is represented by a "-".  For
    example, "- [-, 10]" means being outside the range starting at the lowest

@@ -301,7 +301,7 @@ ack (s, v, v2)
    silly.  So instead, we just do the equivalent of a call to fatal in the
    same situation (call exit).  */
 
-/* First used: 0 (reserved), Last used: 367.  Free: */
+/* First used: 0 (reserved), Last used: 369.  Free: */
 
 static int abortcount = 0;
 
@@ -986,7 +986,7 @@ process_init_constructor (type, init, elts)
 	    allconstant = 0;
 	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 	    allsimple = 0;
-	  members = tree_cons (NULL_TREE, next1, members);
+	  members = expr_tree_cons (NULL_TREE, next1, members);
 	}
     }
   if (TREE_CODE (type) == RECORD_TYPE)
@@ -1021,7 +1021,7 @@ process_init_constructor (type, init, elts)
 
 	  if (! DECL_NAME (field))
 	    {
-	      members = tree_cons (field, integer_zero_node, members);
+	      members = expr_tree_cons (field, integer_zero_node, members);
 	      continue;
 	    }
 
@@ -1050,7 +1050,7 @@ process_init_constructor (type, init, elts)
 	    allconstant = 0;
 	  else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 	    allsimple = 0;
-	  members = tree_cons (field, next1, members);
+	  members = expr_tree_cons (field, next1, members);
 	}
       for (; field; field = TREE_CHAIN (field))
 	{
@@ -1067,7 +1067,7 @@ process_init_constructor (type, init, elts)
 		allconstant = 0;
 	      else if (! initializer_constant_valid_p (next1, TREE_TYPE (next1)))
 		allsimple = 0;
-	      members = tree_cons (field, next1, members);
+	      members = expr_tree_cons (field, next1, members);
 	    }
 	  else if (TREE_READONLY (field))
 	    error ("uninitialized const member `%s'",
@@ -1149,7 +1149,7 @@ process_init_constructor (type, init, elts)
 	allconstant = 0;
       else if (initializer_constant_valid_p (next1, TREE_TYPE (next1)) == 0)
 	allsimple = 0;
-      members = tree_cons (field, next1, members);
+      members = expr_tree_cons (field, next1, members);
     }
 
   /* If arguments were specified as a list, just remove the ones we used.  */

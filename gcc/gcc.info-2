@@ -185,6 +185,9 @@ GNU CC:
      a label is declared but not used, and whenever a statement
      computes a result that is explicitly not used.
 
+     In order to get a warning about an unused function parameter, you
+     must specify both `-W' and `-Wunused'.
+
      To suppress this warning for an expression, simply cast it to
      void.  For unused variables and parameters, use the `unused'
      attribute (*note Variable Attributes::.).
@@ -442,6 +445,9 @@ the warning.
      Warn if a function can not be inlined, and either it was declared
      as inline, or else the `-finline-functions' option was given.
 
+`-Wold-style-cast'
+     Warn if an old-style (C-style) cast is used within a program.
+
 `-Woverloaded-virtual'
      Warn when a derived class function declaration may be an error in
      defining a virtual function (C++ only).  In a derived class, the
@@ -616,7 +622,7 @@ either your program or GCC:
      blocks being executed.  The output is appended to file `bb.out'.
 
      You can examine different profiling aspects without recompilation.
-     Your execuable will read a list of function names from file
+     Your executable will read a list of function names from file
      `bb.in'.  Profiling starts when a function on the list is entered
      and stops when that invocation is exited.  To exclude a function
      from profiling, prefix its name with `-'.  If a function name is
@@ -725,6 +731,10 @@ either your program or GCC:
           information in the `SOURCENAME.da' file (this last file is
           the output from `-fprofile-arcs').
 
+`-Q'
+     Makes the compiler print out each function name as it is compiled,
+     and print some statistics about each pass when it finishes.
+
 `-dLETTERS'
      Says to make debugging dumps during compilation at times specified
      by LETTERS.  This is used for debugging the compiler.  The file
@@ -760,12 +770,18 @@ either your program or GCC:
           Dump after CSE (including the jump optimization that sometimes
           follows CSE), to `FILE.cse'.
 
+    `D'
+          Dump after purging ADDRESSOF, to `FILE.addressof'.
+
     `L'
           Dump after loop optimization, to `FILE.loop'.
 
     `t'
           Dump after the second CSE pass (including the jump
           optimization that sometimes follows CSE), to `FILE.cse2'.
+
+    `b'
+          Dump after computing branch probabilities, to `FILE.bp'.
 
     `f'
           Dump after flow analysis, to `FILE.flow'.

@@ -205,6 +205,7 @@ Index
 * ASM_OUTPUT_COMMON:                     Uninitialized Data.
 * ASM_OUTPUT_CONSTRUCTOR:                Macros for Initialization.
 * ASM_OUTPUT_DEF:                        Label Output.
+* ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL: Label Output.
 * ASM_OUTPUT_DESTRUCTOR:                 Macros for Initialization.
 * ASM_OUTPUT_DOUBLE:                     Data Output.
 * ASM_OUTPUT_DOUBLE_INT:                 Data Output.
@@ -863,13 +864,10 @@ Index
 * hardware models and configurations, specifying: Submodel Options.
 * HAS_INIT_SECTION:                      Macros for Initialization.
 * HAVE_ATEXIT:                           Misc.
-* HAVE_POPEN:                            Config.
 * HAVE_POST_DECREMENT:                   Addressing Modes.
 * HAVE_POST_INCREMENT:                   Addressing Modes.
 * HAVE_PRE_DECREMENT:                    Addressing Modes.
 * HAVE_PRE_INCREMENT:                    Addressing Modes.
-* HAVE_PUTENV:                           Config.
-* HAVE_VPRINTF:                          Config.
 * header files and VMS:                  Include Files and VMS.
 * high:                                  Constants.
 * HImode:                                Machine Modes.
@@ -1177,6 +1175,7 @@ Index
 * MIPS options:                          MIPS Options.
 * misunderstandings in C++:              C++ Misunderstandings.
 * mktemp, and constant strings:          Incompatibilities.
+* MN10300 options:                       MN10300 Options.
 * mod:                                   Arithmetic.
 * mod and attributes:                    Expressions.
 * MODDI3_LIBCALL:                        Library Calls.
@@ -1392,7 +1391,6 @@ Index
 * pointer arguments:                     Function Attributes.
 * POINTER_SIZE:                          Storage Layout.
 * POINTERS_EXTEND_UNSIGNED:              Storage Layout.
-* popen:                                 Config.
 * portability:                           Portability.
 * portions of temporary objects, pointers to: Temporaries.
 * position independent code:             PIC.
@@ -1445,7 +1443,6 @@ Index
 * PUT_MODE:                              Machine Modes.
 * PUT_REG_NOTE_KIND:                     Insns.
 * PUT_SDB_...:                           SDB and DWARF.
-* putenv:                                Config.
 * Q, in constraint:                      Simple Constraints.
 * QImode:                                Machine Modes.
 * QImode, in insn:                       Insns.
@@ -1685,6 +1682,7 @@ Index
 * sharing of RTL components:             Sharing.
 * shift:                                 Arithmetic.
 * SHIFT_COUNT_TRUNCATED:                 Misc.
+* SHORT_IMMEDIATES_SIGN_EXTEND:          Misc.
 * SHORT_TYPE_SIZE:                       Type Layout.
 * side effect in ?::                     Conditionals.
 * side effects, macro argument:          Statement Exprs.
@@ -1986,7 +1984,6 @@ Index
 * volatile applied to function:          Function Attributes.
 * volatile memory references:            Flags.
 * voting between constraint alternatives: Class Preferences.
-* vprintf:                               Config.
 * warning for comparison of signed and unsigned values: Warning Options.
 * warning for overloaded virtual fn:     Warning Options.
 * warning for reordering of member initializers: Warning Options.

@@ -255,7 +255,7 @@
        (and (eq_attr "mode" "DI") (eq_attr "cpu" "r5000")))
   68 68)
 
-;; The R4300 does *NOT* have a seperate Floating Point Unit, instead
+;; The R4300 does *NOT* have a separate Floating Point Unit, instead
 ;; the FP hardware is part of the normal ALU circuitry.  This means FP
 ;; instructions affect the pipe-line, and no functional unit
 ;; parallelism can occur on R4300 processors.  To force GCC into coding
@@ -2765,11 +2765,17 @@ move\\t%0,%z4\\n\\
 ;; operand zero, because then the address in the move instruction will be
 ;; clobbered.  We mark the scratch register as early clobbered to prevent this.
 
+;; We need the ?X in alternative 1 so that it will be choosen only if the
+;; destination is a floating point register.  Otherwise, alternative 1 can
+;; have lower cost than alternative 0 (because there is one less loser), and
+;; can be choosen when it won't work (because integral reloads into FP
+;; registers are not supported).
+
 (define_insn "fix_truncdfsi2"
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:DF 1 "register_operand" "f,*f,f,f")))
    (clobber (match_scratch:SI 2 "=d,*d,&d,&d"))
-   (clobber (match_scratch:DF 3 "=f,*X,f,f"))]
+   (clobber (match_scratch:DF 3 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
   "*
 {
@@ -2794,7 +2800,7 @@ move\\t%0,%z4\\n\\
   [(set (match_operand:SI 0 "general_operand" "=d,*f,R,o")
 	(fix:SI (match_operand:SF 1 "register_operand" "f,*f,f,f")))
    (clobber (match_scratch:SI 2 "=d,*d,&d,&d"))
-   (clobber (match_scratch:SF 3 "=f,*X,f,f"))]
+   (clobber (match_scratch:SF 3 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT"
   "*
 {
@@ -2827,7 +2833,7 @@ move\\t%0,%z4\\n\\
 (define_insn "fix_truncdfdi2"
   [(set (match_operand:DI 0 "general_operand" "=d,*f,R,o")
 	(fix:DI (match_operand:DF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_scratch:DF 2 "=f,*X,f,f"))]
+   (clobber (match_scratch:DF 2 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT && TARGET_64BIT && TARGET_DOUBLE_FLOAT"
   "*
 {
@@ -2854,7 +2860,7 @@ move\\t%0,%z4\\n\\
 (define_insn "fix_truncsfdi2"
   [(set (match_operand:DI 0 "general_operand" "=d,*f,R,o")
 	(fix:DI (match_operand:SF 1 "register_operand" "f,*f,f,f")))
-   (clobber (match_scratch:DF 2 "=f,*X,f,f"))]
+   (clobber (match_scratch:DF 2 "=f,?*X,f,f"))]
   "TARGET_HARD_FLOAT && TARGET_64BIT && TARGET_DOUBLE_FLOAT"
   "*
 {
@@ -3152,6 +3158,9 @@ move\\t%0,%z4\\n\\
   if (GET_CODE (operands[1]) != MEM)
     FAIL;
 
+  /* Change the mode to BLKmode for aliasing purposes.  */
+  operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
+
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
   emit_insn (gen_movsi_ulw (operands[0], operands[1]));
   DONE;
@@ -3175,6 +3184,9 @@ move\\t%0,%z4\\n\\
      source matches the predicate, so we force it to be a MEM here.  */
   if (GET_CODE (operands[1]) != MEM)
     FAIL;
+
+  /* Change the mode to BLKmode for aliasing purposes.  */
+  operands[1] = change_address (operands[1], BLKmode, XEXP (operands[1], 0));
 
   /* Otherwise, emit a lwl/lwr pair to load the value.  */
   emit_insn (gen_movsi_ulw (operands[0], operands[1]));
@@ -3200,6 +3212,9 @@ move\\t%0,%z4\\n\\
   if (GET_CODE (operands[0]) != MEM)
     FAIL;
 
+  /* Change the mode to BLKmode for aliasing purposes.  */
+  operands[0] = change_address (operands[0], BLKmode, XEXP (operands[0], 0));
+
   /* Otherwise, emit a swl/swr pair to load the value.  */
   emit_insn (gen_movsi_usw (operands[0], operands[3]));
   DONE;
@@ -3209,7 +3224,7 @@ move\\t%0,%z4\\n\\
 
 (define_insn "movsi_ulw"
   [(set (match_operand:SI 0 "register_operand" "=&d,&d")
-	(unspec:SI [(match_operand:QI 1 "general_operand" "R,o")] 0))]
+	(unspec:SI [(match_operand:BLK 1 "general_operand" "R,o")] 0))]
   ""
   "*
 {
@@ -3237,8 +3252,8 @@ move\\t%0,%z4\\n\\
    (set_attr "length"	"2,4")])
 
 (define_insn "movsi_usw"
-  [(set (match_operand:QI 0 "memory_operand" "=R,o")
-	(unspec:QI [(match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
+  [(set (match_operand:BLK 0 "memory_operand" "=R,o")
+	(unspec:BLK [(match_operand:SI 1 "reg_or_0_operand" "dJ,dJ")] 1))]
   ""
   "*
 {

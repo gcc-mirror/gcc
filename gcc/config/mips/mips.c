@@ -3687,7 +3687,7 @@ override_options ()
     }
 
   /* This optimization requires a linker that can support a R_MIPS_LO16
-     relocation which is not immediately preceeded by a R_MIPS_HI16 relocation.
+     relocation which is not immediately preceded by a R_MIPS_HI16 relocation.
      GNU ld has this support, but not all other MIPS linkers do, so we enable
      this optimization only if the user requests it, or if GNU ld is the
      standard linker for this configuration.  */
@@ -5011,9 +5011,32 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  base_offset  = gp_offset;
 	  if (file == (FILE *)0)
 	    {
-	      insn = emit_move_insn (base_reg_rtx, GEN_INT (gp_offset));
-	      if (store_p)
-		RTX_FRAME_RELATED_P (insn) = 1;
+	      rtx gp_offset_rtx = GEN_INT (gp_offset);
+
+	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
+		 bit, so make sure that we don't emit anything that can be
+		 split.  */
+	      /* ??? There is no DImode ori immediate pattern, so we can only
+		 do this for 32 bit code.  */
+	      if (large_int (gp_offset_rtx)
+		  && GET_MODE (base_reg_rtx) == SImode)
+		{
+		  insn = emit_move_insn (base_reg_rtx,
+					 GEN_INT (gp_offset & 0xffff0000));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
+						GEN_INT (gp_offset & 0x0000ffff)));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+		  insn = emit_move_insn (base_reg_rtx, gp_offset_rtx);
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+
 	      if (TARGET_LONG64)
 		insn = emit_insn (gen_adddi3 (base_reg_rtx, base_reg_rtx, stack_pointer_rtx));
 	      else
@@ -5131,7 +5154,32 @@ save_restore_insns (store_p, large_reg, large_offset, file)
 	  base_offset  = fp_offset;
 	  if (file == (FILE *)0)
 	    {
-	      insn = emit_move_insn (base_reg_rtx, GEN_INT (fp_offset));
+	      rtx fp_offset_rtx = GEN_INT (fp_offset);
+
+	      /* Instruction splitting doesn't preserve the RTX_FRAME_RELATED_P
+		 bit, so make sure that we don't emit anything that can be
+		 split.  */
+	      /* ??? There is no DImode ori immediate pattern, so we can only
+		 do this for 32 bit code.  */
+	      if (large_int (fp_offset_rtx)
+		  && GET_MODE (base_reg_rtx) == SImode)
+		{
+		  insn = emit_move_insn (base_reg_rtx,
+					 GEN_INT (fp_offset & 0xffff0000));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		  insn = emit_insn (gen_iorsi3 (base_reg_rtx, base_reg_rtx,
+						GEN_INT (fp_offset & 0x0000ffff)));
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+	      else
+		{
+		  insn = emit_move_insn (base_reg_rtx, fp_offset_rtx);
+		  if (store_p)
+		    RTX_FRAME_RELATED_P (insn) = 1;
+		}
+
 	      if (store_p)
 		RTX_FRAME_RELATED_P (insn) = 1;
 	      if (TARGET_LONG64)
@@ -5591,6 +5639,13 @@ mips_expand_epilogue ()
 	  else
 	    emit_insn (gen_movsi (stack_pointer_rtx, frame_pointer_rtx));
 	}
+      /* The GP/PIC register is implicitly used by all SYMBOL_REFs, so if we
+	 are going to restore it, then we must emit a blockage insn to
+	 prevent the scheduler from moving the restore out of the epilogue.  */
+      else if (TARGET_ABICALLS && mips_abi != ABI_32
+	       && (current_frame_info.mask
+		   & (1L << (PIC_OFFSET_TABLE_REGNUM - GP_REG_FIRST))))
+	emit_insn (gen_blockage ());
 
       save_restore_insns (FALSE, tmp_rtx, tsize, (FILE *)0);
 

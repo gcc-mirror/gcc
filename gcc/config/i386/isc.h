@@ -87,3 +87,7 @@
     }                                            \
     fputs ("\"\n", FILE);                        \
   } while (0)
+
+/* Work around assembler forward label references generated in exception
+   handling code. */
+#define DWARF2_UNWIND_INFO 0

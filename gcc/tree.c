@@ -47,6 +47,10 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #include <stdio.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
@@ -2597,10 +2601,10 @@ substitute_in_expr (exp, f, r)
 	  op0 = (TREE_CHAIN (exp) == 0
 		 ? 0 : substitute_in_expr (TREE_CHAIN (exp), f, r));
 	  op1 = substitute_in_expr (TREE_VALUE (exp), f, r);
-	  if (op0 == TREE_CHAIN (exp) || op1 == TREE_VALUE (exp))
+	  if (op0 == TREE_CHAIN (exp) && op1 == TREE_VALUE (exp))
 	    return exp;
 
-	  return tree_cons (TREE_PURPOSE (exp), op0, op1);
+	  return tree_cons (TREE_PURPOSE (exp), op1, op0);
 	}
 
       abort ();
@@ -3832,7 +3836,7 @@ simple_cst_equal (t1, t2)
 	&& TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2);
 
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
+      return REAL_VALUES_IDENTICAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
 
     case STRING_CST:
       return TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
@@ -4353,7 +4357,7 @@ get_unwidened (op, for_type)
   if (TREE_CODE (op) == COMPONENT_REF
       /* Since type_for_size always gives an integer type.  */
       && TREE_CODE (type) != REAL_TYPE
-      /* Don't crash if field not layed out yet.  */
+      /* Don't crash if field not laid out yet.  */
       && DECL_SIZE (TREE_OPERAND (op, 1)) != 0)
     {
       unsigned innerprec = TREE_INT_CST_LOW (DECL_SIZE (TREE_OPERAND (op, 1)));

@@ -2,7 +2,7 @@
    source file.
    Copyright (C) 1990, 91, 92, 93, 94, 96, 1997 Free Software Foundation, Inc.
    Contributed by James E. Wilson of Cygnus Support.
-   Mongled by Bob Manson of Cygnus Support.
+   Mangled by Bob Manson of Cygnus Support.
 
 Gcov is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -41,17 +41,29 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    is no way to get the total execution counts for the included file, can
    only get execution counts for one or the other of the including files.  */
 
-/* The only need for this is so that we get macro definitions for rindex
-   if necessary.  */
 #include "config.h"
-
 #include <stdio.h>
+#include "gansidecl.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+
 #include "gcov-io.h"
 
-extern char * rindex ();
+#ifdef NEED_DECLARATION_RINDEX
+extern char *rindex ();
+#endif
 
 /* The .bb file format consists of several lists of 4-byte integers
    which are the line numbers of each basic block in the file.  Each
@@ -734,7 +746,7 @@ read_files ()
   stat (bb_file_name, &buf);
   bb_data_size = buf.st_size / 4;
 
-  bb_data = (char *) xmalloc (buf.st_size);
+  bb_data = (char *) xmalloc ((unsigned) buf.st_size);
   fread (bb_data, sizeof (char), buf.st_size, bb_file);
   
   fclose (bb_file);
@@ -912,7 +924,7 @@ function_summary ()
     {
       if (function_branches)
 	{
-	  fprintf (stdout, "%6.2lf%% of %d branches executed in funcion %s\n",
+	  fprintf (stdout, "%6.2lf%% of %d branches executed in function %s\n",
 		   (((double) function_branches_executed / function_branches)
 		    * 100), function_branches, function_name);
 	  fprintf (stdout,
@@ -1208,7 +1220,7 @@ output_data ()
       if (output_gcov_file)
 	{
 	  /* Now the statistics are ready.  Read in the source file one line
-	     at a time, and output that line to the gcov file preceeded by
+	     at a time, and output that line to the gcov file preceded by
 	     its execution count if non zero.  */
       
 	  source_file = fopen (source_file_name, "r");
@@ -1285,8 +1297,8 @@ output_data ()
 		 before the source line.  For lines which exist but were never
 		 executed, print ###### before the source line.  Otherwise,
 		 print the execution count before the source line.  */
-	      /* There are 16 spaces of identation added before the source line
-		 so that tabs won't be messed up.  */
+	      /* There are 16 spaces of indentation added before the source
+		 line so that tabs won't be messed up.  */
 	      if (line_exists[count])
 		{
 		  if (line_counts[count])
@@ -1299,7 +1311,7 @@ output_data ()
 		fprintf (gcov_file, "\t\t%s", string);
 
 	      /* In case the source file line is larger than our buffer, keep
-		 reading and outputing lines until we get a newline.  */
+		 reading and outputting lines until we get a newline.  */
 	      len = strlen (string);
 	      while ((len == 0 || string[strlen (string) - 1] != '\n')
 		     && retval != NULL)
@@ -1356,7 +1368,7 @@ output_data ()
 		fprintf (gcov_file, "\t\t%s", string);
 
 		/* In case the source file line is larger than our buffer, keep
-		   reading and outputing lines until we get a newline.  */
+		   reading and outputting lines until we get a newline.  */
 		len = strlen (string);
 		while ((len == 0 || string[strlen (string) - 1] != '\n')
 		       && retval != NULL)

@@ -121,7 +121,7 @@ in the following sections.
 -Wimplicit-function-declarations -Wimport  -Winline
 -Wlarger-than-@var{len}  -Wmain  -Wmissing-declarations
 -Wmissing-prototypes  -Wnested-externs
--Wno-import  -Woverloaded-virtual  -Wparentheses
+-Wno-import  -Wold-style-cast  -Woverloaded-virtual  -Wparentheses
 -Wpointer-arith  -Wredundant-decls  -Wreorder  -Wreturn-type  -Wshadow
 -Wsign-compare  -Wstrict-prototypes  -Wswitch  -Wsynth
 -Wtemplate-debugging  -Wtraditional  -Wtrigraphs
@@ -245,6 +245,10 @@ in the following sections.
 -msoft-float  -mhard-float
 -mbsd  -mxopen  -mno-symrename
 
+@emph{MN10300 Options}
+-mmult-bug
+-mno-mult-bug
+
 @emph{M32R/D Options}
 -mcode-model=@var{model type}  -msdata=@var{sdata type}
 -G @var{num}
@@ -301,7 +305,9 @@ in the following sections.
 -mstats  -EL  -EB  -G @var{num}  -nocpp
 
 @emph{i386 Options}
--m486  -m386  -mieee-fp  -mno-fancy-math-387
+-mcpu=@var{cpu type}
+-march=@var{cpu type}
+-mieee-fp  -mno-fancy-math-387
 -mno-fp-ret-in-387  -msoft-float  -msvr3-shlib
 -mno-wide-multiply  -mrtd  -malign-double
 -mreg-alloc=@var{list}  -mregparm=@var{num}
@@ -330,11 +336,13 @@ in the following sections.
 -mtail-call
 
 @emph{DEC Alpha Options}
--mfp-regs  -mno-fp-regs
--mno-soft-float  -msoft-float
+-mfp-regs  -mno-fp-regs -mno-soft-float  -msoft-float
+-malpha-as -mgas
 -mieee  -mieee-with-inexact  -mieee-conformant
--mfp-trap-mode  -mfp-rounding-mode  -mtrap-precision
--mbuild-constants
+-mfp-trap-mode=@var{mode}  -mfp-rounding-mode=@var{mode}
+-mtrap-precision=@var{mode}  -mbuild-constants
+-mcpu=@var{cpu type}
+-mbwx -mno-bwx -mcix -mno-cix -mmax -mno-max
 
 @emph{Clipper Options}
 -mc300  -mc400
@@ -362,9 +370,9 @@ in the following sections.
 -ffixed-@var{reg}  -finhibit-size-directive
 -fcheck-memory-usage  -fprefix-function-name
 -fno-common  -fno-ident  -fno-gnu-linker
--fpcc-struct-return  -fpic  -fPIC
--freg-struct-return  -fshared-data  -fshort-enums
--fshort-double  -fvolatile  -fvolatile-global
+-fpcc-struct-return  -freg-struct-return
+-fshared-data  -fpic  -fPIC  -fexceptions
+-fshort-enums  -fshort-double  -fvolatile  -fvolatile-global
 -fverbose-asm  -fpack-struct  -fstack-check  +e0  +e1
 @end smallexample
 @end table
@@ -1119,7 +1127,8 @@ have meanings only for C++ programs:
 Do not assume @samp{inline} for functions defined inside a class scope.
 @xref{Optimize Options,,Options That Control Optimization}.
 
-@item -Woverloaded-virtual
+@item -Wold-style-cast
+@itemx -Woverloaded-virtual
 @itemx -Wtemplate-debugging
 Warnings that apply only to C++ programs.  @xref{Warning
 Options,,Options to Request or Suppress Warnings}.
@@ -1291,6 +1300,9 @@ Warn whenever a variable is unused aside from its declaration,
 whenever a function is declared static but never defined, whenever a
 label is declared but not used, and whenever a statement computes a
 result that is explicitly not used.
+
+In order to get a warning about an unused function parameter, you must
+specify both @samp{-W} and @samp{-Wunused}.
 
 To suppress this warning for an expression, simply cast it to void.  For
 unused variables and parameters, use the @samp{unused} attribute
@@ -1583,6 +1595,9 @@ Warn if an @code{extern} declaration is encountered within an function.
 Warn if a function can not be inlined, and either it was declared as inline,
 or else the @samp{-finline-functions} option was given.
 
+@item -Wold-style-cast
+Warn if an old-style (C-style) cast is used within a program.
+
 @item -Woverloaded-virtual
 @cindex overloaded virtual fn, warning
 @cindex warning for overloaded virtual fn
@@ -1762,7 +1777,7 @@ and (optionally) the complete sequence of basic blocks being executed.
 The output is appended to file @file{bb.out}.
 
 You can examine different profiling aspects without recompilation.  Your
-execuable will read a list of function names from file @file{bb.in}.
+executable will read a list of function names from file @file{bb.in}.
 Profiling starts when a function on the list is entered and stops when
 that invocation is exited.  To exclude a function from profiling, prefix
 its name with `-'.  If a function name is not unique, you can
@@ -1874,6 +1889,10 @@ block and arc execution counts from the information in the
 @samp{-fprofile-arcs}).
 @end table
 
+@item -Q
+Makes the compiler print out each function name as it is compiled, and
+print some statistics about each pass when it finishes.
+
 @item -d@var{letters}
 Says to make debugging dumps during compilation at times specified by
 @var{letters}.  This is used for debugging the compiler.  The file names
@@ -1902,11 +1921,15 @@ Dump after first jump optimization, to @file{@var{file}.jump}.
 @item s
 Dump after CSE (including the jump optimization that sometimes
 follows CSE), to @file{@var{file}.cse}.
+@item D
+Dump after purging ADDRESSOF, to @file{@var{file}.addressof}.
 @item L
 Dump after loop optimization, to @file{@var{file}.loop}.
 @item t
 Dump after the second CSE pass (including the jump optimization that
 sometimes follows CSE), to @file{@var{file}.cse2}.
+@item b
+Dump after computing branch probabilities, to @file{@var{file}.bp}.
 @item f
 Dump after flow analysis, to @file{@var{file}.flow}.
 @item c
@@ -2805,6 +2828,7 @@ that macro, which enables you to change the defaults.
 * Convex Options::
 * AMD29K Options::
 * ARM Options::
+* MN10300 Options::
 * M32R/D Options::
 * M88K Options::
 * RS/6000 and PowerPC Options::
@@ -3085,17 +3109,36 @@ These options are deprecated and will be deleted in GNU CC 2.9.
 They have been replaced with @samp{-mcpu=xxx}.
 
 @item -mcpu=@var{cpu_type}
-Set architecture type and instruction scheduling parameters for machine
-type @var{cpu_type}.  Supported values for @var{cpu_type} are
-@samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc},
-@samp{sparclite}, @samp{f930}, @samp{f934}, @samp{sparclet}, @samp{tsc701},
-@samp{v8plus}, @samp{v9}, and @samp{ultrasparc}.
+Set the instruction set, register set, and instruction scheduling parameters
+for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
+@samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{sparclite},
+@samp{f930}, @samp{f934}, @samp{sparclet}, @samp{tsc701}, @samp{v9}, and
+@samp{ultrasparc}.
+
+Default instruction scheduling parameters are used for values that select
+an architecture and not an implementation.  These are @samp{v7}, @samp{v8},
+@samp{sparclite}, @samp{sparclet}, @samp{v9}.
+
+Here is a list of each supported architecture and their supported
+implementations.
+
+@smallexample
+    v7:             cypress
+    v8:             supersparc
+    sparclite:      f930, f934
+    sparclet:       tsc701
+    v9:             ultrasparc
+@end smallexample
 
 @item -mtune=@var{cpu_type}
 Set the instruction scheduling parameters for machine type
-@var{cpu_type}, but do not set the architecture type as the option
-@samp{-mcpu=}@var{cpu_type} would.  The same values for
-@samp{-mcpu=}@var{cpu_type} are used for @samp{-mtune=}@var{cpu_type}.
+@var{cpu_type}, but do not set the instruction set or register set that the
+option @samp{-mcpu=}@var{cpu_type} would.
+
+The same values for @samp{-mcpu=}@var{cpu_type} are used for
+@samp{-mtune=}@var{cpu_type}, though the only useful values are those that
+select a particular cpu implementation: @samp{cypress}, @samp{supersparc},
+@samp{f930}, @samp{f934}, @samp{tsc701}, @samp{ultrasparc}.
 
 @item -malign-loops=@var{num}
 Align loops to a 2 raised to a @var{num} byte boundary.  If
@@ -3442,6 +3485,21 @@ Normally it is necessary to modify some of the standard symbols in
 preparation for linking with the RISC iX C library; this option
 suppresses this pass.  The post-processor is never run when the
 compiler is built for cross-compilation.
+@end table
+
+@node MN10300 Options
+@subsection MN10300 Options
+@cindex MN10300 options
+These @samp{-m} options are defined for Matsushita MN10300 architectures:
+
+@table @code
+@item -mmult-bug
+Generate code to avoid bugs in the multiply instructions for the MN10300
+processors.  This is the default.
+
+@item -mno-mult-bug
+Do not generate code to avoid bugs in the multiply instructions for the
+MN10300 processors.
 @end table
 
 @node M32R/D Options
@@ -4011,7 +4069,7 @@ be compiled with @samp{-mrelocatable} or @samp{-mrelocatable-lib}.
 @itemx -mno-relocatable-lib
 On embedded PowerPC systems generate code that allows (does not allow)
 the program to be relocated to a different address at runtime.  Modules
-compiled with @samp{-mreloctable-lib} can be linked with either modules
+compiled with @samp{-mrelocatable-lib} can be linked with either modules
 compiled without @samp{-mrelocatable} and @samp{-mrelocatable-lib} or
 with modules compiled with the @samp{-mrelocatable} options.
 
@@ -4156,7 +4214,7 @@ in the @samp{.data} section, and all uninitialized data in the
 @item -G @var{num}
 @cindex smaller data references (PowerPC)
 @cindex .sdata/.sdata2 references (PowerPC)
-On embbeded PowerPC systems, put global and static items less than or
+On embedded PowerPC systems, put global and static items less than or
 equal to @var{num} bytes into the small data or bss sections instead of
 the normal data or bss section.  By default, @var{num} is 8.  The
 @samp{-G @var{num}} switch is also passed to the linker.
@@ -4432,10 +4490,27 @@ defaults.
 These @samp{-m} options are defined for the i386 family of computers:
 
 @table @code
-@item -m486
-@itemx -m386
-Control whether or not code is optimized for a 486 instead of an
-386.  Code generated for an 486 will run on a 386 and vice versa.
+@item -mcpu=@var{cpu type}
+Assume the defaults for the machine type @var{cpu type} when scheduling
+instructions.  The choices for @var{cpu type} are: @samp{i386},
+@samp{i486}, @samp{i586} (@samp{pentium}), @samp{pentium}, @samp{i686}
+(@samp{pentiumpro}) and @samp{pentiumpro}. While picking a specific
+@var{cpu type} will schedule things appropriately for that particular
+chip, the compiler will not generate any code that does not run on the
+i386 without the @samp{-march=@var{cpu type}} option being used.
+
+@item -march=@var{cpu type}
+Generate instructions for the machine type @var{cpu type}.  The choices
+for @var{cpu type} are: @samp{i386}, @samp{i486}, @samp{pentium}, and
+@samp{pentiumpro}.  Specifying @samp{-march=@var{cpu type}} implies
+@samp{-mcpu=@var{cpu type}}.
+
+@item -m386
+@itemx -m486
+@itemx -mpentium
+@itemx -mpentiumpro
+Synonyms for -mcpu=i386, -mcpu=i486, -mcpu=pentium, and -mcpu=pentiumpro
+respectively.
 
 @item -mieee-fp
 @itemx -mno-ieee-fp
@@ -4604,7 +4679,7 @@ functions.
 @item -mspace
 Optimize for space rather than execution time.  Currently this only
 enables out of line function prologues and epilogues.  This option is
-incompatable with PIC code generation and profiling.
+incompatible with PIC code generation and profiling.
 
 @item -mlong-load-store
 Generate 3-instruction load and store sequences as sometimes required by
@@ -4887,7 +4962,7 @@ IEEE-conformant math library routines will be linked in.
 Normally GNU CC examines a 32- or 64-bit integer constant to
 see if it can construct it from smaller constants in two or three
 instructions.  If it cannot, it will output the constant as a literal and
-generate code to load it from the data segement at runtime.
+generate code to load it from the data segment at runtime.
 
 Use this option to require GNU CC to construct @emph{all} integer constants
 using code, even if it takes more instructions (the maximum is six).
@@ -4895,6 +4970,57 @@ using code, even if it takes more instructions (the maximum is six).
 You would typically use this option to build a shared library dynamic
 loader.  Itself a shared library, it must relocate itself in memory
 before it can find the variables and constants in its own data segment.
+
+@item -malpha-as
+@itemx -mgas
+Select whether to generate code to be assembled by the vendor-supplied
+assembler (@samp{-malpha-as}) or by the GNU assembler @samp{-mgas}.
+
+@item -mbwx
+@itemx -mno-bwx
+@itemx -mcix
+@itemx -mno-cix
+@itemx -mmax
+@itemx -mno-max
+Indicate whether GNU CC should generate code to use the optional BWX,
+CIX, and MAX instruction sets.  The default is to use the instruction sets
+supported by the CPU type specified via @samp{-mcpu=} option or that
+of the CPU on which GNU CC was built if none was specified.
+
+@item -mcpu=@var{cpu type}
+@item -mcpu=@var{cpu_type}
+Set the instruction set, register set, and instruction scheduling
+parameters for machine type @var{cpu_type}.  You can specify either the
+@samp{EV} style name or the corresponding chip number.  GNU CC
+supports scheduling parameters for the EV4 and EV5 family of processors
+and will choose the default values for the instruction set from
+the processor you specify.  If you do not specify a processor type,
+GNU CC will default to the processor on which the compiler was built.
+
+Supported values for @var{cpu_type} are
+
+@table @samp
+@item ev4
+@itemx 21064
+Schedules as an EV4 and has no instruction set extensions.
+
+@item ev5
+@itemx 21164
+Schedules as an EV5 and has no instruction set extensions.
+
+@item ev56
+@itemx 21164a
+Schedules as an EV5 and supports the BWX extension.
+
+@item pca56
+@itemx 21164PC
+Schedules as an EV5 and supports the BWX and MAX extensions.
+
+@item ev6
+@itemx 21264
+Schedules as an EV5 (until Digital releases the scheduling parameters
+for the EV6) and supports the BWX, CIX, and MAX extensions.
+@end table
 @end table
 
 @node Clipper Options
@@ -5068,6 +5194,16 @@ can figure out the other form by either removing @samp{no-} or adding
 it.
 
 @table @code
+@item -fexceptions
+Enable exception handling, and generate extra code needed to propagate
+exceptions.  If you do not specify this option, GNU CC enables it by
+default for languages like C++ that normally require exception handling,
+and disabled for languages like C that do not normally require it.
+However, when compiling C code that needs to interoperate properly with
+exception handlers written in C++, you may need to enable this option.
+You may also wish to disable this option is you are compiling older C++
+programs that don't use exception handling.
+
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like
 longer ones, rather than in registers.  This convention is less
@@ -5193,7 +5329,7 @@ This flag does not have a negative form, because it specifies a
 three-way choice.
 
 @item -fcall-used-@var{reg}
-Treat the register named @var{reg} as an allocatable register that is
+Treat the register named @var{reg} as an allocable register that is
 clobbered by function calls.  It may be allocated for temporaries or
 variables that do not live across a call.  Functions compiled this way
 will not save and restore the register @var{reg}.
@@ -5206,7 +5342,7 @@ This flag does not have a negative form, because it specifies a
 three-way choice.
 
 @item -fcall-saved-@var{reg}
-Treat the register named @var{reg} as an allocatable register saved by
+Treat the register named @var{reg} as an allocable register saved by
 functions.  It may be allocated even for temporaries or variables that
 live across a call.  Functions compiled this way will save and restore
 the register @var{reg} if they use it.
@@ -5233,7 +5369,7 @@ code that is suitable for a detector of bad memory accesses such as
 @code{asm} or @code{__asm__} keywords.
 
 You must also specify this option when you compile functions you call that
-have side effects.  If you do not, you may get erronous messages from
+have side effects.  If you do not, you may get erroneous messages from
 the detector.  Normally,  you should compile all your code with this option.
 If you use functions from a library that have side-effects (such as
 @code{read}), you may not be able to recompile the library and

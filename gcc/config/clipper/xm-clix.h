@@ -27,13 +27,4 @@
 /* isinf isn't there, but finite is. */
 #define isinf(x) (!finite(x))
 
-
 #define USG
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
-#define index strchr
-#define rindex strrchr
-
-#define TARGET_MEM_FUNCTIONS

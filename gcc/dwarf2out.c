@@ -250,12 +250,14 @@ static unsigned reg_number		PROTO((rtx));
 #endif
 #define CIE_AFTER_SIZE_LABEL	"LSCIE"
 #define CIE_END_LABEL		"LECIE"
+#define CIE_LENGTH_LABEL	"LLCIE"
 #define FDE_AFTER_SIZE_LABEL	"LSFDE"
 #define FDE_END_LABEL		"LEFDE"
+#define FDE_LENGTH_LABEL	"LLFDE"
 
 /* Definitions of defaults for various types of primitive assembly language
    output operations.  These may be overridden from within the tm.h file,
-   but typically, that is unecessary.  */
+   but typically, that is unnecessary.  */
 
 #ifndef ASM_OUTPUT_SECTION
 #define ASM_OUTPUT_SECTION(FILE, SECTION) \
@@ -372,6 +374,13 @@ static unsigned reg_number		PROTO((rtx));
   } while (0)
 #endif
 
+#ifndef ASM_OUTPUT_DWARF_VALUE4
+#define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
+  do {	fprintf ((FILE), "\t%s\t", UNALIGNED_INT_ASM_OP);		\
+	assemble_name (FILE, LABEL);					\
+  } while (0)
+#endif
+
 #else /* UNALIGNED_INT_ASM_OP */
 
 /* We don't have unaligned support, let's hope the normal output works for
@@ -407,10 +416,27 @@ static unsigned reg_number		PROTO((rtx));
 #define ASM_OUTPUT_DWARF_DATA4(FILE,VALUE) \
   assemble_integer (GEN_INT (VALUE), 4, 1)
 
+#define ASM_OUTPUT_DWARF_VALUE4(FILE,LABEL) \
+  assemble_integer (gen_rtx (SYMBOL_REF, Pmode, LABEL), 4, 1)
+
 #endif /* UNALIGNED_INT_ASM_OP */
 
+#ifdef SET_ASM_OP
+#ifndef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(FILE, SY, HI, LO)	\
+  do {	fprintf ((FILE), "\t%s\t", SET_ASM_OP);				\
+	assemble_name (FILE, SY);					\
+	fprintf ((FILE), ",");						\
+	assemble_name (FILE, HI);					\
+	fprintf ((FILE), "-");						\
+	assemble_name (FILE, LO);					\
+	fprintf ((FILE), "\n");						\
+  } while (0)
+#endif
+#endif /* SET_ASM_OP */
+
 /* This is similar to the default ASM_OUTPUT_ASCII, except that no trailing
-   newline is produced.  When flag_debug_asm is asserted, we add commnetary
+   newline is produced.  When flag_debug_asm is asserted, we add commentary
    at the end of the line, so we must avoid output of a newline here.  */
 #ifndef ASM_OUTPUT_DWARF_STRING
 #define ASM_OUTPUT_DWARF_STRING(FILE,P) \
@@ -1172,8 +1198,9 @@ dwarf2out_frame_debug (insn)
 	      assert (XEXP (src, 1) == stack_pointer_rtx);
 	      assert (GET_CODE (XEXP (src, 0)) == REG
 		      && REGNO (XEXP (src, 0)) == cfa_temp_reg);
+	      assert (cfa_reg == STACK_POINTER_REGNUM);
 	      cfa_store_reg = REGNO (dest);
-	      cfa_store_offset -= cfa_temp_value;
+	      cfa_store_offset = cfa_offset - cfa_temp_value;
 	    }
 	  break;
 
@@ -1486,6 +1513,9 @@ output_call_frame_info (for_eh)
   register dw_cfi_ref cfi;
   unsigned long fde_pad;
   char l1[20], l2[20];
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+  char ld[20];
+#endif
 
   /* Do we want to include a pointer to the exception table?  */
   int eh_ptr = for_eh && exception_table_p ();
@@ -1493,7 +1523,7 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
 
   /* We're going to be generating comments, so turn on app.  */
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     app_enable ();
 
   if (for_eh)
@@ -1504,6 +1534,7 @@ output_call_frame_info (for_eh)
       tree label = get_file_function_name ('F');
 
       data_section ();
+      ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       ASM_GLOBALIZE_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
       ASM_OUTPUT_LABEL (asm_out_file, IDENTIFIER_POINTER (label));
 #endif
@@ -1515,10 +1546,18 @@ output_call_frame_info (for_eh)
   /* Output the CIE. */
   ASM_GENERATE_INTERNAL_LABEL (l1, CIE_AFTER_SIZE_LABEL, for_eh);
   ASM_GENERATE_INTERNAL_LABEL (l2, CIE_END_LABEL, for_eh);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+  ASM_GENERATE_INTERNAL_LABEL (ld, CIE_LENGTH_LABEL, for_eh);
+  if (for_eh)
+    ASM_OUTPUT_DWARF_VALUE4 (asm_out_file, ld);
+  else
+    ASM_OUTPUT_DWARF_OFFSET (asm_out_file, ld);
+#else
   if (for_eh)
     ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
   else
     ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
+#endif
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s Length of Common Information Entry",
 	     ASM_COMMENT_START);
@@ -1526,12 +1565,18 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
   ASM_OUTPUT_LABEL (asm_out_file, l1);
 
-  ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
+  if (for_eh)
+    /* Now that the CIE pointer is PC-relative for EH,
+       use 0 to identify the CIE.  */
+    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, 0);
+  else
+    ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
+
   if (flag_debug_asm)
     fprintf (asm_out_file, "\t%s CIE Identifier Tag", ASM_COMMENT_START);
 
   fputc ('\n', asm_out_file);
-  if (for_eh ? PTR_SIZE == 8 : DWARF_OFFSET_SIZE == 8)
+  if (! for_eh && DWARF_OFFSET_SIZE == 8)
     {
       ASM_OUTPUT_DWARF_DATA4 (asm_out_file, DW_CIE_ID);
       fputc ('\n', asm_out_file);
@@ -1544,11 +1589,25 @@ output_call_frame_info (for_eh)
   fputc ('\n', asm_out_file);
   if (eh_ptr)
     {
-      /* The FDE contains a pointer
-	 to the exception region info for the frame.  */
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, "e");
+      /* The CIE contains a pointer to the exception region info for the
+         frame.  Make the augmentation string three bytes (including the
+         trailing null) so the pointer is 4-byte aligned.  The Solaris ld
+         can't handle unaligned relocs.  */
       if (flag_debug_asm)
-	fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file, "eh");
+	  fprintf (asm_out_file, "\t%s CIE Augmentation", ASM_COMMENT_START);
+	}
+      else
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file, "eh", 3);
+	}
+      fputc ('\n', asm_out_file);
+
+      ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
+      if (flag_debug_asm)
+	fprintf (asm_out_file, "\t%s pointer to exception region info",
+		 ASM_COMMENT_START);
     }
   else
     {
@@ -1581,6 +1640,9 @@ output_call_frame_info (for_eh)
   /* Pad the CIE out to an address sized boundary.  */
   ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
   ASM_OUTPUT_LABEL (asm_out_file, l2);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+  ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
+#endif
 
   /* Loop through all of the FDE's.  */
   for (i = 0; i < fde_table_in_use; ++i)
@@ -1589,17 +1651,25 @@ output_call_frame_info (for_eh)
 
       ASM_GENERATE_INTERNAL_LABEL (l1, FDE_AFTER_SIZE_LABEL, for_eh + i*2);
       ASM_GENERATE_INTERNAL_LABEL (l2, FDE_END_LABEL, for_eh + i*2);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+      ASM_GENERATE_INTERNAL_LABEL (ld, FDE_LENGTH_LABEL, for_eh + i*2);
+      if (for_eh)
+	ASM_OUTPUT_DWARF_VALUE4 (asm_out_file, ld);
+      else
+	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, ld);
+#else
       if (for_eh)
 	ASM_OUTPUT_DWARF_DELTA4 (asm_out_file, l2, l1);
       else
 	ASM_OUTPUT_DWARF_DELTA (asm_out_file, l2, l1);
+#endif
       if (flag_debug_asm)
 	fprintf (asm_out_file, "\t%s FDE Length", ASM_COMMENT_START);
       fputc ('\n', asm_out_file);
       ASM_OUTPUT_LABEL (asm_out_file, l1);
 
       if (for_eh)
-	ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__FRAME_BEGIN__");
+	ASM_OUTPUT_DWARF_DELTA (asm_out_file, l1, "__FRAME_BEGIN__");
       else
 	ASM_OUTPUT_DWARF_OFFSET (asm_out_file, stripattributes (FRAME_SECTION));
       if (flag_debug_asm)
@@ -1617,16 +1687,6 @@ output_call_frame_info (for_eh)
 	fprintf (asm_out_file, "\t%s FDE address range", ASM_COMMENT_START);
 
       fputc ('\n', asm_out_file);
-      if (eh_ptr)
-	{
-	  /* For now, a pointer to the translation unit's info will do.
-	     ??? Eventually this should point to the function's info.  */
-	  ASM_OUTPUT_DWARF_ADDR (asm_out_file, "__EXCEPTION_TABLE__");
-	  if (flag_debug_asm)
-	    fprintf (asm_out_file, "\t%s pointer to exception region info",
-		     ASM_COMMENT_START);
-	  fputc ('\n', asm_out_file);
-	}
 
       /* Loop through the Call Frame Instructions associated with
 	 this FDE.  */
@@ -1637,6 +1697,9 @@ output_call_frame_info (for_eh)
       /* Pad the FDE out to an address sized boundary.  */
       ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (PTR_SIZE));
       ASM_OUTPUT_LABEL (asm_out_file, l2);
+#ifdef ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL
+      ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL (asm_out_file, ld, l2, l1);
+#endif
     }
 #ifndef EH_FRAME_SECTION
   if (for_eh)
@@ -1653,7 +1716,7 @@ output_call_frame_info (for_eh)
 #endif
 
   /* Turn off app to make assembly quicker.  */
-  if (flag_verbose_asm)
+  if (flag_debug_asm)
     app_disable ();
 }
 
@@ -1821,7 +1884,7 @@ typedef struct dw_fp_struct
 dw_float_const;
 
 /* Each entry in the line_info_table maintains the file and
-   line nuber associated with the label generated for that
+   line number associated with the label generated for that
    entry.  The label gives the PC value associated with
    the line number entry.  */
 
@@ -1842,7 +1905,7 @@ typedef struct dw_separate_line_info_struct
 }
 dw_separate_line_info_entry;
 
-/* The dw_val_node describes an attibute's value, as it is
+/* The dw_val_node describes an attribute's value, as it is
    represented internally.  */
 
 typedef struct dw_val_struct
@@ -2035,7 +2098,7 @@ static unsigned next_block_number = 2;
 
 /* A pointer to the base of a table of references to DIE's that describe
    declarations.  The table is indexed by DECL_UID() which is a unique
-   number, indentifying each decl.  */
+   number identifying each decl.  */
 static dw_die_ref *decl_die_table;
 
 /* Number of elements currently allocated for the decl_die_table.  */
@@ -2058,7 +2121,7 @@ static tree *decl_scope_table;
 /* Number of elements currently allocated for the decl_scope_table.  */
 static unsigned decl_scope_table_allocated;
 
-/* Current level of nesting of declataion scopes.  */
+/* Current level of nesting of declaration scopes.  */
 static unsigned decl_scope_depth;
 
 /* Size (in elements) of increments by which we may expand the
@@ -2204,7 +2267,7 @@ static void add_AT_addr			PROTO((dw_die_ref,
 					       enum dwarf_attribute, char *));
 static void add_AT_lbl_id		PROTO((dw_die_ref,
 					       enum dwarf_attribute, char *));
-static void add_AT_setion_offset	PROTO((dw_die_ref,
+static void add_AT_section_offset	PROTO((dw_die_ref,
 					       enum dwarf_attribute, char *));
 static int is_extern_subr_die		PROTO((dw_die_ref));
 static dw_attr_ref get_AT		PROTO((dw_die_ref,
@@ -2235,7 +2298,7 @@ static void add_loc_descr		PROTO((dw_loc_descr_ref *,
 static void print_spaces		PROTO((FILE *));
 static void print_die			PROTO((dw_die_ref, FILE *));
 static void print_dwarf_line_table	PROTO((FILE *));
-static void add_sibling_atttributes	PROTO((dw_die_ref));
+static void add_sibling_attributes	PROTO((dw_die_ref));
 static void build_abbrev_table		PROTO((dw_die_ref));
 static unsigned long size_of_string	PROTO((char *));
 static unsigned long size_of_loc_descr	PROTO((dw_loc_descr_ref));
@@ -2362,7 +2425,7 @@ static unsigned lookup_filename		PROTO((char *));
 #define STR_SECTION		".debug_str"
 #endif
 
-/* Standerd ELF section names for compiled code and data.  */
+/* Standard ELF section names for compiled code and data.  */
 #ifndef TEXT_SECTION
 #define TEXT_SECTION		".text"
 #endif
@@ -2573,7 +2636,7 @@ addr_to_string (x)
   return xstrdup (buf);
 }
 
-/* Test if rtl node points to a psuedo register.  */
+/* Test if rtl node points to a pseudo register.  */
 
 static inline int
 is_pseudo_reg (rtl)
@@ -4011,7 +4074,7 @@ print_spaces (outfile)
   fprintf (outfile, "%*s", print_indent, "");
 }
 
-/* Print the information assoaciated with a given DIE, and its children.
+/* Print the information associated with a given DIE, and its children.
    This routine is a debugging aid only.  */
 
 static void
@@ -4460,10 +4523,10 @@ size_of_die (die)
   return size;
 }
 
-/* Size the debgging information associted with a given DIE.
+/* Size the debugging information associated with a given DIE.
    Visits the DIE's children recursively.  Updates the global
    variable next_die_offset, on each time through.  Uses the
-   current value of next_die_offset to updete the die_offset
+   current value of next_die_offset to update the die_offset
    field in each DIE.  */
 
 static void
@@ -4693,7 +4756,7 @@ size_of_pubnames ()
   return size;
 }
 
-/* Return the size of the information in the .debug_aranges seciton.  */
+/* Return the size of the information in the .debug_aranges section.  */
 
 static unsigned long
 size_of_aranges ()
@@ -5139,7 +5202,12 @@ output_die (die)
 	  break;
 
 	case dw_val_class_str:
-	  ASM_OUTPUT_DWARF_STRING (asm_out_file, a->dw_attr_val.v.val_str);
+	  if (flag_debug_asm)
+	    ASM_OUTPUT_DWARF_STRING (asm_out_file, a->dw_attr_val.v.val_str);
+	  else
+	    ASM_OUTPUT_ASCII (asm_out_file,
+			      a->dw_attr_val.v.val_str,
+			      strlen (a->dw_attr_val.v.val_str) + 1);
 	  break;
 
 	default:
@@ -5284,9 +5352,15 @@ output_pubnames ()
 
       fputc ('\n', asm_out_file);
 
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, pub->name);
       if (flag_debug_asm)
-	fprintf (asm_out_file, "%s external name", ASM_COMMENT_START);
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file, pub->name);
+	  fprintf (asm_out_file, "%s external name", ASM_COMMENT_START);
+	}
+      else
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file, pub->name, strlen (pub->name) + 1);
+	}
 
       fputc ('\n', asm_out_file);
     }
@@ -5511,10 +5585,18 @@ output_line_info ()
 
   for (ft_index = 1; ft_index < file_table_in_use; ++ft_index)
     {
-      ASM_OUTPUT_DWARF_STRING (asm_out_file, file_table[ft_index]);
       if (flag_debug_asm)
-	fprintf (asm_out_file, "%s File Entry: 0x%x",
-		 ASM_COMMENT_START, ft_index);
+	{
+	  ASM_OUTPUT_DWARF_STRING (asm_out_file, file_table[ft_index]);
+	  fprintf (asm_out_file, "%s File Entry: 0x%x",
+		   ASM_COMMENT_START, ft_index);
+	}
+      else
+	{
+	  ASM_OUTPUT_ASCII (asm_out_file,
+			    file_table[ft_index],
+			    strlen (file_table[ft_index]) + 1);
+	}
 
       fputc ('\n', asm_out_file);
 
@@ -6294,7 +6376,7 @@ mem_loc_descriptor (rtl)
   return mem_loc_result;
 }
 
-/* Return a descriptor that describes the concatination of two locations.
+/* Return a descriptor that describes the concatenation of two locations.
    This is typically a complex variable.  */
 
 static dw_loc_descr_ref
@@ -6811,7 +6893,7 @@ add_location_or_const_value_attribute (die, decl)
      get valid non-NULL DECL_INCOMING_RTL values, but integrate.c
      doesn't currently generate these values for inlined instances of
      inline function parameters, so when we see such cases, we are
-     just SOL (shit-out-of-luck) for the time being (until integrate.c
+     just out-of-luck for the time being (until integrate.c
      gets fixed).  */
 
   /* Use DECL_RTL as the "location" unless we find something better.  */
@@ -7431,7 +7513,7 @@ decl_start_label (decl)
   return fnname;
 }
 
-/* These routines generate the internnal representation of the DIE's for
+/* These routines generate the internal representation of the DIE's for
    the compilation unit.  Debugging information is collected by walking
    the declaration trees passed in from dwarf2out_decl().  */
 
@@ -8421,7 +8503,7 @@ gen_inheritance_die (binfo, context_die)
     add_AT_unsigned (die, DW_AT_accessibility, DW_ACCESS_protected);
 }
 
-/* Genearate a DIE for a class member.  */
+/* Generate a DIE for a class member.  */
 
 static void
 gen_member_die (type, context_die)
@@ -8627,6 +8709,13 @@ gen_type_die (type, context_die)
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
+      /* We must set TREE_ASM_WRITTEN in case this is a recursive type.  This
+	 ensures that the gen_type_die recursion will terminate even if the
+	 type is recursive.  Recursive types are possible in Ada.  */
+      /* ??? We could perhaps do this for all types before the switch
+	 statement.  */
+      TREE_ASM_WRITTEN (type) = 1;
+
       /* For these types, all that is required is that we output a DIE (or a
          set of DIEs) to represent the "basis" type.  */
       gen_type_die (TREE_TYPE (type), context_die);
@@ -9100,11 +9189,11 @@ dwarf2out_decl (decl)
       /* What we would really like to do here is to filter out all mere
          file-scope declarations of file-scope functions which are never
          referenced later within this translation unit (and keep all of ones
-         that *are* referenced later on) but we aren't clarvoiant, so we have 
+         that *are* referenced later on) but we aren't clairvoyant, so we have 
          no idea which functions will be referenced in the future (i.e. later 
          on within the current translation unit). So here we just ignore all
          file-scope function declarations which are not also definitions.  If 
-         and when the debugger needs to know something about these funcstion, 
+         and when the debugger needs to know something about these functions,
          it wil have to hunt around and find the DWARF information associated 
          with the definition of the function. Note that we can't just check
          `DECL_EXTERNAL' to find out which FUNCTION_DECL nodes represent

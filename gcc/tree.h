@@ -752,7 +752,7 @@ struct tree_block
    the same way that the first union alternative would be passed.  */
 #define TYPE_TRANSPARENT_UNION(NODE) ((NODE)->type.transparent_union_flag)
 
-/* Indicated that objects of this type should be layed out in as
+/* Indicated that objects of this type should be laid out in as
    compact a way as possible.  */
 #define TYPE_PACKED(NODE) ((NODE)->type.packed_flag)
 
@@ -1232,7 +1232,9 @@ extern char *oballoc			PROTO((int));
 extern char *permalloc			PROTO((int));
 extern char *savealloc			PROTO((int));
 extern char *expralloc			PROTO((int));
+#ifdef NEED_DECLARATION_FREE
 extern void free			PROTO((void *));
+#endif
 
 /* Lowest level primitive for allocating a node.
    The TREE_CODE is the only argument.  Contents are initialized
@@ -1711,8 +1713,8 @@ extern void expand_null_return			PROTO((void));
 extern void expand_return			PROTO((tree));
 extern void expand_start_bindings		PROTO((int));
 extern void expand_end_bindings			PROTO((tree, int, int));
-extern void start_cleanup_deferal		PROTO((void));
-extern void end_cleanup_deferal			PROTO((void));
+extern void start_cleanup_deferral		PROTO((void));
+extern void end_cleanup_deferral		PROTO((void));
 extern void mark_block_as_eh_region		PROTO((void));
 extern void mark_block_as_not_eh_region		PROTO((void));
 extern int is_eh_region				PROTO((void));
@@ -1763,6 +1765,52 @@ extern void rrotate_double	PROTO((HOST_WIDE_INT, HOST_WIDE_INT,
 				       HOST_WIDE_INT *));
 extern int operand_equal_p	PROTO((tree, tree, int));
 extern tree invert_truthvalue	PROTO((tree));
+
+/* Interface of the DWARF2 unwind info support.  */
+
+/* Decide whether we want to emit frame unwind information for the current
+   translation unit.  */
+
+extern int dwarf2out_do_frame		PROTO((void));
+
+/* Generate a new label for the CFI info to refer to.  */
+
+extern char *dwarf2out_cfi_label	PROTO((void));
+
+/* Entry point to update the canonical frame address (CFA).  */
+
+extern void dwarf2out_def_cfa		PROTO((char *, unsigned, long));
+
+/* Add the CFI for saving a register window.  */
+
+extern void dwarf2out_window_save	PROTO((char *));
+
+/* Add a CFI to update the running total of the size of arguments pushed
+   onto the stack.  */
+
+extern void dwarf2out_args_size		PROTO((char *, long));
+
+/* Entry point for saving a register to the stack.  */
+
+extern void dwarf2out_reg_save		PROTO((char *, unsigned, long));
+
+/* Entry point for saving the return address in the stack.  */
+
+extern void dwarf2out_return_save	PROTO((char *, long));
+
+/* Entry point for saving the return address in a register.  */
+
+extern void dwarf2out_return_reg	PROTO((char *, unsigned));
+
+/* Output a marker (i.e. a label) for the beginning of a function, before
+   the prologue.  */
+
+extern void dwarf2out_begin_prologue	PROTO((void));
+
+/* Output a marker (i.e. a label) for the absolute end of the generated
+   code for a function definition.  */
+
+extern void dwarf2out_end_epilogue	PROTO((void));
 
 /* The language front-end must define these functions.  */
 

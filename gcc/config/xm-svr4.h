@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for hosts running System V Release 4
-   Copyright (C) 1988 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,15 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#define bcopy(src,dst,len) memcpy ((dst),(src),(len))
-#define bzero(dst,len) memset ((dst),0,(len))
-#define bcmp(left,right,len) memcmp ((left),(right),(len))
-
-#define rindex strrchr
-#define index strchr
-
 #define USG
-#define HAVE_VPRINTF
 
 #define POSIX
 

@@ -73,6 +73,100 @@ unexpected ()
   __unexpected_func ();
 }
 
+/* C++-specific state about the current exception.
+   This must match init_exception_processing().
+
+   Note that handlers and caught are not redundant; when rethrown, an
+   exception can have multiple active handlers and still be considered
+   uncaught.  */
+
+struct cp_eh_info
+{
+  void *value;
+  void *type;
+  void (*cleanup)(void *, int);
+  bool caught;
+  cp_eh_info *next;
+  long handlers;
+};
+
+/* Language-specific EH info pointer, defined in libgcc2.  */
+
+extern cp_eh_info *__eh_info;  // actually void*
+
+/* Is P the type_info node for a pointer of some kind?  */
+
+extern bool __is_pointer (void *);
+
+/* Compiler hook to return a pointer to the info for the current exception.
+   Used by get_eh_info ().  */
+
+extern "C" cp_eh_info *
+__cp_exception_info (void)
+{
+  return __eh_info;
+}
+
+/* Compiler hook to push a new exception onto the stack.
+   Used by expand_throw().  */
+
+extern "C" void
+__cp_push_exception (void *value, void *type, void (*cleanup)(void *, int))
+{
+  cp_eh_info *p = new cp_eh_info;
+  p->value = value;
+  p->type = type;
+  p->cleanup = cleanup;
+  p->handlers = 0;
+  p->caught = false;
+  p->next = __eh_info;
+  __eh_info = p;
+}
+
+/* Compiler hook to pop an exception that has been finalized.  Used by
+   push_eh_cleanup().  P is the info for the exception caught by the
+   current catch block, and HANDLER determines if we've been called from
+   an exception handler; if so, we avoid destroying the object on rethrow.  */
+
+extern "C" void
+__cp_pop_exception (cp_eh_info *p, bool handler)
+{
+  cp_eh_info **q = &__eh_info;
+
+  --p->handlers;
+
+  if (p->handlers > 0 || (handler && p == *q))
+    return;
+
+  for (; *q; q = &((*q)->next))
+    if (*q == p)
+      break;
+
+  if (! *q)
+    terminate ();
+
+  *q = p->next;
+
+  if (p->cleanup)
+    /* 3 is a magic value for destructors; see build_delete().  */
+    p->cleanup (p->value, 3);
+  else if (__is_pointer (p->type))
+    /* do nothing; pointers are passed directly in p->value.  */;
+  else
+    delete p->value;
+
+  delete p;
+}
+
+extern "C" void
+__uncatch_exception (void)
+{
+  cp_eh_info *p = __cp_exception_info ();
+  if (p)
+    p->caught = false;
+  /* otherwise __throw will call terminate(); don't crash here.  */
+}
+
 extern "C" void
 __throw_bad_cast (void)
 {
@@ -85,18 +179,13 @@ __throw_bad_typeid (void)
   throw bad_typeid ();
 }
 
-extern "C" void
-__throw_bad_exception (void)
-{
-  throw bad_exception ();
-}
+/* Has the current exception been caught?  */
 
 bool
 uncaught_exception ()
 {
-  extern void *__eh_type;
-  extern bool __eh_in_catch;
-  return __eh_type && ! __eh_in_catch;
+  cp_eh_info *p = __cp_exception_info ();
+  return p && ! p->caught;
 }
 
 const char * exception::

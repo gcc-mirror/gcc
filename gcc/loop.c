@@ -3547,11 +3547,20 @@ strength_reduce (scan_start, end, loop_top, insn_count,
   for (bl = loop_iv_list; bl; bl = bl->next)
     {
       rtx src;
+      rtx note;
 
       if (! bl->init_insn)
 	continue;
 
-      src = SET_SRC (bl->init_set);
+      /* IF INIT_INSN has a REG_EQUAL or REG_EQUIV note and the value
+	 is a constant, use the value of that.  */
+      if (((note = find_reg_note (bl->init_insn, REG_EQUAL, 0)) != NULL
+	   && CONSTANT_P (XEXP (note, 0)))
+	  || ((note = find_reg_note (bl->init_insn, REG_EQUIV, 0)) != NULL
+	      && CONSTANT_P (XEXP (note, 0))))
+	src = XEXP (note, 0);
+      else
+	src = SET_SRC (bl->init_set);
 
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -6067,8 +6076,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 
 	  /* Now check other conditions:
 
-	     The increment must be a constant and the comparison code
-	     must be LT. 
+	     The increment must be a constant, as must the initial value,
+	     and the comparison code must be LT. 
 
 	     This test can probably be improved since +/- 1 in the constant
 	     can be obtained by changing LT to LE and vice versa; this is
@@ -6077,7 +6086,8 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	  if (comparison
 	      && GET_CODE (XEXP (comparison, 1)) == CONST_INT
 	      /* LE gets turned into LT */
-	      && GET_CODE (comparison) == LT)
+	      && GET_CODE (comparison) == LT
+	      && GET_CODE (bl->initial_value) == CONST_INT)
 	    {
 	      HOST_WIDE_INT add_val, comparison_val;
 	      rtx initial_value;

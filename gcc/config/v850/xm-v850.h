@@ -34,7 +34,7 @@ Boston, MA 02111-1307, USA.  */
 #define SUCCESS_EXIT_CODE 0
 #define FATAL_EXIT_CODE 33
 
-#ifdef __v850__
+#ifdef __v850
 #ifndef __STDC__
 extern char *malloc (), *realloc (), *calloc ();
 #else

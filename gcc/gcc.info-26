@@ -98,6 +98,10 @@ Miscellaneous Parameters
      return `NIL'.  On machines where this macro is defined, you will
      normally define it as the constant `SIGN_EXTEND' or `ZERO_EXTEND'.
 
+`SHORT_IMMEDIATES_SIGN_EXTEND'
+     Define this macro if loading short immediate values into registers
+     sign extends.
+
 `IMPLICIT_FIX_EXPR'
      An alias for a tree code that should be used by default for
      conversion of floating point values to fixed point.  Normally,
@@ -515,26 +519,14 @@ are some macros that vary:
      properly handle converting a function value to a
      pointer-to-function when it is used in an expression.
 
-`HAVE_VPRINTF'
-     Define this if the library function `vprintf' is available on your
-     system.
-
 `MULTIBYTE_CHARS'
      Define this macro to enable support for multibyte characters in the
      input to GNU CC.  This requires that the host system support the
      ANSI C library functions for converting multibyte characters to
      wide characters.
 
-`HAVE_PUTENV'
-     Define this if the library function `putenv' is available on your
-     system.
-
 `POSIX'
      Define this if your system is POSIX.1 compliant.
-
-`HAVE_POPEN'
-     Define this if the library function `popen' is available on your
-     system.
 
 `NO_SYS_SIGLIST'
      Define this if your system *does not* provide the variable

@@ -1118,7 +1118,7 @@ arc_output_function_prologue (file, size)
   if (size == 0 && gmask)
     abort ();
 
-  /* Allocate space for register argumenets if this is a variadic function.  */
+  /* Allocate space for register arguments if this is a variadic function.  */
   if (current_frame_info.pretend_size != 0)
     fprintf (file, "\tsub %s,%s,%d\n",
 	     sp_str, sp_str, current_frame_info.pretend_size);
@@ -1565,7 +1565,7 @@ arc_print_operand (file, x, code)
   switch (code)
     {
     case '#' :
-      /* Conditional brances.  For now these are equivalent.  */
+      /* Conditional branches.  For now these are equivalent.  */
     case '*' :
       /* Unconditional branches.  Output the appropriate delay slot suffix.  */
       if (!final_sequence || XVECLEN (final_sequence, 0) == 1)
@@ -1971,7 +1971,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
   if (GET_CODE (insn) != JUMP_INSN)
     return;
 
-  /* This jump might be paralled with a clobber of the condition codes,
+  /* This jump might be paralleled with a clobber of the condition codes,
      the jump should always come first.  */
   if (GET_CODE (body) == PARALLEL && XVECLEN (body, 0) > 0)
     body = XVECEXP (body, 0, 0);
@@ -2161,7 +2161,7 @@ arc_final_prescan_insn (insn, opvec, noperands)
 
       /* Restore recog_operand.  Getting the attributes of other insns can
 	 destroy this array, but final.c assumes that it remains intact
-	 accross this call; since the insn has been recognized already we
+	 across this call; since the insn has been recognized already we
 	 call insn_extract direct. */
       insn_extract (insn);
     }

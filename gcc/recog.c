@@ -1682,7 +1682,7 @@ constrain_operands (insn_code_num, strict)
 	  earlyclobber[opno] = 0;
 
 	  /* A unary operator may be accepted by the predicate, but it
-	     is irrelevant for matching contraints.  */
+	     is irrelevant for matching constraints.  */
 	  if (GET_RTX_CLASS (GET_CODE (op)) == '1')
 	    op = XEXP (op, 0);
 
@@ -1991,7 +1991,7 @@ constrain_operands (insn_code_num, strict)
 }
 
 /* Return 1 iff OPERAND (assumed to be a REG rtx)
-   is a hard reg in class CLASS when its regno is offsetted by OFFSET
+   is a hard reg in class CLASS when its regno is offset by OFFSET
    and changed to mode MODE.
    If REG occupies multiple hard regs, all of them must be in CLASS.  */
 

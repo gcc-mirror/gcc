@@ -464,7 +464,7 @@ IBM RS/6000 and PowerPC Options
 `-mno-relocatable-lib'
      On embedded PowerPC systems generate code that allows (does not
      allow) the program to be relocated to a different address at
-     runtime.  Modules compiled with `-mreloctable-lib' can be linked
+     runtime.  Modules compiled with `-mrelocatable-lib' can be linked
      with either modules compiled without `-mrelocatable' and
      `-mrelocatable-lib' or with modules compiled with the
      `-mrelocatable' options.
@@ -609,7 +609,7 @@ IBM RS/6000 and PowerPC Options
      `.bss' section.
 
 `-G NUM'
-     On embbeded PowerPC systems, put global and static items less than
+     On embedded PowerPC systems, put global and static items less than
      or equal to NUM bytes into the small data or bss sections instead
      of the normal data or bss section.  By default, NUM is 8.  The `-G
      NUM' switch is also passed to the linker.  All modules should be
@@ -881,10 +881,26 @@ Intel 386 Options
 
    These `-m' options are defined for the i386 family of computers:
 
-`-m486'
+`-mcpu=CPU TYPE'
+     Assume the defaults for the machine type CPU TYPE when scheduling
+     instructions.  The choices for CPU TYPE are: `i386', `i486',
+     `i586' (`pentium'), `pentium', `i686' (`pentiumpro') and
+     `pentiumpro'. While picking a specific CPU TYPE will schedule
+     things appropriately for that particular chip, the compiler will
+     not generate any code that does not run on the i386 without the
+     `-march=CPU TYPE' option being used.
+
+`-march=CPU TYPE'
+     Generate instructions for the machine type CPU TYPE.  The choices
+     for CPU TYPE are: `i386', `i486', `pentium', and `pentiumpro'.
+     Specifying `-march=CPU TYPE' implies `-mcpu=CPU TYPE'.
+
 `-m386'
-     Control whether or not code is optimized for a 486 instead of an
-     386.  Code generated for an 486 will run on a 386 and vice versa.
+`-m486'
+`-mpentium'
+`-mpentiumpro'
+     Synonyms for -mcpu=i386, -mcpu=i486, -mcpu=pentium, and
+     -mcpu=pentiumpro respectively.
 
 `-mieee-fp'
 `-mno-ieee-fp'
@@ -1054,7 +1070,7 @@ HPPA Options
 `-mspace'
      Optimize for space rather than execution time.  Currently this only
      enables out of line function prologues and epilogues.  This option
-     is incompatable with PIC code generation and profiling.
+     is incompatible with PIC code generation and profiling.
 
 `-mlong-load-store'
      Generate 3-instruction load and store sequences as sometimes

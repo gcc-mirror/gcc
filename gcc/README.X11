@@ -20,7 +20,7 @@ IF YOU THINK YOU MIGHT COMPILE X FOR SOLARIS 2, then you really don't
 need this patch: get /contrib/R5.SunOS5.patch.tar.Z from
 export.lcs.mit.edu instead.  It has everything you need to do the
 build for Solaris 2, sets you up to everything with GCC, and is
-backward compatible with Sunos 4.*.  Get the the README
+backward compatible with SunOS 4.*.  Get the the README
 (/contrib/R5.SunOS5.patch.README at export) for more info.
 
 If you see undefined symbols _dlopen, _dlsym, or _dlclose when linking

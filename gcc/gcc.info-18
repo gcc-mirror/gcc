@@ -101,24 +101,24 @@ pattern in to accomplish a certain task.
      patterns `reload_inM' or `reload_outM' to handle them.  *Note
      Register Classes::.
 
-     The constraints on a `moveM' must permit moving any hard register
+     The constraints on a `movM' must permit moving any hard register
      to any other hard register provided that `HARD_REGNO_MODE_OK'
      permits mode M in both registers and `REGISTER_MOVE_COST' applied
      to their classes returns a value of 2.
 
-     It is obligatory to support floating point `moveM' instructions
+     It is obligatory to support floating point `movM' instructions
      into and out of any registers that can hold fixed point values,
      because unions and structures (which have modes `SImode' or
      `DImode') can be in those registers and they may have floating
      point members.
 
-     There may also be a need to support fixed point `moveM'
+     There may also be a need to support fixed point `movM'
      instructions in and out of floating point registers.
      Unfortunately, I have forgotten why this was so, and I don't know
      whether it is still true.  If `HARD_REGNO_MODE_OK' rejects fixed
      point values in floating point registers, then the constraints of
-     the fixed point `moveM' instructions must be designed to avoid
-     ever trying to reload into a floating point register.
+     the fixed point `movM' instructions must be designed to avoid ever
+     trying to reload into a floating point register.
 
 `reload_inM'
 `reload_outM'
@@ -674,7 +674,7 @@ pattern in to accomplish a certain task.
      move insn to copy `virtual_stack_dynamic_rtx' to operand 0.  If
      you are allocating the space elsewhere, generate code to copy the
      location of the space to operand 0.  In the latter case, you must
-     ensure this space gets freed when the correspoinding space on the
+     ensure this space gets freed when the corresponding space on the
      main stack is free.
 
      Do not define this pattern if all that must be done is the
@@ -986,7 +986,7 @@ are performed:
    * Within address computations (i.e., inside `mem'), a left shift is
      converted into the appropriate multiplication by a power of two.
 
-     De`Morgan's Law is used to move bitwise negation inside a bitwise
+   * De`Morgan's Law is used to move bitwise negation inside a bitwise
      logical-and or logical-or operation.  If this results in only one
      operand being a `not' expression, it will be the first one.
 

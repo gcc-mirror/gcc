@@ -89,10 +89,7 @@ Boston, MA 02111-1307, USA.  */
 #define POINTER_SIZE 32
 #define POINTERS_EXTEND_UNSIGNED 0
 
-/* No data type wants to be aligned rounder than this. */
-#undef BIGGEST_ALIGNMENT
-#define BIGGEST_ALIGNMENT 128       /* X Complex */
-#define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Test CD40VRA */
+#define MAX_OFILE_ALIGNMENT 524288  /* 8 x 2^16 by DEC Ada Test CD40VRA */
 
 #undef FIXED_REGISTERS
 #define FIXED_REGISTERS  \
@@ -212,13 +209,6 @@ extern struct rtx_def *alpha_arg_info_reg_val ();
 ((CUM).num_args < 6 && 6 < (CUM).num_args				\
    + ALPHA_ARG_SIZE (MODE, TYPE, NAMED)					\
  ? 6 - (CUM).num_args : 0)
-
-#undef ENCODE_SECTION_INFO
-#define ENCODE_SECTION_INFO(DECL)				\
-do {								\
-  if (TREE_CODE (DECL) == FUNCTION_DECL && ! TREE_PUBLIC (DECL)) \
-    SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
-} while (0)
 
 /* Perform any needed actions needed for a function that is receiving a
    variable number of arguments. 
@@ -457,28 +447,11 @@ do {									\
   sprintf ((OUTPUT), "%s___%d", (NAME), (LABELNO)))
 
 #undef ASM_SPEC
-#define ASM_SPEC "-nocpp %{pg}"
-
 #undef ASM_FINAL_SPEC
-
-#define OPTIMIZATION_OPTIONS                       \
-{                                                  \
-   write_symbols = PREFERRED_DEBUGGING_TYPE;       \
-   debug_info_level = (enum debug_info_level) 2;   \
-}
-
-#undef OVERRIDE_OPTIONS
-#define OVERRIDE_OPTIONS                           \
-{                                                  \
-   if (write_symbols == NO_DEBUG)                  \
-     debug_info_level = (enum debug_info_level) 0; \
-   override_options ();                            \
-}
-
 #undef LINK_SPEC
-#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{shared:-shared} %{v:-v}"
-
 #undef STARTFILE_SPEC
+#define ASM_SPEC "-nocpp %{pg}"
+#define LINK_SPEC "%{g3:-g3} %{g0:-g0} %{shared:-shared} %{v:-v}"
 
 /* Define the names of the division and modulus functions.  */
 #define DIVSI3_LIBCALL "ots$div_i"

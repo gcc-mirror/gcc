@@ -35,7 +35,6 @@ Boston, MA 02111-1307, USA. */
 #include "flags.h"
 #include "except.h"
 #include "function.h"
-#include "dwarf2.h"
 
 #ifdef EXTRA_CONSTRAINT
 /* If EXTRA_CONSTRAINT is defined, then the 'S'
@@ -1973,12 +1972,10 @@ load_pic_register (do_rtl)
  
       if (do_rtl)
 	{
-	  emit_insn (gen_prologue_get_pc (xops[0], xops[1]));
-	  emit_insn (gen_pop (xops[0]));
-	  emit_insn (gen_prologue_set_got
-		     (xops[0],
-		      gen_rtx (SYMBOL_REF, Pmode, "$_GLOBAL_OFFSET_TABLE_"), 
-		      xops[1]));
+	  /* We can't put a raw CODE_LABEL into the RTL, and we can't emit
+	     a new CODE_LABEL after reload, so we need a single pattern to
+	     emit the 3 necessary instructions.  */
+	  emit_insn (gen_prologue_get_pc_and_set_got (xops[0]));
 	}
       else
 	{
@@ -3545,15 +3542,6 @@ notice_update_cc (exp)
       if (SET_DEST (exp) == pc_rtx)
 	return;
 
-#ifdef IS_STACK_MODE
-      /* Moving into a memory of stack_mode may have been moved
-         in between the use and set of cc0 by loop_spl(). So
-         old value of cc.status must be retained */
-      if (GET_CODE(SET_DEST(exp)) == MEM 
-	  && IS_STACK_MODE (GET_MODE (SET_DEST (exp))))
-	return;
-#endif
-
       /* Moving register or memory into a register:
 	 it doesn't alter the cc's, but it might invalidate
 	 the RTX's which we remember the cc's came from.
@@ -4852,7 +4840,7 @@ reg_mentioned_in_mem (reg, rtl)
   return 0;
 }
 
-/* Output the approprate insns for doing strlen if not just doing repnz; scasb
+/* Output the appropriate insns for doing strlen if not just doing repnz; scasb
 
    operands[0] = result, initialized with the startaddress
    operands[1] = alignment of the address.
@@ -4907,7 +4895,7 @@ output_strlen_unroll (operands)
 	     therefore use andl rather than andb. */
 	  output_asm_insn (AS2 (and%L1,%4,%1), xops);
 
-	  /* Is aligned to 4-byte adress when zero */
+	  /* Is aligned to 4-byte address when zero */
 	  output_asm_insn (AS1 (je,%l8), xops);
 
 	  /* Side-effect even Parity when %eax == 3 */
@@ -4927,7 +4915,7 @@ output_strlen_unroll (operands)
 	     check if is aligned to 4 - byte.  */
 	  output_asm_insn (AS2 (and%L1,%3,%1), xops);
 
-	  /* Is aligned to 4-byte adress when zero */
+	  /* Is aligned to 4-byte address when zero */
 	  output_asm_insn (AS1 (je,%l8), xops);
         }
 

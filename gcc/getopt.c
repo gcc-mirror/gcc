@@ -79,12 +79,6 @@
 #endif
 #endif
 
-#if defined (WINDOWS32) && !defined (__CYGWIN32__)
-/* It's not Unix, really.  See?  Capital letters.  */
-#include <windows.h>
-#define getpid() GetCurrentProcessId()
-#endif
-
 #ifndef _
 /* This is for other GNU distributions with internationalized messages.
    When compiling libc, the _ macro is predefined.  */
@@ -262,8 +256,6 @@ static int nonoption_flags_len;
 static int original_argc;
 static char *const *original_argv;
 
-extern pid_t __libc_pid;
-
 /* Make sure the environment variable bash 2.0 puts in the environment
    is valid for the getopt call we must make sure that the ARGV passed
    to getopt is that one passed to the process.  */
@@ -331,9 +323,9 @@ exchange (argv)
 	nonoption_flags_len = nonoption_flags_max_len = 0;
       else
 	{
-	  memcpy (new_str, __getopt_nonoption_flags, nonoption_flags_max_len);
-	  memset (&new_str[nonoption_flags_max_len], '\0',
-		  top + 1 - nonoption_flags_max_len);
+	  memset (__mempcpy (new_str, __getopt_nonoption_flags,
+			     nonoption_flags_max_len),
+		  '\0', top + 1 - nonoption_flags_max_len);
 	  nonoption_flags_max_len = top + 1;
 	  __getopt_nonoption_flags = new_str;
 	}
@@ -442,11 +434,8 @@ _getopt_initialize (argc, argv, optstring)
 	      if (__getopt_nonoption_flags == NULL)
 		nonoption_flags_max_len = -1;
 	      else
-		{
-		  memcpy (__getopt_nonoption_flags, orig_str, len);
-		  memset (&__getopt_nonoption_flags[len], '\0',
-			  nonoption_flags_max_len - len);
-		}
+		memset (__mempcpy (__getopt_nonoption_flags, orig_str, len),
+			'\0', nonoption_flags_max_len - len);
 	    }
 	}
       nonoption_flags_len = nonoption_flags_max_len;

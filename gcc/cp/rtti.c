@@ -269,7 +269,7 @@ build_x_typeid (exp)
       tree bad = throw_bad_typeid ();
 
       bad = build_compound_expr
-	(tree_cons (NULL_TREE, bad, build_tree_list
+	(expr_tree_cons (NULL_TREE, bad, build_expr_list
 		    (NULL_TREE, cp_convert (type, integer_zero_node))));
       exp = build (COND_EXPR, type, cond, exp, bad);
     }
@@ -624,8 +624,8 @@ build_dynamic_cast_1 (type, expr)
 	    {
 	      expr1 = throw_bad_cast ();
 	      expr1 = build_compound_expr
-		(tree_cons (NULL_TREE, expr1,
-			    build_tree_list (NULL_TREE, cp_convert (type, integer_zero_node))));
+		(expr_tree_cons (NULL_TREE, expr1,
+			    build_expr_list (NULL_TREE, cp_convert (type, integer_zero_node))));
 	      TREE_TYPE (expr1) = type;
 	      result = save_expr (result);
 	      return build (COND_EXPR, type, result, result, expr1);
@@ -810,7 +810,7 @@ expand_class_desc (tdecl, type)
 	   (NULL_TREE, isvir, tree_cons
 	    (NULL_TREE, access, NULL_TREE)))));
       TREE_HAS_CONSTRUCTOR (elt) = TREE_CONSTANT (elt) = TREE_STATIC (elt) = 1;
-      elts = tree_cons (NULL_TREE, elt, elts);
+      elts = expr_tree_cons (NULL_TREE, elt, elts);
       base_cnt++;
     }
 #if 0
@@ -837,10 +837,10 @@ expand_class_desc (tdecl, type)
       offset = BINFO_OFFSET (vb);
       isvir = build_int_2 (1, 0);
 
-      base_list = tree_cons (NULL_TREE, base, base_list);
-      isvir_list = tree_cons (NULL_TREE, isvir, isvir_list);
-      acc_list = tree_cons (NULL_TREE, access, acc_list);
-      off_list = tree_cons (NULL_TREE, offset, off_list);
+      base_list = expr_tree_cons (NULL_TREE, base, base_list);
+      isvir_list = expr_tree_cons (NULL_TREE, isvir, isvir_list);
+      acc_list = expr_tree_cons (NULL_TREE, access, acc_list);
+      off_list = expr_tree_cons (NULL_TREE, offset, off_list);
 
       base_cnt++;
       vb = TREE_CHAIN (vb);
@@ -957,7 +957,7 @@ expand_attr_desc (tdecl, type)
   elems = tree_cons
     (NULL_TREE, decay_conversion (tdecl), tree_cons
      (NULL_TREE, decay_conversion (name_string), tree_cons
-      (NULL_TREE, attrval, tree_cons (NULL_TREE, t, NULL_TREE))));
+      (NULL_TREE, attrval, expr_tree_cons (NULL_TREE, t, NULL_TREE))));
 
   fn = get_identifier ("__rtti_attr");
   if (IDENTIFIER_GLOBAL_VALUE (fn))
@@ -1199,9 +1199,9 @@ build_t_desc (type, definition)
   /* Show that we are defining the t_desc for this type.  */
   DECL_INITIAL (tdecl) = error_mark_node;
 
-  parents = build_tree_list (NULL_TREE, integer_zero_node);
-  vbases = build_tree_list (NULL_TREE, integer_zero_node);
-  offsets = build_tree_list (NULL_TREE, integer_zero_node);
+  parents = build_expr_list (NULL_TREE, integer_zero_node);
+  vbases = build_expr_list (NULL_TREE, integer_zero_node);
+  offsets = build_expr_list (NULL_TREE, integer_zero_node);
   methods = NULL_TREE;
   ivars = NULL_TREE;
 

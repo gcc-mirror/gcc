@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for UMIPS operating system
-   Copyright (C) 1989, 1990, 1991 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1990, 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -28,11 +28,3 @@ Boston, MA 02111-1307, USA.  */
 #define USG
 
 #include "mips/xm-mips.h"
-
-#define bcopy(a,b,c)	memcpy((b),(a),(c))
-#define bzero(a,b)	memset((a),0,(b))
-#define bcmp(a,b,c)	memcmp((a),(b),(c))
-
-#define rindex strrchr
-#define index strchr
-

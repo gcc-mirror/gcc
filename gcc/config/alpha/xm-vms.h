@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for openVMS/Alpha.
-   Copyright (C)  1996 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
    Contributed by Klaus Kaempf (kkaempf@progis.de).
 
 This file is part of GNU CC.
@@ -53,7 +53,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Define a local equivalent (sort of) for unlink */
 #define unlink remove
+
 #define NEED_ATEXIT
+#define HAVE_VPRINTF
+#define HAVE_PUTENV
+#define HAVE_STRERROR
 
 #define NO_SYS_PARAMS_H		/* Don't have <sys/params.h> */
 #define NO_STAB_H		/* Don't have <stab.h> */
@@ -63,16 +67,10 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_STDLIB_H 1
 #define HAVE_UNISTD_H 1
 #define HAVE_STRING_H 1
+#define HAVE_LIMITS_H 1
+#define HAVE_STDDEF_H 1
+#define HAVE_TIME_H 1
 #define STDC_HEADERS 1
-
-/* Use ANSI/SYSV style byte manipulation routines instead of BSD ones.  */
-
-#define bcopy(s,d,n)	memcpy((d),(s),(n))
-#define bzero(d,n)	memset((d),0,(n))
-#define bcmp(l,r,n)	memcmp((l),(r),(n))
-
-#define index	strchr
-#define rindex	strrchr
 
 #if __STDC__
 extern void *alloca (size_t);
@@ -82,5 +80,3 @@ extern char *alloca (unsigned int);
 
 #define OBJECT_SUFFIX ".obj"
 #define EXECUTABLE_SUFFIX ".exe"
-#define DIR_SEPARATOR ']'
-#define PATH_SEPARATOR ','

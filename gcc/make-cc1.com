@@ -295,16 +295,17 @@ $if (f$search("C-PARSE.Y") .eqs. "") then goto yes_yfiles
 $if (f$cvtime(f$file_attributes("C-PARSE.IN","RDT")).gts. -
  	    f$cvtime(f$file_attributes("C-PARSE.Y","RDT")))  -
 		then goto yes_yfiles
-$if (f$search("OBJC-PARSE.Y") .eqs. "") then goto yes_yfiles
+$if f$parse("[.OBJC]").eqs."" then create/Directory [.objc]
+$if (f$search("[.OBJC]OBJC-PARSE.Y") .eqs. "") then goto yes_yfiles
 $if (f$cvtime(f$file_attributes("C-PARSE.IN","RDT")).gts. -
- 	    f$cvtime(f$file_attributes("OBJC-PARSE.Y","RDT")))  -
+ 	    f$cvtime(f$file_attributes("[.OBJC]OBJC-PARSE.Y","RDT")))  -
 		then goto yes_yfiles
 $GOTO no_yfiles
 $yes_yfiles:
-$echo "Now processing c-parse.in to generate c-parse.y and objc-parse.y."
-$ edit/tpu/nojournal/nosection/nodisplay/command=sys$input
+$echo "Now processing c-parse.in to generate c-parse.y and [.objc]objc-parse.y."
+$ EDIT/Tpu/noJournal/noSection/noDisplay/Command=sys$input:
 !
-!     Read c-parse.in, write c-parse.y and objc-parse.y, depending on
+!     Read c-parse.in, write c-parse.y and objc/objc-parse.y, depending on
 !     paired lines of "ifc" & "end ifc" and "ifobjc" & "end ifobjc" to
 !     control what goes into each file.  Most lines will be common to
 !     both (hence not bracketed by either control pair).  Mismatched
@@ -344,7 +345,7 @@ $ edit/tpu/nojournal/nosection/nodisplay/command=sys$input
    ENDLOOP;
 
    WRITE_FILE(c, "c-parse.y");
-   WRITE_FILE(objc, "objc-parse.y");
+   WRITE_FILE(objc, "[.objc]objc-parse.y");
    QUIT
 $	endif	
 $no_yfiles:

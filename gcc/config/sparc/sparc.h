@@ -215,11 +215,13 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:%(asm_cpu_default)}}}}}}} \
 "
 
-/* Word size selection, among other things.  */
+/* Word size selection, among other things.
+   This is what GAS uses.  Add %(asm_arch) to ASM_SPEC to enable.  */
+
 #define ASM_ARCH32_SPEC "-32"
 #define ASM_ARCH64_SPEC "-64"
 #define ASM_ARCH_DEFAULT_SPEC \
-(DEFAULT_ARCH32_P ?  ASM_ARCH32_SPEC : ASM_ARCH64_SPEC)
+(DEFAULT_ARCH32_P ? ASM_ARCH32_SPEC : ASM_ARCH64_SPEC)
 
 #define ASM_ARCH_SPEC "\
 %{m32:%(asm_arch32)} \
@@ -231,7 +233,7 @@ Unrecognized value in TARGET_CPU_DEFAULT.
 
 #define ASM_SPEC "\
 %| %{R} %{!pg:%{!p:%{fpic:-k} %{fPIC:-k}}} %{keep-local-as-symbols:-L} \
-%(asm_cpu) %(asm_arch) \
+%(asm_cpu) \
 "
 
 #define LIB_SPEC "%{!shared:%{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p} %{g:-lg}}"
@@ -438,8 +440,8 @@ extern int target_flags;
 /* Non-zero means the cpu has broken `save' and `restore' insns, only
    the trivial versions work (save %g0,%g0,%g0; restore %g0,%g0,%g0).
    We assume the environment will properly handle or otherwise avoid
-   trouble associated with an interrupt occuring after the `save' or trap
-   occuring during it.  */
+   trouble associated with an interrupt occurring after the `save' or trap
+   occurring during it.  */
 #define MASK_BROKEN_SAVERESTORE 0x200000
 #define TARGET_BROKEN_SAVERESTORE (target_flags & MASK_BROKEN_SAVERESTORE)
 
@@ -1129,7 +1131,7 @@ extern int sparc_mode_class[];
 
    It is important that SPARC_ICC_REG have class NO_REGS.  Otherwise combine
    may try to use it to hold an SImode value.  See register_operand.
-   ??? Should %fcc[0123] be handled similarily?
+   ??? Should %fcc[0123] be handled similarly?
 */
 
 enum reg_class { NO_REGS, FPCC_REGS, GENERAL_REGS, FP_REGS, EXTRA_FP_REGS,

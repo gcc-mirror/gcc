@@ -28,6 +28,7 @@ Boston, MA 02111-1307, USA.  */
 #include "runtime.h"
 #include "sarray.h"
 #include "encoding.h"
+#include "runtime-info.h"
 
 /* this is how we hack STRUCT_VALUE to be 1 or 0 */
 #define gen_rtx(args...) 1
@@ -76,7 +77,11 @@ __objc_get_forward_imp (SEL sel)
 {
   const char *t = sel->sel_types;
 
-  if (t && (*t == '[' || *t == '(' || *t == '{'))
+  if (t && (*t == '[' || *t == '(' || *t == '{')
+#ifdef OBJC_MAX_STRUCT_BY_VALUE
+    && objc_sizeof_type(t) > OBJC_MAX_STRUCT_BY_VALUE
+#endif
+      )
     return (IMP)__objc_block_forward;
   else if (t && (*t == 'f' || *t == 'd'))
     return (IMP)__objc_double_forward;
@@ -89,8 +94,7 @@ __inline__
 IMP
 get_imp (Class class, SEL sel)
 {
-  IMP impl;
-  void* res = sarray_get (class->dtable, (size_t) sel->sel_id);
+  void* res = sarray_get_safe (class->dtable, (size_t) sel->sel_id);
   if (res == 0)
     {
       /* Not a valid method */
@@ -133,7 +137,7 @@ __objc_responds_to (id object, SEL sel)
     }
 
   /* Get the method from the dispatch table */
-  res = sarray_get (object->class_pointer->dtable, (size_t) sel->sel_id);
+  res = sarray_get_safe (object->class_pointer->dtable, (size_t) sel->sel_id);
   return (res != 0);
 }
 
@@ -147,7 +151,8 @@ objc_msg_lookup(id receiver, SEL op)
   IMP result;
   if(receiver)
     {
-      result = sarray_get(receiver->class_pointer->dtable, (sidx)op->sel_id);
+      result = sarray_get_safe (receiver->class_pointer->dtable, 
+				(sidx)op->sel_id);
       if (result == 0)
 	{
 	  /* Not a valid method */
@@ -308,8 +313,8 @@ __objc_send_initialize(Class class)
 /* Walk on the methods list of class and install the methods in the reverse
    order of the lists. Since methods added by categories are before the methods
    of class in the methods list, this allows categories to substitute methods
-   declared in class. However if more than one category replace the same method
-   nothing is guarranteed about what method will be used.
+   declared in class. However if more than one category replaces the same
+   method nothing is guaranteed about what method will be used.
    Assumes that __objc_runtime_mutex is locked down. */
 static void
 __objc_install_methods_in_dtable (Class class, MethodList_t method_list)
@@ -336,7 +341,6 @@ static void
 __objc_install_dispatch_table_for_class (Class class)
 {
   Class super;
-  int counter;
 
   /* If the class has not yet had it's class links resolved, we must 
      re-compute all class links */
@@ -539,6 +543,12 @@ __objc_block_forward (id rcv, SEL op, ...)
   res = __objc_forward (rcv, op, args);
   if (res)
     __builtin_return (res);
+  else
+#if INVISIBLE_STRUCT_RETURN
+    return (__big) {0};
+#else
+    return nil;
+#endif
 }
 
 
@@ -593,6 +603,8 @@ __objc_forward (id object, SEL sel, arglist_t args)
     /* The object doesn't respond to doesNotRecognize: or error:;  Therefore,
        a default action is taken. */
     objc_error (object, OBJC_ERR_UNIMPLEMENTED, "%s\n", msg);
+
+    return 0;
   }
 }
 
@@ -612,13 +624,13 @@ __objc_print_dtable_stats()
 	 );
 
   printf("arrays: %d = %ld bytes\n", narrays, 
-	 (int)narrays*sizeof(struct sarray));
+	 (long)narrays*sizeof(struct sarray));
   total += narrays*sizeof(struct sarray);
   printf("buckets: %d = %ld bytes\n", nbuckets, 
-	 (int)nbuckets*sizeof(struct sbucket));
+	 (long)nbuckets*sizeof(struct sbucket));
   total += nbuckets*sizeof(struct sbucket);
 
-  printf("idxtables: %d = %ld bytes\n", idxsize, (int)idxsize*sizeof(void*));
+  printf("idxtables: %d = %ld bytes\n", idxsize, (long)idxsize*sizeof(void*));
   total += idxsize*sizeof(void*);
   printf("-----------------------------------\n");
   printf("total: %d bytes\n", total);

@@ -1,5 +1,5 @@
 ;;- Machine description for the Hitachi SH.
-;;  Copyright (C) 1993, 1994, 1995 Free Software Foundation, Inc.
+;;  Copyright (C) 1993, 1994, 1995, 1997Free Software Foundation, Inc.
 ;;  Contributed by Steve Chamberlain (sac@cygnus.com).
 ;;  Improved by Jim Wilson (wilson@cygnus.com).
 
@@ -80,7 +80,7 @@
 ;; cbranch	conditional branch instructions
 ;; jump		unconditional jumps
 ;; arith	ordinary arithmetic
-;; arith3	a compound insn that behaves similarily to a sequence of
+;; arith3	a compound insn that behaves similarly to a sequence of
 ;;		three insns of type arith
 ;; arith3b	like above, but might end with a redirected branch
 ;; load		from memory
@@ -101,9 +101,10 @@
 ;; fp		floating point
 ;; fdiv		floating point divide (or square root)
 ;; gp_fpul	move between general purpose register and fpul
+;; nil		no-op move, will be deleted.
 
 (define_attr "type"
- "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,gp_fpul"
+ "cbranch,jump,jump_ind,arith,arith3,arith3b,dyn_shift,other,load,load_si,store,move,fmove,smpy,dmpy,return,pload,pstore,pcload,pcload_si,rte,sfunc,call,fp,fdiv,gp_fpul,nil"
   (const_string "other"))
 
 ; If a conditional branch destination is within -252..258 bytes away
@@ -168,7 +169,7 @@
 ;; between the actual call address and the function arguments.
 ;; ADJUST_COST can only properly handle reductions of the cost, so we
 ;; use a latency of three here.
-;; We only do this for SImode loads of general regsiters, to make the work
+;; We only do this for SImode loads of general registers, to make the work
 ;; for ADJUST_COST easier.
 (define_function_unit "memory" 1 0
   (eq_attr "type" "load_si,pcload_si")
@@ -560,6 +561,17 @@
 
 ;; We take advantage of the library routines which don't clobber as many
 ;; registers as a normal function call would.
+
+;; The INSN_REFERENCES_ARE_DELAYED in sh.h is problematic because it
+;; also has an effect on the register that holds the address of the sfunc.
+;; To make this work, we have an extra dummy insns that shows the use
+;; of this register for reorg.
+
+(define_insn "use_sfunc_addr"
+  [(set (reg:SI 17) (unspec [(match_operand:SI 0 "register_operand" "r")] 5))]
+  ""
+  ""
+  [(set_attr "length" "0")])
 
 ;; We must use a pseudo-reg forced to reg 0 in the SET_DEST rather than
 ;; hard register 0.  If we used hard register 0, then the next instruction
@@ -1836,7 +1848,7 @@
 	lds	%1,%0
 	sts	%1,%0
 	! move optimized away"
-  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,other")
+  [(set_attr "type" "pcload_si,move,*,load_si,move,move,store,store,pstore,move,load,pload,pcload_si,gp_fpul,gp_fpul,nil")
    (set_attr "length" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,0")])
 
 (define_insn "movsi_i_lowpart"
@@ -2107,12 +2119,15 @@
 	sts	%1,%0"
   [(set_attr "type" "move,move,pcload,load,store,move,move")])
 
+;; We may not split the ry/yr/XX alternatives to movsi_ie, since
+;; update_flow_info would not know where to put REG_EQUAL notes
+;; when the destination changes mode.
 (define_insn "movsf_ie"
   [(set (match_operand:SF 0 "general_movdst_operand"
-	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,ry")
+	 "=f,r,f,f,fy,f,m,r,r,m,f,y,y,rf,r,y,y")
 	(match_operand:SF 1 "general_movsrc_operand"
-	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,yr"))
-   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X"))]
+	  "f,r,G,H,FQ,m,f,FQ,m,r,y,f,>,fr,y,r,y"))
+   (clobber (match_scratch:SI 2 "=X,X,X,X,&z,X,X,X,X,X,X,X,X,y,X,X,X"))]
 
   "TARGET_SH3E
    && (arith_reg_operand (operands[0], SFmode)
@@ -2132,23 +2147,11 @@
 	flds	%1,fpul
 	lds.l	%1,%0
 	#
-	#"
-  [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,*")
-   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,*,*")])
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand" "ry")
-	(match_operand:SF 1 "register_operand" "ry"))
-   (clobber (match_scratch:SI 2 "X"))]
-  "reload_completed
-   && true_regnum (operands[0]) < FIRST_FP_REG
-   && true_regnum (operands[1]) < FIRST_FP_REG"
-  [(set (match_dup 0) (match_dup 1))]
-  "
-{
-  operands[0] = gen_rtx (REG, SImode, true_regnum (operands[0]));
-  operands[1] = gen_rtx (REG, SImode, true_regnum (operands[1]));
-}")
+	sts	%1,%0
+	lds	%1,%0
+	! move optimized away"
+  [(set_attr "type" "fmove,move,fmove,fmove,pcload,load,store,pcload,load,store,fmove,fmove,load,*,gp_fpul,gp_fpul,nil")
+   (set_attr "length" "*,*,*,*,4,*,*,*,*,*,2,2,2,*,2,2,0")])
 
 (define_split
   [(set (match_operand:SF 0 "register_operand" "")
@@ -2426,6 +2429,12 @@
   [(set_attr "needs_delay_slot" "yes")
    (set_attr "type" "jump_ind")])
 
+(define_insn "dummy_jump"
+  [(set (pc) (const_int 0))]
+  ""
+  ""
+  [(set_attr "length" "0")])
+
 ;; Call subroutine returning any type.
 ;; ??? This probably doesn't work.
 
@@ -2518,6 +2527,9 @@
 					 gen_rtx (LABEL_REF, VOIDmode, lab),
 					 operands[3]));
       emit_label (lab);
+      /* Put a fake jump after the label, lest some optimization might
+	 delete the barrier and LAB.  */
+      emit_jump_insn (gen_dummy_jump ());
     }
   else
     {
@@ -2634,7 +2646,7 @@
   return \"\";
 }"
 ;; Need a variable length for this to be processed in each shorten_branch pass.
-;; The actual work is done in ADJUST_INSN_LENTH, because length attributes
+;; The actual work is done in ADJUST_INSN_LENGTH, because length attributes
 ;; need to be (a choice of) constants.
 ;; We use the calculated length before ADJUST_INSN_LENGTH to
 ;; determine if the insn_addresses array contents are valid.
@@ -2795,7 +2807,7 @@
   "operands[2] = gen_reg_rtx (SImode);")
 
 ;; Recognize mov #-1/negc/neg sequence, and change it to movt/add #-1.
-;; This prevents a regression that occured when we switched from xor to
+;; This prevents a regression that occurred when we switched from xor to
 ;; mov/neg for sne.
 
 (define_split
@@ -2911,7 +2923,7 @@
  ""
  ".align %O0"
 ;; Need a variable length for this to be processed in each shorten_branch pass.
-;; The actual work is done in ADJUST_INSN_LENTH, because length attributes
+;; The actual work is done in ADJUST_INSN_LENGTH, because length attributes
 ;; need to be (a choice of) constants.
   [(set (attr "length")
 	(if_then_else (ne (pc) (pc)) (const_int 2) (const_int 0)))
@@ -3310,7 +3322,7 @@
 }"
   [(set_attr "length" "10")])
 
-;; Switch back to the original stack for interrupt funtions with the
+;; Switch back to the original stack for interrupt functions with the
 ;; sp_switch attribute.  */
 (define_insn "sp_switch_2"
   [(const_int 2)]

@@ -929,7 +929,7 @@ static format_char_info print_char_table[] = {
 /* Two GNU extensions.  */
   { "Z",	0,	T_ST,	NULL,	NULL,	NULL,	NULL,	"-wp0"		},
   { "m",	0,	T_V,	NULL,	NULL,	NULL,	NULL,	"-wp"		},
-  { "feEgG",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
+  { "feEgGaA",	0,	T_D,	NULL,	NULL,	NULL,	T_LD,	"-wp0 +#"	},
   { "c",	0,	T_I,	NULL,	T_W,	NULL,	NULL,	"-w"		},
   { "C",	0,	T_W,	NULL,	NULL,	NULL,	NULL,	"-w"		},
   { "s",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"-wp"		},
@@ -942,7 +942,7 @@ static format_char_info print_char_table[] = {
 static format_char_info scan_char_table[] = {
   { "di",	1,	T_I,	T_S,	T_L,	T_LL,	T_LL,	"*"	},
   { "ouxX",	1,	T_UI,	T_US,	T_UL,	T_ULL,	T_ULL,	"*"	},	
-  { "efgEG",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	"*"	},
+  { "efgEGaA",	1,	T_F,	NULL,	T_D,	NULL,	T_LD,	"*"	},
   { "sc",	1,	T_C,	NULL,	T_W,	NULL,	NULL,	"*a"	},
   { "[",	1,	T_C,	NULL,	NULL,	NULL,	NULL,	"*a"	},
   { "C",	1,	T_W,	NULL,	NULL,	NULL,	NULL,	"*"	},
@@ -1404,10 +1404,15 @@ check_format_info (info, params)
 	    pedwarn ("ANSI C does not support the `ll' length modifier");
 	}
       aflag = 0;
-      if (*format_chars == 'a')
+      if (*format_chars == 'a' && info->is_scan)
 	{
-	  aflag = 1;
-	  format_chars++;
+	  if (format_chars[1] == 's' || format_chars[1] == 'S'
+	      || format_chars[1] == '[')
+	    {
+	      /* `a' is used as a flag.  */
+	      aflag = 1;
+	      format_chars++;
+	    }
 	}
       if (suppressed && length_char != 0)
 	{

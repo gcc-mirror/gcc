@@ -1216,7 +1216,7 @@ attribute only past the closing brace of a definition.
      variables of that type, even if the variable appears to do
      nothing.  This is often the case with lock or thread classes,
      which are usually defined and then not referenced, but contain
-     constructors and destructors that have non-trivial bookeeping
+     constructors and destructors that have nontrivial bookkeeping
      functions.
 
    To specify multiple attributes, separate them by commas within the

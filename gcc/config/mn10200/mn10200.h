@@ -1,5 +1,4 @@
-/* Definitions of target machine for GNU compiler. 
-   Matsushita MN10200 series
+/* Definitions of target machine for GNU compiler. Matsushita MN10200 series
    Copyright (C) 1997 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -614,10 +613,15 @@ extern struct rtx_def *function_arg();
 #define CONSTANT_ADDRESS_P(X)   CONSTANT_P (X)
 
 /* Extra constraints.  */
+#define OK_FOR_R(OP) \
+   (GET_CODE (OP) == MEM					\
+    && GET_MODE (OP) == QImode					\
+    && REG_P (XEXP (OP, 0)))
  
 /* Q is used for sp + <something> in the {zero,sign}_extendpsisi2 patterns.  */
 #define EXTRA_CONSTRAINT(OP, C) \
- ((C) == 'S' ? GET_CODE (OP) == SYMBOL_REF : \
+ ((C) == 'R' ? OK_FOR_R (OP) : \
+  (C) == 'S' ? GET_CODE (OP) == SYMBOL_REF : \
   (C) == 'Q' ? GET_CODE (OP) == PLUS : 0)
 
 /* Maximum number of registers that can appear in a valid memory address.  */
@@ -663,6 +667,11 @@ extern struct rtx_def *function_arg();
    The MODE argument is the machine mode for the MEM expression
    that wants to use this address.
 
+   We used to allow reg+reg addresses for QImode and HImode; however,
+   they tended to cause the register allocator to run out of registers.
+   Basically, an indexed load/store always keeps 2 data and one address
+   register live, which is just too many for this machine.
+
    The other macros defined here are used only in GO_IF_LEGITIMATE_ADDRESS,
    except for CONSTANT_ADDRESS_P which is actually machine-independent.  */
 
@@ -691,10 +700,6 @@ extern struct rtx_def *function_arg();
       if (base != 0 && index != 0)			\
 	{						\
 	  if (GET_CODE (index) == CONST_INT)		\
-	    goto ADDR;					\
-	  if (GET_CODE (index) == REG			\
-	      && REG_OK_FOR_INDEX_P (index)		\
-	      && GET_MODE_SIZE (MODE) <= word_mode)	\
 	    goto ADDR;					\
 	}						\
     }							\
@@ -948,7 +953,7 @@ do { char dstr[30];					\
   if ((LOG) != 0)			\
     fprintf (FILE, "\t.align %d\n", (LOG))
 
-/* We don't have to worry about dbx compatability for the mn10200.  */
+/* We don't have to worry about dbx compatibility for the mn10200.  */
 #define DEFAULT_GDB_EXTENSIONS 1
 
 /* Use stabs debugging info by default.  */

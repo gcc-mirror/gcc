@@ -1,4 +1,5 @@
-# Target config file for a System V based system (Solaris, Linux, Netbsd) with gas
+# Target config file for a System V based system (Solaris, GNU/Linux, Netbsd)
+# with gas.
 
 # Build libgcc.a with different options.  With gas, build pic libraries
 # as well no floating point

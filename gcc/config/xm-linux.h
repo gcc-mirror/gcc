@@ -1,4 +1,4 @@
-/* Configuration for GCC for Intel i386 running Linux.
+/* Configuration for GCC for Intel i386 running Linux-based GNU systems.
    Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by H.J. Lu (hjl@nynexst.com)
 
@@ -19,15 +19,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#undef  HAVE_VPRINTF
-#define HAVE_VPRINTF
-
-#undef  HAVE_POPEN
-#define HAVE_POPEN
-
-#undef  HAVE_PUTENV
-#define HAVE_PUTENV
-
 #undef  HAVE_ATEXIT
 #define HAVE_ATEXIT
 
@@ -40,8 +31,3 @@ Boston, MA 02111-1307, USA.  */
 
 #undef BSTRING
 #define BSTRING
-#undef bcmp
-#undef bcopy
-#undef bzero
-#undef index
-#undef rindex

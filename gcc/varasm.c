@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #else /* !NO_DOT_IN_LABEL */
 #define CHKR_PREFIX "chkr."
 #endif 
-#else /* !NO_DOLLAR_IN_LABLE */
+#else /* !NO_DOLLAR_IN_LABEL */
 #define CHKR_PREFIX "chkr$"
 #endif
 #define CHKR_PREFIX_SIZE (sizeof (CHKR_PREFIX) - 1)
@@ -2245,8 +2245,7 @@ immed_real_const_1 (d, mode)
 
   /* Detect special cases.  */
 
-  /* Avoid REAL_VALUES_EQUAL here in order to distinguish minus zero.  */
-  if (!bcmp ((char *) &dconst0, (char *) &d, sizeof d))
+  if (REAL_VALUES_IDENTICAL (dconst0, d))
     return CONST0_RTX (mode);
   /* Check for NaN first, because some ports (specifically the i386) do not
      emit correct ieee-fp code by default, and thus will generate a core

@@ -32,7 +32,7 @@
 # mc68030  for Motorola 68030 (Sun-3, ..)
 # sparc    for SPARC (SUN-4, ..)
 # i386     for i386 (Sun i386, ...)
-# i386-linux for i386 (Linux, ...)
+# i386-gnu-linux for i386 (GNU/Linux, ...)
 
 # Guess what kind of objects we are creating and thus what type of assembler
 # symbols to look for
@@ -62,7 +62,7 @@ cd $WD
 # MYSYS=mc68030
 # MYSYS=sparc
 # MYSYS=i386
-# MYSYS=i386-linux
+# MYSYS=i386-gnu-linux
 # MYSYS=`mach`  # this will work on Suns with SunOS > 4.0.0
 # MYSYS=elf
 # MYSYS=coff
@@ -103,7 +103,7 @@ BEGIN {
     line_delimiter = ",";
     line_offset = 0;
   }
-  else if (sys == "mc68020" || sys == "mc68030" || sys == "i386-linux") {
+  else if (sys == "mc68020" || sys == "mc68030" || sys == "i386-gnu-linux") {
     line_hint = "^[ \t]*\.stabd.*"
     line_field = 3;
     line_delimiter = ",";

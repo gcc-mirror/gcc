@@ -1,4 +1,4 @@
-# Do not build libgcc1. Let gcc generate those functions. The Linux
+# Do not build libgcc1. Let gcc generate those functions. The GNU/Linux
 # C library can handle them.
 LIBGCC1 = 
 CROSS_LIBGCC1 =

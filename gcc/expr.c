@@ -110,9 +110,13 @@ static rtx saveregs_value;
 /* Similarly for __builtin_apply_args.  */
 static rtx apply_args_value;
 
+/* Don't check memory usage, since code is being emitted to check a memory
+   usage.  Used when flag_check_memory_usage is true, to avoid infinite
+   recursion.  */
+static int in_check_memory_usage;
+
 /* This structure is used by move_by_pieces to describe the move to
    be performed.  */
-
 struct move_by_pieces
 {
   rtx to;
@@ -2551,10 +2555,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	  move_by_pieces (gen_rtx (MEM, BLKmode, gen_push_operand ()), xinner,
 			  INTVAL (size) - used, align);
 
-	  if (flag_check_memory_usage)
+	  if (flag_check_memory_usage && ! in_check_memory_usage)
 	    {
 	      rtx temp;
 	      
+	      in_check_memory_usage = 1;
 	      temp = get_push_address (INTVAL(size) - used);
 	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
@@ -2567,7 +2572,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 				   temp, ptr_mode,
 			 	   GEN_INT (INTVAL(size) - used),
 				   TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW), QImode);
+				   GEN_INT (MEMORY_USE_RW),
+				   TYPE_MODE (integer_type_node));
+	      in_check_memory_usage = 0;
 	    }
 	}
       else
@@ -2604,10 +2611,11 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 				   plus_constant (gen_rtx (PLUS, Pmode,
 							   args_addr, args_so_far),
 						  skip));
-	  if (flag_check_memory_usage)
+	  if (flag_check_memory_usage && ! in_check_memory_usage)
 	    {
 	      rtx target;
 	      
+	      in_check_memory_usage = 1;
 	      target = copy_to_reg (temp);
 	      if (GET_CODE (x) == MEM && AGGREGATE_TYPE_P (type))
 		emit_library_call (chkr_copy_bitmap_libfunc, 1, VOIDmode, 3,
@@ -2618,7 +2626,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 	        emit_library_call (chkr_set_right_libfunc, 1, VOIDmode, 3,
 				   target, ptr_mode,
 			 	   size, TYPE_MODE (sizetype),
-				   GEN_INT (MEMORY_USE_RW), QImode);
+				   GEN_INT (MEMORY_USE_RW),
+				   TYPE_MODE (integer_type_node));
+	      in_check_memory_usage = 0;
 	    }
 
 	  /* TEMP is the address of the block.  Copy the data there.  */
@@ -2813,8 +2823,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 
       emit_move_insn (gen_rtx (MEM, mode, addr), x);
 
-      if (flag_check_memory_usage)
+      if (flag_check_memory_usage && ! in_check_memory_usage)
 	{
+	  in_check_memory_usage = 1;
 	  if (target == 0)
 	    target = get_push_address (GET_MODE_SIZE (mode));
 
@@ -2829,7 +2840,9 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 			       target, ptr_mode,
 			       GEN_INT (GET_MODE_SIZE (mode)),
 			       TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_RW), QImode);
+			       GEN_INT (MEMORY_USE_RW),
+			       TYPE_MODE (integer_type_node));
+	  in_check_memory_usage = 0;
 	}
     }
 
@@ -2954,6 +2967,15 @@ expand_assignment (to, from, want_value, suggest_reg)
 #endif
 	}
 
+      if (TREE_CODE (to) == COMPONENT_REF
+	  && TREE_READONLY (TREE_OPERAND (to, 1)))
+	{
+	  if (offset = 0)
+	    to_rtx = copy_rtx (to_rtx);
+
+	  RTX_UNCHANGING_P (to_rtx) = 1;
+	}
+
       /* Check the access.  */
       if (flag_check_memory_usage && GET_CODE (to_rtx) == MEM)
 	{
@@ -2978,7 +3000,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       to_addr, ptr_mode,
 			       GEN_INT (size), TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_WO), QImode);
+			       GEN_INT (MEMORY_USE_WO),
+			       TYPE_MODE (integer_type_node));
 	}
 
       result = store_field (to_rtx, bitsize, bitpos, mode1, from,
@@ -3169,16 +3192,16 @@ store_expr (exp, target, want_value)
       do_pending_stack_adjust ();
       NO_DEFER_POP;
       jumpifnot (TREE_OPERAND (exp, 0), lab1);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       store_expr (TREE_OPERAND (exp, 1), target, 0);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       emit_queue ();
       emit_jump_insn (gen_jump (lab2));
       emit_barrier ();
       emit_label (lab1);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       store_expr (TREE_OPERAND (exp, 2), target, 0);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       emit_queue ();
       emit_label (lab2);
       OK_DEFER_POP;
@@ -3309,7 +3332,8 @@ store_expr (exp, target, want_value)
         emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			   XEXP (target, 0), ptr_mode, 
 			   expr_size (exp), TYPE_MODE (sizetype),
-			   GEN_INT (MEMORY_USE_WO), QImode);
+			   GEN_INT (MEMORY_USE_WO), 
+			   TYPE_MODE (integer_type_node));
     }
 
   /* If value was not generated in the target, store it there.
@@ -3400,7 +3424,8 @@ store_expr (exp, target, want_value)
 		    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 				       addr, ptr_mode,
 				       size, TYPE_MODE (sizetype),
- 				       GEN_INT (MEMORY_USE_WO), QImode);
+ 				       GEN_INT (MEMORY_USE_WO), 
+				       TYPE_MODE (integer_type_node));
 #ifdef TARGET_MEM_FUNCTIONS
 		  emit_library_call (memset_libfunc, 0, VOIDmode, 3,
 				     addr, ptr_mode,
@@ -3476,7 +3501,7 @@ is_zeros_p (exp)
 	is_zeros_p (TREE_REALPART (exp)) && is_zeros_p (TREE_IMAGPART (exp));
 
     case REAL_CST:
-      return REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst0);
+      return REAL_VALUES_IDENTICAL (TREE_REAL_CST (exp), dconst0);
 
     case CONSTRUCTOR:
       if (TREE_TYPE (exp) && TREE_CODE (TREE_TYPE (exp)) == SET_TYPE)
@@ -3675,7 +3700,7 @@ store_constructor (exp, target, cleared)
 
 	      if (contains_placeholder_p (offset))
 		offset = build (WITH_RECORD_EXPR, sizetype,
-				offset, exp);
+				offset, make_tree (TREE_TYPE (exp), target));
 
 	      offset = size_binop (FLOOR_DIV_EXPR, offset,
 				   size_int (BITS_PER_UNIT));
@@ -4403,9 +4428,14 @@ get_inner_reference (exp, pbitsize, pbitpos, poffset, pmode,
 	      && TREE_INT_CST_HIGH (index) == 0)
 	    *pbitpos += TREE_INT_CST_LOW (index);
 	  else
-	    offset = size_binop (PLUS_EXPR, offset,
-				 size_binop (FLOOR_DIV_EXPR, index,
-					     size_int (BITS_PER_UNIT)));
+	    {
+	      offset = size_binop (PLUS_EXPR, offset,
+				   size_binop (FLOOR_DIV_EXPR, index,
+					       size_int (BITS_PER_UNIT)));
+
+	      if (contains_placeholder_p (offset))
+		offset = build (WITH_RECORD_EXPR, sizetype, offset, exp);
+	    }
 	}
       else if (TREE_CODE (exp) != NON_LVALUE_EXPR
 	       && ! ((TREE_CODE (exp) == NOP_EXPR
@@ -5016,7 +5046,8 @@ expand_expr (exp, target, tmode, modifier)
 			       XEXP (DECL_RTL (exp), 0), ptr_mode,
 			       GEN_INT (int_size_in_bytes (type)),
 			       TYPE_MODE (sizetype),
-			       GEN_INT (memory_usage), QImode);
+			       GEN_INT (memory_usage),
+			       TYPE_MODE (integer_type_node));
 	}
 
       /* ... fall through ...  */
@@ -5471,7 +5502,8 @@ expand_expr (exp, target, tmode, modifier)
 				 op0, ptr_mode,
 				 GEN_INT (int_size_in_bytes (type)),
 				 TYPE_MODE (sizetype),
-				 GEN_INT (memory_usage), QImode);
+				 GEN_INT (memory_usage),
+				 TYPE_MODE (integer_type_node));
 	  }
 
 	temp = gen_rtx (MEM, mode, op0);
@@ -5725,7 +5757,8 @@ expand_expr (exp, target, tmode, modifier)
 				     to, ptr_mode,
 				     GEN_INT (size / BITS_PER_UNIT),
 				     TYPE_MODE (sizetype),
-				     GEN_INT (memory_usage), QImode);
+				     GEN_INT (memory_usage), 
+				     TYPE_MODE (integer_type_node));
 	      }
 	  }
 
@@ -6847,7 +6880,7 @@ expand_expr (exp, target, tmode, modifier)
 	    else
 	      jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    if (binary_op && temp == 0)
 	      /* Just touch the other operand.  */
 	      expand_expr (TREE_OPERAND (binary_op, 1),
@@ -6881,7 +6914,7 @@ expand_expr (exp, target, tmode, modifier)
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    jumpif (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    op1 = op0;
 	  }
@@ -6899,7 +6932,7 @@ expand_expr (exp, target, tmode, modifier)
 	    store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    op1 = op0;
 	  }
@@ -6908,18 +6941,18 @@ expand_expr (exp, target, tmode, modifier)
 	    op1 = gen_label_rtx ();
 	    jumpifnot (TREE_OPERAND (exp, 0), op0);
 
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 1), temp, 0);
 	    else
 	      expand_expr (TREE_OPERAND (exp, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
-	    end_cleanup_deferal ();
+	    end_cleanup_deferral ();
 	    emit_queue ();
 	    emit_jump_insn (gen_jump (op1));
 	    emit_barrier ();
 	    emit_label (op0);
-	    start_cleanup_deferal ();
+	    start_cleanup_deferral ();
 	    if (temp != 0)
 	      store_expr (TREE_OPERAND (exp, 2), temp, 0);
 	    else
@@ -6927,7 +6960,7 @@ expand_expr (exp, target, tmode, modifier)
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	  }
 
-	end_cleanup_deferal ();
+	end_cleanup_deferral ();
 
 	emit_queue ();
 	emit_label (op1);
@@ -8851,7 +8884,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  if (flag_check_memory_usage)
 	    emit_library_call (chkr_check_str_libfunc, 1, VOIDmode, 2,
 			       src_rtx, ptr_mode,
-			       GEN_INT (MEMORY_USE_RO), QImode);
+			       GEN_INT (MEMORY_USE_RO),
+			       TYPE_MODE (integer_type_node));
 
 	  char_rtx = const0_rtx;
 	  char_mode = insn_operand_mode[(int)icode][2];
@@ -9020,7 +9054,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    emit_library_call (chkr_check_addr_libfunc, 1, VOIDmode, 3,
 			       dest_rtx, ptr_mode,
 			       len_rtx, TYPE_MODE (sizetype),
-			       GEN_INT (MEMORY_USE_WO), QImode);
+			       GEN_INT (MEMORY_USE_WO),
+			       TYPE_MODE (integer_type_node));
 
 
 	  /* There could be a void* cast on top of the object.  */
@@ -9594,7 +9629,14 @@ expand_builtin_apply (function, arguments, argsize)
 
   /* Push a new argument block and copy the arguments.  */
   do_pending_stack_adjust ();
-  emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
+
+  /* Save the stack with nonlocal if available */
+#ifdef HAVE_save_stack_nonlocal
+  if (HAVE_save_stack_nonlocal)
+    emit_stack_save (SAVE_NONLOCAL, &old_stack_level, NULL_RTX);
+  else
+#endif
+    emit_stack_save (SAVE_BLOCK, &old_stack_level, NULL_RTX);
 
   /* Push a block of memory onto the stack to store the memory arguments.
      Save the address in a register, and copy the memory arguments.  ??? I
@@ -9720,7 +9762,12 @@ expand_builtin_apply (function, arguments, argsize)
     CALL_INSN_FUNCTION_USAGE (call_insn) = call_fusage;
 
   /* Restore the stack.  */
-  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
+#ifdef HAVE_save_stack_nonlocal
+  if (HAVE_save_stack_nonlocal)
+    emit_stack_restore (SAVE_NONLOCAL, old_stack_level, NULL_RTX);
+  else
+#endif
+    emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 
   /* Return the address of the result block.  */
   return copy_addr_to_reg (XEXP (result, 0));
@@ -9947,7 +9994,9 @@ expand_increment (exp, post, ignore)
 	}
       if (icode != (int) CODE_FOR_nothing && GET_CODE (op0) == MEM)
 	{
-	  rtx addr = force_reg (Pmode, XEXP (op0, 0));
+	  rtx addr = (general_operand (XEXP (op0, 0), mode)
+		      ? force_reg (Pmode, XEXP (op0, 0))
+		      : copy_to_reg (XEXP (op0, 0)));
 	  rtx temp, result;
 
 	  op0 = change_address (op0, VOIDmode, addr);
@@ -10038,6 +10087,7 @@ preexpand_calls (exp)
     case RTL_EXPR:
     case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
+    case TRY_CATCH_EXPR:
       return;
 
     case SAVE_EXPR:
@@ -10242,18 +10292,18 @@ do_jump (exp, if_false_label, if_true_label)
       if (if_false_label == 0)
 	if_false_label = drop_through_label = gen_label_rtx ();
       do_jump (TREE_OPERAND (exp, 0), if_false_label, NULL_RTX);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       break;
 
     case TRUTH_ORIF_EXPR:
       if (if_true_label == 0)
 	if_true_label = drop_through_label = gen_label_rtx ();
       do_jump (TREE_OPERAND (exp, 0), NULL_RTX, if_true_label);
-      start_cleanup_deferal ();
+      start_cleanup_deferral ();
       do_jump (TREE_OPERAND (exp, 1), if_false_label, if_true_label);
-      end_cleanup_deferal ();
+      end_cleanup_deferral ();
       break;
 
     case COMPOUND_EXPR:
@@ -10314,7 +10364,7 @@ do_jump (exp, if_false_label, if_true_label)
 
 	  do_jump (TREE_OPERAND (exp, 0), label1, NULL_RTX);
 
-	  start_cleanup_deferal ();
+	  start_cleanup_deferral ();
 	  /* Now the THEN-expression.  */
 	  do_jump (TREE_OPERAND (exp, 1),
 		   if_false_label ? if_false_label : drop_through_label,
@@ -10327,7 +10377,7 @@ do_jump (exp, if_false_label, if_true_label)
 	  do_jump (TREE_OPERAND (exp, 2),
 		   if_false_label ? if_false_label : drop_through_label,
 		   if_true_label ? if_true_label : drop_through_label);
-	  end_cleanup_deferal ();
+	  end_cleanup_deferral ();
 	}
       break;
 

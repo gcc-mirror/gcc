@@ -748,6 +748,8 @@ store_split_bit_field (op0, bitsize, bitpos, value, align)
 					       ? GET_MODE (value)
 					       : word_mode, value));
     }
+  else if (GET_CODE (value) == ADDRESSOF)
+    value = copy_to_reg (value);
 
   while (bitsdone < bitsize)
     {

@@ -1266,21 +1266,160 @@ else
 fi
 echo "$ac_t""$CPP" 1>&6
 
-for ac_hdr in inttypes.h limits.h stddef.h string.h strings.h stdlib.h time.h unistd.h
+echo $ac_n "checking for ANSI C header files""... $ac_c" 1>&6
+echo "configure:1271: checking for ANSI C header files" >&5
+if eval "test \"`echo '$''{'ac_cv_header_stdc'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1276 "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <float.h>
+EOF
+ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
+{ (eval echo configure:1284: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+ac_err=`grep -v '^ *+' conftest.out`
+if test -z "$ac_err"; then
+  rm -rf conftest*
+  ac_cv_header_stdc=yes
+else
+  echo "$ac_err" >&5
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_cv_header_stdc=no
+fi
+rm -f conftest*
+
+if test $ac_cv_header_stdc = yes; then
+  # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
+cat > conftest.$ac_ext <<EOF
+#line 1301 "configure"
+#include "confdefs.h"
+#include <string.h>
+EOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  egrep "memchr" >/dev/null 2>&1; then
+  :
+else
+  rm -rf conftest*
+  ac_cv_header_stdc=no
+fi
+rm -f conftest*
+
+fi
+
+if test $ac_cv_header_stdc = yes; then
+  # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
+cat > conftest.$ac_ext <<EOF
+#line 1319 "configure"
+#include "confdefs.h"
+#include <stdlib.h>
+EOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  egrep "free" >/dev/null 2>&1; then
+  :
+else
+  rm -rf conftest*
+  ac_cv_header_stdc=no
+fi
+rm -f conftest*
+
+fi
+
+if test $ac_cv_header_stdc = yes; then
+  # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
+if test "$cross_compiling" = yes; then
+  :
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1340 "configure"
+#include "confdefs.h"
+#include <ctype.h>
+#define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
+#define TOUPPER(c) (ISLOWER(c) ? 'A' + ((c) - 'a') : (c))
+#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
+int main () { int i; for (i = 0; i < 256; i++)
+if (XOR (islower (i), ISLOWER (i)) || toupper (i) != TOUPPER (i)) exit(2);
+exit (0); }
+
+EOF
+if { (eval echo configure:1351: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest && (./conftest; exit) 2>/dev/null
+then
+  :
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -fr conftest*
+  ac_cv_header_stdc=no
+fi
+rm -fr conftest*
+fi
+
+fi
+fi
+
+echo "$ac_t""$ac_cv_header_stdc" 1>&6
+if test $ac_cv_header_stdc = yes; then
+  cat >> confdefs.h <<\EOF
+#define STDC_HEADERS 1
+EOF
+
+fi
+
+echo $ac_n "checking whether time.h and sys/time.h may both be included""... $ac_c" 1>&6
+echo "configure:1375: checking whether time.h and sys/time.h may both be included" >&5
+if eval "test \"`echo '$''{'ac_cv_header_time'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1380 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <sys/time.h>
+#include <time.h>
+int main() {
+struct tm *tp;
+; return 0; }
+EOF
+if { (eval echo configure:1389: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ac_cv_header_time=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_cv_header_time=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$ac_cv_header_time" 1>&6
+if test $ac_cv_header_time = yes; then
+  cat >> confdefs.h <<\EOF
+#define TIME_WITH_SYS_TIME 1
+EOF
+
+fi
+
+for ac_hdr in limits.h stddef.h string.h strings.h stdlib.h time.h fcntl.h unistd.h sys/file.h sys/time.h sys/resource.h sys/param.h sys/times.h
 do
 ac_safe=`echo "$ac_hdr" | sed 'y%./+-%__p_%'`
 echo $ac_n "checking for $ac_hdr""... $ac_c" 1>&6
-echo "configure:1274: checking for $ac_hdr" >&5
+echo "configure:1413: checking for $ac_hdr" >&5
 if eval "test \"`echo '$''{'ac_cv_header_$ac_safe'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1279 "configure"
+#line 1418 "configure"
 #include "confdefs.h"
 #include <$ac_hdr>
 EOF
 ac_try="$ac_cpp conftest.$ac_ext >/dev/null 2>conftest.out"
-{ (eval echo configure:1284: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
+{ (eval echo configure:1423: \"$ac_try\") 1>&5; (eval $ac_try) 2>&5; }
 ac_err=`grep -v '^ *+' conftest.out`
 if test -z "$ac_err"; then
   rm -rf conftest*
@@ -1307,247 +1446,51 @@ fi
 done
 
 
-echo $ac_n "checking whether malloc must be declared""... $ac_c" 1>&6
-echo "configure:1312: checking whether malloc must be declared" >&5
-if eval "test \"`echo '$''{'gcc_cv_decl_needed_malloc'+set}'`\" = set"; then
+# Use <inttypes.h> only if it exists,
+# doesn't clash with <sys/types.h>, and declares intmax_t.
+echo $ac_n "checking for inttypes.h""... $ac_c" 1>&6
+echo "configure:1453: checking for inttypes.h" >&5
+if eval "test \"`echo '$''{'gcc_cv_header_inttypes_h'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1317 "configure"
-#include "confdefs.h"
-
-#include <stdio.h>
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-int main() {
-char *(*pfn) = (char *(*)) malloc
-; return 0; }
-EOF
-if { (eval echo configure:1338: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  gcc_cv_decl_needed_malloc=no
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  gcc_cv_decl_needed_malloc=yes
-fi
-rm -f conftest*
-fi
-
-echo "$ac_t""$gcc_cv_decl_needed_malloc" 1>&6
-if test $gcc_cv_decl_needed_malloc = yes; then
-  gcc_tr_decl=NEED_DECLARATION_`echo malloc | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $gcc_tr_decl 1
-EOF
-
-fi
-
-echo $ac_n "checking whether realloc must be declared""... $ac_c" 1>&6
-echo "configure:1360: checking whether realloc must be declared" >&5
-if eval "test \"`echo '$''{'gcc_cv_decl_needed_realloc'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 1365 "configure"
-#include "confdefs.h"
-
-#include <stdio.h>
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-int main() {
-char *(*pfn) = (char *(*)) realloc
-; return 0; }
-EOF
-if { (eval echo configure:1386: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  gcc_cv_decl_needed_realloc=no
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  gcc_cv_decl_needed_realloc=yes
-fi
-rm -f conftest*
-fi
-
-echo "$ac_t""$gcc_cv_decl_needed_realloc" 1>&6
-if test $gcc_cv_decl_needed_realloc = yes; then
-  gcc_tr_decl=NEED_DECLARATION_`echo realloc | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $gcc_tr_decl 1
-EOF
-
-fi
-
-echo $ac_n "checking whether calloc must be declared""... $ac_c" 1>&6
-echo "configure:1408: checking whether calloc must be declared" >&5
-if eval "test \"`echo '$''{'gcc_cv_decl_needed_calloc'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 1413 "configure"
-#include "confdefs.h"
-
-#include <stdio.h>
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-int main() {
-char *(*pfn) = (char *(*)) calloc
-; return 0; }
-EOF
-if { (eval echo configure:1434: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  gcc_cv_decl_needed_calloc=no
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  gcc_cv_decl_needed_calloc=yes
-fi
-rm -f conftest*
-fi
-
-echo "$ac_t""$gcc_cv_decl_needed_calloc" 1>&6
-if test $gcc_cv_decl_needed_calloc = yes; then
-  gcc_tr_decl=NEED_DECLARATION_`echo calloc | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $gcc_tr_decl 1
-EOF
-
-fi
-
-echo $ac_n "checking whether free must be declared""... $ac_c" 1>&6
-echo "configure:1456: checking whether free must be declared" >&5
-if eval "test \"`echo '$''{'gcc_cv_decl_needed_free'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 1461 "configure"
-#include "confdefs.h"
-
-#include <stdio.h>
-#ifdef HAVE_STRING_H
-#include <string.h>
-#else
-#ifdef HAVE_STRINGS_H
-#include <strings.h>
-#endif
-#endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-int main() {
-char *(*pfn) = (char *(*)) free
-; return 0; }
-EOF
-if { (eval echo configure:1482: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
-  rm -rf conftest*
-  gcc_cv_decl_needed_free=no
-else
-  echo "configure: failed program was:" >&5
-  cat conftest.$ac_ext >&5
-  rm -rf conftest*
-  gcc_cv_decl_needed_free=yes
-fi
-rm -f conftest*
-fi
-
-echo "$ac_t""$gcc_cv_decl_needed_free" 1>&6
-if test $gcc_cv_decl_needed_free = yes; then
-  gcc_tr_decl=NEED_DECLARATION_`echo free | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
-  cat >> confdefs.h <<EOF
-#define $gcc_tr_decl 1
-EOF
-
-fi
-
-
-echo $ac_n "checking for sys_siglist declaration in signal.h or unistd.h""... $ac_c" 1>&6
-echo "configure:1505: checking for sys_siglist declaration in signal.h or unistd.h" >&5
-if eval "test \"`echo '$''{'ac_cv_decl_sys_siglist'+set}'`\" = set"; then
-  echo $ac_n "(cached) $ac_c" 1>&6
-else
-  cat > conftest.$ac_ext <<EOF
-#line 1510 "configure"
+#line 1458 "configure"
 #include "confdefs.h"
 #include <sys/types.h>
-#include <signal.h>
-/* NetBSD declares sys_siglist in unistd.h.  */
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+#include <inttypes.h>
 int main() {
-char *msg = *(sys_siglist + 1);
+intmax_t i = -1;
 ; return 0; }
 EOF
-if { (eval echo configure:1522: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+if { (eval echo configure:1466: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
   rm -rf conftest*
-  ac_cv_decl_sys_siglist=yes
+  gcc_cv_header_inttypes_h=yes
 else
   echo "configure: failed program was:" >&5
   cat conftest.$ac_ext >&5
   rm -rf conftest*
-  ac_cv_decl_sys_siglist=no
+  gcc_cv_header_inttypes_h=no
 fi
 rm -f conftest*
 fi
 
-echo "$ac_t""$ac_cv_decl_sys_siglist" 1>&6
-if test $ac_cv_decl_sys_siglist = yes; then
+echo "$ac_t""$gcc_cv_header_inttypes_h" 1>&6
+if test $gcc_cv_header_inttypes_h = yes; then
   cat >> confdefs.h <<\EOF
-#define SYS_SIGLIST_DECLARED 1
+#define HAVE_INTTYPES_H 1
 EOF
 
 fi
-
 
 for ac_func in strerror
 do
 echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
-echo "configure:1546: checking for $ac_func" >&5
+echo "configure:1489: checking for $ac_func" >&5
 if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
   cat > conftest.$ac_ext <<EOF
-#line 1551 "configure"
+#line 1494 "configure"
 #include "confdefs.h"
 /* System header to define __stub macros and hopefully few prototypes,
     which can conflict with char $ac_func(); below.  */
@@ -1570,7 +1513,7 @@ $ac_func();
 
 ; return 0; }
 EOF
-if { (eval echo configure:1574: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+if { (eval echo configure:1517: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
   rm -rf conftest*
   eval "ac_cv_func_$ac_func=yes"
 else
@@ -1593,6 +1536,919 @@ else
   echo "$ac_t""no" 1>&6
 fi
 done
+
+for ac_func in putenv
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1544: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1549 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1572: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in popen
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1599: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1604 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1627: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in vprintf
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1654: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1659 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1682: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in bcopy
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1709: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1714 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1737: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in bzero
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1764: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1769 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1792: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in bcmp
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1819: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1824 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1847: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in index
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1874: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1879 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1902: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in rindex
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1929: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1934 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:1957: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+for ac_func in kill
+do
+echo $ac_n "checking for $ac_func""... $ac_c" 1>&6
+echo "configure:1984: checking for $ac_func" >&5
+if eval "test \"`echo '$''{'ac_cv_func_$ac_func'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 1989 "configure"
+#include "confdefs.h"
+/* System header to define __stub macros and hopefully few prototypes,
+    which can conflict with char $ac_func(); below.  */
+#include <assert.h>
+/* Override any gcc2 internal prototype to avoid an error.  */
+/* We use char because int might match the return type of a gcc2
+    builtin and then its argument prototype would still apply.  */
+char $ac_func();
+
+int main() {
+
+/* The GNU C library defines this for functions which it implements
+    to always fail with ENOSYS.  Some functions are actually named
+    something starting with __ and the normal name is an alias.  */
+#if defined (__stub_$ac_func) || defined (__stub___$ac_func)
+choke me
+#else
+$ac_func();
+#endif
+
+; return 0; }
+EOF
+if { (eval echo configure:2012: \"$ac_link\") 1>&5; (eval $ac_link) 2>&5; } && test -s conftest; then
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=yes"
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  eval "ac_cv_func_$ac_func=no"
+fi
+rm -f conftest*
+fi
+
+if eval "test \"`echo '$ac_cv_func_'$ac_func`\" = yes"; then
+  echo "$ac_t""yes" 1>&6
+    ac_tr_func=HAVE_`echo $ac_func | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $ac_tr_func 1
+EOF
+ 
+else
+  echo "$ac_t""no" 1>&6
+fi
+done
+
+
+echo $ac_n "checking whether malloc must be declared""... $ac_c" 1>&6
+echo "configure:2038: checking whether malloc must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_malloc'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2043 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) malloc
+; return 0; }
+EOF
+if { (eval echo configure:2070: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_malloc=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_malloc=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_malloc" 1>&6
+if test $gcc_cv_decl_needed_malloc = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo malloc | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+echo $ac_n "checking whether realloc must be declared""... $ac_c" 1>&6
+echo "configure:2092: checking whether realloc must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_realloc'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2097 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) realloc
+; return 0; }
+EOF
+if { (eval echo configure:2124: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_realloc=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_realloc=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_realloc" 1>&6
+if test $gcc_cv_decl_needed_realloc = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo realloc | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+echo $ac_n "checking whether calloc must be declared""... $ac_c" 1>&6
+echo "configure:2146: checking whether calloc must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_calloc'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2151 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) calloc
+; return 0; }
+EOF
+if { (eval echo configure:2178: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_calloc=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_calloc=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_calloc" 1>&6
+if test $gcc_cv_decl_needed_calloc = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo calloc | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+echo $ac_n "checking whether free must be declared""... $ac_c" 1>&6
+echo "configure:2200: checking whether free must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_free'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2205 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) free
+; return 0; }
+EOF
+if { (eval echo configure:2232: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_free=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_free=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_free" 1>&6
+if test $gcc_cv_decl_needed_free = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo free | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+echo $ac_n "checking whether index must be declared""... $ac_c" 1>&6
+echo "configure:2254: checking whether index must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_index'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2259 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) index
+; return 0; }
+EOF
+if { (eval echo configure:2286: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_index=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_index=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_index" 1>&6
+if test $gcc_cv_decl_needed_index = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo index | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+echo $ac_n "checking whether rindex must be declared""... $ac_c" 1>&6
+echo "configure:2308: checking whether rindex must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_rindex'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2313 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) rindex
+; return 0; }
+EOF
+if { (eval echo configure:2340: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_rindex=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_rindex=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_rindex" 1>&6
+if test $gcc_cv_decl_needed_rindex = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo rindex | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+echo $ac_n "checking whether getenv must be declared""... $ac_c" 1>&6
+echo "configure:2362: checking whether getenv must be declared" >&5
+if eval "test \"`echo '$''{'gcc_cv_decl_needed_getenv'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2367 "configure"
+#include "confdefs.h"
+
+#include <stdio.h>
+#ifdef HAVE_STRING_H
+#include <string.h>
+#else
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif
+#endif
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef HAVE_RINDEX
+#define rindex strrchr
+#endif
+#ifndef HAVE_INDEX
+#define index strchr
+#endif
+int main() {
+char *(*pfn) = (char *(*)) getenv
+; return 0; }
+EOF
+if { (eval echo configure:2394: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  gcc_cv_decl_needed_getenv=no
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  gcc_cv_decl_needed_getenv=yes
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$gcc_cv_decl_needed_getenv" 1>&6
+if test $gcc_cv_decl_needed_getenv = yes; then
+  gcc_tr_decl=NEED_DECLARATION_`echo getenv | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'`
+  cat >> confdefs.h <<EOF
+#define $gcc_tr_decl 1
+EOF
+
+fi
+
+
+echo $ac_n "checking for sys_siglist declaration in signal.h or unistd.h""... $ac_c" 1>&6
+echo "configure:2417: checking for sys_siglist declaration in signal.h or unistd.h" >&5
+if eval "test \"`echo '$''{'ac_cv_decl_sys_siglist'+set}'`\" = set"; then
+  echo $ac_n "(cached) $ac_c" 1>&6
+else
+  cat > conftest.$ac_ext <<EOF
+#line 2422 "configure"
+#include "confdefs.h"
+#include <sys/types.h>
+#include <signal.h>
+/* NetBSD declares sys_siglist in unistd.h.  */
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+int main() {
+char *msg = *(sys_siglist + 1);
+; return 0; }
+EOF
+if { (eval echo configure:2434: \"$ac_compile\") 1>&5; (eval $ac_compile) 2>&5; }; then
+  rm -rf conftest*
+  ac_cv_decl_sys_siglist=yes
+else
+  echo "configure: failed program was:" >&5
+  cat conftest.$ac_ext >&5
+  rm -rf conftest*
+  ac_cv_decl_sys_siglist=no
+fi
+rm -f conftest*
+fi
+
+echo "$ac_t""$ac_cv_decl_sys_siglist" 1>&6
+if test $ac_cv_decl_sys_siglist = yes; then
+  cat >> confdefs.h <<\EOF
+#define SYS_SIGLIST_DECLARED 1
+EOF
+
+fi
 
 
 # File extensions
@@ -1846,9 +2702,8 @@ for machine in $build $host $target; do
 		tmake_file="t-netbsd arm/t-netbsd"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
-		use_collect2=yes
 		;;
-	arm-*-linux-gnuaout*)		# ARM Linux
+	arm-*-linux-gnuaout*)		# ARM GNU/Linux
 		cpu_type=arm
 		xm_file=arm/xm-linux.h
 		xmake_file=x-linux
@@ -2183,7 +3038,6 @@ for machine in $build $host $target; do
 		;;
 	i[3456]86-*-freebsdelf*)
 		tm_file="i386/i386.h i386/att.h linux.h i386/freebsd-elf.h i386/perform.h"
-		xm_file=i386/xm-freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
@@ -2193,14 +3047,12 @@ for machine in $build $host $target; do
 		;;
 	i[3456]86-*-freebsd*)
 		tm_file=i386/freebsd.h
-		xm_file=i386/xm-freebsd.h
 		# On FreeBSD, the headers are already ok, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=i386/t-freebsd
 		;;
 	i[3456]86-*-netbsd*)
 		tm_file=i386/netbsd.h
-		xm_file=i386/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2232,44 +3084,44 @@ for machine in $build $host $target; do
 		install_headers_dir=install-headers-cpio
 		broken_install=yes
 		;;
-	i[3456]86-*-linux-gnuoldld*)	# Intel 80386's running Linux
+	i[3456]86-*-linux-gnuoldld*)	# Intel 80386's running GNU/Linux
 		xm_file=i386/xm-linux.h # with a.out format using pre BFD linkers
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-oldld.h
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	i[3456]86-*-linux-gnuaout*)		# Intel 80386's running Linux
+	i[3456]86-*-linux-gnuaout*)	# Intel 80386's running GNU/Linux
 		xm_file=i386/xm-linux.h		# with a.out format
 		xmake_file=x-linux-aout
 		tmake_file="t-linux-aout i386/t-crtstuff"
 		tm_file=i386/linux-aout.h
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in #The headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
 		;;
 	i[3456]86-*-linux-gnulibc1)
-		xm_file=i386/xm-linux.h	# Intel 80386's running Linux
+		xm_file=i386/xm-linux.h	# Intel 80386's running GNU/Linux
 		xmake_file=x-linux	# with ELF format using the
-		tm_file=i386/linux.h	# Linux C library 5
+		tm_file=i386/linux.h	# GNU/Linux C library 5
 		tmake_file="t-linux t-linux-gnulibc1 i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
  		if [ x$enable_threads = xyes ]; then
  			thread_file='single'
  		fi
 		;;
-	i[3456]86-*-linux-gnu*)		# Intel 80386's running Linux
+	i[3456]86-*-linux-gnu*)	# Intel 80386's running GNU/Linux
 		xm_file=i386/xm-linux.h # with ELF format using glibc 2
-		xmake_file=x-linux	# aka Linux C library 6
+		xmake_file=x-linux	# aka GNU/Linux C library 6
 		tm_file=i386/linux.h
 		tmake_file="t-linux i386/t-crtstuff"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
  		if [ x$enable_threads = xyes ]; then
@@ -2482,7 +3334,7 @@ for machine in $build $host $target; do
               ;;
 	i860-alliant-*)		# Alliant FX/2800
 		tm_file="${tm_file} svr4.h i860/sysv4.h i860/fx2800.h"
-		xm_file="${xm_file} i860/xm-fx2800.h"
+		xm_file="${xm_file}"
 		xmake_file=i860/x-fx2800
 		tmake_file=i860/t-fx2800
 		extra_parts="crtbegin.o crtend.o"
@@ -2689,7 +3541,7 @@ for machine in $build $host $target; do
 		;;
 	m68k-ncr-sysv*)			# NCR Tower 32 SVR3
 		tm_file=m68k/tower-as.h
-		xm_file=m68k/xm-tower.h
+		xm_file="${xm_file} xm-svr3.h"
 		xmake_file=m68k/x-tower
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
@@ -2841,7 +3693,6 @@ for machine in $build $host $target; do
 		else
 			tm_file=m68k/sun3.h
 		fi
-		xm_file=m68k/xm-sun3.h
 		use_collect2=yes
 		extra_headers=math-68881.h
 		;;
@@ -2874,7 +3725,6 @@ for machine in $build $host $target; do
 		;;
 	m68k-*-netbsd*)
 		tm_file=m68k/netbsd.h
-		xm_file=m68k/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -2892,32 +3742,32 @@ for machine in $build $host $target; do
 		extra_parts="crtbegin.o crtend.o"
 		extra_headers=math-68881.h
 		;;
-	m68k-*-linux-gnuaout*)		# Motorola m68k's running Linux
+	m68k-*-linux-gnuaout*)		# Motorola m68k's running GNU/Linux
 		xm_file=m68k/xm-linux.h	# with a.out format
 		xmake_file=x-linux
 		tm_file=m68k/linux-aout.h
 		tmake_file="t-linux-aout m68k/t-linux-aout"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		;;
-	m68k-*-linux-gnulibc1)		# Motorola m68k's running Linux
+	m68k-*-linux-gnulibc1)		# Motorola m68k's running GNU/Linux
 		xm_file=m68k/xm-linux.h	# with ELF format using the
-		xmake_file=x-linux	# Linux C library 5
+		xmake_file=x-linux	# GNU/Linux C library 5
 		tm_file=m68k/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		;;
-	m68k-*-linux-gnu*)			# Motorola m68k's running Linux
+	m68k-*-linux-gnu*)		# Motorola m68k's running GNU/Linux
 		xm_file=m68k/xm-linux.h	# with ELF format using glibc 2
-		xmake_file=x-linux	# aka the Linux C library 6.
+		xmake_file=x-linux	# aka the GNU/Linux C library 6.
 		tm_file=m68k/linux.h
 		tmake_file="t-linux m68k/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		extra_headers=math-68881.h
 		gnu_ld=yes
 		if [ x$enable_threads = xyes ]; then
@@ -3181,7 +4031,6 @@ for machine in $build $host $target; do
 	      ;;
 	mips-dec-netbsd*)                  # Decstation running NetBSD
 		tm_file=mips/netbsd.h
-		xm_file=mips/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -3525,7 +4374,6 @@ for machine in $build $host $target; do
 		;;
 	ns32k-pc532-netbsd*)
 		tm_file=ns32k/netbsd.h
-		xm_file=ns32k/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -3755,7 +4603,6 @@ for machine in $build $host $target; do
 		;;
 	sparc-*-netbsd*)
 		tm_file=sparc/netbsd.h
-		xm_file=sparc/xm-netbsd.h
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -3764,35 +4611,37 @@ for machine in $build $host $target; do
 		tm_file=sparc/bsd.h
 		;;
 	sparc-*-elf*)
-		tm_file="sparc/sol2.h libgloss.h"
-		tmake_file=sparc/t-sparcbare
-		float_format=i128
+		tm_file=sparc/elf.h
+		tmake_file=sparc/t-elf
+		extra_parts="crti.o crtn.o crtbegin.o crtend.o"
+		#float_format=i128
+		float_format=i64
 		;;
-	sparc-*-linux-gnuaout*)		# Sparc's running Linux, a.out
+	sparc-*-linux-gnuaout*)		# Sparc's running GNU/Linux, a.out
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		tm_file=sparc/linux-aout.h
 		xmake_file=x-linux
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnulibc1*)	# Sparc's running Linux, libc5
+	sparc-*-linux-gnulibc1*)	# Sparc's running GNU/Linux, libc5
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux t-linux-gnulibc1 sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
 		;;
-	sparc-*-linux-gnu*)		# Sparc's running Linux, libc6
+	sparc-*-linux-gnu*)		# Sparc's running GNU/Linux, libc6
 		xm_file="sparc/xm-sparc.h sparc/xm-linux.h"
 		xmake_file=x-linux
 		tm_file=sparc/linux.h
 		tmake_file="t-linux sparc/t-linux"
 		extra_parts="crtbegin.o crtbeginS.o crtend.o crtendS.o"
-		fixincludes=Makefile.in #On Linux, the headers are ok already.
+		fixincludes=Makefile.in # The headers are ok already.
 		broken_install=yes
 		gnu_ld=yes
  		if [ x$enable_threads = xyes ]; then
@@ -3878,12 +4727,12 @@ for machine in $build $host $target; do
 		tm_file=sparc/sp64-elf.h
 		extra_parts="crtbegin.o crtend.o"
 		;;
-	sparc64-*-linux*)		# 64-bit Sparc's running Linux
+	sparc64-*-linux*)		# 64-bit Sparc's running GNU/Linux
 		tmake_file=sparc/t-sp64
 		xm_file="sparc/xm-sp64.h sparc/xm-linux.h"
 		tm_file=sparc/linux64.h
 		xmake_file=x-linux
-		fixincludes=Makefile.in	# On Linux, the headers are ok already.
+		fixincludes=Makefile.in	# The headers are ok already.
 		gnu_ld=yes
 		;;
 # This hasn't been upgraded to GCC 2.
@@ -3913,12 +4762,11 @@ for machine in $build $host $target; do
 		;;
 	vax-*-sysv*)			# vaxen running system V
 		tm_file="${tm_file} vax/vaxv.h"
-		xm_file="${tm_file} vax/xm-vaxv.h"
+		xm_file="${xm_file} vax/xm-vaxv.h"
 		float_format=vax
 		;;
 	vax-*-netbsd*)
 		tm_file="${tm_file} netbsd.h vax/netbsd.h"
-		xm_file="${xm_file} xm-netbsd.h"
 		# On NetBSD, the headers are already okay, except for math.h.
 		fixincludes=fixinc.math
 		tmake_file=t-netbsd
@@ -4019,6 +4867,37 @@ for machine in $build $host $target; do
 			fi
 		fi
 		;;
+	arm*-*-*)
+		case "x$with_cpu" in
+			x)
+				# The most generic
+				target_cpu_default2="TARGET_CPU_generic"
+				;;
+
+			# Distinguish cores, and major variants
+			# arm7m doesn't exist, but D & I don't affect code
+			xarm23678 | xarm250 | xarm67010 \
+			| xarm7m | xarm7dm | xarm7dmi | xarm7tdmi \
+			| xarm7100 | xarm7500 | xarm7500fe | xarm810 \
+			| xstrongarm | xstrongarm110)
+				target_cpu_default2="TARGET_CPU_$with_cpu"
+				;;
+
+			xyes | xno)
+				echo "--with-cpu must be passed a value" 1>&2
+				exit 1
+				;;
+
+			*)
+				if [ x$pass2done = xyes ]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
+				;;
+		esac
+		;;
+
 	mips*-*-ecoff* | mips*-*-elf*)
 		if [ x$gas = xyes ]
 		then
@@ -4054,8 +4933,11 @@ for machine in $build $host $target; do
 				;;
 
 			*)
-				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
-				exit 1
+				if [ x$pass2done = xyes ]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
 				;;
 		esac
 		;;
@@ -4064,12 +4946,15 @@ for machine in $build $host $target; do
 			.)
 				target_cpu_default2=TARGET_CPU_"`echo $machine | sed 's/-.*$//'`"
 				;;
-			.supersparc | .ultrasparc | .v7 | .v8)
+			.supersparc | .ultrasparc | .v7 | .v8 | .v9)
 				target_cpu_default2="TARGET_CPU_$with_cpu"
 				;;
 			*)
-				echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
-				exit 1
+				if [ x$pass2done = xyes ]
+				then
+					echo "Unknown cpu used with --with-cpu=$with_cpu" 1>&2
+					exit 1
+				fi
 				;;
 		esac
 		;;
@@ -4625,7 +5510,7 @@ EOF
 # Ultrix sh set writes to stderr and can't be redirected directly,
 # and sets the high bit in the cache file unless we assign to the vars.
 (set) 2>&1 |
-  case `(ac_space=' '; set) 2>&1` in
+  case `(ac_space=' '; set | grep ac_space) 2>&1` in
   *ac_space=\ *)
     # `set' does not quote correctly, so add quotes (double-quote substitution
     # turns \\\\ into \\, and sed turns \\ into \).

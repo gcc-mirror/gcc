@@ -29,7 +29,7 @@ Boston, MA 02111-1307, USA.  */
 #define LINK_SPEC "-stack 5000000,5000000 -noinhibit-exec %{g}"
 
 #undef CPP_SPEC
-#define CPP_SPEC "-lang-c-c++-comments"
+#define CPP_SPEC ""
 
 #undef STANDARD_EXEC_PREFIX
 #define STANDARD_EXEC_PREFIX ""

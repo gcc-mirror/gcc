@@ -335,7 +335,7 @@ initialize_for_inline (fndecl, min_labelno, max_labelno, max_reg, copy)
      the value of current_function_outgoing_args_size,
      the original argument vector,
      the original DECL_INITIAL,
-     and pointers to the table of psuedo regs, pointer flags, and alignment. */
+     and pointers to the table of pseudo regs, pointer flags, and alignment. */
 
   return gen_inline_header_rtx (NULL_RTX, NULL_RTX, min_labelno, max_labelno,
 				max_parm_reg, max_reg,

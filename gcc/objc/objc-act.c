@@ -48,7 +48,8 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "except.h"
 #include "function.h"
-
+#include <string.h>
+#include "output.h"
 
 /* This is the default way of generating a method name.  */
 /* I am not sure it is really correct.
@@ -191,6 +192,15 @@ static tree synth_id_with_class_suffix		PROTO((char *, tree));
 /* From expr.c */
 extern int apply_args_register_offset           PROTO((int));
 
+static void generate_static_references		PROTO((void));
+static int check_methods_accessible		PROTO((tree, tree,
+						       int));
+static void encode_aggregate_within		PROTO((tree, int, int,
+					               char, char));
+
+/* We handle printing method names ourselves for ObjC */
+extern char *(*decl_printable_name) ();
+
 /* Misc. bookkeeping */
 
 typedef struct hashed_entry 	*hash;
@@ -226,6 +236,8 @@ enum string_section
 };
 
 static tree add_objc_string			PROTO((tree,
+						       enum string_section));
+static tree get_objc_string_decl		PROTO((tree,
 						       enum string_section));
 static tree build_objc_string_decl		PROTO((tree,
 						       enum string_section));
@@ -502,6 +514,75 @@ int flag_warn_protocol = 1;
 
 static int generating_instance_variables = 0;
 
+/* Tells the compiler that this is a special run.  Do not perform
+   any compiling, instead we are to test some platform dependent
+   features and output a C header file with appropriate definitions. */
+
+static int print_struct_values = 0;
+
+/* Some platforms pass small structures through registers versus through
+   an invisible pointer.  Determine at what size structure is the 
+   transition point between the two possibilities. */
+
+void
+generate_struct_by_value_array ()
+{
+  tree type;
+  tree field_decl, field_decl_chain;
+  int i, j;
+  int aggregate_in_mem[32];
+  int found = 0;
+
+  /* Presumbaly no platform passes 32 byte structures in a register. */
+  for (i = 1; i < 32; i++)
+    {
+      char buffer[5];
+
+      /* Create an unnamed struct that has `i' character components */
+      type = start_struct (RECORD_TYPE, NULL_TREE);
+
+      strcpy (buffer, "c1");
+      field_decl = create_builtin_decl (FIELD_DECL,
+					char_type_node,
+					buffer);
+      field_decl_chain = field_decl;
+
+      for (j = 1; j < i; j++)
+	{
+	  sprintf (buffer, "c%d", j + 1);
+	  field_decl = create_builtin_decl (FIELD_DECL,
+					    char_type_node,
+					    buffer);
+	  chainon (field_decl_chain, field_decl);
+	}
+      finish_struct (type, field_decl_chain, NULL_TREE);
+ 
+      aggregate_in_mem[i] = aggregate_value_p (type);
+      if (!aggregate_in_mem[i])
+	found = 1;
+    }
+ 
+  /* We found some structures that are returned in registers instead of memory
+     so output the necessary data. */
+  if (found)
+    {
+      for (i = 31; i >= 0;  i--)
+	if (!aggregate_in_mem[i])
+	  break;
+      printf ("#define OBJC_MAX_STRUCT_BY_VALUE %d\n\n", i);
+ 
+      /* The first member of the structure is always 0 because we don't handle
+	 structures with 0 members */
+      printf ("static int struct_forward_array[] = {\n  0");
+ 
+      for (j = 1; j <= i; j++)
+	printf (", %d", aggregate_in_mem[j]);
+      printf ("\n};\n");
+    }
+ 
+  exit (0);
+}
+
 void
 lang_init ()
 {
@@ -550,6 +631,9 @@ lang_init ()
 
   if (doing_objc_thang)
     init_objc ();
+
+  if (print_struct_values)
+    generate_struct_by_value_array ();
 }
 
 static void
@@ -603,6 +687,8 @@ lang_decode_option (p)
     flag_next_runtime = 1;
   else if (!strcmp (p, "-fnext-runtime"))
     flag_next_runtime = 1;
+  else if (!strcmp (p, "-print-objc-runtime-info"))
+    print_struct_values = 1;
   else
     return c_decode_option (p);
 
@@ -1743,7 +1829,7 @@ get_objc_string_decl (ident, section)
 /* Output references to all statically allocated objects.  Return the DECL
    for the array built.  */
 
-static tree
+static void
 generate_static_references ()
 {
   tree decls = NULL_TREE, ident, decl_spec, expr_decl, expr = NULL_TREE;
@@ -7863,6 +7949,71 @@ dump_interface (fp, chain)
   fprintf (fp, "\n@end");
 }
 
+/* Demangle function for Objective-C */
+static const char *
+objc_demangle (mangled)
+     const char *mangled;
+{
+  char *demangled, *cp;
+
+  if (mangled[0] == '_' &&
+      (mangled[1] == 'i' || mangled[1] == 'c') &&
+      mangled[2] == '_')
+    {
+      cp = demangled = xmalloc(strlen(mangled) + 2);
+      if (mangled[1] == 'i')
+	*cp++ = '-';            /* for instance method */
+      else
+	*cp++ = '+';            /* for class method */
+      *cp++ = '[';              /* opening left brace */
+      strcpy(cp, mangled+3);    /* tack on the rest of the mangled name */
+      while (*cp && *cp == '_')
+	cp++;                   /* skip any initial underbars in class name */
+      cp = strchr(cp, '_');     /* find first non-initial underbar */
+      if (cp == NULL)
+	{
+	  free(demangled);      /* not mangled name */
+	  return mangled;
+	}
+      if (cp[1] == '_')  /* easy case: no category name */
+	{
+	  *cp++ = ' ';            /* replace two '_' with one ' ' */
+	  strcpy(cp, mangled + (cp - demangled) + 2);
+	}
+      else
+	{
+	  *cp++ = '(';            /* less easy case: category name */
+	  cp = strchr(cp, '_');
+	  if (cp == 0)
+	    {
+	      free(demangled);    /* not mangled name */
+	      return mangled;
+	    }
+	  *cp++ = ')';
+	  *cp++ = ' ';            /* overwriting 1st char of method name... */
+	  strcpy(cp, mangled + (cp - demangled)); /* get it back */
+	}
+      while (*cp && *cp == '_')
+	cp++;                   /* skip any initial underbars in method name */
+      for (; *cp; cp++)
+	if (*cp == '_')
+	  *cp = ':';            /* replace remaining '_' with ':' */
+      *cp++ = ']';              /* closing right brace */
+      *cp++ = 0;                /* string terminator */
+      return demangled;
+    }
+  else
+    return mangled;             /* not an objc mangled name */
+}
+
+static const char *
+objc_printable_name (decl, kind)
+     tree decl;
+     char **kind;
+{
+  return objc_demangle (IDENTIFIER_POINTER (DECL_NAME (decl)));
+}
+
 static void
 init_objc ()
 {
@@ -7898,6 +8049,9 @@ init_objc ()
   errbuf = (char *)xmalloc (BUFSIZE);
   hash_init ();
   synth_module_prologue ();
+
+  /* Change the default error function */
+  decl_printable_name = (char* (*)()) objc_printable_name;
 }
 
 static void
@@ -7917,7 +8071,7 @@ finish_objc ()
 #endif
 
   /* Process the static instances here because initialization of objc_symtab
-     dependens on them. */
+     depends on them. */
   if (objc_static_instances)
     generate_static_references ();
 

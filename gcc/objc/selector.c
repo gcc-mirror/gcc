@@ -196,7 +196,7 @@ sel_get_typed_uid (const char *name, const char *types)
       return 0;
     }
 
-  for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+  for (l = (struct objc_list*)sarray_get_safe (__objc_selector_array, i);
        l; l = l->tail)
     {
       SEL s = (SEL)l->head;
@@ -225,7 +225,7 @@ sel_get_any_typed_uid (const char *name)
 {
   struct objc_list *l;
   sidx i;
-  SEL s;
+  SEL s = NULL;
 
   objc_mutex_lock(__objc_runtime_mutex);
 
@@ -236,7 +236,7 @@ sel_get_any_typed_uid (const char *name)
       return 0;
     }
 
-  for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+  for (l = (struct objc_list*)sarray_get_safe (__objc_selector_array, i);
        l; l = l->tail)
     {
       s = (SEL) l->head;
@@ -267,7 +267,7 @@ sel_get_any_uid (const char *name)
       return 0;
     }
 
-  l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+  l = (struct objc_list*)sarray_get_safe (__objc_selector_array, i);
   objc_mutex_unlock(__objc_runtime_mutex);
 
   if (l == 0)
@@ -293,7 +293,7 @@ sel_get_name (SEL selector)
   objc_mutex_lock(__objc_runtime_mutex);
   if ((soffset_decode((sidx)selector->sel_id) > 0)
       && (soffset_decode((sidx)selector->sel_id) <= __objc_selector_max_index))
-    ret = sarray_get (__objc_selector_names, (sidx) selector->sel_id);
+    ret = sarray_get_safe (__objc_selector_names, (sidx) selector->sel_id);
   else
     ret = 0;
   objc_mutex_unlock(__objc_runtime_mutex);
@@ -338,7 +338,7 @@ __sel_register_typed_name (const char *name, const char *types,
   i = (sidx) hash_value_for_key (__objc_selector_hash, name);
   if (soffset_decode (i) != 0)
     {
-      for (l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+      for (l = (struct objc_list*)sarray_get_safe (__objc_selector_array, i);
 	   l; l = l->tail)
 	{
 	  SEL s = (SEL)l->head;
@@ -379,7 +379,7 @@ __sel_register_typed_name (const char *name, const char *types,
 	j->sel_types = (char *) objc_malloc(strlen(types)+1);
 	strcpy((char *)j->sel_types, types);
       }
-      l = (struct objc_list*)sarray_get (__objc_selector_array, i);
+      l = (struct objc_list*)sarray_get_safe (__objc_selector_array, i);
     }
   else
     {

@@ -636,7 +636,7 @@ package.
    * acct   (SrcCD)
 
      acct is a system accounting package.  It includes the programs `ac'
-     (summariize login accounting), `accton' (turn accounting on or off),
+     (summarize login accounting), `accton' (turn accounting on or off),
      `last' (show who has logged in recently), `lastcomm' (show which
      commands have been used), `sa' (summarize process accounting),
      `dump-utmp' (print a `utmp' file in human-readable format), &
@@ -1601,7 +1601,7 @@ package.
      The Midnight Commander is a user friendly & colorful Unix file manager &
      shell, useful to novice & guru alike.  It has a built-in virtual file
      system that manipulates files inside tar files or files on remote
-     machines using the FTP protocol.  This mechanism is extendable with
+     machines using the FTP protocol.  This mechanism is extensible with
      external Unix programs.
 
    * Miscellaneous Files Distribution   (SrcCD)

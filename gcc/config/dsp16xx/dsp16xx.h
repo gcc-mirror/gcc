@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  AT&T DSP1600.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -440,7 +440,7 @@ extern int target_flags;
 /* 1 for registers that have pervasive standard uses
    and are not available for the register allocator.
 
-   The registers are layed out as follows:
+   The registers are laid out as follows:
 
    {a0,a0l,a1,a1l,x,y,yl,p,pl} - Data Arithmetic Unit
    {r0,r1,r2,r3,j,k,ybase} - Y Space Address Arithmetic Unit
@@ -1652,7 +1652,7 @@ const_section ()                                                   \
 /* This is how to output an assembler line defining a `float' constant.  */
 #define ASM_OUTPUT_FLOAT(FILE,VALUE)  asm_output_float (FILE, VALUE)
 
-/* This is how to output and assembler line defininf a 'float' constant of
+/* This is how to output an assembler line defining a 'float' constant of
    size HFmode. */
 #define ASM_OUTPUT_SHORT_FLOAT(FILE,VALUE)  asm_output_float (FILE, VALUE)
 

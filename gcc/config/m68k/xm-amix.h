@@ -1,7 +1,6 @@
 /* Definitions of host machine for GNU compiler.
    Commodore Amiga A3000UX version.
-
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -22,7 +21,6 @@ Boston, MA 02111-1307, USA.  */
 
 #include "m68k/xm-m68kv.h"	/* Use the System V flavor of m68k host */
 
-#define HAVE_VPRINTF		/* Host has vprintf() in library */
 #define rindex strrchr
 #define index strchr
 
