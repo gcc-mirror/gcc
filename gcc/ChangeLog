@@ -1,3 +1,7 @@
+Thu Mar 26 17:34:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* sh.h (OPTIMIZATION_OPTIONS): Define.
+
 Thu Mar 26 00:19:47 1998  Richard Henderson  <rth@cygnus.com>
 
 	* combine.c (make_compound_operation): Simplify (subreg (*_extend) 0).

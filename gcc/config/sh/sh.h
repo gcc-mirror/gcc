@@ -160,6 +160,12 @@ extern int target_flags;
 
 #define PRESERVE_DEATH_INFO_REGNO_P(regno) (TARGET_RELAX || optimize)
 
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
+do {									\
+  if (SIZE)								\
+    target_flags |= SPACE_BIT;						\
+} while (0)
+
 #define ASSEMBLER_DIALECT 0 /* will allow to distinguish b[tf].s and b[tf]/s .  */
 #define OVERRIDE_OPTIONS 					\
 do {								\
