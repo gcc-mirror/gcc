@@ -109,10 +109,15 @@ jstring
 java::io::File::getCanonicalPath (void)
 {
   JV_TEMP_UTF_STRING (cpath, path);
+  
+  // If the filename is blank, use the current directory.
+  const char* thepath = cpath.buf();
+  if (*thepath == '\0')
+    thepath = ".";
 
   LPTSTR unused;
   char buf2[MAX_PATH];
-  if(!GetFullPathName(cpath, MAX_PATH, buf2, &unused))
+  if(!GetFullPathName(thepath, MAX_PATH, buf2, &unused))
     throw new IOException (JvNewStringLatin1 ("GetFullPathName failed"));
 
   // FIXME: what encoding to assume for file names?  This affects many

@@ -1,3 +1,8 @@
+2003-10-30  Mohan Embar  <gnustuff@thisiscool.com>
+
+	PR libgcj/6652:
+	* java/io/natFileWin32.cc (getCanonicalPath): Treat "" like ".".
+
 2003-10-30  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/lang/reflect/natMethod.cc (_Jv_CallAnyMethodA): Don't use vtable
