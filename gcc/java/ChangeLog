@@ -1,5 +1,16 @@
 2001-04-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
+	* java-tree.h (struct lang_decl): New macro
+	`DECL_FIXED_CONSTRUCTOR_P.' New field `fixed_ctor.'
+	* parse.y (build_instance_initializer): New function.
+	(add_instance_initializer): Use it.
+	(java_fix_constructors): Set `current_class' before fix pass.
+	(fix_constructors): Just return if already fixed. Move `super()'
+	invokation ahead. Use `build_instance_initializer.'
+	Fixes PR java/1315.
+
+2001-04-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
+ 
 	* parse.y (resolve_qualified_expression_name): Pass field's
 	DECL_CONTEXT to `not_accessible_p.'
 	(not_accessible_p): Changed parameters order in `inherits_from_p'

@@ -238,6 +238,7 @@ static const char *get_printable_method_name PARAMS ((tree));
 static tree patch_conditional_expr PARAMS ((tree, tree, tree));
 static tree generate_finit PARAMS ((tree));
 static void add_instance_initializer PARAMS ((tree));
+static tree build_instance_initializer PARAMS ((tree));
 static void fix_constructors PARAMS ((tree));
 static tree build_alias_initializer_parameter_list PARAMS ((int, tree,
 							    tree, int *));
@@ -4302,22 +4303,29 @@ generate_finit (class_type)
   return mdecl;
 }
 
+static tree
+build_instance_initializer (mdecl)
+     tree mdecl;
+{
+  tree compound = NULL_TREE;
+  tree stmt_list = TYPE_II_STMT_LIST (DECL_CONTEXT (mdecl));
+  tree current;
+
+  for (current = stmt_list; current; current = TREE_CHAIN (current))
+    compound = add_stmt_to_compound (compound, NULL_TREE, current);
+
+  return compound;
+}
+
 static void
 add_instance_initializer (mdecl)
      tree mdecl;
 {
-  tree current;
-  tree stmt_list = TYPE_II_STMT_LIST (DECL_CONTEXT (mdecl));
-  tree compound = NULL_TREE;
+  tree compound = build_instance_initializer (mdecl);
 
-  if (stmt_list)
-    {
-      for (current = stmt_list; current; current = TREE_CHAIN (current))
-	compound = add_stmt_to_compound (compound, NULL_TREE, current);
-
-      java_method_add_stmt (mdecl, build1 (INSTANCE_INITIALIZERS_EXPR,
-					   NULL_TREE, compound));
-    }
+  if (compound)
+    java_method_add_stmt (mdecl, build1 (INSTANCE_INITIALIZERS_EXPR,
+					 NULL_TREE, compound));
 }
 
 /* Shared accros method_declarator and method_header to remember the
@@ -5233,6 +5241,7 @@ java_fix_constructors ()
       if (CLASS_INTERFACE (TYPE_NAME (class_type)))
 	continue;
 
+      current_class = class_type;
       for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
 	{
 	  if (DECL_CONSTRUCTOR_P (decl))
@@ -8470,6 +8479,10 @@ fix_constructors (mdecl)
   tree thisn_assign, compound = NULL_TREE;
   tree class_type = DECL_CONTEXT (mdecl);
 
+  if (DECL_FIXED_CONSTRUCTOR_P (mdecl))
+    return;
+  DECL_FIXED_CONSTRUCTOR_P (mdecl) = 1;
+
   if (!body)
     {
       /* It is an error for the compiler to generate a default
@@ -8513,7 +8526,9 @@ fix_constructors (mdecl)
   else 
     {
       int found = 0;
+      tree found_call = NULL_TREE;
       tree main_block = BLOCK_EXPR_BODY (body);
+      tree ii;			/* Instance Initializer */
       
       while (body)
 	switch (TREE_CODE (body))
@@ -8524,9 +8539,11 @@ fix_constructors (mdecl)
 	    break;
 	  case COMPOUND_EXPR:
 	  case EXPR_WITH_FILE_LOCATION:
+	    found_call = body;
 	    body = TREE_OPERAND (body, 0);
 	    break;
 	  case BLOCK:
+	    found_call = body;
 	    body = BLOCK_EXPR_BODY (body);
 	    break;
 	  default:
@@ -8537,14 +8554,23 @@ fix_constructors (mdecl)
       if (!found)
 	compound = add_stmt_to_compound (compound, NULL_TREE,
                                          build_super_invocation (mdecl));
+
+      /* Explicit super() invokation should be kept as the first
+         statement, we move it. */
+      else
+	{
+	  compound = add_stmt_to_compound (compound, NULL_TREE,
+					   TREE_OPERAND (found_call, 0));
+	  TREE_OPERAND (found_call, 0) = empty_stmt_node;
+	}
       
       /* Generate the assignment to this$<n>, if necessary */
       if ((thisn_assign = build_thisn_assign ()))
         compound = add_stmt_to_compound (compound, NULL_TREE, thisn_assign);
 
-      /* Insert the instance initializer block right here, after the
-         super invocation. */
-      add_instance_initializer (mdecl);
+      /* Insert the instance initializer block right after. */
+      if ((ii = build_instance_initializer (mdecl)))
+	compound = add_stmt_to_compound (compound, NULL_TREE, ii);
 
       /* Fix the constructor main block if we're adding extra stmts */
       if (compound)

@@ -713,6 +713,7 @@ struct lang_identifier
 /* True if DECL initializes all its finals */
 #define DECL_FUNCTION_ALL_FINAL_INITIALIZED(DECL) \
   (DECL_LANG_SPECIFIC(DECL)->init_final)
+#define DECL_FIXED_CONSTRUCTOR_P(DECL) (DECL_LANG_SPECIFIC(DECL)->fixed_ctor)
 
 /* True when DECL aliases an outer context local variable.  */
 #define FIELD_LOCAL_ALIAS(DECL) DECL_LANG_FLAG_6 (DECL)
@@ -862,6 +863,7 @@ struct lang_decl
   int native : 1;		/* Nonzero if this is a native method  */
   int synthetic_ctor : 1;	/* Nonzero if this is a synthetic ctor */
   int init_final : 1;		/* Nonzero all finals are initialized */
+  int fixed_ctor : 1;
 };
 
 /* init_test_table hash table entry structure.  */
