@@ -1572,7 +1572,23 @@ grokfield (declarator, declspecs, init, asmspec_tree, attrlist)
 	  || TREE_CODE (TREE_OPERAND (declarator, 0)) == SCOPE_REF)
       && parmlist_is_exprlist (CALL_DECLARATOR_PARMS (declarator)))
     {
-      init = TREE_OPERAND (declarator, 1);
+      /* It's invalid to try to initialize a data member using a
+	 functional notation, e.g.:
+	 
+            struct S {
+	      static int i (3);
+	    };
+	    
+	 Explain that to the user.  */
+      static int explained_p;
+
+      cp_error ("invalid data member initiailization");
+      if (!explained_p)
+	{
+	  cp_error ("use `=' to initialize static data members");
+	  explained_p = 1;
+	}
+
       declarator = TREE_OPERAND (declarator, 0);
       flags = 0;
     }
