@@ -1783,8 +1783,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!f")
-	(match_operand:HI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!fM"))]
+  [(set (match_operand:HI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*f")
+	(match_operand:HI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!*fM"))]
   "register_operand (operands[0], HImode)
    || reg_or_0_operand (operands[1], HImode)"
   "@
@@ -1945,8 +1945,8 @@
 }")
 
 (define_insn ""
-  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!f")
-	(match_operand:QI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!fM"))]
+  [(set (match_operand:QI 0 "reg_or_nonsymb_mem_operand" "=r,r,r,r,r,Q,*q,!*f")
+	(match_operand:QI 1 "move_operand" "r,J,N,K,RQ,rM,rM,!*fM"))]
   "register_operand (operands[0], QImode)
    || reg_or_0_operand (operands[1], QImode)"
   "@
