@@ -514,6 +514,9 @@ scan_operands (part, this_address_p, this_strict_low)
     case STRICT_LOW_PART:
       scan_operands (XEXP (part, 0), 0, 1);
       return;
+      
+    default:
+      break;
     }
 
   format_ptr = GET_RTX_FORMAT (GET_CODE (part));
