@@ -1,5 +1,6 @@
 2004-11-29  Diego Novillo  <dnovillo@redhat.com>
 
+	PR tree-optimization/18712
 	* gcc.c-torture/compile/pr18712.c: New test.
 
 2004-11-29  Joseph Myers  <joseph@codesourcery.com>
