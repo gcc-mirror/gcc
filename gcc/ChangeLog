@@ -1,3 +1,8 @@
+2003-03-30  DJ Delorie  <dj@redhat.com>
+
+	* profile.c (instrument_edges): Make sure any newly created
+	jump insns have correct jump label info.
+
 2003-03-30  Richard Henderson  <rth@redhat.com>
 
 	* cfgbuild.c (make_edges): Use tablejump_p.

@@ -202,6 +202,7 @@ instrument_edges (el)
 	      insert_insn_on_edge (
 			 gen_edge_profiler (total_num_edges_instrumented
 					    + num_instr_edges++), e);
+	      rebuild_jump_labels (e->insns);
 	    }
 	  e = e->succ_next;
 	}
