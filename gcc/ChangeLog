@@ -1,3 +1,13 @@
+2003-04-04  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (expand_prologue): Only use register save
+	helper functions if long calls are not being used.
+	Add a clobber of r11 id using long calls.
+	(pattern_is_ok_for_prologue): Account for the extra clobber.
+	(construct_save_jarl): Likewise.
+	* config/v850/v850.md (prolog pattern): Do not use this pattern
+	for v850e's.
+
 2003-04-04  Andreas Schwab  <schwab@suse.de>
 
 	* stor-layout.c (layout_decl): Avoid syntax error in last change

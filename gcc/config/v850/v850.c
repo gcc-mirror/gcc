@@ -1713,13 +1713,10 @@ expand_prologue ()
   /* Save arg registers to the stack if necessary.  */
   else if (current_function_args_info.anonymous_args)
     {
-      if (TARGET_PROLOG_FUNCTION)
-	{
-	  if (TARGET_V850E && ! TARGET_DISABLE_CALLT)
-	    emit_insn (gen_save_r6_r9_v850e ());
-	  else
-	    emit_insn (gen_save_r6_r9 ());
-	}
+      if (TARGET_PROLOG_FUNCTION && TARGET_V850E && !TARGET_DISABLE_CALLT)
+	emit_insn (gen_save_r6_r9_v850e ());
+      else if (TARGET_PROLOG_FUNCTION && ! TARGET_LONG_CALLS)
+	emit_insn (gen_save_r6_r9 ());
       else
 	{
 	  offset = 0;
@@ -1779,18 +1776,13 @@ expand_prologue ()
 	{
 	  save_all = gen_rtx_PARALLEL
 	    (VOIDmode,
-	     rtvec_alloc (num_save + (TARGET_V850 ? 2 : 1)));
+	     rtvec_alloc (num_save + 1
+			  + (TARGET_V850 ? (TARGET_LONG_CALLS ? 2 : 1) : 0)));
 
 	  XVECEXP (save_all, 0, 0)
 	    = gen_rtx_SET (VOIDmode,
 			   stack_pointer_rtx,
 			   plus_constant (stack_pointer_rtx, -alloc_stack));
-
-	  if (TARGET_V850)
-	    {
-	      XVECEXP (save_all, 0, num_save+1)
-		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 10));
-	    }
 
 	  offset = - default_stack;
 	  for (i = 0; i < num_save; i++)
@@ -1802,6 +1794,16 @@ expand_prologue ()
 							   offset)),
 			       save_regs[i]);
 	      offset -= 4;
+	    }
+
+	  if (TARGET_V850)
+	    {
+	      XVECEXP (save_all, 0, num_save + 1)
+		= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 10));
+
+	      if (TARGET_LONG_CALLS)
+		XVECEXP (save_all, 0, num_save + 2)
+		  = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, 11));
 	    }
 
 	  code = recog (save_all, NULL_RTX, NULL);
@@ -2631,7 +2633,7 @@ pattern_is_ok_for_prologue (op, mode)
 
      */
 
-  for (i = 2; i < count - 1; i++)
+  for (i = 2; i < count - (TARGET_LONG_CALLS ? 2: 1); i++)
     {
       rtx dest;
       rtx src;
@@ -2671,14 +2673,18 @@ pattern_is_ok_for_prologue (op, mode)
 	}
     }
 
-  /* Make sure that the last entry in the vector is a clobber.  */
-  vector_element = XVECEXP (op, 0, i);
-  
-  if (GET_CODE (vector_element) != CLOBBER
-      || GET_CODE (XEXP (vector_element, 0)) != REG
-      || REGNO (XEXP (vector_element, 0)) != 10)
-    return 0;
-  
+  /* Make sure that the last entries in the vector are clobbers.  */
+  for (; i < count; i++)
+    {
+      vector_element = XVECEXP (op, 0, i);
+
+      if (GET_CODE (vector_element) != CLOBBER
+	  || GET_CODE (XEXP (vector_element, 0)) != REG
+	  || !(REGNO (XEXP (vector_element, 0)) == 10
+	       || (TARGET_LONG_CALLS ? (REGNO (XEXP (vector_element, 0)) == 11) : 0 )))
+	return 0;
+    }
+
   return 1;
 }
 
@@ -2720,7 +2726,7 @@ construct_save_jarl (op)
   stack_bytes = INTVAL (XEXP (SET_SRC (XVECEXP (op, 0, 0)), 1));
 
   /* Each push will put 4 bytes from the stack... */
-  stack_bytes += (count - 2) * 4;
+  stack_bytes += (count - (TARGET_LONG_CALLS ? 3 : 2)) * 4;
 
   /* Make sure that the amount we are popping either 0 or 16 bytes.  */
   if (stack_bytes != 0 && stack_bytes != -16)
@@ -2731,7 +2737,7 @@ construct_save_jarl (op)
 
   /* Now compute the bit mask of registers to push.  */
   mask = 0;
-  for (i = 1; i < count - 1; i++)
+  for (i = 1; i < count - (TARGET_LONG_CALLS ? 2 : 1); i++)
     {
       rtx vector_element = XVECEXP (op, 0, i);
       
