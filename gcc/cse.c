@@ -639,6 +639,8 @@ static void record_jump_equiv (rtx, int);
 static void record_jump_cond (enum rtx_code, enum machine_mode, rtx, rtx,
 			      int);
 static void cse_insn (rtx, rtx);
+static void cse_end_of_basic_block (rtx, struct cse_basic_block_data *,
+				    int, int, int);
 static int addr_affects_sp_p (rtx);
 static void invalidate_from_clobbers (rtx);
 static rtx cse_process_notes (rtx, rtx);
@@ -6759,7 +6761,7 @@ cse_set_around_loop (rtx x, rtx insn, rtx loop_start)
    the current block.  The incoming structure's branch path, if any, is used
    to construct the output branch path.  */
 
-void
+static void
 cse_end_of_basic_block (rtx insn, struct cse_basic_block_data *data,
 			int follow_jumps, int after_loop, int skip_blocks)
 {

@@ -1,3 +1,16 @@
+2004-03-05  Paolo Bonzini <bonzini@gnu.org>
+
+	* cse.c (cse_end_of_basic_block): Make static.
+	* local-alloc.c (function_invariant_p): Move to
+	reload1.c.
+	* loop.c (libcall_other_reg, record_excess_regs):
+	Make static.
+	* reload1.c (function_invariant_p): Moved here
+	from local-alloc.c, made static.
+	* rtl.h (cse_end_of_basic_block, function_invariant_p,
+	libcall_other_reg, record_excess_regs): Remove
+	declarations.
+
 2004-03-05  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/m32r/m32r.c (signed_comparison_operator): Add a
