@@ -61,11 +61,16 @@ static int sdiv_pow2_cheap, smod_pow2_cheap;
 #define MAX_BITS_PER_WORD BITS_PER_WORD
 #endif
 
-/* Cost of various pieces of RTL.  */
+/* Cost of various pieces of RTL.  Note that some of these are indexed by shift count,
+   and some by mode.  */
 static int add_cost, negate_cost, zero_cost;
 static int shift_cost[MAX_BITS_PER_WORD];
 static int shiftadd_cost[MAX_BITS_PER_WORD];
 static int shiftsub_cost[MAX_BITS_PER_WORD];
+static int mul_cost[NUM_MACHINE_MODES];
+static int div_cost[NUM_MACHINE_MODES];
+static int mul_widen_cost[NUM_MACHINE_MODES];
+static int mul_highpart_cost[NUM_MACHINE_MODES];
 
 void
 init_expmed ()
@@ -77,6 +82,7 @@ init_expmed ()
   rtx shift_insn, shiftadd_insn, shiftsub_insn;
   int dummy;
   int m;
+  enum machine_mode mode, wider_mode;
 
   start_sequence ();
 
@@ -137,6 +143,32 @@ init_expmed ()
   smod_pow2_cheap
     = (rtx_cost (gen_rtx (MOD, word_mode, reg, GEN_INT (32)), SET)
        <= 2 * add_cost);
+
+  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+       mode != VOIDmode;
+       mode = GET_MODE_WIDER_MODE (mode))
+    {
+      reg = gen_rtx (REG, mode, 10000);
+      div_cost[(int) mode] = rtx_cost (gen_rtx (UDIV, mode, reg, reg), SET);
+      mul_cost[(int) mode] = rtx_cost (gen_rtx (MULT, mode, reg, reg), SET);
+      wider_mode = GET_MODE_WIDER_MODE (mode);
+      if (wider_mode != VOIDmode)
+	{
+	  mul_widen_cost[(int) wider_mode]
+	    = rtx_cost (gen_rtx (MULT, wider_mode,
+				 gen_rtx (ZERO_EXTEND, wider_mode, reg),
+				 gen_rtx (ZERO_EXTEND, wider_mode, reg)),
+			SET);
+	  mul_highpart_cost[(int) mode]
+	    = rtx_cost (gen_rtx (TRUNCATE, mode,
+				 gen_rtx (LSHIFTRT, wider_mode,
+					  gen_rtx (MULT, wider_mode,
+						   gen_rtx (ZERO_EXTEND, wider_mode, reg),
+						   gen_rtx (ZERO_EXTEND, wider_mode, reg)),
+					  GEN_INT (GET_MODE_BITSIZE (mode)))),
+			SET);
+	}
+    }
 
   /* Free the objects we just allocated.  */
   end_sequence ();
@@ -2470,14 +2502,17 @@ expand_mult_highpart_adjust (mode, adj_operand, op0, op1, target, unsignedp)
 
    MODE is the mode of operation and result.
 
-   UNSIGNEDP nonzero means unsigned multiply.  */
+   UNSIGNEDP nonzero means unsigned multiply.
+
+   MAX_COST is the total allowed cost for the expanded RTL.  */
 
 rtx
-expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
+expand_mult_highpart (mode, op0, cnst1, target, unsignedp, max_cost)
      enum machine_mode mode;
      register rtx op0, target;
      unsigned HOST_WIDE_INT cnst1;
      int unsignedp;
+     int max_cost;
 {
   enum machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
   optab mul_highpart_optab;
@@ -2504,7 +2539,8 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
 
   /* expand_mult handles constant multiplication of word_mode
      or narrower.  It does a poor job for large modes.  */
-  if (size < BITS_PER_WORD)
+  if (size < BITS_PER_WORD
+      && mul_cost[(int) wider_mode] + shift_cost[size-1] < max_cost)
     {
       /* We have to do this, since expand_binop doesn't do conversion for
 	 multiply.  Maybe change expand_binop to handle widening multiply?  */
@@ -2521,55 +2557,63 @@ expand_mult_highpart (mode, op0, cnst1, target, unsignedp)
 
   /* Firstly, try using a multiplication insn that only generates the needed
      high part of the product, and in the sign flavor of unsignedp.  */
-  mul_highpart_optab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
-  target = expand_binop (mode, mul_highpart_optab,
-			 op0, op1, target, unsignedp, OPTAB_DIRECT);
-  if (target)
-    return target;
+  if (mul_highpart_cost[(int) mode] < max_cost)
+    {
+      mul_highpart_optab = unsignedp ? umul_highpart_optab : smul_highpart_optab;
+      target = expand_binop (mode, mul_highpart_optab,
+			     op0, op1, target, unsignedp, OPTAB_DIRECT);
+      if (target)
+	return target;
+    }
 
   /* Secondly, same as above, but use sign flavor opposite of unsignedp.
      Need to adjust the result after the multiplication.  */
-  mul_highpart_optab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
-  target = expand_binop (mode, mul_highpart_optab,
-			 op0, op1, target, unsignedp, OPTAB_DIRECT);
-  if (target)
-    /* We used the wrong signedness.  Adjust the result.  */
-    return expand_mult_highpart_adjust (mode, target, op0,
-					op1, target, unsignedp);
-
-  /* Thirdly, we try to use a widening multiplication, or a wider mode
-     multiplication.  */
-
-  moptab = unsignedp ? umul_widen_optab : smul_widen_optab;
-  if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
-    ;
-  else if (smul_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
-    moptab = smul_optab;
-  else
+  if (mul_highpart_cost[(int) mode] + 2 * shift_cost[size-1] + 4 * add_cost < max_cost)
     {
-      /* Try widening multiplication of opposite signedness, and adjust.  */
-      moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
-      if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing)
-	{
-	  tem = expand_binop (wider_mode, moptab, op0, wide_op1,
-			      NULL_RTX, ! unsignedp, OPTAB_WIDEN);
-	  if (tem != 0)
-	    {
-	      /* Extract the high half of the just generated product.  */
-	      tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
-				  build_int_2 (size, 0), NULL_RTX, 1);
-	      tem = convert_modes (mode, wider_mode, tem, unsignedp);
-	      /* We used the wrong signedness.  Adjust the result.  */
-	      return expand_mult_highpart_adjust (mode, tem, op0, op1,
-						  target, unsignedp);
-	    }
-	}
-
-      /* As a last resort, try widening the mode and perform a
-	 non-widening multiplication.  */
-      moptab = smul_optab;
+      mul_highpart_optab = unsignedp ? smul_highpart_optab : umul_highpart_optab;
+      target = expand_binop (mode, mul_highpart_optab,
+			     op0, op1, target, unsignedp, OPTAB_DIRECT);
+      if (target)
+	/* We used the wrong signedness.  Adjust the result.  */
+	return expand_mult_highpart_adjust (mode, target, op0,
+					    op1, target, unsignedp);
     }
 
+  /* Try widening multiplication.  */
+  moptab = unsignedp ? umul_widen_optab : smul_widen_optab;
+  if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
+      && mul_widen_cost[(int) wider_mode] < max_cost)
+    goto try;
+
+  /* Try widening the mode and perform a non-widening multiplication.  */
+  moptab = smul_optab;
+  if (smul_optab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
+      && mul_cost[(int) wider_mode] + shift_cost[size-1] < max_cost)
+    goto try;
+
+  /* Try widening multiplication of opposite signedness, and adjust.  */
+  moptab = unsignedp ? smul_widen_optab : umul_widen_optab;
+  if (moptab->handlers[(int) wider_mode].insn_code != CODE_FOR_nothing
+      && (mul_widen_cost[(int) wider_mode]
+	  + 2 * shift_cost[size-1] + 4 * add_cost < max_cost))
+    {
+      tem = expand_binop (wider_mode, moptab, op0, wide_op1,
+			  NULL_RTX, ! unsignedp, OPTAB_WIDEN);
+      if (tem != 0)
+	{
+	  /* Extract the high half of the just generated product.  */
+	  tem = expand_shift (RSHIFT_EXPR, wider_mode, tem,
+			      build_int_2 (size, 0), NULL_RTX, 1);
+	  tem = convert_modes (mode, wider_mode, tem, unsignedp);
+	  /* We used the wrong signedness.  Adjust the result.  */
+	  return expand_mult_highpart_adjust (mode, tem, op0, op1,
+					      target, unsignedp);
+	}
+    }
+
+  return 0;
+
+ try:
   /* Pass NULL_RTX as target since TARGET has wrong mode.  */
   tem = expand_binop (wider_mode, moptab, op0, wide_op1,
 		      NULL_RTX, unsignedp, OPTAB_WIDEN);
@@ -2617,6 +2661,7 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   rtx insn, set;
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2;
+  int max_cost, extra_cost;
 
   op1_is_constant = GET_CODE (op1) == CONST_INT;
   op1_is_pow2 = (op1_is_constant
@@ -2721,10 +2766,13 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
   size = GET_MODE_BITSIZE (compute_mode);
 #if 0
   /* It should be possible to restrict the precision to GET_MODE_BITSIZE
-     (mode), and thereby get better code when OP1 is a constant.  Do that for
-     GCC 2.7.  It will require going over all usages of SIZE below.  */
+     (mode), and thereby get better code when OP1 is a constant.  Do that
+     later.  It will require going over all usages of SIZE below.  */
   size = GET_MODE_BITSIZE (mode);
 #endif
+
+  max_cost = div_cost[(int) compute_mode]
+    - (rem_flag ? mul_cost[(int) compute_mode] + add_cost : 0);
 
   /* Now convert to the best mode to use.  */
   if (compute_mode != mode)
@@ -2826,8 +2874,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		      {
 			rtx t1, t2, t3, t4;
 
+			extra_cost = (shift_cost[post_shift - 1]
+				      + shift_cost[1] + 2 * add_cost);
 			t1 = expand_mult_highpart (compute_mode, op0, ml,
-						   NULL_RTX, 1);
+						   NULL_RTX, 1,
+						   max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
 			t2 = force_operand (gen_rtx (MINUS, compute_mode,
@@ -2850,8 +2901,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
 					   build_int_2 (pre_shift, 0),
 					   NULL_RTX, 1);
+			extra_cost = (shift_cost[pre_shift]
+				      + shift_cost[post_shift]);
 			t2 = expand_mult_highpart (compute_mode, t1, ml,
-						   NULL_RTX, 1);
+						   NULL_RTX, 1,
+						   max_cost - extra_cost);
 			if (t2 == 0)
 			  goto fail1;
 			quotient = expand_shift (RSHIFT_EXPR, compute_mode, t2,
@@ -2952,8 +3006,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 		      {
 			rtx t1, t2, t3;
 
+			extra_cost = (shift_cost[post_shift]
+				      + shift_cost[size - 1] + add_cost);
 			t1 = expand_mult_highpart (compute_mode, op0, ml,
-						   NULL_RTX, 0);
+						   NULL_RTX, 0,
+						   max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
 			t2 = expand_shift (RSHIFT_EXPR, compute_mode, t1,
@@ -2972,8 +3029,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 			rtx t1, t2, t3, t4;
 
 			ml |= (~(unsigned HOST_WIDE_INT) 0) << (size - 1);
+			extra_cost = (shift_cost[post_shift]
+				      + shift_cost[size - 1] + 2 * add_cost);
 			t1 = expand_mult_highpart (compute_mode, op0, ml,
-						   NULL_RTX, 0);
+						   NULL_RTX, 0,
+						   max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
 			t2 = force_operand (gen_rtx (PLUS, compute_mode, t1, op0),
@@ -3047,8 +3107,11 @@ expand_divmod (rem_flag, code, mode, op0, op1, target, unsignedp)
 				       build_int_2 (size - 1, 0), NULL_RTX, 0);
 		    t2 = expand_binop (compute_mode, xor_optab, op0, t1,
 				       NULL_RTX, 0, OPTAB_WIDEN);
+		    extra_cost = (shift_cost[post_shift]
+				  + shift_cost[size - 1] + 2 * add_cost);
 		    t3 = expand_mult_highpart (compute_mode, t2, ml,
-					       NULL_RTX, 1);
+					       NULL_RTX, 1,
+					       max_cost - extra_cost);
 		    if (t3 != 0)
 		      {
 			t4 = expand_shift (RSHIFT_EXPR, compute_mode, t3,
