@@ -2853,10 +2853,10 @@ expand_vec_init (decl, base, maxindex, init, from_array)
       && !(TREE_CODE (maxindex) == INTEGER_CST
 	   && num_initialized_elts == TREE_INT_CST_LOW (maxindex) + 1))
     {
-      /* If the ITERATOR is equal to zero, then we don't have to loop;
+      /* If the ITERATOR is equal to -1, then we don't have to loop;
 	 we've already initialized all the elements.  */
       expand_start_cond (build (NE_EXPR, boolean_type_node,
-				iterator, integer_zero_node), 
+				iterator, minus_one),
 			 0);
 
       /* Otherwise, loop through the elements.  */
