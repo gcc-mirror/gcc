@@ -3,6 +3,10 @@
 	* bb-reorder.c (fix_crossing_unconditional_branches): Use Pmode
 	for LABEL_REFs.
 
+	* defaults.h (HOT_TEXT_SECTION_NAME): Add leading dot.
+	(UNLIKELY_EXECUTED_TEXT_SECTION_NAME): Likewise.
+	* doc/invoke.texi: Update to match.
+
 2004-04-13  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* reload1.c (emit_reload_insns): Set reg_has_output_reload to one
