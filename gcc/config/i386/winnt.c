@@ -171,7 +171,8 @@ associated_type (tree decl)
 	 dtor's are not affected by class status but virtual and
 	 non-virtual thunks are.  */
       if (!DECL_ARTIFICIAL (decl) || DECL_COMDAT (decl))
-	t = TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl))));
+	t = TYPE_MAIN_VARIANT
+	  (TREE_TYPE (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)))));
     }
   else if (DECL_CONTEXT (decl)
 	   && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (decl))) == 't')
