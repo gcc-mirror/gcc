@@ -309,7 +309,7 @@ get_tinfo_decl (type)
       TREE_STATIC (d) = 1;
       DECL_EXTERNAL (d) = 1;
       TREE_PUBLIC (d) = 1;
-      if (flag_weak || !typeinfo_in_lib_p (d))
+      if (flag_weak || !typeinfo_in_lib_p (type))
 	comdat_linkage (d);
       SET_DECL_ASSEMBLER_NAME (d, name);
       cp_finish_decl (d, NULL_TREE, NULL_TREE, 0);

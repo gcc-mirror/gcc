@@ -1,3 +1,8 @@
+2001-10-03  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* rtti.c (get_tinfo_decl): Call typeinfo_in_lib_p with the type used
+	to build the declaration instead of the declaration itself.
+
 2001-10-02  Jason Merrill  <jason_merrill@redhat.com>
 
 	* spew.c (end_input): No longer static.
