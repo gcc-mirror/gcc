@@ -26,3 +26,11 @@ Boston, MA 02111-1307, USA.  */
 
 /* Use semicolons to separate elements of a path.  */
 #define PATH_SEPARATOR ';'
+
+#define EXECUTABLE_SUFFIX ".exe"
+
+/* Even though we support "/", allow "\" since everybody tests both.  */
+#define DIR_SEPARATOR '\\'
+
+#define NO_SYS_SIGLIST 1
+

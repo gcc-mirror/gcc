@@ -1,3 +1,8 @@
+Fri Oct 10 17:58:31 CEST 1997  Marc Lehmann <pcg@goof.com>
+
+	* i386/xm-go32.h (EXECUTABLE_SUFFIX): Define.
+	(DIR_SEPARATOR, NO_SYS_SIGLIST): Likewise.
+
 1997-11-13  Dave Love  <d.love@dl.ac.uk>
 
 	* i386/linux.h (STACK_BOUNDARY): Define as 64 for glibc2.
