@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989, 1992, 1993 Free Software Foundation, Inc.
+/* Copyright (C) 1989, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1574,8 +1574,12 @@ __builtin_new (size_t sz)
   if (sz == 0)
     sz = 1;
   p = (void *) malloc (sz);
-  if (p == 0)
-    (*__new_handler) ();
+  while (p == 0)
+    {
+      (*__new_handler) ();
+      p = (void *) malloc (sz);
+    }
+  
   return p;
 }
 #endif /* L_op_new */
@@ -1597,9 +1601,9 @@ __builtin_new (size_t sz)
 typedef void (*vfp)(void);
 
 extern void *__builtin_new (size_t);
-static void default_new_handler (void);
+static void __default_new_handler (void);
 
-vfp __new_handler = default_new_handler;
+vfp __new_handler = __default_new_handler;
 
 vfp
 __set_new_handler (handler)
@@ -1608,7 +1612,7 @@ __set_new_handler (handler)
   vfp prev_handler;
 
   prev_handler = __new_handler;
-  if (handler == 0) handler = default_new_handler;
+  if (handler == 0) handler = __default_new_handler;
   __new_handler = handler;
   return prev_handler;
 }
@@ -1623,7 +1627,7 @@ set_new_handler (handler)
 #define MESSAGE "Virtual memory exceeded in `new'\n"
 
 static void
-default_new_handler ()
+__default_new_handler ()
 {
   /* don't use fprintf (stderr, ...) because it may need to call malloc.  */
   /* This should really print the name of the program, but that is hard to
