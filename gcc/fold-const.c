@@ -3820,6 +3820,14 @@ fold (expr)
 	  if (integer_onep (arg1))
 	    return non_lvalue (convert (type, arg0));
 
+	  /* ((A / C) * C) is A if the division is an
+	     EXACT_DIV_EXPR.   Since C is normally a constant,
+	     just check for one of the four possibilities.  */
+
+	  if (TREE_CODE (arg0) == EXACT_DIV_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 1), arg1, 0))
+	    return TREE_OPERAND (arg0, 0);
+
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
 	      && integer_onep (TREE_OPERAND (arg1, 0)))
