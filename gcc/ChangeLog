@@ -1,3 +1,8 @@
+2002-05-06  Catherine Moore  <clm@redhat.com>
+
+	* config/v850/v850.c (compute_register_save_size): Make sure
+        to count all of the registers that will be saved.
+
 Mon May  6 18:03:11 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (q_regs_operand): Use ANY_QI_REGS_P.
