@@ -195,7 +195,10 @@ class real_c_float
   static const enum machine_mode MODE = SFmode;
 
  private:
-  long image[128 / 32];
+  static const int external_max = 128 / 32;
+  static const int internal_max
+    = (sizeof (REAL_VALUE_TYPE) + sizeof (long) + 1) / sizeof (long);
+  long image[external_max < internal_max ? internal_max : external_max];
 
   void from_long(long);
   void from_str(const char *);
@@ -2607,6 +2610,9 @@ Paranoia<FLOAT>::notify (const char *s)
 
 int main(int ac, char **av)
 {
+  setbuf(stdout, NULL);
+  setbuf(stderr, NULL);
+
   while (1)
     switch (getopt (ac, av, "pvg:fdl"))
       {
@@ -2639,6 +2645,7 @@ int main(int ac, char **av)
 	    F(i370_double),
 	    F(c4x_single),
 	    F(c4x_extended),
+	    F(real_internal),
 #undef F
 	  };
 
@@ -2697,3 +2704,13 @@ fancy_abort ()
 }
 
 int target_flags = 0;
+
+extern "C" int
+floor_log2_wide (unsigned HOST_WIDE_INT x)
+{
+  int log = -1;
+  while (x != 0)
+    log++,
+    x >>= 1;
+  return log;
+}
