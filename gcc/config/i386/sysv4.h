@@ -212,3 +212,6 @@ do { long value[3];							\
 	   "addl\t$_GLOBAL_OFFSET_TABLE_+[.-.LPR%=],%0"			\
 	   : "=d"(BASE))
 #endif
+
+#undef CPP_SPEC
+#define CPP_SPEC "%(cpp_cpu)"

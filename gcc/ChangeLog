@@ -1,3 +1,8 @@
+2002-01-22  Craig Rodrigues  <rodrigc@gcc.gnu.org>
+
+	PR other/5450
+	* config/i386/sysv4.h (CPP_SPEC): Define, and add CPU preprocessor flags.
+
 2001-12-11  Richard Henderson  <rth@redhat.com>
 
 	* expmed.c (expand_divmod): Ignore sdiv_pow2_cheap for modes in
