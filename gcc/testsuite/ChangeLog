@@ -1,3 +1,8 @@
+2004-12-21  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* objc.dg/stabs-1.m: Allow section name to be quoted and
+	assembly label to begin with '.LL'.
+
 2004-12-21  Janis Johnson  <janis187@us.ibm.com>
 
 	* gcc.dg/vect/vect.exp
