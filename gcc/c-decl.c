@@ -466,6 +466,12 @@ int warn_write_strings;
 
 int warn_cast_qual;
 
+/* Nonzero means warn when casting a function call to a type that does
+   not match the return type (e.g. (float)sqrt() or (anything*)malloc()
+   when there is no previous declaration of sqrt or malloc.  */
+
+int warn_bad_function_cast;
+
 /* Warn about traditional constructs whose meanings changed in ANSI C.  */
 
 int warn_traditional;
@@ -621,6 +627,10 @@ c_decode_option (p)
     warn_cast_qual = 1;
   else if (!strcmp (p, "-Wno-cast-qual"))
     warn_cast_qual = 0;
+  else if (!strcmp (p, "-Wbad-function-cast"))
+    warn_bad_function_cast = 1;
+  else if (!strcmp (p, "-Wno-bad-function-cast"))
+    warn_bad_function_cast = 0;
   else if (!strcmp (p, "-Wpointer-arith"))
     warn_pointer_arith = 1;
   else if (!strcmp (p, "-Wno-pointer-arith"))
