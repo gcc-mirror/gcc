@@ -1,3 +1,8 @@
+2005-02-22  James E Wilson  <wilson@specifixinc.com>
+
+	* toplev.c (backend_init): Don't call init_adjust_machine_modes here.
+	(do_compile): Do call it here.
+
 2005-02-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	PR rtl-optimization/20017.
