@@ -75,7 +75,7 @@ typedef struct {
 #define FIX_PROC_HEAD( fix ) \
 static void fix ( filname, text, p_fixd ) \
     const char* filname; \
-    static char* text; \
+    const char* text; \
     tFixDesc* p_fixd;
 
 
