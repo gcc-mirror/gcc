@@ -1,3 +1,7 @@
+Thu Jul 26 23:00:13 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* pa.md (extv): Check predicates before emitting extv_32.
+
 2002-07-27  Alan Modra  <amodra@bigpond.net.au>
 
 	* config/rs6000/rs6000.c (rs6000_traceback_name): New var.
