@@ -2932,6 +2932,7 @@ extern void finish_decl				PROTO((tree, tree, tree));
 extern void maybe_inject_for_scope_var          PROTO((tree));
 extern void initialize_local_var                PROTO((tree, tree, int));
 extern void expand_static_init			PROTO((tree, tree));
+extern void start_handler_parms                 PROTO((tree, tree));
 extern int complete_array_type			PROTO((tree, tree, int));
 extern tree build_ptrmemfunc_type		PROTO((tree));
 /* the grokdeclarator prototype is in decl.h */
@@ -3080,7 +3081,7 @@ extern int cp_line_of				PROTO((tree));
 
 /* in except.c */
 extern void init_exception_processing		PROTO((void));
-extern void expand_start_catch_block		PROTO((tree, tree));
+extern void expand_start_catch_block		PROTO((tree));
 extern void expand_end_catch_block		PROTO((void));
 extern void expand_builtin_throw		PROTO((void));
 extern void expand_start_eh_spec		PROTO((void));
@@ -3349,6 +3350,7 @@ extern tree begin_function_try_block            PROTO((void));
 extern void finish_function_try_block           PROTO((tree));
 extern void finish_function_handler_sequence    PROTO((tree));
 extern tree begin_handler                       PROTO((void));
+extern void start_handler_parms                 PROTO((tree, tree));
 extern void finish_handler_parms                PROTO((tree));
 extern void finish_handler                      PROTO((tree));
 extern void finish_cleanup                      PROTO((tree, tree));

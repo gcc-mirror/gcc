@@ -3365,7 +3365,7 @@ type_specifier_seq:
 
 handler_args:
 	  '(' ELLIPSIS ')'
-		{ expand_start_catch_block (NULL_TREE, NULL_TREE); }
+		{ expand_start_catch_block (NULL_TREE); }
 	/* This doesn't allow reference parameters, the below does.
 	| '(' type_specifier_seq absdcl ')'
 		{ check_for_new_type ("inside exception declarations", $2);
@@ -3381,9 +3381,11 @@ handler_args:
 		  expand_start_catch_block ($2.t, $3); }
 	This allows reference parameters...  */
 	| '(' parm ')'
-		{ check_for_new_type ("inside exception declarations", $2);
-		  expand_start_catch_block (TREE_PURPOSE ($2.t),
-					    TREE_VALUE ($2.t)); }
+		{ 
+		  check_for_new_type ("inside exception declarations", $2);
+		  start_handler_parms (TREE_PURPOSE ($2.t),
+				       TREE_VALUE ($2.t));
+		}
 	;
 
 label_colon:

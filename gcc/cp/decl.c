@@ -8317,6 +8317,27 @@ expand_static_init (decl, init)
       static_aggregates = perm_tree_cons (init, decl, static_aggregates);
     }
 }
+
+/* Finish the declaration of a catch-parameter.  */
+
+void
+start_handler_parms (declspecs, declarator)
+     tree declspecs;
+     tree declarator;
+{
+  tree decl;
+  if (declspecs)
+    {
+      decl = grokdeclarator (declarator, declspecs, CATCHPARM,
+			     1, NULL_TREE);
+      if (decl == NULL_TREE)
+	error ("invalid catch parameter");
+    }
+  else
+    decl = NULL_TREE;
+  expand_start_catch_block (decl);
+}
+
 
 /* Make TYPE a complete type based on INITIAL_VALUE.
    Return 0 if successful, 1 if INITIAL_VALUE can't be deciphered,

@@ -51,7 +51,7 @@ static tree get_eh_caught PROTO((void));
 static tree get_eh_handlers PROTO((void));
 #endif
 static tree do_pop_exception PROTO((void));
-static void process_start_catch_block PROTO((tree, tree));
+static void process_start_catch_block PROTO((tree));
 static tree build_eh_type_type_ref PROTO((tree));
 static tree build_terminate_handler PROTO((void));
 static tree alloc_eh_object PROTO((tree));
@@ -513,17 +513,17 @@ build_terminate_handler ()
    (ie: it ends up as the "else" clause rather than an "else if" clause) */
 
 void
-expand_start_catch_block (declspecs, declarator)
-     tree declspecs, declarator;
+expand_start_catch_block (decl)
+     tree decl;
 {
-  tree decl;
-
   if (building_stmt_tree ())
     {
-      if (declspecs)
+      if (decl)
 	{
-	  decl = grokdeclarator (declarator, declspecs, CATCHPARM,
-				 1, NULL_TREE);
+ 	  /* We must ensure that DECL_CONTEXT is set up before we call
+ 	     push_template_decl; that code depends on DECL_CONTEXT
+ 	     being set correctly.  */
+ 	  DECL_CONTEXT (decl) = current_function_decl;
 	  if (processing_template_decl)
 	    decl = push_template_decl (decl);
 	  pushdecl (decl);
@@ -535,7 +535,7 @@ expand_start_catch_block (declspecs, declarator)
   if (! doing_eh (1))
     return;
 
-  process_start_catch_block (declspecs, declarator);
+  process_start_catch_block (decl);
 }
 
 /* This function performs the expand_start_catch_block functionality for 
@@ -544,10 +544,9 @@ expand_start_catch_block (declspecs, declarator)
    nothing additional. */
 
 static void 
-process_start_catch_block (declspecs, declarator)
-     tree declspecs, declarator;
+process_start_catch_block (decl)
+     tree decl;
 {
-  tree decl = NULL_TREE;
   tree init;
 
   /* Create a binding level for the eh_info and the exception object
@@ -555,16 +554,8 @@ process_start_catch_block (declspecs, declarator)
   pushlevel (0);
   expand_start_bindings (0);
 
-
-  if (declspecs)
-    {
-      decl = grokdeclarator (declarator, declspecs, CATCHPARM, 1, NULL_TREE);
-
-      if (decl == NULL_TREE)
-	error ("invalid catch parameter");
-      else if (!complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
-        decl = NULL_TREE;
-    }
+  if (decl && !complete_ptr_ref_or_void_ptr_p (TREE_TYPE (decl), NULL_TREE))
+    decl = NULL_TREE;
 
   if (decl)
     start_catch_handler (build_eh_type_type_ref (TREE_TYPE (decl)));
@@ -701,7 +692,7 @@ expand_end_eh_spec (raises)
   int count = 0;
 
   expand_start_all_catch ();
-  expand_start_catch_block (NULL_TREE, NULL_TREE);
+  expand_start_catch_block (NULL_TREE);
 
   /* Build up an array of type_infos.  */
   for (; raises && TREE_VALUE (raises); raises = TREE_CHAIN (raises))
