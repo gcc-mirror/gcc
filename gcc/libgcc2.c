@@ -3032,10 +3032,11 @@ int atexit (func_ptr func)
     {
       atexit_chain_length += 32;
       if (atexit_chain)
-	atexit_chain = realloc (atexit_chain,
-				atexit_chain_length * sizeof (func_ptr));
+	atexit_chain = (func_ptr *) realloc (atexit_chain, atexit_chain_length
+					     * sizeof (func_ptr));
       else
-	atexit_chain = malloc (atexit_chain_length * sizeof (func_ptr));
+	atexit_chain = (func_ptr *) malloc (atexit_chain_length
+					    * sizeof (func_ptr));
       if (! atexit_chain)
 	{
 	  atexit_chain_length = 0;
