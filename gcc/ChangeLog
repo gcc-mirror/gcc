@@ -1,3 +1,15 @@
+2004-11-12  Steven Bosscher  <stevenb@suse.de>
+
+	* tree-ssa.c (walk_use_def_chains_1): Make the visited map a
+	pointer set instead of a bitmap.
+	(walk_use_def_chains): Create, pass and clean up that pointer_set.
+
+	* tree-ssa-alias.c (struct alias_info): Make the ssa_names_visited
+	field an sbitmap.
+	(init_alias_info): Allocate and zero it here.
+	(delete_alias_info): Delete it here.
+	(collect_points_to_info_for): Use it.
+
 2004-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* alias.c (record_alias_subset, addr_side_effect_eval):
