@@ -515,11 +515,8 @@ extern struct rtx_def *hppa_pic_save_rtx PARAMS ((void));
 #define STRUCT_VALUE_REGNUM 28
 
 /* Describe how we implement __builtin_eh_return.  */
-/* FIXME: What's a good choice for the EH data registers on TARGET_64BIT?  */
 #define EH_RETURN_DATA_REGNO(N)	\
-  (TARGET_64BIT								\
-   ? ((N) < 4 ? (N) + 4 : INVALID_REGNUM)				\
-   : ((N) < 3 ? (N) + 20 : (N) == 4 ? 31 : INVALID_REGNUM))
+  ((N) < 3 ? (N) + 20 : (N) == 3 ? 31 : INVALID_REGNUM)
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, 29)
 #define EH_RETURN_HANDLER_RTX \
   gen_rtx_MEM (word_mode,						\
