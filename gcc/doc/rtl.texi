@@ -1854,14 +1854,14 @@ valid.
 Comparison operators test a relation on two operands and are considered
 to represent a machine-dependent nonzero value described by, but not
 necessarily equal to, @code{STORE_FLAG_VALUE} (@pxref{Misc})
-if the relation holds, or zero if it does not.  The mode of the
-comparison operation is independent of the mode of the data being
-compared.  If the comparison operation is being tested (e.g., the first
-operand of an @code{if_then_else}), the mode must be @code{VOIDmode}.
-If the comparison operation is producing data to be stored in some
-variable, the mode must be in class @code{MODE_INT}.  All comparison
-operations producing data must use the same mode, which is
-machine-specific.
+if the relation holds, or zero if it does not, for comparison operators
+whose results have a `MODE_INT' mode, and
+@code{FLOAT_STORE_FLAG_VALUE} (@pxref{Misc}) if the relation holds, or
+zero if it does not, for comparison operators that return floating-point
+values.  The mode of the comparison operation is independent of the mode
+of the data being compared.  If the comparison operation is being tested
+(e.g., the first operand of an @code{if_then_else}), the mode must be
+@code{VOIDmode}.
 
 @cindex condition codes
 There are two ways that comparison operations may be used.  The

@@ -1,3 +1,8 @@
+2003-04-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* doc/rtl.texi (Comparison operations): Update to
+	record the allowed comparison modes.
+
 Mon Apr  7 22:13:38 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 	PR target/10077
