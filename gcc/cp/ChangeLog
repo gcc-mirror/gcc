@@ -1,3 +1,7 @@
+1999-08-23  Paul Burchard <burchard@pobox.com>
+
+	* decl.c (check_default_argument): Fix typo.
+
 1999-08-22  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.def (STMT_EXPR): Fix typo in node name.

@@ -11335,7 +11335,7 @@ check_default_argument (decl, arg)
 	cp_error ("default argument for `%#D' has type `%T'", 
 		  decl, TREE_TYPE (arg));
       else
-	cp_error ("default argument for paramter of type `%T' has type `%T'",
+	cp_error ("default argument for parameter of type `%T' has type `%T'",
 		  decl_type, TREE_TYPE (arg));
 
       return error_mark_node;
