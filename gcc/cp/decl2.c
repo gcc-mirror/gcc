@@ -1120,11 +1120,29 @@ grokbitfield (declarator, declspecs, width)
   return value;
 }
 
+/* Convert a conversion operator name to an identifier. SCOPE is the
+   scope of the conversion operator, if explicit.  */
+
 tree
-grokoptypename (declspecs, declarator)
+grokoptypename (declspecs, declarator, scope)
      tree declspecs, declarator;
+     tree scope;
 {
   tree t = grokdeclarator (declarator, declspecs, TYPENAME, 0, NULL);
+
+  /* Resolve any TYPENAME_TYPEs that refer to SCOPE, before mangling
+     the name, so that we mangle the right thing.  */
+  if (scope && current_template_parms
+      && uses_template_parms (t)
+      && uses_template_parms (scope))
+    {
+      tree args = current_template_args ();
+      
+      push_scope (scope);
+      t = tsubst (t, args, tf_error | tf_warning, NULL_TREE);
+      pop_scope (scope);
+    }
+  
   return mangle_conv_op_name_for_type (t);
 }
 
