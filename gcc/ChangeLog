@@ -1,5 +1,8 @@
 2003-10-31  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* aclocal.m4: Blacklist ultrix* for mmap file.
+	* configure: Rebuilt.
+
 	* function.c (assign_parms): Add ATTRIBUTE_UNUSED to variable
 	reg_parm_stack_space.
 	* toplev.c (default_get_pch_validity): Fix warning.
