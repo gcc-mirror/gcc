@@ -617,7 +617,12 @@ extern int target_flags;
 /* ??? It isn't clear to me why this is here.  Perhaps because of a bug (since
    fixed) in the definition of INITIAL_FRAME_POINTER_OFFSET which would have
    caused this to fail.  */
-#define FRAME_POINTER_REQUIRED (! leaf_function_p ())
+/* ??? Must check current_function_has_nonlocal_goto, otherwise frame pointer
+  elimination messes up nonlocal goto sequences.  I think this works for other
+  targets because they use indirect jumps for the return which disables fp
+  elimination.  */
+#define FRAME_POINTER_REQUIRED \
+  (! leaf_function_p () || current_function_has_nonlocal_goto)
 
 /* Definitions for register eliminations.
 
