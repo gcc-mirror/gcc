@@ -1,3 +1,8 @@
+2004-07-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (override_options): Don't set x86_prefetch_sse
+	from -mtune= option.
+
 2004-07-07  Alexandre Oliva  <aoliva@redhat.com>
 
 	* builtins.c: Rename movstr*, except for movstrict*, to

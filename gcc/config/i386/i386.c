@@ -1308,8 +1308,6 @@ override_options (void)
 	  error ("CPU you selected does not support x86-64 instruction set");
 	break;
       }
-  if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
-    x86_prefetch_sse = true;
   if (i == pta_size)
     error ("bad value (%s) for -mtune= switch", ix86_tune_string);
 
