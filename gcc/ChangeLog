@@ -1,5 +1,7 @@
 Sun Nov 29 16:36:59 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* reload1.c (emit_reload_insns): Fix typos in preserve death note code.
+
 	* Makefile.in (c-lex.o): Depends on $(RTL_H).
 
 	* genattr.c (fatal): No longer static.
