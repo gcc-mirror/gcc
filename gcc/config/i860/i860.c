@@ -99,7 +99,6 @@ safe_insn_src_p (op, mode)
     case AND:
     case IOR:
     case XOR:
-    case LSHIFT:
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
@@ -326,7 +325,6 @@ single_insn_src_p (op, mode)
 		   || INTVAL (XEXP (op, 1)) & 0xffff == 0)))
 	return 0;
 
-    case LSHIFT:
     case ASHIFT:
     case ASHIFTRT:
     case LSHIFTRT:
