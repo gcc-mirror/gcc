@@ -1,3 +1,7 @@
+Sat Nov  7 23:34:01 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (libcpp.a): Check RANLIB_TEST before runing RANLIB.
+
 Sat Nov  7 22:26:19 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* collect2.c (main, case 'b'): Use else if.
