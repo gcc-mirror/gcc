@@ -231,14 +231,66 @@ fix_sched_param (param, val)
     warning ("fix_sched_param: unknown param: %s", param);
 }
 
+/* Describe state of dependencies used during sched_analyze phase.  */
+struct deps
+{
+  /* The *_insns and *_mems are paired lists.  Each pending memory operation
+     will have a pointer to the MEM rtx on one list and a pointer to the
+     containing insn on the other list in the same place in the list.  */
 
-/* Element N is the next insn that sets (hard or pseudo) register
-   N within the current basic block; or zero, if there is no
-   such insn.  Needed for new registers which may be introduced
-   by splitting insns.  */
-static rtx *reg_last_uses;
-static rtx *reg_last_sets;
-static rtx *reg_last_clobbers;
+  /* We can't use add_dependence like the old code did, because a single insn
+     may have multiple memory accesses, and hence needs to be on the list
+     once for each memory access.  Add_dependence won't let you add an insn
+     to a list more than once.  */
+
+  /* An INSN_LIST containing all insns with pending read operations.  */
+  rtx pending_read_insns;
+
+  /* An EXPR_LIST containing all MEM rtx's which are pending reads.  */
+  rtx pending_read_mems;
+
+  /* An INSN_LIST containing all insns with pending write operations.  */
+  rtx pending_write_insns;
+
+  /* An EXPR_LIST containing all MEM rtx's which are pending writes.  */
+  rtx pending_write_mems;
+
+  /* Indicates the combined length of the two pending lists.  We must prevent
+     these lists from ever growing too large since the number of dependencies
+     produced is at least O(N*N), and execution time is at least O(4*N*N), as
+     a function of the length of these pending lists.  */
+  int pending_lists_length;
+
+  /* The last insn upon which all memory references must depend.
+     This is an insn which flushed the pending lists, creating a dependency
+     between it and all previously pending memory references.  This creates
+     a barrier (or a checkpoint) which no memory reference is allowed to cross.
+
+     This includes all non constant CALL_INSNs.  When we do interprocedural
+     alias analysis, this restriction can be relaxed.
+     This may also be an INSN that writes memory if the pending lists grow
+     too large.  */
+  rtx last_pending_memory_flush;
+
+  /* The last function call we have seen.  All hard regs, and, of course,
+     the last function call, must depend on this.  */
+  rtx last_function_call;
+
+  /* The LOG_LINKS field of this is a list of insns which use a pseudo register
+     that does not already cross a call.  We create dependencies between each
+     of those insn and the next call insn, to ensure that they won't cross a call
+     after scheduling is done.  */
+  rtx sched_before_next_call;
+
+  /* Element N is the next insn that sets (hard or pseudo) register
+     N within the current basic block; or zero, if there is no
+     such insn.  Needed for new registers which may be introduced
+     by splitting insns.  */
+  rtx *reg_last_uses;
+  rtx *reg_last_sets;
+  rtx *reg_last_clobbers;
+};
+
 static regset reg_pending_sets;
 static regset reg_pending_clobbers;
 static int reg_pending_sets_all;
@@ -427,12 +479,13 @@ static int potential_hazard PROTO ((int, rtx, int));
 static int insn_cost PROTO ((rtx, rtx, rtx));
 static int priority PROTO ((rtx));
 static void free_pending_lists PROTO ((void));
-static void add_insn_mem_dependence PROTO ((rtx *, rtx *, rtx, rtx));
-static void flush_pending_lists PROTO ((rtx, int));
-static void sched_analyze_1 PROTO ((rtx, rtx));
-static void sched_analyze_2 PROTO ((rtx, rtx));
-static void sched_analyze_insn PROTO ((rtx, rtx, rtx));
-static void sched_analyze PROTO ((rtx, rtx));
+static void add_insn_mem_dependence PROTO ((struct deps *, rtx *, rtx *, rtx,
+					    rtx));
+static void flush_pending_lists PROTO ((struct deps *, rtx, int));
+static void sched_analyze_1 PROTO ((struct deps *, rtx, rtx));
+static void sched_analyze_2 PROTO ((struct deps *, rtx, rtx));
+static void sched_analyze_insn PROTO ((struct deps *, rtx, rtx, rtx));
+static void sched_analyze PROTO ((struct deps *, rtx, rtx));
 static int rank_for_schedule PROTO ((const PTR, const PTR));
 static void swap_sort PROTO ((rtx *, int));
 static void queue_insn PROTO ((rtx, int));
@@ -670,7 +723,6 @@ static int is_exception_free PROTO ((rtx, int, int));
 
 static char find_insn_mem_list PROTO ((rtx, rtx, rtx, rtx));
 static void compute_block_forward_dependences PROTO ((int));
-static void init_rgn_data_dependences PROTO ((int));
 static void add_branch_dependences PROTO ((rtx, rtx));
 static void compute_block_backward_dependences PROTO ((int));
 void debug_dependencies PROTO ((void));
@@ -731,7 +783,7 @@ static rtx move_insn1 PROTO ((rtx, rtx));
 static rtx move_insn PROTO ((rtx, rtx));
 static rtx group_leader PROTO ((rtx));
 static int set_priorities PROTO ((int));
-static void init_rtx_vector PROTO ((rtx **, rtx *, int, int));
+static void init_deps PROTO ((struct deps *));
 static void schedule_region PROTO ((int));
 
 #endif /* INSN_SCHEDULING */
@@ -907,88 +959,19 @@ schedule_insns (dump_file)
 
 /* Computation of memory dependencies.  */
 
-/* The *_insns and *_mems are paired lists.  Each pending memory operation
-   will have a pointer to the MEM rtx on one list and a pointer to the
-   containing insn on the other list in the same place in the list.  */
+/* Data structures for the computation of data dependences in a regions.  We
+   keep one mem_deps structure for every basic block.  Before analyzing the
+   data dependences for a bb, its variables are initialized as a function of
+   the variables of its predecessors.  When the analysis for a bb completes,
+   we save the contents to the corresponding bb_mem_deps[bb] variable.  */
 
-/* We can't use add_dependence like the old code did, because a single insn
-   may have multiple memory accesses, and hence needs to be on the list
-   once for each memory access.  Add_dependence won't let you add an insn
-   to a list more than once.  */
-
-/* An INSN_LIST containing all insns with pending read operations.  */
-static rtx pending_read_insns;
-
-/* An EXPR_LIST containing all MEM rtx's which are pending reads.  */
-static rtx pending_read_mems;
-
-/* An INSN_LIST containing all insns with pending write operations.  */
-static rtx pending_write_insns;
-
-/* An EXPR_LIST containing all MEM rtx's which are pending writes.  */
-static rtx pending_write_mems;
-
-/* Indicates the combined length of the two pending lists.  We must prevent
-   these lists from ever growing too large since the number of dependencies
-   produced is at least O(N*N), and execution time is at least O(4*N*N), as
-   a function of the length of these pending lists.  */
-
-static int pending_lists_length;
-
-/* The last insn upon which all memory references must depend.
-   This is an insn which flushed the pending lists, creating a dependency
-   between it and all previously pending memory references.  This creates
-   a barrier (or a checkpoint) which no memory reference is allowed to cross.
-
-   This includes all non constant CALL_INSNs.  When we do interprocedural
-   alias analysis, this restriction can be relaxed.
-   This may also be an INSN that writes memory if the pending lists grow
-   too large.  */
-
-static rtx last_pending_memory_flush;
-
-/* The last function call we have seen.  All hard regs, and, of course,
-   the last function call, must depend on this.  */
-
-static rtx last_function_call;
-
-/* The LOG_LINKS field of this is a list of insns which use a pseudo register
-   that does not already cross a call.  We create dependencies between each
-   of those insn and the next call insn, to ensure that they won't cross a call
-   after scheduling is done.  */
-
-static rtx sched_before_next_call;
+static struct deps *bb_deps;
 
 /* Pointer to the last instruction scheduled.  Used by rank_for_schedule,
    so that insns independent of the last scheduled insn will be preferred
    over dependent instructions.  */
 
 static rtx last_scheduled_insn;
-
-/* Data structures for the computation of data dependences in a regions.  We
-   keep one copy of each of the declared above variables for each bb in the
-   region.  Before analyzing the data dependences for a bb, its variables
-   are initialized as a function of the variables of its predecessors.  When
-   the analysis for a bb completes, we save the contents of each variable X
-   to a corresponding bb_X[bb] variable.  For example, pending_read_insns is
-   copied to bb_pending_read_insns[bb].  Another change is that few
-   variables are now a list of insns rather than a single insn:
-   last_pending_memory_flash, last_function_call, reg_last_sets.  The
-   manipulation of these variables was changed appropriately.  */
-
-static rtx **bb_reg_last_uses;
-static rtx **bb_reg_last_sets;
-static rtx **bb_reg_last_clobbers;
-
-static rtx *bb_pending_read_insns;
-static rtx *bb_pending_read_mems;
-static rtx *bb_pending_write_insns;
-static rtx *bb_pending_write_mems;
-static int *bb_pending_lists_length;
-
-static rtx *bb_last_pending_memory_flush;
-static rtx *bb_last_function_call;
-static rtx *bb_sched_before_next_call;
 
 /* Functions for construction of the control flow graph.  */
 
@@ -3149,25 +3132,14 @@ priority (insn)
 static void
 free_pending_lists ()
 {
-  if (current_nr_blocks <= 1)
-    {
-      free_INSN_LIST_list (&pending_read_insns);
-      free_INSN_LIST_list (&pending_write_insns);
-      free_EXPR_LIST_list (&pending_read_mems);
-      free_EXPR_LIST_list (&pending_write_mems);
-    }
-  else
-    {
-      /* Interblock scheduling.  */
-      int bb;
+  int bb;
 
-      for (bb = 0; bb < current_nr_blocks; bb++)
-	{
-	  free_INSN_LIST_list (&bb_pending_read_insns[bb]);
-	  free_INSN_LIST_list (&bb_pending_write_insns[bb]);
-	  free_EXPR_LIST_list (&bb_pending_read_mems[bb]);
-	  free_EXPR_LIST_list (&bb_pending_write_mems[bb]);
-	}
+  for (bb = 0; bb < current_nr_blocks; bb++)
+    {
+      free_INSN_LIST_list (&bb_deps[bb].pending_read_insns);
+      free_INSN_LIST_list (&bb_deps[bb].pending_write_insns);
+      free_EXPR_LIST_list (&bb_deps[bb].pending_read_mems);
+      free_EXPR_LIST_list (&bb_deps[bb].pending_write_mems);
     }
 }
 
@@ -3176,7 +3148,8 @@ free_pending_lists ()
    so that we can do memory aliasing on it.  */
 
 static void
-add_insn_mem_dependence (insn_list, mem_list, insn, mem)
+add_insn_mem_dependence (deps, insn_list, mem_list, insn, mem)
+     struct deps *deps;
      rtx *insn_list, *mem_list, insn, mem;
 {
   register rtx link;
@@ -3187,54 +3160,56 @@ add_insn_mem_dependence (insn_list, mem_list, insn, mem)
   link = alloc_EXPR_LIST (VOIDmode, mem, *mem_list);
   *mem_list = link;
 
-  pending_lists_length++;
+  deps->pending_lists_length++;
 }
 
-
 /* Make a dependency between every memory reference on the pending lists
    and INSN, thus flushing the pending lists.  If ONLY_WRITE, don't flush
    the read list.  */
 
 static void
-flush_pending_lists (insn, only_write)
+flush_pending_lists (deps, insn, only_write)
+     struct deps *deps;
      rtx insn;
      int only_write;
 {
   rtx u;
   rtx link;
 
-  while (pending_read_insns && ! only_write)
+  while (deps->pending_read_insns && ! only_write)
     {
-      add_dependence (insn, XEXP (pending_read_insns, 0), REG_DEP_ANTI);
+      add_dependence (insn, XEXP (deps->pending_read_insns, 0),
+		      REG_DEP_ANTI);
 
-      link = pending_read_insns;
-      pending_read_insns = XEXP (pending_read_insns, 1);
+      link = deps->pending_read_insns;
+      deps->pending_read_insns = XEXP (deps->pending_read_insns, 1);
       free_INSN_LIST_node (link);
 
-      link = pending_read_mems;
-      pending_read_mems = XEXP (pending_read_mems, 1);
+      link = deps->pending_read_mems;
+      deps->pending_read_mems = XEXP (deps->pending_read_mems, 1);
       free_EXPR_LIST_node (link);
     }
-  while (pending_write_insns)
+  while (deps->pending_write_insns)
     {
-      add_dependence (insn, XEXP (pending_write_insns, 0), REG_DEP_ANTI);
+      add_dependence (insn, XEXP (deps->pending_write_insns, 0),
+		      REG_DEP_ANTI);
 
-      link = pending_write_insns;
-      pending_write_insns = XEXP (pending_write_insns, 1);
+      link = deps->pending_write_insns;
+      deps->pending_write_insns = XEXP (deps->pending_write_insns, 1);
       free_INSN_LIST_node (link);
 
-      link = pending_write_mems;
-      pending_write_mems = XEXP (pending_write_mems, 1);
+      link = deps->pending_write_mems;
+      deps->pending_write_mems = XEXP (deps->pending_write_mems, 1);
       free_EXPR_LIST_node (link);
     }
-  pending_lists_length = 0;
+  deps->pending_lists_length = 0;
 
   /* last_pending_memory_flush is now a list of insns.  */
-  for (u = last_pending_memory_flush; u; u = XEXP (u, 1))
+  for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
     add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-  free_INSN_LIST_list (&last_pending_memory_flush);
-  last_pending_memory_flush = alloc_INSN_LIST (insn, NULL_RTX);
+  free_INSN_LIST_list (&deps->last_pending_memory_flush);
+  deps->last_pending_memory_flush = alloc_INSN_LIST (insn, NULL_RTX);
 }
 
 /* Analyze a single SET, CLOBBER, PRE_DEC, POST_DEC, PRE_INC or POST_INC
@@ -3242,7 +3217,8 @@ flush_pending_lists (insn, only_write)
    destination of X, and reads of everything mentioned.  */
 
 static void
-sched_analyze_1 (x, insn)
+sched_analyze_1 (deps, x, insn)
+     struct deps *deps;
      rtx x;
      rtx insn;
 {
@@ -3258,9 +3234,9 @@ sched_analyze_1 (x, insn)
     {
       register int i;
       for (i = XVECLEN (dest, 0) - 1; i >= 0; i--)
-	sched_analyze_1 (XVECEXP (dest, 0, i), insn);
+	sched_analyze_1 (deps, XVECEXP (dest, 0, i), insn);
       if (GET_CODE (x) == SET)
-	sched_analyze_2 (SET_SRC (x), insn);
+	sched_analyze_2 (deps, SET_SRC (x), insn);
       return;
     }
 
@@ -3270,8 +3246,8 @@ sched_analyze_1 (x, insn)
       if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
 	{
 	  /* The second and third arguments are values read by this insn.  */
-	  sched_analyze_2 (XEXP (dest, 1), insn);
-	  sched_analyze_2 (XEXP (dest, 2), insn);
+	  sched_analyze_2 (deps, XEXP (dest, 1), insn);
+	  sched_analyze_2 (deps, XEXP (dest, 2), insn);
 	}
       dest = XEXP (dest, 0);
     }
@@ -3289,12 +3265,13 @@ sched_analyze_1 (x, insn)
 	  i = HARD_REGNO_NREGS (regno, GET_MODE (dest));
 	  while (--i >= 0)
 	    {
+	      int r = regno + i;
 	      rtx u;
 
-	      for (u = reg_last_uses[regno + i]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last_uses[r]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-	      for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last_sets[r]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
 	      /* Clobbers need not be ordered with respect to one
@@ -3302,18 +3279,17 @@ sched_analyze_1 (x, insn)
 		 pending clobber.  */
 	      if (code == SET)
 		{
-		  free_INSN_LIST_list (&reg_last_uses[regno + i]);
-	          for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
+		  free_INSN_LIST_list (&deps->reg_last_uses[r]);
+	          for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
-	          SET_REGNO_REG_SET (reg_pending_sets, regno + i);
+	          SET_REGNO_REG_SET (reg_pending_sets, r);
 		}
 	      else
-		SET_REGNO_REG_SET (reg_pending_clobbers, regno + i);
+		SET_REGNO_REG_SET (reg_pending_clobbers, r);
 
 	      /* Function calls clobber all call_used regs.  */
-	      if (global_regs[regno + i]
-		  || (code == SET && call_used_regs[regno + i]))
-		for (u = last_function_call; u; u = XEXP (u, 1))
+	      if (global_regs[r] || (code == SET && call_used_regs[r]))
+		for (u = deps->last_function_call; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	    }
 	}
@@ -3321,16 +3297,16 @@ sched_analyze_1 (x, insn)
 	{
 	  rtx u;
 
-	  for (u = reg_last_uses[regno]; u; u = XEXP (u, 1))
+	  for (u = deps->reg_last_uses[regno]; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-	  for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
+	  for (u = deps->reg_last_sets[regno]; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 
 	  if (code == SET)
 	    {
-	      free_INSN_LIST_list (&reg_last_uses[regno]);
-	      for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
+	      free_INSN_LIST_list (&deps->reg_last_uses[regno]);
+	      for (u = deps->reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
 	      SET_REGNO_REG_SET (reg_pending_sets, regno);
 	    }
@@ -3343,13 +3319,13 @@ sched_analyze_1 (x, insn)
 	  if (!reload_completed
 	      && reg_known_equiv_p[regno]
 	      && GET_CODE (reg_known_value[regno]) == MEM)
-	    sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
+	    sched_analyze_2 (deps, XEXP (reg_known_value[regno], 0), insn);
 
 	  /* Don't let it cross a call after scheduling if it doesn't
 	     already cross one.  */
 
 	  if (REG_N_CALLS_CROSSED (regno) == 0)
-	    for (u = last_function_call; u; u = XEXP (u, 1))
+	    for (u = deps->last_function_call; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	}
     }
@@ -3357,7 +3333,7 @@ sched_analyze_1 (x, insn)
     {
       /* Writing memory.  */
 
-      if (pending_lists_length > 32)
+      if (deps->pending_lists_length > 32)
 	{
 	  /* Flush all pending reads and writes to prevent the pending lists
 	     from getting any larger.  Insn scheduling runs too slowly when
@@ -3365,15 +3341,15 @@ sched_analyze_1 (x, insn)
 	     seems like a reasonable number.  When compiling GCC with itself,
 	     this flush occurs 8 times for sparc, and 10 times for m88k using
 	     the number 32.  */
-	  flush_pending_lists (insn, 0);
+	  flush_pending_lists (deps, insn, 0);
 	}
       else
 	{
 	  rtx u;
 	  rtx pending, pending_mem;
 
-	  pending = pending_read_insns;
-	  pending_mem = pending_read_mems;
+	  pending = deps->pending_read_insns;
+	  pending_mem = deps->pending_read_mems;
 	  while (pending)
 	    {
 	      if (anti_dependence (XEXP (pending_mem, 0), dest))
@@ -3383,8 +3359,8 @@ sched_analyze_1 (x, insn)
 	      pending_mem = XEXP (pending_mem, 1);
 	    }
 
-	  pending = pending_write_insns;
-	  pending_mem = pending_write_mems;
+	  pending = deps->pending_write_insns;
+	  pending_mem = deps->pending_write_mems;
 	  while (pending)
 	    {
 	      if (output_dependence (XEXP (pending_mem, 0), dest))
@@ -3394,24 +3370,25 @@ sched_analyze_1 (x, insn)
 	      pending_mem = XEXP (pending_mem, 1);
 	    }
 
-	  for (u = last_pending_memory_flush; u; u = XEXP (u, 1))
+	  for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
 	    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-	  add_insn_mem_dependence (&pending_write_insns, &pending_write_mems,
-				   insn, dest);
+	  add_insn_mem_dependence (deps, &deps->pending_write_insns,
+				   &deps->pending_write_mems, insn, dest);
 	}
-      sched_analyze_2 (XEXP (dest, 0), insn);
+      sched_analyze_2 (deps, XEXP (dest, 0), insn);
     }
 
   /* Analyze reads.  */
   if (GET_CODE (x) == SET)
-    sched_analyze_2 (SET_SRC (x), insn);
+    sched_analyze_2 (deps, SET_SRC (x), insn);
 }
 
 /* Analyze the uses of memory and registers in rtx X in INSN.  */
 
 static void
-sched_analyze_2 (x, insn)
+sched_analyze_2 (deps, x, insn)
+     struct deps *deps;
      rtx x;
      rtx insn;
 {
@@ -3476,32 +3453,33 @@ sched_analyze_2 (x, insn)
 	    i = HARD_REGNO_NREGS (regno, GET_MODE (x));
 	    while (--i >= 0)
 	      {
-		reg_last_uses[regno + i]
-		  = alloc_INSN_LIST (insn, reg_last_uses[regno + i]);
+		int r = regno + i;
+		deps->reg_last_uses[r]
+		  = alloc_INSN_LIST (insn, deps->reg_last_uses[r]);
 
-		for (u = reg_last_sets[regno + i]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last_sets[r]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 
 		/* ??? This should never happen.  */
-		for (u = reg_last_clobbers[regno + i]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 
-		if ((call_used_regs[regno + i] || global_regs[regno + i]))
+		if (call_used_regs[r] || global_regs[r])
 		  /* Function calls clobber all call_used regs.  */
-		  for (u = last_function_call; u; u = XEXP (u, 1))
+		  for (u = deps->last_function_call; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 	      }
 	  }
 	else
 	  {
-	    reg_last_uses[regno] = alloc_INSN_LIST (insn,
-						    reg_last_uses[regno]);
+	    deps->reg_last_uses[regno]
+	      = alloc_INSN_LIST (insn, deps->reg_last_uses[regno]);
 
-	    for (u = reg_last_sets[regno]; u; u = XEXP (u, 1))
+	    for (u = deps->reg_last_sets[regno]; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
 
 	    /* ??? This should never happen.  */
-	    for (u = reg_last_clobbers[regno]; u; u = XEXP (u, 1))
+	    for (u = deps->reg_last_clobbers[regno]; u; u = XEXP (u, 1))
 	      add_dependence (insn, XEXP (u, 0), 0);
 
 	    /* Pseudos that are REG_EQUIV to something may be replaced
@@ -3510,13 +3488,14 @@ sched_analyze_2 (x, insn)
 	    if (!reload_completed
 		&& reg_known_equiv_p[regno]
 		&& GET_CODE (reg_known_value[regno]) == MEM)
-	      sched_analyze_2 (XEXP (reg_known_value[regno], 0), insn);
+	      sched_analyze_2 (deps, XEXP (reg_known_value[regno], 0), insn);
 
 	    /* If the register does not already cross any calls, then add this
 	       insn to the sched_before_next_call list so that it will still
 	       not cross calls after scheduling.  */
 	    if (REG_N_CALLS_CROSSED (regno) == 0)
-	      add_dependence (sched_before_next_call, insn, REG_DEP_ANTI);
+	      add_dependence (deps->sched_before_next_call, insn,
+			      REG_DEP_ANTI);
 	  }
 	return;
       }
@@ -3527,8 +3506,8 @@ sched_analyze_2 (x, insn)
 	rtx u;
 	rtx pending, pending_mem;
 
-	pending = pending_read_insns;
-	pending_mem = pending_read_mems;
+	pending = deps->pending_read_insns;
+	pending_mem = deps->pending_read_mems;
 	while (pending)
 	  {
 	    if (read_dependence (XEXP (pending_mem, 0), x))
@@ -3538,8 +3517,8 @@ sched_analyze_2 (x, insn)
 	    pending_mem = XEXP (pending_mem, 1);
 	  }
 
-	pending = pending_write_insns;
-	pending_mem = pending_write_mems;
+	pending = deps->pending_write_insns;
+	pending_mem = deps->pending_write_mems;
 	while (pending)
 	  {
 	    if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
@@ -3550,22 +3529,22 @@ sched_analyze_2 (x, insn)
 	    pending_mem = XEXP (pending_mem, 1);
 	  }
 
-	for (u = last_pending_memory_flush; u; u = XEXP (u, 1))
+	for (u = deps->last_pending_memory_flush; u; u = XEXP (u, 1))
 	  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
 	/* Always add these dependencies to pending_reads, since
 	   this insn may be followed by a write.  */
-	add_insn_mem_dependence (&pending_read_insns, &pending_read_mems,
-				 insn, x);
+	add_insn_mem_dependence (deps, &deps->pending_read_insns,
+				 &deps->pending_read_mems, insn, x);
 
 	/* Take advantage of tail recursion here.  */
-	sched_analyze_2 (XEXP (x, 0), insn);
+	sched_analyze_2 (deps, XEXP (x, 0), insn);
 	return;
       }
 
     /* Force pending stores to memory in case a trap handler needs them.  */
     case TRAP_IF:
-      flush_pending_lists (insn, 1);
+      flush_pending_lists (deps, insn, 1);
       break;
 
     case ASM_OPERANDS:
@@ -3586,19 +3565,19 @@ sched_analyze_2 (x, insn)
 	    int max_reg = max_reg_num ();
 	    for (i = 0; i < max_reg; i++)
 	      {
-		for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		free_INSN_LIST_list (&reg_last_uses[i]);
+		free_INSN_LIST_list (&deps->reg_last_uses[i]);
 
-		for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 
-		for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
+		for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
 		  add_dependence (insn, XEXP (u, 0), 0);
 	      }
 	    reg_pending_sets_all = 1;
 
-	    flush_pending_lists (insn, 0);
+	    flush_pending_lists (deps, insn, 0);
 	  }
 
 	/* For all ASM_OPERANDS, we must traverse the vector of input operands.
@@ -3609,7 +3588,7 @@ sched_analyze_2 (x, insn)
 	if (code == ASM_OPERANDS)
 	  {
 	    for (j = 0; j < ASM_OPERANDS_INPUT_LENGTH (x); j++)
-	      sched_analyze_2 (ASM_OPERANDS_INPUT (x, j), insn);
+	      sched_analyze_2 (deps, ASM_OPERANDS_INPUT (x, j), insn);
 	    return;
 	  }
 	break;
@@ -3625,8 +3604,8 @@ sched_analyze_2 (x, insn)
          instructions.  Thus we need to pass them to both sched_analyze_1
          and sched_analyze_2.  We must call sched_analyze_2 first in order
          to get the proper antecedent for the read.  */
-      sched_analyze_2 (XEXP (x, 0), insn);
-      sched_analyze_1 (x, insn);
+      sched_analyze_2 (deps, XEXP (x, 0), insn);
+      sched_analyze_1 (deps, x, insn);
       return;
 
     default:
@@ -3638,17 +3617,18 @@ sched_analyze_2 (x, insn)
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e')
-	sched_analyze_2 (XEXP (x, i), insn);
+	sched_analyze_2 (deps, XEXP (x, i), insn);
       else if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  sched_analyze_2 (XVECEXP (x, i, j), insn);
+	  sched_analyze_2 (deps, XVECEXP (x, i, j), insn);
     }
 }
 
 /* Analyze an INSN with pattern X to find all dependencies.  */
 
 static void
-sched_analyze_insn (x, insn, loop_notes)
+sched_analyze_insn (deps, x, insn, loop_notes)
+     struct deps *deps;
      rtx x, insn;
      rtx loop_notes;
 {
@@ -3658,7 +3638,7 @@ sched_analyze_insn (x, insn, loop_notes)
   int i;
 
   if (code == SET || code == CLOBBER)
-    sched_analyze_1 (x, insn);
+    sched_analyze_1 (deps, x, insn);
   else if (code == PARALLEL)
     {
       register int i;
@@ -3666,22 +3646,22 @@ sched_analyze_insn (x, insn, loop_notes)
 	{
 	  code = GET_CODE (XVECEXP (x, 0, i));
 	  if (code == SET || code == CLOBBER)
-	    sched_analyze_1 (XVECEXP (x, 0, i), insn);
+	    sched_analyze_1 (deps, XVECEXP (x, 0, i), insn);
 	  else
-	    sched_analyze_2 (XVECEXP (x, 0, i), insn);
+	    sched_analyze_2 (deps, XVECEXP (x, 0, i), insn);
 	}
     }
   else
-    sched_analyze_2 (x, insn);
+    sched_analyze_2 (deps, x, insn);
 
   /* Mark registers CLOBBERED or used by called function.  */
   if (GET_CODE (insn) == CALL_INSN)
     for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
       {
 	if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	  sched_analyze_1 (XEXP (link, 0), insn);
+	  sched_analyze_1 (deps, XEXP (link, 0), insn);
 	else
-	  sched_analyze_2 (XEXP (link, 0), insn);
+	  sched_analyze_2 (deps, XEXP (link, 0), insn);
       }
 
   /* If there is a {LOOP,EHREGION}_{BEG,END} note in the middle of a basic
@@ -3719,19 +3699,19 @@ sched_analyze_insn (x, insn, loop_notes)
 	  for (i = 0; i < max_reg; i++)
 	    {
 	      rtx u;
-	      for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-	      free_INSN_LIST_list (&reg_last_uses[i]);
+	      free_INSN_LIST_list (&deps->reg_last_uses[i]);
 
-	      for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), 0);
 
-	      for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
+	      for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
 		add_dependence (insn, XEXP (u, 0), 0);
 	    }
 	  reg_pending_sets_all = 1;
 
-	  flush_pending_lists (insn, 0);
+	  flush_pending_lists (deps, insn, 0);
 	}
 
     }
@@ -3739,19 +3719,19 @@ sched_analyze_insn (x, insn, loop_notes)
   /* Accumulate clobbers until the next set so that it will be output dependent
      on all of them.  At the next set we can clear the clobber list, since
      subsequent sets will be output dependent on it.  */
-  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i,
-			     {
-			       free_INSN_LIST_list (&reg_last_sets[i]);
-			       free_INSN_LIST_list (&reg_last_clobbers[i]);
-			       reg_last_sets[i]
-				 = alloc_INSN_LIST (insn, NULL_RTX);
-			     });
-  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i,
-			     {
-			       reg_last_clobbers[i]
-				 = alloc_INSN_LIST (insn, 
-						    reg_last_clobbers[i]);
-			     });
+  EXECUTE_IF_SET_IN_REG_SET
+    (reg_pending_sets, 0, i,
+     {
+       free_INSN_LIST_list (&deps->reg_last_sets[i]);
+       free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
+       deps->reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
+     });
+  EXECUTE_IF_SET_IN_REG_SET
+    (reg_pending_clobbers, 0, i,
+     {
+       deps->reg_last_clobbers[i]
+	 = alloc_INSN_LIST (insn, deps->reg_last_clobbers[i]);
+     });
   CLEAR_REG_SET (reg_pending_sets);
   CLEAR_REG_SET (reg_pending_clobbers);
 
@@ -3759,9 +3739,9 @@ sched_analyze_insn (x, insn, loop_notes)
     {
       for (i = 0; i < maxreg; i++)
 	{
-	  free_INSN_LIST_list (&reg_last_sets[i]);
-	  free_INSN_LIST_list (&reg_last_clobbers[i]);
-	  reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
+	  free_INSN_LIST_list (&deps->reg_last_sets[i]);
+	  free_INSN_LIST_list (&deps->reg_last_clobbers[i]);
+	  deps->reg_last_sets[i] = alloc_INSN_LIST (insn, NULL_RTX);
 	}
 
       reg_pending_sets_all = 0;
@@ -3808,7 +3788,8 @@ sched_analyze_insn (x, insn, loop_notes)
    for every dependency.  */
 
 static void
-sched_analyze (head, tail)
+sched_analyze (deps, head, tail)
+     struct deps *deps;
      rtx head, tail;
 {
   register rtx insn;
@@ -3825,9 +3806,9 @@ sched_analyze (head, tail)
 	  /* Make each JUMP_INSN a scheduling barrier for memory
              references.  */
 	  if (GET_CODE (insn) == JUMP_INSN)
-	    last_pending_memory_flush
-	      = alloc_INSN_LIST (insn, last_pending_memory_flush);
-	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
+	    deps->last_pending_memory_flush
+	      = alloc_INSN_LIST (insn, deps->last_pending_memory_flush);
+	  sched_analyze_insn (deps, PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
 	}
       else if (GET_CODE (insn) == CALL_INSN)
@@ -3859,14 +3840,14 @@ sched_analyze (head, tail)
 	      int max_reg = max_reg_num ();
 	      for (i = 0; i < max_reg; i++)
 		{
-		  for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		  for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
-		  free_INSN_LIST_list (&reg_last_uses[i]);
+		  free_INSN_LIST_list (&deps->reg_last_uses[i]);
 
-		  for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		  for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), 0);
 
-		  for (u = reg_last_clobbers[i]; u; u = XEXP (u, 1))
+		  for (u = deps->reg_last_clobbers[i]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), 0);
 		}
 	      reg_pending_sets_all = 1;
@@ -3886,10 +3867,10 @@ sched_analyze (head, tail)
 	      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 		if (call_used_regs[i] || global_regs[i])
 		  {
-		    for (u = reg_last_uses[i]; u; u = XEXP (u, 1))
+		    for (u = deps->reg_last_uses[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
-		    for (u = reg_last_sets[i]; u; u = XEXP (u, 1))
+		    for (u = deps->reg_last_sets[i]; u; u = XEXP (u, 1))
 		      add_dependence (insn, XEXP (u, 0), REG_DEP_ANTI);
 
 		    SET_REGNO_REG_SET (reg_pending_clobbers, i);
@@ -3898,29 +3879,29 @@ sched_analyze (head, tail)
 
 	  /* For each insn which shouldn't cross a call, add a dependence
 	     between that insn and this call insn.  */
-	  x = LOG_LINKS (sched_before_next_call);
+	  x = LOG_LINKS (deps->sched_before_next_call);
 	  while (x)
 	    {
 	      add_dependence (insn, XEXP (x, 0), REG_DEP_ANTI);
 	      x = XEXP (x, 1);
 	    }
-	  free_INSN_LIST_list (&LOG_LINKS (sched_before_next_call));
+	  free_INSN_LIST_list (&LOG_LINKS (deps->sched_before_next_call));
 
-	  sched_analyze_insn (PATTERN (insn), insn, loop_notes);
+	  sched_analyze_insn (deps, PATTERN (insn), insn, loop_notes);
 	  loop_notes = 0;
 
 	  /* In the absence of interprocedural alias analysis, we must flush
 	     all pending reads and writes, and start new dependencies starting
 	     from here.  But only flush writes for constant calls (which may
 	     be passed a pointer to something we haven't written yet).  */
-	  flush_pending_lists (insn, CONST_CALL_P (insn));
+	  flush_pending_lists (deps, insn, CONST_CALL_P (insn));
 
 	  /* Depend this function call (actually, the user of this
 	     function call) on all hard register clobberage.  */
 
 	  /* last_function_call is now a list of insns.  */
-	  free_INSN_LIST_list(&last_function_call);
-	  last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
+	  free_INSN_LIST_list (&deps->last_function_call);
+	  deps->last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
 	}
 
       /* See comments on reemit_notes as to why we do this.  
@@ -6194,30 +6175,27 @@ compute_block_forward_dependences (bb)
 /* Initialize variables for region data dependence analysis.
    n_bbs is the number of region blocks.  */
 
-__inline static void
-init_rgn_data_dependences (n_bbs)
-     int n_bbs;
+static void
+init_deps (deps)
+     struct deps *deps;
 {
-  int bb;
+  int maxreg = max_reg_num ();
+  deps->reg_last_uses = (rtx *) xcalloc (maxreg, sizeof (rtx));
+  deps->reg_last_sets = (rtx *) xcalloc (maxreg, sizeof (rtx));
+  deps->reg_last_clobbers = (rtx *) xcalloc (maxreg, sizeof (rtx));
 
-  /* Variables for which one copy exists for each block.  */
-  bzero ((char *) bb_pending_read_insns, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_pending_read_mems, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_pending_write_insns, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_pending_write_mems, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_pending_lists_length, n_bbs * sizeof (int));
-  bzero ((char *) bb_last_pending_memory_flush, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_last_function_call, n_bbs * sizeof (rtx));
-  bzero ((char *) bb_sched_before_next_call, n_bbs * sizeof (rtx));
+  deps->pending_read_insns = 0;
+  deps->pending_read_mems = 0;
+  deps->pending_write_insns = 0;
+  deps->pending_write_mems = 0;
+  deps->pending_lists_length = 0;
+  deps->last_pending_memory_flush = 0;
+  deps->last_function_call = 0;
 
-  /* Create an insn here so that we can hang dependencies off of it later.  */
-  for (bb = 0; bb < n_bbs; bb++)
-    {
-      bb_sched_before_next_call[bb] =
-	gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
-		      NULL_RTX, 0, NULL_RTX, NULL_RTX);
-      LOG_LINKS (bb_sched_before_next_call[bb]) = 0;
-    }
+  deps->sched_before_next_call
+    = gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
+		    NULL_RTX, 0, NULL_RTX, NULL_RTX);
+  LOG_LINKS (deps->sched_before_next_call) = 0;
 }
 
 /* Add dependences so that branches are scheduled to run last in their
@@ -6227,7 +6205,6 @@ static void
 add_branch_dependences (head, tail)
      rtx head, tail;
 {
-
   rtx insn, last;
 
   /* For all branches, calls, uses, clobbers, and cc0 setters, force them
@@ -6303,6 +6280,154 @@ add_branch_dependences (head, tail)
       }
 }
 
+/* After computing the dependencies for block BB, propagate the dependencies
+   found in TMP_DEPS to the successors of the block.  MAX_REG is the number
+   of registers.  */
+static void
+propagate_deps (bb, tmp_deps, max_reg)
+     int bb;
+     struct deps *tmp_deps;
+     int max_reg;
+{
+  int b = BB_TO_BLOCK (bb);
+  int e, first_edge;
+  int reg;
+  rtx link_insn, link_mem;
+  rtx u;
+
+  /* These lists should point to the right place, for correct
+     freeing later.  */
+  bb_deps[bb].pending_read_insns = tmp_deps->pending_read_insns;
+  bb_deps[bb].pending_read_mems = tmp_deps->pending_read_mems;
+  bb_deps[bb].pending_write_insns = tmp_deps->pending_write_insns;
+  bb_deps[bb].pending_write_mems = tmp_deps->pending_write_mems;
+
+  /* bb's structures are inherited by its successors.  */
+  first_edge = e = OUT_EDGES (b);
+  if (e <= 0)
+    return;
+
+  do
+    {
+      rtx x;
+      int b_succ = TO_BLOCK (e);
+      int bb_succ = BLOCK_TO_BB (b_succ);
+      struct deps *succ_deps = bb_deps + bb_succ;
+
+      /* Only bbs "below" bb, in the same region, are interesting.  */
+      if (CONTAINING_RGN (b) != CONTAINING_RGN (b_succ)
+	  || bb_succ <= bb)
+	{
+	  e = NEXT_OUT (e);
+	  continue;
+	}
+
+      for (reg = 0; reg < max_reg; reg++)
+	{
+	  /* reg-last-uses lists are inherited by bb_succ.  */
+	  for (u = tmp_deps->reg_last_uses[reg]; u; u = XEXP (u, 1))
+	    {
+	      if (find_insn_list (XEXP (u, 0),
+				  succ_deps->reg_last_uses[reg]))
+		continue;
+
+	      succ_deps->reg_last_uses[reg]
+		= alloc_INSN_LIST (XEXP (u, 0),
+				   succ_deps->reg_last_uses[reg]);
+	    }
+
+	  /* reg-last-defs lists are inherited by bb_succ.  */
+	  for (u = tmp_deps->reg_last_sets[reg]; u; u = XEXP (u, 1))
+	    {
+	      if (find_insn_list (XEXP (u, 0),
+				  succ_deps->reg_last_sets[reg]))
+		continue;
+
+	      succ_deps->reg_last_sets[reg]
+		= alloc_INSN_LIST (XEXP (u, 0),
+				   succ_deps->reg_last_sets[reg]);
+	    }
+
+	  for (u = tmp_deps->reg_last_clobbers[reg]; u; u = XEXP (u, 1))
+	    {
+	      if (find_insn_list (XEXP (u, 0),
+				  succ_deps->reg_last_clobbers[reg]))
+		continue;
+
+	      succ_deps->reg_last_clobbers[reg]
+		= alloc_INSN_LIST (XEXP (u, 0),
+				   succ_deps->reg_last_clobbers[reg]);
+	    }
+	}
+
+      /* Mem read/write lists are inherited by bb_succ.  */
+      link_insn = tmp_deps->pending_read_insns;
+      link_mem = tmp_deps->pending_read_mems;
+      while (link_insn)
+	{
+	  if (!(find_insn_mem_list (XEXP (link_insn, 0),
+				    XEXP (link_mem, 0),
+				    succ_deps->pending_read_insns,
+				    succ_deps->pending_read_mems)))
+	    add_insn_mem_dependence (succ_deps, &succ_deps->pending_read_insns,
+				     &succ_deps->pending_read_mems,
+				     XEXP (link_insn, 0), XEXP (link_mem, 0));
+	  link_insn = XEXP (link_insn, 1);
+	  link_mem = XEXP (link_mem, 1);
+	}
+
+      link_insn = tmp_deps->pending_write_insns;
+      link_mem = tmp_deps->pending_write_mems;
+      while (link_insn)
+	{
+	  if (!(find_insn_mem_list (XEXP (link_insn, 0),
+				    XEXP (link_mem, 0),
+				    succ_deps->pending_write_insns,
+				    succ_deps->pending_write_mems)))
+	    add_insn_mem_dependence (succ_deps,
+				     &succ_deps->pending_write_insns,
+				     &succ_deps->pending_write_mems,
+				     XEXP (link_insn, 0), XEXP (link_mem, 0));
+
+	  link_insn = XEXP (link_insn, 1);
+	  link_mem = XEXP (link_mem, 1);
+	}
+
+      /* last_function_call is inherited by bb_succ.  */
+      for (u = tmp_deps->last_function_call; u; u = XEXP (u, 1))
+	{
+	  if (find_insn_list (XEXP (u, 0),
+			      succ_deps->last_function_call))
+	    continue;
+
+	  succ_deps->last_function_call
+	    = alloc_INSN_LIST (XEXP (u, 0),
+			       succ_deps->last_function_call);
+	}
+
+      /* last_pending_memory_flush is inherited by bb_succ.  */
+      for (u = tmp_deps->last_pending_memory_flush; u; u = XEXP (u, 1))
+	{
+	  if (find_insn_list (XEXP (u, 0), 
+			      succ_deps->last_pending_memory_flush))
+	    continue;
+
+	  succ_deps->last_pending_memory_flush
+	    = alloc_INSN_LIST (XEXP (u, 0),
+			       succ_deps->last_pending_memory_flush);
+	}
+
+      /* sched_before_next_call is inherited by bb_succ.  */
+      x = LOG_LINKS (tmp_deps->sched_before_next_call);
+      for (; x; x = XEXP (x, 1))
+	add_dependence (succ_deps->sched_before_next_call,
+			XEXP (x, 0), REG_DEP_ANTI);
+
+      e = NEXT_OUT (e);
+    }
+  while (e != first_edge);
+}
+
 /* Compute backward dependences inside bb.  In a multiple blocks region:
    (1) a bb is analyzed after its predecessors, and (2) the lists in
    effect at the end of bb (after analyzing for bb) are inherited by
@@ -6324,189 +6449,20 @@ static void
 compute_block_backward_dependences (bb)
      int bb;
 {
-  int b;
-  rtx x;
+  int i;
   rtx head, tail;
   int max_reg = max_reg_num ();
+  struct deps tmp_deps;
 
-  b = BB_TO_BLOCK (bb);
-
-  if (current_nr_blocks == 1)
-    {
-      reg_last_uses = (rtx *) xcalloc (max_reg, sizeof (rtx));
-      reg_last_sets = (rtx *) xcalloc (max_reg, sizeof (rtx));
-      reg_last_clobbers = (rtx *) xcalloc (max_reg, sizeof (rtx));
-
-      pending_read_insns = 0;
-      pending_read_mems = 0;
-      pending_write_insns = 0;
-      pending_write_mems = 0;
-      pending_lists_length = 0;
-      last_function_call = 0;
-      last_pending_memory_flush = 0;
-      sched_before_next_call
-	= gen_rtx_INSN (VOIDmode, 0, NULL_RTX, NULL_RTX,
-			NULL_RTX, 0, NULL_RTX, NULL_RTX);
-      LOG_LINKS (sched_before_next_call) = 0;
-    }
-  else
-    {
-      reg_last_uses = bb_reg_last_uses[bb];
-      reg_last_sets = bb_reg_last_sets[bb];
-      reg_last_clobbers = bb_reg_last_clobbers[bb];
-
-      pending_read_insns = bb_pending_read_insns[bb];
-      pending_read_mems = bb_pending_read_mems[bb];
-      pending_write_insns = bb_pending_write_insns[bb];
-      pending_write_mems = bb_pending_write_mems[bb];
-      pending_lists_length = bb_pending_lists_length[bb];
-      last_function_call = bb_last_function_call[bb];
-      last_pending_memory_flush = bb_last_pending_memory_flush[bb];
-
-      sched_before_next_call = bb_sched_before_next_call[bb];
-    }
+  tmp_deps = bb_deps[bb];
 
   /* Do the analysis for this block.  */
   get_bb_head_tail (bb, &head, &tail);
-  sched_analyze (head, tail);
+  sched_analyze (&tmp_deps, head, tail);
   add_branch_dependences (head, tail);
 
   if (current_nr_blocks > 1)
-    {
-      int e, first_edge;
-      int b_succ, bb_succ;
-      int reg;
-      rtx link_insn, link_mem;
-      rtx u;
-
-      /* These lists should point to the right place, for correct
-         freeing later.  */
-      bb_pending_read_insns[bb] = pending_read_insns;
-      bb_pending_read_mems[bb] = pending_read_mems;
-      bb_pending_write_insns[bb] = pending_write_insns;
-      bb_pending_write_mems[bb] = pending_write_mems;
-
-      /* bb's structures are inherited by it's successors.  */
-      first_edge = e = OUT_EDGES (b);
-      if (e > 0)
-	do
-	  {
-	    b_succ = TO_BLOCK (e);
-	    bb_succ = BLOCK_TO_BB (b_succ);
-
-	    /* Only bbs "below" bb, in the same region, are interesting.  */
-	    if (CONTAINING_RGN (b) != CONTAINING_RGN (b_succ)
-		|| bb_succ <= bb)
-	      {
-		e = NEXT_OUT (e);
-		continue;
-	      }
-
-	    for (reg = 0; reg < max_reg; reg++)
-	      {
-
-		/* reg-last-uses lists are inherited by bb_succ.  */
-		for (u = reg_last_uses[reg]; u; u = XEXP (u, 1))
-		  {
-		    if (find_insn_list (XEXP (u, 0),
-					(bb_reg_last_uses[bb_succ])[reg]))
-		      continue;
-
-		    (bb_reg_last_uses[bb_succ])[reg]
-		      = alloc_INSN_LIST (XEXP (u, 0),
-					 (bb_reg_last_uses[bb_succ])[reg]);
-		  }
-
-		/* reg-last-defs lists are inherited by bb_succ.  */
-		for (u = reg_last_sets[reg]; u; u = XEXP (u, 1))
-		  {
-		    if (find_insn_list (XEXP (u, 0),
-					(bb_reg_last_sets[bb_succ])[reg]))
-		      continue;
-
-		    (bb_reg_last_sets[bb_succ])[reg]
-		      = alloc_INSN_LIST (XEXP (u, 0),
-					 (bb_reg_last_sets[bb_succ])[reg]);
-		  }
-
-		for (u = reg_last_clobbers[reg]; u; u = XEXP (u, 1))
-		  {
-		    if (find_insn_list (XEXP (u, 0),
-					(bb_reg_last_clobbers[bb_succ])[reg]))
-		      continue;
-
-		    (bb_reg_last_clobbers[bb_succ])[reg]
-		      = alloc_INSN_LIST (XEXP (u, 0),
-					 (bb_reg_last_clobbers[bb_succ])[reg]);
-		  }
-	      }
-
-	    /* Mem read/write lists are inherited by bb_succ.  */
-	    link_insn = pending_read_insns;
-	    link_mem = pending_read_mems;
-	    while (link_insn)
-	      {
-		if (!(find_insn_mem_list (XEXP (link_insn, 0),
-					  XEXP (link_mem, 0),
-					  bb_pending_read_insns[bb_succ],
-					  bb_pending_read_mems[bb_succ])))
-		  add_insn_mem_dependence (&bb_pending_read_insns[bb_succ],
-					   &bb_pending_read_mems[bb_succ],
-				   XEXP (link_insn, 0), XEXP (link_mem, 0));
-		link_insn = XEXP (link_insn, 1);
-		link_mem = XEXP (link_mem, 1);
-	      }
-
-	    link_insn = pending_write_insns;
-	    link_mem = pending_write_mems;
-	    while (link_insn)
-	      {
-		if (!(find_insn_mem_list (XEXP (link_insn, 0),
-					  XEXP (link_mem, 0),
-					  bb_pending_write_insns[bb_succ],
-					  bb_pending_write_mems[bb_succ])))
-		  add_insn_mem_dependence (&bb_pending_write_insns[bb_succ],
-					   &bb_pending_write_mems[bb_succ],
-				   XEXP (link_insn, 0), XEXP (link_mem, 0));
-
-		link_insn = XEXP (link_insn, 1);
-		link_mem = XEXP (link_mem, 1);
-	      }
-
-	    /* last_function_call is inherited by bb_succ.  */
-	    for (u = last_function_call; u; u = XEXP (u, 1))
-	      {
-		if (find_insn_list (XEXP (u, 0),
-				    bb_last_function_call[bb_succ]))
-		  continue;
-
-		bb_last_function_call[bb_succ]
-		  = alloc_INSN_LIST (XEXP (u, 0),
-				     bb_last_function_call[bb_succ]);
-	      }
-
-	    /* last_pending_memory_flush is inherited by bb_succ.  */
-	    for (u = last_pending_memory_flush; u; u = XEXP (u, 1))
-	      {
-		if (find_insn_list (XEXP (u, 0), 
-				    bb_last_pending_memory_flush[bb_succ]))
-		  continue;
-
-		bb_last_pending_memory_flush[bb_succ]
-		  = alloc_INSN_LIST (XEXP (u, 0),
-				     bb_last_pending_memory_flush[bb_succ]);
-	      }
-
-	    /* sched_before_next_call is inherited by bb_succ.  */
-	    x = LOG_LINKS (sched_before_next_call);
-	    for (; x; x = XEXP (x, 1))
-	      add_dependence (bb_sched_before_next_call[bb_succ],
-			      XEXP (x, 0), REG_DEP_ANTI);
-
-	    e = NEXT_OUT (e);
-	  }
-	while (e != first_edge);
-    }
+    propagate_deps (bb, &tmp_deps, max_reg);
 
   /* Free up the INSN_LISTs.
 
@@ -6515,29 +6471,23 @@ compute_block_backward_dependences (bb)
      The list was empty for the vast majority of those calls.  On the PA, not 
      calling free_INSN_LIST_list in those cases improves -O2 compile times by
      3-5% on average.  */
-  for (b = 0; b < max_reg; ++b)
+  for (i = 0; i < max_reg; ++i)
     {
-      if (reg_last_clobbers[b])
-	free_INSN_LIST_list (&reg_last_clobbers[b]);
-      if (reg_last_sets[b])
-	free_INSN_LIST_list (&reg_last_sets[b]);
-      if (reg_last_uses[b])
-	free_INSN_LIST_list (&reg_last_uses[b]);
+      if (tmp_deps.reg_last_clobbers[i])
+	free_INSN_LIST_list (&tmp_deps.reg_last_clobbers[i]);
+      if (tmp_deps.reg_last_sets[i])
+	free_INSN_LIST_list (&tmp_deps.reg_last_sets[i]);
+      if (tmp_deps.reg_last_uses[i])
+	free_INSN_LIST_list (&tmp_deps.reg_last_uses[i]);
     }
 
   /* Assert that we won't need bb_reg_last_* for this block anymore.  */
-  if (current_nr_blocks > 1)
-    {
-      bb_reg_last_uses[bb] = (rtx *) NULL_RTX;
-      bb_reg_last_sets[bb] = (rtx *) NULL_RTX;
-      bb_reg_last_clobbers[bb] = (rtx *) NULL_RTX;
-    }
-  else if (current_nr_blocks == 1)
-    {
-      free (reg_last_uses);
-      free (reg_last_sets);
-      free (reg_last_clobbers);
-    }
+  free (bb_deps[bb].reg_last_uses);
+  free (bb_deps[bb].reg_last_sets);
+  free (bb_deps[bb].reg_last_clobbers);
+  bb_deps[bb].reg_last_uses = 0;
+  bb_deps[bb].reg_last_sets = 0;
+  bb_deps[bb].reg_last_clobbers = 0;
 }
 
 /* Print dependences for debugging, callable from debugger.  */
@@ -6649,29 +6599,6 @@ set_priorities (bb)
   return n_insn;
 }
 
-/* Make each element of VECTOR point at an rtx-vector,
-   taking the space for all those rtx-vectors from SPACE.
-   SPACE is of type (rtx *), but it is really as long as NELTS rtx-vectors.
-   BYTES_PER_ELT is the number of bytes in one rtx-vector.
-   (this is the same as init_regset_vector () in flow.c)  */
-
-static void
-init_rtx_vector (vector, space, nelts, bytes_per_elt)
-     rtx **vector;
-     rtx *space;
-     int nelts;
-     int bytes_per_elt;
-{
-  register int i;
-  register rtx *p = space;
-
-  for (i = 0; i < nelts; i++)
-    {
-      vector[i] = p;
-      p += bytes_per_elt / sizeof (*p);
-    }
-}
-
 /* Schedule a region.  A region is either an inner loop, a loop-free
    subroutine, or a single basic block.  Each bb in the region is
    scheduled after its flow predecessors.  */
@@ -6683,9 +6610,6 @@ schedule_region (rgn)
   int bb;
   int rgn_n_insns = 0;
   int sched_rgn_n_insns = 0;
-  rtx *bb_reg_last_uses_space = NULL;
-  rtx *bb_reg_last_sets_space = NULL;
-  rtx *bb_reg_last_clobbers_space = NULL;
 
   /* Set variables for the current region.  */
   current_nr_blocks = RGN_NR_BLOCKS (rgn);
@@ -6696,48 +6620,9 @@ schedule_region (rgn)
   reg_pending_sets_all = 0;
 
   /* Initializations for region data dependence analyisis.  */
-  if (current_nr_blocks > 1)
-    {
-      int maxreg = max_reg_num ();
-
-      bb_reg_last_uses = (rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
-      bb_reg_last_uses_space 
-	= (rtx *) xcalloc (current_nr_blocks * maxreg, sizeof (rtx));
-      init_rtx_vector (bb_reg_last_uses, bb_reg_last_uses_space, 
-		       current_nr_blocks, maxreg * sizeof (rtx *));
-
-      bb_reg_last_sets = (rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
-      bb_reg_last_sets_space 
-	= (rtx *) xcalloc (current_nr_blocks * maxreg, sizeof (rtx));
-      init_rtx_vector (bb_reg_last_sets, bb_reg_last_sets_space, 
-		       current_nr_blocks, maxreg * sizeof (rtx *));
-
-      bb_reg_last_clobbers =
-	(rtx **) xmalloc (current_nr_blocks * sizeof (rtx *));
-      bb_reg_last_clobbers_space 
-	= (rtx *) xcalloc (current_nr_blocks * maxreg, sizeof (rtx));
-      init_rtx_vector (bb_reg_last_clobbers, bb_reg_last_clobbers_space, 
-		       current_nr_blocks, maxreg * sizeof (rtx *));
-
-      bb_pending_read_insns 
-	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-      bb_pending_read_mems 
-	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-      bb_pending_write_insns =
-	(rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-      bb_pending_write_mems 
-	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-      bb_pending_lists_length =
-	(int *) xmalloc (current_nr_blocks * sizeof (int));
-      bb_last_pending_memory_flush =
-	(rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-      bb_last_function_call 
-	= (rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-      bb_sched_before_next_call =
-	(rtx *) xmalloc (current_nr_blocks * sizeof (rtx));
-
-      init_rgn_data_dependences (current_nr_blocks);
-    }
+  bb_deps = (struct deps *) xmalloc (sizeof (struct deps) * current_nr_blocks);
+  for (bb = 0; bb < current_nr_blocks; bb++)
+    init_deps (bb_deps + bb);
 
   /* Compute LOG_LINKS.  */
   for (bb = 0; bb < current_nr_blocks; bb++)
@@ -6823,24 +6708,12 @@ schedule_region (rgn)
   FREE_REG_SET (reg_pending_sets);
   FREE_REG_SET (reg_pending_clobbers);
 
+  free (bb_deps);
+
   if (current_nr_blocks > 1)
     {
       int i;
 
-      free (bb_reg_last_uses_space);
-      free (bb_reg_last_uses);
-      free (bb_reg_last_sets_space);
-      free (bb_reg_last_sets);
-      free (bb_reg_last_clobbers_space);
-      free (bb_reg_last_clobbers);
-      free (bb_pending_read_insns);
-      free (bb_pending_read_mems);
-      free (bb_pending_write_insns);
-      free (bb_pending_write_mems);
-      free (bb_pending_lists_length);
-      free (bb_last_pending_memory_flush);
-      free (bb_last_function_call);
-      free (bb_sched_before_next_call);
       free (prob);
       for (i = 0; i < current_nr_blocks; ++i)
 	{
