@@ -1,3 +1,7 @@
+1999-08-02  Tom Tromey  <tromey@cygnus.com>
+
+	* aclocal.m4, configure: Rebuilt for new libtool.
+
 1999-08-01  Tom Tromey  <tromey@cygnus.com>
 
 	* configure: Rebuilt.
