@@ -2352,6 +2352,12 @@ store_constructor (exp, target)
 	  int bitpos;
 	  int unsignedp;
 
+	  /* Just ignore missing fields.
+	     We cleared the whole structure, above,
+	     if any fields are missing.  */
+	  if (field == 0)
+	    continue;
+
 	  bitsize = TREE_INT_CST_LOW (DECL_SIZE (field));
 	  unsignedp = TREE_UNSIGNED (field);
 	  mode = DECL_MODE (field);
@@ -2867,7 +2873,8 @@ safe_from_p (x, exp)
 
     case 'x':
       if (TREE_CODE (exp) == TREE_LIST)
-	return (safe_from_p (x, TREE_VALUE (exp))
+	return ((TREE_VALUE (exp) == 0
+		 || safe_from_p (x, TREE_VALUE (exp)))
 		&& (TREE_CHAIN (exp) == 0
 		    || safe_from_p (x, TREE_CHAIN (exp))));
       else
