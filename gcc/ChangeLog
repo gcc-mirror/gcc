@@ -1,3 +1,9 @@
+Tue Jul 21 03:59:08 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* jump.c (jump_optimize): When simplifying noop moves and
+	PUSH_ROUNDING, fix thinko so we use same criterion for identifying
+	the PUSHes to rewrite in second loop as we did in the first.
+
 Tue Jul 21 00:31:01 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* configure.in: Fix minor problems with gas feature detection code.

@@ -402,9 +402,14 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		    if (GET_CODE (p) != INSN)
 		      break;
 		    pbody = PATTERN (p);
-		    if (GET_CODE (pbody) == SET)
+		    if (GET_CODE (pbody) != SET)
 		      break;
 		    dest = SET_DEST (pbody);
+		    /* Allow a no-op move between the adjust and the push.  */
+		    if (GET_CODE (dest) == REG
+			&& GET_CODE (SET_SRC (pbody)) == REG
+			&& REGNO (dest) == REGNO (SET_SRC (pbody)))
+		      continue;
 		    if (! (GET_CODE (dest) == MEM
 			   && GET_CODE (XEXP (dest, 0)) == POST_INC
 			   && XEXP (XEXP (dest, 0), 0) == stack_pointer_rtx))
