@@ -1,7 +1,5 @@
 /*
  * dpx2g.h - Bull DPX/2 200 and 300 systems (m68k, SysVr3) with gas
- * 
- * $Id: dpx2g.h,v 1.1 1992/03/11 04:21:58 sjg Exp sjg $
  */
 
 #define USE_GAS
