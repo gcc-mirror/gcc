@@ -1,6 +1,4 @@
-// 2001-05-24 Benjamin Kosnik  <bkoz@redhat.com>
-
-// Copyright (C) 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -26,10 +24,10 @@
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  std::stringstream is01;
-  const std::string str00; 
-  const std::string str01 = "123";
-  std::string str02;
+  std::wstringstream is01;
+  const std::wstring str00; 
+  const std::wstring str01 = L"123";
+  std::wstring str02;
   const int i01 = 123;
   int a,b;
 

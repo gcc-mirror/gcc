@@ -1,6 +1,4 @@
-// 2003-04-01 Benjamin Kosnik  <bkoz@redhat.com>
-
-// Copyright (C) 2003 Free Software Foundation, Inc.
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -24,29 +22,29 @@
 #include <testsuite_hooks.h>
 
 void 
-redirect_buffer(std::ios& stream, std::streambuf* new_buf) 
+redirect_buffer(std::wios& stream, std::wstreambuf* new_buf) 
 { stream.rdbuf(new_buf); }
 
-std::streambuf*
-active_buffer(std::ios& stream)
+std::wstreambuf*
+active_buffer(std::wios& stream)
 { return stream.rdbuf(); }
 
 // libstdc++/2832
 void test02()
 {
   bool test __attribute__((unused)) = true;
-  std::stringbuf sbuf;
-  std::streambuf* pbasebuf0 = &sbuf;
+  std::wstringbuf sbuf;
+  std::wstreambuf* pbasebuf0 = &sbuf;
 
-  std::stringstream sstrm1;
+  std::wstringstream sstrm1;
   // derived rdbuf() always returns original streambuf, even though
   // it's no longer associated with the stream.
-  std::stringbuf* const buf1 = sstrm1.rdbuf();
+  std::wstringbuf* const buf1 = sstrm1.rdbuf();
   // base rdbuf() returns the currently associated streambuf
-  std::streambuf* pbasebuf1 = active_buffer(sstrm1);
+  std::wstreambuf* pbasebuf1 = active_buffer(sstrm1);
   redirect_buffer(sstrm1, &sbuf);
-  std::stringbuf* const buf2 = sstrm1.rdbuf();
-  std::streambuf* pbasebuf2 = active_buffer(sstrm1);
+  std::wstringbuf* const buf2 = sstrm1.rdbuf();
+  std::wstreambuf* pbasebuf2 = active_buffer(sstrm1);
   VERIFY( buf1 == buf2 ); 
   VERIFY( pbasebuf1 != pbasebuf2 );
   VERIFY( pbasebuf2 == pbasebuf0 );
