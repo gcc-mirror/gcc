@@ -1,3 +1,10 @@
+2005-02-25  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20204
+	* tree-into-ssa.c (insert_phi_nodes_for): Do not use
+	REWRITE_THIS_STMT markers on PHI nodes.
+	(rewrite_initialize_block): Likewise.
+
 2005-02-25  Mark Mitchell  <mark@codesourcery.com>
 
 	* version.c (version_string): Mark as prerelease.

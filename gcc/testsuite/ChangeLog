@@ -1,3 +1,8 @@
+2005-02-25  Diego Novillo  <dnovillo@redhat.com>
+
+	PR tree-optimization/20204
+	* testsuite/gcc.dg/pr20204.c: New test.
+
 2005-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/20196
