@@ -312,6 +312,10 @@ extern char *target_fp_name;
    big-endian (for backwards compatibility with older versions of GCC).  */
 #define ARM_FLAG_LITTLE_WORDS	(0x2000)
 
+/* Nonzero if a call to abort should be generated if a noreturn 
+function tries to return. */
+#define ARM_FLAG_ABORT_NORETURN (0x8000)
+
 #define TARGET_APCS			(target_flags & ARM_FLAG_APCS_FRAME)
 #define TARGET_POKE_FUNCTION_NAME	(target_flags & ARM_FLAG_POKE)
 #define TARGET_FPE			(target_flags & ARM_FLAG_FPE)
@@ -327,6 +331,7 @@ extern char *target_fp_name;
 #define TARGET_BIG_END			(target_flags & ARM_FLAG_BIG_END)
 #define TARGET_THUMB_INTERWORK		(target_flags & ARM_FLAG_THUMB)
 #define TARGET_LITTLE_WORDS		(target_flags & ARM_FLAG_LITTLE_WORDS)
+#define TARGET_ABORT_NORETURN           (target_flags & ARM_FLAG_ABORT_NORETURN)
 
 /* SUBTARGET_SWITCHES is used to add flags on a per-config basis.
    Bit 31 is reserved.  See riscix.h.  */
@@ -377,6 +382,10 @@ extern char *target_fp_name;
   {"thumb-interwork",		ARM_FLAG_THUMB, 	\
      "Support calls between THUMB and ARM instructions sets" },	\
   {"no-thumb-interwork",       -ARM_FLAG_THUMB, "" },	\
+  {"abort-on-noreturn",         ARM_FLAG_ABORT_NORETURN,     \
+   "Generate a call to abort if a noreturn function returns"}, \
+  {"no-abort-on-noreturn",      -ARM_FLAG_ABORT_NORETURN, ""}, \
+
   SUBTARGET_SWITCHES					\
   {"",				TARGET_DEFAULT }	\
 }
