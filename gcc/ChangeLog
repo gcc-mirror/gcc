@@ -1,3 +1,11 @@
+Mon Oct 20 15:30:26 1997  Nick Clifton  <nickc@cygnus.com>
+
+	* v850.h: Move define of __v850__ from CPP_PREDEFINES
+	to CPP_SPEC.
+	
+	* xm-v850.h: Use __v850 rather than __v850__ to
+	identify v850 port.
+
 Mon Oct 20 14:15:02 1997  Jim Wilson  <wilson@cygnus.com>
 
 	* mips/mips.c (compute_frame_size): Not a leaf function if
