@@ -90,32 +90,43 @@ in the following sections.
 @item Overall Options
 @xref{Overall Options,,Options Controlling the Kind of Output}.
 @smallexample
--c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -v  --target-help  --help  -x @var{language}
+-c  -S  -E  -o @var{file}  -pipe  -pass-exit-codes  -x @var{language}
+-v  --target-help  --help
 @end smallexample
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
 @smallexample
--ansi -std  -fallow-single-precision  -fcond-mismatch  -fno-asm
--fno-builtin  -ffreestanding  -fhosted  -fsigned-bitfields  -fsigned-char
--funsigned-bitfields  -funsigned-char  -fwritable-strings
--traditional  -traditional-cpp  -trigraphs -fsingle-precision-constant
+-ansi  -std=@var{standard}  -fno-asm  -fno-builtin
+-fhosted  -ffreestanding
+-trigraphs  -traditional  -traditional-cpp
+-fallow-single-precision  -fcond-mismatch
+-fsigned-bitfields  -fsigned-char
+-funsigned-bitfields  -funsigned-char
+-fwritable-strings  -fshort-wchar
 @end smallexample
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @smallexample
--fno-access-control -fcheck-new -fconserve-space
--fdollars-in-identifiers -fno-elide-constructors -fexternal-templates
--ffor-scope -fno-for-scope -fno-gnu-keywords -fhonor-std
--fhuge-objects -fno-implicit-templates -finit-priority
--fno-implement-inlines -fname-mangling-version-@var{n}
--fno-default-inline -fno-operator-names -fno-optional-diags -fpermissive
--frepo -fsquangle -ftemplate-depth-@var{n}
--fuse-cxa-atexit -fvtable-thunks -nostdinc++ -Wctor-dtor-privacy
--Wno-deprecated -Weffc++ -Wno-non-template-friend -Wnon-virtual-dtor
--Wold-style-cast -Woverloaded-virtual -Wno-pmf-conversions -Wreorder
--Wsign-promo -Wsynth
+-fno-access-control  -fcheck-new  -fconserve-space
+-fdollars-in-identifiers  -fno-elide-constructors
+-fno-enforce-eh-specs  -fexternal-templates
+-falt-external-templates
+-ffor-scope  -fno-for-scope  -fno-gnu-keywords  -fhonor-std
+-fhuge-objects  -fno-implicit-templates
+-fno-implicit-inline-templates  -finit-priority
+-fno-implement-inlines  -fms-extensions
+-fname-mangling-version-@var{n}  -fno-operator-names
+-fno-optional-diags  -fpermissive
+-frepo  -fno-rtti  -fsquangle  -ftemplate-depth-@var{n}
+-fuse-cxa-atexit  -fvtable-thunks  -nostdinc++
+-fno-default-inline  -Wctor-dtor-privacy
+-Wnon-virtual-dtor  -Wreorder
+-Weffc++  -Wno-deprecated
+-Wno-non-template-friend  -Wold-style-cast
+-Woverloaded-virtual  -Wno-pmf-conversions
+-Wsign-promo  -Wsynth
 @end smallexample
 
 @item Language Independent Options
@@ -129,20 +140,25 @@ in the following sections.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @smallexample
 -fsyntax-only  -pedantic  -pedantic-errors
--w  -W  -Wall  -Waggregate-return 
+-w  -W  -Wall  -Waggregate-return
 -Wcast-align  -Wcast-qual  -Wchar-subscripts  -Wcomment
--Wconversion  -Wdisabled-optimization -Werror  -Wformat
+-Wconversion  -Wdisabled-optimization -Werror
+-Wfloat-equal  -Wformat
 -Wid-clash-@var{len}  -Wimplicit -Wimplicit-int 
--Wimplicit-function-declaration  -Wimport
--Werror-implicit-function-declaration  -Wfloat-equal -Winline
+-Wimplicit-function-declaration
+-Werror-implicit-function-declaration
+-Wimport  -Winline
 -Wlarger-than-@var{len}  -Wlong-long
--Wmain  -Wmissing-declarations  -Wmissing-noreturn
+-Wmain  -Wmissing-declarations
+-Wmissing-format-attribute  -Wmissing-noreturn
 -Wmultichar  -Wno-import  -Wpacked  -Wpadded
 -Wparentheses -Wpointer-arith  -Wredundant-decls
--Wreturn-type -Wshadow  -Wsign-compare -Wswitch -Wsystem-headers
--Wtrigraphs -Wundef  -Wuninitialized  -Wunknown-pragmas -Wunreachable-code 
--Wunused -Wunused-function -Wunused-label -Wunused-parameter
--Wunused-variable -Wunused-value -Wwrite-strings
+-Wreturn-type  -Wsequence-point  -Wshadow
+-Wsign-compare  -Wswitch  -Wsystem-headers
+-Wtrigraphs  -Wundef  -Wuninitialized
+-Wunknown-pragmas  -Wunreachable-code
+-Wunused  -Wunused-function  -Wunused-label  -Wunused-parameter
+-Wunused-value  -Wunused-variable  -Wwrite-strings
 @end smallexample
 
 @item C-only Warning Options
@@ -159,27 +175,33 @@ in the following sections.
 -g  -g@var{level}  -gcoff  -gdwarf  -gdwarf-1  -gdwarf-1+  -gdwarf-2
 -ggdb  -gstabs  -gstabs+  -gxcoff  -gxcoff+
 -p  -pg  -print-file-name=@var{library}  -print-libgcc-file-name
--print-prog-name=@var{program}  -print-search-dirs  -save-temps  -time
+-print-prog-name=@var{program}  -print-search-dirs  -Q
+-save-temps  -time
 @end smallexample
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
 @smallexample
--falign-functions=@var{n}  -falign-labels=@var{n}  -falign-loops=@var{n} 
--falign-jumps=@var{n}  -fbranch-probabilities  
--fcaller-saves  -fcse-follow-jumps  -fcse-skip-blocks
--fdce -fdelayed-branch  -fdelete-null-pointer-checks -fexpensive-optimizations
--ffast-math  -ffloat-store  -fforce-addr  -fforce-mem -fno-math-errno
--fdata-sections  -ffunction-sections  -fgcse 
+-falign-functions=@var{n}  -falign-jumps=@var{n}
+-falign-labels=@var{n}  -falign-loops=@var{n} 
+-fbranch-probabilities  -fcaller-saves
+-fcse-follow-jumps  -fcse-skip-blocks  -fdata-sections  -fdce
+-fdelayed-branch  -fdelete-null-pointer-checks
+-fexpensive-optimizations  -ffast-math  -ffloat-store
+-fforce-addr  -fforce-mem  -ffunction-sections  -fgcse 
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions
--fmove-all-movables  -fno-default-inline  -fno-defer-pop
--fno-function-cse  -fno-inline  -fno-peephole -ftrapv
--fomit-frame-pointer  -foptimize-register-move -foptimize-sibling-calls
--fregmove  -frename-registers  -frerun-cse-after-loop  -frerun-loop-opt
--freduce-all-givs  -fschedule-insns  -fschedule-insns2  -fssa
--fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -funroll-all-loops
--funroll-loops 
--O  -O0  -O1  -O2  -O3 -Os
+-fkeep-static-consts  -fmove-all-movables
+-fno-default-inline  -fno-defer-pop
+-fno-function-cse  -fno-inline  -fno-math-errno  -fno-peephole
+-fomit-frame-pointer  -foptimize-register-move
+-foptimize-sibling-calls  -freduce-all-givs
+-fregmove  -frename-registers
+-frerun-cse-after-loop  -frerun-loop-opt
+-fschedule-insns  -fschedule-insns2
+-fsingle-precision-constant  -fssa
+-fstrength-reduce  -fstrict-aliasing  -fthread-jumps  -ftrapv
+-funroll-all-loops  -funroll-loops 
+-O  -O0  -O1  -O2  -O3  -Os
 @end smallexample
 
 @item Preprocessor Options
@@ -352,7 +374,8 @@ in the following sections.
 -mminimum-fp-blocks  -mnohc-struct-return
 
 @emph{MIPS Options}
--mabicalls  -mcpu=@var{cpu type}  -membedded-data -muninit-const-in-rodata
+-mabicalls  -mcpu=@var{cpu type}
+-membedded-data  -muninit-const-in-rodata
 -membedded-pic  -mfp32  -mfp64  -mgas  -mgp32  -mgp64
 -mgpopt  -mhalf-pic  -mhard-float  -mint64  -mips1
 -mips2  -mips3 -mips4 -mlong64  -mlong32 -mlong-calls  -mmemcpy
@@ -465,13 +488,14 @@ in the following sections.
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
 @smallexample
 -fcall-saved-@var{reg}  -fcall-used-@var{reg}
--fexceptions  -funwind-tables  -ffixed-@var{reg}  -finhibit-size-directive
+-fexceptions  -funwind-tables  -ffixed-@var{reg}
+-finhibit-size-directive  -finstrument-functions
 -fcheck-memory-usage  -fprefix-function-name
 -fno-common  -fno-ident  -fno-gnu-linker
 -fpcc-struct-return  -fpic  -fPIC
 -freg-struct-return  -fshared-data  -fshort-enums
 -fshort-double  -fvolatile  -fvolatile-global -fvolatile-static
--fverbose-asm -fpack-struct  -fstack-check
+-fverbose-asm  -fpack-struct  -fstack-check
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym}
 -fargument-alias  -fargument-noalias
 -fargument-noalias-global

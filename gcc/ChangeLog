@@ -1,3 +1,7 @@
+2000-11-12  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* invoke.texi: Clean up option summary.
+
 2000-11-12  Nick Clifton  <nickc@redhat.com>
 
 	* config/mcore/mcore.c: Fix comment formating, and adjust sequence
