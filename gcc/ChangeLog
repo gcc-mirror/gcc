@@ -1,3 +1,38 @@
+Fri Jul 30 14:53:56 1999  Jakub Jelinek  <jj@ultra.linux.cz>
+
+	* config/sparc/linux64.h (CC1_SPEC): Preserve CPU specified by
+	the user if using the non-default arch size in BI_ARCH configuration.
+	* config/sparc/sol2-sld-64.h (CC1_SPEC): Ditto.
+
+	* config/sparc/sparc.md (cmp_mul_set, cmp_udiv_cc_set):
+	Fix patterns so that they actually match.
+	(cmp_sdiv_cc_set): Ditto, also don't require g0 to be zero.
+	(mulsidi3_sp64, const_mulsidi3_sp64): New patterns.
+	(const_mulsidi3_sp32): Renamed from const_mulsidi3, only on
+	TARGET_HARD_MUL32.
+	(mulsidi3): Reflect this in the expand.
+	(smulsi3_highpart): Only on TARGET_ARCH32.
+	(umulsidi3_sp64, const_umulsidi3_sp64): New patterns.
+	(const_umulsidi3_sp32): Renamed from const_umulsidi3.
+	(umulsidi3): Reflect this in the expand.
+	(umulsi3_highpart): Only on TARGET_ARCH32.
+	(divsi3_sp32): Renamed from divsi3, only on TARGET_ARCH32,
+	don't require g0 to be zero.
+	(udivsi3_sp32): Renamed from udivsi3, only on TARGET_ARCH32.
+	({,u}divsi3): New expands.
+	({,u}divsi3_sp64): New patterns.
+	(after lshrdi3_v8plus): Four new patterns to help combiner
+	optimizing nested mixed mode shifts.
+
+	* config/sparc/sparc.c (sparc_override_options): Use deprecated
+	v8 instructions if optimizing for UltraSPARC I, II, IIi, as it
+	speed things up. Don't use them by default on plain v9 in 64bit
+	mode, according to what SPAMv9 sais.
+
+	* config/sparc/sparc.h: Fix comments, e.g. Linux already preserves
+	top 32 bits of %[og][0-7] in signal handlers.
+	Also, TARGET_HARD_MUL32 now is only true for TARGET_ARCH32.
+
 Fri Jul 30 03:00:41 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* pa.md (zvdep_imm32): Renamed from zvdep_imm.

@@ -244,7 +244,8 @@
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
-%{m64:-mptr64 -mcpu=v9 -mstack-bias -mno-v8plus} \
+%{m64:-mptr64 -mstack-bias -mno-v8plus \
+  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8*:%{!msupersparc:-mcpu=v9}}}}}}}} \
 "
 #else
 #define CC1_SPEC "\
@@ -252,8 +253,10 @@
 %{mcypress:-mcpu=cypress} \
 %{msparclite:-mcpu=sparclite} %{mf930:-mcpu=f930} %{mf934:-mcpu=f934} \
 %{mv8:-mcpu=v8} %{msupersparc:-mcpu=supersparc} \
-%{m32:-mptr32 -mcpu=cypress -mno-stack-bias} \
-%{mv8plus:-m32 -mptr32 -mcpu=cypress -mno-stack-bias} \
+%{m32:-mptr32 -mno-stack-bias \
+  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8*:%{!msupersparc:-mcpu=cypress}}}}}}}} \
+%{mv8plus:-m32 -mptr32 -mno-stack-bias \
+  %{!mcpu*:%{!mcypress:%{!msparclite:%{!mf930:%{!mf934:%{!mv8:%{!msupersparc:-mcpu=v9}}}}}}}} \
 "
 #endif
 
