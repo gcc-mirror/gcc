@@ -2608,10 +2608,12 @@ control passing certain arguments in registers.
 @table @code
 @findex PROMOTE_PROTOTYPES
 @item PROMOTE_PROTOTYPES
-Define this macro if an argument declared in a prototype as an
-integral type smaller than @code{int} should actually be passed as an
-@code{int}.  In addition to avoiding errors in certain cases of
-mismatch, it also makes for better code on certain machines.
+A C expression whose value is nonzero if an argument declared in
+a prototype as an integral type smaller than @code{int} should
+actually be passed as an @code{int}.  In addition to avoiding
+errors in certain cases of mismatch, it also makes for better
+code on certain machines.  If the macro is not defined in target
+header files, it defaults to 0.
 
 @findex PUSH_ROUNDING
 @item PUSH_ROUNDING (@var{npushed})
