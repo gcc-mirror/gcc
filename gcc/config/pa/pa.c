@@ -1597,29 +1597,94 @@ output_ascii (file, p, size)
        
 */
 
-/* Helper functions */
-void
-print_stw (file, r, disp, base)
-     FILE *file;
-     int r, disp, base;
+/* Emit RTL to store REG at the memory location specified by BASE+DISP.
+   Handle case where DISP > 8k by using the add_high_const pattern.
+
+   Note in DISP > 8k case, we will leave the high part of the address
+   in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+static void
+store_reg (reg, disp, base)
+     int reg, disp, base;
 {
   if (VAL_14_BITS_P (disp))
-    fprintf (file, "\tstw %%r%d,%d(0,%%r%d)\n", r, disp, base);
+    {
+      emit_move_insn (gen_rtx (MEM, SImode, 
+			       gen_rtx (PLUS, SImode, 
+				        gen_rtx (REG, SImode, base),
+				        GEN_INT (disp))),
+		      gen_rtx (REG, SImode, reg));
+    }
   else
-    fprintf (file, "\taddil L'%d,%%r%d\n\tstw %%r%d,R'%d(0,%%r1)\n", disp, base,
-	     r, disp);
+    {
+      emit_insn (gen_add_high_const (gen_rtx (REG, SImode, 1), 
+				     gen_rtx (REG, SImode, base), 
+				     GEN_INT (disp)));
+      emit_move_insn (gen_rtx (MEM, SImode,
+			       gen_rtx (LO_SUM, SImode, 
+					gen_rtx (REG, SImode, 1),
+					GEN_INT (disp))),
+		      gen_rtx (REG, SImode, reg));
+    }
 }
 
-void
-print_ldw (file, r, disp, base)
-     FILE *file;
-     int r, disp, base;
+/* Emit RTL to load REG from the memory location specified by BASE+DISP.
+   Handle case where DISP > 8k by using the add_high_const pattern.
+
+   Note in DISP > 8k case, we will leave the high part of the address
+   in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+static void
+load_reg (reg, disp, base)
+     int reg, disp, base;
 {
   if (VAL_14_BITS_P (disp))
-    fprintf (file, "\tldw %d(0,%d),%d\n", disp, base, r);
+    {
+      emit_move_insn (gen_rtx (REG, SImode, reg),
+		      gen_rtx (MEM, SImode, 
+			       gen_rtx (PLUS, SImode, 
+				        gen_rtx (REG, SImode, base),
+				        GEN_INT (disp))));
+		      
+    }
   else
-    fprintf (file, "\taddil L'%d,%d\n\tldw R'%d(0,%%r1),%d\n", disp, base,
-	     disp, r);
+    {
+      emit_insn (gen_add_high_const (gen_rtx (REG, SImode, 1), 
+				     gen_rtx (REG, SImode, base),
+				     GEN_INT (disp)));
+      emit_move_insn (gen_rtx (REG, SImode, reg),
+		      gen_rtx (MEM, SImode,
+			       gen_rtx (LO_SUM, SImode, 
+					gen_rtx (REG, SImode, 1), 
+					GEN_INT (disp))));
+    }
+}
+
+/* Emit RTL to set REG to the value specified by BASE+DISP.
+   Handle case where DISP > 8k by using the add_high_const pattern.
+
+   Note in DISP > 8k case, we will leave the high part of the address
+   in %r1.  There is code in expand_hppa_{prologue,epilogue} that knows this.*/
+static void
+set_reg_plus_d(reg, base, disp)
+     int reg, base, disp;
+{
+  if (VAL_14_BITS_P (disp))
+    {
+      emit_move_insn (gen_rtx (REG, SImode, reg),
+		      gen_rtx (PLUS, SImode, 
+			       gen_rtx (REG, SImode, base),
+			       GEN_INT (disp)));
+      
+    }
+  else
+    {
+      emit_insn (gen_add_high_const (gen_rtx (REG, SImode, 1), 
+				     gen_rtx (REG, SImode, base),
+				     GEN_INT (disp)));
+      emit_move_insn (gen_rtx (REG, SImode, reg),
+		      gen_rtx (LO_SUM, SImode, 
+					gen_rtx (REG, SImode, 1),
+					GEN_INT (disp)));
+    }
 }
 
 /* Global variables set by FUNCTION_PROLOGUE.  */
@@ -1641,12 +1706,21 @@ compute_frame_size (size, fregs_live)
   fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
   /* fp is stored in a special place. */
-  for (i = 18; i >= 5; i--)
-    if (regs_ever_live[i])
-      fsize += 4;
+  if (frame_pointer_needed)
+    {
+      for (i = 18; i >= 5; i--)
+	if (regs_ever_live[i])
+	  fsize += 4;
 
-  if (regs_ever_live[3])
-    fsize += 4;
+      if (regs_ever_live[3])
+	fsize += 4;
+    }
+  else
+    {
+      for (i = 18; i >= 3; i--)
+	if (regs_ever_live[i])
+	  fsize += 4;
+    }
   fsize = (fsize + 7) & ~7;
 
   if (!TARGET_SNAKE)
@@ -1675,128 +1749,177 @@ compute_frame_size (size, fregs_live)
   return TARGET_SNAKE ? (fsize + 63 & ~63) : fsize;
 }
      
+rtx hp_profile_label_rtx;
+static char hp_profile_label_name[8];
 void
 output_function_prologue (file, size)
      FILE *file;
      int size;
 {
+
+  /* hppa_expand_prologue does the dirty work now.  We just need
+     to output the assembler directives which denote the start
+     of a function.  */
+  fprintf (file, "\t.PROC\n\t.CALLINFO FRAME=%d", actual_fsize);
+  if (regs_ever_live[2] || profile_flag)
+    fprintf (file, ",CALLS,SAVE_RP\n");
+  else
+    fprintf (file, ",NO_CALLS\n");
+  fprintf (file, "\t.ENTRY\n");
+
+  /* Horrid hack.  emit_function_prologue will modify this RTL in
+     place to get the expected results.  */
+  if (profile_flag)
+    sprintf(hp_profile_label_name, "LP$%04d", hp_profile_labelno);
+}
+
+hppa_expand_prologue()
+{
+
   extern char call_used_regs[];
-  extern int frame_pointer_needed;
-  extern int current_function_returns_struct;
-  int i, offset;
+  int size = get_frame_size ();
   int merge_sp_adjust_with_store = 0;
+  int i, offset;
+  rtx tmpreg, size_rtx;
+
 
   save_fregs = 0;
   local_fsize =  size + (size || frame_pointer_needed ? 8 : 0);
   actual_fsize = compute_frame_size (size, &save_fregs);
 
-  /* Let's not try to bullshit more than we need to here. */
-  /* This might be right a lot of the time */
-  fprintf (file, "\t.PROC\n\t.CALLINFO FRAME=%d", actual_fsize);
-    if (regs_ever_live[2] || profile_flag)
-      fprintf (file, ",CALLS,SAVE_RP\n");
-    else
-      fprintf (file, ",NO_CALLS\n");
-  fprintf (file, "\t.ENTRY\n");
+  /* Compute a few things we will use often.  */
+  tmpreg = gen_rtx (REG, SImode, 1);
+  size_rtx = GEN_INT (actual_fsize);
 
-  /* Some registers have places to go in the current stack
-     structure.  */
-
+  /* Save RP first.  The calling conventions manual states RP will 
+     always be stored into the caller's frame at sp-20.  */
   if (regs_ever_live[2] || profile_flag)
-    fprintf (file, "\tstw %%r2,-20(0,%%r30)\n");
-
-  /* Reserve space for local variables.  */
+    store_reg (2, -20, STACK_POINTER_REGNUM);  
+    
+  /* Allocate the local frame and set up the frame pointer if needed.  */
   if (actual_fsize)
     if (frame_pointer_needed)
       {
+	/* Copy the old frame pointer temporarily into %r1.  Set up the
+	   new stack pointer, then store away the saved old frame pointer
+	   into the stack at sp+actual_fsize and at the same time update
+	   the stack pointer by actual_fsize bytes.  Two versions, first
+	   handles small (<8k) frames.  The second handles large (>8k)
+	   frames.  */
+	emit_move_insn (tmpreg, frame_pointer_rtx);
+	emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
 	if (VAL_14_BITS_P (actual_fsize))
-	  fprintf (file, "\tcopy %%r4,%%r1\n\tcopy %%r30,%%r4\n\tstwm %%r1,%d(0,%%r30)\n",
-		   actual_fsize);
+	  emit_insn (gen_post_stwm (stack_pointer_rtx,
+				    stack_pointer_rtx,
+				    size_rtx, tmpreg));
 	else
 	  {
-	    fprintf (file, "\tcopy %%r4,%%r1\n\tcopy %%r30,%%r4\n\tstw %%r1,0(0,%%r4)\n");
-	    fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r30\n",
-		     actual_fsize, actual_fsize);
+	    store_reg (1, 0, FRAME_POINTER_REGNUM);
+	    set_reg_plus_d (STACK_POINTER_REGNUM,
+			    STACK_POINTER_REGNUM,
+			    actual_fsize);
 	  }
       }
+    /* no frame pointer needed.  */
     else
       {
-	if (VAL_14_BITS_P (-actual_fsize)
-	    && local_fsize == 0 && ! flag_pic && ! profile_flag)
+	/* In some cases we can perform the first callee register save
+	   and allocating the stack frame at the same time.   If so, just
+	   make a note of it and defer allocating the frame until saving
+	   the callee registers.  */
+	if (VAL_14_BITS_P (-actual_fsize) 
+	    && local_fsize == 0 
+	    && ! profile_flag
+	    && ! flag_pic)
 	  merge_sp_adjust_with_store = 1;
-	else if (VAL_14_BITS_P (actual_fsize))
-	  fprintf (file, "\tldo %d(%%r30),%%r30\n", actual_fsize);
-	else
-	  fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r30\n",
-		   actual_fsize, actual_fsize);
+	/* Can not optimize.  Adjust the stack frame by actual_fsize bytes.  */
+	else if (actual_fsize != 0)
+	  set_reg_plus_d (STACK_POINTER_REGNUM,
+			  STACK_POINTER_REGNUM,
+			  actual_fsize);
       }
   /* The hppa calling conventions say that that %r19, the pic offset
-     register, is saved at sp - 32 (in this function's frame) */
+     register, is saved at sp - 32 (in this function's frame)  when
+     generating PIC code.  */
   if (flag_pic)
-    {
-      fprintf (file, "\tstw %%r19,-32(0,%%r30)\n");
-    }
-  /* Instead of taking one argument, the counter label, as most normal
-     mcounts do, _mcount appears to behave differently on the HPPA. It
-     takes the return address of the caller, the address of this
-     routine, and the address of the label. Also, it isn't magic, so
-     argument registers have to be preserved. */
+    store_reg (19, -32, STACK_POINTER_REGNUM);  
 
+  /* Profiling code.
+
+     Instead of taking one argument, the counter label, as most normal
+     mcounts do, _mcount appears to behave differently on the HPPA.  It
+     takes the return address of the caller, the address of this routine,	
+     and the address of the label.  Also, it isn't magic, so 
+     argument registre hsave to be preserved.  */
   if (profile_flag)
     {
-      unsigned int pc_offset =
-	(4 + (frame_pointer_needed
-	      ? (VAL_14_BITS_P (actual_fsize) ? 12 : 20)
-	      : (VAL_14_BITS_P (actual_fsize) ? 4 : 8)));
-      int i, arg_offset;
-      int basereg, offsetadj;
+      int pc_offset, i, arg_offset, basereg, offsetadj;
 
-      /* When the function has a frame pointer, use that as the base 
-	 register for saving/restoring registers.  Else use the stack
-	 pointer.  Adjust the offset according to the frame size if this
-	 function does not have a frame pointer.  */
+      pc_offset = 4 + (frame_pointer_needed
+		       ? (VAL_14_BITS_P (actual_fsize) ? 12 : 20)
+		       : (VAL_14_BITS_P (actual_fsize) ? 4 : 8));
+
+      /* When the function has a frame pointer, use it as the base
+	 register for saving/restore registers.  Else use the stack
+	 pointer.  Adjust the offset according to the frame size if
+	 this function does not have a frame pointer.  */
 
       basereg = frame_pointer_needed ? FRAME_POINTER_REGNUM
 				     : STACK_POINTER_REGNUM;
       offsetadj = frame_pointer_needed ? 0 : actual_fsize;
 
+      /* Horrid hack.  emit_function_prologue will modify this RTL in
+	 place to get the expected results.   sprintf here is just to
+	 put something in the name.  */
+      sprintf(hp_profile_label_name, "LP$%04d", -1);
+      hp_profile_label_rtx = gen_rtx (SYMBOL_REF, SImode,
+				      hp_profile_label_name);
       if (current_function_returns_struct)
-	print_stw (file, STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
+	store_reg (STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
+
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
-	if (regs_ever_live[i])
+	if (regs_ever_live [i])
 	  {
-	    print_stw (file, i, arg_offset, basereg);
-	    /* It is possible for the arg_offset not to fit in 14 bits 
-               when profiling a function without a frame pointer.  Deal
-	       with such cases.  */
+	    store_reg (i, arg_offset, basereg);
+	    /* Deal with arg_offset not fitting in 14 bits.  */
 	    pc_offset += VAL_14_BITS_P (arg_offset) ? 4 : 8;
 	  }
-      fprintf (file,
-	       "\tcopy %%r2,%%r26\n\taddil L'LP$%04d-$global$,%%r27\n\tldo R'LP$%04d-$global$(%%r1),%%r24\n\tbl _mcount,%%r2\n\tldo %d(%%r2),%%r25\n",
-	       hp_profile_labelno, hp_profile_labelno, -pc_offset - 12 - 8);
+
+      emit_move_insn (gen_rtx (REG, SImode, 26), gen_rtx (REG, SImode, 2));
+      emit_move_insn (tmpreg, gen_rtx (HIGH, SImode, hp_profile_label_rtx));
+      emit_move_insn (gen_rtx (REG, SImode, 24),
+		      gen_rtx (LO_SUM, SImode, tmpreg, hp_profile_label_rtx));
+      /* %r25 is set from within the output pattern.  */
+      emit_insn (gen_call_profiler (GEN_INT (- pc_offset - 20)));
+
+      /* Restore argument registers.  */
       for (i = 26, arg_offset = -36 - offsetadj; i >= 23; i--, arg_offset -= 4)
-	if (regs_ever_live[i])
-	  print_ldw (file, i, arg_offset, basereg);
+	if (regs_ever_live [i])
+	  load_reg (i, arg_offset, basereg);
+
       if (current_function_returns_struct)
-	print_ldw (file, STRUCT_VALUE_REGNUM, - 12 - offsetadj, basereg);
+	load_reg (STRUCT_VALUE_REGNUM, -12 - offsetadj, basereg);
+
     }
 
-  /* Normal register save. */
+  /* Normal register save. 
+
+     Do not save the frame pointer in the frame_pointer_needed case.  It
+     was done earlier.  */
   if (frame_pointer_needed)
     {
-      for (i = 18, offset = local_fsize; i >= 5; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
+      for (i = 18, offset = local_fsize; i >= 3; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i]
+	    && i != FRAME_POINTER_REGNUM)
 	  {
-	    print_stw (file, i, offset, 4);  offset += 4;
+	    store_reg (i, offset, FRAME_POINTER_REGNUM);  
+	    offset += 4;
 	  }
-      if (regs_ever_live[3] && ! call_used_regs[3])
-	{
-	  print_stw (file, 3, offset, 4);  offset += 4;
-	}
     }
+  /* No frame pointer needed.  */
   else
     {
-      for (i = 18, offset = local_fsize - actual_fsize; i >= 5; i--)
+      for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
       	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
 	    /* If merge_sp_adjust_with_store is nonzero, then we can 
@@ -1804,27 +1927,22 @@ output_function_prologue (file, size)
 	    if (merge_sp_adjust_with_store)
 	      {
 		merge_sp_adjust_with_store = 0;
-    		fprintf (file, "\tstwm %d,%d(0,%d)\n", i, -offset, 30);
+	        emit_insn (gen_post_stwm (stack_pointer_rtx,
+					  stack_pointer_rtx,
+					  GEN_INT (-offset),
+					  gen_rtx (REG, SImode, i)));
 	      }
 	    else
-	      print_stw (file, i, offset, 30);  offset += 4;
+	      store_reg (i, offset, STACK_POINTER_REGNUM);
+	    offset += 4;
 	  }
-      if (regs_ever_live[3] && ! call_used_regs[3])
-	{
-	    /* If merge_sp_adjust_with_store is nonzero, then we can 
-	       optimize the first GR save.  */
-	  if (merge_sp_adjust_with_store)
-	    {
-	      merge_sp_adjust_with_store = 0;
-    	      fprintf (file, "\tstwm %%r3,%d(0,%%r30)\n", -offset);
-	    }
-	  else
-	    print_stw (file, 3, offset, 30);  offset += 4;
-	}
+
       /* If we wanted to merge the SP adjustment with a GR save, but we never
-	 did any GR saves, then just output the adjustment here.  */
+	 did any GR saves, then just emit the adjustment here.  */
       if (merge_sp_adjust_with_store)
-	fprintf (file, "\tldo %d(%%r30),%%r30\n", actual_fsize);
+	set_reg_plus_d (STACK_POINTER_REGNUM,
+			STACK_POINTER_REGNUM,
+			actual_fsize);
     }
       
   /* Align pointer properly (doubleword boundary).  */
@@ -1833,28 +1951,23 @@ output_function_prologue (file, size)
   /* Floating point register store.  */
   if (save_fregs)
     {
+
+      /* First get the frame or stack pointer to the start of the FP register
+	 save area.  */
       if (frame_pointer_needed)
-	{
-	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(%%r4),%%r1\n", offset);
-	  else
-	    fprintf (file, "\taddil L'%d,%%r4\n\tldo R'%d(%%r1),%%r1\n",
-		     offset, offset);
-	}
+	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset);
       else
-	{
-	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(%%r30),%%r1\n", offset);
-	  else
-	    fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r1\n",
-		     offset, offset);
-	}
-      if (!TARGET_SNAKE)
+	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
+
+      /* Now actually save the FP registers.  */
+      if (! TARGET_SNAKE)
 	{
 	  for (i = 43; i >= 40; i--)
 	    {
 	      if (regs_ever_live[i])
-		fprintf (file, "\tfstds,ma %s,8(0,%%r1)\n", reg_names[i]);
+		emit_move_insn (gen_rtx (MEM, DFmode, 
+					 gen_rtx (POST_INC, DFmode, tmpreg)),
+				gen_rtx (REG, DFmode, i));
 	    }
 	}
       else
@@ -1862,199 +1975,144 @@ output_function_prologue (file, size)
 	  for (i = 78; i >= 60; i -= 2)
 	    if (regs_ever_live[i] || regs_ever_live[i + 1])
 	      {
-		fprintf (file, "\tfstds,ma %s,8(0,%%r1)\n", reg_names[i]);
+		emit_move_insn (gen_rtx (MEM, DFmode, 
+					 gen_rtx (POST_INC, DFmode, tmpreg)),
+				gen_rtx (REG, DFmode, i));
 	      }
 	}
     }
 }
+
 
 void
 output_function_epilogue (file, size)
      FILE *file;
      int size;
 {
-  extern char call_used_regs[];
-  extern int frame_pointer_needed;
-  int  i, offset;
-  int merge_sp_adjust_with_load = 0;
+  /* hppa_expand_epilogue does the dirty work now.  We just need
+     to output the assembler directives which denote the end
+     of a function.  */
+  fprintf (file, "\t.EXIT\n\t.PROCEND\n");
+}
 
-  /* In the common cases restore RP early to avoid load/use interlock when
-     RP gets used in the bv instruction.  */
+void
+hppa_expand_epilogue()
+{
+  rtx tmpreg; 
+  int offset,i;
+  int merge_sp_adjust_with_load  = 0;
+
+  /* We will use this often.  */
+  tmpreg = gen_rtx (REG, SImode, 1);
+
+  /* Try to restore RP early to avoid load/use interlocks when
+     RP gets used in the return (bv) instruction.  This appears to still
+     be necessary even when we schedule the prologue and epilogue. */
   if (frame_pointer_needed
       && (regs_ever_live [2] || profile_flag))
-    fprintf (file, "\tldw -20(%%r4),%%r2\n");
-  else if (VAL_14_BITS_P (actual_fsize + 20)
-	   && (regs_ever_live [2] || profile_flag))
-    fprintf(file,"\tldw %d(0,%%r30),%%r2\n", - (actual_fsize + 20));
+    load_reg (2, -20, FRAME_POINTER_REGNUM);
 
+  /* No frame pointer, and stack is smaller than 8k.  */
+  else if (! frame_pointer_needed
+	   && VAL_14_BITS_P (actual_fsize + 20)
+	   && (regs_ever_live[2] || profile_flag))
+    load_reg (2, - (actual_fsize + 20), STACK_POINTER_REGNUM);
+
+  /* General register restores.  */
   if (frame_pointer_needed)
     {
-      for (i = 18, offset = local_fsize; i >= 5; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
+      for (i = 18, offset = local_fsize; i >= 3; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i]
+	    && i != FRAME_POINTER_REGNUM)
 	  {
-	    print_ldw (file, i, offset, 4);  offset += 4;
+	    load_reg (i, offset, FRAME_POINTER_REGNUM);
+	    offset += 4;
 	  }
-      if (regs_ever_live[3] && ! call_used_regs[3])
-	{
-	  print_ldw (file, 3, offset, 4);  offset += 4;	  
-	}
     }
   else
     {
-      for (i = 18, offset = local_fsize - actual_fsize; i >= 5; i--)
-      	if (regs_ever_live[i] && ! call_used_regs[i])
+      for (i = 18, offset = local_fsize - actual_fsize; i >= 3; i--)
+	if (regs_ever_live[i] && ! call_used_regs[i])
 	  {
-	    /* Only for first load.  And not if profiling.  
-	       merge_sp_adjust_with_load holds the register load with
-	       which we will merge the sp adjustment with.*/
+	    /* Only for the first load.
+	       merge_sp_adjust_with_load holds the register load
+	       with which we will merge the sp adjustment.  */
 	    if (VAL_14_BITS_P (actual_fsize + 20)
 		&& local_fsize == 0
-		&& ! profile_flag 
 		&& ! merge_sp_adjust_with_load)
 	      merge_sp_adjust_with_load = i;
-	    else 
-	      print_ldw (file, i, offset, 30);  offset += 4;
+	    else
+	      load_reg (i, offset, STACK_POINTER_REGNUM);
+	    offset += 4;
 	  }
-      if (regs_ever_live[3] && ! call_used_regs[3])
-	{
-	  /* Only for first load.  And not if profiling.  
-	     merge_sp_adjust_with_load holds the register load with
-	     which we will merge the sp adjustment with.*/
-	  if (VAL_14_BITS_P (actual_fsize + 20)
-	      && local_fsize == 0
-	      && ! profile_flag
-	      && ! merge_sp_adjust_with_load)
-	    merge_sp_adjust_with_load = 3;
-	  else
-	    print_ldw (file, 3, offset, 30);  offset += 4;
-	}
     }
-      
+
   /* Align pointer properly (doubleword boundary).  */
   offset = (offset + 7) & ~7;
 
-  /* Floating point register restore.  */
+  /* FP register restores.  */
   if (save_fregs)
     {
+      /* Adjust the register to index off of.  */
       if (frame_pointer_needed)
-	{
-	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(%%r4),%%r1\n", offset);
-	  else
-	    fprintf (file, "\taddil L'%d,%%r4\n\tldo R'%d(%%r1),%%r1\n",
-		     offset, offset);
-	}
+	set_reg_plus_d (1, FRAME_POINTER_REGNUM, offset);
       else
-	{
-	  if (VAL_14_BITS_P (offset))
-	    fprintf (file, "\tldo %d(%%r30),%%r1\n", offset);
-	  else
-	    fprintf (file, "\taddil L'%d,%%r30\n\tldo R'%d(%%r1),%%r1\n",
-		     offset, offset);
-	}
-      if (!TARGET_SNAKE)
+	set_reg_plus_d (1, STACK_POINTER_REGNUM, offset);
+
+      /* Actually do the restores now.  */
+      if (! TARGET_SNAKE)
 	{
 	  for (i = 43; i >= 40; i--)
-	    {
-	      if (regs_ever_live[i])
-		fprintf (file, "\tfldds,ma 8(0,%%r1),%s\n", reg_names[i]);
-	    }
+	    if (regs_ever_live[i])
+	      emit_move_insn (gen_rtx (REG, DFmode, i),
+			      gen_rtx (MEM, DFmode, 
+				       gen_rtx (POST_INC, DFmode, tmpreg)));
+	      
 	}
       else
 	{
 	  for (i = 78; i >= 60; i -= 2)
 	    if (regs_ever_live[i] || regs_ever_live[i + 1])
-	      {
-		fprintf (file, "\tfldds,ma 8(0,%%r1),%s\n", reg_names[i]);
-	      }
+	      emit_move_insn (gen_rtx (REG, DFmode, i),
+			      gen_rtx (MEM, DFmode, 
+				       gen_rtx (POST_INC, DFmode, tmpreg)));
 	}
     }
+
+  /* No frame pointer, but we have a stack greater than 8k.  We restore
+     %r2 very late in this case.  (all other cases are restored as early
+     as possible.  */
+  if (! frame_pointer_needed
+      && ! VAL_14_BITS_P (actual_fsize + 20)
+      && (regs_ever_live[2] || profile_flag))
+    {
+      set_reg_plus_d (STACK_POINTER_REGNUM,
+		      STACK_POINTER_REGNUM,
+		      - actual_fsize);
+      /* Uses value left over in %r1 by set_reg_plus_d.  */
+      load_reg (2, - (actual_fsize + 20 + ((- actual_fsize) & ~0x7ff)), 1);
+    }
+
   /* Reset stack pointer (and possibly frame pointer).  The stack */
-  /* pointer is initially set to fp + 64 to avoid a race condition. 
+  /* pointer is initially set to fp + 64 to avoid a race condition.
      ??? What race condition?!?  */
-  if (frame_pointer_needed)
+  else if (frame_pointer_needed)
     {
-      /* RP has already been restored in this case.  */
-      fprintf (file, "\tldo 64(%%r4),%%r30\n");
-      fprintf (file, "\tbv 0(%%r2)\n\tldwm -64(0,%%r30),%%r4\n");
+      set_reg_plus_d (STACK_POINTER_REGNUM, FRAME_POINTER_REGNUM, 64);
+      emit_insn (gen_pre_ldwm (stack_pointer_rtx, stack_pointer_rtx,
+			       GEN_INT (-64), frame_pointer_rtx));
     }
-  else if (actual_fsize)
-    {
-      if (regs_ever_live[2] || profile_flag)
-          
-	{
-	  /* In this case RP has already been restored! */
-	  if (VAL_14_BITS_P (actual_fsize + 20))
-	    {
-	      /* Optimize load and sp adjustment.  */
-	      if (merge_sp_adjust_with_load)
-		fprintf (file, "\tbv 0(%%r2)\n\tldwm %d(0,%%r30),%d\n",
-			 -actual_fsize, merge_sp_adjust_with_load);
-	      else
-		fprintf (file, "\tbv 0(%%r2)\n\tldo %d(%%r30),%%r30\n", -actual_fsize);
-	    }
-	  /* Large frame.  Uncommon and not worth extra hair to avoid
-	     load/use delay for RP.  */
-	  else
-	    fprintf (file,
-		     "\taddil L'%d,%%r30\n\tldw %d(0,%%r1),%%r2\n\tbv 0(%%r2)\n\tldo R'%d(%%r1),%%r30\n",
-		     - actual_fsize,
-		     - (actual_fsize + 20 + ((-actual_fsize) & ~0x7ff)),
-		     - actual_fsize);
-	}
-      /* Merge load with SP adjustment.  */
-      else if (merge_sp_adjust_with_load)
-	fprintf (file, "\tbv 0(%%r2)\n\tldwm %d(0,%%r30),%d\n", 
-		 - actual_fsize, merge_sp_adjust_with_load);
-      else if (VAL_14_BITS_P (actual_fsize))
-	fprintf (file, "\tbv 0(%%r2)\n\tldo %d(%%r30),%%r30\n", - actual_fsize);
-      else
-	fprintf (file, "\taddil L'%d,%%r30\n\tbv 0(%%r2)\n\tldo R'%d(%%r1),%%r30\n",
-		 - actual_fsize, - actual_fsize);
-    }
-  else if (current_function_epilogue_delay_list)
-    {
-      fprintf (file, "\tbv 0(%%r2)\n");
-      final_scan_insn (XEXP (current_function_epilogue_delay_list, 0), file,
-		       1, 0, 1);
-    }
-  else
-    fprintf (file, "\tbv,n 0(%%r2)\n");
-  fprintf (file, "\t.EXIT\n\t.PROCEND\n");
-}
-
-/* If there's a frame, it will be deallocated in the delay slot of the 
-   bv 0(2) return instruction. */
-
-int
-hppa_epilogue_delay_slots ()
-{
-  return (compute_frame_size (get_frame_size (), 0) ? 0 : 1);
-}
-
-/* Return nonzero if TRIAL can go into the function epilogue's
-   delay slot.  SLOT is the slot we are trying to fill.  */
-
-int
-eligible_for_epilogue_delay (trial, slot)
-     rtx trial;
-     int slot;
-{
-  if (slot >= 1)
-    return 0;
-  if (GET_CODE (trial) != INSN
-      || GET_CODE (PATTERN (trial)) != SET)
-    return 0;
-  if (get_attr_length (trial) != 1)
-    return 0;
-
-  /* The epilogue clobbers whatever value is in %r2 before the 
-     delay slot executes, so insns which use %r2 can not be
-     used to fill the epilogue's delay slot.  */
-  if (refers_to_regno_p (2, 3, PATTERN (trial), NULL_PTR))
-    return 0;
-
-  return (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_TRUE);
+  /* If we were deferring a callee register restore, do it now.  */
+  else if (! frame_pointer_needed  && merge_sp_adjust_with_load)
+    emit_insn (gen_pre_ldwm (stack_pointer_rtx,
+			     stack_pointer_rtx,
+			     GEN_INT (- actual_fsize),
+			     gen_rtx (REG, SImode, 
+			     merge_sp_adjust_with_load)));
+  else if (actual_fsize != 0)
+    set_reg_plus_d (STACK_POINTER_REGNUM,
+		    STACK_POINTER_REGNUM,
+		    - actual_fsize);
 }
 
 /* This is only valid once reload has completed because it depends on
