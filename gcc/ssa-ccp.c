@@ -1222,5 +1222,4 @@ ssa_fast_dce (df)
   /* Update the use-def chains in the df_analyzer as needed.  */
   df_analyse (df_analyzer, 0,
               DF_RD_CHAIN | DF_RU_CHAIN | DF_REG_INFO | DF_HARD_REGS);
-
 }
