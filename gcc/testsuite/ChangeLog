@@ -1,3 +1,11 @@
+2004-06-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15096
+	* g++.dg/template/ptrmem10.C: New test.
+
+	PR c++/14930
+	* g++.dg/template/friend30.C: New test.
+	
 2004-06-13  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR rtl-optimization/15296

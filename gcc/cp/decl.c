@@ -7612,27 +7612,28 @@ grokdeclarator (tree declarator,
 	    ctype = TREE_OPERAND (declarator, 0);
 
 	    t = ctype;
-	    while (t != NULL_TREE && CLASS_TYPE_P (t))
-	      {
-		/* You're supposed to have one `template <...>'
-		   for every template class, but you don't need one
-		   for a full specialization.  For example:
-
+	    if (TREE_CODE (TREE_OPERAND (declarator, 1)) != INDIRECT_REF)
+	      while (t != NULL_TREE && CLASS_TYPE_P (t))
+		{
+		  /* You're supposed to have one `template <...>'
+		     for every template class, but you don't need one
+		     for a full specialization.  For example:
+		     
 		     template <class T> struct S{};
 		     template <> struct S<int> { void f(); };
 		     void S<int>::f () {}
-
-		   is correct; there shouldn't be a `template <>' for
-		   the definition of `S<int>::f'.  */
-		if (CLASSTYPE_TEMPLATE_INFO (t)
-		    && (CLASSTYPE_TEMPLATE_INSTANTIATION (t)
-			|| uses_template_parms (CLASSTYPE_TI_ARGS (t)))
-	            && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
-		  template_count += 1;
-
-		t = TYPE_MAIN_DECL (t);
-		t = DECL_CONTEXT (t);
-	      }
+		     
+		     is correct; there shouldn't be a `template <>' for
+		     the definition of `S<int>::f'.  */
+		  if (CLASSTYPE_TEMPLATE_INFO (t)
+		      && (CLASSTYPE_TEMPLATE_INSTANTIATION (t)
+			  || uses_template_parms (CLASSTYPE_TI_ARGS (t)))
+		      && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (t)))
+		    template_count += 1;
+		  
+		  t = TYPE_MAIN_DECL (t);
+		  t = DECL_CONTEXT (t);
+		}
 
 	    if (sname == NULL_TREE)
 	      goto done_scoping;

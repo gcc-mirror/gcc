@@ -1,3 +1,13 @@
+2004-06-14  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15096
+	* decl.c (grokdeclarator): Ignore pointer-to-members when
+	computing template depth.
+
+	PR c++/14930
+	* name-lookup.c (pushtag): Do not try to put class declarations in
+	explicit specialization scopes.
+
 i2004-06-11  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/15862

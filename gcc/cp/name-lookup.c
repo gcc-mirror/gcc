@@ -4617,7 +4617,16 @@ pushtag (tree name, tree type, int globalize)
 
   timevar_push (TV_NAME_LOOKUP);
   b = current_binding_level;
-  while (b->kind == sk_cleanup
+  while (/* Cleanup scopes are not scopes from the point of view of
+	    the language.  */
+	 b->kind == sk_cleanup
+	 /* Neither are the scopes used to hold template parameters
+	    for an explicit specialization.  For an ordinary template
+	    declaration, these scopes are not scopes from the point of
+	    view of the language -- but we need a place to stash
+	    things that will go in the containing namespace when the
+	    template is instantiated.  */
+	 || (b->kind == sk_template_parms && b->explicit_spec_p)
 	 || (b->kind == sk_class
 	     && (globalize
 		 /* We may be defining a new type in the initializer
