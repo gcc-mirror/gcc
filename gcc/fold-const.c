@@ -5861,9 +5861,10 @@ fold (tree expr)
       if (TREE_CODE (arg1) == NEGATE_EXPR)
 	return fold (build (MINUS_EXPR, type, arg0, TREE_OPERAND (arg1, 0)));
       /* (-A) + B -> B - A */
-      if (TREE_CODE (arg0) == NEGATE_EXPR)
+      if (TREE_CODE (arg0) == NEGATE_EXPR
+	  && reorder_operands_p (TREE_OPERAND (arg0, 0), arg1))
 	return fold (build (MINUS_EXPR, type, arg1, TREE_OPERAND (arg0, 0)));
-      else if (! FLOAT_TYPE_P (type))
+      if (! FLOAT_TYPE_P (type))
 	{
 	  if (integer_zerop (arg1))
 	    return non_lvalue (fold_convert (type, arg0));

@@ -1,3 +1,8 @@
+2004-04-03  Roger Sayle  <roger@eyesopen.com>
+
+	* fold-const.c (fold) <PLUS_EXPR>: Guard (-A)+B -> B-A transformation
+	with reorder_operands_p.
+
 2004-04-03  Jan Hubicka  <jh@suse.cz>
 
 	* md.texi (vec_set, vec_extract, vec_init): Document.
