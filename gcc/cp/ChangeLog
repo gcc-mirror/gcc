@@ -1,3 +1,8 @@
+2001-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (duplicate_decls): Tidy.
+	(init_decl_processing): Always set flag_no_builtin.
+
 2001-05-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	PR c++/2184
