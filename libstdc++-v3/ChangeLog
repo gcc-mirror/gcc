@@ -1,3 +1,11 @@
+2003-08-11  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4:  Properly quote variable which will be expanded
+	inside makefiles.  Use CXX instead of CC to extract compiler info.
+	* configure.ac (AC_INIT):  Use the new 4-arg form to finally get the
+	correct form in PACKAGE.
+	* aclocal.m4, configure:  Regenerate.
+
 2003-08-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* testsuite/Makefile.am (check-abi): Change libstdc++-v3 to libstdc++.

@@ -119,6 +119,7 @@ AC_DEFUN(GLIBCXX_CONFIGURE, [
   #
   # -fno-builtin must be present here so that a non-conflicting form of
   # std::exit can be guessed by AC_PROG_CXX, and used in later tests.
+
   m4_define([ac_cv_prog_CXX],[glibcxx_cv_prog_CXX])
   m4_rename([_AC_ARG_VAR_PRECIOUS],[glibcxx_PRECIOUS])
   m4_define([_AC_ARG_VAR_PRECIOUS],[])
@@ -696,10 +697,10 @@ AC_DEFUN(GLIBCXX_EXPORT_INSTALL_INFO, [
     # and header files if --enable-version-specific-runtime-libs option
     # is selected.
     if test x"$gxx_include_dir" = x"no"; then
-      gxx_include_dir='$libdir/gcc-lib/$host_alias/'$gcc_version/include/c++
+      gxx_include_dir='${libdir}/gcc-lib/${host_alias}/'$gcc_version/include/c++
     fi
-    glibcxx_toolexecdir='$libdir/gcc-lib/$host_alias'
-    glibcxx_toolexeclibdir='$toolexecdir/'$gcc_version'$(MULTISUBDIR)'
+    glibcxx_toolexecdir='${libdir}/gcc-lib/${host_alias}'
+    glibcxx_toolexeclibdir='${toolexecdir}/'$gcc_version'$(MULTISUBDIR)'
   fi
 
   # Calculate glibcxx_toolexecdir, glibcxx_toolexeclibdir
@@ -707,13 +708,13 @@ AC_DEFUN(GLIBCXX_EXPORT_INSTALL_INFO, [
   if test x"$glibcxx_toolexecdir" = x"no"; then
     if test -n "$with_cross_host" &&
        test x"$with_cross_host" != x"no"; then
-      glibcxx_toolexecdir='$(exec_prefix)/$(host_alias)'
-      glibcxx_toolexeclibdir='$(toolexecdir)/lib'
+      glibcxx_toolexecdir='${exec_prefix}/${host_alias}'
+      glibcxx_toolexeclibdir='${toolexecdir}/lib'
     else
-      glibcxx_toolexecdir='$(libdir)/gcc-lib/$(host_alias)'
-      glibcxx_toolexeclibdir='$(libdir)'
+      glibcxx_toolexecdir='${libdir}/gcc-lib/${host_alias}'
+      glibcxx_toolexeclibdir='${libdir}'
     fi
-    multi_os_directory=`$CC -print-multi-os-directory`
+    multi_os_directory=`$CXX -print-multi-os-directory`
     case $multi_os_directory in
       .) ;; # Avoid trailing /.
       *) glibcxx_toolexeclibdir=$glibcxx_toolexeclibdir/$multi_os_directory ;;
@@ -1554,7 +1555,7 @@ dnl  _GLIBCXX_SUPPORTS_WEAK
 dnl
 AC_DEFUN(GLIBCXX_ENABLE_THREADS, [
   AC_MSG_CHECKING([for thread model used by GCC])
-  target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   AC_MSG_RESULT([$target_thread_file])
 
   if test $target_thread_file != single; then
