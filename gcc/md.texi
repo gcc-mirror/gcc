@@ -1384,13 +1384,14 @@ Floating point register
 Signed 16 bit constant
 
 @item J
-Constant whose low 16 bits are 0
+Unsigned 16 bit constant shifted left 16 bits (use @samp{L} instead for 
+@code{SImode} constants)
 
 @item K
-Constant whose high 16 bits are 0
+Unsigned 16 bit constant
 
 @item L
-Constant suitable as a mask operand
+Signed 16 bit constant shifted left 16 bits
 
 @item M
 Constant larger than 31
@@ -1417,6 +1418,9 @@ AIX TOC entry
 
 @item S
 Constant suitable as a 64-bit mask operand
+
+@item T
+Constant suitable as a 32-bit mask operand
 
 @item U
 System V Release 4 small data area reference

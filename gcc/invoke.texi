@@ -307,12 +307,12 @@ in the following sections.
 -mcpu=@var{cpu type}
 -mtune=@var{cpu type}
 -mpower  -mno-power  -mpower2  -mno-power2
--mpowerpc  -mno-powerpc
+-mpowerpc  -mpowerpc64  -mno-powerpc
 -mpowerpc-gpopt  -mno-powerpc-gpopt
 -mpowerpc-gfxopt  -mno-powerpc-gfxopt
 -mnew-mnemonics  -mno-new-mnemonics
 -mfull-toc   -mminimal-toc  -mno-fop-in-toc  -mno-sum-in-toc
--maix64  -maix32  -mxl-call  -mno-xl-call  -mthreads  -mpe
+-m64  -m32  -mxl-call  -mno-xl-call  -mthreads  -mpe
 -msoft-float  -mhard-float  -mmultiple  -mno-multiple
 -mstring  -mno-string  -mupdate  -mno-update
 -mfused-madd  -mno-fused-madd  -mbit-align  -mno-bit-align
@@ -4854,49 +4854,34 @@ should normally not specify either @samp{-mnew-mnemonics} or
 @kindex -mcpu
 Set architecture type, register usage, choice of mnemonics, and
 instruction scheduling parameters for machine type @var{cpu_type}.
-Supported values for @var{cpu_type} are @samp{rs6000}, @samp{rios1},
-@samp{rios2}, @samp{rsc}, @samp{601}, @samp{602}, @samp{603},
-@samp{603e}, @samp{604}, @samp{604e}, @samp{620}, @samp{740},
-@samp{750}, @samp{power}, @samp{power2}, @samp{powerpc}, @samp{403},
-@samp{505}, @samp{801}, @samp{821}, @samp{823}, and @samp{860} and
-@samp{common}.  @samp{-mcpu=power}, @samp{-mcpu=power2}, and
-@samp{-mcpu=powerpc} specify generic POWER, POWER2 and pure PowerPC
-(i.e., not MPC601) architecture machine types, with an appropriate,
+Supported values for @var{cpu_type} are @samp{rios}, @samp{rios1},
+@samp{rsc}, @samp{rios2}, @samp{rs64a}, @samp{601}, @samp{602},
+@samp{603}, @samp{603e}, @samp{604}, @samp{604e}, @samp{620},
+@samp{630}, @samp{740}, @samp{750}, @samp{power}, @samp{power2},
+@samp{powerpc}, @samp{403}, @samp{505}, @samp{801}, @samp{821},
+@samp{823}, and @samp{860} and @samp{common}.  @samp{-mcpu=power},
+@samp{-mcpu=power2}, @samp{-mcpu=powerpc}, and @samp{-mcpu=powerpc64}
+specify generic POWER, POWER2, pure 32-bit PowerPC (i.e., not MPC601),
+and 64-bit PowerPC architecture machine types, with an appropriate,
 generic processor model assumed for scheduling purposes.@refill
 
-@c overfull hbox here --bob 22 jul96
-@c original text between ignore ... end ignore
-@ignore
-Specifying any of the @samp{-mcpu=rios1}, @samp{-mcpu=rios2},
-@samp{-mcpu=rsc}, @samp{-mcpu=power}, or @samp{-mcpu=power2} options
-enables the @samp{-mpower} option and disables the @samp{-mpowerpc}
-option; @samp{-mcpu=601} enables both the @samp{-mpower} and
-@samp{-mpowerpc} options; all of @samp{-mcpu=602}, @samp{-mcpu=603},
-@samp{-mcpu=603e}, @samp{-mcpu=604}, @samp{-mcpu=604e},
-@samp{-mcpu=620}, @samp{-mcpu=403}, @samp{-mcpu=505}, @samp{-mcpu=801},
-@samp{-mcpu=821}, @samp{-mcpu=823}, @samp{-mcpu=860} and
-@samp{-mcpu=powerpc} enable the @samp{-mpowerpc} option and disable the
-@samp{-mpower} option; @samp{-mcpu=common} disables both the
-@samp{-mpower} and @samp{-mpowerpc} options.@refill
-@end ignore
-@c            changed paragraph
 Specifying any of the following options: 
 @samp{-mcpu=rios1}, @samp{-mcpu=rios2}, @samp{-mcpu=rsc},
 @samp{-mcpu=power}, or @samp{-mcpu=power2}  
 enables the @samp{-mpower} option and disables the @samp{-mpowerpc} option; 
 @samp{-mcpu=601} enables both the @samp{-mpower} and @samp{-mpowerpc} options.
-All of @samp{-mcpu=602}, @samp{-mcpu=603}, @samp{-mcpu=603e},
-@samp{-mcpu=604}, @samp{-mcpu=620}, 
+All of @samp{-mcpu=rs64a}, @samp{-mcpu=602}, @samp{-mcpu=603},
+@samp{-mcpu=603e}, @samp{-mcpu=604}, @samp{-mcpu=620}, @samp{-mcpu=630},
+@samp{-mcpu=740}, and @samp{-mcpu=750}
 enable the @samp{-mpowerpc} option and disable the @samp{-mpower} option.  
 Exactly similarly, all of @samp{-mcpu=403},
 @samp{-mcpu=505}, @samp{-mcpu=821}, @samp{-mcpu=860} and @samp{-mcpu=powerpc} 
 enable the @samp{-mpowerpc} option and disable the @samp{-mpower} option.
 @samp{-mcpu=common} disables both the 
 @samp{-mpower} and @samp{-mpowerpc} options.@refill
-@c             end changes to prevent overfull hboxes
 
 AIX versions 4 or greater selects @samp{-mcpu=common} by default, so
-that code will operate on all members of the RS/6000 and PowerPC
+that code will operate on all members of the RS/6000 POWER and PowerPC
 families.  In that case, GNU CC will use only the instructions in the
 common subset of both architectures plus some special AIX common-mode
 calls, and will not use the MQ register.  GNU CC assumes a generic
@@ -4906,8 +4891,9 @@ Specifying any of the options @samp{-mcpu=rios1}, @samp{-mcpu=rios2},
 @samp{-mcpu=rsc}, @samp{-mcpu=power}, or @samp{-mcpu=power2} also
 disables the @samp{new-mnemonics} option.  Specifying @samp{-mcpu=601},
 @samp{-mcpu=602}, @samp{-mcpu=603}, @samp{-mcpu=603e}, @samp{-mcpu=604},
-@samp{620}, @samp{403}, or @samp{-mcpu=powerpc} also enables the
-@samp{new-mnemonics} option.@refill
+@samp{-mcpu=620}, @samp{-mcpu=630}, @samp{-mcpu=403}, @samp{-mcpu=505},
+@samp{-mcpu=821}, @samp{-mcpu=860} or @samp{-mcpu=powerpc} also enables
+the @samp{new-mnemonics} option.@refill
 
 Specifying @samp{-mcpu=403}, @samp{-mcpu=821}, or @samp{-mcpu=860} also
 enables the @samp{-msoft-float} option.
@@ -4950,15 +4936,15 @@ option, GNU CC will produce code that is slower and larger but which
 uses extremely little TOC space.  You may wish to use this option
 only on files that contain less frequently executed code. @refill
 
-@item -maix64
-@itemx -maix32
-@kindex -maix64
-@kindex -maix32
-Enable AIX 64-bit ABI and calling convention: 64-bit pointers, 64-bit
+@item -m64
+@itemx -m32
+@kindex -m64
+@kindex -m32
+Enable 64-bit PowerPC ABI and calling convention: 64-bit pointers, 64-bit
 @code{long} type, and the infrastructure needed to support them.
-Specifying @samp{-maix64} implies @samp{-mpowerpc64} and
-@samp{-mpowerpc}, while @samp{-maix32} disables the 64-bit ABI and
-implies @samp{-mno-powerpc64}.  GNU CC defaults to @samp{-maix32}.
+Specifying @samp{-m64} implies @samp{-mpowerpc64} and
+@samp{-mpowerpc}, while @samp{-m32} disables the 64-bit ABI and
+implies @samp{-mno-powerpc64}.  GNU CC defaults to @samp{-m32}.
 
 @item -mxl-call
 @itemx -mno-xl-call
