@@ -1,3 +1,7 @@
+2003-06-05  Phil Edwards <phil@jaj.com>
+
+	* Makefile.in (qmtest-g++): Use target_alias, not target.
+
 2003-06-05  Per Bothner  <pbothner@apple.com>
 
 	* toplev.c (push_srcloc):  Simplify behavior to save current location
