@@ -1,3 +1,16 @@
+2002-05-01  David Edelsohn  <edelsohn@gnu.org>
+
+	* rs6000.md (abssi2_nopower): Convert to define_insn_and_split.
+	(nabs_nopower): Same.
+	(floatdisf2): New pattern.
+	(absdi2): Convert to define_insn_and_split.
+	(nabsdi2): Same.
+	(trunctfsf2): Same.
+	(floatditf2): Same.
+	(floatsitf2): Same.
+	(fix_trunctfdi2): Same.
+	(fix_trunctfsi2): Same.
+
 2002-05-01  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* doc/install.texi: Update Texinfo version requirement
