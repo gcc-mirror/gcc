@@ -46,14 +46,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 #endif
 
-#ifndef STDIO_PROTO
-#ifdef BUFSIZ
-#define STDIO_PROTO(ARGS) PROTO(ARGS)
-#else
-#define STDIO_PROTO(ARGS) ()
-#endif
-#endif
-
 /* Define a generic NULL if one hasn't already been defined.  */
 
 #ifndef NULL
