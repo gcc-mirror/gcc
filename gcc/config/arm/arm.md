@@ -117,7 +117,7 @@
    (VUNSPEC_WCMP_EQ  11) ; Used by the iWMMXt WCMPEQ instructions
    (VUNSPEC_WCMP_GTU 12) ; Used by the iWMMXt WCMPGTU instructions
    (VUNSPEC_WCMP_GT  13) ; Used by the iwMMXT WCMPGT instructions
-   (VUNSPEC_EH_RETURN 20); Use to overrite the return address for exception
+   (VUNSPEC_EH_RETURN 20); Use to override the return address for exception
 			 ; handling.
   ]
 )

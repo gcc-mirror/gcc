@@ -230,8 +230,8 @@ sh_symbian_mark_dllexport (tree decl)
      /* Remove DLL_IMPORT_PREFIX.
 	Note - we do not issue a warning here.  In Symbian's environment it
 	is legitimate for a prototype to be marked as dllimport and the
-	corresponding defintion to be marked as dllexport.  The prototypes
-	are in headers used everywhere and the defintion is in a translation
+	corresponding definition to be marked as dllexport.  The prototypes
+	are in headers used everywhere and the definition is in a translation
 	unit which has included the header in order to ensure argument
 	correctness.  */
       oldname += strlen (DLL_IMPORT_PREFIX);
@@ -448,8 +448,8 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 	}
     }
 
-  /* If the node is an overloaded constructor or desctructor, then we must
-     make sure that the attribute is propogated along the overload chain,
+  /* If the node is an overloaded constructor or destructor, then we must
+     make sure that the attribute is propagated along the overload chain,
      as it is these overloaded functions which will be emitted, rather than
      the user declared constructor itself.  */
   if (TREE_CODE (TREE_TYPE (node)) == METHOD_TYPE
@@ -488,7 +488,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 
 	  symbian_add_attribute (function, attr);
 
-	  /* Propogate the attribute to any function thunks as well.  */
+	  /* Propagate the attribute to any function thunks as well.  */
 	  for (thunk = DECL_THUNKS (function); thunk; thunk = TREE_CHAIN (thunk))
 	    if (TREE_CODE (thunk) == FUNCTION_DECL)
 	      symbian_add_attribute (thunk, attr);
@@ -497,7 +497,7 @@ sh_symbian_handle_dll_attribute (tree *pnode, tree name, tree args,
 
   if (TREE_CODE (node) == FUNCTION_DECL && DECL_VIRTUAL_P (node))
     {
-      /* Propogate the attribute to any thunks of this function.  */
+      /* Propagate the attribute to any thunks of this function.  */
       for (thunk = DECL_THUNKS (node); thunk; thunk = TREE_CHAIN (thunk))
 	if (TREE_CODE (thunk) == FUNCTION_DECL)
 	  symbian_add_attribute (thunk, attr);
@@ -879,7 +879,7 @@ symbian_import_export_class (tree ctype, int import_export)
   return import_export;
 }
 
-/* Dummy defintion of this array for cc1 building purposes.  */
+/* Dummy definition of this array for cc1 building purposes.  */
 tree cp_global_trees[CPTI_MAX] __attribute__((weak));
 
 #if defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 2007)

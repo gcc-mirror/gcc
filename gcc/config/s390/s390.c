@@ -2543,7 +2543,7 @@ legitimate_la_operand_p (register rtx op)
   return FALSE;
 }
 
-/* Return 1 if it is valid *and* preferrable to use LA to
+/* Return 1 if it is valid *and* preferable to use LA to
    compute the sum of OP1 and OP2.  */
 
 int

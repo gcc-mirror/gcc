@@ -1935,7 +1935,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int *total)
 
 	 Given the choice between "li R1,0...255" and "move R1,R2"
 	 (where R2 is a known constant), it is usually better to use "li",
-	 since we do not want to unnessarily extend the lifetime of R2.  */
+	 since we do not want to unnecessarily extend the lifetime of R2.  */
       if (outer_code == SET
 	  && INTVAL (x) >= 0
 	  && INTVAL (x) < 256)
@@ -9604,7 +9604,7 @@ mips_expand_builtin_direct (enum insn_code icode, rtx target, tree arglist)
 /* Expand a __builtin_mips_movt_*_ps() or __builtin_mips_movf_*_ps()
    function (TYPE says which).  ARGLIST is the list of arguments to the
    function, ICODE is the instruction that should be used to compare
-   the first two arguments, and COND is the conditon it should test.
+   the first two arguments, and COND is the condition it should test.
    TARGET, if nonnull, suggests a good place to put the result.  */
 
 static rtx

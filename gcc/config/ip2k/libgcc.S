@@ -1498,7 +1498,7 @@ _abort:
 #endif
 
 #if defined(Lwrite)
-	/* Dummy entrypoint to suppress problems with glue code.  */
+	/* Dummy entry point to suppress problems with glue code.  */
 	.sect	.text.libgcc,"ax"
 	.global	_write
 	.func	write, _write

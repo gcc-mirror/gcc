@@ -47,7 +47,7 @@ _mm_malloc (size_t size, size_t align)
     return ((void *) 0);
 
  /* Assume malloc'd pointer is aligned at least to sizeof (void*).
-    If necesary, add another sizeof (void*) to store the value
+    If necessary, add another sizeof (void*) to store the value
     returned by malloc. Effectively this enforces a minimum alignment
     of sizeof double. */     
     if (align < 2 * sizeof (void *))
