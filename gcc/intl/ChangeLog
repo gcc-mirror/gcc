@@ -1,3 +1,8 @@
+2003-03-14  Loren J. Rittle <ljrittle@acm.org>
+
+	* Makefile.in (.y.c): Only enable production rule when
+	maintaining.
+
 2002-05-25  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* gettextP.h (SWAP): Change parameter type to unsigned int.

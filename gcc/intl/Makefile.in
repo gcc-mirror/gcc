@@ -95,9 +95,12 @@ LTV_AGE=0
 .c.lo:
 	$(LIBTOOL) --mode=compile $(COMPILE) $<
 
+# Unless maintaining, suppress (a) smart makes who think they know how to
+# automake Yacc files and (b) makes who handle VPATH search of generated
+# files differently than GNU make.
 .y.c:
-	$(YACC) $(YFLAGS) --output $@ $<
-	rm -f $*.h
+@MAINT@	$(YACC) $(YFLAGS) --output $@ $<
+@MAINT@	rm -f $*.h
 
 .sin.sed:
 	sed -e '/^#/d' -e 's/@''PACKAGE''@/@PACKAGE@/g' $< > t-$@
