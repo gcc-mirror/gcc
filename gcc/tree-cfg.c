@@ -941,7 +941,12 @@ group_case_labels (void)
 	  tree labels = SWITCH_LABELS (stmt);
 	  int old_size = TREE_VEC_LENGTH (labels);
 	  int i, j, new_size = old_size;
-	  tree default_label = TREE_VEC_ELT (labels, old_size - 1);
+	  tree default_case = TREE_VEC_ELT (labels, old_size - 1);
+ 	  tree default_label;
+
+	  /* The default lable is always the last case in a switch
+	     statement after gimplification.  */
+	  default_label = CASE_LABEL (default_case);
 
 	  /* Look for possible opportunities to merge cases.
 	     Ignore the last element of the label vector because it
@@ -961,6 +966,7 @@ group_case_labels (void)
 		{
 		  TREE_VEC_ELT (labels, i) = NULL_TREE;
 		  i++;
+		  new_size--;
 		  continue;
 		}
 

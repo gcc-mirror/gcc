@@ -1,3 +1,8 @@
+2004-10-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17343
+	* gcc.dg/tree-ssa/pr17343.c: New test.
+
 2004-10-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/tree-ssa/stdarg-1.c: Removed.
