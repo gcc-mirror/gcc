@@ -1,3 +1,10 @@
+Fri Nov 13 22:50:37 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.md (movsf): Remove explicit secondary-reload-like
+	functionality.  Only truncate SFmode store if in FPR.
+	(movsf splitters): Combine const_double splitters.
+	(movsf_hardfloat): Add GPR support.
+
 Fri Nov 13 11:02:11 1998  Stan Cox  <scox@cygnus.com>
 
 	* splet.h (SUBTARGET_OVERRIDE_OPTIONS): New to
