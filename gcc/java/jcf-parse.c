@@ -224,11 +224,12 @@ set_source_filename (jcf, index)
 
 #define HANDLE_SYNTHETIC_ATTRIBUTE()					\
 {									\
-  /* Irrelevant decls should have been nullified by the END macros. */ \
+  /* Irrelevant decls should have been nullified by the END macros.	\
+     We only handle the `Synthetic' attribute on method DECLs.		\
+     DECL_ARTIFICIAL on fields is used for something else (See		\
+     PUSH_FIELD in java-tree.h) */					\
   if (current_method)							\
     DECL_ARTIFICIAL (current_method) = 1;				\
-  else									\
-    DECL_ARTIFICIAL (current_field) = 1;				\
 }
 
 #include "jcf-reader.c"
