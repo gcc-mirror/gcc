@@ -5482,6 +5482,37 @@ round_trampoline_addr (tramp)
   return tramp;
 }
 
+/* Insert the BLOCK in the block-tree, knowing that the previous
+   block-note is for OLD_BLOCK.  BEGIN_P is non-zero if the previous
+   block-note was the for the beginning of a BLOCK.  FN is the
+   FUNCTION_DECL into which the BLOCK is being inserted.  */
+
+void 
+insert_block_after_note (block, old_block, begin_p, fn)
+     tree block;
+     tree old_block;
+     int begin_p;
+     tree fn;
+{
+  if (begin_p)
+    {
+      /* If there was no previous block, use the top-level block for
+	 the function.  */
+      if (!old_block)
+	old_block = DECL_INITIAL (fn);
+
+      BLOCK_SUPERCONTEXT (block) = old_block;
+      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (old_block);
+      BLOCK_SUBBLOCKS (old_block) = block;
+    }
+  else
+    {
+      BLOCK_SUPERCONTEXT (block) = BLOCK_SUPERCONTEXT (old_block);
+      BLOCK_CHAIN (block) = BLOCK_CHAIN (old_block);
+      BLOCK_CHAIN (old_block) = block;
+    }
+}
+
 /* Insert the BLOCK in the block-tree before LAST_INSN.  */
 
 void
@@ -5502,27 +5533,13 @@ retrofit_block (block, last_insn)
 	&& (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG
 	    || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
       break;
-  if (!insn || NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-    {
-      tree superblock;
 
-      if (insn)
-	superblock = NOTE_BLOCK (insn);
-      else
-	superblock = DECL_INITIAL (current_function_decl);
-
-      BLOCK_SUPERCONTEXT (block) = superblock;
-      BLOCK_CHAIN (block) = BLOCK_SUBBLOCKS (superblock);
-      BLOCK_SUBBLOCKS (superblock) = block;
-    }
-  else
-    {
-      tree prevblock = NOTE_BLOCK (insn);
-
-      BLOCK_SUPERCONTEXT (block) = BLOCK_SUPERCONTEXT (prevblock);
-      BLOCK_CHAIN (block) = BLOCK_CHAIN (prevblock);
-      BLOCK_CHAIN (prevblock) = block;
-    }
+  insert_block_after_note (block, 
+			   insn ? NOTE_BLOCK (insn) : NULL_TREE,
+			   insn 
+			   ? (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
+			   : 1,
+			   current_function_decl);
 }
 
 /* The functions identify_blocks and reorder_blocks provide a way to
