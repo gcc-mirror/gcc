@@ -225,7 +225,7 @@ sel_get_any_typed_uid (const char *name)
 {
   struct objc_list *l;
   sidx i;
-  SEL s;
+  SEL s = NULL;
 
   objc_mutex_lock(__objc_runtime_mutex);
 
