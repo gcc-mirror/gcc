@@ -632,7 +632,7 @@ output_branch (logic, insn, operands)
 /* Output to FILE the start of the assembler file.  */
 
 void
-output_file_start (file);
+output_file_start (file)
      FILE *file;
 {
   register int pos;
