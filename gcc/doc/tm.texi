@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001
+@c Copyright (C) 1988,1989,1992,1993,1994,1995,1996,1997,1998,1999,2000,2001,2002
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -2364,7 +2364,7 @@ These macros should not be used in the case where a particular class of
 registers can only be copied to memory and not to another class of
 registers.  In that case, secondary reload registers are not needed and
 would not be helpful.  Instead, a stack location must be used to perform
-the copy and the @code{mov@var{m}} pattern should use memory as a
+the copy and the @code{mov@var{m}} pattern should use memory as an
 intermediate storage.  This case often occurs between floating-point and
 general registers.
 

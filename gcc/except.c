@@ -1,6 +1,6 @@
 /* Implements exception handling.
    Copyright (C) 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Mike Stump <mrs@cygnus.com>.
 
 This file is part of GCC.
@@ -2650,7 +2650,7 @@ reachable_next_level (region, type_thrown, info)
 
 	    if (type_thrown)
 	      {
-		/* If we have a at least one type match, end the search.  */
+		/* If we have at least one type match, end the search.  */
 		tree tp_node = c->u.catch.type_list;
 
 		for (; tp_node; tp_node = TREE_CHAIN (tp_node))
