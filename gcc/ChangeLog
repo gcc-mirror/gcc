@@ -1,3 +1,8 @@
+2003-02-10  Janis Johnson  <janis187@us.ibm.com>
+
+	* config/rs6000/ppc64-fp.c: New file.
+	* config/rs6000/t-linux64 (LIB2FUNCS_EXTRA): Add ppc64-fp.c.
+
 2003-02-10  Josef Zlomek  <zlomekj@suse.cz>
 
 	* Makefile.in (bb-reorder.o): Add dependency on $(FIBHEAP_H).

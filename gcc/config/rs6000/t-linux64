@@ -5,6 +5,9 @@ TARGET_LIBGCC2_CFLAGS =
 EXTRA_MULTILIB_PARTS=crtbegin.o crtend.o crtbeginS.o crtendS.o crtbeginT.o \
 			crtsavres.o
 
+# These functions are needed for soft-float on powerpc64-linux.
+LIB2FUNCS_EXTRA = $(srcdir)/config/rs6000/ppc64-fp.c
+
 # ld provides these functions as needed.
 crtsavres.S:
 	echo >crtsavres.S
