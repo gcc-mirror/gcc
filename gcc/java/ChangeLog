@@ -1,3 +1,14 @@
+2001-06-27  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* class.c (set_super_info): Call `set_class_decl_access_flags.'
+	(set_class_decl_access_flags): New function.
+	* java-tree.h (set_class_decl_access_flags): New prototype.
+	* jcf-parse.c (handle_innerclass_attribute): Read and set access flags.
+	(parse_class_file): New local `decl_max_locals.' Take wide types
+	into account to compute DECL_MAX_LOCALS.
+	* parse.y (type_import_on_demand_declaration:): Ignore duplicate
+	imports on demand.
+
 2001-06-22  Jan van Male  <jan.vanmale@fenk.wau.nl>
 
 	* zipfile.h: Use GCC_JCF_H instead of JCF_H.

@@ -1040,6 +1040,7 @@ extern void pop_labeled_block PARAMS ((void));
 extern const char *lang_printable_name PARAMS ((tree, int));
 extern tree maybe_add_interface PARAMS ((tree, tree));
 extern void set_super_info PARAMS ((int, tree, tree, int));
+extern void set_class_decl_access_flags PARAMS ((int, tree));
 extern int get_access_flags_from_decl PARAMS ((tree));
 extern int interface_of_p PARAMS ((tree, tree));
 extern int inherits_from_p PARAMS ((tree, tree));
