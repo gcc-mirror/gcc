@@ -1,3 +1,8 @@
+2001-07-19  Geoffrey Keating  <geoffk@redhat.com>
+
+	* ifcvt.c (noce_try_store_flag_constants): Correct order
+	of parameters to trunc_int_for_mode.
+
 2001-07-19  Mark Mitchell  <mark@codesourcery.com>
 
 	* reorg.c (fill_simple_delay_slots): If an instruction might throw
