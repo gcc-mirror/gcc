@@ -2385,6 +2385,11 @@ mark_used_regs (needed, live, x, final, insn)
       /* While we're here, optimize this case.  */
       x = SUBREG_REG (x);
 
+      /* Must verify that it is a register, since the RS/6000 port has
+	 (subreg:QI (lshift:SI ...)).  */
+      if (GET_CODE (x) != REG)
+	goto retry;
+
       /* ... fall through ... */
 
     case REG:
