@@ -474,8 +474,10 @@ arm_pe_return_in_memory (type)
 	  if (TREE_CODE (field) == FIELD_DECL
 	      && ! TREE_STATIC (field)
 	      && (! DECL_BIT_FIELD_TYPE (field)
-		  || (TREE_INT_CST_LOW (DECL_FIELD_BITPOS (field))
-		      + TREE_INT_CST_LOW (DECL_SIZE (field))) > 32))
+		  || (host_integerp (DECL_SIZE (field), 1)
+		      && host_integerp (bit_position (field), 1)
+		      && 32 < (int_bit_position (field)
+			       + tree_low_cst (DECL_SIZE (field), 1)))))
 	    return 1;
 	}
       return 0;

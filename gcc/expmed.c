@@ -1138,7 +1138,7 @@ extract_bit_field (str_rtx, bitsize, bitnum, unsignedp,
 	  /* Offset from start of field in OP0.  */
 	  unsigned int bit_offset = (WORDS_BIG_ENDIAN
 				     ? MAX (0, ((int) bitsize - ((int) i + 1)
-						* BITS_PER_WORD))
+						* (int) BITS_PER_WORD))
 				     : (int) i * BITS_PER_WORD);
 	  rtx target_part = operand_subword (target, wordnum, 1, VOIDmode);
 	  rtx result_part

@@ -1295,20 +1295,20 @@ do {							\
    Note that this is not necessarily the width of data type `int';
    if using 16-bit ints on a 68000, this would still be 32.
    But on a machine with 16-bit registers, this would be 16.  */
-#define BITS_PER_WORD (TARGET_64BIT ? 64 : 32)
+#define BITS_PER_WORD ((unsigned int) (TARGET_64BIT ? 64 : 32))
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
-#define UNITS_PER_WORD (TARGET_64BIT ? 8 : 4)
+#define UNITS_PER_WORD ((unsigned int) (TARGET_64BIT ? 8 : 4))
 #define MIN_UNITS_PER_WORD 4
 
 /* For MIPS, width of a floating point register.  */
-#define UNITS_PER_FPREG (TARGET_FLOAT64 ? 8 : 4)
+#define UNITS_PER_FPREG ((unsigned int) (TARGET_FLOAT64 ? 8 : 4))
 
 /* A C expression for the size in bits of the type `int' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define INT_TYPE_SIZE (TARGET_INT64 ? 64 : 32)
+#define INT_TYPE_SIZE ((unsigned int) (TARGET_INT64 ? 64 : 32))
 #define MAX_INT_TYPE_SIZE 64
 
 /* Tell the preprocessor the maximum size of wchar_t.  */
@@ -1327,7 +1327,7 @@ do {							\
 /* A C expression for the size in bits of the type `long' on the
    target machine.  If you don't define this, the default is one
    word.  */
-#define LONG_TYPE_SIZE (TARGET_LONG64 ? 64 : 32)
+#define LONG_TYPE_SIZE ((unsigned int) (TARGET_LONG64 ? 64 : 32))
 #define MAX_LONG_TYPE_SIZE 64
 
 /* A C expression for the size in bits of the type `long long' on the
@@ -1359,14 +1359,14 @@ do {							\
 /* Width in bits of a pointer.
    See also the macro `Pmode' defined below.  */
 #ifndef POINTER_SIZE
-#define POINTER_SIZE (Pmode == DImode ? 64 : 32)
+#define POINTER_SIZE ((unsigned int) (Pmode == DImode ? 64 : 32))
 #endif
 
 /* Allocation boundary (in *bits*) for storing pointers in memory.  */
-#define POINTER_BOUNDARY (Pmode == DImode ? 64 : 32)
+#define POINTER_BOUNDARY ((unsigned int) (Pmode == DImode ? 64 : 32))
 
 /* Allocation boundary (in *bits*) for storing arguments in argument list.  */
-#define PARM_BOUNDARY (TARGET_64BIT ? 64 : 32)
+#define PARM_BOUNDARY ((unsigned int) (TARGET_64BIT ? 64 : 32))
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
 #define FUNCTION_BOUNDARY 32
@@ -1421,9 +1421,7 @@ do {							\
 
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
   ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
+   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
@@ -1582,12 +1580,16 @@ do {							\
    should be used instead.  */
 #define FPSW_REGNUM	ST_REG_FIRST
 
-#define GP_REG_P(REGNO) ((unsigned) ((REGNO) - GP_REG_FIRST) < GP_REG_NUM)
+#define GP_REG_P(REGNO)	\
+  ((unsigned int) ((int) (REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define M16_REG_P(REGNO) \
   (((REGNO) >= 2 && (REGNO) <= 7) || (REGNO) == 16 || (REGNO) == 17)
-#define FP_REG_P(REGNO) ((unsigned) ((REGNO) - FP_REG_FIRST) < FP_REG_NUM)
-#define MD_REG_P(REGNO) ((unsigned) ((REGNO) - MD_REG_FIRST) < MD_REG_NUM)
-#define ST_REG_P(REGNO) ((unsigned) ((REGNO) - ST_REG_FIRST) < ST_REG_NUM)
+#define FP_REG_P(REGNO)  \
+  ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
+#define MD_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - MD_REG_FIRST) < MD_REG_NUM)
+#define ST_REG_P(REGNO) \
+  ((unsigned int) ((int) (REGNO) - ST_REG_FIRST) < ST_REG_NUM)
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
@@ -2453,12 +2455,12 @@ extern struct mips_frame_info current_frame_info;
 
 typedef struct mips_args {
   int gp_reg_found;		/* whether a gp register was found yet */
-  int arg_number;		/* argument number */
-  int arg_words;		/* # total words the arguments take */
-  int fp_arg_words;		/* # words for FP args (MIPS_EABI only) */
+  unsigned int arg_number;	/* argument number */
+  unsigned int arg_words;	/* # total words the arguments take */
+  unsigned int fp_arg_words;	/* # words for FP args (MIPS_EABI only) */
   int last_arg_fp;		/* nonzero if last arg was FP (EABI only) */
   int fp_code;			/* Mode of FP arguments (mips16) */
-  int num_adjusts;		/* number of adjustments made */
+  unsigned int num_adjusts;	/* number of adjustments made */
 				/* Adjustments made to args pass in regs.  */
 				/* ??? The size is doubled to work around a 
 				   bug in the code that sets the adjustments
@@ -2511,7 +2513,7 @@ typedef struct mips_args {
 
 #define FUNCTION_ARG_BOUNDARY(MODE, TYPE)				\
   (((TYPE) != 0)							\
-	? ((TYPE_ALIGN(TYPE) <= (unsigned)PARM_BOUNDARY)		\
+	? ((TYPE_ALIGN(TYPE) <= PARM_BOUNDARY)				\
 		? PARM_BOUNDARY						\
 		: TYPE_ALIGN(TYPE))					\
 	: ((GET_MODE_ALIGNMENT(MODE) <= PARM_BOUNDARY)			\

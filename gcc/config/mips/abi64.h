@@ -105,19 +105,21 @@ extern struct rtx_def *mips_function_value PARAMS ((union tree_node *, union tre
    For stdarg, we do not need to save the current argument, because it
    is a real argument.  */
 #define SETUP_INCOMING_VARARGS(CUM,MODE,TYPE,PRETEND_SIZE,NO_RTL)	\
-{ int mips_off = (! current_function_varargs) && (! (CUM).last_arg_fp);	\
-  int mips_fp_off = (! current_function_varargs) && ((CUM).last_arg_fp); \
+{ unsigned int mips_off							\
+    = (! current_function_varargs) && (! (CUM).last_arg_fp);		\
+    unsigned int mips_fp_off						\
+    = (! current_function_varargs) && ((CUM).last_arg_fp); 		\
   if (((mips_abi != ABI_32 && mips_abi != ABI_O64)			\
        && (CUM).arg_words < MAX_ARGS_IN_REGISTERS - mips_off)		\
       || (mips_abi == ABI_EABI						\
 	  && ! TARGET_SOFT_FLOAT					\
 	  && (CUM).fp_arg_words < MAX_ARGS_IN_REGISTERS - mips_fp_off))	\
     {									\
-      int mips_save_gp_regs =						\
-        MAX_ARGS_IN_REGISTERS - (CUM).arg_words - mips_off;		\
-      int mips_save_fp_regs =						\
-        (mips_abi != ABI_EABI ? 0					\
-	 : MAX_ARGS_IN_REGISTERS - (CUM).fp_arg_words - mips_fp_off);	\
+      int mips_save_gp_regs						\
+        = MAX_ARGS_IN_REGISTERS - (CUM).arg_words - mips_off;		\
+      int mips_save_fp_regs						\
+        = (mips_abi != ABI_EABI ? 0					\
+	   : MAX_ARGS_IN_REGISTERS - (CUM).fp_arg_words - mips_fp_off);	\
 									\
       if (mips_save_gp_regs < 0)					\
 	mips_save_gp_regs = 0;						\

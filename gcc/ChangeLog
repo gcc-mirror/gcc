@@ -1,6 +1,32 @@
+Sun Mar 26 11:37:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expmed.c (extract_bit_field): Ensure BITS_PER_WORD is signed in MAX.
+	* config/arm/pe.c (arm_pe_return_in_memory): Use host_integerp and
+	int_bit_position.
+	* config/mips/mips.c (function_arg): Likewise; also remove cast
+	and make variables unsigned or HOST_WIDE_INT and use tree_low_cst.
+	(mips_function_value): Use int_byte_position and make HOST_WIDE_INT.
+	* config/mips/abi64.h (SETUP_INCOMING_VARARGS): Offsets are unsigned.
+	* config/mips/mips.h (BITS_PER_WORD, UNITS_PER_WORD): Cast to unsigned.
+	(UNITS_PER_FPREG, INT_TYPE_SIZE, LONG_TYPE_SIZE): Likewise.
+	(POINTER_SIZE, POINTER_BOUNDARY,PARM_BOUNDARY): Likewise.
+	(GP_REG_P, FP_REG_P, MD_REG_P, ST_REG_P): Ensure subtraction signed.
+	(struct mips_arg): arg_number, arg_words, fp_arg_words, and
+	num_adjusts now unsigned.
+	(FUNCTION_ARG_BOUNDARY): Remove unneeded cast.
+	* config/sparc/sparc.c (struct function_arg_record_value_parms):
+	NREGS now unsigned.
+	(function_arg_record_value_1): STARTBITPOS arg now HOST_WIDE_INT
+	as is BITPOS variable; use host_integerp and int_bit_position.
+	(function_arg_record_value_2): Likewise.
+	(function_arg_record_value_3): Arg BITPOS now HOST_WIDE_INT.
+	Variable REGNO now unsigned.
+	(function_arg_record_value): NREGS now unsigned.
+
 2000-03-26  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* jump.c (mark_all_labels): Handle CALL_PLACEHOLDERs.
+
 
 Sat Mar 25 09:12:10 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
