@@ -6899,7 +6899,7 @@ cxx_init_decl_processing ()
   current_lang_name = NULL_TREE;
 
   /* Adjust various flags based on command-line settings.  */
-  if (! flag_permissive && ! pedantic)
+  if (!flag_permissive)
     flag_pedantic_errors = 1;
   if (!flag_no_inline)
     {

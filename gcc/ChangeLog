@@ -1,3 +1,9 @@
+2003-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10032
+	* doc/invoke.texi (C++ Dialect Options): Change documentation of
+	-fpermissive.
+
 2003-07-10  Matt Kraai  <kraai@alumni.cmu.edu>
 
 	* doc/invoke.texi: Fix misspelling of "@item".

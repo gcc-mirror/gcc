@@ -1,3 +1,13 @@
+2003-07-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/10032
+	* decl.c (cxx_init_decl_processing): With -pedantic, pedwarns are
+	still errors.
+
+	PR c++/10527
+	* error.c (decl_to_string): Do not print default argument
+	expressions.
+
 2003-07-10  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	PR c++/10849
@@ -7,6 +17,10 @@
 	* search.c (type_access_control): Revert my 2003-05-25 change.
 
 2003-07-06  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/11236
+	* cvt.c (convert_to_void): Treat an overloaded function like
+	"((void) 0)" after issuing a diagnostic.
 
 	PR c++/11345
 	* search.c (lookup_base_r): Remove is_non_public and
