@@ -94,7 +94,7 @@ Boston, MA 02111-1307, USA.  */
 #define LONG_DOUBLE_TYPE_SIZE 128
     
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix)"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -D_LONGLONG -Dsparc -D__sparc__ -Dlinux -Asystem(unix) -Asystem(posix)"
 
 #undef CPP_SUBTARGET_SPEC
 #define CPP_SUBTARGET_SPEC "\

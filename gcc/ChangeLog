@@ -1,3 +1,12 @@
+Sun Nov  1 11:04:32 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* i386/linux.h (CPP_PREDEFINES): Bring back -Di386 for the last time.
+
+	* From Christian Gafton:
+	* i386/linux.h (CPP_PREDEFINES): Add -D__i386__.
+	* sparc/linux.h (CPP_PREDEFINES): Add -D__sparc__.
+	* sparc/linux64.h (CPP_PREDEFIENS): Add -D__sparc__.
+
 Sat Oct 31 00:40:05 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* jump.c (jump_optimize): Initialize mappings from INSN_UID to

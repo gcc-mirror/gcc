@@ -103,7 +103,7 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -Dsparc -Dlinux -Asystem(unix) -Asystem(posix)"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -Dsparc -D__sparc__ -Dlinux -Asystem(unix) -Asystem(posix)"
 
 #undef CPP_SUBTARGET_SPEC
 #ifdef USE_GNULIBC_1

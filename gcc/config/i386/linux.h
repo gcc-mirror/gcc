@@ -150,8 +150,9 @@ Boston, MA 02111-1307, USA.  */
 #undef WCHAR_TYPE_SIZE
 #define WCHAR_TYPE_SIZE BITS_PER_WORD
     
+/* The egcs-1.1 branch is the last time we will have -Di386.  -D__i386__ is the thing to use.  */
 #undef CPP_PREDEFINES
-#define CPP_PREDEFINES "-D__ELF__ -Dunix -Dlinux -Asystem(posix)"
+#define CPP_PREDEFINES "-D__ELF__ -Dunix -Di386 -D__i386__ -Dlinux -Asystem(posix)"
 
 #undef CPP_SPEC
 #ifdef USE_GNULIBC_1
