@@ -261,6 +261,8 @@ static void ia64_hpux_add_extern_decl (tree decl)
      ATTRIBUTE_UNUSED;
 static void ia64_hpux_file_end (void)
      ATTRIBUTE_UNUSED;
+static void ia64_init_libfuncs (void)
+     ATTRIBUTE_UNUSED;
 static void ia64_hpux_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 static void ia64_vms_init_libfuncs (void)
@@ -8747,11 +8749,25 @@ ia64_hpux_file_end (void)
   extern_func_head = 0;
 }
 
+/* Set SImode div/mod functions, init_integral_libfuncs only initializes
+   modes of word_mode and larger.  */
+
+static void
+ia64_init_libfuncs (void)
+{
+  set_optab_libfunc (sdiv_optab, SImode, "__divsi3");
+  set_optab_libfunc (udiv_optab, SImode, "__udivsi3");
+  set_optab_libfunc (smod_optab, SImode, "__modsi3");
+  set_optab_libfunc (umod_optab, SImode, "__umodsi3");
+}
+
 /* Rename all the TFmode libfuncs using the HPUX conventions.  */
 
 static void
 ia64_hpux_init_libfuncs (void)
 {
+  ia64_init_libfuncs ();
+
   set_optab_libfunc (add_optab, TFmode, "_U_Qfadd");
   set_optab_libfunc (sub_optab, TFmode, "_U_Qfsub");
   set_optab_libfunc (smul_optab, TFmode, "_U_Qfmpy");
