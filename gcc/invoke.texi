@@ -3262,6 +3262,12 @@ In each case, the @var{value} is a integer.  The allowable choices for
 If an function contains more than this many instructions, it
 will not be inlined.  This option is precisely equivalent to
 @samp{-finline-limit}.
+
+@item max-gcse-memory
+The approximate maximum amount of memory that will be allocated in
+order to perform the global common subexpression elimination
+optimization.  If more memory than specified is required, the
+optimization will not be done.
 @end table
 
 @end table

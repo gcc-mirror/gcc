@@ -1,3 +1,7 @@
+2001-04-12  Mark Mitchell  <mark@codesourcery.com>
+
+	* invoke.texi: Document --param max-gcse-memory.
+
 2001-04-12  kaz Kojima  <kkojima@rr.iij4u.or.jp>
 
 	* sh.md (builtin_setjmp_receiver): New expander.
