@@ -149,14 +149,18 @@ gen_insn (insn)
 	}
       printf (")\n");
     }
-      
+
   /* Save the current insn, so that we can later put out appropriate
      prototypes.  At present, most md files have the wrong number of
-     arguments for call and call_value, ignoring the extra arguments
-     that are passed for some machines, so by default, turn off the
-     prototype.  */
+     arguments for the call insns (call, call_value, call_pop,
+     call_value_pop) ignoring the extra arguments that are passed for
+     some machines, so by default, turn off the prototype.  */
 
-  obstack_ptr = (!strcmp (name, "call") || !strcmp (name, "call_value"))
+  obstack_ptr = (name[0] == 'c'
+		 && (!strcmp (name, "call")
+		     || !strcmp (name, "call_value")
+		     || !strcmp (name, "call_pop")
+		     || !strcmp (name, "call_value_pop")))
     ? &call_obstack : &normal_obstack;
 
   obstack_grow (obstack_ptr, &insn, sizeof (rtx));
