@@ -1,3 +1,15 @@
+2001-05-18  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* include/jvm.h: Move "#pragma GCC java_exceptions" to ...
+	* gcj/javaprims.h: ... here.
+	* gnu/gcj/io/shs.cc: Add "#pragma GCC java_exceptions".
+
+2001-05-17  Martin Kahlert  <martin.kahlert@infineon.com>
+
+	* java/lang/natClass.cc (_Jv_FindIIndex): Fix an off by one error 
+	with length of ioffset table.
+	(_Jv_IsAssignableFrom): Likewise.
+
 2001-05-17  Per Bothner  <per@bothner.com>
 
 	* Makefile.am (ZIP):  The "fastjar" binary is now plain "jar".

@@ -11,6 +11,9 @@ details.  */
 #ifndef __JAVAPRIMS_H__
 #define __JAVAPRIMS_H__
 
+// Force C++ compiler to use Java-style exceptions.
+#pragma GCC java_exceptions
+
 // FIXME: this is a hack until we get a proper gcjh.
 // It is needed to work around system header files that define TRUE
 // and FALSE.
