@@ -239,7 +239,6 @@ flow_call_edges_add (blocks)
 
       check_last_block = true;
     }
-
   else
     EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i,
 			       {
