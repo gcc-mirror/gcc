@@ -1264,6 +1264,19 @@ To get a list of the possible @file{*.exp} files, pipe the
 output of @samp{make check} into a file and look at the
 @samp{Running @dots{}  .exp} lines.
 
+To run only the tests for a library, run @samp{make check} from the
+the library's testsuite in a subdirectory of the object directory:
+@file{libstdc++-v3/testsuite} or @file{libcgj/testsuite}.
+
+@section Additional testing for Java Class Libraries
+
+The @uref{http://sources.redhat.com/mauve/,,Mauve Project} provides
+a suite of tests for the Java Class Libraries.  This suite can be run
+as part of libgcj testing by placing the Mauve tree within the libjava
+testsuite at @file{libjava/testsuite/libjava.mauve/mauve}, or by
+specifying the location of that tree when invoking @samp{make}, as in
+@samp{make MAUVEDIR=~/mauve check}.
+
 @section How to interpret test results
 
 After the testsuite has run you'll find various @file{*.sum} and @file{*.log}
