@@ -1,5 +1,13 @@
 2000-03-20  Richard Henderson  <rth@cygnus.com>
 
+	* regmove.c (stack_memref_p): Fix typo, reorg for readability.
+	(combine_stack_adjustments_for_block): Don't allow sp references
+	in the side of a set we're not fixing up.
+	* toplev.c (rest_of_compilation): Run combine_stack_adjustments
+	after life_analysis.
+
+2000-03-20  Richard Henderson  <rth@cygnus.com>
+
 	* calls.c (expand_call): Don't bother generating tail call
 	sequences if there are pending cleanups.  Use
 	expand_start_target_temps/expand_end_target_temps to elide
