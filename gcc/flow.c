@@ -1,5 +1,5 @@
 /* Data flow analysis for GNU compiler.
-   Copyright (C) 1987, 88, 92, 93, 94, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 92, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -287,7 +287,7 @@ static HARD_REG_SET elim_reg_set;
 
 /* Forward declarations */
 static void find_basic_blocks		PROTO((rtx, rtx));
-static int uses_reg_or_mem		PROTO((rtx));
+static int jmp_uses_reg_or_mem		PROTO((rtx));
 static void mark_label_ref		PROTO((rtx, rtx, int));
 static void life_analysis		PROTO((rtx, int));
 void allocate_for_life_analysis		PROTO((void));
@@ -553,12 +553,12 @@ find_basic_blocks (f, nonlocal_label_list)
 		  for (i = len - 1; i >= 0; i--)
 		    if (GET_CODE (XVECEXP (pat, 0, i)) == SET
 			&& SET_DEST (XVECEXP (pat, 0, i)) == pc_rtx
-			&& uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
+			&& jmp_uses_reg_or_mem (SET_SRC (XVECEXP (pat, 0, i))))
 		      computed_jump = 1;
 	      }
 	    else if (GET_CODE (pat) == SET
 		     && SET_DEST (pat) == pc_rtx
-		     && uses_reg_or_mem (SET_SRC (pat)))
+		     && jmp_uses_reg_or_mem (SET_SRC (pat)))
 	      computed_jump = 1;
 		    
 	    if (computed_jump)
@@ -759,32 +759,50 @@ find_basic_blocks (f, nonlocal_label_list)
 
 /* Subroutines of find_basic_blocks.  */
 
-/* Return 1 if X contain a REG or MEM that is not in the constant pool.  */
+/* Return 1 if X, the SRC_SRC of  SET of (pc) contain a REG or MEM that is
+   not in the constant pool and not in the condition of an IF_THEN_ELSE.  */
 
 static int
-uses_reg_or_mem (x)
+jmp_uses_reg_or_mem (x)
      rtx x;
 {
   enum rtx_code code = GET_CODE (x);
   int i, j;
   char *fmt;
 
-  if (code == REG
-      || (code == MEM
-	  && ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
-		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)))))
-    return 1;
+  switch (code)
+    {
+    case CONST:
+    case LABEL_REF:
+    case PC:
+      return 0;
+
+    case REG:
+      return 1;
+
+    case MEM:
+      return ! (GET_CODE (XEXP (x, 0)) == SYMBOL_REF
+		&& CONSTANT_POOL_ADDRESS_P (XEXP (x, 0)));
+
+    case IF_THEN_ELSE:
+      return (jmp_uses_reg_or_mem (XEXP (x, 1))
+	      || jmp_uses_reg_or_mem (XEXP (x, 2)));
+
+    case PLUS:  case MINUS:  case MULT:
+      return (jmp_uses_reg_or_mem (XEXP (x, 0))
+	      || jmp_uses_reg_or_mem (XEXP (x, 1)));
+    }
 
   fmt = GET_RTX_FORMAT (code);
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'e'
-	  && uses_reg_or_mem (XEXP (x, i)))
+	  && jmp_uses_reg_or_mem (XEXP (x, i)))
 	return 1;
 
       if (fmt[i] == 'E')
 	for (j = 0; j < XVECLEN (x, i); j++)
-	  if (uses_reg_or_mem (XVECEXP (x, i, j)))
+	  if (jmp_uses_reg_or_mem (XVECEXP (x, i, j)))
 	    return 1;
     }
 
