@@ -158,6 +158,7 @@ static void aof_file_end (void);
 static rtx arm_struct_value_rtx (tree, int);
 static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 					tree, int *, int);
+static bool arm_promote_prototypes (tree);
 
 
 /* Initialize the GCC target structure.  */
@@ -247,7 +248,7 @@ static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
 #undef TARGET_PROMOTE_FUNCTION_RETURN
 #define TARGET_PROMOTE_FUNCTION_RETURN hook_bool_tree_true
 #undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_false
+#define TARGET_PROMOTE_PROTOTYPES arm_promote_prototypes
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX arm_struct_value_rtx
@@ -14437,5 +14438,15 @@ arm_no_early_mul_dep (rtx producer, rtx consumer)
   
   return (GET_CODE (op) == PLUS
 	  && !reg_overlap_mentioned_p (value, XEXP (op, 0)));
+}
+
+
+/* We can't rely on the caller doing the proper promotion when
+   using APCS or ATPCS.  */
+
+static bool
+arm_promote_prototypes (tree t ATTRIBUTE_UNUSED)
+{
+    return arm_abi == ARM_ABI_APCS || arm_abi == ARM_ABI_ATPCS;
 }
 
