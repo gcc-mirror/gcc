@@ -2326,6 +2326,7 @@ expand_body (fn)
 {
   int saved_lineno;
   const char *saved_input_filename;
+  tree saved_function;
 
   /* When the parser calls us after finishing the body of a template
      function, we don't really want to expand the body.  When we're
@@ -2403,6 +2404,16 @@ expand_body (fn)
   if (DECL_EXTERNAL (fn))
     return;
 
+  /* Save the current file name and line number.  When we expand the
+     body of the function, we'll set LINENO and INPUT_FILENAME so that
+     error-mesages come out in the right places.  */
+  saved_lineno = lineno;
+  saved_input_filename = input_filename;
+  saved_function = current_function_decl;
+  lineno = DECL_SOURCE_LINE (fn);
+  input_filename = DECL_SOURCE_FILE (fn);
+  current_function_decl = fn;
+
   timevar_push (TV_INTEGRATION);
 
   /* Optimize the body of the function before expanding it.  */
@@ -2410,14 +2421,6 @@ expand_body (fn)
 
   timevar_pop (TV_INTEGRATION);
   timevar_push (TV_EXPAND);
-
-  /* Save the current file name and line number.  When we expand the
-     body of the function, we'll set LINENO and INPUT_FILENAME so that
-     error-mesages come out in the right places.  */
-  saved_lineno = lineno;
-  saved_input_filename = input_filename;
-  lineno = DECL_SOURCE_LINE (fn);
-  input_filename = DECL_SOURCE_FILE (fn);
 
   genrtl_start_function (fn);
   current_function_is_thunk = DECL_THUNK_P (fn);
@@ -2450,6 +2453,7 @@ expand_body (fn)
     DECL_SAVED_TREE (fn) = NULL_TREE;
 
   /* And restore the current source position.  */
+  current_function_decl = saved_function;
   lineno = saved_lineno;
   input_filename = saved_input_filename;
   extract_interface_info ();
