@@ -1,3 +1,7 @@
+2001-10-24  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* include/safe-ctype.h (_sch_isbasic, IS_ISOBASIC): New.
+
 2001-10-22  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* libiberty.h (hex_init): Revert delete.
