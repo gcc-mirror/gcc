@@ -24,6 +24,7 @@
 PACKAGE = @PACKAGE@
 
 # Location of installation directories.
+mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 locale_installdir = $(DESTDIR)$(datadir)/locale
 locale_builddir = @glibcpp_localedir@
 
