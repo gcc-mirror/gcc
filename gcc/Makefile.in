@@ -1522,19 +1522,8 @@ stmp-headers: stmp-int-hdrs gfloat.h
 	chmod a+r include/float.h
 	touch stmp-headers
 
-# Running fixincludes requires making sure that xgcc and cpp have been
-# compiled (they are used to get the value of __SIZE_TYPE__).
-# But recompiling xgcc should not force the the header files to be
-# fixed again.  If you want to do that, delete stmp-fixinc.
-fixinc.ready: xgcc cpp
-	-if [ -f fixinc.ready ] ; then \
-		true; \
-	else \
-		touch fixinc.ready; \
-	fi
-
 # Build fixed copies of system files.
-stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h fixinc.ready
+stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h
 	rm -rf include
 	mkdir include
 	if [ x$(FIXINCLUDES) != xMakefile.in ]; \
@@ -1542,7 +1531,7 @@ stmp-fixinc: $(srcdir)/$(FIXINCLUDES) gsyslimits.h fixinc.ready
 	  for dir in $(SYSTEM_HEADER_DIR) $(OTHER_FIXINCLUDES_DIRS); do \
 	    if [ -d $$dir ]; \
 	    then \
-	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir) "`pwd`/xgcc -B`pwd`/"; \
+	      $(SHELL) $(srcdir)/$(FIXINCLUDES) include $$dir $(srcdir); \
 	    else true; fi; \
 	  done; \
 	else true; \
@@ -1719,7 +1708,7 @@ clean: mostlyclean bytecode.clean
 	  rm -f md ; \
 	fi
 # Delete the include directory.
-	-rm -rf stmp-* fixinc.ready include objc-headers
+	-rm -rf stmp-* include objc-headers
 
 # Delete all files that users would normally create
 # while building and installing GCC.
