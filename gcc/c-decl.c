@@ -3921,9 +3921,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
       if (TREE_CODE (id) == IDENTIFIER_NODE && C_IS_RESERVED_WORD (id))
 	{
 	  enum rid i = C_RID_CODE (id);
-	  if (i <= RID_LAST_MODIFIER)
+	  if ((int) i <= (int) RID_LAST_MODIFIER)
 	    {
-	      if (i == RID_LONG && specbits & (1<<i))
+	      if (i == RID_LONG && (specbits & (1 << (int) i)))
 		{
 		  if (longlong)
 		    error ("`long long long' is too long for GCC");
@@ -3935,9 +3935,9 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
 		      longlong = 1;
 		    }
 		}
-	      else if (specbits & (1 << i))
+	      else if (specbits & (1 << (int) i))
 		pedwarn ("duplicate `%s'", IDENTIFIER_POINTER (id));
-	      specbits |= 1 << i;
+	      specbits |= 1 << (int) i;
 	      goto found;
 	    }
 	}

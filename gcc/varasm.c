@@ -2431,7 +2431,7 @@ const_hash (exp)
       
     default:
       /* A language specific constant. Just hash the code. */
-      return code % MAX_HASH_TABLE;
+      return (int) code % MAX_HASH_TABLE;
     }
 
   /* Compute hashing function */

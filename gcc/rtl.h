@@ -184,11 +184,11 @@ typedef struct rtx_def
 
 /* Define macros to access the `code' field of the rtx.  */
 
-#define GET_CODE(RTX)		((RTX)->code)
-#define PUT_CODE(RTX, CODE)	((RTX)->code = (CODE))
+#define GET_CODE(RTX)	    ((enum rtx_code) (RTX)->code)
+#define PUT_CODE(RTX, CODE) ((RTX)->code = (ENUM_BITFIELD(rtx_code)) (CODE))
 
-#define GET_MODE(RTX)		((RTX)->mode)
-#define PUT_MODE(RTX, MODE)	((RTX)->mode = (MODE))
+#define GET_MODE(RTX)	    ((enum machine_mode) (RTX)->mode)
+#define PUT_MODE(RTX, MODE) ((RTX)->mode = (ENUM_BITFIELD(machine_mode)) (MODE))
 
 #define RTX_INTEGRATED_P(RTX) ((RTX)->integrated)
 #define RTX_UNCHANGING_P(RTX) ((RTX)->unchanging)
@@ -702,7 +702,7 @@ enum insn_note
 
 extern const char * const note_insn_name[NOTE_INSN_MAX - NOTE_INSN_BIAS];
 #define GET_NOTE_INSN_NAME(NOTE_CODE) \
-  (note_insn_name[(NOTE_CODE) - NOTE_INSN_BIAS])
+  (note_insn_name[(NOTE_CODE) - (int) NOTE_INSN_BIAS])
 
 /* The name of a label, in case it corresponds to an explicit label
    in the input source code.  */

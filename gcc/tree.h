@@ -272,7 +272,8 @@ struct tree_common
 /* The tree-code says what kind of node it is.
    Codes are defined in tree.def.  */
 #define TREE_CODE(NODE) ((enum tree_code) (NODE)->common.code)
-#define TREE_SET_CODE(NODE, VALUE) ((NODE)->common.code = (int) (VALUE))
+#define TREE_SET_CODE(NODE, VALUE) \
+((NODE)->common.code = (ENUM_BITFIELD(tree_code)) (VALUE))
 
 /* When checking is enabled, errors will be generated if a tree node
    is accessed incorrectly. The macros abort with a fatal error.  */
