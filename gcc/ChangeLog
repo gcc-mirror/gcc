@@ -1,3 +1,10 @@
+2003-02-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (*zero_extendhisi2_h8300): Fix the
+	insn length.
+	(extendqisi2): Likewise.
+	(*extendhisi2_h8300): Likewise.
+
 2003-02-18  Matt Austern <austern@apple.com>
 	
 	* langhooks.h, langhooks-def.h: introduce new langhook,
