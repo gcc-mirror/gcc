@@ -1,3 +1,11 @@
+2002-06-24  David S. Miller  <davem@redhat.com>
+
+	* config/sparc/sparc.h (INIT_TARGET_OPTABS): If ARCH64, set the
+	32-bit ABI libfuncs to NULL.
+
+	* expmed.c (expand_divmod): Do not set optab1/optab2 to the shift
+	optabs if op1 is const0_rtx.
+
 2002-06-23  Jan Hubicka  <jh@suse.cz>
 
 	* reg-stack.c (convert_regs_exit): Push the registers to stack in
