@@ -538,7 +538,7 @@ general_operand_src (op, mode)
 }
 
 /* Return true if OP is a valid destination operand for an integer move
-   instruction, excluding those involving pre_modify.  */
+   instruction.  */
 
 int
 general_operand_dst (op, mode)
@@ -548,20 +548,6 @@ general_operand_dst (op, mode)
   if (GET_CODE (op) == MEM && GET_CODE (XEXP (op, 0)) == PRE_DEC)
     return 1;
   return general_operand (op, mode);
-}
-
-/* Return true if OP is a valid destination operand for an integer move
-   instruction, including those involving pre_modify.  */
-
-int
-general_operand_dst_push (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (push_operand (op, mode))
-    return 1;
-
-  return general_operand_dst (op, mode);
 }
 
 /* Return true if OP is a const valid for a bit clear instruction.  */

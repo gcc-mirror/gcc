@@ -1,3 +1,16 @@
+Fri Sep  7 11:52:30 2001   Kazu Hirata  <kazu@hxi.com>
+
+	* h8300-protos.h (general_operand_dst_push): Remove.
+	* h8300.c (general_operand_dst_push): Likewise.
+	* h8300.h (OK_FOR_T): Likewise.
+	(EXTRA_CONSTRAINTS): Do not use OK_FOR_T.
+	* h8300.md (pushqi_h8300): New.
+	(pushqi_h8300hs): Likewise.
+	(pushqi): Likewise.
+	(pushhi_h8300): Likewise.
+	(pushhi_h8300hs): Likewise.
+	(pushhi): Likewise.
+
 Fri Sep  7 12:56:26 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* genattrtab.c (attr_printf): First arg is unsigned.
