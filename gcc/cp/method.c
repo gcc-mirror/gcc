@@ -1241,7 +1241,7 @@ process_overload_item (parmtype, extra_Gcode)
 
         OB_PUTC ('A');
         if (TYPE_DOMAIN (parmtype) == NULL_TREE)
-          error("pointer/reference to array of unknown bound in parm type");
+	  OB_PUTC ('_');
         else
 	  {
 	    tree length = array_type_nelts (parmtype);
