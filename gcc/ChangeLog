@@ -1,3 +1,8 @@
+2003-03-31  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md: Organize peephole2's that trasform
+	(compare (reg:HI) (const_int)).
+
 2003-03-31  Roger Sayle  <roger@eyesopen.com>
 
 	* emit-rtl.c (dconstm2, dconsthalf): New real constants.
