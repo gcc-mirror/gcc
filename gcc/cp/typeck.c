@@ -520,7 +520,7 @@ composite_pointer_type (t1, t2, arg1, arg2, location)
      tree t2;
      tree arg1;
      tree arg2;
-     char* location;
+     const char* location;
 {
   tree result_type;
 

@@ -1,3 +1,40 @@
+1999-08-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* class.c (count_fields, add_fields_to_vec): Add static prototype.
+
+	* cp-tree.h (opname_tab, assignop_tab, operator_name_string,
+	get_id_2, composite_pointer_type, dump_node_to_file): Constify a
+	char*.
+
+	* decl.c (named_label_list, cp_finish_decl, grokdeclarator):
+	Constify a char*.
+
+	* decl2.c (finish_static_data_member_decl, grokfield): Constify a
+	char*.
+
+	* dump.c (queue_and_dump_index, dump_int, dump_string,
+	dump_string_field, dequeue_and_dump, dump_node_to_file): Constify
+	a char*.
+	(dump_stmt): Add static prototype.
+
+	* errfn.c (cp_thing): Constify a char*.
+
+	* error.c (dump_unary_op, dump_binary_op, aggr_variety,
+	dump_aggr_type, dump_global_iord, dump_decl, dump_function_name,
+	dump_expr): Constify a char*.
+
+	* lex.c (extend_token_buffer_to, pragma_getc, pragma_ungetc,
+	read_line_number): Add static prototype.
+	(opname_tab, assignop_tab, operator_name_string): Constify a char*.
+	(real_yylex): Move label `letter' into the scope where it is used.
+
+	* method.c (build_mangled_template_parm_index, build_overload_int,
+	build_decl_overload_real, get_id_2): Constify a char*.
+
+	* search.c (check_final_overrider): Make static.
+
+	* typeck.c (composite_pointer_type): Constify a char*.
+
 1999-08-06  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (bad_specifiers): It's OK to have an EH spec on a function

@@ -139,6 +139,8 @@ static tree resolve_address_of_overloaded_function PROTO((tree, tree, int,
 static void build_vtable_entry_ref PROTO((tree, tree, tree));
 static tree build_vtable_entry_for_fn PROTO((tree, tree));
 static tree build_vtbl_initializer PROTO((tree));
+static int count_fields PROTO((tree));
+static int add_fields_to_vec PROTO((tree, tree, int));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;

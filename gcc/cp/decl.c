@@ -344,7 +344,7 @@ struct named_label_list
   struct binding_level *binding_level;
   tree names_in_scope;
   tree label_decl;
-  char *filename_o_goto;
+  const char *filename_o_goto;
   int lineno_o_goto;
   struct named_label_list *next;
 };
@@ -7375,7 +7375,7 @@ cp_finish_decl (decl, init, asmspec_tree, need_pop, flags)
   tree cleanup = NULL_TREE, ttype = NULL_TREE;
   int was_incomplete;
   int temporary = allocation_temporary_p ();
-  char *asmspec = NULL;
+  const char *asmspec = NULL;
   int was_readonly = 0;
   int already_used = 0;
   tree core_type;
@@ -8950,7 +8950,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   int defaulted_int = 0;
   int opaque_typedef = 0;
   tree typedef_decl = NULL_TREE;
-  char *name;
+  const char *name;
   tree typedef_type = NULL_TREE;
   int funcdef_flag = 0;
   enum tree_code innermost_code = ERROR_MARK;

@@ -80,15 +80,16 @@ typedef struct dump_info
 
 static unsigned int queue PROTO ((dump_info_p, tree, int));
 static void dump_index PROTO ((dump_info_p, unsigned int));
-static void queue_and_dump_index PROTO ((dump_info_p, char *, tree, int));
+static void queue_and_dump_index PROTO ((dump_info_p, const char *, tree, int));
 static void queue_and_dump_type PROTO ((dump_info_p, tree, int));
 static void dequeue_and_dump PROTO ((dump_info_p));
 static void dump_new_line PROTO ((dump_info_p));
 static void dump_maybe_newline PROTO ((dump_info_p));
-static void dump_int PROTO ((dump_info_p, char *, int));
-static void dump_string PROTO ((dump_info_p, char *));
-static void dump_string_field PROTO ((dump_info_p, char *, char *));
+static void dump_int PROTO ((dump_info_p, const char *, int));
+static void dump_string PROTO ((dump_info_p, const char *));
+static void dump_string_field PROTO ((dump_info_p, const char *, const char *));
 static void dump_node PROTO ((tree, FILE *));
+static void dump_stmt PROTO ((dump_info_p, tree));
 
 /* Add T to the end of the queue of nodes to dump.  If DUMP_CHILDREN_P
    is non-zero, then its children should be dumped as well.  Returns
@@ -152,7 +153,7 @@ dump_index (di, index)
 static void
 queue_and_dump_index (di, field, t, flags)
      dump_info_p di;
-     char *field;
+     const char *field;
      tree t;
      int flags;
 {
@@ -223,7 +224,7 @@ dump_maybe_newline (di)
 static void
 dump_int (di, field, i)
      dump_info_p di;
-     char *field;
+     const char *field;
      int i;
 {
   dump_maybe_newline (di);
@@ -236,7 +237,7 @@ dump_int (di, field, i)
 static void
 dump_string (di, string)
      dump_info_p di;
-     char *string;
+     const char *string;
 {
   dump_maybe_newline (di);
   fprintf (di->stream, "%-13s ", string);
@@ -251,8 +252,8 @@ dump_string (di, string)
 static void
 dump_string_field (di, field, string)
      dump_info_p di;
-     char *field;
-     char *string;
+     const char *field;
+     const char *string;
 {
   dump_maybe_newline (di);
   fprintf (di->stream, "%-4s: %-7s ", field, string);
@@ -382,7 +383,7 @@ dequeue_and_dump (di)
       /* And a source position.  */
       if (DECL_SOURCE_FILE (t))
 	{
-	  char *filename = rindex (DECL_SOURCE_FILE (t), '/');
+	  const char *filename = rindex (DECL_SOURCE_FILE (t), '/');
 	  if (!filename)
 	    filename = DECL_SOURCE_FILE (t);
 	  else
@@ -846,7 +847,7 @@ dump_node (t, stream)
 void
 dump_node_to_file (t, file)
      tree t;
-     char *file;
+     const char *file;
 {
   FILE *f;
 
