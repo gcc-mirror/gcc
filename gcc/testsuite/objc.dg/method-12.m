@@ -1,7 +1,7 @@
 /* Contributed by Igor Seleznev <selez@mail.ru>.  */
 /* This used to be broken.  */
 
-#include <objc/objc-api.h>
+#include <objc/objc.h>
 
 @interface A
 + (A *)currentContext;

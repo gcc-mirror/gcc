@@ -1,3 +1,13 @@
+2003-10-03  Alexander Malmberg  <alexander@malmberg.org>
+	    Ziemowit Laski  <zlaski@apple.com>
+
+	* objc.dg/method-6.m ('starboard'): Move prototype from 'Base' to
+	'Derived', so that it is never considered a class method; add
+	new warning for '+port' method ambiguity.
+	* objc.dg/method-12.m: Include <objc/objc.h> instead of
+	<objc/objc-api.h> (needed on Mac OS X).
+	* objc.dg/method-13.m: New test.
+
 2003-10-03  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/9325, PR java/6391
