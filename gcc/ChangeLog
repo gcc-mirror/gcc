@@ -1,3 +1,7 @@
+Mon Jun 28 04:07:27 1999  David Edelsohn  <edelsohn@gnu.org>
+
+	* expmed.c (expand_divmod): Ensure unsigned value fits in reg_note.
+
 Fri Jun 25 06:06:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.h (MASK_SUPPORT_ARCH, MASK_CPU_EV5, MASK_CPU_EV6): Define
