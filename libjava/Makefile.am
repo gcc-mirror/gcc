@@ -857,7 +857,6 @@ java/lang/UnsupportedOperationException.java \
 java/lang/VerifyError.java \
 java/lang/VirtualMachineError.java \
 java/lang/Void.java \
-java/io/BlockDataException.java	\
 java/io/BufferedInputStream.java \
 java/io/BufferedOutputStream.java \
 java/io/BufferedReader.java \
@@ -983,7 +982,7 @@ java/util/Timer.java \
 java/util/TimerTask.java \
 java/util/TooManyListenersException.java \
 java/util/Vector.java
-#java/util/WeakHashmap.java
+#java/util/WeakHashMap.java \
 
 
 ## List of all .java files to be compiled.  Please keep this list
@@ -1205,6 +1204,7 @@ java/util/zip/ZipInputStream.java \
 java/util/zip/ZipOutputStream.java \
 $(awt_java_source_files) \
 $(convert_source_files)
+
 
 java_source_files = $(special_java_source_files) $(ordinary_java_source_files)
 

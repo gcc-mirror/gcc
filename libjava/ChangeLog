@@ -1,3 +1,11 @@
+2001-02-13  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/io/BlockDataException.java: Removed.
+	* java/io/ObjectInputStream.java (readObject): Throw 
+	StreamCorruptedException, not BlockDataException.
+	* Makefile.am: Remove BlockDataException.
+	* Makefile.in: Rebuild.
+
 2001-02-12  Jeff Sturm  <jeff.sturm@commerceone.com>
             Tom Tromey  <tromey@redhat.com>
 
