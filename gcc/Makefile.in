@@ -1562,7 +1562,7 @@ objc-headers: stmp-fixinc
 # Files related to the fixproto script.
 
 deduced.h: $(srcdir)/scan-types.sh
-	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -nostdinc -Iinclude -I${SYSTEM_HEADER_DIR}"; \
+	CC="$(GCC_FOR_TARGET) $(GCC_CFLAGS) $(ALL_CPPFLAGS) -Iinclude -I${SYSTEM_HEADER_DIR}"; \
 	  export CC; \
 	  $(srcdir)/scan-types.sh >tmp-deduced.h
 	mv tmp-deduced.h deduced.h
@@ -1577,15 +1577,12 @@ xsys-protos.h: $(srcdir)/sys-protos.h deduced.h gen-protos Makefile
 	  | ./gen-protos >xsys-protos.h
 	rm -rf fixtmp.c
 
-scan-decls: scan-decls.o scan.o
-	$(HOST_CC) -o scan-decls scan-decls.o scan.o
-
-patch-header: patch-header.o scan.o xsys-protos.h $(HOST_OBSTACK)
-	$(HOST_CC) -o patch-header patch-header.o scan.o $(HOST_OBSTACK)
+patch-header: patch-header.o scan-decls.o scan.o xsys-protos.h $(HOST_OBSTACK)
+	$(HOST_CC) -o patch-header patch-header.o scan-decls.o scan.o $(HOST_OBSTACK)
 
 patch-header.o: xsys-protos.h
 
-stmp-fixproto: patch-header scan-decls xsys-protos.h
+stmp-fixproto: patch-header xsys-protos.h
 	CPP="$(GCC_FOR_TARGET) -E"; export CPP; \
 	  ${srcdir}/fixproto include include $(SYSTEM_HEADER_DIR)
 	touch stmp-fixproto
@@ -1657,8 +1654,8 @@ mostlyclean: bytecode.mostlyclean
 	-rm -f specs gfloat.h float.h-* enquire SYSCALLS.c.X SYSCALLS.c
 	-rm -f collect collect2 ld mips-tfile mips-tdump alloca.s
 # Delete files generated for fixproto
-	-rm -rf patch-header scan-decls xsys-protos.h deduced.h tmp-deduced.h \
-	  gen-protos fixproto.list fixtmp.?
+	-rm -rf patch-header xsys-protos.h deduced.h tmp-deduced.h \
+	  gen-protos fixproto.list fixtmp.*
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 # Delete sorted indices we don't actually use.
