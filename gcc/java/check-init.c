@@ -879,8 +879,12 @@ check_init (tree exp, words before)
 	if (IS_EMPTY_STMT (body))
 	  break;
 	wfl = exp;
+#ifdef USE_MAPPED_LOCATION
+	input_location = EXPR_LOCATION (exp);
+#else
 	input_filename = EXPR_WFL_FILENAME (exp);
 	input_line = EXPR_WFL_LINENO (exp);
+#endif
 	check_init (body, before);
 	input_location = saved_location;
 	wfl = saved_wfl;

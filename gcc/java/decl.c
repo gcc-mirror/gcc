@@ -1954,8 +1954,12 @@ finish_method (tree fndecl)
     cfun = DECL_STRUCT_FUNCTION (fndecl);
   else
     allocate_struct_function (fndecl);
+#ifdef USE_MAPPED_LOCATION
+  cfun->function_end_locus = DECL_FUNCTION_LAST_LINE (fndecl);
+#else
   cfun->function_end_locus.file = DECL_SOURCE_FILE (fndecl);
   cfun->function_end_locus.line = DECL_FUNCTION_LAST_LINE (fndecl);
+#endif
 
   /* Defer inlining and expansion to the cgraph optimizers.  */
   cgraph_finalize_function (fndecl, false);
@@ -2023,7 +2027,7 @@ tree
 java_add_stmt (tree stmt)
 {
   if (input_filename)
-    annotate_with_locus (stmt, input_location);
+    SET_EXPR_LOCATION (stmt, input_location);
   
   return current_binding_level->stmts 
     = add_stmt_to_compound (current_binding_level->stmts, 

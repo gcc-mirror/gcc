@@ -1479,8 +1479,12 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	tree body = EXPR_WFL_NODE (exp);
 	if (IS_EMPTY_STMT (body))
 	  break;
+#ifdef USE_MAPPED_LOCATION
+	input_location = EXPR_LOCATION (exp);
+#else
 	input_filename = EXPR_WFL_FILENAME (exp);
 	input_line = EXPR_WFL_LINENO (exp);
+#endif
 	if (EXPR_WFL_EMIT_LINE_NOTE (exp) && input_line > 0
 	    && debug_info_level > DINFO_LEVEL_NONE)
 	  put_linenumber (input_line, state);
