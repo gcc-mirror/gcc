@@ -3457,7 +3457,7 @@ duplicate_decls (newdecl, olddecl)
 	  /* Don't warn about extern decl followed by definition. */
 	  && !(DECL_EXTERNAL (olddecl) && ! DECL_EXTERNAL (newdecl))
 	  /* Don't warn about friends, let add_friend take care of it. */
-	  && ! DECL_FRIEND_P (newdecl))
+	  && ! (DECL_FRIEND_P (newdecl) || DECL_FRIEND_P (olddecl)))
 	{
 	  cp_warning ("redundant redeclaration of `%D' in same scope", newdecl);
 	  cp_warning_at ("previous declaration of `%D'", olddecl);
