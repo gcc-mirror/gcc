@@ -1,3 +1,7 @@
+2004-02-09  Loren J. Rittle  <ljrittle@acm.org>
+
+	* include/ext/pool_allocator.h: Include c++config.h.
+
 2004-02-09  Stefan Olsson  <stefan@xapa.se>
 
 	* include/ext/mt_allocator.h: thread_id is unused in non threaded
