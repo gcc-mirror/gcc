@@ -1,3 +1,8 @@
+2004-07-20  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/16637
+	* g++.dg/parse/lookup4.C: New test.
+
 2004-07-16  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR rtl-optimization/16536
