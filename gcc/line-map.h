@@ -68,12 +68,10 @@ struct line_maps
 };
 
 /* Initialize a line map set.  */
-extern void init_line_maps
-  PARAMS ((struct line_maps *));
+extern void init_line_maps (struct line_maps *);
 
 /* Free a line map set.  */
-extern void free_line_maps
-  PARAMS ((struct line_maps *));
+extern void free_line_maps (struct line_maps *);
 
 /* Add a mapping of logical source line to physical source file and
    line number.  The text pointed to by TO_FILE must have a lifetime
@@ -85,19 +83,18 @@ extern void free_line_maps
    function.  A call to this function can relocate the previous set of
    maps, so any stored line_map pointers should not be used.  */
 extern const struct line_map *add_line_map
-  PARAMS ((struct line_maps *, enum lc_reason, unsigned int sysp,
-	   unsigned int from_line, const char *to_file, unsigned int to_line));
+  (struct line_maps *, enum lc_reason, unsigned int sysp,
+   unsigned int from_line, const char *to_file, unsigned int to_line);
 
 /* Given a logical line, returns the map from which the corresponding
    (source file, line) pair can be deduced.  */
-extern const struct line_map *lookup_line
-  PARAMS ((struct line_maps *, unsigned int));
+extern const struct line_map *lookup_line (struct line_maps *, unsigned int);
 
 /* Print the file names and line numbers of the #include commands
    which led to the map MAP, if any, to stderr.  Nothing is output if
    the most recently listed stack is the same as the current one.  */
-extern void print_containing_files
-  PARAMS ((struct line_maps *, const struct line_map *));
+extern void print_containing_files (struct line_maps *,
+				    const struct line_map *);
 
 /* Converts a map and logical line to source line.  */
 #define SOURCE_LINE(MAP, LINE) ((LINE) + (MAP)->to_line - (MAP)->from_line)
