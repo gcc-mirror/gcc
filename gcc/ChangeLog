@@ -1,5 +1,19 @@
 2004-12-18  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.md (SSEINT16): New.
+	(movv16qi, movv8hi, movv4si, movv2di): Compress via macros.
+	(movv16qi_internal, movv8hi_internal, movv4si_internal,
+	movv2di_internal): Compress via macros.  Add SSE zero alternative.
+	Fix pure SSE alternatives to use 'x' instead of 'Y'.
+	(MMXINT8): New.
+	(movv8qi, movv4hi, movv2si, movv8qi_internal, movv4hi_internal,
+	movv2si_internal): Compress via macros.
+	(SSEPUSH, MMXPUSH): New.
+	(pushv18qi, pushv8hi, pushv4si, pushv2di, pushti, pushv4sf, pushv2df,
+	pushv8qi, pushv4hi, pushv2si, pushv2sf): Compress via macros.
+
+2004-12-18  Richard Henderson  <rth@redhat.com>
+
 	PR middle-end/16417
 	* c-decl.c (store_parm_decls): Clarify get_pending_sizes insertion
 	comment.
