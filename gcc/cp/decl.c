@@ -210,7 +210,7 @@ tree error_mark_list;
 	tree bltn_desc_type_node, ptr_desc_type_node;
 	tree ary_desc_type_node, func_desc_type_node, enum_desc_type_node;
 	tree class_desc_type_node, si_class_desc_type_node, vmi_class_desc_type_node;
-	tree ptmd_desc_type_node;
+	tree ptm_desc_type_node;
 	tree base_desc_type_node;
 #if 0
    Not needed yet?  May be needed one day?

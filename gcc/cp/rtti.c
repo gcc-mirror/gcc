@@ -66,7 +66,7 @@ static int target_incomplete_p PARAMS((tree));
 static tree tinfo_base_init PARAMS((tree, tree));
 static tree generic_initializer PARAMS((tree, tree));
 static tree ptr_initializer PARAMS((tree, tree, int *));
-static tree ptmd_initializer PARAMS((tree, tree, int *));
+static tree ptm_initializer PARAMS((tree, tree, int *));
 static tree dfs_class_hint_mark PARAMS ((tree, void *));
 static tree dfs_class_hint_unmark PARAMS ((tree, void *));
 static int class_hint_flags PARAMS((tree));
@@ -1385,7 +1385,7 @@ ptr_initializer (desc, target, non_public_ptr)
    base.  */
 
 static tree
-ptmd_initializer (desc, target, non_public_ptr)
+ptm_initializer (desc, target, non_public_ptr)
      tree desc;
      tree target;
      int *non_public_ptr;
@@ -1528,8 +1528,8 @@ synthesize_tinfo_var (target_type, real_name)
     case POINTER_TYPE:
       if (TYPE_PTRMEM_P (target_type))
         {
-          var_type = ptmd_desc_type_node;
-          var_init = ptmd_initializer (var_type, target_type, &non_public);
+          var_type = ptm_desc_type_node;
+          var_init = ptm_initializer (var_type, target_type, &non_public);
         }
       else
         {
@@ -1561,7 +1561,12 @@ synthesize_tinfo_var (target_type, real_name)
       break;
     case UNION_TYPE:
     case RECORD_TYPE:
-      if (!COMPLETE_TYPE_P (target_type))
+      if (TYPE_PTRMEMFUNC_P (target_type))
+        {
+          var_type = ptm_desc_type_node;
+          var_init = ptm_initializer (var_type, target_type, &non_public);
+        }
+      else if (!COMPLETE_TYPE_P (target_type))
         {
           /* Emit a non-public class_type_info.  */
           non_public = 1;
@@ -1853,14 +1858,6 @@ create_tinfo_types ()
       ("__fundamental_type_info", 0,
        NULL);
 
-  /* Pointer type_info. Adds two fields, qualification mask
-     and pointer to the pointed to type.  */
-  ptr_desc_type_node = create_pseudo_type_info
-      ("__pointer_type_info", 0,
-       build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
-       build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
-       NULL);
-
   /* Array, function and enum type_info. No additional fields. */
   ary_desc_type_node = create_pseudo_type_info
       ("__array_type_info", 0,
@@ -1900,10 +1897,19 @@ create_tinfo_types ()
   /* General heirarchy is created as necessary in this vector. */
   vmi_class_desc_type_node = make_tree_vec (10);
   
+  /* Pointer type_info. Adds two fields, qualification mask
+     and pointer to the pointed to type.  This is really a descendant of
+     __pbase_type_info. */
+  ptr_desc_type_node = create_pseudo_type_info
+      ("__pointer_type_info", 0,
+       build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
+       build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),
+       NULL);
+
   /* Pointer to member data type_info.  Add qualifications flags,
      pointer to the member's type info and pointer to the class.
-     This is really a descendant of __pointer_type_info.  */
-  ptmd_desc_type_node = create_pseudo_type_info
+     This is really a descendant of __pbase_type_info.  */
+  ptm_desc_type_node = create_pseudo_type_info
        ("__pointer_to_member_type_info", 0,
         build_decl (FIELD_DECL, NULL_TREE, integer_type_node),
         build_decl (FIELD_DECL, NULL_TREE, ptr_type_info),

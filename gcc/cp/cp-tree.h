@@ -541,7 +541,7 @@ enum cp_tree_index
     CPTI_CLASS_DESC_TYPE,
     CPTI_SI_CLASS_DESC_TYPE,
     CPTI_VMI_CLASS_DESC_TYPE,
-    CPTI_PTMD_DESC_TYPE,
+    CPTI_PTM_DESC_TYPE,
     CPTI_BASE_DESC_TYPE,
     
     CPTI_CLASS_TYPE,
@@ -634,7 +634,7 @@ extern tree cp_global_trees[CPTI_MAX];
 #define class_desc_type_node		cp_global_trees[CPTI_CLASS_DESC_TYPE]
 #define si_class_desc_type_node		cp_global_trees[CPTI_SI_CLASS_DESC_TYPE]
 #define vmi_class_desc_type_node	cp_global_trees[CPTI_VMI_CLASS_DESC_TYPE]
-#define ptmd_desc_type_node		cp_global_trees[CPTI_PTMD_DESC_TYPE]
+#define ptm_desc_type_node		cp_global_trees[CPTI_PTM_DESC_TYPE]
 #define base_desc_type_node		cp_global_trees[CPTI_BASE_DESC_TYPE]
 
 #define class_type_node			cp_global_trees[CPTI_CLASS_TYPE]
