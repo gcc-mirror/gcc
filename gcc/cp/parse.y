@@ -239,10 +239,11 @@ empty_parms ()
 %type <ttype> component_constructor_declarator
 %type <ttype> fn.def2 return_id fn.defpen constructor_declarator
 %type <itype> ctor_initializer_opt function_try_block
-%type <ttype> named_class_head named_class_head_sans_basetype
-%type <ttype> named_complex_class_head_sans_basetype
+%type <ttype> named_class_head_sans_basetype
+%type <ftype> class_head named_class_head 
+%type <ftype> named_complex_class_head_sans_basetype 
 %type <ttype> unnamed_class_head
-%type <ttype> class_head base_class_list
+%type <ttype> base_class_list
 %type <ttype> base_class_access_list
 %type <ttype> base_class maybe_base_class_list base_class.1
 %type <ttype> exception_specification_opt ansi_raise_identifier ansi_raise_identifiers
@@ -2140,7 +2141,7 @@ structsp:
 		    cp_pedwarn ("using `typename' outside of template"); }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head '{'
-                { $<ttype>1 = begin_class_definition ($<ttype>1); }
+                { $1.t = begin_class_definition ($1.t); }
           opt.component_decl_list '}' maybe_attribute
 		{ 
 		  int semi;
@@ -2149,7 +2150,7 @@ structsp:
 		    yychar = YYLEX;
 		  semi = yychar == ';';
 
-		  $<ttype>$ = finish_class_definition ($1, $6, semi); 
+		  $<ttype>$ = finish_class_definition ($1.t, $6, semi); 
 		}
 	  pending_defargs
                 {
@@ -2158,20 +2159,24 @@ structsp:
 	  pending_inlines
                 {
 		  finish_inline_definitions ();
+		  if ($1.new_type_flag)
+		    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL ($<ttype>7)));
 		  $$.t = $<ttype>7;
 		  $$.new_type_flag = 1; 
 		}
 	| class_head  %prec EMPTY
 		{
+		  if ($1.new_type_flag)
+		    pop_scope (CP_DECL_CONTEXT (TYPE_MAIN_DECL ($1.t)));
 		  $$.new_type_flag = 0;
-		  if (TYPE_BINFO ($1) == NULL_TREE)
+		  if (TYPE_BINFO ($1.t) == NULL_TREE)
 		    {
-		      cp_error ("%T is not a class type", $1);
+		      cp_error ("%T is not a class type", $1.t);
 		      $$.t = error_mark_node;
 		    } 
 		  else
 		    {
-		      $$.t = $1;
+		      $$.t = $1.t;
 		      /* struct B: public A; is not accepted by the WP grammar.  */
 		      if (TYPE_BINFO_BASETYPES ($$.t) && !TYPE_SIZE ($$.t)
 			  && ! TYPE_BEING_DEFINED ($$.t))
@@ -2228,63 +2233,77 @@ named_complex_class_head_sans_basetype:
 	  aggr nested_name_specifier identifier
 		{
 		  current_aggr = $1;
-		  $$ = handle_class_head ($1, $2, $3);
+		  $$.t = handle_class_head ($1, $2, $3);
+		  $$.new_type_flag = 1;
 		}
 	| aggr global_scope nested_name_specifier identifier
 		{
 		  current_aggr = $1;
-		  $$ = handle_class_head ($1, $3, $4);
+		  $$.t = handle_class_head ($1, $3, $4);
+		  $$.new_type_flag = 1;
 		}
 	| aggr global_scope identifier
 		{
 		  current_aggr = $1;
-		  $$ = handle_class_head ($1, NULL_TREE, $3);
+		  $$.t = handle_class_head ($1, NULL_TREE, $3);
+		  $$.new_type_flag = 1;
 		}
 	| aggr apparent_template_type
-		{ current_aggr = $$; $$ = $2; }
+		{ 
+		  current_aggr = $1; 
+		  $$.t = $2;
+		  $$.new_type_flag = 0;
+		}
 	| aggr nested_name_specifier apparent_template_type
-		{ current_aggr = $$; $$ = $3; }
+		{ 
+		  current_aggr = $1; 
+		  $$.t = $3;
+		  if (CP_DECL_CONTEXT ($$.t))
+		    push_scope (CP_DECL_CONTEXT ($$.t));
+		  $$.new_type_flag = 1;
+		}
 	;
 
 named_class_head:
 	  named_class_head_sans_basetype  %prec EMPTY
-		{ $$ = xref_tag (current_aggr, $1, 1); }
+		{ 
+		  $$.t = xref_tag (current_aggr, $1, 1); 
+		  $$.new_type_flag = 0;
+		}
 	| named_class_head_sans_basetype_defn 
                 { $<ttype>$ = xref_tag (current_aggr, $1, 0); }
           /* Class name is unqualified, so we look for base classes
              in the current scope.  */
           maybe_base_class_list  %prec EMPTY
 		{ 
-		  $$ = $<ttype>2;
+		  $$.t = $<ttype>2;
+		  $$.new_type_flag = 0;
 		  if ($3)
                     xref_basetypes (current_aggr, $1, $<ttype>2, $3); 
 		}
 	| named_complex_class_head_sans_basetype 
-                { 
-		  if ($1 != error_mark_node)
-		    push_scope (CP_DECL_CONTEXT ($1)); 
-		}
 	  maybe_base_class_list
 		{ 
-		  if ($1 != error_mark_node)
+		  if ($1.t != error_mark_node)
 		    {
-		      pop_scope (CP_DECL_CONTEXT ($1));
-		      $$ = TREE_TYPE ($1);
+		      $$.t = TREE_TYPE ($1.t);
+		      $$.new_type_flag = $1.new_type_flag;
 		      if (current_aggr == union_type_node
-			  && TREE_CODE ($$) != UNION_TYPE)
-			cp_pedwarn ("`union' tag used in declaring `%#T'", $$);
-		      else if (TREE_CODE ($$) == UNION_TYPE
+			  && TREE_CODE ($$.t) != UNION_TYPE)
+			cp_pedwarn ("`union' tag used in declaring `%#T'", 
+				    $$.t);
+		      else if (TREE_CODE ($$.t) == UNION_TYPE
 			       && current_aggr != union_type_node)
 			cp_pedwarn ("non-`union' tag used in declaring `%#T'", $$);
-		      else if (TREE_CODE ($$) == RECORD_TYPE)
+		      else if (TREE_CODE ($$.t) == RECORD_TYPE)
 			/* We might be specializing a template with a different
 			   class-key; deal.  */
-			CLASSTYPE_DECLARED_CLASS ($$) = (current_aggr
-							 == class_type_node);
-		      if ($3)
+			CLASSTYPE_DECLARED_CLASS ($$.t) 
+			  = (current_aggr == class_type_node);
+		      if ($2)
 			{
-			  maybe_process_partial_specialization ($$);
-			  xref_basetypes (current_aggr, $1, $$, $3); 
+			  maybe_process_partial_specialization ($$.t);
+			  xref_basetypes (current_aggr, $1.t, $$.t, $2); 
 			}
 		    }
 		}
@@ -2296,8 +2315,16 @@ unnamed_class_head:
 		  yyungetc ('{', 1); }
 	;
 
+/* The tree output of this nonterminal a declarationf or the type
+   named.  If NEW_TYPE_FLAG is set, then the name used in this
+   class-head was explicitly qualified, e.g.:  `struct X::Y'.  We have
+   already called push_scope for X.  */
 class_head:
 	  unnamed_class_head
+                {
+		  $$.t = $1;
+		  $$.new_type_flag = 0;
+		}
 	| named_class_head
 	;
 

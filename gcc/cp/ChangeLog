@@ -1,3 +1,21 @@
+1999-04-15  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (lang_type): Add documentation.
+	* decl2.c (handle_class_head): Create template declarations here,
+	as appropriate.
+	* parse.y (class_head): Return whether or not we entered a new
+	scope, as well as the type named.
+	(named_class_head): Likewise.
+	(named_complex_class_head_sans_basetype): Likewise.
+	(structsp): Adjust accordingly.  Pop scope when required.
+	* parse.c: Regenerated.
+	* pt.c (check_default_tmpl_args): Robustify.
+	(redeclare_class_template): Likewise.
+	(instantiate_class_template): An instantiation of an
+	anonymous union is itself an anonymous union.
+	* semantics.c (begin_class_definition): Don't create template
+	declarations here.
+	
 1999-04-15  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* parse.y (after_type_declarator_intern): New nonterminal.
@@ -23,7 +41,7 @@
 	(pop_nested_class): Likewise.
 	* decl.c (poplevel_class): Declare it here, and make it static.
 	(poplevel): Handle class scopes.
-	(pop_level_class): Don't take an rgument.  Simplify.
+	(poplevel_class): Don't take an rgument.  Simplify.
 	(pop_everything): Pass no arguments to pop_nested_class.
 	(cp_finish_decl): Pass no arguments to popclass.
 	(grokdeclarator): Pass no arguments to pop_nested_class.

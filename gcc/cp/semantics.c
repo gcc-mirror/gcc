@@ -1290,11 +1290,6 @@ begin_class_definition (t)
       pushtag (TYPE_IDENTIFIER (t), t, 0);
     }
   maybe_process_partial_specialization (t);
-  if (processing_template_decl
-      && ! CLASSTYPE_TEMPLATE_SPECIALIZATION (t)
-      && TYPE_CONTEXT (t) && TYPE_P (TYPE_CONTEXT (t))
-      && ! current_class_type)
-    push_template_decl (TYPE_STUB_DECL (t));
   pushclass (t, 1);
   TYPE_BEING_DEFINED (t) = 1;
   /* Reset the interface data, at the earliest possible
