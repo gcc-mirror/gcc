@@ -116,7 +116,7 @@ new_number_token (pfile, number)
      int number;
 {
   cpp_token *token = _cpp_temp_token (pfile);
-  unsigned char *buf = _cpp_pool_alloc (&pfile->ident_pool, 20);
+  unsigned char *buf = _cpp_unaligned_alloc (pfile, 20);
 
   sprintf ((char *) buf, "%d", number);
   token->type = CPP_NUMBER;
@@ -158,7 +158,7 @@ builtin_macro (pfile, node)
 
 	name = map->to_file;
 	len = strlen (name);
-	buf = _cpp_pool_alloc (&pfile->ident_pool, len * 4 + 1);
+	buf = _cpp_unaligned_alloc (pfile, len * 4 + 1);
 	len = quote_string (buf, (const unsigned char *) name, len) - buf;
 
 	return new_string_token (pfile, buf, len);
@@ -196,7 +196,7 @@ builtin_macro (pfile, node)
 	  struct tm *tb = localtime (&tt);
 
 	  pfile->date.val.str.text =
-	    _cpp_pool_alloc (&pfile->ident_pool, sizeof ("Oct 11 1347"));
+	    _cpp_unaligned_alloc (pfile, sizeof ("Oct 11 1347"));
 	  pfile->date.val.str.len = sizeof ("Oct 11 1347") - 1;
 	  pfile->date.type = CPP_STRING;
 	  pfile->date.flags = 0;
@@ -204,7 +204,7 @@ builtin_macro (pfile, node)
 		   monthnames[tb->tm_mon], tb->tm_mday, tb->tm_year + 1900);
 
 	  pfile->time.val.str.text =
-	    _cpp_pool_alloc (&pfile->ident_pool, sizeof ("12:34:56"));
+	    _cpp_unaligned_alloc (pfile, sizeof ("12:34:56"));
 	  pfile->time.val.str.len = sizeof ("12:34:56") - 1;
 	  pfile->time.type = CPP_STRING;
 	  pfile->time.flags = 0;
@@ -255,17 +255,15 @@ stringify_arg (pfile, arg)
      cpp_reader *pfile;
      macro_arg *arg;
 {
-  cpp_pool *pool = &pfile->ident_pool;
-  unsigned char *start = POOL_FRONT (pool);
-  unsigned int i, escape_it, total_len = 0, backslash_count = 0;
+  unsigned char *dest = BUFF_FRONT (pfile->u_buff);
+  unsigned int i, escape_it, backslash_count = 0;
   const cpp_token *source = NULL;
+  size_t len;
 
   /* Loop, reading in the argument's tokens.  */
   for (i = 0; i < arg->count; i++)
     {
-      unsigned char *dest;
       const cpp_token *token = arg->first[i];
-      unsigned int len;
 
       if (token->type == CPP_PADDING)
 	{
@@ -277,21 +275,22 @@ stringify_arg (pfile, arg)
       escape_it = (token->type == CPP_STRING || token->type == CPP_WSTRING
 		   || token->type == CPP_CHAR || token->type == CPP_WCHAR);
 
+      /* Room for each char being written in octal, initial space and
+	 final NUL.  */
       len = cpp_token_len (token);
       if (escape_it)
-	/* Worst case is each char is octal.  */
 	len *= 4;
-      len += 2;			/* Room for initial space and final NUL.  */
+      len += 2;
 
-      dest = &start[total_len];
-      if (dest + len > POOL_LIMIT (pool))
+      if ((size_t) (BUFF_LIMIT (pfile->u_buff) - dest) < len)
 	{
-	  _cpp_next_chunk (pool, len, (unsigned char **) &start);
-	  dest = &start[total_len];
+	  size_t len_so_far = dest - BUFF_FRONT (pfile->u_buff);
+	  pfile->u_buff = _cpp_extend_buff (pfile, pfile->u_buff, len);
+	  dest = BUFF_FRONT (pfile->u_buff) + len_so_far;
 	}
 
       /* Leading white space?  */
-      if (total_len)
+      if (dest != BUFF_FRONT (pfile->u_buff))
 	{
 	  if (source == NULL)
 	    source = token;
@@ -302,15 +301,14 @@ stringify_arg (pfile, arg)
 
       if (escape_it)
 	{
-	  unsigned char *buf = (unsigned char *) xmalloc (len);
-
+	  _cpp_buff *buff = _cpp_get_buff (pfile, len);
+	  unsigned char *buf = BUFF_FRONT (buff);
 	  len = cpp_spell_token (pfile, token, buf) - buf;
 	  dest = quote_string (dest, buf, len);
-	  free (buf);
+	  _cpp_release_buff (pfile, buff);
 	}
       else
 	dest = cpp_spell_token (pfile, token, dest);
-      total_len = dest - start;
 
       if (token->type == CPP_OTHER && token->val.c == '\\')
 	backslash_count++;
@@ -322,12 +320,13 @@ stringify_arg (pfile, arg)
   if (backslash_count & 1)
     {
       cpp_warning (pfile, "invalid string literal, ignoring final '\\'");
-      total_len--;
+      dest--;
     }
 
   /* Commit the memory, including NUL, and return the token.  */
-  POOL_COMMIT (pool, total_len + 1);
-  return new_string_token (pfile, start, total_len);
+  len = dest - BUFF_FRONT (pfile->u_buff);
+  BUFF_FRONT (pfile->u_buff) = dest + 1;
+  return new_string_token (pfile, dest - len, len);
 }
 
 /* Try to paste two tokens.  On success, return non-zero.  In any
@@ -447,7 +446,7 @@ collect_args (pfile, node)
   base_buff = buff;
   args = (macro_arg *) buff->base;
   memset (args, 0, argc * sizeof (macro_arg));
-  buff->cur = (char *) &args[argc];
+  buff->cur = (unsigned char *) &args[argc];
   arg = args, argc = 0;
 
   /* Collect the tokens making up each argument.  We don't yet know
@@ -464,7 +463,7 @@ collect_args (pfile, node)
       for (;;)
 	{
 	  /* Require space for 2 new tokens (including a CPP_EOF).  */
-	  if ((char *) &arg->first[ntokens + 2] > buff->limit)
+	  if ((unsigned char *) &arg->first[ntokens + 2] > buff->limit)
 	    {
 	      buff = _cpp_extend_buff (pfile, buff,
 				       1000 * sizeof (cpp_token *));
@@ -512,7 +511,7 @@ collect_args (pfile, node)
 	 overwrite the final legitimate argument, before failing.  */
       if (argc <= macro->paramc)
 	{
-	  buff->cur = (char *) &arg->first[ntokens + 1];
+	  buff->cur = (unsigned char *) &arg->first[ntokens + 1];
 	  if (argc != macro->paramc)
 	    arg++;
 	}
@@ -538,10 +537,12 @@ collect_args (pfile, node)
 	  step_back = true;
 	}
       else
-	/* We still need the CPP_EOF to end directives, and to end
-           pre-expansion of a macro argument.  */
 	step_back = (pfile->context->prev || pfile->state.in_directive);
 
+      /* We still need the CPP_EOF to end directives, and to end
+	 pre-expansion of a macro argument.  Step back is not
+	 unconditional, since we don't want to return a CPP_EOF to our
+	 callers at the end of an -include-d file.  */
       if (step_back)
 	_cpp_backup_tokens (pfile, 1);
       cpp_error (pfile, "unterminated argument list invoking macro \"%s\"",

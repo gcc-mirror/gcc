@@ -1,3 +1,21 @@
+2001-09-28  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* cpphash.h (struct cpp_buff): Make unsigned.
+	(_cpp_get_buff): Take length of size_t.
+	(_cpp_unaligned_alloc): New.
+	(BUFF_ROOM, BUFF_FRONT, BUFF_LIMIT): New.
+	(struct cpp_reader): Remove ident_pool.  Add u_buff.
+	* cppinit.c (cpp_create_reader): Initialize u_buff, not ident_pool.
+	(cpp_destroy): Destroy u_buff, not ident_pool.
+	* cpplex.c (parse_number, parse_string, save_comment,
+	cpp_token_as_text): Update to use the unaligned buffer.
+	(new_buff): Make unsigned.
+	(_cpp_unaligned_alloc): New.
+	* cpplib.c (glue_header_name): Update to use the unaligned buffer.
+	* cppmacro.c (new_number_token, builtin_macro, stringify_arg):
+	Similarly.
+	(collect_args): Make unsigned.
+
 2001-09-27  Zack Weinberg  <zack@codesourcery.com>
 
 	* cpplex.c (cpp_output_token): Use a putc loop for
