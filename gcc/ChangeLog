@@ -1,3 +1,10 @@
+2003-01-08  Dale Johannesen  <dalej@apple.com>
+ 
+        * function.c (assign_parms):  Don't set pretend_args_size if 
+	  REG_PARM_STACK_SPACE.
+          config/rs6000/rs6000.c (setup_incoming_varargs):  Don't set 
+	  pretend_args_size.
+
 2003-01-08  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* gcc.hlp: Delete.
