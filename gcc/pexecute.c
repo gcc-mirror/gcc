@@ -357,7 +357,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
       for (i=1; argv[i]; i++)
 	{
 	  fputc ('\'', stdout);
-	  /* See if we have an argument that needs fixing. */
+	  /* See if we have an argument that needs fixing.  */
 	  if (strchr(argv[i], '/'))
 	    {
 	      tmpname = xmalloc (256);
@@ -366,7 +366,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 	    }
 	  for (cp = argv[i]; *cp; cp++)
 	    {
-	      /* Write an Option-d escape char in front of special chars. */
+	      /* Write an Option-d escape char in front of special chars.  */
 	      if (strchr("'+", *cp))
 		fputc ('\266', stdout);
 	      fputc (*cp, stdout);
@@ -382,7 +382,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 
   for (i=1; argv[i]; i++)
     {
-      /* See if we have an argument that needs fixing. */
+      /* See if we have an argument that needs fixing.  */
       if (strchr(argv[i], '/'))
 	{
 	  tmpname = xmalloc (256);
@@ -393,7 +393,7 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
 	fputc ('\'', stdout);
       for (cp = argv[i]; *cp; cp++)
 	{
-	  /* Write an Option-d escape char in front of special chars. */
+	  /* Write an Option-d escape char in front of special chars.  */
 	  if (strchr("'+", *cp))
 	    fputc ('\266', stdout);
 	  fputc (*cp, stdout);
@@ -408,14 +408,14 @@ pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
   /* Output commands that arrange to clean up and exit if a failure occurs.
      We have to be careful to collect the status from the program that was
      run, rather than some other script command.  Also, we don't exit
-     immediately, since necessary cleanups are at the end of the script. */
+     immediately, since necessary cleanups are at the end of the script.  */
   fputs ("\tSet TmpStatus {Status}\n", stdout);
   fputs ("\tIf {TmpStatus} != 0\n", stdout);
   fputs ("\t\tSet Failed {TmpStatus}\n", stdout);
   fputs ("\tEnd\n", stdout);
   fputs ("End\n", stdout);
 
-  /* We're just composing a script, can't fail here. */
+  /* We're just composing a script, can't fail here.  */
   return 0;
 }
 
@@ -430,7 +430,7 @@ pwait (pid, status, flags)
 }
 
 /* Write out commands that will exit with the correct error code
-   if something in the script failed. */
+   if something in the script failed.  */
 
 void
 pfinish ()
