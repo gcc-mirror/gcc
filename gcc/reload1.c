@@ -5614,6 +5614,21 @@ emit_reload_insns (insn)
 	  else if (GET_CODE (oldequiv) == SUBREG)
 	    oldequiv_reg = SUBREG_REG (oldequiv);
 
+	  /* If we are reloading from a register that was recently stored in
+	     with an output-reload, see if we can prove there was
+	     actually no need to store the old value in it.  */
+
+	  if (optimize && GET_CODE (oldequiv) == REG
+	      && REGNO (oldequiv) < FIRST_PSEUDO_REGISTER
+	      && spill_reg_order[REGNO (oldequiv)] >= 0
+	      && spill_reg_store[reload_spill_index[REGNO (oldequiv)]] != 0
+	      && dead_or_set_p (insn, reload_in[j])
+	      /* This is unsafe if operand occurs more than once in current
+	     insn.  Perhaps some occurrences weren't reloaded.  */
+	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1)
+	    delete_output_reload
+	      (insn, j, spill_reg_store[spill_reg_order[REGNO (oldequiv)]]);
+
 	  /* Encapsulate both RELOADREG and OLDEQUIV into that mode,
 	     then load RELOADREG from OLDEQUIV.  Note that we cannot use
 	     gen_lowpart_common since it can do the wrong thing when
