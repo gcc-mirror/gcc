@@ -29,6 +29,8 @@ SUBDIRS = include libio libmath libsupc++ src po testsuite
 
 mkinstalldirs = $(SHELL) $(toplevel_srcdir)/mkinstalldirs
 
+PWD = $${PWDCMD-pwd}
+
 # These two special 'check-script' rules use the bash script 'mkcheck'
 # to do testing. This script is not as portable as the dejagnu test
 # harness, and is thus off by default. It does produce interesting
@@ -46,20 +48,20 @@ check-script-install: $(top_builddir)/mkcheck
 
 # These rules are messy, but are hella worth it.
 doxygen:
-	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  builddir=`pwd`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
+	  builddir=`${PWD}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=user $${srcdir} $${builddir})
 
 doxygen-maint:
-	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  builddir=`pwd`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
+	  builddir=`${PWD}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=maint $${srcdir} $${builddir})
 
 doxygen-man:
-	-(srcdir=`cd ${top_srcdir}; pwd`; \
-	  builddir=`pwd`; \
+	-(srcdir=`cd ${top_srcdir}; ${PWD}`; \
+	  builddir=`${PWD}`; \
 	  /bin/sh ${srcdir}/docs/doxygen/run_doxygen \
 	            --mode=man $${srcdir} $${builddir})
 

@@ -1,3 +1,8 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* aclocal.m4: Allow for PWDCMD to override hardcoded pwd.
+	* configure: Regenerate.
+
 2002-05-08  Alexandre Oliva  <aoliva@redhat.com>
 
 	* configure.in (ORIGINAL_LD_FOR_MULTILIBS): Preserve LD at

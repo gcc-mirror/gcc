@@ -7,18 +7,18 @@
 
 set -e
 TESTDIR=tests
-TESTBASE=`cd $1;pwd`
+TESTBASE=`cd $1;${PWDCMD-pwd}`
 
 [ -d ${TESTDIR} ] || mkdir ${TESTDIR}
 cd ${TESTDIR}
-TESTDIR=`pwd`
+TESTDIR=`${PWDCMD-pwd}`
 
 TARGET_MACHINE='*'
-DESTDIR=`pwd`/res
-SRCDIR=`pwd`/inc
+DESTDIR=`${PWDCMD-pwd}`/res
+SRCDIR=`${PWDCMD-pwd}`/inc
 FIND_BASE='.'
 VERBOSE=1
-INPUT=`pwd`
+INPUT=`${PWDCMD-pwd}`
 ORIGDIR=${INPUT}
 
 export TARGET_MACHINE DESTDIR SRCDIR FIND_BASE VERBOSE INPUT ORIGDIR

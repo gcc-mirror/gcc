@@ -6659,9 +6659,9 @@ fi
 esac
 
 # Get an absolute path to the GCC top-level source directory
-holddir=`pwd`
+holddir=`${PWDCMD-pwd}`
 cd $srcdir
-topdir=`pwd`
+topdir=`${PWDCMD-pwd}`
 cd $holddir
 
 # Conditionalize the makefile for this host machine.
@@ -8139,7 +8139,7 @@ fi
 
 
 # Nothing to do for FLOAT_H, float_format already handled.
-objdir=`pwd`
+objdir=`${PWDCMD-pwd}`
 
 
 # Process the language and host/target makefile fragments.
@@ -8786,7 +8786,7 @@ esac
 if test "$symbolic_link" = "ln -s"; then
  for d in .. ${subdirs} fixinc ; do
    if test $d != ..; then
-	STARTDIR=`pwd`
+	STARTDIR=`${PWDCMD-pwd}`
 	cd $d
 	for t in stage1 stage2 stage3 stage4 include
 	do

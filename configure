@@ -3,8 +3,8 @@
 ### WARNING: this file contains embedded tabs.  Do not run untabify on this file.
 
 # Configuration script
-# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 97, 98, 1999, 2000, 2001
-# Free Software Foundation, Inc.
+# Copyright (C) 1988, 90, 91, 92, 93, 94, 95, 96, 97, 98, 1999, 2000, 2001,
+# 2002 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ subdirs=
 target_alias=NOTARGET
 target_makefile_frag=
 undefs=NOUNDEFS
-version="$Revision: 1.40 $"
+version="$Revision: 1.41 $"
 x11=default
 bindir='${exec_prefix}/bin'
 sbindir='${exec_prefix}/sbin'
@@ -152,13 +152,13 @@ NO_EDIT="This file was generated automatically by configure.  Do not edit."
 
 progname=$0
 # if PWD already has a value, it is probably wrong.
-if [ -n "$PWD" ]; then PWD=`pwd`; fi
+if [ -n "$PWD" ]; then PWD=`${PWDCMD-pwd}`; fi
 
 case "${progname}" in
 /* | [A-Za-z]:[\\/]* ) ;;
 */*) ;;
 *)
-        PATH=$PATH:${PWD=`pwd`} ; export PATH
+        PATH=$PATH:${PWD=`${PWDCMD-pwd}`} ; export PATH
         ;;
 esac
 
@@ -526,7 +526,7 @@ fi
 configsub=`echo ${progname} | sed 's/configure$/config.sub/'`
 moveifchange=`echo ${progname} | sed 's/configure$/move-if-change/'`
 ## the sed command below emulates the dirname command
-topsrcdir=`cd \`echo ${progname} | sed -e 's,[^/]*$,,;s,/$,,;s,^$,.,'\`; pwd`
+topsrcdir=`cd \`echo ${progname} | sed -e 's,[^/]*$,,;s,/$,,;s,^$,.,'\`; ${PWDCMD-pwd}`
 
 
 # this is a hack.  sun4 must always be a valid host alias or this will fail.
@@ -566,8 +566,8 @@ case "${srcdir}" in
 		echo "Invalid source directory ${srcdir}" >&2
 		exit 1
 	fi
-	pwd=`pwd`
-	srcpwd=`cd ${srcdir} ; pwd`
+	pwd=`${PWDCMD-pwd}`
+	srcpwd=`cd ${srcdir} ; ${PWDCMD-pwd}`
 	if [ "${pwd}" = "${srcpwd}" ] ; then
 		srcdir=.
 	fi
@@ -579,7 +579,7 @@ case "${srcdir}" in
 ".") ;;
 *)
         if [ -f ${srcdir}/config.status ] ; then
-                echo '***' Cannot configure here in \"${PWD=`pwd`}\" when \"${srcdir}\" is currently configured. 1>&2
+                echo '***' Cannot configure here in \"${PWD=`${PWDCMD-pwd}`}\" when \"${srcdir}\" is currently configured. 1>&2
                 exit 1
         fi
 esac
@@ -708,7 +708,7 @@ fi
 # some sanity checks on configure.in
 case "${srctrigger}" in
 "")
-        echo '***' srctrigger not set in ${PWD=`pwd`}/configure.in.  1>&2
+        echo '***' srctrigger not set in ${PWD=`${PWDCMD-pwd}`}/configure.in.  1>&2
         exit 1
         ;;
 *) ;;
@@ -778,8 +778,8 @@ esac
 
 if [ ! -r ${srcdir}/${srctrigger} ] ; then
         case "${srcdirdefaulted}" in
-        "") echo '***' "${progname}: Can't find ${srcname} sources in ${PWD=`pwd`}/${srcdir}" 1>&2 ;;
-        *)  echo '***' "${progname}: Can't find ${srcname} sources in ${PWD=`pwd`}/. or ${PWD=`pwd`}/.." 1>&2 ;;
+        "") echo '***' "${progname}: Can't find ${srcname} sources in ${PWD=`${PWDCMD-pwd}`}/${srcdir}" 1>&2 ;;
+        *)  echo '***' "${progname}: Can't find ${srcname} sources in ${PWD=`${PWDCMD-pwd}`}/. or ${PWD=`${PWDCMD-pwd}`}/.." 1>&2 ;;
         esac
 
         echo '***' \(At least ${srctrigger} is missing.\) 1>&2
@@ -1108,7 +1108,7 @@ for subdir in . ${subdirs} ; do
         if mkdir ${subdir} ; then
                 true
         else
-                echo '***' "${progname}: could not make ${PWD=`pwd`}/${subdir}" 1>&2
+                echo '***' "${progname}: could not make ${PWD=`${PWDCMD-pwd}`}/${subdir}" 1>&2
                 exit 1
         fi
     fi
@@ -1207,7 +1207,7 @@ EOF
                               sed -e "/^####/  r ${package_makefile_rules_frag}" ${srcdir}/${subdir}/${Makefile_in} > ${Makefile}.tem
                       else
                               echo '***' Expected package makefile rules fragment \"${package_makefile_rules_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`pwd`}. 1>&2
+                              echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
                               cp ${srcdir}/${subdir}/${Makefile_in} ${subdir}/Makefile.tem
                       fi
             esac
@@ -1243,7 +1243,7 @@ EOF
                               sed -e "/^####/  r ${host_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
                       else
                               echo '***' Expected host makefile fragment \"${host_makefile_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`pwd`}. 1>&2
+                              echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
                               mv ${Makefile} ${subdir}/Makefile.tem
                       fi
             esac
@@ -1279,7 +1279,7 @@ EOF
                               sed -e "/^####/  r ${package_makefile_frag}" ${Makefile} > ${subdir}/Makefile.tem
                       else
                               echo '***' Expected package makefile fragment \"${package_makefile_rules_frag}\" 1>&2
-                              echo '***' is missing in ${PWD=`pwd`}. 1>&2
+                              echo '***' is missing in ${PWD=`${PWDCMD-pwd}`}. 1>&2
                               mv ${Makefile} ${subdir}/Makefile.tem
                       fi
             esac
@@ -1465,7 +1465,7 @@ EOF
 
         newusing=`echo "${using}" | sed 's/and/using/'`
         using=${newusing}
-        echo "Created \"${Makefile}\" in" ${PWD=`pwd`} ${using}
+        echo "Created \"${Makefile}\" in" ${PWD=`${PWDCMD-pwd}`} ${using}
 
         . ${tmpfile}.pos
 
@@ -1531,14 +1531,14 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
                                         if mkdir ./${bld_dir} ; then
                                                 true
                                         else
-                                                echo '***' "${progname}: could not make ${PWD=`pwd`}/${bld_dir}" 1>&2
+                                                echo '***' "${progname}: could not make ${PWD=`${PWDCMD-pwd}`}/${bld_dir}" 1>&2
                                                 exit 1
                                         fi
                                 fi
                                 ;;
                         esac
 
-                        POPDIR=${PWD=`pwd`}
+                        POPDIR=${PWD=`${PWDCMD-pwd}`}
                         cd ${bld_dir} 
 
 ### figure out what to do with srcdir
@@ -1586,7 +1586,7 @@ if [ -z "${norecursion}" ] && [ -n "${configdirs}" ] ; then
                 	                ${srcdiroption} ${diroptions} ${program_prefixoption} ${program_suffixoption} ${program_transform_nameoption} ${site_option} ${withoptions} ${withoutoptions} ${enableoptions} ${disableoptions} ${floating_pointoption} ${cache_file_option} ${removing} ${other_options} ${redirect} ; then
 	                                true
         	                else
-					echo Configure in `pwd` failed, exiting. 1>&2
+					echo Configure in `${PWDCMD-pwd}` failed, exiting. 1>&2
                 	                exit 1
                         	fi
 			fi

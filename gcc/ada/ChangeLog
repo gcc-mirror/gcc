@@ -1,3 +1,8 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.adalib: Allow for PWDCMD to override hardcoded pwd.
+	* Makefile.in: Likewise.
+
 2002-05-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* Make-lang.in (gnat1$(exeext), gnatbind$(exeext), gnattools):

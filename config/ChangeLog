@@ -1,3 +1,7 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* acinclude.m4: Allow for PWDCMD to override hardcoded pwd.
+
 2002-05-13  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* mh-apollo68: remove unused HDEFINES setting.

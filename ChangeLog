@@ -1,3 +1,10 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* Makefile.in: Allow for PWDCMD to override hardcoded pwd.
+	* config-ml.in: Likewise.
+	* configure: Likewise.
+	* configure.in: Likewise.
+
 2002-05-16  Stephane Carrez  <stcarrez@nerim.fr>
 
 	* MAINTAINERS: Update my email address.

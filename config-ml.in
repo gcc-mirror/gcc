@@ -527,14 +527,16 @@ multidirs=`echo "$multidirs" | sed -e 's/^[ ][ ]*//' -e 's/[ ][ ]*$//' -e 's/[ ]
 
 cat > Multi.tem <<\EOF
 
+PWD=$${PWDCMD-pwd}
+
 # FIXME: There should be an @-sign in front of the `if'.
 # Leave out until this is tested a bit more.
 multi-do:
 	if [ -z "$(MULTIDIRS)" ]; then \
 	  true; \
 	else \
-	  rootpre=`pwd`/; export rootpre; \
-	  srcrootpre=`cd $(srcdir); pwd`/; export srcrootpre; \
+	  rootpre=`${PWD}`/; export rootpre; \
+	  srcrootpre=`cd $(srcdir); ${PWD}`/; export srcrootpre; \
 	  lib=`echo $${rootpre} | sed -e 's,^.*/\([^/][^/]*\)/$$,\1,'`; \
 	  compiler="$(CC)"; \
 	  for i in `$${compiler} --print-multi-lib 2>/dev/null`; do \
@@ -570,7 +572,7 @@ multi-clean:
 	if [ -z "$(MULTIDIRS)" ]; then \
 	  true; \
 	else \
-	  lib=`pwd | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \
+	  lib=`${PWD} | sed -e 's,^.*/\([^/][^/]*\)$$,\1,'`; \
 	  for dir in Makefile $(MULTIDIRS); do \
 	    if [ -f ../$${dir}/$${lib}/Makefile ]; then \
 	      if (cd ../$${dir}/$${lib}; $(MAKE) $(FLAGS_TO_PASS) $(DO)); \
@@ -677,10 +679,10 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 
   if [ "${ml_verbose}" = --verbose ]; then
     echo "Running configure in multilib subdirs ${multidirs}"
-    echo "pwd: `pwd`"
+    echo "pwd: `${PWDCMD-pwd}`"
   fi
 
-  ml_origdir=`pwd`
+  ml_origdir=`${PWDCMD-pwd}`
   ml_libdir=`echo $ml_origdir | sed -e 's,^.*/,,'`
   # cd to top-level-build-dir/${with_target_subdir}
   cd ..
@@ -689,7 +691,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 
     if [ "${ml_verbose}" = --verbose ]; then
       echo "Running configure in multilib subdir ${ml_dir}"
-      echo "pwd: `pwd`"
+      echo "pwd: `${PWDCMD-pwd}`"
     fi
 
     if [ -d ${ml_dir} ]; then true; else
@@ -717,7 +719,7 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
 
     case ${srcdir} in
     ".")
-      echo Building symlink tree in `pwd`/${ml_dir}/${ml_libdir}
+      echo Building symlink tree in `${PWDCMD-pwd}`/${ml_dir}/${ml_libdir}
       if [ "${with_target_subdir}" != "." ]; then
 	ml_unsubdir="../"
       else

@@ -1,3 +1,7 @@
+2002-05-16  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* exgettext: Allow for PWDCMD to override hardcoded pwd.
+
 2002-05-10  Philipp Thomas  <pthomas@suse.de>
 
 	* tr.po, es.po, fr.po: Update to version for 20020415

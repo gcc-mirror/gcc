@@ -206,7 +206,7 @@ dnl Look for the header file
 AC_CACHE_VAL(ac_cv_c_bfdh,[
 for i in $dirlist; do
     if test -f "$i/bfd/bfd.h" ; then
-	ac_cv_c_bfdh=`(cd $i/bfd; pwd)`
+	ac_cv_c_bfdh=`(cd $i/bfd; ${PWDCMD-pwd})`
 	break
     fi
 done
@@ -224,7 +224,7 @@ AC_MSG_CHECKING(for the bfd library in the build tree)
 AC_CACHE_VAL(ac_cv_c_bfdlib,[
 for i in $dirlist; do
     if test -f "$i/bfd/Makefile" ; then
-	ac_cv_c_bfdlib=`(cd $i/bfd; pwd)`
+	ac_cv_c_bfdlib=`(cd $i/bfd; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -247,7 +247,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_liberty,[
 for i in $dirlist; do
     if test -f "$i/libiberty/Makefile" ; then
-	ac_cv_c_liberty=`(cd $i/libiberty; pwd)`
+	ac_cv_c_liberty=`(cd $i/libiberty; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -268,7 +268,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_opc,[
 for i in $dirlist; do
     if test -f "$i/opcodes/Makefile" ; then
-	ac_cv_c_opc=`(cd $i/opcodes; pwd)`
+	ac_cv_c_opc=`(cd $i/opcodes; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -290,7 +290,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_dejagnu,[
 for i in $dirlist; do
     if test -f "$srcdir/$i/ecc/ecc/infra/testlib/current/include/dejagnu.h" ; then
-	ac_cv_c_dejagnu=`(cd $srcdir/$i/ecc/ecc/infra/testlib/current/include; pwd)`
+	ac_cv_c_dejagnu=`(cd $srcdir/$i/ecc/ecc/infra/testlib/current/include; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -303,7 +303,7 @@ fi
 AC_CACHE_VAL(ac_cv_c_dejagnulib,[
 for i in $dirlist; do
     if test -f "$srcdir/$i/infra/testlib/current/lib/hostutil.exp" ; then
-	ac_cv_c_dejagnulib=`(cd $srcdir/$i/infra/testlib/current/lib; pwd)`
+	ac_cv_c_dejagnulib=`(cd $srcdir/$i/infra/testlib/current/lib; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -316,7 +316,7 @@ AC_MSG_CHECKING(for runtest in the source tree)
 AC_CACHE_VAL(ac_cv_c_runtest,[
 for i in $dirlist; do
     if test -f "$srcdir/$i/dejagnu/runtest" ; then
-	ac_cv_c_runtest=`(cd $srcdir/$i/dejagnu; pwd)`
+	ac_cv_c_runtest=`(cd $srcdir/$i/dejagnu; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -342,7 +342,7 @@ dnl Look for the header file
 AC_CACHE_VAL(ac_cv_c_intlh,[
 for i in $dirlist; do
     if test -f "$i/intl/libintl.h" ; then
-	ac_cv_c_intlh=`(cd $i/intl; pwd)`
+	ac_cv_c_intlh=`(cd $i/intl; ${PWDCMD-pwd})`
 	break
     fi
 done
@@ -360,7 +360,7 @@ AC_MSG_CHECKING(for the libintl library in the build tree)
 AC_CACHE_VAL(ac_cv_c_intllib,[
 for i in $dirlist; do
     if test -f "$i/intl/Makefile" ; then
-	ac_cv_c_intllib=`(cd $i/intl; pwd)`
+	ac_cv_c_intllib=`(cd $i/intl; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -388,7 +388,7 @@ AC_MSG_CHECKING(for the simulator header file)
 AC_CACHE_VAL(ac_cv_c_simh,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/include/remote-sim.h" ; then
-	ac_cv_c_simh=`(cd ${srcdir}/$i/include; pwd)`
+	ac_cv_c_simh=`(cd ${srcdir}/$i/include; ${PWDCMD-pwd})`
 	break
     fi
 done
@@ -420,7 +420,7 @@ AC_MSG_CHECKING(for the simulator library)
 AC_CACHE_VAL(ac_cv_c_simlib,[
 for i in $dirlist; do
     if test -f "$i/sim/$target_dir/Makefile" ; then
-	ac_cv_c_simlib=`(cd $i/sim/$target_dir; pwd)`
+	ac_cv_c_simlib=`(cd $i/sim/$target_dir; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -463,7 +463,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_libib,[
 for i in $dirlist; do
     if test -f "$i/libiberty/Makefile" ; then
-	ac_cv_c_libib=`(cd $i/libiberty/; pwd)`
+	ac_cv_c_libib=`(cd $i/libiberty/; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -483,7 +483,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_devoh,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/include/remote-sim.h" ; then
-	ac_cv_c_devoh=`(cd ${srcdir}/$i/include; pwd)`
+	ac_cv_c_devoh=`(cd ${srcdir}/$i/include; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -506,7 +506,7 @@ IDELIB=
 AC_CACHE_VAL(ac_cv_c_ideh,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/libide/src/event.h" ; then
-	ac_cv_c_ideh=`(cd ${srcdir}/$i/libide/src; pwd)`;
+	ac_cv_c_ideh=`(cd ${srcdir}/$i/libide/src; ${PWDCMD-pwd})`;
     fi
 done
 ])
@@ -521,7 +521,7 @@ AC_MSG_CHECKING(for LIBIDE TCL headers in the source tree)
 AC_CACHE_VAL(ac_cv_c_idetclh,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/libidetcl/src/idetcl.h" ; then
-	ac_cv_c_idetclh=`(cd ${srcdir}/$i/libidetcl/src; pwd)`;
+	ac_cv_c_idetclh=`(cd ${srcdir}/$i/libidetcl/src; ${PWDCMD-pwd})`;
     fi
 done
 ])
@@ -536,7 +536,7 @@ AC_MSG_CHECKING(for IDE headers in the build tree)
 AC_CACHE_VAL(ac_cv_c_ideh2,[
 for i in $dirlist; do
     if test -f "$i/libide/src/Makefile" ; then
-	ac_cv_c_ideh2=`(cd $i/libide/src; pwd)`;
+	ac_cv_c_ideh2=`(cd $i/libide/src; ${PWDCMD-pwd})`;
     fi
 done
 ])
@@ -553,7 +553,7 @@ AC_CACHE_VAL(ac_cv_c_idelib,[
 if test x"${ac_cv_c_idelib}" = x ; then
     for i in $dirlist; do
       if test -f "$i/libide/src/Makefile" ; then
-        ac_cv_c_idelib=`(cd $i/libide/src; pwd)`
+        ac_cv_c_idelib=`(cd $i/libide/src; ${PWDCMD-pwd})`
         break
       fi
     done
@@ -571,7 +571,7 @@ AC_CACHE_VAL(ac_cv_c_idetcllib,[
 if test x"${ac_cv_c_idetcllib}" = x ; then
     for i in $dirlist; do
       if test -f "$i/libidetcl/src/Makefile" ; then
-        ac_cv_c_idetcllib=`(cd $i/libidetcl/src; pwd)`
+        ac_cv_c_idetcllib=`(cd $i/libidetcl/src; ${PWDCMD-pwd})`
         break
       fi
     done
@@ -597,7 +597,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_iluh,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/ilu/runtime/kernel/method.h" ; then
-	ac_cv_c_iluh=`(cd ${srcdir}/$i/ilu/runtime/kernel; pwd)`
+	ac_cv_c_iluh=`(cd ${srcdir}/$i/ilu/runtime/kernel; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -613,7 +613,7 @@ dirlist=".. ../../ ../../../ ../../../../ ../../../../../ ../../../../../../ ../
 AC_CACHE_VAL(ac_cv_c_iluh5,[
 for i in $dirlist; do
     if test -f "$i/ilu/runtime/kernel/iluconf.h" ; then
-	ac_cv_c_iluh5=`(cd $i/ilu/runtime/kernel; pwd)`
+	ac_cv_c_iluh5=`(cd $i/ilu/runtime/kernel; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -628,7 +628,7 @@ AC_MSG_CHECKING(for ILU C++ headers in the source tree)
 AC_CACHE_VAL(ac_cv_c_iluh2,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/ilu/stubbers/cpp/resource.h" ; then
-	ac_cv_c_iluh2=`(cd ${srcdir}/$i/ilu/stubbers/cpp; pwd)`
+	ac_cv_c_iluh2=`(cd ${srcdir}/$i/ilu/stubbers/cpp; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -643,7 +643,7 @@ AC_MSG_CHECKING(for ILU C headers)
 AC_CACHE_VAL(ac_cv_c_iluh3,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/ilu/stubbers/c/resource.h" ; then
-	ac_cv_c_iluh3=`(cd ${srcdir}/$i/ilu/stubbers/c  ; pwd)`
+	ac_cv_c_iluh3=`(cd ${srcdir}/$i/ilu/stubbers/c  ; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -658,7 +658,7 @@ AC_MSG_CHECKING(for ILU C runtime headers)
 AC_CACHE_VAL(ac_cv_c_iluh4,[
 for i in $dirlist; do
     if test -f "${srcdir}/$i/ilu/runtime/c/ilucstub.h" ; then
-	ac_cv_c_iluh4=`(cd ${srcdir}/$i/ilu/runtime/c  ; pwd)`
+	ac_cv_c_iluh4=`(cd ${srcdir}/$i/ilu/runtime/c  ; ${PWDCMD-pwd})`
     fi
 done
 ])
@@ -672,7 +672,7 @@ fi
 AC_CACHE_VAL(ac_cv_c_ilupath,[
 for i in $dirlist; do
     if test -f "$i/ilu/Makefile" ; then
-	ac_cv_c_ilupath=`(cd $i/ilu; pwd)`
+	ac_cv_c_ilupath=`(cd $i/ilu; ${PWDCMD-pwd})`
 	break
     fi
 done
@@ -682,7 +682,7 @@ ILUTOP=${ac_cv_c_ilupath}
 AC_MSG_CHECKING(for the ILU library in the build tree)
 AC_CACHE_VAL(ac_cv_c_ilulib,[
 if test -f "$ac_cv_c_ilupath/runtime/kernel/Makefile" ; then
-    ac_cv_c_ilulib=`(cd $ac_cv_c_ilupath/runtime/kernel; pwd)`
+    ac_cv_c_ilulib=`(cd $ac_cv_c_ilupath/runtime/kernel; ${PWDCMD-pwd})`
     AC_MSG_RESULT(found ${ac_cv_c_ilulib}/libilu.a)
 else
     AC_MSG_RESULT(no)
@@ -691,7 +691,7 @@ fi])
 AC_MSG_CHECKING(for the ILU C++ bindings library in the build tree)
 AC_CACHE_VAL(ac_cv_c_ilulib2,[
 if test -f "$ac_cv_c_ilupath/runtime/cpp/Makefile" ; then
-    ac_cv_c_ilulib2=`(cd $ac_cv_c_ilupath/runtime/cpp; pwd)`
+    ac_cv_c_ilulib2=`(cd $ac_cv_c_ilupath/runtime/cpp; ${PWDCMD-pwd})`
     AC_MSG_RESULT(found ${ac_cv_c_ilulib2}/libilu-c++.a)
 else
     AC_MSG_RESULT(no)
@@ -700,7 +700,7 @@ fi])
 AC_MSG_CHECKING(for the ILU C bindings library in the build tree)
 AC_CACHE_VAL(ac_cv_c_ilulib3,[
 if test -f "$ac_cv_c_ilupath/runtime/c/Makefile" ; then
-    ac_cv_c_ilulib3=`(cd $ac_cv_c_ilupath/runtime/c; pwd)`
+    ac_cv_c_ilulib3=`(cd $ac_cv_c_ilupath/runtime/c; ${PWDCMD-pwd})`
     AC_MSG_RESULT(found ${ac_cv_c_ilulib3}/libilu-c.a)
 else
     AC_MSG_RESULT(no)
@@ -709,7 +709,7 @@ fi])
 AC_MSG_CHECKING(for the ILU Tk bindings library in the build tree)
 AC_CACHE_VAL(ac_cv_c_ilulib4,[
 if test -f "$ac_cv_c_ilupath/runtime/mainloop/Makefile" ; then
-    ac_cv_c_ilulib4=`(cd $ac_cv_c_ilupath/runtime/mainloop; pwd)`
+    ac_cv_c_ilulib4=`(cd $ac_cv_c_ilupath/runtime/mainloop; ${PWDCMD-pwd})`
     AC_MSG_RESULT(found ${ac_cv_c_ilulib4}/libilu-tk.a)
 else
     AC_MSG_RESULT(no)
@@ -858,9 +858,9 @@ AC_CACHE_VAL(ac_cv_c_tclh,[
 dnl first check to see if --with-tclinclude was specified
 if test x"${with_tclinclude}" != x ; then
   if test -f ${with_tclinclude}/tcl.h ; then
-    ac_cv_c_tclh=`(cd ${with_tclinclude}; pwd)`
+    ac_cv_c_tclh=`(cd ${with_tclinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_tclinclude}/generic/tcl.h ; then
-    ac_cv_c_tclh=`(cd ${with_tclinclude}/generic; pwd)`
+    ac_cv_c_tclh=`(cd ${with_tclinclude}/generic; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_tclinclude} directory doesn't contain headers])
   fi
@@ -870,7 +870,7 @@ dnl next check if it came with Tcl configuration file
 if test x"${ac_cv_c_tclconfig}" != x ; then
   for i in $dirlist; do
     if test -f $ac_cv_c_tclconfig/$i/generic/tcl.h ; then
-      ac_cv_c_tclh=`(cd $ac_cv_c_tclconfig/$i/generic; pwd)`
+      ac_cv_c_tclh=`(cd $ac_cv_c_tclconfig/$i/generic; ${PWDCMD-pwd})`
       break
     fi
   done
@@ -891,7 +891,7 @@ if test x"${ac_cv_c_tclh}" = x ; then
     dnl might be multiple version of Tcl, and we want the most recent one.
     for i in `ls -dr $tclpath/tcl* 2>/dev/null ` ; do
         if test -f $i/generic/tcl.h ; then
-          ac_cv_c_tclh=`(cd $i/generic; pwd)`
+          ac_cv_c_tclh=`(cd $i/generic; ${PWDCMD-pwd})`
           break
         fi
     done
@@ -950,7 +950,7 @@ if test x"${no_tcl}" = x ; then
     dnl First check to see if --with-tclconfig was specified.
     if test x"${with_tclconfig}" != x ; then
         if test -f "${with_tclconfig}/tclConfig.sh" ; then
-            ac_cv_c_tclconfig=`(cd ${with_tclconfig}; pwd)`
+            ac_cv_c_tclconfig=`(cd ${with_tclconfig}; ${PWDCMD-pwd})`
         else
             AC_MSG_ERROR([${with_tclconfig} directory doesn't contain tclConfig.sh])
         fi
@@ -963,11 +963,11 @@ if test x"${no_tcl}" = x ; then
             dnl cygwin's tkConfig.sh could be in either directory depending
             dnl on the cygwin port of tcl.
             if test -f $srcdir/$i/unix/tclConfig.sh ; then
-                ac_cv_c_tclconfig=`(cd $srcdir/$i/unix; pwd)`
+                ac_cv_c_tclconfig=`(cd $srcdir/$i/unix; ${PWDCMD-pwd})`
 	        break
             fi
             if test -f $srcdir/$i/win/tclConfig.sh ; then
-                ac_cv_c_tclconfig=`(cd $srcdir/$i/win; pwd)`
+                ac_cv_c_tclconfig=`(cd $srcdir/$i/win; ${PWDCMD-pwd})`
 	        break
             fi
         done
@@ -989,11 +989,11 @@ if test x"${no_tcl}" = x ; then
             dnl cygwin's tclConfig.sh could be in either directory depending
             dnl on the cygwin port of tcl.
             if test -f $i/unix/tclConfig.sh ; then
-                ac_cv_c_tclconfig=`(cd $i/unix; pwd)`
+                ac_cv_c_tclconfig=`(cd $i/unix; ${PWDCMD-pwd})`
                 break
             fi
             if test -f $i/win/tclConfig.sh ; then
-                ac_cv_c_tclconfig=`(cd $i/win; pwd)`
+                ac_cv_c_tclconfig=`(cd $i/win; ${PWDCMD-pwd})`
                 break
             fi
         done
@@ -1097,9 +1097,9 @@ AC_CACHE_VAL(ac_cv_c_tkh,[
 dnl first check to see if --with-tkinclude was specified
 if test x"${with_tkinclude}" != x ; then
   if test -f ${with_tkinclude}/tk.h ; then
-    ac_cv_c_tkh=`(cd ${with_tkinclude}; pwd)`
+    ac_cv_c_tkh=`(cd ${with_tkinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_tkinclude}/generic/tk.h ; then
-    ac_cv_c_tkh=`(cd ${with_tkinclude}/generic; pwd)`
+    ac_cv_c_tkh=`(cd ${with_tkinclude}/generic; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_tkinclude} directory doesn't contain headers])
   fi
@@ -1109,7 +1109,7 @@ dnl next check if it came with Tk configuration file
 if test x"${ac_cv_c_tkconfig}" != x ; then
   for i in $dirlist; do
     if test -f $ac_cv_c_tkconfig/$i/generic/tk.h ; then
-      ac_cv_c_tkh=`(cd $ac_cv_c_tkconfig/$i/generic; pwd)`
+      ac_cv_c_tkh=`(cd $ac_cv_c_tkconfig/$i/generic; ${PWDCMD-pwd})`
       break
     fi
   done
@@ -1130,7 +1130,7 @@ if test x"${ac_cv_c_tkh}" = x ; then
     dnl might be multiple version of Tk, and we want the most recent one.
     for i in `ls -dr $tkpath/tk* 2>/dev/null ` ; do
         if test -f $i/generic/tk.h ; then
-          ac_cv_c_tkh=`(cd $i/generic; pwd)`
+          ac_cv_c_tkh=`(cd $i/generic; ${PWDCMD-pwd})`
           break
         fi
     done
@@ -1183,7 +1183,7 @@ if test x"${no_tk}" = x ; then
     dnl First check to see if --with-tkconfig was specified.
     if test x"${with_tkconfig}" != x ; then
         if test -f "${with_tkconfig}/tkConfig.sh" ; then
-            ac_cv_c_tkconfig=`(cd ${with_tkconfig}; pwd)`
+            ac_cv_c_tkconfig=`(cd ${with_tkconfig}; ${PWDCMD-pwd})`
         else
             AC_MSG_ERROR([${with_tkconfig} directory doesn't contain tkConfig.sh])
         fi
@@ -1196,11 +1196,11 @@ if test x"${no_tk}" = x ; then
             dnl cygwin's tkConfig.sh could be in either directory depending
             dnl on the cygwin port of tk.
             if test -f $srcdir/$i/unix/tkConfig.sh ; then
-                ac_cv_c_tkconfig=`(cd $srcdir/$i/unix; pwd)`
+                ac_cv_c_tkconfig=`(cd $srcdir/$i/unix; ${PWDCMD-pwd})`
 	        break
             fi
             if test -f $srcdir/$i/win/tkConfig.sh ; then
-                ac_cv_c_tkconfig=`(cd $srcdir/$i/unix; pwd)`
+                ac_cv_c_tkconfig=`(cd $srcdir/$i/unix; ${PWDCMD-pwd})`
 	        break
             fi
         done
@@ -1222,11 +1222,11 @@ if test x"${no_tk}" = x ; then
             dnl cygwin's tkConfig.sh could be in either directory depending
             dnl on the cygwin port of tk.
             if test -f $i/unix/tkConfig.sh ; then
-                ac_cv_c_tkconfig=`(cd $i/unix; pwd)`
+                ac_cv_c_tkconfig=`(cd $i/unix; ${PWDCMD-pwd})`
                 break
             fi
             if test -f $i/win/tkConfig.sh ; then
-                ac_cv_c_tkconfig=`(cd $i/win; pwd)`
+                ac_cv_c_tkconfig=`(cd $i/win; ${PWDCMD-pwd})`
                 break
             fi
         done
@@ -1302,9 +1302,9 @@ AC_CACHE_VAL(ac_cv_c_itclh,[
 dnl first check to see if --with-itclinclude was specified
 if test x"${with_itclinclude}" != x ; then
   if test -f ${with_itclinclude}/itcl.h ; then
-    ac_cv_c_itclh=`(cd ${with_itclinclude}; pwd)`
+    ac_cv_c_itclh=`(cd ${with_itclinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_itclinclude}/src/itcl.h ; then
-    ac_cv_c_itclh=`(cd ${with_itclinclude}/src; pwd)`
+    ac_cv_c_itclh=`(cd ${with_itclinclude}/src; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_itclinclude} directory doesn't contain headers])
   fi
@@ -1314,7 +1314,7 @@ dnl next check if it came with Itcl configuration file
 if test x"${ac_cv_c_itclconfig}" != x ; then
   for i in $dirlist; do
     if test -f $ac_cv_c_itclconfig/$i/src/itcl.h ; then
-      ac_cv_c_itclh=`(cd $ac_cv_c_itclconfig/$i/src; pwd)`
+      ac_cv_c_itclh=`(cd $ac_cv_c_itclconfig/$i/src; ${PWDCMD-pwd})`
       break
     fi
   done
@@ -1335,7 +1335,7 @@ if test x"${ac_cv_c_itclh}" = x ; then
     dnl might be multiple version of Itcl, and we want the most recent one.
     for i in `ls -dr $itclpath/itcl* 2>/dev/null ` ; do
         if test -f $i/src/itcl.h ; then
-          ac_cv_c_itclh=`(cd $i/src; pwd)`
+          ac_cv_c_itclh=`(cd $i/src; ${PWDCMD-pwd})`
           break
         fi
     done
@@ -1380,10 +1380,10 @@ if test x"${no_itcl}" = x ; then
     dnl First check to see if --with-itcllib was specified.
     if test x"${with_itcllib}" != x ; then
         if test -f "${with_itcllib}/libitcl$TCL_SHARED_LIB_SUFFIX" ; then
-            ac_cv_c_itcllib=`(cd ${with_itcllib}; pwd)`/libitcl$TCL_SHARED_LIB_SUFFIX
+            ac_cv_c_itcllib=`(cd ${with_itcllib}; ${PWDCMD-pwd})`/libitcl$TCL_SHARED_LIB_SUFFIX
 	else
 	    if test -f "${with_itcllib}/libitcl$TCL_UNSHARED_LIB_SUFFIX"; then
-	 	ac_cv_c_itcllib=`(cd ${with_itcllib}; pwd)`/libitcl$TCL_UNSHARED_LIB_SUFFIX
+	 	ac_cv_c_itcllib=`(cd ${with_itcllib}; ${PWDCMD-pwd})`/libitcl$TCL_UNSHARED_LIB_SUFFIX
 	    fi
 	fi
     fi
@@ -1399,9 +1399,9 @@ if test x"${no_itcl}" = x ; then
         done
         dnl Itcl 7.5 and greater puts library in subdir.  Look there first.
         if test -f "$itclpath/src/libitcl.$TCL_SHLIB_SUFFIX" ; then
-	     ac_cv_c_itcllib=`(cd $itclpath/src; pwd)`
+	     ac_cv_c_itcllib=`(cd $itclpath/src; ${PWDCMD-pwd})`
         elif test -f "$itclpath/src/libitcl.a"; then
-	     ac_cv_c_itcllib=`(cd $itclpath/src; pwd)`
+	     ac_cv_c_itcllib=`(cd $itclpath/src; ${PWDCMD-pwd})`
 	fi
     fi
     dnl check in a few other private locations
@@ -1415,10 +1415,10 @@ if test x"${no_itcl}" = x ; then
         for i in `ls -dr ${itclpath}/itcl* 2>/dev/null` ; do
             dnl Itcl 7.5 and greater puts library in subdir.  Look there first.
             if test -f "$i/src/libitcl$TCL_SHLIB_SUFFIX" ; then
-	        ac_cv_c_itcllib=`(cd $i/src; pwd)`
+	        ac_cv_c_itcllib=`(cd $i/src; ${PWDCMD-pwd})`
 	        break
             elif test -f "$i/src/libitcl.a"; then
-	        ac_cv_c_itcllib=`(cd $i/src; pwd)`
+	        ac_cv_c_itcllib=`(cd $i/src; ${PWDCMD-pwd})`
 	        break
 	    fi	
         done
@@ -1430,9 +1430,9 @@ if test x"${no_itcl}" = x ; then
 	ccpath=`which ${CC}  | sed -e 's:/bin/.*::'`/lib
         dnl Itcl 7.5 and greater puts library in subdir.  Look there first.
         if test -f "${ccpath}/libitcl$TCL_SHLIB_SUFFIX" ; then
-	    ac_cv_c_itcllib=`(cd ${ccpath}; pwd)`
+	    ac_cv_c_itcllib=`(cd ${ccpath}; ${PWDCMD-pwd})`
         elif test -f "${ccpath}/libitcl.a"; then
-	    ac_cv_c_itcllib=`(cd ${ccpath}; pwd)`
+	    ac_cv_c_itcllib=`(cd ${ccpath}; ${PWDCMD-pwd})`
         fi
     fi
     ])
@@ -1463,9 +1463,9 @@ AC_CACHE_VAL(ac_cv_c_itclsh,[
 dnl first check to see if --with-itclinclude was specified
 if test x"${with_itclinclude}" != x ; then
   if test -f ${with_itclinclude}/itcl_sh ; then
-    ac_cv_c_itclsh=`(cd ${with_itclinclude}; pwd)`
+    ac_cv_c_itclsh=`(cd ${with_itclinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_itclinclude}/src/itcl_sh ; then
-    ac_cv_c_itclsh=`(cd ${with_itclinclude}/src; pwd)`
+    ac_cv_c_itclsh=`(cd ${with_itclinclude}/src; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_itclinclude} directory doesn't contain itcl_sh])
   fi
@@ -1486,7 +1486,7 @@ if test x"${ac_cv_c_itclsh}" = x ; then
     dnl might be multiple version of Itcl, and we want the most recent one.
     for i in `ls -dr $itclpath/itcl* 2>/dev/null ` ; do
         if test -f $i/src/itcl_sh ; then
-          ac_cv_c_itclsh=`(cd $i/src; pwd)`/itcl_sh
+          ac_cv_c_itclsh=`(cd $i/src; ${PWDCMD-pwd})`/itcl_sh
           break
         fi
     done
@@ -1525,9 +1525,9 @@ AC_CACHE_VAL(ac_cv_c_itclmkidx,[
 dnl first check to see if --with-itclinclude was specified
 if test x"${with_itclinclude}" != x ; then
   if test -f ${with_itclinclude}/itcl_sh ; then
-    ac_cv_c_itclmkidx=`(cd ${with_itclinclude}; pwd)`
+    ac_cv_c_itclmkidx=`(cd ${with_itclinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_itclinclude}/src/itcl_sh ; then
-    ac_cv_c_itclmkidx=`(cd ${with_itclinclude}/src; pwd)`
+    ac_cv_c_itclmkidx=`(cd ${with_itclinclude}/src; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_itclinclude} directory doesn't contain itcl_sh])
   fi
@@ -1548,7 +1548,7 @@ if test x"${ac_cv_c_itclmkidx}" = x ; then
     dnl might be multiple version of Itcl, and we want the most recent one.
     for i in `ls -dr $itclpath/itcl* 2>/dev/null ` ; do
         if test -f $i/library/itcl_mkindex.tcl ; then
-          ac_cv_c_itclmkidx=`(cd $i/library; pwd)`/itcl_mkindex.tcl
+          ac_cv_c_itclmkidx=`(cd $i/library; ${PWDCMD-pwd})`/itcl_mkindex.tcl
           break
         fi
     done
@@ -1559,7 +1559,7 @@ if test x"${ac_cv_c_itclmkidx}" = x ; then
     dnl Itcl 7.5 and greater puts library in subdir.  Look there first.
     for i in `ls -dr $ccpath/itcl* 2>/dev/null ` ; do
         if test -f $i/itcl_mkindex.tcl ; then
-            ac_cv_c_itclmkidx=`(cd $i; pwd)`/itcl_mkindex.tcl
+            ac_cv_c_itclmkidx=`(cd $i; ${PWDCMD-pwd})`/itcl_mkindex.tcl
             break
         fi
     done
@@ -1595,9 +1595,9 @@ AC_CACHE_VAL(ac_cv_c_tixh,[
 dnl first check to see if --with-tixinclude was specified
 if test x"${with_tixinclude}" != x ; then
   if test -f ${with_tixinclude}/tix.h ; then
-    ac_cv_c_tixh=`(cd ${with_tixinclude}; pwd)`
+    ac_cv_c_tixh=`(cd ${with_tixinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_tixinclude}/generic/tix.h ; then
-    ac_cv_c_tixh=`(cd ${with_tixinclude}/generic; pwd)`
+    ac_cv_c_tixh=`(cd ${with_tixinclude}/generic; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_tixinclude} directory doesn't contain headers])
   fi
@@ -1607,7 +1607,7 @@ dnl next check if it came with Tix configuration file
 if test x"${ac_cv_c_tixconfig}" != x ; then
   for i in $dirlist; do
     if test -f $ac_cv_c_tixconfig/$i/generic/tix.h ; then
-      ac_cv_c_tixh=`(cd $ac_cv_c_tixconfig/$i/generic; pwd)`
+      ac_cv_c_tixh=`(cd $ac_cv_c_tixconfig/$i/generic; ${PWDCMD-pwd})`
       break
     fi
   done
@@ -1628,7 +1628,7 @@ if test x"${ac_cv_c_tixh}" = x ; then
     dnl might be multiple version of Tix, and we want the most recent one.
     for i in `ls -dr $tixpath/tix* 2>/dev/null ` ; do
         if test -f $i/generic/tix.h ; then
-          ac_cv_c_tixh=`(cd $i/generic; pwd)`
+          ac_cv_c_tixh=`(cd $i/generic; ${PWDCMD-pwd})`
           break
         fi
     done
@@ -1681,7 +1681,7 @@ if test x"${no_tix}" = x ; then
   # First check to see if --with-tixconfig was specified.
   if test x"${with_tixconfig}" != x ; then
     if test -f "${with_tixconfig}/tixConfig.sh" ; then
-      ac_cv_c_tixconfig=`(cd ${with_tixconfig}; pwd)`
+      ac_cv_c_tixconfig=`(cd ${with_tixconfig}; ${PWDCMD-pwd})`
     else
       AC_MSG_ERROR([${with_tixconfig} directory doesn't contain tixConfig.sh])
     fi
@@ -1697,7 +1697,7 @@ if test x"${no_tix}" = x ; then
 		../../../tix \
 		`ls -dr ../../../tix[[4]]* 2>/dev/null` ; do
       if test -f "$i/tixConfig.sh" ; then
-        ac_cv_c_tixconfig=`(cd $i; pwd)`
+        ac_cv_c_tixconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1706,7 +1706,7 @@ if test x"${no_tix}" = x ; then
   if test x"${ac_cv_c_tixconfig}" = x ; then
     for i in `ls -d ${prefix}/lib /usr/local/lib 2>/dev/null` ; do
       if test -f "$i/tixConfig.sh" ; then
-        ac_cv_c_tkconfig=`(cd $i; pwd)`
+        ac_cv_c_tkconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1717,7 +1717,7 @@ if test x"${no_tix}" = x ; then
 		${srcdir}/../tix \
 		`ls -dr ${srcdir}/../tix[[4-9]]* 2>/dev/null` ; do
       if test -f "$i/tixConfig.sh" ; then
-        ac_cv_c_tixconfig=`(cd $i; pwd)`
+        ac_cv_c_tixconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1764,7 +1764,7 @@ if test x"${no_itcl}" = x ; then
   # First check to see if --with-itclconfig was specified.
   if test x"${with_itclconfig}" != x ; then
     if test -f "${with_itclconfig}/itclConfig.sh" ; then
-      ac_cv_c_itclconfig=`(cd ${with_itclconfig}; pwd)`
+      ac_cv_c_itclconfig=`(cd ${with_itclconfig}; ${PWDCMD-pwd})`
     else
       AC_MSG_ERROR([${with_itclconfig} directory doesn't contain itclConfig.sh])
     fi
@@ -1780,7 +1780,7 @@ if test x"${no_itcl}" = x ; then
 		../../../itcl/itcl \
 		`ls -dr ../../../itcl/itcl[[3]]* 2>/dev/null` ; do
       if test -f "$i/itclConfig.sh" ; then
-        ac_cv_c_itclconfig=`(cd $i; pwd)`
+        ac_cv_c_itclconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1789,7 +1789,7 @@ if test x"${no_itcl}" = x ; then
   if test x"${ac_cv_c_itclconfig}" = x ; then
     for i in `ls -d ${prefix}/lib /usr/local/lib 2>/dev/null` ; do
       if test -f "$i/itclConfig.sh" ; then
-        ac_cv_c_itclconfig=`(cd $i; pwd)`
+        ac_cv_c_itclconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1800,7 +1800,7 @@ if test x"${no_itcl}" = x ; then
 		${srcdir}/../itcl/itcl \
 		`ls -dr ${srcdir}/../itcl/itcl[[3]]* 2>/dev/null` ; do
       if test -f "$i/itcl/itclConfig.sh" ; then
-        ac_cv_c_itclconfig=`(cd $i; pwd)`
+        ac_cv_c_itclconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1851,7 +1851,7 @@ if test x"${no_itk}" = x ; then
   # First check to see if --with-itkconfig was specified.
   if test x"${with_itkconfig}" != x ; then
     if test -f "${with_itkconfig}/itkConfig.sh" ; then
-      ac_cv_c_itkconfig=`(cd ${with_itkconfig}; pwd)`
+      ac_cv_c_itkconfig=`(cd ${with_itkconfig}; ${PWDCMD-pwd})`
     else
       AC_MSG_ERROR([${with_itkconfig} directory doesn't contain itkConfig.sh])
     fi
@@ -1867,7 +1867,7 @@ if test x"${no_itk}" = x ; then
 		../../../itcl/itk \
 		`ls -dr ../../../itcl/itk[[3]]* 2>/dev/null` ; do
       if test -f "$i/itkConfig.sh" ; then
-        ac_cv_c_itkconfig=`(cd $i; pwd)`
+        ac_cv_c_itkconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1876,7 +1876,7 @@ if test x"${no_itk}" = x ; then
   if test x"${ac_cv_c_itkconfig}" = x ; then
     for i in `ls -d ${prefix}/lib /usr/local/lib 2>/dev/null` ; do
       if test -f "$i/itcl/itkConfig.sh" ; then
-        ac_cv_c_itkconfig=`(cd $i; pwd)`
+        ac_cv_c_itkconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1887,7 +1887,7 @@ if test x"${no_itk}" = x ; then
 		${srcdir}/../itcl/itk \
 		`ls -dr ${srcdir}/../itcl/itk[[3]]* 2>/dev/null` ; do
       if test -f "$i/itkConfig.sh" ; then
-        ac_cv_c_itkconfig=`(cd $i; pwd)`
+        ac_cv_c_itkconfig=`(cd $i; ${PWDCMD-pwd})`
 	break
       fi
     done
@@ -1934,9 +1934,9 @@ AC_CACHE_VAL(ac_cv_c_libguih,[
 dnl first check to see if --with-libguiinclude was specified
 if test x"${with_libguiinclude}" != x ; then
   if test -f ${with_libguiinclude}/guitcl.h ; then
-    ac_cv_c_libguih=`(cd ${with_libguiinclude}; pwd)`
+    ac_cv_c_libguih=`(cd ${with_libguiinclude}; ${PWDCMD-pwd})`
   elif test -f ${with_libguiinclude}/src/guitcl.h ; then
-    ac_cv_c_libguih=`(cd ${with_libguiinclude}/src; pwd)`
+    ac_cv_c_libguih=`(cd ${with_libguiinclude}/src; ${PWDCMD-pwd})`
   else
     AC_MSG_ERROR([${with_libguiinclude} directory doesn't contain headers])
   fi
@@ -1946,7 +1946,7 @@ dnl next check if it came with Libgui configuration file
 if test x"${ac_cv_c_libguiconfig}" != x ; then
   for i in $dirlist; do
     if test -f $ac_cv_c_libguiconfig/$i/src/guitcl.h ; then
-      ac_cv_c_libguih=`(cd $ac_cv_c_libguiconfig/$i/src; pwd)`
+      ac_cv_c_libguih=`(cd $ac_cv_c_libguiconfig/$i/src; ${PWDCMD-pwd})`
       break
     fi
   done
@@ -1967,7 +1967,7 @@ if test x"${ac_cv_c_libguih}" = x ; then
     dnl might be multiple version of Libgui, and we want the most recent one.
     for i in `ls -dr $libguipath/libgui* 2>/dev/null ` ; do
         if test -f $i/src/guitcl.h ; then
-          ac_cv_c_libguih=`(cd $i/src; pwd)`
+          ac_cv_c_libguih=`(cd $i/src; ${PWDCMD-pwd})`
           break
         fi
     done
@@ -2004,7 +2004,7 @@ AC_CACHE_VAL(ac_cv_c_libguilib,[
 if test x"${ac_cv_c_libguilib}" = x ; then
     for i in $dirlist; do
       if test -f "$i/libgui/src/Makefile" ; then
-        ac_cv_c_libguilib=`(cd $i/libgui/src; pwd)`
+        ac_cv_c_libguilib=`(cd $i/libgui/src; ${PWDCMD-pwd})`
         break
       fi
     done

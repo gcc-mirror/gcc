@@ -51,7 +51,7 @@ T=exg$$.d
 mkdir $T
 trap "rm -r $T" 0
 
-pwd=`pwd`
+pwd=`${PWDCMD-pwd}`
 kopt=$pwd/$T/keyword-options
 emsg=$pwd/$T/emsgids.c
 posr=$pwd/$T/po-sources
