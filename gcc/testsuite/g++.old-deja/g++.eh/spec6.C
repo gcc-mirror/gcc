@@ -25,7 +25,7 @@ template<class T> void fnx(T *) throw(T){}  // ERROR - invalid use of void expre
 void fx()
 {
   fnx((int *)0);
-  fnx((void *)0);
+  fnx((void *)0);		// ERROR - instantiated from here
 }
 
 // [except.spec] 2, exception specifiers must be the same set of types (but
