@@ -1635,20 +1635,20 @@ typedef struct rs6000_stack {
    as seen by the caller.
 
    On RS/6000, this is r3, fp1, and v2 (for AltiVec).  */
-#define FUNCTION_VALUE_REGNO_P(N)  ((N) == GP_ARG_RETURN	\
-				    || ((N) == FP_ARG_RETURN)	\
-				    || (TARGET_ALTIVEC &&	\
-					(N) == ALTIVEC_ARG_RETURN))
+#define FUNCTION_VALUE_REGNO_P(N)					\
+  ((N) == GP_ARG_RETURN							\
+   || ((N) == FP_ARG_RETURN && TARGET_HARD_FLOAT)			\
+   || ((N) == ALTIVEC_ARG_RETURN && TARGET_ALTIVEC))
 
 /* 1 if N is a possible register number for function argument passing.
    On RS/6000, these are r3-r10 and fp1-fp13.
    On AltiVec, v2 - v13 are used for passing vectors.  */
 #define FUNCTION_ARG_REGNO_P(N)						\
-  (((unsigned)((N) - GP_ARG_MIN_REG) < (unsigned)(GP_ARG_NUM_REG))	\
-   || (TARGET_ALTIVEC &&						\
-       (unsigned)((N) - ALTIVEC_ARG_MIN_REG) < (unsigned)(ALTIVEC_ARG_NUM_REG)) \
-   || ((unsigned)((N) - FP_ARG_MIN_REG) < (unsigned)(FP_ARG_NUM_REG)))
-
+  ((unsigned) (N) - GP_ARG_MIN_REG < GP_ARG_NUM_REG			\
+   || ((unsigned) (N) - ALTIVEC_ARG_MIN_REG < ALTIVEC_ARG_NUM_REG	\
+       && TARGET_ALTIVEC)						\
+   || ((unsigned) (N) - FP_ARG_MIN_REG < FP_ARG_NUM_REG			\
+       && TARGET_HARD_FLOAT))
 
 /* A C structure for machine-specific, per-function data.
    This is added to the cfun structure.  */
