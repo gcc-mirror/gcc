@@ -837,6 +837,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && this_is_condjump && ! this_is_simplejump
 	      && BRANCH_COST >= 3
 	      && (temp = next_nonnote_insn (insn)) != 0
+	      && GET_CODE (temp) == INSN
 	      && REG_NOTES (temp) == 0
 	      && (reallabelprev == temp
 		  || ((temp2 = next_active_insn (temp)) != 0
@@ -874,8 +875,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && this_is_condjump && ! this_is_simplejump
 	      && BRANCH_COST >= 4
 	      && (temp = next_nonnote_insn (insn)) != 0
+	      && GET_CODE (temp) == INSN
 	      && REG_NOTES (temp) == 0
 	      && (temp3 = next_nonnote_insn (temp)) != 0
+	      && GET_CODE (temp3) == INSN
 	      && REG_NOTES (temp3) == 0
 	      && (reallabelprev == temp3
 		  || ((temp2 = next_active_insn (temp3)) != 0
@@ -920,8 +923,10 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 	      && this_is_condjump && ! this_is_simplejump
 	      && BRANCH_COST >= 4
 	      && (temp = next_nonnote_insn (insn)) != 0
+	      && GET_CODE (temp) == INSN
 	      && REG_NOTES (temp) == 0
 	      && (temp3 = next_nonnote_insn (temp)) != 0
+	      && GET_CODE (temp3) == INSN
 	      && REG_NOTES (temp3) == 0
 	      && (reallabelprev == temp3
 		  || ((temp2 = next_active_insn (temp3)) != 0
