@@ -1,3 +1,10 @@
+2004-09-27  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/16848
+	* include/Makefile.am (ext_headers): Remove demangle.h.
+	* include/Makefile.in: Regenerate.
+	* include/ext/demangle.h: Remove.
+
 2004-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR libstdc++/17469
