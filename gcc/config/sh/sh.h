@@ -263,6 +263,11 @@ extern int target_flags;
 
 #define TARGET_SAVE_ALL_TARGET_REGS (target_flags & SAVE_ALL_TR_BIT)
 
+/* This is not used by the SH2E calling convention  */
+#define TARGET_VARARGS_PRETEND_ARGS(FUN_DECL) \
+  (TARGET_SH1 && ! TARGET_SH2E && ! TARGET_SH5 \
+   && ! (TARGET_HITACHI || sh_attr_renesas_p (FUN_DECL)))
+
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT SELECT_SH1
 #define SUPPORT_SH1
