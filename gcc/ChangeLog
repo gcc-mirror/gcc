@@ -1,3 +1,10 @@
+Mon Sep  1 22:13:18 1997  Jeffrey A Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
+	* haifa-sched.c (move_insn): Handle notes correctly for insns
+	with SCHED_GROUP_P set.
+	
 Mon Sep  1 16:58:57 1997  H.J. Lu  (hjl@gnu.ai.mit.edu)
 
 	* alpha/xm-linux.h (USE_BFD): Undef before define.

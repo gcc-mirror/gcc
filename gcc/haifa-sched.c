@@ -6494,23 +6494,45 @@ reemit_notes (insn, last)
 }
 
 /* Move INSN, and all insns which should be issued before it,
-   due to SCHED_GROUP_P flag.  Reemit notes if needed.  */
+   due to SCHED_GROUP_P flag.  Reemit notes if needed.
+
+   Return the last insn emitted by the scheduler, which is the
+   return value from the first call to reemit_notes.  */
 
 static rtx
 move_insn (insn, last)
      rtx insn, last;
 {
-  rtx new_last = insn;
+  rtx retval = NULL;
 
+  /* If INSN has SCHED_GROUP_P set, then issue it and any other
+     insns with SCHED_GROUP_P set first.  */
   while (SCHED_GROUP_P (insn))
     {
       rtx prev = PREV_INSN (insn);
+
+      /* Move a SCHED_GROUP_P insn.  */
       move_insn1 (insn, last);
+      /* If this is the first call to reemit_notes, then record
+	 its return value.  */
+      if (retval == NULL_RTX)
+	retval = reemit_notes (insn, insn);
+      else
+	reemit_notes (insn, insn);
       insn = prev;
     }
 
+  /* Now move the first non SCHED_GROUP_P insn.  */
   move_insn1 (insn, last);
-  return reemit_notes (new_last, new_last);
+
+  /* If this is the first call to reemit_notes, then record
+     its return value.  */
+  if (retval == NULL_RTX)
+    retval = reemit_notes (insn, insn);
+  else
+    reemit_notes (insn, insn);
+
+  return retval;
 }
 
 /* Return an insn which represents a SCHED_GROUP, which is
