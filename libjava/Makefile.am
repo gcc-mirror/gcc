@@ -2206,6 +2206,7 @@ gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
+gnu/java/net/URLParseError.java \
 gnu/java/net/protocol/core/Connection.java \
 gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/core/CoreInputStream.java \

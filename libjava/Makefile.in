@@ -1913,6 +1913,7 @@ gnu/java/locale/LocaleInformation_zh_TW.java \
 gnu/java/math/MPN.java \
 gnu/java/net/PlainDatagramSocketImpl.java \
 gnu/java/net/PlainSocketImpl.java \
+gnu/java/net/URLParseError.java \
 gnu/java/net/protocol/core/Connection.java \
 gnu/java/net/protocol/core/Handler.java \
 gnu/java/net/protocol/core/CoreInputStream.java \
@@ -3051,7 +3052,7 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/locale/LocaleInformation_zh_SG.P \
 .deps/gnu/java/locale/LocaleInformation_zh_TW.P \
 .deps/gnu/java/math/MPN.P .deps/gnu/java/net/PlainDatagramSocketImpl.P \
-.deps/gnu/java/net/PlainSocketImpl.P \
+.deps/gnu/java/net/PlainSocketImpl.P .deps/gnu/java/net/URLParseError.P \
 .deps/gnu/java/net/natPlainDatagramSocketImpl.P \
 .deps/gnu/java/net/natPlainSocketImpl.P \
 .deps/gnu/java/net/protocol/core/Connection.P \
