@@ -86,6 +86,9 @@ struct processor_costs {
 				   in SImode, DImode and TImode*/
   const int mmxsse_to_integer;	/* cost of moving mmxsse register to
 				   integer and vice versa.  */
+  const int prefetch_block;	/* bytes moved to cache for prefetch.  */
+  const int simultaneous_prefetches; /* number of parallel prefetch
+				   operations.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -224,6 +227,7 @@ extern const int x86_add_esp_4, x86_add_esp_8, x86_sub_esp_4, x86_sub_esp_8;
 extern const int x86_partial_reg_dependency, x86_memory_mismatch_stall;
 extern const int x86_accumulate_outgoing_args, x86_prologue_using_move;
 extern const int x86_epilogue_using_move, x86_decompose_lea;
+extern int x86_prefetch_sse;
 
 #define TARGET_USE_LEAVE (x86_use_leave & CPUMASK)
 #define TARGET_PUSH_MEMORY (x86_push_memory & CPUMASK)
@@ -262,6 +266,7 @@ extern const int x86_epilogue_using_move, x86_decompose_lea;
 #define TARGET_PROLOGUE_USING_MOVE (x86_prologue_using_move & CPUMASK)
 #define TARGET_EPILOGUE_USING_MOVE (x86_epilogue_using_move & CPUMASK)
 #define TARGET_DECOMPOSE_LEA (x86_decompose_lea & CPUMASK)
+#define TARGET_PREFETCH_SSE (x86_prefetch_sse)
 
 #define TARGET_STACK_PROBE (target_flags & MASK_STACK_PROBE)
 
@@ -480,24 +485,61 @@ extern int ix86_arch;
 %n`-mpentiumpro' is deprecated. Use `-march=pentiumpro' or `-mcpu=pentiumpro' instead.\n}}"
 #endif
 
+#define TARGET_CPU_DEFAULT_i386 0
+#define TARGET_CPU_DEFAULT_i486 1
+#define TARGET_CPU_DEFAULT_pentium 2
+#define TARGET_CPU_DEFAULT_pentiumpro 3
+#define TARGET_CPU_DEFAULT_pentium2 4
+#define TARGET_CPU_DEFAULT_pentium3 5
+#define TARGET_CPU_DEFAULT_pentium4 6
+#define TARGET_CPU_DEFAULT_k6 7
+#define TARGET_CPU_DEFAULT_k6_2 8
+#define TARGET_CPU_DEFAULT_k6_3 9
+#define TARGET_CPU_DEFAULT_athlon 10
+#define TARGET_CPU_DEFAULT_athlon_sse 11
+
+#define TARGET_CPU_DEFAULT_NAMES {"i386", "i486", "pentium", "pentium-mmx",\
+				  "pentiumpro", "pentium2", "pentium3", \
+				  "pentium4", "k6", "k6-2", "k6-3",\
+				  "athlon", "athlon-4"}
 #ifndef CPP_CPU_DEFAULT_SPEC
-#if TARGET_CPU_DEFAULT == 1
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_i486
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i486__"
 #endif
-#if TARGET_CPU_DEFAULT == 2
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i586__ -D__tune_pentium__"
 #endif
-#if TARGET_CPU_DEFAULT == 3
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium_mmx
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i586__ -D__tune_pentium__ -D__tune_pentium_mmx__"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentiumpro
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__"
 #endif
-#if TARGET_CPU_DEFAULT == 4
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium2
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__\
+-D__tune_pentium2__"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium3
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_i686__ -D__tune_pentiumpro__\
+-D__tune_pentium2__ -D__tune_pentium3__"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_pentium4
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentium4__"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_k6
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__"
 #endif
-#if TARGET_CPU_DEFAULT == 5
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_k6_2
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__ -D__tune_k6_2__"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_k6_3
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_k6__ -D__tune_k6_3__"
+#endif
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_athlon
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_athlon__"
 #endif
-#if TARGET_CPU_DEFAULT == 6
-#define CPP_CPU_DEFAULT_SPEC "-D__tune_pentium4__"
+#if TARGET_CPU_DEFAULT == TARGET_CPU_DEFAULT_athlon_sse
+#define CPP_CPU_DEFAULT_SPEC "-D__tune_athlon__ -D__tune_athlon_sse__"
 #endif
 #ifndef CPP_CPU_DEFAULT_SPEC
 #define CPP_CPU_DEFAULT_SPEC "-D__tune_i386__"
@@ -531,30 +573,45 @@ extern int ix86_arch;
 %{march=i486:-D__i486 -D__i486__ %{!mcpu*:-D__tune_i486__ }}\
 %{march=pentium|march=i586:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
   %{!mcpu*:-D__tune_i586__ -D__tune_pentium__ }}\
+%{march=pentium-mmx:-D__i586 -D__i586__ -D__pentium -D__pentium__ \
+  -D__pentium__mmx__ \
+  %{!mcpu*:-D__tune_i586__ -D__tune_pentium__ -D__tune_pentium_mmx__}}\
 %{march=pentiumpro|march=i686:-D__i686 -D__i686__ \
   -D__pentiumpro -D__pentiumpro__ \
   %{!mcpu*:-D__tune_i686__ -D__tune_pentiumpro__ }}\
 %{march=k6:-D__k6 -D__k6__ %{!mcpu*:-D__tune_k6__ }}\
-%{march=athlon:-D__athlon -D__athlon__ %{!mcpu*:-D__tune_athlon__ }}\
+%{march=k6-2:-D__k6 -D__k6__ -D__k6_2__ \
+  %{!mcpu*:-D__tune_k6__ -D__tune_k6_2__ }}\
+%{march=k6-3:-D__k6 -D__k6__ -D__k6_3__ \
+  %{!mcpu*:-D__tune_k6__ -D__tune_k6_3__ }}\
+%{march=athlon|march=athlon-tbird:-D__athlon -D__athlon__ \
+  %{!mcpu*:-D__tune_athlon__ }}\
+%{march=athlon-4|march=athlon-xp|march=athlon-mp:-D__athlon -D__athlon__ \
+  -D__athlon_sse__ \
+  %{!mcpu*:-D__tune_athlon__ -D__tune_athlon_sse__ }}\
 %{march=pentium4:-D__pentium4 -D__pentium4__ %{!mcpu*:-D__tune_pentium4__ }}\
 %{m386|mcpu=i386:-D__tune_i386__ }\
 %{m486|mcpu=i486:-D__tune_i486__ }\
 %{mpentium|mcpu=pentium|mcpu=i586|mcpu=pentium-mmx:-D__tune_i586__ -D__tune_pentium__ }\
-%{mpentiumpro|mcpu=pentiumpro|mcpu=i686|cpu=pentium2|cpu=pentium3:-D__tune_i686__\
+%{mpentiumpro|mcpu=pentiumpro|mcpu=i686|cpu=pentium2|cpu=pentium3:-D__tune_i686__ \
 -D__tune_pentiumpro__ }\
 %{mcpu=k6|mcpu=k6-2|mcpu=k6-3:-D__tune_k6__ }\
 %{mcpu=athlon|mcpu=athlon-tbird|mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
 -D__tune_athlon__ }\
+%{mcpu=athlon-4|mcpu=athlon-xp|mcpu=athlon-mp:\
+-D__tune_athlon_sse__ }\
 %{mcpu=pentium4:-D__tune_pentium4__ }\
 %{march=march=athlon-tbird|march=athlon-xp|march=athlon-mp|march=pentium3|march=pentium4:\
 -D__SSE__ }\
 %{march=pentium-mmx|march=k6|march=k6-2|march=k6-3\
 march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp|march=pentium2|march=pentium3|march=pentium4: -D__MMX__ }\
-%{march=k6|march=k6-2|march=k6-3\
+%{march=k6-2|march=k6-3\
 march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
 |march=athlon-mp: -D__3dNOW__ }\
-%{mcpu=mcpu=pentium4: -D__SSE2__ }\
+%{march=athlon|march=athlon-tbird|march=athlon-4|march=athlon-xp\
+|march=athlon-mp: -D__3dNOW_A__ }\
+%{march=mcpu=pentium4: -D__SSE2__ }\
 %{!march*:%{!mcpu*:%{!m386:%{!m486:%{!mpentium*:%(cpp_cpu_default)}}}}}"
 
 #ifndef CPP_CPU_SPEC
@@ -2260,6 +2317,12 @@ while (0)
 
 /* Define this as 1 if `char' should by default be signed; else as 0.  */
 #define DEFAULT_SIGNED_CHAR 1
+
+/* Number of bytes moved into a data cache for a single prefetch operation.  */
+#define PREFETCH_BLOCK ix86_cost->prefetch_block
+
+/* Number of prefetch operations that can be done in parallel.  */
+#define SIMULTANEOUS_PREFETCHES ix86_cost->simultaneous_prefetches
 
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */

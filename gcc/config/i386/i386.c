@@ -81,6 +81,8 @@ struct processor_costs size_cost = {	/* costs for tunning for size */
   {3, 3, 3},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  0,					/* size of prefetch block */
+  0,					/* number of parallel prefetches */
 };
 /* Processor costs (relative to an add) */
 static const 
@@ -116,6 +118,8 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   {4, 8, 16},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   3,					/* MMX or SSE register to integer */
+  0,					/* size of prefetch block */
+  0,					/* number of parallel prefetches */
 };
 
 static const 
@@ -150,7 +154,9 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
 					   in SImode, DImode and TImode */
   {4, 8, 16},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  3					/* MMX or SSE register to integer */
+  3,					/* MMX or SSE register to integer */
+  0,					/* size of prefetch block */
+  0,					/* number of parallel prefetches */
 };
 
 static const 
@@ -185,7 +191,9 @@ struct processor_costs pentium_cost = {
 					   in SImode, DImode and TImode */
   {4, 8, 16},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  3					/* MMX or SSE register to integer */
+  3,					/* MMX or SSE register to integer */
+  0,					/* size of prefetch block */
+  0,					/* number of parallel prefetches */
 };
 
 static const 
@@ -220,7 +228,9 @@ struct processor_costs pentiumpro_cost = {
 					   in SImode, DImode and TImode */
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  3					/* MMX or SSE register to integer */
+  3,					/* MMX or SSE register to integer */
+  32,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
 };
 
 static const 
@@ -255,7 +265,9 @@ struct processor_costs k6_cost = {
 					   in SImode, DImode and TImode */
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  6					/* MMX or SSE register to integer */
+  6,					/* MMX or SSE register to integer */
+  32,					/* size of prefetch block */
+  1,					/* number of parallel prefetches */
 };
 
 static const 
@@ -290,7 +302,9 @@ struct processor_costs athlon_cost = {
 					   in SImode, DImode and TImode */
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
-  6					/* MMX or SSE register to integer */
+  6,					/* MMX or SSE register to integer */
+  64,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
 };
 
 static const 
@@ -326,6 +340,8 @@ struct processor_costs pentium4_cost = {
   {2, 2, 8},				/* cost of storing SSE registers
 					   in SImode, DImode and TImode */
   10,					/* MMX or SSE register to integer */
+  64,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
 };
 
 const struct processor_costs *ix86_cost = &pentium_cost;
@@ -592,6 +608,9 @@ const char *ix86_fpmath_string;		/* for -mfpmath=<xxx> */
 /* # of registers to use to pass arguments.  */
 const char *ix86_regparm_string;
 
+/* true if sse prefetch instruction is not NOOP.  */
+int x86_prefetch_sse;
+
 /* ix86_regparm_string as a number */
 int ix86_regparm;
 
@@ -817,6 +836,7 @@ override_options ()
       {&pentium4_cost, 0, 0, 0, 0, 0, 0, 0, 1}
     };
 
+  static const char * const cpu_names[] = TARGET_CPU_DEFAULT_NAMES;
   static struct pta
     {
       const char *const name;		/* processor name or nickname.  */
@@ -826,7 +846,7 @@ override_options ()
 	  PTA_SSE = 1,
 	  PTA_SSE2 = 2,
 	  PTA_MMX = 4,
-	  PTA_SSEPREFETCH = 8,
+	  PTA_PREFETCH_SSE = 8,
 	  PTA_3DNOW = 16,
 	  PTA_3DNOW_A = 64
 	} flags;
@@ -841,21 +861,21 @@ override_options ()
       {"i686", PROCESSOR_PENTIUMPRO, 0},
       {"pentiumpro", PROCESSOR_PENTIUMPRO, 0},
       {"pentium2", PROCESSOR_PENTIUMPRO, PTA_MMX},
-      {"pentium3", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_SSEPREFETCH},
+      {"pentium3", PROCESSOR_PENTIUMPRO, PTA_MMX | PTA_SSE | PTA_PREFETCH_SSE},
       {"pentium4", PROCESSOR_PENTIUM4, PTA_SSE | PTA_SSE2 |
-				       PTA_MMX | PTA_SSEPREFETCH},
+				       PTA_MMX | PTA_PREFETCH_SSE},
       {"k6", PROCESSOR_K6, PTA_MMX},
       {"k6-2", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
       {"k6-3", PROCESSOR_K6, PTA_MMX | PTA_3DNOW},
-      {"athlon", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+      {"athlon", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 				   | PTA_3DNOW_A},
-      {"athlon-tbird", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH
+      {"athlon-tbird", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE
 					 | PTA_3DNOW | PTA_3DNOW_A},
-      {"athlon-4", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+      {"athlon-4", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 				    | PTA_3DNOW_A | PTA_SSE},
-      {"athlon-xp", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+      {"athlon-xp", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 				      | PTA_3DNOW_A | PTA_SSE},
-      {"athlon-mp", PROCESSOR_ATHLON, PTA_MMX | PTA_SSEPREFETCH | PTA_3DNOW
+      {"athlon-mp", PROCESSOR_ATHLON, PTA_MMX | PTA_PREFETCH_SSE | PTA_3DNOW
 				      | PTA_3DNOW_A | PTA_SSE},
     };
 
@@ -865,8 +885,12 @@ override_options ()
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
-  ix86_arch = PROCESSOR_I386;
-  ix86_cpu = (enum processor_type) TARGET_CPU_DEFAULT;
+  if (!ix86_cpu_string && ix86_arch_string)
+    ix86_cpu_string = ix86_arch_string;
+  if (!ix86_cpu_string)
+    ix86_cpu_string = cpu_names [TARGET_CPU_DEFAULT];
+  if (!ix86_arch_string)
+    ix86_arch_string = TARGET_64BIT ? "athlon-4" : "i386";
 
   if (ix86_cmodel_string != 0)
     {
@@ -900,47 +924,45 @@ override_options ()
     sorry ("%i-bit mode not compiled in",
 	   (target_flags & MASK_64BIT) ? 64 : 32);
 
-  if (ix86_arch_string != 0)
-    {
-      for (i = 0; i < pta_size; i++)
-	if (! strcmp (ix86_arch_string, processor_alias_table[i].name))
-	  {
-	    ix86_arch = processor_alias_table[i].processor;
-	    /* Default cpu tuning to the architecture.  */
-	    ix86_cpu = ix86_arch;
-	    if (processor_alias_table[i].flags & PTA_MMX
-	        && !(target_flags & MASK_MMX_SET))
-	      target_flags |= MASK_MMX;
-	    if (processor_alias_table[i].flags & PTA_3DNOW
-	        && !(target_flags & MASK_3DNOW_SET))
-	      target_flags |= MASK_3DNOW;
-	    if (processor_alias_table[i].flags & PTA_3DNOW_A
-	        && !(target_flags & MASK_3DNOW_A_SET))
-	      target_flags |= MASK_3DNOW_A;
-	    if (processor_alias_table[i].flags & PTA_SSE
-	        && !(target_flags & MASK_SSE_SET))
-	      target_flags |= MASK_SSE;
-	    if (processor_alias_table[i].flags & PTA_SSE2
-	        && !(target_flags & MASK_SSE2_SET))
-	      target_flags |= MASK_SSE2;
-	    break;
-	  }
+  for (i = 0; i < pta_size; i++)
+    if (! strcmp (ix86_arch_string, processor_alias_table[i].name))
+      {
+	ix86_arch = processor_alias_table[i].processor;
+	/* Default cpu tuning to the architecture.  */
+	ix86_cpu = ix86_arch;
+	if (processor_alias_table[i].flags & PTA_MMX
+	    && !(target_flags & MASK_MMX_SET))
+	  target_flags |= MASK_MMX;
+	if (processor_alias_table[i].flags & PTA_3DNOW
+	    && !(target_flags & MASK_3DNOW_SET))
+	  target_flags |= MASK_3DNOW;
+	if (processor_alias_table[i].flags & PTA_3DNOW_A
+	    && !(target_flags & MASK_3DNOW_A_SET))
+	  target_flags |= MASK_3DNOW_A;
+	if (processor_alias_table[i].flags & PTA_SSE
+	    && !(target_flags & MASK_SSE_SET))
+	  target_flags |= MASK_SSE;
+	if (processor_alias_table[i].flags & PTA_SSE2
+	    && !(target_flags & MASK_SSE2_SET))
+	  target_flags |= MASK_SSE2;
+	if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
+	  x86_prefetch_sse = true;
+	break;
+      }
 
-      if (i == pta_size)
-	error ("bad value (%s) for -march= switch", ix86_arch_string);
-    }
+  if (i == pta_size)
+    error ("bad value (%s) for -march= switch", ix86_arch_string);
 
-  if (ix86_cpu_string != 0)
-    {
-      for (i = 0; i < pta_size; i++)
-	if (! strcmp (ix86_cpu_string, processor_alias_table[i].name))
-	  {
-	    ix86_cpu = processor_alias_table[i].processor;
-	    break;
-	  }
-      if (i == pta_size)
-	error ("bad value (%s) for -mcpu= switch", ix86_cpu_string);
-    }
+  for (i = 0; i < pta_size; i++)
+    if (! strcmp (ix86_cpu_string, processor_alias_table[i].name))
+      {
+	ix86_cpu = processor_alias_table[i].processor;
+	break;
+      }
+  if (processor_alias_table[i].flags & PTA_PREFETCH_SSE)
+    x86_prefetch_sse = true;
+  if (i == pta_size)
+    error ("bad value (%s) for -mcpu= switch", ix86_cpu_string);
 
   if (optimize_size)
     ix86_cost = &size_cost;
@@ -11857,22 +11879,13 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
       return ix86_expand_binop_builtin (CODE_FOR_pmulhrwv4hi3, arglist, target);
 
     case IX86_BUILTIN_PREFETCH_3DNOW:
+    case IX86_BUILTIN_PREFETCHW:
       icode = CODE_FOR_prefetch_3dnow;
       arg0 = TREE_VALUE (arglist);
       op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
+      op1 = (fcode == IX86_BUILTIN_PREFETCH_3DNOW ? const0_rtx : const1_rtx);
       mode0 = insn_data[icode].operand[0].mode;
-      pat = GEN_FCN (icode) (copy_to_mode_reg (Pmode, op0));
-      if (! pat)
-        return NULL_RTX;
-      emit_insn (pat);
-      return NULL_RTX;
-
-    case IX86_BUILTIN_PREFETCHW:
-      icode = CODE_FOR_prefetchw;
-      arg0 = TREE_VALUE (arglist);
-      op0 = expand_expr (arg0, NULL_RTX, VOIDmode, 0);
-      mode0 = insn_data[icode].operand[0].mode;
-      pat = GEN_FCN (icode) (copy_to_mode_reg (Pmode, op0));
+      pat = GEN_FCN (icode) (copy_to_mode_reg (Pmode, op0), op1);
       if (! pat)
         return NULL_RTX;
       emit_insn (pat);
