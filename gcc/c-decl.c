@@ -3310,10 +3310,12 @@ finish_decl (decl, init, asmspec_tree)
 
       if ((DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	  && DECL_SIZE (decl) != 0)
-	if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
-	  constant_expression_warning (DECL_SIZE (decl));
-	else
-	  error_with_decl (decl, "storage size of `%s' isn't constant");
+	{
+	  if (TREE_CODE (DECL_SIZE (decl)) == INTEGER_CST)
+	    constant_expression_warning (DECL_SIZE (decl));
+	  else
+	    error_with_decl (decl, "storage size of `%s' isn't constant");
+	}
     }
 
   /* Output the assembler code and/or RTL code for variables and functions,
@@ -4901,13 +4903,15 @@ finish_struct (t, fieldlist)
       if (DECL_INITIAL (x))
 	STRIP_NOPS (DECL_INITIAL (x));
       if (DECL_INITIAL (x))
-	if (TREE_CODE (DECL_INITIAL (x)) == INTEGER_CST)
-	  constant_expression_warning (DECL_INITIAL (x));
-	else
-	  {
-	    error_with_decl (x, "bit-field `%s' width not an integer constant");
-	    DECL_INITIAL (x) = NULL;
-	  }
+	{
+	  if (TREE_CODE (DECL_INITIAL (x)) == INTEGER_CST)
+	    constant_expression_warning (DECL_INITIAL (x));
+	  else
+	    {
+	      error_with_decl (x, "bit-field `%s' width not an integer constant");
+	      DECL_INITIAL (x) = NULL;
+	    }
+	}
 
       /* Detect invalid bit-field type.  */
       if (DECL_INITIAL (x)
@@ -5316,14 +5320,16 @@ build_enumerator (name, value)
     STRIP_TYPE_NOPS (value);
 
   if (value != 0)
-    if (TREE_CODE (value) == INTEGER_CST)
-      constant_expression_warning (value);
-    else
-      {
-	error ("enumerator value for `%s' not integer constant",
-	       IDENTIFIER_POINTER (name));
-	value = 0;
-      }
+    {
+      if (TREE_CODE (value) == INTEGER_CST)
+	constant_expression_warning (value);
+      else
+	{
+	  error ("enumerator value for `%s' not integer constant",
+		 IDENTIFIER_POINTER (name));
+	  value = 0;
+	}
+    }
 
   /* Default based on previous value.  */
   /* It should no longer be possible to have NON_LVALUE_EXPR
