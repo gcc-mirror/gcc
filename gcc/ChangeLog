@@ -1,3 +1,14 @@
+2002-09-19  Steve Ellcey  <sje@cup.hp.com>
+
+	* config/ia64/hpux.h (CTORS_SECTION_ASM_OP): New.
+	(DTORS_SECTION_ASM_OP): Ditto.
+	(READONLY_DATA_SECTION_ASM_OP): Moved.
+	(DATA_SECTION_ASM_OP): New.
+	(SDATA_SECTION_ASM_OP): New.
+	(BSS_SECTION_ASM_OP): New.
+	(SBSS_SECTION_ASM_OP): New.
+	(TEXT_SECTION_ASM_OP): New.
+
 2002-09-19  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/fp-bit.c: Follow spelling conventions.

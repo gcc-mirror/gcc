@@ -88,10 +88,6 @@ do {							\
 
 #define JMP_BUF_SIZE  (8 * 76)
 
-#undef READONLY_DATA_SECTION_ASM_OP
-#define READONLY_DATA_SECTION_ASM_OP \
-  "\t.section\t.rodata,\t\"a\",\t\"progbits\""
-
 #undef BITS_BIG_ENDIAN
 #define BITS_BIG_ENDIAN 1
 
@@ -138,3 +134,27 @@ do {							\
 /* Put out the needed function declarations at the end.  */
 
 #define ASM_FILE_END(STREAM) ia64_hpux_asm_file_end(STREAM)
+
+#undef CTORS_SECTION_ASM_OP
+#define CTORS_SECTION_ASM_OP  "\t.section\t.init_array,\t\"aw\",\"init_array\""
+
+#undef DTORS_SECTION_ASM_OP
+#define DTORS_SECTION_ASM_OP  "\t.section\t.fini_array,\t\"aw\",\"fini_array\""
+
+#undef READONLY_DATA_SECTION_ASM_OP
+#define READONLY_DATA_SECTION_ASM_OP "\t.section\t.rodata,\t\"a\",\t\"progbits\""
+
+#undef DATA_SECTION_ASM_OP
+#define DATA_SECTION_ASM_OP "\t.section\t.data,\t\"aw\",\t\"progbits\""
+
+#undef SDATA_SECTION_ASM_OP
+#define SDATA_SECTION_ASM_OP "\t.section\t.sdata,\t\"asw\",\t\"progbits\""
+
+#undef BSS_SECTION_ASM_OP
+#define BSS_SECTION_ASM_OP "\t.section\t.bss,\t\"aw\",\t\"nobits\""
+
+#undef SBSS_SECTION_ASM_OP
+#define SBSS_SECTION_ASM_OP "\t.section\t.sbss,\t\"asw\",\t\"nobits\""
+
+#undef TEXT_SECTION_ASM_OP
+#define TEXT_SECTION_ASM_OP "\t.section\t.text,\t\"ax\",\t\"progbits\""
