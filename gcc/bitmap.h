@@ -85,8 +85,16 @@ extern void bitmap_clear (bitmap);
 extern void bitmap_copy (bitmap, bitmap);
 
 /* True if two bitmaps are identical.  */
-extern int bitmap_equal_p (bitmap, bitmap);
+extern bool bitmap_equal_p (bitmap, bitmap);
 
+/* True if the bitmaps intersect (their AND is non-empty).  */
+extern bool bitmap_intersect_p (bitmap, bitmap);
+
+/* True if the complement of the second intersects the first (their
+   AND_COMPL is non-empty).  */
+extern bool bitmap_intersect_compl_p (bitmap, bitmap);
+
+/* True if MAP is an empty bitmap.  */
 #define bitmap_empty_p(MAP) (!(MAP)->first)
 
 /* Perform an operation on two bitmaps, yielding a third.  */

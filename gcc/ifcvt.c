@@ -3217,13 +3217,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	   TEST_SET & merge_bb->global_live_at_start
 	 are empty.  */
 
-      bitmap_ior (tmp, test_set, test_live);
-      bitmap_and_into (tmp, merge_set);
-      if (!bitmap_empty_p (tmp))
-	fail = 1;
-
-      bitmap_and (tmp, test_set, merge_bb->global_live_at_start);
-      if (!bitmap_empty_p (tmp))
+      if (bitmap_intersect_p (test_set, merge_set)
+	  || bitmap_intersect_p (test_live, merge_set)
+	  || bitmap_intersect_p (test_set, merge_bb->global_live_at_start))
 	fail = 1;
 
       FREE_REG_SET (tmp);

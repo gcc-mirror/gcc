@@ -1,5 +1,15 @@
 2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.h (bitmap_equal_p): Return bool.
+	(bitmap_intersect_p, bitmap_intersect_compl_p): Declare.
+	* bitmap.c (bitmap_equal_p): Return bool. Compare directly.
+	(bitmap_intersect_p, bitmap_intersect_compl_p): New.
+	* flow.c (calculate_global_regs_live): Use bitmap_intersect_p and
+	bitmap_intersect_compl_p.
+	* ifcvt (dead_or_predicable): Likewise.
+
+2004-11-02  Nathan Sidwell  <nathan@codesourcery.com>
+
 	PR rtl-optimization/17104
 	* config/rs6000/rs6000.c (rs6000_emit_move): Don't wrap small
 	loads in zero_extend.

@@ -1185,38 +1185,32 @@ calculate_global_regs_live (sbitmap blocks_in, sbitmap blocks_out, int flags)
 	     rescan the block.  This wouldn't be necessary if we had
 	     precalculated local_live, however with PROP_SCAN_DEAD_CODE
 	     local_live is really dependent on live_at_end.  */
-	  CLEAR_REG_SET (tmp);
-	  rescan = bitmap_and_compl (tmp, bb->global_live_at_end,
-				     new_live_at_end);
+	  rescan = bitmap_intersect_compl_p (bb->global_live_at_end,
+					     new_live_at_end);
 
-	  if (! rescan)
-	    {
-	      /* If any of the registers in the new live_at_end set are
-		 conditionally set in this basic block, we must rescan.
-	         This is because conditional lifetimes at the end of the
-		 block do not just take the live_at_end set into account,
-		 but also the liveness at the start of each successor
-		 block.  We can miss changes in those sets if we only
-		 compare the new live_at_end against the previous one.  */
-	      CLEAR_REG_SET (tmp);
-	      rescan = bitmap_and (tmp, new_live_at_end,
-				   bb->cond_local_set);
-	    }
+	  if (!rescan)
+	    /* If any of the registers in the new live_at_end set are
+	       conditionally set in this basic block, we must rescan.
+	       This is because conditional lifetimes at the end of the
+	       block do not just take the live_at_end set into
+	       account, but also the liveness at the start of each
+	       successor block.  We can miss changes in those sets if
+	       we only compare the new live_at_end against the
+	       previous one.  */
+	    rescan = bitmap_intersect_p (new_live_at_end,
+					 bb->cond_local_set);
 
-	  if (! rescan)
+	  if (!rescan)
 	    {
 	      /* Find the set of changed bits.  Take this opportunity
 		 to notice that this set is empty and early out.  */
-	      CLEAR_REG_SET (tmp);
-	      changed = bitmap_xor (tmp, bb->global_live_at_end,
-					  new_live_at_end);
-	      if (! changed)
+	      bitmap_xor (tmp, bb->global_live_at_end, new_live_at_end);
+	      if (bitmap_empty_p (tmp))
 		continue;
-
+  
 	      /* If any of the changed bits overlap with local_set,
-		 we'll have to rescan the block.  Detect overlap by
-		 the AND with ~local_set turning off bits.  */
-	      rescan = bitmap_and_compl_into (tmp, bb->local_set);
+ 		 we'll have to rescan the block.  */
+	      rescan = bitmap_intersect_p (tmp, bb->local_set);
 	    }
 	}
 
