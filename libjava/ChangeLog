@@ -1,3 +1,8 @@
+1999-05-07  Tom Tromey  <tromey@cygnus.com>
+
+	* mauve-libgcj: Test more from java.text.  Don't mention 1.1 tests
+	(we pick those up already).
+
 1999-05-05  Per Bothner  <bothner@cygnus.com>
 
 	* java/awt/*:  Check a bunch of classes, a few complete, but mostly
