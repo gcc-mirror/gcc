@@ -1,3 +1,8 @@
+2003-11-20  Arnaud Charlet  <charlet@act-europe.fr>
+
+	* 35soccon.ads, 45intnam.ads, 55osinte.adb, 55osinte.ads,
+	56system.ads: New file, FreeBSD version.
+
 2003-11-20  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* Make-lang.in (ada.extraclean): Delete.
