@@ -3801,17 +3801,18 @@ build_function_type (value_type, arg_types)
   return t;
 }
 
-/* Like build_function_type, but take a vararg list of nodes.  The
-   list of nodes should end with a NULL_TREE.  This is typically used
-   for creating function types for builtins.  */
+/* Build a function type.  The RETURN_TYPE is the type retured by the
+   function.  If additional arguments are provided, they are
+   additional argument types.  The list of argument types must always
+   be terminated by NULL_TREE.  */
 
 tree
-build_function_type_list VPARAMS ((tree first, ...))
+build_function_type_list VPARAMS ((tree return_type, ...))
 {
   tree t, args, last;
 
-  VA_OPEN (p, first);
-  VA_FIXEDARG (p, tree, first);
+  VA_OPEN (p, return_type);
+  VA_FIXEDARG (p, tree, return_type);
 
   t = va_arg (p, tree);
   for (args = NULL_TREE; t != NULL_TREE; t = va_arg (p, tree))
@@ -3820,7 +3821,7 @@ build_function_type_list VPARAMS ((tree first, ...))
   last = args;
   args = nreverse (args);
   TREE_CHAIN (last) = void_list_node;
-  args = build_function_type (first, args);
+  args = build_function_type (return_type, args);
 
   VA_CLOSE (p);
   return args;
