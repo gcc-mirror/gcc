@@ -95,6 +95,7 @@ int GC_timeout_stop_func GC_PROTO((void))
     unsigned long time_diff;
     
     if ((count++ & 3) != 0) return(0);
+#ifndef NO_CLOCK
     GET_TIME(current_time);
     time_diff = MS_TIME_DIFF(current_time,GC_start_time);
     if (time_diff >= TIME_LIMIT) {
@@ -104,6 +105,7 @@ int GC_timeout_stop_func GC_PROTO((void))
 #	endif
     	return(1);
     }
+#endif
     return(0);
 }
 
@@ -234,7 +236,9 @@ void GC_maybe_gc()
         /* We try to mark with the world stopped.	*/
         /* If we run out of time, this turns into	*/
         /* incremental marking.			*/
+#ifndef NO_CLOCK
         GET_TIME(GC_start_time);
+#endif
         if (GC_stopped_mark(GC_timeout_stop_func)) {
 #           ifdef SAVE_CALL_CHAIN
                 GC_save_callers(GC_last_stack);

@@ -161,7 +161,8 @@ static ptr_t GC_first_common()
 
 # if defined(SUNOS4) || defined(SUNOS5DL)
 /* Add dynamic library data sections to the root set.		*/
-# if !defined(PCR) && !defined(SOLARIS_THREADS) && defined(THREADS)
+# if !defined(PCR) && !defined(SOLARIS_THREADS) \
+	&& !defined(QUICK_THREADS) && defined(THREADS)
 #   ifndef SRC_M3
 	--> fix mutual exclusion with dlopen
 #   endif  /* We assume M3 programs don't call dlopen for now */

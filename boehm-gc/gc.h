@@ -334,6 +334,8 @@ GC_API void GC_debug_end_stubborn_change GC_PROTO((GC_PTR));
 	GC_debug_register_finalizer(p, f, d, of, od)
 #   define GC_REGISTER_FINALIZER_IGNORE_SELF(p, f, d, of, od) \
 	GC_debug_register_finalizer_ignore_self(p, f, d, of, od)
+#   define GC_REGISTER_FINALIZER_NO_ORDER(p, f, d, of, od) \
+	GC_debug_register_finalizer_no_order(p, f, d, of, od)
 #   define GC_MALLOC_STUBBORN(sz) GC_debug_malloc_stubborn(sz, GC_EXTRAS);
 #   define GC_CHANGE_STUBBORN(p) GC_debug_change_stubborn(p)
 #   define GC_END_STUBBORN_CHANGE(p) GC_debug_end_stubborn_change(p)
@@ -350,6 +352,8 @@ GC_API void GC_debug_end_stubborn_change GC_PROTO((GC_PTR));
 	GC_register_finalizer(p, f, d, of, od)
 #   define GC_REGISTER_FINALIZER_IGNORE_SELF(p, f, d, of, od) \
 	GC_register_finalizer_ignore_self(p, f, d, of, od)
+#   define GC_REGISTER_FINALIZER_NO_ORDER(p, f, d, of, od) \
+	GC_register_finalizer_no_order(p, f, d, of, od)
 #   define GC_MALLOC_STUBBORN(sz) GC_malloc_stubborn(sz)
 #   define GC_CHANGE_STUBBORN(p) GC_change_stubborn(p)
 #   define GC_END_STUBBORN_CHANGE(p) GC_end_stubborn_change(p)
@@ -425,6 +429,15 @@ GC_API void GC_register_finalizer_ignore_self
 	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
 		  GC_finalization_proc *ofn, GC_PTR *ocd));
 GC_API void GC_debug_register_finalizer_ignore_self
+	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
+		  GC_finalization_proc *ofn, GC_PTR *ocd));
+
+/* Another version of the above.  It ignores all cycles.        */
+/* It should probably only be used by Java implementations.      */
+GC_API void GC_register_finalizer_no_order
+	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
+		  GC_finalization_proc *ofn, GC_PTR *ocd));
+GC_API void GC_debug_register_finalizer_no_order
 	GC_PROTO((GC_PTR obj, GC_finalization_proc fn, GC_PTR cd,
 		  GC_finalization_proc *ofn, GC_PTR *ocd));
 

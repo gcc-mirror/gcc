@@ -1,4 +1,3 @@
- # $Id: alpha_mach_dep.s,v 1.1 1999/04/07 14:56:06 tromey Exp $
 
 # define call_push(x)    						\
 	lda   $16, 0(x);    	/* copy x to first argument register */	\

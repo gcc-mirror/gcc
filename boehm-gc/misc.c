@@ -48,13 +48,21 @@
 #		endif
 	        pthread_t GC_lock_holder = NO_THREAD;
 #	      else
-	        --> declare allocator lock here
+#               if defined(QUICK_THREADS)
+                    /* Nothing.  */
+#               else
+	            --> declare allocator lock here
+#               endif
 #	      endif
 #	   endif
 #	endif
 #     endif
 #   endif
 # endif
+
+#ifdef ECOS
+#undef STACKBASE
+#endif
 
 GC_FAR struct _GC_arrays GC_arrays /* = { 0 } */;
 
@@ -391,6 +399,10 @@ size_t GC_get_bytes_since_gc GC_PROTO(())
 
 GC_bool GC_is_initialized = FALSE;
 
+#if defined(SOLARIS_THREADS) || defined(IRIX_THREADS)
+    extern void GC_thr_init();
+#endif
+
 void GC_init()
 {
     DCL_LOCK_STATE;
@@ -435,7 +447,7 @@ void GC_init_inner()
 #   if !defined(THREADS) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
        || defined(IRIX_THREADS) || defined(LINUX_THREADS)
       if (GC_stackbottom == 0) {
-	GC_stackbottom = GC_get_stack_base();
+	  GC_stackbottom = GC_get_stack_base();
       }
 #   endif
     if  (sizeof (ptr_t) != sizeof(word)) {
@@ -637,7 +649,7 @@ int GC_tmp;  /* Should really be local ... */
 # endif
 #endif
 
-#if !defined(MSWIN32)  && !defined(OS2) && !defined(MACOS)
+#if !defined(MSWIN32)  && !defined(OS2) && !defined(MACOS) && !defined(ECOS)
 int GC_write(fd, buf, len)
 int fd;
 char *buf;
@@ -659,6 +671,15 @@ size_t len;
     return(bytes_written);
 }
 #endif /* UN*X */
+
+#if defined(ECOS)
+int GC_write(fd, buf, len)
+{
+  _Jv_diag_write (buf, len);
+  return len;
+}
+#endif
+
 
 #ifdef MSWIN32
 #   define WRITE(f, buf, len) (GC_set_files(), \
