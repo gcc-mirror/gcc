@@ -1,5 +1,6 @@
 /* Frv prototypes.
-   Copyright (C) 1999, 2000, 2001, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003, 2004, 2005 Free Software Foundation,
+   Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GCC.
@@ -200,6 +201,7 @@ extern int small_data_register_operand	(rtx, enum machine_mode);
 extern int small_data_symbolic_operand	(rtx, enum machine_mode);
 extern int upper_int16_operand		(rtx, enum machine_mode);
 extern int uint16_operand		(rtx, enum machine_mode);
+extern int symbolic_operand		(rtx, enum machine_mode);
 extern int relational_operator		(rtx, enum machine_mode);
 extern int signed_relational_operator	(rtx, enum machine_mode);
 extern int unsigned_relational_operator	(rtx, enum machine_mode);
@@ -221,5 +223,6 @@ extern int accg_operand			(rtx, enum machine_mode);
 extern rtx frv_matching_accg_for_acc	(rtx);
 extern void frv_expand_fdpic_call	(rtx *, bool, bool);
 extern rtx frv_gen_GPsym2reg		(rtx, rtx);
+extern void frv_output_dwarf_dtprel	(FILE *, int, rtx);
 #endif
 
