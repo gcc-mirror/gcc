@@ -1,19 +1,25 @@
-2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
- 
-        * doc/md.texi (Standard Names): Document additional dependency on
-        fix pattern.
- 
-        * optabs.c (ftruncify): Remove.
-        (expand_fix): Manually inline ftruncify above.
-        (can_fix_p): Add FIXME note.
+2004-02-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/ia64/ia64.c (ia64_function_arg): In big-endian mode,
+	when passing single SFmode quantities in general registers,
+	put them in the high half.
 
 2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
- 
-        * config/rs6000/spe.md (spe_fixunssfsi2): Rename to
-        spe_fixuns_truncsfsi2.
- 
-        * config/rs6000/rs6000.md (fixunssfsi2): Rename to
-        fixuns_truncsfsi2.
+
+	* doc/md.texi (Standard Names): Document additional dependency on
+	fix pattern.
+
+	* optabs.c (ftruncify): Remove.
+	(expand_fix): Manually inline ftruncify above.
+	(can_fix_p): Add FIXME note.
+
+2004-02-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/spe.md (spe_fixunssfsi2): Rename to
+	spe_fixuns_truncsfsi2.
+
+	* config/rs6000/rs6000.md (fixunssfsi2): Rename to
+	fixuns_truncsfsi2.
 
 2004-02-19  Steve Ellcey  <sje@cup.hp.com>
 
