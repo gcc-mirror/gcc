@@ -2708,7 +2708,7 @@ tSCC zIrix_Stdio_Va_ListName[] =
  *  File name selection pattern
  */
 tSCC zIrix_Stdio_Va_ListList[] =
-  "|stdio.h|";
+  "|stdio.h|internal/stdio_core.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4313,7 +4313,7 @@ tSCC zStdio_Va_ListName[] =
  *  File name selection pattern
  */
 tSCC zStdio_Va_ListList[] =
-  "|stdio.h|";
+  "|stdio.h|internal/stdio_core.h|internal/wchar_core.h|";
 /*
  *  Machine/OS name selection pattern
  */
@@ -4335,6 +4335,8 @@ static tTestDesc aStdio_Va_ListTests[] = {
 static const char* apzStdio_Va_ListPatch[] = { "sed",
     "-e", "s@ va_list @ __gnuc_va_list @\n\
 s@ va_list)@ __gnuc_va_list)@\n\
+s@va_list _ap;@__gnuc_va_list _ap;@\n\
+s@(va_list)&@(__gnuc_va_list)\\&@\n\
 s@ _VA_LIST_));@ __gnuc_va_list));@\n\
 s@ __VA_LIST__));@ __gnuc_va_list));@\n\
 s@ va_list@ __not_va_list__@\n\
