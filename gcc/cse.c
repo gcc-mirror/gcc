@@ -453,7 +453,7 @@ struct table_elt
 #define CHEAP_REG(N) \
   ((N) == FRAME_POINTER_REGNUM || (N) == STACK_POINTER_REGNUM \
    || (N) == ARG_POINTER_REGNUM				\
-   || (N) >= FIRST_VIRTUAL_REGISTER && (N) <= LAST_VIRTUAL_REGISTER  \
+   || ((N) >= FIRST_VIRTUAL_REGISTER && (N) <= LAST_VIRTUAL_REGISTER) \
    || ((N) < FIRST_PSEUDO_REGISTER			\
        && FIXED_REGNO_P (N) && REGNO_REG_CLASS (N) != NO_REGS))
 
