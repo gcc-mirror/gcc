@@ -61,7 +61,7 @@ int main()
 /*
 The problems with the first approach, as above, are numerous.
 
-1) Then locale usage and design for formatters and parers becomes
+1) Then locale usage and design for formatters and parsers becomes
    fragmented. On one side, num_put and money_put, and on the other,
    time_put. This inconsistency is not useful.
 
