@@ -73,16 +73,6 @@ public class EtchedBorder extends AbstractBorder
     this.shadow = shadow;
   }
     
-    public EtchedBorder(int top,
-		int left,
-		int bottom, 
-		int right,
-		Color color)
-    {
-        super(top, left, bottom, right);
-        this.c = color;
-    }
-
     public boolean isBorderOpaque()
     {
 	return false;

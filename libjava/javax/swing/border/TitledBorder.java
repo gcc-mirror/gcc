@@ -72,9 +72,9 @@ public class TitledBorder extends AbstractBorder
   protected int titleJustification;
   protected int titlePosition;
 
-  private static Border defaultBorder = new BorderUIRessource ();
-  private static Font defaultFont = new FontUIRessource ("Dialog", BOLD, 12);
-  private static Color defaultColor = new ColorUIRessource (Color.black);
+  private static Border defaultBorder = new LineBorder (Color.black);
+  private static Font defaultFont = null;
+  private static Color defaultColor = Color.black;
   
   public TitledBorder (String title)
   {

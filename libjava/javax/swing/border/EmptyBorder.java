@@ -62,49 +62,27 @@ public class EmptyBorder extends AbstractBorder
     this.top = top;
     this.bottom = bottom;
   }
+
+  public Insets getBorderInsets (Component c, Insets s)
+  {
+    if (s == null)
+      s = new Insets (0,0,0,0);
+
+    s.left = left;
+    s.right = right;
+    s.top = top;
+    s.bottom = bottom;
+    return s;
+  }
     
-    protected int l,r,b,t;
+  public boolean isBorderOpaque ()
+  {
+    return false;
+  }
 
-    public EmptyBorder()
-    {
-    }
-
-    public EmptyBorder(int left,
-		int right,
-		int top, 
-		int bottom)
-    {
-	this.l = left;
-	this.r = r;
-	this.t = t;
-	this.b = b;
-    }
-
-
-    public Insets getBorderInsets(Component  c,
-				  Insets s)
-    {
-	if (s == null)
-	    s = new Insets(0,0,0,0);
-
-	s.left = l;
-	s.right = r;
-	s.top = t;
-	s.bottom = b;
-	
-	return s;
-    }
-    
-    public boolean isBorderOpaque()
-    {
-	return false;
-    }
-
-    
-    public void paintBorder(Component  c, 
-			    Graphics  g,
-			    int  x, int  y, int  width, int  height)
-    {
-    }
+  public void paintBorder (Component c, Graphics g, int x, int y,
+                           int width, int height)
+  {
+  }
 }
 

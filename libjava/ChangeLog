@@ -1,5 +1,24 @@
 2003-06-05  Michael Koch  <konqueror@gmx.de>
 
+	* javax/swing/border/BevelBorder.java
+	(BevelBorder): Removed.
+	* javax/swing/border/EmptyBorder.java:
+	Reformatted.
+	(EmptyBorder): Removed.
+	(getBorderInsets): Dont use l, r, t and b.
+	* javax/swing/border/EtchedBorder.java
+	(EtchedBorder): Removed.
+	* javax/swing/border/LineBorder.java
+	(LineBorder): Removed.
+	* javax/swing/border/MatteBorder.java
+	(MatteBorder): Removed.
+	* javax/swing/border/TitledBorder.java
+	(defaultBorder): Use other default for now.
+	(defaultFont): Likewise.
+	(defaultColor): Likewise.
+
+2003-06-05  Michael Koch  <konqueror@gmx.de>
+
 	* javax/swing/border/Border.java:
 	New version from classpath.
 
