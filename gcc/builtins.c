@@ -67,6 +67,15 @@ const char *const built_in_names[(int) END_BUILTINS] =
 };
 #undef DEF_BUILTIN
 
+/* Setup an array of _DECL trees, make sure each element is
+   initialized to NULL_TREE.  */
+#define DEF_BUILTIN(x) NULL_TREE,
+tree built_in_decls[(int) END_BUILTINS] =
+{
+#include "builtins.def"
+};
+#undef DEF_BUILTIN
+
 tree (*lang_type_promotes_to) PARAMS ((tree));
 
 static int get_pointer_alignment	PARAMS ((tree, unsigned));
@@ -102,6 +111,7 @@ static rtx expand_builtin_strlen	PARAMS ((tree, rtx,
 static rtx expand_builtin_alloca	PARAMS ((tree, rtx));
 static rtx expand_builtin_ffs		PARAMS ((tree, rtx, rtx));
 static rtx expand_builtin_frame_address	PARAMS ((tree));
+static rtx expand_builtin_fputs		PARAMS ((tree, int));
 static tree stabilize_va_list		PARAMS ((tree, int));
 static rtx expand_builtin_expect	PARAMS ((tree, rtx));
 
@@ -2310,6 +2320,60 @@ expand_builtin_ffs (arglist, target, subtarget)
   return target;
 }
 
+/* If the string passed to fputs is a constant and is one character
+   long, we attempt to transform this call into __builtin_fputc(). */
+static rtx
+expand_builtin_fputs (arglist, ignore)
+     tree arglist;
+     int ignore;
+{
+  tree call_expr, len, stripped_string, newarglist;
+  tree fn = built_in_decls[BUILT_IN_FPUTC];
+
+  /* If the return value is used, or the replacement _DECL isn't
+     initialized, don't do the transformation. */
+  if (!ignore || !fn)
+    return 0;
+
+  /* Verify the arguments in the original call. */
+  if (arglist == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (arglist))) != POINTER_TYPE)
+      || TREE_CHAIN (arglist) == 0
+      || (TREE_CODE (TREE_TYPE (TREE_VALUE (TREE_CHAIN (arglist))))
+	  != POINTER_TYPE))
+    return 0;
+
+  /* Get the length of the string passed to fputs. */
+  len = c_strlen (TREE_VALUE (arglist));
+  
+  /* If the length != 1, punt. */
+  if (len == 0 || compare_tree_int (len, 1))
+    return 0;
+
+  stripped_string = TREE_VALUE (arglist);
+  STRIP_NOPS (stripped_string);
+  if (stripped_string && TREE_CODE (stripped_string) == ADDR_EXPR)
+    stripped_string = TREE_OPERAND (stripped_string, 0);
+
+  /* New argument list transforming fputs(string, stream) to
+     fputc(string[0], stream).  */
+  newarglist = build_tree_list (NULL_TREE, TREE_VALUE (TREE_CHAIN (arglist)));
+  newarglist =
+    tree_cons (NULL_TREE, 
+	       build_int_2 (TREE_STRING_POINTER (stripped_string)[0], 0),
+	       newarglist);
+  
+#ifdef TEST_STDIO_OPTS
+  warning ("Converted fputs(one-char-string, FILE*) -> fputc(char, FILE*)");
+#endif
+
+  call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
+  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+		     call_expr, newarglist, NULL_TREE);
+  TREE_SIDE_EFFECTS (call_expr) = 1;
+  return expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
+}
+
 /* Expand a call to __builtin_expect.  We return our argument and
    emit a NOTE_INSN_EXPECTED_VALUE note.  */
 
@@ -2383,7 +2447,8 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	  || fcode == BUILT_IN_MEMCPY || fcode == BUILT_IN_MEMCMP
 	  || fcode == BUILT_IN_BCMP || fcode == BUILT_IN_BZERO
 	  || fcode == BUILT_IN_STRLEN || fcode == BUILT_IN_STRCPY
-	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS))
+	  || fcode == BUILT_IN_STRCMP || fcode == BUILT_IN_FFS
+	  || fcode == BUILT_IN_FPUTC || fcode == BUILT_IN_FPUTS))
     return expand_call (exp, target, ignore);
 
   switch (fcode)
@@ -2596,6 +2661,15 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       emit_barrier ();
       return const0_rtx;
 
+    case BUILT_IN_FPUTC:
+      break;
+      
+    case BUILT_IN_FPUTS:
+      target = expand_builtin_fputs (arglist, ignore);
+      if (target)
+	return target;
+      break;
+      
       /* Various hooks for the DWARF 2 __throw routine.  */
     case BUILT_IN_UNWIND_INIT:
       expand_builtin_unwind_init ();
