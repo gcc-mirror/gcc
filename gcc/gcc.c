@@ -45,6 +45,9 @@ compilation is specified by a string called a "spec".  */
 #endif
 #include <stdio.h>
 
+/* Include multi-lib information.  */
+#include "multilib.h"
+
 #ifndef R_OK
 #define R_OK 4
 #define W_OK 2
@@ -151,6 +154,16 @@ static char *print_file_name = NULL;
 
 static char *print_prog_name = NULL;
 
+/* Flag saying to print the relative path we'd use to
+   find libgcc.a given the current compiler flags.  */
+
+static int print_multi_directory;
+
+/* Flag saying to print the list of subdirectories and
+   compiler flags used to select them in a standard form.  */
+
+static int print_multi_lib;
+
 /* Flag indicating whether we should print the command and arguments */
 
 static int verbose_flag;
@@ -224,6 +237,9 @@ static int is_directory		PROTO((char *, char *, int));
 static void validate_switches	PROTO((char *));
 static void validate_all_switches PROTO((void));
 static void give_switch		PROTO((int, int));
+static int used_arg		PROTO((char *, int));
+static void set_multilib_dir	PROTO((void));
+static void print_multilib_info	PROTO((void));
 static void pfatal_with_name	PROTO((char *));
 static void perror_with_name	PROTO((char *));
 static void perror_exec		PROTO((char *));
@@ -304,6 +320,7 @@ or with constant text in a single argument.
 	used here.  This can be used to run a post-processor after the
 	assembler has done it's job.
  %D	Dump out a -L option for each directory in startfile_prefix.
+	If multilib_dir is set, extra entries are generated with it affixed.
  %l     process LINK_SPEC as a spec.
  %L     process LIB_SPEC as a spec.
  %S     process STARTFILE_SPEC as a spec.  A capital S is actually used here.
@@ -433,6 +450,13 @@ proper position among the other output files.  */
 #endif
 #endif
 
+/* MULTILIB_SELECT comes from multilib.h.  It gives a
+   string interpreted by set_multilib_dir to select a library
+   subdirectory based on the compiler options.  */
+#ifndef MULTILIB_SELECT
+#define MULTILIB_SELECT ". ;"
+#endif
+
 static char *cpp_spec = CPP_SPEC;
 static char *cpp_predefines = CPP_PREDEFINES;
 static char *cc1_spec = CC1_SPEC;
@@ -445,6 +469,7 @@ static char *lib_spec = LIB_SPEC;
 static char *endfile_spec = ENDFILE_SPEC;
 static char *startfile_spec = STARTFILE_SPEC;
 static char *switches_need_spaces = SWITCHES_NEED_SPACES;
+static char *multilib_select = MULTILIB_SELECT;
 
 /* This defines which switch letters take arguments.  */
 
@@ -789,6 +814,8 @@ struct option_map option_map[] =
    {"--print-libgcc-file-name", "-print-libgcc-file-name", 0},
    {"--print-file-name", "-print-file-name=", "aj"},
    {"--print-prog-name", "-print-prog-name=", "aj"},
+   {"--print-multi-lib", "-print-multi-lib", 0},
+   {"--print-multi-directory", "-print-multi-directory", 0},
    {"--static", "-static", 0},
    {"--shared", "-shared", 0},
    {"--symbolic", "-symbolic", 0},
@@ -1144,6 +1171,8 @@ set_spec (name, spec)
     switches_need_spaces = sl->spec;
   else if (! strcmp (name, "cross_compile"))
     cross_compile = atoi (sl->spec);
+  else if (! strcmp (name, "multilib"))
+    multilib_select = sl->spec;
   /* Free the old spec */
   if (old_spec)
     free (old_spec);
@@ -1268,6 +1297,11 @@ static char *standard_startfile_prefix_2 = "/usr/lib/";
 #endif
 static char *tooldir_base_prefix = TOOLDIR_BASE_PREFIX;
 static char *tooldir_prefix;
+
+/* Subdirectory to use for locating libraries.  Set by
+   set_multilib_dir based on the compilation options.  */
+
+static char *multilib_dir;
 
 /* Clear out the vector of arguments (after a command is executed).  */
 
@@ -2340,6 +2374,7 @@ process_command (argc, argv)
 	  printf ("*signed_char:\n%s\n\n", signed_char_spec);
 	  printf ("*predefines:\n%s\n\n", cpp_predefines);
 	  printf ("*cross_compile:\n%d\n\n", cross_compile);
+	  printf ("*multilib:\n%s\n\n", multilib_select);
 
 	  exit (0);
 	}
@@ -2354,6 +2389,10 @@ process_command (argc, argv)
 	  print_file_name = argv[i] + 17;
       else if (! strncmp (argv[i], "-print-prog-name=", 17))
 	  print_prog_name = argv[i] + 17;
+      else if (! strcmp (argv[i], "-print-multi-lib"))
+	print_multi_lib = 1;
+      else if (! strcmp (argv[i], "-print-multi-directory"))
+	print_multi_directory = 1;
       else if (! strcmp (argv[i], "-Xlinker"))
 	{
 	  /* Pass the argument of this option to the linker when we link.  */
@@ -2596,6 +2635,10 @@ process_command (argc, argv)
       else if (! strncmp (argv[i], "-print-file-name=", 17))
 	;
       else if (! strncmp (argv[i], "-print-prog-name=", 17))
+	;
+      else if (! strcmp (argv[i], "-print-multi-lib"))
+	;
+      else if (! strcmp (argv[i], "-print-multi-directory"))
 	;
       else if (argv[i][0] == '+' && argv[i][1] == 'e')
 	{
@@ -2941,6 +2984,45 @@ do_spec_1 (spec, inswitch, soft_matched_part)
 		  if (pl->prefix[0] != '/')
 		    continue;
 #endif
+		  /* Try subdirectory if there is one.  */
+		  if (multilib_dir != NULL)
+		    {
+		      if (machine_suffix)
+			{
+			  if (strlen (pl->prefix) + strlen (machine_suffix)
+			      >= bufsize)
+			    bufsize = (strlen (pl->prefix)
+				       + strlen (machine_suffix)) * 2 + 1;
+			  buffer = (char *) xrealloc (buffer, bufsize);
+			  strcpy (buffer, pl->prefix);
+			  strcat (buffer, machine_suffix);
+			  if (is_directory (buffer, multilib_dir, 1))
+			    {
+			      do_spec_1 ("-L", 0, NULL_PTR);
+#ifdef SPACE_AFTER_L_OPTION
+			      do_spec_1 (" ", 0, NULL_PTR);
+#endif
+			      do_spec_1 (buffer, 1, NULL_PTR);
+			      do_spec_1 (multilib_dir, 1, NULL_PTR);
+			      /* Make this a separate argument.  */
+			      do_spec_1 (" ", 0, NULL_PTR);
+			    }
+			}
+		      if (!pl->require_machine_suffix)
+			{
+			  if (is_directory (pl->prefix, multilib_dir, 1))
+			    {
+			      do_spec_1 ("-L", 0, NULL_PTR);
+#ifdef SPACE_AFTER_L_OPTION
+			      do_spec_1 (" ", 0, NULL_PTR);
+#endif
+			      do_spec_1 (pl->prefix, 1, NULL_PTR);
+			      do_spec_1 (multilib_dir, 1, NULL_PTR);
+			      /* Make this a separate argument.  */
+			      do_spec_1 (" ", 0, NULL_PTR);
+			    }
+			}
+		    }
 		  if (machine_suffix)
 		    {
 		      if (is_directory (pl->prefix, machine_suffix, 1))
@@ -3836,6 +3918,24 @@ find_file (name)
 {
   char *newname;
 
+  /* Try multilib_dir if it is defined.  */
+  if (multilib_dir != NULL)
+    {
+      char *try;
+
+      try = (char *) alloca (strlen (multilib_dir) + strlen (name) + 2);
+      strcpy (try, multilib_dir);
+      strcat (try, "/");
+      strcat (try, name);
+
+      newname = find_a_file (&startfile_prefix, try, R_OK);
+
+      /* If we don't find it in the multi library dir, then fall
+	 through and look for it in the normal places.  */
+      if (newname != NULL)
+	return newname;
+    }
+
   newname = find_a_file (&startfile_prefix, name, R_OK);
   return newname ? newname : name;
 }
@@ -4022,6 +4122,10 @@ main (argc, argv)
 
   validate_all_switches ();
 
+  /* Now that we have the switches and the specs, set
+     the subdirectory based on the options.  */
+  set_multilib_dir ();
+
   /* Warn about any switches that no pass was interested in.  */
 
   for (i = 0; i < n_switches; i++)
@@ -4040,6 +4144,21 @@ main (argc, argv)
     {
       char *newname = find_a_file (&exec_prefix, print_prog_name, X_OK);
       printf ("%s\n", (newname ? newname : print_prog_name));
+      exit (0);
+    }
+
+  if (print_multi_lib)
+    {
+      print_multilib_info ();
+      exit (0);
+    }
+
+  if (print_multi_directory)
+    {
+      if (multilib_dir == NULL)
+	printf (".\n");
+      else
+	printf ("%s\n", multilib_dir);
       exit (0);
     }
 
@@ -4583,5 +4702,192 @@ validate_switches (start)
 	      && switches[i].part1[p - filter] == 0)
 	    switches[i].valid = 1;
 	}
+    }
+}
+
+/* Check whether a particular argument was used.  */
+
+static int
+used_arg (p, len)
+     char *p;
+     int len;
+{
+  int i;
+
+  for (i = 0; i < n_switches; i++)
+    if (! strncmp (switches[i].part1, p, len)
+	&& strlen (switches[i].part1) == len)
+      return 1;
+  return 0;
+}
+
+/* Work out the subdirectory to use based on the
+   options.  The format of multilib_select is a list of elements.
+   Each element is a subdirectory name followed by a list of options
+   followed by a semicolon.  gcc will consider each line in turn.  If
+   none of the options beginning with an exclamation point are
+   present, and all of the other options are present, that
+   subdirectory will be used.  */
+
+static void
+set_multilib_dir ()
+{
+  char *p = multilib_select;
+  int this_path_len;
+  char *this_path, *this_arg;
+  int failed;
+
+  while (*p != '\0')
+    {
+      /* Ignore newlines.  */
+      if (*p == '\n')
+	{
+	  ++p;
+	  continue;
+	}
+
+      /* Get the initial path.  */
+      this_path = p;
+      while (*p != ' ')
+	{
+	  if (*p == '\0')
+	    abort ();
+	  ++p;
+	}
+      this_path_len = p - this_path;
+
+      /* Check the arguments.  */
+      failed = 0;
+      ++p;
+      while (*p != ';')
+	{
+	  if (*p == '\0')
+	    abort ();
+
+	  if (failed)
+	    {
+	      ++p;
+	      continue;
+	    }
+
+	  this_arg = p;
+	  while (*p != ' ' && *p != ';')
+	    {
+	      if (*p == '\0')
+		abort ();
+	      ++p;
+	    }
+
+	  if (*this_arg == '!')
+	    failed = used_arg (this_arg + 1, p - (this_arg + 1));
+	  else
+	    failed = ! used_arg (this_arg, p - this_arg);
+
+	  if (*p == ' ')
+	    ++p;
+	}
+
+      if (! failed)
+	{
+	  if (this_path_len != 1
+	      || this_path[0] != '.')
+	    {
+	      multilib_dir = xmalloc (this_path_len + 1);
+	      strncpy (multilib_dir, this_path, this_path_len);
+	      multilib_dir[this_path_len] = '\0';
+	    }
+	  break;
+	}
+
+      ++p;
+    }      
+}
+
+/* Print out the multiple library subdirectory selection
+   information.  This prints out a series of lines.  Each line looks
+   like SUBDIRECTORY;@OPTION@OPTION, with as many options as is
+   required.  Only the desired options are printed out, the negative
+   matches.  The options are print without a leading dash.  There are
+   no spaces to make it easy to use the information in the shell.
+   Each subdirectory is printed only once.  This assumes the ordering
+   generated by the genmultilib script.  */
+
+static void
+print_multilib_info ()
+{
+  char *p = multilib_select;
+  char *last_path, *this_path;
+  int last_path_len, skip, use_arg;
+
+  while (*p != '\0')
+    {
+      /* Ignore newlines.  */
+      if (*p == '\n')
+	{
+	  ++p;
+	  continue;
+	}
+
+      /* Get the initial path.  */
+      this_path = p;
+      while (*p != ' ')
+	{
+	  if (*p == '\0')
+	    abort ();
+	  ++p;
+	}
+
+      /* If this is a duplicate, skip it.  */
+      skip = (p - this_path == last_path_len
+	      && ! strncmp (last_path, this_path, last_path_len));
+
+      last_path = this_path;
+      last_path_len = p - this_path;
+
+      if (! skip)
+	{
+	  char *p1;
+
+	  for (p1 = last_path; p1 < p; p1++)
+	    putchar (*p1);
+	  putchar (';');
+	}
+
+      ++p;
+      while (*p != ';')
+	{
+	  int use_arg;
+
+	  if (*p == '\0')
+	    abort ();
+
+	  if (skip)
+	    {
+	      ++p;
+	      continue;
+	    }
+
+	  use_arg = *p != '!';
+
+	  if (use_arg)
+	    putchar ('@');
+
+	  while (*p != ' ' && *p != ';')
+	    {
+	      if (*p == '\0')
+		abort ();
+	      if (use_arg)
+		putchar (*p);
+	      ++p;
+	    }
+
+	  if (*p == ' ')
+	    ++p;
+	}
+
+      if (! skip)
+	putchar ('\n');
+
+      ++p;
     }
 }
