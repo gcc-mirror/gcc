@@ -1,3 +1,11 @@
+Wed May 20 11:29:48 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.dg/{980502-1.c, clobbers.c}: New tests.
+	* gcc.c-torture/compile/{980504-1.c, 980506-1.c}: Likewise.
+	* gcc.c-torture/compile/{980506-2.c, 980611-1.c}: Likewise.
+	* gcc.c-torture/execute/{980505-1.c, 980505-2.c, 980506-1.c}: Likewise.
+	* gcc.c-torture/execute/{980506-2.c, 980506-3.c}: Likewise.
+
 1998-05-20  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.f-torture/execute/980520-1.f: New test.
