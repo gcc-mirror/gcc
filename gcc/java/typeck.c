@@ -151,8 +151,8 @@ convert_to_boolean (type, expr)
 
 void
 incomplete_type_error (value, type)
-     tree value;
-     tree type;
+  tree value ATTRIBUTE_UNUSED;
+  tree type ATTRIBUTE_UNUSED;
 {
   error ("internal error - use of undefined type");
 }
@@ -464,7 +464,7 @@ parse_signature_type (ptr, limit)
     case 'Z':  (*ptr)++;  return boolean_type_node;
     case 'V':  (*ptr)++;  return void_type_node;
     case '[':
-      for ((*ptr)++; (*ptr) < limit && isdigit (**ptr); ) (*ptr)++;
+      for ((*ptr)++; (*ptr) < limit && ISDIGIT (**ptr); ) (*ptr)++;
       type = parse_signature_type (ptr, limit);
       type = build_java_array_type (type, -1); 
       break;

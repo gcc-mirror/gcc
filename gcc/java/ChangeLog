@@ -1,3 +1,111 @@
+Sat Jan 23 23:02:43 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* Makefile.in (parse.o): Depend on $(CONFIG_H) and
+	$(srcdir)/../system.h.
+	(class.o): Depend on $(PARSE_H) and $(srcdir)/../output.h.
+	(jcf-parse.o): Depend on $(srcdir)/../toplev.h.
+	(jcf-write.o): Likewise.
+	(jv-scan.o): Depend on $(CONFIG_H) and $(srcdir)/../system.h.
+	(mangle.o): Depend on $(srcdir)/../toplev.h.
+	(parse-scan.o): Depend on $(CONFIG_H) and $(srcdir)/../system.h.
+	(zextract.o): Depend on $(CONFIG_H) and $(srcdir)/../system.h.
+
+	* class.c: Include output.h and parse.h.
+	(mangled_classname): Add the `const' keyword to a char*.
+	(find_named_method): Hide unused function definition.
+	(build_utf8_ref): Change type of variable `c' to unsigned char.
+	Use ISALPHA/ISDIGIT instead of isalpha/isdigit.
+	(build_class_ref): Add the `const' keyword to a char*.
+	(layout_class_method): Remove unused variable `buf'.
+
+	* decl.c (find_local_variable): Remove unused variable `rtl'.
+	(pushdecl): Likewise for variables `different_binding_level' and
+	`oldglobal'.
+	(pushlevel): Mark parameter `unused' with ATTRIBUTE_UNUSED.
+	(maybe_build_cleanup): Likewise for parameter `decl'.
+
+	* except.c (expand_start_java_handler): Mark parameter `range'
+	with ATTRIBUTE_UNUSED.
+
+	* expr.c: Include except.h.
+	(pop_type): Remove unused variable `i'.
+	(pop_value): Likewise for variables `n_words' and `i'.
+	(expand_java_arrayload): Likewise for variable `convert'.
+	(java_lang_expand_expr): Likewise for variables `op0', `type',
+	`mode', `unsignedp', `node' and `elements'.
+	(expand_byte_code): Likewise for variables `prev_eh_ranges' and
+	`eh_ranges'.
+	(process_jvm_instruction): Add a `const' qualifier to a char*.
+
+	* gjavah.c (output_directory): Add the `const' keyword to a char*.
+	(temp_directory): Likewise.
+	(print_c_decl): Likewise.
+	(print_method_info): Likewise.
+	(decode_signature_piece): Likewise.
+	(print_mangled_classname): Likewise.
+
+	* java-except.h: Provide prototypes for maybe_start_try,
+	maybe_end_try and add_handler.
+
+	* java-tree.h (mangled_classname): Add the `const' keyword to a char*.
+	(parse_error_context): Likewise.  Also add ATTRIBUTE_PRINTF_2.
+	(pushdecl_top_level, alloc_class_constant, unicode_mangling_length,
+	init_expr_processing, push_super_field, init_class_processing,
+	can_widen_reference_to, class_depth, verify_jvm_instructions,
+	maybe_pushlevels, maybe_poplevels, process_jvm_instruction,
+	set_local_type, merge_type_state, push_type, load_type_state,
+	add_interface, find_in_current_zip, append_gpp_mangled_classtype,
+	emit_unicode_mangled_name): Add prototypes.
+
+	* jcf-dump.c (print_constant): Add the `const' keyword to a char*.
+	(print_signature_type): Use ISDIGIT, not isdigit.
+	(print_signature): Remove unused variable `j'.
+
+	* jcf-io.c (jcf_filbuf_from_stdio): Cast the result of `fread' to
+	int when comparing against one.
+
+	* jcf-parse.c: Include toplev.h.
+
+	* jcf-write.c: Likewise.  Don't include <string.h> or <sys/stat.h>.
+	(localvar_free): Remove unused variable `i'.
+	(generate_bytecode_conditional): Likewise for variable `kind'.
+
+	* jv-scan.c: Include config.h and system.h.  Remove redundant
+	OS header and gansidecl.h includes.
+	(warning): Add the `const' keyword to a char*.  Also add
+	ATTRIBUTE_PRINTF_1 to the prototype.  Check ANSI_PROTOTYPES, not
+	__STDC__, when determining whether to use ANSI-isms.
+	(fatal): Likewise.  Also add ATTRIBUTE_UNUSED.
+	(xmalloc): Don't redundantly prototype here.
+	(main): Remove unused parameter `envp'.  Also fix the arguments
+	passed to function `fatal' to match the format specifier.
+
+	* lang.c (java_tree_code_name): Add the `const' keyword to a char*.
+
+	* mangle.c: Include toplev.h.
+	(emit_unicode_mangled_name): Declare parameter `len'.
+
+	* parse.y (parse_warning_context): Add the `const' keyword to a
+	char*.  Also add ATTRIBUTE_PRINTF_2 to the prototype.  Check
+	`ANSI_PROTOTYPES' not `__STDC__' for whether to use ANSI-isms.
+	(issue_warning_error_from_context): Add the `const' keyword to
+	a char*.
+	(parse_error_context): Likewise.  Also check `ANSI_PROTOTYPES'
+	not `__STDC__' for whether to use ANSI-isms.
+
+	* typeck.c (incomplete_type_error): Mark parameters `value' and
+	`type' with ATTRIBUTE_UNUSED.
+	(parse_signature_type): Use ISDIGIT, not isdigit.
+
+	* verify.c (check_pending_block): Add the `const' keyword to a char*.
+	(verify_jvm_instructions): Likewise.  Remove unused variables
+	`field_name' and `default_val'.
+	
+	* zextract.c: Include config.h and system.h.  Remove redundant
+	OS header includes.
+	
+	* zipfile.h: Prototype `read_zip_archive'.
+
 Thu Jan 21 16:00:06 1999  Andrew Haley  <aph@cygnus.com>
 
 	* typeck.c (convert): Allow conversions to void type: some

@@ -61,7 +61,7 @@ push_pending_label (target_label)
    Merge the type state etc.
    Return NULL on sucess, or an error message on failure. */
 
-static char *
+static const char *
 check_pending_block (target_label)
      tree target_label;
 {
@@ -332,7 +332,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
   int PC;
   int oldpc; /* PC of start of instruction. */
   int prevpc;  /* If >= 0, PC of previous instruction. */
-  char *message;
+  const char *message;
   int i;
   register unsigned char *p;
   struct eh_range *prev_eh_ranges = NULL_EH_RANGE;
@@ -724,7 +724,6 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	    int index = IMMEDIATE_u2;
 	    tree self_type = get_class_constant
 	      (jcf, COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool, index));
-	    tree field_name = COMPONENT_REF_NAME (&current_jcf->cpool, index);
 	    tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
 	    tree field_type = get_type_from_signature (field_signature);
 	    if (is_putting)
@@ -963,7 +962,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 
 	case OPCODE_tableswitch:
 	  {
-	    jint default_val, low, high;
+	    jint low, high;
 
 	    pop_type (int_type_node);
 	    while (PC%4)

@@ -58,3 +58,4 @@ extern struct ZipFileCache *SeenZipFiles;
 #define ZIPMAGIC 0x504b0304	
 
 extern ZipFile * opendir_in_zip ();
+extern int read_zip_archive PROTO ((ZipFile *));

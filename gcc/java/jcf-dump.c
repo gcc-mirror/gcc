@@ -364,7 +364,7 @@ DEFUN(print_constant, (out, jcf, index, verbosity),
 {
   int j, n;
   jlong num;
-  char *str;
+  const char *str;
   int kind = JPOOL_TAG (jcf, index);
   switch (kind)
     {
@@ -518,7 +518,7 @@ DEFUN(print_signature_type, (stream, ptr, limit),
     {
     case '[':
       array_size = -1;
-      for ((*ptr)++; (*ptr) < limit && isdigit (**ptr); (*ptr)++)
+      for ((*ptr)++; (*ptr) < limit && ISDIGIT (**ptr); (*ptr)++)
 	{
 	  int digit = 
 	    array_size = (array_size < 0 ? 0 : 10 * array_size) + *(*ptr) - '0';
@@ -578,7 +578,6 @@ DEFUN(print_signature, (stream, jcf, signature_index, int options),
     print_constant_terse (out, jcf, signature_index, CONSTANT_Utf8);
   else
     {
-      int j;
       const unsigned char *str = JPOOL_UTF_DATA (jcf, signature_index);
       int length = JPOOL_UTF_LENGTH (jcf, signature_index);
       const unsigned char *limit;

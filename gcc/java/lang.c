@@ -65,7 +65,7 @@ int java_tree_code_length[] = {
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
 
-char *java_tree_code_name[] = {
+const char *java_tree_code_name[] = {
   "@@dummy",
 #include "java-tree.def"
 };

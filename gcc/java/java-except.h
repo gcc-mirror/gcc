@@ -65,3 +65,9 @@ extern void method_init_exceptions PROTO ((void));
 
 extern void emit_handlers PROTO ((void));
 
+extern void maybe_start_try PROTO ((int));
+
+extern void maybe_end_try PROTO ((int));
+
+extern int add_handler PROTO ((int, int, tree, tree));
+

@@ -512,7 +512,7 @@ extern tree find_stack_slot PROTO ((int index, tree type));
 extern tree build_prim_array_type PROTO ((tree, HOST_WIDE_INT));
 extern tree build_java_array_type PROTO ((tree, HOST_WIDE_INT));
 extern int is_compiled_class PROTO ((tree));
-extern tree mangled_classname PROTO ((char*, tree));
+extern tree mangled_classname PROTO ((const char*, tree));
 extern tree lookup_label PROTO ((int));
 extern tree pop_type PROTO ((tree));
 extern void pop_argument_types PROTO ((tree));
@@ -561,12 +561,34 @@ extern void emit_register_classes PROTO (());
 extern void lang_init_source PROTO ((int));
 extern void write_classfile PROTO ((tree));
 extern char *print_int_node PROTO ((tree));
-extern void parse_error_context VPROTO ((tree cl, char *msg, ...));
+extern void parse_error_context PVPROTO ((tree cl, const char *, ...))
+  ATTRIBUTE_PRINTF_2;
 extern tree build_primtype_type_ref PROTO ((char *));
 extern tree java_get_real_method_name PROTO ((tree));
 extern void finish_class PROTO ((tree));
 extern void java_layout_seen_class_methods PROTO (());
 extern void check_for_initialization PROTO ((tree));
+
+extern tree pushdecl_top_level PROTO ((tree));
+extern int alloc_class_constant PROTO ((tree));
+extern int unicode_mangling_length PROTO ((char *, int));
+extern void init_expr_processing PROTO ((void));
+extern void push_super_field PROTO ((tree, tree));
+extern void init_class_processing PROTO ((void));
+extern int can_widen_reference_to PROTO ((tree, tree));
+extern int class_depth PROTO ((tree));
+extern int verify_jvm_instructions PROTO ((struct JCF *, unsigned char *, long));
+extern void maybe_pushlevels PROTO ((int));
+extern void maybe_poplevels PROTO ((int));
+extern int process_jvm_instruction PROTO ((int, unsigned char *, long));
+extern void set_local_type PROTO ((int, tree));
+extern int merge_type_state PROTO ((tree));
+extern void push_type PROTO ((tree));
+extern void load_type_state PROTO ((tree));
+extern void add_interface PROTO ((tree, tree));
+extern int find_in_current_zip PROTO ((char *, int, struct JCF **));
+extern void append_gpp_mangled_classtype PROTO ((struct obstack *, char *));
+extern void emit_unicode_mangled_name PROTO ((struct obstack *, char *, int));
 
 /* Access flags etc for a method (a FUNCTION_DECL): */
 

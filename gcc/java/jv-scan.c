@@ -19,22 +19,15 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#ifdef __STDC__
-#include <stdarg.h>
-#else
-#include <varargs.h>
-#endif
+#include "config.h"
+#include "system.h"
 
-#include "gansidecl.h"		/* Definitions of PROTO and VPROTO */
 #include "obstack.h"		/* We use obstacks in lex.c */
 
-void fatal VPROTO((char *s, ...));
-void warning VPROTO((char *s, ...));
+void fatal VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+void warning VPROTO((const char *s, ...)) ATTRIBUTE_PRINTF_1;
 void gcc_obstack_init PROTO ((struct obstack *obstack));
 extern void reset_report PROTO ((void));
-extern PTR xmalloc PROTO((size_t));
 
 #define JC1_LITE
 #include "parse.h"
@@ -55,10 +48,9 @@ int flag_list_filename = 0;
 
 /* jc1-lite main entry point */
 int
-main (argc, argv, envp)
-     int argc;
-     char **argv;
-     char **envp;
+main (argc, argv)
+  int argc;
+  char **argv;
 {
   int i = 1;
   char *output_file = NULL;
@@ -109,10 +101,10 @@ main (argc, argv, envp)
   /* Check on bad usage */
   if (flag_find_main && flag_dump_class)
     fatal ("Options `--print-main' and `--list-class' can't be turned on "
-	   "at the same time", argv [0]);
+	   "at the same time");
 
   if (output_file && !(out = fopen (output_file, "w")))
-    fatal ("Can't open output file `%s'", argv [0], output_file);
+    fatal ("Can't open output file `%s'", output_file);
 
   ft = ftell (out);
 
@@ -134,7 +126,7 @@ main (argc, argv, envp)
 	    reset_report ();
 	  }
 	else
-	  fatal ("File not found `%s'", argv [0], argv [i]);
+	  fatal ("File not found `%s'", argv [i]);
       }
 
   /* Flush and close */
@@ -150,17 +142,17 @@ main (argc, argv, envp)
    functions */
 
 void
-fatal VPROTO((char *s, ...))
+fatal VPROTO((const char *s, ...))
 {
-#ifndef __STDC__
-  char *s;
+#ifndef ANSI_PROTOTYPES
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  s = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "%s: error: ", exec_name);
@@ -171,17 +163,17 @@ fatal VPROTO((char *s, ...))
 }
 
 void
-warning VPROTO((char *s, ...))
+warning VPROTO((const char *s, ...))
 {
-#ifndef __STDC__
-  char *s;
+#ifndef ANSI_PROTOTYPES
+  const char *s;
 #endif
   va_list ap;
 
   VA_START (ap, s);
 
-#ifndef __STDC__
-  s = va_arg (ap, char *);
+#ifndef ANSI_PROTOTYPES
+  s = va_arg (ap, const char *);
 #endif
 
   fprintf (stderr, "%s: warning: ", exec_name);
