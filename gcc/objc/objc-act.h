@@ -1,5 +1,5 @@
 /* Declarations for objc-act.c.
-   Copyright (C) 1990, 2000, 2001, 2002, 2003
+   Copyright (C) 1990, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -22,14 +22,14 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_OBJC_ACT_H
 #define GCC_OBJC_ACT_H
 
-/*** Public Interface (procedures) ***/
+/*** Language hooks ***/
 
 bool objc_init (void);
 const char *objc_printable_name (tree, int);
+void objc_finish_file (void);
 
 /* used by yyparse */
 
-void finish_file (void);
 tree start_class (enum tree_code, tree, tree, tree);
 tree continue_class (tree);
 void finish_class (tree);
