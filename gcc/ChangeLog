@@ -1,3 +1,10 @@
+Tue Oct  7 10:19:26 1997  Manfred Hollstein  (manfred@lts.sel.alcatel.de)
+
+	* m68k/mot3300.h (ASM_OUTPUT_ALIGN): Accept any alignment
+	instead of aborting.
+	* dwarf2out.c (output_call_frame_info): Call app_enable and
+	app_disable to let GNU as accept the generated comments.
+
 Tue Oct  7 11:41:21 1997  Michael Meissner  <meissner@cygnus.com>
 
 	* tree.h (get_file_function_name): Add declaration.
