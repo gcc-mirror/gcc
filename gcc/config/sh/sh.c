@@ -4659,20 +4659,6 @@ general_movdst_operand (op, mode)
   return general_operand (op, mode);
 }
 
-/* Accept a register, but not a subreg of any kind.  This allows us to
-   avoid pathological cases in reload wrt data movement common in 
-   int->fp conversion.  */
-
-int
-reg_no_subreg_operand (op, mode)
-     register rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == SUBREG)
-    return 0;
-  return register_operand (op, mode);
-}
-
 /* Returns 1 if OP is a normal arithmetic register.  */
 
 int
@@ -4716,33 +4702,6 @@ fp_arith_reg_operand (op, mode)
 
       return (regno >= FIRST_PSEUDO_REGISTER
 	      || (regno >= FIRST_FP_REG && regno <= LAST_FP_REG));
-    }
-  return 0;
-}
-
-int
-fp_extended_operand (op, mode)
-     rtx op;
-     enum machine_mode mode;
-{
-  if (GET_CODE (op) == FLOAT_EXTEND && GET_MODE (op) == mode)
-    {
-      op = XEXP (op, 0);
-      mode = GET_MODE (op);
-    }
-  if (register_operand (op, mode))
-    {
-      int regno;
-
-      if (GET_CODE (op) == REG)
-	regno = REGNO (op);
-      else if (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == REG)
-	regno = REGNO (SUBREG_REG (op));
-      else
-	return 1;
-
-      return (regno != T_REG && regno != PR_REG && regno > 15
-	      && regno != MACH_REG && regno != MACL_REG);
     }
   return 0;
 }
@@ -4854,6 +4813,15 @@ fpscr_operand (op, mode)
 {
   return (GET_CODE (op) == REG && REGNO (op) == FPSCR_REG
 	  && GET_MODE (op) == PSImode);
+}
+
+int
+fpul_operand (op, mode)
+     rtx op;
+{
+  return (GET_CODE (op) == REG
+	  && (REGNO (op) == FPUL_REG || REGNO (op) >= FIRST_PSEUDO_REGISTER)
+	  && GET_MODE (op) == mode);
 }
 
 int
