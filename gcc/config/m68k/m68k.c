@@ -356,6 +356,11 @@ output_function_prologue (stream, size)
       mask &= ~ (1 << (15 - FRAME_POINTER_REGNUM));
       num_saved_regs--;
     }
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    {
+      mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
+      num_saved_regs++;
+    }
 
 #if NEED_PROBE
 #ifdef MOTOROLA
@@ -563,6 +568,11 @@ output_function_epilogue (stream, size)
         nregs++;
 	mask |= 1 << regno;
       }
+  if (flag_pic && regs_ever_live[PIC_OFFSET_TABLE_REGNUM])
+    {
+      nregs++;
+      mask |= 1 << PIC_OFFSET_TABLE_REGNUM;
+    }
   offset = foffset + nregs * 4;
   /* FIXME : leaf_function_p below is too strong.
      What we really need to know there is if there could be pending
