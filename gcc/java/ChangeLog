@@ -1,5 +1,10 @@
 1999-04-06  Per Bothner  <bothner@cygnus.com>
 
+	* expr.c (pop_type_0):  New function.
+	(pop_type):  Use pop_type_0.
+	* java-tree.h (pop_type_0):  New declaration.
+	* verify.c (verify_jvm_instructions):  Check return instructions.
+
 	* parse.y (patch_binop):  Don't fold if non-constant and emiting
 	class files.
 
