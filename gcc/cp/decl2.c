@@ -2672,21 +2672,23 @@ import_export_decl (decl)
     }
   else if (DECL_FUNCTION_MEMBER_P (decl))
     {
-      tree ctype = DECL_CONTEXT (decl);
-      import_export_class (ctype);
-      if (CLASSTYPE_INTERFACE_KNOWN (ctype)
-	  && ! DECL_THIS_INLINE (decl))
+      if (!DECL_THIS_INLINE (decl))
 	{
-	  DECL_NOT_REALLY_EXTERN (decl)
-	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
-		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines
-		     && !DECL_VINDEX (decl)));
+	  tree ctype = DECL_CONTEXT (decl);
+	  import_export_class (ctype);
+	  if (CLASSTYPE_INTERFACE_KNOWN (ctype))
+	    {
+	      DECL_NOT_REALLY_EXTERN (decl)
+		= ! (CLASSTYPE_INTERFACE_ONLY (ctype)
+		     || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines
+			 && !DECL_VINDEX (decl)));
 
-	  /* Always make artificials weak.  */
-	  if (DECL_ARTIFICIAL (decl) && flag_weak)
-	    comdat_linkage (decl);
-	  else
-	    maybe_make_one_only (decl);
+	      /* Always make artificials weak.  */
+	      if (DECL_ARTIFICIAL (decl) && flag_weak)
+		comdat_linkage (decl);
+	      else
+		maybe_make_one_only (decl);
+	    }
 	}
       else
 	comdat_linkage (decl);
