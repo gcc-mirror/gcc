@@ -2523,11 +2523,11 @@ find_use_as_address (x, reg, plusconst)
       /* If REG occurs inside a MEM used in a bit-field reference,
 	 that is unacceptable.  */
       if (find_use_as_address (XEXP (x, 0), reg, 0) != 0)
-	return (rtx) 1;
+	return (rtx) (HOST_WIDE_INT) 1;
     }
 
   if (x == reg)
-    return (rtx) 1;
+    return (rtx) (HOST_WIDE_INT) 1;
 
   for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
@@ -2537,7 +2537,7 @@ find_use_as_address (x, reg, plusconst)
 	  if (value == 0)
 	    value = tem;
 	  else if (tem != 0)
-	    return (rtx) 1;
+	    return (rtx) (HOST_WIDE_INT) 1;
 	}
       if (fmt[i] == 'E')
 	{
@@ -2548,7 +2548,7 @@ find_use_as_address (x, reg, plusconst)
 	      if (value == 0)
 		value = tem;
 	      else if (tem != 0)
-		return (rtx) 1;
+		return (rtx) (HOST_WIDE_INT) 1;
 	    }
 	}
     }
