@@ -4060,6 +4060,15 @@ package body Sem_Ch8 is
                Error_Msg_N (
                 "invalid prefix in selected component&", P);
 
+               if Is_Access_Type (P_Type)
+                 and then Ekind (Designated_Type (P_Type)) = E_Incomplete_Type
+               then
+                  Error_Msg_Node_2 := Selector_Name (N);
+                  Error_Msg_NE (
+                    "\incomplete type& has no visible component&", P,
+                      Designated_Type (P_Type));
+               end if;
+
             else
                Error_Msg_N (
                 "invalid prefix in selected component", P);

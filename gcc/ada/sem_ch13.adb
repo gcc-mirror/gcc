@@ -2153,29 +2153,6 @@ package body Sem_Ch13 is
                               CC, Rectype);
                         end if;
 
-                        --  Test for large object that is not on a storage unit
-                        --  boundary, defined as a large packed array not
-                        --  represented by a modular type, or an object for
-                        --  which a size of greater than 64 bits is specified.
-
-                        if Fbit mod SSU /= 0 then
-                           if (Is_Packed_Array_Type (Etype (Comp))
-                                and then Is_Array_Type
-                                     (Packed_Array_Type (Etype (Comp))))
-                             or else Esize (Etype (Comp)) > Max_Unaligned_Field
-                           then
-                              if SSU = 8 then
-                                 Error_Msg_N
-                                   ("large component must be on byte boundary",
-                                    First_Bit (CC));
-                              else
-                                 Error_Msg_N
-                                   ("large component must be on word boundary",
-                                    First_Bit (CC));
-                              end if;
-                           end if;
-                        end if;
-
                         --  This information is also set in the
                         --  corresponding component of the base type,
                         --  found by accessing the Original_Record_Component
@@ -2602,6 +2579,9 @@ package body Sem_Ch13 is
       --------------------------
 
       procedure Check_Expr_Constants (Nod : Node_Id) is
+         Loc_U_Ent : constant Source_Ptr := Sloc (U_Ent);
+         Ent       : Entity_Id           := Empty;
+
       begin
          if Nkind (Nod) in N_Has_Etype
            and then Etype (Nod) = Any_Type
@@ -2614,6 +2594,7 @@ package body Sem_Ch13 is
                return;
 
             when N_Identifier | N_Expanded_Name =>
+               Ent := Entity (Nod);
 
                --  We need to look at the original node if it is different
                --  from the node, since we may have rewritten things and
@@ -2627,85 +2608,92 @@ package body Sem_Ch13 is
                   --  is not constant, even if the constituents might be
                   --  acceptable, as in  A'Address + offset.
 
-                  if Ekind (Entity (Nod)) = E_Variable
-                    and then Nkind (Declaration_Node (Entity (Nod)))
+                  if Ekind (Ent) = E_Variable
+                    and then Nkind (Declaration_Node (Ent))
                       = N_Object_Declaration
                     and then
-                      No (Expression (Declaration_Node (Entity (Nod))))
+                      No (Expression (Declaration_Node (Ent)))
+                  then
+                     Error_Msg_NE
+                       ("invalid address clause for initialized object &!",
+                        Nod, U_Ent);
+
+                  --  If entity is constant, it may be the result of expanding
+                  --  a check. We must verify that its declaration appears
+                  --  before the object in question, else we also reject the
+                  --  address clause.
+
+                  elsif Ekind (Ent) = E_Constant
+                    and then In_Same_Source_Unit (Ent, U_Ent)
+                    and then Sloc (Ent) > Loc_U_Ent
                   then
                      Error_Msg_NE
                        ("invalid address clause for initialized object &!",
                         Nod, U_Ent);
                   end if;
+
                   return;
                end if;
 
                --  Otherwise look at the identifier and see if it is OK.
 
-               declare
-                  Ent       : constant Entity_Id  := Entity (Nod);
-                  Loc_Ent   : constant Source_Ptr := Sloc (Ent);
-                  Loc_U_Ent : constant Source_Ptr := Sloc (U_Ent);
+               if Ekind (Ent) = E_Named_Integer
+                    or else
+                  Ekind (Ent) = E_Named_Real
+                    or else
+                  Is_Type (Ent)
+               then
+                  return;
 
-               begin
-                  if Ekind (Ent) = E_Named_Integer
-                       or else
-                     Ekind (Ent) = E_Named_Real
-                       or else
-                     Is_Type (Ent)
-                  then
+               elsif
+                  Ekind (Ent) = E_Constant
+                    or else
+                  Ekind (Ent) = E_In_Parameter
+               then
+                  --  This is the case where we must have Ent defined
+                  --  before U_Ent. Clearly if they are in different
+                  --  units this requirement is met since the unit
+                  --  containing Ent is already processed.
+
+                  if not In_Same_Source_Unit (Ent, U_Ent) then
                      return;
 
-                  elsif
-                     Ekind (Ent) = E_Constant
-                       or else
-                     Ekind (Ent) = E_In_Parameter
-                  then
-                     --  This is the case where we must have Ent defined
-                     --  before U_Ent. Clearly if they are in different
-                     --  units this requirement is met since the unit
-                     --  containing Ent is already processed.
+                  --  Otherwise location of Ent must be before the
+                  --  location of U_Ent, that's what prior defined means.
 
-                     if not In_Same_Source_Unit (Ent, U_Ent) then
-                        return;
-
-                     --  Otherwise location of Ent must be before the
-                     --  location of U_Ent, that's what prior defined means.
-
-                     elsif Loc_Ent < Loc_U_Ent then
-                        return;
-
-                     else
-                        Error_Msg_NE
-                          ("invalid address clause for initialized object &!",
-                           Nod, U_Ent);
-                        Error_Msg_Name_1 := Chars (Ent);
-                        Error_Msg_Name_2 := Chars (U_Ent);
-                        Error_Msg_N
-                          ("\% must be defined before % ('R'M 13.1(22))!",
-                           Nod);
-                     end if;
-
-                  elsif Nkind (Original_Node (Nod)) = N_Function_Call then
-                     Check_Expr_Constants (Original_Node (Nod));
+                  elsif Sloc (Ent) < Loc_U_Ent then
+                     return;
 
                   else
                      Error_Msg_NE
                        ("invalid address clause for initialized object &!",
                         Nod, U_Ent);
-
-                     if Comes_From_Source (Ent) then
-                        Error_Msg_Name_1 := Chars (Ent);
-                        Error_Msg_N
-                          ("\reference to variable% not allowed"
-                             & " ('R'M 13.1(22))!", Nod);
-                     else
-                        Error_Msg_N
-                          ("non-static expression not allowed"
-                             & " ('R'M 13.1(22))!", Nod);
-                     end if;
+                     Error_Msg_Name_1 := Chars (Ent);
+                     Error_Msg_Name_2 := Chars (U_Ent);
+                     Error_Msg_N
+                       ("\% must be defined before % ('R'M 13.1(22))!",
+                        Nod);
                   end if;
-               end;
+
+               elsif Nkind (Original_Node (Nod)) = N_Function_Call then
+                  Check_Expr_Constants (Original_Node (Nod));
+
+               else
+                  Error_Msg_NE
+                    ("invalid address clause for initialized object &!",
+                     Nod, U_Ent);
+
+                  if Comes_From_Source (Ent) then
+                     Error_Msg_Name_1 := Chars (Ent);
+                     Error_Msg_N
+                       ("\reference to variable% not allowed"
+                          & " ('R'M 13.1(22))!", Nod);
+                  else
+                     Error_Msg_N
+                       ("non-static expression not allowed"
+                          & " ('R'M 13.1(22))!", Nod);
+                  end if;
+               end if;
 
             when N_Integer_Literal   |
                  N_Real_Literal      |

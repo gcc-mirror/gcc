@@ -930,7 +930,7 @@ package Einfo is
 --       the record that is the fat pointer representation of an RAST.
 
 --    Esize (Uint12)
---       Present in all types and subtypes, an also for components, constants,
+--       Present in all types and subtypes, and also for components, constants,
 --       and variables. Contains the Object_Size of the type or of the object.
 --       A value of zero indicates that the value is not yet known.
 --
@@ -2830,7 +2830,7 @@ package Einfo is
 --       Present in all type and subtype entities. Contains the value of
 --       type'Size as defined in the RM. See also the Esize field and
 --       and the description on "Handling of Type'Size Values". A value
---       of zero for in this field for a non-discrete type means that
+--       of zero in this field for a non-discrete type means that
 --       the front end has not yet determined the size value. For the
 --       case of a discrete type, this field is always set by the front
 --       end and zero is a legitimate value for a type with one value.

@@ -104,11 +104,6 @@ package body System.Init is
    --  Common procedure that is executed when a SIGFPE, SIGILL,
    --  SIGSEGV, or SIGBUS is captured.
 
-   procedure Install_Handler;
-   pragma Export (C, Install_Handler, "__gnat_install_handler");
-   --  Install handler for the synchronous signals. The C profile
-   --  here is what is expected by the binder-generated main.
-
    ------------------------
    -- GNAT_Error_Handler --
    ------------------------
@@ -237,16 +232,6 @@ package body System.Init is
          Gl_Zero_Cost_Exceptions     := Zero_Cost_Exceptions;
       end if;
    end Set_Globals;
-
-   -----------------------------
-   -- Install_Signal_Handlers --
-   -----------------------------
-
-   function Install_Signal_Handlers return Interfaces.C.int is
-   begin
-      Install_Handler;
-      return 0;
-   end Install_Signal_Handlers;
 
    ---------------------
    -- Install_Handler --

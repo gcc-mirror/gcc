@@ -2973,11 +2973,28 @@ package body Prj.Nmsc is
                   end if;
 
                   if Lib_Dir.Default then
-                     Error_Msg
-                       (Project,
-                        "a project extending a library project must specify " &
-                          "an attribute Library_Dir",
-                        Data.Location);
+
+                     --  If the extending project is a virtual project, we
+                     --  put the error message in the library project that
+                     --  is extended, rather than in the extending all project.
+                     --  Of course, we cannot put it in the virtual extending
+                     --  project, because it has no source.
+
+                     if Data.Virtual then
+                        Error_Msg_Name_1 := Extended_Data.Name;
+
+                        Error_Msg
+                          (Project,
+                           "library project % cannot be virtually extended",
+                           Extended_Data.Location);
+
+                     else
+                        Error_Msg
+                          (Project,
+                           "a project extending a library project must " &
+                           "specify an attribute Library_Dir",
+                           Data.Location);
+                     end if;
                   end if;
 
                   Projects.Table (Data.Extends).Library := False;
@@ -3001,6 +3018,7 @@ package body Prj.Nmsc is
                Data.Library_Dir, Data.Display_Library_Dir);
 
             if Data.Library_Dir = No_Name then
+
                --  Get the absolute name of the library directory that
                --  does not exist, to report an error.
 

@@ -930,6 +930,15 @@ package body Sinfo is
       return Node4 (N);
    end Entity;
 
+   function Entity_Or_Associated_Node
+      (N : Node_Id) return Node_Id is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind in N_Has_Entity
+        or else NT (N).Nkind = N_Freeze_Entity);
+      return Node4 (N);
+   end Entity_Or_Associated_Node;
+
    function Entry_Body_Formal_Part
       (N : Node_Id) return Node_Id is
    begin

@@ -33,6 +33,7 @@ with Exp_Util; use Exp_Util;
 with Freeze;   use Freeze;
 with Lib.Xref; use Lib.Xref;
 with Nlists;   use Nlists;
+with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Sem;      use Sem;
 with Sem_Case; use Sem_Case;
@@ -1002,7 +1003,64 @@ package body Sem_Ch5 is
    -- Analyze_Iteration_Scheme --
    ------------------------------
 
+
    procedure Analyze_Iteration_Scheme (N : Node_Id) is
+      procedure Check_Controlled_Array_Attribute (DS : Node_Id);
+      --  If the bounds are given by a 'Range reference on a function call
+      --  that returns a controlled array, introduce an explicit declaration
+      --  to capture the bounds, so that the function result can be finalized
+      --  in timely fashion.
+
+      --------------------------------------
+      -- Check_Controlled_Array_Attribute --
+      --------------------------------------
+
+      procedure Check_Controlled_Array_Attribute (DS : Node_Id) is
+      begin
+         if Nkind (DS) = N_Attribute_Reference
+            and then Is_Entity_Name (Prefix (DS))
+            and then Ekind (Entity (Prefix (DS))) = E_Function
+            and then Is_Array_Type (Etype (Entity (Prefix (DS))))
+            and then
+              Is_Controlled (
+                Component_Type (Etype (Entity (Prefix (DS)))))
+            and then Expander_Active
+         then
+            declare
+               Loc  : constant Source_Ptr := Sloc (N);
+               Arr  : constant Entity_Id :=
+                        Etype (Entity (Prefix (DS)));
+               Indx : constant Entity_Id :=
+                        Base_Type (Etype (First_Index (Arr)));
+               Subt : constant Entity_Id :=
+                        Make_Defining_Identifier
+                          (Loc, New_Internal_Name ('S'));
+               Decl : Node_Id;
+
+            begin
+               Decl :=
+                 Make_Subtype_Declaration (Loc,
+                   Defining_Identifier => Subt,
+                   Subtype_Indication  =>
+                      Make_Subtype_Indication (Loc,
+                        Subtype_Mark  => New_Reference_To (Indx, Loc),
+                        Constraint =>
+                          Make_Range_Constraint (Loc,
+                            Relocate_Node (DS))));
+               Insert_Before (Parent (N), Decl);
+               Analyze (Decl);
+
+               Rewrite (DS,
+                  Make_Attribute_Reference (Loc,
+                    Prefix => New_Reference_To (Subt, Loc),
+                    Attribute_Name => Attribute_Name (DS)));
+               Analyze (DS);
+            end;
+         end if;
+      end Check_Controlled_Array_Attribute;
+
+   --  Start of processing for Analyze_Iteration_Scheme
+
    begin
       --  For an infinite loop, there is no iteration scheme
 
@@ -1080,6 +1138,7 @@ package body Sem_Ch5 is
                      Set_Etype (DS, Any_Type);
                   end if;
 
+                  Check_Controlled_Array_Attribute (DS);
                   Make_Index (DS, LP);
 
                   Set_Ekind          (Id, E_Loop_Parameter);

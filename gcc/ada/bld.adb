@@ -2595,6 +2595,25 @@ package body Bld is
                --  Include some utility functions and saved all reserved
                --  env. vars. by including Makefile.prolog.
 
+               New_Line;
+
+               --  First, if MAKE_ROOT is not defined, try to get GNAT prefix
+
+               Put ("   ifeq ($(");
+               Put (MAKE_ROOT);
+               Put ("),)");
+               New_Line;
+
+               Put ("      MAKE_ROOT=$(shell gprcmd prefix)");
+               New_Line;
+
+               Put ("   endif");
+               New_Line;
+
+               New_Line;
+
+               --  If MAKE_ROOT is still not defined, then fail
+
                Put ("   ifeq ($(");
                Put (MAKE_ROOT);
                Put ("),)");

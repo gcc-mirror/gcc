@@ -1339,7 +1339,10 @@ __gnat_stat (char *name, struct stat *statbuf)
      terminated by a directory separator except if just after a drive name.  */
   int name_len  = strlen (name);
   char last_char = name[name_len - 1];
-  char win32_name[4096];
+  char win32_name[GNAT_MAX_PATH_LEN + 2];
+
+  if (name_len > GNAT_MAX_PATH_LEN)
+    return -1;
 
   strcpy (win32_name, name);
 

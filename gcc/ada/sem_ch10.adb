@@ -1749,7 +1749,14 @@ package body Sem_Ch10 is
 
             Generate_Reference (Par_Name, Pref);
             Pref := Prefix (Pref);
-            Par_Name := Scope (Par_Name);
+
+            --  If E_Name is the dummy entity for a nonexistent unit,
+            --  its scope is set to Standard_Standard, and no attempt
+            --  should be made to further unwind scopes.
+
+            if Par_Name /= Standard_Standard then
+               Par_Name := Scope (Par_Name);
+            end if;
          end loop;
 
          if Present (Entity (Pref))

@@ -840,6 +840,25 @@ package body Prj.Proc is
          Check (Project);
       end if;
 
+      --  If main project is an extending all project, set the object
+      --  directory of all virtual extending projects to the object directory
+      --  of the main project.
+
+      if Project /= No_Project
+        and then Is_Extending_All (From_Project_Node)
+      then
+         declare
+            Object_Dir : constant Name_Id :=
+              Projects.Table (Project).Object_Directory;
+         begin
+            for Index in Projects.First .. Projects.Last loop
+               if Projects.Table (Index).Virtual then
+                  Projects.Table (Index).Object_Directory := Object_Dir;
+               end if;
+            end loop;
+         end;
+      end if;
+
       --  Check that no extended project shares its object directory with
       --  another project.
 
@@ -855,20 +874,39 @@ package body Prj.Proc is
                     and then Projects.Table (Prj).Sources_Present
                     and then Projects.Table (Prj).Object_Directory = Obj_Dir
                   then
-                     Error_Msg_Name_1 := Projects.Table (Extending).Name;
-                     Error_Msg_Name_2 := Projects.Table (Extended).Name;
+                     if Projects.Table (Extending).Virtual then
+                        Error_Msg_Name_1 := Projects.Table (Extended).Name;
 
-                     if Error_Report = null then
-                        Error_Msg ("project % cannot extend project %",
-                                   Projects.Table (Extending).Location);
+                        if Error_Report = null then
+                           Error_Msg
+                             ("project % cannot be extended by " &
+                              "a virtual project",
+                              Projects.Table (Extending).Location);
+
+                        else
+                           Error_Report
+                             ("project """ &
+                              Get_Name_String (Error_Msg_Name_1) &
+                              """ cannot be extended by a virtual project",
+                              Project);
+                        end if;
 
                      else
-                        Error_Report
-                          ("project """ &
-                             Get_Name_String (Error_Msg_Name_1) &
-                             """ cannot extend project """ &
-                             Get_Name_String (Error_Msg_Name_2) & '"',
-                           Project);
+                        Error_Msg_Name_1 := Projects.Table (Extending).Name;
+                        Error_Msg_Name_2 := Projects.Table (Extended).Name;
+
+                        if Error_Report = null then
+                           Error_Msg ("project % cannot extend project %",
+                                      Projects.Table (Extending).Location);
+
+                        else
+                           Error_Report
+                             ("project """ &
+                              Get_Name_String (Error_Msg_Name_1) &
+                              """ cannot extend project """ &
+                              Get_Name_String (Error_Msg_Name_2) & '"',
+                              Project);
+                        end if;
                      end if;
 
                      Error_Msg_Name_1 := Projects.Table (Extended).Name;
@@ -1788,6 +1826,18 @@ package body Prj.Proc is
             Processed_Projects.Set (Name, Project);
 
             Processed_Data.Name := Name;
+
+            Get_Name_String (Name);
+
+            --  If name starts with the virtual prefix, flag the project as
+            --  being a virtual extending project.
+
+            if Name_Len > Virtual_Prefix'Length
+              and then Name_Buffer (1 .. Virtual_Prefix'Length) =
+                         Virtual_Prefix
+            then
+               Processed_Data.Virtual := True;
+            end if;
 
             Processed_Data.Display_Path_Name :=
               Path_Name_Of (From_Project_Node);

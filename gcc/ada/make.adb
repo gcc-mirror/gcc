@@ -3595,7 +3595,7 @@ package body Make is
                         end loop Look_For_Foreign;
                      end if;
 
-                     --  The, find all mains, or if there is a foreign
+                     --  Then, find all mains, or if there is a foreign
                      --  language, all the Ada mains.
 
                      while Value /= Prj.Nil_String loop
@@ -6848,11 +6848,13 @@ package body Make is
             --  linking with all standard library files.
 
             Opt.No_Stdlib := True;
+
+            Add_Switch (Argv, Compiler, And_Save => And_Save);
             Add_Switch (Argv, Binder, And_Save => And_Save);
 
          elsif Argv (2 .. Argv'Last) = "nostdinc" then
 
-            --  Pass -nostdinv to the Compiler and to gnatbind
+            --  Pass -nostdinc to the Compiler and to gnatbind
 
             Opt.No_Stdinc := True;
             Add_Switch (Argv, Compiler, And_Save => And_Save);

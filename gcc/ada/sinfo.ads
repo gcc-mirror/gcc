@@ -393,7 +393,7 @@ package Sinfo is
    --  abbreviations are used:
 
    --  Note: the utility program that creates the Treeprs spec (in the file
-   --  treeprs.ads) knows about the special fields here, so it must be
+   --  xtreeprs.adb) knows about the special fields here, so it must be
    --  modified if any change is made to these fields.
 
    --    "plus fields for binary operator"
@@ -567,14 +567,18 @@ package Sinfo is
 
    --  Associated_Node (Node4-Sem)
    --    Present in nodes that can denote an entity: identifiers, character
-   --    literals, operator symbols, expanded names, operator nodes and
+   --    literals, operator symbols, expanded names, operator nodes, and
    --    attribute reference nodes (all these nodes have an Entity field).
    --    This field is also present in N_Aggregate, N_Selected_Component,
-   --    and N_Extension_Aggregate nodes. This field is used during generic
-   --    processing to relate nodes in the original template to nodes in the
-   --    generic copy. It overlaps the Entity field, and is used to capture
-   --    global references in the analyzed copy and place them in the instance.
-   --    See description in Sem_Ch12 for further details on this usage.
+   --    and N_Extension_Aggregate nodes. This field is used in generic
+   --    processing to create links between the generic template and the
+   --    generic copy. See Sem_Ch12.Get_Associated_Node for full details.
+   --    Note that this field overlaps Entity, which is fine, since, as
+   --    explained in Sem_Ch12, the normal function of Entity is not
+   --    required at the point where the Associated_Node is set. Note
+   --    also, that in generic templates, this means that the Entity field
+   --    does not necessarily point to an Entity. Since the back end is
+   --    expected to ignore generic templates, this is harmless.
 
    --  At_End_Proc (Node1)
    --    This field is present in an N_Handled_Sequence_Of_Statements node.
@@ -861,8 +865,16 @@ package Sinfo is
    --    incorrect (e.g. during overload resolution, Entity is initially
    --    set to the first possible correct interpretation, and then later
    --    modified if necessary to contain the correct value after resolution).
-   --    Note that Associated_Node overlays this field during the processing
-   --    of generics. See Sem_Ch12 for further details.
+   --    Note that this field overlaps Associated_Node, which is used during
+   --    generic processing (see Sem_Ch12 for details). Note also that in
+   --    generic templates, this means that the Entity field does not always
+   --    point to an Entity. Since the back end is expected to ignore
+   --    generic templates, this is harmless.
+
+   --  Entity_Or_Associated_Node (Node4-Sem)
+   --    A synonym for both Entity and Asasociated_Node. Used by convention
+   --    in the code when referencing this field in cases where it is not
+   --    known whether the field contains an Entity or an Associated_Node.
 
    --  Etype (Node5-Sem)
    --    Appears in all expression nodes, all direct names, and all
@@ -7107,6 +7119,9 @@ package Sinfo is
    function Entity
      (N : Node_Id) return Node_Id;    -- Node4
 
+   function Entity_Or_Associated_Node
+     (N : Node_Id) return Node_Id;    -- Node4
+
    function Entry_Body_Formal_Part
      (N : Node_Id) return Node_Id;    -- Node5
 
@@ -8491,6 +8506,7 @@ package Sinfo is
    pragma Inline (End_Label);
    pragma Inline (End_Span);
    pragma Inline (Entity);
+   pragma Inline (Entity_Or_Associated_Node);
    pragma Inline (Entry_Body_Formal_Part);
    pragma Inline (Entry_Call_Alternative);
    pragma Inline (Entry_Call_Statement);

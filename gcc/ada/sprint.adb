@@ -61,7 +61,7 @@ package body Sprint is
 
    Dump_Generated_Only : Boolean;
    --  Set True if the -gnatG (dump generated tree) debug flag is set
-   --  or for Print_Generated_Code (-gnatG) or Dump_Gnerated_Code (-gnatD).
+   --  or for Print_Generated_Code (-gnatG) or Dump_Generated_Code (-gnatD).
 
    Dump_Freeze_Null : Boolean;
    --  Set True if freeze nodes and non-source null statements output
@@ -2782,10 +2782,11 @@ package body Sprint is
       then
          Write_Id (Entity (Parent (N)));
 
-      --  For any other kind of node with an associated entity, output it.
+      --  For any other node with an associated entity, output it
 
       elsif Nkind (N) in N_Has_Entity
-        and then Present (Entity (N))
+        and then Present (Entity_Or_Associated_Node (N))
+        and then Nkind (Entity_Or_Associated_Node (N)) in N_Entity
       then
          Write_Id (Entity (N));
 

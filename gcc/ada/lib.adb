@@ -460,8 +460,7 @@ package body Lib is
    end Generic_Separately_Compiled;
 
    function Generic_Separately_Compiled
-     (Sfile : File_Name_Type)
-      return  Boolean
+     (Sfile : File_Name_Type) return Boolean
    is
    begin
       --  Exactly the same as previous function, but works directly on a file
@@ -534,8 +533,7 @@ package body Lib is
    ----------------------------------
 
    function Get_Cunit_Entity_Unit_Number
-     (E    : Entity_Id)
-      return Unit_Number_Type
+     (E : Entity_Id) return Unit_Number_Type
    is
    begin
       for U in Units.First .. Units.Last loop
@@ -613,8 +611,7 @@ package body Lib is
    --------------------------------
 
    function In_Extended_Main_Code_Unit
-     (N    : Node_Or_Entity_Id)
-      return Boolean
+     (N : Node_Or_Entity_Id) return Boolean
    is
    begin
       if Sloc (N) = Standard_Location then
@@ -647,10 +644,7 @@ package body Lib is
       end if;
    end In_Extended_Main_Code_Unit;
 
-   function In_Extended_Main_Code_Unit
-     (Loc :  Source_Ptr)
-      return Boolean
-   is
+   function In_Extended_Main_Code_Unit (Loc : Source_Ptr) return Boolean is
    begin
       if Loc = Standard_Location then
          return True;
@@ -676,8 +670,7 @@ package body Lib is
    ----------------------------------
 
    function In_Extended_Main_Source_Unit
-     (N    : Node_Or_Entity_Id)
-      return Boolean
+     (N : Node_Or_Entity_Id) return Boolean
    is
       Nloc : constant Source_Ptr := Sloc (N);
       Mloc : constant Source_Ptr := Sloc (Cunit (Main_Unit));
@@ -718,8 +711,7 @@ package body Lib is
    end In_Extended_Main_Source_Unit;
 
    function In_Extended_Main_Source_Unit
-     (Loc  : Source_Ptr)
-      return Boolean
+     (Loc : Source_Ptr) return Boolean
    is
       Mloc : constant Source_Ptr := Sloc (Cunit (Main_Unit));
 

@@ -1526,6 +1526,12 @@ package VMS_Data is
    --
    --   Do not look in the default directory for source files of the runtime.
 
+   S_GCC_Nostlib : aliased constant S := "/NOSTD_LIBRARIES "              &
+                                            "-nostdlib";
+   --        /NOSTD_LIBRARIES
+   --
+   --    Do not look for library files in the system default directory.
+
    S_GCC_Opt     : aliased constant S := "/OPTIMIZE="                      &
                                             "ALL "                         &
                                                "-O2,!-O0,!-O1,!-O3 "       &
@@ -2809,6 +2815,7 @@ package VMS_Data is
       S_GCC_Noadc   'Access,
       S_GCC_Noload  'Access,
       S_GCC_Nostinc 'Access,
+      S_GCC_Nostlib 'Access,
       S_GCC_Opt     'Access,
       S_GCC_OptX    'Access,
       S_GCC_Polling 'Access,

@@ -2944,6 +2944,8 @@ package body Exp_Ch6 is
          Excep_Handlers : List_Id;
 
       begin
+         New_Scope (Spec_Id);
+
          --  Get proper setting for secondary stack size
 
          if List_Length (Pragma_Argument_Associations (TB_Pragma)) = 2 then
@@ -3046,6 +3048,7 @@ package body Exp_Ch6 is
              Exception_Handlers => Excep_Handlers));
 
          Analyze (Handled_Statement_Sequence (N));
+         End_Scope;
       end Expand_Thread_Body;
 
    --  Start of processing for Expand_N_Subprogram_Body

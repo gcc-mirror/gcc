@@ -96,8 +96,8 @@ package body Switch.C is
 
             when False =>
 
-            --  There are only two front-end switches that
-            --  do not start with -gnat, namely -I and --RTS
+            --  There are few front-end switches that
+            --  do not start with -gnat: -I, --RTS, -nostdlib
 
                if Switch_Chars (Ptr) = 'I' then
                   Store_Switch := False;
@@ -117,6 +117,14 @@ package body Switch.C is
                      Add_Src_Search_Dir (Switch_Chars (Ptr .. Max));
                   end if;
 
+                  Ptr := Max + 1;
+
+               --  Processing of -nostdlib
+
+               elsif Ptr + 7 = Max
+                 and then Switch_Chars (Ptr .. Ptr + 7) = "nostdlib"
+               then
+                  Opt.No_Stdlib := True;
                   Ptr := Max + 1;
 
                --  Processing of the --RTS switch. --RTS has been modified by
@@ -636,6 +644,12 @@ package body Switch.C is
 
                Ptr := Ptr + 1;
                Operating_Mode := Check_Syntax;
+
+            --  Processing for S switch
+
+            when 'S' =>
+               Print_Standard := True;
+               Ptr := Ptr + 1;
 
             --  Processing for t switch
 

@@ -78,7 +78,6 @@ package body Lib.Load is
    is
       Unum         : Unit_Number_Type;
       Cunit_Entity : Entity_Id;
-      Scope_Entity : Entity_Id;
       Cunit        : Node_Id;
       Du_Name      : Node_Or_Entity_Id;
       End_Lab      : Node_Id;
@@ -98,11 +97,12 @@ package body Lib.Load is
          Du_Name := Cunit_Entity;
          End_Lab := New_Occurrence_Of (Cunit_Entity, No_Location);
 
-         Scope_Entity := Standard_Standard;
-
       --  Child package
 
-      else -- Nkind (Name (With_Node)) = N_Expanded_Name
+      else
+
+         --  Nkind (Name (With_Node)) = N_Expanded_Name
+
          Cunit_Entity :=
            Make_Defining_Identifier (No_Location,
              Chars => Chars (Selector_Name (Name (With_Node))));
@@ -113,19 +113,14 @@ package body Lib.Load is
 
          Set_Is_Child_Unit (Cunit_Entity);
 
-         if Nkind (Du_Name) = N_Defining_Program_Unit_Name then
-            Scope_Entity := Defining_Identifier (Du_Name);
-         else
-            Scope_Entity := Du_Name;
-         end if;
-
          End_Lab :=
            Make_Designator (No_Location,
              Name => New_Copy_Tree (Prefix (Name (With_Node))),
              Identifier => New_Occurrence_Of (Cunit_Entity, No_Location));
+
       end if;
 
-      Set_Scope (Cunit_Entity, Scope_Entity);
+      Set_Scope (Cunit_Entity, Standard_Standard);
 
       Cunit :=
         Make_Compilation_Unit (No_Location,

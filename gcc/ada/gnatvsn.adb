@@ -41,6 +41,15 @@ package body Gnatvsn is
    pragma Import (C, Version_String, "version_string");
 
    -------------------------
+   -- Get_Gnat_Build_Type --
+   -------------------------
+
+   function Get_Gnat_Build_Type return Gnat_Build_Type is
+   begin
+      return FSF;
+   end Get_Gnat_Build_Type;
+
+   -------------------------
    -- Gnat_Version_String --
    -------------------------
 

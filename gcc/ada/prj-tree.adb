@@ -166,7 +166,8 @@ package body Prj.Tree is
             Field1           => Empty_Node,
             Field2           => Empty_Node,
             Field3           => Empty_Node,
-            Case_Insensitive => False);
+            Case_Insensitive => False,
+            Extending_All    => False);
       return Project_Nodes.Last;
    end Default_Project_Node;
 
@@ -484,6 +485,19 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Project);
       return Project_Nodes.Table (Node).Field1;
    end First_With_Clause_Of;
+
+   ----------------------
+   -- Is_Extending_All --
+   ----------------------
+
+   function Is_Extending_All (Node  : Project_Node_Id) return Boolean is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            Project_Nodes.Table (Node).Kind = N_Project);
+      return Project_Nodes.Table (Node).Extending_All;
+   end Is_Extending_All;
 
    ----------
    -- Hash --
@@ -1236,6 +1250,19 @@ package body Prj.Tree is
             Project_Nodes.Table (Node).Kind = N_Project);
       Project_Nodes.Table (Node).Field1 := To;
    end Set_First_With_Clause_Of;
+
+   --------------------------
+   -- Set_Is_Extending_All --
+   --------------------------
+
+   procedure Set_Is_Extending_All (Node  : Project_Node_Id) is
+   begin
+      pragma Assert
+        (Node /= Empty_Node
+          and then
+            Project_Nodes.Table (Node).Kind = N_Project);
+      Project_Nodes.Table (Node).Extending_All := True;
+   end Set_Is_Extending_All;
 
    -----------------
    -- Set_Kind_Of --

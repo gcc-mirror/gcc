@@ -277,6 +277,11 @@ begin
    Write_Switch_Char ("s");
    Write_Line ("Syntax check only");
 
+   --  Lines for -gnatS switch
+
+   Write_Switch_Char ("S");
+   Write_Line ("Print listing of package Standard");
+
    --  Lines for -gnatt switch
 
    Write_Switch_Char ("t");
