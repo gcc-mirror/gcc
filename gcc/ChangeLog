@@ -1,3 +1,15 @@
+2005-03-29  Uros Bizjak  <uros@kss-loka.si>
+
+	* reg-stack.c (subst_stack_regs_pat): Handle <UNSPEC_FIST> case.
+	* config/i386/i386.c (output_fix_trunc): Add new round_mode
+	variable.  Output "fldcw" depending on round_mode.
+	* config/i386/i386.md (UNSPEC_FIST): New.
+	(fistdi2, fistdi2_with_temp, fist<mode>2, fist<mode>2_with_temp):
+	New isns patterns to implement lrint and llrint built-ins as x87
+	intrinsic function.
+	(fistdi2, fist<mode>2 splitters): New splitters.
+	(lrint<mode>2): New expanders.
+
 2005-03-28  Ian Lance Taylor  <ian@airs.com>
 
 	* config/arc/arc.c (arc_output_function_epilogue): Pass prescan as

@@ -1672,6 +1672,27 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 	  case UNSPEC:
 	    switch (XINT (pat_src, 1))
 	      {
+	      case UNSPEC_FIST:
+		/* These insns only operate on the top of the stack.  */
+
+		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
+		emit_swap_insn (insn, regstack, *src1);
+
+		src1_note = find_regno_note (insn, REG_DEAD, REGNO (*src1));
+
+		if (STACK_REG_P (*dest))
+		  replace_reg (dest, FIRST_STACK_REG);
+
+		if (src1_note)
+		  {
+		    replace_reg (&XEXP (src1_note, 0), FIRST_STACK_REG);
+		    regstack->top--;
+		    CLEAR_HARD_REG_BIT (regstack->reg_set, REGNO (*src1));
+		  }
+
+		replace_reg (src1, FIRST_STACK_REG);
+		break;
+
 	      case UNSPEC_SIN:
 	      case UNSPEC_COS:
 	      case UNSPEC_FRNDINT:
