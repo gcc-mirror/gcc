@@ -1,3 +1,7 @@
+2003-10-20  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* gcc.dg/old-style-asm-1.c: Count jump_insns instead of labels.
+
 2003-10-20  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* gcc.dg/builtins-18.c: Wrap C99 tests with HAVE_C99_RUNTIME.
