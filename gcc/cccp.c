@@ -1,7 +1,7 @@
 /* C Compatible Compiler Preprocessor (CCCP)
-Copyright (C) 1986, 1987, 1989, 1992, 1993 Free Software Foundation, Inc.
-                    Written by Paul Rubin, June 1986
-		    Adapted to ANSI C, Richard Stallman, Jan 1987
+   Copyright (C) 1986, 87, 89, 92, 93, 1994 Free Software Foundation, Inc.
+   Written by Paul Rubin, June 1986
+   Adapted to ANSI C, Richard Stallman, Jan 1987
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -1418,23 +1418,17 @@ main (argc, argv)
 	break;
 
       case 'D':
-	{
-	  char *p, *p1;
-
-	  if (argv[i][2] != 0)
-	    p = argv[i] + 2;
-	  else if (i + 1 == argc)
-	    fatal ("Macro name missing after -D option");
-	  else
-	    p = argv[++i];
-
-	  pend_defs[i] = p;
-	}
+	if (argv[i][2] != 0)
+	  pend_defs[i] = argv[i] + 2;
+	else if (i + 1 == argc)
+	  fatal ("Macro name missing after -D option");
+	else
+	  i++, pend_defs[i] = argv[i];
 	break;
 
       case 'A':
 	{
-	  char *p, *p1;
+	  char *p;
 
 	  if (argv[i][2] != 0)
 	    p = argv[i] + 2;
@@ -3199,27 +3193,31 @@ hashcollision:
   /* Come here to return -- but first give an error message
      if there was an unterminated successful conditional.  */
  ending:
-  if (if_stack != ip->if_stack) {
-    char *str;
-    switch (if_stack->type) {
-    case T_IF:
-      str = "if";
-      break;
-    case T_IFDEF:
-      str = "ifdef";
-      break;
-    case T_IFNDEF:
-      str = "ifndef";
-      break;
-    case T_ELSE:
-      str = "else";
-      break;
-    case T_ELIF:
-      str = "elif";
-      break;
-    }
-    error_with_line (line_for_error (if_stack->lineno),
-		     "unterminated `#%s' conditional", str);
+  if (if_stack != ip->if_stack)
+    {
+      char *str = "unknown";
+
+      switch (if_stack->type)
+	{
+	case T_IF:
+	  str = "if";
+	  break;
+	case T_IFDEF:
+	  str = "ifdef";
+	  break;
+	case T_IFNDEF:
+	  str = "ifndef";
+	  break;
+	case T_ELSE:
+	  str = "else";
+	  break;
+	case T_ELIF:
+	  str = "elif";
+	  break;
+	}
+
+      error_with_line (line_for_error (if_stack->lineno),
+		       "unterminated `#%s' conditional", str);
   }
   if_stack = ip->if_stack;
 }
@@ -6651,7 +6649,7 @@ do_xifdef (buf, limit, op, keyword)
 	;
       else if (c == '/' && p != ip->bufp && *p == '*') {
 	/* Skip this comment.  */
-	int junk;
+	int junk = 0;
 	U_CHAR *save_bufp = ip->bufp;
 	ip->bufp = p + 1;
 	p = skip_to_end_of_comment (ip, &junk, 1);
@@ -7046,7 +7044,7 @@ do_endif (buf, limit, op, keyword)
 	case '/':
 	  if (p != ep && *p == '*') {
 	    /* Skip this comment.  */
-	    int junk;
+	    int junk = 0;
 	    U_CHAR *save_bufp = ip->bufp;
 	    ip->bufp = p + 1;
 	    p = skip_to_end_of_comment (ip, &junk, 1);
