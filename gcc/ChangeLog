@@ -1,3 +1,12 @@
+Wed Jun  9 16:29:01 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* configure.in: Add new target: thumb-elf.
+	* configure: Regenerate.
+	* config/arm/t-thumb-elf: New file: Makefile fragment for
+	thumb-elf build.
+	* config/arm/telf.h: New file: Header file for thumb-elf
+	build. 
+
 Fri Jun 11 03:17:51 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* Makefile.in (libgcc2): Pass MAYBE_USE_COLLECT2 as an argument.
