@@ -1119,9 +1119,11 @@ outgoing_edges_match (mode, bb1, bb2)
   /* If BB1 has only one successor, we may be looking at either an
      unconditional jump, or a fake edge to exit.  */
   if (bb1->succ && !bb1->succ->succ_next
-      && !(bb1->succ->flags & (EDGE_COMPLEX | EDGE_FAKE)))
+      && (bb1->succ->flags & (EDGE_COMPLEX | EDGE_FAKE)) == 0
+      && (GET_CODE (bb1->end) != JUMP_INSN || simplejump_p (bb1->end)))
     return (bb2->succ &&  !bb2->succ->succ_next
-	    && (bb2->succ->flags & (EDGE_COMPLEX | EDGE_FAKE)) == 0);
+	    && (bb2->succ->flags & (EDGE_COMPLEX | EDGE_FAKE)) == 0
+	    && (GET_CODE (bb2->end) != JUMP_INSN || simplejump_p (bb2->end)));
 
   /* Match conditional jumps - this may get tricky when fallthru and branch
      edges are crossed.  */
