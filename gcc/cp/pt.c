@@ -8605,6 +8605,7 @@ unify (tparms, targs, parm, arg, strict)
 	 here.  */
       if (TREE_CODE (arg) == ARRAY_TYPE 
 	  && !uses_template_parms (arg)
+	  && TYPE_DOMAIN (arg)
 	  && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (arg)))
 	      != INTEGER_CST))
 	return 1;

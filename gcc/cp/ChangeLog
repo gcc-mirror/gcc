@@ -1,5 +1,10 @@
 2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* pt.c (unify): Check array has a domain, before checking
+	whether it is variable sized.
+
+2001-01-11  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* decl.c (grokparms): Unobfuscate and get correct diagnostic for
 	parameters with pointers to arrays of unknown bound.
 
