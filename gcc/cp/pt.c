@@ -5788,6 +5788,9 @@ tsubst_decl (t, args, type, in_decl)
 	    maybe_retrofit_in_chrg (r);
 	    if (DECL_CONSTRUCTOR_P (r))
 	      grok_ctor_properties (ctx, r);
+	    /* If this is an instantiation of a member template, clone it.
+	       If it isn't, that'll be handled by
+	       clone_constructors_and_destructors.  */
 	    if (PRIMARY_TEMPLATE_P (gen_tmpl))
 	      clone_function_decl(r, /*update_method_vec_p=*/0);
 	  }
