@@ -1660,11 +1660,10 @@ changequote(,)dnl
 			fi
 		fi
 changequote([,])dnl
+	else
+		# non-GNU linkers don't seem to support .hidden yet
+		gcc_cv_as_hidden=no
 	fi
-fi
-# non-GNU linkers don't seem to support .hidden yet
-if test x"$gnu_ld_flag" = x"no"; then
-      gcc_cv_as_hidden=no
 fi
 if test x"$gcc_cv_as_hidden" = xyes; then
 	AC_DEFINE(HAVE_GAS_HIDDEN, 1,

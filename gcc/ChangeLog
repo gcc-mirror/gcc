@@ -1,3 +1,10 @@
+2003-09-17  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in (gcc_cv_as_hidden): Only disable if no GNU ld
+	detected.
+	* configure: Regenerate.
+	Fixes PR target/12248.
+
 2003-09-17  Richard Henderson  <rth@redhat.com>
 
 	* config/alpha/alpha.c (alpha_expand_mov): Do gen_movdi_er_maybe_g
