@@ -1,3 +1,10 @@
+1999-12-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (store_return_init): Use mode of old RTL generated for
+	DECL_RESULT, not the mode of DECL_RESULT itself.
+	* semantics.c (finish_named_return_value): Set DECL_UNINLINABLE
+	for functions that used named return values.
+	
 1999-12-24  Mark Mitchell  <mark@codesourcery.com>
 
 	* semantics.c (expand_body): Use
