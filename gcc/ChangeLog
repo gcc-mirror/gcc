@@ -1,5 +1,10 @@
 2004-05-07  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (mips_va_arg): Fix calculation of osize for
+	EABI_FLOAT_VARARGS_P.
+
+2004-05-07  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (ISA_HAS_BRANCHLIKELY): Remove TARGET_MIPS5500.
 	* config/mips/mips.c (override_options): Disable branch likely
 	instructions if TUNE_MIPS5500.
