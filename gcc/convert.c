@@ -665,7 +665,7 @@ convert_to_integer (tree type, tree expr)
 	  break;
 	}
 
-      return build1 (NOP_EXPR, type, expr);
+      return build1 (CONVERT_EXPR, type, expr);
 
     case REAL_TYPE:
       return build1 (FIX_TRUNC_EXPR, type, expr);
