@@ -2335,7 +2335,7 @@ f () @{ /* @r{Do something.} */; @}
 int i __attribute__ ((visibility ("hidden")));
 @end smallexample
 
-See the ELF gABI for complete details, but the short story is
+See the ELF gABI for complete details, but the short story is:
 
 @table @dfn
 @item default
