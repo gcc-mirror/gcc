@@ -329,7 +329,7 @@ namespace std
         {
 	  // According to 22.2.2.1.2, p8-9, first look for thousands_sep
 	  // and decimal_point.
-	  const char_type __c = *__beg;
+	  char_type __c = *__beg;
           if (__lc->_M_use_grouping && __c == __lc->_M_thousands_sep)
 	    {
 	      if (!__found_dec && !__found_sci)
@@ -390,11 +390,12 @@ namespace std
 		  // Remove optional plus or minus sign, if they exist.
 		  if (++__beg != __end)
 		    {
-		      const bool __plus = *__beg == __lit[__num_base::_S_iplus];
-		      if ((__plus || *__beg == __lit[__num_base::_S_iminus])
+		      __c = *__beg;
+		      const bool __plus = __c == __lit[__num_base::_S_iplus];
+		      if ((__plus || __c == __lit[__num_base::_S_iminus])
 			  && !(__lc->_M_use_grouping
-			       && *__beg == __lc->_M_thousands_sep)
-			  && !(*__beg == __lc->_M_decimal_point))
+			       && __c == __lc->_M_thousands_sep)
+			  && !(__c == __lc->_M_decimal_point))
 			{
 			  __xtrc += __plus ? '+' : '-';
 			  ++__beg;
@@ -668,15 +669,17 @@ namespace std
 	  size_t __n;
           for (__n = 0; __beg != __end; ++__n, ++__beg)
             {
+	      const char_type __c = *__beg;
+
 	      if (__testf)
 		if (__n < __lc->_M_falsename_size)
-		  __testf = *__beg == __lc->_M_falsename[__n];
+		  __testf = __c == __lc->_M_falsename[__n];
 		else
 		  break;
 
 	      if (__testt)
 		if (__n < __lc->_M_truename_size)
-		  __testt = *__beg == __lc->_M_truename[__n];
+		  __testt = __c == __lc->_M_truename[__n];
 		else
 		  break;
 
@@ -1294,7 +1297,7 @@ namespace std
 	__res.reserve(32);
 
 	const char_type* __lit_zero = __lit + money_base::_S_zero;
-	const money_base::pattern __p = __lc->_M_neg_format;	
+	const money_base::pattern __p = __lc->_M_neg_format;
 	for (int __i = 0; __i < 4 && __testvalid; ++__i)
 	  {
 	    const part __which = static_cast<part>(__p.field[__i]);
@@ -1356,14 +1359,15 @@ namespace std
 		// grouping of found thousands separators.
 		for (; __beg != __end; ++__beg)
 		  {
+		    const char_type __c = *__beg;
 		    const char_type* __q = __traits_type::find(__lit_zero, 
-							       10, *__beg);
+							       10, __c);
 		    if (__q != 0)
 		      {
 			__res += money_base::_S_atoms[__q - __lit];
 			++__n;
 		      }
-		    else if (*__beg == __lc->_M_decimal_point 
+		    else if (__c == __lc->_M_decimal_point 
 			     && !__testdecfound)
 		      {
 			__last_pos = __n;
@@ -1371,7 +1375,7 @@ namespace std
 			__testdecfound = true;
 		      }
 		    else if (__lc->_M_use_grouping
-			     && *__beg == __lc->_M_thousands_sep
+			     && __c == __lc->_M_thousands_sep
 			     && !__testdecfound)
 		      {
 			if (__n)
