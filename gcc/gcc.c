@@ -3142,11 +3142,8 @@ process_command (argc, argv)
 
   /* If there is a -V or -b option (or both), process it now, before
      trying to interpret the rest of the command line.  */
-  /* Use heuristic that all configuration names must have at least one dash '-'.
-     This allows to pass options that start with -b.  */
   if (argc > 1 && argv[1][0] == '-'
-      && (argv[1][1] == 'V' 
-	  || (argv[1][1] == 'b' && strchr (argv[1] + 2, '-') != NULL)))
+      && (argv[1][1] == 'V' || argv[1][1] == 'b'))
     {
       const char *new_version = DEFAULT_TARGET_VERSION;
       const char *new_machine = DEFAULT_TARGET_MACHINE;
