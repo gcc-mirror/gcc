@@ -388,6 +388,8 @@ extern enum processor_type rs6000_cpu;
     N_("Specify size of long double (64 or 128 bits)") },		\
    {"isel=", &rs6000_isel_string,                                       \
     N_("Specify yes/no if isel instructions should be generated") },    \
+   {"spe=", &rs6000_spe_string,                                         \
+    N_("Specify yes/no if SPE SIMD instructions should be generated") },\
    {"vrsave=", &rs6000_altivec_vrsave_string,                         \
     N_("Specify yes/no if VRSAVE instructions should be generated for AltiVec") }, \
    {"longcall", &rs6000_longcall_switch,				\
@@ -425,8 +427,10 @@ extern int rs6000_long_double_type_size;
 extern int rs6000_altivec_abi;
 extern int rs6000_spe_abi;
 extern int rs6000_isel;
+extern int rs6000_spe;
 extern int rs6000_fprs;
 extern const char *rs6000_isel_string;
+extern const char *rs6000_spe_string;
 extern const char *rs6000_altivec_vrsave_string;
 extern int rs6000_altivec_vrsave;
 extern const char *rs6000_longcall_switch;
@@ -438,6 +442,7 @@ extern int rs6000_default_long_calls;
 
 #define TARGET_SPE_ABI 0
 #define TARGET_SPE 0
+#define TARGET_E500 0
 #define TARGET_ISEL 0
 #define TARGET_FPRS 1
 

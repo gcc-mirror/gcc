@@ -1,3 +1,29 @@
+2003-04-06  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/invoke.texi (RS/6000 and PowerPC Options): Document -mspe
+        option.
+
+        * config/rs6000/eabispe.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Set
+        rs6000_spe.
+
+        * config/rs6000/eabi.h (TARGET_E500): Define.
+
+        * config/rs6000/rs6000.h (TARGET_E500): Define.
+        (TARGET_OPTIONS): Add spe= option.
+        Declare rs6000_spe and rs6000_spe_string extern.
+
+        * config/rs6000/rs6000.c (branch_positive_comparison_operator):
+        Change TARGET_SPE to TARGET_E500.
+        (ccr_bit): Change TARGET_SPE to TARGET_E500.  Check for
+        !TARGET_FPRS.
+        (print_operand): Same.
+        (rs6000_generate_compare): Same.
+        (output_cbranch): Same.
+        (rs6000_spe): Declare.
+        (rs6000_spe_string): Declare.
+        (rs6000_override_options): Call rs6000_parse_spe_option.
+        (rs6000_parse_spe_option): New.
+
 2003-04-06  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* hashtable.c (gcc_obstack_init): Delete this function

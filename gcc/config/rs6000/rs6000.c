@@ -95,11 +95,17 @@ int rs6000_spe_abi;
 /* Whether isel instructions should be generated.  */
 int rs6000_isel;
 
+/* Whether SPE simd instructions should be generated.  */
+int rs6000_spe;
+
 /* Nonzero if we have FPRs.  */
 int rs6000_fprs = 1;
 
 /* String from -misel=.  */
 const char *rs6000_isel_string;
+
+/* String from -mspe=.  */
+const char *rs6000_spe_string;
 
 /* Set to nonzero once AIX common-mode calls have been defined.  */
 static GTY(()) int common_mode_defined;
@@ -270,6 +276,7 @@ static rtx altivec_expand_stv_builtin PARAMS ((enum insn_code, tree));
 static void rs6000_parse_abi_options PARAMS ((void));
 static void rs6000_parse_vrsave_option PARAMS ((void));
 static void rs6000_parse_isel_option PARAMS ((void));
+static void rs6000_parse_spe_option (void);
 static int first_altivec_reg_to_save PARAMS ((void));
 static unsigned int compute_vrsave_mask PARAMS ((void));
 static void is_altivec_return_reg PARAMS ((rtx, void *));
@@ -612,7 +619,7 @@ rs6000_override_options (default_cpu)
 	}
     }
 
-  if (rs6000_cpu == PROCESSOR_PPC8540)
+  if (TARGET_E500)
     rs6000_isel = 1;
 
   /* If we are optimizing big endian systems for space, use the load/store
@@ -701,6 +708,9 @@ rs6000_override_options (default_cpu)
   /* Handle -misel= option.  */
   rs6000_parse_isel_option ();
 
+  /* Handle -mspe= option.  */
+  rs6000_parse_spe_option ();
+
 #ifdef SUBTARGET_OVERRIDE_OPTIONS
   SUBTARGET_OVERRIDE_OPTIONS;
 #endif
@@ -786,6 +796,20 @@ rs6000_parse_isel_option ()
   else
     error ("unknown -misel= option specified: '%s'",
          rs6000_isel_string);
+}
+
+/* Handle -mspe= option.  */
+static void
+rs6000_parse_spe_option (void)
+{
+  if (rs6000_spe_string == 0)
+    return;
+  else if (!strcmp (rs6000_spe_string, "yes"))
+    rs6000_spe = 1;
+  else if (!strcmp (rs6000_spe_string, "no"))
+    rs6000_spe = 0;
+  else
+    error ("unknown -mspe= option specified: '%s'", rs6000_spe_string);
 }
 
 /* Handle -mvrsave= options.  */
@@ -7009,7 +7033,7 @@ branch_positive_comparison_operator (op, mode)
 
   code = GET_CODE (op);
   return (code == EQ || code == LT || code == GT
-	  || (TARGET_SPE && TARGET_HARD_FLOAT && !TARGET_FPRS && code == NE)
+	  || (TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS && code == NE)
 	  || code == LTU || code == GTU
 	  || code == UNORDERED);
 }
@@ -7469,11 +7493,13 @@ ccr_bit (op, scc_p)
   switch (code)
     {
     case NE:
-      if (TARGET_SPE && TARGET_HARD_FLOAT && cc_mode == CCFPmode)
+      if (TARGET_E500 && !TARGET_FPRS
+	  && TARGET_HARD_FLOAT && cc_mode == CCFPmode)
 	return base_bit + 1;
       return scc_p ? base_bit + 3 : base_bit + 2;
     case EQ:
-      if (TARGET_SPE && TARGET_HARD_FLOAT && cc_mode == CCFPmode)
+      if (TARGET_E500 && !TARGET_FPRS
+	  && TARGET_HARD_FLOAT && cc_mode == CCFPmode)
 	return base_bit + 1;
       return base_bit + 2;
     case GT:  case GTU:  case UNLE:
@@ -7685,7 +7711,7 @@ print_operand (file, x, code)
 	  fprintf (file, "crnor %d,%d,%d\n\t", base_bit + 3,
 		   base_bit + 2, base_bit + 2);
 	}
-      else if (TARGET_SPE && TARGET_HARD_FLOAT
+      else if (TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT
 	       && GET_CODE (x) == EQ
 	       && GET_MODE (XEXP (x, 0)) == CCFPmode)
 	{
@@ -8192,7 +8218,7 @@ print_operand (file, x, code)
 
 	tmp = XEXP (x, 0);
 
-	if (TARGET_SPE)
+	if (TARGET_E500)
 	  {
 	    /* Handle [reg].  */
 	    if (GET_CODE (tmp) == REG)
@@ -8477,7 +8503,8 @@ rs6000_generate_compare (code)
   compare_result = gen_reg_rtx (comp_mode);
 
   /* SPE FP compare instructions on the GPRs.  Yuck!  */
-  if ((TARGET_SPE && TARGET_HARD_FLOAT) && rs6000_compare_fp_p)
+  if ((TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT)
+      && rs6000_compare_fp_p)
     {
       rtx cmp, or1, or2, or_result, compare_result2;
 
@@ -8602,7 +8629,7 @@ rs6000_generate_compare (code)
      except for flag_unsafe_math_optimizations we don't bother.  */
   if (rs6000_compare_fp_p
       && ! flag_unsafe_math_optimizations
-      && ! (TARGET_HARD_FLOAT && TARGET_SPE)
+      && ! (TARGET_HARD_FLOAT && TARGET_E500 && !TARGET_FPRS)
       && (code == LE || code == GE
 	  || code == UNEQ || code == LTGT
 	  || code == UNGT || code == UNLT))
@@ -8730,7 +8757,7 @@ output_cbranch (op, label, reversed, insn)
 	code = reverse_condition (code);
     }
 
-  if ((TARGET_SPE && TARGET_HARD_FLOAT) && mode == CCFPmode)
+  if ((TARGET_E500 && !TARGET_FPRS && TARGET_HARD_FLOAT) && mode == CCFPmode)
     {
       /* The efscmp/tst* instructions twiddle bit 2, which maps nicely
 	 to the GT bit.  */

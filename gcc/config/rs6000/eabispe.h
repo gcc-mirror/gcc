@@ -36,6 +36,8 @@ Boston, MA 02111-1307, USA.  */
   /* See note below.  */ \
   /*if (rs6000_long_double_size_string == NULL)*/ \
   /*  rs6000_long_double_type_size = 128;*/ \
+  if (rs6000_spe_string == NULL) \
+    rs6000_spe = 1; \
   if (rs6000_isel_string == NULL) \
     rs6000_isel = 1
 
