@@ -1,3 +1,8 @@
+2004-02-21  Mark Mitchell  <mark@codesourcery.com>
+
+	* testsuite/testsuite_hooks.cc (__gnu_test::set_memory_limits): Do
+	not set RLIMIT_AS on HP-UX.
+
 2004-02-20  Mark Mitchell  <mark@codesourcery.com>
 
 	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc: Open
