@@ -1,3 +1,9 @@
+2003-05-07  Benjamin Kosnik  <bkoz@redhat.com>
+	
+	* testsuite/27_io/ios_base/cons: New.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: New.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: New.	
+
 2003-05-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_fstream.h (_M_is_indeterminate): Remove.
