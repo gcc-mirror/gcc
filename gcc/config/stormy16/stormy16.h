@@ -1043,7 +1043,7 @@ do {									\
    only sequences of consecutive registers.  On such machines, define
    `REG_ALLOC_ORDER' to be an initializer that lists the highest numbered
    allocatable register first.  */
-#define REG_ALLOC_ORDER { 9, 7, 6, 5, 4, 3, 8, 2, 1, 0, 10, 11, 12, 13, 14, 15, 16 }
+#define REG_ALLOC_ORDER { 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 10, 11, 12, 13, 14, 15, 16 }
 
 /* A C statement (sans semicolon) to choose the order in which to allocate hard
    registers for pseudo-registers local to a basic block.
@@ -1204,6 +1204,7 @@ enum reg_class
   R2_REGS,
   EIGHT_REGS,
   R8_REGS,
+  ICALL_REGS,
   GENERAL_REGS,
   CARRY_REGS,
   ALL_REGS,
@@ -1226,6 +1227,7 @@ enum reg_class
   "R2_REGS",					\
   "EIGHT_REGS",					\
   "R8_REGS",					\
+  "ICALL_REGS",					\
   "GENERAL_REGS",				\
   "CARRY_REGS",					\
   "ALL_REGS"					\
@@ -1250,6 +1252,7 @@ enum reg_class
   0x00004,					\
   0x000FF,					\
   0x00100,					\
+  0x00300,					\
   0x6FFFF,					\
   0x10000,					\
   (1 << FIRST_PSEUDO_REGISTER) - 1		\
@@ -1303,6 +1306,7 @@ enum reg_class
   : (CHAR) == 'e' ? EIGHT_REGS			\
   : (CHAR) == 't' ? TWO_REGS			\
   : (CHAR) == 'y' ? CARRY_REGS			\
+  : (CHAR) == 'z' ? ICALL_REGS			\
   : NO_REGS)
 
 /* A C expression which is nonzero if register number NUM is suitable for use
@@ -2007,7 +2011,7 @@ enum reg_class
 
 /* Function Arguments in Registers */
 
-#define NUM_ARGUMENT_REGISTERS 8
+#define NUM_ARGUMENT_REGISTERS 6
 #define FIRST_ARGUMENT_REGISTER 2
 
 #define STORMY16_WORD_SIZE(TYPE, MODE)				\
@@ -2293,7 +2297,7 @@ typedef int CUMULATIVE_ARGS;
    return values are decided by the `RETURN_IN_MEMORY' macro.
 
    If not defined, this defaults to the value 1.  */
-#define DEFAULT_PCC_STRUCT_RETURN 0
+/* #define DEFAULT_PCC_STRUCT_RETURN 0 */
 
 /* If the structure value address is passed in a register, then
    `STRUCT_VALUE_REGNUM' should be the number of that register.  */

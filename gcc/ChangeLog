@@ -1,3 +1,15 @@
+2001-10-05  Catherine Moore  <clm@redhat.com>
+
+        * config/stormy16/stormy-abi:  Document abi changes.
+        * config/stormy16/stormy16.h (REG_ALLOC_ORDER): Redefine.
+        (ICALL_REGS): New register class.
+        (NUM_ARGUMENT_REGISTERS): Now 6.
+        (DEFAULT_PCC_STRUCT_RETURN): Don't try to return structs
+        in registers.
+        (REG_CLASS_FROM_LETTER): Map 'z' to ICALL_REGS.
+        * config/stormy16.md (call_internal, call_value_internal,
+        indirect_jump): Use new 'z' constraint.
+
 2001-10-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* doc/cppinternals.texi: Update.

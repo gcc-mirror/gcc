@@ -822,7 +822,7 @@
 (define_insn "*call_internal"
   [(call (mem:HI (match_operand:HI 0 "nonmemory_operand" "i,r"))
 	 (match_operand 1 "" ""))
-   (use (match_operand:HI 2 "nonmemory_operand" "X,t"))]
+   (use (match_operand:HI 2 "nonmemory_operand" "X,z"))]
   ""
   "@
    callf %C0
@@ -834,7 +834,7 @@
   [(set (match_operand 3 "register_operand" "=r,r")
         (call (mem:HI (match_operand:HI 0 "nonmemory_operand" "i,r"))
 	      (match_operand 1 "" "")))
-   (use (match_operand:HI 2 "nonmemory_operand" "X,t"))]
+   (use (match_operand:HI 2 "nonmemory_operand" "X,z"))]
   ""
   "@
    callf %C0
@@ -882,7 +882,7 @@
 
 (define_insn ""
   [(set (pc) (match_operand:HI 0 "register_operand" "r"))
-   (use (match_operand:HI 1 "register_operand" "t"))]
+   (use (match_operand:HI 1 "register_operand" "z"))]
   ""
   "jmp %1,%0"
   [(set_attr "length" "4")
