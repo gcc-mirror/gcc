@@ -1065,7 +1065,7 @@ optimize_mode_switching (file)
   if (VARRAY_SIZE (basic_block_info) < last_basic_block)
     VARRAY_GROW (basic_block_info, last_basic_block);
   BASIC_BLOCK (last_basic_block - 1) = EXIT_BLOCK_PTR;
-  EXIT_BLOCK_PTR->sindex = last_basic_block;
+  EXIT_BLOCK_PTR->sindex = last_basic_blocks;
 #endif
 
   /* Create the bitmap vectors.  */
