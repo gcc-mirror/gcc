@@ -187,6 +187,21 @@ sparc64_fpconv_stack_temp ()
     return fpconv_stack_temp;
 }
 
+/* Miscellaneous utilities.  */
+
+/* Nonzero if CODE, a comparison, is suitable for use in v9 conditional move
+   or branch on register contents instructions.  */
+
+int
+v9_regcmp_p (code)
+     enum rtx_code code;
+{
+  return (code == EQ || code == NE || code == GE || code == LT
+	  || code == LE || code == GT);
+}
+
+/* Operand constraints.  */
+
 /* Return non-zero only if OP is a register of mode MODE,
    or const0_rtx.  */
 int
@@ -524,8 +539,7 @@ v9_regcmp_op (op, mode)
   if (GET_RTX_CLASS (code) != '<')
     return 0;
 
-  return (code == EQ || code == NE || code == GE || code == LT
-	  || code == LE || code == GT);
+  return v9_regcmp_p (code);
 }
 
 /* Return 1 if this is a SIGN_EXTEND or ZERO_EXTEND operation.  */

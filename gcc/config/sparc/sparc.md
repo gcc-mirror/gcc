@@ -2184,6 +2184,139 @@
 
 ;; Sparc V9 conditional move instructions.
 
+;; We can handle larger constants here for some flavors, but for now we play
+;; it safe and only allow those constants supported by all flavours.
+
+(define_expand "movsicc"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SI 2 "arith10_operand" "")
+		      (match_operand:SI 3 "arith10_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
+(define_expand "movdicc"
+  [(set (match_operand:DI 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:DI 2 "arith10_operand" "")
+		      (match_operand:DI 3 "arith10_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
+(define_expand "movsfcc"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SF 2 "register_operand" "")
+		      (match_operand:SF 3 "register_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
+(define_expand "movdfcc"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:DF 2 "register_operand" "")
+		      (match_operand:DF 3 "register_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
+(define_expand "movtfcc"
+  [(set (match_operand:TF 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:TF 2 "register_operand" "")
+		      (match_operand:TF 3 "register_operand" "")))]
+  "TARGET_V9"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+
+  if (sparc_compare_op1 == const0_rtx
+      && GET_CODE (sparc_compare_op0) == REG
+      && GET_MODE (sparc_compare_op0) == DImode
+      && v9_regcmp_p (code))
+    {
+      operands[1] = gen_rtx (code, DImode,
+			     sparc_compare_op0, sparc_compare_op1);
+    }
+  else
+    {
+      rtx cc_reg = gen_compare_reg (code,
+				    sparc_compare_op0, sparc_compare_op1);
+      operands[1] = gen_rtx (code, GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+}")
+
 ; ??? There is not actually a 32 bit version of this instruction.
 (define_insn "*movsi_cc_sp64"
   [(set (match_operand:SI 0 "register_operand" "=r")
