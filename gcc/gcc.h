@@ -42,7 +42,13 @@ extern void lang_specific_driver PARAMS ((int *, const char *const **, int *));
 /* Called before linking.  Returns 0 on success and -1 on failure. */
 extern int lang_specific_pre_link PARAMS ((void));
 
+extern int n_infiles;
+
 /* Number of extra output files that lang_specific_pre_link may generate. */
 extern int lang_specific_extra_outfiles;
+
+/* A vector of corresponding output files is made up later.  */
+
+extern const char **outfiles;
 
 #endif /* ! __GCC_H__ */
