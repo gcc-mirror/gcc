@@ -1320,7 +1320,8 @@ need to define this macro when the format is IEEE@.
 
 @findex VAX_FLOAT_FORMAT
 @item VAX_FLOAT_FORMAT
-This code indicates the ``D float'' format used on the VAX@.
+This code indicates the ``F float'' (for @code{float}) and ``D float''
+or ``G float'' formats (for @code{double}) used on the VAX and PDP-11@.
 
 @findex IBM_FLOAT_FORMAT
 @item IBM_FLOAT_FORMAT
@@ -1335,14 +1336,19 @@ This code indicates the format used on the TMS320C3x/C4x.
 This code indicates any other format.
 @end table
 
-The value of this macro is compared with @code{HOST_FLOAT_FORMAT}, which
-is defined by the @command{configure} script, to determine whether the
-target machine has the same format as the host machine.  If any other
+If any other
 formats are actually in use on supported machines, new codes should be
 defined for them.
 
 The ordering of the component words of floating point values stored in
 memory is controlled by @code{FLOAT_WORDS_BIG_ENDIAN}.
+
+@findex VAX_HALFWORD_ORDER
+@item VAX_HALFWORD_ORDER
+This macro is only used if @code{TARGET_FLOAT_FORMAT} is
+@code{VAX_FLOAT_FORMAT}.  If defaulted or defined as 1, the halfwords of
+the generated floating point data are in the order used by the VAX.  If
+defined as 0, they are reversed, which is used by the PDP-11 target.
 
 @findex MODE_HAS_NANS
 @item MODE_HAS_NANS (@var{mode})
@@ -1422,8 +1428,7 @@ Not defining this macro is equivalent to returning zero.
 
 @findex LARGEST_EXPONENT_IS_NORMAL
 @item LARGEST_EXPONENT_IS_NORMAL (@var{size})
-This macro should only be defined when the target float format is
-described as IEEE@.  It should return true if floats with @var{size}
+This macro should return true if floats with @var{size}
 bits do not have a NaN or infinity representation, but use the largest
 exponent for normal numbers instead.
 
@@ -5467,9 +5472,8 @@ This value must be constant over the entire compilation.  If you need
 it to vary depending on what the instructions are, you must use
 @samp{TARGET_SCHED_VARIABLE_ISSUE}.
 
-You could use the value of macro @samp{MAX_DFA_ISSUE_RATE} to return
-the value of the hook @samp{TARGET_SCHED_ISSUE_RATE} for the automaton
-based pipeline interface.
+For the automaton based pipeline interface, you could define this hook
+to return the value of the macro @code{MAX_DFA_ISSUE_RATE}.
 @end deftypefn
 
 @deftypefn {Target Hook} int TARGET_SCHED_VARIABLE_ISSUE (FILE *@var{file}, int @var{verbose}, rtx @var{insn}, int @var{more})
@@ -6688,12 +6692,12 @@ encoded by @code{TARGET_ENCODE_SECTION_INFO}.
 @findex ASM_OUTPUT_LABEL_REF
 @item ASM_OUTPUT_LABEL_REF (@var{stream}, @var{buf})
 A C statement (sans semicolon) to output a reference to @var{buf}, the
-result of ASM_GENERATE_INTERNAL_LABEL.  If not defined,
+result of @code{ASM_GENERATE_INTERNAL_LABEL}.  If not defined,
 @code{assemble_name} will be used to output the name of the symbol.
 This macro is not used by @code{output_asm_label}, or the @code{%l}
 specifier that calls it; the intention is that this macro should be set
-when it is necessary to output a label differently when its address
-is being taken.
+when it is necessary to output a label differently when its address is
+being taken.
 
 @findex ASM_OUTPUT_INTERNAL_LABEL
 @item ASM_OUTPUT_INTERNAL_LABEL (@var{stream}, @var{prefix}, @var{num})
@@ -8439,7 +8443,7 @@ elements of a jump-table should have.
 Optional: return the preferred mode for an @code{addr_diff_vec}
 when the minimum and maximum offset are known.  If you define this,
 it enables extra code in branch shortening to deal with @code{addr_diff_vec}.
-To make this work, you also have to define INSN_ALIGN and
+To make this work, you also have to define @code{INSN_ALIGN} and
 make the alignment for @code{addr_diff_vec} explicit.
 The @var{body} argument is provided so that the offset_unsigned and scale
 flags can be updated.

@@ -1744,70 +1744,6 @@ Integer constant in the range 1 to 4 for @code{shladd} instruction
 Memory operand except postincrement and postdecrement
 @end table
 
-@item MIPS---@file{mips.h}
-@table @code
-@item d
-General-purpose integer register
-
-@item f
-Floating-point register (if available)
-
-@item h
-@samp{Hi} register
-
-@item l
-@samp{Lo} register
-
-@item x
-@samp{Hi} or @samp{Lo} register
-
-@item y
-General-purpose integer register
-
-@item z
-Floating-point status register
-
-@item I
-Signed 16-bit constant (for arithmetic instructions)
-
-@item J
-Zero
-
-@item K
-Zero-extended 16-bit constant (for logic instructions)
-
-@item L
-Constant with low 16 bits zero (can be loaded with @code{lui})
-
-@item M
-32-bit constant which requires two instructions to load (a constant
-which is not @samp{I}, @samp{K}, or @samp{L})
-
-@item N
-Negative 16-bit constant
-
-@item O
-Exact power of two
-
-@item P
-Positive 16-bit constant
-
-@item G
-Floating point zero
-
-@item Q
-Memory reference that can be loaded with more than one instruction
-(@samp{m} is preferable for @code{asm} statements)
-
-@item R
-Memory reference that can be loaded with one instruction
-(@samp{m} is preferable for @code{asm} statements)
-
-@item S
-Memory reference in external OSF/rose PIC format
-(@samp{m} is preferable for @code{asm} statements)
-@end table
-
 @item IP2K---@file{ip2k.h}
 @table @code
 @item a
@@ -1876,6 +1812,70 @@ Zero
 
 @item P
 Integers from 0 to 255
+@end table
+
+@item MIPS---@file{mips.h}
+@table @code
+@item d
+General-purpose integer register
+
+@item f
+Floating-point register (if available)
+
+@item h
+@samp{Hi} register
+
+@item l
+@samp{Lo} register
+
+@item x
+@samp{Hi} or @samp{Lo} register
+
+@item y
+General-purpose integer register
+
+@item z
+Floating-point status register
+
+@item I
+Signed 16-bit constant (for arithmetic instructions)
+
+@item J
+Zero
+
+@item K
+Zero-extended 16-bit constant (for logic instructions)
+
+@item L
+Constant with low 16 bits zero (can be loaded with @code{lui})
+
+@item M
+32-bit constant which requires two instructions to load (a constant
+which is not @samp{I}, @samp{K}, or @samp{L})
+
+@item N
+Negative 16-bit constant
+
+@item O
+Exact power of two
+
+@item P
+Positive 16-bit constant
+
+@item G
+Floating point zero
+
+@item Q
+Memory reference that can be loaded with more than one instruction
+(@samp{m} is preferable for @code{asm} statements)
+
+@item R
+Memory reference that can be loaded with one instruction
+(@samp{m} is preferable for @code{asm} statements)
+
+@item S
+Memory reference in external OSF/rose PIC format
+(@samp{m} is preferable for @code{asm} statements)
 @end table
 
 @item Motorola 680x0---@file{m68k.h}
