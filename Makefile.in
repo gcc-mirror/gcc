@@ -1601,7 +1601,7 @@ all-sed: all-libiberty
 all-send-pr: all-prms
 all-shellutils:
 all-sim: all-libiberty all-bfd all-opcodes all-readline
-all-snavigator: all-tcl all-tk all-itcl all-db all-grep all-flexlm all-libgui
+all-snavigator: all-tcl all-tk all-itcl all-db all-grep all-libgui
 all-tar: all-libiberty
 all-tcl:
 all-tclX: all-tcl all-tk
