@@ -683,6 +683,10 @@ get_access_flags (decl)
 	flags |= ACC_INTERFACE;
       if (CLASS_STATIC (decl))
 	flags |= ACC_STATIC;
+      if (CLASS_PRIVATE (decl))
+	flags |= ACC_PRIVATE;
+      if (CLASS_PROTECTED (decl))
+	flags |= ACC_PROTECTED;
       if (ANONYMOUS_CLASS_P (TREE_TYPE (decl))
 	  || LOCAL_CLASS_P (TREE_TYPE (decl)))
 	flags |= ACC_PRIVATE;
