@@ -1995,7 +1995,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree scope, tree id)
 	   template <typename T> struct B : public A<T> { X x; };
 
 	 The user should have said "typename A<T>::X".  */
-      if (processing_template_decl && current_class_type)
+      if (processing_template_decl && current_class_type
+	  && TYPE_BINFO (current_class_type))
 	{
 	  tree b;
 
