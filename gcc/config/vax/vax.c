@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Vax.
-   Copyright (C) 1987, 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -18,8 +18,8 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-#include <stdio.h>
 #include "config.h"
+#include <stdio.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -614,34 +614,36 @@ check_float_value (mode, d, overflow)
 
   if (overflow)
     {
-      bcopy (&float_values[0], d, sizeof (REAL_VALUE_TYPE));
+      bcopy ((char *) &float_values[0], (char *) d, sizeof (REAL_VALUE_TYPE));
       return 1;
     }
 
   if ((mode) == SFmode)
     {
       REAL_VALUE_TYPE r;
-      bcopy (d, &r, sizeof (REAL_VALUE_TYPE));
+      bcopy ((char *) d, (char *) &r, sizeof (REAL_VALUE_TYPE));
       if (REAL_VALUES_LESS (float_values[0], r))
 	{
-	  bcopy (&float_values[0], d, sizeof (REAL_VALUE_TYPE));
+	  bcopy ((char *) &float_values[0], (char *) d,
+		 sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
       else if (REAL_VALUES_LESS (r, float_values[1]))
 	{
-	  bcopy (&float_values[1], d, sizeof (REAL_VALUE_TYPE));
+	  bcopy ((char *) &float_values[1], (char*) d,
+		 sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
       else if (REAL_VALUES_LESS (dconst0, r)
 		&& REAL_VALUES_LESS (r, float_values[2]))
 	{
-	  bcopy (&dconst0, d, sizeof (REAL_VALUE_TYPE));
+	  bcopy ((char *) &dconst0, (char *) d, sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
       else if (REAL_VALUES_LESS (r, dconst0)
 		&& REAL_VALUES_LESS (float_values[3], r))
 	{
-	  bcopy (&dconst0, d, sizeof (REAL_VALUE_TYPE));
+	  bcopy ((char *) &dconst0, (char *) d, sizeof (REAL_VALUE_TYPE));
 	  return 1;
 	}
     }

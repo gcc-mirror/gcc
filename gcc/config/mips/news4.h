@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sony RISC NEWS (mips)
-   Copyright (C) 1991 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1997 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -33,4 +33,7 @@ Boston, MA 02111-1307, USA.  */
 
 #define MACHINE_TYPE "RISC NEWS-OS"
 
-#include "mips/mips.h"
+/* INITIALIZE_TRAMPOLINE calls this library function to flush
+   program and data caches.  */
+#define CACHE_FLUSH_FUNC "cacheflush"
+

@@ -1,5 +1,5 @@
 /* Configuration for GNU C-compiler for System/370.
-   Copyright (C) 1989, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1993, 1997 Free Software Foundation, Inc.
    Contributed by Jan Stein (jan@cd.chalmers.se).
    Modified for MVS C/370 by Dave Pitts (dpitts@nyx.cs.du.edu)
 
@@ -43,10 +43,6 @@ Boston, MA 02111-1307, USA.  */
    target specific file.  */
 
 #include "tm.h"
-
-#define bcopy(a,b,c) memcpy (b,a,c)
-#define bzero(a,b) memset (a,0,b)
-#define bcmp(a,b,c) memcmp (a,b,c)
 
 /* Arguments to use with `exit'.  */
 
