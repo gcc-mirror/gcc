@@ -28,7 +28,6 @@ Boston, MA 02111-1307, USA.  */
 extern tree create_tmp_var_raw (tree, const char *);
 extern tree create_tmp_var_name (const char *);
 extern tree create_tmp_var (tree, const char *);
-extern bool is_gimple_tmp_var (tree);
 extern tree get_initialized_tmp_var (tree, tree *, tree *);
 extern tree get_formal_tmp_var (tree, tree *);
 extern void declare_tmp_vars (tree, tree);
@@ -48,6 +47,10 @@ extern bool is_gimple_stmt (tree);
 extern bool is_gimple_reg_type (tree);
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);
+/* Returns true if T is a GIMPLE temporary variable, false otherwise.  */
+extern bool is_gimple_tmp_var (tree);
+/* Returns true if T is a GIMPLE temporary register variable.  */
+extern bool is_gimple_tmp_reg (tree);
 /* Returns true iff T is any sort of variable.  */
 extern bool is_gimple_variable (tree);
 /* Returns true iff T is a variable or an INDIRECT_REF (of a variable).  */
