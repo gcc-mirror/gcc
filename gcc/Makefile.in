@@ -65,6 +65,34 @@ INSTALL_DATA = $(INSTALL)
 SYMLINK = ln -s
 MAKEINFO = makeinfo
 TEXI2DVI = texi2dvi
+MAKEOVERRIDES=
+
+FLAGS_TO_PASS = \
+	"AR_FLAGS=$(AR_FLAGS)" \
+	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
+	"AS_FOR_TARGET=$(AS_FOR_TARGET)" \
+	"BISON=$(BISON)" \
+	"CC=$(CC)" \
+	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
+	"CFLAGS=$(CFLAGS)" \
+	"CXX_FOR_BUILD=$(CXX_FOR_BUILD)" \
+	"CXXFLAGS=$(CXXFLAGS)" \
+	"CXX_FOR_TARGET=$(CXX_FOR_TARGET)" \
+	"GCC_FOR_TARGET=$(CC_FOR_TARGET)" \
+	"LDFLAGS=$(LDFLAGS)" \
+	"LEX=$(LEX)" \
+	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+	"MALLOC=$(MALLOC)" \
+	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
+	"OBSTACK=$(OBSTACK)" \
+	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
+	"SHELL=$(SHELL)" \
+	"USE_ALLOCA=$(USE_ALLOCA)" \
+	"YACC=$(BISON)" \
+	"exec_prefix=$(exec_prefix)" \
+	"prefix=$(prefix)" \
+	"tooldir=$(tooldir)" 
 
 # Define this as & to perform parallel make on a Sequent.
 # Note that this has some bugs, and it seems currently necessary 
@@ -403,14 +431,6 @@ C_OBJS = c-parse.o c-lang.o c-lex.o c-pragma.o \
 OBJC_OBJS = objc-parse.o objc-act.o c-lex.o c-pragma.o \
    c-decl.o c-typeck.o c-convert.o c-aux-info.o c-common.o c-iterate.o
 
-# Language-specific object files for C++.
-CPLUS_OBJS = cp-parse.o cp-decl.o cp-decl2.o \
-   cp-typeck.o cp-type2.o cp-tree.o cp-ptree.o \
-   cp-cvt.o cp-search.o cp-lex.o cp-gc.o cp-call.o \
-   cp-class.o cp-init.o cp-method.o cp-except.o \
-   cp-expr.o cp-pt.o cp-edsel.o cp-xref.o \
-   $(CPLUS_INPUT) cp-spew.o c-common.o cp-error.o cp-errfn.o
-
 # Files specific to the C interpreter bytecode compiler(s).
 BC_OBJS = bc-emit.o bc-optab.o
 
@@ -479,7 +499,6 @@ USER_H = va-alpha.h va-h8300.h va-i860.h va-i960.h va-mips.h va-m88k.h \
 CONFIG_H =
 RTL_H = rtl.h rtl.def machmode.h machmode.def
 TREE_H = tree.h real.h tree.def machmode.h machmode.def
-CPLUS_TREE_H = $(TREE_H) cp-tree.h cp-tree.def
 BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 
 # Avoid a lot of time thinking about remaking Makefile.in and *.def.
@@ -488,6 +507,8 @@ BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
    $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file)
 	$(SHELL) config.status
+
+SUBDIRS = ch cp
 
 all.internal: start.encap rest.encap
 # This is what to compile if making a cross-compiler.
@@ -570,8 +591,18 @@ g++-cross: $(srcdir)/g++.c
 cc1: $(P) $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1 $(C_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
 
-cc1plus: $(P) $(CPLUS_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
-	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1plus $(CPLUS_OBJS) $(BC_OBJS) $(OBJS) $(LIBS)
+CXX_SRCS= $(srcdir)/cp/call.c $(srcdir)/cp/decl2.c \
+ $(srcdir)/cp/except.c $(srcdir)/cp/input.c $(srcdir)/cp/pt.c \
+ $(srcdir)/cp/spew.c $(srcdir)/cp/xref.c $(srcdir)/cp/class.c \
+ $(srcdir)/cp/edsel.c $(srcdir)/cp/expr.c $(srcdir)/cp/lex.c \
+ $(srcdir)/cp/ptree.c $(srcdir)/cp/tree.c $(srcdir)/cp/cvt.c \
+ $(srcdir)/cp/errfn.c $(srcdir)/cp/gc.c $(srcdir)/cp/method.c \
+ $(srcdir)/cp/search.c $(srcdir)/cp/typeck.c $(srcdir)/cp/decl.c \
+ $(srcdir)/cp/error.c $(srcdir)/cp/init.c $(srcdir)/cp/parse.y \
+ $(srcdir)/cp/sig.c $(srcdir)/cp/typeck2.c
+
+cc1plus: $(P) $(CXX_SRCS) $(OBJS) $(BC_OBJS) $(LIBDEPS) c-common.o
+	cd cp; $(MAKE) $(FLAGS_TO_PASS) ../cc1plus
 
 cc1obj: $(P) $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBDEPS)
 	$(CC) $(ALL_CFLAGS) $(LDFLAGS) -o cc1obj $(OBJC_OBJS) $(OBJS) $(BC_OBJS) $(LIBS)
@@ -829,43 +860,6 @@ c-pragma.o: c-pragma.c $(CONFIG_H) $(TREE_H)
 c-iterate.o: c-iterate.c $(CONFIG_H) $(TREE_H) $(RTL_H) c-tree.h flags.h
 
 # C++ language specific files.
-
-cp-parse.o : $(srcdir)/cp-parse.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h cp-lex.h
-	$(CC) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-  `echo $(srcdir)/cp-parse.c | sed 's,^\./,,'`
-
-$(srcdir)/cp-parse.c $(srcdir)/cp-parse.h : $(srcdir)/cp-parse.y
-	@echo expect 27 shift/reduce conflicts and 14 reduce/reduce conflicts
-	cd $(srcdir); $(BISON) $(BISONFLAGS) -d -o cp-parse.c cp-parse.y
-	cd $(srcdir); grep '^#define[ 	]*YYEMPTY' cp-parse.c >>cp-parse.h
-
-cp-spew.o : cp-spew.c $(CONFIG_H) $(CPLUS_TREE_H) \
-   $(srcdir)/cp-parse.h flags.h cp-lex.h
-cp-lex.o : cp-lex.c $(CONFIG_H) $(CPLUS_TREE_H) \
-   $(srcdir)/cp-parse.h $(srcdir)/cp-input.c flags.h cp-hash.h cp-lex.h
-cp-decl.o : cp-decl.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h \
-  cp-lex.h cp-decl.h stack.h
-cp-decl2.o : cp-decl2.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h \
-  cp-lex.h cp-decl.h
-cp-type2.o : cp-type2.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-typeck.o : cp-typeck.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
-cp-class.o : cp-class.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-call.o : cp-call.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-init.o : cp-init.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
-cp-method.o : cp-method.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-cvt.o : cp-cvt.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-search.o : cp-search.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
-cp-tree.o : cp-tree.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-ptree.o : cp-ptree.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-gc.o : cp-gc.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h
-cp-except.o : cp-except.c $(CONFIG_H) $(CPLUS_TREE_H) flags.h $(RTL_H)
-cp-expr.o : cp-expr.c $(CONFIG_H) $(CPLUS_TREE_H) $(RTL_H) flags.h \
-  expr.h insn-codes.h
-cp-edsel.o : cp-edsel.c $(CONFIG_H) $(CPLUS_TREE_H) stack.h flags.h
-cp-xref.o : cp-xref.c $(CONFIG_H) $(CPLUS_TREE_H) input.h
-cp-pt.o : cp-pt.c $(CONFIG_H) $(CPLUS_TREE_H) cp-decl.h cp-parse.h
-cp-error.o : cp-error.c $(CONFIG_H) $(CPLUS_TREE_H)
-cp-errfn.o : cp-errfn.c $(CONFIG_H) $(CPLUS_TREE_H)
 
 g++.o : g++.c $(CONFIG_H) gvarargs.h
 
@@ -1667,6 +1661,13 @@ mostlyclean: bytecode.mostlyclean
 	  cd objc; $(MAKE) -f $$srcdir1/objc/Makefile mostlyclean; \
 	else true; fi
 	-rm -f libobjc.a
+# Clean the language subdirs.
+	srcdir1=`cd $(srcdir); pwd`; \
+        for dir in $(SUBDIRS); do \
+          if [ -d $$dir ] ; then \
+	    (cd $$dir; $(MAKE) -f $$srcdir1/$$dir/Makefile.in $@) ; \
+          fi ; \
+        done
 # Delete the temporary source copies for cross compilation.
 	-rm -f $(HOST_PREFIX_1)rtl.c $(HOST_PREFIX_1)rtlanal.c
 	-rm -f $(HOST_PREFIX_1)alloca.c $(HOST_PREFIX_1)malloc.c
@@ -1707,6 +1708,13 @@ clean: mostlyclean bytecode.clean
 	-if [ -f md.pre-cpp ]; then \
 	  rm -f md ; \
 	fi
+# Clean the language subdirs.
+	srcdir1=`cd $(srcdir); pwd`; \
+        for dir in $(SUBDIRS); do \
+          if [ -d $$dir ] ; then \
+	    (cd $$dir; $(MAKE) -f $$srcdir1/$$dir/Makefile.in $@) ; \
+          fi ; \
+        done
 # Delete the include directory.
 	-rm -rf stmp-* include objc-headers
 
@@ -1716,8 +1724,14 @@ distclean: clean bytecode.distclean
 	-rm -f tm.h aux-output.c config.h config.status tconfig.h hconfig.h
 	-rm -f md md.pre-cpp
 	-rm -f Makefile *.oaux
+# Clean the language subdirs.
+	srcdir1=`cd $(srcdir); pwd`; \
+        for dir in $(SUBDIRS); do \
+          if [ -d $$dir ] ; then \
+	    (cd $$dir; $(MAKE) -f $$srcdir1/$$dir/Makefile.in $@) ; \
+          fi ; \
+        done
 	-rm -fr stage1 stage2 stage3 stage4
-	-rm -f cp-parse.output
 	-rm -f objc-parse.output
 	-rm -f c-parse.output
 
@@ -1735,18 +1749,31 @@ extraclean: distclean
 	-rm -f *lose config/*lose config/*/*lose
 	-rm -f *.s *.s[0-9] *.i install1.texi config/ChangeLog
 	-rm -f djefoo
+# Clean the language subdirs.
+	srcdir1=`cd $(srcdir); pwd`; \
+        for dir in $(SUBDIRS); do \
+          if [ -d $$dir ] ; then \
+	    (cd $$dir; $(MAKE) -f $$srcdir1/$$dir/Makefile.in $@) ; \
+          fi ; \
+        done
 
 # Get rid of every file that's generated from some other file.
 # Most of these files ARE PRESENT in the GCC distribution.
 realclean: distclean bytecode.realclean
 	-rm -f c-parse.y objc-parse.y
-	-rm -f cp-parse.c cp-parse.h cp-parse.output
 	-rm -f objc-parse.c objc-parse.output
 	-rm -f c-parse.c c-parse.h c-parse.output
 	-rm -f cexp.c cexp.output TAGS 
 	-rm -f cpp.info* cpp.??s cpp.*aux
 	-rm -f gcc.info* gcc.??s gcc.*aux
 	-rm -f gplus.info* gplus.??s gplus.*aux
+# Clean the language subdirs.
+	srcdir1=`cd $(srcdir); pwd`; \
+        for dir in $(SUBDIRS); do \
+          if [ -d $$dir ] ; then \
+	    (cd $$dir; $(MAKE) -f $$srcdir1/$$dir/Makefile.in $@) ; \
+          fi ; \
+        done
 
 # Entry points `install' and `uninstall'.
 # Also use `install-collect2' to install collect2 when the config files don't.
@@ -2021,6 +2048,7 @@ distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
 	-rm -rf gcc-$(version) tmp	
 # Put all the files in a temporary subdirectory
 # which has the name that we want to have in the tar file.
+# ??? Do we need to handle the language subdirs here?
 	mkdir tmp
 	mkdir tmp/config
 	mkdir tmp/objc
@@ -2054,6 +2082,7 @@ distdir: doc $(srcdir)/INSTALL c-parse.y objc-parse.y cp-parse.y \
 # make diff oldversion=M.N 
 # creates a diff file between an older distribution and this one.
 # The -P option assumes this is GNU diff.
+# ??? cp-parse.c needs renaming or some such.
 diff:
 	diff -rc2P -x c-parse.y -x c-parse.c -x c-parse.h -x objc-parse.y \
 	  -x cp-parse.c -x cp-parse.h -x cexp.c -x bi-parser.c \
@@ -2091,36 +2120,56 @@ bootstrap: force
 # To prevent `make install' from compiling alloca.o and then relinking cc1
 # because alloca.o is newer, we permit these recursive makes to compile
 # alloca.o.  Then cc1 is newer, so it won't have to be relinked.
-	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	cwd=`pwd` ; $(MAKE) CC="$$cwd/stage1/xgcc -B$$cwd/stage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	cwd=`pwd` ; $(MAKE) CC="$$cwd/stage2/xgcc -B$$cwd/stage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 bootstrap2: force
-	$(MAKE) CC="stage1/xgcc -Bstage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	cwd=`pwd` ; $(MAKE) CC="$$cwd/stage1/xgcc -B$$cwd/stage1/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 	$(MAKE) stage2
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	cwd=`pwd` ; $(MAKE) CC="$$cwd/stage2/xgcc -B$$cwd/stage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 bootstrap3: force
-	$(MAKE) CC="stage2/xgcc -Bstage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
+	cwd=`pwd` ; $(MAKE) CC="$$cwd/stage2/xgcc -B$$cwd/stage2/" CFLAGS="$(BOOT_CFLAGS)" LDFLAGS="$(BOOT_LDFLAGS)" libdir=$(libdir) LANGUAGES="$(LANGUAGES)"
 
 # Compare the object files in the current directory with those in the
 # stage2 directory.
 
 # ./ avoids bug in some versions of tail.
+# ??? The test "-f $$dir/decl.o" needs to be changed.
 compare: force
 	for file in *.o; do \
 	  tail +16c ./$$file > tmp-foo1; \
 	  tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
 	done
+	for dir in $(SUBDIRS); do \
+	  if [ -f $$dir/decl.o ] ; then \
+	    for file in $$dir/*.o; do \
+	      tail +16c ./$$file > tmp-foo1; \
+	      tail +16c stage2/$$file > tmp-foo2 2>/dev/null \
+	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	    done \
+	  fi \
+	done
 	-rm -f tmp-foo*
 
 # Similar, but compare with stage3 directory
+# ??? The test "-f $$dir/decl.o" needs to be changed.
 compare3: force
 	for file in *.o; do \
-	  tail +16c $$file > tmp-foo1; \
+	  tail +16c ./$$file > tmp-foo1; \
 	  tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
 	    && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	done
+	for dir in $(SUBDIRS); do \
+	  if [ -f $$dir/decl.o ] ; then \
+	    for file in $$dir/*.o; do \
+	      tail +16c ./$$file > tmp-foo1; \
+	      tail +16c stage3/$$file > tmp-foo2 2>/dev/null \
+	        && (cmp tmp-foo1 tmp-foo2 || echo $$file differs); \
+	    done \
+	  fi \
 	done
 	-rm -f tmp-foo*
 
@@ -2143,6 +2192,10 @@ gnucompare3: force
 stage1: force
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	-mv $(STAGESTUFF) stage1
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
+	   mv $$dir/*.o stage1/$$dir; \
+	 done
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage1/libgcc.a; else true; fi
@@ -2150,6 +2203,10 @@ stage1: force
 stage2: force
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	-mv $(STAGESTUFF) stage2
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
+	   mv $$dir/*.o stage2/$$dir; \
+	 done
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage2/libgcc.a; else true; fi
@@ -2157,6 +2214,10 @@ stage2: force
 stage3: force
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	-mv $(STAGESTUFF) stage3
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
+	   mv $$dir/*.o stage3/$$dir; \
+	 done
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage3/libgcc.a; else true; fi
@@ -2164,6 +2225,10 @@ stage3: force
 stage4: force
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	-mv $(STAGESTUFF) stage4
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
+	   mv $$dir/*.o stage4/$$dir; \
+	 done
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4
 	-if $(RANLIB_TEST) ; then $(RANLIB) stage4/libgcc.a; else true; fi
@@ -2174,6 +2239,10 @@ stage4: force
 risky-stage1: force
 	-if [ -d stage1 ] ; then true ; else mkdir stage1 ; fi
 	-mv $(GCC_PARTS) stage1
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage1/$$dir ] ; then true ; else mkdir stage1/$$dir ; fi ; \
+	   mv $$dir/*.o stage1/$$dir; \
+	 done
 	-rm -f stage1/libgcc.a
 	-cp libgcc.a stage1 && $(RANLIB) stage1/libgcc.a
 	-make clean
@@ -2181,6 +2250,10 @@ risky-stage1: force
 risky-stage2: force
 	-if [ -d stage2 ] ; then true ; else mkdir stage2 ; fi
 	-mv $(GCC_PARTS) stage2
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage2/$$dir ] ; then true ; else mkdir stage2/$$dir ; fi ; \
+	   mv $$dir/*.o stage2/$$dir; \
+	 done
 	-rm -f stage2/libgcc.a
 	-cp libgcc.a stage2 && $(RANLIB) stage2/libgcc.a
 	-make clean
@@ -2188,6 +2261,10 @@ risky-stage2: force
 risky-stage3: force
 	-if [ -d stage3 ] ; then true ; else mkdir stage3 ; fi
 	-mv $(GCC_PARTS) stage3
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage3/$$dir ] ; then true ; else mkdir stage3/$$dir ; fi ; \
+	   mv $$dir/*.o stage3/$$dir; \
+	 done
 	-rm -f stage3/libgcc.a
 	-cp libgcc.a stage3 && $(RANLIB) stage3/libgcc.a
 	-make clean
@@ -2195,6 +2272,10 @@ risky-stage3: force
 risky-stage4: force
 	-if [ -d stage4 ] ; then true ; else mkdir stage4 ; fi
 	-mv $(GCC_PARTS) stage4
+	-for dir in $(SUBDIRS); do \
+	   if [ -d stage4/$$dir ] ; then true ; else mkdir stage4/$$dir ; fi ; \
+	   mv $$dir/*.o stage4/$$dir; \
+	 done
 	-rm -f stage4/libgcc.a
 	-cp libgcc.a stage4 && $(RANLIB) stage4/libgcc.a
 	-make clean
