@@ -2228,7 +2228,7 @@
 ;; a divide by power of 2 with a shift, and then the remainder is no longer
 ;; available.
 
-(define_insn "divmodsi4"
+(define_expand "divmodsi4"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(div:SI (match_operand:SI 1 "register_operand" "d")
 		(match_operand:SI 2 "register_operand" "d")))
@@ -2239,21 +2239,46 @@
    (clobber (match_scratch:SI 5 "=h"))
    (clobber (match_scratch:SI 6 "=a"))]
   "optimize"
-  "*
+  "
 {
-  if (find_reg_note (insn, REG_UNUSED, operands[3]))
-    return \"div\\t%0,%1,%2\";
+  rtx label;
 
-  if (find_reg_note (insn, REG_UNUSED, operands[0]))
-    return \"rem\\t%3,%1,%2\";
+  emit_insn (gen_divmodsi4_internal (operands[0], operands[1], operands[2],
+	     operands[3]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  if (TARGET_CHECK_RANGE_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (-1)),
+			       GEN_INT (0x6)));
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0x80000000)),
+			       GEN_INT (0x6)));
+    }
+  
+  DONE;
+}")
 
-  return \"div\\t%0,%1,%2\;mfhi\\t%3\";
-}"
+(define_insn "divmodsi4_internal"
+  [(set (match_operand:SI 0 "register_operand" "=l")
+	(div:SI (match_operand:SI 1 "register_operand" "d")
+		(match_operand:SI 2 "register_operand" "d")))
+   (set (match_operand:SI 3 "register_operand" "=h")
+	(mod:SI (match_dup 1)
+		(match_dup 2)))
+   (clobber (match_scratch:SI 6 "=a"))]
+  "optimize"
+  "div\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"14")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
-(define_insn "divmoddi4"
+(define_expand "divmoddi4"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(div:DI (match_operand:DI 1 "se_register_operand" "d")
 		(match_operand:DI 2 "se_register_operand" "d")))
@@ -2264,21 +2289,46 @@
    (clobber (match_scratch:DI 5 "=h"))
    (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && optimize"
-  "*
+  "
 {
-  if (find_reg_note (insn, REG_UNUSED, operands[3]))
-    return \"ddiv\\t%0,%1,%2\";
+  rtx label;
 
-  if (find_reg_note (insn, REG_UNUSED, operands[0]))
-    return \"drem\\t%3,%1,%2\";
+  emit_insn (gen_divmoddi4_internal (operands[0], operands[1], operands[2],
+             operands[3]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  if (TARGET_CHECK_RANGE_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (-1)),
+			       GEN_INT (0x6)));
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0x80000000)),
+			       GEN_INT (0x6)));
+    }
+  
+  DONE;
+}")
 
-  return \"ddiv\\t%0,%1,%2\;mfhi\\t%3\";
-}"
+(define_insn "divmoddi4_internal"
+  [(set (match_operand:DI 0 "register_operand" "=l")
+	(div:DI (match_operand:DI 1 "se_register_operand" "d")
+		(match_operand:DI 2 "se_register_operand" "d")))
+   (set (match_operand:DI 3 "register_operand" "=h")
+	(mod:DI (match_dup 1)
+		(match_dup 2)))
+   (clobber (match_scratch:DI 6 "=a"))]
+  "TARGET_64BIT && optimize"
+  "ddiv\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"15")])		;; various tests for dividing by 0 and such
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
 
-(define_insn "udivmodsi4"
+(define_expand "udivmodsi4"
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(udiv:SI (match_operand:SI 1 "register_operand" "d")
 		 (match_operand:SI 2 "register_operand" "d")))
@@ -2289,21 +2339,37 @@
    (clobber (match_scratch:SI 5 "=h"))
    (clobber (match_scratch:SI 6 "=a"))]
   "optimize"
-  "*
+  "
 {
-  if (find_reg_note (insn, REG_UNUSED, operands[3]))
-    return \"divu\\t%0,%1,%2\";
+  rtx label;
 
-  if (find_reg_note (insn, REG_UNUSED, operands[0]))
-    return \"remu\\t%3,%1,%2\";
+  emit_insn (gen_udivmodsi4_internal (operands[0], operands[1], operands[2],
+                                      operands[3]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  
+  DONE;
+}")
 
-  return \"divu\\t%0,%1,%2\;mfhi\\t%3\";
-}"
+(define_insn "udivmodsi4_internal"
+  [(set (match_operand:SI 0 "register_operand" "=l")
+	(udiv:SI (match_operand:SI 1 "register_operand" "d")
+		 (match_operand:SI 2 "register_operand" "d")))
+   (set (match_operand:SI 3 "register_operand" "=h")
+	(umod:SI (match_dup 1)
+		 (match_dup 2)))
+   (clobber (match_scratch:SI 6 "=a"))]
+  "optimize"
+  "divu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])		;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
-(define_insn "udivmoddi4"
+(define_expand "udivmoddi4"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(udiv:DI (match_operand:DI 1 "se_register_operand" "d")
 		 (match_operand:DI 2 "se_register_operand" "d")))
@@ -2314,220 +2380,372 @@
    (clobber (match_scratch:DI 5 "=h"))
    (clobber (match_scratch:DI 6 "=a"))]
   "TARGET_64BIT && optimize"
+  "
+{
+  rtx label;
+
+  emit_insn (gen_udivmoddi4_internal (operands[0], operands[1], operands[2],
+                                      operands[3]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  
+  DONE;
+}")
+
+(define_insn "udivmoddi4_internal"
+  [(set (match_operand:DI 0 "register_operand" "=l")
+	(udiv:DI (match_operand:DI 1 "se_register_operand" "d")
+		 (match_operand:DI 2 "se_register_operand" "d")))
+   (set (match_operand:DI 3 "register_operand" "=h")
+	(umod:DI (match_dup 1)
+		 (match_dup 2)))
+   (clobber (match_scratch:DI 6 "=a"))]
+  "TARGET_64BIT && optimize"
+  "ddivu\\t$0,%1,%2"
+  [(set_attr "type"	"idiv")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"1")])
+
+;; Division trap
+
+(define_insn "div_trap"
+  [(trap_if (eq (match_operand 0 "register_operand" "d")
+		(match_operand 1 "reg_or_0_operand" "dJ"))
+            (match_operand 2 "immediate_operand" ""))]
+  ""
   "*
 {
-  if (find_reg_note (insn, REG_UNUSED, operands[3]))
-    return \"ddivu\\t%0,%1,%2\";
+  rtx link;
+  int have_dep_anti = 0;
 
-  if (find_reg_note (insn, REG_UNUSED, operands[0]))
-    return \"dremu\\t%3,%1,%2\";
+  /* For divmod if one division is not needed then we don't need an extra
+     divide by zero trap, which is anti dependent on previous trap */
+  for (link = LOG_LINKS (insn); link; link = XEXP (link, 1))
 
-  return \"ddivu\\t%0,%1,%2\;mfhi\\t%3\";
+    if ((int) REG_DEP_ANTI == (int) REG_NOTE_KIND (link)
+        && GET_CODE (PATTERN (XEXP (link, 0))) == TRAP_IF
+	&& REGNO (operands[1]) == 0)
+      have_dep_anti = 1;
+  if (! have_dep_anti)
+    if (GENERATE_BRANCHLIKELY)
+      return \"%(beql\\t%0,%1,.+8\\n\\tbreak\\t%2%)\";
+    else
+      return \"%(bne\\t%0,%1,.+12\\n\\tnop\\n\\tbreak\\t%2%)\";
 }"
-  [(set_attr "type"	"idiv")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"8")])		;; various tests for dividing by 0 and such
+  [(set_attr "type" "unknown")
+   (set_attr "length" "2")])
 
 (define_expand "divsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=l")
 	(div:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "nonmemory_operand" "di")))
-   (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))
-   (clobber (match_scratch:SI 6 "=a"))]
+		(match_operand:SI 2 "register_operand" "d")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (SImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_divsi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  if (TARGET_CHECK_RANGE_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (-1)),
+			       GEN_INT (0x6)));
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0x80000000)),
+			       GEN_INT (0x6)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "divsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=l")
 	(div:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "nonmemory_operand" "di")))]
+		(match_operand:SI 2 "nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
-  "div\\t%0,%1,%2"
+  "div\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"13")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "divdi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=l")
 	(div:DI (match_operand:DI 1 "se_register_operand" "d")
-		(match_operand:DI 2 "se_nonmemory_operand" "di")))
-   (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))
-   (clobber (match_scratch:DI 6 "=a"))]
+		(match_operand:DI 2 "se_register_operand" "d"))) 
+   (clobber (match_scratch:DI 3 "=h"))
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && !optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (DImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_divdi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  if (TARGET_CHECK_RANGE_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (-1)),
+			       GEN_INT (0x6)));
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0x80000000)),
+			       GEN_INT (0x6)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "divdi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=l")
 	(div:DI (match_operand:DI 1 "se_register_operand" "d")
-		(match_operand:DI 2 "se_nonmemory_operand" "di")))]
+		(match_operand:DI 2 "se_nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "TARGET_64BIT && !optimize"
-  "ddiv\\t%0,%1,%2"
+  "ddiv\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"14")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "modsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=h")
 	(mod:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "nonmemory_operand" "di")))
+		(match_operand:SI 2 "register_operand" "d")))
    (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))
-   (clobber (match_scratch:SI 6 "=a"))]
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (SImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_modsi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  if (TARGET_CHECK_RANGE_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (-1)),
+			       GEN_INT (0x6)));
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0x80000000)),
+			       GEN_INT (0x6)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "modsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=h")
 	(mod:SI (match_operand:SI 1 "register_operand" "d")
-		(match_operand:SI 2 "nonmemory_operand" "di")))]
+		(match_operand:SI 2 "nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=l"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
-  "rem\\t%0,%1,%2"
+  "div\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"13")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "moddi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=h")
 	(mod:DI (match_operand:DI 1 "se_register_operand" "d")
-		(match_operand:DI 2 "se_nonmemory_operand" "di")))
+		(match_operand:DI 2 "se_register_operand" "d")))
    (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))
-   (clobber (match_scratch:DI 6 "=a"))]
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && !optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (DImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_moddi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  if (TARGET_CHECK_RANGE_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (-1)),
+			       GEN_INT (0x6)));
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0x80000000)),
+			       GEN_INT (0x6)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "moddi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=h")
 	(mod:DI (match_operand:DI 1 "se_register_operand" "d")
-		(match_operand:DI 2 "se_nonmemory_operand" "di")))]
+		(match_operand:DI 2 "se_nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=l"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "TARGET_64BIT && !optimize"
-  "drem\\t%0,%1,%2"
+  "ddiv\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"14")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "udivsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=l")
 	(udiv:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "nonmemory_operand" "di")))
-   (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))
-   (clobber (match_scratch:SI 6 "=a"))]
+		 (match_operand:SI 2 "register_operand" "d")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (SImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_udivsi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "udivsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=l")
 	(udiv:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "nonmemory_operand" "di")))]
+		 (match_operand:SI 2 "nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
-  "divu\\t%0,%1,%2"
+  "divu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "udivdi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=l")
 	(udiv:DI (match_operand:DI 1 "se_register_operand" "d")
-		 (match_operand:DI 2 "se_nonmemory_operand" "di")))
-   (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))
-   (clobber (match_scratch:DI 6 "=a"))]
+		 (match_operand:DI 2 "se_register_operand" "di")))
+   (clobber (match_scratch:DI 3 "=h"))
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && !optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (DImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_udivdi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "udivdi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=l")
 	(udiv:DI (match_operand:DI 1 "se_register_operand" "d")
-		 (match_operand:DI 2 "se_nonmemory_operand" "di")))]
+		 (match_operand:DI 2 "se_nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=h"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "TARGET_64BIT && !optimize"
-  "ddivu\\t%0,%1,%2"
+  "ddivu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "umodsi3"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=h")
 	(umod:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "nonmemory_operand" "di")))
+		 (match_operand:SI 2 "register_operand" "d")))
    (clobber (match_scratch:SI 3 "=l"))
-   (clobber (match_scratch:SI 4 "=h"))
-   (clobber (match_scratch:SI 6 "=a"))]
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (SImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_umodsi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (SImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "umodsi3_internal"
-  [(set (match_operand:SI 0 "register_operand" "=d")
+  [(set (match_operand:SI 0 "register_operand" "=h")
 	(umod:SI (match_operand:SI 1 "register_operand" "d")
-		 (match_operand:SI 2 "nonmemory_operand" "di")))]
+		 (match_operand:SI 2 "nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=l"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "!optimize"
-  "remu\\t%0,%1,%2"
+  "divu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
+   (set_attr "length"	"1")])
 
 (define_expand "umoddi3"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=h")
 	(umod:DI (match_operand:DI 1 "se_register_operand" "d")
-		 (match_operand:DI 2 "se_nonmemory_operand" "di")))
+		 (match_operand:DI 2 "se_register_operand" "di")))
    (clobber (match_scratch:DI 3 "=l"))
-   (clobber (match_scratch:DI 4 "=h"))
-   (clobber (match_scratch:DI 6 "=a"))]
+   (clobber (match_scratch:DI 4 "=a"))]
   "TARGET_64BIT && !optimize"
   "
 {
-  /* MIPS16 needs div/rem ops in registers. */
-  if (TARGET_MIPS16)
-    operands[2] = force_reg (DImode, operands[2]);
+  rtx label;
+
+  emit_insn (gen_umoddi3_internal (operands[0], operands[1], operands[2]));
+  if (!TARGET_NO_CHECK_ZERO_DIV)
+    {
+      emit_insn (gen_div_trap (operands[2],
+			       copy_to_mode_reg (DImode, GEN_INT (0)),
+			       GEN_INT (0x7)));
+    }
+  
+  DONE;
 }")
 
 (define_insn "umoddi3_internal"
-  [(set (match_operand:DI 0 "register_operand" "=d")
+  [(set (match_operand:DI 0 "register_operand" "=h")
 	(umod:DI (match_operand:DI 1 "se_register_operand" "d")
-		 (match_operand:DI 2 "se_nonmemory_operand" "di")))]
+		 (match_operand:DI 2 "se_nonmemory_operand" "di")))
+   (clobber (match_scratch:SI 3 "=l"))
+   (clobber (match_scratch:SI 4 "=a"))]
   "TARGET_64BIT && !optimize"
-  "dremu\\t%0,%1,%2"
+  "ddivu\\t$0,%1,%2"
   [(set_attr "type"	"idiv")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"7")])	;; various tests for dividing by 0 and such
-
+   (set_attr "length"	"1")])
 
 ;;
 ;;  ....................

@@ -336,16 +336,18 @@ extern void		mips_select_section ();
 #define MASK_4300_MUL_FIX 0x00080000    /* Work-around early Vr4300 CPU bug */
 #define MASK_MIPS3900	0x00100000	/* like -mips1 only 3900 */
 #define MASK_MIPS16	0x01000000	/* Generate mips16 code */
+#define MASK_NO_CHECK_ZERO_DIV 0x04000000	/* divide by zero checking */
+#define MASK_CHECK_RANGE_DIV 0x08000000	/* divide result range checking */
 
 					/* Dummy switches used only in spec's*/
 #define MASK_MIPS_TFILE	0x00000000	/* flag for mips-tfile usage */
 
 					/* Debug switches, not documented */
-#define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
-#define MASK_DEBUG_A	0x20000000	/* don't allow <label>($reg) addrs */
-#define MASK_DEBUG_B	0x10000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
-#define MASK_DEBUG_C	0x08000000	/* don't expand seq, etc. */
-#define MASK_DEBUG_D	0x04000000	/* don't do define_split's */
+#define MASK_DEBUG	0		/* Eliminate version # in .s file */
+#define MASK_DEBUG_A	0x40000000	/* don't allow <label>($reg) addrs */
+#define MASK_DEBUG_B	0x20000000	/* GO_IF_LEGITIMATE_ADDRESS debug */
+#define MASK_DEBUG_C	0x10000000	/* don't expand seq, etc. */
+#define MASK_DEBUG_D	0		/* don't do define_split's */
 #define MASK_DEBUG_E	0		/* function_arg debug */
 #define MASK_DEBUG_F	0
 #define MASK_DEBUG_G	0		/* don't support 64 bit arithmetic */
@@ -425,6 +427,9 @@ extern void		mips_select_section ();
 
 #define TARGET_4300_MUL_FIX     (target_flags & MASK_4300_MUL_FIX)
 
+#define TARGET_NO_CHECK_ZERO_DIV (target_flags & MASK_NO_CHECK_ZERO_DIV)
+#define TARGET_CHECK_RANGE_DIV  (target_flags & MASK_CHECK_RANGE_DIV)
+
 /* This is true if we must enable the assembly language file switching
    code.  */
 
@@ -490,6 +495,10 @@ extern void		mips_select_section ();
   {"no-fix4300",         -MASK_4300_MUL_FIX},				\
   {"4650",		  MASK_MAD | MASK_SINGLE_FLOAT},		\
   {"3900",		  MASK_MIPS3900},                               \
+  {"check-zero-division",-MASK_NO_CHECK_ZERO_DIV},			\
+  {"no-check-zero-division", MASK_NO_CHECK_ZERO_DIV},			\
+  {"check-range-division",MASK_CHECK_RANGE_DIV},			\
+  {"no-check-range-division",-MASK_CHECK_RANGE_DIV},			\
   {"debug",		  MASK_DEBUG},					\
   {"debuga",		  MASK_DEBUG_A},				\
   {"debugb",		  MASK_DEBUG_B},				\
@@ -2144,6 +2153,7 @@ extern struct mips_frame_info current_frame_info;
  { RETURN_ADDRESS_POINTER_REGNUM, STACK_POINTER_REGNUM},		\
  { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 30},			\
  { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 17},			\
+ { RETURN_ADDRESS_POINTER_REGNUM, GP_REG_FIRST + 31},			\
  { FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 30},				\
  { FRAME_POINTER_REGNUM, GP_REG_FIRST + 17}}
@@ -2169,11 +2179,14 @@ extern struct mips_frame_info current_frame_info;
    */
 
 #define CAN_ELIMINATE(FROM, TO)						\
-  ((TO) == HARD_FRAME_POINTER_REGNUM					\
+  (((FROM) == RETURN_ADDRESS_POINTER_REGNUM && (! leaf_function_p ()	\
+   || TO == GP_REG_FIRST + 31 && leaf_function_p))   			\
+  || ((FROM) != RETURN_ADDRESS_POINTER_REGNUM				\
+   && ((TO) == HARD_FRAME_POINTER_REGNUM 				\
    || ((TO) == STACK_POINTER_REGNUM && ! frame_pointer_needed		\
        && ! (TARGET_MIPS16 && TARGET_64BIT)                             \
        && (! TARGET_MIPS16						\
-	   || compute_frame_size (get_frame_size ()) < 32768)))
+	   || compute_frame_size (get_frame_size ()) < 32768)))))
 
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It
    specifies the initial difference between the specified pair of
@@ -2206,7 +2219,9 @@ extern struct mips_frame_info current_frame_info;
   /* Some ABIs store 64 bits to the stack, but Pmode is 32 bits,	 \
      so we must add 4 bytes to the offset to get the right value.  */	 \
   else if ((FROM) == RETURN_ADDRESS_POINTER_REGNUM)			 \
-    (OFFSET) = current_frame_info.gp_sp_offset				 \
+   if (leaf_function_p ()) 						 \
+      (OFFSET) = 0;				 			 \
+   else (OFFSET) = current_frame_info.gp_sp_offset			 \
 	       + ((UNITS_PER_WORD - (POINTER_SIZE / BITS_PER_UNIT))	 \
 		  * (BYTES_BIG_ENDIAN != 0));				 \
 }
