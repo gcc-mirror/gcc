@@ -891,7 +891,11 @@ read_only_operand (operand)
      
 
 /* Return the best assembler insn template
-   for moving operands[1] into operands[0] as a fullword.  */
+   for moving operands[1] into operands[0] as a fullword. 
+
+   For CONST_DOUBLE and CONST_INT we should also check for
+   other values we can load directly via zdepi, ldil, etc. 
+   ??? Do this for 2.5.  */
 
 char *
 singlemove_string (operands)
@@ -899,13 +903,34 @@ singlemove_string (operands)
 {
   if (GET_CODE (operands[0]) == MEM)
     return "stw %r1,%0";
-  if (GET_CODE (operands[1]) == MEM)
+  else if (GET_CODE (operands[1]) == MEM)
     return "ldw %1,%0";
-  if (GET_CODE (operands[1]) == CONST_INT)
-    if (INT_14_BITS (operands[1]))
-      return (INTVAL (operands[1]) == 0 ? "copy 0,%0" : "ldi %1,%0");
-    else
-      return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
+  else if (GET_CODE (operands[1]) == CONST_DOUBLE
+	   && GET_MODE (operands[1]) == SFmode)
+    {
+      int i;
+      union real_extract u;
+      union float_extract { float f; int i; } v;
+
+      bcopy (&CONST_DOUBLE_LOW (operands[1]), &u, sizeof u);
+      v.f = REAL_VALUE_TRUNCATE (SFmode, u.d);
+      i = v.i;
+
+      operands[1] = gen_rtx (CONST_INT, VOIDmode, i);
+
+      if (INT_14_BITS (operands[1]))
+	return (INTVAL (operands[1]) == 0 ? "copy 0,%0" : "ldi %1,%0");
+      else
+	return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
+    }
+
+  else if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (INT_14_BITS (operands[1]))
+	return (INTVAL (operands[1]) == 0 ? "copy 0,%0" : "ldi %1,%0");
+      else
+	return "ldil L'%1,%0\n\tldo R'%1(%0),%0";
+    }
   return "copy %1,%0";
 }
 
