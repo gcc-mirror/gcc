@@ -109,9 +109,15 @@ array_base_name_differ_p (struct data_reference *a,
 {
   tree base_a = DR_BASE_NAME (a);
   tree base_b = DR_BASE_NAME (b);
-  tree ta = TREE_TYPE (base_a);
-  tree tb = TREE_TYPE (base_b);
+  tree ta, tb;
 
+  if (!base_a || !base_b)
+    return false;
+
+  ta = TREE_TYPE (base_a);
+  tb = TREE_TYPE (base_b);
+  
+  gcc_assert (!POINTER_TYPE_P (ta) && !POINTER_TYPE_P (tb));
 
   /* Determine if same base.  Example: for the array accesses
      a[i], b[i] or pointer accesses *a, *b, bases are a, b.  */
@@ -174,24 +180,6 @@ array_base_name_differ_p (struct data_reference *a,
       || (TREE_CODE (base_b) == VAR_DECL
        && (TREE_CODE (base_a) == COMPONENT_REF
            && TREE_CODE (TREE_OPERAND (base_a, 0)) == VAR_DECL)))
-    {
-      *differ_p = true;
-      return true;
-    }
-
-  if (!alias_sets_conflict_p (get_alias_set (base_a), get_alias_set (base_b)))
-    {
-      *differ_p = true;
-      return true;
-    }
-
-  /* An instruction writing through a restricted pointer is
-     "independent" of any instruction reading or writing through a
-     different pointer, in the same block/scope.  */
-  if ((TREE_CODE (ta) == POINTER_TYPE && TYPE_RESTRICT (ta)
-       && !DR_IS_READ(a))
-      || (TREE_CODE (tb) == POINTER_TYPE && TYPE_RESTRICT (tb)
-	  && !DR_IS_READ(b)))
     {
       *differ_p = true;
       return true;

@@ -1,3 +1,16 @@
+2005-02-12  Ira Rosen  <irar@il.ibm.com>
+
+	* tree-data-ref.c (array_base_name_differ_p): Check that the bases
+	exist and are objects. Remove checks for pointer.
+	* tree-vectorizer.c (vect_create_addr_base_for_vector_ref): Use
+	STMT_VINFO_VECT_DR_BASE_ADDRESS instead of DR_BASE_NAME.
+	(vect_create_data_ref_ptr): Likewise.
+	(vect_base_addr_differ_p): New function.
+	(vect_analyze_data_ref_dependence): Call vect_base_addr_differ_p.
+	(vect_analyze_pointer_ref_access): Add output parameter - ptr_init.
+	Don't set the DR_BASE_NAME field of data-ref.
+	(vect_get_memtag_and_dr): Use ptr_init instead of DR_BASE_NAME.
+
 2005-02-12  Uros Bizjak  <uros@kss-loka.si>
 
 	* optabs.h (enum optab_index): Add new OTI_ldexp.
@@ -14,7 +27,7 @@
 	to implement ldexpf, ldexp and ldexpl built-ins as inline x87
 	intrinsics.
 
-2005-02-13  Ira Rosen  <irar@il.ibm.com>
+2005-02-12  Ira Rosen  <irar@il.ibm.com>
 
 	* tree-vectorizer.h (struct _stmt_vec_info): Rename a field: base
 	to base_address.

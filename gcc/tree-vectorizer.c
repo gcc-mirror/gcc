@@ -223,19 +223,20 @@ static bool vect_compute_data_ref_alignment (struct data_reference *);
 static bool vect_analyze_data_ref_access (struct data_reference *);
 static bool vect_can_force_dr_alignment_p (tree, unsigned int);
 static struct data_reference * vect_analyze_pointer_ref_access 
-  (tree, tree, bool);
+  (tree, tree, bool, tree*);
 static bool vect_can_advance_ivs_p (loop_vec_info);
 static tree vect_get_base_and_offset (struct data_reference *, tree, tree, 
 				      loop_vec_info, tree *, tree *, tree *,
 				      bool*);
-static struct data_reference * vect_analyze_pointer_ref_access
-  (tree, tree, bool);
 static tree vect_get_ptr_offset (tree, tree, tree *);
 static tree vect_get_memtag_and_dr
   (tree, tree, bool, loop_vec_info, tree, struct data_reference **);
 static bool vect_analyze_offset_expr (tree, struct loop *, tree, tree *, 
 				      tree *, tree *);
 static tree vect_strip_conversion (tree);
+static bool vect_base_addr_differ_p (struct data_reference *,
+				     struct data_reference *drb, bool *);
+
 
 /* Utility functions for the code transformation.  */
 static tree vect_create_destination_var (tree, tree);
@@ -1962,7 +1963,7 @@ vect_create_addr_base_for_vector_ref (tree stmt,
   struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   tree data_ref_base = 
     unshare_expr (STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info));
-  tree base_name = unshare_expr (DR_BASE_NAME (dr));
+  tree base_name = build_fold_indirect_ref (data_ref_base);
   tree ref = DR_REF (dr);
   tree scalar_type = TREE_TYPE (ref);
   tree scalar_ptr_type = build_pointer_type (scalar_type);
@@ -2132,7 +2133,6 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
 {
   tree base_name;
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
@@ -2156,7 +2156,9 @@ vect_create_data_ref_ptr (tree stmt, block_stmt_iterator *bsi, tree offset,
   tree data_ref_ptr;
   tree type, tmp, size;
 
-  base_name = unshare_expr (DR_BASE_NAME (dr));
+  base_name =  build_fold_indirect_ref (unshare_expr (
+		      STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info)));
+
   if (vect_print_dump_info (REPORT_DETAILS, UNKNOWN_LOC))
     {
       tree data_ref_base = base_name;
@@ -4089,6 +4091,61 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 }
 
 
+/* Function vect_base_addr_differ_p.
+
+   This is the simplest data dependence test: determines whether the
+   data references A and B access the same array/region.  Returns
+   false when the property is not computable at compile time.
+   Otherwise return true, and DIFFER_P will record the result. This
+   utility will not be necessary when alias_sets_conflict_p will be
+   less conservative.  */
+
+
+static bool
+vect_base_addr_differ_p (struct data_reference *dra,
+			 struct data_reference *drb,
+			 bool *differ_p)
+{
+  tree stmt_a = DR_STMT (dra);
+  stmt_vec_info stmt_info_a = vinfo_for_stmt (stmt_a);   
+  tree stmt_b = DR_STMT (drb);
+  stmt_vec_info stmt_info_b = vinfo_for_stmt (stmt_b);   
+  tree addr_a = STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info_a);
+  tree addr_b = STMT_VINFO_VECT_DR_BASE_ADDRESS (stmt_info_b);
+  tree type_a = TREE_TYPE (addr_a);
+  tree type_b = TREE_TYPE (addr_b);
+  HOST_WIDE_INT alias_set_a, alias_set_b;
+
+  gcc_assert (POINTER_TYPE_P (type_a) &&  POINTER_TYPE_P (type_b));
+  
+  /* Both references are ADDR_EXPR, i.e., we have the objects.  */
+  if (TREE_CODE (addr_a) == ADDR_EXPR && TREE_CODE (addr_b) == ADDR_EXPR)
+    return array_base_name_differ_p (dra, drb, differ_p);  
+
+  alias_set_a = (TREE_CODE (addr_a) == ADDR_EXPR) ? 
+    get_alias_set (TREE_OPERAND (addr_a, 0)) : get_alias_set (addr_a);
+  alias_set_b = (TREE_CODE (addr_b) == ADDR_EXPR) ? 
+    get_alias_set (TREE_OPERAND (addr_b, 0)) : get_alias_set (addr_b);
+
+  if (!alias_sets_conflict_p (alias_set_a, alias_set_b))
+    {
+      *differ_p = true;
+      return true;
+    }
+  
+  /* An instruction writing through a restricted pointer is "independent" of any 
+     instruction reading or writing through a different pointer, in the same 
+     block/scope.  */
+  else if ((TYPE_RESTRICT (type_a) && !DR_IS_READ (dra))
+      || (TYPE_RESTRICT (type_b) && !DR_IS_READ (drb)))
+    {
+      *differ_p = true;
+      return true;
+    }
+  return false;
+}
+
+
 /* Function vect_analyze_data_ref_dependence.
 
    Return TRUE if there (might) exist a dependence between a memory-reference
@@ -4102,7 +4159,7 @@ vect_analyze_data_ref_dependence (struct data_reference *dra,
   bool differ_p; 
   struct data_dependence_relation *ddr;
   
-  if (!array_base_name_differ_p (dra, drb, &differ_p))
+  if (!vect_base_addr_differ_p (dra, drb, &differ_p))
     {
       if (vect_print_dump_info (REPORT_UNVECTORIZED_LOOPS,
 				LOOP_LOC (loop_vinfo)))
@@ -4660,7 +4717,8 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo)
    that represents it (DR). Otherwise - return NULL.  */
 
 static struct data_reference *
-vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
+vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read, 
+				 tree *ptr_init)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -4758,7 +4816,8 @@ vect_analyze_pointer_ref_access (tree memref, tree stmt, bool is_read)
       fprintf (vect_dump, "Access function of ptr indx: ");
       print_generic_expr (vect_dump, indx_access_fn, TDF_SLIM);
     }
-  dr = init_data_ref (stmt, memref, init, indx_access_fn, is_read);
+  dr = init_data_ref (stmt, memref, NULL_TREE, indx_access_fn, is_read);
+  *ptr_init = init;
   return dr;
 }
 
@@ -4806,6 +4865,7 @@ vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read,
   tree ref_to_be_analyzed, tag, dr_base;
   struct data_reference *new_dr;
   bool base_aligned_p;
+  tree ptr_init;
 
   if (*dr)
     {
@@ -4889,12 +4949,13 @@ vect_get_memtag_and_dr (tree memref, tree stmt, bool is_read,
       switch (TREE_CODE (memref))
 	{      
 	case INDIRECT_REF:
-	  new_dr = vect_analyze_pointer_ref_access (memref, stmt, is_read);
+	  new_dr = vect_analyze_pointer_ref_access (memref, stmt, is_read, 
+						    &ptr_init);
 	  if (!new_dr)
 	    return NULL_TREE; 
 	  *dr = new_dr;
-	  symbl = DR_BASE_NAME (new_dr);
-	  ref_to_be_analyzed = DR_BASE_NAME (new_dr);
+	  symbl = ptr_init;
+	  ref_to_be_analyzed = ptr_init;
 	  break;
       
 	case ARRAY_REF:
