@@ -1884,13 +1884,14 @@ special_symbol (hp, pfile)
 {
   const char *buf;
   int len;
+  cpp_buffer *ip;
 
   switch (hp->type)
     {
     case T_FILE:
     case T_BASE_FILE:
       {
-	cpp_buffer *ip = CPP_BUFFER (pfile);
+	ip = CPP_BUFFER (pfile);
 	if (hp->type == T_BASE_FILE)
 	  {
 	    while (CPP_PREV_BUFFER (ip) != CPP_NULL_BUFFER (pfile))
@@ -1915,7 +1916,7 @@ special_symbol (hp, pfile)
     case T_INCLUDE_LEVEL:
       {
 	int true_indepth = 0;
-	cpp_buffer *ip = CPP_BUFFER (pfile);
+	ip = CPP_BUFFER (pfile);
 	for (;  ip != CPP_NULL_BUFFER (pfile); ip = CPP_PREV_BUFFER (ip))
 	  if (ip->fname != NULL)
 	    true_indepth++;
