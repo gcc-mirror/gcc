@@ -1,5 +1,7 @@
 /* PR optimization/9325  */
 
+#include <limits.h>
+
 extern void abort (void);
 
 int f1()
@@ -14,10 +16,12 @@ int f2()
 
 int main()
 {
+#if INT_MAX == 2147483647
   if (f1() != 2147483647)
     abort ();
   if (f2() != 2147483647)
     abort ();
+#endif
   return 0;
 }
 
