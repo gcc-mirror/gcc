@@ -1,5 +1,9 @@
 2003-10-22  Tom Tromey  <tromey@redhat.com>
 
+	PR libgcj/12416:
+	* libjava.lang/PR12416.out: New file.
+	* libjava.lang/PR12416.java: New file.
+
 	PR libgcj/12656:
 	* libjava.lang/PR12656.java: New file.
 	* libjava.lang/PR12656.out: New file.
