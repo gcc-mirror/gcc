@@ -186,10 +186,14 @@ GCC_3.4 {
   # bit scanning and counting built-ins
   __clzsi2
   __clzdi2
+  __clzti2
   __ctzsi2
   __ctzdi2
+  __ctzti2
   __popcountsi2
   __popcountdi2
-  __paritysi2  
-  __paritydi2  
+  __popcountti2
+  __paritysi2
+  __paritydi2
+  __parityti2
 }
