@@ -57,7 +57,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    include these in the sources since other machines might define them
    differently.  */
 
-extern void *malloc (), *realloc (), *sbrk (), *calloc (), *alloca ();
+extern void *malloc (), *realloc (), *calloc (), *alloca ();
 
 #ifndef inhibit_libc
 #include "string.h"
