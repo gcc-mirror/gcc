@@ -5873,6 +5873,13 @@ mips_file_start (void)
 	 executable.  */
       fprintf (asm_out_file, "\t.section .mdebug.%s\n", abi_string);
 
+      /* There is no ELF header flag to distinguish long32 forms of the
+	 EABI from long64 forms.  Emit a special section to help tools
+	 such as GDB.  */
+      if (mips_abi == ABI_EABI)
+	fprintf (asm_out_file, "\t.section .gcc_compiled_long%d\n",
+		 TARGET_LONG64 ? 64 : 32);
+
       /* Restore the default section.  */
       fprintf (asm_out_file, "\t.previous\n");
 #endif
