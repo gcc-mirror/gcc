@@ -4023,7 +4023,7 @@ store_expr (exp, target, want_value)
  				       GEN_INT (MEMORY_USE_WO), 
 				       TYPE_MODE (integer_type_node));
 		  in_check_memory_usage = 0;
-		  clear_storage (target, size, align);
+		  clear_storage (dest, size, align);
 		}
 
 	      if (label)

@@ -1,3 +1,7 @@
+2000-06-06  Jason Merrill  <jason@casey.soma.redhat.com>
+
+	* expr.c (store_expr): Fix typo.
+
 2000-06-06  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* m68k.c (legitimize_pic_address): Move prototype ...
