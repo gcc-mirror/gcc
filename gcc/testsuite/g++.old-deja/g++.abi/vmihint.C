@@ -36,7 +36,7 @@ int expect (int flags, type_info const &info)
       dynamic_cast <__vmi_class_type_info const *> (&info);
   if (!ptr)
     return 0;
-  if (ptr->details != flags)
+  if (ptr->vmi_flags != flags)
     return 0;
   return 1;
 }

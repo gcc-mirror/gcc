@@ -1,3 +1,8 @@
+2000-04-07  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* g++.old-deja/g++.abi/vmihint.C: Adjust __vmi_class_type_info
+	member name.
+
 2000-04-06  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.abi/vmihint.C: New test.
