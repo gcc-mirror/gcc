@@ -42,9 +42,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA. */
    : \
      ( \
       ((FUNDECL && (TREE_CODE_CLASS (TREE_CODE (FUNDECL)) == 'd') ? \
-        chain_member_value (get_identifier ("stdcall"), \
-                            DECL_MACHINE_ATTRIBUTES (FUNDECL) \
-                           )                                      : 0 \
+        chain_member_purpose (get_identifier ("stdcall"), \
+                              DECL_MACHINE_ATTRIBUTES (FUNDECL) \
+                             )                                    : 0 \
        ) \
       ) \
       && \
@@ -154,8 +154,8 @@ do									\
 	     || ! TREE_PUBLIC (DECL));					\
       }									\
     if (TREE_CODE (DECL) == FUNCTION_DECL) 				\
-      if (chain_member_value (get_identifier ("stdcall"), 		\
-                             DECL_MACHINE_ATTRIBUTES (DECL))) 		\
+      if (chain_member_purpose (get_identifier ("stdcall"), 		\
+                                DECL_MACHINE_ATTRIBUTES (DECL))) 	\
         XEXP (DECL_RTL (DECL), 0) = 					\
           gen_rtx (SYMBOL_REF, Pmode, gen_stdcall_suffix (DECL)); 	\
   }									\
@@ -171,6 +171,32 @@ while (0)
    || (TREE_CODE(decl) == TYPE_DECL)) \
   && ((get_identifier("stdcall") == name) \
    || (get_identifier("cdecl") == name))
+
+/* The global __fltused is necessary to cause the printf/scanf routines
+   for outputting/inputting floating point numbers to be loaded.  Since this
+   is kind of hard to detect, we just do it all the time. */
+
+#ifdef ASM_FILE_START
+#undef ASM_FILE_START
+#endif
+#define ASM_FILE_START(FILE) \
+  do {	fprintf (FILE, "\t.file\t");				\
+	output_quoted_string (FILE, dump_base_name);		\
+	fprintf (FILE, "\n");					\
+        fprintf (FILE, ".global\t__fltused\n");			\
+  } while (0)
+
+/* if the switch "-mwindows" is passed to ld, then specify to the Microsoft
+   linker the proper switches and libraries to build a graphical program */
+
+#undef LIB_SPEC
+#define LIB_SPEC "%{mwindows:-subsystem:windows -entry:WinMainCRTStartup \
+  USER32.LIB GDI32.LIB COMDLG32.LIB WINSPOOL.LIB} \
+ %{!mwindows:-subsystem:console -entry:mainCRTStartup} \
+ %{mcrtmt:OLDNAMES.LIB LIBCMT.LIB KERNEL32.LIB ADVAPI32.LIB} \
+ %{!mcrtmt:OLDNAMES.LIB LIBC.LIB KERNEL32.LIB ADVAPI32.LIB} \
+ %{g:-debugtype:coff -debug:full} \
+ %{v}"
 
 #include "winnt/winnt.h"
 
