@@ -33,7 +33,7 @@ LANGUAGES = c c++ objective-c proto
 
 ALLOCA =
 ALLOCA_FLAGS =
-ALLOCA_FINISH =
+ALLOCA_FINISH = true
 
 # Various ways of specifying flags for compilations:  
 # CFLAGS is for the user to override to, e.g., do a bootstrap with -O2.
@@ -95,7 +95,7 @@ GCC_FOR_TARGET = ./xgcc
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
 # It also specifies -B$(tooldir)/ to find as and ld for a cross compiler.
-GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -B./ -B$(tooldir)/bin/
+GCC_CFLAGS=$(INTERNAL_CFLAGS) $(X_CFLAGS) $(T_CFLAGS) $(CFLAGS) -B./ $(CROSS_GCC_CFLAGS)
 
 # Special flags for compiling enquire.
 # We disable optimization to make floating point more reliable.
@@ -391,7 +391,7 @@ LIB2FUNCS = _muldi3 _divdi3 _moddi3 _udivdi3 _umoddi3 _negdi2 \
 
 # Header files that are made available under the same name
 # to programs compiled with GCC.
-USER_H = assert.h va-hp800.h va-i860.h va-mips.h va-pyr.h va-sparc.h \
+USER_H = assert.h va-pa.h va-i860.h va-mips.h va-pyr.h va-sparc.h \
     va-spur.h va-m88k.h va-i960.h proto.h $(EXTRA_HEADERS)
 
 # All the header files that are installed for users from GCC itself.
@@ -1378,8 +1378,8 @@ install-common: native install-dir xgcc $(srcdir)/g++ $(srcdir)/c++ $(EXTRA_PART
 # Don't mess with specs if it doesn't exist yet.
 # We can't make it a dependency because with a cross compiler
 # you have to make specs on the target machine or not at all.
-	if [ -f specs ] ; then \
-	  -rm -f $(libsubdir)/specs; \
+	-if [ -f specs ] ; then \
+	  rm -f $(libsubdir)/specs; \
 	  $(INSTALL_DATA) specs $(libsubdir)/specs; \
 	fi
 # Install the driver program as gcc-$(target)
