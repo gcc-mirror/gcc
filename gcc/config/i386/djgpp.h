@@ -136,6 +136,8 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_FILE_START
 #define ASM_FILE_START(FILE)						\
   do {									\
+	if (ix86_asm_dialect == ASM_INTEL)				\
+	  fputs ("\t.intel_syntax\n", FILE);				\
 	output_file_directive (FILE, main_input_filename);		\
   } while (0)
 
