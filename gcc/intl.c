@@ -45,7 +45,7 @@ gcc_init_libintl ()
   (void) textdomain ("gcc");
 }
 
-#if defined HAVE_WCHAR_H && defined HAVE_MBSTOWCS && defined HAVE_WCSWIDTH
+#if defined HAVE_WCHAR_H && defined HAVE_WORKING_MBSTOWCS && defined HAVE_WCSWIDTH
 #include <wchar.h>
 
 /* Returns the width in columns of MSGSTR, which came from gettext.
