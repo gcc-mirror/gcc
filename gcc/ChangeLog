@@ -1,5 +1,8 @@
 2000-07-20  Geoff Keating  <geoffk@cygnus.com>
 
+	* config/rs6000/rs6000.c (output_toc): Use RS6000_OUTPUT_BASENAME
+	for vtable references.
+
 	* config/rs6000/rs6000.h (PREFERRED_RELOAD_CLASS): If we have a
 	choice, don't put integer values in FP regs.
 
