@@ -6372,6 +6372,32 @@ check_special_function_return_type (special_function_kind sfk,
   return type;
 }
 
+/* A variable or data member (whose unqualified name is IDENTIFIER)
+   has been declared with the indicated TYPE.  If the TYPE is not
+   acceptable, issue an error message and return a type to use for
+   error-recovery purposes. */
+
+tree
+check_var_type (tree identifier, tree type)
+{
+  if (VOID_TYPE_P (type))
+    {
+      if (!identifier)
+	error ("unnamed variable or field declared void");
+      else if (TREE_CODE (identifier) == IDENTIFIER_NODE)
+	{
+	  if (IDENTIFIER_OPNAME_P (identifier))
+	    abort ();
+	  error ("variable or field `%E' declared void", identifier);
+	}
+      else
+	error ("variable or field declared void");
+      type = integer_type_node;
+    }
+  
+  return type;
+}
+
 /* Given declspecs and a declarator (abstract or otherwise), determine
    the name and type of the object declared and construct a DECL node
    for it.
@@ -8074,26 +8100,21 @@ grokdeclarator (tree declarator,
       declarator = make_anon_name ();
     }
 
-  /* `void' at top level (not within pointer)
-     is allowed only in typedefs or type names.
-     We don't complain about parms either, but that is because
-     a better error message can be made later.  */
-
-  if (TREE_CODE (type) == VOID_TYPE && decl_context != PARM)
+  /* Only functions may be declared using an operator-function-id.  */
+  if (declarator
+      && TREE_CODE (declarator) == IDENTIFIER_NODE
+      && IDENTIFIER_OPNAME_P (declarator)
+      && TREE_CODE (type) != FUNCTION_TYPE
+      && TREE_CODE (type) != METHOD_TYPE)
     {
-      if (! declarator)
-	error ("unnamed variable or field declared void");
-      else if (TREE_CODE (declarator) == IDENTIFIER_NODE)
-	{
-	  if (IDENTIFIER_OPNAME_P (declarator))
-	    abort ();
-	  else
-	    error ("variable or field `%s' declared void", name);
-	}
-      else
-	error ("variable or field declared void");
-      type = integer_type_node;
+      error ("declaration of `%D' as non-function", declarator);
+      return error_mark_node;
     }
+
+  /* We don't check parameter types here because we can emit a better
+     error message later.  */
+  if (decl_context != PARM)
+    type = check_var_type (declarator, type);
 
   /* Now create the decl, which may be a VAR_DECL, a PARM_DECL
      or a FUNCTION_DECL, depending on DECL_CONTEXT and TYPE.  */

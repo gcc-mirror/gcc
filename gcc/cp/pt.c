@@ -6444,6 +6444,7 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	    type = complete_type (type);
 	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
 	      = DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (t);
+	    type = check_var_type (DECL_NAME (r), type);
 	  }
 	else if (DECL_SELF_REFERENCE_P (t))
 	  SET_DECL_SELF_REFERENCE_P (r);
@@ -6484,9 +6485,6 @@ tsubst_decl (tree t, tree args, tree type, tsubst_flags_t complain)
 	  register_local_specialization (r, t);
 
 	TREE_CHAIN (r) = NULL_TREE;
-	if (TREE_CODE (r) == VAR_DECL && VOID_TYPE_P (type))
-	  cp_error_at ("instantiation of `%D' as type `%T'", r, type);
-	/* Compute the size, alignment, etc. of R.  */
 	layout_decl (r, 0);
       }
       break;

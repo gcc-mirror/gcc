@@ -1,3 +1,15 @@
+2004-10-09  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/17524
+	* cp-tree.h (check_var_type): New function.
+	* decl.c (check_var_type): New function, split out from ...
+	(grokdeclarator): ... here.
+	* pt.c (tsubst_decl): Use check_var_type.
+
+	PR c++/17685
+	* decl.c (grokdeclarator): Disallow declarations of operators as
+	non-functions.
+	
 2004-10-08  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	PR c++/17868
