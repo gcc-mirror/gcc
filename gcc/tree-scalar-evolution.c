@@ -1367,7 +1367,7 @@ follow_ssa_edge_in_condition_phi_branch (int i,
     }
 
   /* This case occurs when one of the condition branches sets 
-     the variable to a constant: ie. a phi-node like
+     the variable to a constant: i.e. a phi-node like
      "a_2 = PHI <a_7(5), 2(6)>;".  
 	 
      FIXME:  This case have to be refined correctly: 
@@ -1491,7 +1491,7 @@ follow_ssa_edge (struct loop *loop,
 	return true;
 	  
       /* Otherwise, the evolution of the HALTING_PHI depends
-	 on the evolution of another loop-phi-node, ie. the
+	 on the evolution of another loop-phi-node, i.e. the
 	 evolution function is a higher degree polynomial.  */
       if (def_loop == loop)
 	return false;
@@ -1564,7 +1564,7 @@ analyze_evolution_in_loop (tree loop_phi_node,
 	      
       /* When it is impossible to go back on the same
 	 loop_phi_node by following the ssa edges, the
-	 evolution is represented by a peeled chrec, ie. the
+	 evolution is represented by a peeled chrec, i.e. the
 	 first iteration, EV_FN has the value INIT_COND, then
 	 all the other iterations it has the value of ARG.  
 	 For the moment, PEELED_CHREC nodes are not built.  */

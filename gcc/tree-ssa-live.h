@@ -130,7 +130,7 @@ static inline tree version_to_var (var_map map, int version)
  
 
 /* Given VAR, return the partition number in MAP which contains it.  
-   NO_PARTITION is returned if its not in any partition.  */
+   NO_PARTITION is returned if it's not in any partition.  */
 
 static inline int
 var_to_partition (var_map map, tree var)

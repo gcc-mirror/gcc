@@ -1,3 +1,11 @@
+2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* bb-reorder.c, c-common.c, c-incpath.c, c-typeck.c,
+	genrecog.c, lambda-code.c, mips-tdump.c, mips-tfile.c,
+	passes.c, tree-data-ref.c, tree-data-ref.h, tree-mudflap.c,
+	tree-scalar-evolution.c, tree-ssa-copyrename.c,
+	tree-ssa-live.c, tree-ssa-live.h: Fix comment typos.
+
 2004-09-10  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/frv/frv.md (UNSPEC_MASACCS, UNSPEC_MDASACCS): New constants.

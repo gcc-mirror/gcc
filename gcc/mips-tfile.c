@@ -737,7 +737,7 @@ typedef enum st {
   st_StaticProc	= stStaticProc,	/* load time only static procs */
   st_Constant	= stConstant,	/* const */
   st_Str	= stStr,	/* string */
-  st_Number	= stNumber,	/* pure number (ie. 4 NOR 2+2) */
+  st_Number	= stNumber,	/* pure number (i.e. 4 NOR 2+2) */
   st_Expr	= stExpr,	/* 2+2 vs. 4 */
   st_Type	= stType,	/* post-coercion SER */
   st_Max	= stMax		/* max type+1 */

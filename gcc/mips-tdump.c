@@ -122,7 +122,7 @@ typedef enum st {
   st_Enum	= stEnum,	/* enum */
 #endif
   st_Str	= stStr,	/* string */
-  st_Number	= stNumber,	/* pure number (ie. 4 NOR 2+2) */
+  st_Number	= stNumber,	/* pure number (i.e. 4 NOR 2+2) */
   st_Expr	= stExpr,	/* 2+2 vs. 4 */
   st_Type	= stType,	/* post-coercion SER */
   st_Max	= stMax		/* max type+1 */
