@@ -1,4 +1,4 @@
-#include "hppa.h"
+#include "pa.h"
 
 /* Make GCC agree with types.h.  */
 #define SIZE_TYPE "unsigned int"
