@@ -114,7 +114,7 @@ v_cpp_message (pfile, is_error, msgid, ap)
       pfile->errors = CPP_FATAL_LIMIT;
       break;
     default:
-      abort ();
+      cpp_fatal (pfile, "internal error: bad is_error(%d) in v_cpp_message", is_error);
     }
 
   vfprintf (stderr, _(msgid), ap);

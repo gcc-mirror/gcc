@@ -836,7 +836,10 @@ cpp_expand_to_buffer (pfile, buf, length)
 #endif
 
   if (length < 0)
-    abort ();
+    {
+      cpp_fatal (pfile, "internal error: length < 0 in cpp_expand_to_buffer");
+      return;
+    }
 
   /* Set up the input on the input stack.  */
 

@@ -37,24 +37,6 @@ char *progname;
 cpp_reader parse_in;
 cpp_options options;
 
-#ifdef abort
-/* More 'friendly' abort that prints the line and file.
-   config.h can #define abort fancy_abort if you like that sort of thing.  */
-void
-fatal (s)
-     char *s;
-{
-  fputs (s, stderr);
-  exit (FATAL_EXIT_CODE);
-}
-
-void
-fancy_abort ()
-{
-  fatal ("Internal gcc abort.");
-}
-#endif
-
 
 int
 main (argc, argv)
