@@ -5383,9 +5383,15 @@ dwarfout_init (asm_out_file, main_input_filename)
       ASM_OUTPUT_PUSH_SECTION (asm_out_file, SFNAMES_SECTION);
       ASM_OUTPUT_LABEL (asm_out_file, SFNAMES_BEGIN_LABEL);
       {
-	register char *pwd = getpwd ();
-	register unsigned len = strlen (pwd);
-	register char *dirname = (char *) xmalloc (len + 2);
+	register char *pwd;
+	register unsigned len;
+	register char *dirname;
+
+	pwd = getpwd ();
+	if (!pwd)
+	  pfatal_with_name ("getpwd");
+	len = strlen (pwd);
+	dirname = (char *) xmalloc (len + 2);
     
 	strcpy (dirname, pwd);
 	strcpy (dirname + len, "/");
