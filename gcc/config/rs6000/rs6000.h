@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for IBM RS/6000.
-   Copyright (C) 1992, 1993, 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1992, 93, 94, 95, 96, 1997 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu)
 
 This file is part of GNU CC.
@@ -1022,15 +1022,15 @@ enum reg_class
    `O' is the constant zero
    `P' is a constant whose negation is a signed 16-bit constant */
 
-#define CONST_OK_FOR_LETTER_P(VALUE, C)				\
-   ( (C) == 'I' ? (unsigned) ((VALUE) + 0x8000) < 0x10000	\
-   : (C) == 'J' ? ((VALUE) & 0xffff) == 0			\
-   : (C) == 'K' ? ((VALUE) & 0xffff0000) == 0			\
-   : (C) == 'L' ? mask_constant (VALUE)				\
-   : (C) == 'M' ? (VALUE) > 31					\
-   : (C) == 'N' ? exact_log2 (VALUE) >= 0			\
-   : (C) == 'O' ? (VALUE) == 0					\
-   : (C) == 'P' ? (unsigned) ((- (VALUE)) + 0x8000) < 0x1000	\
+#define CONST_OK_FOR_LETTER_P(VALUE, C)					\
+   ( (C) == 'I' ? (unsigned HOST_WIDE_INT) ((VALUE) + 0x8000) < 0x10000	\
+   : (C) == 'J' ? ((VALUE) & 0xffff) == 0				\
+   : (C) == 'K' ? ((VALUE) & 0xffff0000) == 0				\
+   : (C) == 'L' ? mask_constant (VALUE)					\
+   : (C) == 'M' ? (VALUE) > 31						\
+   : (C) == 'N' ? exact_log2 (VALUE) >= 0				\
+   : (C) == 'O' ? (VALUE) == 0						\
+   : (C) == 'P' ? (unsigned HOST_WIDE_INT) ((- (VALUE)) + 0x8000) < 0x1000 \
    : 0)
 
 /* Similar, but for floating constants, and defining letters G and H.
@@ -1767,7 +1767,7 @@ typedef struct rs6000_args
 
 #define LEGITIMATE_ADDRESS_INTEGER_P(X,OFFSET)				\
  (GET_CODE (X) == CONST_INT						\
-  && (unsigned) (INTVAL (X) + (OFFSET) + 0x8000) < 0x10000)
+  && (unsigned HOST_WIDE_INT) (INTVAL (X) + (OFFSET) + 0x8000) < 0x10000)
 
 #define LEGITIMATE_OFFSET_ADDRESS_P(MODE,X)		\
  (GET_CODE (X) == PLUS					\
@@ -1854,7 +1854,7 @@ typedef struct rs6000_args
 #define LEGITIMIZE_ADDRESS(X,OLDX,MODE,WIN)				\
 { if (GET_CODE (X) == PLUS && GET_CODE (XEXP (X, 0)) == REG		\
     && GET_CODE (XEXP (X, 1)) == CONST_INT				\
-    && (unsigned) (INTVAL (XEXP (X, 1)) + 0x8000) >= 0x10000)		\
+    && (unsigned HOST_WIDE_INT) (INTVAL (XEXP (X, 1)) + 0x8000) >= 0x10000) \
     { HOST_WIDE_INT high_int, low_int;					\
       rtx sum;								\
       high_int = INTVAL (XEXP (X, 1)) & (~ (HOST_WIDE_INT) 0xffff);	\
