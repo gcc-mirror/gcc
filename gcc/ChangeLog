@@ -1,3 +1,13 @@
+2001-08-31  Geoffrey Keating  <geoffk@redhat.com>
+
+	* config/stormy16/stormy16.c (stormy16_expand_epilogue): Use
+	the frame pointer to pop the stack if convenient.
+
+	* config/stormy16/stormy16.c (stormy16_initialize_trampoline):
+	Don't use post-increment before combine.
+	* config/stormy16/stormy16.h (STATIC_CHAIN_REGNUM): Don't use
+	a call-saved register.
+
 2001-08-31  Andreas Jaeger  <aj@suse.de>
 
 	* jump.c (mark_jump_label): Revert patch from 2001-08-28, the
