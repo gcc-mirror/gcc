@@ -720,10 +720,25 @@ approx_reg_cost_1 (xp, data)
      void *data;
 {
   rtx x = *xp;
-  regset set = (regset) data;
+  int *cost_p = data;
 
   if (x && GET_CODE (x) == REG)
-    SET_REGNO_REG_SET (set, REGNO (x));
+    {
+      unsigned int regno = REGNO (x);
+
+      if (! CHEAP_REGNO (regno))
+	{
+	  if (regno < FIRST_PSEUDO_REGISTER)
+	    {
+	      if (SMALL_REGISTER_CLASSES)
+		return 1;
+	      *cost_p += 2;
+	    }
+	  else
+	    *cost_p += 1;
+	}
+    }
+
   return 0;
 }
 
@@ -736,28 +751,12 @@ static int
 approx_reg_cost (x)
      rtx x;
 {
-  regset_head set;
-  int i;
   int cost = 0;
-  int hardregs = 0;
 
-  INIT_REG_SET (&set);
-  for_each_rtx (&x, approx_reg_cost_1, (void *) &set);
+  if (for_each_rtx (&x, approx_reg_cost_1, (void *) &cost))
+    return MAX_COST;
 
-  EXECUTE_IF_SET_IN_REG_SET
-    (&set, 0, i,
-     {
-       if (! CHEAP_REGNO (i))
-	 {
-	   if (i < FIRST_PSEUDO_REGISTER)
-	     hardregs++;
-
-	   cost += i < FIRST_PSEUDO_REGISTER ? 2 : 1;
-	 }
-     });
-
-  CLEAR_REG_SET (&set);
-  return hardregs && SMALL_REGISTER_CLASSES ? MAX_COST : cost;
+  return cost;
 }
 
 /* Return a negative value if an rtx A, whose costs are given by COST_A

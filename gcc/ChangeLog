@@ -1,3 +1,8 @@
+2002-05-23  David S. Miller  <davem@redhat.com>
+
+	* cse.c (approx_reg_cost_1, approx_reg_cost): Recode to not use
+	regsets.
+
 2002-05-23  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* c-common.c (warn_nonnull): Declare.
