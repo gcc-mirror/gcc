@@ -5360,6 +5360,10 @@ instantiate_class_template (type)
   if (ANON_AGGR_TYPE_P (pattern))
     SET_ANON_AGGR_TYPE_P (type);
 
+  if (DECL_CLASS_SCOPE_P (TYPE_MAIN_DECL (pattern)))
+    /* First instantiate our enclosing class.  */
+    complete_type (TYPE_CONTEXT (type));
+
   if (TYPE_BINFO_BASETYPES (pattern))
     {
       tree base_list = NULL_TREE;
