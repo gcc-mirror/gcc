@@ -1,5 +1,9 @@
 2001-02-17  Mark Wielaard <mark@klomp.org>
 
+	* HACKING: new file
+
+2001-02-17  Mark Wielaard <mark@klomp.org>
+
 	* java/io/DataInputStream.java: update copyright notice
 	* java/io/PrintWriter.java: idem
 	* java/io/Reader.java: idem
