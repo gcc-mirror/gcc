@@ -67,85 +67,106 @@
 
 namespace std
 {
-
-// Malloc-based allocator.  Typically slower than default alloc below.
-// Typically thread-safe and more storage efficient.
-template <int __inst>
-class __malloc_alloc_template {
-
-private:
-
-  static void* _S_oom_malloc(size_t);
-  static void* _S_oom_realloc(void*, size_t);
-  static void (* __malloc_alloc_oom_handler)();
-
-public:
-
-  static void* allocate(size_t __n)
+  // A new-based allocator, as required by the standard.
+  class __new_alloc 
   {
-    void* __result = malloc(__n);
-    if (0 == __result) __result = _S_oom_malloc(__n);
-    return __result;
-  }
+  public:
+    static void* 
+    allocate(size_t __n)
+    { return ::operator new(__n); }
+    
+    static void 
+    deallocate(void* __p, size_t)
+    { ::operator delete(__p); }
+  };
+  
+  // Malloc-based allocator.  Typically slower than default alloc below.
+  // Typically thread-safe and more storage efficient.
+  template <int __inst>
+    class __malloc_alloc_template 
+    {
+    private:
+      static void* _S_oom_malloc(size_t);
+      static void* _S_oom_realloc(void*, size_t);
+      static void (* __malloc_alloc_oom_handler)();
+      
+    public:
+      static void* 
+      allocate(size_t __n)
+      {
+	void* __result = malloc(__n);
+	if (0 == __result) __result = _S_oom_malloc(__n);
+	return __result;
+      }
 
-  static void deallocate(void* __p, size_t /* __n */)
-  {
-    free(__p);
-  }
+      static void 
+      deallocate(void* __p, size_t /* __n */)
+      { free(__p); }
 
-  static void* reallocate(void* __p, size_t /* old_sz */, size_t __new_sz)
-  {
-    void* __result = realloc(__p, __new_sz);
-    if (0 == __result) __result = _S_oom_realloc(__p, __new_sz);
-    return __result;
-  }
+      static void* 
+      reallocate(void* __p, size_t /* old_sz */, size_t __new_sz)
+      {
+	void* __result = realloc(__p, __new_sz);
+	if (0 == __result) __result = _S_oom_realloc(__p, __new_sz);
+	return __result;
+      }
+      
+      static void (* __set_malloc_handler(void (*__f)()))()
+      {
+	void (* __old)() = __malloc_alloc_oom_handler;
+	__malloc_alloc_oom_handler = __f;
+	return(__old);
+      }
+    };
 
-  static void (* __set_malloc_handler(void (*__f)()))()
-  {
-    void (* __old)() = __malloc_alloc_oom_handler;
-    __malloc_alloc_oom_handler = __f;
-    return(__old);
-  }
+  // malloc_alloc out-of-memory handling
+  template <int __inst>
+    void (* __malloc_alloc_template<__inst>::__malloc_alloc_oom_handler)() = 0;
 
-};
-
-// malloc_alloc out-of-memory handling
-
-template <int __inst>
-void (* __malloc_alloc_template<__inst>::__malloc_alloc_oom_handler)() = 0;
-
-template <int __inst>
-void*
-__malloc_alloc_template<__inst>::_S_oom_malloc(size_t __n)
-{
-    void (* __my_malloc_handler)();
-    void* __result;
-
-    for (;;) {
-        __my_malloc_handler = __malloc_alloc_oom_handler;
-        if (0 == __my_malloc_handler) { std::__throw_bad_alloc(); }
-        (*__my_malloc_handler)();
-        __result = malloc(__n);
-        if (__result) return(__result);
+  template <int __inst>
+    void*
+    __malloc_alloc_template<__inst>::_S_oom_malloc(size_t __n)
+    {
+      void (* __my_malloc_handler)();
+      void* __result;
+      
+      for (;;) 
+	{
+	  __my_malloc_handler = __malloc_alloc_oom_handler;
+	  if (0 == __my_malloc_handler) 
+	    std::__throw_bad_alloc();
+	  (*__my_malloc_handler)();
+	  __result = malloc(__n);
+	  if (__result) 
+	    return(__result);
+	}
     }
-}
-
-template <int __inst>
-void* __malloc_alloc_template<__inst>::_S_oom_realloc(void* __p, size_t __n)
-{
-    void (* __my_malloc_handler)();
-    void* __result;
-
-    for (;;) {
-        __my_malloc_handler = __malloc_alloc_oom_handler;
-        if (0 == __my_malloc_handler) { std::__throw_bad_alloc(); }
-        (*__my_malloc_handler)();
-        __result = realloc(__p, __n);
-        if (__result) return(__result);
+  
+  template <int __inst>
+    void* 
+    __malloc_alloc_template<__inst>::_S_oom_realloc(void* __p, size_t __n)
+    { 
+      void (* __my_malloc_handler)();
+      void* __result;
+      
+      for (;;) 
+	{
+	  __my_malloc_handler = __malloc_alloc_oom_handler;
+	  if (0 == __my_malloc_handler) 
+	    std::__throw_bad_alloc();
+	  (*__my_malloc_handler)();
+	  __result = realloc(__p, __n);
+	  if (__result) 
+	    return(__result);
+	}
     }
-}
 
-typedef __malloc_alloc_template<0> malloc_alloc;
+  // Determines the underlying allocator choice.
+# ifdef __USE_MALLOC
+  typedef __malloc_alloc_template<0> __mem_interface;
+#else
+  typedef __new_alloc __mem_interface;
+#endif
 
 template<class _Tp, class _Alloc>
 class simple_alloc {
@@ -295,28 +316,28 @@ public:
   {
     void* __ret = 0;
 
-    if (__n > (size_t) _MAX_BYTES) {
-      __ret = malloc_alloc::allocate(__n);
-    }
-    else {
-      _Obj* __STL_VOLATILE* __my_free_list
-          = _S_free_list + _S_freelist_index(__n);
-      // Acquire the lock here with a constructor call.
-      // This ensures that it is released in exit or during stack
-      // unwinding.
+    if (__n > (size_t) _MAX_BYTES) 
+      __ret = __mem_interface::allocate(__n);
+    else 
+      {
+	_Obj* __STL_VOLATILE* __my_free_list = _S_free_list + _S_freelist_index(__n);
+	// Acquire the lock here with a constructor call.
+	// This ensures that it is released in exit or during stack
+	// unwinding.
 #     ifndef _NOTHREADS
-      /*REFERENCED*/
-      _Lock __lock_instance;
+	/*REFERENCED*/
+	_Lock __lock_instance;
 #     endif
-      _Obj* __RESTRICT __result = *__my_free_list;
-      if (__result == 0)
-        __ret = _S_refill(_S_round_up(__n));
-      else {
-        *__my_free_list = __result -> _M_free_list_link;
-        __ret = __result;
+	_Obj* __RESTRICT __result = *__my_free_list;
+	if (__result == 0)
+	  __ret = _S_refill(_S_round_up(__n));
+	else 
+	  {
+	    *__my_free_list = __result -> _M_free_list_link;
+	    __ret = __result;
+	  }
       }
-    }
-
+    
     return __ret;
   };
 
@@ -324,26 +345,26 @@ public:
   static void deallocate(void* __p, size_t __n)
   {
     if (__n > (size_t) _MAX_BYTES)
-      malloc_alloc::deallocate(__p, __n);
-    else {
-      _Obj* __STL_VOLATILE*  __my_free_list
+      __mem_interface::deallocate(__p, __n);
+    else 
+      {
+	_Obj* __STL_VOLATILE*  __my_free_list
           = _S_free_list + _S_freelist_index(__n);
-      _Obj* __q = (_Obj*)__p;
-
-      // acquire lock
+	_Obj* __q = (_Obj*)__p;
+	
+	// acquire lock
 #       ifndef _NOTHREADS
-      /*REFERENCED*/
-      _Lock __lock_instance;
+	/*REFERENCED*/
+	_Lock __lock_instance;
 #       endif /* _NOTHREADS */
-      __q -> _M_free_list_link = *__my_free_list;
-      *__my_free_list = __q;
-      // lock is released here
-    }
+	__q -> _M_free_list_link = *__my_free_list;
+	*__my_free_list = __q;
+	// lock is released here
+      }
   }
-
+  
   static void* reallocate(void* __p, size_t __old_sz, size_t __new_sz);
-
-} ;
+};
 
 typedef __default_alloc_template<__NODE_ALLOCATOR_THREADS, 0> alloc;
 typedef __default_alloc_template<false, 0> single_client_alloc;
@@ -377,59 +398,67 @@ __default_alloc_template<__threads, __inst>::_S_chunk_alloc(size_t __size,
     size_t __total_bytes = __size * __nobjs;
     size_t __bytes_left = _S_end_free - _S_start_free;
 
-    if (__bytes_left >= __total_bytes) {
+    if (__bytes_left >= __total_bytes) 
+      {
         __result = _S_start_free;
         _S_start_free += __total_bytes;
         return(__result);
-    } else if (__bytes_left >= __size) {
+      } 
+    else if (__bytes_left >= __size) 
+      {
         __nobjs = (int)(__bytes_left/__size);
         __total_bytes = __size * __nobjs;
         __result = _S_start_free;
         _S_start_free += __total_bytes;
         return(__result);
-    } else {
+    } 
+    else 
+      {
         size_t __bytes_to_get = 
 	  2 * __total_bytes + _S_round_up(_S_heap_size >> 4);
         // Try to make use of the left-over piece.
-        if (__bytes_left > 0) {
-            _Obj* __STL_VOLATILE* __my_free_list =
-                        _S_free_list + _S_freelist_index(__bytes_left);
-
-            ((_Obj*)_S_start_free) -> _M_free_list_link = *__my_free_list;
-            *__my_free_list = (_Obj*)_S_start_free;
-        }
-        _S_start_free = (char*)malloc(__bytes_to_get);
-        if (0 == _S_start_free) {
+        if (__bytes_left > 0) 
+	  {
+	    _Obj* __STL_VOLATILE* __my_free_list =
+	      _S_free_list + _S_freelist_index(__bytes_left);
+	    
+	    ((_Obj*)_S_start_free) -> _M_free_list_link = *__my_free_list;
+	    *__my_free_list = (_Obj*)_S_start_free;
+	  }
+        _S_start_free = (char*) __mem_interface::allocate(__bytes_to_get);
+        if (0 == _S_start_free) 
+	  {
             size_t __i;
             _Obj* __STL_VOLATILE* __my_free_list;
 	    _Obj* __p;
-            // Try to make do with what we have.  That can't
-            // hurt.  We do not try smaller requests, since that tends
-            // to result in disaster on multi-process machines.
-            for (__i = __size;
-                 __i <= (size_t) _MAX_BYTES;
-                 __i += (size_t) _ALIGN) {
+            // Try to make do with what we have.  That can't hurt.  We
+            // do not try smaller requests, since that tends to result
+            // in disaster on multi-process machines.
+	    __i = __size;
+            for (; __i <= (size_t) _MAX_BYTES; __i += (size_t) _ALIGN) 
+	      {
                 __my_free_list = _S_free_list + _S_freelist_index(__i);
                 __p = *__my_free_list;
-                if (0 != __p) {
-                    *__my_free_list = __p -> _M_free_list_link;
-                    _S_start_free = (char*)__p;
+                if (0 != __p) 
+		  {
+		    *__my_free_list = __p -> _M_free_list_link;
+		    _S_start_free = (char*)__p;
                     _S_end_free = _S_start_free + __i;
                     return(_S_chunk_alloc(__size, __nobjs));
                     // Any leftover piece will eventually make it to the
                     // right free list.
-                }
-            }
+		  }
+	      }
 	    _S_end_free = 0;	// In case of exception.
-            _S_start_free = (char*)malloc_alloc::allocate(__bytes_to_get);
+            _S_start_free = (char*)__mem_interface::allocate(__bytes_to_get);
             // This should either throw an
             // exception or remedy the situation.  Thus we assume it
             // succeeded.
-        }
+	  }
         _S_heap_size += __bytes_to_get;
         _S_end_free = _S_start_free + __bytes_to_get;
         return(_S_chunk_alloc(__size, __nobjs));
-    }
+      }
 }
 
 
