@@ -1713,12 +1713,11 @@ expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
 	return;
 
       if (! allows_reg
-	  && ((TREE_CODE (val) == INDIRECT_REF && allows_mem)
+	  && (allows_mem
+	      || is_inout
 	      || (DECL_P (val)
-		  && (allows_mem || GET_CODE (DECL_RTL (val)) == REG)
-		  && ! (GET_CODE (DECL_RTL (val)) == REG
-			&& GET_MODE (DECL_RTL (val)) != TYPE_MODE (type)))
-	      || is_inout))
+		  && GET_CODE (DECL_RTL (val)) == REG
+		  && GET_MODE (DECL_RTL (val)) != TYPE_MODE (type))))
 	mark_addressable (val);
 
       if (is_inout)

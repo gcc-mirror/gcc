@@ -1,3 +1,8 @@
+2001-12-13  Richard Henderson  <rth@redhat.com>
+
+	* stmt.c (expand_asm_operands): Correct and simplify the
+	conditions for spilling an output operand to memory.
+
 2001-12-12  Bruce Korb  <bkorb@gnu.org>
 	Rodney Brown  <rbrown64@csc.com.au>
 
