@@ -1,3 +1,12 @@
+2000-08-22  Gabriel Dos Reis  <gdr@codesourcery.com>
+
+	* diagnostic.h (output_buffer_state): New macro.
+	* diagnostic.c (diagnostic_for_decl, sorry,
+	default_print_error_function, output_do_verbatim,
+	report_diagnostic, report_problematic_module): Use it.
+	(wrap_text): Tweak.
+	(output_format): Use wrap_text instead of maybe_wrap_text.
+
 2000-08-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/lib1funcs.asm (ARM_DIV_MOD_BODY): New macro.

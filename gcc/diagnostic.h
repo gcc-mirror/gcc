@@ -87,6 +87,7 @@ struct output_buffer
 #define output_buffer_text_cursor(BUFFER) (BUFFER)->state.cursor
 #define output_buffer_format_args(BUFFER) *((BUFFER)->state.format_args)
 #define output_needs_newline(BUFFER) (BUFFER)->state.need_newline_p
+#define output_buffer_state(BUFFER) (BUFFER)->state
 
 /* This data structure bundles altogether any information relevent to
    the context of a diagnostic message.  */

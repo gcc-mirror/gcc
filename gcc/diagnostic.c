@@ -550,6 +550,8 @@ wrap_text (buffer, start, end)
      const char *start;
      const char *end;
 {
+  int is_wrapping = output_is_line_wrapping (buffer);
+  
   while (start != end)
     {
       /* Dump anything bodered by whitespaces.  */ 
@@ -557,7 +559,7 @@ wrap_text (buffer, start, end)
         const char *p = start;
         while (p != end && *p != ' ' && *p != '\n')
           ++p;
-        if (p - start >= output_space_left (buffer))
+        if (is_wrapping && p - start >= output_space_left (buffer))
           output_add_newline (buffer);
         output_append (buffer, start, p);
         start = p;
@@ -640,7 +642,7 @@ output_format (buffer)
         const char *p = output_buffer_text_cursor (buffer);
         while (*p && *p != '%')
           ++p;
-        maybe_wrap_text (buffer, output_buffer_text_cursor (buffer), p);
+        wrap_text (buffer, output_buffer_text_cursor (buffer), p);
         output_buffer_text_cursor (buffer) = p;
       }
 
@@ -984,7 +986,7 @@ diagnostic_for_decl (decl, msg, args_ptr, warn)
 
   if (count_error (warn))
     {
-      os = diagnostic_buffer->state;
+      os = output_buffer_state (diagnostic_buffer);
       report_error_function (DECL_SOURCE_FILE (decl));
       output_set_prefix
 	(diagnostic_buffer, context_as_prefix
@@ -995,7 +997,7 @@ diagnostic_for_decl (decl, msg, args_ptr, warn)
       finish_diagnostic ();
       output_destroy_prefix (diagnostic_buffer);
   
-      diagnostic_buffer->state = os;
+      output_buffer_state (diagnostic_buffer) = os;
     }
   diagnostic_lock--;
 }
@@ -1159,7 +1161,7 @@ sorry VPARAMS ((const char *msgid, ...))
   va_list ap;
   output_state os;
 
-  os = diagnostic_buffer->state;
+  os = output_buffer_state (diagnostic_buffer);
   VA_START (ap, msgid);
 
 #ifndef ANSI_PROTOTYPES
@@ -1173,7 +1175,7 @@ sorry VPARAMS ((const char *msgid, ...))
   output_buffer_text_cursor (diagnostic_buffer) = msgid;
   output_format (diagnostic_buffer);
   finish_diagnostic ();
-  diagnostic_buffer->state = os;
+  output_buffer_state (diagnostic_buffer) = os;
   va_end (ap);
 }
 
@@ -1208,7 +1210,7 @@ default_print_error_function (file)
       char *prefix = file ? build_message_string ("%s: ", file) : NULL;
       output_state os;
 
-      os = diagnostic_buffer->state;
+      os = output_buffer_state (diagnostic_buffer);
       output_set_prefix (diagnostic_buffer, prefix);
       
       if (current_function_decl == NULL)
@@ -1230,7 +1232,7 @@ default_print_error_function (file)
 
       record_last_error_function ();
       output_to_stream (diagnostic_buffer, stderr);
-      diagnostic_buffer->state = os;
+      output_buffer_state (diagnostic_buffer) = os;
       free ((char*) prefix);
     }
 }
@@ -1505,14 +1507,14 @@ output_do_verbatim (buffer, msg, args_ptr)
 {
   output_state os;
 
-  os = buffer->state;
+  os = output_buffer_state (buffer);
   output_prefix (buffer) = NULL;
   prefixing_policy (buffer) = DIAGNOSTICS_SHOW_PREFIX_NEVER;
   output_buffer_text_cursor (buffer) = msg;
   output_buffer_ptr_to_format_args (buffer) = args_ptr;
   output_set_maximum_length (buffer, 0);
   output_format (buffer);
-  buffer->state = os;
+  output_buffer_state (buffer) = os;
 }
 
 /* Output MESSAGE verbatim into BUFFER.  */
@@ -1568,14 +1570,14 @@ report_diagnostic (dc)
 
   if (count_error (diagnostic_is_warning (dc)))
     {
-      os = diagnostic_buffer->state;
+      os = output_buffer_state (diagnostic_buffer);
       diagnostic_msg = diagnostic_message (dc);
       diagnostic_args = diagnostic_argument_list (dc);
       (*diagnostic_starter (dc)) (diagnostic_buffer, dc);
       output_format (diagnostic_buffer);
       (*diagnostic_finalizer (dc)) (diagnostic_buffer, dc);
       finish_diagnostic ();
-      diagnostic_buffer->state = os;
+      output_buffer_state (diagnostic_buffer) = os;
     }
 
   diagnostic_lock--;
@@ -1666,7 +1668,7 @@ report_problematic_module (buffer)
 
   if (output_needs_newline (buffer))
     {
-      output_verbatim (buffer, "\n");
+      output_add_newline (buffer);
       output_needs_newline (buffer) = 0;
     }
 
