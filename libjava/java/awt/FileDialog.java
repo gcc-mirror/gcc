@@ -41,6 +41,7 @@ package java.awt;
 import java.awt.peer.FileDialogPeer;
 import java.awt.peer.DialogPeer;
 import java.io.FilenameFilter;
+import java.io.Serializable;
 
 /**
   * This class implements a file selection dialog box widget.
@@ -48,7 +49,7 @@ import java.io.FilenameFilter;
   * @author Aaron M. Renn (arenn@urbanophile.com)
   * @author Tom Tromey <tromey@redhat.com>
   */
-public class FileDialog extends Dialog implements java.io.Serializable
+public class FileDialog extends Dialog implements Serializable
 {
 
 /*

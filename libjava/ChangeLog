@@ -1,3 +1,7 @@
+2004-05-05  Michael Koch  <konqueror@gmx.de>
+
+	* java/awt/FileDialog.java: Import java.io.Serializable explicitly.
+
 2004-05-05  Dalibor Topic  <robilad@kaffe.org>
 
 	* java/text/AttributedString.java,
