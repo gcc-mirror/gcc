@@ -1,3 +1,9 @@
+2001-05-25  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* init.c (__objc_send_message_in_list): When setting a new entry
+	in __objc_load_methods use the method name as key, not the method
+	IMP (reported by Richard Frith-Macdonald <richard@brainstorm.co.uk>).
+
 2001-05-22  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* sendmsg.c (__objc_forward): Delete strlen() declaration.
