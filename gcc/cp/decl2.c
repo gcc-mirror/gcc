@@ -117,7 +117,7 @@ int at_eof;
 tree static_ctors;
 tree static_dtors;
 
-/* The :: namespace. */
+/* The :: namespace.  */
 
 tree global_namespace;
 
@@ -580,7 +580,7 @@ check_member_template (tmpl)
       if (current_function_decl)
 	/* 14.5.2.2 [temp.mem]
 	   
-	   A local class shall not have member templates. */
+	   A local class shall not have member templates.  */
 	error ("invalid declaration of member template `%#D' in local class",
 		  decl);
       
@@ -603,7 +603,7 @@ check_member_template (tmpl)
     error ("template declaration of `%#D'", decl);
 }
 
-/* Return true iff TYPE is a valid Java parameter or return type. */
+/* Return true iff TYPE is a valid Java parameter or return type.  */
 
 static int
 acceptable_java_type (type)
@@ -1370,7 +1370,7 @@ finish_anon_union (anon_union_decl)
   int static_p = TREE_STATIC (anon_union_decl);
   int external_p = DECL_EXTERNAL (anon_union_decl);
 
-  /* The VAR_DECL's context is the same as the TYPE's context. */
+  /* The VAR_DECL's context is the same as the TYPE's context.  */
   DECL_CONTEXT (anon_union_decl) = DECL_CONTEXT (TYPE_NAME (type));
   
   if (TYPE_FIELDS (type) == NULL_TREE)
@@ -1611,7 +1611,7 @@ maybe_make_one_only (decl)
      one.  However, that's not actually the case in SVR4; a strong definition
      after a weak one is an error.  Also, not making explicit
      instantiations one_only means that we can end up with two copies of
-     some template instantiations. */
+     some template instantiations.  */
   if (! flag_weak)
     return;
 
@@ -1981,7 +1981,7 @@ import_export_tinfo (decl, type, is_in_library)
       DECL_COMDAT (decl) = 1;
     }
 
-  /* Now override some cases. */
+  /* Now override some cases.  */
   if (flag_weak)
     DECL_COMDAT (decl) = 1;
   else if (is_in_library)
@@ -2031,7 +2031,7 @@ get_guard (decl)
       guard_type = long_long_integer_type_node;
       guard = build_decl (VAR_DECL, sname, guard_type);
       
-      /* The guard should have the same linkage as what it guards. */
+      /* The guard should have the same linkage as what it guards.  */
       TREE_PUBLIC (guard) = TREE_PUBLIC (decl);
       TREE_STATIC (guard) = TREE_STATIC (decl);
       DECL_COMMON (guard) = DECL_COMMON (decl);
@@ -2275,7 +2275,7 @@ start_static_storage_duration_function ()
       VARRAY_TREE_INIT (ssdf_decls, 32, "ssdf_decls");
 
       /* Take this opportunity to initialize the map from priority
-	 numbers to information about that priority level. */
+	 numbers to information about that priority level.  */
       priority_info_map = splay_tree_new (splay_tree_compare_ints,
 					  /*delete_key_fn=*/0,
 					  /*delete_value_fn=*/
@@ -2868,7 +2868,7 @@ finish_file ()
 	 This is done in a separate for cycle, because if some deferred
 	 function is contained in another deferred function later in
 	 deferred_fns varray, rest_of_compilation would skip this
-	 function and we really cannot expand the same function twice. */
+	 function and we really cannot expand the same function twice.  */
       for (i = 0; i < deferred_fns_used; ++i)
 	{
 	  tree decl = VARRAY_TREE (deferred_fns, i);
@@ -2972,7 +2972,7 @@ finish_file ()
   finish_repo ();
 
   /* The entire file is now complete.  If requested, dump everything
-     to a file.   */
+     to a file.  */
   {
     int flags;
     FILE *stream = dump_begin (TDI_all, &flags);
@@ -3317,7 +3317,7 @@ build_expr_from_tree (t)
               && (!current_class_type
                   || !lookup_member (current_class_type, id, 0, 0)))
             {
-              /* Do Koenig lookup if there are no class members. */
+              /* Do Koenig lookup if there are no class members.  */
               name = do_identifier (id, 0, args);
             }
           else if (TREE_CODE (name) == TEMPLATE_ID_EXPR
@@ -3588,7 +3588,7 @@ finish_decl_parsing (decl)
     }
 }
 
-/* Return 1 if root encloses child. */
+/* Return 1 if root encloses child.  */
 
 static int
 is_namespace_ancestor (root, child)
@@ -3605,7 +3605,7 @@ is_namespace_ancestor (root, child)
   
 
 /* Return the namespace that is the common ancestor 
-   of two given namespaces. */
+   of two given namespaces.  */
 
 tree
 namespace_ancestor (ns1, ns2)
@@ -3626,38 +3626,38 @@ add_using_namespace (user, used, indirect)
      int indirect;
 {
   tree t;
-  /* Using oneself is a no-op. */
+  /* Using oneself is a no-op.  */
   if (user == used)
     return;
   my_friendly_assert (TREE_CODE (user) == NAMESPACE_DECL, 380);
   my_friendly_assert (TREE_CODE (used) == NAMESPACE_DECL, 380);
-  /* Check if we already have this. */
+  /* Check if we already have this.  */
   t = purpose_member (used, DECL_NAMESPACE_USING (user));
   if (t != NULL_TREE)
     {
       if (!indirect)
-	/* Promote to direct usage. */
+	/* Promote to direct usage.  */
 	TREE_INDIRECT_USING (t) = 0;
       return;
     }
 
-  /* Add used to the user's using list. */
+  /* Add used to the user's using list.  */
   DECL_NAMESPACE_USING (user) 
     = tree_cons (used, namespace_ancestor (user, used), 
 		 DECL_NAMESPACE_USING (user));
 
   TREE_INDIRECT_USING (DECL_NAMESPACE_USING (user)) = indirect;
 
-  /* Add user to the used's users list. */
+  /* Add user to the used's users list.  */
   DECL_NAMESPACE_USERS (used)
     = tree_cons (user, 0, DECL_NAMESPACE_USERS (used));
 
-  /* Recursively add all namespaces used. */
+  /* Recursively add all namespaces used.  */
   for (t = DECL_NAMESPACE_USING (used); t; t = TREE_CHAIN (t))
     /* indirect usage */
     add_using_namespace (user, TREE_PURPOSE (t), 1);
 
-  /* Tell everyone using us about the new used namespaces. */
+  /* Tell everyone using us about the new used namespaces.  */
   for (t = DECL_NAMESPACE_USERS (user); t; t = TREE_CHAIN (t))
     add_using_namespace (TREE_PURPOSE (t), used, 1);
 }
@@ -3717,14 +3717,14 @@ ambiguous_decl (name, old, new, flags)
 {
   tree val, type;
   my_friendly_assert (old != NULL_TREE, 393);
-  /* Copy the value. */
+  /* Copy the value.  */
   val = BINDING_VALUE (new);
   if (val)
     switch (TREE_CODE (val))
       {
       case TEMPLATE_DECL:
         /* If we expect types or namespaces, and not templates,
-           or this is not a template class. */
+           or this is not a template class.  */
         if (LOOKUP_QUALIFIERS_ONLY (flags)
             && !DECL_CLASS_TEMPLATE_P (val))
           val = NULL_TREE;
@@ -3759,7 +3759,7 @@ ambiguous_decl (name, old, new, flags)
 	}
       else
 	{
-	  /* Some declarations are functions, some are not. */
+	  /* Some declarations are functions, some are not.  */
           if (flags & LOOKUP_COMPLAIN)
             {
 	      /* If we've already given this error for this lookup,
@@ -3776,7 +3776,7 @@ ambiguous_decl (name, old, new, flags)
 	  BINDING_VALUE (old) = error_mark_node;
 	}
     }
-  /* ... and copy the type. */
+  /* ... and copy the type.  */
   type = BINDING_TYPE (new);
   if (LOOKUP_NAMESPACES_ONLY (flags))
     type = NULL_TREE;
@@ -3799,7 +3799,7 @@ ambiguous_decl (name, old, new, flags)
    We are currently looking for names in namespace SCOPE, so we
    look through USINGS for using-directives of namespaces
    which have SCOPE as a common ancestor with the current scope.
-   Returns zero on errors. */
+   Returns zero on errors.  */
 
 int
 lookup_using_namespace (name, val, usings, scope, flags, spacesp)
@@ -3810,7 +3810,7 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
   tree iter;
   tree val1;
   /* Iterate over all used namespaces in current, searching for using
-     directives of scope. */
+     directives of scope.  */
   for (iter = usings; iter; iter = TREE_CHAIN (iter))
     if (TREE_VALUE (iter) == scope)
       {
@@ -3818,7 +3818,7 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
 	  *spacesp = tree_cons (TREE_PURPOSE (iter), NULL_TREE,
 				*spacesp);
 	val1 = binding_for_name (name, TREE_PURPOSE (iter));
-	/* Resolve ambiguities. */
+	/* Resolve ambiguities.  */
 	val = ambiguous_decl (name, val, val1, flags);
       }
   return BINDING_VALUE (val) != error_mark_node;
@@ -3827,7 +3827,7 @@ lookup_using_namespace (name, val, usings, scope, flags, spacesp)
 /* [namespace.qual]
    Accepts the NAME to lookup and its qualifying SCOPE.
    Returns the name/type pair found into the CPLUS_BINDING RESULT,
-   or 0 on error. */
+   or 0 on error.  */
 
 int
 qualified_lookup_using_namespace (name, scope, result, flags)
@@ -3836,9 +3836,9 @@ qualified_lookup_using_namespace (name, scope, result, flags)
      tree result;
      int flags;
 {
-  /* Maintain a list of namespaces visited... */
+  /* Maintain a list of namespaces visited...  */
   tree seen = NULL_TREE;
-  /* ... and a list of namespace yet to see. */
+  /* ... and a list of namespace yet to see.  */
   tree todo = NULL_TREE;
   tree usings;
   /* Look through namespace aliases.  */
@@ -3849,10 +3849,10 @@ qualified_lookup_using_namespace (name, scope, result, flags)
       result = ambiguous_decl (name, result,
                                binding_for_name (name, scope), flags);
       if (!BINDING_VALUE (result) && !BINDING_TYPE (result))
-	/* Consider using directives. */
+	/* Consider using directives.  */
 	for (usings = DECL_NAMESPACE_USING (scope); usings;
 	     usings = TREE_CHAIN (usings))
-	  /* If this was a real directive, and we have not seen it. */
+	  /* If this was a real directive, and we have not seen it.  */
 	  if (!TREE_INDIRECT_USING (usings)
 	      && !purpose_member (TREE_PURPOSE (usings), seen))
 	    todo = tree_cons (TREE_PURPOSE (usings), NULL_TREE, todo);
@@ -3862,7 +3862,7 @@ qualified_lookup_using_namespace (name, scope, result, flags)
 	  todo = TREE_CHAIN (todo);
 	}
       else
-	scope = NULL_TREE; /* If there never was a todo list. */
+	scope = NULL_TREE; /* If there never was a todo list.  */
     }
   return result != error_mark_node;
 }
@@ -3870,7 +3870,7 @@ qualified_lookup_using_namespace (name, scope, result, flags)
 /* [namespace.memdef]/2 */
 
 /* Set the context of a declaration to scope. Complain if we are not
-   outside scope. */
+   outside scope.  */
 
 void
 set_decl_namespace (decl, scope, friendp)
@@ -3880,7 +3880,7 @@ set_decl_namespace (decl, scope, friendp)
 {
   tree old;
   
-  /* Get rid of namespace aliases. */
+  /* Get rid of namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
   
   /* It is ok for friends to be qualified in parallel space.  */
@@ -3890,10 +3890,10 @@ set_decl_namespace (decl, scope, friendp)
   DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
   if (scope != current_namespace)
     {
-      /* See whether this has been declared in the namespace. */
+      /* See whether this has been declared in the namespace.  */
       old = namespace_binding (DECL_NAME (decl), scope);
       if (!old)
-	/* No old declaration at all. */
+	/* No old declaration at all.  */
 	goto complain;
       /* A template can be explicitly specialized in any namespace.  */
       if (processing_explicit_instantiation)
@@ -3903,7 +3903,7 @@ set_decl_namespace (decl, scope, friendp)
 	   since it can't check for the correct constness at this
 	   point. pushdecl will find those errors later.  */
 	return;
-      /* Since decl is a function, old should contain a function decl. */
+      /* Since decl is a function, old should contain a function decl.  */
       if (!is_overloaded_fn (old))
 	goto complain;
       if (processing_template_decl || processing_specialization)
@@ -3923,7 +3923,7 @@ set_decl_namespace (decl, scope, friendp)
 	    decl, scope);
 } 
 
-/* Compute the namespace where a declaration is defined. */
+/* Compute the namespace where a declaration is defined.  */
 
 static tree
 decl_namespace (decl)
@@ -3944,13 +3944,13 @@ decl_namespace (decl)
   return global_namespace;
 }
 
-/* Return the namespace where the current declaration is declared. */
+/* Return the namespace where the current declaration is declared.  */
 
 tree
 current_decl_namespace ()
 {
   tree result;
-  /* If we have been pushed into a different namespace, use it. */
+  /* If we have been pushed into a different namespace, use it.  */
   if (decl_namespace_list)
     return TREE_PURPOSE (decl_namespace_list);
 
@@ -3963,7 +3963,7 @@ current_decl_namespace ()
   return result;
 }
 
-/* Temporarily set the namespace for the current declaration. */
+/* Temporarily set the namespace for the current declaration.  */
 
 void
 push_decl_namespace (decl)
@@ -3981,7 +3981,7 @@ pop_decl_namespace ()
   decl_namespace_list = TREE_CHAIN (decl_namespace_list);
 }
 
-/* Enter a class or namespace scope. */
+/* Enter a class or namespace scope.  */
 
 void
 push_scope (t)
@@ -3993,7 +3993,7 @@ push_scope (t)
     pushclass (t, 2);
 }
 
-/* Leave scope pushed by push_scope. */
+/* Leave scope pushed by push_scope.  */
 
 void
 pop_scope (t)
@@ -4039,7 +4039,7 @@ add_function (k, fn)
      total number of functions being compared, which should usually be the
      case.  */
 
-  /* We must find only functions, or exactly one non-function. */
+  /* We must find only functions, or exactly one non-function.  */
   if (!k->functions) 
     k->functions = fn;
   else if (is_overloaded_fn (k->functions) && is_overloaded_fn (fn))
@@ -4153,19 +4153,19 @@ arg_assoc_class (k, type)
   if (arg_assoc_namespace (k, context))
     return 1;
   
-  /* Process baseclasses. */
+  /* Process baseclasses.  */
   for (i = 0; i < CLASSTYPE_N_BASECLASSES (type); i++)
     if (arg_assoc_class (k, TYPE_BINFO_BASETYPE (type, i)))
       return 1;
   
-  /* Process friends. */
+  /* Process friends.  */
   for (list = DECL_FRIENDLIST (TYPE_MAIN_DECL (type)); list; 
        list = TREE_CHAIN (list))
     if (k->name == TREE_PURPOSE (list))
       for (friends = TREE_VALUE (list); friends; 
 	   friends = TREE_CHAIN (friends))
 	/* Only interested in global functions with potentially hidden
-           (i.e. unqualified) declarations. */
+           (i.e. unqualified) declarations.  */
 	if (TREE_PURPOSE (friends) == error_mark_node && TREE_VALUE (friends)
 	    && decl_namespace (TREE_VALUE (friends)) == context)
 	  if (add_function (k, TREE_VALUE (friends)))
@@ -4212,7 +4212,7 @@ arg_assoc_type (k, type)
     case ENUMERAL_TYPE:
       return arg_assoc_namespace (k, decl_namespace (TYPE_MAIN_DECL (type)));
     case OFFSET_TYPE:
-      /* Pointer to member: associate class type and value type. */
+      /* Pointer to member: associate class type and value type.  */
       if (arg_assoc_type (k, TYPE_OFFSET_BASETYPE (type)))
 	return 1;
       return arg_assoc_type (k, TREE_TYPE (type));
@@ -4220,10 +4220,10 @@ arg_assoc_type (k, type)
       /* The basetype is referenced in the first arg type, so just
 	 fall through.  */
     case FUNCTION_TYPE:
-      /* Associate the parameter types. */
+      /* Associate the parameter types.  */
       if (arg_assoc_args (k, TYPE_ARG_TYPES (type)))
 	return 1;
-      /* Associate the return type. */
+      /* Associate the return type.  */
       return arg_assoc_type (k, TREE_TYPE (type));
     case TEMPLATE_TYPE_PARM:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
@@ -4332,7 +4332,7 @@ arg_assoc (k, n)
 }
 
 /* Performs Koenig lookup depending on arguments, where fns
-   are the functions found in normal lookup. */
+   are the functions found in normal lookup.  */
 
 tree
 lookup_arg_dependent (name, fns, args)
@@ -4360,7 +4360,7 @@ lookup_arg_dependent (name, fns, args)
   return k.functions;
 }
 
-/* Process a namespace-alias declaration. */
+/* Process a namespace-alias declaration.  */
 
 void
 do_namespace_alias (alias, namespace)
@@ -4368,21 +4368,21 @@ do_namespace_alias (alias, namespace)
 {
   if (TREE_CODE (namespace) != NAMESPACE_DECL)
     {
-      /* The parser did not find it, so it's not there. */
+      /* The parser did not find it, so it's not there.  */
       error ("unknown namespace `%D'", namespace);
       return;
     }
 
   namespace = ORIGINAL_NAMESPACE (namespace);
 
-  /* Build the alias. */
+  /* Build the alias.  */
   alias = build_lang_decl (NAMESPACE_DECL, alias, void_type_node);     
   DECL_NAMESPACE_ALIAS (alias) = namespace;
   pushdecl (alias);
 }
 
 /* Check a non-member using-declaration. Return the name and scope
-   being used, and the USING_DECL, or NULL_TREE on failure. */
+   being used, and the USING_DECL, or NULL_TREE on failure.  */
 
 static tree
 validate_nonmember_using_decl (decl, scope, name)
@@ -4435,11 +4435,11 @@ validate_nonmember_using_decl (decl, scope, name)
     abort ();
   if (DECL_P (*name))
     *name = DECL_NAME (*name);
-  /* Make a USING_DECL. */
+  /* Make a USING_DECL.  */
   return push_using_decl (*scope, *name);
 }
 
-/* Process local and global using-declarations. */
+/* Process local and global using-declarations.  */
 
 static void
 do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
@@ -4461,7 +4461,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
       return;
     }
 
-  /* Check for using functions. */
+  /* Check for using functions.  */
   if (BINDING_VALUE (decls) && is_overloaded_fn (BINDING_VALUE (decls)))
     {
       tree tmp, tmp1;
@@ -4541,7 +4541,7 @@ do_nonmember_using_decl (scope, name, oldval, oldtype, newval, newtype)
     }
 }
 
-/* Process a using-declaration not appearing in class or local scope. */
+/* Process a using-declaration not appearing in class or local scope.  */
 
 void
 do_toplevel_using_decl (decl)
@@ -4561,7 +4561,7 @@ do_toplevel_using_decl (decl)
 
   do_nonmember_using_decl (scope, name, oldval, oldtype, &newval, &newtype);
 
-  /* Copy declarations found. */
+  /* Copy declarations found.  */
   if (newval)
     BINDING_VALUE (binding) = newval;
   if (newtype)
@@ -4658,7 +4658,7 @@ do_class_using_decl (decl)
   return value;
 }
 
-/* Process a using-directive. */
+/* Process a using-directive.  */
 
 void
 do_using_directive (namespace)
@@ -4672,7 +4672,7 @@ do_using_directive (namespace)
       namespace = TREE_OPERAND (namespace, 1);
   if (TREE_CODE (namespace) == IDENTIFIER_NODE)
     {
-      /* Lookup in lexer did not find a namespace. */
+      /* Lookup in lexer did not find a namespace.  */
       if (!processing_template_decl)
 	error ("namespace `%T' undeclared", namespace);
       return;
