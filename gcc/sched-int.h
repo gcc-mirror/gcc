@@ -94,7 +94,7 @@ struct deps
 
   /* Used to keep post-call pseudo/hard reg movements together with
      the call.  */
-  bool in_post_call_group_p;
+  enum { not_post_call, post_call, post_call_initial } in_post_call_group_p;
 
   /* Set to the tail insn of the outermost libcall block.
 

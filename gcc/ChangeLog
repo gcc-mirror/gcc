@@ -1,3 +1,15 @@
+2004-06-09  J"orn Rennecke <joern.rennecke@superh.com>
+
+	PR rtl-optimization/15521:
+	* sched-int.h (in_post_call_group_p): Change type to enum.
+	* sched-deps.c (sched_analyze_insn):
+	(sched_analyze): When in_post_call_group_p is post_call_initial,
+	don't add a dependency, but still set SCHED_GROUP_P and CANT_MOVE,
+	and also reset in_post_call_group_p to post_call.
+	(sched_analyze): When the previous basic block ended in a CALL_INSN,
+	initialize in_post_call_group_p as post_call_initial.
+	(init_deps): initialize in_post_call_group_p to not_post_call.
+	
 2004-06-09  Arnaud Charlet  <charlet@act-europe.fr>
 
 	PR ada/6637
