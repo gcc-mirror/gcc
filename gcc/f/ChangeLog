@@ -1,3 +1,8 @@
+2001-03-01  Zack Weinberg  <zackw@stanford.edu>
+
+	* lang-specs.h: Add zero initializer for cpp_spec field to all
+	array elements.
+
 2001-02-24  Zack Weinberg  <zackw@stanford.edu>
 
 	* com.c: Don't define STDC_HEADERS, autoconf handles it.

@@ -24,23 +24,23 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* This is the contribution to the `default_compilers' array in gcc.c for
    g77.  */
 
-  {".F",   "@f77-cpp-input"},
-  {".fpp", "@f77-cpp-input"},
-  {".FPP", "@f77-cpp-input"},
+  {".F",   "@f77-cpp-input", 0},
+  {".fpp", "@f77-cpp-input", 0},
+  {".FPP", "@f77-cpp-input", 0},
   {"@f77-cpp-input",
    "tradcpp0 -lang-fortran %(cpp_options) %{!M:%{!MM:%{!E:%{!pipe:%g.f |\n\
-    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}}}}"},
-  {".r", "@ratfor"},
+    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}}}}", 0},
+  {".r", "@ratfor", 0},
   {"@ratfor",
    "%{C:%{!E:%eGNU C does not support -C without using -E}}\
     ratfor %{C} %{v} %i %{E:%W{o*}} %{!E: %{!pipe:-o %g.f} |\n\
-    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}"},
-  {".f",   "@f77"},
-  {".for", "@f77"},
-  {".FOR", "@f77"},
+    f771 %{!pipe:%g.f} %(cc1_options) %{I*} %{!fsyntax-only:%(invoke_as)}}", 0},
+  {".f",   "@f77", 0},
+  {".for", "@f77", 0},
+  {".FOR", "@f77", 0},
   {"@f77",
    "%{!M:%{!MM:%{!E:f771 %i %(cc1_options) %{I*}\
-	%{!fsyntax-only:%(invoke_as)}}}}"},
+	%{!fsyntax-only:%(invoke_as)}}}}", 0},
   /* XXX This is perverse and should not be necessary.  */
   {"@f77-version",
    "tradcpp0 -lang-fortran %(cpp_options) %j \n\
@@ -56,4 +56,4 @@ the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       %{!nostdlib:%{!nodefaultlibs:%G %L %G}} \
       %{!A:%{!nostdlib:%{!nostartfiles:%E}}} \
       %{T*} \n\
-     %g \n"},
+     %g \n", 0},
