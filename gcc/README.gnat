@@ -34,29 +34,31 @@ Mon Mar 16 11:00:25 1998  Jim Wilson  <wilson@cygnus.com>
 	bcopy call for gnat_tree_code_type change.
 	* a-tree.def: Adjust for tree_code_* type changes.
 
-diff -pr gnat-3.10p-src/src/ada/a-gtran3.c egcs-980308/gcc/ada/a-gtran3.c
-*** gnat-3.10p-src/src/ada/a-gtran3.c	Wed Aug 13 21:02:17 1997
---- egcs-980308/gcc/ada/a-gtran3.c	Sat Mar 14 18:33:51 1998
-*************** maybe_pad_type (type, size, align, gnat_
-*** 3330,3335 ****
---- 3330,3342 ----
+	* a-misc.c (init_lex): Rename to init_parse.
+
+diff -c ada/a-gtran3.c /home/brolley/comp/egcs/tmp/ada/a-gtran3.c
+*** ada/a-gtran3.c	Mon Mar 30 16:29:04 1998
+--- /home/brolley/comp/egcs/tmp/ada/a-gtran3.c	Thu Apr  2 17:16:15 1998
+***************
+*** 3329,3334 ****
+--- 3329,3341 ----
+       isn't changing.  Likewise, clear the alignment if it isn't being
        changed.  Then return if we aren't doing anything.  */
   
++     if (size != 0
++ 	&& TYPE_MODE (TREE_TYPE (size)) != TYPE_MODE (TREE_TYPE (orig_size)))
++       {
++ 	size = convert (sizetype, size);
++ 	orig_size = convert (sizetype, orig_size);
++       }
++  
     if (size != 0
-+       && TYPE_MODE (TREE_TYPE (size)) != TYPE_MODE (TREE_TYPE (orig_size)))
-+     {
-+       size = convert (sizetype, size);
-+       orig_size = convert (sizetype, orig_size);
-+     }
-+ 
-+   if (size != 0
         && (operand_equal_p (size, orig_size, 0)
   	  || (TREE_CODE (orig_size) == INTEGER_CST
-  	      && tree_int_cst_lt (size, orig_size)))
-diff -pr gnat-3.10p-src/src/ada/a-misc.c egcs-980308/gcc/ada/a-misc.c
-*** gnat-3.10p-src/src/ada/a-misc.c	Wed Aug 13 21:02:18 1997
---- egcs-980308/gcc/ada/a-misc.c	Tue Mar 10 18:39:13 1998
-*************** extern char *main_input_filename;
+diff -c ada/a-misc.c /home/brolley/comp/egcs/tmp/ada/a-misc.c
+*** ada/a-misc.c	Mon Mar 30 16:29:05 1998
+--- /home/brolley/comp/egcs/tmp/ada/a-misc.c	Thu Apr  2 17:36:19 1998
+***************
 *** 70,77 ****
   
   #define DEFTREECODE(SYM, NAME, TYPE, LENGTH) TYPE,
@@ -75,8 +77,30 @@ diff -pr gnat-3.10p-src/src/ada/a-misc.c egcs-980308/gcc/ada/a-misc.c
   #include "a-tree.def"
   };
   #undef DEFTREECODE
-*************** init_lex ()
-*** 607,626 ****
+***************
+*** 254,259 ****
+--- 254,268 ----
+  print_lang_statistics ()
+  {}
+  
++ void
++ lang_print_xnode (file, node, indent)
++      FILE *file;
++      tree node;
++      int indent;
++ {
++ }
++  
++ 
+  /* integrate_decl_tree calls this function, but since we don't use the
+     DECL_LANG_SPECIFIC field, this is a no-op.  */
+  
+***************
+*** 603,622 ****
+     it, but it's where g++ does it.  */
+  
+  void
+! init_lex ()
   {
     lang_expand_expr = gnat_expand_expr;
   
@@ -92,24 +116,45 @@ diff -pr gnat-3.10p-src/src/ada/a-misc.c egcs-980308/gcc/ada/a-misc.c
 - 
     bcopy ((char *) gnat_tree_code_type,
   	 (char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
-! 	 ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
-! 	  * sizeof (char *)));
+  	 ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+--- 612,622 ----
+     it, but it's where g++ does it.  */
   
-    bcopy ((char *)gnat_tree_code_length,
-  	 (char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
---- 607,615 ----
+  void
+! init_parse (filename)
+!      char *filename
   {
     lang_expand_expr = gnat_expand_expr;
   
     bcopy ((char *) gnat_tree_code_type,
   	 (char *) (tree_code_type + (int) LAST_AND_UNUSED_TREE_CODE),
-! 	 LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE);
+  	 ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+***************
+*** 629,636 ****
   
-    bcopy ((char *)gnat_tree_code_length,
-  	 (char *) (tree_code_length + (int) LAST_AND_UNUSED_TREE_CODE),
-diff -pr gnat-3.10p-src/src/ada/a-tree.def egcs-980308/gcc/ada/a-tree.def
-*** gnat-3.10p-src/src/ada/a-tree.def	Wed Aug 13 21:02:20 1997
---- egcs-980308/gcc/ada/a-tree.def	Tue Mar 10 18:39:54 1998
+    bcopy ((char *) gnat_tree_code_name,
+  	 (char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
+! 	 ((LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE)
+! 	  * sizeof (char *)));
+  }
+  
+  /* Sets some debug flags for the parsed. It does nothing here.  */
+--- 629,640 ----
+  
+    bcopy ((char *) gnat_tree_code_name,
+  	 (char *) (tree_code_name + (int) LAST_AND_UNUSED_TREE_CODE),
+! 	 LAST_GNAT_TREE_CODE - (int) LAST_AND_UNUSED_TREE_CODE);
+! }
+! 
+! void
+! finish_parse ()
+! {
+  }
+  
+  /* Sets some debug flags for the parsed. It does nothing here.  */
+diff -c ada/a-tree.def /home/brolley/comp/egcs/tmp/ada/a-tree.def
+*** ada/a-tree.def	Mon Mar 30 16:29:09 1998
+--- /home/brolley/comp/egcs/tmp/ada/a-tree.def	Thu Apr  2 17:20:38 1998
 ***************
 *** 31,69 ****
      The only field used if TREE_COMPLEXITY, which contains the GNAT node
@@ -191,22 +236,4 @@ diff -pr gnat-3.10p-src/src/ada/a-tree.def egcs-980308/gcc/ada/a-tree.def
      involved.  */
   
 ! DEFTREECODE (GNAT_NOP_EXPR, "gnat_nop_expr", '1', 1)
-*** ada/a-misc.c.dist	Mon Mar 23 00:09:16 1998
---- ada/a-misc.c	Sat Mar 28 00:19:01 1998
-***************
-*** 254,259 ****
---- 254,267 ----
-  print_lang_statistics ()
-  {}
-  
-+ void
-+ lang_print_xnode (file, node, indent)
-+      FILE *file;
-+      tree node;
-+      int indent;
-+ {
-+ }
-+ 
-  /* integrate_decl_tree calls this function, but since we don't use the
-     DECL_LANG_SPECIFIC field, this is a no-op.  */
-  
+
