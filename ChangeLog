@@ -1,3 +1,9 @@
+2004-08-17  Robert Millan  <robertmh@gnu.org>
+
+	* configure.in: In noconfigdirs check, match GNU/k*BSD with GNU/Linux
+	(instead of FreeBSD).
+	* configure: Regenerate.
+
 2004-08-16  Paolo Bonzini  <bonzini@gnu.org>
 
 	* Makefile.in: Regenerate.
