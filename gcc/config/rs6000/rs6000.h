@@ -1149,6 +1149,9 @@ struct rs6000_args {int words, fregno, nargs_prototype; };
 
 #define XCOFF_DEBUGGING_INFO
 
+/* Define if the object format being used is COFF or a superset.  */
+#define OBJECT_FORMAT_COFF
+
 /* We don't have GAS for the RS/6000 yet, so don't write out special
    .stabs in cc1plus.  */
    
