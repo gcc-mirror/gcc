@@ -1278,6 +1278,26 @@ extern char *current_function_name;
 
 #define FLOAT_STORE_FLAG_VALUE 0.5
 
+/* Canonicalize a comparison from one we don't have to one we do have.  */
+
+#define CANONICALIZE_COMPARISON(CODE,OP0,OP1) \
+  do {									\
+    if (((CODE) == GE || (CODE) == GT || (CODE) == GEU || (CODE) == GTU) \
+	&& (GET_CODE (OP1) == REG || (OP1) == const0_rtx))		\
+      {									\
+	rtx tem = (OP0);						\
+	(OP0) = (OP1);							\
+	(OP1) = tem;							\
+	(CODE) = swap_condition (CODE);					\
+      }									\
+    if (((CODE) == LT || (CODE) == LTU)					\
+	&& GET_CODE (OP1) == CONST_INT && INTVAL (OP1) == 256)		\
+      {									\
+	(CODE) = (CODE) == LT ? LE : LEU;				\
+	(OP1) = GEN_INT (255);						\
+      }									\
+  } while (0)
+
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
