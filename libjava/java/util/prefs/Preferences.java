@@ -238,10 +238,10 @@ public abstract class Preferences {
      * @exception SecurityException when a security manager is installed and
      * the caller does not have <code>RuntimePermission("preferences")</code>.
      */
-    public static Preferences systemNodeForPackage(Object o)
+    public static Preferences systemNodeForPackage(Class c)
             throws SecurityException
     {
-        return nodeForPackage(o, systemRoot());
+        return nodeForPackage(c, systemRoot());
     }
 
     /**
@@ -257,10 +257,10 @@ public abstract class Preferences {
      * @exception SecurityException when a security manager is installed and
      * the caller does not have <code>RuntimePermission("preferences")</code>.
      */
-    public static Preferences userNodeForPackage(Object o)
+    public static Preferences userNodeForPackage(Class c)
             throws SecurityException
     {
-        return nodeForPackage(o, userRoot());
+        return nodeForPackage(c, userRoot());
     }
 
     /**
@@ -269,9 +269,9 @@ public abstract class Preferences {
      * root it returns the correct Preference node for the package node name
      * of the given object.
      */
-    private static Preferences nodeForPackage(Object o, Preferences root) {
+    private static Preferences nodeForPackage(Class c, Preferences root) {
         // Get the package path
-        String className = o.getClass().getName();
+        String className = c.getName();
         String packagePath;
         int index = className.lastIndexOf('.');
         if(index == -1) {

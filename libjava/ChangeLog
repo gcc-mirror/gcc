@@ -1,5 +1,15 @@
 2003-06-17  Michael Koch  <konqueror@gmx.de>
 
+	* java/util/prefs/AbstractPreferences.java,
+	java/util/prefs/PreferencesFactory.java:
+	Reworked imports, removed unused imports.
+	* java/util/prefs/Preferences.java
+	(systemNodeForPackage): Method takes a Class not an Object.
+	(userNodeForPackage): Likewise.
+	(nodeForPackage): Likewise.
+
+2003-06-17  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/security/x509/X509Certificate.java:
 	Explicitely import used classes.
 
