@@ -533,7 +533,6 @@ insert_slot_to_list (struct temp_slot *temp, struct temp_slot **list)
 static struct temp_slot **
 temp_slots_at_level (int level)
 {
-  level++;
 
   if (!used_temp_slots)
     VARRAY_GENERIC_PTR_INIT (used_temp_slots, 3, "used_temp_slots");

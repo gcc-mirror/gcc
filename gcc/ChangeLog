@@ -1,3 +1,9 @@
+2004-10-11  Andrew Pinski  <pinskia@physics.uc.edu
+
+	PR middle-end/16266
+	* function.c (temp_slots_at_level): Fix typo which creates too
+	many temp stack slots levels.
+
 2004-10-11  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_trampoline_template): Generate shorter
