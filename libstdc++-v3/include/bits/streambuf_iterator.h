@@ -109,7 +109,7 @@ namespace std
 	return __old; 
       }
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 110 istreambuf_iterator::equal not const
       // NB: there is also number 111 (NAD, Future) pending on this function.
       bool 
@@ -120,7 +120,6 @@ namespace std
 	bool __beof = traits_type::eq_int_type(__b._M_get(), __eof);
 	return (__thiseof && __beof || (!__thiseof && !__beof));
       }
-#endif
 
     private:
       int_type 

@@ -62,11 +62,10 @@ namespace std
 				traits_type::to_char_type(__c)))
 		  __c = __sb->snextc();
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-//195.  Should basic_istream::sentry's constructor ever set eofbit? 
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 195. Should basic_istream::sentry's constructor ever set eofbit? 
 	      if (traits_type::eq_int_type(__c, __eof))
 		__in.setstate(ios_base::eofbit);
-#endif
 	    }
 	}
 
@@ -147,7 +146,7 @@ namespace std
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
 	      __ng.get(*this, 0, *this, __err, __l);
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
 		  && (numeric_limits<short>::min() <= __l 
@@ -155,7 +154,6 @@ namespace std
 		__n = __l;
 	      else
                 __err |= ios_base::failbit;
-#endif
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -211,7 +209,7 @@ namespace std
 	      ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
 	      const __num_get_type& __ng = __check_facet(this->_M_num_get);
 	      __ng.get(*this, 0, *this, __err, __l);
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	      // 118. basic_istream uses nonexistent num_get member functions.
 	      if (!(__err & ios_base::failbit)
 		  && (numeric_limits<int>::min() <= __l 
@@ -219,7 +217,6 @@ namespace std
 		__n = __l;
 	      else
                 __err |= ios_base::failbit;
-#endif
 	      this->setstate(__err);
 	    }
 	  catch(...)
@@ -844,10 +841,9 @@ namespace std
     basic_istream<_CharT, _Traits>::
     putback(char_type __c)
     {
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 60. What is a formatted input function?
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 60. What is a formatted input function?
       _M_gcount = 0;
-#endif
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
@@ -876,10 +872,9 @@ namespace std
     basic_istream<_CharT, _Traits>::
     unget(void)
     {
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 60. What is a formatted input function?
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 60. What is a formatted input function?
       _M_gcount = 0;
-#endif
       sentry __cerb(*this, true);
       if (__cerb) 
 	{
@@ -957,14 +952,13 @@ namespace std
       // DR60.  Do not change _M_gcount.
       if (!this->fail())
 	{
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 136.  seekp, seekg setting wrong streams?
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekpos(__pos, ios_base::in);
 
-// 129. Need error indication from seekp() and seekg()
+	  // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
 	    this->setstate(ios_base::failbit);
-#endif
 	}
       return *this;
     }
@@ -977,15 +971,14 @@ namespace std
       // DR60.  Do not change _M_gcount.
       if (!this->fail())
 	{
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 136.  seekp, seekg setting wrong streams?
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 136.  seekp, seekg setting wrong streams?
 	  pos_type __err = this->rdbuf()->pubseekoff(__off, __dir, 
 						     ios_base::in);
 
-// 129. Need error indication from seekp() and seekg()
+	  // 129. Need error indication from seekp() and seekg()
 	  if (__err == pos_type(off_type(-1)))
 	    this->setstate(ios_base::failbit);
-#endif
 	}
       return *this;
     }
@@ -1052,10 +1045,9 @@ namespace std
 	      if (_Traits::eq_int_type(__c, __eof))
 		__in.setstate(ios_base::eofbit);
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-//68.  Extractors for char* should store null at end
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 68.  Extractors for char* should store null at end
 	      *__s = char_type();
-#endif
 	      __in.width(0);
 	    }
 	  catch(...)
@@ -1136,11 +1128,10 @@ namespace std
 	    __in.setstate(ios_base::eofbit);
 	  __in.width(0);
 	}
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-//211.  operator>>(istream&, string&) doesn't set failbit
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 211.  operator>>(istream&, string&) doesn't set failbit
       if (!__extracted)
 	__in.setstate (ios_base::failbit);
-#endif
       return __in;
     }
 

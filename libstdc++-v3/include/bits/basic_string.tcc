@@ -502,12 +502,9 @@ namespace std
     _S_create(size_t __capacity, const _Alloc& __alloc)
     {
       typedef basic_string<_CharT, _Traits, _Alloc> __string_type;
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 83.  String::npos vs. string::max_size()
       if (__capacity > _S_max_size)
-#else
-      if (__capacity == npos)
-#endif
 	__throw_length_error("basic_string::_S_create");
 
       // NB: Need an array of char_type[__capacity], plus a

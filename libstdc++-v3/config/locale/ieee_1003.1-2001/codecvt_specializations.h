@@ -453,11 +453,11 @@
 	      const extern_type* __end, size_t __max) const
     { return std::min(__max, static_cast<size_t>(__end - __from)); }
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-// 74.  Garbled text for codecvt::do_max_length
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 74.  Garbled text for codecvt::do_max_length
   template<typename _InternT, typename _ExternT>
     int 
     codecvt<_InternT, _ExternT, __enc_traits>::
     do_max_length() const throw()
     { return 1; }
-#endif
+

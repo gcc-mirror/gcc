@@ -409,8 +409,8 @@ namespace std
       return __beg;
     }
 
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-  //17.  Bad bool parsing
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 17.  Bad bool parsing
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
@@ -479,7 +479,6 @@ namespace std
         }
       return __beg;
     }
-#endif
 
   template<typename _CharT, typename _InIter>
     _InIter
@@ -863,8 +862,8 @@ namespace std
     _M_group_float(const string& __grouping, _CharT __sep, const _CharT* __p, 
 		   _CharT* __new, _CharT* __cs, int& __len) const
     {
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-      //282. What types does numpunct grouping refer to?
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 282. What types does numpunct grouping refer to?
       // Add grouping, if necessary. 
       _CharT* __p2;
       const int __declen = __p ? __p - __cs : __len;
@@ -880,7 +879,6 @@ namespace std
 	  __newlen += __len - __declen;
 	}    
       __len = __newlen;
-#endif
     }
 
   // The following code uses snprintf (or sprintf(), when

@@ -361,13 +361,12 @@ public:
   operator()(const typename _Operation::second_argument_type& __x) const {
     return op(value, __x); 
   }
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-  //109.  Missing binders for non-const sequence elements
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 109.  Missing binders for non-const sequence elements
   typename _Operation::result_type
   operator()(typename _Operation::second_argument_type& __x) const {
     return op(value, __x); 
   }
-#endif
 };
 
 /// One of the @link s20_3_6_binder binder functors@endlink.
@@ -395,13 +394,12 @@ public:
   operator()(const typename _Operation::first_argument_type& __x) const {
     return op(__x, value); 
   }
-#ifdef _GLIBCXX_RESOLVE_LIB_DEFECTS
-  //109.  Missing binders for non-const sequence elements
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 109.  Missing binders for non-const sequence elements
   typename _Operation::result_type
   operator()(typename _Operation::first_argument_type& __x) const {
     return op(__x, value); 
   }
-#endif
 };
 
 /// One of the @link s20_3_6_binder binder functors@endlink.
