@@ -981,6 +981,17 @@ function_arg (cum, mode, type, named)
   return ret;
 }
 
+
+/* Return nonzero if OP is (const_int 1), else return zero.  */
+
+int
+const_int_1_operand (op, mode)
+     rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (GET_CODE (op) == CONST_INT && INTVAL (op) == 1);
+}
+
 /* Returns 1 if OP is either a symbol reference or a sum of a symbol
    reference and a constant.  */
 
