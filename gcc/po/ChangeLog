@@ -1,3 +1,8 @@
+2002-05-10  Philipp Thomas  <pthomas@suse.de>
+
+	* es.po, tr.po, fr.po: Update to version
+	for the 20020415 snapshot.
+
 2002-04-24  Philipp Thomas  <pthomas@suse.de>
 
 	* gcc.pot: Regenerate.
