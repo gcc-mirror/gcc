@@ -21,19 +21,29 @@ proc libjava_read_xfail {file} {
     return $tokens
 }
 
-# Find `jv-scan'.  FIXME: this relies on DejaGnu internals.  These
-# should probably be exposed in a better way.
-proc find_jvscan {} {
+# Find a particular executable.  FIXME: this relies on DejaGnu
+# internals.  These should probably be exposed in a better way.
+proc libjava_find_program {prog} {
     global tool_root_dir
 
-    set file [lookfor_file $tool_root_dir jv-scan]
+    set file [lookfor_file $tool_root_dir $prog]
     if { $file == "" } {
-	set file [lookfor_file $tool_root_dir gcc/jv-scan];
+	set file [lookfor_file $tool_root_dir gcc/$prog];
     }
     if {$file == ""} {
-	set file jv-scan
+	set file $prog
     }
     return $file
+}
+
+# Find `jv-scan'.
+proc find_jvscan {} {
+    return [libjava_find_program jv-scan]
+}
+
+# Find `gcjh'.
+proc find_gcjh {} {
+    return [libjava_find_program gcjh]
 }
 
 proc bytecompile_file { file objdir {classpath {}} } {
@@ -61,7 +71,9 @@ proc bytecompile_file { file objdir {classpath {}} } {
     if {$classpath != ""} then {
         set env(CLASSPATH) $classpath
     }
-    if {[catch {system "cd $dirname; $SUN_JAVAC $file -d $objdir"} msg]} then {
+    if {[catch {
+	system "cd $dirname; $SUN_JAVAC $file -d $objdir 2>&1"
+    } msg]} then {
 	verbose "couldn't compile $file: $msg"
 	set r 0
     } else {
@@ -270,20 +282,6 @@ proc libjava_arguments {{mode compile}} {
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
-#   `no-link'     don't try to link the program
-#   `no-exec'     don't try to run the test
-#   `xfail-gcj'   compilation from source will fail
-#   `xfail-javac' compilation with javac will fail
-#   `xfail-gcjC'  compilation with gcj -C will fail
-#   `shouldfail'  compilation from source is supposed to fail
-#                 This is different from xfail, which marks a known
-#                 failure that we just havne't fixed.
-#                 A compilation marked this way should fail with any
-#                 front end.
-#   `xfail-byte'  compilation from bytecode will fail
-#   `xfail-exec'  exec will fail
-#   `xfail-output' output will be wrong
-#   
 #
 proc test_libjava_from_source { options srcfile compile_args inpfile resultfile exec_args } {
     global base_dir
@@ -333,7 +331,8 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 	set errname "$errname $compile_args"
     }
 
-    set x [target_compile $srcfile "$executable" $target $args]
+    set x [prune_warnings \
+	     [target_compile $srcfile "$executable" $target $args]]
     if {[info exists opts(xfail-gcj)]} {
 	setup_xfail *-*-*
     }
@@ -419,19 +418,6 @@ proc test_libjava_from_source { options srcfile compile_args inpfile resultfile 
 #
 # Run the test specified by srcfile and resultfile. compile_args and
 # exec_args are options telling this proc how to work.
-#   `no-link'     don't try to link the program
-#   `no-exec' don't try to run the test
-#   `xfail-gcj'   compilation from source will fail
-#   `xfail-javac' compilation with javac will fail
-#   `xfail-gcjC'  compilation with gcj -C will fail
-#   `shouldfail'  compilation from source is supposed to fail
-#                 This is different from xfail, which marks a known
-#                 failure that we just havne't fixed.
-#                 A compilation marked this way should fail with any
-#                 front end.
-#   `xfail-byte'  compilation from bytecode will fail
-#   `xfail-exec'  exec will fail
-#   `xfail-output' output will be wrong
 #
 proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile exec_args } {
     global base_dir
@@ -488,12 +474,14 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     set jvscan [find_jvscan]
     verbose "jvscan is $jvscan"
     set main_name [string trim \
-		     [target_compile $srcfile "" none \
-			"compiler=$jvscan additional_flags=--print-main"]]
+		     [prune_warnings \
+			[target_compile $srcfile "" none \
+			   "compiler=$jvscan additional_flags=--print-main"]]]
     verbose "main name is $main_name"
     set class_out [string trim \
-		     [target_compile $srcfile "" none \
-			"compiler=$jvscan additional_flags=--list-class"]]
+		     [prune_warnings \
+			[target_compile $srcfile "" none \
+			   "compiler=$jvscan additional_flags=--list-class"]]]
     verbose "class list is $class_out"
 
     if {[string match "*parse error*" $main_name]
@@ -559,13 +547,15 @@ proc test_libjava_from_javac { options srcfile compile_args inpfile resultfile e
     if {$mode == "compile"} {
 	foreach c_file $class_files {
 	    set executable [file rootname [file tail $c_file]].o
-	    set x [target_compile $c_file "$executable" $type $args]
+	    set x [prune_warnings \
+		     [target_compile $c_file "$executable" $type $args]]
 	    if {$x != ""} {
 		break
 	    }
 	}
     } else {
-	set x [target_compile $class_files "$executable" $type $args]
+	set x [prune_warnings \
+		 [target_compile $class_files "$executable" $type $args]]
     }
     if {[info exists opts(xfail-byte)]} {
 	setup_xfail *-*-*
