@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1063,12 +1063,20 @@ package body Exp_Ch4 is
          Test := Expand_Composite_Equality
                    (Nod, Component_Type (Typ), L, R, Decls);
 
-         return
-           Make_Implicit_If_Statement (Nod,
-             Condition => Make_Op_Not (Loc, Right_Opnd => Test),
-             Then_Statements => New_List (
-               Make_Return_Statement (Loc,
-                 Expression => New_Occurrence_Of (Standard_False, Loc))));
+         --  If some (sub)component is an unchecked_union, the whole
+         --  operation will raise program error.
+
+         if Nkind (Test) = N_Raise_Program_Error then
+            return Test;
+
+         else
+            return
+              Make_Implicit_If_Statement (Nod,
+                Condition => Make_Op_Not (Loc, Right_Opnd => Test),
+                Then_Statements => New_List (
+                  Make_Return_Statement (Loc,
+                    Expression => New_Occurrence_Of (Standard_False, Loc))));
+         end if;
       end Component_Equality;
 
       ------------------
@@ -1650,14 +1658,9 @@ package body Exp_Ch4 is
                         --  It is not possible to infer the discriminant since
                         --  the subtype is not constrained.
 
-                        Insert_Action (Nod,
+                        return
                           Make_Raise_Program_Error (Loc,
-                            Reason => PE_Unchecked_Union_Restriction));
-
-                        --  Prevent Gigi from generating illegal code, change
-                        --  the equality to a standard False.
-
-                        return New_Occurrence_Of (Standard_False, Loc);
+                            Reason => PE_Unchecked_Union_Restriction);
                      end if;
 
                      --  Rhs of the composite equality
@@ -1686,11 +1689,9 @@ package body Exp_Ch4 is
 
                         end if;
                      else
-                        Insert_Action (Nod,
+                        return
                           Make_Raise_Program_Error (Loc,
-                            Reason => PE_Unchecked_Union_Restriction));
-
-                        return Empty;
+                            Reason => PE_Unchecked_Union_Restriction);
                      end if;
 
                      --  Call the TSS equality function with the inferred
@@ -7108,6 +7109,7 @@ package body Exp_Ch4 is
          declare
             New_Lhs : Node_Id;
             New_Rhs : Node_Id;
+            Check   : Node_Id;
 
          begin
             if First_Time then
@@ -7119,20 +7121,31 @@ package body Exp_Ch4 is
                New_Rhs := New_Copy_Tree (Rhs);
             end if;
 
-            Result :=
-              Make_And_Then (Loc,
-                Left_Opnd  => Result,
-                Right_Opnd =>
-                  Expand_Composite_Equality (Nod, Etype (C),
-                    Lhs =>
-                      Make_Selected_Component (Loc,
-                        Prefix => New_Lhs,
-                        Selector_Name => New_Reference_To (C, Loc)),
-                    Rhs =>
-                      Make_Selected_Component (Loc,
-                        Prefix => New_Rhs,
-                        Selector_Name => New_Reference_To (C, Loc)),
-                    Bodies => Bodies));
+            Check :=
+              Expand_Composite_Equality (Nod, Etype (C),
+               Lhs =>
+                 Make_Selected_Component (Loc,
+                   Prefix => New_Lhs,
+                   Selector_Name => New_Reference_To (C, Loc)),
+               Rhs =>
+                 Make_Selected_Component (Loc,
+                   Prefix => New_Rhs,
+                   Selector_Name => New_Reference_To (C, Loc)),
+               Bodies => Bodies);
+
+            --  If some (sub)component is an unchecked_union, the whole
+            --  operation will raise program error.
+
+            if Nkind (Check) = N_Raise_Program_Error then
+               Result := Check;
+               Set_Etype (Result, Standard_Boolean);
+               exit;
+            else
+               Result :=
+                 Make_And_Then (Loc,
+                   Left_Opnd  => Result,
+                   Right_Opnd => Check);
+            end if;
          end;
 
          C := Suitable_Element (Next_Entity (C));
