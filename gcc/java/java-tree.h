@@ -138,6 +138,8 @@ extern int flag_assume_compiled;
 
 extern int flag_emit_class_files;
 
+extern int flag_filelist_file;
+
 /* When non zero, assume all native functions are implemented with
    JNI, not CNI.  */
 
@@ -1111,6 +1113,7 @@ extern boolean java_hash_compare_tree_node PARAMS ((hash_table_key,
 						    hash_table_key));
 extern void java_check_methods PARAMS ((tree));
 extern void init_jcf_parse PARAMS((void));
+extern void init_src_parse PARAMS((void));
 
 extern int cxx_keyword_p PARAMS ((const char *, int));
 extern tree java_mangle_decl PARAMS ((struct obstack *, tree));
