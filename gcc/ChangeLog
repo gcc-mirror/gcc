@@ -1,3 +1,14 @@
+Thu Feb 26 07:33:53 1998  Paul Eggert  <eggert@twinsun.com>
+
+	* c-lex.c (yylex): Don't munge errno before using it.
+	* cccp.c (error_from_errno, perror_with_name): Likewise.
+	* cpplib.c (cpp_error_from_errno): Likewise.
+	* gcc.c (pfatal_pexecute): Likewise.
+	* protoize.c (safe_write, find_file, process_aux_info_file): Likewise.
+	(rename_c_file, edit_file): Likewise.
+
+	* c-lex.c (yylex): Remove unused variable exceeds_double.
+
 Thu Feb 26 07:05:14 1998  Michael P. Hayes  <michaelh@ongaonga.chch.cri.nz>
 
 	* reorg.c (fill_slots_from_thread): Don't steal delay list from target
