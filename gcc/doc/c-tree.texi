@@ -2302,8 +2302,9 @@ depth-first preorder traversal of the expression tree.
 @item TARGET_EXPR
 A @code{TARGET_EXPR} represents a temporary object.  The first operand
 is a @code{VAR_DECL} for the temporary variable.  The second operand is
-the initializer for the temporary.  The initializer is evaluated, and
-copied (bitwise) into the temporary.
+the initializer for the temporary.  The initializer is evaluated and,
+if non-void, copied (bitwise) into the temporary.  If the initializer
+is void, that means that it will perform the initialization itself.
 
 Often, a @code{TARGET_EXPR} occurs on the right-hand side of an
 assignment, or as the second operand to a comma-expression which is
@@ -2329,21 +2330,20 @@ cleanups.
 @item AGGR_INIT_EXPR
 An @code{AGGR_INIT_EXPR} represents the initialization as the return
 value of a function call, or as the result of a constructor.  An
-@code{AGGR_INIT_EXPR} will only appear as the second operand of a
-@code{TARGET_EXPR}.  The first operand to the @code{AGGR_INIT_EXPR} is
-the address of a function to call, just as in a @code{CALL_EXPR}.  The
-second operand are the arguments to pass that function, as a
-@code{TREE_LIST}, again in a manner similar to that of a
-@code{CALL_EXPR}.  The value of the expression is that returned by the
-function.
+@code{AGGR_INIT_EXPR} will only appear as a full-expression, or as the
+second operand of a @code{TARGET_EXPR}.  The first operand to the
+@code{AGGR_INIT_EXPR} is the address of a function to call, just as in
+a @code{CALL_EXPR}.  The second operand are the arguments to pass that
+function, as a @code{TREE_LIST}, again in a manner similar to that of
+a @code{CALL_EXPR}.
 
 If @code{AGGR_INIT_VIA_CTOR_P} holds of the @code{AGGR_INIT_EXPR}, then
 the initialization is via a constructor call.  The address of the third
 operand of the @code{AGGR_INIT_EXPR}, which is always a @code{VAR_DECL},
 is taken, and this value replaces the first argument in the argument
-list.  In this case, the value of the expression is the @code{VAR_DECL}
-given by the third operand to the @code{AGGR_INIT_EXPR}; constructors do
-not return a value.
+list.
+
+In either case, the expression is void.
 
 @item VTABLE_REF
 A @code{VTABLE_REF} indicates that the interior expression computes

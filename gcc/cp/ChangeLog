@@ -1,3 +1,12 @@
+2004-06-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/16015
+	* semantics.c (simplify_aggr_init_expr): Don't return the slot.
+	(finish_stmt_expr_expr): Update type after conversions.
+	(finish_stmt_expr): Wrap initializer in CLEANUP_POINT_EXPR.
+	Handle void initializer.
+	* tree.c (build_cplus_new): Make AGGR_INIT_EXPRs void.
+
 2004-06-17  Geoffrey Keating  <geoffk@apple.com>
 
 	* class.c (build_clone): Don't call defer_fn, let mark_used do it.
