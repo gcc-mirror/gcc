@@ -1597,23 +1597,6 @@ mmix_asm_output_def (stream, name, value)
   fputc ('\n', stream);
 }
 
-/* ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL.  */
-
-void
-mmix_asm_output_define_label_difference_symbol (stream, symbol, hi, lo)
-     FILE *stream;
-     const char *symbol;
-     const char *hi;
-     const char *lo;
-{
-  assemble_name (stream, symbol);
-  fprintf (stream, "\tIS\t");
-  assemble_name (stream, hi);
-  fputc ('-', stream);
-  assemble_name (stream, lo);
-  fprintf (stream, "\n");
-}
-
 /* PRINT_OPERAND.  */
 
 void

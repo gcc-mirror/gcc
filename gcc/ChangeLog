@@ -1,3 +1,16 @@
+2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
+
+	* dwarf2out.c (SECTION_ASM_OP,
+	ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Remove.
+	* system.h (SECTION_ASM_OP): Poison.
+	* tree.c (FILE_FUNCTION_PREFIX_LEN): Remove.
+	* config/alpha/alpha-interix.h, config/mips/linux.h
+	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Remove.
+	* config/mmix/mmix-protos.h, config/mmix/mmix.c
+	(mmix_asm_output_define_label_difference_symbol): Remove.
+	* config/mmix/mmix.h
+	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Remove.
+
 Tue Jul 23 21:49:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* recog.c (asm_operand_ok): Allow float CONST_VECTORs for 'F'.

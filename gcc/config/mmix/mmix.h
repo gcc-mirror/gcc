@@ -1010,10 +1010,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 #define ASM_OUTPUT_DEF(STREAM, NAME, VALUE) \
  mmix_asm_output_def (STREAM, NAME, VALUE)
 
-#define ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL(STREAM, SY, HI, LO) \
- mmix_asm_output_define_label_difference_symbol (STREAM, SY, HI, LO)
-
-
 /* Node: Macros for Initialization */
 /* We're compiling to ELF and linking to MMO; fundamental ELF features
    that GCC depend on are there.  */
