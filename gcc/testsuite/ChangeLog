@@ -1,3 +1,9 @@
+2001-11-14  Geoffrey Keating  <geoffk@redhat.com>
+
+	* gcc.c-torture/compile/20010327-1.c: Revert last change.
+	* gcc.c-torture/compile/20011114-1.c: New test, exactly
+	like the (before this change) version of 20010327-1.c.
+
 2001-11-14  Roger Sayle <roger@eyesopen.com>
 
 	* gcc.c-torture/execute/string-opt-13.c: New testcase.
