@@ -33,7 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #define obstack_chunk_free free
 
 extern char *xmalloc ();
-extern void free ();
 
 /* Table relating interpreter typecodes to machine modes.  */
 #define GET_TYPECODE_MODE(CODE) (typecode_mode[((int) CODE)])
