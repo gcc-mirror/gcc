@@ -811,7 +811,7 @@ assign_stack_temp_for_type (mode, size, keep, type)
      alias set for the memory.  */
   set_mem_alias_set (p->slot, type ? get_alias_set (type) : 0);
 
-  /* If a type is specified, set the relevant flags. */
+  /* If a type is specified, set the relevant flags.  */
   if (type != 0)
     {
       RTX_UNCHANGING_P (p->slot) = TYPE_READONLY (type);
@@ -5703,7 +5703,7 @@ round_trampoline_addr (tramp)
 
 /* Given a trampoline address, round it then apply any
    platform-specific adjustments so that the result can be used for a
-   function call . */
+   function call .  */
 
 static rtx
 adjust_trampoline_addr (tramp)

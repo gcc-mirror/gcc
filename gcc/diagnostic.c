@@ -58,7 +58,7 @@ Boston, MA 02111-1307, USA.  */
 #define diagnostic_args output_buffer_ptr_to_format_args (diagnostic_buffer)
 #define diagnostic_msg output_buffer_text_cursor (diagnostic_buffer)
 
-/* Prototypes. */
+/* Prototypes.  */
 static void diagnostic_finish PARAMS ((output_buffer *));
 static void output_do_verbatim PARAMS ((output_buffer *,
                                         const char *, va_list *));
@@ -1125,7 +1125,7 @@ pedwarn_with_decl VPARAMS ((tree decl, const char *msgid, ...))
   va_end (ap);
 }
 
-/* Same as above but within the context FILE and LINE. */
+/* Same as above but within the context FILE and LINE.  */
 
 void
 pedwarn_with_file_and_line VPARAMS ((const char *file, int line,

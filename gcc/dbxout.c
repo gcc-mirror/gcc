@@ -2737,7 +2737,7 @@ dbxout_block (block, depth, args)
 	  did_output = 1;
 #else
 	  /* In dbx format, the syms of a block come before the N_LBRAC.
-	     If nothing is output, we don't need the N_LBRAC, either. */
+	     If nothing is output, we don't need the N_LBRAC, either.  */
 	  did_output = 0;
 	  if (debug_info_level != DINFO_LEVEL_TERSE || depth == 0)
 	    did_output = dbxout_syms (BLOCK_VARS (block));

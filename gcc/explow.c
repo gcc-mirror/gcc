@@ -678,7 +678,7 @@ set_mem_attributes (ref, t, objectp)
   MEM_IN_STRUCT_P (ref) = AGGREGATE_TYPE_P (type);
 
   /* If we are making an object of this type, we know that it is a scalar if
-     the type is not an aggregate. */
+     the type is not an aggregate.  */
   if (objectp && ! AGGREGATE_TYPE_P (type))
     MEM_SCALAR_P (ref) = 1;
 
@@ -1663,7 +1663,7 @@ probe_stack_range (first, size)
    otherwise 0.
    OUTGOING is 1 if on a machine with register windows this function
    should return the register in which the function will put its result
-   and 0 otherwise. */
+   and 0 otherwise.  */
 
 rtx
 hard_function_value (valtype, func, outgoing)

@@ -379,7 +379,7 @@ gen_rtx_SUBREG (mode, reg, offset)
 
 /* Generate a SUBREG representing the least-significant part
  * of REG if MODE is smaller than mode of REG, otherwise
- * paradoxical SUBREG. */
+ * paradoxical SUBREG.  */
 rtx
 gen_lowpart_SUBREG (mode, reg)
      enum machine_mode mode;
@@ -1483,12 +1483,12 @@ operand_subword (op, offset, validate_address, mode)
   if (mode == VOIDmode)
     abort ();
 
-  /* If OP is narrower than a word, fail. */
+  /* If OP is narrower than a word, fail.  */
   if (mode != BLKmode
       && (GET_MODE_SIZE (mode) < UNITS_PER_WORD))
     return 0;
 
-  /* If we want a word outside OP, return zero. */
+  /* If we want a word outside OP, return zero.  */
   if (mode != BLKmode
       && (offset + 1) * UNITS_PER_WORD > GET_MODE_SIZE (mode))
     return const0_rtx;
@@ -1886,7 +1886,7 @@ unshare_all_decls (blk)
 }
 
 /* Go through all virtual stack slots of a function and mark them as
-   not shared. */
+   not shared.  */
 static void
 reset_used_decls (blk)
      tree blk;
@@ -3606,7 +3606,7 @@ force_next_line_note ()
 }
 
 /* Place a note of KIND on insn INSN with DATUM as the datum. If a
-   note of this type already exists, remove it first. */
+   note of this type already exists, remove it first.  */
 
 void
 set_unique_reg_note (insn, kind, datum)
@@ -3867,7 +3867,7 @@ gen_sequence ()
   if (len == 1
       && ! RTX_FRAME_RELATED_P (first_insn)
       && GET_CODE (first_insn) == INSN
-      /* Don't throw away any reg notes. */
+      /* Don't throw away any reg notes.  */
       && REG_NOTES (first_insn) == 0)
     return PATTERN (first_insn);
 

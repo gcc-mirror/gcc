@@ -3822,7 +3822,7 @@ try_crossjump_to_edge (mode, e1, e2)
   if (e1->flags & EDGE_COMPLEX)
     return false;
 
-  /* Look for the common insn sequence, part the first ... */
+  /* Look for the common insn sequence, part the first ...  */
   if (!outgoing_edges_match (src1, src2))
     return false;
 
@@ -5802,7 +5802,7 @@ insn_dead_p (pbi, x, call_ok, notes)
 	     If so, this memory write is dead (remember, we're walking
 	     backwards from the end of the block to the start).  Since
 	     rtx_equal_p does not check the alias set or flags, we also
-	     must have the potential for them to conflict (anti_dependence). */
+	     must have the potential for them to conflict (anti_dependence).  */
 	  for (temp = pbi->mem_set_list; temp != 0; temp = XEXP (temp, 1))
 	    if (anti_dependence (r, XEXP (temp, 0)))
 	      {
@@ -8385,7 +8385,7 @@ verify_flow_info ()
   for (i = n_basic_blocks - 1; i >= 0; i--)
     {
       basic_block bb = BASIC_BLOCK (i);
-      /* Check correctness of edge lists. */
+      /* Check correctness of edge lists.  */
       edge e;
       int has_fallthru = 0;
 
@@ -9676,7 +9676,7 @@ flow_loop_pre_header_scan (loop)
 
       /* Count number of edges along trace from loop header to
 	 root of pre-header extended basic block.  Usually this is
-	 only one or two edges. */
+	 only one or two edges.  */
       num++;
       while (ebb->pred->src != ENTRY_BLOCK_PTR && ! ebb->pred->pred_next)
 	{

@@ -4557,7 +4557,7 @@ emit_store_flag (target, code, op0, op1, mode, unsignedp, normalizep)
 
       /* Note that ABS doesn't yield a positive number for INT_MIN, but 
 	 that is compensated by the subsequent overflow when subtracting 
-	 one / negating. */
+	 one / negating.  */
 
       if (abs_optab->handlers[(int) mode].insn_code != CODE_FOR_nothing)
 	tem = expand_unop (mode, abs_optab, op0, subtarget, 1);

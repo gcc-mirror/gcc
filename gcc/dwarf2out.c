@@ -877,7 +877,7 @@ initial_return_save (rtl)
 }
 
 /* Given a SET, calculate the amount of stack adjustment it
-   contains. */
+   contains.  */
 
 static long
 stack_adjust_offset (pattern)
@@ -981,7 +981,7 @@ dwarf2out_stack_adjust (insn)
 	   || GET_CODE (PATTERN (insn)) == SEQUENCE)
     {
       /* There may be stack adjustments inside compound insns.  Search
-         for them. */
+         for them.  */
       int j;
 
       offset = 0;
@@ -2201,7 +2201,7 @@ dw_loc_descr_node;
 
 /* Location lists are ranges + location descriptions for that range,
    so you can track variables that are in different places over
-   their entire life. */
+   their entire life.  */
 typedef struct dw_loc_list_struct
 {
   dw_loc_list_ref dw_loc_next;
@@ -6030,7 +6030,7 @@ output_die_symbol (die)
 /* Return a new location list, given the begin and end range, and the
    expression. gensym tells us whether to generate a new internal
    symbol for this location list node, which is done for the head of
-   the list only. */ 
+   the list only.  */ 
 static inline dw_loc_list_ref
 new_loc_list (expr, begin, end, section, gensym)
      register dw_loc_descr_ref expr;
@@ -6061,7 +6061,7 @@ add_loc_descr_to_loc_list (list_head, descr, begin, end, section)
 {
   register dw_loc_list_ref *d;
   
-  /* Find the end of the chain. */
+  /* Find the end of the chain.  */
   for (d = list_head; (*d) != NULL; d = &(*d)->dw_loc_next)
     ;
   /* Add a new location list node to the list */
@@ -11543,7 +11543,7 @@ dwarf2out_source_line (line, filename)
     }
 }
 
-/* Record the beginning of a new source file. */
+/* Record the beginning of a new source file.  */
 
 static void
 dwarf2out_start_source_file (lineno, filename)
@@ -11833,7 +11833,7 @@ dwarf2out_finish (input_filename)
   /* Output location list section if necessary.  */
   if (have_location_lists)
     {
-      /* Output the location lists info. */
+      /* Output the location lists info.  */
       named_section_flags (DEBUG_LOC_SECTION, SECTION_DEBUG, 1);
       output_location_lists (die);
       have_location_lists = 0;
@@ -11846,7 +11846,7 @@ dwarf2out_finish (input_filename)
       output_ranges ();
     }
 
-  /* Have to end the primary source file. */
+  /* Have to end the primary source file.  */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     { 
       named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG, 1);
