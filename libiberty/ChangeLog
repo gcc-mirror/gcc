@@ -1,3 +1,15 @@
+2003-12-03  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* floatformat.c: Include "config.h" and <string.h> if available.
+	(INFINITY, NAN): Define if not defined by <math.h>.
+	(floatformat_to_double): Handle NaN, infinity, and denormalized
+	numbers.
+	(floatformat_from_double): Likewise.
+	(ieee_test): In debugging code, use little endian rather than big
+	endian.  Correct tests to handle NaN and to check correct sign of
+	zero.  Omit m68k extended test.
+	(main): Add more debugging cases.
+
 2003-11-29  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cp-demangle.c (d_demangle): Only return success if we consumed
