@@ -1,3 +1,8 @@
+2001-04-18  Jim Wilson  <wilson@redhat.com>
+
+	* src/ia64/unix.S: Delete unnecessary increment and decrement of loc2
+	to eliminate RAW DV.
+
 2001-04-12  Bryce McKinlay  <bryce@albatross.co.nz>
 
 	* Makefile.am: Make a libtool convenience library.
