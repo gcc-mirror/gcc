@@ -104,9 +104,6 @@ typedef struct reorder_block_def {
   int index;
   basic_block add_jump;
   edge succ;
-  rtx end;
-  int block_begin;
-  int block_end;
   rtx eff_head;
   rtx eff_end;
   scope scope;
@@ -118,9 +115,6 @@ static struct reorder_block_def rbd_init
     0,			/* index */
     NULL,		/* add_jump */
     NULL,		/* succ */
-    NULL_RTX,		/* end */
-    0,			/* block_begin */
-    0,			/* block_end */
     NULL_RTX,		/* eff_head */
     NULL_RTX,		/* eff_end */
     NULL		/* scope */
@@ -141,15 +135,6 @@ static struct reorder_block_def rbd_init
 
 #define REORDER_BLOCK_SUCC(bb) \
   ((reorder_block_def) (bb)->aux)->succ
-
-#define REORDER_BLOCK_OLD_END(bb) \
-  ((reorder_block_def) (bb)->aux)->end
-
-#define REORDER_BLOCK_BEGIN(bb) \
-  ((reorder_block_def) (bb)->aux)->block_begin
-
-#define REORDER_BLOCK_END(bb) \
-  ((reorder_block_def) (bb)->aux)->block_end
 
 #define REORDER_BLOCK_EFF_HEAD(bb) \
   ((reorder_block_def) (bb)->aux)->eff_head
@@ -336,7 +321,7 @@ chain_reorder_blocks (e, ceb)
 {
   basic_block sb = e->src;
   basic_block db = e->dest;
-  rtx cebe_insn, cebbe_insn, dbh_insn, dbe_insn;
+  rtx cebe_insn, dbh_insn, dbe_insn;
   edge ee, last_edge;
 
   enum cond_types {NO_COND, PREDICT_THEN_WITH_ELSE, PREDICT_ELSE,
@@ -350,45 +335,7 @@ chain_reorder_blocks (e, ceb)
     fprintf (rtl_dump_file,
 	     "Edge from basic block %d to basic block %d last visited %d\n",
 	     sb->index, db->index, ceb->index);
-
-  dbh_insn = REORDER_BLOCK_EFF_HEAD (db);
   cebe_insn = REORDER_BLOCK_EFF_END (ceb);
-  cebbe_insn = skip_insns_between_block (ceb, REORDER_SKIP_BLOCK_END);
-
-  {
-    int block_begins = 0;
-    rtx insn;
-
-    for (insn = dbh_insn; insn && insn != db->end; insn = NEXT_INSN (insn))
-      {
-	if (GET_CODE (insn) == NOTE
-	    && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG)
-	  {
-	    block_begins += 1;
-	    break;
-	  }
-      }
-    REORDER_BLOCK_BEGIN (sb) = block_begins;
-  }
-
-  if (cebbe_insn)
-    {
-      int block_ends = 0;
-      rtx insn;
-
-      for (insn = cebe_insn; insn; insn = NEXT_INSN (insn))
-	{
-	  if (PREV_INSN (insn) == cebbe_insn)
-	    break;
-	  if (GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END)
-	    {
-	      block_ends += 1;
-	      continue;
-	    }
-	}
-      REORDER_BLOCK_END (ceb) = block_ends;
-    }
 
   /* Blocks are in original order.  */
   if (sb->index == ceb->index
@@ -540,41 +487,10 @@ chain_reorder_blocks (e, ceb)
   cebe_insn = REORDER_BLOCK_EFF_END (ceb);
   dbe_insn = REORDER_BLOCK_EFF_END (db);
 
-  /* Leave behind any lexical block markers.  */
-  if (0 && debug_info_level > DINFO_LEVEL_TERSE
-      && ceb->index + 1 < db->index)
-    {
-      rtx insn, last_insn = get_last_insn ();
-      insn = NEXT_INSN (ceb->end);
-      if (! insn)
-	insn = REORDER_BLOCK_OLD_END (ceb);
-
-      if (NEXT_INSN (cebe_insn) == 0)
-	  set_last_insn (cebe_insn);
-      for (; insn && insn != db->head/*dbh_insn*/;
-	   insn = NEXT_INSN (insn))
-	{
-	  if (GET_CODE (insn) == NOTE
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_BEG))
-	    {
-	      cebe_insn = emit_note_after (NOTE_INSN_BLOCK_BEG, cebe_insn);
-	      delete_insn (insn);
-	    }
-	  if (GET_CODE (insn) == NOTE
-	      && (NOTE_LINE_NUMBER (insn) == NOTE_INSN_BLOCK_END))
-	    {
-	      cebe_insn = emit_note_after (NOTE_INSN_BLOCK_END, cebe_insn);
-	      delete_insn (insn);
-	    }      
-	}
-      set_last_insn (last_insn);
-    }
-
   /* Rechain predicted block.  */
   NEXT_INSN (cebe_insn) = dbh_insn;
   PREV_INSN (dbh_insn) = cebe_insn;
 
-  REORDER_BLOCK_OLD_END (db) = NEXT_INSN (dbe_insn);
   if (db->index != n_basic_blocks - 1)
     NEXT_INSN (dbe_insn) = 0;
 
