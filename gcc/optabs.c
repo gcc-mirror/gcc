@@ -3571,105 +3571,71 @@ prepare_cmp_insn (rtx *px, rtx *py, enum rtx_code *pcomparison, rtx size,
 
   if (mode == BLKmode)
     {
+      enum machine_mode cmp_mode, result_mode;
+      enum insn_code cmp_code;
+      tree length_type;
+      rtx libfunc;
       rtx result;
-      enum machine_mode result_mode;
-      rtx opalign ATTRIBUTE_UNUSED
+      rtx opalign
 	= GEN_INT (MIN (MEM_ALIGN (x), MEM_ALIGN (y)) / BITS_PER_UNIT);
+
+      if (size == 0)
+	abort ();
 
       emit_queue ();
       x = protect_from_queue (x, 0);
       y = protect_from_queue (y, 0);
+      size = protect_from_queue (size, 0);
 
-      if (size == 0)
-	abort ();
-#ifdef HAVE_cmpmemqi
-      if (HAVE_cmpmemqi
-	  && GET_CODE (size) == CONST_INT
-	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (QImode)))
+      /* Try to use a memory block compare insn - either cmpstr
+	 or cmpmem will do.  */
+      for (cmp_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+	   cmp_mode != VOIDmode;
+	   cmp_mode = GET_MODE_WIDER_MODE (cmp_mode))
 	{
-	  result_mode = insn_data[(int) CODE_FOR_cmpmemqi].operand[0].mode;
+	  cmp_code = cmpmem_optab[cmp_mode];
+	  if (cmp_code == CODE_FOR_nothing)
+	    cmp_code = cmpstr_optab[cmp_mode];
+	  if (cmp_code == CODE_FOR_nothing)
+	    continue;
+
+	  /* Must make sure the size fits the insn's mode.  */
+	  if ((GET_CODE (size) == CONST_INT
+	       && INTVAL (size) >= (1 << GET_MODE_BITSIZE (cmp_mode)))
+	      || (GET_MODE_BITSIZE (GET_MODE (size))
+		  > GET_MODE_BITSIZE (cmp_mode)))
+	    continue;
+
+	  result_mode = insn_data[cmp_code].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpmemqi (result, x, y, size, opalign));
+	  size = convert_to_mode (cmp_mode, size, 1);
+	  emit_insn (GEN_FCN (cmp_code) (result, x, y, size, opalign));
+
+	  *px = result;
+	  *py = const0_rtx;
+	  *pmode = result_mode;
+	  return;
 	}
-      else
-#endif
-#ifdef HAVE_cmpmemhi
-      if (HAVE_cmpmemhi
-	  && GET_CODE (size) == CONST_INT
-	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (HImode)))
-	{
-	  result_mode = insn_data[(int) CODE_FOR_cmpmemhi].operand[0].mode;
-	  result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpmemhi (result, x, y, size, opalign));
-	}
-      else
-#endif
-#ifdef HAVE_cmpmemsi
-      if (HAVE_cmpmemsi)
-	{
-	  result_mode = insn_data[(int) CODE_FOR_cmpmemsi].operand[0].mode;
-	  result = gen_reg_rtx (result_mode);
-	  size = protect_from_queue (size, 0);
-	  emit_insn (gen_cmpmemsi (result, x, y,
-				   convert_to_mode (SImode, size, 1),
-				   opalign));
-	}
-      else
-#endif
-#ifdef HAVE_cmpstrqi
-      if (HAVE_cmpstrqi
-	  && GET_CODE (size) == CONST_INT
-	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (QImode)))
-	{
-	  result_mode = insn_data[(int) CODE_FOR_cmpstrqi].operand[0].mode;
-	  result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpstrqi (result, x, y, size, opalign));
-	}
-      else
-#endif
-#ifdef HAVE_cmpstrhi
-      if (HAVE_cmpstrhi
-	  && GET_CODE (size) == CONST_INT
-	  && INTVAL (size) < (1 << GET_MODE_BITSIZE (HImode)))
-	{
-	  result_mode = insn_data[(int) CODE_FOR_cmpstrhi].operand[0].mode;
-	  result = gen_reg_rtx (result_mode);
-	  emit_insn (gen_cmpstrhi (result, x, y, size, opalign));
-	}
-      else
-#endif
-#ifdef HAVE_cmpstrsi
-      if (HAVE_cmpstrsi)
-	{
-	  result_mode = insn_data[(int) CODE_FOR_cmpstrsi].operand[0].mode;
-	  result = gen_reg_rtx (result_mode);
-	  size = protect_from_queue (size, 0);
-	  emit_insn (gen_cmpstrsi (result, x, y,
-				   convert_to_mode (SImode, size, 1),
-				   opalign));
-	}
-      else
-#endif
-	{
+
+      /* Otherwise call a library function, memcmp if we've got it,
+	 bcmp otherwise.  */
 #ifdef TARGET_MEM_FUNCTIONS
-	  result = emit_library_call_value (memcmp_libfunc, NULL_RTX, LCT_PURE_MAKE_BLOCK,
-					    TYPE_MODE (integer_type_node), 3,
-					    XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
-					    convert_to_mode (TYPE_MODE (sizetype), size,
-							     TREE_UNSIGNED (sizetype)),
-					    TYPE_MODE (sizetype));
+      libfunc = memcmp_libfunc;
+      length_type = sizetype;
 #else
-	  result = emit_library_call_value (bcmp_libfunc, NULL_RTX, LCT_PURE_MAKE_BLOCK,
-					    TYPE_MODE (integer_type_node), 3,
-					    XEXP (x, 0), Pmode, XEXP (y, 0), Pmode,
-					    convert_to_mode (TYPE_MODE (integer_type_node),
-							     size,
-							     TREE_UNSIGNED (integer_type_node)),
-					    TYPE_MODE (integer_type_node));
+      libfunc = bcmp_libfunc;
+      length_type = integer_type_node;
 #endif
+      result_mode = TYPE_MODE (integer_type_node);
+      cmp_mode = TYPE_MODE (length_type);
+      size = convert_to_mode (TYPE_MODE (length_type), size,
+			      TREE_UNSIGNED (length_type));
 
-	  result_mode = TYPE_MODE (integer_type_node);
-	}
+      result = emit_library_call_value (libfunc, 0, LCT_PURE_MAKE_BLOCK,
+					result_mode, 3,
+					XEXP (x, 0), Pmode,
+					XEXP (y, 0), Pmode,
+					size, cmp_mode);
       *px = result;
       *py = const0_rtx;
       *pmode = result_mode;
@@ -5330,6 +5296,8 @@ init_optabs (void)
     {
       movstr_optab[i] = CODE_FOR_nothing;
       clrstr_optab[i] = CODE_FOR_nothing;
+      cmpstr_optab[i] = CODE_FOR_nothing;
+      cmpmem_optab[i] = CODE_FOR_nothing;
 
 #ifdef HAVE_SECONDARY_RELOADS
       reload_in_optab[i] = reload_out_optab[i] = CODE_FOR_nothing;

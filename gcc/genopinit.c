@@ -150,7 +150,9 @@ static const char * const optabs[] =
   "reload_in_optab[$A] = CODE_FOR_$(reload_in$a$)",
   "reload_out_optab[$A] = CODE_FOR_$(reload_out$a$)",
   "movstr_optab[$A] = CODE_FOR_$(movstr$a$)",
-  "clrstr_optab[$A] = CODE_FOR_$(clrstr$a$)" };
+  "clrstr_optab[$A] = CODE_FOR_$(clrstr$a$)",
+  "cmpstr_optab[$A] = CODE_FOR_$(cmpstr$a$)",
+  "cmpmem_optab[$A] = CODE_FOR_$(cmpmem$a$)" };
 
 static void gen_insn (rtx);
 
