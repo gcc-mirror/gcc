@@ -55,7 +55,6 @@
 	* emit-rtl.c (reverse_comparison): Remove.
 	* rtl.h: Remove the corresponding prototype.
 
->>>>>>> 2.7995
 2005-03-24  James E Wilson  <wilson@specifixinc.com>
 
 	* doc/install.texi (--enable-altivec): Delete docs.
