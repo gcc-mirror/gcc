@@ -1,5 +1,10 @@
 2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
+	* aclocal.m4: Add hpux10* and hpux11.00 to /dev/zero blacklist.
+	* configure: Rebuilt.
+
+2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
 	* aclocal.m4: Add ultrix* to /dev/zero blacklist.
 	* configure: Rebuilt.
 
