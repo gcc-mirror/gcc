@@ -1,3 +1,8 @@
+2001-03-16  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/sh/sh.c (sh_expand_prologue): Insns that set up the PIC
+	register may be dead.
+
 2001-03-16  Brad Lucier  <lucier@math.purdue.edu>
 
 	* Makefile.in (hash.o): Depend on CONFIG_H.
