@@ -483,11 +483,32 @@ do {									\
 /* This is how we tell the assembler that two symbols have the same value.  */
 
 #undef  ASM_OUTPUT_DEF
-#define ASM_OUTPUT_DEF(FILE, NAME1, NAME2) \
-  do { assemble_name(FILE, NAME1); 	 \
-       fputs(" = ", FILE);		 \
-       assemble_name(FILE, NAME2);	 \
-       fputc('\n', FILE); } while (0)
+#define ASM_OUTPUT_DEF(FILE, ALIAS, NAME)			\
+  do {								\
+    assemble_name(FILE, ALIAS);					\
+    fputs(" = ", FILE);						\
+    assemble_name(FILE, NAME);					\
+    fputc('\n', FILE);						\
+  } while (0)
+
+#undef  ASM_OUTPUT_DEF_FROM_DECLS
+#define ASM_OUTPUT_DEF_FROM_DECLS(FILE, DECL, TARGET)		\
+  do {								\
+    const char *alias = XSTR (XEXP (DECL_RTL (DECL), 0), 0);	\
+    const char *name = IDENTIFIER_POINTER (TARGET);		\
+    if (TREE_CODE (DECL) == FUNCTION_DECL)			\
+      {								\
+	fputc ('$', FILE);					\
+	assemble_name (FILE, alias);				\
+	fputs ("..ng = $", FILE);				\
+	assemble_name (FILE, name);				\
+	fputs ("..ng\n", FILE);					\
+      }								\
+    assemble_name(FILE, alias);					\
+    fputs(" = ", FILE);						\
+    assemble_name(FILE, name);					\
+    fputc('\n', FILE);						\
+  } while (0)
 
 /* The following macro defines the format used to output the second
    operand of the .type assembler directive.  Different svr4 assemblers

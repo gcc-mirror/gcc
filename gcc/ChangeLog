@@ -1,5 +1,11 @@
 2002-03-31  Richard Henderson  <rth@redhat.com>
 
+	PR target/3997
+	* config/alpha/elf.h (ASM_OUTPUT_DEF): Tidy.
+	(ASM_OUTPUT_DEF_FROM_DECLS): New.
+
+2002-03-31  Richard Henderson  <rth@redhat.com>
+
 	* libgcc2.c (__bb_exit_func): Make static.
 
 	* config/alpha/alpha.md (trap): New.
