@@ -1,3 +1,8 @@
+2004-03-16   Richard Zidlicky  <rz@linux-m68k.org>
+
+	* config/m68k/m68k.md: Fix constraints for bitfield instructions.
+	* doc/md.texi: Clarify description of "i" constraint.
+
 2004-03-15  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.md (type): Split load into load, fpload, fpidxload.

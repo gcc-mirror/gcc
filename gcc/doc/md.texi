@@ -800,7 +800,7 @@ register.
 @item @samp{i}
 An immediate integer operand (one with constant value) is allowed.
 This includes symbolic constants whose values will be known only at
-assembly time.
+assembly time or later.
 
 @cindex @samp{n} in constraint
 @item @samp{n}
