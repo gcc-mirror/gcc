@@ -5,11 +5,15 @@ Sun Jun 21 17:05:34 1998  Dave Love  <d.love@dl.ac.uk>
 
 Sun Jun 21 18:56:44 1998  Jeffrey A Law  (law@cygnus.com)
 
+	* bitmap.h (debug_bitmap): Declare.
+
 	* haifa-sched.c (debug_ready_list): Make static.
 
 	* toplev.h (fancy_abort): Declare.
 
 Sun Jun 21 18:30:13 1998  H.J. Lu  (hjl@gnu.org)
+
+	* basic-block.h (init_regset_vector): New declaration.
 
 	* Makefile.in (sdbout.o): Add insn-codes.h to dependency.
 
