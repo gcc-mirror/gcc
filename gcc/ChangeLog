@@ -1,3 +1,12 @@
+Sun Apr 19 07:48:37 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* mips.c: Cleanups and reformatting throughout.
+	({expand,output}_block_move): Use HOST_WIDE_INT for sizes.
+	(mips_debugger_offset, compute_frame_size): Likewise.
+	(save_restore_insns, mips_expand_{pro,epi}logue): Likewise.
+	(siginfo): Deleted.
+	(override_options): Don't set up to call it; don't call setvbuf.
+
 Mon Apr 13 06:40:17 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* configure.in (sparc-*-vxsim*): Include xm-siglist.h and
