@@ -386,6 +386,7 @@ in the following sections.
 @emph{MN10300 Options}
 @gccoptlist{-mmult-bug  -mno-mult-bug @gol
 -mam33  -mno-am33 @gol
+-mam33-2  -mno-am33-2 @gol
 -mno-crt0  -mrelax}
 
 @emph{M32R/D Options}

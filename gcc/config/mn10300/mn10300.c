@@ -82,7 +82,9 @@ mn10300_file_start ()
 {
   default_file_start ();
 
-  if (TARGET_AM33)
+  if (TARGET_AM33_2)
+    fprintf (asm_out_file, "\t.am33_2\n");
+  else if (TARGET_AM33)
     fprintf (asm_out_file, "\t.am33\n");
 }
 
@@ -100,6 +102,58 @@ print_operand (file, x, code)
     {
       case 'b':
       case 'B':
+	if (cc_status.mdep.fpCC)
+	  {
+	    switch (code == 'b' ? GET_CODE (x)
+		    : reverse_condition_maybe_unordered (GET_CODE (x)))
+	      {
+	      case NE:
+		fprintf (file, "ne");
+		break;
+	      case EQ:
+		fprintf (file, "eq");
+		break;
+	      case GE:
+		fprintf (file, "ge");
+		break;
+	      case GT:
+		fprintf (file, "gt");
+		break;
+	      case LE:
+		fprintf (file, "le");
+		break;
+	      case LT:
+		fprintf (file, "lt");
+		break;
+	      case ORDERED:
+		fprintf (file, "lge");
+		break;
+	      case UNORDERED:
+		fprintf (file, "uo");
+		break;
+	      case LTGT:
+		fprintf (file, "lg");
+		break;
+	      case UNEQ:
+		fprintf (file, "ue");
+		break;
+	      case UNGE:
+		fprintf (file, "uge");
+		break;
+	      case UNGT:
+		fprintf (file, "ug");
+		break;
+	      case UNLE:
+		fprintf (file, "ule");
+		break;
+	      case UNLT:
+		fprintf (file, "ul");
+		break;
+	      default:
+		abort ();
+	      }
+	    break;
+	  }
 	/* These are normal and reversed branches.  */
 	switch (code == 'b' ? GET_CODE (x) : reverse_condition (GET_CODE (x)))
 	  {
@@ -151,6 +205,24 @@ print_operand (file, x, code)
 	  print_operand (file, x, 0);
 	break;
      
+      case 'D':
+	switch (GET_CODE (x))
+	  {
+	  case MEM:
+	    fputc ('(', file);
+	    output_address (XEXP (x, 0));
+	    fputc (')', file);
+	    break;
+
+	  case REG:
+	    fprintf (file, "fd%d", REGNO (x) - 18);
+	    break;
+
+	  default:
+	    abort ();
+	  }
+	break;
+
       /* These are the least significant word in a 64bit value.  */
       case 'L':
 	switch (GET_CODE (x))
@@ -388,6 +460,22 @@ print_operand_address (file, addr)
     }
 }
 
+/* Count the number of FP registers that have to be saved.  */
+static int
+fp_regs_to_save ()
+{
+  int i, n = 0;
+
+  if (! TARGET_AM33_2)
+    return 0;
+
+  for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
+    if (regs_ever_live[i] && ! call_used_regs[i])
+      ++n;
+
+  return n;
+}
+
 /* Print a set of registers in the format required by "movm" and "ret".
    Register K is saved if bit K of MASK is set.  The data and address
    registers can be stored individually, but the extended registers cannot.
@@ -446,6 +534,7 @@ can_use_return_insn ()
 	  && !regs_ever_live[15]
 	  && !regs_ever_live[16]
 	  && !regs_ever_live[17]
+	  && fp_regs_to_save () == 0
 	  && !frame_pointer_needed);
 }
 
@@ -460,7 +549,7 @@ mn10300_get_live_callee_saved_regs ()
   int i;
 
   mask = 0;
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+  for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
     if (regs_ever_live[i] && ! call_used_regs[i])
       mask |= (1 << i);
   if ((mask & 0x3c000) != 0)
@@ -501,7 +590,7 @@ mn10300_gen_multiple_store (mask)
 
       /* Count how many registers need to be saved. */
       count = 0;
-      for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+      for (i = 0; i <= LAST_EXTENDED_REGNUM; i++)
 	if ((mask & (1 << i)) != 0)
 	  count += 1;
 
@@ -519,7 +608,7 @@ mn10300_gen_multiple_store (mask)
 
       /* Create each store. */
       pari = 1;
-      for (i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
+      for (i = LAST_EXTENDED_REGNUM; i >= 0; i--)
 	if ((mask & (1 << i)) != 0)
 	  {
 	    rtx address = gen_rtx_PLUS (SImode,
@@ -549,6 +638,240 @@ expand_prologue ()
   /* If we use any of the callee-saved registers, save them now. */
   mn10300_gen_multiple_store (mn10300_get_live_callee_saved_regs ());
 
+  if (TARGET_AM33_2 && fp_regs_to_save ())
+    {
+      int num_regs_to_save = fp_regs_to_save (), i;
+      HOST_WIDE_INT xsize;
+      enum { save_sp_merge,
+	     save_sp_no_merge,
+	     save_sp_partial_merge,
+	     save_a0_merge,
+	     save_a0_no_merge } strategy;
+      unsigned int strategy_size = (unsigned)-1, this_strategy_size;
+      rtx reg;
+      rtx insn;
+
+      /* We have several different strategies to save FP registers.
+	 We can store them using SP offsets, which is beneficial if
+	 there are just a few registers to save, or we can use `a0' in
+	 post-increment mode (`a0' is the only call-clobbered address
+	 register that is never used to pass information to a
+	 function).  Furthermore, if we don't need a frame pointer, we
+	 can merge the two SP adds into a single one, but this isn't
+	 always beneficial; sometimes we can just split the two adds
+	 so that we don't exceed a 16-bit constant size.  The code
+	 below will select which strategy to use, so as to generate
+	 smallest code.  Ties are broken in favor or shorter sequences
+	 (in terms of number of instructions).  */
+
+#define SIZE_ADD_AX(S) ((((S) >= (1 << 15)) || ((S) < -(1 << 15))) ? 6 \
+			: (((S) >= (1 << 7)) || ((S) < -(1 << 7))) ? 4 : 2)
+#define SIZE_ADD_SP(S) ((((S) >= (1 << 15)) || ((S) < -(1 << 15))) ? 6 \
+			: (((S) >= (1 << 7)) || ((S) < -(1 << 7))) ? 4 : 3)
+#define SIZE_FMOV_LIMIT(S,N,L,SIZE1,SIZE2,ELSE) \
+  (((S) >= (L)) ? (SIZE1) * (N) \
+   : ((S) + 4 * (N) >= (L)) ? (((L) - (S)) / 4 * (SIZE2) \
+			       + ((S) + 4 * (N) - (L)) / 4 * (SIZE1)) \
+   : (ELSE))
+#define SIZE_FMOV_SP_(S,N) \
+  (SIZE_FMOV_LIMIT ((S), (N), (1 << 24), 7, 6, \
+                   SIZE_FMOV_LIMIT ((S), (N), (1 << 8), 6, 4, \
+				    (S) ? 4 * (N) : 3 + 4 * ((N) - 1))))
+#define SIZE_FMOV_SP(S,N) (SIZE_FMOV_SP_ ((unsigned HOST_WIDE_INT)(S), (N)))
+
+      /* Consider alternative save_sp_merge only if we don't need the
+	 frame pointer and size is non-zero.  */
+      if (! frame_pointer_needed && size)
+	{
+	  /* Insn: add -(size + 4 * num_regs_to_save), sp.  */
+	  this_strategy_size = SIZE_ADD_SP (-(size + 4 * num_regs_to_save));
+	  /* Insn: fmov fs#, (##, sp), for each fs# to be saved.  */
+	  this_strategy_size += SIZE_FMOV_SP (size, num_regs_to_save);
+
+	  if (this_strategy_size < strategy_size)
+	    {
+	      strategy = save_sp_merge;
+	      strategy_size = this_strategy_size;
+	    }
+	}
+
+      /* Consider alternative save_sp_no_merge unconditionally.  */
+      /* Insn: add -4 * num_regs_to_save, sp.  */
+      this_strategy_size = SIZE_ADD_SP (-4 * num_regs_to_save);
+      /* Insn: fmov fs#, (##, sp), for each fs# to be saved.  */
+      this_strategy_size += SIZE_FMOV_SP (0, num_regs_to_save);
+      if (size)
+	{
+	  /* Insn: add -size, sp.  */
+	  this_strategy_size += SIZE_ADD_SP (-size);
+	}
+
+      if (this_strategy_size < strategy_size)
+	{
+	  strategy = save_sp_no_merge;
+	  strategy_size = this_strategy_size;
+	}
+
+      /* Consider alternative save_sp_partial_merge only if we don't
+	 need a frame pointer and size is reasonably large.  */
+      if (! frame_pointer_needed && size + 4 * num_regs_to_save > 128)
+	{
+	  /* Insn: add -128, sp.  */
+	  this_strategy_size = SIZE_ADD_SP (-128);
+	  /* Insn: fmov fs#, (##, sp), for each fs# to be saved.  */
+	  this_strategy_size += SIZE_FMOV_SP (128 - 4 * num_regs_to_save,
+					      num_regs_to_save);
+	  if (size)
+	    {
+	      /* Insn: add 128-size, sp.  */
+	      this_strategy_size += SIZE_ADD_SP (128 - size);
+	    }
+
+	  if (this_strategy_size < strategy_size)
+	    {
+	      strategy = save_sp_partial_merge;
+	      strategy_size = this_strategy_size;
+	    }
+	}
+
+      /* Consider alternative save_a0_merge only if we don't need a
+	 frame pointer, size is non-zero and the user hasn't
+	 changed the calling conventions of a0.  */
+      if (! frame_pointer_needed && size
+	  && call_used_regs[FIRST_ADDRESS_REGNUM]
+	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
+	{
+	  /* Insn: add -(size + 4 * num_regs_to_save), sp.  */
+	  this_strategy_size = SIZE_ADD_SP (-(size + 4 * num_regs_to_save));
+	  /* Insn: mov sp, a0.  */
+	  this_strategy_size++;
+	  if (size)
+	    {
+	      /* Insn: add size, a0.  */
+	      this_strategy_size += SIZE_ADD_AX (size);
+	    }
+	  /* Insn: fmov fs#, (a0+), for each fs# to be saved.  */
+	  this_strategy_size += 3 * num_regs_to_save;
+
+	  if (this_strategy_size < strategy_size)
+	    {
+	      strategy = save_a0_merge;
+	      strategy_size = this_strategy_size;
+	    }
+	}
+
+      /* Consider alternative save_a0_no_merge if the user hasn't
+	 changed the calling conventions of a0. */
+      if (call_used_regs[FIRST_ADDRESS_REGNUM]
+	  && ! fixed_regs[FIRST_ADDRESS_REGNUM])
+	{
+	  /* Insn: add -4 * num_regs_to_save, sp.  */
+	  this_strategy_size = SIZE_ADD_SP (-4 * num_regs_to_save);
+	  /* Insn: mov sp, a0.  */
+	  this_strategy_size++;
+	  /* Insn: fmov fs#, (a0+), for each fs# to be saved.  */
+	  this_strategy_size += 3 * num_regs_to_save;
+	  if (size)
+	    {
+	      /* Insn: add -size, sp.  */
+	      this_strategy_size += SIZE_ADD_SP (-size);
+	    }
+
+	  if (this_strategy_size < strategy_size)
+	    {
+	      strategy = save_a0_no_merge;
+	      strategy_size = this_strategy_size;
+	    }
+	}
+
+      /* Emit the initial SP add, common to all strategies.  */
+      switch (strategy)
+	{
+	case save_sp_no_merge:
+	case save_a0_no_merge:
+	  emit_insn (gen_addsi3 (stack_pointer_rtx,
+				 stack_pointer_rtx,
+				 GEN_INT (-4 * num_regs_to_save)));
+	  xsize = 0;
+	  break;
+
+	case save_sp_partial_merge:
+	  emit_insn (gen_addsi3 (stack_pointer_rtx,
+				 stack_pointer_rtx,
+				 GEN_INT (-128)));
+	  xsize = 128 - 4 * num_regs_to_save;
+	  size -= xsize;
+	  break;
+
+	case save_sp_merge:
+	case save_a0_merge:
+	  emit_insn (gen_addsi3 (stack_pointer_rtx,
+				 stack_pointer_rtx,
+				 GEN_INT (-(size + 4 * num_regs_to_save))));
+	  /* We'll have to adjust FP register saves according to the
+	     frame size. */
+	  xsize = size;
+	  /* Since we've already created the stack frame, don't do it
+	     again at the end of the function. */
+	  size = 0;
+	  break;
+
+	default:
+	  abort ();
+	}
+	  
+      /* Now prepare register a0, if we have decided to use it.  */
+      switch (strategy)
+	{
+	case save_sp_merge:
+	case save_sp_no_merge:
+	case save_sp_partial_merge:
+	  reg = 0;
+	  break;
+
+	case save_a0_merge:
+	case save_a0_no_merge:
+	  reg = gen_rtx_REG (SImode, FIRST_ADDRESS_REGNUM);
+	  emit_insn (gen_movsi (reg, stack_pointer_rtx));
+	  if (xsize)
+	    emit_insn (gen_addsi3 (reg, reg, GEN_INT (xsize)));
+	  reg = gen_rtx_POST_INC (SImode, reg);
+	  break;
+	  
+	default:
+	  abort ();
+	}
+      
+      /* Now actually save the FP registers.  */
+      for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  {
+	    rtx addr;
+
+	    if (reg)
+	      addr = reg;
+	    else
+	      {
+		/* If we aren't using `a0', use an SP offset.  */
+		if (xsize)
+		  {
+		    addr = gen_rtx_PLUS (SImode,
+					 stack_pointer_rtx,
+					 GEN_INT (xsize));
+		  }
+		else
+		  addr = stack_pointer_rtx;
+		
+		xsize += 4;
+	      }
+
+	    insn = emit_insn (gen_movsi (gen_rtx_MEM (SImode, addr),
+					 gen_rtx_REG (SImode, i)));
+
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	  }
+    }
+
   /* Now put the frame pointer into the frame pointer register.  */
   if (frame_pointer_needed)
     emit_move_insn (frame_pointer_rtx, stack_pointer_rtx);
@@ -568,6 +891,193 @@ expand_epilogue ()
   /* SIZE includes the fixed stack space needed for function calls.  */
   size = get_frame_size () + current_function_outgoing_args_size;
   size += (current_function_outgoing_args_size ? 4 : 0);
+
+  if (TARGET_AM33_2 && fp_regs_to_save ())
+    {
+      int num_regs_to_save = fp_regs_to_save (), i;
+      rtx reg = 0;
+
+      /* We have several options to restore FP registers.  We could
+	 load them from SP offsets, but, if there are enough FP
+	 registers to restore, we win if we use a post-increment
+	 addressing mode.  */
+
+      /* If we have a frame pointer, it's the best option, because we
+	 already know it has the value we want.  */
+      if (frame_pointer_needed)
+	reg = gen_rtx_REG (SImode, FRAME_POINTER_REGNUM);
+      /* Otherwise, we may use `a1', since it's call-clobbered and
+	 it's never used for return values.  But only do so if it's
+	 smaller than using SP offsets.  */
+      else
+	{
+	  enum { restore_sp_post_adjust,
+		 restore_sp_pre_adjust,
+		 restore_sp_partial_adjust,
+		 restore_a1 } strategy;
+	  unsigned int this_strategy_size, strategy_size = (unsigned)-1;
+
+	  /* Consider using sp offsets before adjusting sp.  */
+	  /* Insn: fmov (##,sp),fs#, for each fs# to be restored.  */
+	  this_strategy_size = SIZE_FMOV_SP (size, num_regs_to_save);
+	  /* If size is too large, we'll have to adjust SP with an
+		 add.  */
+	  if (size + 4 * num_regs_to_save + REG_SAVE_BYTES > 255)
+	    {
+	      /* Insn: add size + 4 * num_regs_to_save, sp.  */
+	      this_strategy_size += SIZE_ADD_SP (size + 4 * num_regs_to_save);
+	    }
+	  /* If we don't have to restore any non-FP registers,
+		 we'll be able to save one byte by using rets.  */
+	  if (! REG_SAVE_BYTES)
+	    this_strategy_size--;
+
+	  if (this_strategy_size < strategy_size)
+	    {
+	      strategy = restore_sp_post_adjust;
+	      strategy_size = this_strategy_size;
+	    }
+
+	  /* Consider using sp offsets after adjusting sp.  */
+	  /* Insn: add size, sp.  */
+	  this_strategy_size = SIZE_ADD_SP (size);
+	  /* Insn: fmov (##,sp),fs#, for each fs# to be restored.  */
+	  this_strategy_size += SIZE_FMOV_SP (0, num_regs_to_save);
+	  /* We're going to use ret to release the FP registers
+		 save area, so, no savings. */
+
+	  if (this_strategy_size < strategy_size)
+	    {
+	      strategy = restore_sp_pre_adjust;
+	      strategy_size = this_strategy_size;
+	    }
+
+	  /* Consider using sp offsets after partially adjusting sp.
+	     When size is close to 32Kb, we may be able to adjust SP
+	     with an imm16 add instruction while still using fmov
+	     (d8,sp).  */
+	  if (size + 4 * num_regs_to_save + REG_SAVE_BYTES > 255)
+	    {
+	      /* Insn: add size + 4 * num_regs_to_save
+				+ REG_SAVE_BYTES - 252,sp.  */
+	      this_strategy_size = SIZE_ADD_SP (size + 4 * num_regs_to_save
+						+ REG_SAVE_BYTES - 252);
+	      /* Insn: fmov (##,sp),fs#, fo each fs# to be restored.  */
+	      this_strategy_size += SIZE_FMOV_SP (252 - REG_SAVE_BYTES
+						  - 4 * num_regs_to_save,
+						  num_regs_to_save);
+	      /* We're going to use ret to release the FP registers
+		 save area, so, no savings. */
+
+	      if (this_strategy_size < strategy_size)
+		{
+		  strategy = restore_sp_partial_adjust;
+		  strategy_size = this_strategy_size;
+		}
+	    }
+
+	  /* Consider using a1 in post-increment mode, as long as the
+	     user hasn't changed the calling conventions of a1.  */
+	  if (call_used_regs[FIRST_ADDRESS_REGNUM+1]
+	      && ! fixed_regs[FIRST_ADDRESS_REGNUM+1])
+	    {
+	      /* Insn: mov sp,a1.  */
+	      this_strategy_size = 1;
+	      if (size)
+		{
+		  /* Insn: add size,a1.  */
+		  this_strategy_size += SIZE_ADD_AX (size);
+		}
+	      /* Insn: fmov (a1+),fs#, for each fs# to be restored.  */
+	      this_strategy_size += 3 * num_regs_to_save;
+	      /* If size is large enough, we may be able to save a
+		 couple of bytes.  */
+	      if (size + 4 * num_regs_to_save + REG_SAVE_BYTES > 255)
+		{
+		  /* Insn: mov a1,sp.  */
+		  this_strategy_size += 2;
+		}
+	      /* If we don't have to restore any non-FP registers,
+		 we'll be able to save one byte by using rets.  */
+	      if (! REG_SAVE_BYTES)
+		this_strategy_size--;
+
+	      if (this_strategy_size < strategy_size)
+		{
+		  strategy = restore_a1;
+		  strategy_size = this_strategy_size;
+		}
+	    }
+
+	  switch (strategy)
+	    {
+	    case restore_sp_post_adjust:
+	      break;
+
+	    case restore_sp_pre_adjust:
+	      emit_insn (gen_addsi3 (stack_pointer_rtx,
+				     stack_pointer_rtx,
+				     GEN_INT (size)));
+	      size = 0;
+	      break;
+
+	    case restore_sp_partial_adjust:
+	      emit_insn (gen_addsi3 (stack_pointer_rtx,
+				     stack_pointer_rtx,
+				     GEN_INT (size + 4 * num_regs_to_save
+					      + REG_SAVE_BYTES - 252)));
+	      size = 252 - REG_SAVE_BYTES - 4 * num_regs_to_save;
+	      break;
+	      
+	    case restore_a1:
+	      reg = gen_rtx_REG (SImode, FIRST_ADDRESS_REGNUM + 1);
+	      emit_insn (gen_movsi (reg, stack_pointer_rtx));
+	      if (size)
+		emit_insn (gen_addsi3 (reg, reg, GEN_INT (size)));
+	      break;
+
+	    default:
+	      abort ();
+	    }
+	}
+
+      /* Adjust the selected register, if any, for post-increment.  */
+      if (reg)
+	reg = gen_rtx_POST_INC (SImode, reg);
+
+      for (i = FIRST_FP_REGNUM; i <= LAST_FP_REGNUM; ++i)
+	if (regs_ever_live[i] && ! call_used_regs[i])
+	  {
+	    rtx addr;
+	    
+	    if (reg)
+	      addr = reg;
+	    else if (size)
+	      {
+		/* If we aren't using a post-increment register, use an
+		   SP offset. */
+		addr = gen_rtx_PLUS (SImode,
+				     stack_pointer_rtx,
+				     GEN_INT (size));
+	      }
+	    else
+	      addr = stack_pointer_rtx;
+
+	    size += 4;
+
+	    emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
+				  gen_rtx_MEM (SImode, addr)));
+	  }
+
+      /* If we were using the restore_a1 strategy and the number of
+	 bytes to be released won't fit in the `ret' byte, copy `a1'
+	 to `sp', to avoid having to use `add' to adjust it.  */
+      if (! frame_pointer_needed && reg && size + REG_SAVE_BYTES > 255)
+	{
+	  emit_move_insn (stack_pointer_rtx, XEXP (reg, 0));
+	  size = 0;
+	}
+    }
 
   /* Maybe cut back the stack, except for the register save area.
 
@@ -649,6 +1159,9 @@ notice_update_cc (body, insn)
       /* The insn is a compare instruction.  */
       CC_STATUS_INIT;
       cc_status.value1 = SET_SRC (body);
+      if (GET_CODE (cc_status.value1) == COMPARE
+	  && GET_MODE (XEXP (cc_status.value1, 0)) == SFmode)
+	cc_status.mdep.fpCC = 1;
       break;
 
     case CC_INVERT:
@@ -714,7 +1227,7 @@ store_multiple_operation (op, mode)
 
      LAST keeps track of the smallest-numbered register stored so far.
      MASK is the set of stored registers. */
-  last = FIRST_PSEUDO_REGISTER;
+  last = LAST_EXTENDED_REGNUM + 1;
   mask = 0;
   for (i = 1; i < count; i++)
     {
@@ -810,6 +1323,14 @@ secondary_reload_class (class, mode, in)
       return DATA_REGS;
     }
  
+  if (TARGET_AM33_2 && class == FP_REGS
+      && GET_CODE (in) == MEM && ! OK_FOR_Q (in))
+    {
+      if (TARGET_AM33)
+	return DATA_OR_EXTENDED_REGS;
+      return DATA_REGS;
+    }
+
   /* Otherwise assume no secondary reloads are needed.  */
   return NO_REGS;
 }
@@ -826,8 +1347,10 @@ initial_offset (from, to)
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || regs_ever_live[14] || regs_ever_live[15]
 	  || regs_ever_live[16] || regs_ever_live[17]
+	  || fp_regs_to_save ()
 	  || frame_pointer_needed)
-	return REG_SAVE_BYTES;
+	return REG_SAVE_BYTES
+	  + 4 * fp_regs_to_save ();
       else
 	return 0;
     }
@@ -841,8 +1364,10 @@ initial_offset (from, to)
 	  || regs_ever_live[6] || regs_ever_live[7]
 	  || regs_ever_live[14] || regs_ever_live[15]
 	  || regs_ever_live[16] || regs_ever_live[17]
+	  || fp_regs_to_save ()
 	  || frame_pointer_needed)
 	return (get_frame_size () + REG_SAVE_BYTES
+		+ 4 * fp_regs_to_save ()
 		+ (current_function_outgoing_args_size
 		   ? current_function_outgoing_args_size + 4 : 0)); 
       else
@@ -1155,6 +1680,15 @@ const_8bit_operand (op, mode)
 	  && INTVAL (op) < 256);
 }
 
+/* Return true if the operand is the 1.0f constant.  */
+int
+const_1f_operand (op, mode)
+    register rtx op;
+    enum machine_mode mode ATTRIBUTE_UNUSED;
+{
+  return (op == CONST1_RTX (SFmode));
+}
+
 /* Similarly, but when using a zero_extract pattern for a btst where
    the source operand might end up in memory.  */
 int
@@ -1271,6 +1805,7 @@ mn10300_address_cost_1 (x, unsig)
 
 	case DATA_REGS:
 	case EXTENDED_REGS:
+	case FP_REGS:
 	  return 3;
 
 	case NO_REGS:

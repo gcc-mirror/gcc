@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler.
    Matsushita MN10300 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -40,7 +40,7 @@ Boston, MA 02111-1307, USA.  */
     }						\
   while (0)
 
-#define CPP_SPEC "%{mam33:-D__AM33__}"
+#define CPP_SPEC "%{mam33:-D__AM33__} %{mam33-2:-D__AM33__=2 -D__AM33_2__}"
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -60,6 +60,9 @@ extern int target_flags;
 /* Generate code for the AM33 processor.  */
 #define TARGET_AM33			(target_flags & 0x2)
 
+/* Generate code for the AM33/2.0 processor.  */
+#define TARGET_AM33_2			(target_flags & 0x4)
+
 #define TARGET_SWITCHES  \
   {{ "mult-bug",	0x1,  N_("Work around hardware multiply bug")},	\
    { "no-mult-bug", 	-0x1, N_("Do not work around hardware multiply bug")},\
@@ -67,6 +70,9 @@ extern int target_flags;
    { "am33", 		-(0x1), ""},\
    { "no-am33", 	-0x2, ""},	\
    { "no-crt0",		0,    N_("No default crt0.o") }, \
+   { "am33-2",		0x6,  N_("Target the AM33/2.0 processor")},   \
+   { "am33-2",		-(0x1), ""},\
+   { "no-am33-2",	-0x4,   ""},  \
    { "relax",		0,    N_("Enable linker relaxations") }, \
    { "", TARGET_DEFAULT, NULL}}
 
@@ -131,7 +137,7 @@ extern int target_flags;
    All registers that the compiler knows about must be given numbers,
    even those that are not normally considered general registers.  */
 
-#define FIRST_PSEUDO_REGISTER 18
+#define FIRST_PSEUDO_REGISTER 50
 
 /* Specify machine-specific register numbers.  */
 #define FIRST_DATA_REGNUM 0
@@ -140,6 +146,8 @@ extern int target_flags;
 #define LAST_ADDRESS_REGNUM 8
 #define FIRST_EXTENDED_REGNUM 10
 #define LAST_EXTENDED_REGNUM 17
+#define FIRST_FP_REGNUM 18
+#define LAST_FP_REGNUM 49
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -162,7 +170,10 @@ extern int target_flags;
    and are not available for the register allocator.  */
 
 #define FIXED_REGISTERS \
-  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0}
+  { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 \
+  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+  , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+  }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -173,10 +184,16 @@ extern int target_flags;
    like.  */
 
 #define CALL_USED_REGISTERS \
-  { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0}
+  { 1, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 \
+  , 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 \
+  , 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 \
+  }
 
 #define REG_ALLOC_ORDER \
-  { 0, 1, 4, 5, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 8, 9}
+  { 0, 1, 4, 5, 2, 3, 6, 7, 10, 11, 12, 13, 14, 15, 16, 17, 8, 9 \
+  , 42, 43, 44, 45, 46, 47, 48, 49, 34, 35, 36, 37, 38, 39, 40, 41 \
+  , 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33 \
+  }
 
 #define CONDITIONAL_REGISTER_USAGE \
 {						\
@@ -187,6 +204,13 @@ extern int target_flags;
       for (i = FIRST_EXTENDED_REGNUM; 		\
 	   i <= LAST_EXTENDED_REGNUM; i++) 	\
 	fixed_regs[i] = call_used_regs[i] = 1; 	\
+    }						\
+  if (!TARGET_AM33_2)				\
+    {						\
+      for (i = FIRST_FP_REGNUM;			\
+	   i <= LAST_FP_REGNUM; 		\
+           i++) 				\
+	fixed_regs[i] = call_used_regs[i] = 1;	\
     }						\
 }
 
@@ -247,6 +271,7 @@ enum reg_class {
   DATA_OR_ADDRESS_REGS, SP_OR_ADDRESS_REGS, 
   EXTENDED_REGS, DATA_OR_EXTENDED_REGS, ADDRESS_OR_EXTENDED_REGS,
   SP_OR_EXTENDED_REGS, SP_OR_ADDRESS_OR_EXTENDED_REGS, 
+  FP_REGS, FP_ACC_REGS,
   GENERAL_REGS, ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -260,6 +285,7 @@ enum reg_class {
   "EXTENDED_REGS", \
   "DATA_OR_EXTENDED_REGS", "ADDRESS_OR_EXTENDED_REGS", \
   "SP_OR_EXTENDED_REGS", "SP_OR_ADDRESS_OR_EXTENDED_REGS", \
+  "FP_REGS", "FP_ACC_REGS", \
   "GENERAL_REGS", "ALL_REGS", "LIM_REGS" }
 
 /* Define which registers fit in which classes.
@@ -267,19 +293,21 @@ enum reg_class {
    of length N_REG_CLASSES.  */
 
 #define REG_CLASS_CONTENTS  			\
-{      {0},		/* No regs      */	\
-   {0x0000f},		/* DATA_REGS */		\
-   {0x001f0},		/* ADDRESS_REGS */	\
-   {0x00200},		/* SP_REGS */		\
-   {0x001ff},		/* DATA_OR_ADDRESS_REGS */\
-   {0x003f0},		/* SP_OR_ADDRESS_REGS */\
-   {0x3fc00},		/* EXTENDED_REGS */	\
-   {0x3fc0f},		/* DATA_OR_EXTENDED_REGS */	\
-   {0x3fdf0},		/* ADDRESS_OR_EXTENDED_REGS */	\
-   {0x3fe00},		/* SP_OR_EXTENDED_REGS */	\
-   {0x3fff0},		/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
-   {0x3fdff},		/* GENERAL_REGS */    	\
-   {0x3ffff},		/* ALL_REGS 	*/	\
+{  { 0,	0 },		/* No regs      */	\
+ { 0x0000f, 0 },	/* DATA_REGS */		\
+ { 0x001f0, 0 },	/* ADDRESS_REGS */	\
+ { 0x00200, 0 },	/* SP_REGS */		\
+ { 0x001ff, 0 },	/* DATA_OR_ADDRESS_REGS */\
+ { 0x003f0, 0 },	/* SP_OR_ADDRESS_REGS */\
+ { 0x3fc00, 0 },	/* EXTENDED_REGS */	\
+ { 0x3fc0f, 0 },	/* DATA_OR_EXTENDED_REGS */	\
+ { 0x3fdf0, 0 },	/* ADDRESS_OR_EXTENDED_REGS */	\
+ { 0x3fe00, 0 },	/* SP_OR_EXTENDED_REGS */	\
+ { 0x3fff0, 0 },	/* SP_OR_ADDRESS_OR_EXTENDED_REGS */	\
+ { 0xfffc0000, 0x3ffff }, /* FP_REGS */		\
+ { 0x03fc0000, 0 },	/* FP_ACC_REGS */	\
+ { 0x3fdff, 0 }, 	/* GENERAL_REGS */	\
+ { 0xffffffff, 0x3ffff } /* ALL_REGS 	*/	\
 }
 
 /* The same information, inverted:
@@ -292,6 +320,7 @@ enum reg_class {
    (REGNO) <= LAST_ADDRESS_REGNUM ? ADDRESS_REGS : \
    (REGNO) == STACK_POINTER_REGNUM ? SP_REGS : \
    (REGNO) <= LAST_EXTENDED_REGNUM ? EXTENDED_REGS : \
+   (REGNO) <= LAST_FP_REGNUM ? FP_REGS : \
    NO_REGS)
 
 /* The class value for index registers, and the one for base regs.  */
@@ -306,6 +335,9 @@ enum reg_class {
    (C) == 'y' ? SP_REGS : \
    ! TARGET_AM33 ? NO_REGS : \
    (C) == 'x' ? EXTENDED_REGS : \
+   ! TARGET_AM33_2 ? NO_REGS : \
+   (C) == 'f' ? FP_REGS : \
+   (C) == 'A' ? FP_ACC_REGS : \
    NO_REGS)
 
 /* Macros to check register numbers against specific register classes.  */
@@ -350,6 +382,8 @@ enum reg_class {
 #define REGNO_AM33_P(regno) \
   (REGNO_DATA_P ((regno)) || REGNO_ADDRESS_P ((regno)) \
    || REGNO_EXTENDED_P ((regno)))
+#define REGNO_FP_P(regno) \
+  REGNO_IN_RANGE_P ((regno), FIRST_FP_REGNUM, LAST_FP_REGNUM)
 
 #define REGNO_OK_FOR_BASE_P(regno) \
   (REGNO_SP_P ((regno)) \
@@ -396,6 +430,11 @@ enum reg_class {
 
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
+
+/* A class that contains registers which the compiler must always
+   access in a mode that is the same size as the mode in which it
+   loaded the register.  */
+#define CLASS_CANNOT_CHANGE_SIZE FP_REGS
 
 /* The letters I, J, K, L, M, N, O, P in a register constraint string
    can be used to stand for particular ranges of immediate operands.
@@ -669,6 +708,9 @@ struct cum_arg {int nbytes; };
 
 /* Extra constraints.  */
  
+#define OK_FOR_Q(OP) \
+   (GET_CODE (OP) == MEM && ! CONSTANT_ADDRESS_P (XEXP (OP, 0)))
+
 #define OK_FOR_R(OP) \
    (GET_CODE (OP) == MEM					\
     && GET_MODE (OP) == QImode					\
@@ -692,6 +734,7 @@ struct cum_arg {int nbytes; };
 
 #define EXTRA_CONSTRAINT(OP, C) \
  ((C) == 'R' ? OK_FOR_R (OP) \
+  : (C) == 'Q' ? OK_FOR_Q (OP) \
   : (C) == 'S' ? GET_CODE (OP) == SYMBOL_REF \
   : (C) == 'T' ? OK_FOR_T (OP) \
   : 0)
@@ -814,6 +857,7 @@ struct cum_arg {int nbytes; };
    ! TARGET_AM33 ? 6 : \
    (CLASS1 == SP_REGS || CLASS2 == SP_REGS) ? 6 : \
    (CLASS1 == CLASS2 && CLASS1 == EXTENDED_REGS) ? 6 : \
+   (CLASS1 == FP_REGS || CLASS2 == FP_REGS) ? 6 : \
    (CLASS1 == EXTENDED_REGS || CLASS2 == EXTENDED_REGS) ? 4 : \
    4)
 
@@ -885,6 +929,10 @@ struct cum_arg {int nbytes; };
 #define REGISTER_NAMES \
 { "d0", "d1", "d2", "d3", "a0", "a1", "a2", "a3", "ap", "sp", \
   "r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7" \
+, "fs0", "fs1", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7" \
+, "fs8", "fs9", "fs10", "fs11", "fs12", "fs13", "fs14", "fs15" \
+, "fs16", "fs17", "fs18", "fs19", "fs20", "fs21", "fs22", "fs23" \
+, "fs24", "fs25", "fs26", "fs27", "fs28", "fs29", "fs30", "fs31" \
 }
 
 #define ADDITIONAL_REGISTER_NAMES \
@@ -892,6 +940,10 @@ struct cum_arg {int nbytes; };
   {"r12", 0}, {"r13", 1}, {"r14", 2}, {"r15", 3}, \
   {"e0", 10}, {"e1", 11}, {"e2", 12}, {"e3", 13}, \
   {"e4", 14}, {"e5", 15}, {"e6", 16}, {"e7", 17} \
+, {"fd0", 18}, {"fd2", 20}, {"fd4", 22}, {"fd6", 24} \
+, {"fd8", 26}, {"fd10", 28}, {"fd12", 30}, {"fd14", 32} \
+, {"fd16", 34}, {"fd18", 36}, {"fd20", 38}, {"fd22", 40} \
+, {"fd24", 42}, {"fd26", 44}, {"fd28", 46}, {"fd30", 48} \
 }
 
 /* Print an instruction operand X on file FILE.
@@ -994,3 +1046,15 @@ struct cum_arg {int nbytes; };
 
 #define FILE_ASM_OP "\t.file\n"
 
+#define PREDICATE_CODES \
+  {"const_1f_operand", {CONST_INT, CONST_DOUBLE}},
+
+typedef struct mn10300_cc_status_mdep
+  {
+    int fpCC;
+  }
+cc_status_mdep;
+
+#define CC_STATUS_MDEP cc_status_mdep
+
+#define CC_STATUS_MDEP_INIT (cc_status.mdep.fpCC = 0)

@@ -10,8 +10,8 @@ fp-bit.c: $(srcdir)/config/fp-bit.c
 	echo '#define FLOAT' > fp-bit.c
 	cat $(srcdir)/config/fp-bit.c >> fp-bit.c
 
-MULTILIB_OPTIONS = mam33
-MULTILIB_DIRNAMES = am33
+MULTILIB_OPTIONS = mam33/mam33-2
+MULTILIB_DIRNAMES = am33 am33-2
 
 LIBGCC = stmp-multilib
 INSTALL_LIBGCC = install-multilib
