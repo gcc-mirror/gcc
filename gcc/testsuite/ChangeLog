@@ -1,3 +1,7 @@
+Sat Jan 25 12:32:55 CET 2003  Jan HUbicka  <jh@suse.cz>
+
+	* gcc.c-torture/execute/20030125-1.[cx]: New test.
+
 2003-01-25  Paolo Carlini  <pcarlini@unitus.it>
 
 	Tweaks for Bison-1.875. From the NEWS file:
