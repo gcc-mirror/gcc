@@ -1718,7 +1718,7 @@ combine_reloads ()
      that it does not occur in the output (we already know it isn't an
      earlyclobber.  If this is an asm insn, give up.  */
 
-  if (INSN_CODE (this_insn) == -1 || output_reload == -1)
+  if (INSN_CODE (this_insn) == -1)
     return;
 
   for (i = 1; i < insn_data[INSN_CODE (this_insn)].n_operands; i++)
