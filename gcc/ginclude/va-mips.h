@@ -38,12 +38,7 @@ typedef char * __gnuc_va_list;
 #endif
 
 #ifdef _STDARG_H
-#if __mips==3
-#define va_start(__AP, __LASTARG)	(__AP = __builtin_next_arg ())
-#else
-#define va_start(__AP, __LASTARG) 						\
- (__AP = ((char *) &(__LASTARG) + __va_rounded_size (__LASTARG)))
-#endif
+#define va_start(__AP, __LASTARG)	(__AP = __builtin_next_arg (__LASTARG))
 
 #else
 #define va_alist  __builtin_va_alist
