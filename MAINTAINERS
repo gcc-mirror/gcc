@@ -33,6 +33,7 @@ alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
 sparc port		David S. Miller		davem@dm.cobaltmicro.com
 x86 ports		Stan Cox		scox@cygnus.com
+c4x port		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 *fortran		Craig Burley		burley@gnu.org
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
