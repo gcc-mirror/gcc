@@ -6062,12 +6062,12 @@ merge_assigned_reloads (insn)
 	  if (rld[i].when_needed == RELOAD_OTHER)
 	    for (j = 0; j < n_reloads; j++)
 	      if (rld[j].in != 0
-		  && rld[i].when_needed != RELOAD_OTHER
+		  && rld[j].when_needed != RELOAD_OTHER
 		  && reg_overlap_mentioned_for_reload_p (rld[j].in,
 							 rld[i].in))
 		rld[j].when_needed
-		  = ((rld[i].when_needed == RELOAD_FOR_INPUT_ADDRESS
-		      || rld[i].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
+		  = ((rld[j].when_needed == RELOAD_FOR_INPUT_ADDRESS
+		      || rld[j].when_needed == RELOAD_FOR_INPADDR_ADDRESS)
 		     ? RELOAD_FOR_OTHER_ADDRESS : RELOAD_OTHER);
 	}
     }
