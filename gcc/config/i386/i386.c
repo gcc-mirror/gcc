@@ -7472,13 +7472,32 @@ ix86_expand_move (enum machine_mode mode, rtx operands[])
   op0 = operands[0];
   op1 = operands[1];
 
-  model = GET_CODE (op1) == SYMBOL_REF ? SYMBOL_REF_TLS_MODEL (op1) : 0;
-  if (model)
+  if (GET_CODE (op1) == SYMBOL_REF)
     {
-      op1 = legitimize_tls_address (op1, model, true);
-      op1 = force_operand (op1, op0);
-      if (op1 == op0)
-	return;
+      model = SYMBOL_REF_TLS_MODEL (op1);
+      if (model)
+	{
+	  op1 = legitimize_tls_address (op1, model, true);
+	  op1 = force_operand (op1, op0);
+	  if (op1 == op0)
+	    return;
+	}
+    }
+  else if (GET_CODE (op1) == CONST
+	   && GET_CODE (XEXP (op1, 0)) == PLUS
+	   && GET_CODE (XEXP (XEXP (op1, 0), 0)) == SYMBOL_REF)
+    {
+      model = SYMBOL_REF_TLS_MODEL (XEXP (XEXP (op1, 0), 0));
+      if (model)
+	{
+	  rtx addend = XEXP (XEXP (op1, 0), 1);
+	  op1 = legitimize_tls_address (XEXP (XEXP (op1, 0), 0), model, true);
+	  op1 = force_operand (op1, NULL);
+	  op1 = expand_simple_binop (Pmode, PLUS, op1, addend,
+				     op0, 1, OPTAB_DIRECT);
+	  if (op1 == op0)
+	    return;
+	}
     }
 
   if (flag_pic && mode == Pmode && symbolic_operand (op1, Pmode))
