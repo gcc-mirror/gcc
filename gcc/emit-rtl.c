@@ -198,6 +198,7 @@ static reg_attrs *get_reg_attrs (tree, int);
 static tree component_ref_for_mem_expr (tree);
 static rtx gen_const_vector_0 (enum machine_mode);
 static rtx gen_complex_constant_part (enum machine_mode, rtx, int);
+static void copy_rtx_if_shared_1 (rtx *orig);
 
 /* Probability of the conditional branch currently proceeded by try_split.
    Set to -1 otherwise.  */
@@ -2775,14 +2776,27 @@ copy_most_rtx (rtx orig, rtx may_share)
 rtx
 copy_rtx_if_shared (rtx orig)
 {
-  rtx x = orig;
+  copy_rtx_if_shared_1 (&orig);
+  return orig;
+}
+
+static void
+copy_rtx_if_shared_1 (rtx *orig1)
+{
+  rtx x;
   int i;
   enum rtx_code code;
+  rtx *last_ptr;
   const char *format_ptr;
   int copied = 0;
+  int length;
+
+  /* Repeat is used to turn tail-recursion into iteration.  */
+repeat:
+  x = *orig1;
 
   if (x == 0)
-    return 0;
+    return;
 
   code = GET_CODE (x);
 
@@ -2802,7 +2816,7 @@ copy_rtx_if_shared (rtx orig)
     case CC0:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
-      return x;
+      return;
 
     case CONST:
       /* CONST can be shared if it contains a SYMBOL_REF.  If it contains
@@ -2810,7 +2824,7 @@ copy_rtx_if_shared (rtx orig)
       if (GET_CODE (XEXP (x, 0)) == PLUS
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == SYMBOL_REF
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT)
-	return x;
+	return;
       break;
 
     case INSN:
@@ -2819,7 +2833,7 @@ copy_rtx_if_shared (rtx orig)
     case NOTE:
     case BARRIER:
       /* The chain of insns is not being copied.  */
-      return x;
+      return;
 
     default:
       break;
@@ -2845,13 +2859,17 @@ copy_rtx_if_shared (rtx orig)
      must be copied if X was copied.  */
 
   format_ptr = GET_RTX_FORMAT (code);
-
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+  length = GET_RTX_LENGTH (code);
+  last_ptr = NULL;
+  
+  for (i = 0; i < length; i++)
     {
       switch (*format_ptr++)
 	{
 	case 'e':
-	  XEXP (x, i) = copy_rtx_if_shared (XEXP (x, i));
+          if (last_ptr)
+            copy_rtx_if_shared_1 (last_ptr);
+	  last_ptr = &XEXP (x, i);
 	  break;
 
 	case 'E':
@@ -2859,16 +2877,29 @@ copy_rtx_if_shared (rtx orig)
 	    {
 	      int j;
 	      int len = XVECLEN (x, i);
-
+              
+              /* Copy the vector iff I copied the rtx and the length is nonzero. */
 	      if (copied && len > 0)
 		XVEC (x, i) = gen_rtvec_v (len, XVEC (x, i)->elem);
+              
+              /* Call recsusively on all inside the vector. */
 	      for (j = 0; j < len; j++)
-		XVECEXP (x, i, j) = copy_rtx_if_shared (XVECEXP (x, i, j));
+                {
+		  if (last_ptr)
+		    copy_rtx_if_shared_1 (last_ptr);
+                  last_ptr = &XVECEXP (x, i, j);
+                }
 	    }
 	  break;
 	}
     }
-  return x;
+  *orig1 = x;
+  if (last_ptr)
+    {
+      orig1 = last_ptr;
+      goto repeat;
+    }
+  return;
 }
 
 /* Clear all the USED bits in X to allow copy_rtx_if_shared to be used
@@ -2880,7 +2911,10 @@ reset_used_flags (rtx x)
   int i, j;
   enum rtx_code code;
   const char *format_ptr;
+  int length;
 
+  /* Repeat is used to turn tail-recursion into iteration.  */
+repeat:
   if (x == 0)
     return;
 
@@ -2918,11 +2952,18 @@ reset_used_flags (rtx x)
   RTX_FLAG (x, used) = 0;
 
   format_ptr = GET_RTX_FORMAT (code);
-  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+  length = GET_RTX_LENGTH (code);
+  
+  for (i = 0; i < length; i++)
     {
       switch (*format_ptr++)
 	{
 	case 'e':
+          if (i == length-1)
+            {
+              x = XEXP (x, i);
+	      goto repeat;
+            }
 	  reset_used_flags (XEXP (x, i));
 	  break;
 
