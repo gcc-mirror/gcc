@@ -74,8 +74,8 @@ public abstract class AbstractInterruptibleChannel
   {
     if (!closed)
       {
-	implCloseChannel();
 	closed = true;
+	implCloseChannel();
       }
   }
 

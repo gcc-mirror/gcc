@@ -1,3 +1,8 @@
+2004-02-14  Per Bothner  <per@bothner.com>
+
+	* java/nio/channels/spi/AbstractInterruptibleChannel.java (close):
+	Set closed before calling implCloseChannel, as in the spec.
+
 2004-02-09  Graydon Hoare  <graydon@redhat.com>
 
 	* javax/swing/ToggleButtonModel.java: Remove dead class.
