@@ -1,3 +1,12 @@
+2002-04-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/rs6000/altivec.h (vec_xor): Add variant for both args
+        being vector signed int.
+        (vec_andc): Same.
+        (vec_xor): Add variant for both args being vector signed char.
+        Remove redundant variant.
+        (vec_andc): Same.
+
 2002-04-21  David S. Miller  <davem@redhat.com>
 
 	* config/sparc/sparc.md (set then compare DI mode peephole2): Fix
