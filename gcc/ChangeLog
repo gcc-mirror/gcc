@@ -1,3 +1,7 @@
+2000-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* cppinit.c (cl_directive_handler): More K&R fixing.
+
 Sat Mar 11 23:54:26 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_compute_frame_size): Align size to

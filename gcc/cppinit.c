@@ -165,7 +165,7 @@ static const struct default_include include_defaults_array[]
    -D, ignored for the others.
    (Future: add an equivalent of -U for -A) */
 
-typedef void (* cl_directive_handler) (cpp_reader *, const char *);
+typedef void (* cl_directive_handler) PARAMS ((cpp_reader *, const char *));
 struct pending_option
 {
   struct pending_option *next;
