@@ -2285,10 +2285,13 @@ changequote([,])dnl
 		fixincludes=fixinc.wrap
 		tmake_file=t-netbsd
 		;;
-	mipsel-*-linux*)			# Little endian Linux MIPS
+       mips*-*-linux*)                         # Linux MIPS, either endian.
 		xmake_file=x-linux
 		xm_file="xm-siglist.h ${xm_file}"
-		tm_file="mips/elfl.h mips/linux.h"
+               case $machine in
+                       mipsel-*)  tm_file="mips/elfl.h mips/linux.h" ;;
+                       *)         tm_file="mips/elf.h mips/linux.h" ;;
+               esac
 		extra_parts="crtbegin.o crtend.o"
 		gnu_ld=yes
 		gas=yes
