@@ -1335,7 +1335,7 @@ ix86_osf_output_function_prologue (file, size)
 {
   const char *prefix = "";
   const char *const lprefix = LPREFIX;
-  int labelno = profile_label_no;
+  int labelno = current_function_profile_label_no;
 
 #ifdef OSF_OS
 

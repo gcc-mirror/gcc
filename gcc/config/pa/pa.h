@@ -939,9 +939,16 @@ extern enum cmp_type hppa_branch_type;
 }
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
-   as assembly via FUNCTION_PROFILER.  */
+   as assembly via FUNCTION_PROFILER.  Just output a local label.
+   We can't use the function label because the GAS SOM target can't
+   handle the difference of a global symbol and a local symbol.  */
 
-#define FUNCTION_PROFILER(FILE, LABEL) /* nothing */
+#ifndef FUNC_BEGIN_PROLOG_LABEL
+#define FUNC_BEGIN_PROLOG_LABEL        "LFBP"
+#endif
+
+#define FUNCTION_PROFILER(FILE, LABEL) \
+  ASM_OUTPUT_INTERNAL_LABEL (FILE, FUNC_BEGIN_PROLOG_LABEL, LABEL)
 
 #define PROFILE_HOOK(label_no) hppa_profile_hook (label_no)
 void hppa_profile_hook PARAMS ((int label_no));

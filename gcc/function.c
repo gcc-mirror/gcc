@@ -124,6 +124,9 @@ int current_function_uses_only_leaf_regs;
    post-instantiation libcalls.  */
 int virtuals_instantiated;
 
+/* Assign unique numbers to labels generated for profiling.  */
+static int profile_label_no;
+
 /* These variables hold pointers to functions to create and destroy
    target specific, per-function data structures.  */
 void (*init_machine_status) PARAMS ((struct function *));
@@ -6684,10 +6687,13 @@ expand_function_start (subr, parms_have_cleanups)
 			 Pmode);
     }
 
-#ifdef PROFILE_HOOK
   if (current_function_profile)
-    PROFILE_HOOK (profile_label_no);
+    {
+      current_function_profile_label_no = profile_label_no++;
+#ifdef PROFILE_HOOK
+      PROFILE_HOOK (current_function_profile_label_no);
 #endif
+    }
 
   /* After the display initializations is where the tail-recursion label
      should go, if we end up needing one.   Ensure we have a NOTE here
