@@ -6624,10 +6624,15 @@ emit_reload_insns (insn)
       if (i < 0 && reload_out[r] != 0 && GET_CODE (reload_out[r]) == REG)
 	{
 	  register int nregno = REGNO (reload_out[r]);
-	  int num_regs = HARD_REGNO_NREGS (nregno, GET_MODE (reload_out[r]));
+	  if (nregno >= FIRST_PSEUDO_REGISTER)
+	    reg_last_reload_reg[nregno] = 0;
+	  else
+	    {
+	      int num_regs = HARD_REGNO_NREGS (nregno,GET_MODE (reload_out[r]));
 
-	  while (num_regs-- > 0)
-	    reg_last_reload_reg[nregno + num_regs] = 0;
+	      while (num_regs-- > 0)
+		reg_last_reload_reg[nregno + num_regs] = 0;
+	    }
 	}
     }
 }
