@@ -14997,7 +14997,8 @@ ix86_register_move_cost (enum machine_mode mode, enum reg_class class1,
 }
 
 /* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-int
+
+bool
 ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
 {
   /* Flags and only flags can only hold CCmode values.  */
@@ -15036,6 +15037,67 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
   if (regno < 4 || mode != QImode || TARGET_64BIT)
     return 1;
   return reload_in_progress || reload_completed || !TARGET_PARTIAL_REG_STALL;
+}
+
+/* A subroutine of ix86_modes_tieable_p.  Return true if MODE is a 
+   tieable integer mode.  */
+
+static bool
+ix86_tieable_integer_mode_p (enum machine_mode mode)
+{
+  switch (mode)
+    {
+    case HImode:
+    case SImode:
+      return true;
+
+    case QImode:
+      return TARGET_64BIT || !TARGET_PARTIAL_REG_STALL;
+
+    case DImode:
+      return TARGET_64BIT;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if MODE1 is accessible in a register that can hold MODE2
+   without copying.  That is, all register classes that can hold MODE2
+   can also hold MODE1.  */
+
+bool
+ix86_modes_tieable_p (enum machine_mode mode1, enum machine_mode mode2)
+{
+  if (mode1 == mode2)
+    return true;
+
+  if (ix86_tieable_integer_mode_p (mode1)
+      && ix86_tieable_integer_mode_p (mode2))
+    return true;
+
+  /* MODE2 being XFmode implies fp stack or general regs, which means we
+     can tie any smaller floating point modes to it.  Note that we do not
+     tie this with TFmode.  */
+  if (mode2 == XFmode)
+    return mode1 == SFmode || mode1 == DFmode;
+
+  /* MODE2 being DFmode implies fp stack, general or sse regs, which means
+     that we can tie it with SFmode.  */
+  if (mode2 == DFmode)
+    return mode1 == SFmode;
+
+  /* If MODE2 is only appropriate for an SSE register, then tie with 
+     any other mode acceptable to SSE registers.  */
+  if (SSE_REG_MODE_P (mode2))
+    return ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1);
+
+  /* If MODE2 is appropriate for an MMX (or SSE) register, then tie
+     with any other mode acceptable to MMX registers.  */
+  if (MMX_REG_MODE_P (mode2))
+    return ix86_hard_regno_mode_ok (FIRST_MMX_REG, mode1);
+
+  return false;
 }
 
 /* Return the cost of moving data of mode M between a

@@ -1,3 +1,12 @@
+2005-02-01  Richard Henderson  <rth@redhat.com
+
+	PR target/19680
+	* config/i386/i386.h (MODES_TIEABLE_P): Use ix86_modes_tieable_p.
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): Change return
+	type to bool.
+	(ix86_tieable_integer_mode_p, ix86_modes_tieable_p): New.
+	* config/i386/i386-protos.h: Update.
+
 2005-02-01  Steven Bosscher  <stevenb@suse.de>
 
 	PR tree-optimization/19217
