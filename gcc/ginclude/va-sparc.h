@@ -5,19 +5,7 @@
 
 #ifndef __GNUC_VA_LIST
 #define __GNUC_VA_LIST
-
-#ifdef __arch64__
-typedef long long __va_greg;
-typedef double __va_freg;
-typedef struct {
-  __va_greg * __va_next_o;		/* next available %o* register */
-  __va_greg * __va_next_o_limit;	/* past last available %o* register */
-  __va_freg * __va_next_fp;		/* next available %f* register */
-  __va_freg * __va_next_fp_limit;	/* last available %f* register */
-  __va_greg * __va_next_stack;		/* next extended word on stack */
-} __gnuc_va_list;
-#else
-#if ! defined (__svr4__) && ! defined (__linux__)
+#if ! defined (__svr4__) && ! defined (__linux__) && ! defined (__arch64__)
 /* This has to be a char * to be compatible with Sun.
    i.e., we have to pass a `va_list' to vsprintf.  */
 typedef char * __gnuc_va_list;
@@ -26,7 +14,6 @@ typedef char * __gnuc_va_list;
    i.e., we have to pass a `va_list' to vsprintf.  */
 typedef void * __gnuc_va_list;
 #endif
-#endif /* not __arch64__ */
 #endif /* not __GNUC_VA_LIST */
 
 /* If this is for internal libc use, don't define anything but
@@ -35,56 +22,27 @@ typedef void * __gnuc_va_list;
 
 #ifdef _STDARG_H
 
-#ifdef __arch64__
-#define va_start(AP, LASTARG) \
-__extension__ \
-  ({ \
-     AP.__va_next_o = (__va_greg *) __builtin_saveregs (); \
-     AP.__va_next_o_limit = (AP.__va_next_o + \
-			     (__builtin_args_info (0) < 6 ? 6 - __builtin_args_info (0) : 0)); \
-     AP.__va_next_fp = (__va_freg *) AP.__va_next_o_limit; \
-     AP.__va_next_fp_limit = (AP.__va_next_fp + \
-			      (__builtin_args_info (1) < 16 ? (16 - __builtin_args_info (1) + 1) / 2 : 0)); \
-     AP.__va_next_stack = (__va_greg *) __builtin_next_arg (LASTARG); \
-  })
-#else
 /* Call __builtin_next_arg even though we aren't using its value, so that
    we can verify that LASTARG is correct.  */
-#ifdef __GCC_NEW_VARARGS__
+#if defined (__GCC_NEW_VARARGS__) || defined (__arch64__)
 #define va_start(AP, LASTARG) \
   (__builtin_next_arg (LASTARG), AP = (char *) __builtin_saveregs ())
 #else
 #define va_start(AP, LASTARG)					\
   (__builtin_saveregs (), AP = ((char *) __builtin_next_arg (LASTARG)))
 #endif
-#endif /* not __arch64__ */
 
 #else
 
 #define va_alist  __builtin_va_alist
 #define va_dcl    int __builtin_va_alist;...
 
-#ifdef __arch64__
+#if defined (__GCC_NEW_VARARGS__) || defined (__arch64__)
+#define va_start(AP)	((AP) = (char *) __builtin_saveregs ())
+#else
 #define va_start(AP) \
-__extension__ \
-  ({ \
-     AP.__va_next_o = (__va_greg *) __builtin_saveregs (); \
-     AP.__va_next_o_limit = (AP.__va_next_o + \
-			     (__builtin_args_info (0) < 6 ? 6 - __builtin_args_info (0) : 0)); \
-     AP.__va_next_fp = (__va_freg *) AP.__va_next_o_limit; \
-     AP.__va_next_fp_limit = (AP.__va_next_fp + \
-			      (__builtin_args_info (1) < 16 ? (16 - __builtin_args_info (1) + 1) / 2 : 0)); \
-     AP.__va_next_stack = (__va_greg *) __builtin_next_arg (__builtin_va_alist) \
-       - (__builtin_args_info (0) >= 6 || __builtin_args_info (1) >= 16 ? 1 : 0); \
-  })
-#else
-#ifdef __GCC_NEW_VARARGS__
-#define va_start(AP)		((AP) = (char *) __builtin_saveregs ())
-#else
-#define va_start(AP) 						\
- (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
+  (__builtin_saveregs (), (AP) = ((char *) &__builtin_va_alist))
 #endif
-#endif /* not __arch64__ */
 
 #endif
 
@@ -131,45 +89,45 @@ enum __va_type_classes {
 
 #ifdef __arch64__
 
-#define va_arg(pvar,TYPE)					\
+typedef unsigned int __ptrint __attribute__ ((__mode__ (__DI__)));
+
+/* ??? TODO: little endian support */
+
+#define va_arg(pvar, TYPE) \
 __extension__							\
 (*({int __type = __builtin_classify_type (* (TYPE *) 0);	\
-  void * __result;						\
+  char * __result;						\
   if (__type == __real_type_class)		/* float? */	\
     {								\
-      __va_freg *__r;						\
-      /* see PASS_IN_REG_P in gcc's sparc.h */			\
-      if (pvar.__va_next_fp < pvar.__va_next_fp_limit		\
-	  && ((__r = (__va_freg *) (((__va_greg) pvar.__va_next_fp + sizeof (TYPE) - 1) & ~(__va_greg) (sizeof (TYPE) - 1))) \
-	      < pvar.__va_next_fp_limit))			\
-	{							\
-	  pvar.__va_next_fp = __r + (sizeof (TYPE) + 7) / 8;	\
-	}							\
-      else							\
-	{							\
-	  __r = (__va_freg *) pvar.__va_next_stack;		\
-	  pvar.__va_next_stack += (sizeof (TYPE) + 7) / 8;	\
-	}							\
-      __result = __r;						\
+      if (__alignof__ (TYPE) == 16)				\
+	(pvar) = (void *) (((__ptrint) (pvar) + 15) & -16);	\
+      __result = (pvar);					\
+      (pvar) = (char *) (pvar) + sizeof (TYPE);			\
     }								\
   else if (__type < __record_type_class)	/* integer? */	\
     {								\
-      __va_greg *__r;						\
-      if (pvar.__va_next_o < pvar.__va_next_o_limit)		\
-	__r = pvar.__va_next_o++;				\
-      else							\
-	__r = pvar.__va_next_stack++;				\
-      /* adjust for 4 byte ints */				\
-      __result = (char *) __r + 8 - sizeof (TYPE);		\
+      (pvar) = (char *) (pvar) + 8;				\
+      __result = (char *) (pvar) - sizeof (TYPE);		\
     }								\
   else /* aggregate object */					\
     {								\
-      void **__r;						\
-      if (pvar.__va_next_o < pvar.__va_next_o_limit)		\
-	__r = (void **) pvar.__va_next_o++;			\
+      if (sizeof (TYPE) <= 8)					\
+	{							\
+	  __result = (pvar);					\
+	  (pvar) = (char *) (pvar) + 8;				\
+	}							\
+      else if (sizeof (TYPE) <= 16)				\
+	{							\
+	  if (__alignof__ (TYPE) == 16)				\
+	    (pvar) = (void *) (((__ptrint) (pvar) + 15) & -16);	\
+	  __result = (pvar);					\
+	  (pvar) = (char *) (pvar) + 16;			\
+	}							\
       else							\
-	__r = (void **) pvar.__va_next_stack++;			\
-      __result = *__r;						\
+	{							\
+	  __result = * (void **) (pvar);			\
+	  (pvar) = (char *) (pvar) + 8;				\
+	}							\
     }								\
   (TYPE *) __result;}))
 
@@ -198,6 +156,7 @@ __extension__							\
 	 (TYPE *) (void *) __u.__d; })				\
     : ((pvar) = (char *)(pvar) + __va_rounded_size (TYPE),	\
        ((TYPE *) (void *) ((char *)(pvar) - __va_rounded_size (TYPE)))));}))
+
 #endif /* not __arch64__ */
 
 /* Copy __gnuc_va_list into another variable of this type.  */
