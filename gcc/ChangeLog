@@ -1,3 +1,9 @@
+Tue Apr 13 14:29:58 1999  Jan Hubicka <hubicka@freesoft.cz>
+
+	* i386.md (extendhisi2): Output mov instead of cw instruction for K6
+	to improve decoding bandwidth.
+	* i386.md (extendhiqi2): Likewise.
+
 Tue Apr 13 14:26:31 1999  Jan Hubicka <hubicka@freesoft.cz>
 
 	* i386.md (movsf_push): Handle memory to memory case too, new splitter.
