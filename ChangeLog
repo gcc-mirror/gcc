@@ -1,3 +1,8 @@
+Wed Sep 13 11:11:29 2000  Jeffrey A Law  (law@cygnus.com)
+
+        * configure.in: Do not build byacc for hppa64.  Provide paths to the
+        X11 libraries for hppa64.
+
 2000-09-08  Stephane Carrez  <Stephane.Carrez@worldnet.fr>
 
 	* MAINTAINERS: Add myself as 68hc11 port maintainer.
