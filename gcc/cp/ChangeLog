@@ -1,5 +1,7 @@
 2005-02-01  Alexandre Oliva  <aoliva@redhat.com>
 
+	* parser.c (cp_parser_template_id): Revert comment patch too.
+	
 	PR c++/18757
 	PR c++/19366
 	PR c++/19499
