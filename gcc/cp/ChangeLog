@@ -1,3 +1,7 @@
+Mon May 11 10:09:16 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (tsubst): Remove duplicate check for IDENTIFIER_NODE.
+
 Mon May 11 07:16:30 1998  Mark Mitchell  <mmitchell@usa.net>
 
 	* call.c (add_template_candidate): Adjust for changes to
