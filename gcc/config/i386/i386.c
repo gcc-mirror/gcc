@@ -561,7 +561,6 @@ static int ix86_safe_length_prefix PARAMS ((rtx));
 static int ix86_nsaved_regs PARAMS((void));
 static void ix86_emit_save_regs PARAMS((void));
 static void ix86_emit_restore_regs_using_mov PARAMS ((rtx, int, int));
-static void ix86_emit_epilogue_esp_adjustment PARAMS((int));
 static void ix86_set_move_mem_attrs_1 PARAMS ((rtx, rtx, rtx, rtx, rtx));
 static void ix86_sched_reorder_pentium PARAMS((rtx *, rtx *));
 static void ix86_sched_reorder_ppro PARAMS((rtx *, rtx *));
@@ -2497,17 +2496,9 @@ ix86_expand_prologue ()
     ;
   else if (! TARGET_STACK_PROBE || frame.to_allocate < CHECK_STACK_LIMIT)
     {
-      if (frame_pointer_needed)
-	insn = emit_insn (gen_pro_epilogue_adjust_stack
-			  (stack_pointer_rtx, stack_pointer_rtx,
-		           GEN_INT (-frame.to_allocate), hard_frame_pointer_rtx));
-      else
-	if (TARGET_64BIT)
-	  insn = emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-					GEN_INT (-frame.to_allocate)));
-        else
-	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-					GEN_INT (-frame.to_allocate)));
+      insn = emit_insn (gen_pro_epilogue_adjust_stack
+			(stack_pointer_rtx, stack_pointer_rtx,
+			 GEN_INT (-frame.to_allocate)));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
@@ -2545,28 +2536,6 @@ ix86_expand_prologue ()
     emit_insn (gen_blockage ());
 }
 
-/* Emit code to add TSIZE to esp value.  Use POP instruction when
-   profitable.  */
-
-static void
-ix86_emit_epilogue_esp_adjustment (tsize)
-     int tsize;
-{
-  /* If a frame pointer is present, we must be sure to tie the sp
-     to the fp so that we don't mis-schedule.  */
-  if (frame_pointer_needed)
-    emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
-					      stack_pointer_rtx,
-					      GEN_INT (tsize),
-					      hard_frame_pointer_rtx));
-  else
-    if (TARGET_64BIT)
-      emit_insn (gen_adddi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (tsize)));
-    else
-      emit_insn (gen_addsi3 (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (tsize)));
-}
 
 /* Emit code to restore saved registers using MOV insns.  First register
    is restored from POINTER + OFFSET.  */
@@ -2662,8 +2631,7 @@ ix86_expand_epilogue (style)
 	      emit_move_insn (hard_frame_pointer_rtx, tmp);
 
 	      emit_insn (gen_pro_epilogue_adjust_stack
-			 (stack_pointer_rtx, sa, const0_rtx,
-			  hard_frame_pointer_rtx));
+			 (stack_pointer_rtx, sa, const0_rtx));
 	    }
 	  else
 	    {
@@ -2674,8 +2642,10 @@ ix86_expand_epilogue (style)
 	    }
 	}
       else if (!frame_pointer_needed)
-	ix86_emit_epilogue_esp_adjustment (frame.to_allocate
-					   + frame.nregs * UNITS_PER_WORD);
+	emit_insn (gen_pro_epilogue_adjust_stack
+		   (stack_pointer_rtx, stack_pointer_rtx,
+		    GEN_INT (frame.to_allocate
+			     + frame.nregs * UNITS_PER_WORD)));
       /* If not an i386, mov & pop is faster than "leave".  */
       else if (TARGET_USE_LEAVE || optimize_size)
 	emit_insn (TARGET_64BIT ? gen_leave_rex64 () : gen_leave ());
@@ -2683,8 +2653,7 @@ ix86_expand_epilogue (style)
 	{
 	  emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
 						    hard_frame_pointer_rtx,
-						    const0_rtx,
-						    hard_frame_pointer_rtx));
+						    const0_rtx));
 	  if (TARGET_64BIT)
 	    emit_insn (gen_popdi1 (hard_frame_pointer_rtx));
 	  else
@@ -2701,11 +2670,12 @@ ix86_expand_epilogue (style)
 	    abort ();
           emit_insn (gen_pro_epilogue_adjust_stack (stack_pointer_rtx,
 						    hard_frame_pointer_rtx,
-						    GEN_INT (offset),
-						    hard_frame_pointer_rtx));
+						    GEN_INT (offset)));
 	}
       else if (frame.to_allocate)
-	ix86_emit_epilogue_esp_adjustment (frame.to_allocate);
+	emit_insn (gen_pro_epilogue_adjust_stack
+		   (stack_pointer_rtx, stack_pointer_rtx,
+		    GEN_INT (frame.to_allocate)));
 
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	if (ix86_save_reg (regno, false))
@@ -8307,14 +8277,6 @@ ix86_adjust_cost (insn, link, dep_insn, cost)
 
   insn_type = get_attr_type (insn);
   dep_insn_type = get_attr_type (dep_insn);
-
-  /* Prologue and epilogue allocators can have a false dependency on ebp.
-     This results in one cycle extra stall on Pentium prologue scheduling,
-     so handle this important case manually.  */
-  if (dep_insn_code_number == CODE_FOR_pro_epilogue_adjust_stack
-      && dep_insn_type == TYPE_ALU
-      && !reg_mentioned_p (stack_pointer_rtx, insn))
-    return 0;
 
   switch (ix86_cpu)
     {
