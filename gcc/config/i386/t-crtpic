@@ -7,3 +7,4 @@
 # routines in crtstuff.c.
 
 CRTSTUFF_T_CFLAGS = -fPIC -fno-omit-frame-pointer
+TARGET_LIBGCC2_CFLAGS = -fPIC
