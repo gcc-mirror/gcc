@@ -25,6 +25,7 @@ You should have received a copy of the GNU General Public License along with
    covered by the GNU General Public License.  */
 
 #include "runtime.h"		/* the kitchen sink */
+#include "../tconfig.h"         /* include defs of bzero for target */
 
 id __objc_object_alloc(Class*);
 id __objc_object_dispose(id);
