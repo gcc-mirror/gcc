@@ -100,6 +100,7 @@ static void modify_all_indirect_vtables PROTO((tree, int, int, tree,
 					       tree, tree));
 static void build_class_init_list PROTO((tree));
 static int finish_base_struct PROTO((tree, struct base_info *));
+static int maybe_class_too_private_p PROTO((tree));
 
 /* Way of stacking language names.  */
 tree *current_lang_base, *current_lang_stack;
@@ -1897,6 +1898,32 @@ grow_method (fndecl, method_vec_ptr)
     }
 }
 
+/* Returns non-zero if T is the sort of class for which we should
+   check issue warnings like "all constructors are private".  */
+
+static int
+maybe_class_too_private_p (t)
+    tree t;
+{
+  if (!warn_ctor_dtor_privacy)
+    /* The user doesn't want to here these warnings.  */
+    return 0;
+
+  if (CLASSTYPE_FRIEND_CLASSES (t) 
+      || DECL_FRIENDLIST (TYPE_MAIN_DECL (t)))
+    /* The class has friends.  Maybe they can make use of the class,
+       even though it's very private.  */
+    return 0;
+
+  if (CLASSTYPE_HAS_NON_PRIVATE_STATIC_MEM_FN (t))
+    /* The class has a non-private static member function.  Such a
+       thing might be used, like a friend, to create instances of the
+       class.  */
+    return 0;
+
+  return 1;
+}
+
 /* Warn about duplicate methods in fn_fields.  Also compact method
    lists so that lookup can be made faster.
 
@@ -2023,9 +2050,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
   obstack_finish (&class_obstack);
   CLASSTYPE_METHOD_VEC (t) = method_vec;
 
-  if (nonprivate_method == 0
-      && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
-      && DECL_FRIENDLIST (TYPE_MAIN_DECL (t)) == NULL_TREE)
+  if (nonprivate_method == 0 && maybe_class_too_private_p (t))
     {
       tree binfos = BINFO_BASETYPES (TYPE_BINFO (t));
       for (i = 0; i < n_baseclasses; i++)
@@ -2035,8 +2060,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
 	    nonprivate_method = 1;
 	    break;
 	  }
-      if (nonprivate_method == 0 
-	  && warn_ctor_dtor_privacy)
+      if (nonprivate_method == 0)
 	cp_warning ("all member functions in class `%T' are private", t);
     }
 
@@ -2049,10 +2073,7 @@ finish_struct_methods (t, fn_fields, nonprivate_method)
       /* Wild parse errors can cause this to happen.  */
       if (dtor == NULL_TREE)
 	TYPE_HAS_DESTRUCTOR (t) = 0;
-      else if (TREE_PRIVATE (dtor)
-	       && CLASSTYPE_FRIEND_CLASSES (t) == NULL_TREE
-	       && DECL_FRIENDLIST (TYPE_MAIN_DECL (t)) == NULL_TREE
-	       && warn_ctor_dtor_privacy)
+      else if (TREE_PRIVATE (dtor) && maybe_class_too_private_p (t))
 	cp_warning ("`%#T' only defines a private destructor and has no friends",
 		    t);
     }
@@ -3629,7 +3650,7 @@ finish_struct_1 (t, warn_anon)
 		break;
 	      }
 
-	  if (nonprivate_ctor == 0 && warn_ctor_dtor_privacy)
+	  if (nonprivate_ctor == 0 && maybe_class_too_private_p (t))
 	    cp_warning ("`%#T' only defines private constructors and has no friends",
 			t);
 	}
@@ -4207,6 +4228,12 @@ finish_struct (t, list_of_fieldlists, attributes, warn_anon)
 
 	  TREE_PRIVATE (x) = access == access_private_node;
 	  TREE_PROTECTED (x) = access == access_protected_node;
+
+	  if (!TREE_PRIVATE (x) 
+	      && TREE_CODE (x) == FUNCTION_DECL 
+	      && DECL_LANG_SPECIFIC (x)
+	      && DECL_STATIC_FUNCTION_P (x))
+	    CLASSTYPE_HAS_NON_PRIVATE_STATIC_MEM_FN (t) = 1;
 
 	  if (TREE_CODE (x) == TEMPLATE_DECL)
 	    {

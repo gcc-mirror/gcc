@@ -24,7 +24,7 @@ private:
        void operator=( const singleton& rhs );
        int initialized;
        static int counter;
-};  // gets bogus error - class is not useless XFAIL *-*-*
+};  
 
 int singleton::counter;
 
