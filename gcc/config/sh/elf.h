@@ -25,10 +25,6 @@ Boston, MA 02111-1307, USA.  */
 /* No SDB debugging info.  */
 #undef SDB_DEBUGGING_INFO
 
-/* Prefer stabs.  */
-#undef PREFERRED_DEBUGGING_TYPE
-#define PREFERRED_DEBUGGING_TYPE DBX_DEBUG
-
 /* Undefine some macros defined in both sh.h and svr4.h.  */
 #undef IDENT_ASM_OP
 #undef ASM_FILE_END
@@ -40,9 +36,29 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_OUTPUT_CONSTRUCTOR
 #undef ASM_OUTPUT_DESTRUCTOR
 #undef ASM_DECLARE_FUNCTION_NAME
+#undef PREFERRED_DEBUGGING_TYPE
 
 /* Be ELF-like.  */
 #include "svr4.h"
+
+/* The prefix to add to user-visible assembler symbols.
+   Note that svr4.h redefined it from the original value (that we want)
+   in sh.h */
+
+#undef USER_LABEL_PREFIX
+#define USER_LABEL_PREFIX "_"
+
+#undef LOCAL_LABEL_PREFIX
+#define LOCAL_LABEL_PREFIX "."
+
+#undef ASM_FILE_START
+#define ASM_FILE_START(FILE) do {				\
+  output_file_directive ((FILE), main_input_filename);		\
+  if (TARGET_LITTLE_ENDIAN)					\
+    fprintf ((FILE), "\t.little\n");				\
+} while (0)
+
+
 
 /* Let code know that this is ELF.  */
 #define CPP_PREDEFINES "-D__sh__ -D__ELF__ -Acpu(sh) -Amachine(sh)"
@@ -52,7 +68,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_SPEC  "%{ml:-little} %{mrelax:-relax}"
 
 #undef LINK_SPEC
-#define LINK_SPEC "%{ml:-m shl} %{mrelax:-relax}"
+#define LINK_SPEC "%{ml:-m shlelf} %{mrelax:-relax}"
 
 /* svr4.h undefined DBX_REGISTER_NUMBER, so we need to define it
    again.  */
@@ -63,29 +79,26 @@ Boston, MA 02111-1307, USA.  */
    symbol names.  */
 #undef ASM_OUTPUT_LABELREF
 #define ASM_OUTPUT_LABELREF(STREAM,NAME) \
-  fprintf (STREAM, "_%s", NAME)
-
-/* Because SH ELF uses underscores, we don't put a '.' before local
-   labels, for easy compatibility with the COFF implementation.  */
+  asm_fprintf (STREAM, "%U%s", NAME)
 
 #undef ASM_GENERATE_INTERNAL_LABEL
 #define ASM_GENERATE_INTERNAL_LABEL(STRING, PREFIX, NUM) \
-  sprintf (STRING, "*%s%d", PREFIX, NUM)
+  sprintf ((STRING), "*%s%s%d", LOCAL_LABEL_PREFIX, (PREFIX), (NUM))
 
 #undef ASM_OUTPUT_INTERNAL_LABEL
 #define ASM_OUTPUT_INTERNAL_LABEL(FILE,PREFIX,NUM) \
-  fprintf (FILE, "%s%d:\n", PREFIX, NUM)
+  asm_fprintf ((FILE), "%L%s%d:\n", (PREFIX), (NUM))
 
 #undef  ASM_OUTPUT_SOURCE_LINE
 #define ASM_OUTPUT_SOURCE_LINE(file, line)				\
 do									\
   {									\
     static int sym_lineno = 1;						\
-    fprintf (file, ".stabn 68,0,%d,LM%d-",				\
-	     line, sym_lineno);						\
-    assemble_name (file,						\
+    asm_fprintf ((file), ".stabn 68,0,%d,%LLM%d-",			\
+	     (line), sym_lineno);					\
+    assemble_name ((file),						\
 		   XSTR (XEXP (DECL_RTL (current_function_decl), 0), 0));\
-    fprintf (file, "\nLM%d:\n", sym_lineno);				\
+    asm_fprintf ((file), "\n%LLM%d:\n", sym_lineno);			\
     sym_lineno += 1;							\
   }									\
 while (0)
@@ -94,7 +107,7 @@ while (0)
 #define DBX_OUTPUT_MAIN_SOURCE_FILE_END(FILE, FILENAME)			\
 do {									\
   text_section ();							\
-  fprintf (FILE, "\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO);	\
+  fprintf ((FILE), "\t.stabs \"\",%d,0,0,Letext\nLetext:\n", N_SO);	\
 } while (0)
 
 /* Arrange to call __main, rather than using crtbegin.o and crtend.o
@@ -103,3 +116,7 @@ do {									\
 #undef FINI_SECTION_ASM_OP
 #undef STARTFILE_SPEC
 #undef ENDFILE_SPEC
+
+/* HANDLE_SYSV_PRAGMA (defined by svr4.h) takes precedence over HANDLE_PRAGMA.
+   We want to use the HANDLE_PRAGMA from sh.h.  */
+#undef HANDLE_SYSV_PRAGMA
