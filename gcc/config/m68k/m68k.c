@@ -3840,15 +3840,19 @@ void
 m68k_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT d;
      tree function;
 {
   if (delta > 0 && delta <= 8)						
-    asm_fprintf (file, "\taddq.l %I%d,4(%Rsp)\n", delta);		
+    asm_fprintf (file, "\taddq.l %I%d,4(%Rsp)\n", (int) delta);
   else if (delta < 0 && delta >= -8)					
-    asm_fprintf (file, "\tsubq.l %I%d,4(%Rsp)\n", -delta);		
+    asm_fprintf (file, "\tsubq.l %I%d,4(%Rsp)\n", (int) -delta);
   else									
-    asm_fprintf (file, "\tadd.l %I%d,4(%Rsp)\n", delta);		
+    {
+      asm_fprintf (file, "\tadd.l %I");
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);		
+      asm_fprintf (file, ",4(%Rsp)\n", delta);		
+    }
 									
   if (flag_pic)								
     {									

@@ -1466,4 +1466,4 @@ extern int rtx_equal_function_value_matters;
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK i960_output_mi_thunk
+#define TARGET_ASM_OUTPUT_MI_THUNK i960_output_mi_thunk

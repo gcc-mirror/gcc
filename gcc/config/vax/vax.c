@@ -997,11 +997,13 @@ void
 vax_output_mi_thunk (file, thunk, delta, function)
      FILE *file;
      tree thunk ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   fprintf (file, "\t.word 0x0ffc\n");					
-  asm_fprintf (file, "\taddl2 $%d,4(%Rap)\n", delta);			
+  fprintf (file, "\taddl2 $");
+  fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+  asm_fprintf (file, ",4(%Rap)\n");
   fprintf (file, "\tjmp ");						
   assemble_name (file,  XSTR (XEXP (DECL_RTL (function), 0), 0));	
   fprintf (file, "+2\n");						

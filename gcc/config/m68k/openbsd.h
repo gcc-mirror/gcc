@@ -1,5 +1,5 @@
 /* Configuration file for an m68k OpenBSD target.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -86,7 +86,7 @@ Boston, MA 02111-1307, USA.  */
 #define DWARF2_UNWIND_INFO 0
 
 
-/* TODO: ASM_OUTPUT_MI_THUNK is busted. I need to figure out 
+/* TODO: TARGET_ASM_OUTPUT_MI_THUNK is busted. I need to figure out 
    what bra func@PLTPC means under linux, and find the corresponding 
    construction for our gas/pic setup.  */
 #if 0
@@ -95,7 +95,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Output code to add DELTA to the first argument, and then jump to FUNCTION.
    Used for C++ multiple inheritance.  */
-#define ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
+#define TARGET_ASM_OUTPUT_MI_THUNK(FILE, THUNK_FNDECL, DELTA, FUNCTION)	\
 do {									\
   if (DELTA > 0 && DELTA <= 8)						\
     asm_fprintf (FILE, "\taddq.l %I%d,4(%Rsp)\n", DELTA);		\

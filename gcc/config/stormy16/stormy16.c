@@ -1384,7 +1384,7 @@ void
 xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   int regnum = FIRST_ARGUMENT_REGISTER;
@@ -1393,7 +1393,7 @@ xstormy16_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
   if (aggregate_value_p (TREE_TYPE (TREE_TYPE (function))))
     regnum += 1;
   
-  fprintf (file, "\tadd %s,#0x%x\n", reg_names[regnum], (delta) & 0xFFFF);
+  fprintf (file, "\tadd %s,#0x%x\n", reg_names[regnum], (int) delta & 0xFFFF);
   fputs ("\tjmpf ", file);
   assemble_name (file, XSTR (XEXP (DECL_RTL (function), 0), 0));
   putc ('\n', file);

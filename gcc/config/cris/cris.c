@@ -2570,23 +2570,27 @@ cris_override_options ()
   init_machine_status = cris_init_machine_status;
 }
 
-/* The ASM_OUTPUT_MI_THUNK worker.  */
+/* The TARGET_ASM_OUTPUT_MI_THUNK worker.  */
 
 void
 cris_asm_output_mi_thunk (stream, thunkdecl, delta, funcdecl)
      FILE *stream;
      tree thunkdecl ATTRIBUTE_UNUSED;
-     int delta;
+     HOST_WIDE_INT delta;
      tree funcdecl;
 {
   if (delta > 0)
-    fprintf (stream, "\tadd%s %d,$%s\n",
-	     ADDITIVE_SIZE_MODIFIER (delta), delta,
-	     reg_names[CRIS_FIRST_ARG_REG]);
+    {
+      fprintf (stream, "\tadd%s ", ADDITIVE_SIZE_MODIFIER (delta));
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, delta);
+      fprintf (stream, ",$%s\n", reg_names[CRIS_FIRST_ARG_REG]);
+    }
   else if (delta < 0)
-    fprintf (stream, "\tsub%s %d,$%s\n",
-	     ADDITIVE_SIZE_MODIFIER (-delta), -delta,
-	     reg_names[CRIS_FIRST_ARG_REG]);
+    {
+      fprintf (stream, "\tsub%s ", ADDITIVE_SIZE_MODIFIER (-delta));
+      fprintf (stream, HOST_WIDE_INT_PRINT_DEC, -delta);
+      fprintf (stream, ",$%s\n", reg_names[CRIS_FIRST_ARG_REG]);
+    }
 
   if (flag_pic)
     {

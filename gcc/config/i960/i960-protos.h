@@ -86,7 +86,7 @@ extern void i960_setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *, enum machine
 extern tree i960_build_va_list PARAMS ((void));
 extern int i960_final_reg_parm_stack_space PARAMS ((int, tree));
 extern int i960_reg_parm_stack_space PARAMS ((tree));
-extern void i960_output_mi_thunk PARAMS ((FILE *, tree, int, tree));
+extern void i960_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #endif /* TREE_CODE */
 
 extern int process_pragma PARAMS ((int(*)(void), void(*)(int), const char *));

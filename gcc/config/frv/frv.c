@@ -1870,7 +1870,7 @@ void
 frv_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
      FILE *file;
      tree thunk_fndecl ATTRIBUTE_UNUSED;
-     long delta;
+     HOST_WIDE_INT delta;
      tree function;
 {
   const char *name_func = XSTR (XEXP (DECL_RTL (function), 0), 0);
@@ -1880,12 +1880,16 @@ frv_asm_output_mi_thunk (file, thunk_fndecl, delta, function)
 
   /* Do the add using an addi if possible */
   if (IN_RANGE_P (delta, -2048, 2047))
-    fprintf (file, "\taddi %s,#%ld,%s\n", name_arg0, delta, name_arg0);
+    fprintf (file, "\taddi %s,#%d,%s\n", name_arg0, (int) delta, name_arg0);
   else
     {
       const char *name_add = reg_names[TEMP_REGNO];
-      fprintf (file, "\tsethi%s #hi(%ld),%s\n", parallel, delta, name_add);
-      fprintf (file, "\tsetlo #lo(%ld),%s\n", delta, name_add);
+      fprintf (file, "\tsethi%s #hi(", parallel);
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+      fprintf (file, "),%s\n", name_add);
+      fprintf (file, "\tsetlo #lo(");
+      fprintf (file, HOST_WIDE_INT_PRINT_DEC, delta);
+      fprintf (file, "),%s\n", name_add);
       fprintf (file, "\tadd %s,%s,%s\n", name_add, name_arg0, name_arg0);
     }
 

@@ -150,7 +150,7 @@ extern void setup_incoming_varargs PARAMS ((CUMULATIVE_ARGS *,
 					    enum machine_mode, tree,
 					    int *, int));
 extern struct rtx_def *rs6000_va_arg PARAMS ((tree, tree));
-extern void output_mi_thunk PARAMS ((FILE *, tree, int, tree));
+extern void output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 extern int function_ok_for_sibcall PARAMS ((tree));
 #ifdef ARGS_SIZE_RTX
 /* expr.h defines ARGS_SIZE_RTX and `enum direction' */

@@ -36,7 +36,7 @@ extern int check_float_value PARAMS ((enum machine_mode, REAL_VALUE_TYPE *, int)
 
 #ifdef TREE_CODE
 extern void vms_check_external PARAMS ((tree, const char *, int));
-extern void vax_output_mi_thunk PARAMS ((FILE *, tree, int, tree));
+extern void vax_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #endif /* TREE_CODE */
 
 extern void vms_flush_pending_externals PARAMS ((FILE *));

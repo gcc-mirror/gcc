@@ -121,7 +121,7 @@ extern int ia64_function_arg_pass_by_reference PARAMS((CUMULATIVE_ARGS *,
 						       tree, int));
 extern int ia64_return_in_memory PARAMS((tree));
 extern void ia64_asm_output_external PARAMS((FILE *, tree, const char *));
-extern void ia64_output_mi_thunk PARAMS((FILE *, tree, int, tree));
+extern void ia64_output_mi_thunk PARAMS((FILE *, tree, HOST_WIDE_INT, tree));
 #endif /* TREE_CODE */
 
 extern int ia64_register_move_cost PARAMS((enum machine_mode, enum reg_class,

@@ -1,5 +1,5 @@
 /* Perform optimizations on tree structure.
-   Copyright (C) 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Written by Mark Michell (mark@codesourcery.com).
 
 This file is part of GNU CC.
@@ -64,7 +64,7 @@ optimize_function (fn)
       /* We do not inline thunks, as (a) the backend tries to optimize
          the call to the thunkee, (b) tree based inlining breaks that
          optimization, (c) virtual functions are rarely inlineable,
-         and (d) ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
+         and (d) TARGET_ASM_OUTPUT_MI_THUNK is there to DTRT anyway.  */
       && !DECL_THUNK_P (fn))
     {
       optimize_inline_calls (fn);

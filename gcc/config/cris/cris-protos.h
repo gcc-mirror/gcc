@@ -54,7 +54,7 @@ extern rtx cris_expand_builtin_va_arg PARAMS ((tree, tree));
 
 #ifdef STDIO_INCLUDED
 # ifdef TREE_CODE
-extern void cris_asm_output_mi_thunk PARAMS ((FILE *, tree, int, tree));
+extern void cris_asm_output_mi_thunk PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 # endif
 #endif
 

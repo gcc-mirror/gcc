@@ -194,7 +194,7 @@ extern int  arm_dllexport_p 		PARAMS ((tree));
 extern int  arm_dllimport_p 		PARAMS ((tree));
 extern void arm_mark_dllexport 		PARAMS ((tree));
 extern void arm_mark_dllimport 		PARAMS ((tree));
-extern void arm_output_mi_thunk         PARAMS ((FILE *, tree, int, tree));
+extern void arm_output_mi_thunk         PARAMS ((FILE *, tree, HOST_WIDE_INT, tree));
 #endif
 
 extern void arm_init_builtins		PARAMS ((void));

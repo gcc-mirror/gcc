@@ -97,7 +97,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_PREFERRED_EH_DATA_FORMAT
 
 
-/* Note that we pick up ASM_OUTPUT_MI_THUNK from unix.h.  */
+/* Note that we pick up TARGET_ASM_OUTPUT_MI_THUNK from unix.h.  */
 
 #undef ASM_COMMENT_START
 #define ASM_COMMENT_START ";#"

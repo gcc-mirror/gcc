@@ -1,3 +1,9 @@
+2002-10-20  Mark Mitchell  <mark@codesourcery.com>
+
+	* method.c (use_thunk): Compute the vcall index as a HOST_WIDE_INT.
+	* optimize.c (optimize_function): Replace ASM_OUTPUT_MI_THUNK with
+	TARGET_ASM_OUTPUT_MI_THUNK in comments.
+	
 2002-10-18  Zack Weinberg  <zack@codesourcery.com>
 
 	* decl.c (start_decl): Point users of the old initialized-
