@@ -1,3 +1,8 @@
+2001-07-19  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* tree.def: Document restriction on {L|R}SHIFT_EXPR's second argument.
+	* doc/tree.texi: Ditto.
+
 2001-07-19  Mark Kettenis  <kettenis@wins.uva.nl>
 	    Jakub Jelinek  <jakub@redhat.com>
 
