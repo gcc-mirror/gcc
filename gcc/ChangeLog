@@ -1,5 +1,9 @@
 2003-02-28  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.md: Disable the movstrsi define_split.
+
+2003-02-28  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.h (CRT_CALL_STATIC_FUNCTION): Wrap in
 	#ifndef __mips16.
 
