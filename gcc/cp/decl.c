@@ -13833,7 +13833,7 @@ finish_function (lineno, flags, nested)
 	 start_function.  Expand_function_end will decrement this
 	 variable.  So, we set the variable to one here, so that after
 	 the decrement it will remain zero.  */
-      immediate_size_expand = 0;
+      immediate_size_expand = 1;
 
       /* Generate rtl for function exit.  */
       expand_function_end (input_filename, lineno, 1);
