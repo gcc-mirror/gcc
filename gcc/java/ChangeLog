@@ -1,3 +1,11 @@
+2001-11-07  Tom Tromey  <tromey@redhat.com>
+
+	Patch for PR java/1414:
+	* parse.y (case_label_list): New global.
+	(goal): Register case_label_list with GC.
+	(java_complete_lhs): Save new case on case_label_list.
+	(patch_switch_statement): Check for duplicate case labels.
+
 2001-11-07  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* parse.y (patch_assignment): Removed unused third argument.
