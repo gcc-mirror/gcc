@@ -1,3 +1,13 @@
+Thu Oct  2 10:36:49 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* gen-params: Fix __printf_fp test.
+	* config/linuxlibc1.mt (gxx_includedir): Don't define.
+
+Thu Oct  2 10:36:26 1997  Ulrich Drepper  <drepper@rtl.cygnus.com>
+
+	* config/linuxlibc1.mt (_G_CONFIG_H): Don't define.
+	* gen-params: Add test for __printf_fp.
+
 Sun Sep 28 12:09:04 1997  Mark Mitchell  <mmitchell@usa.net>
 
         * iomanip.h: Use new friend <> syntax.
@@ -6,7 +16,7 @@ Sun Sep 28 12:04:21 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* libio.h: Don't use _IO_LOCK_T if it's not defined.
 
-Fri Sep 26 20:56:41 1997  Ulrich Drepper  <drepper@rtl.cygnus.com>
+Fri Sep 26 20:56:41 1997  
 
 	Based on a patch by H.J. Lu  (hjl@gnu.ai.mit.edu).
 
