@@ -1,5 +1,22 @@
 2004-10-26  Aldy Hernandez  <aldyh@redhat.com>
 
+	* config/rs6000/rs6000.c (rs6000_hard_regno_nregs): Adjust for
+	e500 doubles.
+	(spe_build_register_parallel): New.
+	(rs6000_spe_function_arg): Handle e500 doubles.
+	(function_arg): Same.
+	(spe_func_has_64bit_regs_p): Same.
+	(rs6000_function_value): Same.
+	(rs6000_libcall_value): Same.
+	(legitimate_lo_sum_address_p): Return false for e500 doubles.
+
+	* config/rs6000/rs6000.h (LOCAL_ALIGNMENT): Adjust for e500
+	doubles.
+	(DATA_ALIGNMENT): Same.
+	(CANNOT_CHANGE_MODE_CLASS): Same.
+
+2004-10-26  Aldy Hernandez  <aldyh@redhat.com>
+
         * expr.c (emit_group_load): Handle floats.
         (emit_group_store): Same.
 
