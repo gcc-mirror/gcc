@@ -137,9 +137,11 @@
 ; scheduling decisions for the load unit and the multiplier.
 (define_attr "is_strongarm" "no,yes" (const (symbol_ref "arm_is_strong")))
 
+; IS_XSCALE is set to 'yes' when compiling for XScale.
+(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_tune_xscale")))
+
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
-(define_attr "is_xscale" "no,yes" (const (symbol_ref "arm_tune_xscale")))
 (define_attr "shift" "" (const_int 0))
 
 ; Floating Point Unit.  If we only have floating point emulation, then there
