@@ -1,3 +1,9 @@
+Sat Feb 16 13:48:50 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* config/alpha/alpha.md (*movsi_nt_vms_nofix): Was *movesi_nt_vms;
+	now only if !TARGET_FIX.
+	(*movsi_nt_vms_fix): New pattern.
+
 2002-02-16  Douglas B Rupp  <rupp@gnat.com>
 
 	* config/alpha/alpha.c: Implement null frame procedure types on VMS.
