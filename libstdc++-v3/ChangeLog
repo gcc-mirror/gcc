@@ -1,3 +1,10 @@
+2004-01-27  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc
+	(basic_string(const basic_string&, size_type, size_type),
+	basic_string(const basic_string&, size_type, size_type,
+	const _Alloc&)): Avoid unnecessarily constructing iterators.
+
 2004-01-26  Paolo Carlini  <pcarlini@suse.de>
 
 	* config/locale/generic/c_locale.cc: Fix throw messages
