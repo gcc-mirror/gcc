@@ -8514,6 +8514,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	rtx lab1 = gen_label_rtx (), lab2 = gen_label_rtx ();
 	enum machine_mode sa_mode = Pmode;
 	rtx stack_save;
+	int i;
 
 	if (target == 0 || GET_CODE (target) != REG
 	    || REGNO (target) < FIRST_PSEUDO_REGISTER)
@@ -8551,6 +8552,17 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	emit_barrier ();
 	emit_label (lab1);
 
+	/* Note that setjmp clobbers FP when we get here, so we have to
+	   make sure it's marked as used by this function.  Also,
+	   some inner function might use a call-saved register, so we
+	   have to set up to save all of them here.  */
+	emit_insn (gen_rtx (USE, VOIDmode, hard_frame_pointer_rtx));
+
+	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	  if (! call_used_regs[i])
+	    emit_insn (gen_rtx (USE, VOIDmode,
+				gen_rtx (REG, reg_raw_mode[i], i)));
+
 	/* Now put in the code to restore the frame pointer, and argument
 	   pointer, if needed.  The code below is from expand_end_bindings
 	   in stmt.c; see detailed documentation there.  */
@@ -8559,12 +8571,13 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 #endif
 	  emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
+	current_function_has_nonlocal_goto = 1;
+
 #if ARG_POINTER_REGNUM != HARD_FRAME_POINTER_REGNUM
 	if (fixed_regs[ARG_POINTER_REGNUM])
 	  {
 #ifdef ELIMINABLE_REGS
 	    static struct elims {int from, to;} elim_regs[] = ELIMINABLE_REGS;
-	    int i;
 
 	    for (i = 0; i < sizeof elim_regs / sizeof elim_regs[0]; i++)
 	      if (elim_regs[i].from == ARG_POINTER_REGNUM
