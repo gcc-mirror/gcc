@@ -1,3 +1,14 @@
+2003-04-16  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR/10271
+	* pa-protos.h (function_arg): Remove last argument.
+	* pa.c (function_arg): Likewise.  Use CUMULATIVE_ARGS struct instead.
+	* pa.h (struct hppa_args): Add member incoming. 
+	(INIT_CUMULATIVE_ARGS, INIT_CUMULATIVE_INCOMING_ARGS): Initialize
+	member incoming.
+	(FUNCTION_ARG): Revise call to function_arg.
+	(FUNCTION_INCOMING_ARG): Delete.
+
 2003-04-15  Zack Weinberg  <zack@codesourcery.com>
 
 	* configure.in: Unify the code which creates symlinks to a
