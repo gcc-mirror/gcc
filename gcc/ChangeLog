@@ -1,3 +1,11 @@
+2004-10-01  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR tree-opt/17343
+	* tree-cfg.c (group_case_labels): Get the label and not
+	the case expr for the default case.
+	When the label we looking at is the default, decrement the
+	new_size.
+
 2004-10-01  Jan Hubicka  <jh@suse.cz>
 
 	* c-decl.c (c_expand_body): Update call tree_rest_of_compilation.
