@@ -1,3 +1,18 @@
+2005-01-30  Richard Henderson  <rth@redhat.com>
+
+	PR target/19700
+	* config/i386/i386.c (ix86_expand_copysign): New.
+	(ix86_split_copysign_const): New.
+	(ix86_split_copysign_var): Rename from ix86_split_copysign, 
+	rearrange op1/nmask operands.
+	* config/i386/i386-protos.h: Update.
+	* config/i386/i386.md (copysignsf3): Use ix86_expand_copysign.
+	(copysigndf3): Likewise.
+	(copysignsf3_const, copysigndf3_const): New.
+	(copysignsf3_var): Rename from copysignsf3, split out splitter
+	and fix split predicate for X constraint.
+	(copysigndf3_var): Similarly.
+
 2005-01-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* optabs.c, doc/c-tree.texi, doc/install.texi, doc/md.texi,

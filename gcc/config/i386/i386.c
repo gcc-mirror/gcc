@@ -8117,10 +8117,92 @@ ix86_expand_fp_absneg_operator (enum rtx_code code, enum machine_mode mode,
     emit_move_insn (operands[0], dst);
 }
 
-/* Deconstruct a copysign operation into bit masks.  */
+/* Expand a copysign operation.  Special case operand 0 being a constant.  */
 
 void
-ix86_split_copysign (rtx operands[])
+ix86_expand_copysign (rtx operands[])
+{
+  enum machine_mode mode, vmode;
+  rtx dest, op0, op1, mask, nmask;
+
+  dest = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+
+  mode = GET_MODE (dest);
+  vmode = mode == SFmode ? V4SFmode : V2DFmode;
+
+  if (GET_CODE (op0) == CONST_DOUBLE)
+    {
+      rtvec v;
+
+      if (real_isneg (CONST_DOUBLE_REAL_VALUE (op0)))
+	op0 = simplify_unary_operation (ABS, mode, op0, mode);
+
+      if (op0 == CONST0_RTX (mode))
+	op0 = CONST0_RTX (vmode);
+      else
+        {
+	  if (mode == SFmode)
+	    v = gen_rtvec (4, op0, CONST0_RTX (SFmode),
+                           CONST0_RTX (SFmode), CONST0_RTX (SFmode));
+	  else
+	    v = gen_rtvec (2, op0, CONST0_RTX (DFmode));
+          op0 = force_reg (vmode, gen_rtx_CONST_VECTOR (vmode, v));
+	}
+
+      mask = ix86_build_signbit_mask (mode, 0, 0);
+
+      if (mode == SFmode)
+	emit_insn (gen_copysignsf3_const (dest, op0, op1, mask));
+      else
+	emit_insn (gen_copysigndf3_const (dest, op0, op1, mask));
+    }
+  else
+    {
+      nmask = ix86_build_signbit_mask (mode, 0, 1);
+      mask = ix86_build_signbit_mask (mode, 0, 0);
+
+      if (mode == SFmode)
+	emit_insn (gen_copysignsf3_var (dest, NULL, op0, op1, nmask, mask));
+      else
+	emit_insn (gen_copysigndf3_var (dest, NULL, op0, op1, nmask, mask));
+    }
+}
+
+/* Deconstruct a copysign operation into bit masks.  Operand 0 is known to
+   be a constant, and so has already been expanded into a vector constant.  */
+
+void
+ix86_split_copysign_const (rtx operands[])
+{
+  enum machine_mode mode, vmode;
+  rtx dest, op0, op1, mask, x;
+
+  dest = operands[0];
+  op0 = operands[1];
+  op1 = operands[2];
+  mask = operands[3];
+
+  mode = GET_MODE (dest);
+  vmode = GET_MODE (mask);
+
+  dest = simplify_gen_subreg (vmode, dest, mode, 0);
+  x = gen_rtx_AND (vmode, dest, mask);
+  emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+
+  if (op0 != CONST0_RTX (vmode))
+    {
+      x = gen_rtx_IOR (vmode, dest, op0);
+      emit_insn (gen_rtx_SET (VOIDmode, dest, x));
+    }
+}
+
+/* Deconstruct a copysign operation into bit masks.  Operand 0 is variable,
+   so we have to do two masks.  */
+
+void
+ix86_split_copysign_var (rtx operands[])
 {
   enum machine_mode mode, vmode;
   rtx dest, scratch, op0, op1, mask, nmask, x;
@@ -8128,8 +8210,8 @@ ix86_split_copysign (rtx operands[])
   dest = operands[0];
   scratch = operands[1];
   op0 = operands[2];
-  nmask = operands[3];
-  op1 = operands[4];
+  op1 = operands[3];
+  nmask = operands[4];
   mask = operands[5];
 
   mode = GET_MODE (dest);
