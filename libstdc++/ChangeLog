@@ -1,3 +1,7 @@
+1999-02-07  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* Makefile.in (stuff2): Tweak.
+
 1999-02-04  Ulrich Drepper  <drepper@cygnus.com>
 
 	* configure.in: Recognize --enable-threads=posix for all
