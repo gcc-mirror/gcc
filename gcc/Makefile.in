@@ -118,8 +118,8 @@ ENQUIRE_CFLAGS = -DNO_MEM -DNO_LONG_DOUBLE_IO -O0
 ENQUIRE_LDFLAGS = $(LDFLAGS)
 
 # Sed command to transform gcc to installed name.  Overwritten by configure.
-program_transform_name = s,x,x,
-program_transform_cross_name = s,^,$(target)-,
+program_transform_name = -e s,x,x,
+program_transform_cross_name = -e s,^,$(target)-,
 
 # Tools to use when building a cross-compiler.
 # These are used because `configure' appends `cross-make'
