@@ -96,6 +96,7 @@ extern enum rs6000_sdata_type rs6000_sdata;
   { "sim",		 0 },						\
   { "mvme",		 0 },						\
   { "emb",		 0 },						\
+  { "solaris-cclib",	 0 },						\
   { "newlib",		 0 },
 
 /* Default ABI to use */
@@ -185,8 +186,7 @@ do {									\
     }									\
   else if (TARGET_SDATA)						\
     rs6000_sdata = (TARGET_EABI) ? SDATA_EABI : SDATA_SYSV;		\
-  else if (!TARGET_RELOCATABLE && !flag_pic				\
-	   && (DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_SOLARIS))	\
+  else if (!TARGET_RELOCATABLE && !flag_pic && DEFAULT_ABI == ABI_V4)	\
     {									\
       rs6000_sdata = SDATA_DATA;					\
       target_flags |= MASK_SDATA;					\
@@ -403,7 +403,8 @@ do {									\
 
 #define SDATA_SECTION_ASM_OP "\t.section \".sdata\",\"aw\""
 #define SDATA2_SECTION_ASM_OP "\t.section \".sdata2\",\"a\""
-#define SBSS_SECTION_ASM_OP "\t.section \".sbss\",\"aw\",@nobits"
+#define SBSS_SECTION_ASM_OP \
+  ((DEFAULT_ABI == ABI_SOLARIS) ? "\t.section \".sbss\",\"aw\"" : "\t.section \".sbss\",\"aw\",@nobits")
 
 
 /* Besides the usual ELF sections, we need a toc section.  */
@@ -1091,11 +1092,15 @@ scrti.o%s"
 #endif
 
 #ifndef	STARTFILE_SOLARIS_SPEC
-#define	STARTFILE_SOLARIS_SPEC "scrti.o%s scrt0.o%s"
+#define	STARTFILE_SOLARIS_SPEC "\
+%{!msolaris-cclib: scrti.o%s scrt0.o%s} \
+%{msolaris-cclib: crti.o%s crt1.o%s}"
 #endif
 
 #ifndef	ENDFILE_SOLARIS_SPEC
-#define	ENDFILE_SOLARIS_SPEC "scrtn.o%s"
+#define	ENDFILE_SOLARIS_SPEC "\
+%{!msolaris-cclib: scrtn.o%s} \
+%{msolaris-cclib: crtn.o%s}"
 #endif
 
 #ifndef LINK_START_SOLARIS_SPEC
@@ -1109,7 +1114,7 @@ scrti.o%s"
 #ifndef CPP_OS_SOLARIS_SPEC
 #define CPP_OS_SOLARIS_SPEC "-D__ppc -D__sun__=1 -D__unix__ -D__svr4__  -D__SVR4__ \
 %{!ansi: -Dsun=1 -Dunix -DSVR4 -D__EXTENSIONS__ } \
--Asystem(unix) -Asystem(svr4) -Amachine(prep)"
+-Amachine(prep)"
 #endif
 
 /* Define any extra SPECS that the compiler needs to generate.  */

@@ -25,11 +25,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef	RS6000_ABI_NAME
 #define RS6000_ABI_NAME "solaris"
 
-#undef CPP_PREDEFINES
-#define CPP_PREDEFINES \
- "-Dsun=1 -Dunix -D__svr4__ -DSVR4 -DPPC \
-  -D__ppc -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(prep)"
-
 #undef ASM_CPU_SPEC
 #define ASM_CPU_SPEC "%{fpic:-K PIC} %{fPIC:-K PIC} -le -s"
 
@@ -60,16 +55,19 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 			MASK_REGNAMES)
 
 #undef	LIB_DEFAULT_SPEC
-#define LIB_DEFAULT_SPEC LIB_SOLARIS_SPEC
+#define LIB_DEFAULT_SPEC "%(lib_solaris)"
 
 #undef	STARTFILE_DEFAULT_SPEC
-#define STARTFILE_DEFAULT_SPEC STARTFILE_SOLARIS_SPEC
+#define STARTFILE_DEFAULT_SPEC "%(startfile_solaris)"
 
 #undef	ENDFILE_DEFAULT_SPEC
-#define ENDFILE_DEFAULT_SPEC ENDFILE_SOLARIS_SPEC
+#define ENDFILE_DEFAULT_SPEC "%(endfile_solaris)"
 
 #undef	LINK_START_DEFAULT_SPEC
-#define LINK_START_DEFAULT_SPEC LINK_START_SOLARIS_SPEC
+#define LINK_START_DEFAULT_SPEC "%(link_start_solaris)"
+
+#undef	CPP_OS_DEFAULT_SPEC
+#define	CPP_OS_DEFAULT_SPEC "%(cpp_os_solaris)"
 
 /* Don't turn -B into -L if the argument specifies a relative file name.  */
 #undef	RELATIVE_PREFIX_NOT_LINKDIR
@@ -171,6 +169,3 @@ while (0)
 #define ASM_FORMAT_PRIVATE_NAME(OUTPUT, NAME, LABELNO)	\
 ( (OUTPUT) = (char *) alloca (strlen ((NAME)) + 10),	\
   sprintf ((OUTPUT), "%s_.%d", (NAME), (LABELNO))) 
-
-#define ASM_RELOCATION_EXPRESSIONS 1
-

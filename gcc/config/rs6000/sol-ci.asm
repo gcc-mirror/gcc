@@ -39,6 +39,16 @@
 	.file	"scrti.s"
 	.ident	"GNU C scrti.s"
 
+# Start of .text
+	.section ".text"
+	.globl	_ex_text0
+_ex_text0:
+
+# Exception range
+	.section ".exception_ranges","aw"
+	.globl	_ex_range0
+_ex_range0:
+
 # List of C++ constructors
 	.section ".ctors","aw"
 	.globl	__CTOR_LIST__
@@ -56,15 +66,36 @@ __DTOR_LIST__:
 	.align 2
 	.globl __init
 	.type __init,@function
-__init:	stwu %r1,-16(%r1)
-	mflr %r0
-	stw %r0,12(%r1)
+__init:	stwu	%r1,-16(%r1)
+	mflr	%r0
+#	stw	%r31,12(%r1)
+	stw	%r0,16(%r1)
+
+#	bl	_GLOBAL_OFFSET_TABLE_-4	# get the GOT address
+#	mflr	%r31
+#
+#	lwz	%r3,_ex_shared0@got(%r31)
+#	lwz	%r4,-8(%r3)		# _ex_register or 0
+#	cmpi	%cr0,%r4,0
+#	beq	.Lno_reg
+#	mtlr	%r4
+#	blrl
+#.Lno_reg:
 
 # Head of __fini function used for static destructors in Solaris
 	.section ".fini","ax"
 	.align 2
 	.globl __fini
 	.type __fini,@function
-__fini:	stwu %r1,-16(%r1)
-	mflr %r0
-	stw %r0,12(%r1)
+__fini:	stwu	%r1,-16(%r1)
+	mflr	%r0
+	stw	%r31,12(%r1)
+	stw	%r0,16(%r1)
+
+#	bl	_GLOBAL_OFFSET_TABLE_-4	# get the GOT address
+#	mflr	%r31
+
+# _environ and its evil twin environ, pointing to the environment
+	.comm	_environ,4,4
+	.weak	environ
+	.set	environ,_environ

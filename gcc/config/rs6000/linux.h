@@ -30,16 +30,16 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define LINK_SPEC ""
 
 #undef	LIB_DEFAULT_SPEC
-#define LIB_DEFAULT_SPEC LIB_LINUX_SPEC
+#define LIB_DEFAULT_SPEC "%(lib_linux)"
 
 #undef	STARTFILE_DEFAULT_SPEC
-#define STARTFILE_DEFAULT_SPEC STARTFILE_LINUX_SPEC
+#define STARTFILE_DEFAULT_SPEC "%(startfile_linux)"
 
 #undef	ENDFILE_DEFAULT_SPEC
-#define ENDFILE_DEFAULT_SPEC ENDFILE_LINUX_SPEC
+#define ENDFILE_DEFAULT_SPEC "%(endfile_linux)"
 
 #undef	LINK_START_DEFAULT_SPEC
-#define LINK_START_DEFAULT_SPEC LINK_START_LINUX_SPEC
+#define LINK_START_DEFAULT_SPEC "%(link_start_linux)"
 
 #undef TARGET_VERSION
 #define TARGET_VERSION fprintf (stderr, " (PowerPC Linux)");
