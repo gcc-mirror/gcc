@@ -18,7 +18,7 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 
-This file does the following:
+/* This file does the following:
 
     - Sets VIRTUAL addr of .text to 0x400200 
       Sets FILE addr of .text to 0x200 (BLOCK directive)
