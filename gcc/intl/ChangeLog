@@ -2,6 +2,10 @@
 
 	* GCC 3.3 Released.
 
+2003-05-13  Release Manager
+
+	* GCC 3.3 Released.
+
 2002-05-25  Roman Lechtchinsky  <rl@cs.tu-berlin.de>
 
 	* gettextP.h (SWAP): Change parameter type to unsigned int.
