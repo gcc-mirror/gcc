@@ -90,7 +90,9 @@ proc g++_include_flags { paths } {
 
     if { ${HAVE_LIBSTDCXX_V3} } {
       set odir_v3 [lookfor_file ${gccpath} libstdc++-v3]
-      append flags [exec sh ${odir_v3}/testsuite_flags --build-includes]
+      if { ${odir_v3} != "" } {
+        append flags [exec sh ${odir_v3}/testsuite_flags --build-includes]
+      }
     } else {
       set odir_v2 [lookfor_file ${gccpath} libstdc++]
       set sdir_v2 [lookfor_file ${srcdir} libstdc++]
