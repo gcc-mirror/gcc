@@ -211,8 +211,21 @@ public final class PlainDatagramSocketImpl extends DatagramSocketImpl
    */
   public native Object getOption(int optID) throws SocketException;
   
-  private native void mcastGrp(InetAddress inetaddr, NetworkInterface netIf,
-		               boolean join) throws IOException;
+  /**
+   * Joins or leaves a broadcasting group on a given network interface.
+   * If the network interface is <code>null</code> the group is join/left on
+   * all locale network interfaces.
+   * 
+   * @param inetAddr The broadcast address.
+   * @param netIf The network interface to join the group on.
+   * @param join True to join a broadcasting group, fals to leave it.
+   *
+   * @exception IOException If an error occurs.
+   */
+  private native void mcastGrp(InetAddress inetAddr,
+		  	       NetworkInterface netIf,
+		               boolean join)
+    throws IOException;
 
   /**
    * Closes the socket
