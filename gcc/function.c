@@ -6251,10 +6251,35 @@ mark_varargs ()
 void
 expand_main_function ()
 {
-#if !defined (HAS_INIT_SECTION)
+#ifdef FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+  if (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN)
+    {
+      int align = PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT;
+      rtx tmp;
+
+      /* Forcably align the stack.  */
+#ifdef STACK_GROWS_DOWNWARD
+      tmp = expand_binop (Pmode, and_optab, stack_pointer_rtx,
+			  GEN_INT (-align), stack_pointer_rtx, 1, OPTAB_WIDEN);
+#else
+      tmp = expand_binop (Pmode, add_optab, stack_pointer_rtx,
+			  GEN_INT (align - 1), NULL_RTX, 1, OPTAB_WIDEN);
+      tmp = expand_binop (Pmode, and_optab, tmp, GEN_INT (-align),
+			  stack_pointer_rtx, 1, OPTAB_WIDEN);
+#endif
+      if (tmp != stack_pointer_rtx)
+	emit_move_insn (stack_pointer_rtx, tmp);
+      
+      /* Enlist allocate_dynamic_stack_space to pick up the pieces.  */
+      tmp = force_reg (Pmode, const0_rtx);
+      allocate_dynamic_stack_space (tmp, NULL_RTX, BIGGEST_ALIGNMENT);
+    }
+#endif
+
+#ifndef HAS_INIT_SECTION
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, NAME__MAIN), 0,
 		     VOIDmode, 0);
-#endif /* not HAS_INIT_SECTION */
+#endif
 }
 
 extern struct obstack permanent_obstack;

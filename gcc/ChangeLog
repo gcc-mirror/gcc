@@ -1,5 +1,14 @@
 2001-08-06  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN): New.
+	* function.c (expand_main_function): Implement it.
+	* doc/tm.texi: Document it.
+
+	* i386-protos.h, i386.c, i386.h, osf1elf.h, osfrose.h: Revert 08-01
+	ix86_output_main_function_alignment_hack patch.
+
+2001-08-06  Richard Henderson  <rth@redhat.com>
+
 	2001-07-23  Richard Henderson  <rth@redhat.com>
 	* config/i386/i386.c (ix86_expand_setcc): Don't use method 0
 	before CSE.

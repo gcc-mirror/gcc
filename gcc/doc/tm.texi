@@ -967,6 +967,12 @@ for the desired alignment (measured in bits).  If @code{STACK_BOUNDARY} is
 also defined, this macro must evaluate to a value equal to or larger
 than @code{STACK_BOUNDARY}.
 
+@findex FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+@item FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN
+A C expression that evaluates true if @code{PREFERRED_STACK_BOUNDARY} is
+not guaranteed by the runtime and we should emit code to align the stack
+at the beginning of @code{main}.
+
 @cindex @code{PUSH_ROUNDING}, interaction with @code{PREFERRED_STACK_BOUNDARY}
 If @code{PUSH_ROUNDING} is not defined, the stack will always be aligned
 to the specified boundary.  If @code{PUSH_ROUNDING} is defined and specifies

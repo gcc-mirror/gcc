@@ -511,6 +511,13 @@ extern int ix86_arch;
    aligned; the compiler cannot rely on having this alignment.  */
 #define PREFERRED_STACK_BOUNDARY ix86_preferred_stack_boundary
 
+/* As of July 2001, many runtimes to not align the stack properly when
+   entering main.  This causes expand_main_function to forcably align
+   the stack, which results in aligned frames for functions called from
+   main, though it does nothing for the alignment of main itself.  */
+#define FORCE_PREFERRED_STACK_BOUNDARY_IN_MAIN \
+  (ix86_preferred_stack_boundary > STACK_BOUNDARY)
+
 /* Allocation boundary for the code of a function. */
 #define FUNCTION_BOUNDARY \
    (1 << ((ix86_align_funcs >= 0 ? ix86_align_funcs : -ix86_align_funcs) + 3))
@@ -2931,10 +2938,6 @@ extern const char * const qi_high_reg_name[];	/* names for 8 bit regs (high) */
 extern enum reg_class const regclass_map[];	/* smalled class containing REGNO */
 extern struct rtx_def *ix86_compare_op0;	/* operand 0 for comparisons */
 extern struct rtx_def *ix86_compare_op1;	/* operand 1 for comparisons */
-
-#ifndef FUNCTION_PROLOGUE
-#define FUNCTION_PROLOGUE(f,s) ix86_output_main_function_alignment_hack(f,s)
-#endif
 
 /*
 Local variables:
