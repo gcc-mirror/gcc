@@ -363,36 +363,28 @@ convert_memory_address (to_mode, x)
       return x;
 
     case SUBREG:
-      if (POINTERS_EXTEND_UNSIGNED >= 0
-	  && (SUBREG_PROMOTED_VAR_P (x) || REG_POINTER (SUBREG_REG (x)))
+      if ((SUBREG_PROMOTED_VAR_P (x) || REG_POINTER (SUBREG_REG (x)))
 	  && GET_MODE (SUBREG_REG (x)) == to_mode)
 	return SUBREG_REG (x);
       break;
 
     case LABEL_REF:
-      if (POINTERS_EXTEND_UNSIGNED >= 0)
-	{
-	  temp = gen_rtx_LABEL_REF (to_mode, XEXP (x, 0));
-	  LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
-	  return temp;
-	}
+      temp = gen_rtx_LABEL_REF (to_mode, XEXP (x, 0));
+      LABEL_REF_NONLOCAL_P (temp) = LABEL_REF_NONLOCAL_P (x);
+      return temp;
       break;
 
     case SYMBOL_REF:
-      if (POINTERS_EXTEND_UNSIGNED >= 0)
-	{
-	  temp = gen_rtx_SYMBOL_REF (to_mode, XSTR (x, 0));
-	  SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
-	  CONSTANT_POOL_ADDRESS_P (temp) = CONSTANT_POOL_ADDRESS_P (x);
-	  STRING_POOL_ADDRESS_P (temp) = STRING_POOL_ADDRESS_P (x);
-	  return temp;
-	}
+      temp = gen_rtx_SYMBOL_REF (to_mode, XSTR (x, 0));
+      SYMBOL_REF_FLAG (temp) = SYMBOL_REF_FLAG (x);
+      CONSTANT_POOL_ADDRESS_P (temp) = CONSTANT_POOL_ADDRESS_P (x);
+      STRING_POOL_ADDRESS_P (temp) = STRING_POOL_ADDRESS_P (x);
+      return temp;
       break;
 
     case CONST:
-      if (POINTERS_EXTEND_UNSIGNED >= 0)
-	return gen_rtx_CONST (to_mode,
-			      convert_memory_address (to_mode, XEXP (x, 0)));
+      return gen_rtx_CONST (to_mode,
+			    convert_memory_address (to_mode, XEXP (x, 0)));
       break;
 
     case PLUS:
@@ -401,8 +393,7 @@ convert_memory_address (to_mode, x)
 	 permute the conversion and addition operation.  We can always safely
 	 permute them if we are making the address narrower.  In addition,
 	 always permute the operations if this is a constant.  */
-      if (POINTERS_EXTEND_UNSIGNED >= 0
-	  && (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
+      if ((GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (from_mode)
 	      || (GET_CODE (x) == PLUS && GET_CODE (XEXP (x, 1)) == CONST_INT
 		  && (INTVAL (XEXP (x, 1)) + 20000 < 40000
 		      || CONSTANT_P (XEXP (x, 0))))))

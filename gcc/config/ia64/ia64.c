@@ -250,7 +250,7 @@ call_operand (op, mode)
      rtx op;
      enum machine_mode mode;
 {
-  if (mode != GET_MODE (op))
+  if (mode != GET_MODE (op) && mode != VOIDmode)
     return 0;
 
   return (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == REG
@@ -992,7 +992,10 @@ ia64_expand_load_address (dest, src, scratch)
   /* The destination could be a MEM during initial rtl generation,
      which isn't a valid destination for the PIC load address patterns.  */
   if (! register_operand (dest, DImode))
-    temp = gen_reg_rtx (DImode);
+    if (! scratch || ! register_operand (scratch, DImode))
+      temp = gen_reg_rtx (DImode);
+    else
+      temp = scratch;
   else
     temp = dest;
 
@@ -1003,7 +1006,8 @@ ia64_expand_load_address (dest, src, scratch)
     emit_insn (gen_load_gprel64 (temp, src));
   else if (GET_CODE (src) == SYMBOL_REF && SYMBOL_REF_FLAG (src))
     emit_insn (gen_load_fptr (temp, src));
-  else if (sdata_symbolic_operand (src, DImode))
+  else if ((GET_MODE (src) == Pmode || GET_MODE (src) == ptr_mode)
+           && sdata_symbolic_operand (src, VOIDmode))
     emit_insn (gen_load_gprel (temp, src));
   else if (GET_CODE (src) == CONST
 	   && GET_CODE (XEXP (src, 0)) == PLUS
@@ -1038,7 +1042,11 @@ ia64_expand_load_address (dest, src, scratch)
     }
 
   if (temp != dest)
-    emit_move_insn (dest, temp);
+    {
+      if (GET_MODE (dest) != GET_MODE (temp))
+	temp = convert_to_mode (GET_MODE (dest), temp, 0);
+      emit_move_insn (dest, temp);
+    }
 }
 
 static GTY(()) rtx gen_tls_tga;
@@ -1073,7 +1081,7 @@ ia64_expand_move (op0, op1)
   if (!reload_in_progress && !reload_completed && !ia64_move_ok (op0, op1))
     op1 = force_reg (mode, op1);
 
-  if (mode == Pmode)
+  if (mode == Pmode || mode == ptr_mode)
     {
       enum tls_model tls_kind;
       if ((tls_kind = tls_symbolic_operand (op1, Pmode)))
@@ -1184,7 +1192,9 @@ ia64_expand_move (op0, op1)
 	      abort ();
 	    }
 	}
-      else if (!TARGET_NO_PIC && symbolic_operand (op1, DImode))
+      else if (!TARGET_NO_PIC &&
+	       (symbolic_operand (op1, Pmode) ||
+		symbolic_operand (op1, ptr_mode)))
 	{
 	  /* Before optimization starts, delay committing to any particular
 	     type of PIC address load.  If this function gets deferred, we
@@ -1208,7 +1218,10 @@ ia64_expand_move (op0, op1)
 		    && (SYMBOL_REF_FLAG (op1)
 			|| CONSTANT_POOL_ADDRESS_P (op1)
 			|| STRING_POOL_ADDRESS_P (op1))))
-	    emit_insn (gen_movdi_symbolic (op0, op1));
+	    if (GET_MODE (op1) == DImode)
+	      emit_insn (gen_movdi_symbolic (op0, op1));
+	    else
+	      emit_insn (gen_movsi_symbolic (op0, op1));
 	  else
 	    ia64_expand_load_address (op0, op1, NULL_RTX);
 	  return NULL_RTX;
@@ -2857,12 +2870,16 @@ ia64_assemble_integer (x, size, aligned_p)
      unsigned int size;
      int aligned_p;
 {
-  if (size == UNITS_PER_WORD && aligned_p
+  if (size == (TARGET_ILP32 ? 4 : 8)
+      && aligned_p
       && !(TARGET_NO_PIC || TARGET_AUTO_PIC)
       && GET_CODE (x) == SYMBOL_REF
       && SYMBOL_REF_FLAG (x))
     {
-      fputs ("\tdata8\t@fptr(", asm_out_file);
+      if (TARGET_ILP32)
+	fputs ("\tdata4\t@fptr(", asm_out_file);
+      else
+	fputs ("\tdata8\t@fptr(", asm_out_file);
       output_addr_const (asm_out_file, x);
       fputs (")\n", asm_out_file);
       return true;
@@ -7631,6 +7648,10 @@ ia64_expand_fetch_and_op (binoptab, mode, arglist, target)
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
   mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE(mem) != Pmode)
+    mem = convert_memory_address (Pmode, mem);
+#endif
   value = expand_expr (arg1, NULL_RTX, mode, 0);
 
   mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
@@ -7708,6 +7729,11 @@ ia64_expand_op_and_fetch (binoptab, mode, arglist, target)
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
   mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  if (GET_MODE(mem) != Pmode)
+    mem = convert_memory_address (Pmode, mem);
+#endif
+
   value = expand_expr (arg1, NULL_RTX, mode, 0);
 
   mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
@@ -7771,11 +7797,11 @@ ia64_expand_compare_and_swap (mode, boolp, arglist, target)
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
   arg2 = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  mem = expand_expr (arg0, NULL_RTX, ptr_mode, 0);
   old = expand_expr (arg1, NULL_RTX, mode, 0);
   new = expand_expr (arg2, NULL_RTX, mode, 0);
 
-  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  mem = gen_rtx_MEM (mode, force_reg (ptr_mode, mem));
   MEM_VOLATILE_P (mem) = 1;
 
   if (! register_operand (old, mode))
@@ -7820,10 +7846,10 @@ ia64_expand_lock_test_and_set (mode, arglist, target)
 
   arg0 = TREE_VALUE (arglist);
   arg1 = TREE_VALUE (TREE_CHAIN (arglist));
-  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  mem = expand_expr (arg0, NULL_RTX, ptr_mode, 0);
   new = expand_expr (arg1, NULL_RTX, mode, 0);
 
-  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  mem = gen_rtx_MEM (mode, force_reg (ptr_mode, mem));
   MEM_VOLATILE_P (mem) = 1;
   if (! register_operand (new, mode))
     new = copy_to_mode_reg (mode, new);
@@ -7854,9 +7880,9 @@ ia64_expand_lock_release (mode, arglist, target)
   rtx mem;
 
   arg0 = TREE_VALUE (arglist);
-  mem = expand_expr (arg0, NULL_RTX, Pmode, 0);
+  mem = expand_expr (arg0, NULL_RTX, ptr_mode, 0);
 
-  mem = gen_rtx_MEM (mode, force_reg (Pmode, mem));
+  mem = gen_rtx_MEM (mode, force_reg (ptr_mode, mem));
   MEM_VOLATILE_P (mem) = 1;
 
   emit_move_insn (mem, const0_rtx);
