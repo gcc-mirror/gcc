@@ -1,5 +1,14 @@
 2000-10-31  Neil Booth  <neilb@earthling.net>
 
+	* cpp.texi: Update for new command line assertion syntax.
+	* cpplib.c (cpp_define): Simplify a bit.
+	(cpp_assert, cpp_unassert): Use handle_assertion.
+	(handle_assertion): New function; accept new command line
+	syntax with '='.
+	* testsuite/gcc.dg/cpp/assert3.c: New tests.
+
+2000-10-31  Neil Booth  <neilb@earthling.net>
+
 	* cppmacro.c (STDC_0_IN_SYSTEM_HEADERS): Define to 0 if
 	undefined.  Remove #ifdef check.
 	* config/i386/sol2.h, config/rs6000/sol2.h, config/sparc/sol2.h:

@@ -107,6 +107,7 @@ static cpp_hashnode *parse_assertion PARAMS ((cpp_reader *, struct answer **,
 					      int));
 static struct answer ** find_answer PARAMS ((cpp_hashnode *,
 					     const struct answer *));
+static void handle_assertion	PARAMS ((cpp_reader *, const char *, int));
 
 /* This is the table of directive handlers.  It is ordered by
    frequency of occurrence; the numbers at the end are directive
@@ -1608,29 +1609,25 @@ cpp_define (pfile, str)
   char *buf, *p;
   size_t count;
 
-  p = strchr (str, '=');
   /* Copy the entire option so we can modify it. 
      Change the first "=" in the string to a space.  If there is none,
-     tack " 1" on the end.  Then add a newline and a NUL.  */
-  
+     tack " 1" on the end.  */
+
+  /* Length including the null.  */  
+  count = strlen (str);
+  buf = (char *) alloca (count + 2);
+  memcpy (buf, str, count);
+
+  p = strchr (str, '=');
   if (p)
-    {
-      count = strlen (str) + 2;
-      buf = (char *) alloca (count);
-      memcpy (buf, str, count - 2);
-      buf[p - str] = ' ';
-      buf[count - 2] = '\n';
-      buf[count - 1] = '\0';
-    }
+    buf[p - str] = ' ';
   else
     {
-      count = strlen (str) + 4;
-      buf = (char *) alloca (count);
-      memcpy (buf, str, count - 4);
-      strcpy (&buf[count-4], " 1\n");
+      buf[count++] = ' ';
+      buf[count++] = '1';
     }
 
-  run_directive (pfile, T_DEFINE, buf, count - 1, 0);
+  run_directive (pfile, T_DEFINE, buf, count, 0);
 }
 
 /* Slight variant of the above for use by initialize_builtins, which (a)
@@ -1659,7 +1656,7 @@ cpp_assert (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  run_directive (pfile, T_ASSERT, str, strlen (str), 0);
+  handle_assertion (pfile, str, T_ASSERT);
 }
 
 /* Process STR as if it appeared as the body of an #unassert. */
@@ -1668,8 +1665,33 @@ cpp_unassert (pfile, str)
      cpp_reader *pfile;
      const char *str;
 {
-  run_directive (pfile, T_UNASSERT, str, strlen (str), 0);
+  handle_assertion (pfile, str, T_UNASSERT);
 }  
+
+/* Common code for cpp_assert (-A) and cpp_unassert (-A-).  */
+static void
+handle_assertion (pfile, str, type)
+     cpp_reader *pfile;
+     const char *str;
+     int type;
+{
+  size_t count = strlen (str);
+  const char *p = strchr (str, '=');
+
+  if (p)
+    {
+      /* Copy the entire option so we can modify it.  Change the first
+	 "=" in the string to a '(', and tack a ')' on the end.  */
+      char *buf = (char *) alloca (count + 1);
+
+      memcpy (buf, str, count);
+      buf[p - str] = '(';
+      buf[count++] = ')';
+      str = buf;
+    }
+
+  run_directive (pfile, type, str, count, 0);
+}
 
 /* Determine whether the identifier ID, of length LEN, is a defined macro.  */
 int
