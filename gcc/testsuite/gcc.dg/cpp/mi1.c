@@ -1,7 +1,7 @@
 /* Test "ignore redundant include" facility.
    We must test with C and C++ comments outside the guard conditional;
    also, we test guarding with #ifndef and #if !defined.
-   -H is used because cpp might confuse the issue by optimizing out
+   -H is used because cpp mi1ght confuse the issue by optimizing out
    #line markers.  This test only passes if each of the headers is
    read exactly once.
 
@@ -12,23 +12,23 @@
 
 /* { dg-do compile }
    { dg-options "-H" }
-   { dg-error "mic\.h\n\[^\n\]*micc\.h\n\[^\n\]*mind\.h\n\[^\n\]*mindp\.h\n\[^\n\]*mix\.h" "redundant include check" { target *-*-* } 0 } */
+   { dg-error "mi1c\.h\n\[^\n\]*mi1cc\.h\n\[^\n\]*mi1nd\.h\n\[^\n\]*mi1ndp\.h\n\[^\n\]*mi1x\.h" "redundant include check" { target *-*-* } 0 } */
 
-#include "cpp-mic.h"
-#include "cpp-mic.h"
+#include "mi1c.h"
+#include "mi1c.h"
 
-#include "cpp-micc.h"
-#include "cpp-micc.h"
+#include "mi1cc.h"
+#include "mi1cc.h"
 
-#include "cpp-mind.h"
-#include "cpp-mind.h"
+#include "mi1nd.h"
+#include "mi1nd.h"
 
-#include "cpp-mindp.h"
-#include "cpp-mindp.h"
+#include "mi1ndp.h"
+#include "mi1ndp.h"
 
-#define CPP_MIX_H
-#include "cpp-mix.h"
-#include "cpp-mix.h"
+#define MIX_H
+#include "mi1x.h"
+#include "mi1x.h"
 
 int
 main (void)

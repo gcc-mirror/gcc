@@ -1,9 +1,7 @@
 /* Regression test for paste corner cases.  Distilled from
    syscall stub logic in glibc.  */
 
-/* { dg-do run } */
-
-#include <stdlib.h>
+/* { dg-do compile } */
 
 #define ENTRY(name)	name##:
 #define socket bind

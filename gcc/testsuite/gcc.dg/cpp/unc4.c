@@ -23,7 +23,7 @@ ignored
 
 /* We shouldn't see unbalanced conditionals inside #if'ed out #includes.  */
 #if 0
-#include "cpp-unc1.c"
+#include "unc1.c"
 #endif
 
 /* The ifdef below should not get an error just because there's a bad if
@@ -32,9 +32,9 @@ ignored
    message.  */
 #define FOO
 #ifdef FOO  /* { dg-bogus "unterminated" "nested unterm" } */
-#include "cpp-unc1.c"  /* { dg-error "" } */
+#include "unc1.c"  /* { dg-error "" } */
 #endif
 
 /* dg.exp doesn't read the included files for tags, so we have to
    do them explicitly here.  */
-/* { dg-error "#if" "unc1.h: unterminated #if" { target *-*-* } 3 } */
+/* { dg-error "#if" "unc1.c: unterminated #if" { target *-*-* } 3 } */

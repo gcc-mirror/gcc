@@ -10,9 +10,9 @@
 wibble
 
 /*
-  { dg-final { if \{ [grep cpp-li1.i baz] != "" \} \{ } }
-  { dg-final {   pass "cpp-li1.i: #line directive optimization" } }
+  { dg-final { if \{ [grep line1.i baz] != "" \} \{ } }
+  { dg-final {   pass "line1.i: #line directive optimization" } }
   { dg-final { \} else \{ } }
-  { dg-final {   fail "cpp-li1.i: #line directive optimization" } }
+  { dg-final {   fail "line1.i: #line directive optimization" } }
   { dg-final { \} } }
 */

@@ -2,4 +2,4 @@
    Problem distilled from glibc 2.0.7's time.h, sys/time.h, timebits.h. 
    Problem noted by Tom Tromey <tromey@cygnus.com>.  */
 
-#include "cpp-mi2c.h"
+#include "mi2c.h"

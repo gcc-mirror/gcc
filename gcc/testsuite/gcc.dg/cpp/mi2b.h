@@ -3,4 +3,4 @@
    Problem noted by Tom Tromey <tromey@cygnus.com>.  */
 
 #define need_x
-#include "cpp-mi2c.h"
+#include "mi2c.h"
