@@ -3116,9 +3116,9 @@ peephole2_optimize (FILE *dump_file ATTRIBUTE_UNUSED)
 		  if (note || (was_call && nonlocal_goto_handler_labels))
 		    {
 		      edge eh_edge;
+		      edge_iterator ei;
 
-		      for (eh_edge = bb->succ; eh_edge
-			   ; eh_edge = eh_edge->succ_next)
+		      FOR_EACH_EDGE (eh_edge, ei, bb->succs)
 			if (eh_edge->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
 			  break;
 

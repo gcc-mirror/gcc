@@ -28,6 +28,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "partition.h"
 #include "hard-reg-set.h"
 #include "predict.h"
+#include "vec.h"
+#include "errors.h"
 
 /* Head of register set linked list.  */
 typedef bitmap_head regset_head;
@@ -147,12 +149,8 @@ do {									\
 typedef HOST_WIDEST_INT gcov_type;
 
 /* Control flow edge information.  */
-struct edge_def GTY((chain_next ("%h.pred_next")))
+struct edge_def GTY(())
 {
-  /* Links through the predecessor and successor lists.  */
-  struct edge_def *pred_next;
-  struct edge_def *succ_next;
-
   /* The two blocks at the ends of the edge.  */
   struct basic_block_def *src;
   struct basic_block_def *dest;
@@ -176,6 +174,7 @@ struct edge_def GTY((chain_next ("%h.pred_next")))
 };
 
 typedef struct edge_def *edge;
+DEF_VEC_GC_P(edge);
 
 #define EDGE_FALLTHRU		1	/* 'Straight line' flow */
 #define EDGE_ABNORMAL		2	/* Strange flow, like computed
@@ -250,8 +249,8 @@ struct basic_block_def GTY((chain_next ("%h.next_bb"), chain_prev ("%h.prev_bb")
   tree stmt_list;
 
   /* The edges into and out of the block.  */
-  edge pred;
-  edge succ;
+  VEC(edge) *preds;
+  VEC(edge) *succs;
 
   /* Liveness info.  */
 
@@ -539,12 +538,12 @@ struct edge_list
 #define NUM_EDGES(el)			((el)->num_edges)
 
 /* BB is assumed to contain conditional jump.  Return the fallthru edge.  */
-#define FALLTHRU_EDGE(bb)		((bb)->succ->flags & EDGE_FALLTHRU \
-					 ? (bb)->succ : (bb)->succ->succ_next)
+#define FALLTHRU_EDGE(bb)		(EDGE_SUCC ((bb), 0)->flags & EDGE_FALLTHRU \
+					 ? EDGE_SUCC ((bb), 0) : EDGE_SUCC ((bb), 1))
 
 /* BB is assumed to contain conditional jump.  Return the branch edge.  */
-#define BRANCH_EDGE(bb)			((bb)->succ->flags & EDGE_FALLTHRU \
-					 ? (bb)->succ->succ_next : (bb)->succ)
+#define BRANCH_EDGE(bb)			(EDGE_SUCC ((bb), 0)->flags & EDGE_FALLTHRU \
+					 ? EDGE_SUCC ((bb), 1) : EDGE_SUCC ((bb), 0))
 
 /* Return expected execution frequency of the edge E.  */
 #define EDGE_FREQUENCY(e)		(((e)->src->frequency \
@@ -553,8 +552,112 @@ struct edge_list
 					 / REG_BR_PROB_BASE)
 
 /* Return nonzero if edge is critical.  */
-#define EDGE_CRITICAL_P(e)		((e)->src->succ->succ_next \
-					 && (e)->dest->pred->pred_next)
+#define EDGE_CRITICAL_P(e)		(EDGE_COUNT ((e)->src->succs) >= 2 \
+					 && EDGE_COUNT ((e)->dest->preds) >= 2)
+
+#define EDGE_COUNT(ev)			VEC_length (edge, (ev))
+#define EDGE_I(ev,i)			VEC_index  (edge, (ev), (i))
+#define EDGE_PRED(bb,i)			VEC_index  (edge, (bb)->preds, (i))
+#define EDGE_SUCC(bb,i)			VEC_index  (edge, (bb)->succs, (i))
+
+/* Iterator object for edges.  */
+
+typedef struct {
+  unsigned index;
+  VEC(edge) *container;
+} edge_iterator;
+
+/* Return an iterator pointing to the start of an edge vector.  */
+static inline edge_iterator
+ei_start (VEC(edge) *ev)
+{
+  edge_iterator i;
+
+  i.index = 0;
+  i.container = ev;
+
+  return i;
+}
+
+/* Return an iterator pointing to the last element of an edge
+   vector. */
+static inline edge_iterator
+ei_last (VEC(edge) *ev)
+{
+  edge_iterator i;
+
+  i.index = EDGE_COUNT (ev) - 1;
+  i.container = ev;
+
+  return i;
+}
+
+/* Is the iterator `i' at the end of the sequence?  */
+static inline bool
+ei_end_p (edge_iterator i)
+{
+  return (i.index == EDGE_COUNT (i.container));
+}
+
+/* Is the iterator `i' at one position before the end of the
+   sequence?  */
+static inline bool
+ei_one_before_end_p (edge_iterator i)
+{
+  return (i.index + 1 == EDGE_COUNT (i.container));
+}
+
+/* Advance the iterator to the next element.  */
+static inline void
+ei_next (edge_iterator *i)
+{
+  gcc_assert (i->index < EDGE_COUNT (i->container));
+  i->index++;
+}
+
+/* Move the iterator to the previous element.  */
+static inline void
+ei_prev (edge_iterator *i)
+{
+  gcc_assert (i->index > 0);
+  i->index--;
+}
+
+/* Return the edge pointed to by the iterator `i'.  */
+static inline edge
+ei_edge (edge_iterator i)
+{
+  return EDGE_I (i.container, i.index);
+}
+
+/* Return an edge pointed to by the iterator.  Do it safely so that
+   NULL is returned when the iterator is pointing at the end of the
+   sequence.  */
+static inline edge
+ei_safe_edge (edge_iterator i)
+{
+  return !ei_end_p (i) ? ei_edge (i) : NULL;
+}
+
+/* This macro serves as a convenient way to iterate each edge in a
+   vector of predeccesor or successor edges.  It must not be used when
+   an element might be removed during the traversal, otherwise
+   elements will be missed.  Instead, use a for-loop like that shown
+   in the following pseudo-code:
+   
+   FOR (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+     {
+	IF (e != taken_edge)
+	  ssa_remove_edge (e);
+	ELSE
+	  ei_next (&ei);
+     }
+*/
+
+#define FOR_EACH_EDGE(EDGE,ITER,EDGE_VEC) \
+  for ((EDGE) = NULL, (ITER) = ei_start ((EDGE_VEC)); \
+       ((EDGE) = ei_safe_edge ((ITER))); \
+       ei_next (&(ITER)))
 
 struct edge_list * create_edge_list (void);
 void free_edge_list (struct edge_list *);

@@ -1350,13 +1350,17 @@ rewrite_program2 (bitmap new_deaths)
 	  int in_ir = 0;
 	  edge e;
 	  int num = 0;
+	  edge_iterator ei;
 	  bitmap_iterator bi;
 
 	  HARD_REG_SET cum_colors, colors;
 	  CLEAR_HARD_REG_SET (cum_colors);
-	  for (e = bb->pred; e && num < 5; e = e->pred_next, num++)
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
 	      int j;
+
+	      if (num >= 5)
+		break;
 	      CLEAR_HARD_REG_SET (colors);
 	      EXECUTE_IF_SET_IN_BITMAP (live_at_end[e->src->index], 0, j, bi)
 		{
@@ -1366,6 +1370,7 @@ rewrite_program2 (bitmap new_deaths)
 		    update_spill_colors (&colors, web, 1);
 		}
 	      IOR_HARD_REG_SET (cum_colors, colors);
+	      num++;
 	    }
 	  if (num == 5)
 	    in_ir = 1;

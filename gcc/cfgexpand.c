@@ -924,6 +924,7 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 {
   rtx last = get_last_insn ();
   edge e;
+  edge_iterator ei;
   int probability;
   gcov_type count;
 
@@ -948,13 +949,11 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
      all edges here, or redirecting the existing fallthru edge to
      the exit block.  */
 
-  e = bb->succ;
   probability = 0;
   count = 0;
-  while (e)
-    {
-      edge next = e->succ_next;
 
+  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
+    {
       if (!(e->flags & (EDGE_ABNORMAL | EDGE_EH)))
 	{
 	  if (e->dest != EXIT_BLOCK_PTR)
@@ -970,8 +969,8 @@ expand_gimple_tailcall (basic_block bb, tree stmt, bool *can_fallthru)
 	  probability += e->probability;
 	  remove_edge (e);
 	}
-
-      e = next;
+      else
+	ei_next (&ei);
     }
 
   /* This is somewhat ugly: the call_expr expander often emits instructions
@@ -1020,6 +1019,7 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
   tree stmt = NULL;
   rtx note, last;
   edge e;
+  edge_iterator ei;
 
   if (dump_file)
     {
@@ -1050,11 +1050,8 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
 
   NOTE_BASIC_BLOCK (note) = bb;
 
-  e = bb->succ;
-  while (e)
+  for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
     {
-      edge next = e->succ_next;
-
       /* Clear EDGE_EXECUTABLE.  This flag is never used in the backend.  */
       e->flags &= ~EDGE_EXECUTABLE;
 
@@ -1063,8 +1060,8 @@ expand_gimple_basic_block (basic_block bb, FILE * dump_file)
          rediscover them.  In the future we should get this fixed properly.  */
       if (e->flags & EDGE_ABNORMAL)
 	remove_edge (e);
-
-      e = next;
+      else
+	ei_next (&ei);
     }
 
   for (; !bsi_end_p (bsi); bsi_next (&bsi))
@@ -1129,8 +1126,9 @@ construct_init_block (void)
 {
   basic_block init_block, first_block;
   edge e = NULL, e2;
+  edge_iterator ei;
 
-  for (e2 = ENTRY_BLOCK_PTR->succ; e2; e2 = e2->succ_next)
+  FOR_EACH_EDGE (e2, ei, ENTRY_BLOCK_PTR->succs)
     {
       /* Clear EDGE_EXECUTABLE.  This flag is never used in the backend.
 
@@ -1173,7 +1171,9 @@ construct_exit_block (void)
   rtx head = get_last_insn ();
   rtx end;
   basic_block exit_block;
-  edge e, e2, next;
+  edge e, e2;
+  unsigned ix;
+  edge_iterator ei;
 
   /* Make sure the locus is set to the end of the function, so that
      epilogue line numbers and warnings are set properly.  */
@@ -1199,16 +1199,21 @@ construct_exit_block (void)
 				   EXIT_BLOCK_PTR->prev_bb);
   exit_block->frequency = EXIT_BLOCK_PTR->frequency;
   exit_block->count = EXIT_BLOCK_PTR->count;
-  for (e = EXIT_BLOCK_PTR->pred; e; e = next)
+
+  ix = 0;
+  while (ix < EDGE_COUNT (EXIT_BLOCK_PTR->preds))
     {
-      next = e->pred_next;
+      e = EDGE_I (EXIT_BLOCK_PTR->preds, ix);
       if (!(e->flags & EDGE_ABNORMAL))
-        redirect_edge_succ (e, exit_block);
+	redirect_edge_succ (e, exit_block);
+      else
+	ix++;
     }
+
   e = make_edge (exit_block, EXIT_BLOCK_PTR, EDGE_FALLTHRU);
   e->probability = REG_BR_PROB_BASE;
   e->count = EXIT_BLOCK_PTR->count;
-  for (e2 = EXIT_BLOCK_PTR->pred; e2; e2 = e2->pred_next)
+  FOR_EACH_EDGE (e2, ei, EXIT_BLOCK_PTR->preds)
     if (e2 != e)
       {
         e->count -= e2->count;

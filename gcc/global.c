@@ -748,8 +748,9 @@ global_conflicts (void)
 	   regs live across such edges.  */
 	{
 	  edge e;
+	  edge_iterator ei;
 
-	  for (e = b->pred; e ; e = e->pred_next)
+	  FOR_EACH_EDGE (e, ei, b->preds)
 	    if (e->flags & EDGE_ABNORMAL)
 	      break;
 
@@ -2339,12 +2340,14 @@ calculate_reg_pav (void)
       sbitmap_zero (wset);
       for (i = 0; i < nel; i++)
 	{
+	  edge_iterator ei;
+
 	  bb = bb_array [i];
 	  changed_p = 0;
-	  for (e = bb->pred; e; e = e->pred_next)
+	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    changed_p = modify_bb_reg_pav (bb, e->src, changed_p);
 	  if (changed_p)
-	    for (e = bb->succ; e; e = e->succ_next)
+	    FOR_EACH_EDGE (e, ei, bb->succs)
 	      {
 		succ = e->dest;
 		if (succ->index != EXIT_BLOCK && !TEST_BIT (wset, succ->index))

@@ -1,3 +1,334 @@
+2004-09-24  Ben Elliston  <bje@au.ibm.com>
+	    Steven Bosscher  <stevenb@suse.de>
+	    Andrew Pinski  <pinskia@physics.uc.edu>
+
+	Merge from edge-vector-branch:
+	* basic-block.h: Include vec.h, errors.h. Instantiate a VEC(edge).
+	(struct edge_def): Remove pred_next, succ_next members.
+	(struct basic_block_def): Remove pred, succ members.  Add preds
+	and succs members of type VEC(edge).
+	(FALLTHRU_EDGE): Redefine using EDGE_SUCC.
+	(BRANCH_EDGE): Likewise.
+	(EDGE_CRITICAL_P): Redefine using EDGE_COUNT.
+	(EDGE_COUNT, EDGE_I, EDGE_PRED, EDGE_SUCC): New.
+	(edge_iterator): New.
+	(ei_start, ei_last, ei_end_p, ei_one_before_end_p): New.
+	(ei_next, ei_prev, ei_edge, ei_safe_edge): Likewise.
+	(FOR_EACH_EDGE): New.
+	* bb-reorder.c (find_traces): Use FOR_EACH_EDGE and EDGE_* macros
+	where applicable.
+	(rotate_loop): Likewise.
+	(find_traces_1_route): Likewise.
+	(bb_to_key): Likewise.
+	(connect_traces): Likewise.
+	(copy_bb_p): Likewise.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Likewise.
+	(add_labels_and_missing_jumps): Likewise.
+	(fix_up_fall_thru_edges): Likewise.
+	(find_jump_block): Likewise.
+	(fix_crossing_conditional_branches): Likewise.
+	(fix_crossing_unconditional_branches): Likewise.
+	(add_reg_crossing_jump_notes): Likewise.
+	* bt-load.c (augment_live_range): Likewise.
+	* cfg.c (clear_edges): Likewise.
+	(unchecked_make_edge): Likewise.
+	(cached_make_edge): Likewise.
+	(make_single_succ_edge): Likewise.
+	(remove_edge): Likewise.
+	(redirect_edge_succ_nodup): Likewise.
+	(check_bb_profile): Likewise.
+	(dump_flow_info): Likewise.
+	(alloc_aux_for_edges): Likewise.
+	(clear_aux_for_edges): Likewise.
+	(dump_cfg_bb_info): Likewise.
+	* cfganal.c (forwarder_block_p): Likewise.
+	(can_fallthru): Likewise.
+	(could_fall_through): Likewise.
+	(mark_dfs_back_edges): Likewise.
+	(set_edge_can_fallthru_flag): Likewise.
+	(find_unreachable_blocks): Likewise.
+	(create_edge_list): Likewise.
+	(verify_edge_list): Likewise.
+	(add_noreturn_fake_exit_edges): Likewise.
+	(connect_infinite_loops_to_exit): Likewise.
+	(flow_reverse_top_sort_order_compute): Likewise.
+	(flow_depth_first_order_compute): Likewise.
+	(flow_preorder_transversal_compute): Likewise.
+	(flow_dfs_compute_reverse_execute): Likewise.
+	(dfs_enumerate_from): Likewise.
+	(compute_dominance_frontiers_1): Likewise.
+	* cfgbuild.c (make_edges): Likewise.
+	(compute_outgoing_frequencies): Likewise.
+	(find_many_sub_basic_blocks): Likewise.
+	(find_sub_basic_blocks): Likewise.
+	* cfgcleanup.c (try_simplify_condjump): Likewise.
+	(thread_jump): Likewise.
+	(try_forward_edges): Likewise.
+	(merge_blocks_move): Likewise.
+	(outgoing_edges_match): Likewise.
+	(try_crossjump_to_edge): Likewise.
+	(try_crossjump_bb): Likewise.
+	(try_optimize_cfg): Likewise.
+	(merge_seq_blocks): Likewise.
+	* cfgexpand.c (expand_gimple_tailcall): Likewise.
+	(expand_gimple_basic_block): Likewise.
+	(construct_init_block): Likewise.
+	(construct_exit_block): Likewise.
+	* cfghooks.c (verify_flow_info): Likewise.
+	(dump_bb): Likewise.
+	(delete_basic_block): Likewise.
+	(split_edge): Likewise.
+	(merge_blocks): Likewise.
+	(make_forwarder_block): Likewise.
+	(tidy_fallthru_edges): Likewise.
+	(can_duplicate_block_p): Likewise.
+	(duplicate_block): Likewise.
+	* cfglayout.c (fixup_reorder_chain): Likewise.
+	(fixup_fallthru_exit_predecessor): Likewise.
+	(can_copy_bbs_p): Likewise.
+	(copy_bbs): Likewise.
+	* cfgloop.c (flow_loops_cfg_dump): Likewise.
+	(flow_loop_entry_edges_find): Likewise.
+	(flow_loop_exit_edges_find): Likewise.
+	(flow_loop_nodes_find): Likewise.
+	(mark_single_exit_loops): Likewise.
+	(flow_loop_pre_header_scan): Likewise.
+	(flow_loop_pre_header_find): Likewise.
+	(update_latch_info): Likewise.
+	(canonicalize_loop_headers): Likewise.
+	(flow_loops_find): Likewise.
+	(get_loop_body_in_bfs_order): Likewise.
+	(get_loop_exit_edges): Likewise.
+	(num_loop_branches): Likewise.
+	(verify_loop_structure): Likewise.
+	(loop_latch_edge): Likewise.
+	(loop_preheader_edge): Likewise.
+	* cfgloopanal.c (mark_irreducible_loops): Likewise.
+	(expected_loop_iterations): Likewise.
+	* cfgloopmanip.c (remove_bbs): Likewise.
+	(fix_bb_placement): Likewise.
+	(fix_irreducible_loops): Likewise.
+	(remove_path): Likewise.
+	(scale_bbs_frequencies): Likewise.
+	(loopify): Likewise.
+	(unloop): Likewise.
+	(fix_loop_placement): Likewise.
+	(loop_delete_branch_edge): Likewise.
+	(duplicate_loop_to_header_edge): Likewise.
+	(mfb_keep_just): Likewise.
+	(create_preheader): Likewise.
+	(force_single_succ_latches): Likewise.
+	(loop_split_edge_with): Likewise.
+	(create_loop_notes): Likewise.
+	* cfgrtl.c (rtl_split_block): Likewise.
+	(rtl_merge_blocks): Likewise.
+	(rtl_can_merge_blocks): Likewise.
+	(try_redirect_by_replacing_jump): Likewise.
+	(force_nonfallthru_and_redirect): Likewise.
+	(rtl_tidy_fallthru_edge): Likewise.
+	(commit_one_edge_insertion): Likewise.
+	(commit_edge_insertions): Likewise.
+	(commit_edge_insertions_watch_calls): Likewise.
+	(rtl_verify_flow_info_1): Likewise.
+	(rtl_verify_flow_info): Likewise.
+	(purge_dead_edges): Likewise.
+	(cfg_layout_redirect_edge_and_branch): Likewise.
+	(cfg_layout_can_merge_blocks_p): Likewise.
+	(rtl_flow_call_edges_add): Likewise.
+	* cse.c (cse_cc_succs): Likewise.
+	* df.c (hybrid_search): Likewise.
+	* dominance.c (calc_dfs_tree_nonrec): Likewise.
+	(calc_dfs_tree): Likewise.
+	(calc_idoms): Likewise.
+	(recount_dominator): Likewise.
+	* domwalk.c (walk_dominator_tree): Likewise.
+	* except.c (emit_to_new_bb_before): Likewise.
+	(connect_post_landing_pads): Likewise.
+	(sjlj_emit_function_enter): Likewise.
+	(sjlj_emit_function_exit): Likewise.
+	(finish_eh_generation): Likewise.
+	* final.c (compute_alignments): Likewise.
+	* flow.c (calculate_global_regs_live): Likewise.
+	(initialize_uninitialized_subregs): Likewise.
+	(init_propagate_block_info): Likewise.
+	* function.c (thread_prologue_and_epilogue_insns): Likewise.
+	* gcse.c (find_implicit_sets): Likewise.
+	(bypass_block): Likewise.
+	(bypass_conditional_jumps): Likewise.
+	(compute_pre_data): Likewise.
+	(insert_insn_end_bb): Likewise.
+	(insert_store): Likewise.
+	(remove_reachable_equiv_notes): Likewise.
+	* global.c (global_conflicts): Likewise.
+	(calculate_reg_pav): Likewise.
+	* graph.c (print_rtl_graph_with_bb): Likewise.
+	* ifcvt.c (mark_loop_exit_edges): Likewise.
+	(merge_if_block): Likewise.
+	(find_if_header): Likewise.
+	(block_jumps_and_fallthru_p): Likewise.
+	(find_if_block): Likewise.
+	(find_cond_trap): Likewise.
+	(block_has_only_trap): Likewise.
+	(find_if_case1): Likewise.
+	(find_if_case_2): Likewise.
+	* lambda-code.c (lambda_loopnest_to_gcc_loopnest): Likewise.
+	(perfect_nestify): Likewise.
+	* lcm.c (compute_antinout_edge): Likewise.
+	(compute_laterin): Likewise.
+	(compute_available): Likewise.
+	(compute_nearerout): Likewise.
+	* loop-doloop.c (doloop_modify): Likewise.
+	* loop-init.c (loop_optimizer_init): Likewise.
+	* loop-invariant.c (find_exits): Likewise.
+	* loop-iv.c (simplify_using_initial_values): Likewise.
+	(check_simple_exit): Likewise.
+	(find_simple_exit): Likewise.
+	* loop-unroll.c (peel_loop_completely): Likewise.
+	(unroll_loop_constant_iterations): Likewise.
+	(unroll_loop_runtime_iterations): Likewise.
+	* loop-unswitch.c (may_unswitch_on): Likewise.
+	(unswitch_loop): Likewise.
+	* modulo-sched.c (generate_prolog_epilog): Likewise.
+	(sms_schedule): Likewise.
+	* postreload-gcse.c (eliminate_partially_redundant_load):
+	Likewise.
+	* predict.c (can_predict_insn_p): Likewise.
+	(set_even_probabilities): Likewise.
+	(combine_predictions_for_bb): Likewise.
+	(predict_loops): Likewise.
+	(estimate_probability): Likewise.
+	(tree_predict_by_opcode): Likewise.
+	(tree_estimate_probability): Likewise.
+	(last_basic_block_p): Likewise.
+	(propagate_freq): Likewise.
+	(estimate_loops_at_level): Likewise.
+	(estimate_bb_frequencies): Likewise.
+	* profile.c (instrument_edges): Likewise.
+	(get_exec_counts): Likewise.
+	(compute_branch_probabilities): Likewise.
+	(branch_prob): Likewise.
+	* ra-build.c (live_in): Likewise.
+	* ra-rewrite.c (rewrite_program2): Likewise.
+	* ra.c (reg_alloc): Likewise.
+	* reg-stack.c (reg_to_stack): Likewise.
+	(convert_regs_entry): Likewise.
+	(compensate_edge): Likewise.
+	(convert_regs_1): Likewise,
+	(convert_regs_2): Likewise.
+	(convert_regs): Likewise.
+	* regrename.c (copyprop_hardreg_forward): Likewise.
+	* reload1.c (fixup_abnormal_edges): Likewise.
+	* sbitmap.c (sbitmap_intersection_of_succs): Likewise.
+	(sbitmap_insersection_of_preds): Likewise.
+	(sbitmap_union_of_succs): Likewise.
+	(sbitmap_union_of_preds): Likewise.
+	* sched-ebb.c (compute_jump_reg_dependencies): Likewise.
+	(fix_basic_block_boundaries): Likewise.
+	(sched_ebbs): Likewise.
+	* sched-rgn.c (build_control_flow): Likewise.
+	(find_rgns): Likewise.
+	* tracer.c (find_best_successor): Likewise.
+	(find_best_predecessor): Likewise.
+	(tail_duplicate): Likewise.
+	* tree-cfg.c (make_edges): Likewise.
+	(make_ctrl_stmt_edges): Likewise.
+	(make_goto_expr_edges): Likewise.
+	(tree_can_merge_blocks_p): Likewise.
+	(tree_merge_blocks): Likewise.
+	(cfg_remove_useless_stmts_bb): Likewise.
+	(remove_phi_nodes_and_edges_for_unreachable_block): Likewise.
+	(tree_block_forwards_to): Likewise.
+	(cleanup_control_expr_graph): Likewise.
+	(find_taken_edge): Likewise.
+	(dump_cfg_stats): Likewise.
+	(tree_cfg2vcg): Likewise.
+	(disband_implicit_edges): Likewise.
+	(tree_find_edge_insert_loc): Likewise.
+	(bsi_commit_edge_inserts): Likewise.
+	(tree_split_edge): Likewise.
+	(tree_verify_flow_info): Likewise.
+	(tree_make_forwarder_block): Likewise.
+	(tree_forwarder_block_p): Likewise.
+	(thread_jumps): Likewise.
+	(tree_try_redirect_by_replacing_jump): Likewise.
+	(tree_split_block): Likewise.
+	(add_phi_args_after_copy_bb): Likewise.
+	(rewrite_to_new_ssa_names_bb): Likewise.
+	(dump_function_to_file): Likewise.
+	(print_pred_bbs): Likewise.
+	(print_loop): Likewise.
+	(tree_flow_call_edges_add): Likewise.
+	(split_critical_edges): Likewise.
+	(execute_warn_function_return): Likewise.
+	(extract_true_false_edges_from_block): Likewise.
+	* tree-if-conv.c (tree_if_conversion): Likewise.
+	(if_convertable_bb_p): Likewise.
+	(find_phi_replacement_condition): Likewise.
+	(combine_blocks): Likewise.
+	* tree-into-ssa.c (compute_global_livein): Likewise.
+	(ssa_mark_phi_uses): Likewise.
+	(ssa_rewrite_initialize_block): Likewise.
+	(rewrite_add_phi_arguments): Likewise.
+	(ssa_rewrite_phi_arguments): Likewise.
+	(insert_phi_nodes_for): Likewise.
+	(rewrite_into_ssa): Likewise.
+	(rewrite_ssa_into_ssa): Likewise.
+	* tree-mudflap.c (mf_build_check_statement_for): Likewise.
+	* tree-outof-ssa.c (coalesce_abnormal_edges): Likewise.
+	(rewrite_trees): Likewise.
+	* tree-pretty-print.c (dump_bb_header): Likewise.
+	(dump_implicit_edges): Likewise.
+	* tree-sra.c (insert_edge_copies): Likewise.
+	(find_obviously_necessary_stmts): Likewise.
+	(remove_data_stmt): Likewise.
+	* tree-ssa-dom.c (thread_across_edge): Likewise.
+	(dom_opt_finalize_block): Likewise.
+	(single_incoming_edge_ignoring_loop_edges): Likewise.
+	(record_equivalences_from_incoming_edges): Likewise.
+	(cprop_into_successor_phis): Likewise.
+	* tree-ssa-live.c (live_worklist): Likewise.
+	(calculate_live_on_entry): Likewise.
+	(calculate_live_on_exit): Likewise.
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Likewise.
+	(copy_loop_headers): Likewise.
+	* tree-ssa-loop-im.c (loop_commit_inserts): Likewise.
+	(fill_always_executed_in): Likewise.
+	* tree-ssa-loop-ivcanon.c (create_canonical_iv): Likewise.
+	* tree-ssa-loop-ivopts.c (find_interesting_uses): Likewise.
+	(compute_phi_arg_on_exit): Likewise.
+	* tree-ssa-loop-manip.c (add_exit_phis_edge): Likewise.
+	(get_loops_exit): Likewise.
+	(split_loop_exit_edge): Likewise.
+	(ip_normal_pos): Likewise.
+	* tree-ssa-loop-niter.c (simplify_using_initial_conditions):
+	Likewise.
+	* tree-ssa-phiopt.c (candidate_bb_for_phi_optimization): Likewise.
+	(replace_phi_with_stmt): Likewise.
+	(value_replacement): Likewise.
+	* tree-ssa-pre.c (compute_antic_aux): Likewise.
+	(insert_aux): Likewise.
+	(init_pre): Likewise.
+	* tree-ssa-propagate.c (simulate_stmt): Likewise.
+	(simulate_block): Likewise.
+	(ssa_prop_init): Likewise.
+	* tree-ssa-threadupdate.c (thread_block): Likewise.	
+	(create_block_for_threading): Likewise.
+	(remove_last_stmt_and_useless_edges): Likewise.
+	* tree-ssa.c (verify_phi_args): Likewise.
+	(verify_ssa): Likewise.
+	* tree_tailcall.c (independent_of_stmt_p): Likewise.
+	(find_tail_calls): Likewise.
+	(eliminate_tail_call): Likewise.
+	(tree_optimize_tail_calls_1): Likewise.
+	* tree-vectorizer.c (vect_transform_loop): Likewise.
+	* var-tracking.c (prologue_stack_adjust): Likewise.
+	(vt_stack_adjustments): Likewise.
+	(vt_find_locations): Likewise.
+	* config/frv/frv.c (frv_ifcvt_modify_tests): Likewise.
+	* config/i386/i386.c (ix86_pad_returns): Likewise.
+	* config/ia64/ia64.c (ia64_expand_prologue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+
 2004-09-28  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR target/16532

@@ -968,11 +968,12 @@ static bool
 bb_has_well_behaved_predecessors (basic_block bb)
 {
   edge pred;
+  edge_iterator ei;
 
-  if (! bb->pred)
+  if (EDGE_COUNT (bb->preds) == 0)
     return false;
 
-  for (pred = bb->pred; pred != NULL; pred = pred->pred_next)
+  FOR_EACH_EDGE (pred, ei, bb->preds)
     {
       if ((pred->flags & EDGE_ABNORMAL) && EDGE_CRITICAL_P (pred))
 	return false;
@@ -1023,6 +1024,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
   int npred_ok = 0;
   gcov_type ok_count = 0; /* Redundant load execution count.  */
   gcov_type critical_count = 0; /* Execution count of critical edges.  */
+  edge_iterator ei;
 
   /* The execution count of the loads to be added to make the
      load fully redundant.  */
@@ -1038,7 +1040,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx insn,
     return;
 
   /* Check potential for replacing load with copy for predecessors.  */
-  for (pred = bb->pred; pred; pred = pred->pred_next)
+  FOR_EACH_EDGE (pred, ei, bb->preds)
     {
       rtx next_pred_bb_end;
 

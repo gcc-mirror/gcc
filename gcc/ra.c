@@ -682,7 +682,9 @@ reg_alloc (void)
   if (last)
     {
       edge e;
-      for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+      edge_iterator ei;
+
+      FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
 	{
 	  basic_block bb = e->src;
 	  last = BB_END (bb);

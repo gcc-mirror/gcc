@@ -6715,7 +6715,7 @@ frv_ifcvt_modify_tests (ce_if_block_t *ce_info, rtx *p_true, rtx *p_false)
       while (multiple_test_bb != test_bb)
 	{
 	  bb[num_bb++] = multiple_test_bb;
-	  multiple_test_bb = multiple_test_bb->pred->src;
+	  multiple_test_bb = EDGE_PRED (multiple_test_bb, 0)->src;
 	}
     }
 

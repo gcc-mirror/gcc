@@ -102,6 +102,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
   edge e;
   basic_block *worklist, *qin, *qout, *qend;
   unsigned int qlen;
+  edge_iterator ei;
 
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
@@ -126,7 +127,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 
   /* Mark blocks which are predecessors of the exit block so that we
      can easily identify them below.  */
-  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     e->src->aux = EXIT_BLOCK_PTR;
 
   /* Iterate until the worklist is empty.  */
@@ -157,7 +158,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
 	/* If the in state of this block changed, then we need
 	   to add the predecessors of this block to the worklist
 	   if they are not already on the worklist.  */
-	for (e = bb->pred; e; e = e->pred_next)
+	FOR_EACH_EDGE (e, ei, bb->preds)
 	  if (!e->src->aux && e->src != ENTRY_BLOCK_PTR)
 	    {
 	      *qin++ = e->src;
@@ -251,6 +252,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
   edge e;
   basic_block *worklist, *qin, *qout, *qend, bb;
   unsigned int qlen;
+  edge_iterator ei;
 
   num_edges = NUM_EDGES (edge_list);
 
@@ -280,7 +282,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      do not want to be overly optimistic.  Consider an outgoing edge from
      the entry block.  That edge should always have a LATER value the
      same as EARLIEST for that edge.  */
-  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     sbitmap_copy (later[(size_t) e->aux], earliest[(size_t) e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit from
@@ -310,12 +312,12 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
 
       /* Compute the intersection of LATERIN for each incoming edge to B.  */
       sbitmap_ones (laterin[bb->index]);
-      for (e = bb->pred; e != NULL; e = e->pred_next)
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	sbitmap_a_and_b (laterin[bb->index], laterin[bb->index],
 			 later[(size_t)e->aux]);
 
       /* Calculate LATER for all outgoing edges.  */
-      for (e = bb->succ; e != NULL; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	if (sbitmap_union_of_diff_cg (later[(size_t) e->aux],
 				      earliest[(size_t) e->aux],
 				      laterin[e->src->index],
@@ -336,7 +338,7 @@ compute_laterin (struct edge_list *edge_list, sbitmap *earliest,
      for the EXIT block.  We allocated an extra entry in the LATERIN array
      for just this purpose.  */
   sbitmap_ones (laterin[last_basic_block]);
-  for (e = EXIT_BLOCK_PTR->pred; e != NULL; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     sbitmap_a_and_b (laterin[last_basic_block],
 		     laterin[last_basic_block],
 		     later[(size_t) e->aux]);
@@ -478,6 +480,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
   edge e;
   basic_block *worklist, *qin, *qout, *qend, bb;
   unsigned int qlen;
+  edge_iterator ei;
 
   /* Allocate a worklist array/queue.  Entries are only added to the
      list if they were not already on the list.  So the size is
@@ -501,7 +504,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
 
   /* Mark blocks which are successors of the entry block so that we
      can easily identify them below.  */
-  for (e = ENTRY_BLOCK_PTR->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     e->dest->aux = ENTRY_BLOCK_PTR;
 
   /* Iterate until the worklist is empty.  */
@@ -534,7 +537,7 @@ compute_available (sbitmap *avloc, sbitmap *kill, sbitmap *avout,
 	/* If the out state of this block changed, then we need
 	   to add the successors of this block to the worklist
 	   if they are not already on the worklist.  */
-	for (e = bb->succ; e; e = e->succ_next)
+	FOR_EACH_EDGE (e, ei, bb->succs)
 	  if (!e->dest->aux && e->dest != EXIT_BLOCK_PTR)
 	    {
 	      *qin++ = e->dest;
@@ -604,6 +607,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
   int num_edges, i;
   edge e;
   basic_block *worklist, *tos, bb;
+  edge_iterator ei;
 
   num_edges = NUM_EDGES (edge_list);
 
@@ -624,7 +628,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
      do not want to be overly optimistic.  Consider an incoming edge to
      the exit block.  That edge should always have a NEARER value the
      same as FARTHEST for that edge.  */
-  for (e = EXIT_BLOCK_PTR->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
     sbitmap_copy (nearer[(size_t)e->aux], farthest[(size_t)e->aux]);
 
   /* Add all the blocks to the worklist.  This prevents an early exit
@@ -644,12 +648,12 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
 
       /* Compute the intersection of NEARER for each outgoing edge from B.  */
       sbitmap_ones (nearerout[bb->index]);
-      for (e = bb->succ; e != NULL; e = e->succ_next)
+      FOR_EACH_EDGE (e, ei, bb->succs)
 	sbitmap_a_and_b (nearerout[bb->index], nearerout[bb->index],
 			 nearer[(size_t) e->aux]);
 
       /* Calculate NEARER for all incoming edges.  */
-      for (e = bb->pred; e != NULL; e = e->pred_next)
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	if (sbitmap_union_of_diff_cg (nearer[(size_t) e->aux],
 				      farthest[(size_t) e->aux],
 				      nearerout[e->dest->index],
@@ -667,7 +671,7 @@ compute_nearerout (struct edge_list *edge_list, sbitmap *farthest,
      for the ENTRY block.  We allocated an extra entry in the NEAREROUT array
      for just this purpose.  */
   sbitmap_ones (nearerout[last_basic_block]);
-  for (e = ENTRY_BLOCK_PTR->succ; e != NULL; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, ENTRY_BLOCK_PTR->succs)
     sbitmap_a_and_b (nearerout[last_basic_block],
 		     nearerout[last_basic_block],
 		     nearer[(size_t) e->aux]);
@@ -912,8 +916,9 @@ static void
 make_preds_opaque (basic_block b, int j)
 {
   edge e;
+  edge_iterator ei;
 
-  for (e = b->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, b->preds)
     {
       basic_block pb = e->src;
 

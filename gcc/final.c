@@ -677,6 +677,7 @@ compute_alignments (void)
       rtx label = BB_HEAD (bb);
       int fallthru_frequency = 0, branch_frequency = 0, has_fallthru = 0;
       edge e;
+      edge_iterator ei;
 
       if (!LABEL_P (label)
 	  || probably_never_executed_bb_p (bb))
@@ -684,7 +685,7 @@ compute_alignments (void)
       max_log = LABEL_ALIGN (label);
       max_skip = LABEL_ALIGN_MAX_SKIP;
 
-      for (e = bb->pred; e; e = e->pred_next)
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  if (e->flags & EDGE_FALLTHRU)
 	    has_fallthru = 1, fallthru_frequency += EDGE_FREQUENCY (e);

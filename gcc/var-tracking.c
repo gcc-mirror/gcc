@@ -526,7 +526,7 @@ prologue_stack_adjust (void)
 static bool
 vt_stack_adjustments (void)
 {
-  edge *stack;
+  edge_iterator *stack;
   int sp;
 
   /* Initialize entry block.  */
@@ -534,22 +534,22 @@ vt_stack_adjustments (void)
   VTI (ENTRY_BLOCK_PTR)->out.stack_adjust = frame_stack_adjust;
 
   /* Allocate stack for back-tracking up CFG.  */
-  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge));
+  stack = xmalloc ((n_basic_blocks + 1) * sizeof (edge_iterator));
   sp = 0;
 
   /* Push the first edge on to the stack.  */
-  stack[sp++] = ENTRY_BLOCK_PTR->succ;
+  stack[sp++] = ei_start (ENTRY_BLOCK_PTR->succs);
 
   while (sp)
     {
-      edge e;
+      edge_iterator ei;
       basic_block src;
       basic_block dest;
 
       /* Look at the edge on the top of the stack.  */
-      e = stack[sp - 1];
-      src = e->src;
-      dest = e->dest;
+      ei = stack[sp - 1];
+      src = ei_edge (ei)->src;
+      dest = ei_edge (ei)->dest;
 
       /* Check if the edge destination has been visited yet.  */
       if (!VTI (dest)->visited)
@@ -558,10 +558,10 @@ vt_stack_adjustments (void)
 	  VTI (dest)->in.stack_adjust = VTI (src)->out.stack_adjust;
 	  bb_stack_adjust_offset (dest);
 
-	  if (dest->succ)
+	  if (EDGE_COUNT (dest->succs) > 0)
 	    /* Since the DEST node has been visited for the first
 	       time, check its successors.  */
-	    stack[sp++] = dest->succ;
+	    stack[sp++] = ei_start (dest->succs);
 	}
       else
 	{
@@ -572,9 +572,9 @@ vt_stack_adjustments (void)
 	      return false;
 	    }
 
-	  if (e->succ_next)
+	  if (! ei_one_before_end_p (ei))
 	    /* Go to the next edge.  */
-	    stack[sp - 1] = e->succ_next;
+	    ei_next (&stack[sp - 1]);
 	  else
 	    /* Return to previous level if there are no more edges.  */
 	    sp--;
@@ -1723,12 +1723,13 @@ vt_find_locations (void)
 	  if (!TEST_BIT (visited, bb->index))
 	    {
 	      bool changed;
+	      edge_iterator ei;
 
 	      SET_BIT (visited, bb->index);
 
 	      /* Calculate the IN set as union of predecessor OUT sets.  */
 	      dataflow_set_clear (&VTI (bb)->in);
-	      for (e = bb->pred; e; e = e->pred_next)
+	      FOR_EACH_EDGE (e, ei, bb->preds)
 		{
 		  dataflow_set_union (&VTI (bb)->in, &VTI (e->src)->out);
 		}
@@ -1736,7 +1737,7 @@ vt_find_locations (void)
 	      changed = compute_bb_dataflow (bb);
 	      if (changed)
 		{
-		  for (e = bb->succ; e; e = e->succ_next)
+		  FOR_EACH_EDGE (e, ei, bb->succs)
 		    {
 		      if (e->dest == EXIT_BLOCK_PTR)
 			continue;

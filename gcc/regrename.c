@@ -1750,14 +1750,13 @@ copyprop_hardreg_forward (void)
 	 processed, begin with the value data that was live at
 	 the end of the predecessor block.  */
       /* ??? Ought to use more intelligent queuing of blocks.  */
-      if (bb->pred)
-	for (bbp = bb; bbp && bbp != bb->pred->src; bbp = bbp->prev_bb);
-      if (bb->pred
-	  && ! bb->pred->pred_next
-	  && ! (bb->pred->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
-	  && bb->pred->src != ENTRY_BLOCK_PTR
+      if (EDGE_COUNT (bb->preds) > 0)
+	for (bbp = bb; bbp && bbp != EDGE_PRED (bb, 0)->src; bbp = bbp->prev_bb);
+      if (EDGE_COUNT (bb->preds) == 1
+	  && ! (EDGE_PRED (bb, 0)->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
+	  && EDGE_PRED (bb, 0)->src != ENTRY_BLOCK_PTR
 	  && bbp)
-	all_vd[bb->index] = all_vd[bb->pred->src->index];
+	all_vd[bb->index] = all_vd[EDGE_PRED (bb, 0)->src->index];
       else
 	init_value_data (all_vd + bb->index);
 

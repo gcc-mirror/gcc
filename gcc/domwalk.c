@@ -201,7 +201,7 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
     {
       /* The destination block may have become unreachable, in
 	 which case there's no point in optimizing it.  */
-      if (dest->pred)
+      if (EDGE_COUNT (dest->preds) > 0)
 	walk_dominator_tree (walk_data, dest);
     }
 

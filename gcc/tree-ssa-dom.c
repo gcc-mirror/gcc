@@ -591,6 +591,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
     {
       tree cond, cached_lhs;
       edge e1;
+      edge_iterator ei;
 
       /* Do not forward entry edges into the loop.  In the case loop
 	 has multiple entry edges we may end up in constructing irreducible
@@ -599,7 +600,7 @@ thread_across_edge (struct dom_walk_data *walk_data, edge e)
 	 edges forward to the same destination block.  */
       if (!e->flags & EDGE_DFS_BACK)
 	{
-	  for (e1 = e->dest->pred; e; e = e->pred_next)
+	  FOR_EACH_EDGE (e1, ei, e->dest->preds)
 	    if (e1->flags & EDGE_DFS_BACK)
 	      break;
 	  if (e1)
@@ -879,24 +880,21 @@ dom_opt_finalize_block (struct dom_walk_data *walk_data, basic_block bb)
      the edge from BB through its successor.
 
      Do this before we remove entries from our equivalence tables.  */
-  if (bb->succ
-      && ! bb->succ->succ_next
-      && (bb->succ->flags & EDGE_ABNORMAL) == 0
-      && (get_immediate_dominator (CDI_DOMINATORS, bb->succ->dest) != bb
-	  || phi_nodes (bb->succ->dest)))
+  if (EDGE_COUNT (bb->succs) == 1
+      && (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL) == 0
+      && (get_immediate_dominator (CDI_DOMINATORS, EDGE_SUCC (bb, 0)->dest) != bb
+	  || phi_nodes (EDGE_SUCC (bb, 0)->dest)))
 	
     {
-      thread_across_edge (walk_data, bb->succ);
+      thread_across_edge (walk_data, EDGE_SUCC (bb, 0));
     }
   else if ((last = last_stmt (bb))
 	   && TREE_CODE (last) == COND_EXPR
 	   && (COMPARISON_CLASS_P (COND_EXPR_COND (last))
 	       || TREE_CODE (COND_EXPR_COND (last)) == SSA_NAME)
-	   && bb->succ
-	   && (bb->succ->flags & EDGE_ABNORMAL) == 0
-	   && bb->succ->succ_next
-	   && (bb->succ->succ_next->flags & EDGE_ABNORMAL) == 0
-	   && ! bb->succ->succ_next->succ_next)
+	   && EDGE_COUNT (bb->succs) == 2
+	   && (EDGE_SUCC (bb, 0)->flags & EDGE_ABNORMAL) == 0
+	   && (EDGE_SUCC (bb, 1)->flags & EDGE_ABNORMAL) == 0)
     {
       edge true_edge, false_edge;
       tree cond, inverted = NULL;
@@ -1111,8 +1109,9 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
 {
   edge retval = NULL;
   edge e;
+  edge_iterator ei;
 
-  for (e = bb->pred; e; e = e->pred_next)
+  FOR_EACH_EDGE (e, ei, bb->preds)
     {
       /* A loop back edge can be identified by the destination of
 	 the edge dominating the source of the edge.  */
@@ -1161,7 +1160,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data ATTRIBUT
   /* If we have a single predecessor (ignoring loop backedges), then extract
      EDGE_FLAGS from the single incoming edge.  Otherwise just return as
      there is nothing to do.  */
-  if (bb->pred
+  if (EDGE_COUNT (bb->preds) >= 1
       && parent_block_last_stmt)
     {
       edge e = single_incoming_edge_ignoring_loop_edges (bb);
@@ -1192,7 +1191,7 @@ record_equivalences_from_incoming_edge (struct dom_walk_data *walk_data ATTRIBUT
   /* Similarly when the parent block ended in a SWITCH_EXPR.
      We can only know the value of the switch's condition if the dominator
      parent is also the only predecessor of this block.  */
-  else if (bb->pred->src == parent
+  else if (EDGE_PRED (bb, 0)->src == parent
 	   && TREE_CODE (parent_block_last_stmt) == SWITCH_EXPR)
     {
       tree switch_cond = SWITCH_COND (parent_block_last_stmt);
@@ -2185,10 +2184,11 @@ static void
 cprop_into_successor_phis (basic_block bb, bitmap nonzero_vars)
 {
   edge e;
+  edge_iterator ei;
 
   /* This can get rather expensive if the implementation is naive in
      how it finds the phi alternative associated with a particular edge.  */
-  for (e = bb->succ; e; e = e->succ_next)
+  FOR_EACH_EDGE (e, ei, bb->succs)
     {
       tree phi;
       int phi_num_args;

@@ -185,39 +185,35 @@ candidate_bb_for_phi_optimization (basic_block bb,
 
   /* One of the alternatives must come from a block ending with
      a COND_EXPR.  */
-  last0 = last_stmt (bb->pred->src);
-  last1 = last_stmt (bb->pred->pred_next->src);
+  last0 = last_stmt (EDGE_PRED (bb, 0)->src);
+  last1 = last_stmt (EDGE_PRED (bb, 1)->src);
   if (last0 && TREE_CODE (last0) == COND_EXPR)
     {
-      cond_block = bb->pred->src;
-      other_block = bb->pred->pred_next->src;
+      cond_block = EDGE_PRED (bb, 0)->src;
+      other_block = EDGE_PRED (bb, 1)->src;
     }
   else if (last1 && TREE_CODE (last1) == COND_EXPR)
     {
-      other_block = bb->pred->src;
-      cond_block = bb->pred->pred_next->src;
+      other_block = EDGE_PRED (bb, 0)->src;
+      cond_block = EDGE_PRED (bb, 1)->src;
     }
   else
     return false;
   
   /* COND_BLOCK must have precisely two successors.  We indirectly
      verify that those successors are BB and OTHER_BLOCK.  */
-  if (!cond_block->succ
-      || !cond_block->succ->succ_next
-      || cond_block->succ->succ_next->succ_next
-      || (cond_block->succ->flags & EDGE_ABNORMAL) != 0
-      || (cond_block->succ->succ_next->flags & EDGE_ABNORMAL) != 0)
+  if (EDGE_COUNT (cond_block->succs) != 2
+      || (EDGE_SUCC (cond_block, 0)->flags & EDGE_ABNORMAL) != 0
+      || (EDGE_SUCC (cond_block, 1)->flags & EDGE_ABNORMAL) != 0)
     return false;
   
   /* OTHER_BLOCK must have a single predecessor which is COND_BLOCK,
      OTHER_BLOCK must have a single successor which is BB and
      OTHER_BLOCK must have no PHI nodes.  */
-  if (!other_block->pred
-      || other_block->pred->src != cond_block
-      || other_block->pred->pred_next
-      || !other_block->succ
-      || other_block->succ->dest != bb
-      || other_block->succ->succ_next
+  if (EDGE_COUNT (other_block->preds) != 1
+      || EDGE_PRED (other_block, 0)->src != cond_block
+      || EDGE_COUNT (other_block->succs) != 1
+      || EDGE_SUCC (other_block, 0)->dest != bb
       || phi_nodes (other_block))
     return false;
   
@@ -252,20 +248,20 @@ replace_phi_with_stmt (block_stmt_iterator bsi, basic_block bb,
   bb_ann (bb)->phi_nodes = NULL;
   
   /* Remove the empty basic block.  */
-  if (cond_block->succ->dest == bb)
+  if (EDGE_SUCC (cond_block, 0)->dest == bb)
     {
-      cond_block->succ->flags |= EDGE_FALLTHRU;
-      cond_block->succ->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      EDGE_SUCC (cond_block, 0)->flags |= EDGE_FALLTHRU;
+      EDGE_SUCC (cond_block, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 
-      block_to_remove = cond_block->succ->succ_next->dest;
+      block_to_remove = EDGE_SUCC (cond_block, 1)->dest;
     }
   else
     {
-      cond_block->succ->succ_next->flags |= EDGE_FALLTHRU;
-      cond_block->succ->succ_next->flags
+      EDGE_SUCC (cond_block, 1)->flags |= EDGE_FALLTHRU;
+      EDGE_SUCC (cond_block, 1)->flags
 	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 
-      block_to_remove = cond_block->succ->dest;
+      block_to_remove = EDGE_SUCC (cond_block, 0)->dest;
     }
   delete_basic_block (block_to_remove);
   
@@ -477,7 +473,7 @@ value_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 	 edge from OTHER_BLOCK which reaches BB and represents the desired
 	 path from COND_BLOCK.  */
       if (e->dest == other_block)
-	e = e->dest->succ;
+	e = EDGE_SUCC (e->dest, 0);
 
       /* Now we know the incoming edge to BB that has the argument for the
 	 RHS of our new assignment statement.  */
