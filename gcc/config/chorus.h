@@ -26,7 +26,7 @@ Boston, MA 02111-1307, USA.  */
 #define PREFERRED_DEBUGGING_TYPE DWARF2_DEBUG
 
 #undef TARGET_VERSION
-#define TARGET_VERSION fprintf (stderr, " (Ultrasparc IIi Sun Chorus OS Embedded)");
+#define TARGET_VERSION fprintf (stderr, " (Sun Chorus OS Embedded)");
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "unsigned int"
@@ -39,5 +39,4 @@ Boston, MA 02111-1307, USA.  */
 #define WCHAR_TYPE "int"
 
 #undef LINK_SPEC
-#define LINK_SPEC "-r"
-
+#define LINK_SPEC ""
