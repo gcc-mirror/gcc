@@ -3210,7 +3210,9 @@ arm_rtx_costs_1 (rtx x, enum rtx_code code, enum rtx_code outer)
 
     case DIV:
     case MOD:
-      return 100;
+    case UDIV:
+    case UMOD:
+      return optimize_size ? COSTS_N_INSNS (2) : 100;
 
     case ROTATE:
       if (mode == SImode && GET_CODE (XEXP (x, 1)) == REG)
