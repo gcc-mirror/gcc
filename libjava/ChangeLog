@@ -1,3 +1,7 @@
+2003-11-21  Mark Wielaard  <mark@klomp.org>
+
+	* java/lang/Float.java (static): Removed.
+
 2003-11-18  Graydon Hoare  <graydon@redhat.com>
 
 	* java/awt/font/TextLayout.java: Implement simple layouts
