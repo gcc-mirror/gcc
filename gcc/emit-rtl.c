@@ -2944,6 +2944,11 @@ init_emit_once (line_numbers)
       for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
 	   mode = GET_MODE_WIDER_MODE (mode))
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
+
+      for (mode = GET_CLASS_NARROWEST_MODE (MODE_PARTIAL_INT);
+	   mode != VOIDmode;
+	   mode = GET_MODE_WIDER_MODE (mode))
+	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
     }
 
   for (mode = GET_CLASS_NARROWEST_MODE (MODE_CC); mode != VOIDmode;
