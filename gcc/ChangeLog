@@ -1,3 +1,8 @@
+2001-08-26  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config/mips/mips.c (mips_function_value): Handle complex return
+        values.
+
 2001-08-25  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* reload1.c (reload): Make all entries in reg_equiv_memory_loc

@@ -7782,13 +7782,39 @@ mips_function_value (valtype, func)
      just as PROMOTE_MODE does.  */
   mode = promote_mode (valtype, mode, &unsignedp, 1);
 
-  /* ??? How should we return complex float?  */
-  if (mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT)
+  if (mclass == MODE_FLOAT)
     {
       if (TARGET_SINGLE_FLOAT
 	  && (mclass == MODE_FLOAT
 	      ? GET_MODE_SIZE (mode) > 4 : GET_MODE_SIZE (mode) / 2 > 4))
 	reg = GP_RETURN;
+      else
+	reg = FP_RETURN;
+    }
+
+  else if (mclass == MODE_COMPLEX_FLOAT)
+    {
+      if (TARGET_FLOAT64)
+	reg = FP_RETURN;
+      else if (mode == SCmode)
+	{
+	  /* When FP registers are 32 bits, we can't directly reference
+	     the odd numbered ones, so let's make a pair of evens.  */
+
+	  enum machine_mode cmode = TYPE_MODE (TREE_TYPE (valtype));
+
+	  return gen_rtx_PARALLEL
+	    (VOIDmode,
+	     gen_rtvec (2,
+			gen_rtx_EXPR_LIST (VOIDmode,
+					   gen_rtx_REG (cmode,
+							FP_RETURN),
+					   GEN_INT (0)),
+			gen_rtx_EXPR_LIST (VOIDmode,
+					   gen_rtx_REG (cmode,
+							FP_RETURN + 2),
+					   GEN_INT (4))));
+	}
       else
 	reg = FP_RETURN;
     }
