@@ -1,3 +1,9 @@
+2003-10-25  Richard Henderson  <rth@redhat.com>
+
+        * config/i386/i386.c (ix86_eax_live_at_start_p): New.
+        (ix86_expand_prologue): Save and restore eax around stack probe
+        if it's live.
+
 2003-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* cppcharset.c (one_utf8_to_utf32): Initialize 's' to silence warning.
