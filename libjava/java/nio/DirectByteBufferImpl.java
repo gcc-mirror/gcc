@@ -42,9 +42,14 @@ import gnu.gcj.RawData;
 
 public class DirectByteBufferImpl extends ByteBuffer
 {
-  private RawData address;
+  RawData address;
   private int offset;
   private boolean readOnly;
+
+  public DirectByteBufferImpl (RawData address, long len)
+  {
+    this (address, 0, (int) len, (int) len, 0, -1, false);
+  }
   
   public DirectByteBufferImpl (RawData address, int offset, int capacity,
                                int limit, int position, int mark,

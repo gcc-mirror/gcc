@@ -13,33 +13,33 @@ details.  */
 #include <gcj/cni.h>
 #include <jvm.h>
 
+#include <stdlib.h>
+
 #include <gnu/gcj/RawData.h>
 #include <java/nio/DirectByteBufferImpl.h>
 
 gnu::gcj::RawData*
-java::nio::DirectByteBufferImpl::allocateImpl (jint /*capacity*/)
+java::nio::DirectByteBufferImpl::allocateImpl (jint capacity)
 {
-  // FIXME: implement this
-  return 0;
+  return reinterpret_cast<gnu::gcj::RawData*> (::malloc (capacity));
 }
 
 void
-java::nio::DirectByteBufferImpl::freeImpl (gnu::gcj::RawData* /*address*/)
+java::nio::DirectByteBufferImpl::freeImpl (gnu::gcj::RawData* address)
 {
-  // FIXME: implement this
+  ::free (reinterpret_cast<void*> (address));
 }
 
 jbyte
-java::nio::DirectByteBufferImpl::getImpl (jint /*index*/)
+java::nio::DirectByteBufferImpl::getImpl (jint index)
 {
-  // FIXME: implement this
-  // Dont forget: add offset to index
-  return 0;
+  jbyte* pointer = reinterpret_cast<jbyte*> (address) + offset + index;
+  return *pointer;
 }
 
 void
-java::nio::DirectByteBufferImpl::putImpl (jint /*index*/, jbyte /*value*/)
+java::nio::DirectByteBufferImpl::putImpl (jint index, jbyte value)
 {
-  // FIXME: implement this
-  // Dont forget: add offset to index
+  jbyte* pointer = reinterpret_cast<jbyte*> (address) + offset + index;
+  *pointer = value;
 }

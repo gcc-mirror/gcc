@@ -35,11 +35,13 @@ details.  */
 #include <java/lang/reflect/Method.h>
 #include <java/lang/reflect/Modifier.h>
 #include <java/lang/OutOfMemoryError.h>
-#include <java/util/IdentityHashMap.h>
 #include <java/lang/Integer.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/Thread.h>
 #include <java/lang/IllegalAccessError.h>
+#include <java/nio/DirectByteBufferImpl.h>
+#include <java/util/IdentityHashMap.h>
+#include <gnu/gcj/RawData.h>
 
 #include <gcj/method.h>
 #include <gcj/field.h>
@@ -1720,24 +1722,28 @@ void
 // Direct byte buffers.
 
 static jobject
-(JNICALL _Jv_JNI_NewDirectByteBuffer) (JNIEnv *, void *, jlong)
+(JNICALL _Jv_JNI_NewDirectByteBuffer) (JNIEnv *, void *address, jlong length)
 {
-  // For now we don't support this.
-  return NULL;
+  using namespace gnu::gcj;
+  using namespace java::nio;
+  return new DirectByteBufferImpl (reinterpret_cast<RawData *> (address),
+				   length);
 }
 
 static void *
-(JNICALL _Jv_JNI_GetDirectBufferAddress) (JNIEnv *, jobject)
+(JNICALL _Jv_JNI_GetDirectBufferAddress) (JNIEnv *, jobject buffer)
 {
-  // For now we don't support this.
-  return NULL;
+  using namespace java::nio;
+  DirectByteBufferImpl* bb = static_cast<DirectByteBufferImpl *> (buffer);
+  return reinterpret_cast<void *> (bb->address);
 }
 
 static jlong
-(JNICALL _Jv_JNI_GetDirectBufferCapacity) (JNIEnv *, jobject)
+(JNICALL _Jv_JNI_GetDirectBufferCapacity) (JNIEnv *, jobject buffer)
 {
-  // For now we don't support this.
-  return -1;
+  using namespace java::nio;
+  DirectByteBufferImpl* bb = static_cast<DirectByteBufferImpl *> (buffer);
+  return bb->capacity();
 }
 
 
