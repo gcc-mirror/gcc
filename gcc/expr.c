@@ -5506,13 +5506,12 @@ expand_increment (exp, post)
 
   /* Compute the operands as RTX.
      Note whether OP0 is the actual lvalue or a copy of it:
-     I believe it is a copy iff it is a register and insns were
-     generated in computing it or if it is a SUBREG (generated when
-     the low-order field in a register was referenced).  */
+     I believe it is a copy iff it is a register or subreg
+     and insns were generated in computing it.  */
   temp = get_last_insn ();
   op0 = expand_expr (incremented, 0, VOIDmode, 0);
-  op0_is_copy = (GET_CODE (op0) == SUBREG
-		 || (GET_CODE (op0) == REG && temp != get_last_insn ()));
+  op0_is_copy = ((GET_CODE (op0) == SUBREG || GET_CODE (op0) == REG)
+		 && temp != get_last_insn ());
   op1 = expand_expr (TREE_OPERAND (exp, 1), 0, VOIDmode, 0);
 
   /* Decide whether incrementing or decrementing.  */
