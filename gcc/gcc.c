@@ -265,7 +265,11 @@ char *xmalloc ();
 char *xrealloc ();
 
 #ifdef LANG_SPECIFIC_DRIVER
+#ifdef HAVE_VPRINTF
+extern void lang_specific_driver PROTO ((void (*) (char *, ...), int *, char ***, int *));
+#else
 extern void lang_specific_driver PROTO ((void (*) (), int *, char ***, int *));
+#endif
 #endif
 
 /* Specs are strings containing lines, each of which (if not blank)
