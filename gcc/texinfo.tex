@@ -1,5 +1,5 @@
 % texinfo.tex -- TeX macros to handle Texinfo files.
-% $Id: texinfo.tex,v 2.232 1998/05/01 21:31:56 karl Exp $
+% $Id: texinfo.tex,v 2.237 1998/05/12 21:41:08 karl Exp $
 %
 % Copyright (C) 1985, 86, 88, 90, 91, 92, 93, 94, 95, 96, 97, 98
 % Free Software Foundation, Inc.
@@ -27,7 +27,7 @@
 % reports; you can get the latest version from:
 % /home/gd/gnu/doc/texinfo.tex on the GNU machines.
 % ftp://ftp.gnu.org/pub/gnu/texinfo.tex
-% (and all GNU mirrors)
+% (and all GNU mirrors, see ftp://ftp.gnu.org/pub/gnu/README.mirrors)
 % ftp://tug.org/tex/texinfo.tex
 % ftp://ctan.org/macros/texinfo/texinfo.tex
 % (and all CTAN mirrors, finger ctan@tug.org for a list).
@@ -60,7 +60,7 @@
 
 % This automatically updates the version number based on RCS.
 \def\deftexinfoversion$#1: #2 ${\def\texinfoversion{#2}}
-\deftexinfoversion$Revision: 2.232 $
+\deftexinfoversion$Revision: 2.237 $
 \message{Loading texinfo package [Version \texinfoversion]:}
 
 % If in a .fmt file, print the version number
@@ -965,13 +965,24 @@ where each line of input produces a line of output.}
 \def\value{\begingroup
   \catcode`\-=12 \catcode`\_=12 % Allow - and _ in VAR.
   \valuexxx}
-\def\valuexxx#1{%
+\def\valuexxx#1{\expandablevalue{#1}\endgroup}
+
+% We have this subroutine so that we can handle at least some @value's
+% properly in indexes (we \let\value to this in \indexdummies).  Ones
+% whose names contain - or _ still won't work, but we can't do anything
+% about that.  The command has to be fully expandable, since the result
+% winds up in the index file.  This means that if the variable's value
+% contains other Texinfo commands, it's almost certain it will fail
+% (although perhaps we could fix that with sufficient work to do a
+% one-level expansion on the result, instead of complete).
+% 
+\def\expandablevalue#1{%
   \expandafter\ifx\csname SET#1\endcsname\relax
-    {\{No value for ``#1''\}}%
+    {[No value for ``#1'']v}%
   \else
     \csname SET#1\endcsname
   \fi
-\endgroup}
+}
 
 % @ifset VAR ... @end ifset reads the `...' iff VAR has been defined
 % with @set.
@@ -1898,7 +1909,7 @@ July\or August\or September\or October\or November\or December\fi
 \def\itemize{\parsearg\itemizezzz}
 
 \def\itemizezzz #1{%
-  \begingroup % ended by the @end itemsize
+  \begingroup % ended by the @end itemize
   \itemizey {#1}{\Eitemize}
 }
 
@@ -2369,7 +2380,6 @@ width0pt\relax} \fi
 \def\gtr{\realbackslash gtr}%
 \def\less{\realbackslash less}%
 \def\hat{\realbackslash hat}%
-%\def\char{\realbackslash char}%
 \def\TeX{\realbackslash TeX}%
 \def\dots{\realbackslash dots }%
 \def\result{\realbackslash result}%
@@ -2396,7 +2406,12 @@ width0pt\relax} \fi
 \def\kbd##1{\realbackslash kbd {##1}}%
 \def\dfn##1{\realbackslash dfn {##1}}%
 \def\emph##1{\realbackslash emph {##1}}%
-\def\value##1{\realbackslash value {##1}}%
+%
+% Handle some cases of @value -- where the variable name does not
+% contain - or _, and the value does not contain any
+% (non-fully-expandable) commands.
+\let\value = \expandablevalue
+%
 \unsepspaces
 }
 
@@ -2469,14 +2484,24 @@ width0pt\relax} \fi
 % so we do not become unable to do a definition.
 
 {\catcode`\@=0 \catcode`\\=\other
-@gdef@realbackslash{\}}
+ @gdef@realbackslash{\}}
 
 \let\indexbackslash=0  %overridden during \printindex.
+\let\SETmarginindex=\relax % put index entries in margin (undocumented)?
 
-\let\SETmarginindex=\relax %initialize!
-% workhorse for all \fooindexes
-% #1 is name of index, #2 is stuff to put there
-\def\doind #1#2{%
+% For \ifx comparisons.
+\def\emptymacro{\empty}
+
+% Most index entries go through here, but \dosubind is the general case.
+% 
+\def\doind#1#2{\dosubind{#1}{#2}\empty}
+
+% Workhorse for all \fooindexes.
+% #1 is name of index, #2 is stuff to put there, #3 is subentry --
+% \empty if called from \doind, as we usually are.  The main exception
+% is with defuns, which call us directly.
+% 
+\def\dosubind#1#2#3{%
   % Put the index entry in the margin if desired.
   \ifx\SETmarginindex\relax\else
     \insert\margin{\hbox{\vrule height8pt depth3pt width0pt #2}}%
@@ -2487,13 +2512,22 @@ width0pt\relax} \fi
       \indexdummies % Must do this here, since \bf, etc expand at this stage
       \escapechar=`\\
       {%
-        \let\folio=0% We will expand all macros now EXCEPT \folio.
+        \let\folio = 0% We will expand all macros now EXCEPT \folio.
         \def\rawbackslashxx{\indexbackslash}% \indexbackslash isn't defined now
         % so it will be output as is; and it will print as backslash.
         %
+        \def\thirdarg{#3}%
+        %
+        % If third arg is present, precede it with space in sort key.
+        \ifx\thirdarg\emptymacro
+          \let\subentry = \empty
+        \else
+          \def\subentry{ #3}%
+        \fi
+        %
         % First process the index-string with all font commands turned off
         % to get the string to sort by.
-        {\indexnofonts \xdef\indexsorttmp{#2}}%
+        {\indexnofonts \xdef\indexsorttmp{#2\subentry}}%
         %
         % Now produce the complete index entry, with both the sort key and the
         % original text, including any font commands.
@@ -2502,32 +2536,32 @@ width0pt\relax} \fi
           \write\csname#1indfile\endcsname{%
             \realbackslash entry{\indexsorttmp}{\folio}{\the\toks0}}%
         }%
+        %
+        % If third (subentry) arg is present, add it to the index string.
+        \ifx\thirdarg\emptymacro \else
+          \toks0 = {#3}%
+          \edef\temp{\temp{\the\toks0}}%
+        \fi
+        %
+        % If a skip is the last thing on the list now, preserve it
+        % by backing up by \lastskip, doing the \write, then inserting
+        % the skip again.  Otherwise, the whatsit generated by the
+        % \write will make \lastskip zero.  The result is that sequences
+        % like this:
+        % @end defun
+        % @tindex whatever
+        % @defun ...
+        % will have extra space inserted, because the \medbreak in the
+        % start of the @defun won't see the skip inserted by the @end of
+        % the previous defun.
+        \skip0 = \lastskip \ifdim\lastskip = 0pt \else \vskip-\lastskip \fi
         \temp
+        \ifdim\skip0 = 0pt \else \vskip\skip0 \fi
       }%
     }%
     \penalty\count255
   }%
 }
-
-\def\dosubind #1#2#3{%
-{\count10=\lastpenalty %
-{\indexdummies % Must do this here, since \bf, etc expand at this stage
-\escapechar=`\\%
-{\let\folio=0%
-\def\rawbackslashxx{\indexbackslash}%
-%
-% Now process the index-string once, with all font commands turned off,
-% to get the string to sort the index by.
-{\indexnofonts
-\xdef\temp1{#2 #3}%
-}%
-% Now produce the complete index entry.  We process the index-string again,
-% this time with font commands expanded, to get what to print in the index.
-\edef\temp{%
-\write \csname#1indfile\endcsname{%
-\realbackslash entry {\temp1}{\folio}{#2}{#3}}}%
-\temp }%
-}\penalty\count10}}
 
 % The index entry written in the file actually looks like
 %  \entry {sortstring}{page}{topic}
@@ -3944,13 +3978,18 @@ width0pt\relax} \fi
 \begingroup\obeylines\activeparens\spacesplit{#3{#4}}}
 
 % @deftypemethod has an extra argument that nothing else does.  Sigh.
+% #1 is the \E... control sequence to end the definition (which we define).
+% #2 is the \...x control sequence for consecutive fns (which we define).
+% #3 is the control sequence to call to resume processing.
+% #4, delimited by the space, is the class name.
+% #5 is the method's return type.
 % 
 \def\deftypemethparsebody#1#2#3#4 #5 {\begingroup\inENV %
 \medbreak %
 % Define the end token that this defining construct specifies
 % so that it will exit this group.
 \def#1{\endgraf\endgroup\medbreak}%
-\def#2##1 {\begingroup\obeylines\activeparens\spacesplit{#3{##1}}}%
+\def#2##1 ##2 {\begingroup\obeylines\activeparens\spacesplit{#3{##1}{##2}}}%
 \parindent=0in
 \advance\leftskip by \defbodyindent \advance \rightskip by \defbodyindent
 \exdentamount=\defbodyindent
@@ -4173,7 +4212,7 @@ width0pt\relax} \fi
 \def\defspecx #1 {\errmessage{@defspecx in invalid context}}
 \def\deftypefnx #1 {\errmessage{@deftypefnx in invalid context}}
 \def\deftypemethodx #1 {\errmessage{@deftypemethodx in invalid context}}
-\def\deftypeunx #1 {\errmessage{@deftypeunx in invalid context}}
+\def\deftypefunx #1 {\errmessage{@deftypefunx in invalid context}}
 
 % @defmethod, and so on
 
@@ -4329,7 +4368,7 @@ width0pt\relax} \fi
 \def\deftpx #1 {\errmessage{@deftpx in invalid context}}
 
 
-\message{cross reference,}
+\message{cross references,}
 \newwrite\auxfile
 
 \newif\ifhavexrefs    % True if xref values are known.
@@ -4724,7 +4763,9 @@ width0pt\relax} \fi
 \openin 1 = epsf.tex
 \ifeof 1 \else
   \closein 1
-  \def\epsfannounce{\toks0 = }% do not bother showing banner
+  % Do not bother showing banner with post-v2.7 epsf.tex (available in
+  % doc/epsf.tex until it shows up on ctan).
+  \def\epsfannounce{\toks0 = }%
   \input epsf.tex
 \fi
 %
