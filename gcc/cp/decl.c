@@ -13409,7 +13409,9 @@ store_parm_decls ()
 		  else
 		    cp_error ("parameter `%D' declared void", parm);
 
-		  cleanup = maybe_build_cleanup (parm);
+		  cleanup = (processing_template_decl 
+			     ? NULL_TREE
+			     : maybe_build_cleanup (parm));
 
 		  if (cleanup)
 		    cleanups = tree_cons (parm, cleanup, cleanups);
