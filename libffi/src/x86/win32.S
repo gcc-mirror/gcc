@@ -1,5 +1,8 @@
 /* -----------------------------------------------------------------------
-   win32.S - Copyright (c) 1996, 1998, 2001  Cygnus Solutions
+   win32.S - Copyright (c) 1996, 1998, 2001, 2002  Red Hat, Inc.
+	     Copyright (c) 2001  John Beniton
+	     Copyright (c) 2002  Ranjit Mathew
+			
  
    X86 Foreign Function Interface
  
@@ -52,7 +55,10 @@ _ffi_call_SYSV:
         # Return stack to previous state and call the function
         addl  $8,%esp
  
-        call  *28(%ebp)
+        # FIXME: Align the stack to a 128-bit boundary to avoid
+        # potential performance hits.
+
+	call  *28(%ebp)
  
         # Remove the space we pushed for the args
         movl  16(%ebp),%ecx
@@ -123,3 +129,98 @@ epilogue:
         ret
  
 .ffi_call_SYSV_end:
+
+        # This assumes we are using gas.
+        .balign 16
+.globl _ffi_call_STDCALL
+
+_ffi_call_STDCALL:
+        pushl %ebp
+        movl  %esp,%ebp
+
+        # Make room for all of the new args.
+        movl  16(%ebp),%ecx 
+        subl  %ecx,%esp
+
+        movl  %esp,%eax
+
+        # Place all of the ffi_prep_args in position
+        pushl 12(%ebp)
+        pushl %eax
+        call  *8(%ebp)
+
+        # Return stack to previous state and call the function
+        addl  $8,%esp
+
+        # FIXME: Align the stack to a 128-bit boundary to avoid
+        # potential performance hits.
+
+        call  *28(%ebp)
+
+        # stdcall functions pop arguments off the stack themselves
+
+        # Load %ecx with the return type code
+        movl  20(%ebp),%ecx
+
+        # If the return value pointer is NULL, assume no return value.
+        cmpl  $0,24(%ebp)
+        jne   sc_retint
+
+        # Even if there is no space for the return value, we are
+        # obliged to handle floating-point values.
+        cmpl  $FFI_TYPE_FLOAT,%ecx
+        jne   sc_noretval
+        fstp  %st(0)
+
+        jmp   sc_epilogue
+
+sc_retint:
+        cmpl  $FFI_TYPE_INT,%ecx
+        jne   sc_retfloat
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movl  %eax,0(%ecx)
+        jmp   sc_epilogue
+
+sc_retfloat:
+        cmpl  $FFI_TYPE_FLOAT,%ecx
+        jne   sc_retdouble
+         # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        fstps (%ecx)
+        jmp   sc_epilogue
+
+sc_retdouble:
+        cmpl  $FFI_TYPE_DOUBLE,%ecx
+        jne   sc_retlongdouble
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        fstpl (%ecx)
+        jmp   sc_epilogue
+
+sc_retlongdouble:
+        cmpl  $FFI_TYPE_LONGDOUBLE,%ecx
+        jne   sc_retint64
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        fstpt (%ecx)
+        jmp   sc_epilogue
+
+sc_retint64:
+        cmpl  $FFI_TYPE_SINT64,%ecx
+        jne   sc_retstruct
+        # Load %ecx with the pointer to storage for the return value
+        movl  24(%ebp),%ecx
+        movl  %eax,0(%ecx)
+        movl  %edx,4(%ecx)
+
+sc_retstruct:
+        # Nothing to do!
+
+sc_noretval:
+sc_epilogue:
+        movl %ebp,%esp
+        popl %ebp
+        ret
+
+.ffi_call_STDCALL_end:
