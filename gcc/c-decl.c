@@ -62,10 +62,6 @@ enum decl_context
 #define SIZE_TYPE "long unsigned int"
 #endif
 
-#ifndef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "long int"
-#endif
-
 #ifndef WCHAR_TYPE
 #define WCHAR_TYPE "int"
 #endif
