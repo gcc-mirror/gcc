@@ -62,8 +62,10 @@ typedef 	 int SItype	__attribute__ ((mode (SI)));
 typedef unsigned int USItype	__attribute__ ((mode (SI)));
 typedef		 int DItype	__attribute__ ((mode (DI)));
 typedef unsigned int UDItype	__attribute__ ((mode (DI)));
+
 typedef 	float SFtype	__attribute__ ((mode (SF)));
 typedef		float DFtype	__attribute__ ((mode (DF)));
+
 #if LONG_DOUBLE_TYPE_SIZE == 96
 typedef		float XFtype	__attribute__ ((mode (XF)));
 #endif
@@ -71,15 +73,7 @@ typedef		float XFtype	__attribute__ ((mode (XF)));
 typedef		float TFtype	__attribute__ ((mode (TF)));
 #endif
 
-#if BITS_PER_WORD==16
-typedef int word_type __attribute__ ((mode (HI)));
-#endif
-#if BITS_PER_WORD==32
-typedef int word_type __attribute__ ((mode (SI)));
-#endif
-#if BITS_PER_WORD==64
-typedef int word_type __attribute__ ((mode (DI)));
-#endif
+typedef int word_type __attribute__ ((mode (__word__)));
 
 /* Make sure that we don't accidentally use any normal C language built-in
    type names in the first part of this file.  Instead we want to use *only*
