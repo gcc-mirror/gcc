@@ -3644,6 +3644,11 @@ Normally the facilities of the machine's usual C compiler are used, but
 this can't be done directly in cross-compilation.  You must make your
 own arrangements to provide suitable library functions for
 cross-compilation.
+
+@item -mno-multm
+@kindex -mno-multm
+Do not generate multm or multmu instructions.  This is useful for some embedded
+systems which do not have trap handlers for these instructions.
 @end table
 
 @node ARM Options

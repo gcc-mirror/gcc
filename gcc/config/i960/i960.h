@@ -229,58 +229,98 @@ extern int target_flags;
    am not sure which are real and which aren't.  */
 
 #define TARGET_SWITCHES  \
-  { {"sa", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"sb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES| \
-			TARGET_FLAG_COMPLEX_ADDR)},\
-/*  {"sc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
-			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},*/ \
-    {"ka", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"kb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES| \
-			TARGET_FLAG_COMPLEX_ADDR)},\
-/*  {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
-			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},*/ \
-    {"ja", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"jd", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"jf", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES| \
-			TARGET_FLAG_COMPLEX_ADDR)},\
-    {"rp", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"mc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
-			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"ca", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
-			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR)},\
-/*  {"cb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_C_SERIES|\
-			TARGET_FLAG_BRANCH_PREDICT|TARGET_FLAG_CODE_ALIGN)},\
-    {"cc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|\
+  { {"sa", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
+       "Generate SA code"},						\
+    {"sb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES|			\
+			TARGET_FLAG_COMPLEX_ADDR),			\
+       "Generate SB code"},						\
+/*  {"sc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
+			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	\
+       "Generate SC code"}, */						\
+    {"ka", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
+       "Generate KA code"},						\
+    {"kb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES|			\
+			TARGET_FLAG_COMPLEX_ADDR),			\
+       "Generate KB code"},						\
+/*  {"kc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
+			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	\
+       "Generate KC code"}, */						\
+    {"ja", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
+       "Generate JA code"},						\
+    {"jd", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
+       "Generate JD code"},						\
+    {"jf", (TARGET_FLAG_NUMERICS|TARGET_FLAG_K_SERIES|			\
+			TARGET_FLAG_COMPLEX_ADDR),			\
+       "Generate JF code"},						\
+    {"rp", (TARGET_FLAG_K_SERIES|TARGET_FLAG_COMPLEX_ADDR),		\
+       "generate RP code"},						\
+    {"mc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
+			TARGET_FLAG_MC|TARGET_FLAG_COMPLEX_ADDR),	\
+       "Generate MC code"},						\
+    {"ca", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|		\
+			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR),\
+       "Generate CA code"},						\
+/*  {"cb", (TARGET_FLAG_NUMERICS|TARGET_FLAG_C_SERIES|			\
+			TARGET_FLAG_BRANCH_PREDICT|TARGET_FLAG_CODE_ALIGN),\
+       "Generate CB code"},						\
+    {"cc", (TARGET_FLAG_NUMERICS|TARGET_FLAG_PROTECTED|			\
 			TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
-			TARGET_FLAG_CODE_ALIGN)}, */	\
-    {"cf", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|\
-			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR)},\
-    {"numerics", (TARGET_FLAG_NUMERICS)},		\
-    {"soft-float", -(TARGET_FLAG_NUMERICS)},		\
-    {"leaf-procedures", TARGET_FLAG_LEAFPROC},		\
-    {"no-leaf-procedures",-(TARGET_FLAG_LEAFPROC)},	\
-    {"tail-call",TARGET_FLAG_TAILCALL},			\
-    {"no-tail-call",-(TARGET_FLAG_TAILCALL)},		\
-    {"complex-addr",TARGET_FLAG_COMPLEX_ADDR},		\
-    {"no-complex-addr",-(TARGET_FLAG_COMPLEX_ADDR)},	\
-    {"code-align",TARGET_FLAG_CODE_ALIGN},		\
-    {"no-code-align",-(TARGET_FLAG_CODE_ALIGN)},	\
-    {"clean-linkage", (TARGET_FLAG_CLEAN_LINKAGE)},	\
-    {"no-clean-linkage", -(TARGET_FLAG_CLEAN_LINKAGE)},	\
-    {"ic-compat", TARGET_FLAG_IC_COMPAT2_0},		\
-    {"ic2.0-compat", TARGET_FLAG_IC_COMPAT2_0},		\
-    {"ic3.0-compat", TARGET_FLAG_IC_COMPAT3_0},		\
-    {"asm-compat",TARGET_FLAG_ASM_COMPAT},		\
-    {"intel-asm",TARGET_FLAG_ASM_COMPAT},		\
-    {"strict-align", TARGET_FLAG_STRICT_ALIGN},		\
-    {"no-strict-align", -(TARGET_FLAG_STRICT_ALIGN)},	\
-    {"old-align", (TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)},	 \
-    {"no-old-align", -(TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN)}, \
-    {"long-double-64", TARGET_FLAG_LONG_DOUBLE_64},	\
-    {"link-relax", 0},					\
-    {"no-link-relax", 0},				\
+			TARGET_FLAG_CODE_ALIGN),			\
+       "Generate CC code"}, */						\
+    {"cf", (TARGET_FLAG_C_SERIES|TARGET_FLAG_BRANCH_PREDICT|		\
+			TARGET_FLAG_CODE_ALIGN|TARGET_FLAG_COMPLEX_ADDR),\
+       "Generate CF code"},						\
+    {"numerics", (TARGET_FLAG_NUMERICS),				\
+       "Use hardware floating point instructions"},			\
+    {"soft-float", -(TARGET_FLAG_NUMERICS),				\
+       "Use software floating point"},					\
+    {"leaf-procedures", TARGET_FLAG_LEAFPROC,				\
+       "Use alternate leaf function entries"},				\
+    {"no-leaf-procedures", -(TARGET_FLAG_LEAFPROC),			\
+       "Do not use alternate leaf function entries"},			\
+    {"tail-call", TARGET_FLAG_TAILCALL,					\
+       "Perform tail call optimization"},				\
+    {"no-tail-call", -(TARGET_FLAG_TAILCALL),				\
+       "Do not perform tail call optimization"},			\
+    {"complex-addr", TARGET_FLAG_COMPLEX_ADDR, 				\
+       "Use complex addressing modes"},					\
+    {"no-complex-addr", -(TARGET_FLAG_COMPLEX_ADDR),			\
+       "Do not use complex addressing modes"},				\
+    {"code-align", TARGET_FLAG_CODE_ALIGN,				\
+       "Align code to 8 byte boundary"},				\
+    {"no-code-align", -(TARGET_FLAG_CODE_ALIGN),			\
+       "Do not align code to 8 byte boundary"},				\
+/*  {"clean-linkage", (TARGET_FLAG_CLEAN_LINKAGE),			\
+       "Force use of prototypes"},					\
+    {"no-clean-linkage", -(TARGET_FLAG_CLEAN_LINKAGE),			\
+       "Do not force use of prototypes"}, */				\
+    {"ic-compat", TARGET_FLAG_IC_COMPAT2_0,				\
+       "Enable compatibility with iC960 v2.0"},				\
+    {"ic2.0-compat", TARGET_FLAG_IC_COMPAT2_0,				\
+       "Enable compatibility with iC960 v2.0"},				\
+    {"ic3.0-compat", TARGET_FLAG_IC_COMPAT3_0,				\
+       "Enable compatibility with iC960 v3.0"},				\
+    {"asm-compat", TARGET_FLAG_ASM_COMPAT,				\
+       "Enable compatibility with ic960 assembler"},			\
+    {"intel-asm", TARGET_FLAG_ASM_COMPAT,				\
+       "Enable compatibility with ic960 assembler"},			\
+    {"strict-align", TARGET_FLAG_STRICT_ALIGN,				\
+       "Do not permit unaligned accesses"},				\
+    {"no-strict-align", -(TARGET_FLAG_STRICT_ALIGN),			\
+       "Permit unaligned accesses"},					\
+    {"old-align", (TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN),	\
+       "Layout types like Intel's v1.3 gcc"},				\
+    {"no-old-align", -(TARGET_FLAG_OLD_ALIGN|TARGET_FLAG_STRICT_ALIGN),	\
+       "Do not layout types like Intel's v1.3 gcc"},			\
+    {"long-double-64", TARGET_FLAG_LONG_DOUBLE_64,			\
+       "Use 64 bit long doubles"},					\
+    {"link-relax", 0,							\
+       "Enable linker relaxation"},					\
+    {"no-link-relax", 0,						\
+       "Do not enable linker relaxation"},				\
     SUBTARGET_SWITCHES                                                  \
-    { "", TARGET_DEFAULT}}
+    { "", TARGET_DEFAULT,						\
+	NULL}}
 
 /* This are meant to be redefined in the host dependent files */
 #define SUBTARGET_SWITCHES

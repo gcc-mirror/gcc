@@ -97,26 +97,26 @@ extern int target_flags;
 #define TARGET_MULTM		((target_flags & 1024) == 0)
 
 #define TARGET_SWITCHES			\
-  { {"dw", 1},				\
-    {"ndw", -1},			\
-    {"bw", 2},				\
-    {"nbw", - (1|2)},			\
-    {"small", 4},			\
-    {"normal", - (4|8)},		\
-    {"large", 8},			\
-    {"29050", 16+128},			\
-    {"29000", -16},			\
-    {"kernel-registers", 32},		\
-    {"user-registers", -32},		\
-    {"stack-check", 64},		\
-    {"no-stack-check", - 74},		\
-    {"storem-bug", -128},		\
-    {"no-storem-bug", 128},		\
-    {"reuse-arg-regs", -256},		\
-    {"no-reuse-arg-regs", 256},		\
-    {"soft-float", 512},		\
-    {"no-multm", 1024},			\
-    {"", TARGET_DEFAULT}}
+  { {"dw", 1, "Generate code assuming DW bit is set"},			\
+    {"ndw", -1, "Generate code assuming DW bit is not set"},		\
+    {"bw", 2, "Generate code using byte writes"},			\
+    {"nbw", - (1|2), "Do not generate byte writes"},			\
+    {"small", 4, "Use small memory model"},				\
+    {"normal", - (4|8), "Use normal memory model"},			\
+    {"large", 8, "Use large memory model"},				\
+    {"29050", 16+128, "Generate 29050 code"},				\
+    {"29000", -16, "Generate 29000 code"},				\
+    {"kernel-registers", 32, "Use kernel global registers"},		\
+    {"user-registers", -32, "Use user global registers"},		\
+    {"stack-check", 64, "Emit stack checking code"},			\
+    {"no-stack-check", - 74, "Do not emit stack checking code"},	\
+    {"storem-bug", -128, "Work around storem hardware bug"},		\
+    {"no-storem-bug", 128, "Do not work around storem hardware bug"},	\
+    {"reuse-arg-regs", -256, "Store locals in argument registers"},	\
+    {"no-reuse-arg-regs", 256, "Do not store locals in arg registers"},	\
+    {"soft-float", 512, "Use software floating point"},			\
+    {"no-multm", 1024, "Do not generate multm instructions"},		\
+    {"", TARGET_DEFAULT, NULL}}
 
 #define TARGET_DEFAULT 3
 
