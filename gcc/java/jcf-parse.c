@@ -910,9 +910,9 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
       finput = NULL;
     }
   else
-    list = xstrdup (input_filename);
+    list = input_filename ? xstrdup (input_filename) : 0;
 
-  do 
+  while (list)
     {
       for (next = list; ; )
 	{
@@ -991,7 +991,6 @@ java_parse_file (int set_yydebug ATTRIBUTE_UNUSED)
 	}
       list = next;
     }
-  while (next);
 
   if (filename_count == 0)
     warning ("no input file specified");
