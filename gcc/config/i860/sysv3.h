@@ -149,13 +149,11 @@ extern char *current_function_original_name;
 #define TDESC_SECTION_ASM_OP    "\t.section\t.tdesc"
 
 #undef EXTRA_SECTIONS
-#define EXTRA_SECTIONS in_const, in_ctors, in_dtors, in_tdesc
+#define EXTRA_SECTIONS in_const, in_tdesc
 
 #undef EXTRA_SECTION_FUNCTIONS
 #define EXTRA_SECTION_FUNCTIONS						\
   CONST_SECTION_FUNCTION						\
-  CTORS_SECTION_FUNCTION						\
-  DTORS_SECTION_FUNCTION						\
   TDESC_SECTION_FUNCTION
 
 #define TDESC_SECTION_FUNCTION						\

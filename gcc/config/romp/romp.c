@@ -33,10 +33,11 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "flags.h"
 #include "recog.h"
-#include "expr.h"
 #include "obstack.h"
 #include "tree.h"
 #include "function.h"
+#include "expr.h"
+#include "toplev.h"
 #include "tm_p.h"
 #include "target.h"
 #include "target-def.h"
@@ -1546,7 +1547,7 @@ output_fpop (code, op0, op1, op2, insn)
       goto win;
 
   /* We have never seen this operation before.  */
-  fpop = (struct fp_op *) oballoc (sizeof (struct fp_op));
+  fpop = (struct fp_op *) xmalloc (sizeof (struct fp_op));
   fpop->mem_offset = data_offset;
   fpop->opcode = code;
   fpop->noperands = noperands;

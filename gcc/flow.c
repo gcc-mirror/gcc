@@ -5711,7 +5711,7 @@ propagate_block (bb, live, local_set, cond_local_set, flags)
       /* If this is a call to `setjmp' et al, warn if any
 	 non-volatile datum is live.  */
       if ((flags & PROP_REG_INFO)
-	  && GET_CODE (insn) == CALL
+	  && GET_CODE (insn) == CALL_INSN
 	  && find_reg_note (insn, REG_SETJMP, NULL))
 	IOR_REG_SET (regs_live_at_setjmp, pbi->reg_live);
 

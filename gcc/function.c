@@ -67,7 +67,7 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL_ALIGNMENT(TYPE, ALIGNMENT) ALIGNMENT
 #endif
 
-#if !defined (PREFERRED_STACK_BOUNDARY) && defined (STACK_BOUNDARY)
+#ifndef PREFERRED_STACK_BOUNDARY
 #define PREFERRED_STACK_BOUNDARY STACK_BOUNDARY
 #endif
 
@@ -5058,13 +5058,11 @@ assign_parms (fndecl)
 #endif
 #endif
 
-#ifdef STACK_BOUNDARY
 #define STACK_BYTES (STACK_BOUNDARY / BITS_PER_UNIT)
 
   current_function_args_size
     = ((current_function_args_size + STACK_BYTES - 1)
        / STACK_BYTES) * STACK_BYTES;
-#endif
 
 #ifdef ARGS_GROW_DOWNWARD
   current_function_arg_offset_rtx
@@ -6140,13 +6138,8 @@ prepare_function_start ()
   cfun->original_decl_initial = 0;
   cfun->original_arg_vector = 0;
 
-#ifdef STACK_BOUNDARY
   cfun->stack_alignment_needed = STACK_BOUNDARY;
   cfun->preferred_stack_boundary = STACK_BOUNDARY;
-#else
-  cfun->stack_alignment_needed = 0;
-  cfun->preferred_stack_boundary = 0;
-#endif
 
   /* Set if a call to setjmp is seen.  */
   current_function_calls_setjmp = 0;

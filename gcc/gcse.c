@@ -2495,23 +2495,21 @@ compute_hash_table (set_p)
 	   insn && insn != NEXT_INSN (BLOCK_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
-#ifdef NON_SAVING_SETJMP 
-	  if (NON_SAVING_SETJMP && GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		record_last_reg_set_info (insn, regno);
-	      continue;
-	    }
-#endif
-
 	  if (! INSN_P (insn))
 	    continue;
 
 	  if (GET_CODE (insn) == CALL_INSN)
 	    {
+	      bool clobbers_all = false;
+#ifdef NON_SAVING_SETJMP 
+	      if (NON_SAVING_SETJMP
+		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
+		clobbers_all = true;
+#endif
+
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		if (clobbers_all
+		    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 		  record_last_reg_set_info (insn, regno);
 
 	      mark_call (insn);
@@ -6415,23 +6413,22 @@ compute_store_table ()
 	   insn && insn != PREV_INSN (BLOCK_HEAD (bb));
 	   insn = PREV_INSN (insn))
 	{
-#ifdef NON_SAVING_SETJMP 
-	  if (NON_SAVING_SETJMP && GET_CODE (insn) == NOTE
-	      && NOTE_LINE_NUMBER (insn) == NOTE_INSN_SETJMP)
-	    {
-	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		SET_BIT (reg_set_in_block[bb], regno);
-	      continue;
-	    }
-#endif
-	/* Ignore anything that is not a normal insn.  */
-	if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	  /* Ignore anything that is not a normal insn.  */
+	  if (! INSN_P (insn))
 	    continue;
 
 	  if (GET_CODE (insn) == CALL_INSN)
 	    {
+	      bool clobbers_all = false;
+#ifdef NON_SAVING_SETJMP 
+	      if (NON_SAVING_SETJMP
+		  && find_reg_note (insn, REG_SETJMP, NULL_RTX))
+		clobbers_all = true;
+#endif
+
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-		if (TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
+		if (clobbers_all
+		    || TEST_HARD_REG_BIT (regs_invalidated_by_call, regno))
 		  SET_BIT (reg_set_in_block[bb], regno);
 	    }
 	  
