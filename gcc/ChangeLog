@@ -1,3 +1,13 @@
+2004-06-16  Steven Bosscher  <stevenb@suse.de>
+
+	* tree.h (PHI_CHAIN): New.
+	* (tree-cfg.c, tree-dfa.c, tree-flow-inline.h, tree-into-ssa.c,
+	tree-outof-ssa.c, tree-phinodes.c, tree-pretty-print.c,
+	tree-ssa-alias.c, tree-ssa-ccp.c, tree-ssa-dom.c, tree-ssa-dse.c,
+	tree-ssa-live.c, tree-ssa-loop.c, tree-ssa-phiopt.c, tree-ssa-pre.c,
+	tree-ssa.c, tree-tailcall.c): Use PHI_CHAIN instead of TREE_CHAIN
+	when traversing a list of PHI_NODEs.
+
 2004-06-16  Bernardo Innocenti  <bernie@develer.com>
 
 	PR target/13292
@@ -72,8 +82,8 @@
 	
 2004-06-16  Dale Johannesen  <dalej@apple.com>
 
-        * loop.c (loop_givs_reduce): Avoid miscompilation of
-        loops entered at bottom.
+	* loop.c (loop_givs_reduce): Avoid miscompilation of
+	loops entered at bottom.
 
 2004-06-16  J"orn Rennecke <joern.rennecke@superh.com>
 
@@ -559,7 +569,7 @@
 	automake 1.8.5.
 
 2004-06-15  Eric Botcazou  <ebotcazou@act-europe.fr>
-            Olivier Hainque  <hainque@act-europe.fr>
+	    Olivier Hainque  <hainque@act-europe.fr>
 
 	* function.c (fixup_var_refs): Also adjust the start of sequence
 	after fixing up the insns.

@@ -121,7 +121,7 @@ tree_ssa_phiopt (void)
       /* We're searching for blocks with one PHI node which has two
 	 arguments.  */
       phi = phi_nodes (bb);
-      if (phi && TREE_CHAIN (phi) == NULL
+      if (phi && PHI_CHAIN (phi) == NULL
 	  && PHI_NUM_ARGS (phi) == 2)
 	{
 	  arg0 = PHI_ARG_DEF (phi, 0);

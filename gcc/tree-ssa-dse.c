@@ -333,7 +333,7 @@ dse_record_phis (struct dom_walk_data *walk_data, basic_block bb)
   struct dse_global_data *dse_gd = walk_data->global_data;
   tree phi;
 
-  for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
     if (need_imm_uses_for (PHI_RESULT (phi)))
       record_voperand_set (dse_gd->stores,
 			   &bd->stores,
@@ -373,7 +373,7 @@ tree_ssa_dse (void)
       for (bsi = bsi_start (bb); !bsi_end_p (bsi); bsi_next (&bsi))
 	stmt_ann (bsi_stmt (bsi))->uid = uid++;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	stmt_ann (phi)->uid = uid++;
     }
 

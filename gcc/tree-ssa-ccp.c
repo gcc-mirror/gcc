@@ -289,7 +289,7 @@ simulate_block (basic_block block)
 
   /* Always simulate PHI nodes, even if we have simulated this block
      before.  */
-  for (phi = phi_nodes (block); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (block); phi; phi = PHI_CHAIN (phi))
     visit_phi_node (phi);
 
   /* If this is the first time we've simulated this block, then we
@@ -382,7 +382,7 @@ substitute_and_fold (void)
       tree phi;
 
       /* Propagate our known constants into PHI nodes.  */
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  int i;
 
@@ -1184,7 +1184,7 @@ initialize (void)
     {
       tree phi, var;
       int x;
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
 	  value *val;
 	  val = get_value (PHI_RESULT (phi));

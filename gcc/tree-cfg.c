@@ -1768,7 +1768,7 @@ remove_phi_nodes_and_edges_for_unreachable_block (basic_block bb)
   phi = phi_nodes (bb);
   while (phi)
     {
-      tree next = TREE_CHAIN (phi);
+      tree next = PHI_CHAIN (phi);
       remove_phi_node (phi, NULL_TREE, bb);
       phi = next;
     }
@@ -2113,7 +2113,7 @@ phi_alternatives_equal (basic_block dest, edge e1, edge e2)
   tree phi, val1, val2;
   int n1, n2;
 
-  for (phi = phi_nodes (dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
     {
       n1 = phi_arg_from_edge (phi, e1);
       n2 = phi_arg_from_edge (phi, e2);
@@ -3100,7 +3100,7 @@ tree_split_edge (edge edge_in)
   /* Find all the PHI arguments on the original edge, and change them to
      the new edge.  Do it before redirection, so that the argument does not
      get removed.  */
-  for (phi = phi_nodes (dest); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
     {
       num_elem = PHI_NUM_ARGS (phi);
       for (i = 0; i < num_elem; i++)
@@ -3386,7 +3386,7 @@ verify_stmts (void)
       tree phi;
       int i;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  int phi_num_args = PHI_NUM_ARGS (phi);
 
@@ -3733,7 +3733,7 @@ tree_make_forwarder_block (edge fallthru)
 {
   edge e;
   basic_block dummy, bb;
-  tree phi, new_phi, var;
+  tree phi, new_phi, var, prev, next;
 
   dummy = fallthru->src;
   bb = fallthru->dest;
@@ -3743,7 +3743,7 @@ tree_make_forwarder_block (edge fallthru)
 
   /* If we redirected a branch we must create new phi nodes at the
      start of BB.  */
-  for (phi = phi_nodes (dummy); phi; phi = TREE_CHAIN (phi))
+  for (phi = phi_nodes (dummy); phi; phi = PHI_CHAIN (phi))
     {
       var = PHI_RESULT (phi);
       new_phi = create_phi_node (var, bb);
@@ -3752,8 +3752,15 @@ tree_make_forwarder_block (edge fallthru)
       add_phi_arg (&new_phi, PHI_RESULT (phi), fallthru);
     }
 
-  /* Ensure that the PHI node chains are in the same order.  */
-  set_phi_nodes (bb, nreverse (phi_nodes (bb)));
+  /* Ensure that the PHI node chain is in the same order.  */
+  prev = NULL;
+  for (phi = phi_nodes (bb); phi; phi = next)
+    {
+      next = PHI_CHAIN (phi);
+      PHI_CHAIN (phi) = prev;
+      prev = phi;
+    }
+  set_phi_nodes (bb, prev);
 
   /* Add the arguments we have stored on edges.  */
   for (e = bb->pred; e; e = e->pred_next)
@@ -3763,7 +3770,7 @@ tree_make_forwarder_block (edge fallthru)
 
       for (phi = phi_nodes (bb), var = PENDING_STMT (e);
 	   phi;
-	   phi = TREE_CHAIN (phi), var = TREE_CHAIN (var))
+	   phi = PHI_CHAIN (phi), var = TREE_CHAIN (var))
 	add_phi_arg (&phi, TREE_VALUE (var), e);
 
       PENDING_STMT (e) = NULL;
@@ -3944,7 +3951,7 @@ thread_jumps (void)
 	      /* Update PHI nodes.   We know that the new argument should
 		 have the same value as the argument associated with LAST.
 		 Otherwise we would have changed our target block above.  */
-	      for (phi = phi_nodes (dest); phi; phi = TREE_CHAIN (phi))
+	      for (phi = phi_nodes (dest); phi; phi = PHI_CHAIN (phi))
 		{
 		  arg = phi_arg_from_edge (phi, last);
 		  if (arg < 0)

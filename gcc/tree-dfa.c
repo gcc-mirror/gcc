@@ -181,7 +181,7 @@ compute_immediate_uses (int flags, bool (*calc_for)(tree))
     {
       tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	compute_immediate_uses_for_phi (phi, calc_for);
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
@@ -227,7 +227,7 @@ free_df (void)
     {
       tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	free_df_for_stmt (phi);
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
@@ -636,7 +636,7 @@ dump_immediate_uses (FILE *file)
     {
       tree phi;
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	dump_immediate_uses_for (file, phi);
 
       for (si = bsi_start (bb); !bsi_end_p (si); bsi_next (&si))
@@ -818,7 +818,7 @@ collect_dfa_stats (struct dfa_stats_d *dfa_stats_p)
   FOR_EACH_BB (bb)
     {
       tree phi;
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  dfa_stats_p->num_phis++;
 	  dfa_stats_p->num_phi_args += PHI_NUM_ARGS (phi);

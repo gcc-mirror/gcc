@@ -2123,7 +2123,7 @@ dump_phi_nodes (pretty_printer *buffer, basic_block bb, int indent, int flags)
   if (!phi)
     return;
 
-  for (; phi; phi = TREE_CHAIN (phi))
+  for (; phi; phi = PHI_CHAIN (phi))
     {
       if (is_gimple_reg (PHI_RESULT (phi)) || (flags & TDF_VOPS))
         {

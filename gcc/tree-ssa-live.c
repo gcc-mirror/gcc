@@ -329,7 +329,7 @@ create_ssa_var_map (int flags)
   FOR_EACH_BB (bb)
     {
       tree phi, arg;
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  int i;
 	  register_ssa_partition (map, PHI_RESULT (phi), false);
@@ -578,7 +578,7 @@ calculate_live_on_entry (var_map map)
     {
       bitmap_clear (saw_def);
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  for (i = 0; i < PHI_NUM_ARGS (phi); i++)
 	    {
@@ -603,7 +603,7 @@ calculate_live_on_entry (var_map map)
 	 The a_3 referred to in b_3's PHI node is the one incoming on the
 	 edge, *not* the PHI node just seen.  */
 
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
         {
 	  var = PHI_RESULT (phi);
 	  set_if_valid (map, saw_def, var);
@@ -701,7 +701,7 @@ calculate_live_on_entry (var_map map)
 		int z, ok = 0;
 		for (phi = phi_nodes (e->dest); 
 		     phi && !ok; 
-		     phi = TREE_CHAIN (phi))
+		     phi = PHI_CHAIN (phi))
 		  {
 		    for (z = 0; z < PHI_NUM_ARGS (phi); z++)
 		      if (var == PHI_ARG_DEF (phi, z))
@@ -751,7 +751,7 @@ calculate_live_on_exit (tree_live_info_p liveinfo)
   /* Set all the live-on-exit bits for uses in PHIs.  */
   FOR_EACH_BB (bb)
     {
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	for (i = 0; i < PHI_NUM_ARGS (phi); i++)
 	  { 
 	    t = PHI_ARG_DEF (phi, i);
@@ -1418,7 +1418,7 @@ build_tree_conflict_graph (tree_live_info_p liveinfo, tpa_p tpa,
 	 going to be translated out of SSA form we must record a conflict
 	 between the result of the PHI and any variables with are live. 
 	 Otherwise the out-of-ssa translation may create incorrect code.  */
-      for (phi = phi_nodes (bb); phi; phi = TREE_CHAIN (phi))
+      for (phi = phi_nodes (bb); phi; phi = PHI_CHAIN (phi))
 	{
 	  tree result = PHI_RESULT (phi);
 	  int p = var_to_partition (map, result);
@@ -1837,7 +1837,7 @@ register_ssa_partitions_for_vars (bitmap vars, var_map map)
 	    {
 	      tree result = SSA_NAME_VAR (PHI_RESULT (phi));
 
-	      next = TREE_CHAIN (phi);
+	      next = PHI_CHAIN (phi);
 	      if (bitmap_bit_p (vars, var_ann (result)->uid))
 		{
 		  if (! is_gimple_reg (result))
