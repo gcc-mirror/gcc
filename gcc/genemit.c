@@ -246,7 +246,7 @@ gen_exp (x, subroutine_type, used)
       else
 	{
 	  printf ("GEN_INT (");
-	  printf (HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+	  printf (HOST_WIDE_INT_PRINT_DEC_C, INTVAL (x));
 	  printf (")");
 	}
       return;

@@ -1944,7 +1944,7 @@ write_switch (start, depth)
 	    case DT_elt_one_int:
 	    case DT_elt_zero_wide:
 	    case DT_elt_zero_wide_safe:
-	      printf (HOST_WIDE_INT_PRINT_DEC, p->tests->u.intval);
+	      printf (HOST_WIDE_INT_PRINT_DEC_C, p->tests->u.intval);
 	      break;
 	    default:
 	      abort ();
@@ -2003,7 +2003,7 @@ write_cond (p, depth, subroutine_type)
     case DT_elt_zero_wide:
     case DT_elt_zero_wide_safe:
       printf ("XWINT (x%d, 0) == ", depth);
-      printf (HOST_WIDE_INT_PRINT_DEC, p->u.intval);
+      printf (HOST_WIDE_INT_PRINT_DEC_C, p->u.intval);
       break;
 
     case DT_veclen_ge:

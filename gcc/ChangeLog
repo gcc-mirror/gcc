@@ -1,3 +1,9 @@
+Mon Jul 22 15:18:58 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* hwint.c (define HOST_WIDE_INT_PRINT_DEC_C): New define.
+	* genrecog.c (write_switch, write_cond): Use it.
+	* genemit.c (gen_exp): Likewise.
+
 2002-07-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (build_compound_literal): Set decl TREE_READONLY from TYPE.
