@@ -1489,7 +1489,6 @@ save_expr (tree expr)
      value was computed on both sides of the jump.  So make sure it isn't
      eliminated as dead.  */
   TREE_SIDE_EFFECTS (t) = 1;
-  TREE_READONLY (t) = 1;
   TREE_INVARIANT (t) = 1;
   return t;
 }
