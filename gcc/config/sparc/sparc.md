@@ -370,8 +370,8 @@
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
    (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (eq:SI (subreg:SI (match_dup 3) 0) (const_int 0)))
-	      (clobber (reg:CC 0))])]
+		   (eq:DI (match_dup 3) (const_int 0)))
+	      (clobber (reg:CCX 0))])]
   ""
   "{ operands[3] = gen_reg_rtx (DImode); }")
 
@@ -380,30 +380,30 @@
 	(xor:DI (match_operand:DI 1 "register_operand" "")
 		(match_operand:DI 2 "register_operand" "")))
    (parallel [(set (match_operand:SI 0 "register_operand" "")
-		   (ne:SI (subreg:SI (match_dup 3) 0) (const_int 0)))
-	      (clobber (reg:CC 0))])]
-  ""
-  "{ operands[3] = gen_reg_rtx (DImode); }")
-
-(define_expand "seqsi_special_extend"
-  [(set (subreg:SI (match_dup 3) 0)
-	(xor:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "register_operand" "")))
-   (parallel [(set (match_operand:DI 0 "register_operand" "")
-		   (eq:DI (match_dup 3) (const_int 0)))
-	      (clobber (reg:CCX 0))])]
-  ""
-  "{ operands[3] = gen_reg_rtx (DImode); }")
-
-(define_expand "snesi_special_extend"
-  [(set (subreg:SI (match_dup 3) 0)
-	(xor:SI (match_operand:SI 1 "register_operand" "")
-		(match_operand:SI 2 "register_operand" "")))
-   (parallel [(set (match_operand:DI 0 "register_operand" "")
 		   (ne:DI (match_dup 3) (const_int 0)))
 	      (clobber (reg:CCX 0))])]
   ""
   "{ operands[3] = gen_reg_rtx (DImode); }")
+
+(define_expand "seqsi_special_extend"
+  [(set (match_dup 3)
+	(xor:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "register_operand" "")))
+   (parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (eq:SI (match_dup 3) (const_int 0)))
+	      (clobber (reg:CC 0))])]
+  "TARGET_V9"
+  "{ operands[3] = gen_reg_rtx (SImode); }")
+
+(define_expand "snesi_special_extend"
+  [(set (match_dup 3)
+	(xor:SI (match_operand:SI 1 "register_operand" "")
+		(match_operand:SI 2 "register_operand" "")))
+   (parallel [(set (match_operand:DI 0 "register_operand" "")
+		   (ne:SI (match_dup 3) (const_int 0)))
+	      (clobber (reg:CC 0))])]
+  "TARGET_V9"
+  "{ operands[3] = gen_reg_rtx (SImode); }")
 
 ;; ??? v9: Operand 0 needs a mode, so SImode was chosen.
 ;; However, the code handles both SImode and DImode.
@@ -824,6 +824,16 @@
   [(set_attr "type" "unary")
    (set_attr "length" "2")])
 
+(define_insn "*snesi_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(ne:SI (match_operand:SI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CC 0))]
+  "TARGET_V9"
+  "subcc %%g0,%1,%%g0\;addx %%g0,0,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "2")])
+
 (define_insn "*snedi_zero"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(ne:DI (match_operand:DI 1 "register_operand" "r")
@@ -841,6 +851,26 @@
    (clobber (reg:CCX 0))]
   "TARGET_V9"
   "mov 0,%0\;movrnz %1,-1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "2")])
+
+(define_insn "*snedi_zero_trunc_sp32"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ne:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CCX 0))]
+  "! TARGET_V9"
+  "xor %1,%R1,%0\;subcc %%g0,%0,%%g0\;addx %%g0,0,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "3")])
+
+(define_insn "*snedi_zero_trunc_sp64"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ne:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CCX 0))]
+  "TARGET_V9"
+  "mov 0,%0\;movrnz %1,1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "2")])
 
@@ -864,6 +894,16 @@
   [(set_attr "type" "unary")
    (set_attr "length" "2")])
 
+(define_insn "*seqsi_zero_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(eq:SI (match_operand:SI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CC 0))]
+  "TARGET_V9"
+  "subcc %%g0,%1,%%g0\;subx %%g0,-1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "2")])
+
 (define_insn "*seqdi_zero"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(eq:DI (match_operand:DI 1 "register_operand" "r")
@@ -883,6 +923,26 @@
   "mov 0,%0\;movrz %1,-1,%0"
   [(set_attr "type" "unary")
    (set_attr "length" "2")]) 
+
+(define_insn "*seqdi_zero_trunc_sp32"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(eq:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CCX 0))]
+  "! TARGET_V9"
+  "xor %1,%R1,%0\;subcc %%g0,%0,%%g0\;subx %%g0,-1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "3")])
+
+(define_insn "*seqdi_zero_trunc_sp64"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(eq:DI (match_operand:DI 1 "register_operand" "r")
+	       (const_int 0)))
+   (clobber (reg:CCX 0))]
+  "TARGET_V9"
+  "mov 0,%0\;movrz %1,1,%0"
+  [(set_attr "type" "unary")
+   (set_attr "length" "2")])
 
 ;; We can also do (x + (i == 0)) and related, so put them in.
 ;; ??? The addx/subx insns use the 32 bit carry flag so there are no DImode
