@@ -617,7 +617,6 @@ add_method_1 (tree this_class, int access_flags, tree name, tree function_type)
     METHOD_FINAL (fndecl) = DECL_INLINE (fndecl) = 1;
   if (access_flags & ACC_SYNCHRONIZED) METHOD_SYNCHRONIZED (fndecl) = 1;
   if (access_flags & ACC_ABSTRACT) METHOD_ABSTRACT (fndecl) = 1;
-  if (access_flags & ACC_TRANSIENT) METHOD_TRANSIENT (fndecl) = 1;
   if (access_flags & ACC_STRICT) METHOD_STRICTFP (fndecl) = 1;
   return fndecl;
 }
@@ -1033,8 +1032,6 @@ get_access_flags_from_decl (tree decl)
 	access_flags |= ACC_NATIVE;
       if (METHOD_ABSTRACT (decl))
 	access_flags |= ACC_ABSTRACT;
-      if (METHOD_TRANSIENT (decl))
-	access_flags |= ACC_TRANSIENT;
       if (METHOD_STRICTFP (decl))
 	access_flags |= ACC_STRICT;
       return access_flags;

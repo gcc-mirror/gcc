@@ -1014,9 +1014,6 @@ pushdecl (tree x)
     DECL_CONTEXT (x) = current_function_decl;
   if (name)
     {
-      const char *file;
-      int line;
-
       t = lookup_name_current_level (name);
       if (t != 0 && t == error_mark_node)
 	/* error_mark_node is 0 for a while during initialization!  */
@@ -1024,12 +1021,6 @@ pushdecl (tree x)
 	  t = 0;
 	  error ("%H'%D' used prior to declaration",
                  &DECL_SOURCE_LOCATION (x), x);
-	}
-
-      if (t != 0)
-	{
-	  file = DECL_SOURCE_FILE (t);
-	  line = DECL_SOURCE_LINE (t);
 	}
 
       /* If we're naming a hitherto-unnamed type, set its TYPE_NAME
