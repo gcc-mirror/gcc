@@ -244,41 +244,6 @@ pwait (pid, status, flags)
 extern int _spawnv ();
 extern int _spawnvp ();
 
-int
-pexecute (program, argv, this_pname, temp_base, errmsg_fmt, errmsg_arg, flags)
-     const char *program;
-     char * const *argv;
-     const char *this_pname;
-     const char *temp_base;
-     char **errmsg_fmt, **errmsg_arg;
-     int flags;
-{
-  int pid;
-
-  if ((flags & PEXECUTE_ONE) != PEXECUTE_ONE)
-    abort ();
-  pid = (flags & PEXECUTE_SEARCH ? _spawnvp : _spawnv)
-    (_P_NOWAIT, program, fix_argv(argv));
-  if (pid == -1)
-    {
-      *errmsg_fmt = install_error_msg;
-      *errmsg_arg = program;
-      return -1;
-    }
-  return pid;
-}
-
-int
-pwait (pid, status, flags)
-     int pid;
-     int *status;
-     int flags;
-{
-  /* ??? Here's an opportunity to canonicalize the values in STATUS.
-     Needed?  */
-  return cwait (status, pid, WAIT_CHILD);
-}
-
 #else /* ! __CYGWIN32__ */
 
 /* This is a kludge to get around the Microsoft C spawn functions' propensity
@@ -317,6 +282,7 @@ fix_argv (argvec)
 
   return (const char * const *) argvec;
 }
+#endif /* __CYGWIN32__ */
 
 #include <io.h>
 #include <fcntl.h>
@@ -433,6 +399,9 @@ pwait (pid, status, flags)
      int *status;
      int flags;
 {
+#ifdef __CYGWIN32__
+  return wait (status);
+#else
   int termstat;
 
   pid = _cwait (&termstat, pid, WAIT_CHILD);
@@ -450,9 +419,8 @@ pwait (pid, status, flags)
     *status = (((termstat) & 0xff) << 8);
 
   return pid;
+#endif /* __CYGWIN32__ */
 }
-
-#endif /* ! defined (__CYGWIN32__) */
 
 #endif /* _WIN32 */
 
