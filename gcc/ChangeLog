@@ -1,3 +1,18 @@
+2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * regrename.c (kill_value): Fix typo.
+
+2002-01-22  Aldy Hernandez  <aldyh@redhat.com>
+
+        * doc/tm.texi: Remove STARTING_FRAME_PHASE.
+
+        * config/rs6000/rs6000.h: Same.
+
+        * function.c (instantiate_virtual_regs): Remove
+        STARTING_FRAME_PHASE.
+        (assign_stack_local_1): Same.
+        Calculate frame phase.
+
 2002-01-22  Nick Clifton  <nickc@redhat.com>
 
 	* config/arm/arm.h (CONDITIONAL_REGISTER_USAGE): Move 'regno'
@@ -105,6 +120,7 @@ Tue Jan 22 06:26:33 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(sparc-*-netbsd*): Add netbsd-aout.h to tm_file.
 	(vax-*-netbsd*): Add netbsd-aout.h to tm_file.
 
+>>>>>>> 1.12770
 2002-01-21  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa-protos.h (reg_before_reload_operand): New function prototype.
