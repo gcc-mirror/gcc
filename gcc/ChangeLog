@@ -1,5 +1,10 @@
 2004-01-06  Geoffrey Keating  <geoffk@apple.com>
 
+	* config/rs6000/rs6000.md (floatsitf2): Use expand_float rather
+	than trying to generate RTL directly.
+	(fix_trunctfsi2): Use expand_fix rather than trying to generate
+	RTL directly.
+
 	* dwarf2out.c (add_const_value_attribute): Remove incorrect comment.
 
 2004-01-06  David Edelsohn  <edelsohn@gnu.org>
