@@ -1,3 +1,11 @@
+2005-03-14  Alexandre Oliva  <aoliva@redhat.com>
+
+	PR c++/20280
+	* gimplify.c (gimplify_cond_expr): Add fallback argument.  Use a
+	temporary variable of pointer type if an lvalues is required.
+	(gimplify_modify_expr_rhs): Request an rvalue from it.
+	(gimplify_expr): Pass fallback on.
+
 2005-03-14  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfgbuild.c: Update comments.

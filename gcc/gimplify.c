@@ -2123,7 +2123,8 @@ gimple_boolify (tree expr)
      *EXPR_P should be stored.  */
 
 static enum gimplify_status
-gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target)
+gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target,
+		    fallback_t fallback)
 {
   tree expr = *expr_p;
   tree tmp, tmp2, type;
@@ -2137,18 +2138,40 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target)
      the arms.  */
   else if (! VOID_TYPE_P (type))
     {
+      tree result;
+
       if (target)
 	{
 	  ret = gimplify_expr (&target, pre_p, post_p,
 			       is_gimple_min_lval, fb_lvalue);
 	  if (ret != GS_ERROR)
 	    ret = GS_OK;
-	  tmp = target;
+	  result = tmp = target;
 	  tmp2 = unshare_expr (target);
+	}
+      else if ((fallback & fb_lvalue) == 0)
+	{
+	  result = tmp2 = tmp = create_tmp_var (TREE_TYPE (expr), "iftmp");
+	  ret = GS_ALL_DONE;
 	}
       else
 	{
-	  tmp2 = tmp = create_tmp_var (TREE_TYPE (expr), "iftmp");
+	  tree type = build_pointer_type (TREE_TYPE (expr));
+
+	  if (TREE_TYPE (TREE_OPERAND (expr, 1)) != void_type_node)
+	    TREE_OPERAND (expr, 1) =
+	      build_fold_addr_expr (TREE_OPERAND (expr, 1));
+
+	  if (TREE_TYPE (TREE_OPERAND (expr, 2)) != void_type_node)
+	    TREE_OPERAND (expr, 2) =
+	      build_fold_addr_expr (TREE_OPERAND (expr, 2));
+	  
+	  tmp2 = tmp = create_tmp_var (type, "iftmp");
+
+	  expr = build (COND_EXPR, void_type_node, TREE_OPERAND (expr, 0),
+			TREE_OPERAND (expr, 1), TREE_OPERAND (expr, 2));
+
+	  result = build_fold_indirect_ref (tmp);
 	  ret = GS_ALL_DONE;
 	}
 
@@ -2169,7 +2192,7 @@ gimplify_cond_expr (tree *expr_p, tree *pre_p, tree *post_p, tree target)
       /* Move the COND_EXPR to the prequeue.  */
       gimplify_and_add (expr, pre_p);
 
-      *expr_p = tmp;
+      *expr_p = result;
       return ret;
     }
 
@@ -2907,7 +2930,8 @@ gimplify_modify_expr_rhs (tree *expr_p, tree *from_p, tree *to_p, tree *pre_p,
 	if (!is_gimple_reg_type (TREE_TYPE (*from_p)))
 	  {
 	    *expr_p = *from_p;
-	    return gimplify_cond_expr (expr_p, pre_p, post_p, *to_p);
+	    return gimplify_cond_expr (expr_p, pre_p, post_p, *to_p,
+				       fb_rvalue);
 	  }
 	else
 	  ret = GS_UNHANDLED;
@@ -3786,7 +3810,8 @@ gimplify_expr (tree *expr_p, tree *pre_p, tree *post_p,
 	  break;
 
 	case COND_EXPR:
-	  ret = gimplify_cond_expr (expr_p, pre_p, post_p, NULL_TREE);
+	  ret = gimplify_cond_expr (expr_p, pre_p, post_p, NULL_TREE,
+				    fallback);
 	  break;
 
 	case CALL_EXPR:
