@@ -1,3 +1,8 @@
+2002-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8439
+	* gcc.dg/testsuite/20021110.c: New test.
+	
 2002-11-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* g++.dg/abi/vthunk3.C: Run only on x86.

@@ -1,3 +1,9 @@
+2002-11-09  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR c/8439
+	* recog.c (validate_replace_rtx_1) [PLUS]: Simplify only
+	if there is something new to be simplified.
+
 2002-11-10  H.J. Lu <hjl@gnu.org>
 
 	* calls.c (PUSH_ARGS_REVERSED): Define only if not defined.
