@@ -1241,7 +1241,8 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     return build1 (NOP_EXPR, void_type_node, t);
 
   if (doing_vec)
-    return build_vec_delete (t, maxindex, integer_one_node, use_global_delete);
+    return build_vec_delete (t, maxindex, sfk_deleting_destructor,
+			     use_global_delete);
   else
     {
       if (IS_AGGR_TYPE (TREE_TYPE (type))
@@ -1255,7 +1256,7 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
 	    return error_mark_node;
 	}
 
-      return build_delete (type, t, integer_three_node,
+      return build_delete (type, t, sfk_deleting_destructor,
 			   LOOKUP_NORMAL, use_global_delete);
     }
 }
@@ -2788,7 +2789,7 @@ build_cleanup (decl)
       temp = build1 (ADDR_EXPR, build_pointer_type (type), decl);
     }
   temp = build_delete (TREE_TYPE (temp), temp,
-		       integer_two_node,
+		       sfk_complete_destructor,
 		       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR, 0);
   return temp;
 }

@@ -1,12 +1,31 @@
+2000-05-24  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (build_delete): Change prototype.
+	(build_vec_delete): Likewise.
+	* call.c (build_scoped_method_call): Use special_function_kind
+	values to indicate the kind of destruction to be done.
+	(build_method_call): Likewise.
+	* decl.c (finish_destructor_body): Likewise.
+	(maybe_build_cleanup_1): Likewise.  Rename to ...
+	(maybe_build_cleanup): ... this.
+	* decl2.c (delete_sanity): Use special_function_kind
+	values to indicate the kind of destruction to be done.
+	(build_cleanup): Likewise.
+	* init.c (perform_member_init): Likewise.
+	(build_vec_delete_1): Likewise.
+	(build_dtor_call): Simplify.
+	(build_delete): Use special_function_kind
+	values to indicate the kind of destruction to be done.
+	(build_vbase_delete): Likewise.
+	(build_vec_delete): Likewise.
+	
+	* init.c (sort_member_init): Fix typo in error message generation
+	code.
+
 Mon May 15 11:46:29 2000  Donald Lindsay  <dlindsay@cygnus.com>
 
 	* semantics.c (begin_class_definition): make the packed
 	attribute be sensitive to the "-fpack-struct" command line flag
-
-2000-05-24  Mark Mitchell  <mark@codesourcery.com>
-
-	* init.c (sort_member_init): Fix typo in error message generation
-	code.
 
 2000-05-24  Nathan Sidwell  <nathan@codesourcery.com>
 

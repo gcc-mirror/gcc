@@ -309,7 +309,8 @@ build_scoped_method_call (exp, basetype, name, parms)
 	  if (! TYPE_HAS_DESTRUCTOR (TREE_TYPE (decl)))
 	    return cp_convert (void_type_node, exp);
 	  
-	  return build_delete (TREE_TYPE (decl), decl, integer_two_node,
+	  return build_delete (TREE_TYPE (decl), decl, 
+			       sfk_complete_destructor,
 			       LOOKUP_NORMAL|LOOKUP_NONVIRTUAL|LOOKUP_DESTRUCTOR,
 			       0);
 	}
@@ -516,7 +517,7 @@ build_method_call (instance, name, parms, basetype_path, flags)
       instance = default_conversion (instance);
       instance_ptr = build_unary_op (ADDR_EXPR, instance, 0);
       return build_delete (build_pointer_type (basetype),
-			   instance_ptr, integer_two_node,
+			   instance_ptr, sfk_complete_destructor,
 			   LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
     }
 
