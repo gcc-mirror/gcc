@@ -984,7 +984,7 @@ if (TARGET_ARCH64				\
 #define CONDITIONAL_REGISTER_USAGE				\
 do								\
   {								\
-    if (flag_pic)						\
+    if (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM)		\
       {								\
 	fixed_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
 	call_used_regs[PIC_OFFSET_TABLE_REGNUM] = 1;		\
@@ -1159,7 +1159,7 @@ extern int sparc_mode_class[];
 /* Register which holds offset table for position-independent
    data references.  */
 
-#define PIC_OFFSET_TABLE_REGNUM 23
+#define PIC_OFFSET_TABLE_REGNUM (flag_pic ? 23 : INVALID_REGNUM)
 
 /* Pick a default value we can notice from override_options:
    !v9: Default is on.

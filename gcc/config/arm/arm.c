@@ -268,7 +268,7 @@ enum machine_mode output_memory_reference_mode;
 
 /* The register number to be used for the PIC offset register.  */
 const char * arm_pic_register_string = NULL;
-int arm_pic_register = 9;
+int arm_pic_register = INVALID_REGNUM;
 
 /* Set to 1 when a return insn is output, this means that the epilogue
    is not needed.  */
@@ -651,8 +651,8 @@ arm_override_options ()
   
   /* If stack checking is disabled, we can use r10 as the PIC register,
      which keeps r9 available.  */
-  if (flag_pic && !TARGET_APCS_STACK)
-    arm_pic_register = 10;
+  if (flag_pic)
+    arm_pic_register = TARGET_APCS_STACK ? 9 : 10;
   
   if (TARGET_APCS_FLOAT)
     warning ("passing floating point arguments in fp regs not yet supported");
@@ -713,18 +713,16 @@ arm_override_options ()
 
   if (arm_pic_register_string != NULL)
     {
-      int pic_register;
-
+      int pic_register = decode_reg_name (arm_pic_register_string);
+      
       if (!flag_pic)
 	warning ("-mpic-register= is useless without -fpic");
 
-      pic_register = decode_reg_name (arm_pic_register_string);
-      
       /* Prevent the user from choosing an obviously stupid PIC register.  */
-      if (pic_register < 0 || call_used_regs[pic_register]
-	  || pic_register == HARD_FRAME_POINTER_REGNUM
-	  || pic_register == STACK_POINTER_REGNUM
-	  || pic_register >= PC_REGNUM)
+      else if (pic_register < 0 || call_used_regs[pic_register]
+	       || pic_register == HARD_FRAME_POINTER_REGNUM
+	       || pic_register == STACK_POINTER_REGNUM
+	       || pic_register >= PC_REGNUM)
 	error ("unable to use '%s' for PIC register", arm_pic_register_string);
       else
 	arm_pic_register = pic_register;
