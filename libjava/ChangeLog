@@ -1,3 +1,8 @@
+2003-01-21  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/natResourceBundle.cc (getCallingClassLoader): Start
+	search at 2, not 3.
+
 2003-01-21  Vladimir Puskas  <vpuskas@eunet.yu>
 
 	* java/io/natFileWin32.cc (isAbsolute): Check path length before
