@@ -1159,6 +1159,7 @@ connect_traces (int n_traces, struct trace *traces)
     }
 
   FREE (connected);
+  FREE (cold_traces);
 }
 
 /* Return true when BB can and should be copied. CODE_MAY_GROW is true
