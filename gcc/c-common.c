@@ -1366,7 +1366,7 @@ check_format_info (info, params)
 	      || format_char == 'x' || format_char == 'x'))
 	{
 	  sprintf (message,
-		   "precision and `0' flag not both allowed with `%c' format",
+		   "`0' flag ignored with precision specifier and `%c' format",
 		   format_char);
 	  warning (message);
 	}
