@@ -1,3 +1,8 @@
+Wed Sep  3 14:35:52 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* Makefile.in (stamp-needed, stamp-config): Add MULTISRCTOP to
+	pathname for move-if-change.
+
 Tue Aug 19 20:28:45 1997  Geoffrey Noer  <noer@cygnus.com>
 
 	* config/mh-cygwin32: also build random.o
