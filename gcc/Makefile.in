@@ -2391,6 +2391,7 @@ uninstall: lang.uninstall
 	-rm -rf $(mandir)/cccp$(manext)
 	-rm -rf $(mandir)/protoize$(manext)
 	-rm -rf $(mandir)/unprotoize$(manext)
+	-rm -f $(infodir)/cpp.info* $(infodir)/gcc.info*
 #
 # These exist for maintenance purposes.
 
