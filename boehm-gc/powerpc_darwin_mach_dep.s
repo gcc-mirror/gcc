@@ -1,10 +1,21 @@
+#if defined(__ppc64__)
+#define MODE_CHOICE(x, y) y
+#else
+#define MODE_CHOICE(x, y) x
+#endif
+
+#define lgu     MODE_CHOICE(lwzu, ldu)
+
+#define g_long  MODE_CHOICE(long, quad)         /* usage is ".g_long" */
+
+#define LOG2_GPR_BYTES  MODE_CHOICE(2,3)        /* log2(GPR_BYTES) */
 
 ; GC_push_regs function. Under some optimization levels GCC will clobber
 ; some of the non-volatile registers before we get a chance to save them
 ; therefore, this can't be inline asm.
 
 .text
-	.align 2
+	.align LOG2_GPR_BYTES
 	.globl _GC_push_regs
 _GC_push_regs:
     
@@ -65,7 +76,7 @@ _GC_push_regs:
 
 .data
 .section __TEXT,__picsymbolstub1,symbol_stubs,pure_instructions,32
-	.align 2
+	.align LOG2_GPR_BYTES
 L_GC_push_one$stub:
 	.indirect_symbol _GC_push_one
 	mflr r0
@@ -74,11 +85,11 @@ L0$_GC_push_one:
 	mflr r11
 	addis r11,r11,ha16(L_GC_push_one$lazy_ptr-L0$_GC_push_one)
 	mtlr r0
-	lwzu r12,lo16(L_GC_push_one$lazy_ptr-L0$_GC_push_one)(r11)
+	lgu r12,lo16(L_GC_push_one$lazy_ptr-L0$_GC_push_one)(r11)
 	mtctr r12
 	bctr
 .data
 .lazy_symbol_pointer
 L_GC_push_one$lazy_ptr:
 	.indirect_symbol _GC_push_one
-	.long dyld_stub_binding_helper
+	.g_long dyld_stub_binding_helper
