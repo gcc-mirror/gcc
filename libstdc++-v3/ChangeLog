@@ -1,3 +1,9 @@
+2003-03-12  Jonathan Wakely  <redi@gcc.gnu.org>
+
+	* docs/html/faq/index.html: Explain memory "leaks" due to allocators.
+	* docs/html/faq/index.txt: Regenerate.
+	* docs/html/debug.html: Add a bit to allocator text and fix XHTML.
+
 2003-03-12  Andreas Schwab  <schwab@suse.de>
 
 	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Avoid trailing /. in
