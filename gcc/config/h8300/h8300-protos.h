@@ -41,6 +41,7 @@ extern unsigned int compute_logical_op_length PARAMS ((enum machine_mode,
 						       rtx *));
 extern int compute_logical_op_cc PARAMS ((enum machine_mode, rtx *));
 extern int expand_a_shift PARAMS ((enum machine_mode, int, rtx[]));
+extern int h8300_shift_needs_scratch_p PARAMS ((int, enum machine_mode));
 extern int expand_a_rotate PARAMS ((enum rtx_code, rtx[]));
 extern int fix_bit_operand PARAMS ((rtx *, int, enum rtx_code));
 extern int h8300_adjust_insn_length PARAMS ((rtx, int));

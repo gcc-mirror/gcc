@@ -2694,6 +2694,58 @@ get_shift_alg (shift_type, shift_mode, count, info)
     info->shift2 = NULL;
 }
 
+/* Given COUNT and MODE of a shift, return 1 if a scratch reg may be
+   needed for some shift with COUNT and MODE.  Return 0 otherwise.  */
+
+int
+h8300_shift_needs_scratch_p (count, mode)
+     int count;
+     enum machine_mode mode;
+{
+  int cpu;
+  int a, lr, ar;
+
+  if (GET_MODE_BITSIZE (mode) <= count)
+    return 1;
+
+  /* Find out the target CPU.  */
+  if (TARGET_H8300)
+    cpu = 0;
+  else if (TARGET_H8300H)
+    cpu = 1;
+  else
+    cpu = 2;
+
+  /* Find the shift algorithm.  */
+  switch (mode)
+    {
+    case QImode:
+      a  = shift_alg_qi[cpu][SHIFT_ASHIFT][count];
+      lr = shift_alg_qi[cpu][SHIFT_LSHIFTRT][count];
+      ar = shift_alg_qi[cpu][SHIFT_ASHIFTRT][count];
+      break;
+
+    case HImode:
+      a  = shift_alg_hi[cpu][SHIFT_ASHIFT][count];
+      lr = shift_alg_hi[cpu][SHIFT_LSHIFTRT][count];
+      ar = shift_alg_hi[cpu][SHIFT_ASHIFTRT][count];
+      break;
+
+    case SImode:
+      a  = shift_alg_si[cpu][SHIFT_ASHIFT][count];
+      lr = shift_alg_si[cpu][SHIFT_LSHIFTRT][count];
+      ar = shift_alg_si[cpu][SHIFT_ASHIFTRT][count];
+      break;
+
+    default:
+      abort ();
+    }
+
+  /* On H8/300H and H8/S, count == 8 uses the scratch register.  */
+  return (a == SHIFT_LOOP || lr == SHIFT_LOOP || ar == SHIFT_LOOP
+	  || (!TARGET_H8300 && mode == SImode && count == 8));
+}
+
 /* Emit the assembler code for doing shifts.  */
 
 const char *
