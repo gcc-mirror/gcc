@@ -451,21 +451,7 @@ print_operand (file, x, code)
   else if (GET_CODE (x) == MEM)
     {
       rtx tmp = XEXP (x, 0);
-#if ! (defined (PC_RELATIVE) || defined (NO_ABSOLUTE_PREFIX_IF_SYMBOLIC))
-      if (GET_CODE (tmp) != CONST_INT)
-	{
-	  char *out = XSTR (tmp, 0);
-	  if (out[0] == '*')
-	    {
-	      PUT_ABSOLUTE_PREFIX (file);
-	      fprintf (file, "%s", &out[1]);
-	    }
-	  else
-	    ASM_OUTPUT_LABELREF (file, out);
-	}
-      else
-#endif
-	output_address (XEXP (x, 0));
+      output_address (XEXP (x, 0));
     }
   else if (GET_CODE (x) == CONST_DOUBLE && GET_MODE (x) != VOIDmode)
     {
@@ -615,7 +601,7 @@ print_operand_address (file, addr)
 	      rtx sym, off, tmp1;
 	      tmp1 = XEXP (tmp,0);
 	      if (GET_CODE (tmp1)  != PLUS)
-	abort ();
+		abort ();
 
 	      sym = XEXP (tmp1,0);
 	      if (GET_CODE (sym) != SYMBOL_REF)
@@ -670,7 +656,7 @@ print_operand_address (file, addr)
 
   if (base
 #ifndef INDEX_RATHER_THAN_BASE
-      && flag_pic 
+      && (flag_pic || TARGET_HIMEM)
       && GET_CODE (base) != SYMBOL_REF 
       && GET_CODE (offset) != CONST_INT
 #else
@@ -684,15 +670,15 @@ print_operand_address (file, addr)
     }
 
   /* now, offset, base and indexexp are set */
+#ifndef BASE_REG_NEEDED
   if (! base)
     {
 #if defined (PC_RELATIVE) || defined (NO_ABSOLUTE_PREFIX_IF_SYMBOLIC)
       if (GET_CODE (offset) == CONST_INT)
-/*      if (! (GET_CODE (offset) == LABEL_REF
-	     || GET_CODE (offset) == SYMBOL_REF)) */
 #endif
 	PUT_ABSOLUTE_PREFIX (file);
     }
+#endif
 
   output_addr_const (file, offset);
   if (base) /* base can be (REG ...) or (MEM ...) */
@@ -711,8 +697,8 @@ print_operand_address (file, addr)
 	fprintf (file, "(%s)", reg_names[REGNO (base)]);
 	break;
       case SYMBOL_REF:
-	  if (! flag_pic)
-	    abort ();
+	if (! flag_pic)
+	  abort ();
 
         fprintf (file, "(");
 	output_addr_const (file, base);
@@ -766,45 +752,26 @@ print_operand_address (file, addr)
 	output_addr_const (file, offset);
 	if (base)
 	  fprintf (file, "(%s)", reg_names[REGNO (base)]);
-#ifdef BASE_REG_NEEDED
 	else if (TARGET_SB)
 	  fprintf (file, "(sb)");
 	else
 	  abort ();
-#endif
 	fprintf (file, ")");
 	break;
-
       default:
 	abort ();
       }
 #ifdef PC_RELATIVE
-  else if (GET_CODE (offset) == LABEL_REF
-	   || GET_CODE (offset) == SYMBOL_REF
-	   || GET_CODE (offset) == CONST
-	   || GET_CODE (offset) == PLUS)
+  else if (GET_CODE (offset) != CONST_INT)
     fprintf (file, "(pc)");
-#endif
 #ifdef BASE_REG_NEEDED
-  else 
-    {
-      /* Abs. addresses don't need a base (I think). */
-      if (GET_CODE (offset) != CONST_INT
-#ifndef PC_RELATIVE
-	  && GET_CODE (offset) != LABEL_REF
-	  && GET_CODE (offset) != SYMBOL_REF
-	  && GET_CODE (offset) != CONST
-	  && GET_CODE (offset) != PLUS
+  else if (TARGET_SB)
+    fprintf (file, "(sb)");
+  else
+    abort ();
 #endif
-         )
-        {
-	  if (TARGET_SB)
-	    fprintf (file, "(sb)");
-	  else
-	    abort ();
-        }
-    }
-#endif
+#endif /* PC_RELATIVE */
+
   /* now print index if we have one */
   if (indexexp)
     {
