@@ -946,7 +946,11 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 		      && simplejump_p (temp2)
 		      && JUMP_LABEL (temp2) == JUMP_LABEL (insn)))
 	      && (temp1 = single_set (temp)) != 0
-	      && (temp5 = SET_DEST (temp1), GET_CODE (temp5) == REG)
+	      && (temp5 = SET_DEST (temp1),
+		  (GET_CODE (temp5) == REG
+		   || (GET_CODE (temp5) == SUBREG
+		       && (temp5 = SUBREG_REG (temp5),
+			   GET_CODE (temp5) == REG))))
 	      && REGNO (temp5) >= FIRST_PSEUDO_REGISTER
 	      && regno_first_uid[REGNO (temp5)] == INSN_UID (temp)
 	      && regno_last_uid[REGNO (temp5)] == INSN_UID (temp3)
