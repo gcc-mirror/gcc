@@ -1,3 +1,8 @@
+Thu Feb 11 01:06:49 1999  Nathan Sidwell  <nathan@acm.org>
+
+	* fold-const.c (range_binop): Take account of the bounded nature
+	of fixed length arithmetic when comparing unbounded ranges.
+
 Thu Feb 11 00:08:17 1999  John Wehle  (john@feith.com)
 
 	* function.c (assign_stack_temp_for_type): Clear best_p
