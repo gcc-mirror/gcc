@@ -1,3 +1,7 @@
+2003-02-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/rs6000/rs6000.c (bdesc_2arg): Change spe_evxor to xorv2si3.
+
 2003-02-09  Dan Nicolaescu  <dann@ics.uci.edu>
 
 	* tree.h (struct tree_decl): Remove unused live_range_rtl field.
