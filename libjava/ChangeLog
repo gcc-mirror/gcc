@@ -1,5 +1,7 @@
 2000-09-14  Alexandre Oliva  <aoliva@redhat.com>
 
+	* java/lang/natRuntime.cc (lt_preloaded_symbols): Define as `extern'.
+
 	* defineclass.cc: Include alloca.h only if HAVE_ALLOCA_H.
 	* java/lang/natDouble.cc: Likewise.
 	* java/lang/reflect/natMethod.cc: Likewise.
