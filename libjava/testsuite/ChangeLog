@@ -1,3 +1,58 @@
+1999-07-13  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.lang/test.exp: New file.
+	* libjava.lang/err9.out: New file.
+	* libjava.lang/err9.java: New file.
+	* libjava.lang/err8.out: New file.
+	* libjava.lang/err8.java: New file.
+	* libjava.lang/err7.out: New file.
+	* libjava.lang/err7.java: New file.
+	* libjava.lang/err6.out: New file.
+	* libjava.lang/err6.java: New file.
+	* libjava.lang/err5.out: New file.
+	* libjava.lang/err5.java: New file.
+	* libjava.lang/err4.out: New file.
+	* libjava.lang/err4.java: New file.
+	* libjava.lang/err3.out: New file.
+	* libjava.lang/err3.java: New file.
+	* libjava.lang/err2.out: New file.
+	* libjava.lang/err2.java: New file.
+	* libjava.lang/err13.out: New file.
+	* libjava.lang/err13.java: New file.
+	* libjava.lang/err12.out: New file.
+	* libjava.lang/err12.java: New file.
+	* libjava.lang/err11.out: New file.
+	* libjava.lang/err11.java: New file.
+	* libjava.lang/err10.out: New file.
+	* libjava.lang/err10.java: New file.
+	* libjava.lang/err1.out: New file.
+	* libjava.lang/err1.java: New file.
+	* libjava.lang/N19990310_5.out: New file.
+	* libjava.lang/N19990310_5.java: New file.
+	* libjava.lang/N19990310_4.out: New file.
+	* libjava.lang/N19990310_4.java: New file.
+	* libjava.lang/N19990310_3.out: New file.
+	* libjava.lang/N19990310_3.java: New file.
+	* libjava.lang/N19990310_02.out: New file.
+	* libjava.lang/N19990310_02.java: New file.
+	* libjava.lang/G19990303_02.out: New file.
+	* libjava.lang/G19990303_02.java: New file.
+	* libjava.lang/G19990303_01.out: New file.
+	* libjava.lang/G19990303_01.java: New file.
+	* libjava.lang/G19990302_02.out: New file.
+	* libjava.lang/G19990302_02.java: New file.
+	* libjava.lang/G19990301_01.out: New file.
+	* libjava.lang/G19990301_01.java: New file.
+
+	* libjava.compile/N19990317.java: New file.
+	* libjava.compile/N19990310_01.java: New file.
+	* libjava.compile/G19990225_01.java: New file.
+	* libjava.compile/G19990217_02.java: New file.
+	* libjava.compile/G19990217_01.java: New file.
+	* libjava.compile/G19990210_3.java: New file.
+	* libjava.compile/G19990210_2.java: New file.
+	* libjava.compile/G19990210_1.java: New file.
+
 1999-07-06  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/Final.xfail: Output fails, not exec.
