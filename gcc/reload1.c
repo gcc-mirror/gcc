@@ -4378,7 +4378,7 @@ reload_as_needed (live_known)
 			    spill_reg_order);
 	    }
 
-	  if (num_eliminable && GET_MODE (insn) == QImode)
+	  if (num_eliminable && chain->need_elim)
 	    update_eliminable_offsets ();
 
 	  if (n_reloads > 0)
