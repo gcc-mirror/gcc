@@ -1097,6 +1097,16 @@ struct lang_decl
   ((TREE_CODE (NODE) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (NODE)) \
    ? DECL_CLASS_CONTEXT (NODE) : DECL_CONTEXT (NODE))
 
+/* 1 iff NODE has namespace scope, including the global namespace.  */
+#define DECL_NAMESPACE_SCOPE(NODE) \
+  (DECL_CONTEXT (NODE) == NULL_TREE \
+   || TREE_CODE (DECL_CONTEXT (NODE)) == NAMESPACE_DECL)
+
+/* 1 iff NODE is a class member.  */
+#define DECL_CLASS_SCOPE(NODE) \
+  (DECL_CONTEXT (NODE) \
+   && TREE_CODE_CLASS (TREE_CODE (DECL_CONTEXT (NODE))) == 't')
+
 /* For a NAMESPACE_DECL: the list of using namespace directives
    The PURPOSE is the used namespace, the value is the namespace
    that is the common ancestor. */
