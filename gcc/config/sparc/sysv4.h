@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for Sparc running System V.4
-   Copyright (C) 1991, 1992, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1991, 1992, 1995, 1996 Free Software Foundation, Inc.
 
    Written by Ron Guilmette (rfg@netcom.com).
 
@@ -65,7 +65,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{V} %{v:%{!V:-V}} %{Qy:} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Yd,*} %{Wa,*:%*} \
-   %{fpic:-K PIC} %{fPIC:-K PIC}"
+   %{fpic:-K PIC} %{fPIC:-K PIC} %(asm_cpu)"
 
 /* Must use data section for relocatable constants when pic.  */
 #undef SELECT_RTX_SECTION
