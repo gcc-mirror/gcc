@@ -1,3 +1,10 @@
+1999-03-25  Philip Blundell  <pb@nexus.co.uk>
+
+	Based on patch from Jim Studt <jim@federated.com>:
+	* config/arm/linux-elf.h (STARTFILE_SPEC, ENDFILE_SPEC): Copy
+	definitions from config/linux.h.
+	(DBX_BLOCKS_FUNCTION_RELATIVE): Define to 1.
+
 Thu Mar 25 02:12:42 1999  Finn Hakansson  <finn@axis.com>
 
         * rtl.h (MEM_COPY_ATTRIBUTES): Remove unnecessary ending backslash.
