@@ -1,3 +1,7 @@
+2001-11-18  Egor Duda  <deo@logos-m.ru>
+
+	* config/i386/cygwin.h: Strip leading '*' from name, if any.
+
 2001-11-18  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* Makefile.in (c-parse.o, c-common.o): Update dependencies.
