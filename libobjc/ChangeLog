@@ -1,3 +1,7 @@
+2001-09-10  Ovidiu Predescu  <ovidiu@cup.hp.com>
+
+	* gc.c: Removed the DEBUG declaration.
+
 Wed Jul 18 12:48:56 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* thr.c (objc_mutex_lock): Invoke __objc_thread_id directly,
