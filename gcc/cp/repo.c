@@ -37,7 +37,7 @@ Boston, MA 02111-1307, USA.  */
 
 static tree repo_get_id PARAMS ((tree));
 static char *extract_string PARAMS ((char **));
-static char *get_base_filename PARAMS ((const char *));
+static const char *get_base_filename PARAMS ((const char *));
 static void open_repo_file PARAMS ((const char *));
 static char *afgets PARAMS ((FILE *));
 static void reopen_repo_file_for_write PARAMS ((void));
@@ -246,7 +246,7 @@ extract_string (pp)
   return obstack_finish (&temporary_obstack);
 }
 
-static char *
+const char *
 get_base_filename (filename)
      const char *filename;
 {
