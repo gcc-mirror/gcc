@@ -1,3 +1,9 @@
+2004-12-07  David Mosberger  <davidm@hpl.hp.com>
+
+	PR target/18443
+	* config/ia64/ia64.c (ia64_assemble_integer): Add support for
+	emitting unaligned pointer-sized integers.
+
 2004-12-07  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR middle-end/17827
