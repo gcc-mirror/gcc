@@ -2368,7 +2368,7 @@ lvalue_type (arg)
   tree type = TREE_TYPE (arg);
   if (TREE_CODE (arg) == OVERLOAD)
     type = unknown_type_node;
-  if (TREE_CODE (type) != ARRAY_TYPE)
+  else if (TREE_CODE (type) != ARRAY_TYPE)
     type = cp_build_type_variant
       (type, TREE_READONLY (arg), TREE_THIS_VOLATILE (arg));
   return type;
