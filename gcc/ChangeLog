@@ -1,6 +1,10 @@
 2001-10-10  Richard Henderson  <rth@redhat.com>
 
-        * combine.c (try_combine): Handle a SEQUENCE of one insn.
+	* combine.c (try_combine): Handle a SEQUENCE of one insn.
+
+	* i386.c (test splitter): Narrow tests vs paradoxical subregs.
+	(jcc splitters): Add two splitters to simplify compound compares
+	that simplify_comparison can't handle.
 
 2001-10-10  Richard Henderson  <rth@redhat.com>
 
@@ -301,8 +305,8 @@ Wed Oct 10 00:41:29 EDT 2001  John Wehle  (john@feith.com)
 
 2001-10-08  Richard Henderson  <rth@redhat.com>
 
-        * i386.md (movsi_xor): Export.
-        (setcc peep2): Use it when available; add an alternative to
+	* i386.md (movsi_xor): Export.
+	(setcc peep2): Use it when available; add an alternative to
 	match zero_extendhisi2_and.
 
 2001-10-08  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
@@ -533,7 +537,7 @@ Sat Oct  6 07:42:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-06  Ulrich Weigand  <uweigand@de.ibm.com>
  
-        * config/s390/s390.c (s390_va_arg): Use set_mem_alias_set.
+	* config/s390/s390.c (s390_va_arg): Use set_mem_alias_set.
 
 2001-10-05  Joseph S. Myers  <jsm28@cam.ac.uk>
 
@@ -541,15 +545,15 @@ Sat Oct  6 07:42:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-10-05  Catherine Moore  <clm@redhat.com>
 
-        * config/stormy16/stormy-abi:  Document abi changes.
-        * config/stormy16/stormy16.h (REG_ALLOC_ORDER): Redefine.
-        (ICALL_REGS): New register class.
-        (NUM_ARGUMENT_REGISTERS): Now 6.
-        (DEFAULT_PCC_STRUCT_RETURN): Don't try to return structs
-        in registers.
-        (REG_CLASS_FROM_LETTER): Map 'z' to ICALL_REGS.
-        * config/stormy16.md (call_internal, call_value_internal,
-        indirect_jump): Use new 'z' constraint.
+	* config/stormy16/stormy-abi:  Document abi changes.
+	* config/stormy16/stormy16.h (REG_ALLOC_ORDER): Redefine.
+	(ICALL_REGS): New register class.
+	(NUM_ARGUMENT_REGISTERS): Now 6.
+	(DEFAULT_PCC_STRUCT_RETURN): Don't try to return structs
+	in registers.
+	(REG_CLASS_FROM_LETTER): Map 'z' to ICALL_REGS.
+	* config/stormy16.md (call_internal, call_value_internal,
+	indirect_jump): Use new 'z' constraint.
 
 2001-10-05  Neil Booth  <neil@daikokuya.demon.co.uk>
 
@@ -1055,7 +1059,7 @@ Mon Oct  1 06:43:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	storehps builtins.
 	* doc/extend.texi (Vector Extensions): New node.
 	* doc/invoke.texi (Machine Dependent Options): Add documentation for
-        i386 -mmmx, -msse, -m3dnow.
+	i386 -mmmx, -msse, -m3dnow.
 
 Sat Sep 29 15:08:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
