@@ -1,3 +1,10 @@
+2001-08-08  Kelley Cook  <kelley.cook@home.com>
+
+	* Makefile.in: Move many of the *_H definitions eariler in the file,
+	so that rules in t-* files that use them for dependencies will work
+	in a parallel build.
+	* config/i386/t-cygwin (winnt.o): Depend on $(CONFIG_H).
+
 2001-08-08  Mark Mitchell  <mark@codesourcery.com>
 
 	* except.c (remove_fixup_regions): Fix typo.
