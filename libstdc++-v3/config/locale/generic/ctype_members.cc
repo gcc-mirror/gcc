@@ -128,7 +128,9 @@ namespace std
   do_is(mask __m, char_type __c) const
   { 
     bool __ret = false;
-    const size_t __bitmasksize = 10; 
+    // Generically, 15 (instead of 10) since we don't know the numerical
+    // encoding of the various categories in /usr/include/ctype.h.
+    const size_t __bitmasksize = 15; 
     for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
       {
 	const mask __bit = static_cast<mask>(1 << __bitcur);
@@ -144,7 +146,9 @@ namespace std
   {
     for (;__lo < __hi; ++__vec, ++__lo)
       {
-	const size_t __bitmasksize = 10; 
+	// Generically, 15 (instead of 10) since we don't know the numerical
+	// encoding of the various categories in /usr/include/ctype.h.
+	const size_t __bitmasksize = 15; 
 	mask __m = 0;
 	for (size_t __bitcur = 0; __bitcur <= __bitmasksize; ++__bitcur)
 	  { 

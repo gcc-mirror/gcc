@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-1999 Free Software Foundation, Inc.
+// Copyright (C) 1997, 1998, 1999, 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -48,8 +48,8 @@
     static const mask xdigit 	= _ISxdigit;
     static const mask space 	= _ISspace;
     static const mask print 	= _ISprint;
-    static const mask graph 	= _ISgraph;
+    static const mask graph 	= _ISalpha | _ISdigit | _ISpunct;
     static const mask cntrl 	= _IScntrl;
     static const mask punct 	= _ISpunct;
-    static const mask alnum 	= _ISalnum;
+    static const mask alnum 	= _ISalpha | _ISdigit;
   };

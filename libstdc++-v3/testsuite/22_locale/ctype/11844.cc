@@ -1,6 +1,4 @@
-// Locale support -*- C++ -*-
-
-// Copyright (C) 1997, 1998, 1999, 2003 Free Software Foundation, Inc.
+// Copyright (C) 2003 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -27,32 +25,23 @@
 // invalidate any other reasons why the executable file might be covered by
 // the GNU General Public License.
 
-//
-// ISO C++ 14882: 22.1  Locales
-//
+// 22.2.1 The ctype category
+
+#include <locale>
+#include <testsuite_hooks.h>
+
+// libstdc++/11844
+void test01()
+{
+  typedef std::ctype_base ctb;
+  bool test __attribute__((unused)) = true;
   
-// Default information, may not be appropriate for specific host.
-  
-  struct ctype_base
-  {
-    // Non-standard typedefs.
-    typedef const int* 		__to_type;
+  VERIFY( ctb::alnum == (ctb::alpha | ctb::digit) );
+  VERIFY( ctb::graph == (ctb::alnum | ctb::punct) );
+}
 
-    // NB: Offsets into ctype<char>::_M_table force a particular size
-    // on the mask type. Because of this, we don't use an enum.
-    typedef unsigned int 	mask;   
-    static const mask upper    	= 1 << 0;
-    static const mask lower 	= 1 << 1;
-    static const mask alpha 	= 1 << 2;
-    static const mask digit 	= 1 << 3;
-    static const mask xdigit 	= 1 << 4;
-    static const mask space 	= 1 << 5;
-    static const mask print 	= 1 << 6;
-    static const mask graph 	= (1 << 2) | (1 << 3) | (1 << 9);  // alnum|punct
-    static const mask cntrl 	= 1 << 8;
-    static const mask punct 	= 1 << 9;
-    static const mask alnum 	= (1 << 2) | (1 << 3);  // alpha|digit
-  };
-
-
-
+int main()
+{
+  test01();
+  return 0;
+}
