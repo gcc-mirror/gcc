@@ -28,9 +28,13 @@
    the GNU General Public License.  */
 
 #include <math.h>
-#include <config.h>
+#include "config.h"
 
-#ifndef _GLIBCPP_HAVE_ATAN2F
+/* For targets which do not have support for long double versions,
+   we use the crude approximation.  We'll do better later.  */
+
+
+#ifndef HAVE_ATAN2F
 float
 atan2f(float x, float y)
 {
@@ -38,7 +42,16 @@ atan2f(float x, float y)
 }
 #endif
 
-#if !defined(_GLIBCPP_HAVE_COSF) && !defined(_GLIBCPP_HAVE___BUILTIN_COSF)
+#ifndef HAVE_ATAN2L
+long double
+atan2l(long double x, long double y)
+{
+  return atan2((double) x, (double) y);
+}
+#endif
+
+
+#if !defined(HAVE_COSF) && !defined(HAVE___BUILTIN_COSF)
 float
 cosf(float x)
 {
@@ -46,7 +59,16 @@ cosf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_COSHF
+#ifndef HAVE_COSL
+long double
+cosl(long double x)
+{
+  return cos((double) x);
+}
+#endif
+
+
+#ifndef HAVE_COSHF
 float
 coshf(float x)
 {
@@ -54,7 +76,16 @@ coshf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_EXPF
+#ifndef HAVE_COSHL
+long double
+coshl(long double x)
+{
+  return cosh((double) x);
+}
+#endif
+
+
+#ifndef HAVE_EXPF
 float
 expf(float x)
 {
@@ -62,7 +93,49 @@ expf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_LOGF
+#ifndef HAVE_EXPL
+long double
+expl(long double x)
+{
+  return exp((double) x);
+}
+#endif
+
+
+/* Compute the hypothenuse of a right triangle with side x and y.  */
+#ifndef HAVE_HYPOTF
+float
+hypotf(float x, float y)
+{
+  float s = fabsf(x) + fabsf(y);
+  x /= s; y /= s;
+  return s * sqrtf(x * x + y * y);
+}
+#endif
+
+#ifndef HAVE_HYPOT
+double
+hypot(double x, double y)
+{
+  double s = fabs(x) + fabs(y);
+  x /= s; y /= s;
+  return s * sqrt(x * x + y * y);
+}
+#endif
+
+#ifndef HAVE_HYPOTL
+long double
+hypotl(long double x, long double y)
+{
+  long double s = fabsl(x) + fabsl(y);
+  x /= s; y /= s;
+  return s * sqrtl(x * x + y * y);
+}
+#endif
+
+
+
+#ifndef HAVE_LOGF
 float
 logf(float x)
 {
@@ -70,7 +143,16 @@ logf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_LOG10F
+#ifndef _GBLICPP_HAVE_LOGL
+long double
+logl(long double x)
+{
+  return log((double) x);
+}
+#endif
+
+
+#ifndef HAVE_LOG10F
 float
 log10f(float x)
 {
@@ -78,7 +160,16 @@ log10f(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_POWF
+#ifndef HAVE_LOG10L
+long double
+log10l(long double x)
+{
+  return log10((double) x);
+}
+#endif
+
+
+#ifndef HAVE_POWF
 float
 powf(float x, float y)
 {
@@ -86,7 +177,16 @@ powf(float x, float y)
 }
 #endif
 
-#if !defined(_GLIBCPP_HAVE_SINF) && !defined(_GLIBCPP_HAVE___BUILTIN_SINF)
+#ifndef HAVE_POWL
+long double
+powl(long double x, long double y)
+{
+  return pow((double) x, (double) y);
+}
+#endif
+
+
+#if !defined(HAVE_SINF) && !defined(HAVE___BUILTIN_SINF)
 float
 sinf(float x)
 {
@@ -94,7 +194,16 @@ sinf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_SINHF
+#ifndef HAVE_SINL
+long double
+sinl(long double x)
+{
+  return sin((double) x);
+}
+#endif
+
+
+#ifndef HAVE_SINHF
 float
 sinhf(float x)
 {
@@ -102,7 +211,16 @@ sinhf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_SQRTF
+#ifndef HAVE_SINHL
+long double
+sinhl(long double x)
+{
+  return sinh((double) x);
+}
+#endif
+
+
+#ifndef HAVE_SQRTF
 float
 sqrtf(float x)
 {
@@ -110,7 +228,16 @@ sqrtf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_TANF
+#ifndef HAVE_SQRTL
+long double
+sqrtl(long double x)
+{
+  return  sqrt((double) x);
+}
+#endif
+
+
+#ifndef HAVE_TANF
 float
 tanf(float x)
 {
@@ -118,10 +245,27 @@ tanf(float x)
 }
 #endif
 
-#ifndef _GLIBCPP_HAVE_TANHF
+#ifndef HAVE_TANL
+long double
+tanl(long double x)
+{
+  return tan((double) x);
+}
+#endif
+
+
+#ifndef HAVE_TANHF
 float
 tanhf(float x)
 {
   return (float) tanh(x);
+}
+#endif
+
+#ifndef HAVE_TANHL
+long double
+tanhl(long double x)
+{
+  return tanh((double) x);
 }
 #endif
