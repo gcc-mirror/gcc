@@ -76,6 +76,9 @@ protected:
 
   // The method description.
   _Jv_Method *self;
+
+  // Size of raw arguments.
+  _Jv_ushort args_raw_size;
 };
 
 class _Jv_InterpMethod : public _Jv_MethodBase
@@ -85,7 +88,6 @@ class _Jv_InterpMethod : public _Jv_MethodBase
   int              code_length;
 
   _Jv_ushort       exc_count;
-  _Jv_ushort       args_raw_size;
 
   unsigned char* bytecode () 
   {
@@ -174,6 +176,12 @@ class _Jv_JNIMethod : public _Jv_MethodBase
   // The underlying function.  If NULL we have to look for the
   // function.
   void *function;
+
+  // This is the CIF used by the JNI function.
+  ffi_cif jni_cif;
+
+  // These are the argument types used by the JNI function.
+  ffi_type **jni_arg_types;
 
   // This function is used when making a JNI call from the interpreter.
   static void call (ffi_cif *, void *, ffi_raw *, void *);

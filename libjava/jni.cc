@@ -1323,7 +1323,7 @@ mangled_name (jclass klass, _Jv_Utf8Const *func_name,
 // This function is the stub which is used to turn an ordinary (CNI)
 // method call into a JNI call.
 void
-_Jv_JNIMethod::call (ffi_cif *cif, void *ret, ffi_raw *args, void *__this)
+_Jv_JNIMethod::call (ffi_cif *, void *ret, ffi_raw *args, void *__this)
 {
   _Jv_JNIMethod* _this = (_Jv_JNIMethod *) __this;
 
@@ -1372,9 +1372,24 @@ _Jv_JNIMethod::call (ffi_cif *cif, void *ret, ffi_raw *args, void *__this)
 	}
     }
 
+  JvAssert (_this->args_raw_size % sizeof (ffi_raw) == 0);
+  ffi_raw real_args[2 + _this->args_raw_size / sizeof (ffi_raw)];
+  int offset = 0;
+
+  // First argument is always the environment pointer.
+  real_args[offset++].ptr = &env;
+
+  // For a static method, we pass in the Class.  For non-static
+  // methods, the `this' argument is already handled.
+  if ((_this->self->accflags & java::lang::reflect::Modifier::STATIC))
+    real_args[offset++].ptr = _this->defining_class;
+
+  // Copy over passed-in arguments.
+  memcpy (&real_args[offset], args, _this->args_raw_size);
+
   // The actual call to the JNI function.
-  // FIXME: if this is a static function we must include the class!
-  ffi_raw_call (cif, (void (*) (...)) _this->function, ret, args);
+  ffi_raw_call (&_this->jni_cif, (void (*) (...)) _this->function,
+		ret, real_args);
 
   do
     {

@@ -941,7 +941,8 @@ init_cif (_Jv_Utf8Const* signature,
 	  int arg_count,
 	  jboolean staticp,
 	  ffi_cif *cif,
-	  ffi_type **arg_types)
+	  ffi_type **arg_types,
+	  ffi_type **rtype_p)
 {
   unsigned char *ptr = (unsigned char*) signature->data;
 
@@ -983,6 +984,9 @@ init_cif (_Jv_Utf8Const* signature,
 		    arg_count, rtype, arg_types) != FFI_OK)
     throw_internal_error ("ffi_prep_cif failed");
 
+  if (rtype_p != NULL)
+    *rtype_p = rtype;
+
   return item_count;
 }
 
@@ -1019,7 +1023,8 @@ _Jv_InterpMethod::ncode ()
 	    arg_count,
 	    staticp,
 	    &closure->cif,
-	    &closure->arg_types[0]);
+	    &closure->arg_types[0],
+	    NULL);
 
   ffi_closure_fun fun;
 
@@ -1064,13 +1069,36 @@ _Jv_JNIMethod::ncode ()
     (ncode_closure*)_Jv_AllocBytesChecked (sizeof (ncode_closure)
 					+ arg_count * sizeof (ffi_type*));
 
+  ffi_type *rtype;
   init_cif (self->signature,
 	    arg_count,
 	    staticp,
 	    &closure->cif,
-	    &closure->arg_types[0]);
+	    &closure->arg_types[0],
+	    &rtype);
 
   ffi_closure_fun fun;
+
+  args_raw_size = ffi_raw_size (&closure->cif);
+
+  // Initialize the argument types and CIF that represent the actual
+  // underlying JNI function.
+  int extra_args = 1;
+  if ((self->accflags & Modifier::STATIC))
+    ++extra_args;
+  jni_arg_types = (ffi_type **) _Jv_Malloc ((extra_args + arg_count)
+					    * sizeof (ffi_type *));
+  int offset = 0;
+  jni_arg_types[offset++] = &ffi_type_pointer;
+  if ((self->accflags & Modifier::STATIC))
+    jni_arg_types[offset++] = &ffi_type_pointer;
+  memcpy (&jni_arg_types[offset], &closure->arg_types[0],
+	  arg_count * sizeof (ffi_type *));
+
+  if (ffi_prep_cif (&jni_cif, FFI_DEFAULT_ABI,
+		    extra_args + arg_count, rtype,
+		    jni_arg_types) != FFI_OK)
+    throw_internal_error ("ffi_prep_cif failed for JNI function");
 
   JvAssert ((self->accflags & Modifier::NATIVE) != 0);
 
@@ -1083,7 +1111,7 @@ _Jv_JNIMethod::ncode ()
 			fun,
 			(void*) this);
 
-  self->ncode = (void*)closure;
+  self->ncode = (void *) closure;
   return self->ncode;
 }
 
@@ -1107,7 +1135,8 @@ _Jv_BuildResolvedMethod (_Jv_Method* method,
 		arg_count,
 		staticp,
 		&result->cif,
-		&result->arg_types[0]);
+		&result->arg_types[0],
+		NULL);
 
   result->vtable_index        = vtable_index;
   result->method              = method;
