@@ -3032,7 +3032,8 @@ rs6000_stack_info ()
   if (TARGET_EABI)
 #endif
     {
-      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main") == 0)
+      if (strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)), "main") == 0
+	  && DECL_CONTEXT (current_function_decl) == NULL_TREE)
 	{
 	  info_ptr->main_p = 1;
 
