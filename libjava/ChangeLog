@@ -1,3 +1,8 @@
+2003-08-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* configure.in: Don't initialize GCINCS to boehm-gc/include.
+	* configure: Regenerate.
+
 2003-08-07  Bryce McKinlay  <bryce@mckinlay.net.nz>
 
 	* java/net/Socket.java (Socket (SocketImpl)): Don't allow null

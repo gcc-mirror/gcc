@@ -2722,7 +2722,7 @@ if test "${enable_parallel_mark+set}" = set; then
 fi
 
 
-INCLUDES=-I${srcdir}/include
+INCLUDES="-I`cd $srcdir && ${PWDCMD-pwd}`/include"
 THREADLIBS=
 case "$THREADS" in
  no | none | single)
@@ -3792,11 +3792,12 @@ gc_basedir=${gc_basedir}
 CC="${CC}"
 ORIGINAL_LD_FOR_MULTILIBS="${ORIGINAL_LD_FOR_MULTILIBS}"
 DEFS="$DEFS"
+INCLUDES="$INCLUDES"
 
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 
-echo "$DEFS" > boehm-cflags
+echo "$INCLUDES $DEFS" > boehm-cflags
 
 if test -n "$CONFIG_FILES"; then
   LD="${ORIGINAL_LD_FOR_MULTILIBS}"

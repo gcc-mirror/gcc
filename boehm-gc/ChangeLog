@@ -1,3 +1,11 @@
+2003-08-07  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+	    Roger Sayle <roger@eyesopen.com>
+
+	* configure.in: Set INCLUDES to absolute path.
+	Save $INCLUDES in boehm-cflags, too.
+	Set INCLUDES so it's available to config.status.
+	* configure: Regenerate.
+
 2003-07-31  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	* include/gc.h (GC_CreateThread): Declare with WINAPI
