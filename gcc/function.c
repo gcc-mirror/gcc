@@ -4907,6 +4907,14 @@ uninitialized_vars_warning (block)
 	  && ! AGGREGATE_TYPE_P (TREE_TYPE (decl))
 	  && DECL_RTL (decl) != 0
 	  && GET_CODE (DECL_RTL (decl)) == REG
+	  /* Global optimizations can make it difficult to determine if a
+	     particular variable has been initialized.  However, a VAR_DECL
+	     with a nonzero DECL_INITIAL had an initializer, so do not
+	     claim it is potentially uninitialized.
+
+	     We do not care about the actual value in DECL_INITIAL, so we do
+	     not worry that it may be a dangling pointer.  */
+	  && DECL_INITIAL (decl) == NULL_TREE
 	  && regno_uninitialized (REGNO (DECL_RTL (decl))))
 	warning_with_decl (decl,
 			   "`%s' might be used uninitialized in this function");

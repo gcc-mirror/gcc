@@ -1,3 +1,8 @@
+Sun Oct 18 17:31:26 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* function.c (uninitialized_vars_warning): Do not warn for a VAR_DECL
+	if it has a nonzero DECL_INITIAL.
+
 Sat Oct 17 23:18:08 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* Makefile.in (flow.o): Depend on recog.h.
