@@ -1,3 +1,7 @@
+2001-12-16  Aldy Hernandez  <aldyh@redhat.com>
+
+        * config.gcc: Add powerpc-*-eabisimaltivec*.
+
 2001-12-16  Neil Booth  <neil@daikokuya.demon.co.uk>
 
 	* c-common.c, c-common.h (back_end_hook): Remove.
