@@ -98,6 +98,7 @@ struct cgraph_node GTY((chain_next ("%h.next"), chain_prev ("%h.previous")))
   struct cgraph_node *next_needed;
   /* Pointer to the next clone.  */
   struct cgraph_node *next_clone;
+  struct cgraph_node *prev_clone;
   PTR GTY ((skip)) aux;
 
   struct cgraph_local_info local;
