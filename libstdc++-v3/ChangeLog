@@ -1,3 +1,14 @@
+2004-01-26  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/basic_string.tcc (replace(size_type,
+	size_type, const _CharT*, size_type)): Implement optimized
+	in-place algorithm for non-overlapping ranges.
+	* testsuite/21_strings/basic_string/replace/char/6.cc: New.
+	* testsuite/21_strings/basic_string/replace/wchar_t/6.cc: New.
+
+	* include/bits/basic_string.tcc (insert(size_type,
+	const _CharT*, size_type)): Tweak slightly.
+
 2004-01-26  Andreas Schwab  <schwab@suse.de>
 
 	* config/locale/gnu/monetary_members.cc: Restore locale before
