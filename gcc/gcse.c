@@ -3948,7 +3948,13 @@ cprop_insn (insn, alter_jumps)
 		   && GET_CODE (NEXT_INSN (insn)) == JUMP_INSN
 		   && condjump_p (NEXT_INSN (insn))
 		   && ! simplejump_p (NEXT_INSN (insn)))
-	    changed |= cprop_cc0_jump (insn, reg_used, src);
+            {
+	      if (cprop_cc0_jump (insn, reg_used, src))
+		{
+		  changed = 1;
+		  break;
+		}
+	    }
 #endif
 	}
       else if (GET_CODE (src) == REG

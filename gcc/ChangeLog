@@ -1,3 +1,8 @@
+2000-10-24  Aldy Hernandez  <aldyh@redhat.com>
+
+        * gcse.c (cprop_insn): do not propagate constants into jump_insn
+        for machines with CC0 more than once.
+
 2000-10-24  Richard Henderson <rth@cygnus.com>, Aldy <aldyh@cygnus.com>
 
         * config/mn10300/mn10300.h (PREFERRED_RELOAD_CLASS): Treat
