@@ -1,3 +1,15 @@
+2003-04-12  Paolo Carlini  <pcarlini at unitus dot it>
+
+	* include/ext/stdio_filebuf.h
+	(stdio_filebuf::stdio_filebuf(int, openmode, bool, size_t),
+	stdio_filebuf::stdio_filebuf(__c_file*, openmode, size_t):
+	_M_buf_size_opt == 0 only means "not to use an allocated buffer"
+	since a stack-based buffer is used for small values of the size_t
+	parameter.
+	* include/bits/fstream.tcc (basic_filebuf::_M_really_overflow).
+	If _M_buf_size != 0 flush out the buffer (any kind, stack-based too).
+	* testsuite/ext/stdio_filebuf_2.cc: New testfile.
+
 2003-04-12  Paolo Carlini  <pcarlini@unitus.it>
 
 	PR libstdc++/9533

@@ -355,7 +355,7 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testput = this->_M_out_cur && this->_M_out_beg < this->_M_out_lim;
-      bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size_opt;
+      bool __testunbuffered = _M_file.is_open() && !this->_M_buf_size;
       // Sync with stdio.
       bool __sync = this->_M_buf_size <= 1;
 

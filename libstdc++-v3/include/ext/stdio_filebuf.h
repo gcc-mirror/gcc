@@ -126,7 +126,7 @@ namespace __gnu_cxx
 	  this->_M_mode = __mode;
 	  if (__size > 0 && __size < 4)
 	    {
-	      // Specify unbuffered.
+	      // Specify not to use an allocated buffer.
 	      this->_M_buf = _M_unbuf;
 	      this->_M_buf_size = __size;
 	      this->_M_buf_size_opt = 0;
@@ -151,7 +151,7 @@ namespace __gnu_cxx
 	  this->_M_mode = __mode;
 	  if (__size > 0 && __size < 4)
 	    {
-	      // Specify unbuffered.
+	      // Specify not to use an allocated buffer.
 	      this->_M_buf = _M_unbuf;
 	      this->_M_buf_size = __size;
 	      this->_M_buf_size_opt = 0;
