@@ -1,3 +1,10 @@
+2000-04-13  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* class.c (build_base_field): Reformat comment.
+	
+	* inc/cxxabi.h (stddef.h): Comment inclusion.
+	(__base_class_info::__offset): Comment shift.
+
 2000-04-12  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (IDENTIFIER_CTOR_OR_DTOR_P): New macro.
