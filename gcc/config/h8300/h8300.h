@@ -1054,10 +1054,9 @@ struct cum_arg
 #undef DO_GLOBAL_CTORS_BODY
 #define DO_GLOBAL_CTORS_BODY			\
 {						\
-  typedef (*pfunc)();				\
-  extern pfunc __ctors[];			\
-  extern pfunc __ctors_end[];			\
-  pfunc *p;					\
+  extern func_ptr __ctors[];			\
+  extern func_ptr __ctors_end[];		\
+  func_ptr *p;					\
   for (p = __ctors_end; p > __ctors; )		\
     {						\
       (*--p)();					\
@@ -1067,10 +1066,9 @@ struct cum_arg
 #undef DO_GLOBAL_DTORS_BODY
 #define DO_GLOBAL_DTORS_BODY			\
 {						\
-  typedef (*pfunc)();				\
-  extern pfunc __dtors[];			\
-  extern pfunc __dtors_end[];			\
-  pfunc *p;					\
+  extern func_ptr __dtors[];			\
+  extern func_ptr __dtors_end[];		\
+  func_ptr *p;					\
   for (p = __dtors; p < __dtors_end; p++)	\
     {						\
       (*p)();					\

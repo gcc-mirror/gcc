@@ -1,3 +1,8 @@
+2003-11-15  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.h (DO_GLOBAL_CTORS_BODY): Fix warnings.
+	(DO_GLOBAL_DTORS_BODY): Likewise.
+
 2003-11-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* doc/install.texi (Prerequisites): Refine documentation of
