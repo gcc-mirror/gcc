@@ -1417,7 +1417,7 @@ caller-save.o : caller-save.c $(CONFIG_H) $(RTL_H) flags.h \
    reload.h expr.h
 reorg.o : reorg.c $(CONFIG_H) $(RTL_H) conditions.h hard-reg-set.h \
    $(BASIC_BLOCK_H) regs.h insn-config.h insn-attr.h insn-flags.h $(RECOG_H) \
-   flags.h output.h
+   flags.h output.h expr.h
 alias.o : alias.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
    insn-codes.h
 regmove.o : regmove.c $(CONFIG_H) $(RTL_H) insn-config.h recog.h output.h \
