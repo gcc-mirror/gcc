@@ -118,7 +118,7 @@ link_handler (range, outer)
 
   if (range->start_pc == outer->start_pc && range->end_pc == outer->end_pc)
     {
-      outer->handlers = chainon (range->handlers, outer->handlers);
+      outer->handlers = chainon (outer->handlers, range->handlers);
       return;
     }
 
