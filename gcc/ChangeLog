@@ -1,3 +1,8 @@
+2000-11-10  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.texi (Service): Update to reflect current practice and
+	location of the GNU service directory.
+
 2000-11-09  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* regrename.c (build_def_use): Mark contents of REG_INC notes as
