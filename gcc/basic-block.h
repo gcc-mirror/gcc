@@ -640,7 +640,7 @@ ei_safe_edge (edge_iterator i)
 }
 
 /* This macro serves as a convenient way to iterate each edge in a
-   vector of predeccesor or successor edges.  It must not be used when
+   vector of predecessor or successor edges.  It must not be used when
    an element might be removed during the traversal, otherwise
    elements will be missed.  Instead, use a for-loop like that shown
    in the following pseudo-code:
