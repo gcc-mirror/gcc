@@ -3845,8 +3845,10 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && DEFAULT_ABI == ABI_DARWIN
       && !ALTIVEC_VECTOR_MODE (mode)
       && (flag_pic || MACHO_DYNAMIC_NO_PIC_P)
-      /* Don't do this for TFmode, since the result isn't offsettable.  */
-      && mode != TFmode)
+      /* Don't do this for TFmode, since the result isn't offsettable.
+	 The same goes for DImode without 64-bit gprs.  */
+      && mode != TFmode
+      && (mode != DImode || TARGET_POWERPC64))
     {
       if (flag_pic)
 	{
