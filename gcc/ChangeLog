@@ -1,5 +1,9 @@
 2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
 
+	* arm.md (push_multi): Revert unintended change.
+
+2000-10-09  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.c: Miscellaneous white space and comment clean-ups.  No 
 	functional change.
 	* arm.md: Likewise.
