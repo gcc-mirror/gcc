@@ -1,3 +1,10 @@
+2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* gfortran.fortran-torture/execute/select_1.f90: Rename function
+	to fix type error.
+	* gfortran.fortran-torture/execute/intrinsic_associated.f90:
+	Remove trailing spaces.
+	
 2004-06-21  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/tree-ssa/20030714-1.c: Rename variables to avoid

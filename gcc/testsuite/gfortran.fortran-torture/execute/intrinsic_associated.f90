@@ -5,7 +5,7 @@ program intrinsic_associated
    call pointer_to_derived_1 ()
    call associated_2 ()
 end
- 
+
 subroutine pointer_to_section ()
    integer, dimension(5, 5), target :: xy
    integer, dimension(:, :), pointer :: window
@@ -36,13 +36,13 @@ end
 subroutine sub1 (a, ap)
    integer, pointer :: ap(:, :)
    integer, target :: a(10, 10)
-                                                                                
+
    ap => a
 end
 
 subroutine nullify_pp (a)
    integer, pointer :: a(:, :)
-                                                                                
+
    if (.not. associated (a)) call abort ()
    nullify (a)
 end
