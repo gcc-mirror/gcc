@@ -182,11 +182,19 @@ namespace std
       if (this->is_open())
 	{
 	  bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-	  if (__testput)
-	    _M_really_overflow(traits_type::eof());
-
-	  // NB: Do this here so that re-opened filebufs will be cool...
-	  _M_pback_destroy();
+	  if (__testput
+	      && _M_really_overflow(traits_type::eof()) != traits_type::eof())
+	    {
+	      // NB: Do this here so that re-opened filebufs will be cool...
+	      _M_mode = ios_base::openmode(0);
+	      _M_destroy_internal_buffer();
+	      
+	      _M_pback_destroy();
+	      if (_M_pback)
+		{
+		  delete [] _M_pback;
+		  _M_pback = NULL;
+		}
 
 #if 0
 	  // XXX not done
@@ -196,16 +204,8 @@ namespace std
 	      _M_really_overflow(traits_type::eof());
 	    }
 #endif
-
-	  _M_mode = ios_base::openmode(0);
-	  _M_destroy_internal_buffer();
-
-	  if (_M_pback)
-	    {
-	      delete [] _M_pback;
-	      _M_pback = NULL;
+	      __ret = this;
 	    }
-	  __ret = this;
 	}
 
       // Can actually allocate this file as part of an open and never
@@ -227,7 +227,7 @@ namespace std
       streamsize __ret = -1;
       bool __testin = _M_mode & ios_base::in;
 
-      if (__testin)
+      if (__testin && this->is_open())
 	{
 	  if (_M_in_cur < _M_in_end)
 	    __ret = _M_in_end - _M_in_cur;
@@ -420,7 +420,7 @@ namespace std
 	  if (__plen)
 	    __len = _M_file->xsputn(_M_out_beg, __plen);
 
-	  if (__c !=traits_type::eof())
+	  if (__c != traits_type::eof())
 	    {
  	      char_type __pending = traits_type::to_char_type(__c);
  	      __len += _M_file->xsputn(&__pending, 1);
@@ -429,12 +429,11 @@ namespace std
 
 	  // NB: Need this so that external byte sequence reflects
 	  // internal buffer.
-	  _M_file->sync();
 	  if (__len == __plen)
-	    {
-	      _M_set_indeterminate();
-	      __ret = traits_type::not_eof(__c);
-	    }
+	    _M_set_indeterminate();
+
+	  if (!_M_file->sync())
+	    __ret = traits_type::not_eof(__c);
 #else
 	  // Part one: Allocate temporary conversion buffer on
 	  // stack. Convert internal buffer plus __c (ie,
@@ -468,7 +467,7 @@ namespace std
 	      streamsize __len = _M_file->xsputn(__conv_buf, __plen);
 	      // NB: Need this so that external byte sequence reflects
 	      // internal buffer.
-	      _M_file->sync();
+	      _M_file->sync(); // XXX error check
 	      if (__len == __plen)
 		{
 		  _M_set_indeterminate();
