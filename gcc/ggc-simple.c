@@ -148,7 +148,7 @@ init_ggc PROTO ((void))
   setlinebuf (dump);
 #endif
 
-  ggc_alloc_string ("", 0);
+  empty_string = ggc_alloc_string ("", 0);
   ggc_add_string_root (&empty_string, 1);
 }
 
