@@ -225,7 +225,7 @@ int tree_node_counts[(int)all_kinds];
 int tree_node_sizes[(int)all_kinds];
 int id_string_size = 0;
 
-char *tree_node_kind_names[] = {
+const char *tree_node_kind_names[] = {
   "decls",
   "types",
   "blocks",
@@ -743,10 +743,10 @@ void
 print_obstack_name (object, file, prefix)
      char *object;
      FILE *file;
-     char *prefix;
+     const char *prefix;
 {
   struct obstack *obstack = NULL;
-  char *obstack_name = NULL;
+  const char *obstack_name = NULL;
   struct function *p;
 
   for (p = outer_function_chain; p; p = p->next)
@@ -1241,7 +1241,7 @@ copy_list (list)
 
 tree
 get_identifier (text)
-     register char *text;
+     register const char *text;
 {
   register int hi;
   register int i;
@@ -1304,7 +1304,7 @@ get_identifier (text)
 
 tree
 maybe_get_identifier (text)
-     register char *text;
+     register const char *text;
 {
   register int hi;
   register int i;
@@ -1502,7 +1502,7 @@ build_real_from_int_cst (type, i)
 tree
 build_string (len, str)
      int len;
-     char *str;
+     const char *str;
 {
   /* Put the string in saveable_obstack since it will be placed in the RTL
      for an "asm" statement and will also be kept around a while if
@@ -3220,10 +3220,10 @@ build_block (vars, tags, subblocks, supercontext, chain)
 tree
 build_expr_wfl (node, file, line, col)
      tree node;
-     char *file;
+     const char *file;
      int line, col;
 {
-  static char *last_file = 0;
+  static const char *last_file = 0;
   static tree  last_filenode = NULL_TREE;
   register tree wfl = make_node (EXPR_WITH_FILE_LOCATION);
 
@@ -3432,7 +3432,7 @@ valid_machine_attribute (attr_name, attr_args, decl, type)
 
 int
 is_attribute_p (attr, ident)
-     char *attr;
+     const char *attr;
      tree ident;
 {
   int ident_len, attr_len;
@@ -3477,7 +3477,7 @@ is_attribute_p (attr, ident)
 
 tree
 lookup_attribute (attr_name, list)
-     char *attr_name;
+     const char *attr_name;
      tree list;
 {
   tree l;
@@ -4730,7 +4730,7 @@ print_inline_obstack_statistics ()
 
 void
 print_obstack_statistics (str, o)
-     char *str;
+     const char *str;
      struct obstack *o;
 {
   struct _obstack_chunk *chunk = o->chunk;
@@ -4855,7 +4855,7 @@ append_random_chars (template)
 
 tree
 get_file_function_name_long (type)
-     char *type;
+     const char *type;
 {
   char *buf;
   register char *p;
@@ -4867,8 +4867,8 @@ get_file_function_name_long (type)
       /* We don't have anything that we know to be unique to this translation
 	 unit, so use what we do have and throw in some randomness.  */
 
-      char *name = weak_global_object_name;
-      char *file = main_input_filename;
+      const char *name = weak_global_object_name;
+      const char *file = main_input_filename;
 
       if (! name)
 	name = "";
@@ -5038,7 +5038,7 @@ tree
 tree_check (node, code, file, line, nofatal)
      tree node;
      enum tree_code code;
-     char *file;
+     const char *file;
      int line;
      int nofatal;
 {
@@ -5058,7 +5058,7 @@ tree
 tree_class_check (node, cl, file, line, nofatal)
      tree node;
      char cl;
-     char *file;
+     const char *file;
      int line;
      int nofatal;
 {
@@ -5077,7 +5077,7 @@ tree
 expr_check (node, ignored, file, line, nofatal)
      tree node;
      int ignored;
-     char *file;
+     const char *file;
      int line;
      int nofatal;
 {

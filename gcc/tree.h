@@ -1416,13 +1416,13 @@ extern tree make_tree_vec		PROTO((int));
 /* Return the (unique) IDENTIFIER_NODE node for a given name.
    The name is supplied as a char *.  */
 
-extern tree get_identifier		PROTO((char *));
+extern tree get_identifier		PROTO((const char *));
 
 /* If an identifier with the name TEXT (a null-terminated string) has
    previously been referred to, return that node; otherwise return
    NULL_TREE.  */
 
-extern tree maybe_get_identifier	PROTO((char *));
+extern tree maybe_get_identifier	PROTO((const char *));
 
 /* Construct various types of nodes.  */
 
@@ -1437,14 +1437,14 @@ extern tree build_int_2_wide		PROTO((HOST_WIDE_INT, HOST_WIDE_INT));
 extern tree build_real			PROTO((tree, REAL_VALUE_TYPE));
 extern tree build_real_from_int_cst 	PROTO((tree, tree));
 extern tree build_complex		PROTO((tree, tree, tree));
-extern tree build_string		PROTO((int, char *));
+extern tree build_string		PROTO((int, const char *));
 extern tree build1			PROTO((enum tree_code, tree, tree));
 extern tree build_tree_list		PROTO((tree, tree));
 extern tree build_decl_list		PROTO((tree, tree));
 extern tree build_expr_list		PROTO((tree, tree));
 extern tree build_decl			PROTO((enum tree_code, tree, tree));
 extern tree build_block			PROTO((tree, tree, tree, tree, tree));
-extern tree build_expr_wfl              PROTO((tree, char *, int, int));
+extern tree build_expr_wfl              PROTO((tree, const char *, int, int));
 
 /* Construct various nodes representing data types.  */
 
@@ -1509,12 +1509,12 @@ extern int valid_machine_attribute	PROTO((tree, tree, tree, tree));
 /* Given a tree node and a string, return non-zero if the tree node is
    a valid attribute name for the string.  */
 
-extern int is_attribute_p		PROTO((char *, tree));
+extern int is_attribute_p		PROTO((const char *, tree));
 
 /* Given an attribute name and a list of attributes, return the list element
    of the attribute or NULL_TREE if not found.  */
 
-extern tree lookup_attribute		PROTO((char *, tree));
+extern tree lookup_attribute		PROTO((const char *, tree));
 
 /* Given two attributes lists, return a list of their union.  */
 
@@ -1897,7 +1897,7 @@ extern void (*incomplete_decl_finalize_hook)	PROTO((tree));
 /* In tree.c */
 extern char *perm_calloc			PROTO((int, long));
 extern tree get_file_function_name		PROTO((int));
-extern tree get_file_function_name_long 	PROTO((char *));
+extern tree get_file_function_name_long 	PROTO((const char *));
 extern tree get_set_constructor_bits		PROTO((tree, char *, int));
 extern tree get_set_constructor_bytes		PROTO((tree,
 						       unsigned char *, int));
@@ -2153,9 +2153,10 @@ extern void rtl_in_current_obstack	PROTO ((void));
 extern void rtl_in_saveable_obstack	PROTO ((void));
 extern void init_tree_codes		PROTO ((void));
 extern void dump_tree_statistics	PROTO ((void));
-extern void print_obstack_statistics	PROTO ((char *, struct obstack *));
+extern void print_obstack_statistics	PROTO ((const char *,
+						struct obstack *));
 #ifdef BUFSIZ
-extern void print_obstack_name		PROTO ((char *, FILE *, char *));
+extern void print_obstack_name		PROTO ((char *, FILE *, const char *));
 #endif
 extern void expand_function_end		PROTO ((char *, int, int));
 extern void expand_function_start	PROTO ((tree, int));
@@ -2165,9 +2166,12 @@ extern void start_identifier_warnings	PROTO ((void));
 extern void gcc_obstack_init		PROTO ((struct obstack *));
 extern void init_obstacks		PROTO ((void));
 extern void obfree			PROTO ((char *));
-extern tree tree_check                  PROTO ((tree, enum tree_code, char*, int, int));
-extern tree tree_class_check            PROTO ((tree, char, char*, int, int));
-extern tree expr_check                  PROTO ((tree, int, char*, int, int));
+extern tree tree_check                  PROTO ((tree, enum tree_code,
+						const char *, int, int));
+extern tree tree_class_check            PROTO ((tree, char, const char *,
+						int, int));
+extern tree expr_check                  PROTO ((tree, int, const char *,
+						int, int));
 
 /* In function.c */
 extern void setjmp_protect_args		PROTO ((void));

@@ -1,3 +1,17 @@
+Wed Feb 17 10:56:24 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* tree.c (tree_node_kind_names, print_obstack_name,
+ 	get_identifier, maybe_get_identifier, build_string,
+ 	build_expr_wfl, is_attribute_p, lookup_attribute,
+ 	print_obstack_statistics, get_file_function_name_long, tree_check,
+ 	tree_class_check, expr_check): Qualify a char* with the `const'
+ 	keyword.
+
+	* tree.h (get_identifier, maybe_get_identifier, build_string,
+	build_expr_wfl, is_attribute_p, lookup_attribute,
+	print_obstack_statistics, print_obstack_name, tree_check,
+	tree_class_check, expr_check): Likewise.
+
 Tue Feb 16 21:29:38 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* i386/freebsd-elf.h, i386/gas.h, i386/linux.h: Fix minor spacing
