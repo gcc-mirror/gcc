@@ -1598,7 +1598,7 @@ vectorizable_load (tree stmt, block_stmt_iterator *bsi, tree *vec_stmt)
 	software_pipeline_loads_p = true;
       else if (!targetm.vectorize.misaligned_mem_ok (mode))
 	{
-	  /* Possibly unaligned access, and can't sofware pipeline the loads  */
+	  /* Possibly unaligned access, and can't software pipeline the loads  */
 	  if (vect_debug_details (loop))
 	    fprintf (dump_file, "Arbitrary load not supported.");
 	  return false;
