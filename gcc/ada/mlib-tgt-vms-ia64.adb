@@ -160,8 +160,10 @@ package body MLib.Tgt is
       --  Returns Symbol_File, if not empty. Otherwise, returns "symvec.opt"
 
       function Version_String return String;
-      --  Returns Lib_Version if not empty, otherwise returns "1".
-      --  Fails gnatmake if Lib_Version is not the image of a positive number.
+      --  Returns Lib_Version if not empty and if Symbol_Data.Symbol_Policy is
+      --  not Autonomous, otherwise returns "".
+      --  When Symbol_Data.Symbol_Policy is Autonomous, fails gnatmake if
+      --  Lib_Version is not the image of a positive number.
 
       ------------------
       -- Is_Interface --
@@ -215,8 +217,10 @@ package body MLib.Tgt is
       function Version_String return String is
          Version : Integer := 0;
       begin
-         if Lib_Version = "" then
-            return "1";
+         if Lib_Version = ""
+           or else Symbol_Data.Symbol_Policy /= Autonomous
+         then
+            return "";
 
          else
             begin
