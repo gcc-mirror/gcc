@@ -434,25 +434,23 @@ namespace __gnu_cxx
 #ifdef __GTHREADS
       if (__gthread_active_p())
 	{
-	  // Calculate the number of records to remove from our freelist.
+	  // Calculate the number of records to remove from our freelist:
+	  // in order to avoid too much contention we wait until the
+	  // number of records is "high enough".
 	  const size_t __thread_id = _S_get_thread_id();
-	  int __remove = (__bin._M_free[__thread_id]
-			  - (__bin._M_used[__thread_id]
-			     / _S_options._M_freelist_headroom));
 
-	  // The calculation above will almost always tell us to
-	  // remove one or two records at a time, but this creates too
-	  // much contention when locking and therefore we wait until
-	  // the number of records is "high enough".
-	  int __cond1 = static_cast<int>(100 * (_S_bin_size - __which));
-	  int __cond2 = static_cast<int>(__bin._M_free[__thread_id]
-					 / _S_options._M_freelist_headroom);
-	  if (__remove > __cond1 && __remove > __cond2)
+	  long __remove = ((__bin._M_free[__thread_id]
+			    * _S_options._M_freelist_headroom)
+			   - __bin._M_used[__thread_id]);
+	  if (__remove > static_cast<long>(100 * (_S_bin_size - __which)
+					   * _S_options._M_freelist_headroom)
+	      && __remove > static_cast<long>(__bin._M_free[__thread_id]))
 	    {
 	      __gthread_mutex_lock(__bin._M_mutex);
 	      _Block_record* __tmp = __bin._M_first[__thread_id];
 	      _Block_record* __first = __tmp;
-	      const int __removed = __remove;
+	      __remove /= _S_options._M_freelist_headroom;
+	      const long __removed = __remove;
 	      while (__remove > 1)
 		{
 		  __tmp = __tmp->_M_next;
