@@ -1,3 +1,8 @@
+2003-12-08  Fernando Nasser  <fnasser@redhat.com>
+ 
+	* java/awt/datatransfer/DataFlavor.java (getParameter): Fix off-by-one
+	error which was clipping off the first character of a parameter value.
+
 2003-12-08  Olga Rodimina <rodimina@redhat.com>
 
 	* java/awt/Polygon.java
