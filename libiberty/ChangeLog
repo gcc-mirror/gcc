@@ -1,3 +1,7 @@
+2004-01-14  Loren J. Rittle  <ljrittle@acm.org>
+
+	* Makefile.in (distclean): Remove config.cache.
+
 2004-01-13  Daniel Jacobowitz  <drow@mvista.com>
 
 	* cp-demangle.c (d_make_comp): DEMANGLE_COMPONENT_CONSTRUCTION_VTABLE
