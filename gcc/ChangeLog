@@ -1,3 +1,9 @@
+2003-11-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* emit-rtl.c (copy_rtx_if_shared): Don't allow MEMs with constant
+	addresses to be shared.
+	(force_const_mem): Return a copy of the pool entry.
+
 2003-11-03  Andreas Jaeger  <aj@suse.de>
 
 	* Makefile.in (GCC_CFLAGS): Remove @WERROR@ again.
