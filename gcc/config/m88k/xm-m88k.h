@@ -20,9 +20,6 @@ along with GNU CC; see the file COPYING.  If not, write to
 the Free Software Foundation, 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.  */
 
-/* This describes the machine the compiler is hosted on.  */
-#define HOST_WORDS_BIG_ENDIAN
-
 /* For DG/UX, the best size is different.  */
 #ifdef __DGUX__
 #define OBSTACK_CHUNK_SIZE (8192-16)

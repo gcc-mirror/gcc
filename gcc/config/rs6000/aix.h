@@ -23,8 +23,11 @@ Boston, MA 02111-1307, USA.  */
 #define DEFAULT_ABI ABI_AIX
 #define TARGET_OBJECT_FORMAT OBJECT_XCOFF
 
-/* The RS/6000 uses the XCOFF format.  */
+/* The AIX linker will discard static constructors in object files before
+   collect has a chance to see them, so scan the object files directly.  */
+#define COLLECT_EXPORT_LIST
 
+/* The RS/6000 uses the XCOFF format.  */
 #define XCOFF_DEBUGGING_INFO
 
 /* Define if the object format being used is COFF or a superset.  */

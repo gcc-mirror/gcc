@@ -40,9 +40,6 @@ Boston, MA 02111-1307, USA.  */
 #undef FILE_TYPE
 #endif
 
-/* This describes the machine the compiler is hosted on.  */
-#define HOST_FLOAT_FORMAT VAX_FLOAT_FORMAT
-
 #define SUCCESS_EXIT_CODE 1
 #define FATAL_EXIT_CODE (44 | 0x10000000)  /* Abort, and no DCL message.  */
 
