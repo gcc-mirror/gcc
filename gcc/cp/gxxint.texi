@@ -238,6 +238,13 @@ The functions @code{convert_to_aggr} and @code{build_method_call} use
 a given candidate function (that's how we get the list of candidates for
 @code{ideal_candidate}).
 
+@item The Explicit Keyword
+
+The use of @code{explicit} on a constructor is used by @code{grokdeclarator}
+to set the field @code{DECL_NONCONVERTING_P}.  That value is used by
+@code{build_method_call} and @code{build_user_type_conversion_1} to decide
+if a particular constructor should be used as a candidate for conversions.
+
 @end itemize
 
 @node Glossary, Macros, Implementation Specifics, Top
