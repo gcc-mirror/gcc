@@ -254,12 +254,12 @@ extern double physmem_available PARAMS ((void));
 
 #define _hex_array_size 256
 #define _hex_bad	99
-extern const char _hex_value[_hex_array_size];
+extern const unsigned char _hex_value[_hex_array_size];
 extern void hex_init PARAMS ((void));
 #define hex_p(c)	(hex_value (c) != _hex_bad)
 /* If you change this, note well: Some code relies on side effects in
    the argument being performed exactly once.  */
-#define hex_value(c)	(_hex_value[(unsigned char) (c)])
+#define hex_value(c)	((unsigned int) _hex_value[(unsigned char) (c)])
 
 /* Definitions used by the pexecute routine.  */
 
