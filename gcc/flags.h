@@ -291,6 +291,11 @@ extern int flag_volatile_static;
 
 extern int flag_fast_math;
 
+/* Nonzero means the front end generally wants `errno' maintained by math
+   operations, like built-in SQRT, unless overridden by flag_fast_math.  */
+
+extern int flag_errno_math;
+
 /* Nonzero means to run loop optimizations twice.  */
 
 extern int flag_rerun_loop_opt;

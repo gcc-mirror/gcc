@@ -14958,6 +14958,7 @@ lang_init_options ()
   flag_move_all_movables = 1;
   flag_reduce_all_givs = 1;
   flag_argument_noalias = 2;
+  flag_errno_math = 0;
 }
 
 void

@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-05-10
+@set last-update-news 1999-05-12
 
 @include root.texi
 
@@ -272,6 +272,11 @@ Even without the @samp{-malign-double} option,
 that are not in @code{EQUIVALENCE} areas
 and not @code{SAVE}'d.
 @end ifclear
+
+@item
+@code{g77} no longer generates code to maintain @code{errno},
+a C-language concept,
+when performing operations such as the @code{SqRt} intrinsic.
 
 @ifclear USERVISONLY
 @item

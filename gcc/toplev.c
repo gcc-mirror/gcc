@@ -558,6 +558,11 @@ int flag_no_peephole = 0;
 
 int flag_fast_math = 0;
 
+/* Nonzero means the front end generally wants `errno' maintained by math
+   operations, like built-in SQRT, unless overridden by flag_fast_math.  */
+
+int flag_errno_math = 1;
+
 /* Nonzero means all references through pointers are volatile.  */
 
 int flag_volatile;
