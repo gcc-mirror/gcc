@@ -75,6 +75,9 @@ int
 _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 	      jlong millis, jint nanos)
 {
+  if (_Jv_PthreadCheckMonitor (mu))
+    return 1;
+
   int r;
   pthread_mutex_t *pmu;
 #ifdef HAVE_RECURSIVE_MUTEX
@@ -82,6 +85,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 #else
   pmu = &mu->mutex2;
 #endif
+
   if (millis == 0 && nanos == 0)
     r = pthread_cond_wait (cv, pmu);
   else
@@ -96,6 +100,7 @@ _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
       if (r && errno == ETIMEDOUT)
 	r = 0;
     }
+
   return r;
 }
 

@@ -27,7 +27,7 @@ extern "C" void _Jv_RegisterClasses (jclass *classes);
 // `resolved' must come between `nothing' and the other states.
 // Whenever the state changes, one should notify all waiters of this
 // class.
-#define JV_STATE_NOTING        0 // set by compiler
+#define JV_STATE_NOTHING       0 // set by compiler
 
 #define JV_STATE_PRELOADING    1 // can do _Jv_FindClass
 #define JV_STATE_LOADING       3 // has super installed

@@ -65,6 +65,25 @@ typedef struct
 typedef void _Jv_ThreadStartFunc (java::lang::Thread *);
 
 
+// This is a convenience function used only by the pthreads thread
+// implementation.  This is slow, but that's too bad -- we need to do
+// the checks for correctness.  It might be nice to be able to compile
+// this out.
+inline int _Jv_PthreadCheckMonitor (_Jv_Mutex_t *mu)
+{
+  pthread_mutex_t *pmu;
+#ifdef HAVE_RECURSIVE_MUTEX
+  pmu = mu;
+#else
+  pmu = &mu->mutex2;
+#endif
+  // See if the mutex is locked by this thread.
+  if (pthread_mutex_trylock (pmu))
+    return 1;
+  pthread_mutex_unlock (pmu);
+  return 0;
+}
+
 //
 // Condition variables.
 //
@@ -94,17 +113,15 @@ int _Jv_CondWait (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu,
 		  jlong millis, jint nanos);
 
 inline int
-_Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
+_Jv_CondNotify (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 {
-  // FIXME: check to see if mutex is held by current thread.
-  return pthread_cond_signal (cv);
+  return _Jv_PthreadCheckMonitor (mu) || pthread_cond_signal (cv);
 }
 
 inline int
-_Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *)
+_Jv_CondNotifyAll (_Jv_ConditionVariable_t *cv, _Jv_Mutex_t *mu)
 {
-  // FIXME: check to see if mutex is held by current thread.
-  return pthread_cond_broadcast (cv);
+  return _Jv_PthreadCheckMonitor (mu) || pthread_cond_broadcast (cv);
 }
 
 
