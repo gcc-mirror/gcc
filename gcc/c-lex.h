@@ -68,4 +68,4 @@ extern tree make_pointer_declarator ();
 extern void reinit_parse_for_function ();
 extern int yylex ();
 
-extrn char *get_directive_line ();
+extern char *get_directive_line ();
