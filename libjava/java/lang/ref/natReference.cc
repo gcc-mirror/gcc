@@ -1,6 +1,6 @@
 // natReference.cc - Native code for References
 
-/* Copyright (C) 2001, 2002  Free Software Foundation
+/* Copyright (C) 2001, 2002, 2003  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -67,6 +67,8 @@ static int hash_count = 0;
 // Number of slots total in HASH.  Must be power of 2.
 static int hash_size = 0;
 
+#define DELETED_REFERENCE  ((jobject) -1)
+
 static object_list *
 find_slot (jobject key)
 {
@@ -89,7 +91,10 @@ find_slot (jobject key)
 	    return &hash[deleted_index];
 	}
       else if (ptr->weight == DELETED)
-	deleted_index = index;
+	{
+	  deleted_index = index;
+	  JvAssert (ptr->reference == DELETED_REFERENCE);
+	}
       index = (index + step) & (hash_size - 1);
       JvAssert (index != start_index);
     }
@@ -132,6 +137,11 @@ remove_from_hash (jobject obj)
   java::lang::ref::Reference *ref
     = reinterpret_cast<java::lang::ref::Reference *> (obj);
   object_list *head = find_slot (ref->copy);
+
+  // We might have found a new slot.  We can just ignore that here.
+  if (head->reference != ref->copy)
+    return;
+
   object_list **link = &head->next;
   head = head->next;
 
@@ -168,7 +178,7 @@ add_to_hash (java::lang::ref::Reference *the_reference)
   // Use `copy' here because the `referent' field has been cleared.
   jobject referent = the_reference->copy;
   object_list *item = find_slot (referent);
-  if (item->reference == NULL)
+  if (item->reference == NULL || item->reference == DELETED_REFERENCE)
     {
       // New item, so make an entry for the finalizer.
       item->reference = referent;
@@ -217,6 +227,7 @@ finalize_referred_to_object (jobject obj)
       // run, all the object's references have been processed, and the
       // object is unreachable.  There is, at long last, no way to
       // resurrect it.
+      list->reference = DELETED_REFERENCE;
       list->weight = DELETED;
       --hash_count;
       return;
