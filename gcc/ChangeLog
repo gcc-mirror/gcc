@@ -278,7 +278,7 @@ Sun Dec 21 13:58:39 1997  Jeffrey A Law  (law@cygnus.com)
 	(FPBIT): Define.
 	(DPBIT): Define.
 
-Sat Dec 20 11:26:47 1997  Kaveh R. Ghazi  <ghazi@tragg.rutgers.edu>
+Sat Dec 20 11:26:47 1997  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 			  Jeff Law  <law@cygnus.com>
 
 	* bitmap.c (bitmap_clear): Ensure `inline' is at the beginning
