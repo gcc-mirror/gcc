@@ -1824,19 +1824,29 @@ enum
 #undef EXPR_WFL_NODE
 #define EXPR_WFL_NODE(NODE) \
   TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 0)
-#undef EXPR_WFL_FILENAME_NODE
-#define EXPR_WFL_FILENAME_NODE(NODE) \
-  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 1)
-#define EXPR_WFL_FILENAME(NODE) \
-  IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (NODE))
-/* ??? Java uses this in all expressions.  */
+#ifdef USE_MAPPED_LOCATION
+#define EXPR_WFL_LINECOL(NODE) ((NODE)->exp.locus)
+#define EXPR_WFL_FILENAME(NODE) EXPR_FILENAME (NODE)
+#define EXPR_WFL_LINENO(NODE) EXPR_LINENO (NODE)
+extern tree build_expr_wfl              PARAMS ((tree, source_location));
+extern tree expr_add_location           PARAMS ((tree, source_location, bool));
+#define build_unknown_wfl(NODE) build_expr_wfl(NODE, UNKNOWN_LOCATION)
+#else
 #define EXPR_WFL_LINECOL(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 #define EXPR_WFL_LINENO(NODE) (EXPR_WFL_LINECOL (NODE) >> 12)
 #define EXPR_WFL_COLNO(NODE) (EXPR_WFL_LINECOL (NODE) & 0xfff)
+#undef EXPR_WFL_FILENAME_NODE
+#define EXPR_WFL_FILENAME_NODE(NODE) \
+  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 2)
+#define EXPR_WFL_FILENAME(NODE) \
+  IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE (NODE))
+/* ??? Java uses this in all expressions.  */
 #define EXPR_WFL_SET_LINECOL(NODE, LINE, COL) \
   (EXPR_WFL_LINECOL(NODE) = ((LINE) << 12) | ((COL) & 0xfff))
 
 extern tree build_expr_wfl              PARAMS ((tree, const char *, int, int));
+#define build_unknown_wfl(NODE) build_expr_wfl(NODE, NULL, 0, 0)
+#endif
 
 extern void java_genericize		PARAMS ((tree));
 extern int java_gimplify_expr		PARAMS ((tree *, tree *, tree *));

@@ -97,8 +97,13 @@ DEFTREECODE (JAVA_EXC_OBJ_EXPR, "java_exc_obj_expr", tcc_expression, 0)
    (EXPR_WFL_LINENO); and column number (EXPR_WFL_COLNO).  It is
    expanded as the contained node (EXPR_WFL_NODE);  a line note should
    be emitted first if EXPR_WFL_EMIT_LINE_NOTE.  */
+#ifdef USE_MAPPED_LOCATION
+DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location",
+	     tcc_expression, 2)
+#else
 DEFTREECODE (EXPR_WITH_FILE_LOCATION, "expr_with_file_location",
 	     tcc_expression, 3)
+#endif
 
 /*
 Local variables:

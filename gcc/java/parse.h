@@ -625,7 +625,7 @@ typedef struct jdeplist_s jdeplist;
   build_expr_wfl ((NODE), input_filename, EXPR_WFL_LINENO ((WFL)), 	\
 		  EXPR_WFL_COLNO ((WFL)))
 
-#define EXPR_WFL_QUALIFICATION(WFL) TREE_OPERAND ((WFL), 2)
+#define EXPR_WFL_QUALIFICATION(WFL) TREE_OPERAND ((WFL), 1)
 #define QUAL_WFL(NODE) TREE_PURPOSE (NODE)
 #define QUAL_RESOLUTION(NODE) TREE_VALUE (NODE)
 #define QUAL_DECL_TYPE(NODE) GET_SKIP_TYPE (NODE)
