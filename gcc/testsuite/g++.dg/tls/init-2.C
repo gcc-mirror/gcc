@@ -10,4 +10,4 @@ struct S
 {
   S();
 };
-__thread S s;		/* { dg-error "non-POD" } */
+__thread S s;		/* { dg-error "dynamically initialized" } */
