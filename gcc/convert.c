@@ -86,6 +86,10 @@ convert_to_real (type, expr)
   if (form == INTEGER_TYPE || form == ENUMERAL_TYPE)
     return build1 (FLOAT_EXPR, type, expr);
 
+  if (form == COMPLEX_TYPE)
+    return convert (type, fold (build1 (REALPART_EXPR,
+					TREE_TYPE (TREE_TYPE (expr)), expr)));
+
   if (form == POINTER_TYPE)
     error ("pointer value used where a floating point value was expected");
   else
@@ -360,6 +364,10 @@ convert_to_integer (type, expr)
   if (form == REAL_TYPE)
     return build1 (FIX_TRUNC_EXPR, type, expr);
 
+  if (form == COMPLEX_TYPE)
+    return convert (type, fold (build1 (REALPART_EXPR,
+					TREE_TYPE (TREE_TYPE (expr)), expr)));
+
   error ("aggregate value used where an integer was expected");
 
   {
@@ -367,4 +375,51 @@ convert_to_integer (type, expr)
     TREE_TYPE (tem) = type;
     return tem;
   }
+}
+
+/* Convert EXPR to the complex type TYPE in the usual ways.  */
+
+tree
+convert_to_complex (type, expr)
+     tree type, expr;
+{
+  register enum tree_code form = TREE_CODE (TREE_TYPE (expr));
+  tree subtype = TREE_TYPE (type);
+  
+  if (form == REAL_TYPE || form == INTEGER_TYPE || form == ENUMERAL_TYPE)
+    {
+      expr = convert (subtype, expr);
+      return build (COMPLEX_EXPR, type, expr,
+		    convert (subtype, integer_zero_node));
+    }
+
+  if (form == COMPLEX_TYPE)
+    {
+      if (comptypes (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (expr))))
+	return expr;
+      else if (TREE_CODE (expr) == COMPLEX_EXPR)
+	return fold (build (COMPLEX_EXPR,
+			    type,
+			    convert (subtype, TREE_OPERAND (expr, 0)),
+			    convert (subtype, TREE_OPERAND (expr, 1))));
+      else
+	{
+	  expr = save_expr (expr);
+	  return fold (build (COMPLEX_EXPR,
+			      type,
+			      convert (subtype,
+				       build_unary_op (REALPART_EXPR, expr, 1)),
+			      convert (subtype,
+				       build_unary_op (IMAGPART_EXPR, expr, 1))));
+	}
+    }
+
+  if (form == POINTER_TYPE)
+    error ("pointer value used where a complex was expected");
+  else
+    error ("aggregate value used where a complex was expected");
+  
+  return build (COMPLEX_EXPR, type,
+		convert (subtype, integer_zero_node),
+		convert (subtype, integer_zero_node));
 }
