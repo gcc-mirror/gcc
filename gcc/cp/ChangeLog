@@ -16,6 +16,9 @@
 	PR c++/15471
 	* typeck.c (unary_complex_lvalue): Use context_for_name_lookup
 	when determining the scope to use for a pointer to member.
+	(lookup_anon_field): Give it external linkage.
+	* cp-tree.h (lookup_anon_field): Declare it.
+	* expr.c (cplus_expand_constant): Use it.
 
 2004-05-28  Mark Mitchell  <mark@codesourcery.com>
 

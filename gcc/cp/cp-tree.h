@@ -4243,6 +4243,7 @@ extern tree build_ptrmemfunc_access_expr       (tree, tree);
 extern tree build_address                       (tree);
 extern tree build_nop                           (tree, tree);
 extern tree non_reference                       (tree);
+extern tree lookup_anon_field                   (tree, tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
