@@ -551,7 +551,7 @@ while (0)
 #define GENERAL_REGNO_P(REGNO) \
   (GR_REGNO_P (REGNO)							\
    || (REGNO) == FRAME_POINTER_REGNUM					\
-   || (REGNO) == RETURN_ADDRESS_REGNUM)
+   || (REGNO) == RETURN_ADDRESS_POINTER_REGNUM)
 
 #define GR_REG(REGNO) ((REGNO) + 0)
 #define FR_REG(REGNO) ((REGNO) + 128)
@@ -788,7 +788,7 @@ while (0)
   /* Special branch registers.  */					   \
   R_BR (0),								   \
   /* Frame pointer.  Return address.  */				   \
-  FRAME_POINTER_REGNUM, RETURN_ADDRESS_REGNUM,				   \
+  FRAME_POINTER_REGNUM, RETURN_ADDRESS_POINTER_REGNUM,			   \
 }
 
 
@@ -1110,13 +1110,8 @@ enum reg_class
    unwind info, so we don't try to support them.  We would also need to define
    DYNAMIC_CHAIN_ADDRESS and SETUP_FRAME_ADDRESS (for the reg stack flush).  */
 
-/* ??? This only works for non-leaf functions.  In a leaf function, the return
-   address would be in b0 (rp).  */
-
-#define RETURN_ADDR_RTX(COUNT, FRAMEADDR) \
-  (((COUNT) == 0)							\
-   ? gen_rtx_REG (Pmode, RETURN_ADDRESS_REGNUM)				\
-   : (rtx) 0)
+#define RETURN_ADDR_RTX(COUNT, FRAME) \
+  ((COUNT) == 0 ? return_address_pointer_rtx : const0_rtx)
 
 /* A C expression whose value is RTL representing the location of the incoming
    return address at the beginning of any function, before the prologue.  This
@@ -1177,10 +1172,12 @@ extern int ia64_local_regs;
    in it.  */
 #define ARG_POINTER_REGNUM R_GR(0)
 
-/* The register number for the return address register.  This is modified by
-   ia64_expand_prologue to point to the real return address save register.  */
+/* The register number for the return address register.  This is not actually
+   a pointer as the name suggests, but that's a name that gen_rtx_REG 
+   already takes care to keep unique.  We modify return_address_pointer_rtx
+   in ia64_expand_prologue to reference the final output regnum.  */
 
-#define RETURN_ADDRESS_REGNUM 329
+#define RETURN_ADDRESS_POINTER_REGNUM 329
 
 /* Register numbers used for passing a function's static chain pointer.  */
 
@@ -1202,14 +1199,15 @@ extern int ia64_local_regs;
 {									\
   {ARG_POINTER_REGNUM,	 STACK_POINTER_REGNUM},				\
   {ARG_POINTER_REGNUM,	 FRAME_POINTER_REGNUM},				\
-  {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM}				\
+  {FRAME_POINTER_REGNUM, STACK_POINTER_REGNUM},				\
+  {RETURN_ADDRESS_POINTER_REGNUM, BR_REG (0)}				\
 }
 
 /* A C expression that returns non-zero if the compiler is allowed to try to
-   replace register number FROM with register number TO.  There are no ia64
-   specific restrictions.  */
+   replace register number FROM with register number TO.  */
 
-#define CAN_ELIMINATE(FROM, TO) 1
+#define CAN_ELIMINATE(FROM, TO) \
+  (TO == BR_REG (0) ? current_function_is_leaf : 1)
 
 /* This macro is similar to `INITIAL_FRAME_POINTER_OFFSET'.  It specifies the
    initial difference between the specified pair of registers.  This macro must
@@ -1238,6 +1236,8 @@ extern int ia64_local_regs;
 	  abort ();							\
 	}								\
     }									\
+  else if ((TO) == BR_REG (0))						\
+    (OFFSET) = 0;							\
   else									\
     abort ();								\
 }
@@ -2324,7 +2324,7 @@ do {									\
   /* Branch registers.  */						\
   "b0", "b1", "b2", "b3", "b4", "b5", "b6", "b7",			\
   /* Frame pointer.  Return address.  */				\
-  "fp", "ra"								\
+  "sfp", "retaddr"							\
 }
 
 /* If defined, a C initializer for an array of structures containing a name and

@@ -1,5 +1,25 @@
 2000-06-13  Richard Henderson  <rth@cygnus.com>
 
+	* libgcc2.c (ia64_throw_helper): Use __builtin_return_address.
+	(__throw): Don't pass the address of a label.
+
+	* config/ia64/ia64.c (ia64_compute_frame_size): Use
+	current_function_is_leaf.
+	(ia64_expand_prologue): Likewise.  Modify return_address_pointer_rtx
+	instead of reg_names[RETURN_ADDRESS_REGNUM].
+	(ia64_init_machine_status): Reset return_address_pointer_rtx.
+	* config/ia64/ia64.h (RETURN_ADDRESS_POINTER_REGNUM): Rename
+	from RETURN_ADDRESS_REGNUM.  Update all uses.
+	(RETURN_ADDR_RTX): Use return_address_pointer_rtx; return
+	zero instead of null on failure.
+	(ELIMINABLE_REGS): Add ra->b0 elimination.
+	(CAN_ELIMINATE): Update accordingly.
+	(INITIAL_ELIMINATION_OFFSET): Likewise.
+	(REGISTER_NAMES): Use an illegal assembler name for
+	RETURN_ADDRESS_POINTER_REGNUM.
+
+2000-06-13  Richard Henderson  <rth@cygnus.com>
+
 	* config/ia64/ia64.h (enum reg_class): Remove FR_INT_REGS, FR_FP_REGS,
 	GR_AND_FR_INT_REGS, GR_AND_FR_FP_REGS.
 	(REG_CLASS_NAMES): Likewise.

@@ -4043,12 +4043,12 @@ __ia64_personality_v1 (void *pc, old_exception_table *table)
 }
 
 static void
-ia64_throw_helper (throw_pc, throw_frame, caller, throw_bsp)
-     void *throw_pc;
+ia64_throw_helper (throw_frame, caller, throw_bsp)
      ia64_frame_state *throw_frame;
      ia64_frame_state *caller;
      void *throw_bsp;
 {
+  void *throw_pc = __builtin_return_address (0);
   unwind_info_ptr *info;
   void *pc, *handler = NULL;
   void *pc_base;
@@ -4146,7 +4146,6 @@ __throw ()
     __terminate ();
 
   __builtin_unwind_init ();
-label_ia64:
   /* We have to call another routine to actually process the frame 
      information, which will force all of __throw's local registers into
      backing store.  */
@@ -4154,7 +4153,7 @@ label_ia64:
   /* Get the value of ar.bsp while we're here.  */
 
   bsp = __builtin_ia64_bsp ();
-  ia64_throw_helper (&&label_ia64, &my_frame, &originator, bsp);
+  ia64_throw_helper (&my_frame, &originator, bsp);
 
   /* Now we have to fudge the bsp by the amount in our (__throw)
      frame marker, since the return is going to adjust it by that much. */
