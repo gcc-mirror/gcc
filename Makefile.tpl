@@ -484,7 +484,7 @@ EXTRA_HOST_FLAGS = \
 	'DLLTOOL=$(DLLTOOL)' \
 	'LD=$(LD)' \
 	'NM=$(NM)' \
-	"`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
+	'RANLIB=$(RANLIB)' \
 	'WINDRES=$(WINDRES)'
 
 FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
@@ -538,7 +538,7 @@ EXTRA_GCC_FLAGS = \
 	'BUILD_PREFIX=$(BUILD_PREFIX)' \
 	'BUILD_PREFIX_1=$(BUILD_PREFIX_1)' \
 	'NM=$(NM)' \
-	"`echo 'RANLIB=$(RANLIB)' | sed -e s/.*=$$/XFOO=/`" \
+	'RANLIB=$(RANLIB)' \
 	'WINDRES=$$(WINDRES_FOR_TARGET)' \
 	"GCC_FOR_TARGET=$(GCC_FOR_TARGET)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -617,7 +617,7 @@ do-[+target+]:
 	    (cd ./$$i && \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	                "`echo \"RANLIB=$${RANLIB}\" | sed -e 's/.*=$$/XFOO=/'`" \
+	                "RANLIB=$${RANLIB}" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 			[+target+]) \
 	    || exit 1; \
@@ -635,7 +635,7 @@ do-[+target+]:
 	    (cd $(TARGET_SUBDIR)/$$i && \
 	        $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
 			"CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	                "`echo \"RANLIB=$${RANLIB}\" | sed -e 's/.*=$$/XFOO=/'`" \
+	                "RANLIB=$${RANLIB}" \
 			"DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" \
 			[+target+]) \
 	    || exit 1; \
