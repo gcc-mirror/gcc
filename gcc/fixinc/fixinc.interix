@@ -1,4 +1,6 @@
 #!/bin/sh
+rm -f include/stddef.h
+exit
 #
 #   fixinc.interix  --  Install modified versions of Interix system include
 #   files.
