@@ -1,5 +1,6 @@
 /* Save and restore call-clobbered registers which are live across a call.
-   Copyright (C) 1989, 92, 94, 95, 97-99, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1989, 1992, 1994, 1995, 1997, 1998,
+   1999, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
