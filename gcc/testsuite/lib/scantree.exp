@@ -49,7 +49,8 @@ proc scan-tree-dump { args } {
     upvar 2 name testcase
 
     # This must match the rule in gcc-dg.exp.
-    set output_file "[glob [file tail $testcase].t??.[lindex $args 1]]"
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.t??.[lindex $args 1]]"
 
     set fd [open $output_file r]
     set text [read $fd]
@@ -91,7 +92,8 @@ proc scan-tree-dump-times { args } {
     upvar 2 name testcase
 
     # This must match the rule in gcc-dg.exp.
-    set output_file "[glob [file tail $testcase].t??.[lindex $args 2]]"
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.t??.[lindex $args 2]]"
 
     set fd [open $output_file r]
     set text [read $fd]
@@ -128,7 +130,8 @@ proc scan-tree-dump-not { args } {
     }
 
     upvar 2 name testcase
-    set output_file "[glob [file tail $testcase].t??.[lindex $args 1]]"
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.t??.[lindex $args 1]]"
 
     set fd [open $output_file r]
     set text [read $fd]
@@ -179,7 +182,8 @@ proc scan-tree-dump-dem { args } {
     }
 
     upvar 2 name testcase
-    set output_file "[glob [file tail $testcase].t??.[lindex $args 1]]"
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.t??.[lindex $args 1]]"
 
     set fd [open "| $cxxfilt < $output_file" r]
     set text [read $fd]
@@ -229,7 +233,8 @@ proc scan-tree-dump-dem-not { args } {
     }
 
     upvar 2 name testcase
-    set output_file "[glob [file tail $testcase].t??.[lindex $args 1]]"
+    set src [file tail [lindex $testcase 0]]
+    set output_file "[glob $src.t??.[lindex $args 1]]"
 
     set fd [open "| $cxxfilt < $output_file" r]
     set text [read $fd]
