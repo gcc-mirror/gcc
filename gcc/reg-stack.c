@@ -1398,7 +1398,7 @@ uses_reg_or_mem (x)
 }
 
 /* If current function returns its result in an fp stack register,
-   return the register number.  Otherwise return -1.  */
+   return the REG.  Otherwise, return 0.  */
 
 static rtx
 stack_result (decl)
@@ -1407,8 +1407,8 @@ stack_result (decl)
   rtx result = DECL_RTL (DECL_RESULT (decl));
 
   if (result != 0
-      && !(GET_CODE (result) == REG
-	   && REGNO (result) < FIRST_PSEUDO_REGISTER))
+      && ! (GET_CODE (result) == REG
+	    && REGNO (result) < FIRST_PSEUDO_REGISTER))
     {
 #ifdef FUNCTION_OUTGOING_VALUE
       result
@@ -1418,7 +1418,7 @@ stack_result (decl)
 #endif
     }
 
-  return STACK_REG_P (result) ? result : (rtx) 0;
+  return result != 0 && STACK_REG_P (result) ? result : 0;
 }
 
 /* Determine the which registers are live at the start of each basic
