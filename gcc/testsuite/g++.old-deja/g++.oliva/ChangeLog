@@ -1,3 +1,7 @@
+1999-07-02  Alexandre Oliva  <oliva@dcc.unicamp.br>
+
+	* ns1.C: New test.
+
 1999-07-01  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
 	* new1.C: New test.
