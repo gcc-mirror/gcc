@@ -1,5 +1,11 @@
 2004-08-24  Bud Davis  <bdavis9659@comcast.net>
 
+	PR fortran/17143	
+	* runtime/error.c (itoa): keep from overflowing during
+        mod operation by using unsigned variable.
+
+2004-08-24  Bud Davis  <bdavis9659@comcast.net>
+
 	PR fortran/17164
 	* runtime/string_intrinsics.c (string_index):check for
 	substring longer than string.

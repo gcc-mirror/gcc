@@ -117,6 +117,7 @@ itoa (int64_t n)
 {
   int negative;
   char *p;
+  uint64_t t;
 
   if (n == 0)
     {
@@ -126,19 +127,20 @@ itoa (int64_t n)
     }
 
   negative = 0;
+  t = n;
   if (n < 0)
     {
       negative = 1;
-      n = -n;
+      t = -n; /*must use unsigned to protect from overflow*/
     }
 
   p = buffer + sizeof (buffer) - 1;
   *p-- = '\0';
 
-  while (n != 0)
+  while (t != 0)
     {
-      *p-- = '0' + (n % 10);
-      n /= 10;
+      *p-- = '0' + (t % 10);
+      t /= 10;
     }
 
   if (negative)
