@@ -1,3 +1,10 @@
+Thu Aug 27 23:44:49 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* reload1.c (forget_old_reloads_1): Keep track of the largest mode
+	found while stripping SUBREGS and invalidate reloads for all the hard
+	regs specified by that largest mode.  egcs-1.1 only hack.  The
+	mainline tree will get a better fix.
+
 Tue Aug 25 19:43:11 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* From Alexandre:

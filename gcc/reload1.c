@@ -4251,27 +4251,43 @@ forget_old_reloads_1 (x, ignored)
      rtx ignored ATTRIBUTE_UNUSED;
 {
   register int regno;
+  enum machine_mode mode = GET_MODE (x);
   int nr;
-  int offset = 0;
 
-  /* note_stores does give us subregs of hard regs.  */
+  /* note_stores does give us subregs of hard regs.
+
+     This is a egcs-1.1 tree hack only.  A better solution is being
+     developed for mainline sources.  Do not import this back to the
+     mainline tree.
+
+     We want to strip all the SUBREGs, but also keep track of the
+     largest mode we encounter so that we can invalidate all the
+     hard regs which are needed to hold the widest mode.
+
+     This avoids a bug in choose_reload_regs (which is where the real
+     fix for the mainline tree will be).  */
+
   while (GET_CODE (x) == SUBREG)
     {
-      offset += SUBREG_WORD (x);
+      if (GET_MODE_BITSIZE (GET_MODE (x)) > GET_MODE_BITSIZE (mode))
+	mode = GET_MODE (x);
       x = SUBREG_REG (x);
     }
+
+  if (GET_MODE_BITSIZE (GET_MODE (x)) > GET_MODE_BITSIZE (mode))
+    mode = GET_MODE (x);
 
   if (GET_CODE (x) != REG)
     return;
 
-  regno = REGNO (x) + offset;
+  regno = REGNO (x);
 
   if (regno >= FIRST_PSEUDO_REGISTER)
     nr = 1;
   else
     {
       int i;
-      nr = HARD_REGNO_NREGS (regno, GET_MODE (x));
+      nr = HARD_REGNO_NREGS (regno, mode);
       /* Storing into a spilled-reg invalidates its contents.
 	 This can happen if a block-local pseudo is allocated to that reg
 	 and it wasn't spilled because this block's total need is 0.
