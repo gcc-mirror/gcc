@@ -35,7 +35,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
       STMT_IS_FULL_EXPR_P (in _STMT)
       STATEMENT_LIST_STMT_EXPR (in STATEMENT_LIST)
    2: unused
-   3: unused
+   3: STATEMENT_LIST_HAS_LABEL (in STATEMENT_LIST)
    4: unused
 */
 
@@ -707,6 +707,10 @@ extern void finish_file	(void);
    if a statement expression.  */
 #define STATEMENT_LIST_STMT_EXPR(NODE) \
   TREE_LANG_FLAG_1 (STATEMENT_LIST_CHECK (NODE))
+
+/* Nonzero if a label has been added to the statement list.  */
+#define STATEMENT_LIST_HAS_LABEL(NODE) \
+  TREE_LANG_FLAG_3 (STATEMENT_LIST_CHECK (NODE))
 
 /* WHILE_STMT accessors. These give access to the condition of the
    while statement and the body of the while statement, respectively.  */

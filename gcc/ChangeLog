@@ -1,5 +1,12 @@
 2004-08-12  Richard Henderson  <rth@redhat.com>
 
+	* c-common.h (STATEMENT_LIST_HAS_LABEL): New.
+	* c-semantics.c (add_stmt): Set it.
+	* c-decl.c (finish_decl): Use it to create a new BIND_EXPR
+	before instantiating a variable sized type.
+
+2004-08-12  Richard Henderson  <rth@redhat.com>
+
 	* stor-layout.c (round_up, round_down): Move ...
 	* fold-const.c (round_up, round_down): ... here.  Use 
 	multiple_of_p to avoid any arithmetic at all.
