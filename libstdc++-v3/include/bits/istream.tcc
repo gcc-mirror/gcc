@@ -519,8 +519,8 @@ namespace std
 		     && !traits_type::eq_int_type(__c, __idelim))
 		{
 		  *__s++ = traits_type::to_char_type(__c);
-		  __c = __sb->snextc();
 		  ++_M_gcount;
+		  __c = __sb->snextc();
 		}
 	      if (traits_type::eq_int_type(__c, __eof))
 		__err |= ios_base::eofbit;
@@ -591,15 +591,14 @@ namespace std
 	      const int_type __eof = traits_type::eof();
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c = __sb->sgetc();
-	      --__n;
 	      
-	      while (_M_gcount < __n
+	      while (_M_gcount + 1 < __n
 		     && !traits_type::eq_int_type(__c, __eof)
 		     && !traits_type::eq_int_type(__c, __idelim))
 		{
 		  streamsize __size = std::min(streamsize(__sb->egptr()
 							  - __sb->gptr()),
-					       __n - _M_gcount);
+					       __n - _M_gcount - 1);
 		  if (__size > 1)
 		    {
 		      const char_type* __p = traits_type::find(__sb->gptr(),
@@ -616,8 +615,8 @@ namespace std
 		  else
 		    {
 		      *__s++ = traits_type::to_char_type(__c);
-		      __c = __sb->snextc();
 		      ++_M_gcount;
+		      __c = __sb->snextc();
 		    }
 		}
 
@@ -625,8 +624,8 @@ namespace std
 		__err |= ios_base::eofbit;
 	      else if (traits_type::eq_int_type(__c, __idelim))
 		{
+		  ++_M_gcount;		  
 		  __sb->sbumpc();
-		  ++_M_gcount;
 		}
 	      else
 		__err |= ios_base::failbit;
@@ -658,7 +657,9 @@ namespace std
 	      __streambuf_type* __sb = this->rdbuf();
 	      int_type __c;
 
-	      while (_M_gcount < __n
+	      if (__n != numeric_limits<streamsize>::max())
+		--__n;
+	      while (_M_gcount <= __n
 		     && !traits_type::eq_int_type(__c = __sb->sbumpc(), __eof))
 		{
 		  ++_M_gcount;
@@ -1101,7 +1102,6 @@ namespace std
 
       __size_type __extracted = 0;
       const __size_type __n = __str.max_size();
-      bool __testdelim = false;
       ios_base::iostate __err = ios_base::iostate(ios_base::goodbit);
       typename __istream_type::sentry __cerb(__in, true);
       if (__cerb)
@@ -1136,8 +1136,8 @@ namespace std
 		__err |= ios_base::eofbit;
 	      else if (_Traits::eq_int_type(__c, __idelim))
 		{
+		  ++__extracted;		  
 		  __sb->sbumpc();
-		  ++__extracted;
 		}
 	      else
 		__err |= ios_base::failbit;
