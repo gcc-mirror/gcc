@@ -1,3 +1,7 @@
+2000-08-13  Ralf Gütlein <ralf.guetlein@aranea.de>
+
+	* h8300.md: Remove obsolete peepholes.
+
 2000-08-13  Kazu Hirata  <kazu@hxi.com>
 
 	* invoke.texi (H8/300 Options): Fix typos.
