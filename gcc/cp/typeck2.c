@@ -330,15 +330,8 @@ store_init_value (tree decl, tree init)
 	   && TREE_TYPE (init) != unknown_type_node)
     {
       if (TREE_CODE (decl) == RESULT_DECL)
-	{
-	  if (TREE_CHAIN (init))
-	    {
-	      warning ("comma expression used to initialize return value");
-	      init = build_compound_expr (init);
-	    }
-	  else
-	    init = TREE_VALUE (init);
-	}
+	init = build_x_compound_expr_from_list (init,
+						"return value initializer");
       else if (TREE_CODE (init) == TREE_LIST
 	       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
 	{
@@ -346,17 +339,8 @@ store_init_value (tree decl, tree init)
 	  return NULL_TREE;
 	}
       else
-	{
-	  /* We get here with code like `int a (2);' */
-	     
-	  if (TREE_CHAIN (init) != NULL_TREE)
-	    {
-	      pedwarn ("initializer list being treated as compound expression");
-	      init = build_compound_expr (init);
-	    }
-	  else
-	    init = TREE_VALUE (init);
-	}
+	/* We get here with code like `int a (2);' */
+	init = build_x_compound_expr_from_list (init, "initializer");
     }
 
   /* End of special C++ code.  */
@@ -1160,11 +1144,7 @@ build_functional_cast (tree exp, tree parms)
       if (parms == NULL_TREE)
 	parms = integer_zero_node;
       else
-	{
-	  if (TREE_CHAIN (parms) != NULL_TREE)
-	    pedwarn ("initializer list being treated as compound expression");
-	  parms = build_compound_expr (parms);
-	}
+	parms = build_x_compound_expr_from_list (parms, "functional cast");
 
       return build_c_cast (type, parms);
     }

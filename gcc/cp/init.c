@@ -379,17 +379,9 @@ perform_member_init (tree member, tree init)
 	    pedwarn ("uninitialized reference member `%D'", member);
 	}
       else if (TREE_CODE (init) == TREE_LIST)
-	{
-	  /* There was an explicit member initialization.  Do some
-	     work in that case.  */
-	  if (TREE_CHAIN (init))
-	    {
-	      warning ("initializer list treated as compound expression");
-	      init = build_compound_expr (init);
-	    }
-	  else
-	    init = TREE_VALUE (init);
-	}
+	/* There was an explicit member initialization.  Do some work
+	   in that case.  */
+	init = build_x_compound_expr_from_list (init, "member initializer");
 
       if (init)
 	finish_expr_stmt (build_modify_expr (decl, INIT_EXPR, init));
@@ -2110,12 +2102,8 @@ build_new_1 (tree exp)
 	     means allocate an int, and initialize it with 10.  */
 
 	  if (TREE_CODE (init) == TREE_LIST)
-	    {
-	      if (TREE_CHAIN (init) != NULL_TREE)
-		pedwarn
-		  ("initializer list being treated as compound expression");
-	      init = build_compound_expr (init);
-	    }
+	    init = build_x_compound_expr_from_list (init, "new initializer");
+	  
 	  else if (TREE_CODE (init) == CONSTRUCTOR
 		   && TREE_TYPE (init) == NULL_TREE)
 	    {
@@ -2250,7 +2238,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   tree body;
 
   /* This is the LOOP_EXPR that governs the deletion of the elements.  */
-  tree loop;
+  tree loop = 0;
 
   /* This is the thing that governs what to do after the loop has run.  */
   tree deallocate_expr = 0;
@@ -2266,10 +2254,7 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
     abort ();
 
   if (! IS_AGGR_TYPE (type) || TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
-    {
-      loop = integer_zero_node;
-      goto no_destructor;
-    }
+    goto no_destructor;
 
   /* The below is short by the cookie size.  */
   virtual_size = size_binop (MULT_EXPR, size_exp,
@@ -2284,32 +2269,21 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
   controller = build (BIND_EXPR, void_type_node, tbase, NULL_TREE, NULL_TREE);
   TREE_SIDE_EFFECTS (controller) = 1;
 
-  body = NULL_TREE;
+  body = build (EXIT_EXPR, void_type_node,
+		build (EQ_EXPR, boolean_type_node, base, tbase));
+  body = build_compound_expr
+    (body, build_modify_expr (tbase, NOP_EXPR,
+			      build (MINUS_EXPR, ptype, tbase, size_exp)));
+  body = build_compound_expr
+    (body, build_delete (ptype, tbase, sfk_complete_destructor,
+			 LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1));
 
-  body = tree_cons (NULL_TREE,
-		    build_delete (ptype, tbase, sfk_complete_destructor,
-				  LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 1),
-		    body);
-
-  body = tree_cons (NULL_TREE,
-		    build_modify_expr (tbase, NOP_EXPR, build (MINUS_EXPR, ptype, tbase, size_exp)),
-		    body);
-
-  body = tree_cons (NULL_TREE,
-		    build (EXIT_EXPR, void_type_node,
-			   build (EQ_EXPR, boolean_type_node, base, tbase)),
-		    body);
-
-  loop = build (LOOP_EXPR, void_type_node, build_compound_expr (body));
-
-  loop = tree_cons (NULL_TREE, tbase_init,
-		    tree_cons (NULL_TREE, loop, NULL_TREE));
-  loop = build_compound_expr (loop);
+  loop = build (LOOP_EXPR, void_type_node, body);
+  loop = build_compound_expr (tbase_init, loop);
 
  no_destructor:
   /* If the delete flag is one, or anything else with the low bit set,
      delete the storage.  */
-  deallocate_expr = integer_zero_node;
   if (auto_delete_vec != sfk_base_destructor)
     {
       tree base_tbd;
@@ -2342,15 +2316,17 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 					  virtual_size);
     }
 
-  if (loop && deallocate_expr != integer_zero_node)
-    {
-      body = tree_cons (NULL_TREE, loop,
-			tree_cons (NULL_TREE, deallocate_expr, NULL_TREE));
-      body = build_compound_expr (body);
-    }
+  body = loop;
+  if (!deallocate_expr)
+    ;
+  else if (!body)
+    body = deallocate_expr;
   else
-    body = loop;
-
+    body = build_compound_expr (body, deallocate_expr);
+  
+  if (!body)
+    body = integer_zero_node;
+  
   /* Outermost wrapper: If pointer is null, punt.  */
   body = fold (build (COND_EXPR, void_type_node,
 		      fold (build (NE_EXPR, boolean_type_node, base,
@@ -3005,24 +2981,23 @@ tree
 build_vbase_delete (tree type, tree decl)
 {
   tree vbases = CLASSTYPE_VBASECLASSES (type);
-  tree result = NULL_TREE;
+  tree result;
   tree addr = build_unary_op (ADDR_EXPR, decl, 0);
 
   my_friendly_assert (addr != error_mark_node, 222);
 
-  while (vbases)
+  for (result = convert_to_void (integer_zero_node, NULL);
+       vbases; vbases = TREE_CHAIN (vbases))
     {
-      tree this_addr 
-	= convert_force (build_pointer_type (BINFO_TYPE (TREE_VALUE (vbases))),
-			 addr, 0);
-      result = tree_cons (NULL_TREE,
-			  build_delete (TREE_TYPE (this_addr), this_addr,
-					sfk_base_destructor,
-					LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0),
-			  result);
-      vbases = TREE_CHAIN (vbases);
+      tree base_addr = convert_force
+	(build_pointer_type (BINFO_TYPE (TREE_VALUE (vbases))), addr, 0);
+      tree base_delete = build_delete
+	(TREE_TYPE (base_addr), base_addr, sfk_base_destructor,
+	 LOOKUP_NORMAL|LOOKUP_DESTRUCTOR, 0);
+      
+      result = build_compound_expr (result, base_delete);
     }
-  return build_compound_expr (nreverse (result));
+  return result;
 }
 
 /* Build a C++ vector delete expression.

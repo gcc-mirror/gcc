@@ -1,5 +1,26 @@
 2003-07-25  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* cp-tree.h (build_compound_expr): Take LHS & RHS args.
+	(build_x_compound_expr_from_list): Declare.
+	* typeck.c (build_x_compound_expr_from_list): New.
+	(build_x_compound_expr): Adjust.
+	(build_compound_expr): Remove unreachable code. Take two
+	parameters, adjust.
+	* decl.c (grok_reference_init): Use
+	build_x_compound_expr_from_list.
+	(expand_static_init): Adjust build_compound_expr call.
+	(cxx_maybe_build_cleanup): Likewise.
+	* init.c (perform_member_init): Use
+	build_x_compound_expr_from_list.
+	(build_new_1): Likewise.
+	(build_vec_delete): Adjust build_compound_expr calls.
+	(build_vbase_delete): Likewise.
+	* typeck2.c (store_init_value): Use
+	build_x_compound_expr_from_list.
+	(build_functional_cast): Likewise.
+
+2003-07-25  Nathan Sidwell  <nathan@codesourcery.com>
+
 	* cp-tree.h (enum tsubst_flags_t): Add tf_user.
 	* decl.c (make_typename_type): Pass it.
 	* pt.c (lookup_template_class): Use it.

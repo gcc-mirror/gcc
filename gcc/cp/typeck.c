@@ -4264,8 +4264,26 @@ build_x_conditional_expr (tree ifexp, tree op1, tree op2)
   return expr;
 }
 
-/* Handle overloading of the ',' operator when needed.  Otherwise,
-   this function just builds an expression list.  */
+/* Given a list of expressions, return a compound expression
+   that performs them all and returns the value of the last of them. */
+
+tree build_x_compound_expr_from_list (tree list, const char *msg)
+{
+  tree expr = TREE_VALUE (list);
+  
+  if (TREE_CHAIN (list))
+    {
+      if (msg)
+	pedwarn ("%s expression list treated as compound expression", msg);
+
+      for (list = TREE_CHAIN (list); list; list = TREE_CHAIN (list))
+	expr = build_x_compound_expr (expr, TREE_VALUE (list));
+    }
+  
+  return expr;
+}
+
+/* Handle overloading of the ',' operator when needed.  */
 
 tree
 build_x_compound_expr (tree op1, tree op2)
@@ -4298,10 +4316,7 @@ build_x_compound_expr (tree op1, tree op2)
 		   && VOID_TYPE_P (TREE_TYPE (op1))))
 	    warning("left-hand operand of comma expression has no effect");
 	}
-      result = build_compound_expr (tree_cons (NULL_TREE,
-					       op1,
-					       build_tree_list (NULL_TREE,
-								op2)));
+      result = build_compound_expr (op1, op2);
     }
 
   if (processing_template_decl && result != error_mark_node)
@@ -4310,42 +4325,17 @@ build_x_compound_expr (tree op1, tree op2)
   return result;
 }
 
-/* Given a list of expressions, return a compound expression
-   that performs them all and returns the value of the last of them.  */
+/* Build a compound expression. */
 
 tree
-build_compound_expr (tree list)
+build_compound_expr (tree lhs, tree rhs)
 {
-  register tree rest;
-  tree first;
-
-  TREE_VALUE (list) = decl_constant_value (TREE_VALUE (list));
-
-  if (TREE_CHAIN (list) == 0)
-    {
-      /* build_c_cast puts on a NOP_EXPR to make the result not an lvalue.
-	 Strip such NOP_EXPRs, since LIST is used in non-lvalue context.  */
-      if (TREE_CODE (list) == NOP_EXPR
-	  && TREE_TYPE (list) == TREE_TYPE (TREE_OPERAND (list, 0)))
-	list = TREE_OPERAND (list, 0);
-	
-      return TREE_VALUE (list);
-    }
-
-  first = TREE_VALUE (list);
-  first = convert_to_void (first, "left-hand operand of comma");
-  if (first == error_mark_node)
+  lhs = decl_constant_value (lhs);
+  lhs = convert_to_void (lhs, "left-hand operand of comma");
+  if (lhs == error_mark_node || rhs == error_mark_node)
     return error_mark_node;
   
-  rest = build_compound_expr (TREE_CHAIN (list));
-  if (rest == error_mark_node)
-    return error_mark_node;
-
-  /* When pedantic, a compound expression cannot be a constant expression.  */
-  if (! TREE_SIDE_EFFECTS (first) && ! pedantic)
-    return rest;
-
-  return build (COMPOUND_EXPR, TREE_TYPE (rest), first, rest);
+  return build (COMPOUND_EXPR, TREE_TYPE (rhs), lhs, rhs);
 }
 
 /* Issue an error message if casting from SRC_TYPE to DEST_TYPE casts
