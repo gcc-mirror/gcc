@@ -388,6 +388,7 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
   static int recurse = 0;
   struct sigcontext *mstate;
   const char *msg;
+  jmp_buf handler_jmpbuf;
 
   /* If this was an explicit signal from a "kill", just resignal it.  */
   if (SI_FROMUSER (sip))
@@ -397,6 +398,43 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
     }
 
   /* Otherwise, treat it as something we handle.  */
+
+  /* We are now going to raise the exception corresponding to the signal we
+     caught, which may eventually end up resuming the application code if the
+     exception is handled.
+
+     When the exception is handled, merely arranging for the *exception*
+     handler's context (stack pointer, program counter, other registers, ...)
+     to be installed is *not* enough to let the kernel think we've left the
+     *signal* handler.  This has annoying implications if an alternate stack
+     has been setup for this *signal* handler, because the kernel thinks we
+     are still running on that alternate stack even after the jump, which
+     causes trouble at least as soon as another signal is raised.
+
+     We deal with this by forcing a "local" longjmp within the signal handler
+     below, forcing the "on alternate stack" indication to be reset (kernel
+     wise) on the way.  If no alternate stack has been setup, this should be a
+     neutral operation. Otherwise, we will be in a delicate situation for a
+     short while because we are going to run the exception propagation code
+     within the alternate stack area (that is, with the stack pointer inside
+     the alternate stack bounds), but with the corresponding flag off from the
+     kernel's standpoint.  We expect this to be ok as long as the propagation
+     code does not trigger a signal itself, which is expected.
+
+     ??? A better approach would be to at least delay this operation until the
+     last second, that is, until just before we jump to the exception handler,
+     if any.  */
+
+  if (setjmp (handler_jmpbuf) == 0)
+    {
+#define JB_ONSIGSTK 0
+
+      /* Arrange for the "on alternate stack" flag to be reset.  See the
+	 comments around "jmp_buf offsets" in /usr/include/setjmp.h.  */
+      handler_jmpbuf [JB_ONSIGSTK] = 0;
+      longjmp (handler_jmpbuf, 1);
+    }
+
   switch (sig)
     {
     case SIGSEGV:
@@ -448,48 +486,7 @@ __gnat_error_handler (int sig, siginfo_t *sip, struct sigcontext *context)
   if (mstate != 0)
     *mstate = *context;
 
-  /* We are now going to raise the exception corresponding to the signal we
-     caught, which may eventually end up resuming the application code if the
-     exception is handled.
-
-     When the exception is handled, merely arranging for the *exception*
-     handler's context (stack pointer, program counter, other registers, ...)
-     to be installed is *not* enough to let the kernel think we've left the
-     *signal* handler.  This has annoying implications if an alternate stack
-     has been setup for this *signal* handler, because the kernel thinks we
-     are still running on that alternate stack even after the jump, which
-     causes trouble at least as soon as another signal is raised.
-
-     We deal with this by forcing a "local" longjmp within the signal handler
-     below, forcing the "on alternate stack" indication to be reset (kernel
-     wise) on the way.  If no alternate stack has been setup, this should be a
-     neutral operation. Otherwise, we will be in a delicate situation for a
-     short while because we are going to run the exception propagation code
-     within the alternate stack area (that is, with the stack pointer inside
-     the alternate stack bounds), but with the corresponding flag off from the
-     kernel's standpoint.  We expect this to be ok as long as the propagation
-     code does not trigger a signal itself, which is expected.
-
-     ??? A better approach would be to at least delay this operation until the
-     last second, that is, until just before we jump to the exception handler,
-     if any.  */
-  {
-    jmp_buf handler_jmpbuf;
-
-    if (setjmp (handler_jmpbuf) != 0)
-      Raise_From_Signal_Handler (exception, (char *) msg);
-    else
-      {
-	/* Arrange for the "on alternate stack" flag to be reset.  See the
-	   comments around "jmp_buf offsets" in /usr/include/setjmp.h.  */
-	struct sigcontext * handler_context
-	  = (struct sigcontext *) & handler_jmpbuf;
-
-	handler_context->sc_onstack = 0;
-	
-	longjmp (handler_jmpbuf, 1);
-      }
-  }
+  Raise_From_Signal_Handler (exception, (char *) msg);
 }
 
 void
