@@ -4829,9 +4829,13 @@ digest_init (type, init, tail, require_constant, constructor_constant, ofwhat)
 	    {
 	      register int size = TREE_INT_CST_LOW (TYPE_SIZE (type));
 	      size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
-	      /* Subtract 1 because it's ok to ignore the terminating null char
+	      /* Subtract 1 (or sizeof (wchar_t))
+		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (size < TREE_STRING_LENGTH (string) - 1)
+	      if (size < TREE_STRING_LENGTH (string)
+		  - (TYPE_PRECISION (typ1) != TYPE_PRECISION (char_type_node)
+		     ? TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT
+		     : 1))
 		pedwarn_init (
 		  "initializer-string for array of chars%s is too long",
 		  " `%s'", ofwhat);
