@@ -8641,7 +8641,7 @@ void
 java_expand_classes ()
 {
   int save_error_count = 0;
-  static struct parser_ctxt *saved_ctxp = NULL;
+  static struct parser_ctxt *cur_ctxp = NULL;
 
   java_parse_abort_on_error ();
   if (!(ctxp = ctxp_for_generation))
@@ -8649,10 +8649,10 @@ java_expand_classes ()
   java_layout_classes ();
   java_parse_abort_on_error ();
 
-  saved_ctxp = ctxp_for_generation;
-  for (; ctxp_for_generation; ctxp_for_generation = ctxp_for_generation->next)
+  cur_ctxp = ctxp_for_generation;
+  for (; cur_ctxp; cur_ctxp = cur_ctxp->next)
     {
-      ctxp = ctxp_for_generation;
+      ctxp = cur_ctxp;
       input_filename = ctxp->filename;
       lang_init_source (2);	       /* Error msgs have method prototypes */
       java_complete_expand_classes (); /* Complete and expand classes */
@@ -8662,11 +8662,10 @@ java_expand_classes ()
 
   /* Find anonymous classes and expand their constructor, now they
      have been fixed. */
-  for (ctxp_for_generation = saved_ctxp;
-       ctxp_for_generation; ctxp_for_generation = ctxp_for_generation->next)
+  for (cur_ctxp = ctxp_for_generation;  cur_ctxp;  cur_ctxp = cur_ctxp->next)
     {
       tree current;
-      ctxp = ctxp_for_generation;
+      ctxp = cur_ctxp;
       for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
 	{
 	  current_class = TREE_TYPE (current);
@@ -8696,11 +8695,10 @@ java_expand_classes ()
     return;
 
   /* Now things are stable, go for generation of the class data. */
-  for (ctxp_for_generation = saved_ctxp;
-       ctxp_for_generation; ctxp_for_generation = ctxp_for_generation->next)
+  for (cur_ctxp = ctxp_for_generation;  cur_ctxp;  cur_ctxp = cur_ctxp->next)
     {
       tree current;
-      ctxp = ctxp_for_generation;
+      ctxp = cur_ctxp;
       for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
 	{
 	  current_class = TREE_TYPE (current);

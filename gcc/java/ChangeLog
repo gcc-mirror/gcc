@@ -1,3 +1,8 @@
+2001-04-27  Per Bothner  <per@bothner.com>
+
+	* parse.y (java_expand_classes):  Don't change ctxp_for_generation
+	while iterating, since that could cause gc to lose stuff.
+
 2001-04-26  Per Bothner  <per@bothner.com>
 
 	Fix method search wrt scope of inner classes to match JLS2.
