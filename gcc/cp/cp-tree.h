@@ -212,12 +212,12 @@ struct tree_overload
    indicating a particular base class, and whose TREE_VALUE is a
    (possibly overloaded) function from that base class.  */
 #define BASELINK_P(NODE) \
-  (TREE_CODE ((NODE)) == TREE_LIST && TREE_LANG_FLAG_1 ((NODE)))
+  (TREE_CODE (NODE) == TREE_LIST && TREE_LANG_FLAG_1 (NODE))
 #define SET_BASELINK_P(NODE) \
-  (TREE_LANG_FLAG_1 ((NODE)) = 1)
+  (TREE_LANG_FLAG_1 (NODE) = 1)
 
-#define WRAPPER_PTR(NODE) (((struct tree_wrapper*)NODE)->u.ptr)
-#define WRAPPER_INT(NODE) (((struct tree_wrapper*)NODE)->u.i)
+#define WRAPPER_PTR(NODE) (((struct tree_wrapper*)(NODE))->u.ptr)
+#define WRAPPER_INT(NODE) (((struct tree_wrapper*)(NODE))->u.i)
 
 struct tree_wrapper
 {
@@ -1403,6 +1403,10 @@ struct lang_decl
 #define CP_DECL_CONTEXT(NODE) \
   (DECL_CONTEXT (NODE) ? DECL_CONTEXT (NODE) : global_namespace)
 #define FROB_CONTEXT(NODE)   ((NODE) == global_namespace ? NULL_TREE : (NODE))
+
+/* For a virtual function, the base where we find its vtable entry.
+   For a non-virtual function, the base where it is defined.  */
+#define DECL_VIRTUAL_CONTEXT(NODE) DECL_CONTEXT (NODE)
 
 /* 1 iff NODE has namespace scope, including the global namespace.  */
 #define DECL_NAMESPACE_SCOPE_P(NODE) \

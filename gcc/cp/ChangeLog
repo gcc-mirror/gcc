@@ -1,5 +1,9 @@
 1999-07-27  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* cp-tree.h (DECL_VIRTUAL_CONTEXT): New macro.
+	* typeck.c (expand_ptrmemfunc_cst): Calculate delta correctly for
+	virtual functions and MI.  Simplify.
+
 	* method.c: Remove prototype for largest_union_member.
 	* pt.c (determine_specialization): Fix uninitialized warning.
 	* lex.c (real_yylex): Likewise.
