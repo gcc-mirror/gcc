@@ -1,3 +1,15 @@
+2004-06-25  Dan Nicolaescu  <dann@ics.uci.edu>
+	    Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/stl_algobase.h (__fill, __fill_n): New helpers
+	for fill and fill_n, respectively: when copying is cheap, use a
+	temporary to avoid a memory read in each iteration.
+
+2004-06-25  Paolo Carlini  <pcarlini@suse.de>
+
+	* testsuite/25_algorithms/fill/1.cc: New.
+	* testsuite/25_algorithms/fill/2.cc: Likewise.
+
 2004-06-25  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/debug/formatter.h (__gnu_debug::_Error_formatter):

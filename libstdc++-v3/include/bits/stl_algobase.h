@@ -499,6 +499,32 @@ namespace std
 							__result, __Normal());
     }
 
+  template<typename>
+    struct __fill
+    {
+      template<typename _ForwardIterator, typename _Tp>
+        static void
+        fill(_ForwardIterator __first, _ForwardIterator __last,
+	     const _Tp& __value)
+        {
+	  for (; __first != __last; ++__first)
+	    *__first = __value;
+	}
+    };
+
+  template<>
+    struct __fill<__true_type>
+    {
+      template<typename _ForwardIterator, typename _Tp>
+        static void
+        fill(_ForwardIterator __first, _ForwardIterator __last,
+	     const _Tp& __value)
+        {
+	  const _Tp __tmp = __value;
+	  for (; __first != __last; ++__first)
+	    *__first = __tmp;
+	}
+    };
 
   /**
    *  @brief Fills the range [first,last) with copies of value.
@@ -520,31 +546,9 @@ namespace std
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __last);
 
-      for ( ; __first != __last; ++__first)
-	*__first = __value;
-    }
-
-  /**
-   *  @brief Fills the range [first,first+n) with copies of value.
-   *  @param  first  An output iterator.
-   *  @param  n      The count of copies to perform.
-   *  @param  value  A reference-to-const of arbitrary type.
-   *  @return   The iterator at first+n.
-   *
-   *  This function fills a range with copies of the same value.  For one-byte
-   *  types filling contiguous areas of memory, this becomes an inline call to
-   *  @c memset.
-  */
-  template<typename _OutputIterator, typename _Size, typename _Tp>
-    _OutputIterator
-    fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
-    {
-      // concept requirements
-      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator,_Tp>)
-
-      for ( ; __n > 0; --__n, ++__first)
-	*__first = __value;
-      return __first;
+      typedef typename __type_traits<_Tp>::has_trivial_copy_constructor
+	_Trivial;
+      std::__fill<_Trivial>::fill(__first, __last, __value);
     }
 
   // Specialization: for one-byte types we can use memset.
@@ -572,6 +576,56 @@ namespace std
     std::memset(__first, static_cast<unsigned char>(__tmp), __last - __first);
   }
 
+  template<typename>
+    struct __fill_n
+    {
+      template<typename _OutputIterator, typename _Size, typename _Tp>
+        static _OutputIterator
+        fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
+        {
+	  for (; __n > 0; --__n, ++__first)
+	    *__first = __value;
+	  return __first;
+	}
+    };
+
+  template<>
+    struct __fill_n<__true_type>
+    {
+      template<typename _OutputIterator, typename _Size, typename _Tp>
+        static _OutputIterator
+        fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
+        {
+	  const _Tp __tmp = __value;
+	  for (; __n > 0; --__n, ++__first)
+	    *__first = __tmp;
+	  return __first;	  
+	}
+    };
+
+  /**
+   *  @brief Fills the range [first,first+n) with copies of value.
+   *  @param  first  An output iterator.
+   *  @param  n      The count of copies to perform.
+   *  @param  value  A reference-to-const of arbitrary type.
+   *  @return   The iterator at first+n.
+   *
+   *  This function fills a range with copies of the same value.  For one-byte
+   *  types filling contiguous areas of memory, this becomes an inline call to
+   *  @c memset.
+  */
+  template<typename _OutputIterator, typename _Size, typename _Tp>
+    _OutputIterator
+    fill_n(_OutputIterator __first, _Size __n, const _Tp& __value)
+    {
+      // concept requirements
+      __glibcxx_function_requires(_OutputIteratorConcept<_OutputIterator, _Tp>)
+
+      typedef typename __type_traits<_Tp>::has_trivial_copy_constructor
+	_Trivial;
+      return std::__fill_n<_Trivial>::fill_n(__first, __n, __value);
+    }
+
   template<typename _Size>
     inline unsigned char*
     fill_n(unsigned char* __first, _Size __n, const unsigned char& __c)
@@ -595,7 +649,6 @@ namespace std
       std::fill(__first, __first + __n, __c);
       return __first + __n;
     }
-
 
   /**
    *  @brief Finds the places in ranges which don't match.
