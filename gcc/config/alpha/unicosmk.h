@@ -483,6 +483,5 @@ ssib_section (void)		\
 #define LIB_SPEC "-L/opt/ctl/craylibs/craylibs -lu -lm -lc -lsma"
 
 #undef EXPAND_BUILTIN_VA_START
-#undef EXPAND_BUILTIN_VA_ARG
 
 #define EH_FRAME_IN_DATA_SECTION 1

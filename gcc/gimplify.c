@@ -608,20 +608,6 @@ mostly_copy_tree_r (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
-/* Mark all the _DECL nodes under *TP as volatile.  FIXME: This must die
-   after VA_ARG_EXPRs are properly lowered.  */
-
-static tree
-mark_decls_volatile_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
-		       void *data ATTRIBUTE_UNUSED)
-{
-  if (SSA_VAR_P (*tp))
-    TREE_THIS_VOLATILE (*tp) = 1;
-
-  return NULL_TREE;
-}
-
-
 /* Callback for walk_tree to unshare most of the shared trees rooted at
    *TP.  If *TP has been visited already (i.e., TREE_VISITED (*TP) == 1),
    then *TP is deep copied by calling copy_tree_r.
@@ -662,23 +648,7 @@ copy_if_shared_r (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   /* Otherwise, mark the tree as visited and keep looking.  */
   else
-    {
-      TREE_VISITED (t) = 1;
-      if (TREE_CODE (*tp) == VA_ARG_EXPR
-	  && targetm.gimplify_va_arg_expr == NULL)
-	{
-	  /* Mark any _DECL inside the operand as volatile to avoid
-	     the optimizers messing around with it. We have to do this
-	     early, otherwise we might mark a variable as volatile
-	     after we gimplify other statements that use the variable
-	     assuming it's not volatile.  */
-
-	  /* FIXME once most targets define the above hook, this should
-	     go away (perhaps along with the #include "target.h").  */
-	  walk_tree (&TREE_OPERAND (*tp, 0), mark_decls_volatile_r,
-		     NULL, NULL);
-	}
-    }
+    TREE_VISITED (t) = 1;
 
   return NULL_TREE;
 }

@@ -219,8 +219,6 @@ is_gimple_tmp_rhs (tree t)
     case CALL_EXPR:
     case CONSTRUCTOR:
     case COMPLEX_EXPR:
-      /* FIXME lower VA_ARG_EXPR.  */
-    case VA_ARG_EXPR:
     case INTEGER_CST:
     case REAL_CST:
     case STRING_CST:
@@ -387,10 +385,6 @@ is_gimple_stmt (tree t)
     case PHI_NODE:
     case STATEMENT_LIST:
       /* These are always void.  */
-      return true;
-
-    case VA_ARG_EXPR:
-      /* FIXME this should be lowered.  */
       return true;
 
     case CALL_EXPR:

@@ -1734,11 +1734,8 @@ cfg_remove_useless_stmts_bb (basic_block bb)
 
       /* Invalidate the var if we encounter something that could modify it.  */
       if (TREE_CODE (stmt) == ASM_EXPR
-	  || TREE_CODE (stmt) == VA_ARG_EXPR
 	  || (TREE_CODE (stmt) == MODIFY_EXPR
-	      && (TREE_OPERAND (stmt, 0) == var
-		  || TREE_OPERAND (stmt, 0) == val
-		  || TREE_CODE (TREE_OPERAND (stmt, 1)) == VA_ARG_EXPR)))
+	      && TREE_OPERAND (stmt, 0) == var))
 	return;
   
       bsi_next (&bsi);

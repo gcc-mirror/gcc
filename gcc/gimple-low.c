@@ -195,7 +195,6 @@ lower_stmt (tree_stmt_iterator *tsi, struct lower_data *data)
     case CALL_EXPR:
     case GOTO_EXPR:
     case LABEL_EXPR:
-    case VA_ARG_EXPR:
     case SWITCH_EXPR:
       break;
 

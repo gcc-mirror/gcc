@@ -808,8 +808,8 @@ get_stmt_operands (tree stmt)
     default:
       /* Notice that if get_expr_operands tries to use &STMT as the operand
 	 pointer (which may only happen for USE operands), we will abort in
-	 append_use.  This default will handle statements like empty statements,
-	 CALL_EXPRs or VA_ARG_EXPRs that may appear on the RHS of a statement
+	 append_use.  This default will handle statements like empty
+	 statements, or CALL_EXPRs that may appear on the RHS of a statement
 	 or as statements themselves.  */
       get_expr_operands (stmt, &stmt, opf_none, &prev_vops);
       break;
@@ -963,13 +963,6 @@ get_expr_operands (tree stmt, tree *expr_p, int flags, voperands_t prev_vops)
 	get_expr_operands (stmt, &TREE_OPERAND (expr, 0), subflags, prev_vops);
 	return;
       }
-
-    case VA_ARG_EXPR:
-      /* Mark VA_ARG_EXPR nodes as making volatile references.  FIXME,
-	 this is needed because we currently do not gimplify VA_ARG_EXPR
-	 properly.  */
-      stmt_ann (stmt)->has_volatile_ops = true;
-      return;
 
     case CONSTRUCTOR:
       {
