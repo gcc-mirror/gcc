@@ -858,7 +858,7 @@ gen_reg_rtx (enum machine_mode mode)
   return val;
 }
 
-/* Generate an register with same attributes as REG,
+/* Generate a register with same attributes as REG,
    but offsetted by OFFSET.  */
 
 rtx

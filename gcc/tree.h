@@ -2582,7 +2582,7 @@ extern tree substitute_in_expr (tree, tree, tree);
 
 extern tree variable_size (tree);
 
-/* stabilize_reference (EXP) returns an reference equivalent to EXP
+/* stabilize_reference (EXP) returns a reference equivalent to EXP
    but it can be used multiple times
    and only evaluate the subexpressions once.  */
 

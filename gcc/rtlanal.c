@@ -3311,7 +3311,7 @@ subreg_offset_representable_p (unsigned int xregno, enum machine_mode xmode,
 #endif
 
   /* The XMODE value can be seen as a vector of NREGS_XMODE
-     values.  The subreg must represent an lowpart of given field.
+     values.  The subreg must represent a lowpart of given field.
      Compute what field it is.  */
   offset -= subreg_lowpart_offset (ymode,
 				   mode_for_size (GET_MODE_BITSIZE (xmode)

@@ -2429,7 +2429,7 @@ detect_spill_temps ()
 	continue;
 
       /* A web with only defs and no uses can't be spilled.  Nevertheless
-	 it must get a color, as it takes away an register from all webs
+	 it must get a color, as it takes away a register from all webs
 	 live at these defs.  So we make it a short web.  */
       if (web->num_uses == 0)
 	web->spill_temp = 3;
