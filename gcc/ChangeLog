@@ -1,3 +1,16 @@
+2001-07-02  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
+
+	* doc/install.texi: Various spelling and markup fixes.
+	(Installing GCC): Component specific installation instructions are
+	gone.
+	Fix reference.
+	Warn about removing old install dir in the presence of shared libs.
+	(Configuration): Invoke with options target to match configure
+	--help.
+	Consistently refer to gas, gld pathnames.
+	Invert --enable-multilib documentation.
+	Remove references to old compiler versions.
+
 Mon Jul  2 12:50:51 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* flow.c (try_simplify_condjump): Fix typo in updating fallthru flags.
