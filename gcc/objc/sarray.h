@@ -28,8 +28,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #ifndef __sarray_INCLUDE_GNU
 #define __sarray_INCLUDE_GNU
 
-#define OBJC_SPARSE3		/* 2-level sparse array */
-/* #define OBJC_SPARSE2 */      /* 3-level sparse array */
+#define OBJC_SPARSE2		/* 2-level sparse array */
+/* #define OBJC_SPARSE3 */      /* 3-level sparse array */
 
 #ifdef OBJC_SPARSE2
 extern const char* __objc_sparse2_id;
