@@ -1,6 +1,6 @@
 /* Language-dependent node constructors for parse phase of GNU compiler.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -1898,6 +1898,27 @@ pod_type_p (t)
     return 0; /* other non-class type (reference or function) */
   if (CLASSTYPE_NON_POD_P (t))
     return 0;
+  return 1;
+}
+
+/* Returns 1 iff zero initialization of type T means actually storing
+   zeros in it.  */
+
+int
+zero_init_p (t)
+     tree t;
+{
+  t = strip_array_types (t);
+
+  /* NULL pointers to data members are initialized with -1.  */
+  if (TYPE_PTRMEM_P (t))
+    return 0;
+
+  /* Classes that contain types that can't be zero-initialized, cannot
+     be zero-initialized themselves.  */
+  if (CLASS_TYPE_P (t) && CLASSTYPE_NON_ZERO_INIT_P (t))
+    return 0;
+
   return 1;
 }
 

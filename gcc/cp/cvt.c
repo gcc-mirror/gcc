@@ -1,6 +1,6 @@
 /* Language-level data type conversion for GNU C++.
    Copyright (C) 1987, 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GNU CC.
@@ -288,13 +288,6 @@ convert_to_pointer_force (type, expr)
   register tree intype = TREE_TYPE (expr);
   register enum tree_code form = TREE_CODE (intype);
   
-  if (integer_zerop (expr))
-    {
-      expr = build_int_2 (0, 0);
-      TREE_TYPE (expr) = type;
-      return expr;
-    }
-
   if (form == POINTER_TYPE)
     {
       intype = TYPE_MAIN_VARIANT (intype);
