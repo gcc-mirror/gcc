@@ -1531,8 +1531,6 @@ map_test_to_internal_test (test_code)
 
 /* Generate the code to compare two integer values.  The return value is:
    (reg:SI xx)		The pseudo register the comparison is in
-   (const_int 0)	The comparison is always false
-   (const_int 1)	The comparison is always true
    (rtx)0	       	No register, generate a simple branch.  */
 
 rtx
@@ -1582,52 +1580,6 @@ gen_int_relational (test_code, result, cmp0, cmp1, p_invert)
 
   p_info = &info[ (int)test ];
   eqne_p = (p_info->test_code == XOR);
-
-  /* See if the test is always true or false.  */
-  if ((GET_CODE (cmp0) == REG || GET_CODE (cmp0) == SUBREG)
-      && GET_CODE (cmp1) == CONST_INT)
-    {
-      HOST_WIDE_INT value = INTVAL (cmp1);
-      rtx truth = (rtx)0;
-
-      if (test == ITEST_GEU && value == 0)
-	truth = const1_rtx;
-
-      else if (test == ITEST_LTU && value == 0)
-	truth = const0_rtx;
-
-      else if (!TARGET_INT64)
-	{
-	  if (test == ITEST_LTU && value == -1)
-	    truth = const1_rtx;
-
-	  else if (test == ITEST_GTU && value == -1)
-	    truth = const0_rtx;
-
-	  else if (test == ITEST_LEU && value == -1)
-	    truth = const1_rtx;
-
-	  else if (test == ITEST_GT && value == 0x7fffffff)
-	    truth = const0_rtx;
-
-	  else if (test == ITEST_LE && value == 0x7fffffff)
-	    truth = const1_rtx;
-
-	  else if (test == ITEST_LT && value == 0x80000000)
-	    truth = const0_rtx;
-
-	  else if (test == ITEST_GE && value == 0x80000000)
-	    truth = const1_rtx;
-	}
-
-      if (truth != (rtx)0)
-	{
-	  if (result != (rtx)0)
-	    emit_move_insn (result, truth);
-
-	  return truth;
-	}
-    }
 
   /* Eliminate simple branches */
   branch_p = (result == (rtx)0);
@@ -1811,41 +1763,6 @@ gen_conditional_branch (operands, test_code)
 	test_code = NE;
       }
       break;
-    }
-
-  /* Handle always true or always false cases directly */
-  if (GET_CODE (cmp0) == CONST_INT && GET_CODE (cmp1) == CONST_INT)
-    {
-      HOST_WIDE_INT sval0 = INTVAL (cmp0);
-      HOST_WIDE_INT sval1 = INTVAL (cmp1);
-      unsigned long uval0 = sval0;
-      unsigned long uval1 = sval1;
-      int truth		  = 0;
-
-      switch (test_code)
-	{
-	default:
-	  goto fail;
-
-	case EQ:  truth = (sval0 == sval1); break;
-	case NE:  truth = (sval0 != sval1); break;
-	case GT:  truth = (sval0 >  sval1); break;
-	case GE:  truth = (sval0 >= sval1); break;
-	case LT:  truth = (sval0 <  sval1); break;
-	case LE:  truth = (sval0 <= sval1); break;
-	case GTU: truth = (uval0 >  uval1); break;
-	case GEU: truth = (uval0 >= uval1); break;
-	case LTU: truth = (uval0 <  uval1); break;
-	case LEU: truth = (uval0 <= uval1); break;
-	}
-
-      if (invert)
-	truth = ! truth;
-
-      if (truth)
-	emit_jump_insn (gen_rtx (SET, VOIDmode, pc_rtx, label1));
-
-      return;
     }
 
   /* Generate the jump */
