@@ -80,13 +80,6 @@ java::lang::Class::forName (jstring className)
   if (! className)
     JvThrow (new java::lang::NullPointerException);
 
-#if 0
-  // FIXME: should check syntax of CLASSNAME and throw
-  // IllegalArgumentException on failure.
-
-  // FIXME: should use class loader from calling method.
-  jclass klass = _Jv_FindClass (className, NULL);
-#else
   jsize length = _Jv_GetStringUTFLength (className);
   char buffer[length];
   _Jv_GetStringUTFRegion (className, 0, length, buffer);
@@ -99,8 +92,10 @@ java::lang::Class::forName (jstring className)
   jclass klass = (buffer[0] == '[' 
 		  ? _Jv_FindClassFromSignature (name->data, NULL)
 		  : _Jv_FindClass (name, NULL));
-#endif
-  if (! klass)
+
+  if (klass)
+    _Jv_InitClass (klass);
+  else
     JvThrow (new java::lang::ClassNotFoundException (className));
 
   return klass;
