@@ -12,9 +12,13 @@ struct
   unsigned int :4;
   unsigned short :14;
   unsigned int G938:8;
+#if __INT_MAX__ >= 2147483647L
   unsigned int :30;
+#endif
   unsigned short :16;
+#if __INT_MAX__ >= 2147483647L
   unsigned int :18;
+#endif
   unsigned short G939:9;
 } G928b;
 

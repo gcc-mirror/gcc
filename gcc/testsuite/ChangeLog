@@ -1,3 +1,9 @@
+2004-02-19  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* gcc.c-torture/compile/20040130-1.c: Enable only when
+	__INT_MAX__ >= 2147483647L.
+	* gcc.c-torture/compile/961203-1.c: Likewise.
+
 2004-02-19  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/attr-ctor1.C: XFAIL on hppa.
