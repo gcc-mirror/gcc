@@ -1382,6 +1382,7 @@ combine_reloads ()
 {
   int i;
   int output_reload = -1;
+  int secondary_out = -1;
   rtx note;
 
   /* Find the output reload; return unless there is exactly one
@@ -1525,6 +1526,16 @@ combine_reloads ()
 			      REGNO (XEXP (note, 0)))
 	&& (HARD_REGNO_NREGS (REGNO (XEXP (note, 0)), reload_outmode[output_reload])
 	    <= HARD_REGNO_NREGS (REGNO (XEXP (note, 0)), GET_MODE (XEXP (note, 0))))
+	/* Ensure that a secondary or tertiary reload for this output
+	   won't want this register.  */
+        && ((secondary_out = reload_secondary_out_reload[output_reload]) == -1
+            || (! (TEST_HARD_REG_BIT
+		    (reg_class_contents[(int) reload_reg_class[secondary_out]],
+		     REGNO (XEXP (note, 0))))
+		&& ((secondary_out = reload_secondary_out_reload[secondary_out]) == -1
+		    ||  ! (TEST_HARD_REG_BIT
+			   (reg_class_contents[(int) reload_reg_class[secondary_out]],
+			    REGNO (XEXP (note, 0)))))))
 	&& ! fixed_regs[REGNO (XEXP (note, 0))])
       {
 	reload_reg_rtx[output_reload] = gen_rtx (REG,
