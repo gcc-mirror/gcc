@@ -1,3 +1,7 @@
+2004-03-05  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* doc/tm.texi (HARD_REGNO_RENAME_OK): Document.
+
 2004-03-05  Jason Merrill  <jason@redhat.com>
 
 	* tree.h (TYPE_HASH): Use TYPE_UID.

@@ -2072,6 +2072,17 @@ floating registers are not in class @code{GENERAL_REGS}, they will not
 be used unless some pattern's constraint asks for one.
 @end defmac
 
+@defmac HARD_REGNO_RENAME_OK (@var{from}, @var{to})
+A C expression that is nonzero if it is OK to rename a hard register
+@var{from} to another hard register @var{to}.
+
+One common use of this macro is to prevent renaming of a register to
+another register that is not saved by a prologue in an interrupt
+handler.
+
+The default is always nonzero.
+@end defmac
+
 @defmac MODES_TIEABLE_P (@var{mode1}, @var{mode2})
 A C expression that is nonzero if a value of mode
 @var{mode1} is accessible in mode @var{mode2} without copying.
