@@ -1,3 +1,9 @@
+2003-12-08  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* defaults.h (LOCAL_REGNO): Give the default definition.
+	* flow.c (LOCAL_REGNO): Remove.
+	* reload1.c (LOCAL_REGNO): Likewise.
+
 2003-12-08  Geoffrey Keating  <geoffk@apple.com>
 
 	PR target/11848
