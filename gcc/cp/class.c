@@ -90,8 +90,6 @@ int current_lang_stacksize;
 tree lang_name_c, lang_name_cplusplus;
 tree current_lang_name;
 
-char *dont_allow_type_definitions;
-
 /* When layout out an aggregate type, the size of the
    basetypes (virtual and non-virtual) is passed to layout_record
    via this node.  */
@@ -376,7 +374,7 @@ build_vtable_entry (delta, pfn)
   if (flag_vtable_thunks)
     {
       HOST_WIDE_INT idelta = TREE_INT_CST_LOW (delta);
-      if (idelta)
+      if (idelta && ! DECL_ABSTRACT_VIRTUAL_P (TREE_OPERAND (pfn, 0)))
 	{
 	  pfn = build1 (ADDR_EXPR, vtable_entry_type,
 			make_thunk (pfn, idelta));
@@ -590,7 +588,7 @@ set_rtti_entry (virtuals, offset, type)
   if (flag_rtti)
     vfn = build1 (ADDR_EXPR, vfunc_ptr_type_node, get_tinfo_fn (type));
   else
-    vfn = build1 (NOP_EXPR, vfunc_ptr_type_node, integer_zero_node);
+    vfn = build1 (NOP_EXPR, vfunc_ptr_type_node, size_zero_node);
   TREE_CONSTANT (vfn) = 1;
 
   if (! flag_vtable_thunks)
@@ -600,11 +598,11 @@ set_rtti_entry (virtuals, offset, type)
       tree voff = build1 (NOP_EXPR, vfunc_ptr_type_node, offset);
       TREE_CONSTANT (voff) = 1;
 
-      TREE_VALUE (virtuals) = build_vtable_entry (integer_zero_node, voff);
+      TREE_VALUE (virtuals) = build_vtable_entry (size_zero_node, voff);
 
       /* The second slot is for the tdesc pointer when thunks are used.  */
       TREE_VALUE (TREE_CHAIN (virtuals))
-	= build_vtable_entry (integer_zero_node, vfn);
+	= build_vtable_entry (size_zero_node, vfn);
     }
 }
 
@@ -628,7 +626,7 @@ build_vtable (binfo, type)
 
       /* Now do rtti stuff.  */
       offset = get_derived_offset (TYPE_BINFO (type), NULL_TREE);
-      offset = size_binop (MINUS_EXPR, integer_zero_node, offset);
+      offset = size_binop (MINUS_EXPR, size_zero_node, offset);
       set_rtti_entry (virtuals, offset, type);
     }
   else
@@ -787,7 +785,7 @@ prepare_fresh_vtable (binfo, for_type)
     offset = BINFO_OFFSET (binfo);
 
   set_rtti_entry (BINFO_VIRTUALS (binfo),
-		  size_binop (MINUS_EXPR, integer_zero_node, offset),
+		  size_binop (MINUS_EXPR, size_zero_node, offset),
 		  for_type);
 
 #ifdef GATHER_STATISTICS
@@ -3046,12 +3044,6 @@ finish_struct_1 (t, attributes, warn_anon)
       return t;
     }
 
-  if (dont_allow_type_definitions)
-    {
-      pedwarn ("types cannot be defined %s",
-	       dont_allow_type_definitions);
-    }
-
   GNU_xref_decl (current_function_decl, t);
 
   /* If this type was previously laid out as a forward reference,
@@ -3979,7 +3971,7 @@ finish_struct_1 (t, attributes, warn_anon)
 	  /* The first slot is for the rtti offset.  */
 	  pending_virtuals = tree_cons (NULL_TREE, NULL_TREE, pending_virtuals);
 
-	  set_rtti_entry (pending_virtuals, integer_zero_node, t);
+	  set_rtti_entry (pending_virtuals, size_zero_node, t);
 	  build_vtable (NULL_TREE, t);
 	}
       else

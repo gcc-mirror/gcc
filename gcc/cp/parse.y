@@ -99,7 +99,7 @@ empty_parms ()
 
 %start program
 
-%union {long itype; tree ttype; char *strtype; enum tree_code code; }
+%union {long itype; tree ttype; char *strtype; enum tree_code code; flagged_type_tree ftype; }
 
 /* All identifiers that are not reserved words
    and are not declared typedefs in the current block */
@@ -195,10 +195,10 @@ empty_parms ()
 %type <ttype> identifier IDENTIFIER TYPENAME CONSTANT expr nonnull_exprlist
 %type <ttype> paren_expr_or_null nontrivial_exprlist SELFNAME
 %type <ttype> expr_no_commas cast_expr unary_expr primary string STRING
-%type <ttype> typed_declspecs reserved_declspecs boolean.literal
-%type <ttype> typed_typespecs reserved_typespecquals
-%type <ttype> declmods typespec typespecqual_reserved
-%type <ttype> SCSPEC TYPESPEC TYPE_QUAL nonempty_type_quals maybe_type_qual
+%type <ttype> reserved_declspecs boolean.literal
+%type <ttype> reserved_typespecquals
+%type <ttype> declmods 
+%type <ttype> SCSPEC TYPESPEC TYPE_QUAL maybe_type_qual
 %type <itype> initdecls notype_initdecls initdcl	/* C++ modification */
 %type <ttype> init initlist maybeasm maybe_init
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
@@ -210,23 +210,27 @@ empty_parms ()
 %type <ttype> declarator notype_declarator after_type_declarator
 %type <ttype> direct_notype_declarator direct_after_type_declarator
 
-%type <ttype> structsp opt.component_decl_list component_decl_list
+%type <ttype> opt.component_decl_list component_decl_list
 %type <ttype> component_decl component_decl_1 components notype_components
 %type <ttype> component_declarator component_declarator0 self_reference
 %type <ttype> notype_component_declarator notype_component_declarator0
 %type <ttype> after_type_component_declarator after_type_component_declarator0
 %type <ttype> enumlist enumerator
-%type <ttype> type_id absdcl type_quals
+%type <ttype> absdcl type_quals
 %type <ttype> direct_abstract_declarator conversion_declarator
-%type <ttype> new_type_id new_declarator direct_new_declarator
-%type <ttype> xexpr parmlist parms parm bad_parm full_parm
+%type <ttype> new_declarator direct_new_declarator
+%type <ttype> xexpr parmlist parms bad_parm 
 %type <ttype> identifiers_or_typenames
 %type <ttype> fcast_or_absdcl regcast_or_absdcl
 %type <ttype> expr_or_declarator complex_notype_declarator
 %type <ttype> notype_unqualified_id unqualified_id qualified_id
 %type <ttype> overqualified_id notype_qualified_id any_id
 %type <ttype> complex_direct_notype_declarator functional_cast
-%type <ttype> named_parm complex_parmlist typed_declspecs1 parms_comma
+%type <ttype> complex_parmlist parms_comma
+
+%type <ftype> type_id new_type_id typed_typespecs typespec typed_declspecs
+%type <ftype> typed_declspecs1 type_specifier_seq nonempty_type_quals
+%type <ftype> structsp typespecqual_reserved parm named_parm full_parm
 
 /* C++ extensions */
 %token <ttype> TYPENAME_ELLIPSIS PTYPENAME
@@ -258,7 +262,7 @@ empty_parms ()
 %type <ttype> complete_type_name notype_identifier
 %type <ttype> complex_type_name nested_name_specifier_1
 %type <itype> nomods_initdecls nomods_initdcl0
-%type <ttype> new_initializer new_placement type_specifier_seq
+%type <ttype> new_initializer new_placement
 %type <ttype> using_decl .poplevel
 
 /* in order to recognize aggr tags as defining and thus shadowing. */
@@ -455,11 +459,11 @@ template_parm:
 	  template_type_parm
 		{ $$ = build_tree_list (NULL_TREE, $1); }
 	| template_type_parm '=' type_id
-		{ $$ = build_tree_list (groktypename ($3), $1); }
+		{ $$ = build_tree_list (groktypename ($3.t), $1); }
 	| parm
-		{ $$ = build_tree_list (NULL_TREE, $1); }
+		{ $$ = build_tree_list (NULL_TREE, $1.t); }
 	| parm '=' expr_no_commas %prec ARITHCOMPARE
-		{ $$ = build_tree_list ($3, $1); }
+		{ $$ = build_tree_list ($3, $1.t); }
 	;
 
 overloaddef:
@@ -497,14 +501,14 @@ datadef:
 		}
 	| typed_declspecs initdecls ';'
 		{
-		  note_list_got_semicolon ($<ttype>$);
+		  note_list_got_semicolon ($1.t);
 		}
 	/* Normal case: make this fast.  */
 	| typed_declspecs declarator ';'
 		{ tree d, specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  note_list_got_semicolon (specs);
-		  d = start_decl ($<ttype>2, specs, 0, NULL_TREE);
+		  d = start_decl ($2, specs, 0, NULL_TREE);
 		  cplus_decl_attributes (d, NULL_TREE, attrs);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
 		}
@@ -514,9 +518,9 @@ datadef:
 	| typed_declspecs ';'
 	  {
 	    tree t, attrs;
-	    split_specs_attrs ($1, &t, &attrs);
+	    split_specs_attrs ($1.t, &t, &attrs);
 	    shadow_tag (t);
-	    note_list_got_semicolon ($<ttype>$);
+	    note_list_got_semicolon ($1.t);
 	  }
 	| error ';'
 	| error '}'
@@ -645,7 +649,7 @@ constructor_declarator:
 fn.def1:
 	  typed_declspecs declarator exception_specification_opt
 		{ tree specs, attrs;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  if (! start_function (specs, $2, $3, attrs, 0))
 		    YYERROR1;
 		  reinit_parse_for_function ();
@@ -702,7 +706,7 @@ fn.def2:
 	| component_constructor_declarator exception_specification_opt
 		{ $$ = start_method (NULL_TREE, $1, $2); goto rest_of_mdef; }
 	| typed_declspecs declarator exception_specification_opt
-		{ tree specs = strip_attrs ($1);
+		{ tree specs = strip_attrs ($1.t);
 		  $$ = start_method (specs, $2, $3); goto rest_of_mdef; }
 	| declmods notype_declarator exception_specification_opt
 		{ tree specs = strip_attrs ($1);
@@ -829,7 +833,7 @@ explicit_instantiation:
 	  TEMPLATE aggr template_type
 		{ do_type_instantiation ($3, NULL_TREE); }
 	| TEMPLATE typed_declspecs declarator
-		{ tree specs = strip_attrs ($2);
+		{ tree specs = strip_attrs ($2.t);
 		  do_function_instantiation (specs, $3, NULL_TREE); }
 	| TEMPLATE notype_declarator
 		{ do_function_instantiation (NULL_TREE, $2, NULL_TREE); }
@@ -838,7 +842,7 @@ explicit_instantiation:
 	| SCSPEC TEMPLATE aggr template_type
 		{ do_type_instantiation ($4, $1); }
 	| SCSPEC TEMPLATE typed_declspecs declarator
-		{ tree specs = strip_attrs ($3);
+		{ tree specs = strip_attrs ($3.t);
 		  do_function_instantiation (specs, $4, $1); }
 	| SCSPEC TEMPLATE notype_declarator
 		{ do_function_instantiation (NULL_TREE, $3, $1); }
@@ -912,7 +916,7 @@ template_arg_list:
 
 template_arg:
 	  type_id
-		{ $$ = groktypename ($$); }
+		{ $$ = groktypename ($1.t); }
 	| expr_no_commas  %prec ARITHCOMPARE
 	;
 
@@ -973,7 +977,7 @@ condition:
 			cp_error ("definition of enum `%T' in condition", s);
 		    }
 		  }
-		  current_declspecs = $1;
+		  current_declspecs = $1.t;
 		  $<itype>6 = suspend_momentary ();
 		  $<ttype>$ = start_decl ($<ttype>2, current_declspecs, 1, $3);
 		  cplus_decl_attributes ($<ttype>$, $5,
@@ -1082,31 +1086,40 @@ unary_expr:
 	| SIZEOF unary_expr  %prec UNARY
 		{ $$ = expr_sizeof ($2); }
 	| SIZEOF '(' type_id ')'  %prec HYPERUNARY
-		{ $$ = c_sizeof (groktypename ($3)); }
+		{ $$ = c_sizeof (groktypename ($3.t)); }
 	| ALIGNOF unary_expr  %prec UNARY
 		{ $$ = grok_alignof ($2); }
 	| ALIGNOF '(' type_id ')'  %prec HYPERUNARY
-		{ $$ = c_alignof (groktypename ($3)); }
+		{ $$ = c_alignof (groktypename ($3.t)); 
+		  check_for_new_type ("alignof", $3); }
 
 	/* The %prec EMPTY's here are required by the = init initializer
 	   syntax extension; see below.  */
 	| new new_type_id %prec EMPTY
-		{ $$ = build_new (NULL_TREE, $2, NULL_TREE, $1); }
+		{ $$ = build_new (NULL_TREE, $2.t, NULL_TREE, $1); 
+		  check_for_new_type ("new", $2); }
 	| new new_type_id new_initializer
-		{ $$ = build_new (NULL_TREE, $2, $3, $1); }
+		{ $$ = build_new (NULL_TREE, $2.t, $3, $1); 
+		  check_for_new_type ("new", $2); }
 	| new new_placement new_type_id %prec EMPTY
-		{ $$ = build_new ($2, $3, NULL_TREE, $1); }
+		{ $$ = build_new ($2, $3.t, NULL_TREE, $1); 
+		  check_for_new_type ("new", $3); }
 	| new new_placement new_type_id new_initializer
-		{ $$ = build_new ($2, $3, $4, $1); }
+		{ $$ = build_new ($2, $3.t, $4, $1); 
+		  check_for_new_type ("new", $3); }
 	| new '(' type_id ')' %prec EMPTY
-		{ $$ = build_new (NULL_TREE, groktypename($3),
-				  NULL_TREE, $1); }
+		{ $$ = build_new (NULL_TREE, groktypename($3.t),
+				  NULL_TREE, $1); 
+		  check_for_new_type ("new", $3); }
 	| new '(' type_id ')' new_initializer
-		{ $$ = build_new (NULL_TREE, groktypename($3), $5, $1); }
+		{ $$ = build_new (NULL_TREE, groktypename($3.t), $5, $1); 
+		  check_for_new_type ("new", $3); }
 	| new new_placement '(' type_id ')' %prec EMPTY
-		{ $$ = build_new ($2, groktypename($4), NULL_TREE, $1); }
+		{ $$ = build_new ($2, groktypename($4.t), NULL_TREE, $1); 
+		  check_for_new_type ("new", $4); }
 	| new new_placement '(' type_id ')' new_initializer
-		{ $$ = build_new ($2, groktypename($4), $6, $1); }
+		{ $$ = build_new ($2, groktypename($4.t), $6, $1); 
+		  check_for_new_type ("new", $4); }
 
 	| delete cast_expr  %prec UNARY
 		{ $$ = delete_sanity ($2, NULL_TREE, 0, $1); }
@@ -1137,7 +1150,7 @@ new_initializer:
 		{ $$ = NULL_TREE; }
 	| '(' typespec ')'
 		{
-		  cp_error ("`%T' is not a valid expression", $2);
+		  cp_error ("`%T' is not a valid expression", $2.t);
 		  $$ = error_mark_node;
 		}
 	/* GNU extension so people can use initializer lists.  Note that
@@ -1154,14 +1167,16 @@ new_initializer:
 /* This is necessary to postpone reduction of `int ((int)(int)(int))'.  */
 regcast_or_absdcl:
 	  '(' type_id ')' %prec EMPTY
-		{ $2 = tree_cons (NULL_TREE, $2, void_list_node);
-		  TREE_PARMLIST ($2) = 1;
-		  $$ = build_parse_node (CALL_EXPR, NULL_TREE, $2, 
-					 NULL_TREE); }
+		{ $2.t = tree_cons (NULL_TREE, $2.t, void_list_node);
+		  TREE_PARMLIST ($2.t) = 1;
+		  $$ = build_parse_node (CALL_EXPR, NULL_TREE, $2.t, 
+					 NULL_TREE);
+		  check_for_new_type ("cast", $2); }
 	| regcast_or_absdcl '(' type_id ')' %prec EMPTY
-		{ $3 = tree_cons (NULL_TREE, $3, void_list_node);
-		  TREE_PARMLIST ($3) = 1;
-		  $$ = build_parse_node (CALL_EXPR, $$, $3, NULL_TREE); }
+		{ $3.t = tree_cons (NULL_TREE, $3.t, void_list_node);
+		  TREE_PARMLIST ($3.t) = 1;
+		  $$ = build_parse_node (CALL_EXPR, $$, $3.t, NULL_TREE);
+		  check_for_new_type ("cast", $3); }
 	;
 
 cast_expr:
@@ -1241,7 +1256,7 @@ expr_no_commas:
 	| object unop expr_no_commas  %prec UNARY
 		{ $$ = build_m_component_ref ($$, build_x_unary_op ($2, $3)); }
 	| object '(' type_id ')' expr_no_commas  %prec UNARY
-		{ tree type = groktypename ($3);
+		{ tree type = groktypename ($3.t);
 		  $$ = build_m_component_ref ($$, build_c_cast (type, $5, 0)); }
 	| object primary_no_id  %prec UNARY
 		{ $$ = build_m_component_ref ($$, $2); }
@@ -1443,38 +1458,27 @@ primary:
 		    }
 		}
 	| functional_cast
-	| DYNAMIC_CAST '<'
-		{ dont_allow_type_definitions = "inside dynamic_cast"; }
-	  type_id '>'
-		{ dont_allow_type_definitions = 0; }
-	  '(' expr ')'
-		{ tree type = groktypename ($4);
-		  $$ = build_dynamic_cast (type, $8); }
-	| STATIC_CAST '<'
-		{ dont_allow_type_definitions = "inside static_cast"; }
-	  type_id '>'
-		{ dont_allow_type_definitions = 0; }
-	  '(' expr ')'
-		{ tree type = groktypename ($4);
-		  $$ = build_static_cast (type, $8); }
-	| REINTERPRET_CAST '<'
-		{ dont_allow_type_definitions = "inside reinterpret_cast"; }
-	  type_id '>'
-		{ dont_allow_type_definitions = 0; }
-	  '(' expr ')'
-		{ tree type = groktypename ($4);
-		  $$ = build_reinterpret_cast (type, $8); }
-	| CONST_CAST '<'
-		{ dont_allow_type_definitions = "inside const_cast"; }
-	  type_id '>'
-		{ dont_allow_type_definitions = 0; }
-	  '(' expr ')'
-		{ tree type = groktypename ($4);
-		  $$ = build_const_cast (type, $8); }
+	| DYNAMIC_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3.t);
+		  check_for_new_type ("dynamic_cast", $3);
+		  $$ = build_dynamic_cast (type, $6); }
+	| STATIC_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3.t);
+		  check_for_new_type ("static_cast", $3);
+		  $$ = build_static_cast (type, $6); }
+	| REINTERPRET_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3.t);
+		  check_for_new_type ("reinterpret_cast", $3);
+		  $$ = build_reinterpret_cast (type, $6); }
+	| CONST_CAST '<' type_id '>' '(' expr ')'
+		{ tree type = groktypename ($3.t);
+		  check_for_new_type ("const_cast", $3);
+		  $$ = build_const_cast (type, $6); }
 	| TYPEID '(' expr ')'
 		{ $$ = build_typeid ($3); }
 	| TYPEID '(' type_id ')'
-		{ tree type = groktypename ($3);
+		{ tree type = groktypename ($3.t);
+		  check_for_new_type ("typeid", $3);
 		  $$ = get_typeid (TYPE_MAIN_VARIANT (type)); }
 	| global_scope IDENTIFIER
 		{ $$ = do_scoped_id ($2, 1); }
@@ -1671,42 +1675,42 @@ object:	  primary '.'
 decl:
 	/* Normal case: make this fast.  */
 	  typespec declarator ';'
-		{ tree d = get_decl_list ($1);
+		{ tree d = get_decl_list ($1.t);
 		  int yes = suspend_momentary ();
 		  d = start_decl ($2, d, 0, NULL_TREE);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
 		  resume_momentary (yes);
-		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1)))
-		    note_got_semicolon ($1);
+		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1.t)))
+		    note_got_semicolon ($1.t);
 		}
 	| typed_declspecs declarator ';'
 		{ tree d, specs, attrs;
 		  int yes;
-		  split_specs_attrs ($1, &specs, &attrs);
+		  split_specs_attrs ($1.t, &specs, &attrs);
 		  yes = suspend_momentary ();
 		  d = start_decl ($2, specs, 0, NULL_TREE);
 		  cplus_decl_attributes (d, NULL_TREE, attrs);
 		  cp_finish_decl (d, NULL_TREE, NULL_TREE, 1, 0);
 		  resume_momentary (yes);
-		  note_list_got_semicolon ($1);
+		  note_list_got_semicolon ($1.t);
 		}
 	| typespec initdecls ';'
 		{
 		  resume_momentary ($2);
-		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1)))
-		    note_got_semicolon ($1);
+		  if (IS_AGGR_TYPE_CODE (TREE_CODE ($1.t)))
+		    note_got_semicolon ($1.t);
 		}
 	| typed_declspecs initdecls ';'
 		{
 		  resume_momentary ($2);
-		  note_list_got_semicolon ($1);
+		  note_list_got_semicolon ($1.t);
 		}
 	| declmods notype_initdecls ';'
 		{ resume_momentary ($2); }
 	| typed_declspecs ';'
 		{
-		  shadow_tag ($1);
-		  note_list_got_semicolon ($1);
+		  shadow_tag ($1.t);
+		  note_list_got_semicolon ($1.t);
 		}
 	| declmods ';'
 		{ warning ("empty declaration"); }
@@ -1733,15 +1737,20 @@ fcast_or_absdcl:
 /* ANSI type-id (8.1) */
 type_id:
 	  typed_typespecs absdcl
-		{ $$ = build_decl_list ($$, $2); }
+		{ $$.t = build_decl_list ($1.t, $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_type_quals absdcl
-		{ $$ = build_decl_list ($$, $2); }
+		{ $$.t = build_decl_list ($1.t, $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec absdcl
-		{ $$ = build_decl_list (get_decl_list ($$), $2); }
+		{ $$.t = build_decl_list (get_decl_list ($1.t), $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_typespecs %prec EMPTY
-		{ $$ = build_decl_list ($$, NULL_TREE); }
+		{ $$.t = build_decl_list ($1.t, NULL_TREE);
+		  $$.new_type_flag = $1.new_type_flag;  }
 	| nonempty_type_quals %prec EMPTY
-		{ $$ = build_decl_list ($$, NULL_TREE); }
+		{ $$.t = build_decl_list ($1.t, NULL_TREE); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	;
 
 /* Declspecs which contain at least one type specifier or typedef name.
@@ -1756,18 +1765,24 @@ typed_declspecs:
 
 typed_declspecs1:
 	  declmods typespec
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1); 
+		  $$.new_type_flag = $2.new_type_flag; }
 	| typespec reserved_declspecs	%prec HYPERUNARY
-		{ $$ = decl_tree_cons (NULL_TREE, $$, $2); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec reserved_typespecquals reserved_declspecs
-		{ $$ = decl_tree_cons (NULL_TREE, $$, chainon ($2, $3)); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, chainon ($2, $3)); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| declmods typespec reserved_declspecs
-		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1)); 
+		  $$.new_type_flag = $2.new_type_flag; }
 	| declmods typespec reserved_typespecquals
-		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1)); 
+		  $$.new_type_flag = $2.new_type_flag; }
 	| declmods typespec reserved_typespecquals reserved_declspecs
-		{ $$ = decl_tree_cons (NULL_TREE, $2, 
-				       chainon ($3, chainon ($4, $$))); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t,
+					 chainon ($3, chainon ($4, $1))); 
+		  $$.new_type_flag = $2.new_type_flag; }
 	;
 
 reserved_declspecs:
@@ -1777,7 +1792,7 @@ reserved_declspecs:
 			     IDENTIFIER_POINTER ($$));
 		  $$ = build_decl_list (NULL_TREE, $$); }
 	| reserved_declspecs typespecqual_reserved
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		{ $$ = decl_tree_cons (NULL_TREE, $2.t, $$); }
 	| reserved_declspecs SCSPEC
 		{ if (extra_warnings)
 		    warning ("`%s' is not at beginning of declaration",
@@ -1796,7 +1811,7 @@ reserved_declspecs:
 
 declmods:
 	  nonempty_type_quals %prec EMPTY
-		{ TREE_STATIC ($$) = 1; }
+		{ $$ = $1.t; TREE_STATIC ($$) = 1; }
 	| SCSPEC
 		{ $$ = IDENTIFIER_AS_LIST ($$); }
 	| declmods TYPE_QUAL
@@ -1822,20 +1837,24 @@ declmods:
 
 typed_typespecs:
 	  typespec  %prec EMPTY
-		{ $$ = get_decl_list ($$); }
+		{ $$.t = get_decl_list ($1.t); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_type_quals typespec
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, $1.t); 
+		  $$.new_type_flag = $2.new_type_flag; }
 	| typespec reserved_typespecquals
-		{ $$ = decl_tree_cons (NULL_TREE, $$, $2); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $1.t, $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| nonempty_type_quals typespec reserved_typespecquals
-		{ $$ = decl_tree_cons (NULL_TREE, $2, chainon ($3, $$)); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2.t, chainon ($3, $1.t)); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	;
 
 reserved_typespecquals:
 	  typespecqual_reserved
-		{ $$ = build_decl_list (NULL_TREE, $$); }
+		{ $$ = build_decl_list (NULL_TREE, $1.t); }
 	| reserved_typespecquals typespecqual_reserved
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		{ $$ = decl_tree_cons (NULL_TREE, $2.t, $1); }
 	;
 
 /* A typespec (but not a type qualifier).
@@ -1844,41 +1863,47 @@ reserved_typespecquals:
 
 typespec: structsp
 	| TYPESPEC  %prec EMPTY
+		{ $$.t = $1; $$.new_type_flag = 0; }
 	| complete_type_name
+		{ $$.t = $1; $$.new_type_flag = 0; }
 	| TYPEOF '(' expr ')'
-		{ $$ = TREE_TYPE ($3);
+		{ $$.t = TREE_TYPE ($3);
+		  $$.new_type_flag = 0;
 		  if (pedantic && !in_system_header)
 		    pedwarn ("ANSI C++ forbids `typeof'"); }
 	| TYPEOF '(' type_id ')'
-		{ $$ = groktypename ($3);
+		{ $$.t = groktypename ($3.t);
 		  if (pedantic && !in_system_header)
-		    pedwarn ("ANSI C++ forbids `typeof'"); }
+		    pedwarn ("ANSI C++ forbids `typeof'"); 
+		  $$.new_type_flag = 0; }
 	| SIGOF '(' expr ')'
 		{ tree type = TREE_TYPE ($3);
 
+                  $$.new_type_flag = 0;
 		  if (IS_AGGR_TYPE (type))
 		    {
 		      sorry ("sigof type specifier");
-		      $$ = type;
+		      $$.t = type;
 		    }
 		  else
 		    {
 		      error ("`sigof' applied to non-aggregate expression");
-		      $$ = error_mark_node;
+		      $$.t = error_mark_node;
 		    }
 		}
 	| SIGOF '(' type_id ')'
-		{ tree type = groktypename ($3);
+		{ tree type = groktypename ($3.t);
 
+                  $$.new_type_flag = 0;
 		  if (IS_AGGR_TYPE (type))
 		    {
 		      sorry ("sigof type specifier");
-		      $$ = type;
+		      $$.t = type;
 		    }
 		  else
 		    {
 		      error("`sigof' applied to non-aggregate type");
-		      $$ = error_mark_node;
+		      $$.t = error_mark_node;
 		    }
 		}
 	;
@@ -1886,7 +1911,9 @@ typespec: structsp
 /* A typespec that is a reserved word, or a type qualifier.  */
 
 typespecqual_reserved: TYPESPEC
+		{ $$.t = $1; $$.new_type_flag = 0; }
 	| TYPE_QUAL
+		{ $$.t = $1; $$.new_type_flag = 0; }
 	| structsp
 	;
 
@@ -2131,38 +2158,47 @@ pending_inlines:
 structsp:
 	  ENUM identifier '{'
 		{ $<itype>3 = suspend_momentary ();
-		  $$ = start_enum ($2); }
+		  $<ttype>$ = start_enum ($2); }
 	  enumlist maybecomma_warn '}'
-		{ $$ = finish_enum ($<ttype>4, $5);
+		{ $$.t = finish_enum ($<ttype>4, $5);
+		  $$.new_type_flag = 1;
 		  resume_momentary ((int) $<itype>3);
 		  check_for_missing_semicolon ($<ttype>4); }
 	| ENUM identifier '{' '}'
-		{ $$ = finish_enum (start_enum ($2), NULL_TREE);
-		  check_for_missing_semicolon ($$); }
+		{ $$.t = finish_enum (start_enum ($2), NULL_TREE);
+		  $$.new_type_flag = 1;
+		  check_for_missing_semicolon ($$.t); }
 	| ENUM '{'
 		{ $<itype>2 = suspend_momentary ();
-		  $$ = start_enum (make_anon_name ()); }
+		  $<ttype>$ = start_enum (make_anon_name ()); }
 	  enumlist maybecomma_warn '}'
-		{ $$ = finish_enum ($<ttype>3, $4);
+		{ $$.t = finish_enum ($<ttype>3, $4);
 		  resume_momentary ((int) $<itype>1);
-		  check_for_missing_semicolon ($<ttype>3); }
+		  check_for_missing_semicolon ($<ttype>3);
+		  $$.new_type_flag = 1; }
 	| ENUM '{' '}'
-		{ $$ = finish_enum (start_enum (make_anon_name()), NULL_TREE);
-		  check_for_missing_semicolon ($$); }
+		{ $$.t = finish_enum (start_enum (make_anon_name()), NULL_TREE);
+		  $$.new_type_flag = 1;
+		  check_for_missing_semicolon ($$.t); }
 	| ENUM identifier
-		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
+		{ $$.t = xref_tag (enum_type_node, $2, NULL_TREE, 1); 
+		  $$.new_type_flag = 0; }
 	| ENUM complex_type_name
-		{ $$ = xref_tag (enum_type_node, $2, NULL_TREE, 1); }
+		{ $$.t = xref_tag (enum_type_node, $2, NULL_TREE, 1); 
+		  $$.new_type_flag = 0; }
 	| TYPENAME_KEYWORD nested_name_specifier identifier
-		{ $$ = make_typename_type ($2, $3); }
+		{ $$.t = make_typename_type ($2, $3); 
+		  $$.new_type_flag = 0; }
 	| TYPENAME_KEYWORD global_scope nested_name_specifier identifier
-		{ $$ = make_typename_type ($3, $4); }
+		{ $$.t = make_typename_type ($3, $4); 
+		  $$.new_type_flag = 0; }
 	/* C++ extensions, merged with C to avoid shift/reduce conflicts */
 	| class_head left_curly opt.component_decl_list '}' maybe_attribute
 		{
 		  int semi;
 		  tree id;
 
+		  $<ttype>$ = $1;
 #if 0
 		  /* Need to rework class nesting in the
 		     presence of nested classes, etc.  */
@@ -2193,14 +2229,17 @@ structsp:
 		    do_pending_inlines ();
 		}
 	  pending_inlines
-		{ $$ = $<ttype>6; }
+		{ $$.t = $<ttype>6;
+		  $$.new_type_flag = 1; }
 	| class_head  %prec EMPTY
 		{
+		  $$.t = $1;
+		  $$.new_type_flag = 0;
 		  /* struct B: public A; is not accepted by the WP grammar.  */
-		  if (TYPE_BINFO_BASETYPES ($$) && !TYPE_SIZE ($$)
-		      && ! TYPE_BEING_DEFINED ($$))
+		  if (TYPE_BINFO_BASETYPES ($$.t) && !TYPE_SIZE ($$.t)
+		      && ! TYPE_BEING_DEFINED ($$.t))
 		    cp_error ("base clause without member specification for `%#T'",
-			      $$);
+			      $$.t);
 		}
 	;
 
@@ -2403,10 +2442,10 @@ base_class.1:
 		{
 		  if (current_aggr == signature_type_node)
 		    {
-		      if (IS_AGGR_TYPE (groktypename ($3)))
+		      if (IS_AGGR_TYPE (groktypename ($3.t)))
 			{
 			  sorry ("`sigof' as base signature specifier");
-			  $$ = groktypename ($3);
+			  $$ = groktypename ($3.t);
 			}
 		      else
 			{
@@ -2625,7 +2664,7 @@ component_decl_1:
 	   speed; we need to call grok_x_components for enums, so the
 	   speedup would be insignificant.  */
 	  typed_declspecs components
-		{ $$ = grok_x_components ($1, $2); }
+		{ $$ = grok_x_components ($1.t, $2); }
 	| declmods notype_components
 		{ $$ = grok_x_components ($1, $2); }
 	| notype_declarator exception_specification_opt maybeasm maybe_attribute maybe_init
@@ -2783,17 +2822,20 @@ enumerator:
 /* ANSI new-type-id (5.3.4) */
 new_type_id:
 	  type_specifier_seq new_declarator
-		{ $$ = build_decl_list ($$, $2); }
+		{ $$.t = build_decl_list ($1.t, $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| type_specifier_seq %prec EMPTY
-		{ $$ = build_decl_list ($$, NULL_TREE); }
+		{ $$.t = build_decl_list ($1.t, NULL_TREE); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	/* GNU extension to allow arrays of arbitrary types with
 	   non-constant dimension.  */
 	| '(' type_id ')' '[' expr ']'
 		{
 		  if (pedantic)
 		    pedwarn ("ANSI C++ forbids array dimensions with parenthesized type in new");
-		  $$ = build_parse_node (ARRAY_REF, TREE_VALUE ($2), $5);
-		  $$ = build_decl_list (TREE_PURPOSE ($2), $$);
+		  $$.t = build_parse_node (ARRAY_REF, TREE_VALUE ($2.t), $5);
+		  $$.t = build_decl_list (TREE_PURPOSE ($2.t), $$.t);
+		  $$.new_type_flag = $2.new_type_flag;
 		}
 	;
 
@@ -2806,9 +2848,11 @@ type_quals:
 
 nonempty_type_quals:
 	  TYPE_QUAL
-		{ $$ = IDENTIFIER_AS_LIST ($$); }
+		{ $$.t = IDENTIFIER_AS_LIST ($1); 
+		  $$.new_type_flag = 0; }
 	| nonempty_type_quals TYPE_QUAL
-		{ $$ = decl_tree_cons (NULL_TREE, $2, $$); }
+		{ $$.t = decl_tree_cons (NULL_TREE, $2, $1.t); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	;
 
 /* These rules must follow the rules for function declarations
@@ -2839,9 +2883,9 @@ maybe_parmlist:
 /* may all be followed by prec '.' */
 after_type_declarator:
 	  '*' nonempty_type_quals after_type_declarator  %prec UNARY
-		{ $$ = make_pointer_declarator ($2, $3); }
+		{ $$ = make_pointer_declarator ($2.t, $3); }
 	| '&' nonempty_type_quals after_type_declarator  %prec UNARY
-		{ $$ = make_reference_declarator ($2, $3); }
+		{ $$ = make_reference_declarator ($2.t, $3); }
 	| '*' after_type_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
 	| '&' after_type_declarator  %prec UNARY
@@ -2913,9 +2957,9 @@ direct_after_type_declarator:
 
 notype_declarator:
 	  '*' nonempty_type_quals notype_declarator  %prec UNARY
-		{ $$ = make_pointer_declarator ($2, $3); }
+		{ $$ = make_pointer_declarator ($2.t, $3); }
 	| '&' nonempty_type_quals notype_declarator  %prec UNARY
-		{ $$ = make_reference_declarator ($2, $3); }
+		{ $$ = make_reference_declarator ($2.t, $3); }
 	| '*' notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
 	| '&' notype_declarator  %prec UNARY
@@ -2929,9 +2973,9 @@ notype_declarator:
 
 complex_notype_declarator:
 	  '*' nonempty_type_quals notype_declarator  %prec UNARY
-		{ $$ = make_pointer_declarator ($2, $3); }
+		{ $$ = make_pointer_declarator ($2.t, $3); }
 	| '&' nonempty_type_quals notype_declarator  %prec UNARY
-		{ $$ = make_reference_declarator ($2, $3); }
+		{ $$ = make_reference_declarator ($2.t, $3); }
 	| '*' complex_notype_declarator  %prec UNARY
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
 	| '&' complex_notype_declarator  %prec UNARY
@@ -2981,11 +3025,11 @@ overqualified_id:
 
 functional_cast:
 	  typespec '(' nonnull_exprlist ')'
-		{ $$ = build_functional_cast ($$, $3); }
+		{ $$ = build_functional_cast ($1.t, $3); }
 	| typespec '(' expr_or_declarator ')'
-		{ $$ = reparse_decl_as_expr ($$, $3); }
+		{ $$ = reparse_decl_as_expr ($1.t, $3); }
 	| typespec fcast_or_absdcl %prec EMPTY
-		{ $$ = reparse_absdcl_as_expr ($$, $2); }
+		{ $$ = reparse_absdcl_as_expr ($1.t, $2); }
 	;
 
 type_name:
@@ -3099,19 +3143,19 @@ direct_new_declarator:
 /* ANSI abstract-declarator (8.1) */
 absdcl:
 	  '*' nonempty_type_quals absdcl
-		{ $$ = make_pointer_declarator ($2, $3); }
+		{ $$ = make_pointer_declarator ($2.t, $3); }
 	| '*' absdcl
 		{ $$ = make_pointer_declarator (NULL_TREE, $2); }
 	| '*' nonempty_type_quals  %prec EMPTY
-		{ $$ = make_pointer_declarator ($2, NULL_TREE); }
+		{ $$ = make_pointer_declarator ($2.t, NULL_TREE); }
 	| '*' %prec EMPTY
 		{ $$ = make_pointer_declarator (NULL_TREE, NULL_TREE); }
 	| '&' nonempty_type_quals absdcl
-		{ $$ = make_reference_declarator ($2, $3); }
+		{ $$ = make_reference_declarator ($2.t, $3); }
 	| '&' absdcl
 		{ $$ = make_reference_declarator (NULL_TREE, $2); }
 	| '&' nonempty_type_quals %prec EMPTY
-		{ $$ = make_reference_declarator ($2, NULL_TREE); }
+		{ $$ = make_reference_declarator ($2.t, NULL_TREE); }
 	| '&' %prec EMPTY
 		{ $$ = make_reference_declarator (NULL_TREE, NULL_TREE); }
 	| ptr_to_mem type_quals %prec EMPTY
@@ -3673,11 +3717,7 @@ try_block:
 
 handler_seq:
 	  /* empty */
-	| handler_seq CATCH .pushlevel
-		{ dont_allow_type_definitions = "inside exception declarations"; }
-	  handler_args
-		{ dont_allow_type_definitions = 0; }
-	  compstmt
+	| handler_seq CATCH .pushlevel handler_args compstmt
 		{ expand_end_catch_block (); }
 	  .poplevel
 	;
@@ -3692,17 +3732,22 @@ handler_args:
 		{ expand_start_catch_block (NULL_TREE, NULL_TREE); }
 	/* This doesn't allow reference parameters, the below does.
 	| '(' type_specifier_seq absdcl ')'
-		{ expand_start_catch_block ($2, $3); }
+		{ check_for_new_type ("inside exception declarations", $2);
+		  expand_start_catch_block ($2.t, $3); }
 	| '(' type_specifier_seq ')'
-		{ expand_start_catch_block ($2, NULL_TREE); }
+		{ check_for_new_type ("inside exception declarations", $2);
+		  expand_start_catch_block ($2.t, NULL_TREE); }
 	| '(' type_specifier_seq notype_declarator ')'
-		{ expand_start_catch_block ($2, $3); }
+		{ check_for_new_type ("inside exception declarations", $2);
+		  expand_start_catch_block ($2.t, $3); }
 	| '(' typed_typespecs after_type_declarator ')'
-		{ expand_start_catch_block ($2, $3); }
+		{ check_for_new_type ("inside exception declarations", $2);
+		  expand_start_catch_block ($2.t, $3); }
 	This allows reference parameters... */
 	| '(' parm ')'
-		{ expand_start_catch_block (TREE_PURPOSE ($2),
-					    TREE_VALUE ($2)); }
+		{ check_for_new_type ("inside exception declarations", $2);
+		  expand_start_catch_block (TREE_PURPOSE ($2.t),
+					    TREE_VALUE ($2.t)); }
 	;
 
 label_colon:
@@ -3782,15 +3827,13 @@ asm_clobbers:
 
 parmlist:  /* empty */
 		{
-		  if (strict_prototype)
-		    $$ = void_list_node;
-		  else
-		    $$ = NULL_TREE;
+		  $$ = empty_parms();
 		}
 	| complex_parmlist
 	| type_id
-		{ $$ = tree_cons (NULL_TREE, $$, void_list_node);
-		  TREE_PARMLIST ($$) = 1; }
+		{ $$ = tree_cons (NULL_TREE, $1.t, void_list_node);
+		  TREE_PARMLIST ($$) = 1; 
+		  check_for_new_type ("inside parameter list", $1); }
 	;
 
 /* This nonterminal does not include the common sequence '(' type_id ')',
@@ -3812,7 +3855,7 @@ complex_parmlist:
 		}
 	| type_id ELLIPSIS
 		{
-		  $$ = build_tree_list (NULL_TREE, $$); 
+		  $$ = build_tree_list (NULL_TREE, $1.t); 
 		  TREE_PARMLIST ($$) = 1;
 		}
 	| ELLIPSIS
@@ -3829,7 +3872,7 @@ complex_parmlist:
 		}
 	| type_id TYPENAME_ELLIPSIS
 		{
-		  $$ = build_tree_list (NULL_TREE, $$);
+		  $$ = build_tree_list (NULL_TREE, $1.t);
 		  TREE_PARMLIST ($$) = 1;
 		}
 	| parms ':'
@@ -3849,7 +3892,7 @@ complex_parmlist:
 		     parse errors, for example, a missing right
 		     parenthesis.  */
 		  yyerror ("possibly missing ')'");
-		  $$ = tree_cons (NULL_TREE, $$, void_list_node);
+		  $$ = tree_cons (NULL_TREE, $1.t, void_list_node);
 		  TREE_PARMLIST ($$) = 1;
 		  yyungetc (':', 0);
 		  yychar = ')';
@@ -3859,11 +3902,14 @@ complex_parmlist:
 /* A nonempty list of parameter declarations or type names.  */
 parms:
 	  named_parm
-		{ $$ = build_tree_list (NULL_TREE, $$); }
+		{ check_for_new_type ("in a parameter list", $1);
+		  $$ = build_tree_list (NULL_TREE, $1.t); }
 	| parm '=' init
-		{ $$ = build_tree_list ($3, $$); }
+		{ check_for_new_type ("in a parameter list", $1);
+		  $$ = build_tree_list ($3, $1.t); }
 	| parms_comma full_parm
-		{ $$ = chainon ($$, $2); }
+		{ check_for_new_type ("in a parameter list", $2);
+		  $$ = chainon ($$, $2.t); }
 	| parms_comma bad_parm
 		{ $$ = chainon ($$, build_tree_list (NULL_TREE, $2)); }
 	| parms_comma bad_parm '=' init
@@ -3873,7 +3919,8 @@ parms:
 parms_comma:
 	  parms ','
 	| type_id ','
-		{ $$ = build_tree_list (NULL_TREE, $$); }
+		{ check_for_new_type ("in a parameter list", $1);
+		  $$ = build_tree_list (NULL_TREE, $1.t); }
 	;
 
 /* A single parameter declaration or parameter type name,
@@ -3883,41 +3930,52 @@ parms_comma:
 named_parm:
 /*
 	  typed_declspecs dont_see_typename '*' IDENTIFIER
-		{ tree specs = strip_attrs ($1);
-		  $$ = build_tree_list (specs, build_parse_node (INDIRECT_REF, $4));
+		{ tree specs = strip_attrs ($1.t);
+		  $$.t = build_tree_list (specs, build_parse_node (INDIRECT_REF, $4));
+		  $$.new_type_flag = $1.new_type_flag;
 		  see_typename (); }
 	| typed_declspecs dont_see_typename '&' IDENTIFIER
-		{ tree specs = strip_attrs ($1);
-		  $$ = build_tree_list (specs, build_parse_node (ADDR_EXPR, $4));
+		{ tree specs = strip_attrs ($1.t);
+		  $$.t = build_tree_list (specs, build_parse_node (ADDR_EXPR, $4));
+		  $$.new_type_flag = $1.new_type_flag;
 		  see_typename (); }
 	| TYPENAME IDENTIFIER
-		{ $$ = build_tree_list (get_decl_list ($$), $2);  }
+		{ $$.t = build_tree_list (get_decl_list ($$), $2);  
+		  $$.new_type_flag = 0; }
 	| TYPESPEC IDENTIFIER
-		{ $$ = build_tree_list (get_decl_list ($$), $2); }
+		{ $$.t = build_tree_list (get_decl_list ($$), $2); 
+		  $$.new_type_flag = 0; }
 	| */
 	/* Here we expand typed_declspecs inline to avoid mis-parsing of
 	   TYPESPEC IDENTIFIER.  */
 	  typed_declspecs1 declarator
-		{ tree specs = strip_attrs ($1);
-		  $$ = build_tree_list (specs, $2); }
+		{ tree specs = strip_attrs ($1.t);
+		  $$.new_type_flag = $1.new_type_flag;
+		  $$.t = build_tree_list (specs, $2); }
 	| typed_typespecs declarator
-		{ $$ = build_tree_list ($$, $2); }
+		{ $$.t = build_tree_list ($1.t, $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| typespec declarator
-		{ $$ = build_tree_list (get_decl_list ($$), $2); }
+		{ $$.t = build_tree_list (get_decl_list ($1.t), $2); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_declspecs1 absdcl
-		{ tree specs = strip_attrs ($1);
-		  $$ = build_tree_list (specs, $2); }
+		{ tree specs = strip_attrs ($1.t);
+		  $$.t = build_tree_list (specs, $2);
+		  $$.new_type_flag = $1.new_type_flag; }
 	| typed_declspecs1 %prec EMPTY
-		{ tree specs = strip_attrs ($1);
-		  $$ = build_tree_list (specs, NULL_TREE); }
+		{ tree specs = strip_attrs ($1.t);
+		  $$.t = build_tree_list (specs, NULL_TREE); 
+		  $$.new_type_flag = $1.new_type_flag; }
 	| declmods notype_declarator
 		{ tree specs = strip_attrs ($1);
-		  $$ = build_tree_list (specs, $2); }
+		  $$.t = build_tree_list (specs, $2); 
+		  $$.new_type_flag = 0; }
 	;
 
 full_parm:
 	  parm maybe_init
-		{ $$ = build_tree_list ($2, $$); }
+		{ $$.t = build_tree_list ($2, $1.t);
+		  $$.new_type_flag = $1.new_type_flag;  }
 	;
 
 parm:
@@ -3974,7 +4032,7 @@ exception_specification_opt:
 
 ansi_raise_identifier:
 	  type_id
-		{ $$ = build_decl_list (NULL_TREE, groktypename($$)); }
+		{ $$ = build_decl_list (NULL_TREE, groktypename($1.t)); }
 	;
 
 ansi_raise_identifiers:
@@ -4072,7 +4130,7 @@ operator_name:
 		{ $$ = ansi_opname[VEC_DELETE_EXPR]; }
 	/* Names here should be looked up in class scope ALSO.  */
 	| operator type_specifier_seq conversion_declarator
-		{ $$ = grokoptypename ($2, $3); }
+		{ $$ = grokoptypename ($2.t, $3); }
 	| operator error
 		{ $$ = ansi_opname[ERROR_MARK]; }
 	;

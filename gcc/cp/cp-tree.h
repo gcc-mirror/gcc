@@ -51,6 +51,12 @@ struct lang_id2
   tree type_desc, as_list, error_locus;
 };
 
+typedef struct 
+{
+  tree t;
+  int new_type_flag;
+} flagged_type_tree;
+
 /* To identify to the debug emitters if it should pay attention to the
    flag `-Wtemplate-debugging'.  */
 #define HAVE_TEMPLATES 1
@@ -1942,7 +1948,6 @@ extern tree build_overload_call			PROTO((tree, tree, int, struct candidate *));
 extern tree build_overload_call_maybe		PROTO((tree, tree, int, struct candidate *));
 
 /* in class.c */
-extern char *dont_allow_type_definitions;
 extern tree build_vbase_pointer			PROTO((tree, tree));
 extern tree build_vbase_path			PROTO((enum tree_code, tree, tree, tree, int));
 extern tree build_vtable_entry			PROTO((tree, tree));
@@ -2490,6 +2495,7 @@ extern tree build_m_component_ref		PROTO((tree, tree));
 extern tree build_functional_cast		PROTO((tree, tree));
 extern char *enum_name_string			PROTO((tree, tree));
 extern void report_case_error			PROTO((int, tree, tree, tree));
+extern void check_for_new_typeid		PROTO((char *,flagged_type_tree));
 
 /* in xref.c */
 extern void GNU_xref_begin			PROTO((char *));

@@ -1872,6 +1872,8 @@ emit_thunk (thunk_fndecl)
   if (current_function_decl)
     abort ();
   current_function_decl = thunk_fndecl;
+  TREE_ADDRESSABLE (function) = 1;
+  mark_used (function);
 #ifdef ASM_OUTPUT_MI_THUNK
   assemble_start_function (thunk_fndecl, fnname);
   ASM_OUTPUT_MI_THUNK (asm_out_file, thunk_fndecl, delta, function);

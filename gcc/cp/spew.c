@@ -28,8 +28,8 @@ Boston, MA 02111-1307, USA.  */
 #include "input.h"
 #include "tree.h"
 #include "lex.h"
-#include "parse.h"
 #include "cp-tree.h"
+#include "parse.h"
 #include "flags.h"
 #include "obstack.h"
 

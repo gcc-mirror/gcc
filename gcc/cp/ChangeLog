@@ -1,6 +1,60 @@
+Mon Apr 29 15:38:29 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* decl2.c (import_export_vtable): Use DECL_ONE_ONLY.
+	(import_export_decl): Ditto.
+	(finish_prevtable_vardecl): Disable vtable hack if
+	SUPPORTS_ONE_ONLY > 1.
+
+Mon Apr 29 14:32:47 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_modify_expr): PREINCREMENT_EXPR and
+	PREDECREMENT_EXPRs take two arguments, not one.
+
+Mon Apr 29 00:27:53 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (build_vtable_entry): Don't build thunks for abstract
+ 	virtuals.
+
+	* lex.c (real_yylex): Fix handling of __PRETTY_FUNCTION__ like C
+ 	frontend.
+
+Sat Apr 27 16:45:35 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (set_rtti_entry): Use size_zero_node.
+	(build_vtable): Ditto.
+
+Sat Apr 27 14:48:57 1996  Jason Merrill  <jason@phydeaux.cygnus.com>
+
+	* class.c (finish_struct_1): Pass size_zero_node to set_rtti_entry.
+	(prepare_fresh_vtable): Ditto.
+
+Fri Apr 26 13:14:14 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (emit_thunk): Call mark_used on the target function.
+
+	* call.c (build_method_call): Don't warn about pending templates.
+
 Thu Apr 25 14:55:44 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (finish_file): Fix list walking logic.
+
+	* typeck2.c (check_for_new_type): Only warn if -pedantic.
+
+Wed Apr 24 15:41:15 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* class.c (finish_struct_1): Remove old code for
+	dont_allow_type_definitions.
+	* cp-tree.h: Ditto.
+	* spew.c: Make sure cp-tree.h is included before parse.h, so the
+	definition of flagged_type_tree is found before it is used.
+	* lex.c: Ditto.
+	* parse.y: Added the ftype member to the type union, and changed a
+ 	number of rules to use it instead of ttype. Added calls to
+	check_for_new_type() as appropriate.
+	* typeck2.c (check_for_new_type): New function for checking
+	if a newly defined type appears in the specified tree.
+	* cp-tree.h: Add new type flagged_type_tree. Add a prototype
+	for check_for_new_type().
 
 Wed Apr 24 00:36:21 1996  Jason Merrill  <jason@yorick.cygnus.com>
 

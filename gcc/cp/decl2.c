@@ -37,6 +37,10 @@ Boston, MA 02111-1307, USA.  */
 #include "lex.h"
 #include "output.h"
 
+#ifndef SUPPORTS_ONE_ONLY
+#define SUPPORTS_ONE_ONLY 0
+#endif
+
 extern tree get_file_function_name ();
 extern tree cleanups_this_call;
 static void grok_function_init PROTO((tree, tree));
@@ -2508,15 +2512,23 @@ import_export_vtable (decl, type, final)
 
       if (final || ! found)
 	{
-#ifdef ASSEMBLE_EXTERNAL
-	  if (TREE_PUBLIC (decl))
-	    cp_error ("all virtual functions redeclared inline");
+#ifdef DECL_ONE_ONLY
+	  if (SUPPORTS_ONE_ONLY)
+	    {
+	      TREE_PUBLIC (decl) = 1;
+	      DECL_ONE_ONLY (decl) = 1;
+	    }
+	  else
 #endif
 	  if (flag_weak)
 	    {
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_WEAK (decl) = 1;
 	    }
+#ifdef ASSEMBLE_EXTERNAL
+	  else if (TREE_PUBLIC (decl))
+	    cp_error ("all virtual functions redeclared inline");
+#endif
 	  else
 	    TREE_PUBLIC (decl) = 0;
 	  DECL_EXTERNAL (decl) = 0;
@@ -2551,6 +2563,7 @@ finish_prevtable_vardecl (prev, vars)
   import_export_template (ctype);
 
   if (CLASSTYPE_INTERFACE_UNKNOWN (ctype) && TYPE_VIRTUAL_P (ctype)
+      && ! (SUPPORTS_ONE_ONLY > 1)
       && ! CLASSTYPE_TEMPLATE_INSTANTIATION (ctype))
     {
       tree method;
@@ -2564,9 +2577,6 @@ finish_prevtable_vardecl (prev, vars)
 	      SET_CLASSTYPE_INTERFACE_KNOWN (ctype);
 	      CLASSTYPE_VTABLE_NEEDS_WRITING (ctype) = ! DECL_EXTERNAL (method);
 	      CLASSTYPE_INTERFACE_ONLY (ctype) = DECL_EXTERNAL (method);
-#ifdef ADJUST_VTABLE_LINKAGE
-	      ADJUST_VTABLE_LINKAGE (vars, method);
-#endif
 	      break;
 	    }
 	}
@@ -2731,6 +2741,11 @@ import_export_decl (decl)
 	{
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    {
+#ifdef DECL_ONE_ONLY
+	      if (SUPPORTS_ONE_ONLY)
+		DECL_ONE_ONLY (decl) = 1;
+	      else
+#endif
 	      if (flag_weak)
 		DECL_WEAK (decl) = 1;
 	      else
@@ -2745,6 +2760,10 @@ import_export_decl (decl)
 	      DECL_COMMON (decl) = 1;
 	      DECL_INITIAL (decl) = error_mark_node;
 	    }
+#ifdef DECL_ONE_ONLY
+	  else if (SUPPORTS_ONE_ONLY)
+	    DECL_ONE_ONLY (decl) = 1;
+#endif
 	  /* Statically initialized vars are weak or comdat, if supported.  */
 	  else if (flag_weak)
 	    DECL_WEAK (decl) = 1;
@@ -2762,6 +2781,10 @@ import_export_decl (decl)
 	    = ! (CLASSTYPE_INTERFACE_ONLY (ctype)
 		 || (DECL_THIS_INLINE (decl) && ! flag_implement_inlines));
 	}
+#ifdef DECL_ONE_ONLY
+      else if (SUPPORTS_ONE_ONLY)
+	DECL_ONE_ONLY (decl) = 1;
+#endif
       else if (flag_weak)
 	DECL_WEAK (decl) = 1;
       else
@@ -2779,6 +2802,10 @@ import_export_decl (decl)
 	}
       else if (TYPE_BUILT_IN (ctype) && ctype == TYPE_MAIN_VARIANT (ctype))
 	DECL_NOT_REALLY_EXTERN (decl) = 0;
+#ifdef DECL_ONE_ONLY
+      else if (SUPPORTS_ONE_ONLY)
+	DECL_ONE_ONLY (decl) = 1;
+#endif
       else if (flag_weak)
 	DECL_WEAK (decl) = 1;
       else
@@ -2786,6 +2813,10 @@ import_export_decl (decl)
     } 
   else if (DECL_C_STATIC (decl))
     TREE_PUBLIC (decl) = 0;
+#ifdef DECL_ONE_ONLY
+  else if (SUPPORTS_ONE_ONLY)
+    DECL_ONE_ONLY (decl) = 1;
+#endif
   else if (flag_weak)
     DECL_WEAK (decl) = 1;
   else
