@@ -1,3 +1,8 @@
+2002-03-22  Alexandre Oliva  <aoliva@redhat.com>
+
+	* config/mips/mips.h (MASK_RETURN_ADDR): Define.
+	(TARGET_PTRMEMFUNC_VBIT_LOCATION): Define.
+
 2002-03-22  Phil Edwards  <pme@gcc.gnu.org>
 
 	* cpplib.h (struct cpp_options):  New member, warn_endif_labels.
