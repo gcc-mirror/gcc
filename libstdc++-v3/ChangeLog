@@ -1,4 +1,11 @@
 2004-09-02  Benjamin Kosnik  <bkoz@redhat.com>
+            Simon Richter  <Simon.Richter@hogyros.de>
+	
+	PR libstdc++/16715
+	* include/bits/istream.tcc: Add extern template for iostream
+	char and wchar_t instantiations.
+
+2004-09-02  Benjamin Kosnik  <bkoz@redhat.com>
             Leland Wang  <llwang@infor.org>
 	
 	PR libstdc++/17259
