@@ -1,3 +1,7 @@
+Tue Aug 17 17:39:43 EDT 1999  Andrew MacLeod  <amacleod@cygnus.com>
+
+	* flow.c (create_edge_list): Use xmalloc, not malloc.
+
 Tue Aug 17 01:40:54 1999  Loren Rittle  <ljrittle@acm.org>
 
 	* fixinc/inclhack.def (no_double_slash): Do not trash single-line
