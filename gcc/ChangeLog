@@ -1,3 +1,10 @@
+2004-04-14  Nick Clifton  <nickc@redhat.com>
+
+	* config/arm/arm.c (arm_override_options): If the user has not
+	specified an ABI, then default to AAPCS for the iWMMXt processor.
+	* config/arm/t-xscale-elf: Remove redundant multilib specifications.
+	* config/arm/t-xscale-coff: Likewise.
+
 2004-04-14  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (fold_builtin_isdigit): New.
