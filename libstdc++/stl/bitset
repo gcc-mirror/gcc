@@ -144,7 +144,7 @@ struct _Base_bitset {
   }
 
   bool _M_is_any() const {
-    for ( size_t __i = 0; __i < __BITSET_WORDS(_Nw,_WordT); __i++ ) {
+    for ( size_t __i = 0; __i < _Nw; __i++ ) {
       if ( _M_w[__i] != static_cast<_WordT>(0) )
         return true;
     }
