@@ -74,6 +74,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
    combine anyway.  */
 
 #include "config.h"
+/* Must precede rtl.h for FFS.  */
+#include <stdio.h>
+
 #include "gvarargs.h"
 #include "rtl.h"
 #include "flags.h"
@@ -87,7 +90,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "insn-attr.h"
 #include "recog.h"
 #include "real.h"
-#include <stdio.h>
 
 /* It is not safe to use ordinary gen_lowpart in combine.
    Use gen_lowpart_for_combine instead.  See comments there.  */
