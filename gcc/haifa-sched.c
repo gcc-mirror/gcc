@@ -21,7 +21,6 @@ along with GNU CC; see the file COPYING.  If not, write to the Free
 the Free Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 02111-1307, USA.  */
 
-
 /* Instruction scheduling pass.
 
    This pass implements list scheduling within basic blocks.  It is
@@ -214,7 +213,6 @@ static int sched_verbose = 0;
 /* nr_inter/spec counts interblock/speculative motion for the function.  */
 static int nr_inter, nr_spec;
 
-
 /* Debugging file.  All printouts are sent to dump, which is always set,
    either to stderr, or to the dump listing file (-dRS).  */
 static FILE *dump = 0;
@@ -308,7 +306,7 @@ static int reg_pending_sets_all;
    branches for typical C code.  So we can make a guess that the average
    basic block is approximately 5 instructions long; we will choose 100X
    the average size as a very large basic block.
-  
+
    Each insn has an associated bitmap for its dependencies.  Each bitmap
    has enough entries to represent a dependency on any other insn in the
    insn chain.  */
@@ -323,7 +321,7 @@ struct haifa_insn_data
      it represents forward dependancies.  */
   rtx depend;
 
-  /* The line number note in effect for each insn.  For line number 
+  /* The line number note in effect for each insn.  For line number
      notes, this indicates whether the note may be reused.  */
   rtx line_note;
 
@@ -484,7 +482,7 @@ static int insn_cost PARAMS ((rtx, rtx, rtx));
 static int priority PARAMS ((rtx));
 static void free_pending_lists PARAMS ((void));
 static void add_insn_mem_dependence PARAMS ((struct deps *, rtx *, rtx *, rtx,
-					    rtx));
+					     rtx));
 static void flush_pending_lists PARAMS ((struct deps *, rtx, int));
 static void sched_analyze_1 PARAMS ((struct deps *, rtx, rtx));
 static void sched_analyze_2 PARAMS ((struct deps *, rtx, rtx));
@@ -502,12 +500,12 @@ static void adjust_priority PARAMS ((rtx));
 
 /* Control flow graph edges are kept in circular lists.  */
 typedef struct
-  {
-    int from_block;
-    int to_block;
-    int next_in;
-    int next_out;
-  }
+{
+  int from_block;
+  int to_block;
+  int next_in;
+  int next_out;
+}
 haifa_edge;
 static haifa_edge *edge_table;
 
@@ -527,21 +525,18 @@ static int *out_edges;
 #define IN_EDGES(block) (in_edges[block])
 #define OUT_EDGES(block) (out_edges[block])
 
-
-
 static int is_cfg_nonregular PARAMS ((void));
 static int build_control_flow PARAMS ((struct edge_list *));
 static void new_edge PARAMS ((int, int));
-
 
 /* A region is the main entity for interblock scheduling: insns
    are allowed to move between blocks in the same region, along
    control flow graph edges, in the 'up' direction.  */
 typedef struct
-  {
-    int rgn_nr_blocks;		/* Number of blocks in region.  */
-    int rgn_blocks;		/* cblocks in the region (actually index in rgn_bb_table).  */
-  }
+{
+  int rgn_nr_blocks;		/* Number of blocks in region.  */
+  int rgn_blocks;		/* cblocks in the region (actually index in rgn_bb_table).  */
+}
 region;
 
 /* Number of regions in the procedure.  */
@@ -581,16 +576,15 @@ static int current_blocks;
 /* The mapping from bb to block.  */
 #define BB_TO_BLOCK(bb) (rgn_bb_table[current_blocks + (bb)])
 
-
 /* Bit vectors and bitset operations are needed for computations on
    the control flow graph.  */
 
 typedef unsigned HOST_WIDE_INT *bitset;
 typedef struct
-  {
-    int *first_member;		/* Pointer to the list start in bitlst_table.  */
-    int nr_members;		/* The number of members of the bit list.  */
-  }
+{
+  int *first_member;		/* Pointer to the list start in bitlst_table.  */
+  int nr_members;		/* The number of members of the bit list.  */
+}
 bitlst;
 
 static int bitlst_table_last;
@@ -608,13 +602,13 @@ static void extract_bitlst PARAMS ((bitset, int, int, bitlst *));
    about such sources: are they valid?  Speculative?  Etc.  */
 typedef bitlst bblst;
 typedef struct
-  {
-    char is_valid;
-    char is_speculative;
-    int src_prob;
-    bblst split_bbs;
-    bblst update_bbs;
-  }
+{
+  char is_valid;
+  char is_speculative;
+  int src_prob;
+  bblst split_bbs;
+  bblst update_bbs;
+}
 candidate;
 
 static candidate *candidate_table;
@@ -643,7 +637,6 @@ static void split_edges PARAMS ((int, int, edgelst *));
 static void compute_trg_info PARAMS ((int));
 void debug_candidate PARAMS ((int));
 void debug_candidates PARAMS ((int));
-
 
 /* Bit-set of bbs, where bit 'i' stands for bb 'i'.  */
 typedef bitset bbset;
@@ -769,7 +762,7 @@ static rtx reemit_notes PARAMS ((rtx, rtx));
 static void get_block_head_tail PARAMS ((int, rtx *, rtx *));
 static void get_bb_head_tail PARAMS ((int, rtx *, rtx *));
 
-static int queue_to_ready PARAMS ((rtx [], int));
+static int queue_to_ready PARAMS ((rtx[], int));
 
 static void debug_ready_list PARAMS ((rtx[], int));
 static void init_target_units PARAMS ((void));
@@ -819,7 +812,7 @@ add_dependence (insn, elem, dep_type)
      such dependency is useless and can be ignored.  */
   if (GET_CODE (elem) == NOTE)
     return;
-	
+
   /* If elem is part of a sequence that must be scheduled together, then
      make the dependence point to the last insn of the sequence.
      When HAVE_cc0, it is possible for NOTEs to exist between users and
@@ -881,7 +874,7 @@ add_dependence (insn, elem, dep_type)
 #ifdef INSN_SCHEDULING
 	/* If we are adding a true dependency to INSN's LOG_LINKs, then
 	   note that in the bitmap cache of true dependency information.  */
-	if ((int)dep_type == 0 && true_dependency_cache)
+	if ((int) dep_type == 0 && true_dependency_cache)
 	  SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
 #endif
 	return;
@@ -897,7 +890,7 @@ add_dependence (insn, elem, dep_type)
 #ifdef INSN_SCHEDULING
   /* If we are adding a true dependency to INSN's LOG_LINKs, then
      note that in the bitmap cache of true dependency information.  */
-  if ((int)dep_type == 0 && true_dependency_cache)
+  if ((int) dep_type == 0 && true_dependency_cache)
     SET_BIT (true_dependency_cache[INSN_LUID (insn)], INSN_LUID (elem));
 #endif
 }
@@ -1134,7 +1127,6 @@ build_control_flow (edge_list)
   return unreachable;
 }
 
-
 /* Record an edge in the control flow graph from SOURCE to TARGET.
 
    In theory, this is redundant with the s_succs computed above, but
@@ -1194,7 +1186,6 @@ new_edge (source, target)
     }
 }
 
-
 /* BITSET macros for operations on the control flow graph.  */
 
 /* Compute bitwise union of two bitsets.  */
@@ -1245,7 +1236,6 @@ do { register bitset tmpset = set;                                   \
       ~(1 << (index%HOST_BITS_PER_WIDE_INT));                        \
 }
 
-
 /* Check if the index'th bit in bitset set is on.  */
 
 static char
@@ -1258,7 +1248,6 @@ bitset_member (set, index, len)
   return (set[index / HOST_BITS_PER_WIDE_INT] &
 	  1 << (index % HOST_BITS_PER_WIDE_INT)) ? 1 : 0;
 }
-
 
 /* Translate a bit-set SET to a list BL of the bit-set members.  */
 
@@ -1300,7 +1289,6 @@ extract_bitlst (set, len, bitlen, bl)
 
 }
 
-
 /* Functions for the construction of regions.  */
 
 /* Print the regions, for debugging purposes.  Callable from debugger.  */
@@ -1331,7 +1319,6 @@ debug_regions ()
     }
 }
 
-
 /* Build a single block region for each basic block in the function.
    This allows for using the same code for interblock and basic block
    scheduling.  */
@@ -1352,7 +1339,6 @@ find_single_block_region ()
   nr_regions = n_basic_blocks;
 }
 
-
 /* Update number of blocks and the estimate for number of insns
    in the region.  Return 1 if the region is "too large" for interblock
    scheduling (compile time considerations), otherwise return 0.  */
@@ -1370,7 +1356,6 @@ too_large (block, num_bbs, num_insns)
     return 0;
 }
 
-
 /* Update_loop_relations(blk, hdr): Check if the loop headed by max_hdr[blk]
    is still an inner loop.  Put in max_hdr[blk] the header of the most inner
    loop containing blk.  */
@@ -1387,7 +1372,6 @@ too_large (block, num_bbs, num_insns)
          }                                                           \
 }
 
-
 /* Find regions for interblock scheduling.
 
    A region for scheduling can be:
@@ -1397,7 +1381,6 @@ too_large (block, num_bbs, num_insns)
      * A reducible inner loop, or
 
      * A basic block not contained in any other region.
-
 
    ?!? In theory we could build other regions based on extended basic
    blocks or reverse extended basic blocks.  Is it worth the trouble?
@@ -1412,7 +1395,6 @@ too_large (block, num_bbs, num_insns)
      * rgn_bb_table
      * block_to_bb
      * containing region
-
 
    We use dominator relationships to avoid making regions out of non-reducible
    loops.
@@ -1441,10 +1423,10 @@ find_rgns (edge_list, dom)
   /* Note if a block is an natural inner loop header.  */
   sbitmap inner;
 
-  /* Note if a block is in the block queue. */
+  /* Note if a block is in the block queue.  */
   sbitmap in_queue;
 
-  /* Note if a block is in the block queue. */
+  /* Note if a block is in the block queue.  */
   sbitmap in_stack;
 
   int num_edges = NUM_EDGES (edge_list);
@@ -1556,7 +1538,7 @@ find_rgns (edge_list, dom)
 	 out edge.  However, if the node has no out edge then we will
 	 not set dfs_nr for that node.  This can confuse the scheduler
 	 into thinking that we have unreachable blocks, which in turn
-	 disables cross block scheduling. 
+	 disables cross block scheduling.
 
 	 So, if we have a node with no out edges, go ahead and mark it
 	 as reachable now.  */
@@ -1627,7 +1609,7 @@ find_rgns (edge_list, dom)
 		 If there exists a block that is not dominated by the loop
 		 header, then the block is reachable from outside the loop
 		 and thus the loop is not a natural loop.  */
-	      for (j = 0; j < n_basic_blocks; j++)	
+	      for (j = 0; j < n_basic_blocks; j++)
 		{
 		  /* First identify blocks in the loop, except for the loop
 		     entry block.  */
@@ -1660,9 +1642,8 @@ find_rgns (edge_list, dom)
 
 	      /* Estimate # insns, and count # blocks in the region.  */
 	      num_bbs = 1;
-	      num_insns	= (INSN_LUID (BLOCK_END (i))
+	      num_insns = (INSN_LUID (BLOCK_END (i))
 			   - INSN_LUID (BLOCK_HEAD (i)));
-
 
 	      /* Find all loop latches (blocks with back edges to the loop
 		 header) or all the leaf blocks in the cfg has no loops.
@@ -1710,7 +1691,6 @@ find_rgns (edge_list, dom)
 			      break;
 			    }
 			}
-		      
 		    }
 		}
 
@@ -1724,7 +1704,6 @@ find_rgns (edge_list, dom)
 		 b	  c
 		 c	  a,d
 		 d	  b
-
 
 	     The algorithm in the DFS traversal may not mark B & D as part
 	     of the loop (ie they will not have max_hdr set to A).
@@ -1744,7 +1723,7 @@ find_rgns (edge_list, dom)
 
 	     We do not do this because I'm not sure that the actual
 	     scheduling code will properly handle this case. ?!? */
-	
+
 	      while (head < tail && !too_large_failure)
 		{
 		  edge e;
@@ -1843,7 +1822,6 @@ find_rgns (edge_list, dom)
   free (in_stack);
 }
 
-
 /* Functions for regions scheduling information.  */
 
 /* Compute dominators, probability, and potential-split-edges of bb.
@@ -1921,8 +1899,9 @@ compute_dom_prob_ps (bb)
   BITSET_DIFFER (pot_split[bb], ancestor_edges[bb], edgeset_size);
 
   if (sched_verbose >= 2)
-    fprintf (dump, ";;  bb_prob(%d, %d) = %3d\n", bb, BB_TO_BLOCK (bb), (int) (100.0 * prob[bb]));
-}				/* compute_dom_prob_ps */
+    fprintf (dump, ";;  bb_prob(%d, %d) = %3d\n", bb, BB_TO_BLOCK (bb),
+	     (int) (100.0 * prob[bb]));
+}
 
 /* Functions for target info.  */
 
@@ -1944,7 +1923,6 @@ split_edges (bb_src, bb_trg, bl)
   extract_bitlst (src, edgeset_size, edgeset_bitsize, bl);
   free (src);
 }
-
 
 /* Find the valid candidate-source-blocks for the target block TRG, compute
    their probability, and check if they are speculative or not.
@@ -2024,8 +2002,7 @@ compute_trg_info (trg)
 	  sp->src_prob = 0;
 	}
     }
-}				/* compute_trg_info */
-
+}
 
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
@@ -2065,7 +2042,6 @@ debug_candidate (i)
     }
 }
 
-
 /* Print candidates info, for debugging purposes.  Callable from debugger.  */
 
 void
@@ -2079,7 +2055,6 @@ debug_candidates (trg)
   for (i = trg + 1; i < current_nr_blocks; i++)
     debug_candidate (i);
 }
-
 
 /* Functions for speculative scheduing.  */
 
@@ -2161,7 +2136,6 @@ check_live_1 (src, x)
   return 1;
 }
 
-
 /* If x is a set of a register R, mark that R is alive in the beginning
    of every update-block of src.  */
 
@@ -2227,7 +2201,6 @@ update_live_1 (src, x)
     }
 }
 
-
 /* Return 1 if insn can be speculatively moved from block src to trg,
    otherwise return 0.  Called before first insertion of insn to
    ready-list or before the scheduling.  */
@@ -2255,7 +2228,6 @@ check_live (insn, src)
 
   return 1;
 }
-
 
 /* Update the live registers info after insn was moved speculatively from
    block src to trg.  */
@@ -2586,8 +2558,7 @@ may_trap_exp (x, is_store)
 	}
       return insn_class;
     }
-}				/* may_trap_exp */
-
+}
 
 /* Classifies insn for the purpose of verifying that it can be
    moved speculatively, by examining it's patterns, returning:
@@ -2628,7 +2599,7 @@ haifa_classify_insn (insn)
 	      /* Test if it is a load.  */
 	      tmp_class =
 		WORST_CLASS (tmp_class,
-			   may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)), 0));
+			     may_trap_exp (SET_SRC (XVECEXP (pat, 0, i)), 0));
 	      break;
 	    case COND_EXEC:
 	    case TRAP_IF:
@@ -2670,8 +2641,7 @@ haifa_classify_insn (insn)
     }
 
   return insn_class;
-
-}				/* haifa_classify_insn */
+}
 
 /* Return 1 if load_insn is prisky (i.e. if load_insn is fed by
    a load moved speculatively, or if load_insn is protected by
@@ -2693,7 +2663,7 @@ is_prisky (load_insn, bb_src, bb_trg)
     return 1;
 
   return 0;
-}				/* is_prisky */
+}
 
 /* Insn is a candidate to be moved speculatively from bb_src to bb_trg.
    Return 1 if insn is exception-free (and the motion is valid)
@@ -2739,8 +2709,7 @@ is_exception_free (insn, bb_src, bb_trg)
     }
 
   return flag_schedule_speculative_load_dangerous;
-}				/* is_exception_free */
-
+}
 
 /* Process an insn's memory dependencies.  There are four kinds of
    dependencies:
@@ -2771,7 +2740,6 @@ find_insn_mem_list (insn, x, list, list1)
     }
   return 0;
 }
-
 
 /* Compute the function units used by INSN.  This caches the value
    returned by function_units_used.  A function unit is encoded as the
@@ -3163,7 +3131,6 @@ priority (insn)
   return this_priority;
 }
 
-
 /* Remove all INSN_LISTs and EXPR_LISTs from the pending lists and add
    them to the unused_*_list variables, so that they can be reused.  */
 
@@ -3279,7 +3246,7 @@ sched_analyze_1 (deps, x, insn)
     }
 
   while (GET_CODE (dest) == STRICT_LOW_PART || GET_CODE (dest) == SUBREG
-      || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
+	 || GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
     {
       if (GET_CODE (dest) == ZERO_EXTRACT || GET_CODE (dest) == SIGN_EXTRACT)
 	{
@@ -3318,9 +3285,9 @@ sched_analyze_1 (deps, x, insn)
 	      if (code == SET)
 		{
 		  free_INSN_LIST_list (&deps->reg_last_uses[r]);
-	          for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
+		  for (u = deps->reg_last_clobbers[r]; u; u = XEXP (u, 1))
 		    add_dependence (insn, XEXP (u, 0), REG_DEP_OUTPUT);
-	          SET_REGNO_REG_SET (reg_pending_sets, r);
+		  SET_REGNO_REG_SET (reg_pending_sets, r);
 		}
 	      else
 		SET_REGNO_REG_SET (reg_pending_clobbers, r);
@@ -3539,7 +3506,7 @@ sched_analyze_2 (deps, x, insn)
 	while (pending)
 	  {
 	    if (true_dependence (XEXP (pending_mem, 0), VOIDmode,
-		x, rtx_varies_p))
+				 x, rtx_varies_p))
 	      add_dependence (insn, XEXP (pending, 0), 0);
 
 	    pending = XEXP (pending, 1);
@@ -3791,11 +3758,11 @@ sched_analyze_insn (deps, x, insn, loop_notes)
 
   /* If a post-call group is still open, see if it should remain so.
      This insn must be a simple move of a hard reg to a pseudo or
-     vice-versa. 
+     vice-versa.
 
      We must avoid moving these insns for correctness on
      SMALL_REGISTER_CLASS machines, and for special registers like
-     PIC_OFFSET_TABLE_REGNUM.  For simplicity, extend this to all 
+     PIC_OFFSET_TABLE_REGNUM.  For simplicity, extend this to all
      hard regs for all targets.  */
 
   if (deps->in_post_call_group_p)
@@ -3961,13 +3928,13 @@ sched_analyze (deps, head, tail)
 	  free_INSN_LIST_list (&deps->last_function_call);
 	  deps->last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
 
-	  /* Before reload, begin a post-call group, so as to keep the 
+	  /* Before reload, begin a post-call group, so as to keep the
 	     lifetimes of hard registers correct.  */
 	  if (! reload_completed)
 	    deps->in_post_call_group_p = 1;
 	}
 
-      /* See comments on reemit_notes as to why we do this.  
+      /* See comments on reemit_notes as to why we do this.
 	 ??? Actually, the reemit_notes just say what is done, not why.  */
 
       else if (GET_CODE (insn) == NOTE
@@ -4030,12 +3997,11 @@ rank_for_schedule (x, y)
      const PTR x;
      const PTR y;
 {
-  rtx tmp = *(const rtx *)y;
-  rtx tmp2 = *(const rtx *)x;
+  rtx tmp = *(const rtx *) y;
+  rtx tmp2 = *(const rtx *) x;
   rtx link;
   int tmp_class, tmp2_class, depend_count1, depend_count2;
   int val, priority_val, spec_val, prob_val, weight_val;
-
 
   /* Prefer insn with higher priority.  */
   priority_val = INSN_PRIORITY (tmp2) - INSN_PRIORITY (tmp);
@@ -4094,7 +4060,7 @@ rank_for_schedule (x, y)
 	return val;
     }
 
-  /* Prefer the insn which has more later insns that depend on it. 
+  /* Prefer the insn which has more later insns that depend on it.
      This gives the scheduler more freedom when scheduling later
      instructions at the expense of added register pressure.  */
   depend_count1 = 0;
@@ -4108,7 +4074,7 @@ rank_for_schedule (x, y)
   val = depend_count2 - depend_count1;
   if (val)
     return val;
-  
+
   /* If insns are equally good, sort by INSN_LUID (original insn order),
      so that we make the sort stable.  This minimizes instruction movement,
      thus minimizing sched's effect on debugging and cross-jumping.  */
@@ -4171,7 +4137,7 @@ adjust_priority (prev)
 {
   /* ??? There used to be code here to try and estimate how an insn
      affected register lifetimes, but it did it by looking at REG_DEAD
-     notes, which we removed in schedule_region.  Nor did it try to 
+     notes, which we removed in schedule_region.  Nor did it try to
      take into account register pressure or anything useful like that.
 
      Revisit when we have a machine model to work with and not before.  */
@@ -4248,7 +4214,7 @@ schedule_insn (insn, ready, n_ready, clock)
 
 	  if (sched_verbose >= 2)
 	    {
-	      fprintf (dump, ";;\t\tdependences resolved: insn %d ", 
+	      fprintf (dump, ";;\t\tdependences resolved: insn %d ",
 		       INSN_UID (next));
 
 	      if (current_nr_blocks > 1 && INSN_BB (next) != target_bb)
@@ -4270,7 +4236,7 @@ schedule_insn (insn, ready, n_ready, clock)
 	}
     }
 
-  /* Annotate the instruction with issue information -- TImode 
+  /* Annotate the instruction with issue information -- TImode
      indicates that the instruction is expected not to be able
      to issue on the same cycle as the previous insn.  A machine
      may use this information to decide how the instruction should
@@ -4470,7 +4436,6 @@ save_line_notes (bb)
       LINE_NOTE (insn) = line;
 }
 
-
 /* After bb was scheduled, insert line notes into the insns list.  */
 
 static void
@@ -4629,7 +4594,7 @@ rm_other_notes (head, tail)
 
 static void
 find_insn_reg_weight (b)
-    int b;
+     int b;
 {
   rtx insn, next_tail, head, tail;
 
@@ -4725,7 +4690,8 @@ queue_to_ready (ready, n_ready)
 		  q_size -= 1;
 
 		  if (sched_verbose >= 2)
-		    fprintf (dump, ";;\t\tQ-->Ready: insn %d: ", INSN_UID (insn));
+		    fprintf (dump, ";;\t\tQ-->Ready: insn %d: ",
+			     INSN_UID (insn));
 
 		  if (sched_verbose >= 2 && INSN_BB (insn) != target_bb)
 		    fprintf (dump, "(b%d) ", BLOCK_NUM (insn));
@@ -4904,14 +4870,14 @@ print_exp (buf, x, verbose)
   char tmp[BUF_LEN];
   const char *st[4];
   char *cur = buf;
-  const char *fun = (char *)0;
+  const char *fun = (char *) 0;
   const char *sep;
   rtx op[4];
   int i;
 
   for (i = 0; i < 4; i++)
     {
-      st[i] = (char *)0;
+      st[i] = (char *) 0;
       op[i] = NULL_RTX;
     }
 
@@ -5259,7 +5225,7 @@ print_value (buf, x, verbose)
       cur = safe_concat (buf, cur, t);
       break;
     case CONST_DOUBLE:
-      sprintf (t, "<0x%lx,0x%lx>", (long)XWINT (x, 2), (long)XWINT (x, 3));
+      sprintf (t, "<0x%lx,0x%lx>", (long) XWINT (x, 2), (long) XWINT (x, 3));
       cur = safe_concat (buf, cur, t);
       break;
     case CONST_STRING:
@@ -5291,11 +5257,11 @@ print_value (buf, x, verbose)
     case REG:
       if (REGNO (x) < FIRST_PSEUDO_REGISTER)
 	{
-	  int c = reg_names[ REGNO (x) ][0];
+	  int c = reg_names[REGNO (x)][0];
 	  if (c >= '0' && c <= '9')
 	    cur = safe_concat (buf, cur, "%");
 
-	  cur = safe_concat (buf, cur, reg_names[ REGNO (x) ]);
+	  cur = safe_concat (buf, cur, reg_names[REGNO (x)]);
 	}
       else
 	{
@@ -5861,7 +5827,7 @@ schedule_block (bb, rgn_n_insns)
   /* Prepare current target block info.  */
   if (current_nr_blocks > 1)
     {
-      candidate_table = (candidate *) xmalloc (current_nr_blocks 
+      candidate_table = (candidate *) xmalloc (current_nr_blocks
 					       * sizeof (candidate));
 
       bblst_last = 0;
@@ -5888,7 +5854,6 @@ schedule_block (bb, rgn_n_insns)
   /* Print debugging information.  */
   if (sched_verbose >= 5)
     debug_dependencies ();
-
 
   /* Initialize ready list with all 'ready' insns in target block.
      Count number of insns in the target block being scheduled.  */
@@ -5938,7 +5903,7 @@ schedule_block (bb, rgn_n_insns)
 	      {
 		rtx next;
 
-		/* Note that we havn't squirrled away the notes for 
+		/* Note that we havn't squirrled away the notes for
 		   blocks other than the current.  So if this is a
 		   speculative insn, NEXT might otherwise be a note.  */
 		next = next_nonnote_insn (insn);
@@ -5999,7 +5964,7 @@ schedule_block (bb, rgn_n_insns)
       /* Sort the ready list based on priority.  */
       SCHED_SORT (ready, n_ready);
 
-      /* Allow the target to reorder the list, typically for 
+      /* Allow the target to reorder the list, typically for
 	 better instruction bundling.  */
 #ifdef MD_SCHED_REORDER
       MD_SCHED_REORDER (dump, sched_verbose, ready, n_ready, clock_var,
@@ -6048,8 +6013,8 @@ schedule_block (bb, rgn_n_insns)
 	      nr_inter++;
 
 	      /* Find the beginning of the scheduling group.  */
-	      /* ??? Ought to update basic block here, but later bits of 
-		 schedule_block assumes the original insn block is 
+	      /* ??? Ought to update basic block here, but later bits of
+		 schedule_block assumes the original insn block is
 		 still intact.  */
 
 	      temp = insn;
@@ -6174,9 +6139,8 @@ schedule_block (bb, rgn_n_insns)
   free (ready);
 
   return (sched_n_insns);
-}				/* schedule_block () */
+}
 
-
 /* Print the bit-set of registers, S, callable from debugger.  */
 
 extern void
@@ -6483,7 +6447,7 @@ propagate_deps (bb, tmp_deps, max_reg)
       /* last_pending_memory_flush is inherited by bb_succ.  */
       for (u = tmp_deps->last_pending_memory_flush; u; u = XEXP (u, 1))
 	{
-	  if (find_insn_list (XEXP (u, 0), 
+	  if (find_insn_list (XEXP (u, 0),
 			      succ_deps->last_pending_memory_flush))
 	    continue;
 
@@ -6541,9 +6505,9 @@ compute_block_backward_dependences (bb)
 
   /* Free up the INSN_LISTs.
 
-     Note this loop is executed max_reg * nr_regions times.  It's first 
+     Note this loop is executed max_reg * nr_regions times.  It's first
      implementation accounted for over 90% of the calls to free_INSN_LIST_list.
-     The list was empty for the vast majority of those calls.  On the PA, not 
+     The list was empty for the vast majority of those calls.  On the PA, not
      calling free_INSN_LIST_list in those cases improves -O2 compile times by
      3-5% on average.  */
   for (i = 0; i < max_reg; ++i)
@@ -6749,7 +6713,7 @@ schedule_region (rgn)
       edgeset_size = rgn_nr_edges / HOST_BITS_PER_WIDE_INT + 1;
       edgeset_bitsize = rgn_nr_edges;
       pot_split = (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
-      ancestor_edges 
+      ancestor_edges
 	= (edgeset *) xmalloc (current_nr_blocks * sizeof (edgeset));
       for (i = 0; i < current_nr_blocks; i++)
 	{
@@ -6872,7 +6836,7 @@ schedule_insns (dump_file)
 	if (insn == BLOCK_END (b))
 	  break;
       }
-  
+
   /* ?!? We could save some memory by computing a per-region luid mapping
      which could reduce both the number of vectors in the cache and the size
      of each vector.  Instead we just avoid the cache entirely unless the
@@ -7007,7 +6971,7 @@ schedule_insns (dump_file)
     {
       sbitmap_zero (blocks);
       for (b = RGN_NR_BLOCKS (rgn) - 1; b >= 0; --b)
-	SET_BIT (blocks, rgn_bb_table [RGN_BLOCKS (rgn) + b]);
+	SET_BIT (blocks, rgn_bb_table[RGN_BLOCKS (rgn) + b]);
 
       deaths_in_region[rgn] = count_or_remove_death_notes (blocks, 1);
     }
@@ -7027,7 +6991,7 @@ schedule_insns (dump_file)
 
      I'm fairly certain that this _shouldn't_ happen, since I don't think
      that live_at_start should change at region heads.  Not sure what the
-     best way to test for this kind of thing... */
+     best way to test for this kind of thing...  */
 
   allocate_reg_life_data ();
   compute_bb_for_insn (max_uid);
@@ -7057,14 +7021,14 @@ schedule_insns (dump_file)
 	/* In the single block case, the count of registers that died should
 	   not have changed during the schedule.  */
 	if (count_or_remove_death_notes (blocks, 0) != deaths_in_region[rgn])
-          abort ();
+	  abort ();
 #endif
       }
 
   if (any_large_regions)
     {
       update_life_info (large_region_blocks, UPDATE_LIFE_GLOBAL,
-		        PROP_DEATH_NOTES | PROP_REG_INFO);
+			PROP_DEATH_NOTES | PROP_REG_INFO);
     }
 
   /* Reposition the prologue and epilogue notes in case we moved the
@@ -7080,7 +7044,8 @@ schedule_insns (dump_file)
     {
       if (reload_completed == 0 && flag_schedule_interblock)
 	{
-	  fprintf (dump, "\n;; Procedure interblock/speculative motions == %d/%d \n",
+	  fprintf (dump,
+		   "\n;; Procedure interblock/speculative motions == %d/%d \n",
 		   nr_inter, nr_spec);
 	}
       else
