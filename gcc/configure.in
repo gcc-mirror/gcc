@@ -2444,7 +2444,7 @@ for machine in $build $host $target; do
 		# supports are matched above and just set $cpu_type.
 		xm_file=${cpu_type}/xm-gnu.h
 		tm_file=${cpu_type}/gnu.h
-		extra_parts="crtbegin.o crtend.o"
+		extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o"
 		# GNU always uses ELF.
 		elf=yes
 		# GNU tools are the only tools.
