@@ -35,6 +35,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
    Be sure to add an entry to invoke.texi summarizing the parameter.  */
 
+/* The maximum number of fields in a variable with only implicit uses
+   for which structure aliasing will consider trying to track each
+   field.  The default is 5.  */
+DEFPARAM (PARAM_SALIAS_MAX_IMPLICIT_FIELDS,
+	  "salias-max-implicit-fields",
+	  "The maximum number of fields in a structure variable without direct structure accesses that GCC will attempt to track separately",
+	  5, 0, 0)
+   
 /* The maximum structure size at which the scalar replacement of
    aggregates (SRA) pass will perform block copies.  The default
    value, 0, implies that GCC will select the most appropriate size

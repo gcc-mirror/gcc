@@ -1,3 +1,17 @@
+2005-04-06  Daniel Berlin  <dberlin@dberlin.org>
+
+	* params.def (PARAM_SALIAS_MAX_IMPLICIT_FIELDS): New
+	* params.h (SALIAS_MAX_IMPLICIT_FIELDS): New
+	* doc/invoke.texi: Documnet salias-max-implicit-fields.
+	* tree-ssa-alias.c (struct used_part): Add implicit_uses and
+	explicit_uses members.
+	(get_or_create_used_part_for): Initialize new fields.
+	(fieldoff_compare): New function.
+	(create_overlap_variables_for): Count number of fields, use
+	heuristic to determine whether to create subvars for vars with
+	only implicit uses.
+	Sort the field list by offset and avoid creating duplicate SFT's.
+
 2005-04-06  Richard Sandiford  <rsandifo@redhat.com>
 
 	* c.opt (-F): Remove trailing whitespace from help string.

@@ -89,6 +89,8 @@ typedef enum compiler_param
   (compiler_params[(int) ENUM].value)
 
 /* Macros for the various parameters.  */
+#define SALIAS_MAX_IMPLICIT_FIELDS \
+  PARAM_VALUE (PARAM_SALIAS_MAX_IMPLICIT_FIELDS)
 #define SRA_MAX_STRUCTURE_SIZE \
   PARAM_VALUE (PARAM_SRA_MAX_STRUCTURE_SIZE)
 #define SRA_FIELD_STRUCTURE_RATIO \
