@@ -1,8 +1,20 @@
+			Blanket Write Privs.
+
+Richard Henderson                               rth@cygnus.com
+Jeff Law					law@cygnus.com
+Michael Meissner				meissner@cygnus.com
+Jim Wilson					wilson@cygnus.com
+
+
+
+
+			Various Maintainers
+
 sh port			Joern Renecke		amylaar@cygnus.com
 v850 port		Nick Clifton		nickc@cygnus.com
 v850 port		Michael Meissner	meissner@cygnus.com
 arm port		Nick Clifton		nickc@cygnus.com
-*arm port		Richard Earnshaw
+*arm port		Richard Earnshaw	rearnsha@arm.com
 m32r port		Nick Clifton		nickc@cygnus.com
 h8 port			Jeff Law		law@cygnus.com
 mn10200 port		Jeff Law		law@cygnus.com
@@ -18,7 +30,7 @@ alpha port		Richard Henderson	rth@cygnus.com
 sparc port		Richard Henderson	rth@cygnus.com
 sparc port (?) 		David S. Miller		davem@dm.cobaltmicro.com
 x86 ports		Stan Cox		scox@cygnus.com
-*fortran		Craig Burley
+*fortran		Craig Burley		burley@gnu.org
 fortran			Richard Henderson	rth@cygnus.com	
 c++			Jason Merrill		jason@cygnus.com
 chill			Per Bothner		bothner@cygnus.com
@@ -31,23 +43,34 @@ scheduler (+ haifa)	Jim Wilson		wilson@cygnus.com
 scheduler (+ haifa)	Michael Meissner	meissner@cygnus.com
 scheduler (+ haifa)	Jeff Law		law@cygnus.com
 reorg			Jeff Law		law@cygnus.com
-caller-sae.c		Jeff Law		law@cygnus.com
+caller-save.c		Jeff Law		law@cygnus.com
 debugging code		Jim Wilson		wilson@cygnus.com
 dwarf debugging code	Jason Merrill		jason@cygnus.com
 c++ runtime libs	Ulrich Drepper		drepper@cygnus.com
-*synthetic multiply	Torbjorn Granlund
-*c-torture		Torbjorn Granlund
-*f-torture		Kate Hedstrom
+*synthetic multiply	Torbjorn Granlund	tege@pdc.kth.se
+*c-torture		Torbjorn Granlund	tege@pdc.kth.se
+*f-torture		Kate Hedstrom		kate@ahab.rutgers.edu
 
 
-Folks who have write access after patch approval:
-Ken Raeburn			raeburn@cygnus.com
-Gavin Koch			gavin@cygnus.com
-Brendan Kehoe			brendan@cygnus.com
-Benjamin Kosnik			bkoz@cygnus.com
-Andrew Macleod			amacleod@cygnus.com
-Dave Love			d.love@dl.ac.uk
-*fortran			Toon Moene
+			
+
+			Write After Approval
+Ken Raeburn					raeburn@cygnus.com
+Gavin Koch					gavin@cygnus.com
+Brendan Kehoe					brendan@cygnus.com
+Benjamin Kosnik					bkoz@cygnus.com
+Andrew Macleod					amacleod@cygnus.com
+Dave Love					d.love@dl.ac.uk
+*Toon Moene					toon@moene.indiv.nluug.nl
+*HJ Lu						hjl@lucon.org
+*Mark Mitchell					mmitchell@usa.net
+*Kaveh Ghazi					ghazi@caip.rutgers.edu
+*Andreas Schwab					schwab@issan.informatik.uni-dortmund.de
+*Manfred Hollstein				manfred@s-direktnet.de
+*Paul Eggert					eggert@twinsun.com
+*Klaus Kaempf					kkaempf@progis.de
+*Robert Lipe					robertl@dgii.com
+*Marc Lehmann					pcg@goof.com
 
 
 * Indicates folks we need to get Kerberos/ssh accounts ready so they
