@@ -121,7 +121,10 @@ static long right_shift ();
 #define LEFT_OPERAND_REQUIRED 1
 #define RIGHT_OPERAND_REQUIRED 2
 #define HAVE_VALUE 4
-/*#define UNSIGNEDP 8*/
+/* SKIP_OPERAND is set for '&&' '||' '?' and ':' when the
+   following operand should be short-circuited instead of evaluated. */
+#define SKIP_OPERAND 8
+/*#define UNSIGNEDP 16*/
 
 #ifndef HOST_BITS_PER_WIDE_INT
 
@@ -308,15 +311,16 @@ cpp_reader *pfile;
   switch (token)
   {
     case CPP_EOF: /* Should not happen ... */
+    case CPP_VSPACE:
       op.op = 0;
       return op;
-    case CPP_VSPACE:
     case CPP_POP:
       if (CPP_BUFFER (pfile)->fname != NULL)
 	{
 	  op.op = 0;
 	  return op;
 	}
+      cpp_pop_buffer (pfile);
       goto retry;
     case CPP_HSPACE:   case CPP_COMMENT: 
       goto retry;
@@ -670,6 +674,7 @@ cpp_parse_expr (pfile)
   struct operation *limit = stack + INIT_STACK_SIZE;
   register struct operation *top = stack;
   int lprio, rprio;
+  int skip_evaluation = 0;
 
   top->rprio = 0;
   top->flags = 0;
@@ -782,13 +787,14 @@ cpp_parse_expr (pfile)
 		{
 		  top->value = v1 + v2;
 		  top->unsignedp = unsigned1 || unsigned2;
-		  if (! top->unsignedp
+		  if (! top->unsignedp && ! skip_evaluation
 		      && ! possible_sum_sign (v1, v2, top->value))
 		    integer_overflow (pfile);
 		}
 	      break;
 	    case '-':
-	      if (!(top->flags & HAVE_VALUE))
+	      if (skip_evaluation) ;	/* do nothing */
+	      else if (!(top->flags & HAVE_VALUE))
 		{ /* Unary '-' */
 		  top->value = - v2;
 		  if ((top->value & v2) < 0 && ! unsigned2)
@@ -809,7 +815,7 @@ cpp_parse_expr (pfile)
 	      top->unsignedp = unsigned1 || unsigned2;
 	      if (top->unsignedp)
 		top->value = (unsigned long) v1 * v2;
-	      else
+	      else if (!skip_evaluation)
 		{
 		  top->value = v1 * v2;
 		  if (v1
@@ -819,6 +825,8 @@ cpp_parse_expr (pfile)
 		}
 	      break;
 	    case '/':
+	      if (skip_evaluation)
+		break;
 	      if (v2 == 0)
 		{
 		  cpp_error (pfile, "division by zero in #if");
@@ -835,6 +843,8 @@ cpp_parse_expr (pfile)
 		}
 	      break;
 	    case '%':
+	      if (skip_evaluation)
+		break;
 	      if (v2 == 0)
 		{
 		  cpp_error (pfile, "division by zero in #if");
@@ -879,6 +889,8 @@ cpp_parse_expr (pfile)
 	      top->unsignedp = 0;
 	      break;
 	    case LSH:
+	      if (skip_evaluation)
+		break;
 	      top->unsignedp = unsigned1;
 	      if (v2 < 0 && ! unsigned2)
 		top->value = right_shift (pfile, v1, unsigned1, -v2);
@@ -886,6 +898,8 @@ cpp_parse_expr (pfile)
 		top->value = left_shift (pfile, v1, unsigned1, v2);
 	      break;
 	    case RSH:
+	      if (skip_evaluation)
+		break;
 	      top->unsignedp = unsigned1;
 	      if (v2 < 0 && ! unsigned2)
 		top->value = left_shift (pfile, v1, unsigned1, -v2);
@@ -899,9 +913,13 @@ cpp_parse_expr (pfile)
 	    case '^':  LOGICAL(^);  break;
 	    case '|':  LOGICAL(|);  break;
 	    case ANDAND:
-	      top->value = v1 && v2;  top->unsignedp = 0;  break;
+	      top->value = v1 && v2;  top->unsignedp = 0;
+	      if (!v1) skip_evaluation--;
+	      break;
 	    case OROR:
-	      top->value = v1 || v2;  top->unsignedp = 0;  break;
+	      top->value = v1 || v2;  top->unsignedp = 0;
+	      if (v1) skip_evaluation--;
+	      break;
 	    case ',':
 	      if (CPP_PEDANTIC (pfile))
 		cpp_pedwarn (pfile, "comma operator in operand of `#if'");
@@ -928,6 +946,7 @@ cpp_parse_expr (pfile)
 	      else
 		{
 		  top--;
+		  if (top->value) skip_evaluation--;
 		  top->value = top->value ? v1 : v2;
 		  top->unsignedp = unsigned1 || unsigned2;
 		}
@@ -988,6 +1007,19 @@ cpp_parse_expr (pfile)
       top->flags = flags;
       top->rprio = rprio;
       top->op = op.op;
+      if ((op.op == OROR && top[-1].value)
+	  || (op.op == ANDAND && !top[-1].value)
+	  || (op.op == '?' && !top[-1].value))
+	{
+	  skip_evaluation++;
+	}
+      else if (op.op == ':')
+	{
+	  if (top[-2].value) /* Was condition true? */
+	    skip_evaluation++;
+	  else
+	    skip_evaluation--;
+	}
     }
  syntax_error:
   if (stack != init_stack)
