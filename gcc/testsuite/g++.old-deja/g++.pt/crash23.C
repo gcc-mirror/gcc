@@ -2,6 +2,7 @@
 
 template <class A, class B> void foo();
 template <class C> class bar {
+public:
   int i;
   template <class B> friend void foo<C,B>(); // ERROR - template-id
 };
