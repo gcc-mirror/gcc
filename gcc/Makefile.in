@@ -2124,7 +2124,7 @@ mostlyclean: $(INTL_MOSTLYCLEAN) lang.mostlyclean
 	  gen-protos fixproto.list fixtmp.* fixhdr.ready
 # Delete files generated for fixincl
 	-rm -rf fixincl fixinc.sh specs.ready
-	(cd fixinc && make clean)
+	(cd fixinc && $(MAKE) clean)
 # Delete unwanted output files from TeX.
 	-rm -f *.toc *.log *.vr *.fn *.cp *.tp *.ky *.pg
 	-rm -f */*.toc */*.log */*.vr */*.fn */*.cp */*.tp */*.ky */*.pg

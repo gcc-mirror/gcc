@@ -1,3 +1,7 @@
+2000-06-02  Pekka Nikander  <pnr@teldanex.tcm.hut.fi>
+
+	* Makefile.in: Use $(MAKE) not "make"
+
 Fri Jun  2 19:31:03 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* alias.c (struct alias_set_entry): New field has_zero_child.
