@@ -6017,6 +6017,29 @@ fold (tree expr)
 						  TREE_OPERAND (arg1, 1))),
 				    arg0));
 	    }
+
+	  /* Fold (A & ~B) - (A & B) into (A ^ B) - B, , where B is
+	     any power of 2 minus 1.  */
+	  if (TREE_CODE (arg0) == BIT_AND_EXPR
+	      && TREE_CODE (arg1) == BIT_AND_EXPR
+	      && operand_equal_p (TREE_OPERAND (arg0, 0),
+				  TREE_OPERAND (arg1, 0), 0)
+	      && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST
+	      && TREE_CODE (TREE_OPERAND (arg1, 1)) == INTEGER_CST)
+	    {
+	      tree mask0 = TREE_OPERAND (arg0, 1);
+	      tree mask1 = TREE_OPERAND (arg1, 1);
+	      tree tem = fold (build1 (BIT_NOT_EXPR, type, mask0));
+	      
+	      if (operand_equal_p (tem, mask1, 0)
+		  && integer_pow2p (fold (build (PLUS_EXPR, type,
+						 mask1, integer_one_node))))
+		{
+		  tem = fold (build (BIT_XOR_EXPR, type,
+				     TREE_OPERAND (arg0, 0), mask1));
+		  return fold (build (MINUS_EXPR, type, tem, mask1));
+		}
+	    }
 	}
 
       /* See if ARG1 is zero and X - ARG1 reduces to X.  */
