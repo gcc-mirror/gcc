@@ -4625,9 +4625,9 @@ build_new_method_call (instance, name, args, basetype_path, flags)
       if (!COMPLETE_TYPE_P (basetype))
 	incomplete_type_error (instance_ptr, basetype);
       else
-	error ("no matching function for call to `%T::%D(%A)%V'",
-		  basetype, pretty_name, user_args,
-		  TREE_TYPE (TREE_TYPE (instance_ptr)));
+	error ("no matching function for call to `%T::%D(%A)%#V'",
+	       basetype, pretty_name, user_args,
+	       TREE_TYPE (TREE_TYPE (instance_ptr)));
       print_z_candidates (candidates);
       return error_mark_node;
     }

@@ -1,3 +1,8 @@
+2001-12-18  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* call.c (build_new_method_call): Use '%#V'.
+	* error.c (cv_to_string): Use V parameter to determine padding.
+
 2001-12-18  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* call.c, decl2.c, init.c: Use "built-in" and "bit-field"

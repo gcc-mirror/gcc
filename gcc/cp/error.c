@@ -2388,11 +2388,11 @@ args_to_string (p, verbose)
 static const char *
 cv_to_string (p, v)
      tree p;
-     int v ATTRIBUTE_UNUSED;
+     int v;
 {
   reinit_global_formatting_buffer ();
 
-  dump_qualifiers (p, before);
+  dump_qualifiers (p, v ? before : none);
 
   return output_finalize_message (scratch_buffer);
 }
