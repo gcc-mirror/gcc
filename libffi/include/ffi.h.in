@@ -372,6 +372,12 @@ struct ffi_ia64_trampoline_struct {
 #define FFI_TRAMPOLINE_SIZE 24
 #define FFI_NATIVE_RAW_API 0
 
+#elif defined(POWERPC)
+
+#define FFI_CLOSURES 1
+#define FFI_TRAMPOLINE_SIZE 40
+#define FFI_NATIVE_RAW_API 0
+
 #else 
 
 #define FFI_CLOSURES 0
