@@ -1,3 +1,9 @@
+Tue Feb 16 21:29:38 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* calls.c (store_one_arg): Mark any slots used for the argument
+	as in-use immediately after we're done saving any slots which
+	will be overwritten by this argument. 
+
 Tue Feb 16 21:02:07 1999  Anton Hartl <toni@devsoft.com>
 
 	* rs6000.md (call_value): Fix typo.
