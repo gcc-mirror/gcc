@@ -5694,7 +5694,6 @@ emit_reload_insns (insn)
   rtx output_address_reload_insns[MAX_RECOG_OPERANDS];
   rtx operand_reload_insns = 0;
   rtx other_operand_reload_insns = 0;
-  rtx other_output_reload_insns = 0;
   rtx following_insn = NEXT_INSN (insn);
   rtx before_insn = insn;
   int special;
@@ -6481,14 +6480,9 @@ emit_reload_insns (insn)
 	      }
 
 	  if (reload_when_needed[j] == RELOAD_OTHER)
-	    {
-	      if (other_output_reload_insns)
-		emit_insns (other_output_reload_insns);
-	      other_output_reload_insns = get_insns ();
-	    }
-	  else
-	    output_reload_insns[reload_opnum[j]] = get_insns ();
+	    emit_insns (output_reload_insns[reload_opnum[j]]);
 
+	  output_reload_insns[reload_opnum[j]] = get_insns ();
 	  end_sequence ();
 	}
     }
@@ -6533,8 +6527,6 @@ emit_reload_insns (insn)
       emit_insns_before (output_address_reload_insns[j], following_insn);
       emit_insns_before (output_reload_insns[j], following_insn);
     }
-
-  emit_insns_before (other_output_reload_insns, following_insn);
 
   /* Move death notes from INSN
      to output-operand-address and output reload insns.  */
