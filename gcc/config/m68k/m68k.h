@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  Sun 68000/68020 version.
-   Copyright (C) 1987, 1988, 1993, 1994, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1987, 88, 93, 94, 95, 1996 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -926,15 +926,27 @@ while(0)
 
 /* Save all registers which may be clobbered by a function call. */
 
-#define MACHINE_STATE_SAVE(id)			\
-  asm ("	movew cc,sp@-");		\
-  asm ("	moveml d0/d1/a0/a1,sp@-");
+#ifdef MOTOROLA
+#define MACHINE_STATE_SAVE(id)		\
+  asm ("move.w %ccr,-(%sp)");		\
+  asm ("movm.l &0xc0c0,-(%sp)");
+#else
+#define MACHINE_STATE_SAVE(id)		\
+  asm ("movew cc,sp@-");		\
+  asm ("moveml d0/d1/a0/a1,sp@-");
+#endif
 
 /* Restore all registers saved by MACHINE_STATE_SAVE. */
 
-#define MACHINE_STATE_RESTORE(id)		\
-  asm ("	moveml sp@+,d0/d1/a0/a1");	\
-  asm ("	movew sp@+,cc");
+#ifdef MOTOROLA
+#define MACHINE_STATE_RESTORE(id)	\
+  asm ("movm.l (%sp)+,&0x0303");	\
+  asm ("move.w (%sp)+,%ccr");
+#else
+#define MACHINE_STATE_RESTORE(id)	\
+  asm ("moveml sp@+,d0/d1/a0/a1");	\
+  asm ("movew sp@+,cc");
+#endif
 
 /* EXIT_IGNORE_STACK should be nonzero if, when returning from a function,
    the stack pointer does not matter.  The value is tested only in
