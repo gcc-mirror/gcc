@@ -1,5 +1,5 @@
-/* java.lang.Package - Everything you ever wanted to know about a package.
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+/* Package.java -- information about a package
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -49,8 +49,8 @@ import java.util.StringTokenizer;
  * section of the
  * <a href="http://java.sun.com/products/jdk/1.3/docs/guide/versioning/spec/VersioningSpecification.html">Product Versioning Specification</a>.
  * It also allows packages to be sealed with respect to the originating URL.
- * <p>
- * The most useful method is the <code>isCompatibleWith()</code> method that
+ *
+ * <p>The most useful method is the <code>isCompatibleWith()</code> method that
  * compares a desired version of a specification with the version of the
  * specification as implemented by a package. A package is considered
  * compatible with another version if the version of the specification is
@@ -63,8 +63,11 @@ import java.util.StringTokenizer;
  * then the other version, etc. (If a version has no minor, micro, etc numbers
  * then they are considered the be 0.)
  *
+ * @author Mark Wielaard <mark@klomp.org>
+ * @see ClassLoader#definePackage(String, String, String, String, String,
+ *      String, String, URL)
  * @since 1.2
- * @author Mark Wielaard (mark@klomp.org)
+ * @status updated to 1.4
  */
 public class Package
 {
@@ -73,26 +76,29 @@ public class Package
 
   /** The name if the implementation */
   final private String implTitle;
+
   /** The vendor that wrote this implementation */
   final private String implVendor;
+
   /** The version of this implementation */
   final private String implVersion;
 
   /** The name of the specification */
   final private String specTitle;
+
   /** The name of the specification designer */
   final private String specVendor;
+
   /** The version of this specification */
   final private String specVersion;
 
   /** If sealed the origin of the package classes, otherwise null */
   final private URL sealed;
 
-  /** 
-   * A package local constructor for the Package class.
-   * All parameters except the <code>name</code> of the package may be
-   * <code>null</code>.
-   * There are no public constructors defined for Package this is a package
+  /**
+   * A package local constructor for the Package class. All parameters except
+   * the <code>name</code> of the package may be <code>null</code>.
+   * There are no public constructors defined for Package; this is a package
    * local constructor that is used by java.lang.Classloader.definePackage().
    * 
    * @param name The name of the Package
@@ -112,87 +118,102 @@ public class Package
       throw new IllegalArgumentException("null Package name");
 
     this.name = name;
-
     this.implTitle = implTitle;
     this.implVendor = implVendor;
     this.implVersion = implVersion;
-
     this.specTitle = specTitle;
     this.specVendor = specVendor;
     this.specVersion = specVersion;
-
     this.sealed = sealed;
   }
 
-  /** 
-   * Returns the Package name.
+  /**
+   * Returns the Package name in dot-notation.
+   *
+   * @return the non-null package name
    */
   public String getName()
   {
     return name;
   }
 
-  /** 
-   * Returns the name of the implementation or null if unknown.
-   */
-  public String getImplementationTitle()
-  {
-    return implTitle;
-  }
-
-  /** 
-   * Returns the vendor that wrote this implementation or null if unknown.
-   */
-  public String getImplementationVendor()
-  {
-    return implVendor;
-  }
-
-  /** 
-   * Returns the version of this implementation or null if unknown.
-   */
-  public String getImplementationVersion()
-  {
-    return implVersion;
-  }
-
-  /** 
-   * Returns the name of the specification or null if unknown.
+  /**
+   * Returns the name of the specification, or null if unknown.
+   *
+   * @return the specification title
    */
   public String getSpecificationTitle()
   {
     return specTitle;
   }
 
-  /** 
-   * Returns the name of the specification designer or null if unknown.
-   */
-  public String getSpecificationVendor()
-  {
-    return specVendor;
-  }
-
-  /** 
-   * Returns the version of the specification or null if unknown.
+  /**
+   * Returns the version of the specification, or null if unknown.
+   *
+   * @return the specification version
    */
   public String getSpecificationVersion()
   {
     return specVersion;
   }
 
-  /** 
+  /**
+   * Returns the name of the specification designer, or null if unknown.
+   *
+   * @return the specification vendor
+   */
+  public String getSpecificationVendor()
+  {
+    return specVendor;
+  }
+
+  /**
+   * Returns the name of the implementation, or null if unknown.
+   *
+   * @return the implementation title
+   */
+  public String getImplementationTitle()
+  {
+    return implTitle;
+  }
+
+  /**
+   * Returns the version of this implementation, or null if unknown.
+   *
+   * @return the implementation version
+   */
+  public String getImplementationVersion()
+  {
+    return implVersion;
+  }
+
+  /**
+   * Returns the vendor that wrote this implementation, or null if unknown.
+   *
+   * @return the implementation vendor
+   */
+  public String getImplementationVendor()
+  {
+    return implVendor;
+  }
+
+  /**
    * Returns true if this Package is sealed.
+   *
+   * @return true if the package is sealed
    */
   public boolean isSealed()
   {
-    return (sealed != null);
+    return sealed != null;
   }
 
-  /** 
+  /**
    * Returns true if this Package is sealed and the origin of the classes is
    * the given URL.
-   * 
-   * @param url 
+   *
+   * @param url the URL to test
+   * @return true if the package is sealed by this URL
+   * @throws NullPointerException if url is null
    */
   public boolean isSealed(URL url)
   {
@@ -201,36 +222,36 @@ public class Package
 
   /**
    * Checks if the version of the specification is higher or at least as high
-   * as the desired version.
+   * as the desired version. Comparison is done by sequentially comparing
+   * dotted decimal numbers from the parameter and from
+   * <code>getSpecificationVersion</code>.
+   *
    * @param version the (minimal) desired version of the specification
-   * @exception NumberFormatException when either version or the
-   * specification version is not a correctly formatted version number
-   * @exception NullPointerException if the supplied version or the
-   * Package specification version is null.
+   * @throws NumberFormatException if either version string is invalid
+   * @throws NullPointerException if either version string is null
    */
-  public boolean isCompatibleWith(String version) throws NumberFormatException
+  public boolean isCompatibleWith(String version)
   {
     StringTokenizer versionTokens = new StringTokenizer(version, ".");
     StringTokenizer specTokens = new StringTokenizer(specVersion, ".");
     try
       {
-	while (versionTokens.hasMoreElements())
-	  {
-	    int vers = Integer.parseInt(versionTokens.nextToken());
-	    int spec = Integer.parseInt(specTokens.nextToken());
-	    if (spec < vers)
-	      return false;
-	    else if (spec > vers)
-	      return true;
-	    // They must be equal, next Token please!
-	  }
+        while (versionTokens.hasMoreElements())
+          {
+            int vers = Integer.parseInt(versionTokens.nextToken());
+            int spec = Integer.parseInt(specTokens.nextToken());
+            if (spec < vers)
+              return false;
+            else if (spec > vers)
+              return true;
+            // They must be equal, next Token please!
+          }
       }
     catch (NoSuchElementException e)
       {
-	// this must have been thrown by spec.netToken() so return false
-	return false;
+        // This must have been thrown by spec.nextToken() so return false.
+        return false;
       }
-
     // They must have been exactly the same version.
     // Or the specVersion has more subversions. That is also good.
     return true;
@@ -241,7 +262,9 @@ public class Package
    * It may return null if the package is unknown, when there is no
    * information on that particular package available or when the callers
    * classloader is null.
+   *
    * @param name the name of the desired package
+   * @return the package by that name in the current ClassLoader
    */
   public static Package getPackage(String name)
   {
@@ -249,16 +272,14 @@ public class Package
     SecurityManager sm = System.getSecurityManager();
     Class c = sm.getClassContext()[1];
     ClassLoader cl = c.getClassLoader();
-
-    if (cl != null)
-      return cl.getPackage(name);
-    else
-      return null;
+    return cl != null ? cl.getPackage(name) : null;
   }
 
   /**
    * Returns all the packages that are known to the callers class loader.
    * It may return an empty array if the classloader of the caller is null.
+   *
+   * @return an array of all known packages
    */
   public static Package[] getPackages()
   {
@@ -266,24 +287,29 @@ public class Package
     SecurityManager sm = System.getSecurityManager();
     Class c = sm.getClassContext()[1];
     ClassLoader cl = c.getClassLoader();
-
-    if (cl != null)
-      return cl.getPackages();
-    else
-      return new Package[0];
+    // Sun's implementation returns the packages loaded by the bootstrap
+    // classloader if cl is null, but right now our bootstrap classloader
+    // does not create any Packages.
+    return cl != null ? cl.getPackages() : new Package[0];
   }
 
-  /** 
+  /**
    * Returns the hashCode of the name of this package.
+   *
+   * @return the hash code
    */
   public int hashCode()
   {
     return name.hashCode();
   }
 
-  /** 
-   * Returns a string representation of this package name, specification,
-   * implementation and class origin if sealed.
+  /**
+   * Returns a string representation of this package. It is specified to
+   * be <code>"package " + getName() + (getSpecificationTitle() == null
+   * ? "" : ", " + getSpecificationTitle()) + (getSpecificationVersion()
+   * == null ? "" : ", version " + getSpecificationVersion())</code>.
+   *
+   * @return the string representation of the package
    */
   public String toString()
   {
@@ -295,4 +321,4 @@ public class Package
 	   " version: " + implVersion +
 	   " vendor: " + implVendor + " sealed: " + sealed;
   }
-}
+} // class Package
