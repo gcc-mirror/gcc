@@ -13,6 +13,18 @@
 
 2000-08-10  Kazu Hirata  <kazu@hxi.com>
 
+        * h8300.c (expand_a_rotate): New.
+        (emit_a_rotate): Likewise.
+        (h8300_adjust_insn_length): Add support for the rotate insns.
+        * h8300.md (rotlqi3): New.
+        (*rotlqi3_1): Likewise.
+        (rotlhi3): Likewise.
+        (*rotlhi3_1): Likewise.
+        (rotlhi3): Likewise.
+        (*rotlhi3_1): Likewise.
+        * h8300-proto.h: Add prototypes for expand_a_rotate and
+        emit_a_rotate.
+
 	* h8300.c: Fix comment typos.
 	(dosize): Declare the variable amount as unsigned.
 	(get_shift_alg): Fix a comparison between signed and unsigned.

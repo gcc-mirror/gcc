@@ -2662,6 +2662,177 @@ emit_a_shift (insn, operands)
     }
 }
 
+/* A rotation by a non-constant will cause a loop to be generated, in
+   which a rotation by one bit is used.  A rotation by a constant,
+   including the one in the loop, will be taken care of by
+   emit_a_rotate () at the insn emit time.  */
+
+int
+expand_a_rotate (code, operands)
+     int code;
+     rtx operands[];
+{
+  rtx dst = operands[0];
+  rtx src = operands[1];
+  rtx rotate_amount = operands[2];
+  enum machine_mode mode = GET_MODE (dst);
+  rtx tmp;
+
+  /* We rotate in place.  */
+  emit_move_insn (dst, src);
+
+  if (GET_CODE (rotate_amount) != CONST_INT)
+    {
+      rtx counter = gen_reg_rtx (QImode);
+      rtx start_label = gen_label_rtx ();
+      rtx end_label = gen_label_rtx ();
+
+      /* If the rotate amount is less than or equal to 0,
+	 we go out of the loop.  */
+      emit_cmp_and_jump_insns (rotate_amount, GEN_INT (0),
+			       LE, NULL_RTX, QImode, 0, 0, end_label);
+
+      /* Initialize the loop counter.  */
+      emit_move_insn (counter, rotate_amount);
+
+      emit_label (start_label);
+
+      /* Rotate by one bit.  */
+      tmp = gen_rtx (code, mode, dst, GEN_INT (1));
+      emit_insn (gen_rtx_SET (mode, dst, tmp));
+
+      /* Decrement the counter by 1.  */
+      tmp = gen_rtx_PLUS (QImode, counter, GEN_INT (-1));
+      emit_insn (gen_rtx_SET (VOIDmode, counter, tmp));
+
+      /* If the loop counter is non-zero, we go back to the beginning
+	 of the loop.  */
+      emit_cmp_and_jump_insns (counter, GEN_INT (0),
+			       NE, NULL_RTX, QImode, 1, 0, start_label);
+
+      emit_label (end_label);
+    }
+  else
+    {
+      /* Rotate by AMOUNT bits.  */
+      tmp = gen_rtx (code, mode, dst, rotate_amount);
+      emit_insn (gen_rtx_SET (mode, dst, tmp));
+    }
+
+  return 1;
+}
+
+/* Emit rotate insns.  */
+
+const char *
+emit_a_rotate (code, operands)
+     int code;
+     rtx *operands;
+{
+  rtx dst = operands[0];
+  rtx rotate_amount = operands[2];
+  enum shift_mode rotate_mode;
+  enum shift_type rotate_type;
+  const char *insn_buf;
+  int bits;
+  int amount;
+  enum machine_mode mode = GET_MODE (dst);
+
+  if (GET_CODE (rotate_amount) != CONST_INT)
+    abort ();
+
+  switch (mode)
+    {
+    case QImode:
+      rotate_mode = QIshift;
+      break;
+    case HImode:
+      rotate_mode = HIshift;
+      break;
+    case SImode:
+      rotate_mode = SIshift;
+      break;
+    default:
+      abort ();
+    }
+
+  switch (code)
+    {
+    case ROTATERT:
+      rotate_type = SHIFT_ASHIFT;
+      break;
+    case ROTATE:
+      rotate_type = SHIFT_LSHIFTRT;
+      break;
+    default:
+      abort ();
+    }
+
+  amount = INTVAL (rotate_amount);
+
+  /* Clean up AMOUNT.  */
+  if (amount < 0)
+    amount = 0;
+  if ((unsigned int) amount > GET_MODE_BITSIZE (mode))
+    amount = GET_MODE_BITSIZE (mode);
+
+  /* Determine the faster direction.  After this phase, amount will be
+     at most a half of GET_MODE_BITSIZE (mode).  */
+  if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2)
+    {
+      /* Flip the direction.  */
+      amount = GET_MODE_BITSIZE (mode) - amount;
+      rotate_type =
+	(rotate_type == SHIFT_ASHIFT) ? SHIFT_LSHIFTRT : SHIFT_ASHIFT;
+    }
+
+  /* See if a byte swap (in HImode) or a word swap (in SImode) can
+     boost up the rotation.  */
+  if ((mode == HImode && TARGET_H8300 && amount >= 5)
+      || (mode == HImode && TARGET_H8300H && amount >= 6)
+      || (mode == HImode && TARGET_H8300S && amount == 8)
+      || (mode == SImode && TARGET_H8300H && amount >= 10)
+      || (mode == SImode && TARGET_H8300S && amount >= 13))
+    {
+      switch (mode)
+	{
+	case HImode:
+	  /* This code works on any family.  */
+	  insn_buf = "xor.b\t%s0,%t0\n\txor.b\t%t0,%s0\n\txor.b\t%s0,%t0";
+	  output_asm_insn (insn_buf, operands);
+	  break;
+
+	case SImode:
+	  /* This code works on the H8/300H and H8/S.  */
+	  insn_buf = "xor.w\t%e0,%f0\n\txor.w\t%f0,%e0\n\txor.w\t%e0,%f0";
+	  output_asm_insn (insn_buf, operands);
+	  break;
+
+	default:
+	  abort ();
+	}
+
+      /* Adjust AMOUNT and flip the direction.  */
+      amount = GET_MODE_BITSIZE (mode) / 2 - amount;
+      rotate_type =
+	(rotate_type == SHIFT_ASHIFT) ? SHIFT_LSHIFTRT : SHIFT_ASHIFT;
+    }
+
+  /* Emit rotate insns.  */
+  for (bits = TARGET_H8300S ? 2 : 1; bits > 0; bits /= 2)
+    {
+      if (bits == 2)
+	insn_buf = rotate_two[rotate_type][rotate_mode];
+      else
+	insn_buf = rotate_one[cpu_type][rotate_type][rotate_mode];
+      
+      for (; amount >= bits; amount -= bits)
+	output_asm_insn (insn_buf, operands);
+    }
+
+  return "";
+}
+
 /* Fix the operands of a gen_xxx so that it could become a bit
   operating insn.  */
 
@@ -3050,6 +3221,57 @@ h8300_adjust_insn_length (insn, length)
 	return -(20 - (shift * (GET_CODE (src) == ASHIFT ? 6 : 8)));
 
       /* XXX ??? Could check for more shift/rotate cases here.  */
+    }
+
+  /* Rotations need various adjustments.  */
+  if (GET_CODE (pat) == SET
+      && (GET_CODE (SET_SRC (pat)) == ROTATE
+	  || GET_CODE (SET_SRC (pat)) == ROTATERT))
+    {
+      rtx src = SET_SRC (pat);
+      enum machine_mode mode = GET_MODE (src);
+      int amount;
+      int states = 0;
+
+      if (GET_CODE (XEXP (src, 1)) != CONST_INT)
+	return 0;
+
+      amount = INTVAL (XEXP (src, 1));
+
+      /* Clean up AMOUNT.  */
+      if (amount < 0)
+	amount = 0;
+      if ((unsigned int) amount > GET_MODE_BITSIZE (mode))
+	amount = GET_MODE_BITSIZE (mode);
+
+      /* Determine the faster direction.  After this phase, amount
+	 will be at most a half of GET_MODE_BITSIZE (mode).  */
+      if ((unsigned int) amount > GET_MODE_BITSIZE (mode) / 2)
+	/* Flip the direction.  */
+	amount = GET_MODE_BITSIZE (mode) - amount;
+
+      /* See if a byte swap (in HImode) or a word swap (in SImode) can
+	 boost up the rotation.  */
+      if ((mode == HImode && TARGET_H8300 && amount >= 5)
+	  || (mode == HImode && TARGET_H8300H && amount >= 6)
+	  || (mode == HImode && TARGET_H8300S && amount == 8)
+	  || (mode == SImode && TARGET_H8300H && amount >= 10)
+	  || (mode == SImode && TARGET_H8300S && amount >= 13))
+	{
+	  /* Adjust AMOUNT and flip the direction.  */
+	  amount = GET_MODE_BITSIZE (mode) / 2 - amount;
+	  states += 6;
+	}
+
+      /* We use 2-bit rotatations on the H8/S.  */
+      if (TARGET_H8300S)
+	amount = amount / 2 + amount % 2;
+
+      /* The H8/300 uses three insns to rotate one bit, taking 6
+         states.  */
+      states += amount * ((TARGET_H8300 && mode == HImode) ? 6 : 2);
+
+      return -(20 - states);
     }
 
   return 0;
