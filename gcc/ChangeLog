@@ -1,3 +1,8 @@
+2004-06-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* doc/invoke.texi: Remove obsolete comment regarding PA 2.0 support
+	in binutils.
+
 2004-06-19  Andrew Pinski  <apinski@apple.com>
 
 	PR c++/15721
