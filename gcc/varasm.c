@@ -2596,6 +2596,21 @@ notice_rtl_inlining_of_deferred_constant (void)
 {
   n_deferred_constants++;
 }
+
+/* Look up EXP in the table of constant descriptors.  Return the rtl
+   if it has been emitted, else null.  */
+
+rtx
+lookup_constant_def (tree exp)
+{
+  struct constant_descriptor_tree *desc;
+  struct constant_descriptor_tree key;
+
+  key.value = exp;
+  desc = htab_find (const_desc_htab, &key);
+
+  return (desc ? desc->rtl : NULL_RTX);
+}
 
 /* Used in the hash tables to avoid outputting the same constant
    twice.  Unlike 'struct constant_descriptor_tree', RTX constants

@@ -8560,17 +8560,19 @@ loc_descriptor_from_tree (tree loc, int addressp)
 
     case CONSTRUCTOR:
       {
-	/* Get an RTL for this, which will may have the effect of outputting
-	   it.  This may violates the principle of not having -g affect
-	   the generated code, but it's in the data segment and it's hard
-	   to see a case where it won't already have been output.  */
-	rtx rtl = output_constant_def (loc, 0);
+	/* Get an RTL for this, if something has been emitted.  */
+	rtx rtl = lookup_constant_def (loc);
+	enum machine_mode mode;
 
-#ifdef ASM_SIMPLIFY_DWARF_ADDR
-	rtl = ASM_SIMPLIFY_DWARF_ADDR (rtl);
-#endif
+	if (GET_CODE (rtl) != MEM)
+	  return 0;
+	mode = GET_MODE (rtl);
+	rtl = XEXP (rtl, 0);
+
+	rtl = (*targetm.delegitimize_address) (rtl);
+
 	indirect_p = 1;
-	ret = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (rtl));
+	ret = mem_loc_descriptor (rtl, mode);
 	break;
       }
 
