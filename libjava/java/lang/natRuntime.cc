@@ -1,6 +1,6 @@
 // natRuntime.cc - Implementation of native side of Runtime class.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -540,6 +540,9 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
   // The java extensions directory.
   SET ("java.ext.dirs", JAVA_EXT_DIRS);
 
+  // The path to libgcj's boot classes
+  SET ("sun.boot.class.path", BOOT_CLASS_PATH);
+
   // Set some properties according to whatever was compiled in with
   // `-D'.  Important: after this point, the only properties that
   // should be set are those which either the user cannot meaningfully
@@ -593,9 +596,6 @@ java::lang::Runtime::insertSystemProperties (java::util::Properties *newprops)
       newprops->put(JvNewStringLatin1 ("java.class.path"),
 		      sb->toString ());
     }
-
-  // The path to libgcj's boot classes
-  SET ("sun.boot.class.path", BOOT_CLASS_PATH);
 
   // The name used to invoke this process (argv[0] in C).
   SET ("gnu.gcj.progname", _Jv_GetSafeArg (0));

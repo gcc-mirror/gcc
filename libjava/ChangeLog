@@ -1,5 +1,10 @@
 2005-02-07  Tom Tromey  <tromey@redhat.com>
 
+	* java/lang/natRuntime.cc (insertSystemProperties): Set
+	sun.boot.class.path earlier.
+
+2005-02-07  Tom Tromey  <tromey@redhat.com>
+
 	* defineclass.cc (handleClassBegin): Use
 	_Jv_RegisterInitiatingLoader.
 	* java/lang/Class.h (_Jv_UnregisterInitiatingLoader): Declare.
