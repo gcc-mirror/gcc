@@ -1070,7 +1070,7 @@ alpha_builtin_saveregs (arglist)
      order to account for the integer arg registers which are counted in
      argsize above, but which are not actually stored on the stack.  */
 
-  addr = (current_function_args_info < 6
+  addr = (current_function_args_info <= 6
 	  ? plus_constant (virtual_incoming_args_rtx, 6 * UNITS_PER_WORD)
 	  : plus_constant (virtual_incoming_args_rtx, - (6 * UNITS_PER_WORD)));
 
