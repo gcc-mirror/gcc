@@ -1,3 +1,11 @@
+2002-02-10  Jonathan Wakely  <cow@compsoc.man.ac.uk>
+
+	* include/bits/stl_algo.h (__median, for_each, find, find_if,
+	adjacent_find, count, count_if, search, search_n, swap_ranges,
+	transform, replace, replace_if, replace_copy, replace_copy_if,
+	generate, generate_n, remove_copy, remove_copy_if, remove, remove_if,
+	unique, unique_copy, reverse, reverse_copy):  Doxygenate.
+
 2002-02-08   Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.h
