@@ -1,6 +1,6 @@
 /* Perform instruction reorganizations for delay slot filling.
    Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@vlsi1.ultra.nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -648,7 +648,7 @@ delete_scheduled_jump (insn)
 	  if (GET_CODE (trial) == NOTE)
 	    trial = prev_nonnote_insn (trial);
 	  if (sets_cc0_p (PATTERN (trial)) != 1
-	      || FIND_REG_INC_NOTE (trial, 0))
+	      || FIND_REG_INC_NOTE (trial, NULL_RTX))
 	    return;
 	  if (PREV_INSN (NEXT_INSN (trial)) == trial)
 	    delete_related_insns (trial);
@@ -2239,11 +2239,11 @@ fill_simple_delay_slots (non_jumps_p)
 
                int i = 2;
 
-	       try { 
+	       try {
                  f();
 	         i = 3;
                } catch (...) {}
-	       
+
                return i;
 
 	     Even though `i' is a local variable, we must be sure not

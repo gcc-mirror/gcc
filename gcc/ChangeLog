@@ -1,3 +1,10 @@
+2002-01-02  Eric Christopher  <echristo@redhat.com>
+
+	* final.c (final_scan_insn): Change 0 -> NULL_RTX in
+	FIND_REG_INC_NOTE call. Update copyright.
+	* loop.c (canonicalize_condition): Ditto.
+	* reorg.c (delete_scheduled_jump): Ditto.
+
 2002-01-03  Kazu Hirata  <kazu@hxi.com>
 
 	* gcse.c: Fix formatting.
@@ -152,7 +159,7 @@
         (LOOP_MOVABLES): Fix typo.
         (LOOP_REGS): Likewise.
         (LOOP_IVS): Likewise.
-	
+
 2002-01-03  Graham Stott  <grahams@redhat.com>
 
 	* cppinit.c: Update copyright date.
@@ -344,7 +351,7 @@ Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 2001-12-31  Richard Henderson  <rth@redhat.com>
 
 	* regrename.c (build_def_use): Don't rename asm operands that
-	were originally hard registers. 
+	were originally hard registers.
 	(copyprop_hardreg_forward_1): Likewise.
 	(find_oldest_value_reg): Copy ORIGINAL_REGNO from source.
 	* varasm.c (make_decl_rtl): Use gen_rtx_raw_REG.  Set ORIGINAL_REGNO.
@@ -462,7 +469,7 @@ Tue Jan  1 17:12:56 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
         * config/i386/i386.c (ix86_asm_dialect): Fix enum type.
 
-        (override_options): Delete abs macro unused. 
+        (override_options): Delete abs macro unused.
 
         (output_pic_addr_const): Use ASM_ATT/ASM_INTEL enumerations
         when testing ASSEMBLER_DIALECT.
@@ -906,16 +913,16 @@ Fri Dec 21 17:30:15 2001  Jeffrey A Law  (law@redhat.com)
 	* builtin-attrs.def (__builtin_printf_unlocked,
 	__builtin_fprintf_unlocked, printf_unlocked, fprintf_unlocked):
 	Mark with the __printf__ attribute.
-	
+
 	* builtins.c (expand_builtin_fputs): Add an `unlocked' parameter
 	and set the replacement function depending on it.
 	(expand_builtin): Skip BUILT_IN_*_UNLOCKED when not optimizing.
 	Handle BUILT_IN_*_UNLOCKED when optimizing.
-	
+
 	* builtins.def (DEF_EXT_FALLBACK_BUILTIN,
 	DEF_EXT_FRONT_END_LIB_BUILTIN): New macros.
 	Declare the "unlocked" stdio functions.
-	
+
 	* c-common.c (c_expand_builtin_printf, c_expand_builtin_fprintf):
 	Add an `unlocked' parameter and set the replacement function
 	depending on it.
