@@ -341,7 +341,9 @@ while (0)
 #define CPP_PREDEFINES \
   "-DPPC -Dunix -D__svr4__ -Asystem(unix) -Asystem(svr4) -Acpu(powerpc) -Amachine(powerpc)"
 
+/* Don't put -Y P,<path> for cross compilers */
 #undef LINK_SPEC
+#ifdef CROSS_COMPILE
 #define LINK_SPEC "\
 %{h*} %{V} %{v:%{!V:-V}} \
 %{b} %{Wl,*:%*} \
@@ -350,11 +352,24 @@ while (0)
 %{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
 %{G:-G} \
 %{YP,*} \
-%{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
-%{!p:-Y P,/usr/ccs/lib:/usr/lib}} \
 %{Qy:} %{!Qn:-Qy} \
 %{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
 %{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
+
+#define LINK_SPEC "\
+%{h*} %{V} %{v:%{!V:-V}} \
+%{b} %{Wl,*:%*} \
+%{static:-dn -Bstatic} \
+%{shared:-G -dy -z text %{!h*:%{o*:-h %*}}} \
+%{symbolic:-Bsymbolic -G -dy -z text %{!h*:%{o*:-h %*}}} \
+%{G:-G} \
+%{YP,*} \
+%{!nostdlib: %{!YP,*:%{p:-Y P,/usr/ccs/lib/libp:/usr/lib/libp:/usr/ccs/lib:/usr/lib} \
+	     %{!p:-Y P,/usr/ccs/lib:/usr/lib}}} \
+%{Qy:} %{!Qn:-Qy} \
+%{mlittle: -oformat elf32-powerpcle } %{mlittle-endian: -oformat elf32-powerpcle } \
+%{mbig: -oformat elf32-powerpc } %{mbig-endian: -oformat elf32-powerpc }"
+#endif /* CROSS_COMPILE */
 
 #undef CPP_SPEC
 #define CPP_SPEC "\
