@@ -1,3 +1,21 @@
+2004-12-14  Richard Henderson  <rth@redhat.com>
+
+	* gfortran.h (gfc_expr.function.name): Make const.
+	(gfc_iresolve_init_1, gfc_iresolve_done_1): Remove.
+	(gfc_get_string): Update prototype.
+	* iresolve.c: Include tree.h.
+	(string_node, HASH_SIZE, string_head, hash): Remove.
+	(gfc_get_string): Use vsnprintf, get_identifier.
+	(free_strings, gfc_iresolve_init_1, gfc_iresolve_done_1): Remove.
+	* misc.c (gfc_init_1): Don't call gfc_iresolve_init_1.
+	(gfc_done_1): Don't call gfc_iresolve_done_1.
+	* module.c (mio_allocated_string): Take and return const char *,
+	instead of modifying char**.
+	(mio_expr): Update to match.
+	* resolve.c (pure_function): Constify name argument.
+	(resolve_function): Constify name.
+	* trans-intrinsic.c (gfc_conv_intrinsic_function): Likewise.
+
 2004-12-12  Richard Henderson  <rth@redhat.com>
 
 	* iresolve.c (gfc_resolve_all, gfc_resolve_any, gfc_resolve_count,

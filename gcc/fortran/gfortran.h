@@ -1075,7 +1075,7 @@ typedef struct gfc_expr
     struct
     {
       gfc_actual_arglist *actual;
-      char *name;	/* Points to the ultimate name of the function */
+      const char *name;	/* Points to the ultimate name of the function */
       gfc_intrinsic_sym *isym;
       gfc_symbol *esym;
     }
@@ -1509,9 +1509,7 @@ int gfc_handle_option (size_t, const char *, int);
 bool gfc_post_options (const char **);
 
 /* iresolve.c */
-char * gfc_get_string (const char *, ...) ATTRIBUTE_PRINTF_1;
-void gfc_iresolve_init_1 (void);
-void gfc_iresolve_done_1 (void);
+const char * gfc_get_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 /* error.c */
 
