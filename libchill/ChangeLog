@@ -1,3 +1,8 @@
+1998-09-13  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* configure.in: Use 'if test' not brackets.
+	* configure: Rebuilt.
+	
 Wed Sep  9 21:32:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* Add library exception clause to the copyright notice for all

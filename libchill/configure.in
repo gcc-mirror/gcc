@@ -21,8 +21,8 @@
 
 AC_INIT(chillrt0.c)
 
-if [ "${srcdir}" = "." ] ; then
-  if [ "${with_target_subdir}" != "." ] ; then
+if test "${srcdir}" = "." ; then
+  if test "${with_target_subdir}" != "." ; then
     topsrcdir=${with_multisrctop}../..
   else
     topsrcdir=${with_multisrctop}..

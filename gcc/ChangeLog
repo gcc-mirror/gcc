@@ -1,3 +1,16 @@
+Sun Sep 13 19:17:35 1998  David S. Miller  <davem@pierdol.cobaltmicro.com>
+
+	* configure.in: in sparc9-sol2 config, use 'if test' not
+	brackets.
+	* configure: Rebuilt.
+
+	* config/sparc/sol2-sld-64.h (SPARC_DEFAULT_CMODEL): Change to
+	CM_MEDANY.
+	(CPP_CPU_SPEC): Do not define _LP64, header files do this.
+	(CPP_CPU_DEFAULT_SPEC): Likewise.
+	* config/sparc/sol2.h (INIT_SUBTARGET_OPTABS): Get the names right
+	for arch64 libfuncs.
+	
 Sun Sep 13 09:11:59 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* acconfig.h (NEED_DECLARATION_STRSIGNAL): Provide a stub.
