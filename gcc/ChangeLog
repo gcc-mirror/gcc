@@ -1,3 +1,8 @@
+Mon Nov 10 20:53:11 1997  Gavin Koch  <gavin@cygnus.com>
+
+	* config/mips/mips.h (MASK_DEBUG_H): Set to zero, so this bit
+	is available elsewhere.
+
 Mon Nov 10 16:21:58 1997  Doug Evans  <devans@canuck.cygnus.com>
 
 	* sparc/sparc.md (mov[sdt]f_const_insn): Fix condition to match
