@@ -516,7 +516,7 @@ asm_output_bss (file, decl, name, size, rounded)
   /* Standard thing is just output label for the object.  */
   ASM_OUTPUT_LABEL (file, name);
 #endif /* ASM_DECLARE_OBJECT_NAME */
-  ASM_OUTPUT_SKIP (file, rounded);
+  ASM_OUTPUT_SKIP (file, rounded ? rounded : 1);
 }
 
 #endif

@@ -165,7 +165,7 @@ do {									\
     }									\
   ASM_OUTPUT_ALIGN ((FILE), exact_log2((ALIGN) / BITS_PER_UNIT));	\
   ASM_OUTPUT_LABEL(FILE, NAME);						\
-  ASM_OUTPUT_SKIP((FILE), (SIZE));					\
+  ASM_OUTPUT_SKIP((FILE), (SIZE) ? (SIZE) : 1);				\
 } while (0)
 
 /* This says how to output assembler code to declare an
