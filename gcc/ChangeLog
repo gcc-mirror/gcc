@@ -1,3 +1,8 @@
+2004-03-11  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* config/host-solaris.c (sol_gt_pch_use_address): Add
+	missing terminating marker to comment.
+
 2004-03-11  Richard Sandiford  <rsandifo@redhat.com>
 
 	* config/mips/mips.md: Use move_operand in splitters for 64-bit moves.
