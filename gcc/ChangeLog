@@ -13,6 +13,9 @@ Mon Jul  6 22:50:48 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 Mon Jul  6 22:47:55 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* reload1.c (delete_dead_insn): Don't delete feeding insn
+	if that insn has side effects.
+
 	* flow.c (find_auto_inc): Clear UNCHANGING bit of register that is
 	changed.
 
