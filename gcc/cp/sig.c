@@ -1,5 +1,5 @@
 /* Functions dealing with signatures and signature pointers/references.
-   Copyright (C) 1992, 1995 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
    Contributed by Gerald Baumgartner (gb@cs.purdue.edu)
 
 This file is part of GNU CC.
@@ -144,7 +144,6 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
        struct {
          void * optr;
 	 const s * sptr;
-	 vtbl_type_node * vptr;
        };
 
      A `const' signature pointer/reference is a
@@ -152,7 +151,6 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
        struct {
          const void * optr;
 	 const s * sptr;
-	 vtbl_type_node * vptr;
        };
 
      Similarly, for `volatile' and `const volatile'.
@@ -162,7 +160,7 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
   {
     tree obj_type = build_type_variant (void_type_node, constp, volatilep);
     tree optr_type = build_pointer_type (obj_type);
-    tree optr, sptr, vptr;
+    tree optr, sptr;
 
     optr = build_lang_field_decl (FIELD_DECL,
 				  get_identifier (SIGNATURE_OPTR_NAME),
@@ -171,11 +169,8 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
     DECL_CLASS_CONTEXT (optr) = t;
 
     if (m)
-      {
-	/* We can share `sptr' and `vptr' among type variants.  */
-	sptr = TREE_CHAIN (TYPE_FIELDS (m));
-	vptr = TREE_CHAIN (sptr);
-      }
+      /* We can share the `sptr' field among type variants.  */
+      sptr = TREE_CHAIN (TYPE_FIELDS (m));
     else
       {
 	tree sig_tbl_type = cp_build_type_variant (to_type, 1, 0);
@@ -183,25 +178,16 @@ build_signature_pointer_or_reference_type (to_type, constp, volatilep, refp)
 	sptr = build_lang_field_decl (FIELD_DECL,
 				      get_identifier (SIGNATURE_SPTR_NAME),
 				      build_pointer_type (sig_tbl_type));
-	vptr = build_lang_field_decl (FIELD_DECL,
-				      get_identifier (SIGNATURE_VPTR_NAME),
-				      build_pointer_type (vtbl_type_node));
 	DECL_FIELD_CONTEXT (sptr) = t;
 	DECL_CLASS_CONTEXT (sptr) = t;
-	DECL_FIELD_CONTEXT (vptr) = t;
-	DECL_CLASS_CONTEXT (vptr) = t;
-	TREE_CHAIN (sptr) = vptr;
-	TREE_CHAIN (vptr) = NULL_TREE;
+	TREE_CHAIN (sptr) = NULL_TREE;
       }
 
     TREE_CHAIN (optr) = sptr;
     TYPE_FIELDS (t) = optr;
-    /* To make `build_vfn_ref' work when building a signature method call.  */
-    CLASSTYPE_VFIELD (t) = vptr;
-    DECL_FCONTEXT (CLASSTYPE_VFIELD (t)) = t;
     TYPE_ALIGN (t) = TYPE_ALIGN (optr_type);
 
-    /* A signature pointer/reference isn't a `real' class.  */
+    /* A signature pointer/reference type isn't a `real' class type.  */
     IS_AGGR_TYPE (t) = 0;
   }
 
@@ -573,36 +559,68 @@ build_signature_table_constructor (sig_ty, rhs)
 	}
       else
 	{
-	  tree code, offset, pfn;
+	  tree tag, delta, pfn, offset, index;
+	  tree tag_decl, delta_decl, pfn_decl, offset_decl, index_decl;
 
 	  if (rhs_method == sig_method)
 	    {
-	      code = integer_two_node;
-	      offset = integer_zero_node;
+	      tag = build_unary_op (NEGATE_EXPR, integer_one_node, 0);
+	      delta = integer_zero_node;
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      offset_p = 0;	/* we can't offset the rhs sig table */
 	    }
 	  else if (DECL_VINDEX (rhs_method))
 	    {
-	      code = integer_one_node;
-	      offset = DECL_VINDEX (rhs_method);
+	      tag = integer_one_node;
+	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
+					       rhstype, 1));
 	      pfn = null_pointer_node;
+	      offset = get_vfield_offset (get_binfo (DECL_CONTEXT (rhs_method),
+						     rhstype, 0));
+	      index = DECL_VINDEX (rhs_method);
 	    }
 	  else
 	    {
-	      code = integer_zero_node;
-	      offset = integer_zero_node;
+	      tag = integer_zero_node;
+	      delta = BINFO_OFFSET (get_binfo (DECL_CLASS_CONTEXT (rhs_method),
+					       rhstype, 1));
 	      pfn = build_unary_op (ADDR_EXPR, rhs_method, 0);
 	      TREE_TYPE (pfn) = ptr_type_node;
 	      TREE_ADDRESSABLE (rhs_method) = 1;
 	    }
 
-	  tbl_entry = tree_cons (NULL_TREE, code,
-				 tree_cons (NULL_TREE, offset,
-					    build_tree_list (NULL_TREE, pfn)));
-	  tbl_entry = build_nt (CONSTRUCTOR, NULL_TREE, tbl_entry);
-	  TREE_HAS_CONSTRUCTOR (tbl_entry) = 1;
+	  /* Since digest_init doesn't handle initializing selected fields
+	     of a struct (i.e., anonymous union), we build the constructor
+	     by hand, without calling digest_init.  */
+	  tag_decl = TYPE_FIELDS (sigtable_entry_type);
+	  delta_decl = TREE_CHAIN (tag_decl);
+	  pfn_decl = TREE_CHAIN (delta_decl);
+	  offset_decl = TREE_CHAIN (pfn_decl);
+	  index_decl = TREE_CHAIN (offset_decl);
+	  
+	  tag = convert (TREE_TYPE (tag_decl), tag);
+	  delta = convert (TREE_TYPE (delta_decl), delta);
+
+	  if (DECL_VINDEX (rhs_method))
+	    {
+	      offset = convert (TREE_TYPE (offset_decl), offset);
+	      index = convert (TREE_TYPE (index_decl), index);
+
+	      tbl_entry = tree_cons (offset_decl, offset,
+				     build_tree_list (index_decl, index));
+	    }
+	  else
+	    {
+	      pfn = convert (TREE_TYPE (pfn_decl), pfn);
+
+	      tbl_entry = build_tree_list (pfn_decl, pfn);
+	    }
+	  tbl_entry = tree_cons (tag_decl, tag,
+				 tree_cons (delta_decl, delta, tbl_entry));
+	  tbl_entry = build (CONSTRUCTOR, sigtable_entry_type,
+			     NULL_TREE, tbl_entry);
+
 	  TREE_CONSTANT (tbl_entry) = 1;
 	}
 
@@ -744,7 +762,7 @@ build_signature_pointer_constructor (lhs, rhs)
   tree lhstype = initp ? lhs : TREE_TYPE (lhs);
   tree rhstype = TREE_TYPE (rhs);
   tree sig_ty  = SIGNATURE_TYPE (lhstype);
-  tree sig_tbl, sptr_expr, optr_expr, vptr_expr;
+  tree sig_tbl, sptr_expr, optr_expr;
   tree result;
 
   if (! ((TREE_CODE (rhstype) == POINTER_TYPE
@@ -781,7 +799,6 @@ build_signature_pointer_constructor (lhs, rhs)
 	  /* LHS and RHS are signature pointers/refs of the same signature.  */
 	  optr_expr = build_optr_ref (rhs);
 	  sptr_expr = build_sptr_ref (rhs);
-	  vptr_expr = build_vptr_ref (rhs);
 	}
       else
 	{
@@ -805,19 +822,10 @@ build_signature_pointer_constructor (lhs, rhs)
 	  else
 	    sptr_expr = build_unary_op (ADDR_EXPR, sig_tbl, 0);
 	  TREE_TYPE (sptr_expr) = build_pointer_type (sig_ty);
-	  vptr_expr = build_vptr_ref (rhs);
 	}
     }
   else
     {
-      tree rhs_vptr;
-
-      if (TYPE_USES_COMPLEX_INHERITANCE (TREE_TYPE (rhstype)))
-	{
-	  sorry ("class with multiple inheritance as implementation of signature");
-	  return error_mark_node;
-	}
-
       sig_tbl = build_sigtable (sig_ty, TREE_TYPE (rhstype), rhs);
       if (sig_tbl == error_mark_node)
 	return error_mark_node;
@@ -832,22 +840,12 @@ build_signature_pointer_constructor (lhs, rhs)
 	}
       else
 	sptr_expr = build_unary_op (ADDR_EXPR, sig_tbl, 0);
-      if (CLASSTYPE_VFIELD (TREE_TYPE (rhstype)))
-	{
-	  rhs_vptr = DECL_NAME (CLASSTYPE_VFIELD (TREE_TYPE (rhstype)));
-	  vptr_expr = build_component_ref (build_indirect_ref (rhs, 0),
-					   rhs_vptr, NULL_TREE, 0);
-	}
-      else
-	vptr_expr = copy_node (null_pointer_node);
-      TREE_TYPE (vptr_expr) = build_pointer_type (vtbl_type_node);
     }
 
   if (initp)
     {
       result = tree_cons (NULL_TREE, optr_expr,
-			  tree_cons (NULL_TREE, sptr_expr,
-				     build_tree_list (NULL_TREE, vptr_expr)));
+			  build_tree_list (NULL_TREE, sptr_expr));
       result = build_nt (CONSTRUCTOR, NULL_TREE, result);
       TREE_HAS_CONSTRUCTOR (result) = 1;
       result = digest_init (lhstype, result, 0);
@@ -861,14 +859,10 @@ build_signature_pointer_constructor (lhs, rhs)
 				     optr_expr);
       sptr_expr = build_modify_expr (build_sptr_ref (lhs), NOP_EXPR,
 				     sptr_expr);
-      vptr_expr = build_modify_expr (build_vptr_ref (lhs), NOP_EXPR,
-				     vptr_expr);
 
       result = tree_cons (NULL_TREE, optr_expr,
 			  tree_cons (NULL_TREE, sptr_expr,
-				     tree_cons (NULL_TREE, vptr_expr,
-						build_tree_list (NULL_TREE,
-								 lhs))));
+				     build_tree_list (NULL_TREE, lhs)));
       result = build_compound_expr (result);
     }
 
@@ -911,31 +905,39 @@ build_signature_method_call (basetype, instance, function, parms)
      tree basetype, instance, function, parms;
 {
   tree saved_instance = save_this (instance);	/* Create temp for `this'.  */
+  tree object_ptr = build_optr_ref (saved_instance);
+  tree new_object_ptr, new_parms;
   tree signature_tbl_ptr = build_sptr_ref (saved_instance);
   tree sig_field_name = DECL_NAME (DECL_MEMFUNC_POINTER_TO (function));
   tree basetype_path = TYPE_BINFO (basetype);
   tree tbl_entry = build_component_ref (build1 (INDIRECT_REF, basetype,
 						signature_tbl_ptr),
 					sig_field_name, basetype_path, 1);
-  tree code, offset, pfn, vfn;
+  tree tag, delta, pfn, offset, index, vfn;
   tree deflt_call = NULL_TREE, direct_call, virtual_call, result;
 
-  code = build_component_ref (tbl_entry, get_identifier (SIGTABLE_CODE_NAME),
-			     NULL_TREE, 1);
-  offset = build_component_ref (tbl_entry,
-				get_identifier (SIGTABLE_OFFSET_NAME),
-			     NULL_TREE, 1);
-  pfn = build_component_ref (tbl_entry, get_identifier (SIGTABLE_PFN_NAME),
-			     NULL_TREE, 1);
+  tbl_entry = save_expr (tbl_entry);
+  tag = build_component_ref (tbl_entry, tag_identifier, NULL_TREE, 1);
+  delta = build_component_ref (tbl_entry, delta_identifier, NULL_TREE, 1);
+  pfn = build_component_ref (tbl_entry, pfn_identifier, NULL_TREE, 1);
+  offset = build_component_ref (tbl_entry, offset_identifier, NULL_TREE, 1);
+  index = build_component_ref (tbl_entry, index_identifier, NULL_TREE, 1);
   TREE_TYPE (pfn) = build_pointer_type (TREE_TYPE (function)); 
 
   if (IS_DEFAULT_IMPLEMENTATION (function))
     {
       pfn = save_expr (pfn);
-      deflt_call = build_function_call (pfn,
-					tree_cons (NULL_TREE, saved_instance,
-						   TREE_CHAIN (parms)));
+      deflt_call = build_function_call (pfn, parms);
     }
+
+  new_object_ptr = build (PLUS_EXPR, TYPE_POINTER_TO (basetype),
+			  convert (ptrdiff_type_node, object_ptr),
+			  convert (ptrdiff_type_node, delta));
+
+  parms = tree_cons (NULL_TREE,
+		     convert (TYPE_POINTER_TO (basetype), object_ptr),
+		     TREE_CHAIN (parms));
+  new_parms = tree_cons (NULL_TREE, new_object_ptr, TREE_CHAIN (parms));
 
   {
     /* Cast the signature method to have `this' of a normal pointer type.  */
@@ -946,11 +948,31 @@ build_signature_method_call (basetype, instance, function, parms)
 			  TYPE_READONLY (old_this),
 			  TYPE_VOLATILE (old_this));
 
-    direct_call = build_function_call (pfn, parms);
+    direct_call = build_function_call (pfn, new_parms);
 
-    vfn = build_vfn_ref (&TREE_VALUE (parms), saved_instance, offset);
-    TREE_TYPE (vfn) = build_pointer_type (TREE_TYPE (function));
-    virtual_call = build_function_call (vfn, parms);
+    {
+      tree vfld, vtbl, aref;
+
+      vfld = build (PLUS_EXPR,
+		    build_pointer_type (build_pointer_type (vtbl_type_node)),
+		    convert (ptrdiff_type_node, object_ptr),
+		    convert (ptrdiff_type_node, offset));
+      vtbl = build_indirect_ref (build_indirect_ref (vfld, NULL_PTR),
+				 NULL_PTR);
+      aref = build_array_ref (vtbl, index);
+
+      if (flag_vtable_thunks)
+	vfn = aref;
+      else
+	vfn = build_component_ref (aref, pfn_identifier, 0, 0);
+
+      TREE_TYPE (vfn) = build_pointer_type (TREE_TYPE (function));
+
+      if (flag_vtable_thunks)
+	virtual_call = build_function_call (vfn, parms);
+      else
+	virtual_call = build_function_call (vfn, new_parms);
+    }
 
     /* Undo the cast, make `this' a signature pointer again.  */
     TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (TREE_TYPE (pfn)))) = old_this;
@@ -970,16 +992,16 @@ build_signature_method_call (basetype, instance, function, parms)
 
   if (IS_DEFAULT_IMPLEMENTATION (function))
     {
-      tree test = build_binary_op_nodefault (EQ_EXPR, code, integer_one_node,
-					     EQ_EXPR);
-      result = build_conditional_expr (code,
+      tree test = build_binary_op_nodefault (LT_EXPR, tag, integer_zero_node,
+					     LT_EXPR);
+      result = build_conditional_expr (tag,
 				       build_conditional_expr (test,
-							       virtual_call,
-							       deflt_call),
+							       deflt_call,
+							       virtual_call),
 				       direct_call);
     }
   else
-    result = build_conditional_expr (code, virtual_call, direct_call);
+    result = build_conditional_expr (tag, virtual_call, direct_call);
 
   /* If we created a temporary variable for `this', initialize it first.  */
   if (instance != saved_instance)
@@ -1010,18 +1032,6 @@ build_sptr_ref (instance)
      tree instance;
 {
   tree field = get_identifier (SIGNATURE_SPTR_NAME);
-
-  return build_component_ref (instance, field, NULL_TREE, 1);
-}
-
-/* Create a COMPONENT_REF expression for referencing the VPTR field
-   of a signature pointer or reference.  */
-
-tree
-build_vptr_ref (instance)
-     tree instance;
-{
-  tree field = get_identifier (SIGNATURE_VPTR_NAME);
 
   return build_component_ref (instance, field, NULL_TREE, 1);
 }
