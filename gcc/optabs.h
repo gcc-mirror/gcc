@@ -477,9 +477,6 @@ extern optab optab_for_tree_code (enum tree_code, tree);
 extern int can_compare_p (enum rtx_code, enum machine_mode,
 			  enum can_compare_purpose);
 
-extern rtx prepare_operand (int, rtx, int, enum machine_mode,
-			    enum machine_mode, int);
-
 /* Return the INSN_CODE to use for an extend operation.  */
 extern enum insn_code can_extend_p (enum machine_mode, enum machine_mode, int);
 

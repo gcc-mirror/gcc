@@ -1,5 +1,10 @@
 2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* optabs.c (prepare_operand): Make it static.
+	* optabs.h: Remove the corresponding prototype.
+
+2004-11-09  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* reload1.c (reloads_conflict, gen_reload): Make them static.
 	* reload.h: Remove the corresponding prototypes.
 
