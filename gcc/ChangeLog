@@ -1,3 +1,8 @@
+2004-11-27  Richard Henderson  <rth@redhat.com>
+
+	* config/ia64/ia64.md: Move all define_predicate's ...
+	* config/ia64/predicates.md: ... here.  New file.
+
 2004-11-27  Per Bothner  <per@bothner.com>
 
 	PR bootstrap/18142
