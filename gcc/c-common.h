@@ -116,7 +116,10 @@ enum c_tree_index
     CTI_SIGNED_WCHAR_TYPE,
     CTI_UNSIGNED_WCHAR_TYPE,
     CTI_WINT_TYPE,
-    CTI_C_SIZE_TYPE, /* For format checking only.  */
+    CTI_C_SIZE_TYPE, /* The type used for the size_t typedef and the
+			result type of sizeof (an ordinary type without
+			TYPE_IS_SIZETYPE set, unlike the internal
+			sizetype).  */
     CTI_SIGNED_SIZE_TYPE, /* For format checking only.  */
     CTI_UNSIGNED_PTRDIFF_TYPE, /* For format checking only.  */
     CTI_INTMAX_TYPE,
