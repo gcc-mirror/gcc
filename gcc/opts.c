@@ -1182,6 +1182,14 @@ common_handle_option (size_t scode, const char *arg,
       profile_arc_flag = value;
       break;
 
+    case OPT_fprofile_values:
+      flag_profile_values = value;
+      break;
+
+    case OPT_fvpt:
+      flag_value_profile_transformations = value;
+      break;
+
     case OPT_frandom_seed:
       /* The real switch is -fno-random-seed.  */
       if (value)

@@ -1,3 +1,32 @@
+2003-10-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* Makefile.in (toplev.o): Add value-prof.h dependency.
+	(value-prof.o): Add REGS_H dependency.
+	* common.opt (fprofile-values, fvpt): New.
+	* flags.h (flag_value_profile_transformations): Declare.
+	* opts.c (common_handle_option): Handle -fprofile_values and
+	-fvpt.
+	* profile.c (branch_prob): Don't remove death notes here.
+	* timevar.def (TV_VPT): New.
+	* value-prof.c: Include regs.h.
+	(insn_divmod_values_to_profile, gen_divmod_fixed_value, gen_mod_pow2,
+	gen_mod_subtract, divmod_fixed_value_transform,mod_pow2_value_transform,
+	mod_subtract_transform, value_profile_transformations): New.
+	(insn_values_to_profile): Call insn_divmod_values_to_profile.
+	(find_values_to_profile): Add dumps.
+	* value-prof.h (value_profile_transformations): Declare.
+	* toplev.c: Include value-prof.h.
+	(rest_of_handle_value_profile_transformations): New.
+	(enum dump_file_index): Add DFI_vpt.
+	(dump_file): Add vpt dump.
+	(flag_value_profile_transformations): New.
+	(lang_independent_options): Add flag_profile_values and
+	flag_value_profile_transformations.
+	(rest_of_compilation): Call
+	rest_of_handle_value_profile_transformations.
+	(process_options): Let -fvpt imply -fprofile-values.
+	* doc/invoke.texi (-fvpt): Document.
+
 2003-10-19  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (print_reg): Do not abort on certain registers.

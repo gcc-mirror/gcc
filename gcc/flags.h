@@ -680,6 +680,9 @@ extern int flag_gcse_sm;
 
 extern int flag_gcse_las;
 
+/* Nonzero if value histograms should be used to optimize code.  */
+extern int flag_value_profile_transformations;
+
 /* Perform branch target register optimization before prologue / epilogue
    threading.  */
 
