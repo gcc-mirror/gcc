@@ -1,3 +1,10 @@
+2004-07-16  Andris Pavenis  <pavenis@latnet.lv>
+
+	PR preprocessor/16366
+	* internal.h (struct cpp_reader): New field dir_hash.
+	* files.c (make_cpp_dir): Use dir_hash, not file_hash.
+	(_cpp_init_files, _cpp_cleanup_files): Update for new field.
+
 2004-07-15  James E Wilson  <wilson@specifixinc.com>
 
 	Backport from mainline:
@@ -7,9 +14,9 @@
 
 2004-07-15  Aldy Hernandez  <aldyh@redhat.com>
 
-        * config/rs6000/rs6000.md ("*cceq_ior_compare"): Allow
-        unconditionally.
-        * config/rs6000/spe.md ("e500_cceq_ior_compare"): Remove.
+	* config/rs6000/rs6000.md ("*cceq_ior_compare"): Allow
+	unconditionally.
+	* config/rs6000/spe.md ("e500_cceq_ior_compare"): Remove.
 
 2004-07-14  James E Wilson  <wilson@specifixinc.com>
 
@@ -42,14 +49,14 @@
 	side-effect of having a length greater or equal to 3.
 
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Lloyd Parkes  <lloyd@must-have-coffee.gen.nz>
+	    Lloyd Parkes  <lloyd@must-have-coffee.gen.nz>
 
 	PR target/15186
 	* config/sparc/sol2-bi.h (LINK_ARCH64_SPEC_BASE): Pass
 	/usr/ucblib/sparcv9 as -R path when -compat-bsd is specified.
 
 2004-07-13  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Martin Sebor  <sebor@roguewave.com>
+	    Martin Sebor  <sebor@roguewave.com>
 
 	PR target/12602
 	* doc/invoke.texi (SPARC options): Document -threads
@@ -167,13 +174,13 @@
 	PR target/16143
 	* config/ia64/ia64.c (ia64_dfa_new_cycle): Reset DFA state for asm
 	insn.
-	
+
 2004-07-06  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	PR target/1679.
 	* config/m32r/m32r.c (m32r_function_symbol): New function:
 	Generate a symbol name RTX with the correct m32r specific flags
-	set. 
+	set.
 	(block_move_call): Use new function to generate correct symbol.
 	* config/m32r/m32r-protos.h: Add prototype for new funcion.
 	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Use the new
@@ -224,11 +231,11 @@
 	Backport from mainline:
 	2004-06-30  Zack Weinberg  <zack@codesourcery.com>
 	* combine.c (distribute_notes): Don't look at global_regs for
-        pseudos.
+	pseudos.
 
 	2004-06-24  Eric Christopher  <echristo@redhat.com>
 	* combine.c (distribute_notes): Don't delete sets to
-        global register variables.
+	global register variables.
 
 2004-07-04  Gerald Pfeifer  <gerald@pfeifer.com>
 

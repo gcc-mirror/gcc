@@ -795,7 +795,7 @@ make_cpp_dir (cpp_reader *pfile, const char *dir_name, int sysp)
   cpp_dir *dir;
 
   hash_slot = (struct file_hash_entry **)
-    htab_find_slot_with_hash (pfile->file_hash, dir_name,
+    htab_find_slot_with_hash (pfile->dir_hash, dir_name,
 			      htab_hash_string (dir_name),
 			      INSERT);
 
@@ -894,6 +894,8 @@ _cpp_init_files (cpp_reader *pfile)
 {
   pfile->file_hash = htab_create_alloc (127, file_hash_hash, file_hash_eq,
 					NULL, xcalloc, free);
+  pfile->dir_hash = htab_create_alloc (127, file_hash_hash, file_hash_eq,
+					NULL, xcalloc, free);
   allocate_file_hash_entries (pfile);
 }
 
@@ -902,6 +904,7 @@ void
 _cpp_cleanup_files (cpp_reader *pfile)
 {
   htab_delete (pfile->file_hash);
+  htab_delete (pfile->dir_hash);
 }
 
 /* Enter a file name in the hash for the sake of cpp_included.  */
