@@ -257,7 +257,7 @@ extern int target_flags;
     { "noshort", - MASK_SHORT,						\
       N_("Consider type `int' to be 32 bits wide") },			\
     { "68881", MASK_68881, "" },					\
-    { "soft-float", - (MASK_68040_ONLY|MASK_68881),			\
+    { "soft-float", - MASK_68881,					\
       N_("Generate code with library calls for floating point") },	\
     { "68020-40", -(MASK_ALL_CF_BITS|MASK_68060|MASK_68040_ONLY),	\
       N_("Generate code for a 68040, without any new instructions") },	\
@@ -355,7 +355,7 @@ extern int target_flags;
 /* target machine storage layout */
 
 #define LONG_DOUBLE_TYPE_SIZE 96
-#define TARGET_FLT_EVAL_METHOD (TARGET_68040_ONLY ? 0 : 2)
+#define TARGET_FLT_EVAL_METHOD ((TARGET_68040_ONLY || ! TARGET_68881) ? 0 : 2)
 
 #define BITS_BIG_ENDIAN 1
 #define BYTES_BIG_ENDIAN 1
