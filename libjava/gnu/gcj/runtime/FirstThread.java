@@ -1,6 +1,6 @@
 // FirstThread.java - Implementation of very first thread.
 
-/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -33,12 +33,12 @@ final class FirstThread extends Thread
     this.args = args;
     this.is_jar = is_jar;
   }
-  
+
   public void run()
   {
     if (is_jar)
       klass_name = getMain(klass_name);
-    
+
     if (klass == null)
       {
         try
@@ -50,7 +50,7 @@ final class FirstThread extends Thread
 	    throw new NoClassDefFoundError(klass_name);
 	  }
       }
-    
+
     call_main();
   }
 

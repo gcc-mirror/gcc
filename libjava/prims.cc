@@ -53,7 +53,6 @@ details.  */
 #include <java/lang/String.h>
 #include <java/lang/Thread.h>
 #include <java/lang/ThreadGroup.h>
-#include <gnu/gcj/runtime/FirstThread.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/ArithmeticException.h>
 #include <java/lang/ClassFormatError.h>
@@ -64,7 +63,10 @@ details.  */
 #include <java/lang/reflect/Modifier.h>
 #include <java/io/PrintStream.h>
 #include <java/lang/UnsatisfiedLinkError.h>
+#include <java/lang/VirtualMachineError.h>
 #include <gnu/gcj/runtime/VMClassLoader.h>
+#include <gnu/gcj/runtime/FinalizerThread.h>
+#include <gnu/gcj/runtime/FirstThread.h>
 
 #ifdef USE_LTDL
 #include <ltdl.h>
@@ -893,6 +895,21 @@ _Jv_CreateJavaVM (void* /*vm_args*/)
 #endif
 
   _Jv_JNI_Init ();
+
+  _Jv_GCInitializeFinalizers (&::gnu::gcj::runtime::FinalizerThread::finalizerReady);
+
+  // Start the GC finalizer thread.  A VirtualMachineError can be
+  // thrown by the runtime if, say, threads aren't available.  In this
+  // case finalizers simply won't run.
+  try
+    {
+      using namespace gnu::gcj::runtime;
+      FinalizerThread *ft = new FinalizerThread ();
+      ft->start ();
+    }
+  catch (java::lang::VirtualMachineError *ignore)
+    {
+    }
 
   return 0;
 }
