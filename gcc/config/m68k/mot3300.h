@@ -192,14 +192,12 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #undef ASM_APP_OFF
 #define ASM_APP_OFF ""
 
-/* We like aligned sources, and maybe our as will like them.  */
-
 #undef TEXT_SECTION_ASM_OP
-#define TEXT_SECTION_ASM_OP "\ttext"
+#define TEXT_SECTION_ASM_OP "text"
 #undef DATA_SECTION_ASM_OP
-#define DATA_SECTION_ASM_OP "\tdata"
+#define DATA_SECTION_ASM_OP "data"
 #undef ASCII_DATA_ASM_OP
-#define	ASCII_DATA_ASM_OP "\tbyte"
+#define	ASCII_DATA_ASM_OP "byte"
 
 /* The file command should always begin the output.  */
 
@@ -391,7 +389,7 @@ do { union { float f; long l;} tem;			\
     if (++sp < (LEN))						\
       {	if (lp > 60)						\
 	  { lp = 0;						\
-	    fprintf ((FILE), "\n%s ", ASCII_DATA_ASM_OP); }	\
+	    fprintf ((FILE), "\n\t%s ", ASCII_DATA_ASM_OP); }	\
 	else							\
 	  putc (',', (FILE));					\
 	goto loop; }						\
@@ -647,6 +645,11 @@ do { union { float f; long l;} tem;			\
       while (*(PTR) != ' ')				\
 	{ putc (*(PTR), (FILE)); ++(PTR); }		\
       fprintf ((FILE), ".w"); }				\
+  else if ((PTR)[0] == 's')				\
+    {							\
+      if (!strncmp ((PTR), "swap", 4))			\
+	{ fprintf ((FILE), "swap.w"); (PTR) += 4; }	\
+    }							\
   else if ((PTR)[0] == 'f')				\
     {							\
       if (!strncmp ((PTR), "fmove", 5))			\
@@ -672,20 +675,20 @@ do { union { float f; long l;} tem;			\
   else if ((PTR)[0] == 'm' && (PTR)[1] == 'o'		\
 	   && (PTR)[2] == 'v' && (PTR)[3] == 'e')	\
     { fprintf ((FILE), "mov"); (PTR) += 4;		\
-       if ((PTR)[0] == 'q' || (PTR)[0] == 'a' ||	\
-	   (PTR)[0] == 'c') (PTR)++; }			\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'a'		\
+	   || (PTR)[0] == 'c') (PTR)++; }		\
 /* SUB, SUBQ, SUBA, SUBI ==> SUB */			\
   else if ((PTR)[0] == 's' && (PTR)[1] == 'u' 		\
 	   && (PTR)[2] == 'b')				\
     { fprintf ((FILE), "sub"); (PTR) += 3;		\
-       if ((PTR)[0] == 'q' || (PTR)[0] == 'i' || 	\
-	   (PTR)[0] == 'a') (PTR)++; }			\
+       if ((PTR)[0] == 'q' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'a') (PTR)++; }		\
 /* CMP, CMPA, CMPI, CMPM ==> CMP	*/		\
   else if ((PTR)[0] == 'c' && (PTR)[1] == 'm'		\
 	   && (PTR)[2] == 'p')				\
     { fprintf ((FILE), "cmp"); (PTR) += 3;		\
-       if ((PTR)[0] == 'a' || (PTR)[0] == 'i' || 	\
-	   (PTR)[0] == 'm') (PTR)++; }			\
+       if ((PTR)[0] == 'a' || (PTR)[0] == 'i'	 	\
+	   || (PTR)[0] == 'm') (PTR)++; }		\
 /* JMP to switch label */				\
   else if (!strncmp((PTR), (SWITCH_JUMP_MATCH), sizeof(SWITCH_JUMP_MATCH) - 1)) \
     { while (*(PTR)++ != '(');				\
