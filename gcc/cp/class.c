@@ -2662,7 +2662,8 @@ build_vtbl_initializer (binfo, t)
             decl = integer_zero_node;
           decl = build1 (NOP_EXPR, vfunc_ptr_type_node, decl);
           TREE_CONSTANT (decl) = 1;
-          decl = build_vtable_entry (integer_zero_node, decl);
+          decl = build_vtable_entry (integer_zero_node, integer_zero_node,
+                                     decl);
           inits = tree_cons (NULL_TREE, decl, inits);
           
           v = TREE_CHAIN (v);
