@@ -10,6 +10,7 @@
 	(mmix_asm_output_define_label_difference_symbol): Remove.
 	* config/mmix/mmix.h
 	(ASM_OUTPUT_DEFINE_LABEL_DIFFERENCE_SYMBOL): Remove.
+	* doc/tm.texi: Remove documentation.
 
 Tue Jul 23 21:49:24 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
