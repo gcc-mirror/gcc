@@ -87,7 +87,12 @@ inline bool operator>=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y) {
 #endif /* __STL_FUNCTION_TMPL_PARTIAL_ORDER */
 
 template <class _T1, class _T2>
+#ifdef _GLIBCPP_RESOLVE_LIB_DEFECTS
+//181.  make_pair() unintended behavior
+inline pair<_T1, _T2> make_pair(const _T1 __x, const _T2 __y)
+#else
 inline pair<_T1, _T2> make_pair(const _T1& __x, const _T2& __y)
+#endif
 {
   return pair<_T1, _T2>(__x, __y);
 }

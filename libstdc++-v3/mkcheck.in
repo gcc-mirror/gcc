@@ -107,6 +107,9 @@ LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-mkchecklog.txt"
 # the names of the specific test files to be run
 TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheckfiles.txt"
 
+# the heap size limit for testsuite binaries; start with a 2MB limit as per
+# http://sources.redhat.com/ml/libstdc++/2000-10/msg00029.html
+MAX_MEM_USAGE=3072
 
 #
 # 2: clean, make files, append general test info
@@ -233,7 +236,7 @@ test_file()
 
         # Actually run the executable and time it . . .
         TIMEFORMAT='timemark %R'
-        E_TIME_TEXT="$(exec 2>&1; time $EXENAME)"
+        E_TIME_TEXT="$(exec 2>&1; ulimit -d $MAX_MEM_USAGE; time $EXENAME)"
 	E_ABNORMAL_TERMINATION=$?
         E_TIME="$(echo $E_TIME_TEXT | awk '{print $2}')"
         # joining those two commands does not work due to quoting problems:
@@ -364,4 +367,6 @@ if [ $TEST_TIME_START -lt $TEST_TIME_END ]; then
 fi
 
 exit 0
+
+
 
