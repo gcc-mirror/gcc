@@ -1,5 +1,10 @@
 2004-08-21  Paolo Carlini  <pcarlini@suse.de>
 
+	* include/bits/char_traits.h (struct _Char_traits_match): Remove,
+	unused.
+
+2004-08-21  Paolo Carlini  <pcarlini@suse.de>
+
 	* testsuite/22_locale/money_put/put/wchar_t/1.cc: Use proper
 	wchar_t	type for the fill argument; minor formatting tweaks.
 	* testsuite/22_locale/money_put/put/wchar_t/12971.cc: Likewise.

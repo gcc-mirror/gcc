@@ -1,6 +1,6 @@
 // Character Traits for use by standard string and iostream -*- C++ -*-
 
-// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
+// Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
 // Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -362,15 +362,6 @@ namespace std
   };
 #endif //_GLIBCXX_USE_WCHAR_T
 
-  template<typename _CharT, typename _Traits>
-    struct _Char_traits_match
-    {
-      _CharT _M_c;
-      _Char_traits_match(_CharT const& __c) : _M_c(__c) { }
-
-      bool
-      operator()(_CharT const& __a) { return _Traits::eq(_M_c, __a); }
-    };
 } // namespace std
 
 #endif
