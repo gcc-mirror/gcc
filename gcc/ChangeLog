@@ -1,3 +1,8 @@
+2002-09-04  Eric Botcazou  <ebotcazou@multimania.com>
+
+	PR c/7102
+	* optabs.c (expand_binop): Convert CONST_INTs in all cases.
+
 2002-09-04  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/t-netbsd64: Disable multilib for now.

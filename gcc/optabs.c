@@ -752,23 +752,18 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	}
 
       /* In case the insn wants input operands in modes different from
-	 the result, convert the operands.  It would seem that we
-	 don't need to convert CONST_INTs, but we do, so that they're
-	 a properly sign-extended for their modes; we choose the
-	 widest mode between mode and mode[01], so that, in a widening
-	 operation, we call convert_modes with different FROM and TO
-	 modes, which ensures the value is sign-extended.  Shift
-	 operations are an exception, because the second operand needs
-	 not be extended to the mode of the result.  */
+	 those of the actual operands, convert the operands.  It would
+	 seem that we don't need to convert CONST_INTs, but we do, so
+	 that they're properly zero-extended or sign-extended for their
+	 modes; shift operations are an exception, because the second
+	 operand needs not be extended to the mode of the result.  */
 
       if (GET_MODE (op0) != mode0
 	  && mode0 != VOIDmode)
 	xop0 = convert_modes (mode0,
 			      GET_MODE (op0) != VOIDmode
 			      ? GET_MODE (op0)
-			      : GET_MODE_SIZE (mode) > GET_MODE_SIZE (mode0)
-			      ? mode
-			      : mode0,
+			      : mode,
 			      xop0, unsignedp);
 
       if (GET_MODE (xop1) != mode1
@@ -776,8 +771,7 @@ expand_binop (mode, binoptab, op0, op1, target, unsignedp, methods)
 	xop1 = convert_modes (mode1,
 			      GET_MODE (op1) != VOIDmode
 			      ? GET_MODE (op1)
-			      : (GET_MODE_SIZE (mode) > GET_MODE_SIZE (mode1)
-				 && ! shift_op)
+			      : ! shift_op
 			      ? mode
 			      : mode1,
 			      xop1, unsignedp);
