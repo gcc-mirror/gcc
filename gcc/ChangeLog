@@ -1,3 +1,8 @@
+2000-01-21  Jim Wilson  <wilson@cygnus.com>
+
+	* fixinc/inclhack.tpl: Test for directory before trying to cd into it.
+	* fixinc/fixincl.sh, fixinc/inclhack.sh: Regenerate.
+
 2000-01-21  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* cpphash.c (change_newlines): Delete function.
