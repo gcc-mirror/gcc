@@ -3615,7 +3615,7 @@ output_cbranch (operands, nullify, length, negated, insn)
 
      In such cases it is safe to emit nothing.  */
 
-  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
     return "";
 
   /* If this is a long branch with its delay slot unfilled, set `nullify'
@@ -3731,7 +3731,7 @@ output_bb (operands, nullify, length, negated, insn, which)
      is only used when optimizing; jump optimization should eliminate the
      jump.  But be prepared just in case.  */
 
-  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
     return "";
 
   /* If this is a long branch with its delay slot unfilled, set `nullify'
@@ -3862,7 +3862,7 @@ output_dbra (operands, insn, which_alternative)
   /* A conditional branch to the following instruction (eg the delay slot) is
      asking for a disaster.  Be prepared!  */
 
-  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
     {
       if (which_alternative == 0)
 	return "ldo %1(%0),%0";
@@ -3968,7 +3968,7 @@ output_movb (operands, insn, which_alternative, reverse_comparison)
   /* A conditional branch to the following instruction (eg the delay slot) is
      asking for a disaster.  Be prepared!  */
 
-  if (JUMP_LABEL (insn) == next_nonnote_insn (insn))
+  if (next_active_insn (JUMP_LABEL (insn)) == next_active_insn (insn))
     {
       if (which_alternative == 0)
 	return "copy %1,%0";
