@@ -1,3 +1,7 @@
+2002-03-23  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
+
+	* error.c (dump_type): Be careful about implicit typenames.
+
 2002-03-21  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
 	PR C++/3656
