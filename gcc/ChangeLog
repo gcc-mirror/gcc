@@ -1,3 +1,17 @@
+2004-07-09 Jan Beulich <jbeulich@novell.com>
+
+	* builtin-types.def (BT_UINT): Rename from BT_UNSIGNED.
+	(BT_FN_UINT): Rename from BT_FN_UNSIGNED.
+	(BT_FN_PTR_UINT): Rename from BT_FN_PTR_UNSIGNED.
+	(BT_ULONG, BT_ULONGLONG, BT_UINTMAX, BT_FN_INT_UINT, BT_FN_INT_ULONG,
+	BT_FN_INT_ULONGLONG, BT_FN_INT_INTMAX, BT_FN_INT_UINTMAX): New.
+	* builtins.def (BUILTIN_CLZxxx, BUILTIN_CTXxxx, BUILTIN_PARITYxxx,
+	BUILTIN_POPCOUNTxxx): Arguments are unsigned.
+	(BUILTIN_xxxIMAX): New.
+	* builtins.c (expand_builtin): Handle BUILT_IN_FFSIMAX,
+	BUILT_IN_CLZIMAX, BUILT_IN_CTZIMAX, BUILT_IN_POPCOUNIMAX, and
+	BUILT_IN_PARITYIMAX.
+
 2004-07-09  David S. Miller  <davem@nuts.davemloft.net>
 
 	* config/sparc/sparc.h (processor_costs): Define.

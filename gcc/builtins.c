@@ -5973,6 +5973,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_FFS:
     case BUILT_IN_FFSL:
     case BUILT_IN_FFSLL:
+    case BUILT_IN_FFSIMAX:
       target = expand_builtin_unop (target_mode, arglist, target,
 				    subtarget, ffs_optab);
       if (target)
@@ -5982,6 +5983,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_CLZ:
     case BUILT_IN_CLZL:
     case BUILT_IN_CLZLL:
+    case BUILT_IN_CLZIMAX:
       target = expand_builtin_unop (target_mode, arglist, target,
 				    subtarget, clz_optab);
       if (target)
@@ -5991,6 +5993,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_CTZ:
     case BUILT_IN_CTZL:
     case BUILT_IN_CTZLL:
+    case BUILT_IN_CTZIMAX:
       target = expand_builtin_unop (target_mode, arglist, target,
 				    subtarget, ctz_optab);
       if (target)
@@ -6000,6 +6003,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_POPCOUNT:
     case BUILT_IN_POPCOUNTL:
     case BUILT_IN_POPCOUNTLL:
+    case BUILT_IN_POPCOUNTIMAX:
       target = expand_builtin_unop (target_mode, arglist, target,
 				    subtarget, popcount_optab);
       if (target)
@@ -6009,6 +6013,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
     case BUILT_IN_PARITY:
     case BUILT_IN_PARITYL:
     case BUILT_IN_PARITYLL:
+    case BUILT_IN_PARITYIMAX:
       target = expand_builtin_unop (target_mode, arglist, target,
 				    subtarget, parity_optab);
       if (target)
