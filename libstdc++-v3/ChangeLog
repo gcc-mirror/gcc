@@ -1,5 +1,12 @@
 2003-07-06  Paolo Carlini  <pcarlini@unitus.it>
 
+	* include/std/std_fstream.h (xsputn): Don't call _M_destroy_pback:
+	if output is at all possible (!_M_reading), cannot be active.
+
+	* include/std/std_fstream.h: Tweak comments to doxygen style.
+
+2003-07-06  Paolo Carlini  <pcarlini@unitus.it>
+
 	* include/bits/locale_classes.h: Fully qualify standard
 	functions with std::, thus avoiding Koenig lookup.
 	* include/bits/locale_facets.tcc: Likewise.
