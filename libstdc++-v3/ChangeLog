@@ -1,3 +1,8 @@
+2003-08-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* config/os/hpux/os_defines.h: Unconditionally define
+	_GLIBCXX_GTHREAD_USE_WEAK to 0.
+
 2003-08-19  Geoffrey Keating  <geoffk@apple.com>
 
 	* crossconfig.m4 (*-darwin*): Add a large and boring stanza for
@@ -6,8 +11,8 @@
 
 2003-08-19  Petur Runolfsson  <peturr02@ru.is>
 
-        * include/ext/ropeimpl.h: #include <ostream> instead of <iostream>
-	
+	* include/ext/ropeimpl.h: #include <ostream> instead of <iostream>
+
 2003-08-17  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.ac:  GCC_NO_EXECUTABLES was supposed to be commented
@@ -48,7 +53,7 @@
 2003-08-11  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/basic_ios.h: Remove *_iter typedefs, change num*
-	typedefs to num_*.	
+	typedefs to num_*.
 	* include/bits/basic_ios.tcc: Same.
 	* include/bits/istream.tcc: Same.
 	* include/bits/locale_facets.h: Same.
@@ -58,7 +63,7 @@
 	* testsuite/26_numerics/complex_inserters_extractors.cc: Fix.
 
 	* include/ext/rope: Remove build warning.
-	
+
 2003-08-11  Andreas Jaeger  <aj@suse.de>
 
 	* include/Makefile.am (stamp-c_base): Add dependency on stamp-bits
@@ -84,27 +89,27 @@
 	* testsuite/Makefile.am (check-abi): Change libstdc++-v3 to libstdc++.
 	(check-abi-verbose): Same.
 	* testsuite/testsuite_performance.h (report_performance): Same.
-	
+
 2003-08-08  Loren J. Rittle  <ljrittle@acm.org>
 
 	* testsuite/testsuite_performance.h (__FreeBSD__): Add fake mallinfo.
 
 2003-08-07  Doug Gregor  <dgregor@apple.com>
 
-	* include/bits/char_traits.h (char_traits::not_eof): Match operand 
-        types in ? :.
+	* include/bits/char_traits.h (char_traits::not_eof): Match operand
+	types in ? :.
 
 2003-08-07  Bernardo Innocenti  <bernie@develer.com>
 
 	PR libstdc++/11784
 	* libstdc++-v3/config/cpu/m68k/atomicity.h (__exchange_and_add):
 	Replace variants with new BSET-based version.
-	
+
 2003-08-07  Carlo Wood  <carlo@alinoe.com>
 
 	* include/bits/demangle.h: Do not use cctype functions that depend
 	on locale.
-	
+
 2003-08-05  Phil Edwards  <pme@gcc.gnu.org>
 
 	* configure.in:  Rename...
@@ -201,11 +206,11 @@
 	* testsuite/23_containers/multiset/1.cc: New.
 	* testsuite/23_containers/set/1.cc: New.
 	* testsuite/23_containers/vector/1.cc: New.
-	
+
 2003-07-31  Benjamin Kosnik  <bkoz@redhat.com>
 
 	Reshuffle 23_containers testsuite.
-	* 23_containers/adaptors.cc, bitset_ctor.cc,bitset_members.cc, 
+	* 23_containers/adaptors.cc, bitset_ctor.cc,bitset_members.cc,
 	bitset_shift.cc, deque_ctor.cc, deque_operators.cc,
 	list_capacity.cc, list_ctor.cc, list_modifiers.cc, list_operators.cc,
 	map_insert.cc, map_operators.cc, map_operators_neg.cc, multiset.cc,
@@ -261,7 +266,7 @@
 	* 23_containers/vector/modifiers/1.cc: New.
 	* 23_containers/vector/modifiers/2.cc: New.
 	* 23_containers/vector/resize/1.cc: New.
-	
+
 2003-07-31  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* testsuite/thread/pthread1.cc: Add alpha*-*-osf* to dg-do run,
@@ -319,20 +324,20 @@
 	* include/c/std_cwctype.h: Same.
 	* include/c_std/cmath.tcc: Same.
 	* include/c_std/std_cmath.h: Same.
-	
+
 2003-07-30  Gawain Bolton  <gp.bolton@computer.org>
 
-	PR libstdc++/11504.  
+	PR libstdc++/11504.
 	* include/bits/stl_tree.h: Replace C-style casts with C++-style
 	casts.  Changes to avoid casting away constness.  Eliminate
 	_Rb_tree_base_iterator class.  Change _Rb_tree_iterator to use
 	initialization lists.  Move out implementation of __black_count()
 	to...
-        * src/stl_tree.cc: ...here and rename _Rb_tree_black_count().
-        Rename_Rb_tree_base_iterator::_M_increment() to
-        _Rb_tree_increment and _Rb_tree_base_iterator::_M_decrement() to
-        _Rb_tree_decrement.
-        * config/linker-map.gnu: Add and change symbols here.
+	* src/stl_tree.cc: ...here and rename _Rb_tree_black_count().
+	Rename_Rb_tree_base_iterator::_M_increment() to
+	_Rb_tree_increment and _Rb_tree_base_iterator::_M_decrement() to
+	_Rb_tree_decrement.
+	* config/linker-map.gnu: Add and change symbols here.
 
 2003-07-30  Jonathan Wakely  <redi@gcc.gnu.org>
 
@@ -346,7 +351,7 @@
 	Change DEBUG_ASSERT to _GLIBCXX_ASSERT.
 	* testsuite/libstdc++-v3.dg/dg.exp: Same.
 	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Same.
-	* testsuite/23_containers/bitset_ctor.cc: 
+	* testsuite/23_containers/bitset_ctor.cc:
 	* testsuite/17_intro/header_ciso646.cc: Remove DEBUG_ASSERT.
 	* testsuite/18_support/numeric_limits.cc: Same.
 	* testsuite/21_strings/basic_string/append/char/1.cc: Same.
@@ -369,16 +374,16 @@
 	* testsuite/21_strings/basic_string/insert/char/2.cc: Same.
 	* testsuite/21_strings/basic_string/insert/wchar_t/1.cc: Same.
 	* testsuite/21_strings/basic_string/insert/wchar_t/2.cc: Same.
-	* testsuite/21_strings/basic_string/inserters_extractors/char/1.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/char/4.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/char/5.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/char/6.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/char/7.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/1.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/4.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/5.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/6.cc: 
-	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/7.cc: 
+	* testsuite/21_strings/basic_string/inserters_extractors/char/1.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/char/4.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/char/5.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/char/6.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/char/7.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/1.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/4.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/5.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/6.cc:
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/7.cc:
 	* testsuite/21_strings/basic_string/operators/char/1.cc: Same.
 	* testsuite/21_strings/basic_string/operators/char/2.cc: Same.
 	* testsuite/21_strings/basic_string/operators/wchar_t/1.cc: Same.
@@ -411,9 +416,9 @@
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/09.cc: Same.
 	* testsuite/27_io/basic_istream/extractors_arithmetic/char/10.cc: Same.
 	* testsuite/27_io/basic_ostream/inserters_arithmetic/char/1.cc: Same.
-	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc: 
-        Same.
-	
+	* testsuite/27_io/basic_ostream/inserters_arithmetic/wchar_t/1.cc:
+	Same.
+
 2003-07-28  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/doxygen/user.cfg.in, docs/html/abi.txt, docs/html/debug.html,
@@ -456,8 +461,8 @@
 
 2003-07-24  Nathan Myers  <ncm-nospam@cantrip.org>
 
-        * testsuite/23_containers/map_operators.cc: Conform to 
-        container requirement as value must be Assignable.
+	* testsuite/23_containers/map_operators.cc: Conform to
+	container requirement as value must be Assignable.
 
 2003-07-23  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -538,9 +543,9 @@
 2003-07-21  Doug Gregor  <dgregor@apple.com>
 
 	* include/bits/boost_concept_check.h:
-	(_EqualityComparableConcept::__constraints): Remove != from the 
-        list of constraints; it is not listed in Table 28 of the C++98 
-        standard.
+	(_EqualityComparableConcept::__constraints): Remove != from the
+	list of constraints; it is not listed in Table 28 of the C++98
+	standard.
 
 2003-07-18  Andreas Jaeger  <aj@suse.de>
 
@@ -550,7 +555,7 @@
 	* config/abi/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
 
 2003-07-17  Benjamin Kosnik  <bkoz@redhat.com>
-	
+
 	* config/linker-map.gnu: Add __moneypunct_cache, __timepunct_cache.
 	* config/locale/generic/messages_members.h: Tweaks.
 	* config/locale/generic/monetary_members.cc
@@ -590,7 +595,7 @@
 
 	* include/bits/locale_facets.h (__num_base::_S_atoms_in): Add -+xX.
 	(num_get::_M_convert_int): To _M_insert_int.
-	(num_get::_M_convert_float): To _M_insert_float.	
+	(num_get::_M_convert_float): To _M_insert_float.
 	* include/bits/locale_facets.tcc (num_get::_M_extract_float):
 	Use caches for ctype, num_get.
 	(num_get::_M_extract_int): Same.
@@ -633,18 +638,18 @@
 2003-07-15  Jerry Quinn  <jlquinn@optonline.net>
 
 	* include/bits/stl_algo.h (includes, set_union, set_intersection,
-        set_difference, set_symmetric_difference, max_element, min_element,
-        next_permutation, prev_permutation, find_first_of, find_end):
-        Document.
+	set_difference, set_symmetric_difference, max_element, min_element,
+	next_permutation, prev_permutation, find_first_of, find_end):
+	Document.
 	* include/bits/stl_algobase.h (copy,copy_backward):  Clarify overlap
-        restrictions in docs.
+	restrictions in docs.
 	* include/bits/stl_heap.h (push_heap, pop_heap, make_heap, sort_heap):
-        Document.
+	Document.
 	* docs/doxygen/doxygroups.cc (setoperations):  New group.
 
 2003-07-15  Jerry Quinn  <jlquinn@optonline.net>
 
-        * include/bits/basic_string.h:  Document public functions.
+	* include/bits/basic_string.h:  Document public functions.
 	* docs/doxygen/TODO:  Update c21 todo.
 
 2003-07-15  Jerry Quinn  <jlquinn@optonline.net>
@@ -674,7 +679,7 @@
 	PR libstdc++/11378
 	* include/std/std_fstream.h (xsputn): Declare only.
 	* include/bits/fstream.tcc (xsputn): Define, optimize for the
-	always_noconv() case: when __n is sufficiently large flush 
+	always_noconv() case: when __n is sufficiently large flush
 	the buffer and issue a direct write, if possible combining the
 	two with writev in __basic_file<>::xsputn_2.
 	* config/io/basic_file_stdio.h (__basic_file<>::xsputn_2):
@@ -696,7 +701,7 @@
 
 	* testsuite/27_io/ios_base/cons/assign_neg.cc: Fix line numbers.
 	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
-	
+
 2003-07-14  Gabriel Dos Reis  <gcc@integrable-solutions.net>
 
 	* config/locale/gnu/c_locale.h (__convert_from_v): Include
@@ -744,7 +749,7 @@
 2003-07-09  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/locale_facets.tcc: Use function object for
-	__use_cache instead of template function. Partially specialize for 
+	__use_cache instead of template function. Partially specialize for
 	__numpunct<_CharT>.
 	* include/bits/locale_classes.h: Update friend declaration for
 	__use_cache.
@@ -761,7 +766,7 @@
 	* testsuite/22_locale/numpunct/members/wchar_t/cache_2.cc: New.
 	* testsuite/22_locale/numpunct/members/pod/1.cc: New.
 	* testsuite/22_locale/numpunct/members/pod/2.cc: New.
-	
+
 2003-07-09  Jerry Quinn  <jlquinn@optonline.net>
 
 	* src/ios.cc (_M_grow_words):  Fix spelling.
@@ -782,7 +787,7 @@
 	* include/Makefile.am (ext_headers): Add pod_char_traits.h.
 	* include/Makefile.in: Regenerate.
 	* docs/html/21_strings/howto.html: Update.
-		
+
 2003-07-08  Gawain Bolton  <gp.bolton@computer.org>
 
 	* testsuite/performance/list_create_fill_sort.cc: New.
@@ -792,11 +797,11 @@
 	* config/locale/generic/numeric_members.cc: Correct type info.
 	* config/locale/gnu/numeric_members.cc: Same.
 	* include/bits/locale_facets.h: Same.
-	
+
 	* include/bits/char_traits.h: Correct spacing.
 
 	* src/locale.cc: Wrap to 80 col.
-	
+
 2003-07-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/std/std_complex.h: Partially revert last
@@ -881,7 +886,7 @@
 2003-07-05  Gawain Bolton  <gp.bolton@computer.org>
 
 	* include/bits/stl_tree.h: _Rb_tree_rebalance():  Add local
-          variable for grandparent and use const
+	  variable for grandparent and use const
 
 2003-07-05  David Billinghurst <David.Billinghurst@riotinto.com>
 
@@ -912,15 +917,15 @@
 	* testsuite/Makefile.am: Same.
 	* testsuite/Makefile.in: Regenerate.
 	* po/Makefile.am: Same.
-	* po/Makefile.in: Regenerate.	
+	* po/Makefile.in: Regenerate.
 	* libsupc++/Makefile.am: Same.
-	* libsupc++/Makefile.in: Regenerate.	
+	* libsupc++/Makefile.in: Regenerate.
 	* libmath/Makefile.am: Same.
-	* libmath/Makefile.in: Regenerate.	
+	* libmath/Makefile.in: Regenerate.
 	* include/Makefile.am: Same.
-	* include/Makefile.in: Regenerate.	
+	* include/Makefile.in: Regenerate.
 	* src/Makefile.am: Same.
-	* src/Makefile.in: Regenerate.	
+	* src/Makefile.in: Regenerate.
 	* acconfig.h: Same.
 	* configure.host: Same.
 	* configure.in: Same.
@@ -932,7 +937,7 @@
 	* include: Same, standardize include guards.
 	* config: Same.
 	* libsupc++: Same.
-	
+
 2003-07-04  Zack Weinberg  <zack@codesourcery.com>
 
 	* testsuite/22_locale/collate/compare/wchar_t/2.cc

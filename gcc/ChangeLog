@@ -1,3 +1,17 @@
+2003-08-25  Zack Weinberg  <zack@codesourcery.com>
+
+	* config.gcc (hppa*-*-hpux11*, ia64*-*-hpux*): Remove
+	commented-out logic to use DCE threads (if present), add
+	support for POSIX threads.
+	* config/ia64/hpux.h: Define CPP_SPEC to set appropriate
+	#defines for -pthread.  Add -lpthread to LIB_SPEC when
+	-pthread.  In both cases take -mt as a synonym for -pthread
+	for acc compatibility.
+	Define GTHREAD_USE_WEAK to 0.
+	* config/pa/pa-hpux11.h: Likewise for CPP_SPEC and LIB_SPEC.
+	Remove old logic for DCE threads from LIB_SPEC.
+	* config/pa/pa64-hpux.h: Define GTHREAD_USE_WEAK to 0.
+
 2003-08-25  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_mathfn):  Rearrange so that we only
@@ -9,7 +23,7 @@
 
 	* config/ia64/ia64.c (ia64_expand_tls_address): Properly truncate
 	result when op0 is SImode.
-	
+
 2003-08-25  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* fixinc/inclhack.def (svr4_sighandler_type): New fix, ported
@@ -64,7 +78,7 @@
 	(pp_c_abstract_declarator): Adjust prototype.
 	(pp_c_direct_abstract_declarator): Likewise.
 	(pp_c_type_id): Likewise.
-	(pp_c_storage_class_specifier): Likewise. 
+	(pp_c_storage_class_specifier): Likewise.
 	(pp_c_function_specifier): Likewise.
 	(pp_c_declaration_specifiers): Likewise.
 	(pp_c_direct_declarator): Likewise.
@@ -356,17 +370,17 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/pa/quadlib.c: Likewise.
 	* config/pa/rtems.h: Likewise.
 	* config/pa/pa-protos.h: Replace 'GNU CC' with 'GCC' and remove
-	all uses of the PARAMS macro. 
+	all uses of the PARAMS macro.
 	* config/pa/pa.h: Likewise.
 	* config/pa/som.h: Likewise.
 
-        * config/iq2000/iq2000.c: Replace 'GNU CC' with 'GCC'.
-        Remove all uses of PARAMS macro.
-        Convert all function definitions to ISO C90 syntax.
+	* config/iq2000/iq2000.c: Replace 'GNU CC' with 'GCC'.
+	Remove all uses of PARAMS macro.
+	Convert all function definitions to ISO C90 syntax.
 	* config/iq2000-protos.h: Replace 'GNU CC' with 'GCC'.
-        Remove all uses of PARAMS macro.
+	Remove all uses of PARAMS macro.
 	* config/iq2000.h: Remove all uses of PARAMS macro.
-        * config/iq2000/iq2000.md: Replace 'GNU CC' with 'GCC'.
+	* config/iq2000/iq2000.md: Replace 'GNU CC' with 'GCC'.
 
 2003-08-23  Ulrich Weigand  <uweigand@de.ibm.com>
 
@@ -374,8 +388,8 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/s390/s390.c (gen_consttable): Remove.
 	(s390_dump_pool): Use UNSPECV_POOL_ENTRY for pool entry insns.
 	(s390_output_pool_entry): New function.
-	* config/s390/s390.md (UNSPECV_POOL_QI, UNSPECV_POOL_HI, 
-	UNSPECV_POOL_SI, UNSPECV_POOL_DI, UNSPECV_POOL_TI, 
+	* config/s390/s390.md (UNSPECV_POOL_QI, UNSPECV_POOL_HI,
+	UNSPECV_POOL_SI, UNSPECV_POOL_DI, UNSPECV_POOL_TI,
 	UNSPECV_POOL_SF, UNSPECV_POOL_DF): Remove, replace by ...
 	(UNSPECV_POOL_ENTRY): ... this new constant.
 	("consttable_qi", "consttable_hi", "consttable_si", "consttable_di",
@@ -475,8 +489,8 @@ Wed Aug 20 12:08:55 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	* config/m68k/m68k.c: Likewise.
 
 2003-08-21  Bernardo Innocenti  <bernie@develer.com>
-            Paul Dale  <pauli@snapgear.com>
-            Peter Barada <peter@baradas.org>
+	    Paul Dale  <pauli@snapgear.com>
+	    Peter Barada <peter@baradas.org>
 
 	* config/m68k/m68k.c (m68k_rtx_costs): Adjust mul/div costs for
 	ColdFire cores.

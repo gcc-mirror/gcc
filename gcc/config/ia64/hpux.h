@@ -49,6 +49,13 @@ do {							\
 	  }						\
 } while (0)
 
+#undef CPP_SPEC
+#define CPP_SPEC \
+  "%{mt|pthread:-D_REENTRANT -D_THREAD_SAFE -D_POSIX_C_SOURCE=199506L}"
+/* aCC defines also -DRWSTD_MULTI_THREAD, -DRW_MULTI_THREAD.  These
+   affect only aCC's C++ library (Rogue Wave-derived) which we do not
+   use, and they violate the user's name space.  */
+
 #undef  ASM_EXTRA_SPEC
 #define ASM_EXTRA_SPEC "%{milp32:-milp32} %{mlp64:-mlp64}"
 
@@ -68,6 +75,7 @@ do {							\
 #undef  LIB_SPEC
 #define LIB_SPEC \
   "%{!shared: \
+     %{mt|pthread:-lpthread} \
      %{p:%{!mlp64:-L/usr/lib/hpux32/libp} \
 	 %{mlp64:-L/usr/lib/hpux64/libp} -lprof} \
      %{pg:%{!mlp64:-L/usr/lib/hpux32/libp} \
@@ -133,6 +141,10 @@ do {								\
 
 #undef TARGET_HPUX_LD
 #define TARGET_HPUX_LD	1
+
+/* The HPUX dynamic linker objects to weak symbols with no
+   definitions, so do not use them in gthr-posix.h.  */
+#define GTHREAD_USE_WEAK 0
 
 /* Put out the needed function declarations at the end.  */
 
