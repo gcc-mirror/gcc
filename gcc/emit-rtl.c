@@ -1717,7 +1717,7 @@ set_mem_attributes (ref, t, objectp)
 
   /* If this is an INDIRECT_REF, we know its alignment.  */
   if (TREE_CODE (t) == INDIRECT_REF)
-    set_mem_align (ref, TYPE_ALIGN (type) / BITS_PER_UNIT);
+    set_mem_align (ref, TYPE_ALIGN (type));
 
   /* Now see if we can say more about whether it's an aggregate or
      scalar.  If we already know it's an aggregate, don't bother.  */
@@ -1752,7 +1752,7 @@ set_mem_alias_set (mem, set)
 				   MEM_SIZE (mem), MEM_ALIGN (mem));
 }
 
-/* Set the alignment of MEM to ALIGN.  */
+/* Set the alignment of MEM to ALIGN bits.  */
 
 void
 set_mem_align (mem, align)
@@ -1866,7 +1866,7 @@ adjust_address_1 (memref, mode, offset, validate)
      lowest-order set bit in OFFSET, but don't change the alignment if OFFSET
      if zero.  */
   if (offset != 0)
-    memalign = MIN (memalign, offset & -offset);
+    memalign = MIN (memalign, (offset & -offset) * BITS_PER_UNIT);
 
   MEM_ATTRS (new)
     = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref), memoffset,
@@ -1896,7 +1896,8 @@ offset_address (memref, offset, pow2)
   /* Update the alignment to reflect the offset.  Reset the offset, which
      we don't know.  */
   MEM_ATTRS (new) = get_mem_attrs (MEM_ALIAS_SET (memref), MEM_DECL (memref),
-				   0, 0, MIN (MEM_ALIGN (memref), pow2));
+				   0, 0, MIN (MEM_ALIGN (memref),
+					      pow2 * BITS_PER_UNIT));
   return new;
 }
   

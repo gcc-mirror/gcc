@@ -612,7 +612,7 @@ extern rtx memory_address_noforce PARAMS ((enum machine_mode, rtx));
 /* Set the alias set of MEM to SET.  */
 extern void set_mem_alias_set PARAMS ((rtx, HOST_WIDE_INT));
 
-/* Set the alignment of MEM to ALIGN.  */
+/* Set the alignment of MEM to ALIGN bits.  */
 extern void set_mem_align PARAMS ((rtx, unsigned int));
 
 /* Return a memory reference like MEMREF, but with its mode changed
