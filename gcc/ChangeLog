@@ -1,3 +1,12 @@
+2000-12-16  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+        * tradcpp.c: T_WARNING: New.
+        (do_warning): New function.
+        (finclude): Skip past the newline and increase the line number
+        before calling output_line_command.
+        (do_line): Skip the new line after output_line_command.  Don't  
+        pre-decrement the line number.   
+
 2000-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (cpp_options): Pass -fno-operator-names.
