@@ -17,7 +17,7 @@ template <void (*)()> struct S {};
 template <int *> struct T {};
 
 void f (S<Foo>){} // { dg-warning "mangled name" }
-// { dg-final { scan-assembler "\n_Z1f1SIXadL3FooEEE:" } }
+// { dg-final { scan-assembler "\n_?_Z1f1SIXadL3FooEEE\[: \t\n\]" } }
 
 void g (T<&NMS::V>){}  // { dg-warning "mangled name" }
-// { dg-final { scan-assembler "\n_Z1g1TIXadL_ZN3NMS1VEEEE:" } }
+// { dg-final { scan-assembler "\n_?_Z1g1TIXadL_ZN3NMS1VEEEE\[: \t\n\]" } }

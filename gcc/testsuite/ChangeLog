@@ -1,3 +1,13 @@
+2003-12-18  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* g++.dg/abi/mangle18-1.C: Modify regexp to test for `[: \t\n]' at end
+	of label name and allow for USER_LABEL_PREFIX == "_" names.
+	* g++.dg/abi/mangle18-2.C: Likewise.
+	* g++.dg/abi/mangle19-1.C: Likewise.
+	* g++.dg/abi/mangle19-2.C: Likewise.
+	* g++.dg/abi/mangle20-1.C: Likewise.
+	* g++.dg/abi/mangle20-2.C: Likewise.
+
 2003-12-18  Richard Henderson  <rth@redhat.com>
 
 	* gcc.dg/bitfld-1.c: Expect warnings for enum bitfields.

@@ -10,4 +10,4 @@
 extern int N;
 template <int &> struct S {};
 void n (S<N>) {}  // { dg-warning "mangled name" }
-// { dg-final { scan-assembler "\n_Z1n1SIXadL_Z1NEEE:" } }
+// { dg-final { scan-assembler "\n_?_Z1n1SIXadL_Z1NEEE\[: \t\n\]" } }
