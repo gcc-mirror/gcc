@@ -1,3 +1,7 @@
+Sat Oct 21 08:24:25 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* loop.c (strength_reduce): Fix error in last change.
+
 2000-10-20  David Edelsohn  <edelsohn@gnu.org>
 
 	* Makefile.in (SHLIB_NM_FLAGS): New.
