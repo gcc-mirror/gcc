@@ -1,3 +1,7 @@
+2004-05-14  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* gcc.dg/tree-ssa/20040514-1.c: New test.
+
 2004-05-14  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	* gfortran.fortran-torture/compile/noncontinuation_1.f90: New 

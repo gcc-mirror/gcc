@@ -37,9 +37,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 static void tree_ssa_phiopt (void);
 static bool conditional_replacement (basic_block bb, tree phi, tree arg0,
-                                     tree arg1);
-
-
+                                     tree arg1);                            
+                                  
 /* This pass eliminates PHI nodes which can be trivially implemented as
    an assignment from a conditional expression.  ie if we have something
    like:
@@ -108,11 +107,13 @@ static bool
 conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
 {
   tree result;
+  tree old_result = NULL;
   basic_block other_block = NULL;
   basic_block cond_block = NULL;
   tree last0, last1, new, cond;
   block_stmt_iterator bsi;
   edge true_edge, false_edge;
+  tree new_var = NULL;
 
   /* The PHI arguments have the constants 0 and 1, then convert
     it to the conditional.  */
@@ -172,14 +173,20 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
     return false;
   
   /* If the condition is not a naked SSA_NAME and its type does not
-      match the type of the result, then we can not optimize this case
-      as it would likely create non-gimple code when the condition
-      was converted to the result's type.  */
+      match the type of the result, then we have to create a new
+      variable to optimize this case as it would likely create
+      non-gimple code when the condition was converted to the
+      result's type.  */
+
   cond = COND_EXPR_COND (last_stmt (cond_block));
   result = PHI_RESULT (phi);
   if (TREE_CODE (cond) != SSA_NAME
       && !lang_hooks.types_compatible_p (TREE_TYPE (cond), TREE_TYPE (result)))
-    return false;
+    {
+      new_var = make_rename_temp (TREE_TYPE (cond), NULL);
+      old_result = cond;
+      cond = new_var;
+    }
   
   /* If the condition was a naked SSA_NAME and the type is not the
       same as the type of the result, then convert the type of the
@@ -190,6 +197,25 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
   /* We need to know which is the true edge and which is the false
       edge so that we know when to invert the condition below.  */
   extract_true_false_edges_from_block (cond_block, &true_edge, &false_edge);
+      
+  /* Insert our new statement at the head of our block.  */
+  bsi = bsi_start (bb);
+  
+  if (old_result)
+    {
+      tree new1;
+      if (TREE_CODE_CLASS (TREE_CODE (old_result)) != '<')
+        return false;
+      
+      new1 = build (TREE_CODE (old_result), TREE_TYPE (result),
+                    TREE_OPERAND (old_result, 0),
+                    TREE_OPERAND (old_result, 1));
+      
+      new1 = build (MODIFY_EXPR, TREE_TYPE (result),
+                    new_var, new1);
+      bsi_insert_after (&bsi, new1, BSI_NEW_STMT);
+    }
+  
   
   /* At this point we know we have a COND_EXPR with two successors.
       One successor is BB, the other successor is an empty block which
@@ -208,6 +234,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
       false edge as the value zero.  Note that those conditions are not
       the same since only one of the outgoing edges from the COND_EXPR
       will directly reach BB and thus be associated with an argument.  */
+  
   if ((PHI_ARG_EDGE (phi, 0) == true_edge && integer_onep (arg0))
       || (PHI_ARG_EDGE (phi, 0) == false_edge && integer_zerop (arg0))
       || (PHI_ARG_EDGE (phi, 1) == true_edge && integer_onep (arg1))
@@ -218,11 +245,25 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
     }
   else
     {
-      cond = invert_truthvalue (cond);
-  
+      tree cond1 = invert_truthvalue (cond);
+      
+      cond = cond1;
+      /* If what we get back is a conditional expression, there is no
+	 way that is can be gimple.   */
+      if (TREE_CODE (cond) == COND_EXPR)
+	return false; 
+
+      /* If what we get back is not gimple try to create it as gimple by
+         using a temporary variable.   */
       if (is_gimple_cast (cond)
 	  && !is_gimple_val (TREE_OPERAND (cond, 0)))
-	return false;
+        {
+          tree temp = TREE_OPERAND (cond, 0);
+          tree new_var_1 = make_rename_temp (TREE_TYPE (temp), NULL);
+          new = build (MODIFY_EXPR, TREE_TYPE (new_var_1), new_var_1, temp);
+          bsi_insert_after (&bsi, new, BSI_NEW_STMT);
+          cond = fold_convert (TREE_TYPE (result), new_var_1);
+        }
       
       if (TREE_CODE (cond) == TRUTH_NOT_EXPR
           &&  !is_gimple_val (TREE_OPERAND (cond, 0)))
@@ -232,9 +273,7 @@ conditional_replacement (basic_block bb, tree phi, tree arg0, tree arg1)
                     PHI_RESULT (phi), cond);
     }
   
-  /* Insert our new statement at the head of our block.  */
-  bsi = bsi_start (bb);
-  bsi_insert_after (&bsi, new, BSI_SAME_STMT);
+  bsi_insert_after (&bsi, new, BSI_NEW_STMT);
   
   /* Register our new statement as the defining statement for
       the result.  */
@@ -300,7 +339,8 @@ struct tree_opt_pass pass_phiopt =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_dump_func | TODO_ggc_collect	/* todo_flags_finish */
-    | TODO_verify_ssa
+    | TODO_verify_ssa | TODO_rename_vars
+    | TODO_verify_flow
 };
 												
 
