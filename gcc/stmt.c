@@ -3090,6 +3090,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
       /* If label is not recognized, abort.  */
       emit_library_call (gen_rtx (SYMBOL_REF, Pmode, "abort"), 0,
 			 VOIDmode, 0);
+      emit_barrier ();
       emit_label (afterward);
     }
 
