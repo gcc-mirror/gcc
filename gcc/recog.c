@@ -1707,7 +1707,7 @@ asm_operand_ok (rtx op, const char *constraint)
 	      || (GET_CODE (op) == CONST_DOUBLE
 		  && GET_MODE (op) == VOIDmode))
 	    break;
-	  /* FALLTHRU */
+	  /* Fall through.  */
 
 	case 'i':
 	  if (CONSTANT_P (op)

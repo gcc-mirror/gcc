@@ -8425,7 +8425,7 @@ fold_checksum_tree (tree expr, struct md5_ctx *ctx, htab_t ht)
 	case WITH_CLEANUP_EXPR: len = 2; break;
 	default: break;
 	}
-      /* FALLTHROUGH */
+      /* Fall through.  */
     case 'r':
     case '<':
     case '1':

@@ -1769,7 +1769,7 @@ subst_stack_regs_pat (rtx insn, stack regstack, rtx pat)
 		if (GET_CODE (pat_src) != UNSPEC
 		    || XINT (pat_src, 1) != UNSPEC_FNSTSW)
 		  abort ();
-		/* FALLTHRU */
+		/* Fall through.  */
 
 	      case UNSPEC_FNSTSW:
 		/* Combined fcomp+fnstsw generated for doing well with

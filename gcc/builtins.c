@@ -4354,7 +4354,7 @@ expand_builtin_fputs (tree arglist, rtx target, bool unlocked)
 	    break;
 	  }
       }
-      /* FALLTHROUGH */
+      /* Fall through.  */
     case 1: /* length is greater than 1, call fwrite.  */
       {
 	tree string_arg;

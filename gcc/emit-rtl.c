@@ -2876,7 +2876,7 @@ repeat:
 	      if (copied && len > 0)
 		XVEC (x, i) = gen_rtvec_v (len, XVEC (x, i)->elem);
               
-              /* Call recsusively on all inside the vector.  */
+              /* Call recursively on all inside the vector.  */
 	      for (j = 0; j < len; j++)
                 {
 		  if (last_ptr)

@@ -172,7 +172,7 @@ struct alloc_chunk {
    Similar with increasing max_free_bin_size without increasing num_free_bins.
 
    After much histogramming of allocation sizes and time spent on gc,
-   on a powerpc G4 7450 - 667 mhz, and an pentium 4 - 2.8ghz,
+   on a PowerPC G4 7450 - 667 mhz, and a Pentium 4 - 2.8ghz,
    these were determined to be the optimal values.  */
 #define NUM_FREE_BINS		64
 #define MAX_FREE_BIN_SIZE	256

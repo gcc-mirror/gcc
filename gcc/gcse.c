@@ -817,7 +817,7 @@ gcse_main (rtx f, FILE *file)
 	 partial redundancy elimination.  */
       free_gcse_mem ();
 
-      /* It does not make sense to run code hoisting unless we optimizing
+      /* It does not make sense to run code hoisting unless we are optimizing
 	 for code size -- it rarely makes programs faster, and can make
 	 them bigger if we did partial redundancy elimination (when optimizing
 	 for space, we use a classic gcse algorithm instead of partial

@@ -8503,7 +8503,7 @@ loc_descriptor_from_tree (tree loc, int addressp)
 	  indirect_p = 1;
 	  break;
 	}
-      /* FALLTHRU */
+      /* Fall through.  */
 
     case PARM_DECL:
       {

@@ -537,7 +537,7 @@ assign_dfs_numbers (struct et_node *node, int *num)
   node->dfs_num_out = (*num)++;
 }
 
-/* Compute the data neccesary for fast resolving of dominator queries in a
+/* Compute the data necessary for fast resolving of dominator queries in a
    static dominator tree.  */
 
 static void
@@ -659,7 +659,7 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
     dom_computed[dir] = DOM_NO_FAST_QUERY;
 }
 
-/* Store all basic blocks immediatelly dominated by BB into BBS and return
+/* Store all basic blocks immediately dominated by BB into BBS and return
    their number.  */
 int
 get_dominated_by (enum cdi_direction dir, basic_block bb, basic_block **bbs)

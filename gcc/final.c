@@ -3779,7 +3779,7 @@ leaf_renumber_regs_insn (rtx in_rtx)
    calls into this file, i.e., dbxout_symbol, dbxout_parms, and dbxout_reg_params.
    Those routines may also be called from a higher level intercepted routine. So
    to prevent recording data for an inner call to one of these for an intercept,
-   we maintain a intercept nesting counter (debug_nesting). We only save the
+   we maintain an intercept nesting counter (debug_nesting). We only save the
    intercepted arguments if the nesting is 1.  */
 int debug_nesting = 0;
 

@@ -99,7 +99,7 @@ rtx_unstable_p (rtx x)
       if (MEM_VOLATILE_P (x))
 	return 1;
 
-      /* FALLTHROUGH */
+      /* Fall through.  */
 
     default:
       break;
@@ -189,7 +189,7 @@ rtx_varies_p (rtx x, int for_alias)
       if (MEM_VOLATILE_P (x))
 	return 1;
 
-      /* FALLTHROUGH */
+      /* Fall through.  */
 
     default:
       break;

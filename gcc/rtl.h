@@ -1986,7 +1986,7 @@ struct cse_basic_block_data;
    N times that of a fast register-to-register instruction.  */
 #define COSTS_N_INSNS(N) ((N) * 4)
 
-/* Maximum cost of a rtl expression.  This value has the special meaning
+/* Maximum cost of an rtl expression.  This value has the special meaning
    not to use an rtx with this cost under any circumstances.  */
 #define MAX_COST INT_MAX
 

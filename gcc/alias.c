@@ -2386,7 +2386,7 @@ nonlocal_mentioned_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
       if (MEM_VOLATILE_P (x))
 	return 1;
 
-    /* FALLTHROUGH */
+    /* Fall through.  */
 
     default:
       break;
@@ -2480,7 +2480,7 @@ nonlocal_referenced_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
       if (MEM_VOLATILE_P (x))
 	return 1;
 
-    /* FALLTHROUGH */
+    /* Fall through.  */
 
     default:
       break;
@@ -2556,7 +2556,7 @@ nonlocal_set_p_1 (rtx *loc, void *data ATTRIBUTE_UNUSED)
       if (MEM_VOLATILE_P (x))
 	return 1;
 
-    /* FALLTHROUGH */
+    /* Fall through.  */
 
     default:
       break;

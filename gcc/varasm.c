@@ -2704,7 +2704,7 @@ decode_rtx_const (enum machine_mode mode, rtx x, struct rtx_const *value)
 	      break;
 	    case rvc_normal:
 	      value->un.du.exp = r->exp;
-	      /* FALLTHRU */
+	      /* Fall through.  */
 	    case rvc_nan:
 	      memcpy (value->un.du.sig, r->sig, sizeof (r->sig));
 	      break;
@@ -2764,7 +2764,7 @@ decode_rtx_const (enum machine_mode mode, rtx x, struct rtx_const *value)
 	            break;
 	          case rvc_normal:
 	            d->exp = r->exp;
-	            /* FALLTHRU */
+	            /* Fall through.  */
 	          case rvc_nan:
 	            memcpy (d->sig, r->sig, sizeof (r->sig));
 	            break;
@@ -3132,7 +3132,7 @@ output_constant_pool (const char *fnname ATTRIBUTE_UNUSED,
 	      || GET_CODE (XEXP (XEXP (x, 0), 0)) != LABEL_REF)
 	    break;
 	  tmp = XEXP (XEXP (x, 0), 0);
-	  /* FALLTHRU */
+	  /* Fall through.  */
 
 	case LABEL_REF:
 	  tmp = XEXP (x, 0);

@@ -334,7 +334,7 @@ cached_make_edge (sbitmap *edge_cache, basic_block src, basic_block dst, int fla
       if (flags == 0)
 	return NULL;
 
-      /* FALLTHRU */
+      /* Fall through.  */
     case 0:
       for (e = src->succ; e; e = e->succ_next)
 	if (e->dest == dst)

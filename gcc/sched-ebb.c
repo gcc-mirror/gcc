@@ -445,7 +445,7 @@ add_deps_for_risky_insns (rtx head, rtx tail)
 		    prev = BB_END (bb);
 		  }
 	      }
-	    /* FALLTHRU */
+	    /* Fall through.  */
 	  case TRAP_RISKY:
 	  case IRISKY:
 	  case PRISKY_CANDIDATE:
