@@ -136,7 +136,7 @@ struct processor_costs m6811_cost = {
     COSTS_N_INSNS (2), COSTS_N_INSNS (1) },
 
   /* shiftHI const */
-  { COSTS_N_INSNS (0), COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (1), COSTS_N_INSNS (4),
     COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (6),
     COSTS_N_INSNS (4), COSTS_N_INSNS (2),
     COSTS_N_INSNS (2), COSTS_N_INSNS (4),
@@ -171,7 +171,7 @@ struct processor_costs m6812_cost = {
     COSTS_N_INSNS (2), COSTS_N_INSNS (1) },
 
   /* shiftHI const */
-  { COSTS_N_INSNS (0), COSTS_N_INSNS (2), COSTS_N_INSNS (4),
+  { COSTS_N_INSNS (0), COSTS_N_INSNS (1), COSTS_N_INSNS (4),
     COSTS_N_INSNS (6), COSTS_N_INSNS (8), COSTS_N_INSNS (6),
     COSTS_N_INSNS (4), COSTS_N_INSNS (2),
     COSTS_N_INSNS (2), COSTS_N_INSNS (4), COSTS_N_INSNS (6),
@@ -4975,7 +4975,7 @@ m68hc11_shift_cost (mode, x, shift)
     }
 
   /* For SI and others, the cost is higher.  */
-  if (GET_MODE_SIZE (mode) > 2)
+  if (GET_MODE_SIZE (mode) > 2 && (shift % 16) != 0)
     total *= GET_MODE_SIZE (mode) / 2;
 
   /* When optimizing for size, make shift more costly so that
@@ -5081,10 +5081,6 @@ m68hc11_rtx_costs (x, code, outer_code)
           break;
 
         case SImode:
-          if (GET_CODE (XEXP (x, 1)) == CONST_INT
-              && INTVAL (XEXP (x, 1)) == 65536)
-            break;
-
         default:
           total += m68hc11_cost->multSI;
           break;
