@@ -698,8 +698,12 @@ scan_out_logical_line (pfile, macro)
 	      out = pfile->out.cur;
 
 	      if (is_vspace (*cur))
-		/* Null directive ignored.  */
-		out = pfile->out.base;
+		{
+		  /* Null directive.  Ignore it and don't invalidate
+		     the MI optimization.  */
+		  out = pfile->out.base;
+		  continue;
+		}
 	      else
 		{
 		  bool do_it = false;
@@ -732,6 +736,10 @@ scan_out_logical_line (pfile, macro)
 	default:
 	  break;
 	}
+
+      /* Non-whitespace disables MI optimization.  */
+      if (!pfile->state.in_directive)
+	pfile->mi_valid = false;
 
       if (lex_state == ls_none)
 	continue;
