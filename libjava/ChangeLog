@@ -1,5 +1,54 @@
 2003-09-25  Michael Koch  <konqueror@gmx.de>
 
+	* gnu/java/nio/DatagramChannelImpl.java
+	(DatagramChannelImpl): Made class final.
+	(blocking): Made private.
+	(socket): Made it a NIODatagramSocket and private.
+	(DatagramChannelImpl): create NIODatagramSocket instead of
+	DatagramSocket.
+	(implConfigureBlocking): Set socket timeout.
+	(connect): Check that channel is not closed.
+	(write): Implemented.
+	(write): Rewritten.
+	(read): Implemented.
+	(read): Rewritten.
+	(receive): Implemented.
+	(send): Implemented.
+	* gnu/java/nio/SelectionKeyImpl.java
+	(readyOps): Made private.
+	(interestOps): Made private.
+	(impl): Made private.
+	(ch): Made private.
+	(readyOps): Check if selection key is valid.
+	(interestOps): Likewise.
+	* gnu/java/nio/SelectorImpl.java
+	(closed): Removed.
+	(keys): Made private.
+	(selected): Made private.
+	(finalize): New method.
+	(implCloseSelector): Rewritten.
+	(keys): Return unmodifiable Set.
+	(deregisterCancelledKeys): Fixed typo in method name.
+	* gnu/java/nio/SocketChannelImpl.java
+	(SocketChannelImpl): Made class final.
+	(socket): Made it a NIOSocket and private.
+	(blocking): Made private.
+	(connected): Made private.
+	(connectionPending): New member variable.
+	(SocketChannelImpl): New implementation.
+	(finalizer): Use isConnected().
+	(connect): Rewritten.
+	(finishConnect): Throws IOException, implemented.
+	(isConnectionPending): Return connectionPending.
+	(read): Rewritten.
+	(write): Rewritten.
+	* gnu/java/nio/NIOConstants.java: New file.
+	* Makefile.am (ordinary_java_source_files):
+	Added gnu/java/nio/NIOConstants.java.
+	* Makefile.in: Regenerated.
+
+2003-09-25  Michael Koch  <konqueror@gmx.de>
+
 	* java/net/InetAddress.java:
 	Reorder imports, remove implementation comment.
 	(isMulticastAddress): Merged documentation from classpath.

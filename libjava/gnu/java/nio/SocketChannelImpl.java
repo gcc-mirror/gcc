@@ -1,5 +1,5 @@
 /* SocketChannelImpl.java -- 
-   Copyright (C) 2002 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -38,32 +38,55 @@ exception statement from your version. */
 
 package gnu.java.nio;
 
+import java.io.InputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import gnu.java.net.PlainSocketImpl;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AlreadyConnectedException;
+import java.nio.channels.ClosedChannelException;
+import java.nio.channels.ConnectionPendingException;
+import java.nio.channels.NoConnectionPendingException;
+import java.nio.channels.NotYetConnectedException;
+import java.nio.channels.UnresolvedAddressException;
+import java.nio.channels.UnsupportedAddressTypeException;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.Selector;
+import java.nio.channels.SelectionKey;
 import java.nio.channels.spi.SelectorProvider;
 import gnu.classpath.Configuration;
 
-public class SocketChannelImpl extends SocketChannel
+public final class SocketChannelImpl extends SocketChannel
 {
-  Socket socket;
-  boolean blocking = true;
-  boolean connected = false;
+  private NIOSocket socket;
+  private boolean blocking = true;
+  private boolean connected = false;
+  private boolean connectionPending = false;
 
-  public SocketChannelImpl (SelectorProvider provider)		      
+  SocketChannelImpl (SelectorProvider provider)
+    throws IOException
   {
     super (provider);
-    socket = new Socket ();
+    socket = new NIOSocket (new PlainSocketImpl(), this);
+  }
+  
+  SocketChannelImpl (SelectorProvider provider,
+                     NIOSocket socket)
+    throws IOException
+  {
+    super (provider);
+    this.socket = socket;
+    this.connected = socket.isConnected();
   }
 
   public void finalizer()
   {
-    if (connected)
+    if (isConnected())
       {
         try
           {
@@ -83,21 +106,82 @@ public class SocketChannelImpl extends SocketChannel
 
   protected void implConfigureBlocking (boolean blocking) throws IOException
   {
-    this.blocking = blocking; // FIXME
+    socket.setSoTimeout (blocking ? 0 : NIOConstants.DEFAULT_TIMEOUT);
+    this.blocking = blocking;
   }   
 
   public boolean connect (SocketAddress remote) throws IOException
   {
-    if (connected)
+    if (!isOpen())
+      throw new ClosedChannelException();
+    
+    if (isConnected())
       throw new AlreadyConnectedException();
-	
-    socket.connect (remote, 50);
-    connected = true;
-    return blocking; // FIXME
+
+    if (connectionPending)
+      throw new ConnectionPendingException();
+
+    if (!(remote instanceof InetSocketAddress))
+      throw new UnsupportedAddressTypeException();
+
+    if (((InetSocketAddress) remote).isUnresolved())
+      throw new UnresolvedAddressException();
+    
+    if (blocking)
+      {
+        // Do blocking connect.
+        socket.connect (remote);
+        connected = true;
+        return true;
+      }
+
+    // Do non-blocking connect.
+    try
+      {
+        socket.connect (remote, NIOConstants.DEFAULT_TIMEOUT);
+        connected = true;
+        return true;
+      }
+    catch (SocketTimeoutException e)
+      {
+        connectionPending = true;
+        return false;
+      }
   }
     
   public boolean finishConnect ()
+    throws IOException
   {
+    if (!isOpen())
+      throw new ClosedChannelException();
+    
+    if (!connectionPending)
+      throw new NoConnectionPendingException();
+    
+    if (isConnected())
+      return true;
+
+    // FIXME: Handle blocking/non-blocking mode.
+
+    Selector selector = provider().openSelector();
+    register (selector, SelectionKey.OP_CONNECT);
+
+    if (isBlocking())
+      {
+        selector.select(); // blocking until channel is connected.
+        connected = true;
+        connectionPending = false;
+        return true;
+      }
+
+    int ready = selector.selectNow(); // non-blocking
+    if (ready == 1)
+      {
+        connected = true;
+        connectionPending = false;
+        return true;
+      }
+
     return false;
   }
 
@@ -108,7 +192,7 @@ public class SocketChannelImpl extends SocketChannel
     
   public boolean isConnectionPending ()
   {
-    return blocking ? true : false;
+    return connectionPending;
   }
     
   public Socket socket ()
@@ -118,67 +202,120 @@ public class SocketChannelImpl extends SocketChannel
 
   public int read (ByteBuffer dst) throws IOException
   {
+    if (!connected)
+      throw new NotYetConnectedException();
+    
     byte[] data;
-    int bytes = 0;
-    int len = dst.remaining ();
+    int offset = 0;
+    int len = dst.remaining();
 	
-    if (!dst.hasArray ())
+    if (dst.hasArray())
       {
-        data = new byte [len];
-        dst.get (data, 0, len);
+        offset = dst.arrayOffset() + dst.position();
+        data = dst.array();
       }
     else
       {
-        data = dst.array ();
+        data = new byte [len];
       }
+
+    InputStream input = socket.getInputStream();
+    int available = input.available();
+
+    if (available == 0)
+      return 0;
     
-    return socket.getInputStream().read (data, 0, len);
+    if (len > available)
+      len = available;
+
+    int readBytes = 0;
+    boolean completed = false;
+
+    try
+      {
+        begin();
+        readBytes = input.read (data, offset, len);
+        completed = true;
+      }
+    finally
+      {
+        end (completed);
+      }
+
+    if (readBytes > 0
+        && !dst.hasArray())
+      {
+        dst.put (data);
+      }
+
+    return readBytes;
   }
     
   public long read (ByteBuffer[] dsts, int offset, int length)
     throws IOException
   {
-    long bytes = 0;
+    if (!connected)
+      throw new NotYetConnectedException();
+    
+    if ((offset < 0)
+        || (offset > dsts.length)
+        || (length < 0)
+        || (length > (dsts.length - offset)))
+      throw new IndexOutOfBoundsException();
+      
+    long readBytes = 0;
 
-    for (int i = offset; i < length; i++)
-      {
-        bytes += read (dsts [i]);
-      }
+    for (int index = offset; index < length; index++)
+      readBytes += read (dsts [index]);
 
-    return bytes;
+    return readBytes;
   }
      
   public int write (ByteBuffer src)
     throws IOException
   {
-    byte[] data;
-    int bytes = 0;
-    int len = src.remaining ();
+    if (!connected)
+      throw new NotYetConnectedException();
     
-    if (!src.hasArray ())
+    byte[] data;
+    int offset = 0;
+    int len = src.remaining();
+    
+    if (!src.hasArray())
       {
         data = new byte [len];
         src.get (data, 0, len);
       }
     else
       {
-        data = src.array ();
+        offset = src.arrayOffset() + src.position();
+        data = src.array();
       }
-   
-    socket.getOutputStream().write (data, 0, len);
+
+    System.out.println ("INTERNAL: writing to socket outputstream");
+    
+    OutputStream output = socket.getOutputStream();
+    output.write (data, offset, len);
     return len;
   }
 
   public long write (ByteBuffer[] srcs, int offset, int length)
     throws IOException
   {
-    long bytes = 0;
+    if (!connected)
+      throw new NotYetConnectedException();
+    
+    if ((offset < 0)
+        || (offset > srcs.length)
+        || (length < 0)
+        || (length > (srcs.length - offset)))
+      throw new IndexOutOfBoundsException();
+      
+    long writtenBytes = 0;
 
-    for (int i = offset; i < length; i++)
-      {
-        bytes += write (srcs [i]);
-      }
+    for (int index = offset; index < length; index++)
+      writtenBytes += write (srcs [index]);
 
-    return bytes;
+    return writtenBytes;
   }
 }
