@@ -4759,6 +4759,7 @@ bypass_block (bb, setcc, jump)
   rtx insn, note;
   edge e, enext;
   int i, change;
+  int may_be_loop_header;
 
   insn = (setcc != NULL) ? setcc : jump;
 
@@ -4769,6 +4770,14 @@ bypass_block (bb, setcc, jump)
   if (note)
     find_used_regs (&XEXP (note, 0), NULL);
 
+  may_be_loop_header = false;
+  for (e = bb->pred; e; e = e->pred_next)
+    if (e->flags & EDGE_DFS_BACK)
+      {
+	may_be_loop_header = true;
+	break;
+      }
+
   change = 0;
   for (e = bb->pred; e; e = enext)
     {
@@ -4778,6 +4787,13 @@ bypass_block (bb, setcc, jump)
 
       /* We can't redirect edges from new basic blocks.  */
       if (e->src->index >= bypass_last_basic_block)
+	continue;
+
+      /* The irreducible loops created by redirecting of edges entering the
+	 loop from outside would decrease effectivity of some of the following
+	 optimalizations, so prevent this.  */
+      if (may_be_loop_header
+	  && !(e->flags & EDGE_DFS_BACK))
 	continue;
 
       for (i = 0; i < reg_use_count; i++)
@@ -4866,6 +4882,7 @@ bypass_conditional_jumps ()
     return 0;
 
   bypass_last_basic_block = last_basic_block;
+  mark_dfs_back_edges ();
 
   changed = 0;
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR->next_bb->next_bb,
