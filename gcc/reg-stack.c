@@ -1711,6 +1711,8 @@ subst_stack_regs_pat (insn, regstack, pat)
 	      {
 	      case UNSPEC_SIN:
 	      case UNSPEC_COS:
+	      case UNSPEC_FRNDINT:
+	      case UNSPEC_F2XM1:
 		/* These insns only operate on the top of the stack.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));
@@ -1734,6 +1736,7 @@ subst_stack_regs_pat (insn, regstack, pat)
 
 	      case UNSPEC_FPATAN:
 	      case UNSPEC_FYL2X:
+	      case UNSPEC_FSCALE:
 		/* These insns operate on the top two stack slots.  */
 
 		src1 = get_true_reg (&XVECEXP (pat_src, 0, 0));

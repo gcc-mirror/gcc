@@ -1,3 +1,18 @@
+2003-06-15  Roger Sayle  <roger@eyesopen.com>
+
+	* config/i386/i386.md (expsf2, expdf2, expxf2): New patterns to
+	implement exp, expf and expl built-ins as inline x87 intrinsics.
+	(UNSPEC_FSCALE, UNSPEC_FRNDINT, UNSPEC_F2XM1): New unspecs to
+	represent x87's fscale, frndint and f2xm1 insns respectively.
+	(*fscale_sfxf3, *fscale_dfxf3, *fscale_xf3): New insn patterns
+	to encode x87's "fscale" instruction followed by a pop.
+	(*frndintxf2): New insn pattern for "frndint".
+	(*f2xm1xf2): New insn pattern for "f2xm1".
+
+	* reg-stack.c (subst_stack_regs_pat): Handle UNSPEC_FRNDINT and
+	UNSPEC_F2XM1 like UNSPEC_{SIN,COS} and handle UNSPEC_FSCALE like
+	UNSPEC_FPATAN.
+
 2003-06-15  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (stagefeedback-start): Use $(SUBDIRS) instead of
