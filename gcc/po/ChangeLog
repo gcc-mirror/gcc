@@ -1,5 +1,10 @@
 2004-01-25  Joseph S. Myers  <jsm@polyomino.org.uk>
 
+	* EXCLUDES: Update.
+	* gcc.pot: Regenerate.
+
+2004-01-25  Joseph S. Myers  <jsm@polyomino.org.uk>
+
 	* de.po: Update.
 
 2004-01-25  Joseph S. Myers  <jsm@polyomino.org.uk>
