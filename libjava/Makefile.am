@@ -84,6 +84,8 @@ WARNINGS = -W -Wall
 ## currently broken with respect to exception handling in leaf
 ## functions.
 AM_CXXFLAGS = -fno-rtti -fvtable-thunks -fasynchronous-exceptions \
+## Some systems don't allow `$' in identifiers by default, so we force it.
+	-fdollars-in-identifiers \
 	@LIBGCJ_CXXFLAGS@ @EXCEPTIONSPEC@ $(WARNINGS) -D_GNU_SOURCE
 if USING_GCC
 AM_CFLAGS = @LIBGCJ_CFLAGS@ $(WARNINGS)
