@@ -1570,7 +1570,8 @@ build_class_member_access_expr (tree object, tree member,
      The type of the first expression shall be "class object" (of a
      complete type).  */
   object_type = TREE_TYPE (object);
-  if (!complete_type_or_else (object_type, object))
+  if (!currently_open_class (object_type) 
+      && !complete_type_or_else (object_type, object))
     return error_mark_node;
   if (!CLASS_TYPE_P (object_type))
     {
@@ -1856,7 +1857,8 @@ finish_class_member_access_expr (tree object, tree name)
 
      The type of the first expression shall be "class object" (of a
      complete type).  */
-  if (!complete_type_or_else (object_type, object))
+  if (!currently_open_class (object_type) 
+      && !complete_type_or_else (object_type, object))
     return error_mark_node;
   if (!CLASS_TYPE_P (object_type))
     {
