@@ -126,7 +126,7 @@ namespace __gnu_cxx
 	  _M_mode = __mode;
 	  if (__size > 0 && __size < 4)
 	    {
-	      // Specify unbuffered.
+	      // Specify not to use an allocated buffer.
 	      _M_buf = _M_unbuf;
 	      _M_buf_size = __size;
 	      _M_buf_size_opt = 0;
@@ -151,7 +151,7 @@ namespace __gnu_cxx
 	  _M_mode = __mode;
 	  if (__size > 0 && __size < 4)
 	    {
-	      // Specify unbuffered.
+	      // Specify not to use an allocated buffer.
 	      _M_buf = _M_unbuf;
 	      _M_buf_size = __size;
 	      _M_buf_size_opt = 0;

@@ -345,7 +345,7 @@ namespace std
     {
       int_type __ret = traits_type::eof();
       bool __testput = _M_out_cur && _M_out_beg < _M_out_end;
-      bool __testunbuffered = _M_file.is_open() && !_M_buf_size_opt;
+      bool __testunbuffered = _M_file.is_open() && !_M_buf_size;
 
       if (__testput || __testunbuffered)
 	{
