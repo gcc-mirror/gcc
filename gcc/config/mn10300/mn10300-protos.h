@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. Matsushita MN10300 series
-   Copyright (C) 2000, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2003, 2004 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GCC.
@@ -54,7 +54,6 @@ extern int function_arg_partial_nregs (CUMULATIVE_ARGS *,
 extern struct rtx_def *mn10300_va_arg (tree, tree);
 #endif /* TREE_CODE */
 
-extern struct rtx_def *mn10300_builtin_saveregs (void);
 extern void expand_prologue (void);
 extern void expand_epilogue (void);
 extern int initial_offset (int, int);

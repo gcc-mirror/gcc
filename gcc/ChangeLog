@@ -1,3 +1,18 @@
+2004-01-25  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/mn10300/mn10300-protos.h: Remove the prototype for
+	mn10300_builtin_saveregs.
+	* config/mn10300/mn10300.c (TARGET_PROMOTE_PROTOTYPES): New.
+	(TARGET_STRUCT_VALUE_RTX): Likewise.
+	(TARGET_RETURN_IN_MEMORY): Likewise.
+	(TARGET_EXPAND_BUILTIN_SAVEREGS): Likewise.
+	(mn10300_return_in_memory): Likewise.
+	(mn10300_builtin_saveregs): Make it static.
+	* config/mn10300/mn10300.h (PROMOTE_PROTOTYPES): Remove.
+	(RETURN_IN_MEMORY): Likewise.
+	(STRUCT_VALUE): Likewise.
+	(EXPAND_BUILTIN_SAVEREGS): Likewise.
+
 2004-01-25  Eric Botcazou  <ebotcazou@act-europe.fr>
 
 	PR bootstrap/13853

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Matsushita MN10300 series
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
    Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
@@ -69,6 +69,8 @@ static int mn10300_address_cost_1 (rtx, int *);
 static int mn10300_address_cost (rtx);
 static bool mn10300_rtx_costs (rtx, int, int, int *);
 static void mn10300_file_start (void);
+static bool mn10300_return_in_memory (tree, tree);
+static rtx mn10300_builtin_saveregs (void);
 
 
 /* Initialize the GCC target structure.  */
@@ -87,6 +89,17 @@ static void mn10300_file_start (void);
 
 #undef  TARGET_ENCODE_SECTION_INFO
 #define TARGET_ENCODE_SECTION_INFO mn10300_encode_section_info
+
+#undef TARGET_PROMOTE_PROTOTYPES
+#define TARGET_PROMOTE_PROTOTYPES hook_bool_tree_true
+
+#undef TARGET_STRUCT_VALUE_RTX
+#define TARGET_STRUCT_VALUE_RTX hook_rtx_tree_int_null
+#undef TARGET_RETURN_IN_MEMORY
+#define TARGET_RETURN_IN_MEMORY mn10300_return_in_memory
+
+#undef TARGET_EXPAND_BUILTIN_SAVEREGS
+#define TARGET_EXPAND_BUILTIN_SAVEREGS mn10300_builtin_saveregs
 
 static void mn10300_encode_section_info (tree, rtx, int);
 struct gcc_target targetm = TARGET_INITIALIZER;
@@ -1405,9 +1418,16 @@ initial_offset (int from, int to)
   abort ();
 }
 
+static bool
+mn10300_return_in_memory (tree type, tree fntype ATTRIBUTE_UNUSED)
+{
+  /* Return values > 8 bytes in length in memory.  */
+  return int_size_in_bytes (type) > 8 || TYPE_MODE (type) == BLKmode;
+}
+
 /* Flush the argument registers to the stack for a stdarg function;
    return the new argument pointer.  */
-rtx
+static rtx
 mn10300_builtin_saveregs (void)
 {
   rtx offset, mem;
