@@ -535,10 +535,7 @@ public class Container extends Component
    */
   public Dimension getPreferredSize()
   {
-    if (layoutMgr != null)
-      return layoutMgr.preferredLayoutSize(this);
-    else
-      return super.getPreferredSize();
+      return preferredSize();
   }
 
   /**
@@ -550,7 +547,10 @@ public class Container extends Component
    */
   public Dimension preferredSize()
   {
-    return getPreferredSize();
+      if (layoutMgr != null)
+	  return layoutMgr.preferredLayoutSize(this);
+      else
+	  return super.preferredSize();
   }
 
   /**
@@ -560,10 +560,7 @@ public class Container extends Component
    */
   public Dimension getMinimumSize()
   {
-    if (layoutMgr != null)
-      return layoutMgr.minimumLayoutSize(this);
-    else
-      return super.getMinimumSize();
+      return minimumSize();
   }
 
   /**
@@ -575,7 +572,10 @@ public class Container extends Component
    */
   public Dimension minimumSize()
   {
-    return getMinimumSize();
+      if (layoutMgr != null)
+	  return layoutMgr.minimumLayoutSize(this);
+      else
+	  return super.minimumSize();
   }
 
   /**
