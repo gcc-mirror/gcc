@@ -1,6 +1,6 @@
 /* This file contains the definitions and documentation for the
    machine modes used in the GNU compiler.
-   Copyright (C) 1987, 1992, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1992, 1994, 1997, 1998, 2000 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -122,6 +122,8 @@ DEF_MACHMODE (V8QImode, "V8QI", MODE_VECTOR_INT, 64, 8, 1, VOIDmode)
 DEF_MACHMODE (V8HImode, "V8HI", MODE_VECTOR_INT, 128, 16, 2, VOIDmode)
 DEF_MACHMODE (V8SImode, "V8SI", MODE_VECTOR_INT, 256, 32, 4, VOIDmode)
 DEF_MACHMODE (V8DImode, "V8DI", MODE_VECTOR_INT, 512, 64, 8, VOIDmode)
+
+DEF_MACHMODE (V16QImode, "V16QI", MODE_VECTOR_INT, 128, 16, 1, VOIDmode)
 
 DEF_MACHMODE (V2SFmode, "V2SF", MODE_VECTOR_FLOAT, 64, 8, 4, VOIDmode)
 DEF_MACHMODE (V2DFmode, "V2DF", MODE_VECTOR_FLOAT, 128, 16, 8, VOIDmode)
