@@ -507,14 +507,16 @@ _Jv_GetMethodLocal (jclass klass, _Jv_Utf8Const *name,
   return NULL;
 }
 
-#define MCACHE_SIZE 1013
+// NOTE: MCACHE_SIZE should be a power of 2 minus one.
+#define MCACHE_SIZE 1023
 
-struct _Jv_mcache {
+struct _Jv_mcache
+{
   jclass klass;
   _Jv_Method *method;
 };
 
-static _Jv_mcache method_cache[MCACHE_SIZE];
+static _Jv_mcache method_cache[MCACHE_SIZE + 1];
 
 static void *
 _Jv_FindMethodInCache (jclass klass,
