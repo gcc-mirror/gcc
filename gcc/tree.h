@@ -2402,11 +2402,6 @@ extern tree merge_attributes		PARAMS ((tree, tree));
 extern tree merge_dllimport_decl_attributes PARAMS ((tree, tree));
 #endif
 
-/* Return true if DECL will be always resolved to a symbol defined in the
-   same module (shared library or program).  */
-#define MODULE_LOCAL_P(DECL) \
-  (lookup_attribute ("visibility", DECL_ATTRIBUTES (DECL)) != NULL)
-
 /* Return a version of the TYPE, qualified as indicated by the
    TYPE_QUALS, if one exists.  If no qualified version exists yet,
    return NULL_TREE.  */

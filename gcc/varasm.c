@@ -5417,7 +5417,7 @@ default_binds_local_p_1 (exp, shlib)
   else if (! TREE_PUBLIC (exp))
     local_p = true;
   /* A variable is local if the user tells us so.  */
-  else if (MODULE_LOCAL_P (exp))
+  else if (decl_visibility (exp) != VISIBILITY_DEFAULT)
     local_p = true;
   /* Otherwise, variables defined outside this object may not be local.  */
   else if (DECL_EXTERNAL (exp))

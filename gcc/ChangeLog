@@ -1,3 +1,8 @@
+2002-12-11  Richard Henderson  <rth@redhat.com>
+
+	* tree.h (MODULE_LOCAL_P): Kill.
+	* varasm.c (default_binds_local_p_1): Use decl_visibility instead.
+
 2002-12-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.md (two define_peephole2): New.
