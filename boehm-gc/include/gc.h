@@ -30,7 +30,7 @@
 
 # define _GC_H
 
-# include <config.h>
+# include <gc_config.h>
 # include "gc_config_macros.h"
 
 # if defined(__STDC__) || defined(__cplusplus)
