@@ -1,3 +1,8 @@
+2003-09-03  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/12053
+	* g++.dg/abi/layout4.C: New test.
+
 2003-09-01  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/12114
