@@ -896,10 +896,19 @@ enum reg_class
 /* Similar, but for floating constants, and defining letters G and H.
    Here VALUE is the CONST_DOUBLE rtx itself.  We allow constants even if
    TARGET_387 isn't set, because the stack register converter may need to
-   load 0.0 into the function value register. */
+   load 0.0 into the function value register.
+
+   We disallow these constants when -fomit-frame-pointer and compiling
+   PIC code since reload might need to force the constant to memory.
+   Forcing the constant to memory changes the elimination offsets after
+   the point where they must stay constant.
+
+   However, we must allow them after reload as completed as reg-stack.c
+   will create insns which use these constants.  */
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'G' ? standard_80387_constant_p (VALUE) : 0)
+  (((reload_completed || !flag_pic || !flag_omit_frame_pointer) && (C) == 'G') \
+   ? standard_80387_constant_p (VALUE) : 0)
 
 /* Place additional restrictions on the register class to use when it
    is necessary to be able to hold a value of mode MODE in a reload
