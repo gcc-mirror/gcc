@@ -1,3 +1,56 @@
+Tue Aug 27 14:39:09 2002  J"orn Rennecke <joern.rennecke@superh.com>
+
+	* sh.md (attribute type): Add types mt_group, fload, pcfload, fpul_gp,
+	mac_gp ftrc_s and cwb.  Add / Adjust definitions in individual insn
+	accordingly.
+	(attribute insn_class): Provide default definitions based on type.
+	Remove all insn-specific settings.
+	(various function units): Remove old SH4 scheduling.
+	(branch_zero, dfp_comp, late_fp_use, any_fp_comp, any_int_load):
+	New attributes.  Set them where appropriate.
+	(cpu unit FS): Don't define / use.
+	(F3, load_store): New cpu units.
+	(F01): New reservation.
+	(all insn_reservations): Make dependent on sh4 pipeline model.
+	Fix latencies.
+	(nil, reg_mov, freg_mov, sh4_fpul_gp, sh4_call): New insn_reservations.
+	(sh4_mac_gp, fp_arith_ftrc, arith3, arith3b): Likewise.
+	(mt insn_reservation): Use type mt_group.
+	(insn_reservation load_store): Split into sh4_load, sh4_load_si,
+	sh4_fload and sh4_store.
+	(insn_reservation branch_zero and branch): Replace with sh4_branch.
+	(insn_reservation branch_far): Replace with sh4_return.
+	(insn_reservation return_from_exp): Rename to:
+	(sh4_return_from_exp).  Change to be just d_lock*5.
+	(insn_reservation lds_to_pr): Rename to:
+	(sh4_lds_to_pr).  Change to be just d_lock*2.
+	(insn_reservation ldsmem_to_pr, sts_from_pr): Change to be just
+	d_lock*2.
+	(insn_reservation prload_mem): Rename to:
+	(sh4_prstore_mem).  Change to d_lock*2,nothing,memory.
+	(insn_reservation fpscr_store): Rename to:
+	(fpscr_load).  Change to d_lock,nothing,F1*3.
+	(insn_reservation fpscr_store_mem): Rename to:
+	(fpscr_load_mem).  Change to d_lock,nothing,(F1+memory),F1*2.
+	(insn_reservation multi): Change to
+	d_lock,(d_lock+f1_1),(f1_1|f1_2)*3,F2.
+	(insn_reservation fp_arith): Change to issue,F01,F2.
+	(insn_reservation fp_div: Change to issue,F01+F3,F2+F3,F3*7,F1+F3,F2.
+	(insn_reservation dp_float): Change to issue,F01,F1+F2,F2.
+	(insn_reservation fp_double_arith): Change to issue,F01,F1+F2,fpu*4,F2.
+	(insn_reservation fp_double_cmp): Change to
+	d_lock,(d_lock+F01),F1+F2,F2.
+	(insn_reservation dp_div): Change to
+	issue,F01+F3,F1+F2+F3,F2+F3,F3*16,F1+F3,(fpu+F3)*2,F2.
+	* sh.c (flow_dependent_p, flow_dependent_p_1): New functions.
+	(sh_adjust_cost, SHcompact): Differentiate between different
+	kinds of dependencies.  Drop factor of ten for superscalar.
+	Use new instruction types.  Add new exception rules.
+
+	* sh.md (mulhisi3, umulhisi3: Add a REG_EQUAL note.
+
+	* sh.md (mperm_w): Add DONE.
+
 2002-08-27  David Edelsohn  <edelsohn@gnu.org>
 
 	* longlong.h: Import current PowerPC defintion from GMP-4.1.
