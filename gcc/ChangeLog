@@ -1,3 +1,7 @@
+1999-12-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/sparc/sparc.c (sparc64_initialize_trampoline): Use gen_flushdi.
+
 1999-12-05  Mark Mitchell  <mark@codesourcery.com>
 
 	* tree.h (special_function_p): Declare.

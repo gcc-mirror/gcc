@@ -5664,10 +5664,10 @@ sparc64_initialize_trampoline (tramp, fnaddr, cxt)
 		  GEN_INT (0xca586010));
   emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 16)), cxt);
   emit_move_insn (gen_rtx_MEM (DImode, plus_constant (tramp, 24)), fnaddr);
-  emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, tramp))));
+  emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, tramp))));
 
   if (sparc_cpu != PROCESSOR_ULTRASPARC)
-    emit_insn (gen_flush (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
+    emit_insn (gen_flushdi (validize_mem (gen_rtx_MEM (DImode, plus_constant (tramp, 8)))));
 }
 
 /* Subroutines to support a flat (single) register window calling
