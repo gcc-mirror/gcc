@@ -4517,7 +4517,7 @@ find_reloads_toplev (x, opnum, type, ind_levels, is_set_dest, insn)
 	     not to do the change.  */
 	  if (new_part != XEXP (x, i) && ! CONSTANT_P (new_part) && ! copied)
 	    {
-	      x = copy_rtx (x);
+	      x = shallow_copy_rtx (x);
 	      copied = 1;
 	    }
 	  XEXP (x, i) = new_part;
