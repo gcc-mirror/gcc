@@ -401,7 +401,10 @@ sparc_override_options ()
      are available.
      -m64 also implies v9.  */
   if (TARGET_VIS || TARGET_ARCH64)
-    target_flags |= MASK_V9;
+    {
+      target_flags |= MASK_V9;
+      target_flags &= ~(MASK_V8 | MASK_SPARCLET | MASK_SPARCLITE);
+    }
 
   /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)
