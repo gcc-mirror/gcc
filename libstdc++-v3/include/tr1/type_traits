@@ -662,7 +662,7 @@ namespace tr1
   // 
   // template<std::size_t _Len, std::size_t _Align>
   //   struct aligned_storage
-  //   { typedef char type[_Len] __attribute__((aligned(_Align))); }
+  //   { typedef char type[_Len] __attribute__((__aligned__(_Align))); }
   //
   // Temporary workaround, useful for Align up to 32:
   template<std::size_t, std::size_t>
@@ -674,7 +674,7 @@ namespace tr1
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((aligned(1)));
+	char __align __attribute__((__aligned__(1)));
       };
     };
 
@@ -684,7 +684,7 @@ namespace tr1
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((aligned(2)));
+	char __align __attribute__((__aligned__(2)));
       };
     };
 
@@ -694,7 +694,7 @@ namespace tr1
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((aligned(4)));
+	char __align __attribute__((__aligned__(4)));
       };
     };
 
@@ -704,7 +704,7 @@ namespace tr1
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((aligned(8)));
+	char __align __attribute__((__aligned__(8)));
       };
     };
 
@@ -714,7 +714,7 @@ namespace tr1
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((aligned(16)));
+	char __align __attribute__((__aligned__(16)));
       };
     };
   
@@ -724,7 +724,7 @@ namespace tr1
       union type
       {
 	unsigned char __data[_Len];
-	char __align __attribute__((aligned(32)));
+	char __align __attribute__((__aligned__(32)));
       };
     };
 

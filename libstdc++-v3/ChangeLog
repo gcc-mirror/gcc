@@ -1,4 +1,9 @@
 2005-01-23  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/tr1/type_traits (aligned_storage): Use __aligned__ instead
+	of aligned.
+
+2005-01-23  Paolo Carlini  <pcarlini@suse.de>
             Andreas Jaeger  <aj@suse.de>
 
 	PR libstdc++/19343
