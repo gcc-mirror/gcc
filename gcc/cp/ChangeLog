@@ -1,5 +1,15 @@
 2004-06-28  Nathan Sidwell  <nathan@codesourcery.com>
 
+	PR C++/16174
+	* call.c (build_temp): Declare.
+	(check_constructor_callable): New.
+	(reference_binding): Only set CHECK_COPY_CONSTRUCTOR if not for
+	CONSTRUCTOR_CALLABLE.
+	(convert_like_real, initialize_reference): Use
+	check_constructor_callable.
+	* cp-tree.h (LOOKUP_CONSTRUCTOR_CALLABLE): New.
+	(LOOKUP_*): Renumber.
+
 	* friend.c (add_friend): Only perform access checks when context
 	is a class.
 	* lex.c (cxx_make_type): Only create a binfo for aggregate types.
