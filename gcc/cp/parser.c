@@ -13367,6 +13367,8 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
       /* If that's not a class type, there is no destructor.  */
       if (!type || !CLASS_TYPE_P (type))
 	return error_mark_node;
+      if (!CLASSTYPE_DESTRUCTORS (type))
+	  return error_mark_node;
       /* If it was a class type, return the destructor.  */
       return CLASSTYPE_DESTRUCTORS (type);
     }

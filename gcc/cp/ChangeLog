@@ -1,3 +1,9 @@
+2004-01-14  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
+
+	PR c++/12335
+	* parser.c (cp_parser_lookup_name): Return error_mark_node if there
+	is no destructor while looking up a BIT_NOT_EXPR.
+
 2004-01-13  Ian Lance Taylor  <ian@wasabisystems.com>
 
 	* cxxfilt.c: Remove unused file.
