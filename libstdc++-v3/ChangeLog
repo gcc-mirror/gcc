@@ -1,3 +1,10 @@
+2003-08-05  Phil Edwards  <pme@gcc.gnu.org>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_SJLJ_EXCEPTIONS):  Put down the crack
+	pipe, open the window to let out the fumes, redo the option-handling
+	logic to properly execute the detection test.
+	* aclocal.m4, configure:  Regenerate.
+
 2003-08-04  Phil Edwards  <pme@gcc.gnu.org>
 
 	Convert to new autotools.

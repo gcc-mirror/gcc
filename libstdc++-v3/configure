@@ -864,7 +864,7 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --enable-sjlj-exceptions
                           force use of builtin_setjmp for exceptions
-                          [default=no]
+                          [default=auto]
   --enable-libunwind-exceptions
                           force use of libunwind for exceptions
                           [default=no]
@@ -4837,25 +4837,72 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
    # Check whether --enable-sjlj-exceptions or --disable-sjlj-exceptions was given.
 if test "${enable_sjlj_exceptions+set}" = set; then
   enableval="$enable_sjlj_exceptions"
-  :
+
+      case "$enableval" in
+       yes|no|auto) ;;
+       *) { { echo "$as_me:$LINENO: error: Unknown argument to enable/disable sjlj-exceptions" >&5
+echo "$as_me: error: Unknown argument to enable/disable sjlj-exceptions" >&2;}
+   { (exit 1); exit 1; }; } ;;
+                          esac
+
 else
-  enable_sjlj_exceptions=no
+  enable_sjlj_exceptions=auto
 fi;
 
- if test $enable_sjlj_exceptions = yes; then
+
+  if test $enable_sjlj_exceptions = auto; then
+    # Botheration.  Now we've got to detect the exception model.  Link tests
+    # against libgcc.a are problematic since we've not been given proper -L
+    # bits for single-tree newlib and libgloss.
+    #
+    # Fake what AC_TRY_COMPILE does.  XXX Look at redoing this new-style.
+    cat > conftest.$ac_ext << EOF
+#line 4860 "configure"
+struct S { ~S(); };
+void bar();
+void foo()
+{
+  S s;
+  bar();
+}
+EOF
+    old_CXXFLAGS="$CXXFLAGS"
+    CXXFLAGS=-S
+    if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; then
+      if grep _Unwind_SjLj_Resume conftest.s >/dev/null 2>&1 ; then
+        enable_sjlj_exceptions=yes
+      elif grep _Unwind_Resume conftest.s >/dev/null 2>&1 ; then
+        enable_sjlj_exceptions=no
+      fi
+    fi
+    CXXFLAGS="$old_CXXFLAGS"
+    rm -f conftest*
+  fi
+
+  # This is a tad weird, for hysterical raisins.  We have to map enable/disable
+  # to two different models.
+  case $enable_sjlj_exceptions in
+    yes)
 
 cat >>confdefs.h <<\_ACEOF
 #define _GLIBCXX_SJLJ_EXCEPTIONS 1
 _ACEOF
 
-   ac_exception_model_name=sjlj
- elif test x$enable_sjlj_exceptions = xno; then
-   ac_exception_model_name="call frame"
- else
-   { { echo "$as_me:$LINENO: error: unable to detect exception model" >&5
+      ac_exception_model_name=sjlj
+      ;;
+    no)
+      ac_exception_model_name="call frame"
+      ;;
+    *)
+      { { echo "$as_me:$LINENO: error: unable to detect exception model" >&5
 echo "$as_me: error: unable to detect exception model" >&2;}
    { (exit 1); exit 1; }; }
- fi
+      ;;
+  esac
  ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
