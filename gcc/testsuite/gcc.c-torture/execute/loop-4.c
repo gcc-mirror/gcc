@@ -12,5 +12,5 @@ main ()
 {
   if (f () != 8192)
     abort ();
-  return 0;
+  exit (0);
 }
