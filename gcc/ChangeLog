@@ -1,6 +1,6 @@
 Wed Jul 17 17:08:06 2002  J"orn Rennecke <joern.rennecke@superh.com>
 
-	* lib1funcs.asm (udivsi3_i4): Implement SHcompact version in
+	* config/sh/lib1funcs.asm (udivsi3_i4): Implement SHcompact version in
 	SHmedia code.
 
 	* sh.md (cmpgtudi_media): Remove spurious @.
