@@ -3860,7 +3860,7 @@ rs6000_expand_ternop_builtin (icode, arglist, target)
 	  || TREE_INT_CST_LOW (arg2) & ~0xf)
 	{
 	  error ("argument 3 must be a 4-bit unsigned literal");
-	  return NULL_RTX;
+	  return const0_rtx;
 	}
       break;
     default:
