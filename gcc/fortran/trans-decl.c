@@ -866,6 +866,32 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 }
 
 
+/* Substitute a temporary variable in place of the real one.  */
+
+void
+gfc_shadow_sym (gfc_symbol * sym, tree decl, gfc_saved_var * save)
+{
+  save->attr = sym->attr;
+  save->decl = sym->backend_decl;
+
+  gfc_clear_attr (&sym->attr);
+  sym->attr.referenced = 1;
+  sym->attr.flavor = FL_VARIABLE;
+
+  sym->backend_decl = decl;
+}
+
+
+/* Restore the original variable.  */
+
+void
+gfc_restore_sym (gfc_symbol * sym, gfc_saved_var * save)
+{
+  sym->attr = save->attr;
+  sym->backend_decl = save->decl;
+}
+
+
 /* Get a basic decl for an external function.  */
 
 tree

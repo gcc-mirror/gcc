@@ -1,3 +1,15 @@
+2004-05-30  Paul Brook  <paul@codesourcery.com>
+
+	PR fortran/15620
+	* trans-decl.c (gfc_shadow_sym, gfc_restore_sym): New functions.
+	* trans-expr.c (gfc_trans_string_copy): New function.
+	(gfc_conv_statement_function): Use them.  Create temp vars.  Enforce
+	character lengths.
+	(gfc_conv_string_parameter): Use gfc_trans_string_copy.
+	* trans-stmt.c (gfc_trans_forall_1): Use gfc_{shadow,restore}_sym.
+	* trans.h (struct gfc_saved_var): Define.
+	(gfc_shadow_sym, gfc_restore_sym): Add prototypes.
+
 2004-05-30  Steven G. Kargl  <kargls@comcast.net>
 
 	* iresolve.c (gfc_resolve_random_number): Clean up conditional.
