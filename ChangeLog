@@ -1,3 +1,8 @@
+Mon Apr 23 09:15:03 2001  Anthony Green  <green@redhat.com>
+
+	* configure.in: Move *-chorusos target case to the proper switch.
+	Disable libgcj.
+
 2001-04-12  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltconfig, ltmain.sh, ltcf-cxx.sh: Upgraded to libtool 1.4a
