@@ -701,6 +701,27 @@ tagged_types_tu_compatible_p (tree t1, tree t2, int flags)
     {
     case ENUMERAL_TYPE:
       {
+      
+        /* Speed up the case where the type values are in the same order. */
+        tree tv1 = TYPE_VALUES (t1);
+        tree tv2 = TYPE_VALUES (t2);
+        
+        if (tv1 == tv2)
+          return 1;
+        
+        for (;tv1 && tv2; tv1 = TREE_CHAIN (tv2), tv2 = TREE_CHAIN (tv2))
+          {
+            if (TREE_PURPOSE (tv1) != TREE_PURPOSE (tv1))
+              break;
+            if (simple_cst_equal (TREE_VALUE (tv1), TREE_VALUE (tv2)) != 1)
+              return 0;
+          }
+        
+        if (tv1 == NULL_TREE && tv2 == NULL_TREE)
+          return 1;
+        if (tv1 == NULL_TREE || tv2 == NULL_TREE)
+          return 0;
+        
 	if (list_length (TYPE_VALUES (t1)) != list_length (TYPE_VALUES (t2)))
 	  return 0;
 	
