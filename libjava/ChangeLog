@@ -1,3 +1,10 @@
+2002-06-05  Loren J. Rittle  <ljrittle@acm.org>
+
+	* libjava/include/posix.h (O_SYNC): Define if not available
+	and a reasonable, perhaps more conservative, replacement exists.
+	(O_DSYNC): Likewise.
+	* java/io/natFileDescriptorPosix.cc (open): Revert last patch.
+
 2003-06-05  Michael Koch  <konqueror@gmx.de>
 
 	* javax/swing/plaf/BorderUIResource.java,
