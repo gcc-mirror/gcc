@@ -1907,10 +1907,10 @@ process_partial_specialization (decl)
      or some such would have been OK.  */
   tpd.level = TMPL_PARMS_DEPTH (current_template_parms);
   tpd.parms = alloca (sizeof (int) * ntparms);
-  bzero (tpd.parms, sizeof (int) * ntparms);
+  bzero ((PTR) tpd.parms, sizeof (int) * ntparms);
 
   tpd.arg_uses_template_parms = alloca (sizeof (int) * nargs);
-  bzero (tpd.arg_uses_template_parms, sizeof (int) * nargs);
+  bzero ((PTR) tpd.arg_uses_template_parms, sizeof (int) * nargs);
   for (i = 0; i < nargs; ++i)
     {
       tpd.current_arg = i;
@@ -1993,7 +1993,7 @@ process_partial_specialization (decl)
 		 template, not in the specialization.  */
 	      tpd2.current_arg = i;
 	      tpd2.arg_uses_template_parms[i] = 0;
-	      bzero (tpd2.parms, sizeof (int) * nargs);
+	      bzero ((PTR) tpd2.parms, sizeof (int) * nargs);
 	      for_each_template_parm (type,
 				      &mark_template_parm,
 				      &tpd2);
