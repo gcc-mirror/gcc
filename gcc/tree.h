@@ -327,8 +327,8 @@ struct tree_common
 
 #include "tree-check.h"
 
-#define TYPE_CHECK(t)          DO_CHECK (tree_class_check, t, 't')
-#define TYPE_CHECK1(t)         DO_CHECK1 (tree_class_check, t, 't')
+#define TYPE_CHECK(tree)       DO_CHECK (tree_class_check, tree, 't')
+#define TYPE_CHECK1(tree)      DO_CHECK1 (tree_class_check, tree, 't')
 #define DECL_CHECK(t)          DO_CHECK (tree_class_check, t, 'd')
 #define DECL_CHECK1(t)         DO_CHECK1 (tree_class_check, t, 'd')
 #define CST_CHECK(t)           DO_CHECK (tree_class_check, t, 'c')
