@@ -856,6 +856,15 @@ enum reg_class {NO_REGS, ALL_REGS, LIM_REG_CLASSES};
    TARGET_STACK_ALIGN and TARGET_ALIGN_BY_32.  */
 #define DWARF_CIE_DATA_ALIGNMENT -1
 
+/* If we would ever need an exact mapping between canonical register
+   number and dwarf frame register, we would either need to include all
+   registers in the gcc decription (with some marked fixed of course), or
+   an inverse mapping from dwarf register to gcc register.  There is one
+   need in dwarf2out.c:expand_builtin_init_dwarf_reg_sizes.  Right now, I
+   don't see that we need exact correspondence between DWARF *frame*
+   registers and DBX_REGISTER_NUMBER, so map them onto GCC registers.  */
+#define DWARF_FRAME_REGNUM(REG) (REG)
+
 /* Node: Stack Checking */
 /* (no definitions) FIXME: Check.  */
 
