@@ -4624,39 +4624,15 @@ subroutine.  The former technique makes trampoline execution faster; the
 latter makes initialization faster.
 
 To clear the instruction cache when a trampoline is initialized, define
-the following macros which describe the shape of the cache.
-
-@table @code
-@findex INSN_CACHE_SIZE
-@item INSN_CACHE_SIZE
-The total size in bytes of the cache.
-
-@findex INSN_CACHE_LINE_WIDTH
-@item INSN_CACHE_LINE_WIDTH
-The length in bytes of each cache line.  The cache is divided into cache
-lines which are disjoint slots, each holding a contiguous chunk of data
-fetched from memory.  Each time data is brought into the cache, an
-entire line is read at once.  The data loaded into a cache line is
-always aligned on a boundary equal to the line size.
-
-@findex INSN_CACHE_DEPTH
-@item INSN_CACHE_DEPTH
-The number of alternative cache lines that can hold any particular memory
-location.
-@end table
-
-Alternatively, if the machine has system calls or instructions to clear
-the instruction cache directly, you can define the following macro.
+the following macro.
 
 @table @code
 @findex CLEAR_INSN_CACHE
 @item CLEAR_INSN_CACHE (@var{beg}, @var{end})
 If defined, expands to a C expression clearing the @emph{instruction
-cache} in the specified interval.  If it is not defined, and the macro
-@code{INSN_CACHE_SIZE} is defined, some generic code is generated to clear the
-cache.  The definition of this macro would typically be a series of
-@code{asm} statements.  Both @var{beg} and @var{end} are both pointer
-expressions.
+cache} in the specified interval.  The definition of this macro would
+typically be a series of @code{asm} statements.  Both @var{beg} and
+@var{end} are both pointer expressions.
 @end table
 
 To use a standard subroutine, define the following macro.  In addition,
@@ -7949,13 +7925,6 @@ arguments should precede the assembler code for the function.  Normally,
 in DBX format, the debugging information entirely follows the assembler
 code.
 
-@findex DBX_LBRAC_FIRST
-@item DBX_LBRAC_FIRST
-Define this macro if the @code{N_LBRAC} symbol for a block should
-precede the debugging information for variables and functions defined in
-that block.  Normally, in DBX format, the @code{N_LBRAC} symbol comes
-first.
-
 @findex DBX_BLOCKS_FUNCTION_RELATIVE
 @item DBX_BLOCKS_FUNCTION_RELATIVE
 Define this macro if the value of a symbol describing the scope of a
@@ -7994,13 +7963,6 @@ Like @code{DBX_OUTPUT_LBRAC}, but for the end of a scope level.
 @item DBX_OUTPUT_NFUN (@var{stream}, @var{lscope_label}, @var{decl})
 Define this macro if the target machine requires special handling to
 output an @code{N_FUN} entry for the function @var{decl}.
-
-@findex DBX_OUTPUT_ENUM
-@item DBX_OUTPUT_ENUM (@var{stream}, @var{type})
-Define this macro if the target machine requires special handling to
-output an enumeration type.  The definition should be a C statement
-(sans semicolon) to output the appropriate information to @var{stream}
-for the type @var{type}.
 
 @findex DBX_OUTPUT_FUNCTION_END
 @item DBX_OUTPUT_FUNCTION_END (@var{stream}, @var{function})
@@ -8085,14 +8047,6 @@ disturbing the rest of the gdb extensions.
 This describes file names in DBX format.
 
 @table @code
-@findex DBX_WORKING_DIRECTORY
-@item DBX_WORKING_DIRECTORY
-Define this if DBX wants to have the current directory recorded in each
-object file.
-
-Note that the working directory is always recorded if GDB extensions are
-enabled.
-
 @findex DBX_OUTPUT_MAIN_SOURCE_FILENAME
 @item DBX_OUTPUT_MAIN_SOURCE_FILENAME (@var{stream}, @var{name})
 A C statement to output DBX debugging information to the stdio stream
@@ -8119,17 +8073,6 @@ compilation of the main source file @var{name}.
 
 If you don't define this macro, nothing special is output at the end
 of compilation, which is correct for most machines.
-
-@findex DBX_OUTPUT_SOURCE_FILENAME
-@item DBX_OUTPUT_SOURCE_FILENAME (@var{stream}, @var{name})
-A C statement to output DBX debugging information to the stdio stream
-@var{stream} which indicates that file @var{name} is the current source
-file.  This output is generated each time input shifts to a different
-source file as a result of @samp{#include}, the end of an included file,
-or a @samp{#line} command.
-
-This macro need not be defined if the standard form of output
-for DBX debugging information is appropriate.
 @end table
 
 @need 2000

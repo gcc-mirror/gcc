@@ -5162,10 +5162,6 @@ ix86_expand_prologue ()
 				       -frame.nregs * UNITS_PER_WORD);
     }
 
-#ifdef SUBTARGET_PROLOGUE
-  SUBTARGET_PROLOGUE;
-#endif
-
   pic_reg_used = false;
   if (pic_offset_table_rtx
       && (regs_ever_live[REAL_PIC_OFFSET_TABLE_REGNUM]

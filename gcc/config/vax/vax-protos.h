@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
-   Copyright (C) 2000, 2002 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -32,4 +32,3 @@ extern int reg_was_0_p PARAMS ((rtx, rtx));
 extern int check_float_value PARAMS ((enum machine_mode, REAL_VALUE_TYPE *, int));
 #endif /* REAL_VALUE_TYPE */
 
-extern void const_section PARAMS ((void));

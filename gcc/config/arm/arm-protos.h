@@ -23,7 +23,6 @@
 #ifndef GCC_ARM_PROTOS_H
 #define GCC_ARM_PROTOS_H
 
-extern void   rdata_section		PARAMS ((void));
 extern void   arm_override_options	PARAMS ((void));
 extern int    use_return_insn		PARAMS ((int));
 extern int    arm_regno_class 		PARAMS ((int));

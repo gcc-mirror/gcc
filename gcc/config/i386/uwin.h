@@ -2,7 +2,7 @@
    hosting on U/WIN (Windows32), using GNU tools and the Windows32 API 
    Library, as distinct from winnt.h, which is used to build GCC for use 
    with a windows style library and tool set and uses the Microsoft tools.
-   Copyright (C) 1999, 2002 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Mumit Khan  <khan@xraylith.wisc.edu>.
 
 This file is part of GNU CC.
@@ -91,8 +91,4 @@ Boston, MA 02111-1307, USA.  */
 
 #undef ASM_OUTPUT_EXTERNAL
 #undef ASM_OUTPUT_EXTERNAL_LIBCALL
-
-/* Override Cygwin's definition. This is necessary now due to the way
-   Cygwin profiling code is written. Once "fixed", we can remove this.  */
-#undef SUBTARGET_PROLOGUE
 

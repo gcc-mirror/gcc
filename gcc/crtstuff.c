@@ -1,7 +1,7 @@
 /* Specialized bits of code needed to support construction and
    destruction of file-scope objects in C++ code.
    Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com).
 
 This file is part of GCC.
@@ -272,7 +272,7 @@ __do_global_dtors_aux (void)
     }
 
 #ifdef USE_EH_FRAME_REGISTRY
-#if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
+#ifdef CRT_GET_RFIB_DATA
   /* If we used the new __register_frame_info_bases interface,
      make sure that we deregister from the same place.  */
   if (__deregister_frame_info_bases)
@@ -299,24 +299,16 @@ frame_dummy (void)
 {
 #ifdef USE_EH_FRAME_REGISTRY
   static struct object object;
-#if defined(CRT_GET_RFIB_TEXT) || defined(CRT_GET_RFIB_DATA)
-  void *tbase, *dbase;
-#ifdef CRT_GET_RFIB_TEXT
-  CRT_GET_RFIB_TEXT (tbase);
-#else
-  tbase = 0;
-#endif
 #ifdef CRT_GET_RFIB_DATA
+  void *tbase, *dbase;
+  tbase = 0;
   CRT_GET_RFIB_DATA (dbase);
-#else
-  dbase = 0;
-#endif
   if (__register_frame_info_bases)
     __register_frame_info_bases (__EH_FRAME_BEGIN__, &object, tbase, dbase);
 #else
   if (__register_frame_info)
     __register_frame_info (__EH_FRAME_BEGIN__, &object);
-#endif
+#endif /* CRT_GET_RFIB_DATA */
 #endif /* USE_EH_FRAME_REGISTRY */
 #ifdef JCR_SECTION_NAME
   if (__JCR_LIST__[0] && _Jv_RegisterClasses)

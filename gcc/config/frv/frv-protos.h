@@ -1,5 +1,5 @@
 /* Frv prototypes.
-   Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
 
 This file is part of GNU CC.
@@ -170,7 +170,6 @@ extern int frv_adjust_field_align	PARAMS ((tree, int));
 extern void fixup_section		PARAMS ((void));
 extern void sdata_section		PARAMS ((void));
 extern void sbss_section		PARAMS ((void));
-extern void const_section		PARAMS ((void));
 extern void data_section		PARAMS ((void));
 
 #ifdef RTX_CODE
