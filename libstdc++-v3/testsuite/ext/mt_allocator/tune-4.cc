@@ -18,14 +18,9 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <cassert>
+#include <testsuite_hooks.h>
 #include <memory>
 #include <ext/mt_allocator.h>
-
-struct pod
-{
-  int i;
-};
 
 // Tune characteristics, two of same type
 template<typename _Tp>
@@ -49,6 +44,8 @@ struct pod2
 template<typename _Tp, typename _Cp>
 void test04()
 {
+  bool test __attribute__((unused)) = true;
+  
   typedef __gnu_cxx::__pool_base::_Tune tune_type;
   typedef _Tp value_type;
   typedef _Cp policy_type;
@@ -63,10 +60,10 @@ void test04()
   tune_type t2;
   if (test_policy<policy_type>::per_type())
     {
-      assert(t1._M_align == t_default._M_align);
+      VERIFY( t1._M_align == t_default._M_align );
       a._M_set_options(t_opt);
       t2 = a._M_get_options();  
-      assert(t1._M_align != t2._M_align);
+      VERIFY( t1._M_align != t2._M_align );
     }
   else
     t2 = t1;
@@ -85,21 +82,21 @@ void test04()
   // Both policy_type and rebind_type::policy_type have same characteristics.
   if (test_policy<policy_type>::per_type())
     {
-      assert(t3._M_align == t_default._M_align);
+      VERIFY( t3._M_align == t_default._M_align );
       a2._M_set_options(t_opt);
-      t4 = a2._M_get_options();  
-      assert(t3._M_align != t4._M_align);
+      t4 = a2._M_get_options();
+      VERIFY( t3._M_align != t4._M_align );
       t3 = t4;
     }
   else
-    assert(t3._M_max_threads == t2._M_max_threads);
+    VERIFY( t3._M_max_threads == t2._M_max_threads );
 
   typename rebind_type::pointer p2 = a2.allocate(5128);
 
   a2._M_set_options(t_single);
-  t4 = a2._M_get_options();  
-  assert(t4._M_max_threads != t_single._M_max_threads);
-  assert(t4._M_max_threads == t3._M_max_threads);
+  t4 = a2._M_get_options();
+  VERIFY( t4._M_max_threads != t_single._M_max_threads );
+  VERIFY( t4._M_max_threads == t3._M_max_threads );
 
   a.deallocate(p1, 128);
   a2.deallocate(p2, 5128);

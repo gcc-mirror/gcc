@@ -18,14 +18,9 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <cassert>
+#include <testsuite_hooks.h>
 #include <memory>
 #include <ext/mt_allocator.h>
-
-struct pod
-{
-  int i;
-};
 
 // Tune characteristics, two of same type
 template<typename _Tp>
@@ -43,6 +38,8 @@ struct test_policy<__gnu_cxx::__common_pool_policy<_Thread> >
 template<typename _Tp, typename _Cp>
 void test03()
 {
+  bool test __attribute__((unused)) = true;
+
   typedef __gnu_cxx::__pool_base::_Tune tune_type;
   typedef _Tp value_type;
   typedef _Cp policy_type;
@@ -58,14 +55,13 @@ void test03()
   tune_type t2;
   if (test_policy<policy_type>::per_type())
     {
-      assert(t1._M_align == t_default._M_align);
+      VERIFY( t1._M_align == t_default._M_align );
       a._M_set_options(t_opt);
-      t2 = a._M_get_options();  
-      assert(t1._M_align != t2._M_align);
+      t2 = a._M_get_options();
+      VERIFY( t1._M_align != t2._M_align );
     }
   else
     t2 = t1;
-
 
   // Lock tune settings.
   typename allocator_type::pointer p1 = a.allocate(128);
@@ -73,14 +69,14 @@ void test03()
   allocator_type a2;
   tune_type t3 = a2._M_get_options();  
   tune_type t4;
-  assert(t3._M_max_threads == t2._M_max_threads);
+  VERIFY( t3._M_max_threads == t2._M_max_threads );
 
   typename allocator_type::pointer p2 = a2.allocate(5128);
 
   a2._M_set_options(t_single);
-  t4 = a2._M_get_options();  
-  assert(t4._M_max_threads != t_single._M_max_threads);
-  assert(t4._M_max_threads == t3._M_max_threads);
+  t4 = a2._M_get_options();
+  VERIFY( t4._M_max_threads != t_single._M_max_threads );
+  VERIFY( t4._M_max_threads == t3._M_max_threads );
 
   a.deallocate(p1, 128);
   a2.deallocate(p2, 5128);

@@ -18,20 +18,17 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-#include <cassert>
+#include <testsuite_hooks.h>
 #include <memory>
 #include <ext/mt_allocator.h>
-
-struct pod
-{
-  int i;
-};
 
 // Tune characteristics. 
 // __common_pool_policy
 void test01()
 {
-  typedef pod value_type;
+  bool test __attribute__((unused)) = true;
+
+  typedef __gnu_test::pod_int value_type;
 #ifdef __GTHREADS
   typedef __gnu_cxx::__common_pool_policy<true> policy_type;
 #else
@@ -46,17 +43,17 @@ void test01()
 
   allocator_type a;
   tune_type t1 = a._M_get_options();  
-  assert(t1._M_align == t_default._M_align);
+  VERIFY( t1._M_align == t_default._M_align );
   a._M_set_options(t_opt);
-  tune_type t2 = a._M_get_options();  
-  assert(t1._M_align != t2._M_align);
+  tune_type t2 = a._M_get_options();
+  VERIFY( t1._M_align != t2._M_align );
 
   allocator_type::pointer p1 = a.allocate(128);
   allocator_type::pointer p2 = a.allocate(5128);
   a._M_set_options(t_single);
   t1 = a._M_get_options();  
-  assert(t1._M_max_threads != t_single._M_max_threads);
-  assert(t1._M_max_threads == t_opt._M_max_threads);
+  VERIFY( t1._M_max_threads != t_single._M_max_threads );
+  VERIFY( t1._M_max_threads == t_opt._M_max_threads );
 
   a.deallocate(p1, 128);
   a.deallocate(p2, 5128);
