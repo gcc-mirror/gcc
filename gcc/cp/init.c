@@ -3235,12 +3235,30 @@ build_delete (type, addr, auto_delete, flags, use_global_delete)
       tree do_delete = NULL_TREE;
       tree ifexp;
 
+      /* For `::delete x', we must not use the deleting destructor
+	 since then we would not be sure to get the global `operator
+	 delete'.  */
       if (use_global_delete && auto_delete == sfk_deleting_destructor)
 	{
 	  /* Delete the object. */
 	  do_delete = build_builtin_delete_call (addr);
 	  /* Otherwise, treat this like a complete object destructor
 	     call.  */
+	  auto_delete = sfk_complete_destructor;
+	}
+      /* If the destructor is non-virtual, there is no deleting
+	 variant.  Instead, we must explicitly call the appropriate
+	 `operator delete' here.  */
+      else if (!DECL_VIRTUAL_P (CLASSTYPE_DESTRUCTORS (type))
+	       && auto_delete == sfk_deleting_destructor)
+	{
+	  /* Buidl the call.  */
+	  do_delete = build_op_delete_call (DELETE_EXPR,
+					    addr,
+					    c_sizeof_nowarn (type),
+					    LOOKUP_NORMAL,
+					    NULL_TREE);
+	  /* Call the complete object destructor.  */
 	  auto_delete = sfk_complete_destructor;
 	}
 

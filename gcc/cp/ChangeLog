@@ -1,3 +1,15 @@
+2001-02-13  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (CLASSTYPE_DESTRUCTORS): Fix typo in comment.
+	* call.c (build_op_delete_call): Simplify to remove duplicate
+	code.
+	* class.c (clone_function_decl): Don't build the deleting variant
+	of a non-virtual destructor.
+	* decl.c (finish_destructor_body): Don't call delete if this is a
+	non-virtual destructor.
+	* init.c (build_delete): Explicitly call `operator delete' when
+	deleting an object with a non-virtual destructor.
+	
 2001-02-12  Mark Mitchell  <mark@codesourcery.com>
 
 	Remove old ABI support.

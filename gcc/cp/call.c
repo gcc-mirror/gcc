@@ -3547,6 +3547,7 @@ build_op_delete_call (code, addr, size, flags, placement)
      int flags;
 {
   tree fn, fns, fnname, fntype, argtypes, args, type;
+  int pass;
 
   if (addr == error_mark_node)
     return error_mark_node;
@@ -3595,48 +3596,45 @@ build_op_delete_call (code, addr, size, flags, placement)
       args = NULL_TREE;
     }
 
-  argtypes = tree_cons (NULL_TREE, ptr_type_node, argtypes);
-  fntype = build_function_type (void_type_node, argtypes);
-
   /* Strip const and volatile from addr.  */
   addr = cp_convert (ptr_type_node, addr);
 
-  fn = instantiate_type (fntype, fns, itf_no_attributes);
-
-  if (fn != error_mark_node)
+  /* We make two tries at finding a matching `operator delete'.  On
+     the first pass, we look for an one-operator (or placement)
+     operator delete.  If we're not doing placement delete, then on
+     the second pass we look for a two-argument delete.  */
+  for (pass = 0; pass < (placement ? 1 : 2); ++pass) 
     {
-      if (TREE_CODE (fns) == TREE_LIST)
-	/* Member functions.  */
-	enforce_access (type, fn);
-      return build_function_call (fn, tree_cons (NULL_TREE, addr, args));
+      if (pass == 0)
+	argtypes = tree_cons (NULL_TREE, ptr_type_node, argtypes);
+      else 
+	/* Normal delete; now try to find a match including the size
+	   argument.  */
+	argtypes = tree_cons (NULL_TREE, ptr_type_node,
+			      tree_cons (NULL_TREE, sizetype, 
+					 void_list_node));
+
+      fntype = build_function_type (void_type_node, argtypes);
+      fn = instantiate_type (fntype, fns, itf_no_attributes);
+
+      if (fn != error_mark_node)
+	{
+	  /* Member functions.  */
+	  if (BASELINK_P (fns))
+	    enforce_access (type, fn);
+
+	  if (pass == 0)
+	    args = tree_cons (NULL_TREE, addr, args);
+	  else
+	    args = tree_cons (NULL_TREE, addr, 
+			      build_tree_list (NULL_TREE, size));
+	  return build_function_call (fn, args);
+	}
     }
 
   /* If we are doing placement delete we do nothing if we don't find a
      matching op delete.  */
   if (placement)
-    return NULL_TREE;
-
-  /* Normal delete; now try to find a match including the size argument.  */
-  argtypes = tree_cons (NULL_TREE, ptr_type_node,
-			tree_cons (NULL_TREE, sizetype, void_list_node));
-  fntype = build_function_type (void_type_node, argtypes);
-
-  fn = instantiate_type (fntype, fns, itf_no_attributes);
-
-  if (fn != error_mark_node)
-    {
-      if (BASELINK_P (fns))
-	/* Member functions.  */
-	enforce_access (type, fn);
-      return build_function_call
-	(fn, tree_cons (NULL_TREE, addr,
-			build_tree_list (NULL_TREE, size)));
-    }
-
-  /* finish_function passes LOOKUP_SPECULATIVELY if we're in a
-     destructor, in which case the error should be deferred
-     until someone actually tries to delete one of these.  */
-  if (flags & LOOKUP_SPECULATIVELY)
     return NULL_TREE;
 
   cp_error ("no suitable `operator delete' for `%T'", type);
