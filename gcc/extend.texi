@@ -3371,6 +3371,7 @@ function as well.
 @findex creall
 @findex exit
 @findex _exit
+@findex _Exit
 @findex fabs
 @findex fabsf
 @findex fabsl
@@ -3421,10 +3422,11 @@ option.  Many of these functions are only optimized in certain cases; if
 not optimized in a particular case, a call to the library function will
 be emitted.
 
-The functions @code{abort}, @code{exit}, and @code{_exit} are recognized
-and presumed not to return, but otherwise are not built in.
-@code{_exit} is not recognized in strict ISO C mode (@samp{-ansi},
-@samp{-std=c89} or @samp{-std=c99}).
+The functions @code{abort}, @code{exit}, @code{_Exit} and @code{_exit}
+are recognized and presumed not to return, but otherwise are not built
+in.  @code{_exit} is not recognized in strict ISO C mode (@samp{-ansi},
+@samp{-std=c89} or @samp{-std=c99}).  @code{_Exit} is not recognized in
+strict C89 mode (@samp{-ansi} or @samp{-std=c89}).
 
 Outside strict ISO C mode, the functions @code{alloca}, @code{bcmp},
 @code{bzero}, @code{index}, @code{rindex} and @code{ffs} may be handled
