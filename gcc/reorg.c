@@ -3134,7 +3134,8 @@ relax_delay_slots (first)
 	    }
 
 	  if (target_label != JUMP_LABEL (insn))
-	    redirect_jump (insn, target_label);
+	    redirect_jump (insn,
+			   target_label ? target_label : find_end_label ());
 
 	  /* See if this jump branches around a unconditional jump.
 	     If so, invert this jump and point it to the target of the
