@@ -41,7 +41,6 @@ Boston, MA 02111-1307, USA.  */
 #include "regs.h"
 #include "defaults.h"
 #include "real.h"
-#include "bytecode.h"
 
 #include "obstack.h"
 #include "c-pragma.h"
@@ -138,9 +137,7 @@ struct constant_descriptor;
 struct rtx_const;
 struct pool_constant;
 
-static void bc_make_decl_rtl		PROTO((tree, char *, int));
 static char *strip_reg_name		PROTO((char *));
-static void bc_output_ascii		PROTO((FILE *, char *, int));
 static int contains_pointers_p		PROTO((tree));
 static void decode_addr_const		PROTO((tree, struct addr_const *));
 static int const_hash			PROTO((tree));
@@ -163,7 +160,6 @@ static void mark_constant_pool		PROTO((void));
 static void mark_constants		PROTO((rtx));
 static int output_addressed_constants	PROTO((tree));
 static void output_after_function_constants PROTO((void));
-static void bc_assemble_integer		PROTO((tree, int));
 static void output_constructor		PROTO((tree, int));
 
 static enum in_section { no_section, in_text, in_data, in_named
@@ -198,11 +194,7 @@ text_section ()
 {
   if (in_section != in_text)
     {
-      if (output_bytecode)
-	bc_text ();
-      else
-	fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
-
+      fprintf (asm_out_file, "%s\n", TEXT_SECTION_ASM_OP);
       in_section = in_text;
     }
 }
@@ -214,21 +206,16 @@ data_section ()
 {
   if (in_section != in_data)
     {
-      if (output_bytecode)
-	bc_data ();
-      else
+      if (flag_shared_data)
 	{
-	  if (flag_shared_data)
-	    {
 #ifdef SHARED_SECTION_ASM_OP
-	      fprintf (asm_out_file, "%s\n", SHARED_SECTION_ASM_OP);
+	  fprintf (asm_out_file, "%s\n", SHARED_SECTION_ASM_OP);
 #else
-	      fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
+	  fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
 #endif
-	    }
-	  else
-	    fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
 	}
+      else
+	fprintf (asm_out_file, "%s\n", DATA_SECTION_ASM_OP);
 
       in_section = in_data;
     }
@@ -329,17 +316,12 @@ bss_section ()
 {
   if (in_section != in_bss)
     {
-      if (output_bytecode)
-	bc_data ();
-      else
-	{
 #ifdef SHARED_BSS_SECTION_ASM_OP
-	  if (flag_shared_data)
-	    fprintf (asm_out_file, "%s\n", SHARED_BSS_SECTION_ASM_OP);
-	  else
+      if (flag_shared_data)
+	fprintf (asm_out_file, "%s\n", SHARED_BSS_SECTION_ASM_OP);
+      else
 #endif
-	    fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);
-	}
+	fprintf (asm_out_file, "%s\n", BSS_SECTION_ASM_OP);
 
       in_section = in_bss;
     }
@@ -501,16 +483,6 @@ make_function_rtl (decl)
   char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   char *new_name = name;
 
-  if (output_bytecode)
-    {
-      if (DECL_RTL (decl) == 0)
-	DECL_RTL (decl) = bc_gen_rtx (name, 0, (struct bc_label *) 0);
-      
-      /* Record that at least one function has been defined.  */
-      function_defined = 1;
-      return;
-    }
-
   /* Rename a nested function to avoid conflicts.  */
   if (decl_function_context (decl) != 0
       && DECL_INITIAL (decl) != 0
@@ -554,47 +526,6 @@ make_function_rtl (decl)
 
   /* Record at least one function has been defined.  */
   function_defined = 1;
-}
-
-/* Create the DECL_RTL for a declaration for a static or external
-   variable or static or external function.
-   ASMSPEC, if not 0, is the string which the user specified
-   as the assembler symbol name.
-   TOP_LEVEL is nonzero if this is a file-scope variable.
-   This is never called for PARM_DECLs.  */
-
-static void
-bc_make_decl_rtl (decl, asmspec, top_level)
-     tree decl;
-     char *asmspec;
-     int top_level;
-{
-  register char *name = TREE_STRING_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-  if (DECL_RTL (decl) == 0)
-    {
-      /* Print an error message for register variables.  */
-      if (DECL_REGISTER (decl))
-	error ("global register variables not supported in the interpreter");
-
-      /* Handle ordinary static variables and functions.  */
-      if (DECL_RTL (decl) == 0)
-	{
-	  /* Can't use just the variable's own name for a variable
-	     whose scope is less than the whole file.
-	     Concatenate a distinguishing number.  */
-	  if (!top_level && !TREE_PUBLIC (decl) && asmspec == 0)
-	    {
-	      char *label;
-
-	      ASM_FORMAT_PRIVATE_NAME (label, name, var_labelno);
-	      name = obstack_copy0 (saveable_obstack, label, strlen (label));
-	      var_labelno++;
-	    }
-
-	  DECL_RTL (decl) = bc_gen_rtx (name, 0, (struct bc_label *) 0);
-	}
-    }
 }
 
 /* Given NAME, a putative register name, discard any customary prefixes.  */
@@ -688,12 +619,6 @@ make_decl_rtl (decl, asmspec, top_level)
 {
   register char *name = 0;
   int reg_number;
-
-  if (output_bytecode)
-    {
-      bc_make_decl_rtl (decl, asmspec, top_level);
-      return;
-    }
 
   reg_number = decode_reg_name (asmspec);
 
@@ -889,12 +814,6 @@ void
 assemble_asm (string)
      tree string;
 {
-  if (output_bytecode)
-    {
-      error ("asm statements not allowed in interpreter");
-      return;
-    }
-
   app_enable ();
 
   if (TREE_CODE (string) == ADDR_EXPR)
@@ -1025,12 +944,7 @@ assemble_start_function (decl, fnname)
   /* Tell assembler to move to target machine's alignment for functions.  */
   align = floor_log2 (FUNCTION_BOUNDARY / BITS_PER_UNIT);
   if (align > 0)
-    {
-      if (output_bytecode)
-	BC_OUTPUT_ALIGN (asm_out_file, align);
-      else
-	ASM_OUTPUT_ALIGN (asm_out_file, align);
-    }
+    ASM_OUTPUT_ALIGN (asm_out_file, align);
 
 #ifdef ASM_OUTPUT_FUNCTION_PREFIX
   ASM_OUTPUT_FUNCTION_PREFIX (asm_out_file, fnname);
@@ -1067,24 +981,16 @@ assemble_start_function (decl, fnname)
 	ASM_WEAKEN_LABEL (asm_out_file, fnname);
       else
 #endif
-      if (output_bytecode)
-	BC_GLOBALIZE_LABEL (asm_out_file, fnname);
-      else
-	ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
+      ASM_GLOBALIZE_LABEL (asm_out_file, fnname);
     }
 
   /* Do any machine/system dependent processing of the function name */
-  if (output_bytecode)
-    BC_OUTPUT_LABEL (asm_out_file, fnname);
-  else
-    {
 #ifdef ASM_DECLARE_FUNCTION_NAME
-      ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
+  ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
 #else
-      /* Standard thing is just output label for the function.  */
-      ASM_OUTPUT_LABEL (asm_out_file, fnname);
+  /* Standard thing is just output label for the function.  */
+  ASM_OUTPUT_LABEL (asm_out_file, fnname);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
-    }
 }
 
 /* Output assembler code associated with defining the size of the
@@ -1114,12 +1020,6 @@ void
 assemble_zeros (size)
      int size;
 {
-  if (output_bytecode)
-    {
-      bc_emit_const_skip (size);
-      return;
-    }
-
 #ifdef ASM_NO_SKIP_IN_TEXT
   /* The `space' pseudo in the text section outputs nop insns rather than 0s,
      so we must output 0s explicitly in the text section.  */
@@ -1153,12 +1053,7 @@ assemble_zeros (size)
   else
 #endif
     if (size > 0)
-      {
-	if (output_bytecode)
-	  BC_OUTPUT_SKIP (asm_out_file, size);
-	else
-	  ASM_OUTPUT_SKIP (asm_out_file, size);
-      }
+      ASM_OUTPUT_SKIP (asm_out_file, size);
 }
 
 /* Assemble an alignment pseudo op for an ALIGN-bit boundary.  */
@@ -1182,12 +1077,6 @@ assemble_string (p, size)
   int pos = 0;
   int maximum = 2000;
 
-  if (output_bytecode)
-    {
-      bc_emit (p, size);
-      return;
-    }
-
   /* If the string is very long, split it up.  */
 
   while (pos < size)
@@ -1196,26 +1085,13 @@ assemble_string (p, size)
       if (thissize > maximum)
 	thissize = maximum;
 
-      if (output_bytecode)
-	bc_output_ascii (asm_out_file, p, thissize);
-      else
-	{
-	  ASM_OUTPUT_ASCII (asm_out_file, p, thissize);
-	}
+      ASM_OUTPUT_ASCII (asm_out_file, p, thissize);
 
       pos += thissize;
       p += thissize;
     }
 }
 
-static void
-bc_output_ascii (file, p, size)
-     FILE *file;
-     char *p;
-     int size;
-{
-  BC_OUTPUT_ASCII (file, p, size);
-}
 
 /* Assemble everything that is needed for a variable or function declaration.
    Not used for automatic variables, and not used for function definitions.
@@ -1242,9 +1118,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 
   last_assemble_variable_decl = 0;
 
-  if (output_bytecode)
-    return;
-
   if (GET_CODE (DECL_RTL (decl)) == REG)
     {
       /* Do output symbol info for global register variables, but do nothing
@@ -1254,22 +1127,19 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	return;
       TREE_ASM_WRITTEN (decl) = 1;
 
-      if (!output_bytecode)
-	{
 #if defined (DBX_DEBUGGING_INFO) || defined (XCOFF_DEBUGGING_INFO)
-	  /* File-scope global variables are output here.  */
-	  if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
-	      && top_level)
-	    dbxout_symbol (decl, 0);
+      /* File-scope global variables are output here.  */
+      if ((write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
+	   && top_level)
+	dbxout_symbol (decl, 0);
 #endif
 #ifdef SDB_DEBUGGING_INFO
-	  if (write_symbols == SDB_DEBUG && top_level
-	      /* Leave initialized global vars for end of compilation;
-		 see comment in compile_file.  */
-	      && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
-	    sdbout_symbol (decl, 0);
+      if (write_symbols == SDB_DEBUG && top_level
+	  /* Leave initialized global vars for end of compilation;
+	     see comment in compile_file.  */
+	  && (TREE_PUBLIC (decl) == 0 || DECL_INITIAL (decl) == 0))
+	sdbout_symbol (decl, 0);
 #endif
-	}
 
       /* Don't output any DWARF debugging information for variables here.
 	 In the case of local variables, the information for them is output
@@ -1422,11 +1292,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	    ASM_OUTPUT_SHARED_COMMON (asm_out_file, name, size, rounded);
 	  else
 #endif
-	    if (output_bytecode)
-	      {
-		BC_OUTPUT_COMMON (asm_out_file, name, size, rounded);
-	      }
-	    else
 	      {
 #ifdef ASM_OUTPUT_ALIGNED_DECL_COMMON
 		ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, decl, name, size,
@@ -1449,11 +1314,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	    ASM_OUTPUT_SHARED_BSS (asm_out_file, decl, name, size, rounded);
 	  else
 #endif
-	    if (output_bytecode)
-	      {
-		BC_OUTPUT_BSS (asm_out_file, name, size, rounded);
-	      }
-	    else
 	      {
 #ifdef ASM_OUTPUT_ALIGNED_BSS
 		ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size,
@@ -1471,11 +1331,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	    ASM_OUTPUT_SHARED_LOCAL (asm_out_file, name, size, rounded);
 	  else
 #endif
-	    if (output_bytecode)
-	      {
-		BC_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
-	      }
-	    else
 	      {
 #ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
 		ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, decl, name, size,
@@ -1601,26 +1456,16 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
   DECL_ALIGN (decl) = align;
 
   if (align > BITS_PER_UNIT)
-    {
-      if (output_bytecode)
-	BC_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-      else
-	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-    }
+    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
 
   /* Do any machine/system dependent processing of the object.  */
-  if (output_bytecode)
-    BC_OUTPUT_LABEL (asm_out_file, name);
-  else
-    {
 #ifdef ASM_DECLARE_OBJECT_NAME
-      last_assemble_variable_decl = decl;
-      ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
+  last_assemble_variable_decl = decl;
+  ASM_DECLARE_OBJECT_NAME (asm_out_file, name, decl);
 #else
-      /* Standard thing is just output label for the object.  */
-      ASM_OUTPUT_LABEL (asm_out_file, name);
+  /* Standard thing is just output label for the object.  */
+  ASM_OUTPUT_LABEL (asm_out_file, name);
 #endif /* ASM_DECLARE_OBJECT_NAME */
-    }
 
   if (!dont_output_data)
     {
@@ -1693,55 +1538,6 @@ contains_pointers_p (type)
     }
 }
 
-/* Output text storage for constructor CONSTR.  */
-
-void
-bc_output_constructor (constr, size)
-     tree constr;
-     int size;
-{
-  int i;
-
-  /* Must always be a literal; non-literal constructors are handled
-     differently.  */
-
-  if (!TREE_CONSTANT (constr))
-    abort ();
-
-  /* Always const */
-  text_section ();
-
-  /* Align */
-  for (i = 0; TYPE_ALIGN (constr) >= BITS_PER_UNIT << (i + 1); i++)
-    ;
-
-  if (i > 0)
-    BC_OUTPUT_ALIGN (asm_out_file, i);
-
-  /* Output data */
-  output_constant (constr, size);
-}
-
-/* Create storage for constructor CONSTR.  */
-
-void
-bc_output_data_constructor (constr)
-    tree constr;
-{
-  int i;
-
-  /* Put in data section */
-  data_section ();
-
-  /* Align */
-  for (i = 0; TYPE_ALIGN (constr) >= BITS_PER_UNIT << (i + 1); i++);
-  if (i > 0)
-    BC_OUTPUT_ALIGN (asm_out_file, i);
-
-  /* The constructor is filled in at runtime.  */
-  BC_OUTPUT_SKIP (asm_out_file, int_size_in_bytes (TREE_TYPE (constr)));
-}
-
 /* Output something to declare an external symbol to the assembler.
    (Most assemblers don't need this, so we normally output nothing.)
    Do nothing if DECL is not external.  */
@@ -1750,9 +1546,6 @@ void
 assemble_external (decl)
      tree decl;
 {
-  if (output_bytecode)
-    return;
-
 #ifdef ASM_OUTPUT_EXTERNAL
   if (TREE_CODE_CLASS (TREE_CODE (decl)) == 'd'
       && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl))
@@ -1777,14 +1570,11 @@ assemble_external_libcall (fun)
      rtx fun;
 {
 #ifdef ASM_OUTPUT_EXTERNAL_LIBCALL
-  if (!output_bytecode)
+  /* Declare library function name external when first used, if nec.  */
+  if (! SYMBOL_REF_USED (fun))
     {
-      /* Declare library function name external when first used, if nec.  */
-      if (! SYMBOL_REF_USED (fun))
-	{
-	  SYMBOL_REF_USED (fun) = 1;
-	  ASM_OUTPUT_EXTERNAL_LIBCALL (asm_out_file, fun);
-	}
+      SYMBOL_REF_USED (fun) = 1;
+      ASM_OUTPUT_EXTERNAL_LIBCALL (asm_out_file, fun);
     }
 #endif
 }
@@ -1804,10 +1594,7 @@ void
 assemble_label (name)
      char *name;
 {
-  if (output_bytecode)
-    BC_OUTPUT_LABEL (asm_out_file, name);
-  else
-    ASM_OUTPUT_LABEL (asm_out_file, name);
+  ASM_OUTPUT_LABEL (asm_out_file, name);
 }
 
 /* Output to FILE a reference to the assembler name of a C-level name NAME.
@@ -1834,19 +1621,9 @@ assemble_name (file, name)
     TREE_SYMBOL_REFERENCED (id) = 1;
 
   if (name[0] == '*')
-    {
-      if (output_bytecode)
-	bc_emit_labelref (name, 0);
-      else
-	fputs (&name[1], file);
-    }
+    fputs (&name[1], file);
   else
-    {
-      if (output_bytecode)
-	BC_OUTPUT_LABELREF (file, name);
-      else
-	ASM_OUTPUT_LABELREF (file, name);
-    }
+    ASM_OUTPUT_LABELREF (file, name);
 }
 
 /* Allocate SIZE bytes writable static space with a gensym name
@@ -1877,28 +1654,18 @@ assemble_static_space (size)
 				       strlen (name) + 2);
   strcpy (namestring, name);
 
-  if (output_bytecode)
-    x = bc_gen_rtx (namestring, 0, (struct bc_label *) 0);
-  else
-    x = gen_rtx_SYMBOL_REF (Pmode, namestring);
+  x = gen_rtx_SYMBOL_REF (Pmode, namestring);
 
-  if (output_bytecode)
-    {
-      BC_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
-    }
-  else
-    {
 #ifdef ASM_OUTPUT_ALIGNED_DECL_LOCAL
-      ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
-				  BIGGEST_ALIGNMENT);
+  ASM_OUTPUT_ALIGNED_DECL_LOCAL (asm_out_file, NULL_TREE, name, size,
+				 BIGGEST_ALIGNMENT);
 #else
 #ifdef ASM_OUTPUT_ALIGNED_LOCAL
-      ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, BIGGEST_ALIGNMENT);
+  ASM_OUTPUT_ALIGNED_LOCAL (asm_out_file, name, size, BIGGEST_ALIGNMENT);
 #else
-      ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
+  ASM_OUTPUT_LOCAL (asm_out_file, name, size, rounded);
 #endif
 #endif
-    }
   return x;
 }
 
@@ -1913,10 +1680,6 @@ assemble_trampoline_template ()
   char label[256];
   char *name;
   int align;
-
-  /* Shouldn't get here */
-  if (output_bytecode)
-    abort ();
 
   /* By default, put trampoline templates in read-only data section.  */
 
@@ -2385,13 +2148,9 @@ decode_addr_const (exp, value)
       break;
 
     case LABEL_DECL:
-      if (output_bytecode)
-	/* FIXME: this may not be correct, check it */
-	x = bc_gen_rtx (TREE_STRING_POINTER (target), 0, (struct bc_label *) 0);
-      else
-	x = gen_rtx_MEM (FUNCTION_MODE,
-			 gen_rtx_LABEL_REF (VOIDmode,
-					    label_rtx (TREE_OPERAND (exp, 0))));
+      x = gen_rtx_MEM (FUNCTION_MODE,
+		       gen_rtx_LABEL_REF (VOIDmode,
+					  label_rtx (TREE_OPERAND (exp, 0))));
       break;
 
     case REAL_CST:
@@ -2406,12 +2165,9 @@ decode_addr_const (exp, value)
       abort ();
     }
 
-  if (!output_bytecode)
-    {
-      if (GET_CODE (x) != MEM)
-	abort ();
-      x = XEXP (x, 0);
-    }
+  if (GET_CODE (x) != MEM)
+    abort ();
+  x = XEXP (x, 0);
 
   value->base = x;
   value->offset = offset;
@@ -3179,16 +2935,7 @@ output_constant_def_contents (exp, reloc, labelno)
 #endif
 
   if (align > BITS_PER_UNIT)
-    {
-      if (!output_bytecode)
-	{
-	  ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-	}
-      else
-	{
-	  BC_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
-	}
-    }
+    ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
 
   /* Output the label itself.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "LC", labelno);
@@ -3994,10 +3741,7 @@ output_constant (exp, size)
      This means to fill the space with zeros.  */
   if (TREE_CODE (exp) == CONSTRUCTOR && CONSTRUCTOR_ELTS (exp) == 0)
     {
-      if (output_bytecode)
-	bc_emit_const_skip (size);
-      else
-	assemble_zeros (size);
+      assemble_zeros (size);
       return;
     }
 
@@ -4091,107 +3835,6 @@ output_constant (exp, size)
     assemble_zeros (size);
 }
 
-/* Bytecode specific code to output assembler for integer.  */
-
-static void
-bc_assemble_integer (exp, size)
-    tree exp;
-    int size;
-{
-  tree const_part;
-  tree addr_part;
-  tree tmp;
-
-  /* FIXME: is this fold() business going to be as good as the
-     expand_expr() using EXPAND_SUM above in the RTL case?  I
-     hate RMS.
-     FIXME: Copied as is from BC-GCC1; may need work. Don't hate. -bson */
-  
-  exp = fold (exp);
-  
-  while (TREE_CODE (exp) == NOP_EXPR || TREE_CODE (exp) == CONVERT_EXPR
-	 || TREE_CODE (exp) == NON_LVALUE_EXPR)
-    exp = TREE_OPERAND (exp, 0);
-  if (TREE_CODE (exp) == INTEGER_CST)
-    {
-      const_part = exp;
-      addr_part = 0;
-    }
-  else if (TREE_CODE (exp) == PLUS_EXPR)
-    {
-      const_part = TREE_OPERAND (exp, 0);
-      while (TREE_CODE (const_part) == NOP_EXPR
-	     || TREE_CODE (const_part) == CONVERT_EXPR
-	     || TREE_CODE (const_part) == NON_LVALUE_EXPR)
-	const_part = TREE_OPERAND (const_part, 0);
-      addr_part = TREE_OPERAND (exp, 1);
-      while (TREE_CODE (addr_part) == NOP_EXPR
-	     || TREE_CODE (addr_part) == CONVERT_EXPR
-	     || TREE_CODE (addr_part) == NON_LVALUE_EXPR)
-	addr_part = TREE_OPERAND (addr_part, 0);
-      if (TREE_CODE (const_part) != INTEGER_CST)
-	tmp = const_part, const_part = addr_part, addr_part = tmp;
-      if (TREE_CODE (const_part) != INTEGER_CST
-	  || TREE_CODE (addr_part) != ADDR_EXPR)
-	abort ();		/* FIXME: we really haven't considered
-				   all the possible cases here.  */
-    }
-  else if (TREE_CODE (exp) == ADDR_EXPR)
-    {
-      const_part = integer_zero_node;
-      addr_part = exp;
-    }
-  else
-    abort ();		/* FIXME: ditto previous.  */
-  
-  if (addr_part == 0)
-    {
-      if (size == 1)
-	{
-	  char c = TREE_INT_CST_LOW (const_part);
-	  bc_emit (&c, 1);
-	  size -= 1;
-	}
-      else if (size == 2)
-	{
-	  short s = TREE_INT_CST_LOW (const_part);
-	  bc_emit ((char *) &s, 2);
-	  size -= 2;
-	}
-      else if (size == 4)
-	{
-	  int i = TREE_INT_CST_LOW (const_part);
-	  bc_emit ((char *) &i, 4);
-	  size -= 4;
-	}
-      else if (size == 8)
-	{
-	  if (WORDS_BIG_ENDIAN)
-	    {
-	      int i = TREE_INT_CST_HIGH (const_part);
-	      bc_emit ((char *) &i, 4);
-	      i = TREE_INT_CST_LOW (const_part);
-	      bc_emit ((char *) &i, 4);
-	    }
-	  else
-	    {
-	      int i = TREE_INT_CST_LOW (const_part);
-	      bc_emit ((char *) &i, 4);
-	      i = TREE_INT_CST_HIGH (const_part);
-	      bc_emit ((char *) &i, 4);
-	    }
-	  size -= 8;
-	}
-    }
-  else
-    if (size == 4
-	&& TREE_CODE (TREE_OPERAND (addr_part, 0)) == VAR_DECL)
-      bc_emit_labelref (IDENTIFIER_POINTER
-			(DECL_ASSEMBLER_NAME (TREE_OPERAND (addr_part, 0))),
-			TREE_INT_CST_LOW (const_part));
-    else
-      abort ();		/* FIXME: there may be more cases.  */
-}
 
 /* Subroutine of output_constant, used for CONSTRUCTORs
    (aggregate constants).
@@ -4299,10 +3942,7 @@ output_constructor (exp, size)
 	     if each element has the proper size.  */
 	  if ((field != 0 || index != 0) && bitpos != total_bytes)
 	    {
-	      if (!output_bytecode)
-		assemble_zeros (bitpos - total_bytes);
-	      else
-		bc_emit_const_skip (bitpos - total_bytes);
+	      assemble_zeros (bitpos - total_bytes);
 	      total_bytes = bitpos;
 	    }
 
@@ -4563,9 +4203,6 @@ assemble_alias (decl, target)
 	ASM_WEAKEN_LABEL (asm_out_file, name);
       else
 #endif
-      if (output_bytecode)
-	BC_GLOBALIZE_LABEL (asm_out_file, name);
-      else
 	ASM_GLOBALIZE_LABEL (asm_out_file, name);
     }
 

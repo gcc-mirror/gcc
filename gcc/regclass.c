@@ -34,7 +34,6 @@ Boston, MA 02111-1307, USA.  */
 #include "recog.h"
 #include "reload.h"
 #include "real.h"
-#include "bytecode.h"
 
 #ifndef REGISTER_MOVE_COST
 #define REGISTER_MOVE_COST(x, y) 2
@@ -424,8 +423,7 @@ init_regs ()
 {
   /* This finishes what was started by init_reg_sets, but couldn't be done
      until after register usage was specified.  */
-  if (!output_bytecode)
-    init_reg_sets_1 ();
+  init_reg_sets_1 ();
 
   init_reg_modes ();
 }
@@ -482,13 +480,6 @@ fix_register (name, fixed, call_used)
      int fixed, call_used;
 {
   int i;
-
-  if (output_bytecode)
-    {
-      warning ("request to mark `%s' as %s ignored by bytecode compiler",
-	       name, call_used ? "call-used" : "fixed");
-      return;
-    }
 
   /* Decode the name and update the primary form of
      the register info.  */

@@ -72,8 +72,6 @@ Boston, MA 02111-1307, USA.  */
 #include "insn-attr.h"
 #include "defaults.h"
 #include "output.h"
-#include "bytecode.h"
-#include "bc-emit.h"
 #include "except.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
@@ -305,9 +303,6 @@ int optimize = 0;
 int errorcount = 0;
 int warningcount = 0;
 int sorrycount = 0;
-
-/* Flag to output bytecode instead of native assembler */
-int output_bytecode = 0;
 
 /* Pointer to function to compute the name to use to print a declaration.
    DECL is the declaration in question.
@@ -751,7 +746,6 @@ struct { char *string; int *variable; int on_value;} f_options[] =
   {"regmove", &flag_regmove, 1},
   {"pack-struct", &flag_pack_struct, 1},
   {"stack-check", &flag_stack_check, 1},
-  {"bytecode", &output_bytecode, 1},
   {"argument-alias", &flag_argument_noalias, 0},
   {"argument-noalias", &flag_argument_noalias, 1},
   {"argument-noalias-global", &flag_argument_noalias, 2},
@@ -1111,11 +1105,8 @@ fatal_insn (message, insn)
      char *message;
      rtx insn;
 {
-  if (!output_bytecode)
-    {
-      error (message);
-      debug_rtx (insn);
-    }
+  error (message);
+  debug_rtx (insn);
   if (asm_out_file)
     fflush (asm_out_file);
   if (aux_info_file)
@@ -2262,8 +2253,6 @@ compile_file (name)
 #else
   init_lex ();
 #endif
-  /* Some of these really don't need to be called when generating bytecode,
-     but the options would have to be parsed first to know that. -bson */
   init_rtl ();
   init_emit_once (debug_info_level == DINFO_LEVEL_NORMAL
 		  || debug_info_level == DINFO_LEVEL_VERBOSE
@@ -2431,36 +2420,27 @@ compile_file (name)
   if (main_input_filename == 0)
     main_input_filename = name;
 
-  if (!output_bytecode)
-    {
-      ASM_FILE_START (asm_out_file);
+  ASM_FILE_START (asm_out_file);
 
 #ifdef ASM_COMMENT_START
-      if (flag_verbose_asm)
-	{
-	  /* Print the list of options in effect.  */
-	  print_version (asm_out_file, ASM_COMMENT_START);
-	  print_switch_values (asm_out_file, 0, MAX_LINE,
-			       ASM_COMMENT_START, " ", "\n");
-	  /* Add a blank line here so it appears in assembler output but not
-	     screen output.  */
-	  fprintf (asm_out_file, "\n");
-	}
-#endif
-    }
-
-  /* Output something to inform GDB that this compilation was by GCC.  Also
-     serves to tell GDB file consists of bytecodes.  */
-  if (output_bytecode)
-    fprintf (asm_out_file, "bc_gcc2_compiled.:\n");
-  else
+  if (flag_verbose_asm)
     {
-#ifndef ASM_IDENTIFY_GCC
-      fprintf (asm_out_file, "gcc2_compiled.:\n");
-#else
-      ASM_IDENTIFY_GCC (asm_out_file);
-#endif
+      /* Print the list of options in effect.  */
+      print_version (asm_out_file, ASM_COMMENT_START);
+      print_switch_values (asm_out_file, 0, MAX_LINE,
+			       ASM_COMMENT_START, " ", "\n");
+      /* Add a blank line here so it appears in assembler output but not
+	 screen output.  */
+      fprintf (asm_out_file, "\n");
     }
+#endif
+
+  /* Output something to inform GDB that this compilation was by GCC.  */
+#ifndef ASM_IDENTIFY_GCC
+  fprintf (asm_out_file, "gcc2_compiled.:\n");
+#else
+  ASM_IDENTIFY_GCC (asm_out_file);
+#endif
 
   /* Output something to identify which front-end produced this file.  */
 #ifdef ASM_IDENTIFY_LANGUAGE
@@ -2485,28 +2465,20 @@ compile_file (name)
   if (flag_function_sections && write_symbols != NO_DEBUG)
     warning ("-ffunction-sections may affect debugging on some targets.");
 
-  if (output_bytecode)
-    {
-      if (profile_flag || profile_block_flag)
-	error ("profiling not supported in bytecode compilation");
-    }
-  else
-    {
-      /* ??? Note: There used to be a conditional here
-	 to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
-	 This was to guarantee separation between gcc_compiled. and
-	 the first function, for the sake of dbx on Suns.
-	 However, having the extra zero here confused the Emacs
-	 code for unexec, and might confuse other programs too.
-	 Therefore, I took out that change.
-	 In future versions we should find another way to solve
-	 that dbx problem.  -- rms, 23 May 93.  */
+  /* ??? Note: There used to be a conditional here
+      to call assemble_zeros without fail if DBX_DEBUGGING_INFO is defined.
+      This was to guarantee separation between gcc_compiled. and
+      the first function, for the sake of dbx on Suns.
+      However, having the extra zero here confused the Emacs
+      code for unexec, and might confuse other programs too.
+      Therefore, I took out that change.
+      In future versions we should find another way to solve
+      that dbx problem.  -- rms, 23 May 93.  */
       
-      /* Don't let the first function fall at the same address
-	 as gcc_compiled., if profiling.  */
-      if (profile_flag || profile_block_flag)
-	assemble_zeros (UNITS_PER_WORD);
-    }
+  /* Don't let the first function fall at the same address
+     as gcc_compiled., if profiling.  */
+  if (profile_flag || profile_block_flag)
+    assemble_zeros (UNITS_PER_WORD);
 
   /* If dbx symbol table desired, initialize writing it
      and output the predefined types.  */
@@ -2535,8 +2507,7 @@ compile_file (name)
 
   /* Initialize yet another pass.  */
 
-  if (!output_bytecode)
-    init_final (main_input_filename);
+  init_final (main_input_filename);
   init_branch_prob (dump_base_name);
 
   start_time = get_run_time ();
@@ -2792,22 +2763,16 @@ compile_file (name)
 
   /* Output some stuff at end of file if nec.  */
 
-  if (!output_bytecode)
-    {
-      end_final (dump_base_name);
-      end_branch_prob (branch_prob_dump_file);
+  end_final (dump_base_name);
+  end_branch_prob (branch_prob_dump_file);
 
 #ifdef ASM_FILE_END
-      ASM_FILE_END (asm_out_file);
+  ASM_FILE_END (asm_out_file);
 #endif
-    }
 
   /* Language-specific end of compilation actions.  */
 
   lang_finish ();
-
-  if (output_bytecode)
-    bc_write_file (asm_out_file);
 
   /* Close the dump files.  */
 
@@ -2893,29 +2858,26 @@ compile_file (name)
       fprintf (stderr,"\n");
       print_time ("parse", parse_time);
 
-      if (!output_bytecode)
-	{
-	  print_time ("integration", integration_time);
-	  print_time ("jump", jump_time);
-	  print_time ("cse", cse_time);
-	  print_time ("loop", loop_time);
-	  print_time ("cse2", cse2_time);
-	  print_time ("branch-prob", branch_prob_time);
-	  print_time ("flow", flow_time);
-	  print_time ("combine", combine_time);
-	  print_time ("regmove", regmove_time);
-	  print_time ("sched", sched_time);
-	  print_time ("local-alloc", local_alloc_time);
-	  print_time ("global-alloc", global_alloc_time);
-	  print_time ("sched2", sched2_time);
-	  print_time ("dbranch", dbr_sched_time);
-	  print_time ("shorten-branch", shorten_branch_time);
-	  print_time ("stack-reg", stack_reg_time);
-	  print_time ("final", final_time);
-	  print_time ("varconst", varconst_time);
-	  print_time ("symout", symout_time);
-	  print_time ("dump", dump_time);
-	}
+      print_time ("integration", integration_time);
+      print_time ("jump", jump_time);
+      print_time ("cse", cse_time);
+      print_time ("loop", loop_time);
+      print_time ("cse2", cse2_time);
+      print_time ("branch-prob", branch_prob_time);
+      print_time ("flow", flow_time);
+      print_time ("combine", combine_time);
+      print_time ("regmove", regmove_time);
+      print_time ("sched", sched_time);
+      print_time ("local-alloc", local_alloc_time);
+      print_time ("global-alloc", global_alloc_time);
+      print_time ("sched2", sched2_time);
+      print_time ("dbranch", dbr_sched_time);
+      print_time ("shorten-branch", shorten_branch_time);
+      print_time ("stack-reg", stack_reg_time);
+      print_time ("final", final_time);
+      print_time ("varconst", varconst_time);
+      print_time ("symout", symout_time);
+      print_time ("dump", dump_time);
     }
 }
 
@@ -2966,8 +2928,7 @@ rest_of_decl_compilation (decl, asmspec, top_level, at_end)
 			&& (DECL_INITIAL (decl) == 0
 			    || DECL_INITIAL (decl) == error_mark_node)))
 		   assemble_variable (decl, top_level, at_end, 0);
-	       if (!output_bytecode
-		   && decl == last_assemble_variable_decl)
+	       if (decl == last_assemble_variable_decl)
 		 {
 		   ASM_FINISH_DECLARE_OBJECT (asm_out_file, decl,
 					      top_level, at_end);
@@ -3032,9 +2993,6 @@ rest_of_compilation (decl)
   /* Likewise, for DECL_ARGUMENTS.  */
   tree saved_arguments = 0;
   int failure = 0;
-
-  if (output_bytecode)
-    return;
 
   /* If we are reconsidering an inline function
      at the end of compilation, skip the stuff for making it inline.  */
@@ -4391,18 +4349,6 @@ main (argc, argv, envp)
   /* Checker uses the frame pointer.  */
   if (flag_check_memory_usage)
     flag_omit_frame_pointer = 0;
-
-  /* Initialize for bytecode output.  A good idea to do this as soon as
-     possible after the "-f" options have been parsed.  */
-  if (output_bytecode)
-    {
-#ifndef TARGET_SUPPORTS_BYTECODE
-      /* Just die with a fatal error if not supported */
-      fatal ("-fbytecode not supported for this target");
-#else
-      bc_initialize ();
-#endif
-    }
 
   if (optimize == 0)
     {

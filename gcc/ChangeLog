@@ -1,3 +1,14 @@
+Tue Jan 20 09:29:09 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in: Remove all bytecode support.
+	(OBJS): Make sure last entry is a real object file, not EXTRA_OBJS.
+	* emit-rtl.c: Remove all bytecode support.
+	* expr.c, expr.h function.c, integrate.c: Likewise.
+	* output.h, regclass.c, rtl.h, stmt.c, toplev.c: Likewise.
+	* tree.h, varasm.c: Likewise.
+	* bi-*, bc-*: Delete bytecode related files.
+	
+
 Tue Jan 20 09:02:31 1998  Gavin Koch  (gavin@cygnus.com)
 
 	* mips/mips.md (divsi3,divdi3,modsi3,moddi3,udivsi3,udivdi3,

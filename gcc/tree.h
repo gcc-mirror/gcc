@@ -1964,8 +1964,6 @@ extern tree reorder_blocks		PROTO ((tree *, tree,
 extern void free_temps_for_rtl_expr	PROTO ((tree));
 extern void instantiate_virtual_regs	PROTO ((tree, struct rtx_def *));
 extern int max_parm_reg_num		PROTO ((void));
-extern void bc_expand_function_start	PROTO ((tree, int));
-extern void bc_expand_function_end	PROTO ((void));
 extern void push_function_context	PROTO ((void));
 extern void pop_function_context	PROTO ((void));
 extern void push_function_context_to	PROTO ((tree));
@@ -1987,8 +1985,6 @@ extern void indent_to			PROTO ((FILE *, int));
 /* In expr.c */
 extern void emit_queue				PROTO ((void));
 extern int apply_args_register_offset		PROTO ((int));
-extern char * bc_gen_constr_label		PROTO ((void));
-extern struct rtx_def *bc_allocate_variable_array PROTO ((tree));
 extern struct rtx_def *expand_builtin_return_addr
 	PROTO ((enum built_in_function, int, struct rtx_def *));
 extern void do_pending_stack_adjust		PROTO ((void));

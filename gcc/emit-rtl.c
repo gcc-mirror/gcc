@@ -53,23 +53,7 @@ Boston, MA 02111-1307, USA.  */
 #include "real.h"
 #include "obstack.h"
 
-#include "bytecode.h"
 #include "machmode.h"
-#include "bc-opcode.h"
-#include "bc-typecd.h"
-#include "bc-optab.h"
-#include "bc-emit.h"
-
-/* Opcode names */
-#ifdef BCDEBUG_PRINT_CODE
-char *opcode_name[] =
-{
-#include "bc-opname.h"
-
-"***END***"
-};
-#endif
-
 
 /* Commonly used modes.  */
 
@@ -1451,11 +1435,8 @@ gen_label_rtx ()
 {
   register rtx label;
 
-  label = (output_bytecode
-	   ? gen_rtx_CODE_LABEL (VOIDmode, 0, bc_get_bytecode_label (),
-				 NULL_RTX, 0, NULL_PTR)
-	   : gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX,
-				 NULL_RTX, label_num++, NULL_PTR));
+  label = gen_rtx_CODE_LABEL (VOIDmode, 0, NULL_RTX,
+			      NULL_RTX, label_num++, NULL_PTR);
 
   LABEL_NUSES (label) = 0;
   return label;
@@ -2937,13 +2918,6 @@ emit_line_note (file, line)
      char *file;
      int line;
 {
-  if (output_bytecode)
-    {
-      /* FIXME: for now we do nothing, but eventually we will have to deal with
-	 debugging information.  */
-      return 0;
-    }
-
   emit_filename = file;
   emit_lineno = line;
 
