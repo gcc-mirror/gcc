@@ -5721,40 +5721,32 @@ fold_offsetof (tree expr)
   return convert (size_type_node, fold_offsetof_1 (expr));
 }
 
-/* Return nonzero if REF is an lvalue valid for this language;
-   otherwise, print an error message and return zero.  USE says
+/* Print an error message for an invalid lvalue.  USE says
    how the lvalue is being used and so selects the error message.  */
 
-int
-lvalue_or_else (tree ref, enum lvalue_use use)
+void
+lvalue_error (enum lvalue_use use)
 {
-  int win = lvalue_p (ref);
-
-  if (!win)
+  switch (use)
     {
-      switch (use)
-	{
-	case lv_assign:
-	  error ("invalid lvalue in assignment");
-	  break;
-	case lv_increment:
-	  error ("invalid lvalue in increment");
-	  break;
-	case lv_decrement:
-	  error ("invalid lvalue in decrement");
-	  break;
-	case lv_addressof:
-	  error ("invalid lvalue in unary %<&%>");
-	  break;
-	case lv_asm:
-	  error ("invalid lvalue in asm statement");
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
+    case lv_assign:
+      error ("invalid lvalue in assignment");
+      break;
+    case lv_increment:
+      error ("invalid lvalue in increment");
+      break;
+    case lv_decrement:
+      error ("invalid lvalue in decrement");
+      break;
+    case lv_addressof:
+      error ("invalid lvalue in unary %<&%>");
+      break;
+    case lv_asm:
+      error ("invalid lvalue in asm statement");
+      break;
+    default:
+      gcc_unreachable ();
     }
-
-  return win;
 }
 
 #include "gt-c-common.h"

@@ -808,7 +808,6 @@ extern tree build_break_stmt (void);
 
 extern tree build_unary_op (enum tree_code, tree, int);
 extern tree build_binary_op (enum tree_code, tree, tree, int);
-extern int lvalue_p (tree);
 extern tree default_conversion (tree);
 
 /* Given two integer or real types, return the type for their sum.
@@ -877,7 +876,7 @@ extern void verify_sequence_points (tree);
 extern tree fold_offsetof (tree);
 
 /* Places where an lvalue, or modifiable lvalue, may be required.
-   Used to select diagnostic messages in lvalue_or_else and
+   Used to select diagnostic messages in lvalue_error and
    readonly_error.  */
 enum lvalue_use {
   lv_assign,
@@ -887,7 +886,7 @@ enum lvalue_use {
   lv_asm
 };
 
-extern int lvalue_or_else (tree, enum lvalue_use);
+extern void lvalue_error (enum lvalue_use);
 
 /* In c-gimplify.c  */
 extern void c_genericize (tree);

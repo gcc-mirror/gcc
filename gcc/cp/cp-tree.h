@@ -4332,6 +4332,8 @@ extern tree lookup_anon_field                   (tree, tree);
 extern bool invalid_nonstatic_memfn_p           (tree);
 extern tree convert_member_func_to_ptr          (tree, tree);
 extern tree convert_ptrmem                      (tree, tree, bool, bool);
+extern int lvalue_or_else                       (tree, enum lvalue_use);
+extern int lvalue_p                             (tree);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
