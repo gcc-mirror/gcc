@@ -26,7 +26,12 @@
 #if USING_SJLJ_EXCEPTIONS
 
 #ifdef DONT_USE_BUILTIN_SETJMP
+#ifndef inhibit_libc
 #include <setjmp.h>
+#else
+typedef void *jmp_buf[JMP_BUF_SIZE];
+extern void longjmp(jmp_buf, int) __attribute__((noreturn));
+#endif
 #else
 #define setjmp __builtin_setjmp
 #define longjmp __builtin_longjmp

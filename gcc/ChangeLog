@@ -1,5 +1,20 @@
 2001-09-21  Richard Henderson  <rth@redhat.com>
 
+	* rtl.h (LCT_RETURNS_TWICE): New.
+	* calls.c (emit_call_1): Set current_function_calls_setjmp for
+	ECF_RETURNS_TWICE.
+	(emit_library_call_value_1): Map LCT_RETURNS_TWICE
+	to ECF_RETURNS_TWICE.
+	* except.c (sjlj_emit_function_enter): Use LCT_RETURNS_TWICE for
+	call to setjmp.
+
+	* unwind-sjlj.c: Invent the setjmp.h declarations if inhibit_libc.
+
+	* config/stormy16/stormy16.h (DONT_USE_BUILTIN_SETJMP): New.
+	(JMP_BUF_SIZE): New.
+
+2001-09-21  Richard Henderson  <rth@redhat.com>
+
 	* config/stormy16/stormy16.h (REG_CLASS_FROM_LETTER): Map 'd'
 	to R8_REGS.
 

@@ -4537,6 +4537,10 @@ do {									\
    instead of inline unwinders and __unwind_function in the non-setjmp case.  */
 #define DWARF2_UNWIND_INFO 0
 
+/* Don't use __builtin_setjmp for unwinding, since it's tricky to get
+   at the high 16 bits of an address.  */
+#define DONT_USE_BUILTIN_SETJMP
+#define JMP_BUF_SIZE  8
 
 /* Assembler Commands for Alignment.  */
 
