@@ -317,7 +317,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
      edge so that we know when to invert the condition below.  */
   extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
 
-  /* Insert our new statement at the end of condtional block before the
+  /* Insert our new statement at the end of conditional block before the
      COND_EXPR.  */
   bsi = bsi_last (cond_bb);
   bsi_insert_before (&bsi, build_empty_stmt (), BSI_NEW_STMT);
