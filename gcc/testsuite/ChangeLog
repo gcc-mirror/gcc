@@ -1,3 +1,7 @@
+2003-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/execute/string-opt-19.c: New test.
+
 2003-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/10506

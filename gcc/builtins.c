@@ -126,6 +126,9 @@ static rtx expand_builtin_strcspn	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_memcpy	PARAMS ((tree, rtx,
 						 enum machine_mode, int));
+static rtx expand_builtin_memmove	PARAMS ((tree, rtx,
+						 enum machine_mode));
+static rtx expand_builtin_bcopy		PARAMS ((tree));
 static rtx expand_builtin_strcpy	PARAMS ((tree, rtx,
 						 enum machine_mode));
 static rtx expand_builtin_stpcpy	PARAMS ((tree, rtx,
@@ -2364,6 +2367,84 @@ expand_builtin_memcpy (arglist, target, mode, endp)
     }
 }
 
+/* Expand expression EXP, which is a call to the memmove builtin.  Return 0
+   if we failed the caller should emit a normal call.  */
+
+static rtx
+expand_builtin_memmove (arglist, target, mode)
+     tree arglist;
+     rtx target;
+     enum machine_mode mode;
+{
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return 0;
+  else
+    {
+      tree dest = TREE_VALUE (arglist);
+      tree src = TREE_VALUE (TREE_CHAIN (arglist));
+      tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+      unsigned int src_align = get_pointer_alignment (src, BIGGEST_ALIGNMENT);
+      unsigned int dest_align
+	= get_pointer_alignment (dest, BIGGEST_ALIGNMENT);
+
+      /* If DEST is not a pointer type, call the normal function.  */
+      if (dest_align == 0)
+	return 0;
+
+      /* If the LEN parameter is zero, return DEST.  */
+      if (host_integerp (len, 1) && tree_low_cst (len, 1) == 0)
+	{
+	  /* Evaluate and ignore SRC in case it has side-effects.  */
+	  expand_expr (src, const0_rtx, VOIDmode, EXPAND_NORMAL);
+	  return expand_expr (dest, target, mode, EXPAND_NORMAL);
+	}
+
+      /* If either SRC is not a pointer type, don't do this
+         operation in-line.  */
+      if (src_align == 0)
+	return 0;
+
+      /* If src is a string constant and strings are not writable,
+	 we can use normal memcpy.  */
+      if (!flag_writable_strings && c_getstr (src))
+	return expand_builtin_memcpy (arglist, target, mode, 0);
+
+      /* Otherwise, call the normal function.  */
+      return 0;
+   }
+}
+
+/* Expand expression EXP, which is a call to the bcopy builtin.  Return 0
+   if we failed the caller should emit a normal call.  */
+
+static rtx
+expand_builtin_bcopy (arglist)
+     tree arglist;
+{
+  tree src, dest, size, newarglist;
+
+  if (!validate_arglist (arglist,
+			 POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
+    return NULL_RTX;
+
+  src = TREE_VALUE (arglist);
+  dest = TREE_VALUE (TREE_CHAIN (arglist));
+  size = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
+
+  /* New argument list transforming bcopy(ptr x, ptr y, int z) to
+     memmove(ptr y, ptr x, size_t z).   This is done this way
+     so that if it isn't expanded inline, we fallback to
+     calling bcopy instead of memmove.  */
+
+  newarglist = build_tree_list (NULL_TREE, convert (sizetype, size));
+  newarglist = tree_cons (NULL_TREE, src, newarglist);
+  newarglist = tree_cons (NULL_TREE, dest, newarglist);
+
+  return expand_builtin_memmove (newarglist, const0_rtx, VOIDmode);
+}
+
 /* Expand expression EXP, which is a call to the strcpy builtin.  Return 0
    if we failed the caller should emit a normal call, otherwise try to get
    the result in TARGET, if convenient (and in mode MODE if that's
@@ -4177,8 +4258,10 @@ expand_builtin (exp, target, subtarget, mode, ignore)
       case BUILT_IN_MEMCPY:
       case BUILT_IN_MEMCMP:
       case BUILT_IN_MEMPCPY:
+      case BUILT_IN_MEMMOVE:
       case BUILT_IN_BCMP:
       case BUILT_IN_BZERO:
+      case BUILT_IN_BCOPY:
       case BUILT_IN_INDEX:
       case BUILT_IN_RINDEX:
       case BUILT_IN_STPCPY:
@@ -4539,6 +4622,18 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 
     case BUILT_IN_MEMPCPY:
       target = expand_builtin_memcpy (arglist, target, mode, /*endp=*/1);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_MEMMOVE:
+      target = expand_builtin_memmove (arglist, target, mode);
+      if (target)
+	return target;
+      break;
+
+    case BUILT_IN_BCOPY:
+      target = expand_builtin_bcopy (arglist);
       if (target)
 	return target;
       break;
