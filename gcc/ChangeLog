@@ -1,3 +1,7 @@
+Sat Sep  4 12:57:17 1999  Richard Henderson  <rth@cygnus.com>
+
+	* i386/sco5.h (RETURN_POPS_ARGS): Name change ix86_return_pops_args.
+
 Sat Sep  4 11:19:52 1999  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (GGC, GGC_LIB): New.
