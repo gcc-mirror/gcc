@@ -528,9 +528,9 @@ single_set (insn)
     {
       for (i = 0, set = 0; i < XVECLEN (PATTERN (insn), 0); i++)
 	if (GET_CODE (XVECEXP (PATTERN (insn), 0, i)) == SET
-	    && ! (find_reg_note (insn, REG_UNUSED,
-				SET_DEST (XVECEXP (PATTERN (insn), 0, i)))
-		  || side_effects_p (XVECEXP (PATTERN (insn), 0, i))))
+	    && (! find_reg_note (insn, REG_UNUSED,
+				 SET_DEST (XVECEXP (PATTERN (insn), 0, i)))
+		|| side_effects_p (XVECEXP (PATTERN (insn), 0, i))))
 	  {
 	    if (set)
 	      return 0;
