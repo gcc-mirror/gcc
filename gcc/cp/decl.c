@@ -7709,12 +7709,12 @@ check_initializer (decl, init)
 	  init = NULL_TREE;
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE
-	       && !COMPLETE_TYPE_P (TREE_TYPE (type)))
+	       && !COMPLETE_TYPE_P (complete_type (TREE_TYPE (type))))
 	{
 	  cp_error ("elements of array `%#D' have incomplete type", decl);
 	  init = NULL_TREE;
 	}
-      else if (!COMPLETE_TYPE_P (type))
+      else if (TREE_CODE (type) != ARRAY_TYPE && !COMPLETE_TYPE_P (type))
 	{
 	  cp_error ("`%D' has incomplete type", decl);
 	  TREE_TYPE (decl) = error_mark_node;
@@ -8154,8 +8154,8 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
     }
 
   /* Deduce size of array from initialization, if not already known.  */
-  maybe_deduce_size_from_array_init (decl, init);
   init = check_initializer (decl, init);
+  maybe_deduce_size_from_array_init (decl, init);
 
   GNU_xref_decl (current_function_decl, decl);
 
