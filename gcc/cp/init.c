@@ -1893,7 +1893,6 @@ build_new (placement, decl, init, use_global_new)
   tree type, rval;
   tree nelts = NULL_TREE, t;
   int has_array = 0;
-  int momentary;
 
   tree pending_sizes = NULL_TREE;
 
@@ -1953,9 +1952,6 @@ build_new (placement, decl, init, use_global_new)
 		      == NULL_TREE)
 		    pedwarn ("size in array new must have integral type");
 
-		  /* The size must live long so it can be used in a
-		     cleanup.  */
-		  momentary = suspend_momentary ();
 		  this_nelts = save_expr (cp_convert (sizetype, this_nelts));
 		  absdcl = TREE_OPERAND (absdcl, 0);
 	          if (this_nelts == integer_zero_node)
@@ -1965,7 +1961,6 @@ build_new (placement, decl, init, use_global_new)
 		    }
 		  else
 		    nelts = build_binary_op (MULT_EXPR, nelts, this_nelts);
-		  resume_momentary (momentary);
 		}
 	    }
 	  else
@@ -2051,9 +2046,7 @@ build_new (placement, decl, init, use_global_new)
      both new int and new int[10] return an int*.  5.3.4.  */
   if (TREE_CODE (type) == ARRAY_TYPE && has_array == 0)
     {
-      momentary = suspend_momentary ();
       nelts = array_type_nelts_top (type);
-      resume_momentary (momentary);
       has_array = 1;
       type = TREE_TYPE (type);
     }
@@ -2134,7 +2127,6 @@ build_new_1 (exp)
   int use_cookie, nothrow, check_new;
   int use_global_new;
   int use_java_new = 0;
-  int susp = 0;
 
   placement = TREE_OPERAND (exp, 0);
   type = TREE_OPERAND (exp, 1);
@@ -2164,13 +2156,11 @@ build_new_1 (exp)
   if (!complete_type_or_else (true_type, exp))
     return error_mark_node;
 
-  susp = suspend_momentary ();
   if (has_array)
     size = fold (build_binary_op (MULT_EXPR, size_in_bytes (true_type),
 				  nelts));
   else
     size = size_in_bytes (type);
-  resume_momentary (susp);
 
   if (TREE_CODE (true_type) == VOID_TYPE)
     {
@@ -2210,9 +2200,7 @@ build_new_1 (exp)
     {
       tree extra = BI_header_size;
 
-      susp = suspend_momentary ();
       size = size_binop (PLUS_EXPR, size, extra);
-      resume_momentary (susp);
     }
 
   if (has_array)
@@ -2255,6 +2243,8 @@ build_new_1 (exp)
     }
   else
     {
+      int susp = 0;
+
       if (flag_exceptions)
 	/* We will use RVAL when generating an exception handler for
 	   this new-expression, so we must save it.  */
@@ -2427,7 +2417,7 @@ build_new_1 (exp)
 	  int flags = LOOKUP_NORMAL | (use_global_new * LOOKUP_GLOBAL);
 
 	  /* All cleanups must last longer than normal.  */
-	  susp = suspend_momentary ();
+	  int yes = suspend_momentary ();
 
 	  if (placement)
 	    {
@@ -2439,9 +2429,12 @@ build_new_1 (exp)
 	      fn = TREE_OPERAND (fn, 0);
 	    }
 
+	  /* Copy size to the saveable obstack.  */
+	  size = mapcar (size, permanent_p);
+
 	  cleanup = build_op_delete_call (dcode, alloc_node, size, flags, fn);
 
-	  resume_momentary (susp);
+	  resume_momentary (yes);
 
 	  /* Ack!  First we allocate the memory.  Then we set our sentry
 	     variable to true, and expand a cleanup that deletes the memory
@@ -2455,11 +2448,11 @@ build_new_1 (exp)
 	      begin = get_target_expr (boolean_true_node);
 	      sentry = TREE_OPERAND (begin, 0);
 
-	      susp = suspend_momentary ();
+	      yes = suspend_momentary ();
 	      TREE_OPERAND (begin, 2)
 		= build (COND_EXPR, void_type_node, sentry,
 			 cleanup, void_zero_node);
-	      resume_momentary (susp);
+	      resume_momentary (yes);
 
 	      rval = get_target_expr (rval);
 
