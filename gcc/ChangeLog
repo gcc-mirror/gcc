@@ -1,5 +1,11 @@
 2002-03-02  Richard Henderson  <rth@redhat.com>
 
+	* config/i386/i386.h (ix86_expand_prologue): Do not emit pic register
+	load if "internal" visibility.
+	* doc/extend.texi: Document visibility meanings.
+
+2002-03-02  Richard Henderson  <rth@redhat.com>
+
 	* config/i386/i386.h (ENCODE_SECTION_INFO): MODULE_LOCAL_P applies
 	to functions as well.
 
