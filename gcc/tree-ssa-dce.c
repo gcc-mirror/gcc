@@ -508,7 +508,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 static void
 mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el)
 {
-  int edge_number;
+  unsigned edge_number;
 
   gcc_assert (bb != EXIT_BLOCK_PTR);
 

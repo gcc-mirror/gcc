@@ -1986,7 +1986,7 @@ propagate_deps (int bb, struct deps *pred_deps)
   FOR_EACH_EDGE (e, ei, block->succs)
     {
       struct deps *succ_deps;
-      int reg;
+      unsigned reg;
       reg_set_iterator rsi;
 
       /* Only bbs "below" bb, in the same region, are interesting.  */

@@ -669,7 +669,7 @@ allocno_compare (const void *v1p, const void *v2p)
 static void
 global_conflicts (void)
 {
-  int i;
+  unsigned i;
   basic_block b;
   rtx insn;
   int *block_start_allocnos;
@@ -1816,7 +1816,7 @@ build_insn_chain (rtx first)
 
       if (first == BB_HEAD (b))
 	{
-	  int i;
+	  unsigned i;
 	  bitmap_iterator bi;
 
 	  CLEAR_REG_SET (live_relevant_regs);

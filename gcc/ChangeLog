@@ -1,3 +1,53 @@
+2004-11-04  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* bitmap.c (bitmap_print): Make bitno unsigned.
+	* bt-load.c (clear_btr_from_live_range,
+	btr_def_live_range): Likewise.
+	* caller-save.c (save_call_clobbered_regs): Likewise.
+	* cfganal.c (compute_dominance_frontiers_1): Likewise.
+	* cfgcleanup.c (thread_jump): Likewise.
+	* cfgrtl.c (safe_insert_insn_on_edge): Likewise.
+	* conflict.c (conflict_graph_compute): Likewise.
+	* ddg.c (add_deps_for_use): Likewise.
+	* df.c (df_refs_update): Likewise.
+	* except.c (remove_eh_handler): Likewise.
+	* flow.c (verify_local_live_at_start, update_life_info,
+	initialize_uninitialized_subregs, propagate_one_insn,
+	free_propagate_block_info, propagate_block, find_use_as_address,
+	reg_set_to_hard_reg_set): Likewise.
+	* gcse.c (clear_modify_mem_tables): Likewise.
+	* global.c (global_conflicts, build_insn_chain): Likewise.
+	* ifcvt.c (dead_or_predicable): Likewise.
+	* local-alloc.c (update_equiv_regs): Likewise.
+	* loop.c (load_mems): Likewise.
+	* ra-build.c (livethrough_conflicts_bb, conflicts_between_webs):
+	Likewise.
+	* ra-rewrite.c (reloads_to_loads, rewrite_program2, actual_spill):
+	Likewise.
+	* reload1.c (order_regs_for_reload, finish_spills): Likewise.
+	* sched-deps.c (sched_analyze_insn, free_deps): Likewise.
+	* sched-rgn.c (propagate_deps
+	* tree-cfg.c (tree_purge_all_dead_eh_edges): Likewise.
+	* tree-dfa.c (dump_dfa_stats
+	tree-into-ssa.c (compute_global_livein, insert_phi_nodes,
+	insert_phi_nodes_for, debug_def_blocks_r, invalidate_name_tags):
+	Likewise.
+	* tree-outof-ssa.c (coalesce_ssa_name, coalesce_vars,
+	free_temp_expr_table, find_replaceable_exprs): Likewise.
+	* tree-sra.c (scan_function, scalarize_parms): Likewise.
+	* tree-ssa-alias.c (init_alias_info,
+	compute_points_to_and_addr_escape,
+	compute_flow_sensitive_aliasing, maybe_create_global_var): Likewise.
+	* tree-ssa-dce.c (mark_control_dependent_edges_necessary): Likewise.
+	* tree-ssa-live.c (new_tree_live_info, live_worklist,
+	calculate_live_on_entry, calculate_live_on_exit, compare_pairs,
+	sort_coalesce_list, build_tree_conflict_graph, dump_live_info
+	tree-ssa-loop-manip.c (add_exit_phis_var): Likewise.
+	tree-ssa-operands.c (get_asm_expr_operands, add_call_clobber_ops,
+	add_call_read_ops): Likewise.
+	* tree-ssa-pre.c (bitmap_print_value_set, insert_aux): Likewise.
+	* tree-ssa-live.h (num_var_partitions): Return unsigned.
+
 2004-11-03  Dorit Naishlos  <dorit@il.ibm.com>
 
 	PR tree-optimization/18009

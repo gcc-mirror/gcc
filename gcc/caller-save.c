@@ -408,7 +408,7 @@ save_call_clobbered_regs (void)
 
 	  if (code == CALL_INSN && ! find_reg_note (insn, REG_NORETURN, NULL))
 	    {
-	      int regno;
+	      unsigned regno;
 	      HARD_REG_SET hard_regs_to_save;
 	      reg_set_iterator rsi;
 

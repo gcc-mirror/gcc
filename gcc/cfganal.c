@@ -970,7 +970,7 @@ compute_dominance_frontiers_1 (bitmap *frontiers, basic_block bb, sbitmap done)
        c;
        c = next_dom_son (CDI_DOMINATORS, c))
     {
-      int x;
+      unsigned x;
       bitmap_iterator bi;
 
       EXECUTE_IF_SET_IN_BITMAP (frontiers[c->index], 0, x, bi)

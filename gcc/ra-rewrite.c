@@ -996,7 +996,8 @@ reloads_to_loads (struct rewrite_info *ri, struct ref **refs,
       struct web *web = ref2web[DF_REF_ID (refs[n])];
       struct web *supweb = find_web_for_subweb (web);
       int is_death;
-      int j;
+      unsigned j;
+      
       /* Only emit reloads when entering their interference
 	 region.  A use of a spilled web never opens an
 	 interference region, independent of it's color.  */
@@ -1062,7 +1063,7 @@ rewrite_program2 (bitmap new_deaths)
     {
       basic_block last_bb = NULL;
       rtx last_block_insn;
-      int i, j;
+      unsigned i, j;
       bitmap_iterator bi;
 
       if (!INSN_P (insn))
@@ -1355,7 +1356,7 @@ rewrite_program2 (bitmap new_deaths)
 	  CLEAR_HARD_REG_SET (cum_colors);
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    {
-	      int j;
+	      unsigned j;
 
 	      if (num >= 5)
 		break;
@@ -1629,7 +1630,7 @@ reset_changed_flag (void)
 void
 actual_spill (void)
 {
-  int i;
+  unsigned i;
   bitmap_iterator bi;
   bitmap new_deaths = BITMAP_XMALLOC ();
 

@@ -821,7 +821,7 @@ block_at_edge_of_live_range_p (int bb, btr_def def)
 static void
 clear_btr_from_live_range (btr_def def)
 {
-  int bb;
+  unsigned bb;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
@@ -845,7 +845,7 @@ clear_btr_from_live_range (btr_def def)
 static void
 add_btr_to_live_range (btr_def def)
 {
-  int bb;
+  unsigned bb;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
@@ -975,11 +975,9 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
       def->live_range = BITMAP_XMALLOC ();
 
       bitmap_set_bit (def->live_range, def->bb->index);
-      if (flag_btr_bb_exclusive)
-	COPY_HARD_REG_SET (*btrs_live_in_range, btrs_live[def->bb->index]);
-      else
-	COPY_HARD_REG_SET (*btrs_live_in_range,
-			   btrs_live_at_end[def->bb->index]);
+      COPY_HARD_REG_SET (*btrs_live_in_range,
+			 (flag_btr_bb_exclusive
+			  ? btrs_live : btrs_live_at_end)[def->bb->index]);
 
       for (user = def->uses; user != NULL; user = user->next)
 	augment_live_range (def->live_range, btrs_live_in_range,
@@ -991,26 +989,16 @@ btr_def_live_range (btr_def def, HARD_REG_SET *btrs_live_in_range)
 	 the set of target registers live over it, because migration
 	 of other PT instructions may have affected it.
       */
-      int bb;
-      int def_bb = def->bb->index;
+      unsigned bb;
+      unsigned def_bb = flag_btr_bb_exclusive ? -1 : def->bb->index;
       bitmap_iterator bi;
 
       CLEAR_HARD_REG_SET (*btrs_live_in_range);
-      if (flag_btr_bb_exclusive)
+      EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
 	{
-	  EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
-	    {
-	      IOR_HARD_REG_SET (*btrs_live_in_range, btrs_live[bb]);
-	    }
-	}
-      else
-	{
-	  EXECUTE_IF_SET_IN_BITMAP (def->live_range, 0, bb, bi)
-	    {
-	      IOR_HARD_REG_SET (*btrs_live_in_range,
-				(def_bb == bb
-				 ? btrs_live_at_end : btrs_live) [bb]);
-	    }
+	  IOR_HARD_REG_SET (*btrs_live_in_range,
+			    (def_bb == bb
+			     ? btrs_live_at_end : btrs_live) [bb]);
 	}
     }
   if (!def->other_btr_uses_before_def &&

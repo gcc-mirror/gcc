@@ -10929,7 +10929,7 @@ load_mems (const struct loop *loop)
 	  cselib_val *e = cselib_lookup (mem, VOIDmode, 0);
 	  rtx set;
 	  rtx best = mem;
-	  int j;
+	  unsigned j;
 	  struct elt_loc_list *const_equiv = 0;
 	  reg_set_iterator rsi;
 

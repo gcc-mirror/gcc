@@ -279,7 +279,7 @@ thread_jump (int mode, edge e, basic_block b)
   rtx set1, set2, cond1, cond2, insn;
   enum rtx_code code1, code2, reversed_code2;
   bool reverse1 = false;
-  int i;
+  unsigned i;
   regset nonequal;
   bool failed = false;
   reg_set_iterator rsi;
@@ -348,7 +348,8 @@ thread_jump (int mode, edge e, basic_block b)
   cselib_init (false);
 
   /* First process all values computed in the source basic block.  */
-  for (insn = NEXT_INSN (BB_HEAD (e->src)); insn != NEXT_INSN (BB_END (e->src));
+  for (insn = NEXT_INSN (BB_HEAD (e->src));
+       insn != NEXT_INSN (BB_END (e->src));
        insn = NEXT_INSN (insn))
     if (INSN_P (insn))
       cselib_process_insn (insn);
@@ -360,7 +361,8 @@ thread_jump (int mode, edge e, basic_block b)
      processing as if it were same basic block.
      Our goal is to prove that whole block is an NOOP.  */
 
-  for (insn = NEXT_INSN (BB_HEAD (b)); insn != NEXT_INSN (BB_END (b)) && !failed;
+  for (insn = NEXT_INSN (BB_HEAD (b));
+       insn != NEXT_INSN (BB_END (b)) && !failed;
        insn = NEXT_INSN (insn))
     {
       if (INSN_P (insn))
@@ -369,7 +371,7 @@ thread_jump (int mode, edge e, basic_block b)
 
 	  if (GET_CODE (pat) == PARALLEL)
 	    {
-	      for (i = 0; i < XVECLEN (pat, 0); i++)
+	      for (i = 0; i < (unsigned)XVECLEN (pat, 0); i++)
 		failed |= mark_effect (XVECEXP (pat, 0, i), nonequal);
 	    }
 	  else

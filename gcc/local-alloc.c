@@ -1118,7 +1118,8 @@ update_equiv_regs (void)
   /* Clear all dead REGNOs from all basic block's live info.  */
   if (clear_regnos)
     {
-      int j;
+      unsigned j;
+      
       if (clear_regnos > 8)
 	{
 	  FOR_EACH_BB (bb)

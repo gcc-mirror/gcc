@@ -1589,7 +1589,7 @@ count_pseudo (int reg)
 static void
 order_regs_for_reload (struct insn_chain *chain)
 {
-  int i;
+  unsigned i;
   HARD_REG_SET used_by_pseudos;
   HARD_REG_SET used_by_pseudos2;
   reg_set_iterator rsi;
@@ -3543,7 +3543,7 @@ finish_spills (int global)
 {
   struct insn_chain *chain;
   int something_changed = 0;
-  int i;
+  unsigned i;
   reg_set_iterator rsi;
 
   /* Build the spill_regs array for the function.  */
@@ -3613,7 +3613,7 @@ finish_spills (int global)
 	 and call retry_global_alloc.
 	 We change spill_pseudos here to only contain pseudos that did not
 	 get a new hard register.  */
-      for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+      for (i = FIRST_PSEUDO_REGISTER; i < (unsigned)max_regno; i++)
 	if (reg_old_renumber[i] != reg_renumber[i])
 	  {
 	    HARD_REG_SET forbidden;
@@ -3661,7 +3661,7 @@ finish_spills (int global)
     }
 
   /* Let alter_reg modify the reg rtx's for the modified pseudos.  */
-  for (i = FIRST_PSEUDO_REGISTER; i < max_regno; i++)
+  for (i = FIRST_PSEUDO_REGISTER; i < (unsigned)max_regno; i++)
     {
       int regno = reg_renumber[i];
       if (reg_old_renumber[i] == regno)

@@ -69,7 +69,7 @@ extern tree make_ssa_temp (tree);
 extern void register_ssa_partition_check (tree ssa_var);
 #endif
 
-static inline int num_var_partitions (var_map);
+static inline unsigned num_var_partitions (var_map);
 static inline tree var_to_partition_to_var (var_map, tree);
 static inline tree partition_to_var (var_map, int);
 static inline int var_to_partition (var_map, tree);
@@ -82,7 +82,7 @@ extern var_map create_ssa_var_map (int);
 
 /* Number of partitions in MAP.  */
 
-static inline int 
+static inline unsigned
 num_var_partitions (var_map map)
 {
   return map->num_partitions;

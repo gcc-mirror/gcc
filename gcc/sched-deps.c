@@ -821,7 +821,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 {
   RTX_CODE code = GET_CODE (x);
   rtx link;
-  int i;
+  unsigned i;
   reg_set_iterator rsi;
 
   if (code == COND_EXEC)
@@ -845,8 +845,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
     }
   else if (code == PARALLEL)
     {
-      int i;
-      for (i = XVECLEN (x, 0) - 1; i >= 0; i--)
+      for (i = XVECLEN (x, 0); i--;)
 	{
 	  rtx sub = XVECEXP (x, 0, i);
 	  code = GET_CODE (sub);
@@ -1006,7 +1005,7 @@ sched_analyze_insn (struct deps *deps, rtx x, rtx insn, rtx loop_notes)
 	    }
 	}
 
-      for (i = 0; i < deps->max_reg; i++)
+      for (i = 0; i < (unsigned)deps->max_reg; i++)
 	{
 	  struct deps_reg *reg_last = &deps->reg_last[i];
 	  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
@@ -1461,7 +1460,7 @@ init_deps (struct deps *deps)
 void
 free_deps (struct deps *deps)
 {
-  int i;
+  unsigned i;
   reg_set_iterator rsi;
 
   free_INSN_LIST_list (&deps->pending_read_insns);

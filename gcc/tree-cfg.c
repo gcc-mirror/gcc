@@ -5126,7 +5126,7 @@ bool
 tree_purge_all_dead_eh_edges (bitmap blocks)
 {
   bool changed = false;
-  size_t i;
+  unsigned i;
   bitmap_iterator bi;
 
   EXECUTE_IF_SET_IN_BITMAP (blocks, 0, i, bi)

@@ -439,8 +439,8 @@ conflict_graph_compute (regset regs, partition p)
       insn = BB_END (bb);
       for (insn = BB_END (bb); insn != head; insn = PREV_INSN (insn))
 	{
-	  int born_reg;
-	  int live_reg;
+	  unsigned born_reg;
+	  unsigned live_reg;
 	  rtx link;
 
 	  /* Are we interested in this insn? */
