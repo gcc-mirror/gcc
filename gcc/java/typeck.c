@@ -755,7 +755,10 @@ lookup_java_method (searched_class, method_name, method_signature)
 	   method != NULL_TREE;  method = TREE_CHAIN (method))
 	{
 	  tree method_sig = build_java_signature (TREE_TYPE (method));
-	  if (DECL_NAME (method) == method_name 
+	  tree name = DECL_NAME (method);
+
+	  if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
+	       EXPR_WFL_NODE (name) : name) == method_name
 	      && method_sig == method_signature)
 	    return method;
 	}
@@ -788,8 +791,10 @@ lookup_java_method (searched_class, method_name, method_signature)
               method != NULL_TREE;  method = TREE_CHAIN (method))
            {
              tree method_sig = build_java_signature (TREE_TYPE (method));
+	     tree name = DECL_NAME (method);
 
-             if (DECL_NAME (method) == method_name 
+	     if ((TREE_CODE (name) == EXPR_WITH_FILE_LOCATION ?
+		  EXPR_WFL_NODE (name) : name) == method_name
 		 && method_sig == method_signature)
                return method;
            }

@@ -134,6 +134,7 @@ static tree register_incomplete_type PROTO ((int, tree, tree, tree));
 static tree obtain_incomplete_type PROTO ((tree));
 static tree java_complete_lhs PROTO ((tree));
 static tree java_complete_tree PROTO ((tree));
+static int java_pre_expand_clinit PROTO ((tree));
 static void java_complete_expand_method PROTO ((tree));
 static int  unresolved_type_p PROTO ((tree, tree *));
 static void create_jdep_list PROTO ((struct parser_ctxt *));
@@ -216,7 +217,7 @@ static int check_thrown_exceptions_do PROTO ((tree));
 static void purge_unchecked_exceptions PROTO ((tree));
 static void check_throws_clauses PROTO ((tree, tree, tree));
 static void finish_method_declaration PROTO ((tree));
-static tree build_super_invocation PROTO ((void));
+static tree build_super_invocation PROTO ((tree));
 static int verify_constructor_circularity PROTO ((tree, tree));
 static char *constructor_circularity_msg PROTO ((tree, tree));
 static tree build_this_super_qualified_invocation PROTO ((int, tree, tree,
@@ -3985,7 +3986,7 @@ java_check_circular_reference ()
   for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
     {
       tree type = TREE_TYPE (current);
-      if (CLASS_INTERFACE (TYPE_NAME (type)))
+      if (CLASS_INTERFACE (current))
 	{
 	  /* Check all interfaces this class extends */
 	  tree basetype_vec = TYPE_BINFO_BASETYPES (type);
@@ -4007,6 +4008,44 @@ java_check_circular_reference ()
 	if (inherits_from_p (CLASSTYPE_SUPER (type), type))
 	  parse_error_context (lookup_cl (current), 
 			       "Cyclic class inheritance");
+    }
+}
+
+/* Fix the constructors. This will be called right after circular
+   references have been checked. It is necessary to fix constructors
+   early even if no code generation will take place for that class:
+   some generated constructor might be required by the class whose
+   compilation triggered this one to be simply loaded.  */
+
+void
+java_fix_constructors ()
+{
+  tree current;
+
+  for (current = ctxp->class_list; current; current = TREE_CHAIN (current))
+    {
+      tree decl;
+      tree class_type = TREE_TYPE (current);
+      int saw_ctor = 0;
+
+      for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
+	{
+	  if (DECL_CONSTRUCTOR_P (decl))
+	    {
+	      fix_constructors (decl);
+	      saw_ctor = 1;
+	    }
+	}
+
+      if (!saw_ctor)
+	{
+	  int flags = (get_access_flags_from_decl (current) & ACC_PUBLIC ?
+		       ACC_PUBLIC : 0);
+	  decl = create_artificial_method (class_type, flags, void_type_node, 
+					   init_identifier_node, 
+					   end_params_node);
+	  DECL_CONSTRUCTOR_P (decl) = 1;
+	}
     }
 }
 
@@ -4916,24 +4955,7 @@ java_check_regular_methods (class_decl)
   java_check_abstract_method_definitions (class_decl);
 
   if (!saw_constructor)
-    {
-      /* No constructor seen, we craft one, at line 0. Since this
-       operation takes place after we laid methods out
-       (layout_class_methods), we prepare the its DECL
-       appropriately. */
-      int flags;
-      tree decl;
-
-      /* If the class is declared PUBLIC, the default constructor is
-         PUBLIC otherwise it has default access implied by no access
-         modifiers. */
-      flags = (get_access_flags_from_decl (class_decl) & ACC_PUBLIC ?
-	       ACC_PUBLIC : 0);
-      decl = create_artificial_method (class, flags, void_type_node, 
-				       init_identifier_node, end_params_node);
-      DECL_CONSTRUCTOR_P (decl) = 1;
-      layout_class_method (TREE_TYPE (class_decl), NULL_TREE, decl, NULL_TREE);
-    }
+    fatal ("No constructor found");
 }
 
 /* Return a non zero value if the `throws' clause of METHOD (if any)
@@ -5999,7 +6021,7 @@ java_complete_expand_methods ()
     {
       int is_interface;
       tree class_type = CLASS_TO_HANDLE_TYPE (TREE_TYPE (current));
-      tree decl;
+      tree decl, prev_decl;
 
       current_class = TREE_TYPE (current);
       is_interface = CLASS_INTERFACE (TYPE_NAME (current_class));
@@ -6008,42 +6030,21 @@ java_complete_expand_methods ()
       init_outgoing_cpool ();
 
       /* We want <clinit> (if any) to be processed first. */
-      decl = tree_last (TYPE_METHODS (class_type));
-      if (IS_CLINIT (decl))
-	{
-	  tree fbody = DECL_FUNCTION_BODY (decl);
-	  tree list;
-	  if (fbody != NULL_TREE)
-	    {
-	      /* First check if we can ignore empty <clinit> */
-	      tree block_body = BLOCK_EXPR_BODY (fbody);
+      for (prev_decl = NULL_TREE, decl = TYPE_METHODS (class_type); 
+	   decl; prev_decl= decl, decl = TREE_CHAIN (decl))
+	if (IS_CLINIT (decl))
+	  {
+	    if (!java_pre_expand_clinit (decl))
+	      {
+		if (prev_decl)
+		  TREE_CHAIN (prev_decl) = TREE_CHAIN (decl);
+		else
+		  TYPE_METHODS (class_type) = TREE_CHAIN (decl);
+	      }
+	    break;
+	  }
 
-	      current_this = NULL_TREE;
-	      current_function_decl = decl;
-	      if (block_body != NULL_TREE)
-		{
-		  /* Prevent the use of `this' inside <clinit> */
-		  ctxp->explicit_constructor_p = 1;
-
-		  block_body = java_complete_tree (block_body);
-		  ctxp->explicit_constructor_p = 0;
-		  BLOCK_EXPR_BODY (fbody) = block_body;
-		  if (block_body != NULL_TREE
-		      && TREE_CODE (block_body) == BLOCK
-		      && BLOCK_EXPR_BODY (block_body) == empty_stmt_node)
-		    decl = NULL_TREE;
-		}
-	    }
-	  list = nreverse (TREE_CHAIN (nreverse (TYPE_METHODS (class_type))));
-	  if (decl != NULL_TREE)
-	    {
-	      TREE_CHAIN (decl) = list;
-	      TYPE_METHODS (class_type) = decl;
-	    }
-	    else
-	      TYPE_METHODS (class_type) = list;
-	}
-      
+      /* Now go on for regular business.  */
       for (decl = TYPE_METHODS (class_type); decl; decl = TREE_CHAIN (decl))
 	{
 	  current_function_decl = decl;
@@ -6091,6 +6092,40 @@ java_complete_expand_methods ()
 /* Hold a list of catch clauses list. The first element of this list is
    the list of the catch clauses of the currently analysed try block. */
 static tree currently_caught_type_list;
+
+/* Complete and expand <clinit>. Return a non zero value if <clinit>
+   is worth keeping.  */
+
+static int
+java_pre_expand_clinit (decl)
+     tree decl;
+{
+  tree fbody = DECL_FUNCTION_BODY (decl);
+  tree list;
+  int to_return = 1;
+
+  if (fbody != NULL_TREE)
+    {
+      /* First check if we can ignore empty <clinit> */
+      tree block_body = BLOCK_EXPR_BODY (fbody);
+      
+      current_this = NULL_TREE;
+      current_function_decl = decl;
+      if (block_body != NULL_TREE)
+	{
+	  /* Prevent the use of `this' inside <clinit> */
+	  ctxp->explicit_constructor_p = 1;
+	  block_body = java_complete_tree (block_body);
+	  ctxp->explicit_constructor_p = 0;
+
+	  BLOCK_EXPR_BODY (fbody) = block_body;
+	  if (block_body != NULL_TREE  && TREE_CODE (block_body) == BLOCK
+	      && BLOCK_EXPR_BODY (block_body) == empty_stmt_node)
+	    to_return = 0;
+	}
+    }
+  return to_return;
+}
 
 /* Complete and expand a method.  */
 
@@ -6197,7 +6232,7 @@ fix_constructors (mdecl)
       /* We don't generate a super constructor invocation if we're
 	 compiling java.lang.Object. build_super_invocation takes care
 	 of that. */
-      compound = java_method_add_stmt (mdecl, build_super_invocation ());
+      compound = java_method_add_stmt (mdecl, build_super_invocation (mdecl));
 
       end_artificial_method_body (mdecl);
     }
@@ -6229,7 +6264,7 @@ fix_constructors (mdecl)
       /* The constructor is missing an invocation of super() */
       if (!found)
 	compound = add_stmt_to_compound (compound, NULL_TREE,
-					 build_super_invocation ());
+					 build_super_invocation (mdecl));
       
       /* Fix the constructor main block if we're adding extra stmts */
       if (compound)
@@ -8923,9 +8958,10 @@ maybe_absorb_scoping_blocks ()
    we're currently dealing with the class java.lang.Object. */
 
 static tree
-build_super_invocation ()
+build_super_invocation (mdecl)
+     tree mdecl;
 {
-  if (current_class == object_type_node)
+  if (DECL_CONTEXT (mdecl) == object_type_node)
     return empty_stmt_node;
   else
     {
