@@ -359,10 +359,14 @@ widen_operand (op, mode, oldmode, unsignedp, no_extend)
 /* Generate code to perform a straightforward complex divide.  */
 
 static int
-expand_cmplxdiv_straight (rtx real0, rtx real1, rtx imag0, rtx imag1,
-			  rtx realr, rtx imagr, enum machine_mode submode,
-			  int unsignedp, enum optab_methods methods,
-			  enum mode_class class, optab binoptab)
+expand_cmplxdiv_straight (real0, real1, imag0, imag1, realr, imagr, submode,
+			  unsignedp, methods, class, binoptab)
+  rtx real0, real1, imag0, imag1, realr, imagr;
+  enum machine_mode submode;
+  int unsignedp;
+  enum optab_methods methods;
+  enum mode_class class;
+  optab binoptab;
 {
   rtx divisor;
   rtx real_t, imag_t;
@@ -475,10 +479,14 @@ expand_cmplxdiv_straight (rtx real0, rtx real1, rtx imag0, rtx imag1,
 /* Generate code to perform a wide-input-range-acceptable complex divide.  */
 
 static int
-expand_cmplxdiv_wide (rtx real0, rtx real1, rtx imag0, rtx imag1,
-		      rtx realr, rtx imagr, enum machine_mode submode,
-		      int unsignedp, enum optab_methods methods,
-		      enum mode_class class, optab binoptab)
+expand_cmplxdiv_wide (real0, real1, imag0, imag1, realr, imagr, submode,
+		      unsignedp, methods, class, binoptab)
+  rtx real0, real1, imag0, imag1, realr, imagr;
+  enum machine_mode submode;
+  int unsignedp;
+  enum optab_methods methods;
+  enum mode_class class;
+  optab binoptab;
 {
   rtx ratio, divisor;
   rtx real_t, imag_t;

@@ -41,6 +41,11 @@ Thu May 20 10:38:43 1999  Mark Mitchell  <mark@codesourcery.com>
 	* toplev.c (lang_expand_constant): Define it.
 	* varasm.c (output_constant): Use it.
 
+Thu May 20 11:28:53 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* optabs.c (expand_cmplxdiv_straight, expand_cmplxdiv_wide):
+	Change function definitions to K&R style.
+
 Thu May 20 08:15:00 1999  Bruce Korb <ddsinc09@ix.netcom.com>
 
 	* fixinc/fixincl.c(main): we must not ignore SIGCLD now.
