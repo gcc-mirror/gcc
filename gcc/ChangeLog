@@ -1,3 +1,17 @@
+Sat Apr 10 06:04:50 1999 Donn Terry (donn@interix.com) 
+
+	* i386/t-interix: Use mostly system headers unchanged.
+	Use system assert.h
+	* fixinc/fixinc.interix: Ditto (make almost no-op).
+	* config/x-interix.h (_ALL_SOURCE): add -D
+	* config/x-interix.h (crti.o): Delete dependency.
+	* config/xm-interix.h (ONLY_INT_FIELDS): Define only when bootstrapping.
+	* i386/xm-i386-interix.h: New file.
+	* i386/interix.h (ASM_OUTPUT_LIMITED_STRING): Fix warnings.
+	* i386/i386-interix.h: Renamed from interix.h.
+	* configure.in (interix): Use new files.
+	* configure: Rebuilt.
+
 Sat Apr 10 05:25:28 1999  Daniel Jacobowitz <dan@debian.org>
 
 	* rs6000/sysv4.h (CPP_OS_LINUX_SPEC): Fix conditions

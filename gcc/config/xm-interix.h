@@ -26,7 +26,9 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 #ifndef ONLY_INT_FIELDS
+#ifndef __GNUC__
 #define ONLY_INT_FIELDS 1
+#endif
 #endif
 
 #ifndef USE_PROTOTYPES

@@ -16,14 +16,9 @@ RANLIB_TEST = false
 SHELL = sh
 
 # Existing CC/GCC may not define -D__INTERIX, so need this here.
-X_CFLAGS= -D__INTERIX
+# Since we want to configure with _ALL_SOURCE, we need to build that way too
+X_CFLAGS= -D__INTERIX -D_ALL_SOURCE
 
 LIBGCC2_INCLUDES = -idirafter $${INTERIX_ROOT}/usr/include
 # Headers come from a funny place
 SYSTEM_HEADER_DIR=$${INTERIX_ROOT}/usr/include
-
-EXTRA_PARTS += crti.o
-
-crti.o: $(srcdir)/crti.c
-	$(GCC_FOR_TARGET) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $(srcdir)/crti.c
-

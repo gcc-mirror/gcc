@@ -157,10 +157,10 @@ Boston, MA 02111-1307, USA.  */
       register unsigned char *_limited_str = (unsigned char *) (STR);	\
       register unsigned ch;						\
       fprintf ((FILE), "\t%s\t\"", STRING_ASM_OP);			\
-      for (; ch = *_limited_str; _limited_str++)			\
+      for (; (ch = *_limited_str); _limited_str++)			\
         {								\
-	  register int escape;						\
-	  switch (escape = ESCAPES[ch])					\
+	  register int escape = ESCAPES[ch];				\
+	  switch (escape)						\
 	    {								\
 	    case 0:							\
 	      putc (ch, (FILE));					\
