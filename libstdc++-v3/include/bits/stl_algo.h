@@ -1268,8 +1268,18 @@ namespace std
       __glibcxx_function_requires(_EqualityComparableConcept<
 	    typename iterator_traits<_ForwardIterator>::value_type>)
 
+      // Skip the beginning, if already unique.
       __first = std::adjacent_find(__first, __last);
-      return std::unique_copy(__first, __last, __first);
+      if (__first == __last)
+	return __last;
+
+      // Do the real copy work.
+      _ForwardIterator __dest = __first;
+      ++__first;
+      while (++__first != __last)
+	if (!(*__dest == *__first))
+	  *++__dest = *__first;
+      return ++__dest;
     }
 
   /**
@@ -1297,8 +1307,18 @@ namespace std
 		typename iterator_traits<_ForwardIterator>::value_type,
 		typename iterator_traits<_ForwardIterator>::value_type>)
 
+      // Skip the beginning, if already unique.
       __first = std::adjacent_find(__first, __last, __binary_pred);
-      return std::unique_copy(__first, __last, __first, __binary_pred);
+      if (__first == __last)
+	return __last;
+
+      // Do the real copy work.
+      _ForwardIterator __dest = __first;
+      ++__first;
+      while (++__first != __last)
+	if (!__binary_pred(*__dest, *__first))
+	  *++__dest = *__first;
+      return ++__dest;
     }
 
   /**
