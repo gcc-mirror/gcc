@@ -58,7 +58,8 @@ Boston, MA 02111-1307, USA.  */
   { "cpp_cpu_spec",         CPP_CPU_SPEC }, \
   { "cpp_fpu_spec",         CPP_FPU_SPEC }, \
   { "asm_default_spec",     ASM_DEFAULT_SPEC }, \
-  { "netbsd_cpp_spec",      NETBSD_CPP_SPEC },
+  { "netbsd_cpp_spec",      NETBSD_CPP_SPEC }, \
+  { "netbsd_entry_point",   NETBSD_ENTRY_POINT },
 
 
 #define CPP_CPU_SPEC \
@@ -106,24 +107,12 @@ Boston, MA 02111-1307, USA.  */
     %{m68010} %{m68020} %{m68030} %{m68040} %{m68060} \
     %{fpic:-k} %{fPIC:-k -K}"
 
-/* Provide a LINK_SPEC appropriate for a NetBSD/m68k ELF target.
-   This is a copy of LINK_SPEC from <netbsd-elf.h> tweaked for
-   the m68k target.  */
+/* Provide a LINK_SPEC appropriate for a NetBSD/m68k ELF target.  */
 
 #undef LINK_SPEC
-#define LINK_SPEC							\
-  "%{assert*} %{R*}							\
-   %{shared:-shared}							\
-   %{!shared:								\
-     -dc -dp								\
-     %{!nostdlib:							\
-       %{!r*:								\
-	 %{!e*:-e _start}}}						\
-     %{!static:								\
-       %{rdynamic:-export-dynamic}					\
-       %{!dynamic-linker:-dynamic-linker /usr/libexec/ld.elf_so}}	\
-     %{static:-static}}"
+#define LINK_SPEC NETBSD_LINK_SPEC_ELF
 
+#define NETBSD_ENTRY_POINT "_start"
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function only.  */

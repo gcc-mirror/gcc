@@ -1,5 +1,11 @@
 2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
 
+	* config/m68k/netbsd-elf.h (EXTRA_SPECS): Add netbsd_entry_point.
+	(LINK_SPEC): Define as NETBSD_LINK_SPEC_ELF.
+	(NETBSD_ENTRY_POINT): Define.
+
+2002-06-08  Jason Thorpe  <thorpej@wasabisystems.com>
+
 	* config/i386/netbsd-elf.h (LINK_SPEC): Define as
 	NETBSD_LINK_SPEC_ELF.
 	(SUBTARGET_EXTRA_SPECS): Add netbsd_entry_point.
