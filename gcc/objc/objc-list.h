@@ -1,7 +1,6 @@
 /* Generic single linked list to keep various information 
    Copyright (C) 1993, 1994, 1996 Free Software Foundation, Inc.
-
-Author: Kresten Krab Thorup
+   Contributed by Kresten Krab Thorup.
 
 This file is part of GNU CC.
 
@@ -28,8 +27,6 @@ Boston, MA 02111-1307, USA.  */
 
 #ifndef __GNU_OBJC_LIST_H
 #define __GNU_OBJC_LIST_H
-void * __objc_xrealloc (void *optr, size_t size);
-void * __objc_xmalloc (size_t size);
 
 struct objc_list {
   void *head;
@@ -43,7 +40,7 @@ list_cons(void* head, struct objc_list* tail)
 {
   struct objc_list* cell;
 
-  cell = (struct objc_list*)__objc_xmalloc(sizeof(struct objc_list));
+  cell = (struct objc_list*)objc_malloc(sizeof(struct objc_list));
   cell->head = head;
   cell->tail = tail;
   return cell;
@@ -88,11 +85,11 @@ list_remove_head(struct objc_list** list)
     {
       struct objc_list* tail = (*list)->tail; /* fetch next */
       *(*list) = *tail;		/* copy next to list head */
-      free(tail);			/* free next */
+      objc_free(tail);			/* free next */
     }
   else				/* only one element in list */
     {
-      free (*list);
+      objc_free(*list);
       (*list) = 0;
     }
 }
@@ -144,7 +141,7 @@ list_free(struct objc_list* list)
   if(list)
     {
       list_free(list->tail);
-      free(list);
+      objc_free(list);
     }
 }
 #endif __GNU_OBJC_LIST_H
