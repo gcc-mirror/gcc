@@ -1,3 +1,8 @@
+2000-09-06  Geoff Keating  <geoffk@cygnus.com>
+
+	* config/rs6000/rs6000.c (rs6000_reverse_condition): Return
+	the result.
+
 2000-09-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* toplev.c (display_help): Fix thinko in documentation.
@@ -83,6 +88,7 @@
 	(output_cbranch): The length of a long branch insn is
 	now only 8 bytes.  Add validate_condition_mode.  Use
 	rs6000_reverse_condition.  Remove cror generation.
+
 	* config/rs6000/rs6000.h: Update comments.
 	(PREDICATE_CODES): Add new predicate.  Update codes used
 	by branch_comparison_operator and scc_comparison_operator.
