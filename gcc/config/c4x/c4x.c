@@ -44,6 +44,7 @@
 #include "recog.h"
 #include "c-tree.h"
 #include "ggc.h"
+#include "c4x-protos.h"
 
 static int c4x_leaf_function;
 
@@ -192,7 +193,14 @@ c4x_override_options ()
 
   /* -mcpu=xx overrides -m40 etc.  */
   if (c4x_cpu_version_string)
-    c4x_cpu_version = atoi (c4x_cpu_version_string);
+    {
+      const char *p = c4x_cpu_version_string;
+      
+      /* Also allow -mcpu=c30 etc.  */
+      if (*p == 'c' || *p == 'C')
+	p++;
+      c4x_cpu_version = atoi (p);
+    }
 
   target_flags &= ~(C30_FLAG | C31_FLAG | C32_FLAG | C40_FLAG | C44_FLAG);
 
@@ -251,7 +259,7 @@ c4x_optimization_options (level, size)
 void
 c4x_output_ascii (stream, ptr, len)
      FILE *stream;
-     unsigned char *ptr;
+     const char *ptr;
      int len;
 {
   char sbuf[C4X_ASCII_LIMIT + 1];
@@ -1197,7 +1205,7 @@ c4x_emit_move_sequence (operands, mode)
 
 void
 c4x_emit_libcall (name, code, dmode, smode, noperands, operands)
-     char *name;
+     const char *name;
      enum rtx_code code;
      enum machine_mode dmode;
      enum machine_mode smode;
@@ -1273,34 +1281,6 @@ c4x_emit_libcall_mulhi (name, code, mode, operands)
   insns = get_insns ();
   end_sequence ();
   emit_libcall_block (insns, operands[0], ret, equiv);
-}
-
-
-enum reg_class
-c4x_preferred_reload_class (x, class)
-     rtx x ATTRIBUTE_UNUSED;
-     enum reg_class class;
-{
-  return class;
-}
-
-
-enum reg_class
-c4x_limit_reload_class (mode, class)
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-     enum reg_class class;
-{
-  return class;
-}
-
-
-enum reg_class
-c4x_secondary_memory_needed (class1, class2, mode)
-     enum reg_class class1 ATTRIBUTE_UNUSED;
-     enum reg_class class2 ATTRIBUTE_UNUSED;
-     enum machine_mode mode ATTRIBUTE_UNUSED;
-{
-  return 0;
 }
 
 
@@ -1590,7 +1570,7 @@ c4x_legitimize_reload_address (orig, mode, insn)
 
 int 
 c4x_address_cost (addr)
-rtx addr;
+     rtx addr;
 {
   switch (GET_CODE (addr))
     {
@@ -1657,6 +1637,11 @@ rtx addr;
 	    return 2;
 
 	  case CONST_INT:
+	    /* The following tries to improve GIV combination
+	       in strength reduce but appears not to help.  */
+	    if (TARGET_DEVEL && IS_UINT5_CONST (INTVAL (op1)))
+	      return 1;
+
 	    if (IS_DISP1_CONST (INTVAL (op1)))
 	      return 1;
 
@@ -2722,8 +2707,9 @@ any_operand (op, mode)
 /* Nonzero if OP is a floating point value with value 0.0.  */
 
 int
-fp_zero_operand (op)
+fp_zero_operand (op, mode)
      rtx op;
+     enum machine_mode mode ATTRIBUTE_UNUSED;
 {
   REAL_VALUE_TYPE r;
 
@@ -4211,7 +4197,7 @@ c4x_operand_subword (op, i, validate_address, mode)
 
 int
 c4x_handle_pragma (p_getc, p_ungetc, pname)
-     int (*  p_getc) PROTO ((void));
+     int (* p_getc) PROTO ((void));
      void (* p_ungetc) PROTO ((int)) ATTRIBUTE_UNUSED;
      char *pname;
 {

@@ -21,10 +21,6 @@
    the Free Software Foundation, 59 Temple Place - Suite 330,
    Boston, MA 02111-1307, USA.  */
 
-/* Set the following so that some of the macros expand to function
-   calls to simplify debugging.  */
-#define C4X_DEBUG 1
-
 /* RUN-TIME TARGET SPECIFICATION */
 
 #define C4x   1
@@ -236,8 +232,8 @@
 
 extern int target_flags;
 
-#define TARGET_INLINE		1 /* Inline MPYI */
-#define TARGET_PARALLEL	        1 /* Enable parallel insns in MD */
+#define TARGET_INLINE		1 /* Inline MPYI.  */
+#define TARGET_PARALLEL	        1 /* Enable parallel insns in MD.  */
 #define TARGET_SMALL_REG_CLASS	0
 
 #define TARGET_SMALL		(target_flags & SMALL_MEMORY_FLAG)
@@ -316,11 +312,10 @@ extern const char *c4x_rpts_cycles_string, *c4x_cpu_version_string;
    defined, is executed once just after all the command options have
    been parsed.  */
 
-extern void c4x_override_options ();
 #define OVERRIDE_OPTIONS c4x_override_options ()
 
 /* Define this to change the optimizations performed by default.  */
-extern void c4x_optimization_options ();
+
 #define OPTIMIZATION_OPTIONS(LEVEL,SIZE) c4x_optimization_options(LEVEL,SIZE)
 
 /* Run Time Target Specification  */
@@ -814,15 +809,11 @@ enum reg_class
 #define REGNO_OK_FOR_INDEX_P(REGNO) \
      (IS_INDEX_REG(REGNO) || IS_INDEX_REG((unsigned)reg_renumber[REGNO]))
 
-extern enum reg_class c4x_preferred_reload_class ();
-#define PREFERRED_RELOAD_CLASS(X, CLASS) c4x_preferred_reload_class(X, CLASS)
+#define PREFERRED_RELOAD_CLASS(X, CLASS) (CLASS)
 
-extern enum reg_class c4x_limit_reload_class ();
-#define LIMIT_RELOAD_CLASS(X, CLASS) c4x_limit_reload_class(X, CLASS)
+#define LIMIT_RELOAD_CLASS(X, CLASS) (CLASS)
 
-extern enum reg_class c4x_secondary_memory_needed ();
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) 	\
-c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
+#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) 0
 
 #define CLASS_MAX_NREGS(CLASS, MODE)			\
 (((MODE) == CCmode || (MODE) == CC_NOOVmode) ? 1 : ((MODE) == HFmode) ? 1 : \
@@ -866,7 +857,7 @@ c4x_secondary_memory_needed(CLASS1, CLASS2, MODE)
         : 0 )	
 
 #define CONST_DOUBLE_OK_FOR_LETTER_P(OP, C) 				\
-        ( ((C) == 'G') ? (fp_zero_operand (OP))				\
+        ( ((C) == 'G') ? (fp_zero_operand (OP, QFmode))			\
 	: ((C) == 'H') ? (c4x_H_constant (OP)) 				\
 	: 0 )
 
@@ -1070,17 +1061,11 @@ typedef struct c4x_args
 }
 CUMULATIVE_ARGS;
 
-extern void c4x_init_cumulative_args();
-
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,INDIRECT)	\
   (c4x_init_cumulative_args (&CUM, FNTYPE, LIBNAME))
 
-extern void c4x_function_arg_advance();
-
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
   (c4x_function_arg_advance (&CUM, MODE, TYPE, NAMED))
-
-extern struct rtx_def *c4x_function_arg();
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED) \
   (c4x_function_arg(&CUM, MODE, TYPE, NAMED))
@@ -1127,11 +1112,9 @@ extern struct rtx_def *c4x_function_arg();
 
 /* Varargs handling.  */
 
-extern void c4x_va_start ();
 #define	EXPAND_BUILTIN_VA_START(stdarg, valist, nextarg) \
   c4x_va_start (stdarg, valist, nextarg)
 
-extern struct rtx_def *c4x_va_arg ();
 #define EXPAND_BUILTIN_VA_ARG(valist, type) \
   c4x_va_arg (valist, type)
 
@@ -1553,8 +1536,6 @@ extern struct rtx_def *c4x_va_arg ();
     || GET_MODE (Y) == ABS)					\
     ? CC_NOOVmode : CCmode)
 
-extern struct rtx_def *c4x_gen_compare_reg ();
-
 /* Addressing Modes  */
 
 #define HAVE_POST_INCREMENT 1
@@ -1593,8 +1574,6 @@ extern struct rtx_def *c4x_gen_compare_reg ();
    After reload, it makes no difference, since pseudo regs have
    been eliminated by then.  */
 
-extern int c4x_check_legit_addr ();
-
 #ifndef REG_OK_STRICT
 
 /* Nonzero if X is a hard or pseudo reg that can be used as an base.  */
@@ -1629,7 +1608,6 @@ extern int c4x_check_legit_addr ();
 
 #endif
 
-extern struct rtx_def *c4x_legitimize_address ();
 #define LEGITIMIZE_ADDRESS(X, OLDX, MODE, WIN) \
 {									\
   rtx new;								\
@@ -1641,7 +1619,6 @@ extern struct rtx_def *c4x_legitimize_address ();
   }									\
 }
 
-extern struct rtx_def *c4x_legitimize_reload_address ();
 #define LEGITIMIZE_RELOAD_ADDRESS(X,MODE,OPNUM,TYPE,IND_LEVELS,WIN)     \
 {									\
   rtx new;								\
@@ -1708,7 +1685,6 @@ extern struct rtx_def *c4x_legitimize_reload_address ();
    On the C4x we use this to indicate if a symbol is in text or
    data space.  */
 
-extern void c4x_encode_section_info ();
 #define ENCODE_SECTION_INFO(DECL) c4x_encode_section_info (DECL);
 
 /* Descripting Relative Cost of Operations  */
@@ -1810,8 +1786,6 @@ extern void c4x_encode_section_info ();
    this macro should be a constant.  The value of this macro only matters
    for valid addresses.  We handle the most common address without 
    a call to c4x_address_cost.  */
-
-extern int c4x_address_cost ();
 
 #define ADDRESS_COST(ADDR) (REG_P (ADDR) ? 1 : c4x_address_cost (ADDR))
 
@@ -2130,7 +2104,6 @@ dtors_section ()							\
 #define ASM_OUTPUT_BYTE(FILE, VALUE)  \
   fprintf (FILE, "\t.word\t0%xh\n", (VALUE))
 
-extern void c4x_output_ascii ();
 #define ASM_OUTPUT_ASCII(FILE, PTR, LEN) c4x_output_ascii (FILE, PTR, LEN)
 
 #define ASM_OPEN_PAREN "("
@@ -2286,8 +2259,6 @@ asm_fprintf (FILE, "%s%d:\n", PREFIX, NUM)
  "iif",	 "rs",  "re",  "rc",  "f8",  "f9", "f10", "f11"		\
 }
 
-
-extern void c4x_print_operand ();
 #define PRINT_OPERAND(FILE, X, CODE) c4x_print_operand(FILE, X, CODE)
 
 /* Determine which codes are valid without a following integer.  These must
@@ -2295,7 +2266,6 @@ extern void c4x_print_operand ();
 
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE) ((CODE) == '#')
 
-extern void c4x_print_operand_address ();
 #define PRINT_OPERAND_ADDRESS(FILE, X) c4x_print_operand_address(FILE, X)
 
 /* Define this macro if you want to implement any pragmas.  If defined, it
@@ -2304,15 +2274,12 @@ extern void c4x_print_operand_address ();
    text can be read.  CH is the first character after the #pragma.  The
    result of the expression is the terminating character found
    (newline or EOF).  */
-extern int c4x_handle_pragma ();
 #define HANDLE_PRAGMA(GETC, UNGETC, NAME) \
   c4x_handle_pragma (GETC, UNGETC, NAME)
 
-extern void c4x_set_default_attributes ();
 #define SET_DEFAULT_DECL_ATTRIBUTES(DECL, ATTRIBUTES) \
   c4x_set_default_attributes (DECL, &ATTRIBUTES)
 
-extern int c4x_valid_type_attribute_p ();
 #define VALID_MACHINE_TYPE_ATTRIBUTE(TYPE, ATTRIBUTES, NAME, ARGS) \
   (c4x_valid_type_attribute_p (TYPE, ATTRIBUTES, NAME, ARGS))
 
@@ -2619,179 +2586,3 @@ extern struct rtx_def *c4x_compare_op1;	/* operand 1 for comparisons */
 
 extern int c4x_rpts_cycles;	        /* max cycles for RPTS */
 extern int c4x_cpu_version;		/* cpu version C30/31/32/40/44 */
-
-/* Functions in c4x.c */
-
-extern void c4x_function_prologue ();
-
-extern void c4x_function_epilogue ();
-
-extern struct rtx_def *c4x_operand_subword ();
-
-extern struct rtx_def *c4x_adj_offsettable_operand ();
-
-extern char *c4x_output_cbranch ();
-
-extern int c4x_null_epilogue_p ();
-
-extern int c4x_autoinc_operand ();
-
-extern int c4x_label_conflict ();
-
-extern int c4x_address_conflict ();
-
-extern int c4x_adjust_cost ();
-
-extern void c4x_process_after_reload ();
-
-extern void c4x_combine_parallel ();
-
-extern int c4x_rptb_nop_p ();
-
-extern int c4x_rptb_rpts_p ();
-
-extern int fp_zero_operand ();
-
-extern int const_operand ();
-
-extern int stik_const_operand ();
-
-extern int not_const_operand ();
-
-extern int parallel_operand ();
-
-extern int reg_or_const_operand ();
-
-extern int reg_operand ();
-
-extern int mixed_subreg_operand ();
-
-extern int reg_imm_operand ();
-
-extern int r0r1_reg_operand ();
-
-extern int r2r3_reg_operand ();
-
-extern int ext_low_reg_operand ();
-
-extern int ext_reg_operand ();
-
-extern int std_reg_operand ();
-
-extern int dst_operand ();
-
-extern int src_operand ();
-
-extern int src_hi_operand ();
-
-extern int lsrc_operand ();
-
-extern int tsrc_operand ();
-
-extern int addr_reg_operand ();
-
-extern int index_reg_operand ();
-
-extern int dp_reg_operand ();
-
-extern int sp_reg_operand ();
-
-extern int rc_reg_operand ();
-
-extern int st_reg_operand ();
-
-extern int symbolic_address_operand ();
-
-extern int ar0_reg_operand ();
-
-extern int ar0_mem_operand ();
-
-extern int ar1_reg_operand ();
-
-extern int ar1_mem_operand ();
-
-extern int ar2_reg_operand ();
-
-extern int ar2_mem_operand ();
-
-extern int ar3_reg_operand ();
-
-extern int ar3_mem_operand ();
-
-extern int ar4_reg_operand ();
-
-extern int ar4_mem_operand ();
-
-extern int ar5_reg_operand ();
-
-extern int ar5_mem_operand ();
-
-extern int ar6_reg_operand ();
-
-extern int ar6_mem_operand ();
-
-extern int ar7_reg_operand ();
-
-extern int ar7_mem_operand ();
-
-extern int ir0_reg_operand ();
-
-extern int ir0_mem_operand ();
-
-extern int ir1_reg_operand ();
-
-extern int ir1_mem_operand ();
-
-extern int group1_reg_operand ();
-
-extern int group1_mem_operand ();
-
-extern int arx_reg_operand ();
-
-extern int call_address_operand ();
-
-extern int par_ind_operand ();
-
-extern int not_rc_reg ();
-
-extern int not_modify_reg ();
-
-extern int c4x_shiftable_constant ();
-
-extern int c4x_H_constant ();
-
-extern int c4x_I_constant ();
-
-extern int c4x_J_constant ();
-
-extern int c4x_L_constant ();
-
-extern int c4x_Q_constraint ();
-
-extern int c4x_R_constraint ();
-
-extern int c4x_S_constraint ();
-
-extern int c4x_T_constraint ();
-
-extern int c4x_U_constraint ();
-
-extern void c4x_emit_libcall ();
-
-extern void c4x_emit_libcall3 ();
-
-extern void c4x_emit_libcall_mulhi ();
-
-extern int c4x_emit_move_sequence ();
-
-extern int legitimize_operands ();
-
-extern int valid_operands ();
-
-extern int valid_parallel_load_store ();
-
-extern int valid_parallel_operands_4 ();
-
-extern int valid_parallel_operands_5 ();
-
-extern int valid_parallel_operands_6 ();
