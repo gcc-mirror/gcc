@@ -1,3 +1,8 @@
+Fri Mar  5 21:41:07 1999  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* reload1.c (emit_reload_insns): If pseudo that can't be replaced
+	with its equivalent constant, fall back to reload_in.
+
 Fri Mar  5 13:20:39 1999  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in: Delete .flow2 debugging files.
