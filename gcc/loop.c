@@ -6214,10 +6214,11 @@ check_dbra_loop (loop_end, insn_count, loop_start)
 	      comparison_val = INTVAL (XEXP (comparison, 1));
 	      initial_value = bl->initial_value;
 		
-	      /* Normalize the initial value if it has no other use
-		 except as a counter.  This will allow a few more loops
-		 to be reversed.  */
-	      if (no_use_except_counting)
+	      /* Normalize the initial value if it is an integer and 
+		 has no other use except as a counter.  This will allow
+		 a few more loops to be reversed.  */
+	      if (no_use_except_counting
+		  && GET_CODE (initial_value) == CONST_INT)
 		{
 		  comparison_val = comparison_val - INTVAL (bl->initial_value);
 		  initial_value = const0_rtx;
