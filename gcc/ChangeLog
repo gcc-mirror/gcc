@@ -1,5 +1,7 @@
 Mon Jul 12 14:29:15 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* rs6000.md (movsf): Do not force easy FP constants into memory.
+
 	* expr.c (expand_expr, case PLUS_EXPR): Pass constants through
 	immed_double_const to ensure they are properly truncated then
 	sign extended.
