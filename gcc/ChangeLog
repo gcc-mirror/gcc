@@ -1,3 +1,27 @@
+2003-04-22  Geoffrey Keating  <geoffk@apple.com>
+	    Loren James Rittle  <ljrittle@acm.org>
+
+	* dwarf2out.c (fde_table_allocated): Mark with GTY.
+	(decl_die_table_allocated): Likewise.
+	(abbrev_die_table_allocated): Likewise.
+	(line_info_table_allocated): Likewise.
+	(separate_line_info_table_allocated): Likewise.
+	(pubname_table_allocated): Likewise.
+	(arange_table_allocated): Likewise.
+	(ranges_table_allocated): Likewise.
+	(decl_die_table_in_use): Unconditionalize; mark with GTY.
+	(abbrev_die_table_in_use): Likewise.
+	(line_info_table_in_use): Likewise.
+	(separate_line_info_table_in_use): Likewise.
+	(pubname_table_in_use): Likewise.
+	(arange_table_in_use): Likewise.
+	(ranges_table_in_use): Likewise.
+	(have_location_lists): Likewise.
+	(emitcount): New GTY-marked static, moved...
+	(maybe_emit_file): ...from here.
+	(label_num): New GTY-marked static, moved...
+	(gen_internal_sym): ...from here.
+
 2003-04-22  Richard Henderson  <rth@redhat.com>
 
         PR 8866
