@@ -1,5 +1,11 @@
 Sat Aug 19 09:18:47 2000  Jeffrey A Law  (law@cygnus.com)
 
+	* reload1.c (reload_as_needed): Accept dumpfile argument,
+	pass it to emit_reload_insns.
+	(emit_reload_insns): Add new dumpfile argument.  If non-null
+	then dump the reloads for each insn into the dumpfile.
+	(reload): Pass dumpfile to reload_as_needed.
+
 	* invoke.texi: Clean up linux-gnu vs linux comments.
 
 2000-08-19  Richard Henderson  <rth@cygnus.com>

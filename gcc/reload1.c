@@ -401,7 +401,7 @@ static void ior_hard_reg_set		PARAMS ((HARD_REG_SET *, HARD_REG_SET *));
 static void scan_paradoxical_subregs	PARAMS ((rtx));
 static void count_pseudo		PARAMS ((int));
 static void order_regs_for_reload	PARAMS ((struct insn_chain *));
-static void reload_as_needed		PARAMS ((int));
+static void reload_as_needed		PARAMS ((int, FILE *));
 static void forget_old_reloads_1	PARAMS ((rtx, rtx, void *));
 static int reload_reg_class_lower	PARAMS ((const PTR, const PTR));
 static void mark_reload_reg_in_use	PARAMS ((unsigned int, int,
@@ -431,7 +431,7 @@ static void do_input_reload		PARAMS ((struct insn_chain *,
 						 struct reload *, int));
 static void do_output_reload		PARAMS ((struct insn_chain *,
 						 struct reload *, int));
-static void emit_reload_insns		PARAMS ((struct insn_chain *));
+static void emit_reload_insns		PARAMS ((struct insn_chain *, FILE *));
 static void delete_output_reload	PARAMS ((rtx, int, int));
 static void delete_address_reloads	PARAMS ((rtx, rtx));
 static void delete_address_reloads_1	PARAMS ((rtx, rtx, rtx));
@@ -1023,7 +1023,7 @@ reload (first, global, dumpfile)
     {
       int old_frame_size = get_frame_size ();
 
-      reload_as_needed (global);
+      reload_as_needed (global, dumpfile);
 
       if (old_frame_size != get_frame_size ())
 	abort ();
@@ -3717,8 +3717,9 @@ scan_paradoxical_subregs (x)
    as the insns are scanned.  */
 
 static void
-reload_as_needed (live_known)
+reload_as_needed (live_known, dumpfile)
      int live_known;
+     FILE *dumpfile;
 {
   struct insn_chain *chain;
 #if defined (AUTO_INC_DEC)
@@ -3819,7 +3820,7 @@ reload_as_needed (live_known)
 
 	      /* Generate the insns to reload operands into or out of
 		 their reload regs.  */
-	      emit_reload_insns (chain);
+	      emit_reload_insns (chain, dumpfile);
 
 	      /* Substitute the chosen reload regs from reload_reg_rtx
 		 into the insn's body (or perhaps into the bodies of other
@@ -6770,8 +6771,9 @@ do_output_reload (chain, rl, j)
 /* Output insns to reload values in and out of the chosen reload regs.  */
 
 static void
-emit_reload_insns (chain)
+emit_reload_insns (chain, dumpfile)
      struct insn_chain *chain;
+     FILE *dumpfile;
 {
   rtx insn = chain->insn;
 
@@ -6791,6 +6793,13 @@ emit_reload_insns (chain)
   other_input_reload_insns = 0;
   operand_reload_insns = 0;
   other_operand_reload_insns = 0;
+
+  /* Dump reloads into the dump file.  */
+  if (dumpfile)
+    {
+      fprintf (dumpfile, "\nReloads for insn # %d\n", INSN_UID (insn));
+      debug_reload_to_stream (dumpfile);
+    }
 
   /* Now output the instructions to copy the data into and out of the
      reload registers.  Do these in the order that the reloads were reported,
