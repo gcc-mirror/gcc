@@ -1,4 +1,3 @@
-/* CYGNUS LOCAL entire file */
 /* Global common subexpression elimination
    and global constant/copy propagation for GNU compiler.
    Copyright (C) 1997 Free Software Foundation, Inc.
