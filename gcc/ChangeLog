@@ -1,3 +1,9 @@
+1998-02-11  Mark Mitchell  <mmitchell@usa.net>
+
+	* config/i386/i386.c (reg_mentioned_in_mem): Don't abort when
+	falling through default case in switch.
+	(i386_aligned_p): Likewise.
+
 Wed Feb 11 12:59:56 1998  Lee Iverson  <leei@Canada.AI.SRI.COM>
 
 	* mips/mips.h (mips_abi_string): Correct typo in comment.

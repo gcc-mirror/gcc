@@ -495,7 +495,7 @@ i386_aligned_p (op)
       return i386_aligned_reg_p (REGNO (op));
     
     default:
-      abort ();
+      break;
     }
 
   return 0;
@@ -4828,7 +4828,7 @@ reg_mentioned_in_mem (reg, rtl)
     case SUBREG:
       return 0;
     default:
-      abort ();
+      break;
     }
 
   if (code == MEM && reg_mentioned_p (reg, rtl))
