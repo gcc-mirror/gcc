@@ -471,7 +471,7 @@ namespace std
     _Words* 		_M_word;
  
     _Words& 
-    _M_grow_words(int __index);
+    _M_grow_words(int __index, bool __iword);
 
     // Members for locale and locale caching.
     locale 		_M_ios_locale;
@@ -692,7 +692,7 @@ namespace std
     iword(int __ix)
     {
       _Words& __word = (__ix < _M_word_size) 
-			? _M_word[__ix] : _M_grow_words(__ix);
+			? _M_word[__ix] : _M_grow_words(__ix, true);
       return __word._M_iword;
     }
 
@@ -713,7 +713,7 @@ namespace std
     pword(int __ix)
     {
       _Words& __word = (__ix < _M_word_size) 
-			? _M_word[__ix] : _M_grow_words(__ix);
+			? _M_word[__ix] : _M_grow_words(__ix, false);
       return __word._M_pword;
     }
 
