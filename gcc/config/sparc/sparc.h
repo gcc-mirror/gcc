@@ -42,11 +42,9 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define CC1_SPEC "%{sun4:} %{target:}"
 
-#if 0
-/* Sparc ABI says that long double is 4 words.
-   ??? This doesn't work yet.  */
+/* Sparc ABI says that long double is 4 words.  */
+
 #define LONG_DOUBLE_TYPE_SIZE 128
-#endif
 
 #define PTRDIFF_TYPE "int"
 #define SIZE_TYPE "int"
@@ -107,17 +105,10 @@ extern int target_flags;
    use fast return insns, but lose some generality.  */
 #define TARGET_EPILOGUE (target_flags & 2)
 
-/* Nonzero means that reference doublewords as if they were guaranteed
-   to be aligned...if they aren't, too bad for the user!
-   Like -dalign in Sun cc.  */
-#define TARGET_HOPE_ALIGN (target_flags & 16)
-
-/* Nonzero means make sure all doubles are on 8-byte boundaries.
-   This option results in a calling convention that is incompatible with
-   every other sparc compiler in the world, and thus should only ever be
-   used for experimenting.  Also, varargs won't work with it, but it doesn't
-   seem worth trying to fix.  */
-#define TARGET_FORCE_ALIGN (target_flags & 32)
+/* Nonzero if we should assume that double pointers might be unaligned.
+   This can happen when linking gcc compiled code with other compilers,
+   because the ABI only guarantees 4 byte alignment.  */
+#define TARGET_UNALIGNED_DOUBLES (target_flags & 4)
 
 /* Nonzero means that we should generate code for a v8 sparc.  */
 #define TARGET_V8 (target_flags & 64)
@@ -154,8 +145,8 @@ extern int target_flags;
     {"soft-float", -1},		\
     {"epilogue", 2},		\
     {"no-epilogue", -2},	\
-    {"hope-align", 16},		\
-    {"force-align", 48},	\
+    {"unaligned-doubles", 4},	\
+    {"no-unaligned-doubles", -4},\
     {"v8", 64},			\
     {"no-v8", -64},		\
     {"sparclite", 128},		\
@@ -679,11 +670,8 @@ extern char leaf_reg_backmap[];
 
 /* Offset of first parameter from the argument pointer register value.
    This is 64 for the ins and locals, plus 4 for the struct-return reg
-   even if this function isn't going to use it.
-   If TARGET_FORCE_ALIGN, we must reserve 4 more bytes to ensure that the
-   stack remains aligned.  */
-#define FIRST_PARM_OFFSET(FNDECL) \
-  (STRUCT_VALUE_OFFSET + UNITS_PER_WORD + (TARGET_FORCE_ALIGN ? 4 : 0))
+   even if this function isn't going to use it.  */
+#define FIRST_PARM_OFFSET(FNDECL) (STRUCT_VALUE_OFFSET + UNITS_PER_WORD)
 
 /* When a parameter is passed in a register, stack space is still
    allocated for it.  */
@@ -779,13 +767,6 @@ extern char leaf_reg_backmap[];
 #define ROUND_ADVANCE(SIZE)	\
   ((SIZE + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Round a register number up to a proper boundary for an arg of mode MODE.
-   Note that we need an odd/even pair for a two-word arg,
-   since that will become 8-byte aligned when stored in memory.  */
-#define ROUND_REG(X, MODE) 					\
- (TARGET_FORCE_ALIGN && GET_MODE_UNIT_SIZE ((MODE)) > 4		\
-  ? ((X) + ! ((X) & 1)) : (X))
-
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
    for a call to a function whose data type is FNTYPE.
    For a library call, FNTYPE is 0.
@@ -800,10 +781,9 @@ extern char leaf_reg_backmap[];
    (TYPE is null for libcalls where that information may not be available.)  */
 
 #define FUNCTION_ARG_ADVANCE(CUM, MODE, TYPE, NAMED)	\
- ((CUM) = (ROUND_REG ((CUM), (MODE))			\
-	   + ((MODE) != BLKmode				\
-	      ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))	\
-	      : ROUND_ADVANCE (int_size_in_bytes (TYPE)))))
+  ((CUM) += ((MODE) != BLKmode				\
+	     ? ROUND_ADVANCE (GET_MODE_SIZE (MODE))	\
+	     : ROUND_ADVANCE (int_size_in_bytes (TYPE))))
 
 /* Determine where to put an argument to a function.
    Value is zero to push the argument on the stack,
@@ -823,24 +803,22 @@ extern char leaf_reg_backmap[];
    is at least partially passed in a register unless its data type forbids.  */
 
 #define FUNCTION_ARG(CUM, MODE, TYPE, NAMED)				\
-(ROUND_REG ((CUM), (MODE)) < NPARM_REGS					\
+((CUM) < NPARM_REGS							\
  && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))			\
  && ((TYPE)==0 || (MODE) != BLKmode					\
      || (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))			\
- ? gen_rtx (REG, (MODE),						\
-	    (BASE_PASSING_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))))	\
+ ? gen_rtx (REG, (MODE), (BASE_PASSING_ARG_REG (MODE) + (CUM)))		\
  : 0)
 
 /* Define where a function finds its arguments.
    This is different from FUNCTION_ARG because of register windows.  */
 
 #define FUNCTION_INCOMING_ARG(CUM, MODE, TYPE, NAMED)			\
-(ROUND_REG ((CUM), (MODE)) < NPARM_REGS					\
+((CUM) < NPARM_REGS							\
  && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))			\
  && ((TYPE)==0 || (MODE) != BLKmode					\
      || (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))			\
- ? gen_rtx (REG, (MODE),						\
-	    (BASE_INCOMING_ARG_REG (MODE) + ROUND_REG ((CUM), (MODE))))	\
+ ? gen_rtx (REG, (MODE), (BASE_INCOMING_ARG_REG (MODE) + (CUM)))	\
  : 0)
 
 /* For an arg passed partly in registers and partly in memory,
@@ -850,15 +828,14 @@ extern char leaf_reg_backmap[];
    needs partial registers on the Sparc.  */
 
 #define FUNCTION_ARG_PARTIAL_NREGS(CUM, MODE, TYPE, NAMED) 		\
-  ((ROUND_REG ((CUM), (MODE)) < NPARM_REGS				\
+  ((CUM) < NPARM_REGS							\
     && ((TYPE)==0 || ! TREE_ADDRESSABLE ((tree)(TYPE)))			\
     && ((TYPE)==0 || (MODE) != BLKmode					\
 	|| (TYPE_ALIGN ((TYPE)) % PARM_BOUNDARY == 0))			\
-    && (ROUND_REG ((CUM), (MODE))					\
-	+ ((MODE) == BLKmode						\
-	   ? ROUND_ADVANCE (int_size_in_bytes (TYPE))			\
-	   : ROUND_ADVANCE (GET_MODE_SIZE (MODE)))) - NPARM_REGS > 0)	\
-   ? (NPARM_REGS - ROUND_REG ((CUM), (MODE)))				\
+    && ((CUM) + ((MODE) == BLKmode					\
+		 ? ROUND_ADVANCE (int_size_in_bytes (TYPE))		\
+		 : ROUND_ADVANCE (GET_MODE_SIZE (MODE))) - NPARM_REGS > 0)\
+   ? (NPARM_REGS - (CUM))						\
    : 0)
 
 /* The SPARC ABI stipulates passing struct arguments (of any size) and
@@ -867,24 +844,6 @@ extern char leaf_reg_backmap[];
   ((TYPE && (TREE_CODE (TYPE) == RECORD_TYPE				\
 	    || TREE_CODE (TYPE) == UNION_TYPE))				\
    || (MODE == TFmode))
-
-/* If defined, a C expression that gives the alignment boundary, in
-   bits, of an argument with the specified mode and type.  If it is
-   not defined,  `PARM_BOUNDARY' is used for all arguments.
-
-   This definition does nothing special unless TARGET_FORCE_ALIGN;
-   in that case, it aligns each arg to the natural boundary.  */
-
-#define FUNCTION_ARG_BOUNDARY(MODE, TYPE)			\
- (! TARGET_FORCE_ALIGN						\
-  ? PARM_BOUNDARY						\
-  : (((TYPE) != 0)						\
-     ? (TYPE_ALIGN (TYPE) <= PARM_BOUNDARY			\
-	? PARM_BOUNDARY						\
-	: TYPE_ALIGN (TYPE))					\
-     : (GET_MODE_ALIGNMENT (MODE) <= PARM_BOUNDARY		\
-	? PARM_BOUNDARY						\
-	: GET_MODE_ALIGNMENT (MODE))))
 
 /* Define the information needed to generate branch and scc insns.  This is
    stored from the compare operation.  Note that we can't use "rtx" here
