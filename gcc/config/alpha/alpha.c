@@ -1595,6 +1595,10 @@ alpha_in_small_data_p (tree exp)
   if (TREE_CODE (exp) == STRING_CST)
     return false;
 
+  /* Functions are never in the small data area.  Duh.  */
+  if (TREE_CODE (exp) == FUNCTION_DECL)
+    return false;
+
   if (TREE_CODE (exp) == VAR_DECL && DECL_SECTION_NAME (exp))
     {
       const char *section = TREE_STRING_POINTER (DECL_SECTION_NAME (exp));
