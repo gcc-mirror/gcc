@@ -1,3 +1,8 @@
+2004-07-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/16559
+	* gcc.dg/ia64-fptr-1.c: New file.
+
 2004-07-21  Giovanni Bajo  <giovannibajo@gcc.gnu.org>
 
 	PR c++/14497
