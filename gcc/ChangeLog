@@ -1,3 +1,7 @@
+Mon Feb 24 22:08:22 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* combine.c (simplify_shift_const):  Fix previous patch.
+
 2003-02-24  Jeff Law  <law@redhat.com>
 
 	* i386.md (testdi_1_rex64): Discourage reload from using the %eax
