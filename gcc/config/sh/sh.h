@@ -1244,10 +1244,12 @@ dtors_section() 					     \
     }							     \
 }                                                            
 
-/* Assemble generic sections.
-   This is currently only used to support section attributes.  */
+/* A C statement to output something to the assembler file to switch to section
+   NAME for object DECL which is either a FUNCTION_DECL, a VAR_DECL or
+   NULL_TREE.  Some target formats do not support arbitrary sections.  Do not
+   define this macro in such cases.  */
 
-#define ASM_OUTPUT_SECTION_NAME(FILE, NAME) \
+#define ASM_OUTPUT_SECTION_NAME(FILE, DECL, NAME) \
    do { fprintf (FILE, ".section\t%s\n", NAME); } while (0)
 
 #define ASM_OUTPUT_CONSTRUCTOR(FILE,NAME)	\

@@ -576,9 +576,10 @@ handle_pragma (file)
   if (strcmp (pbuf, "saveall") == 0)
     pragma_saveall = 1;
 
-  /* ??? This is deprecated.  Use section attributes.  */
+  /* ??? This is deprecated.  Delete for gcc 2.8.  */
   if (strcmp (pbuf, "section") == 0)
     {
+      warning ("#pragma section is deprecated, use section attributes");
       while (c && !isalpha (c))
 	c = getc (file);
       psize = 0;
@@ -589,7 +590,7 @@ handle_pragma (file)
 	  c = getc (file);
 	}
       pbuf[psize] = 0;
-      named_section (pbuf);
+      named_section (NULL_TREE, pbuf);
     }
   ungetc (c, file);
   return c;
