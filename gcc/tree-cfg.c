@@ -718,18 +718,14 @@ cleanup_tree_cfg (void)
 
   retval = cleanup_control_flow ();
   retval |= delete_unreachable_blocks ();
-
-  /* thread_jumps sometimes leaves further transformation
-     opportunities for itself, so iterate on it until nothing
-     changes.  */
-  while (thread_jumps ())
-    retval = true;
+  retval |= thread_jumps ();
 
 #ifdef ENABLE_CHECKING
   if (retval)
     {
       gcc_assert (!cleanup_control_flow ());
       gcc_assert (!delete_unreachable_blocks ());
+      gcc_assert (!thread_jumps ());
     }
 #endif
 
@@ -3780,10 +3776,13 @@ thread_jumps (void)
     tree phi;
   int arg;
   bool retval = false;
+  bool rerun;
 
   FOR_EACH_BB (bb)
     bb_ann (bb)->forwardable = tree_forwarder_block_p (bb);
 
+ restart:
+  rerun = false;
   FOR_EACH_BB (bb)
     {
       edge_iterator ei;
@@ -3945,8 +3944,10 @@ thread_jumps (void)
 	 two arms eventually merge without any intervening
 	 statements.  */
       if (this_jump_threaded && tree_forwarder_block_p (bb))
-	bb_ann (bb)->forwardable = true;
+	bb_ann (bb)->forwardable = rerun = true;
     }
+  if (rerun)
+    goto restart;
 
   return retval;
 }
