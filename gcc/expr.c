@@ -3608,9 +3608,15 @@ expand_expr (exp, target, tmode, modifier)
       if (SAVE_EXPR_RTL (exp) == 0)
 	{
 	  if (mode == BLKmode)
-	    temp
-	      = assign_stack_temp (mode,
-				   int_size_in_bytes (TREE_TYPE (exp)), 0);
+	    {
+	      temp
+		= assign_stack_temp (mode, int_size_in_bytes (type), 0);
+	      MEM_IN_STRUCT_P (temp)
+		= (TREE_CODE (type) == RECORD_TYPE
+		   || TREE_CODE (type) == UNION_TYPE
+		   || TREE_CODE (type) == QUAL_UNION_TYPE
+		   || TREE_CODE (type) == ARRAY_TYPE);
+	    }
 	  else
 	    {
 	      enum machine_mode var_mode = mode;
