@@ -33,7 +33,9 @@ Boston, MA 02111-1307, USA.  */
 #define HAVE_ATEXIT
 
 /* Default to using APCS-32 and software floating point.  */
+#ifndef TARGET_DEFAULT
 #define TARGET_DEFAULT	(ARM_FLAG_SOFT_FLOAT | ARM_FLAG_APCS_32)
+#endif
 
 /* Now we define the strings used to build the spec file.  */
 #define STARTFILE_SPEC	"crtbegin%O%s crt0%O%s"
@@ -157,8 +159,13 @@ do {								\
   DECL_SECTION_NAME (DECL) = build_string (len, string);	\
 } while (0)
 
+#ifndef CPP_APCS_PC_DEFAULT_SPEC
 #define CPP_APCS_PC_DEFAULT_SPEC	"-D__APCS_32__"
+#endif
+     
+#ifndef SUBTARGET_CPU_DEFAULT
 #define SUBTARGET_CPU_DEFAULT 		TARGET_CPU_arm7tdmi
-
+#endif
+     
 /* Now get the routine arm-elf definitions.  */
 #include "arm/elf.h"
