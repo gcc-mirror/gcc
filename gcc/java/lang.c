@@ -37,10 +37,20 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "xref.h"
 #include "ggc.h"
 
+struct string_option
+{
+  const char *string;
+  int *variable;
+  int on_value;
+};
+
 static void put_decl_string PARAMS ((const char *, int));
 static void put_decl_node PARAMS ((tree));
 static void java_dummy_print PARAMS ((const char *));
 static void lang_print_error PARAMS ((const char *));
+static int process_option_with_no PARAMS ((char *,
+					   struct string_option *,
+					   int));
 
 #ifndef OBJECT_SUFFIX
 # define OBJECT_SUFFIX ".o"
@@ -122,6 +132,10 @@ int flag_hash_synchronization;
    JNI, not CNI.  */
 int flag_jni = 0;
 
+/* When non zero, warn when source file is newer than matching class
+   file.  */
+int flag_newer = 1;
+
 /* The encoding of the source file.  */
 const char *current_encoding = NULL;
 
@@ -139,7 +153,7 @@ extern int flag_exceptions;
     if `-fSTRING' is seen as an option.
    (If `-fno-STRING' is seen as an option, the opposite value is stored.)  */
 
-static struct { const char *string; int *variable; int on_value;}
+static struct string_option
 lang_f_options[] =
 {
   {"emit-class-file", &flag_emit_class_files, 1},
@@ -148,6 +162,15 @@ lang_f_options[] =
   {"use-boehm-gc", &flag_use_boehm_gc, 1},
   {"hash-synchronization", &flag_hash_synchronization, 1},
   {"jni", &flag_jni, 1}
+};
+
+static struct string_option
+lang_W_options[] =
+{
+  { "unsupported-jdk11", &flag_static_local_jdk1_1, 1 },
+  { "redundant-modifiers", &flag_redundant, 1 },
+  { "extraneous-semicolon", &flag_extraneous_semicolon, 1 },
+  { "out-of-date", &flag_newer, 1 }
 };
 
 JCF *current_jcf;
@@ -161,6 +184,34 @@ static int dependency_tracking = 0;
 #define DEPEND_ENABLE   2
 #define DEPEND_TARGET_SET 4
 #define DEPEND_FILE_ALREADY_SET 8
+
+/* Process an option that can accept a `no-' form.
+   Return 1 if option found, 0 otherwise.  */
+static int
+process_option_with_no (p, table, table_size)
+     char *p;
+     struct string_option *table;
+     int table_size;
+{
+  int j;
+
+  for (j = 0; j < table_size; j++)
+    {
+      if (!strcmp (p, table[j].string))
+	{
+	  *table[j].variable = table[j].on_value;
+	  return 1;
+	}
+      if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
+	  && ! strcmp (p+3, table[j].string))
+	{
+	  *table[j].variable = ! table[j].on_value;
+	  return 1;
+	}
+    }
+
+  return 0;
+}
 
 /*
  * process java-specific compiler command-line options
@@ -241,28 +292,9 @@ lang_decode_option (argc, argv)
       /* Some kind of -f option.
 	 P's value is the option sans `-f'.
 	 Search for it in the table of options.  */
-      int found = 0, j;
-
       p += 2;
-
-      for (j = 0; !found && j < (int) ARRAY_SIZE (lang_f_options); j++)
-	{
-	  if (!strcmp (p, lang_f_options[j].string))
-	    {
-	      *lang_f_options[j].variable = lang_f_options[j].on_value;
-	      /* A goto here would be cleaner,
-		 but breaks the vax pcc.  */
-	      found = 1;
-	    }
-	  if (p[0] == 'n' && p[1] == 'o' && p[2] == '-'
-	      && ! strcmp (p+3, lang_f_options[j].string))
-	    {
-	      *lang_f_options[j].variable = ! lang_f_options[j].on_value;
-	      found = 1;
-	    }
-	}
-
-      return found;
+      return process_option_with_no (p, lang_f_options,
+				     ARRAY_SIZE (lang_f_options));
     }
 
   if (strcmp (p, "-Wall") == 0)
@@ -276,22 +308,12 @@ lang_decode_option (argc, argv)
       return 1;
     }
 
-  if (strcmp (p, "-Wunsupported-jdk11") == 0)
+  if (p[0] == '-' && p[1] == 'W')
     {
-      flag_static_local_jdk1_1 = 1;
-      return 1;
-    }
-
-  if (strcmp (p, "-Wredundant-modifiers") == 0)
-    {
-      flag_redundant = 1;
-      return 1;
-    }
-
-  if (strcmp (p, "-Wextraneous-semicolon") == 0)
-    {
-      flag_extraneous_semicolon = 1;
-      return 1;
+      /* Skip `-W' and see if we accept the option or its `no-' form.  */
+      p += 2;
+      return process_option_with_no (p, lang_W_options,
+				     ARRAY_SIZE (lang_W_options));
     }
 
   if (strcmp (p, "-MD") == 0)

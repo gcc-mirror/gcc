@@ -162,6 +162,10 @@ extern int flag_redundant;
 extern int flag_not_overriding;
 extern int flag_static_local_jdk1_1;
 
+/* When non zero, warn when source file is newer than matching class
+   file.  */
+extern int flag_newer;
+
 /* When non zero, call a library routine to do integer divisions. */
 extern int flag_use_divide_subroutine;
 

@@ -403,7 +403,8 @@ DEFUN(find_class, (classname, classname_length, jcf, source_ok),
 	i--;
       
       stripped_class_name [i] = '\0';
-      warning ("Source file for class `%s' is newer than its matching class file. Source file used instead", stripped_class_name);
+      if (flag_newer)
+	warning ("Source file for class `%s' is newer than its matching class file. Source file used instead", stripped_class_name);
       free (stripped_class_name);
       class = -1;
     }

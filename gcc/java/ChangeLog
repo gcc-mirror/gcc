@@ -1,5 +1,15 @@
 2000-11-03  Tom Tromey  <tromey@cygnus.com>
 
+	* lang-options.h: Mention -Wout-of-date.
+	* jcf-dump.c (flag_newer): New global.
+	* gjavah.c (flag_newer): New global.
+	* jcf-io.c (find_class): Only warn when flag_newer set.
+	* lang.c (flag_newer): New global.
+	(struct string_option): New declaration.
+	(lang_W_options): New global.
+	(process_option_with_no): New function.
+	(lang_decode_option): Use it.
+
 	* class.c (cxx_keyword_p): Accept keywords with trailing `$'s.
 	* gjavah.c (cxx_keyword_subst): Handle any number of trailing
 	`$'.
