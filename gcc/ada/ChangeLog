@@ -1,3 +1,89 @@
+2001-10-10  Vincent Celier <celier@gnat.com>
+
+	* make.adb:
+	(Add_Switches): reflect the changes for the switches attributes
+	Default_Switches indexed by the programming language,
+	Switches indexed by the file name.
+	(Collect_Arguments_And_Compile): Idem.
+	Reflect the attribute name changes.
+	
+	* prj-attr.adb:
+	(Initialisation_Data): Change the names of some packages and
+	attributes.
+	(Initialize): process case insensitive associative arrays.
+	
+	* prj-attr.ads:
+	(Attribute_Kind): Remove Both, add Case_Insensitive_Associative_Array.
+	
+	* prj-dect.adb:
+	(Parse_Attribute_Declaration): For case insensitive associative
+	 arrays, set the index string to lower case.
+	
+	* prj-env.adb:
+	Reflect the changes of the project attributes.
+	
+	* prj-nmsc.adb:
+	Replace Check_Naming_Scheme by Ada_Check and
+	Language_Independent_Check.
+	
+	* prj-nmsc.ads:
+	Replaced Check_Naming_Scheme by 2 procedures:
+	Ada_Check and Language_Independent_Check.
+	
+	* prj-proc.adb:
+	(Process_Declarative_Items): For case-insensitive associative
+	arrays, set the index string to lower case.
+	(Recursive_Check): Call Prj.Nmsc.Ada_Check, instead of
+	Prj.Nmsc.Check_Naming_Scheme.
+	
+	* prj-tree.adb:
+	(Case_Insensitive): New function
+	(Set_Case_Insensitive): New procedure
+	
+	* prj-tree.ads:
+	(Case_Insensitive): New function
+	(Set_Case_Insensitive): New procedure
+	(Project_Node_Record): New flag Case_Insensitive.
+	
+	* prj-util.adb:
+	(Value_Of): new function to get the string value of a single
+	string variable or attribute.
+	
+	* prj-util.ads:
+	(Value_Of): new function to get the string value of a single
+	string variable or attribute.
+	
+	* prj.adb:
+	(Ada_Default_Spec_Suffix): New function
+	(Ada_Default_Impl_Suffix): New function
+	Change definitions of several constants to reflect
+	new components of record types.
+	
+	* prj.ads:
+	(Naming_Data): Change several components to reflect new
+	elements of naming schemes.
+	(Project_Data): New flags Sources_Present and
+	Language_Independent_Checked.
+	(Ada_Default_Spec_Suffix): New function.
+	(Ada_Default_Impl_Suffix): New function.
+	
+	* snames.ads:
+	Modification of predefined names for project manager: added
+	Implementation, Specification_Exceptions, Implementation_Exceptions,
+	Specification_Suffix, Implementation_Suffix, Separate_Suffix,
+	Default_Switches, _Languages, Builder, Cross_Reference,
+	Finder. Removed Body_Part, Specification_Append, Body_Append,
+	Separate_Append, Gnatmake, Gnatxref, Gnatfind, Gnatbind,
+	Gnatlink.
+	
+	* prj.ads: (Ada_Default_Spec_Suffix, Ada_Default_Impl_Suffix):
+	Add comments.
+	
+	* prj-nmsc.adb (Ada_Check): Test that Separate_Suffix is defaulted,
+	not that it is Nil_Variable_Value.
+	
+	* prj.ads: Add ??? for uncommented declarations
+
 2001-10-10  Ed Schonberg <schonber@gnat.com>
 
 	* sem_prag.adb: (Analyze_Pragma, case External): If entity is a 

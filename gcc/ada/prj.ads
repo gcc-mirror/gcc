@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.18 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -195,47 +195,66 @@ package Prj is
    --  Raises Constraint_Error if not a Casing_Type image.
 
    type Naming_Data is record
-      Dot_Replacement      : Name_Id          := No_Name;
-      --  The string to replace '.' in the source file name.
+      Current_Language          : Name_Id          := No_Name;
+      --  The programming language being currently considered
 
-      Dot_Repl_Loc         : Source_Ptr       := No_Location;
+      Dot_Replacement           : Name_Id          := No_Name;
+      --  The string to replace '.' in the source file name (for Ada).
+
+      Dot_Repl_Loc              : Source_Ptr       := No_Location;
       --  The position in the project file source where
       --  Dot_Replacement is defined.
 
-      Casing               : Casing_Type      := All_Lower_Case;
-      --  The casing of the source file name.
+      Casing                    : Casing_Type      := All_Lower_Case;
+      --  The casing of the source file name (for Ada).
 
-      Specification_Append : Name_Id          := No_Name;
+      Specification_Suffix      : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
       --  source file name of a specification.
+      --  Indexed by the programming language.
 
-      Spec_Append_Loc      : Source_Ptr       := No_Location;
+      Current_Spec_Suffix       : Name_Id          := No_Name;
+      --  The specification suffix of the current programming language
+
+      Spec_Suffix_Loc           : Source_Ptr       := No_Location;
       --  The position in the project file source where
-      --  Specification_Append is defined.
+      --  Current_Spec_Suffix is defined.
 
-      Body_Append          : Name_Id          := No_Name;
+      Implementation_Suffix     : Array_Element_Id := No_Array_Element;
       --  The string to append to the unit name for the
       --  source file name of a body.
+      --  Indexed by the programming language.
 
-      Body_Append_Loc      : Source_Ptr       := No_Location;
+      Current_Impl_Suffix       : Name_Id          := No_Name;
+      --  The implementation suffix of the current programming language
+
+      Impl_Suffix_Loc           : Source_Ptr       := No_Location;
       --  The position in the project file source where
-      --  Body_Append is defined.
+      --  Current_Impl_Suffix is defined.
 
-      Separate_Append      : Name_Id          := No_Name;
+      Separate_Suffix           : Name_Id          := No_Name;
       --  The string to append to the unit name for the
-      --  source file name of a subunit.
+      --  source file name of an Ada subunit.
 
-      Sep_Append_Loc       : Source_Ptr       := No_Location;
+      Sep_Suffix_Loc            : Source_Ptr       := No_Location;
       --  The position in the project file source where
-      --  Separate_Append is defined.
+      --  Separate_Suffix is defined.
 
-      Specifications       : Array_Element_Id := No_Array_Element;
+      Specifications            : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual specifications
-      --  to source file names.
+      --  to source file names. Specific to Ada.
 
-      Bodies               : Array_Element_Id := No_Array_Element;
+      Bodies                    : Array_Element_Id := No_Array_Element;
       --  An associative array mapping individual bodies
-      --  to source file names.
+      --  to source file names. Specific to Ada.
+
+      Specification_Exceptions  : Array_Element_Id := No_Array_Element;
+      --  An associative array mapping individual specifications
+      --  to source file names. Indexed by the programming language name.
+
+      Implementation_Exceptions : Array_Element_Id := No_Array_Element;
+      --  An associative array mapping individual bodies
+      --  to source file names. Indexed by the programming language name.
 
    end record;
    --  A naming scheme.
@@ -278,88 +297,122 @@ package Prj is
       First_Referred_By  : Project_Id     := No_Project;
       --  The project, if any, that was the first to be known
       --  as importing or modifying this project.
+      --  Set by Prj.Proc.Process.
 
       Name               : Name_Id        := No_Name;
       --  The name of the project.
+      --  Set by Prj.Proc.Process.
 
       Path_Name          : Name_Id        := No_Name;
       --  The path name of the project file.
+      --  Set by Prj.Proc.Process.
 
       Location           : Source_Ptr     := No_Location;
       --  The location in the project file source of the
       --  reserved word project.
+      --  Set by Prj.Proc.Process.
 
       Directory          : Name_Id        := No_Name;
       --  The directory where the project file resides.
-
-      File_Name          : Name_Id        := No_Name;
-      --  The file name of the project file.
+      --  Set by Prj.Proc.Process.
 
       Library            : Boolean        := False;
-      --  True if this is a library project
+      --  True if this is a library project.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Library_Dir        : Name_Id        := No_Name;
       --  If a library project, directory where resides the library
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Library_Name       : Name_Id        := No_Name;
       --  If a library project, name of the library
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Library_Kind       : Lib_Kind       := Static;
       --  If a library project, kind of library
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Lib_Internal_Name  : Name_Id        := No_Name;
       --  If a library project, internal name store inside the library
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Lib_Elaboration    : Boolean        := False;
       --  If a library project, indicate if <lib>init and <lib>final
       --  procedures need to be defined.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
+
+      Sources_Present    : Boolean        := True;
+      --  A flag that indicates if there are sources in this project file.
+      --  There are no sources if 1) Source_Dirs is specified as an
+      --  empty list, 2) Source_Files is specified as an empty list, or
+      --  3) the current language is not in the list of the specified
+      --  Languages.
 
       Sources            : String_List_Id := Nil_String;
       --  The list of all the source file names.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Source_Dirs        : String_List_Id := Nil_String;
       --  The list of all the source directories.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Object_Directory   : Name_Id        := No_Name;
       --  The object directory of this project file.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Modifies           : Project_Id     := No_Project;
       --  The reference of the project file, if any, that this
       --  project file modifies.
+      --  Set by Prj.Proc.Process.
 
       Modified_By        : Project_Id     := No_Project;
       --  The reference of the project file, if any, that
       --  modifies this project file.
+      --  Set by Prj.Proc.Process.
 
       Naming             : Naming_Data    := Standard_Naming_Data;
       --  The naming scheme of this project file.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       Decl               : Declarations   := No_Declarations;
       --  The declarations (variables, attributes and packages)
       --  of this project file.
+      --  Set by Prj.Proc.Process.
 
       Imported_Projects  : Project_List   := Empty_Project_List;
       --  The list of all directly imported projects, if any.
+      --  Set by Prj.Proc.Process.
 
       Include_Path       : String_Access  := null;
       --  The cached value of ADA_INCLUDE_PATH for this project file.
+      --  Set by gnatmake (prj.Env.Set_Ada_Paths).
 
       Objects_Path       : String_Access  := null;
       --  The cached value of ADA_OBJECTS_PATH for this project file.
+      --  Set by gnatmake (prj.Env.Set_Ada_Paths).
 
       Config_File_Name   : Name_Id        := No_Name;
       --  The name of the configuration pragmas file, if any.
+      --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
 
       Config_File_Temp   : Boolean        := False;
       --  An indication that the configuration pragmas file is
       --  a temporary file that must be deleted at the end.
+      --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
 
       Config_Checked     : Boolean        := False;
-      --  A flag to avoid checking repetively the configuration pragmas file.
+      --  A flag to avoid checking repetitively the configuration pragmas file.
+      --  Set by gnatmage (Prj.Env.Create_Config_Pragmas_File).
+
+      Language_Independent_Checked : Boolean := False;
+      --  A flag that indicates that the project file has been checked
+      --  for language independent features: Object_Directory,
+      --  Source_Directories, Library, non empty Naming Suffixs.
 
       Checked            : Boolean        := False;
-      --  A flag to avoid checking repetively the naming scheme of
+      --  A flag to avoid checking repetitively the naming scheme of
       --  this project file.
+      --  Set by Prj.Nmsc.Check_Naming_Scheme.
 
       --  Various flags that are used in an ad hoc manner
 
@@ -403,10 +456,18 @@ package Prj is
      (By         : Project_Id;
       With_State : in out State);
    --  Call Action for each project imported directly or indirectly by project
-   --  By.--  Action is called according to the order of importation: if A
+   --  By. Action is called according to the order of importation: if A
    --  imports B, directly or indirectly, Action will be called for A before
    --  it is called for B. With_State may be used by Action to choose a
    --  behavior or to report some global result.
+
+   function Ada_Default_Spec_Suffix return Name_Id;
+   --  Return the Name_Id for the standard GNAT suffix for Ada spec source
+   --  file name ".ads".
+
+   function Ada_Default_Impl_Suffix return Name_Id;
+   --  Return the Name_Id for the standard GNAT suffix for Ada body source
+   --  file name ".adb".
 
 private
 

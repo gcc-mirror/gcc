@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.6 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -34,6 +34,13 @@ with Types;       use Types;
 package Prj.Util is
 
    function Value_Of
+     (Variable : Variable_Value;
+      Default  : String)
+      return     String;
+   --  Get the value of a single string variable. If Variable is
+   --  Nil_Variable_Value, is a string list or is defaulted, return Default.
+
+   function Value_Of
      (Index    : Name_Id;
       In_Array : Array_Element_Id)
       return     Name_Id;
@@ -53,7 +60,7 @@ package Prj.Util is
      (Name                    : Name_Id;
       Attribute_Or_Array_Name : Name_Id;
       In_Package              : Package_Id)
-      return                   Variable_Value;
+      return                    Variable_Value;
    --  In a specific package,
    --   - if there exists an array Variable_Or_Array_Name with an index
    --     Name, returns the corresponding component,
@@ -76,41 +83,36 @@ package Prj.Util is
      (Name      : Name_Id;
       In_Arrays : Array_Id)
       return      Array_Element_Id;
-   --  Returns a specified array in an array list.
-   --  Returns No_Array_Element if In_Arrays is null or if Name is not the
-   --  name of an array in In_Arrays.
-   --  Assumption: Name is in lower case.
+   --  Returns a specified array in an array list. Returns No_Array_Element
+   --  if In_Arrays is null or if Name is not the name of an array in
+   --  In_Arrays. The caller must ensure that Name is in lower case.
 
    function Value_Of
      (Name        : Name_Id;
       In_Packages : Package_Id)
       return        Package_Id;
-   --  Returns a specified package in a package list.
-   --  Returns No_Package if In_Packages is null or if Name is not the
-   --  name of a package in Package_List.
-   --  Assumption: Name is in lower case.
+   --  Returns a specified package in a package list. Returns No_Package
+   --  if In_Packages is null or if Name is not the name of a package in
+   --  Package_List. The caller must ensure that Name is in lower case.
 
    function Value_Of
      (Variable_Name : Name_Id;
       In_Variables  : Variable_Id)
       return          Variable_Value;
-   --  Returns a specified variable in a variable list.
-   --  Returns null if In_Variables is null or if Variable_Name
-   --  is not the name of a variable in In_Variables.
-   --  Assumption: Variable_Name is in lower case.
+   --  Returns a specified variable in a variable list. Returns null if
+   --  In_Variables is null or if Variable_Name is not the name of a
+   --  variable in In_Variables. Caller must ensure that Name is lower case.
 
    procedure Write_Str
      (S          : String;
       Max_Length : Positive;
       Separator  : Character);
-   --  Output string S using Output.Write_Str.
-   --  If S is too long to fit in one line of Max_Length, cut it in
-   --  several lines, using Separator as the last character of each line,
-   --  if possible.
+   --  Output string S using Output.Write_Str. If S is too long to fit in
+   --  one line of Max_Length, cut it in several lines, using Separator as
+   --  the last character of each line, if possible.
 
    type Text_File is limited private;
-   --  Represents a text file.
-   --  Default is invalid text file.
+   --  Represents a text file. Default is invalid text file.
 
    function Is_Valid (File : Text_File) return Boolean;
    --  Returns True if File designates an open text file that

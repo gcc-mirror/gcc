@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                            $Revision: 1.3 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2000-2001 Free Software Foundation, Inc.       --
 --                                                                          --
@@ -31,12 +31,21 @@
 
 private package Prj.Nmsc is
 
-   procedure Check_Naming_Scheme
+   procedure Ada_Check
      (Project      : Project_Id;
       Report_Error : Put_Line_Access);
-   --  Check that the Naming Scheme of a project is legal. Find the
-   --  object directory, the source directories, and the source files.
-   --  Check the source files against the Naming Scheme.
+   --  Call Language_Independent_Check.
+   --  Check the naming scheme for Ada.
+   --  Find the Ada source files if any.
+   --  If Report_Error is null , use the standard error reporting mechanism
+   --  (Errout). Otherwise, report errors using Report_Error.
+
+   procedure Language_Independent_Check
+     (Project      : Project_Id;
+      Report_Error : Put_Line_Access);
+   --  Check the object directory and the source directories.
+   --  Check the library attributes, including the library directory if any.
+   --  Get the set of specification and implementation suffixs, if any.
    --  If Report_Error is null , use the standard error reporting mechanism
    --  (Errout). Otherwise, report errors using Report_Error.
 

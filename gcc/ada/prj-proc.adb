@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                            $Revision: 1.16 $
+--                            $Revision$
 --                                                                          --
 --             Copyright (C) 2001 Free Software Foundation, Inc.            --
 --                                                                          --
@@ -27,6 +27,7 @@
 ------------------------------------------------------------------------------
 
 with Errout;   use Errout;
+with GNAT.Case_Util;
 with Namet;    use Namet;
 with Opt;
 with Output;   use Output;
@@ -1015,6 +1016,10 @@ package body Prj.Proc is
                      String_To_Name_Buffer
                        (Associative_Array_Index_Of (Current_Item));
 
+                     if Case_Insensitive (Current_Item) then
+                        GNAT.Case_Util.To_Lower (Name_Buffer (1 .. Name_Len));
+                     end if;
+
                      declare
                         The_Array : Array_Id;
 
@@ -1260,7 +1265,7 @@ package body Prj.Proc is
             Write_Line ("""");
          end if;
 
-         Prj.Nmsc.Check_Naming_Scheme (Project, Error_Report);
+         Prj.Nmsc.Ada_Check (Project, Error_Report);
       end if;
 
    end Recursive_Check;
