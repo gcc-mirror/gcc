@@ -1,4 +1,12 @@
 2004-06-13  Steven G. Kargl  <kargls@comcast.net>
+	    Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	* random.c: Fix several spelling and formatting mistakes in 
+	comments.
+	(random_r8): Fix loop to make random numbers range in [0,1(.
+	
+
+2004-06-13  Steven G. Kargl  <kargls@comcast.net>
 
 	* random.c (random_r4): Burn a random number.
 	(random_r8): fix infinite loop.

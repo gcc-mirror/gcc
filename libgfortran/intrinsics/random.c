@@ -416,7 +416,7 @@ arandom_r8 (gfc_array_r8 * harv)
    wish to acknowledge the source, as a courtesy.
 
 "There is no copyright on the code below." included the original
-KISS algorithm. */
+KISS algorithm.  */
 
 #include "config.h"
 #include "libgfortran.h"
@@ -449,7 +449,7 @@ kiss_random_kernel(void)
 
 }
 
-/*  This function produces a REAL(4) value in the uniform distribution
+/*  This function produces a REAL(4) value from the uniform distribution
     with range [0,1).  */
 
 void
@@ -485,7 +485,7 @@ prefix(random_r8) (GFC_REAL_8 *x)
 	     + kiss_random_kernel ();
       *x = (GFC_REAL_8)kiss / (GFC_REAL_8)(~(GFC_UINTEGER_8) 0);
     }
-  while (*x == 0);
+  while (*x == 1.0);
 
 }
 
@@ -554,7 +554,7 @@ prefix(arandom_r4) (gfc_array_r4 *x)
     }
 }
 
-/*  This function fills a REAL(8) array with valuse from the uniform
+/*  This function fills a REAL(8) array with values from the uniform
     distribution with range [0,1).  */
 
 void
@@ -620,7 +620,7 @@ prefix(arandom_r8) (gfc_array_r8 *x)
 }
 
 /* prefix(random_seed) is used to seed the PRNG with either a default
-   set of seeds or user specified set of seed.  prefix(random_seed) 
+   set of seeds or user specified set of seeds.  prefix(random_seed) 
    must be called with no argument or exactly one argument.  */
 
 void
@@ -633,7 +633,7 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 * put,
   if (size == NULL && put == NULL && get == NULL)
     {
       /* From the standard: "If no argument is present, the processor assigns
-         a processor-dependent value to the seed." */
+         a processor-dependent value to the seed."  */
       kiss_seed[0] = kiss_default_seed[0];
       kiss_seed[1] = kiss_default_seed[1];
       kiss_seed[2] = kiss_default_seed[2];
@@ -645,37 +645,37 @@ random_seed (GFC_INTEGER_4 *size, gfc_array_i4 * put,
 
   if (put != NULL)
     {
-      /* If the rank of the array is not 1, abort */
+      /* If the rank of the array is not 1, abort.  */
       if (GFC_DESCRIPTOR_RANK (put) != 1)
         runtime_error ("Array rank of PUT is not 1.");
 
-      /* If the array is too small, abort */
+      /* If the array is too small, abort.  */
       if (((put->dim[0].ubound + 1 - put->dim[0].lbound)) < kiss_size)
         runtime_error ("Array size of PUT is too small.");
 
       if (put->dim[0].stride == 0)
 	put->dim[0].stride = 1;
 
-      /*  This code now should do correct strides. */
+      /*  This code now should do correct strides.  */
       for (i = 0; i < kiss_size; i++)
         kiss_seed[i] =(GFC_UINTEGER_4) put->data[i * put->dim[0].stride];
     }
 
-  /* Return the seed to GET data */
+  /* Return the seed to GET data.  */
   if (get != NULL)
     {
-      /* If the rank of the array is not 1, abort. */
+      /* If the rank of the array is not 1, abort.  */
       if (GFC_DESCRIPTOR_RANK (get) != 1)
 	runtime_error ("Array rank of GET is not 1.");
 
-      /* If the array is too small, abort. */
+      /* If the array is too small, abort.  */
       if (((get->dim[0].ubound + 1 - get->dim[0].lbound)) < kiss_size)
 	runtime_error ("Array size of GET is too small.");
 
       if (get->dim[0].stride == 0)
 	get->dim[0].stride = 1;
 
-      /*  This code now should do correct strides. */
+      /*  This code now should do correct strides.  */
       for (i = 0; i < kiss_size; i++)
         get->data[i * get->dim[0].stride] = (GFC_INTEGER_4) kiss_seed[i];
     }
