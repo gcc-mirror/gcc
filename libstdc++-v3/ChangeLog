@@ -1,3 +1,9 @@
+2000-08-17  Mark Mitchell  <mark@codesourcery.com>
+
+	* bits/localefwd.h (std::locale): Use explicit `class' specified
+	when declaring friends.
+	* bits/std_fstream.h (std::basic_filebuf): Likewise.
+
 2000-08-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* src/Makefile.am (libstdc++.INC): Renamed from INCLUDES.

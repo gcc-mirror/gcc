@@ -210,7 +210,7 @@ namespace std
   {
     // Forwrd decls and friends:
     class _Impl;
-    friend _Impl;
+    friend class _Impl;
 
     template<typename _Facet>
       friend const _Facet& 
