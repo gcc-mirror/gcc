@@ -1,3 +1,9 @@
+Thu Jul 12 17:57:16 CEST 2001  Jan Hubicka  <jh@suse.cz>
+
+	* flow.c (try_optimize_cfg): Delete whole chain of trivially dead
+	basic blocks.
+	(verify_flow_info): Make diagnostics prettier.
+
 Thu Jul 12 16:48:54 CEST 2001  Jan Hubicka  <jh@suse.cz>
 
 	* flow.c (find_basic_blocks_1): Do not emit NOP after call.

@@ -3653,10 +3653,10 @@ try_optimize_cfg (mode)
 	  edge s;
 	  int changed_here = 0;
 
-	  /* Delete trivially dead basic block.  */
-	  if (b->pred == NULL)
+	  /* Delete trivially dead basic blocks.  */
+	  while (b->pred == NULL)
 	    {
-	      c = BASIC_BLOCK (i - 1);
+	      c = BASIC_BLOCK (b->index - 1);
 	      if (rtl_dump_file)
 		fprintf (rtl_dump_file, "Deleting block %i.\n", b->index);
 	      flow_delete_block (b);
@@ -7923,23 +7923,20 @@ verify_flow_info ()
 	      && (e->src->index + 1 != e->dest->index
 		  || !can_fallthru (e->src, e->dest)))
 	    {
-	      fprintf (stderr,
-		       "verify_flow_info: Incorrect fallthru edge %i->%i\n",
-		       e->src->index, e->dest->index);
-	      fflush (stderr);
+	      error ("verify_flow_info: Incorrect fallthru edge %i->%i",
+		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
 	    
 	  if (e->src != bb)
 	    {
-	      fprintf (stderr,
-		       "verify_flow_info: Basic block %d succ edge is corrupted\n",
-		       bb->index);
+	      error ("verify_flow_info: Basic block %d succ edge is corrupted",
+		     bb->index);
 	      fprintf (stderr, "Predecessor: ");
 	      dump_edge_info (stderr, e, 0);
 	      fprintf (stderr, "\nSuccessor: ");
 	      dump_edge_info (stderr, e, 1);
-	      fflush (stderr);
+	      fprintf (stderr, "\n");
 	      err = 1;
 	    }
 	  if (e->dest != EXIT_BLOCK_PTR)
