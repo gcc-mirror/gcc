@@ -1,5 +1,22 @@
 2004-04-20  Michael Koch  <konqueror@gmx.de>
 
+	* javax/print/attribute/EnumSyntax.java
+	(getOffset): Made protected.
+	* javax/print/attribute/HashAttributeSet.java
+	(HashAttributeSet): Likewise.
+	* javax/print/attribute/ResolutionSyntax.java
+	(getFeedResolution): Fixed typo in exception name.
+	(getCrossFeedResolution): Likewise.
+	* javax/print/attribute/SetOfIntegerSyntax.java
+	(SetOfIntegerSyntax): Fixed HTML entities in javadoc.
+	* javax/print/attribute/TextSyntax.java
+	(TextSyntax): Handle locale correctly.
+	(hashCode): Calc better hashcode value.
+	(equals): Fixed @return tag.
+	(toString): New method.
+
+2004-04-20  Michael Koch  <konqueror@gmx.de>
+
 	* gnu/java/nio/FileLockImpl.java
 	(static): Removed, not needed anymore.
 	* gnu/java/nio/channels/FileChannelImpl.java

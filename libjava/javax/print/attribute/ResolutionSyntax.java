@@ -104,7 +104,7 @@ public abstract class ResolutionSyntax
    *
    * @return the resolution
    *
-   * @exception IllegalArgumenException if units < 1
+   * @exception IllegalArgumentException if units < 1
    */
   public int getCrossFeedResolution(int units)
   {
@@ -130,7 +130,7 @@ public abstract class ResolutionSyntax
    *
    * @return the resolution
    *
-   * @exception IllegalArgumenException if units < 1
+   * @exception IllegalArgumentException if units < 1
    */
   public int getFeedResolution(int units)
   {
