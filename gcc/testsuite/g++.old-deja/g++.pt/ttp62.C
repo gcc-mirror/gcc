@@ -1,6 +1,6 @@
 // Origin: Ewgenij Gawrilow <gawrilow@math.TU-Berlin.DE>
 
-#include <iostream>
+extern "C" void abort ();
 
 template <template <class X> class B, class A>
 struct is_instance_of {
@@ -21,7 +21,9 @@ bool is_C (const T&) {
 };
 
 int main() {
-   std::cout << "should be true: " << is_C(C<int>()) << std::endl;
-   std::cout << "should be false: " << is_C(D<int>()) << std::endl;
+   if (!is_C(C<int>()))
+      abort ();
+   if (is_C(D<int>()))
+      abort ();
    return 0;
 }

@@ -1,3 +1,7 @@
+2000-11-24  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	* g++.old-dega/g++.pt/ttp62.C: Call abort() on failure.
+
 2000-11-24  Bernd Schmidt  <bernds@redhat.co.uk>
 
 	* gcc.dg/sequence-point-1.c: Add some new tests.
