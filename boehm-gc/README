@@ -1,6 +1,7 @@
 Copyright 1988, 1989 Hans-J. Boehm, Alan J. Demers
 Copyright (c) 1991-1996 by Xerox Corporation.  All rights reserved.
-Copyright (c) 1996-1998 by Silicon Graphics.  All rights reserved.
+Copyright (c) 1996-1999 by Silicon Graphics.  All rights reserved.
+Copyright (c) 1999 by Hewlett-Packard Company. All rights reserved.
 
   [ This version of the collector modified by Cygnus Solutions.
     See the file ChangeLog for details ]
@@ -14,18 +15,25 @@ Permission to modify the code and to distribute modified code is granted,
 provided the above notices are retained, and a notice that the code was
 modified is included with the above copyright notice.
 
-This is version 4.13alpha2 of a conservative garbage collector for C and C++.
+This is version 5.0alpha4 of a conservative garbage collector for C and C++.
 
 You might find a more recent version of this at
 
-http://reality.sgi.com/boehm/gc.html
+http://www.hpl.hp.com/personal/Hans_Boehm/gc
 
 HISTORY -
 
   Early versions of this collector were developed as a part of research
 projects supported in part by the National Science Foundation
 and the Defense Advance Research Projects Agency.
-Much of the code was rewritten by Hans-J. Boehm at Xerox PARC.
+Much of the code was rewritten by Hans-J. Boehm (boehm@acm.org) at Xerox PARC
+and at SGI.
+
+Some other contributors:  
+
+More recent contributors are mentioned in the modification history at the
+end of this file.  My apologies for any omissions.
+
 The SPARC specific code was contributed by Mark Weiser
 (weiser@parc.xerox.com).  The Encore Multimax modifications were supplied by
 Kevin Kenny (kenny@m.cs.uiuc.edu).  The adaptation to the RT is largely due
@@ -36,8 +44,8 @@ Robert Brazile (brazile@diamond.bbn.com) originally supplied the ULTRIX code.
 Al Dosser (dosser@src.dec.com) and Regis Cridlig (Regis.Cridlig@cl.cam.ac.uk)
 subsequently provided updates and information on variation between ULTRIX
 systems.  Parag Patel (parag@netcom.com) supplied the A/UX code.
-Jesper Peterson(jep@mtiame.mtia.oz.au) and
-Michel Schinz supplied the Amiga port.
+Jesper Peterson(jep@mtiame.mtia.oz.au), Michel Schinz, and
+Martin Tauchmann (martintauchmann@bigfoot.com) supplied the Amiga port.
 Thomas Funke (thf@zelator.in-berlin.de(?)) and
 Brian D.Carlstrom (bdc@clark.lcs.mit.edu) supplied the NeXT ports.
 Douglas Steel (doug@wg.icl.co.uk) provided ICL DRS6000 code.
@@ -62,8 +70,7 @@ made it into the released version of the collector, yet.)
 (Blame for misinstallation of these modifications goes to the first author,
 however.)
 
-Credits for some more recent modifications are given in the modification
-history at the end of this file.
+OVERVIEW
 
     This is intended to be a general purpose, garbage collecting storage
 allocator.  The algorithms used are described in:
@@ -92,7 +99,7 @@ of the ACM SIGPLAN '96 Conference on Programming Language Design and
 Implementation.
 
 (Both are also available from
-http://reality.sgi.com/employees/boehm_mti/papers/, among other places.)
+http://reality.sgi.com/boehm/papers/, among other places.)
 
   Unlike the collector described in the second reference, this collector
 operates either with the mutator stopped during the entire collection
@@ -259,7 +266,7 @@ or win16 is hard.
   For machines not already mentioned, or for nonstandard compilers, the
 following are likely to require change:
 
-1.  The parameters in config.h.
+1.  The parameters in gcconfig.h.
       The parameters that will usually require adjustment are
    STACKBOTTOM,  ALIGNMENT and DATASTART.  Setjmp_test
    prints its guesses of the first two.
@@ -276,7 +283,7 @@ following are likely to require change:
    On some machines, it is difficult to obtain such a value that is
    valid across a variety of MMUs, OS releases, etc.  A number of
    alternatives exist for using the collector in spite of this.  See the
-   discussion in config.h immediately preceding the various
+   discussion in gcconfig.h immediately preceding the various
    definitions of STACKBOTTOM.
    
 2.  mach_dep.c.
@@ -313,7 +320,7 @@ following are likely to require change:
     in gc_priv.h will need to be suitably redefined.
       The incremental collector requires page dirty information, which
     is acquired through routines defined in os_dep.c.  Unless directed
-    otherwise by config.h, these are implemented as stubs that simply
+    otherwise by gcconfig.h, these are implemented as stubs that simply
     treat all pages as dirty.  (This of course makes the incremental
     collector much less useful.)
 
@@ -325,7 +332,7 @@ following are likely to require change:
 
   For a different version of UN*X or different machines using the
 Motorola 68000, Vax, SPARC, 80386, NS 32000, PC/RT, or MIPS architecture,
-it should frequently suffice to change definitions in config.h.
+it should frequently suffice to change definitions in gcconfig.h.
 
 
 THE C INTERFACE TO THE ALLOCATOR
@@ -609,7 +616,7 @@ reclaimed.  Exclusive-or'ing forward and backward links in a list
 doesn't cut it.
   Some C optimizers may lose the last undisguised pointer to a memory
 object as a consequence of clever optimizations.  This has almost
-never been observed in practice.  Send mail to boehm@mti.sgi.com
+never been observed in practice.  Send mail to boehm@acm.org
 for suggestions on how to fix your compiler.
   This is not a real-time collector.  In the standard configuration,
 percentage of time required for collection should be constant across
@@ -618,7 +625,7 @@ heap sizes.  But collection pauses will increase for larger heaps.
 per MB of accessible memory that needs to be scanned.  Your mileage
 may vary.)  The incremental/generational collection facility helps,
 but is portable only if "stubborn" allocation is used.
-  Please address bug reports to boehm@mti.sgi.com.  If you are
+  Please address bug reports to boehm@acm.org.  If you are
 contemplating a major addition, you might also send mail to ask whether
 it's already been done (or whether we tried and discarded it).
 
@@ -1371,9 +1378,156 @@ Since alpha1:
  - USE_MMAP had some serious bugs.  This caused the collector to fail
    consistently on Solaris with -DSMALL_CONFIG.
  - Added Linux threads support, thanks largely to Fergus Henderson.
+Since alpha2:
+ - Fixed more Linux threads problems.
+ - Changed default GC_free_space_divisor to 3 with new large block allocation.
+   (Thanks to Matthew Flatt for some measurements that suggest the old
+   value sometimes favors space too much over time.)
+ - More CYGWIN32 fixes.
+ - Integrated Tyson-Dowd's Linux-M68K port.
+ - Minor HP PA and DEC UNIX fixes from Fergus Henderson.
+ - Integrated Christoffe Raffali's Linux-SPARC changes.
+ - Allowed for one more GC fixup iteration after a full GC in incremental
+   mode.  Some quick measurements suggested that this significantly
+   reduces pause times even with smaller GC_RATE values.
+ - Moved some more GC data structures into GC_arrays.  This decreases
+   pause times and GC overhead, but makes debugging slightly less convenient.
+ - Fixed namespace pollution problem ("excl_table").
+ - Made GC_incremental a constant for -DSMALL_CONFIG, hopefully shrinking
+   that slightly.
+ - Added some win32 threads fixes.
+ - Integrated Ivan Demakov and David Stes' Watcom fixes.
+ - Various other minor fixes contributed by many people.
+ - Renamed config.h to gcconfig.h, since config.h tends to be used for
+   many other things.
+ - Integrated Matthew Flatt's support for 68K MacOS "far globals".
+ - Fixed up some of the dynamic library Makefile targets for consistency
+   across platforms.
+ - Fixed a USE_MMAP typo that caused out-of-memory handling to fail
+   on Solaris.
+ - Added code to test.c to test thread creation a bit more.
+ - Integrated GC_win32_free_heap, as suggested by Ivan Demakov.
+ - Fixed Solaris 2.7 stack base finding problem.  (This may actually
+   have been done in an earlier alpha release.)
+Since alpha3:
+ - Fixed MSWIN32 recognition test, which interfered with cygwin.
+ - Removed unnecessary gc_watcom.asm from distribution.  Removed
+   some obsolete README.win32 text.
+ - Added Alpha Linux incremental GC support.  (Thanks to Philipp Tomsich
+   for code for retrieving the fault address in a signal handler.)
+   Changed Linux signal handler context argument to be a pointer.
+ - Took care of some new warnings generated by the 7.3 SGI compiler.
+ - Integrated Phillip Musumeci's FreeBSD/ELF fixes.
+ - -DIRIX_THREADS was broken with the -o32 ABI (typo in gc_priv.h>
+
+Since 4.13:
+ - Fixed GC_print_source_ptr to not use a prototype.
+ - generalized CYGWIN test.
+ - gc::new did the wrong thing with PointerFreeGC placement.
+   (Thanks to Rauli Ruohonen.)
+ - In the ALL_INTERIOR_POINTERS (default) case, some callee-save register
+   values could fail to be scanned if the register was saved and
+   reused in a GC frame.  This showed up in verbose mode with gctest
+   compiled with an unreleased SGI compiler.  I vaguely recall an old
+   bug report that may have been related.  The bug was probably quite old.
+   (The problem was that the stack scanning could be deferred until
+   after the relevant frame was overwritten, and the new save location
+   might be outside the scanned area.  Fixed by more eager stack scanning.)
+ - PRINT_BLACK_LIST had some problems.  A few source addresses were garbage.
+ - Replaced Makefile.dj and added -I flags to cord make targets.
+   (Thanks to Gary Leavens.)
+ - GC_try_to_collect was broken with the nonincremental collector.
+ - gc_cleanup destructors could pass the wrong address to
+   GC_register_finalizer_ignore_self in the presence of multiple
+   inheritance.  (Thanks to Darrell Schiebel.)
+ - Changed PowerPC Linux stack finding code.
+
+Since 4.14alpha1
+ - -DSMALL_CONFIG did not work reliably with large (> 4K) pages.
+   Recycling the mark stack during expansion could result in a size
+   zero heap segment, which confused things.  (This was probably also an
+   issue with the normal config and huge pages.)
+ - Did more work to make sure that callee-save registers were scanned
+   completely, even with the setjmp-based code.  Added USE_GENERIC_PUSH_REGS
+   macro to facilitate testing on machines I have access to.
+ - Added code to explicitly push register contents for win32 threads.
+   This seems to be necessary.  (Thanks to Pierre de Rop.)
+
+Since 4.14alpha2
+ - changed STACKBOTTOM for DJGPP (Thanks to Salvador Eduardo Tropea).
+ 
+Since 4.14
+ - Reworked large block allocator.  Now uses multiple doubly linked free
+   lists to approximate best fit.
+ - Changed heap expansion heuristic.  Entirely free blocks are no longer
+   counted towards the heap size.  This seems to have a major impact on
+   heap size stability; the old version could expand the heap way too
+   much in the presence of large block fragmentation.
+ - added -DGC_ASSERTIONS and some simple assertions inside the collector.
+   This is mainlyt for collector debugging.
+ - added -DUSE_MUNMAP to allow the heap to shrink.  Suupported on only
+   a few UNIX-like platforms for now.
+ - added GC_dump_regions() for debugging of fragmentation issues.
+ - Changed PowerPC pointer alignment under Linux to 4.  (This needs
+   checking by someone who has one.  The suggestions came to me via a
+   rather circuitous path.)
+ - Changed the Linux/Alpha port to walk the data segment backwards until
+   it encounters a SIGSEGV.  The old way to find the start of the data
+   segment broke with a recent release.
+ - cordxtra.c needed to call GC_REGISTER_FINALIZER instead of
+   GC_register_finalizer, so that it would continue to work with GC_DEBUG.
+ - allochblk sometimes cleared the wrong block for debugging purposes
+   when it dropped blacklisted blocks.  This could result in spurious
+   error reports with GC_DEBUG.
+ - added MACOS X Server support.  (Thanks to Andrew Stone.)
+ - Changed the Solaris threads code to ignore stack limits > 8 MB with
+   a warning.  Empirically, it is not safe to access arbitrary pages
+   in such large stacks.  And the dirty bit implementation does not
+   guarantee that none of them will be accessed.
+ - Integrated Martin Tauchmann's Amiga changes.
+ - Integrated James Dominy's OpenBSD/SPARC port.
+
+Since 5.0alpha1
+ - Fixed bugs introduced in alpha1 (OpenBSD & large block initialization).
+ - Added -DKEEP_BACK_PTRS and backptr.h interface.  (The implementation
+   idea came from Al Demers.)
+
+Since 5.0alpha2
+ - Added some highly incomplete code to support a copied young generation.
+   Comments on nursery.h are appreciated.
+ - Changed -DFIND_LEAK, -DJAVA_FINALIZATION, and -DFINALIZE_ON_DEMAND,
+   so the same effect could be obtained with a runtime switch.   This is
+   a step towards standardizing on a single dynamic GC library.
+ - Significantly changed the way leak detection is handled, as a consequence
+   of the above.
+
+Since 5.0 alpha3
+ - Added protection fault handling patch for Linux/M68K from Fergus
+   Henderson and Roman Hodek.
+ - Removed the tests for SGI_SOURCE in new_gc_alloc.h.  This was causing that
+   interface to fail on nonSGI platforms.
+ - Changed the Linux stack finding code to use /proc, after chnging it
+   to use HEURISTIC1.  (Thanks to David Mossberger for pointing out the
+   /proc hook.)
+ - Added HP/UX incremental GC support and HP/UX 11 thread support.
+ - Added basic Linux/IA64 support.
+ - Integrated Anthony Green's PicoJava support.
+ - Integrated Scott Ananian's StrongARM/NetBSD support.
+ - Fixed some fairly serious performance bugs in the incremental
+   collector.  These have probably been there essentially forever.
+   (Mark bits were sometimes set before scanning dirty pages.
+   The reclaim phase unnecessarily dirtied full small object pages.)
+ - Changed the reclaim phase to ignore nearly full pages to avoid
+   touching them.
+ - Limited GC_black_list_spacing to roughly the heap growth increment.
+ - Changed full collection triggering heuristic to decrease full GC
+   frequency by default, but to explicitly trigger full GCs during
+   heap growth.  This doesn't always improve things, but on average it's
+   probably a win.
+ - GC_debug_free(0, ...) failed.  Thanks to Fergus Henderson for the
+   bug report and fix.
 
 To do:
- - I have a backlog of unintegrated contributed platform-specific changes.
  - Very large root set sizes (> 16 MB or so) could cause the collector
    to abort with an unexpected mark stack overflow.  (Thanks again to
    Peter Chubb.)  NOT YET FIXED.  Workaround is to increase the initial
@@ -1386,4 +1540,6 @@ To do:
    be possible to conditionally intercept mmap and use GC_exclude_static_roots.
    The real fix is to walk rld data structures, which looks possible.
  - Integrate MIT and DEC pthreads ports.
- 
+ - Incremental collector should handle large objects better.  Currently,
+   it looks like the whole object is treated as dirty if any part of it
+   is.

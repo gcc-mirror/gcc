@@ -1,6 +1,6 @@
-/* Conditionally execute a command based on machine and OS from config.h */
-/* Boehm, November 21, 1994 1:40 pm PST */
-# include "config.h"
+/* Conditionally execute a command based on machine and OS from gcconfig.h */
+
+# include "gcconfig.h"
 # include <stdio.h>
 
 int main(argc, argv, envp)

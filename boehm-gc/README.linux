@@ -1,7 +1,11 @@
-See README.alpha for Linux on DEC AXP info.  This file applies to
-Linux/Intel.
+See README.alpha for Linux on DEC AXP info.
 
-Incremental GC is supported.
+This file applies mostly to Linux/Intel IA32.  Ports to Linux on an M68K
+and PowerPC are also integrated.  They should behave similarly, except that
+the PowerPC port lacks incremental GC support, and it is unknown to what
+extent the Linux threads code is functional.
+
+Incremental GC is supported on Intel IA32 and M68K.
 
 Dynamic libraries are supported on an ELF system.  A static executable
 should be linked with the gcc option "-Wl,-defsym,_DYNAMIC=0".
@@ -37,3 +41,10 @@ To use threads, you need to abide by the following requirements:
    probably be an inconsistent state when a thread calling the loader is
    is stopped for GC.  (It's possible that this is fixable in the
    same way it is handled for SOLARIS_THREADS, with GC_dlopen.)
+
+5) The combination of LINUX_THREADS, REDIRECT_MALLOC, and incremental
+   collection fails in seemingly random places.  This hasn't been tracked
+   down yet, but is perhaps not completely astonishing.  The thread package
+   uses malloc, and thus can presumably get SIGSEGVs while inside the
+   package.  There is no real guarantee that signals are handled properly
+   at that point.

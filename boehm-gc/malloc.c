@@ -93,8 +93,16 @@ register ptr_t *opp;
           if(GC_incremental && !GC_dont_gc)
 		GC_collect_a_little_inner((int)n_blocks);
 	lw = ROUNDED_UP_WORDS(lb);
-	while ((h = GC_allochblk(lw, k, 0)) == 0
-		&& GC_collect_or_expand(n_blocks, FALSE));
+        h = GC_allochblk(lw, k, 0);
+#       ifdef USE_MUNMAP
+	  if (0 == h) {
+	    GC_merge_unmapped();
+	    h = GC_allochblk(lw, k, 0);
+	  }
+#	endif
+	while (0 == h && GC_collect_or_expand(n_blocks, FALSE)) {
+	  h = GC_allochblk(lw, k, 0);
+	}
 	if (h == 0) {
 	    op = 0;
 	} else {
@@ -220,6 +228,9 @@ DCL_LOCK_STATE;
       /*
        * Thread initialisation can call malloc before
        * we're ready for it.
+       * It's not clear that this is enough to help matters.
+       * The thread implementation may well call malloc at other
+       * inopportune times.
        */
       if (!GC_is_initialized) return sbrk(lb);
 #   endif /* I386 && SOLARIS_THREADS */
@@ -375,6 +386,12 @@ int obj_kind;
     	/* Required by ANSI.  It's not my fault ...	*/
     h = HBLKPTR(p);
     hhdr = HDR(h);
+#   if defined(REDIRECT_MALLOC) && \
+	(defined(SOLARIS_THREADS) || defined(LINUX_THREADS))
+	/* We have to redirect malloc calls during initialization.	*/
+	/* Don't try to deallocate that memory.				*/
+	if (0 == hhdr) return;
+#   endif
     knd = hhdr -> hb_obj_kind;
     sz = hhdr -> hb_sz;
     ok = &GC_obj_kinds[knd];

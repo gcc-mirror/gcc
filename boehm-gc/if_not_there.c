@@ -1,6 +1,6 @@
 /* Conditionally execute a command based if the file argv[1] doesn't exist */
 /* Except for execvp, we stick to ANSI C.				   */
-# include "config.h"
+# include "gcconfig.h"
 # include <stdio.h>
 
 int main(argc, argv, envp)

@@ -42,17 +42,19 @@
 #          ifdef WIN32_THREADS
 	      GC_API CRITICAL_SECTION GC_allocate_ml;
 #          else
-#             if defined(IRIX_THREADS) || defined(LINUX_THREADS)
-#		ifdef UNDEFINED
-		    pthread_mutex_t GC_allocate_ml = PTHREAD_MUTEX_INITIALIZER;
-#		endif
+#             if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+		 || defined(IRIX_JDK_THREADS)
 	        pthread_t GC_lock_holder = NO_THREAD;
 #	      else
-#               if defined(QUICK_THREADS)
-                    /* Nothing.  */
-#               else
-	            --> declare allocator lock here
-#               endif
+#	        if defined(HPUX_THREADS)
+		  pthread_mutex_t GC_allocate_ml = PTHREAD_MUTEX_INITIALIZER;
+#		else 
+#                 if defined(QUICK_THREADS)
+				/* Nothing */
+#                 else
+	          --> declare allocator lock here
+#                 endif
+#		endif
 #	      endif
 #	   endif
 #	endif
@@ -79,6 +81,12 @@ ptr_t GC_stackbottom = 0;
 GC_bool GC_dont_gc = 0;
 
 GC_bool GC_quiet = 0;
+
+#ifdef FIND_LEAK
+  int GC_find_leak = 1;
+#else
+  int GC_find_leak = 0;
+#endif
 
 /*ARGSUSED*/
 GC_PTR GC_default_oom_fn GC_PROTO((size_t bytes_requested))
@@ -392,6 +400,11 @@ size_t GC_get_heap_size GC_PROTO(())
     return ((size_t) GC_heapsize);
 }
 
+size_t GC_get_free_bytes GC_PROTO(())
+{
+    return ((size_t) GC_large_free_bytes);
+}
+
 size_t GC_get_bytes_since_gc GC_PROTO(())
 {
     return ((size_t) WORDS_TO_BYTES(GC_words_allocd));
@@ -429,27 +442,34 @@ void GC_init_inner()
     
     if (GC_is_initialized) return;
     GC_setpagesize();
-    GC_exclude_static_roots(beginGC_arrays, endGC_arrays);
+    GC_exclude_static_roots(beginGC_arrays, end_gc_area);
+#   ifdef PRINTSTATS
+	if ((ptr_t)endGC_arrays != (ptr_t)(&GC_obj_kinds)) {
+	    GC_printf0("Reordering linker, didn't exclude obj_kinds\n");
+	}
+#   endif
 #   ifdef MSWIN32
  	GC_init_win32();
 #   endif
 #   if defined(LINUX) && defined(POWERPC)
 	GC_init_linuxppc();
 #   endif
-#   if defined(LINUX) && defined(ALPHA)
-      GC_init_linuxalpha();
+#   if defined(LINUX) && \
+	(defined(POWERPC) || defined(ALPHA) || defined(SPARC) || defined(IA64))
+	GC_init_linux_data_start();
 #   endif
 #   ifdef SOLARIS_THREADS
 	GC_thr_init();
 	/* We need dirty bits in order to find live stack sections.	*/
         GC_dirty_init();
 #   endif
-#   if defined(IRIX_THREADS) || defined(LINUX_THREADS)
-	GC_thr_init();
+#   if defined(IRIX_THREADS) || defined(LINUX_THREADS) \
+       || defined(IRIX_JDK_THREADS) || defined(HPUX_THREADS)
+        GC_thr_init();
 #   endif
 #   if !defined(THREADS) || defined(SOLARIS_THREADS) || defined(WIN32_THREADS) \
        || defined(IRIX_THREADS) || defined(LINUX_THREADS) \
-       || defined (QUICK_THREADS)
+       || defined(HPUX_THREADS) || defined(QUICK_THREADS)
       if (GC_stackbottom == 0) {
 	  GC_stackbottom = GC_get_stack_base();
       }
@@ -564,9 +584,10 @@ void GC_init_inner()
 
 void GC_enable_incremental GC_PROTO(())
 {
+# if !defined(SMALL_CONFIG)
+  if (!GC_find_leak) {
     DCL_LOCK_STATE;
     
-# ifndef FIND_LEAK
     DISABLE_SIGNALS();
     LOCK();
     if (GC_incremental) goto out;
@@ -602,6 +623,7 @@ void GC_enable_incremental GC_PROTO(())
 out:
     UNLOCK();
     ENABLE_SIGNALS();
+  }
 # endif
 }
 
@@ -781,7 +803,7 @@ char * msg;
 void GC_print_callers (info)
 struct callinfo info[NFRAMES];
 {
-    register int i,j;
+    register int i;
     
 #   if NFRAMES == 1
       GC_err_printf0("\tCaller at allocation:\n");
@@ -791,6 +813,9 @@ struct callinfo info[NFRAMES];
     for (i = 0; i < NFRAMES; i++) {
      	if (info[i].ci_pc == 0) break;
 #	if NARGS > 0
+	{
+	  int j;
+
      	  GC_err_printf0("\t\targs: ");
      	  for (j = 0; j < NARGS; j++) {
      	    if (j != 0) GC_err_printf0(", ");
@@ -798,6 +823,7 @@ struct callinfo info[NFRAMES];
      	    				~(info[i].ci_arg[j]));
      	  }
 	  GC_err_printf0("\n");
+	}
 # 	endif
      	GC_err_printf1("\t\t##PC##= 0x%X\n", info[i].ci_pc);
     }

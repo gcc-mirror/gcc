@@ -39,7 +39,7 @@ OBJS= $(XXXOBJS:XXX=)
 
 all: gctest.exe cord\de.exe test_cpp.exe
 
-$(OBJS) test.obj: gc_priv.h gc_hdrs.h gc.h config.h MAKEFILE
+$(OBJS) test.obj: gc_priv.h gc_hdrs.h gc.h gcconfig.h MAKEFILE
 
 gc.lib: $(OBJS)
     -del gc.lib

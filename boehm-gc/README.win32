@@ -23,7 +23,11 @@ the two systems, and under different versions of win32s.)
 The collector test program "gctest" is linked as a GUI application,
 but does not open any windows.  Its output appears in the file
 "gc.log".  It may be started from the file manager.  The hour glass
-cursor will appear as long as it's running.
+cursor will appear as long as it's running.  If it is started from the
+command line, it will usually run in the background.  Wait a few
+minutes (a few seconds on a modern machine) before you check the output.
+You should see either a failure indication or a "Collector appears to
+work" message.
 
 The cord test program has not been ported (but should port
 easily).  A toy editor (cord/de.exe) based on cords (heavyweight
@@ -46,7 +50,7 @@ the line "include Makefile.DLLs".  The latter should be necessary only
 if you want to package the collector as a DLL.  The GNU-win32 port is
 believed to work only for b18, not b19, probably dues to linker changes
 in b19.  This is probably fixable with a different definition of
-DATASTART and DATAEND in config.h.
+DATASTART and DATAEND in gcconfig.h.
 
 For Borland tools, use BCC_MAKEFILE.  Note that
 Borland's compiler defaults to 1 byte alignment in structures (-a1),
@@ -56,7 +60,7 @@ LEAST 4 BYTE ALIGNMENT.  Thus the BORLAND DEFAULT MUST
 BE OVERRIDDEN.  (In my opinion, it should usually be anyway.
 I expect that -a1 introduces major performance penalties on a
 486 or Pentium.)  Note that this changes structure layouts.  (As a last
-resort, config.h can be changed to allow 1 byte alignment.  But
+resort, gcconfig.h can be changed to allow 1 byte alignment.  But
 this has significant negative performance implications.)
 The Makefile is set up to assume Borland 4.5.  If you have another
 version, change the line near the top.  By default, it does not
@@ -97,67 +101,49 @@ test with VC++ from the command line, use
 nmake /F ".\gc.mak" CFG="gctest - Win32 Release"
 
 This requires that the subdirectory gctest\Release exist.
+The test program and DLL will reside in the Release directory.
 
 This version relies on the collector residing in a dll.
 
 This version currently supports incremental collection only if it is
 enabled before any additional threads are created.
-It is known to not be completely solid.  At a minimum it can deadlock
-if a thread starts in the middle of an allocation.  There may be
-other problems.  If you need solid support for win32 threads, you
-check with Geodesic Systems.  I haven't tried it, but they claim
-to support it.
+Version 4.13 attempts to fix some of the earlier problems, but there
+may be other issues.  If you need solid support for win32 threads, you
+might check with Geodesic Systems.  Their collector must be licensed,
+but they have invested far more time in win32-specific issues.
 
 Hans
 
 Ivan V. Demakov's README for the Watcom port:
 
-[ He points out in a later message that there may be a problem compiling
-  under Windows-3.11 for Windows NT. ]
+The collector has been compiled with Watcom C 10.6 and 11.0.
+It runs under win32, win32s, and even under msdos with dos4gw
+dos-extender. It should also run under OS/2, though this isn't
+tested. Under win32 the collector can be built either as dll
+or as static library.
 
-Watcom C/C++ 10.5, 10.6, 11.0 tested.
+Note that all compilations were done under Windows 95 or NT.
+For unknown reason compiling under Windows 3.11 for NT (one
+attempt has been made) leads to broken executables.
 
-The collector runs on WIN32 and DOS4GW dos-extender with both
-stack and register based calling conventions (options -5r and -5s).
-Incremental collection not supported.
+Incremental collection is not supported.
 
-OS/2 not tested, but should work (only some #ifdef's added for OS/2 port).
+cord is not ported.
 
-cord not ported. Watcom C fails to compile it, from first attempt.
-Since I don't use it, I don't try to fix it.
+Before compiling you may need to edit WCC_MAKEFILE to set target
+platform, library type (dynamic or static), calling conventions, and
+optimization options.
 
-cpp_test succeeds, but not compiled automaticaly with WCC_MAKEFILE.
+To compile the collector and testing programs use the command:
+    wmake -f WCC_MAKEFILE
 
+All programs using gc should be compiled with 4-byte alignment.
+For further explanations on this see comments about Borland.
 
-My changes:
+If gc compiled as dll, the macro ``GC_DLL'' should be defined before
+including "gc.h" (for example, with -DGC_DLL compiler option). It's
+important, otherwise resulting programs will not run.
 
-      * config.h      Added definitions for Watcom C/C++.
-                      Undefined MPROTECT_VDB for Watcom C/C++ MSWIN32,
-                      I don't have idea why it not work.
-
-      * gc.h          Explicitly declared GC_noop. This prevents
-                      program crash, compiled with -5r option.
-
-      * gc_priv.h     Changed declaration for GC_push_one to make
-                      compiler happy.
-                      Added GC_dos4gw_get_mem declaration and
-                      GET_MEM uses it in DOS4GW environment.
-
-      * os_dep.c      Added __WATCOMC__ and DOS4GW #ifdef's.
-                      Added GC_dos4gw_get_mem.
-
-      * mach_dep.c    For Watcom used setjmp method of marking registers.
-
-      * WCC_MAKEFILE  New file. Makefile for Watcom C/C++.
-
-      * gc_watcom.asm New file. Some functions for DOS4GW.
-                      This functions may (probably) be done in C,
-                      but I can't figure out how do this for all
-                      possible options of compiler.
-
-      * README.watcom This file.
-
-
-  Ivan Demakov (email: dem@tgrad.nsk.su)
+Ivan Demakov (email: ivan@tgrad.nsk.su)
 
 

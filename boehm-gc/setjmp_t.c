@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <setjmp.h>
 #include <string.h>
-#include "config.h"
+#include "gcconfig.h"
 
 #ifdef OS2
 /* GETPAGESIZE() is set to getpagesize() by default, but that	*/

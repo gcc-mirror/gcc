@@ -135,3 +135,20 @@ void GC_MacFreeTemporaryMemory()
 #       endif
     }
 }
+
+#if __option(far_data)
+
+  void* GC_MacGetDataEnd()
+  {
+	CodeZeroHandle code0 = (CodeZeroHandle)GetResource('CODE', 0);
+	if (code0) {
+		long aboveA5Size = (**code0).aboveA5;
+		ReleaseResource((Handle)code0);
+		return (LMGetCurrentA5() + aboveA5Size);
+	}
+	fprintf(stderr, "Couldn't load the jump table.");
+	exit(-1);
+	return 0;
+  }
+
+#endif /* __option(far_data) */
