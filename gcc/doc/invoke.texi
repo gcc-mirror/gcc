@@ -4055,10 +4055,11 @@ release to an another.
 
 @item -fkeep-inline-functions
 @opindex fkeep-inline-functions
-Even if all calls to a given function are integrated, and the function
-is declared @code{static}, nevertheless output a separate run-time
-callable version of the function.  This switch does not affect
-@code{extern inline} functions.
+In C, emit @code{static} functions that are declared @code{inline}
+into the object file, even if the function has been inlined into all
+of its callers.  This switch does not affect functions using the
+@code{extern inline} extension in GNU C.  In C++, emit any and all
+inline functions into the object file.
 
 @item -fkeep-static-consts
 @opindex fkeep-static-consts

@@ -2959,7 +2959,7 @@ expand_or_defer_fn (tree fn)
   /* We make a decision about linkage for these functions at the end
      of the compilation.  Until that point, we do not want the back
      end to output them -- but we do want it to see the bodies of
-     these fucntions so that it can inline them as appropriate.  */
+     these functions so that it can inline them as appropriate.  */
   if (DECL_DECLARED_INLINE_P (fn) || DECL_IMPLICIT_INSTANTIATION (fn))
     {
       if (!at_eof)
@@ -2970,6 +2970,12 @@ expand_or_defer_fn (tree fn)
 	}
       else
 	import_export_decl (fn);
+
+      /* If the user wants us to keep all inline functions, then mark
+	 this function as needed so that finish_file will make sure to
+	 output it later.  */
+      if (flag_keep_inline_functions && DECL_DECLARED_INLINE_P (fn))
+	mark_needed (fn);
     }
 
   /* There's no reason to do any of the work here if we're only doing

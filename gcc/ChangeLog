@@ -1,3 +1,8 @@
+2004-08-17  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/15871
+	* doc/invoke.texi (-fkeep-inline-functions): Update documentation.
+
 2004-08-17  Robert Bowdidge  <bowdidge@apple.com>
   
         * config/rs6000/x-darwin: Add -mdynamic-no-pic to gcc build flags.
