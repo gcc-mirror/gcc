@@ -4,7 +4,7 @@ Fri Sep  6 16:17:33 2002  Nicola Pero  <n.pero@mi.flashnet.it>
 	10k.  Fixed category dumping - print out category names with the
 	proper syntax.  Print '@end\n' and not '\n@end' at the end of the
 	interface.
-        (finish_objc): Fixed the -gen-decls option.  It was printing out
+	(finish_objc): Fixed the -gen-decls option.  It was printing out
 	only the last class.  Dump an interface declaration of all classes
 	being compiled instead.
 
