@@ -1625,22 +1625,21 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 	      struct fixup_replacement *replacements = 0;
 	      rtx next_insn = NEXT_INSN (insn);
 
-#ifdef SMALL_REGISTER_CLASSES
-	      /* If the insn that copies the results of a CALL_INSN
-		 into a pseudo now references VAR, we have to use an
-		 intermediate pseudo since we want the life of the
-		 return value register to be only a single insn.
-
-		 If we don't use an intermediate pseudo, such things as
-		 address computations to make the address of VAR valid
-		 if it is not can be placed between the CALL_INSN and INSN.
-
-		 To make sure this doesn't happen, we record the destination
-		 of the CALL_INSN and see if the next insn uses both that
-		 and VAR.  */
-
 	      if (SMALL_REGISTER_CLASSES)
 		{
+		  /* If the insn that copies the results of a CALL_INSN
+		     into a pseudo now references VAR, we have to use an
+		     intermediate pseudo since we want the life of the
+		     return value register to be only a single insn.
+
+		     If we don't use an intermediate pseudo, such things as
+		     address computations to make the address of VAR valid
+		     if it is not can be placed between the CALL_INSN and INSN.
+
+		     To make sure this doesn't happen, we record the destination
+		     of the CALL_INSN and see if the next insn uses both that
+		     and VAR.  */
+
 		  if (call_dest != 0 && GET_CODE (insn) == INSN
 		      && reg_mentioned_p (var, PATTERN (insn))
 		      && reg_mentioned_p (call_dest, PATTERN (insn)))
@@ -1663,7 +1662,6 @@ fixup_var_refs_insns (var, promoted_mode, unsignedp, insn, toplevel)
 		  else
 		    call_dest = 0;
 		}
-#endif
 
 	      /* See if we have to do anything to INSN now that VAR is in
 		 memory.  If it needs to be loaded into a pseudo, use a single
@@ -5464,12 +5462,10 @@ expand_function_start (subr, parms_have_cleanups)
     {
       last_ptr = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
 
-#ifdef SMALL_REGISTER_CLASSES
       /* Delay copying static chain if it is not a register to avoid
 	 conflicts with regs used for parameters.  */
       if (! SMALL_REGISTER_CLASSES
 	  || GET_CODE (static_chain_incoming_rtx) == REG)
-#endif
         emit_move_insn (last_ptr, static_chain_incoming_rtx);
     }
 
@@ -5578,14 +5574,12 @@ expand_function_start (subr, parms_have_cleanups)
 
   assign_parms (subr, 0);
 
-#ifdef SMALL_REGISTER_CLASSES
   /* Copy the static chain now if it wasn't a register.  The delay is to
      avoid conflicts with the parameter passing registers.  */
 
   if (SMALL_REGISTER_CLASSES && current_function_needs_context)
       if (GET_CODE (static_chain_incoming_rtx) != REG)
         emit_move_insn (last_ptr, static_chain_incoming_rtx);
-#endif
 
   /* The following was moved from init_function_start.
      The move is supposed to make sdb output more accurate.  */
@@ -5620,15 +5614,12 @@ expand_function_start (subr, parms_have_cleanups)
 	 generated above.  */
       if (tem && ! obey_regdecls)
 	{
-#ifdef SMALL_REGISTER_CLASSES
 	  /* If the static chain originally came in a register, put it back
 	     there, then move it out in the next insn.  The reason for
 	     this peculiar code is to satisfy function integration.  */
 	  if (SMALL_REGISTER_CLASSES
 	      && GET_CODE (static_chain_incoming_rtx) == REG)
 	    emit_move_insn (static_chain_incoming_rtx, last_ptr);
-#endif
-
 	  last_ptr = copy_to_reg (static_chain_incoming_rtx);
 	}
 
