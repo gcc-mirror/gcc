@@ -356,7 +356,7 @@ init_reg_sets ()
 /* After switches have been processed, which perhaps alter
    `fixed_regs' and `call_used_regs', convert them to HARD_REG_SETs.  */
 
-void
+static void
 init_reg_sets_1 ()
 {
   register int i;
@@ -398,15 +398,33 @@ init_reg_sets_1 ()
       if (call_fixed_regs[i])
 	SET_HARD_REG_BIT (call_fixed_reg_set, i);
     }
+}
 
-  /* Compute the table of register modes.
-     These values are used to record death information for individual registers
-     (as opposed to a multi-register mode).
-     This can't be done until HARD_REGNO_NREGS and HARD_REGNO_MODE_OK are
-     usable which is after OVERRIDE_OPTIONS on some targets.  */
+/* Compute the table of register modes.
+   These values are used to record death information for individual registers
+   (as opposed to a multi-register mode).  */
+
+static void
+init_reg_modes ()
+{
+  register int i;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     reg_raw_mode[i] = choose_hard_reg_mode (i, 1);
+}
+
+/* Finish initializing the register sets and
+   initialize the register modes.  */
+
+void
+init_regs ()
+{
+  /* This finishes what was started by init_reg_sets, but couldn't be done
+     until after register usage was specified.  */
+  if (!output_bytecode)
+    init_reg_sets_1 ();
+
+  init_reg_modes ();
 }
 
 /* Return a machine mode that is legitimate for hard reg REGNO and large
