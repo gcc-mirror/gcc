@@ -1,3 +1,31 @@
+2003-06-04  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (struct ix86_address): Add seg.
+	(no_seg_address_operand): New.
+	(ix86_decompose_address): Restructure PLUS loop.  Accept one
+	UNSPEC_TP if TARGET_TLS_DIRECT_SEG_REFS.  Adjust ESP swap test
+	to test for a regnum, not stack_pointer_rtx.
+	(ix86_address_cost): Reduce cost if non-default segment.
+	(legitimate_address_p): Remove UNSPEC_TP check.
+	(get_thread_pointer): Add to_reg argument.  Don't represent
+	the thread pointer as a memory load.
+	(legitimize_tls_address): Split out of ...
+	(legitimize_address): ... here.
+	(print_operand_address): Handle parts.seg.
+	(ix86_expand_move): Use legitimize_tls_address.
+	(ix86_rtx_costs): Handle UNSPEC_TP.
+	* config/i386/i386.h (MASK_TLS_DIRECT_SEG_REFS): New.
+	(TARGET_TLS_DIRECT_SEG_REFS): New.
+	(TARGET_SWITCHES): Add tls-direct-seg-refs.
+	(TARGET_TLS_DIRECT_SEG_REFS_DEFAULT): Default.
+	(PREDICATE_CODES): Add no_seg_address_operand.
+	* config/i386/i386.md (lea_1): Use it.
+	(lea_1_rex64, lea_1_zext, lea_2_rex64): Likewise.
+	(load_tp_si, add_tp_si, load_tp_di, add_tp_di): New.
+	* config/i386/linux.h (TARGET_TLS_DIRECT_SEG_REFS_DEFAULT): New.
+	* config/i386/linux64.h (TARGET_TLS_DIRECT_SEG_REFS_DEFAULT): New.
+	* doc/invoke.texi: Add -mtls-direct-seg-refs.
+
 2003-06-04  Mark Mitchell  <mark@codesourcery.com>
 
 	* Makefile.in (QMTESTRUNFLAGS): Set for DejaGNU emulation.

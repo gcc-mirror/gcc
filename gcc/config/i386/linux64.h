@@ -47,6 +47,10 @@ Boston, MA 02111-1307, USA.  */
 #undef DEFAULT_PCC_STRUCT_RETURN
 #define DEFAULT_PCC_STRUCT_RETURN 1
 
+/* We arrange for the whole %fs segment to map the tls area.  */
+#undef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
+#define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT MASK_TLS_DIRECT_SEG_REFS
+
 /* Provide a LINK_SPEC.  Here we provide support for the special GCC
    options -static and -shared, which allow us to link things in one
    of these three modes by applying the appropriate combinations of

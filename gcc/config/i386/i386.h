@@ -122,6 +122,7 @@ extern int target_flags;
 #define MASK_128BIT_LONG_DOUBLE 0x00040000	/* long double size is 128bit */
 #define MASK_64BIT		0x00080000	/* Produce 64bit code */
 #define MASK_MS_BITFIELD_LAYOUT 0x00100000	/* Use native (MS) bitfield layout */
+#define MASK_TLS_DIRECT_SEG_REFS 0x00200000	/* Avoid adding %gs:0  */
 
 /* Unused:			0x03e0000	*/
 
@@ -200,6 +201,9 @@ extern int target_flags;
 #endif
 #endif
 #endif
+
+/* Avoid adding %gs:0 in TLS references; use %gs:address directly.  */
+#define TARGET_TLS_DIRECT_SEG_REFS (target_flags & MASK_TLS_DIRECT_SEG_REFS)
 
 #define TARGET_386 (ix86_tune == PROCESSOR_I386)
 #define TARGET_486 (ix86_tune == PROCESSOR_I486)
@@ -405,11 +409,20 @@ extern int x86_prefetch_sse;
     N_("Use red-zone in the x86-64 code") },				      \
   { "no-red-zone",		MASK_NO_RED_ZONE,			      \
     N_("Do not use red-zone in the x86-64 code") },			      \
+  { "tls-direct-seg-refs",	MASK_TLS_DIRECT_SEG_REFS,		      \
+    N_("Use direct references against %gs when accessing tls data") },	      \
+  { "no-tls-direct-seg-refs",	-MASK_TLS_DIRECT_SEG_REFS,		      \
+    N_("Do not use direct references against %gs when accessing tls data") }, \
   SUBTARGET_SWITCHES							      \
-  { "", TARGET_DEFAULT | TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_DEFAULT, 0 }}
+  { "",									      \
+    TARGET_DEFAULT | TARGET_64BIT_DEFAULT | TARGET_SUBTARGET_DEFAULT	      \
+    | TARGET_TLS_DIRECT_SEG_REFS_DEFAULT, 0 }}
 
 #ifndef TARGET_64BIT_DEFAULT
 #define TARGET_64BIT_DEFAULT 0
+#endif
+#ifndef TARGET_TLS_DIRECT_SEG_REFS_DEFAULT
+#define TARGET_TLS_DIRECT_SEG_REFS_DEFAULT 0
 #endif
 
 /* Once GDB has been enhanced to deal with functions without frame
@@ -3034,6 +3047,8 @@ do {						\
   {"register_and_not_fp_reg_operand", {REG}},				\
   {"zero_extended_scalar_load_operand", {MEM}},				\
   {"vector_move_operand", {CONST_VECTOR, SUBREG, REG, MEM}},		\
+  {"no_seg_address_operand", {CONST_INT, CONST_DOUBLE, CONST, SYMBOL_REF, \
+			      LABEL_REF, SUBREG, REG, MEM, PLUS, MULT}},
 
 /* A list of predicates that do special things with modes, and so
    should not elicit warnings for VOIDmode match_operand.  */
