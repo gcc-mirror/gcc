@@ -952,7 +952,7 @@ dnl       Where DEFAULT is either `yes' or `no'.  If ommitted, it
 dnl       defaults to `no'.
 AC_DEFUN(GLIBCPP_ENABLE_SHADOW, [dnl
 define([GLIBCPP_ENABLE_SHADOW_DEFAULT], ifelse($1, yes, yes, no))dnl
-AC_ARG_ENABLE(debug,
+AC_ARG_ENABLE(shadow-headers,
 changequote(<<, >>)dnl
 <<  --enable-shadow-headers construct "shadowed" C header files for
                           g++ [default=>>GLIBCPP_ENABLE_SHADOW_DEFAULT],
@@ -962,9 +962,9 @@ changequote([, ])dnl
  no)  enable_shadow_headers=no ;;
  *)   AC_MSG_ERROR([Unknown argument to enable/disable shadowed C headers]) ;;
  esac],
-enable_debug=GLIBCPP_ENABLE_SHADOW_DEFAULT)dnl
+enable_shadow_headers=GLIBCPP_ENABLE_SHADOW_DEFAULT)dnl
 dnl Option parsed, now set things appropriately
-case "$enable_debug" in
+case "$enable_shadow_headers" in
     yes) 
 	SHADOW_INCLUDES="-I -am -the -walrus"
 	;;
@@ -972,6 +972,7 @@ case "$enable_debug" in
 	SHADOW_INCLUDES=''
         ;;
 esac
+# SHADOW_INCLUDES is currently not used anywhere in the source
 AC_SUBST(SHADOW_INCLUDES)
 ])
 
