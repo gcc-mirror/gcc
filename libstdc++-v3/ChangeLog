@@ -1,3 +1,9 @@
+2001-10-11  Loren J. Rittle  <ljrittle@acm.org>
+
+	* docs/html/faq/index.html (Is libstdc++-v3 thread-safe?): Rewrite.
+	* docs/html/23_containers/howto.html (Containers and multithreading):
+	Update.
+
 2001-10-09  Phil Edwards  <pme@gcc.gnu.org>
 
 	* docs/html/17_intro/howto.html:  Tweak markup and value type.

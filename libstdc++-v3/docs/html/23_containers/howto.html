@@ -192,68 +192,55 @@
 
 <hr>
 <h2><a name="3">Containers and multithreading</a></h2>
-   <p>This section will mention some of the problems in designing MT
-      programs that use Standard containers.  For information on other
-      aspects of multithreading (e.g., the library as a whole), see
-      the Received Wisdom on Chapter 17.  This section only applies
-      when gcc and libstdc++-v3 were configured with --enable-threads.
-   </p>
-   <p>Two excellent pages to read when working with templatized containers
-      and threads are
+   <p>This section discusses issues surrounding the design of
+      multithreaded applications which use Standard C++ containers.
+      All information in this section is current as of the gcc 3.0
+      release and all later point releases.  Although earlier gcc
+      releases had a different approach to threading configuration and
+      proper compilation, the basic code design rules presented here
+      were similar.  For information on all other aspects of
+      multithreading as it relates to libstdc++, including details on
+      the proper compilation of threaded code (and compatibility between
+      threaded and non-threaded code), see Chapter 17.
+  </p>
+   <p>Two excellent pages to read when working with the Standard C++
+      containers and threads are
       <a href="http://www.sgi.com/tech/stl/thread_safety.html">SGI's
       http://www.sgi.com/tech/stl/thread_safety.html</a> and
       <a href="http://www.sgi.com/tech/stl/Allocators.html">SGI's
-      http://www.sgi.com/tech/stl/Allocators.html</a>.  The
-      libstdc++-v3 uses the same definition of thread safety
-      when discussing design.  A key point that beginners may miss is the
+      http://www.sgi.com/tech/stl/Allocators.html</a>.
+  </p>
+   <p><em>However, please ignore all discussions about the user-level
+      configuration of the lock implementation inside the STL
+      container-memory allocator on those pages.  For the sake of this
+      discussion, libstdc++-v3 configures the SGI STL implementation,
+      not you.  This is quite different from how gcc pre-3.0 worked.
+      In particular, past advice was for people using g++ to
+      explicitly define _PTHREADS or other macros or port-specific
+      compilation options on the command line to get a thread-safe
+      STL.  This is no longer required for any port and should no
+      longer be done unless you really know what you are doing and
+      assume all responsibility.</em>
+  </p>
+   <p>Since the container implementation of libstdc++-v3 uses the SGI
+      code, we use the same definition of thread safety as SGI when
+      discussing design.  A key point that beginners may miss is the
       fourth major paragraph of the first page mentioned above
-      (&quot;For most clients,&quot;...), pointing
-      out that locking must nearly always be done outside the container,
-      by client code (that'd be you, not us *grin*).
-      <em>However, please take caution when considering the discussion
-      about the user-level configuration of the mutex lock
-      implementation inside the STL container-memory allocator on that
-      page.  For the sake of this discussion, libstdc++-v3 configures
-      the SGI STL implementation, not you.  We attempt to configure
-      the mutex lock as is best for your platform.  In particular,
-      past advice was for people using g++ to explicitly define
-      _PTHREADS on the command line to get a thread-safe STL.  This
-      is no longer required for your port.  It may or may not be
-      a good idea for your port.  Extremely big caution: if you
-      compile some of your application code against the STL with one
-      set of threading flags and macros and another portion of the
-      code with different flags and macros that influence the
-      selection of the mutex lock, you may well end up with multiple
-      locking mechanisms in use which don't impact each other in the
-      manner that they should.  Everything might link and all code
-      might have been built with a perfectly reasonable thread model
-      but you may have two internal ABIs in play within the
-      application.  This might produce races, memory leaks and fatal
-      crashes.  In any multithreaded application using STL, this
-      is the first thing to study well before blaming the allocator.</em>
-   </p>
-   <p>You didn't read it, did you?  *sigh*  I'm serious, go read the
-      SGI page.  It's really good and doesn't take long, and makes most
-      of the points that would otherwise have to be made here (and does
-      a better job).
-   </p>
-   <p>That's much better.  Now, the issue of MT has been brought up on
-      the libstdc++-v3 mailing list as well as the main GCC mailing list
-      several times.  The Chapter 17 HOWTO has some links into the mail
-      archives, so you can see what's been thrown around.  The usual
-      container (or pseudo-container, depending on how you look at it)
-      that people have in mind is <code>string</code>, which is one of the
-      points where libstdc++ departs from the SGI STL.  As of the
-      2.90.8 snapshot, the libstdc++-v3 string class is safe for
-      certain kinds of multithreaded access.
-   </p>
+      (&quot;For most clients,&quot;...), which points out that
+      locking must nearly always be done outside the container, by
+      client code (that'd be you, not us).  There is a notable
+      exceptions to this rule.  Allocators called while a container or
+      element is constructed uses an internal lock obtained and
+      released solely within libstdc++-v3 code (in fact, this is the
+      reason STL requires any knowledge of the thread configuration).
+  </p>
    <p>For implementing a container which does its own locking, it is
-      trivial to (as SGI suggests) provide a wrapper class which obtains
-      the lock, performs the container operation, then releases the lock.
-      This could be templatized <em>to a certain extent</em>, on the
-      underlying container and/or a locking mechanism.  Trying to provide
-      a catch-all general template solution would probably be more trouble
-      than it's worth.
+      trivial to provide a wrapper class which obtains the lock (as
+      SGI suggests), performs the container operation, and then
+      releases the lock.  This could be templatized <em>to a certain
+      extent</em>, on the underlying container and/or a locking
+      mechanism.  Trying to provide a catch-all general template
+      solution would probably be more trouble than it's worth.
    </p>
    <p>Return <a href="#top">to top of page</a> or
       <a href="../faq/index.html">to the FAQ</a>.
