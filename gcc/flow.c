@@ -2011,6 +2011,75 @@ commit_edge_insertions ()
       bb = BASIC_BLOCK (i);
     }
 }
+
+/* Add fake edges to the function exit for any non constant calls in
+   the bitmap of blocks specified by BLOCKS or to the whole CFG if
+   BLOCKS is zero.  Return the nuber of blocks that were split.  */
+
+int
+flow_call_edges_add (blocks)
+     sbitmap blocks;
+{
+  int i;
+  int blocks_split = 0;
+  int bb_num = 0;
+  basic_block *bbs;
+
+  /* Map bb indicies into basic block pointers since split_block
+     will renumber the basic blocks.  */
+
+  bbs = xmalloc (n_basic_blocks * sizeof (*bbs));
+
+  if (! blocks)
+    {
+      for (i = 0; i < n_basic_blocks; i++)
+	bbs[bb_num++] = BASIC_BLOCK (i);
+    }
+  else
+    {
+      EXECUTE_IF_SET_IN_SBITMAP (blocks, 0, i, 
+      {
+	bbs[bb_num++] = BASIC_BLOCK (i);
+      });
+    }
+
+
+  /* Now add fake edges to the function exit for any non constant
+     calls since there is no way that we can determine if they will
+     return or not...  */
+
+  for (i = 0; i < bb_num; i++)
+    {
+      basic_block bb = bbs[i];
+      rtx insn;
+      rtx prev_insn;
+
+      for (insn = bb->end; ; insn = prev_insn)
+	{
+	  prev_insn = PREV_INSN (insn);
+	  if (GET_CODE (insn) == CALL_INSN && ! CONST_CALL_P (insn))
+	    {
+	      edge e;
+
+	      /* Note that the following may create a new basic block
+		 and renumber the existing basic blocks.  */
+	      e = split_block (bb, insn);
+	      if (e)
+		blocks_split++;
+
+	      make_edge (NULL, bb, EXIT_BLOCK_PTR, EDGE_FAKE);
+	    }
+	  if (insn == bb->head)
+	    break;
+	}
+    }
+
+  if (blocks_split)
+    verify_flow_info ();
+
+  free (bbs);
+  return blocks_split;
+}
 
 /* Delete all unreachable basic blocks.   */
 

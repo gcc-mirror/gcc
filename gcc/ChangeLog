@@ -1,3 +1,8 @@
+2001-01-11  Michael Hayes  <mhayes@redhat.com>
+
+	* flow.c (flow_call_edges_add): New.
+	* basic_block.h (flow_call_edges_add): New.
+
 2001-01-11  J"orn Rennecke <amylaar@redhat.com>
 
 	* reload1.c (move2add_note_store): Update reg_set_luid even if
