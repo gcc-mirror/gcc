@@ -1,5 +1,11 @@
 2003-03-29  Kazu Hirata  <kazu@cs.umass.edu>
 
+	* config/h8300/h8300.md (*iorsi3_and_ashift): New.
+	(*iorsi3_and_lshiftrt): Likewise.
+	(*iorsi3_zero_extract): Likewise.
+
+2003-03-29  Kazu Hirata  <kazu@cs.umass.edu>
+
 	* config/h8300/h8300.md (*insv_si_8_8): New.
 	(*insv_si_8_8_lshiftrt_8): Likewise.
 	(a peephole2): Likewise.
