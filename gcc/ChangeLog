@@ -1,3 +1,8 @@
+Wed Jul  8 02:43:34 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* configure.in: Also look at $srcdir/gas/configure to find a 
+	gas version #.
+
 Wed Jul  8 00:28:22 1998  Carlo Wood <carlo@runaway.xs4all.nl>
 
 	* dsp16xx.h : Clean up of macro OPTIMIZATION_OPTIONS

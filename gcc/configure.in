@@ -3323,7 +3323,7 @@ if [[ -x as$host_exeext ]]; then
 	gcc_cv_as=./as$host_exeext
 elif [[ -f $srcdir/../gas/configure.in ]]; then
 	# Single tree build which includes gas.
-	for f in $srcdir/../gas/configure.in $srcdir/../gas/Makefile.in
+	for f in $srcdir/../gas/configure $srcdir/../gas/configure.in $srcdir/../gas/Makefile.in
 	do
 		gcc_cv_gas_version=`grep '^VERSION=[[0-9]]*\.[[0-9]]*' $f`
 		if [[ x$gcc_cv_gas_version != x ]]; then
