@@ -1,3 +1,7 @@
+2002-10-08  Anthony Green  <green@redhat.com> 
+
+	* bitmap.c (bitmap_equal_p): Clear all bitmap_head fields. 
+
 2002-10-08  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (c4x_print_operand): Enlarge buffer

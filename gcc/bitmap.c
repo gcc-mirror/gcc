@@ -706,7 +706,7 @@ bitmap_equal_p (a, b)
   bitmap_head c;
   int ret;
 
-  c.first = c.current = 0;
+  memset (&c, 0, sizeof (c)); 
   ret = ! bitmap_operation (&c, a, b, BITMAP_XOR);
   bitmap_clear (&c);
 
