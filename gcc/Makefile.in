@@ -190,7 +190,7 @@ USER_H = $(srcdir)/ginclude/stdarg.h $(srcdir)/ginclude/stddef.h \
 # The GCC to use for compiling libgcc.a, enquire, and libgcc1-test.
 # Usually the one we just built.
 # Don't use this as a dependency--use $(GCC_PASSES) or $(GCC_PARTS).
-GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include
+GCC_FOR_TARGET = ./xgcc -B./ -B$(build_tooldir)/bin/ -isystem $(build_tooldir)/include -isystem $(build_tooldir)/sys-include
 
 # This is used instead of ALL_CFLAGS when compiling with GCC_FOR_TARGET.
 # It omits XCFLAGS, and specifies -B./.
@@ -260,7 +260,7 @@ OBSTACK_H   = $(srcdir)/../include/obstack.h
 SPLAY_TREE_H= $(srcdir)/../include/splay-tree.h
 
 # Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
-CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include
+CROSS_SYSTEM_HEADER_DIR = $(build_tooldir)/sys-include
 
 # Control whether to run fixproto and fixincludes.
 STMP_FIXPROTO = stmp-fixproto
@@ -325,7 +325,7 @@ dollar = @dollar@
 gcc_tooldir = @gcc_tooldir@
 # Used to install the shared libgcc.
 slibdir = @slibdir@
-# Since tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
+# Since gcc_tooldir does not exist at build-time, use -B$(build_tooldir)/bin/
 build_tooldir = $(exec_prefix)/$(target_alias)
 # Directory in which the compiler finds target-independent g++ includes.
 gcc_gxx_include_dir = @gcc_gxx_include_dir@
@@ -749,7 +749,7 @@ ORDINARY_FLAGS_TO_PASS = \
 	"prefix=$(prefix)" \
 	"local_prefix=$(local_prefix)" \
 	"gxx_include_dir=$(gcc_gxx_include_dir)" \
-	"tooldir=$(tooldir)" \
+	"build_tooldir=$(build_tooldir)" \
 	"gcc_tooldir=$(gcc_tooldir)" \
 	"bindir=$(bindir)" \
 	"libsubdir=$(libsubdir)" \
@@ -2186,15 +2186,15 @@ stmp-fixinc: fixinc.sh gsyslimits.h
 	  cp $(srcdir)/gsyslimits.h include/syslimits.h; \
 	fi; \
 	chmod a+r include/syslimits.h)
-# If $(SYSTEM_HEADER_DIR) is $(tooldir)/sys-include, and
+# If $(SYSTEM_HEADER_DIR) is $(build_tooldir)/sys-include, and
 # that directory exists, then make sure that $(libsubdir) exists.
-# This is because cpp is compiled to find $(tooldir)/include via
+# This is because cpp is compiled to find $(gcc_tooldir)/include via
 # $(libsubdir)/$(unlibsubdir), which will only work if $(libsubdir)
 # exists.
-# We deliberately use tooldir instead of gcc_tooldir here.  gcc_tooldir
-# won't work because libsubdir doesn't exist yet.
-	if [ "$(SYSTEM_HEADER_DIR)" = "$(tooldir)/sys-include" ] \
-	   && [ -d $(tooldir)/sys-include ]; then \
+# ??? Better would be to use -isystem $(build_tooldir)/sys-include,
+# but fixincludes does not take such arguments.
+	if [ "$(SYSTEM_HEADER_DIR)" = "$(build_tooldir)/sys-include" ] \
+	   && [ -d $(build_tooldir)/sys-include ]; then \
 	  if [ -d $(libdir) ] ; then true ; else mkdir $(libdir) ; fi; \
 	  if [ -d $(libdir)/gcc-lib ] ; then true ; else mkdir $(libdir)/gcc-lib; fi; \
 	  if [ -d $(libdir)/gcc-lib/$(target_alias) ] ; then true ; else mkdir $(libdir)/gcc-lib/$(target_alias) ; fi; \
