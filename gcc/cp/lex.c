@@ -755,6 +755,7 @@ void
 finish_parse ()
 {
   cpp_finish (parse_in);
+  /* Call to cpp_destroy () omitted for performance reasons.  */
   errorcount += cpp_errors (parse_in);
 }
 

@@ -79,9 +79,7 @@ main (argc, argv)
   
   do_preprocessing (argc, argv);
 
-  /* Reader destructor.  */
-  cpp_cleanup (pfile);
-
+  /* Call to cpp_destroy () omitted for performance reasons.  */
   if (cpp_errors (pfile))
     return FATAL_EXIT_CODE;
 

@@ -557,12 +557,13 @@ cpp_create_reader (lang)
   return pfile;
 }
 
-/* Free resources used by PFILE.
-   This is the cpp_reader 'finalizer' or 'destructor' (in C++ terminology).  */
-void
-cpp_cleanup (pfile)
+/* Free resources used by PFILE.  Accessing PFILE after this function
+   returns leads to undefined behaviour.  */
+int
+cpp_destroy (pfile)
      cpp_reader *pfile;
 {
+  int result;
   struct file_name_list *dir, *dirn;
   cpp_context *context, *contextn;
 
@@ -600,6 +601,11 @@ cpp_cleanup (pfile)
       contextn = context->next;
       free (context);
     }
+
+  result = pfile->errors;
+  free (pfile);
+
+  return result;
 }
 
 
