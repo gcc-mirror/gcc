@@ -36,7 +36,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define REGISTER_PREFIX ""
 #endif
 
-static void builtin_define_std PARAMS ((const char *));
+static void builtin_define_std PARAMS ((const char *)) ATTRIBUTE_UNUSED;
 static void builtin_define_with_value_n PARAMS ((const char *, const char *,
 						 size_t));
 static void builtin_define_with_int_value PARAMS ((const char *,
