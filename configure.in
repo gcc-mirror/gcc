@@ -419,8 +419,8 @@ case "${target}" in
 	;;
     esac
     ;;
-  *-*-netware)
-    noconfigdirs="$noconfigdirs target-libstdc++-v3 target-newlib target-libiberty target-libgloss ${libgcj}"
+  *-*-netware*)
+    noconfigdirs="$noconfigdirs target-newlib target-libiberty target-libgloss ${libgcj} target-libmudflap"
     ;;
   *-*-rtems*)
     noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
@@ -1441,10 +1441,7 @@ extra_nmflags_for_target=
 extra_ranlibflags_for_target=
 target_makefile_frag=/dev/null
 case "${target}" in
-  i[[3456789]]86-*-netware*)
-    target_makefile_frag="config/mt-netware"
-    ;;
-  powerpc-*-netware*)
+  *-*-netware*)
     target_makefile_frag="config/mt-netware"
     ;;
   *-*-linux* | *-*-gnu* | *-*-k*bsd*-gnu)

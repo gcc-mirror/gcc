@@ -161,7 +161,7 @@ void z(int n, ...)
   while (n--)
     {
       int *a = va_arg (list, int *);
-      bzero (a, sizeof (l));
+      __builtin_bzero (a, sizeof (l));
     }
   va_end (list);
 }

@@ -1,3 +1,9 @@
+2004-09-03  Jan Beulich  <jbeulich@novell.com>
+
+	* inclhack.def: Suppress exception_structure and math_exception
+	for NetWare headers.
+	* fixincl.x: Regenerate.
+
 2004-08-31  Paolo Bonzini  <bonzini@gnu.org>
 
 	* .cvsignore: New.

@@ -1054,7 +1054,7 @@ fix = {
     files     = math.h;
 
     /*  If matherr has a prototype already, the header needs no fix.  */
-    bypass    = 'matherr.*(struct exception|__MATH_EXCEPTION)';
+    bypass    = 'matherr.*(struct exception|__MATH_EXCEPTION|[ \t]*__FP_EXCEPTION[ \t]*\*[ \t]*)';
     select    = matherr;
 
     c_fix     = wrap;
@@ -1950,7 +1950,7 @@ fix = {
      * exception either.  So currently we bypass only for glibc, based on a
      * comment in the fixed glibc header.  Ick.
      */
-    bypass    = 'We have a problem when using C\+\+';
+    bypass    = 'We have a problem when using C\+\+|for C\+\+, _[a-z0-9A-Z_]+_exception; for C, exception';
     c_fix     = wrap;
 
     c_fix_arg = "#ifdef __cplusplus\n"

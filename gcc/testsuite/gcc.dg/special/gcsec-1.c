@@ -5,6 +5,7 @@
 
 /* { dg-options "-ffunction-sections -fdata-sections -Wl,--gc-sections -static" } */
 /* { dg-options "-ffunction-sections -fdata-sections -Wl,--gc-sections -static" { target native } } */
+/* { dg-options "-ffunction-sections -fdata-sections -Wl,--gc-sections" { target *-*-netware* } } */
 
 #include <stdlib.h>
 

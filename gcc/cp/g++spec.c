@@ -36,7 +36,7 @@ Boston, MA 02111-1307, USA.  */
 #define MATH_LIBRARY "-lm"
 #endif
 #ifndef MATH_LIBRARY_PROFILE
-#define MATH_LIBRARY_PROFILE "-lm"
+#define MATH_LIBRARY_PROFILE MATH_LIBRARY
 #endif
 
 #ifndef LIBSTDCXX
