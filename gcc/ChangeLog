@@ -1,3 +1,13 @@
+2001-01-16  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc.texi (Bug Lists): Do not mention newsgroups nor the
+	possibility to report bugs via postal mail. Change a URL and
+	merge in a nearly duplicate statement...
+	(Bug Reporting): ...from here.
+	(Service): Refer to the Bug Reporting section instead of
+	duplicating an URL.
+	(Contributing): Remove trivial explanations concerning snapshots.
+
 2001-01-16  Alan Modra <alan@linuxcare.com.au>
 
         * cppmain.c (general_init): Don't use ANSI prototype.
