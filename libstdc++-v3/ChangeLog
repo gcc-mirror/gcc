@@ -1,3 +1,9 @@
+2004-04-14  Zack Weinberg  <zack@codesourcery.com>
+
+	* testsuite/Makefile.am: Add definition of AM_CXXFLAGS.
+	Change definition of CXX to use $(shell) instead of backticks.
+	* testsuite/Makefile.in: Regenerate.
+
 2004-04-09  Andreas Schwab  <schwab@suse.de>
 
 	* testsuite/lib/prune.exp (prune_g++_output): Ignore errata
