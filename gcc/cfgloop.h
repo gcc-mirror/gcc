@@ -272,6 +272,7 @@ extern unsigned get_loop_level (const struct loop *);
 /* Loops & cfg manipulation.  */
 extern basic_block *get_loop_body (const struct loop *);
 extern basic_block *get_loop_body_in_dom_order (const struct loop *);
+extern basic_block *get_loop_body_in_bfs_order (const struct loop *);
 extern edge *get_loop_exit_edges (const struct loop *, unsigned *);
 extern unsigned num_loop_branches (const struct loop *);
 

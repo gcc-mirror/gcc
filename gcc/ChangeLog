@@ -1,3 +1,21 @@
+2004-09-03  Devang Patel  <dpatel@apple.com>
+
+	* Makefile.in (OBJS-common): Add tree-if-conv.o
+	(tree-if-conv.o): New rule.
+	* cfgloop.c (flow_loop_exit_edges_find): Set EDGE_LOOP_EXIT flag.
+	(get_loop_body_in_bfs_order): New.
+	* cfgloop.h (get_loop_body_in_bfs_order): New.
+	* tree-flow.h (enum move_pos): Move here from ..
+	* tree-ssa-loop-im.c (enum move_pos): here.
+	(movement_possibility): Make externally visible.
+	* tree-optimize.c (init_tree_optimization_passes): New entry for
+	if conversion pass.
+	* tree-pass.h (pass_if_conversion): New.
+	* tree-ssa-operands.c (get_expr_operands): Handle COND_EXPR.
+	* tree-if-conv.c: New file.
+	* doc/passes.texi: Document tree if-conversion pass.
+	* doc/tree-ssa.texi: Same.	
+
 2004-09-03  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/14925:
