@@ -320,7 +320,7 @@
     {
     public:
       explicit 
-      codecvt_byname(const char* __s, size_t __refs = 0) 
+      codecvt_byname(const char*, size_t __refs = 0) 
       : codecvt<_InternT, _ExternT, _StateT>(__refs) { }
 
     protected:

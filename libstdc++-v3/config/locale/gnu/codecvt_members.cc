@@ -50,7 +50,7 @@ namespace std
     result __ret = error;
     size_t __len = min(__from_end - __from, __to_end - __to);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+    __c_locale __old = __uselocale(_S_c_locale);
 #endif
     size_t __conv = wcsrtombs(__to, &__from, __len, &__state);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
@@ -85,7 +85,7 @@ namespace std
     result __ret = error;
     size_t __len = min(__from_end - __from, __to_end - __to);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
-    __c_locale __old = __uselocale(_M_c_locale_codecvt);
+    __c_locale __old = __uselocale(_S_c_locale);
 #endif
     size_t __conv = mbsrtowcs(__to, &__from, __len, &__state);
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
