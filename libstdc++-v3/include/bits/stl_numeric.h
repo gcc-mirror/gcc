@@ -209,8 +209,8 @@ namespace std
 
       if (__first == __last)
 	return __result;
-      *__result = *__first;
       _ValueType __value = *__first;
+      *__result = __value;
       while (++__first != __last)
 	{
 	  __value = __value + *__first;
@@ -249,8 +249,8 @@ namespace std
 
       if (__first == __last)
 	return __result;
-      *__result = *__first;
       _ValueType __value = *__first;
+      *__result = __value;
       while (++__first != __last)
 	{
 	  __value = __binary_op(__value, *__first);
@@ -285,8 +285,8 @@ namespace std
 
       if (__first == __last)
 	return __result;
-      *__result = *__first;
       _ValueType __value = *__first;
+      *__result = __value;
       while (++__first != __last)
 	{
 	  _ValueType __tmp = *__first;
@@ -324,8 +324,8 @@ namespace std
 
       if (__first == __last)
 	return __result;
-      *__result = *__first;
       _ValueType __value = *__first;
+      *__result = __value;
       while (++__first != __last)
 	{
 	  _ValueType __tmp = *__first;
