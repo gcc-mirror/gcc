@@ -321,6 +321,7 @@ struct ieee_format
   EMULONG adjustment;
 };
 
+#ifdef IEEE
 /* IEEE float (24 bits).  */
 static const struct ieee_format ieee_24 =
 {
@@ -360,7 +361,9 @@ static const struct ieee_format ieee_113 =
   TFmode,
   0
 };
+#endif
 
+#ifdef DEC
 /* DEC F float (24 bits).  */
 static const struct ieee_format dec_f =
 {
@@ -400,6 +403,7 @@ static const struct ieee_format dec_h =
   TFmode,
   EXONE - 16385
 };
+#endif
 
 extern int extra_warnings;
 extern const UEMUSHORT ezero[NE], ehalf[NE], eone[NE], etwo[NE];

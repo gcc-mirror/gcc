@@ -1,3 +1,10 @@
+2002-07-29  John David Anglin  <dave@hiauly1.hia.nrc>
+
+	* real.c (ieee_24, ieee_53, ieee_64, ieee_113): Define only if the
+	floating point format of the target is IEEE.
+	* (dec_f, dec_d, dec_g, dec_h): Define only if the floating point
+	format of the target is DEC.
+
 2002-07-29  Richard Henderson  <rth@redhat.com>
 
 	* unroll.c (verify_addresses): Remove.
