@@ -1,3 +1,22 @@
+2002-01-14  Paolo Carlini  <pcarlini@unitus.it>
+	    Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/basic_string.h
+	(replace(__pos, __n1, __s, __n2)): Optimize by avoiding
+	temporaries (i.e., call _M_replace_safe) when possible.
+	(replace(__pos, __n, __str)): Call replace(__pos, __n1, __s, __n2).
+	(replace(__pos, __n1, __s)): Call replace(__pos, __n1, __s , __n2).
+	(replace(__i1, __i2, __str)): Call replace(__i1, __i2, __s, __n).
+	(replace(__i1, __i2, __s)): Call replace(__i1, __i2, __s, __n).
+	(replace(__i1, __i2, __s, __n)): Call replace(__pos1, __n1, __s, __n2).
+	* include/bits/basic_string.tcc
+	(replace(__pos1, __n1, __str, __pos2, __n2)): Call
+	replace(__pos, __n1, __s, __n2).
+	* testsuite/21_strings/replace.cc (test03): New testcases.
+
+	* include/bits/basic_string.h (insert(__pos, __s, __n)):
+	Adjust comparison wrt overflow.
+	
 2002-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/Makefile.am (std_headers_rename): New variable.
