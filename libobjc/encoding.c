@@ -56,6 +56,8 @@ Boston, MA 02111-1307, USA.  */
 
 #define REAL_TYPE       _C_DBL
 
+#define VECTOR_TYPE	_C_VECTOR
+
 #define TYPE_FIELDS(TYPE)     objc_skip_typespec (TYPE)
 
 #define DECL_MODE(TYPE) *(TYPE)

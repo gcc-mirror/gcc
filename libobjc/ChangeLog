@@ -1,3 +1,9 @@
+2001-11-07  Aldy Hernandez  <aldyh@redhat.com>
+
+	 * objc/objc-api.h (_C_VECTOR): New.
+
+	 * encoding.c (VECTOR_TYPE): New.
+
 Mon Oct 29 21:29:21 2001  Nicola Pero  <n.pero@mi.flashnet.it>
 
 	* class.c: Rewritten the class table to use optimized, lock-free
