@@ -1,3 +1,8 @@
+Sun Oct 11 01:51:42 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* config.shared (depend.new): Fix typo.
+	* depend: Rebuilt.
+
 1998-09-09  Manfred Hollstein  <manfred@s-direktnet.de>
 
 	* configure.in (INSTALLDIR): Fix comment about changing INSTALLDIR's
