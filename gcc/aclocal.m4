@@ -1,4 +1,17 @@
-Fdnl See whether we can include both string.h and strings.h.
+dnl See if stdbool.h properly defines bool and true/false.
+AC_DEFUN(gcc_AC_HEADER_STDBOOL,
+[AC_CACHE_CHECK([for working stdbool.h],
+  ac_cv_header_stdbool_h,
+[AC_TRY_COMPILE([#include <stdbool.h>],
+[bool foo = false;],
+ac_cv_header_stdbool_h=yes, ac_cv_header_stdbool_h=no)])
+if test $ac_cv_header_stdbool_h = yes; then
+  AC_DEFINE(HAVE_STDBOOL_H, 1,
+  [Define if you have a working <stdbool.h> header file.])
+fi
+])
+
+dnl See whether we can include both string.h and strings.h.
 AC_DEFUN(gcc_AC_HEADER_STRING,
 [AC_CACHE_CHECK([whether string.h and strings.h may both be included],
   gcc_cv_header_string,
@@ -194,6 +207,18 @@ gcc_cv_c_long_double=yes, gcc_cv_c_long_double=no)
 fi])
 if test $gcc_cv_c_long_double = yes; then
   AC_DEFINE(HAVE_LONG_DOUBLE)
+fi
+])
+
+dnl Check whether _Bool is built-in.
+AC_DEFUN(gcc_AC_C__BOOL,
+[AC_CACHE_CHECK(for built-in _Bool, gcc_cv_c__bool,
+[AC_TRY_COMPILE(,
+[_Bool foo;],
+gcc_cv_c__bool=yes, gcc_cv_c__bool=no)
+])
+if test $gcc_cv_c__bool = yes; then
+  AC_DEFINE(HAVE__BOOL, 1, [Define if the \`_Bool' type is built-in.])
 fi
 ])
 
