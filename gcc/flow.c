@@ -2231,7 +2231,11 @@ find_auto_inc (needed, x, insn)
 	  else if (GET_CODE (q) == REG
 		   /* PREV_INSN used here to check the semi-open interval
 		      [insn,incr).  */
-		   && ! reg_used_between_p (q,  PREV_INSN (insn), incr))
+		   && ! reg_used_between_p (q,  PREV_INSN (insn), incr)
+		   /* We must also check for sets of q as q may be
+		      a call clobbered hard register and there may
+		      be a call between PREV_INSN (insn) and incr.  */
+		   && ! reg_set_between_p (q,  PREV_INSN (insn), incr))
 	    {
 	      /* We have *p followed sometime later by q = p+size.
 		 Both p and q must be live afterward,
