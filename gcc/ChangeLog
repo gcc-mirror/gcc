@@ -1,3 +1,8 @@
+Wed Jul 21 16:00:32 1999  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.h (INITIAL_ELIMINATION_OFFSET): Fix typo
+	introduced in previous delta.
+
 Wed Jul 21 14:30:51 1999  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* c-lang.c (finish_file): Rename void_list_node to void_list_node_1
