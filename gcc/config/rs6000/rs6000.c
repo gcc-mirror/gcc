@@ -4691,7 +4691,11 @@ print_operand (file, x, code)
 	      break;
 	    }
 	}
+#if TARGET_AIX
+      RS6000_OUTPUT_BASENAME (file, XSTR (x, 0));
+#else
       assemble_name (file, XSTR (x, 0));
+#endif
       return;
 
     case 'Z':
@@ -7045,9 +7049,17 @@ rs6000_output_function_epilogue (file, size)
       /* Offset from start of code to tb table.  */
       fputs ("\t.long ", file);
       ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
+#if TARGET_AIX
+      RS6000_OUTPUT_BASENAME (file, fname);
+#else
       assemble_name (file, fname);
+#endif
       fputs ("-.", file);
+#if TARGET_AIX
+      RS6000_OUTPUT_BASENAME (file, fname);
+#else
       assemble_name (file, fname);
+#endif
       putc ('\n', file);
 
       /* Interrupt handler mask.  */
@@ -7464,7 +7476,13 @@ rs6000_output_symbol_ref (file, x)
      we emit the TOC reference to reference the symbol and not the
      section.  */
   const char *name = XSTR (x, 0);
-  assemble_name (file, name);
+
+  if (VTABLE_NAME_P (name)) 
+    {
+      RS6000_OUTPUT_BASENAME (file, name);
+    }
+  else
+    assemble_name (file, name);
 }
 
 /* Output a TOC entry.  We derive the entry name from what is being
@@ -7697,7 +7715,7 @@ output_toc (file, x, labelno, mode)
      section.  */
   if (VTABLE_NAME_P (name))
     {
-      assemble_name (file, name);
+      RS6000_OUTPUT_BASENAME (file, name);
       if (offset < 0)
 	fprintf (file, "%d", offset);
       else if (offset > 0)

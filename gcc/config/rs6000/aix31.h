@@ -45,7 +45,7 @@ Boston, MA 02111-1307, USA.  */
   if (TREE_CODE (DECL) == FUNCTION_DECL)	\
     {						\
       fputs ("\n\t.extern .", FILE);		\
-      assemble_name (FILE, XSTR (_symref, 0));	\
+      RS6000_OUTPUT_BASENAME (FILE, XSTR (_symref, 0));	\
     }						\
   putc ('\n', FILE);				\
 }

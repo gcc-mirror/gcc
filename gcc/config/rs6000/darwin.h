@@ -79,6 +79,12 @@ Boston, MA 02111-1307, USA.  */
 #undef REGISTER_NAMES
 #define REGISTER_NAMES DEBUG_REGISTER_NAMES
 
+/* This outputs NAME to FILE.  */
+
+#undef  RS6000_OUTPUT_BASENAME
+#define RS6000_OUTPUT_BASENAME(FILE, NAME)	\
+    assemble_name (FILE, NAME);
+
 /* Output before instructions.  */
 /* This is how to output the definition of a user-level label named NAME,
    such as the label on a static function or variable NAME.  */
@@ -92,7 +98,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_GLOBALIZE_LABEL
 #define ASM_GLOBALIZE_LABEL(FILE,NAME)	\
   do { fputs ("\t.globl ", FILE);	\
-       assemble_name (FILE, NAME); putc ('\n', FILE);} while (0)
+       RS6000_OUTPUT_BASENAME (FILE, NAME); putc ('\n', FILE);} while (0)
 
 /* This is how to output an internal label prefix.  rs6000.c uses this
    when generating traceback tables.  */
@@ -116,7 +122,7 @@ Boston, MA 02111-1307, USA.  */
 #undef  ASM_OUTPUT_ALIGNED_COMMON
 #define ASM_OUTPUT_COMMON(FILE, NAME, SIZE, ROUNDED)	\
   do { fputs (".comm ", (FILE));			\
-       assemble_name ((FILE), (NAME));		\
+       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
        fprintf ((FILE), ",%d\n", (SIZE)); } while (0)
 
 #define ASM_OUTPUT_SKIP(FILE,SIZE)  \
