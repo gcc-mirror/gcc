@@ -1,6 +1,5 @@
 /* Test Gcov basics.  */
 
-/* { dg-prms-id 8294 } */
 /* { dg-options "-fprofile-arcs -ftest-coverage -g" } */
 /* { dg-do run { target native } } */
 
@@ -19,3 +18,5 @@ int main ()
 }
 
 int a_variable = 0;
+
+/* { dg-final { run-gcov gcov-2.c } } */
