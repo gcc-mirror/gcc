@@ -185,7 +185,7 @@ Boston, MA 02111-1307, USA.  */
 #undef ASM_SPEC
 #define ASM_SPEC \
   "%{V} %{v:%{!V:-V}} %{!Qn:-Qy} %{n} %{T} %{Ym,*} %{Wa,*:%*} -s %{fpic:-K PIC} \
-   %{fPIC:-K PIC} %(asm_relax)"
+   %{fPIC:-K PIC} %(asm_cpu) %(asm_relax)"
 
 /* Same as sparc.h */
 #undef DBX_REGISTER_NUMBER
@@ -251,3 +251,7 @@ do {									\
 
 /* Don't be different from other Linux platforms in this regard.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
+
+/* We use GNU ld so undefine this so that attribute((init_priority)) works.  */
+#undef CTORS_SECTION_ASM_OP
+#undef DTORS_SECTION_ASM_OP

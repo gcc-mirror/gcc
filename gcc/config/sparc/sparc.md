@@ -2592,8 +2592,8 @@
   "sethi\\t%%hi(%a1), %0")
 
 (define_insn "*movdi_insn_sp64_novis"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m")
-        (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,m,e"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?W")
+        (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,W,e"))]
   "TARGET_ARCH64 && ! TARGET_VIS
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -2610,8 +2610,8 @@
    (set_attr "fptype" "*,*,*,*,*,double,*,*")])
 
 (define_insn "*movdi_insn_sp64_vis"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?m,b")
-        (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,m,e,J"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,r,m,?e,?e,?W,b")
+        (match_operand:DI 1 "input_operand"   "rI,N,J,m,rJ,e,W,e,J"))]
   "TARGET_ARCH64 && TARGET_VIS &&
    (register_operand (operands[0], DImode)
     || reg_or_0_operand (operands[1], DImode))"
@@ -3272,8 +3272,8 @@
 
 ;; Be careful, fmovd does not exist when !v9.
 (define_insn "*movdf_insn_sp32"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,T,U,T,o,e,*r,o,e,o")
-	(match_operand:DF 1 "input_operand"    "T#F,e,T,U,G,e,*rFo,*r,o#F,e"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,W,U,T,o,e,*r,o,e,o")
+	(match_operand:DF 1 "input_operand"    "W#F,e,T,U,G,e,*rFo,*r,o#F,e"))]
   "TARGET_FPU
    && ! TARGET_V9
    && (register_operand (operands[0], DFmode)
@@ -3332,8 +3332,8 @@
 ;; We have available v9 double floats but not 64-bit
 ;; integer registers and no VIS.
 (define_insn "*movdf_insn_v9only_novis"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,T,T,U,T,e,*r,o")
-        (match_operand:DF 1 "input_operand"    "e,T#F,G,e,T,U,o#F,*roF,*rGe"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,T,W,U,T,e,*r,o")
+        (match_operand:DF 1 "input_operand"    "e,W#F,G,e,T,U,o#F,*roF,*rGe"))]
   "TARGET_FPU
    && TARGET_V9
    && ! TARGET_VIS
@@ -3358,8 +3358,8 @@
 ;; We have available v9 double floats but not 64-bit
 ;; integer registers but we have VIS.
 (define_insn "*movdf_insn_v9only_vis"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,T,T,U,T,e,*r,o")
-        (match_operand:DF 1 "input_operand" "G,e,T#F,G,e,T,U,o#F,*roGF,*rGe"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,T,W,U,T,e,*r,o")
+        (match_operand:DF 1 "input_operand" "G,e,W#F,G,e,T,U,o#F,*roGF,*rGe"))]
   "TARGET_FPU
    && TARGET_VIS
    && ! TARGET_ARCH64
@@ -3384,8 +3384,8 @@
 ;; We have available both v9 double floats and 64-bit
 ;; integer registers. No VIS though.
 (define_insn "*movdf_insn_sp64_novis"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,m,*r,*r,m,*r")
-        (match_operand:DF 1 "input_operand"    "e,m#F,e,*rG,m,*rG,F"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,W,*r,*r,m,*r")
+        (match_operand:DF 1 "input_operand"    "e,W#F,e,*rG,m,*rG,F"))]
   "TARGET_FPU
    && ! TARGET_VIS
    && TARGET_ARCH64
@@ -3407,8 +3407,8 @@
 ;; We have available both v9 double floats and 64-bit
 ;; integer registers. And we have VIS.
 (define_insn "*movdf_insn_sp64_vis"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,m,*r,*r,m,*r")
-        (match_operand:DF 1 "input_operand"    "G,e,m#F,e,*rG,m,*rG,F"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=e,e,e,W,*r,*r,m,*r")
+        (match_operand:DF 1 "input_operand"    "G,e,W#F,e,*rG,m,*rG,F"))]
   "TARGET_FPU
    && TARGET_VIS
    && TARGET_ARCH64

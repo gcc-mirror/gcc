@@ -2989,7 +2989,7 @@ load_pic_register ()
 }
 
 /* Return 1 if RTX is a MEM which is known to be aligned to at
-   least an 8 byte boundary.  */
+   least a DESIRED byte boundary.  */
 
 int
 mem_min_alignment (mem, desired)
