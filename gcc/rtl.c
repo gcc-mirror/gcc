@@ -122,11 +122,6 @@ enum machine_mode mode_wider_mode[(int) MAX_MACHINE_MODE] = {
 
 enum machine_mode class_narrowest_mode[(int) MAX_MODE_CLASS];
 
-/* Commonly used modes.  */
-
-enum machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT */
-enum machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD */
-
 /* Indexed by rtx code, gives a sequence of operand-types for
    rtx's of that code.  The sequence is a C string in which
    each character describes one operand.  */
@@ -828,14 +823,10 @@ init_rtl ()
     }
 #endif
 
-  /* Find the narrowest mode for each class and compute the word and byte
-     modes.  */
+  /* Find the narrowest mode for each class.  */
 
   for (i = 0; i < (int) MAX_MODE_CLASS; i++)
     min_class_size[i] = 1000;
-
-  byte_mode = VOIDmode;
-  word_mode = VOIDmode;
 
   for (mode = VOIDmode; (int) mode < (int) MAX_MACHINE_MODE;
        mode = (enum machine_mode) ((int) mode + 1))
@@ -845,15 +836,6 @@ init_rtl ()
 	  class_narrowest_mode[(int) GET_MODE_CLASS (mode)] = mode;
 	  min_class_size[(int) GET_MODE_CLASS (mode)] = GET_MODE_SIZE (mode);
 	}
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
-	  && byte_mode == VOIDmode)
-	byte_mode = mode;
-
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_BITSIZE (mode) == BITS_PER_WORD
-	  && word_mode == VOIDmode)
-	word_mode = mode;
     }
 }
 
