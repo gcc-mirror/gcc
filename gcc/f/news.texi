@@ -9,7 +9,7 @@
 @c in the standalone derivations of this file (e.g. NEWS).
 @set copyrights-news 1995-1999
 
-@set last-update-news 1999-04-17
+@set last-update-news 1999-04-20
 
 @include root.texi
 
@@ -176,6 +176,13 @@ Instead, it issues a diagnostic.
 
 @ifclear USERVISONLY
 @item
+Fix @code{g77} so it properly handles @samp{DATA A/@var{rpt}*@var{val}/},
+where @var{rpt} is not default @code{INTEGER}, such as @code{INTEGER*2},
+instead of producing a spurious diagnostic.
+@end ifclear
+
+@ifclear USERVISONLY
+@item
 The @samp{-ax} option is now obeyed when compiling Fortran programs.
 (It is passed to the @file{f771} driver.)
 @end ifclear
@@ -218,12 +225,22 @@ now reliably aligns @emph{all} double-precision variables and arrays
 on Intel x86 targets.
 
 @item
+A substantial portion of the @code{g77} front end's code-generation component
+was rewritten.
+It now generates code using facilities more robustly supported
+by the @code{gcc} back end.
+One effect of this rewrite is that some codes no longer produce
+a spurious ``label @var{lab} used before containing binding contour''
+message.
+
+@item
 Support for the @samp{-fugly} option has been removed.
 
 @ifclear USERVISONLY
 @item
 Improve documentation and indexing,
-including information on Year 2000 (Y2K) compliance.
+including information on Year 2000 (Y2K) compliance,
+and providing more information on internals of the front end.
 @end ifclear
 
 @ifclear USERVISONLY

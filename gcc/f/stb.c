@@ -5707,7 +5707,12 @@ ffestb_R5282_ (ffelexToken ft, ffebld expr, ffelexToken t)
     case FFELEX_typeASTERISK:
       if (expr == NULL)
 	break;
-      ffestb_local_.data.expr = expr;
+      ffestb_local_.data.expr = ffeexpr_convert (expr, ft, t,
+						 FFEINFO_basictypeINTEGER,
+						 FFEINFO_kindtypeINTEGER1,
+						 0,
+						 FFETARGET_charactersizeNONE,
+						 FFEEXPR_contextLET);
       ffesta_tokens[1] = ffelex_token_use (ft);
       return (ffelexHandler) ffeexpr_rhs
 	(ffesta_output_pool, FFEEXPR_contextDATA,
