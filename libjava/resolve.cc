@@ -1022,7 +1022,13 @@ _Jv_InterpMethod::ncode ()
 
   args_raw_size = ffi_raw_size (&closure->cif);
 
-  if ((self->accflags & Modifier::SYNCHRONIZED) != 0)
+  if ((self->accflags & Modifier::NATIVE) != 0)
+    {
+      // FIXME: for now we assume that all native methods for
+      // interpreted code use JNI.
+      fun = (ffi_closure_fun) &_Jv_JNI_conversion_call;
+    }
+  else if ((self->accflags & Modifier::SYNCHRONIZED) != 0)
     {
       if (staticp)
 	fun = (ffi_closure_fun)&_Jv_InterpMethod::run_synch_class;

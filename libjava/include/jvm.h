@@ -204,5 +204,4 @@ extern void _Jv_ThisExecutable (const char *);
 /* Initialize JNI.  */
 extern void _Jv_JNI_Init (void);
 
-
 #endif /* __JAVA_JVM_H__ */

@@ -1,6 +1,6 @@
 // java-interp.h - Header file for the bytecode interpreter.  -*- c++ -*-
 
-/* Copyright (C) 1999  Red Hat, Inc.
+/* Copyright (C) 1999, 2000  Red Hat, Inc.
 
    This file is part of libgcj.
 
@@ -121,6 +121,9 @@ class _Jv_InterpMethod {
   friend class gnu::gcj::runtime::MethodInvocation;
 
   friend void _Jv_PrepareClass(jclass);
+
+  // This function is used when making a JNI call from the interpreter.
+  friend void _Jv_JNI_conversion_call (ffi_cif *, void *, ffi_raw *, void *);
 };
 
 class _Jv_InterpMethodInvocation {
