@@ -1,3 +1,41 @@
+Sat Jul 12 03:06:01 CEST 2003  Jan Hubicka  <jh@suse.cz>
+			       Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* cgraph.c (cgraph_max_uid): New global variable.
+	(cgraph_node): Set uid field.
+	(create_edge): Keep inline flags consistent.
+	(dump_cgraph): Dump more info.
+	* cgraph.h (struct cgraph_local_info): Remove inline_many and
+	can_inline_once; add inlinable, disgread_inline_limits, and self_insn
+	(struct cgraph_global_info): Add insns, calls, cloned_times,
+	will_be_output.
+	(struct cgraph_node): Add uid.
+	(struct cgraph_edge): Add inline_call.
+	(cgraph_max_uid, cgraph_inline_p): Declare.
+	* cgraph.c: Include params.h and fibheap.h
+	(cgraph_mark_functions_to_inline_once): Kill.
+	(INSNS_PER_CALL): New constant.
+	(ncalls_inlined, nfunctions_inlined, initial_insns, overall_insns): New
+	static variables.
+	(cgraph_finalize_function): Do not analyze inlining.
+	(cgraph_finalize_compilation_unit): Set inlining attributes.
+	(cgraph_mark_functions_to_output): More consistency checks.
+	(cgraph_optimize_function): Set current_function_decl to NULL.
+	(cgraph_expand_function): Use new inline flags.
+	(cgraph_postorder): Expand from cgraph_expand_functions.
+	(INLINED_TIMES, SET_INLINED_TIMES): New macros.
+	(cgraph_inlined_into, cgraph_inlined_callees,
+	cgraph_estimate_size_after_inlining, cgraph_estimate_growth,
+	cgraph_mark_inline, cgraph_check_inline_limits,
+	cgraph_default_inline_p, cgraph_decide_inling_of_small_functions, 
+	cgraph_decide_inlining, cgraph_inline_p): New functions.
+	* params.def (PARAM_LARGE_FUNCTION_INSNS, PARAM_LARGE_FUNCTION_GROWTH,
+	PARAM_INLINE_UNIT_GROWTH): New parameters.
+	* tree-inline.c (struct inline_data): New field current_decl.
+	(expand_call_inline): Avoid forward declarations; use
+	inlinable_function_p.
+	(optimize_inline_calls): Set id.current_decl.
+
 2003-07-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* configure.in: Remove wrongly added definition of
