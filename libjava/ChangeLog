@@ -1,3 +1,8 @@
+2002-12-09  Tom Tromey  <tromey@redhat.com>
+
+	* java/util/natResourceBundle.cc (getCallingClassLoader): Assume
+	`t' won't be null.
+
 2002-12-08  Mark Wielaard  <mark@klomp.org>
 
 	* gnu/gcj/protocol/jar/Connection.java (getJarFile): download and
@@ -1264,7 +1269,8 @@
 	heavy_lock_obj_finalization_proc, wait, notify, notifyAll):
 	removed some posix-isms, use Thread::sleep() instead of usleep,
 	added code to clear bottom three bits if platform has a broken
-	linker.  * include/win32-threads.h (_Jv_ThreadId_t): added.
+	linker.
+	* include/win32-threads.h (_Jv_ThreadId_t): added.
 
 2002-10-19  Ranjit Mathew <rmathew@hotmail.com>
 
