@@ -1,3 +1,100 @@
+2004-08-18  Caroline Tice  <ctice@apple.com>
+
+        * Makefile.in (STAGEFEEDBACK_FLAGS_TO_PASS) Add
+	"-freorder-blocks-and-partition" to the flags used in second
+	stage of profiledbootstrap.
+	* bb-reorder.c (push_to_next_round_p): Add new variable,
+	next_round_is_last; set and use variable to make sure, when
+	partitioning, that the last trace construction round consists
+	of all (and only) cold basic blocks.
+	(rotate_loop): Don't copy blocks that end in a section
+	crossing jump.
+	(copy_bb): Correctly initialize "partition" of duplicated bb.
+	(add_unlikely_executed_notes): Add a comment.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Modify
+	to make sure, if function contains hot blocks, that the
+	successors of ENTRY_BLOCK_PTR are hot; also, only look for
+	crossing edges if the architecture supports named sections.
+	(mark_bb_for_unlikely_executed_section): Modify to always
+	insert the NOTE_INSN_UNLIKELY_EXECUTED_CODE immediately after
+	the basic block note insn.
+	(fix_crossing_unconditional_branches): Remove extra space.
+	(fix_edges_for_rarely_executed_code): Modify to only do
+	partitioning work if the architecture supports named sections.
+	(reorder_basic_blocks): Modify to only add
+	NOTE_INSN_UNLIKELY_EXECUTED_CODE notes if the architecture
+	supports named sections.
+	* c-common.c (handle_section_attribute): Initialize new global
+	variable, user_defined_section_attribute, to true if user has
+	specified one.
+	* cfgcleanup.c (try_forward_edges): Modify to not attempt to
+	forward edges that cross section boundaries.
+	* cfglayout.c (fixup_reorder_chain): Modify to only fix up
+	partitioning information if the architecture supports named
+	sections.
+	* cfgrtl.c (target.h): Add statement to include this.
+	(rtl_split_block): Make sure newly created bb gets correct
+	partition.
+	(try_redirect_by_replacing_jump): Make sure redirection isn't
+	attempting to cross section boundaries.
+	(force_nonfallthru_and_redirect): Only do partition fix up if
+	architecture supports named sections.
+	(rtl_split_edge): Make sure newly created bb ends up in
+	correct partition.
+	(commit_one_edge_insertion): Remove code that incorrectly
+	updated basic block partition; Make sure partition fix up only
+	happens if architecture supports named sections and it's not
+	already done.
+	(rtl_verify_flow_info_1): Fix if-condition on test/error
+	condition that fallthru edges are not allowed to cross section
+	boundaries.
+	* defaults.h (NORMAL_TEXT_SECTION_NAME): Remove this.
+	* final.c (final_scan_insn): Remove redundant test from if-statement;
+	change calls to text_section into calls to function_section; add code
+	to only to partitioning fix up if architecture supports named
+	sections.
+	* ifcvt.c (find_if_case_1): Make sure newly created bb has correct
+	partition.
+	(if_convert): Add targetm.have_named_sections to test.
+	* output.h (unlikely_section_label): Extern declaration for new global
+	variable.
+	(unlikely_text_section_name): Likewise.
+	* opts.c (decode_options): If both partitioning and DWARF debugging
+	are turned on, issue a warning that this doesn't work, and change
+	partitiong to basic block reordering (without hot/cold partitions).
+	* passes.c (rest_of_handle_final): Re-set new global variable, 
+	user_defined_section_attribute, to false.
+	(rest_of_compilation): Change options for calling partitioning
+	function: Don't call if the user defined the section attribute, and
+	don't call if DECL_ONE_ONLY is true for the current function.
+	* predict.c (choose_function_section): Return immediately if we
+	are doing hot/cold partitioning (i.e. let the basic block partitioning
+	determine where the function belongs).
+	* reg-stack.c (emit_swap_insn): Add condition to step over
+	NOTE_INSN_UNLIKELY_EXECUTED_CODE notes.
+	* toplev.c (user_defined_section_attribute): New global variable.
+	* toplev.h (user_defined_section_attribute): Extern declaration for new
+	global variable.
+	* varasm.c (unlikely_section_label): New global variable.
+	(unlikely_text_section_name): New global variable.
+	(unlikely_text_section): Add code to initialize unlikely_text_section_name
+	if necessary; modify to use unlikely_text_section_name and 
+	unlikely_section_label; also to use named_section properly.
+	(in_unlikely_text_section):  Modify to work correctly with named_section
+	and to use unlikely_text_section_name.
+	(named_section):  Add code to work properly with cold section.
+	(function_section): Clean up if-statement.
+	* config/darwin.c (darwin_asm_named_section): Return to original code,
+	removing use of SECTION_FORMAT_STRING.
+	* config/arm/pe.h (switch_to_section):  Add case for 
+	in_unlikely_executed_text to switch statement.
+	* config/i386/cygming.h (switch_to_section): Likewise.
+	* config/i386/darwin.h (NORMAL_TEXT_SECTION_NAME): Remove.
+	(SECTION_FORMAT_STRING): Likewise.
+	* config/mcore/mcore.h (switch_to_section): Likewise.
+	* config/rs6000/darwin.h (NORMAL_TEXT_SECTION_NAME): Remove.
+	(SECTION_FORMAT_STRING): Remove.
+
 2004-08-18  Roger Sayle  <roger@eyesopen.com>
 
 	* config/i386/i386.h (FIXED_REGISTERS): Update encoding to be
