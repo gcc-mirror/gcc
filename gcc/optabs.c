@@ -4389,11 +4389,11 @@ init_optabs ()
   fixunstfti_libfunc = gen_rtx (SYMBOL_REF, Pmode, "__fixunstfti");
 
   /* For check-memory-usage.  */
-  chkr_check_addr_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_addr");
-  chkr_set_right_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_set_right");
-  chkr_copy_bitmap_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_copy_bitmap");
-  chkr_check_exec_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_exec");
-  chkr_check_str_libfunc = gen_rtx (SYMBOL_REF, VOIDmode, "chkr_check_str");
+  chkr_check_addr_libfunc = gen_rtx (SYMBOL_REF, Pmode, "chkr_check_addr");
+  chkr_set_right_libfunc = gen_rtx (SYMBOL_REF, Pmode, "chkr_set_right");
+  chkr_copy_bitmap_libfunc = gen_rtx (SYMBOL_REF, Pmode, "chkr_copy_bitmap");
+  chkr_check_exec_libfunc = gen_rtx (SYMBOL_REF, Pmode, "chkr_check_exec");
+  chkr_check_str_libfunc = gen_rtx (SYMBOL_REF, Pmode, "chkr_check_str");
 
 #ifdef INIT_TARGET_OPTABS
   /* Allow the target to add more libcalls or rename some, etc.  */
