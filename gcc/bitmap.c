@@ -477,7 +477,7 @@ bitmap_operation (to, from1, from2, operation)
 	  changed = 1;
 	  to_tmp = to_ptr;
 	  to_ptr = to_ptr->next;
-	  to_tmp = bitmap_free;
+	  to_tmp->next = bitmap_free;
 	  bitmap_free = to_tmp;
 	}
       if (to_ptr && to_ptr->indx == indx)
@@ -516,6 +516,11 @@ bitmap_operation (to, from1, from2, operation)
 	{
 	  to_tmp->indx = indx;
 	  bitmap_element_link (to, to_tmp);
+	}
+      else
+	{
+	  to_tmp->next = bitmap_free;
+	  bitmap_free = to_tmp;
 	}
     }
 
