@@ -23,9 +23,9 @@
 rm -f Make-lang
 touch Make-lang
 
-# First parameter is the source directory, second is list of subdirectories
-savesrcdir=$1
-savesubdirs=$2
+savesrcdir=$srcdir
+savesubdirs="$subdirs"
+
 for subdir in . $savesubdirs
 do
 	oldsrcdir=$savesrcdir
