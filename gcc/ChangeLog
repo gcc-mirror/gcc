@@ -1,3 +1,14 @@
+Fri Nov  5 19:38:14 1999  Richard Henderson  <rth@cygnus.com>
+
+	* function.c (diddle_return_value): New.
+	(expand_function_end): Use it.
+	* stmt.c (expand_null_return): Likewise.
+	(expand_value_return): Likewise.
+
+	* reg-stack.c (subst_stack_regs_pat): Handle clobbers at top-level.
+
+	* reload1.c (reload): Don't remove return value clobbers.
+
 Thu Nov  4 13:33:46 1999  Richard Henderson  <rth@cygnus.com>
 
 	* rtl.c (read_rtx): Use fatal_with_file_and_line not fatal.
@@ -78,17 +89,17 @@ Wed Nov  3 14:51:59 1999  Mark P. Mitchell  <mark@codesourcery.com>
 	
 Wed Nov  3 15:40:23 1999  Catherine Moore  <clm@cygnus.com>
 
-        * defaults.h (ASM_OUTPUT_ALTERNATE_LABEL_NAME): Provide default.
-        * emit-rtl.c (gen_label_rtx): Support LABEL_ALTERNATE_NAME.
-        * final.c (final_scan_insn): Emit LABEL_ALTERNATE_NAME.
-        * ggc-common.c (ggc_mark_rtx_children): Mark LABEL_ALTERNATE_NAME.
-        * jump.c (delete_unreferenced_labels): Don't delete if
-        LABEL_ALTERNATE_NAME is set.
-        * print-rtl.c (print_rtx): Dump alternate name.
-        * rtl.def (CODE_LABEL): Change format to "iuuis00s".
-        * rtl.h (LABEL_ALTERNATE_NAME): Define.
-        * rtl.texi (LABEL_ALTERNATE_NAME): Document.
-        * tm.texi (ASM_OUTPUT_ALTERNATE_LABEL_NAME): Document.
+	* defaults.h (ASM_OUTPUT_ALTERNATE_LABEL_NAME): Provide default.
+	* emit-rtl.c (gen_label_rtx): Support LABEL_ALTERNATE_NAME.
+	* final.c (final_scan_insn): Emit LABEL_ALTERNATE_NAME.
+	* ggc-common.c (ggc_mark_rtx_children): Mark LABEL_ALTERNATE_NAME.
+	* jump.c (delete_unreferenced_labels): Don't delete if
+	LABEL_ALTERNATE_NAME is set.
+	* print-rtl.c (print_rtx): Dump alternate name.
+	* rtl.def (CODE_LABEL): Change format to "iuuis00s".
+	* rtl.h (LABEL_ALTERNATE_NAME): Define.
+	* rtl.texi (LABEL_ALTERNATE_NAME): Document.
+	* tm.texi (ASM_OUTPUT_ALTERNATE_LABEL_NAME): Document.
 
 Wed Nov  3 15:39:19 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 

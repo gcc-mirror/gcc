@@ -1106,13 +1106,12 @@ reload (first, global, dumpfile)
      which are only valid during and after reload.  */
   reload_completed = 1;
 
-  /* Make a pass over all the insns and delete all USEs which we
-     inserted only to tag a REG_EQUAL note on them.  Remove all
-     REG_DEAD and REG_UNUSED notes.  Delete all CLOBBER insns and
-     simplify (subreg (reg)) operands.  Also remove all REG_RETVAL and
-     REG_LIBCALL notes since they are no longer useful or accurate.
-     Strip and regenerate REG_INC notes that may have been moved
-     around.  */
+  /* Make a pass over all the insns and delete all USEs which we inserted
+     only to tag a REG_EQUAL note on them.  Remove all REG_DEAD and REG_UNUSED
+     notes.  Delete all CLOBBER insns that don't refer to the return value
+     and simplify (subreg (reg)) operands.  Also remove all REG_RETVAL and
+     REG_LIBCALL notes since they are no longer useful or accurate.  Strip
+     and regenerate REG_INC notes that may have been moved around.  */
 
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (GET_RTX_CLASS (GET_CODE (insn)) == 'i')
@@ -1121,7 +1120,9 @@ reload (first, global, dumpfile)
 
 	if ((GET_CODE (PATTERN (insn)) == USE
 	     && find_reg_note (insn, REG_EQUAL, NULL_RTX))
-	    || GET_CODE (PATTERN (insn)) == CLOBBER)
+	    || (GET_CODE (PATTERN (insn)) == CLOBBER
+		&& (GET_CODE (XEXP (PATTERN (insn), 0)) != REG
+		    || ! REG_FUNCTION_VALUE_P (XEXP (PATTERN (insn), 0)))))
 	  {
 	    PUT_CODE (insn, NOTE);
 	    NOTE_SOURCE_FILE (insn) = 0;

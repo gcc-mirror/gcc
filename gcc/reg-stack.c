@@ -1394,27 +1394,48 @@ subst_stack_regs_pat (insn, regstack, pat)
       {
 	rtx note;
 
-	/* The fix_truncdi_1 pattern wants to be able to allocate it's
-	   own scratch register.  It does this by clobbering an fp reg
-	   so that it is assured of an empty reg-stack register.
-	   If the register is live, kill it now.  Remove the DEAD/UNUSED
-	   note so we don't try to kill it later too.  */
-
 	dest = get_true_reg (&XEXP (pat, 0));
 	if (STACK_REG_P (*dest))
 	  {
 	    note = find_reg_note (insn, REG_DEAD, *dest);
-	    if (note)
-	      emit_pop_insn (insn, regstack, *dest, EMIT_BEFORE);
+
+	    if (pat != PATTERN (insn))
+	      {
+		/* The fix_truncdi_1 pattern wants to be able to allocate
+		   it's own scratch register.  It does this by clobbering
+		   an fp reg so that it is assured of an empty reg-stack
+		   register.  If the register is live, kill it now. 
+		   Remove the DEAD/UNUSED note so we don't try to kill it
+		   later too.  */
+
+		if (note)
+		  emit_pop_insn (insn, regstack, *dest, EMIT_BEFORE);
+		else
+		  {
+		    note = find_reg_note (insn, REG_UNUSED, *dest);
+		    if (!note)
+		      abort ();
+		  }
+		remove_note (insn, note);
+		replace_reg (dest, LAST_STACK_REG);
+	      }
 	    else
 	      {
-		note = find_reg_note (insn, REG_UNUSED, *dest);
-		if (!note)
-		  abort ();
-	      }
+		/* A top-level clobber with no REG_DEAD, and no hard-regnum
+		   indicates an uninitialized value.  Because reload removed
+		   all other clobbers, this must be due to a function 
+		   returning without a value.  Load up a NaN.  */
 
-	    remove_note (insn, note);
-	    replace_reg (dest, LAST_STACK_REG);
+		if (! note
+		    && get_hard_regnum (regstack, *dest) == -1)
+		  {
+		    pat = gen_rtx_SET (VOIDmode,
+				       FP_MODE_REG (REGNO (*dest), SFmode),
+				       nan);
+		    PATTERN (insn) = pat;
+		    move_for_stack_reg (insn, regstack, pat);
+		  }
+	      }
 	  }
 	break;
       }

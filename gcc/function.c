@@ -6150,6 +6150,36 @@ expand_dummy_function_end ()
   current_function = 0;
 }
 
+/* Emit CODE for each register of the return value.  Useful values for
+   code are USE and CLOBBER.  */
+
+void
+diddle_return_value (code)
+     enum rtx_code code;
+{
+  rtx return_reg = DECL_RTL (DECL_RESULT (current_function_decl));
+
+  if (return_reg)
+    {
+      if (GET_CODE (return_reg) == REG
+	  && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
+	emit_insn (gen_rtx_fmt_e (code, VOIDmode, return_reg));
+      else if (GET_CODE (return_reg) == PARALLEL)
+	{
+	  int i;
+
+	  for (i = 0; i < XVECLEN (return_reg, 0); i++)
+	    {
+	      rtx x = XEXP (XVECEXP (return_reg, 0, i), 0);
+
+	      if (GET_CODE (x) == REG
+		  && REGNO (x) < FIRST_PSEUDO_REGISTER)
+		emit_insn (gen_rtx_fmt_e (code, VOIDmode, x));
+	    }
+	}
+    }
+}
+
 /* Generate RTL for the end of the current function.
    FILENAME and LINE are the current position in the source file. 
 
@@ -6332,7 +6362,16 @@ expand_function_end (filename, line, end_bindings)
      structure returning.  */
 
   if (return_label)
-    emit_label (return_label);
+    {
+      /* Before the return label, clobber the return registers so that
+         they are not propogated live to the rest of the function.  This
+	 can only happen with functions that drop through; if there had
+	 been a return statement, there would have either been a return
+	 rtx, or a jump to the return label.  */
+      diddle_return_value (CLOBBER);
+
+      emit_label (return_label);
+    }
 
   /* C++ uses this.  */
   if (end_bindings)
