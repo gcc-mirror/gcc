@@ -1,5 +1,16 @@
 2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
 
+	* Makefile.in: Rename cpp to cpp0, tradcpp to tradcpp0, and
+	xcpp to cpp throughout.
+	(native): Remove unnecessary dependency on cpp.
+
+	* gcc.c (trad_capable_cpp, C specs): Rename cpp to cpp,
+	tradcpp to tradcpp0.
+	(.i spec): Add missing output-file spec to cc1 command line.
+	* objc/lang-specs.h: Rename cpp to cpp0 and/or tradcpp to tradcpp0.
+
+2000-07-31  Zack Weinberg  <zack@wolery.cumb.org>
+
 	* c-decl.c (mesg_implicit_function_declaration): Init to -1.
 	(implicit_decl_warning): New function.
 	(implicitly_declare): Use it.
