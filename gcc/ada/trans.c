@@ -532,14 +532,6 @@ tree_transform (gnat_node)
 	  gnu_result = UI_To_gnu (Corresponding_Integer_Value (gnat_node),
 				  gnu_result_type);
 	  if (TREE_CONSTANT_OVERFLOW (gnu_result)
-#if 0
-	      || (TREE_CODE (TYPE_MIN_VALUE (gnu_result_type)) == INTEGER_CST
-		  && tree_int_cst_lt (gnu_result,
-				      TYPE_MIN_VALUE (gnu_result_type)))
-	      || (TREE_CODE (TYPE_MAX_VALUE (gnu_result_type)) == INTEGER_CST
-		  && tree_int_cst_lt (TYPE_MAX_VALUE (gnu_result_type),
-				      gnu_result))
-#endif
 	      )
 	    gigi_abort (305);
 	}

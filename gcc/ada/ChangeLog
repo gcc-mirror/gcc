@@ -1,3 +1,7 @@
+2003-06-10  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* init.c, misc.c, trans.c, utils.c: Remove dead code.
+
 2003-06-09  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* Makefile.in: Replace "host_canonical" with "host" for autoconf

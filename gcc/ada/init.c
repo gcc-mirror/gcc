@@ -1623,16 +1623,6 @@ __gnat_initialize ()
 
   __gnat_init_float ();
 
-#ifdef __mips_vxworks
-#if 0
-  /* For now remove this handler, since it is causing interferences with gdb */
-
-  /* Connect the overflow trap directly to the __gnat_int_handler routine
-   as it is not converted to a signal by VxWorks. */
-
-  intConnect (INUM_TO_IVEC (IV_TRAP_VEC), &__gnat_int_handler, IV_TRAP_VEC);
-#endif
-#endif
 }
 
 /***************************************/
