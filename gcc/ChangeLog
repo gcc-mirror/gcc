@@ -1,3 +1,7 @@
+2005-04-06  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (LIBGCC2_CFLAGS): Compile with -pipe.
+
 2005-04-06  Ben Elliston  <bje@au.ibm.com>
 
 	* gcc.c: Correct comment about DEFAULT_SWITCH_TAKES_ARG and
