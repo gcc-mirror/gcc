@@ -1,5 +1,10 @@
 2001-07-18  Andreas Jaeger  <aj@suse.de>
 
+	* g++.dg/vtgc1.C: Revert patch from 2001-04-26 since vtable-gc is
+	supported again.
+
+2001-07-18  Andreas Jaeger  <aj@suse.de>
+
 	* gcc.dg/iftrap-1.c: Fix target line.
 
 2001-07-17  Richard Henderson  <rth@redhat.com>
