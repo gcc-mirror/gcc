@@ -142,7 +142,7 @@ i77 f77 u77: g2c.h
 $(LIBG2C): s-libi77 s-libf77 s-libu77 s-libe77
 	$(LIBTOOL) --mode=link $(CC) -o $@ \
 	  -version-info $(VERSION_MAJOR):$(VERSION_MINOR):$(VERSION_SUB) \
-	  -rpath $(libsubdir)/$(MULTISUBDIR) \
+	  -rpath $(libdir)$(MULTISUBDIR) \
 	  -objectlist s-libe77 \
 	  -objectlist s-libf77 \
 	  -objectlist s-libi77 \
@@ -204,7 +204,7 @@ check:
 	cd libU77; $(MAKE) G77DIR=../../../gcc/ check
 
 install: all
-	$(LIBTOOL) --mode=install $(INSTALL_DATA) $(LIBG2C) $(libsubdir)/$(MULTISUBDIR)
+	$(LIBTOOL) --mode=install $(INSTALL) $(LIBG2C) $(libdir)$(MULTISUBDIR)
 	$(INSTALL_DATA) libfrtbegin.a $(libsubdir)/$(MULTISUBDIR)
 	$(RANLIB) $(libsubdir)/$(MULTISUBDIR)/libfrtbegin.a
 	$(INSTALL_DATA) g2c.h $(libsubdir)/include/g2c.h
@@ -224,7 +224,7 @@ install-strip:
 	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
 
 uninstall:
-	rm -f $(libsubdir)/$(MULTISUBDIR)/include/g2c.h $(libsubdir)/$(MULTISUBDIR)/$(LIBG2C_BASE).*
+	rm -f $(libsubdir)/$(MULTISUBDIR)/include/g2c.h $(libdir)$(MULTISUBDIR)/$(LIBG2C_BASE).*
 	rm -f $(prefix)/lib/$(LIBG2C_BASE).so*
 	$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO="$@"
 
