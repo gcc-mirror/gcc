@@ -195,7 +195,7 @@ public class XMLFormatter
     long            millis = record.getMillis();
     Object[]        params = record.getParameters();
     ResourceBundle  bundle = record.getResourceBundle();
-    String          key, message;
+    String          message;
     
     buf.append("<record>");
     buf.append(lineSep);

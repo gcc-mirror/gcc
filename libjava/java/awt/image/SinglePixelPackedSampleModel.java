@@ -47,7 +47,7 @@ public class SinglePixelPackedSampleModel extends SampleModel
   private int scanlineStride;
   private int[] bitMasks;
   private int[] bitOffsets;
-  private int[] sampleSize;;
+  private int[] sampleSize;
   
   public SinglePixelPackedSampleModel(int dataType, int w, int h,
 				      int[] bitMasks)
