@@ -444,7 +444,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 #define MAYBE_BOUNDED_POINTER_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == POINTER_TYPE || BOUNDED_POINTER_TYPE_P (TYPE))
 
-/* Nonzero if TYPE represents a reference type, either bounded or unbounded.  */
+/* Nonzero if TYPE represents a reference type, either bounded or
+   unbounded.  */
 
 #define MAYBE_BOUNDED_REFERENCE_TYPE_P(TYPE) \
   (TREE_CODE (TYPE) == REFERENCE_TYPE || BOUNDED_REFERENCE_TYPE_P (TYPE))
@@ -457,11 +458,11 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 
 /* Nonzero if this type is complete or is cv void.  */
 #define COMPLETE_OR_VOID_TYPE_P(NODE) \
-    (COMPLETE_TYPE_P (NODE) || VOID_TYPE_P (NODE))
+  (COMPLETE_TYPE_P (NODE) || VOID_TYPE_P (NODE))
 
 /* Nonzero if this type is complete or is an array with unspecified bound.  */
 #define COMPLETE_OR_UNBOUND_ARRAY_TYPE_P(NODE) \
-    (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : NODE))
+  (COMPLETE_TYPE_P (TREE_CODE (NODE) == ARRAY_TYPE ? TREE_TYPE (NODE) : NODE))
 
 /* Nonzero if TYPE represents a type.  */
 
@@ -506,7 +507,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 
 /* In an IDENTIFIER_NODE, this means that assemble_name was called with
    this string as an argument.  */
-#define TREE_SYMBOL_REFERENCED(NODE) ((NODE)->common.static_flag)
+#define TREE_SYMBOL_REFERENCED(NODE) \
+	(IDENTIFIER_NODE_CHECK (NODE)->common.static_flag)
 
 /* In an INTEGER_CST, REAL_CST, of COMPLEX_CST, this means there was an
    overflow in folding, and no warning has been issued for this subexpression.
@@ -532,7 +534,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    base class is via a `protected' declaration, which preserves
    protected fields from the base class as protected.
    OVERLOADED.  */
-#define TREE_VIA_PROTECTED(NODE) ((NODE)->common.protected_flag)
+#define TREE_VIA_PROTECTED(NODE) \
+  (TREE_LIST_CHECK (NODE)->common.protected_flag)
 
 /* In any expression, nonzero means it has side effects or reevaluation
    of the whole expression could produce a different value.
@@ -561,8 +564,7 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 #define TREE_READONLY(NODE) ((NODE)->common.readonly_flag)
 
 /* Non-zero if NODE is a _DECL with TREE_READONLY set.  */
-#define TREE_READONLY_DECL_P(NODE) \
-  (TREE_READONLY (NODE) && DECL_P (NODE))
+#define TREE_READONLY_DECL_P(NODE) (TREE_READONLY (NODE) && DECL_P (NODE))
 
 /* Value of expression is constant.
    Always appears in all ..._CST nodes.
@@ -575,7 +577,8 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
    The same bit is used in functions as DECL_BUILT_IN_NONANSI.  */
 #define TREE_UNSIGNED(NODE) ((NODE)->common.unsigned_flag)
 
-#define TYPE_TRAP_SIGNED(NODE) (flag_trapv && ! TREE_UNSIGNED (NODE))
+#define TYPE_TRAP_SIGNED(NODE) \
+  (flag_trapv && ! TREE_UNSIGNED (TYPE_CHECK (NODE)))
 
 /* Nonzero in a VAR_DECL means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
@@ -664,17 +667,17 @@ extern void tree_class_check_failed PARAMS ((const tree, int,
 #define TREE_INT_CST_HIGH(NODE) (TREE_INT_CST (NODE).high)
 
 #define INT_CST_LT(A, B)  \
-(TREE_INT_CST_HIGH (A) < TREE_INT_CST_HIGH (B)			\
- || (TREE_INT_CST_HIGH (A) == TREE_INT_CST_HIGH (B)		\
-     && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
+  (TREE_INT_CST_HIGH (A) < TREE_INT_CST_HIGH (B)			\
+   || (TREE_INT_CST_HIGH (A) == TREE_INT_CST_HIGH (B)		\
+       && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
 
 #define INT_CST_LT_UNSIGNED(A, B)  \
-(((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
-  < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
- || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
-      == (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B)) \
-     && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
-
+  (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
+    < (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B))	\
+   || (((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (A)	\
+        == (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (B)) \
+       && TREE_INT_CST_LOW (A) < TREE_INT_CST_LOW (B)))
+ 
 struct tree_int_cst
 {
   struct tree_common common;
@@ -695,10 +698,10 @@ struct tree_int_cst
 
 #define TREE_CST_RTL(NODE) (CST_OR_CONSTRUCTOR_CHECK (NODE)->real_cst.rtl)
 
-/* In a REAL_CST node.  */
-/* We can represent a real value as either a `double' or a string.
-   Strings don't allow for any optimization, but they do allow
-   for cross-compilation.  */
+/* In a REAL_CST node.
+
+   We can represent a real value as either a `double' or an array of
+   longs.  */
 
 #define TREE_REAL_CST(NODE) (REAL_CST_CHECK (NODE)->real_cst.real_cst)
 
@@ -743,17 +746,16 @@ struct tree_complex
 /* Define fields and accessors for some special-purpose tree nodes.  */
 
 #define IDENTIFIER_LENGTH(NODE) \
-	(IDENTIFIER_NODE_CHECK (NODE)->identifier.id.len)
+  (IDENTIFIER_NODE_CHECK (NODE)->identifier.id.len)
 #define IDENTIFIER_POINTER(NODE) \
-	((char *) IDENTIFIER_NODE_CHECK (NODE)->identifier.id.str)
+  ((char *) IDENTIFIER_NODE_CHECK (NODE)->identifier.id.str)
 
 /* Translate a hash table identifier pointer to a tree_identifier
    pointer, and vice versa.  */
 
 #define HT_IDENT_TO_GCC_IDENT(NODE) \
-	((tree) ((char *) (NODE) - sizeof (struct tree_common)))
-#define GCC_IDENT_TO_HT_IDENT(NODE) \
-	(&((struct tree_identifier *) (NODE))->id)
+  ((tree) ((char *) (NODE) - sizeof (struct tree_common)))
+#define GCC_IDENT_TO_HT_IDENT(NODE) (&((struct tree_identifier *) (NODE))->id)
 
 struct tree_identifier
 {
@@ -775,7 +777,8 @@ struct tree_list
 /* In a TREE_VEC node.  */
 #define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->vec.length)
 #define TREE_VEC_ELT(NODE,I) (TREE_VEC_CHECK (NODE)->vec.a[I])
-#define TREE_VEC_END(NODE) ((void) TREE_VEC_CHECK (NODE),&((NODE)->vec.a[(NODE)->vec.length]))
+#define TREE_VEC_END(NODE) \
+  ((void) TREE_VEC_CHECK (NODE), &((NODE)->vec.a[(NODE)->vec.length]))
 
 struct tree_vec
 {
@@ -787,49 +790,58 @@ struct tree_vec
 /* Define fields and accessors for some nodes that represent expressions.  */
 
 /* In a SAVE_EXPR node.  */
-#define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND(NODE, 1)
-#define SAVE_EXPR_RTL(NODE) (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[2])
-#define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (NODE)
+#define SAVE_EXPR_CONTEXT(NODE) TREE_OPERAND(SAVE_EXPR_CHECK (NODE), 1)
+#define SAVE_EXPR_RTL(NODE) (*(rtx *) &SAVE_EXPR_CHECK (NODE)->exp.operands[2])
+#define SAVE_EXPR_NOPLACEHOLDER(NODE) TREE_UNSIGNED (SAVE_EXPR_CHECK (NODE))
 /* Nonzero if the SAVE_EXPRs value should be kept, even if it occurs
    both in normal code and in a handler.  (Normally, in a handler, all
    SAVE_EXPRs are unsaved, meaning that there values are
    recalculated.)  */
-#define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (NODE)
+#define SAVE_EXPR_PERSISTENT_P(NODE) TREE_ASM_WRITTEN (SAVE_EXPR_CHECK (NODE))
 
 /* In a RTL_EXPR node.  */
-#define RTL_EXPR_SEQUENCE(NODE) (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[0])
-#define RTL_EXPR_RTL(NODE) (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[1])
+#define RTL_EXPR_SEQUENCE(NODE) \
+  (*(rtx *) &RTL_EXPR_CHECK (NODE)->exp.operands[0])
+#define RTL_EXPR_RTL(NODE) (*(rtx *) &RTL_EXPR_CHECK (NODE)->exp.operands[1])
 
 /* In a WITH_CLEANUP_EXPR node.  */
 #define WITH_CLEANUP_EXPR_RTL(NODE) \
-  (*(rtx *) &EXPR_CHECK (NODE)->exp.operands[2])
+  (*(rtx *) &WITH_CLEANUP_EXPR_CHECK (NODE)->exp.operands[2])
 
 /* In a CONSTRUCTOR node.  */
-#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (NODE, 1)
+#define CONSTRUCTOR_ELTS(NODE) TREE_OPERAND (CONSTRUCTOR_CHECK (NODE), 1)
 
 /* In ordinary expression nodes.  */
 #define TREE_OPERAND(NODE, I) (EXPR_CHECK (NODE)->exp.operands[I])
 #define TREE_COMPLEXITY(NODE) (EXPR_CHECK (NODE)->exp.complexity)
 
 /* In a LABELED_BLOCK_EXPR node.  */
-#define LABELED_BLOCK_LABEL(NODE) TREE_OPERAND (NODE, 0)
-#define LABELED_BLOCK_BODY(NODE) TREE_OPERAND (NODE, 1)
+#define LABELED_BLOCK_LABEL(NODE) \
+  TREE_OPERAND (LABELED_BLOCK_EXPR_CHECK (NODE), 0)
+#define LABELED_BLOCK_BODY(NODE) \
+  TREE_OPERAND (LABELED_BLOCK_EXPR_CHECK (NODE), 1)
 
 /* In a EXIT_BLOCK_EXPR node.  */
-#define EXIT_BLOCK_LABELED_BLOCK(NODE) TREE_OPERAND (NODE, 0)
-#define EXIT_BLOCK_RETURN(NODE) TREE_OPERAND (NODE, 1)
+#define EXIT_BLOCK_LABELED_BLOCK(NODE) \
+  TREE_OPERAND (EXIT_BLOCK_EXPR_CHECK (NODE), 0)
+#define EXIT_BLOCK_RETURN(NODE) TREE_OPERAND (EXIT_BLOCK_EXPR_CHECK (NODE), 1)
 
 /* In a LOOP_EXPR node.  */
-#define LOOP_EXPR_BODY(NODE) TREE_OPERAND (NODE, 0)
+#define LOOP_EXPR_BODY(NODE) TREE_OPERAND (LOOP_EXPR_CHECK (NODE), 0)
 
 /* In a EXPR_WITH_FILE_LOCATION node.  */
-#define EXPR_WFL_NODE(NODE) TREE_OPERAND((NODE), 0)
+#define EXPR_WFL_NODE(NODE) \
+  TREE_OPERAND (EXPR_WITH_FILE_LOCATION_CHECK (NODE), 0)
+#define EXPR_WFL_FILENAME_NODE(NODE) \
+  TREE_OPERAND(EXPR_WITH_FILE_LOCATION_CHECK (NODE), 1)
 #define EXPR_WFL_FILENAME(NODE) \
-  (IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE ((NODE))))
-#define EXPR_WFL_FILENAME_NODE(NODE) TREE_OPERAND((NODE), 1)
-#define EXPR_WFL_LINENO(NODE) (EXPR_CHECK (NODE)->exp.complexity >> 12)
-#define EXPR_WFL_COLNO(NODE) (EXPR_CHECK (NODE)->exp.complexity & 0xfff)
-#define EXPR_WFL_LINECOL(NODE) (EXPR_CHECK (NODE)->exp.complexity)
+  IDENTIFIER_POINTER (EXPR_WFL_FILENAME_NODE ((NODE)))
+#define EXPR_WFL_LINENO(NODE) \
+  (EXPR_WITH_FILE_LOCATION_CHECK (NODE)->exp.complexity >> 12)
+#define EXPR_WFL_COLNO(NODE) \
+  (EXPR_WITH_FILE_LOCATION_CHECK (NODE)->exp.complexity & 0xfff)
+#define EXPR_WFL_LINECOL(NODE) \
+  EXPR_WITH_FILE_LOCATION_CHECK (NODE)->exp.complexity
 #define EXPR_WFL_SET_LINECOL(NODE, LINE, COL) \
   (EXPR_WFL_LINECOL(NODE) = ((LINE) << 12) | ((COL) & 0xfff))
 #define EXPR_WFL_EMIT_LINE_NOTE(NODE) ((NODE)->common.public_flag)
@@ -853,7 +865,8 @@ struct tree_exp
 
 /* Nonzero means that this block is prepared to handle exceptions
    listed in the BLOCK_VARS slot.  */
-#define BLOCK_HANDLER_BLOCK(NODE) (BLOCK_CHECK (NODE)->block.handler_block_flag)
+#define BLOCK_HANDLER_BLOCK(NODE) \
+  (BLOCK_CHECK (NODE)->block.handler_block_flag)
 
 /* An index number for this block.  These values are not guaranteed to
    be unique across functions -- whether or not they are depends on
@@ -882,10 +895,8 @@ struct tree_exp
    be null.  The list of fragments will be chained through 
    BLOCK_FRAGMENT_CHAIN from the origin.  */
 
-#define BLOCK_FRAGMENT_ORIGIN(NODE) \
-  (BLOCK_CHECK (NODE)->block.fragment_origin)
-#define BLOCK_FRAGMENT_CHAIN(NODE) \
-  (BLOCK_CHECK (NODE)->block.fragment_chain)
+#define BLOCK_FRAGMENT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.fragment_origin)
+#define BLOCK_FRAGMENT_CHAIN(NODE) (BLOCK_CHECK (NODE)->block.fragment_chain)
 
 struct tree_block
 {
@@ -972,8 +983,7 @@ struct tree_block
 
 /* Nonzero iff the typed-based alias set for this type has been
    calculated.  */
-#define TYPE_ALIAS_SET_KNOWN_P(NODE) \
-  (TYPE_CHECK (NODE)->type.alias_set != -1)
+#define TYPE_ALIAS_SET_KNOWN_P(NODE) (TYPE_CHECK (NODE)->type.alias_set != -1)
 
 /* A TREE_LIST of IDENTIFIER nodes of the attributes that apply
    to this type.  */
@@ -988,8 +998,7 @@ struct tree_block
 #define TYPE_USER_ALIGN(NODE) (TYPE_CHECK (NODE)->type.user_align)
 
 /* The alignment for NODE, in bytes.  */
-#define TYPE_ALIGN_UNIT(NODE) \
-  (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
+#define TYPE_ALIGN_UNIT(NODE) (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
 
 /* If your language allows you to declare types, and you want debug info
    for them, then you need to generate corresponding TYPE_DECL nodes.
@@ -998,7 +1007,7 @@ struct tree_block
    to point back at the TYPE_DECL node.  This allows the debug routines
    to know that the two nodes represent the same type, so that we only
    get one debug info record for them.  */
-#define TYPE_STUB_DECL(NODE) (TREE_CHAIN (NODE))
+#define TYPE_STUB_DECL(NODE) TREE_CHAIN (NODE)
 
 /* In a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE, it means the type
    has BLKmode only because it lacks the alignment requirement for
@@ -1079,11 +1088,14 @@ struct tree_block
 #define TYPE_STRING_FLAG(NODE) (TYPE_CHECK (NODE)->type.string_flag)
 
 /* If non-NULL, this is an upper bound of the size (in bytes) of an
-   object of the given ARRAY_TYPE.  This allows temporaries to be allocated.  */
-#define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) TYPE_MAX_VALUE (ARRAY_TYPE)
+   object of the given ARRAY_TYPE.  This allows temporaries to be
+   allocated.  */
+#define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) \
+  TYPE_MAX_VALUE (ARRAY_TYPE_CHECK (ARRAY_TYPE))
 
 /* For a VECTOR_TYPE, this is the number of sub-parts of the vector.  */
-#define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) (GET_MODE_NUNITS (TYPE_CHECK (VECTOR_TYPE)->type.mode))
+#define TYPE_VECTOR_SUBPARTS(VECTOR_TYPE) \
+  GET_MODE_NUNITS (VECTOR_TYPE_CHECK (VECTOR_TYPE)->type.mode)
 
   /* Indicates that objects of this type must be initialized by calling a
    function when they are created.  */
@@ -1269,7 +1281,8 @@ struct tree_type
 
 /* Accessor macro to get to the Nth basetype of this basetype.  */
 #define BINFO_BASETYPE(NODE,N) TREE_VEC_ELT (BINFO_BASETYPES (NODE), (N))
-#define TYPE_BINFO_BASETYPE(NODE,N) BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (NODE)), (N)))
+#define TYPE_BINFO_BASETYPE(NODE,N) \
+  BINFO_TYPE (TREE_VEC_ELT (BINFO_BASETYPES (TYPE_BINFO (NODE)), (N)))
 
 /* For a BINFO record describing a virtual base class, i.e., one where
    TREE_VIA_VIRTUAL is set, this field assists in locating the virtual
@@ -1278,12 +1291,12 @@ struct tree_type
    pointer to the virtual base; under the new ABI this field is
    instead a INTEGER_CST giving an offset into the vtable where the
    offset to the virtual base can be found.  */
-#define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT ((NODE), 5)
+#define BINFO_VPTR_FIELD(NODE) TREE_VEC_ELT (NODE, 5)
 
 /* The size of a base class subobject of this type.  Not all frontends
    currently allocate the space for these fields.  */
-#define BINFO_SIZE(NODE) TREE_VEC_ELT ((NODE), 6)
-#define BINFO_SIZE_UNIT(NODE) TREE_VEC_ELT ((NODE), 7)
+#define BINFO_SIZE(NODE) TREE_VEC_ELT (NODE, 6)
+#define BINFO_SIZE_UNIT(NODE) TREE_VEC_ELT (NODE, 7)
 #define TYPE_BINFO_SIZE(NODE) BINFO_SIZE (TYPE_BINFO (NODE))
 #define TYPE_BINFO_SIZE_UNIT(NODE) BINFO_SIZE_UNIT (TYPE_BINFO (NODE))
 
@@ -1304,9 +1317,11 @@ struct tree_type
 
 /* Nonzero if DECL represents a decl.  */
 #define DECL_P(DECL)	(TREE_CODE_CLASS (TREE_CODE (DECL)) == 'd')
+
 /* This is the name of the object as written by the user.
    It is an IDENTIFIER_NODE.  */
 #define DECL_NAME(NODE) (DECL_CHECK (NODE)->decl.name)
+
 /* The name of the object as the assembler will see it (but before any
    translations made by ASM_OUTPUT_LABELREF).  Often this is the same
    as DECL_NAME.  It is an IDENTIFIER_NODE.  */
@@ -1315,23 +1330,26 @@ struct tree_type
     ? (void) 0					\
     : (*lang_set_decl_assembler_name) (NODE)),	\
    DECL_CHECK (NODE)->decl.assembler_name)
-/* Returns non-zero if the DECL_ASSEMBLER_NAME for NODE has been 
-   set.  If zero, the NODE might still have a DECL_ASSEMBLER_NAME --
-   it just hasn't been set yet.  */
+
+/* Returns non-zero if the DECL_ASSEMBLER_NAME for NODE has been set.  If zero,
+   the NODE might still have a DECL_ASSEMBLER_NAME -- it just hasn't been set
+   yet.  */
 #define DECL_ASSEMBLER_NAME_SET_P(NODE) \
   (DECL_CHECK (NODE)->decl.assembler_name != NULL_TREE)
+
 /* Set the DECL_ASSEMBLER_NAME for NODE to NAME.  */
 #define SET_DECL_ASSEMBLER_NAME(NODE, NAME) \
   (DECL_CHECK (NODE)->decl.assembler_name = (NAME))
-/* Copy the DECL_ASSEMBLER_NAME from DECL1 to DECL2.  Note that if
-   DECL1's DECL_ASSEMBLER_NAME has not yet been set, using this macro
-   will not cause the DECL_ASSEMBLER_NAME of either DECL to be set.
-   In other words, the semantics of using this macro, are different
-   than saying:
+
+/* Copy the DECL_ASSEMBLER_NAME from DECL1 to DECL2.  Note that if DECL1's
+   DECL_ASSEMBLER_NAME has not yet been set, using this macro will not cause
+   the DECL_ASSEMBLER_NAME of either DECL to be set.  In other words, the
+   semantics of using this macro, are different than saying:
      
      SET_DECL_ASSEMBLER_NAME(DECL2, DECL_ASSEMBLER_NAME (DECL1))
 
    which will try to set the DECL_ASSEMBLER_NAME for DECL1.  */
+
 #define COPY_DECL_ASSEMBLER_NAME(DECL1, DECL2)				\
   (DECL_ASSEMBLER_NAME_SET_P (DECL1)					\
    ? (void) SET_DECL_ASSEMBLER_NAME (DECL2, 				\
@@ -1341,6 +1359,7 @@ struct tree_type
 /* Records the section name in a section attribute.  Used to pass
    the name from decl_attributes to make_function_rtl and make_decl_rtl.  */
 #define DECL_SECTION_NAME(NODE) (DECL_CHECK (NODE)->decl.section_name)
+
 /*  For FIELD_DECLs, this is the
     RECORD_TYPE, UNION_TYPE, or QUAL_UNION_TYPE node that the field is
     a member of.  For VAR_DECL, PARM_DECL, FUNCTION_DECL, LABEL_DECL,
@@ -1361,9 +1380,9 @@ struct tree_type
    if so, the type that was originally specified for it.
    TREE_TYPE may have been modified (in finish_struct).  */
 #define DECL_BIT_FIELD_TYPE(NODE) (FIELD_DECL_CHECK (NODE)->decl.result)
-/* In FUNCTION_DECL, a chain of ..._DECL nodes.  */
-/* VAR_DECL and PARM_DECL reserve the arguments slot
-   for language-specific uses.  */
+/* In FUNCTION_DECL, a chain of ..._DECL nodes.
+   VAR_DECL and PARM_DECL reserve the arguments slot for language-specific
+   uses.  */
 #define DECL_ARGUMENTS(NODE) (DECL_CHECK (NODE)->decl.arguments)
 /* This field is used to reference anything in decl.result and is meant only
    for use by the garbage collector.  */
@@ -1430,26 +1449,27 @@ struct tree_type
    ? (NODE)->decl.rtl					\
    : (make_decl_rtl (NODE, NULL), (NODE)->decl.rtl))
 /* Set the DECL_RTL for NODE to RTL.  */
-#define SET_DECL_RTL(NODE, RTL) \
-  (DECL_CHECK (NODE)->decl.rtl = (RTL))
+#define SET_DECL_RTL(NODE, RTL) (DECL_CHECK (NODE)->decl.rtl = (RTL))
 /* Returns non-zero if the DECL_RTL for NODE has already been set.  */
-#define DECL_RTL_SET_P(NODE) \
-  (DECL_CHECK (NODE)->decl.rtl != NULL)
+#define DECL_RTL_SET_P(NODE)  (DECL_CHECK (NODE)->decl.rtl != NULL)
 /* Copy the RTL from NODE1 to NODE2.  If the RTL was not set for
    NODE1, it will not be set for NODE2; this is a lazy copy.  */
 #define COPY_DECL_RTL(NODE1, NODE2) \
   (DECL_CHECK (NODE2)->decl.rtl = DECL_CHECK (NODE1)->decl.rtl)
 /* The DECL_RTL for NODE, if it is set, or NULL, if it is not set.  */
-#define DECL_RTL_IF_SET(NODE) \
-  (DECL_RTL_SET_P (NODE) ? DECL_RTL (NODE) : NULL)
+#define DECL_RTL_IF_SET(NODE) (DECL_RTL_SET_P (NODE) ? DECL_RTL (NODE) : NULL)
+
 /* Holds an INSN_LIST of all of the live ranges in which the variable
    has been moved to a possibly different register.  */
 #define DECL_LIVE_RANGE_RTL(NODE) (DECL_CHECK (NODE)->decl.live_range_rtl)
+
 /* For PARM_DECL, holds an RTL for the stack slot or register
    where the data was actually passed.  */
 #define DECL_INCOMING_RTL(NODE) (PARM_DECL_CHECK (NODE)->decl.u2.r)
+
 /* For FUNCTION_DECL, if it is inline, holds the saved insn chain.  */
 #define DECL_SAVED_INSNS(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u2.f)
+
 /* For FUNCTION_DECL, if it is built-in,
    this identifies which built-in operation it is.  */
 #define DECL_FUNCTION_CODE(NODE) (FUNCTION_DECL_CHECK (NODE)->decl.u1.f)
@@ -1462,6 +1482,7 @@ struct tree_type
    to an INTEGER_CST node which is suitable for use as an index
    into the virtual function table.  */
 #define DECL_VINDEX(NODE) (DECL_CHECK (NODE)->decl.vindex)
+
 /* For FIELD_DECLS, DECL_FCONTEXT is the *first* baseclass in
    which this FIELD_DECL is defined.  This information is needed when
    writing debugging information about vfield and vbase decls for C++.  */
@@ -1503,7 +1524,8 @@ struct tree_type
 
 /* Nonzero if a _DECL means that no warnings should be generated just
    because this decl is unused.  */
-#define DECL_IN_SYSTEM_HEADER(NODE) (DECL_CHECK (NODE)->decl.in_system_header_flag)
+#define DECL_IN_SYSTEM_HEADER(NODE) \
+  (DECL_CHECK (NODE)->decl.in_system_header_flag)
 
 /* Nonzero for a given ..._DECL node means that this node should be
    put in .common, if possible.  If a DECL_INITIAL is given, and it
@@ -1529,19 +1551,22 @@ struct tree_type
    Instead it will generate cross reference ('x') of names. 
    This uses the same flag as DECL_EXTERNAL.  */
 #define TYPE_DECL_SUPPRESS_DEBUG(NODE) \
-(TYPE_DECL_CHECK (NODE)->decl.external_flag)
+  (TYPE_DECL_CHECK (NODE)->decl.external_flag)
 
 /* In VAR_DECL and PARM_DECL nodes, nonzero means declared `register'.  */
 #define DECL_REGISTER(NODE) (DECL_CHECK (NODE)->decl.regdecl_flag)
+
 /* In LABEL_DECL nodes, nonzero means that an error message about
    jumping into such a binding contour has been printed for this label.  */
 #define DECL_ERROR_ISSUED(NODE) (LABEL_DECL_CHECK (NODE)->decl.regdecl_flag)
+
 /* In a FIELD_DECL, indicates this field should be bit-packed.  */
 #define DECL_PACKED(NODE) (FIELD_DECL_CHECK (NODE)->decl.regdecl_flag)
+
 /* In a FUNCTION_DECL with a non-zero DECL_CONTEXT, indicates that a
    static chain is not needed.  */
 #define DECL_NO_STATIC_CHAIN(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->decl.regdecl_flag)
+  (FUNCTION_DECL_CHECK (NODE)->decl.regdecl_flag)
 
 /* Nonzero in a ..._DECL means this variable is ref'd from a nested function.
    For VAR_DECL nodes, PARM_DECL nodes, and FUNCTION_DECL nodes.
@@ -1571,7 +1596,7 @@ struct tree_type
    that is not specified by ansi C and that users are supposed to be allowed
    to redefine for any purpose whatever.  */
 #define DECL_BUILT_IN_NONANSI(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->common.unsigned_flag)
+  (FUNCTION_DECL_CHECK (NODE)->common.unsigned_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
    as if it were a malloc, meaning it returns a pointer that is
@@ -1585,6 +1610,7 @@ struct tree_type
 /* Nonzero in a FIELD_DECL means it is a bit field, and must be accessed
    specially.  */
 #define DECL_BIT_FIELD(NODE) (FIELD_DECL_CHECK (NODE)->decl.bit_field_flag)
+
 /* In a LABEL_DECL, nonzero means label was defined inside a binding
    contour that restored a stack level and which is now exited.  */
 #define DECL_TOO_LATE(NODE) (LABEL_DECL_CHECK (NODE)->decl.bit_field_flag)
@@ -1597,9 +1623,10 @@ struct tree_type
 
 /* In a FUNCTION_DECL, nonzero means a built in function.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
+
 /* For a builtin function, identify which part of the compiler defined it.  */
 #define DECL_BUILT_IN_CLASS(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->decl.built_in_class)
+   (FUNCTION_DECL_CHECK (NODE)->decl.built_in_class)
 
 /* Used in VAR_DECLs to indicate that the variable is a vtable.
    Used in FIELD_DECLs for vtable pointers.
@@ -1614,12 +1641,12 @@ struct tree_type
    argument should be passed in the same way that the first union
    alternative would be passed.  */
 #define DECL_TRANSPARENT_UNION(NODE) \
-(PARM_DECL_CHECK (NODE)->decl.transparent_union)
+  (PARM_DECL_CHECK (NODE)->decl.transparent_union)
 
 /* Used in FUNCTION_DECLs to indicate that they should be run automatically
    at the beginning or end of execution.  */
 #define DECL_STATIC_CONSTRUCTOR(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->decl.static_ctor_flag)
+  (FUNCTION_DECL_CHECK (NODE)->decl.static_ctor_flag)
 
 #define DECL_STATIC_DESTRUCTOR(NODE) \
 (FUNCTION_DECL_CHECK (NODE)->decl.static_dtor_flag)
@@ -1648,17 +1675,17 @@ struct tree_type
 /* Used in FUNCTION_DECLs to indicate that function entry and exit should
    be instrumented with calls to support routines.  */
 #define DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->decl.no_instrument_function_entry_exit)
+  (FUNCTION_DECL_CHECK (NODE)->decl.no_instrument_function_entry_exit)
 
 /* Used in FUNCTION_DECLs to indicate that check-memory-usage should be
    disabled in this function.  */
 #define DECL_NO_CHECK_MEMORY_USAGE(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->decl.no_check_memory_usage)
+  (FUNCTION_DECL_CHECK (NODE)->decl.no_check_memory_usage)
 
 /* Used in FUNCTION_DECLs to indicate that limit-stack-* should be
    disabled in this function.  */
 #define DECL_NO_LIMIT_STACK(NODE) \
-(FUNCTION_DECL_CHECK (NODE)->decl.no_limit_stack)
+  (FUNCTION_DECL_CHECK (NODE)->decl.no_limit_stack)
 
 /* Additional flags for language-specific uses.  */
 #define DECL_LANG_FLAG_0(NODE) (DECL_CHECK (NODE)->decl.lang_flag_0)
