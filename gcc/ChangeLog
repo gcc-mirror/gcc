@@ -1,3 +1,10 @@
+2003-12-01  Zack Weinberg  <zack@codesourcery.com>
+
+	PR 12505
+	* configure.in: Check for system-provided 'uchar' type.
+	* configure, config.in: Regenerate.
+	* cpphash.h: Only typedef 'uchar' if the system doesn't.
+
 2003-12-01  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* unroll.c (find_splittable_givs): Add missing extend_value_for_giv.
@@ -297,7 +304,7 @@
 	* config/i386/emmintrin.h: Here. New file.
 
 2003-11-04  H.J. Lu  <hongjiu.lu@intel.com>
- 
+
 	Backport from 3.4-branch
 	2003-04-25  H.J. Lu   <hjl@gnu.org>
 
@@ -395,7 +402,7 @@
 2003-10-14  Jason Merrill  <jason@redhat.com>
 
 	PR c/11885
-	* stor-layout.c (update_alignment_for_field): Packed non-bit-fields 
+	* stor-layout.c (update_alignment_for_field): Packed non-bit-fields
 	get byte alignment.
 
 2003-10-14  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
@@ -403,7 +410,7 @@
 	* fixinc/inclhack.def (alpha_pthread_gcc): New fix.
 	* fixinc/fixincl.x: Regenerate.
 	* fixinc/tests/base/pthread.h [ALPHA_PTHREAD_GCC_CHECK]: New
-	testcase. 
+	testcase.
 	Fixes PR bootstrap/9330.
 
 2003-10-14  Steven Bosscher  <steven@gcc.gnu.org>
@@ -451,7 +458,7 @@
 	Fixes PR libf2c/12263.
 
 2003-10-08  Timo Kokkonen  <tjko@iki.fi>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	PR bootstrap/12490
 	* scan-decls.c (MAX_EXTERN_C_BRACES): New preprocessor constant
@@ -551,7 +558,7 @@
 2003-10-01  Nick Clifton  <nickc@redhat.com>
 
 	* Import this patch from mainline:
-	
+
 	2003-02-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* collect2.c (pexecute_pid): Rename to pid.
@@ -657,7 +664,7 @@
 
 	* config/alpha/alpha.c (alpha_expand_mov): Do gen_movdi_er_maybe_g
 	always during initial code generation.
-	* config/alpha/alpha.md (movdi_er_maybe_g): Don't conditionalize 
+	* config/alpha/alpha.md (movdi_er_maybe_g): Don't conditionalize
 	on flag_inline_functions.
 
 2003-09-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
@@ -718,7 +725,7 @@
 	* configure: Regenerate.
 	* config.in: Li{ewise.
 	* config/i386/i386.c: Rename CMOV_SUN_AS_SYNTAX to
-	HAVE_AS_IX86_CMOV_SUN_SYNTAX. 
+	HAVE_AS_IX86_CMOV_SUN_SYNTAX.
 	* config/i386/sol2.h (CMOV_SUN_AS_SYNTAX): Remove.
 	Fixes PR target/12101.
 
@@ -755,7 +762,7 @@ Sun Sep  7 14:53:36 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	Backport from mainline:
 
 	2003-07-10  Denis Chertykov  <denisc@overta.ru>
-	            Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+		    Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* combine.c (gen_binary): Handle the CLOBBER rtx and
 	don't build a binary operation with it.
@@ -808,7 +815,7 @@ Sat Sep  6 23:16:35 CEST 2003  Jan Hubicka  <jh@suse.cz>
 	(m32r_block_small_immediate_operand): New predicate.
 	* m32r.md (movstrsi_small_internal): New pattern.
 	* m32r.h (PREDICATE_CODES): Add m32r_block_small_immediate_operand.
-	* m32r-protos.h: Add prototype for m32r_block_small_immediate_operand.	
+	* m32r-protos.h: Add prototype for m32r_block_small_immediate_operand.
 
 2003-08-25  Richard Henderson  <rth@redhat.com>
 

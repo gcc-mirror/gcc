@@ -817,6 +817,19 @@ if test $gcc_cv_type_clock_t = yes; then
   [Define if <time.h> defines clock_t.])
 fi
 
+AC_CACHE_CHECK(for uchar, gcc_cv_type_uchar,
+[AC_TRY_COMPILE([
+#include "ansidecl.h"
+#include "system.h"
+], 
+[if ((uchar *)0) return 0;
+ if (sizeof(uchar)) return 0;],
+ac_cv_type_uchar=yes, ac_cv_type_uchar=no)])
+if test $ac_cv_type_uchar = yes; then
+  AC_DEFINE(HAVE_UCHAR, 1,
+  [Define if <sys/types.h> provides uchar.])
+fi
+
 AC_ARG_ENABLE(initfini-array,
 	[  --enable-initfini-array	use .init_array/.fini_array sections],
 	gcc_cv_initfinit_array=$enableval, [gcc_AC_INITFINI_ARRAY])
