@@ -1,3 +1,9 @@
+2003-04-15  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* unwind.inc (_Unwind_Backtrace): New function.
+	* unwind.h (_Unwind_Backtrace): Declare it.
+	* libgcc-std.ver (_Unwind_Backtrace): Export it.
+
 2003-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR middle-end/10336, c++/10401

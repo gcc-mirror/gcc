@@ -239,3 +239,39 @@ _Unwind_DeleteException (struct _Unwind_Exception *exc)
 {
   (*exc->exception_cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exc);
 }
+
+
+/* Perform stack backtrace through unwind data.  */
+
+_Unwind_Reason_Code
+_Unwind_Backtrace(_Unwind_Trace_Fn trace, void * trace_argument)
+{
+  struct _Unwind_Context context;
+  _Unwind_Reason_Code code;
+
+  uw_init_context (&context);
+
+  while (1)
+    {
+      _Unwind_FrameState fs;
+
+      /* Set up fs to describe the FDE for the caller of context.  */
+      code = uw_frame_state_for (&context, &fs);
+      if (code != _URC_NO_REASON && code != _URC_END_OF_STACK)
+	return _URC_FATAL_PHASE1_ERROR;
+
+      /* Call trace function.  */
+      if ((*trace) (&context, trace_argument) != _URC_NO_REASON)
+	return _URC_FATAL_PHASE1_ERROR;
+
+      /* We're done at end of stack.  */	
+      if (code == _URC_END_OF_STACK)
+	break;
+
+      /* Update context to describe the same frame as fs.  */
+      uw_update_context (&context, &fs);
+    }
+
+  return code;
+}
+

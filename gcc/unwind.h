@@ -127,6 +127,14 @@ extern void _Unwind_DeleteException (struct _Unwind_Exception *);
    e.g. executing cleanup code, and not to implement rethrowing.  */
 extern void _Unwind_Resume (struct _Unwind_Exception *);
 
+/* @@@ Use unwind data to perform a stack backtrace.  The trace callback
+   is called for every stack frame in the call chain, but no cleanup
+   actions are performed.  */
+typedef _Unwind_Reason_Code (*_Unwind_Trace_Fn)
+     (struct _Unwind_Context *, void *);
+
+extern _Unwind_Reason_Code _Unwind_Backtrace (_Unwind_Trace_Fn, void *);
+
 /* These functions are used for communicating information about the unwind
    context (i.e. the unwind descriptors and the user register state) between
    the unwind library and the personality routine and landing pad.  Only
