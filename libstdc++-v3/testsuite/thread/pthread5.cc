@@ -95,7 +95,7 @@ main (int argc, char *argv[])
   int ids[NTHREADS];
   void* status;
 
-#if defined(__sun) && defined(__svr4__)
+#if defined(__sun) && defined(__svr4__) && _XOPEN_VERSION >= 500
   pthread_setconcurrency (NTHREADS);
 #endif
 

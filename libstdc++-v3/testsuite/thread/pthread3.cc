@@ -47,7 +47,7 @@ main()
 {
   pthread_t tid[max_thread_count];
 
-#if defined(__sun) && defined(__svr4__)
+#if defined(__sun) && defined(__svr4__) && _XOPEN_VERSION >= 500
   pthread_setconcurrency (max_thread_count);
 #endif
 

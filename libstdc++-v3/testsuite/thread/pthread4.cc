@@ -93,7 +93,7 @@ consume (void*)
 int
 main (void)
 {
-#if defined(__sun) && defined(__svr4__)
+#if defined(__sun) && defined(__svr4__) && _XOPEN_VERSION >= 500
   pthread_setconcurrency (2);
 #endif
 
