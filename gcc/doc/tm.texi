@@ -1385,6 +1385,46 @@ towards @minus{}infinity and towards +infinity.
 
 The default definition of this macro is true if @var{mode} is
 a floating-point mode and the target format is IEEE@.
+
+@findex ROUND_TOWARDS_ZERO
+@item ROUND_TOWARDS_ZERO
+If defined, this macro should be true if the prevailing rounding
+mode is towards zero.  A true value has the following effects:
+
+@itemize @bullet
+@item
+@code{MODE_HAS_SIGN_DEPENDENT_ROUNDING} will be false for all modes.
+
+@item
+@file{libgcc.a}'s floating-point emulator will round towards zero
+rather than towards nearest.
+
+@item
+The compiler's floating-point emulator will round towards zero after
+doing arithmetic, and when converting from the internal float format to
+the target format.
+@end itemize
+
+The macro does not affect the parsing of string literals.  When the
+primary rounding mode is towards zero, library functions like
+@code{strtod} might still round towards nearest, and the compiler's
+parser should behave like the target's @code{strtod} where possible.
+
+Not defining this macro is equivalent to returning zero.
+
+@findex LARGEST_EXPONENT_IS_NORMAL
+@item LARGEST_EXPONENT_IS_NORMAL (@var{size})
+This macro should only be defined when the target float format is
+described as IEEE@.  It should return true if floats with @var{size}
+bits do not have a NaN or infinity representation, but use the largest
+exponent for normal numbers instead.
+
+Defining this macro to true for @var{size} causes @code{MODE_HAS_NANS}
+and @code{MODE_HAS_INFINITIES} to be false for @var{size}-bit modes.
+It also affects the way @file{libgcc.a} and @file{real.c} emulate
+floating-point arithmetic.
+
+The default definition of this macro returns false for all sizes.
 @end table
 
 @deftypefn {Target Hook} bool TARGET_MS_BITFIELD_LAYOUT_P (tree @var{record_type})
