@@ -30,11 +30,10 @@ proc gcj_jni_compile_c_to_so {file {options {}}} {
 proc gcj_jni_build_header {file} {
   set gcjh [find_gcjh]
   set file [file rootname $file]
-  set options [list "compiler=$gcjh" \
-		 "additional_flags=-jni"]
-  set x [prune_warnings [target_compile $file "" none $options]]
+  set x [string trim [prune_warnings \
+			[lindex [local_exec "$gcjh -jni $file" "" "" 300] 1]]]
   if {$x != ""} {
-    verbose "target_compile failed: $x" 2
+    verbose "local_exec failed: $x" 2
     fail "$file header generation"
     return 0
   }
