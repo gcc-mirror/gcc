@@ -4906,7 +4906,7 @@ fi
   test -n "$AWK" && break
 done
 
-# We need awk to run opts.sh (to create options.c and options.h).
+# We need awk to create options.c and options.h.
 # Bail out if it's missing.
 case ${AWK} in
   "") { { echo "$as_me:$LINENO: error: can't build without awk, bailing out" >&5

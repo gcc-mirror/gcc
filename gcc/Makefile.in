@@ -1511,12 +1511,20 @@ s-specs : Makefile
 	$(SHELL) $(srcdir)/../move-if-change tmp-specs.h specs.h
 	$(STAMP) s-specs
 
-options.c options.h: s-options ; @true
-s-options: $(lang_opt_files) $(srcdir)/opts.sh Makefile
-	AWK=$(AWK) $(SHELL) $(srcdir)/opts.sh \
-               '$(SHELL) $(srcdir)/../move-if-change' \
-               options.c options.h $(lang_opt_files)
+optionlist: s-options ; @true
+s-options: $(lang_opt_files) Makefile $(srcdir)/opt-gather.awk
+	$(AWK) -f $(srcdir)/opt-gather.awk $(lang_opt_files) > tmp-optionlist
+	$(SHELL) $(srcdir)/../move-if-change tmp-optionlist optionlist
 	$(STAMP) s-options
+
+
+options.c: optionlist $(srcdir)/opt-functions.awk $(srcdir)/optc-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/optc-gen.awk \
+	       -v header_name="options.h" < $< > $@ 
+
+options.h: optionlist $(srcdir)/opt-functions.awk $(srcdir)/opth-gen.awk
+	$(AWK) -f $(srcdir)/opt-functions.awk -f $(srcdir)/opth-gen.awk \
+	       < $< > $@
 
 options.o: options.c options.h opts.h intl.h
 
@@ -3010,6 +3018,7 @@ clean: mostlyclean lang.clean
 	-rm -f libgcc.a libgcc_eh.a libgcov.a
 	-rm -f libgcc_s$(SHLIB_EXT) libgcc_s$(SHLIB_EXT).1
 	-rm -f config.h tconfig.h bconfig.h tm_p.h tm.h
+	-rm -f options.c options.h optionlist
 	-rm -f cs-*
 	-rm -rf libgcc
 	-rm -f doc/*.dvi
