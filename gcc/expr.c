@@ -1322,8 +1322,8 @@ emit_block_move_via_libcall (rtx dst, rtx src, rtx size)
 
   /* Now we have to build up the CALL_EXPR itself.  */
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		     call_expr, arg_list, NULL_TREE);
+  call_expr = build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+		      call_expr, arg_list, NULL_TREE);
 
   retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 
@@ -2390,8 +2390,8 @@ clear_storage_via_libcall (rtx object, rtx size)
 
   /* Now we have to build up the CALL_EXPR itself.  */
   call_expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (fn)), fn);
-  call_expr = build (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
-		     call_expr, arg_list, NULL_TREE);
+  call_expr = build3 (CALL_EXPR, TREE_TYPE (TREE_TYPE (fn)),
+		      call_expr, arg_list, NULL_TREE);
 
   retval = expand_expr (call_expr, NULL_RTX, VOIDmode, 0);
 
@@ -4529,8 +4529,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 	      if (BYTES_BIG_ENDIAN)
 		value
-		  = fold (build (LSHIFT_EXPR, type, value,
-				 build_int_2 (BITS_PER_WORD - bitsize, 0)));
+		  = fold (build2 (LSHIFT_EXPR, type, value,
+				  build_int_2 (BITS_PER_WORD - bitsize, 0)));
 	      bitsize = BITS_PER_WORD;
 	      mode = word_mode;
 	    }
@@ -4729,8 +4729,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		  /* Assign value to element index.  */
 		  position
 		    = convert (ssizetype,
-			       fold (build (MINUS_EXPR, TREE_TYPE (index),
-					    index, TYPE_MIN_VALUE (domain))));
+			       fold (build2 (MINUS_EXPR, TREE_TYPE (index),
+					     index, TYPE_MIN_VALUE (domain))));
 		  position = size_binop (MULT_EXPR, position,
 					 convert (ssizetype,
 						  TYPE_SIZE_UNIT (elttype)));
@@ -4746,8 +4746,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 		    store_expr (value, xtarget, 0);
 
 		  /* Generate a conditional jump to exit the loop.  */
-		  exit_cond = build (LT_EXPR, integer_type_node,
-				     index, hi_index);
+		  exit_cond = build2 (LT_EXPR, integer_type_node,
+				      index, hi_index);
 		  jumpif (exit_cond, loop_end);
 
 		  /* Update the loop counter, and jump to the head of
@@ -4772,8 +4772,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 
 	      if (minelt)
 		index = fold_convert (ssizetype,
-				      fold (build (MINUS_EXPR, index,
-						   TYPE_MIN_VALUE (domain))));
+				      fold (build2 (MINUS_EXPR,
+						    TREE_TYPE (index),
+						    index,
+						    TYPE_MIN_VALUE (domain))));
 
 	      position = size_binop (MULT_EXPR, index,
 				     convert (ssizetype,
@@ -5409,8 +5411,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	     index, then convert to sizetype and multiply by the size of the
 	     array element.  */
 	  if (! integer_zerop (low_bound))
-	    index = fold (build (MINUS_EXPR, TREE_TYPE (index),
-				 index, low_bound));
+	    index = fold (build2 (MINUS_EXPR, TREE_TYPE (index),
+				  index, low_bound));
 
 	  offset = size_binop (PLUS_EXPR, offset,
 			       size_binop (MULT_EXPR,
@@ -7601,10 +7603,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       if (flag_unsafe_math_optimizations && optimize && !optimize_size
 	  && TREE_CODE (type) == REAL_TYPE
 	  && !real_onep (TREE_OPERAND (exp, 0)))
-        return expand_expr (build (MULT_EXPR, type, TREE_OPERAND (exp, 0),
-				   build (RDIV_EXPR, type,
-					  build_real (type, dconst1),
-					  TREE_OPERAND (exp, 1))),
+        return expand_expr (build2 (MULT_EXPR, type, TREE_OPERAND (exp, 0),
+				    build2 (RDIV_EXPR, type,
+					    build_real (type, dconst1),
+					    TREE_OPERAND (exp, 1))),
 			    target, tmode, modifier);
       this_optab = sdiv_optab;
       goto binop;
@@ -7974,9 +7976,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      || (TREE_CODE_CLASS (TREE_CODE (iffalse)) == '1'
 		  && operand_equal_p (iftrue, TREE_OPERAND (iffalse, 0), 0)))
 	    return expand_expr (build1 (NOP_EXPR, type,
-					build (COND_EXPR, TREE_TYPE (iftrue),
-					       TREE_OPERAND (exp, 0),
-					       iftrue, iffalse)),
+					build3 (COND_EXPR, TREE_TYPE (iftrue),
+						TREE_OPERAND (exp, 0),
+						iftrue, iffalse)),
 				target, tmode, modifier);
 	}
 
@@ -8152,9 +8154,9 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	      expand_expr (TREE_OPERAND (binary_op, 1),
 			   ignore ? const0_rtx : NULL_RTX, VOIDmode, 0);
 	    else if (binary_op)
-	      store_expr (build (TREE_CODE (binary_op), type,
-				 make_tree (type, temp),
-				 TREE_OPERAND (binary_op, 1)),
+	      store_expr (build2 (TREE_CODE (binary_op), type,
+				  make_tree (type, temp),
+				  TREE_OPERAND (binary_op, 1)),
 			  temp, modifier == EXPAND_STACK_PARM ? 2 : 0);
 	    else
 	      store_expr (build1 (TREE_CODE (unary_op), type,
@@ -9033,8 +9035,8 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
       rtx rangertx = expand_expr (range, NULL_RTX, VOIDmode, 0);
 
       /* We must handle the endpoints in the original mode.  */
-      index_expr = build (MINUS_EXPR, index_type,
-			  index_expr, minval);
+      index_expr = build2 (MINUS_EXPR, index_type,
+			   index_expr, minval);
       minval = integer_zero_node;
       index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
       emit_cmp_and_jump_insns (rangertx, index, LTU, NULL_RTX,
@@ -9175,9 +9177,9 @@ try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
   if (! HAVE_tablejump)
     return 0;
 
-  index_expr = fold (build (MINUS_EXPR, index_type,
-			    convert (index_type, index_expr),
-			    convert (index_type, minval)));
+  index_expr = fold (build2 (MINUS_EXPR, index_type,
+			     convert (index_type, index_expr),
+			     convert (index_type, minval)));
   index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
   do_pending_stack_adjust ();
 

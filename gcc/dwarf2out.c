@@ -9195,9 +9195,9 @@ loc_descriptor_from_tree (tree loc, int addressp)
         const enum tree_code code =
           TREE_CODE (loc) == MIN_EXPR ? GT_EXPR : LT_EXPR;
 
-        loc = build (COND_EXPR, TREE_TYPE (loc),
-                     build (code, integer_type_node,
-                            TREE_OPERAND (loc, 0), TREE_OPERAND (loc, 1)),
+        loc = build3 (COND_EXPR, TREE_TYPE (loc),
+		      build2 (code, integer_type_node,
+			      TREE_OPERAND (loc, 0), TREE_OPERAND (loc, 1)),
                      TREE_OPERAND (loc, 1), TREE_OPERAND (loc, 0));
       }
 

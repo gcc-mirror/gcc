@@ -2655,10 +2655,10 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
       else
         test[i].bits++;
 
-      lo = tree_low_cst (fold (build (MINUS_EXPR, index_type,
-				      n->low, minval)), 1);
-      hi = tree_low_cst (fold (build (MINUS_EXPR, index_type,
-				      n->high, minval)), 1);
+      lo = tree_low_cst (fold (build2 (MINUS_EXPR, index_type,
+				       n->low, minval)), 1);
+      hi = tree_low_cst (fold (build2 (MINUS_EXPR, index_type,
+				       n->high, minval)), 1);
       for (j = lo; j <= hi; j++)
         if (j >= HOST_BITS_PER_WIDE_INT)
 	  test[i].hi |= (HOST_WIDE_INT) 1 << (j - HOST_BITS_PER_INT);
@@ -2668,9 +2668,9 @@ emit_case_bit_tests (tree index_type, tree index_expr, tree minval,
 
   qsort (test, count, sizeof(*test), case_bit_test_cmp);
 
-  index_expr = fold (build (MINUS_EXPR, index_type,
-			    convert (index_type, index_expr),
-			    convert (index_type, minval)));
+  index_expr = fold (build2 (MINUS_EXPR, index_type,
+			     convert (index_type, index_expr),
+			     convert (index_type, minval)));
   index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
   do_pending_stack_adjust ();
 
@@ -2808,7 +2808,7 @@ expand_end_case_type (tree orig_index, tree orig_type)
 
       /* Compute span of values.  */
       if (count != 0)
-	range = fold (build (MINUS_EXPR, index_type, maxval, minval));
+	range = fold (build2 (MINUS_EXPR, index_type, maxval, minval));
 
       if (count == 0)
 	{
@@ -2973,11 +2973,11 @@ expand_end_case_type (tree orig_index, tree orig_type)
 		 value since that should fit in a HOST_WIDE_INT while the
 		 actual values may not.  */
 	      HOST_WIDE_INT i_low
-		= tree_low_cst (fold (build (MINUS_EXPR, index_type,
-					     n->low, minval)), 1);
+		= tree_low_cst (fold (build2 (MINUS_EXPR, index_type,
+					      n->low, minval)), 1);
 	      HOST_WIDE_INT i_high
-		= tree_low_cst (fold (build (MINUS_EXPR, index_type,
-					     n->high, minval)), 1);
+		= tree_low_cst (fold (build2 (MINUS_EXPR, index_type,
+					      n->high, minval)), 1);
 	      HOST_WIDE_INT i;
 
 	      for (i = i_low; i <= i_high; i ++)
@@ -3280,8 +3280,8 @@ node_has_low_bound (case_node_ptr node, tree index_type)
   if (node->left)
     return 0;
 
-  low_minus_one = fold (build (MINUS_EXPR, TREE_TYPE (node->low),
-			       node->low, integer_one_node));
+  low_minus_one = fold (build2 (MINUS_EXPR, TREE_TYPE (node->low),
+				node->low, integer_one_node));
 
   /* If the subtraction above overflowed, we can't verify anything.
      Otherwise, look for a parent that tests our value - 1.  */
@@ -3330,8 +3330,8 @@ node_has_high_bound (case_node_ptr node, tree index_type)
   if (node->right)
     return 0;
 
-  high_plus_one = fold (build (PLUS_EXPR, TREE_TYPE (node->high),
-			       node->high, integer_one_node));
+  high_plus_one = fold (build2 (PLUS_EXPR, TREE_TYPE (node->high),
+				node->high, integer_one_node));
 
   /* If the addition above overflowed, we can't verify anything.
      Otherwise, look for a parent that tests our value + 1.  */
@@ -3754,8 +3754,8 @@ emit_case_nodes (rtx index, case_node_ptr node, rtx default_label,
 	      new_index = expand_simple_binop (mode, MINUS, index, low_rtx,
 					       NULL_RTX, unsignedp,
 					       OPTAB_WIDEN);
-	      new_bound = expand_expr (fold (build (MINUS_EXPR, type,
-						    high, low)),
+	      new_bound = expand_expr (fold (build2 (MINUS_EXPR, type,
+						     high, low)),
 				       NULL_RTX, mode, 0);
 
 	      emit_cmp_and_jump_insns (new_index, new_bound, GT, NULL_RTX,

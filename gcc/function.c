@@ -4154,8 +4154,9 @@ expand_function_start (tree subr)
 	 before the frame variable gets declared.  Help out...  */
       expand_var (TREE_OPERAND (cfun->nonlocal_goto_save_area, 0));
 
-      t_save = build (ARRAY_REF, ptr_type_node, cfun->nonlocal_goto_save_area,
-		      integer_zero_node, NULL_TREE, NULL_TREE);
+      t_save = build4 (ARRAY_REF, ptr_type_node,
+		       cfun->nonlocal_goto_save_area,
+		       integer_zero_node, NULL_TREE, NULL_TREE);
       r_save = expand_expr (t_save, NULL_RTX, VOIDmode, EXPAND_WRITE);
       r_save = convert_memory_address (Pmode, r_save);
 

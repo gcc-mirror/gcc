@@ -2362,9 +2362,9 @@ copy_constant (tree exp)
 
     case PLUS_EXPR:
     case MINUS_EXPR:
-      return build (TREE_CODE (exp), TREE_TYPE (exp),
-		    copy_constant (TREE_OPERAND (exp, 0)),
-		    copy_constant (TREE_OPERAND (exp, 1)));
+      return build2 (TREE_CODE (exp), TREE_TYPE (exp),
+		     copy_constant (TREE_OPERAND (exp, 0)),
+		     copy_constant (TREE_OPERAND (exp, 1)));
 
     case NOP_EXPR:
     case CONVERT_EXPR:
