@@ -6357,8 +6357,6 @@ struct set
   unsigned dest_hash;
   /* The SET_DEST, with SUBREG, etc., stripped.  */
   rtx inner_dest;
-  /* Place where the pointer to the INNER_DEST was found.  */
-  rtx *inner_dest_loc;
   /* Nonzero if the SET_SRC is in memory.  */ 
   char src_in_memory;
   /* Nonzero if the SET_SRC is in a structure.  */ 
@@ -7326,7 +7324,6 @@ cse_insn (insn, libcall_insn)
 
       /* Now deal with the destination.  */
       do_not_record = 0;
-      sets[i].inner_dest_loc = &SET_DEST (sets[0].rtl);
 
       /* Look within any SIGN_EXTRACT or ZERO_EXTRACT
 	 to the MEM or REG within it.  */
@@ -7334,10 +7331,7 @@ cse_insn (insn, libcall_insn)
 	     || GET_CODE (dest) == ZERO_EXTRACT
 	     || GET_CODE (dest) == SUBREG
 	     || GET_CODE (dest) == STRICT_LOW_PART)
-	{
-	  sets[i].inner_dest_loc = &XEXP (dest, 0);
-	  dest = XEXP (dest, 0);
-	}
+	dest = XEXP (dest, 0);
 
       sets[i].inner_dest = dest;
 

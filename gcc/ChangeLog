@@ -1,3 +1,8 @@
+Wed Sep 29 23:43:39 1999  Jeffrey A Law  (law@cygnus.com)
+
+	* cse.c (struct set): Delete inner_dest_loc field. 
+	(cse_insn): Remove assignments to inner_dest_loc field.
+
 Wed Sep 29 16:06:20 1999  Richard Henderson  <rth@cygnus.com>
 
 	* ggc-page.c: Don't include <unistd.h> etc taken care of
