@@ -48,7 +48,9 @@ load_data() {
 main()
 {
     load_data();
-    if (data_ptr[0].dummy != 0x55555555)
+    if (sizeof (int) == 2 && data_ptr[0].dummy != 0x5555)
+      abort ();
+    else if (sizeof (int) > 2 && data_ptr[0].dummy != 0x55555555)
       abort ();
     exit (0);
 }

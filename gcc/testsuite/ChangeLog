@@ -1,3 +1,8 @@
+Mon Jan 10 18:12:49 2000  Jeffrey A Law  (law@cygnus.com)
+
+	* gcc.c-torture/execute/990628-1.c: Tweak to work on targets
+	with 16 bit integers.
+
 2000-01-08  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
 
 	* gcc.dg/20000108-1.c: New test.
