@@ -1,3 +1,8 @@
+2002-07-29  Mike Stump  <mrs@apple.com>
+
+	* config.gcc (target_gtfiles): Initialize, as otherwise cross compilers hosted on
+	powerpc-apple-darwin6.0 won't even build.
+
 2002-07-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.md (sibcall, sibcall_value): Add RETURN as part of the pattern,
