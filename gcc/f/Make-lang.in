@@ -129,11 +129,11 @@ f/str-ot.h f/str-ot.j: f/fini$(build_exeext) f/str-ot.fin
 	./f/fini$(build_exeext) $(srcdir)/f/str-ot.fin f/str-ot.j f/str-ot.h
 
 f/fini$(build_exeext): f/fini.o $(BUILD_LIBDEPS)
-	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o f/fini$(build_exeext) \
+	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) -o f/fini$(build_exeext) \
 		f/fini.o $(BUILD_LIBS)
 
 f/fini.o:
-	$(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
+	$(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_CPPFLAGS) $(INCLUDES) \
 	      -c $(srcdir)/f/fini.c $(OUTPUT_OPTION)
 
 gt-f-lex.h gt-f-where.h gt-f-com.h gt-f-ste.h gtype-f.h : s-gtype; @true
@@ -219,7 +219,7 @@ $(srcdir)/f/intdoc.texi: $(INTDOC_DEPS) $(srcdir)/f/intdoc.in
 
 f/intdoc$(build_exeext): $(INTDOC_DEPS) f/intdoc.h0 bconfig.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(BUILD_LIBDEPS)
-	  $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
+	  $(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
 		  $(srcdir)/f/intdoc.c $(BUILD_LIBS) -o f/intdoc$(build_exeext)
 
 f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
@@ -227,7 +227,7 @@ f/intdoc.h0: f/intdoc.in f/ansify$(build_exeext)
 		< $(srcdir)/f/intdoc.in > f/intdoc.h0
 
 f/ansify$(build_exeext): f/ansify.c bconfig.h $(SYSTEM_H) coretypes.h $(TM_H)
-	  $(BUILD_CC) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
+	  $(CC_FOR_BUILD) $(BUILD_CFLAGS) $(BUILD_LDFLAGS) $(INCLUDES) \
 	  	$(srcdir)/f/ansify.c -o f/ansify$(build_exeext)
 
 $(srcdir)/f/BUGS: f/bugs0.texi f/bugs.texi f/root.texi

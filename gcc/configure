@@ -6967,7 +6967,7 @@ fi
 # These are the normal (build=host) settings:
 BUILD_PREFIX=			
 BUILD_PREFIX_1=ignore-		
-BUILD_CC='$(CC)'		
+CC_FOR_BUILD='$(CC)'		
 BUILD_CFLAGS='$(ALL_CFLAGS)'	
 
 STMP_FIXINC=stmp-fixinc		
@@ -6978,7 +6978,6 @@ if test x$build != x$host
 then
     BUILD_PREFIX=build-
     BUILD_PREFIX_1=build-
-    BUILD_CC='$(CC_FOR_BUILD)'
     BUILD_CFLAGS='$(INTERNAL_CFLAGS) $(T_CFLAGS) $(CFLAGS_FOR_BUILD) $(XCFLAGS)'
 
     if test "x$TARGET_SYSTEM_ROOT" = x; then
@@ -7018,7 +7017,7 @@ esac
 # build->target assembler and hope that it will have the same features
 # as the host->target assembler we'll be using.
 echo $ac_n "checking what assembler to use""... $ac_c" 1>&6
-echo "configure:7022: checking what assembler to use" >&5
+echo "configure:7021: checking what assembler to use" >&5
 in_tree_gas=no
 gcc_cv_as=
 gcc_cv_gas_major_version=
@@ -7129,7 +7128,7 @@ esac
 # build->target linker and hope that it will have the same features
 # as the host->target linker we'll be using.
 echo $ac_n "checking what linker to use""... $ac_c" 1>&6
-echo "configure:7133: checking what linker to use" >&5
+echo "configure:7132: checking what linker to use" >&5
 in_tree_ld=no
 gcc_cv_ld=
 gcc_cv_gld_major_version=
@@ -7232,7 +7231,7 @@ esac
 # Figure out what nm we will be using.
 gcc_cv_binutils_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/binutils
 echo $ac_n "checking what nm to use""... $ac_c" 1>&6
-echo "configure:7236: checking what nm to use" >&5
+echo "configure:7235: checking what nm to use" >&5
 in_tree_nm=no
 if test -x nm$host_exeext; then
 	gcc_cv_nm=./nm$host_exeext
@@ -7255,7 +7254,7 @@ esac
 
 # Figure out what objdump we will be using.
 echo $ac_n "checking what objdump to use""... $ac_c" 1>&6
-echo "configure:7259: checking what objdump to use" >&5
+echo "configure:7258: checking what objdump to use" >&5
 in_tree_objdump=no
 if test -x objdump$host_exeext; then
 	gcc_cv_objdump=./objdump$host_exeext
@@ -7280,7 +7279,7 @@ esac
 
 # Figure out what assembler alignment features are present.
 echo $ac_n "checking assembler alignment features""... $ac_c" 1>&6
-echo "configure:7284: checking assembler alignment features" >&5
+echo "configure:7283: checking assembler alignment features" >&5
 gcc_cv_as_alignment_features=none
 if test $in_tree_gas = yes; then
   # Gas version 2.6 and later support for .balign and .p2align.
@@ -7341,7 +7340,7 @@ fi
 echo "$ac_t""$gcc_cv_as_alignment_features" 1>&6
 
 echo $ac_n "checking assembler subsection support""... $ac_c" 1>&6
-echo "configure:7345: checking assembler subsection support" >&5
+echo "configure:7344: checking assembler subsection support" >&5
 gcc_cv_as_subsections=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -7390,7 +7389,7 @@ fi
 echo "$ac_t""$gcc_cv_as_subsections" 1>&6
 
 echo $ac_n "checking assembler weak support""... $ac_c" 1>&6
-echo "configure:7394: checking assembler weak support" >&5
+echo "configure:7393: checking assembler weak support" >&5
 gcc_cv_as_weak=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -7420,7 +7419,7 @@ fi
 echo "$ac_t""$gcc_cv_as_weak" 1>&6
 
 echo $ac_n "checking assembler hidden support""... $ac_c" 1>&6
-echo "configure:7424: checking assembler hidden support" >&5
+echo "configure:7423: checking assembler hidden support" >&5
 gcc_cv_as_hidden=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -7501,7 +7500,7 @@ libgcc_visibility=$gcc_cv_as_hidden
 
 
 echo $ac_n "checking assembler leb128 support""... $ac_c" 1>&6
-echo "configure:7505: checking assembler leb128 support" >&5
+echo "configure:7504: checking assembler leb128 support" >&5
 gcc_cv_as_leb128=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -7555,7 +7554,7 @@ fi
 echo "$ac_t""$gcc_cv_as_leb128" 1>&6
 
 echo $ac_n "checking assembler eh_frame optimization""... $ac_c" 1>&6
-echo "configure:7559: checking assembler eh_frame optimization" >&5
+echo "configure:7558: checking assembler eh_frame optimization" >&5
 gcc_cv_as_eh_frame=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -7645,7 +7644,7 @@ fi
 echo "$ac_t""$gcc_cv_as_eh_frame" 1>&6
 
 echo $ac_n "checking assembler section merging support""... $ac_c" 1>&6
-echo "configure:7649: checking assembler section merging support" >&5
+echo "configure:7648: checking assembler section merging support" >&5
 gcc_cv_as_shf_merge=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -7677,7 +7676,7 @@ fi
 echo "$ac_t""$gcc_cv_as_shf_merge" 1>&6
 
 echo $ac_n "checking assembler thread-local storage support""... $ac_c" 1>&6
-echo "configure:7681: checking assembler thread-local storage support" >&5
+echo "configure:7680: checking assembler thread-local storage support" >&5
 gcc_cv_as_tls=no
 conftest_s=
 tls_first_major=
@@ -7887,7 +7886,7 @@ case "$target" in
   # All TARGET_ABI_OSF targets.
   alpha*-*-osf* | alpha*-*-linux* | alpha*-*-*bsd*)
     echo $ac_n "checking assembler supports explicit relocations""... $ac_c" 1>&6
-echo "configure:7891: checking assembler supports explicit relocations" >&5
+echo "configure:7890: checking assembler supports explicit relocations" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_explicit_relocs'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7940,7 +7939,7 @@ EOF
     ;;
   sparc*-*-*)
     echo $ac_n "checking assembler .register pseudo-op support""... $ac_c" 1>&6
-echo "configure:7944: checking assembler .register pseudo-op support" >&5
+echo "configure:7943: checking assembler .register pseudo-op support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_register_pseudo_op'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7968,7 +7967,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler supports -relax""... $ac_c" 1>&6
-echo "configure:7972: checking assembler supports -relax" >&5
+echo "configure:7971: checking assembler supports -relax" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_relax_opt'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -7996,7 +7995,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler and linker support unaligned pc related relocs""... $ac_c" 1>&6
-echo "configure:8000: checking assembler and linker support unaligned pc related relocs" >&5
+echo "configure:7999: checking assembler and linker support unaligned pc related relocs" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8023,7 +8022,7 @@ EOF
     fi
 
     echo $ac_n "checking assembler and linker support unaligned pc related relocs against hidden symbols""... $ac_c" 1>&6
-echo "configure:8027: checking assembler and linker support unaligned pc related relocs against hidden symbols" >&5
+echo "configure:8026: checking assembler and linker support unaligned pc related relocs against hidden symbols" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_sparc_ua_pcrel_hidden'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8063,7 +8062,7 @@ EOF
     fi
 
     echo $ac_n "checking for assembler offsetable %lo() support""... $ac_c" 1>&6
-echo "configure:8067: checking for assembler offsetable %lo() support" >&5
+echo "configure:8066: checking for assembler offsetable %lo() support" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_offsetable_lo10'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8102,7 +8101,7 @@ EOF
 
   i[34567]86-*-* | x86_64-*-*)
     echo $ac_n "checking assembler instructions""... $ac_c" 1>&6
-echo "configure:8106: checking assembler instructions" >&5
+echo "configure:8105: checking assembler instructions" >&5
     gcc_cv_as_instructions=
     if test $in_tree_gas = yes ; then 
        if test $gcc_cv_gas_major_version -eq 2 \
@@ -8136,7 +8135,7 @@ EOF
     echo "$ac_t""$gcc_cv_as_instructions" 1>&6
 
     echo $ac_n "checking assembler GOTOFF in data directives""... $ac_c" 1>&6
-echo "configure:8140: checking assembler GOTOFF in data directives" >&5
+echo "configure:8139: checking assembler GOTOFF in data directives" >&5
     gcc_cv_as_gotoff_in_data=no
     if test $in_tree_gas = yes ; then
        if test $gcc_cv_gas_major_version -eq 2 \
@@ -8170,7 +8169,7 @@ EOF
 
   ia64*-*-*)
     echo $ac_n "checking assembler supports ltoffx and ldxmov""... $ac_c" 1>&6
-echo "configure:8174: checking assembler supports ltoffx and ldxmov" >&5
+echo "configure:8173: checking assembler supports ltoffx and ldxmov" >&5
 if eval "test \"`echo '$''{'gcc_cv_as_ltoffx_ldxmov_relocs'+set}'`\" = set"; then
   echo $ac_n "(cached) $ac_c" 1>&6
 else
@@ -8215,7 +8214,7 @@ EOF
 esac
 
 echo $ac_n "checking assembler dwarf2 debug_line support""... $ac_c" 1>&6
-echo "configure:8219: checking assembler dwarf2 debug_line support" >&5
+echo "configure:8218: checking assembler dwarf2 debug_line support" >&5
 gcc_cv_as_dwarf2_debug_line=no
 # ??? Not all targets support dwarf2 debug_line, even within a version
 # of gas.  Moreover, we need to emit a valid instruction to trigger any
@@ -8281,7 +8280,7 @@ fi
 echo "$ac_t""$gcc_cv_as_dwarf2_debug_line" 1>&6
 
 echo $ac_n "checking assembler --gdwarf2 support""... $ac_c" 1>&6
-echo "configure:8285: checking assembler --gdwarf2 support" >&5
+echo "configure:8284: checking assembler --gdwarf2 support" >&5
 gcc_cv_as_gdwarf2_flag=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -8315,7 +8314,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gdwarf2_flag" 1>&6
 
 echo $ac_n "checking assembler --gstabs support""... $ac_c" 1>&6
-echo "configure:8319: checking assembler --gstabs support" >&5
+echo "configure:8318: checking assembler --gstabs support" >&5
 gcc_cv_as_gstabs_flag=no
 if test $in_tree_gas = yes ; then
    if test $gcc_cv_gas_major_version -eq 2 \
@@ -8348,7 +8347,7 @@ fi
 echo "$ac_t""$gcc_cv_as_gstabs_flag" 1>&6
 
 echo $ac_n "checking linker read-only and read-write section mixing""... $ac_c" 1>&6
-echo "configure:8352: checking linker read-only and read-write section mixing" >&5
+echo "configure:8351: checking linker read-only and read-write section mixing" >&5
 gcc_cv_ld_ro_rw_mix=unknown
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 10 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8386,7 +8385,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_ro_rw_mix" 1>&6
 
 echo $ac_n "checking linker PT_GNU_EH_FRAME support""... $ac_c" 1>&6
-echo "configure:8390: checking linker PT_GNU_EH_FRAME support" >&5
+echo "configure:8389: checking linker PT_GNU_EH_FRAME support" >&5
 gcc_cv_ld_eh_frame_hdr=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 12 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8407,7 +8406,7 @@ fi
 echo "$ac_t""$gcc_cv_ld_eh_frame_hdr" 1>&6
 
 echo $ac_n "checking linker position independent executable support""... $ac_c" 1>&6
-echo "configure:8411: checking linker position independent executable support" >&5
+echo "configure:8410: checking linker position independent executable support" >&5
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 15 -o "$gcc_cv_gld_major_version" -gt 2 && grep 'EMUL = elf' ../ld/Makefile > /dev/null; then
@@ -8431,7 +8430,7 @@ echo "$ac_t""$gcc_cv_ld_pie" 1>&6
 case "$target" in
   mips*-*-*)
     echo $ac_n "checking whether libgloss uses STARTUP directives consistently""... $ac_c" 1>&6
-echo "configure:8435: checking whether libgloss uses STARTUP directives consistently" >&5
+echo "configure:8434: checking whether libgloss uses STARTUP directives consistently" >&5
     gcc_cv_mips_libgloss_startup=no
     gcc_cv_libgloss_srcdir=`echo $srcdir | sed -e 's,/gcc$,,'`/libgloss
     if test "x$exec_prefix" = xNONE; then
@@ -8459,7 +8458,7 @@ EOF
     echo "$ac_t""$gcc_cv_mips_libgloss_startup" 1>&6
 
     echo $ac_n "checking whether the assembler has explicit relocation support""... $ac_c" 1>&6
-echo "configure:8463: checking whether the assembler has explicit relocation support" >&5
+echo "configure:8462: checking whether the assembler has explicit relocation support" >&5
     if test x$gcc_cv_mips_explicit_relocs = x; then
       gcc_cv_mips_explicit_relocs=no
       if test $in_tree_gas = yes; then
@@ -8665,7 +8664,7 @@ fi
 
 
 echo $ac_n "checking whether to enable maintainer-specific portions of Makefiles""... $ac_c" 1>&6
-echo "configure:8669: checking whether to enable maintainer-specific portions of Makefiles" >&5
+echo "configure:8668: checking whether to enable maintainer-specific portions of Makefiles" >&5
     # Check whether --enable-maintainer-mode or --disable-maintainer-mode was given.
 if test "${enable_maintainer_mode+set}" = set; then
   enableval="$enable_maintainer_mode"
@@ -9225,7 +9224,7 @@ s%@SYSTEM_HEADER_DIR@%$SYSTEM_HEADER_DIR%g
 s%@inhibit_libc@%$inhibit_libc%g
 s%@BUILD_PREFIX@%$BUILD_PREFIX%g
 s%@BUILD_PREFIX_1@%$BUILD_PREFIX_1%g
-s%@BUILD_CC@%$BUILD_CC%g
+s%@CC_FOR_BUILD@%$CC_FOR_BUILD%g
 s%@BUILD_CFLAGS@%$BUILD_CFLAGS%g
 s%@STMP_FIXINC@%$STMP_FIXINC%g
 s%@STMP_FIXPROTO@%$STMP_FIXPROTO%g

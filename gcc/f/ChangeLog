@@ -1,3 +1,7 @@
+2003-06-17  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* Make-lang.in: Replace BUILD_CC references with CC_FOR_BUILD.
+
 Sun Jun 15 15:56:51 2003  Neil Booth  <neil@daikokuya.co.uk>
 
 	* lang.opt: Declare F77.

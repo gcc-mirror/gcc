@@ -153,7 +153,6 @@ CXX_FOR_BUILD = $(CXX)
 
 # Special variables passed down in EXTRA_GCC_FLAGS.  They are defined
 # here so that they can be overridden by Makefile fragments.
-BUILD_CC = $(CC_FOR_BUILD)
 BUILD_PREFIX = @BUILD_PREFIX@
 BUILD_PREFIX_1 = @BUILD_PREFIX_1@
 
@@ -523,7 +522,6 @@ EXTRA_GCC_FLAGS = \
 	'CC=$(CC)' \
 	'CXX=$(CXX)' \
 	'DLLTOOL=$$(DLLTOOL_FOR_TARGET)' \
-	'BUILD_CC=$(CC_FOR_BUILD)' \
 	'BUILD_PREFIX=$(BUILD_PREFIX)' \
 	'BUILD_PREFIX_1=$(BUILD_PREFIX_1)' \
 	'NM=$(NM)' \
