@@ -1,3 +1,7 @@
+2001-11-05  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
+
+	* java/util/ResourceBundle.java (class Security): Now static.
+
 2001-11-04  Bryce McKinlay  <bryce@waitaki.otago.ac.nz>
 
 	* java/util/ResourceBundle.java (getClassContext): Removed.
