@@ -346,6 +346,7 @@ static int hard_reg_use_compare		PROTO((struct hard_reg_n_uses *,
 					       struct hard_reg_n_uses *));
 static void order_regs_for_reload	PROTO((void));
 static void reload_as_needed		PROTO((rtx, int));
+static int reloads_conflict 		PROTO((int, int));
 static void forget_old_reloads_1	PROTO((rtx, rtx));
 static int reload_reg_class_lower	PROTO((short *, short *));
 static void mark_reload_reg_in_use	PROTO((int, int, enum reload_type,
@@ -929,40 +930,48 @@ reload (first, global, dumpfile)
 	      /* These just count RELOAD_OTHER.  */
 	      int insn_needs[N_REG_CLASSES];
 	      int insn_groups[N_REG_CLASSES];
+	      int insn_nongroups[N_REG_CLASSES];
 	      int insn_total_groups = 0;
 
 	      /* Count RELOAD_FOR_INPUT reloads.  */
 	      int insn_needs_for_inputs[N_REG_CLASSES];
+	      int insn_nongroups_for_inputs[N_REG_CLASSES];
 	      int insn_groups_for_inputs[N_REG_CLASSES];
 	      int insn_total_groups_for_inputs = 0;
 
 	      /* Count RELOAD_FOR_OUTPUT reloads.  */
 	      int insn_needs_for_outputs[N_REG_CLASSES];
+	      int insn_nongroups_for_outputs[N_REG_CLASSES];
 	      int insn_groups_for_outputs[N_REG_CLASSES];
 	      int insn_total_groups_for_outputs = 0;
 
 	      /* Count RELOAD_FOR_INSN reloads.  */
 	      int insn_needs_for_insn[N_REG_CLASSES];
+	      int insn_nongroups_for_insn[N_REG_CLASSES];
 	      int insn_groups_for_insn[N_REG_CLASSES];
 	      int insn_total_groups_for_insn = 0;
 
 	      /* Count RELOAD_FOR_OTHER_ADDRESS reloads.  */
 	      int insn_needs_for_other_addr[N_REG_CLASSES];
+	      int insn_nongroups_for_other_addr[N_REG_CLASSES];
 	      int insn_groups_for_other_addr[N_REG_CLASSES];
 	      int insn_total_groups_for_other_addr = 0;
 
 	      /* Count RELOAD_FOR_INPUT_ADDRESS reloads.  */
 	      int insn_needs_for_in_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
+	      int insn_nongroups_for_in_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
 	      int insn_groups_for_in_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
 	      int insn_total_groups_for_in_addr[MAX_RECOG_OPERANDS];
 
 	      /* Count RELOAD_FOR_OUTPUT_ADDRESS reloads.  */
 	      int insn_needs_for_out_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
+	      int insn_nongroups_for_out_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
 	      int insn_groups_for_out_addr[MAX_RECOG_OPERANDS][N_REG_CLASSES];
 	      int insn_total_groups_for_out_addr[MAX_RECOG_OPERANDS];
 
 	      /* Count RELOAD_FOR_OPERAND_ADDRESS reloads.  */
 	      int insn_needs_for_op_addr[N_REG_CLASSES];
+	      int insn_nongroups_for_op_addr[N_REG_CLASSES];
 	      int insn_groups_for_op_addr[N_REG_CLASSES];
 	      int insn_total_groups_for_op_addr = 0;
 
@@ -1059,12 +1068,27 @@ reload (first, global, dumpfile)
 
 	      for (i = 0; i < N_REG_CLASSES; i++)
 		{
-		  insn_needs[i] = 0, insn_groups[i] = 0;
-		  insn_needs_for_inputs[i] = 0, insn_groups_for_inputs[i] = 0;
-		  insn_needs_for_outputs[i] = 0, insn_groups_for_outputs[i] = 0;
-		  insn_needs_for_insn[i] = 0, insn_groups_for_insn[i] = 0;
-		  insn_needs_for_op_addr[i] = 0, insn_groups_for_op_addr[i] = 0;
-		  insn_needs_for_other_addr[i] = 0;
+		  insn_needs[i] = 0, insn_nongroups[i] = 0, 
+		  insn_groups[i] = 0;
+
+		  insn_needs_for_inputs[i] = 0, 
+		  insn_nongroups_for_inputs[i] = 0,
+		  insn_groups_for_inputs[i] = 0;
+
+		  insn_needs_for_outputs[i] = 0, 
+		  insn_nongroups_for_outputs[i] = 0,
+		  insn_groups_for_outputs[i] = 0;
+
+		  insn_needs_for_insn[i] = 0, 
+		  insn_nongroups_for_insn[i] = 0,
+		  insn_groups_for_insn[i] = 0;
+
+		  insn_needs_for_op_addr[i] = 0, 
+		  insn_nongroups_for_op_addr[i] = 0,
+		  insn_groups_for_op_addr[i] = 0;
+
+		  insn_needs_for_other_addr[i] = 0, 
+		  insn_nongroups_for_other_addr[i] = 0,
 		  insn_groups_for_other_addr[i] = 0;
 		}
 
@@ -1077,6 +1101,8 @@ reload (first, global, dumpfile)
 		    {
 		      insn_needs_for_in_addr[i][j] = 0;
 		      insn_needs_for_out_addr[i][j] = 0;
+		      insn_nongroups_for_in_addr[i][j] = 0;
+		      insn_nongroups_for_out_addr[i][j] = 0;
 		      insn_groups_for_in_addr[i][j] = 0;
 		      insn_groups_for_out_addr[i][j] = 0;
 		    }
@@ -1091,6 +1117,7 @@ reload (first, global, dumpfile)
 		  enum reg_class class = reload_reg_class[i];
 		  int size;
 		  enum machine_mode mode;
+		  int nongroup_need;
 		  int *this_groups;
 		  int *this_needs;
 		  int *this_total_groups;
@@ -1115,55 +1142,93 @@ reload (first, global, dumpfile)
 		      new_basic_block_needs = 1;
 		    }
 
+		  /* If this class doesn't want a group determine if
+		     we have a nongroup need or a regular need. */
+
+		  nongroup_need = 0;
+		  if (CLASS_MAX_NREGS (class, mode) == 1)
+		    for (j = i + 1; j < n_reloads; j++)
+		      if (reloads_conflict (i, j)
+			  && reg_classes_intersect_p (class,
+						      reload_reg_class[j]))
+			{
+			  nongroup_need = 1;
+			  break;
+			}
+
 		  /* Decide which time-of-use to count this reload for.  */
 		  switch (reload_when_needed[i])
 		    {
 		    case RELOAD_OTHER:
-		      this_needs = insn_needs;
+		      if (nongroup_need)
+			this_needs = insn_nongroups;
+		      else
+			this_needs = insn_needs;
 		      this_groups = insn_groups;
 		      this_total_groups = &insn_total_groups;
 		      break;
 
 		    case RELOAD_FOR_INPUT:
-		      this_needs = insn_needs_for_inputs;
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_inputs;
+		      else
+			this_needs = insn_needs_for_inputs;
 		      this_groups = insn_groups_for_inputs;
 		      this_total_groups = &insn_total_groups_for_inputs;
 		      break;
 
 		    case RELOAD_FOR_OUTPUT:
-		      this_needs = insn_needs_for_outputs;
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_outputs;
+		      else
+			this_needs = insn_needs_for_outputs;
 		      this_groups = insn_groups_for_outputs;
 		      this_total_groups = &insn_total_groups_for_outputs;
 		      break;
 
 		    case RELOAD_FOR_INSN:
-		      this_needs = insn_needs_for_insn;
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_insn;
+		      else
+			this_needs = insn_needs_for_insn;
 		      this_groups = insn_groups_for_insn;
 		      this_total_groups = &insn_total_groups_for_insn;
 		      break;
 
 		    case RELOAD_FOR_OTHER_ADDRESS:
-		      this_needs = insn_needs_for_other_addr;
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_other_addr;
+		      else
+			this_needs = insn_needs_for_other_addr;
 		      this_groups = insn_groups_for_other_addr;
 		      this_total_groups = &insn_total_groups_for_other_addr;
 		      break;
 
 		    case RELOAD_FOR_INPUT_ADDRESS:
-		      this_needs = insn_needs_for_in_addr[reload_opnum[i]];
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_in_addr[reload_opnum[i]];
+		      else
+			this_needs = insn_needs_for_in_addr[reload_opnum[i]];
 		      this_groups = insn_groups_for_in_addr[reload_opnum[i]];
 		      this_total_groups
 			= &insn_total_groups_for_in_addr[reload_opnum[i]];
 		      break;
 
 		    case RELOAD_FOR_OUTPUT_ADDRESS:
-		      this_needs = insn_needs_for_out_addr[reload_opnum[i]];
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_out_addr[reload_opnum[i]];
+		      else
+			this_needs = insn_needs_for_out_addr[reload_opnum[i]];
 		      this_groups = insn_groups_for_out_addr[reload_opnum[i]];
 		      this_total_groups
 			= &insn_total_groups_for_out_addr[reload_opnum[i]];
 		      break;
 
 		    case RELOAD_FOR_OPERAND_ADDRESS:
-		      this_needs = insn_needs_for_op_addr;
+		      if (nongroup_need)
+			this_needs = insn_nongroups_for_op_addr;
+		      else
+			this_needs = insn_needs_for_op_addr;
 		      this_groups = insn_groups_for_op_addr;
 		      this_total_groups = &insn_total_groups_for_op_addr;
 		      break;
@@ -1258,6 +1323,27 @@ reload (first, global, dumpfile)
 		  insn_needs[i] += MAX (MAX (insn_needs_for_inputs[i],
 					     insn_needs_for_outputs[i]),
 					insn_needs_for_other_addr[i]);
+
+		  for (in_max = 0, out_max = 0, j = 0;
+		       j < reload_n_operands; j++)
+		    {
+		      in_max = MAX (in_max, insn_nongroups_for_in_addr[j][i]);
+		      out_max = MAX (out_max, insn_nongroups_for_out_addr[j][i]);
+		    }
+
+		  in_max = MAX (in_max, insn_nongroups_for_op_addr[i]);
+		  out_max = MAX (out_max, insn_nongroups_for_insn[i]);
+
+		  insn_nongroups_for_inputs[i]
+		    = MAX (insn_nongroups_for_inputs[i]
+			   + insn_nongroups_for_op_addr[i]
+			   + insn_nongroups_for_insn[i],
+			   in_max + insn_nongroups_for_inputs[i]);
+
+		  insn_nongroups_for_outputs[i] += out_max;
+		  insn_nongroups[i] += MAX (MAX (insn_nongroups_for_inputs[i],
+						 insn_nongroups_for_outputs[i]),
+					    insn_nongroups_for_other_addr[i]);
 
 		  for (in_max = 0, out_max = 0, j = 0;
 		       j < reload_n_operands; j++)
@@ -1435,12 +1521,11 @@ reload (first, global, dumpfile)
 		      max_groups[i] = insn_groups[i];
 		      max_groups_insn[i] = insn;
 		    }
-		  if (insn_total_groups > 0)
-		    if (max_nongroups[i] < insn_needs[i])
-		      {
-			max_nongroups[i] = insn_needs[i];
-			max_nongroups_insn[i] = insn;
-		      }
+		  if (max_nongroups[i] < insn_nongroups[i])
+		    {
+		      max_nongroups[i] = insn_nongroups[i];
+		      max_nongroups_insn[i] = insn;
+		    }
 		}
 	    }
 	  /* Note that there is a continue statement above.  */
@@ -3970,6 +4055,99 @@ forget_old_reloads_1 (x, ignored)
     if (n_reloads == 0 || reg_has_output_reload[regno + nr] == 0)
       reg_last_reload_reg[regno + nr] = 0;
 }
+
+/* 1 if reload1 and reload2 conflict with each other */
+
+static int
+reloads_conflict (reload1, reload2)
+int reload1, reload2;
+{
+  int i;
+  enum reload_type reload1_type = reload_when_needed[reload1];
+  enum reload_type reload2_type = reload_when_needed[reload2];
+  int reload1_opnum = reload_opnum[reload1];
+  int reload2_opnum = reload_opnum[reload2];
+
+  /* RELOAD_OTHER conflicts with everything. */
+  
+  if (reload1_type == RELOAD_OTHER 
+      || reload2_type == RELOAD_OTHER)
+    return 1;
+
+  switch (reload1_type)
+    {
+    case RELOAD_FOR_OTHER_ADDRESS:
+      if (reload2_type == RELOAD_FOR_OTHER_ADDRESS)
+	return 1;
+      break;
+
+    case RELOAD_FOR_INPUT:
+      if (reload2_type == RELOAD_FOR_INSN 
+	  || reload2_type == RELOAD_FOR_OPERAND_ADDRESS
+	  || reload2_type == RELOAD_FOR_INPUT)
+	return 1;
+
+      /* RELOAD_FOR_INPUT conflicts with any later
+	 RELOAD_FOR_INPUT_ADDRESS reloads */
+      for (i = reload2_opnum + 1; i < n_reloads; i++) 
+	if (reload_when_needed[i] == RELOAD_FOR_INPUT_ADDRESS) 
+	  return 1;
+      break;
+
+    case RELOAD_FOR_INPUT_ADDRESS:
+      if (reload2_type == RELOAD_FOR_INPUT_ADDRESS 
+	  && (reload1_opnum == reload2_opnum))
+	return 1;
+
+      /* RELOAD_FOR_INPUT_ADDRESS conflicts with any
+	 earlier RELOAD_FOR_INPUT reloads */
+      for (i = 0; i < reload2_opnum; i++)
+	if (reload_when_needed[i] == RELOAD_FOR_INPUT)
+	  return 1;
+      break;
+
+    case RELOAD_FOR_OUTPUT_ADDRESS:
+      if (reload2_type == RELOAD_FOR_OUTPUT_ADDRESS
+	  && (reload1_opnum == reload2_opnum))
+	return 1;
+
+      for (i = reload2_opnum; i < n_reloads; i++)
+	if (reload_when_needed[i] == RELOAD_FOR_INPUT)
+	  return 1;
+      break;
+
+    case RELOAD_FOR_OPERAND_ADDRESS:
+      if (reload2_type == RELOAD_FOR_INPUT 
+	  || reload2_type == RELOAD_FOR_INSN
+	  || reload2_type == RELOAD_FOR_OPERAND_ADDRESS)
+	  return 1;
+      break;
+
+    case RELOAD_FOR_OUTPUT:
+      if (reload2_type == RELOAD_FOR_INSN 
+	  || reload2_type == RELOAD_FOR_OUTPUT)
+	  return 1;
+
+      for (i = 0; i <= reload2_opnum; i++)
+	if (reload_when_needed[i] == RELOAD_FOR_OUTPUT_ADDRESS)
+	  return 1;
+      break;
+
+    case RELOAD_FOR_INSN:
+      if (reload2_type == RELOAD_FOR_INPUT
+	  || reload2_type == RELOAD_FOR_OUTPUT
+	  || reload2_type == RELOAD_FOR_INSN
+	  || reload2_type == RELOAD_FOR_OPERAND_ADDRESS
+	  || reload2_type == RELOAD_FOR_OTHER_ADDRESS)
+	return 1;
+      break;
+    }
+
+  /* No conflict */
+  return 0;
+}
+
+
 
 /* For each reload, the mode of the reload register.  */
 static enum machine_mode reload_mode[MAX_RELOADS];
