@@ -10647,9 +10647,21 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	    t = ctype;
 	    while (t != NULL_TREE && CLASS_TYPE_P (t))
 	      {
-		if (CLASSTYPE_TEMPLATE_INFO (t) &&
-		    !CLASSTYPE_TEMPLATE_SPECIALIZATION (t))
+		/* You're supposed to have one `template <...>' 
+		   for every template class, but you don't need one
+		   for a full specialization.  For example:
+
+		     template <class T> struct S{};
+		     template <> struct S<int> { void f(); };
+		     void S<int>::f () {}
+
+		   is correct; there shouldn't be a `template <>' for
+		   the definition of `S<int>::f'.  */
+		if (CLASSTYPE_TEMPLATE_INFO (t)
+		    && (CLASSTYPE_TEMPLATE_INSTANTIATION (t)
+			|| uses_template_parms (CLASSTYPE_TI_ARGS (t))))
 		  template_count += 1;
+
 		t = TYPE_MAIN_DECL (t);
 		if (DECL_LANG_SPECIFIC (t))
 		  t = DECL_CONTEXT (t);
