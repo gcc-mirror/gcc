@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do run } */
 
 /* Not all platforms support TImode integers.  */
 #if defined(__LP64__) || defined(__sparc__)
