@@ -42,6 +42,10 @@ Boston, MA 02111-1307, USA.  */
                lib$get_current_invo_context(decc$$get_vfork_jmpbuf()) : -1)
 #endif /* VMS */
 
+#ifndef LIBRARY_PATH_ENV
+#define LIBRARY_PATH_ENV "LIBRARY_PATH"
+#endif
+
 #define COLLECT
 
 #include "collect2.h"
@@ -1353,9 +1357,9 @@ main (argc, argv)
       if (ptr)
 	fprintf (stderr, "COMPILER_PATH       = %s\n", ptr);
 
-      ptr = getenv ("LIBRARY_PATH");
+      ptr = getenv (LIBRARY_PATH_ENV);
       if (ptr)
-	fprintf (stderr, "LIBRARY_PATH        = %s\n", ptr);
+	fprintf (stderr, "%-20s= %s\n", LIBRARY_PATH_ENV, ptr);
 
       fprintf (stderr, "\n");
     }

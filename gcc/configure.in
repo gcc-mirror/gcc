@@ -409,7 +409,7 @@ AC_FUNC_MMAP
 
 GCC_NEED_DECLARATIONS(bcopy bzero bcmp \
 	index rindex getenv atol sbrk abort atof strerror getcwd getwd \
-	strsignal putc_unlocked fputs_unlocked strstr)
+	strsignal putc_unlocked fputs_unlocked strstr environ)
 
 GCC_NEED_DECLARATIONS(malloc realloc calloc free, [
 #ifdef HAVE_MALLOC_H
@@ -1275,6 +1275,27 @@ changequote(,)dnl
 changequote([,])dnl
 		tm_file=i386/i386-aout.h
 		tmake_file=i386/t-i386bare
+		;;
+changequote(,)dnl
+	i[34567]86-*-beospe*)
+changequote([,])dnl
+		xm_file=i386/xm-beos.h
+		xm_defines="USE_C_ALLOCA"
+		tmake_file=i386/t-beos
+		tm_file=i386/beos-pe.h
+		xmake_file=i386/x-beos
+		extra_objs=winnt.o
+		;;
+changequote(,)dnl
+	i[34567]86-*-beoself* | i[34567]86-*-beos*)
+changequote([,])dnl
+		xm_file=i386/xm-beos.h
+		tmake_file='i386/t-beos i386/t-crtpic'
+		tm_file=i386/beos-elf.h
+		xmake_file=i386/x-beos
+		extra_objs=winnt.o
+		extra_parts='crtbegin.o crtend.o'
+		fixincludes=Makefile.in
 		;;
 changequote(,)dnl
 	i[34567]86-*-bsdi* | i[34567]86-*-bsd386*)

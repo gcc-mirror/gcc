@@ -25,6 +25,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include "obstack.h"
 
+#undef false
+#undef true
+#undef boolean
+
 typedef enum {false, true} boolean;
 
 typedef PTR hash_table_key;

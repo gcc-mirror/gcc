@@ -82,6 +82,11 @@ static char dir_separator_str[] = {DIR_SEPARATOR, 0};
 #define GET_ENV_PATH_LIST(VAR,NAME)	do { (VAR) = getenv (NAME); } while (0)
 #endif
 
+/* Most every one is fine with LIBRARY_PATH.  For some, it conflicts.  */
+#ifndef LIBRARY_PATH_ENV
+#define LIBRARY_PATH_ENV "LIBRARY_PATH"
+#endif
+
 #ifndef HAVE_KILL
 #define kill(p,s) raise(s)
 #endif
@@ -240,6 +245,7 @@ static int execute			PROTO ((void));
 static void unused_prefix_warnings	PROTO ((struct path_prefix *));
 static void clear_args			PROTO ((void));
 static void fatal_error			PROTO ((int));
+static void set_input			PROTO ((const char *));
 
 /* Specs are strings containing lines, each of which (if not blank)
 is made up of a program name, and arguments separated by spaces.
@@ -1892,6 +1898,7 @@ build_search_list (paths, prefix, check_dir_p)
   struct prefix_list *pprefix;
 
   obstack_grow (&collect_obstack, prefix, strlen (prefix));
+  obstack_1grow (&collect_obstack, '=');
 
   for (pprefix = paths->plist; pprefix != 0; pprefix = pprefix->next)
     {
@@ -2941,7 +2948,7 @@ process_command (argc, argv)
 	}
     }
 
-  GET_ENV_PATH_LIST (temp, "LIBRARY_PATH");
+  GET_ENV_PATH_LIST (temp, LIBRARY_PATH_ENV);
   if (temp && *cross_compile == '0')
     {
       const char *startp, *endp;
@@ -4935,6 +4942,37 @@ is_directory (path1, path2, linker)
 
   return (stat (path, &st) >= 0 && S_ISDIR (st.st_mode));
 }
+
+/* Set up the various global variables to indicate that we're processing
+   the input file named FILENAME.  */
+
+static void
+set_input (filename)
+     const char *filename;
+{
+  register const char *p;
+
+  input_filename = filename;
+  input_filename_length = strlen (input_filename);
+  
+  input_basename = input_filename;
+  for (p = input_filename; *p; p++)
+    if (IS_DIR_SEPARATOR (*p))
+      input_basename = p + 1;
+
+  /* Find a suffix starting with the last period,
+     and set basename_length to exclude that suffix.  */
+  basename_length = strlen (input_basename);
+  p = input_basename + basename_length;
+  while (p != input_basename && *p != '.') --p;
+  if (*p == '.' && p != input_basename)
+    {
+      basename_length = p - input_basename;
+      input_suffix = p + 1;
+    }
+  else
+    input_suffix = "";
+}
 
 /* On fatal signals, delete all the temporary files.  */
 
@@ -5335,9 +5373,8 @@ main (argc, argv)
 
       /* Tell do_spec what to substitute for %i.  */
 
-      input_filename = infiles[i].name;
-      input_filename_length = strlen (input_filename);
       input_file_number = i;
+      set_input (infiles[i].name);
 
       /* Use the same thing in %o, unless cp->spec says otherwise.  */
 
@@ -5352,30 +5389,11 @@ main (argc, argv)
 	{
 	  /* Ok, we found an applicable compiler.  Run its spec.  */
 	  /* First say how much of input_filename to substitute for %b  */
-	  register const char *p;
 	  int len;
 
 	  if (cp->spec[0][0] == '#')
 	    error ("%s: %s compiler not installed on this system",
 		   input_filename, &cp->spec[0][1]);
-
-	  input_basename = input_filename;
-	  for (p = input_filename; *p; p++)
-	    if (IS_DIR_SEPARATOR (*p))
-	      input_basename = p + 1;
-
-	  /* Find a suffix starting with the last period,
-	     and set basename_length to exclude that suffix.  */
-	  basename_length = strlen (input_basename);
-	  p = input_basename + basename_length;
-	  while (p != input_basename && *p != '.') --p;
-	  if (*p == '.' && p != input_basename)
-	    {
-	      basename_length = p - input_basename;
-	      input_suffix = p + 1;
-	    }
-	  else
-	    input_suffix = "";
 
 	  len = 0;
 	  for (j = 0; j < sizeof cp->spec / sizeof cp->spec[0]; j++)
@@ -5418,6 +5436,12 @@ main (argc, argv)
       clear_failure_queue ();
     }
 
+  /* Reset the output file name to the first input file name, for use
+     with %b in LINK_SPEC on a target that prefers not to emit a.out
+     by default.  */
+  if (n_infiles > 0)
+    set_input (infiles[0].name);
+
   if (error_count == 0)
     {
       /* Make sure INPUT_FILE_NUMBER points to first available open
@@ -5442,8 +5466,8 @@ main (argc, argv)
 	}
       /* Rebuild the COMPILER_PATH and LIBRARY_PATH environment variables
 	 for collect.  */
-      putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH=");
-      putenv_from_prefixes (&startfile_prefixes, "LIBRARY_PATH=");
+      putenv_from_prefixes (&exec_prefixes, "COMPILER_PATH");
+      putenv_from_prefixes (&startfile_prefixes, LIBRARY_PATH_ENV);
 
       value = do_spec (link_command_spec);
       if (value < 0)

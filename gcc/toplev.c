@@ -138,7 +138,7 @@ You Lose!  You must define PREFERRED_DEBUGGING_TYPE!
 #define PREFERRED_DEBUGGING_TYPE NO_DEBUG
 #endif
 
-#if ! (defined (VMS) || defined (OS2))
+#ifdef NEED_DECLARATION_ENVIRON
 extern char **environ;
 #endif
 extern char *version_string;

@@ -461,7 +461,7 @@ The environment variable @code{GCC_EXEC_PREFIX}, if any.
 
 @item
 The directories specified by the environment variable @code{LIBRARY_PATH}
-(native only, cross compilers do not use this).
+(or port-specific name; native only, cross compilers do not use this).
 
 @item
 The macro @code{STANDARD_EXEC_PREFIX}.
@@ -2281,6 +2281,12 @@ during virtual register instantiation.
 
 You only need to define this macro if you want to support call frame
 debugging information like that provided by DWARF 2.
+
+@findex SMALL_STACK
+@item SMALL_STACK
+Define this macro if the stack size for the target is very small.  This
+has the effect of disabling gcc's builtin @samp{alloca}, though
+@samp{__builtin_alloca} is not affected.
 @end table
 
 @node Stack Checking
@@ -7784,4 +7790,12 @@ in the system math library, or @samp{""} if the target does not have a
 separate math library.
 
 You need only define this macro if the default of @samp{"-lm"} is wrong.
+
+@findex LIBRARY_PATH_ENV
+@item LIBRARY_PATH_ENV
+Define this macro as a C string constant for the environment variable that
+specifies where the linker should look for libraries.
+
+You need only define this macro if the default of @samp{"LIBRARY_PATH"}
+is wrong.
 @end table

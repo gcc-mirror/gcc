@@ -209,6 +209,9 @@ RANLIB_TEST_FOR_TARGET = \
 # Dir to search for system headers.  Overridden by cross-make.
 SYSTEM_HEADER_DIR = /usr/include
 
+# Default cross SYSTEM_HEADER_DIR, to be overridden by targets.
+CROSS_SYSTEM_HEADER_DIR = $(tooldir)/sys-include
+
 # Control whether to run fixproto.
 STMP_FIXPROTO = stmp-fixproto
 

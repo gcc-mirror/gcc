@@ -35,10 +35,14 @@ AC_CACHE_VAL(gcc_cv_decl_needed_$1,
 #include <unistd.h>
 #endif
 #ifndef HAVE_RINDEX
+#ifndef rindex
 #define rindex strrchr
 #endif
+#endif
 #ifndef HAVE_INDEX
+#ifndef index
 #define index strchr
+#endif
 #endif
 $2],
 [char *(*pfn) = (char *(*)) $1],

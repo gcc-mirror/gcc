@@ -1,0 +1,9 @@
+# configuration for BeOS
+INSTALL=install -c
+
+# Show we need to use the C version of ALLOCA
+ALLOCA=alloca.o
+# Use it regardless of whether we are compiling with gcc or not.
+USE_ALLOCA= `echo "${ALLOCA}"`
+USE_HOST_ALLOCA= `echo ${HOST_PREFIX}${HOST_ALLOCA}`
+SUBDIR_USE_ALLOCA = `if [ x$(ALLOCA) != x ]; then echo ../$(ALLOCA); else true; fi`
