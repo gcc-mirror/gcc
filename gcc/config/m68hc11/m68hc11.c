@@ -1654,7 +1654,7 @@ expand_prologue ()
       emit_insn (gen_addhi3 (stack_pointer_rtx,
 			     stack_pointer_rtx, GEN_INT (-size)));
     }
-  else if (size > 8)
+  else if ((!optimize_size && size > 8) || (optimize_size && size > 10))
     {
       rtx insn;
 
@@ -1742,7 +1742,7 @@ expand_epilogue ()
       emit_insn (gen_addhi3 (stack_pointer_rtx,
 			     stack_pointer_rtx, GEN_INT (size)));
     }
-  else if (size > 8)
+  else if ((!optimize_size && size > 8) || (optimize_size && size > 10))
     {
       rtx insn;
 
@@ -5176,7 +5176,7 @@ m68hc11_memory_move_cost (mode, class, in)
   else
     {
       if (GET_MODE_SIZE (mode) <= 2)
-	return COSTS_N_INSNS (2);
+	return COSTS_N_INSNS (3);
       else
 	return COSTS_N_INSNS (4);
     }
