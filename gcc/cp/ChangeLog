@@ -1,3 +1,9 @@
+Fri Mar 27 13:22:18 1998  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (redeclare_class_template): New function.
+	* cp_tree.h (redeclare_class_template): Declare it.
+	* decl.c (xref_tag): Use it.
+
 Thu Mar 26 11:16:30 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* call.c (build_over_call): Check IS_AGGR_TYPE, not 
