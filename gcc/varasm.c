@@ -421,11 +421,10 @@ assemble_asm (string)
   fprintf (asm_out_file, "\t%s\n", TREE_STRING_POINTER (string));
 }
 
-/* Tiemann: please get rid of this conditional and put appropriate
-   definitions in each of the files that should have them.
-   The type of debugging format is not the right parameter to
-   control how some other aspect of assembler output is done.  */
-
+#if 0 /* This should no longer be needed, because
+	 flag_gnu_linker should be 0 on these systems,
+	 which should prevent any output
+	 if ASM_OUTPUT_CONSTRUCTOR and ASM_OUTPUT_DESTRUCTOR are absent.  */
 #if !(defined(DBX_DEBUGGING_INFO) && !defined(FASCIST_ASSEMBLER))
 #ifndef ASM_OUTPUT_CONSTRUCTOR
 #define ASM_OUTPUT_CONSTRUCTOR(file, name)
@@ -434,6 +433,7 @@ assemble_asm (string)
 #define ASM_OUTPUT_DESTRUCTOR(file, name)
 #endif
 #endif
+#endif /* 0 */
 
 /* Record an element in the table of global destructors.
    How this is done depends on what sort of assembler and linker
