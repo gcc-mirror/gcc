@@ -406,6 +406,33 @@
     __w; })  
 #endif /* __i960__ */
 
+#if defined (__M32R__)
+#define add_ssaaaa(sh, sl, ah, al, bh, bl) \
+  /* The cmp clears the condition bit.  */ \
+  __asm__ ("cmp %0,%0
+	addx %%5,%1
+	addx %%3,%0"							\
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "%0" ((USItype) (ah)),					\
+	     "r" ((USItype) (bh)),					\
+	     "%1" ((USItype) (al)),					\
+	     "r" ((USItype) (bl))					\
+	   : "cbit")
+#define sub_ddmmss(sh, sl, ah, al, bh, bl) \
+  /* The cmp clears the condition bit.  */ \
+  __asm__ ("cmp %0,%0
+	subx %5,%1
+	subx %3,%0"							\
+	   : "=r" ((USItype) (sh)),					\
+	     "=&r" ((USItype) (sl))					\
+	   : "0" ((USItype) (ah)),					\
+	     "r" ((USItype) (bh)),					\
+	     "1" ((USItype) (al)),					\
+	     "r" ((USItype) (bl))					\
+	   : "cbit")
+#endif /* __M32R__ */
+
 #if defined (__mc68000__)
 #define add_ssaaaa(sh, sl, ah, al, bh, bl) \
   __asm__ ("add%.l %5,%1
