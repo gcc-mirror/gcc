@@ -47,10 +47,10 @@ configure, port, build, and install @code{g77},
 @ref{Problems Installing}.
 @end ifset
 
-@ifset NEWSONLY
+@ifset BUGSONLY
 For information on bugs that might afflict people who
 configure, port, build, and install @code{g77},
-see "Problems Installing" in @file{egcs/gcc/f/INSTALL}.
+see ``Problems Installing'' in @file{egcs/gcc/f/INSTALL}.
 @end ifset
 
 @itemize @bullet
