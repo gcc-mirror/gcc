@@ -130,4 +130,6 @@ extern void check_global_declarations   PROTO ((union tree_node **, int));
 extern int errorcount;
 extern int warningcount;
 extern int sorrycount;
+
+extern const char *progname;
 #endif /* __GCC_TOPLEV_H */

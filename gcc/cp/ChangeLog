@@ -1,3 +1,7 @@
+1999-09-15  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* typeck2.c (ack): Don't declare progname.
+
 1999-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	* typeck.c (expr_sizeof): Reinstall and augment OFFSET_REF
