@@ -230,21 +230,21 @@ struct c_scope GTY(())
 
   /* True if we are currently filling this scope with parameter
      declarations.  */
-  bool parm_flag : 1;
+  BOOL_BITFIELD parm_flag : 1;
 
   /* True if we already complained about forward parameter decls
      in this scope.  This prevents double warnings on
      foo (int a; int b; ...)  */
-  bool warned_forward_parm_decls : 1;
+  BOOL_BITFIELD warned_forward_parm_decls : 1;
 
   /* True if this is the outermost block scope of a function body.
      This scope contains the parameters, the local variables declared
      in the outermost block, and all the labels (except those in
      nested functions, or declared at block scope with __label__).  */
-  bool function_body : 1;
+  BOOL_BITFIELD function_body : 1;
 
   /* True means make a BLOCK for this scope no matter what.  */
-  bool keep : 1;
+  BOOL_BITFIELD keep : 1;
 };
 
 /* The scope currently in effect.  */
