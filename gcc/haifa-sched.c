@@ -190,8 +190,8 @@ static int target_units = 0;
 
 static int issue_rate;
 
-#ifndef MACHINE_issue_rate
-#define get_issue_rate() (1)
+#ifndef ISSUE_RATE
+#define ISSUE_RATE 1
 #endif
 
 /* sched_debug_count is used for debugging the scheduler by limiting
@@ -8460,7 +8460,7 @@ schedule_insns (dump_file)
     }
 
   /* initialize issue_rate */
-  issue_rate = get_issue_rate ();
+  issue_rate = ISSUE_RATE;
 
   /* do the splitting first for all blocks */
   for (b = 0; b < n_basic_blocks; b++)

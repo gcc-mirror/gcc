@@ -1,5 +1,9 @@
 Tue Aug 19 09:34:57 1997  Jeffrey A Law  (law@cygnus.com)
 
+	* haifa-sched.c (ISSUE_RATE): Renamed from MACHINE_issue_rate.
+	(get_issue_rate): Delete.
+	* pa.h (ISSUE_RATE): Define.
+
 	* configure.in: Turn on haifa by default for the PA.
 	* configure: Rebuilt.
 	* pa.c (override_options): Accept -mschedule=7200 option.
