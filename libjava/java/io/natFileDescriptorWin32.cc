@@ -97,20 +97,25 @@ java::io::FileDescriptor::open (jstring path, jint jflags) {
   if ((jflags & READ) && (jflags & WRITE))
     {
       access = GENERIC_READ | GENERIC_WRITE;
-      if (jflags & APPEND)
+      if (jflags & EXCL)
+	create = CREATE_NEW; // this will raise error if file exists.
+      else
+	create = OPEN_ALWAYS; // equivalent to O_CREAT
+    }
+  else if (jflags & READ)
+    {
+      access = GENERIC_READ;
+      create = OPEN_EXISTING; // ignore EXCL
+    }
+  else
+    { 
+      access = GENERIC_WRITE;
+      if (jflags & EXCL)
+	create = CREATE_NEW;
+      else if (jflags & APPEND)
 	create = OPEN_ALWAYS;
       else
 	create = CREATE_ALWAYS;
-    }
-  else if(jflags & READ)
-    access = GENERIC_READ;
-  else
-    {
-      access = GENERIC_WRITE;
-      if (jflags & APPEND)
-	create = OPEN_ALWAYS;
-      else
-        create = CREATE_ALWAYS;
     }
 
   handle = CreateFile(buf, access, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, create, 0, NULL);
