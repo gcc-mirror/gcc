@@ -505,8 +505,6 @@ int warn_parentheses;
 #endif
 int dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 1;
 
-char *language_string = "GNU C";
-
 /* Decode the string P as a language-specific option for C.
    Return 1 if it is recognized (and handle it);
    return 0 if not recognized.  */
