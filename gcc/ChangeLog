@@ -1,3 +1,23 @@
+Thu Jan 29 00:25:35 1998  David S. Miller  <davem@tanya.rutgers.edu>
+			  Jeffrey A Law  (law@cygnus.com)
+
+	* rtl.c (read_rtx): Use atol/atoq based upon disposition of
+	HOST_WIDE_INT.
+
+	* genattrtab.c (write_test_expr): Use HOST_WIDE_INT_PRINT_DEC
+	as needed.
+	* genemit.c (gen_exp): Likewise.
+	* genpeep.c (match_rtx): Likewise.
+	* genrecog.c (write_tree_1): Likewise.
+
+	* c-lex.c (yyprint): Use proper format string based upon
+	disposition of HOST_BITS_PER_WIDE_INT.
+	(yylex): Put casts in right place for args to build_int_2.
+
+Thu Jan 29 00:24:29 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* combine.c: Fix typos in Jan27 changes.
+
 Thu Jan 29 00:07:49 1998  Ollivier Robert <roberto@keltia.freenix.fr>
 
 	* i386/freebsd.h (LIB_SPEC): Correctly handle -shared, -p and friends.

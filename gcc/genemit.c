@@ -212,13 +212,11 @@ gen_exp (x)
       else if (INTVAL (x) == STORE_FLAG_VALUE)
 	printf ("const_true_rtx");
       else
-	printf (
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT	     
-		"GEN_INT (%d)",
-#else
-		"GEN_INT (%ld)",
-#endif
-		INTVAL (x));
+	{
+	  printf ("GEN_INT (");
+	  printf (HOST_WIDE_INT_PRINT_DEC, INTVAL (x));
+	  printf (")");
+	}
       return;
 
     case CONST_DOUBLE:
