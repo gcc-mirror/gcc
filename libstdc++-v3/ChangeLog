@@ -1,5 +1,7 @@
 2001-01-12  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* config/os/djgpp/bits/*: Fix dates.
+	
 	* include/bits/basic_string.h (_S_find(const _CharT* __beg, const
 	_CharT* __end, _CharT __c): Remove.
 	* include/bits/basic_string.tcc: Substitute traits::find for _S_find.
