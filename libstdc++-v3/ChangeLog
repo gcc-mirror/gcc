@@ -1,3 +1,8 @@
+2003-10-30  Paolo Carlini  <pcarlini@suse.de>
+
+	* include/bits/locale_facets.tcc (time_get::_M_extract_via_format):
+	__mod is only assigned, never used its value, remove it.
+
 2003-10-29  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (time_get::do_get_year):

@@ -1544,13 +1544,9 @@ namespace std
 	    {
 	      // Verify valid formatting code, attempt to extract.
 	      __c = __format[++__i];
-	      char __mod = 0;
 	      int __mem = 0; 
 	      if (__c == 'E' || __c == 'O')
-		{
-		  __mod = __c;
-		  __c = __format[++__i];
-		}
+		__c = __format[++__i];
 	      switch (__c)
 		{
 		  const char* __cs;
