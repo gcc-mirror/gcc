@@ -32,6 +32,7 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "obstack.h"
 #include "cfglayout.h"
 #include "cfgloop.h"
+#include "target.h"
 
 /* The contents of the current function definition are allocated
    in this obstack, and all are freed at the end of the function.  */
@@ -748,6 +749,21 @@ cfg_layout_can_duplicate_bb_p (bb)
       && (GET_CODE (PATTERN (next)) == ADDR_VEC
 	  || GET_CODE (PATTERN (next)) == ADDR_DIFF_VEC))
     return false;
+
+  /* Do not duplicate blocks containing insns that can't be copied.  */
+  if (targetm.cannot_copy_insn_p)
+    {
+      rtx insn = bb->head;
+      while (1)
+	{
+	  if (INSN_P (insn) && (*targetm.cannot_copy_insn_p) (insn))
+	    return false;
+	  if (insn == bb->end)
+	    break;
+	  insn = NEXT_INSN (insn);
+	}
+    }
+
   return true;
 }
 

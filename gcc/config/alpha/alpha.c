@@ -192,6 +192,8 @@ static int some_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
 static int split_small_symbolic_operand_1
   PARAMS ((rtx *, void *));
+static bool alpha_cannot_copy_insn_p
+  PARAMS ((rtx));
 static bool alpha_rtx_costs
   PARAMS ((rtx, int, int, int *));
 static void alpha_set_memflags_1
@@ -361,6 +363,8 @@ static void unicosmk_unique_section PARAMS ((tree, int));
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL alpha_function_ok_for_sibcall
+#undef TARGET_CANNOT_COPY_INSN_P
+#define TARGET_CANNOT_COPY_INSN_P alpha_cannot_copy_insn_p
 
 #if TARGET_ABI_OSF
 #undef TARGET_ASM_OUTPUT_MI_THUNK
@@ -657,10 +661,6 @@ override_options ()
       real_format_for_mode[DFmode - QFmode] = &vax_g_format;
       real_format_for_mode[TFmode - QFmode] = NULL;
     }
-
-  /* ??? Turn off explicit relocs until code duplication by bb-reorder
-     is addressed.  */
-  target_flags &= ~MASK_EXPLICIT_RELOCS;
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -2475,6 +2475,49 @@ split_small_symbolic_operand_1 (px, data)
   return 0;
 }
 
+/* Indicate that INSN cannot be duplicated.  This is true for any insn
+   that we've marked with gpdisp relocs, since those have to stay in
+   1-1 correspondence with one another.
+
+   Techinically we could copy them if we could set up a mapping from one
+   sequence number to another, across the set of insns to be duplicated.
+   This seems overly complicated and error-prone since interblock motion
+   from sched-ebb could move one of the pair of insns to a different block.  */
+
+static bool
+alpha_cannot_copy_insn_p (insn)
+     rtx insn;
+{
+  rtx pat;
+
+  if (!reload_completed || !TARGET_EXPLICIT_RELOCS)
+    return false;
+
+  if (GET_CODE (insn) != INSN)
+    return false;
+  if (asm_noperands (insn) >= 0)
+    return false;
+
+  pat = PATTERN (insn);
+  if (GET_CODE (pat) != SET)
+    return false;
+  pat = SET_SRC (pat);
+  if (GET_CODE (pat) == UNSPEC_VOLATILE)
+    {
+      if (XINT (pat, 1) == UNSPECV_LDGP1
+	  || XINT (pat, 1) == UNSPECV_PLDGP2)
+	return true;
+    }
+  else if (GET_CODE (pat) == UNSPEC)
+    {
+      if (XINT (pat, 1) == UNSPEC_LDGP2)
+	return true;
+    }
+
+  return false;
+}
+
+  
 /* Try a machine-dependent way of reloading an illegitimate address
    operand.  If we find one, push the reload and return the new rtx.  */
    

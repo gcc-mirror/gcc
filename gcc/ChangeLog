@@ -1,5 +1,17 @@
 2003-02-15  Richard Henderson  <rth@redhat.com>
 
+	* Makefile.in (cfglayout.o): Depend on TARGET_H.
+	* cfglayout.c: Include target.h.
+	(cfg_layout_can_duplicate_bb_p): Check targetm.cannot_copy_insn_p.
+	* target-def.h (TARGET_CANNOT_COPY_INSN_P): New.
+	* target.h (struct gcc_target): Add cannot_copy_insn_p.
+
+	* config/alpha/alpha.c (alpha_cannot_copy_insn_p): New.
+	(TARGET_CANNOT_COPY_INSN_P): New.
+	(override_options): Revert 2003-02-08 hack.
+
+2003-02-15  Richard Henderson  <rth@redhat.com>
+
 	* gcse.c (bypass_block): Use BLOCK_FOR_INSN for resolving LABEL_REFs.
 	(bypass_conditional_jumps): Accept computed_jump_p insns as well.
 
