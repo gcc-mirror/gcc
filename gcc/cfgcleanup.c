@@ -1751,7 +1751,7 @@ try_optimize_cfg (int mode)
   if (mode & (CLEANUP_UPDATE_LIFE | CLEANUP_CROSSJUMP | CLEANUP_THREADING))
     clear_bb_flags ();
 
-  if (! (* targetm.cannot_modify_jumps_p) ())
+  if (! targetm.cannot_modify_jumps_p ())
     {
       first_pass = true;
       /* Attempt to merge blocks as made possible by edge removal.  If

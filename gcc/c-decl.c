@@ -6137,8 +6137,8 @@ c_expand_body_1 (tree fndecl, int nested_p)
   if (DECL_STATIC_CONSTRUCTOR (fndecl))
     {
       if (targetm.have_ctors_dtors)
-	(* targetm.asm_out.constructor) (XEXP (DECL_RTL (fndecl), 0),
-				         DEFAULT_INIT_PRIORITY);
+	targetm.asm_out.constructor (XEXP (DECL_RTL (fndecl), 0),
+				     DEFAULT_INIT_PRIORITY);
       else
 	static_ctors = tree_cons (NULL_TREE, fndecl, static_ctors);
     }
@@ -6146,8 +6146,8 @@ c_expand_body_1 (tree fndecl, int nested_p)
   if (DECL_STATIC_DESTRUCTOR (fndecl))
     {
       if (targetm.have_ctors_dtors)
-	(* targetm.asm_out.destructor) (XEXP (DECL_RTL (fndecl), 0),
-				        DEFAULT_INIT_PRIORITY);
+	targetm.asm_out.destructor (XEXP (DECL_RTL (fndecl), 0),
+				    DEFAULT_INIT_PRIORITY);
       else
 	static_dtors = tree_cons (NULL_TREE, fndecl, static_dtors);
     }
