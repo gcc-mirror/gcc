@@ -488,6 +488,13 @@ struct gcc_target
      the port wishes to automatically clobber for all asms.  */
   tree (* md_asm_clobbers) (tree);
 
+  /* This target hook allows the backend to specify a calling convention
+     in the debug information.  This function actually returns an
+     enum dwarf_calling_convention, but because of forward declarations
+     and not wanting to include dwarf2.h everywhere target.h is included
+     the function is being declared as an int.  */
+  int (* dwarf_calling_convention) (tree);
+
   /* Functions relating to calls - argument passing, returns, etc.  */
   struct calls {
     bool (*promote_function_args) (tree fntype);

@@ -129,7 +129,7 @@ default_pretend_outgoing_varargs_named (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 	  != default_setup_incoming_varargs);
 }
 
-enum machine_mode 
+enum machine_mode
 default_eh_return_filter_mode (void)
 {
   return word_mode;
@@ -173,7 +173,7 @@ default_cxx_get_cookie_size (tree type)
      (true_type)) bytes.  */
   tree sizetype_size;
   tree type_align;
-  
+
   sizetype_size = size_in_bytes (sizetype);
   type_align = size_int (TYPE_ALIGN_UNIT (type));
   if (INT_CST_LT_UNSIGNED (type_align, sizetype_size))

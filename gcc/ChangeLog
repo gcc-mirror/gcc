@@ -1,3 +1,18 @@
+2004-09-30  Eric Christopher  <echristo@redhat.com>
+
+	* dwarf2.h (dwarf_calling_convention): Add enum for renesas
+	sh abi.
+	* dwarf2out.c (add_calling_convention_attribute): New function.
+	(gen_subroutine_type_die): Use.
+	* target-def.h (TARGET_DWARF_CALLING_CONVENTION): New hook.
+	* target.h (gcc_target): Add dwarf_calling_convention.
+	* hooks.c (hook_int_tree_0): New function.
+	* hooks.h: Prototype.
+	* config/sh/sh.c: Include dwarf2.h.
+	(sh_dwarf_calling_convention): New function.
+	(TARGET_DWARF_CALLING_CONVENTION): Use.
+	* doc/tm.texi (TARGET_DWARF_CALLING_CONVENTION): Document.
+
 2004-09-30  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strstr, expand_builtin_strchr,
@@ -102,7 +117,7 @@
 	s390_update_frame_layout instead of s390_register_info.  Handle
 	prologue/epilogue insns that touch only RETURN_REGNUM.
 	(s390_reorg): Remove base_used.  Clear split_branches_pending_p.
-	(s390_register_info): Remove base_used and return_addr_used 
+	(s390_register_info): Remove base_used and return_addr_used
 	arguments, compute special register usage inline.  Return live
 	register data to caller.
 	(s390_frame_info): Remove arguments, do not call s390_register_info.

@@ -117,6 +117,12 @@ default_can_output_mi_thunk_no_vcall (tree a ATTRIBUTE_UNUSED,
   return c == 0;
 }
 
+int
+hook_int_tree_0 (tree a ATTRIBUTE_UNUSED)
+{
+  return 0;
+}
+
 /* ??? Used for comp_type_attributes, which ought to return bool.  */
 int
 hook_int_tree_tree_1 (tree a ATTRIBUTE_UNUSED, tree b ATTRIBUTE_UNUSED)
@@ -245,4 +251,3 @@ hook_tree_tree_bool_null (tree t ATTRIBUTE_UNUSED, bool ignore ATTRIBUTE_UNUSED)
 {
   return NULL;
 }
-  
