@@ -1,5 +1,24 @@
 2004-01-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
 
+	* gnu/java/awt/peer/gtk/GtkTextAreaPeer.java,
+	jni/gtk-peer/gnu_java_awt_peer_gtk_GtkTextAreaPeer.c
+	(native	create): Add width and height parameters.  Set text
+	view's size request according to new parameters.
+	(create): Calculate text view size based on current font's
+	metrics and number of rows and columns.  Set TextArea's font if
+	not already set.  Call native create.
+	(getMinimumSize): Call minimumSize.
+	(getPreferredSize): Call preferredSize.
+	(getHScrollbarHeight): New method.
+	(getVScrollbarWidth): New method.
+	(minimumSize): Calculate minimum size based on scrollbar
+	visibility, scrollbar sizes, font metrics and number of rows and
+	columns.
+	(preferredSize): Likewise for preferred size.
+	(gtkTextGetSize): Remove method.
+
+2004-01-13  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
 	* gnu/java/awt/peer/gtk/GtkComponentPeer.java
 	(initializeInsets): Remove method.
 	(GtkComponentPeer): Initialize insets field.  Remove call to
