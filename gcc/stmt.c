@@ -418,6 +418,8 @@ static void expand_cleanups		PARAMS ((tree, tree, int, int));
 static void check_seenlabel		PARAMS ((void));
 static void do_jump_if_equal		PARAMS ((rtx, rtx, rtx, int));
 static int estimate_case_costs		PARAMS ((case_node_ptr));
+static bool same_case_target_p		PARAMS ((rtx, rtx));
+static void strip_default_case_nodes	PARAMS ((case_node_ptr *, rtx));
 static void group_case_nodes		PARAMS ((case_node_ptr));
 static void balance_case_nodes		PARAMS ((case_node_ptr *,
 					       case_node_ptr));
@@ -5201,13 +5203,13 @@ expand_end_case_type (orig_index, orig_type)
   rtx before_case, end;
   struct nesting *thiscase = case_stack;
   tree index_expr, index_type;
+  bool exit_done = false;
   int unsignedp;
 
   /* Don't crash due to previous errors.  */
   if (thiscase == NULL)
     return;
 
-  table_label = gen_label_rtx ();
   index_expr = thiscase->data.case_stmt.index_expr;
   index_type = TREE_TYPE (index_expr);
   unsignedp = TREE_UNSIGNED (index_type);
@@ -5247,6 +5249,13 @@ expand_end_case_type (orig_index, orig_type)
 	{
 	  thiscase->data.case_stmt.default_label
 	    = build_decl (LABEL_DECL, NULL_TREE, NULL_TREE);
+	  /* Share the exit label if possible.  */
+          if (thiscase->exit_label)
+	    {
+	      SET_DECL_RTL (thiscase->data.case_stmt.default_label,
+			    thiscase->exit_label);
+	      exit_done = true;
+	    }
 	  expand_label (thiscase->data.case_stmt.default_label);
 	}
       default_label = label_rtx (thiscase->data.case_stmt.default_label);
@@ -5260,6 +5269,8 @@ expand_end_case_type (orig_index, orig_type)
 
       /* Simplify the case-list before we count it.  */
       group_case_nodes (thiscase->data.case_stmt.case_list);
+      strip_default_case_nodes (&thiscase->data.case_stmt.case_list,
+				default_label);
 
       /* Get upper and lower bounds of case values.
 	 Also convert all the case values to the index expr's data type.  */
@@ -5321,9 +5332,7 @@ expand_end_case_type (orig_index, orig_type)
 #ifndef ASM_OUTPUT_ADDR_DIFF_ELT
 	       || flag_pic
 #endif
-	       || TREE_CODE (index_expr) == INTEGER_CST
-	       || (TREE_CODE (index_expr) == COMPOUND_EXPR
-		   && TREE_CODE (TREE_OPERAND (index_expr, 1)) == INTEGER_CST))
+	       || TREE_CONSTANT (index_expr))
 	{
 	  index = expand_expr (index_expr, NULL_RTX, VOIDmode, 0);
 
@@ -5406,6 +5415,7 @@ expand_end_case_type (orig_index, orig_type)
 	}
       else
 	{
+	  table_label = gen_label_rtx ();
 	  if (! try_casesi (index_type, index_expr, minval, range,
 			    table_label, default_label))
 	    {
@@ -5487,7 +5497,7 @@ expand_end_case_type (orig_index, orig_type)
   else
     end_cleanup_deferral ();
 
-  if (thiscase->exit_label)
+  if (thiscase->exit_label && !exit_done)
     emit_label (thiscase->exit_label);
 
   POPSTACK (case_stack);
@@ -5617,6 +5627,54 @@ estimate_case_costs (node)
   return 1;
 }
 
+/* Determine whether two case labels branch to the same target.  */
+
+static bool
+same_case_target_p (l1, l2)
+     rtx l1, l2;
+{
+  rtx i1, i2;
+
+  if (l1 == l2)
+    return true;
+
+  i1 = next_real_insn (l1);
+  i2 = next_real_insn (l2);
+  if (i1 == i2)
+    return true;
+
+  if (i1 && simplejump_p (i1))
+    {
+      l1 = XEXP (SET_SRC (PATTERN (i1)), 0);
+    }
+
+  if (i2 && simplejump_p (i2))
+    {
+      l2 = XEXP (SET_SRC (PATTERN (i2)), 0);
+    }
+  return l1 == l2;
+}
+
+/* Delete nodes that branch to the default label from a list of
+   case nodes.  Eg. case 5: default: becomes just default:  */
+
+static void
+strip_default_case_nodes (prev, deflab)
+     case_node_ptr *prev;
+     rtx deflab;
+{
+  case_node_ptr ptr;
+
+  while (*prev)
+    {
+      ptr = *prev;
+      if (same_case_target_p (label_rtx (ptr->code_label), deflab))
+	*prev = ptr->right;
+      else
+	prev = &ptr->right;
+    }
+}
+
 /* Scan an ordered list of case nodes
    combining those with consecutive values or ranges.
 
@@ -5630,19 +5688,13 @@ group_case_nodes (head)
 
   while (node)
     {
-      rtx lb = next_real_insn (label_rtx (node->code_label));
-      rtx lb2;
+      rtx lab = label_rtx (node->code_label);
       case_node_ptr np = node;
 
       /* Try to group the successors of NODE with NODE.  */
       while (((np = np->right) != 0)
 	     /* Do they jump to the same place?  */
-	     && ((lb2 = next_real_insn (label_rtx (np->code_label))) == lb
-		 || (lb != 0 && lb2 != 0
-		     && simplejump_p (lb)
-		     && simplejump_p (lb2)
-		     && rtx_equal_p (SET_SRC (PATTERN (lb)),
-				     SET_SRC (PATTERN (lb2)))))
+	     && same_case_target_p (label_rtx (np->code_label), lab)
 	     /* Are their ranges consecutive?  */
 	     && tree_int_cst_equal (np->low,
 				    fold (build (PLUS_EXPR,
