@@ -66,8 +66,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 /* The obstack on which the flow graph components are allocated.  */
 
 struct bitmap_obstack reg_obstack;
-struct obstack flow_obstack;
-static char *flow_firstobj;
 
 /* Number of basic blocks in the current function.  */
 
@@ -102,21 +100,7 @@ enum profile_status profile_status;
 void
 init_flow (void)
 {
-  static int initialized;
-
   n_edges = 0;
-
-  if (!initialized)
-    {
-      gcc_obstack_init (&flow_obstack);
-      flow_firstobj = obstack_alloc (&flow_obstack, 0);
-      initialized = 1;
-    }
-  else
-    {
-      obstack_free (&flow_obstack, flow_firstobj);
-      flow_firstobj = obstack_alloc (&flow_obstack, 0);
-    }
 
   ENTRY_BLOCK_PTR = ggc_alloc_cleared (sizeof (*ENTRY_BLOCK_PTR));
   ENTRY_BLOCK_PTR->index = ENTRY_BLOCK;
