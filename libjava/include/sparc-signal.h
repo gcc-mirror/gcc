@@ -1,6 +1,6 @@
 // sparc-signal.h - Catch runtime signals and turn them into exceptions.
 
-/* Copyright (C) 1998, 1999  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -23,7 +23,7 @@ static void _name (int _dummy, siginfo_t *_info, void *arg)
 #define FLUSH_REGISTER_WINDOWS					\
   asm volatile ("ta 3");
 
-#define MAKE_THROW_FRAME					\
+#define MAKE_THROW_FRAME(_exception)				\
 do								\
 {								\
   ucontext_t *_context = (ucontext_t *) arg;                    \
