@@ -146,8 +146,10 @@ default_setup_incoming_varargs (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* Generic hook that takes a CUMULATIVE_ARGS pointer and returns true.  */
+
 bool
-default_strict_argument_naming (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
+hook_bool_CUMULATIVE_ARGS_false (CUMULATIVE_ARGS *ca ATTRIBUTE_UNUSED)
 {
   return false;
 }
