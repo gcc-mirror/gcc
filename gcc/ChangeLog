@@ -1,3 +1,8 @@
+2001-10-17  Richard Earnshaw <rearnsha@arm.com>
+
+	* cpplex.c (_cpp_get_buff): Fix off-by-one error that caused memory
+	leak.
+
 Wed Oct 17 05:26:39 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* Makefile.in (print-rtl.o): Depend on TREE_H.
