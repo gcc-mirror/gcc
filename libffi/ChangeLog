@@ -1,3 +1,9 @@
+2002-09-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* src/arm/sysv.S: If we don't have machine/asm.h and the pre-processor
+	has defined __USER_LABEL_PREFIX__, then use it in CNAME.
+	(ffi_call_SYSV): Handle soft-float.
+
 2002-09-27  Bo Thorsen  <bo@suse.de>
 
 	* include/ffi.h.in: Fix multilib x86-64 support.
