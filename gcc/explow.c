@@ -116,19 +116,32 @@ plus_constant_wide (x, c)
 	 integer.  For a constant term that is not an explicit integer,
 	 we cannot really combine, but group them together anyway.  
 
-	 Use a recursive call in case the remaining operand is something
-	 that we handle specially, such as a SYMBOL_REF.  */
+	 Restart or use a recursive call in case the remaining operand is
+	 something that we handle specially, such as a SYMBOL_REF.
+
+	 We may not immediately return from the recursive call here, lest
+	 all_constant gets lost.  */
 
       if (GET_CODE (XEXP (x, 1)) == CONST_INT)
-	return plus_constant (XEXP (x, 0), c + INTVAL (XEXP (x, 1)));
+	{
+	  c += INTVAL (XEXP (x, 1));
+	  x = XEXP (x, 0);
+	  goto restart;
+	}
       else if (CONSTANT_P (XEXP (x, 0)))
-	return gen_rtx_PLUS (mode,
-			     plus_constant (XEXP (x, 0), c),
-			     XEXP (x, 1));
+	{
+	  x = gen_rtx_PLUS (mode,
+			    plus_constant (XEXP (x, 0), c),
+			    XEXP (x, 1));
+	  c = 0;
+	}
       else if (CONSTANT_P (XEXP (x, 1)))
-	return gen_rtx_PLUS (mode,
-			     XEXP (x, 0),
-			     plus_constant (XEXP (x, 1), c));
+	{
+	  x = gen_rtx_PLUS (mode,
+			    XEXP (x, 0),
+			    plus_constant (XEXP (x, 1), c));
+	  c = 0;
+	}
       break;
       
     default:
