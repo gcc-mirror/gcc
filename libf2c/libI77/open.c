@@ -143,12 +143,20 @@ integer f_open(olist *a)
 	 case 's':
 	 case 'S':
 		b->uscrtch=1;
+#ifdef HAVE_TEMPNAM		/* Allow use of TMPDIR preferentially. */
+		s = tempnam (0, buf);
+		if (strlen (s) >= sizeof (buf))
+		  err (a->oerr, 132, "open");
+		(void) strcpy (buf, s);
+		free (s);
+#else /* ! defined (HAVE_TEMPNAM) */
 #ifdef _POSIX_SOURCE
 		tmpnam(buf);
 #else
 		(void) strcpy(buf,"tmp.FXXXXXX");
 		(void) mktemp(buf);
 #endif
+#endif /* ! defined (HAVE_TEMPNAM) */
 		goto replace;
 	case 'n':
 	case 'N':

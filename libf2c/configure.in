@@ -192,6 +192,8 @@ dnl test $ac_cv_func_symlink = yes && SYMLNK=symlnk_.o
 dnl test $ac_cv_func_lstat = yes && SYMLNK="$SYMLNK lstat_.o"
 dnl AC_SUBST(SYMLNK)
 
+AC_CHECK_FUNCS(tempnam)
+
 # posix will guarantee the right behaviour for sprintf, else we can't be
 # sure; HEADER_STDC wouldn't be the right check in sunos4, for instance.
 # However, on my sunos4/gcc setup unistd.h leads us wrongly to believe

@@ -80,7 +80,8 @@ char *F_err[] =
 	"'new' file exists",				/* 128 */
 	"can't append to file",				/* 129 */
 	"non-positive record number",			/* 130 */
-	"I/O started while already doing I/O"		/* 131 */
+	"I/O started while already doing I/O",		/* 131 */
+	"Temporary file name (TMPDIR?) too long"        /* 132 */
 };
 #define MAXERR (sizeof(F_err)/sizeof(char *)+100)
 
