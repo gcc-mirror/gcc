@@ -937,7 +937,7 @@ endif
 # Rebuilding this configuration
 # -----------------------------
 
-Makefile: config.status $(srcdir)/Makefile.in $(srcdir)/version.c
+Makefile: config.status $(srcdir)/Makefile.in $(srcdir)/version.c $(LANG_MAKEFRAGS)
 	LANGUAGES="$(CONFIG_LANGUAGES)" \
 	CONFIG_HEADERS= \
 	CONFIG_FILES=$@ $(SHELL) config.status
@@ -3353,6 +3353,8 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	STRICT_WARN="$(STRICT2_WARN)" \
 	libdir=$(libdir) \
 	LANGUAGES="$(LANGUAGES)" \
+	MAKEINFO="$(MAKEINFO)" \
+	MAKEINFOFLAGS="$(MAKEINFOFLAGS)" \
 	MAKEOVERRIDES= \
 	OUTPUT_OPTION="-o \$$@"
 

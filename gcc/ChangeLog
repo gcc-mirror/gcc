@@ -1,3 +1,8 @@
+2003-10-18  Kelley Cook  <kcook@gcc.gnu.org>
+
+	* Makefile.in (Makefile): Depend on the all Make-lang.in fragments.
+	(POSTSTAGE1_FLAGS_TO_PASS): Pass down MAKEINFO and MAKEINFOFLAGS.
+
 2003-10-17  David Edelsohn  <edelsohn@gnu.org>
 
 	* doc/invoke.texi (gcse-las): Fix typo.
