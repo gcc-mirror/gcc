@@ -189,11 +189,7 @@ Boston, MA 02111-1307, USA.  */
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
   do								\
     {								\
-      fprintf (FILE, "\t%s\t ", TYPE_ASM_OP);			\
-      assemble_name (FILE, NAME);				\
-      putc (',', FILE);						\
-      fprintf (FILE, TYPE_OPERAND_FMT, "function");		\
-      putc ('\n', FILE);					\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
       ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));		\
     }								\
   while (0)

@@ -148,21 +148,14 @@ do {									\
 #undef ASM_DECLARE_OBJECT_NAME
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
   do {									\
-    fprintf (FILE, "%s", TYPE_ASM_OP);				\
-    assemble_name (FILE, NAME);						\
-    putc (',', FILE);							\
-    fprintf (FILE, TYPE_OPERAND_FMT, "object");				\
-    putc ('\n', FILE);							\
+    HOST_WIDE_INT size;							\
+    ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
     size_directive_output = 0;						\
     if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		\
       {									\
 	size_directive_output = 1;					\
-	fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	assemble_name (FILE, NAME);					\
-	fprintf (FILE, ",");						\
-	fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,				\
-	  int_size_in_bytes (TREE_TYPE (DECL)));			\
-	fprintf (FILE, "\n");						\
+	size = int_size_in_bytes (TREE_TYPE (DECL));			\
+	ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);			\
       }									\
     mips_declare_object (FILE, NAME, "", ":\n", 0);			\
   } while (0)
@@ -177,18 +170,16 @@ do {									\
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
+     HOST_WIDE_INT size;						 \
+									 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
          && ! AT_END && TOP_LEVEL					 \
 	 && DECL_INITIAL (DECL) == error_mark_node			 \
 	 && !size_directive_output)					 \
        {								 \
 	 size_directive_output = 1;					 \
-	 fprintf (FILE, "%s", SIZE_ASM_OP);				 \
-	 assemble_name (FILE, name);					 \
-	 fprintf (FILE, ",");						 \
-	 fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,			 \
-		  int_size_in_bytes (TREE_TYPE (DECL)));		 \
-	 fprintf (FILE, "\n");						 \
+	 size = int_size_in_bytes (TREE_TYPE (DECL));			 \
+	 ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);			 \
        }								 \
    } while (0)
 

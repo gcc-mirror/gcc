@@ -2145,13 +2145,7 @@ do {						\
 	labelno++;						\
 	ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
-	fprintf ((FILE), "\t%s\t ", SIZE_ASM_OP);		\
-	assemble_name ((FILE), (FNAME));			\
-        fprintf ((FILE), ",");					\
-	assemble_name ((FILE), label);				\
-        fprintf ((FILE), "-");					\
-	assemble_name ((FILE), (FNAME));			\
-	putc ('\n', (FILE));					\
+	ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), label);	\
       }								\
   } while (0)
 /* A C statement (sans semicolon) to output to the stdio stream
@@ -2162,8 +2156,6 @@ do {						\
 
    If this macro is not defined, then the function size is not
    defined.  */
-
-
 
 #define ESCAPES \
 "\1\1\1\1\1\1\1\1btn\1fr\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\1\

@@ -62,18 +62,14 @@ Boston, MA 02111-1307, USA.  */
 
 /* We might need a ARM specific header to function declarations.  */
 #undef  ASM_DECLARE_FUNCTION_NAME
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
-  do							\
-    {							\
-      ARM_DECLARE_FUNCTION_NAME (FILE, NAME, DECL);     \
-      fprintf (FILE, "%s", TYPE_ASM_OP);		\
-      assemble_name (FILE, NAME);			\
-      putc (',', FILE);					\
-      fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
-      putc ('\n', FILE);				\
-      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));	\
-      ASM_OUTPUT_LABEL(FILE, NAME);			\
-    }							\
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
+  do								\
+    {								\
+      ARM_DECLARE_FUNCTION_NAME (FILE, NAME, DECL);		\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
+      ASM_DECLARE_RESULT (FILE, DECL_RESULT (DECL));		\
+      ASM_OUTPUT_LABEL(FILE, NAME);				\
+    }								\
   while (0)
 
 /* We might need an ARM specific trailer for function declarations.  */
@@ -89,13 +85,7 @@ Boston, MA 02111-1307, USA.  */
 	  labelno ++;						\
 	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
-	  assemble_name (FILE, (FNAME));			\
-          fprintf (FILE, ",");					\
-	  assemble_name (FILE, label);				\
-          fprintf (FILE, "-");					\
-	  assemble_name (FILE, (FNAME));			\
-	  putc ('\n', FILE);					\
+	  ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), label);	\
         }							\
     }								\
   while (0)

@@ -146,9 +146,6 @@ do {								\
 
 #define ASM_COMMENT_START "|"
 
-#undef TYPE_OPERAND_FMT
-#define TYPE_OPERAND_FMT      "@%s"
-
 /* Define how the m68k registers should be numbered for Dwarf output.
    The numbering provided here should be compatible with the native
    SVR4 SDB debugger in the m68k/SVR4 reference port, where d0-d7

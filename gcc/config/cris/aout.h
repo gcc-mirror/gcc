@@ -288,42 +288,30 @@ Boston, MA 02111-1307, USA.  */
     }					\
   while (0)
 
-#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)	\
-  do							\
-    {							\
-      fprintf (FILE, "%s", TYPE_ASM_OP);		\
-      assemble_name (FILE, NAME);			\
-      putc (',', FILE);					\
-      fprintf (FILE, TYPE_OPERAND_FMT, "function");	\
-      putc ('\n', FILE);				\
-      							\
-      ASM_OUTPUT_LABEL(FILE, NAME);			\
-    }							\
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)		\
+  do								\
+    {								\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");	\
+      ASM_OUTPUT_LABEL(FILE, NAME);				\
+    }								\
   while (0)
 
 #define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)		\
   do								\
     {								\
-      fprintf (FILE, "%s", TYPE_ASM_OP);			\
-      assemble_name (FILE, NAME);				\
-      putc (',', FILE);						\
-      fprintf (FILE, TYPE_OPERAND_FMT, "object");		\
-      putc ('\n', FILE);					\
-      								\
+      HOST_WIDE_INT size;					\
+								\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");		\
+								\
       size_directive_output = 0;				\
-      								\
       if (!flag_inhibit_size_directive				\
 	  && (DECL) && DECL_SIZE (DECL))			\
 	{							\
 	  size_directive_output = 1;				\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
-	  assemble_name (FILE, NAME);				\
-	  putc (',', FILE);					\
-	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
-		   int_size_in_bytes (TREE_TYPE (DECL)));	\
-	  fputc ('\n', FILE);					\
+          size = int_size_in_bytes (TREE_TYPE (DECL));		\
+          ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);		\
 	}							\
-      								\
+								\
       ASM_OUTPUT_LABEL (FILE, NAME);				\
     }								\
   while (0)
@@ -332,6 +320,7 @@ Boston, MA 02111-1307, USA.  */
   do								\
     {								\
       const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);	\
+      HOST_WIDE_INT size;					\
       								\
       if (!flag_inhibit_size_directive				\
 	  && DECL_SIZE (DECL)					\
@@ -340,12 +329,8 @@ Boston, MA 02111-1307, USA.  */
 	  && !size_directive_output)				\
 	{							\
 	  size_directive_output = 1;				\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
-	  assemble_name (FILE, name);				\
-	  putc (',', FILE);					\
-	  fprintf (FILE, HOST_WIDE_INT_PRINT_DEC,		\
-		   int_size_in_bytes (TREE_TYPE (DECL))); 	\
-	  fputc ('\n', FILE);					\
+	  size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	  ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);		\
 	}							\
     }								\
   while (0)
@@ -362,14 +347,7 @@ Boston, MA 02111-1307, USA.  */
 	  							\
 	  ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	  ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);	\
-	  							\
-	  fprintf (FILE, "%s", SIZE_ASM_OP);			\
-	  assemble_name (FILE, (FNAME));			\
-	  fprintf (FILE, ",");					\
-	  assemble_name (FILE, label);				\
-	  fprintf (FILE, "-");					\
-	  assemble_name (FILE, (FNAME));			\
-	  putc ('\n', FILE);					\
+	  ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), label);	\
 	}							\
     }								\
   while (0)

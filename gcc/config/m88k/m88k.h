@@ -1813,38 +1813,31 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL)			\
   do {									\
     if (DECLARE_ASM_NAME)						\
-      {									\
-	fprintf (FILE, "%s", TYPE_ASM_OP);				\
-	assemble_name (FILE, NAME);					\
-	putc (',', FILE);						\
-	fprintf (FILE, TYPE_OPERAND_FMT, "function");			\
-	putc ('\n', FILE);						\
-      }									\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "function");		\
     ASM_OUTPUT_LABEL(FILE, NAME);					\
   } while (0)
 
 /* Write the extra assembler code needed to declare an object properly.  */
 #undef	ASM_DECLARE_OBJECT_NAME
-#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			    \
-  do {									    \
-    if (DECLARE_ASM_NAME)						    \
-      {									    \
-	fprintf (FILE, "%s", TYPE_ASM_OP);				    \
-	assemble_name (FILE, NAME);					    \
-	putc (',', FILE);						    \
-	fprintf (FILE, TYPE_OPERAND_FMT, "object");			    \
-	putc ('\n', FILE);						    \
-        size_directive_output = 0;					    \
-	if (!flag_inhibit_size_directive && DECL_SIZE (DECL))		    \
-	  {								    \
-            size_directive_output = 1;					    \
-	    fprintf (FILE, "%s", SIZE_ASM_OP);				    \
-	    assemble_name (FILE, NAME);					    \
-	    fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
-	  }								    \
-      }									    \
-    ASM_OUTPUT_LABEL(FILE, NAME);					    \
-  } while (0)
+#define ASM_DECLARE_OBJECT_NAME(FILE, NAME, DECL)			\
+  do {									\
+    if (DECLARE_ASM_NAME)						\
+      {									\
+	HOST_WIDE_INT size;						\
+									\
+	ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");		\
+									\
+	size_directive_output = 0;					\
+	if (!flag_inhibit_size_directive				\
+	    && (DECL) && DECL_SIZE (DECL))				\
+	  {								\
+	    size_directive_output = 1;					\
+	    size = int_size_in_bytes (TREE_TYPE (DECL));		\
+	    ASM_OUTPUT_SIZE_DIRECTIVE (FILE, NAME, size);		\
+	  }								\
+      }									\
+    ASM_OUTPUT_LABEL(FILE, NAME);					\
+  } while (0);
 
 /* Output the size directive for a decl in rest_of_decl_compilation
    in the case where we did not do so before the initializer.
@@ -1856,6 +1849,7 @@ enum reg_class { NO_REGS, AP_REG, XRF_REGS, GENERAL_REGS, AGRF_REGS,
 #define ASM_FINISH_DECLARE_OBJECT(FILE, DECL, TOP_LEVEL, AT_END)	 \
 do {									 \
      const char *name = XSTR (XEXP (DECL_RTL (DECL), 0), 0);		 \
+     HOST_WIDE_INT size;						 \
      if (!flag_inhibit_size_directive && DECL_SIZE (DECL)		 \
 	 && DECLARE_ASM_NAME						 \
          && ! AT_END && TOP_LEVEL					 \
@@ -1863,9 +1857,8 @@ do {									 \
 	 && !size_directive_output)					 \
        {								 \
 	 size_directive_output = 1;					 \
-	 fprintf (FILE, "%s", SIZE_ASM_OP);				 \
-	 assemble_name (FILE, name);					 \
-	 fprintf (FILE, ",%d\n",  int_size_in_bytes (TREE_TYPE (DECL))); \
+	 size = int_size_in_bytes (TREE_TYPE (DECL));			 \
+	 ASM_OUTPUT_SIZE_DIRECTIVE (FILE, name, size);			 \
        }								 \
    } while (0)
 
@@ -1882,11 +1875,7 @@ do {									 \
 	    labelno++;							\
 	    ASM_GENERATE_INTERNAL_LABEL (label, "Lfe", labelno);	\
 	    ASM_OUTPUT_INTERNAL_LABEL (FILE, "Lfe", labelno);		\
-	    fprintf (FILE, "%s", SIZE_ASM_OP);				\
-	    assemble_name (FILE, (FNAME));				\
-	    fprintf (FILE, ",%s-", &label[1]);				\
-	    assemble_name (FILE, (FNAME));				\
-	    putc ('\n', FILE);						\
+	    ASM_OUTPUT_MEASURED_SIZE (FILE, (FNAME), label);		\
 	  }								\
       }									\
   } while (0)

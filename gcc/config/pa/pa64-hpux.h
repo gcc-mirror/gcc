@@ -130,28 +130,11 @@ do {  \
 
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 
-/* Define the strings used for the special svr4 .type and .size directives.
-   These strings generally do not vary from one system running svr4 to
-   another, but if a given system (e.g. m88k running svr) needs to use
-   different pseudo-op names for these, they may be overridden in the
-   file which includes this one.  */
-
-#define TYPE_ASM_OP	"\t.type\t"
-#define SIZE_ASM_OP	"\t.size\t"
-
 /* This is how we tell the assembler that a symbol is weak.  */
 
 #define ASM_WEAKEN_LABEL(FILE,NAME) \
   do { fputs ("\t.weak\t", FILE); assemble_name (FILE, NAME); \
        fputc ('\n', FILE); } while (0)
-
-/* The following macro defines the format used to output the second
-   operand of the .type assembler directive.  Different svr4 assemblers
-   expect various different forms for this operand.  The one given here
-   is just a default.  You may need to override it in your machine-
-   specific tm.h file (depending upon the particulars of your assembler).  */
-
-#define TYPE_OPERAND_FMT	"@%s"
 
 /* Write the extra assembler code needed to declare a function's result.
    Most svr4 assemblers don't require any special declaration of the

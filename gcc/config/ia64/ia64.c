@@ -4059,13 +4059,7 @@ ia64_asm_output_external (file, decl, name)
      restore it.  */
   save_referenced = TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl));
   if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      fprintf (file, "%s", TYPE_ASM_OP);
-      assemble_name (file, name);
-      putc (',', file);
-      fprintf (file, TYPE_OPERAND_FMT, "function");
-      putc ('\n', file);
-    }
+    ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_GLOBALIZE_LABEL (file, name);
   TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)) = save_referenced;
 }
