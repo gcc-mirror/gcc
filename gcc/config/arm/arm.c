@@ -418,6 +418,13 @@ int arm_is_6_or_7 = 0;
 /* Nonzero if generating Thumb instructions.  */
 int thumb_code = 0;
 
+/* Nonzero if we should define __THUMB_INTERWORK__ in the
+   preprocessor.  
+   XXX This is a bit of a hack, it's intended to help work around
+   problems in GLD which doesn't understand that armv5t code is
+   interworking clean.  */
+int arm_cpp_interwork = 0;
+
 /* In case of a PRE_INC, POST_INC, PRE_DEC, POST_DEC memory reference, we
    must report the mode of the memory reference from PRINT_OPERAND to
    PRINT_OPERAND_ADDRESS.  */
@@ -838,6 +845,12 @@ arm_override_options (void)
 
   /* V5 code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */
+
+  /* XXX However, we must pass the right pre-processor defines to CPP
+     or GLD can get confused.  This is a hack.  */
+  if (TARGET_INTERWORK)
+    arm_cpp_interwork = 1;
+
   if (arm_arch5)
     target_flags &= ~ARM_FLAG_INTERWORK;
 

@@ -1,3 +1,12 @@
+2004-07-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_cpp_interwork): New variable.
+	(arm_override_options): Set it if TARGET_INTERWORK was on the command
+	line.
+	* arm.h (arm_cpp_interwork): Declare it.
+	(TARGET_CPU_CPP_BUILTINS): Use it to control definition of
+	__THUMB_INTERWORK__ in the preprocessor.
+
 2004-07-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.h (VEC_T_alloc): Fix MEM_STAT_DECL pasto.
