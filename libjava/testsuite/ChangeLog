@@ -1,3 +1,13 @@
+2003-10-22  Tom Tromey  <tromey@redhat.com>
+
+	PR libgcj/12656:
+	* libjava.lang/PR12656.java: New file.
+	* libjava.lang/PR12656.out: New file.
+
+2003-10-21  Tom Tromey  <tromey@redhat.com>
+
+	* lib/libjava.exp (find_javac): Use -Wno-unreachable-bytecode.
+
 2003-10-08  Tom Tromey  <tromey@redhat.com>
 
 	* libjava.mauve/xfails: Removed some tests.
