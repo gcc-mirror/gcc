@@ -1,3 +1,8 @@
+2003-04-29  Mark Mitchell  <mark@codesourcery.com>
+
+	* decl.c (maybe_commonize_var): Further tweak support for systems
+	without weak symbols.
+
 2003-04-27  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (maybe_commonize_var): Fix thinko in last patch.

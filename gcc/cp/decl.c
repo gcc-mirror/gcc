@@ -7803,34 +7803,34 @@ maybe_commonize_var (decl)
 	       || DECL_TEMPLATE_INSTANTIATION (DECL_CONTEXT (decl)))
 	      && TREE_PUBLIC (DECL_CONTEXT (decl)))))
     {
-      /* If flag_weak, we don't need to mess with this, as we can just
-	 make the function weak, and let it refer to its unique local
-	 copy.  This works because we don't allow the function to be
-	 inlined.  */
-      if (! flag_weak)
+      if (flag_weak)
 	{
-	  if (DECL_INTERFACE_KNOWN (current_function_decl))
+	  /* With weak symbols, we simply make the variable COMDAT;
+	     that will cause copies in multiple translations units to
+	     be merged.  */
+	  comdat_linkage (decl);
+	}
+      else
+	{
+	  if (DECL_INITIAL (decl) == NULL_TREE
+	      || DECL_INITIAL (decl) == error_mark_node)
 	    {
-	      TREE_PUBLIC (decl) = 1;
-	      DECL_EXTERNAL (decl) = DECL_EXTERNAL (current_function_decl);
-	    }
-	  else if (DECL_INITIAL (decl) == NULL_TREE
-		   || DECL_INITIAL (decl) == error_mark_node)
-	    {
+	      /* Without weak symbols, we can use COMMON to merge
+		 uninitialized variables.  */
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_COMMON (decl) = 1;
 	    }
-	  /* else we lose. We can only do this if we can use common,
-	     which we can't if it has been initialized.  */
-
-	  if (!TREE_PUBLIC (decl))
+	  else
 	    {
+	      /* While for initialized variables, we must use internal
+		 linkage -- which means that multiple copies will not
+		 be merged.  */
+	      TREE_PUBLIC (decl) = 0;
+	      DECL_COMMON (decl) = 0;
 	      cp_warning_at ("sorry: semantics of inline function static data `%#D' are wrong (you'll wind up with multiple copies)", decl);
 	      cp_warning_at ("  you can work around this by removing the initializer", decl);
 	    }
 	}
-      else
-	comdat_linkage (decl);
     }
   else if (DECL_LANG_SPECIFIC (decl) && DECL_COMDAT (decl))
     /* Set it up again; we might have set DECL_INITIAL since the last
