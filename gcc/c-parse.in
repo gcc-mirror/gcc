@@ -2605,11 +2605,12 @@ setspecs_fp:
    where either a parmlist or an identifier list is ok.
    Its value is a list of ..._TYPE nodes or a list of identifiers.  */
 parmlist_or_identifiers:
+	  maybe_attribute
 		{ pushlevel (0);
 		  clear_parm_order ();
 		  declare_parm_level (1); }
 	  parmlist_or_identifiers_1
-		{ $$ = $2;
+		{ $$ = $3;
 		  parmlist_tags_warning ();
 		  poplevel (0, 0, 0); }
 	;
@@ -2621,7 +2622,15 @@ parmlist_or_identifiers_1:
 		  for (t = $1; t; t = TREE_CHAIN (t))
 		    if (TREE_VALUE (t) == NULL_TREE)
 		      error ("`...' in old-style identifier list");
-		  $$ = tree_cons (NULL_TREE, NULL_TREE, $1); }
+		  $$ = tree_cons (NULL_TREE, NULL_TREE, $1);
+
+		  /* Make sure we have a parmlist after attributes.  */
+		  if ($<ttype>-1 != 0
+		      && (TREE_CODE ($$) != TREE_LIST
+			  || TREE_PURPOSE ($$) == 0
+			  || TREE_CODE (TREE_PURPOSE ($$)) != PARM_DECL))
+		    YYERROR1;
+		}
 	;
 
 /* A nonempty list of identifiers.  */
