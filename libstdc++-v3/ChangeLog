@@ -1,3 +1,8 @@
+2001-03-02  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
+
+        * src/locale.cc: initialise __ret with zero
+        * src/strstream.cc:cast gptr to int_type
+
 2001-03-01  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/faq/index.html:  Update broken links.
@@ -59,7 +64,7 @@
 
 	Correct license.
 	* config/cpu/alpha/bits/atomicity.h: Change.
-	* config/cpu/arm/bits/atomicity.h
+	* config/cpu/arm/bits/atomicit3y.h
 	* config/cpu/generic/bits/atomicity.h
 	* config/cpu/i386/bits/atomicity.h
 	* config/cpu/i486/bits/atomicity.h
