@@ -47,78 +47,8 @@ namespace std
   // Specializations for all types used in num_get.
   template<>
     void
-    __convert_to_v(const char* __s, long& __v, ios_base::iostate& __err, 
-		   const __c_locale&, int __base)
-    {
-      if (!(__err & ios_base::failbit))
-      {
-	char* __sanity;
-	errno = 0;
-	long __l = strtol(__s, &__sanity, __base);
-	if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
-	  __v = __l;
-	else
-	  __err |= ios_base::failbit;
-      }
-    }
-
-  template<>
-    void
-    __convert_to_v(const char* __s, unsigned long& __v, 
-		   ios_base::iostate& __err, const __c_locale&, int __base)
-    {
-      if (!(__err & ios_base::failbit))
-	{
-	  char* __sanity;
-	  errno = 0;
-	  unsigned long __ul = strtoul(__s, &__sanity, __base);
-          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
-	    __v = __ul;
-	  else
-	    __err |= ios_base::failbit;
-	}
-    }
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template<>
-    void
-    __convert_to_v(const char* __s, long long& __v, ios_base::iostate& __err, 
-		   const __c_locale&, int __base)
-    {
-      if (!(__err & ios_base::failbit))
-	{
-	  char* __sanity;
-	  errno = 0;
-	  long long __ll = strtoll(__s, &__sanity, __base);
-          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
-	    __v = __ll;
-	  else
-	    __err |= ios_base::failbit;
-	}
-    }
-
-  template<>
-    void
-    __convert_to_v(const char* __s, unsigned long long& __v, 
-		   ios_base::iostate& __err, const __c_locale&, int __base)
-    {
-      if (!(__err & ios_base::failbit))
-	{      
-	  char* __sanity;
-	  errno = 0;
-	  unsigned long long __ull = strtoull(__s, &__sanity, __base);
-          if (__sanity != __s && *__sanity == '\0' && errno != ERANGE)
-	    __v = __ull;
-	  else
-	    __err |= ios_base::failbit;
-	}  
-    }
-#endif
-
-  template<>
-    void
     __convert_to_v(const char* __s, float& __v, ios_base::iostate& __err, 
-		   const __c_locale&, int) 	      
+		   const __c_locale&) 	      
     {
       if (!(__err & ios_base::failbit))
 	{
@@ -158,7 +88,7 @@ namespace std
   template<>
     void
     __convert_to_v(const char* __s, double& __v, ios_base::iostate& __err, 
-		   const __c_locale&, int) 
+		   const __c_locale&) 
     {
       if (!(__err & ios_base::failbit))
 	{
@@ -180,7 +110,7 @@ namespace std
   template<>
     void
     __convert_to_v(const char* __s, long double& __v, 
-		   ios_base::iostate& __err, const __c_locale&, int) 
+		   ios_base::iostate& __err, const __c_locale&) 
     {
       if (!(__err & ios_base::failbit))
 	{

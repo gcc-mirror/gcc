@@ -258,144 +258,194 @@ namespace std
     }
 
   template<typename _CharT, typename _InIter>
-    _InIter
-    num_get<_CharT, _InIter>::
-    _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
-		   ios_base::iostate& __err, string& __xtrc, int& __base) const
-    {
-      typedef char_traits<_CharT>			__traits_type;
-      typedef typename numpunct<_CharT>::__cache_type  	__cache_type;
-      __use_cache<__cache_type> __uc;
-      const locale& __loc = __io._M_getloc();
-      const __cache_type* __lc = __uc(__loc);
-      const _CharT* __lit = __lc->_M_atoms_in;
- 
-      // NB: Iff __basefield == 0, this can change based on contents.
-      const ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
-      if (__basefield == ios_base::oct)
-        __base = 8;
-      else if (__basefield == ios_base::hex)
-        __base = 16;
-      else
-	__base = 10;
+    template<typename _ValueT> 
+      _InIter
+      num_get<_CharT, _InIter>::
+      _M_extract_int(_InIter __beg, _InIter __end, ios_base& __io,
+		     ios_base::iostate& __err, _ValueT& __v) const
+      {
+        typedef char_traits<_CharT>			__traits_type;
+	typedef typename numpunct<_CharT>::__cache_type __cache_type; 
+	__use_cache<__cache_type> __uc;
+	const locale& __loc = __io._M_getloc();
+	const __cache_type* __lc = __uc(__loc);
+	const _CharT* __lit = __lc->_M_atoms_in;
 
-      // First check for sign.
-      if (__beg != __end)
-	{
-	  const char_type __c = *__beg;
-	  const bool __plus = __traits_type::eq(__c, __lit[_S_iplus]);
-	  if (__plus || __traits_type::eq(__c, __lit[_S_iminus]))
-	    {
-	      __xtrc += __plus ? _S_atoms_in[_S_iplus]
-		               : _S_atoms_in[_S_iminus];
+	// NB: Iff __basefield == 0, __base can change based on contents.
+	const ios_base::fmtflags __basefield = __io.flags() & ios_base::basefield;
+	const bool __oct = __basefield == ios_base::oct;
+	int __base = __oct ? 8 : (__basefield == ios_base::hex ? 16 : 10);
+
+	// True if numeric digits are found.
+	bool __found_num = false;
+
+	// First check for sign.
+	bool __negative = false;
+	if (__beg != __end)
+	  {
+	    __negative = __traits_type::eq(*__beg, __lit[_S_iminus]);
+	    if (__negative && numeric_limits<_ValueT>::is_signed
+		|| __traits_type::eq(*__beg, __lit[_S_iplus]))
 	      ++__beg;
-	    }
-	}
+	  }
 
-      // Next, look for leading zeros and check required digits for base formats.
-      if (__builtin_expect(__base == 10, true))
-	{
-	  // Look for a zero...
-	  if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
-	    {
-	      __xtrc += _S_atoms_in[_S_izero];
-	      ++__beg;
-	      // ... and skip the additional ones.
-	      for (; __beg != __end
-		     && __traits_type::eq(*__beg, __lit[_S_izero]); ++__beg);
-	      
-	      // Check required digits.
-	      if (__beg != __end && __basefield == 0)
-		{	  
-		  const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
-		  if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
-		    {
-		      __xtrc += __x ? _S_atoms_in[_S_ix] 
-			            : _S_atoms_in[_S_iX];
-		      __base = 16;
-		      ++__beg;		      
-		    }
-		  else 
-		    __base = 8;
-		}	      
-	    }
-	}
-      else if (__base == 16)
-	{
-	  if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
-	    {
-	      __xtrc += _S_atoms_in[_S_izero];
-	      
-	      if (++__beg != __end)
-		{
-		  const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
-		  if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
-		    {
-		      __xtrc += __x ? _S_atoms_in[_S_ix] 
-			            : _S_atoms_in[_S_iX];
-		      ++__beg;
-		    }
-		}
-	    }
-	}
+	// Next, look for leading zeros and check required digits
+	// for base formats.
+	if (__beg != __end && __traits_type::eq(*__beg, __lit[_S_izero]))
+	  {
+	    __found_num = true;
+	    ++__beg;
+	    if (__builtin_expect(__base == 10, true))
+	      {
+		// Skip the additional zeros.
+		for (; __beg != __end
+		       && __traits_type::eq(*__beg, __lit[_S_izero]); ++__beg);
+		
+		// Check required digits.
+		if (__beg != __end && __basefield == 0)
+		  {	  
+		    const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
+		    if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
+		      {
+			__base = 16;
+			++__beg;
+			__found_num = false;
+		      }
+		    else
+		      __base = 8;
+		  }	      
+	      }
+	    else if (__base == 16 && __beg != __end)
+	      {
+		const bool __x = __traits_type::eq(*__beg, __lit[_S_ix]);
+		if (__x || __traits_type::eq(*__beg, __lit[_S_iX]))
+		  {
+		    ++__beg;
+		    __found_num = false;
+		  }
+	      }
+	  }
 
-      // At this point, base is determined. If not hex, only allow
-      // base digits as valid input.
-      const size_t __len = __base == 16 ? _S_iend : __base;
+	// At this point, base is determined. If not hex, only allow
+	// base digits as valid input.
+	const size_t __len = __base == 16 ? _S_iend : __base;
 
-      // Extract.
-      string __found_grouping;
-      int __sep_pos = 0;
-      for (; __beg != __end; ++__beg)
-        {
-	  const char_type __c = *__beg;
-          const char_type* __p = __traits_type::find(__lit + _S_izero,
-						     __len, __c);
-          if (__p)
-	    {
-	      // Try first for acceptable digit; record it if found.
-	      __xtrc += _S_atoms_in[__p - __lit];
-	      ++__sep_pos;
-	    }
-          else if (__traits_type::eq(__c, __lc->_M_thousands_sep)
-		   && __lc->_M_use_grouping)
-	    {
-              // NB: Thousands separator at the beginning of a string
-              // is a no-no, as is two consecutive thousands separators.
-              if (__sep_pos)
-                {
-                  __found_grouping += static_cast<char>(__sep_pos);
-                  __sep_pos = 0;
-                }
-              else
-		{
-		  __err |= ios_base::failbit;
+	// Extract.
+	string __found_grouping;
+	int __sep_pos = 0;
+	bool __overflow = false;
+	_ValueT __result = 0;
+	const char_type* __lit_zero = __lit + _S_izero;
+	if (__negative)
+	  {
+	    const _ValueT __min = numeric_limits<_ValueT>::min() / __base;
+	    for (; __beg != __end; ++__beg)
+	      {
+		const char_type* __p = __traits_type::find(__lit_zero,
+							   __len, *__beg);
+		if (__p)
+		  {
+		    int __digit = __p - __lit_zero;
+		    if (__digit > 15)
+		      __digit -= 6;
+		    if (__result < __min)
+		      __overflow = true;
+		    else
+		      {
+			const _ValueT __new_result = __result * __base - __digit;
+			if (__result)
+			  __overflow |= __new_result >= __result;
+			__result = __new_result;
+			++__sep_pos;
+			__found_num = true;
+		      }
+		  }
+		else if (__lc->_M_use_grouping
+			 && __traits_type::eq(*__beg, __lc->_M_thousands_sep))
+		  {
+		    // NB: Thousands separator at the beginning of a string
+		    // is a no-no, as is two consecutive thousands separators.
+		    if (__sep_pos)
+		      {
+			__found_grouping += static_cast<char>(__sep_pos);
+			__sep_pos = 0;
+		      }
+		    else
+		      {
+			__err |= ios_base::failbit;
+			break;
+		      }
+		  }
+		else
+		  // Not a valid input item.
 		  break;
-		}
-            }
-	  else
-	    // Not a valid input item.
-	    break;
-        }
+	      }
+	  }
+	else
+	  {
+	    const _ValueT __max = numeric_limits<_ValueT>::max() / __base;
+	    for (; __beg != __end; ++__beg)
+	      {
+		const char_type* __p = __traits_type::find(__lit_zero,
+							   __len, *__beg);
+		if (__p)
+		  {
+		    int __digit = __p - __lit_zero;
+		    if (__digit > 15)
+		      __digit -= 6;
+		    if (__result > __max)
+		      __overflow = true;
+		    else
+		      {
+			const _ValueT __new_result = __result * __base + __digit;
+			if (__result)
+			  __overflow |= __new_result <= __result;
+			__result = __new_result;
+			++__sep_pos;
+			__found_num = true;
+		      }
+		  }
+		else if (__lc->_M_use_grouping
+			 && __traits_type::eq(*__beg, __lc->_M_thousands_sep))
+		  {
+		    if (__sep_pos)
+		      {
+			__found_grouping += static_cast<char>(__sep_pos);
+			__sep_pos = 0;
+		      }
+		    else
+		      {
+			__err |= ios_base::failbit;
+			break;
+		      }
+		  }
+		else
+		  break;
+	      }
+	  }
 
-      // Digit grouping is checked. If grouping and found_grouping don't
-      // match, then get very very upset, and set failbit.
-      if (__lc->_M_use_grouping && __found_grouping.size())
-        {
-          // Add the ending grouping.
-          __found_grouping += static_cast<char>(__sep_pos);
+	// Digit grouping is checked. If grouping and found_grouping don't
+	// match, then get very very upset, and set failbit.
+	if (__lc->_M_use_grouping && __found_grouping.size())
+	  {
+	    // Add the ending grouping.
+	    __found_grouping += static_cast<char>(__sep_pos);
+	    
+	    const string __grouping = __lc->_M_grouping;
+	    if (!std::__verify_grouping(__grouping, __found_grouping))
+	      __err |= ios_base::failbit;
+	  }
 
-	  const string __grouping = __lc->_M_grouping;
-          if (!std::__verify_grouping(__grouping, __found_grouping))
-	    __err |= ios_base::failbit;
-        }
+	if (!(__err & ios_base::failbit)
+	    && !__overflow && __found_num)
+	  __v = __result;
+	else
+	  __err |= ios_base::failbit;
 
-      // Finish up.
-      __xtrc += char();
-      if (__beg == __end)
-        __err |= ios_base::eofbit;
-      return __beg;
-    }
+	if (__beg == __end)
+	  __err |= ios_base::eofbit;
+	return __beg;
+      }
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 17.  Bad bool parsing
@@ -407,26 +457,21 @@ namespace std
     {
       if (!(__io.flags() & ios_base::boolalpha))
         {
-	  // Parse bool values as unsigned long.
+	  // Parse bool values as long.
           // NB: We can't just call do_get(long) here, as it might
           // refer to a derived class.
-          string __xtrc;
-          int __base;
-          __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-
-	  unsigned long __ul; 
-	  std::__convert_to_v(__xtrc.c_str(), __ul, __err, 
-			      _S_get_c_locale(), __base);
-	  if (!(__err & ios_base::failbit) && __ul <= 1)
-	    __v = __ul;
-	  else 
+	  long __l = -1;
+          __beg = _M_extract_int(__beg, __end, __io, __err, __l);
+	  if (__l == 0 || __l == 1)
+	    __v = __l;
+	  else
             __err |= ios_base::failbit;
         }
       else
         {
 	  // Parse bool values as alphanumeric.
-	  typedef char_traits<_CharT>	      	__traits_type;
-	  typedef typename numpunct<_CharT>::__cache_type  	__cache_type;
+	  typedef char_traits<_CharT>                     __traits_type;
+	  typedef typename numpunct<_CharT>::__cache_type __cache_type;
 	  __use_cache<__cache_type> __uc;
 	  const locale& __loc = __io._M_getloc();
 	  const __cache_type* __lc = __uc(__loc);
@@ -473,68 +518,28 @@ namespace std
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
            ios_base::iostate& __err, long& __v) const
-    {
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err,
-			  _S_get_c_locale(), __base);
-      return __beg;
-    }
+    { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
            ios_base::iostate& __err, unsigned short& __v) const
-    {
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err,
-			  _S_get_c_locale(), __base);
-      if (!(__err & ios_base::failbit) 
-	  && __ul <= numeric_limits<unsigned short>::max())
-	__v = static_cast<unsigned short>(__ul);
-      else 
-	__err |= ios_base::failbit;
-      return __beg;
-    }
+    { return _M_extract_int(__beg, __end, __io, __err, __v); } 
 
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
            ios_base::iostate& __err, unsigned int& __v) const
-    {
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err,
-			  _S_get_c_locale(), __base);
-      if (!(__err & ios_base::failbit) 
-	  && __ul <= numeric_limits<unsigned int>::max())
-	__v = static_cast<unsigned int>(__ul);
-      else 
-	__err |= ios_base::failbit;
-      return __beg;
-    }
+    { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
            ios_base::iostate& __err, unsigned long& __v) const
-    {
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err,
-			  _S_get_c_locale(), __base);
-      return __beg;
-    }
+    { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
 #ifdef _GLIBCXX_USE_LONG_LONG
   template<typename _CharT, typename _InIter>
@@ -542,28 +547,14 @@ namespace std
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
            ios_base::iostate& __err, long long& __v) const
-    {
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err,
-			  _S_get_c_locale(), __base);
-      return __beg;
-    }
+    { return _M_extract_int(__beg, __end, __io, __err, __v); }
 
   template<typename _CharT, typename _InIter>
     _InIter
     num_get<_CharT, _InIter>::
     do_get(iter_type __beg, iter_type __end, ios_base& __io,
            ios_base::iostate& __err, unsigned long long& __v) const
-    {
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err,
-			  _S_get_c_locale(), __base);
-      return __beg;
-    }
+    { return _M_extract_int(__beg, __end, __io, __err, __v); }
 #endif
 
   template<typename _CharT, typename _InIter>
@@ -575,8 +566,7 @@ namespace std
       string __xtrc;
       __xtrc.reserve(32);
       __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
-      std::__convert_to_v(__xtrc.c_str(), __v, __err,
-			  _S_get_c_locale());
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
       return __beg;
     }
 
@@ -619,16 +609,12 @@ namespace std
 				   | ios_base::uppercase | ios_base::internal);
       __io.flags(__fmt & __fmtmask | (ios_base::hex | ios_base::showbase));
 
-      string __xtrc;
-      int __base;
-      __beg = _M_extract_int(__beg, __end, __io, __err, __xtrc, __base);
+      unsigned long __ul;
+      __beg = _M_extract_int(__beg, __end, __io, __err, __ul);
 
       // Reset from hex formatted input.
       __io.flags(__fmt);
 
-      unsigned long __ul;
-      std::__convert_to_v(__xtrc.c_str(), __ul, __err, 
-			  _S_get_c_locale(), __base);
       if (!(__err & ios_base::failbit))
 	__v = reinterpret_cast<void*>(__ul);
       else 
@@ -794,7 +780,7 @@ namespace std
       _OutIter
       num_put<_CharT, _OutIter>::
       _M_insert_int(_OutIter __s, ios_base& __io, _CharT __fill, 
-		     _ValueT __v) const
+		    _ValueT __v) const
       {
 	typedef typename numpunct<_CharT>::__cache_type	__cache_type;
 	__use_cache<__cache_type> __uc;

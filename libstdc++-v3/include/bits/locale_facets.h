@@ -63,45 +63,23 @@ namespace std
   template<typename _Tv>
     void
     __convert_to_v(const char* __in, _Tv& __out, ios_base::iostate& __err, 
-		   const __c_locale& __cloc, int __base = 10);
+		   const __c_locale& __cloc);
 
   // Explicit specializations for required types.
   template<>
     void
-    __convert_to_v(const char*, long&, ios_base::iostate&, 
-		   const __c_locale&, int);
-
-  template<>
-    void
-    __convert_to_v(const char*, unsigned long&, ios_base::iostate&, 
-		   const __c_locale&, int);
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template<>
-    void
-    __convert_to_v(const char*, long long&, ios_base::iostate&, 
-		   const __c_locale&, int);
-
-  template<>
-    void
-    __convert_to_v(const char*, unsigned long long&, ios_base::iostate&, 
-		   const __c_locale&, int);
-#endif
-
-  template<>
-    void
     __convert_to_v(const char*, float&, ios_base::iostate&, 
-		   const __c_locale&, int);
+		   const __c_locale&);
 
   template<>
     void
     __convert_to_v(const char*, double&, ios_base::iostate&, 
-		   const __c_locale&, int);
+		   const __c_locale&);
 
- template<>
+  template<>
     void
     __convert_to_v(const char*, long double&, ios_base::iostate&, 
-		   const __c_locale&, int);
+		   const __c_locale&);
 
   // NB: __pad is a struct, rather than a function, so it can be
   // partially-specialized.
@@ -586,7 +564,7 @@ namespace std
     static const char* _S_atoms_out;
 
     // String literal of acceptable (narrow) input, for num_get.
-    // "-+xX0123456789eEabcdfABCDF"
+    // "-+xX0123456789abcdefABCDEF"
     static const char* _S_atoms_in;
 
     enum 
@@ -596,8 +574,8 @@ namespace std
       _S_ix, 
       _S_iX, 
       _S_izero,
-      _S_ie = _S_izero + 10,
-      _S_iE = _S_izero + 11,
+      _S_ie = _S_izero + 14,
+      _S_iE = _S_izero + 20,
       _S_iend = 26
     };
 
@@ -624,7 +602,7 @@ namespace std
       _CharT                    	_M_atoms_out[__num_base::_S_oend + 1];
 
       // A list of valid numeric literals for input: in the standard
-      // "C" locale, this is "-+xX0123456789eEabcdfABCDF"
+      // "C" locale, this is "-+xX0123456789abcdefABCDEF"
       // This array contains the chars after having been passed
       // through the current locale's ctype<_CharT>.widen().
       _CharT                    	_M_atoms_in[__num_base::_S_iend + 1];
@@ -893,9 +871,10 @@ namespace std
       _M_extract_float(iter_type, iter_type, ios_base&, ios_base::iostate&, 
 		       string& __xtrc) const;
 
-      iter_type 
-      _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
-		     string& __xtrc, int& __base) const;
+      template<typename _ValueT>
+        iter_type 
+        _M_extract_int(iter_type, iter_type, ios_base&, ios_base::iostate&, 
+		       _ValueT& __v) const;
 
       virtual iter_type 
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&, bool&) const;
