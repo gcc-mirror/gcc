@@ -1,3 +1,11 @@
+Mon Oct 20 16:47:08 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* expmed.c (extract_bit_field): Don't make flag_force_mem disable
+	extzv for memory operands.
+
+	* cse.c (simplify_ternary_operation, case IF_THEN_ELSE): Collapse
+	redundant conditional moves to single operand.
+
 Mon Oct 20 15:30:26 1997  Nick Clifton  <nickc@cygnus.com>
 
 	* v850.h: Move define of __v850__ from CPP_PREDEFINES
