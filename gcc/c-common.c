@@ -3242,10 +3242,10 @@ disable_builtin_function (const char *name)
     error ("cannot disable built-in function `%s'", name);
   else
     {
-      disabled_builtin *new = xmalloc (sizeof (disabled_builtin));
-      new->name = name;
-      new->next = disabled_builtins;
-      disabled_builtins = new;
+      disabled_builtin *n = XNEW (disabled_builtin);
+      n->name = name;
+      n->next = disabled_builtins;
+      disabled_builtins = n;
     }
 }
 
