@@ -1,3 +1,9 @@
+Fri Feb 25 18:47:25 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* jcf-write.c (generate_bytecode_insns): TRY_FINALLY_EXPR:
+ 	initialize locals to avoid warnings. Local `exception_type' moved
+	into if statement.
+
 Fri Feb 25 18:00:37 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
 	* parse.y (resolve_expression_name): Use `orig' as a second
