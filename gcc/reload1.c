@@ -5675,13 +5675,16 @@ choose_reload_regs (insn, avoid_return_reg)
 	      && ! reload_secondary_p[r])
 	    continue;
 
-	  /* If find_reloads chose a to use reload_in or reload_out as a reload
+	  /* If find_reloads chose to use reload_in or reload_out as a reload
 	     register, we don't need to chose one.  Otherwise, try even if it
 	     found one since we might save an insn if we find the value lying
-	     around.  */
+	     around.
+	     Try also when reload_in is a pseudo without a hard reg.  */
 	  if (reload_in[r] != 0 && reload_reg_rtx[r] != 0
 	      && (rtx_equal_p (reload_in[r], reload_reg_rtx[r])
-		  || rtx_equal_p (reload_out[r], reload_reg_rtx[r])))
+		  || (rtx_equal_p (reload_out[r], reload_reg_rtx[r])
+		      && GET_CODE (reload_in[r]) != MEM
+		      && true_regnum (reload_in[r]) < FIRST_PSEUDO_REGISTER)))
 	    continue;
 
 #if 0 /* No longer needed for correct operation.
@@ -5827,7 +5830,13 @@ choose_reload_regs (insn, avoid_return_reg)
 			      /* Don't really use the inherited spill reg
 				 if we need it wider than we've got it.  */
 			      || (GET_MODE_SIZE (reload_mode[r])
-				  > GET_MODE_SIZE (mode)))
+				  > GET_MODE_SIZE (mode))
+			      /* If find_reloads chose reload_out as reload
+				 register, stay with it - that leaves the
+				 inherited register for subsequent reloads.  */
+			      || (reload_reg_rtx
+				  && rtx_equal_p (reload_out[r],
+						  reload_reg_rtx[r])))
 			    reload_override_in[r] = reg_last_reload_reg[regno];
 			  else
 			    {
