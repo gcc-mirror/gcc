@@ -462,18 +462,10 @@ struct table_elt
 /* Determine whether register number N is considered a fixed register for CSE.
    It is desirable to replace other regs with fixed regs, to reduce need for
    non-fixed hard regs.
-   A reg wins if it is either the frame pointer or designated as fixed,
-   but not if it is an overlapping register.  */
-#ifdef OVERLAPPING_REGNO_P
-#define FIXED_REGNO_P(N)  \
-  (((N) == FRAME_POINTER_REGNUM || (N) == HARD_FRAME_POINTER_REGNUM \
-    || fixed_regs[N] || global_regs[N])	  \
-   && ! OVERLAPPING_REGNO_P ((N)))
-#else
+   A reg wins if it is either the frame pointer or designated as fixed.  */
 #define FIXED_REGNO_P(N)  \
   ((N) == FRAME_POINTER_REGNUM || (N) == HARD_FRAME_POINTER_REGNUM \
    || fixed_regs[N] || global_regs[N])
-#endif
 
 /* Compute cost of X, as stored in the `cost' field of a table_elt.  Fixed
    hard registers and pointers into the frame are the cheapest with a cost

@@ -4302,7 +4302,7 @@ reload_as_needed (live_known)
      int live_known;
 {
   struct insn_chain *chain;
-#if defined (AUTO_INC_DEC) || defined (INSN_CLOBBERS_REGNO_P)
+#if defined (AUTO_INC_DEC)
   register int i;
 #endif
   rtx x;
@@ -4562,16 +4562,6 @@ reload_as_needed (live_known)
 	 if it is a call-used reg.  */
       else if (GET_CODE (insn) == CALL_INSN)
 	AND_COMPL_HARD_REG_SET(reg_reloaded_valid, call_used_reg_set);
-
-      /* In case registers overlap, allow certain insns to invalidate
-	 particular hard registers.  */
-
-#ifdef INSN_CLOBBERS_REGNO_P
-      for (i = 0 ; i < FIRST_PSEUDO_REGISTER; i++)
-	if (TEST_HARD_REG_BIT (reg_reloaded_valid, i)
-	    && INSN_CLOBBERS_REGNO_P (insn, i))
-	  CLEAR_HARD_REG_BIT (reg_reloaded_valid, i);
-#endif
     }
 
   /* Clean up.  */

@@ -237,11 +237,6 @@ extern int target_flags;
 /*  This Macro is not defined now.
     #define CONDITIONAL_REGISTER_USAGE */
 
-/* The Gmicro has no overlapping register */
-/* #define OVERLAPPING_REGNO_P(REGNO) */
-
-/* #define INSN_CLOBBERS_REGNO_P(INSN,REGNO)  */
-
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE

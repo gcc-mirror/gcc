@@ -337,11 +337,6 @@ global_alloc (file)
      are safe to use only within a basic block.  */
 
   CLEAR_HARD_REG_SET (no_global_alloc_regs);
-#ifdef OVERLAPPING_REGNO_P
-  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (OVERLAPPING_REGNO_P (i))
-      SET_HARD_REG_BIT (no_global_alloc_regs, i);
-#endif
 
   /* Build the regset of all eliminable registers and show we can't use those
      that we already know won't be eliminated.  */

@@ -1842,11 +1842,6 @@ find_dummy_reload (real_in, real_out, inloc, outloc,
       *inloc = const0_rtx;
 
       if (regno < FIRST_PSEUDO_REGISTER
-	  /* A fixed reg that can overlap other regs better not be used
-	     for reloading in any way.  */
-#ifdef OVERLAPPING_REGNO_P
-	  && ! (fixed_regs[regno] && OVERLAPPING_REGNO_P (regno))
-#endif
 	  && ! refers_to_regno_for_reload_p (regno, regno + nwords,
 					     PATTERN (this_insn), outloc))
 	{
@@ -6042,15 +6037,6 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
   else
     return 0;
 
-  /* On some machines, certain regs must always be rejected
-     because they don't behave the way ordinary registers do.  */
-
-#ifdef OVERLAPPING_REGNO_P
-  if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER
-      && OVERLAPPING_REGNO_P (regno))
-    return 0;
-#endif
-
   /* Scan insns back from INSN, looking for one that copies
      a value into or out of GOAL.
      Stop and give up if we reach a label.  */
@@ -6189,14 +6175,6 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
       && reload_reg_p[valueno] >= 0)
     return 0;
 
-  /* On some machines, certain regs must always be rejected
-     because they don't behave the way ordinary registers do.  */
-
-#ifdef OVERLAPPING_REGNO_P
-  if (OVERLAPPING_REGNO_P (valueno))
-    return 0;
-#endif
-
   nregs = HARD_REGNO_NREGS (regno, mode);
   valuenregs = HARD_REGNO_NREGS (valueno, mode);
 
@@ -6249,14 +6227,6 @@ find_equiv_reg (goal, insn, class, other, reload_reg_p, goalreg, mode)
 #ifdef NON_SAVING_SETJMP
       if (NON_SAVING_SETJMP && GET_CODE (p) == NOTE
 	  && NOTE_LINE_NUMBER (p) == NOTE_INSN_SETJMP)
-	return 0;
-#endif
-
-#ifdef INSN_CLOBBERS_REGNO_P
-      if ((valueno >= 0 && valueno < FIRST_PSEUDO_REGISTER
-	   && INSN_CLOBBERS_REGNO_P (p, valueno))
-	  || (regno >= 0 && regno < FIRST_PSEUDO_REGISTER
-	      && INSN_CLOBBERS_REGNO_P (p, regno)))
 	return 0;
 #endif
 

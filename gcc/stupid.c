@@ -542,15 +542,6 @@ stupid_find_reg (call_preserved, class, mode,
       int regno = i;
 #endif
 
-      /* If a register has screwy overlap problems,
-	 don't use it at all if not optimizing.
-	 Actually this is only for the 387 stack register,
-	 and it's because subsequent code won't work.  */
-#ifdef OVERLAPPING_REGNO_P
-      if (OVERLAPPING_REGNO_P (regno))
-	continue;
-#endif
-
       if (! TEST_HARD_REG_BIT (used, regno)
 	  && HARD_REGNO_MODE_OK (regno, mode))
 	{
