@@ -581,7 +581,7 @@ compare_options (p1, p2)
      const PTR p1;
      const PTR p2;
 {
-  return strcmp (*((char **) p1), *((char **) p2));
+  return strcmp (*((const char *const *) p1), *((const char *const *) p2));
 }
 
 /* Decode the string P as a language-specific option.

@@ -964,7 +964,7 @@ build_scope_forest (forest)
   rtx x;
   int level, bbi, i;
   basic_block curr_bb;
-  scope root, curr_scope;
+  scope root, curr_scope = 0;
 
   forest->num_trees = 0;
   forest->trees = NULL;

@@ -2093,7 +2093,7 @@ while (0)
       : (GET_MODE_SIZE (MODE)==2					\
 	 ? (IN ? ix86_cost->int_load[1] : ix86_cost->int_store[1])	\
 	 : ((IN ? ix86_cost->int_load[2] : ix86_cost->int_store[2])	\
-	    * GET_MODE_SIZE (MODE) / 4))))
+	    * (int) GET_MODE_SIZE (MODE) / 4))))
 
 /* A C expression for the cost of a branch instruction.  A value of 1
    is the default; other values are interpreted relative to that.  */

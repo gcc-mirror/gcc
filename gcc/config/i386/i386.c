@@ -901,8 +901,8 @@ function_arg_advance (cum, mode, type, named)
      tree type;			/* type of the argument or 0 if lib support */
      int named;			/* whether or not the argument was named */
 {
-  int bytes
-    = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes =
+    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   if (TARGET_DEBUG_ARG)
@@ -944,8 +944,8 @@ function_arg (cum, mode, type, named)
      int named;			/* != 0 for normal args, == 0 for ... args */
 {
   rtx ret   = NULL_RTX;
-  int bytes
-    = (mode == BLKmode) ? int_size_in_bytes (type) : GET_MODE_SIZE (mode);
+  int bytes =
+    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 
   switch (mode)

@@ -652,7 +652,7 @@ lang_print_xnode (file, node, indent)
 
 HOST_WIDE_INT
 lang_get_alias_set (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
   return -1;
 }

@@ -14875,7 +14875,7 @@ lang_identify ()
 
 HOST_WIDE_INT
 lang_get_alias_set (t)
-     tree t;
+     tree t ATTRIBUTE_UNUSED;
 {
   /* We do not wish to use alias-set based aliasing at all.  Used in the
      extreme (every object with its own set, with equivalences recorded)

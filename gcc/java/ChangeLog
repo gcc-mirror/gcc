@@ -1,3 +1,12 @@
+2000-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl.c (create_primitive_vtable): Prototype.
+
+	* jcf-write.c (generate_bytecode_insns): Initialize variable
+	`saved_context'.
+
+	* lang.c (lang_get_alias_set): Mark parameter with ATTRIBUTE_UNUSED.
+
 Tue Jun  6 11:39:05 2000  Tom Tromey  <tromey@ferrule.cygnus.com>
 
 	* parse.y (check_modifiers_consistency): Don't subtract out

@@ -2534,7 +2534,7 @@ generate_bytecode_insns (exp, target, state)
 	  NOTE_POP (1);  /* Pop implicit this. */
 	if (TREE_CODE (f) == FUNCTION_DECL && DECL_CONTEXT (f) != NULL_TREE)
 	  {
-	    tree saved_context;
+	    tree saved_context = NULL_TREE;
 	    int index, interface = 0;
 	    RESERVE (5);
 	    if (METHOD_STATIC (f))

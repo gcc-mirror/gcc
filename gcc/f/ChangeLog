@@ -1,3 +1,7 @@
+Sun Jun 11 00:03:00 2000  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* com.c (lang_get_alias_set): Mark parameter with ATTRIBUTE_UNUSED.
+
 2000-06-04  Philipp Thomas  <pthomas@suse.de>
 
 	* Makefile.in(INTLLIBS): New macro.

@@ -1,3 +1,7 @@
+2000-06-11  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* decl2.c (compare_options): Don't needlessly cast away const-ness.
+
 2000-06-10  Mark Mitchell  <mark@codesourcery.com>
 
 	* decl.c (add_binding): Handle duplicate declarations of external

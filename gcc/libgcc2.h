@@ -42,6 +42,8 @@ extern void __sjthrow (void) __attribute__ ((__noreturn__));
 extern void __sjpopnthrow (void) __attribute__ ((__noreturn__));
 extern void __eprintf (const char *, const char *, unsigned int, const char *)
   __attribute__ ((__noreturn__));
+extern void *__eh_alloc (size_t);
+extern void __eh_free (void *);
 
 struct bb;
 extern void __bb_exit_func (void);
