@@ -1,3 +1,7 @@
+2000-02-25  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* gcc.dg/cpp-li1.c: New test.
+
 2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.other/sizeof5.C: New test.
