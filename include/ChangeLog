@@ -227,8 +227,7 @@ Tue Dec  8 00:30:31 1998  Elena Zannoni  <ezannoni@kwikemart.cygnus.com>
 	(demangling_styles): add new edg_demangling style
 	(EDG_DEMANGLING_STYLE_STRING): new macro
 	(EDG_DEMANGLING): new macro
-
-	* demangle.h (DMGL_HP): new macro, for HP/aCC compiler.
+	(DMGL_HP): new macro, for HP/aCC compiler.
 	(DMGL_STYLE_MASK): modify to include new HP's style.
 	(demangling_styles): add new hp_demangling value.
 	(HP_DEMANGLING_STYLE_STRING): new macro.
