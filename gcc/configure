@@ -4219,13 +4219,13 @@ if [ -f ../gas/Makefile ]; then
 fi
 
 # If we have ld in the build tree, make a link to it.
-#if [ -f ../ld/Makefile ]; then
-#	if [ x$use_collect2 = x ]; then
+if [ -f ../ld/Makefile ]; then
+#	if [[ x$use_collect2 = x ]]; then
 #		rm -f ld; $symbolic_link ../ld/ld.new ld 2>/dev/null
 #	else
-#		rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
+		rm -f collect-ld; $symbolic_link ../ld/ld.new collect-ld 2>/dev/null
 #	fi
-#fi
+fi
 
 # Figure out what language subdirectories are present.
 subdirs=
@@ -4364,14 +4364,14 @@ fi
 # Override SCHED_OBJ and SCHED_CFLAGS to enable the Haifa scheduler.
 sched_prefix=
 sched_cflags=
-if [[ x$enable_haifa = xyes ]]; then
+if [ x$enable_haifa = xyes ]; then
     echo "Using the Haifa scheduler."
     sched_prefix=haifa-
     sched_cflags=-DHAIFA
 fi
 
 
-if [[ x$enable_haifa != x ]]; then
+if [ x$enable_haifa != x ]; then
     # Explicitly remove files that need to be recompiled for the Haifa scheduler.
     for x in genattrtab.o toplev.o loop.o unroll.o *sched.o; do
 	if [ -f $x ]; then
@@ -4622,9 +4622,9 @@ s%@CC@%$CC%g
 s%@SET_MAKE@%$SET_MAKE%g
 s%@CPP@%$CPP%g
 s%@manext@%$manext%g
+s%@objext@%$objext%g
 s%@sched_prefix@%$sched_prefix%g
 s%@sched_cflags@%$sched_cflags%g
-s%@objext@%$objext%g
 s%@subdirs@%$subdirs%g
 s%@all_languages@%$all_languages%g
 s%@all_boot_languages@%$all_boot_languages%g
