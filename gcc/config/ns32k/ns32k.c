@@ -260,7 +260,7 @@ output_move_double (operands)
 
   if (REG_P (operands[1]))
     optype1 = REGOP;
-  else if (CONSTANT_ADDRESS_P (operands[1])
+  else if (CONSTANT_P (operands[1])
 	   || GET_CODE (operands[1]) == CONST_DOUBLE)
     optype1 = CNSTOP;
   else if (offsettable_memref_p (operands[1]))
@@ -299,7 +299,7 @@ output_move_double (operands)
     latehalf[1] = adj_offsettable_operand (operands[1], 4);
   else if (optype1 == CNSTOP)
     {
-      if (CONSTANT_ADDRESS_P (operands[1]))
+      if (CONSTANT_P (operands[1]))
 	latehalf[1] = const0_rtx;
       else if (GET_CODE (operands[1]) == CONST_DOUBLE)
 	split_double (operands[1], &operands[1], &latehalf[1]);
@@ -400,8 +400,9 @@ check_reg (oper, reg)
 /* Returns 1 if OP contains a global symbol reference */
 
 int
-global_symbolic_reference_mentioned_p (op)
+global_symbolic_reference_mentioned_p (op, f)
      rtx op;
+     int f;
 {
   register char *fmt;
   register int i;
@@ -411,9 +412,9 @@ global_symbolic_reference_mentioned_p (op)
       if (! SYMBOL_REF_FLAG (op))
 	return 1;
       else
-return 0;
+        return 0;
     }
-  else if (GET_CODE (op) != CONST)
+  else if (f && GET_CODE (op) != CONST)
     return 0;
 
   fmt = GET_RTX_FORMAT (GET_CODE (op));
@@ -424,11 +425,11 @@ return 0;
 	  register int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
-	    if (global_symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
+	    if (global_symbolic_reference_mentioned_p (XVECEXP (op, i, j), 0))
 	      return 1;
 	}
       else if (fmt[i] == 'e' 
-	       && global_symbolic_reference_mentioned_p (XEXP (op, i)))
+	       && global_symbolic_reference_mentioned_p (XEXP (op, i), 0))
 	return 1;
     }
 
@@ -672,15 +673,20 @@ print_operand_address (file, addr)
   if (! offset)
     offset = const0_rtx;
 
-#ifdef INDEX_RATHER_THAN_BASE
+  if (base
+#ifndef INDEX_RATHER_THAN_BASE
+      && flag_pic 
+      && GET_CODE (base) != SYMBOL_REF 
+      && GET_CODE (offset) != CONST_INT
+#else
   /* This is a re-implementation of the SEQUENT_ADDRESS_BUG fix.  */
-  if (base && !indexexp && GET_CODE (base) == REG
+#endif
+      && !indexexp && GET_CODE (base) == REG
       && REG_OK_FOR_INDEX_P (base))
     {
       indexexp = base;
-      base = 0;
+      base = NULL;
     }
-#endif
 
   /* now, offset, base and indexexp are set */
   if (! base)
@@ -766,10 +772,23 @@ print_operand_address (file, addr)
 	if (base)
 	  fprintf (file, "(%s)", reg_names[REGNO (base)]);
 #ifdef BASE_REG_NEEDED
-	else if (TARGET_SB)
-	  fprintf (file, "(sb)");
-	else
-	  abort ();
+  else 
+    {
+      /* Abs. addresses don't need a base (I think). */
+      if (GET_CODE (offset) != CONST_INT
+#ifndef PC_RELATIVE
+           && GET_CODE (offset) != LABEL_REF
+	   && GET_CODE (offset) != SYMBOL_REF
+	   && GET_CODE (offset) != CONST
+#endif
+         )
+        {
+	  if (TARGET_SB)
+	    fprintf (file, "(sb)");
+	  else
+	    abort ();
+        }
+    }
 #endif
 	fprintf (file, ")");
 	break;
@@ -777,10 +796,6 @@ print_operand_address (file, addr)
       default:
 	abort ();
       }
-#if 0
-  else if (flag_pic && SYMBOL_REF_FLAG (offset))
-    fprintf (file, "(sb)");
-#endif
 #ifdef PC_RELATIVE
   else if (GET_CODE (offset) == LABEL_REF
 	   || GET_CODE (offset) == SYMBOL_REF
