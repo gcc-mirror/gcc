@@ -1,3 +1,7 @@
+1998-05-06 Mark Mitchell  <mmitchell@usa.net>
+
+	* tree.h (IS_EXPR_CODE_CLASS): Remove bogus '3'.
+
 Wed May  6 06:35:38 1998  Robert Lipe  <robertl@dgii.com>
 
 	* toplev.h: New file.   Protypes for functions in toplev.c.

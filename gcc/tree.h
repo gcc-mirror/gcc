@@ -55,8 +55,7 @@ extern char tree_code_type[MAX_TREE_CODES];
    expression.  */
 
 #define IS_EXPR_CODE_CLASS(CLASS) \
-  (CLASS == '<' || CLASS == '1' || CLASS == '2' || CLASS == '3' \
-   || CLASS == 'e')
+  (CLASS == '<' || CLASS == '1' || CLASS == '2' || CLASS == 'e')
 
 /* Number of argument-words in each kind of tree-node.  */
 
