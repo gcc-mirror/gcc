@@ -689,7 +689,6 @@ ORDINARY_FLAGS_TO_PASS = \
 	"RANLIB_FOR_TARGET=$(RANLIB_FOR_TARGET)" \
 	"RANLIB_TEST_FOR_TARGET=$(RANLIB_TEST_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
-	"STAGE_PREFIX=@stage_prefix_set_by_configure@" \
 	"exeext=$(exeext)" \
 	"build_exeext=$(build_exeext)" \
 	"objext=$(objext)" \
@@ -703,7 +702,8 @@ ORDINARY_FLAGS_TO_PASS = \
 	"libsubdir=$(libsubdir)" \
 	"datadir=$(datadir)" \
 	"localedir=$(localedir)"
-FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@"
+FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) "CC=@cc_set_by_configure@" \
+	"STAGE_PREFIX=@stage_prefix_set_by_configure@"
 PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
 	-e 's|^ *[^ /][^ /]*/|%&|' \
 	-e 's| -B| -B%|g' \
@@ -711,7 +711,8 @@ PREPEND_DOTDOT_TO_RELATIVE_PATHS = sed \
 	-e 's|%% *|../|g' \
 	-e 's|%||g'
 SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
-	"CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
+	"CC=`echo @quoted_cc_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`" \
+	"STAGE_PREFIX=`echo @stage_prefix_set_by_configure@ | $(PREPEND_DOTDOT_TO_RELATIVE_PATHS)`"
 #
 # Lists of files for various purposes.
 
