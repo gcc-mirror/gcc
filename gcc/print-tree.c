@@ -64,7 +64,7 @@ debug_tree (node)
 void
 print_node_brief (file, prefix, node, indent)
      FILE *file;
-     char *prefix;
+     const char *prefix;
      tree node;
      int indent;
 {
@@ -176,7 +176,7 @@ indent_to (file, column)
 void
 print_node (file, prefix, node, indent)
      FILE *file;
-     char *prefix;
+     const char *prefix;
      tree node;
      int indent;
 {

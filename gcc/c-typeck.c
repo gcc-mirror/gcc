@@ -56,16 +56,17 @@ static tree pointer_diff		PROTO((tree, tree));
 static tree unary_complex_lvalue	PROTO((enum tree_code, tree));
 static void pedantic_lvalue_warning	PROTO((enum tree_code));
 static tree internal_build_compound_expr PROTO((tree, int));
-static tree convert_for_assignment	PROTO((tree, tree, char *, tree,
+static tree convert_for_assignment	PROTO((tree, tree, const char *, tree,
 					       tree, int));
-static void warn_for_assignment		PROTO((char *, char *, tree, int));
+static void warn_for_assignment		PROTO((const char *, const char *,
+					       tree, int));
 static tree valid_compound_expr_initializer PROTO((tree, tree));
-static void push_string			PROTO((char *));
+static void push_string			PROTO((const char *));
 static void push_member_name		PROTO((tree));
 static void push_array_bounds		PROTO((int));
 static int spelling_length		PROTO((void));
 static char *print_spelling		PROTO((char *));
-static void warning_init		PROTO((char *));
+static void warning_init		PROTO((const char *));
 static tree digest_init			PROTO((tree, tree, int, int));
 static void check_init_type_bitfields	PROTO((tree));
 static void output_init_element		PROTO((tree, tree, tree, int));
@@ -100,7 +101,7 @@ incomplete_type_error (value, type)
      tree value;
      tree type;
 {
-  char *type_code_string;
+  const char *type_code_string;
 
   /* Avoid duplicate error message.  */
   if (TREE_CODE (type) == ERROR_MARK)
@@ -1321,7 +1322,7 @@ build_component_ref (datum, component)
 tree
 build_indirect_ref (ptr, errorstring)
      tree ptr;
-     char *errorstring;
+     const char *errorstring;
 {
   register tree pointer = default_conversion (ptr);
   register tree type = TREE_TYPE (pointer);
@@ -3231,7 +3232,7 @@ lvalue_p (ref)
 int
 lvalue_or_else (ref, msgid)
      tree ref;
-     char *msgid;
+     const char *msgid;
 {
   int win = lvalue_p (ref);
   if (! win)
@@ -3300,7 +3301,7 @@ pedantic_lvalue_warning (code)
 void
 readonly_warning (arg, msgid)
      tree arg;
-     char *msgid;
+     const char *msgid;
 {
   /* Forbid assignments to iterators.  */
   if (TREE_CODE (arg) == VAR_DECL && ITERATOR_P (arg))
@@ -3723,7 +3724,7 @@ build_c_cast (type, expr)
 
       if (field)
 	{
-	  char *name;
+	  const char *name;
 	  tree t;
 
 	  if (pedantic)
@@ -4029,7 +4030,7 @@ build_modify_expr (lhs, modifycode, rhs)
 static tree
 convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
      tree type, rhs;
-     char *errtype;
+     const char *errtype;
      tree fundecl, funname;
      int parmnum;
 {
@@ -4288,14 +4289,15 @@ convert_for_assignment (type, rhs, errtype, fundecl, funname, parmnum)
 
 static void
 warn_for_assignment (msgid, opname, function, argnum)
-     char *msgid;
-     char *opname;
+     const char *msgid;
+     const char *opname;
      tree function;
      int argnum;
 {
   if (opname == 0)
     {
       tree selector = maybe_building_objc_message_expr ();
+      char * new_opname;
       
       if (selector && argnum > 2)
 	{
@@ -4305,18 +4307,21 @@ warn_for_assignment (msgid, opname, function, argnum)
       if (function)
 	{
 	  /* Function name is known; supply it.  */
-	  char *argstring = _("passing arg %d of `%s'");
-	  opname = (char *) alloca (IDENTIFIER_LENGTH (function)
-				    + strlen (argstring) + 1 + 25 /*%d*/ + 1);
-	  sprintf (opname, argstring, argnum, IDENTIFIER_POINTER (function));
+	  const char *argstring = _("passing arg %d of `%s'");
+	  new_opname = (char *) alloca (IDENTIFIER_LENGTH (function)
+					+ strlen (argstring) + 1 + 25
+					/*%d*/ + 1);
+	  sprintf (new_opname, argstring, argnum,
+		   IDENTIFIER_POINTER (function));
 	}
       else
 	{
-	  /* Function name unknown (call through ptr); just give arg number.  */
-	  char *argnofun = _("passing arg %d of pointer to function");
-	  opname = (char *) alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
-	  sprintf (opname, argnofun, argnum);
+	  /* Function name unknown (call through ptr); just give arg number.*/
+	  const char *argnofun = _("passing arg %d of pointer to function");
+	  new_opname = (char *) alloca (strlen (argnofun) + 1 + 25 /*%d*/ + 1);
+	  sprintf (new_opname, argnofun, argnum);
 	}
+      opname = new_opname;
     }
   pedwarn (msgid, opname);
 }
@@ -4557,7 +4562,7 @@ struct spelling
   union
     {
       int i;
-      char *s;
+      const char *s;
     } u;
 };
 
@@ -4613,7 +4618,7 @@ static int spelling_size;		/* Size of the spelling stack.  */
 
 static void
 push_string (string)
-     char *string;
+     const char *string;
 {
   PUSH_SPELLING (SPELLING_STRING, string, u.s);
 }
@@ -4625,7 +4630,7 @@ push_member_name (decl)
      tree decl;
      
 {
-  char *string
+  const char *string
     = DECL_NAME (decl) ? IDENTIFIER_POINTER (DECL_NAME (decl)) : "<anonymous>";
   PUSH_SPELLING (SPELLING_MEMBER, string, u.s);
 }
@@ -4665,7 +4670,6 @@ print_spelling (buffer)
      register char *buffer;
 {
   register char *d = buffer;
-  register char *s;
   register struct spelling *p;
 
   for (p = spelling_base; p < spelling; p++)
@@ -4676,6 +4680,7 @@ print_spelling (buffer)
       }
     else
       {
+	register const char *s;
 	if (p->kind == SPELLING_MEMBER)
 	  *d++ = '.';
 	for (s = p->u.s; (*d = *s++); d++)
@@ -4691,7 +4696,7 @@ print_spelling (buffer)
 
 void
 error_init (msgid)
-     char *msgid;
+     const char *msgid;
 {
   char *ofwhat;
 
@@ -4707,7 +4712,7 @@ error_init (msgid)
 
 void
 pedwarn_init (msgid)
-     char *msgid;
+     const char *msgid;
 {
   char *ofwhat;
 
@@ -4723,7 +4728,7 @@ pedwarn_init (msgid)
 
 static void
 warning_init (msgid)
-     char *msgid;
+     const char *msgid;
 {
   char *ofwhat;
 
@@ -5103,7 +5108,7 @@ start_init (decl, asmspec_tree, top_level)
      tree asmspec_tree;
      int top_level;
 {
-  char *locus;
+  const char *locus;
   struct initializer_stack *p
     = (struct initializer_stack *) xmalloc (sizeof (struct initializer_stack));
   char *asmspec = 0;

@@ -1,3 +1,38 @@
+Thu Feb 18 23:28:35 1999  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+        * bitmap.c (bitmap_print): Qualify a char* with the `const' keyword.
+	 
+        * bitmap.h (bitmap_print): Likewise.
+	 
+        * c-decl.c (builtin_function, grokdeclarator, grokfield): Likewise.
+	 
+        * c-lang.c (build_objc_string): Likewise.
+	 
+        * c-lex.c (yyerror, extend_token_buffer): Likewise.  Don't include
+ 	limits.h or ctype.h.  Remove unused variable `p'.
+	 
+        * c-lex.h (yyerror): Qualify a char* with the `const' keyword.
+	 
+        * c-pragma.c (handle_pragma_token): Likewise.
+	 
+        * c-pragma.h (handle_pragma_token): Likewise.
+	 
+        * c-tree.h (build_objc_string, builtin_function, grokfield,
+ 	build_indirect_ref, lvalue_or_else, readonly_warning, error_init,
+ 	pedwarn_init): Likewise.
+	 
+        * c-typeck.c (convert_for_assignment, warn_for_assignment,
+ 	push_string, warning_init, incomplete_type_error,
+ 	build_indirect_ref, lvalue_or_else, readonly_warning,
+ 	build_c_cast, spelling, push_member_name, print_spelling,
+ 	error_init, pedwarn_init, start_init): Likewise.
+	 
+        * objc/objc-act.c (build_objc_string): Likewise.
+	 
+        * print-tree.c (print_node_brief, print_node): Likewise.
+	 
+        * tree.h (lvalue_or_else, print_node, print_node_brief): Likewise.
+
 Thu Feb 18 20:44:21 1999  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* regclass.c (record_reg_classes): Correctly handle 'p' constraint.

@@ -231,7 +231,7 @@ add_weak (name, value)
 
 int
 handle_pragma_token (string, token)
-     char * string;
+     const char * string;
      tree token;
 {
   static enum pragma_state state = ps_start;

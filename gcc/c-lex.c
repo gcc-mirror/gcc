@@ -22,10 +22,6 @@ Boston, MA 02111-1307, USA.  */
 #include "system.h"
 #include <setjmp.h>
 
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
 #include "rtl.h"
 #include "tree.h"
 #include "input.h"
@@ -37,10 +33,6 @@ Boston, MA 02111-1307, USA.  */
 #include "c-pragma.h"
 #include "toplev.h"
 #include "intl.h"
-
-#ifdef MAP_CHARACTER
-#include <ctype.h>
-#endif
 
 /* MULTIBYTE_CHARS support only works for native compilers.
    ??? Ideally what we want is to model widechar support after
@@ -132,7 +124,7 @@ static int handle_generic_pragma	PROTO((int));
 static int whitespace_cr		PROTO((int));
 static int skip_white_space		PROTO((int));
 static int skip_white_space_on_line	PROTO((void));
-static char *extend_token_buffer	PROTO((char *));
+static char *extend_token_buffer	PROTO((const char *));
 static int readescape			PROTO((int *));
 
 /* Do not insert generated code into the source, instead, include it.
@@ -237,8 +229,6 @@ finish_parse ()
 void
 init_lex ()
 {
-  char *p;
-
   /* Make identifier nodes long enough for the language-specific slots.  */
   set_identifier_size (sizeof (struct lang_identifier));
 
@@ -494,7 +484,7 @@ skip_white_space_on_line ()
 
 static char *
 extend_token_buffer (p)
-     char *p;
+     const char *p;
 {
   int offset = p - token_buffer;
 
@@ -1059,9 +1049,9 @@ readescape (ignore_ptr)
 
 void
 yyerror (msgid)
-     char *msgid;
+     const char *msgid;
 {
-  char *string = _(msgid);
+  const char *string = _(msgid);
 
   /* We can't print string and character constants well
      because the token_buffer contains the result of processing escapes.  */

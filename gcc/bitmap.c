@@ -613,10 +613,10 @@ void
 bitmap_print (file, head, prefix, suffix)
      FILE *file;
      bitmap head;
-     char *prefix;
-     char *suffix;
+     const char *prefix;
+     const char *suffix;
 {
-  char *comma = "";
+  const char *comma = "";
   int i;
 
   fputs (prefix, file);

@@ -3616,10 +3616,10 @@ init_decl_processing ()
 
 tree
 builtin_function (name, type, function_code, library_name)
-     char *name;
+     const char *name;
      tree type;
      enum built_in_function function_code;
-     char *library_name;
+     const char *library_name;
 {
   tree decl = build_decl (FUNCTION_DECL, get_identifier (name), type);
   DECL_EXTERNAL (decl) = 1;
@@ -4390,7 +4390,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized)
   int explicit_char = 0;
   int defaulted_int = 0;
   tree typedef_decl = 0;
-  char *name;
+  const char *name;
   tree typedef_type = 0;
   int funcdef_flag = 0;
   enum tree_code innermost_code = ERROR_MARK;
@@ -5770,8 +5770,8 @@ start_struct (code, name)
 
 tree
 grokfield (filename, line, declarator, declspecs, width)
-     char *filename;
-     int line;
+     const char *filename ATTRIBUTE_UNUSED;
+     int line ATTRIBUTE_UNUSED;
      tree declarator, declspecs, width;
 {
   tree value;

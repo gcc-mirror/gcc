@@ -170,7 +170,7 @@ extern int maybe_objc_comptypes                 PROTO((tree, tree, int));
 extern tree maybe_building_objc_message_expr    PROTO((void));
 extern tree maybe_objc_method_name		PROTO((tree));
 extern int recognize_objc_keyword		PROTO((void));
-extern tree build_objc_string			PROTO((int, char *));
+extern tree build_objc_string			PROTO((int, const char *));
 
 /* in c-aux-info.c */
 extern void gen_aux_info_record                 PROTO((tree, int, int, int));
@@ -282,7 +282,7 @@ extern tree boolean_false_node;
 
 extern tree build_enumerator                    PROTO((tree, tree));
 /* Declare a predefined function.  Return the declaration.  */
-extern tree builtin_function                    PROTO((char *, tree, enum built_in_function function_, char *));
+extern tree builtin_function                    PROTO((const char *, tree, enum built_in_function function_, const char *));
 /* Add qualifiers to a type, in the fashion for C.  */
 extern tree c_build_qualified_type              PROTO((tree, int));
 #define c_build_type_variant(TYPE, CONST_P, VOLATILE_P)		  \
@@ -307,7 +307,7 @@ extern tree get_parm_info                       PROTO((int));
 extern tree getdecls                            PROTO((void));
 extern tree gettags                             PROTO((void));
 extern int  global_bindings_p                   PROTO((void));
-extern tree grokfield                           PROTO((char *, int, tree, tree, tree));
+extern tree grokfield                           PROTO((const char *, int, tree, tree, tree));
 extern tree groktypename                        PROTO((tree));
 extern tree groktypename_in_parm_context        PROTO((tree));
 extern tree implicitly_declare                  PROTO((tree));
@@ -365,7 +365,7 @@ extern tree c_alignof				PROTO((tree));
 extern tree c_alignof_expr			PROTO((tree));
 extern tree default_conversion                  PROTO((tree));
 extern tree build_component_ref                 PROTO((tree, tree));
-extern tree build_indirect_ref                  PROTO((tree, char *));
+extern tree build_indirect_ref                  PROTO((tree, const char *));
 extern tree build_array_ref                     PROTO((tree, tree));
 extern tree build_function_call                 PROTO((tree, tree));
 extern tree parser_build_binary_op              PROTO((enum tree_code,
@@ -375,8 +375,8 @@ extern tree build_binary_op                     PROTO((enum tree_code,
 extern tree build_unary_op                      PROTO((enum tree_code,
 						       tree, int));
 extern int lvalue_p				PROTO((tree));
-extern int lvalue_or_else			PROTO((tree, char *));
-extern void readonly_warning			PROTO((tree, char *));
+extern int lvalue_or_else			PROTO((tree, const char *));
+extern void readonly_warning			PROTO((tree, const char *));
 extern int mark_addressable			PROTO((tree));
 extern tree build_conditional_expr              PROTO((tree, tree, tree));
 extern tree build_compound_expr                 PROTO((tree));
@@ -385,8 +385,8 @@ extern tree build_modify_expr                   PROTO((tree, enum tree_code,
 						       tree));
 extern tree initializer_constant_valid_p	PROTO((tree, tree));
 extern void store_init_value                    PROTO((tree, tree));
-extern void error_init				PROTO((char *));
-extern void pedwarn_init			PROTO((char *));
+extern void error_init				PROTO((const char *));
+extern void pedwarn_init			PROTO((const char *));
 extern void start_init				PROTO((tree, tree, int));
 extern void finish_init				PROTO((void));
 extern void really_start_incremental_init	PROTO((tree));

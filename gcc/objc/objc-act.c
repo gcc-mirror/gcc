@@ -1320,7 +1320,7 @@ my_build_string (len, str)
 tree
 build_objc_string (len, str)
      int len;
-     char *str;
+     const char *str;
 {
   tree s = build_string (len, str);
 

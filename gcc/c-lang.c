@@ -149,7 +149,7 @@ recognize_objc_keyword ()
 tree
 build_objc_string (len, str)
     int len ATTRIBUTE_UNUSED;
-    char *str ATTRIBUTE_UNUSED;
+    const char *str ATTRIBUTE_UNUSED;
 {
   abort ();
   return NULL_TREE;
