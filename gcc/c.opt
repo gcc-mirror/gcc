@@ -174,9 +174,11 @@ Warn about possibly confusing type conversions
 
 Wctor-dtor-privacy
 C++ ObjC++
+Warn when all constructors and destructors are private
 
 Wdeprecated
 C++ ObjC++
+Warn about deprecated compiler features
 
 Wdiv-by-zero
 C ObjC
@@ -184,6 +186,7 @@ Warn about compile-time integer division by zero
 
 Weffc++
 C++ ObjC++
+Warn about violations of Effective C++ style rules
 
 Wendif-labels
 C ObjC C++ ObjC++
@@ -244,6 +247,7 @@ Warn about uses of the \"#import\" directive
 
 Winvalid-offsetof
 C++ ObjC++
+Warn about invalid uses of the \"offsetof\" macro
 
 Winvalid-pch
 C ObjC C++ ObjC++
@@ -283,18 +287,22 @@ Warn about \"extern\" declarations not at file scope
 
 Wnon-template-friend
 C++ ObjC++
+Warn when non-templatized friend functions are declared within a template
 
 Wnon-virtual-dtor
 C++ ObjC++
+Warn about non-virtual destructors
 
 Wnonnull
 C ObjC
 
 Wold-style-cast
 C++ ObjC++
+Warn if a C-style cast is used in a program
 
 Woverloaded-virtual
 C++ ObjC++
+Warn about overloaded virtual function names
 
 Wparentheses
 C ObjC C++ ObjC++
@@ -302,6 +310,7 @@ Warn about possibly missing parentheses
 
 Wpmf-conversions
 C++ ObjC++
+Warn when converting the type of pointers to member functions
 
 Wpointer-arith
 C ObjC C++ ObjC++
@@ -316,10 +325,11 @@ Warn about multiple declarations of the same object
 
 Wreorder
 C++ ObjC++
+Warn when the compiler reorders code
 
 Wreturn-type
 C ObjC C++ ObjC++
-Warn whenever a function's return type defaults to \"int\"
+Warn whenever a function's return type defaults to \"int\" (C), or about inconsistent return types (C++)
 
 Wselector
 ObjC ObjC++
@@ -334,6 +344,7 @@ Warn about signed-unsigned comparisons
 
 Wsign-promo
 C++ ObjC++
+Warn when overload promotes from unsigned to signed
 
 Wstrict-prototypes
 C ObjC
@@ -341,6 +352,7 @@ Warn about unprototyped function declarations
 
 Wsynth
 C++ ObjC++
+Warn when synthesis behavior differs from Cfront
 
 Wsystem-headers
 C ObjC C++ ObjC++
@@ -386,12 +398,14 @@ C++ ObjC++ Joined UInteger
 
 faccess-control
 C++ ObjC++
+Enforce class member access control semantics
 
 fall-virtual
 C++ ObjC++
 
 falt-external-templates
 C++ ObjC++
+Change when template instances are emitted
 
 fasm
 C ObjC C++ ObjC++
@@ -406,6 +420,7 @@ C ObjC C++ ObjC++ Joined
 
 fcheck-new
 C++ ObjC++
+Check the return value of new
 
 fcond-mismatch
 C ObjC C++ ObjC++
@@ -413,15 +428,18 @@ Allow the arguments of the '?' operator to have different types
 
 fconserve-space
 C++ ObjC++
+Reduce the size of object files
 
 fconst-strings
 C++ ObjC++
+Make string literals \"const char[]\" not \"char[]\"
 
 fconstant-string-class=
 ObjC ObjC++ Joined
 
 fdefault-inline
 C++ ObjC++
+Inline member functions by default
 
 fdollars-in-identifiers
 C ObjC C++ ObjC++
@@ -429,12 +447,14 @@ Permit '$' as an identifier character
 
 fdump-
 C ObjC C++ ObjC++ Joined RejectNegative
+-fdump-<type>	Dump various compiler internals to a file
 
 felide-constructors
 C++ ObjC++
 
 fenforce-eh-specs
 C++ ObjC++
+Generate code to check exception specifications
 
 fenum-int-equiv
 C++ ObjC++
@@ -454,6 +474,7 @@ C ObjC Joined
 
 ffor-scope
 C++ ObjC++
+Scope of for-init-statement variables is local to the loop
 
 ffreestanding
 C ObjC
@@ -461,6 +482,7 @@ Do not assume that standard C libraries and \"main\" exist
 
 fgnu-keywords
 C++ ObjC++
+Recognize GNU-defined keywords
 
 fgnu-runtime
 ObjC ObjC++
@@ -480,21 +502,26 @@ Assume normal C execution environment
 
 fhuge-objects
 C++ ObjC++
+Enable support for huge objects
 
 fimplement-inlines
 C++ ObjC++
+Export functions even if they can be inlined
 
 fimplicit-inline-templates
 C++ ObjC++
+Emit implicit instantiations of inline templates
 
 fimplicit-templates
 C++ ObjC++
+Emit implicit instantiations of templates
 
 flabels-ok
 C++ ObjC++
 
 fms-extensions
 C ObjC C++ ObjC++
+Don't warn about uses of Microsoft extensions
 
 fname-mangling-version-
 C++ ObjC++ Joined
@@ -513,15 +540,18 @@ C++ ObjC++
 
 foperator-names
 C++ ObjC++
+Recognize C++ kewords like \"compl\" and \"xor\"
 
 foptional-diags
 C++ ObjC++
+Enable optional diagnostics
 
 fpch-deps
 C ObjC C++ ObjC++
 
 fpermissive
 C++ ObjC++
+Downgrade conformance errors to warnings
 
 fpreprocessed
 C ObjC C++ ObjC++
@@ -529,9 +559,11 @@ Treat the input file as already preprocessed
 
 frepo
 C++ ObjC++
+Enable automatic template instantiation
 
 frtti
 C++ ObjC++
+Generate run time type descriptor information
 
 fshort-double
 C ObjC C++ ObjC++
@@ -561,6 +593,7 @@ C++ ObjC++
 
 fstats
 C++ ObjC++
+Display statistics accumulated during compilation
 
 fstrict-prototype
 C++ ObjC++
@@ -571,6 +604,7 @@ C ObjC C++ ObjC++ Joined RejectNegative UInteger
 
 ftemplate-depth-
 C++ ObjC++ Joined RejectNegative UInteger 
+-ftemplate-depth-<number>	Specify maximum template instantiation depth
 
 fthis-is-variable
 C++ ObjC++
@@ -585,15 +619,19 @@ Make \"char\" unsigned by default
 
 fuse-cxa-atexit
 C++ ObjC++
+Use __cxa_atexit to register destructors
 
 fvtable-gc
 C++ ObjC++
+Discard unused virtual functions
 
 fvtable-thunks
 C++ ObjC++
+Implement vtables using thunks
 
 fweak
 C++ ObjC++
+Emit common-like symbols as weak symbols
 
 fwide-exec-charset=
 C ObjC C++ ObjC++ Joined RejectNegative
@@ -601,6 +639,7 @@ C ObjC C++ ObjC++ Joined RejectNegative
 
 fxref
 C++ ObjC++
+Emit cross referencing information
 
 gen-decls
 ObjC ObjC++

@@ -1,3 +1,7 @@
+2003-07-16  Neil Booth  <neil@daikokuya.co.uk>
+
+	* c.opt: Document more options.
+
 2003-07-16  Roger Sayle  <roger@eyesopen.com>
 
 	* combine.c (subst): Also handle (subreg (const_double ...)) case
