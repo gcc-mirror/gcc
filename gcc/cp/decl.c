@@ -613,6 +613,10 @@ struct binding_level
     /* A list of USING_DECL nodes. */
     tree usings;
 
+    /* A list of used namespaces. PURPOSE is the namespace,
+       VALUE the common ancestor with this binding_level's namespace. */
+    tree using_directives;
+
     /* For each level, a list of shadowed outer-level local definitions
        to be restored when this level is popped.
        Each link is a TREE_LIST whose TREE_PURPOSE is an identifier and
@@ -3822,12 +3826,6 @@ push_using_decl (scope, name)
 {
   tree decl;
   
-  if (!toplevel_bindings_p ())
-    {
-      sorry ("using declaration inside function");
-      return NULL_TREE;
-    }
-
   my_friendly_assert (TREE_CODE (scope) == NAMESPACE_DECL, 383);
   my_friendly_assert (TREE_CODE (name) == IDENTIFIER_NODE, 384);
   for (decl = current_binding_level->usings; decl; decl = TREE_CHAIN (decl))
@@ -3840,6 +3838,26 @@ push_using_decl (scope, name)
   TREE_CHAIN (decl) = current_binding_level->usings;
   current_binding_level->usings = decl;
   return decl;
+}
+
+/* Add namespace to using_directives. Return NULL_TREE if nothing was
+   changed (i.e. there was already a directive), or the fresh
+   TREE_LIST otherwise.  */
+
+tree
+push_using_directive (used, ancestor)
+     tree used;
+     tree ancestor;
+{
+  tree ud = current_binding_level->using_directives;
+  
+  /* Check if we already have this. */
+  if (purpose_member (used, ud) != NULL_TREE)
+    return NULL_TREE;
+ 
+  ud = perm_tree_cons (used, ancestor, ud);
+  current_binding_level->using_directives = ud;
+  return ud;
 }
 
 /* DECL is a FUNCTION_DECL which may have other definitions already in
@@ -4732,6 +4750,62 @@ select_decl (binding, prefer_type, namespaces_only)
   return val;
 }
 
+/* Unscoped lookup of a global, iterate over namespaces, considering
+   using namespace statements. */
+
+static tree
+unqualified_namespace_lookup (name, prefer_type, namespaces_only)
+     tree name;
+     int prefer_type;
+     int namespaces_only;
+{
+  struct tree_binding _binding;
+  tree b = binding_init (&_binding);
+  tree initial = current_decl_namespace();
+  tree scope = initial;
+  tree siter;
+  struct binding_level *level;
+  tree val = NULL_TREE;
+
+  while (!val)
+    {
+      val = binding_for_name (name, scope);
+
+      /* Initialize binding for this context. */
+      BINDING_VALUE (b) = BINDING_VALUE (val);
+      BINDING_TYPE (b) = BINDING_TYPE (val);
+
+      /* Add all _DECLs seen through local using-directives. */
+      for (level = current_binding_level; 
+	   !level->namespace_p;
+	   level = level->level_chain)
+	if (!lookup_using_namespace (name, b, level->using_directives, scope))
+	  /* Give up because of error. */
+	  return NULL_TREE;
+
+      /* Add all _DECLs seen through global using-directives. */
+      /* XXX local and global using lists should work equally. */
+      siter = initial;
+      while (1)
+	{
+	  if (!lookup_using_namespace (name, b, DECL_NAMESPACE_USING (siter), 
+				       scope))
+	    /* Give up because of error. */
+	    return NULL_TREE;
+	  if (siter == scope) break;
+	  siter = CP_DECL_CONTEXT (siter);
+	}
+
+      val = select_decl (b, prefer_type, namespaces_only);
+      if (scope == global_namespace)
+	break;
+      scope = DECL_CONTEXT (scope);
+      if (scope == NULL_TREE)
+	scope = global_namespace;
+    }
+  return val;
+}
+
 /* Look up NAME in the current binding level and its superiors in the
    namespace of variables, functions and typedefs.  Return a ..._DECL
    node of some kind representing its definition if there is only one
@@ -4903,35 +4977,7 @@ lookup_name_real (name, prefer_type, nonclass, namespaces_only)
   else if (classval)
     val = classval;
   else
-    {
-      /* Unscoped lookup of a global, iterate over namespaces,
-         considering using namespace statements. */
-      struct tree_binding _binding;
-      tree b = binding_init (&_binding);
-      tree initial = current_decl_namespace();
-      tree scope = initial;
-      val = NULL_TREE;
-      while (!val)
-	{
-	  val = binding_for_name (name, scope);
-	  /* Initialize binding for this context. */
-	  BINDING_VALUE (b) = BINDING_VALUE (val);
-	  BINDING_TYPE (b) = BINDING_TYPE (val);
-	  /* Add all _DECLs seen through using-directives. */
-	  if (!lookup_using_namespace (name, b, initial, scope))
-	    {
-	      /* Give up because of error. */
-	      val = NULL_TREE;
-	      break;
-	    }
-	  val = select_decl (b, prefer_type, namespaces_only);
-	  if (scope == global_namespace)
-	    break;
-	  scope = DECL_CONTEXT (scope);
-          if (scope == NULL_TREE)
-            scope = global_namespace;
-	}
-    }
+    val = unqualified_namespace_lookup (name, prefer_type, namespaces_only);
 
  done:
   if (val)

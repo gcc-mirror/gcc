@@ -2359,7 +2359,9 @@ extern void pushdecl_nonclass_level		PROTO((tree));
 #endif
 extern tree pushdecl_namespace_level            PROTO((tree));
 extern tree push_using_decl                     PROTO((tree, tree));
+extern tree push_using_directive                PROTO((tree, tree));
 extern void push_class_level_binding		PROTO((tree, tree));
+extern tree push_using_decl                     PROTO((tree, tree));
 extern tree implicitly_declare			PROTO((tree));
 extern tree lookup_label			PROTO((tree));
 extern tree shadow_label			PROTO((tree));
@@ -2489,6 +2491,7 @@ extern void push_decl_namespace                 PROTO((tree));
 extern void pop_decl_namespace                  PROTO((void));
 extern void do_namespace_alias			PROTO((tree, tree));
 extern void do_toplevel_using_decl		PROTO((tree));
+extern void do_local_using_decl                 PROTO((tree));
 extern tree do_class_using_decl			PROTO((tree));
 extern void do_using_directive			PROTO((tree));
 extern void check_default_args			PROTO((tree));
