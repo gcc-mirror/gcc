@@ -1,5 +1,9 @@
 2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
 
+	* libgcc2.c (_mulvsi3): Change variables u and v to a and b.
+
+2000-10-19  Chandrakala Chavva   <cchavva@redhat.com>
+
 	* expmed.c: Minor corrections in comments.
 	* invoke.texi: Added desciption for the new option -ftrapv.
 
