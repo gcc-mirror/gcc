@@ -5025,6 +5025,7 @@ resolve_address_of_overloaded_function (target_type,
      are the TREE_PURPOSE, not the TREE_VALUE, in this list, for easy
      interoperability with most_specialized_instantiation.  */
   tree matches = NULL_TREE;
+  tree fn;
 
   /* By the time we get here, we should be seeing only real
      pointer-to-member types, not the internal POINTER_TYPE to
@@ -5212,8 +5213,20 @@ resolve_address_of_overloaded_function (target_type,
       return error_mark_node;
     }
 
-  /* Good, exactly one match.  */
-  return TREE_PURPOSE (matches);
+  /* Good, exactly one match.  Now, convert it to the correct type.  */
+  fn = TREE_PURPOSE (matches);
+
+  if (TYPE_PTRFN_P (target_type) || TYPE_PTRMEMFUNC_P (target_type))
+    return build_unary_op (ADDR_EXPR, fn, 0);
+  else
+    {
+      /* The target must be a REFERENCE_TYPE.  Above, build_unary_op
+	 will mark the function as addressed, but here we must do it
+	 explicitly.  */
+      mark_addressable (fn);
+
+      return fn;
+    }
 }
 
 /* This function will instantiate the type of the expression given in
@@ -5291,33 +5304,31 @@ instantiate_type (lhstype, rhs, complain)
     case COMPONENT_REF:
       {
 	tree field = TREE_OPERAND (rhs, 1);
-	if (TREE_CODE (field) == TREE_LIST)
+	tree r;
+
+	my_friendly_assert (TREE_CODE (field) == TREE_LIST, 0);
+
+	r = instantiate_type (lhstype, field, complain);
+
+	if (r != error_mark_node && TYPE_PTRMEMFUNC_P (lhstype))
 	  {
-	    tree function = instantiate_type (lhstype, field, complain);
-	    if (function == error_mark_node)
-	      return error_mark_node;
-	    my_friendly_assert (TREE_CODE (function) == FUNCTION_DECL, 185);
-
-	    if (! DECL_STATIC_FUNCTION_P (function))
+	    tree t = TYPE_PTRMEMFUNC_OBJECT_TYPE (lhstype);
+	    tree fn = TREE_VALUE (field);
+	    if (TREE_CODE (fn) == OVERLOAD)
+	      fn = OVL_FUNCTION (fn);
+	    if (TREE_CODE (fn) == FUNCTION_DECL)
 	      {
-		tree t = TREE_TYPE (TREE_OPERAND (rhs, 0));
-		if (TYPE_MAIN_VARIANT (t) == current_class_type)
-		  t = constructor_name (t);
-
-		cp_error ("object-dependent reference to `%D' can only be used in a call",
-			  function);
-		cp_error ("  to form a pointer to member function, say `&%T::%D'",
-			  t, DECL_NAME (function));
-		return error_mark_node;
+		cp_error ("object-dependent reference `%E' can only be used in a call",
+			  DECL_NAME (fn));
+		cp_error ("  to form a pointer to member function, say `&%T::%E'",
+			  t, DECL_NAME (fn));
 	      }
-
-	    mark_used (function);
-	    return function;
+	    else
+	      cp_error ("object-dependent reference can only be used in a call");
+	    return error_mark_node;
 	  }
-
-	/* I could not trigger this code. MvL */
-	my_friendly_abort (980326);
-	return rhs;
+	
+	return r;
       }
 
     case OFFSET_REF:
@@ -5469,27 +5480,7 @@ instantiate_type (lhstype, rhs, complain)
       return rhs;
       
     case ADDR_EXPR:
-      {
-	tree fn = instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
-	if (fn == error_mark_node)
-	  return error_mark_node;
-	mark_addressable (fn);
-	TREE_OPERAND (rhs, 0) = fn;
-	TREE_CONSTANT (rhs) = staticp (fn);
-	if (TYPE_PTRMEMFUNC_P (lhstype))
-	  {
-	    /* We must use the POINTER_TYPE to METHOD_TYPE on RHS here
-	       so that build_ptrmemfunc knows that RHS we have is not
-	       already a pointer-to-member constant.  Instead, it is
-	       just a ADDR_EXPR over a FUNCTION_DECL.  */
-	    TREE_TYPE (rhs) = TYPE_PTRMEMFUNC_FN_TYPE (lhstype);
-	    rhs = build_ptrmemfunc (TREE_TYPE (rhs), rhs, 0);
-	  }
-	else
-	  /* Here, things our simple; we have exactly what we need.  */
-	  TREE_TYPE (rhs) = lhstype;
-      }
-      return rhs;
+      return instantiate_type (lhstype, TREE_OPERAND (rhs, 0), complain);
 
     case ENTRY_VALUE_EXPR:
       my_friendly_abort (184);

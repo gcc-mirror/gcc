@@ -1,3 +1,20 @@
+1998-12-16  Mark Mitchell  <mark@markmitchell.com>
+
+	* class.c (resolve_address_of_overloaded_function): Do conversion
+	to correct type here, rather than ...
+	(instantiate_type): Here.
+
+	* cp-tree.h (DECL_TEMPLATE_PARM_P): New macro.
+	(DECL_TEMPLATE_TEMPLATE_PARM_P): Use it.
+	(decl_template_parm_p): Remove.
+	* decl.c (pushdecl): Don't set DECL_CONTEXT for a template
+	paramter. 
+	* lex.c (do_identifier): Use DECL_TEMPLATE_PARM_P.
+	(push_inline_template_parms_recursive): Set it.
+	(decl_template_parm_p): Remove.
+	(check_template_shadow): Use DECL_TEMPLATE_PARM_P.
+	(process_template_parm): Set it.
+	
 Wed Dec 16 16:33:58 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* lang-specs.h (default_compilers): Pass -MD, -MMD and -MG to cc1plus
