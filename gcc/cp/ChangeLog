@@ -1,3 +1,9 @@
+2002-07-24  Geoffrey Keating  <geoffk@redhat.com>
+
+	* tree.c (cp_build_qualified_type_real): When copying
+	pointer-to-method types, unshare the record that holds
+	the cached pointer-to-member-function type.
+
 2002-07-23  Neil Booth  <neil@daikokuya.co.uk>
 
 	* cp-tree.h (FILE_FUNCTION_PREFIX_LEN): Remove.

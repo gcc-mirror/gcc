@@ -644,13 +644,13 @@ cp_build_qualified_type_real (type, type_quals, complain)
   result = build_qualified_type (type, type_quals);
 
   /* If this was a pointer-to-method type, and we just made a copy,
-     then we need to clear the cached associated
-     pointer-to-member-function type; it is not valid for the new
-     type.  */
+     then we need to unshare the record that holds the cached
+     pointer-to-member-function type, because these will be distinct
+     between the unqualified and qualified types.  */
   if (result != type 
       && TREE_CODE (type) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (type)) == METHOD_TYPE)
-    TYPE_SET_PTRMEMFUNC_TYPE (result, NULL_TREE);
+    TYPE_LANG_SPECIFIC (result) = NULL;
 
   return result;
 }
