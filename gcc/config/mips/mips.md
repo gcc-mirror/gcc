@@ -4061,8 +4061,8 @@ dsrl\t%3,%3,1\n\
 
 (define_insn "mov_lwl"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec:SI [(match_operand:BLK 1 "general_operand" "m")
-		    (match_operand:QI 2 "general_operand" "m")]
+	(unspec:SI [(match_operand:BLK 1 "memory_operand" "m")
+		    (match_operand:QI 2 "memory_operand" "m")]
 		   UNSPEC_LWL))]
   "!TARGET_MIPS16"
   "lwl\t%0,%2"
@@ -4072,8 +4072,8 @@ dsrl\t%3,%3,1\n\
 
 (define_insn "mov_lwr"
   [(set (match_operand:SI 0 "register_operand" "=d")
-	(unspec:SI [(match_operand:BLK 1 "general_operand" "m")
-		    (match_operand:QI 2 "general_operand" "m")
+	(unspec:SI [(match_operand:BLK 1 "memory_operand" "m")
+		    (match_operand:QI 2 "memory_operand" "m")
 		    (match_operand:SI 3 "register_operand" "0")]
 		   UNSPEC_LWR))]
   "!TARGET_MIPS16"
@@ -4085,7 +4085,7 @@ dsrl\t%3,%3,1\n\
 (define_insn "mov_swl"
   [(set (match_operand:BLK 0 "memory_operand" "=m")
 	(unspec:BLK [(match_operand:SI 1 "reg_or_0_operand" "dJ")
-		     (match_operand:QI 2 "general_operand" "m")]
+		     (match_operand:QI 2 "memory_operand" "m")]
 		    UNSPEC_SWL))]
   "!TARGET_MIPS16"
   "swl\t%z1,%2"
@@ -4095,7 +4095,7 @@ dsrl\t%3,%3,1\n\
 (define_insn "mov_swr"
   [(set (match_operand:BLK 0 "memory_operand" "+m")
 	(unspec:BLK [(match_operand:SI 1 "reg_or_0_operand" "dJ")
-		     (match_operand:QI 2 "general_operand" "m")
+		     (match_operand:QI 2 "memory_operand" "m")
 		     (match_dup 0)]
 		    UNSPEC_SWR))]
   "!TARGET_MIPS16"
@@ -4106,8 +4106,8 @@ dsrl\t%3,%3,1\n\
 
 (define_insn "mov_ldl"
   [(set (match_operand:DI 0 "register_operand" "=d")
-	(unspec:DI [(match_operand:BLK 1 "general_operand" "m")
-		    (match_operand:QI 2 "general_operand" "m")]
+	(unspec:DI [(match_operand:BLK 1 "memory_operand" "m")
+		    (match_operand:QI 2 "memory_operand" "m")]
 		   UNSPEC_LDL))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "ldl\t%0,%2"
@@ -4116,8 +4116,8 @@ dsrl\t%3,%3,1\n\
 
 (define_insn "mov_ldr"
   [(set (match_operand:DI 0 "register_operand" "=d")
-	(unspec:DI [(match_operand:BLK 1 "general_operand" "m")
-		    (match_operand:QI 2 "general_operand" "m")
+	(unspec:DI [(match_operand:BLK 1 "memory_operand" "m")
+		    (match_operand:QI 2 "memory_operand" "m")
 		    (match_operand:DI 3 "register_operand" "0")]
 		   UNSPEC_LDR))]
   "TARGET_64BIT && !TARGET_MIPS16"
@@ -4129,7 +4129,7 @@ dsrl\t%3,%3,1\n\
 (define_insn "mov_sdl"
   [(set (match_operand:BLK 0 "memory_operand" "=m")
 	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ")
-		     (match_operand:QI 2 "general_operand" "m")]
+		     (match_operand:QI 2 "memory_operand" "m")]
 		    UNSPEC_SDL))]
   "TARGET_64BIT && !TARGET_MIPS16"
   "sdl\t%z1,%2"
@@ -4139,7 +4139,7 @@ dsrl\t%3,%3,1\n\
 (define_insn "mov_sdr"
   [(set (match_operand:BLK 0 "memory_operand" "+m")
 	(unspec:BLK [(match_operand:DI 1 "reg_or_0_operand" "dJ")
-		     (match_operand:QI 2 "general_operand" "m")
+		     (match_operand:QI 2 "memory_operand" "m")
 		     (match_dup 0)]
 		    UNSPEC_SDR))]
   "TARGET_64BIT && !TARGET_MIPS16"
