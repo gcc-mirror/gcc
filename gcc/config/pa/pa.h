@@ -108,11 +108,6 @@ extern int target_flags;
 #define MASK_JUMP_IN_DELAY 8
 #define TARGET_JUMP_IN_DELAY (target_flags & MASK_JUMP_IN_DELAY)
 
-/* Optimize for space.  Currently this only turns on out of line
-   prologues and epilogues.  */
-#define MASK_SPACE 16
-#define TARGET_SPACE (target_flags & MASK_SPACE)
-
 /* Disable indexed addressing modes.  */
 #define MASK_DISABLE_INDEXING 32
 #define TARGET_DISABLE_INDEXING (target_flags & MASK_DISABLE_INDEXING)
@@ -174,8 +169,6 @@ extern int target_flags;
    {"space-regs", -MASK_NO_SPACE_REGS, "Do not disable space regs"},	\
    {"jump-in-delay", MASK_JUMP_IN_DELAY, "Put jumps in call delay slots"},\
    {"no-jump-in-delay", -MASK_JUMP_IN_DELAY, "Do not put jumps in call delay slots"},	\
-   {"space", MASK_SPACE, "Optimize for code space"},			\
-   {"no-space", -MASK_SPACE, "Do not optimize for code space"},		\
    {"disable-indexing", MASK_DISABLE_INDEXING, "Disable indexed addressing"},\
    {"no-disable-indexing", -MASK_DISABLE_INDEXING, "Do not disable indexed addressing"},\
    {"portable-runtime", MASK_PORTABLE_RUNTIME, "Use portable calling conventions"},	\

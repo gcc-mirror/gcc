@@ -71,10 +71,6 @@ int hp_profile_labelno;
    registers which were saved by the current function's prologue.  */
 static int gr_saved, fr_saved;
 
-/* Whether or not the current function uses an out-of-line prologue
-   and epilogue.  */
-static int out_of_line_prologue_epilogue;
-
 static rtx find_addr_reg ();
 
 /* Keep track of the number of bytes we have output in the CODE subspaces
@@ -172,12 +168,6 @@ override_options ()
   if (flag_pic && profile_flag)
     {
       warning ("PIC code generation is not compatible with profiling\n");
-    }
-
-  if (TARGET_SPACE && (flag_pic || profile_flag))
-    {
-      warning ("Out of line entry/exit sequences are not compatible\n");
-      warning ("with PIC or profiling\n");
     }
 
   if (! TARGET_GAS && write_symbols != NO_DEBUG)
@@ -2566,31 +2556,23 @@ compute_frame_size (size, fregs_live)
      we need to add this in because of STARTING_FRAME_OFFSET. */
   fsize = size + (size || frame_pointer_needed ? 8 : 0);
 
-  /* We must leave enough space for all the callee saved registers
-     from 3 .. highest used callee save register since we don't
-     know if we're going to have an inline or out of line prologue
-     and epilogue.  */
   for (i = 18; i >= 3; i--)
     if (regs_ever_live[i])
       {
-	fsize += 4 * (i - 2);
+	fsize += 4;
 	break;
       }
 
   /* Round the stack.  */
   fsize = (fsize + 7) & ~7;
 
-  /* We must leave enough space for all the callee saved registers
-     from 3 .. highest used callee save register since we don't
-     know if we're going to have an inline or out of line prologue
-     and epilogue.  */
   for (i = 66; i >= 48; i -= 2)
     if (regs_ever_live[i] || regs_ever_live[i + 1])
       {
 	if (fregs_live)
 	  *fregs_live = 1;
 
-	fsize += 4 * (i - 46);
+	fsize += 4;
 	break;
       }
 
@@ -2690,91 +2672,6 @@ hppa_expand_prologue()
   /* Compute a few things we will use often.  */
   tmpreg = gen_rtx_REG (SImode, 1);
   size_rtx = GEN_INT (actual_fsize);
-
-  /* Handle out of line prologues and epilogues.  */
-  if (TARGET_SPACE)
-    {
-      rtx operands[2];
-      int saves = 0;
-      int outline_insn_count = 0;
-      int inline_insn_count = 0;
-
-      /* Count the number of insns for the inline and out of line
-	 variants so we can choose one appropriately.
-
-	 No need to screw with counting actual_fsize operations -- they're
-	 done for both inline and out of line prologues.  */
-      if (regs_ever_live[2])
-	inline_insn_count += 1;
-
-      if (! cint_ok_for_move (local_fsize))
-	outline_insn_count += 2;
-      else
-	outline_insn_count += 1;
-
-      /* Put the register save info into %r22.  */
-      for (i = 18; i >= 3; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
-	  {
-	    /* -1 because the stack adjustment is normally done in
-	       the same insn as a register save.  */
-	    inline_insn_count += (i - 2) - 1;
-	    saves = i;
-            break;
-	  }
-  
-      for (i = 66; i >= 48; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  {
-	    /* +1 needed as we load %r1 with the start of the freg
-	       save area.  */
-	    inline_insn_count += (i/2 - 23) + 1;
-	    saves |= ((i/2 - 12 ) << 16);
-	    break;
-	  }
-
-      if (frame_pointer_needed)
-	inline_insn_count += 3;
-
-      if (! cint_ok_for_move (saves))
-	outline_insn_count += 2;
-      else
-	outline_insn_count += 1;
-
-      if (TARGET_PORTABLE_RUNTIME)
-	outline_insn_count += 2;
-      else
-	outline_insn_count += 1;
-	
-      /* If there's a lot of insns in the prologue, then do it as
-	 an out-of-line sequence.  */
-      if (inline_insn_count > outline_insn_count)
-	{
-	  /* Put the local_fisze into %r19.  */
-	  operands[0] = gen_rtx_REG (SImode, 19);
-	  operands[1] = GEN_INT (local_fsize);
-	  emit_move_insn (operands[0], operands[1]);
-
-	  /* Put the stack size into %r21.  */
-	  operands[0] = gen_rtx_REG (SImode, 21);
-	  operands[1] = size_rtx;
-	  emit_move_insn (operands[0], operands[1]);
-
-	  operands[0] = gen_rtx_REG (SImode, 22);
-	  operands[1] = GEN_INT (saves);
-	  emit_move_insn (operands[0], operands[1]);
-
-	  /* Now call the out-of-line prologue.  */
-	  emit_insn (gen_outline_prologue_call ());
-	  emit_insn (gen_blockage ());
-
-	  /* Note that we're using an out-of-line prologue.  */
-	  out_of_line_prologue_epilogue = 1;
-	  return;     
-	}
-    }
-
-  out_of_line_prologue_epilogue = 0;
 
   /* Save RP first.  The calling conventions manual states RP will
      always be stored into the caller's frame at sp-20.  */
@@ -3037,48 +2934,6 @@ hppa_expand_epilogue ()
   rtx tmpreg;
   int offset,i;
   int merge_sp_adjust_with_load  = 0;
-
-  /* Handle out of line prologues and epilogues.  */
-  if (TARGET_SPACE && out_of_line_prologue_epilogue)
-    {
-      int saves = 0;
-      rtx operands[2];
-
-      /* Put the register save info into %r22.  */
-      for (i = 18; i >= 3; i--)
-	if (regs_ever_live[i] && ! call_used_regs[i])
-	  {
-	    saves = i;
-            break;
-	  }
-	  
-      for (i = 66; i >= 48; i -= 2)
-	if (regs_ever_live[i] || regs_ever_live[i + 1])
-	  {
-	    saves |= ((i/2 - 12 ) << 16);
-	    break;
-	  }
-
-      emit_insn (gen_blockage ());
-
-      /* Put the local_fisze into %r19.  */
-      operands[0] = gen_rtx_REG (SImode, 19);
-      operands[1] = GEN_INT (local_fsize);
-      emit_move_insn (operands[0], operands[1]);
-
-      /* Put the stack size into %r21.  */
-      operands[0] = gen_rtx_REG (SImode, 21);
-      operands[1] = GEN_INT (actual_fsize);
-      emit_move_insn (operands[0], operands[1]);
-
-      operands[0] = gen_rtx_REG (SImode, 22);
-      operands[1] = GEN_INT (saves);
-      emit_move_insn (operands[0], operands[1]);
-
-      /* Now call the out-of-line epilogue.  */
-      emit_insn (gen_outline_epilogue_call ());
-      return;
-    }
 
   /* We will use this often.  */
   tmpreg = gen_rtx_REG (SImode, 1);
