@@ -2966,7 +2966,7 @@ instruction scheduling.
 @cindex @code{epilogue} instruction pattern
 @anchor{epilogue instruction pattern}
 @item @samp{epilogue}
-This pattern, if defined, emits RTL for exit from a function.  The function
+This pattern emits RTL for exit from a function.  The function
 exit is responsible for deallocating the stack frame, restoring callee saved
 registers and emitting the return instruction.
 

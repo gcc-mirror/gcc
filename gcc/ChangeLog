@@ -1,3 +1,13 @@
+2001-08-09  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* stmt.c (expand_null_return_1): Remove code to generate simple returns 
+	and "use_goto" argument.
+	(expand_null_return, expand_value_return): Update all callers.
+	* function.c (expand_function_end): Remove code to generate simple
+	return.
+	* config/vax/vax.md (epilogue): New expander for function return.
+	* doc/md.texi (epilogue): Remove "if defined".
+
 2001-08-09  Zack Weinberg  <zackw@stanford.edu>
 
 	* Makefile.in: Partially revert my previous change:
