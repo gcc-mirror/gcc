@@ -2608,8 +2608,7 @@ expand_builtin_strncat (arglist, target, mode)
 
       /* If the requested length is zero, or the src parameter string
           length is zero, return the dst parameter.  */
-      if ((TREE_CODE (len) == INTEGER_CST && integer_zerop (len))
-	  || (p && *p == '\0'))
+      if (integer_zerop (len) || (p && *p == '\0'))
         {
 	  /* Evaluate and ignore the src and len parameters in case
 	     they have side-effects.  */
