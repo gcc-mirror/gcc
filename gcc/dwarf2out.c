@@ -13795,11 +13795,10 @@ dwarf2out_finish (const char *filename)
       output_ranges ();
     }
 
-  /* Have to end the primary source file.  */
+  /* Have to end the macro section.  */
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
       named_section_flags (DEBUG_MACINFO_SECTION, SECTION_DEBUG);
-      dw2_asm_output_data (1, DW_MACINFO_end_file, "End file");
       dw2_asm_output_data (1, 0, "End compilation unit");
     }
 

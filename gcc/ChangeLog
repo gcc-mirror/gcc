@@ -1,3 +1,13 @@
+2005-03-04  Daniel Berlin <dberlin@dbrelin.org>
+
+	Fix PR debug/20253
+	
+	* c-opts.c (c_common_parse_file): Call start_source_file
+	and end_source_file at the approriate times.
+
+	* dwarf2out.c (dwarf2out_finish): Don't auto-end
+	the main file, it will be done for us now.
+
 2005-03-03  Alan Modra  <amodra@bigpond.net.au>
 
 	PR target/20277
