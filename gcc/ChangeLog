@@ -1,3 +1,11 @@
+2005-03-31  James E Wilson  <wilson@specifixinc.com>
+
+	PR c++/20505
+	* dwarf2out.c (rtl_for_decl_init): New function.
+	(rtl_for_decl_location): Extracted from here.
+	(tree_add_const_value_attribute): Call rtl_for_decl_init and
+	add_const_value_attribute.  Delete initializer_constant_valid_p call.
+
 2005-04-01  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cgraphunit.c, dbxout.c, flow.c, gcse.c, gimplify.c,
