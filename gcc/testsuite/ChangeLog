@@ -1,3 +1,8 @@
+2001-01-27  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* gcc.c-torture/execute/stdio-opt-2.c: Also test __builtin_puts
+	and __builtin_putchar.
+
 2001-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gnu99-init-1.c: Add 3 more designated range initializer

@@ -33,6 +33,10 @@ int main()
   /* Test at least one instance of the __builtin_ style.  We do this
      to ensure that it works and that the prototype is correct.  */
   __builtin_printf ("%s\n", "hello");
+  /* These builtin stubs are called by __builtin_printf, ensure their
+     prototypes are set correctly too.  */
+  __builtin_putchar ('\n');
+  __builtin_puts ("hello");
 
   return 0;
 }
