@@ -1,3 +1,9 @@
+2004-06-28  Ulrich Weigand  <uweigand@de.ibm.com>
+
+	* combine.c (can_combine_p): Do not prevent building insns that use
+	and clobber the same fixed hard register.
+	(reg_dead_at_p): Likewise.
+
 2004-06-28  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* tree-sra.c (is_sra_candidate_ref): Remove second arg; all callers

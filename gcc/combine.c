@@ -1129,16 +1129,30 @@ can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
   else if (GET_CODE (dest) != CC0)
     return 0;
 
-  /* Don't substitute for a register intended as a clobberable operand.
-     Similarly, don't substitute an expression containing a register that
-     will be clobbered in I3.  */
+
   if (GET_CODE (PATTERN (i3)) == PARALLEL)
     for (i = XVECLEN (PATTERN (i3), 0) - 1; i >= 0; i--)
-      if (GET_CODE (XVECEXP (PATTERN (i3), 0, i)) == CLOBBER
-	  && (reg_overlap_mentioned_p (XEXP (XVECEXP (PATTERN (i3), 0, i), 0),
-				       src)
-	      || rtx_equal_p (XEXP (XVECEXP (PATTERN (i3), 0, i), 0), dest)))
-	return 0;
+      if (GET_CODE (XVECEXP (PATTERN (i3), 0, i)) == CLOBBER)
+	{
+          /* Don't substitute for a register intended as a clobberable
+	     operand. */
+	  rtx reg = XEXP (XVECEXP (PATTERN (i3), 0, i), 0);
+	  if (rtx_equal_p (reg, dest))
+	    return 0;
+
+	  /* If the clobber represents an earlyclobber operand, we must not
+	     substitute an expression containing the clobbered register.
+	     As we do not analyse the constraint strings here, we have to
+	     make the conservative assumption.  However, if the register is
+	     a fixed hard reg, the clobber cannot represent any operand;
+	     we leave it up to the machine description to either accept or
+	     reject use-and-clobber patterns.  */
+	  if (!REG_P (reg)
+	      || REGNO (reg) >= FIRST_PSEUDO_REGISTER
+	      || !fixed_regs[REGNO (reg)])
+	    if (reg_overlap_mentioned_p (reg, src))
+	      return 0;
+	}
 
   /* If INSN contains anything volatile, or is an `asm' (whether volatile
      or not), reject, unless nothing volatile comes between it and I3 */
@@ -11142,11 +11156,13 @@ reg_dead_at_p (rtx reg, rtx insn)
 
   reg_dead_flag = 0;
 
-  /* Check that reg isn't mentioned in NEWPAT_USED_REGS.  */
+  /* Check that reg isn't mentioned in NEWPAT_USED_REGS.  For fixed registers
+     we allow the machine description to decide whether use-and-clobber
+     patterns are OK.  */
   if (reg_dead_regno < FIRST_PSEUDO_REGISTER)
     {
       for (i = reg_dead_regno; i < reg_dead_endregno; i++)
-	if (TEST_HARD_REG_BIT (newpat_used_regs, i))
+	if (!fixed_regs[i] && TEST_HARD_REG_BIT (newpat_used_regs, i))
 	  return 0;
     }
 
