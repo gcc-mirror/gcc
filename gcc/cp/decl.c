@@ -62,7 +62,7 @@ static int unary_op_p (enum tree_code);
 static void push_local_name (tree);
 static tree grok_reference_init (tree, tree, tree, tree *);
 static tree grokfndecl (tree, tree, tree, tree, tree, int,
-			enum overload_flags, tree,
+			enum overload_flags, cp_cv_quals,
 			tree, int, int, int, int, int, int, tree);
 static tree grokvardecl (tree, tree, cp_decl_specifier_seq *, int, int, tree);
 static void record_unknown_type (tree, const char *);
@@ -5424,7 +5424,7 @@ grokfndecl (tree ctype,
             tree orig_declarator,
             int virtualp,
             enum overload_flags flags,
-            tree quals, 
+	    cp_cv_quals quals,
             tree raises,
             int check, 
             int friendp, 
@@ -5544,11 +5544,11 @@ grokfndecl (tree ctype,
     DECL_INLINE (decl) = 1;
 
   DECL_EXTERNAL (decl) = 1;
-  if (quals != NULL_TREE && TREE_CODE (type) == FUNCTION_TYPE)
+  if (quals && TREE_CODE (type) == FUNCTION_TYPE)
     {
-      error ("%smember function `%D' cannot have `%T' method qualifier",
-		(ctype ? "static " : "non-"), decl, TREE_VALUE (quals));
-      quals = NULL_TREE;
+      error ("%smember function `%D' cannot have cv-qualifier",
+	     (ctype ? "static " : "non-"), decl);
+      quals = TYPE_UNQUALIFIED;
     }
 
   if (IDENTIFIER_OPNAME_P (DECL_NAME (decl)))
@@ -6287,7 +6287,7 @@ grokdeclarator (const cp_declarator *declarator,
   tree dname = NULL_TREE;
   tree ctor_return_type = NULL_TREE;
   enum overload_flags flags = NO_SPECIAL;
-  tree quals = NULL_TREE;
+  cp_cv_quals quals = TYPE_UNQUALIFIED;
   tree raises = NULL_TREE;
   int template_count = 0;
   tree returned_attrs = NULL_TREE;
@@ -6546,7 +6546,7 @@ grokdeclarator (const cp_declarator *declarator,
 	} 
       else if (declspecs->specs[(int)ds] > 1)
 	{
-	  static const char *decl_spec_names[] = {
+	  static const char *const decl_spec_names[] = {
 	    "signed",
 	    "unsigned",
 	    "short",
@@ -7049,9 +7049,8 @@ grokdeclarator (const cp_declarator *declarator,
 		      error ("destructor cannot be static member function");
 		    if (quals)
 		      {
-			error ("destructors may not be `%E'",
-				  TREE_VALUE (quals));
-			quals = NULL_TREE;
+			error ("destructors may not be cv-qualified");
+			quals = TYPE_UNQUALIFIED;
 		      }
 		    if (decl_context == FIELD)
 		      {
@@ -7078,9 +7077,8 @@ grokdeclarator (const cp_declarator *declarator,
 		      }
 		    if (quals)
 		      {
-			error ("constructors may not be `%E'",
-                               TREE_VALUE (quals));
-			quals = NULL_TREE;
+			error ("constructors may not be cv-qualified");
+			quals = TYPE_UNQUALIFIED;
 		      }
 		    if (decl_context == FIELD)
 		      {
@@ -7163,7 +7161,7 @@ grokdeclarator (const cp_declarator *declarator,
 	      grok_method_quals (declarator->u.pointer.class_type, 
 				 dummy, quals);
 	      type = TREE_TYPE (dummy);
-	      quals = NULL_TREE;
+	      quals = TYPE_UNQUALIFIED;
 	    }
 
 	  if (declarator->kind == cdk_reference)
@@ -7184,45 +7182,9 @@ grokdeclarator (const cp_declarator *declarator,
 
 	  if (declarator->u.pointer.qualifiers)
 	    {
-	      tree typemodlist;
-	      int erred = 0;
-	      int constp = 0;
-	      int volatilep = 0;
-	      int restrictp = 0;
-	      
-	      for (typemodlist = declarator->u.pointer.qualifiers; typemodlist;
-		   typemodlist = TREE_CHAIN (typemodlist))
-		{
-		  tree qualifier = TREE_VALUE (typemodlist);
-
-		  if (qualifier == ridpointers[(int) RID_CONST])
-		    {
-		      constp++;
-		      type_quals |= TYPE_QUAL_CONST;
-		    }
-		  else if (qualifier == ridpointers[(int) RID_VOLATILE])
-		    {
-		      volatilep++;
-		      type_quals |= TYPE_QUAL_VOLATILE;
-		    }
-		  else if (qualifier == ridpointers[(int) RID_RESTRICT])
-		    {
-		      restrictp++;
-		      type_quals |= TYPE_QUAL_RESTRICT;
-		    }
-		  else if (!erred)
-		    {
-		      erred = 1;
-		      error ("invalid type modifier within pointer declarator");
-		    }
-		}
-	      if (constp > 1)
-		pedwarn ("duplicate `const'");
-	      if (volatilep > 1)
-		pedwarn ("duplicate `volatile'");
-	      if (restrictp > 1)
-		pedwarn ("duplicate `restrict'");
-	      type = cp_build_qualified_type (type, type_quals);
+	      type 
+		= cp_build_qualified_type (type, 
+					   declarator->u.pointer.qualifiers);
 	      type_quals = cp_type_quals (type);
 	    }
 	  ctype = NULL_TREE;
@@ -7488,7 +7450,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  || (typedef_decl && C_TYPEDEF_EXPLICITLY_SIGNED (typedef_decl)))
 	C_TYPEDEF_EXPLICITLY_SIGNED (decl) = 1;
 
-      bad_specifiers (decl, "type", virtualp, quals != NULL_TREE,
+      bad_specifiers (decl, "type", virtualp, quals != TYPE_UNQUALIFIED, 
 		      inlinep, friendp, raises != NULL_TREE);
 
       return decl;
@@ -7654,7 +7616,7 @@ grokdeclarator (const cp_declarator *declarator,
       {
 	decl = cp_build_parm_decl (unqualified_id, type);
 
-	bad_specifiers (decl, "parameter", virtualp, quals != NULL_TREE,
+	bad_specifiers (decl, "parameter", virtualp, quals != TYPE_UNQUALIFIED,
 			inlinep, friendp, raises != NULL_TREE);
       }
     else if (decl_context == FIELD)
@@ -7908,7 +7870,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 	      }
 
-	    bad_specifiers (decl, "field", virtualp, quals != NULL_TREE,
+	    bad_specifiers (decl, "field", virtualp, quals != TYPE_UNQUALIFIED,
 			    inlinep, friendp, raises != NULL_TREE);
 	  }
       }
@@ -8009,7 +7971,7 @@ grokdeclarator (const cp_declarator *declarator,
 			    initialized,
 			    (type_quals & TYPE_QUAL_CONST) != 0,
 			    ctype ? ctype : in_namespace);
-	bad_specifiers (decl, "variable", virtualp, quals != NULL_TREE,
+	bad_specifiers (decl, "variable", virtualp, quals != TYPE_UNQUALIFIED,
 			inlinep, friendp, raises != NULL_TREE);
 
 	if (ctype)

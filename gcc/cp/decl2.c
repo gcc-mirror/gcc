@@ -118,31 +118,15 @@ tree static_dtors;
    TYPE_UNQUALIFIED will be an extension.  */
 
 int
-grok_method_quals (tree ctype, tree function, tree quals)
+grok_method_quals (tree ctype, tree function, cp_cv_quals quals)
 {
   tree fntype = TREE_TYPE (function);
   tree raises = TYPE_RAISES_EXCEPTIONS (fntype);
   int type_quals = TYPE_UNQUALIFIED;
-  int dup_quals = TYPE_UNQUALIFIED;
   int this_quals = TYPE_UNQUALIFIED;
 
-  while (quals)
-    {
-      int tq = cp_type_qual_from_rid (TREE_VALUE (quals));
-      
-      if ((type_quals | this_quals) & tq)
-	dup_quals |= tq;
-      else if (tq & TYPE_QUAL_RESTRICT)
-        this_quals |= tq;
-      else
-	type_quals |= tq;
-      quals = TREE_CHAIN (quals);
-    } 
-
-  if (dup_quals != TYPE_UNQUALIFIED)
-    error ("duplicate type qualifiers in %s declaration",
-	      TREE_CODE (function) == FUNCTION_DECL 
-	      ? "member function" : "type");
+  type_quals = quals & ~TYPE_QUAL_RESTRICT;
+  this_quals = quals & TYPE_QUAL_RESTRICT;
 
   ctype = cp_build_qualified_type (ctype, type_quals);
   fntype = build_method_type_directly (ctype, TREE_TYPE (fntype),
@@ -281,10 +265,11 @@ maybe_retrofit_in_chrg (tree fn)
    QUALS are the qualifiers for the this pointer.  */
 
 void
-grokclassfn (tree ctype, tree function, enum overload_flags flags, tree quals)
+grokclassfn (tree ctype, tree function, enum overload_flags flags, 
+	     cp_cv_quals quals)
 {
   tree fn_name = DECL_NAME (function);
-  int this_quals = TYPE_UNQUALIFIED;
+  cp_cv_quals this_quals = TYPE_UNQUALIFIED;
 
   /* Even within an `extern "C"' block, members get C++ linkage.  See
      [dcl.link] for details.  */

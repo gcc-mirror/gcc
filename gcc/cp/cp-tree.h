@@ -3503,6 +3503,11 @@ extern GTY(()) operator_name_info_t operator_name_info
 extern GTY(()) operator_name_info_t assignment_operator_name_info
   [(int) LAST_CPLUS_TREE_CODE];
 
+/* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
+   constants.  */
+
+typedef int cp_cv_quals;
+
 /* A storage class.  */
 
 typedef enum cp_storage_class {
@@ -3628,7 +3633,7 @@ struct cp_declarator {
       /* The parameters to the function.  */
       cp_parameter_declarator *parameters;
       /* The cv-qualifiers for the function.  */
-      tree qualifiers;
+      cp_cv_quals qualifiers;
       /* The exception-specification for the function.  */
       tree exception_specification;
     } function;
@@ -3640,7 +3645,7 @@ struct cp_declarator {
     /* For cdk_pointer, cdk_reference, and cdk_ptrmem.  */
     struct {
       /* The cv-qualifiers for the pointer.  */
-      tree qualifiers;
+      cp_cv_quals qualifiers;
       /* For cdk_ptrmem, the class type containing the member.  */
       tree class_type;
     } pointer;
@@ -3866,10 +3871,10 @@ extern bool have_extern_spec;
 
 /* in decl2.c */
 extern bool check_java_method (tree);
-extern int grok_method_quals (tree, tree, tree);
+extern cp_cv_quals grok_method_quals (tree, tree, cp_cv_quals);
 extern void maybe_retrofit_in_chrg (tree);
 extern void maybe_make_one_only	(tree);
-extern void grokclassfn	(tree, tree, enum overload_flags, tree);
+extern void grokclassfn	(tree, tree, enum overload_flags, cp_cv_quals);
 extern tree grok_array_decl (tree, tree);
 extern tree delete_sanity (tree, tree, bool, int);
 extern tree check_classfn (tree, tree, tree);
@@ -3941,7 +3946,7 @@ extern tree cplus_expand_constant               (tree);
 extern int is_friend				(tree, tree);
 extern void make_friend_class			(tree, tree, bool);
 extern void add_friend                          (tree, tree, bool);
-extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, tree, int);
+extern tree do_friend				(tree, tree, tree, tree, enum overload_flags, cp_cv_quals, int);
 
 /* in init.c */
 extern tree expand_member_init			(tree);

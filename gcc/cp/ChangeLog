@@ -1,3 +1,29 @@
+2004-06-26  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (cp_cv_quals): New type.
+	(cp_declarator): Use it instead of "tree" as appropriate.
+	(grok_method_quals): Adjust prototype.
+	(grokclassfn): Likewise.
+	(do_friend): Likewise.
+	* decl.c (grokfndecl): Use cp_cv_quals, not tree.
+	(grokdeclarator): Likewise.
+	* decl2.c (grok_method_quals): Likewise.
+	(grokclassfn): Likewise.
+	* friend.c (do_friend): Likewise.
+	* method.c (implicitly_declare_fn): Adjust call to grokclassfn.
+	* parser.c (make_call_declarator): Use cp_cv_quals, not tree.
+	(make_pointer_declarator): Likewise.
+	(make_reference_declarator): Likewise.
+	(make_ptrmem_declarator): Likewise.
+	(cp_parser_ptr_operator): Likewise.
+	(cp_parser_cv_qualifier_seq_opt): Likewise.
+	(cp_parser_cv_qualifier_opt): Remove.
+	(cp_parser_new_declarator_opt): Adjust call to
+	cp_parser_ptr_operator.
+	(cp_parser_conversion_declaration_opt): Likewise.
+	(cp_parser_declarator): Use cp_cv_quals, not tree.
+	(cp_parser_direct_declarator): Likewise.
+
 2004-06-26  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* call.c, cp-tree.h, cxx-pretty-print.c, decl.c, decl2.c:

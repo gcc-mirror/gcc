@@ -325,7 +325,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 
 tree
 do_friend (tree ctype, tree declarator, tree decl,
-	   tree attrlist, enum overload_flags flags, tree quals,
+	   tree attrlist, enum overload_flags flags, 
+	   cp_cv_quals quals,
 	   int funcdef_flag)
 {
   /* Every decl that gets here is a friend of something.  */
