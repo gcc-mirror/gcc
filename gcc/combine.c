@@ -91,6 +91,8 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "target.h"
 #include "rtlhooks-def.h"
+/* Include output.h for dump_file.  */
+#include "output.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -282,6 +284,15 @@ static basic_block this_basic_block;
    those blocks as starting points.  */
 static sbitmap refresh_blocks;
 
+/* The following array records the combine_insn_cost for every insn
+   in the instruction stream.  */
+
+static int *uid_insn_cost;
+
+/* Length of the currently allocated uid_insn_cost array.  */
+
+static int last_insn_cost;
+
 /* Incremented for each label.  */
 
 static int label_tick;
@@ -504,6 +515,135 @@ do_SUBST_INT (int *into, int newval)
 
 #define SUBST_INT(INTO, NEWVAL)  do_SUBST_INT(&(INTO), (NEWVAL))
 
+/* Calculate the rtx_cost of a single instruction.  A return value of zero
+   indicates an instruction without a known cost.  */
+
+static int
+combine_insn_cost (rtx pat)
+{
+  int i, cost;
+  rtx set;
+
+  /* Extract the single set rtx from the instruction pattern.
+     We can't use single_set since we only have the pattern.  */
+  if (GET_CODE (pat) == SET)
+    set = pat;
+  else if (GET_CODE (pat) == PARALLEL)
+    {
+      set = NULL_RTX;
+      for (i = 0; i < XVECLEN (pat, 0); i++)
+	{
+	  rtx x = XVECEXP (pat, 0, i);
+	  if (GET_CODE (x) == SET)
+	    {
+	      if (set)
+		return 0;
+	      set = x;
+	    }
+	}
+      if (!set)
+	return 0;
+    }
+  else
+    return 0;
+
+  cost = rtx_cost (SET_SRC (set), SET);
+  return cost > 0 ? cost : COSTS_N_INSNS (1);
+}
+
+/* Subroutine of try_combine.  Determine whether the combine replacement
+   patterns NEWPAT and NEWI2PAT are cheaper according to combine_insn_cost
+   that the original instruction sequence I1, I2 and I3.  Note that I1
+   and/or NEWI2PAT may be NULL_RTX.  This function returns false, if the
+   costs of all instructions can be estimated, and the replacements are
+   more expensive than the original sequence.  */
+
+static bool
+combine_validate_cost (rtx i1, rtx i2, rtx i3, rtx newpat, rtx newi2pat)
+{
+  int i1_cost, i2_cost, i3_cost;
+  int new_i2_cost, new_i3_cost;
+  int old_cost, new_cost;
+
+  /* Lookup the original combine_insn_costs.  */
+  i2_cost = INSN_UID (i2) <= last_insn_cost
+	    ? uid_insn_cost[INSN_UID (i2)] : 0;
+  i3_cost = INSN_UID (i3) <= last_insn_cost
+	    ? uid_insn_cost[INSN_UID (i3)] : 0;
+
+  if (i1)
+    {
+      i1_cost = INSN_UID (i1) <= last_insn_cost
+		? uid_insn_cost[INSN_UID (i1)] : 0;
+      old_cost = (i1_cost > 0 && i2_cost > 0 && i3_cost > 0)
+		 ? i1_cost + i2_cost + i3_cost : 0;
+    }
+  else
+    {
+      old_cost = (i2_cost > 0 && i3_cost > 0) ? i2_cost + i3_cost : 0;
+      i1_cost = 0;
+    }
+
+  /* Calculate the replacement combine_insn_costs.  */
+  new_i3_cost = combine_insn_cost (newpat);
+  if (newi2pat)
+    {
+      new_i2_cost = combine_insn_cost (newi2pat);
+      new_cost = (new_i2_cost > 0 && new_i3_cost > 0)
+		 ? new_i2_cost + new_i3_cost : 0;
+    }
+  else
+    {
+      new_cost = new_i3_cost;
+      new_i2_cost = 0;
+    }
+
+  /* Disallow this recombination if both new_cost and old_cost are
+     greater than zero, and new_cost is greater than old cost.  */
+  if (!undobuf.other_insn
+      && old_cost > 0
+      && new_cost > old_cost)
+    {
+      if (dump_file)
+	{
+	  if (i1)
+	    {
+	      fprintf (dump_file,
+		       "rejecting combination of insns %d, %d and %d\n",
+		       INSN_UID (i1), INSN_UID (i2), INSN_UID (i3));
+	      fprintf (dump_file, "original costs %d + %d + %d = %d\n",
+		       i1_cost, i2_cost, i3_cost, old_cost);
+	    }
+	  else
+	    {
+	      fprintf (dump_file,
+		       "rejecting combination of insns %d and %d\n",
+		       INSN_UID (i2), INSN_UID (i3));
+	      fprintf (dump_file, "original costs %d + %d = %d\n",
+		       i2_cost, i3_cost, old_cost);
+	    }
+
+	  if (newi2pat)
+	    {
+	      fprintf (dump_file, "replacement costs %d + %d = %d\n",
+		       new_i2_cost, new_i3_cost, new_cost);
+	    }
+	  else
+	    fprintf (dump_file, "replacement cost %d\n", new_cost);
+	}
+
+      return false;
+    }
+
+  /* Update the uid_insn_cost array with the replacement costs.  */
+  uid_insn_cost[INSN_UID (i2)] = new_i2_cost;
+  uid_insn_cost[INSN_UID (i3)] = new_i3_cost;
+  if (i1)
+    uid_insn_cost[INSN_UID (i1)] = 0;
+
+  return true;
+}
+
 /* Main entry point for combiner.  F is the first insn of the function.
    NREGS is the first unused pseudo-reg number.
 
@@ -568,6 +708,10 @@ combine_instructions (rtx f, unsigned int nregs)
   refresh_blocks = sbitmap_alloc (last_basic_block);
   sbitmap_zero (refresh_blocks);
 
+  /* Allocate array of current combine_insn_costs.  */
+  uid_insn_cost = xcalloc (max_uid_cuid + 1, sizeof (int));
+  last_insn_cost = max_uid_cuid;
+
   for (insn = f, i = 0; insn; insn = NEXT_INSN (insn))
     {
       uid_cuid[INSN_UID (insn)] = ++i;
@@ -586,6 +730,12 @@ combine_instructions (rtx f, unsigned int nregs)
 	      set_nonzero_bits_and_sign_copies (XEXP (links, 0), NULL_RTX,
 						NULL);
 #endif
+
+	  /* Record the current combine_insn_cost of this instruction.  */
+	  uid_insn_cost[INSN_UID (insn)] = combine_insn_cost (PATTERN (insn));
+	  if (dump_file)
+	    fprintf(dump_file, "insn_cost %d: %d\n",
+		    INSN_UID (insn), uid_insn_cost[INSN_UID (insn)]);
 	}
 
       if (GET_CODE (insn) == CODE_LABEL)
@@ -762,6 +912,7 @@ combine_instructions (rtx f, unsigned int nregs)
 
   /* Clean up.  */
   sbitmap_free (refresh_blocks);
+  free (uid_insn_cost);
   free (reg_stat);
   free (uid_cuid);
 
@@ -2503,6 +2654,14 @@ try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
       }
   }
 #endif
+
+  /* Only allow this combination if combine_insn_costs reports that the
+     replacement instructions are cheaper than the originals.  */
+  if (!combine_validate_cost (i1, i2, i3, newpat, newi2pat))
+    {
+      undo_all ();
+      return 0;
+    }
 
   /* We now know that we can do this combination.  Merge the insns and
      update the status of registers and LOG_LINKS.  */
