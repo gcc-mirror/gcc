@@ -4286,6 +4286,13 @@ declare_weak (decl)
     error_with_decl (decl, "weak declaration of `%s' must precede definition");
   else if (SUPPORTS_WEAK)
     DECL_WEAK (decl) = 1;
+
+#ifdef HANDLE_PRAGMA_WEAK
+  /* Make sure this function name gets on the weak declaration list.  */
+  handle_pragma_weak (ps_name,
+		      IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)),
+		      NULL);
+#endif
 }
 
 /* Emit any pending weak declarations.  */
