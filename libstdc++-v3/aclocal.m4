@@ -779,7 +779,7 @@ AC_DEFUN(GLIBCPP_CHECK_COMPLEX_MATH_SUPPORT, [
   if test x$ac_cv_func_atan2l = x"yes" \
      && test x$ac_cv_func_copysignl = x"yes"; then
     USE_COMPLEX_LONG_DOUBLE=yes
-    AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl cpowl csinhl csinl \
+    AC_REPLACE_MATHFUNCS(ccoshl ccosl cexpl csinhl csinl \
     csqrtl ctanhl ctanl hypotl signbitl clog10l)
   fi
 
