@@ -43,9 +43,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 
 #define SWAP(X, Y) do { void *tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
 
-/* Just to shorten the ugly names.  */
-#define EXEC_BINARY nondestructive_fold_binary_to_constant
-#define EXEC_UNARY nondestructive_fold_unary_to_constant
 
 /*
 
@@ -156,10 +153,10 @@ inverse (tree x, tree mask)
       rslt = build_int_cst_type (type, 1);
       for (; ctr; ctr--)
 	{
-	  rslt = EXEC_BINARY (MULT_EXPR, type, rslt, x);
-	  x = EXEC_BINARY (MULT_EXPR, type, x, x);
+	  rslt = fold_binary_to_constant (MULT_EXPR, type, rslt, x);
+	  x = fold_binary_to_constant (MULT_EXPR, type, x, x);
 	}
-      rslt = EXEC_BINARY (BIT_AND_EXPR, type, rslt, mask);
+      rslt = fold_binary_to_constant (BIT_AND_EXPR, type, rslt, mask);
     }
 
   return rslt;
@@ -217,7 +214,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       if (code != NE_EXPR)
 	return;
 
-      step0 = EXEC_BINARY (MINUS_EXPR, type, step0, step1);
+      step0 = fold_binary_to_constant (MINUS_EXPR, type, step0, step1);
       step1 = NULL_TREE;
     }
 
@@ -311,7 +308,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
   if (code != NE_EXPR)
     {
       if (zero_p (step0))
-	step = EXEC_UNARY (NEGATE_EXPR, type, step1);
+	step = fold_unary_to_constant (NEGATE_EXPR, type, step1);
       else
 	step = step0;
       delta = build2 (MINUS_EXPR, type, base1, base0);
@@ -320,8 +317,8 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 
       if (TREE_CODE (delta) == INTEGER_CST)
 	{
-	  tmp = EXEC_BINARY (MINUS_EXPR, type, step,
-			     build_int_cst_type (type, 1));
+	  tmp = fold_binary_to_constant (MINUS_EXPR, type, step,
+					 build_int_cst_type (type, 1));
 	  if (was_sharp
 	      && operand_equal_p (delta, tmp, 0))
 	    {
@@ -342,8 +339,10 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 		may_xform = boolean_true_node;
 	      else
 		{
-		  bound = EXEC_BINARY (PLUS_EXPR, type, mmin, step);
-		  bound = EXEC_BINARY (MINUS_EXPR, type, bound, delta);
+		  bound = fold_binary_to_constant (PLUS_EXPR, type,
+						   mmin, step);
+		  bound = fold_binary_to_constant (MINUS_EXPR, type,
+						   bound, delta);
 		  may_xform = fold (build2 (LE_EXPR, boolean_type_node,
 					   bound, base0));
 		}
@@ -354,8 +353,10 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 		may_xform = boolean_true_node;
 	      else
 		{
-		  bound = EXEC_BINARY (MINUS_EXPR, type, mmax, step);
-		  bound = EXEC_BINARY (PLUS_EXPR, type, bound, delta);
+		  bound = fold_binary_to_constant (MINUS_EXPR, type,
+						   mmax, step);
+		  bound = fold_binary_to_constant (PLUS_EXPR, type,
+						   bound, delta);
 		  may_xform = fold (build2 (LE_EXPR, boolean_type_node,
 					   base1, bound));
 		}
@@ -401,11 +402,11 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
       base1 = fold (build2 (MINUS_EXPR, type, base1, base0));
       base0 = NULL_TREE;
       if (!zero_p (step1))
-  	step0 = EXEC_UNARY (NEGATE_EXPR, type, step1);
+  	step0 = fold_unary_to_constant (NEGATE_EXPR, type, step1);
       step1 = NULL_TREE;
       if (!tree_expr_nonnegative_p (fold_convert (signed_niter_type, step0)))
 	{
-	  step0 = EXEC_UNARY (NEGATE_EXPR, type, step0);
+	  step0 = fold_unary_to_constant (NEGATE_EXPR, type, step0);
 	  base1 = fold (build1 (NEGATE_EXPR, type, base1));
 	}
 
@@ -416,9 +417,9 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	 is infinite.  Otherwise, the number of iterations is
 	 (inverse(s/d) * (c/d)) mod (size of mode/d).  */
       bits = num_ending_zeros (step0);
-      d = EXEC_BINARY (LSHIFT_EXPR, niter_type,
-		       build_int_cst_type (niter_type, 1), bits);
-      s = EXEC_BINARY (RSHIFT_EXPR, niter_type, step0, bits);
+      d = fold_binary_to_constant (LSHIFT_EXPR, niter_type,
+				   build_int_cst_type (niter_type, 1), bits);
+      s = fold_binary_to_constant (RSHIFT_EXPR, niter_type, step0, bits);
 
       bound = build_low_bits_mask (niter_type,
 				   (TYPE_PRECISION (niter_type)
@@ -447,7 +448,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	{
 	  if (mmax)
 	    {
-	      bound = EXEC_BINARY (MINUS_EXPR, type, mmax, step0);
+	      bound = fold_binary_to_constant (MINUS_EXPR, type, mmax, step0);
 	      assumption = fold (build2 (LE_EXPR, boolean_type_node,
 					 base1, bound));
 	      assumptions = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,
@@ -468,7 +469,7 @@ number_of_iterations_cond (tree type, tree base0, tree step0,
 	     we can again compute number of iterations as (b - (a - s)) / s.  */
 	  if (mmin)
 	    {
-	      bound = EXEC_BINARY (MINUS_EXPR, type, mmin, step1);
+	      bound = fold_binary_to_constant (MINUS_EXPR, type, mmin, step1);
 	      assumption = fold (build2 (LE_EXPR, boolean_type_node,
 					bound, base0));
 	      assumptions = fold (build2 (TRUTH_AND_EXPR, boolean_type_node,

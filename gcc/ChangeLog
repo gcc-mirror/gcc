@@ -1,5 +1,23 @@
 2004-11-22  Roger Sayle  <roger@eyesopen.com>
 
+	* fold-const.c (nondestructive_fold_binary_to_constant): Rename
+	to fold_binary_to_constant.
+	(nondestructive_fold_unary_to_constant): Likewise, rename to
+	fold_unary_to_constant.
+	(fold_relational_hi_lo): Update call to fold_binary_to_constant.
+	* tree.h (nondestructive_fold_binary_to_constant): Update prototype.
+	(nondestructive_fold_unary_to_constant): Likewise.
+	* tree-ssa-ccp.c (ccp_fold): Update calls to fold_unary_to_constant
+	and fold_binary_to_constant.
+	* tree-ssa-loop-niter.c (EXEC_BINARY, EXEC_UNARY): Delete macros.
+	(inverse, number_of_iterations_cond): Replace uses of EXEC_BINARY
+	and EXEC_UNARY with calls to fold_*nary_to_constant.
+	* tree-ssa-loop-ivopts.c (EXEC_BINARY, EXEC_UNARY): Delete macros.
+	(idx_find_step): Replace uses of EXEC_BINARY with calls to
+	fold_binary_to_constant.
+
+2004-11-22  Roger Sayle  <roger@eyesopen.com>
+
 	* config/i386/i386.h (TARGET_USE_FANCY_MATH_387): New macro.
 	* config/i386/i386.c (override_options):  Set MASK_NO_FANCY_MATH_387
 	automatically for targets without TARGET_80387.
