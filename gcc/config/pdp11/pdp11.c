@@ -1,5 +1,5 @@
 /* Subroutines for gcc2 for pdp11.
-   Copyright (C) 1994 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -649,6 +649,13 @@ output_move_quad (operands)
 				 CONST_DOUBLE_LOW (operands[1]));
 #endif /* HOST_WORDS_BIG_ENDIAN */
 	}
+      else if (GET_CODE(operands[1]) == CONST_INT)
+      {
+	  latehalf[1] = gen_rtx (CONST_INT, VOIDmode, 0);
+      }
+      else
+	  abort();
+      
     }
   else
     latehalf[1] = operands[1];
