@@ -3130,7 +3130,12 @@ expand_builtin_stpcpy (tree arglist, rtx target, enum machine_mode mode)
 	      if (ret)
 		{
 		  if (! target)
-		    target = gen_reg_rtx (mode);
+		    {
+		      if (mode != VOIDmode)
+			target = gen_reg_rtx (mode);
+		      else
+			target = gen_reg_rtx (GET_MODE (ret));
+		    }
 		  if (GET_MODE (target) != GET_MODE (ret))
 		    ret = gen_lowpart (GET_MODE (target), ret);
 
