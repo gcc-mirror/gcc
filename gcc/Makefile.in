@@ -63,7 +63,7 @@ XCFLAGS =
 TCFLAGS =
 CFLAGS = -g
 BOOT_CFLAGS = -O2 $(CFLAGS)
-WARN_CFLAGS = -W -Wall
+WARN_CFLAGS = 
 # These exists to be overridden by the x-* and t-* files, respectively.
 X_CFLAGS =
 T_CFLAGS =

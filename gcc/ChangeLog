@@ -1,3 +1,8 @@
+Fri Jul 17 02:01:00 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* Makefile.in (WARN_CFLAGS): Disable -W -Wall for the release
+	branch.
+
 Thu Jul 16 14:48:04 1998  Nick Clifton  <nickc@cygnus.com>
 
 	* gcc.c (do_spec_1): Cope with %g/%u/%U options which do not have
