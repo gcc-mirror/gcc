@@ -166,7 +166,7 @@ in the following sections.
 -fno-function-cse  -fno-inline  -fno-peephole
 -fomit-frame-pointer  -foptimize-register-moves -foptimize-sibling-calls
 -fregmove -frerun-cse-after-loop  -frerun-loop-opt  -freduce-all-givs
--fschedule-insns  -fschedule-insns2  -fstrength-reduce
+-fschedule-insns  -fschedule-insns2  -fssa -fstrength-reduce
 -fstrict-aliasing  -fthread-jumps  -funroll-all-loops
 -funroll-loops
 -O  -O0  -O1  -O2  -O3 -Os
@@ -2831,6 +2831,13 @@ bytes like @samp{-falign-functions}.  In this case, no dummy operations
 need be executed.
 
 If @var{n} is not specified, use a machine-dependent default.
+
+@item -fssa
+Perform optimizations in static single assignment form.  Each function's
+flow graph is translated into SSA form, optimizations are performed, and
+the flow graph is translated back from SSA form.  (Currently, no
+SSA-based optimizations are implemented, but converting into and out of
+SSA form is not an invariant operation, and generated code may differ.)
 
 @end table
 
