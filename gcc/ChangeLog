@@ -1,3 +1,9 @@
+2003-12-17  David Edelsohn  <edelsohn@gnu.org>
+
+	* collect2.c (main): Add -fno-profile-arcs -fno-test-coverage
+	-fno-branch-probabilities to arguments when compiling ctors and
+	dtors.
+
 2003-12-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sol2.h: Set SUPPORTS_INIT_PRIORITY to 0.
