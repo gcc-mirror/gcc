@@ -29,6 +29,10 @@ Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 #include "cpplib.h"
 #include "cpphash.h"
 
+#ifndef STDC_0_IN_SYSTEM_HEADERS
+#define STDC_0_IN_SYSTEM_HEADERS 0 /* Boolean macro.  */
+#endif
+
 struct cpp_macro
 {
   cpp_hashnode **params;	/* Parameters, if any.  */
@@ -189,11 +193,9 @@ builtin_macro (pfile, token)
       {
 	int stdc = 1;
 
-#ifdef STDC_0_IN_SYSTEM_HEADERS
-	if (CPP_IN_SYSTEM_HEADER (pfile)
+	if (STDC_0_IN_SYSTEM_HEADERS && CPP_IN_SYSTEM_HEADER (pfile)
 	    && pfile->spec_nodes.n__STRICT_ANSI__->type == NT_VOID)
 	  stdc = 0;
-#endif
 	make_number_token (pfile, token, stdc);
       }
       break;

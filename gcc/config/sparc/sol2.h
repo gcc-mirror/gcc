@@ -185,7 +185,7 @@ Boston, MA 02111-1307, USA.  */
 /* But indicate that it isn't supported by the hardware.  */
 #define WIDEST_HARDWARE_FP_SIZE 64
 
-#define STDC_0_IN_SYSTEM_HEADERS
+#define STDC_0_IN_SYSTEM_HEADERS 1
 
 #define MULDI3_LIBCALL "__mul64"
 #define DIVDI3_LIBCALL "__div64"

@@ -171,4 +171,4 @@ while (0)
 #undef	MULTILIB_DEFAULTS
 #define	MULTILIB_DEFAULTS { "mlittle", "mcall-solaris" }
 
-#define STDC_0_IN_SYSTEM_HEADERS
+#define STDC_0_IN_SYSTEM_HEADERS 1
