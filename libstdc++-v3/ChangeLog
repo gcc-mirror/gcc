@@ -1,3 +1,28 @@
+2003-02-11 Jerry Quinn  <jlquinn@optonline.net>
+           Benjamin Kosnik  <benjamin@redhat.com>
+	
+	* include/bits/locale_facets.h (__num_base): Add _S_atoms_out.
+	Add indexes into this array.
+	(__num_base::_S_atoms): To _S_atoms_in.
+	(num_put::_M_insert): Rename to _M_pad.
+	(num_put::_M_convert_int): Adjust remove __mod, __modl arguments.
+	(num_put::_M_widen_int): Rename to _M_group_int.
+	(num_put::_M_widen_float): Rename to _M_group_float.	
+	* include/bits/locale_facets.tcc (__int_to_char): New inline
+	function and adapter functions.
+	(num_put::_M_group_int): Streamline.
+	(num_put::_M_group_float): Streamline.	
+	(num_put::_M_convert_int): Remove unused parameter names. Choose
+	large enough buffer for text.  Use __int_to_char instead of
+	__convert_from_v.  Formatted text is now at the end of the buffer.
+	(num_put::_M_convert_float): Preliminary fixups.
+	* src/locale-inst.cc (__convert_from_v<long long>): Add ifdef.
+	(__int_to_char<unsigned long long>): Same.
+	(__int_to_char<char, unsigned long>): New.
+	(__int_to_char<char, unsigned long long>): New.
+	(__int_to_char<wchar_t, unsigned long>): New.
+	(__int_to_char<wchar_t, unsigned long long>): New.
+	
 2003-02-11  Scott Snyder  <snyder@fnal.gov>
 
 	PR libstdc++/9659
