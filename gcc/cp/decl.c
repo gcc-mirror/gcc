@@ -8253,6 +8253,12 @@ cp_finish_decl (decl, init, asmspec_tree, flags)
 	     taken place.  */
 	  DECL_INITIALIZED_P (decl) = 1;
 	}
+      /* If the variable has an array type, lay out the type, even if
+	 there is no initializer.  It is valid to index through the
+	 array, and we must get TYPE_ALIGN set correctly on the array
+	 type.  */
+      else if (TREE_CODE (type) == ARRAY_TYPE)
+	layout_type (type);
     }
 
   /* Add this declaration to the statement-tree.  This needs to happen
