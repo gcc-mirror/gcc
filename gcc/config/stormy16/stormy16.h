@@ -3483,6 +3483,11 @@ do  {						\
    pointers.  */
 #define DWARF2_ADDR_SIZE 4
 
+/* Define the architecture-dependent minimum instruction length (in
+   bytes).  */
+#define DWARF_LINE_MIN_INSTR_LENGTH 2
+
+
 /* Define these macros to override the assembler syntax for the special SDB
    assembler directives.  See `sdbout.c' for a list of these macros and their
    arguments.  If the standard syntax is used, you need not define them

@@ -150,13 +150,13 @@
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "")
-	(match_operand:HI 1 "general_operand" ""))]
+	(match_operand:HI 1 "xs_hi_general_operand" ""))]
   ""
   "{ xstormy16_expand_move (HImode, operands[0], operands[1]); DONE; }")
 
 (define_insn "*movhi_internal"
   [(set (match_operand:HI 0 "nonimmediate_nonstack_operand" "=r,m,e,e,T,r,S")
-	(match_operand:HI 1 "general_operand"       "r,e,m,L,L,i,i"))]
+	(match_operand:HI 1 "xs_hi_general_operand"       "r,e,m,L,L,i,i"))]
   ""
   "@
    mov %0,%1
@@ -279,7 +279,7 @@
 (define_insn "addhi3"
   [(set (match_operand:HI 0 "register_operand" "=r,r,T,T,r,r,r")
 	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0,0,0,0,0")
-		 (match_operand:HI 2 "nonmemory_operand" "O,P,L,M,Ir,N,i")))
+		 (match_operand:HI 2 "xs_hi_nonmemory_operand" "O,P,L,M,Ir,N,i")))
    (clobber (match_scratch:BI 3 "=X,X,&y,&y,&y,&y,&y"))]
   ""
   "@
@@ -311,7 +311,7 @@
 (define_insn "addchi4"
   [(set (match_operand:HI 0 "register_operand" "=T,r,r")
 	(plus:HI (match_operand:HI 1 "register_operand" "%0,0,0")
-		 (match_operand:HI 2 "nonmemory_operand" "L,Ir,i")))
+		 (match_operand:HI 2 "xs_hi_nonmemory_operand" "L,Ir,i")))
    (set (match_operand:BI 3 "register_operand" "=y,y,y")
         (truncate:BI (lshiftrt:SI (plus:SI (zero_extend:SI (match_dup 1))
 					   (zero_extend:SI (match_dup 2)))
@@ -329,7 +329,7 @@
 			  (zero_extend:HI (match_operand:BI 3 
 							    "register_operand"
 							    "y,y,y")))
-		 (match_operand:HI 2 "nonmemory_operand" "L,Ir,i")))
+		 (match_operand:HI 2 "xs_hi_nonmemory_operand" "L,Ir,i")))
    (set (match_operand:BI 4 "register_operand" "=y,y,y") 
         (truncate:BI (lshiftrt:SI (plus:SI (plus:SI 
 					    (zero_extend:SI (match_dup 1))
@@ -352,7 +352,7 @@
 (define_insn "subhi3"
   [(set (match_operand:HI 0 "register_operand" "=r,r,T,T,r,r,r")
 	(minus:HI (match_operand:HI 1 "register_operand" "0,0,0,0,0,0,0")
-		  (match_operand:HI 2 "nonmemory_operand" "O,P,L,M,rI,M,i")))
+		  (match_operand:HI 2 "xs_hi_nonmemory_operand" "O,P,L,M,rI,M,i")))
    (clobber (match_scratch:BI 3 "=X,X,&y,&y,&y,&y,&y"))]
   ""
   "@
@@ -368,7 +368,7 @@
 (define_insn "subchi4"
   [(set (match_operand:HI 0 "register_operand" "=T,r,r")
 	(minus:HI (match_operand:HI 1 "register_operand" "0,0,0")
-		  (match_operand:HI 2 "nonmemory_operand" "L,Ir,i")))
+		  (match_operand:HI 2 "xs_hi_nonmemory_operand" "L,Ir,i")))
    (set (match_operand:BI 3 "register_operand" "=y,y,y") 
         (truncate:BI (lshiftrt:SI (minus:SI (zero_extend:SI (match_dup 1))
 					    (zero_extend:SI (match_dup 2)))
@@ -386,7 +386,7 @@
 			  (zero_extend:HI (match_operand:BI 3 
 							    "register_operand"
 							    "y,y,y")))
-		 (match_operand:HI 2 "nonmemory_operand" "L,Ir,i")))
+		 (match_operand:HI 2 "xs_hi_nonmemory_operand" "L,Ir,i")))
    (set (match_operand:BI 4 "register_operand" "=y,y,y") 
         (truncate:BI (lshiftrt:SI (minus:SI (minus:SI 
 					     (zero_extend:SI (match_dup 1))
@@ -796,7 +796,7 @@
   [(set (pc)
 	(if_then_else (match_operator:SI 1 "equality_operator"
 				      [(match_operand:SI 2 "register_operand" 
-							 "+r")
+							 "r")
 				       (const_int 0)])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))
@@ -817,7 +817,7 @@
   [(set (pc)
 	(if_then_else (match_operator:SI 1 "xstormy16_ineqsi_operator"
 				      [(match_operand:SI 2 "register_operand" 
-							 "+r")
+							 "r")
 				       (match_operand:SI 3 "nonmemory_operand" 
 							 "ri")])
 		      (label_ref (match_operand 0 "" ""))
@@ -851,7 +851,7 @@
 			(match_operand:HI 3 "nonmemory_operand" "L,Ir,i")])
 		      (label_ref (match_operand 0 "" ""))
 		      (pc)))
-   (set (match_operand:HI 2 "register_operand" "=2,2,2")
+   (set (match_operand:HI 2 "register_operand" "=1,1,1")
 	(minus:HI (minus:HI (match_dup 1) (zero_extend:HI (match_dup 4)))
 		  (match_dup 3)))
    (clobber (match_operand:BI 6 "" "=y,y,y"))]

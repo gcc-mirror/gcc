@@ -1,3 +1,45 @@
+2002-03-05  Tom Tromey  <tromey@redhat.com>
+
+	* config/stormy16/stormy16.h (DWARF_LINE_MIN_INSTR_LENGTH):
+	Define.
+
+2002-03-05  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/stormy16/stormy16.md ("*eqbranchsi"): Remove '+' on
+	operand 2.
+	("*ineqbranchsi"): Likewise.
+
+2002-03-05  Andrew Haley  <aph@cambridge.redhat.com>
+
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue): Delete
+	mem_fake_push_rtx.  Instead construct a SEQUENCE to show the
+	register store followed by a stack increment.
+
+2002-03-05  Chris Moller  <cmoller@redhat.com>
+
+	* config/stormy16/stormy16.c (REG_NEEDS_SAVE): added a term
+	to inhibit saving CARRY_REGS.
+
+	* config/stormy16/stormy16.c (xs_hi_general_operand):
+	added predicate to detect and error-out on out-of-range
+	const_ints for movhi.
+	* config/stormy16/stormy16.md (movhi): use 
+	xs_hi_general_operand.
+
+	* config/stormy16/stormy16.c (xstormy16_expand_prologue):
+	added a check for local vbl size overflow.
+	* config/stormy16/stormy16.c (xs_hi_nonmemory_operand):
+	added predicate to detect and error-out on out-of-range
+	const_ints for addhi and subhi.
+	* config/stormy16/stormy16.md (addhi3, addchi4, addchi5, 
+	subhi3, subchi4, subchi5): used xs_hi_nonmemory_operand.
+
+	* config/stormy16/stormy16.c (xstormy16_legitimate_address_p):
+	add a term to accept PRE_MODIFY addresses.
+	* config/stormy16/stormy16.c (xstormy16_expand_move):
+	add code to expand PRE_MODIFY addresses to an add followed
+	by a move.
+
 2003-03-06  Jason Merrill  <jason@redhat.com>
 
 	* tree-inline.c (inlinable_function_p): Revert earlier change
