@@ -6,6 +6,10 @@
 
         * MAINTAINERS (Write After Approval): Add myself.
 
+2004-04-29  Uros Bizjak  <uros@kss-loka.si>
+
+        * MAINTAINERS (Write After Approval): Add myself.
+
 2004-04-28  Paolo Bonzini  <bonzini@gnu.org>
 
 	* config/acx.m4: Fix fastcompare support for new-bootstrap.
