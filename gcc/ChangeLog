@@ -73,7 +73,7 @@
 	* configure.ac: Define GGC_ZONE for --with-gc=zone.
 	* config.in: Regenerated.
 	* configure: Regenerated.
-	* gentype.c (write_types_process_field, write_func_for_structure):
+	* gengtype.c (write_types_process_field, write_func_for_structure):
 	Pass new argument to gt_pch_note_object.
 	* ggc-common.c (struct ptr_data): Add TYPE.
 	(gt_pch_note_object): Take TYPE argument and save it.
