@@ -1,3 +1,7 @@
+2004-11-04  Release Manager
+
+	* GCC 3.4.3 released.
+
 2004-10-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/18129
