@@ -1464,7 +1464,7 @@ lookup_member (xbasetype, name, protect, want_type)
       && IDENTIFIER_CLASS_VALUE (name))
     {
       tree field = IDENTIFIER_CLASS_VALUE (name);
-      if (TREE_CODE (field) != FUNCTION_DECL
+      if (! is_overloaded_fn (field)
 	  && ! (want_type && TREE_CODE (field) != TYPE_DECL))
 	/* We're in the scope of this class, and the value has already
 	   been looked up.  Just return the cached value.  */
