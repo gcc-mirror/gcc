@@ -9,7 +9,7 @@
       real tarray1(2), tarray2(2), r1, r2, sum
       intrinsic getpid, getuid, getgid, ierrno, gerror,
      +     fnum, isatty, getarg, access, unlink, fstat,
-     +     stat, lstat, getcwd, gmtime, hostnm, etime, chmod,
+     +     stat, lstat, getcwd, gmtime, etime, chmod,
      +     chdir, fgetc, fputc, system_clock, second, idate, secnds,
      +     time, ctime, fdate, ttynam, date_and_time
       external lenstr, ctrlc
@@ -159,13 +159,15 @@ c now try to get times to change enough to see in etime/dtime
         write (6,*) '***CHDIR to ".": ', i
         call abort
       end if
-      i=hostnm(wd)
-      if(i.ne.0) then
-        call perror ('*** hostnm')
-        call abort
-      else
-        write (6,*) 'Host name is ', wd(:lenstr(wd))
-      end if
+CCC   Don't do this, beacuse some targets need -lsocket, which we don't
+CCC   have a mechanism for supplying.
+CCC      i=hostnm(wd)
+CCC      if(i.ne.0) then
+CCC        call perror ('*** hostnm')
+CCC        call abort
+CCC      else
+CCC        write (6,*) 'Host name is ', wd(:lenstr(wd))
+CCC      end if
       i = access('/dev/null ', 'rw')
       if (i.ne.0) write (6,*) '***Read/write ACCESS to /dev/null: ', i
       write (6,*) 'Creating file "foo" for testing...'
