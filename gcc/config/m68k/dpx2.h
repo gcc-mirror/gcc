@@ -9,7 +9,6 @@
 #define MOTOROLA	   /* Use Motorola syntax rather than "MIT" */
 #define SGS_NO_LI	   /* Suppress jump table label usage */
 #define VERSADOS           /* This is the name of the assembler we have */
-#define USG
 #endif
 
 #include "m68k/m68k.h"
