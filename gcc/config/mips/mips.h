@@ -80,7 +80,6 @@ extern int set_noreorder;		/* # of nested .set noreorder's  */
 extern int set_nomacro;			/* # of nested .set nomacro's  */
 extern int set_noat;			/* # of nested .set noat's  */
 extern int set_volatile;		/* # of nested .set volatile's  */
-extern int flag_half_pic;		/* whether or not we use half-pic */
 extern int mips_branch_likely;		/* emit 'l' after br (branch likely) */
 extern int mips_dbx_regno[];		/* Map register # to debug register # */
 extern char mips_rtx_classify[];	/* classify an RTX code */
@@ -119,15 +118,14 @@ extern int		function_arg_partial_nregs ();
 extern void		function_epilogue ();
 extern void		function_prologue ();
 extern void		gen_conditional_branch ();
-extern void		half_pic_encode_section_info ();
 extern void		init_cumulative_args ();
 extern int		large_int ();
 extern int		md_register_operand ();
 extern int		mips_address_cost ();
 extern void		mips_asm_file_end ();
 extern void		mips_asm_file_start ();
+extern void		mips_declare_object ();
 extern int		mips_const_double_ok ();
-extern int		mips_constant_address_p ();
 extern void		mips_count_memory_refs ();
 extern int		mips_debugger_offset ();
 extern int		mips_epilogue_delay_slots ();
@@ -154,6 +152,15 @@ extern void		rdata_section ();
 extern void		readonly_data_section ();
 extern void		sdata_section ();
 extern void		text_section ();
+
+/* Stubs for half-pic support if not OSF/1 reference platform.  */
+
+#ifndef HALF_PIC_P
+#define HALF_PIC_P() 0
+#define HALF_PIC_ENCODE(DECL)
+#define HALF_PIC_INIT()	error ("half-pic init called on systems that don't support it.")
+#define HALF_PIC_ADDRESS_P(X) 0
+#endif
 
 
 /* Switch  Recognition by gcc.c.  Add -G xx support */
@@ -234,7 +241,6 @@ while (0)
       flag_delayed_branch		= TRUE;				\
       flag_thread_jumps			= TRUE;				\
       flag_schedule_insns_after_reload	= TRUE;				\
-      flag_caller_saves			= TRUE;				\
     }									\
 									\
   if (LEVEL >= 2)							\
@@ -244,7 +250,7 @@ while (0)
       flag_expensive_optimizations	= TRUE;				\
       flag_rerun_cse_after_loop		= TRUE;				\
       flag_schedule_insns		= TRUE;				\
-   }									\
+    }									\
 									\
   if (LEVEL >= 3)							\
     {									\
@@ -300,29 +306,31 @@ while (0)
 /* Extra switches sometimes passed to the assembler.  */
 
 #ifndef ASM_SPEC
-#define ASM_SPEC	"%{!mgas:					\
-				%{!mrnames: -nocpp}			\
-			 	%{pipe: %e-pipe is not supported.}	\
-				%{EB} %{!EB:-EB}			\
-				%{EL: %e-EL not supported}		\
-				%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3}	\
-				%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}}	\
-			 %{G*}"
+#define ASM_SPEC "\
+%{!mgas: \
+	%{!mrnames: -nocpp} \
+	%{pipe: %e-pipe is not supported.} \
+	%{EB} %{!EB:-EB} \
+	%{EL: %e-EL not supported} \
+	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
+	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}} \
+%{G*}"
 
 #endif				/* ASM_SPEC */
 
 /* Specify to run a post-processor, mips-tfile after the assembler
    has run to stuff the mips debug information into the object file.
    This is needed because the $#!%^ MIPS assembler provides no way
-   of specifing such information in the assembly file.  */
+   of specifying such information in the assembly file.  */
 
 #ifndef ASM_FINAL_SPEC
-#define ASM_FINAL_SPEC "%{!mgas: %{!mno-mips-tfile:			\
-				\n mips-tfile %{v*: -v}			\
-					%{K: -I %b.o~} 			\
-					%{!K: %{save-temps: -I %b.o~}}	\
-					%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %b.o} \
-					%{.s:%i} %{!.s:%g.s}}}"
+#define ASM_FINAL_SPEC "\
+%{!mgas: %{!mno-mips-tfile: \
+	\n mips-tfile %{v*: -v} \
+		%{K: -I %b.o~} \
+		%{!K: %{save-temps: -I %b.o~}} \
+		%{c:%W{o*}%{!o*:-o %b.o}}%{!c:-o %b.o} \
+		%{.s:%i} %{!.s:%g.s}}}"
 #endif
 
 /* Redefinition of libraries used.  Mips doesn't support normal
@@ -333,77 +341,60 @@ while (0)
 #define LIB_SPEC "%{pg:-lprof1} %{p:-lprof1} -lc"
 #endif
 
-/* Suppress libg.a from being linked in when debugging, since MIPS doesn't
-   supply one.  */
-
-#ifndef LIBG_SPEC
-#define LIBG_SPEC ""
-#endif
-
-/* Extra switches sometimes passed to the loader.  */
-
+/* Extra switches sometimes passed to the linker.  */
 
 #ifndef LINK_SPEC
-#define LINK_SPEC	"%{G*}						\
-			 %{!mgas:					\
-				%{pipe: %e-pipe is not supported.}	\
-				%{EB} %{!EB:-EB}			\
-				%{EL: %e-EL not supported}		\
-				%{bestGnum}}"
+#define LINK_SPEC "\
+%{G*} \
+%{!mgas: \
+	%{pipe: %e-pipe is not supported.} \
+	%{EB} %{!EB:-EB} \
+	%{EL: %e-EL not supported} \
+	%{bestGnum}}"
 #endif				/* LINK_SPEC defined */
 
 /* Specs for the compiler proper */
 
 #ifndef CC1_SPEC
-#define CC1_SPEC   "%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}}		\
-		    %{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}}		\
-		    %{G*}						\
-		    %{pic-none:   -mno-half-pic}			\
-		    %{pic-lib:    -mhalf-pic}				\
-		    %{pic-extern: -mhalf-pic}				\
-		    %{pic-calls:  -mhalf-pic}				\
-		    %{save-temps: }"
+#define CC1_SPEC "\
+%{O*: %{!mno-gpOPT:%{!mno-gpopt: -mgpopt}}} \
+%{gline:%{!g:%{!g0:%{!g1:%{!g2: -g1}}}}} \
+%{G*} \
+%{pic-none:   -mno-half-pic} \
+%{pic-lib:    -mhalf-pic} \
+%{pic-extern: -mhalf-pic} \
+%{pic-calls:  -mhalf-pic} \
+%{save-temps: }"
 #endif
 
 #ifndef CC1PLUS_SPEC
-#define CC1PLUS_SPEC	"%{!fgnu-binutils: -fno-gnu-binutils}"
+#define CC1PLUS_SPEC "%{!fgnu-binutils: -fno-gnu-binutils}"
 #endif
 
 /* Preprocessor specs */
 
 #ifndef CPP_SPEC
-#define CPP_SPEC	"%{!ansi:-DSYSTYPE_BSD} -D__SYSTYPE_BSD__	\
-			 %{.S:	-D__LANGUAGE_ASSEMBLY__			\
-				-D_LANGUAGE_ASSEMBLY			\
-				%{!ansi:-DLANGUAGE_ASSEMBLY}}		\
-			 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.cxx:-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.C:	-D__LANGUAGE_C_PLUS_PLUS__		\
-				-D_LANGUAGE_C_PLUS_PLUS			\
-				%{!ansi:-DLANGUAGE_C_PLUS_PLUS}}	\
-			 %{.m:	-D__LANGUAGE_OBJECTIVE_C__		\
-				-D_LANGUAGE_OBJECTIVE_C			\
-				%{!ansi:-DLANGUAGE_OBJECTIVE_C}}	\
-			 %{!.S: -D__LANGUAGE_C__			\
-				-D_LANGUAGE_C				\
-				%{!ansi:-DLANGUAGE_C}}"
+#define CPP_SPEC "\
+%{!ansi:-DSYSTYPE_BSD} -D__SYSTYPE_BSD__ \
+%{.cc:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
+%{.cxx:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
+%{.C:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
+%{.m:	-D__LANGUAGE_OBJECTIVE_C -D_LANGUAGE_OBJECTIVE_C} \
+%{.S:	-D__LANGUAGE_ASSEMBLY -D_LANGUAGE_ASSEMBLY %{!ansi:-DLANGUAGE_ASSEMBLY}} \
+%{!.S:	-D__LANGUAGE_C -D_LANGUAGE_C %{!ansi:-DLANGUAGE_C}}"
 #endif
 
 /* If defined, this macro is an additional prefix to try after
    `STANDARD_EXEC_PREFIX'.  */
 
 #ifndef MD_EXEC_PREFIX
-#define MD_EXEC_PREFIX "/usr/lib/cmplrs/cc"
+#define MD_EXEC_PREFIX "/usr/lib/cmplrs/cc/"
 #endif
 
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 11]"
+#define MIPS_VERSION "[AL 1.1, MM 13]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -584,6 +575,13 @@ do {							\
 #define DEBUGGER_AUTO_OFFSET(X)		mips_debugger_offset (X, 0)
 #define DEBUGGER_ARG_OFFSET(OFFSET, X)	mips_debugger_offset (X, OFFSET)
 
+
+/* Tell collect that the object format is ECOFF */
+#ifndef OBJECT_FORMAT_ROSE
+#define OBJECT_FORMAT_COFF	/* Object file looks like COFF */
+#define EXTENDED_COFF		/* ECOFF, not normal coff */
+#endif
+
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
@@ -617,7 +615,7 @@ do {							\
 					/* switches not used yet */
 #define MASK_WC8	0x00000000	/* wchar's are  8 bits, not 32 */
 #define MASK_WC16	0x00000000	/* wchar's are 16 bits, not 32 */
-#define MASK_WC32	0x00000000	/* dummy for consistancy */
+#define MASK_WC32	0x00000000	/* dummy for consistency */
 
 					/* Debug switches, not documented */
 #define MASK_DEBUG	0x40000000	/* Eliminate version # in .s file */
@@ -807,7 +805,7 @@ do {							\
 #define LEAST_SIGNIFICANT_WORD	0
 #endif
 
-/* Number of bits in an addressible storage unit */
+/* Number of bits in an addressable storage unit */
 #define BITS_PER_UNIT 8
 
 /* Width in bits of a "word", which is the contents of a machine register.
@@ -887,9 +885,9 @@ do {							\
 /* Biggest alignment any structure field can require in bits.  */
 #define BIGGEST_FIELD_ALIGNMENT 64
 
-/* Define this if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.  */
-#define STRICT_ALIGNMENT
+#define STRICT_ALIGNMENT 1
 
 /* Define this if you wish to imitate the way many other C compilers
    handle alignment of bitfields and the structures that contain
@@ -1326,16 +1324,16 @@ extern enum reg_class mips_char_to_class[];
    operand as its first argument and the constraint letter as its
    second operand.
 
-   `Q'	is for memory refereces using take more than 1 instruction.
-   `R'	is for memory refereces which take 1 word for the instruction.
+   `Q'	is for memory references which take more than 1 instruction.
+   `R'	is for memory references which take 1 word for the instruction.
    `S'	is for references to extern items which are PIC for OSF/rose.  */
 
 #define EXTRA_CONSTRAINT(OP,CODE)					\
   ((GET_CODE (OP) != MEM) ? FALSE					\
    : ((CODE) == 'Q')	  ? !simple_memory_operand (OP, GET_MODE (OP))	\
    : ((CODE) == 'R')	  ? simple_memory_operand (OP, GET_MODE (OP))	\
-   : ((CODE) == 'S')	  ? (flag_half_pic && CONSTANT_P (OP)		\
-			     && !mips_constant_address_p (OP))		\
+   : ((CODE) == 'S')	  ? (HALF_PIC_P () && CONSTANT_P (OP)		\
+			     && HALF_PIC_ADDRESS_P (OP))		\
    : FALSE)
 
 /* Given an rtx X being reloaded into a reg required to be
@@ -1419,9 +1417,7 @@ extern struct mips_frame_info current_frame_info;
    of the fixed parts of the stack frame and on how registers are saved.  */
 
 #define INITIAL_FRAME_POINTER_OFFSET(VAR)				\
- ((VAR) = (current_frame_info.initialized)				\
-		? current_frame_info.total_size				\
-		: compute_frame_size (get_frame_size ()))
+ ((VAR) = compute_frame_size (get_frame_size ()))
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
@@ -1951,7 +1947,7 @@ __enable_execute_stack (addr)						\
 	     machine doesn't support it.  This is because the		\
 	     assembler can use $r1 to load just the high 16 bits, add	\
 	     in the register, and fold the low 16 bits into the memory	\
-	     reference, wheras the compiler generates a 4 instruction	\
+	     reference, whereas the compiler generates a 4 instruction	\
 	     sequence.  On the other hand, CSE is not as effective.	\
 	     It would be a win to generate the lui directly, but the	\
 	     MIPS assembler does not have syntax to generate the	\
@@ -1979,7 +1975,8 @@ __enable_execute_stack (addr)						\
    `high' expressions and `const' arithmetic expressions, in
    addition to `const_int' and `const_double' expressions.  */
 
-#define CONSTANT_ADDRESS_P(X) mips_constant_address_p (X)
+#define CONSTANT_ADDRESS_P(X)						\
+  (CONSTANT_P (X) && (!HALF_PIC_P () || HALF_PIC_ADDRESS_P (X)))
 
 
 /* Nonzero if the constant value X is a legitimate general operand.
@@ -2071,8 +2068,8 @@ do									\
 	  SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;		\
       }									\
 									\
-    else if (flag_half_pic)						\
-      half_pic_encode_section_info (DECL);				\
+    else if (HALF_PIC_P ())						\
+      HALF_PIC_ENCODE (DECL);						\
   }									\
 while (0)
 
@@ -2176,7 +2173,7 @@ while (0)
   case CONST:								\
     {									\
       extern rtx eliminate_constant_term ();				\
-      int offset = 0;							\
+      rtx offset = const0_rtx;						\
       rtx symref = eliminate_constant_term (X, &offset);		\
 									\
       if (GET_CODE (symref) == LABEL_REF)				\
@@ -2186,7 +2183,7 @@ while (0)
 	return COSTS_N_INSNS (4);					\
 									\
       /* let's be paranoid.... */					\
-      if (offset < -32768 || offset > 32767)				\
+      if (INTVAL (offset) < -32768 || INTVAL (offset) > 32767)		\
 	return COSTS_N_INSNS (2);					\
 									\
       return COSTS_N_INSNS (SYMBOL_REF_FLAG (symref) ? 1 : 2);		\
@@ -2400,7 +2397,7 @@ while (0)
 /* Optionally define this if you have added predicates to
    `MACHINE.c'.  This macro is called within an initializer of an
    array of structures.  The first field in the structure is the
-   name of a predicate and the second field is an arrary of rtl
+   name of a predicate and the second field is an array of rtl
    codes.  For each predicate, list all rtl codes that can be in
    expressions matched by the predicate.  The list should have a
    trailing comma.  Here is an example of two entries in the list
@@ -2869,30 +2866,30 @@ while (0)
    since those bits seem to be unused, and we don't have any method
    of getting the decl nodes from the name.  */
 
-#ifndef COLLECT
 #define ASM_OUTPUT_LABEL(STREAM,NAME)					\
 do {									\
   assemble_name (STREAM, NAME);						\
   fputs (":\n", STREAM);						\
-									\
-  if (TARGET_GP_OPT && mips_section_threshold != 0)			\
-    {									\
-      tree name_tree = get_identifier (NAME);				\
-      TREE_ADDRESSABLE (name_tree) = 1;					\
-    }									\
 } while (0)
 
-#else
-#define ASM_OUTPUT_LABEL(STREAM,NAME)					\
-do {									\
-  fprintf (STREAM, "%s:\n", NAME);					\
-} while (0)
-#endif
+
+/* A C statement (sans semicolon) to output to the stdio stream
+   STREAM any text necessary for declaring the name NAME of an
+   initialized variable which is being defined.  This macro must
+   output the label definition (perhaps using `ASM_OUTPUT_LABEL'). 
+   The argument DECL is the `VAR_DECL' tree node representing the
+   variable.
+
+   If this macro is not defined, then the variable name is defined
+   in the usual manner as a label (by means of `ASM_OUTPUT_LABEL').  */
+
+#define ASM_DECLARE_OBJECT_NAME(STREAM, NAME, DECL)			\
+  mips_declare_object (STREAM, NAME, "", ":\n", 0);
+
 
 /* This is how to output a command to make the user-level label named NAME
    defined for reference from other files.  */
 
-#ifndef COLLECT
 #define ASM_GLOBALIZE_LABEL(STREAM,NAME)				\
   do {									\
     fputs ("\t.globl\t", STREAM);					\
@@ -2900,44 +2897,16 @@ do {									\
     fputs ("\n", STREAM);						\
   } while (0)
 
-#else
-#define ASM_GLOBALIZE_LABEL(STREAM,NAME)				\
-do {									\
-  fprintf (STREAM, "\t.globl\t%s\n", NAME);				\
-} while (0)
-#endif
-
-/* This says how to output an assembler line
-   to define a global common symbol.  */
+/* This says how to define a global common symbol.  */
 
 #define ASM_OUTPUT_COMMON(STREAM, NAME, SIZE, ROUNDED)			\
-do {									\
-  fputs ("\n\t.comm\t", (STREAM));					\
-  assemble_name ((STREAM), (NAME));					\
-  fprintf ((STREAM), ",%u\n", (ROUNDED));				\
-									\
-  if (TARGET_GP_OPT && mips_section_threshold != 0)			\
-    {									\
-      tree name_tree = get_identifier (NAME);				\
-      TREE_ADDRESSABLE (name_tree) = 1;					\
-    }									\
-} while (0)
+  mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n", (ROUNDED))
 
-/* This says how to output an assembler line
-   to define a local common symbol.  */
+/* This says how to define a local common symbol (ie, not visable to
+   linker).  */
 
 #define ASM_OUTPUT_LOCAL(STREAM, NAME, SIZE, ROUNDED)			\
-do {									\
-  fputs ("\n\t.lcomm\t", (STREAM));					\
-  assemble_name ((STREAM), (NAME));					\
-  fprintf ((STREAM), ",%u\n", (ROUNDED));				\
-									\
-  if (TARGET_GP_OPT && mips_section_threshold != 0)			\
-    {									\
-      tree name_tree = get_identifier (NAME);				\
-      TREE_ADDRESSABLE (name_tree) = 1;					\
-    }									\
-} while (0)
+  mips_declare_object (STREAM, NAME, "\n\t.lcomm\t", ",%u\n", (ROUNDED))
 
 
 /* This says how to output an external.  It would be possible not to
@@ -3008,18 +2977,12 @@ do {									\
 
 /* This is how to output an assembler line defining an `int' constant.  */
 
-#ifndef COLLECT
 #define ASM_OUTPUT_INT(STREAM,VALUE)					\
 do {									\
   fprintf (STREAM, "\t.word\t");					\
   output_addr_const (STREAM, (VALUE));					\
   fprintf (STREAM, "\n");						\
 } while (0)
-
-#else
-#define ASM_OUTPUT_INT(STREAM,VALUE)					\
-  fprintf (STREAM, "\t.word\t%d\n", VALUE)
-#endif
 
 /* Likewise for `char' and `short' constants.  */
 
@@ -3036,29 +2999,6 @@ do {									\
   output_addr_const (STREAM, (VALUE));					\
   fprintf (STREAM, "\n");						\
 }
-
-/* This is how to output an assembler line defining an `int' constant,
-   which is not in tree format (for collect.c).  */
-
-#define ASM_OUTPUT_INT_CONST(STREAM,VALUE) 				\
-  fprintf(STREAM, "\t.word\t%d\n", VALUE)
-
-/* This is how to output an assembler line defining an external/static
-   address which is not in tree format (for collect.c).  */
-
-#define ASM_OUTPUT_PTR_INT_SUM(STREAM, NAME, VALUE)			\
-do {									\
-  fprintf (STREAM, "\t.word\t");					\
-  ASM_OUTPUT_LABELREF (STREAM, NAME);					\
-  fprintf (STREAM, "+%d\n", VALUE);					\
-} while (0)
-
-#define ASM_OUTPUT_LABELREF_AS_INT(STREAM, NAME)			\
-do {									\
-  fprintf (STREAM, "\t.word\t");					\
-  ASM_OUTPUT_LABELREF (STREAM, NAME);					\
-  fprintf (STREAM, "\n");						\
-} while (0)
 
 /* This is how to output an assembler line for a numeric constant byte.  */
 
@@ -3192,19 +3132,19 @@ do {									\
 
 /* Output before read-only data.  */
 
-#define TEXT_SECTION_ASM_OP "\t.text"
+#define TEXT_SECTION_ASM_OP ".text"
 
 /* Output before writable data.  */
 
-#define DATA_SECTION_ASM_OP "\t.data"
+#define DATA_SECTION_ASM_OP ".data"
 
 /* Output before writable  short data.  */
 
-#define SDATA_SECTION_ASM_OP "\t.sdata"
+#define SDATA_SECTION_ASM_OP ".sdata"
 
 /* Output before read-only data.  */
 
-#define RDATA_SECTION_ASM_OP "\t.rdata"
+#define RDATA_SECTION_ASM_OP ".rdata"
 #define READONLY_DATA_SECTION rdata_section
 
 /* What other sections we support other than the normal .data/.text.  */
