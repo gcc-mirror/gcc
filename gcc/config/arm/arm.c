@@ -8331,7 +8331,7 @@ arm_expand_prologue ()
 
 	  emit_insn (gen_rtx_SET (SImode, ip_rtx, insn));
 	  /* Add a USE to stop propagate_one_insn() from barfing.  */
-	  emit_insn (gen_rtx_USE (VOIDmode, ip_rtx));
+	  emit_insn (gen_prologue_use (ip_rtx));
 	}
     }
 
@@ -8377,7 +8377,7 @@ arm_expand_prologue ()
      then make sure that it does not get reused by the ce2 pass.  */
   if ((live_regs_mask & (1 << LR_REGNUM)) == 0)
     {
-      emit_insn (gen_rtx_USE (VOIDmode, gen_rtx_REG (SImode, LR_REGNUM)));
+      emit_insn (gen_prologue_use (gen_rtx_REG (SImode, LR_REGNUM)));
       cfun->machine->lr_save_eliminated = 1;
     }
 }
@@ -10186,7 +10186,7 @@ thumb_expand_prologue ()
 	      /* Save it by copying it into a high, scratch register.  */
 	      emit_insn (gen_movsi (spare, reg));
 	      /* Add a USE to stop propagate_one_insn() from barfing.  */
-	      emit_insn (gen_rtx_USE (VOIDmode, spare));
+	      emit_insn (gen_prologue_use (spare));
 
 	      /* Decrement the stack.  */
 	      emit_insn (gen_movsi (reg, GEN_INT (- amount)));
@@ -10200,7 +10200,7 @@ thumb_expand_prologue ()
 		 analysis will not consider the restore redundant.  The
 		 register won't be used again in this function and isn't
 		 restored by the epilogue.  */
-	      emit_insn (gen_rtx_USE (VOIDmode, reg));
+	      emit_insn (gen_prologue_use (reg));
 	    }
 	  else
 	    {
@@ -10248,7 +10248,7 @@ thumb_expand_epilogue ()
       
   /* Emit a USE (stack_pointer_rtx), so that
      the stack adjustment will not be deleted.  */
-  emit_insn (gen_rtx_USE (VOIDmode, stack_pointer_rtx));
+  emit_insn (gen_prologue_use (stack_pointer_rtx));
 
   if (current_function_profile || TARGET_NO_SCHED_PRO)
     emit_insn (gen_blockage ());

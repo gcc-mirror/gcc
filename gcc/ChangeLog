@@ -1,3 +1,14 @@
+2002-01-23  Nick Clifton  <nickc@cambridge.redhat.com>
+
+	* config/arm/arm.md (UNSPEC_PROLOGUE_USE): New unspec constant.
+	(prologue_use): New pattern.
+	* config/arm/arm.c (expand_prologue): Use gen_prologue_use in
+	preference to gen_rtx_USE.
+	(thumb_expand_prologue): Use gen_prologue_use in preference to
+	gen_rtx_USE.
+	(thumb_expand_epilogue): Use gen_prologue_use in preference to
+	gen_rtx_USE.
+
 2002-01-23  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	* loop.c [!HAVE_prefetch] (CODE_FOR_prefetch): Define to 0.

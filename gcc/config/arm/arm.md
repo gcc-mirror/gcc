@@ -1,6 +1,6 @@
 ;;- Machine description for ARM for GNU compiler
-;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000, 2001
-;;  Free Software Foundation, Inc.
+;;  Copyright 1991, 1993, 1994, 1995, 1996, 1996, 1997, 1998, 1999, 2000,
+;;  2001, 2002  Free Software Foundation, Inc.
 ;;  Contributed by Pieter `Tiggr' Schoenmakers (rcpieter@win.tue.nl)
 ;;  and Martin Simmons (@harleqn.co.uk).
 ;;  More major hacks by Richard Earnshaw (rearnsha@arm.com).
@@ -64,6 +64,11 @@
    (UNSPEC_CLZ	     5) ; `clz' instruction, count leading zeros (SImode):
 			;   operand 0 is the result,
 			;   operand 1 is the parameter.
+   (UNSPEC_PROLOGUE_USE 6) ; As USE insns are not meaningful after reload,
+   			; this unspec is used to prevent the deletion of
+   			; instructions setting registers for EH handling
+   			; and stack frame generation.  Operand 0 is the
+   			; register to "use".
   ]
 )
 
@@ -9187,3 +9192,8 @@
   ""
 )
 
+(define_insn "prologue_use"
+  [(unspec:SI [(match_operand:SI 0 "register_operand" "")] UNSPEC_PROLOGUE_USE)]
+  ""
+  "%@ %0 needed for prologue"
+)
