@@ -1127,11 +1127,12 @@ Enable automatic template instantiation.  This option also implies
 information.
 
 @item -fno-rtti
-Disable generation of the information used by C++ runtime type
-identification features (@samp{dynamic_cast} and @samp{typeid}).  If you
-don't use those parts of the language (or exception handling, which uses
-@samp{dynamic_cast} internally), you can save some space by using this
-flag.
+Disable generation of information about every class with virtual
+functions for use by the C++ runtime type identification features
+(@samp{dynamic_cast} and @samp{typeid}).  If you don't use those parts
+of the language, you can save some space by using this flag.  Note that
+exception handling uses the same information, but it will generate it as
+needed.
 
 @item -fstrict-prototype
 Within an @samp{extern "C"} linkage specification, treat a function
