@@ -38,7 +38,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define MAX_INSNS_SKIPPED  5
 
 /* Some function declarations.  */
-extern void *xmalloc ();
 extern FILE *asm_out_file;
 extern char *output_multi_immediate ();
 extern char *arm_output_asm_insn ();
@@ -1012,7 +1011,7 @@ arm_asm_output_label (stream, name)
   for (s = real_name; *s; s++)
     hash += *s;
   hash = hash % LABEL_HASH_SIZE;
-  cur = xmalloc (sizeof (struct label_offset));
+  cur = (struct label_offset *) xmalloc (sizeof (struct label_offset));
   cur->name = real_name;
   cur->offset = arm_text_location;
   cur->cdr = offset_table[hash];
