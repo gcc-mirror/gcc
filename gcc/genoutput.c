@@ -115,6 +115,9 @@ static void mybcopy ();
 static void mybzero ();
 static int n_occurrences PROTO((int, char *));
 
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+char **insn_name_ptr = 0;
+
 /* insns in the machine description are assigned sequential code numbers
    that are used by insn-recog.c (produced by genrecog) to communicate
    to insn-output.c (produced by this program).  */

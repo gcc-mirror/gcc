@@ -1,3 +1,12 @@
+Wed Apr 15 12:10:18 1998  Michael Meissner  <meissner@cygnus.com>
+
+	* Makefile.in (gen{config,flags,codes,emit}): Link in host print-rtl.o.
+	(gen{extract,peep,opinit,output}): Ditto.
+
+	* gen{attr,codes,config,emit,output}.c (insn_attr_name): Provide a
+	global definition so print-rtl.o can be linked in.
+	* gen{peep,recog}.c (insn_attr_name): Ditto.
+
 Tue Apr 14 07:30:57 1998  K. Richard Pixley  <rich@kyoto.noir.com>
 
 	* fixincludes: discard empty C++ comments, as found in sys/time.h

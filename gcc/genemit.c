@@ -34,6 +34,9 @@ char *xmalloc PROTO((unsigned));
 static void fatal ();
 void fancy_abort PROTO((void));
 
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+char **insn_name_ptr = 0;
+
 static int max_opno;
 static int max_dup_opno;
 static int register_constraints;

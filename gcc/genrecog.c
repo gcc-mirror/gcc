@@ -57,6 +57,9 @@ struct obstack *rtl_obstack = &obstack;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
+/* Define this so we can link with print-rtl.o to get debug_rtx function.  */
+char **insn_name_ptr = 0;
+
 /* Data structure for a listhead of decision trees.  The alternatives
    to a node are kept in a doublely-linked list so we can easily add nodes
    to the proper place when merging.  */
