@@ -1,5 +1,10 @@
 2004-09-07  Ziemowit Laski  <zlaski@apple.com>
 
+	* c-decl.c (groktypename_in_parm_context): Remove function.
+	* c-tree.h (groktypename_in_parm_context): Remove prototype.
+
+2004-09-07  Ziemowit Laski  <zlaski@apple.com>
+
 	* Makefile.in (c-parse.o): Depend on $(C_COMMON_H).
 	* c-parse.in: Include c-common.h instead of objc-act.h.
 	(ivar_decl_list, ivar_decls, ivar_decl, ivars, ivar_declarator,

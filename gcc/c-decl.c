@@ -2887,18 +2887,6 @@ groktypename (tree type_name)
   return type_name;
 }
 
-/* Return a PARM_DECL node for a given pair of specs and declarator.  */
-
-tree
-groktypename_in_parm_context (tree type_name)
-{
-  if (TREE_CODE (type_name) != TREE_LIST)
-    return type_name;
-  return grokdeclarator (TREE_VALUE (type_name),
-			 TREE_PURPOSE (type_name),
-			 PARM, false, NULL);
-}
-
 /* Decode a declarator in an ordinary declaration or data definition.
    This is called as soon as the type information and variable name
    have been parsed, before parsing the initializer if any.
