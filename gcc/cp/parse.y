@@ -2246,7 +2246,8 @@ maybecomma:
 maybecomma_warn:
 	  /* empty */
 	| ','
-		{ if (pedantic) pedwarn ("comma at end of enumerator list"); }
+		{ if (pedantic && !in_system_header)
+		    pedwarn ("comma at end of enumerator list"); }
 	;
 
 aggr:	  AGGR

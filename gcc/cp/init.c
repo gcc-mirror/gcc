@@ -1530,21 +1530,20 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 	  return;
 	}
 
-#ifndef NEW_OVER
-      /* See whether we can go through a type conversion operator.
-	 This wins over going through a non-existent constructor.  If
-	 there is a constructor, it is ambiguous.  */
-      if (TREE_CODE (init) != TREE_LIST)
+      /* If this is copy-initialization, see whether we can go through a
+	 type conversion operator.  */
+      if (TREE_CODE (init) != TREE_LIST && (flags & LOOKUP_ONLYCONVERTING))
 	{
 	  tree ttype = TREE_CODE (init_type) == REFERENCE_TYPE
 	    ? TREE_TYPE (init_type) : init_type;
 
 	  if (ttype != type && IS_AGGR_TYPE (ttype))
 	    {
-	      tree rval = build_type_conversion (CONVERT_EXPR, type, init, 0);
+	      tree rval = build_type_conversion (CONVERT_EXPR, type, init, 1);
 
 	      if (rval)
 		{
+#ifndef NEW_OVER
 		  /* See if there is a constructor for``type'' that takes a
 		     ``ttype''-typed object.  */
 		  tree parms = build_tree_list (NULL_TREE, init);
@@ -1558,12 +1557,13 @@ expand_aggr_init_1 (binfo, true_exp, exp, init, alias_this, flags)
 		    cp_error ("ambiguity between conversion to `%T' and constructor",
 			      type);
 		  else
+#endif
+		  if (rval != error_mark_node)
 		    expand_aggr_init_1 (binfo, true_exp, exp, rval, alias_this, flags);
 		  return;
 		}
 	    }
 	}
-#endif
     }
 
   /* We know that expand_default_init can handle everything we want
@@ -2022,7 +2022,8 @@ resolve_offset_ref (exp)
 
   if ((TREE_CODE (member) == VAR_DECL
        && ! TYPE_PTRMEMFUNC_P (TREE_TYPE (member)))
-      || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE)
+      || TREE_CODE (TREE_TYPE (member)) == FUNCTION_TYPE
+      || TREE_CODE (TREE_TYPE (member)) == METHOD_TYPE)
     {
       /* These were static members.  */
       if (mark_addressable (member) == 0)

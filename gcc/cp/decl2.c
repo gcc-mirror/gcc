@@ -2542,7 +2542,7 @@ import_export_vtable (decl, type, final)
 	      TREE_PUBLIC (decl) = 1;
 	      DECL_WEAK (decl) = 1;
 	    }
-#ifdef ASSEMBLE_EXTERNAL
+#ifdef ASM_OUTPUT_EXTERNAL
 	  else if (TREE_PUBLIC (decl))
 	    cp_error ("all virtual functions redeclared inline");
 #endif

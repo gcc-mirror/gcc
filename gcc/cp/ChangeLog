@@ -1,3 +1,85 @@
+Fri Jul 19 14:04:05 1996  Mike Stump  <mrs@cygnus.com>
+
+	* decl.c (lookup_name_real): Make sure we do obj->X::i correctly.
+
+Thu Jul 18 14:48:23 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* decl2.c (import_export_vtable): ASM_OUTPUT_EXTERNAL, not
+	ASSEMBLE_EXTERNAL.
+
+Mon Jul 15 17:48:43 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck2.c (process_init_constructor): New pedwarn for using { }
+	to initialize a pointer to member function.
+	* typeck.c (build_ptrmemfunc1): Avoid use of digest_init so that
+	we can avoid the new error.
+
+Mon Jul 15 15:42:03 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_ptrmemfunc1): New function to hide details of
+	pointer to member functions better.
+
+Mon Jul 15 14:23:02 1996  Mike Stump  <mrs@cygnus.com>
+
+	* init.c (resolve_offset_ref): Resolve OFFSET_REFs that are
+	methods into the actual method, as we know the implied object is
+	not used.
+
+Mon Jul 15 13:08:29 1996  Brendan Kehoe  <brendan@lisa.cygnus.com>
+
+	* parse.y (maybecomma_warn): Only emit the pedwarn if we're not
+	inside a system header.
+
+Fri Jul 12 16:30:05 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* call.c (build_method_call): Call complete_type on the
+	instance type.
+
+Thu Jul 11 17:16:40 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_component_ref): Always build up an OFFSET_REF
+	for obj_ptr->func so that we can know which object to use in a
+	method call.
+
+Wed Jul 10 19:36:37 1996  Mike Stump  <mrs@cygnus.com>
+
+	* typeck.c (build_ptrmemfunc): Remove sorry, now we can cast
+	around things.  Also improve maintainability.
+
+Wed Jul 10 18:20:11 1996  Bob Manson  <manson@charmed.cygnus.com>
+
+	* decl.c (grokdeclarator): Check for overflow when evaluating an
+ 	array dimension.
+
+Wed Jul 10 17:26:19 1996  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* cvt.c (cp_convert): Don't check for ambiguity with constructor
+ 	if NEW_OVER.
+
+	* typeck.c (build_x_function_call): Pass function overload
+ 	questions to new overloading code if NEW_OVER.
+	* init.c (expand_aggr_init_1): Only check for type conversion ops
+ 	if we're doing copy-initialization (i.e. LOOKUP_ONLYCONVERTING).
+  	Don't check for ambiguity with constructor if NEW_OVER.
+	* cvt.c (convert_to_reference): Dereference the result of a type
+ 	conversion operator.
+	(build_conv): Propagate ICS_USER_FLAG.
+	(implicit_conversion): Call instantiate_type.
+	Pass LOOKUP_ONLYCONVERTING instead of LOOKUP_NORMAL.
+	(add_function_candidate): Fix cv-quals on argtype.
+	(print_z_candidates): New function.
+	(build_new_function_call): Call it.
+	(build_user_type_conversion_1): If LOOKUP_ONLYCONVERTING, don't
+	consider non-converting constructors.
+	Call print_z_candidates.
+	Return an AMBIG_CONV for an ambiguous conversion.
+	(build_user_type_conversion): Handle AMBIG_CONV.
+	(convert_like): Fix test for building TARGET_EXPR.
+	Call instantiate_type.
+	Handle AMBIG_CONV and LVALUE_CONV.
+	(build_over_call): Handle 0 args and ellipsis.
+	* cp-tree.def: Add AMBIG_CONV.
+
 Tue Jul  9 17:48:48 1996  Mike Stump  <mrs@cygnus.com>
 
 	* decl.c (lookup_name_real): If we find mem in obj when parsing
@@ -223,11 +305,6 @@ Fri Jun  7 10:37:33 1996  Mike Stump  <mrs@cygnus.com>
 	* typeck.c (c_expand_return): Don't try and convert the return
 	value twice when we want a reference, once is enough.
 	
-Sat May 11 04:33:50 1996  Doug Evans  <dje@canuck.cygnus.com>
-
-	* decl2.c (finish_vtable_vardecl): Surround DECL_ONE_ONLY with ifdef.
-	(finish_file): Likewise.
-
 Tue Jun  4 15:41:45 1996  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (tsubst_expr, case DECL_STMT): Don't pass

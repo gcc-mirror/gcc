@@ -1011,6 +1011,9 @@ process_init_constructor (type, init, elts)
 	      sorry ("initializer list for object using virtual functions");
 	      return error_mark_node;
 	    }
+
+	  if (TYPE_PTRMEMFUNC_P (type))
+	    cp_pedwarn ("initializer list for `%T'", type);
 	}
 
       for (field = TYPE_FIELDS (type); field && tail;
