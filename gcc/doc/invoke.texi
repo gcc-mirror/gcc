@@ -66,7 +66,6 @@ for contributors to GCC@.
 @cindex options, GCC command
 
 @c man begin DESCRIPTION
-
 When you invoke GCC, it normally does preprocessing, compilation,
 assembly and linking.  The ``overall options'' allow you to stop this
 process at an intermediate stage.  For example, the @option{-c} option
@@ -4838,6 +4837,7 @@ are processed in order, from left to right.
 @node Spec Files
 @section Specifying subprocesses and the switches to pass to them
 @cindex Spec Files
+
 @command{gcc} is a driver program.  It performs its job by invoking a
 sequence of other programs to do the work of compiling, assembling and
 linking.  GCC interprets its command-line parameters and uses these to
@@ -6278,6 +6278,7 @@ of executing a function pointer if this option is enabled.
 @node MN10200 Options
 @subsection MN10200 Options
 @cindex MN10200 options
+
 These @option{-m} options are defined for Matsushita MN10200 architectures:
 @table @gcctabopt
 
@@ -6293,6 +6294,7 @@ This option makes symbolic debugging impossible.
 @node MN10300 Options
 @subsection MN10300 Options
 @cindex MN10300 options
+
 These @option{-m} options are defined for Matsushita MN10300 architectures:
 
 @table @gcctabopt
@@ -7231,6 +7233,10 @@ This option sets flags for both the preprocessor and linker.
 @node Darwin Options
 @subsection Darwin Options
 @cindex Darwin options
+
+These options are defined for all architectures running the Darwin operating
+system.  These are useful for compatibility with other Mac OS compilers.
+
 @table @gcctabopt
 @item -all_load    
 @opindex all_load   
@@ -10913,7 +10919,6 @@ The default without @option{-fpic} is @code{initial-exec}; with
 @cindex environment variables
 
 @c man begin ENVIRONMENT
-
 This section describes several environment variables that affect how GCC
 operates.  Some of them work by specifying directories or prefixes to use
 when searching for various kinds of files.  Some are used to specify other
