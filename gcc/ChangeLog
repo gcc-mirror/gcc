@@ -1,3 +1,8 @@
+2002-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.h (ASM_OUTPUT_REG_PUSH, ASM_OUTPUT_REG_POP):
+	Handle TARGET_64BIT.
+
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/6631

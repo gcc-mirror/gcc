@@ -1,3 +1,7 @@
+2002-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/20021014-1.c: New test.
+
 2002-10-14  Mark Mitchell  <mark@codesourcery.com>
 
 	PR optimization/6631
