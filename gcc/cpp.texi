@@ -2630,12 +2630,16 @@ comment, or whenever a Backslash-Newline appears in a @samp{//} comment.
 @item -Wall
 @findex -Wall
 Requests both @samp{-Wtrigraphs} and @samp{-Wcomment} (but not
-@samp{-Wtraditional}). 
+@samp{-Wtraditional} or @samp{-Wundef}). 
 
 @item -Wtraditional
 @findex -Wtraditional
 Warn about certain constructs that behave differently in traditional and
 ANSI C@.
+
+@item -Wundef
+@findex -Wundef
+Warn if an undefined identifier is evaluated in an @samp{#if} directive.
 
 @item -I @var{directory}
 @findex -I
