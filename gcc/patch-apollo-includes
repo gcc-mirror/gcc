@@ -1,0 +1,69 @@
+#!/bin/sh
+# patch-apollo-includes -- fix some (but not all!) Apollo brain damage.
+
+FILES_TO_PATCH='sys/types.h setjmp.h'
+
+mkdir sys
+
+for i in $FILES_TO_PATCH;
+do
+  cp /bsd4.3/usr/include/$i ./$i
+done
+
+patch -b -apollo <<'EOP'
+*** /bsd4.3/usr/include/sys/types.h	Fri Apr  8 20:29:06 1988
+--- sys/types.h	Wed Feb 26 21:17:57 1992
+***************
+*** 38,44 ****
+--- 38,47 ----
+  typedef	char *	caddr_t;
+  typedef	u_long	ino_t;
+  typedef	long	swblk_t;
++ #ifndef _SIZE_T
++ #define _SIZE_T
+  typedef	long	size_t;
++ #endif
+  typedef	long	time_t;
+  typedef	long	dev_t;
+  typedef	long	off_t;
+*** /bsd4.3/usr/include/setjmp.h	Fri Feb  3 21:40:21 1989
+--- setjmp.h	Sun Feb 23 19:06:55 1992
+***************
+*** 24,30 ****
+--- 24,39 ----
+  #endif
+  
+  
++ #ifdef __GNUC__
+  #ifdef _PROTOTYPES
++ extern int sigsetjmp (sigjmp_buf env, int savemask);
++ extern void siglongjmp (sigjmp_buf env, int val);
++ #else
++ extern int sigsetjmp();
++ extern void siglongjmp();
++ #endif /* _PROTOTYPES */
++ #else /* not __GNUC__ */
++ #ifdef _PROTOTYPES
+  extern int sigsetjmp(
+          sigjmp_buf env,
+          int savemask
+***************
+*** 37,43 ****
+  extern int sigsetjmp() #options(abnormal);
+  extern void siglongjmp() #options(noreturn);
+  #endif /* _PROTOTYPES */
+! 
+  #undef _PROTOTYPES
+  
+  #ifdef __cplusplus
+--- 46,52 ----
+  extern int sigsetjmp() #options(abnormal);
+  extern void siglongjmp() #options(noreturn);
+  #endif /* _PROTOTYPES */
+! #endif /* not __GNUC__ */
+  #undef _PROTOTYPES
+  
+  #ifdef __cplusplus
+EOP
+
+exit 0
