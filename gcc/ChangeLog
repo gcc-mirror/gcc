@@ -1,3 +1,10 @@
+2000-01-28  Ulrich Drepper  <drepper@redhat.com>
+
+	* c-decl.c (c_decode_option): Accept optional numeric argument to
+	-Wformat and set warn_format.
+	* c-common.c: Don't emit warning about non-constant printf format
+	string unless warn_format > 1.
+
 2000-01-30  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (return_internal): Allow after reload only.

@@ -1529,7 +1529,7 @@ check_format_info (info, params)
       /* Functions taking a va_list normally pass a non-literal format
 	 string.  These functions typically are declared with
 	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (info->first_arg_num != 0)
+      if (info->first_arg_num != 0 && warn_format > 1)
 	warning ("format not a string literal, argument types not checked");
       return;
     }
@@ -1541,7 +1541,7 @@ check_format_info (info, params)
       /* Functions taking a va_list normally pass a non-literal format
 	 string.  These functions typically are declared with
 	 first_arg_num == 0, so avoid warning in those cases.  */
-      if (info->first_arg_num != 0)
+      if (info->first_arg_num != 0 && warn_format > 1)
 	warning ("format not a string literal, argument types not checked");
       return;
     }

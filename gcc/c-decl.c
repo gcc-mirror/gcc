@@ -677,6 +677,8 @@ c_decode_option (argc, argv)
     warn_traditional = 1;
   else if (!strcmp (p, "-Wno-traditional"))
     warn_traditional = 0;
+  else if (!strncmp (p, "-Wformat=", 9))
+    warn_format = atol (p + 9);
   else if (!strcmp (p, "-Wformat"))
     warn_format = 1;
   else if (!strcmp (p, "-Wno-format"))
