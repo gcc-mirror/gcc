@@ -1,3 +1,8 @@
+2001-06-15  Andreas Jaeger  <aj@suse.de>
+
+	* doc/install.texi (Specific): Mention that glibc cannot be
+	compiled with GCC 3.0.
+
 2001-06-14  Andrew Haley  <aph@cambridge.redhat.com>
 
 	* combine.c (nonzero_bits): Don't optimize away division by
