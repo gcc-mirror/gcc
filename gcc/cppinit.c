@@ -237,7 +237,10 @@ append_include_chain (pfile, dir, path, cxx_aware)
   new->nlen = len;
   new->ino  = st.st_ino;
   new->dev  = st.st_dev;
-  if (path == SYSTEM)
+  /* Both systm and after include file lists should be treated as system
+     include files since these two lists are really just a concatenation
+     of one "system" list. */
+  if (path == SYSTEM || path == AFTER)
 #ifdef NO_IMPLICIT_EXTERN_C
     new->sysp = 1;
 #else

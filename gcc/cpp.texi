@@ -3590,10 +3590,10 @@ before processing the regular input file.
 @item -idirafter @var{dir}
 @findex -idirafter
 @cindex second include path
-Add the directory @var{dir} to the second include path.  The directories
-on the second include path are searched when a header file is not found
-in any of the directories in the main include path (the one that
-@samp{-I} adds to).
+Add the directory @var{dir} to the second include path, marking it as a
+system directory.  The directories on the second include path are searched
+when a header file is not found in any of the directories in the main
+include path (the one that @samp{-I} adds to).
 
 @item -iprefix @var{prefix}
 @findex -iprefix
@@ -3603,9 +3603,10 @@ final @samp{/}.
 
 @item -iwithprefix @var{dir}
 @findex -iwithprefix
-Add a directory to the second include path.  The directory's name is
-made by concatenating @var{prefix} and @var{dir}, where @var{prefix} was
-specified previously with @samp{-iprefix}.
+Add a directory to the second include path, marking it as a system
+directory.  The directory's name is made by concatenating @var{prefix}
+and @var{dir}, where @var{prefix} was specified previously with
+@samp{-iprefix}.
 
 @item -isystem @var{dir}
 @findex -isystem

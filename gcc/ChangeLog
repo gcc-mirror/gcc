@@ -1,3 +1,9 @@
+Fri Mar  2 12:18:13 2001  Christopher Faylor <cgf@cygnus.com>
+
+	* cppinit.c (append_include_chain): Mark "after" include file name list
+	as a system directory.
+	* cpp.texi: Document new behavior.
+
 2001-03-01  Zack Weinberg  <zackw@stanford.edu>
 
 	* cpphash.h (struct cpp_reader): Add print_version field.
