@@ -43,6 +43,7 @@ pedwarn_c99 VPARAMS ((const char *msgid, ...))
   msgid = va_arg (ap, const char *);
 #endif
 
-  report_diagnostic (msgid, ap, input_filename, lineno,
+  report_diagnostic (msgid, &ap, input_filename, lineno,
                      !flag_isoc99 || !flag_pedantic_errors);
+  va_end (ap);
 }
