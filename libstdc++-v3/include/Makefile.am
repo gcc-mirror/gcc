@@ -1,6 +1,6 @@
 ## Makefile for the include subdirectory of the GNU C++ Standard library.
 ##
-## Copyright (C) 2001 Free Software Foundation, Inc.
+## Copyright (C) 2001, 2002 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -21,7 +21,7 @@
 ## Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 ## USA.
 
-## $Id: Makefile.am,v 1.1.6.5 2001/08/25 00:22:02 bkoz Exp $
+## $Id: Makefile.am,v 1.1.6.6 2001/08/29 00:41:56 ljrittle Exp $
 
 AUTOMAKE_OPTIONS = 1.3 gnits
 MAINT_CHARSET = latin1
@@ -286,6 +286,11 @@ target_headers = \
 	${target_srcdir}/os_defines.h \
 	${glibcpp_srcdir}/@ATOMICITY_INC_SRCDIR@/atomicity.h \
 	${glibcpp_srcdir}/@LIMITS_INC_SRCDIR@/limits.h
+extra_target_headers = \
+	${target_builddir}/basic_file_model.h \
+	${target_builddir}/c++config.h \
+	${target_builddir}/c++io.h \
+	${target_builddir}/c++locale.h
 
 thread_builddir = ./${target_alias}/bits
 thread_headers = \
@@ -311,63 +316,63 @@ stamp-std: ${std_headers}
 	@if [ ! -d "${std_builddir}" ]; then \
 	  mkdir -p ${std_builddir} ;\
 	fi ;\
-	(cd ${std_builddir} && @LN_S@ $? .) ;\
+	(cd ${std_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-std
 
 stamp-bits: ${bits_headers}
 	@if [ ! -d "${bits_builddir}" ]; then \
 	  mkdir -p ${bits_builddir} ;\
 	fi ;\
-	(cd ${bits_builddir} && @LN_S@ $? .) ;\
+	(cd ${bits_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-bits
 
 stamp-c_base: ${c_base_headers}
 	@if [ ! -d "${c_base_builddir}" ]; then \
 	  mkdir -p ${c_base_builddir} ;\
 	fi ;\
-	(cd ${c_base_builddir} && @LN_S@ $? .) ;\
+	(cd ${c_base_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-c_base
 
 stamp-c_compatibility: ${c_compatibility_headers}
 	@if [ ! -d "${c_compatibility_builddir}" ]; then \
 	  mkdir -p ${c_compatibility_builddir} ;\
 	fi ;\
-	(cd ${c_compatibility_builddir} && @LN_S@ $? .) ;\
+	(cd ${c_compatibility_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-c_compatibility
 
 stamp-backward: ${backward_headers}
 	@if [ ! -d "${backward_builddir}" ]; then \
 	  mkdir -p ${backward_builddir} ;\
 	fi ;\
-	(cd ${backward_builddir} && @LN_S@ $? .) ;\
+	(cd ${backward_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-backward
 
 stamp-ext: ${ext_headers}
 	@if [ ! -d "${ext_builddir}" ]; then \
 	  mkdir -p ${ext_builddir} ;\
 	fi ;\
-	(cd ${ext_builddir} && @LN_S@ $? .) ;\
+	(cd ${ext_builddir} && @LN_S@ $? . || true) ;\
 	echo `date` > stamp-ext
 
 # Can't use $? in command, otherwise target_builddir will trigger it, and
 # we get bizarre symlinks mazes.
 stamp-target: ${target_headers} ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${target_headers} .) ;\
+	@(cd ${target_builddir} && @LN_S@ ${target_headers} . || true) ;\
 	echo `date` > stamp-target
 
 stamp-thread: ${thread_headers} ${thread_builddir}
 	@echo `date` > stamp-thread
 
 stamp-file_model: ${glibcpp_srcdir}/@BASIC_FILE_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h) ;\
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@BASIC_FILE_H@ basic_file_model.h || true) ;\
 	echo `date` > stamp-file_model
 
 stamp-io: ${glibcpp_srcdir}/@CSTDIO_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h) ;\
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CSTDIO_H@ c++io.h || true) ;\
 	echo `date` > stamp-io
 
 stamp-locale: ${glibcpp_srcdir}/@CLOCALE_H@ ${target_builddir}
-	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h) ;\
+	@(cd ${target_builddir} && @LN_S@ ${glibcpp_srcdir}/@CLOCALE_H@ c++locale.h || true) ;\
 	echo `date` > stamp-locale
 
 # This target is kinda special.  The timestamp on a directory gets modified
@@ -412,17 +417,31 @@ ${thread_builddir}/gthr-default.h:
 	    -e 's/\(${uppercase}*WEAK\)/_GLIBCPP_\1/g' \
 	    < ${toplevel_srcdir}/gcc/${glibcpp_thread_h} > $@
 
-# One big happy istallation:  just copy everything from the build to the
-# install tree (except for the build stamps).
+# For robustness sake (in light of junk files or in-source
+# configuration), copy from the build tree to the install tree using
+# only the human-maintained file lists and directory components.
 gxx_include_dir = @gxx_include_dir@
 
 install-data-local:
-	for file in `find . ! -name stamp-\* ! -name Makefile -print`; do \
-	installFile=${gxx_include_dir}/$${file} ;\
-	if [ -d $${file} ]; then \
-	  $(INSTALL) -d $${installFile} ;\
-	else \
-	  $(INSTALL_DATA) $${file} $${installFile} ;\
-	fi ;\
-	done
-
+	$(INSTALL) -d ${gxx_include_dir}
+	$(INSTALL) -d ${gxx_include_dir}/${bits_builddir}
+	for file in ${bits_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${bits_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${backward_builddir}
+	for file in ${backward_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${backward_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${ext_builddir}
+	for file in ${ext_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${ext_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${c_base_builddir}
+	for file in ${c_base_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${c_base_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${std_builddir}
+	for file in ${std_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${std_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${target_builddir}
+	for file in ${target_headers} ${extra_target_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${target_builddir}; done
+	$(INSTALL) -d ${gxx_include_dir}/${thread_builddir}
+	for file in ${thread_headers}; do \
+	  $(INSTALL_DATA) $${file} ${gxx_include_dir}/${thread_builddir}; done
