@@ -1,4 +1,4 @@
-/* Copyright (C) 1999  Free Software Foundation
+/* Copyright (C) 1999, 2000  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -21,7 +21,7 @@ public class Output_UTF8 extends UnicodeToBytes
   /** True if a surrogate pair should be emitted as a single UTF8 sequence.
    * Otherwise, a surrogate pair is treated as two separate characters.
    * Also, '\0' is emitted as {0} if true, and as {0xC0,0x80} if false. */
-  public boolean standardUTF8;
+  public boolean standardUTF8 = true;
 
   // Saves the previous char if it was a high-surrogate.
   char hi_part;
@@ -60,9 +60,27 @@ public class Output_UTF8 extends UnicodeToBytes
 	    while (bytes_todo > 0 && avail > 0);
 	    continue;
 	  }
+
 	char ch = inbuffer[inpos++];
 	inlength--;
-	if (ch < 128 && (ch != 0 || standardUTF8))
+
+	if ((hi_part != 0 && (ch <= 0xDBFF || ch > 0xDFFF))
+	    || (hi_part == 0 && ch >= 0xDC00 && ch <= 0xDFFF))
+	  {
+	    // If the previous character was a high surrogate, and we
+	    // don't now have a low surrogate, we print the high
+	    // surrogate as an isolated character.  If this character
+	    // is a low surrogate and we didn't previously see a high
+	    // surrogate, we do the same thing.
+	    --inpos;
+	    ++inlength;
+	    buf[count++] = (byte) (0xE0 | (hi_part >> 12));
+	    value = hi_part;
+	    hi_part = 0;
+	    avail--;
+	    bytes_todo = 2;
+	  }
+	else if (ch < 128 && (ch != 0 || standardUTF8))
 	  {
 	    avail--;
 	    buf[count++] = (byte) ch;
@@ -78,19 +96,16 @@ public class Output_UTF8 extends UnicodeToBytes
 	  {
 	    if (ch <= 0xDBFF)  // High surrogates
 	      {
-		// The first byte is (0xF0 | value>>18), where value is the
-		// Unicode scalar value of the combine character - which
-		// we may not know yet.  But from substituting:
-		// value == (hi-0xD800)*0x400+(lo-0xDC00)+0x10000,
-		// hi==ch, and cancelling we get:
-		buf[count++] = (byte) (0xF0 | ((ch-0xD800) >> 8));
-		avail--;
+		// Just save the high surrogate until the next
+		// character comes along.
 		hi_part = ch;
 	      }
 	    else // Low surrogates
 	      {
 		value = (hi_part - 0xD800) * 0x400 + (ch - 0xDC00) + 0x10000;
+		buf[count++] = (byte) (0xF0 | (value >> 18));
 		bytes_todo = 3;
+		hi_part = 0;
 	      }
 	  }
 	else
