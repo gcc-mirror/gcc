@@ -1490,7 +1490,14 @@ output_prolog (file, size)
   /* If TARGET_MINIMAL_TOC, and the constant pool is needed, then load the
      TOC_TABLE address into register 30.  */
   if (TARGET_MINIMAL_TOC && get_pool_size () != 0)
-    asm_fprintf (file, "\t{l|lwz} 30,LCTOC..0(2)\n");
+    {
+      char buf[100];
+
+      ASM_GENERATE_INTERNAL_LABEL (buf, "LCTOC", 0);
+      asm_fprintf (file, "\t{l|lwz} 30,");
+      assemble_name (file, buf);
+      asm_fprintf (file, "(2)\n");
+    }
 }
 
 /* Write function epilogue.  */
@@ -1586,7 +1593,7 @@ output_epilog (file, size)
        from the function start.  */
     if (*fname == '*')
       ++fname;
-    fprintf (file, "LT..");
+    ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
     ASM_OUTPUT_LABEL (file, fname);
 
     /* The .tbtab pseudo-op can only be used for the first eight
@@ -1720,7 +1727,8 @@ output_epilog (file, size)
       fprintf (file, "\t.long %d\n", parm_info);
 
     /* Offset from start of code to tb table.  */
-    fprintf (file, "\t.long LT..");
+    fprintf (file, "\t.long ");
+    ASM_OUTPUT_INTERNAL_LABEL_PREFIX (file, "LT");
     RS6000_OUTPUT_BASENAME (file, fname);
     fprintf (file, "-.");
     RS6000_OUTPUT_BASENAME (file, fname);
@@ -1965,14 +1973,26 @@ output_function_profiler (file, labelno)
   /* The last used parameter register.  */
   int last_parm_reg;
   int i, j;
+  char buf[100];
 
   /* Set up a TOC entry for the profiler label.  */
   toc_section ();
+  ASM_OUTPUT_INTERNAL_LABEL (file, "LPC", labelno);
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
   if (TARGET_MINIMAL_TOC)
-    fprintf (file, "LPC..%d:\n\t.long LP..%d\n", labelno, labelno);
+    {
+      fprintf (file, "\t.long ");
+      assemble_name (file, buf);
+      fprintf (file, "\n");
+    }
   else
-    fprintf (file, "LPC..%d:\n\t.tc\tLP..%d[TC],LP..%d\n",
-	     labelno, labelno, labelno);
+    {
+      fprintf (file, "\t.tc\t");
+      assemble_name (file, buf);
+      fprintf (file, "[TC],");
+      assemble_name (file, buf);
+      fprintf (file, "\n");
+    }
   text_section ();
 
   /* Figure out last used parameter register.  The proper thing to do is
@@ -1992,7 +2012,10 @@ output_function_profiler (file, labelno)
 
   /* Load location address into r3, and call mcount.  */
 
-  fprintf (file, "\tl 3,LPC..%d(2)\n\tbl .mcount\n", labelno);
+  ASM_GENERATE_INTERNAL_LABEL (buf, "LPC", labelno);
+  fprintf (file, "\tl 3,");
+  assemble_name (file, buf);
+  fprintf (file, "(2)\n\tbl .mcount\n");
 
   /* Restore parameter registers.  */
 
