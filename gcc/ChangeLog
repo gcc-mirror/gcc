@@ -1,3 +1,9 @@
+Tue Sep  1 11:30:33 1998  Nick Clifton  <nickc@cygnus.com>
+
+	* config/m32r/m32r.md: Change (reg:CC 17) to (reg:SI 17).
+	* config/m32r/m32r.h: Make register 17 be fixed.
+	* config/m32r/m32r.c: Use SImode for cc operations.
+
 Thu Sep  3 18:17:34 1998 Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* invoke.texi (Warning Options): Add -Wnon-template-friend
