@@ -92,9 +92,6 @@ int in_ssa_form = 0;
 /* Element I is the single instruction that sets register I.  */
 varray_type ssa_definition;
 
-/* Element I is an INSN_LIST of instructions that use register I.  */
-varray_type ssa_uses;
-
 /* Element I-PSEUDO is the normal register that originated the ssa
    register in question.  */
 varray_type ssa_rename_from;
@@ -828,7 +825,6 @@ apply_delayed_renames (c)
 	{
 	  int new_limit = new_regno * 5 / 4;
 	  VARRAY_GROW (ssa_definition, new_limit);
-	  VARRAY_GROW (ssa_uses, new_limit);
 	}
 
       VARRAY_RTX (ssa_definition, new_regno) = r->set_insn;
@@ -1084,7 +1080,6 @@ rename_block (bb, idom)
 		abort();
 
 	      *phi_alternative (phi, bb) = reg;
-	      /* ??? Mark for a new ssa_uses entry.  */
 	    }
 
 	  insn = NEXT_INSN (insn);
@@ -1124,7 +1119,6 @@ rename_registers (nregs, idom)
      int *idom;
 {
   VARRAY_RTX_INIT (ssa_definition, nregs * 3, "ssa_definition");
-  VARRAY_RTX_INIT (ssa_uses, nregs * 3, "ssa_uses");
   ssa_rename_from_initialize ();
 
   ssa_rename_to_pseudo = (rtx *) alloca (nregs * sizeof(rtx));
@@ -2222,7 +2216,6 @@ convert_from_ssa()
 
   /* Deallocate the data structures.  */
   VARRAY_FREE (ssa_definition);
-  VARRAY_FREE (ssa_uses);
   ssa_rename_from_free ();
 }
 

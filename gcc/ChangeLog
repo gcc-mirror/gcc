@@ -1,5 +1,11 @@
 Tue Jun 19 07:53:52 2001  Jeffrey A Law  (law@cygnus.com)
 
+	* ssa.c (ssa_uses): Remove definition.
+	(apply_delayed_renames): Don't grow ssa_uses.
+	(rename_block): Remove comment related to ssa_uses.
+	(rename_registers): Do not initialize ssa_uses.
+	(convert_from_ssa): Do not free ssa_uses.
+
 	* ssa-dce.c: Renamed from dce.c.
 	* Makefile.in (OBJS): Replace dce.o with ssa-dce.o
 	(dependencies): Replace dce.c with ssa-dce.c and dce.o with
