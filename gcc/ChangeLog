@@ -1,3 +1,57 @@
+2002-05-12  Zack Weinberg  <zack@codesourcery.com>
+
+	* emit-rtl.c (global_rtl): Update comment.
+	(const_double_htab, const_double_htab_hash,
+	const_double_htab_hash, lookup_const_double): New.
+	(const_int_htab_hash, const_int_htab_eq): Remove const
+	qualifiers, which cause tons of warnings with RTL checking on.
+	(gen_rtx_CONST_DOUBLE): Deleted.
+	(const_double_from_real_value): New function - bears some
+	resemblance to the former immed_real_const_1.
+	(immed_double_const): Moved here from varasm.c and
+	simplified.
+	(gen_rtx_REG): Make REGNO unsigned to squelch warnings.
+	(gen_rtx_SUBREG): Use gen_rtx_raw_SUBREG.
+	(gen_rtx): Use immed_double_const.
+	(init_emit_once): Initialize the const_double_htab.  Use
+	REAL_VALUE_FROM_INT where possible.  Can now use
+	CONST_DOUBLE_FROM_REAL_VALUE when setting up const_tiny_rtx.
+	* varasm.c (struct varasm_status): Remove x_const_double_chain.
+	(const_double_chain, immed_real_const, clear_const_double_mem): Delete.
+	(immed_double_const, immed_real_const_1): Moved to emit-rtl.c.
+	(init_varasm_status, mark_varasm_status): Don't touch
+	x_const_double_chain.
+
+	* output.h: Delete prototype for clear_const_double_mem.
+	* real.h: Make REAL_VALUE_TYPE a macro again.  Remove leading
+	'0' slot from all CONST_DOUBLE_FORMAT definitions.  Prototype
+	const_double_from_real_value, not immed_real_const_1, and use
+	it to define CONST_DOUBLE_FROM_REAL_VALUE.  Define new macro
+	CONST_DOUBLE_ATOF.
+	* rtl.h (CONST_DOUBLE_CHAIN): Kill.
+	(CONST_DOUBLE_LOW, CONST_DOUBLE_HIGH): Adjust.
+	(gen_rtx_CONST_DOUBLE, immed_real_const): Delete prototypes.
+	(gen_rtx_REG): Second arg is unsigned.
+
+	* gengenrtl.c (special_rtx): Take out CONST_DOUBLE.
+	(excluded_rtx): New, return true for CONST_DOUBLE.
+	(genmacro): Write nothing for excluded codes.
+	* combine.c (combine_simplify_rtx): Use CONST_DOUBLE_FROM_REAL_VALUE.
+	* expr.c (expand_expr): Likewise.
+	* ggc-common.c (ggc_mark_rtx_children_1): Don't mark the
+	CONST_DOUBLE_CHAIN.
+	* toplev.c (rest_of_compilation): Don't call
+	clear_const_double_mem.
+
+	* config/rs6000/rs6000.c (rs6000_float_const): Delete.
+	(rs6000_hash_constant): Remove CONST_DOUBLE special case.
+	(toc_hash_eq): Remove CONST_DOUBLE and LABEL_REF special cases.
+	* config/rs6000/rs6000-protos.h: Don't prototype rs6000_float_const.
+	* config/c4x/c4x.md, config/rs6000/rs6000.md: Use CONST_DOUBLE_ATOF.
+	* config/dsp16xx/dsp16xx.md, config/mips/mips.md,
+	config/pa/pa.md: Use CONST_DOUBLE_FROM_REAL_VALUE.
+	* config/sparc/sparc.md, config/sparc/sparc.c: Use immed_double_const.
+
 2002-05-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* mips/iris6.h (CPLUSPLUS_CPP_SPEC): Define.
@@ -313,38 +367,38 @@ Thu May  9 14:52:45 CEST 2002  Jan Hubicka  <jh@suse.cz>
 	* final.c (end_final): Use C trees to output data structures for profiling.
 
 	* Makefile.in (LIBGCC_DEPS): Added missing dependency on gcov-io.h
-        (profile.o): New dependency profile.h
-        (final.o): New dependency profile.h
-        * profile.h: New file. New global structure profile_info.
-        * final.h (count_edges_instrumented_now): Declare.
-        (current_function_cfg_checksum): Declare.
-        (function_list): New structure.
-        (functions_head, functions_tail): New static variables.
-        (end_final): Emits more data, removed some -ax stuff.
-        (final): Stores function names and chcksums.
-        * gcov-io.h (__write_gcov_string): New function.
-        (__read_gcov_string): New function.
-        * gcov.c (read_profile): New function.
-        (create_program_flow_graph): Uses read_profile instead of reading
+	(profile.o): New dependency profile.h
+	(final.o): New dependency profile.h
+	* profile.h: New file. New global structure profile_info.
+	* final.h (count_edges_instrumented_now): Declare.
+	(current_function_cfg_checksum): Declare.
+	(function_list): New structure.
+	(functions_head, functions_tail): New static variables.
+	(end_final): Emits more data, removed some -ax stuff.
+	(final): Stores function names and chcksums.
+	* gcov-io.h (__write_gcov_string): New function.
+	(__read_gcov_string): New function.
+	* gcov.c (read_profile): New function.
+	(create_program_flow_graph): Uses read_profile instead of reading
 	da_file.
-        (read_files): Removed da_file checking, it's done by read_profile now.
-        * libgcc2.c (bb_function_info): New structure.
-        (bb): New field in structure, removed some -ax stuff.
-        (__bb_exit_func): Changed structure of da_file.
-        * profile.c (count_edges_instrumented_now): New global variable.
-        (current_function_cfg_checksum): New global variable.
-        (max_counter_in_program): New global variable.
-        (get_exec_counts): New function.
-        (compute_checksum): New function.
-        (instrument_edges): Sets count_edges_instrumented_now.
-        (compute_branch_probabilities): Uses get_exec_counts instead of
+	(read_files): Removed da_file checking, it's done by read_profile now.
+	* libgcc2.c (bb_function_info): New structure.
+	(bb): New field in structure, removed some -ax stuff.
+	(__bb_exit_func): Changed structure of da_file.
+	* profile.c (count_edges_instrumented_now): New global variable.
+	(current_function_cfg_checksum): New global variable.
+	(max_counter_in_program): New global variable.
+	(get_exec_counts): New function.
+	(compute_checksum): New function.
+	(instrument_edges): Sets count_edges_instrumented_now.
+	(compute_branch_probabilities): Uses get_exec_counts instead of
 	reading da_file.
-        (branch_prob): Calls compute_checksum and writes extra data to bbg_file.
-        (init_branch_prob): Removed da_file checking, done in get_exec_counts
+	(branch_prob): Calls compute_checksum and writes extra data to bbg_file.
+	(init_branch_prob): Removed da_file checking, done in get_exec_counts
 	now.
-        (end_branch_prob): Removed da_file checking, done in get_exec_counts
+	(end_branch_prob): Removed da_file checking, done in get_exec_counts
 	now.
-        * gcov.texi: Updated information about gcov file format.
+	* gcov.texi: Updated information about gcov file format.
 
 2002-05-09  Kazu Hirata  <kazu@cs.umass.edu>
 

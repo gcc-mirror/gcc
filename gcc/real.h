@@ -89,7 +89,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
    + (REAL_VALUE_TYPE_SIZE%HOST_BITS_PER_WIDE_INT ? 1 : 0)) /* round up */
 typedef struct {
   HOST_WIDE_INT r[REAL_WIDTH];
-} REAL_VALUE_TYPE;
+} realvaluetype;
+/* Various headers condition prototypes on #ifdef REAL_VALUE_TYPE, so it needs
+   to be a macro.  */
+#define REAL_VALUE_TYPE realvaluetype
 
 /* Calculate the format for CONST_DOUBLE.  We need as many slots as
    are necessary to overlay a REAL_VALUE_TYPE on them.  This could be
@@ -99,19 +102,19 @@ typedef struct {
    slots in a CONST_DOUBLE, so we provide them even if one would suffice.  */
 
 #if REAL_WIDTH == 1
-# define CONST_DOUBLE_FORMAT	 "0ww"
+# define CONST_DOUBLE_FORMAT	 "ww"
 #else
 # if REAL_WIDTH == 2
-#  define CONST_DOUBLE_FORMAT	 "0ww"
+#  define CONST_DOUBLE_FORMAT	 "ww"
 # else
 #  if REAL_WIDTH == 3
-#   define CONST_DOUBLE_FORMAT	 "0www"
+#   define CONST_DOUBLE_FORMAT	 "www"
 #  else
 #   if REAL_WIDTH == 4
-#    define CONST_DOUBLE_FORMAT	 "0wwww"
+#    define CONST_DOUBLE_FORMAT	 "wwww"
 #   else
 #    if REAL_WIDTH == 5
-#     define CONST_DOUBLE_FORMAT "0wwwww"
+#     define CONST_DOUBLE_FORMAT "wwwww"
 #    else
       #error "REAL_WIDTH > 5 not supported"
 #    endif
@@ -265,9 +268,14 @@ REAL_VALUE_TYPE real_value_from_int_cst	PARAMS ((union tree_node *,
 
 /* Return a CONST_DOUBLE with value R and mode M.  */
 
-#define CONST_DOUBLE_FROM_REAL_VALUE(r, m) immed_real_const_1 (r,  m)
-extern struct rtx_def *immed_real_const_1	PARAMS ((REAL_VALUE_TYPE,
-						       enum machine_mode));
+#define CONST_DOUBLE_FROM_REAL_VALUE(r, m) \
+  const_double_from_real_value (r, m)
+extern rtx const_double_from_real_value PARAMS ((REAL_VALUE_TYPE,
+						 enum machine_mode));
+
+/* Shorthand; can be handy in machine descriptions.  */
+#define CONST_DOUBLE_ATOF(s, m) \
+  CONST_DOUBLE_FROM_REAL_VALUE (REAL_VALUE_ATOF (s, m), m)
 
 /* Replace R by 1/R in the given machine mode, if the result is exact.  */
 extern int exact_real_inverse	PARAMS ((enum machine_mode, REAL_VALUE_TYPE *));

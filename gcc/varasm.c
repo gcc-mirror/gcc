@@ -95,10 +95,6 @@ struct varasm_status
   /* Current offset in constant pool (does not include any machine-specific
      header).  */
   HOST_WIDE_INT x_pool_offset;
-
-  /* Chain of all CONST_DOUBLE rtx's constructed for the current function.
-     They are chained through the CONST_DOUBLE_CHAIN.  */
-  rtx x_const_double_chain;
 };
 
 #define const_rtx_hash_table (cfun->varasm->x_const_rtx_hash_table)
@@ -106,7 +102,6 @@ struct varasm_status
 #define first_pool (cfun->varasm->x_first_pool)
 #define last_pool (cfun->varasm->x_last_pool)
 #define pool_offset (cfun->varasm->x_pool_offset)
-#define const_double_chain (cfun->varasm->x_const_double_chain)
 
 /* Number for making the label on the next
    constant that is stored in memory.  */
@@ -2104,190 +2099,6 @@ assemble_real (d, mode, align)
     }
 }
 
-/* Here we combine duplicate floating constants to make
-   CONST_DOUBLE rtx's, and force those out to memory when necessary.  */
-
-/* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair of ints.
-   For an integer, I0 is the low-order word and I1 is the high-order word.
-   For a real number, I0 is the word with the low address
-   and I1 is the word with the high address.  */
-
-rtx
-immed_double_const (i0, i1, mode)
-     HOST_WIDE_INT i0, i1;
-     enum machine_mode mode;
-{
-  rtx r;
-
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT)
-    {
-      /* We clear out all bits that don't belong in MODE, unless they and our
-	 sign bit are all one.  So we get either a reasonable negative value
-	 or a reasonable unsigned value for this mode.  */
-      int width = GET_MODE_BITSIZE (mode);
-      if (width < HOST_BITS_PER_WIDE_INT
-	  && ((i0 & ((HOST_WIDE_INT) (-1) << (width - 1)))
-	      != ((HOST_WIDE_INT) (-1) << (width - 1))))
-	i0 &= ((HOST_WIDE_INT) 1 << width) - 1, i1 = 0;
-      else if (width == HOST_BITS_PER_WIDE_INT
-	       && ! (i1 == ~0 && i0 < 0))
-	i1 = 0;
-      else if (width > 2 * HOST_BITS_PER_WIDE_INT)
-	/* We cannot represent this value as a constant.  */
-	abort ();
-
-      /* If this would be an entire word for the target, but is not for
-	 the host, then sign-extend on the host so that the number will look
-	 the same way on the host that it would on the target.
-
-	 For example, when building a 64 bit alpha hosted 32 bit sparc
-	 targeted compiler, then we want the 32 bit unsigned value -1 to be
-	 represented as a 64 bit value -1, and not as 0x00000000ffffffff.
-	 The later confuses the sparc backend.  */
-
-      if (width < HOST_BITS_PER_WIDE_INT
-	  && (i0 & ((HOST_WIDE_INT) 1 << (width - 1))))
-	i0 |= ((HOST_WIDE_INT) (-1) << width);
-
-      /* If MODE fits within HOST_BITS_PER_WIDE_INT, always use a CONST_INT.
-
-	 ??? Strictly speaking, this is wrong if we create a CONST_INT
-	 for a large unsigned constant with the size of MODE being
-	 HOST_BITS_PER_WIDE_INT and later try to interpret that constant in a
-	 wider mode.  In that case we will mis-interpret it as a negative
-	 number.
-
-	 Unfortunately, the only alternative is to make a CONST_DOUBLE
-	 for any constant in any mode if it is an unsigned constant larger
-	 than the maximum signed integer in an int on the host.  However,
-	 doing this will break everyone that always expects to see a CONST_INT
-	 for SImode and smaller.
-
-	 We have always been making CONST_INTs in this case, so nothing new
-	 is being broken.  */
-
-      if (width <= HOST_BITS_PER_WIDE_INT)
-	i1 = (i0 < 0) ? ~(HOST_WIDE_INT) 0 : 0;
-
-      /* If this integer fits in one word, return a CONST_INT.  */
-      if ((i1 == 0 && i0 >= 0)
-	  || (i1 == ~0 && i0 < 0))
-	return GEN_INT (i0);
-
-      /* We use VOIDmode for integers.  */
-      mode = VOIDmode;
-    }
-
-  /* Search the chain for an existing CONST_DOUBLE with the right value.
-     If one is found, return it.  */
-  if (cfun != 0)
-    for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
-      if (CONST_DOUBLE_LOW (r) == i0 && CONST_DOUBLE_HIGH (r) == i1
-	  && GET_MODE (r) == mode)
-	return r;
-
-  /* No; make a new one and add it to the chain.  */
-  r = gen_rtx_CONST_DOUBLE (mode, i0, i1);
-
-  /* Don't touch const_double_chain if not inside any function.  */
-  if (current_function_decl != 0)
-    {
-      CONST_DOUBLE_CHAIN (r) = const_double_chain;
-      const_double_chain = r;
-    }
-
-  return r;
-}
-
-/* Return a CONST_DOUBLE for a specified `double' value
-   and machine mode.  */
-
-rtx
-immed_real_const_1 (d, mode)
-     REAL_VALUE_TYPE d;
-     enum machine_mode mode;
-{
-  rtx r;
-
-  /* Detect special cases.  Check for NaN first, because some ports
-     (specifically the i386) do not emit correct ieee-fp code by default, and
-     thus will generate a core dump here if we pass a NaN to REAL_VALUES_EQUAL
-     and if REAL_VALUES_EQUAL does a floating point comparison.  */
-  if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_IDENTICAL (dconst0, d))
-    return CONST0_RTX (mode);
-  else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst1, d))
-    return CONST1_RTX (mode);
-  else if (! REAL_VALUE_ISNAN (d) && REAL_VALUES_EQUAL (dconst2, d))
-    return CONST2_RTX (mode);
-
-  if (sizeof (REAL_VALUE_TYPE) == sizeof (HOST_WIDE_INT))
-    return immed_double_const (d.r[0], 0, mode);
-  if (sizeof (REAL_VALUE_TYPE) == 2 * sizeof (HOST_WIDE_INT))
-    return immed_double_const (d.r[0], d.r[1], mode);
-
-  /* The rest of this function handles the case where
-     a float value requires more than 2 ints of space.
-     It will be deleted as dead code on machines that don't need it.  */
-
-  /* Search the chain for an existing CONST_DOUBLE with the right value.
-     If one is found, return it.  */
-  if (cfun != 0)
-    for (r = const_double_chain; r; r = CONST_DOUBLE_CHAIN (r))
-      if (! memcmp ((char *) &CONST_DOUBLE_LOW (r), (char *) &d, sizeof d)
-	  && GET_MODE (r) == mode)
-	return r;
-
-  /* No; make a new one and add it to the chain.
-
-     We may be called by an optimizer which may be discarding any memory
-     allocated during its processing (such as combine and loop).  However,
-     we will be leaving this constant on the chain, so we cannot tolerate
-     freed memory.  */
-  r = rtx_alloc (CONST_DOUBLE);
-  PUT_MODE (r, mode);
-  memcpy ((char *) &CONST_DOUBLE_LOW (r), (char *) &d, sizeof d);
-
-  /* If we aren't inside a function, don't put r on the
-     const_double_chain.  */
-  if (current_function_decl != 0)
-    {
-      CONST_DOUBLE_CHAIN (r) = const_double_chain;
-      const_double_chain = r;
-    }
-  else
-    CONST_DOUBLE_CHAIN (r) = NULL_RTX;
-
-  return r;
-}
-
-/* Return a CONST_DOUBLE rtx for a value specified by EXP,
-   which must be a REAL_CST tree node.  */
-
-rtx
-immed_real_const (exp)
-     tree exp;
-{
-  return immed_real_const_1 (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)));
-}
-
-/* At the end of a function, forget the memory-constants
-   previously made for CONST_DOUBLEs.  Mark them as not on real_constant_chain.
-   Also clear out real_constant_chain and clear out all the chain-pointers.  */
-
-void
-clear_const_double_mem ()
-{
-  rtx r, next;
-
-  for (r = const_double_chain; r; r = next)
-    {
-      next = CONST_DOUBLE_CHAIN (r);
-      CONST_DOUBLE_CHAIN (r) = 0;
-    }
-  const_double_chain = 0;
-}
-
 /* Given an expression EXP with a constant value,
    reduce it to the sum of an assembler symbol and an integer.
    Store them both in the structure *VALUE.
@@ -3470,7 +3281,6 @@ init_varasm_status (f)
 
   p->x_first_pool = p->x_last_pool = 0;
   p->x_pool_offset = 0;
-  p->x_const_double_chain = 0;
 }
 
 /* Mark PC for GC.  */
@@ -3498,7 +3308,6 @@ mark_varasm_status (p)
     return;
 
   mark_pool_constant (p->x_first_pool);
-  ggc_mark_rtx (p->x_const_double_chain);
 }
 
 /* Clear out all parts of the state in F that can safely be discarded
