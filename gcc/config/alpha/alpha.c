@@ -1801,8 +1801,6 @@ alpha_sa_mask (imaskP, fmaskP)
 	else
 	  fmask |= (1L << (i - 32));
       }
-  if (alpha_ra_ever_killed ())
-    imask |= (1L << REG_RA);
 
   *imaskP = imask;
   *fmaskP = fmask;
