@@ -4728,6 +4728,11 @@ cb_register_builtins (pfile)
 	cpp_define (pfile, "__GXX_WEAK__=1");
       else
 	cpp_define (pfile, "__GXX_WEAK__=0");
+      if (flag_exceptions)
+	cpp_define (pfile, "__EXCEPTIONS");
+      if (warn_deprecated)
+	cpp_define (pfile, "__DEPRECATED");
+      cpp_define (pfile, "__GXX_ABI_VERSION__=101");
     }
 
   /* libgcc needs to know this.  */
