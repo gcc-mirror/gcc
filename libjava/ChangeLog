@@ -1,3 +1,7 @@
+1999-08-18  Tom Tromey  <tromey@cygnus.com>
+
+	* include/javaprims.h ("Java"): Regenerated namespace decls.
+
 1999-08-18  Kresten Krab Thorup  <krab@gnu.org>
 
 	* java/lang/natClassLoader.cc (_Jv_PrepareCompiledClass): Renamed
