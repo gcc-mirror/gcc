@@ -1,3 +1,9 @@
+2003-02-10  Raif S. Naffah  <raif@fl.net.au>
+
+	* gnu/java/security/provider/SHA1PRNG.java (ensureIsSeeded): new 
+	method used to ensure seeding has occurred and that a specific 
+	seed can be set and used.
+
 2003-02-10  Michael Koch  <konqueror@gmx.de>
 
 	* java/nio/channels/SelectionKey.java

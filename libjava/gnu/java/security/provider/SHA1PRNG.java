@@ -1,5 +1,5 @@
 /* SHA1PRNG.java --- Secure Random SPI SHA1PRNG
-   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -51,27 +51,22 @@ public class SHA1PRNG extends SecureRandomSpi implements Serializable
   byte data[];
   int seedpos;
   int datapos;
+  private boolean seeded = false; // set to true when we seed this
 
   public SHA1PRNG()
   {
     try {
       digest = MessageDigest.getInstance("SHA");
     } catch ( NoSuchAlgorithmException nsae) {
-      System.out.println("Failed to find SHA Message Digest: " + nsae);
-      nsae.printStackTrace();
+//      System.out.println("Failed to find SHA Message Digest: " + nsae);
+//      nsae.printStackTrace();
+      throw new InternalError ("no SHA implementation found");
     }
 
     seed = new byte[20];
     seedpos = 0;
     data = new byte[40];
-    datapos = 0;
-
-    new Random().nextBytes(seed);
-
-    byte digestdata[];
-    digestdata = digest.digest( data );
-    System.arraycopy( digestdata, 0, data, 0, 20);
-
+    datapos = 20;  // try to force hashing a first block
   }
 
   public void engineSetSeed(byte[] seed)
@@ -84,6 +79,7 @@ public class SHA1PRNG extends SecureRandomSpi implements Serializable
 
   public void engineNextBytes(byte[] bytes)
   {
+    ensureIsSeeded ();
     int loc = 0;
     while (loc < bytes.length)
       {
@@ -113,4 +109,18 @@ public class SHA1PRNG extends SecureRandomSpi implements Serializable
     engineNextBytes( tmp );
     return tmp;
   }
+
+  private void ensureIsSeeded()
+  {
+    if (!seeded)
+      {
+        new Random(0L).nextBytes(seed);
+
+        byte[] digestdata = digest.digest(data);
+        System.arraycopy(digestdata, 0, data, 0, 20);
+
+        seeded = true;
+      }
+  }
+
 }
