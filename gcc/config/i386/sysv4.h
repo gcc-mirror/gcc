@@ -213,15 +213,3 @@ extern int maximum_field_alignment;
     else							\
       c = getc (FILE);						\
   } while (1)
-
-/* This says how to output assembler code to declare an
-   uninitialized internal linkage data object.  Under SVR4,
-   the linker seems to want the alignment of data objects
-   to depend on their types.  We do exactly that here.  */
-
-#undef ASM_OUTPUT_ALIGNED_LOCAL
-#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
-do {									\
-  fprintf (FILE, "\t.local\t%s\n", NAME);				\
-  ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN);			\
-} while (0)
