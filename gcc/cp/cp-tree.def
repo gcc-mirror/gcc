@@ -89,6 +89,20 @@ DEFTREECODE (THROW_EXPR, "throw_expr", 'e', 1)
    these to avoid actually creating instances of the empty classes.  */
 DEFTREECODE (EMPTY_CLASS_EXPR, "empty_class_expr", 'e', 0)
 
+/* A reference to a member function or member functions from a base
+   class.  BASELINK_FUNCTIONS gives the FUNCTION_DECL,
+   TEMPLATE_DECL, OVERLOAD, or TEMPLATE_ID_EXPR corresponding to the
+   functions.  BASELINK_BINFO gives the base from which the functions
+   come, i.e., the base to which the `this' pointer must be converted
+   before the functions are called.  BASELINK_ACCESS_BINFO gives the
+   base used to name the functions.  
+
+   A BASELINK is an expression; the TREE_TYPE of the BASELINK gives
+   the type of the expression.  This type is either a FUNCTION_TYPE,
+   METHOD_TYPE, or `unknown_type_node' indicating that the function is
+   overloaded. */
+DEFTREECODE (BASELINK, "baselink", 'e', 3)
+
 /* Template definition.  The following fields have the specified uses,
    although there are other macros in cp-tree.h that should be used for
    accessing this data.

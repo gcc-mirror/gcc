@@ -990,6 +990,10 @@ dump_decl (t, flags)
       print_tree_identifier (scratch_buffer, DECL_NAME (t));
       break;
 
+    case BASELINK:
+      dump_decl (BASELINK_FUNCTIONS (t), flags);
+      break;
+
     default:
       sorry_for_unsupported_tree (t);
       /* Fallthrough to error.  */
@@ -1826,7 +1830,7 @@ dump_expr (t, flags)
     case CONSTRUCTOR:
       if (TREE_TYPE (t) && TYPE_PTRMEMFUNC_P (TREE_TYPE (t)))
 	{
-	  tree idx = build_component_ref (t, pfn_identifier, NULL_TREE, 0);
+	  tree idx = build_ptrmemfunc_access_expr (t, pfn_identifier);
 
 	  if (integer_zerop (idx))
 	    {

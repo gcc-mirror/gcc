@@ -1520,11 +1520,11 @@ notype_unqualified_id:
 
 do_id:
 		{
-		  /* If lastiddecl is a TREE_LIST, it's a baselink, which
-		     means that we're in an expression like S::f<int>, so
-		     don't do_identifier; we only do that for unqualified
+		  /* If lastiddecl is a BASELINK we're in an
+		     expression like S::f<int>, so don't
+		     do_identifier; we only do that for unqualified
 		     identifiers.  */
-	          if (!lastiddecl || TREE_CODE (lastiddecl) != TREE_LIST)
+	          if (!lastiddecl || !BASELINK_P (lastiddecl))
 		    $$ = do_identifier ($<ttype>-1, 1, NULL_TREE);
 		  else
 		    $$ = $<ttype>-1;
@@ -1718,20 +1718,15 @@ primary:
 	| overqualified_id LEFT_RIGHT
 		{ $$ = parse_finish_call_expr ($1, NULL_TREE, 0); }
         | object object_template_id %prec UNARY
-                {
-		  $$ = build_x_component_ref ($$, $2, NULL_TREE);
-		}
+                { $$ = finish_class_member_access_expr ($$, $2); }
         | object object_template_id '(' nonnull_exprlist ')'
                 { $$ = finish_object_call_expr ($2, $1, $4); }
 	| object object_template_id LEFT_RIGHT
                 { $$ = finish_object_call_expr ($2, $1, NULL_TREE); }
 	| object unqualified_id  %prec UNARY
-		{ $$ = build_x_component_ref ($$, $2, NULL_TREE); }
+		{ $$ = finish_class_member_access_expr ($$, $2); }
 	| object overqualified_id  %prec UNARY
-		{ if (processing_template_decl)
-		    $$ = build_min_nt (COMPONENT_REF, $1, $2);
-		  else
-		    $$ = build_object_ref ($$, OP0 ($2), OP1 ($2)); }
+                { $$ = finish_class_member_access_expr ($1, $2); }
 	| object unqualified_id '(' nonnull_exprlist ')'
                 { $$ = finish_object_call_expr ($2, $1, $4); }
 	| object unqualified_id LEFT_RIGHT
@@ -4147,14 +4142,20 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 	      else 
 		template_id = NULL_TREE;
 
-	      if (TREE_CODE (name) == OVERLOAD)
-		name = DECL_NAME (get_first_fn (name));
-	      fn = lookup_member (scope, name, /*protect=*/1, 
-				  /*prefer_type=*/0);
-	      if (BASELINK_P (fn) && template_id)
-		BASELINK_FUNCTIONS (fn) = build_nt (TEMPLATE_ID_EXPR,
-						    BASELINK_FUNCTIONS (fn),
-						    template_args);
+	      if (BASELINK_P (name))
+		fn = name;
+	      else 
+		{
+		  if (TREE_CODE (name) == OVERLOAD)
+		    name = DECL_NAME (get_first_fn (name));
+		  fn = lookup_member (scope, name, /*protect=*/1, 
+				      /*prefer_type=*/0);
+		  if (BASELINK_P (fn) && template_id)
+		    BASELINK_FUNCTIONS (fn) 
+		      = build_nt (TEMPLATE_ID_EXPR,
+				  BASELINK_FUNCTIONS (fn),
+				  template_args);
+		}
 	      if (BASELINK_P (fn) 
 		  && current_class_type 
 		  && DERIVED_FROM_P (scope, current_class_type))
@@ -4216,9 +4217,19 @@ parse_finish_call_expr (tree fn, tree args, int koenig)
 
 	      if (DERIVED_FROM_P (scope, current_class_type)
 		  && current_class_ref)
-		return finish_object_call_expr (fn,
-						current_class_ref,
-						args);
+		{
+		  fn = build_baselink (lookup_base (current_class_type,
+						    scope,
+						    ba_any,
+						    NULL),
+				       TYPE_BINFO (current_class_type),
+				       fn,
+				       /*optype=*/NULL_TREE);
+		  return finish_object_call_expr (fn,
+						  current_class_ref,
+						  args);
+		}
+
 
 	      access_scope = current_class_type;
 	      while (!DERIVED_FROM_P (scope, access_scope))

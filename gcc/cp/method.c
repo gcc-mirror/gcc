@@ -161,12 +161,26 @@ hack_identifier (value, name)
 	  return error_mark_node;
 	}
       TREE_USED (current_class_ptr) = 1;
+      if (processing_template_decl)
+	value = build_min_nt (COMPONENT_REF, current_class_ref, name);
+      else
+	{
+	  tree access_type = current_class_type;
+	  
+	  while (!DERIVED_FROM_P (context_for_name_lookup (value), 
+				  access_type))
+	    {
+	      access_type = TYPE_CONTEXT (access_type);
+	      while (DECL_P (access_type))
+		access_type = DECL_CONTEXT (access_type);
+	    }
 
-      /* Mark so that if we are in a constructor, and then find that
-	 this field was initialized by a base initializer,
-	 we can emit an error message.  */
-      TREE_USED (value) = 1;
-      value = build_component_ref (current_class_ref, name, NULL_TREE, 1);
+	  enforce_access (access_type, value);
+	  value 
+	    = build_class_member_access_expr (current_class_ref, value,
+					      /*access_path=*/NULL_TREE,
+					      /*preserve_reference=*/false);
+	}
     }
   else if ((TREE_CODE (value) == FUNCTION_DECL
 	    && DECL_FUNCTION_MEMBER_P (value))
@@ -179,7 +193,7 @@ hack_identifier (value, name)
 	value = OVL_CURRENT (value);
 
       decl = maybe_dummy_object (DECL_CONTEXT (value), 0);
-      value = build_component_ref (decl, name, NULL_TREE, 1);
+      value = finish_class_member_access_expr (decl, name);
     }
   else if (really_overloaded_fn (value))
     ;

@@ -57,7 +57,6 @@ struct diagnostic_context;
       (TREE_CALLS_NEW) (in _EXPR or _REF) (commented-out).
       TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (in _TYPE).
       INHERITED_VALUE_BINDING_P (in CPLUS_BINDING)
-      BASELINK_P (in TREE_LIST)
       ICS_ELLIPSIS_FLAG (in _CONV)
       BINFO_ACCESS (in BINFO)
    2: IDENTIFIER_OPNAME_P.
@@ -361,32 +360,28 @@ struct tree_overload GTY(())
   tree function;
 };
 
-/* A `baselink' is a TREE_LIST whose TREE_PURPOSE is a BINFO
-   indicating a particular base class, and whose TREE_VALUE is a
-   (possibly overloaded) function from that base class.  */
+/* Returns true iff NODE is a BASELINK.  */
 #define BASELINK_P(NODE) \
-  (TREE_CODE (NODE) == TREE_LIST && TREE_LANG_FLAG_1 (NODE))
-#define SET_BASELINK_P(NODE) \
-  (TREE_LANG_FLAG_1 (NODE) = 1)
-/* The BINFO indicated the base from which the BASELINK_FUNCTIONS came.  */
+  (TREE_CODE (NODE) == BASELINK)
+/* The BINFO indicating the base from which the BASELINK_FUNCTIONS came.  */
 #define BASELINK_BINFO(NODE) \
-  (TREE_PURPOSE (NODE))
-/* The functions referred to by the BASELINK; either a FUNCTION_DECL
-   or an OVERLOAD.  */
+  (TREE_OPERAND (BASELINK_CHECK (NODE), 0))
+/* The functions referred to by the BASELINK; either a FUNCTION_DECL,
+   a TEMPLATE_DECL, an OVERLOAD, or a TEMPLATE_ID_EXPR.  */
 #define BASELINK_FUNCTIONS(NODE) \
-  (TREE_VALUE (NODE))
+  (TREE_OPERAND (BASELINK_CHECK (NODE), 1))
 /* The BINFO in which the search for the functions indicated by this baselink 
    began.  This base is used to determine the accessibility of functions 
    selected by overload resolution.  */
 #define BASELINK_ACCESS_BINFO(NODE) \
-  (TREE_TYPE (NODE))
+  (TREE_OPERAND (BASELINK_CHECK (NODE), 2))
 /* For a type-conversion operator, the BASELINK_OPTYPE indicates the type
    to which the conversion should occur.  This value is important if
    the BASELINK_FUNCTIONS include a template conversion operator --
    the BASELINK_OPTYPE can be used to determine what type the user
    requested.  */
 #define BASELINK_OPTYPE(NODE) \
-  (TREE_CHAIN (NODE))
+  (TREE_CHAIN (BASELINK_CHECK (NODE)))
 
 #define WRAPPER_ZC(NODE) (((struct tree_wrapper*)WRAPPER_CHECK (NODE))->z_c)
 
@@ -3525,6 +3520,7 @@ extern tree perform_implicit_conversion         PARAMS ((tree, tree));
 
 /* in class.c */
 extern tree build_base_path			PARAMS ((enum tree_code, tree, tree, int));
+extern tree convert_to_base                     (tree, tree, bool);
 extern tree build_vbase_path			PARAMS ((enum tree_code, tree, tree, tree, int));
 extern tree build_vtbl_ref			PARAMS ((tree, tree));
 extern tree build_vfn_ref			PARAMS ((tree, tree));
@@ -4238,6 +4234,7 @@ extern tree cp_build_qualified_type_real        PARAMS ((tree, int, tsubst_flags
   cp_build_qualified_type_real ((TYPE), (QUALS), tf_error | tf_warning)
 extern tree build_shared_int_cst                PARAMS ((int));
 extern special_function_kind special_function_p PARAMS ((tree));
+extern bool name_p                              (tree);
 extern int count_trees                          PARAMS ((tree));
 extern int char_type_p                          PARAMS ((tree));
 extern void verify_stmt_tree                    PARAMS ((tree));
@@ -4277,10 +4274,8 @@ extern tree cxx_sizeof_or_alignof_type    PARAMS ((tree, enum tree_code, int));
 #define cxx_sizeof_nowarn(T) cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, false)
 extern tree inline_conversion			PARAMS ((tree));
 extern tree decay_conversion			PARAMS ((tree));
-extern tree build_object_ref			PARAMS ((tree, tree, tree));
-extern tree build_component_ref_1		PARAMS ((tree, tree, int));
-extern tree build_component_ref			PARAMS ((tree, tree, tree, int));
-extern tree build_x_component_ref		PARAMS ((tree, tree, tree));
+extern tree build_class_member_access_expr      (tree, tree, tree, bool);
+extern tree finish_class_member_access_expr     (tree, tree);
 extern tree build_x_indirect_ref		PARAMS ((tree, const char *));
 extern tree build_indirect_ref			PARAMS ((tree, const char *));
 extern tree build_array_ref			PARAMS ((tree, tree));
@@ -4321,6 +4316,7 @@ extern tree check_return_expr                   PARAMS ((tree));
   build_binary_op(code, arg1, arg2, 1)
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (T, SIZEOF_EXPR, true)
 #define cxx_alignof(T) cxx_sizeof_or_alignof_type (T, ALIGNOF_EXPR, true)
+extern tree build_ptrmemfunc_access_expr       (tree, tree);
 
 /* in typeck2.c */
 extern void cxx_incomplete_type_diagnostic	PARAMS ((tree, tree, int));

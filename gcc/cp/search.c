@@ -300,8 +300,10 @@ lookup_base_r (binfo, base, access, within_current_scope,
    canonical).  If KIND_PTR is non-NULL, fill with information about
    what kind of base we discovered.
 
-   If ba_quiet bit is set in ACCESS, then do not issue an error, and
-   return NULL_TREE for failure.  */
+   If the base is inaccessible, or ambiguous, and the ba_quiet bit is
+   not set in ACCESS, then an error is issued and error_mark_node is
+   returned.  If the ba_quiet bit is set, then no error is issued and
+   NULL_TREE is returned.  */
 
 tree
 lookup_base (t, base, access, kind_ptr)
@@ -1385,9 +1387,10 @@ build_baselink (tree binfo, tree access_binfo, tree functions, tree optype)
 		      || TREE_CODE (functions) == OVERLOAD,
 		      20020730);
   my_friendly_assert (!optype || TYPE_P (optype), 20020730);
+  my_friendly_assert (TREE_TYPE (functions), 20020805);
 
-  baselink = build_tree_list (NULL_TREE, NULL_TREE);
-  SET_BASELINK_P (baselink);
+  baselink = build (BASELINK, TREE_TYPE (functions), NULL_TREE,
+		    NULL_TREE, NULL_TREE);
   BASELINK_BINFO (baselink) = binfo;
   BASELINK_ACCESS_BINFO (baselink) = access_binfo;
   BASELINK_FUNCTIONS (baselink) = functions;
@@ -1522,7 +1525,7 @@ lookup_field (xbasetype, name, protect, want_type)
   tree rval = lookup_member (xbasetype, name, protect, want_type);
   
   /* Ignore functions.  */
-  if (rval && TREE_CODE (rval) == TREE_LIST)
+  if (rval && BASELINK_P (rval))
     return NULL_TREE;
 
   return rval;
@@ -1539,7 +1542,7 @@ lookup_fnfields (xbasetype, name, protect)
   tree rval = lookup_member (xbasetype, name, protect, /*want_type=*/0);
 
   /* Ignore non-functions.  */
-  if (rval && TREE_CODE (rval) != TREE_LIST)
+  if (rval && !BASELINK_P (rval))
     return NULL_TREE;
 
   return rval;
@@ -2436,7 +2439,7 @@ setup_class_bindings (name, type_binding_p)
 	{
 	  if (BASELINK_P (value_binding))
 	    /* NAME is some overloaded functions.  */
-	    value_binding = TREE_VALUE (value_binding);
+	    value_binding = BASELINK_FUNCTIONS (value_binding);
 	  pushdecl_class_level (value_binding);
 	}
     }

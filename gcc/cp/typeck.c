@@ -1758,45 +1758,6 @@ string_conv_p (totype, exp, warn)
 
   return 1;
 }
-
-tree
-build_object_ref (datum, basetype, field)
-     tree datum, basetype, field;
-{
-  tree dtype;
-  if (datum == error_mark_node)
-    return error_mark_node;
-
-  dtype = TREE_TYPE (datum);
-  if (TREE_CODE (dtype) == REFERENCE_TYPE)
-    dtype = TREE_TYPE (dtype);
-  if (! IS_AGGR_TYPE_CODE (TREE_CODE (dtype)))
-    {
-      error ("request for member `%T::%D' in expression of non-aggregate type `%T'",
-		basetype, field, dtype);
-      return error_mark_node;
-    }
-  else if (is_aggr_type (basetype, 1))
-    {
-      tree binfo = NULL_TREE;
-      datum = build_scoped_ref (datum, basetype, &binfo);
-      return build_x_component_ref (datum, field, binfo);
-    }
-  return error_mark_node;
-}
-
-/* Like `build_component_ref, but uses an already found field, and converts
-   from a reference.  Must compute access for current_class_ref.
-   Otherwise, ok.  */
-
-tree
-build_component_ref_1 (datum, field, protect)
-     tree datum, field;
-     int protect;
-{
-  return convert_from_reference
-    (build_component_ref (datum, field, NULL_TREE, protect));
-}
 
 /* Given a COND_EXPR, MIN_EXPR, or MAX_EXPR in T, return it in a form that we
    can, for example, use as an lvalue.  This code used to be in
@@ -1868,342 +1829,406 @@ lookup_anon_field (t, type)
   return NULL_TREE;
 }
 
-/* Build a COMPONENT_REF for a given DATUM, and it's member COMPONENT.
-   COMPONENT can be an IDENTIFIER_NODE that is the name of the member
-   that we are interested in, or it can be a FIELD_DECL.  */
+/* Build an expression representing OBJECT.MEMBER.  OBJECT is an
+   expression; MEMBER is a DECL or baselink.  If ACCESS_PATH is
+   non-NULL, it indicates the path to the base used to name MEMBER.
+   If PRESERVE_REFERENCE is true, the expression returned will have
+   REFERENCE_TYPE if the MEMBER does.  Otherwise, the expression
+   returned will have the type referred to by the reference. 
+
+   This function does not perform access control; that is either done
+   earlier by the parser when the name of MEMBER is resolved to MEMBER
+   itself, or later when overload resolution selects one of the
+   functions indicated by MEMBER.  */
 
 tree
-build_component_ref (datum, component, basetype_path, protect)
-     tree datum, component, basetype_path;
-     int protect;
+build_class_member_access_expr (tree object, tree member, 
+				tree access_path, bool preserve_reference)
 {
-  register tree basetype;
-  register enum tree_code code;
-  register tree field = NULL;
-  register tree ref;
-  tree field_type;
-  int type_quals;
-  tree old_datum;
-  tree old_basetype;
+  tree object_type;
+  tree member_scope;
+  tree result = NULL_TREE;
 
-  if (processing_template_decl)
-    return build_min_nt (COMPONENT_REF, datum, component);
-  
-  if (datum == error_mark_node 
-      || TREE_TYPE (datum) == error_mark_node)
+  if (object == error_mark_node || member == error_mark_node)
     return error_mark_node;
 
-  /* BASETYPE holds the type of the class containing the COMPONENT.  */
-  basetype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
-    
-  /* If DATUM is a COMPOUND_EXPR or COND_EXPR, move our reference
-     inside it.  */
-  switch (TREE_CODE (datum))
-    {
-    case COMPOUND_EXPR:
-      {
-	tree value = build_component_ref (TREE_OPERAND (datum, 1), component,
-					  basetype_path, protect);
-	return build (COMPOUND_EXPR, TREE_TYPE (value),
-		      TREE_OPERAND (datum, 0), value);
-      }
-    case COND_EXPR:
-      return build_conditional_expr
-	(TREE_OPERAND (datum, 0),
-	 build_component_ref (TREE_OPERAND (datum, 1), component,
-			      basetype_path, protect),
-	 build_component_ref (TREE_OPERAND (datum, 2), component,
-			      basetype_path, protect));
+  my_friendly_assert (DECL_P (member) || BASELINK_P (member),
+		      20020801);
 
-    case TEMPLATE_DECL:
-      error ("invalid use of `%D'", datum);
-      datum = error_mark_node;
-      break;
+  /* [expr.ref]
 
-    default:
-      break;
-    }
-
-  code = TREE_CODE (basetype);
-
-  if (code == REFERENCE_TYPE)
-    {
-      datum = convert_from_reference (datum);
-      basetype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
-      code = TREE_CODE (basetype);
-    }
-  if (TREE_CODE (datum) == OFFSET_REF)
-    {
-      datum = resolve_offset_ref (datum);
-      basetype = TYPE_MAIN_VARIANT (TREE_TYPE (datum));
-      code = TREE_CODE (basetype);
-    }
-
-  /* First, see if there is a field or component with name COMPONENT.  */
-  if (TREE_CODE (component) == TREE_LIST)
-    {
-      /* I could not trigger this code. MvL */
-      abort ();
-#ifdef DEAD
-      my_friendly_assert (!(TREE_CHAIN (component) == NULL_TREE
-		&& DECL_CHAIN (TREE_VALUE (component)) == NULL_TREE), 309);
-#endif
-      return build (COMPONENT_REF, TREE_TYPE (component), datum, component);
-    }
-
-  if (! IS_AGGR_TYPE_CODE (code))
-    {
-      if (code != ERROR_MARK)
-	error ("request for member `%D' in `%E', which is of non-aggregate type `%T'",
-		  component, datum, basetype);
-      return error_mark_node;
-    }
-
-  if (!complete_type_or_else (basetype, datum))
+     The type of the first expression shall be "class object" (of a
+     complete type).  */
+  object_type = TREE_TYPE (object);
+  if (!complete_type_or_else (object_type, object))
     return error_mark_node;
-
-  if (TREE_CODE (component) == BIT_NOT_EXPR)
+  if (!CLASS_TYPE_P (object_type))
     {
-      if (TYPE_IDENTIFIER (basetype) != TREE_OPERAND (component, 0))
-	{
-	  error ("destructor specifier `%T::~%T' must have matching names",
-		    basetype, TREE_OPERAND (component, 0));
-	  return error_mark_node;
-	}
-      if (! TYPE_HAS_DESTRUCTOR (basetype))
-	{
-	  error ("type `%T' has no destructor", basetype);
-	  return error_mark_node;
-	}
-      return TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (basetype), 1);
-    }
-
-  /* Look up component name in the structure type definition.  */
-  if (TYPE_VFIELD (basetype)
-      && DECL_NAME (TYPE_VFIELD (basetype)) == component)
-    /* Special-case this because if we use normal lookups in an ambiguous
-       hierarchy, the compiler will abort (because vptr lookups are
-       not supposed to be ambiguous.  */
-    field = TYPE_VFIELD (basetype);
-  else if (TREE_CODE (component) == FIELD_DECL)
-    field = component;
-  else if (TREE_CODE (component) == TYPE_DECL)
-    {
-      error ("invalid use of type decl `%#D' as expression", component);
+      error ("request for member `%D' in `%E', which is of non-class type `%T'", 
+	     member, object, object_type);
       return error_mark_node;
     }
-  else if (TREE_CODE (component) == TEMPLATE_DECL)
+
+  /* The standard does not seem to actually say that MEMBER must be a
+     member of OBJECT_TYPE.  However, that is clearly what is
+     intended.  */
+  if (DECL_P (member))
     {
-      error ("invalid use of template `%#D' as expression", component);
-      return error_mark_node;
+      member_scope = DECL_CLASS_CONTEXT (member);
+      mark_used (member);
+      if (TREE_DEPRECATED (member))
+	warn_deprecated_use (member);
     }
   else
+    member_scope = BINFO_TYPE (BASELINK_BINFO (member));
+  /* If MEMBER is from an anonymous aggregate, MEMBER_SCOPE will
+     presently be the anonymous union.  Go outwards until we find a
+     type related to OBJECT_TYPE.  */
+  while (ANON_AGGR_TYPE_P (member_scope)
+	 && !same_type_ignoring_top_level_qualifiers_p (member_scope,
+							object_type))
+    member_scope = TYPE_CONTEXT (member_scope);
+  if (!member_scope || !DERIVED_FROM_P (member_scope, object_type))
     {
-      tree name = component;
-      
-      if (TREE_CODE (component) == TEMPLATE_ID_EXPR)
-	name = TREE_OPERAND (component, 0);
-      else if (TREE_CODE (component) == VAR_DECL)
-	name = DECL_NAME (component);
-      if (TREE_CODE (component) == NAMESPACE_DECL)
-        /* Source is in error, but produce a sensible diagnostic.  */
-        name = DECL_NAME (component);
-      if (basetype_path == NULL_TREE)
-	basetype_path = TYPE_BINFO (basetype);
-      field = lookup_field (basetype_path, name,
-			    protect && !VFIELD_NAME_P (name), 0);
-      if (field == error_mark_node)
-	return error_mark_node;
-
-      if (field == NULL_TREE)
-	{
-	  /* Not found as a data field, look for it as a method.  If found,
-	     then if this is the only possible one, return it, else
-	     report ambiguity error.  */
-	  tree fndecls = lookup_fnfields (basetype_path, name, 1);
-	  if (fndecls == error_mark_node)
-	    return error_mark_node;
-	  if (fndecls)
-	    {
-	      /* If the function is unique and static, we can resolve it
-		 now.  Otherwise, we have to wait and see what context it is
-		 used in; a component_ref involving a non-static member
-		 function can only be used in a call (expr.ref).  */
-	      
-	      if (TREE_CHAIN (fndecls) == NULL_TREE
-		  && TREE_CODE (TREE_VALUE (fndecls)) == FUNCTION_DECL)
-		{
-		  if (DECL_STATIC_FUNCTION_P (TREE_VALUE (fndecls)))
-		    {
-		      tree fndecl = TREE_VALUE (fndecls);
-		      enforce_access (basetype_path, fndecl);
-		      mark_used (fndecl);
-		      return fndecl;
-		    }
-		  else
-		    {
-		      /* A unique non-static member function.  Other parts
-			 of the compiler expect something with
-			 unknown_type_node to be really overloaded, so
-			 let's oblige.  */
-		      TREE_VALUE (fndecls)
-			= ovl_cons (TREE_VALUE (fndecls), NULL_TREE);
-		    }
-		}
-
-	      fndecls = TREE_VALUE (fndecls);
-	      
- 	      if (IDENTIFIER_TYPENAME_P (name))
- 		{
- 		  /* We want for a conversion op. We need to remember
- 		     the actual type we wanted, in case we got a set of
- 		     templated conversion operators back.  */
- 		  fndecls = ovl_cons (OVL_CURRENT (fndecls),
- 				      OVL_NEXT (fndecls));
- 		  TREE_TYPE (fndecls) = TREE_TYPE (name);
- 		}
-	      else if (TREE_CODE (component) == TEMPLATE_ID_EXPR)
-		fndecls = build_nt (TEMPLATE_ID_EXPR,
-				    fndecls, TREE_OPERAND (component, 1));
-	      
-	      ref = build (COMPONENT_REF, unknown_type_node,
-			   datum, fndecls);
-	      return ref;
-	    }
-
-	  error ("`%#T' has no member named `%D'", basetype, name);
-	  return error_mark_node;
-	}
-      else if (TREE_TYPE (field) == error_mark_node)
-	return error_mark_node;
-
-      if (TREE_CODE (field) != FIELD_DECL)
-	{
-	  if (TREE_CODE (field) == TYPE_DECL)
-	    pedwarn ("invalid use of type decl `%#D' as expression", field);
-	  else if (DECL_RTL (field) != 0)
-	    mark_used (field);
-	  else
-	    TREE_USED (field) = 1;
-
-	  /* Do evaluate the object when accessing a static member.  */
-	  if (TREE_SIDE_EFFECTS (datum))
-	    field = build (COMPOUND_EXPR, TREE_TYPE (field), datum, field);
-
-	  return field;
-	}
+      error ("`%D' is not a member of `%T'", member, object_type);
+      return error_mark_node;
     }
 
-  if (TREE_DEPRECATED (field))
-    warn_deprecated_use (field);
-
-  old_datum = datum;
-  old_basetype = basetype;
-
-  /* See if we have to do any conversions so that we pick up the field from the
-     right context.  */
-  if (DECL_FIELD_CONTEXT (field) != basetype)
+  /* In [expr.ref], there is an explicit list of the valid choices for
+     MEMBER.  We check for each of those cases here.  */
+  if (TREE_CODE (member) == VAR_DECL)
     {
-      tree context = DECL_FIELD_CONTEXT (field);
-      tree base = context;
-      while (!same_type_p (base, basetype) && TYPE_NAME (base)
-	     && ANON_AGGR_TYPE_P (base))
-	base = TYPE_CONTEXT (base);
+      /* A static data member.  */
+      result = member;
+      /* If OBJECT has side-effects, they are supposed to occur.  */
+      if (TREE_SIDE_EFFECTS (object))
+	result = build (COMPOUND_EXPR, TREE_TYPE (result), object, result);
+    }
+  else if (TREE_CODE (member) == FIELD_DECL)
+    {
+      /* A non-static data member.  */
+      bool null_object_p;
+      int type_quals;
+      tree member_type;
 
-      /* Handle base classes here...  */
-      if (base != basetype && TYPE_BASE_CONVS_MAY_REQUIRE_CODE_P (basetype))
+      null_object_p = (TREE_CODE (object) == INDIRECT_REF
+		       && integer_zerop (TREE_OPERAND (object, 0)));
+
+      /* Convert OBJECT to the type of MEMBER.  */
+      if (!same_type_p (object_type, member_scope))
 	{
+	  tree binfo;
 	  base_kind kind;
- 	  tree binfo = lookup_base (TREE_TYPE (datum), base, ba_check, &kind);
 
-	  /* Complain about use of offsetof which will break.  */
-	  if (TREE_CODE (datum) == INDIRECT_REF
-	      && integer_zerop (TREE_OPERAND (datum, 0))
-	      && kind == bk_via_virtual)
+	  binfo = lookup_base (access_path ? access_path : object_type,
+			       member_scope, ba_ignore,  &kind);
+	  if (binfo == error_mark_node)
+	    return error_mark_node;
+
+	  /* It is invalid to use to try to get to a virtual base of a
+	     NULL object.  The most common cause is invalid use of
+	     offsetof macro.  */
+	  if (null_object_p && kind == bk_via_virtual)
 	    {
-	      error ("\
-invalid offsetof from non-POD type `%#T'; use pointer to member instead",
-		     basetype);
+	      error ("invalid access to non-static data member `%D' of NULL object",
+		     member);
+	      error ("(perhaps the `offsetof' macro was used incorrectly)");
 	      return error_mark_node;
 	    }
- 	  datum = build_base_path (PLUS_EXPR, datum, binfo, 1);
-	  if (datum == error_mark_node)
-	    return error_mark_node;
+
+	  /* Convert to the base.  */
+	  object = build_base_path (PLUS_EXPR, object, binfo, 
+				    /*nonnull=*/1);
+	  /* If we found the base successfully then we should be able
+	     to convert to it successfully.  */
+	  my_friendly_assert (object != error_mark_node,
+			      20020801);
 	}
-      basetype = base;
- 
-      /* Handle things from anon unions here...  */
-      if (TYPE_NAME (context) && ANON_AGGR_TYPE_P (context))
+      
+      /* Issue a warning about access a member of a NULL object.  */
+      if (null_object_p && CLASSTYPE_NON_POD_P (object_type))
 	{
-	  tree subfield = lookup_anon_field (basetype, context);
-	  tree subdatum = build_component_ref (datum, subfield,
-					       basetype_path, protect);
-	  return build_component_ref (subdatum, field, basetype_path, protect);
+	  warning ("invalid access to non-static data member `%D' of NULL object", 
+		   member);
+	  warning  ("(perhaps the `offsetof' macro was used incorrectly)");
+	  return error_mark_node;
 	}
+
+      /* If MEMBER is from an anonymous aggregate, we have converted
+	 OBJECT so that it refers to the class containing the
+	 anonymous union.  Generate a reference to the anonymous union
+	 itself, and recur to find MEMBER.  */
+      if (ANON_AGGR_TYPE_P (DECL_CONTEXT (member)))
+	{
+	  tree anonymous_union;
+
+	  anonymous_union = lookup_anon_field (TREE_TYPE (object),
+					       DECL_CONTEXT (member));
+	  object = build_class_member_access_expr (object,
+						   anonymous_union,
+						   /*access_path=*/NULL_TREE,
+						   preserve_reference);
+	}
+
+      /* Compute the type of the field, as described in [expr.ref].  */
+      type_quals = TYPE_UNQUALIFIED;
+      member_type = TREE_TYPE (member);
+      if (TREE_CODE (member_type) != REFERENCE_TYPE)
+	{
+	  type_quals = (cp_type_quals (member_type)  
+			| cp_type_quals (object_type));
+	  
+	  /* A field is const (volatile) if the enclosing object, or the
+	     field itself, is const (volatile).  But, a mutable field is
+	     not const, even within a const object.  */
+	  if (DECL_MUTABLE_P (member))
+	    type_quals &= ~TYPE_QUAL_CONST;
+	  member_type = cp_build_qualified_type (member_type, type_quals);
+	}
+
+      result = fold (build (COMPONENT_REF, member_type, object, member));
+
+      /* Mark the expression const or volatile, as appropriate.  Even
+	 though we've dealt with the type above, we still have to mark the
+	 expression itself.  */
+      if (type_quals & TYPE_QUAL_CONST)
+	TREE_READONLY (result) = 1;
+      else if (type_quals & TYPE_QUAL_VOLATILE)
+	TREE_THIS_VOLATILE (result) = 1;
     }
+  else if (BASELINK_P (member))
+    {
+      /* The member is a (possibly overloaded) member function.  */
+      tree functions;
 
-  /* Complain about other invalid uses of offsetof, even though they will
-     give the right answer.  Note that we complain whether or not they
-     actually used the offsetof macro, since there's no way to know at this
-     point.  So we just give a warning, instead of a pedwarn.  */
-  if (protect
-      && CLASSTYPE_NON_POD_P (old_basetype)
-      && TREE_CODE (old_datum) == INDIRECT_REF
-      && integer_zerop (TREE_OPERAND (old_datum, 0)))
-    warning ("\
-invalid offsetof from non-POD type `%#T'; use pointer to member instead",
-	     basetype);
-
-  /* Compute the type of the field, as described in [expr.ref].  */
-  type_quals = TYPE_UNQUALIFIED;
-  field_type = TREE_TYPE (field);
-  if (TREE_CODE (field_type) == REFERENCE_TYPE)
-    /* The standard says that the type of the result should be the
-       type referred to by the reference.  But for now, at least, we
-       do the conversion from reference type later.  */
-    ;
+      /* If the MEMBER is exactly one static member function, then we
+	 know the type of the expression.  Otherwise, we must wait
+	 until overload resolution has been performed.  */
+      functions = BASELINK_FUNCTIONS (member);
+      if (TREE_CODE (functions) == FUNCTION_DECL
+	  && DECL_STATIC_FUNCTION_P (functions))
+	{
+	  /* A static member function.  */
+	  result = functions;
+	  mark_used (result);
+	  /* If OBJECT has side-effects, they are supposed to occur.  */
+	  if (TREE_SIDE_EFFECTS (object))
+	    result = build (COMPOUND_EXPR, TREE_TYPE (result),
+			    object, result);
+	}
+      else
+	/* Note that we do not convert OBJECT to the BASELINK_BINFO
+	   base.  That will happen when the function is called.  */
+	result = build (COMPONENT_REF, unknown_type_node, object, member);
+    }
+  else if (TREE_CODE (member) == CONST_DECL)
+    {
+      /* The member is an enumerator.  */
+      result = member;
+      /* If OBJECT has side-effects, they are supposed to occur.  */
+      if (TREE_SIDE_EFFECTS (object))
+	result = build (COMPOUND_EXPR, TREE_TYPE (result),
+			object, result);
+    }
   else
     {
-      type_quals = (cp_type_quals (field_type)  
-		    | cp_type_quals (TREE_TYPE (datum)));
-
-      /* A field is const (volatile) if the enclosing object, or the
-	 field itself, is const (volatile).  But, a mutable field is
-	 not const, even within a const object.  */
-      if (DECL_MUTABLE_P (field))
-	type_quals &= ~TYPE_QUAL_CONST;
-      field_type = cp_build_qualified_type (field_type, type_quals);
+      error ("invalid use of `%D'", member);
+      return error_mark_node;
     }
 
-  ref = fold (build (COMPONENT_REF, field_type, datum, field));
+  if (!preserve_reference)
+    /* [expr.ref]
+       
+       If E2 is declared to have type "reference to T", then ... the
+       type of E1.E2 is T.  */
+    result = convert_from_reference (result);
 
-  /* Mark the expression const or volatile, as appropriate.  Even
-     though we've dealt with the type above, we still have to mark the
-     expression itself.  */
-  if (type_quals & TYPE_QUAL_CONST)
-    TREE_READONLY (ref) = 1;
-  else if (type_quals & TYPE_QUAL_VOLATILE)
-    TREE_THIS_VOLATILE (ref) = 1;
-
-  return ref;
+  return result;
 }
 
-/* Variant of build_component_ref for use in expressions, which should
-   never have REFERENCE_TYPE.  */
+/* This function is called by the parser to process a class member
+   access expression of the form OBJECT.NAME.  NAME is a node used by
+   the parser to represent a name; it is not yet a DECL.  It may,
+   however, be a BASELINK where the BASELINK_FUNCTIONS is a
+   TEMPLATE_ID_EXPR.  Templates must be looked up by the parser, and
+   there is no reason to do the lookup twice, so the parser keeps the
+   BASELINK.  */
 
 tree
-build_x_component_ref (datum, component, basetype_path)
-     tree datum, component, basetype_path;
+finish_class_member_access_expr (tree object, tree name)
 {
-  tree t = build_component_ref (datum, component, basetype_path, 
-				/*protect=*/1);
+  tree object_type;
+  tree member;
+  tree access_path = NULL_TREE;
 
-  if (! processing_template_decl)
-    t = convert_from_reference (t);
+  if (object == error_mark_node || name == error_mark_node)
+    return error_mark_node;
 
-  return t;
+  if (processing_template_decl)
+    return build_min_nt (COMPONENT_REF, object, name);
+  
+  if (TREE_CODE (object) == OFFSET_REF)
+    object = resolve_offset_ref (object);
+
+  object_type = TREE_TYPE (object);
+  if (TREE_CODE (object_type) == REFERENCE_TYPE)
+    {
+      object = convert_from_reference (object);
+      object_type = TREE_TYPE (object);
+    }
+
+  /* [expr.ref]
+
+     The type of the first expression shall be "class object" (of a
+     complete type).  */
+  if (!complete_type_or_else (object_type, object))
+    return error_mark_node;
+  if (!CLASS_TYPE_P (object_type))
+    {
+      error ("request for member `%D' in `%E', which is of non-class type `%T'", 
+	     name, object, object_type);
+      return error_mark_node;
+    }
+
+  if (BASELINK_P (name))
+    {
+      /* A member function that has already been looked up.  */
+      my_friendly_assert ((TREE_CODE (BASELINK_FUNCTIONS (name)) 
+			   == TEMPLATE_ID_EXPR), 
+			  20020805);
+      member = name;
+    }
+  else
+    {
+      bool is_template_id = false;
+      tree template_args = NULL_TREE;
+
+      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+	{
+	  is_template_id = true;
+	  template_args = TREE_OPERAND (name, 1);
+	  name = TREE_OPERAND (name, 0);
+	}
+
+      if (TREE_CODE (name) == SCOPE_REF)
+	{
+	  tree scope;
+
+	  /* A qualified name.  The qualifying class or namespace `S' has
+	     already been looked up; it is either a TYPE or a
+	     NAMESPACE_DECL.  The member name is either an IDENTIFIER_NODE
+	     or a BIT_NOT_EXPR.  */
+	  scope = TREE_OPERAND (name, 0);
+	  name = TREE_OPERAND (name, 1);
+	  my_friendly_assert ((CLASS_TYPE_P (scope) 
+			       || TREE_CODE (scope) == NAMESPACE_DECL),
+			      20020804);
+	  my_friendly_assert ((TREE_CODE (name) == IDENTIFIER_NODE
+			       || TREE_CODE (name) == BIT_NOT_EXPR),
+			      20020804);
+
+	  /* If SCOPE is a namespace, then the qualified name does not
+	     name a member of OBJECT_TYPE.  */
+	  if (TREE_CODE (scope) == NAMESPACE_DECL)
+	    {
+	      error ("`%D::%D' is not a member of `%T'", 
+		     scope, member, object_type);
+	      return error_mark_node;
+	    }
+
+	  /* Find the base of OBJECT_TYPE corresponding to SCOPE.  */
+	  access_path = lookup_base (object_type, scope, ba_check, NULL);
+	  if (!access_path || access_path == error_mark_node)
+	    return error_mark_node;
+
+	  /* Look up the member.  */
+	  member = lookup_member (access_path, name, /*protect=*/1, 
+				  /*want_type=*/0);
+	  if (member == error_mark_node)
+	    return error_mark_node;
+	}
+      else if (TREE_CODE (name) == BIT_NOT_EXPR)
+	{
+	  /* A destructor.  */
+	  if (TYPE_IDENTIFIER (object_type) != TREE_OPERAND (name, 0))
+	    {
+	      error ("destructor specifier `%T::~%T' must have matching names",
+		     object_type, TREE_OPERAND (name, 0));
+	      return error_mark_node;
+	    }
+	  if (! TYPE_HAS_DESTRUCTOR (object_type))
+	    {
+	      error ("type `%T' has no destructor", object_type);
+	      return error_mark_node;
+	    }
+	  member = CLASSTYPE_DESTRUCTORS (object_type);
+	}
+      else if (TREE_CODE (name) == IDENTIFIER_NODE)
+	{
+	  /* An unqualified name.  */
+	  member = lookup_member (object_type, name, /*protect=*/1, 
+				  /*want_type=*/0);
+	  if (member == error_mark_node)
+	    return error_mark_node;
+	}
+      else
+	{
+	  /* The YACC parser sometimes gives us things that are not names.
+	     These always indicate errors.  The recursive-descent parser
+	     does not do this, so this code can go away once that parser
+	     replaces the YACC parser.  */
+	  error ("invalid use of `%D'", name);
+	  return error_mark_node;
+	}
+      
+      if (is_template_id)
+	{
+	  tree template = member;
+	  
+	  if (BASELINK_P (template))
+	    BASELINK_FUNCTIONS (template) 
+	      = build_nt (TEMPLATE_ID_EXPR,
+			  BASELINK_FUNCTIONS (template),
+			  template_args);
+	  else
+	    {
+	      error ("`%D' is not a member template function", name);
+	      return error_mark_node;
+	    }
+	}
+    }
+
+  return build_class_member_access_expr (object, member, access_path,
+					 /*preserve_reference=*/false);
 }
-
+
+/* Return an expression for the MEMBER_NAME field in the internal
+   representation of PTRMEM, a pointer-to-member function.  (Each
+   pointer-to-member function type gets its own RECORD_TYPE so it is
+   more convenient to access the fields by name than by FIELD_DECL.)
+   This routine converts the NAME to a FIELD_DECL and then creates the
+   node for the complete expression.  */
+
+tree
+build_ptrmemfunc_access_expr (tree ptrmem, tree member_name)
+{
+  tree ptrmem_type;
+  tree member;
+  tree member_type;
+
+  /* This code is a stripped down version of
+     build_class_member_access_expr.  It does not work to use that
+     routine directly because it expects the object to be of class
+     type.  */
+  ptrmem_type = TREE_TYPE (ptrmem);
+  my_friendly_assert (TYPE_PTRMEMFUNC_P (ptrmem_type), 20020804);
+  member = lookup_member (ptrmem_type, member_name, /*protect=*/0,
+			  /*want_type=*/0);
+  member_type = cp_build_qualified_type (TREE_TYPE (member),
+					 cp_type_quals (ptrmem_type));
+  return fold (build (COMPONENT_REF, member_type, ptrmem, member));
+}
+
 /* Given an expression PTR for a pointer, return an expression
    for the value pointed to.
    ERRORSTRING is the name of the operator to appear in error messages.
@@ -2505,7 +2530,7 @@ get_member_function_from_ptrfunc (instance_ptrptr, function)
 
       /* Start by extracting all the information from the PMF itself.  */
       e3 = PFN_FROM_PTRMEMFUNC (function);
-      delta = build_component_ref (function, delta_identifier, NULL_TREE, 0);
+      delta = build_ptrmemfunc_access_expr (function, delta_identifier);
       idx = build1 (NOP_EXPR, vtable_index_type, e3);
       switch (TARGET_PTRMEMFUNC_VBIT_LOCATION)
 	{
@@ -3219,7 +3244,7 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	}
       else if (TYPE_PTRMEMFUNC_P (type0) && null_ptr_cst_p (op1))
 	{
-	  op0 = build_component_ref (op0, pfn_identifier, NULL_TREE, 0);
+	  op0 = build_ptrmemfunc_access_expr (op0, pfn_identifier);
 	  op1 = cp_convert (TREE_TYPE (op0), integer_zero_node);
 	  result_type = TREE_TYPE (op0);
 	}
@@ -3253,10 +3278,10 @@ build_binary_op (code, orig_op0, orig_op1, convert_p)
 	     DELTA field is unspecified.  */
 	  pfn0 = pfn_from_ptrmemfunc (op0);
 	  pfn1 = pfn_from_ptrmemfunc (op1);
-	  delta0 = build_component_ref (op0, delta_identifier,
-					NULL_TREE, 0);
-	  delta1 = build_component_ref (op1, delta_identifier,
-					NULL_TREE, 0);
+	  delta0 = build_ptrmemfunc_access_expr (op0,
+						 delta_identifier);
+	  delta1 = build_ptrmemfunc_access_expr (op1,
+						 delta_identifier);
 	  e1 = cp_build_binary_op (EQ_EXPR, delta0, delta1);
 	  e2 = cp_build_binary_op (EQ_EXPR, 
 				   pfn0,
@@ -4191,7 +4216,7 @@ build_unary_op (code, xarg, noconvert)
 	}
 
       if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
-          && OVL_NEXT (TREE_OPERAND (arg, 1)) == NULL_TREE)
+	  && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
         {
 	  /* They're trying to take the address of a unique non-static
 	     member function.  This is ill-formed (except in MS-land),
@@ -4204,7 +4229,7 @@ build_unary_op (code, xarg, noconvert)
 	     a useful error here.  */
 
 	  tree base = TREE_TYPE (TREE_OPERAND (arg, 0));
-	  tree name = DECL_NAME (OVL_CURRENT (TREE_OPERAND (arg, 1)));
+	  tree name = DECL_NAME (get_first_fn (TREE_OPERAND (arg, 1)));
 
 	  if (! flag_ms_extensions)
 	    {
@@ -5595,8 +5620,8 @@ build_ptrmemfunc (type, pfn, force)
 	expand_ptrmemfunc_cst (pfn, &delta, &npfn);
       else
 	{
-	  npfn = build_component_ref (pfn, pfn_identifier, NULL_TREE, 0);
-	  delta = build_component_ref (pfn, delta_identifier, NULL_TREE, 0);
+	  npfn = build_ptrmemfunc_access_expr (pfn, pfn_identifier);
+	  delta = build_ptrmemfunc_access_expr (pfn, delta_identifier);
 	}
 
       /* Just adjust the DELTA field.  */
@@ -5711,7 +5736,7 @@ pfn_from_ptrmemfunc (t)
 	return pfn;
     }
 
-  return build_component_ref (t, pfn_identifier, NULL_TREE, 0);
+  return build_ptrmemfunc_access_expr (t, pfn_identifier);
 }
 
 /* Expression EXPR is about to be implicitly converted to TYPE.  Warn

@@ -1,3 +1,73 @@
+2002-08-07  Mark Mitchell  <mark@codesourcery.com>
+
+	Rework build_component_ref.
+	* call.c (build_vfield_ref): Do not go through build_component_ref.
+	(build_field_call): Use build_class_member_access_expr.
+	(build_user_type_conversion_1): Use BASELINK_FUNCTIONS.
+	(build_object_call): Likewise.
+	* class.c (convert_to_base): New function.
+	(type_requires_array_cookie): Use BASELINK_FUNCTIONS.
+	(instantiate_type): Handle BASELINKs.
+	* cp-tree.def (BASELINK): New tree code.
+	* cp-tree.h (BASELINK_P): Reimplement.
+	(SET_BASELINK_P): Remove.
+	(BASELINK_BINFO): Reimplement.
+	(BASELINK_FUNCTIONS): Likewise.
+	(BASELINK_ACCESS_BINFO): Likewise.
+	(BASELINK_OPTYPE): Likewise.
+	(convert_to_base): New function.
+	(name_p): Likewise.
+	(build_object_ref): Remove.
+	(build_component_ref_1): Likewise.
+	(build_component_ref): Likewise.
+	(build_x_component_ref): Likewise.
+	(build_class_member_access_expr): New function.
+	(finish_class_member_access_expr): Likewise.
+	(build_ptrmemfunc_access_expr): Likewise.
+	* decl.c (grokdeclarator): Handle BASELINKs.
+	* decl2. (build_expr_from_tree): Handle COMPONENT_REFs by using
+	finish_class_member_access_expr.
+	(arg_assoc): Handle BASELINKs.
+	(do_class_using_decl): Likewise.
+	* error.c (dump_decl): Likewise.
+	(dump_expr): Use build_ptrmemfunc_access_expr.
+	* except.c (dtor_nothrow): Use CLASSTYPE_DESTRUCTORS to find
+	destructors.
+	(build_throw): Use BASELINK_FUNCTIONS.
+	* init.c (perform_member_init): Use
+	build_class_member_access_expr.
+	(build_offset_ref): Handle BASELINKs.  Use
+	build_class_member_access_expr.
+	* method.c (hack_identifier): Likewise.
+	* parse.y (do_id): Use BASELINK, not TREE_LIST.
+	(primary): Remove uses of build_object_ref.
+	* pt.c (lookup_template_function): Handle BASELINKs.
+	(resolve_overloaded_unification): Likewise.
+	* search.c (build_baselink): Build a BASELINK, not a TREE_LIST.
+	(lookup_field): Use BASELINK, not TREE_LIST.
+	(lookup_fnfiels): Likewise.
+	(setup_class_bindings): Likewise.
+	* semantics.c (finish_object_call_expr): Do not use
+	build_method_call when we already know what function is being
+	called.
+	* spew.c (identifier_type): Use BASELINK, not TREE_LIST.
+	* tree.c (really_overloaded_fn): Use OVL_CHAIN for OVERLOADs, not
+	TREE_CHAIN.
+	(name_p): New function.
+	* typeck.c (build_object_ref): Remove.
+	(build_component_ref_1): Likewise.
+	(build_x_component_ref): Likewise.
+	(build_class_member_access_expr): New function.
+	(finish_class_member_access_expr): Likewise.
+	(build_ptrmemfunc_access_expr): Likewise.
+	(get_member_function_from_ptrfunc): Use
+	build_ptrmemfunc_access_expr.
+	(build_binary_op): Likewise.
+	(build_unary_op): Likewise.
+	(build_ptrmemfunc): Likewise.
+	(pfn_from_ptrmemfunc): Likewise.
+	* typeck2.c (build_m_component_ref): Adjust comment.
+	
 2002-08-07  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in (CXX_C_OBJS): Update.

@@ -1400,7 +1400,10 @@ finish_object_call_expr (fn, object, args)
 	}
     }
   
-  return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
+  if (name_p (fn))
+    return build_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
+  else
+    return build_new_method_call (object, fn, args, NULL_TREE, LOOKUP_NORMAL);
 }
 
 /* Finish a qualified member function call using OBJECT and ARGS as
