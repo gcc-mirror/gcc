@@ -200,6 +200,44 @@ while [ $# != 0 ]; do
   shift; shift
 done
 
+# Install the proper definition of the three standard types in header files
+# that they come from.
+for file in sys/types.h stdlib.h sys/stdtypes.h stddef.h memory.h unistd.h; do
+  if [ -r $file ] && [ ! -r ${LIB}/$file ]; then
+    cp $file ${LIB}/$file >/dev/null 2>&1 || echo "Can't copy $file"
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+
+  if [ -r ${LIB}/$file ]; then
+    echo Fixing size_t, ptrdiff_t and wchar_t in $file
+    sed \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/i\
+#ifndef __SIZE_TYPE__\
+#define __SIZE_TYPE__ long unsigned int\
+#endif
+' \
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]size_t/typedef __SIZE_TYPE__ size_t/' \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]ptrdiff_t/i\
+#ifndef __PTRDIFF_TYPE__\
+#define __PTRDIFF_TYPE__ long int\
+#endif
+' \
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]ptrdiff_t/typedef __PTRDIFF_TYPE__ ptrdiff_t/' \
+      -e '/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/i\
+#ifndef __WCHAR_TYPE__\
+#define __WCHAR_TYPE__ int\
+#endif
+' \
+      -e 's/typedef[ 	][ 	]*[a-z_][ 	a-z_]*[ 	]wchar_t/typedef __WCHAR_TYPE__ wchar_t/' \
+      ${LIB}/$file > ${LIB}/${file}.sed
+    rm -f ${LIB}/$file; mv ${LIB}/${file}.sed ${LIB}/$file
+    if cmp $file ${LIB}/$file >/dev/null 2>&1; then
+      rm ${LIB}/$file
+    fi
+  fi
+done
+
 # Fix first broken decl of getcwd present on some svr4 systems.
 
 file=stdlib.h
@@ -1470,17 +1508,11 @@ cat <<'__EOF__' >${LIB}/sys/byteorder.h
 #define __PDP_ENDIAN__      3412
 #endif
 
-#ifdef __GNUC__
-#define __STATIC static
-#else
-#define __STATIC
-#endif
-
 #ifdef __STDC__
-__STATIC __inline__ unsigned long htonl (unsigned long);
-__STATIC __inline__ unsigned short htons (unsigned int);
-__STATIC __inline__ unsigned long ntohl (unsigned long);
-__STATIC __inline__ unsigned short ntohs (unsigned int);
+extern __inline__ unsigned long htonl (unsigned long);
+extern __inline__ unsigned short htons (unsigned int);
+extern __inline__ unsigned long ntohl (unsigned long);
+extern __inline__ unsigned short ntohs (unsigned int);
 #endif /* defined (__STDC__) */
 
 #if defined (__i386__)
@@ -1493,7 +1525,7 @@ __STATIC __inline__ unsigned short ntohs (unsigned int);
 
 /* We must use a new-style function definition, so that this will also
    be valid for C++.  */
-__STATIC __inline__ unsigned long
+extern __inline__ unsigned long
 htonl (unsigned long __arg)
 {
   register unsigned long __result;
@@ -1506,7 +1538,7 @@ htonl (unsigned long __arg)
 
 /* Convert a host short to a network short.  */
 
-__STATIC __inline__ unsigned short
+extern __inline__ unsigned short
 htons (unsigned int __arg)
 {
   register unsigned short __result;
@@ -1528,7 +1560,7 @@ htons (unsigned int __arg)
 
 /* Convert a host long to a network long.  */
 
-__STATIC __inline__ unsigned long
+extern __inline__ unsigned long
 htonl (unsigned long __arg)
 {
   register unsigned long __result;
@@ -1542,7 +1574,7 @@ htonl (unsigned long __arg)
 
 /* Convert a host short to a network short.  */
 
-__STATIC __inline__ unsigned short
+extern __inline__ unsigned short
 htons (unsigned int __arg)
 {
   register unsigned short __result;
@@ -1560,7 +1592,7 @@ htons (unsigned int __arg)
 
 /* Convert a host long to a network long.  */
 
-__STATIC __inline__ unsigned long
+extern __inline__ unsigned long
 htonl (unsigned long __arg)
 {
   return __arg;
@@ -1568,7 +1600,7 @@ htonl (unsigned long __arg)
 
 /* Convert a host short to a network short.  */
 
-__STATIC __inline__ unsigned short
+extern __inline__ unsigned short
 htons (unsigned int __arg)
 {
   return __arg;
@@ -1578,7 +1610,7 @@ htons (unsigned int __arg)
 
 /* Convert a network long to a host long.  */
 
-__STATIC __inline__ unsigned long
+extern __inline__ unsigned long
 ntohl (unsigned long __arg)
 {
   return htonl (__arg);
@@ -1586,14 +1618,11 @@ ntohl (unsigned long __arg)
 
 /* Convert a network short to a host short.  */
 
-__STATIC __inline__ unsigned short
+extern __inline__ unsigned short
 ntohs (unsigned int __arg)
 {
   return htons (__arg);
 }
-
-
-#undef __STATIC
 
 __EOF__
 
