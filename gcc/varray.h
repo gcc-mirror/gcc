@@ -57,7 +57,7 @@ struct const_equiv_data GTY(()) {
 };
 
 /* Enum indicating what the varray contains.  
-   If this is changed, `element_size' in varray.c needs to be updated.  */
+   If this is changed, `element' in varray.c needs to be updated.  */
 
 enum varray_data_enum {
   VARRAY_DATA_C,

@@ -29,34 +29,33 @@
 
 #define VARRAY_HDR_SIZE (sizeof (struct varray_head_tag) - sizeof (varray_data))
 
-static const size_t element_size[NUM_VARRAY_DATA] = {
-  sizeof (char),
-  sizeof (unsigned char),
-  sizeof (short),
-  sizeof (unsigned short),
-  sizeof (int),
-  sizeof (unsigned int),
-  sizeof (long),
-  sizeof (unsigned long),
-  sizeof (HOST_WIDE_INT),
-  sizeof (unsigned HOST_WIDE_INT),
-  sizeof (PTR),
-  sizeof (char *),
-  sizeof (struct rtx_def *),
-  sizeof (struct rtvec_def *),
-  sizeof (union tree_node *),
-  sizeof (struct bitmap_head_def *),
-  sizeof (struct reg_info_def *),
-  sizeof (struct const_equiv_data),
-  sizeof (struct basic_block_def *),
-  sizeof (struct elt_list *)
-};
+/* Do not add any more non-GC items here.  Please either remove or GC those items that
+   are not GCed.  */
 
-static const int uses_ggc[NUM_VARRAY_DATA] = {
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, /* unsigned HOST_WIDE_INT */
-  1, /* PTR */
-  1, 1, 1, 1, 1, /* bitmap_head_def */
-  0, 0, 0, 1
+static const struct {
+  unsigned char size;
+  bool uses_ggc;
+} element[NUM_VARRAY_DATA] = {
+  { sizeof (char), 1 },
+  { sizeof (unsigned char), 1 },
+  { sizeof (short), 1 },
+  { sizeof (unsigned short), 1 },
+  { sizeof (int), 1 },
+  { sizeof (unsigned int), 1 },
+  { sizeof (long), 1 },
+  { sizeof (unsigned long), 1 },
+  { sizeof (HOST_WIDE_INT), 1 },
+  { sizeof (unsigned HOST_WIDE_INT), 1 },
+  { sizeof (PTR), 1 },
+  { sizeof (char *), 1 },
+  { sizeof (struct rtx_def *), 1 },
+  { sizeof (struct rtvec_def *), 1 },
+  { sizeof (union tree_node *), 1 },
+  { sizeof (struct bitmap_head_def *), 1 },
+  { sizeof (struct reg_info_def *), 0 },
+  { sizeof (struct const_equiv_data), 0 },
+  { sizeof (struct basic_block_def *), 0 },
+  { sizeof (struct elt_list *), 1 },
 };
 
 /* Allocate a virtual array with NUM_ELEMENT elements, each of which is
@@ -67,9 +66,9 @@ varray_init (num_elements, element_kind, name)
      enum varray_data_enum element_kind;
      const char *name;
 {
-  size_t data_size = num_elements * element_size[element_kind];
+  size_t data_size = num_elements * element[element_kind].size;
   varray_type ptr;
-  if (uses_ggc [element_kind])
+  if (element[element_kind].uses_ggc)
     ptr = (varray_type) ggc_alloc_cleared (VARRAY_HDR_SIZE + data_size);
   else
     ptr = (varray_type) xcalloc (VARRAY_HDR_SIZE + data_size, 1);
@@ -92,11 +91,11 @@ varray_grow (va, n)
 
   if (n != old_elements)
     {
-      size_t elem_size = element_size[va->type];
+      size_t elem_size = element[va->type].size;
       size_t old_data_size = old_elements * elem_size;
       size_t data_size = n * elem_size;
 
-      if (uses_ggc[va->type])
+      if (element[va->type].uses_ggc)
 	va = (varray_type) ggc_realloc (va, VARRAY_HDR_SIZE + data_size);
       else
 	va = (varray_type) xrealloc ((char *) va, VARRAY_HDR_SIZE + data_size);
@@ -113,7 +112,7 @@ void
 varray_clear (va)
      varray_type va;
 {
-  size_t data_size = element_size[va->type] * va->num_elements;
+  size_t data_size = element[va->type].size * va->num_elements;
 
   memset (va->data.c, 0, data_size);
   va->elements_used = 0;
