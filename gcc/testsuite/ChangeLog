@@ -1,3 +1,8 @@
+2000-11-18  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	* gcc.c-torture/execute/20001115-1.c: Don't access nonexistant
+	memory.
+
 2000-11-17  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.old-deja/g++.pt/instantiate8.C: New test.
