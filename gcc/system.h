@@ -606,7 +606,7 @@ typedef char _Bool;
 	STRUCT_VALUE_INCOMING STRICT_ARGUMENT_NAMING			\
 	PROMOTE_FUNCTION_RETURN PROMOTE_PROTOTYPES STRUCT_VALUE_REGNUM	\
 	SETUP_INCOMING_VARARGS EXPAND_BUILTIN_SAVEREGS			\
-	DEFAULT_SHORT_ENUMS
+	DEFAULT_SHORT_ENUMS SPLIT_COMPLEX_ARGS
 
 /* Other obsolete target macros, or macros that used to be in target
    headers and were not used, and may be obsolete or may never have
