@@ -451,9 +451,4 @@ namespace std
     has_facet(const locale& __loc) throw();
 } // namespace std
 
-#endif	/* _CPP_BITS_LOCCORE_H */
-
-// Local Variables:
-// mode:c++
-// End:
-
+#endif

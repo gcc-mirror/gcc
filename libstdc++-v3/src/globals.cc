@@ -44,6 +44,17 @@
 // allocate the actual file buffers in this file.
 namespace std 
 {
+  // Standard "C" locale.
+  typedef char fake_locale_Impl[sizeof(locale::_Impl)]
+  __attribute__ ((aligned(__alignof__(locale::_Impl))));
+  fake_locale_Impl locale_impl_c;
+
+  typedef char fake_locale[sizeof(locale)]
+  __attribute__ ((aligned(__alignof__(locale))));
+  fake_locale locale_c;
+  
+
+  // Standard stream objects.
   typedef char fake_istream[sizeof(istream)]
   __attribute__ ((aligned(__alignof__(istream))));
   typedef char fake_ostream[sizeof(ostream)] 
@@ -76,30 +87,28 @@ namespace std
   fake_wfilebuf buf_wcerr;
 #endif
 
-// Globals for once-only runtime initialization of mutex objects.  This
-// allows static initialization of these objects on systems that need a
-// function call to initialize a mutex.  For example, see stl_threads.h.
+
+  // Globals for once-only runtime initialization of mutex objects.  This
+  // allows static initialization of these objects on systems that need a
+  // function call to initialize a mutex.  For example, see stl_threads.h.
 #if __GTHREADS
 #ifdef __GTHREAD_MUTEX_INIT
-// This path is not needed since static initialization of mutexs works
-// on this platform.
+  // This path is not needed since static initialization of mutexs works
+  // on this platform.
 #elif defined(__GTHREAD_MUTEX_INIT_FUNCTION)
-__gthread_once_t _GLIBCPP_once = __GTHREAD_ONCE_INIT;
-__gthread_mutex_t _GLIBCPP_mutex;
-__gthread_mutex_t *_GLIBCPP_mutex_address;
+  __gthread_once_t _GLIBCPP_once = __GTHREAD_ONCE_INIT;
+  __gthread_mutex_t _GLIBCPP_mutex;
+  __gthread_mutex_t *_GLIBCPP_mutex_address;
+  
+  // Once-only initializer function for _GLIBCPP_mutex.  
+  void
+  _GLIBCPP_mutex_init ()
+  { __GTHREAD_MUTEX_INIT_FUNCTION (&_GLIBCPP_mutex); }
 
-// Once-only initializer function for _GLIBCPP_mutex.  
-void
-_GLIBCPP_mutex_init ()
-{
-  __GTHREAD_MUTEX_INIT_FUNCTION (&_GLIBCPP_mutex);
-}
-// Once-only initializer function for _GLIBCPP_mutex_address.  
-void
-_GLIBCPP_mutex_address_init ()
-{
-  __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCPP_mutex_address);
-}
+  // Once-only initializer function for _GLIBCPP_mutex_address.  
+  void
+  _GLIBCPP_mutex_address_init ()
+  { __GTHREAD_MUTEX_INIT_FUNCTION (_GLIBCPP_mutex_address); }
 #endif
-#endif
+#endif // __GTHREADS
 }

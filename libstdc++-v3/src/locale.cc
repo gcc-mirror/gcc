@@ -43,6 +43,10 @@
 
 namespace std 
 {
+  // Defined in globals.cc.
+  extern locale::_Impl locale_impl_c;
+  extern locale locale_c;
+
   // Definitions for static const data members of locale.
   const locale::category 	locale::none;
   const locale::category 	locale::ctype;
@@ -362,10 +366,10 @@ namespace std
   locale::locale(const locale& __other) throw()
   { (_M_impl = __other._M_impl)->_M_add_reference(); }
 
-  // This is used to initialize global and classic locales.
-  locale::locale(_Impl* __ip) throw()
-  : _M_impl(__ip)
-  { __ip->_M_add_reference(); }
+  // This is used to initialize global and classic locales, and
+  // assumes that the _Impl objects are constructed correctly.
+  locale::locale(_Impl* __ip) throw() : _M_impl(__ip)
+  { }
 
   locale::locale(const char* __s)
   {
@@ -415,13 +419,18 @@ namespace std
   {
     // XXX MT
     _S_initialize();
-    locale __old(_S_global);
+    _Impl* __old = _S_global;
     __other._M_impl->_M_add_reference();
-    _S_global->_M_remove_reference();
     _S_global = __other._M_impl; 
     if (_S_global->_M_check_same_name() && _S_global->_M_names[0] != "*")
       setlocale(LC_ALL, __other.name().c_str());
-    return __old;
+
+    // Reference count sanity check: one reference removed for the
+    // subsition of __other locale, one added by return-by-value. Net
+    // difference: zero. When the returned locale object's destrutor
+    // is called, then the reference count is decremented and possibly
+    // destroyed.
+    return locale(__old);
   }
 
   string
@@ -446,7 +455,6 @@ namespace std
   locale const&
   locale::classic()
   {
-    static locale* __classic_locale;
     // XXX MT
     if (!_S_classic)
       {
@@ -454,26 +462,21 @@ namespace std
 	  {
 	    // 26 Standard facets, 2 references.
 	    // One reference for _M_classic, one for _M_global
-	    _S_classic = new _Impl("C", 2);
+	    _S_classic = new (&locale_impl_c) _Impl("C", 2);
 	    _S_global = _S_classic; 	    
-
-	    // Finesse static init order hassles
-	    __classic_locale = new locale(_S_classic);
+	    new (&locale_c) locale(_S_classic);
 	  }
 	catch(...) 
 	  {
-	    delete __classic_locale;
+	    // Just call destructor, so that locale_impl_c's memory is
+	    // not deallocated via a call to delete.
 	    if (_S_classic)
-	      {
-		_S_classic->_M_remove_reference();
-		_S_global->_M_remove_reference();
-	      }
+	      _S_classic->~_Impl();
 	    _S_classic = _S_global = 0;
-	    // XXX MT
 	    __throw_exception_again;
 	  }
       }
-    return *__classic_locale;
+    return locale_c;
   }
 
   locale::category
@@ -518,8 +521,7 @@ namespace std
   }
 
   locale::facet::
-  facet(size_t __refs) throw()
-  : _M_references(__refs) 
+  facet(size_t __refs) throw() : _M_references(__refs) 
   { }
 
   void  
@@ -531,12 +533,10 @@ namespace std
   locale::facet::
   _M_remove_reference() throw()
   {
-    if (_M_references)
-      --_M_references;
-    else
+    if (_M_references-- == 0)
       {
         try 
-	  { delete this; }  // XXX MT
+	  { delete this; }  
 	catch (...) 
 	  { }
       }
