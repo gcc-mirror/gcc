@@ -1,3 +1,7 @@
+Sun Jan 31 01:15:04 PST 1999 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sun Jan 31 00:52:37 1999  Richard Henderson  <rth@cygnus.com>
 
 	* alpha.md (mov patterns): Emit the assembler aliases mov and fmov
