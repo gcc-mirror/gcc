@@ -169,7 +169,7 @@ struct args_size
  : size_binop (PLUS_EXPR, (SIZE).var, size_int ((SIZE).constant)))
 
 /* Supply a default definition for FUNCTION_ARG_PADDING:
-   usually pad upward, but pad short, non-BLKmode args downward on
+   usually pad upward, but pad short args downward on
    big-endian machines.  */
 
 enum direction {none, upward, downward};  /* Value has this type.  */
