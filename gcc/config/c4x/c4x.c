@@ -436,7 +436,7 @@ c4x_hard_regno_mode_ok (regno, mode)
   return 0;
 }
 
-/* Return non-zero if REGNO1 can be renamed to REGNO2.  */
+/* Return nonzero if REGNO1 can be renamed to REGNO2.  */
 int
 c4x_hard_regno_rename_ok (regno1, regno2)
      unsigned int regno1;
@@ -3366,10 +3366,10 @@ src_operand (op, mode)
       || GET_CODE (op) == CONST)
     return 0;
 
-  /* If TARGET_LOAD_DIRECT_MEMS is non-zero, disallow direct memory
+  /* If TARGET_LOAD_DIRECT_MEMS is nonzero, disallow direct memory
      access to symbolic addresses.  These operands will get forced
      into a register and the movqi expander will generate a
-     HIGH/LO_SUM pair if TARGET_EXPOSE_LDP is non-zero.  */
+     HIGH/LO_SUM pair if TARGET_EXPOSE_LDP is nonzero.  */
   if (GET_CODE (op) == MEM
       && ((GET_CODE (XEXP (op, 0)) == SYMBOL_REF
 	   || GET_CODE (XEXP (op, 0)) == LABEL_REF

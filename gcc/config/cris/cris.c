@@ -2315,7 +2315,7 @@ cris_legitimate_pic_operand (x)
   return ! cris_symbol (x) || cris_got_symbol (x);
 }
 
-/* Return non-zero if there's a SYMBOL_REF or LABEL_REF hiding inside this
+/* Return nonzero if there's a SYMBOL_REF or LABEL_REF hiding inside this
    CONSTANT_P.  */
 
 int
@@ -2352,7 +2352,7 @@ cris_symbol (x)
   return 1;
 }
 
-/* Return non-zero if there's a SYMBOL_REF or LABEL_REF hiding inside this
+/* Return nonzero if there's a SYMBOL_REF or LABEL_REF hiding inside this
    CONSTANT_P, and the symbol does not need a GOT entry.  Also set
    current_function_uses_pic_offset_table if we're generating PIC and ever
    see something that would need one.  */
@@ -2410,7 +2410,7 @@ cris_gotless_symbol (x)
   return 1;
 }
 
-/* Return non-zero if there's a SYMBOL_REF or LABEL_REF hiding inside this
+/* Return nonzero if there's a SYMBOL_REF or LABEL_REF hiding inside this
    CONSTANT_P, and the symbol needs a GOT entry.  */
 
 int

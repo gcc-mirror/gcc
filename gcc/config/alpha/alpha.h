@@ -508,14 +508,14 @@ extern const char *alpha_tls_size_string; /* For -mtls-size= */
 #define DATA_ALIGNMENT(EXP, ALIGN) MAX ((ALIGN), BITS_PER_WORD)
 #endif
 
-/* Set this non-zero if move instructions will actually fail to work
+/* Set this nonzero if move instructions will actually fail to work
    when given unaligned data.
 
    Since we get an error message when we do one, call them invalid.  */
 
 #define STRICT_ALIGNMENT 1
 
-/* Set this non-zero if unaligned move instructions are extremely slow.
+/* Set this nonzero if unaligned move instructions are extremely slow.
 
    On the Alpha, they trap.  */
 
@@ -1468,7 +1468,7 @@ do {									     \
 #define MAX_FIXED_MODE_SIZE	GET_MODE_BITSIZE (TImode)
 
 /* Nonzero if access to memory by bytes is no faster than for words.
-   Also non-zero if doing byte operations (specifically shifts) in registers
+   Also nonzero if doing byte operations (specifically shifts) in registers
    is undesirable. 
 
    On the Alpha, we want to not use the byte operation and instead use

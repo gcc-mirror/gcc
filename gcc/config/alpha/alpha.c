@@ -88,7 +88,7 @@ const char *alpha_tls_size_string; /* -mtls-size=[16|32|64] */
 
 struct alpha_compare alpha_compare;
 
-/* Non-zero if inside of a function, because the Alpha asm can't
+/* Nonzero if inside of a function, because the Alpha asm can't
    handle .files inside of functions.  */
 
 static int inside_function = FALSE;
@@ -3478,7 +3478,7 @@ alpha_emit_setcc (code)
 /* Rewrite a comparison against zero CMP of the form
    (CODE (cc0) (const_int 0)) so it can be written validly in
    a conditional move (if_then_else CMP ...).
-   If both of the operands that set cc0 are non-zero we must emit
+   If both of the operands that set cc0 are nonzero we must emit
    an insn to perform the compare (it can't be done within
    the conditional move).  */
 rtx
@@ -3510,7 +3510,7 @@ alpha_emit_conditional_move (cmp, mode)
 
       /* If we have fp<->int register move instructions, do a cmov by
 	 performing the comparison in fp registers, and move the
-	 zero/non-zero value to integer registers, where we can then
+	 zero/nonzero value to integer registers, where we can then
 	 use a normal cmov, or vice-versa.  */
 
       switch (code)
@@ -4042,7 +4042,7 @@ alpha_split_tfmode_frobsign (operands, operation)
 
   alpha_split_tfmode_pair (operands);
 
-  /* Detect three flavours of operand overlap.  */
+  /* Detect three flavors of operand overlap.  */
   move = 1;
   if (rtx_equal_p (operands[0], operands[2]))
     move = 0;

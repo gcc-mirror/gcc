@@ -338,7 +338,7 @@ avr_reg_class_from_letter  (c)
   return NO_REGS;
 }
 
-/* Return non-zero if FUNC is a naked function.  */
+/* Return nonzero if FUNC is a naked function.  */
 
 static int
 avr_naked_function_p (func)
@@ -4433,7 +4433,7 @@ adjust_insn_length (insn, len)
   return len;
 }
 
-/* Return non-zero if register REG dead after INSN */
+/* Return nonzero if register REG dead after INSN */
 
 int
 reg_unused_after (insn, reg)
@@ -4444,7 +4444,7 @@ reg_unused_after (insn, reg)
 	  || (REG_P(reg) && _reg_unused_after (insn, reg)));
 }
 
-/* Return non-zero if REG is not used after INSN.
+/* Return nonzero if REG is not used after INSN.
    We assume REG is a reload reg, and therefore does
    not live past labels.  It may live past calls or jumps though.  */
 
@@ -5250,7 +5250,7 @@ avr_function_value (type, func)
   return gen_rtx (REG, BLKmode, RET_REGISTER + 2 - offs);
 }
 
-/* Returns non-zero if the number MASK has only one bit set.  */
+/* Returns nonzero if the number MASK has only one bit set.  */
 
 int
 mask_one_bit_p (mask)

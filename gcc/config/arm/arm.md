@@ -8427,7 +8427,7 @@
 ; We must watch to see that the source/destination register isn't also the
 ; same as the base address register, and that if the index is a register,
 ; that it is not the same as the base address register.  In such cases the
-; instruction that we would generate would have UNPREDICTABLE behaviour so 
+; instruction that we would generate would have UNPREDICTABLE behavior so 
 ; we cannot use it.
 
 (define_peephole

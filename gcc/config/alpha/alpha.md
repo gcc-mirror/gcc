@@ -1733,7 +1733,7 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   "ext%M2l %r1,%3,%0"
   [(set_attr "type" "shift")])
 
-;; Combine has some strange notion of preserving existing undefined behaviour
+;; Combine has some strange notion of preserving existing undefined behavior
 ;; in shifts larger than a word size.  So capture these patterns that it
 ;; should have turned into zero_extracts.
 
