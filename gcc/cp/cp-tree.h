@@ -634,10 +634,10 @@ struct language_function
   int temp_name_counter;
   int static_labelno;
   int in_function_try_handler;
-  int expanding_p;
+  int x_expanding_p;
   int stmts_are_full_exprs_p; 
 
-  struct named_label_list *named_label_uses;
+  struct named_label_list *x_named_label_uses;
   struct binding_level *bindings;
 };
 
@@ -719,7 +719,7 @@ struct language_function
    When this is zero, we just accumulate tree structure, without
    interacting with the back end.  */
 
-#define expanding_p cp_function_chain->expanding_p
+#define expanding_p cp_function_chain->x_expanding_p
 
 /* Non-zero if we should treat statements as full expressions.  In
    particular, this variable is no-zero if at the end of a statement
@@ -1384,7 +1384,7 @@ struct lang_type
 
    We use TREE_VIA_PROTECTED and TREE_VIA_PUBLIC, but private
    inheritance is indicated by the absence of the other two flags, not
-   by TREE_VIAR_PRIVATE, which is unused.
+   by TREE_VIA_PRIVATE, which is unused.
 
    The TREE_CHAIN is for scratch space in search.c.  */
 
@@ -2184,11 +2184,6 @@ extern int flag_new_for_scope;
    derived class is made protected, then the derived class and the
    protected_access_node will appear in the DECL_ACCESS for the node.  */
 #define DECL_ACCESS(NODE) (DECL_LANG_SPECIFIC(NODE)->decl_flags.access)
-
-/* C++: all of these are overloaded!
-   These apply to PARM_DECLs and VAR_DECLs.  */
-#define DECL_REFERENCE_SLOT(NODE) ((tree)(NODE)->decl.arguments)
-#define SET_DECL_REFERENCE_SLOT(NODE,VAL) ((NODE)->decl.arguments=VAL)
 
 /* Accessor macros for C++ template decl nodes.  */
 

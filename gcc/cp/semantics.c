@@ -45,6 +45,7 @@ static void do_pushlevel PROTO((void));
 static tree do_poplevel PROTO((void));
 static void finish_expr_stmt_real PROTO((tree, int));
 static tree expand_cond PROTO((tree));
+static tree maybe_convert_cond PROTO((tree));
 
 /* When parsing a template, LAST_TREE contains the last statement
    parsed.  These are chained together through the TREE_CHAIN field,
@@ -61,12 +62,19 @@ static tree expand_cond PROTO((tree));
 
 /* Finish processing the COND, the SUBSTMT condition for STMT.  */
 
-#define FINISH_COND(cond, stmt, substmt) 	\
-  do {						\
-    if (last_tree != stmt)			\
-      RECHAIN_STMTS (stmt, substmt);	        \
-    else					\
-      substmt = cond;				\
+#define FINISH_COND(cond, stmt, substmt) 		\
+  do {							\
+    if (last_tree != stmt)				\
+      {							\
+        RECHAIN_STMTS (stmt, substmt);	                \
+        if (!processing_template_decl)                  \
+          {                                             \
+	    cond = build_tree_list (substmt, cond);     \
+	    substmt = cond;                             \
+          }                                             \
+      }							\
+    else						\
+      substmt = cond;					\
   } while (0)
   
 /* T is a statement.  Add it to the statement-tree.  */
@@ -82,6 +90,26 @@ add_tree (t)
      statements are full-expresions.  We record that fact here.  */
   if (building_stmt_tree ())
     STMT_IS_FULL_EXPR_P (last_tree) = stmts_are_full_exprs_p;
+}
+
+/* COND is the condition-expression for an if, while, etc.,
+   statement.  Convert it to a boolean value, if appropriate.  */
+
+static tree
+maybe_convert_cond (cond)
+     tree cond;
+{
+  /* Empty conditions remain empty.  */
+  if (!cond)
+    return NULL_TREE;
+
+  /* Wait until we instantiate templates before doing conversion.  */
+  if (processing_template_decl)
+    return cond;
+
+  /* Do the conversion.  */
+  cond = convert_from_reference (cond);
+  return condition_conversion (cond);
 }
 
 /* Finish an expression-statement, whose EXPRESSION is as indicated.
@@ -171,12 +199,14 @@ finish_if_stmt_cond (cond, if_stmt)
      tree cond;
      tree if_stmt;
 {
+  cond = maybe_convert_cond (cond);
+
   if (building_stmt_tree ())
     FINISH_COND (cond, if_stmt, IF_COND (if_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
-      expand_start_cond (condition_conversion (cond), 0);
+      expand_start_cond (cond, 0);
     }
 }
 
@@ -263,12 +293,14 @@ finish_while_stmt_cond (cond, while_stmt)
      tree cond;
      tree while_stmt;
 {
+  cond = maybe_convert_cond (cond);
+
   if (building_stmt_tree ())
     FINISH_COND (cond, while_stmt, WHILE_COND (while_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
-      expand_exit_loop_if_false (0, condition_conversion (cond));
+      expand_exit_loop_if_false (0, cond);
     }
 
   /* If COND wasn't a declaration, clear out the
@@ -337,12 +369,14 @@ finish_do_stmt (cond, do_stmt)
      tree cond;
      tree do_stmt;
 {
+  cond = maybe_convert_cond (cond);
+
   if (building_stmt_tree ())
     DO_COND (do_stmt) = cond;
   else
     {
       emit_line_note (input_filename, lineno);
-      expand_exit_loop_if_false (0, condition_conversion (cond));
+      expand_exit_loop_if_false (0, cond);
       expand_end_loop ();
     }
 
@@ -423,13 +457,15 @@ finish_for_cond (cond, for_stmt)
      tree cond;
      tree for_stmt;
 {
+  cond = maybe_convert_cond (cond);
+
   if (building_stmt_tree ())
     FINISH_COND (cond, for_stmt, FOR_COND (for_stmt));
   else
     {
       emit_line_note (input_filename, lineno);
       if (cond)
-	expand_exit_loop_if_false (0, condition_conversion (cond));
+	expand_exit_loop_if_false (0, cond);
     }
   
   /* If the cond wasn't a declaration, clear out the
@@ -2038,10 +2074,10 @@ static tree
 expand_cond (t)
      tree t;
 {
-  if (t && TREE_CODE (t) == DECL_STMT)
+  if (t && TREE_CODE (t) == TREE_LIST)
     {
-      expand_stmt (t);
-      return convert_from_reference (DECL_STMT_DECL (t));
+      expand_stmt (TREE_PURPOSE (t));
+      return TREE_VALUE (t);
     }
   else 
     return t;

@@ -338,24 +338,10 @@ struct named_label_list
   struct named_label_list *next;
 };
 
-/* A list (chain of TREE_LIST nodes) of named label uses.
-   The TREE_PURPOSE field is the list of variables defined
-   in the label's scope defined at the point of use.
-   The TREE_VALUE field is the LABEL_DECL used.
-   The TREE_TYPE field holds `current_binding_level' at the
-   point of the label's use.
+/* Used only for jumps to as-yet undefined labels, since jumps to
+   defined labels can have their validity checked by stmt.c.  */
 
-   BWAHAHAAHAHahhahahahaah.  No, no, no, said the little chicken.
-
-   Look at the pretty struct named_label_list. See the pretty struct
-   with the pretty named fields that describe what they do. See the
-   pretty lack of gratuitous casts. Notice the code got a lot cleaner.
-
-   Used only for jumps to as-yet undefined labels, since
-   jumps to defined labels can have their validity checked
-   by stmt.c.  */
-
-#define named_label_uses cp_function_chain->named_label_uses
+#define named_label_uses cp_function_chain->x_named_label_uses
 
 /* A list of objects which have constructors or destructors
    which reside in the global scope.  The decl is stored in
@@ -4529,7 +4515,8 @@ push_overloaded_decl (decl, flags)
 		  TREE_VALUE (*d) = new_binding;
 		else
 		  /* Build a TREE_LIST to wrap the OVERLOAD.  */
-		  *d = build_tree_list (NULL_TREE, new_binding);
+		  *d = tree_cons (NULL_TREE, new_binding, 
+				  TREE_CHAIN (*d));
 
 		/* And update the CPLUS_BINDING node.  */
 		BINDING_VALUE (IDENTIFIER_BINDING (name))
@@ -7118,19 +7105,14 @@ grok_reference_init (decl, type, init)
       if ((DECL_LANG_SPECIFIC (decl) == 0
 	   || DECL_IN_AGGR_P (decl) == 0)
 	  && ! DECL_THIS_EXTERN (decl))
-	{
-	  cp_error ("`%D' declared as reference but not initialized", decl);
-	  if (TREE_CODE (decl) == VAR_DECL)
-	    SET_DECL_REFERENCE_SLOT (decl, error_mark_node);
-	}
+	cp_error ("`%D' declared as reference but not initialized", decl);
       return;
     }
 
   if (init == error_mark_node)
     return;
 
-  if (TREE_CODE (type) == REFERENCE_TYPE
-      && TREE_CODE (init) == CONSTRUCTOR)
+  if (TREE_CODE (init) == CONSTRUCTOR)
     {
       cp_error ("ANSI C++ forbids use of initializer list to initialize reference `%D'", decl);
       return;
@@ -7154,7 +7136,7 @@ grok_reference_init (decl, type, init)
      LOOKUP_SPECULATIVELY|LOOKUP_NORMAL|DIRECT_BIND, decl);
 
   if (tmp == error_mark_node)
-    goto fail;
+    return;
   else if (tmp != NULL_TREE)
     {
       init = tmp;
@@ -7163,27 +7145,19 @@ grok_reference_init (decl, type, init)
   else
     {
       cp_error ("cannot initialize `%T' from `%T'", type, TREE_TYPE (init));
-      goto fail;
+      return;
     }
 
   /* ?? Can this be optimized in some cases to
      hand back the DECL_INITIAL slot??  */
   if (TYPE_SIZE (TREE_TYPE (type)))
-    {
-      init = convert_from_reference (decl);
-      SET_DECL_REFERENCE_SLOT (decl, init);
-    }
+    init = convert_from_reference (decl);
 
   if (TREE_STATIC (decl) && ! TREE_CONSTANT (DECL_INITIAL (decl)))
     {
       expand_static_init (decl, DECL_INITIAL (decl));
       DECL_INITIAL (decl) = NULL_TREE;
     }
-  return;
-
- fail:
-  if (TREE_CODE (decl) == VAR_DECL)
-    SET_DECL_REFERENCE_SLOT (decl, error_mark_node);
   return;
 }
 
@@ -7686,7 +7660,7 @@ maybe_inject_for_scope_var (decl)
     }
 }
 
-/* Generate code to initialized DECL (a local variable).  */
+/* Generate code to initialize DECL (a local variable).  */
 
 void
 initialize_local_var (decl, init, flags)
@@ -13342,26 +13316,7 @@ store_parm_decls ()
 	      else if (TREE_CODE (TREE_TYPE (parm)) == VOID_TYPE)
 		cp_error ("parameter `%D' declared void", parm);
 	      else
-		{
-		  /* Now fill in DECL_REFERENCE_SLOT for any of the parm decls.
-		     A parameter is assumed not to have any side effects.
-		     If this should change for any reason, then this
-		     will have to wrap the bashed reference type in a save_expr.
-		     
-		     Also, if the parameter type is declared to be an X
-		     and there is an X(X&) constructor, we cannot lay it
-		     into the stack (any more), so we make this parameter
-		     look like it is really of reference type.  Functions
-		     which pass parameters to this function will know to
-		     create a temporary in their frame, and pass a reference
-		     to that.  */
-
-		  if (TREE_CODE (TREE_TYPE (parm)) == REFERENCE_TYPE
-		      && TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))))
-		    SET_DECL_REFERENCE_SLOT (parm, convert_from_reference (parm));
-
-		  pushdecl (parm);
-		}
+		pushdecl (parm);
 	      if (! building_stmt_tree ()
 		  && (cleanup = maybe_build_cleanup (parm), cleanup))
 		{
@@ -13418,9 +13373,12 @@ store_parm_decls ()
      should not be called before the parm can be used.  */
   if (cleanups && !building_stmt_tree ())
     {
-      for (cleanups = nreverse (cleanups); cleanups; cleanups = TREE_CHAIN (cleanups))
+      for (cleanups = nreverse (cleanups); 
+	   cleanups; 
+	   cleanups = TREE_CHAIN (cleanups))
 	{
-	  if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), TREE_VALUE (cleanups)))
+	  if (! expand_decl_cleanup (TREE_PURPOSE (cleanups), 
+				     TREE_VALUE (cleanups)))
 	    cp_error ("parser lost in parsing declaration of `%D'",
 		      TREE_PURPOSE (cleanups));
 	}
