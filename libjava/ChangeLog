@@ -1,5 +1,9 @@
 2002-01-22  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/TextField.java: Replaced with Classpath version.
+	* java/awt/TextArea.java: Replaced with Classpath version.
+	* java/awt/TextComponent.java: Replaced with Classpath version.
+
 	* java/awt/GridBagConstraints.java: Updated copyright.
 
 2002-01-22  Mark Wielaard <mark@klomp.org>
