@@ -1,6 +1,6 @@
 // natDouble.cc - Implementation of java.lang.Double native methods.
 
-/* Copyright (C) 1998, 1999, 2000, 2001, 2003  Free Software Foundation
+/* Copyright (C) 1998, 1999, 2000, 2001, 2003, 2005  Free Software Foundation
 
    This file is part of libgcj.
 
@@ -167,11 +167,15 @@ java::lang::Double::parseDouble(jstring str)
     length--;
 
   // The String could end with a f/F/d/D which is valid but we don't need.
+  bool saw_trailer = false;
   if (length > 0)
     {
       jchar last = str->charAt(length-1);
       if (last == 'f' || last == 'F' || last == 'd' || last == 'D')
-	length--;
+	{
+	  length--;
+	  saw_trailer = true;
+	}
     }
 
   jsize start = 0;
@@ -185,6 +189,17 @@ java::lang::Double::parseDouble(jstring str)
       char *data = (char *) __builtin_alloca (3 * length + 1);
       jsize blength = _Jv_GetStringUTFRegion (str, start, length, data);
       data[blength] = 0; 
+
+      if (! saw_trailer)
+	{
+	  if (! strcmp (data, "NaN") || ! strcmp (data, "+NaN")
+	      || ! strcmp (data, "-NaN"))
+	    return NaN;
+	  else if (! strcmp (data, "Infinity") || ! strcmp (data, "+Infinity"))
+	    return POSITIVE_INFINITY;
+	  else if (! strcmp (data, "-Infinity"))
+	    return NEGATIVE_INFINITY;
+	}
 
       struct _Jv_reent reent;  
       memset (&reent, 0, sizeof reent);
