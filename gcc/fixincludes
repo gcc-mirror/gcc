@@ -283,13 +283,14 @@ while [ $# != 0 ]; do
 	  /\/\/[^*]/			s|//\(.*\)$|/*\1*/|
 	  /[ 	]_IO[A-Z]*[ 	]*(/	s/\(_IO[A-Z]*[ 	]*(\)\(.\),/\1'\''\2'\'',/
 	  /[ 	]BSD43__IO[A-Z]*[ 	]*(/	s/(\(.\),/('\''\1'\'',/
-	  /#define._IO/			s/'\''\([cgxtf]\)'\''/\1/g
-	  /#define.BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
+	  /#[ 	]*define[ 	]*[ 	]_IO/			s/'\''\([cgxtf]\)'\''/\1/g
+	  /#[ 	]*define[ 	]*[ 	]BSD43__IO/		s/'\''\([cgx]\)'\''/\1/g
+	  /#[ 	]*define[ 	]*[ 	]DESIOC/		s/'\''\([cdgx]\)'\''/\1/g
 	  /[^A-Z0-9_]CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
 	  /[^A-Z0-9]_CTRL[ 	]*(/		s/\([^'\'']\))/'\''\1'\'')/
-	  /#define[ 	]*[ 	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
-	  /#define[ 	]*[ 	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
-	  /#define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#[ 	]*define[ 	]*[ 	]CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#[ 	]*define[ 	]*[ 	]_CTRL/		s/'\''\([cgx]\)'\''/\1/g
+	  /#[ 	]*define.BSD43_CTRL/		s/'\''\([cgx]\)'\''/\1/g
 	  /#[	 ]*[el]*if/{
 		s/[a-zA-Z0-9_][a-zA-Z0-9_]*/ & /g
 
@@ -1105,6 +1106,18 @@ fi
 file=drv/netif/if_med.h
 if [ -r ${LIB}/$file ]; then
   if egrep 'Wind River' ${LIB}/$file > /dev/null; then
+    echo Fixing $file, overeager sed script
+    rm ${LIB}/$file
+    sed -e 's|//.*$||g' $file > ${LIB}/$file
+    chmod +w ${LIB}/$file 2>/dev/null
+    chmod a+r ${LIB}/$file 2>/dev/null
+  fi
+fi
+
+# And also with the HP-UX 10 sys/pci.h file
+file=sys/pci.h
+if [ -r ${LIB}/$file ]; then
+  if egrep 'System Private Structures' ${LIB}/$file > /dev/null; then
     echo Fixing $file, overeager sed script
     rm ${LIB}/$file
     sed -e 's|//.*$||g' $file > ${LIB}/$file
