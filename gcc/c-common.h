@@ -195,6 +195,15 @@ extern int flag_isoc99;
 
 extern int flag_digraphs;
 
+/* Nonzero means environment is hosted (i.e., not freestanding) */
+
+extern int flag_hosted;
+
+/* Nonzero means add default format_arg attributes for functions not
+   in ISO C.  */
+
+extern int flag_noniso_default_format_attributes;
+
 /* Nonzero means warn about suggesting putting in ()'s.  */
 
 extern int warn_parentheses;

@@ -299,10 +299,6 @@ extern int flag_cond_mismatch;
 
 extern int flag_no_asm;
 
-/* Nonzero means environment is hosted (i.e., not freestanding) */
-
-extern int flag_hosted;
-
 /* Nonzero means warn about implicit declarations.  */
 
 extern int warn_implicit;

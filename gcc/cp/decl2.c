@@ -822,7 +822,7 @@ lang_decode_option (argc, argv)
     }
   else if (!strcmp (p, "-ansi"))
     flag_no_nonansi_builtin = 1, flag_ansi = 1,
-    flag_no_gnu_keywords = 1;
+    flag_noniso_default_format_attributes = 0, flag_no_gnu_keywords = 1;
 #ifdef SPEW_DEBUG
   /* Undocumented, only ever used when you're invoking cc1plus by hand, since
      it's probably safe to assume no sane person would ever want to use this

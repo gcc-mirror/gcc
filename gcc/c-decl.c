@@ -345,6 +345,11 @@ int flag_digraphs = 1;
 
 int flag_hosted = 1;
 
+/* Nonzero means add default format_arg attributes for functions not
+   in ISO C.  */
+
+int flag_noniso_default_format_attributes = 1;
+
 /* Nonzero means to allow single precision math even if we're generally
    being traditional.  */
 int flag_allow_single_precision = 0;
@@ -550,6 +555,7 @@ c_decode_option (argc, argv)
 	  flag_writable_strings = 0;
 	  flag_no_asm = 1;
 	  flag_no_nonansi_builtin = 1;
+	  flag_noniso_default_format_attributes = 0;
 	  flag_isoc99 = 0;
 	}
       else if (!strcmp (argstart, "iso9899:199409"))
@@ -567,6 +573,7 @@ c_decode_option (argc, argv)
 	  flag_writable_strings = 0;
 	  flag_no_asm = 1;
 	  flag_no_nonansi_builtin = 1;
+	  flag_noniso_default_format_attributes = 0;
 	  flag_isoc99 = 1;
 	  flag_digraphs = 1;
 	  flag_isoc94 = 1;
@@ -577,6 +584,7 @@ c_decode_option (argc, argv)
 	  flag_writable_strings = 0;
 	  flag_no_asm = 0;
 	  flag_no_nonansi_builtin = 0;
+	  flag_noniso_default_format_attributes = 1;
 	  flag_isoc99 = 0;
 	  flag_digraphs = 1;
 	  flag_isoc94 = 0;
@@ -587,6 +595,7 @@ c_decode_option (argc, argv)
 	  flag_writable_strings = 0;
 	  flag_no_asm = 0;
 	  flag_no_nonansi_builtin = 0;
+	  flag_noniso_default_format_attributes = 1;
 	  flag_isoc99 = 1;
 	  flag_digraphs = 1;
 	  flag_isoc94 = 1;

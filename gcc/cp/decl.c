@@ -345,6 +345,15 @@ int flag_isoc94;
 
 int flag_isoc99;
 
+/* Nonzero means we are a hosted implementation for code shared with C.  */
+
+int flag_hosted = 1;
+
+/* Nonzero means add default format_arg attributes for functions not
+   in ISO C.  */
+
+int flag_noniso_default_format_attributes = 1;
+
 /* Nonzero means give `double' the same size as `float'.  */
 
 extern int flag_short_double;

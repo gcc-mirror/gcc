@@ -1,3 +1,10 @@
+2000-08-21  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* decl.c (flag_hosted, flag_noniso_default_format_attributes): New
+	variables.
+	* decl2.c (lang_decode_option): Disable gettext attributes for
+	-ansi.
+
 2000-08-21  Gabriel Dos Reis  <gdr@codesourcery.com>
 
 	* lex.c (lang_init_options): Default diagnostic message maximum
