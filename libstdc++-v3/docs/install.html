@@ -9,7 +9,7 @@
    <TITLE>libstdc++-v3 Installation Instructions</TITLE>
 <LINK REL="home" HREF="http://sources.redhat.com/libstdc++/">
 <LINK REL=StyleSheet HREF="lib3styles.css">
-<!-- $Id: install.html,v 1.5 2000/07/11 21:45:07 pme Exp $ -->
+<!-- $Id: install.html,v 1.6 2000/07/26 21:30:45 pme Exp $ -->
 </HEAD>
 <BODY>
 
@@ -48,14 +48,15 @@
       GCC snapshots can be had from one of the sites on their
       <A HREF="http://gcc.gnu.org/mirrors.html">mirror list</A>.
    </P>
+
    <P>In addition, if you plan to modify the makefiles or regenerate
-      the configure scripts you'll need the nuevo automake (version
-      1.4 from Cygnus, not the one on the net.  In addition, libtool
-      and autoconf are also required to be installed in the same
-      location as the new automake:  you can get them all in one
-      easy-to-use tarball 
-<A HREF="ftp://sources.redhat.com/pub/libstdc++/20000619-maintainer-tools.tar.gz">here</A>.
+      the configure scripts you'll need the nuevo automake, libtool
+      and autoconf to regenerate the Makefiles and configure
+      scripts. These tools are all required to be installed in the
+      same location (most linux distributions install these tools by
+      default, so no worries.)
    </P>
+
    <P>If you don't have bash, and want to run <TT>'make check'</TT> to
       test your build, you'll need to get bash 2.x.  Also recommended
       is GNU Make, since it is the only 'make' that will parse these
@@ -392,7 +393,7 @@
 Comments and suggestions are welcome, and may be sent to
 <A HREF="mailto:pme@sources.redhat.com">Phil Edwards</A> or
 <A HREF="mailto:gdr@egcs.cygnus.com">Gabriel Dos Reis</A>.
-<BR> $Id: install.html,v 1.5 2000/07/11 21:45:07 pme Exp $
+<BR> $Id: install.html,v 1.6 2000/07/26 21:30:45 pme Exp $
 </EM></P>
 
 

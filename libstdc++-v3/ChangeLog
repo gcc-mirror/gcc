@@ -1,3 +1,8 @@
+2000-08-01  Benjamin Kosnik  <bkoz@purist.soma.redhat.com>
+
+	* docs/install.html: Edit bits about requiring a special version
+	of the autotools.
+
 2000-07-31  Benjamin Kosnik  <bkoz@cygnus.com>
 
 	* libio/fileops.cc: Update to current glibc sources.
