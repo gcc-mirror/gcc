@@ -1,3 +1,9 @@
+2004-01-17  Ziemowit Laski  <zlaski@apple.com>
+
+	* objc/objc-act.c (build_objc_method_call): Use target
+	hooks instead of macros to determine if ..._stret 
+	dispatchers should be used (NeXT runtime only).
+
 2004-01-17  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (expand_builtin_expect_jump): Fix mistake in my

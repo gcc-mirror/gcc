@@ -5890,21 +5890,18 @@ build_objc_method_call (int super_flag, tree method_prototype,
 
   if (flag_next_runtime)
     {
-#ifdef STRUCT_VALUE
       /* If we are returning a struct in memory, and the address
 	 of that memory location is passed as a hidden first
 	 argument, then change which messenger entry point this
 	 expr will call.  NB: Note that sender_cast remains
 	 unchanged (it already has a struct return type).  */
-      if ((TREE_CODE (ret_type) == RECORD_TYPE
-	   || TREE_CODE (ret_type) == UNION_TYPE)
-#if defined (DEFAULT_PCC_STRUCT_RETURN) && DEFAULT_PCC_STRUCT_RETURN == 0
-	   && RETURN_IN_MEMORY (ret_type)
-#endif
-	   && STRUCT_VALUE == 0)
+      if (!targetm.calls.struct_value_rtx (0, 0)
+	  && (TREE_CODE (ret_type) == RECORD_TYPE
+	      || TREE_CODE (ret_type) == UNION_TYPE)
+	  && targetm.calls.return_in_memory (ret_type, 0))
 	sender = (super_flag ? umsg_super_stret_decl :
 		flag_nil_receivers ? umsg_stret_decl : umsg_nonnil_stret_decl);
-#endif
+
       method_params = tree_cons (NULL_TREE, lookup_object,
 				 tree_cons (NULL_TREE, selector,
 					    method_params));
