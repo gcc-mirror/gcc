@@ -1,3 +1,16 @@
+2004-09-11  Joseph S. Myers  <jsm@polyomino.org.uk>
+
+	* c-tree.h (struct c_declspecs): Remove typedef_decl.  Add
+	typedef_p and typedef_signed_p.
+	* c-decl.c (shadow_tag_warned): Check typedef_p, not typedef_decl.
+	(grokdeclarator): Don't use typedef_decl for warn_deprecated_use.
+	Check typedef_p and typedef_signed_p, not typedef_decl.
+	(grokfield): Check typedef_p, not typedef_decl.
+	(build_null_declspecs): Initialize typedef_p and typedef_signed_p,
+	not typedef_decl.
+	(declspecs_add_type): Set typedef_p and typedef_signed_p, not
+	typedef_decl.
+
 2004-09-10  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* doc/tm.texi, doc/tree-ssa.texi: Fix typos.

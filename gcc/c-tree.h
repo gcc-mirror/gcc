@@ -136,8 +136,6 @@ struct c_declspecs {
   /* The type specified, not reflecting modifiers such as "short" and
      "unsigned", or NULL_TREE if none.  */
   tree type;
-  /* If the type was specified with a typedef, that typedef decl.  */
-  tree typedef_decl;
   /* The attributes from a typedef decl.  */
   tree decl_attr;
   /* When parsing, the attributes.  Outside the parser, this will be
@@ -153,6 +151,11 @@ struct c_declspecs {
      specifiers to be handled separately from storage class
      specifiers.)  */
   BOOL_BITFIELD non_sc_seen_p : 1;
+  /* Whether the type is specified by a typedef.  */
+  BOOL_BITFIELD typedef_p : 1;
+  /* Whether the type is specified by a typedef whose type is
+     explicitly "signed".  */
+  BOOL_BITFIELD typedef_signed_p : 1;
   /* Whether the specifiers include a deprecated typedef.  */
   BOOL_BITFIELD deprecated_p : 1;
   /* Whether "int" was explicitly specified.  */
