@@ -814,7 +814,7 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
  insn-extract.o insn-opinit.o insn-output.o insn-peep.o insn-recog.o	   \
  integrate.o intl.o jump.o  langhooks.o lcm.o lists.o local-alloc.o  	   \
  loop.o mbchar.o optabs.o options.o opts.o params.o predict.o		   \
- print-rtl.o print-tree.o						   \
+ print-rtl.o print-tree.o value-prof.o					   \
  profile.o ra.o ra-build.o ra-colorize.o ra-debug.o ra-rewrite.o	   \
  real.o recog.o reg-stack.o regclass.o regmove.o regrename.o		   \
  reload.o reload1.o reorg.o resource.o rtl.o rtlanal.o rtl-error.o	   \
@@ -854,7 +854,7 @@ STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
 LIB2FUNCS_ST = _eprintf __gcc_bcmp
 
 # Defined in libgcov.c, included only in gcov library
-LIBGCOV = _gcov _gcov_merge_add
+LIBGCOV = _gcov _gcov_merge_add _gcov_merge_single _gcov_merge_delta
 
 FPBIT_FUNCS = _pack_sf _unpack_sf _addsub_sf _mul_sf _div_sf \
     _fpcmp_parts_sf _compare_sf _eq_sf _ne_sf _gt_sf _ge_sf \
@@ -1636,7 +1636,10 @@ conflict.o : conflict.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(OBSTACK_H)
    $(HASHTAB_H) $(RTL_H) hard-reg-set.h $(BASIC_BLOCK_H)
 profile.o : profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) flags.h output.h $(REGS_H) $(EXPR_H) function.h \
-   toplev.h $(BASIC_BLOCK_H) $(COVERAGE_H)
+   toplev.h $(BASIC_BLOCK_H) $(COVERAGE_H) $(TREE_H) value-prof.h
+value-prof.o : value-prof.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
+   $(BASIC_BLOCK_H) hard-reg-set.h value-prof.h $(EXPR_H) output.h flags.h \
+   $(RECOG_H) insn-config.h $(OPTABS_H)
 loop.o : loop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) flags.h $(LOOP_H) \
    insn-config.h $(REGS_H) hard-reg-set.h $(RECOG_H) $(EXPR_H) \
    real.h $(PREDICT_H) $(BASIC_BLOCK_H) function.h cfgloop.h \

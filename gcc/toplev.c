@@ -410,6 +410,10 @@ int profile_flag = 0;
 
 int profile_arc_flag = 0;
 
+/* Nonzero if value histograms should be measured.  */
+
+int flag_profile_values = 0;
+
 /* Nonzero if generating info for gcov to calculate line test coverage.  */
 
 int flag_test_coverage = 0;
@@ -1184,6 +1188,8 @@ static const lang_independent_options f_options[] =
    N_("Create data files needed by gcov") },
   {"branch-probabilities", &flag_dummy, 1,
    N_("Use profiling information for branch probabilities") },
+  {"profile-values", &flag_profile_values, 1,
+   N_("Insert code to profile values of expressions") },
   {"profile", &flag_dummy, 1,
    N_("Enable basic program profiling code") },
   {"reorder-blocks", &flag_dummy, 1,

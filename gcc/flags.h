@@ -191,6 +191,10 @@ extern int profile_flag;
 
 extern int profile_arc_flag;
 
+/* Nonzero if value profile should be measured.  */
+
+extern int flag_profile_values;
+
 /* Nonzero if generating info for gcov to calculate line test coverage.  */
 
 extern int flag_test_coverage;

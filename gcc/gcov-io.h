@@ -269,14 +269,24 @@ typedef HOST_WIDEST_INT gcov_type;
 #define GCOV_COUNTER_ARCS 	0  /* Arc transitions.  */
 #define GCOV_COUNTERS_SUMMABLE	1  /* Counters which can be
 				      summaried.  */
-#define GCOV_COUNTERS		1
-
-/* A list of human readable names of the counters */
-#define GCOV_COUNTER_NAMES	{"arcs"}
-
-/* Names of merge functions for counters.  */
-#define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add"}
-
+#define GCOV_COUNTER_V_INTERVAL	1  /* Histogram of value inside an interval.  */
+#define GCOV_COUNTER_V_POW2	2  /* Histogram of exact power2 logarithm
+				      of a value.  */
+#define GCOV_COUNTER_V_SINGLE	3  /* The most common value of expression.  */
+#define GCOV_COUNTER_V_DELTA	4  /* The most common difference between
+				      consecutive values of expression.  */
+#define GCOV_COUNTERS		5
+  
+  /* A list of human readable names of the counters */
+#define GCOV_COUNTER_NAMES	{"arcs", "interval", "pow2", "single", "delta"}
+  
+  /* Names of merge functions for counters.  */
+#define GCOV_MERGE_FUNCTIONS	{"__gcov_merge_add",	\
+				 "__gcov_merge_add",	\
+				 "__gcov_merge_add",	\
+				 "__gcov_merge_single",	\
+				 "__gcov_merge_delta"}
+  
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\
 	(GCOV_TAG_COUNTER_BASE + ((gcov_unsigned_t)(COUNT) << 17))
@@ -380,6 +390,13 @@ extern void __gcov_flush (void);
 
 /* The merge function that just sums the counters.  */
 extern void __gcov_merge_add (gcov_type *, unsigned);
+
+/* The merge function to choose the most often value.  */
+extern void __gcov_merge_single (gcov_type *, unsigned);
+
+/* The merge function to choose the most often difference between consecutive
+   values.  */
+extern void __gcov_merge_delta (gcov_type *, unsigned);
 #endif /* IN_LIBGCOV */
 
 #if IN_LIBGCOV >= 0
