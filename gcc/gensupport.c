@@ -50,6 +50,7 @@ static char *base_dir = NULL;
 struct queue_elem
 {
   rtx data;
+  const char *filename;
   int lineno;
   struct queue_elem *next;
 };
@@ -63,7 +64,8 @@ static struct queue_elem **define_cond_exec_tail = &define_cond_exec_queue;
 static struct queue_elem *other_queue;
 static struct queue_elem **other_tail = &other_queue;
 
-static void queue_pattern PARAMS ((rtx, struct queue_elem ***, int));
+static void queue_pattern PARAMS ((rtx, struct queue_elem ***,
+				   const char *, int));
 
 /* Current maximum length of directory names in the search path
    for include files.  (Altered as we get more of them.)  */
@@ -131,13 +133,15 @@ gen_rtx_CONST_INT (mode, arg)
 /* Queue PATTERN on LIST_TAIL.  */
 
 static void
-queue_pattern (pattern, list_tail, lineno)
+queue_pattern (pattern, list_tail, filename, lineno)
      rtx pattern;
      struct queue_elem ***list_tail;
+     const char *filename;
      int lineno;
 {
   struct queue_elem *e = (struct queue_elem *) xmalloc (sizeof (*e));
   e->data = pattern;
+  e->filename = filename;
   e->lineno = lineno;
   e->next = NULL;
   **list_tail = e;
@@ -248,11 +252,13 @@ process_include (desc, lineno)
       process_rtx (desc, lineno);
     }
 
+  /* Do not free pathname.  It is attached to the various rtx queue
+     elements.  */
+
   read_rtx_filename = old_filename;
   read_rtx_lineno = old_lineno;
 
   fclose (input_file);
-  free (pathname);
 }
 
 /* Process a top level rtx in some way, queueing as appropriate.  */
@@ -265,15 +271,15 @@ process_rtx (desc, lineno)
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
-      queue_pattern (desc, &define_insn_tail, lineno);
+      queue_pattern (desc, &define_insn_tail, read_rtx_filename, lineno);
       break;
 
     case DEFINE_COND_EXEC:
-      queue_pattern (desc, &define_cond_exec_tail, lineno);
+      queue_pattern (desc, &define_cond_exec_tail, read_rtx_filename, lineno);
       break;
 
     case DEFINE_ATTR:
-      queue_pattern (desc, &define_attr_tail, lineno);
+      queue_pattern (desc, &define_attr_tail, read_rtx_filename, lineno);
       break;
 
     case INCLUDE:
@@ -324,13 +330,13 @@ process_rtx (desc, lineno)
 	XVEC (desc, 4) = attr;
 
 	/* Queue them.  */
-	queue_pattern (desc, &define_insn_tail, lineno);
-	queue_pattern (split, &other_tail, lineno);
+	queue_pattern (desc, &define_insn_tail, read_rtx_filename, lineno);
+	queue_pattern (split, &other_tail, read_rtx_filename, lineno);
 	break;
       }
 
     default:
-      queue_pattern (desc, &other_tail, lineno);
+      queue_pattern (desc, &other_tail, read_rtx_filename, lineno);
       break;
     }
 }
@@ -850,7 +856,8 @@ process_one_cond_exec (ce_elem)
 	 patterns into the define_insn chain just after their generator
 	 is something we'll have to experiment with.  */
 
-      queue_pattern (insn, &other_tail, insn_elem->lineno);
+      queue_pattern (insn, &other_tail, insn_elem->filename,
+		     insn_elem->lineno);
     }
 }
 
@@ -1011,6 +1018,7 @@ read_md_rtx (lineno, seqnr)
   elem = *queue;
   *queue = elem->next;
   desc = elem->data;
+  read_rtx_filename = elem->filename;
   *lineno = elem->lineno;
   *seqnr = sequence_num;
 
