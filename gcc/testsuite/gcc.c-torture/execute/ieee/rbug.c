@@ -1,3 +1,7 @@
+#if defined(__i386__) && defined(__FreeBSD__)
+#include <ieeefp.h>
+#endif
+
 double d (unsigned long long k)
 {
   double x;
@@ -18,6 +22,12 @@ main ()
 {
   unsigned long long int k;
   double x;
+
+#if defined(__i386__) && defined(__FreeBSD__)
+  /* This test case assumes extended-precision, but FreeBSD defaults to
+     double-precision.  Make it so.  */
+  fpsetprec (FP_PE);
+#endif
 
   if (sizeof (double) >= 8)
     {
