@@ -28,8 +28,8 @@ long in the same registers used for @code{int} or @code{double} return
 values.  (GCC typically allocates variables of such types in
 registers also.)  Structures and unions of other sizes are returned by
 storing them into an address passed by the caller (usually in a
-register).  The machine-description macros @code{STRUCT_VALUE} and
-@code{STRUCT_INCOMING_VALUE} tell GCC where to pass this address.
+register).  The target hook @code{TARGET_STRUCT_VALUE_RTX}
+tells GCC where to pass this address.
 
 By contrast, PCC on most target machines returns structures and unions
 of any size by copying the data into an area of static storage, and then
