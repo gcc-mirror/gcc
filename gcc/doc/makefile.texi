@@ -48,9 +48,9 @@ You can specify specific tests by setting RUNTESTFLAGS to be the name
 of the @file{.exp} file, optionally followed by (for some tests) an equals
 and a file wildcard, like:
 
-@example
+@smallexample
 make check-gcc RUNTESTFLAGS="execute.exp=19980413-*"
-@end example
+@end smallexample
 
 Note that running the testsuite may require additional tools be
 installed, such as TCL or dejagnu.

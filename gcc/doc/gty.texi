@@ -95,18 +95,21 @@ option is a fragment of C code that calculates the length.
 
 The second case is when a structure or a global variable contains a
 pointer to an array, like this:
-@verbatim
-  tree * GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
-@end verbatim
+@smallexample
+tree *
+  GTY ((length ("%h.regno_pointer_align_length"))) regno_decl;
+@end smallexample
 In this case, @code{regno_decl} has been allocated by writing something like
-@verbatim
-  x->regno_decl = ggc_alloc (x->regno_pointer_align_length * sizeof (tree));
-@end verbatim
+@smallexample
+  x->regno_decl =
+    ggc_alloc (x->regno_pointer_align_length * sizeof (tree));
+@end smallexample
 and the @code{length} provides the length of the field.
 
 This second use of @code{length} also works on global variables, like:
 @verbatim
-static GTY((length ("reg_base_value_size"))) rtx *reg_base_value;
+  static GTY((length ("reg_base_value_size")))
+    rtx *reg_base_value;
 @end verbatim
 
 @findex skip
@@ -126,17 +129,17 @@ field really isn't ever used.
 The type machinery needs to be told which field of a @code{union} is
 currently active.  This is done by giving each field a constant @code{tag}
 value, and then specifying a discriminator using @code{desc}.  For example,
-@verbatim
+@smallexample
 struct tree_binding GTY(())
-{
+@{
   struct tree_common common;
-  union tree_binding_u {
+  union tree_binding_u @{
     tree GTY ((tag ("0"))) scope;
     struct cp_binding_level * GTY ((tag ("1"))) level;
-  } GTY ((desc ("BINDING_HAS_LEVEL_P ((tree)&%0)"))) scope;
+  @} GTY ((desc ("BINDING_HAS_LEVEL_P ((tree)&%0)"))) scope;
   tree value;
-};
-@end verbatim
+@};
+@end smallexample
 
 In the @code{desc} option, the ``current structure'' is the union that
 it discriminates.  Use @code{%1} to mean the structure containing it.

@@ -270,11 +270,12 @@ in the following sections.
 -fif-conversion -fif-conversion2 @gol
 -finline-functions  -finline-limit=@var{n}  -fkeep-inline-functions @gol
 -fkeep-static-consts  -fmerge-constants  -fmerge-all-constants @gol
--fmove-all-movables  -fnew-ra -fno-default-inline  -fno-defer-pop @gol
+-fmove-all-movables  -fnew-ra  -fno-default-inline @gol
+-fno-defer-pop @gol
 -fno-function-cse  -fno-guess-branch-probability @gol
 -fno-inline  -fno-math-errno  -fno-peephole  -fno-peephole2 @gol
--funsafe-math-optimizations -ffinite-math-only -fno-trapping-math @gol
--fno-zero-initialized-in-bss @gol
+-funsafe-math-optimizations -ffinite-math-only @gol
+-fno-trapping-math -fno-zero-initialized-in-bss @gol
 -fomit-frame-pointer  -foptimize-register-move @gol
 -foptimize-sibling-calls  -fprefetch-loop-arrays @gol
 -freduce-all-givs -fregmove  -frename-registers @gol
@@ -282,8 +283,8 @@ in the following sections.
 -frerun-cse-after-loop  -frerun-loop-opt @gol
 -fschedule-insns  -fschedule-insns2 -fsignaling-nans @gol
 -fsingle-precision-constant  -fssa -fssa-ccp -fssa-dce @gol
--fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps  -ftrapv @gol
--funroll-all-loops  -funroll-loops  @gol
+-fstrength-reduce  -fstrict-aliasing  -ftracer -fthread-jumps @gol
+-ftrapv -funroll-all-loops  -funroll-loops  @gol
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os}
 
@@ -338,7 +339,8 @@ in the following sections.
 @emph{M68hc1x Options}
 @gccoptlist{
 -m6811  -m6812  -m68hc11  -m68hc12 @gol
--mauto-incdec  -minmax  -mlong-calls  -mshort  -msoft-reg-count=@var{count}}
+-mauto-incdec  -minmax  -mlong-calls  -mshort @gol
+-msoft-reg-count=@var{count}}
 
 @emph{VAX Options}
 @gccoptlist{
@@ -447,7 +449,7 @@ in the following sections.
 -mno-relocatable  -mrelocatable-lib  -mno-relocatable-lib @gol
 -mtoc  -mno-toc -mlittle  -mlittle-endian  -mbig  -mbig-endian @gol
 -mcall-aix -mcall-sysv -mcall-netbsd @gol
--maix-struct-return -msvr4-struct-return
+-maix-struct-return -msvr4-struct-return @gol
 -mabi=altivec -mabi=no-altivec @gol
 -mabi=spe -mabi=no-spe @gol
 -misel=yes -misel=no @gol
@@ -477,7 +479,7 @@ in the following sections.
 -m4650  -msingle-float  -mmad @gol
 -mstats  -EL  -EB  -G @var{num}  -nocpp @gol
 -mabi=32  -mabi=n32  -mabi=64  -mabi=eabi @gol
--mfix7000  -mno-crt0 -mflush-func=@var{func} -mno-flush-func
+-mfix7000  -mno-crt0 -mflush-func=@var{func} -mno-flush-func @gol
 -mbranch-likely -mno-branch-likely}
 
 @emph{i386 and x86-64 Options}
@@ -619,8 +621,8 @@ in the following sections.
 
 @emph{D30V Options}
 @gccoptlist{
--mextmem  -mextmemory  -monchip  -mno-asm-optimize  -masm-optimize @gol
--mbranch-cost=@var{n} -mcond-exec=@var{n}}
+-mextmem  -mextmemory  -monchip  -mno-asm-optimize @gol
+-masm-optimize -mbranch-cost=@var{n} -mcond-exec=@var{n}}
 
 @emph{S/390 and zSeries Options}
 @gccoptlist{
@@ -684,7 +686,8 @@ in the following sections.
 -fverbose-asm  -fpack-struct  -fstack-check @gol
 -fstack-limit-register=@var{reg}  -fstack-limit-symbol=@var{sym} @gol
 -fargument-alias  -fargument-noalias @gol
--fargument-noalias-global  -fleading-underscore -ftls-model=@var{model}}
+-fargument-noalias-global  -fleading-underscore @gol
+-ftls-model=@var{model}}
 @end table
 
 @menu

@@ -1445,9 +1445,9 @@ variable number of arguments much as a function can.  The syntax for
 defining the macro is similar to that of a function.  Here is an
 example:
 
-@example
+@smallexample
 #define debug(format, ...) fprintf (stderr, format, __VA_ARGS__)
-@end example
+@end smallexample
 
 Here @samp{@dots{}} is a @dfn{variable argument}.  In the invocation of
 such a macro, it represents the zero or more tokens until the closing
@@ -1486,9 +1486,9 @@ string.
 To help solve this problem, CPP behaves specially for variable arguments
 used with the token paste operator, @samp{##}.  If instead you write
 
-@example
+@smallexample
 #define debug(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
-@end example
+@end smallexample
 
 and if the variable arguments are omitted or empty, the @samp{##}
 operator causes the preprocessor to remove the comma before it.  If you
@@ -1798,9 +1798,9 @@ nested subobject to initialize; the list is taken relative to the
 subobject corresponding to the closest surrounding brace pair.  For
 example, with the @samp{struct point} declaration above:
 
-@example
+@smallexample
 struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
-@end example
+@end smallexample
 
 @noindent
 If the same field is initialized multiple times, it will have value from
@@ -3420,7 +3420,7 @@ any other type of objects, just like the @code{char} type.  See
 
 Example of use:
 
-@example
+@smallexample
 typedef short __attribute__((__may_alias__)) short_a;
 
 int
@@ -3436,7 +3436,7 @@ main (void)
 
   exit(0);
 @}
-@end example
+@end smallexample
 
 If you replaced @code{short_a} with @code{short} in the variable
 declaration, the above program would abort when compiled with
@@ -4688,13 +4688,15 @@ as @var{exp2}.
 Example:
 
 @smallexample
-#define foo(x)                                                               \
-  __builtin_choose_expr (__builtin_types_compatible_p (typeof (x), double),  \
-    foo_double (x),                                                          \
-    __builtin_choose_expr (__builtin_types_compatible_p (typeof (x), float), \
-      foo_float (x),                                                         \
-      /* @r{The void expression results in a compile-time error}             \
-         @r{when assigning the result to something.}  */                     \
+#define foo(x)                                                    \
+  __builtin_choose_expr (                                         \
+    __builtin_types_compatible_p (typeof (x), double),            \
+    foo_double (x),                                               \
+    __builtin_choose_expr (                                       \
+      __builtin_types_compatible_p (typeof (x), float),           \
+      foo_float (x),                                              \
+      /* @r{The void expression results in a compile-time error}  \
+         @r{when assigning the result to something.}  */          \
       (void)0))
 @end smallexample
 
@@ -7289,10 +7291,10 @@ inclusive.  Lower numbers indicate a higher priority.
 In the following example, @code{A} would normally be created before
 @code{B}, but the @code{init_priority} attribute has reversed that order:
 
-@example
+@smallexample
 Some_Class  A  __attribute__ ((init_priority (2000)));
 Some_Class  B  __attribute__ ((init_priority (543)));
-@end example
+@end smallexample
 
 @noindent
 Note that the particular values of @var{priority} do not matter; only their
@@ -7318,7 +7320,7 @@ appropriately.  However, if C++ code only needs to execute destructors
 when Java exceptions are thrown through it, GCC will guess incorrectly.
 Sample problematic code is:
 
-@example
+@smallexample
   struct S @{ ~S(); @};
   extern void bar();    // is written in Java, and may throw exceptions
   void foo()
@@ -7326,7 +7328,7 @@ Sample problematic code is:
     S s;
     bar();
   @}
-@end example
+@end smallexample
 
 @noindent
 The usual effect of an incorrect guess is a link failure, complaining of
