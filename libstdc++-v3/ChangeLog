@@ -1,3 +1,11 @@
+2003-04-15  Benjamin Kosnik  <bkoz at redhat dot com>
+	    Paolo Carlini  <pcarlini at unitus dot it>
+
+	PR libstdc++/9423
+	* docs/html/27_io/howto.html
+	('The buffering is screwing up my program!'): Explain that
+	opening counts as an I/O operation.
+
 2003-04-15  Andreas Tobler  <a.tobler@schweiz.ch>
 
 	* testsuite/thread/pthread1.cc: Enable for darwin test.
