@@ -1,3 +1,10 @@
+1998-11-29  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* pt.c (unify, case OFFSET_TYPE): Pass down 'strict' rather than
+	UNIFY_ALLOW_NONE.
+	(convert_nontype_argument): Use TYPE_PTRMEMFUNC_FN_TYPE.
+	(resolve_overloaded_unification): Strip baselinks.
+
 Fri Nov 27 13:07:23 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* g++spec.c: Don't prototype xmalloc.

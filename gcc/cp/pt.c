@@ -2737,7 +2737,7 @@ convert_nontype_argument (type, expr)
 
 	fns = TREE_OPERAND (expr, 0);
 	
-	fn = instantiate_type (TREE_TYPE (TREE_TYPE (type)), 
+	fn = instantiate_type (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)),
 			       fns, 0);
 	
 	if (fn == error_mark_node)
@@ -7151,6 +7151,11 @@ resolve_overloaded_unification (tparms, targs, parm, arg, strict,
 
   if (TREE_CODE (arg) == ADDR_EXPR)
     arg = TREE_OPERAND (arg, 0);
+
+  /* Strip baselink information.  */
+  while (TREE_CODE (arg) == TREE_LIST)
+    arg = TREE_VALUE (arg);
+
   if (TREE_CODE (arg) == TEMPLATE_ID_EXPR)
     {
       /* If we got some explicit template args, we need to plug them into
@@ -7711,7 +7716,7 @@ unify (tparms, targs, parm, arg, strict, explicit_mask)
 		 TYPE_OFFSET_BASETYPE (arg), UNIFY_ALLOW_NONE, explicit_mask))
 	return 1;
       return unify (tparms, targs, TREE_TYPE (parm), TREE_TYPE (arg),
-		    UNIFY_ALLOW_NONE, explicit_mask);
+		    strict, explicit_mask);
 
     case CONST_DECL:
       if (arg != decl_constant_value (parm)) 
