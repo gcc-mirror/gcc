@@ -396,7 +396,6 @@ create_primitive_vtable (name)
   sprintf (buf, "_Jv_%sVTable", name);
   r = build_decl (VAR_DECL, get_identifier (buf), ptr_type_node);
   DECL_EXTERNAL (r) = 1;
-  make_decl_rtl (r, buf);
   return r;
 }
 
