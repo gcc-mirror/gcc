@@ -390,7 +390,7 @@ template <class _CharT, class _Alloc>
 // Concatenate a C string onto a leaf rope by copying the rope data.
 // Used for short ropes.
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeLeaf*
+typename rope<_CharT,_Alloc>::_RopeLeaf*
 rope<_CharT,_Alloc>::_S_leaf_concat_char_iter
 		(_RopeLeaf* __r, const _CharT* __iter, size_t __len)
 {
@@ -418,7 +418,7 @@ rope<_CharT,_Alloc>::_S_leaf_concat_char_iter
 #ifndef __GC
 // As above, but it's OK to clobber original if refcount is 1
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeLeaf*
+typename rope<_CharT,_Alloc>::_RopeLeaf*
 rope<_CharT,_Alloc>::_S_destr_leaf_concat_char_iter
 		(_RopeLeaf* __r, const _CharT* __iter, size_t __len)
 {
@@ -449,7 +449,7 @@ rope<_CharT,_Alloc>::_S_destr_leaf_concat_char_iter
 // Does not increment (nor decrement on exception) child reference counts.
 // Result has ref count 1.
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeRep*
+typename rope<_CharT,_Alloc>::_RopeRep*
 rope<_CharT,_Alloc>::_S_tree_concat (_RopeRep* __left, _RopeRep* __right)
 {
   _RopeConcatenation* __result = _S_new_RopeConcatenation(__left, __right, 
@@ -482,6 +482,7 @@ rope<_CharT,_Alloc>::_S_tree_concat (_RopeRep* __left, _RopeRep* __right)
 }
 
 template <class _CharT, class _Alloc>
+typename
 rope<_CharT,_Alloc>::_RopeRep* rope<_CharT,_Alloc>::_S_concat_char_iter
 		(_RopeRep* __r, const _CharT*__s, size_t __slen)
 {
@@ -536,7 +537,7 @@ rope<_CharT,_Alloc>::_RopeRep* rope<_CharT,_Alloc>::_S_concat_char_iter
 
 #ifndef __GC
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeRep* 
+typename rope<_CharT,_Alloc>::_RopeRep* 
 rope<_CharT,_Alloc>::_S_destr_concat_char_iter(
   _RopeRep* __r, const _CharT* __s, size_t __slen)
 {
@@ -593,7 +594,7 @@ rope<_CharT,_Alloc>::_S_destr_concat_char_iter(
 #endif /* !__GC */
 
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeRep*
+typename rope<_CharT,_Alloc>::_RopeRep*
 rope<_CharT,_Alloc>::_S_concat(_RopeRep* __left, _RopeRep* __right)
 {
     if (0 == __left) {
@@ -648,7 +649,7 @@ rope<_CharT,_Alloc>::_S_concat(_RopeRep* __left, _RopeRep* __right)
 }
 
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeRep*
+typename rope<_CharT,_Alloc>::_RopeRep*
 rope<_CharT,_Alloc>::_S_substring(_RopeRep* __base, 
                                size_t __start, size_t __endp1)
 {
@@ -1073,7 +1074,7 @@ rope<_CharT,_Alloc>::_S_min_len[
 // These are Fibonacci numbers < 2**32.
 
 template <class _CharT, class _Alloc>
-rope<_CharT,_Alloc>::_RopeRep*
+typename rope<_CharT,_Alloc>::_RopeRep*
 rope<_CharT,_Alloc>::_S_balance(_RopeRep* __r)
 {
     _RopeRep* __forest[_RopeRep::_S_max_rope_depth + 1];

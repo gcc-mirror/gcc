@@ -1055,7 +1055,8 @@ class _Rope_iterator : public _Rope_iterator_base<_CharT,_Alloc> {
         _RopeRep::_S_unref(_M_root);
     }
     _Rope_iterator& operator= (const _Rope_iterator& __x) {
-        _RopeRep* __old = _M_root;
+        typename
+	  _Rope_iterator_base<_CharT,_Alloc>::_RopeRep* __old = _M_root;
 
         _RopeRep::_S_ref(__x._M_root);
         if (0 != __x._M_buf_ptr) {
@@ -2183,7 +2184,7 @@ class rope : public _Rope_base<_CharT,_Alloc> {
 };
 
 template <class _CharT, class _Alloc>
-const rope<_CharT, _Alloc>::size_type rope<_CharT, _Alloc>::npos =
+const typename rope<_CharT, _Alloc>::size_type rope<_CharT, _Alloc>::npos =
                         (size_type)(-1);
 
 template <class _CharT, class _Alloc>
