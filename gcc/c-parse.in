@@ -517,7 +517,8 @@ expr_no_commas:
 		  C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
 	| expr_no_commas ASSIGN expr_no_commas
 		{ $$ = build_modify_expr ($1, $2, $3);
-		  C_SET_EXP_ORIGINAL_CODE ($$, MODIFY_EXPR); }
+		  /* This inhibits warnings in truthvalue_conversion.  */
+		  C_SET_EXP_ORIGINAL_CODE ($$, ERROR_MARK); }
 	;
 
 primary:
