@@ -1398,7 +1398,7 @@ final_scan_insn (insn, file, optimize, prescan, nopeepholes)
 #endif
 #ifdef SDB_DEBUGGING_INFO
 	  if (write_symbols == SDB_DEBUG && block_depth >= 0)
-	    sdbout_end_block (file, last_linenum);
+	    sdbout_end_block (file, last_linenum, pending_blocks[block_depth]);
 #endif
 #ifdef DWARF_DEBUGGING_INFO
 	  if (write_symbols == DWARF_DEBUG && block_depth >= 1)
