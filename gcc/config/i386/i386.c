@@ -5610,12 +5610,16 @@ output_ashlsi3 (operands)
   return AS2 (sal%L0,%2,%0);
 }
 
-/* Calculate the length of the memory address in the instruction
-   encoding.  Does not include the one-byte modrm, opcode, or prefix.  */
+/* Given the memory address ADDR, calculate the length of the address or
+   the length of just the displacement (controlled by DISP_LENGTH).
+  
+   The length returned does not include the one-byte modrm, opcode,
+   or prefix.  */
 
 int
-memory_address_length (addr)
+memory_address_info (addr, disp_length)
      rtx addr;
+     int disp_length;
 {
   rtx base, index, disp, scale;
   rtx op0, op1;
@@ -5709,6 +5713,11 @@ memory_address_length (addr)
   if (base == frame_pointer_rtx && !disp)
     disp = const0_rtx;
 
+  /* Scaling can not be encoded without base or displacement.  
+     Except for scale == 1 where we can encode reg + reg instead of reg * 2.  */
+  if (!base && index && scale != 1)
+    disp = const0_rtx;
+
   /* Find the length of the displacement constant.  */
   len = 0;
   if (disp)
@@ -5720,8 +5729,9 @@ memory_address_length (addr)
 	len = 4;
     }
 
-  /* An index requires the two-byte modrm form.  */
-  if (index)
+  /* An index requires the two-byte modrm form.  Not important
+     if we are computing just length of the displacement.  */
+  if (index && ! disp_length)
     len += 1;
 
   return len;
