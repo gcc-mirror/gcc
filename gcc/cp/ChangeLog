@@ -1,3 +1,7 @@
+Tue Sep 30 00:18:26 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* method.c (synthesize_method): If at_eof, determine our linkage.
+
 1997-09-29  Paul Eggert  <eggert@twinsun.com>
 
 	* lex.c (real_yylex): Treat `$' just like `_', except issue a

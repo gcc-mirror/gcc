@@ -2177,6 +2177,9 @@ synthesize_method (fndecl)
   int nested = (current_function_decl != NULL_TREE);
   tree context = hack_decl_function_context (fndecl);
 
+  if (at_eof)
+    import_export_decl (fndecl);
+
   if (! context)
     push_to_top_level ();
   else if (nested)
