@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
+extern void abort (void);
 extern int inside_main;
 
 int

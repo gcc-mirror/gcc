@@ -1,3 +1,4 @@
+extern void abort (void);
 extern int abs_called;
 extern int inside_main;
 

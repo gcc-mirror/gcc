@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stddef.h>
+extern void abort (void);
 extern int inside_main;
 extern size_t strlen(const char *);
 int

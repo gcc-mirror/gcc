@@ -1,3 +1,4 @@
+extern void abort (void);
 extern int inside_main;
 typedef __SIZE_TYPE__ size_t;
 

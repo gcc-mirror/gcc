@@ -1,10 +1,16 @@
+extern void abort (void);
+typedef __SIZE_TYPE__ size_t;
+extern size_t strlen(const char *);
+extern char *strchr(const char *, int);
+extern int strcmp(const char *, const char *);
+extern int strncmp(const char *, const char *, size_t);
 extern int inside_main;
 extern const char *p;
 
 char *
 my_strstr (const char *s1, const char *s2)
 {
-  __SIZE_TYPE__ len = strlen (s2);
+  const size_t len = strlen (s2);
 
 #ifdef __OPTIMIZE__
   /* If optimizing, we should be called only in the strstr (foo + 2, p)
