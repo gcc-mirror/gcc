@@ -1,3 +1,8 @@
+2002-02-04  Hartmut Penner  <hpenner@de.ibm.com>
+
+        * varasm.c (decode_rtx_const): Allow unspec (symbol_ref) in
+        constant pool to be identical by string address and index.
+
 2002-02-04  Anthony Green  <green@redhat.com>
 
 	* output.h (SECTION_OVERRIDE): Define.
