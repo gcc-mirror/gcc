@@ -5603,7 +5603,6 @@ ffecom_expr_power_integer_ (ffebld expr)
 
     ffecom_start_compstmt ();
 
-#ifndef HAHA
     rtmp = ffecom_make_tempvar ("power_r", rtype,
 				FFETARGET_charactersizeNONE, -1);
     ltmp = ffecom_make_tempvar ("power_l", ltype,
@@ -5616,25 +5615,6 @@ ffecom_expr_power_integer_ (ffebld expr)
 				    FFETARGET_charactersizeNONE, -1);
     else
       divide = NULL_TREE;
-#else  /* HAHA */
-    {
-      tree hook;
-
-      hook = ffebld_nonter_hook (expr);
-      assert (hook);
-      assert (TREE_CODE (hook) == TREE_VEC);
-      assert (TREE_VEC_LENGTH (hook) == 4);
-      rtmp = TREE_VEC_ELT (hook, 0);
-      ltmp = TREE_VEC_ELT (hook, 1);
-      result = TREE_VEC_ELT (hook, 2);
-      divide = TREE_VEC_ELT (hook, 3);
-      if (TREE_CODE (ltype) == COMPLEX_TYPE
-	  || TREE_CODE (ltype) == RECORD_TYPE)
-	assert (divide);
-      else
-	assert (! divide);
-    }
-#endif  /* HAHA */
 
     expand_expr_stmt (ffecom_modify (void_type_node,
 				     rtmp,
@@ -12424,27 +12404,6 @@ ffecom_prepare_expr_ (ffebld expr, ffebld dest UNUSED)
 	  break;
 	}
       break;
-
-#ifdef HAHA
-    case FFEBLD_opPOWER:
-      {
-	tree rtype, ltype;
-	tree rtmp, ltmp, result;
-
-	ltype = ffecom_type_expr (ffebld_left (expr));
-	rtype = ffecom_type_expr (ffebld_right (expr));
-
-	rtmp = ffecom_make_tempvar (rtype, FFETARGET_charactersizeNONE, -1);
-	ltmp = ffecom_make_tempvar (ltype, FFETARGET_charactersizeNONE, -1);
-	result = ffecom_make_tempvar (ltype, FFETARGET_charactersizeNONE, -1);
-
-	tempvar = make_tree_vec (3);
-	TREE_VEC_ELT (tempvar, 0) = rtmp;
-	TREE_VEC_ELT (tempvar, 1) = ltmp;
-	TREE_VEC_ELT (tempvar, 2) = result;
-      }
-      break;
-#endif  /* HAHA */
 
     case FFEBLD_opCONCATENATE:
       {

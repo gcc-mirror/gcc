@@ -1,3 +1,8 @@
+2002-06-20  Andreas Jaeger  <aj@suse.de>
+
+	* com.c (ffecom_prepare_expr_,ffecom_expr_power_integer_):
+	Remove #ifdefed HAHA sections.
+
 2002-06-20  Nathanael Nerode  <neroden@twcny.rr.com>
 
 	* com.c: Remove #ifdef HOHO sections.
