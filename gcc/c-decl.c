@@ -2128,12 +2128,11 @@ pushdecl_top_level (tree x)
 {
   tree name;
   bool nested = false;
-
-  gcc_assert (TREE_CODE (x) == VAR_DECL);
+  gcc_assert (TREE_CODE (x) == VAR_DECL || TREE_CODE (x) == CONST_DECL);
 
   name = DECL_NAME (x);
 
-  gcc_assert (!I_SYMBOL_BINDING (name));
+ gcc_assert (TREE_CODE (x) == CONST_DECL || !I_SYMBOL_BINDING (name));
 
   if (TREE_PUBLIC (x))
     {

@@ -1,3 +1,11 @@
+2004-10-21  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	PR objc/17923
+	* tree.c (staticp): A CONST_DECL has static storage if either
+	TREE_STATIC or DECL_EXTERNAL is set.
+	* c-decl.c (pushdecl_top_level): Accept CONST_DECLs which can
+	have null names.
+
 2004-10-21  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* expr.c (store_expr): Remove dont_store_target.

@@ -1661,6 +1661,7 @@ objc_build_string_object (tree string)
 
   if (!desc)
     {
+      tree var;
       *loc = desc = ggc_alloc (sizeof (*desc));
       desc->literal = string;
 
@@ -1685,14 +1686,18 @@ objc_build_string_object (tree string)
       if (!flag_next_runtime)
 	constructor
 	  = objc_add_static_instance (constructor, constant_string_type);
-
+      else
+        {
+	  var = build_decl (CONST_DECL, NULL, TREE_TYPE (constructor));
+	  DECL_INITIAL (var) = constructor;
+	  TREE_STATIC (var) = 1;
+	  pushdecl_top_level (var);
+	  constructor = var;
+	}
       desc->constructor = constructor;
     }
 
   addr = build_unary_op (ADDR_EXPR, desc->constructor, 1);
-  TREE_CONSTANT (addr) = true;
-  TREE_INVARIANT (addr) = true;
-  TREE_STATIC (addr) = true;
 
   return addr;
 }
