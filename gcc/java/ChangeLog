@@ -1,3 +1,8 @@
+2002-09-26  Andrew Haley  <aph@redhat.com>
+
+	* expr.c (build_java_array_length_access): Check for null pointer.
+	* expr.c (expand_java_arrayload): Likewise.
+
 2002-09-21  Richard Henderson  <rth@redhat.com>
 
 	* jcf-parse.c (get_constant): Decode from IEEE no matter 
