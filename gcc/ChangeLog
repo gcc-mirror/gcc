@@ -1,3 +1,7 @@
+Tue Nov 17 17:13:53 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
+
+	* flow.c (insn_dead_p): New argument NOTES.  Changed all callers.
+
 Mon Nov 16 17:56:07 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 	* rs6000.c (output_mi_thunk): Improve test for local branch.
