@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2004, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1214,12 +1214,13 @@ package body Sem_Ch12 is
          Error_Msg_N ("premature usage of incomplete type", Def);
 
       elsif Is_Internal (Component_Type (T))
-        and then Nkind (Original_Node (Subtype_Indication (Def)))
+        and then Nkind (Original_Node
+                        (Subtype_Indication (Component_Definition (Def))))
           /= N_Attribute_Reference
       then
          Error_Msg_N
            ("only a subtype mark is allowed in a formal",
-              Subtype_Indication (Def));
+              Subtype_Indication (Component_Definition (Def)));
       end if;
 
    end Analyze_Formal_Array_Type;
@@ -1604,6 +1605,27 @@ package body Sem_Ch12 is
              Gen_Id);
          Restore_Env;
          return;
+
+      elsif In_Open_Scopes (Gen_Unit) then
+         if Is_Compilation_Unit (Gen_Unit)
+           and then Is_Child_Unit (Current_Scope)
+         then
+            --  Special-case the error when the formal is a parent, and
+            --  continue analysis to minimize cascaded errors.
+
+            Error_Msg_N
+              ("generic parent cannot be used as formal package "
+                & "of a child unit",
+                Gen_Id);
+
+         else
+            Error_Msg_N
+              ("generic package cannot be used as a formal package "
+                & "within itself",
+                Gen_Id);
+            Restore_Env;
+            return;
+         end if;
       end if;
 
       --  Check for a formal package that is a package renaming.
