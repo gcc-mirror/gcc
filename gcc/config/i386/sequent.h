@@ -73,6 +73,20 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 ((n) < 3 ? (n) : (n) < 6 ? (n) + 2	\
  : (n) == 6 ? 15 : (n) == 7 ? 14 : 3)
 
+/* malcolmp@hydra.maths.unsw.EDU.AU says these two definitions
+   fix trouble in dbx.  */
+#undef DBX_OUTPUT_LBRAC
+#define DBX_OUTPUT_LBRAC(file,name)	\
+	      fprintf (asmfile, "%s %d,0,%d,", ASM_STABN_OP, N_LBRAC, depth); \
+	      assemble_name (asmfile, buf); \
+	      fprintf (asmfile, "\n");
+
+#undef DBX_OUTPUT_RBRAC
+#define DBX_OUTPUT_RBRAC(file,name)	\
+	      fprintf (asmfile, "%s %d,0,%d,", ASM_STABN_OP, N_RBRAC, depth); \
+	      assemble_name (asmfile, buf); \
+	      fprintf (asmfile, "\n");
+
 /* Prevent anything from being allocated in the register pair cx/bx,
    since that would confuse GDB.  */
 
@@ -80,8 +94,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define HARD_REGNO_MODE_OK(REGNO, MODE) \
   (((REGNO) < 2 ? 1							\
     : (REGNO) < 4 ? 1							\
-    : (REGNO) >= 8 ? (GET_MODE_CLASS (MODE) == MODE_FLOAT		\
-		    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT)	\
+    : FP_REGNO_P (REGNO) ? (GET_MODE_CLASS (MODE) == MODE_FLOAT         \
+			    || GET_MODE_CLASS (MODE) == MODE_COMPLEX_FLOAT) \
     : (MODE) != QImode)							\
    && ! (REGNO == 2 && GET_MODE_UNIT_SIZE (MODE) > 4))
 
