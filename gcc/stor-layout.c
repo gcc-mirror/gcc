@@ -37,9 +37,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "regs.h"
 #include "params.h"
 
-/* Set to one when set_sizetype has been called.  */
-static int sizetype_set;
-
 /* Data type for the expressions representing sizes of data types.
    It is the first integer type laid out.  */
 tree sizetype_tab[(int) TYPE_KIND_LAST];
@@ -1887,8 +1884,6 @@ set_sizetype (tree type)
 		       2 * HOST_BITS_PER_WIDE_INT);
   tree t;
 
-  if (sizetype_set)
-    abort ();
   if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (sizetype))
     abort ();
 
