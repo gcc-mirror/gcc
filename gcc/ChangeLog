@@ -1,3 +1,8 @@
+2004-12-01  Richard Henderson  <rth@redhat.com>
+
+	* expr.c (get_inner_reference): Fix thinko in REAL/IMAGPART_EXPR
+	offsetting.
+
 2004-12-01  Diego Novillo  <dnovillo@redhat.com>
 
 	PR tree-optimization/18291

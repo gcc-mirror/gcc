@@ -5429,11 +5429,11 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	  break;
 
 	case REALPART_EXPR:
-	  bit_offset = bitsize_zero_node;
 	  break;
 
 	case IMAGPART_EXPR:
-	  bit_offset = build_int_cst (bitsizetype, *pbitsize);
+	  bit_offset = size_binop (PLUS_EXPR, bit_offset,
+				   bitsize_int (*pbitsize));
 	  break;
 
 	/* We can go inside most conversions: all NON_VALUE_EXPRs, all normal
