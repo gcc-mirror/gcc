@@ -40,7 +40,6 @@ extern int _Jv_strLengthUtf8(char* str, int len);
 
 typedef struct _Jv_Utf8Const Utf8Const;
 _Jv_Utf8Const *_Jv_makeUtf8Const (char *s, int len);
-_Jv_Utf8Const *_Jv_makeUtf8TypeConst (char* s, int len);
 _Jv_Utf8Const *_Jv_makeUtf8Const (jstring string);
 extern jboolean _Jv_equalUtf8Consts (_Jv_Utf8Const *, _Jv_Utf8Const *);
 extern jboolean _Jv_equal (_Jv_Utf8Const *, jstring, jint);
