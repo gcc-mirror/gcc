@@ -402,7 +402,8 @@ extern int target_flags;
 #define ROUND_TYPE_ALIGN(TYPE, COMPUTED, SPECIFIED)		\
   ((TREE_CODE (TYPE) == REAL_TYPE && TYPE_MODE (TYPE) == XFmode)	   \
    ? 128  /* Put 80 bit floating point elements on 128 bit boundaries.  */ \
-   : ((!TARGET_OLD_ALIGN && TREE_CODE (TYPE) == RECORD_TYPE)		   \
+   : ((!TARGET_OLD_ALIGN && !TYPE_PACKED (TYPE)				   \
+       && TREE_CODE (TYPE) == RECORD_TYPE)				   \
       ? i960_round_align (MAX ((COMPUTED), (SPECIFIED)), TYPE_SIZE (TYPE)) \
       : MAX ((COMPUTED), (SPECIFIED))))
 
