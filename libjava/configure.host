@@ -114,8 +114,8 @@ case "${host}" in
 	;;
   powerpc64*-*)
 	# libffi not ported.
-	with_libffi_default=no
-	libgcj_interpreter=no
+	with_libffi_default=yes
+	libgcj_interpreter=yes
 	libgcj_flags="${libgcj_flags} -mminimal-toc"
 	# this may not be correct
 	sysdeps_dir=powerpc
