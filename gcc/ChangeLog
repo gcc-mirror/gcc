@@ -1,5 +1,8 @@
 Sat Jan 16 23:40:33 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* reload1.c (reload_cse_regs_1): Do not call
+	reload_cse_simplify_operands for an insn with asm operands.
+
 	* cccp.c (print_help): Fix typos.
 	* cpplib.c (print_help): Fix typos.
 	* toplev.c (f_optiosn): Fix typos.
