@@ -1,5 +1,8 @@
 2002-01-24  Tom Tromey  <tromey@redhat.com>
 
+	* java/awt/Shape.java: Merged with Classpath.
+	* java/awt/Scrollbar.java: Merged with Classpath.
+
 	* java/awt/Container.java (addNotify): Unconditionally call
 	addNotifyContainerChildren and superclass addNotify.
 
