@@ -1,3 +1,12 @@
+Tue Feb  9 11:34:15 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
+
+	* config/c4x/c4x.md (all call patterns): Add constraints "Ur".
+	(call, call_value): Force address into a register if not valid
+	for a call instruction.
+	(load_immed_address): Emit a USE of the SYMBOL_REF that is
+	forced into memory.
+	* config/c4x/c4x.c (c4x_print_operand): Fix 'C' and 'U' modifiers.
+
 Tue Feb  9 11:08:41 1999  Michael Hayes  <m.hayes@elec.canterbury.ac.nz>
 
 	* config/c4x/c4x.c (call_address_operand, symbolic_address_operand):
