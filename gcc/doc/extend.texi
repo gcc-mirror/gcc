@@ -449,8 +449,8 @@ bar (int *array, int offset, int size)
 @end group
 @end smallexample
 
-A nested function always has internal linkage.  Declaring one with
-@code{extern} is erroneous.  If you need to declare the nested function
+A nested function always has no linkage.  Declaring one with
+@code{extern} or @code{static} is erroneous.  If you need to declare the nested function
 before its definition, use @code{auto} (which is otherwise meaningless
 for function declarations).
 
