@@ -114,6 +114,10 @@ struct ggc_status
    front of the chain.  */
 static struct ggc_status *ggc_chain;
 
+/* The table of all allocated strings.  Only valid during collection.  */
+static varray_type ggc_allocated_strings;
+static size_t ggc_strings_used;
+
 /* Some statistics.  */
 
 static int n_rtxs_collected;
@@ -134,6 +138,7 @@ static void ggc_free_rtvec PROTO ((struct ggc_rtvec *v));
 static void ggc_free_tree PROTO ((struct ggc_tree *t));
 static void ggc_free_string PROTO ((struct ggc_string *s));
 static void ggc_free_any PROTO ((struct ggc_any *a));
+static int ggc_compare_addresses PROTO ((const void *, const void *));
 
 /* Called once to initialize the garbage collector.  */
 
@@ -173,6 +178,7 @@ ggc_pop_context PROTO ((void))
   struct ggc_rtvec *v;
   struct ggc_tree *t;
   struct ggc_string *s;
+  struct ggc_any *a;
   struct ggc_status *gs;
 
   gs = ggc_chain;
@@ -211,6 +217,15 @@ ggc_pop_context PROTO ((void))
 	s = s->chain;
       s->chain = gs->next->strings;
       gs->next->strings = gs->strings;
+    }
+
+  a = gs->anys;
+  if (a)
+    {
+     while (a->chain)
+       a = a->chain;
+      a->chain = gs->next->anys;
+      gs->next->anys = gs->anys;
     }
 
   gs->next->bytes_alloced_since_gc += gs->bytes_alloced_since_gc;
@@ -455,6 +470,25 @@ ggc_set_mark_tree (t)
   return marked;
 }
 
+/* Compare the pointers pointed to by A1 and A2.  Used as a callback
+   for qsort/bsearch.  */
+
+static int
+ggc_compare_addresses (a1, a2)
+     const void *a1;
+     const void *a2;
+{
+  const char *c1 = *((const char **) a1);
+  const char *c2 = *((const char **) a2);
+
+  if (c1 < c2)
+    return -1;
+  else if (c1 > c2)
+    return 1;
+  else
+    return 0;
+}
+
 void
 ggc_mark_string (s)
      char *s;
@@ -470,6 +504,21 @@ ggc_mark_string (s)
     return;   /* abort? */
   gs->magic_mark = GGC_STRING_MAGIC_MARK;
 }
+
+
+void
+ggc_mark_string_if_gcable (s)
+     char *s;
+{
+  if (s && !bsearch (&s, 
+		     &VARRAY_CHAR_PTR (ggc_allocated_strings, 0),
+		     ggc_strings_used, sizeof (char *),
+		     ggc_compare_addresses))
+    return;
+
+  ggc_mark_string (s);
+}
+
 
 /* Mark P, allocated with ggc_alloc.  */
 
@@ -513,6 +562,10 @@ ggc_collect ()
 
   time = get_run_time ();
 
+  /* Set up the table of allocated strings.  */
+  VARRAY_CHAR_PTR_INIT (ggc_allocated_strings, 1024, "allocated strings");
+  ggc_strings_used = 0;
+
   /* Clean out all of the GC marks.  */
   for (gs = ggc_chain; gs; gs = gs->next)
     {
@@ -523,12 +576,27 @@ ggc_collect ()
       for (t = gs->trees; t != NULL; t = t->chain)
 	t->tree.common.gc_mark = 0;
       for (s = gs->strings; s != NULL; s = s->chain)
-	s->magic_mark = GGC_STRING_MAGIC;
+	{
+	  s->magic_mark = GGC_STRING_MAGIC;
+	  if (ggc_strings_used == ggc_allocated_strings->num_elements)
+	    VARRAY_GROW (ggc_allocated_strings, 2 * ggc_strings_used);
+	  VARRAY_CHAR_PTR (ggc_allocated_strings, ggc_strings_used)
+	    = &s->string[0];
+	  ++ggc_strings_used;
+	}
       for (a = gs->anys; a != NULL; a = a->chain)
 	a->magic_mark = GGC_ANY_MAGIC;
     }
 
+  /* Sort the allocated string table.  */
+  qsort (&VARRAY_CHAR_PTR (ggc_allocated_strings, 0),
+	 ggc_strings_used, sizeof (char *),
+	 ggc_compare_addresses);
+
   ggc_mark_roots ();
+
+  /* Free the string table.  */
+  VARRAY_FREE (ggc_allocated_strings);
 
   /* Sweep the resulting dead nodes.  */
 
