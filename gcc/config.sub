@@ -97,6 +97,9 @@ case $os in
 	-isc*)
 		basic_machine=`echo $1 | sed -e 's/86-.*/86-unknown/'`
 		;;
+	-lynx)
+		os=-lynxos
+		;;
 esac
 
 # Decode aliases for certain CPU-COMPANY combinations.
@@ -515,7 +518,7 @@ case $os in
 	      | -amigados* | -msdos* | -newsos* | -unicos* | -aos* \
 	      | -nindy* | -vxworks* | -ebmon* | -hms* | -mvs* | -clix* \
 	      | -riscos* | -linux* | -uniplus* | -iris* | -rtu* | -xenix* \
-	      | -386bsd*)
+	      | -386bsd* | -lynxos*)
 		;;
 	-sunos5*)
 		os=`echo $os | sed -e 's|sunos5|solaris2|'`
@@ -670,6 +673,9 @@ case $basic_machine in
 		case $os in
 			-sunos*)
 				vendor=sun
+				;;
+			-lynxos*)
+				vendor=lynx
 				;;
 			-aix*)
 				vendor=ibm
