@@ -4587,3 +4587,11 @@ real_round (REAL_VALUE_TYPE *r, enum machine_mode mode,
     real_convert (r, mode, r);
 }
 
+/* Set the sign of R to the sign of X.  */
+
+void
+real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
+{
+  r->sign = x->sign;
+}
+

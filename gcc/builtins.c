@@ -162,6 +162,10 @@ static tree fold_builtin_memcmp (tree);
 static tree fold_builtin_strcmp (tree);
 static tree fold_builtin_strncmp (tree);
 static tree fold_builtin_signbit (tree);
+static tree fold_builtin_copysign (tree, tree);
+static tree fold_builtin_isascii (tree);
+static tree fold_builtin_toascii (tree);
+static tree fold_builtin_isdigit (tree);
 
 static tree simplify_builtin_memcmp (tree);
 static tree simplify_builtin_strcmp (tree);
@@ -7298,6 +7302,49 @@ fold_builtin_signbit (tree exp)
   return NULL_TREE;
 }
 
+/* Fold function call to builtin copysign, copysignf or copysignl.
+   Return NULL_TREE if no simplification can be made.  */
+
+static tree
+fold_builtin_copysign (tree arglist, tree type)
+{
+  tree arg1, arg2;
+
+  if (!validate_arglist (arglist, REAL_TYPE, REAL_TYPE, VOID_TYPE))
+    return NULL_TREE;
+
+  arg1 = TREE_VALUE (arglist);
+  arg2 = TREE_VALUE (TREE_CHAIN (arglist));
+
+  /* copysign(X,X) is X.  */
+  if (operand_equal_p (arg1, arg2, 0))
+    return fold_convert (type, arg1);
+
+  /* If ARG1 and ARG2 are compile-time constants, determine the result.  */
+  if (TREE_CODE (arg1) == REAL_CST
+      && TREE_CODE (arg2) == REAL_CST
+      && !TREE_CONSTANT_OVERFLOW (arg1)
+      && !TREE_CONSTANT_OVERFLOW (arg2))
+    {
+      REAL_VALUE_TYPE c1, c2;
+
+      c1 = TREE_REAL_CST (arg1);
+      c2 = TREE_REAL_CST (arg2);
+      real_copysign (&c1, &c2);
+      return build_real (type, c1);
+      c1.sign = c2.sign;
+    }
+
+  /* copysign(X, Y) is fabs(X) when Y is always non-negative.
+     Remember to evaluate Y for side-effects.  */
+  if (tree_expr_nonnegative_p (arg2))
+    return omit_one_operand (type,
+			     fold (build1 (ABS_EXPR, type, arg1)),
+			     arg2);
+
+  return NULL_TREE;
+}
+
 /* Fold a call to builtin isascii.  */
 
 static tree
@@ -7577,10 +7624,12 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_EXPF:
     case BUILT_IN_EXPL:
       return fold_builtin_exponent (exp, &dconste);
+
     case BUILT_IN_EXP2:
     case BUILT_IN_EXP2F:
     case BUILT_IN_EXP2L:
       return fold_builtin_exponent (exp, &dconst2);
+
     case BUILT_IN_EXP10:
     case BUILT_IN_EXP10F:
     case BUILT_IN_EXP10L:
@@ -7588,21 +7637,21 @@ fold_builtin_1 (tree exp)
     case BUILT_IN_POW10F:
     case BUILT_IN_POW10L:
       return fold_builtin_exponent (exp, &dconst10);
+
     case BUILT_IN_LOG:
     case BUILT_IN_LOGF:
     case BUILT_IN_LOGL:
       return fold_builtin_logarithm (exp, &dconste);
-      break;
+
     case BUILT_IN_LOG2:
     case BUILT_IN_LOG2F:
     case BUILT_IN_LOG2L:
       return fold_builtin_logarithm (exp, &dconst2);
-      break;
+
     case BUILT_IN_LOG10:
     case BUILT_IN_LOG10F:
     case BUILT_IN_LOG10L:
       return fold_builtin_logarithm (exp, &dconst10);
-      break;
 
     case BUILT_IN_TAN:
     case BUILT_IN_TANF:
@@ -7883,6 +7932,11 @@ fold_builtin_1 (tree exp)
 
     case BUILT_IN_ISDIGIT:
       return fold_builtin_isdigit (arglist);
+
+    case BUILT_IN_COPYSIGN:
+    case BUILT_IN_COPYSIGNF:
+    case BUILT_IN_COPYSIGNL:
+      return fold_builtin_copysign (arglist, type);
 
     default:
       break;

@@ -1,3 +1,18 @@
+2004-06-07  Roger Sayle  <roger@eyesopen.com>
+
+	* real.c (real_copysign): New function to implement libm's copysign.
+	* real.h (real_copysign): Prototype here.
+	* fold-const.c (tree_expr_nonnegative_p): The result of sqrt, sqrtf
+	and sqrtl can be negative, as sqrt(-0.0) = -0.0.  Correct whitespace.
+	* builtins.c (fold_builtin_isascii, fold_builtin_toascii,
+	fold_builtin_isdigit): Add function prototypes.
+	(fold_builtin_copysign): New function to fold copysign, copysignf
+	and copysignl.  Optimize copysign(x,x) as x.  Evaluate copysign of
+	constant arguments at compile-time using real_copysign.  Fold
+	copysign(X,Y) as fabs(X) if Y is always non-negative.
+	(fold_builtin_1): Correct minor whitespace/style issues.  Call
+	fold_builtin_copysign for BUILT_IN_COPYSIGN{,F,L}.
+
 2004-06-07  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* tree.c (iterative_hash_expr): Use real_hash.

@@ -384,4 +384,7 @@ extern void real_ceil (REAL_VALUE_TYPE *, enum machine_mode,
 extern void real_round (REAL_VALUE_TYPE *, enum machine_mode,
 			const REAL_VALUE_TYPE *);
 
+/* Set the sign of R to the sign of X.  */
+extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
+
 #endif /* ! GCC_REAL_H */
