@@ -84,7 +84,7 @@ java::net::PlainSocketImpl::setOption (jint, java::lang::Object *)
 java::lang::Object *
 java::net::PlainSocketImpl::getOption (jint)
 {
-  JvThrow (new SocketException (JvNewStringLatin1 ("SocketImpl.create: unimplemented")));
+  JvThrow (new SocketException (JvNewStringLatin1 ("SocketImpl.getOption: unimplemented")));
 }
 
 #else /* DISABLE_JAVA_NET */
@@ -124,6 +124,7 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
   jbyteArray haddress = host->address;
   jbyte *bytes = elements (haddress);
   int len = haddress->length;
+  int i = 1;
 
   if (len == 4)
     {
@@ -146,6 +147,10 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
 #endif
   else
     goto error;
+
+  // Enable SO_REUSEADDR, so that servers can reuse ports left in TIME_WAIT.
+  ::setsockopt(fnum, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i));
+  
   if (::bind (fnum, ptr, len) == 0)
     {
       address = host;
@@ -159,9 +164,9 @@ java::net::PlainSocketImpl::bind (java::net::InetAddress *host, jint lport)
       return;
     }
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "SocketImpl.bind: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::BindException (JvNewStringUTF (msg)));
 }
 
@@ -204,9 +209,9 @@ java::net::PlainSocketImpl::connect (java::net::InetAddress *host, jint rport)
       goto error;
   return;  
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "SocketImpl.connect: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::ConnectException (JvNewStringUTF (msg)));
 }
 
@@ -215,9 +220,9 @@ java::net::PlainSocketImpl::listen (jint backlog)
 {
   if (::listen (fnum, backlog) != 0)
     {
-      char msg[100];
+      char msg[80];
       char* strerr = strerror (errno);
-      sprintf (msg, "SocketImpl.listen: %.*s", 80, strerr);
+      sprintf (msg, "%.*s", 80, strerr);
       JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
     }
 }
@@ -274,9 +279,9 @@ java::net::PlainSocketImpl::accept (java::net::PlainSocketImpl *s)
   s->fd = new java::io::FileDescriptor (new_socket);
   return;
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "SocketImpl.accept: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::io::IOException (JvNewStringUTF (msg)));
 }
 
@@ -365,9 +370,9 @@ java::net::PlainSocketImpl::setOption (jint optID, java::lang::Object *value)
     }
 
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "SocketImpl.setOption: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }
 
@@ -465,9 +470,9 @@ java::net::PlainSocketImpl::getOption (jint optID)
     }
 
  error:
-  char msg[100];
+  char msg[80];
   char* strerr = strerror (errno);
-  sprintf (msg, "SocketImpl.getOption: %.*s", 80, strerr);
+  sprintf (msg, "%.*s", 80, strerr);
   JvThrow (new java::net::SocketException (JvNewStringUTF (msg)));
 }
 

@@ -1,3 +1,11 @@
+1999-11-23  Bryce McKinlay  <bryce@albatross.co.nz>
+
+	* java/net/natPlainSocketImpl.cc: Fix potential buffer overruns in
+	Exception messages. PR java.net/57.
+	(bind): set SO_REUSEADDR before bind.
+	* java/net/natPlainDatagramSocketImpl.cc: Fix potential buffer
+	overruns. PR java.net/57.
+
 1999-11-19  Tom Tromey  <tromey@cygnus.com>
 
 	* Makefile.am (DIVIDESPEC): Removed.
