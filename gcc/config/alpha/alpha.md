@@ -2398,7 +2398,7 @@
 {
   operands[5] = GEN_INT (~ INTVAL (operands[3]));
   operands[6] = gen_rtx (((GET_CODE (operands[1]) == GTU
-			   || GET_CODE (operands[1]) == GE)
+			   || GET_CODE (operands[1]) == GT)
 			  ? NE : EQ),
 			 DImode, operands[4], const0_rtx);
 }")
