@@ -1,3 +1,8 @@
+Wed Feb 14 00:11:20 CET 2001  Jan Hubicka  <jh@suse.cz>
+
+	* i386.md (movsfcc_1): Support integer cmove instruction.
+	(movdfcc_1): Likewise; new splitter.
+
 Tue Feb 13 23:19:27 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (output_fp_compare): Support SSE.
