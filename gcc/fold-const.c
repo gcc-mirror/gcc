@@ -3366,17 +3366,17 @@ fold (expr)
 	  tree inter_type = TREE_TYPE (TREE_OPERAND (t, 0));
 	  tree final_type = TREE_TYPE (t);
 	  int inside_int = INTEGRAL_TYPE_P (inside_type);
-	  int inside_ptr = TREE_CODE (inside_type) == POINTER_TYPE;
+	  int inside_ptr = POINTER_TYPE_P (inside_type);
 	  int inside_float = FLOAT_TYPE_P (inside_type);
 	  int inside_prec = TYPE_PRECISION (inside_type);
 	  int inside_unsignedp = TREE_UNSIGNED (inside_type);
 	  int inter_int = INTEGRAL_TYPE_P (inter_type);
-	  int inter_ptr = TREE_CODE (inter_type) == POINTER_TYPE;
+	  int inter_ptr = POINTER_TYPE_P (inter_type);
 	  int inter_float = FLOAT_TYPE_P (inter_type);
 	  int inter_prec = TYPE_PRECISION (inter_type);
 	  int inter_unsignedp = TREE_UNSIGNED (inter_type);
 	  int final_int = INTEGRAL_TYPE_P (final_type);
-	  int final_ptr = TREE_CODE (final_type) == POINTER_TYPE;
+	  int final_ptr = POINTER_TYPE_P (final_type);
 	  int final_float = FLOAT_TYPE_P (final_type);
 	  int final_prec = TYPE_PRECISION (final_type);
 	  int final_unsignedp = TREE_UNSIGNED (final_type);
@@ -3393,11 +3393,13 @@ fold (expr)
 	  /* Likewise, if the intermediate and final types are either both
 	     float or both integer, we don't need the middle conversion if
 	     it is wider than the final type and doesn't change the signedness
-	     (for integers).  */
+	     (for integers).  Avoid this if the final type is a pointer
+	     since then we sometimes need the inner conversion.  */
 	  if ((((inter_int || inter_ptr) && (inside_int || inside_ptr))
 	       || (inter_float && inside_float))
 	      && inter_prec >= inside_prec
-	      && (inter_float || inter_unsignedp == inside_unsignedp))
+	      && (inter_float || inter_unsignedp == inside_unsignedp)
+	      && ! final_ptr)
 	    return convert (final_type, TREE_OPERAND (TREE_OPERAND (t, 0), 0));
 
 	  /* Two conversions in a row are not needed unless:
