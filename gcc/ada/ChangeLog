@@ -1,3 +1,10 @@
+2002-05-30  Zack Weinberg  <zack@codesourcery.com>
+
+	* ada.h: Add MI guard macro.
+	(SUBTYPE): Define constants with an anonymous enum, not static
+	const variables.
+	(IN): Cast constants to appropriate type before use.
+
 2002-05-26  Joseph S. Myers  <jsm28@cam.ac.uk>
 
 	* gnatvsn.ads (Gnat_Version_String): Change to "3.2 20020526
