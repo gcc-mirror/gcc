@@ -664,8 +664,6 @@ primary:
 
 		   if (pedantic)
 		     pedwarn ("ISO C forbids braced-groups within expressions");
-		  pop_label_level ();
-
 		  saved_last_tree = COMPOUND_BODY ($1);
 		  RECHAIN_STMTS ($1, COMPOUND_BODY ($1));
 		  last_tree = saved_last_tree;
@@ -677,7 +675,6 @@ primary:
 		}
 	| compstmt_primary_start error ')'
 		{
-		  pop_label_level ();
 		  last_tree = COMPOUND_BODY ($1);
 		  TREE_CHAIN (last_tree) = NULL_TREE;
 		  $$ = error_mark_node;
@@ -2113,7 +2110,7 @@ label_decl:
 		{ tree link;
 		  for (link = $2; link; link = TREE_CHAIN (link))
 		    {
-		      tree label = shadow_label (TREE_VALUE (link));
+		      tree label = declare_label (TREE_VALUE (link));
 		      C_DECLARED_LABEL_FLAG (label) = 1;
 		      add_decl_stmt (label);
 		    }
@@ -2158,7 +2155,6 @@ compstmt_primary_start:
 		     there is a way to turn off the entire subtree of blocks
 		     that are contained in it.  */
 		  keep_next_level ();
-		  push_label_level ();
 		  compstmt_count++;
 		  $$ = add_stmt (build_stmt (COMPOUND_STMT, last_tree));
 		}

@@ -1,10 +1,17 @@
+2003-07-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* gcc.dg/noncompile/label-1.c: New comprehensive test case for
+	diagnostics of ill-formed constructs involving labels.
+	* gcc.dg/noncompile/label-lineno-1.c: Add error regexp for
+	the new 'previously defined here' message.
+
 2003-07-18  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* g++.dg/parse/non-dependent2.C: New test.
 
 2003-07-18  Andrew Pinski  <pinskia@physics.uc.edu>
 
-	* g++.dg/init/init-ref4.C: xfail on targets without 
+	* g++.dg/init/init-ref4.C: xfail on targets without
 	weak symbols.
 
 2003-07-17  Jakub Jelinek  <jakub@redhat.com>
@@ -278,7 +285,7 @@
 	* g++.dg/opt/emptyunion.C: New testcase.
 
 2003-07-07  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
-            Eric Botcazou  <ebotcazou@libertysurf.fr>
+	    Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* g++.dg/opt/stack1.C: New test.
 
@@ -286,7 +293,7 @@
 
 	* g++.old-deja/g++.jason/typeid1.C: Make it a compile test, not a
 	run test.
-	
+
 	PR c++/11431
 	* g++.dg/expr/static_cast3.C: New test.
 

@@ -1,3 +1,46 @@
+2003-07-19  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (named_labels, shadowed_labels, label_level_chain)
+	(push_label_level, pop_label_level): Kill.
+	(struct binding_level): Rename level_chain to outer.
+	Add outer_function field.  Change parm_flag, function_body,
+	keep, keep_if_subblocks to 1-bit bitfields of type bool.
+	(current_function_level): New variable.
+	(keep_next_level_flag, keep_next_if_subblocks): Change type to bool.
+	(keep_next_level, declare_parm_level, warn_if_shadowing):
+	Update to match.
+	(struct language_function): Kill named_labels, shadowed_labels fields.
+	(c_init_decl_processing, start_function, c_push__function_context)
+	(c_pop_function_context): No need to muck with named_labels nor
+	shadowed_labels.
+
+	(make_binding_level): No need to clear the structure here.
+	(pop_binding_level): Always operate on current_binding_level.
+	Update current_function_level if necessary.
+	(pushlevel): Don't clear named_labels.  Update current_function_level
+	if necessary.  Use "true" and "false" where appropriate.
+	(poplevel): Diagnose labels defined but not used, or vice
+	versa, and clear out label-meanings leaving scope, while
+	walking down the decls list, for all binding levels.
+	Handle LABEL_DECLs appearing in the shadowed list.
+	pop_binding_level takes no arguments.
+	(pushdecl_function_level): Use current_function_level.
+
+	(make_label, bind_label): New static functions.
+	(declare_label): New exported function.
+	(lookup_label, define_label): Rewritten for new data structure.
+	(shadow_label): Kill.
+
+	* c-tree.h: Prototype declare_label; don't prototype
+	push_label_level, pop_label_level, nor shadow_label.
+	* c-parse.in: Remove all calls to push_label_level and
+	pop_label_level.  Use declare_label for __label__ decls.
+
+	* doc/extend.texi: Clarify that __label__ can be used to
+	declare labels with local scope in any nested block, not
+	just statement expressions.  Cross-reference nested functions
+	section from local labels section.
+
 2003-07-19  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
 
 	* sched-rgn.c (find_rgns): Initialize current_edge correctly.
@@ -13,7 +56,7 @@
 
 2003-07-19  Ulrich Weigand  <uweigand@de.ibm.com>
 
-	* config/s390/s390.c (legitimize_pic_address): Access local symbols 
+	* config/s390/s390.c (legitimize_pic_address): Access local symbols
 	relative to the GOT instead of relative to the literal pool base.
 	(s390_output_symbolic_const): Handle new GOT-relative accesses.
 	* config/s390/s390.md ("call"): Access local functions and PLT stubs
@@ -21,7 +64,7 @@
 	("call_value"): Likewise.
 	("call_value_tls"): Likewise.
 
-	* config/s390/s390.c (s390_chunkify_start): Remove pool anchor 
+	* config/s390/s390.c (s390_chunkify_start): Remove pool anchor
 	reloading.  Support LTREL_BASE / LTREL_OFFSET construct.
 	(s390_chunkify_finish): Likewise.
 	(s390_chunkify_cancel): Likewise.
@@ -40,12 +83,12 @@
 	* config/s390/s390.c (s390_split_branches): Use LTREL_BASE/OFFSET.
 	(s390_load_got): New function.  Use LTREL_BASE/OFFSET.
 	(s390_emit_prologue): Use it.
-	* config/s390/s390.md ("builtin_longjmp", "builtin_setjmp_setup", 
-	"builtin_setjmp_receiver"): Cleanup.  Use s390_load_got.  Do not 
+	* config/s390/s390.md ("builtin_longjmp", "builtin_setjmp_setup",
+	"builtin_setjmp_receiver"): Cleanup.  Use s390_load_got.  Do not
 	hard-code register 14.
 	* config/s390/s390-protos.h (s390_load_got): Declare.
 
-	* config/s390/s390.c (NR_C_MODES, constant_modes, gen_consttable): 
+	* config/s390/s390.c (NR_C_MODES, constant_modes, gen_consttable):
 	Support TImode constants.
 	* config/s390/s390.md ("consttable_ti"): New.
 	("consttable_si", "consttable_di"): Handle TLS symbols correctly.
@@ -61,7 +104,7 @@
 	"pool_start_64", "pool_end_64", "reload_base_31", "reload_base_64",
 	"pool", "literal_pool_31", "literal_pool_64"): Cleanup.  Use
 	symbolic UNSPEC values.
-	* config/s390/s390.c (larl_operand, s390_short_displacement, 
+	* config/s390/s390.c (larl_operand, s390_short_displacement,
 	bras_sym_operand, s390_cannot_force_const_mem,
 	s390_delegitimize_address, s390_decompose_address,
 	legitimize_pic_address, s390_output_symbolic_const,
@@ -163,7 +206,7 @@
 
 2003-07-18  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* combine.c (simplify_comparison): Don't share rtx when converting 
+	* combine.c (simplify_comparison): Don't share rtx when converting
 	(ne (and (not X) 1) 0) to (eq (and X 1) 0).
 
 2003-07-18  David Edelsohn  <edelsohn@gnu.org>
