@@ -80,7 +80,7 @@ namespace std
 
   ios_base::Init::Init()
   {
-    if (_S_ios_base_init == 0)
+    if (__exchange_and_add(&_S_refcount, 1) == 0)
       {
 	// Standard streams default to synced with "C" operations.
 	_S_synced_with_stdio = true;
@@ -110,15 +110,18 @@ namespace std
 	wcin.tie(&wcout);
 	wcerr.flags(ios_base::unitbuf);
 #endif
-
-	_S_ios_base_init = 1;
+	
+	// NB: Have to set refcount above one, so that standard
+	// streams are not re-initialized with uses of ios_base::Init
+	// besides <iostream> static object, ie just using <ios> with
+	// ios_base::Init objects.
+	__atomic_add(&_S_refcount, 1);
       }
-    ++_S_ios_base_init;
   }
 
   ios_base::Init::~Init()
   {
-    if (--_S_ios_base_init == 1)
+    if (__exchange_and_add(&_S_refcount, -1) == 2)
       {
 	// Catch any exceptions thrown by basic_ostream::flush()
 	try

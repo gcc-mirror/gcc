@@ -1,3 +1,15 @@
+2003-12-15  Benjamin Kosnik  <bkoz@redhat.com>
+
+	PR libstdc++/12855	
+	* include/bits/ios_base.h (Init::_S_ios_base_init): Change to
+	_S_refcount, make atomic.
+	* src/ios.cc: Adjust definition.	
+	* src/ios_init.cc (ios_base::Init::Init): Use __exchange_and_add,
+	and __atomic_add.
+	(ios_base::Init::~Init): Same.
+	* testsuite/27_io/ios_base/cons/assign_neg.cc: Adjust line numbers.
+	* testsuite/27_io/ios_base/cons/copy_neg.cc: Same.
+	
 2003-12-15  Paolo Carlini  <pcarlini@suse.de>
 
 	* include/bits/locale_facets.tcc (num_get::do_get(bool&)):

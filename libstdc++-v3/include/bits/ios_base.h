@@ -493,14 +493,13 @@ namespace std
       ~Init();
       
       // NB: Allows debugger applications use of the standard streams
-      // from operator new. _S_ios_base_init must be incremented in
-      // _S_ios_create _after_ initialization is completed.
+      // from operator new. 
       static bool
-      _S_initialized() { return _S_ios_base_init; }
+      _S_initialized() { return _S_refcount > 0; }
 
     private:
-      static int 	_S_ios_base_init;
-      static bool	_S_synced_with_stdio;
+      static _Atomic_word	_S_refcount;
+      static bool		_S_synced_with_stdio;
     };
 
     // [27.4.2.2] fmtflags state functions

@@ -107,7 +107,7 @@ namespace std
 
   const int ios_base::_S_local_word_size;
 
-  int ios_base::Init::_S_ios_base_init = 0;
+  _Atomic_word ios_base::Init::_S_refcount;
 
   bool ios_base::Init::_S_synced_with_stdio = true;
 
