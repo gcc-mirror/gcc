@@ -2024,6 +2024,46 @@ look_for_overrides (type, fndecl)
   return found;
 }
 
+/* Look in TYPE for virtual functions with the same signature as FNDECL.
+   This differs from get_matching_virtual in that it will only return
+   a function from TYPE.  */
+
+tree
+look_for_overrides_here (type, fndecl)
+     tree type, fndecl;
+{
+  int ix;
+
+  if (DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (fndecl))
+    ix = CLASSTYPE_DESTRUCTOR_SLOT;
+  else
+    ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
+  if (ix >= 0)
+    {
+      tree fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), ix);
+  
+      for (; fns; fns = OVL_NEXT (fns))
+        {
+          tree fn = OVL_CURRENT (fns);
+
+          if (!DECL_VIRTUAL_P (fn))
+            /* Not a virtual.  */;
+          else if (DECL_CONTEXT (fn) != type)
+            /* Introduced with a using declaration.  */;
+	  else if (DECL_STATIC_FUNCTION_P (fndecl))
+	    {
+	      tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
+	      tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
+  	      if (compparms (TREE_CHAIN (btypes), dtypes))
+		return fn;
+            }
+          else if (same_signature_p (fndecl, fn))
+	    return fn;
+	}
+    }
+  return NULL_TREE;
+}
+
 /* Look in TYPE for virtual functions overridden by FNDECL. Check both
    TYPE itself and its bases. */
 
@@ -2031,49 +2071,25 @@ static int
 look_for_overrides_r (type, fndecl)
      tree type, fndecl;
 {
-  int ix;
-  
-  if (DECL_DESTRUCTOR_P (fndecl))
-    ix = CLASSTYPE_DESTRUCTOR_SLOT;
-  else
-    ix = lookup_fnfields_1 (type, DECL_NAME (fndecl));
-  if (ix >= 0)
+  tree fn = look_for_overrides_here (type, fndecl);
+  if (fn)
     {
-      tree fns = TREE_VEC_ELT (CLASSTYPE_METHOD_VEC (type), ix);
-      tree dtypes = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
-      tree thistype = DECL_STATIC_FUNCTION_P (fndecl)
-                      ? NULL_TREE : TREE_TYPE (TREE_VALUE (dtypes));
-  
-      for (; fns; fns = OVL_NEXT (fns))
-        {
-          tree fn = OVL_CURRENT (fns);
-          tree btypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
-          
-          if (!DECL_VIRTUAL_P (fn))
-            /*  Not a virtual */;
-          else if (DECL_CONTEXT (fn) != type)
-            /*  Introduced with a using declaration */;
-	  else if (thistype == NULL_TREE)
-	    {
-	      if (compparms (TREE_CHAIN (btypes), dtypes))
-                {
-                  /* A static member function cannot match an inherited
-                     virtual member function.  */
-                  cp_error_at ("`%#D' cannot be declared", fndecl);
-                  cp_error_at ("  since `%#D' declared in base class", fn);
-                  return 1;
-                }
-            }
-          else if (same_signature_p (fndecl, fn))
-            {
-	      /* It's definitely virtual, even if not explicitly set.  */
-	      DECL_VIRTUAL_P (fndecl) = 1;
-	      check_final_overrider (fndecl, fn);
-
-	      return 1;
-	    }
+      if (DECL_STATIC_FUNCTION_P (fndecl))
+	{
+	  /* A static member function cannot match an inherited
+	     virtual member function.  */
+	  cp_error_at ("`%#D' cannot be declared", fndecl);
+	  cp_error_at ("  since `%#D' declared in base class", fn);
 	}
+      else
+	{
+	  /* It's definitely virtual, even if not explicitly set.  */
+	  DECL_VIRTUAL_P (fndecl) = 1;
+	  check_final_overrider (fndecl, fn);
+	}
+      return 1;
     }
+
   /* We failed to find one declared in this class. Look in its bases.  */
   return look_for_overrides (type, fndecl);
 }

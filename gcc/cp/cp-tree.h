@@ -55,7 +55,6 @@ Boston, MA 02111-1307, USA.  */
       BASELINK_P (in TREE_LIST)
       ICS_ELLIPSIS_FLAG (in _CONV)
       BINFO_ACCESS (in BINFO)
-      BV_GENERATE_THUNK_WITH_VTABLE_P (in TREE_LIST)
    2: IDENTIFIER_OPNAME_P.
       TYPE_POLYMORHPIC_P (in _TYPE)
       ICS_THIS_FLAG (in _CONV)
@@ -132,10 +131,6 @@ Boston, MA 02111-1307, USA.  */
      use a virtual thunk, as opposed to an ordinary thunk.
 
      The BV_FN is the declaration for the virtual function itself.
-
-     The BV_OVERRIDING_BASE is the binfo for the final overrider for
-     this function.  (That binfo's BINFO_TYPE will always be the same
-     as the DECL_CLASS_CONTEXT for the function.)
 
    BINFO_VTABLE
      Sometimes this is a VAR_DECL.  Under the new ABI, it is instead
@@ -1736,14 +1731,6 @@ struct lang_type
 /* Nonzero if we should use a virtual thunk for this entry.  */
 #define BV_USE_VCALL_INDEX_P(NODE) \
    (TREE_LANG_FLAG_0 (NODE))
-
-/* Nonzero if we should generate this thunk when the vtable that
-   references it is emitted, rather than with the final overrider.  */
-#define BV_GENERATE_THUNK_WITH_VTABLE_P(NODE) \
-  (TREE_LANG_FLAG_1 (NODE))
-
-/* The most derived class.  */
-
 
 /* Nonzero for TREE_LIST node means that this list of things
    is a list of parameters, as opposed to a list of expressions.  */
@@ -1806,8 +1793,7 @@ struct lang_decl_flags
   unsigned global_dtor_p : 1;
   unsigned assignment_operator_p : 1;
   unsigned anticipated_p : 1;
-  unsigned generate_with_vtable_p : 1;
-  /* Two unused bits.  */
+  /* Three unused bits.  */
 
   union {
     /* In a FUNCTION_DECL, VAR_DECL, TYPE_DECL, or TEMPLATE_DECL, this
@@ -3036,11 +3022,6 @@ enum ptrmemfunc_vbit_where_t
 #define THUNK_VCALL_OFFSET(DECL) \
   (DECL_LANG_SPECIFIC (DECL)->decl_flags.u2.vcall_offset)
 
-/* Nonzero if this thunk should be generated with the vtable that
-   references it.  */
-#define THUNK_GENERATE_WITH_VTABLE_P(DECL) \
-  (DECL_LANG_SPECIFIC (DECL)->decl_flags.generate_with_vtable_p)
-
 /* These macros provide convenient access to the various _STMT nodes
    created when parsing template declarations.  */
 #define TRY_STMTS(NODE)         TREE_OPERAND (TRY_BLOCK_CHECK (NODE), 0)
@@ -3716,7 +3697,6 @@ extern tree get_vtable_decl                     PARAMS ((tree, int));
 extern void add_method				PARAMS ((tree, tree, int));
 extern int currently_open_class			PARAMS ((tree));
 extern tree currently_open_derived_class	PARAMS ((tree));
-extern tree get_vfield_offset			PARAMS ((tree));
 extern void duplicate_tag_error			PARAMS ((tree));
 extern tree finish_struct			PARAMS ((tree, tree));
 extern void finish_struct_1			PARAMS ((tree));
@@ -4083,7 +4063,7 @@ extern void init_method				PARAMS ((void));
 extern void set_mangled_name_for_decl           PARAMS ((tree));
 extern tree build_opfncall			PARAMS ((enum tree_code, int, tree, tree, tree));
 extern tree hack_identifier			PARAMS ((tree, tree));
-extern tree make_thunk				PARAMS ((tree, tree, tree, int));
+extern tree make_thunk				PARAMS ((tree, tree, tree));
 extern void use_thunk				PARAMS ((tree, int));
 extern void synthesize_method			PARAMS ((tree));
 extern tree implicitly_declare_fn               PARAMS ((special_function_kind, tree, int));
@@ -4202,6 +4182,7 @@ extern tree context_for_name_lookup		PARAMS ((tree));
 extern tree lookup_conversions			PARAMS ((tree));
 extern tree binfo_for_vtable			PARAMS ((tree));
 extern tree binfo_from_vbase			PARAMS ((tree));
+extern tree look_for_overrides_here		PARAMS ((tree, tree));
 extern tree dfs_walk                            PARAMS ((tree,
 						       tree (*) (tree, void *),
 						       tree (*) (tree, void *),

@@ -2265,7 +2265,7 @@ mark_vtable_entries (decl)
 	 we know all the thunks we'll need when we emit a virtual
 	 function, so we emit the thunks there instead.  */
       if (DECL_THUNK_P (fn)) 
-	use_thunk (fn, THUNK_GENERATE_WITH_VTABLE_P (fn));
+	use_thunk (fn, /*emit_p=*/0);
       mark_used (fn);
     }
 }
@@ -2369,7 +2369,12 @@ key_method (type)
        method = TREE_CHAIN (method))
     if (DECL_VINDEX (method) != NULL_TREE
 	&& ! DECL_DECLARED_INLINE_P (method)
-	&& (! DECL_PURE_VIRTUAL_P (method) || DECL_DESTRUCTOR_P (method)))
+	&& (! DECL_PURE_VIRTUAL_P (method)
+#if 0
+	    /* This would be nice, but we didn't think of it in time.  */
+	    || DECL_DESTRUCTOR_P (method)
+#endif
+	    ))
       return method;
 
   return NULL_TREE;
