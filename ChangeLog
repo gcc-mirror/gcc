@@ -1,3 +1,7 @@
+2002-03-20  Anthony Green  <green@redhat.com>
+
+	* configure.in: Enable libgcj for xscale-elf target.
+
 2002-03-16  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltmain.sh (relink_command): Fix typo in previous change.
