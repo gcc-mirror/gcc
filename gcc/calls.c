@@ -87,6 +87,13 @@ static char *stack_usage_map;
 
 /* Size of STACK_USAGE_MAP.  */
 static int highest_outgoing_arg_in_use;
+
+/* stack_arg_under_construction is nonzero when an argument may be
+   initialized with a constructor call (including a C function that
+   returns a BLKmode struct) and expand_call must take special action
+   to make sure the object being constructed does not overlap the
+   argument list for the constructor call.  */
+int stack_arg_under_construction;
 #endif
 
 static void store_one_arg ();
@@ -468,6 +475,7 @@ expand_call (exp, target, ignore)
 
   rtx old_stack_level = 0;
   int old_pending_adj;
+  int old_stack_arg_under_construction;
   int old_inhibit_defer_pop = inhibit_defer_pop;
   tree old_cleanups = cleanups_this_call;
 
@@ -576,6 +584,7 @@ expand_call (exp, target, ignore)
   if (is_integrable)
     {
       rtx temp;
+      rtx before_call = get_last_insn ();
 
       temp = expand_inline_function (fndecl, actparms, target,
 				     ignore, TREE_TYPE (exp),
@@ -584,6 +593,39 @@ expand_call (exp, target, ignore)
       /* If inlining succeeded, return.  */
       if ((int) temp != -1)
 	{
+	  int i;
+
+	  /* If the outgoing argument list must be preserved, push
+	     the stack before executing the inlined function if it
+	     makes any calls.  */
+
+	  for (i = reg_parm_stack_space - 1; i >= 0; i--)
+	    if (i < highest_outgoing_arg_in_use && stack_usage_map[i] != 0)
+	      break;
+
+	  if (stack_arg_under_construction || i >= 0)
+	    {
+	      rtx insn, seq;
+
+	      for (insn = NEXT_INSN (before_call); insn;
+		   insn = NEXT_INSN (insn))
+		if (GET_CODE (insn) == CALL_INSN)
+		  break;
+
+	      if (insn)
+		{
+		  start_sequence ();
+		  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+		  allocate_dynamic_stack_space (gen_rtx (CONST_INT, VOIDmode,
+							 highest_outgoing_arg_in_use),
+						0, BITS_PER_UNIT);
+		  seq = get_insns ();
+		  end_sequence ();
+		  emit_insns_before (seq, NEXT_INSN (before_call));
+		  emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
+		}
+	    }
+
 	  /* Perform all cleanups needed for the arguments of this call
 	     (i.e. destructors in C++).  It is ok if these destructors
 	     clobber RETURN_VALUE_REG, because the only time we care about
@@ -701,10 +743,15 @@ expand_call (exp, target, ignore)
      as if it were an extra parameter.  */
   if (structure_value_addr && struct_value_rtx == 0)
     {
+      /* If the stack will be adjusted, make sure the structure address
+	 does not refer to virtual_outgoing_args_rtx.  */
+      rtx temp = (stack_arg_under_construction
+		  ? copy_addr_to_reg (structure_value_addr)
+		  : force_reg (Pmode, structure_value_addr));
       actparms
 	= tree_cons (error_mark_node,
 		     make_tree (build_pointer_type (TREE_TYPE (funtype)),
-				force_reg (Pmode, structure_value_addr)),
+				temp),
 		     actparms);
       structure_value_addr_parm = 1;
     }
@@ -1064,6 +1111,11 @@ expand_call (exp, target, ignore)
 	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
 	  old_pending_adj = pending_stack_adjust;
 	  pending_stack_adjust = 0;
+	  /* stack_arg_under_construction says whether a stack arg is
+	     being constructed at the old stack level.  Pushing the stack
+	     gets a clean outgoing argument block.  */
+	  old_stack_arg_under_construction = stack_arg_under_construction;
+	  stack_arg_under_construction = 0;
 	}
       argblock = push_block (ARGS_SIZE_RTX (args_size), 0, 0);
     }
@@ -1118,10 +1170,24 @@ expand_call (exp, target, ignore)
 	bzero (&stack_usage_map[initial_highest_arg_in_use],
 	       highest_outgoing_arg_in_use - initial_highest_arg_in_use);
       needed = 0;
-      /* No need to copy this virtual register; the space we're
-	 using gets preallocated at the start of the function
-	 so the stack pointer won't change here.  */
+
+      /* The only way the stack pointer can change here is if some arguments
+	 which are passed in memory are constructed in place in the outgoing
+	 argument area.  All objects which are constructed in place have
+	 pass_on_stack == 1 (see store_one_arg ()).
+
+	 The test for arguments being constructed on the stack is just an
+	 optimization: it would be correct but suboptimal to call
+	 copy_addr_to_reg () unconditionally.  */
+
       argblock = virtual_outgoing_args_rtx;
+      for (i = 0; i < num_actuals; i++)
+	if (args[i].pass_on_stack)
+	  {
+	    argblock = copy_addr_to_reg (argblock);
+	    break;
+	  }
+
 #else /* not ACCUMULATE_OUTGOING_ARGS */
       if (inhibit_defer_pop == 0)
 	{
@@ -1206,6 +1272,31 @@ expand_call (exp, target, ignore)
 				 - original_args_size.constant)));
 #endif
 #endif
+
+  /* The save/restore code in store_one_arg handles all cases except one:
+     a constructor call (including a C function returning a BLKmode struct)
+     to initialize an argument.  */
+  if (stack_arg_under_construction)
+    {
+      rtx push_size = gen_rtx (CONST_INT, VOIDmode,
+			       highest_outgoing_arg_in_use);
+      if (old_stack_level == 0)
+	{
+	  emit_stack_save (SAVE_BLOCK, &old_stack_level, 0);
+	  old_pending_adj = pending_stack_adjust;
+	  pending_stack_adjust = 0;
+	  /* stack_arg_under_construction says whether a stack arg is
+	     being constructed at the old stack level.  Pushing the stack
+	     gets a clean outgoing argument block.  */
+	  old_stack_arg_under_construction = stack_arg_under_construction;
+	  stack_arg_under_construction = 0;
+	  /* Make a new map for the new argument list.  */
+	  stack_usage_map = (char *)alloca (highest_outgoing_arg_in_use);
+	  bzero (stack_usage_map, highest_outgoing_arg_in_use);
+	  highest_outgoing_arg_in_use = 0;
+	}
+      allocate_dynamic_stack_space (push_size, 0, BITS_PER_UNIT);
+    }
 
   /* Don't try to defer pops if preallocating, not even from the first arg,
      since ARGBLOCK probably refers to the SP.  */
@@ -1537,14 +1628,17 @@ expand_call (exp, target, ignore)
      (i.e. destructors in C++).  */
   expand_cleanups_to (old_cleanups);
 
-  /* If size of args is variable, restore saved stack-pointer value.  */
+  /* If size of args is variable or this was a constructor call for a stack
+     argument, restore saved stack-pointer value.  */
 
   if (old_stack_level)
     {
       emit_stack_restore (SAVE_BLOCK, old_stack_level, 0);
       pending_stack_adjust = old_pending_adj;
+      stack_arg_under_construction = old_stack_arg_under_construction;
+      highest_outgoing_arg_in_use = initial_highest_arg_in_use;
+      stack_usage_map = initial_stack_usage_map;
     }
-
 #ifdef ACCUMULATE_OUTGOING_ARGS
   else
     {
