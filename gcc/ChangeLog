@@ -1,5 +1,10 @@
 1999-11-24  Andreas Jaeger  <aj@suse.de>
 
+	* config/mips/linux.h (CPP_PREDEFINES): Added.
+	(LINK_SPEC): Remove -Y since this is only needed on sparc.
+
+1999-11-24  Andreas Jaeger  <aj@suse.de>
+
 	* config/mips/linux.h (TARGET_VERSION): Added.
 	(HANDLE_SYSV_PRAGMA): Added.
 	(DEFAULT_VTABLE_THUNKS): Added.
