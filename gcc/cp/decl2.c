@@ -4208,7 +4208,6 @@ arg_assoc_type (k, type)
     case COMPLEX_TYPE:
     case CHAR_TYPE:
     case BOOLEAN_TYPE:
-    case LANG_TYPE:
       return 0;
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (type))
@@ -4221,6 +4220,11 @@ arg_assoc_type (k, type)
     case UNION_TYPE:
     case ENUMERAL_TYPE:
       return arg_assoc_namespace (k, decl_namespace (TYPE_MAIN_DECL (type)));
+    case OFFSET_TYPE:
+      /* Pointer to member: associate class type and value type. */
+      if (arg_assoc_type (k, TYPE_OFFSET_BASETYPE (type)))
+	return 1;
+      return arg_assoc_type (k, TREE_TYPE (type));
     case METHOD_TYPE:
       /* Associate the class of the method. */
       if (arg_assoc_type (k, TYPE_METHOD_BASETYPE (type)))
@@ -4232,6 +4236,10 @@ arg_assoc_type (k, type)
 	return 1;
       /* Associate the return type. */
       return arg_assoc_type (k, TREE_TYPE (type));
+    case LANG_TYPE:
+      if (type == unknown_type_node)
+	return 0;
+      /* else fall through */
     default:
       my_friendly_abort (390);
     }
