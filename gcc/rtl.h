@@ -913,7 +913,11 @@ extern unsigned int subreg_regno 	PARAMS ((rtx));
 #define MEM_SIZE(RTX) (MEM_ATTRS (RTX) == 0 ? 0 : MEM_ATTRS (RTX)->size)
 
 /* For a MEM rtx, the alignment in bits.  */
-#define MEM_ALIGN(RTX) (MEM_ATTRS (RTX) == 0 ? 1 : MEM_ATTRS (RTX)->align)
+#define MEM_ALIGN(RTX)							\
+(MEM_ATTRS (RTX) != 0 ? MEM_ATTRS (RTX)->align				\
+ : GET_MODE (RTX) != BLKmode ? GET_MODE_ALIGNMENT (GET_MODE (RTX))	\
+ : BITS_PER_UNIT)
+
 
 /* Copy the attributes that apply to memory locations from RHS to LHS.  */
 #define MEM_COPY_ATTRIBUTES(LHS, RHS)			\

@@ -2184,13 +2184,18 @@ copy_rtx_and_substitute (orig, map, for_lhs)
 #ifndef NO_FUNCTION_CSE
       if (! (optimize && ! flag_no_function_cse))
 #endif
-	return
-	  gen_rtx_CALL
-	    (GET_MODE (orig),
-	     gen_rtx_MEM (GET_MODE (XEXP (orig, 0)),
-			  copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
-						   map, 0)),
-	     copy_rtx_and_substitute (XEXP (orig, 1), map, 0));
+	{
+	  rtx copy
+	    = gen_rtx_MEM (GET_MODE (XEXP (orig, 0)),
+			   copy_rtx_and_substitute (XEXP (XEXP (orig, 0), 0),
+						    map, 0));
+
+	  MEM_COPY_ATTRIBUTES (copy, orig);
+
+	  return
+	    gen_rtx_CALL (GET_MODE (orig), copy, 
+			  copy_rtx_and_substitute (XEXP (orig, 1), map, 0));
+	}
       break;
 
 #if 0

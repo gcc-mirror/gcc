@@ -31,7 +31,7 @@ struct rtx_def;
 #define skip_leading_substring(whole,  part) \
    (strncmp (whole, part, strlen (part)) ? NULL : whole + strlen (part))
 
-extern int toplev_main			PARAMS ((int argc, char **argv));
+extern int toplev_main			PARAMS ((int, char **));
 extern int read_integral_parameter	PARAMS ((const char *, const char *,
 						const int));
 extern int count_error			PARAMS ((int));
@@ -127,7 +127,8 @@ struct lang_hooks_for_tree_inlining
 					     void *, void *));
   int (*cannot_inline_tree_fn) PARAMS ((union tree_node **));
   int (*disregard_inline_limits) PARAMS ((union tree_node *));
-  union tree_node *(*add_pending_fn_decls) PARAMS ((void*, union tree_node *));
+  union tree_node *(*add_pending_fn_decls) PARAMS ((void *,
+						    union tree_node *));
   int (*tree_chain_matters_p) PARAMS ((union tree_node *));
   int (*auto_var_in_fn_p) PARAMS ((union tree_node *, union tree_node *));
   union tree_node *(*copy_res_decl_for_inlining) PARAMS ((union tree_node *,
@@ -163,6 +164,10 @@ struct lang_hooks
 
   /* Called when all command line options have been processed.  */
   void (*post_options) PARAMS ((void));
+
+  /* Called to obtain the alias set to be used for an expression or type.
+     Returns -1 if the language does nothing special for it.  */
+  HOST_WIDE_INT (*get_alias_set) PARAMS ((tree));
 
   /* Nonzero if TYPE_READONLY and TREE_READONLY should always be honored.  */
   bool honor_readonly;

@@ -1109,6 +1109,8 @@ noce_try_cmove_arith (if_info)
 	MEM_SCALAR_P (tmp) = 1;
       if (MEM_ALIAS_SET (if_info->a) == MEM_ALIAS_SET (if_info->b))
 	set_mem_alias_set (tmp, MEM_ALIAS_SET (if_info->a));
+      set_mem_align (tmp,
+		     MIN (MEM_ALIGN (if_info->a), MEM_ALIGN (if_info->b)));
 
       noce_emit_move_insn (if_info->x, tmp);
     }

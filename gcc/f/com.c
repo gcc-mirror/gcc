@@ -14276,6 +14276,14 @@ static void ffe_init_options PARAMS ((void));
 #undef  LANG_HOOKS_DECODE_OPTION
 #define LANG_HOOKS_DECODE_OPTION	ffe_decode_option
 
+/* We do not wish to use alias-set based aliasing at all.  Used in the
+   extreme (every object with its own set, with equivalences recorded) it
+   might be helpful, but there are problems when it comes to inlining.  We
+   get on ok with flag_argument_noalias, and alias-set aliasing does
+   currently limit how stack slots can be reused, which is a lose.  */
+#undef LANG_HOOKS_GET_ALIAS_SET
+#define LANG_HOOKS_GET_ALIAS_SET hook_get_alias_set_0
+
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 
 /* used by print-tree.c */
@@ -14301,21 +14309,6 @@ const char *
 lang_identify ()
 {
   return "f77";
-}
-
-/* Return the typed-based alias set for T, which may be an expression
-   or a type.  Return -1 if we don't do anything special.  */
-
-HOST_WIDE_INT
-lang_get_alias_set (t)
-     tree t ATTRIBUTE_UNUSED;
-{
-  /* We do not wish to use alias-set based aliasing at all.  Used in the
-     extreme (every object with its own set, with equivalences recorded)
-     it might be helpful, but there are problems when it comes to inlining.
-     We get on ok with flag_argument_noalias, and alias-set aliasing does
-     currently limit how stack slots can be reused, which is a lose.  */
-  return 0;
 }
 
 static void

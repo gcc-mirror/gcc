@@ -2583,6 +2583,7 @@ i960_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
       regblock = gen_rtx_MEM (BLKmode,
 			      plus_constant (arg_pointer_rtx, first_reg * 4));
       set_mem_alias_set (regblock, get_varargs_alias_set ());
+      set_mem_align (regblock, BITS_PER_WORD);
       move_block_from_reg (first_reg, regblock,
 			   NPARM_REGS - first_reg,
 			   (NPARM_REGS - first_reg) * UNITS_PER_WORD);

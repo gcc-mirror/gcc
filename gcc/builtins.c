@@ -724,6 +724,8 @@ get_memory_rtx (exp)
 					 expand_expr (exp, NULL_RTX,
 						      ptr_mode, EXPAND_SUM)));
 
+  set_mem_attributes (mem, exp, 0);
+
   /* Get an expression we can use to find the attributes to assign to MEM.
      If it is an ADDR_EXPR, use the operand.  Otherwise, dereference it if
      we can.  First remove any nops.  */
@@ -739,7 +741,6 @@ get_memory_rtx (exp)
   else
     return mem;
 
-  set_mem_attributes (mem, exp, 0);
   /* memcpy, memset and other builtin stringops can alias with anything.  */
   set_mem_alias_set (mem, 0);
   return mem;
@@ -1040,7 +1041,7 @@ expand_builtin_apply (function, arguments, argsize)
 {
   int size, align, regno;
   enum machine_mode mode;
-  rtx incoming_args, result, reg, dest, call_insn;
+  rtx incoming_args, result, reg, dest, src, call_insn;
   rtx old_stack_level = 0;
   rtx call_fusage = 0;
 
@@ -1079,13 +1080,16 @@ expand_builtin_apply (function, arguments, argsize)
      but it's likely that the source and/or destination addresses in
      the block copy will need updating in machine specific ways.  */
   dest = allocate_dynamic_stack_space (argsize, 0, BITS_PER_UNIT);
-  emit_block_move (gen_rtx_MEM (BLKmode, dest),
-		   gen_rtx_MEM (BLKmode, incoming_args),
-		   argsize, PARM_BOUNDARY);
+  dest = gen_rtx_MEM (BLKmode, dest);
+  set_mem_align (dest, PARM_BOUNDARY);
+  src = gen_rtx_MEM (BLKmode, incoming_args);
+  set_mem_align (src, PARM_BOUNDARY);
+  emit_block_move (dest, src, argsize);
 
   /* Refer to the argument block.  */
   apply_args_size ();
   arguments = gen_rtx_MEM (BLKmode, arguments);
+  set_mem_align (arguments, PARM_BOUNDARY);
 
   /* Walk past the arg-pointer and structure value address.  */
   size = GET_MODE_SIZE (Pmode);
@@ -1813,6 +1817,7 @@ expand_builtin_memcpy (arglist)
 	return 0;
 
       dest_mem = get_memory_rtx (dest);
+      set_mem_align (dest_mem, dest_align);
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
       src_str = c_getstr (src);
 
@@ -1833,6 +1838,7 @@ expand_builtin_memcpy (arglist)
 	}
 
       src_mem = get_memory_rtx (src);
+      set_mem_align (src_mem, src_align);
 
       /* Just copy the rights of SRC to the rights of DEST.  */
       if (current_function_check_memory_usage)
@@ -1842,9 +1848,7 @@ expand_builtin_memcpy (arglist)
 			   len_rtx, TYPE_MODE (sizetype));
 
       /* Copy word part most expediently.  */
-      dest_addr
-	= emit_block_move (dest_mem, src_mem, len_rtx,
-			   MIN (src_align, dest_align));
+      dest_addr = emit_block_move (dest_mem, src_mem, len_rtx);
 
       if (dest_addr == 0)
 	dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -2041,6 +2045,7 @@ expand_builtin_memset (exp)
       len_rtx = expand_expr (len, NULL_RTX, VOIDmode, 0);
 
       dest_mem = get_memory_rtx (dest);
+      set_mem_align (dest_mem, dest_align);
 	   
       /* Just check DST is writable and mark it as readable.  */
       if (current_function_check_memory_usage)
@@ -2051,7 +2056,7 @@ expand_builtin_memset (exp)
 			   TYPE_MODE (integer_type_node));
 
 
-      dest_addr = clear_storage (dest_mem, len_rtx, dest_align);
+      dest_addr = clear_storage (dest_mem, len_rtx);
 
       if (dest_addr == 0)
 	dest_addr = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -3013,11 +3018,13 @@ expand_builtin_va_copy (arglist)
       /* "Dereference" to BLKmode memories.  */
       dstb = gen_rtx_MEM (BLKmode, dstb);
       set_mem_alias_set (dstb, get_alias_set (TREE_TYPE (TREE_TYPE (dst))));
+      set_mem_align (dstb, TYPE_ALIGN (va_list_type_node));
       srcb = gen_rtx_MEM (BLKmode, srcb);
       set_mem_alias_set (srcb, get_alias_set (TREE_TYPE (TREE_TYPE (src))));
+      set_mem_align (srcb, TYPE_ALIGN (va_list_type_node));
 
       /* Copy.  */
-      emit_block_move (dstb, srcb, size, TYPE_ALIGN (va_list_type_node));
+      emit_block_move (dstb, srcb, size);
     }
 
   return const0_rtx;

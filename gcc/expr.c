@@ -1635,16 +1635,16 @@ move_by_pieces_1 (genfun, mode, data)
    0 otherwise.  */
 
 rtx
-emit_block_move (x, y, size, align)
+emit_block_move (x, y, size)
      rtx x, y;
      rtx size;
-     unsigned int align;
 {
   rtx retval = 0;
 #ifdef TARGET_MEM_FUNCTIONS
   static tree fn;
   tree call_expr, arg_list;
 #endif
+  unsigned int align = MIN (MEM_ALIGN (x), MEM_ALIGN (y));
 
   if (GET_MODE (x) != BLKmode)
     abort ();
@@ -2540,21 +2540,20 @@ store_by_pieces_2 (genfun, mode, data)
 }
 
 /* Write zeros through the storage of OBJECT.  If OBJECT has BLKmode, SIZE is
-   its length in bytes and ALIGN is the maximum alignment we can is has.
-
-   If we call a function that returns the length of the block, return it.  */
+   its length in bytes.  */
 
 rtx
-clear_storage (object, size, align)
+clear_storage (object, size)
      rtx object;
      rtx size;
-     unsigned int align;
 {
 #ifdef TARGET_MEM_FUNCTIONS
   static tree fn;
   tree call_expr, arg_list;
 #endif
   rtx retval = 0;
+  unsigned int align = (GET_CODE (object) == MEM ? MEM_ALIGN (object)
+			: GET_MODE_ALIGNMENT (GET_MODE (object)));
 
   /* If OBJECT is not BLKmode and SIZE is the same size as its mode,
      just move a zero.  Otherwise, do this a piece at a time.  */
@@ -3415,6 +3414,8 @@ emit_push_insn (x, mode, type, size, align, partial, reg, extra,
 		 of sibling calls.  */
 	      set_mem_alias_set (target, 0);
 	    }
+	  else
+	    set_mem_align (target, align);
 
 	  /* TEMP is the address of the block.  Copy the data there.  */
 	  if (GET_CODE (size) == CONST_INT
@@ -3833,8 +3834,8 @@ expand_assignment (to, from, want_value, suggest_reg)
 	  rtx inner_to_rtx
 	    = adjust_address (to_rtx, BLKmode, bitpos / BITS_PER_UNIT);
 
-	  emit_block_move (inner_to_rtx, from_rtx, expr_size (from),
-			   MIN (alignment, from_align));
+	  emit_block_move (inner_to_rtx, from_rtx, expr_size (from));
+
 	  free_temp_slots ();
 	  pop_temp_slots ();
 	  return to_rtx;
@@ -3894,8 +3895,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 	emit_group_load (to_rtx, value, int_size_in_bytes (TREE_TYPE (from)),
 			 TYPE_ALIGN (TREE_TYPE (from)));
       else if (GET_MODE (to_rtx) == BLKmode)
-	emit_block_move (to_rtx, value, expr_size (from),
-			 TYPE_ALIGN (TREE_TYPE (from)));
+	emit_block_move (to_rtx, value, expr_size (from));
       else
 	{
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -3915,11 +3915,7 @@ expand_assignment (to, from, want_value, suggest_reg)
      Don't re-expand if it was expanded already (in COMPONENT_REF case).  */
 
   if (to_rtx == 0)
-    {
-      to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
-      if (GET_CODE (to_rtx) == MEM)
-	set_mem_alias_set (to_rtx, get_alias_set (to));
-    }
+    to_rtx = expand_expr (to, NULL_RTX, VOIDmode, EXPAND_MEMORY_USE_WO);
 
   /* Don't move directly into a return register.  */
   if (TREE_CODE (to) == RESULT_DECL
@@ -4274,7 +4270,7 @@ store_expr (exp, target, want_value)
 	  size = expr_size (exp);
 	  if (GET_CODE (size) == CONST_INT
 	      && INTVAL (size) < TREE_STRING_LENGTH (exp))
-	    emit_block_move (target, temp, size, TYPE_ALIGN (TREE_TYPE (exp)));
+	    emit_block_move (target, temp, size);
 	  else
 	    {
 	      /* Compute the size of the data to copy from the string.  */
@@ -4282,14 +4278,12 @@ store_expr (exp, target, want_value)
 		= size_binop (MIN_EXPR,
 			      make_tree (sizetype, size),
 			      size_int (TREE_STRING_LENGTH (exp)));
-	      unsigned int align = TYPE_ALIGN (TREE_TYPE (exp));
 	      rtx copy_size_rtx = expand_expr (copy_size, NULL_RTX,
 					       VOIDmode, 0);
 	      rtx label = 0;
 
 	      /* Copy that much.  */
-	      emit_block_move (target, temp, copy_size_rtx,
-			       TYPE_ALIGN (TREE_TYPE (exp)));
+	      emit_block_move (target, temp, copy_size_rtx);
 
 	      /* Figure out how much is left in TARGET that we have to clear.
 		 Do all calculations in ptr_mode.  */
@@ -4301,10 +4295,6 @@ store_expr (exp, target, want_value)
 		{
 		  addr = plus_constant (addr, TREE_STRING_LENGTH (exp));
 		  size = plus_constant (size, -TREE_STRING_LENGTH (exp));
-		  align = MIN (align,
-			       (unsigned int) (BITS_PER_UNIT
-					       * (INTVAL (copy_size_rtx)
-						  & - INTVAL (copy_size_rtx))));
 		}
 	      else
 		{
@@ -4317,12 +4307,10 @@ store_expr (exp, target, want_value)
 				       copy_size_rtx, NULL_RTX, 0,
 				       OPTAB_LIB_WIDEN);
 
-		  align = BITS_PER_UNIT;
 		  label = gen_label_rtx ();
 		  emit_cmp_and_jump_insns (size, const0_rtx, LT, NULL_RTX,
 					   GET_MODE (size), 0, 0, label);
 		}
-	      align = MIN (align, expr_align (copy_size));
 
 	      if (size != const0_rtx)
 		{
@@ -4340,7 +4328,7 @@ store_expr (exp, target, want_value)
  				       GEN_INT (MEMORY_USE_WO),
 				       TYPE_MODE (integer_type_node));
 		  in_check_memory_usage = 0;
-		  clear_storage (dest, size, align);
+		  clear_storage (dest, size);
 		}
 
 	      if (label)
@@ -4353,8 +4341,7 @@ store_expr (exp, target, want_value)
 	emit_group_load (target, temp, int_size_in_bytes (TREE_TYPE (exp)),
 			 TYPE_ALIGN (TREE_TYPE (exp)));
       else if (GET_MODE (temp) == BLKmode)
-	emit_block_move (target, temp, expr_size (exp),
-			 TYPE_ALIGN (TREE_TYPE (exp)));
+	emit_block_move (target, temp, expr_size (exp));
       else
 	emit_move_insn (target, temp);
     }
@@ -4552,7 +4539,7 @@ store_constructor (exp, target, align, cleared, size)
 
 	  /* If the constructor is empty, clear the union.  */
 	  if (! CONSTRUCTOR_ELTS (exp)  && ! cleared)
-	    clear_storage (target, expr_size (exp), TYPE_ALIGN (type));
+	    clear_storage (target, expr_size (exp));
 	}
 
       /* If we are building a static constructor into a register,
@@ -4581,7 +4568,7 @@ store_constructor (exp, target, align, cleared, size)
 		   || (HOST_WIDE_INT) GET_MODE_SIZE (GET_MODE (target)) == size))
 	{
 	  if (! cleared)
-	    clear_storage (target, GEN_INT (size), align);
+	    clear_storage (target, GEN_INT (size));
 
 	  cleared = 1;
 	}
@@ -4776,7 +4763,7 @@ store_constructor (exp, target, align, cleared, size)
       if (need_to_clear && size > 0)
 	{
 	  if (! cleared)
-	    clear_storage (target, GEN_INT (size), align);
+	    clear_storage (target, GEN_INT (size));
 	  cleared = 1;
 	}
       else if (REG_P (target))
@@ -4962,7 +4949,7 @@ store_constructor (exp, target, align, cleared, size)
       if (elt == NULL_TREE && size > 0)
 	{
 	  if (!cleared)
-	    clear_storage (target, GEN_INT (size), TYPE_ALIGN (type));
+	    clear_storage (target, GEN_INT (size));
 	  return;
 	}
 
@@ -5037,7 +5024,7 @@ store_constructor (exp, target, align, cleared, size)
 		   || (tree_low_cst (TREE_VALUE (elt), 0)
 		       - tree_low_cst (TREE_PURPOSE (elt), 0) + 1
 		       != (HOST_WIDE_INT) nbits))))
-	  clear_storage (target, expr_size (exp), TYPE_ALIGN (type));
+	  clear_storage (target, expr_size (exp));
 
       for (; elt != NULL_TREE; elt = TREE_CHAIN (elt))
 	{
@@ -5281,8 +5268,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 	  emit_block_move (target, temp,
 			   bitsize == -1 ? expr_size (exp)
 			   : GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-				      / BITS_PER_UNIT),
-			   align);
+				      / BITS_PER_UNIT));
 
 	  return value_mode == VOIDmode ? const0_rtx : target;
 	}
@@ -5343,15 +5329,7 @@ store_field (target, bitsize, bitpos, mode, exp, value_mode,
 					 bitpos / BITS_PER_UNIT));
 
       MEM_SET_IN_STRUCT_P (to_rtx, 1);
-      /* If the address of the structure varies, then it might be on
-	 the stack.  And, stack slots may be shared across scopes.
-	 So, two different structures, of different types, can end up
-	 at the same location.  We will give the structures alias set
-	 zero; here we must be careful not to give non-zero alias sets
-	 to their fields.  */
-      set_mem_alias_set (to_rtx,
-			 rtx_varies_p (addr, /*for_alias=*/0)
-			 ? 0 : alias_set);
+      set_mem_alias_set (to_rtx, alias_set);
 
       return store_expr (exp, to_rtx, value_mode != VOIDmode);
     }
@@ -5999,7 +5977,7 @@ highest_pow2_factor (exp)
     case CEIL_DIV_EXPR:
       c0 = highest_pow2_factor (TREE_OPERAND (exp, 0));
       c1 = highest_pow2_factor (TREE_OPERAND (exp, 1));
-      return c0 / c1;
+      return MAX (1, c0 / c1);
 
     case NON_LVALUE_EXPR:  case NOP_EXPR:  case CONVERT_EXPR:
     case COMPOUND_EXPR:  case SAVE_EXPR:
@@ -7189,8 +7167,7 @@ expand_expr (exp, target, tmode, modifier)
 		emit_block_move (target, op0,
 				 bitsize == -1 ? expr_size  (exp)
 				 : GEN_INT ((bitsize + BITS_PER_UNIT - 1)
-					    / BITS_PER_UNIT),
-				 BITS_PER_UNIT);
+					    / BITS_PER_UNIT));
 
 		return target;
 	      }
@@ -9172,7 +9149,7 @@ expand_expr_unaligned (exp, palign)
 	  /* Get a reference to just this component.  */
 	  op0 = adjust_address (op0, mode1, bitpos / BITS_PER_UNIT);
 
-	set_mem_alias_set (op0, get_alias_set (exp));
+	set_mem_attributes (op0, exp, 0);
 
 	/* Adjust the alignment in case the bit position is not
 	   a multiple of the alignment of the inner object.  */

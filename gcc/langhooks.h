@@ -22,6 +22,10 @@ Boston, MA 02111-1307, USA.  */
 #ifndef GCC_LANG_HOOKS_H
 #define GCC_LANG_HOOKS_H
 
+/* Provide a hook routine for alias sets that always returns 1.  This is
+   used by languages that haven't deal with alias sets yet.  */
+extern HOST_WIDE_INT hook_get_alias_set_0	PARAMS ((tree));
+
 /* Note to creators of new hooks:
 
    The macros in this file should NOT be surrounded by a
@@ -33,30 +37,34 @@ Boston, MA 02111-1307, USA.  */
 
 extern void lang_hook_default_do_nothing PARAMS ((void));
 extern int lang_hook_default_decode_option PARAMS ((int, char **));
+extern HOST_WIDE_INT lang_hook_default_get_alias_set PARAMS ((tree));
 
 #define LANG_HOOKS_INIT			lang_hook_default_do_nothing
 #define LANG_HOOKS_FINISH		lang_hook_default_do_nothing
 #define LANG_HOOKS_INIT_OPTIONS		lang_hook_default_do_nothing
 #define LANG_HOOKS_DECODE_OPTION	lang_hook_default_decode_option
 #define LANG_HOOKS_POST_OPTIONS		lang_hook_default_do_nothing
+#define LANG_HOOKS_GET_ALIAS_SET	lang_hook_default_get_alias_set
 
 #define LANG_HOOKS_HONOR_READONLY	false
 
 /* Declarations of default tree inlining hooks.  */
-tree tree_inlining_default_hook_walk_subtrees PARAMS ((tree*, int *,
-						       walk_tree_fn,
-						       void *, void *));
-int tree_inlining_default_hook_cannot_inline_tree_fn PARAMS ((tree*));
-int tree_inlining_default_hook_disregard_inline_limits PARAMS ((tree));
-tree tree_inlining_default_hook_add_pending_fn_decls PARAMS ((void*, tree));
-int tree_inlining_default_hook_tree_chain_matters_p PARAMS ((tree));
-int tree_inlining_default_hook_auto_var_in_fn_p PARAMS ((tree, tree));
+tree tree_inlining_default_hook_walk_subtrees		PARAMS ((tree *, int *,
+								 walk_tree_fn,
+								 void *,
+								 void *));
+int tree_inlining_default_hook_cannot_inline_tree_fn	PARAMS ((tree *));
+int tree_inlining_default_hook_disregard_inline_limits	PARAMS ((tree));
+tree tree_inlining_default_hook_add_pending_fn_decls	PARAMS ((void *,
+								 tree));
+int tree_inlining_default_hook_tree_chain_matters_p	PARAMS ((tree));
+int tree_inlining_default_hook_auto_var_in_fn_p		PARAMS ((tree, tree));
 tree tree_inlining_default_hook_copy_res_decl_for_inlining PARAMS ((tree, tree,
 								    tree,
 								    void *,
 								    int *,
 								    void *));
-int tree_inlining_default_hook_anon_aggr_type_p PARAMS ((tree));
+int tree_inlining_default_hook_anon_aggr_type_p		PARAMS ((tree));
 
 /* Tree inlining hooks.  */
 #define LANG_HOOKS_TREE_INLINING_WALK_SUBTREES \
@@ -94,6 +102,7 @@ int tree_inlining_default_hook_anon_aggr_type_p PARAMS ((tree));
   LANG_HOOKS_INIT_OPTIONS, \
   LANG_HOOKS_DECODE_OPTION, \
   LANG_HOOKS_POST_OPTIONS, \
+  LANG_HOOKS_GET_ALIAS_SET, \
   LANG_HOOKS_HONOR_READONLY, \
   LANG_HOOKS_TREE_INLINING_INITIALIZER \
 }

@@ -813,6 +813,7 @@ arc_setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 					     FIRST_PARM_OFFSET (0)
 					     + align_slop * UNITS_PER_WORD));
       set_mem_alias_set (regblock, get_varargs_alias_set ());
+      set_mem_align (regblock, BITS_PER_WORD);
       move_block_from_reg (first_reg_offset, regblock,
 			   MAX_ARC_PARM_REGS - first_reg_offset,
 			   ((MAX_ARC_PARM_REGS - first_reg_offset)

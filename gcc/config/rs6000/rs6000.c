@@ -2499,6 +2499,7 @@ setup_incoming_varargs (cum, mode, type, pretend_size, no_rtl)
 		         plus_constant (save_area,
 					first_reg_offset * reg_size)),
       set_mem_alias_set (mem, set);
+      set_mem_align (mem, BITS_PER_WORD);
 
       move_block_from_reg
 	(GP_ARG_MIN_REG + first_reg_offset, mem,
@@ -2850,9 +2851,6 @@ expand_block_move_mem (mode, addr, orig_mem)
   rtx mem = gen_rtx_MEM (mode, addr);
 
   MEM_COPY_ATTRIBUTES (mem, orig_mem);
-#ifdef MEM_UNALIGNED_P
-  MEM_UNALIGNED_P (mem) = MEM_UNALIGNED_P (orig_mem);
-#endif
   return mem;
 }
 
@@ -5697,12 +5695,16 @@ rs6000_return_addr (count, frame)
       || DEFAULT_ABI == ABI_AIX_NODESC)
     {
       cfun->machine->ra_needs_full_frame = 1;
-      return gen_rtx_MEM (Pmode,
-	       memory_address (Pmode,
-		 plus_constant (copy_to_reg
-				(gen_rtx_MEM (Pmode,
-					      memory_address (Pmode, frame))),
-				RETURN_ADDRESS_OFFSET)));
+
+      return
+	gen_rtx_MEM
+	  (Pmode,
+	   memory_address
+	   (Pmode,
+	    plus_constant (copy_to_reg
+			   (gen_rtx_MEM (Pmode,
+					 memory_address (Pmode, frame))),
+			   RETURN_ADDRESS_OFFSET)));
     }
 
   return get_hard_reg_initial_val (Pmode, LINK_REGISTER_REGNUM);

@@ -1,3 +1,8 @@
+Tue Oct 23 14:00:20 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* cp-lang.c (cxx_get_alias_set): New function.
+	Point LANG_HOOKS_GET_ALIAS_SET to it.
+
 2001-10-23  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
 
 	* cp-tree.def (UNBOUND_CLASS_TEMPLATE): New tree node.

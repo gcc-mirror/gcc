@@ -56,6 +56,9 @@ static int c_cannot_inline_tree_fn PARAMS ((tree *));
 #define LANG_HOOKS_DECODE_OPTION c_decode_option
 #undef LANG_HOOKS_POST_OPTIONS
 #define LANG_HOOKS_POST_OPTIONS c_post_options
+#undef LANG_HOOKS_GET_ALIAS_SET
+#define LANG_HOOKS_GET_ALIAS_SET c_common_get_alias_set
+
 #undef LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN
 #define LANG_HOOKS_TREE_INLINING_CANNOT_INLINE_TREE_FN \
   c_cannot_inline_tree_fn

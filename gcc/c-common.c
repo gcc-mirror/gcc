@@ -2146,7 +2146,7 @@ c_apply_type_quals_to_decl (type_quals, decl)
    or a type.  Return -1 if we don't do anything special.  */
 
 HOST_WIDE_INT
-lang_get_alias_set (t)
+c_common_get_alias_set (t)
      tree t;
 {
   tree u;
@@ -2221,10 +2221,6 @@ lang_get_alias_set (t)
       if (t1 != t)
 	return get_alias_set (t1);
     }
-  /* It's not yet safe to use alias sets for classes in C++ because
-     the TYPE_FIELDs list for a class doesn't mention base classes.  */
-  else if (c_language == clk_cplusplus && AGGREGATE_TYPE_P (t))
-    return 0;
 
   return -1;
 }
