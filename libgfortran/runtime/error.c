@@ -53,62 +53,6 @@ unsigned line;
 
 static char buffer[32];		/* buffer for integer/ascii conversions */
 
-/* rtoa()-- Real to ascii conversion for base 10 and below.
- * Returns a pointer to a static buffer.  */
-
-char *
-rtoa (double f, int length, int oprec)
-{
-  double n = f;
-  double fval, minval;
-  int negative, prec;
-  unsigned k;
-  char formats[16];
-
-  prec = 0;
-  negative = 0;
-  if (n < 0.0)
-    {
-      negative = 1;
-      n = -n;
-    }
-
-  if (length >= 8)
-    minval = FLT_MIN;
-  else
-    minval = DBL_MIN;
-
-
-  if (n <= minval)
-    {
-      buffer[0] = '0';
-      buffer[1] = '.';
-      for (k = 2; k < 28 ; k++)
-        buffer[k] = '0';
-      buffer[k+1] = '\0';
-      return buffer;
-    }
-  fval = n;
-  while (fval > 1.0)
-    {
-      fval = fval / 10.0;
-      prec ++;
-    }
-
-  prec = sizeof (buffer) - 2 - prec;
-  if (prec > 20)
-     prec = 20;
-  prec = prec > oprec ? oprec : prec ;
-
-  if (negative)
-     sprintf (formats, "-%%.%df", prec);
-  else
-     sprintf (formats, "%%.%df", prec);
-
-  sprintf (buffer, formats, n);
-  return buffer;
-}
-
 
 /* Returns a pointer to a static buffer. */
 

@@ -250,9 +250,6 @@ void get_args (int *, char ***);
 
 
 /* error.c */
-#define rtoa prefix(rtoa)
-char *rtoa (double f, int length, int oprec);
-
 #define itoa prefix(itoa)
 char *itoa (int64_t);
 
