@@ -268,6 +268,9 @@ finish_file ()
   
   if (back_end_hook)
     (*back_end_hook) (getdecls ());
+
+  if (flag_dump_translation_unit)
+    dump_node_to_file (getdecls (), flag_dump_translation_unit);
 }
 
 /* Called during diagnostic message formatting process to print a

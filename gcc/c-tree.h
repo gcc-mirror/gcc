@@ -140,9 +140,6 @@ struct lang_type
    without prototypes.  */
 #define TYPE_ACTUAL_ARG_TYPES(NODE) TYPE_NONCOPIED_PARTS (NODE)
 
-/* In a FIELD_DECL, nonzero if the decl was originally a bitfield.  */
-#define DECL_C_BIT_FIELD(NODE) DECL_LANG_FLAG_4 (NODE)
-
 
 /* in c-lang.c and objc-act.c */
 extern tree lookup_interface			PARAMS ((tree));

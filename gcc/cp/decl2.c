@@ -236,11 +236,6 @@ int flag_optional_diags = 1;
 
 int flag_const_strings = 1;
 
-/* If non-NULL, dump the tree structure for the entire translation
-   unit to this file.  */
-
-const char *flag_dump_translation_unit = 0;
-
 /* Nonzero means warn about deprecated conversion from string constant to
    `char *'.  */
 

@@ -723,7 +723,7 @@ SUBDIR_FLAGS_TO_PASS = $(ORDINARY_FLAGS_TO_PASS) \
 
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = c-errors.o c-lex.o c-pragma.o c-decl.o c-typeck.o \
-  c-convert.o c-aux-info.o c-common.o c-semantics.o $(MAYBE_CPPLIB)
+  c-convert.o c-aux-info.o c-common.o c-semantics.o c-dump.o $(MAYBE_CPPLIB)
 
 # Language-specific object files for C.
 C_OBJS = c-parse.o c-lang.o $(C_AND_OBJC_OBJS)
@@ -1223,6 +1223,10 @@ c-common.o : c-common.c $(CONFIG_H) system.h $(TREE_H) \
 c-semantics.o : c-semantics.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
 	c-lex.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
 	$(EXPR_H)
+
+c-dump.o: c-dump.c $(CONFIG_H) system.h $(TREE_H) $(C_TREE_H) \
+	c-lex.h flags.h toplev.h output.h c-pragma.h $(RTL_H) $(GGC_H) \
+	$(EXPR_H) $(SPLAY_TREE_H) c-dump.h
 
 # Language-independent files.
 

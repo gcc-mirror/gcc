@@ -6331,6 +6331,7 @@ init_decl_processing ()
   free_lang_status = &pop_cp_function_context;
   mark_lang_status = &mark_cp_function_context;
   lang_safe_from_p = &c_safe_from_p;
+  lang_dump_tree = &cp_dump_tree;
 
   cp_parse_init ();
   init_decl2 ();

@@ -283,7 +283,7 @@ make_rtl_for_local_static (decl)
 
   /* If the DECL_ASSEMBLER_NAME is not the same as the DECL_NAME, then
      either we already created RTL for this DECL (and since it was a
-     local variable, its DECL_ASSMEMBLER_NAME got hacked up to prevent
+     local variable, its DECL_ASSEMBLER_NAME got hacked up to prevent
      clashes with other local statics with the same name by a previous
      call to make_decl_rtl), or the user explicitly requested a
      particular assembly name for this variable, using the GNU

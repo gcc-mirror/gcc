@@ -510,6 +510,7 @@ c_decode_option (argc, argv)
      char **argv;
 {
   int strings_processed;
+  const char *option_value = NULL;
   char *p = argv[0];
 #if USE_CPPLIB
   strings_processed = cpp_handle_option (&parse_in, argc, argv);
@@ -667,6 +668,14 @@ c_decode_option (argc, argv)
     flag_no_builtin = 0;
   else if (!strcmp (p, "-fno-builtin"))
     flag_no_builtin = 1;
+  else if ((option_value
+	    = skip_leading_substring (p, "-fdump-translation-unit-")))
+    {
+      if (p[22] == '\0')
+	error ("no file specified with -fdump-translation-unit");
+      else
+	flag_dump_translation_unit = option_value;
+    }
   else if (!strcmp (p, "-ansi"))
     goto iso_1990;
   else if (!strcmp (p, "-Werror-implicit-function-declaration"))
@@ -5464,7 +5473,8 @@ finish_struct (t, fieldlist, attributes)
 				   "`%s' is narrower than values of its type");
 
 	      DECL_SIZE (x) = bitsize_int (width);
-	      DECL_BIT_FIELD (x) = DECL_C_BIT_FIELD (x) = 1;
+	      DECL_BIT_FIELD (x) = 1;
+	      SET_DECL_C_BIT_FIELD (x);
 
 	      if (width == 0)
 		{

@@ -1,3 +1,24 @@
+2000-11-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* Make-lang.in (CXX_C_OBJS): Add c-dump.o.
+	(dump.o): Update dependency list.
+	* cp-tree.h (DECL_MAYBE_TEMPLATE): Remove.
+	(flag_dump_translation_unit): Likewise.
+	(CP_TYPE_QUALS): Adjust definition.
+	(DECL_C_BIT_FIELD): Remove.
+	(SET_DECL_C_BIT_FIELD): Likewise.
+	(CLEAR_DECL_C_BIT_FIELD): Likewise.
+	(add_maybe_template): Likewise.
+	(strip_array_types): Likewise.
+	(dump_node_to_file): Likewise.
+	(cp_dump_tree): New function.
+	* decl.c (init_decl_processing): Set lang_dump_tree.
+	* decl2.c (flag_dump_translation_unit): Remove.
+	* dump.c: Move most of it to ../c-dump.c.
+	(cp_dump_tree): New function.
+	* pt.c (add_maybe_template): Remove.
+	* typeck.c (strip_array_types): Likewise.
+	
 2000-11-07  Eric Christopher  <echristo@redhat.com>
 
         * decl.c (init_decl_processing): Change definition of
