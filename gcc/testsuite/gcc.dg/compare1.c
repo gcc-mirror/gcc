@@ -4,23 +4,36 @@
 /* { dg-do compile } */
 /* { dg-options "-Wsign-compare" } */
 
-int target_flags = 1;
+int tf = 1;
 
-enum machine_mode 
+/* This enumeration has an explicit negative value and is therefore signed.  */
+enum mm1 
 {
-  VOIDmode , PQImode , QImode , PHImode , HImode ,
-  PSImode , SImode , PDImode , DImode , TImode , OImode , QFmode ,
-  HFmode , TQFmode , SFmode , DFmode , XFmode , TFmode , QCmode ,
-  HCmode , SCmode , DCmode , XCmode , TCmode , CQImode , CHImode ,
-  CSImode , CDImode , CTImode , COImode , BLKmode , CCmode , CCXmode,
-  CC_NOOVmode, CCX_NOOVmode, CCFPmode, CCFPEmode , MAX_MACHINE_MODE 
+  VOID, SI, DI, MAX = -1
 };
 
-#define Pmode ( target_flags ? DImode : SImode )
-
-int main()
+/* This enumeration fits entirely in a signed int, but is unsigned anyway.  */
+enum mm2
 {
-  enum machine_mode mode = DImode;
+  VOID2, SI2, DI2, MAX2
+};
 
-  return (mode == Pmode); /* { dg-bogus "warning:" "comparison between signed and unsigned" } */
+int f(enum mm1 x)
+{
+  return x == (tf?DI:SI); /* { dg-bogus "signed and unsigned" "case 1" } */
+}
+
+int g(enum mm1 x)
+{
+  return x == (tf?DI:-1); /* { dg-bogus "signed and unsigned" "case 2" } */
+}
+
+int h(enum mm2 x)
+{
+  return x == (tf?DI2:SI2); /* { dg-bogus "signed and unsigned" "case 3" } */
+}
+
+int i(enum mm2 x)
+{
+  return x == (tf?DI2:-1); /* { dg-warning "signed and unsigned" "case 4" } */
 }
