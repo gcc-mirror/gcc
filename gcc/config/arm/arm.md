@@ -2565,44 +2565,17 @@
  (set_attr "type" 
 "load,store2,load,ffarith,ffarith,ffarith,f_load,f_store,r_mem_f,f_mem_r,*")])
 
-;; Exactly the same as above, except that all `f' cases are deleted.
-;; This is necessary to prevent reload from ever trying to use a `f' reg
-;; when -msoft-float.
+;; Software floating point version.  This is essentially the same as movdi.
+;; Do not use `f' as a constraint to prevent reload from ever trying to use
+;; an `f' reg.
 
 (define_insn "*movdf_soft_insn"
-  [(set (match_operand:DF 0 "general_operand" "=r,Q#m,r,r")
-	(match_operand:DF 1 "general_operand" 
-	 	"Q,r,?o,??r"))]
-  "TARGET_SOFT_FLOAT
-   && (GET_CODE (operands[0]) != MEM || register_operand (operands[1], DFmode))"
-  "*
-{
-  rtx ops[3];
-
-  switch (which_alternative)
-    {
-    case 0:
-      return \"ldm%?ia\\t%m1, {%0, %R0}\\t%@ double\";
-
-    case 1:
-      return \"stm%?ia\\t%m0, {%1, %R1}\\t%@ double\";
-
-    case 2:
-      ops[0] = operands[0];
-      ops[1] = XEXP (XEXP (operands[1], 0), 0);
-      ops[2] = XEXP (XEXP (operands[1], 0), 1);
-      if (!INTVAL (ops[2]) || const_ok_for_arm (INTVAL (ops[2])))
-	output_asm_insn (\"add%?\\t%0, %1, %2\", ops);
-      else
-	output_asm_insn (\"sub%?\\t%0, %1, #%n2\", ops);
-      return \"ldm%?ia\\t%0, {%0, %R0}\\t%@ double\";
-
-    case 3: return output_move_double (operands);
-    }
-}
-"
-[(set_attr "length" "4,4,8,8")
- (set_attr "type" "load,store2,load,*")])
+  [(set (match_operand:DF 0 "soft_df_operand" "=r,r,o<>,r")
+	(match_operand:DF 1 "soft_df_operand" "r,o<>,r,F"))]
+  "TARGET_SOFT_FLOAT"
+  "* return output_move_double (operands);"
+[(set_attr "length" "8,8,8,32")
+ (set_attr "type" "*,load,store2,*")])
 
 (define_expand "movxf"
   [(set (match_operand:XF 0 "general_operand" "")
@@ -3335,6 +3308,98 @@
 [(set_attr "conds" "use")
  (set_attr "length" "8")])
 
+
+;; Conditional move insns
+
+(define_expand "movsicc"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SI 2 "arm_not_operand" "")
+		      (match_operand:SI 3 "register_operand" "")))]
+  ""
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx ccreg = gen_rtx (REG,
+		       SELECT_CC_MODE (code, arm_compare_op0, arm_compare_op1),
+		       CC_REGNUM);
+
+  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+}")
+
+(define_expand "movsfcc"
+  [(set (match_operand:SF 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SF 2 "nonmemory_operand" "")
+		      (match_operand:SF 3 "register_operand" "")))]
+  ""
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx ccreg = gen_rtx (REG,
+		       SELECT_CC_MODE (code, arm_compare_op0, arm_compare_op1),
+		       CC_REGNUM);
+
+  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+}")
+
+(define_expand "movdfcc"
+  [(set (match_operand:DF 0 "register_operand" "")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:DF 2 "nonmemory_operand" "")
+		      (match_operand:DF 3 "register_operand" "")))]
+  "TARGET_HARD_FLOAT"
+  "
+{
+  enum rtx_code code = GET_CODE (operands[1]);
+  rtx ccreg = gen_rtx (REG,
+		       SELECT_CC_MODE (code, arm_compare_op0, arm_compare_op1),
+		       CC_REGNUM);
+
+  operands[1] = gen_rtx (code, VOIDmode, ccreg, const0_rtx);
+}")
+
+(define_insn "*movsicc_insn"
+  [(set (match_operand:SI 0 "register_operand" "=r,r")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SI 2 "arm_not_operand" "rI,K")
+		      (match_operand:SI 3 "register_operand" "0,0")))]
+  ""
+  "@
+   mov%d1\\t%0, %2
+   mvn%d1\\t%0, #%B2"
+  [(set_attr "type" "*,*")
+   (set_attr "conds" "use,use")])
+
+(define_insn "*movsfcc_hard_insn"
+  [(set (match_operand:SF 0 "register_operand" "=f")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SF 2 "register_operand" "f")
+		      (match_operand:SF 3 "register_operand" "0")))]
+  "TARGET_HARD_FLOAT"
+  "mvf%d1s\\t%0, %2"
+  [(set_attr "type" "ffarith")
+   (set_attr "conds" "use")])
+
+(define_insn "*movsfcc_soft_insn"
+  [(set (match_operand:SF 0 "register_operand" "=r")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:SF 2 "register_operand" "r")
+		      (match_operand:SF 3 "register_operand" "0")))]
+  "TARGET_SOFT_FLOAT"
+  "mov%d1\\t%0, %2"
+  [(set_attr "type" "*")
+   (set_attr "conds" "use")])
+
+(define_insn "*movdfcc_insn"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(if_then_else (match_operand 1 "comparison_operator" "")
+		      (match_operand:DF 2 "register_operand" "f")
+		      (match_operand:DF 3 "register_operand" "0")))]
+  "TARGET_HARD_FLOAT"
+  "mvf%d1d\\t%0, %2"
+  [(set_attr "type" "ffarith")
+   (set_attr "conds" "use")])
 
 ;; Jump and linkage insns
 
