@@ -1,3 +1,8 @@
+2005-03-13  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
+
+	PR fortran/20323
+	* gfortran.dg/spec_expr_1.f90: New test.
+
 2005-03-12  Tobias Schl"uter  <tobias.schlueter@physik.uni-muenchen.de>
 
 	PR fortran/20361
