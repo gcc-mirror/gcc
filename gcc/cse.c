@@ -2649,9 +2649,17 @@ find_best_addr (insn, loc)
 	  int best_rtx_cost = (COST (*loc) + 1) >> 1;
 	  struct table_elt *best_elt = elt; 
 	  rtx best_rtx = *loc;
+	  int count;
+
+	  /* This is at worst case an O(n^2) algorithm, so limit our search
+	     to the first 32 elements on the list.  This avoids trouble
+	     compiling code with very long basic blocks that can easily
+	     call cse_gen_binary so many times that we run out of memory.  */
 
 	  found_better = 0;
-	  for (p = elt->first_same_value; p; p = p->next_same_value)
+	  for (p = elt->first_same_value, count = 0;
+	       p && count < 32;
+	       p = p->next_same_value, count++)
 	    if (! p->flag
 		&& (GET_CODE (p->exp) == REG
 		    || exp_equiv_p (p->exp, p->exp, 1, 0)))
