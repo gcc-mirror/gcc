@@ -1,5 +1,5 @@
 /* Output xcoff-format symbol table information from GNU compiler.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -143,25 +143,25 @@ xcoff_output_standard_types (syms)
 {
   /* Handle built-in C types here.  */
 
-  assign_type_number (syms, "int", -1);
+  assign_type_number (syms, "int", (TARGET_64BIT ? -31 : -1));
   assign_type_number (syms, "char", -2);
   assign_type_number (syms, "short int", -3);
-  assign_type_number (syms, "long int", -4);
+  assign_type_number (syms, "long int", (TARGET_64BIT ? -31 : -4));
   assign_type_number (syms, "unsigned char", -5);
   assign_type_number (syms, "signed char", -6);
   assign_type_number (syms, "short unsigned int", -7);
-  assign_type_number (syms, "unsigned int", -8);
+  assign_type_number (syms, "unsigned int", (TARGET_64BIT ? -32 : -8));
   /* No such type "unsigned".  */
-  assign_type_number (syms, "long unsigned int", -10);
+  assign_type_number (syms, "long unsigned int", (TARGET_64BIT ? -32 : -10));
   assign_type_number (syms, "void", -11);
   assign_type_number (syms, "float", -12);
   assign_type_number (syms, "double", -13);
   assign_type_number (syms, "long double", -14);
   /* Pascal and Fortran types run from -15 to -29.  */
-  /* No such type "wchar".  */
-
-  /* "long long int", and "long long unsigned int", are not handled here,
-     because there are no predefined types that match them.  */
+  assign_type_number (syms, "wchar", -30);
+  assign_type_number (syms, "long long int", -31);
+  assign_type_number (syms, "long long unsigned int", -32);
+  /* Additional Fortran types run from -33 to -37.  */
 
   /* ??? Should also handle built-in C++ and Obj-C types.  There perhaps
      aren't any that C doesn't already have.  */
