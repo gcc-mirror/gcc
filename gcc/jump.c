@@ -3054,7 +3054,8 @@ follow_jumps (label)
        (depth < 10
 	&& (insn = next_active_insn (value)) != 0
 	&& GET_CODE (insn) == JUMP_INSN
-	&& (JUMP_LABEL (insn) != 0 || GET_CODE (PATTERN (insn)) == RETURN)
+	&& ((JUMP_LABEL (insn) != 0 && simplejump_p (insn))
+	    || GET_CODE (PATTERN (insn)) == RETURN)
 	&& (next = NEXT_INSN (insn))
 	&& GET_CODE (next) == BARRIER);
        depth++)

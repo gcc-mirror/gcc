@@ -371,9 +371,11 @@ static rtx
 canon_rtx (x)
      rtx x;
 {
+  /* Recursively look for equivalences.  */
   if (GET_CODE (x) == REG && REGNO (x) >= FIRST_PSEUDO_REGISTER
       && REGNO (x) <= reg_known_value_size)
-    return reg_known_value[REGNO (x)];
+    return reg_known_value[REGNO (x)] == x
+      ? x : canon_rtx (reg_known_value[REGNO (x)]);
   else if (GET_CODE (x) == PLUS)
     {
       rtx x0 = canon_rtx (XEXP (x, 0));
@@ -389,6 +391,16 @@ canon_rtx (x)
 	    return plus_constant_for_output (x0, INTVAL (x1));
 	  return gen_rtx (PLUS, GET_MODE (x), x0, x1);
 	}
+    }
+  /* This gives us much better alias analysis when called from
+     the loop optimizer.   Note we want to leave the original
+     MEM alone, but need to return the canonicalized MEM with
+     all the flags with their original values.  */
+  else if (GET_CODE (x) == MEM)
+    {
+      rtx copy = copy_rtx (x);
+      XEXP (copy, 0) = canon_rtx (XEXP (copy, 0));
+      x = copy;
     }
   return x;
 }
@@ -825,6 +837,8 @@ true_dependence (mem, x)
      both an unchanging read and an unchanging write.  This won't handle all
      cases optimally, but the possible performance loss should be
      negligible.  */
+  x = canon_rtx (x);
+  mem = canon_rtx (mem);
   if (RTX_UNCHANGING_P (x) && ! RTX_UNCHANGING_P (mem))
     return 0;
 
@@ -849,6 +863,8 @@ anti_dependence (mem, x)
   /* If MEM is an unchanging read, then it can't possibly conflict with
      the store to X, because there is at most one store to MEM, and it must
      have occurred somewhere before MEM.  */
+  x = canon_rtx (x);
+  mem = canon_rtx (mem);
   if (RTX_UNCHANGING_P (mem))
     return 0;
 
@@ -870,6 +886,8 @@ output_dependence (mem, x)
      rtx mem;
      rtx x;
 {
+  x = canon_rtx (x);
+  mem = canon_rtx (mem);
   return ((MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
 	  || (memrefs_conflict_p (SIZE_FOR_MODE (mem), XEXP (mem, 0),
 				  SIZE_FOR_MODE (x), XEXP (x, 0), 0)
