@@ -1294,15 +1294,10 @@ allocate_dynamic_stack_space (size, target, known_align)
 #endif
 
   if (MUST_ALIGN)
-    {
-      if (GET_CODE (size) == CONST_INT)
-	size = GEN_INT (INTVAL (size)
-			+ (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1));
-      else
-	size = expand_binop (Pmode, add_optab, size,
-			     GEN_INT (BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
-			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
-    }
+    size
+      = force_operand (plus_constant (size, 
+				      BIGGEST_ALIGNMENT / BITS_PER_UNIT - 1),
+		       NULL_RTX);
 
 #ifdef SETJMP_VIA_SAVE_AREA
   /* If setjmp restores regs from a save area in the stack frame,
@@ -1325,12 +1320,12 @@ allocate_dynamic_stack_space (size, target, known_align)
 #if !defined(PREFERRED_STACK_BOUNDARY) || !defined(MUST_ALIGN) || (PREFERRED_STACK_BOUNDARY != BIGGEST_ALIGNMENT)
 	/* If anyone creates a target with these characteristics, let them
 	   know that our optimization cannot work correctly in such a case.  */
-	abort();
+	abort ();
 #endif
 
 	if (GET_CODE (size) == CONST_INT)
 	  {
-	    int new = INTVAL (size) / align * align;
+	    HOST_WIDE_INT new = INTVAL (size) / align * align;
 
 	    if (INTVAL (size) != new)
 	      setjmpless_size = GEN_INT (new);
@@ -1395,9 +1390,10 @@ allocate_dynamic_stack_space (size, target, known_align)
   if (flag_stack_check && ! STACK_CHECK_BUILTIN)
     probe_stack_range (STACK_CHECK_MAX_FRAME_SIZE + STACK_CHECK_PROTECT, size);
 
-  /* Don't use a TARGET that isn't a pseudo.  */
+  /* Don't use a TARGET that isn't a pseudo or is the wrong mode.  */
   if (target == 0 || GET_CODE (target) != REG
-      || REGNO (target) < FIRST_PSEUDO_REGISTER)
+      || REGNO (target) < FIRST_PSEUDO_REGISTER
+      || GET_MODE (target) != Pmode)
     target = gen_reg_rtx (Pmode);
 
   mark_reg_pointer (target, known_align);
@@ -1422,7 +1418,6 @@ allocate_dynamic_stack_space (size, target, known_align)
       if (mode == VOIDmode)
 	mode = Pmode;
 
-      size = convert_modes (mode, ptr_mode, size, 1);
       pred = insn_data[(int) CODE_FOR_allocate_stack].operand[1].predicate;
       if (pred && ! ((*pred) (size, mode)))
 	size = copy_to_mode_reg (mode, size);
@@ -1435,7 +1430,6 @@ allocate_dynamic_stack_space (size, target, known_align)
 #ifndef STACK_GROWS_DOWNWARD
       emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif
-      size = convert_modes (Pmode, ptr_mode, size, 1);
 
       /* Check stack bounds if necessary.  */
       if (current_function_limit_stack)
@@ -1474,6 +1468,7 @@ allocate_dynamic_stack_space (size, target, known_align)
 				 REG_NOTES (note_target));
 	}
 #endif /* SETJMP_VIA_SAVE_AREA */
+
 #ifdef STACK_GROWS_DOWNWARD
   emit_move_insn (target, virtual_stack_dynamic_rtx);
 #endif

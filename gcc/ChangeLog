@@ -1,5 +1,11 @@
 Thu Feb  1 07:22:41 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* builtins.c (expand_builtin_alloca): allocate_dynamic_stack_space
+	returns Pmode pseudo, but we need ptr_mode.
+	* explow.c (allocate_dynamic_stack_space): Use plus_constant.
+	Remove bogus conversions; use HOST_WIDE_INT for size.
+	Don't use TARGET if wrong mode.
+
 	* config/i386/i386.c (ix86_compute_frame_size): Allow
 	stack_alignment_needed to be non-default even if size is zero.
 
