@@ -131,8 +131,8 @@ namespace std {
 	// Solving for m:
 	// m = ((npos - sizeof(_Rep))/sizeof(CharT)) - 1 
 	// In addition, this implementation quarters this ammount.
-	static size_type 	_S_max_size;
-	static _CharT 		_S_terminal;
+	static const size_type 	_S_max_size;
+	static const _CharT 	_S_terminal;
 
 	size_type 		_M_length;
 	size_type 		_M_capacity;
