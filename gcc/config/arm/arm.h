@@ -2041,10 +2041,10 @@ extern struct rtx_def * arm_compare_op1;
 
 #define ARM_SIGN_EXTEND(x)  ((HOST_WIDE_INT)		\
   (HOST_BITS_PER_WIDE_INT <= 32 ? (x)			\
-   : (((x) & (unsigned HOST_WIDE_INT) 0xffffffff) |	\
-      (((x) & (unsigned HOST_WIDE_INT) 0x80000000)	\
+   : (((x) & (unsigned HOST_WIDE_INT) 0xffffffffUL) |	\
+      (((x) & (unsigned HOST_WIDE_INT) 0x80000000UL)	\
        ? ((~ (HOST_WIDE_INT) 0)				\
-	  & ~ (unsigned HOST_WIDE_INT) 0xffffffff)	\
+	  & ~ (unsigned HOST_WIDE_INT) 0xffffffffUL)	\
        : 0))))
 
 /* Output the address of an operand.  */

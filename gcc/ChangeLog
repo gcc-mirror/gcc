@@ -1,3 +1,10 @@
+2000-01-09  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm.c: Fix compile time warnings about signed vs
+	unsigned constants.
+	* config/arm/arm.h: Fix compile time warnings about signed vs
+	unsigned constants.
+
 2000-01-09  Philip Blundell  <philb@gnu.org>
 
 	* config/arm/arm.c (output_return_instruction): Use `ldr' rather
