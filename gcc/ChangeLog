@@ -1,3 +1,8 @@
+2004-01-22  Bob Wilson  <bob.wilson@acm.org>
+
+	* config/xtensa/xtensa.c (function_arg): Generalize logic so that it
+	handles complex and vector modes.
+
 2004-01-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/h8300.h (REG_OK_FOR_INDEX_P_STRICT): Remove.
