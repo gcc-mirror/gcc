@@ -47,9 +47,10 @@ extern enum rs6000_sdata_type rs6000_sdata;
 #define TARGET_REGNAMES		(target_flags & MASK_REGNAMES)
 #define	TARGET_PROTOTYPE	(target_flags & MASK_PROTOTYPE)
 #define TARGET_EABI		(target_flags & MASK_EABI)
-#define	TARGET_TOC		((target_flags & (MASK_64BIT		\
-						 | MASK_RELOCATABLE	\
-						 | MASK_MINIMAL_TOC))	\
+#define	TARGET_TOC		((target_flags & MASK_64BIT)		\
+				 || ((target_flags & (MASK_RELOCATABLE	\
+						      | MASK_MINIMAL_TOC)) \
+				     && flag_pic > 1)			\
 				 || DEFAULT_ABI == ABI_AIX		\
 				 || DEFAULT_ABI == ABI_NT)
 
