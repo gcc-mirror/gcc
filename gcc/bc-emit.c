@@ -361,7 +361,7 @@ bc_seg_write (seg, file)
 	  if (i % 8 != 0)
 	    putc ('\n', file);
 
-	  offset = *(int *) (seg->data + i);
+	  bcopy (seg->data + i, &offset, sizeof (int));
 	  i += sizeof (int) - 1;
 
 	  BC_WRITE_RELOC_ENTRY (segreloc, file, offset);
