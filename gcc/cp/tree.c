@@ -1505,19 +1505,19 @@ build_min VPARAMS ((enum tree_code code, tree tt, ...))
    same node; therefore, callers should never modify the node
    returned.  */
 
+static GTY(()) tree shared_int_cache[256];
+
 tree
 build_shared_int_cst (i)
      int i;
 {
-  static tree cache[256];
-
   if (i >= 256)
     return build_int_2 (i, 0);
   
-  if (!cache[i])
-    cache[i] = build_int_2 (i, 0);
+  if (!shared_int_cache[i])
+    shared_int_cache[i] = build_int_2 (i, 0);
   
-  return cache[i];
+  return shared_int_cache[i];
 }
 
 tree
