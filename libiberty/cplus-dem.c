@@ -1,6 +1,6 @@
 /* Demangler for GNU C++
    Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
@@ -2318,6 +2318,7 @@ demangle_arm_hp_template (work, mangled, n, declp)
   if (HP_DEMANGLING && ((*mangled)[n] == 'X'))
     {
       char *start_spec_args = NULL;
+      int hold_options;
 
       /* First check for and omit template specialization pseudo-arguments,
          such as in "Spec<#1,#1.*>" */
@@ -2330,6 +2331,12 @@ demangle_arm_hp_template (work, mangled, n, declp)
       string_init (&arg);
       if (work->temp_start == -1) /* non-recursive call */
         work->temp_start = declp->p - declp->b;
+
+      /* We want to unconditionally demangle parameter types in
+	 template parameters.  */
+      hold_options = work->options;
+      work->options |= DMGL_PARAMS;
+
       string_append (declp, "<");
       while (1)
         {
@@ -2376,17 +2383,25 @@ demangle_arm_hp_template (work, mangled, n, declp)
       string_delete (&arg);
       if (**mangled == '_')
         (*mangled)++;
+      work->options = hold_options;
       return;
     }
   /* ARM template? (Also handles HP cfront extensions) */
   else if (arm_pt (work, *mangled, n, &p, &args))
     {
+      int hold_options;
       string type_str;
 
       string_init (&arg);
       string_appendn (declp, *mangled, p - *mangled);
       if (work->temp_start == -1)  /* non-recursive call */
 	work->temp_start = declp->p - declp->b;
+
+      /* We want to unconditionally demangle parameter types in
+	 template parameters.  */
+      hold_options = work->options;
+      work->options |= DMGL_PARAMS;
+
       string_append (declp, "<");
       /* should do error checking here */
       while (args < e) {
@@ -2430,7 +2445,10 @@ demangle_arm_hp_template (work, mangled, n, declp)
 
               /* Fail if we didn't make any progress: prevent infinite loop. */
               if (args == old_args)
-                return;
+		{
+		  work->options = hold_options;
+		  return;
+		}
             }
 	  }
 	string_appends (declp, &arg);
@@ -2441,6 +2459,7 @@ demangle_arm_hp_template (work, mangled, n, declp)
       if (args >= e)
 	--declp->p; /* remove extra comma */
       string_append (declp, ">");
+      work->options = hold_options;
     }
   else if (n>10 && strncmp (*mangled, "_GLOBAL_", 8) == 0
 	   && (*mangled)[9] == 'N'
