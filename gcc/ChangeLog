@@ -1,3 +1,7 @@
+2000-08-11  Richard Henderson  <rth@cygnus.com>
+
+	* config/ia64/ia64.h (PROMOTE_MODE): Only extend to SImode.
+
 2000-08-11  Mark Elbrecht  <snowball3@bigfoot.com>
  
 	* gcc.texi (The Configuration File): Document
