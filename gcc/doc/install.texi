@@ -33,7 +33,7 @@
 @settitle Installing GCC: Binaries
 @end ifset
 
-@comment $Id: install.texi,v 1.27 2001/06/15 16:41:04 aj Exp $
+@comment $Id: install.texi,v 1.28 2001/06/15 17:35:48 ro Exp $
 @c Copyright (C) 2001 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
@@ -458,12 +458,12 @@ On some systems, this is the default.
 In general, the best (and, in many cases, the only known) threading
 model available will be configured for use.  Beware that on some
 systems, gcc has not been taught what threading models are generally
-available for the system.  In this case, @samp{--enable-threads} is an
-alias for @samp{--enable-threads=single}.
+available for the system.  In this case, @option{--enable-threads} is an
+alias for @option{--enable-threads=single}.
 
 @item --disable-threads
 Specify that threading support should be disabled for the system.
-This is an alias for @samp{--enable-threads=single}.
+This is an alias for @option{--enable-threads=single}.
 
 @item --enable-threads=@var{lib}
 Specify that
@@ -478,7 +478,7 @@ AIX thread support.
 DCE thread support.
 @item mach
 Generic MACH thread support, known to work on NEXTSTEP.  (Please note
-that the file needed to support this configuration, gthr-mach.h, is
+that the file needed to support this configuration, @file{gthr-mach.h}, is
 missing and thus this setting will cause a known bootstrap failure.)
 @item no
 This is an alias for @samp{single}.
