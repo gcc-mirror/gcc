@@ -1,1 +1,22 @@
+LIBGCC1=libgcc1-asm.a
+CROSS_LIBGCC1=libgcc1-asm.a
+
+#Plug millicode routines into libgcc.a  We want these on both native and
+#cross compiles.
+
+LIB1ASMFUNCS =  _divI _divU _remI _remU _multiply \
+	_divI_15 _divI_14 _divI_12 _divI_10 _divI_9 \
+	_divI_7 _divI_6 _divI_5 _divI_3 \
+	_divU_15 _divU_14 _divU_12 _divU_10 _divU_9 \
+	_divU_7 _divU_6 _divU_5 _divU_3 _dyncall
+
+LIB1ASMSRC = pa/milli32.S
+
+# Compile crtbeginS.o and crtendS.o as PIC.
+CRTSTUFF_T_CFLAGS_S = -fPIC
+
+# Compile libgcc2.a as PIC.
+# This is also used when compiling libgcc1 if libgcc1 is the asm variety.
+TARGET_LIBGCC2_CFLAGS = -fPIC -DELF=1 -DLINUX=1
+
 ADA_CFLAGS=-mdisable-indexing
