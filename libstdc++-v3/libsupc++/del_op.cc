@@ -29,7 +29,9 @@
 // the GNU General Public License.
 
 #include "new"
+#if _GLIBCXX_HOSTED
 #include <cstdlib>
+#endif
 #include <bits/c++config.h>
 
 #if _GLIBCXX_HOSTED

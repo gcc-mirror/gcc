@@ -1,3 +1,7 @@
+2005-02-09  Mike Stump  <mrs@apple.com>
+
+	* libsupc++/del_op.cc: Don't include cstdlib when !_GLIBCXX_HOSTED.
+
 2005-02-09  Janis Johnson  <janis187@us.ibm.com>
 
 	* testsuite/ext/array_allocator/2.cc: XFAIL for powerpc*-*-linux*.
