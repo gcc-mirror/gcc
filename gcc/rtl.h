@@ -565,6 +565,11 @@ extern const char * const reg_note_name[];
    Other kinds of NOTEs are identified by negative numbers here.  */
 #define NOTE_LINE_NUMBER(INSN) XCINT(INSN, 4, NOTE)
 
+/* Nonzero if INSN is a note marking the beginning of a basic block.  */
+#define NOTE_INSN_BASIC_BLOCK_P(INSN) 			\
+  (GET_CODE (INSN) == NOTE				\
+   && NOTE_LINE_NUMBER (INSN) == NOTE_INSN_BASIC_BLOCK)
+
 /* Codes that appear in the NOTE_LINE_NUMBER field
    for kinds of notes that are not line numbers.
 

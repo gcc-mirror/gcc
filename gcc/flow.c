@@ -1673,8 +1673,7 @@ commit_one_edge_insertion (e)
       tmp = bb->head;
       if (GET_CODE (tmp) == CODE_LABEL)
 	tmp = NEXT_INSN (tmp);
-      if (GET_CODE (tmp) == NOTE
-	  && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (tmp))
 	tmp = NEXT_INSN (tmp);
       if (tmp == bb->head)
 	before = tmp;
@@ -2164,8 +2163,7 @@ merge_blocks_nomove (a, b)
     }
 
   /* Delete the basic block note.  */
-  if (GET_CODE (b_head) == NOTE 
-      && NOTE_LINE_NUMBER (b_head) == NOTE_INSN_BASIC_BLOCK)
+  if (NOTE_INSN_BASIC_BLOCK_P (b_head))
     {
       if (b_head == b_end)
 	b_empty = 1;
@@ -6471,9 +6469,7 @@ verify_flow_info ()
 	    }
 	  x = NEXT_INSN (x);
 	}
-      if (GET_CODE (x) != NOTE
-	  || NOTE_LINE_NUMBER (x) != NOTE_INSN_BASIC_BLOCK
-	  || NOTE_BASIC_BLOCK (x) != bb)
+      if (!NOTE_INSN_BASIC_BLOCK_P (x) || NOTE_BASIC_BLOCK (x) != bb)
 	{
 	  error ("NOTE_INSN_BASIC_BLOCK is missing for block %d\n",
 		 bb->index);
@@ -6489,8 +6485,7 @@ verify_flow_info ()
 	  x = NEXT_INSN (x);
 	  while (x)
 	    {
-	      if (GET_CODE (x) == NOTE
-		  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+	      if (NOTE_INSN_BASIC_BLOCK_P (x))
 		{
 		  error ("NOTE_INSN_BASIC_BLOCK %d in the middle of basic block %d",
 			 INSN_UID (x), bb->index);
@@ -6518,8 +6513,7 @@ verify_flow_info ()
   x = rtx_first;
   while (x)
     {
-      if (GET_CODE (x) == NOTE
-	  && NOTE_LINE_NUMBER (x) == NOTE_INSN_BASIC_BLOCK)
+      if (NOTE_INSN_BASIC_BLOCK_P (x))
 	{
 	  basic_block bb = NOTE_BASIC_BLOCK (x);
 	  num_bb_notes++;

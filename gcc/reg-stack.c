@@ -978,8 +978,7 @@ emit_swap_insn (insn, regstack, reg)
       while (tmp != limit)
 	{
 	  if (GET_CODE (tmp) == CODE_LABEL
-	      || (GET_CODE (tmp) == NOTE
-		  && NOTE_LINE_NUMBER (tmp) == NOTE_INSN_BASIC_BLOCK)
+	      || NOTE_INSN_BASIC_BLOCK_P (tmp)
 	      || (GET_CODE (tmp) == INSN
 		  && stack_regs_mentioned (tmp)))
 	    {
