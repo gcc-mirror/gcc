@@ -3787,7 +3787,16 @@ fold_rtx (rtx x, rtx insn)
 	new = simplify_unary_operation (code, mode,
 					const_arg0 ? const_arg0 : folded_arg0,
 					mode_arg0);
-	if (new != 0 && is_const)
+	/* NEG of PLUS could be converted into MINUS, but that causes
+	   expressions of the form
+	   (CONST (MINUS (CONST_INT) (SYMBOL_REF)))
+	   which many ports mistakenly treat as LEGITIMATE_CONSTANT_P.
+	   FIXME: those ports should be fixed.  */
+	if (new != 0 && is_const
+	    && GET_CODE (new) == PLUS
+	    && (GET_CODE (XEXP (new, 0)) == SYMBOL_REF
+		|| GET_CODE (XEXP (new, 0)) == LABEL_REF)
+	    && GET_CODE (XEXP (new, 1)) == CONST_INT)
 	  new = gen_rtx_CONST (mode, new);
       }
       break;

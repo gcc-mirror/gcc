@@ -1,5 +1,8 @@
 2004-09-07  Jan Hubicka  <jh@suse.cz>
 
+	* cse.c (fold_rtx):  Avoid building of
+	(CONST (MINUS (CONST_INT) (SYMBOL_REF)))
+
 	* tree-ssa-pre.c (grand_bitmap_obstack): New.
 	(value_insert_into_set_bitmap, bitmap_set_new): Use the obstack.
 	(init_pre): Initialize obstack.
