@@ -511,7 +511,7 @@ layout_record (rec)
 	  /* Do nothing.  */;
 	else if (TREE_CODE (dsize) == INTEGER_CST
 		 && TREE_INT_CST_HIGH (dsize) == 0
-		 && TREE_INT_CST_LOW (dsize) + const_size > const_size)
+		 && TREE_INT_CST_LOW (dsize) + const_size >= const_size)
 	  /* Use const_size if there's no overflow.  */
 	  const_size += TREE_INT_CST_LOW (dsize);
 	else
