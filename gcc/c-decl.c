@@ -540,6 +540,14 @@ c_decode_option (p)
       flag_writable_strings = 0;
       dollars_in_ident = DOLLARS_IN_IDENTIFIERS > 1;
     }
+  else if (!strcmp (p, "-fdollars-in-identifiers"))
+    {
+#if DOLLARS_IN_IDENTIFIERS > 0
+      dollars_in_ident = 1;
+#endif
+    }
+  else if (!strcmp (p, "-fnodollars-in-identifiers"))
+    dollars_in_ident = 0;
   else if (!strcmp (p, "-fsigned-char"))
     flag_signed_char = 1;
   else if (!strcmp (p, "-funsigned-char"))
