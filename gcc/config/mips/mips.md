@@ -871,7 +871,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" ""))]
   "reload_completed && !WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -895,7 +895,7 @@
   [(set (match_operand:DI 0 "register_operand" "")
 	(plus:DI (match_operand:DI 1 "register_operand" "")
 		 (match_operand:DI 2 "small_int" "")))
-   (clobber (match_operand:SI 3 "register_operand" "=d"))]
+   (clobber (match_operand:SI 3 "register_operand" ""))]
   "reload_completed && WORDS_BIG_ENDIAN && !TARGET_64BIT
    && !TARGET_DEBUG_D_MODE && !TARGET_DEBUG_G_MODE && !TARGET_MIPS16
    && GET_CODE (operands[0]) == REG && GP_REG_P (REGNO (operands[0]))
@@ -9546,8 +9546,8 @@ ld\\t%2,%1-%S1(%2)\;daddu\\t%2,%2,$31\;j\\t%2"
   "#")
 
 (define_split
-  [(unspec [(match_operand 0 "register_operand" "r")] 3)
-   (clobber (match_scratch 1 "=&r"))]
+  [(unspec [(match_operand 0 "register_operand" "")] 3)
+   (clobber (match_scratch 1 ""))]
   "reload_completed"
   [(const_int 0)]
   "
