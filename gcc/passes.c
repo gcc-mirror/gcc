@@ -734,7 +734,7 @@ rest_of_handle_tracer (void)
     dump_flow_info (dump_file);
   tracer (0);
   cleanup_cfg (CLEANUP_EXPENSIVE);
-  reg_scan (get_insns (), max_reg_num (), 0);
+  reg_scan (get_insns (), max_reg_num ());
   close_dump_file (DFI_tracer, print_rtl_with_bb, get_insns ());
 }
 
@@ -750,13 +750,13 @@ rest_of_handle_if_conversion (void)
       if (dump_file)
 	dump_flow_info (dump_file);
       cleanup_cfg (CLEANUP_EXPENSIVE);
-      reg_scan (get_insns (), max_reg_num (), 0);
+      reg_scan (get_insns (), max_reg_num ());
       if_convert (0);
     }
 
   timevar_push (TV_JUMP);
   cleanup_cfg (CLEANUP_EXPENSIVE);
-  reg_scan (get_insns (), max_reg_num (), 0);
+  reg_scan (get_insns (), max_reg_num ());
   timevar_pop (TV_JUMP);
 
   close_dump_file (DFI_ce1, print_rtl_with_bb, get_insns ());
@@ -807,7 +807,7 @@ rest_of_handle_web (void)
 
   timevar_pop (TV_WEB);
   close_dump_file (DFI_web, print_rtl_with_bb, get_insns ());
-  reg_scan (get_insns (), max_reg_num (), 0);
+  reg_scan (get_insns (), max_reg_num ());
 }
 
 /* Do branch profiling and static profile estimation passes.  */
@@ -883,7 +883,7 @@ rest_of_handle_cfg (void)
     {
       /* Alias analysis depends on this information and mark_constant_function
        depends on alias analysis.  */
-      reg_scan (get_insns (), max_reg_num (), 1);
+      reg_scan (get_insns (), max_reg_num ());
       mark_constant_function ();
     }
 
@@ -898,7 +898,7 @@ rest_of_handle_jump_bypass (void)
   open_dump_file (DFI_bypass, current_function_decl);
 
   cleanup_cfg (CLEANUP_EXPENSIVE);
-  reg_scan (get_insns (), max_reg_num (), 1);
+  reg_scan (get_insns (), max_reg_num ());
 
   if (bypass_jumps (dump_file))
     {
@@ -959,8 +959,7 @@ rest_of_handle_life (void)
 #endif
   life_analysis (dump_file, PROP_FINAL);
   if (optimize)
-    cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_UPDATE_LIFE
-		 | CLEANUP_LOG_LINKS
+    cleanup_cfg (CLEANUP_EXPENSIVE | CLEANUP_UPDATE_LIFE | CLEANUP_LOG_LINKS
 		 | (flag_thread_jumps ? CLEANUP_THREADING : 0));
 
   if (extra_warnings)
@@ -1001,7 +1000,7 @@ rest_of_handle_cse (void)
     dump_flow_info (dump_file);
   timevar_push (TV_CSE);
 
-  reg_scan (get_insns (), max_reg_num (), 1);
+  reg_scan (get_insns (), max_reg_num ());
 
   tem = cse_main (get_insns (), max_reg_num (), dump_file);
   if (tem)
@@ -1053,7 +1052,7 @@ rest_of_handle_cse2 (void)
       cleanup_cfg (CLEANUP_EXPENSIVE);
       timevar_pop (TV_JUMP);
     }
-  reg_scan (get_insns (), max_reg_num (), 0);
+  reg_scan (get_insns (), max_reg_num ());
   close_dump_file (DFI_cse2, print_rtl_with_bb, get_insns ());
   timevar_pop (TV_CSE2);
 
@@ -1083,7 +1082,7 @@ rest_of_handle_gcse (void)
   if (flag_expensive_optimizations)
     {
       timevar_push (TV_CSE);
-      reg_scan (get_insns (), max_reg_num (), 1);
+      reg_scan (get_insns (), max_reg_num ());
       tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
       purge_all_dead_edges (0);
       delete_trivially_dead_insns (get_insns (), max_reg_num ());
@@ -1104,7 +1103,7 @@ rest_of_handle_gcse (void)
       if (flag_expensive_optimizations)
 	{
 	  timevar_push (TV_CSE);
-	  reg_scan (get_insns (), max_reg_num (), 1);
+	  reg_scan (get_insns (), max_reg_num ());
 	  tem2 = cse_main (get_insns (), max_reg_num (), dump_file);
 	  purge_all_dead_edges (0);
 	  delete_trivially_dead_insns (get_insns (), max_reg_num ());
@@ -1155,7 +1154,7 @@ rest_of_handle_loop_optimize (void)
 
       /* The regscan pass is currently necessary as the alias
 	 analysis code depends on this information.  */
-      reg_scan (get_insns (), max_reg_num (), 1);
+      reg_scan (get_insns (), max_reg_num ());
     }
   cleanup_barriers ();
   loop_optimize (get_insns (), dump_file, do_prefetch);
@@ -1228,7 +1227,7 @@ rest_of_handle_loop2 (void)
 
   cleanup_cfg (CLEANUP_EXPENSIVE);
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  reg_scan (get_insns (), max_reg_num (), 0);
+  reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
     dump_flow_info (dump_file);
   close_dump_file (DFI_loop2, print_rtl_with_bb, get_insns ());
@@ -1390,7 +1389,7 @@ rest_of_handle_jump2 (void)
     expected_value_to_br_prob ();
 
   delete_trivially_dead_insns (get_insns (), max_reg_num ());
-  reg_scan (get_insns (), max_reg_num (), 0);
+  reg_scan (get_insns (), max_reg_num ());
   if (dump_file)
     dump_flow_info (dump_file);
   cleanup_cfg ((optimize ? CLEANUP_EXPENSIVE : 0) | CLEANUP_PRE_LOOP

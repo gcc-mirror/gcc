@@ -1,6 +1,6 @@
 /* Register Transfer Language (RTL) definitions for GCC
    Copyright (C) 1987, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-   1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+   1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2061,7 +2061,7 @@ extern void init_fake_stack_mems (void);
 extern void init_reg_sets (void);
 extern void regclass_init (void);
 extern void regclass (rtx, int, FILE *);
-extern void reg_scan (rtx, unsigned int, int);
+extern void reg_scan (rtx, unsigned int);
 extern void reg_scan_update (rtx, rtx, unsigned int);
 extern void fix_register (const char *, int, int);
 extern void init_subregs_of_mode (void);

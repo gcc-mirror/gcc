@@ -1,5 +1,5 @@
 /* Basic block reordering routines for the GNU compiler.
-   Copyright (C) 2000, 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1920,7 +1920,7 @@ fix_edges_for_rarely_executed_code (edge *crossing_edges,
       if (!HAS_LONG_UNCOND_BRANCH)
 	{
 	  fix_crossing_unconditional_branches ();
-	  reg_scan (get_insns(), max_reg_num (), 1);
+	  reg_scan (get_insns(), max_reg_num ());
 	}
 
       add_reg_crossing_jump_notes ();

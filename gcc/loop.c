@@ -858,7 +858,7 @@ loop_optimize (rtx f, FILE *dumpfile, int flags)
   /* Now find all register lifetimes.  This must be done after
      find_and_verify_loops, because it might reorder the insns in the
      function.  */
-  reg_scan (f, max_reg_before_loop, 1);
+  reg_scan (f, max_reg_before_loop);
 
   /* This must occur after reg_scan so that registers created by gcse
      will have entries in the register tables.
