@@ -26,6 +26,10 @@
 #include "hosthooks.h"
 #include "hosthooks-def.h"
 
+#ifndef MAP_FAILED
+#define MAP_FAILED (void *)-1L
+#endif
+
 static void *pa_gt_pch_get_address (size_t, int);
 static int pa_gt_pch_use_address (void *, size_t, int, size_t);
 
@@ -114,8 +118,16 @@ pa_gt_pch_use_address (void *base, size_t size, int fd, size_t offset)
   if (lseek (fd, offset, SEEK_SET) == (off_t)-1)
     return -1;
 
-  if (read (fd, base, size) == -1)
-    return -1;
+  while (size)
+    {
+      ssize_t nbytes;
+
+      nbytes = read (fd, base, MIN (size, SSIZE_MAX));
+      if (nbytes <= 0)
+        return -1;
+      base = (char *) base + nbytes;
+      size -= nbytes;
+    }
 
   return 1;
 }
