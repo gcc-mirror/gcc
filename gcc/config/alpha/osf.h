@@ -145,7 +145,7 @@ Boston, MA 02111-1307, USA.  */
 
 /* Attempt to turn on access permissions for the stack.  */
 
-#define TRANSFER_FROM_TRAMPOLINE					\
+#define ENABLE_EXECUTE_STACK						\
 void									\
 __enable_execute_stack (void *addr)					\
 {									\

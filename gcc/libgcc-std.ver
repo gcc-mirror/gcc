@@ -217,3 +217,9 @@ GCC_3.4 {
   __paritydi2
   __parityti2
 }
+
+%inherit GCC_3.4.2 GCC_3.4
+GCC_3.4.2 {
+  # Used to deal with trampoline initialization on some platforms
+  __enable_execute_stack
+}
