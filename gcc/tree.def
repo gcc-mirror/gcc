@@ -327,7 +327,7 @@ DEFTREECODE (STRING_CST, "string_cst", 'c', 0)
     built-in functions.  Its value is an enum built_in_function
     that says which built-in function it is.
 
-   DECL_SOURCE_FILE holds a filename string and DECL_SOURCE_LINE
+   TREE_FILENAME holds a filename string and TREE_LINENO
    holds a line number.  In some cases these can be the location of
    a reference, if no definition has been seen.
 

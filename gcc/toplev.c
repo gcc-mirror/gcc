@@ -1709,7 +1709,7 @@ warn_deprecated_use (tree node)
   if (DECL_P (node))
     warning ("`%s' is deprecated (declared at %s:%d)",
 	     IDENTIFIER_POINTER (DECL_NAME (node)),
-	     DECL_SOURCE_FILE (node), DECL_SOURCE_LINE (node));
+	     TREE_FILENAME (node), TREE_LINENO (node));
   else if (TYPE_P (node))
     {
       const char *what = NULL;
@@ -1725,13 +1725,13 @@ warn_deprecated_use (tree node)
 	{
 	  if (decl)
 	    warning ("`%s' is deprecated (declared at %s:%d)", what,
-		     DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+		     TREE_FILENAME (decl), TREE_LINENO (decl));
 	  else
 	    warning ("`%s' is deprecated", what);
 	}
       else if (decl)
 	warning ("type is deprecated (declared at %s:%d)",
-		 DECL_SOURCE_FILE (decl), DECL_SOURCE_LINE (decl));
+		 TREE_FILENAME (decl), TREE_LINENO (decl));
       else
 	warning ("type is deprecated");
     }

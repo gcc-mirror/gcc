@@ -1,3 +1,15 @@
+2003-09-21  Richard Henderson  <rth@redhat.com>
+
+	* tree.h (TREE_LOCUS): Rename from DECL_SOURCE_LOCATION; make const.
+	(TREE_FILENAME, TREE_LINENO): Likewise.
+	(set_tree_locus, copy_tree_locus, set_tree_file_line): New.
+	(TREE_LOCUS_SET_P): New.
+	* c-aux-info.c, c-decl.c, c-parse.in, coverage.c, dbxout.c, 
+	diagnostic.c, dwarf2out.c, dwarfout.c, function.c, integrate.c,
+	print-tree.c, stmt.c, toplev.c, tree-dump.c, tree-inline.c,
+	tree-optimize.c, tree.c, tree.def, xcoffout.c, config/alpha/alpha.c,
+	config/mips/mips.c, doc/c-tree.texi, objc/objc-act.c: Update to match.
+
 2003-09-21  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/vax/vax-protos.h: Convert to ISO C90.

@@ -3113,7 +3113,7 @@ generate_classfile (tree clas, struct jcf_partial *state)
     }
   ptr = methods_count_ptr;  UNSAFE_PUT2 (methods_count);
 
-  source_file = DECL_SOURCE_FILE (TYPE_NAME (clas));
+  source_file = TREE_FILENAME (TYPE_NAME (clas));
   for (s = source_file; ; s++)
     {
       char ch = *s;
@@ -3299,7 +3299,7 @@ make_class_file_name (tree clas)
       /* Make sure we put the class file into the .java file's
 	 directory, and not into some subdirectory thereof.  */
       char *t;
-      dname = DECL_SOURCE_FILE (TYPE_NAME (clas));
+      dname = TREE_FILENAME (TYPE_NAME (clas));
       slash = strrchr (dname, DIR_SEPARATOR);
 #ifdef DIR_SEPARATOR_2
       if (! slash)

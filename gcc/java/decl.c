@@ -1070,7 +1070,7 @@ pushdecl (tree x)
 	  /* Maybe warn if shadowing something else.  */
 	  else if (warn_shadow && !DECL_EXTERNAL (x)
 		   /* No shadow warnings for internally generated vars.  */
-		   && DECL_SOURCE_LINE (x) != 0
+		   && TREE_LOCUS_SET_P (x)
 		   /* No shadow warnings for vars made for inlining.  */
 		   && ! DECL_FROM_INLINE (x))
 	    {
@@ -1817,8 +1817,7 @@ java_expand_body (tree fndecl)
   int saved_lineno = input_line;
 
   current_function_decl = fndecl;
-  input_filename = DECL_SOURCE_FILE (fndecl);
-  input_line = DECL_SOURCE_LINE (fndecl);
+  input_location = TREE_LOCUS (fndecl);
 
   timevar_push (TV_EXPAND);
 

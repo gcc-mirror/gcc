@@ -2030,7 +2030,7 @@ begin_class_definition (tree t)
     }
 
   /* Update the location of the decl.  */
-  DECL_SOURCE_LOCATION (TYPE_NAME (t)) = input_location;
+  set_tree_locus (TYPE_NAME (t), input_location);
   
   if (TYPE_BEING_DEFINED (t))
     {

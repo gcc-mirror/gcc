@@ -313,8 +313,9 @@ tree_code_create_function_prototype (unsigned char* chars,
   id = get_identifier ((const char*)chars);
   fn_decl = build_decl (FUNCTION_DECL, id, fn_type);
 
-  DECL_CONTEXT (fn_decl) = NULL_TREE; /* Nested functions not supported here.  */
-  DECL_SOURCE_LOCATION (fn_decl) = loc;
+  /* Nested functions not supported here.  */
+  DECL_CONTEXT (fn_decl) = NULL_TREE;
+  set_tree_locus (fn_decl, loc);
 
   TREE_USED (fn_decl) = 1;
 
@@ -387,14 +388,14 @@ tree_code_create_function_initial (tree prev_saved,
   current_function_decl = fn_decl;
   DECL_INITIAL (fn_decl) = error_mark_node;
 
-  DECL_SOURCE_LOCATION (fn_decl) = loc;
+  set_tree_locus (fn_decl, loc);
 
   /* Prepare creation of rtl for a new function.  */
 
   resultdecl = DECL_RESULT (fn_decl) 
     = build_decl (RESULT_DECL, NULL_TREE, TREE_TYPE (TREE_TYPE (fn_decl)));
   DECL_CONTEXT (DECL_RESULT (fn_decl)) = fn_decl;
-  DECL_SOURCE_LOCATION (resultdecl) = loc;
+  set_tree_locus (resultdecl, loc);
 
   /* Work out the size. ??? is this needed.  */
   layout_decl (DECL_RESULT (fn_decl), 0);
@@ -414,7 +415,7 @@ tree_code_create_function_initial (tree prev_saved,
       if (!fn_decl)
         abort ();
       DECL_CONTEXT (parm_decl) = fn_decl;
-      DECL_SOURCE_LOCATION (parm_decl) = loc;
+      set_tree_locus (parm_decl, loc);
       parm_list = chainon (parm_decl, parm_list);
     }
 
@@ -582,7 +583,7 @@ tree_code_create_variable (unsigned int storage_class,
 
   DECL_CONTEXT (var_decl) = current_function_decl;
 
-  DECL_SOURCE_LOCATION (var_decl) = loc;
+  set_tree_locus (var_decl, loc);
 
   /* Set the storage mode and whether only visible in the same file.  */
   switch (storage_class)

@@ -1,3 +1,8 @@
+2003-09-21  Richard Henderson  <rth@redhat.com>
+
+	* treetree.c: Update for DECL_SOURCE_LOCATION rename and
+	change to const.
+
 2003-07-28  Andreas Jaeger  <aj@suse.de>
 
 	* treetree.c: Convert remaining K&R prototypes to ISO C90.

@@ -2240,7 +2240,7 @@ start_static_initialization_or_destruction (tree decl, int initp)
      where DECL was declared so that error-messages make sense, and so
      that the debugger will show somewhat sensible file and line
      information.  */
-  input_location = DECL_SOURCE_LOCATION (decl);
+  input_location = TREE_LOCUS (decl);
 
   /* Because of:
 

@@ -5212,7 +5212,7 @@ finish_struct (tree t, tree attributes)
 
   /* Nadger the current location so that diagnostics point to the start of
      the struct, not the end.  */
-  input_location = DECL_SOURCE_LOCATION (TYPE_NAME (t));
+  input_location = TREE_LOCUS (TYPE_NAME (t));
 
   if (processing_template_decl)
     {
