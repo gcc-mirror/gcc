@@ -1,3 +1,7 @@
+Wed Apr 22 10:42:45 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* mips.c (compute_frame_size): Change only argument to a HOST_WIDE_INT.
+
 Wed Apr 22 10:53:49 EDT 1998 Andrew MacLeod  <amacleod@cygnus.com>
 
 	* cplus-dem.c (struct work stuff): Add field for B and K mangle codes.
