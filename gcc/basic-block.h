@@ -796,7 +796,6 @@ extern void conflict_graph_enum (conflict_graph, int, conflict_graph_enum_fn,
 				 void *);
 extern void conflict_graph_merge_regs (conflict_graph, int, int);
 extern void conflict_graph_print (conflict_graph, FILE*);
-extern conflict_graph conflict_graph_compute (regset, partition);
 extern bool mark_dfs_back_edges (void);
 extern void set_edge_can_fallthru_flag (void);
 extern void update_br_prob_note (basic_block);
