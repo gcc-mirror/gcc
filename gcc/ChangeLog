@@ -1,6 +1,7 @@
 2004-08-17  Joseph S. Myers  <jsm@polyomino.org.uk>
 
-	* gcc.dg/funcdef-attr-1.c: New test.
+	* c-decl.c (grokdeclarator): Allow for function definition where
+	innermost declarator has attributes.
 
 2004-08-17  Daniel Bornstein  <danfuzz@milk.com>
 
