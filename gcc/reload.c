@@ -1019,9 +1019,14 @@ push_reload (in, out, inloc, outloc, class,
 	     The convention is that secondary input reloads are valid only if
 	     the secondary_class is different from class.  If you have such
 	     a case, you can not use secondary reloads, you must work around
-	     the problem some other way.  */
+	     the problem some other way.
 
-	  if (type == RELOAD_FOR_INPUT && secondary_class == class)
+	     Allow this when secondary_mode is not inmode and assume that
+	     the generated code handles this case (it does on the Alpha, which
+	     is the only place this currently happens).  */
+
+	  if (type == RELOAD_FOR_INPUT && secondary_class == class
+	      && secondary_mode == inmode)
 	    abort ();
 
 	  /* If we need a tertiary reload, see if we have one we can reuse
