@@ -8,7 +8,7 @@
 # has been enabled.
 
 # Invocation 
-# mkcheck [01] 
+# check_survey [01] 
 
 # 1: variables
 #
@@ -17,14 +17,14 @@
 # (1) testing the installed binary and headers, or
 WHICH=$1
 if [ "$WHICH"x = 0x ]; then
-  echo "running mkcheck"
+  echo "running check_survey"
   echo "$0: testing the build directory"
 elif [ "$WHICH"x = 1x ]; then
-  echo "running mkcheck"
+  echo "running check_survey"
   echo "$0: testing the install directory"
 else
-  echo 'Usage: mkcheck 0    /* test the build directory    */'
-  echo '       mkcheck 1    /* test the install directory  */'
+  echo 'Usage: check_survey 0    /* test the build directory    */'
+  echo '       check_survey 1    /* test the install directory  */'
   exit 1;
 fi
 
@@ -34,7 +34,7 @@ shift
 
 # This has been true all along.  Found out about it the hard way...
 case $BASH_VERSION in
-    1*)  echo 'You need bash 2.x to run mkcheck.  Exiting.'; exit 1 ;;
+    1*)  echo 'You need bash 2.x to run check_survey.  Exiting.'; exit 1 ;;
     *)   ;;   # ??
 esac
 
@@ -42,16 +42,15 @@ BUILD_DIR=@glibcpp_builddir@
 SRC_DIR=@glibcpp_srcdir@
 PREFIX_DIR=@glibcpp_prefixdir@
 if [ "$WHICH"x = 0x ]; then
-  CXX=`$BUILD_DIR/testsuite_flags --build-cxx`
-  INCLUDES=`$BUILD_DIR/testsuite_flags --build-includes`
+  CXX=`$BUILD_DIR/scripts/testsuite_flags --build-cxx`
+  INCLUDES=`$BUILD_DIR/scripts/testsuite_flags --build-includes`
 else
-  CXX=`$BUILD_DIR/testsuite_flags --install-cxx`
-  INCLUDES=`$BUILD_DIR/testsuite_flags --install-includes`
+  CXX=`$BUILD_DIR/scripts/testsuite_flags --install-cxx`
+  INCLUDES=`$BUILD_DIR/scripts/testsuite_flags --install-includes`
 fi
-CXXFLAGS=`$BUILD_DIR/testsuite_flags --cxxflags`
+CXXFLAGS=`$BUILD_DIR/scripts/testsuite_flags --cxxflags`
 LIBTOOL="$BUILD_DIR/libtool"
 LTEXE="$LIBTOOL --mode=execute"
-#LTCXX="$LIBTOOL --tag=CXX --mode=link $CXX $CXXFLAGS $INCLUDES"
 LTCXX="$CXX $CXXFLAGS $INCLUDES"
 
 # specific libtool flag(s) to use shared libraries, if any
@@ -59,7 +58,6 @@ SH_FLAG="-Wl,--rpath -Wl,$BUILD_DIR/../../gcc -Wl,--rpath -Wl,$BUILD_DIR/src/.li
 
 # specific libtool flag(s) to use static libraries, if any
 ST_FLAG="-static"
-#ST_FLAG="-all-static"
 
 # Set up the testing directory, which should be in a directory called
 # "testsuite" in the root level of the build directory.
@@ -70,14 +68,10 @@ if [ ! -d ${TEST_DIR}/.libs ]; then
 fi
 
 # the name of the file that will collect and hold all this useful data:
-RESULTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheck.txt"
+RESULTS_FILE="$TEST_DIR/$(date +%Y%m%d)-check_survey.txt"
 
 # the name of the log file that will append compiler diagnostics:
-LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-mkchecklog.txt"
-
-# the names of the specific test files to be run
-TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-mkcheckfiles.txt"
-
+LOG_FILE="$TEST_DIR/$(date +%Y%m%d)-check_survey_log.txt"
 
 #
 # 2: clean, make files, append general test info
@@ -96,6 +90,9 @@ fi
 if [ -f $LOG_FILE ]; then
     rm $LOG_FILE
 fi
+
+# the names of the specific test files to be run
+TESTS_FILE="$TEST_DIR/$(date +%Y%m%d)-check_survey_files.txt"
 
 # Make a list of the files we're going to run, or use an old one if it exists.
 if [ ! -f "$TESTS_FILE" ]; then

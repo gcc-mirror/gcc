@@ -23968,7 +23968,7 @@ ac_given_INSTALL="$INSTALL"
 trap 'rm -fr `echo "Makefile \
 include/Makefile src/Makefile \
 libmath/Makefile libsupc++/Makefile \
-po/Makefile testsuite/Makefile mkcheck testsuite_flags config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
+po/Makefile testsuite/Makefile scripts/check scripts/testsuite_flags config.h" | sed "s/:[^ ]*//g"` conftest*; exit 1' 1 2 15
 EOF
 cat >> $CONFIG_STATUS <<EOF
 
@@ -24162,7 +24162,7 @@ cat >> $CONFIG_STATUS <<EOF
 CONFIG_FILES=\${CONFIG_FILES-"Makefile \
 include/Makefile src/Makefile \
 libmath/Makefile libsupc++/Makefile \
-po/Makefile testsuite/Makefile mkcheck testsuite_flags"}
+po/Makefile testsuite/Makefile scripts/check scripts/testsuite_flags"}
 EOF
 cat >> $CONFIG_STATUS <<\EOF
 for ac_file in .. $CONFIG_FILES; do if test "x$ac_file" != x..; then
@@ -24369,8 +24369,8 @@ test -z "$CONFIG_HEADERS" || echo timestamp > stamp-h
      esac
    fi
  fi
- chmod +x mkcheck
- chmod +x testsuite_flags
+ chmod +x scripts/check
+ chmod +x scripts/testsuite_flags
 exit 0
 EOF
 chmod +x $CONFIG_STATUS

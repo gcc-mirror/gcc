@@ -37,14 +37,19 @@ AM_RUNTESTFLAGS =
 RUNTESTFLAGS =
 
 ## CXX is actually a "C" compiler. These are real C++ programs.
-## Do the same thing as `testsuite_flags --build-cxx`
-CXX_build = @glibcpp_CXX@ 
-CXX=`echo "$(CXX_build)" | sed 's,gcc/xgcc ,gcc/g++ ,'`
+glibcpp_srcdir=@glibcpp_srcdir@
+glibcpp_builddir=@glibcpp_builddir@
+testsuite_flags_script=${glibcpp_builddir}/scripts/testsuite_flags
+CXX=`${testsuite_flags_script} --build-cxx`
+
 CXXLINK = \
 	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
+GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
+TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 INCLUDES = \
 	-nostdinc++ \
 	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
@@ -79,7 +84,7 @@ check-am:
 check-local: check-abi
 
 baseline_file = @baseline_file@
-extract_symvers = @glibcpp_srcdir@/config/abi/extract_symvers
+extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
 
 current_symbols.txt: ${extract_symvers} ../src/.libs/libstdc++.so
 	  -@(${extract_symvers} ../src/.libs/libstdc++.so current_symbols.txt)
@@ -116,6 +121,31 @@ check-abi-verbose:
 endif
 
 
+# These two special 'check-script' rules use the bash script 'check'
+# to do testing. This script is not as portable as the dejagnu test
+# harness, and is thus off by default. It does produce interesting
+# output however, including various performance analysis items like
+# compile time, execution time, and binary size.
+check_survey = ${glibcpp_builddir}/scripts/check_survey
+check-script: ${check_survey}
+	-@(chmod + ${check_survey}; \
+	  ${check_survey} 0)
+
+check-script-install: ${check_survey}
+	-@(chmod + ${check_survey}; \
+	  ${check_survey} 0)
+
+
+# Runs the testsuite/performance tests.  
+# Some of these tests create large (~75MB) files, allocate huge
+# ammounts of memory, or otherwise tie up machine resources. Thus,
+# running this is off by default.
+check_performance=${glibcpp_srcdir}/scripts/check_performance
+check-performance: ${check_performance}
+	-@(chmod + ${check_performance}; \
+	  ${check_performance} ${glibcpp_srcdir} ${glibcpp_builddir})
+
+
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check 
+	     testsuite_* site.exp abi_check baseline_symbols

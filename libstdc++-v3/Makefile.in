@@ -210,10 +210,9 @@ AM_MAKEFLAGS = \
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES =  mkcheck testsuite_flags
+CONFIG_CLEAN_FILES = 
 DIST_COMMON =  README ./stamp-h.in ChangeLog Makefile.am Makefile.in \
-acconfig.h acinclude.m4 aclocal.m4 config.h.in configure configure.in \
-mkcheck.in testsuite_flags.in
+acconfig.h acinclude.m4 aclocal.m4 config.h.in configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -264,10 +263,6 @@ distclean-hdr:
 	-rm -f config.h
 
 maintainer-clean-hdr:
-mkcheck: $(top_builddir)/config.status mkcheck.in
-	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
-testsuite_flags: $(top_builddir)/config.status testsuite_flags.in
-	cd $(top_builddir) && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -478,21 +473,6 @@ all-redirect all-am all installdirs-am installdirs mostlyclean-generic \
 distclean-generic clean-generic maintainer-clean-generic clean \
 mostlyclean distclean maintainer-clean
 
-
-# These two special 'check-script' rules use the bash script 'mkcheck'
-# to do testing. This script is not as portable as the dejagnu test
-# harness, and is thus off by default. It does produce interesting
-# output however, including various performance analysis items like
-# compile time, execution time, and binary size.
-check-script: $(top_builddir)/mkcheck
-	-(chmod + $(top_builddir)/mkcheck; \
-	  cd testsuite; \
-	  @glibcpp_builddir@/mkcheck 0)
-
-check-script-install: $(top_builddir)/mkcheck
-	-(chmod + $(top_builddir)/mkcheck; \
-	  cd testsuite; \
-	  @glibcpp_builddir@/mkcheck 1)
 
 # These rules are messy, but are hella worth it.
 doxygen:

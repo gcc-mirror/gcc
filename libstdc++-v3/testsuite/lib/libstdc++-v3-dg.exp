@@ -110,7 +110,7 @@ proc libstdc++-v3-init { args } {
       set includes "-I./"
     } else {
         # If we find a testsuite_flags file, we're testing in the build dir.
-        set flags_file "${blddir}/testsuite_flags"
+        set flags_file "${blddir}/scripts/testsuite_flags"
         if { [file exists $flags_file] } {
             set cxx [exec sh $flags_file --build-cxx]
             set cxxflags [exec sh $flags_file --cxxflags]

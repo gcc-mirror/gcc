@@ -93,11 +93,9 @@ EXEEXT = @EXEEXT@
 EXTRA_CXX_FLAGS = @EXTRA_CXX_FLAGS@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
-GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
 GLIBCPP_IS_CROSS_COMPILING = @GLIBCPP_IS_CROSS_COMPILING@
 LIBMATHOBJS = @LIBMATHOBJS@
 LIBMATH_INCLUDES = @LIBMATH_INCLUDES@
-LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
 LIBSUPCXX_PICFLAGS = @LIBSUPCXX_PICFLAGS@
 LIBTOOL = @LIBTOOL@
 LIBUNWIND_FLAG = @LIBUNWIND_FLAG@
@@ -115,7 +113,6 @@ SECTION_FLAGS = @SECTION_FLAGS@
 SECTION_LDFLAGS = @SECTION_LDFLAGS@
 STRIP = @STRIP@
 SYMVER_MAP = @SYMVER_MAP@
-TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 WARN_FLAGS = @WARN_FLAGS@
@@ -128,10 +125,8 @@ glibcpp_MOFILES = @glibcpp_MOFILES@
 glibcpp_PCHFLAGS = @glibcpp_PCHFLAGS@
 glibcpp_POFILES = @glibcpp_POFILES@
 glibcpp_basedir = @glibcpp_basedir@
-glibcpp_builddir = @glibcpp_builddir@
 glibcpp_localedir = @glibcpp_localedir@
 glibcpp_prefixdir = @glibcpp_prefixdir@
-glibcpp_srcdir = @glibcpp_srcdir@
 glibcpp_thread_h = @glibcpp_thread_h@
 glibcpp_toolexecdir = @glibcpp_toolexecdir@
 glibcpp_toolexeclibdir = @glibcpp_toolexeclibdir@
@@ -157,14 +152,20 @@ RUNTEST = `if [ -f @glibcpp_srcdir@/../dejagnu/runtest ] ; then \
 AM_RUNTESTFLAGS = 
 RUNTESTFLAGS = 
 
-CXX_build = @glibcpp_CXX@ 
-CXX = `echo "$(CXX_build)" | sed 's,gcc/xgcc ,gcc/g++ ,'`
+glibcpp_srcdir = @glibcpp_srcdir@
+glibcpp_builddir = @glibcpp_builddir@
+testsuite_flags_script = ${glibcpp_builddir}/scripts/testsuite_flags
+CXX = `${testsuite_flags_script} --build-cxx`
+
 CXXLINK = \
 	LD_RUN_PATH=$${LD_RUN_PATH:+$$LD_RUN_PATH:}${glibcpp_builddir}/src/.libs\
 	$(LIBTOOL) --tag=CXX --mode=link $(CXX) \
 	$(AM_CXXFLAGS) $(CXXFLAGS) $(LDFLAGS) -o $@
 
 
+GLIBCPP_INCLUDES = @GLIBCPP_INCLUDES@
+LIBSUPCXX_INCLUDES = @LIBSUPCXX_INCLUDES@
+TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 INCLUDES = \
 	-nostdinc++ \
 	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
@@ -177,11 +178,24 @@ libv3test_a_SOURCES = testsuite_hooks.cc testsuite_allocator.cc
 abi_check_SOURCES = abi_check.cc
 
 baseline_file = @baseline_file@
-extract_symvers = @glibcpp_srcdir@/config/abi/extract_symvers
+extract_symvers = @glibcpp_srcdir@/scripts/extract_symvers
+
+# These two special 'check-script' rules use the bash script 'check'
+# to do testing. This script is not as portable as the dejagnu test
+# harness, and is thus off by default. It does produce interesting
+# output however, including various performance analysis items like
+# compile time, execution time, and binary size.
+check_survey = ${glibcpp_builddir}/scripts/check_survey
+
+# Runs the testsuite/performance tests.  
+# Some of these tests create large (~75MB) files, allocate huge
+# ammounts of memory, or otherwise tie up machine resources. Thus,
+# running this is off by default.
+check_performance = ${glibcpp_srcdir}/scripts/check_performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
-	     testsuite_* site.exp abi_check 
+	     testsuite_* site.exp abi_check baseline_symbols
 
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -510,6 +524,16 @@ new-abi-baseline:
 @GLIBCPP_TEST_ABI_TRUE@	-@(./abi_check --check-verbose ./current_symbols.txt ${baseline_file})
 @GLIBCPP_TEST_ABI_FALSE@check-abi:
 @GLIBCPP_TEST_ABI_FALSE@check-abi-verbose:
+check-script: ${check_survey}
+	-@(chmod + ${check_survey}; \
+	  ${check_survey} 0)
+
+check-script-install: ${check_survey}
+	-@(chmod + ${check_survey}; \
+	  ${check_survey} 0)
+check-performance: ${check_performance}
+	-@(chmod + ${check_performance}; \
+	  ${check_performance} ${glibcpp_srcdir} ${glibcpp_builddir})
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
