@@ -451,6 +451,9 @@ output_function_epilogue (stream, size)
 	mask |= 1 << regno;
       }
   offset = foffset + nregs * 4;
+  /* FIXME : leaf_function_p below is too strong.
+     What we really need to know there is if there could be pending
+     stack adjustment needed at that point. */
   restore_from_sp = ! frame_pointer_needed
 	     || (! current_function_calls_alloca && leaf_function_p ());
   if (offset + fsize >= 0x8000
@@ -1296,7 +1299,7 @@ output_move_simode_const (operands)
       && (DATA_REG_P (operands[0])
 	  || GET_CODE (operands[0]) == MEM)
       /* clr insns on 68000 read before writing.
-	 This isn't so on the 68010, but we have no alternative for it.  */
+	 This isn't so on the 68010, but we have no TARGET_68010.  */
       && (TARGET_68020
 	  || !(GET_CODE (operands[0]) == MEM
 	       && MEM_VOLATILE_P (operands[0]))))
