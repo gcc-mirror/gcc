@@ -1,0 +1,54 @@
+#!/bin/sh
+
+
+# "sh update_web_docs_libstdcxx.sh"
+# Checks out a copy of the libstdc++-v3 "inner" documentation and puts
+# it in the onlinedocs area.  For an initial description of "inner"
+# docs, see the thread starting with 
+#     http://gcc.gnu.org/ml/libstdc++/2000-11/msg00475.html
+#
+# Id: update_v3_web_docs.sh,v 1.4 2000/12/25 05:02:14 pedwards Exp
+#####################################################################
+
+CVSROOT=/cvs/gcc
+GETTHIS='gcc/libstdc++-v3/docs/html'
+WWWDIR=/www/gcc/htdocs/onlinedocs/libstdc++
+#WWWDIR=/tmp/fake-onlinedocs-testing
+
+
+## No more changes should be needed.  Ha, right, whatever.
+#####################################################################
+
+
+PATH=/usr/local/bin:$PATH
+export CVSROOT
+
+test -d $WWWDIR || /bin/mkdir $WWWDIR
+test -d $WWWDIR || { echo something is very wrong ; exit 1; }
+
+WORKDIR=/tmp/v3-doc-update.$$
+/bin/rm -rf $WORKDIR
+/bin/mkdir $WORKDIR
+cd $WORKDIR
+
+
+# checkout all the HTML files, get down into an interesting directory
+cvs -Q co $GETTHIS
+cd $GETTHIS
+
+# pity the cvs 'export' would require a tag... maybe gcc_latest_snapshot
+# would be recent enough?  anyhow, get rid of the CVS dirs in the tree
+find . -type d -name CVS -print | xargs rm -r Makefile
+
+# build a compressed copy of the HTML, preserve directory structure
+for file in `find . -name "*.html" -print`; do
+    gzip --best < $file > $file.gz
+done
+
+# copy the tree to the onlinedocs area, preserve directory structure
+#find . -depth -print | cpio -pdv $WWWDIR
+find . -depth -print | cpio -pd $WWWDIR > /dev/null 2>&1
+
+cd /
+/bin/rm -rf $WORKDIR
+
