@@ -595,7 +595,7 @@ divmod_fixed_value_transform (rtx insn)
   histogram = XEXP (histogram, 1);
   all = INTVAL (XEXP (histogram, 0));
 
-  /* We require that count is at least half of all; this means
+  /* We require that count be at least half of all; this means
      that for the transformation to fire the value must be constant
      at least 50% of time (and 75% gives the guarantee of usage).  */
   if (!rtx_equal_p (op2, value) || 2 * count < all)
@@ -969,7 +969,7 @@ speculative_prefetching_transform (rtx insn)
   if (all < 4)
     return false;
 
-  /* We require that count is at least half of all; this means
+  /* We require that count be at least half of all; this means
      that for the transformation to fire the value must be constant
      at least 50% of time (and 75% gives the guarantee of usage).  */
   if (!rtx_equal_p (address, value) || 2 * count < all)

@@ -1,6 +1,7 @@
 2004-11-14  Kazu Hirata  <kazu@cs.umass.edu>
 
-	* cfgrtl.c: Fix a comment typo.
+	* cfgrtl.c, global.c, tree-ssa-copy.c, tree-ssa-loop-ivopts.c,
+	value-prof.c: Fix comment typos.
 
 2004-11-14  Stan Shebs  <shebs@apple.com>
 
