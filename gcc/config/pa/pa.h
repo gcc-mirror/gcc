@@ -546,16 +546,16 @@ extern void hppa_init_pic_save PARAMS ((void));
    */
 
 #define CONST_OK_FOR_LETTER_P(VALUE, C)  \
-  ((C) == 'I' ? VAL_11_BITS_P (VALUE)				\
-   : (C) == 'J' ? VAL_14_BITS_P (VALUE)				\
-   : (C) == 'K' ? zdepi_cint_p (VALUE)				\
-   : (C) == 'L' ? VAL_5_BITS_P (VALUE)				\
-   : (C) == 'M' ? (VALUE) == 0					\
-   : (C) == 'N' ? (((VALUE) & (unsigned long)0x7ff) == 0	\
-		   && (VALUE) == ((((VALUE) & 0xffffffff) ^ (~0x7fffffff)) \
-				  + 0x80000000))		\
-   : (C) == 'O' ? (((VALUE) & ((VALUE) + (long)1)) == 0)	\
-   : (C) == 'P' ? and_mask_p (VALUE)				\
+  ((C) == 'I' ? VAL_11_BITS_P (VALUE)					\
+   : (C) == 'J' ? VAL_14_BITS_P (VALUE)					\
+   : (C) == 'K' ? zdepi_cint_p (VALUE)					\
+   : (C) == 'L' ? VAL_5_BITS_P (VALUE)					\
+   : (C) == 'M' ? (VALUE) == 0						\
+   : (C) == 'N' ? (((VALUE) & (((HOST_WIDE_INT) -1 << 31) | 0x7ff)) == 0 \
+		   || (((VALUE) & (((HOST_WIDE_INT) -1 << 31) | 0x7ff))	\
+		       == (HOST_WIDE_INT) -1 << 31))			\
+   : (C) == 'O' ? (((VALUE) & ((VALUE) + 1)) == 0)			\
+   : (C) == 'P' ? and_mask_p (VALUE)					\
    : 0)
 
 /* Similar, but for floating or large integer constants, and defining letters
