@@ -1,4 +1,8 @@
- 1999-06-08  Nathan Sidwell  <nathan@acm.org>
+1999-06-14  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.old-deja/g++.other/bitfld3.C: New test.
+
+1999-06-08  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.old-deja/g++.eh/catch1.C: New test.
 
