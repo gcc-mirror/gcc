@@ -186,14 +186,31 @@ static void __objc_send_initialize(Class* class)
       
       if(class->super_class)
 	__objc_send_initialize(class->super_class);
-  
-      m = search_for_method_in_list(class->class_pointer->methods,
-				    sel_get_uid("initialize"));
-      if(m != NULL)
-        {
-          CLS_SETINITIALIZED(class);
-          (*m->method_imp) ((id) class, sel_get_uid("initialize"));
-        }
+
+      {
+	MethodList_t method_list = class->class_pointer->methods;
+	SEL op = sel_register_name ("initialize");
+
+	/* If not found then we'll search the list.  */
+	while (method_list)
+	  {
+	    int i;
+
+	    /* Search the method list.  */
+	    for (i = 0; i < method_list->method_count; ++i)
+	      {
+		Method_t method = &method_list->method_list[i];
+		
+		
+		if (method->method_name == op)
+		  (*method->method_imp)((id) class, op);
+	      }
+
+	    /* The method wasn't found.  Follow the link to the next list of
+	       methods.  */
+	    method_list = method_list->method_next;
+	  }
+      }
     }
 }  
 
@@ -268,6 +285,9 @@ void
 class_add_method_list (Class* class, MethodList_t list)
 {
   int i;
+  static SEL initialize_sel = 0;
+  if (!initialize_sel)
+    initialize_sel = sel_register_name ("initialize");
 
   /* Passing of a linked list is not allowed.  Do multiple calls.  */
   assert (!list->method_next);
@@ -282,7 +302,8 @@ class_add_method_list (Class* class, MethodList_t list)
 	  /* This is where selector names are transmogriffed to SEL's */
 	  method->method_name = sel_register_name ((char*)method->method_name);
 
-	  if (search_for_method_in_list (class->methods, method->method_name))
+	  if (search_for_method_in_list (class->methods, method->method_name)
+	      && method->method_name != initialize_sel)
 	    {
 	      /* Duplication. Print a error message an change the method name
 		 to NULL. */
