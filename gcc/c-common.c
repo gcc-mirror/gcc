@@ -723,12 +723,19 @@ default_valid_lang_attribute (attr_name, attr_args, decl, type)
 int (*valid_lang_attribute) PARAMS ((tree, tree, tree, tree))
      = default_valid_lang_attribute;
 
-/* Process the attributes listed in ATTRIBUTES and install them in NODE,
-   which is either a DECL (including a TYPE_DECL) or a TYPE.  */
+/* Process the attributes listed in ATTRIBUTES and install them in *NODE,
+   which is either a DECL (including a TYPE_DECL) or a TYPE.  If a DECL,
+   it should be modified in place; if a TYPE, a copy should be created.
+   FLAGS gives further information, in the form of a bitwise OR of flags
+   in enum attribute_flags from c-common.h.  Depending on these flags,
+   some attributes may be returned to be applied at a later stage (for
+   example, to apply a decl attribute to the declaration rather than to
+   its type).  */
 
-void
-decl_attributes (node, attributes)
-     tree node, attributes;
+tree
+decl_attributes (node, attributes, flags)
+     tree *node, attributes;
+     int flags ATTRIBUTE_UNUSED;
 {
   tree decl = 0, type = 0;
   int is_type = 0;
@@ -737,16 +744,16 @@ decl_attributes (node, attributes)
   if (attrtab_idx == 0)
     init_attributes ();
 
-  if (DECL_P (node))
+  if (DECL_P (*node))
     {
-      decl = node;
+      decl = *node;
       type = TREE_TYPE (decl);
-      is_type = TREE_CODE (node) == TYPE_DECL;
+      is_type = TREE_CODE (*node) == TYPE_DECL;
     }
-  else if (TYPE_P (node))
-    type = node, is_type = 1;
+  else if (TYPE_P (*node))
+    type = *node, is_type = 1;
 
-  (*targetm.insert_attributes) (node, &attributes);
+  (*targetm.insert_attributes) (*node, &attributes);
 
   for (a = attributes; a; a = TREE_CHAIN (a))
     {
@@ -979,16 +986,16 @@ decl_attributes (node, attributes)
 	      else if (DECL_SECTION_NAME (decl) != NULL_TREE
 		       && strcmp (TREE_STRING_POINTER (DECL_SECTION_NAME (decl)),
 				  TREE_STRING_POINTER (TREE_VALUE (args))) != 0)
-		error_with_decl (node,
+		error_with_decl (*node,
 				 "section of `%s' conflicts with previous declaration");
 	      else
 		DECL_SECTION_NAME (decl) = TREE_VALUE (args);
 	    }
 	  else
-	    error_with_decl (node,
+	    error_with_decl (*node,
 			   "section attribute not allowed for `%s'");
 #else
-	  error_with_decl (node,
+	  error_with_decl (*node,
 		  "section attributes are not supported for this target");
 #endif
 	  break;
@@ -1140,6 +1147,7 @@ decl_attributes (node, attributes)
 	  break;
 	}
     }
+  return NULL_TREE;
 }
 
 /* Split SPECS_ATTRS, a list of declspecs and prefix attributes, into two

@@ -3341,8 +3341,8 @@ start_decl (declarator, declspecs, initialized, attributes)
      int initialized;
      tree attributes;
 {
-  register tree decl = grokdeclarator (declarator, declspecs,
-				       NORMAL, initialized);
+  tree decl = grokdeclarator (declarator, declspecs,
+			      NORMAL, initialized);
   register tree tem;
 
   if (warn_main > 0 && TREE_CODE (decl) != FUNCTION_DECL
@@ -3448,7 +3448,7 @@ start_decl (declarator, declspecs, initialized, attributes)
     DECL_COMMON (decl) = 1;
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  decl_attributes (decl, attributes);
+  decl_attributes (&decl, attributes, 0);
 
   /* Add this decl to the current binding level.
      TEM may equal DECL or it may be a previous decl of the same name.  */
@@ -3712,7 +3712,7 @@ push_parm_decl (parm)
 
   decl = grokdeclarator (TREE_VALUE (TREE_PURPOSE (parm)),
 			 TREE_PURPOSE (TREE_PURPOSE (parm)), PARM, 0);
-  decl_attributes (decl, TREE_VALUE (parm));
+  decl_attributes (&decl, TREE_VALUE (parm), 0);
 
 #if 0
   if (DECL_NAME (decl))
@@ -5340,7 +5340,7 @@ finish_struct (t, fieldlist, attributes)
 
   TYPE_SIZE (t) = 0;
 
-  decl_attributes (t, attributes);
+  decl_attributes (&t, attributes, 0);
 
   /* Nameless union parm types are useful as GCC extension.  */
   if (! (TREE_CODE (t) == UNION_TYPE && TYPE_NAME (t) == 0) && !pedantic)
@@ -5704,7 +5704,7 @@ finish_enum (enumtype, values, attributes)
   if (in_parm_level_p ())
     warning ("enum defined inside parms");
 
-  decl_attributes (enumtype, attributes);
+  decl_attributes (&enumtype, attributes, 0);
 
   /* Calculate the maximum value of any enumerator in this type.  */
 
@@ -5928,7 +5928,7 @@ start_function (declspecs, declarator, attributes)
       return 0;
     }
 
-  decl_attributes (decl1, attributes);
+  decl_attributes (&decl1, attributes, 0);
 
   announce_function (decl1);
 

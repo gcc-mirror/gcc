@@ -1,3 +1,14 @@
+2001-07-13  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* c-common.c (decl_attributes): Take a pointer to the node to
+	which attributes are to be attached, and a flags argument.
+	* c-common.h (enum attribute_flags): New.
+	(decl_attributes): Update prototype.
+	* c-decl.c (start_decl, push_parm_decl, finish_struct,
+	finish_enum, start_function): Update calls to decl_attributes.
+	* c-parse.in (component_declarator, component_notype_declarator,
+	label): Update calls to decl_attributes.
+
 Fri Jul 13 23:04:00 2001  Denis Chertykov  <denisc@overta.ru>
 
 	* config/avr/avr.md (strlenhi): PARALLEL keyword removed.

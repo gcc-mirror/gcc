@@ -7128,7 +7128,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
      int initialized;
      tree attributes, prefix_attributes;
 {
-  register tree decl;
+  tree decl;
   register tree type, tem;
   tree context;
   extern int have_extern_spec;
@@ -7221,7 +7221,7 @@ start_decl (declarator, declspecs, initialized, attributes, prefix_attributes)
     }
 
   /* Set attributes here so if duplicate decl, will have proper attributes.  */
-  cplus_decl_attributes (decl, attributes, prefix_attributes);
+  cplus_decl_attributes (&decl, attributes, prefix_attributes, 0);
 
   if (context && COMPLETE_TYPE_P (complete_type (context)))
     {
@@ -10471,7 +10471,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
 	ignore_attrs = 0;
       else if (inner_attrs)
 	{
-	  decl_attributes (type, inner_attrs);
+	  decl_attributes (&type, inner_attrs, 0);
 	  inner_attrs = NULL_TREE;
 	}
 
@@ -10990,7 +10990,7 @@ grokdeclarator (declarator, declspecs, decl_context, initialized, attrlist)
   if (inner_attrs)
     {
       if (! ignore_attrs)
-	decl_attributes (type, inner_attrs);
+	decl_attributes (&type, inner_attrs, 0);
       else if (attrlist)
 	TREE_VALUE (attrlist) = chainon (inner_attrs, TREE_VALUE (attrlist));
       else
@@ -13639,7 +13639,7 @@ start_function (declspecs, declarator, attrs, flags)
   pushlevel (0);
   current_binding_level->parm_flag = 1;
 
-  cplus_decl_attributes (decl1, NULL_TREE, attrs);
+  cplus_decl_attributes (&decl1, NULL_TREE, attrs, 0);
 
   /* Promote the value to int before returning it.  */
   if (c_promoting_integer_type_p (restype))

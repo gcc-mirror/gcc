@@ -182,7 +182,7 @@ parse_bitfield (declarator, attributes, width)
      tree declarator, attributes, width;
 {
   tree d = grokbitfield (declarator, current_declspecs, width);
-  cplus_decl_attributes (d, attributes, prefix_attributes);
+  cplus_decl_attributes (&d, attributes, prefix_attributes, 0);
   decl_type_access_control (d);
   return d;
 }
