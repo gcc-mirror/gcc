@@ -2519,14 +2519,6 @@ typedef struct mips_args {
       register enum rtx_code code0 = GET_CODE (xplus0);			\
       register enum rtx_code code1 = GET_CODE (xplus1);			\
 									\
-      if (code0 != REG && code1 == REG)					\
-	{								\
-	  xplus0 = XEXP (xinsn, 1);					\
-	  xplus1 = XEXP (xinsn, 0);					\
-	  code0 = GET_CODE (xplus0);					\
-	  code1 = GET_CODE (xplus1);					\
-	}								\
-									\
       if (code0 == REG && REG_OK_FOR_BASE_P (xplus0))			\
 	{								\
 	  if (code1 == CONST_INT					\
