@@ -1,3 +1,10 @@
+1998-07-27  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* parse.y (direct_notype_declarator): Add precedence declaration
+	to notype_unqualified_id case.
+
+	* tree.c (ovl_member): Fix for single function in OVL.
+
 1998-07-27  Dave Brolley  <brolley@cygnus.com>
 
 	* c-lex.c (yylex): Fix boundary conditions in character literal and

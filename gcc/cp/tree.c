@@ -1430,10 +1430,10 @@ ovl_member (fn, ovl)
      tree fn;
      tree ovl;
 {
-  if (fn == ovl)
-    return 1;
-  if (!ovl || TREE_CODE (ovl) != OVERLOAD)
+  if (ovl == NULL_TREE)
     return 0;
+  if (TREE_CODE (ovl) != OVERLOAD)
+    return decls_match (ovl, fn);
   for (; ovl; ovl = OVL_CHAIN (ovl))
     if (decls_match (OVL_FUNCTION (ovl), fn))
       return 1;
