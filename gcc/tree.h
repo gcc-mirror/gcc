@@ -3565,8 +3565,8 @@ extern bool ptr_difference_const (tree, tree, HOST_WIDE_INT *);
 /* In builtins.c */
 extern tree fold_builtin (tree, bool);
 extern tree fold_builtin_fputs (tree, bool, bool, tree);
-extern tree fold_builtin_strcpy (tree, tree);
-extern tree fold_builtin_strncpy (tree, tree);
+extern tree fold_builtin_strcpy (tree, tree, tree);
+extern tree fold_builtin_strncpy (tree, tree, tree);
 extern bool fold_builtin_next_arg (tree);
 extern enum built_in_function builtin_mathfn_code (tree);
 extern tree build_function_call_expr (tree, tree);

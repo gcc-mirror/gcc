@@ -2942,10 +2942,11 @@ expand_movstr (tree dest, tree src, rtx target, int endp)
 static rtx
 expand_builtin_strcpy (tree exp, rtx target, enum machine_mode mode)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   if (validate_arglist (arglist, POINTER_TYPE, POINTER_TYPE, VOID_TYPE))
     {
-      tree result = fold_builtin_strcpy (exp, 0);
+      tree result = fold_builtin_strcpy (fndecl, arglist, 0);
       if (result)
 	return expand_expr (result, target, mode, EXPAND_NORMAL);
 
@@ -3062,13 +3063,14 @@ builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
 static rtx
 expand_builtin_strncpy (tree exp, rtx target, enum machine_mode mode)
 {
+  tree fndecl = get_callee_fndecl (exp);
   tree arglist = TREE_OPERAND (exp, 1);
   if (validate_arglist (arglist,
 			POINTER_TYPE, POINTER_TYPE, INTEGER_TYPE, VOID_TYPE))
     {
       tree slen = c_strlen (TREE_VALUE (TREE_CHAIN (arglist)), 1);
       tree len = TREE_VALUE (TREE_CHAIN (TREE_CHAIN (arglist)));
-      tree result = fold_builtin_strncpy (exp, slen);
+      tree result = fold_builtin_strncpy (fndecl, arglist, slen);
       
       if (result)
 	return expand_expr (result, target, mode, EXPAND_NORMAL);
@@ -7254,10 +7256,8 @@ fold_builtin_memmove (tree arglist, tree type)
    simplification can be made.  */
 
 tree
-fold_builtin_strcpy (tree exp, tree len)
+fold_builtin_strcpy (tree fndecl, tree arglist, tree len)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, fn;
 
   if (!validate_arglist (arglist,
@@ -7298,10 +7298,8 @@ fold_builtin_strcpy (tree exp, tree len)
    can be made.  */
 
 tree
-fold_builtin_strncpy (tree exp, tree slen)
+fold_builtin_strncpy (tree fndecl, tree arglist, tree slen)
 {
-  tree fndecl = get_callee_fndecl (exp);
-  tree arglist = TREE_OPERAND (exp, 1);
   tree dest, src, len, fn;
 
   if (!validate_arglist (arglist,
@@ -8003,10 +8001,10 @@ fold_builtin_1 (tree exp, bool ignore)
       return fold_builtin_strrchr (arglist, type);
 
     case BUILT_IN_STRCPY:
-      return fold_builtin_strcpy (exp, NULL_TREE);
+      return fold_builtin_strcpy (fndecl, arglist, NULL_TREE);
 
     case BUILT_IN_STRNCPY:
-      return fold_builtin_strncpy (exp, NULL_TREE);
+      return fold_builtin_strncpy (fndecl, arglist, NULL_TREE);
 
     case BUILT_IN_STRCMP:
       return fold_builtin_strcmp (arglist);
