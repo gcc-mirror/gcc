@@ -1,3 +1,7 @@
+2001-10-04  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* doc/cppinternals.texi: Update.
+
 2001-10-04  Eric Christopher  <echristo@redhat.com>
 
 	* config/mips/mips.c (init_cumulative_args): Remember to set
