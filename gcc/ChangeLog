@@ -1,3 +1,9 @@
+2003-06-26  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	PR optimization/11210
+	* fold-const (decode_field_reference): Strip only NOPs that
+	don't affect the sign.
+
 2003-06-26  Dhananjay Deshpande  <dhananjayd@kpitcummins.com>
 
 	* gcc/config/sh/sh.md (push_fpscr): Enable for TARGET_SH2E.

@@ -2742,7 +2742,8 @@ decode_field_reference (exp, pbitsize, pbitpos, pmode, punsignedp,
   if (! INTEGRAL_TYPE_P (TREE_TYPE (exp)))
     return 0;
 
-  STRIP_NOPS (exp);
+  /* Signedness matters here.  */
+  STRIP_SIGN_NOPS (exp);
 
   if (TREE_CODE (exp) == BIT_AND_EXPR)
     {
