@@ -3692,11 +3692,10 @@ bc_expand_decl_init (decl)
       if (code == INTEGER_TYPE || code == REAL_TYPE || code == ENUMERAL_TYPE
 	  || code == POINTER_TYPE)
 
-	expand_assignment (TREE_TYPE (decl), decl,
-			   convert (TREE_TYPE (decl), integer_zero_node));
+	expand_assignment (TREE_TYPE (decl), decl, 0, 0);
     }
   else if (DECL_INITIAL (decl))
-    expand_assignment (TREE_TYPE (decl), decl, DECL_INITIAL (decl));
+    expand_assignment (TREE_TYPE (decl), decl, 0, 0);
 
   /* Restore stack depth */
   if (org_stack_depth > stack_depth)
