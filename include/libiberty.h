@@ -111,8 +111,7 @@ extern int xatexit PARAMS ((void (*fn) (void)));
 #ifndef __GNUC__
 extern void xexit PARAMS ((int status));
 #else
-typedef void libiberty_voidfn PARAMS ((int status));
-__volatile__ libiberty_voidfn xexit;
+void xexit PARAMS ((int status)) __attribute__ ((noreturn));
 #endif
 
 /* Set the program name used by xmalloc.  */
