@@ -33,16 +33,12 @@ Haifa scheduler (haifa-sched.c, loop.[ch], unroll.[ch], genattrtab.c):
 
 Improvements to global cse and partial redundancy elimination:
 
-The current implementation of global cse uses partial redundancy elimination
-as described in Chow's thesis.
+The current implementation of global cse uses a lazy code motion algorithm
+from Muchnick's "Advanced Compiler Design and Implementation".
 
-Long term we want to use lazy code motion as the basis for partial redundancy
-elimination.  lcm will find as many (or more) redunancies *and* it will
-place the remaining computations at computationally optimal placement points
-within the function.  This reduces the number of redundant operations performed
-as well as reducing register lifetimes.  My experiments have shown that the
-cases were the current PRE code hurts performance are greatly helped by using
-lazy code motion.
+Longer term we want to convert to an edge based LCM algorithm using the
+new structures defined by flow.c.  This allows for better expression
+placement and provides edge splitting "for free". 
 
 lcm also provides the underlying framework for several additional optimizations
 such as shrink wrapping, spill code motion, dead store elimination, and generic
