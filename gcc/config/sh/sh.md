@@ -5572,7 +5572,7 @@
 {
   rtx lab = PATTERN (gen_call_site ());
 
-  if (SYMBOL_REF_FLAG (operands[0]))
+  if (SYMBOL_REF_LOCAL_P (operands[0]))
     emit_insn (gen_sym_label2reg (operands[2], operands[0], lab));
   else
     emit_insn (gen_symPLT_label2reg (operands[2], operands[0], lab));
@@ -5672,7 +5672,7 @@
 {
   rtx lab = PATTERN (gen_call_site ());
 
-  if (SYMBOL_REF_FLAG (operands[1]))
+  if (SYMBOL_REF_LOCAL_P (operands[1]))
     emit_insn (gen_sym_label2reg (operands[3], operands[1], lab));
   else
     emit_insn (gen_symPLT_label2reg (operands[3], operands[1], lab));
@@ -5744,7 +5744,7 @@
       operands[0] = XEXP (operands[0], 0);
       if (flag_pic && GET_CODE (operands[0]) == SYMBOL_REF)
 	{
-	  if (! SYMBOL_REF_FLAG (operands[0]))
+	  if (! SYMBOL_REF_LOCAL_P (operands[0]))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -5787,7 +5787,7 @@
 
       if (flag_pic)
 	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_FLAG (func))
+	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -5831,7 +5831,7 @@
     }
   else if (TARGET_SHCOMPACT && flag_pic
 	   && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
-	   && ! SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
+	   && ! SYMBOL_REF_LOCAL_P (XEXP (operands[0], 0)))
     {
       rtx reg = gen_reg_rtx (Pmode);
 
@@ -5907,7 +5907,7 @@
 
       if (flag_pic)
 	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_FLAG (func))
+	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -5968,7 +5968,7 @@
       operands[1] = XEXP (operands[1], 0);
       if (flag_pic && GET_CODE (operands[1]) == SYMBOL_REF)
 	{
-	  if (! SYMBOL_REF_FLAG (operands[1]))
+	  if (! SYMBOL_REF_LOCAL_P (operands[1]))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -6012,7 +6012,7 @@
 
       if (flag_pic)
 	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_FLAG (func))
+	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -6058,7 +6058,7 @@
     }
   else if (TARGET_SHCOMPACT && flag_pic
 	   && GET_CODE (XEXP (operands[1], 0)) == SYMBOL_REF
-	   && ! SYMBOL_REF_FLAG (XEXP (operands[1], 0)))
+	   && ! SYMBOL_REF_LOCAL_P (XEXP (operands[1], 0)))
     {
       rtx reg = gen_reg_rtx (Pmode);
 
@@ -6176,7 +6176,7 @@
       operands[0] = XEXP (operands[0], 0);
       if (flag_pic && GET_CODE (operands[0]) == SYMBOL_REF)
 	{
-	  if (! SYMBOL_REF_FLAG (operands[0]))
+	  if (! SYMBOL_REF_LOCAL_P (operands[0]))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -6222,7 +6222,7 @@
 
       if (flag_pic)
 	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_FLAG (func))
+	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 
@@ -6277,7 +6277,7 @@
     }
   else if (TARGET_SHCOMPACT && flag_pic
 	   && GET_CODE (XEXP (operands[0], 0)) == SYMBOL_REF
-	   && ! SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
+	   && ! SYMBOL_REF_LOCAL_P (XEXP (operands[0], 0)))
     {
       rtx reg = gen_reg_rtx (Pmode);
 
@@ -6290,7 +6290,7 @@
       /* The PLT needs the PIC register, but the epilogue would have
 	 to restore it, so we can only use PC-relative PIC calls for
 	 static functions.  */
-      && SYMBOL_REF_FLAG (XEXP (operands[0], 0)))
+      && SYMBOL_REF_LOCAL_P (XEXP (operands[0], 0)))
     {
       emit_call_insn (gen_sibcall_pcrel (XEXP (operands[0], 0), operands[1]));
       DONE;
@@ -6372,7 +6372,7 @@
 
       if (flag_pic)
 	{
-	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_FLAG (func))
+	  if (GET_CODE (func) == SYMBOL_REF && ! SYMBOL_REF_LOCAL_P (func))
 	    {
 	      rtx reg = gen_reg_rtx (Pmode);
 

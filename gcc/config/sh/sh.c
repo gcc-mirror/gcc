@@ -209,8 +209,6 @@ static bool sh_function_ok_for_sibcall PARAMS ((tree, tree));
 static bool sh_cannot_modify_jumps_p PARAMS ((void));
 static bool sh_ms_bitfield_layout_p PARAMS ((tree));
 
-static void sh_encode_section_info PARAMS ((tree, int));
-static const char *sh_strip_name_encoding PARAMS ((const char *));
 static void sh_init_builtins PARAMS ((void));
 static void sh_media_init_builtins PARAMS ((void));
 static rtx sh_expand_builtin PARAMS ((tree, rtx, rtx, enum machine_mode, int));
@@ -269,11 +267,6 @@ static int sh_address_cost PARAMS ((rtx));
 
 #undef TARGET_MS_BITFIELD_LAYOUT_P
 #define TARGET_MS_BITFIELD_LAYOUT_P sh_ms_bitfield_layout_p
-
-#undef TARGET_ENCODE_SECTION_INFO
-#define TARGET_ENCODE_SECTION_INFO sh_encode_section_info
-#undef TARGET_STRIP_NAME_ENCODING
-#define TARGET_STRIP_NAME_ENCODING sh_strip_name_encoding
 
 #undef TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS sh_init_builtins
@@ -2478,8 +2471,6 @@ gen_datalabel_ref (sym)
     
   if (GET_CODE (sym) != SYMBOL_REF)
     abort ();
-
-  XSTR (sym, 0) = concat (SH_DATALABEL_ENCODING, XSTR (sym, 0), NULL);
 
   return sym;
 }
@@ -6556,28 +6547,9 @@ tls_symbolic_operand (op, mode)
      rtx op;
      enum machine_mode mode ATTRIBUTE_UNUSED;
 {
-  const char *str;
-
   if (GET_CODE (op) != SYMBOL_REF)
     return 0;
-
-  str = XSTR (op, 0);
-  STRIP_DATALABEL_ENCODING(str, str);  
-  if (! TLS_SYMNAME_P (str))
-    return 0;
-
-  switch (str[1])
-    {
-    case 'G':
-      return TLS_MODEL_GLOBAL_DYNAMIC;
-    case 'L':
-      return TLS_MODEL_LOCAL_DYNAMIC;
-    case 'i':
-      return TLS_MODEL_INITIAL_EXEC;
-    case 'l':
-      return TLS_MODEL_LOCAL_EXEC;
-    }
-  return 0;
+  return SYMBOL_REF_TLS_MODEL (op);
 }
 
 int
@@ -7360,10 +7332,7 @@ legitimize_pic_address (orig, mode, reg)
     return orig;
 
   if (GET_CODE (orig) == LABEL_REF
-      || (GET_CODE (orig) == SYMBOL_REF
-	  && (CONSTANT_POOL_ADDRESS_P (orig)
-	      /* SYMBOL_REF_FLAG is set on static symbols.  */
-	      || SYMBOL_REF_FLAG (orig))))
+      || (GET_CODE (orig) == SYMBOL_REF && SYMBOL_REF_LOCAL_P (orig)))
     {
       if (reg == 0)
 	reg = gen_reg_rtx (Pmode);
@@ -7687,100 +7656,6 @@ sh_ms_bitfield_layout_p (record_type)
 {
   return TARGET_SH5;
 }
-
-/* If using PIC, mark a SYMBOL_REF for a non-global symbol so that we
-   may access it using GOTOFF instead of GOT.  */
-
-static void
-sh_encode_section_info (decl, first)
-     tree decl;
-     int first;
-{
-  rtx rtl, symbol;
-
-  if (DECL_P (decl))
-    rtl = DECL_RTL (decl);
-  else
-    rtl = TREE_CST_RTL (decl);
-  if (GET_CODE (rtl) != MEM)
-    return;
-  symbol = XEXP (rtl, 0);
-  if (GET_CODE (symbol) != SYMBOL_REF)
-    return;
-
-  if (flag_pic)
-    SYMBOL_REF_FLAG (symbol) = (*targetm.binds_local_p) (decl);
-
-  if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL (decl))
-    {
-      const char *symbol_str, *orig_str;
-      bool is_local;
-      enum tls_model kind;
-      char encoding;
-      char *newstr;
-      size_t len, dlen;
-
-      orig_str = XSTR (symbol, 0);
-      is_local = (*targetm.binds_local_p) (decl);
-
-      if (! flag_pic)
-	{
-	  if (is_local)
-	    kind = TLS_MODEL_LOCAL_EXEC;
-	  else
-	    kind = TLS_MODEL_INITIAL_EXEC;
-	}
-      else if (is_local)
-	kind = TLS_MODEL_LOCAL_DYNAMIC;
-      else
-	kind = TLS_MODEL_GLOBAL_DYNAMIC;
-      if (kind < flag_tls_default)
-	kind = flag_tls_default;
-
-      STRIP_DATALABEL_ENCODING (symbol_str, orig_str);
-      dlen = symbol_str - orig_str;
-
-      encoding = " GLil"[kind];
-      if (TLS_SYMNAME_P (symbol_str))
-	{
-	  if (encoding == symbol_str[1])
-	    return;
-	  /* Handle the changes from initial-exec to local-exec and
-	     from global-dynamic to local-dynamic.  */
-	  if ((encoding == 'l' && symbol_str[1] == 'i')
-	      || (encoding == 'L' && symbol_str[1] == 'G'))
-	    symbol_str += 2;
-	  else
-	    abort ();
-	}
-
-      len = strlen (symbol_str);
-      newstr = alloca (dlen + len + 3);
-      if (dlen)
-	memcpy (newstr, orig_str, dlen);
-      newstr[dlen + 0] = SH_TLS_ENCODING[0];
-      newstr[dlen + 1] = encoding;
-      memcpy (newstr + dlen + 2, symbol_str, len + 1);
-
-      XSTR (symbol, 0) = ggc_alloc_string (newstr, dlen + len + 2);
-    }
-
-  if (TARGET_SH5 && first && TREE_CODE (decl) != FUNCTION_DECL)
-    XEXP (rtl, 0) = gen_datalabel_ref (symbol);
-}
-
-/* Undo the effects of the above.  */
-
-static const char *
-sh_strip_name_encoding (str)
-     const char *str;
-{
-  STRIP_DATALABEL_ENCODING (str, str);
-  STRIP_TLS_ENCODING (str, str);
-  str += *str == '*';
-  return str;
-}
-
 
 /* 
    On the SH1..SH4, the trampoline looks like
