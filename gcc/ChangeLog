@@ -1,3 +1,20 @@
+2003-03-04  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	* function.c (STACK_ALIGNMENT_NEEDED): New macro.  Default to 1.
+	(assign_stack_local_1): Perform overall stack alignment only when
+	STACK_ALIGNMENT_NEEDED is non-zero.
+	* doc/tm.texi (STACK_ALIGNMENT_NEEDED): Document.
+
+	* pa.c (compute_frame_size): Rename fsize to size.  Account for
+	alignment to a word boundary before general register save block.  Only
+	account for double-word alignment before floating point register save
+	block if one or more are saved.  Don't allocate space for %r3 when
+	frame pointer is needed.
+	(hppa_expand_prologue): Include alignment to word boundary in local
+	frame size.
+	* pa.h (STARTING_FRAME_OFFSET): Define to 8 on both 32 and 64-bit ports.
+	(STACK_ALIGNMENT_NEEDED): Define.
+
 2003-03-04  Kevin Buettner  <kevinb@redhat.com>
 
 	* dwarf2out.c (rtl_for_decl_location): Don't return NULL_RTX for
