@@ -1,5 +1,10 @@
 2005-01-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	PR fortran/19182
+	* error.c (error_char): Line-buffer errors / warnings.
+
+2005-01-16  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* trans-intrinsic.c (gfc_conv_intrinsic_ishft): Fix signed /
 	unsigned issue.  Use build_int_cst instead of converting
 	integer_zero_node.  Remove unnecessary conversion.

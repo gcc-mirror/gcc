@@ -86,7 +86,20 @@ error_char (char c)
   else
     {
       if (c != 0)
-	fputc (c, stderr);
+	{
+	  /* We build up complete lines before handing things
+	     over to the library in order to speed up error printing.  */
+	  static char line[MAX_ERROR_MESSAGE + 1];
+	  static int index = 0;
+
+	  line[index++] = c;
+	  if (c == '\n' || index == MAX_ERROR_MESSAGE)
+	    {
+	      line[index] = '\0';
+	      fputs (line, stderr);
+	      index = 0;
+	    }
+	}
     }
 }
 
