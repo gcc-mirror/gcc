@@ -1120,7 +1120,7 @@ static void
 do_pragma (cpp_reader *pfile)
 {
   const struct pragma_entry *p = NULL;
-  const cpp_token *token;
+  const cpp_token *token, *pragma_token = pfile->cur_token;
   unsigned int count = 1;
 
   pfile->state.prevent_expansion++;
@@ -1141,7 +1141,17 @@ do_pragma (cpp_reader *pfile)
     }
 
   if (p)
-    p->u.handler (pfile);
+    {
+      /* Since the handler below doesn't get the line number, that it
+	 might need for diagnostics, make sure it has the right
+	 numbers in place.  */
+      if (pfile->cb.line_change)
+	(*pfile->cb.line_change) (pfile, pragma_token, false);
+      (*p->u.handler) (pfile);
+      if (pfile->cb.line_change)
+	(*pfile->cb.line_change) (pfile, pfile->cur_token, false);
+      
+    }
   else if (pfile->cb.def_pragma)
     {
       _cpp_backup_tokens (pfile, count);
