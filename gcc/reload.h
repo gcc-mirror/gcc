@@ -354,6 +354,9 @@ extern rtx find_equiv_reg PROTO((rtx, rtx, enum reg_class, int, short *,
 /* Return 1 if register REGNO is the subject of a clobber in insn INSN.  */
 extern int regno_clobbered_p PROTO((int, rtx));
 
+/* Return 1 if X is an operand of an insn that is being earlyclobbered.  */
+int earlyclobber_operand_p PROTO((rtx));
+
 /* Functions in reload1.c:  */
 
 extern int reloads_conflict		PROTO ((int, int));
