@@ -3733,7 +3733,9 @@ delete_labelref_insn (insn, label, delete_this)
 }
 
 /* Like rtx_equal_p except that it considers two REGs as equal
-   if they renumber to the same value.  */
+   if they renumber to the same value and considers two commutative
+   operations to be the same if the order of the operands has been
+   reversed.  */
 
 int
 rtx_renumbered_equal_p (x, y)
@@ -3745,11 +3747,13 @@ rtx_renumbered_equal_p (x, y)
       
   if (x == y)
     return 1;
+
   if ((code == REG || (code == SUBREG && GET_CODE (SUBREG_REG (x)) == REG))
       && (GET_CODE (y) == REG || (GET_CODE (y) == SUBREG
 				  && GET_CODE (SUBREG_REG (y)) == REG)))
     {
-      register int j;
+      int reg_x = -1, reg_y = -1;
+      int word_x = 0, word_y = 0;
 
       if (GET_MODE (x) != GET_MODE (y))
 	return 0;
@@ -3761,36 +3765,50 @@ rtx_renumbered_equal_p (x, y)
 
       if (code == SUBREG)
 	{
-	  i = REGNO (SUBREG_REG (x));
-	  if (reg_renumber[i] >= 0)
-	    i = reg_renumber[i];
-	  i += SUBREG_WORD (x);
+	  reg_x = REGNO (SUBREG_REG (x));
+	  word_x = SUBREG_WORD (x);
+
+	  if (reg_renumber[reg_x] >= 0)
+	    {
+	      reg_x = reg_renumber[reg_x] + word_x;
+	      word_x = 0;
+	    }
 	}
+
       else
 	{
-	  i = REGNO (x);
-	  if (reg_renumber[i] >= 0)
-	    i = reg_renumber[i];
+	  reg_x = REGNO (x);
+	  if (reg_renumber[reg_x] >= 0)
+	    reg_x = reg_renumber[reg_x];
 	}
+
       if (GET_CODE (y) == SUBREG)
 	{
-	  j = REGNO (SUBREG_REG (y));
-	  if (reg_renumber[j] >= 0)
-	    j = reg_renumber[j];
-	  j += SUBREG_WORD (y);
+	  reg_y = REGNO (SUBREG_REG (y));
+	  word_y = SUBREG_WORD (y);
+
+	  if (reg_renumber[reg_y] >= 0)
+	    {
+	      reg_y = reg_renumber[reg_y];
+	      word_y = 0;
+	    }
 	}
+
       else
 	{
-	  j = REGNO (y);
-	  if (reg_renumber[j] >= 0)
-	    j = reg_renumber[j];
+	  reg_y = REGNO (y);
+	  if (reg_renumber[reg_y] >= 0)
+	    reg_y = reg_renumber[reg_y];
 	}
-      return i == j;
+
+      return reg_x >= 0 && reg_x == reg_y && word_x == word_y;
     }
+
   /* Now we have disposed of all the cases 
      in which different rtx codes can match.  */
   if (code != GET_CODE (y))
     return 0;
+
   switch (code)
     {
     case PC:
@@ -3806,6 +3824,7 @@ rtx_renumbered_equal_p (x, y)
       /* We can't assume nonlocal labels have their following insns yet.  */
       if (LABEL_REF_NONLOCAL_P (x) || LABEL_REF_NONLOCAL_P (y))
 	return XEXP (x, 0) == XEXP (y, 0);
+
       /* Two label-refs are equivalent if they point at labels
 	 in the same position in the instruction stream.  */
       return (next_real_insn (XEXP (x, 0))
@@ -3819,6 +3838,19 @@ rtx_renumbered_equal_p (x, y)
 
   if (GET_MODE (x) != GET_MODE (y))
     return 0;
+
+  /* For commutative operations, the RTX match if the operand match in any
+     order.  Also handle the simple binary and unary cases without a loop.  */
+  if (code == EQ || code == NE || GET_RTX_CLASS (code) == 'c')
+    return ((rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0))
+	     && rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 1)))
+	    || (rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 1))
+		&& rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 0))));
+  else if (GET_RTX_CLASS (code) == '<' || GET_RTX_CLASS (code) == '2')
+    return (rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0))
+	    && rtx_renumbered_equal_p (XEXP (x, 1), XEXP (y, 1)));
+  else if (GET_RTX_CLASS (code) == '1')
+    return rtx_renumbered_equal_p (XEXP (x, 0), XEXP (y, 0));
 
   /* Compare the elements.  If any pair of corresponding elements
      fail to match, return 0 for the whole things.  */
