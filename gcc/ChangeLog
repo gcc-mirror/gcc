@@ -1,3 +1,16 @@
+2004-07-08  Zack Weinberg  <zack@codesourcery.com>
+
+	* c-decl.c (pop_scope): Do not set DECL_CONTEXT on file-scope
+	decls when there is only one input translation unit.
+	* langhooks.c (lhd_set_decl_assembler_name): Partially revert
+	change of 2004-07-05; do not treat declarations with
+	DECL_CONTEXT a TRANSLATION_UNIT_DECL specially.
+	* opts.c (cur_in_fname): Delete.
+	* opts.h: Likewise.
+	* tree.c: Revert changes of 2004-07-05; no special treatment
+	for TRANSLATION_UNIT_DECLs.
+	* Makefile.in (tree.o): Update dependencies.
+
 2004-07-08  Roger Sayle  <roger@eyesopen.com>
 
 	* builtins.c (fold_builtin_strcpy): Merge functionality from
@@ -69,7 +82,7 @@
 	* tree-ssa-ccp.c (get_rhs, set_rhs): Reorg to use switch.
 
 2004-07-08  Paolo Bonzini  <bonzini@gnu.org>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (override_options): Enable
 	SSE prefetches with -mtune, as long as we are
@@ -118,7 +131,7 @@
 	OBJ_TYPE_REF_OBJECT.
 
 2004-07-08  Joseph S. Myers  <jsm@polyomino.org.uk>
-            Neil Booth  <neil@daikokuya.co.uk>
+	    Neil Booth  <neil@daikokuya.co.uk>
 
 	PR c/2511
 	PR c/3325
@@ -148,7 +161,7 @@
 
 2004-07-08  Andrew Pinski  <apinski@apple.com>
 
-	* Makefile.in (libbackend.o): Add -combine to the gcc 
+	* Makefile.in (libbackend.o): Add -combine to the gcc
 	command line.
 
 2004-07-08  Nick Clifton  <nickc@redhat.com>
@@ -158,7 +171,7 @@
 
 2004-07-08  Richard Henderson  <rth@redhat.com>
 
-	* except.c (expand_eh_region_start, expand_eh_region_end, 
+	* except.c (expand_eh_region_start, expand_eh_region_end,
 	expand_eh_handler, expand_eh_region_end_cleanup,
 	expand_start_all_catch, expand_start_catch, expand_end_catch,
 	expand_end_all_catch, expand_eh_region_end_allowed,
@@ -172,7 +185,7 @@
 	(stack_block_stack, expand_goto_internal, expand_fixup, expand_fixups,
 	fixup_gotos, save_stack_pointer, expand_decl_cleanup,
 	expand_decl_cleanup_eh, expand_cleanups, start_cleanup_deferral,
-	end_cleanup_deferral, last_cleanup_this_contour, 
+	end_cleanup_deferral, last_cleanup_this_contour,
 	containing_blocks_have_cleanups_or_stack_level,
 	any_pending_cleanups): Remove.
 	(expand_null_return_1): Take no arguments.
@@ -185,8 +198,8 @@
 	* function.c (expand_function_end): Likewise.
 	* expr.c (store_expr, expand_expr_real_1): Likewise.
 	(safe_from_p): Don't handle WITH_CLEANUP_EXPR, CLEANUP_POINT_EXPR.
-	(expand_expr_real_1): Don't handle WITH_CLEANUP_EXPR, 
-	CLEANUP_POINT_EXPR, TARGET_EXPR, TRY_CATCH_EXPR, CATCH_EXPR, 
+	(expand_expr_real_1): Don't handle WITH_CLEANUP_EXPR,
+	CLEANUP_POINT_EXPR, TARGET_EXPR, TRY_CATCH_EXPR, CATCH_EXPR,
 	EH_FILTER_EXPR, TRY_FINALLY_EXPR, GOTO_SUBROUTINE_EXPR.
 	* fold-const.c (fold_checksum_tree): Use first_rtl_op.
 	* gengtype.c (adjust_field_tree_exp): Remove rtl op handling.
@@ -714,7 +727,7 @@
 2004-07-07  Mike Stump  <mrs@apple.com>
 
 	* darwin.h (ASM_OUTPUT_LABELREF): Fix -fno-leading-underscore.
-	* darwin.c (machopic_non_lazy_ptr_name, machopic_stub_name) 
+	* darwin.c (machopic_non_lazy_ptr_name, machopic_stub_name)
 	(machopic_finish): Likewise.
 
 2004-07-07  Richard Henderson  <rth@redhat.com>
@@ -906,13 +919,13 @@
 	PR target/16143
 	* config/ia64/ia64.c (ia64_dfa_new_cycle): Reset DFA state for asm
 	insn.
-	
+
 2004-07-06  Kazuhiro Inaoka  <inaoka.kazuhiro@renesas.com>
 
 	PR target/1679.
 	* config/m32r/m32r.c (m32r_function_symbol): New function:
 	Generate a symbol name RTX with the correct m32r specific flags
-	set. 
+	set.
 	(block_move_call): Use new function to generate correct symbol.
 	* config/m32r/m32r-protos.h: Add prototype for new funcion.
 	* config/m32r/m32r.h (INITIALIZE_TRAMPOLINE): Use the new
@@ -942,7 +955,7 @@
 2004-07-07  Nick Clifton  <nickc@redhat.com>
 
 	* config/fr30/fr30.c (fr30_setup_incoming_varargs): Change
-	arguments to match TARGET_SETUP_INCOMING_VARARGS prototype. 
+	arguments to match TARGET_SETUP_INCOMING_VARARGS prototype.
 
 2004-07-07  Nathan Sidwell  <nathan@codesourcery.com>
 
@@ -1119,7 +1132,7 @@
 	(find_var_from_fn): New function.
 	(variably_modified_type_p): Add arg and call new function.
 	* tree.h (variably_modified_type_p): Add extra arg.
-	
+
 2004-07-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* config/sparc/sparc.md (nonlocal_goto): Remove disabled code.

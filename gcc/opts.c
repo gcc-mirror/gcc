@@ -92,7 +92,6 @@ static bool flag_peel_loops_set, flag_branch_probabilities_set;
 /* Input file names.  */
 const char **in_fnames;
 unsigned num_in_fnames;
-unsigned cur_in_fname;
 
 static size_t find_opt (const char *, int);
 static int common_handle_option (size_t scode, const char *arg, int value);

@@ -1569,7 +1569,7 @@ langhooks.o : langhooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) 
    $(LANGHOOKS_DEF_H) $(FLAGS_H) $(GGC_H) diagnostic.h
 tree.o : tree.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(FLAGS_H) function.h \
    toplev.h $(GGC_H) $(HASHTAB_H) $(TARGET_H) output.h $(TM_P_H) langhooks.h \
-   real.h gt-tree.h tree-iterator.h $(BASIC_BLOCK_H) $(TREE_FLOW_H) opts.h
+   real.h gt-tree.h tree-iterator.h $(BASIC_BLOCK_H) $(TREE_FLOW_H)
 tree-dump.o: tree-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(C_TREE_H) $(FLAGS_H) langhooks.h toplev.h output.h c-pragma.h $(RTL_H) \
    $(GGC_H) $(EXPR_H) $(SPLAY_TREE_H) $(TREE_DUMP_H) tree-iterator.h

@@ -179,31 +179,15 @@ lhd_set_decl_assembler_name (tree decl)
 
          Can't use just the variable's own name for a variable whose
 	 scope is less than the whole compilation.  Concatenate a
-	 distinguishing number.  If the decl is at block scope, the
-	 number assigned is the DECL_UID; if the decl is at file
-	 scope, the number is the DECL_UID of the surrounding
-	 TRANSLATION_UNIT_DECL, except for the T_U_D with UID 0.
-	 Those (the file-scope internal-linkage declarations from the
-	 first input file) get no suffix, which is consistent with
-	 what has historically been done for file-scope declarations
-	 with internal linkage.  */
-      if (TREE_PUBLIC (decl)
-	  || DECL_CONTEXT (decl) == NULL_TREE
-	  || (TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL
-	      && DECL_UID (DECL_CONTEXT (decl)) == 0))
+	 distinguishing number - we use the DECL_UID.  */
+      if (TREE_PUBLIC (decl) || DECL_CONTEXT (decl) == NULL_TREE)
 	SET_DECL_ASSEMBLER_NAME (decl, DECL_NAME (decl));
       else
 	{
 	  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
 	  char *label;
-	  unsigned int uid;
 
-	  if (TREE_CODE (DECL_CONTEXT (decl)) == TRANSLATION_UNIT_DECL)
-	    uid = DECL_UID (DECL_CONTEXT (decl));
-	  else
-	    uid = DECL_UID (decl);
-
-	  ASM_FORMAT_PRIVATE_NAME (label, name, uid);
+	  ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
 	  SET_DECL_ASSEMBLER_NAME (decl, get_identifier (label));
 	}
     }
