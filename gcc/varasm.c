@@ -43,7 +43,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "toplev.h"
 #include "hashtab.h"
 #include "c-pragma.h"
-#include "c-tree.h"
 #include "ggc.h"
 #include "langhooks.h"
 #include "tm_p.h"
