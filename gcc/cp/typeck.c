@@ -45,34 +45,32 @@ Boston, MA 02111-1307, USA.  */
 #include "diagnostic.h"
 #include "target.h"
 
-static tree convert_for_assignment PARAMS ((tree, tree, const char *, tree,
-					  int));
-static tree cp_pointer_int_sum PARAMS ((enum tree_code, tree, tree));
-static tree rationalize_conditional_expr PARAMS ((enum tree_code, tree));
-static int comp_target_parms PARAMS ((tree, tree));
-static int comp_ptr_ttypes_real PARAMS ((tree, tree, int));
-static int comp_ptr_ttypes_const PARAMS ((tree, tree));
-static int comp_ptr_ttypes_reinterpret PARAMS ((tree, tree));
-static int comp_except_types PARAMS ((tree, tree, int));
-static bool comp_array_types PARAMS ((tree, tree, int));
-static tree common_base_type PARAMS ((tree, tree));
-static tree lookup_anon_field PARAMS ((tree, tree));
-static tree pointer_diff PARAMS ((tree, tree, tree));
-static tree qualify_type_recursive PARAMS ((tree, tree));
-static tree get_delta_difference PARAMS ((tree, tree, int));
-static int comp_cv_target_types PARAMS ((tree, tree, int));
-static void casts_away_constness_r PARAMS ((tree *, tree *));
-static int casts_away_constness PARAMS ((tree, tree));
-static void maybe_warn_about_returning_address_of_local PARAMS ((tree));
-static tree strip_all_pointer_quals PARAMS ((tree));
+static tree convert_for_assignment (tree, tree, const char *, tree, int);
+static tree cp_pointer_int_sum (enum tree_code, tree, tree);
+static tree rationalize_conditional_expr (enum tree_code, tree);
+static int comp_target_parms (tree, tree);
+static int comp_ptr_ttypes_real (tree, tree, int);
+static int comp_ptr_ttypes_const (tree, tree);
+static int comp_ptr_ttypes_reinterpret (tree, tree);
+static bool comp_except_types (tree, tree, bool);
+static bool comp_array_types (tree, tree, bool);
+static tree common_base_type (tree, tree);
+static tree lookup_anon_field (tree, tree);
+static tree pointer_diff (tree, tree, tree);
+static tree qualify_type_recursive (tree, tree);
+static tree get_delta_difference (tree, tree, int);
+static int comp_cv_target_types (tree, tree, int);
+static void casts_away_constness_r (tree *, tree *);
+static bool casts_away_constness (tree, tree);
+static void maybe_warn_about_returning_address_of_local (tree);
+static tree strip_all_pointer_quals (tree);
 static tree lookup_destructor (tree, tree, tree);
 
 /* Return the target type of TYPE, which means return T for:
    T*, T&, T[], T (...), and otherwise, just T.  */
 
 tree
-target_type (type)
-     tree type;
+target_type (tree type)
 {
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
@@ -91,8 +89,7 @@ target_type (type)
    complete type when this function returns.  */
 
 tree
-require_complete_type (value)
-     tree value;
+require_complete_type (tree value)
 {
   tree type;
 
@@ -131,8 +128,7 @@ require_complete_type (value)
    horribly wrong, in which case the error_mark_node is returned.  */
 
 tree
-complete_type (type)
-     tree type;
+complete_type (tree type)
 {
   if (type == NULL_TREE)
     /* Rather than crash, we return something sure to cause an error
@@ -163,10 +159,7 @@ complete_type (type)
    Returns NULL_TREE if the type cannot be made complete.  */
 
 tree
-complete_type_or_diagnostic (type, value, diag_type)
-     tree type;
-     tree value;
-     int diag_type;
+complete_type_or_diagnostic (tree type, tree value, int diag_type)
 {
   type = complete_type (type);
   if (type == error_mark_node)
@@ -739,7 +732,8 @@ common_type (t1, t2)
 }
 
 /* Compare two exception specifier types for exactness or subsetness, if
-   allowed. Returns 0 for mismatch, 1 for same, 2 if B is allowed by A.
+   allowed. Returns false for mismatch, true for match (same, or
+   derived and !exact).
  
    [except.spec] "If a class X ... objects of class X or any class publicly
    and unambigously derrived from X. Similarly, if a pointer type Y * ...
@@ -753,17 +747,15 @@ common_type (t1, t2)
    
    We implement the letter of the standard.  */
 
-static int
-comp_except_types (a, b, exact)
-     tree a, b;
-     int exact;
+static bool
+comp_except_types (tree a, tree b, bool exact)
 {
   if (same_type_p (a, b))
-    return 1;
+    return true;
   else if (!exact)
     {
       if (cp_type_quals (a) || cp_type_quals (b))
-        return 0;
+        return false;
       
       if (TREE_CODE (a) == POINTER_TYPE
           && TREE_CODE (b) == POINTER_TYPE)
@@ -771,43 +763,41 @@ comp_except_types (a, b, exact)
           a = TREE_TYPE (a);
           b = TREE_TYPE (b);
           if (cp_type_quals (a) || cp_type_quals (b))
-            return 0;
+            return false;
         }
       
       if (TREE_CODE (a) != RECORD_TYPE
           || TREE_CODE (b) != RECORD_TYPE)
-        return 0;
+        return false;
       
       if (ACCESSIBLY_UNIQUELY_DERIVED_P (a, b))
-        return 2;
+        return true;
     }
-  return 0;
+  return false;
 }
 
-/* Return 1 if TYPE1 and TYPE2 are equivalent exception specifiers.
-   If EXACT is 0, T2 can be stricter than T1 (according to 15.4/7),
+/* Return true if TYPE1 and TYPE2 are equivalent exception specifiers.
+   If EXACT is false, T2 can be stricter than T1 (according to 15.4/7),
    otherwise it must be exact. Exception lists are unordered, but
    we've already filtered out duplicates. Most lists will be in order,
    we should try to make use of that.  */
 
-int
-comp_except_specs (t1, t2, exact)
-     tree t1, t2;
-     int exact;
+bool
+comp_except_specs (tree t1, tree t2, bool exact)
 {
   tree probe;
   tree base;
   int  length = 0;
 
   if (t1 == t2)
-    return 1;
+    return true;
   
   if (t1 == NULL_TREE)              /* T1 is ...  */
     return t2 == NULL_TREE || !exact;
   if (!TREE_VALUE (t1)) /* t1 is EMPTY */
     return t2 != NULL_TREE && !TREE_VALUE (t2);
   if (t2 == NULL_TREE)              /* T2 is ...  */
-    return 0;
+    return false;
   if (TREE_VALUE (t1) && !TREE_VALUE (t2)) /* T2 is EMPTY, T1 is not */
     return !exact;
   
@@ -831,27 +821,25 @@ comp_except_specs (t1, t2, exact)
             }
         }
       if (probe == NULL_TREE)
-        return 0;
+        return false;
     }
   return !exact || base == NULL_TREE || length == list_length (t1);
 }
 
-/* Compare the array types T1 and T2.  STRICT is as for comptypes.  */
+/* Compare the array types T1 and T2.  ALLOW_REDECLARATION is true if
+   [] can match [size].  */
 
 static bool
-comp_array_types (t1, t2, strict)
-     tree t1, t2;
-     int strict;
+comp_array_types (tree t1, tree t2, bool allow_redeclaration)
 {
   tree d1;
   tree d2;
 
   if (t1 == t2)
-    return 1;
+    return true;
 
   /* The type of the array elements must be the same.  */
-  if (!comptypes (TREE_TYPE (t1), TREE_TYPE (t2), 
-		 strict & ~COMPARE_REDECLARATION))
+  if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
     return false;
 
   d1 = TYPE_DOMAIN (t1);
@@ -873,7 +861,7 @@ comp_array_types (t1, t2, strict)
        array types that differ by the presence or absence of a major
        array bound (_dcl.array_).  */
   if (!d1 || !d2)
-    return strict & COMPARE_REDECLARATION;
+    return allow_redeclaration;
 
   /* Check that the dimensions are the same.  */
   return (cp_tree_equal (TYPE_MIN_VALUE (d1), TYPE_MIN_VALUE (d2))
@@ -884,17 +872,10 @@ comp_array_types (t1, t2, strict)
    is a bitwise-or of the COMPARE_* flags.  */
 
 bool
-comptypes (t1, t2, strict)
-     tree t1;
-     tree t2;
-     int strict;
+comptypes (tree t1, tree t2, int strict)
 {
-  int orig_strict = strict;
-
   if (t1 == t2)
     return true;
-
-  strict &= ~(COMPARE_REDECLARATION | COMPARE_BASE | COMPARE_DERIVED);
 
   /* This should never happen.  */
   my_friendly_assert (t1 != error_mark_node, 307);
@@ -970,7 +951,7 @@ comptypes (t1, t2, strict)
       if (TREE_CODE (t1) == TEMPLATE_TEMPLATE_PARM)
 	return true;
       /* Don't check inheritance.  */
-      orig_strict = COMPARE_STRICT;
+      strict = COMPARE_STRICT;
       /* fall through */
 
     case RECORD_TYPE:
@@ -981,34 +962,32 @@ comptypes (t1, t2, strict)
 	  && comp_template_args (TYPE_TI_ARGS (t1), TYPE_TI_ARGS (t2)))
 	return true;
       
-      if ((orig_strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
+      if ((strict & COMPARE_BASE) && DERIVED_FROM_P (t1, t2))
 	return true;
-      else if ((orig_strict & COMPARE_DERIVED) && DERIVED_FROM_P (t2, t1))
+      else if ((strict & COMPARE_DERIVED) && DERIVED_FROM_P (t2, t1))
 	return true;
       
       return false;
 
     case OFFSET_TYPE:
       if (!comptypes (TYPE_OFFSET_BASETYPE (t1), TYPE_OFFSET_BASETYPE (t2),
-		      orig_strict))
+		      strict & ~COMPARE_REDECLARATION))
 	return false;
-      return comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict);
+      /* FALLTHROUGH*/
 
     case POINTER_TYPE:
     case REFERENCE_TYPE:
-      return comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict);
+      return same_type_p (TREE_TYPE (t1), TREE_TYPE (t2));
 
     case METHOD_TYPE:
     case FUNCTION_TYPE:
-      if (!comptypes (TREE_TYPE (t1), TREE_TYPE (t2), strict))
+      if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;
       return compparms (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
 
     case ARRAY_TYPE:
-      /* Target types must match incl. qualifiers.  We use ORIG_STRICT
-	 here since this is the one place where
-	 COMPARE_REDECLARATION should be used.  */
-      return comp_array_types (t1, t2, orig_strict & COMPARE_REDECLARATION);
+      /* Target types must match incl. qualifiers. */
+      return comp_array_types (t1, t2, !!(strict & COMPARE_REDECLARATION));
 
     case TEMPLATE_TYPE_PARM:
       return (TEMPLATE_TYPE_IDX (t1) == TEMPLATE_TYPE_IDX (t2)
@@ -1038,9 +1017,7 @@ comptypes (t1, t2, strict)
    only in the same direction as the target type.  */
 
 static int
-comp_cv_target_types (ttl, ttr, nptrs)
-     tree ttl, ttr;
-     int nptrs;
+comp_cv_target_types (tree ttl, tree ttr, int nptrs)
 {
   int t;
 
@@ -1073,9 +1050,7 @@ comp_cv_target_types (ttl, ttr, nptrs)
    similar instead.  (jason 17 Apr 1997)  */
 
 int
-comp_target_types (ttl, ttr, nptrs)
-     tree ttl, ttr;
-     int nptrs;
+comp_target_types (tree ttl, tree ttr, int nptrs)
 {
   ttl = TYPE_MAIN_VARIANT (ttl);
   ttr = TYPE_MAIN_VARIANT (ttr);
@@ -1240,42 +1215,42 @@ comp_target_types (ttl, ttr, nptrs)
 
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */
 
-int
-at_least_as_qualified_p (type1, type2)
-     tree type1;
-     tree type2;
+bool
+at_least_as_qualified_p (tree type1, tree type2)
 {
+  int q1 = cp_type_quals (type1);
+  int q2 = cp_type_quals (type2);
+  
   /* All qualifiers for TYPE2 must also appear in TYPE1.  */
-  return ((cp_type_quals (type1) & cp_type_quals (type2))
-	  == cp_type_quals (type2));
+  return (q1 & q2) == q2;
 }
 
 /* Returns 1 if TYPE1 is more qualified than TYPE2.  */
 
-int
-more_qualified_p (type1, type2)
-     tree type1;
-     tree type2;
+bool
+more_qualified_p (tree type1, tree type2)
 {
-  return (cp_type_quals (type1) != cp_type_quals (type2)
-	  && at_least_as_qualified_p (type1, type2));
+  int q1 = cp_type_quals (type1);
+  int q2 = cp_type_quals (type2);
+
+  return q1 != q2 && (q1 & q2) == q2;
 }
 
 /* Returns 1 if TYPE1 is more cv-qualified than TYPE2, -1 if TYPE2 is
    more cv-qualified that TYPE1, and 0 otherwise.  */
 
 int
-comp_cv_qualification (type1, type2)
-     tree type1;
-     tree type2;
+comp_cv_qualification (tree type1, tree type2)
 {
-  if (cp_type_quals (type1) == cp_type_quals (type2))
+  int q1 = cp_type_quals (type1);
+  int q2 = cp_type_quals (type2);
+
+  if (q1 == q2)
     return 0;
 
-  if (at_least_as_qualified_p (type1, type2))
+  if ((q1 & q2) == q2)
     return 1;
-
-  else if (at_least_as_qualified_p (type2, type1))
+  else if ((q1 & q2) == q1)
     return -1;
 
   return 0;
@@ -1286,9 +1261,7 @@ comp_cv_qualification (type1, type2)
    are similar.  Returns -1 if the other way 'round, and 0 otherwise.  */
 
 int
-comp_cv_qual_signature (type1, type2)
-     tree type1;
-     tree type2;
+comp_cv_qual_signature (tree type1, tree type2)
 {
   if (comp_ptr_ttypes_real (type2, type1, -1))
     return 1;
@@ -1303,8 +1276,7 @@ comp_cv_qual_signature (type1, type2)
    returns ERROR_MARK_NODE.  */
 
 static tree
-common_base_type (tt1, tt2)
-     tree tt1, tt2;
+common_base_type (tree tt1, tree tt2)
 {
   tree best = NULL_TREE;
   int i;
@@ -1352,36 +1324,31 @@ common_base_type (tt1, tt2)
 
 /* Subroutines of `comptypes'.  */
 
-/* Return 1 if two parameter type lists PARMS1 and PARMS2 are
+/* Return true if two parameter type lists PARMS1 and PARMS2 are
    equivalent in the sense that functions with those parameter types
    can have equivalent types.  The two lists must be equivalent,
-   element by element.
+   element by element.  */
 
-   C++: See comment above about TYPE1, TYPE2.  */
-
-int
-compparms (parms1, parms2)
-     tree parms1, parms2;
+bool
+compparms (tree parms1, tree parms2)
 {
-  register tree t1 = parms1, t2 = parms2;
+  tree t1, t2;
 
   /* An unspecified parmlist matches any specified parmlist
      whose argument types don't need default promotions.  */
 
-  while (1)
+  for (t1 = parms1, t2 = parms2;
+       t1 || t2;
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
     {
-      if (t1 == 0 && t2 == 0)
-	return 1;
       /* If one parmlist is shorter than the other,
 	 they fail to match.  */
-      if (t1 == 0 || t2 == 0)
-	return 0;
+      if (!t1 || !t2)
+	return false;
       if (!same_type_p (TREE_VALUE (t2), TREE_VALUE (t1)))
-	return 0;
-
-      t1 = TREE_CHAIN (t1);
-      t2 = TREE_CHAIN (t2);
+	return false;
     }
+  return true;
 }
 
 /* This really wants return whether or not parameter type lists
@@ -1394,8 +1361,7 @@ compparms (parms1, parms2)
    (jason 17 Apr 1997)  */
 
 static int
-comp_target_parms (parms1, parms2)
-     tree parms1, parms2;
+comp_target_parms (tree parms1, tree parms2)
 {
   register tree t1 = parms1, t2 = parms2;
   int warn_contravariance = 0;
@@ -1461,10 +1427,7 @@ comp_target_parms (parms1, parms2)
 }
 
 tree
-cxx_sizeof_or_alignof_type (type, op, complain)
-     tree type;
-     enum tree_code op;
-     int complain;
+cxx_sizeof_or_alignof_type (tree type, enum tree_code op, int complain)
 {
   enum tree_code type_code;
   tree value;
@@ -1499,8 +1462,7 @@ cxx_sizeof_or_alignof_type (type, op, complain)
 }
 
 tree
-expr_sizeof (e)
-     tree e;
+expr_sizeof (tree e)
 {
   if (processing_template_decl)
     return build_min_nt (SIZEOF_EXPR, e);
@@ -1538,8 +1500,7 @@ expr_sizeof (e)
    constants are replaced by their values.  */
 
 tree
-decay_conversion (exp)
-     tree exp;
+decay_conversion (tree exp)
 {
   register tree type;
   register enum tree_code code;
@@ -1656,8 +1617,7 @@ decay_conversion (exp)
 }
 
 tree
-default_conversion (exp)
-     tree exp;
+default_conversion (tree exp)
 {
   tree type;
   enum tree_code code;
@@ -1681,8 +1641,7 @@ default_conversion (exp)
    or TREE_USED.  */
 
 tree
-inline_conversion (exp)
-     tree exp;
+inline_conversion (tree exp)
 {
   if (TREE_CODE (exp) == FUNCTION_DECL)
     exp = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (exp)), exp);
@@ -1694,9 +1653,7 @@ inline_conversion (exp)
    decay_conversion to one.  */
 
 int
-string_conv_p (totype, exp, warn)
-     tree totype, exp;
-     int warn;
+string_conv_p (tree totype, tree exp, int warn)
 {
   tree t;
 
@@ -1742,9 +1699,7 @@ string_conv_p (totype, exp, warn)
    get it there.  */
 
 static tree
-rationalize_conditional_expr (code, t)
-     enum tree_code code;
-     tree t;
+rationalize_conditional_expr (enum tree_code code, tree t)
 {
   /* For MIN_EXPR or MAX_EXPR, fold-const.c has arranged things so that
      the first operand is always the one to be used if both operands
@@ -1772,8 +1727,7 @@ rationalize_conditional_expr (code, t)
    that are directly reachable.  */
 
 static tree
-lookup_anon_field (t, type)
-     tree t, type;
+lookup_anon_field (tree t, tree type)
 {
   tree field;
 
@@ -4068,10 +4022,7 @@ build_nop (tree type, tree expr)
    (such as from short to int).  */
 
 tree
-build_unary_op (code, xarg, noconvert)
-     enum tree_code code;
-     tree xarg;
-     int noconvert;
+build_unary_op (enum tree_code code, tree xarg, int noconvert)
 {
   /* No default_conversion here.  It causes trouble for ADDR_EXPR.  */
   register tree arg = xarg;
@@ -4522,9 +4473,7 @@ build_unary_op (code, xarg, noconvert)
    If ARG is not a kind of expression we can handle, return zero.  */
    
 tree
-unary_complex_lvalue (code, arg)
-     enum tree_code code;
-     tree arg;
+unary_complex_lvalue (enum tree_code code, tree arg)
 {
   /* Handle (a, b) used as an "lvalue".  */
   if (TREE_CODE (arg) == COMPOUND_EXPR)
@@ -4661,8 +4610,7 @@ unary_complex_lvalue (code, arg)
    C++: we do not allow `current_class_ptr' to be addressable.  */
 
 bool
-cxx_mark_addressable (exp)
-     tree exp;
+cxx_mark_addressable (tree exp)
 {
   register tree x = exp;
 
@@ -4727,8 +4675,7 @@ cxx_mark_addressable (exp)
 /* Build and return a conditional expression IFEXP ? OP1 : OP2.  */
 
 tree
-build_x_conditional_expr (ifexp, op1, op2)
-     tree ifexp, op1, op2;
+build_x_conditional_expr (tree ifexp, tree op1, tree op2)
 {
   if (processing_template_decl)
     return build_min_nt (COND_EXPR, ifexp, op1, op2);
@@ -4740,8 +4687,7 @@ build_x_conditional_expr (ifexp, op1, op2)
    this function just builds an expression list.  */
 
 tree
-build_x_compound_expr (list)
-     tree list;
+build_x_compound_expr (tree list)
 {
   tree rest = TREE_CHAIN (list);
   tree result;
@@ -4784,8 +4730,7 @@ build_x_compound_expr (list)
    that performs them all and returns the value of the last of them.  */
 
 tree
-build_compound_expr (list)
-     tree list;
+build_compound_expr (tree list)
 {
   register tree rest;
   tree first;
@@ -4820,8 +4765,7 @@ build_compound_expr (list)
 }
 
 tree
-build_static_cast (type, expr)
-   tree type, expr;
+build_static_cast (tree type, tree expr)
 {
   tree intype;
   int ok;
@@ -4933,8 +4877,7 @@ build_static_cast (type, expr)
 }
 
 tree
-build_reinterpret_cast (type, expr)
-   tree type, expr;
+build_reinterpret_cast (tree type, tree expr)
 {
   tree intype;
 
@@ -5024,8 +4967,7 @@ build_reinterpret_cast (type, expr)
 }
 
 tree
-build_const_cast (type, expr)
-   tree type, expr;
+build_const_cast (tree type, tree expr)
 {
   tree intype;
 
@@ -5094,8 +5036,7 @@ build_const_cast (type, expr)
    when doing the cast.  */
 
 tree
-build_c_cast (type, expr)
-     tree type, expr;
+build_c_cast (tree type, tree expr)
 {
   register tree value = expr;
   tree otype;
@@ -5261,10 +5202,7 @@ build_c_cast (type, expr)
    C++: If MODIFYCODE is INIT_EXPR, then leave references unbashed.  */
 
 tree
-build_modify_expr (lhs, modifycode, rhs)
-     tree lhs;
-     enum tree_code modifycode;
-     tree rhs;
+build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 {
   register tree result;
   tree newrhs = rhs;
@@ -5627,10 +5565,7 @@ build_modify_expr (lhs, modifycode, rhs)
 }
 
 tree
-build_x_modify_expr (lhs, modifycode, rhs)
-     tree lhs;
-     enum tree_code modifycode;
-     tree rhs;
+build_x_modify_expr (tree lhs, enum tree_code modifycode, tree rhs)
 {
   if (processing_template_decl)
     return build_min_nt (MODOP_EXPR, lhs,
@@ -5657,9 +5592,7 @@ build_x_modify_expr (lhs, modifycode, rhs)
    a pointer to member of FROM to a pointer to member of TO.  */
 
 static tree
-get_delta_difference (from, to, force)
-     tree from, to;
-     int force;
+get_delta_difference (tree from, tree to, int force)
 {
   tree delta = integer_zero_node;
   tree binfo;
@@ -5722,8 +5655,7 @@ get_delta_difference (from, to, force)
    the other components as specified.  */
 
 tree
-build_ptrmemfunc1 (type, delta, pfn)
-     tree type, delta, pfn;
+build_ptrmemfunc1 (tree type, tree delta, tree pfn)
 {
   tree u = NULL_TREE;
   tree delta_field;
@@ -5761,9 +5693,7 @@ build_ptrmemfunc1 (type, delta, pfn)
    Return error_mark_node, if something goes wrong.  */
 
 tree
-build_ptrmemfunc (type, pfn, force)
-     tree type, pfn;
-     int force;
+build_ptrmemfunc (tree type, tree pfn, int force)
 {
   tree fn;
   tree pfn_type;
@@ -5848,10 +5778,7 @@ build_ptrmemfunc (type, pfn, force)
    integer_type_node.  */
 
 void
-expand_ptrmemfunc_cst (cst, delta, pfn)
-     tree cst;
-     tree *delta;
-     tree *pfn;
+expand_ptrmemfunc_cst (tree cst, tree *delta, tree *pfn)
 {
   tree type = TREE_TYPE (cst);
   tree fn = PTRMEM_CST_MEMBER (cst);
@@ -5914,8 +5841,7 @@ expand_ptrmemfunc_cst (cst, delta, pfn)
    given by T.  */
 
 tree
-pfn_from_ptrmemfunc (t)
-     tree t;
+pfn_from_ptrmemfunc (tree t)
 {
   if (TREE_CODE (t) == PTRMEM_CST)
     {
@@ -5935,12 +5861,8 @@ pfn_from_ptrmemfunc (t)
    marked EXPR.  */
 
 tree
-dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
-     tree type;
-     tree expr;
-     const char *errtype;
-     tree fndecl;
-     int parmnum;
+dubious_conversion_warnings (tree type, tree expr,
+			     const char *errtype, tree fndecl, int parmnum)
 {
   if (TREE_CODE (type) == REFERENCE_TYPE)
     type = TREE_TYPE (type);
@@ -5995,11 +5917,8 @@ dubious_conversion_warnings (type, expr, errtype, fndecl, parmnum)
    FNDECL.  */
 
 static tree
-convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
-     tree type, rhs;
-     const char *errtype;
-     tree fndecl;
-     int parmnum;
+convert_for_assignment (tree type, tree rhs,
+			const char *errtype, tree fndecl, int parmnum)
 {
   register enum tree_code codel = TREE_CODE (type);
   register tree rhstype;
@@ -6099,12 +6018,8 @@ convert_for_assignment (type, rhs, errtype, fndecl, parmnum)
    If flags doesn't include LOOKUP_COMPLAIN, don't complain about anything.  */
 
 tree
-convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
-     tree exp, type, rhs;
-     int flags;
-     const char *errtype;
-     tree fndecl;
-     int parmnum;
+convert_for_initialization (tree exp, tree type, tree rhs, int flags,
+			    const char *errtype, tree fndecl, int parmnum)
 {
   register enum tree_code codel = TREE_CODE (type);
   register tree rhstype;
@@ -6194,11 +6109,8 @@ convert_for_initialization (exp, type, rhs, flags, errtype, fndecl, parmnum)
    up operands that are expected to be in memory.  */
 
 void
-c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
-     tree string, outputs, inputs, clobbers;
-     int vol;
-     const char *filename;
-     int line;
+c_expand_asm_operands (tree string, tree outputs, tree inputs, tree clobbers,
+		       int vol, const char *filename, int line)
 {
   int noutputs = list_length (outputs);
   register int i;
@@ -6248,8 +6160,7 @@ c_expand_asm_operands (string, outputs, inputs, clobbers, vol, filename, line)
    temporary give an appropraite warning.  */
 
 static void
-maybe_warn_about_returning_address_of_local (retval)
-     tree retval;
+maybe_warn_about_returning_address_of_local (tree retval)
 {
   tree valtype = TREE_TYPE (DECL_RESULT (current_function_decl));
   tree whats_returned = retval;
@@ -6309,8 +6220,7 @@ maybe_warn_about_returning_address_of_local (retval)
    the DECL_RESULT for the function.  */
 
 tree
-check_return_expr (retval)
-     tree retval;
+check_return_expr (tree retval)
 {
   tree result;
   /* The type actually returned by the function, after any
@@ -6500,9 +6410,7 @@ check_return_expr (retval)
    const-qualified.  */
 
 static int
-comp_ptr_ttypes_real (to, from, constp)
-     tree to, from;
-     int constp;
+comp_ptr_ttypes_real (tree to, tree from, int constp)
 {
   int to_more_cv_qualified = 0;
 
@@ -6546,8 +6454,7 @@ comp_ptr_ttypes_real (to, from, constp)
    types to this function.  */
 
 int
-comp_ptr_ttypes (to, from)
-     tree to, from;
+comp_ptr_ttypes (tree to, tree from)
 {
   return comp_ptr_ttypes_real (to, from, 1);
 }
@@ -6556,8 +6463,7 @@ comp_ptr_ttypes (to, from)
    type or inheritance-related types, regardless of cv-quals.  */
 
 int
-ptr_reasonably_similar (to, from)
-     tree to, from;
+ptr_reasonably_similar (tree to, tree from)
 {
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
@@ -6592,8 +6498,7 @@ ptr_reasonably_similar (to, from)
 /* Like comp_ptr_ttypes, for const_cast.  */
 
 static int
-comp_ptr_ttypes_const (to, from)
-     tree to, from;
+comp_ptr_ttypes_const (tree to, tree from)
 {
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
     {
@@ -6613,8 +6518,7 @@ comp_ptr_ttypes_const (to, from)
 /* Like comp_ptr_ttypes, for reinterpret_cast.  */
 
 static int
-comp_ptr_ttypes_reinterpret (to, from)
-     tree to, from;
+comp_ptr_ttypes_reinterpret (tree to, tree from)
 {
   int constp = 1;
 
@@ -6649,8 +6553,7 @@ comp_ptr_ttypes_reinterpret (to, from)
    elements for an array type.  */
 
 int
-cp_type_quals (type)
-     tree type;
+cp_type_quals (tree type)
 {
   type = strip_array_types (type);
   if (type == error_mark_node)
@@ -6660,9 +6563,8 @@ cp_type_quals (type)
 
 /* Returns nonzero if the TYPE contains a mutable member */
 
-int
-cp_has_mutable_p (type)
-     tree type;
+bool
+cp_has_mutable_p (tree type)
 {
   type = strip_array_types (type);
 
@@ -6674,9 +6576,7 @@ cp_has_mutable_p (type)
    if and only if there is no implicit conversion from T1 to T2.  */
 
 static void
-casts_away_constness_r (t1, t2)
-     tree *t1;
-     tree *t2;
+casts_away_constness_r (tree *t1, tree *t2)
 {
   int quals1;
   int quals2;
@@ -6734,10 +6634,8 @@ casts_away_constness_r (t1, t2)
 /* Returns nonzero if casting from TYPE1 to TYPE2 casts away
    constness.  */
 
-static int
-casts_away_constness (t1, t2)
-     tree t1;
-     tree t2;
+static bool
+casts_away_constness (tree t1, tree t2)
 {
   if (TREE_CODE (t2) == REFERENCE_TYPE)
     {
@@ -6747,8 +6645,7 @@ casts_away_constness (t1, t2)
 	 using a reference cast casts away constness if a cast from an
 	 rvalue of type "pointer to T1" to the type "pointer to T2"
 	 casts away constness.  */
-      t1 = (TREE_CODE (t1) == REFERENCE_TYPE
-	    ? TREE_TYPE (t1) : t1);
+      t1 = (TREE_CODE (t1) == REFERENCE_TYPE ? TREE_TYPE (t1) : t1);
       return casts_away_constness (build_pointer_type (t1),
 				   build_pointer_type (TREE_TYPE (t2)));
     }
@@ -6769,16 +6666,16 @@ casts_away_constness (t1, t2)
      pointer or reference types.  */
   if (TREE_CODE (t1) != POINTER_TYPE 
       || TREE_CODE (t2) != POINTER_TYPE)
-    return 0;
+    return false;
 
   /* Top-level qualifiers don't matter.  */
   t1 = TYPE_MAIN_VARIANT (t1);
   t2 = TYPE_MAIN_VARIANT (t2);
   casts_away_constness_r (&t1, &t2);
   if (!can_convert (t2, t1))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
 /* Returns TYPE with its cv qualifiers removed
@@ -6787,8 +6684,7 @@ casts_away_constness (t1, t2)
    above are those of the array members.)  */
 
 static tree
-strip_all_pointer_quals (type)
-     tree type;
+strip_all_pointer_quals (tree type)
 {
   if (TREE_CODE (type) == POINTER_TYPE)
     return build_pointer_type (strip_all_pointer_quals (TREE_TYPE (type)));
