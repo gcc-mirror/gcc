@@ -1,3 +1,8 @@
+1999-03-24  Martin von Löwis  <loewis@informatik.hu-berlin.de>
+
+	* class.c (finish_struct_1): Always reset TYPE_FIELDS for empty
+	classes.
+
 1999-03-24  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl.c (lookup_name_real): Do nested field lookup regardless of
