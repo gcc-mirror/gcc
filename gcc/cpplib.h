@@ -668,22 +668,7 @@ typedef struct if_stack IF_STACK_FRAME;
    Watch out: on some crazy hosts `long' is shorter than `int'.  */
 
 #ifndef HOST_WIDE_INT
-# if HAVE_INTTYPES_H
-#  include <inttypes.h>
-#  define HOST_WIDE_INT intmax_t
-# else
-#  if (HOST_BITS_PER_LONG <= HOST_BITS_PER_INT \
-       && HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_INT)
-#   define HOST_WIDE_INT int
-#  else
-#  if (HOST_BITS_PER_LONGLONG <= HOST_BITS_PER_LONG \
-       || ! (defined LONG_LONG_MAX || defined LLONG_MAX))
-#   define HOST_WIDE_INT long
-#  else
-#   define HOST_WIDE_INT long long
-#  endif
-#  endif
-# endif
+#include "machmode.h"
 #endif
 
 extern void cpp_buf_line_and_col PARAMS((cpp_buffer *, long *, long *));
