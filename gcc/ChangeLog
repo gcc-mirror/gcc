@@ -1,3 +1,7 @@
+2000-02-28  Nick Clifton  <nickc@cygnus.com>
+
+	* config/arm/arm-wince-pe.h (SIZE_TYPE): Define to "unsigned long".
+
 Mon Feb 28 14:21:15 2000  Catherine Moore  <clm@cygnus.com>
 
 	* config/pa/som.h (MAKE_DECL_ONE_ONLY): Define.
