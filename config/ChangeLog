@@ -1,3 +1,7 @@
+2003-05-14  Kelley Cook  <kelleycook@wideopenwest.com>
+
+	* acinclude.m4: Accept i[3456789]86 for machine type.
+
 2003-05-18  Nathanael Nerode  <neroden@gcc.gnu.org>
 
 	* config/acx.m4: Introduce _GCC_TOPLEV_NONCANONICAL_BUILD,

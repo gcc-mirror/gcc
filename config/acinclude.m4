@@ -788,7 +788,7 @@ dnl Yes, this is ugly, and only used for a canadian cross anyway. This
 dnl is just to keep configure from stopping here.
 case "${host}" in
 changequote(,)
-   i[3456]86-*-*) ac_cv_c_little_endian=yes ;;
+   i[3456789]86-*-*) ac_cv_c_little_endian=yes ;;
    sparc*-*-*)    ac_cv_c_little_endian=no ;;
 changequote([,])
   *)    AC_MSG_WARN(Can't cross compile this test) ;;
