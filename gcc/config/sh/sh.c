@@ -1400,16 +1400,24 @@ andcosts (RTX)
      rtx RTX;
 {
   int i;
+  /* Anding with a register is a single cycle and instruction.  */
   if (GET_CODE (XEXP (RTX, 1)) != CONST_INT)
-    return 2;
+    return 1;
   i = INTVAL (XEXP (RTX, 1));
-  /* And can use the extend insns cheaply.  */
+  /* These constants are single cycle extu.[bw] instructions.  */
   if (i == 0xff || i == 0xffff)
+    return 1;
+  /* Constants that can be used in an and immediate instruction is a single
+     cycle, but this requires r0, so make it a little more expensive.  */
+  if (CONST_OK_FOR_L (i))
     return 2;
-  /* Any small constant is reasonably cheap - but requires r0.  */
+  /* Constants that can be loaded with a mov immediate and an and.
+     This case is probably unnecessary.  */
   if (CONST_OK_FOR_I (i))
-    return 3;
-  return 5;
+    return 2;
+  /* Any other constants requires a 2 cycle pc-relative load plus an and.
+     This case is probably unnecessary.  */
+  return 3;
 }
 
 /* Return the cost of a multiply.  */
