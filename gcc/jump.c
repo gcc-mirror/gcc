@@ -2004,19 +2004,34 @@ comparison_dominates_p (code1, code2)
 
   switch (code1)
     {
+    case UNEQ:
+      if (code2 == UNLE || code2 == UNGE)
+	return 1;
+      break;
+
     case EQ:
       if (code2 == LE || code2 == LEU || code2 == GE || code2 == GEU
 	  || code2 == ORDERED)
 	return 1;
       break;
 
+    case UNLT:
+      if (code2 == UNLE || code2 == NE)
+	return 1;
+      break;
+
     case LT:
-      if (code2 == LE || code2 == NE || code2 == ORDERED)
+      if (code2 == LE || code2 == NE || code2 == ORDERED || code2 == LTGT)
+	return 1;
+      break;
+
+    case UNGT:
+      if (code2 == UNGE || code2 == NE)
 	return 1;
       break;
 
     case GT:
-      if (code2 == GE || code2 == NE || code2 == ORDERED)
+      if (code2 == GE || code2 == NE || code2 == ORDERED || code2 == LTGT)
 	return 1;
       break;
 
@@ -2042,7 +2057,8 @@ comparison_dominates_p (code1, code2)
       break;
 
     case UNORDERED:
-      if (code2 == NE)
+      if (code2 == NE || code2 == UNEQ || code2 == UNLE || code2 == UNLT
+	  || code2 == UNGE || code2 == UNGT)
 	return 1;
       break;
 
