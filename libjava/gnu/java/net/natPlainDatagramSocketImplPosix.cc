@@ -602,9 +602,27 @@ gnu::java::net::PlainDatagramSocketImpl::setOption (jint optID,
         return;
 	
       case _Jv_IP_MULTICAST_LOOP_ :
-        throw new ::java::net::SocketException (
-          JvNewStringUTF ("IP_MULTICAST_LOOP: not yet implemented"));
-        return;
+	haddress = ((::java::net::InetAddress *) value)->addr;
+	len = haddress->length;
+	if (len == 4)
+	  {
+	    level = IPPROTO_IP;
+	    opname = IP_MULTICAST_LOOP;
+	  }
+#if defined (HAVE_INET6) && defined (IPV6_MULTICAST_LOOP)
+	else if (len == 16)
+	  {
+	    level = IPPROTO_IPV6;
+	    opname = IPV6_MULTICAST_LOOP;
+	  }
+#endif
+	else
+	  throw
+	    new ::java::net::SocketException (JvNewStringUTF ("invalid address length"));
+	if (::setsockopt (native_fd, level, opname, (char *) &val,
+			  val_len) != 0)
+	  goto error;
+	return;
 	
       case _Jv_IP_TOS_ :
         if (::setsockopt (native_fd, SOL_SOCKET, IP_TOS, (char *) &val,
@@ -631,6 +649,7 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
   socklen_t val_len = sizeof(val);
   union SockAddr u;
   socklen_t addrlen = sizeof(u);
+  int level, opname;
 
   switch (optID)
     {
@@ -738,8 +757,47 @@ gnu::java::net::PlainDatagramSocketImpl::getOption (jint optID)
         break;
 	
       case _Jv_IP_MULTICAST_LOOP_ :
-	if (::getsockopt (native_fd, SOL_SOCKET, IP_MULTICAST_LOOP, (char *) &val,
-	    &val_len) != 0)
+	// cache the local address
+	if (localAddress == NULL)
+	  {	
+	    jbyteArray laddr;
+	    if (::getsockname (native_fd, (sockaddr*) &u, &addrlen) != 0)
+	      goto error;
+	    if (u.address.sin_family == AF_INET)
+	      {
+		laddr = JvNewByteArray (4);
+		memcpy (elements (laddr), &u.address.sin_addr, 4);
+	      }
+#ifdef HAVE_INET6
+            else if (u.address.sin_family == AF_INET6)
+	      {
+		laddr = JvNewByteArray (16);
+		memcpy (elements (laddr), &u.address6.sin6_addr, 16);
+	      }
+#endif
+	    else
+	      throw new ::java::net::SocketException (
+			      JvNewStringUTF ("invalid family"));
+	    localAddress = new ::java::net::InetAddress (laddr, NULL);
+	    
+	  }
+	if (localAddress->addr->length == 4) 
+	  {
+	    level = IPPROTO_IP;
+	    opname = IP_MULTICAST_LOOP;
+	  }
+#if defined (HAVE_INET6) && defined (IPV6_MULTICAST_LOOP)
+	else if (localAddress->addr->length == 16)
+	  {
+	    level = IPPROTO_IPV6;
+	    opname = IPV6_MULTICAST_LOOP;
+	  }
+#endif
+	else
+	  throw
+	    new ::java::net::SocketException (JvNewStringUTF ("invalid address length"));
+	if (::getsockopt (native_fd, level, opname, (char *) &val,
+			  &val_len) != 0)
 	  goto error;
 	return new ::java::lang::Boolean (val != 0);
 	
