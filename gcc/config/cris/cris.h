@@ -170,9 +170,17 @@ extern const char *cris_elinux_stacksize_str;
    %{!melinux:%{!maout|melf:%{!fno-vtable-gc:-fvtable-gc}}}}}".  */
 #define CC1PLUS_SPEC ""
 
+#ifdef HAVE_AS_MUL_BUG_ABORT_OPTION
+#define MAYBE_AS_NO_MUL_BUG_ABORT \
+ "%{mno-mul-bug-workaround:-no-mul-bug-abort} "
+#else
+#define MAYBE_AS_NO_MUL_BUG_ABORT
+#endif
+
 /* Override previous definitions (linux.h).  */
 #undef ASM_SPEC
 #define ASM_SPEC \
+ MAYBE_AS_NO_MUL_BUG_ABORT \
  "%{v:-v}\
   %(asm_subtarget)"
 
@@ -331,8 +339,34 @@ extern int target_flags;
 #define TARGET_MASK_AVOID_GOTPLT 8192
 #define TARGET_AVOID_GOTPLT (target_flags & TARGET_MASK_AVOID_GOTPLT)
 
+/* Whether or not to work around multiplication instruction hardware bug
+   when generating code for models where it may be present.  From the
+   trouble report for Etrax 100 LX: "A multiply operation may cause
+   incorrect cache behaviour under some specific circumstances. The
+   problem can occur if the instruction following the multiply instruction
+   causes a cache miss, and multiply operand 1 (source operand) bits
+   [31:27] matches the logical mapping of the mode register address
+   (0xb0....), and bits [9:2] of operand 1 matches the TLB register
+   address (0x258-0x25f).  There is such a mapping in kernel mode or when
+   the MMU is off.  Normally there is no such mapping in user mode, and
+   the problem will therefore probably not occur in Linux user mode
+   programs."
+
+   We have no sure-fire way to know from within GCC that we're compiling a
+   user program.  For example, -fpic/PIC is used in libgcc which is linked
+   into the kernel.  However, the workaround option -mno-mul-bug can be
+   safely used per-package when compiling programs.  The same goes for
+   general user-only libraries such as glibc, since there's no user-space
+   driver-like program that gets a mapping of I/O registers (all on the
+   same page, including the TLB registers).  */
+#define TARGET_MASK_MUL_BUG 16384
+#define TARGET_MUL_BUG (target_flags & TARGET_MASK_MUL_BUG)
+
 #define TARGET_SWITCHES							\
  {									\
+  {"mul-bug-workaround",		 TARGET_MASK_MUL_BUG,		\
+   N_("Work around bug in multiplication instruction")},		\
+  {"no-mul-bug-workaround",		-TARGET_MASK_MUL_BUG, ""},	\
   /* No "no-etrax" as it does not really imply any model.		\
      On the other hand, "etrax" implies the common (and large)		\
      subset matching all models.  */					\
@@ -410,7 +444,7 @@ extern int target_flags;
 # define TARGET_DEFAULT \
  (TARGET_MASK_SIDE_EFFECT_PREFIXES + TARGET_MASK_STACK_ALIGN \
   + TARGET_MASK_CONST_ALIGN + TARGET_MASK_DATA_ALIGN \
-  + TARGET_MASK_PROLOGUE_EPILOGUE)
+  + TARGET_MASK_PROLOGUE_EPILOGUE + TARGET_MASK_MUL_BUG)
 #endif
 
 /* For the cris-*-elf subtarget.  */
@@ -1622,7 +1656,8 @@ call_ ## FUNC (void)						\
  cris_print_operand (FILE, X, CODE)
 
 /* For delay-slot handling.  */
-#define PRINT_OPERAND_PUNCT_VALID_P(CODE) (CODE == '#')
+#define PRINT_OPERAND_PUNCT_VALID_P(CODE)	\
+ ((CODE) == '#' || (CODE) == '!')
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)	\
    cris_print_operand_address (FILE, ADDR)

@@ -1,3 +1,26 @@
+2004-03-08  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/14471
+	* doc/invoke.texi (CRIS Options): Document -mmul-bug-workaround
+	and -mno-mul-bug-workaround.
+	* config/cris/cris.md ("smulsi3_highpart", "umulsi3_highpart")
+	("mulsidi3", "umulsidi3"): Prefix output template with "%!".
+	("umulhisi3", "umulqihi3", "mulsi3", "mulqihi3", "mulhisi3"):
+	Ditto.  Make attribute "slottable" dependent on TARGET_MUL_BUG.
+	* config/cris/mulsi3.asm (__Mul) [__CRIS_arch_version >= 10]: Make
+	sure mulu.d is not last on cache-line.
+	* config/cris/cris.h (ASM_SPEC): Translate -mno-mul-bug-workaround
+	into -no-mul-bug-abort depending on HAVE_AS_MUL_BUG_ABORT_OPTION.
+	(TARGET_MASK_MUL_BUG, TARGET_MUL_BUG): New macros.
+	(TARGET_SWITCHES): New options -mmul-bug-workaround and
+	-mno-mul-bug-workaround.
+	(TARGET_DEFAULT): Include TARGET_MASK_MUL_BUG.
+	(PRINT_OPERAND_PUNCT_VALID_P): Include '!'.
+	* config/cris/cris.c (cris_operand_extend_operator): Clarify
+	relation to MULT in head comment.
+	(cris_op_str): Abort for MULT.
+	(cris_print_operand) <case '!'>: New case.
+
 2004-03-06  Richard Henderson  <rth@redhat.com>
 
         * config/alpha/alpha.c (alpha_in_small_data_p): False for functions.

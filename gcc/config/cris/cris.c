@@ -312,7 +312,10 @@ cris_commutative_orth_op (x, mode)
 	   || code == IOR || code == AND || code == UMIN));
 }
 
-/* Check if MODE is same as mode for X, and X is PLUS or MINUS or UMIN.  */
+/* Check if MODE is same as mode for X, and X is PLUS or MINUS or UMIN.
+   By the name, you might think we should include MULT.  We don't because
+   it doesn't accept the same addressing modes as the others (ony
+   registers) and there's also the problem of handling TARGET_MUL_BUG.  */
 
 int
 cris_operand_extend_operator (x, mode)
@@ -496,7 +499,11 @@ cris_op_str (x)
       break;
 
     case MULT:
-      return "mul";
+      /* This function is for retrieving a part of an instruction name for
+	 an operator, for immediate output.  If that ever happens for
+	 MULT, we need to apply TARGET_MUL_BUG in the caller.  Make sure
+	 we notice.  */
+      abort ();
       break;
 
     case DIV:
@@ -1399,6 +1406,23 @@ cris_print_operand (file, x, code)
 	 This method stolen from the sparc files.  */
       if (dbr_sequence_length () == 0)
 	fputs ("\n\tnop", file);
+      return;
+
+    case '!':
+      /* Output directive for alignment padded with "nop" insns.
+	 Optimizing for size, it's plain 4-byte alignment, otherwise we
+	 align the section to a cache-line (32 bytes) and skip at max 2
+	 bytes, i.e. we skip if it's the last insn on a cache-line.  The
+	 latter is faster by a small amount (for two test-programs 99.6%
+	 and 99.9%) and larger by a small amount (ditto 100.1% and
+	 100.2%).  This is supposed to be the simplest yet performance-
+	 wise least intrusive way to make sure the immediately following
+	 (supposed) muls/mulu insn isn't located at the end of a
+	 cache-line.  */
+      if (TARGET_MUL_BUG)
+	fputs (optimize_size
+	       ? ".p2alignw 2,0x050f\n\t"
+	       : ".p2alignw 5,0x050f,2\n\t", file);
       return;
 
     case 'H':
