@@ -1,5 +1,7 @@
 Tue May 25 01:21:16 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* gcc.c-torture/execute/990525-2.c: New test.
+
 	* gcc.c-torture/execute/990525-1.c: New test.
 
 1999-05-24  Nathan Sidwell  <nathan@acm.org>
