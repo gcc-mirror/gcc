@@ -1,3 +1,15 @@
+2001-06-20  Aldy Hernandez  <aldyh@redhat.com>
+
+	* config/sh/sh.md (interrupt_function): Use
+	current_function_interrupt.
+	(define_delay): Schedule in delay slot if TARGET_SH3, even if it is
+	an interrupt function.
+
+	* config/sh/sh.h (current_function_interrupt): Define extern.
+
+	* config/sh/sh.c (current_function_interrupt): New global.
+	(sh_expand_prologue): Set current_function_interrupt.
+
 2001-06-21  Phil Edwards  <pme@sources.redhat.com>
 
 	* doc/install.texi:  Add 'c' to list of --enable-languages choices.
