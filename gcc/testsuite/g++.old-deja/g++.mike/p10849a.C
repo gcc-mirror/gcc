@@ -21,7 +21,7 @@ struct C : public A
 struct D : public B, public C
 {
   virtual int g() {
-    int D::*pmd = &C::comm;
+    int D::*pmd = (int C::*)&C::comm;
     return (this->*pmd) == 42;
   }
   D() : B(41), C(42) { }
