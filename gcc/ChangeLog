@@ -1,3 +1,7 @@
+Fri Jul 24 18:58:37 1998  David Edelsohn  <edelsohn@mhpcc.edu>
+
+	* rs6000.h (ASM_OUTPUT_CONSTRUCTOR, ASM_OUTPUT_DESTRUCTOR): Delete.
+
 Fri Jul 24 14:20:26 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* mn10300.md (movqi, movhi, movsi, movsf): Correctly handle
