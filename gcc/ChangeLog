@@ -1,3 +1,11 @@
+2003-06-05  David Miller  <davem@redhat.com>
+            Richard Henderson  <rth@redhat.com>
+
+        * optabs.c (HAVE_conditional_trap): Provide default.
+        (gen_conditional_trap): Likewise.
+        (init_optabs): Merge init_traps.
+        (gen_cond_trap): Use prepare_operand.  Restructure and avoid ifdef.
+
 2003-06-05  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/md.texi (Machine Constraints): Correct the meaning of
