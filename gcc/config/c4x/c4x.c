@@ -1959,7 +1959,7 @@ c4x_print_operand (file, op, letter)
       
     case CONST_DOUBLE:
       {
-	char str[30];
+	char str[64];
 	REAL_VALUE_TYPE r;
 	
 	REAL_VALUE_FROM_CONST_DOUBLE (r, op);
