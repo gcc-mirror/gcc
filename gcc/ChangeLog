@@ -1,5 +1,10 @@
 2002-03-12  Andrew MacLeod  <amacleod@redhat.com>
 
+	* config/sparc/linux.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+	* config/sparc/linux64.h (HANDLE_PRAGMA_PACK_PUSH_POP): Define.
+
+2002-03-12  Andrew MacLeod  <amacleod@redhat.com>
+
 	* config/sparc/sparc.h (RETURN_ADDR_RTX): Include v9 stack bias in
 	address calculation.
 
