@@ -7740,7 +7740,10 @@ reload_cse_mem_conflict_p (mem_base, val)
       if (GET_MODE (mem_base) == BLKmode
 	  || GET_MODE (val) == BLKmode)
 	return 1;
-      return anti_dependence (val, mem_base);
+      if (anti_dependence (val, mem_base))
+	return 1;
+      /* The address may contain nested MEMs.  */
+      break;
 
     default:
       break;
