@@ -1,3 +1,7 @@
+2001-12-22  Richard Henderson  <rth@redhat.com>
+
+	* configure.target (CPULIMITSH): Fix typo in alpha case.
+
 Sat Dec 22 09:52:41 2001  Jeffrey A Law  (law@redhat.com)
 
         * config/os/hpux/bits/os_defines.h: Update to avoid #defines
