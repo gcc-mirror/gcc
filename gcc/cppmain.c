@@ -196,7 +196,9 @@ scan_buffer (pfile)
 		    putc (' ', print.outf);
 		}
 	    }
-	  else if (print.printed && ! (token->flags & PREV_WHITE)
+	  else if (print.printed
+		   && ! (token->flags & PREV_WHITE)
+		   && ! CPP_OPTION (pfile, lang_asm)
 		   && cpp_avoid_paste (pfile, &tokens[1 - index], token))
 	    token->flags |= PREV_WHITE;
 
