@@ -8429,7 +8429,7 @@ simplify_comparison (code, pop0, pop1)
 	  && GET_CODE (XEXP (XEXP (op0, 0), 0)) == SUBREG
 	  && GET_CODE (XEXP (XEXP (op1, 0), 0)) == SUBREG
 	  && (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0)))
-	      == GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0))))
+	      == GET_MODE (SUBREG_REG (XEXP (XEXP (op1, 0), 0))))
 	  && GET_CODE (XEXP (op0, 1)) == CONST_INT
 	  && GET_CODE (XEXP (op1, 1)) == CONST_INT
 	  && GET_CODE (XEXP (XEXP (op0, 0), 1)) == CONST_INT
@@ -8517,12 +8517,13 @@ simplify_comparison (code, pop0, pop1)
 	  code = unsigned_condition (code);
 	}
 
-      /* If both operands are NOT or both are NEG, we can strip off the
-	 outer operation if this is just an equality comparison.  */
-      else if ((code == EQ || code == NE)
-	       && ((GET_CODE (op0) == NOT && GET_CODE (op1) == NOT)
-		   || (GET_CODE (op0) == NEG && GET_CODE (op1) == NEG)))
-	op0 = XEXP (op0, 0), op1 = XEXP (op1, 0);
+      /* If both operands are NOT, we can strip off the outer operation
+	 and adjust the comparison code for swapped operands; similarly for
+	 NEG, except that this must be an equality comparison.  */
+      else if ((GET_CODE (op0) == NOT && GET_CODE (op1) == NOT)
+	       || (GET_CODE (op0) == NEG && GET_CODE (op1) == NEG
+		   && (code == EQ || code == NE)))
+	op0 = XEXP (op0, 0), op1 = XEXP (op1, 0), code = swap_condition (code);
 
       else
 	break;
