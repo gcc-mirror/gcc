@@ -1,3 +1,7 @@
+2004-07-09  Zack Weinberg  <zack@codesourcery.com>
+
+	* vec.c, vec.h (vec_assert_fail): Use unsigned int for LINE argument.
+
 2004-07-09  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	PR target/16459
@@ -61,7 +65,7 @@
 2004-07-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/12133
-	* arm.c (arm_legitimate_index_p) Allow DFmode for soft-float 
+	* arm.c (arm_legitimate_index_p) Allow DFmode for soft-float
 	and DImode to use +/-4k offset.
 
 2004-07-09  Richard Henderson  <rth@redhat.com>
