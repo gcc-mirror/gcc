@@ -6952,7 +6952,7 @@ output_mi_thunk (file, thunk_fndecl, delta, function)
 	  assemble_name (file, buf);
 	  putc ('\n', file);
 	  text_section ();
-	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz} %s," : "\tld %s", r12);
+	  asm_fprintf (file, (TARGET_32BIT) ? "\t{l|lwz} %s," : "\tld %s,", r12);
 	  assemble_name (file, buf);
 	  asm_fprintf (file, "(%s)\n", reg_names[2]);
 	  asm_fprintf (file,
