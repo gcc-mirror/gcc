@@ -70,8 +70,6 @@ gnu::gcj::convert::Input_iconv::read (jcharArray outbuffer,
 				      jint outpos, jint count)
 {
 #ifdef HAVE_ICONV
-  jint origpos = outpos;
-
   jbyte *bytes = elements (inbuffer);
   jchar *out = elements (outbuffer);
   size_t inavail = inlength - inpos;
@@ -131,8 +129,6 @@ gnu::gcj::convert::Output_iconv::write (jcharArray inbuffer,
 					jint inpos, jint count)
 {
 #ifdef HAVE_ICONV
-  jint origpos = inpos;
-
   jchar *chars = elements (inbuffer);
   jbyte *out = elements (buf);
 

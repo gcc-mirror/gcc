@@ -23,16 +23,13 @@ public final class FileDeleter
 
   // Helper method called by java.lang.Runtime.exit() to perform
   // pending deletions.
-  public static void deleteOnExitNow ()
+  public synchronized static void deleteOnExitNow ()
   {
-    while (!deleteOnExitStack.empty ())
-      ((File)(deleteOnExitStack.pop ())).delete ();
+    if (deleteOnExitStack != null)
+      while (!deleteOnExitStack.empty ())
+	((File)(deleteOnExitStack.pop ())).delete ();
   }
 
   // A stack of files to delete upon normal termination.
   private static Stack deleteOnExitStack;
 }
-
-
-
-
