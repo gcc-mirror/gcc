@@ -1475,14 +1475,14 @@ extern struct rtx_def *hppa_builtin_saveregs ();
 		     || ((MODE) != SFmode && (MODE) != DFmode))) \
 		|| INT_5_BITS (index)))			\
 	  goto ADDR;					\
-      if (base						\
+      if (! TARGET_SOFT_FLOAT				\
+	  && base					\
 	  && (mode == SFmode || mode == DFmode)		\
 	  && GET_CODE (index) == MULT			\
 	  && GET_CODE (XEXP (index, 0)) == REG		\
 	  && REG_OK_FOR_BASE_P (XEXP (index, 0))	\
 	  && GET_CODE (XEXP (index, 1)) == CONST_INT	\
-	  && INTVAL (XEXP (index, 1)) == (mode == SFmode ? 4 : 8)\
-	  && shadd_operand (XEXP (index, 1), VOIDmode)) \
+	  && INTVAL (XEXP (index, 1)) == (mode == SFmode ? 4 : 8))\
 	goto ADDR;					\
     }							\
   else if (GET_CODE (X) == LO_SUM			\
