@@ -1548,30 +1548,6 @@ static const lang_independent_options W_options[] =
    N_ ("Warn about code which might break the strict aliasing rules") }
 };
 
-/* The following routines are useful in setting all the flags that
-   -ffast-math and -fno-fast-math imply.  */
-
-void
-set_fast_math_flags (int set)
-{
-  flag_trapping_math = !set;
-  flag_unsafe_math_optimizations = set;
-  flag_finite_math_only = set;
-  flag_errno_math = !set;
-  if (set)
-    flag_signaling_nans = 0;
-}
-
-/* Return true iff flags are set as if -ffast-math.  */
-bool
-fast_math_flags_set_p (void)
-{
-  return (!flag_trapping_math
-	  && flag_unsafe_math_optimizations
-	  && flag_finite_math_only
-	  && !flag_errno_math);
-}
-
 /* Output files for assembler code (real compiler output)
    and debugging dumps.  */
 
@@ -4197,11 +4173,7 @@ decode_f_option (const char *arg)
 	}
     }
 
-  if (!strcmp (arg, "fast-math"))
-    set_fast_math_flags (1);
-  else if (!strcmp (arg, "no-fast-math"))
-    set_fast_math_flags (0);
-  else if ((option_value = skip_leading_substring (arg, "inline-limit-"))
+  if ((option_value = skip_leading_substring (arg, "inline-limit-"))
 	   || (option_value = skip_leading_substring (arg, "inline-limit=")))
     {
       int val =
@@ -4219,55 +4191,10 @@ decode_f_option (const char *arg)
 	    set_param_value ("min-inline-insns", 10);
 	}
     }
-  else if ((option_value = skip_leading_substring (arg, "tls-model=")))
-    {
-      if (strcmp (option_value, "global-dynamic") == 0)
-	flag_tls_default = TLS_MODEL_GLOBAL_DYNAMIC;
-      else if (strcmp (option_value, "local-dynamic") == 0)
-	flag_tls_default = TLS_MODEL_LOCAL_DYNAMIC;
-      else if (strcmp (option_value, "initial-exec") == 0)
-	flag_tls_default = TLS_MODEL_INITIAL_EXEC;
-      else if (strcmp (option_value, "local-exec") == 0)
-	flag_tls_default = TLS_MODEL_LOCAL_EXEC;
-      else
-	warning ("`%s': unknown tls-model option", arg - 2);
-    }
 #ifdef INSN_SCHEDULING
   else if ((option_value = skip_leading_substring (arg, "sched-verbose=")))
     fix_sched_param ("verbose", option_value);
 #endif
-  else if ((option_value = skip_leading_substring (arg, "fixed-")))
-    fix_register (option_value, 1, 1);
-  else if ((option_value = skip_leading_substring (arg, "call-used-")))
-    fix_register (option_value, 0, 1);
-  else if ((option_value = skip_leading_substring (arg, "call-saved-")))
-    fix_register (option_value, 0, 0);
-  else if ((option_value = skip_leading_substring (arg, "align-loops=")))
-    align_loops = read_integral_parameter (option_value, arg - 2, align_loops);
-  else if ((option_value = skip_leading_substring (arg, "align-functions=")))
-    align_functions
-      = read_integral_parameter (option_value, arg - 2, align_functions);
-  else if ((option_value = skip_leading_substring (arg, "align-jumps=")))
-    align_jumps = read_integral_parameter (option_value, arg - 2, align_jumps);
-  else if ((option_value = skip_leading_substring (arg, "align-labels=")))
-    align_labels
-      = read_integral_parameter (option_value, arg - 2, align_labels);
-  else if ((option_value
-	    = skip_leading_substring (arg, "stack-limit-register=")))
-    {
-      int reg = decode_reg_name (option_value);
-      if (reg < 0)
-	error ("unrecognized register name `%s'", option_value);
-      else
-	stack_limit_rtx = gen_rtx_REG (Pmode, reg);
-    }
-  else if ((option_value
-	    = skip_leading_substring (arg, "stack-limit-symbol=")))
-    {
-      const char *nm;
-      nm = ggc_strdup (option_value);
-      stack_limit_rtx = gen_rtx_SYMBOL_REF (Pmode, nm);
-    }
   else if ((option_value
 	    = skip_leading_substring (arg, "message-length=")))
     output_set_maximum_length
@@ -4896,25 +4823,16 @@ parse_options_and_default_flags (int argc, char **argv)
   /* Perform normal command line switch decoding.  */
   for (i = 1; i < argc;)
     {
-      int lang_processed;
-      int indep_processed;
+      int processed;
 
       /* Give the language a chance to decode the option for itself.  */
-      lang_processed = handle_option (argc - i, argv + i, lang_mask);
+      processed = handle_option (argc - i, argv + i, lang_mask);
 
-      if (lang_processed >= 0)
-	/* Now see if the option also has a language independent meaning.
-	   Some options are both language specific and language independent,
-	   eg --help.  */
-	indep_processed = independent_decode_option (argv + i);
-      else
-	{
-	  lang_processed = -lang_processed;
-	  indep_processed = 0;
-	}
+      if (!processed)
+	processed = independent_decode_option (argv + i);
 
-      if (lang_processed || indep_processed)
-	i += MAX (lang_processed, indep_processed);
+      if (processed)
+	i += processed;
       else
 	{
 	  const char *option = NULL;

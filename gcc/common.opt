@@ -139,6 +139,39 @@ Common Joined
 dumpbase
 Common Separate
 
+falign-functions=
+Common RejectNegative Joined UInteger
+
+falign-jumps=
+Common RejectNegative Joined UInteger
+
+falign-labels=
+Common RejectNegative Joined UInteger
+
+falign-loops=
+Common RejectNegative Joined UInteger
+
+fcall-saved-
+Common Joined RejectNegative
+
+fcall-used-
+Common Joined RejectNegative
+
+ffast-math
+Common
+
+ffixed-
+Common Joined RejectNegative
+
+fstack-limit-register=
+Common RejectNegative Joined
+
+fstack-limit-symbol=
+Common RejectNegative Joined
+
+ftls-model=
+Common Joined RejectNegative
+
 g
 Common JoinedOrMissing
 
