@@ -2669,9 +2669,22 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 				    loop_start);
 		  if (recog_memoized (PREV_INSN (loop_start)) < 0)
 		    {
+		      rtx sequence, ret;
+
+		      /* We can't use bl->initial_value to compute the initial
+			 value, because the loop may have been preconditioned.
+			 We must calculate it from NEW_REG.  Try using
+			 force_operand instead of emit_iv_add_mult.  */
 		      delete_insn (PREV_INSN (loop_start));
-		      emit_iv_add_mult (bl->initial_value, v->mult_val,
-					v->add_val, tem, loop_start);
+
+		      start_sequence ();
+		      ret = force_operand (v->new_reg, tem);
+		      if (ret != tem)
+			emit_move_insn (tem, ret);
+		      sequence = gen_sequence ();
+		      end_sequence ();
+		      emit_insn_before (sequence, loop_start);
+
 		      if (loop_dump_stream)
 			fprintf (loop_dump_stream,
 				 "Illegal init insn, rewritten.\n");
