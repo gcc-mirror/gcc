@@ -1142,6 +1142,8 @@ create_preheader (struct loop *loop, int flags)
   struct loop *cloop, *ploop;
   int nentry = 0;
   bool irred = false;
+  bool latch_edge_was_fallthru;
+  edge one_succ_pred = 0;
   edge_iterator ei;
 
   cloop = loop->outer;
@@ -1152,6 +1154,8 @@ create_preheader (struct loop *loop, int flags)
 	continue;
       irred |= (e->flags & EDGE_IRREDUCIBLE_LOOP) != 0;
       nentry++;
+      if (EDGE_COUNT (e->src->succs) == 1)
+	one_succ_pred = e;
     }
   gcc_assert (nentry);
   if (nentry == 1)
@@ -1166,6 +1170,7 @@ create_preheader (struct loop *loop, int flags)
     }
 
   mfb_kj_edge = loop_latch_edge (loop);
+  latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
   fallthru = make_forwarder_block (loop->header, mfb_keep_just,
 				   mfb_update_loops);
   dummy = fallthru->src;
@@ -1177,13 +1182,23 @@ create_preheader (struct loop *loop, int flags)
     if (ploop->latch == dummy)
       ploop->latch = fallthru->dest;
 
-  /* Reorganize blocks so that the preheader is not stuck in the middle of the
-     loop.  */
-  
-  /* Get an edge that is different from the one from loop->latch to
-     dummy.  */
-  e = EDGE_PRED (dummy, EDGE_PRED (dummy, 0)->src == loop->latch);
-  move_block_after (dummy, e->src);
+  /* Try to be clever in placing the newly created preheader.  The idea is to
+     avoid breaking any "fallthruness" relationship between blocks.
+
+     The preheader was created just before the header and all incoming edges
+     to the header were redirected to the preheader, except the latch edge.
+     So the only problematic case is when this latch edge was a fallthru
+     edge: it is not anymore after the preheader creation so we have broken
+     the fallthruness.  We're therefore going to look for a better place.  */
+  if (latch_edge_was_fallthru)
+    {
+      if (one_succ_pred)
+	e = one_succ_pred;
+      else
+	e = EDGE_PRED (dummy, 0);
+
+      move_block_after (dummy, e->src);
+    }
 
   loop->header->loop_father = loop;
   add_bb_to_loop (dummy, cloop);

@@ -1,3 +1,10 @@
+2004-12-16  Eric Botcazou  <ebotcazou@libertysurf.fr>
+            Roger Sayle  <roger@eyesopen.com>
+ 
+	PR tree-optimization/18707
+	* cfgloopmanip.c (create_preheader): Move the preheader
+	only if the latch was falling through to the header.
+
 2004-12-16  Danny Smith  <dannysmith@users.sourceforge.net>
 
 	PR target/18997
