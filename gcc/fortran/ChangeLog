@@ -1,5 +1,11 @@
 2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 
+	* resolve.c (resolve_symbol): Add comment in function body.
+	(check_data_variable): Change type of mark to ar_type, adapt code
+	accordingly.
+
+2004-06-21  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+
 	* array.c (gfc_insert_constructor): Avoid redundant call to
 	mpz_comp. Add 2004 to copyright years.
 	
