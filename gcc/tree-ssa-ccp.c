@@ -1168,10 +1168,8 @@ ccp_visit_stmt (tree stmt, edge *taken_edge_p, tree *output_p)
 
   /* Any other kind of statement is not interesting for constant
      propagation and, therefore, not worth simulating.  */
-#if 0
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "No interesting values produced.  Marked VARYING.\n");
-#endif
 
   /* Definitions made by statements other than assignments to
      SSA_NAMEs represent unknown modifications to their outputs.
