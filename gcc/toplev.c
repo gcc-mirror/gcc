@@ -4203,7 +4203,7 @@ default_pch_valid_p (const void *data_p, size_t len)
     asprintf (&r, _("created and used with differing settings of `-m%s'"),
 		  flag_that_differs);
     if (r == NULL)
-      r = _("out of memory");
+      return _("out of memory");
     return r;
   }
 }

@@ -1,3 +1,7 @@
+2003-10-26  Andreas Jaeger  <aj@suse.de>
+
+	* toplev.c (default_pch_valid_p): Fix warning.
+
 2003-10-25  Roger Sayle  <roger@eyesopen.com>
 
 	* simplify-rtx.c (simplify_replace_rtx): Avoid allocating duplicate
