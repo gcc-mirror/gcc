@@ -1,3 +1,8 @@
+2003-04-29  Alexander Kabaev  <kan@FreeBSD.ORG>
+
+	bootstrap/10452
+	* gengtype-yacc.y: Improve portability.
+
 2003-04-29  Zack Weinberg  <zack@codesourcery.com>
 
 	* config.gcc: Install obsolete target list for GCC 3.3.
