@@ -9299,7 +9299,6 @@ rs6000_stack_info ()
 					 + ehrd_size
 					 + info_ptr->cr_size
 					 + info_ptr->lr_size
-					 + info_ptr->vrsave_size
 					 + info_ptr->toc_size,
 					 (TARGET_ALTIVEC_ABI || ABI_DARWIN)
 					 ? 16 : 8);
