@@ -243,7 +243,7 @@ override_options ()
   /* Do some sanity checks on the above options. */
 
   if ((alpha_fptm == ALPHA_FPTM_SU || alpha_fptm == ALPHA_FPTM_SUI)
-      && (alpha_tp != ALPHA_TP_INSN || alpha_cpu == PROCESSOR_EV6))
+      && alpha_tp != ALPHA_TP_INSN && alpha_cpu != PROCESSOR_EV6)
     {
       warning ("fp software completion requires -mtrap-precision=i");
       alpha_tp = ALPHA_TP_INSN;
