@@ -1,3 +1,10 @@
+2003-09-03  Jeff Sturm  <jsturm@one-point.com>
+
+	* cgraphunit.c (visited_nodes): New static variable.
+	(record_call_1): Use walk_tree with visited_nodes.
+	(cgraph_create_edges): Use walk_tree with visited_nodes.
+	Setup/teardown visited_nodes hashtable.
+
 2003-09-03  Roger Sayle  <roger@eyesopen.com>
 
 	* toplev.c (flag_rounding_math): New global variable.
