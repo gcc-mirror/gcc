@@ -220,7 +220,7 @@ extern void mark_home_live PROTO((int));
 
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp), plus an offset.  */
-extern rtx eliminate_regs PROTO((rtx, enum machine_mode, rtx));
+extern rtx eliminate_regs PROTO((rtx, enum machine_mode, rtx, int));
 
 /* Emit code to perform a reload from IN (which may be a reload register) to
    OUT (which may also be a reload register).  IN or OUT is from operand
