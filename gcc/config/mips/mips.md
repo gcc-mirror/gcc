@@ -8506,7 +8506,7 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
 
 (define_insn "prefetch_si_address"
   [(prefetch (plus:SI (match_operand:SI 0 "register_operand" "r")
-		      (match_operand:SI 3 "const_int_operand" "i"))
+		      (match_operand:SI 3 "const_int_operand" "I"))
 	     (match_operand:SI 1 "const_int_operand" "n")
 	     (match_operand:SI 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && Pmode == SImode"
@@ -8518,12 +8518,15 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
 	     (match_operand:SI 1 "const_int_operand" "n")
 	     (match_operand:SI 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && Pmode == SImode"
-  { return mips_emit_prefetch (operands); }
+{
+  operands[3] = const0_rtx;
+  return mips_emit_prefetch (operands);
+}
   [(set_attr "type" "prefetch")])
 
 (define_insn "prefetch_di_address"
   [(prefetch (plus:DI (match_operand:DI 0 "register_operand" "r")
-		      (match_operand:DI 3 "const_int_operand" "i"))
+		      (match_operand:DI 3 "const_int_operand" "I"))
 	     (match_operand:DI 1 "const_int_operand" "n")
 	     (match_operand:DI 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && Pmode == DImode"
@@ -8535,7 +8538,10 @@ ld\t%2,%1-%S1(%2)\;daddu\t%2,%2,$31\;%*j\t%2%/"
 	     (match_operand:DI 1 "const_int_operand" "n")
 	     (match_operand:DI 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && Pmode == DImode"
-  { return mips_emit_prefetch (operands); }
+{
+  operands[3] = const0_rtx;
+  return mips_emit_prefetch (operands);
+}
   [(set_attr "type" "prefetch")])
 
 (define_insn "nop"

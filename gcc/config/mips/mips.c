@@ -9643,16 +9643,16 @@ mips_emit_prefetch (rtx *operands)
 
   static const char * const alt[2][4] = {
     {
-      "pref\t4,%a0",
-      "pref\t0,%a0",
-      "pref\t0,%a0",
-      "pref\t6,%a0"
+      "pref\t4,%3(%0)",
+      "pref\t0,%3(%0)",
+      "pref\t0,%3(%0)",
+      "pref\t6,%3(%0)"
     },
     {
-      "pref\t5,%a0",
-      "pref\t1,%a0",
-      "pref\t1,%a0",
-      "pref\t7,%a0"
+      "pref\t5,%3(%0)",
+      "pref\t1,%3(%0)",
+      "pref\t1,%3(%0)",
+      "pref\t7,%3(%0)"
     }
   };
 

@@ -1,3 +1,12 @@
+2003-10-02  Chris Demetriou  <cgd@broadcom.com>
+
+	* config/mips/mips.c (mips_emit_prefetch): Use operand 3
+	in instructions being output.
+	* config/mips/mips.md (prefetch_si_address): Change third
+	operand's constraint letter to 'I'.
+	(prefetch_di_address): Likewise.
+	(prefetch_si, prefetch_di): Set third operand to const0_rtx.
+	
 2003-10-02  Zack Weinberg  <zack@codesourcery.com>
 
 	* system.h: Poison macros obsoleted by earlier patch.
