@@ -31,15 +31,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #define SDB_DEBUGGING_INFO  1
 
-/* CYGNUS LOCAL stabs-in-coff */
-/* Output DBX (stabs) debugging information if doing -gstabs.  */
-
-#define DBX_DEBUGGING_INFO
-
-/* Generate SDB debugging information by default. */
-
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
-
 #define SDB_DELIM ";"
 
 #define CPP_PREDEFINES "-D__sh__ -Acpu(sh) -Amachine(sh)"
