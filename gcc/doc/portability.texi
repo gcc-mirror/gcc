@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -8,10 +8,11 @@
 @cindex portability
 @cindex GCC and portability
 
-The main goal of GCC was to make a good, fast compiler for machines in
-the class that the GNU system aims to run on: 32-bit machines that address
-8-bit bytes and have several general registers.  Elegance, theoretical
-power and simplicity are only secondary.
+GCC itself aims to be portable to any machine where @code{int} is at least
+a 32-bit type.  It aims to target machines with a flat (non-segmented) byte
+addressed data address space (the code address space can be separate).
+Target ABIs may have 8, 16, 32 or 64-bit @code{int} type. @code{char}
+can be wider than 8 bits.
 
 GCC gets most of the information about the target machine from a machine
 description which gives an algebraic formula for each of the machine's

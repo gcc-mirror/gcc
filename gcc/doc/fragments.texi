@@ -1,5 +1,5 @@
 @c Copyright (C) 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
-@c 1999, 2000, 2001 Free Software Foundation, Inc.
+@c 1999, 2000, 2001, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -134,12 +134,12 @@ specified, there are combinations that should not be built.  In that
 case, set @code{MULTILIB_EXCEPTIONS} to be all of the switch exceptions
 in shell case syntax that should not be built.
 
-For example, in the PowerPC embedded ABI support, it is not desirable
-to build libraries compiled with the @option{-mcall-aix} option
-and either of the @option{-fleading-underscore} or @option{-mlittle} options
-at the same time.  Therefore @code{MULTILIB_EXCEPTIONS} is set to
+For example the ARM processor cannot execute both hardware floating
+point instructions and the reduced size THUMB instructions at the same
+time, so there is no need to build libraries with both of these
+options enabled.  Therefore @code{MULTILIB_EXCEPTIONS} is set to:
 @smallexample
-*mcall-aix/*fleading-underscore* *mlittle/*mcall-aix*
+*mthumb/*mhard-float*
 @end smallexample
 
 @findex MULTILIB_EXTRA_OPTS
@@ -147,7 +147,24 @@ at the same time.  Therefore @code{MULTILIB_EXCEPTIONS} is set to
 Sometimes it is desirable that when building multiple versions of
 @file{libgcc.a} certain options should always be passed on to the
 compiler.  In that case, set @code{MULTILIB_EXTRA_OPTS} to be the list
-of options to be used for all builds.
+of options to be used for all builds.  If you set this, you should
+probably set @code{CRTSTUFF_T_CFLAGS} to a dash followed by it.
+
+@findex SPECS
+@item SPECS
+Unfortunately, setting @code{MULTILIB_EXTRA_OPTS} is not enough, since
+it does not affect the build of target libraries, at least not the
+build of the default multilib.  One possible work-around is to use
+@code{DRIVER_SELF_SPECS} to bring options from the @file{specs} file
+as if they had been passed in the compiler driver command line.
+However, you don't want to be adding these options after the toolchain
+is installed, so you can instead tweak the @file{specs} file that will
+be used during the toolchain build, while you still install the
+original, built-in @file{specs}.  The trick is to set @code{SPECS} to
+some other filename (say @file{specs.install}), that will then be
+created out of the built-in specs, and introduce a @file{Makefile}
+rule to generate the @file{specs} file that's going to be used at
+build time out of your @file{specs.install}.
 @end table
 
 @node Host Fragment

@@ -1,4 +1,4 @@
-@c Copyright (c) 1999, 2000, 2001 Free Software Foundation, Inc.
+@c Copyright (c) 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -645,7 +645,7 @@ the unqualified name of the name of the namespace (@pxref{Identifiers}).
 The name of the global namespace is @samp{::}, even though in C++ the
 global namespace is unnamed.  However, you should use comparison with
 @code{global_namespace}, rather than @code{DECL_NAME} to determine
-whether or not a namespaces is the global one.  An unnamed namespace
+whether or not a namespace is the global one.  An unnamed namespace
 will have a @code{DECL_NAME} equal to @code{anonymous_namespace_name}.
 Within a single translation unit, all unnamed namespaces will have the
 same name.

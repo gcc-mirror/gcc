@@ -2386,7 +2386,7 @@ For example, an expression such as @samp{x[i,j]} will cause a warning,
 but @samp{x[(void)i,j]} will not.
 
 @item
-An unsigned value is compared against zero with @samp{<} or @samp{<=}.
+An unsigned value is compared against zero with @samp{<} or @samp{>=}.
 
 @item
 A comparison like @samp{x<=y<=z} appears; this is equivalent to
@@ -3447,7 +3447,7 @@ optimizations designed to reduce code size.
 
 @option{-Os} disables the following optimization flags:
 @gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
--falign-labels  -freorder-blocks -fprefetch-loop-arrays}
+-falign-labels  -freorder-blocks  -fprefetch-loop-arrays}
 
 If you use multiple @option{-O} options, with or without level numbers,
 the last such option is the one that is effective.
@@ -3559,7 +3559,7 @@ specified individually by using @option{--param @var{name}=@var{value}}.
 The @option{-finline-limit=@var{n}} option sets some of these parameters 
 as follows:
 
- @table @gcctabopt
+@table @gcctabopt
  @item max-inline-insns
   is set to @var{n}.
  @item max-inline-insns-single
@@ -3570,7 +3570,7 @@ as follows:
   is set to 130 or @var{n}/4, whichever is smaller.
  @item max-inline-insns-rtl
   is set to @var{n}.
- @end table
+@end table
 
 Using @option{-finline-limit=600} thus results in the default settings
 for these parameters.  See below for a documentation of the individual
@@ -4258,7 +4258,6 @@ to improve locality of reference in the instruction space.  Most systems
 using the ELF object format and SPARC processors running Solaris 2 have
 linkers with such optimizations.  AIX may have these optimizations in
 the future.
-
 
 Only use these options when there are significant benefits from doing
 so.  When you specify these options, the assembler and linker will
@@ -5016,7 +5015,7 @@ for each @samp{%g.s} and another for each @samp{%U.s}.  Previously, @samp{%U} wa
 simply substituted with a file name chosen for the previous @samp{%u},
 without regard to any appended suffix.
 
-@item %j@var{SUFFIX}
+@item %j@var{suffix}
 Substitutes the name of the @code{HOST_BIT_BUCKET}, if any, and if it is
 writable, and if save-temps is off; otherwise, substitute the name
 of a temporary file, just like @samp{%u}.  This temporary file is not
@@ -7239,7 +7238,7 @@ This option sets flags for both the preprocessor and linker.
 @cindex Darwin options
 
 These options are defined for all architectures running the Darwin operating
-system.  These are useful for compatibility with other Mac OS compilers.
+system.  They are useful for compatibility with other Mac OS compilers.
 
 @table @gcctabopt
 @item -all_load    

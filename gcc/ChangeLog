@@ -1,5 +1,23 @@
 2003-07-19  Kelley Cook  <kelleycook@wideopenwest.com>
 
+	* c-tree.texi: Backport changes from mainline.
+	* c-tree.texi: Ditto.
+	* collect2.texi: Ditto.
+	* cpp.texi: Ditto.
+	* cppopts.texi: Ditto.
+	* extend.texi: Ditto.
+	* fragments.texi: Ditto.
+	* headerdirs.texi: Ditto.
+	* install.texi: Ditto.
+	* invoke.texi: Ditto.
+	* md.texi: Ditto.
+	* portability.texi: Ditto.
+	* rtl.texi: Ditto.
+	* sourcebuild.texi: Ditto.
+	* trouble.texi: Ditto.
+
+2003-07-19  Kelley Cook  <kelleycook@wideopenwest.com>
+
 	PR optimization/4490
 	* doc/invoke.texi (m96bit-long-double, m128bit-long-double):  Reword
 	documentation to accurately reflect what these options do.

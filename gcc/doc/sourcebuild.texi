@@ -1,4 +1,4 @@
-@c Copyright (C) 2002 Free Software Foundation, Inc.
+@c Copyright (C) 2002, 2003 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -466,10 +466,9 @@ following are also necessary:
 
 @itemize @bullet
 @item
-At least one GNATS category for bugs in that front end and runtime
+At least one Bugzilla component for bugs in that front end and runtime
 libraries.  This category needs to be mentioned in
-@file{gcc/gccbug.in}, and in @file{gnats.html} on the GCC web site, as
-well as being added to the GNATS database.
+@file{gcc/gccbug.in}, as well as being added to the Bugzilla database.
 @item
 Normally, one or more maintainers of that front end listed in
 @file{MAINTAINERS}.
@@ -931,9 +930,9 @@ test cases and magic comments more.
 @node libgcj Tests
 @subsection The Java library test suites.
 
-Runtime tests are executed via @samp{make check} from the @samp{testsuite}
-directory of the libjava hierarchy in the build tree.  Additional runtime
-tests can be checked into this testsuite.
+Runtime tests are executed via @samp{make check} in the
+@file{@var{target}/libjava/testsuite} directory in the build
+tree.  Additional runtime tests can be checked into this testsuite.
 
 Regression testing of the core packages in libgcj is also covered by the
 Mauve test suite.  The @uref{http://sources.redhat.com/mauve/,,Mauve Project}

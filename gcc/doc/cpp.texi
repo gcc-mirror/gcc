@@ -377,8 +377,9 @@ comment.
 @end group
 @end example
 
-Comments are not recognized within string literals.  @t{@w{"/* blah
-*/"}} is the string constant @samp{@w{/* blah */}}, not an empty string.
+Comments are not recognized within string literals.  
+@t{@w{"/* blah */"}} is the string constant @samp{@w{/* blah */}}, not
+an empty string.
 
 Line comments are not in the 1989 edition of the C standard, but they
 are recognized by GCC as an extension.  In C++ and in the 1999 edition
@@ -1731,7 +1732,7 @@ predefined macros, but you cannot undefine them.
 @subsection Standard Predefined Macros
 @cindex standard predefined macros.
 
-The standard predefined macros are specified by the C and/or C++
+The standard predefined macros are specified by the relevant
 language standards, so they are available with all compilers that
 implement those standards.  Older compilers may not provide all of
 them.  Their names all start with double underscores.
@@ -1850,6 +1851,15 @@ of the 1998 C++ standard will define this macro to @code{199711L}.  The
 GNU C++ compiler is not yet fully conforming, so it uses @code{1}
 instead.  We hope to complete our implementation in the near future.
 
+@item __OBJC__
+This macro is defined, with value 1, when the Objective-C compiler is in
+use.  You can use @code{__OBJC__} to test whether a header is compiled
+by a C compiler or a Objective-C compiler.
+
+@item __ASSEMBLER__
+This macro is defined with value 1 when preprocessing assembly
+language.
+
 @end table
 
 @node Common Predefined Macros
@@ -1911,11 +1921,6 @@ calculate a single number, then compare that against a threshold:
 @noindent
 Many people find this form easier to understand.
 
-@item __OBJC__
-This macro is defined, with value 1, when the Objective-C compiler is in
-use.  You can use @code{__OBJC__} to test whether a header is compiled
-by a C compiler or a Objective-C compiler.
-
 @item __GNUG__
 The GNU C++ compiler defines this.  Testing it is equivalent to
 testing @code{@w{(__GNUC__ && __cplusplus)}}.
@@ -1939,6 +1944,9 @@ depth of nesting in include files.  The value of this macro is
 incremented on every @samp{#include} directive and decremented at the
 end of every included file.  It starts out at 0, it's value within the
 base file specified on the command line.
+
+@item __ELF__
+This macro is defined if the target uses the ELF object format.
 
 @item __VERSION__
 This macro expands to a string constant which describes the version of
@@ -2031,6 +2039,12 @@ This macro is defined, with value 1, if (and only if) the NeXT runtime
 (as in @option{-fnext-runtime}) is in use for Objective-C.  If the GNU
 runtime is used, this macro is not defined, so that you can use this
 macro to determine which runtime (NeXT or GNU) is being used.
+
+@item __LP64__
+@item _LP64
+These macros are defined, with value 1, if (and only if) the compilation
+is for a target where @code{long int} and pointer both use 64-bits and
+@code{int} uses 32-bit.
 @end table
 
 @node System-specific Predefined Macros

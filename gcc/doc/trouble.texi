@@ -993,7 +993,7 @@ inside @samp{func} in the example).
 
 g++ implements the ``intuitive'' algorithm for copy-assignment: assign all
 direct bases, then assign all members.  In that algorithm, the virtual
-base subobject can be encountered many times.  In the example, copying
+base subobject can be encountered more than once.  In the example, copying
 proceeds in the following order: @samp{val}, @samp{name} (via
 @code{strdup}), @samp{bval}, and @samp{name} again.
 
