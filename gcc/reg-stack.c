@@ -2640,43 +2640,46 @@ change_stack (insn, old, new, when)
       if (old->top != new->top)
 	abort ();
 
-      /* Loop here emitting swaps until the stack is correct.  The
-	 worst case number of swaps emitted is N + 2, where N is the
+      /* If the stack is not empty (new->top != -1), loop here emitting
+	 swaps until the stack is correct. 
+
+	 The worst case number of swaps emitted is N + 2, where N is the
 	 depth of the stack.  In some cases, the reg at the top of
 	 stack may be correct, but swapped anyway in order to fix
 	 other regs.  But since we never swap any other reg away from
 	 its correct slot, this algorithm will converge.  */
 
-      do
-	{
-	  /* Swap the reg at top of stack into the position it is
-	     supposed to be in, until the correct top of stack appears.  */
+      if (new->top != -1)
+	do
+	  {
+	    /* Swap the reg at top of stack into the position it is
+	       supposed to be in, until the correct top of stack appears.  */
 
-	  while (old->reg[old->top] != new->reg[new->top])
-	    {
-	      for (reg = new->top; reg >= 0; reg--)
-		if (new->reg[reg] == old->reg[old->top])
-		  break;
+	    while (old->reg[old->top] != new->reg[new->top])
+	      {
+		for (reg = new->top; reg >= 0; reg--)
+		  if (new->reg[reg] == old->reg[old->top])
+		    break;
 
-	      if (reg == -1)
-		abort ();
+		if (reg == -1)
+		  abort ();
 
-	      emit_swap_insn (insn, old,
-			      FP_MODE_REG (old->reg[reg], DFmode));
-	    }
+		emit_swap_insn (insn, old,
+				FP_MODE_REG (old->reg[reg], DFmode));
+	      }
 
-	  /* See if any regs remain incorrect.  If so, bring an
+	    /* See if any regs remain incorrect.  If so, bring an
 	     incorrect reg to the top of stack, and let the while loop
 	     above fix it.  */
 
-	  for (reg = new->top; reg >= 0; reg--)
-	    if (new->reg[reg] != old->reg[reg])
-	      {
-		emit_swap_insn (insn, old,
-				FP_MODE_REG (old->reg[reg], DFmode));
-		break;
-	      }
-	} while (reg >= 0);
+	    for (reg = new->top; reg >= 0; reg--)
+	      if (new->reg[reg] != old->reg[reg])
+		{
+		  emit_swap_insn (insn, old,
+				  FP_MODE_REG (old->reg[reg], DFmode));
+		  break;
+		}
+	  } while (reg >= 0);
 
       /* At this point there must be no differences.  */
 
