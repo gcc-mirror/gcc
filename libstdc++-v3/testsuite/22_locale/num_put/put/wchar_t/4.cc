@@ -1,0 +1,105 @@
+// 2001-11-19 Benjamin Kosnik  <bkoz@redhat.com>
+
+// Copyright (C) 2001, 2002, 2003 Free Software Foundation
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 2, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// You should have received a copy of the GNU General Public License along
+// with this library; see the file COPYING.  If not, write to the Free
+// Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+// USA.
+
+// 22.2.2.2.1  num_put members
+
+#include <locale>
+#include <sstream>
+#include <testsuite_hooks.h>
+
+void test04()
+{
+  using namespace std;
+  bool test = true;
+
+  // Check num_put works with other iterators besides streambuf
+  // output iterators. (As long as output_iterator requirements are met.)
+  typedef wstring::iterator iter_type;
+  typedef char_traits<wchar_t> traits;
+  typedef num_put<wchar_t, iter_type> num_put_type;
+  const ios_base::iostate goodbit = ios_base::goodbit;
+  const ios_base::iostate eofbit = ios_base::eofbit;
+  const locale loc_c = locale::classic();
+  const wstring str(L"1798 Lady Elgin");
+  const wstring str2(L"0 true 0xbffff74c Mary Nisbet");
+  const wstring x(15, L'x'); // have to have allocated wstring!
+  wstring res;
+
+  wostringstream oss; 
+  oss.imbue(locale(loc_c, new num_put_type));
+
+  // Iterator advanced, state, output.
+  const num_put_type& tp = use_facet<num_put_type>(oss.getloc());
+
+  // 01 put(long)
+  // 02 put(long double)
+  // 03 put(bool)
+  // 04 put(void*)
+
+  // 01 put(long)
+  const long l = 1798;
+  res = x;
+  iter_type ret1 = tp.put(res.begin(), oss, ' ', l);
+  wstring sanity1(res.begin(), ret1);
+  VERIFY( res == L"1798xxxxxxxxxxx" );
+  VERIFY( sanity1 == L"1798" );
+
+  // 02 put(long double)
+  const long double ld = 1798.0;
+  res = x;
+  iter_type ret2 = tp.put(res.begin(), oss, ' ', ld);
+  wstring sanity2(res.begin(), ret2);
+  VERIFY( res == L"1798xxxxxxxxxxx" );
+  VERIFY( sanity2 == L"1798" );
+
+  // 03 put(bool)
+  bool b = 1;
+  res = x;
+  iter_type ret3 = tp.put(res.begin(), oss, ' ', b);
+  wstring sanity3(res.begin(), ret3);
+  VERIFY( res == L"1xxxxxxxxxxxxxx" );
+  VERIFY( sanity3 == L"1" );
+
+  b = 0;
+  res = x;
+  oss.setf(ios_base::boolalpha);
+  iter_type ret4 = tp.put(res.begin(), oss, ' ', b);
+  wstring sanity4(res.begin(), ret4);
+  VERIFY( res == L"falsexxxxxxxxxx" );
+  VERIFY( sanity4 == L"false" );
+
+  // 04 put(void*)
+  oss.clear();
+  const void* cv = &ld;
+  res = x;
+  oss.setf(ios_base::fixed, ios_base::floatfield);
+  iter_type ret5 = tp.put(res.begin(), oss, ' ', cv);
+  wstring sanity5(res.begin(), ret5);
+  VERIFY( sanity5.size() );
+  VERIFY( sanity5[1] == 'x' );
+}
+
+int main()
+{
+  test04();
+  return 0;
+}
+
+
