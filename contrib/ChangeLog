@@ -1,3 +1,7 @@
+2000-09-28  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* gcc_update (touch_files): Add some informative output.
+	
 2000-09-16  Andreas Jaeger  <aj@suse.de>
 
 	* gcc_update: Remove gcc/c-parse.gperf.

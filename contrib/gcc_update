@@ -97,8 +97,9 @@ touch_files () {
 	    touch $f
 	    if is_out_of_date "$f" $deps; then
 		# Hmm, it may have got the same timestamp as one of
-		# its touched dependencies.  Wait a second and retry
+		# its touched dependencies.  Wait a second and retry.
 		sleep 1
+		echo Touching "$f" once more...
 		touch $f
 	    fi
 	fi
