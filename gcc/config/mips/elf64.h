@@ -82,12 +82,12 @@ do {							\
    switching, then we need a custom TARGET_ASM_NAMED_SECTION too.  */
 
 #undef TEXT_SECTION
-#define TEXT_SECTION()
-do {
-  if (TARGET_FILE_SWITCHING)
-    abort ();
-  fputs (TEXT_SECTION_ASM_OP, asm_out_file);
-  fputc ('\n', asm_out_file);
+#define TEXT_SECTION()				\
+do {						\
+  if (TARGET_FILE_SWITCHING)			\
+    abort ();					\
+  fputs (TEXT_SECTION_ASM_OP, asm_out_file);	\
+  fputc ('\n', asm_out_file);			\
 } while (0)
 
 /* The following macro defines the format used to output the second

@@ -112,12 +112,12 @@ Boston, MA 02111-1307, USA.  */
    TARGET_ASM_NAMED_SECTION too.  */
 
 #undef TEXT_SECTION
-#define TEXT_SECTION()
-do {
-  if (TARGET_FILE_SWITCHING)
-    abort ();
-  fputs (TEXT_SECTION_ASM_OP, asm_out_file);
-  fputc ('\n', asm_out_file);
+#define TEXT_SECTION()				\
+do {						\
+  if (TARGET_FILE_SWITCHING)			\
+    abort ();					\
+  fputs (TEXT_SECTION_ASM_OP, asm_out_file);	\
+  fputc ('\n', asm_out_file);			\
 } while (0)
 
 /* collect2 support (Macros for initialization).  */
