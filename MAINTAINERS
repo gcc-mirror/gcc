@@ -29,6 +29,7 @@ mn10200 port		Jeff Law		law@cygnus.com
 mn10300 port		Jeff Law		law@cygnus.com
 hppa port		Jeff Law		law@cygnus.com
 m68k port (?)		Jeff Law		law@cygnus.com
+m68k-motorola-sysv port	Philippe De Muyter	phdm@macqel.be
 rs6000 port		Geoff Keating		geoffk@cygnus.com
 rs6000 port		David Edelsohn		dje@watson.ibm.com
 mips port		Gavin Romig-Koch	gavin@cygnus.com
