@@ -245,10 +245,11 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 	extern char *m88k_short_data;
 	#define TARGET_OPTIONS { { "short-data-", &m88k_short_data } }  */
 
-extern char *alpha_cpu_string;  /* For -mcpu=ev[4|5] */
+extern char *alpha_cpu_string;  /* For -mcpu= */
 extern char *alpha_fprm_string;	/* For -mfp-rounding-mode=[n|m|c|d] */
 extern char *alpha_fptm_string;	/* For -mfp-trap-mode=[n|u|su|sui]  */
 extern char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
+extern char *alpha_mlat_string;	/* For -mmemory-latency= */
 
 #define TARGET_OPTIONS				\
 {						\
@@ -256,6 +257,7 @@ extern char *alpha_tp_string;	/* For -mtrap-precision=[p|f|i] */
   {"fp-rounding-mode=",	&alpha_fprm_string},	\
   {"fp-trap-mode=",	&alpha_fptm_string},	\
   {"trap-precision=",	&alpha_tp_string},	\
+  {"memory-latency=",	&alpha_mlat_string},	\
 }
 
 /* Sometimes certain combinations of command options do not make sense
@@ -792,15 +794,17 @@ enum reg_class { NO_REGS, GENERAL_REGS, FLOAT_REGS, ALL_REGS,
    reduce the impact of not being able to allocate a pseudo to a
    hard register.  */
 
-#define REGISTER_MOVE_COST(CLASS1, CLASS2)	\
-  (((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS) ? 2 : 20)
+#define REGISTER_MOVE_COST(CLASS1, CLASS2)				\
+  (TARGET_CIX || ((CLASS1) == FLOAT_REGS) == ((CLASS2) == FLOAT_REGS)	\
+   ? 2 : 4+2*alpha_memory_latency)
 
 /* A C expressions returning the cost of moving data of MODE from a register to
    or from memory.
 
    On the Alpha, bump this up a bit.  */
 
-#define MEMORY_MOVE_COST(MODE)  6
+extern int alpha_memory_latency;
+#define MEMORY_MOVE_COST(MODE)  (2*alpha_memory_latency)
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST 5
@@ -1106,6 +1110,10 @@ extern int alpha_compare_fp_p;
 
    IS_LOCAL is 0 if name is used in call, 1 if name is used in definition.  */
 extern void alpha_need_linkage ();
+
+/* This macro defines the start of an assembly comment.  */
+
+#define ASM_COMMENT_START " #"
 
 /* This macro produces the initial definition of a function name.  On the
    Alpha, we need to save the function name for the prologue and epilogue.  */

@@ -1,4 +1,19 @@
-Mon Dec 15 17:48:05 1997  Ricahrd Henderson  <rth@cygnus.com>
+Mon Dec 15 18:31:43 1997  Richard Henderson  <rth@cygnus.com>
+
+	* alpha.c (alpha_cpu_name): New variable.
+	(alpha_mlat_string): Likewise.
+	(alpha_memory_latency): Likewise.
+	(override_options): Handle -mmemory-latency.
+	(alpha_adjust_cost): Adjust load cost for latency.
+	* alpha.h (TARGET_OPTIONS): Add meory-latency.
+	(REGISTER_MOVE_COST): Define in terms of memory_latency.  Take
+	TARGET_CIX into account.
+	(MEMORY_MOVE_COST): Define in terms of memory_latency.
+	* invoke.texi (DEC Alpha Options): Document -mmemory-latency.
+
+	* alpha.h (ASM_COMMENT_START): New macro.
+
+Mon Dec 15 17:48:05 1997  Richard Henderson  <rth@cygnus.com>
 
 	* reload.h, reload1.c (eliminate_regs), caller-save.c, dbxout.c,
 	dwarfout.c, dwarf2out.c, reload.c, sdbout.c: Revert March 15 change.

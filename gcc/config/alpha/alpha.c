@@ -22,6 +22,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "config.h"
 #include <stdio.h>
+#include <ctype.h>
 #include "rtl.h"
 #include "regs.h"
 #include "hard-reg-set.h"
@@ -47,6 +48,10 @@ extern int rtx_equal_function_value_matters;
 /* Specify which cpu to schedule for. */
 
 enum processor_type alpha_cpu;
+static char* const alpha_cpu_name[] = 
+{
+  "ev4", "ev5", "ev6"
+};
 
 /* Specify how accurate floating-point traps need to be.  */
 
@@ -62,10 +67,11 @@ enum alpha_fp_trap_mode alpha_fptm;
 
 /* Strings decoded into the above options.  */
 
-char *alpha_cpu_string;		/* -mcpu=ev[4|5] */
+char *alpha_cpu_string;		/* -mcpu= */
 char *alpha_tp_string;		/* -mtrap-precision=[p|s|i] */
 char *alpha_fprm_string;	/* -mfp-rounding-mode=[n|m|c|d] */
 char *alpha_fptm_string;	/* -mfp-trap-mode=[n|u|su|sui] */
+char *alpha_mlat_string;	/* -mmemory-latency= */
 
 /* Save information from a "cmpxx" operation until the branch or scc is
    emitted.  */
@@ -90,6 +96,10 @@ int alpha_function_needs_gp;
 /* If non-null, this rtx holds the return address for the function.  */
 
 static rtx alpha_return_addr_rtx;
+
+/* The number of cycles of latency we should assume on memory reads.  */
+
+int alpha_memory_latency = 3;
 
 /* Declarations of static functions.  */
 static void alpha_set_memflags_1  PROTO((rtx, int, int, int));
@@ -243,6 +253,52 @@ override_options ()
 	  alpha_fptm = ALPHA_FPTM_SU;
 	}
     }
+
+  {
+    char *end;
+    int lat;
+
+    if (!alpha_mlat_string)
+      alpha_mlat_string = "L1";
+
+    if (isdigit (alpha_mlat_string[0])
+	&& (lat = strtol (alpha_mlat_string, &end, 10), *end == '\0'))
+      ;
+    else if ((alpha_mlat_string[0] == 'L' || alpha_mlat_string[0] == 'l')
+	     && isdigit (alpha_mlat_string[1])
+	     && alpha_mlat_string[2] == '\0')
+      {
+	static int const cache_latency[][4] = 
+	{
+	  { 3, 30, -1 },	/* ev4 -- Bcache is a guess */
+	  { 2, 12, 38 },	/* ev5 -- Bcache from PC164 LMbench numbers */
+	  { 3, 12, -1 },	/* ev6 -- Ho hum, doesn't exist yet */
+	};
+
+	lat = alpha_mlat_string[1] - '0';
+	if (lat < 0 || lat > 3 || cache_latency[alpha_cpu][lat-1] == -1)
+	  {
+	    warning ("L%d cache latency unknown for %s",
+		     lat, alpha_cpu_name[alpha_cpu]);
+	    lat = 3;
+	  }
+	else
+	  lat = cache_latency[alpha_cpu][lat-1];
+      }
+    else if (! strcmp (alpha_mlat_string, "main"))
+      {
+	/* Most current memories have about 370ns latency.  This is
+	   a reasonable guess for a fast cpu.  */
+	lat = 150;
+      }
+    else
+      {
+	warning ("bad value `%s' for -mmemory-latency", alpha_mlat_string);
+	lat = 3;
+      }
+
+    alpha_memory_latency = lat;
+  }
 }
 
 /* Returns 1 if VALUE is a mask that contains full bytes of zero or ones.  */
@@ -1216,6 +1272,10 @@ alpha_adjust_cost (insn, link, dep_insn, cost)
 
   insn_type = get_attr_type (insn);
   dep_insn_type = get_attr_type (dep_insn);
+
+  /* Bring in the user-defined memory latency.  */
+  if (dep_insn_type == TYPE_LD || dep_insn_type == TYPE_LDSYM)
+    cost += alpha_memory_latency-1;
 
   if (alpha_cpu == PROCESSOR_EV5)
     {
