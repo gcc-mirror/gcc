@@ -120,7 +120,7 @@ cplus_demangle_set_style PARAMS ((enum demangling_styles style));
 extern enum demangling_styles 
 cplus_demangle_name_to_style PARAMS ((const char *name));
 
-/* New-ABI demangling entry point, defined in cp-demangle.c.  */
+/* V3 ABI demangling entry point, defined in cp-demangle.c.  */
 extern char*
 cplus_demangle_v3 PARAMS ((const char* mangled));
 
