@@ -1,8 +1,9 @@
-Sat Feb 14 20:09:38 1998  Richard Stallman  <rms@psilocin.gnu.org>
+Wed Feb 18 07:08:05 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
-	* Makefile.in ($(srcdir)/INSTALL, $(srcdir)/cexp.c)
-	($(srcdir)/bi-parser.c, $(srcdir)/c-gperf.h, $(srcdir)/c-parse.y)
-	($(srcdir)/c-parse.c, $(srcdir)/configure): RCS-checkout target file.
+	* emit-rtl.c (hard-reg-set.h): Include.
+	(get_lowpart_common): Don't make new REG for hard reg in a 
+	class that cannot change size.
+	* Makefile.in (emit-rtl.o): Depend on hard-reg-set.h.
 
 Sat Feb 14 09:59:00 1998  Richard Earnshaw (rearnsha@arm.com)
 
