@@ -1712,11 +1712,16 @@ readonly_data ()							\
      } while (0)
 
 #define ASM_GLOBALIZE_LABEL(FILE, NAME)					\
-  do { fputs ("\t.EXPORT ", FILE); assemble_name (FILE, NAME);		\
-       if (FUNCTION_NAME_P (NAME))					\
-	 fputs (",CODE\n", FILE);					\
-       else								\
-	 fputs (",DATA\n", FILE);} while (0)
+  do {									\
+    /* We only handle DATA objects here, functions are globalized in	\
+       ASM_DECLARE_FUNCTION_NAME.  */					\
+    if (! FUNCTION_NAME_P (NAME))					\
+      {									\
+	fputs ("\t.EXPORT ", FILE);					\
+	assemble_name (FILE, NAME);					\
+	fputs (",DATA\n", FILE);					\
+      }									\
+  } while (0)
 
 /* This is how to output a reference to a user-level label named NAME.
    `assemble_name' uses this.  */
