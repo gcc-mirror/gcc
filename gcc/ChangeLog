@@ -1,3 +1,8 @@
+Tue Mar 21 09:24:00 2000  Denis Chertykov  <denisc@overta.ru>
+
+	* config/avr/avr.c (encode_section_info): sets SYMBOL_REF_FLAG if
+	decl is a FUNCTION_DECL
+
 Mon Mar 20 19:53:53 2000  Jim Wilson  <wilson@cygnus.com>
 
 	* config/ia64/ia64.c (ia64_expand_prologue): Don't abort if leaf
