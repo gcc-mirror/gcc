@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <altivec.h>
 
 #define NPAGES 20
@@ -12,7 +13,7 @@ static int failed;
 static void f(vector float *p)
 {
   int i = 1;
-  p = (vector float *)(((int)p + 4095) & ~4095);
+  p = (vector float *)(((ptrdiff_t)p + 4095) & ~4095);
 
   i += NSKIP;
   p += NSKIP*4096/16;

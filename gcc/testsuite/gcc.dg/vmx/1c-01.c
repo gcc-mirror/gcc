@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include "harness.h"
 
 /* Declare vector types.  */
@@ -27,29 +28,29 @@ vector pixel *p16c = &p16;
 
 static void test()
 {
-  check(((int)u8c & 15) == 0, "alignof(u8)");
-  check(((int)u8c & 15) == 0, "alignof(u8)");
-  check(((int)s8c & 15) == 0, "alignof(s8)");
-  check(((int)b8c & 15) == 0, "alignof(b8)");
-  check(((int)u16c & 15) == 0, "alignof(u16)");
-  check(((int)s16c & 15) == 0, "alignof(s16)");
-  check(((int)b16c & 15) == 0, "alignof(b16)");
-  check(((int)u32c & 15) == 0, "alignof(u32)");
-  check(((int)s32c & 15) == 0, "alignof(s32)");
-  check(((int)b32c & 15) == 0, "alignof(b32)");
-  check(((int)f32c & 15) == 0, "alignof(f32)");
-  check(((int)p16c & 15) == 0, "alignof(p16)");
+  check(((ptrdiff_t)u8c & 15) == 0, "alignof(u8)");
+  check(((ptrdiff_t)u8c & 15) == 0, "alignof(u8)");
+  check(((ptrdiff_t)s8c & 15) == 0, "alignof(s8)");
+  check(((ptrdiff_t)b8c & 15) == 0, "alignof(b8)");
+  check(((ptrdiff_t)u16c & 15) == 0, "alignof(u16)");
+  check(((ptrdiff_t)s16c & 15) == 0, "alignof(s16)");
+  check(((ptrdiff_t)b16c & 15) == 0, "alignof(b16)");
+  check(((ptrdiff_t)u32c & 15) == 0, "alignof(u32)");
+  check(((ptrdiff_t)s32c & 15) == 0, "alignof(s32)");
+  check(((ptrdiff_t)b32c & 15) == 0, "alignof(b32)");
+  check(((ptrdiff_t)f32c & 15) == 0, "alignof(f32)");
+  check(((ptrdiff_t)p16c & 15) == 0, "alignof(p16)");
 
-  check((int)u8c == (int)&u8, "u8c == &u8");
-  check((int)u8c == (int)&u8, "u8c == &u8");
-  check((int)s8c == (int)&s8, "s8c == &s8");
-  check((int)b8c == (int)&b8, "b8c == &b8");
-  check((int)u16c == (int)&u16, "u16c == &u16");
-  check((int)s16c == (int)&s16, "s16c == &s16");
-  check((int)b16c == (int)&b16, "b16c == &b16");
-  check((int)u32c == (int)&u32, "u32c == &u32");
-  check((int)s32c == (int)&s32, "s32c == &s32");
-  check((int)b32c == (int)&b32, "b32c == &b32");
-  check((int)f32c == (int)&f32, "f32c == &f32");
-  check((int)p16c == (int)&p16, "p16c == &p16");
+  check((ptrdiff_t)u8c == (ptrdiff_t)&u8, "u8c == &u8");
+  check((ptrdiff_t)u8c == (ptrdiff_t)&u8, "u8c == &u8");
+  check((ptrdiff_t)s8c == (ptrdiff_t)&s8, "s8c == &s8");
+  check((ptrdiff_t)b8c == (ptrdiff_t)&b8, "b8c == &b8");
+  check((ptrdiff_t)u16c == (ptrdiff_t)&u16, "u16c == &u16");
+  check((ptrdiff_t)s16c == (ptrdiff_t)&s16, "s16c == &s16");
+  check((ptrdiff_t)b16c == (ptrdiff_t)&b16, "b16c == &b16");
+  check((ptrdiff_t)u32c == (ptrdiff_t)&u32, "u32c == &u32");
+  check((ptrdiff_t)s32c == (ptrdiff_t)&s32, "s32c == &s32");
+  check((ptrdiff_t)b32c == (ptrdiff_t)&b32, "b32c == &b32");
+  check((ptrdiff_t)f32c == (ptrdiff_t)&f32, "f32c == &f32");
+  check((ptrdiff_t)p16c == (ptrdiff_t)&p16, "p16c == &p16");
 }

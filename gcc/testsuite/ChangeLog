@@ -1,3 +1,8 @@
+2004-04-21  Janis Johnson  <janis187@us.ibm.com>
+
+	* gcc.dg/vmx/1c-01.c: Use ptrdiff_t for casts of pointers.
+	* gcc.dg/vmx/bug-1.c: Ditto.
+
 2004-04-20  Eric Christopher  <echristo@redhat.com>
 
 	* gcc.dg/charset/extern.c: New test.
