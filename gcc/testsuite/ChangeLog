@@ -1,3 +1,7 @@
+2004-07-10  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+	
+	* gfortran.fortran-torture/execute/module_init_1.f90: Fix test.
+
 2004-07-10 Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
 	Paul Brook  <paul@codesourcery.com>
 
