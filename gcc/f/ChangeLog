@@ -1,3 +1,8 @@
+2004-06-17  Toon Moene  <toon@moene.indiv.nluug.nl>
+
+	* news.texi: Note that GCC 3.4.x is the last version
+	of GCC to contain g77.
+
 2004-05-18  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* bugs.texi, news.texi: Don't reference mainline versions.
