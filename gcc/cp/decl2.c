@@ -534,6 +534,8 @@ cxx_decode_option (argc, argv)
 	  warning ("-fname-mangling-version is no longer supported");
 	  return 1;
 	}
+      else if ((option_value = skip_leading_substring (p, "no-builtin-")))
+	disable_builtin_function (option_value);
       else if (dump_switch_p (p))
 	;
       else 

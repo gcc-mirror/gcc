@@ -1,3 +1,8 @@
+2002-07-27  Roger Sayle  <roger@eyesopen.com>
+
+	* doc/invoke.texi: Document that both -fno-builtin-foo and
+	-fno-builtin are supported by the g++ front-end.
+
 2002-07-27  Stan Shebs  <shebs@apple.com>
 
 	* configure.in: Rename config_gtfiles to target_gtfiles.
