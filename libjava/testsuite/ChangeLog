@@ -1,3 +1,8 @@
+2001-10-04  Alexandre Petit-Bianco  <apbianco@redhat.com>
+
+	* libjava.lang/PR3096.java: New file.
+	* libjava.lang/PR3096.out: Likewise.
+
 2001-09-27  Alexandre Petit-Bianco  <apbianco@redhat.com>
 
 	* libjava.compile/final_initialization_in_ctor.java: New file
