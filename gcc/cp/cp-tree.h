@@ -2869,7 +2869,6 @@ extern int is_specialization_of                 PROTO((tree, tree));
 extern int comp_template_args                   PROTO((tree, tree));
 extern void maybe_process_partial_specialization PROTO((tree));
 extern void maybe_check_template_type           PROTO((tree));
-extern int specializations_of_same_template_p   PROTO((tree, tree));
 
 extern int processing_specialization;
 extern int processing_explicit_instantiation;
