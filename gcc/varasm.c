@@ -172,7 +172,7 @@ static void asm_output_aligned_bss	PARAMS ((FILE *, tree, const char *,
 #endif /* BSS_SECTION_ASM_OP */
 static hashval_t const_str_htab_hash	PARAMS ((const void *x));
 static int const_str_htab_eq		PARAMS ((const void *x, const void *y));
-static void asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
+static bool asm_emit_uninitialised	PARAMS ((tree, const char*, int, int));
 static void resolve_unique_section	PARAMS ((tree, int, int));
 static void mark_weak                   PARAMS ((tree));
 
@@ -1350,7 +1350,7 @@ assemble_string (p, size)
 #endif
 #endif
 
-static void
+static bool
 asm_emit_uninitialised (decl, name, size, rounded)
      tree decl;
      const char *name;
@@ -1365,13 +1365,17 @@ asm_emit_uninitialised (decl, name, size, rounded)
   }
   destination = asm_dest_local;
 
+  /* ??? We should handle .bss via select_section mechanisms rather than
+     via special target hooks.  That would eliminate this special case.  */
   if (TREE_PUBLIC (decl))
     {
-#if defined ASM_EMIT_BSS
-      if (! DECL_COMMON (decl))
+      if (!DECL_COMMON (decl))
+#ifdef ASM_EMIT_BSS
 	destination = asm_dest_bss;
-      else
+#else
+	return false;
 #endif
+      else
 	destination = asm_dest_common;
     }
 
@@ -1420,7 +1424,7 @@ asm_emit_uninitialised (decl, name, size, rounded)
       abort ();
     }
 
-  return;
+  return true;
 }
 
 /* Assemble everything that is needed for a variable or function declaration.
@@ -1593,16 +1597,6 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
       if (DECL_COMMON (decl))
 	sorry ("thread-local COMMON data not implemented");
     }
-#ifndef ASM_EMIT_BSS
-  /* If the target can't output uninitialized but not common global data
-     in .bss, then we have to use .data.  */
-  /* ??? We should handle .bss via select_section mechanisms rather than
-     via special target hooks.  That would eliminate this special case.  */
-  /* Duplicate BSS test in asm_emit_uninitialized instead of having it
-     return success or failure for that case.  Shrug.  */
-  else if (TREE_PUBLIC (decl) && !DECL_COMMON (decl))
-    ;
-#endif
   else if (DECL_INITIAL (decl) == 0
 	   || DECL_INITIAL (decl) == error_mark_node
 	   || (flag_zero_initialized_in_bss
@@ -1629,9 +1623,10 @@ assemble_variable (decl, top_level, at_end, dont_output_data)
 	  (decl, "requested alignment for %s is greater than implemented alignment of %d",rounded);
 #endif
 
-      asm_emit_uninitialised (decl, name, size, rounded);
-
-      return;
+      /* If the target cannot output uninitialized but not common global data
+	 in .bss, then we have to use .data, so fall through.  */
+      if (asm_emit_uninitialised (decl, name, size, rounded))
+	return;
     }
 
   /* Handle initialized definitions.
