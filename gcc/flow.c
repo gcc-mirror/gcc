@@ -435,7 +435,6 @@ count_basic_blocks (f)
   register RTX_CODE prev_code;
   register int count = 0;
   int eh_region = 0;
-  int in_libcall_block = 0;
   int call_had_abnormal_edge = 0;
   rtx prev_call = NULL_RTX;
 
@@ -443,11 +442,6 @@ count_basic_blocks (f)
   for (insn = f; insn; insn = NEXT_INSN (insn))
     {
       register RTX_CODE code = GET_CODE (insn);
-
-      /* Track when we are inside in LIBCALL block.  */
-      if (GET_RTX_CLASS (code) == 'i'
-	  && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	in_libcall_block = 1;
 
       if (code == CODE_LABEL
 	  || (GET_RTX_CLASS (code) == 'i'
@@ -473,14 +467,20 @@ count_basic_blocks (f)
       /* Record whether this call created an edge.  */
       if (code == CALL_INSN)
 	{
+	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	  int region = (note ? XINT (XEXP (note, 0), 0) : 1);
 	  prev_call = insn;
 	  call_had_abnormal_edge = 0;
-	  if (nonlocal_goto_handler_labels)
-	    call_had_abnormal_edge = !in_libcall_block;
-	  else if (eh_region)
+
+	  /* If there is a specified EH region, we have an edge.  */
+	  if (eh_region && region > 0)
+	    call_had_abnormal_edge = 1;
+	  else
 	    {
-	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	      if (!note || XINT (XEXP (note, 0), 0) != 0)
+	      /* If there is a nonlocal goto label and the specified
+		 region number isn't -1, we have an edge. (0 means
+		 no throw, but might have a nonlocal goto).  */
+	      if (nonlocal_goto_handler_labels && region >= 0)
 		call_had_abnormal_edge = 1;
 	    }
 	}
@@ -494,9 +494,6 @@ count_basic_blocks (f)
       else if (NOTE_LINE_NUMBER (insn) == NOTE_INSN_EH_REGION_END)
 	--eh_region;
 
-      if (GET_RTX_CLASS (GET_CODE (insn)) == 'i'
-	  && find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	in_libcall_block = 0;
     }
 
   /* The rest of the compiler works a bit smoother when we don't have to
@@ -527,7 +524,6 @@ find_basic_blocks_1 (f, bb_eh_end)
      rtx *bb_eh_end;
 {
   register rtx insn, next;
-  int in_libcall_block = 0;
   int call_has_abnormal_edge = 0;
   int i = 0;
   rtx bb_note = NULL_RTX;
@@ -548,21 +544,22 @@ find_basic_blocks_1 (f, bb_eh_end)
 
       next = NEXT_INSN (insn);
 
-      /* Track when we are inside in LIBCALL block.  */
-      if (GET_RTX_CLASS (code) == 'i'
-	  && find_reg_note (insn, REG_LIBCALL, NULL_RTX))
-	in_libcall_block = 1;
-
       if (code == CALL_INSN)
 	{
 	  /* Record whether this call created an edge.  */
+	  rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
+	  int region = (note ? XINT (XEXP (note, 0), 0) : 1);
 	  call_has_abnormal_edge = 0;
-	  if (nonlocal_goto_handler_labels)
-	    call_has_abnormal_edge = !in_libcall_block;
-	  else if (eh_list)
+
+	  /* If there is an EH region, we have an edge.  */
+	  if (eh_list && region > 0)
+	    call_has_abnormal_edge = 1;
+	  else
 	    {
-	      rtx note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
-	      if (!note || XINT (XEXP (note, 0), 0) != 0)
+	      /* If there is a nonlocal goto label and the specified
+		 region number isn't -1, we have an edge. (0 means
+		 no throw, but might have a nonlocal goto).  */
+	      if (nonlocal_goto_handler_labels && region >= 0)
 		call_has_abnormal_edge = 1;
 	    }
 	}
@@ -722,9 +719,6 @@ find_basic_blocks_1 (f, bb_eh_end)
 		    = gen_rtx_EXPR_LIST (VOIDmode, XEXP (note, 0),
 				         label_value_list);
 	      }
-
-	  if (find_reg_note (insn, REG_RETVAL, NULL_RTX))
-	    in_libcall_block = 0;
 	}
     }
 
@@ -996,7 +990,7 @@ make_edges (label_value_list, bb_eh_end)
 	    x = find_reg_note (insn, REG_EH_REGION, 0);
 	  if (x)
 	    {
-	      if (XINT (XEXP (x, 0), 0) != 0)
+	      if (XINT (XEXP (x, 0), 0) > 0)
 		{
 		  ptr = get_first_handler (XINT (XEXP (x, 0), 0));
 		  while (ptr)
