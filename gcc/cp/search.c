@@ -1637,6 +1637,23 @@ lookup_fnfields_1 (type, name)
 	  if (DECL_NAME (*methods) == name)
 	    break;
 	}
+
+      /* If we didn't find it, it might have been a template
+	 conversion operator.  (Note that we don't look for this case
+	 above so that we will always find specializations first.)  */
+      if (methods == end 
+	  && IDENTIFIER_TYPENAME_P (name)) 
+	{
+	  methods = &TREE_VEC_ELT (method_vec, 0) + 1;
+	  
+	  while (++methods != end)
+	    {
+	      if (TREE_CODE (*methods) == TEMPLATE_DECL 
+		  && IDENTIFIER_TYPENAME_P (DECL_NAME (*methods)))
+		break;
+	    }
+	}
+
       if (methods != end)
 	return methods - &TREE_VEC_ELT (method_vec, 0);
     }

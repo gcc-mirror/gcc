@@ -722,33 +722,42 @@ dump_decl (t, v)
 
     case TEMPLATE_DECL:
       {
-	tree args = DECL_TEMPLATE_PARMS (t);
-	int i, len = args ? TREE_VEC_LENGTH (args) : 0;
-	OB_PUTS ("template <");
-	for (i = 0; i < len; i++)
+	tree orig_args = DECL_TEMPLATE_PARMS (t);
+	tree args;
+	int i; 
+	for (args = orig_args = nreverse (orig_args); 
+	     args;
+	     args = TREE_CHAIN (args))
 	  {
-	    tree arg = TREE_VEC_ELT (args, i);
-	    tree defval = TREE_PURPOSE (arg);
-	    arg = TREE_VALUE (arg);
-	    if (TREE_CODE (arg) == TYPE_DECL)
-	      {
-		OB_PUTS ("class ");
-		OB_PUTID (DECL_NAME (arg));
-	      }
-	    else
-	      dump_decl (arg, 1);
+	    int len = TREE_VEC_LENGTH (TREE_VALUE (args));
 
-	    if (defval)
+	    OB_PUTS ("template <");
+	    for (i = 0; i < len; i++)
 	      {
-		OB_PUTS (" = ");
-		dump_decl (defval, 1);
-	      }
+		tree arg = TREE_VEC_ELT (TREE_VALUE (args), i);
+		tree defval = TREE_PURPOSE (arg);
+		arg = TREE_VALUE (arg);
+		if (TREE_CODE (arg) == TYPE_DECL)
+		  {
+		    OB_PUTS ("class ");
+		    OB_PUTID (DECL_NAME (arg));
+		  }
+		else
+		  dump_decl (arg, 1);
 		
-	    OB_PUTC2 (',', ' ');
+		if (defval)
+		  {
+		    OB_PUTS (" = ");
+		    dump_decl (defval, 1);
+		  }
+		
+		OB_PUTC2 (',', ' ');
+	      }
+	    if (len != 0)
+	      OB_UNPUT (2);
+	    OB_PUTC2 ('>', ' ');
 	  }
-	if (len != 0)
-	  OB_UNPUT (2);
-	OB_PUTC2 ('>', ' ');
+	nreverse(orig_args);
 
 	if (TREE_CODE (DECL_TEMPLATE_RESULT (t)) == TYPE_DECL)
 	  dump_type (TREE_TYPE (t), v);
@@ -801,10 +810,17 @@ dump_function_decl (t, v)
      tree t;
      int v;
 {
-  tree name = DECL_ASSEMBLER_NAME (t);
-  tree fntype = TREE_TYPE (t);
-  tree parmtypes = TYPE_ARG_TYPES (fntype);
+  tree name;
+  tree fntype;
+  tree parmtypes;
   tree cname = NULL_TREE;
+
+  if (TREE_CODE (t) == TEMPLATE_DECL)
+    t = DECL_TEMPLATE_RESULT (t);
+
+  name = DECL_ASSEMBLER_NAME (t);
+  fntype = TREE_TYPE (t);
+  parmtypes = TYPE_ARG_TYPES (fntype);
 
   /* Friends have DECL_CLASS_CONTEXT set, but not DECL_CONTEXT.  */
   if (DECL_CONTEXT (t))
@@ -1349,8 +1365,17 @@ dump_expr (t, nop)
     case TEMPLATE_CONST_PARM:
       if (current_template_parms)
 	{
-	  tree r = TREE_VEC_ELT (TREE_VALUE (current_template_parms),
-				 TEMPLATE_CONST_IDX (t));
+	  int i;
+	  tree parms;
+	  tree r;
+
+	  for (parms = current_template_parms;
+	       TREE_CHAIN (parms);
+	       parms = TREE_CHAIN (parms))
+	    ;
+
+	  r = TREE_VEC_ELT (TREE_VALUE (parms),
+			    TEMPLATE_CONST_IDX (t));
 	  dump_decl (TREE_VALUE (r), -1);
 	}
       else

@@ -1091,6 +1091,7 @@ struct lang_decl
 #define CLASSTYPE_TI_TEMPLATE(NODE) TI_TEMPLATE (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_ARGS(NODE)     TI_ARGS (CLASSTYPE_TEMPLATE_INFO (NODE))
 #define CLASSTYPE_TI_SPEC_INFO(NODE) TI_SPEC_INFO (CLASSTYPE_TEMPLATE_INFO (NODE))
+#define INNERMOST_TEMPLATE_PARMS(NODE)  TREE_VALUE(NODE)
 
 #define DECL_SAVED_TREE(NODE)		DECL_MEMFUNC_POINTER_TO (NODE)
 #define COMPOUND_STMT_NO_SCOPE(NODE)	TREE_LANG_FLAG_0 (NODE)
@@ -1334,6 +1335,10 @@ extern int flag_new_for_scope;
 
 /* Accessor macros for C++ template decl nodes.  */
 #define DECL_TEMPLATE_PARMS(NODE)       DECL_ARGUMENTS(NODE)
+#define DECL_INNERMOST_TEMPLATE_PARMS(NODE) \
+   INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (NODE))
+#define DECL_NTPARMS(NODE) \
+   TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
 /* For class templates.  */
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE(NODE)
 /* For function, method, class-data templates.  */
@@ -1346,7 +1351,7 @@ extern int flag_new_for_scope;
    && TREE_CODE (DECL_TEMPLATE_RESULT (NODE)) == FUNCTION_DECL)
 
 #define PRIMARY_TEMPLATE_P(NODE) \
-  (TREE_TYPE (DECL_TEMPLATE_PARMS (NODE)) == (NODE))
+  (TREE_TYPE (DECL_INNERMOST_TEMPLATE_PARMS (NODE)) == (NODE))
 
 #define CLASSTYPE_TEMPLATE_LEVEL(NODE) \
   (TREE_INT_CST_HIGH (TREE_PURPOSE (CLASSTYPE_TI_TEMPLATE (NODE))))
@@ -2112,6 +2117,7 @@ extern tree grok_alignof			PROTO((tree));
 extern tree grok_array_decl			PROTO((tree, tree));
 extern tree delete_sanity			PROTO((tree, tree, int, int));
 extern tree check_classfn			PROTO((tree, tree));
+extern void check_member_template               PROTO((tree));
 extern tree grokfield				PROTO((tree, tree, tree, tree, tree));
 extern tree grokbitfield			PROTO((tree, tree, tree));
 extern tree groktypefield			PROTO((tree, tree));
@@ -2299,10 +2305,12 @@ extern void synthesize_method			PROTO((tree));
 extern tree get_id_2				PROTO((char *, tree));
 
 /* in pt.c */
-extern tree tsubst				PROTO ((tree, tree*, int, tree));
-extern tree tsubst_expr				PROTO ((tree, tree*, int, tree));
-extern tree tsubst_copy				PROTO ((tree, tree*, int, tree));
+extern tree tsubst				PROTO ((tree, tree, int, tree));
+extern tree tsubst_expr				PROTO ((tree, tree, int, tree));
+extern tree tsubst_copy				PROTO ((tree, tree, int, tree));
 extern tree tsubst_chain			PROTO((tree, tree));
+extern void begin_member_template_processing    PROTO((tree));
+extern void end_member_template_processing      PROTO((void));
 extern void begin_template_parm_list		PROTO((void));
 extern tree process_template_parm		PROTO((tree, tree));
 extern tree end_template_parm_list		PROTO((tree));
@@ -2312,8 +2320,9 @@ extern void push_template_decl			PROTO((tree));
 extern tree lookup_template_class		PROTO((tree, tree, tree));
 extern int uses_template_parms			PROTO((tree));
 extern tree instantiate_class_template		PROTO((tree));
-extern tree instantiate_template		PROTO((tree, tree *));
+extern tree instantiate_template		PROTO((tree, tree));
 extern void overload_template_name		PROTO((tree));
+extern int fn_type_unification                  PROTO((tree, tree, tree, tree, int));
 extern int type_unification			PROTO((tree, tree *, tree, tree, int *, int, int));
 struct tinst_level *tinst_for_decl		PROTO((void));
 extern void mark_decl_instantiated		PROTO((tree, int));
@@ -2324,7 +2333,7 @@ extern void do_type_instantiation		PROTO((tree, tree));
 extern tree instantiate_decl			PROTO((tree));
 extern tree lookup_nested_type_by_name		PROTO((tree, tree));
 extern tree do_poplevel				PROTO((void));
-extern tree *get_bindings			PROTO((tree, tree));
+extern tree get_bindings			PROTO((tree, tree));
 /* CONT ... */
 extern void add_tree				PROTO((tree));
 extern void add_maybe_template			PROTO((tree, tree));
@@ -2333,6 +2342,7 @@ extern tree most_specialized			PROTO((tree, tree));
 extern tree most_specialized_class		PROTO((tree, tree));
 extern int more_specialized_class		PROTO((tree, tree));
 extern void do_pushlevel			PROTO((void));
+extern int is_member_template                   PROTO((tree));
 
 /* in repo.c */
 extern void repo_template_used			PROTO((tree));

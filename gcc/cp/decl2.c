@@ -1282,6 +1282,59 @@ delete_sanity (exp, size, doing_vec, use_global_delete)
     }
 }
 
+/* Report an error if the indicated template declaration is not the
+   sort of thing that should be a member template.  */
+
+void
+check_member_template (tmpl)
+     tree tmpl;
+{
+  tree decl;
+
+  my_friendly_assert (TREE_CODE (tmpl) == TEMPLATE_DECL, 0);
+  decl = DECL_TEMPLATE_RESULT (tmpl);
+
+  if (TREE_CODE (decl) == FUNCTION_DECL) 
+    {
+      if (current_function_decl)
+	/* 14.5.2.2 [temp.mem]
+	   
+	   A local class shall not have member templates. */
+	cp_error ("declaration of of member template `%#D' in local class",
+		  decl);
+      
+      if (DECL_VIRTUAL_P (decl)) 
+	{
+	  /* 14.5.2.3 [temp.mem]
+
+	     A member function template shall not be virtual.  */
+	  cp_error 
+	    ("invalid use of `virtual' in template declaration of `%#D'",
+	     decl);
+	  DECL_VIRTUAL_P (decl) = 0;
+	}
+
+      /* The debug-information generating code doesn't know what to do
+	 with member templates.  */ 
+      DECL_IGNORED_P (tmpl) = 1;
+    } 
+  else if (TREE_CODE (decl) == TYPE_DECL &&
+	   AGGREGATE_TYPE_P (TREE_TYPE (decl)))
+    {
+      if (current_function_decl)
+	/* 14.5.2.2 [temp.mem]
+
+	   A local class shall not have member templates.  */
+	cp_error ("declaration of of member template `%#D' in local class",
+		  decl);
+
+      /* We don't handle member template classes yet. */
+      sorry ("member templates classes");
+    }
+  else
+    cp_error ("template declaration of `%#D'", decl);
+}
+
 /* Sanity check: report error if this function FUNCTION is not
    really a member of the class (CTYPE) it is supposed to belong to.
    CNAME is the same here as it is for grokclassfn above.  */
@@ -1295,6 +1348,7 @@ check_classfn (ctype, function)
   tree method_vec = CLASSTYPE_METHOD_VEC (complete_type (ctype));
   tree *methods = 0;
   tree *end = 0;
+  tree templates = NULL_TREE;
 
   if (method_vec != 0)
     {
@@ -1311,6 +1365,7 @@ check_classfn (ctype, function)
 
       while (++methods != end)
 	{
+	  fndecl = *methods;
 	  if (fn_name == DECL_NAME (*methods))
 	    {
 	    got_it:
@@ -1342,14 +1397,39 @@ check_classfn (ctype, function)
 				     TREE_TYPE (TREE_TYPE (fndecl)), 1)
 			  && compparms (p1, p2, 3))
 			return fndecl;
+
+		      if (is_member_template (fndecl)) 
+			/* This function might be an instantiation
+			   or specialization of fndecl.  */
+			templates = 
+			  tree_cons (NULL_TREE, fndecl, templates);
 		    }
 #endif
 		  fndecl = DECL_CHAIN (fndecl);
 		}
 	      break;		/* loser */
 	    }
+	  else if (TREE_CODE (fndecl) == TEMPLATE_DECL 
+		   && IDENTIFIER_TYPENAME_P (DECL_NAME (fndecl))
+		   && IDENTIFIER_TYPENAME_P (fn_name))
+	    /* The method in the class is a member template
+	       conversion operator.  We are declaring another
+	       conversion operator.  It is possible that even though
+	       the names don't match, there is some specialization
+	       occurring.  */
+	    templates = 
+	      tree_cons (NULL_TREE, fndecl, templates);
 	}
     }
+
+  if (templates)
+    /* This function might be an instantiation or a specialization.
+       We should verify that this is possible.  If it is, we must
+       somehow add the new declaration to the method vector for the
+       class.  Perhaps we should use add_method?  For now, we simply
+       return NULL_TREE, which lets the caller know that this
+       function is new, but we don't print an error message.  */
+    return NULL_TREE;
 
   if (methods != end)
     {
@@ -2792,7 +2872,7 @@ finish_file ()
 
   for (fnname = maybe_templates; fnname; fnname = TREE_CHAIN (fnname))
     {
-      tree *args, fn, decl = TREE_VALUE (fnname);
+      tree args, fn, decl = TREE_VALUE (fnname);
 
       if (DECL_INITIAL (decl))
 	continue;
@@ -2800,7 +2880,6 @@ finish_file ()
       fn = TREE_PURPOSE (fnname);
       args = get_bindings (fn, decl);
       fn = instantiate_template (fn, args);
-      free (args);
       instantiate_decl (fn);
     }
 

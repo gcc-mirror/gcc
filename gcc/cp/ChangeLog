@@ -1,3 +1,104 @@
+Fri Sep  5 17:27:38 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* class.c (grow_method): Remove check for redeclaration.
+
+Wed Sep  3 12:30:24 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* pt.c (type_unification): Change calling squence to allow for
+	multiple levels of template parameters.
+	(tsubst_expr): Likewise.
+	(tsubst): Likewise.
+	(tsubst_copy): Likewise.
+	(instantiate_template): Likewise.
+	(unify): Likewise.
+	* call.c (build_overload_call_real): Use it.
+	(add_builtin_candidate): Use it.
+	(build_new_method_call): Use it.
+	* class.c (instantiate_type): Use it.
+	* decl.c (grokdeclarator): Use it.
+	* decl2.c (finish_file): Use it.
+	* method.c (build_overload_identifier): Use it.
+	
+	* call.c (add_template_candidate):  Add additional parameter for
+	the function return type.  Call fn_type_unification istead of
+	type_unification.
+	(build_user_type_conversion_1): Handle member templates.
+	(build_new_function_call): Likewise.
+	(build_new_op): Likewise.
+	(build_new_method_call): Likewise.
+	
+	* class.c (grow_method): Don't give an error message indicating
+ 	that two member templates with the same name are ambiguous.
+	(finish_struct): Treat member template functions just like member
+ 	functions.
+	
+	* cp-tree.h (check_member_template): Add declaration.
+	(begin_member_template_processing): Likewise.
+	(end_member_template_processing): Likewise.
+	(fn_type_unification): Likewise.
+	(is_member_template): Likewise.
+	(tsubst): Change prototype.
+	(tsubst_expr): Likewise.
+	(tsubst_copy): Likewise.
+	(instantiate_template): Likewise.
+	(get_bindings): Likewise.
+
+	* decl.c (decls_match): Handle multiple levels of template
+	parameters. 
+	(pushdecl): Handle template type params just like other type
+	declarations. 
+	(push_class_level_binding): Return immediately if the
+	class_binding_level is NULL.
+	(grokfndecl): If check_classfn() returns a member_template, use
+	the result of the template, not the template itself.
+	
+	* decl2.c (check_member_template): New function.  Check to see
+	that the entity declared to be a member template can be one.
+	(check_classfn): Allow redeclaration of member template functions
+	with different types; the new functions can be specializations or
+	explicit instantiations.
+	
+	* error.c (dump_decl): Handle multiple levels of template
+	parameters. 
+	(dump_function_decl): Update to handle function	templates.
+
+	* lex.c (do_pending_inlines): Set up template parameter context
+	for member templates.
+	(process_next_inline): Likewise.
+
+	* method. (build_overload_identifier): Adjust for multiple levels
+	of template parameters.
+	
+	* parse.y (fn.def2): Add member templates.
+	(component_decl_1): Likewise.
+
+	* pt.c (begin_member_template_processing): New function.
+	(end_member_template_processing): Likewise.
+	(is_member_template): Likewise.
+	(fn_type_unification): Likewise.
+	(current_template_parms): Return a vector of all the template
+	parms, not just the innermost level of parms.
+	(push_template_decl): Deal with the possibility of member
+	templates. 
+	(lookup_template_class): Likewise.
+	(uses_template_parms): Likewise.
+	(tsubst): Modify processing to TEMPLATE_TYPE_PARM and
+	TEMPLATE_CONST_PARM to deal with multiple levels of template
+	arguments.   Add processing of TEMPLATE_DECL to produce new
+	TEMPLATE_DECLs from old ones.
+	(do_decl_instantiation): Handle member templates.
+
+	* search.c (lookup_fnfields_1): Handle member template conversion
+	operators. 
+
+	* tree.c (cp_tree_equal): Check the levels, as well as the
+	indices, of TEMPLATE_CONST_PARMs.
+
+	* typeck.c (comptypes): Check the levels, as well as the indices,
+	fo TEMPLATE_TYPE_PARMs.
+	(build_x_function_call): Treat member templates like member
+	functions. 
+	
 Wed Sep  3 11:09:25 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* typeck.c (c_expand_return): Always convert_for_initialization
