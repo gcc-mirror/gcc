@@ -11818,13 +11818,8 @@ ffecom_init_0 (void)
 
   ffecom_float_zero_ = build_real (float_type_node, dconst0);
   ffecom_double_zero_ = build_real (double_type_node, dconst0);
-  {
-    REAL_VALUE_TYPE point_5;
-
-    REAL_ARITHMETIC (point_5, RDIV_EXPR, dconst1, dconst2);
-    ffecom_float_half_ = build_real (float_type_node, point_5);
-    ffecom_double_half_ = build_real (double_type_node, point_5);
-  }
+  ffecom_float_half_ = build_real (float_type_node, dconsthalf);
+  ffecom_double_half_ = build_real (double_type_node, dconsthalf);
 
   /* Do "extern int xargc;".  */
 
