@@ -1,5 +1,7 @@
 1999-04-13  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* pt.c (tsubst_function_type): Copy attributes over.
+
 	* tree.c (cp_valid_lang_attribute): New fn.  Handle init_priority
 	and com_interface.
 	* cp-tree.h: Add prototype.
