@@ -1,3 +1,16 @@
+2000-04-09  Mark Mitchell  <mark@codesourcery.com>
+
+	* cp-tree.h (struct lang_decl): Remove main_decl_variant.
+	(DECL_MAIN_VARIANT): Remove.
+	* decl.c (duplicate_decls): Don't set it.
+	(start_function): Likewise.
+	(lang_mark_tree): Don't mark it.
+	* decl2.c (defer_fn): Don't use it.
+	* lex.c (retrofit_lang_decl): Don't set it.
+	* pt.c (tsubst_decl): Likewise.
+	* ptree.c (print_lang_decl): Don't print it.
+	* typeck.c (mark_addressable): Don't use it.
+	
 2000-04-09  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* vec.cc: Include <new> and <exception>.

@@ -44,11 +44,6 @@ print_lang_decl (file, node, indent)
   if (TREE_CODE (node) == FIELD_DECL)
     return;
   indent_to (file, indent + 3);
-  if (DECL_MAIN_VARIANT (node))
-    {
-      fprintf (file, " decl-main-variant ");
-      fprintf (file, HOST_PTR_PRINTF, DECL_MAIN_VARIANT (node));
-    }
   if (TREE_CODE (node) == FUNCTION_DECL
       && DECL_PENDING_INLINE_INFO (node))
     {

@@ -4988,15 +4988,13 @@ mark_addressable (exp)
 	return 1;
 
       case FUNCTION_DECL:
-	if (DECL_LANG_SPECIFIC (x) != 0)
-	  {
-	    x = DECL_MAIN_VARIANT (x);
-	    /* We have to test both conditions here.  The first may be
-	       non-zero in the case of processing a default function.  The
-	       second may be non-zero in the case of a template function.  */
-	    if (DECL_TEMPLATE_INFO (x) && !DECL_TEMPLATE_SPECIALIZATION (x))
-	      mark_used (x);
-	  }
+	/* We have to test both conditions here.  The first may be
+	   non-zero in the case of processing a default function.  The
+	   second may be non-zero in the case of a template function.  */
+	if (DECL_LANG_SPECIFIC (x)
+	    && DECL_TEMPLATE_INFO (x) 
+	    && !DECL_TEMPLATE_SPECIALIZATION (x))
+	  mark_used (x);
 	TREE_ADDRESSABLE (x) = 1;
 	TREE_USED (x) = 1;
 	TREE_ADDRESSABLE (DECL_ASSEMBLER_NAME (x)) = 1;

@@ -4995,9 +4995,6 @@ retrofit_lang_decl (t)
     DECL_LANGUAGE (t) = lang_java;
   else my_friendly_abort (64);
 
-  if (CAN_HAVE_FULL_LANG_DECL_P (t))
-    DECL_MAIN_VARIANT (t) = t;
-
 #ifdef GATHER_STATISTICS
   tree_node_counts[(int)lang_decl] += 1;
   tree_node_sizes[(int)lang_decl] += size;
