@@ -1,3 +1,8 @@
+Sun Mar  1 17:57:34 1998  Mumit Khan <khan@xraylith.wisc.edu>
+
+	* config/i386/winnt.c (i386_pe_unique_section): Put read-only
+	data in the text section unless READONLY_DATA_SECTION is defined.
+
 Sun Mar  1 17:48:46 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* c-parse.in (undeclared variable error): Tweak error message to
