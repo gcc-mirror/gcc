@@ -1417,9 +1417,8 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
       break;
     case EXPR_WITH_FILE_LOCATION:
       {
-	const char *saved_input_filename = input_filename;
+	location_t saved_location = input_location;
 	tree body = EXPR_WFL_NODE (exp);
-	int saved_lineno = input_line;
 	if (body == empty_stmt_node)
 	  break;
 	input_filename = EXPR_WFL_FILENAME (exp);
@@ -1428,8 +1427,7 @@ generate_bytecode_insns (tree exp, int target, struct jcf_partial *state)
 	    && debug_info_level > DINFO_LEVEL_NONE)
 	  put_linenumber (input_line, state);
 	generate_bytecode_insns (body, target, state);
-	input_filename = saved_input_filename;
-	input_line = saved_lineno;
+	input_location = saved_location;
       }
       break;
     case INTEGER_CST:

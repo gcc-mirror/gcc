@@ -1305,10 +1305,7 @@ duplicate_decls (tree newdecl, tree olddecl, int different_binding_level,
 	 information so that meaningful diagnostics can be given.  */
       if (DECL_INITIAL (newdecl) == 0 && DECL_INITIAL (olddecl) != 0
 	  && ! different_binding_level)
-	{
-	  DECL_SOURCE_LINE (newdecl) = DECL_SOURCE_LINE (olddecl);
-	  DECL_SOURCE_FILE (newdecl) = DECL_SOURCE_FILE (olddecl);
-	}
+	DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
 
       /* Merge the unused-warning information.  */
       if (DECL_IN_SYSTEM_HEADER (olddecl))

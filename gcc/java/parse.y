@@ -5461,14 +5461,12 @@ void
 safe_layout_class (tree class)
 {
   tree save_current_class = current_class;
-  const char *save_input_filename = input_filename;
-  int save_lineno = input_line;
+  location_t save_location = input_location;
 
   layout_class (class);
 
   current_class = save_current_class;
-  input_filename = save_input_filename;
-  input_line = save_lineno;
+  input_location = save_location;
 }
 
 static tree
