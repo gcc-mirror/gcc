@@ -686,8 +686,8 @@ cpp_read_state (cpp_reader *r, const char *name, FILE *f,
       else if (m.name_length != m.definition_length)
 	{
 	  if (cpp_push_buffer (r, defn + m.name_length, 
-			       m.definition_length - m.name_length, 
-			       true, 1) != NULL)
+			       m.definition_length - m.name_length, true)
+	      != NULL)
 	    {
 	      _cpp_clean_line (r);
 	      if (!_cpp_create_definition (r, h))

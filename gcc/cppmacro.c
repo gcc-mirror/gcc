@@ -270,7 +270,7 @@ builtin_macro (cpp_reader *pfile, cpp_hashnode *node)
   memcpy (nbuf, buf, len);
   nbuf[len]='\n';
 
-  cpp_push_buffer (pfile, (uchar *) nbuf, len, /* from_stage3 */ true, 1);
+  cpp_push_buffer (pfile, (uchar *) nbuf, len, /* from_stage3 */ true);
   _cpp_clean_line (pfile);
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
@@ -426,7 +426,7 @@ paste_tokens (cpp_reader *pfile, const cpp_token **plhs, const cpp_token *rhs)
   end = cpp_spell_token (pfile, rhs, end);
   *end = '\n';
 
-  cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true, 1);
+  cpp_push_buffer (pfile, buf, end - buf, /* from_stage3 */ true);
   _cpp_clean_line (pfile);
 
   /* Set pfile->cur_token as required by _cpp_lex_direct.  */
@@ -1136,10 +1136,6 @@ cpp_sys_macro_p (cpp_reader *pfile)
 void
 cpp_scan_nooutput (cpp_reader *pfile)
 {
-  /* Request a CPP_EOF token at the end of this file, rather than
-     transparently continuing with the including file.  */
-  pfile->buffer->return_at_eof = true;
-
   if (CPP_OPTION (pfile, traditional))
     while (_cpp_read_logical_line_trad (pfile))
       ;
