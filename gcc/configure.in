@@ -2262,12 +2262,10 @@ changequote([,])dnl
   ia64*-*-*)
     gcc_GAS_CHECK_FEATURE([ltoffx and ldxmov relocs],
 	gcc_cv_as_ia64_ltoffx_ldxmov_relocs, [2,14,0],,
-changequote(<<,>>)dnl
-<<	.text
+[	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
-	ld8.mov r16 = [r15], x#>>,
-changequote([,])dnl
+	ld8.mov r16 = [[r15]], x#],,
     [AC_DEFINE(HAVE_AS_LTOFFX_LDXMOV_RELOCS, 1,
 	  [Define if your assembler supports ltoffx and ldxmov relocations.])])
 
