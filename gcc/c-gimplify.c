@@ -338,10 +338,23 @@ gimplify_c_loop (tree cond, tree body, tree incr, bool cond_is_first)
   location_t stmt_locus;
 
   stmt_locus = input_location;
+  stmt_list = NULL_TREE;
+  entry = NULL_TREE;
 
-  /* Detect do { ... } while (0) and don't generate loop construct.  */
-  if (!cond_is_first && cond && integer_zerop (cond))
-    top = cond = NULL;
+  break_block = begin_bc_block (bc_break);
+  cont_block = begin_bc_block (bc_continue);
+
+  /* If condition is zero don't generate a loop construct.  */
+  if (cond && integer_zerop (cond))
+    {
+      top = NULL_TREE;
+      exit = NULL_TREE;
+      if (cond_is_first)
+	{
+	  t = build_bc_goto (bc_break);
+	  append_to_statement_list (t, &stmt_list);
+	}
+    }
   else
     {
       /* If we use a LOOP_EXPR here, we have to feed the whole thing
@@ -349,44 +362,36 @@ gimplify_c_loop (tree cond, tree body, tree incr, bool cond_is_first)
 	 have to gimplify the loop body NOW so that we can resolve
 	 break/continue stmts, seems easier to just expand to gotos.  */
       top = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-    }
 
-  break_block = begin_bc_block (bc_break);
-
-  if (top)
-    {
       /* If we have an exit condition, then we build an IF with gotos either
 	 out of the loop, or to the top of it.  If there's no exit condition,
 	 then we just build a jump back to the top.  */
       exit = build_and_jump (&LABEL_EXPR_LABEL (top));
-      if (cond)
+      if (cond && !integer_nonzerop (cond))
 	{
 	  t = build_bc_goto (bc_break);
 	  exit = build3 (COND_EXPR, void_type_node, cond, exit, t);
 	  exit = fold (exit);
 	  gimplify_stmt (&exit);
+
+	  if (cond_is_first)
+	    {
+	      if (incr)
+		{
+		  entry = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
+		  t = build_and_jump (&LABEL_EXPR_LABEL (entry));
+		}
+	      else
+		t = build_bc_goto (bc_continue);
+	      append_to_statement_list (t, &stmt_list);
+	    }
 	}
     }
-  else
-    exit = NULL_TREE;
-
-  cont_block = begin_bc_block (bc_continue);
 
   gimplify_stmt (&body);
   gimplify_stmt (&incr);
 
   body = finish_bc_block (cont_block, body);
-
-  stmt_list = NULL;
-
-  if (cond_is_first && cond)
-    {
-      entry = build1 (LABEL_EXPR, void_type_node, NULL_TREE);
-      t = build_and_jump (&LABEL_EXPR_LABEL (entry));
-      append_to_statement_list (t, &stmt_list);
-    }
-  else
-    entry = NULL_TREE;
 
   append_to_statement_list (top, &stmt_list);
   append_to_statement_list (body, &stmt_list);
