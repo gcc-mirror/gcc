@@ -386,7 +386,7 @@ check_class_key (key, aggr)
 %type <ttype> init initlist maybeasm maybe_init defarg defarg1
 %type <ttype> asm_operands nonnull_asm_operands asm_operand asm_clobbers
 %type <ttype> maybe_attribute attributes attribute attribute_list attrib
-%type <ttype> any_word
+%type <ttype> any_word unoperator
 
 %type <itype> save_lineno
 %type <ttype> simple_stmt simple_if
@@ -3917,6 +3917,7 @@ unoperator:
           got_object = TREE_VALUE (saved_scopes);
 	  looking_for_typename = TREE_LANG_FLAG_0 (saved_scopes);
           saved_scopes = TREE_CHAIN (saved_scopes);
+	  $$ = got_scope;
 	}
         ;
 
@@ -3988,7 +3989,7 @@ operator_name:
 	| operator DELETE '[' ']' unoperator
 		{ $$ = frob_opname (ansi_opname (VEC_DELETE_EXPR)); }
 	| operator type_specifier_seq conversion_declarator unoperator
-		{ $$ = frob_opname (grokoptypename ($2.t, $3)); }
+		{ $$ = frob_opname (grokoptypename ($2.t, $3, $4)); }
 	| operator error unoperator
 		{ $$ = frob_opname (ansi_opname (ERROR_MARK)); }
 	;
