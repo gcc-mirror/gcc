@@ -2176,6 +2176,8 @@ uw_install_context (struct _Unwind_Context *current __attribute__((unused)),
 	"(p6) ldf.fill f22 = [r28]		\n\t"
 	"cmp.ne p7, p0 = r0, r29		\n\t"
 	";;					\n\t"
+	"ld8 r27 = [r20], 8			\n\t"
+	";;					\n\t"
 	"ld8 r28 = [r20], 8			\n\t"
 	"(p7) ldf.fill f23 = [r29]		\n\t"
 	"cmp.ne p6, p0 = r0, r22		\n\t"
