@@ -1,3 +1,10 @@
+2003-06-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mips.c: Don't include output.h twice.
+	* stormy16.c: Likewise.
+	* xtensa.c: Likewise.
+	* output.h: Protect against multiple inclusion.
+
 2003-06-02  J"orn Rennecke <joern.rennecke@superh.com>
 
 	* sh.h (OLD_ARG_MODE): New macro.
