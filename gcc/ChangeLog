@@ -1,3 +1,17 @@
+2005-01-27  Marek Michalkiewicz  <marekm@amelek.gda.pl>
+
+	PR target/19293
+	PR target/19329
+	* config/avr/avr.c (notice_update_cc): Only set condition code for
+	ashrqi3 if shift count > 0.
+	(out_shift_with_cnt): Handle shift count <= 0 as a no-op.
+	(ashlqi3_out, ashlhi3_out, ashlsi3_out, ashrqi3_out, ashrhi3_out,
+	ashrsi3_out, lshrqi3_out, lshrhi3_out, lshrsi3_out): Handle shift
+	count <= 0 as a no-op, and shift count >= width by copying zero
+	or sign bit to all bits of the result.
+	* config/avr/avr.md (all shifts): Add alternatives for zero shift
+	count, with attribute "length" set to 0 and "cc" set to "none".
+
 2005-01-27  J"orn Rennecke <joern.rennecke@st.com>
 
 	* real.c (do_add): Initialize signalling and canonical members.
