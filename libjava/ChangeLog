@@ -1,3 +1,47 @@
+2003-09-18  Dalibor Topic  <robilad@kaffe.org>
+
+	* gnu/java/rmi/rmic/Compile_gcj.java (COMPILER_ARGS): New private
+	constant.
+	(computeArguments): use computeTypicalArguments.
+
+	* gnu/java/rmi/rmic/Makefile.am (EXTRA_DIST): Add Compile_kjc.java,
+	Compile_jikes.java and RMICException.java.
+	* gnu/java/rmi/rmic/Compile_kjc.java: New file.
+	* gnu/java/rmi/rmic/Compile_jikes.java: Likewise.
+	* gnu/java/rmi/rmic/RMICException.java: Likewise.
+ 
+	* gnu/java/rmi/rmic/Compiler.java (getDestination): New method.
+ 
+	* gnu/java/rmi/rmic/CompilerProcess.java: Import java.io.InputStream.
+	(computeTypicalArguments): New method.
+	(compile): Print compiler output to System.out. Collect compiler
+	error output and use it in exception message.
+ 
+	* gnu/java/rmi/rmic/RMIC.java: Import java.util.Set.
+	(destination): Initialize to null.
+	(run): Replace file separator with '.' when processing class.
+	(processClass): Replace '.' with file separator when compiling
+	classes.
+	(findClass): Use SystemClassLoader to load class.
+	(generateStub): Use full class name for generated stub, that puts
+	it in right path.  Replace '.' with file separator when generating
+	stub file name. Write just the stub class name without package
+	information as class name, and constructor name. Write only
+	interface names for interfaces extending java.rmi.Remote as
+	implemented.
+	(generateSkel): Use full class name for generated skel, that puts
+	it in right path.  Replace '.' with file separator when generating
+	stub file name. Write just the stub class name without package
+	information as class name.
+
+2003-09-18  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am (rmi_java_source_files):
+	Added gnu/java/rmi/rmic/Compile_kjc.java,
+	gnu/java/rmi/rmic/Compile_jikes.java and
+	gnu/java/rmi/rmic/RMICException.java
+	* Makefile.in: Regenerated.
+
 2003-09-17  Graydon Hoare  <graydon@redhat.com>
 
 	* gnu/java/awt/peer/gtk/GdkGraphics2D.java,

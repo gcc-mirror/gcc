@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2001 Free Software Foundation, Inc.
+  Copyright (c) 2001, 2003 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -37,19 +37,71 @@ exception statement from your version. */
 
 package gnu.java.rmi.rmic;
 
-/** Subclass of Compiler that can be subclassed to invoke a process to
- * do its work.  */
+import java.io.InputStream;
+
+/**
+ * Subclass of Compiler that can be subclassed to invoke a process to
+ * do its work.
+ */
 public abstract class CompilerProcess extends Compiler
 {
   /** This is used to compute the command line for the process.  */
   public abstract String[] computeArguments (String filename);
 
+   /**
+    * This is used to compute the command line for the process.
+    * Most compilers typically arrange their arguments as in
+    * <compiler name and arguments> <optional destination> <filename>.
+    * This method builds an argument array out that. It should be used
+    * to define computeArguments for those compilers that follow the
+    * argument convention described above.
+    */
+   public static String[] computeTypicalArguments(String[] compilerArgs,
+	String destination, String filename)
+   {
+     /* length of compiler specific arguments */
+     final int len = compilerArgs.length;
+
+     /* length of returned array of arguments */
+     final int arglen = len + (destination == null ? 0 : 2) + 1;
+
+     /* Allocate String array for computed arguments. */
+     String [] args = new String[arglen];
+
+     /* Fill in compiler arguments. */
+     System.arraycopy(compilerArgs, 0, args, 0, len);
+
+     /* Fill in destination argument if necessary. */
+     if (destination != null)
+      {
+	args[len] = "-d";
+	args[len + 1] = destination;
+      }
+
+     /* Fill in filename */
+     args[arglen - 1] = filename;
+
+     return args;
+   }
+
   public void compile (String name) throws Exception
   {
     String[] args = computeArguments (name);
     Process p = Runtime.getRuntime ().exec (args);
-    // FIXME: probably should collect compiler output here and then
-    // put it into the exception message.
+
+    /* Print compiler output to System.out. */
+    InputStream procin = p.getInputStream();
+    for (int ch = procin.read(); ch != -1; ch = procin.read())
+      System.out.print((char) ch);
+
+    /* Collect compiler error output in a buffer.
+     * If compilation fails, it will be used for an error message.
+     */
+    StringBuffer stderr = new StringBuffer();
+    InputStream procerr = p.getErrorStream();
+    for (int ch = procerr.read(); ch != -1; ch = procerr.read())
+      stderr.append((char) ch);
+
     int result;
     while (true)
       {
@@ -65,7 +117,8 @@ public abstract class CompilerProcess extends Compiler
     if (result != 0)
       {
 	// FIXME: wrong exception class.
-	throw new Exception ("compiler exited with status: " + result);
+	throw new Exception ("compiler exited with status: " + result,
+			     new RMICException(stderr.toString()));
       }
   }
 }

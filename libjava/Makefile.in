@@ -1315,9 +1315,12 @@ gnu/java/rmi/registry/RegistryImpl.java	\
 gnu/java/rmi/registry/RegistryImpl_Skel.java \
 gnu/java/rmi/registry/RegistryImpl_Stub.java \
 gnu/java/rmi/rmic/Compile_gcj.java \
+gnu/java/rmi/rmic/Compile_jikes.java \
+gnu/java/rmi/rmic/Compile_kjc.java \
 gnu/java/rmi/rmic/Compiler.java	\
 gnu/java/rmi/rmic/CompilerProcess.java \
 gnu/java/rmi/rmic/RMIC.java \
+gnu/java/rmi/rmic/RMICException.java \
 gnu/java/rmi/rmic/TabbedWriter.java \
 gnu/java/rmi/server/ConnectionRunnerPool.java \
 gnu/java/rmi/server/ProtocolConstants.java \
@@ -2705,13 +2708,14 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
 DATA =  $(jar_DATA) $(pkgconfig_DATA) $(toolexecmainlib_DATA)
 
 DIST_COMMON =  README COPYING ChangeLog Makefile.am Makefile.in NEWS \
-THANKS acinclude.m4 aclocal.m4 configure configure.in \
-libgcj-test.spec.in libgcj.pc.in libgcj.spec.in
+THANKS acinclude.m4 aclocal.m4 config.guess config.sub configure \
+configure.in install-sh libgcj-test.spec.in libgcj.pc.in libgcj.spec.in \
+ltmain.sh missing mkinstalldirs
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
-TAR = gtar
+TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  @DIRLTDL@ testsuite gcj include @DIRLTDL@ gcj include
 DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
@@ -3040,9 +3044,12 @@ DEP_FILES =  .deps/$(srcdir)/$(CONVERT_DIR)/gen-from-JIS.P \
 .deps/gnu/java/rmi/registry/RegistryImpl_Skel.P \
 .deps/gnu/java/rmi/registry/RegistryImpl_Stub.P \
 .deps/gnu/java/rmi/rmic/Compile_gcj.P \
+.deps/gnu/java/rmi/rmic/Compile_jikes.P \
+.deps/gnu/java/rmi/rmic/Compile_kjc.P \
 .deps/gnu/java/rmi/rmic/Compiler.P \
 .deps/gnu/java/rmi/rmic/CompilerProcess.P \
-.deps/gnu/java/rmi/rmic/RMIC.P .deps/gnu/java/rmi/rmic/TabbedWriter.P \
+.deps/gnu/java/rmi/rmic/RMIC.P .deps/gnu/java/rmi/rmic/RMICException.P \
+.deps/gnu/java/rmi/rmic/TabbedWriter.P \
 .deps/gnu/java/rmi/server/ConnectionRunnerPool.P \
 .deps/gnu/java/rmi/server/ProtocolConstants.P \
 .deps/gnu/java/rmi/server/RMIDefaultSocketFactory.P \
