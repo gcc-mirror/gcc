@@ -1,3 +1,13 @@
+2004-01-21  Kim Ho  <kho@redhat.com>
+
+	* gnu/java/awt/peer/gtk/GtkFramePeer.java (postConfigureEvent):
+	Fix comments.
+	(removeMenuBarPeer): Make package private.
+	(setMenuBarPeer): Make package private.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GtkWindowPeer.c
+	(menubar_resize_cb): Mark attributes unused.
+	(getMenuBarHeight): ditto.
+
 2004-01-21  David Jee  <djee@redhat.com>
 
 	* java/awt/Container.java

@@ -57,8 +57,8 @@ public class GtkFramePeer extends GtkWindowPeer
   private MenuBarPeer menuBar;
   native int getMenuBarHeight (MenuBarPeer bar);
 
-  native public void setMenuBarPeer (MenuBarPeer bar);
-  native public void removeMenuBarPeer (MenuBarPeer bar);
+  native void setMenuBarPeer (MenuBarPeer bar);
+  native void removeMenuBarPeer (MenuBarPeer bar);
 
   public void setMenuBar (MenuBar bar)
   {
@@ -145,12 +145,13 @@ public class GtkFramePeer extends GtkWindowPeer
   protected void postConfigureEvent (int x, int y, int width, int height)
   {
     int frame_x = x - insets.left;
-    // Add the height of the menubar (if none, menuBarHeight is 0 and has no
-    // effect). To move the frame down a bit so as to still fit in the window.
+    // Since insets.top includes the MenuBar height, we need to add back
+    // the MenuBar height to the frame's y position.
+    // If no MenuBar exists in this frame, the MenuBar height will be 0.
     int frame_y = y - insets.top + menuBarHeight;
     int frame_width = width + insets.left + insets.right;
-    // Add the height of the menubar to adjust the height so it still fits in
-    // the window.
+    // Ditto as above. Since insets.top already includes the MenuBar's height,
+    // we need to subtract the MenuBar's height from the top inset.
     int frame_height = height + insets.top + insets.bottom - menuBarHeight;
     if (frame_x != awtComponent.getX()
         || frame_y != awtComponent.getY()
