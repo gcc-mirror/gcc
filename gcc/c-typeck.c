@@ -5769,10 +5769,8 @@ set_init_index (first, last)
     error_init ("duplicate array index in initializer%s", " for `%s'", NULL);
   else
     {
-      TREE_INT_CST_LOW (constructor_index)
-	= TREE_INT_CST_LOW (first);
-      TREE_INT_CST_HIGH (constructor_index)
-	= TREE_INT_CST_HIGH (first);
+      TREE_INT_CST_LOW (constructor_index) = TREE_INT_CST_LOW (first);
+      TREE_INT_CST_HIGH (constructor_index) = TREE_INT_CST_HIGH (first);
 
       if (last != 0 && tree_int_cst_lt (last, first))
 	error_init ("empty index range in initializer%s", " for `%s'", NULL);
@@ -6377,7 +6375,21 @@ process_init_element (value)
 
 	  /* In the case of [LO .. HI] = VALUE, only evaluate VALUE once.  */
 	  if (constructor_range_end)
-	    value = save_expr (value);
+	    {
+	      if (constructor_max_index != 0
+		  && tree_int_cst_lt (constructor_max_index, 
+				      constructor_range_end))
+		{
+		  pedwarn_init ("excess elements in array initializer%s",
+				" after `%s'", NULL_PTR);
+		  TREE_INT_CST_HIGH (constructor_range_end)
+		    = TREE_INT_CST_HIGH (constructor_max_index);
+		  TREE_INT_CST_LOW (constructor_range_end)
+		    = TREE_INT_CST_LOW (constructor_max_index);
+		}
+
+	      value = save_expr (value);
+	    }
 
 	  /* Now output the actual element.
 	     Ordinarily, output once.
@@ -6395,10 +6407,8 @@ process_init_element (value)
 
 	      tem = size_binop (PLUS_EXPR, constructor_index,
 				integer_one_node);
-	      TREE_INT_CST_LOW (constructor_index)
-		= TREE_INT_CST_LOW (tem);
-	      TREE_INT_CST_HIGH (constructor_index)
-		= TREE_INT_CST_HIGH (tem);
+	      TREE_INT_CST_LOW (constructor_index) = TREE_INT_CST_LOW (tem);
+	      TREE_INT_CST_HIGH (constructor_index) = TREE_INT_CST_HIGH (tem);
 
 	      if (!value)
 		/* If we are doing the bookkeeping for an element that was
