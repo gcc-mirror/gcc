@@ -53,12 +53,6 @@ extern time_t time ();
 #endif /* !defined(POSIX) */
 #endif /* defined(DWARF_TIMESTAMPS) */
 
-#if defined(USG) || defined(POSIX)
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-
 extern char *getpwd ();
 
 extern char *index ();
