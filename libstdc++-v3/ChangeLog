@@ -1,3 +1,11 @@
+2001-08-24  Sylvain Pion <Sylvain.Pion@sophia.inria.fr>
+            Phil Edwards  <pme@sources.redhat.com>
+
+	PR libstdc++/3349
+	* include/bits/stl_tree.h (insert_unique):  Revert last change.
+	Values inserted at begin() must be less, not greater, than *begin()'s.
+	* testsuite/23_containers/map_insert.cc:  New file.
+
 2001-08-23  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/os/gnu-linux/bits/os_defines.h: Correct __s390__ definitions.
@@ -7,16 +15,12 @@
 
 	* GCC 3.0.1 Released.
 
-2001-08-19  Release Manager
-
-	* GCC 3.0.1 Released.
-
 2001-08-17  Loren J. Rittle  <ljrittle@acm.org>
 
-        bootstrap/3963
-        * include/Makefile.am: Use relative file path in rule to allow
-        colon in $(objdir).
-        * include/Makefile.in: Rebuilt.
+	bootstrap/3963
+	* include/Makefile.am: Use relative file path in rule to allow
+	colon in $(objdir).
+	* include/Makefile.in: Rebuilt.
 
 2001-08-16  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
 
@@ -82,24 +86,24 @@
 2001-08-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
             Mark Mitchell <mark@codesourcery.com>
 	
-        * include/bits/std_limits.h: New file.
-        * include/Makefile.am (bits_headers): Add std_limits.h
-        (all-local): std_limits.h is no longer built.
-        (${target_builddir}/std_limits.h): Remove.
-        * include/Makefile.in: Regenerate.
-        * src/limits.cc: New file.
-        * src/Makefile.am (sources): Add limits.cc in replacement of
-        limitsMEMBERS.cc.
-        * src/Makefile.in: Regenerate.
+	* include/bits/std_limits.h: New file.
+	* include/Makefile.am (bits_headers): Add std_limits.h
+	(all-local): std_limits.h is no longer built.
+	(${target_builddir}/std_limits.h): Remove.
+	* include/Makefile.in: Regenerate.
+	* src/limits.cc: New file.
+	* src/Makefile.am (sources): Add limits.cc in replacement of
+	limitsMEMBERS.cc.
+	* src/Makefile.in: Regenerate.
 
 2001-08-09  David Edelsohn  <edelsohn@gnu.org>
 
-        * config/os/aix/bits/os_defines.h: Define std_limits.h macros.
-        * config/os/generic/bits/os_defines.h: Likewise.
-        * config/os/gnu-linux/bits/os_defines.h: Likewise.
-        * config/os/hpux/bits/os_defines.h: Likewise.
-        * config/os/irix/irix6.5/bits/os_defines.h: Likewise.
-        * config/os/solaris/solaris2.7/bits/os_defines.h: Likewise.
+	* config/os/aix/bits/os_defines.h: Define std_limits.h macros.
+	* config/os/generic/bits/os_defines.h: Likewise.
+	* config/os/gnu-linux/bits/os_defines.h: Likewise.
+	* config/os/hpux/bits/os_defines.h: Likewise.
+	* config/os/irix/irix6.5/bits/os_defines.h: Likewise.
+	* config/os/solaris/solaris2.7/bits/os_defines.h: Likewise.
 
 2001-08-10   Gunter Winkler <gunter.winkler@mathematik.tu-chemnitz.de>
 
@@ -246,10 +250,10 @@
 
 2001-07-10  Gabriel Dos Reis  <gdr@merlin.codesourcery.com>
 
-        * acinclude.m4: Don't AC_REPLACE_MATHFUNCS expf and atan2f.
-        * aclocal.m4: Regenerate.
-        * configure: Same.
-	
+	* acinclude.m4: Don't AC_REPLACE_MATHFUNCS expf and atan2f.
+	* aclocal.m4: Regenerate.
+	* configure: Same.
+
 2001-07-09  Phil Edwards  <pme@sources.redhat.com>
 
 	* docs/html/configopts.html:  Fix thinko.
@@ -842,7 +846,7 @@
 
 2001-05-30  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Use
 	get_multilibs to find gcc.
 	
 2001-05-30  Phil Edwards  <pme@sources.redhat.com>
@@ -895,7 +899,7 @@
             Phil Edwards  <pme@sources.redhat.com>
             Alexandre Oliva  <aoliva@redhat.com>
 
-        * acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
+	* acinclude.m4 (GLIBCPP_EXPORT_INSTALL_INFO): Set glibcpp_srcdir
 	in an amd-safe manner. Revert glibcpp_prefixdir.
 	
 2001-05-25  Gabriel Dos Reis  <gdr@codesourcery.com>
@@ -1024,9 +1028,9 @@
 
 2001-05-18  Angela Marie Thomas <angela@cygnus.com>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set flags
-        appropriately for remote testing and testing installed files without
-        a build dir.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init): Set flags
+	appropriately for remote testing and testing installed files without
+	a build dir.
 
 2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1049,13 +1053,13 @@
 
 2001-05-18  Angela Marie Thomas <angela@cygnus.com>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-dg-test):  Set
-        output_file based on the name of the testcase.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-dg-test):  Set
+	output_file based on the name of the testcase.
 
 2001-05-18  Angela Marie Thomas <angela@cygnus.com>
 
-        * testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):  Build
-        gluefile and use it if needs_status_wrapper is set.
+	* testsuite/lib/libstdc++-v3-dg.exp (libstdc++-v3-init):  Build
+	gluefile and use it if needs_status_wrapper is set.
 
 2001-05-18  Alexandre Oliva  <aoliva@redhat.com>
 
@@ -1083,11 +1087,11 @@
 
 001-05-15  Zack Weinberg  <zackw@stanford.edu>
 	
-        * testsuite/21_strings/inserters_extractors.cc,
-        testsuite/27_io/istream_unformatted.cc,
-        testsuite/27_io/stringstream.cc:
-        Replace multi-line string constants with C89-style
-        concatenated string constants.
+	* testsuite/21_strings/inserters_extractors.cc,
+	testsuite/27_io/istream_unformatted.cc,
+	testsuite/27_io/stringstream.cc:
+	Replace multi-line string constants with C89-style
+	concatenated string constants.
 
 2001-05-14  Richard Henderson  <rth@redhat.com>
 
@@ -1449,8 +1453,8 @@
 
 2001-04-06  Joe Buck  <jbuck@welsh-buck.org>
 
-        * stl_algobase.h (std::equal): avoid use of possibly-undefined
-        operator != (one line patch).
+	* stl_algobase.h (std::equal): avoid use of possibly-undefined
+	operator != (one line patch).
 
 2001-04-06   Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -1463,8 +1467,8 @@
 
 2001-04-06  Gabriel Dos Reis  <gdr@codesourcery.com>
 
-        * include/c_std/bits/std_cmath.h: Get rid of C99 math macros.
-        * testsuite/26_numerics/c99_macros.cc: Add test.
+	* include/c_std/bits/std_cmath.h: Get rid of C99 math macros.
+	* testsuite/26_numerics/c99_macros.cc: Add test.
 
 2001-04-06  Phil Edwards  <pme@sources.redhat.com>
 
@@ -1564,8 +1568,8 @@
 
 2001-04-03  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
-        * include/backward/fstream.h:  Expose streampos to global
-          namespace.
+	* include/backward/fstream.h:  Expose streampos to global
+	  namespace.
 	
 2001-04-03  Peter Schmid  <schmid@snake.iap.physik.tu-darmstadt.de>
 
@@ -1838,7 +1842,7 @@
 
 2001-03-21  Theodore Papadopoulo  <Theodore.Papadopoulo@sophia.inria.fr>
 
-    	* include/bits/basic_file.h: Fix typos in comments.
+	* include/bits/basic_file.h: Fix typos in comments.
 
 2001-03-20  Richard Henderson  <rth@redhat.com>
 
