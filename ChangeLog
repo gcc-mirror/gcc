@@ -1,3 +1,7 @@
+2001-05-19  Matt Kraai  <kraai@alumni.carnegiemellon.edu>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2001-05-18  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.in (libstdcxx_flags): Remove reference to libstdc++.INC.
