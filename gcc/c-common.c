@@ -22,6 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "c-lex.h"
 #include "c-tree.h"
 #include "flags.h"
+#include "obstack.h"
 #include <stdio.h>
 
 extern struct obstack permanent_obstack;
