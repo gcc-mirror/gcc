@@ -1,3 +1,11 @@
+2002-05-29  Richard Henderson  <rth@redhat.com>
+
+	* config/i386/i386.c (USE_HIDDEN_LINKONCE): New.
+	(get_pc_thunk_name): New.
+	(output_set_got): Use it.
+	(ix86_asm_file_end): If USE_HIDDEN_LINKONCE, emit get_pc thunks
+	into linkonce sections.
+
 2002-05-29  Jason Thorpe  <thorpej@wasabisystems.com>
 
 	* config/sparc/netbsd-elf.h (TARGET_OS_CPP_BUILTINS): Define.
