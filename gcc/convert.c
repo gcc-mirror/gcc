@@ -269,10 +269,10 @@ convert_to_integer (type, expr)
 			      || TREE_UNSIGNED (TREE_TYPE (arg1)))
 			     ? unsigned_type (typex) : signed_type (typex));
 		    return convert (type,
-				    build_binary_op (ex_form,
-						     convert (typex, arg0),
-						     convert (typex, arg1),
-						     0));
+				    fold (build (ex_form, typex,
+						 convert (typex, arg0),
+						 convert (typex, arg1),
+						 0)));
 		  }
 	      }
 	  }
@@ -300,9 +300,9 @@ convert_to_integer (type, expr)
 		typex = (TREE_UNSIGNED (TREE_TYPE (expr))
 			 ? unsigned_type (typex) : signed_type (typex));
 		return convert (type,
-				build_unary_op (ex_form,
-						convert (typex, TREE_OPERAND (expr, 0)),
-						1));
+				fold (build1 (ex_form, typex,
+					      convert (typex,
+						       TREE_OPERAND (expr, 0)))));
 	      }
 	  }
 
@@ -411,9 +411,13 @@ convert_to_complex (type, expr)
 	  return fold (build (COMPLEX_EXPR,
 			      type,
 			      convert (subtype,
-				       build_unary_op (REALPART_EXPR, expr, 1)),
+				       fold (build1 (REALPART_EXPR,
+						     TREE_TYPE (TREE_TYPE (expr)),
+						     expr))),
 			      convert (subtype,
-				       build_unary_op (IMAGPART_EXPR, expr, 1))));
+				       fold (build1 (IMAGPART_EXPR,
+						     TREE_TYPE (TREE_TYPE (expr)),
+						     expr)))));
 	}
     }
 
