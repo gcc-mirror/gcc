@@ -1,3 +1,8 @@
+2000-06-27  Alex Samuel  <samuel@codesourcery.com>
+
+	* cp-demangle.c (demangle_special_name): Swap base and derived
+	class when demangling construction vtables.
+
 2000-06-21  Alex Samuel  <samuel@codesourcery.com>
 
 	* cp-demangle.c: Don't include ctype.h.
