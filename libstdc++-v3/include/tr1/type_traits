@@ -49,11 +49,11 @@ namespace tr1
     struct _Spec                                                 \
     : public true_type { };
       
-#define _DEFINE_SPEC(_Header, _Primary, _Type)                   \
-  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type>)                  \
-  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type const>)            \
-  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type volatile>)         \
-  _DEFINE_SPEC_HELPER(_Header, _Primary<_Type const volatile>)
+#define _DEFINE_SPEC(_Header, _Trait, _Type)                     \
+  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type>)                    \
+  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type const>)              \
+  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type volatile>)           \
+  _DEFINE_SPEC_HELPER(_Header, _Trait<_Type const volatile>)
 
   /// @brief  primary type categories [4.5.1].
   template<typename>
