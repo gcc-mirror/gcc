@@ -1542,7 +1542,6 @@ force_poplevels (int start_pc)
 	warning ("%JIn %D: overlapped variable and exception ranges at %d",
                  current_function_decl, current_function_decl,
 		 current_binding_level->start_pc);
-      expand_end_bindings (getdecls (), 1, 0);
       poplevel (1, 0, 0);
     }
 }
