@@ -68,7 +68,11 @@ typedef union rtunion_def
 typedef struct rtx_def
 {
 #ifdef ONLY_INT_FIELDS
+#ifdef CODE_FIELD_BUG
+  unsigned int code : 16;
+#else
   unsigned short code;
+#endif
 #else
   /* The kind of expression this is.  */
   enum rtx_code code : 16;
