@@ -700,18 +700,14 @@ alpha_scalar_mode_supported_p (enum machine_mode mode)
 }
 
 /* Alpha implements a couple of integer vector mode operations when
-   TARGET_MAX is enabled.  */
+   TARGET_MAX is enabled.  We do not check TARGET_MAX here, however,
+   which allows the vectorizer to operate on e.g. move instructions,
+   or when expand_vector_operations can do something useful.  */
 
 static bool
 alpha_vector_mode_supported_p (enum machine_mode mode)
 {
-  if (TARGET_MAX
-      && (mode == V8QImode
-	  || mode == V4HImode
-	  || mode == V2SImode))
-    return true;
-
-  return false;
+  return mode == V8QImode || mode == V4HImode || mode == V2SImode;
 }
 
 /* Return 1 if this function can directly return via $26.  */
@@ -1986,10 +1982,35 @@ alpha_emit_set_long_const (rtx target, HOST_WIDE_INT c1, HOST_WIDE_INT c2)
 bool
 alpha_expand_mov (enum machine_mode mode, rtx *operands)
 {
+  /* Honor misaligned loads, for those we promised to do so.  */
+  if (GET_CODE (operands[1]) == MEM
+      && alpha_vector_mode_supported_p (mode)
+      && MEM_ALIGN (operands[1]) < GET_MODE_ALIGNMENT (mode))
+    {
+      rtx tmp;
+      if (register_operand (operands[0], mode))
+	tmp = operands[0];
+      else
+	tmp = gen_reg_rtx (mode);
+      alpha_expand_unaligned_load (tmp, operands[1], 8, 0, 0);
+      if (tmp == operands[0])
+	return true;
+      operands[1] = tmp;
+    }
+
   /* If the output is not a register, the input must be.  */
   if (GET_CODE (operands[0]) == MEM
       && ! reg_or_0_operand (operands[1], mode))
     operands[1] = force_reg (mode, operands[1]);
+
+  /* Honor misaligned stores, for those we promised to do so.  */
+  if (GET_CODE (operands[0]) == MEM
+      && alpha_vector_mode_supported_p (mode)
+      && MEM_ALIGN (operands[0]) < GET_MODE_ALIGNMENT (mode))
+    {
+      alpha_expand_unaligned_store (operands[0], operands[1], 8, 0);
+      return true;
+    }
 
   /* Allow legitimize_address to perform some simplifications.  */
   if (mode == Pmode && symbolic_operand (operands[1], mode))
@@ -3337,7 +3358,7 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
     {
       addr = copy_addr_to_reg (plus_constant (dsta, ofs));
 
-      if (src != const0_rtx)
+      if (src != CONST0_RTX (GET_MODE (src)))
 	{
 	  emit_insn (gen_insxh (insh, gen_lowpart (DImode, src),
 				GEN_INT (size*8), addr));
@@ -3375,7 +3396,7 @@ alpha_expand_unaligned_store (rtx dst, rtx src,
 	}
     }
 
-  if (src != const0_rtx)
+  if (src != CONST0_RTX (GET_MODE (src)))
     {
       dsth = expand_binop (DImode, ior_optab, insh, dsth, dsth, 0, OPTAB_WIDEN);
       dstl = expand_binop (DImode, ior_optab, insl, dstl, dstl, 0, OPTAB_WIDEN);
@@ -9426,6 +9447,9 @@ alpha_init_libfuncs (void)
 
 #undef TARGET_BUILD_BUILTIN_VA_LIST
 #define TARGET_BUILD_BUILTIN_VA_LIST alpha_build_builtin_va_list
+
+#undef TARGET_VECTORIZE_MISALIGNED_MEM_OK
+#define TARGET_VECTORIZE_MISALIGNED_MEM_OK alpha_vector_mode_supported_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
