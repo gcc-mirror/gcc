@@ -170,7 +170,7 @@ one_utf8_to_cppchar (const uchar **inbufp, size_t *inbytesleftp,
 {
   static const uchar masks[6] = { 0x7F, 0x1F, 0x0F, 0x07, 0x02, 0x01 };
   static const uchar patns[6] = { 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC };
-  
+
   cppchar_t c;
   const uchar *inbuf = *inbufp;
   size_t nbytes, i;
@@ -274,7 +274,7 @@ one_cppchar_to_utf8 (cppchar_t c, uchar **outbufp, size_t *outbytesleftp)
    The return value is either 0 for success, or an errno value for
    failure, which may be E2BIG (need more space), EILSEQ (ill-formed
    input sequence), ir EINVAL (incomplete input sequence).  */
-   
+
 static inline int
 one_utf8_to_utf32 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
 		   uchar **outbufp, size_t *outbytesleftp)
@@ -446,6 +446,31 @@ one_utf16_to_utf8 (iconv_t bigend, const uchar **inbufp, size_t *inbytesleftp,
   return 0;
 }
 
+/* The first 256 code points of ISO 8859.1 have the same numeric
+   values as the first 256 code points of Unicode, therefore the
+   incoming ISO 8859.1 character can be passed directly to
+   one_cppchar_to_utf8 (which expects a Unicode value).  */
+
+static int
+one_iso88591_to_utf8 (iconv_t bigend ATTRIBUTE_UNUSED, const uchar **inbufp,
+		      size_t *inbytesleftp, uchar **outbufp, size_t *outbytesleftp)
+{
+  const uchar *inbuf = *inbufp;
+  int rval;
+
+  if (*inbytesleftp > 1)
+    return EINVAL;
+
+  rval = one_cppchar_to_utf8 ((cppchar_t)*inbuf, outbufp, outbytesleftp);
+  if (rval)
+    return rval;
+
+  *inbufp += 1;
+  *inbytesleftp -= 1;
+
+  return 0;
+}
+
 /* Helper routine for the next few functions.  The 'const' on
    one_conversion means that we promise not to modify what function is
    pointed to, which lets the inliner see through it.  */
@@ -489,7 +514,7 @@ conversion_loop (int (*const one_conversion)(iconv_t, const uchar **, size_t *,
       outbuf = to->text + to->asize - outbytesleft;
     }
 }
-		 
+
 
 /* These functions convert entire strings between character sets.
    They all have the signature
@@ -528,6 +553,14 @@ convert_utf32_utf8 (iconv_t cd, const uchar *from, size_t flen,
 {
   return conversion_loop (one_utf32_to_utf8, cd, from, flen, to);
 }
+
+static bool
+convert_iso88591_utf8 (iconv_t cd, const uchar *from, size_t flen,
+                       struct _cpp_strbuf *to)
+{
+  return conversion_loop (one_iso88591_to_utf8, cd, from, flen, to);
+}
+
 
 /* Identity conversion, used when we have no alternative.  */
 static bool
@@ -606,6 +639,7 @@ static const struct conversion conversion_tab[] = {
   { "UTF-32BE/UTF-8", convert_utf32_utf8, (iconv_t)1 },
   { "UTF-16LE/UTF-8", convert_utf16_utf8, (iconv_t)0 },
   { "UTF-16BE/UTF-8", convert_utf16_utf8, (iconv_t)1 },
+  { "ISO-8859-1/UTF-8", convert_iso88591_utf8, (iconv_t)0 },
 };
 
 /* Subroutine of cpp_init_iconv: initialize and return a
@@ -619,7 +653,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
   struct cset_converter ret;
   char *pair;
   size_t i;
-  
+
   if (!strcasecmp (to, from))
     {
       ret.func = convert_no_conversion;
@@ -649,7 +683,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
       if (ret.cd == (iconv_t) -1)
 	{
 	  if (errno == EINVAL)
-	    cpp_error (pfile, CPP_DL_ERROR, /* XXX should be DL_SORRY */
+	    cpp_error (pfile, CPP_DL_ERROR, /* FIXME should be DL_SORRY */
 		       "conversion from %s to %s not supported by iconv",
 		       from, to);
 	  else
@@ -660,7 +694,7 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
     }
   else
     {
-      cpp_error (pfile, CPP_DL_ERROR, /* XXX should be DL_SORRY */
+      cpp_error (pfile, CPP_DL_ERROR, /* FIXME: should be DL_SORRY */
 		 "no iconv implementation, cannot convert from %s to %s",
 		 from, to);
       ret.func = convert_no_conversion;
@@ -1270,7 +1304,7 @@ narrow_str_to_charconst (cpp_reader *pfile, cpp_string str,
   *unsignedp = unsigned_p;
   return result;
 }
-			 
+
 /* Subroutine of cpp_interpret_charconst which performs the conversion
    to a number, for wide strings.  STR is the string structure returned
    by cpp_interpret_string.  PCHARS_SEEN and UNSIGNEDP are as for
@@ -1351,4 +1385,47 @@ cpp_interpret_charconst (cpp_reader *pfile, const cpp_token *token,
     free ((void *)str.text);
 
   return result;
+}
+
+uchar *
+_cpp_input_to_utf8 (cpp_reader *pfile, const uchar *input, cppchar_t length)
+{
+  struct _cpp_strbuf tbuf;
+  struct cset_converter cvt = pfile->buffer->input_cset_desc;
+
+  tbuf.asize = MAX (OUTBUF_BLOCK_SIZE, length);
+  tbuf.text = xmalloc (tbuf.asize);
+  tbuf.len = 0;
+
+  if (!APPLY_CONVERSION (cvt, input, length, &tbuf))
+   {
+      cpp_error (pfile, CPP_DL_ERROR, "converting input to source character set.");
+      return NULL;
+   }
+
+  if (length)
+    tbuf.text[tbuf.len] = '\n';
+  else
+    tbuf.text[0] = '\n';
+
+  return tbuf.text;
+}
+
+  /* Check the input file format. At present assuming the input file
+     is in iso-8859-1 format. Convert this input character set to
+     source character set format (UTF-8). */
+
+void
+_cpp_init_iconv_buffer (cpp_reader *pfile, const char *from)
+{
+  pfile->buffer->input_cset_desc = init_iconv_desc (pfile, SOURCE_CHARSET,
+						    from);
+}
+
+void
+_cpp_close_iconv_buffer (cpp_reader *pfile)
+{
+  if (HAVE_ICONV
+      && pfile->buffer->input_cset_desc.func == convert_using_iconv)
+    iconv_close (pfile->buffer->input_cset_desc.cd);
 }

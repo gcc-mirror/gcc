@@ -1,3 +1,19 @@
+2004-01-16  Eric Christopher  <echristo@redhat.com>
+	    Chandrakala Chavva <cchavva@redhat.com>
+
+	* cppcharset.c (one_iso88591_to_utf8): New function.
+	(convert_iso88591_utf8): Ditto. Use.
+	(conversion_tab): Use.
+	(_cpp_input_to_utf8): New function.
+	(_cpp_init_iconv_buffer): Ditto.
+	(_cpp_close_iconv_buffer): Ditto.
+	* cpphash.h: Prototype new functions.
+	(cpp_buffer): Add input_cset_desc.
+	* cppinit.c: Add input_charset default.
+	* cpplib.c (cpp_push_buffer): Support init and
+	close of iconv.
+	* cpplib.h (cpp_options): Add input_charset.
+
 2004-01-16  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* system.h (ASM_OUTPUT_SECTION_NAME): Poison.
@@ -14,23 +30,23 @@
 	* fixinc/tests/base/sys/stat.h: Adapt for new hackname.
 
 	* fixinc/inclhack.def (alpha___extern_prefix,
-	alpha___extern_prefix_standards): New hacks to obey 
+	alpha___extern_prefix_standards): New hacks to obey
  	__PRAGMA_EXTERN_PREFIX.
 	* fixinc/tests/base/testing.h [ALPHA___EXTERN_PREFIX_CHECK]: New
 	test.
 	* fixinc/tests/base/standards.h: Likewise.
-	
+
 	* fixincl/inclhack.def (alpha_pthread): Tweak to match more
 	variations.
 	New testcase.
 	* fixinc/tests/base/pthread.h: Handle it.
-	
+
 	* fixincl/inclhack.def (bad_lval): Sort file list.
 	Add many missing files up to Tru64 UNIX V5.1B.
 	* gcc/fixinc/tests/base/libgen.h: Renamed to ...
 	* gcc/fixinc/tests/base/dirent.h: ... this to match new file list
 	order.
-	
+
 	* fixinc/fixincl.x: Regenerate.
 
 2004-01-16  Mark Mitchell  <mark@codesourcery.com>
