@@ -1,3 +1,7 @@
+Tue Apr 14 11:31:28 1998  Krister Walfridsson <cato@df.lth.se>
+
+	* i386/bsd386.h (ASM_OUTPUT_ALIGN): Redefine.
+
 Tue Apr 14 09:02:32 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* svr4.h (ASM_DECLARE_OBJECT_NAME): Use HOST_WIDE_INT_PRINT_DEC.

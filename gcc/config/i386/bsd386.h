@@ -24,3 +24,10 @@
 /* Until they use ELF or something that handles dwarf2 unwinds
    and initialization stuff better.  */
 #define DWARF2_UNWIND_INFO 0
+
+/* BSD/OS still uses old binutils that don't insert nops by default
+   when the .align directive demands to insert extra space in the text
+   segment.  */
+#undef ASM_OUTPUT_ALIGN
+#define ASM_OUTPUT_ALIGN(FILE,LOG) \
+  if ((LOG)!=0) fprintf ((FILE), "\t.align %d,0x90\n", (LOG))
