@@ -45,46 +45,44 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #define prefix_was_emitted_for(BUFFER) (BUFFER)->state.emitted_prefix_p
 
 /* Prototypes.  */
-static void output_flush PARAMS ((output_buffer *));
-static void output_do_verbatim PARAMS ((output_buffer *, text_info *));
-static void output_buffer_to_stream PARAMS ((output_buffer *));
-static void output_format PARAMS ((output_buffer *, text_info *));
-static void output_indent PARAMS ((output_buffer *));
+static void output_flush (output_buffer *);
+static void output_do_verbatim (output_buffer *, text_info *);
+static void output_buffer_to_stream (output_buffer *);
+static void output_format (output_buffer *, text_info *);
+static void output_indent (output_buffer *);
 
-static char *build_message_string PARAMS ((const char *, ...))
+static char *build_message_string (const char *, ...)
      ATTRIBUTE_PRINTF_1;
-static void format_with_decl PARAMS ((output_buffer *, text_info *, tree));
-static void diagnostic_for_decl PARAMS ((diagnostic_context *,
-					 diagnostic_info *, tree));
-static void set_real_maximum_length PARAMS ((output_buffer *));
+static void format_with_decl (output_buffer *, text_info *, tree);
+static void diagnostic_for_decl (diagnostic_context *, diagnostic_info *,
+				 tree);
+static void set_real_maximum_length (output_buffer *);
 
-static void output_unsigned_decimal PARAMS ((output_buffer *, unsigned int));
-static void output_long_decimal PARAMS ((output_buffer *, long int));
-static void output_long_unsigned_decimal PARAMS ((output_buffer *,
-						  long unsigned int));
-static void output_octal PARAMS ((output_buffer *, unsigned int));
-static void output_long_octal PARAMS ((output_buffer *, unsigned long int));
-static void output_hexadecimal PARAMS ((output_buffer *, unsigned int));
-static void output_long_hexadecimal PARAMS ((output_buffer *,
-					     unsigned long int));
-static void output_append_r PARAMS ((output_buffer *, const char *, int));
-static void wrap_text PARAMS ((output_buffer *, const char *, const char *));
-static void maybe_wrap_text PARAMS ((output_buffer *, const char *,
-				     const char *));
-static void output_clear_data PARAMS ((output_buffer *));
+static void output_unsigned_decimal (output_buffer *, unsigned int);
+static void output_long_decimal (output_buffer *, long int);
+static void output_long_unsigned_decimal (output_buffer *,
+					  long unsigned int);
+static void output_octal (output_buffer *, unsigned int);
+static void output_long_octal (output_buffer *, unsigned long int);
+static void output_hexadecimal (output_buffer *, unsigned int);
+static void output_long_hexadecimal (output_buffer *, unsigned long int);
+static void output_append_r (output_buffer *, const char *, int);
+static void wrap_text (output_buffer *, const char *, const char *);
+static void maybe_wrap_text (output_buffer *, const char *, const char *);
+static void output_clear_data (output_buffer *);
 
-static void default_diagnostic_starter PARAMS ((diagnostic_context *,
-                                                diagnostic_info *));
-static void default_diagnostic_finalizer PARAMS ((diagnostic_context *,
-                                                  diagnostic_info *));
+static void default_diagnostic_starter (diagnostic_context *,
+					diagnostic_info *);
+static void default_diagnostic_finalizer (diagnostic_context *,
+					  diagnostic_info *);
 
-static void error_recursion PARAMS ((diagnostic_context *)) ATTRIBUTE_NORETURN;
-static bool text_specifies_location PARAMS ((text_info *, location_t *));
-static bool diagnostic_count_diagnostic PARAMS ((diagnostic_context *,
-                                                 diagnostic_info *));
-static void diagnostic_action_after_output PARAMS ((diagnostic_context *,
-						    diagnostic_info *));
-static void real_abort PARAMS ((void)) ATTRIBUTE_NORETURN;
+static void error_recursion (diagnostic_context *) ATTRIBUTE_NORETURN;
+static bool text_specifies_location (text_info *, location_t *);
+static bool diagnostic_count_diagnostic (diagnostic_context *,
+					 diagnostic_info *);
+static void diagnostic_action_after_output (diagnostic_context *,
+					    diagnostic_info *);
+static void real_abort (void) ATTRIBUTE_NORETURN;
 
 extern int rtl_dump_and_exit;
 extern int warnings_are_errors;
@@ -103,8 +101,7 @@ See %s for instructions.\n"
 /* Subroutine of output_set_maximum_length.  Set up BUFFER's
    internal maximum characters per line.  */
 static void
-set_real_maximum_length (buffer)
-     output_buffer *buffer;
+set_real_maximum_length (output_buffer *buffer)
 {
   /* If we're told not to wrap lines then do the obvious thing.  In case
    we'll emit prefix only once per diagnostic message, it is appropriate
@@ -129,9 +126,7 @@ set_real_maximum_length (buffer)
 /* Sets the number of maximum characters per line BUFFER can output
    in line-wrapping mode.  A LENGTH value 0 suppresses line-wrapping.  */
 void
-output_set_maximum_length (buffer, length)
-     output_buffer *buffer;
-     int length;
+output_set_maximum_length (output_buffer *buffer, int length)
 {
   output_line_cutoff (buffer) = length;
   set_real_maximum_length (buffer);
@@ -139,9 +134,7 @@ output_set_maximum_length (buffer, length)
 
 /* Sets BUFFER's PREFIX.  */
 void
-output_set_prefix (buffer, prefix)
-     output_buffer *buffer;
-     const char *prefix;
+output_set_prefix (output_buffer *buffer, const char *prefix)
 {
   buffer->state.prefix = prefix;
   set_real_maximum_length (buffer);
@@ -152,8 +145,7 @@ output_set_prefix (buffer, prefix)
 /*  Return a pointer to the last character emitted in the output
     BUFFER area.  A NULL pointer means no character available.  */
 const char *
-output_last_position (buffer)
-     const output_buffer *buffer;
+output_last_position (const output_buffer *buffer)
 {
   const char *p = NULL;
 
@@ -164,8 +156,7 @@ output_last_position (buffer)
 
 /* Free BUFFER's prefix, a previously malloc'd string.  */
 void
-output_destroy_prefix (buffer)
-     output_buffer *buffer;
+output_destroy_prefix (output_buffer *buffer)
 {
   if (buffer->state.prefix != NULL)
     {
@@ -176,8 +167,7 @@ output_destroy_prefix (buffer)
 
 /* Zero out any text output so far in BUFFER.  */
 void
-output_clear_message_text (buffer)
-     output_buffer *buffer;
+output_clear_message_text (output_buffer *buffer)
 {
   obstack_free (&buffer->obstack, obstack_base (&buffer->obstack));
   output_text_length (buffer) = 0;
@@ -185,8 +175,7 @@ output_clear_message_text (buffer)
 
 /* Zero out any formatting data used so far by BUFFER.  */
 static void
-output_clear_data (buffer)
-     output_buffer *buffer;
+output_clear_data (output_buffer *buffer)
 {
   prefix_was_emitted_for (buffer) = false;
   output_indentation (buffer) = 0;
@@ -195,10 +184,8 @@ output_clear_data (buffer)
 /* Construct an output BUFFER with PREFIX and of MAXIMUM_LENGTH
    characters per line.  */
 void
-init_output_buffer (buffer, prefix, maximum_length)
-     output_buffer *buffer;
-     const char *prefix;
-     int maximum_length;
+init_output_buffer (output_buffer *buffer, const char *prefix,
+		    int maximum_length)
 {
   memset (buffer, 0, sizeof (output_buffer));
   obstack_init (&buffer->obstack);
@@ -212,8 +199,7 @@ init_output_buffer (buffer, prefix, maximum_length)
 
 /* Reinitialize BUFFER.  */
 void
-output_clear (buffer)
-     output_buffer *buffer;
+output_clear (output_buffer *buffer)
 {
   output_clear_message_text (buffer);
   output_clear_data (buffer);
@@ -222,8 +208,7 @@ output_clear (buffer)
 /* Finishes constructing a NULL-terminated character string representing
    the BUFFERed message.  */
 const char *
-output_finalize_message (buffer)
-     output_buffer *buffer;
+output_finalize_message (output_buffer *buffer)
 {
   obstack_1grow (&buffer->obstack, '\0');
   return output_message_text (buffer);
@@ -232,16 +217,14 @@ output_finalize_message (buffer)
 /* Return the amount of characters BUFFER can accept to
    make a full line.  */
 int
-output_space_left (buffer)
-     const output_buffer *buffer;
+output_space_left (const output_buffer *buffer)
 {
   return line_wrap_cutoff (buffer) - output_text_length (buffer);
 }
 
 /* Write out BUFFER's prefix.  */
 void
-output_emit_prefix (buffer)
-     output_buffer *buffer;
+output_emit_prefix (output_buffer *buffer)
 {
   if (buffer->state.prefix != NULL)
     {
@@ -273,8 +256,7 @@ output_emit_prefix (buffer)
 
 /* Have BUFFER start a new line.  */
 void
-output_add_newline (buffer)
-     output_buffer *buffer;
+output_add_newline (output_buffer *buffer)
 {
   obstack_1grow (&buffer->obstack, '\n');
   output_text_length (buffer) = 0;
@@ -282,9 +264,7 @@ output_add_newline (buffer)
 
 /* Appends a character to BUFFER.  */
 void
-output_add_character (buffer, c)
-     output_buffer *buffer;
-     int c;
+output_add_character (output_buffer *buffer, int c)
 {
   if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
     output_add_newline (buffer);
@@ -294,8 +274,7 @@ output_add_character (buffer, c)
 
 /* Adds a space to BUFFER.  */
 void
-output_add_space (buffer)
-     output_buffer *buffer;
+output_add_space (output_buffer *buffer)
 {
   if (output_is_line_wrapping (buffer) && output_space_left (buffer) <= 0)
     {
@@ -309,9 +288,7 @@ output_add_space (buffer)
 /* These functions format an INTEGER into BUFFER as suggested by their
    names.  */
 void
-output_decimal (buffer, i)
-     output_buffer *buffer;
-     int i;
+output_decimal (output_buffer *buffer, int i)
 {
   output_formatted_scalar (buffer, "%d", i);
 }
@@ -367,10 +344,7 @@ output_pointer (output_buffer *buffer, void *p)
 /* Append to BUFFER a string specified by its STARTING character
    and LENGTH.  */
 static void
-output_append_r (buffer, start, length)
-     output_buffer *buffer;
-     const char *start;
-     int length;
+output_append_r (output_buffer *buffer, const char *start, int length)
 {
   obstack_grow (&buffer->obstack, start, length);
   output_text_length (buffer) += length;
@@ -381,10 +355,7 @@ output_append_r (buffer, start, length)
    and skip any leading whitespace if appropriate.  The caller must ensure
    that it is safe to do so.  */
 void
-output_append (buffer, start, end)
-     output_buffer *buffer;
-     const char *start;
-     const char *end;
+output_append (output_buffer *buffer, const char *start, const char *end)
 {
   /* Emit prefix and skip whitespace if we're starting a new line.  */
   if (is_starting_newline (buffer))
@@ -401,8 +372,7 @@ output_append (buffer, start, end)
    the current indentation level, assuming that a newline has just
    been written to the buffer.  */
 static void
-output_indent (buffer)
-     output_buffer *buffer;
+output_indent (output_buffer *buffer)
 {
   int n = output_indentation (buffer);
   int i;
@@ -413,10 +383,7 @@ output_indent (buffer)
 
 /* Wrap a text delimited by START and END into BUFFER.  */
 static void
-wrap_text (buffer, start, end)
-     output_buffer *buffer;
-     const char *start;
-     const char *end;
+wrap_text (output_buffer *buffer, const char *start, const char *end)
 {
   bool is_wrapping = output_is_line_wrapping (buffer);
 
@@ -448,10 +415,7 @@ wrap_text (buffer, start, end)
 
 /* Same as wrap_text but wrap text only when in line-wrapping mode.  */
 static void
-maybe_wrap_text (buffer, start, end)
-     output_buffer *buffer;
-     const char *start;
-     const char *end;
+maybe_wrap_text (output_buffer *buffer, const char *start, const char *end)
 {
   if (output_is_line_wrapping (buffer))
     wrap_text (buffer, start, end);
@@ -463,18 +427,14 @@ maybe_wrap_text (buffer, start, end)
 /* Append a STRING to BUFFER; the STRING might be line-wrapped if in
    appropriate mode.  */
 void
-output_add_string (buffer, str)
-     output_buffer *buffer;
-     const char *str;
+output_add_string (output_buffer *buffer, const char *str)
 {
   maybe_wrap_text (buffer, str, str + (str ? strlen (str) : 0));
 }
 
 /* Append an identifier ID to BUFFER.  */
 void
-output_add_identifier (buffer, id)
-     output_buffer *buffer;
-     tree id;
+output_add_identifier (output_buffer *buffer, tree id)
 {
   output_append (buffer, IDENTIFIER_POINTER (id),
 		 IDENTIFIER_POINTER (id) + IDENTIFIER_LENGTH (id));
@@ -484,8 +444,7 @@ output_add_identifier (buffer, id)
    and reinitialize.  */
 
 static void
-output_buffer_to_stream (buffer)
-     output_buffer *buffer;
+output_buffer_to_stream (output_buffer *buffer)
 {
   const char *text = output_finalize_message (buffer);
   fputs (text, output_buffer_attached_stream (buffer));
@@ -507,9 +466,7 @@ output_buffer_to_stream (buffer)
    %*.s: a substring the length of which is specified by an integer.
    %H: location_t.  */
 static void
-output_format (buffer, text)
-     output_buffer *buffer;
-     text_info *text;
+output_format (output_buffer *buffer, text_info *text)
 {
   for (; *text->format_spec; ++text->format_spec)
     {
@@ -650,8 +607,7 @@ build_message_string (const char *msg, ...)
 
 /* Same as diagnostic_build_prefix, but only the source FILE is given.  */
 char *
-file_name_as_prefix (f)
-     const char *f;
+file_name_as_prefix (const char *f)
 {
   return build_message_string ("%s: ", f);
 }
@@ -673,10 +629,7 @@ output_printf (struct output_buffer *buffer, const char *msgid, ...)
 
 /* Print a message relevant to the given DECL.  */
 static void
-format_with_decl (buffer, text, decl)
-     output_buffer *buffer;
-     text_info *text;
-     tree decl;
+format_with_decl (output_buffer *buffer, text_info *text, tree decl)
 {
   const char *p;
 
@@ -722,8 +675,7 @@ format_with_decl (buffer, text, decl)
 
 /* Flush the content of BUFFER onto the attached stream.  */
 static void
-output_flush (buffer)
-     output_buffer *buffer;
+output_flush (output_buffer *buffer)
 {
   output_buffer_to_stream (buffer);
   output_clear_data (buffer);
@@ -734,9 +686,7 @@ output_flush (buffer)
 /* Helper subroutine of output_verbatim and verbatim. Do the appropriate
    settings needed by BUFFER for a verbatim formatting.  */
 static void
-output_do_verbatim (buffer, text)
-     output_buffer *buffer;
-     text_info *text;
+output_do_verbatim (output_buffer *buffer, text_info *text)
 {
   diagnostic_prefixing_rule_t rule = output_prefixing_rule (buffer);
   int line_cutoff = output_line_cutoff (buffer);
@@ -769,8 +719,7 @@ output_verbatim (output_buffer *buffer, const char *msgid, ...)
 
 /* Initialize the diagnostic message outputting machinery.  */
 void
-diagnostic_initialize (context)
-     diagnostic_context *context;
+diagnostic_initialize (diagnostic_context *context)
 {
   memset (context, 0, sizeof *context);
   obstack_init (&context->buffer.obstack);
@@ -790,9 +739,7 @@ diagnostic_initialize (context)
    for a location_t.  If so, update the object pointed by LOCUS to reflect
    the specified location in *TEXT->args_ptr.  */
 static bool
-text_specifies_location (text, locus)
-     text_info *text;
-     location_t *locus;
+text_specifies_location (text_info *text, location_t *locus)
 {
   const char *p;
   /* Skip any leading text.  */
@@ -811,13 +758,9 @@ text_specifies_location (text, locus)
 }
 
 void
-diagnostic_set_info (diagnostic, msgid, args, file, line, kind)
-     diagnostic_info *diagnostic;
-     const char *msgid;
-     va_list *args;
-     const char *file;
-     int line;
-     diagnostic_t kind;
+diagnostic_set_info (diagnostic_info *diagnostic, const char *msgid,
+		     va_list *args, const char *file,  int line,
+		     diagnostic_t kind)
 {
   diagnostic->message.err_no = errno;
   diagnostic->message.args_ptr = args;
@@ -835,8 +778,7 @@ diagnostic_set_info (diagnostic, msgid, args, file, line, kind)
 /* Return a malloc'd string describing a location.  The caller is
    responsible for freeing the memory.  */
 char *
-diagnostic_build_prefix (diagnostic)
-     diagnostic_info *diagnostic;
+diagnostic_build_prefix (diagnostic_info *diagnostic)
 {
   static const char *const diagnostic_kind_text[] = {
 #define DEFINE_DIAGNOSTIC_KIND(K, T) (T),
@@ -857,8 +799,7 @@ diagnostic_build_prefix (diagnostic)
 }
 
 void
-diagnostic_flush_buffer (context)
-     diagnostic_context *context;
+diagnostic_flush_buffer (diagnostic_context *context)
 {
   output_buffer_to_stream (&context->buffer);
   fflush (output_buffer_attached_stream (&context->buffer));
@@ -866,9 +807,8 @@ diagnostic_flush_buffer (context)
 
 /* Count a diagnostic.  Return true if the message should be printed.  */
 static bool
-diagnostic_count_diagnostic (context, diagnostic)
-    diagnostic_context *context;
-    diagnostic_info *diagnostic;
+diagnostic_count_diagnostic (diagnostic_context *context,
+			     diagnostic_info *diagnostic)
 {
   diagnostic_t kind = diagnostic->kind;
   switch (kind)
@@ -930,9 +870,8 @@ diagnostic_count_diagnostic (context, diagnostic)
 /* Take any action which is expected to happen after the diagnostic
    is written out.  This function does not always return.  */
 static void
-diagnostic_action_after_output (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
+diagnostic_action_after_output (diagnostic_context *context,
+				diagnostic_info *diagnostic)
 {
   switch (diagnostic->kind)
     {
@@ -970,8 +909,7 @@ diagnostic_action_after_output (context, diagnostic)
 /* Called when the start of a function definition is parsed,
    this function prints on stderr the name of the function.  */
 void
-announce_function (decl)
-     tree decl;
+announce_function (tree decl)
 {
   if (!quiet_flag)
     {
@@ -988,9 +926,7 @@ announce_function (decl)
 /* The default function to print out name of current function that caused
    an error.  */
 void
-lhd_print_error_function (context, file)
-     diagnostic_context *context;
-     const char *file;
+lhd_print_error_function (diagnostic_context *context, const char *file)
 {
   if (diagnostic_last_function_changed (context))
     {
@@ -1026,16 +962,14 @@ lhd_print_error_function (context, file)
   We ignore the FILE parameter, as it cannot be relied upon.  */
 
 void
-diagnostic_report_current_function (context)
-     diagnostic_context *context;
+diagnostic_report_current_function (diagnostic_context *context)
 {
   diagnostic_report_current_module (context);
   (*lang_hooks.print_error_function) (context, input_filename);
 }
 
 void
-diagnostic_report_current_module (context)
-     diagnostic_context *context;
+diagnostic_report_current_module (diagnostic_context *context)
 {
   struct file_stack *p;
 
@@ -1063,9 +997,8 @@ diagnostic_report_current_module (context)
 }
 
 static void
-default_diagnostic_starter (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
+default_diagnostic_starter (diagnostic_context *context,
+			    diagnostic_info *diagnostic)
 {
   diagnostic_report_current_function (context);
   output_set_prefix (&context->buffer, diagnostic_build_prefix (diagnostic));
@@ -1086,9 +1019,8 @@ default_diagnostic_finalizer (context, diagnostic)
    in the documentation of output_format.  */
 
 void
-diagnostic_report_diagnostic (context, diagnostic)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
+diagnostic_report_diagnostic (diagnostic_context *context,
+			      diagnostic_info *diagnostic)
 {
   if (context->lock++)
     error_recursion (context);
@@ -1109,10 +1041,8 @@ diagnostic_report_diagnostic (context, diagnostic)
    MSG is a format string which uses %s to substitute the declaration
    name; subsequent substitutions are a la output_format.  */
 static void
-diagnostic_for_decl (context, diagnostic, decl)
-     diagnostic_context *context;
-     diagnostic_info *diagnostic;
-     tree decl;
+diagnostic_for_decl (diagnostic_context *context,
+		     diagnostic_info *diagnostic, tree decl)
 {
   if (context->lock++)
     error_recursion (context);
@@ -1135,8 +1065,7 @@ diagnostic_for_decl (context, diagnostic, decl)
    instead of `Internal compiler error in ../../GCC/gcc/expr.c'.  */
 
 const char *
-trim_filename (name)
-     const char *name;
+trim_filename (const char *name)
 {
   static const char this_file[] = __FILE__;
   const char *p = name, *q = this_file;
@@ -1390,8 +1319,7 @@ fnotice (FILE *file, const char *msgid, ...)
 
 /* Warn about a use of an identifier which was marked deprecated.  */
 void
-warn_deprecated_use (node)
-     tree node;
+warn_deprecated_use (tree node)
 {
   if (node == 0 || !warn_deprecated_decl)
     return;
@@ -1433,8 +1361,7 @@ warn_deprecated_use (node)
    This mustn't use internal_error, that will cause infinite recursion.  */
 
 static void
-error_recursion (context)
-     diagnostic_context *context;
+error_recursion (diagnostic_context *context)
 {
   if (context->lock < 3)
     output_flush (&context->buffer);
@@ -1450,10 +1377,7 @@ error_recursion (context)
    code generally, thanks to a special macro.  */
 
 void
-fancy_abort (file, line, function)
-     const char *file;
-     int line;
-     const char *function;
+fancy_abort (const char *file, int line, const char *function)
 {
   internal_error ("in %s, at %s:%d", function, trim_filename (file), line);
 }
@@ -1462,8 +1386,8 @@ fancy_abort (file, line, function)
    this file, so that there are no functions after it that call abort
    and get the system abort instead of our macro.  */
 #undef abort
-static void 
-real_abort ()
+static void
+real_abort (void)
 {
   abort ();
 }

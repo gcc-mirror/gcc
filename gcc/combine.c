@@ -336,86 +336,80 @@ static struct undobuf undobuf;
 
 static int n_occurrences;
 
-static void do_SUBST			PARAMS ((rtx *, rtx));
-static void do_SUBST_INT		PARAMS ((int *, int));
-static void init_reg_last_arrays	PARAMS ((void));
-static void setup_incoming_promotions   PARAMS ((void));
-static void set_nonzero_bits_and_sign_copies  PARAMS ((rtx, rtx, void *));
-static int cant_combine_insn_p	PARAMS ((rtx));
-static int can_combine_p	PARAMS ((rtx, rtx, rtx, rtx, rtx *, rtx *));
-static int sets_function_arg_p	PARAMS ((rtx));
-static int combinable_i3pat	PARAMS ((rtx, rtx *, rtx, rtx, int, rtx *));
-static int contains_muldiv	PARAMS ((rtx));
-static rtx try_combine		PARAMS ((rtx, rtx, rtx, int *));
-static void undo_all		PARAMS ((void));
-static void undo_commit		PARAMS ((void));
-static rtx *find_split_point	PARAMS ((rtx *, rtx));
-static rtx subst		PARAMS ((rtx, rtx, rtx, int, int));
-static rtx combine_simplify_rtx	PARAMS ((rtx, enum machine_mode, int, int));
-static rtx simplify_if_then_else  PARAMS ((rtx));
-static rtx simplify_set		PARAMS ((rtx));
-static rtx simplify_logical	PARAMS ((rtx, int));
-static rtx expand_compound_operation  PARAMS ((rtx));
-static rtx expand_field_assignment  PARAMS ((rtx));
-static rtx make_extraction	PARAMS ((enum machine_mode, rtx, HOST_WIDE_INT,
-					 rtx, unsigned HOST_WIDE_INT, int,
-					 int, int));
-static rtx extract_left_shift	PARAMS ((rtx, int));
-static rtx make_compound_operation  PARAMS ((rtx, enum rtx_code));
-static int get_pos_from_mask	PARAMS ((unsigned HOST_WIDE_INT,
-					 unsigned HOST_WIDE_INT *));
-static rtx force_to_mode	PARAMS ((rtx, enum machine_mode,
-					 unsigned HOST_WIDE_INT, rtx, int));
-static rtx if_then_else_cond	PARAMS ((rtx, rtx *, rtx *));
-static rtx known_cond		PARAMS ((rtx, enum rtx_code, rtx, rtx));
-static int rtx_equal_for_field_assignment_p PARAMS ((rtx, rtx));
-static rtx make_field_assignment  PARAMS ((rtx));
-static rtx apply_distributive_law  PARAMS ((rtx));
-static rtx simplify_and_const_int  PARAMS ((rtx, enum machine_mode, rtx,
-					    unsigned HOST_WIDE_INT));
-static unsigned HOST_WIDE_INT cached_nonzero_bits
-				PARAMS ((rtx, enum machine_mode, rtx,
-					 enum machine_mode,
-					 unsigned HOST_WIDE_INT));
-static unsigned HOST_WIDE_INT nonzero_bits1
-				PARAMS ((rtx, enum machine_mode, rtx,
-					 enum machine_mode,
-					 unsigned HOST_WIDE_INT));
-static unsigned int cached_num_sign_bit_copies
-				PARAMS ((rtx, enum machine_mode, rtx,
-					 enum machine_mode, unsigned int));
-static unsigned int num_sign_bit_copies1
-				PARAMS ((rtx, enum machine_mode, rtx,
-					 enum machine_mode, unsigned int));
-static int merge_outer_ops	PARAMS ((enum rtx_code *, HOST_WIDE_INT *,
-					 enum rtx_code, HOST_WIDE_INT,
-					 enum machine_mode, int *));
-static rtx simplify_shift_const	PARAMS ((rtx, enum rtx_code, enum machine_mode,
-					 rtx, int));
-static int recog_for_combine	PARAMS ((rtx *, rtx, rtx *));
-static rtx gen_lowpart_for_combine  PARAMS ((enum machine_mode, rtx));
-static rtx gen_binary		PARAMS ((enum rtx_code, enum machine_mode,
-					 rtx, rtx));
-static enum rtx_code simplify_comparison  PARAMS ((enum rtx_code, rtx *, rtx *));
-static void update_table_tick	PARAMS ((rtx));
-static void record_value_for_reg  PARAMS ((rtx, rtx, rtx));
-static void check_promoted_subreg PARAMS ((rtx, rtx));
-static void record_dead_and_set_regs_1  PARAMS ((rtx, rtx, void *));
-static void record_dead_and_set_regs  PARAMS ((rtx));
-static int get_last_value_validate  PARAMS ((rtx *, rtx, int, int));
-static rtx get_last_value	PARAMS ((rtx));
-static int use_crosses_set_p	PARAMS ((rtx, int));
-static void reg_dead_at_p_1	PARAMS ((rtx, rtx, void *));
-static int reg_dead_at_p	PARAMS ((rtx, rtx));
-static void move_deaths		PARAMS ((rtx, rtx, int, rtx, rtx *));
-static int reg_bitfield_target_p  PARAMS ((rtx, rtx));
-static void distribute_notes	PARAMS ((rtx, rtx, rtx, rtx));
-static void distribute_links	PARAMS ((rtx));
-static void mark_used_regs_combine PARAMS ((rtx));
-static int insn_cuid		PARAMS ((rtx));
-static void record_promoted_value PARAMS ((rtx, rtx));
-static rtx reversed_comparison  PARAMS ((rtx, enum machine_mode, rtx, rtx));
-static enum rtx_code combine_reversed_comparison_code PARAMS ((rtx));
+static void do_SUBST (rtx *, rtx);
+static void do_SUBST_INT (int *, int);
+static void init_reg_last_arrays (void);
+static void setup_incoming_promotions (void);
+static void set_nonzero_bits_and_sign_copies (rtx, rtx, void *);
+static int cant_combine_insn_p (rtx);
+static int can_combine_p (rtx, rtx, rtx, rtx, rtx *, rtx *);
+static int sets_function_arg_p (rtx);
+static int combinable_i3pat (rtx, rtx *, rtx, rtx, int, rtx *);
+static int contains_muldiv (rtx);
+static rtx try_combine (rtx, rtx, rtx, int *);
+static void undo_all (void);
+static void undo_commit (void);
+static rtx *find_split_point (rtx *, rtx);
+static rtx subst (rtx, rtx, rtx, int, int);
+static rtx combine_simplify_rtx (rtx, enum machine_mode, int, int);
+static rtx simplify_if_then_else (rtx);
+static rtx simplify_set (rtx);
+static rtx simplify_logical (rtx, int);
+static rtx expand_compound_operation (rtx);
+static rtx expand_field_assignment (rtx);
+static rtx make_extraction (enum machine_mode, rtx, HOST_WIDE_INT,
+			    rtx, unsigned HOST_WIDE_INT, int, int, int);
+static rtx extract_left_shift (rtx, int);
+static rtx make_compound_operation (rtx, enum rtx_code);
+static int get_pos_from_mask (unsigned HOST_WIDE_INT,
+			      unsigned HOST_WIDE_INT *);
+static rtx force_to_mode (rtx, enum machine_mode,
+			  unsigned HOST_WIDE_INT, rtx, int);
+static rtx if_then_else_cond (rtx, rtx *, rtx *);
+static rtx known_cond (rtx, enum rtx_code, rtx, rtx);
+static int rtx_equal_for_field_assignment_p (rtx, rtx);
+static rtx make_field_assignment (rtx);
+static rtx apply_distributive_law (rtx);
+static rtx simplify_and_const_int (rtx, enum machine_mode, rtx,
+				   unsigned HOST_WIDE_INT);
+static unsigned HOST_WIDE_INT cached_nonzero_bits (rtx, enum machine_mode,
+						   rtx, enum machine_mode,
+						   unsigned HOST_WIDE_INT);
+static unsigned HOST_WIDE_INT nonzero_bits1 (rtx, enum machine_mode, rtx,
+					     enum machine_mode,
+					     unsigned HOST_WIDE_INT);
+static unsigned int cached_num_sign_bit_copies (rtx, enum machine_mode, rtx,
+						enum machine_mode,
+						unsigned int);
+static unsigned int num_sign_bit_copies1 (rtx, enum machine_mode, rtx,
+					  enum machine_mode, unsigned int);
+static int merge_outer_ops (enum rtx_code *, HOST_WIDE_INT *, enum rtx_code,
+			    HOST_WIDE_INT, enum machine_mode, int *);
+static rtx simplify_shift_const	(rtx, enum rtx_code, enum machine_mode, rtx,
+				 int);
+static int recog_for_combine (rtx *, rtx, rtx *);
+static rtx gen_lowpart_for_combine (enum machine_mode, rtx);
+static rtx gen_binary (enum rtx_code, enum machine_mode, rtx, rtx);
+static enum rtx_code simplify_comparison (enum rtx_code, rtx *, rtx *);
+static void update_table_tick (rtx);
+static void record_value_for_reg (rtx, rtx, rtx);
+static void check_promoted_subreg (rtx, rtx);
+static void record_dead_and_set_regs_1 (rtx, rtx, void *);
+static void record_dead_and_set_regs (rtx);
+static int get_last_value_validate (rtx *, rtx, int, int);
+static rtx get_last_value (rtx);
+static int use_crosses_set_p (rtx, int);
+static void reg_dead_at_p_1 (rtx, rtx, void *);
+static int reg_dead_at_p (rtx, rtx);
+static void move_deaths (rtx, rtx, int, rtx, rtx *);
+static int reg_bitfield_target_p (rtx, rtx);
+static void distribute_notes (rtx, rtx, rtx, rtx);
+static void distribute_links (rtx);
+static void mark_used_regs_combine (rtx);
+static int insn_cuid (rtx);
+static void record_promoted_value (rtx, rtx);
+static rtx reversed_comparison (rtx, enum machine_mode, rtx, rtx);
+static enum rtx_code combine_reversed_comparison_code (rtx);
 
 /* Substitute NEWVAL, an rtx expression, into INTO, a place in some
    insn.  The substitution can be undone by undo_all.  If INTO is already
@@ -424,8 +418,7 @@ static enum rtx_code combine_reversed_comparison_code PARAMS ((rtx));
    the undo table.  */
 
 static void
-do_SUBST (into, newval)
-     rtx *into, newval;
+do_SUBST (rtx *into, rtx newval)
 {
   struct undo *buf;
   rtx oldval = *into;
@@ -480,8 +473,7 @@ do_SUBST (into, newval)
    not safe.  */
 
 static void
-do_SUBST_INT (into, newval)
-     int *into, newval;
+do_SUBST_INT (int *into, int newval)
 {
   struct undo *buf;
   int oldval = *into;
@@ -510,9 +502,7 @@ do_SUBST_INT (into, newval)
    Return nonzero if the combiner has turned an indirect jump
    instruction into a direct jump.  */
 int
-combine_instructions (f, nregs)
-     rtx f;
-     unsigned int nregs;
+combine_instructions (rtx f, unsigned int nregs)
 {
   rtx insn, next;
 #ifdef HAVE_cc0
@@ -794,7 +784,7 @@ combine_instructions (f, nregs)
 /* Wipe the reg_last_xxx arrays in preparation for another pass.  */
 
 static void
-init_reg_last_arrays ()
+init_reg_last_arrays (void)
 {
   unsigned int nregs = combine_max_regno;
 
@@ -812,7 +802,7 @@ init_reg_last_arrays ()
 /* Set up any promoted values for incoming argument registers.  */
 
 static void
-setup_incoming_promotions ()
+setup_incoming_promotions (void)
 {
 #ifdef PROMOTE_FUNCTION_ARGS
   unsigned int regno;
@@ -852,10 +842,8 @@ setup_incoming_promotions ()
    by any set of X.  */
 
 static void
-set_nonzero_bits_and_sign_copies (x, set, data)
-     rtx x;
-     rtx set;
-     void *data ATTRIBUTE_UNUSED;
+set_nonzero_bits_and_sign_copies (rtx x, rtx set,
+				  void *data ATTRIBUTE_UNUSED)
 {
   unsigned int num;
 
@@ -937,12 +925,8 @@ set_nonzero_bits_and_sign_copies (x, set, data)
    will return 1.  */
 
 static int
-can_combine_p (insn, i3, pred, succ, pdest, psrc)
-     rtx insn;
-     rtx i3;
-     rtx pred ATTRIBUTE_UNUSED;
-     rtx succ;
-     rtx *pdest, *psrc;
+can_combine_p (rtx insn, rtx i3, rtx pred ATTRIBUTE_UNUSED, rtx succ,
+	       rtx *pdest, rtx *psrc)
 {
   int i;
   rtx set = 0, src, dest;
@@ -1227,8 +1211,7 @@ can_combine_p (insn, i3, pred, succ, pdest, psrc)
    argument for a function in a hard register.  */
 
 static int
-sets_function_arg_p (pat)
-     rtx pat;
+sets_function_arg_p (rtx pat)
 {
   int i;
   rtx inner_dest;
@@ -1301,13 +1284,8 @@ sets_function_arg_p (pat)
    Return 1 if the combination is valid, zero otherwise.  */
 
 static int
-combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
-     rtx i3;
-     rtx *loc;
-     rtx i2dest;
-     rtx i1dest;
-     int i1_not_in_src;
-     rtx *pi3dest_killed;
+combinable_i3pat (rtx i3, rtx *loc, rtx i2dest, rtx i1dest,
+		  int i1_not_in_src, rtx *pi3dest_killed)
 {
   rtx x = *loc;
 
@@ -1387,8 +1365,7 @@ combinable_i3pat (i3, loc, i2dest, i1dest, i1_not_in_src, pi3dest_killed)
    and division.  We don't count multiplications by powers of two here.  */
 
 static int
-contains_muldiv (x)
-     rtx x;
+contains_muldiv (rtx x)
 {
   switch (GET_CODE (x))
     {
@@ -1419,8 +1396,7 @@ contains_muldiv (x)
    can't perform combinations.  */
 
 static int
-cant_combine_insn_p (insn)
-     rtx insn;
+cant_combine_insn_p (rtx insn)
 {
   rtx set;
   rtx src, dest;
@@ -1476,9 +1452,7 @@ cant_combine_insn_p (insn)
    new direct jump instruction.  */
 
 static rtx
-try_combine (i3, i2, i1, new_direct_jump_p)
-     rtx i3, i2, i1;
-     int *new_direct_jump_p;
+try_combine (rtx i3, rtx i2, rtx i1, int *new_direct_jump_p)
 {
   /* New patterns for I3 and I2, respectively.  */
   rtx newpat, newi2pat = 0;
@@ -2829,7 +2803,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 /* Undo all the modifications recorded in undobuf.  */
 
 static void
-undo_all ()
+undo_all (void)
 {
   struct undo *undo, *next;
 
@@ -2852,7 +2826,7 @@ undo_all ()
    of the undos to the free list.  */
 
 static void
-undo_commit ()
+undo_commit (void)
 {
   struct undo *undo, *next;
 
@@ -2874,9 +2848,7 @@ undo_commit ()
    two insns.  */
 
 static rtx *
-find_split_point (loc, insn)
-     rtx *loc;
-     rtx insn;
+find_split_point (rtx *loc, rtx insn)
 {
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
@@ -3291,10 +3263,7 @@ find_split_point (loc, insn)
    by copying if `n_occurrences' is nonzero.  */
 
 static rtx
-subst (x, from, to, in_dest, unique_copy)
-     rtx x, from, to;
-     int in_dest;
-     int unique_copy;
+subst (rtx x, rtx from, rtx to, int in_dest, int unique_copy)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode op0_mode = VOIDmode;
@@ -3564,11 +3533,8 @@ subst (x, from, to, in_dest, unique_copy)
    X is returned; IN_DEST is nonzero if we are inside a SET_DEST.  */
 
 static rtx
-combine_simplify_rtx (x, op0_mode, last, in_dest)
-     rtx x;
-     enum machine_mode op0_mode;
-     int last;
-     int in_dest;
+combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int last,
+		      int in_dest)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -3687,7 +3653,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 		x = gen_binary (cond_code, mode, cond, cop1);
 	      else if (true_rtx == const0_rtx && false_rtx == const_true_rtx
 		       && ((reversed = reversed_comparison_code_parts
-			   		(cond_code, cond, cop1, NULL))
+					(cond_code, cond, cop1, NULL))
 		           != UNKNOWN))
 		x = gen_binary (reversed, mode, cond, cop1);
 
@@ -3704,11 +3670,11 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 		       && INTVAL (false_rtx) == - STORE_FLAG_VALUE
 		       && true_rtx == const0_rtx
 		       && ((reversed = reversed_comparison_code_parts
-			   		(cond_code, cond, cop1, NULL))
+					(cond_code, cond, cop1, NULL))
 		           != UNKNOWN))
 		x = simplify_gen_unary (NEG, mode,
 					gen_binary (reversed, mode,
-					  	    cond, cop1),
+						    cond, cop1),
 					mode);
 	      else
 		return gen_rtx_IF_THEN_ELSE (mode,
@@ -4148,10 +4114,10 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 	   && flag_unsafe_math_optimizations)
 	  || GET_CODE (XEXP (x, 0)) == FLOAT_EXTEND)
 	return simplify_gen_unary (GET_MODE_SIZE (GET_MODE (XEXP (XEXP (x, 0),
-		  					    0)))
-	    			   > GET_MODE_SIZE (mode)
+							    0)))
+				   > GET_MODE_SIZE (mode)
 				   ? FLOAT_TRUNCATE : FLOAT_EXTEND,
-	    			   mode,
+				   mode,
 				   XEXP (XEXP (x, 0), 0), mode);
 
       /*  (float_truncate (float x)) is (float x)  */
@@ -4729,8 +4695,7 @@ combine_simplify_rtx (x, op0_mode, last, in_dest)
 /* Simplify X, an IF_THEN_ELSE expression.  Return the new expression.  */
 
 static rtx
-simplify_if_then_else (x)
-     rtx x;
+simplify_if_then_else (rtx x)
 {
   enum machine_mode mode = GET_MODE (x);
   rtx cond = XEXP (x, 0);
@@ -5063,8 +5028,7 @@ simplify_if_then_else (x)
 /* Simplify X, a SET expression.  Return the new expression.  */
 
 static rtx
-simplify_set (x)
-     rtx x;
+simplify_set (rtx x)
 {
   rtx src = SET_SRC (x);
   rtx dest = SET_DEST (x);
@@ -5398,9 +5362,7 @@ simplify_set (x)
    result.  LAST is nonzero if this is the last retry.  */
 
 static rtx
-simplify_logical (x, last)
-     rtx x;
-     int last;
+simplify_logical (rtx x, int last)
 {
   enum machine_mode mode = GET_MODE (x);
   rtx op0 = XEXP (x, 0);
@@ -5710,8 +5672,7 @@ simplify_logical (x, last)
    It is the inverse of this function, loosely speaking.  */
 
 static rtx
-expand_compound_operation (x)
-     rtx x;
+expand_compound_operation (rtx x)
 {
   unsigned HOST_WIDE_INT pos = 0, len;
   int unsignedp = 0;
@@ -5919,8 +5880,7 @@ expand_compound_operation (x)
    support variable lengths.  */
 
 static rtx
-expand_field_assignment (x)
-     rtx x;
+expand_field_assignment (rtx x)
 {
   rtx inner;
   rtx pos;			/* Always counts from low bit.  */
@@ -6070,15 +6030,9 @@ expand_field_assignment (x)
    can't handle it.  */
 
 static rtx
-make_extraction (mode, inner, pos, pos_rtx, len,
-		 unsignedp, in_dest, in_compare)
-     enum machine_mode mode;
-     rtx inner;
-     HOST_WIDE_INT pos;
-     rtx pos_rtx;
-     unsigned HOST_WIDE_INT len;
-     int unsignedp;
-     int in_dest, in_compare;
+make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
+		 rtx pos_rtx, unsigned HOST_WIDE_INT len, int unsignedp,
+		 int in_dest, int in_compare)
 {
   /* This mode describes the size of the storage area
      to fetch the overall value from.  Within that, we
@@ -6462,9 +6416,7 @@ make_extraction (mode, inner, pos, pos_rtx, len,
    with any other operations in X.  Return X without that shift if so.  */
 
 static rtx
-extract_left_shift (x, count)
-     rtx x;
-     int count;
+extract_left_shift (rtx x, int count)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -6525,9 +6477,7 @@ extract_left_shift (x, count)
    or a COMPARE against zero, it is COMPARE.  */
 
 static rtx
-make_compound_operation (x, in_code)
-     rtx x;
-     enum rtx_code in_code;
+make_compound_operation (rtx x, enum rtx_code in_code)
 {
   enum rtx_code code = GET_CODE (x);
   enum machine_mode mode = GET_MODE (x);
@@ -6795,9 +6745,7 @@ make_compound_operation (x, in_code)
    *PLEN is set to the length of the field.  */
 
 static int
-get_pos_from_mask (m, plen)
-     unsigned HOST_WIDE_INT m;
-     unsigned HOST_WIDE_INT *plen;
+get_pos_from_mask (unsigned HOST_WIDE_INT m, unsigned HOST_WIDE_INT *plen)
 {
   /* Get the bit number of the first 1 bit from the right, -1 if none.  */
   int pos = exact_log2 (m & -m);
@@ -6834,12 +6782,8 @@ get_pos_from_mask (m, plen)
    NOT, NEG, or XOR.  */
 
 static rtx
-force_to_mode (x, mode, mask, reg, just_select)
-     rtx x;
-     enum machine_mode mode;
-     unsigned HOST_WIDE_INT mask;
-     rtx reg;
-     int just_select;
+force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
+	       rtx reg, int just_select)
 {
   enum rtx_code code = GET_CODE (x);
   int next_select = just_select || code == XOR || code == NOT || code == NEG;
@@ -7386,9 +7330,7 @@ force_to_mode (x, mode, mask, reg, just_select)
    If we return zero, we set *PTRUE and *PFALSE to X.  */
 
 static rtx
-if_then_else_cond (x, ptrue, pfalse)
-     rtx x;
-     rtx *ptrue, *pfalse;
+if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
 {
   enum machine_mode mode = GET_MODE (x);
   enum rtx_code code = GET_CODE (x);
@@ -7586,10 +7528,7 @@ if_then_else_cond (x, ptrue, pfalse)
    arise with IF_THEN_ELSE expressions.  */
 
 static rtx
-known_cond (x, cond, reg, val)
-     rtx x;
-     enum rtx_code cond;
-     rtx reg, val;
+known_cond (rtx x, enum rtx_code cond, rtx reg, rtx val)
 {
   enum rtx_code code = GET_CODE (x);
   rtx temp;
@@ -7740,9 +7679,7 @@ known_cond (x, cond, reg, val)
    assignment as a field assignment.  */
 
 static int
-rtx_equal_for_field_assignment_p (x, y)
-     rtx x;
-     rtx y;
+rtx_equal_for_field_assignment_p (rtx x, rtx y)
 {
   if (x == y || rtx_equal_p (x, y))
     return 1;
@@ -7779,8 +7716,7 @@ rtx_equal_for_field_assignment_p (x, y)
    We only handle the most common cases.  */
 
 static rtx
-make_field_assignment (x)
-     rtx x;
+make_field_assignment (rtx x)
 {
   rtx dest = SET_DEST (x);
   rtx src = SET_SRC (x);
@@ -7907,8 +7843,7 @@ make_field_assignment (x)
    if so.  */
 
 static rtx
-apply_distributive_law (x)
-     rtx x;
+apply_distributive_law (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   rtx lhs, rhs, other;
@@ -8034,11 +7969,8 @@ apply_distributive_law (x)
    X is zero, we are to always construct the equivalent form.  */
 
 static rtx
-simplify_and_const_int (x, mode, varop, constop)
-     rtx x;
-     enum machine_mode mode;
-     rtx varop;
-     unsigned HOST_WIDE_INT constop;
+simplify_and_const_int (rtx x, enum machine_mode mode, rtx varop,
+			unsigned HOST_WIDE_INT constop)
 {
   unsigned HOST_WIDE_INT nonzero;
   int i;
@@ -8162,12 +8094,9 @@ simplify_and_const_int (x, mode, varop, constop)
    identical subexpressions on the first or the second level.  */
 
 static unsigned HOST_WIDE_INT
-cached_nonzero_bits (x, mode, known_x, known_mode, known_ret)
-     rtx x;
-     enum machine_mode mode;
-     rtx known_x;
-     enum machine_mode known_mode;
-     unsigned HOST_WIDE_INT known_ret;
+cached_nonzero_bits (rtx x, enum machine_mode mode, rtx known_x,
+		     enum machine_mode known_mode,
+		     unsigned HOST_WIDE_INT known_ret)
 {
   if (x == known_x && mode == known_mode)
     return known_ret;
@@ -8218,12 +8147,9 @@ cached_nonzero_bits (x, mode, known_x, known_mode, known_ret)
    a shift, AND, or zero_extract, we can do better.  */
 
 static unsigned HOST_WIDE_INT
-nonzero_bits1 (x, mode, known_x, known_mode, known_ret)
-     rtx x;
-     enum machine_mode mode;
-     rtx known_x;
-     enum machine_mode known_mode;
-     unsigned HOST_WIDE_INT known_ret;
+nonzero_bits1 (rtx x, enum machine_mode mode, rtx known_x,
+	       enum machine_mode known_mode,
+	       unsigned HOST_WIDE_INT known_ret)
 {
   unsigned HOST_WIDE_INT nonzero = GET_MODE_MASK (mode);
   unsigned HOST_WIDE_INT inner_nz;
@@ -8696,12 +8622,9 @@ nonzero_bits1 (x, mode, known_x, known_mode, known_ret)
    first or the second level.  */
 
 static unsigned int
-cached_num_sign_bit_copies (x, mode, known_x, known_mode, known_ret)
-     rtx x;
-     enum machine_mode mode;
-     rtx known_x;
-     enum machine_mode known_mode;
-     unsigned int known_ret;
+cached_num_sign_bit_copies (rtx x, enum machine_mode mode, rtx known_x,
+			    enum machine_mode known_mode,
+			    unsigned int known_ret)
 {
   if (x == known_x && mode == known_mode)
     return known_ret;
@@ -8747,12 +8670,9 @@ cached_num_sign_bit_copies (x, mode, known_x, known_mode, known_ret)
    be between 1 and the number of bits in MODE.  */
 
 static unsigned int
-num_sign_bit_copies1 (x, mode, known_x, known_mode, known_ret)
-     rtx x;
-     enum machine_mode mode;
-     rtx known_x;
-     enum machine_mode known_mode;
-     unsigned int known_ret;
+num_sign_bit_copies1 (rtx x, enum machine_mode mode, rtx known_x,
+		      enum machine_mode known_mode,
+		      unsigned int known_ret)
 {
   enum rtx_code code = GET_CODE (x);
   unsigned int bitwidth;
@@ -9111,10 +9031,7 @@ num_sign_bit_copies1 (x, mode, known_x, known_mode, known_ret)
    implies that it must be called from a define_split.  */
 
 unsigned int
-extended_count (x, mode, unsignedp)
-     rtx x;
-     enum machine_mode mode;
-     int unsignedp;
+extended_count (rtx x, enum machine_mode mode, int unsignedp)
 {
   if (nonzero_sign_valid == 0)
     return 0;
@@ -9149,13 +9066,7 @@ extended_count (x, mode, unsignedp)
    return 0 and do not change *POP0, *PCONST0, and *PCOMP_P.  */
 
 static int
-merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
-     enum rtx_code *pop0;
-     HOST_WIDE_INT *pconst0;
-     enum rtx_code op1;
-     HOST_WIDE_INT const1;
-     enum machine_mode mode;
-     int *pcomp_p;
+merge_outer_ops (enum rtx_code *pop0, HOST_WIDE_INT *pconst0, enum rtx_code op1, HOST_WIDE_INT const1, enum machine_mode mode, int *pcomp_p)
 {
   enum rtx_code op0 = *pop0;
   HOST_WIDE_INT const0 = *pconst0;
@@ -9273,12 +9184,9 @@ merge_outer_ops (pop0, pconst0, op1, const1, mode, pcomp_p)
    are ASHIFTRT and ROTATE, which are always done in their original mode,  */
 
 static rtx
-simplify_shift_const (x, code, result_mode, varop, orig_count)
-     rtx x;
-     enum rtx_code code;
-     enum machine_mode result_mode;
-     rtx varop;
-     int orig_count;
+simplify_shift_const (rtx x, enum rtx_code code,
+		      enum machine_mode result_mode, rtx varop,
+		      int orig_count)
 {
   enum rtx_code orig_code = code;
   unsigned int count;
@@ -10036,10 +9944,7 @@ simplify_shift_const (x, code, result_mode, varop, orig_count)
    or -1.  */
 
 static int
-recog_for_combine (pnewpat, insn, pnotes)
-     rtx *pnewpat;
-     rtx insn;
-     rtx *pnotes;
+recog_for_combine (rtx *pnewpat, rtx insn, rtx *pnotes)
 {
   rtx pat = *pnewpat;
   int insn_code_number;
@@ -10144,9 +10049,7 @@ recog_for_combine (pnewpat, insn, pnotes)
 #undef gen_lowpart
 
 static rtx
-gen_lowpart_for_combine (mode, x)
-     enum machine_mode mode;
-     rtx x;
+gen_lowpart_for_combine (enum machine_mode mode, rtx x)
 {
   rtx result;
 
@@ -10258,10 +10161,7 @@ gen_lowpart_for_combine (mode, x)
    fold; if not, a new expression is allocated.  */
 
 static rtx
-gen_binary (code, mode, op0, op1)
-     enum rtx_code code;
-     enum machine_mode mode;
-     rtx op0, op1;
+gen_binary (enum rtx_code code, enum machine_mode mode, rtx op0, rtx op1)
 {
   rtx result;
   rtx tem;
@@ -10320,10 +10220,7 @@ gen_binary (code, mode, op0, op1)
    should have been detected earlier.  Hence we ignore all such cases.  */
 
 static enum rtx_code
-simplify_comparison (code, pop0, pop1)
-     enum rtx_code code;
-     rtx *pop0;
-     rtx *pop1;
+simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 {
   rtx op0 = *pop0;
   rtx op1 = *pop1;
@@ -11470,8 +11367,7 @@ simplify_comparison (code, pop0, pop1)
 /* Like jump.c' reversed_comparison_code, but use combine infrastructure for
    searching backward.  */
 static enum rtx_code
-combine_reversed_comparison_code (exp)
-     rtx exp;
+combine_reversed_comparison_code (rtx exp)
 {
   enum rtx_code code1 = reversed_comparison_code (exp, NULL);
   rtx x;
@@ -11491,9 +11387,7 @@ combine_reversed_comparison_code (exp)
 /* Return comparison with reversed code of EXP and operands OP0 and OP1.
    Return NULL_RTX in case we fail to do the reversal.  */
 static rtx
-reversed_comparison (exp, mode, op0, op1)
-     rtx exp, op0, op1;
-     enum machine_mode mode;
+reversed_comparison (rtx exp, enum machine_mode mode, rtx op0, rtx op1)
 {
   enum rtx_code reversed_code = combine_reversed_comparison_code (exp);
   if (reversed_code == UNKNOWN)
@@ -11507,8 +11401,7 @@ reversed_comparison (exp, mode, op0, op1)
    for each register mentioned.  Similar to mention_regs in cse.c  */
 
 static void
-update_table_tick (x)
-     rtx x;
+update_table_tick (rtx x)
 {
   enum rtx_code code = GET_CODE (x);
   const char *fmt = GET_RTX_FORMAT (code);
@@ -11579,10 +11472,7 @@ update_table_tick (x)
    with VALUE also zero and is used to invalidate the register.  */
 
 static void
-record_value_for_reg (reg, insn, value)
-     rtx reg;
-     rtx insn;
-     rtx value;
+record_value_for_reg (rtx reg, rtx insn, rtx value)
 {
   unsigned int regno = REGNO (reg);
   unsigned int endregno
@@ -11689,9 +11579,7 @@ record_value_for_reg (reg, insn, value)
    set is occurring.  */
 
 static void
-record_dead_and_set_regs_1 (dest, setter, data)
-     rtx dest, setter;
-     void *data;
+record_dead_and_set_regs_1 (rtx dest, rtx setter, void *data)
 {
   rtx record_dead_insn = (rtx) data;
 
@@ -11733,8 +11621,7 @@ record_dead_and_set_regs_1 (dest, setter, data)
    subroutine call).  */
 
 static void
-record_dead_and_set_regs (insn)
-     rtx insn;
+record_dead_and_set_regs (rtx insn)
 {
   rtx link;
   unsigned int i;
@@ -11792,9 +11679,7 @@ record_dead_and_set_regs (insn)
    missed because of that.  */
 
 static void
-record_promoted_value (insn, subreg)
-     rtx insn;
-     rtx subreg;
+record_promoted_value (rtx insn, rtx subreg)
 {
   rtx links, set;
   unsigned int regno = REGNO (SUBREG_REG (subreg));
@@ -11836,9 +11721,7 @@ record_promoted_value (insn, subreg)
    note what it implies to the registers used in it.  */
 
 static void
-check_promoted_subreg (insn, x)
-     rtx insn;
-     rtx x;
+check_promoted_subreg (rtx insn, rtx x)
 {
   if (GET_CODE (x) == SUBREG && SUBREG_PROMOTED_VAR_P (x)
       && GET_CODE (SUBREG_REG (x)) == REG)
@@ -11875,11 +11758,7 @@ check_promoted_subreg (insn, x)
    we don't know exactly what registers it was produced from.  */
 
 static int
-get_last_value_validate (loc, insn, tick, replace)
-     rtx *loc;
-     rtx insn;
-     int tick;
-     int replace;
+get_last_value_validate (rtx *loc, rtx insn, int tick, int replace)
 {
   rtx x = *loc;
   const char *fmt = GET_RTX_FORMAT (GET_CODE (x));
@@ -11979,8 +11858,7 @@ get_last_value_validate (loc, insn, tick, replace)
    is known longer known reliably.  */
 
 static rtx
-get_last_value (x)
-     rtx x;
+get_last_value (rtx x)
 {
   unsigned int regno;
   rtx value;
@@ -12044,9 +11922,7 @@ get_last_value (x)
    that is set in an instruction more recent than FROM_CUID.  */
 
 static int
-use_crosses_set_p (x, from_cuid)
-     rtx x;
-     int from_cuid;
+use_crosses_set_p (rtx x, int from_cuid)
 {
   const char *fmt;
   int i;
@@ -12104,10 +11980,7 @@ static int reg_dead_flag;
    reg_dead_flag to 1 if X is a CLOBBER and to -1 it is a SET.  */
 
 static void
-reg_dead_at_p_1 (dest, x, data)
-     rtx dest;
-     rtx x;
-     void *data ATTRIBUTE_UNUSED;
+reg_dead_at_p_1 (rtx dest, rtx x, void *data ATTRIBUTE_UNUSED)
 {
   unsigned int regno, endregno;
 
@@ -12131,9 +12004,7 @@ reg_dead_at_p_1 (dest, x, data)
    must be assumed to be always live.  */
 
 static int
-reg_dead_at_p (reg, insn)
-     rtx reg;
-     rtx insn;
+reg_dead_at_p (rtx reg, rtx insn)
 {
   basic_block block;
   unsigned int i;
@@ -12192,8 +12063,7 @@ reg_dead_at_p (reg, insn)
    that in flow.c, but much simpler since we don't care about pseudos.  */
 
 static void
-mark_used_regs_combine (x)
-     rtx x;
+mark_used_regs_combine (rtx x)
 {
   RTX_CODE code = GET_CODE (x);
   unsigned int regno;
@@ -12298,9 +12168,7 @@ mark_used_regs_combine (x)
    Return the note used to record the death, if there was one.  */
 
 rtx
-remove_death (regno, insn)
-     unsigned int regno;
-     rtx insn;
+remove_death (unsigned int regno, rtx insn)
 {
   rtx note = find_regno_note (insn, REG_DEAD, regno);
 
@@ -12324,12 +12192,8 @@ remove_death (regno, insn)
    notes will then be distributed as needed.  */
 
 static void
-move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
-     rtx x;
-     rtx maybe_kill_insn;
-     int from_cuid;
-     rtx to_insn;
-     rtx *pnotes;
+move_deaths (rtx x, rtx maybe_kill_insn, int from_cuid, rtx to_insn,
+	     rtx *pnotes)
 {
   const char *fmt;
   int len, i;
@@ -12497,9 +12361,7 @@ move_deaths (x, maybe_kill_insn, from_cuid, to_insn, pnotes)
    pattern of an insn.  X must be a REG.  */
 
 static int
-reg_bitfield_target_p (x, body)
-     rtx x;
-     rtx body;
+reg_bitfield_target_p (rtx x, rtx body)
 {
   int i;
 
@@ -12548,10 +12410,7 @@ reg_bitfield_target_p (x, body)
    on the type of note.  */
 
 static void
-distribute_notes (notes, from_insn, i3, i2)
-     rtx notes;
-     rtx from_insn;
-     rtx i3, i2;
+distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2)
 {
   rtx note, next_note;
   rtx tem;
@@ -13106,8 +12965,7 @@ distribute_notes (notes, from_insn, i3, i2)
    add a link pointing at I3 when I3's destination is changed.  */
 
 static void
-distribute_links (links)
-     rtx links;
+distribute_links (rtx links)
 {
   rtx link, next_link;
 
@@ -13195,8 +13053,7 @@ distribute_links (links)
 /* Compute INSN_CUID for INSN, which is an insn made by combine.  */
 
 static int
-insn_cuid (insn)
-     rtx insn;
+insn_cuid (rtx insn)
 {
   while (insn != 0 && INSN_UID (insn) > max_uid_cuid
 	 && GET_CODE (insn) == INSN && GET_CODE (PATTERN (insn)) == USE)
@@ -13209,8 +13066,7 @@ insn_cuid (insn)
 }
 
 void
-dump_combine_stats (file)
-     FILE *file;
+dump_combine_stats (FILE *file)
 {
   fnotice
     (file,
@@ -13219,8 +13075,7 @@ dump_combine_stats (file)
 }
 
 void
-dump_combine_total_stats (file)
-     FILE *file;
+dump_combine_total_stats (FILE *file)
 {
   fnotice
     (file,

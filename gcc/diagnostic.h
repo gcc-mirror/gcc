@@ -99,7 +99,7 @@ typedef struct
    an output_buffer.  A client-supplied formatter returns true if everything
    goes well.  */
 typedef struct output_buffer output_buffer;
-typedef bool (*printer_fn) PARAMS ((output_buffer *, text_info *));
+typedef bool (*printer_fn) (output_buffer *, text_info *);
 
 /* The output buffer datatype.  This is best seen as an abstract datatype
    whose fields should not be accessed directly by clients.  */
@@ -171,8 +171,8 @@ struct output_buffer
 
 /*  Forward declarations.  */
 typedef struct diagnostic_context diagnostic_context;
-typedef void (*diagnostic_starter_fn) PARAMS ((diagnostic_context *,
-                                               diagnostic_info *));
+typedef void (*diagnostic_starter_fn) (diagnostic_context *,
+				       diagnostic_info *);
 typedef diagnostic_starter_fn diagnostic_finalizer_fn;
 
 /* This data structure bundles altogether any information relevant to
@@ -207,7 +207,7 @@ struct diagnostic_context
   diagnostic_finalizer_fn end_diagnostic;
 
   /* Client hook to report an internal error.  */
-  void (*internal_error) PARAMS ((const char *, va_list *));
+  void (*internal_error) (const char *, va_list *);
 
   /* Function of last diagnostic message; more generally, function such that
      if next diagnostic message is in it then we don't have to mention the
@@ -291,45 +291,39 @@ extern diagnostic_context *global_dc;
 #define report_diagnostic(D) diagnostic_report_diagnostic (global_dc, D)
 
 /* Diagnostic related functions.  */
-extern void diagnostic_initialize	PARAMS ((diagnostic_context *));
-extern void diagnostic_report_current_module PARAMS ((diagnostic_context *));
-extern void diagnostic_report_current_function PARAMS ((diagnostic_context *));
-extern void diagnostic_flush_buffer	PARAMS ((diagnostic_context *));
-extern void diagnostic_report_diagnostic PARAMS ((diagnostic_context *,
-                                                 diagnostic_info *));
-extern void diagnostic_set_info         PARAMS ((diagnostic_info *,
-                                                 const char *, va_list *,
-                                                 const char *, int,
-                                                 diagnostic_t));
-extern char *diagnostic_build_prefix    PARAMS ((diagnostic_info *));
+extern void diagnostic_initialize (diagnostic_context *);
+extern void diagnostic_report_current_module (diagnostic_context *);
+extern void diagnostic_report_current_function (diagnostic_context *);
+extern void diagnostic_flush_buffer (diagnostic_context *);
+extern void diagnostic_report_diagnostic (diagnostic_context *,
+					  diagnostic_info *);
+extern void diagnostic_set_info (diagnostic_info *, const char *, va_list *,
+				 const char *, int, diagnostic_t);
+extern char *diagnostic_build_prefix (diagnostic_info *);
 
 /* Pure text formatting support functions.  */
-extern void init_output_buffer		PARAMS ((output_buffer *,
-						 const char *, int));
-extern void output_clear		PARAMS ((output_buffer *));
-extern const char *output_last_position PARAMS ((const output_buffer *));
-extern void output_set_prefix		PARAMS ((output_buffer *,
-						 const char *));
-extern void output_destroy_prefix	PARAMS ((output_buffer *));
-extern void output_set_maximum_length   PARAMS ((output_buffer *, int));
-extern void output_emit_prefix		PARAMS ((output_buffer *));
-extern void output_add_newline		PARAMS ((output_buffer *));
-extern void output_add_space		PARAMS ((output_buffer *));
-extern int output_space_left		PARAMS ((const output_buffer *));
-extern void output_append		PARAMS ((output_buffer *, const char *,
-						 const char *));
-extern void output_add_character	PARAMS ((output_buffer *, int));
-extern void output_decimal		PARAMS ((output_buffer *, int));
-extern void output_add_string		PARAMS ((output_buffer *,
-						 const char *));
-extern void output_add_identifier	PARAMS ((output_buffer *, tree));
-extern const char *output_finalize_message PARAMS ((output_buffer *));
-extern void output_clear_message_text	PARAMS ((output_buffer *));
-extern void output_printf		PARAMS ((output_buffer *, const char *,
-						 ...)) ATTRIBUTE_PRINTF_2;
+extern void init_output_buffer (output_buffer *, const char *, int);
+extern void output_clear (output_buffer *);
+extern const char *output_last_position (const output_buffer *);
+extern void output_set_prefix (output_buffer *, const char *);
+extern void output_destroy_prefix (output_buffer *);
+extern void output_set_maximum_length (output_buffer *, int);
+extern void output_emit_prefix (output_buffer *);
+extern void output_add_newline (output_buffer *);
+extern void output_add_space (output_buffer *);
+extern int output_space_left (const output_buffer *);
+extern void output_append (output_buffer *, const char *, const char *);
+extern void output_add_character (output_buffer *, int);
+extern void output_decimal (output_buffer *, int);
+extern void output_add_string (output_buffer *, const char *);
+extern void output_add_identifier (output_buffer *, tree);
+extern const char *output_finalize_message (output_buffer *);
+extern void output_clear_message_text (output_buffer *);
+extern void output_printf (output_buffer *, const char *, ...)
+     ATTRIBUTE_PRINTF_2;
 extern void output_verbatim (output_buffer *, const char *, ...);
 extern void verbatim (const char *, ...);
-extern char *file_name_as_prefix	PARAMS ((const char *));
-extern void inform                      PARAMS ((const char *, ...));
+extern char *file_name_as_prefix (const char *);
+extern void inform (const char *, ...);
 
 #endif /* ! GCC_DIAGNOSTIC_H */
