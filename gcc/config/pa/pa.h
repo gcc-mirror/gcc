@@ -869,10 +869,6 @@ extern enum cmp_type hppa_branch_type;
 	   }								\
 	 ASM_OUTPUT_LABEL (FILE, NAME);} while (0)
 
-/* Two views of the size of the current frame.  */
-extern int actual_fsize;
-extern int apparent_fsize;
-
 /* This macro generates the assembly code for function entry.
    FILE is a stdio stream to output the code to.
    SIZE is an int: how many units of temporary storage to allocate.
