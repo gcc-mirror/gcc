@@ -1,3 +1,9 @@
+2004-09-15  Alan Modra  <amodra@bigpond.net.au>
+
+	* config/rs6000/linux64.h (MD_FALLBACK_FRAME_STATE_FOR): Save
+	location of CR.
+	* config/rs6000/linux.h (MD_FALLBACK_FRAME_STATE_FOR): Ditto.
+
 2004-09-15  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
 	* doc/install.texi (sparc-sun-solaris2*): Properly format warning.

@@ -165,6 +165,10 @@ enum { SIGNAL_FRAMESIZE = 64 };
 	    = (long)&(sc_->regs->gpr[i_]) - new_cfa_;			\
 	}								\
 									\
+    (FS)->regs.reg[CR2_REGNO].how = REG_SAVED_OFFSET;			\
+    (FS)->regs.reg[CR2_REGNO].loc.offset				\
+      = (long)&(sc_->regs->ccr) - new_cfa_;				\
+									\
     (FS)->regs.reg[LINK_REGISTER_REGNUM].how = REG_SAVED_OFFSET;	\
     (FS)->regs.reg[LINK_REGISTER_REGNUM].loc.offset 			\
       = (long)&(sc_->regs->link) - new_cfa_;				\
