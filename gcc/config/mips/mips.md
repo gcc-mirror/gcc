@@ -3479,20 +3479,7 @@ dsrl\t%3,%3,1\n\
 ;; Extension insns.
 ;; Those for integer source operand are ordered widest source type first.
 
-(define_expand "extendsidi2"
-  [(set (match_operand:DI 0 "register_operand" "")
-        (sign_extend:DI (match_operand:SI 1 "move_operand" "")))]
-  "TARGET_64BIT"
-{
-  if (symbolic_operand (operands[1], SImode))
-    {
-      emit_move_insn (operands[0],
-		      convert_memory_address (DImode, operands[1]));
-      DONE;
-    }
-})
-
-(define_insn "*extendsidi2"
+(define_insn "extendsidi2"
   [(set (match_operand:DI 0 "register_operand" "=d,d")
         (sign_extend:DI (match_operand:SI 1 "nonimmediate_operand" "d,m")))]
   "TARGET_64BIT"
