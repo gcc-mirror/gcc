@@ -1,3 +1,8 @@
+2005-02-22  DJ Delorie  <dj@redhat.com>
+
+	* c-common.c (c_common_type_for_mode): Pass the mode's precision
+	to make_[un]signed_type, not the mode itself.
+
 2005-02-22  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* cfg.c (cached_make_edge): Call make_edge if edge cache is

@@ -1606,10 +1606,14 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
     return void_type_node;
 
   if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
-    return unsignedp ? make_unsigned_type (mode) : make_signed_type (mode);
+    return (unsignedp
+	    ? make_unsigned_type (GET_MODE_PRECISION (mode))
+	    : make_signed_type (GET_MODE_PRECISION (mode)));
 
   if (mode == TYPE_MODE (build_pointer_type (integer_type_node)))
-    return unsignedp ? make_unsigned_type (mode) : make_signed_type (mode);
+    return (unsignedp
+	    ? make_unsigned_type (GET_MODE_PRECISION (mode))
+	    : make_signed_type (GET_MODE_PRECISION (mode)));
 
   if (COMPLEX_MODE_P (mode))
     {
