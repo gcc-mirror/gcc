@@ -4114,6 +4114,8 @@
   output_asm_insn (\"cmp\\t%2, %3\", operands);
   if (GET_CODE (operands[5]) == AND)
     output_asm_insn (\"mov%D4\\t%0, #0\", operands);
+  else if (GET_CODE (operands[5]) == MINUS)
+    output_asm_insn (\"rsb%D4\\t%0, %1, #0\", operands);
   else if (which_alternative != 0)
     output_asm_insn (\"mov%D4\\t%0, %1\", operands);
   return \"%i5%d4\\t%0, %1, #1\";
