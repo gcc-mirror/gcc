@@ -978,7 +978,7 @@ genextract : genextract.o $(HOST_RTL) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o genextract \
 	 genextract.o $(HOST_RTL) $(HOST_LIBS)
 
-genextract.o : genextract.c $(RTL_H) config.h
+genextract.o : genextract.c $(RTL_H) config.h insn-config.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c
 
 genpeep : genpeep.o $(HOST_RTL) $(HOST_LIBDEPS)
@@ -1556,18 +1556,18 @@ bootstrap3: force
 
 compare: force
 	for file in *.o; do \
-	  tail +10c $file > tmp-foo1; \
-	  tail +10c stage2/$file > tmp-foo2; \
-	  cmp tmp-foo1 tmp-foo2 || echo $file differs; \
+	  tail +10c $$file > tmp-foo1; \
+	  tail +10c stage2/$$file > tmp-foo2; \
+	  cmp tmp-foo1 tmp-foo2 || echo $$file differs; \
 	done
 	-rm -f tmp-foo*
 
 # Similar, but compare with stage3 directory
 compare3: force
 	for file in *.o; do \
-	  tail +10c $file > tmp-foo1; \
-	  tail +10c stage3/$file > tmp-foo2; \
-	  cmp tmp-foo1 tmp-foo2 || echo $file differs; \
+	  tail +10c $$file > tmp-foo1; \
+	  tail +10c stage3/$$file > tmp-foo2; \
+	  cmp tmp-foo1 tmp-foo2 || echo $$file differs; \
 	done
 	-rm -f tmp-foo*
 
