@@ -1,5 +1,10 @@
 2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
 
+	* config/mips/mips.c (save_restore_insns): Don't mark the RA's
+	stack slot as unchanging if current_function_calls_eh_return.
+
+2001-08-10  Richard Sandiford  <rsandifo@redhat.com>
+
 	* config/mips/mips.md (reload_outcc): Use HARD_REGNO_NREGS to
 	access the second half of the TFmode scratch operand.
 
