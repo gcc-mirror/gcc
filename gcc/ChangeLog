@@ -1,5 +1,8 @@
 1999-12-02  Nick Clifton  <nickc@cygnus.com>
 
+	* config/fp-bit.c: Initialise all fields of the NAN
+	constants. 
+
 	* c-lex.c (check_newline): Pass pragma_getc and pragma_ungetc
 	to HANDLE_PRAGMA.
 
