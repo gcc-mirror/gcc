@@ -150,6 +150,13 @@ Here are the rules for making fixes in the inclhack.def file:
         to the empty string.  Both or the second "c_fix_arg"s may be
         omitted and the file will still be wrapped.
 
+	THERE IS A SPECIAL EXCEPTION TO THIS, HOWEVER:
+
+	If the regular expression '#if.*__need' is found, then it is
+	assumed that the file needs to be read and interpreted more
+	than once.  However, the prolog and epilog text (if any) will
+	be inserted.
+
     v) format - Replaces text selected with a regular expression with
         a specialized formating string.  The formatting works as follows:
         The format text is copied to the output until a '%' character
