@@ -269,6 +269,7 @@ while (0)
     || defined(SGI_TARGET) \
     || defined(MIPS_NEWS) \
     || defined(MIPS_SYSV) \
+    || defined(MIPS_SVR4) \
     || defined(MIPS_BSD43)
 
 #ifndef CPP_PREDEFINES
@@ -296,11 +297,16 @@ while (0)
 #endif
 #endif
 
+/* Tell collect what flags to pass to nm.  */
+#ifndef NM_FLAGS
+#define NM_FLAGS "-Bp"
+#endif
+
 
 /* Names to predefine in the preprocessor for this target machine.  */
 
 #ifndef CPP_PREDEFINES
-#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -DMIPSEB -DR3000"
+#define CPP_PREDEFINES "-Dmips -Dunix -Dhost_mips -DMIPSEB -DR3000 -DSYSTYPE_BSD43"
 #endif
 
 /* Extra switches sometimes passed to the assembler.  */
@@ -308,10 +314,11 @@ while (0)
 #ifndef ASM_SPEC
 #define ASM_SPEC "\
 %{!mgas: \
-	%{!mrnames: -nocpp} \
+	%{!mrnames: %{!.s:-nocpp} %{.s: %{cpp} %{nocpp}}} \
 	%{pipe: %e-pipe is not supported.} \
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{O:-O2} %{O1:-O2} %{O2:-O2} %{O3:-O3} \
 	%{g} %{g0} %{g1} %{g2} %{g3} %{v} %{K}} \
 %{G*}"
@@ -350,6 +357,7 @@ while (0)
 	%{pipe: %e-pipe is not supported.} \
 	%{EB} %{!EB:-EB} \
 	%{EL: %e-EL not supported} \
+	%{mips1} %{mips2} %{mips3} \
 	%{bestGnum}}"
 #endif				/* LINK_SPEC defined */
 
@@ -375,7 +383,6 @@ while (0)
 
 #ifndef CPP_SPEC
 #define CPP_SPEC "\
-%{!ansi:-DSYSTYPE_BSD} -D__SYSTYPE_BSD__ \
 %{.cc:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.cxx:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
 %{.C:	-D__LANGUAGE_C_PLUS_PLUS -D_LANGUAGE_C_PLUS_PLUS} \
@@ -391,10 +398,14 @@ while (0)
 #define MD_EXEC_PREFIX "/usr/lib/cmplrs/cc/"
 #endif
 
+#ifndef MD_STARTFILE_PREFIX
+#define MD_STARTFILE_PREFIX "/usr/lib/cmplrs/cc/"
+#endif
+
 
 /* Print subsidiary information on the compiler version in use.  */
 
-#define MIPS_VERSION "[AL 1.1, MM 13]"
+#define MIPS_VERSION "[AL 1.1, MM 14]"
 
 #ifndef MACHINE_TYPE
 #define MACHINE_TYPE "BSD Mips"
@@ -415,8 +426,11 @@ while (0)
 #define MIPS_DEBUGGING_INFO		/* MIPS specific debugging info */
 
 #ifndef PREFERRED_DEBUGGING_TYPE	/* assume SDB_DEBUGGING_INFO */
-#define PREFERRED_DEBUGGING_TYPE SDB_DEBUG
+#define PREFERRED_DEBUGGING_TYPE ((len > 1 && !strncmp (str, "ggdb", len)) ? DBX_DEBUG : SDB_DEBUG)
 #endif
+
+/* By default, turn on GDB extensions.  */
+#define DEFAULT_GDB_EXTENSIONS 1
 
 /* If we are passing smuggling stabs through the MIPS ECOFF object
    format, put a comment in front of the .stab<x> operation so
@@ -2126,8 +2140,16 @@ while (0)
    is done just by pretending it is already truncated.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
-/* By default, allow $ to be part of an identifier.  */
+/* Define this macro to control use of the character `$' in
+   identifier names.  The value should be 0, 1, or 2.  0 means `$'
+   is not allowed by default; 1 means it is allowed by default if
+   `-traditional' is used; 2 means it is allowed by default provided
+   `-ansi' is not used.  1 is the default; there is no need to
+   define this macro in that case. */
+
+#ifndef DOLLARS_IN_IDENTIFIERS
 #define DOLLARS_IN_IDENTIFIERS 1
+#endif
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
