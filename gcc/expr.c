@@ -5057,27 +5057,8 @@ expand_expr (exp, target, tmode, modifier)
 	tree exp1 = TREE_OPERAND (exp, 0);
 	tree exp2;
 
-	/* A SAVE_EXPR as the address in an INDIRECT_EXPR is generated
-	   for  *PTR += ANYTHING  where PTR is put inside the SAVE_EXPR.
-	   This code has the same general effect as simply doing
-	   expand_expr on the save expr, except that the expression PTR
-	   is computed for use as a memory address.  This means different
-	   code, suitable for indexing, may be generated.  */
-	if (TREE_CODE (exp1) == SAVE_EXPR
-	    && SAVE_EXPR_RTL (exp1) == 0
-	    && TYPE_MODE (TREE_TYPE (exp1)) == ptr_mode)
-	  {
-	    temp = expand_expr (TREE_OPERAND (exp1, 0), NULL_RTX,
-				VOIDmode, EXPAND_SUM);
-	    op0 = memory_address (mode, temp);
-	    op0 = copy_all_regs (op0);
-	    SAVE_EXPR_RTL (exp1) = op0;
-	  }
-	else
-	  {
-	    op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
-	    op0 = memory_address (mode, op0);
-	  }
+	op0 = expand_expr (exp1, NULL_RTX, VOIDmode, EXPAND_SUM);
+	op0 = memory_address (mode, op0);
 
 	temp = gen_rtx (MEM, mode, op0);
 	/* If address was computed by addition,
