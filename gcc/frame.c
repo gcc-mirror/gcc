@@ -326,7 +326,7 @@ find_fde (void *pc)
 
       if (pc < f->pc_begin)
 	hi = i;
-      else if (pc > f->pc_begin + f->pc_range)
+      else if (pc >= f->pc_begin + f->pc_range)
 	lo = i + 1;
       else
 	return f;

@@ -1,3 +1,7 @@
+Mon Jan  5 02:53:01 1998  Bruno Haible  <bruno@linuix.mathematik.uni-karlsruhe.de>
+
+        * frame.c (find_fde): Correct FDE's upper bound.
+
 Fri Jan 16 16:23:52 1998  Richard Henderson  <rth@cygnus.com>
 
 	* gengenrtl.c (DEF_RTL_EXPR): Provide a K&R compliant version.
