@@ -487,14 +487,21 @@ specifications.  However, limited manpower and incomplete and unclear
 documentation work against us.  So, there are caveats to using
 @command{gcj}.
 
+@menu
+* Limitations::                 
+* Extensions::                  
+@end menu
+
+@node Limitations
+@section Standard features not yet supported
+
 This list of compatibility issues is by no means complete.
 
 @itemize @bullet
 @item
-@command{gcj} implements the JDK 1.1 language.  It supports inner classes,
-though these are known to still be buggy.  It does not yet support the
-Java 2 @code{strictfp} keyword (it recognizes the keyword but ignores
-it).
+@command{gcj} implements the JDK 1.2 language.  It supports inner classes
+and the new 1.4 @code{assert} keyword.  It does not yet support the Java 2
+@code{strictfp} keyword (it recognizes the keyword but ignores it).  
 
 @item
 @code{libgcj} is largely compatible with the JDK 1.2 libraries.
@@ -510,6 +517,31 @@ affects you, it probably makes sense to report it so that we can discuss
 the appropriate response.
 @end itemize
 
+@node Extensions
+@section Extra features unique to gcj
+
+The main feature of @command{gcj} is that it can compile programs written in
+the Java programming language to native code.  Most extensions that have been
+added are to facilitate this functionality.
+
+@itemize @bullet
+@item
+@command{gcj} makes it easy and efficient to mix code written in Java and C++.
+@xref{About CNI}, for more info on how to use this in your programs.
+
+@item
+When you compile your classes into a shared library they can be automatically
+loaded by the @code{libgcj} system classloader.  When trying to load a class
+@code{gnu.pkg.SomeClass} the system classloader will first try to load the
+shared library @file{lib-gnu-pkg-SomeClass.so}, if that fails to load the
+class then it will try to load @file{lib-gnu-pkg.so} and finally when the
+class is still not loaded it will try to load @file{lib-gnu.so}.  Note that
+all @samp{.}s will be transformed into @samp{-}s and that searching
+for inner classes starts with their outermost outer class.  If the class
+cannot be found this way the system classloader tries to use
+the @code{libgcj} bytecode interpreter to load the class from the standard
+classpath.
+@end itemize
 
 @node Invoking gcjh
 @chapter Invoking gcjh
