@@ -3843,7 +3843,7 @@ expand_assignment (to, from, want_value, suggest_reg)
 			   TYPE_MODE (sizetype));
 
 #ifdef TARGET_MEM_FUNCTIONS
-      emit_library_call (memcpy_libfunc, LCT_NORMAL,
+      emit_library_call (memmove_libfunc, LCT_NORMAL,
 			 VOIDmode, 3, XEXP (to_rtx, 0), Pmode,
 			 XEXP (from_rtx, 0), Pmode,
 			 convert_to_mode (TYPE_MODE (sizetype),

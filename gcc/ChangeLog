@@ -1,3 +1,11 @@
+Fri Apr 13 21:33:59 2001  Loren J. Rittle  <ljrittle@acm.org>
+
+	* expr.h (enum libfunc_index): Add LTI_memmove.
+	(memmove_libfunc): Define macro.
+	* optabs.c (init_optabs): Initialize memmove_libfunc.
+	* expr.c (expand_assignment): Use memmove_libfunc instead of
+	memcpy_libfunc.
+
 2001-04-13  Alan Modra  <alan@linuxcare.com.au>
 
 	* pa.h (GO_IF_LEGITIMATE_ADDRESS): Disallow PIC LO_SUM
