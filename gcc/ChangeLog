@@ -1,3 +1,7 @@
+2002-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (expand_expr) <case COND_EXPR>: Never modify exp in place.
+
 2002-12-05  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* pa32-linux.h (CANONICALIZE_FUNCPTR_FOR_COMPARE_LIBCALL): Move define.
