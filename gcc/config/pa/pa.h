@@ -1000,13 +1000,19 @@ extern union tree_node *current_function_decl;
    flush multiple lines in the cache.  */
 
 #define TRAMPOLINE_TEMPLATE(FILE) \
-{						\
-  fprintf (FILE, "\tldw 12(0,%%r22),%%r21\n");	\
-  fprintf (FILE, "\tbe 0(4,%%r21)\n");		\
-  fprintf (FILE, "\tldw 16(0,%%r22),%%r29\n");	\
-  fprintf (FILE, "\t.word 0\n");		\
-  fprintf (FILE, "\t.word 0\n");		\
-}
+  {							\
+    fprintf (FILE, "\tldw	36(0,%%r22),%%r21\n");	\
+    fprintf (FILE, "\tbb,>=,n	%%r21,30,.+16\n");	\
+    fprintf (FILE, "\tdepi	0,31,2,%%r21\n");	\
+    fprintf (FILE, "\tldw	4(0,%%r21),%%r19\n");	\
+    fprintf (FILE, "\tldw	0(0,%%r21),%%r21\n");	\
+    fprintf (FILE, "\tldsid	(0,%%r21),%%r1\n");	\
+    fprintf (FILE, "\tmtsp	%%r1,%%sr0\n");		\
+    fprintf (FILE, "\tbe	0(%%sr0,%%r21)\n");	\
+    fprintf (FILE, "\tldw	40(0,%%r22),%%r29\n");	\
+    fprintf (FILE, "\t.word	0\n");			\
+    fprintf (FILE, "\t.word	0\n");			\
+  }
 
 /* Length in units of the trampoline for entering a nested function.
 
@@ -1014,10 +1020,10 @@ extern union tree_node *current_function_decl;
    of the trampoline.  This is necessary as the trampoline may cross two
    cache lines.  
 
-   If the trampoline ever grows to > 32 bytes, then it will become
-   necessary to hack on the cacheflush pattern in pa.md.  */
+   If the code part of the trampoline ever grows to > 32 bytes, then it
+   will become necessary to hack on the cacheflush pattern in pa.md.  */
 
-#define TRAMPOLINE_SIZE (5 * 4)
+#define TRAMPOLINE_SIZE (11 * 4)
 
 /* Emit RTL insns to initialize the variable parts of a trampoline.
    FNADDR is an RTX for the address of the function's pure code.
@@ -1027,18 +1033,24 @@ extern union tree_node *current_function_decl;
    Move the static chain value to trampoline template at offset 16.  */
 
 #define INITIALIZE_TRAMPOLINE(TRAMP, FNADDR, CXT) \
-{								\
-  rtx start_addr, end_addr, mem;				\
-								\
-  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 12));\
-  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (FNADDR));	\
-  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 16));\
-  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (CXT));	\
-  /* fdc and fic only use registers for the address to flush,	\
-     they do not accept integer displacements.  */ 		\
-  start_addr = force_reg (SImode, (TRAMP));			\
-  end_addr = force_reg (SImode, plus_constant ((TRAMP), 8));	\
-  emit_insn (gen_cacheflush (start_addr, end_addr));		\
+{									\
+  rtx start_addr, end_addr, masked_start_addr;				\
+									\
+  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 36));	\
+  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (FNADDR));		\
+  start_addr = memory_address (Pmode, plus_constant ((TRAMP), 40));	\
+  emit_move_insn (gen_rtx (MEM, Pmode, start_addr), (CXT));		\
+  /* fdc and fic only use registers for the address to flush,		\
+     they do not accept integer displacements.  */ 			\
+  start_addr = force_reg (SImode, (TRAMP));				\
+  end_addr = force_reg (SImode, plus_constant ((TRAMP), 32));		\
+  emit_insn (gen_dcacheflush (start_addr, end_addr));			\
+  masked_start_addr = gen_reg_rtx (SImode);				\
+  emit_insn (gen_andsi3 (masked_start_addr, start_addr,			\
+			 GEN_INT (0x3fffffff)));			\
+  end_addr = force_reg (SImode, plus_constant (masked_start_addr, 32));	\
+  emit_insn (gen_icacheflush (masked_start_addr, end_addr, start_addr,	\
+			      gen_reg_rtx (SImode), gen_reg_rtx (SImode)));\
 }
 
 /* Emit code for a call to builtin_saveregs.  We must emit USE insns which
