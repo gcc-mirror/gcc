@@ -1,5 +1,8 @@
 2000-12-20  Bernd Schmidt  <bernds@redhat.co.uk>
 
+	2000-03-22  Richard Henderson  <rth@cygnus.com>
+	* stmt.c (expand_asm_operands): Don't promote the temporary.
+
 	Sun Sep 19 09:03:40 1999  Mark Mitchell  <mark@codesourcery.com>
 	* rtl.h (insns_safe_to_move_p): New function.
 	* loop.c (find_and_verify_loops): Use it.
