@@ -451,6 +451,52 @@ paste_all_tokens (pfile, lhs)
   push_token_context (pfile, NULL, lhs, 1);
 }
 
+/* Returns TRUE if the number of arguments ARGC supplied in an
+   invocation of the MACRO referenced by NODE is valid.  An empty
+   invocation to a macro with no parameters should pass ARGC as zero.
+
+   Note that MACRO cannot necessarily be deduced from NODE, in case
+   NODE was redefined whilst collecting arguments.  */
+bool
+_cpp_arguments_ok (pfile, macro, node, argc)
+     cpp_reader *pfile;
+     cpp_macro *macro;
+     const cpp_hashnode *node;
+     unsigned int argc;
+{
+  if (argc == macro->paramc)
+    return true;
+
+  if (argc < macro->paramc)
+    {
+      /* As an extension, a rest argument is allowed to not appear in
+	 the invocation at all.
+	 e.g. #define debug(format, args...) something
+	 debug("string");
+
+	 This is exactly the same as if there had been an empty rest
+	 argument - debug("string", ).  */
+
+      if (argc + 1 == macro->paramc && macro->variadic)
+	{
+	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
+	    cpp_error (pfile, DL_PEDWARN,
+		       "ISO C99 requires rest arguments to be used");
+	  return true;
+	}
+
+      cpp_error (pfile, DL_ERROR,
+		 "macro \"%s\" requires %u arguments, but only %u given",
+		 NODE_NAME (node), macro->paramc, argc);
+    }
+  else
+    cpp_error (pfile, DL_ERROR,
+	       "macro \"%s\" passed %u arguments, but takes just %u",
+	       NODE_NAME (node), argc, macro->paramc);
+
+  return false;
+}
+
 /* Reads and returns the arguments to a function-like macro
    invocation.  Assumes the opening parenthesis has been processed.
    If there is an error, emits an appropriate diagnostic and returns
@@ -466,7 +512,6 @@ collect_args (pfile, node)
   macro_arg *args, *arg;
   const cpp_token *token;
   unsigned int argc;
-  bool error = false;
 
   macro = node->value.macro;
   if (macro->paramc)
@@ -561,47 +606,17 @@ collect_args (pfile, node)
       cpp_error (pfile, DL_ERROR,
 		 "unterminated argument list invoking macro \"%s\"",
 		 NODE_NAME (node));
-      error = true;
     }
-  else if (argc < macro->paramc)
+  else
     {
-      /* As an extension, a rest argument is allowed to not appear in
-	 the invocation at all.
-	 e.g. #define debug(format, args...) something
-	 debug("string");
-
-	 This is exactly the same as if there had been an empty rest
-	 argument - debug("string", ).  */
-
-      if (argc + 1 == macro->paramc && macro->variadic)
-	{
-	  if (CPP_PEDANTIC (pfile) && ! macro->syshdr)
-	    cpp_error (pfile, DL_PEDWARN,
-		       "ISO C99 requires rest arguments to be used");
-	}
-      else
-	{
-	  cpp_error (pfile, DL_ERROR,
-		     "macro \"%s\" requires %u arguments, but only %u given",
-		     NODE_NAME (node), macro->paramc, argc);
-	  error = true;
-	}
-    }
-  else if (argc > macro->paramc)
-    {
-      /* Empty argument to a macro taking no arguments is OK.  */
-      if (argc != 1 || arg->count)
-	{
-	  cpp_error (pfile, DL_ERROR,
-		     "macro \"%s\" passed %u arguments, but takes just %u",
-		     NODE_NAME (node), argc, macro->paramc);
-	  error = true;
-	}
+      /* A single empty argument is counted as no argument.  */
+      if (argc == 1 && macro->paramc == 0 && args[0].count == 0)
+	argc = 0;
+      if (_cpp_arguments_ok (pfile, macro, node, argc))
+	return base_buff;
     }
 
-  if (!error)
-    return base_buff;
-
+  /* An error occurred.  */
   _cpp_release_buff (pfile, base_buff);
   return NULL;
 }
@@ -919,10 +934,11 @@ push_token_context (pfile, macro, first, count)
 
 /* Push a traditional macro's replacement text.  */
 void
-_cpp_push_text_context (pfile, macro, start, end)
+_cpp_push_text_context (pfile, macro, start, len)
      cpp_reader *pfile;
      cpp_hashnode *macro;
-     const uchar *start, *end;
+     const uchar *start;
+     size_t len;
 {
   cpp_context *context = next_context (pfile);
 
@@ -930,7 +946,7 @@ _cpp_push_text_context (pfile, macro, start, end)
   context->macro = macro;
   context->buff = NULL;
   CUR (context) = start;
-  RLIMIT (context) = end;
+  RLIMIT (context) = start + len;
 }
 
 /* Expand an argument ARG before replacing parameters in a
