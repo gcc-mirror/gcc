@@ -4349,7 +4349,8 @@ assign_parms (tree fndecl)
   max_parm_reg = LAST_VIRTUAL_REGISTER + 1;
   parm_reg_stack_loc = ggc_alloc_cleared (max_parm_reg * sizeof (rtx));
 
-  if (SPLIT_COMPLEX_ARGS)
+  /* If the target wants to split complex arguments into scalars, do so.  */
+  if (targetm.calls.split_complex_arg)
     fnargs = split_complex_args (fnargs);
 
 #ifdef REG_PARM_STACK_SPACE
@@ -5225,11 +5226,12 @@ assign_parms (tree fndecl)
 	}
     }
 
-  if (SPLIT_COMPLEX_ARGS && fnargs != orig_fnargs)
+  if (targetm.calls.split_complex_arg && fnargs != orig_fnargs)
     {
       for (parm = orig_fnargs; parm; parm = TREE_CHAIN (parm))
 	{
-	  if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE)
+	  if (TREE_CODE (TREE_TYPE (parm)) == COMPLEX_TYPE
+	      && targetm.calls.split_complex_arg (TREE_TYPE (parm)))
 	    {
 	      rtx tmp, real, imag;
 	      enum machine_mode inner = GET_MODE_INNER (DECL_MODE (parm));
@@ -5373,8 +5375,12 @@ split_complex_args (tree args)
 
   /* Before allocating memory, check for the common case of no complex.  */
   for (p = args; p; p = TREE_CHAIN (p))
-    if (TREE_CODE (TREE_TYPE (p)) == COMPLEX_TYPE)
-      goto found;
+    {
+      tree type = TREE_TYPE (p);
+      if (TREE_CODE (type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (type))
+        goto found;
+    }
   return args;
 
  found:
@@ -5383,7 +5389,8 @@ split_complex_args (tree args)
   for (p = args; p; p = TREE_CHAIN (p))
     {
       tree type = TREE_TYPE (p);
-      if (TREE_CODE (type) == COMPLEX_TYPE)
+      if (TREE_CODE (type) == COMPLEX_TYPE
+	  && targetm.calls.split_complex_arg (type))
 	{
 	  tree decl;
 	  tree subtype = TREE_TYPE (type);

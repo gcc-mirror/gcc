@@ -1839,6 +1839,3 @@ do {							\
 
 /* Generate calls to memcpy, etc., not bcopy, etc.  */
 #define TARGET_MEM_FUNCTIONS 1
-
-/* Pass complex arguments independently.  */
-#define SPLIT_COMPLEX_ARGS 1
