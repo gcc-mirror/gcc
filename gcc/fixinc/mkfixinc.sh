@@ -91,10 +91,10 @@ case $machine in
 		fixincludes=
 		;;
 
-	i[34567]86-*-linux-gnu* | \
 	i[34567]86-*-linux-gnulibc1 | \
-        i[34567]86-*-linux-gnuaout* | \
-	i[34567]86-*-linux-gnuoldld*)
+	i[34567]86-*-linux-gnuaout* | \
+	i[34567]86-*-linux-gnuoldld* | \
+	i[34567]86-*-linux-gnu*)
 		fixincludes=fixinc.x86-linux-gnu
 		;;
 
