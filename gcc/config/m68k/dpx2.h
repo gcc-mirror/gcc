@@ -24,33 +24,22 @@
  * define all the things the compiler should
  */
 #ifdef ncl_mr
-# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_mr=1"
+# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_mr=1 -D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE"
 #else
 # ifdef ncl_el
-# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_el"
+# define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -Dncl_el-D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE "
 # else
-#   define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020"
+#   define CPP_PREDEFINES "-Dunix -Dbull -DDPX2 -DSVR3 -Dmc68000 -Dmc68020 -D_BULL_SOURCE -D_POSIX_SOURCE -D_XOPEN_SOURCE"
 # endif
 #endif
 
 #undef	CPP_SPEC
 /*
- * use -ansi to imply POSIX and XOPEN and BULL source
- * no -ansi implies _SYSV
- */
-/*
  * you can't get a DPX/2 without a 68882 but allow it
  * to be ignored...
  */
-#if 0
-# define CPP_SPEC "%{ansi:-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BULL_SOURCE}\
- %{!ansi:-D_SYSV}"
-#else
 # define __HAVE_68881__ 1
-# define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ }\
- %{ansi:-D_POSIX_SOURCE -D_XOPEN_SOURCE -D_BULL_SOURCE}\
- %{!ansi:-D_SYSV}"
-#endif
+# define CPP_SPEC "%{!msoft-float:-D__HAVE_68881__ }"
 
 #undef ASM_LONG
 #define ASM_LONG "\t.long"
@@ -58,21 +47,6 @@
 #define HAVE_ATEXIT
 #undef DO_GLOBAL_CTORS_BODY		/* don't use svr3.h version */
 #undef DO_GLOBAL_DTORS_BODY
-
-#if 0 /* Should be no need now that svr3.h defines BSS_SECTION_FUNCTION.  */
-/* 
- * svr3.h says to use BSS_SECTION_FUNCTION
- * but no one appears to, and there is
- * no definition for m68k.
- */
-#ifndef BSS_SECTION_FUNCTION
-# undef EXTRA_SECTION_FUNCTIONS
-# define EXTRA_SECTION_FUNCTIONS	\
-  CONST_SECTION_FUNCTION		\
-  INIT_SECTION_FUNCTION			\
-  FINI_SECTION_FUNCTION
-#endif
-#endif /* 0 */
 
 #ifndef USE_GAS
 /*
