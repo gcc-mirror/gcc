@@ -1,3 +1,8 @@
+2003-03-08  Jerry Quinn  <jlquinn@optonline.net>
+
+	* src/ios.cc (ios_base::ios_base): Correct order of _M_word and
+	_M_word_size initialization.
+
 2003-03-07  Paolo Carlini  <pcarlini@unitus.it>
 
 	* include/bits/fstream.tcc (_M_convert_to_external):
