@@ -1,3 +1,10 @@
+2003-11-11  Eric Christopher  <echristo@redhat.com>
+
+	* function.c (purge_addressof_1): Add libcall check.
+	Remove test for cached replacements on fallback case.
+	Simplify mode comparisons. Add libcall test for
+	paradoxical subregs.
+
 2003-11-11  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* config/h8300/t-h8300: Fix an obsolete comment.
@@ -46,7 +53,7 @@
 	anything other than VISIBILITY_DEFAULT and VISIBILITY_HIDDEN.
 	* config/darwin.h (TARGET_ASM_ASSEMBLE_VISIBILITY): Use
 	darwin_assemble_visibility instead of default.
-	
+
 2003-11-10  Waldek Hebisch  <hebisch@math.uni.wroc.pl>
 
 	PR target/12865
@@ -186,10 +193,10 @@
 	(decl_visibility): Remove declaration.
 	* varasm.c (maybe_assemble_visibility): Use DECL_VISIBILITY
 	instead of decl_visibility.
-	(default_binds_local_p_1):  Use DECL_VISIBILITY	instead of 
+	(default_binds_local_p_1):  Use DECL_VISIBILITY	instead of
 	decl_visibility.
 	(decl_visibility): Remove.
-	
+
 2003-11-06  Ulrich Weigand  <uweigand@de.ibm.com>
 
 	* config/s390/s390.c (s390_emit_epilogue): Recognize more cases
