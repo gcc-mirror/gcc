@@ -1,3 +1,9 @@
+Mon Jan 31 15:35:29 2000  Jim Wilson  <wilson@cygnus.com>
+
+	* class.c (build_vtbl_or_vbase_field): New parameter fcontext.
+	Store it in DECL_FCONTEXT.
+	(build_vbase_pointer_fields, create_vtable_ptr): Fix callers.
+
 2000-01-31  Jason Merrill  <jason@casey.cygnus.com>
 
 	* tinfo.h (old abi): #include "tconfig.h".
