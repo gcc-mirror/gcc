@@ -1,5 +1,16 @@
 2000-05-16  Richard Henderson  <rth@cygnus.com>
 
+	* config/ia64/crtbegin.asm (__dso_handle): Mark hidden if the
+	assembler supports it.
+	(.fini, .init): Use a gp-relative indirect call.
+	(__do_global_dtors_aux): Preserve the gp; rebundle.
+	(__do_frame_setup): Likewise.
+	* config/ia64/crtend.asm (.IA_64.unwind): Don't terminate with -1.
+	(.init): Use a gp-relative indirect call.
+	(__do_global_ctors_aux): Preserve the gp.
+
+2000-05-16  Richard Henderson  <rth@cygnus.com>
+
 	* flow.c (commit_one_edge_insertion): Be prepared for a return
 	insn to be inserted on the edge with a normal jump.
 	* jump.c (jump_optimize_1): Don't look to create return isns.
