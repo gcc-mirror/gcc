@@ -240,7 +240,8 @@ static int push_secondary_reload PARAMS ((int, rtx, int, int, enum reg_class,
 					enum machine_mode, enum reload_type,
 					enum insn_code *));
 #endif
-static enum reg_class find_valid_class PARAMS ((enum machine_mode, int));
+static enum reg_class find_valid_class PARAMS ((enum machine_mode, int,
+						unsigned int));
 static int reload_inner_reg_of_subreg PARAMS ((rtx, enum machine_mode));
 static void push_replacement	PARAMS ((rtx *, int, enum machine_mode));
 static void combine_reloads	PARAMS ((void));
@@ -661,16 +662,20 @@ clear_secondary_mem ()
 #endif /* SECONDARY_MEMORY_NEEDED */
 
 /* Find the largest class for which every register number plus N is valid in
-   M1 (if in range).  Abort if no such class exists.  */
+   M1 (if in range) and is cheap to move into REGNO.
+   Abort if no such class exists.  */
 
 static enum reg_class
-find_valid_class (m1, n)
+find_valid_class (m1, n, dest_regno)
      enum machine_mode m1 ATTRIBUTE_UNUSED;
      int n;
+     unsigned int dest_regno;
 {
+  int best_cost = -1;
   int class;
   int regno;
   enum reg_class best_class = NO_REGS;
+  enum reg_class dest_class = REGNO_REG_CLASS (dest_regno);
   unsigned int best_size = 0;
 
   for (class = 1; class < N_REG_CLASSES; class++)
@@ -682,8 +687,14 @@ find_valid_class (m1, n)
 	    && ! HARD_REGNO_MODE_OK (regno + n, m1))
 	  bad = 1;
 
-      if (! bad && reg_class_size[class] > best_size)
-	best_class = class, best_size = reg_class_size[class];
+      if (! bad && reg_class_size[class] > best_size
+	  && (best_cost < 0
+	      || best_cost >= REGISTER_MOVE_COST (m1, class, dest_class)))
+	{
+	  best_class = class;
+	  best_size = reg_class_size[class];
+	  best_cost = REGISTER_MOVE_COST (m1, class, dest_class);
+	}
     }
 
   if (best_size == 0)
@@ -1041,7 +1052,8 @@ push_reload (in, out, inloc, outloc, class,
 			      subreg_regno_offset (REGNO (SUBREG_REG (in)),
 						   GET_MODE (SUBREG_REG (in)),
 						   SUBREG_BYTE (in),
-						   GET_MODE (in)));
+						   GET_MODE (in)),
+			      REGNO (SUBREG_REG (in)));
 
       /* This relies on the fact that emit_reload_insns outputs the
 	 instructions for input reloads of type RELOAD_OTHER in the same
@@ -1141,7 +1153,8 @@ push_reload (in, out, inloc, outloc, class,
 				     subreg_regno_offset (REGNO (SUBREG_REG (out)),
 							  GET_MODE (SUBREG_REG (out)),
 							  SUBREG_BYTE (out),
-							  GET_MODE (out))),
+							  GET_MODE (out)),
+				     REGNO (SUBREG_REG (out))),
 		   VOIDmode, VOIDmode, 0, 0,
 		   opnum, RELOAD_OTHER);
     }
