@@ -3248,23 +3248,21 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
      things like `7 != NULL' result in errors about comparisons
      between pointers and integers.  So, here, we replace __null with
      an appropriate null pointer constant.  */
-  if (orig_op0 == null_node)
-    orig_op0 = ansi_null_node;
-  if (orig_op1 == null_node)
-    orig_op1 = ansi_null_node;
+  op0 = (orig_op0 == null_node) ? ansi_null_node : orig_op0;
+  op1 = (orig_op1 == null_node) ? ansi_null_node : orig_op1;
 
   /* Apply default conversions.  */
   if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
       || code == TRUTH_XOR_EXPR)
     {
-      op0 = decay_conversion (orig_op0);
-      op1 = decay_conversion (orig_op1);
+      op0 = decay_conversion (op0);
+      op1 = decay_conversion (op1);
     }
   else
     {
-      op0 = default_conversion (orig_op0);
-      op1 = default_conversion (orig_op1);
+      op0 = default_conversion (op0);
+      op1 = default_conversion (op1);
     }
 
   type0 = TREE_TYPE (op0);
@@ -3962,6 +3960,21 @@ build_binary_op_nodefault (code, orig_op0, orig_op1, error_code)
 		TREE_TYPE (orig_op0), TREE_TYPE (orig_op1), error_code);
       return error_mark_node;
     }
+
+  if (/* If OP0 is NULL and OP1 is not a pointer, or vice versa.  */
+      (orig_op0 == null_node
+       && TREE_CODE (TREE_TYPE (orig_op1)) != POINTER_TYPE)
+      /* Or vice versa.  */
+      || (orig_op1 == null_node
+	  && TREE_CODE (TREE_TYPE (orig_op0)) != POINTER_TYPE)
+      /* Or, both are NULL and the operation was not a comparison.  */
+      || (orig_op0 == null_node && orig_op1 == null_node 
+	  && code != EQ_EXPR && code != NE_EXPR))
+    /* Some sort of arithmetic operation involving NULL was
+       performed.  Note that pointer-difference and pointer-addition
+       have already been handled above, and so we don't end up here in
+       that case.  */
+    cp_warning ("NULL used in arithmetic");
 
   if (! converted)
     {

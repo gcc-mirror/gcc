@@ -7,6 +7,6 @@ void f()
   int i;
   float f;
 
-  i != NULL;
-  f != NULL;
+  i != NULL; // WARNING - NULL used in arithmetic
+  f != NULL; // WARNING - NULL used in arithmetic
 }

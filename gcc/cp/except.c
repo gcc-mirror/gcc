@@ -1277,10 +1277,10 @@ build_throw (e)
   if (processing_template_decl)
     return build_min (THROW_EXPR, void_type_node, e);
 
-  if (! flag_ansi && e == null_node)
+  if (e == null_node)
     {
-      cp_warning ("throwing NULL");
-      e = integer_zero_node;
+      cp_warning ("throwing NULL, which has integral, not pointer type");
+      e = ansi_null_node;
     }
 
   e = build1 (THROW_EXPR, void_type_node, e);
