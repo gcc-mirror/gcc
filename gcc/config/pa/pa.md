@@ -1098,17 +1098,17 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r,r,r,r")
 	(if_then_else:SI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 2 "comparison_operator"
 	    [(match_operand:SI 3 "register_operand" "r,r,r,r")
 	     (match_operand:SI 4 "arith11_operand" "rI,rI,rI,rI")])
 	 (match_operand:SI 1 "reg_or_cint_move_operand" "0,J,N,K")
 	 (const_int 0)))]
   ""
   "@
-   {com%I4clr|cmp%I4clr},%S5 %4,%3,%%r0\;ldi 0,%0
-   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;ldi %1,%0
-   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;ldil L'%1,%0
-   {com%I4clr|cmp%I4clr},%B5 %4,%3,%0\;{zdepi|depwi,z} %Z1,%0"
+   {com%I4clr|cmp%I4clr},%S2 %4,%3,%%r0\;ldi 0,%0
+   {com%I4clr|cmp%I4clr},%B2 %4,%3,%0\;ldi %1,%0
+   {com%I4clr|cmp%I4clr},%B2 %4,%3,%0\;ldil L'%1,%0
+   {com%I4clr|cmp%I4clr},%B2 %4,%3,%0\;{zdepi|depwi,z} %Z1,%0"
   [(set_attr "type" "multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8")])
 
@@ -1165,18 +1165,18 @@
 (define_insn ""
   [(set (match_operand:DI 0 "register_operand" "=r,r,r,r,r")
 	(if_then_else:DI
-	 (match_operator 5 "comparison_operator"
+	 (match_operator 2 "comparison_operator"
 	    [(match_operand:DI 3 "register_operand" "r,r,r,r,r")
 	     (match_operand:DI 4 "arith11_operand" "rI,rI,rI,rI,rI")])
 	 (match_operand:DI 1 "reg_or_cint_move_operand" "0,r,J,N,K")
 	 (const_int 0)))]
   "TARGET_64BIT"
   "@
-   cmp%I4clr,*%S5 %4,%3,%%r0\;ldi 0,%0
-   cmp%I4clr,*%B5 %4,%3,%0\;copy %1,%0
-   cmp%I4clr,*%B5 %4,%3,%0\;ldi %1,%0
-   cmp%I4clr,*%B5 %4,%3,%0\;ldil L'%1,%0
-   cmp%I4clr,*%B5 %4,%3,%0\;depdi,z %z1,%0"
+   cmp%I4clr,*%S2 %4,%3,%%r0\;ldi 0,%0
+   cmp%I4clr,*%B2 %4,%3,%0\;copy %1,%0
+   cmp%I4clr,*%B2 %4,%3,%0\;ldi %1,%0
+   cmp%I4clr,*%B2 %4,%3,%0\;ldil L'%1,%0
+   cmp%I4clr,*%B2 %4,%3,%0\;depdi,z %z1,%0"
   [(set_attr "type" "multi,multi,multi,multi,nullshift")
    (set_attr "length" "8,8,8,8,8")])
 
@@ -4068,7 +4068,7 @@
 (define_insn ""
   [(set (reg:SI 29) (mod:SI (reg:SI 26) (reg:SI 25)))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))
+   (clobber (match_operand:SI 1 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -4123,7 +4123,7 @@
 (define_insn ""
   [(set (reg:SI 29) (umod:SI (reg:SI 26) (reg:SI 25)))
    (clobber (match_operand:SI 0 "register_operand" "=a"))
-   (clobber (match_operand:SI 2 "register_operand" "=&r"))
+   (clobber (match_operand:SI 1 "register_operand" "=&r"))
    (clobber (reg:SI 26))
    (clobber (reg:SI 25))
    (clobber (reg:SI 31))]
@@ -6210,7 +6210,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (const_int 1)
-			 (match_operand:SI 3 "register_operand" "q")))]
+			 (match_operand:SI 2 "register_operand" "q")))]
   ""
   "{vextru %1,1,%0|extrw,u %1,%%sar,1,%0}"
   [(set_attr "type" "shift")
@@ -6230,7 +6230,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(zero_extract:DI (match_operand:DI 1 "register_operand" "r")
 			 (const_int 1)
-			 (match_operand:DI 3 "register_operand" "q")))]
+			 (match_operand:DI 2 "register_operand" "q")))]
   "TARGET_64BIT"
   "extrd,u %1,%%sar,1,%0"
   [(set_attr "type" "shift")
@@ -6267,7 +6267,7 @@
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (const_int 1)
-			 (match_operand:SI 3 "register_operand" "q")))]
+			 (match_operand:SI 2 "register_operand" "q")))]
   "!TARGET_64BIT"
   "{vextrs %1,1,%0|extrw,s %1,%%sar,1,%0}"
   [(set_attr "type" "shift")
@@ -6287,7 +6287,7 @@
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extract:DI (match_operand:DI 1 "register_operand" "r")
 			 (const_int 1)
-			 (match_operand:DI 3 "register_operand" "q")))]
+			 (match_operand:DI 2 "register_operand" "q")))]
   "TARGET_64BIT"
   "extrd,s %1,%%sar,1,%0"
   [(set_attr "type" "shift")
