@@ -1,3 +1,8 @@
+2001-09-18  Philip Blundell  <philb@gnu.org>
+
+	* config/arm/lib1funcs.asm (L_dvmd_lnx): Don't rely on kernel
+	header files.
+
 2001-09-17  Dale Johannesen  <dalej@apple.com>
 
 	* config/rs6000/rs6000.h (FIXED_REGISTERS): Use FIXED_R2.
