@@ -1,3 +1,10 @@
+2003-09-30  Alexandre Oliva  <aoliva@redhat.com>
+
+	config/frv/frv.h (PREDICATE_CODES): Added
+	condexec_si_media_operator, condexec_sf_add_operator and
+	condexec_sf_conv_operator.  Removed condexec_sf_binary_operator
+	and condexec_sf_unary_operator.
+
 2003-10-01  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
 
 	* aclocal.m4: Add ultrix* to /dev/zero blacklist.

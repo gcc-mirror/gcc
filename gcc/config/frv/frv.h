@@ -3190,10 +3190,11 @@ do {                                                                    \
   { "minmax_operator",			{ SMIN, SMAX, UMIN, UMAX }},	\
   { "condexec_si_binary_operator",	{ PLUS, MINUS, AND, IOR, XOR,	\
 					  ASHIFT, ASHIFTRT, LSHIFTRT }}, \
+  { "condexec_si_media_operator",	{ AND, IOR, XOR }},		\
   { "condexec_si_divide_operator",	{ DIV, UDIV }},			\
   { "condexec_si_unary_operator",	{ NOT, NEG }},			\
-  { "condexec_sf_binary_operator",	{ PLUS, MINUS, MULT, DIV }},	\
-  { "condexec_sf_unary_operator",	{ ABS, NEG, SQRT }},		\
+  { "condexec_sf_add_operator",		{ PLUS, MINUS }},		\
+  { "condexec_sf_conv_operator",	{ ABS, NEG }},			\
   { "intop_compare_operator",		{ PLUS, MINUS, AND, IOR, XOR,	\
 					  ASHIFT, ASHIFTRT, LSHIFTRT }}, \
   { "condexec_intop_cmp_operator",	{ PLUS, MINUS, AND, IOR, XOR,	\
