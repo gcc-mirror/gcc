@@ -15,7 +15,7 @@ union Lisp_Object
       {
         enum Lisp_Type type: 3L ;
         unsigned long  markbit: 1;
-        unsigned long  val: 60;
+        unsigned long  val: 32;
       } gu;
     long  i;
   }
