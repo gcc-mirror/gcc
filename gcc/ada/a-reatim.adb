@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---             Copyright (C) 1995-2003, Ada Core Technologies               --
+--             Copyright (C) 1995-2005, Ada Core Technologies               --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,6 +154,15 @@ package body Ada.Real_Time is
       return Time_Span_Unit * MS * 1_000_000;
    end Milliseconds;
 
+   -------------
+   -- Minutes --
+   -------------
+
+   function Minutes (M : Integer) return Time_Span is
+   begin
+      return Milliseconds (M) * Integer'(60_000);
+   end Minutes;
+
    -----------------
    -- Nanoseconds --
    -----------------
@@ -162,6 +171,15 @@ package body Ada.Real_Time is
    begin
       return Time_Span_Unit * NS;
    end Nanoseconds;
+
+   -------------
+   -- Seconds --
+   -------------
+
+   function Seconds (S : Integer) return Time_Span is
+   begin
+      return Milliseconds (S) * Integer'(1000);
+   end Seconds;
 
    -----------
    -- Split --

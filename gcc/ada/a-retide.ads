@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2003, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2005, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -39,11 +39,12 @@
 package Ada.Real_Time.Delays is
 
    function To_Duration (T : Real_Time.Time) return Duration;
+   --  Convert Time to Duration
 
    procedure Delay_Until (T : Time);
    --  Delay until Clock has reached (at least) time T,
    --  or the task is aborted to at least the current ATC nesting level.
    --  The body of this procedure must perform all the processing
-   --  required for an abortion point.
+   --  required for an abort point.
 
 end Ada.Real_Time.Delays;

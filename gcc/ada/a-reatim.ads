@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2002 Free Software Foundation, Inc.          --
+--          Copyright (C) 1992-2005 Free Software Foundation, Inc.          --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -86,6 +86,12 @@ package Ada.Real_Time is
    function Microseconds (US : Integer) return Time_Span;
    function Milliseconds (MS : Integer) return Time_Span;
 
+   function Seconds (S : Integer) return Time_Span;
+   pragma Ada_05 (Seconds);
+
+   function Minutes (M : Integer) return Time_Span;
+   pragma Ada_05 (Minutes);
+
    --  Seconds_Count needs 64 bits, since Time has the full range of
    --  Duration. The delta of Duration is 10 ** (-9), so the maximum
    --  number of seconds is 2**63/10**9 = 8*10**9 which does not quite
@@ -125,5 +131,11 @@ private
    pragma Import (Intrinsic, ">");
    pragma Import (Intrinsic, ">=");
    pragma Import (Intrinsic, "abs");
+
+   pragma Inline (Microseconds);
+   pragma Inline (Milliseconds);
+   pragma Inline (Nanoseconds);
+   pragma Inline (Seconds);
+   pragma Inline (Minutes);
 
 end Ada.Real_Time;
