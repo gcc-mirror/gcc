@@ -2,6 +2,17 @@
 
 	* config/sparc/sparc.md (define_splits): Kill constraints.
 
+	Cleanup redundant and unused insn attributes.
+	* config/sparc/sparc.md (define_attr "insn"): Kill address, unary,
+	binary, and move.  Mark ialu as default.
+	(commented out define_function_unit "alu"): Kill.
+	(define_attr "use_clobbered"): Kill.
+	(whole file): Kill address insn type references.  Replace
+	all unary/binary/move references with ialu.
+	* config/sparc/sparc.c (whole file): Kill TYPE_ADDRESS
+	references.  Replace TYPE_{UNARY,BINARY,MOVE} references with
+	TYPE_IALU.
+	
 2001-09-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* loop.c (express_from_1): Fix CONSTANT_P(a) case.
