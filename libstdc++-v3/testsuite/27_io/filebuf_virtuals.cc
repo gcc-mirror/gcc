@@ -73,6 +73,7 @@ const char name_02[] = "filebuf_virtuals-2.txt"; // empty file, need to create
 const char name_03[] = "filebuf_virtuals-3.txt"; // empty file, need to create
 const char name_04[] = "filebuf_virtuals-4.txt"; // empty file, need to create
 const char name_05[] = "filebuf_virtuals-5.txt"; // empty file, need to create
+const char name_06[] = "filebuf_virtuals-6.txt"; // empty file, need to create
 
 class derived_filebuf: public std::filebuf
 {
@@ -647,6 +648,60 @@ void test11()
   fbuf.close();  
 }
 
+class errorcvt : public std::codecvt<char, char, mbstate_t>
+{
+protected:
+  std::codecvt_base::result
+  do_out(mbstate_t&, const char* from, const char*,
+	 const char*& from_next, char* to, char*,
+	 char*& to_next) const
+  {
+    from_next = from;
+    to_next = to;
+    return std::codecvt<char, char, mbstate_t>::error;
+  }
+  
+  virtual bool do_always_noconv() const throw()
+  {
+    return false;
+  }
+};
+
+// libstdc++/9182
+void test12()
+{
+  using namespace std;
+  bool test = true;
+
+  locale loc;
+  loc = locale(loc, new errorcvt);
+  
+  filebuf fbuf1;
+  fbuf1.pubimbue(loc);
+  fbuf1.open(name_06, ios_base::out | ios_base::trunc);
+  fbuf1.sputn("ison", 4); 
+  int r = fbuf1.pubsync();
+  VERIFY( r == -1 );
+  fbuf1.close();
+}
+
+void test13()
+{
+  using namespace std;
+  bool test = true;
+  
+  locale loc;
+  loc = locale(loc, new errorcvt);
+  
+  filebuf fbuf1;
+  fbuf1.pubimbue(loc);
+  fbuf1.pubsetbuf(0, 0);
+  fbuf1.open(name_06, ios_base::out | ios_base::trunc);
+  streamsize n = fbuf1.sputn("onne", 4);
+  VERIFY( n == 0 );
+  fbuf1.close();
+}
+
 main() 
 {
   test01();
@@ -662,5 +717,7 @@ main()
   test09();
   test10();
   test11();
+  test12();
+  test13();
   return 0;
 }
