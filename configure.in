@@ -51,7 +51,7 @@ libstdcxx_flags='`case $$dir in libstdc++-v3 | libjava) ;; *) test ! -f $$r/$(TA
 # these tools are built for the host environment
 # Note, the powerpc-eabi build depends on sim occurring before gdb in order to
 # know that we are building the simulator.
-host_tools="texinfo byacc flex bison binutils ld gas gcc cgen sid sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find emacs emacs19 uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils snavigator libtool gettext zip fastjar"
+host_tools="texinfo byacc flex bison binutils ld gas gcc cgen sid sim gdb make patch prms send-pr gprof gdbtest tgas etc expect dejagnu ash bash bzip2 m4 autoconf automake libtool ispell grep diff rcs cvssrc fileutils shellutils time textutils wdiff find uudecode hello tar gzip indent recode release sed utils guile perl apache inet gawk findutils snavigator libtool gettext zip fastjar"
 
 # libgcj represents the runtime libraries only used by gcj.
 libgcj="target-libffi \
@@ -93,7 +93,7 @@ target_tools="target-examples target-groff target-gperf"
 #
 # This must be a single line because of the way it is searched by grep in
 # the code below.
-native_only="autoconf automake libtool cvssrc emacs emacs19 fileutils find gawk gettext grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl apache inet time ash bash bzip2 prms snavigator gnuserv target-gperf"
+native_only="autoconf automake libtool cvssrc fileutils find gawk gettext grep gzip hello indent ispell m4 rcs recode sed shellutils tar textutils uudecode wdiff gprof target-groff guile perl apache inet time ash bash bzip2 prms snavigator gnuserv target-gperf"
 
 # directories to be built in a cross environment only
 #
@@ -654,10 +654,10 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-newlib target-libgloss ${libgcj}"
     ;;
   alpha*-dec-osf*)
-    # ld works, but does not support shared libraries.  emacs doesn't
-    # work.  newlib is not 64 bit ready.  I'm not sure about fileutils.
+    # ld works, but does not support shared libraries.
+    # newlib is not 64 bit ready.  I'm not sure about fileutils.
     # gas doesn't generate exception information.
-    noconfigdirs="$noconfigdirs gas ld emacs fileutils target-newlib target-libgloss"
+    noconfigdirs="$noconfigdirs gas ld fileutils target-newlib target-libgloss"
     ;;
   alpha*-*-*vms*)
     noconfigdirs="$noconfigdirs gdb ld target-newlib target-libgloss ${libgcj}"
@@ -772,13 +772,6 @@ case "${target}" in
     # Do configure ld/binutils/gas for this case.
     ;;
   hppa*-*-*)
-    # HP's C compiler doesn't handle Emacs correctly (but on BSD and Mach
-    # cc is gcc, and on any system a user should be able to link cc to
-    # whatever they want.  FIXME, emacs emacs19).
-    case "${CC}" in
-	"" | cc*) noconfigdirs="$noconfigdirs emacs emacs19" ;;
-        *) ;;
-    esac
     # According to Alexandre Oliva <aoliva@redhat.com>, libjava won't
     # build on HP-UX 10.20.
     noconfigdirs="$noconfigdirs ld shellutils ${libgcj}"
@@ -864,13 +857,7 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libgloss"
     ;;
   i[3456]86-*-sysv4*)
-    # The SYSV4 C compiler doesn't handle Emacs correctly
-    case "${CC}" in
-	"" | cc*) noconfigdirs="$noconfigdirs emacs emacs19" ;;
-        *) ;;
-    esac
-    # but that's okay since emacs doesn't work anyway
-    noconfigdirs="$noconfigdirs emacs emacs19 target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs target-libgloss ${libgcj}"
     ;;
   i[3456]86-*-beos*)
      noconfigdirs="$noconfigdirs gdb target-newlib target-libgloss ${libgcj}"
@@ -950,17 +937,15 @@ case "${target}" in
     ;;
   mips*-*-irix5*)
     # The GNU linker does not support shared libraries.
-    # emacs is emacs 18, which does not work on Irix 5 (emacs19 does work)
-    noconfigdirs="$noconfigdirs ld gprof emacs target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs ld gprof target-libgloss ${libgcj}"
     ;;
   mips*-*-irix6*)
     # The GNU assembler does not support IRIX 6.
-    # emacs is emacs 18, which does not work on Irix 5 (emacs19 does work)
     # Linking libjava exceeds command-line length limits on at least
     # IRIX 6.2, but not on IRIX 6.5.
     # Also, boehm-gc won't build on IRIX 6.5, according to Jeffrey Oldham
     # <oldham@codesourcery.com>
-    noconfigdirs="$noconfigdirs gas gprof emacs target-libgloss ${libgcj}"
+    noconfigdirs="$noconfigdirs gas gprof target-libgloss ${libgcj}"
     ;;
   mips*-dec-bsd*)
     noconfigdirs="$noconfigdirs gprof target-libgloss ${libgcj}"
