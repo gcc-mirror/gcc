@@ -621,32 +621,46 @@ java_init_decl_processing (void)
 				  one_elt_array_domain_type);
   TYPE_NONALIASED_COMPONENT (otable_type) = 1;
   otable_ptr_type = build_pointer_type (otable_type);
+  atable_type = build_array_type (ptr_type_node, 
+				  one_elt_array_domain_type);
+  TYPE_NONALIASED_COMPONENT (atable_type) = 1;
+  atable_ptr_type = build_pointer_type (atable_type);
 
-  method_symbol_type = make_node (RECORD_TYPE);
-  PUSH_FIELD (method_symbol_type, field, "clname", utf8const_ptr_type);
-  PUSH_FIELD (method_symbol_type, field, "name", utf8const_ptr_type);
-  PUSH_FIELD (method_symbol_type, field, "signature", utf8const_ptr_type);
-  FINISH_RECORD (method_symbol_type);
+  symbol_type = make_node (RECORD_TYPE);
+  PUSH_FIELD (symbol_type, field, "clname", utf8const_ptr_type);
+  PUSH_FIELD (symbol_type, field, "name", utf8const_ptr_type);
+  PUSH_FIELD (symbol_type, field, "signature", utf8const_ptr_type);
+  FINISH_RECORD (symbol_type);
 
-  method_symbols_array_type = build_array_type (method_symbol_type, 
-						one_elt_array_domain_type);
-  method_symbols_array_ptr_type = build_pointer_type 
-				  (method_symbols_array_type);
+  symbols_array_type = build_array_type (symbol_type, 
+					 one_elt_array_domain_type);
+  symbols_array_ptr_type = build_pointer_type (symbols_array_type);
 
   if (flag_indirect_dispatch)
     {
-      otable_decl = build_decl (VAR_DECL, get_identifier ("otable"),
-				otable_type);
+      otable_decl = build_decl (VAR_DECL, get_identifier ("otable"), otable_type);
       DECL_EXTERNAL (otable_decl) = 1;
       TREE_STATIC (otable_decl) = 1;
       TREE_READONLY (otable_decl) = 1;
-      pushdecl (otable_decl);
-  
+      TREE_CONSTANT (otable_decl) = 1;
+      pushdecl (otable_decl);  
       otable_syms_decl = build_decl (VAR_DECL, get_identifier ("otable_syms"), 
-				     method_symbols_array_type);
+				     symbols_array_type);
       TREE_STATIC (otable_syms_decl) = 1;
       TREE_CONSTANT (otable_syms_decl) = 1;
       pushdecl (otable_syms_decl);
+
+      atable_decl = build_decl (VAR_DECL, get_identifier ("atable"), atable_type);
+      DECL_EXTERNAL (atable_decl) = 1;
+      TREE_STATIC (atable_decl) = 1;
+      TREE_READONLY (atable_decl) = 1;
+      TREE_CONSTANT (atable_decl) = 1;
+      pushdecl (atable_decl);  
+      atable_syms_decl = build_decl (VAR_DECL, get_identifier ("atable_syms"), 
+				     symbols_array_type);
+      TREE_STATIC (atable_syms_decl) = 1;
+      TREE_CONSTANT (atable_syms_decl) = 1;
+      pushdecl (atable_syms_decl);
     }
   
   PUSH_FIELD (object_type_node, field, "vtable", dtable_ptr_type);
@@ -684,7 +698,10 @@ java_init_decl_processing (void)
   PUSH_FIELD (class_type_node, field, "vtable", dtable_ptr_type);
   PUSH_FIELD (class_type_node, field, "otable", otable_ptr_type);
   PUSH_FIELD (class_type_node, field, "otable_syms", 
-  	      method_symbols_array_ptr_type);
+  	      symbols_array_ptr_type);
+  PUSH_FIELD (class_type_node, field, "atable", atable_ptr_type);
+  PUSH_FIELD (class_type_node, field, "atable_syms", 
+  	      symbols_array_ptr_type);
   PUSH_FIELD (class_type_node, field, "interfaces",
 	      build_pointer_type (class_ptr_type));
   PUSH_FIELD (class_type_node, field, "loader", ptr_type_node);

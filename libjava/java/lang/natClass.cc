@@ -36,6 +36,7 @@ details.  */
 #include <java/lang/IllegalAccessError.h>
 #include <java/lang/IllegalArgumentException.h>
 #include <java/lang/IncompatibleClassChangeError.h>
+#include <java/lang/NoSuchFieldError.h>
 #include <java/lang/ArrayIndexOutOfBoundsException.h>
 #include <java/lang/InstantiationException.h>
 #include <java/lang/NoClassDefFoundError.h>
@@ -790,7 +791,7 @@ java::lang::Class::initializeClass (void)
          so ensure internal tables are built.  */
       _Jv_PrepareConstantTimeTables (this);
       _Jv_MakeVTable(this);
-      _Jv_LinkOffsetTable(this);
+      _Jv_LinkSymbolTable(this);
 
       return;
     }
@@ -830,8 +831,8 @@ java::lang::Class::initializeClass (void)
   if (vtable == NULL)
     _Jv_MakeVTable(this);
 
-  if (otable != NULL && otable->state == 0)
-    _Jv_LinkOffsetTable(this);
+  if (otable || atable)
+    _Jv_LinkSymbolTable(this);
 
   // Steps 8, 9, 10, 11.
   try
@@ -1533,75 +1534,238 @@ java::lang::Class::getProtectionDomain0 ()
   return protectionDomain;
 }
 
-// Functions for indirect dispatch (symbolic virtual method binding) support.
+// Functions for indirect dispatch (symbolic virtual binding) support.
 
-// Resolve entries in the virtual method offset symbol table 
-// (klass->otable_syms). The vtable offset (in bytes) for each resolved method 
-// is placed at the corresponding position in the virtual method offset table 
-// (klass->otable). A single otable and otable_syms pair may be shared by many 
-// classes.
+// There are two tables, atable and otable.  atable is an array of
+// addresses, and otable is an array of offsets, and these are used
+// for static and virtual members respectively.
+
+// {a,o}table_syms is an array of _Jv_MethodSymbols.  Each such symbol
+// is a tuple of {classname, member name, signature}.
+// _Jv_LinkSymbolTable() scans these two arrays and fills in the
+// corresponding atable and otable with the addresses of static
+// members and the offsets of virtual members.
+
+// The offset (in bytes) for each resolved method or field is placed
+// at the corresponding position in the virtual method offset table
+// (klass->otable). 
+
+// The same otable and atable may be shared by many classes.
+
 void
-_Jv_LinkOffsetTable(jclass klass)
+_Jv_LinkSymbolTable(jclass klass)
 {
-  //// FIXME: Need to lock the otable ////
+  //// FIXME: Need to lock the tables ////
   
+  int index = 0;
+  _Jv_MethodSymbol sym;
   if (klass->otable == NULL
       || klass->otable->state != 0)
-    return;
-  
+    goto atable;
+   
   klass->otable->state = 1;
 
-  int index = 0;
-  _Jv_MethodSymbol sym = klass->otable_syms[0];
-
-  while (sym.name != NULL)
+  for (index = 0; sym = klass->otable_syms[index], sym.name != NULL; index++)
     {
       jclass target_class = _Jv_FindClass (sym.class_name, NULL);
       _Jv_Method *meth = NULL;            
+
+      const _Jv_Utf8Const *signature = sym.signature;
+
+      // FIXME: This should be special index for ThrowNoSuchMethod().
+      klass->otable->offsets[index] = -1;
       
-      if (target_class != NULL)
-	if (target_class->isInterface())
+      if (target_class == NULL)
+	continue;
+
+      if (target_class->isInterface())
+	{
+	  // FIXME: This does not yet fully conform to binary compatibility
+	  // rules. It will break if a declaration is moved into a 
+	  // superinterface.
+	  for (jclass cls = target_class; cls != 0; cls = cls->getSuperclass ())
+	    {
+	      for (int i=0; i < cls->method_count; i++)
+		{
+		  meth = &cls->methods[i];
+		  if (_Jv_equalUtf8Consts (sym.name, meth->name)
+		      && _Jv_equalUtf8Consts (signature, meth->signature))
+		    {
+		      klass->otable->offsets[index] = i + 1;
+		      goto found;
+		    }
+		}
+	    
+	    }
+	found:
+	  continue;
+	}
+
+      // We're looking for a field or a method, and we can tell
+      // which is needed by looking at the signature.
+      if (signature->length >= 2
+	  && signature->data[0] == '(')
+	{
+ 	  // If the target class does not have a vtable_method_count yet, 
+	  // then we can't tell the offsets for its methods, so we must lay 
+	  // it out now.
+	  if (target_class->vtable_method_count == -1)
+	    {
+	      JvSynchronize sync (target_class);
+	      _Jv_LayoutVTableMethods (target_class);
+	    }
+		
+	  meth = _Jv_LookupDeclaredMethod(target_class, sym.name, 
+					  sym.signature);
+		
+	  if (meth != NULL)
+	    {
+	      klass->otable->offsets[index] = 
+		_Jv_VTable::idx_to_offset (meth->index);	      
+	    }
+
+	  continue;
+	}
+
+      // try fields
+      {
+	_Jv_Field *the_field = NULL;
+
+	for (jclass cls = target_class; cls != 0; cls = cls->getSuperclass ())
 	  {
-	    // FIXME: This does not yet fully conform to binary compatibility
-	    // rules. It will break if a declaration is moved into a 
-	    // superinterface.
-	    for (int i=0; i < target_class->method_count; i++)
+	    for (int i = 0; i < cls->field_count; i++)
 	      {
-		meth = &target_class->methods[i];
-		if (_Jv_equalUtf8Consts (sym.name, meth->name)
-		    && _Jv_equalUtf8Consts (sym.signature, meth->signature))
-		  {
-		    klass->otable->offsets[index] = i + 1;
-		    break;
-		  }
+		_Jv_Field *field = &cls->fields[i];
+		if (! _Jv_equalUtf8Consts (field->name, sym.name))
+		  continue;
+
+		// FIXME: What access checks should we perform here?
+// 		if (_Jv_CheckAccess (klass, cls, field->flags))
+// 		  {
+
+		if (!field->isResolved ())
+		  _Jv_ResolveField (field, cls->loader);
+
+// 		if (field_type != 0 && field->type != field_type)
+// 		  throw new java::lang::LinkageError
+// 		    (JvNewStringLatin1 
+// 		     ("field type mismatch with different loaders"));
+
+		the_field = field;
+		goto end_of_field_search;
+	      }
+	  }
+      end_of_field_search:
+	if (the_field != NULL)
+	  {
+	    if (the_field->flags & 0x0008 /* Modifier::STATIC */)
+	      {	      
+		throw new java::lang::IncompatibleClassChangeError;
+	      }
+	    else
+	      {
+		klass->otable->offsets[index] = the_field->u.boffset;
 	      }
 	  }
 	else
 	  {
-	    // If the target class does not have a vtable_method_count yet, 
-	    // then we can't tell the offsets for its methods, so we must lay 
-	    // it out now.
-	    if (target_class->vtable_method_count == -1)
-	      {
-		JvSynchronize sync (target_class);
-		_Jv_LayoutVTableMethods (target_class);
-	      }
+	    throw new java::lang::NoSuchFieldError
+	      (_Jv_NewStringUtf8Const (sym.name));
+	  }
+      }
+    }
 
-            meth = _Jv_LookupDeclaredMethod(target_class, sym.name, 
-					    sym.signature);
+ atable:
+  if (klass->atable == NULL
+      || klass->atable->state != 0)
+    return;
 
-	    if (meth != NULL)
+  klass->atable->state = 1;
+
+  for (index = 0; sym = klass->atable_syms[index], sym.name != NULL; index++)
+    {
+      jclass target_class = _Jv_FindClass (sym.class_name, NULL);
+      _Jv_Method *meth = NULL;            
+      const _Jv_Utf8Const *signature = sym.signature;
+
+      // ??? Setting this pointer to null will at least get us a
+      // NullPointerException
+      klass->atable->addresses[index] = NULL;
+      
+      if (target_class == NULL)
+	continue;
+      
+      // We're looking for a static field or a static method, and we
+      // can tell which is needed by looking at the signature.
+      if (signature->length >= 2
+	  && signature->data[0] == '(')
+	{
+ 	  // If the target class does not have a vtable_method_count yet, 
+	  // then we can't tell the offsets for its methods, so we must lay 
+	  // it out now.
+	  if (target_class->vtable_method_count == -1)
+	    {
+	      JvSynchronize sync (target_class);
+	      _Jv_LayoutVTableMethods (target_class);
+	    }
+	  
+	  meth = _Jv_LookupDeclaredMethod(target_class, sym.name, 
+					  sym.signature);
+	  
+	  if (meth != NULL)
+	    klass->atable->addresses[index] = meth->ncode;
+	  else
+	    klass->atable->addresses[index] = (void *)_Jv_ThrowNoSuchMethodError;
+
+	  continue;
+	}
+
+      // try fields
+      {
+	_Jv_Field *the_field = NULL;
+
+	for (jclass cls = target_class; cls != 0; cls = cls->getSuperclass ())
+	  {
+	    for (int i = 0; i < cls->field_count; i++)
 	      {
-		klass->otable->offsets[index] = 
-		  _Jv_VTable::idx_to_offset (meth->index);
+		_Jv_Field *field = &cls->fields[i];
+		if (! _Jv_equalUtf8Consts (field->name, sym.name))
+		  continue;
+
+		// FIXME: What access checks should we perform here?
+// 		if (_Jv_CheckAccess (klass, cls, field->flags))
+// 		  {
+
+		if (!field->isResolved ())
+		  _Jv_ResolveField (field, cls->loader);
+		
+// 		if (field_type != 0 && field->type != field_type)
+// 		  throw new java::lang::LinkageError
+// 		    (JvNewStringLatin1 
+// 		     ("field type mismatch with different loaders"));
+
+		the_field = field;
+		goto end_of_static_field_search;
 	      }
 	  }
-
-      if (meth == NULL)
-	// FIXME: This should be special index for ThrowNoSuchMethod().
-	klass->otable->offsets[index] = -1;
-
-      sym = klass->otable_syms[++index];
+      end_of_static_field_search:
+	if (the_field != NULL)
+	  {
+	    if (the_field->flags & 0x0008 /* Modifier::STATIC */)
+	      {	      
+		klass->atable->addresses[index] = the_field->u.addr;
+	      }
+	    else
+	      {
+		throw new java::lang::IncompatibleClassChangeError;
+	      }
+	  }
+	else
+	  {
+	    throw new java::lang::NoSuchFieldError
+	      (_Jv_NewStringUtf8Const (sym.name));
+	  }
+      }
     }
 }
 

@@ -84,7 +84,6 @@ static tree build_java_check_indexed_type (tree, tree);
 static tree case_identity (tree, tree); 
 static unsigned char peek_opcode_at_pc (struct JCF *, int, int);
 static int emit_init_test_initialization (void **entry, void * ptr);
-static int get_offset_table_index (tree);
 
 static GTY(()) tree operand_type[59];
 
@@ -1510,6 +1509,25 @@ build_field_ref (tree self_value, tree self_class, tree name)
       tree base_type = promote_type (base_class);
       if (base_type != TREE_TYPE (self_value))
 	self_value = fold (build1 (NOP_EXPR, base_type, self_value));
+      if (flag_indirect_dispatch
+	  && current_class != self_class)
+	/* FIXME: current_class != self_class is not exactly the right
+	   test.  What we really want to know is whether self_class is
+	   in the same translation unit as current_class.  If it is,
+	   we can make a direct reference.  */
+	{
+	  tree otable_index 
+	    = build_int_2 
+	    (get_symbol_table_index (field_decl, &otable_methods), 0);
+	  tree field_offset = build (ARRAY_REF, integer_type_node, otable_decl, 
+				     otable_index);
+	  tree address 
+	    = fold (build (PLUS_EXPR, 
+			   build_pointer_type (TREE_TYPE (field_decl)),
+			   self_value, field_offset));
+	  return fold (build1 (INDIRECT_REF, TREE_TYPE (field_decl), address));
+	}
+
       self_value = build_java_indirect_ref (TREE_TYPE (TREE_TYPE (self_value)),
 					    self_value, check);
       return fold (build (COMPONENT_REF, TREE_TYPE (field_decl),
@@ -1744,8 +1762,19 @@ build_known_method_ref (tree method, tree method_type ATTRIBUTE_UNUSED,
   tree func;
   if (is_compiled_class (self_type))
     {
-      make_decl_rtl (method, NULL);
-      func = build1 (ADDR_EXPR, method_ptr_type_node, method);
+      if (!flag_indirect_dispatch
+	  || (!TREE_PUBLIC (method) && DECL_CONTEXT (method)))
+	{
+	  make_decl_rtl (method, NULL);
+	  func = build1 (ADDR_EXPR, method_ptr_type_node, method);
+	}
+      else
+	{
+	  tree table_index = build_int_2 (get_symbol_table_index 
+					  (method, &atable_methods), 0);
+	  func = build (ARRAY_REF,  method_ptr_type_node, atable_decl, 
+			table_index);
+	}
     }
   else
     {
@@ -1816,27 +1845,29 @@ invoke_build_dtable (int is_invoke_interface, tree arg_list)
   return dtable;
 }
 
-/* Determine the index in the virtual offset table (otable) for a call to
-   METHOD. If this method has not been seen before, it will be added to the 
-   otable_methods. If it has, the existing otable slot will be reused. */
+/* Determine the index in SYMBOL_TABLE for a reference to the decl
+   T. If this decl has not been seen before, it will be added to the
+   otable_methods. If it has, the existing table slot will be
+   reused. */
 
-static int
-get_offset_table_index (tree method)
+int
+get_symbol_table_index (tree t, tree *symbol_table)
 {
   int i = 1;
   tree method_list;
-  
-  if (otable_methods == NULL_TREE)
+
+  if (*symbol_table == NULL_TREE)
     {
-      otable_methods = build_tree_list (method, method);
+      *symbol_table = build_tree_list (t, t);
       return 1;
     }
   
-  method_list = otable_methods;
+  method_list = *symbol_table;
   
   while (1)
     {
-      if (TREE_VALUE (method_list) == method)
+      tree value = TREE_VALUE (method_list);
+      if (value == t)
         return i;
       i++;
       if (TREE_CHAIN (method_list) == NULL_TREE)
@@ -1845,7 +1876,7 @@ get_offset_table_index (tree method)
         method_list = TREE_CHAIN (method_list);
     }
 
-  TREE_CHAIN (method_list) = build_tree_list (method, method);
+  TREE_CHAIN (method_list) = build_tree_list (t, t);
   return i;
 }
 
@@ -1860,7 +1891,8 @@ build_invokevirtual (tree dtable, tree method)
 
   if (flag_indirect_dispatch)
     {
-      otable_index = build_int_2 (get_offset_table_index (method), 0);
+      otable_index 
+	= build_int_2 (get_symbol_table_index (method, &otable_methods), 0);
       method_index = build (ARRAY_REF, integer_type_node, otable_decl, 
 			    otable_index);
     }
@@ -1924,7 +1956,8 @@ build_invokeinterface (tree dtable, tree method)
   
   if (flag_indirect_dispatch)
     {
-      otable_index = build_int_2 (get_offset_table_index (method), 0);
+      otable_index 
+	= build_int_2 (get_symbol_table_index (method, &otable_methods), 0);
       idx = build (ARRAY_REF, integer_type_node, otable_decl, otable_index);
     }
   else

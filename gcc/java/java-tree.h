@@ -146,17 +146,26 @@ extern int compiling_from_source;
 /* List of all class filenames seen so far.  */
 #define all_class_filename java_global_trees [JTI_ALL_CLASS_FILENAME]
 
-/* List of virtual method decls called in this translation unit, used to 
-   generate virtual method offset symbol table. */
+/* List of virtual decls referred to by this translation unit, used to
+   generate virtual method offset symbol table.  */
 #define otable_methods java_global_trees [JTI_OTABLE_METHODS]
+/* List of static decls referred to by this translation unit, used to
+   generate virtual method offset symbol table.  */
+#define atable_methods java_global_trees [JTI_ATABLE_METHODS]
 
-/* The virtual method offset table. This is emitted as uninitialized data of 
-   the required length, and filled out at run time during class linking. */
+/* The virtual offset table.  This is emitted as uninitialized data of
+   the required length, and filled out at run time during class
+   linking. */
 #define otable_decl java_global_trees [JTI_OTABLE_DECL]
+/* The static address table.  */
+#define atable_decl java_global_trees [JTI_ATABLE_DECL]
 
-/* The virtual method offset symbol table. Used by the runtime to fill out the
-   otable. */
+/* The virtual offset symbol table. Used by the runtime to fill out
+   the otable. */
 #define otable_syms_decl java_global_trees [JTI_OTABLE_SYMS_DECL]
+/* The static symbol table. Used by the runtime to fill out the
+   otable. */
+#define atable_syms_decl java_global_trees [JTI_ATABLE_SYMS_DECL]
 
 extern int flag_emit_class_files;
 
@@ -364,9 +373,11 @@ enum java_tree_index
   JTI_METHOD_PTR_TYPE_NODE,
   JTI_OTABLE_TYPE,
   JTI_OTABLE_PTR_TYPE,
-  JTI_METHOD_SYMBOL_TYPE,
-  JTI_METHOD_SYMBOLS_ARRAY_TYPE,
-  JTI_METHOD_SYMBOLS_ARRAY_PTR_TYPE,
+  JTI_ATABLE_TYPE,
+  JTI_ATABLE_PTR_TYPE,
+  JTI_SYMBOL_TYPE,
+  JTI_SYMBOLS_ARRAY_TYPE,
+  JTI_SYMBOLS_ARRAY_PTR_TYPE,
 
   JTI_END_PARAMS_NODE,
 
@@ -408,6 +419,10 @@ enum java_tree_index
   JTI_OTABLE_METHODS,
   JTI_OTABLE_DECL,
   JTI_OTABLE_SYMS_DECL,
+
+  JTI_ATABLE_METHODS,
+  JTI_ATABLE_DECL,
+  JTI_ATABLE_SYMS_DECL,
 
   JTI_PREDEF_FILENAMES,
 
@@ -602,14 +617,18 @@ extern GTY(()) tree java_global_trees[JTI_MAX];
   java_global_trees[JTI_METHOD_PTR_TYPE_NODE]
 #define otable_type \
   java_global_trees[JTI_OTABLE_TYPE]
+#define atable_type \
+  java_global_trees[JTI_ATABLE_TYPE]
 #define otable_ptr_type \
   java_global_trees[JTI_OTABLE_PTR_TYPE]
-#define method_symbol_type \
-  java_global_trees[JTI_METHOD_SYMBOL_TYPE]
-#define method_symbols_array_type \
-  java_global_trees[JTI_METHOD_SYMBOLS_ARRAY_TYPE]
-#define method_symbols_array_ptr_type \
-  java_global_trees[JTI_METHOD_SYMBOLS_ARRAY_PTR_TYPE]
+#define atable_ptr_type \
+  java_global_trees[JTI_ATABLE_PTR_TYPE]
+#define symbol_type \
+  java_global_trees[JTI_SYMBOL_TYPE]
+#define symbols_array_type \
+  java_global_trees[JTI_SYMBOLS_ARRAY_TYPE]
+#define symbols_array_ptr_type \
+  java_global_trees[JTI_SYMBOLS_ARRAY_PTR_TYPE]
 
 #define end_params_node \
   java_global_trees[JTI_END_PARAMS_NODE]
@@ -1199,7 +1218,7 @@ extern void make_class_data (tree);
 extern void register_class (void);
 extern int alloc_name_constant (int, tree);
 extern void emit_register_classes (void);
-extern void emit_offset_symbol_table (void);
+extern tree emit_symbol_table (tree, tree, tree, tree, tree);
 extern void lang_init_source (int);
 extern void write_classfile (tree);
 extern char *print_int_node (tree);
@@ -1299,6 +1318,7 @@ extern void init_resource_processing (void);
 extern void start_complete_expand_method (tree);
 extern void java_expand_body (tree);
 
+extern int get_symbol_table_index (tree, tree *);
 
 #define DECL_FINAL(DECL) DECL_LANG_FLAG_3 (DECL)
 
@@ -1658,11 +1678,11 @@ extern tree *type_map;
 /* Append a field initializer to CONS for a field with the given VALUE.
    NAME is a char* string used for error checking;
    the initializer must be specified in order. */
-#define PUSH_FIELD_VALUE(CONS, NAME, VALUE) {\
-  tree field = TREE_CHAIN(CONS);\
-  if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), NAME) != 0) abort();\
-  CONSTRUCTOR_ELTS(CONS) = tree_cons (field, VALUE, CONSTRUCTOR_ELTS(CONS));\
-  TREE_CHAIN(CONS) = TREE_CHAIN (field); }
+  #define PUSH_FIELD_VALUE(CONS, NAME, VALUE) {\
+    tree field = TREE_CHAIN(CONS);\
+    if (strcmp (IDENTIFIER_POINTER (DECL_NAME (field)), NAME) != 0) abort();\
+    CONSTRUCTOR_ELTS(CONS) = tree_cons (field, VALUE, CONSTRUCTOR_ELTS(CONS));\
+    TREE_CHAIN(CONS) = TREE_CHAIN (field); }
 
 /* Finish creating a record CONSTRUCTOR CONS. */
 #define FINISH_RECORD_CONSTRUCTOR(CONS) \
