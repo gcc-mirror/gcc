@@ -4056,10 +4056,22 @@ build_expr_from_tree (t)
       }
 
     case COMPONENT_REF:
-      return build_x_component_ref
-	(build_expr_from_tree (TREE_OPERAND (t, 0)),
-	 TREE_OPERAND (t, 1), NULL_TREE, 1);
-      
+      {
+	tree object = build_expr_from_tree (TREE_OPERAND (t, 0));
+	tree field = TREE_OPERAND (t, 1);
+	
+	/* We use a COMPONENT_REF to indicate things of the form `x.b'
+	   and `x.A::b'.  We must distinguish between those cases
+	   here.  */
+	if (TREE_CODE (field) == SCOPE_REF)
+	  return build_object_ref (object, 
+				   TREE_OPERAND (field, 0),
+				   TREE_OPERAND (field, 1));
+	else
+	  return build_x_component_ref (object, field,
+					NULL_TREE, 1);
+      }
+
     case THROW_EXPR:
       return build_throw (build_expr_from_tree (TREE_OPERAND (t, 0)));
 
