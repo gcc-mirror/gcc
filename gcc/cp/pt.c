@@ -9966,7 +9966,8 @@ instantiate_decl (d, defer_ok)
      int defer_ok;
 {
   tree tmpl = DECL_TI_TEMPLATE (d);
-  tree args = DECL_TI_ARGS (d);
+  tree gen_args;
+  tree args;
   tree td;
   tree code_pattern;
   tree spec;
@@ -10000,7 +10001,8 @@ instantiate_decl (d, defer_ok)
      specializations, so we must explicitly check
      DECL_TEMPLATE_SPECIALIZATION.  */
   gen_tmpl = most_general_template (tmpl);
-  spec = retrieve_specialization (gen_tmpl, args);
+  gen_args = DECL_TI_ARGS (d);
+  spec = retrieve_specialization (gen_tmpl, gen_args);
   if (spec != NULL_TREE && DECL_TEMPLATE_SPECIALIZATION (spec))
     return spec;
 
@@ -10060,6 +10062,13 @@ instantiate_decl (d, defer_ok)
     }
 
   code_pattern = DECL_TEMPLATE_RESULT (td);
+
+  /* In the case of a friend temlpate whose definition is provided
+     outside the class, we may have too many arguments.  Drop the ones
+     we don't need.  */
+  args = get_innermost_template_args (gen_args,
+				      TMPL_PARMS_DEPTH 
+				      (DECL_TEMPLATE_PARMS (td)));
 
   if (TREE_CODE (d) == FUNCTION_DECL)
     pattern_defined = (DECL_SAVED_TREE (code_pattern) != NULL_TREE);
@@ -10125,8 +10134,8 @@ instantiate_decl (d, defer_ok)
 
       if (TREE_CODE (gen) == FUNCTION_DECL)
 	{
-	  tsubst (DECL_ARGUMENTS (gen), args, tf_error | tf_warning, d);
-	  tsubst (TYPE_RAISES_EXCEPTIONS (type), args,
+	  tsubst (DECL_ARGUMENTS (gen), gen_args, tf_error | tf_warning, d);
+	  tsubst (TYPE_RAISES_EXCEPTIONS (type), gen_args,
 		  tf_error | tf_warning, d);
 	  /* Don't simply tsubst the function type, as that will give
 	     duplicate warnings about poor parameter qualifications.
@@ -10134,7 +10143,7 @@ instantiate_decl (d, defer_ok)
 	     without the top level cv qualifiers.  */
 	  type = TREE_TYPE (type);
 	}
-      tsubst (type, args, tf_error | tf_warning, d);
+      tsubst (type, gen_args, tf_error | tf_warning, d);
 
       if (DECL_CLASS_SCOPE_P (d))
 	popclass ();

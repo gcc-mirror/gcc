@@ -1,3 +1,9 @@
+2002-11-30  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8511
+	* pt.c (instantiate_decl): Handle template friends defined outside
+	of the class correctly.
+
 2002-11-29  Joe Buck <jbuck@synopsys.com>
 
 	* parse.y (class_head_defn): Set CLASSTYPE_DECLARED_CLASS for
