@@ -1,3 +1,9 @@
+2000-12-13  Laurynas Biveinis  <lauras@softhome.net>
+
+        * fixinc/inclhack.def: skip stdio_va_list fix if __DJ_va_list
+        found in a header.
+        * fixinc/fixincl.x: regenerated.
+
 2000-12-13  DJ Delorie  <dj@redhat.com>
 
 	* config.gcc (cygwin, win32, mingw32): Use float-i386.h.

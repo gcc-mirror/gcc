@@ -2011,7 +2011,7 @@ fix = {
 fix = {
     hackname = stdio_va_list;
     files    = stdio.h;
-    bypass   = '__gnuc_va_list|_BSD_VA_LIST_';
+    bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list';
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.

@@ -3679,7 +3679,7 @@ tSCC zStdio_Va_ListList[] =
  *  content bypass pattern - skip fix if pattern found
  */
 tSCC zStdio_Va_ListBypass0[] =
-       "__gnuc_va_list|_BSD_VA_LIST_";
+       "__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list";
 
 #define    STDIO_VA_LIST_TEST_CT  1
 static tTestDesc aStdio_Va_ListTests[] = {
