@@ -1342,6 +1342,7 @@ extern void link_cc0_insns			PROTO ((rtx));
 extern void add_insn				PROTO ((rtx));
 extern void add_insn_before			PROTO ((rtx, rtx));
 extern void add_insn_after			PROTO ((rtx, rtx));
+extern void remove_insn				PROTO ((rtx));
 extern void reorder_insns_with_line_notes	PROTO ((rtx, rtx, rtx));
 extern void emit_insn_after_with_line_notes	PROTO ((rtx, rtx, rtx));
 extern enum rtx_code classify_insn		PROTO ((rtx));

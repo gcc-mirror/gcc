@@ -2473,6 +2473,64 @@ add_insn_before (insn, before)
     PREV_INSN (XVECEXP (PATTERN (before), 0, 0)) = insn;
 }
 
+/* Remove an insn from its doubly-linked list.  This function knows how
+   to handle sequences.  */
+void
+remove_insn (insn)
+     rtx insn;
+{
+  rtx next = NEXT_INSN (insn);
+  rtx prev = PREV_INSN (insn);
+  if (prev)
+    {
+      NEXT_INSN (prev) = next;
+      if (GET_CODE (prev) == INSN && GET_CODE (PATTERN (prev)) == SEQUENCE)
+	{
+	  rtx sequence = PATTERN (prev);
+	  NEXT_INSN (XVECEXP (sequence, 0, XVECLEN (sequence, 0) - 1)) = next;
+	}
+    }
+  else if (first_insn == insn)
+    first_insn = next;
+  else
+    {
+      struct sequence_stack *stack = sequence_stack;
+      /* Scan all pending sequences too.  */
+      for (; stack; stack = stack->next)
+	if (insn == stack->first)
+	  {
+	    stack->first = next;
+	    break;
+	  }
+
+      if (stack == 0)
+	abort ();
+    }
+
+  if (next)
+    {
+      PREV_INSN (next) = prev;
+      if (GET_CODE (next) == INSN && GET_CODE (PATTERN (next)) == SEQUENCE)
+	PREV_INSN (XVECEXP (PATTERN (next), 0, 0)) = prev;
+    }
+  else if (last_insn == insn)
+    last_insn = prev;
+  else
+    {
+      struct sequence_stack *stack = sequence_stack;
+      /* Scan all pending sequences too.  */
+      for (; stack; stack = stack->next)
+	if (insn == stack->last)
+	  {
+	    stack->last = prev;
+	    break;
+	  }
+
+      if (stack == 0)
+	abort ();
+    }
+}
+
 /* Delete all insns made since FROM.
    FROM becomes the new last instruction.  */
 
