@@ -1,3 +1,8 @@
+2001-12-12  Richard Henderson  <rth@redhat.com>
+
+	* emit-rtl.c (adjust_address_1): Always copy address to avoid
+	shared rtl.
+
 Wed Dec 12 07:37:52 2001  Olivier Hainque <hainque@act-europe.fr>
 
 	* stmt.c (expand_end_case): Do subtraction of lower bound as trees
