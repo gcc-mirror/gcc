@@ -1,5 +1,5 @@
 /* Output dbx-format symbol table information from GNU compiler.
-   Copyright (C) 1987, 1988, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1992, 1993, 1994 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -1490,10 +1490,8 @@ dbxout_symbol (decl, local)
      tree decl;
      int local;
 {
-  int letter = 0;
   tree type = TREE_TYPE (decl);
   tree context = NULL_TREE;
-  int regno = -1;
 
   /* Cast avoids warning in old compilers.  */
   current_sym_code = (STAB_CODE_TYPE) 0;
