@@ -1,6 +1,6 @@
 ## Makefile for the toplevel directory of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002
+## Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002, 2003
 ## Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
@@ -88,7 +88,7 @@ doxygen-man:
 # Multilib support.
 MAKEOVERRIDES=
 
-# Multilib variables.
+# Multilib support variables.
 MULTISRCTOP =
 MULTIBUILDTOP =
 MULTIDIRS =
@@ -96,16 +96,16 @@ MULTISUBDIR =
 MULTIDO = true
 MULTICLEAN = true
 
-# Multilib Makefile bits.
+# Multilib support.
 .PHONY: all-multi mostlyclean-multi clean-multi distclean-multi \
 	maintainer-clean-multi
 
-all-am: all-multi
-install-am: install-multi
-mostlyclean-am: mostlyclean-multi
-clean-am: clean-multi
-distclean-am: distclean-multi
-maintainer-clean-am: maintainer-clean-multi
+all-recursive: all-multi
+install-recursive: install-multi
+mostlyclean-recursive: mostlyclean-multi
+clean-recursive: clean-multi
+distclean-recursive: distclean-multi
+maintainer-clean-recursive: maintainer-clean-multi
 
 all-multi:
 	: $(MAKE) ; exec $(MULTIDO) $(AM_MAKEFLAGS) DO=all multi-do
