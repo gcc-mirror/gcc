@@ -1,5 +1,10 @@
 2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
 
+        * config/rs6000/altivec.h (vec_step_help): Rename to
+        __vec_step_help.
+
+2002-02-05  Aldy Hernandez  <aldyh@redhat.com>
+
         * config/rs6000/altivec.h: Fix typos.
 
 2002-02-05  Jason Thorpe  <thorpej@wasabisystems.com>
