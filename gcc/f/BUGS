@@ -40,7 +40,7 @@ via `http://egcs.cygnus.com/onlinedocs/g77_bugs.html'.  Follow the
 port, build, and install `g77', see "Problems Installing" in
 `egcs/gcc/f/INSTALL'.
 
-   The following information was last updated on 1999-04-03:
+   The following information was last updated on 1999-04-20:
 
    * Automatic arrays possibly aren't working on HP-UX systems, at
      least in HP-UX version 10.20.  Writing into them apparently causes
@@ -151,33 +151,6 @@ port, build, and install `g77', see "Problems Installing" in
      specifications of alignment requirements and preferences for
      targets, and front ends like `g77' should take advantage of this
      when it becomes available.
-
-   * The x86 target's `-malign-double' option no longer reliably aligns
-     double-precision variables and arrays when they are placed in the
-     stack frame.
-
-     This can significantly reduce the performance of some applications,
-     even on a run-to-run basis (that is, performance measurements can
-     vary fairly widely depending on whether frequently used variables
-     are properly aligned, and that can change from one program run to
-     the next, even from one procedure call to the next).
-
-     Versions 0.5.22 and earlier of `g77' included a patch to `gcc'
-     that enabled this, but that patch has been deemed an improper
-     (probably buggy) one for version 2.8 of `gcc' and for `egcs'.
-
-     Note that version 1.1 of `egcs' aligns double-precision variables
-     and arrays when they are in static storage even if
-     `-malign-double' is not specified.
-
-     There is ongoing investigation into how to make `-malign-double'
-     work properly, also into how to make it unnecessary to get all
-     double-precision variables and arrays aligned when such alignment
-     would not violate the relevant specifications for processor and
-     inter-procedural interfaces.
-
-     For a suite of programs to test double-precision alignment, see
-     `ftp://alpha.gnu.org/gnu/g77/align/'.
 
    * The `libf2c' routines that perform some run-time arithmetic on
      `COMPLEX' operands were modified circa version 0.5.20 of `g77' to
