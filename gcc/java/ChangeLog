@@ -1,3 +1,10 @@
+2005-02-01  Ranjit Mathew  <rmathew@hotmail.com>
+
+	PR java/9157
+	* parse.y (build_string_concatenation): Remove redundant if.
+	(patch_conditional_expr): Attempt to patch_string() the condition
+	of a ?: as well, in addition to its other operands.
+
 2005-01-25  Tom Tromey  <tromey@redhat.com>
 
 	* Make-lang.in (java/java-tree-inline.o): Removed.
