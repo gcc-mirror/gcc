@@ -57,11 +57,6 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "cfglayout.h"
 #include "expr.h"
 
-/* Stubs in case we don't have a return insn.  */
-#ifndef HAVE_return
-#define HAVE_return 0
-#define gen_return() NULL_RTX
-#endif
 
 /* The labels mentioned in non-jump rtl.  Valid during find_basic_blocks.  */
 /* ??? Should probably be using LABEL_NUSES instead.  It would take a
@@ -1134,10 +1129,11 @@ force_nonfallthru_and_redirect (edge e, basic_block target)
   e->flags &= ~EDGE_FALLTHRU;
   if (target == EXIT_BLOCK_PTR)
     {
-      if (HAVE_return)
+#ifdef HAVE_return
 	emit_jump_insn_after (gen_return (), BB_END (jump_block));
-      else
+#else
 	abort ();
+#endif
     }
   else
     {

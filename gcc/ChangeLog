@@ -1,3 +1,10 @@
+2004-04-11  Andreas Tobler  <a.tobler@schweiz.ch>
+
+	* bb-reorder.c (fix_crossing_conditional_branches): Fix bootstrap
+	failure on solaris. Place ifdef HAVE_return around gen_ret call.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Remove ifdef
+	HAVE_return and place it around the place where it is needed.
+
 2004-04-11  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	* varasm.c (text_section): Use TEXT_SECTION_ASM_OP and
