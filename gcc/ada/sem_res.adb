@@ -7112,17 +7112,25 @@ package body Sem_Res is
                      N, Base_Type (Opnd));
                   return False;
 
-               elsif not Subtypes_Statically_Match (Target, Opnd)
-                  and then (not Has_Discriminants (Target)
-                             or else Is_Constrained (Target))
+               --  Ada 2005 AI-384: legality rule is symmetric in both
+               --  designated types. The conversion is legal (with possible
+               --  constraint check) if either designated type is
+               --  unconstrained.
+
+               elsif Subtypes_Statically_Match (Target, Opnd)
+                 or else
+                   (Has_Discriminants (Target)
+                     and then
+                      (not Is_Constrained (Opnd)
+                        or else not Is_Constrained (Target)))
                then
+                  return True;
+
+               else
                   Error_Msg_NE
                     ("target designated subtype not compatible with }",
                      N, Opnd);
                   return False;
-
-               else
-                  return True;
                end if;
             end if;
          end;
