@@ -2465,54 +2465,6 @@ compare_constant (t1, t2)
   abort ();
 }
 
-/* Record a list of constant expressions that were passed to
-   output_constant_def but that could not be output right away.  */
-
-struct deferred_constant
-{
-  struct deferred_constant *next;
-  tree exp;
-  int reloc;
-  int labelno;
-};
-
-static struct deferred_constant *deferred_constants;
-
-/* Nonzero means defer output of addressed subconstants
-   (i.e., those for which output_constant_def is called.)  */
-static int defer_addressed_constants_flag;
-
-/* Start deferring output of subconstants.  */
-
-void
-defer_addressed_constants ()
-{
-  defer_addressed_constants_flag++;
-}
-
-/* Stop deferring output of subconstants,
-   and output now all those that have been deferred.  */
-
-void
-output_deferred_addressed_constants ()
-{
-  struct deferred_constant *p, *next;
-
-  defer_addressed_constants_flag--;
-
-  if (defer_addressed_constants_flag > 0)
-    return;
-
-  for (p = deferred_constants; p; p = next)
-    {
-      output_constant_def_contents (p->exp, p->reloc, p->labelno);
-      next = p->next;
-      free (p);
-    }
-
-  deferred_constants = 0;
-}
-
 /* Make a copy of the whole tree structure for a constant.  This
    handles the same types of nodes that compare_constant handles.  */
 
@@ -2586,7 +2538,7 @@ copy_constant (exp)
 
    If assembler code for such a constant has already been output,
    return an rtx to refer to it.
-   Otherwise, output such a constant in memory (or defer it for later)
+   Otherwise, output such a constant in memory
    and generate an rtx for it.
 
    If DEFER is nonzero, the output of string constants can be deferred
@@ -2680,9 +2632,7 @@ output_constant_def (exp, defer)
       desc->label = XSTR (XEXP (desc->rtl, 0), 0);
     }
 
-  if (found
-      && STRING_POOL_ADDRESS_P (XEXP (rtl, 0))
-      && (!defer || defer_addressed_constants_flag))
+  if (found && !defer && STRING_POOL_ADDRESS_P (XEXP (rtl, 0)))
     {
       defstr = (struct deferred_string **)
 	htab_find_slot_with_hash (const_str_htab, desc->label,
@@ -2699,48 +2649,31 @@ output_constant_def (exp, defer)
     }
 
   /* If this is the first time we've seen this particular constant,
-     output it (or defer its output for later).  */
-  if (! found)
+     output it.  Do no output if -fsyntax-only.  */
+  if (! found && ! flag_syntax_only)
     {
-      if (defer_addressed_constants_flag)
-	{
-	  struct deferred_constant *p
-	    = (struct deferred_constant *)
-	      xmalloc (sizeof (struct deferred_constant));
-
-	  p->exp = desc->value;
-	  p->reloc = reloc;
-	  p->labelno = labelno;
-	  p->next = deferred_constants;
-	  deferred_constants = p;
-	}
+      if (!defer || TREE_CODE (exp) != STRING_CST
+	  || flag_writable_strings)
+	output_constant_def_contents (exp, reloc, labelno);
       else
 	{
-	  /* Do no output if -fsyntax-only.  */
-	  if (! flag_syntax_only)
+	  defstr = (struct deferred_string **)
+	    htab_find_slot_with_hash (const_str_htab, desc->label,
+				      STRHASH (desc->label), INSERT);
+	  if (!defstr)
+	    output_constant_def_contents (exp, reloc, labelno);
+	  else
 	    {
-	      if (TREE_CODE (exp) != STRING_CST
-		  || !defer
-		  || flag_writable_strings
-		  || (defstr = (struct deferred_string **)
-			       htab_find_slot_with_hash (const_str_htab,
-							 desc->label,
-							 STRHASH (desc->label),
-							 INSERT)) == NULL)
-		output_constant_def_contents (exp, reloc, labelno);
-	      else
-		{
-		  struct deferred_string *p;
+	      struct deferred_string *p;
 
-		  p = (struct deferred_string *)
-		      ggc_alloc (sizeof (struct deferred_string));
+	      p = (struct deferred_string *)
+		ggc_alloc (sizeof (struct deferred_string));
 
-		  p->exp = desc->value;
-		  p->label = desc->label;
-		  p->labelno = labelno;
-		  *defstr = p;
-		  STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
-		}
+	      p->exp = desc->value;
+	      p->label = desc->label;
+	      p->labelno = labelno;
+	      *defstr = p;
+	      STRING_POOL_ADDRESS_P (XEXP (rtl, 0)) = 1;
 	    }
 	}
     }
