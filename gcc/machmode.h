@@ -125,9 +125,9 @@ extern enum machine_mode get_best_mode PARAMS ((int, int, unsigned int,
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
-#define GET_MODE_ALIGNMENT(MODE)   \
-  (unsigned int) MIN (BIGGEST_ALIGNMENT, 	   \
-		      MAX (1, (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT)))
+extern unsigned get_mode_alignment PARAMS ((enum machine_mode));
+
+#define GET_MODE_ALIGNMENT(MODE) get_mode_alignment (MODE)
 
 /* For each class, get the narrowest mode in that class.  */
 

@@ -1,3 +1,10 @@
+2000-02-24  Nathan Sidwell  <nathan@codesourcery.com>
+
+	* machmode.h (get_mode_alignment): Declare.
+	(GET_MODE_ALIGNMENT): Call it.
+	* stor-layout.c (get_mode_alignment): New function. Make
+	sure alignment is always power of 2.
+
 2000-02-23  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* i386.h: Remove useless definition of "I386" and misleading
