@@ -225,6 +225,7 @@ HOST_WIDE_INT parse_escape PROTO((char **, HOST_WIDE_INT));
 int check_assertion PROTO((U_CHAR *, int, int, struct arglist *));
 struct hashnode *lookup PROTO((U_CHAR *, int, int));
 void error PRINTF_PROTO_1((char *, ...));
+void fatal PRINTF_PROTO_1((char *, ...)) __attribute__ ((noreturn));
 void verror PROTO((char *, va_list));
 void pedwarn PRINTF_PROTO_1((char *, ...));
 void warning PRINTF_PROTO_1((char *, ...));
@@ -612,7 +613,7 @@ yylex ()
   register unsigned char *tokstart;
   register struct token *toktab;
   int wide_flag;
-  HOST_WIDE_INT mask;
+  HOST_WIDE_INT mask = ~ (HOST_WIDE_INT) 0;
 
  retry:
 
@@ -644,21 +645,18 @@ yylex ()
       {
 	lexptr++;
 	wide_flag = 1;
-	mask = MAX_WCHAR_TYPE_MASK;
 	goto char_constant;
       }
     if (lexptr[1] == '"')
       {
 	lexptr++;
 	wide_flag = 1;
-	mask = MAX_WCHAR_TYPE_MASK;
 	goto string_constant;
       }
     break;
 
   case '\'':
     wide_flag = 0;
-    mask = MAX_CHAR_TYPE_MASK;
   char_constant:
     lexptr++;
     if (keyword_parsing) {
@@ -666,7 +664,7 @@ yylex ()
       while (1) {
 	c = *lexptr++;
 	if (c == '\\')
-	  c = parse_escape (&lexptr, mask);
+	  parse_escape (&lexptr, mask);
 	else if (c == '\'')
 	  break;
       }
@@ -696,15 +694,16 @@ yylex ()
 
       while (1)
 	{
+ 	  HOST_WIDE_INT ch;
 	  c = *lexptr++;
 
-	  if (c == '\'' || c == EOF)
+ 	  if (c == '\'')
 	    break;
 
 	  ++chars_seen;
 	  if (c == '\\')
 	    {
-	      c = parse_escape (&lexptr, mask);
+	      ch = parse_escape (&lexptr, mask);
 	    }
 	  else
 	    {
@@ -751,23 +750,27 @@ yylex ()
 	      if (wide_flag)
 		c = wc;
 #endif /* ! MULTIBYTE_CHARS */
+	      ch = c & mask;
 	    }
 
 	  if (wide_flag)
 	    {
 	      if (chars_seen == 1) /* only keep the first one */
-		result = c;
+		result = ch;
+	      mask = MAX_WCHAR_TYPE_MASK;
 	      continue;
 	    }
+
+ 	  mask = MAX_CHAR_TYPE_MASK;
 
 	  /* Merge character into result; ignore excess chars.  */
 	  num_chars++;
 	  if (num_chars <= max_chars)
 	    {
-	      if (width < HOST_BITS_PER_INT)
-		result = (result << width) | (c & ((1 << width) - 1));
+	      if (width < HOST_BITS_PER_WIDE_INT)
+		result = (result << width) | ch;
 	      else
-		result = c;
+		result = ch;
 	    }
 	}
 
@@ -845,7 +848,6 @@ yylex ()
     return c;
 
   case '"':
-    mask = MAX_CHAR_TYPE_MASK;
   string_constant:
     if (keyword_parsing) {
       char *start_ptr = lexptr;
@@ -853,7 +855,7 @@ yylex ()
       while (1) {
 	c = *lexptr++;
 	if (c == '\\')
-	  c = parse_escape (&lexptr, mask);
+	  parse_escape (&lexptr, mask);
 	else if (c == '"')
 	  break;
       }
@@ -916,11 +918,10 @@ yylex ()
    RESULT_MASK is used to mask out the result;
    an error is reported if bits are lost thereby.
 
-   A negative value means the sequence \ newline was seen,
-   which is supposed to be equivalent to nothing at all.
+   Returning -1 means an incomplete escape sequence was seen.
 
-   If \ is followed by a null character, we return a negative
-   value and leave the string pointer pointing at the null character.
+   Returning -2 means the sequence \ newline was seen,
+   which is supposed to be equivalent to nothing at all.
 
    If \ is followed by 000, we return 0 and leave the string pointer
    after the zeros.  A value of 0 does not mean end of string.  */
@@ -930,33 +931,45 @@ parse_escape (string_ptr, result_mask)
      char **string_ptr;
      HOST_WIDE_INT result_mask;
 {
-  register int c = *(*string_ptr)++;
+  register char *p = *string_ptr;
+  register int c;
+  register HOST_WIDE_INT i;
+
+  while ((c = *p++) == '\\' && *p == '\n')
+    p++;
+
   switch (c)
     {
     case 'a':
-      return TARGET_BELL;
+      i = TARGET_BELL;
+      break;
     case 'b':
-      return TARGET_BS;
+      i = TARGET_BS;
+      break;
     case 'e':
     case 'E':
       if (pedantic)
 	pedwarn ("non-ANSI-standard escape sequence, `\\%c'", c);
-      return 033;
+      i = 033;
+      break;
     case 'f':
-      return TARGET_FF;
+      i = TARGET_FF;
+      break;
     case 'n':
-      return TARGET_NEWLINE;
+      i = TARGET_NEWLINE;
+      break;
     case 'r':
-      return TARGET_CR;
+      i = TARGET_CR;
+      break;
     case 't':
-      return TARGET_TAB;
+      i = TARGET_TAB;
+      break;
     case 'v':
-      return TARGET_VT;
+      i = TARGET_VT;
+      break;
     case '\n':
-      return -2;
-    case 0:
-      (*string_ptr)--;
-      return 0;
+      i = -2;
+      break;
       
     case '0':
     case '1':
@@ -967,16 +980,17 @@ parse_escape (string_ptr, result_mask)
     case '6':
     case '7':
       {
-	register HOST_WIDE_INT i = c - '0';
 	register int count = 0;
+	i = c - '0';
 	while (++count < 3)
 	  {
-	    c = *(*string_ptr)++;
+	    while ((c = *p++) == '\\' && *p == '\n')
+	      p++;
 	    if (c >= '0' && c <= '7')
 	      i = (i << 3) + c - '0';
 	    else
 	      {
-		(*string_ptr)--;
+		p--;
 		break;
 	      }
 	  }
@@ -985,15 +999,16 @@ parse_escape (string_ptr, result_mask)
 	    i &= result_mask;
 	    pedwarn ("octal escape sequence out of range");
 	  }
-	return i;
       }
+      break;
     case 'x':
       {
-	register unsigned_HOST_WIDE_INT i = 0, overflow = 0;
+	register unsigned_HOST_WIDE_INT u = 0, overflow = 0;
 	register int digits_found = 0, digit;
 	for (;;)
 	  {
-	    c = *(*string_ptr)++;
+	    while ((c = *p++) == '\\' && *p == '\n')
+	      p++;
 	    if (c >= '0' && c <= '9')
 	      digit = c - '0';
 	    else if (c >= 'a' && c <= 'f')
@@ -1002,25 +1017,30 @@ parse_escape (string_ptr, result_mask)
 	      digit = c - 'A' + 10;
 	    else
 	      {
-		(*string_ptr)--;
+		p--;
 		break;
 	      }
-	    overflow |= i ^ (i << 4 >> 4);
-	    i = (i << 4) + digit;
+	    overflow |= u ^ (u << 4 >> 4);
+	    u = (u << 4) + digit;
 	    digits_found = 1;
 	  }
 	if (!digits_found)
 	  yyerror ("\\x used with no following hex digits");
-	if (overflow | (i != (i & result_mask)))
+	if (overflow | (u != (u & result_mask)))
 	  {
-	    i &= result_mask;
+	    u &= result_mask;
 	    pedwarn ("hex escape sequence out of range");
 	  }
-	return i;
+	i = u;
       }
+      break;
     default:
-      return c;
+      i = c;
+      break;
     }
+
+  *string_ptr = p;
+  return i;
 }
 
 static void
