@@ -2084,6 +2084,26 @@ make_jump_insn_raw (pattern)
 
   return insn;
 }
+
+/* Like `make_insn' but make a CALL_INSN instead of an insn.  */
+
+static rtx
+make_call_insn_raw (pattern)
+     rtx pattern;
+{
+  register rtx insn;
+
+  insn = rtx_alloc (CALL_INSN);
+  INSN_UID (insn) = cur_insn_uid++;
+
+  PATTERN (insn) = pattern;
+  INSN_CODE (insn) = -1;
+  LOG_LINKS (insn) = NULL;
+  REG_NOTES (insn) = NULL;
+  CALL_INSN_FUNCTION_USAGE (insn) = NULL;
+
+  return insn;
+}
 
 /* Add INSN to the end of the doubly-linked list.
    INSN may be an INSN, JUMP_INSN, CALL_INSN, CODE_LABEL, BARRIER or NOTE.  */
@@ -2292,8 +2312,17 @@ rtx
 emit_call_insn_before (pattern, before)
      register rtx pattern, before;
 {
-  rtx insn = emit_insn_before (pattern, before);
-  PUT_CODE (insn, CALL_INSN);
+  register rtx insn;
+
+  if (GET_CODE (pattern) == SEQUENCE)
+    insn = emit_insn_before (pattern, before);
+  else
+    {
+      insn = make_call_insn_raw (pattern);
+      add_insn_after (insn, PREV_INSN (before));
+      PUT_CODE (insn, CALL_INSN);
+    }
+
   return insn;
 }
 
@@ -2609,7 +2638,7 @@ emit_call_insn (pattern)
     return emit_insn (pattern);
   else
     {
-      register rtx insn = make_insn_raw (pattern);
+      register rtx insn = make_call_insn_raw (pattern);
       add_insn (insn);
       PUT_CODE (insn, CALL_INSN);
       return insn;
