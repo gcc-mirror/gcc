@@ -59,6 +59,12 @@ Boston, MA 02111-1307, USA.  */
 /* Define this so that all GNU/Linux targets handle the same pragmas.  */
 #define HANDLE_PRAGMA_PACK_PUSH_POP
 
+/* Determine whether the the entire c99 runtime is present in the
+   runtime library.  */
+#ifndef USE_GNULIBC_1
+#define TARGET_C99_FUNCTIONS 1
+#endif
+
 /* Do code reading to identify a signal frame, and set the frame
    state data appropriately.  See unwind-dw2.c for the structs.  */
 

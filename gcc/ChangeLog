@@ -1,3 +1,7 @@
+2003-02-11  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/linux.h (TARGET_C99_FUNCTIONS): New.
+
 Mon Oct 21 17:07:47 CEST 2002  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (contains_128bit_aligned_vector_p): New function.
