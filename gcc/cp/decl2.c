@@ -454,6 +454,9 @@ int flag_guiding_decls;
    and class qualifiers.       */
 int flag_do_squangling;
 
+/* Nonzero means output .vtable_{entry,inherit} for use in doing vtable gc.  */
+
+int flag_vtable_gc;
 
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
@@ -496,6 +499,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"init-priority", &flag_init_priority, 1},
   {"huge-objects", &flag_huge_objects, 1},
   {"conserve-space", &flag_conserve_space, 1},
+  {"vtable-gc", &flag_vtable_gc, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
   {"access-control", &flag_access_control, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0},
@@ -2672,7 +2676,35 @@ finish_prevtable_vardecl (prev, vars)
   import_export_vtable (vars, ctype, 1);
   return 1;
 }
-    
+
+/* We need to describe to the assembler the relationship between
+   a vtable and the vtable of the parent class.  It is not 
+   straightforward how to get this during multiple inheritance.  */
+
+static void
+output_vtable_inherit (vars)
+     tree vars;
+{
+  tree parent;
+  rtx op[2];
+
+  op[0] = XEXP (DECL_RTL (vars), 0);	  /* strip the mem ref  */
+
+  parent = binfo_for_vtable (vars);
+
+  if (parent == TYPE_BINFO (DECL_CONTEXT (vars)))
+    op[1] = const0_rtx;
+  else if (parent)
+    {
+      parent = TYPE_BINFO_VTABLE (BINFO_TYPE (parent));
+      op[1] = XEXP (DECL_RTL (parent), 0);  /* strip the mem ref  */
+    }
+  else
+    my_friendly_abort (980826);
+
+  output_asm_insn (".vtable_inherit %0, %1", op);
+}
+
 static int
 finish_vtable_vardecl (prev, vars)
      tree prev, vars;
@@ -2716,6 +2748,10 @@ finish_vtable_vardecl (prev, vars)
 	}
 
       rest_of_decl_compilation (vars, NULL_PTR, 1, 1);
+
+      if (flag_vtable_gc)
+	output_vtable_inherit (vars);
+
       return 1;
     }
   else if (! TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (vars)))

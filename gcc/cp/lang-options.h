@@ -93,6 +93,8 @@ DEFINE_LANG_NAME ("C++")
   { "-ftemplate-depth-", "Specify maximum template instantiation depth"},
   { "-fthis-is-variable", "Make 'this' not be type '* const'"  },
   { "-fno-this-is-variable", "" },
+  { "-fvtable-gc", "Discard unused virtual functions" },
+  { "-fno-vtable-gc", "" },
   { "-fvtable-thunks", "Implement vtables using thunks" },
   { "-fno-vtable-thunks", "" },
   { "-fweak", "Emit common-like symbols as weak symbols" },

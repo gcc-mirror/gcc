@@ -429,6 +429,36 @@ build_vtable_entry (delta, pfn)
     }
 }
 
+/* We want to give the assembler the vtable identifier as well as
+   the offset to the function pointer.  So we generate
+
+   __asm__ __volatile__ (".vtable_entry %0, %1"
+      : : "s"(&class_vtable),
+          "i"((long)&vtbl[idx].pfn - (long)&vtbl[0])); */
+
+static void
+build_vtable_entry_ref (basetype, vtbl, idx)
+     tree basetype, vtbl, idx;
+{
+  static char asm_stmt[] = ".vtable_entry %0, %1";
+  tree s, i, i2;
+
+  s = build_unary_op (ADDR_EXPR, TYPE_BINFO_VTABLE (basetype), 0);
+  s = build_tree_list (build_string (1, "s"), s);
+
+  i = build_array_ref (vtbl, idx);
+  if (!flag_vtable_thunks)
+    i = build_component_ref (i, pfn_identifier, vtable_entry_type, 0);
+  i = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i, 0));
+  i2 = build_array_ref (vtbl, build_int_2(0,0));
+  i2 = build_c_cast (ptrdiff_type_node, build_unary_op (ADDR_EXPR, i2, 0));
+  i = build_binary_op (MINUS_EXPR, i, i2, 0);
+  i = build_tree_list (build_string (1, "i"), i);
+
+  expand_asm_operands (build_string (sizeof(asm_stmt)-1, asm_stmt),
+		       NULL_TREE, chainon (s, i), NULL_TREE, 1, NULL, 0);
+}
+
 /* Given an object INSTANCE, return an expression which yields the
    virtual function vtable element corresponding to INDEX.  There are
    many special cases for INSTANCE which we take care of here, mainly
@@ -489,7 +519,12 @@ build_vtbl_ref (instance, idx)
 	vtbl = build_indirect_ref (build_vfield_ref (instance, basetype),
 				   NULL_PTR);
     }
+
   assemble_external (vtbl);
+
+  if (flag_vtable_gc)
+    build_vtable_entry_ref (basetype, vtbl, idx);
+
   aref = build_array_ref (vtbl, idx);
 
   return aref;
