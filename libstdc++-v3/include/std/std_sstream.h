@@ -136,14 +136,9 @@ namespace std
 	__string_type __ret = _M_string;
 	if (this->_M_mode & ios_base::out)
 	  {
-	    // This is the deal: _M_string.size() is a value that
-	    // represents the size of the initial string used to
-	    // created the buffer, and may not be the correct size of
-	    // the current stringbuf internal buffer.
-	    const __size_type __len = _M_string.size();
 	    const __size_type __nlen = this->_M_out_lim
-	                               - this->_M_out_beg;
-	    if (__nlen > __len)
+                                       - this->_M_out_beg;
+	    if (__nlen)
 	      __ret = __string_type(this->_M_out_beg, 
 				    this->_M_out_beg + __nlen);
 	  }
