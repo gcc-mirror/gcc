@@ -901,9 +901,15 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	case OPCODE_putfield:  is_putting = 1;  is_static = 0;  goto field;
 	field:
 	  {
-	    int index = IMMEDIATE_u2;
-	    tree field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
-	    tree field_type = get_type_from_signature (field_signature);
+	    tree field_signature, field_type;
+	    index = IMMEDIATE_u2;
+	    if (index <= 0 || index >= JPOOL_SIZE(current_jcf))
+	      VERIFICATION_ERROR_WITH_INDEX ("bad constant pool index %d");
+	    if (JPOOL_TAG (current_jcf, index) != CONSTANT_Fieldref)
+	      VERIFICATION_ERROR
+		("field instruction does not reference a Fieldref");
+	    field_signature = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
+	    field_type = get_type_from_signature (field_signature);
 	    if (is_putting)
 	      POP_TYPE (field_type, "incorrect type for field");
 	    if (! is_static)
@@ -959,7 +965,7 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	  index = IMMEDIATE_u2;  goto ldc;
 	ldc:
 	  if (index <= 0 || index >= JPOOL_SIZE(current_jcf))
-	    VERIFICATION_ERROR ("bad constant pool index in ldc");
+	    VERIFICATION_ERROR_WITH_INDEX ("bad constant pool index %d in ldc");
 	  int_value = -1;
 	  switch (JPOOL_TAG (current_jcf, index) & ~CONSTANT_ResolvedFlag)
 	    {
@@ -988,13 +994,32 @@ verify_jvm_instructions (jcf, byte_ops, length)
 	case OPCODE_invokestatic:
 	case OPCODE_invokeinterface:
 	  {
-	    int index = IMMEDIATE_u2;
-	    tree sig = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
-	    tree self_type = get_class_constant
+	    tree sig, method_name, method_type, self_type;
+	    int self_is_interface, tag;
+	    index = IMMEDIATE_u2;
+	    if (index <= 0 || index >= JPOOL_SIZE(current_jcf))
+	      VERIFICATION_ERROR_WITH_INDEX
+		("bad constant pool index %d for invoke");
+	    tag = JPOOL_TAG (current_jcf, index);
+	    if (op_code == OPCODE_invokeinterface)
+	      {
+		if (tag != CONSTANT_InterfaceMethodref)
+		  VERIFICATION_ERROR
+		    ("invokeinterface does not reference an InterfaceMethodref");
+	      }
+	    else
+	      {
+		if (tag != CONSTANT_Methodref)
+		  VERIFICATION_ERROR ("invoke does not reference a Methodref");
+	      }
+	    sig = COMPONENT_REF_SIGNATURE (&current_jcf->cpool, index);
+	    self_type = get_class_constant
 	      (current_jcf, COMPONENT_REF_CLASS_INDEX (&current_jcf->cpool,
 						       index));
-	    tree method_name = COMPONENT_REF_NAME (&current_jcf->cpool, index);
-	    tree method_type;
+	    if (! CLASS_LOADED_P (self_type))
+	      load_class (self_type, 1);
+	    self_is_interface = CLASS_INTERFACE (TYPE_NAME (self_type));
+	    method_name = COMPONENT_REF_NAME (&current_jcf->cpool, index);
 	    method_type = parse_signature_string (IDENTIFIER_POINTER (sig),
 						  IDENTIFIER_LENGTH (sig));
 	    if (TREE_CODE (method_type) != FUNCTION_TYPE)
@@ -1027,7 +1052,14 @@ verify_jvm_instructions (jcf, byte_ops, length)
 		  if (!nargs || notZero)
 		      VERIFICATION_ERROR 
 		        ("invalid argument number in invokeinterface");
-		  break;		  
+		  // If we verify/resolve the constant pool, as we should,
+		  // this test (and the one just following) are redundant.
+		  if (! self_is_interface)
+		    VERIFICATION_ERROR ("invokeinterface calls method not in interface");
+		  break;
+		default:
+		  if (self_is_interface)
+		    VERIFICATION_ERROR ("method in interface called");
 		}
 	      }
 
