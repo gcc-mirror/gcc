@@ -3499,7 +3499,7 @@ find_reloads (insn, replace, ind_levels, live_known, reload_reg_p)
      that we could reach by reloading the fewest operands.
      Reload so as to fit it.  */
 
-  if (best == MAX_RECOG_OPERANDS + 300)
+  if (best == MAX_RECOG_OPERANDS * 2 + 600)
     {
       /* No alternative works with reloads??  */
       if (insn_code_number >= 0)

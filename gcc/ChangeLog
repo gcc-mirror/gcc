@@ -1,3 +1,8 @@
+Tue Jun 23 21:27:27 1998  Ken Raeburn  <raeburn@cygnus.com>
+
+	* reload.c (find_reloads): Fix check for failure to match any
+	alternative, to account for Mar 26 change in initial "best" cost.
+
 Tue Jun 23 16:44:21 1998  Dave Brolley  <brolley@cygnus.com>
 
 	* cpplib.c (do_line): Typo broke #line directive.
