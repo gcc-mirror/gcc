@@ -1,3 +1,9 @@
+2003-03-30  Richard Henderson  <rth@redhat.com>
+
+	PR c/10083
+	* config/alpha/alpha.md (umuldi3_highpart): Change to expander;
+	don't zero_extend const inputs.
+
 2003-03-30  Kazu Hirata  <kazu@cs.umass.edu>
 
 	* reload1.c (reload_cse_move2add): Fix a comment typo.
