@@ -3954,9 +3954,12 @@ try_replace_reg (from, to, insn)
 	  && validate_change (insn, &SET_SRC (set), src, 0))
 	success = 1;
 
-      /* If we've failed to do replacement, have a single SET, and don't already
-	 have a note, add a REG_EQUAL note to not lose information.  */
-      if (!success && note == 0 && set != 0)
+      /* If we've failed to do replacement, have a single SET, don't already
+	 have a note, and have no special SET, add a REG_EQUAL note to not
+	 lose information.  */
+      if (!success && note == 0 && set != 0
+	  && GET_CODE (XEXP (set, 0)) != ZERO_EXTRACT
+	  && GET_CODE (XEXP (set, 0)) != SIGN_EXTRACT)
 	note = set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
     }
 

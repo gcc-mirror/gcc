@@ -1,3 +1,9 @@
+2003-07-14  Franz Sirl  <Franz.Sirl-kernel@lauterbach.com>
+
+	PR optimization/11440
+	* gcse.c (try_replace_reg): Don't attach notes to ZERO_EXTRACT or
+	SIGN_EXTRACT SETs.
+
 2003-07-13  Aaron W. LaFramboise  <awlaframboise@aol.com>
 
 	* config/i386/gthr-win32.c (__GTHREAD_HIDE_WIN32API): Define to 1.
