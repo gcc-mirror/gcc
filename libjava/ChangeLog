@@ -1,3 +1,19 @@
+2003-03-01  Ranjit Mathew  <rmathew@hotmail.com>
+
+	* java/io/File (getAbsolutePath): Prefix drive specifier on
+	Windows for paths starting with a '\'.
+	(toURL): Make URL more consistent with what Sun's JDK returns.
+
+	* java/io/natFileWin32.cc (java::io::File::isAbsolute): Return
+	true only if the path is a UNC network path or it starts with a
+	drive specifier.
+
+	* java/net/URLStreamHandler.java (parseURL): Correct minor typo.
+	Be prepared to handle either '/' or '\\' in the file path for
+	Windows if using the "file" protocol.
+	Canonicalise the file path if using a relative path in the given
+	context and the "file" protocol.
+
 2003-03-01  Mohan Embar  <gnustuff@thisiscool.com>
 
 	* java/lang/natWin32Process.cc (startProcess): Double-quote each
