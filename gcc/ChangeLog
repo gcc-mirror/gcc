@@ -1,3 +1,11 @@
+Fri Aug 22 14:05:55 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* acconfig.h (NEED_DECLARATION_CALLOC): Add.
+	* configure.in: Add GCC_NEED_DECLARATION call for calloc.
+	* rs6000/xm-rs6000.h (malloc, realloc, calloc, free): Delete
+	declarations.
+	* config.in, configure: Regenerate.
+
 Thu Aug 21 23:52:16 1997  John F. Carr  <jfc@mit.edu>
 
 	* alias.c (find_base_value): Improve handling of PLUS, MINUS, and
