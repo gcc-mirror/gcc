@@ -1223,7 +1223,9 @@ convert_modes (mode, oldmode, x, unsignedp)
 	      || (GET_MODE_SIZE (mode) <= GET_MODE_SIZE (oldmode)
 		  && ((GET_CODE (x) == MEM && ! MEM_VOLATILE_P (x)
 		       && direct_load[(int) mode])
-		      || GET_CODE (x) == REG)))))
+		      || (GET_CODE (x) == REG
+			  && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (mode),
+						    GET_MODE_BITSIZE (GET_MODE (x)))))))))
     {
       /* ?? If we don't know OLDMODE, we have to assume here that
 	 X does not need sign- or zero-extension.   This may not be
