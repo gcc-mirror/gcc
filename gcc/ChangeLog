@@ -1,3 +1,10 @@
+Fri Oct 30 14:05:32 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
+
+	* expr.c (struct move_by_pieces): New fields {to,from}_readonly.
+	(move_by_pieces): Initialize them.
+	(move_by_pieces_1): Use them.
+
+
 Sun Oct 25 06:12:33 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* optabs.c (emit_no_conflict_block): Allow insn of just USE or SET.
