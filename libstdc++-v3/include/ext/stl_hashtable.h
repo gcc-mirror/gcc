@@ -86,6 +86,7 @@ using std::_Destroy;
 using std::distance;
 using std::vector;
 using std::pair;
+using std::__iterator_category;
 
 template <class _Val>
 struct _Hashtable_node
