@@ -1,3 +1,7 @@
+2003-10-07  Zdenek Dvorak  <rakdver@atrey.karlin.mff.cuni.cz>
+
+	* cfgloopmanip.c (fix_irreducible_loops): Initialize e correctly.
+
 2003-10-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/12519
