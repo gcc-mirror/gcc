@@ -1,3 +1,8 @@
+2000-03-09  Jason Merrill  <jason@casey.cygnus.com>
+
+	* varasm.c (make_decl_rtl): Skip initial '*' when setting
+	DECL_ASSEMBLER_NAME.
+
 2000-03-09  Andreas Jaeger  <aj@suse.de>
 
 	* config/mips/linux.h (NO_IMPLICIT_EXTERN_C): Define.
