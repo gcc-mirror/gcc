@@ -2529,6 +2529,21 @@ expand_value_return (val)
   if (GET_CODE (return_reg) == REG
       && REGNO (return_reg) < FIRST_PSEUDO_REGISTER)
     emit_insn (gen_rtx (USE, VOIDmode, return_reg));
+  /* Handle calls that return values in multiple non-contiguous locations.
+     The Irix 6 ABI has examples of this.  */
+  else if (GET_CODE (return_reg) == PARALLEL)
+    {
+      int i;
+
+      for (i = 0; i < XVECLEN (return_reg, 0); i++)
+	{
+	  rtx x = XEXP (XVECEXP (return_reg, 0, i), 0);
+
+	  if (GET_CODE (x) == REG
+	      && REGNO (x) < FIRST_PSEUDO_REGISTER)
+	    emit_insn (gen_rtx (USE, VOIDmode, x));
+	}
+    }
 
   /* Does any pending block have cleanups?  */
 
