@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler. NEC V850 series
-   Copyright (C) 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
 This file is part of GNU CC.
@@ -208,6 +208,8 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    LEVEL is the optimization level specified; 2 if `-O2' is
    specified, 1 if `-O' is specified, and 0 if neither is specified.
 
+   SIZE is non-zero if `-Os' is specified, 0 otherwise.  
+
    You should not use this macro to change options that are not
    machine-specific.  These should uniformly selected by the same
    optimization level on all supported machines.  Use this macro to
@@ -216,7 +218,7 @@ extern struct small_memory_info small_memory[(int)SMALL_MEMORY_max];
    *Do not examine `write_symbols' in this macro!* The debugging
    options are not supposed to alter the generated code. */
 
-#define OPTIMIZATION_OPTIONS(LEVEL)					\
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 {									\
   if (LEVEL)								\
     target_flags |= (MASK_EP | MASK_PROLOG_FUNCTION);			\

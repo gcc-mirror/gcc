@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler, for the pdp-11
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1998 Free Software Foundation, Inc.
    Contributed by Michael K. Gschwind (mike@vlsivie.tuwien.ac.at).
 
 This file is part of GNU CC.
@@ -1295,11 +1295,12 @@ JMP	FUNCTION	0x0058  0x0000 <- FUNCTION
    LEVEL is the optimization level specified; 2 if -O2 is
    specified, 1 if -O is specified, and 0 if neither is specified.  */
 
-#define OPTIMIZATION_OPTIONS(LEVEL)					\
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE)				\
 {									\
   if (LEVEL >= 3)							\
     {									\
-      flag_inline_functions		= 1;				\
+      if (! SIZE)							\
+        flag_inline_functions		= 1;				\
       flag_omit_frame_pointer		= 1;				\
       /* flag_unroll_loops			= 1; */			\
     }									\

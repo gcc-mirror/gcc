@@ -1,4 +1,4 @@
-@c Copyright (C) 1988,89,92,93,94,95,96,1997 Free Software Foundation, Inc.
+@c Copyright (C) 1988,89,92-97,1998 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -155,7 +155,7 @@ in the following sections.
 -fschedule-insns2  -fstrength-reduce  -fthread-jumps
 -funroll-all-loops  -funroll-loops
 -fmove-all-movables  -freduce-all-givs
--O  -O0  -O1  -O2  -O3
+-O  -O0  -O1  -O2  -O3 -Os
 @end smallexample
 
 @item Preprocessor Options
@@ -2077,6 +2077,11 @@ Optimize yet more.  @samp{-O3} turns on all optimizations specified by
 
 @item -O0
 Do not optimize.
+
+@item -Os
+Optimize for size.  @samp{-Os} enables all @samp{-O2} optimizations that
+do not typically increase code size.  It also performs further
+optimizations designed to reduce code size.
 
 If you use multiple @samp{-O} options, with or without level numbers,
 the last such option is the one that is effective.

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Intel X86.
-   Copyright (C) 1988, 92, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -410,8 +410,9 @@ order_regs_for_local_alloc ()
 }
 
 void
-optimization_options (level)
+optimization_options (level, size)
      int level;
+     int size;
 {
   /* For -O2 and beyond, turn off -fschedule-insns by default.  It tends to
      make the problem with not enough registers even worse.  */

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler for Intel X86
    (386, 486, Pentium).
-   Copyright (C) 1988, 92, 94, 95, 96, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94-97, 1998 Free Software Foundation, Inc.
 
 This file is part of GNU CC.
 
@@ -287,7 +287,7 @@ extern int ix86_arch;
 #define SUBTARGET_OPTIONS
 
 /* Define this to change the optimizations performed by default.  */
-#define OPTIMIZATION_OPTIONS(LEVEL) optimization_options(LEVEL)
+#define OPTIMIZATION_OPTIONS(LEVEL,SIZE) optimization_options(LEVEL,SIZE)
 
 /* Specs for the compiler proper */
 
