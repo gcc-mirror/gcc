@@ -2,7 +2,7 @@
 // Special g++ Options: -w
 // GROUPS passed old-abort
 //#include <GetOpt.h>
-#include <std.h>
+#include <std>
 #include <stdio.h>
 
 class GetOpt
