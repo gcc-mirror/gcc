@@ -1,4 +1,10 @@
+2002-12-13  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* config/h8300/h8300.md (addhi3_h8300): Remove the last
+	alternative.
+
 2002-12-12  Devang Patel  <dpatel@apple.com>
+
 	* doc/invoke.texi: Document Darwin linker options, -bundle
 	-bind_at_load, -all_load and -arch_errors_fatal
 
