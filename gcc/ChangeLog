@@ -1,3 +1,7 @@
+Mon Mar 16 11:16:50 1998  Jim Wilson  <wilson@cygnus.com>
+
+	* README.gnat: New file.
+
 Mon Mar 16 11:14:20 1998  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* config/m68k/m68k.c: Include <stdlib.h> for atoi.  Include
