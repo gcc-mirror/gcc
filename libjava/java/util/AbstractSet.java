@@ -52,10 +52,7 @@ public abstract class AbstractSet extends AbstractCollection implements Set {
     if (o == this) {
       return true;
     } else if (o instanceof Set && ((Set)o).size() == size()) {
-      throw new Error ("FIXME: compiler error - AbstractSet.equals");
-      /*  FIXME: this is the correct implementation, but a compiler
-	  error prevents us from building it.
-	  return containsAll((Collection)o);  */
+      return containsAll((Collection)o);
     } else {
       return false;
     }

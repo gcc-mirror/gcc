@@ -1,3 +1,7 @@
+2000-10-23  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* java/util/AbstractSet.java (equals): Re-installed original code.
+
 2000-10-22  Rolf W. Rasmussen  <rolfwr@ii.uib.no>
 
 	* Makefile.am: Added rules for libgcjx library.
