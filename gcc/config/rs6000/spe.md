@@ -2455,55 +2455,98 @@
   "mfspefscr %0"
   [(set_attr "type" "vecsimple")])
 
+;; FP comparison stuff.
+
+(define_insn "e500_cceq_ior_compare"
+  [(set (match_operand:CCEQ 0 "cc_reg_operand" "=y,?y")
+        (compare:CCEQ (match_operator:SI 1 "boolean_operator"
+	                [(match_operator:SI 2
+				      "branch_positive_comparison_operator"
+				      [(match_operand 3
+						      "cc_reg_operand" "y,y")
+				       (const_int 0)])
+	                 (match_operator:SI 4
+				      "branch_positive_comparison_operator"
+				      [(match_operand 5
+						      "cc_reg_operand" "0,y")
+				       (const_int 0)])])
+		      (const_int 1)))]
+  "TARGET_E500 && TARGET_HARD_FLOAT && !TARGET_FPRS"
+  "cr%q1 %c0,%j2,%j4"
+  [(set_attr "type" "cr_logical,delayed_cr")])
+
+;; Flip the GT bit.
+(define_insn "e500_flip_gt_bit"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(unspec:CCFP
+	 [(match_operand:CCFP 1 "cc_reg_operand" "y")] 999))]
+  "!TARGET_FPRS && TARGET_HARD_FLOAT"
+  "*
+{
+  return output_e500_flip_gt_bit (operands[0], operands[1]);
+}"
+  [(set_attr "type" "cr_logical")])
+
 ;; MPC8540 single-precision FP instructions on GPRs.
 ;; We have 2 variants for each.  One for IEEE compliant math and one
 ;; for non IEEE compliant math.
 
 (define_insn "cmpsfeq_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(eq:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+			(match_operand:SF 2 "gpc_reg_operand" "r"))]
+	 1000))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && !flag_unsafe_math_optimizations"
   "efscmpeq %0,%1,%2"
   [(set_attr "type" "veccmp")])
 
 (define_insn "tstsfeq_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(eq:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+			(match_operand:SF 2 "gpc_reg_operand" "r"))]
+	 1001))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
   "efststeq %0,%1,%2"
   [(set_attr "type" "veccmpsimple")])
 
 (define_insn "cmpsfgt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(gt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+			(match_operand:SF 2 "gpc_reg_operand" "r"))]
+	 1002))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && !flag_unsafe_math_optimizations"
   "efscmpgt %0,%1,%2"
   [(set_attr "type" "veccmp")])
 
 (define_insn "tstsfgt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(gt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+			(match_operand:SF 2 "gpc_reg_operand" "r"))]
+	 1003))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
   "efststgt %0,%1,%2"
   [(set_attr "type" "veccmpsimple")])
 
 (define_insn "cmpsflt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(lt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+			(match_operand:SF 2 "gpc_reg_operand" "r"))]
+	 1004))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && !flag_unsafe_math_optimizations"
   "efscmplt %0,%1,%2"
   [(set_attr "type" "veccmp")])
 
 (define_insn "tstsflt_gpr"
   [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
-	(lt:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
-		 (match_operand:SF 2 "gpc_reg_operand" "r")))]
+	(unspec:CCFP
+	 [(compare:CCFP (match_operand:SF 1 "gpc_reg_operand" "r")
+			(match_operand:SF 2 "gpc_reg_operand" "r"))]
+	 1004))]
   "TARGET_HARD_FLOAT && !TARGET_FPRS && flag_unsafe_math_optimizations"
   "efststlt %0,%1,%2"
   [(set_attr "type" "veccmpsimple")])
-
