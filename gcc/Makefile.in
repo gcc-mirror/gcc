@@ -625,7 +625,7 @@ BYTECODE_H = bytecode.h bc-emit.h bc-optab.h
 .SUFFIXES: .in .def
 
 Makefile: $(srcdir)/Makefile.in $(srcdir)/configure $(srcdir)/version.c \
-   $(srcdir)/config/$(xmake_file) $(srcdir)/config/$(tmake_file) \
+   $(xmake_file) $(tmake_file) \
    $(LANG_MAKEFILES)
 	cp config.status config.run
 	$(SHELL) config.run
