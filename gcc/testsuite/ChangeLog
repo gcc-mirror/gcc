@@ -1,3 +1,8 @@
+2003-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9559
+	* g++.dg/init/static1.C: New test.
+
 2003-06-30  Volker Reichelt  <reichelt@igpm.rwth-aachen.de>
 
 	* Changelog: Remove ">>>>>>>" from previous change.

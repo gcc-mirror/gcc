@@ -951,12 +951,7 @@ grokfield (tree declarator, tree declspecs, tree init, tree asmspec_tree,
 		init = decl_constant_value (init);
 	      else if (TREE_CODE (init) == CONSTRUCTOR)
 		init = digest_init (TREE_TYPE (value), init, (tree *)0);
-	      if (init == error_mark_node)
-		/* We must make this look different than `error_mark_node'
-		   because `decl_const_value' would mis-interpret it
-		   as only meaning that this VAR_DECL is defined.  */
-		init = build1 (NOP_EXPR, TREE_TYPE (value), init);
-	      else if (! TREE_CONSTANT (init))
+	      if (init != error_mark_node && ! TREE_CONSTANT (init))
 		{
 		  /* We can allow references to things that are effectively
 		     static, since references are initialized with the

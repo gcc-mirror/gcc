@@ -1,3 +1,9 @@
+2003-07-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/9559
+	* decl2.c (grokfield): Do not build NOP_EXPRs around the
+	error_mark_node.
+
 2003-06-30  Neil Booth  <neil@daikokuya.co.uk>
 
 	* Make-lang.in: Update.
