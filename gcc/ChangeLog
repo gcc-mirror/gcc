@@ -1,3 +1,7 @@
+2003-05-01  Rodney Brown  <rbrown64@csc.com.au>
+ 
+      * rtl.h (subreg_offset_representable_p): Prototype.
+
 2003-05-01  Roger Sayle  <roger@eyesopen.com>
 
         PR fortran/9974

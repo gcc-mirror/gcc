@@ -1034,6 +1034,10 @@ extern unsigned int subreg_regno_offset 	PARAMS ((unsigned int,
 							 enum machine_mode, 
 							 unsigned int, 
 							 enum machine_mode));
+extern bool subreg_offset_representable_p 	PARAMS ((unsigned int, 
+							 enum machine_mode, 
+							 unsigned int, 
+							 enum machine_mode));
 extern unsigned int subreg_regno 	PARAMS ((rtx));
 
 /* 1 if RTX is a subreg containing a reg that is already known to be
