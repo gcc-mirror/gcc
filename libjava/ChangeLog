@@ -1,3 +1,8 @@
+2004-08-17  Michael Koch  <konqueror@gmx.de>
+
+	* Makefile.am (AM_CXXFLAGS): Reformatted to make it more ease to read.
+	* Makefile.in: Regenerated.
+
 2004-08-16  Tom Tromey  <tromey@redhat.com>
 
 	PR java/8473:
