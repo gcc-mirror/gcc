@@ -1,3 +1,7 @@
+2001-01-27  Michael Sokolov  <msokolov@ivan.Harhan.ORG>,  Alexandre Oliva  <oliva@lsd.ic.unicamp.br>
+
+	* ltconfig: Shell portability fix for the tagname validity check.
+
 2001-01-27  Alexandre Oliva  <aoliva@redhat.com>
 
 	* ltcf-c.sh (ld_shlibs) [aix5*]: Disable on unknown CPU types.

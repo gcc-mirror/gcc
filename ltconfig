@@ -422,8 +422,10 @@ fi
 
 if test -n "$tagname"; then
   # Check whether tagname contains only valid characters
-  case "$tagname" in
-  *[!-_A-Za-z0-9,/]*)
+  case `$echo "X$tagname" |
+        $Xsed -e 's/[-_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890,/]//g'` in
+  "") ;;
+  *)
     echo "$progname: invalid tag name: $tagname" 1>&2
     exit 1
     ;;
