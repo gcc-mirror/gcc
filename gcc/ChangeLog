@@ -1,24 +1,16 @@
 Fri Apr 10 16:35:48 1998  Paul Eggert  <eggert@twinsun.com>
 
-	This change is from an idea suggested by Arthur David Olson.
-
-	* c-common.c (decl_attributes, record_function_format,
-	check_format_info, init_function_format_info):
-	Add support for strftime format checking.
+	* c-common.c (decl_attributes): Support strftime format checking.
+	(record_function_format, {check,init_function}_format_info): Likewise.
 	(enum format_type): New type.
-	(record_function_format): Now static, and takes value of type
+	(record_function_format): Now static; takes value of type
 	enum format_type instead of int.
 	(time_char_table): New constant.
 	(struct function_format_info): format_type member renamed from is_scan.
 	(check_format_info): Use `warning' rather than sprintf followed by
 	`warning', to avoid mishandling `%' in warnings.
-	Change `pedwarn' to `warning', since these warnings do not necessarily
-	mean the program does not conform to the C Standard, as the code
-	need not be executed.
-
-	* c-tree.h (record_function_format): Remove decl; no longer extern.
-
-	* extend.texi: Add documentation for strftime format checking.
+	Change a `pedwarn' to `warning'.
+	* c-tree.h (record_function_format): Remove decl.
 
 Thu Apr  2 17:34:27 1998  Manfred Hollstein  <manfred@s-direktnet.de>
 
