@@ -2934,7 +2934,7 @@ sparc-*-rtems*|sparc-*-rtemself*)
 	  thread_file='rtems'
 	fi
 	;;
-sparcv9-*-solaris2*)
+sparcv9-*-solaris2* | sparc64-*-solaris2*)
 	if test x$gnu_ld = xyes
 	then
 		tm_file=sparc/sol2-64.h

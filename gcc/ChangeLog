@@ -1,3 +1,8 @@
+2001-09-10  Michael Meissner  <meissner@redhat.com>
+
+	* config.gcc (sparc64-*-solaris2): Add alias to be compatible with
+	binutils, gdb.
+
 2001-09-10  David Edelsohn  <edelsohn@gnu.org>
 
 	* config/rs6000/t-aix43 (SHLIB_INSTALL): Use mode 751 (a+x,r-o).
