@@ -82,8 +82,8 @@ Boston, MA 02111-1307, USA.  */
 #define TRAMPOLINE_TEMPLATE(FILE)			\
 {							\
   fprintf (FILE, "\tbr $27,$LTRAMPP\n");		\
-  fprintf (FILE, "$LTRAMPP:\n\tldl $1,12($27)\n");	\
-  fprintf (FILE, "\tldl $27,16($27)\n");		\
+  fprintf (FILE, "$LTRAMPP:\n\tldl $1,16($27)\n");	\
+  fprintf (FILE, "\tldl $27,12($27)\n");		\
   fprintf (FILE, "\tjmp $31,($27),0\n");		\
   fprintf (FILE, "\t.long 0,0\n");			\
 }

@@ -1,3 +1,10 @@
+Sun Nov 16 22:02:16 1997  Richard Henderson  (rth@cygnus.com)
+
+	* alpha/win-nt.h (TRAMPOLINE_TEMPLATE): Fix offsets.
+
+	* alpha.h (ASM_OUTPUT_ADDR_DIFF_ELT): Add an L for the local label
+	to correspond with the change to ASM_GENERATE_INTERNAL_LABEL.
+
 Fri Nov 14 08:01:25 1997  Jeffrey A Law  (law@cygnus.com)
 
 	* version.c: Bump for snapshot.
