@@ -1,3 +1,8 @@
+2005-01-16  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* class.c (get_enclosing_class): Remove.
+	* cp-tree.h: Remove the corresponding prototypes.
+
 2005-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/19263

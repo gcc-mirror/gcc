@@ -6189,35 +6189,6 @@ contains_empty_class_p (tree type)
   return false;
 }
 
-/* Find the enclosing class of the given NODE.  NODE can be a *_DECL or
-   a *_TYPE node.  NODE can also be a local class.  */
-
-tree
-get_enclosing_class (tree type)
-{
-  tree node = type;
-
-  while (node && TREE_CODE (node) != NAMESPACE_DECL)
-    {
-      switch (TREE_CODE_CLASS (TREE_CODE (node)))
-	{
-	case tcc_declaration:
-	  node = DECL_CONTEXT (node);
-	  break;
-
-	case tcc_type:
-	  if (node != type)
-	    return node;
-	  node = TYPE_CONTEXT (node);
-	  break;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  return NULL_TREE;
-}
-
 /* Note that NAME was looked up while the current class was being
    defined and that the result of that lookup was DECL.  */
 
