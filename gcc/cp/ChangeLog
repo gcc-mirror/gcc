@@ -1,3 +1,17 @@
+Tue Dec  2 19:18:50 1997  Mike Stump  <mrs@wrs.com>
+
+	* class.c (prepare_fresh_vtable): Enable even more complex MI
+	vtable names.
+
+Tue Dec  2 01:37:19 1997  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* exception.cc (__check_eh_spec): Optimize a bit.
+
+	* exception.cc (__cp_pop_exception): Lose handler arg.
+	* except.c (do_pop_exception): Likewise.
+	(push_eh_cleanup): Let the cleanup mechanism supply the handler.
+	(expand_end_catch_block): Likewise.
+
 Fri Nov 28 01:58:14 1997  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* pt.c (check_explicit_specialization): Complain about using a 
