@@ -4431,17 +4431,13 @@ invert_jump (jump, nlabel)
 
   if (redirect_jump (jump, nlabel))
     {
-      if (flag_branch_probabilities)
-	{
-	  rtx note = find_reg_note (jump, REG_BR_PROB, 0);
+      /* An inverted jump means that a probability taken becomes a
+	 probability not taken.  Subtract the branch probability from the
+	 probability base to convert it back to a taken probability.  */
 
-	  /* An inverted jump means that a probability taken becomes a
-	     probability not taken.  Subtract the branch probability from the
-	     probability base to convert it back to a taken probability.
-	     (We don't flip the probability on a branch that's never taken.  */
-	  if (note && XINT (XEXP (note, 0), 0) >= 0)
-	    XINT (XEXP (note, 0), 0) = REG_BR_PROB_BASE - XINT (XEXP (note, 0), 0);
-	}
+      rtx note = find_reg_note (jump, REG_BR_PROB, 0);
+      if (note)
+	XEXP (note, 0) = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (note, 0)));
 
       return 1;
     }

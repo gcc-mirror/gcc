@@ -2469,23 +2469,6 @@ tidy_fallthru_edges ()
 	tidy_fallthru_edge (s, b, c);
     }
 }
-
-/* Discover and record the loop depth at the head of each basic block.  */
-
-void
-calculate_loop_depth (dump)
-     FILE *dump;
-{
-  struct loops loops;
-
-  /* The loop infrastructure does the real job for us.  */
-  flow_loops_find (&loops);
-
-  if (dump)
-    flow_loops_dump (&loops, dump, 0);
-
-  flow_loops_free (&loops);
-}
 
 /* Perform data flow analysis.
    F is the first insn of the function; FLAGS is a set of PROP_* flags
