@@ -31,6 +31,8 @@ Sat Oct  3 06:58:53 1998  David Edelsohn  <edelsohn@mhpcc.edu>
 
 Sat Oct  3 06:53:43 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* regmove.c (regmove_profitable_p): Free allocated mem if we return 1.
+
 	* rs6000.h (CPP_PREDEFINES): Add -D_LONG_LONG.
 
 Fri Oct  2 11:02:41 1998  Klaus Espenlaub <kespenla@student.informatik.uni-ulm.de>
