@@ -1337,7 +1337,7 @@ c-aux-info.o : c-aux-info.c  $(CONFIG_H) system.h $(TREE_H) c-tree.h \
     c-common.h flags.h toplev.h
 c-convert.o : c-convert.c $(CONFIG_H) system.h $(TREE_H) flags.h toplev.h
 c-pragma.o: c-pragma.c $(CONFIG_H) system.h $(RTL_H) $(TREE_H) function.h \
-    defaults.h c-pragma.h toplev.h
+    defaults.h c-pragma.h toplev.h ggc.h
 c-iterate.o: c-iterate.c $(CONFIG_H) system.h $(TREE_H) $(RTL_H) c-tree.h \
     c-common.h flags.h toplev.h $(EXPR_H)
 mbchar.o: mbchar.c $(CONFIG_H) system.h mbchar.h
