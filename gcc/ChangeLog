@@ -1,5 +1,7 @@
 2004-08-19  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* doc/invoke.texi (integer-share-limit): Document.
+
 	* tree.h (TYPE_CACHED_VALUES_P): New.
 	(TYPE_CACHED_VALUES): New.
 	(TYPE_ORIG_SIZE_TYPE): Adjust.

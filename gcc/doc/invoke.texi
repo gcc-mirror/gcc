@@ -5398,6 +5398,12 @@ interblock scheduling.  The default value is 10.
 @item max-sched-region-insns
 The maximum number of insns in a region to be considered for
 interblock scheduling.  The default value is 100.
+
+@item integer-share-limit
+Small integer constants can use a shared data structure, reducing the
+compiler's memory usage and increasing its speed.  This sets the maximum
+value of a shared integer constant's.  The default value is 256.
+
 @end table
 @end table
 
