@@ -1,5 +1,18 @@
 2004-11-04  Nathan Sidwell  <nathan@codesourcery.com>
 
+	* bitmap.h (bitmap_iterator): Remove word_bit and bit
+	fields. Rename others.
+	(bmp_iter_common_next_1, bmp_iter_single_next_1,
+	bmp_iter_single_init, bmp_iter_end_p, bmp_iter_single_next,
+	bmp_iter_and_not_next_1, bmp_iter_and_not_init,
+	bmp_iter_and_not_next, bmp_iter_and_next_1, bmp_iter_and_init,
+	bmp_iter_and_next): Remove.
+	(bmp_iter_set_init, bmp_iter_and_init, bmp_iter_and_compl_init,
+	bmp_iter_next, bmp_iter_set, bmp_iter_and, bmp_iter_and_compl):
+	New.
+	(EXECUTE_IF_SET_IN_BITMAP, EXECUTE_IF_AND_IN_BITMAP,
+	EXECUTE_IF_AND_COMPL_IN_BITMAP): Adjust.
+
 	* bitmap.h (bitmap_a_or_b, bitmap_a_and_b): Remove.
 	* df.c (dataflow_set_a_op_b): Use bitmap_and, bitmap_ior,
 	bitmap_and_into, bitmap_ior_into as appropriate.
