@@ -153,6 +153,14 @@ Sat Sep 16 19:42:50 EDT 2000  John Wehle  (john@feith.com)
 
 Sat Sep 16 14:35:55 2000  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
+	* function.h (no_debugging_symbols): New field.
+	* integrate.c (save_for_inline): Renamed from save_for_inline_nocopy.
+	Initialize no_debugging_symbols.
+	(output_inline_function): Save and restore write_symbols and set from
+	no_debugging_symbols.
+	* toplev.c (rest_of_compilation): Call save_for_inline.
+	* tree.h: Update comment.
+	
 	* stor-layout.c (place_field): Don't do anything if field or
 	its type are ERROR_MARK.
 
