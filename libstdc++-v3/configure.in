@@ -51,9 +51,9 @@ AM_PROG_LIBTOOL
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 GLIBCPP_CHECK_GNU_MAKE
-  if test "x$_cv_gnu_make_command" = "x"; then
-    AC_MSG_ERROR([GNU make not found. Please install it or correct your path.])
-  fi
+
+
+
 AM_CONFIG_HEADER(config.h)
 
 # Check for c++ or library specific bits that don't require linking.

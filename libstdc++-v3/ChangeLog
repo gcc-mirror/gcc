@@ -1,5 +1,9 @@
 2001-06-04  Hans-Peter Nilsson  <hp@axis.com>
 
+	* configure.in (use of GLIBCPP_CHECK_GNU_MAKE): Re-apply change
+	from 2001-05-30, accidentally reverted later that day.
+	* configure: Regenerate.
+
 	* libsupc++/Makefile.am (install-glibcppinstallHEADERS,
 	uninstall-glibcppinstallHEADERS): Have explicit rules catering to
 	SUN make VPATH peculiarities.
