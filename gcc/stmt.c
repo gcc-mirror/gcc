@@ -1085,7 +1085,7 @@ bc_expand_fixup (opcode, label, stack_level)
    contour from before the beginning of the contour.
    This is also done if STACK_LEVEL is nonzero.  */
 
-void
+static void
 fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
      struct nesting *thisblock;
      rtx stack_level;
@@ -1097,7 +1097,10 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 
   if (output_bytecode)
     {
-      bc_fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in);
+      /* ??? The second arg is the bc stack level, which is not the same
+	 as STACK_LEVEL.  I have no idea what should go here, so I'll
+	 just pass 0.  */
+      bc_fixup_gotos (thisblock, 0, cleanup_list, first_insn, dont_jump_in);
       return;
     }
 
@@ -1238,8 +1241,8 @@ fixup_gotos (thisblock, stack_level, cleanup_list, first_insn, dont_jump_in)
 /* When exiting a binding contour, process all pending gotos requiring fixups.
    Note: STACK_DEPTH is not altered.
 
-   The arguments are currently not used in the bytecode compiler, but we may need
-   them one day for languages other than C.
+   The arguments are currently not used in the bytecode compiler, but we may
+   need them one day for languages other than C.
 
    THISBLOCK is the structure that describes the block being exited.
    STACK_LEVEL is the rtx for the stack level to restore exiting this contour.
@@ -2249,7 +2252,8 @@ expand_end_cond ()
    whose truth is to be tested; if EXITFLAG is nonzero this conditional
    is to be visible to exit_something.  It is assumed that the caller
    has pushed the previous context on the cond stack. */
-void
+
+static void
 bc_expand_start_cond (cond, exitflag)
      tree cond;
      int exitflag;
@@ -2270,7 +2274,8 @@ bc_expand_start_cond (cond, exitflag)
 
 /* Generate the label for the end of an if with
    no else- clause.  */
-void
+
+static void
 bc_expand_end_cond ()
 {
   struct nesting *thiscond = cond_stack;
@@ -2280,7 +2285,8 @@ bc_expand_end_cond ()
 
 /* Generate code for the start of the else- clause of
    an if-then-else.  */
-void
+
+static void
 bc_expand_start_else ()
 {
   struct nesting *thiscond = cond_stack;
@@ -2367,6 +2373,7 @@ expand_loop_continue_here ()
 }
 
 /* End a loop.  */
+
 static void
 bc_expand_end_loop ()
 {
@@ -2556,7 +2563,7 @@ expand_exit_loop_if_false (whichloop, cond)
       bc_expand_expr (cond);
       bc_expand_goto_internal (xjumpifnot,
 			       BYTECODE_BC_LABEL (whichloop->exit_label),
-			       NULL_RTX);
+			       NULL_TREE);
     }
   else
     do_jump (cond, whichloop->data.loop.end_label, NULL_RTX);
@@ -3310,7 +3317,7 @@ expand_end_bindings (vars, mark_ends, dont_jump_in)
    DONT_JUMP_IN is nonzero if it is not valid to jump into this
    contour.  */
 
-void
+static void
 bc_expand_end_bindings (vars, mark_ends, dont_jump_in)
      tree vars;
      int mark_ends;
@@ -3554,7 +3561,7 @@ expand_decl (decl)
    compiler sometimes emits cleanups without variables and we will
    have to deal with those too.  */
 
-void
+static void
 bc_expand_decl (decl, cleanup)
      tree decl;
      tree cleanup;
@@ -3602,6 +3609,12 @@ expand_decl_init (decl)
 {
   int was_used = TREE_USED (decl);
 
+  if (output_bytecode)
+    {
+      bc_expand_decl_init (decl);
+      return;
+    }
+
   /* If this is a CONST_DECL, we don't have to generate any code, but
      if DECL_INITIAL is a constant, call expand_expr to force TREE_CST_RTL
      to be set while in the obstack containing the constant.  If we don't
@@ -3648,6 +3661,7 @@ expand_decl_init (decl)
    using newlocalSI and set local variable, which is a pointer to the
    storage. */
 
+static void
 bc_expand_variable_local_init (decl)
      tree decl;
 {
@@ -3677,7 +3691,8 @@ bc_expand_variable_local_init (decl)
 
 
 /* Emit code to initialize a declaration.  */
-void
+
+static void
 bc_expand_decl_init (decl)
      tree decl;
 {
@@ -3956,7 +3971,8 @@ expand_start_case (exit_flag, expr, type, printname)
 
 /* Enter a case statement. It is assumed that the caller has pushed
    the current context onto the case stack. */
-void
+
+static void
 bc_expand_start_case (thiscase, expr, type, printname)
      struct nesting *thiscase;
      tree expr;
@@ -4269,7 +4285,7 @@ pushcase_range (value1, value2, converter, label, duplicate)
    bytecode compiler, which was based on gcc 1.37.  It should be
    merged into pushcase. */
 
-int
+static int
 bc_pushcase (value, label)
      tree value;
      tree label;
@@ -4445,7 +4461,8 @@ check_for_full_enumeration_handling (type)
 /* Check that all enumeration literals are covered by the case
    expressions of a switch.  Also warn if there are any cases
    that are not elements of the enumerated type.  */
-void
+
+static void
 bc_check_for_full_enumeration_handling (type)
      tree type;
 {
@@ -4855,7 +4872,8 @@ expand_end_case (orig_index)
 
 /* Terminate a case statement.  EXPR is the original index
    expression.  */
-void
+
+static void
 bc_expand_end_case (expr)
      tree expr;
 {
@@ -4947,6 +4965,7 @@ bc_expand_end_case (expr)
 
 
 /* Return unique bytecode ID. */
+
 int 
 bc_new_uid ()
 {
