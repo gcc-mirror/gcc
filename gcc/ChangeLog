@@ -1,3 +1,9 @@
+2002-11-01  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/8391
+	* toplev.c (rest_of_compilation): Do not refuse to output code for
+	an inline function in a local class.
+
 2002-11-01  David O'Brien  <obrien@FreeBSD.org>
 
 	* config/sparc/freebsd.h (CPP_CPU64_DEFAULT_SPEC): Define __arch64__.
