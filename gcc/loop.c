@@ -1791,8 +1791,9 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 				  /* Because the USAGE information potentially
 				     contains objects other than hard registers
 				     we need to copy it.  */
-				  CALL_INSN_FUNCTION_USAGE (i1) =
-				    copy_rtx (CALL_INSN_FUNCTION_USAGE (temp));
+				  if (CALL_INSN_FUNCTION_USAGE (temp))
+				    CALL_INSN_FUNCTION_USAGE (i1) =
+				      copy_rtx (CALL_INSN_FUNCTION_USAGE (temp));
 				}
 			      else
 				i1 = emit_insn_before (body, loop_start);
@@ -1834,8 +1835,9 @@ move_movables (movables, threshold, insn_count, loop_start, end, nregs)
 			  /* Because the USAGE information potentially
 			     contains objects other than hard registers
 			     we need to copy it.  */
-			  CALL_INSN_FUNCTION_USAGE (i1) =
-			    copy_rtx (CALL_INSN_FUNCTION_USAGE (p));
+			  if (CALL_INSN_FUNCTION_USAGE (p))
+			    CALL_INSN_FUNCTION_USAGE (i1) =
+			      copy_rtx (CALL_INSN_FUNCTION_USAGE (p));
 			}
 		      else
 			i1 = emit_insn_before (PATTERN (p), loop_start);
