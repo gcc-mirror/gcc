@@ -117,8 +117,9 @@ static void new_pending_directive	PARAMS ((struct cpp_pending *,
 static void output_deps			PARAMS ((cpp_reader *));
 static int parse_option			PARAMS ((const char *));
 
-/* Fourth argument to append_include_chain: chain to use.  */
-enum { QUOTE = 0, BRACKET, SYSTEM, AFTER };
+/* Fourth argument to append_include_chain: chain to use.
+   Note it's never asked to append to the quote chain.  */
+enum { BRACKET = 0, SYSTEM, AFTER };
 
 /* If we have designated initializers (GCC >2.7) these tables can be
    initialized, constant data.  Otherwise, they have to be filled in at
@@ -250,7 +251,6 @@ append_include_chain (pfile, dir, path, cxx_aware)
 
   switch (path)
     {
-    case QUOTE:		APPEND (pend, quote, new); break;
     case BRACKET:	APPEND (pend, brack, new); break;
     case SYSTEM:	APPEND (pend, systm, new); break;
     case AFTER:		APPEND (pend, after, new); break;
@@ -338,7 +338,7 @@ merge_include_chains (pfile)
   /* This is a bit tricky.  First we drop dupes from the quote-include
      list.  Then we drop dupes from the bracket-include list.
      Finally, if qtail and brack are the same directory, we cut out
-     brack.
+     brack and move brack up to point to qtail.
 
      We can't just merge the lists and then uniquify them because
      then we may lose directories from the <> search path that should
@@ -1316,18 +1316,14 @@ cpp_handle_option (pfile, argc, argv)
 	     verbose and -version.  Historical reasons, don't ask.  */
 	case OPT__version:
 	  CPP_OPTION (pfile, help_only) = 1;
-	  goto version;
+	  pfile->print_version = 1;
+	  break;
 	case OPT_v:
 	  CPP_OPTION (pfile, verbose) = 1;
-	  goto version;
-
+	  pfile->print_version = 1;
+	  break;
 	case OPT_version:
-	version:
-	  fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
-#ifdef TARGET_VERSION
-	  TARGET_VERSION;
-#endif
-	  fputc ('\n', stderr);
+	  pfile->print_version = 1;
 	  break;
 
 	case OPT_C:
@@ -1684,6 +1680,15 @@ void
 cpp_post_options (pfile)
      cpp_reader *pfile;
 {
+  if (pfile->print_version)
+    {
+      fprintf (stderr, _("GNU CPP version %s (cpplib)"), version_string);
+#ifdef TARGET_VERSION
+      TARGET_VERSION;
+#endif
+      fputc ('\n', stderr);
+    }
+
   /* Canonicalize in_fname and out_fname.  We guarantee they are not
      NULL, and that the empty string represents stdin / stdout.  */
   if (CPP_OPTION (pfile, in_fname) == NULL
