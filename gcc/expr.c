@@ -6419,7 +6419,7 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    = get_pointer_alignment (src, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
 	  int dest_align
 	    = get_pointer_alignment (dest, BIGGEST_ALIGNMENT) / BITS_PER_UNIT;
-	  rtx dest_rtx;
+	  rtx dest_rtx, dest_mem, src_mem;
 
 	  /* If either SRC or DEST is not a pointer type, don't do
 	     this operation in-line.  */
@@ -6431,15 +6431,16 @@ expand_builtin (exp, target, subtarget, mode, ignore)
 	    }
 
 	  dest_rtx = expand_expr (dest, NULL_RTX, Pmode, EXPAND_NORMAL);
+	  dest_mem = gen_rtx (MEM, BLKmode,
+			      memory_address (BLKmode, dest_rtx));
+	  src_mem = gen_rtx (MEM, BLKmode,
+			     memory_address (BLKmode,
+					     expand_expr (src, NULL_RTX,
+							  Pmode,
+							  EXPAND_NORMAL)));
 
 	  /* Copy word part most expediently.  */
-	  emit_block_move (gen_rtx (MEM, BLKmode,
-				    memory_address (BLKmode, dest_rtx)),
-			   gen_rtx (MEM, BLKmode,
-				    memory_address (BLKmode,
-						    expand_expr (src, NULL_RTX,
-								 Pmode,
-								 EXPAND_NORMAL))),
+	  emit_block_move (dest_mem, src_mem,
 			   expand_expr (len, NULL_RTX, VOIDmode, 0),
 			   MIN (src_align, dest_align));
 	  return dest_rtx;
