@@ -59,6 +59,14 @@ extern int lineno;
 #define inline
 #endif
 
+#if USE_CPPLIB
+extern unsigned char *yy_cur, *yy_lim;
+extern int yy_get_token ();
+#define GETC() (yy_cur < yy_lim ? *yy_cur++ : yy_get_token ())
+#else
+#define GETC() getc (finput)
+#endif
+
 extern void feed_input PROTO((char *, int));
 extern void put_input PROTO((int));
 extern void put_back PROTO((int));
@@ -168,7 +176,7 @@ sub_getch ()
 	}
       return (unsigned char)input->str[input->offset++];
     }
-  return getc (finput);
+  return GETC ();
 }
 
 inline

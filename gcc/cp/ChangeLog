@@ -1,3 +1,18 @@
+Thu May 21 11:54:44 1998  Dave Brolley  <brolley@cygnus.com>
+
+	* lex.c: (handle_sysv_pragma): FILE* parameter not used.
+	(cpp_reader,parse_in): Add for cpplib.
+	(check_newline): Call handle_sysv_pragma with new interface.
+	(check_newline): Call GET_DIRECTIVE_LINE, not get_directive_line.
+
+	* input.c: (yy_cur,yy_lim,yy_get_token,GETC): Add for cpplib.
+	(sub_getch): Call GETC for cpplib.
+
+	* cp-tree.h: (get_directive_line): Different prototype for cpplib.
+	(GET_DIRECTIVE_LINE): Macro wrapper for get_directive_line.
+
+	* Makefile.in (CXX_OBJS): add @extra_cxx_objs@ for cpplib.
+
 1998-05-21  Jason Merrill  <jason@yorick.cygnus.com>
 
 	* decl2.c (maybe_make_one_only): New fn.
