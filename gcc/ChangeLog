@@ -1,5 +1,18 @@
 Fro Nov 19 05:48:45 CET 1999  Jan Hubicka  <hubicka@freesoft.cz>
 
+	* global.c (allocno): New structure and static variable.
+	(allocno_reg): Remove, all references replaced by allocno.
+	(allocno_size): Likewise.
+	(hard_reg_conflicts): Likewise.
+	(hard_reg_preferences): Likewise.
+	(hard_reg_copy_preferences): Likewise.
+	(hard_reg_full_preferences): Likewise.
+	(regs_someone_prefers): Likewise.
+	(allocno_calls_crossed): Likewise.
+	(allocno_n_refs): Likewise.
+	(allocno_live_length): Likewise.
+	(find_reg): Rename ALLOCNO to NUM.
+
 	* regclass.c (may_move_in_cost): Rename from may_move_cost, all
 	references updated.
 	(may_move_out_cost): New variable.
