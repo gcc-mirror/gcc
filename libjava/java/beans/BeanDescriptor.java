@@ -1,5 +1,5 @@
 /* java.beans.BeanDescriptor
-   Copyright (C) 1998 Free Software Foundation, Inc.
+   Copyright (C) 1998, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU Classpath.
 
@@ -67,6 +67,14 @@ public class BeanDescriptor extends FeatureDescriptor {
 	public BeanDescriptor(Class beanClass, Class customizerClass) {
 		this.beanClass = beanClass;
 		this.customizerClass = customizerClass;
+
+		// Set the FeatureDescriptor programmatic name.
+		String name = beanClass.getName();
+		int lastInd = name.lastIndexOf('.');
+		if (lastInd != -1)
+		  name = name.substring(lastInd + 1);
+
+		setName(name);
 	}
 
 	/** Get the Bean's class. **/
