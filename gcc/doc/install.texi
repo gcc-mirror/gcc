@@ -1568,10 +1568,14 @@ The @uref{http://www.mingw.org/,,MinGW} project.
 @end itemize
 
 @item
-@uref{ftp://ftp.thewrittenword.com/packages/free/by-name/,,The
-Written Word} offers binaries for Solaris 2.5.1, 2.6, 2.7/SPARC, 2.7/Intel,
-IRIX 6.2, 6.5, Digital UNIX 4.0D, HP-UX 10.20, and HP-UX 11.00.
-
+@uref{ftp://ftp.thewrittenword.com/packages/by-name/,,The
+Written Word} offers binaries for
+AIX 4.3.2.
+IRIX 6.5,
+Digital UNIX 4.0D and 5.1,
+GNU/Linux (i386),
+HP-UX 10.20, 11.00, and 11.11, and
+Solaris/SPARC 2.5.1, 2.6, 2.7, 8, and 9,
 @end itemize
 
 In addition to those specific offerings, you can get a binary
