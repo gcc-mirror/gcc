@@ -1,3 +1,8 @@
+2004-04-09  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* c-common.c (handle_noreturn_attribute): Use TYPE_READONLY instead
+	of TREE_READONLY for types.
+
 2004-04-09  Caroline Tice  <ctice@apple.com>
 
         * basic-block.h (struct edge_def):  Add new field, crossing_edge.
