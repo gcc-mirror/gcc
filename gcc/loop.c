@@ -199,6 +199,8 @@ static void record_biv PARAMS ((struct loop *, struct induction *,
 				int, int));
 static void check_final_value PARAMS ((const struct loop *,
 				       struct induction *));
+static void loop_ivs_dump PARAMS((const struct loop *, FILE *, int));
+static void loop_iv_class_dump PARAMS((const struct iv_class *, FILE *, int));
 static void loop_biv_dump PARAMS((const struct induction *, FILE *, int));
 static void loop_giv_dump PARAMS((const struct induction *, FILE *, int));
 static void record_giv PARAMS ((const struct loop *, struct induction *,
@@ -256,6 +258,8 @@ static rtx loop_insn_emit_before PARAMS((const struct loop *, basic_block,
 static rtx loop_insn_sink_or_swim PARAMS((const struct loop *, rtx));
 
 static void loop_dump_aux PARAMS ((const struct loop *, FILE *, int));
+void debug_ivs PARAMS ((const struct loop *));
+void debug_iv_class PARAMS ((const struct iv_class *));
 void debug_biv PARAMS ((const struct induction *));
 void debug_giv PARAMS ((const struct induction *));
 void debug_loop PARAMS ((const struct loop *));
@@ -4131,16 +4135,16 @@ loop_giv_reduce_benefit (loop, bl, v, test_reg)
       && GET_CODE (v->mult_val) == CONST_INT)
     {
       if (HAVE_POST_INCREMENT
-	  && INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+	  && INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
 	benefit += add_cost * bl->biv_count;
       else if (HAVE_PRE_INCREMENT
-	       && INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+	       && INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
 	benefit += add_cost * bl->biv_count;
       else if (HAVE_POST_DECREMENT
-	       && -INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+	       && -INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
 	benefit += add_cost * bl->biv_count;
       else if (HAVE_PRE_DECREMENT
-	       && -INTVAL (v->mult_val) == GET_MODE_SIZE (v->mem_mode))
+	       && -INTVAL (v->mult_val) == GET_MODE_SIZE (GET_MODE (v->mem)))
 	benefit += add_cost * bl->biv_count;
     }
 #endif
@@ -4718,7 +4722,7 @@ find_mem_givs (loop, x, insn, not_every_iteration, maybe_multiple)
 			add_val, ext_val, benefit, DEST_ADDR,
 			not_every_iteration, maybe_multiple, &XEXP (x, 0));
 
-	    v->mem_mode = GET_MODE (x);
+	    v->mem = x;
 	  }
       }
       return;
@@ -6446,7 +6450,7 @@ combine_givs_p (g1, g2)
      the expression of G2 in terms of G1 can be used.  */
   if (ret != NULL_RTX
       && g2->giv_type == DEST_ADDR
-      && memory_address_p (g2->mem_mode, ret)
+      && memory_address_p (GET_MODE (g2->mem), ret)
       /* ??? Looses, especially with -fforce-addr, where *g2->location
 	 will always be a register, and so anything more complicated
 	 gets discarded.  */
@@ -9507,6 +9511,96 @@ loop_insn_sink_or_swim (loop, pattern)
 }
 
 static void
+loop_ivs_dump (loop, file, verbose)
+     const struct loop *loop;
+     FILE *file;
+     int verbose;
+{
+  struct iv_class *bl;
+  int iv_num = 0;
+
+  if (! loop || ! file)
+    return;
+
+  for (bl = LOOP_IVS (loop)->list; bl; bl = bl->next)
+    iv_num++;
+
+  fprintf (file, "Loop %d: %d IV classes\n", loop->num, iv_num);
+
+  for (bl = LOOP_IVS (loop)->list; bl; bl = bl->next)
+    {
+      loop_iv_class_dump (bl, file, verbose);
+      fputc ('\n', file);
+    }
+}
+
+
+static void
+loop_iv_class_dump (bl, file, verbose)
+     const struct iv_class *bl;
+     FILE *file;
+     int verbose ATTRIBUTE_UNUSED;
+{
+  struct induction *v;
+  rtx incr;
+  int i;
+
+  if (! bl || ! file)
+    return;
+
+  fprintf (file, "IV class for reg %d, benefit %d\n",
+	   bl->regno, bl->total_benefit);
+
+  fprintf (file, " Init insn %d", INSN_UID (bl->init_insn));
+  if (bl->initial_value)
+    {
+      fprintf (file, ", init val: ");
+      print_simple_rtl (file, bl->initial_value);
+    }
+  if (bl->initial_test)
+    {
+      fprintf (file, ", init test: ");
+      print_simple_rtl (file, bl->initial_test);
+    }
+  fputc ('\n', file);
+
+  if (bl->final_value)
+    {
+      fprintf (file, " Final val: ");
+      print_simple_rtl (file, bl->final_value);
+      fputc ('\n', file);
+    }
+
+  if ((incr = biv_total_increment (bl)))
+    {
+      fprintf (file, " Total increment: ");
+      print_simple_rtl (file, incr);
+      fputc ('\n', file);
+    }
+
+  /* List the increments.  */
+  for (i = 0, v = bl->biv; v; v = v->next_iv, i++)
+    {
+      fprintf (file, " Inc%d: insn %d, incr: ", i, INSN_UID (v->insn));
+      print_simple_rtl (file, v->add_val);
+      fputc ('\n', file);
+    }
+
+  /* List the givs.  */
+  for (i = 0, v = bl->giv; v; v = v->next_iv, i++)
+    {
+      fprintf (file, " Giv%d: insn %d, benefit %d, ", 
+	       i, INSN_UID (v->insn), v->benefit);
+      if (v->giv_type == DEST_ADDR)
+	  print_simple_rtl (file, v->mem);
+      else
+	  print_simple_rtl (file, single_set (v->insn));
+      fputc ('\n', file);
+    }
+}
+
+
+static void
 loop_biv_dump (v, file, verbose)
      const struct induction *v;
      FILE *file;
@@ -9593,6 +9687,22 @@ loop_giv_dump (v, file, verbose)
     }
 
   fputc ('\n', file);  
+}
+
+
+void
+debug_ivs (loop)
+     const struct loop *loop;
+{
+  loop_ivs_dump (loop, stderr, 1);
+}
+
+
+void
+debug_iv_class (bl)
+     const struct iv_class *bl;
+{
+  loop_iv_class_dump (bl, stderr, 1);
 }
 
 
