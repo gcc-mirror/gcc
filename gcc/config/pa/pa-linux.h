@@ -171,7 +171,7 @@ Boston, MA 02111-1307, USA.  */
 /* Use the default.  */
 #undef ASM_GLOBALIZE_LABEL
 /* Globalizing directive for a label.  */
-#definef GLOBAL_ASM_OP ".globl "
+#define GLOBAL_ASM_OP ".globl "
 
 /* FIXME: Hacked from the <elfos.h> one so that we avoid multiple
    labels in a function declaration (since pa.c seems determined to do

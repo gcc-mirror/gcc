@@ -1,3 +1,7 @@
+2002-07-31  John David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* pa-linux.h (GLOBAL_ASM_OP): Fix typo.
+
 2002-07-31  Graham Stott  <grahams@btinternet.com>
 
 	* config/stormy16/stormy16.h (BSS_SECTION_ASM_OP): Add missing 
