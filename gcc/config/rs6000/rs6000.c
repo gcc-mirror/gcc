@@ -3850,7 +3850,7 @@ output_epilog (file, size)
 	i = 1;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
-      else if (! strcmp (language_string, "GNU PASCAL"))
+      else if (! strcmp (language_string, "GNU Pascal"))
 	i = 2;
       else if (! strcmp (language_string, "GNU C++"))
 	i = 9;
