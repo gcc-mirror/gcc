@@ -2198,7 +2198,7 @@ simplify_subreg (outermode, op, innermode, byte)
       int offset, part;
       unsigned HOST_WIDE_INT val = 0;
 
-      /* ??? This code is partly redundant with code bellow, but can handle
+      /* ??? This code is partly redundant with code below, but can handle
 	 the subregs of floats and similar corner cases.
 	 Later it we should move all simplification code here and rewrite
 	 GEN_LOWPART_IF_POSSIBLE, GEN_HIGHPART, OPERAND_SUBWORD and friends
