@@ -1738,7 +1738,7 @@ emit_block_move (x, y, size, align)
 #else
       size = convert_to_mode (TYPE_MODE (integer_type_node), size,
 			      TREE_UNSIGNED (integer_type_node));
-      size = copy_to_reg (size);
+      size = copy_to_mode_reg (TYPE_MODE (integer_type_node), size);
 #endif
 
 #ifdef TARGET_MEM_FUNCTIONS
@@ -2499,7 +2499,7 @@ clear_storage (object, size, align)
 #else
 	  size = convert_to_mode (TYPE_MODE (integer_type_node), size,
 				  TREE_UNSIGNED (integer_type_node));
-	  size = copy_to_reg (size);
+	  size = copy_to_mode_reg (TYPE_MODE (integer_type_node), size);
 #endif
 
 
