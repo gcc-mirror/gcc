@@ -1,5 +1,8 @@
 1998-10-12  Alexandre Oliva  <oliva@dcc.unicamp.br>
 
+	* g++.old-deja/g++.other/init8.C: New test.  uninitialized
+ 	automatic array of const is ill-formed
+
 	* g++.old-deja/g++.pt/ttp53.C: New test.  incorrect substitution
 	of template parameter?
 
