@@ -573,6 +573,7 @@ extern void verify_ssa (void);
 extern void delete_tree_ssa (void);
 extern void register_new_def (tree, varray_type *);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *);
+extern void kill_redundant_phi_nodes (void);
 
 /* In tree-into-ssa.c  */
 extern void rewrite_into_ssa (bool);

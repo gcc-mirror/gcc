@@ -926,7 +926,7 @@ check_phi_redundancy (tree phi, tree *eq_to)
    The most important effect of this pass is to remove degenerate PHI
    nodes created by removing unreachable code.  */
 
-static void
+void
 kill_redundant_phi_nodes (void)
 {
   tree *eq_to;

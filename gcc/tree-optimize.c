@@ -319,6 +319,7 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_fold_builtins);
   NEXT_PASS (pass_split_crit_edges);
   NEXT_PASS (pass_pre);
+  NEXT_PASS (pass_loop);
   NEXT_PASS (DUP_PASS (pass_dominator));
   NEXT_PASS (DUP_PASS (pass_redundant_phi));
   NEXT_PASS (pass_cd_dce);
@@ -331,6 +332,11 @@ init_tree_optimization_passes (void)
   NEXT_PASS (pass_del_ssa);
   NEXT_PASS (pass_nrv);
   NEXT_PASS (pass_remove_useless_vars);
+  *p = NULL;
+
+  p = &pass_loop.sub;
+  NEXT_PASS (pass_loop_init);
+  NEXT_PASS (pass_loop_done);
   *p = NULL;
 
 #undef NEXT_PASS

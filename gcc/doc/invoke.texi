@@ -312,7 +312,7 @@ in the following sections.
 -fstrength-reduce  -fstrict-aliasing  -ftracer  -fthread-jumps @gol
 -funroll-all-loops  -funroll-loops  -fpeel-loops @gol
 -funswitch-loops  -fold-unroll-loops  -fold-unroll-all-loops @gol
--ftree-pre  -ftree-ccp  -ftree-dce  @gol
+-ftree-pre  -ftree-ccp  -ftree-dce -ftree-loop-optimize @gol
 -ftree-dominator-opts -ftree-dse -ftree-copyrename @gol
 -ftree-ch -ftree-sra -ftree-ter -ftree-lrs -ftree-fre @gol
 --param @var{name}=@var{value}
@@ -4399,6 +4399,10 @@ Perform loop header copying on trees.  This is beneficial since it increases
 effectivity of code motion optimizations.  It also saves one jump.  This flag
 is enabled by default at -O and higher.  It is not enabled for -Os, since it
 usually increases code size.
+
+@item -ftree-loop-optimize
+Perform loop optimizations on trees.  This flag is enabled by default at -O
+and higher.
 
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
