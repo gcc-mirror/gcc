@@ -7799,14 +7799,10 @@ ix86_expand_vector_move (mode, operands)
   if ((reload_in_progress | reload_completed) == 0
       && register_operand (operands[0], mode)
       && CONSTANT_P (operands[1]))
-    {
-      rtx addr = gen_reg_rtx (Pmode);
-      emit_move_insn (addr, XEXP (force_const_mem (mode, operands[1]), 0));
-      operands[1] = gen_rtx_MEM (mode, addr);
-    }
+    operands[1] = force_const_mem (mode, operands[1]);
 
   /* Make operand1 a register if it isn't already.  */
-  if ((reload_in_progress | reload_completed) == 0
+  if (!no_new_pseudos
       && !register_operand (operands[0], mode)
       && !register_operand (operands[1], mode))
     {
@@ -12287,10 +12283,10 @@ ix86_init_mmx_sse_builtins ()
   /* @@@ the type is bogus */
   tree v4sf_ftype_v4sf_pv2si
     = build_function_type_list (V4SF_type_node,
-				V4SF_type_node, pv2di_type_node, NULL_TREE);
+				V4SF_type_node, pv2si_type_node, NULL_TREE);
   tree void_ftype_pv2si_v4sf
     = build_function_type_list (void_type_node,
-				pv2di_type_node, V4SF_type_node, NULL_TREE);
+				pv2si_type_node, V4SF_type_node, NULL_TREE);
   tree void_ftype_pfloat_v4sf
     = build_function_type_list (void_type_node,
 				pfloat_type_node, V4SF_type_node, NULL_TREE);
@@ -13145,7 +13141,8 @@ ix86_expand_builtin (exp, target, subtarget, mode, ignore)
     case IX86_BUILTIN_MASKMOVDQU:
       icode = (fcode == IX86_BUILTIN_MASKMOVQ
 	       ? (TARGET_64BIT ? CODE_FOR_mmx_maskmovq_rex : CODE_FOR_mmx_maskmovq)
-	       : CODE_FOR_sse2_maskmovdqu);
+	       : (TARGET_64BIT ? CODE_FOR_sse2_maskmovdqu_rex64
+		  : CODE_FOR_sse2_maskmovdqu));
       /* Note the arg order is different from the operand order.  */
       arg1 = TREE_VALUE (arglist);
       arg2 = TREE_VALUE (TREE_CHAIN (arglist));
