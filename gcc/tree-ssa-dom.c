@@ -3026,6 +3026,8 @@ record_range (tree cond, basic_block bb)
 
       if (*slot == NULL)
 	*slot = (void *) vrp_hash_elt;
+      else
+	free (vrp_hash_elt);
 
       vrp_hash_elt = (struct vrp_hash_elt *) *slot;
       vrp_records_p = &vrp_hash_elt->records;

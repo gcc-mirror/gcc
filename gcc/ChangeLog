@@ -1,3 +1,8 @@
+2004-10-13  Andrew Pinski  <pinskia@physics.uc.edu>
+
+	* tree-ssa-dom.c (record_range): Free the element if we are not
+	going to use it.
+
 2004-10-13  Tom Tromey  <tromey@redhat.com>
 
 	PR java/15578:
