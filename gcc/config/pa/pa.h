@@ -258,8 +258,6 @@ do {								\
   else								\
     PTR = 0;							\
 } while (0)
-
-#define LD_INIT_SWITCH "+I"
 
 /* target machine storage layout */
 
