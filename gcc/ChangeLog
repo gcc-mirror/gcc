@@ -1,3 +1,7 @@
+Sat Mar 21 08:02:17 1998  Richard Gorton  <gorton@amt.tay1.dec.com>
+
+        * alpha.md (zero_extendqi[hsd]i2): Use "and", not "zapnot".
+
 Sat Mar 21 07:47:04 1998  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* unroll.c (verify_addresses): Use validate_replace_rtx.
