@@ -326,6 +326,20 @@ no_labels_between_p (beg, end)
   return 1;
 }
 
+/* Return 1 if in between BEG and END, exclusive of BEG and END, there is
+   no JUMP_INSN insn.  */
+
+int
+no_jumps_between_p (beg, end)
+     rtx beg, end;
+{
+  register rtx p;
+  for (p = NEXT_INSN (beg); p != end; p = NEXT_INSN (p))
+    if (GET_CODE (p) == JUMP_INSN)
+      return 0;
+  return 1;
+}
+
 /* Nonzero if register REG is used in an insn between
    FROM_INSN and TO_INSN (exclusive of those two).  */
 
@@ -2186,4 +2200,21 @@ for_each_rtx (x, f, data)
     }
 
   return 0;
+}
+
+/* INSN and REFERENCE are instructions in the same insn chain.
+   Return non-zero if INSN is first.  */
+int
+insn_first_p (insn, reference)
+     rtx insn, reference;
+{
+  rtx p, q;
+
+  for (p = insn, q = reference; ; p = NEXT_INSN (p), q = NEXT_INSN (q))
+    {
+      if (p == reference || ! q)
+	return 1;
+      if (q == insn || ! p)
+	return 0;
+    }
 }

@@ -180,6 +180,10 @@ static struct induction **addr_combined_regs;
 static rtx *splittable_regs;
 
 /* Indexed by register number, if this is a splittable induction variable,
+   this indicates if it was made from a derived giv.  */
+static char *derived_regs;
+
+/* Indexed by register number, if this is a splittable induction variable,
    then this will hold the number of instructions in the loop that modify
    the induction variable.  Used to ensure that only the last insn modifying
    a split iv will update the original iv of the dest.  */
@@ -761,16 +765,15 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 
   splittable_regs = (rtx *) alloca (maxregnum * sizeof (rtx));
   bzero ((char *) splittable_regs, maxregnum * sizeof (rtx));
+  derived_regs = alloca (maxregnum);
+  bzero (derived_regs, maxregnum);
   splittable_regs_updates = (int *) alloca (maxregnum * sizeof (int));
   bzero ((char *) splittable_regs_updates, maxregnum * sizeof (int));
   addr_combined_regs
     = (struct induction **) alloca (maxregnum * sizeof (struct induction *));
   bzero ((char *) addr_combined_regs, maxregnum * sizeof (struct induction *));
-  /* We must limit it to max_reg_before_loop, because only these pseudo
-     registers have valid regno_first_uid info.  Any register created after
-     that is unlikely to be local to the loop anyways.  */
-  local_regno = (char *) alloca (max_reg_before_loop);
-  bzero (local_regno, max_reg_before_loop);
+  local_regno = (char *) alloca (maxregnum);
+  bzero (local_regno, maxregnum);
 
   /* Mark all local registers, i.e. the ones which are referenced only
      inside the loop.  */
@@ -793,6 +796,8 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
     /* If a pseudo's lifetime is entirely contained within this loop, then we
        can use a different pseudo in each unrolled copy of the loop.  This
        results in better code.  */
+    /* We must limit the generic test to max_reg_before_loop, because only
+       these pseudo registers have valid regno_first_uid info.  */
     for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; ++j)
       if (REGNO_FIRST_UID (j) > 0 && REGNO_FIRST_UID (j) <= max_uid_for_loop
 	  && uid_luid[REGNO_FIRST_UID (j)] >= copy_start_luid
@@ -821,6 +826,14 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 			 j);
 	    }
 	}
+    /* Givs that have been created from multiple biv increments always have
+       local registers.  */
+    for (j = first_increment_giv; j <= last_increment_giv; j++)
+      {
+	local_regno[j] = 1;
+	if (loop_dump_stream)
+	  fprintf (loop_dump_stream, "Marked reg %d as local\n", j);
+      }
   }
 
   /* If this loop requires exit tests when unrolled, check to see if we
@@ -1041,7 +1054,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 		if (local_label[j])
 		  set_label_in_map (map, j, gen_label_rtx ());
 
-	      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
+	      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
 		if (local_regno[j])
 		  {
 		    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
@@ -1197,7 +1210,7 @@ unroll_loop (loop_end, insn_count, loop_start, end_insert_before,
 	if (local_label[j])
 	  set_label_in_map (map, j, gen_label_rtx ());
 
-      for (j = FIRST_PSEUDO_REGISTER; j < max_reg_before_loop; j++)
+      for (j = FIRST_PSEUDO_REGISTER; j < maxregnum; j++)
 	if (local_regno[j])
 	  {
 	    map->reg_map[j] = gen_reg_rtx (GET_MODE (regno_reg_rtx[j]));
@@ -1701,7 +1714,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		 we might accidentally delete insns generated immediately
 		 below by emit_unrolled_add.  */
 
-	      giv_inc = calculate_giv_inc (set, insn, regno);
+	      if (! derived_regs[regno])
+		giv_inc = calculate_giv_inc (set, insn, regno);
 
 	      /* Now find all address giv's that were combined with this
 		 giv 'v'.  */
@@ -1780,16 +1794,25 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 	      && splittable_regs[REGNO (SET_DEST (set))])
 	    {
 	      int regno = REGNO (SET_DEST (set));
+	      int src_regno;
 	      
 	      dest_reg_was_split = 1;
 	      
-	      /* Compute the increment value for the giv, if it wasn't
-		 already computed above.  */
-
-	      if (giv_inc == 0)
-		giv_inc = calculate_giv_inc (set, insn, regno);
 	      giv_dest_reg = SET_DEST (set);
-	      giv_src_reg = SET_DEST (set);
+	      if (derived_regs[regno])
+		{
+		  giv_src_reg = XEXP (SET_SRC (set), 0);
+		  giv_inc = XEXP (SET_SRC (set), 1);
+		}
+	      else
+		{
+		  giv_src_reg = giv_dest_reg;
+		  /* Compute the increment value for the giv, if it wasn't
+		     already computed above.  */
+		  if (giv_inc == 0)
+		    giv_inc = calculate_giv_inc (set, insn, regno);
+		}
+	      src_regno = REGNO (giv_src_reg);
 
 	      if (unroll_type == UNROLL_COMPLETELY)
 		{
@@ -1799,7 +1822,8 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		  /* The value in splittable_regs may be an invariant
 		     value, so we must use plus_constant here.  */
 		  splittable_regs[regno]
-		    = plus_constant (splittable_regs[regno], INTVAL (giv_inc));
+		    = plus_constant (splittable_regs[src_regno],
+				     INTVAL (giv_inc));
 
 		  if (GET_CODE (splittable_regs[regno]) == PLUS)
 		    {
@@ -1830,7 +1854,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		     induction entry by find_splittable_regs.  */
 
 		  if (regno < max_reg_before_loop
-		      && reg_iv_type[regno] == BASIC_INDUCT)
+		      && REG_IV_TYPE (regno) == BASIC_INDUCT)
 		    {
 		      giv_src_reg = reg_biv_class[regno]->biv->src_reg;
 		      giv_dest_reg = giv_src_reg;
@@ -1844,7 +1868,7 @@ copy_loop_body (copy_start, copy_end, map, exit_label, last_iteration,
 		  
 		  splittable_regs[regno]
 		    = GEN_INT (INTVAL (giv_inc)
-			       + INTVAL (splittable_regs[regno]));
+			       + INTVAL (splittable_regs[src_regno]));
 		  giv_inc = splittable_regs[regno];
 		  
 		  /* Now split the induction variable by changing the dest
@@ -2338,7 +2362,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
 
   /* If this is a new register, can't handle it since we don't have any
      reg_iv_type entry for it.  */
-  if (REGNO (iteration_var) >= max_reg_before_loop)
+  if ((unsigned) REGNO (iteration_var) > reg_iv_type->num_elements)
     {
       if (loop_dump_stream)
 	fprintf (loop_dump_stream,
@@ -2364,7 +2388,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
 		 "Loop unrolling: Iteration var not an integer.\n");
       return;
     }
-  else if (reg_iv_type[REGNO (iteration_var)] == BASIC_INDUCT)
+  else if (REG_IV_TYPE (REGNO (iteration_var)) == BASIC_INDUCT)
     {
       /* Grab initial value, only useful if it is a constant.  */
       bl = reg_biv_class[REGNO (iteration_var)];
@@ -2372,7 +2396,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
 
       *increment = biv_total_increment (bl, loop_start, loop_end);
     }
-  else if (reg_iv_type[REGNO (iteration_var)] == GENERAL_INDUCT)
+  else if (REG_IV_TYPE (REGNO (iteration_var)) == GENERAL_INDUCT)
     {
 #if 1
       /* ??? The code below does not work because the incorrect number of
@@ -2390,7 +2414,7 @@ iteration_info (iteration_var, initial_value, increment, loop_start, loop_end)
 #else
       /* Initial value is mult_val times the biv's initial value plus
 	 add_val.  Only useful if it is a constant.  */
-      v = reg_iv_info[REGNO (iteration_var)];
+      v = REG_IV_INFO (REGNO (iteration_var));
       bl = reg_biv_class[REGNO (v->src_reg)];
       *initial_value = fold_rtx_mult_add (v->mult_val, bl->initial_value,
 					  v->add_val, v->mode);
@@ -2708,6 +2732,10 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 	      /* Line above always fails if INSN was moved by loop opt.  */
 	      || (uid_luid[REGNO_LAST_UID (REGNO (v->dest_reg))]
 		  >= INSN_LUID (loop_end)))
+	  /* Givs made from biv increments are missed by the above test, so
+	     test explicitly for them.  */
+	  && (REGNO (v->dest_reg) < first_increment_giv
+	      || REGNO (v->dest_reg) > last_increment_giv)
 	  && ! (final_value = v->final_value))
 	continue;
 
@@ -2808,6 +2836,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		}
 		
 	      splittable_regs[REGNO (v->new_reg)] = value;
+	      derived_regs[REGNO (v->new_reg)] = v->derived;
 	    }
 	  else
 	    {
@@ -2991,6 +3020,7 @@ find_splittable_givs (bl, unroll_type, loop_start, loop_end, increment,
 		     Make sure that it's giv is marked as splittable here.  */
 		  
 		  splittable_regs[REGNO (v->new_reg)] = value;
+		  derived_regs[REGNO (v->new_reg)] = v->derived;
 		  
 		  /* Make it appear to depend upon itself, so that the
 		     giv will be properly split in the main loop above.  */
@@ -3902,7 +3932,7 @@ remap_split_bivs (x)
 	 have to remap those givs also.  */
 #endif
       if (REGNO (x) < max_reg_before_loop
-	  && reg_iv_type[REGNO (x)] == BASIC_INDUCT)
+	  && REG_IV_TYPE (REGNO (x)) == BASIC_INDUCT)
 	return reg_biv_class[REGNO (x)]->biv->src_reg;
       break;
       
