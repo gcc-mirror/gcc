@@ -509,6 +509,34 @@ extern int rs6000_pic_labelno;
 #define ASM_OUTPUT_INTERNAL_LABEL_PREFIX(FILE,PREFIX)	\
   fprintf (FILE, ".%s", PREFIX)
 
+/* This says how to output assembler code to declare an
+   uninitialized internal linkage data object.  Under SVR4,
+   the linker seems to want the alignment of data objects
+   to depend on their types.  We do exactly that here.  */
+
+#ifndef LOCAL_ASM_OP
+#define LOCAL_ASM_OP	".local"
+#endif
+
+#undef ASM_OUTPUT_ALIGNED_LOCAL
+#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)		\
+do {									\
+  if (TARGET_SDATA && (SIZE) > 0 && (SIZE) <= g_switch_value)		\
+    {									\
+      sbss_section ();							\
+      ASM_OUTPUT_ALIGN (FILE, exact_log2 (ALIGN / BITS_PER_UNIT));	\
+      ASM_OUTPUT_LABEL (FILE, NAME);					\
+      ASM_OUTPUT_SKIP (FILE, SIZE);					\
+    }									\
+  else									\
+    {									\
+      fprintf ((FILE), "\t%s\t", LOCAL_ASM_OP);				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), "\n");						\
+      ASM_OUTPUT_ALIGNED_COMMON (FILE, NAME, SIZE, ALIGN);		\
+    }									\
+} while (0)
+
 /* Pass various options to the assembler */
 #undef ASM_SPEC
 #define ASM_SPEC "-u %(asm_cpu) \
