@@ -85,9 +85,6 @@ public final class FileDescriptor
       init();
     }
 
-  public native void sync () throws SyncFailedException;
-  public native boolean valid ();
-
   // These are WHENCE values for seek.
   static final int SET = 0;
   static final int CUR = 1;
@@ -127,31 +124,6 @@ public final class FileDescriptor
     fd = open (path, mode);
   }
 
-  native int open (String path, int mode) throws FileNotFoundException;
-  native void write (int b) throws IOException;
-  native void write (byte[] b, int offset, int len)
-    throws IOException, NullPointerException, IndexOutOfBoundsException;
-  native void close () throws IOException;
-  native void setLength (long pos) throws IOException;
-  // EOF_TRUNC is true if a request to seek past the end of file
-  // should actually stop at the end of file.  If false, then a seek
-  // past the end is ok (and if a subsequent write occurs the file
-  // will grow).
-  native int seek (long pos, int whence, boolean eof_trunc) throws IOException;
-  native long getLength () throws IOException;
-  native long getFilePointer () throws IOException;
-  native int read () throws IOException;
-  native int read (byte[] bytes, int offset, int len) throws IOException;
-  native int available () throws IOException;
-
-
-  // When collected, close.
-  protected void finalize () throws Throwable
-  {
-    if (valid ())
-      close ();
-  }
-
   // Attach to an already-opened file.  This is not private because we
   // need access to it from other packages, for instance java.net.
   // Ordinarily that wouldn't work, either, but in our case we know
@@ -162,5 +134,84 @@ public final class FileDescriptor
     fd = desc;
   }
 
+  /**
+   * This method forces all data that has not yet been physically written to
+   * the underlying storage medium associated with this 
+   * <code>FileDescriptor</code>
+   * to be written out.  This method will not return until all data has
+   * been fully written to the underlying device.  If the device does not
+   * support this functionality or if an error occurs, then an exception
+   * will be thrown.
+   */
+  public native void sync() throws SyncFailedException;
 
+  /**
+   * This methods tests whether or not this object represents a valid open
+   * native file handle.
+   *
+   * @return <code>true</code> if this object represents a valid 
+   * native file handle, <code>false</code> otherwise
+   */
+  public native boolean valid();
+
+  /**
+   * Opens the specified file in the specified mode.  This can be done
+   * in one of the specified modes:
+   * <ul>
+   * <li>r - Read Only
+   * <li>rw - Read / Write
+   * <li>ra - Read / Write - append to end of file
+   * <li>rws - Read / Write - synchronous writes of data/metadata
+   * <li>rwd - Read / Write - synchronous writes of data.
+   *
+   * @param path Name of the file to open
+   * @param mode Mode to open
+   *
+   * @exception IOException If an error occurs.
+   */
+  native int open(String path, int mode) throws FileNotFoundException;
+
+  /**
+   * Close the file descriptor.
+   */
+  native void close() throws IOException;
+
+  /**
+   * Write oe byte of data.
+   */
+  native void write(int b) throws IOException;
+
+  /**
+   * Write data.
+   */
+  native void write(byte[] b, int offset, int len)
+    throws IOException, NullPointerException, IndexOutOfBoundsException;
+
+  /**
+   * Read one byte of data.
+   */
+  native int read() throws IOException;
+
+  /**
+   * Read data.
+   */
+  native int read(byte[] bytes, int offset, int len) throws IOException;
+  native int available() throws IOException;
+
+  // EOF_TRUNC is true if a request to seek past the end of file
+  // should actually stop at the end of file.  If false, then a seek
+  // past the end is ok (and if a subsequent write occurs the file
+  // will grow).
+  native int seek(long pos, int whence, boolean eof_trunc) throws IOException;
+
+  native long getFilePointer() throws IOException;
+  native long getLength() throws IOException;
+  native void setLength(long pos) throws IOException;
+
+  // When collected, close.
+  protected void finalize() throws Throwable
+  {
+    if (valid())
+      close();
+  }
 }
