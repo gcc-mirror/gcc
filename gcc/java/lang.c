@@ -105,6 +105,9 @@ int flag_not_overriding = 0;
 /* When non zero, warns that final local are treated as non final.  */
 int flag_static_local_jdk1_1 = 0;
 
+/* When non zero, call a library routine to do integer divisions. */
+int flag_use_divide_subroutine = 1;
+
 /* From gcc/flags.h, and indicates if exceptions are turned on or not.  */
 
 extern int flag_new_exceptions;
@@ -123,6 +126,7 @@ lang_f_options[] =
   {"assume-compiled", &flag_assume_compiled, 1},
   {"emit-class-file", &flag_emit_class_files, 1},
   {"emit-class-files", &flag_emit_class_files, 1},
+  {"use-divide-subroutine", &flag_use_divide_subroutine, 1},
 };
 
 JCF *current_jcf;

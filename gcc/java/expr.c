@@ -1052,6 +1052,53 @@ expand_iinc (local_var_index, ival, pc)
     expand_assignment (local_var, res, 0, 0);
 }
 
+      
+tree
+build_java_soft_divmod (op, type, op1, op2)
+    enum tree_code op;
+    tree type, op1, op2;
+{
+  tree call = NULL;
+  tree arg1 = convert (type, op1);
+  tree arg2 = convert (type, op2);
+
+  if (type == int_type_node)
+    {	  
+      switch (op)
+	{
+	case TRUNC_DIV_EXPR:
+	  call = soft_idiv_node;
+	  break;
+	case TRUNC_MOD_EXPR:
+	  call = soft_irem_node;
+	  break;
+	}
+    }
+  else if (type == long_type_node)
+    {	  
+      switch (op)
+	{
+	case TRUNC_DIV_EXPR:
+	  call = soft_ldiv_node;
+	  break;
+	case TRUNC_MOD_EXPR:
+	  call = soft_lrem_node;
+	  break;
+	}
+    }
+
+  if (! call)
+    fatal ("Internal compiler error in build_java_soft_divmod");
+		  
+  call = build (CALL_EXPR, type,
+		build_address_of (call),
+		tree_cons (NULL_TREE, arg1,
+			   build_tree_list (NULL_TREE, arg2)),
+		NULL_TREE);
+	  
+  return call;
+}
+
 tree
 build_java_binop (op, type, arg1, arg2)
      enum tree_code op;
@@ -1100,10 +1147,11 @@ build_java_binop (op, type, arg1, arg2)
 					    integer_zero_node));
 	return fold (build (COND_EXPR, int_type_node,
 			    ifexp1, integer_negative_one_node, second_compare));
-      }
-
+      }      
+    case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
-      if (TREE_CODE (type) == REAL_TYPE)
+      if (TREE_CODE (type) == REAL_TYPE
+	  && op == TRUNC_MOD_EXPR)
 	{
 	  tree call;
 	  if (type != double_type_node)
@@ -1120,6 +1168,12 @@ build_java_binop (op, type, arg1, arg2)
 	    call = convert (type, call);
 	  return call;
 	}
+      
+      if (TREE_CODE (type) == INTEGER_TYPE
+	  && flag_use_divide_subroutine
+	  && ! flag_syntax_only)
+	return build_java_soft_divmod (op, type, arg1, arg2);
+      
       break;
     default:  ;
     }

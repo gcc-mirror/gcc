@@ -141,6 +141,9 @@ extern int flag_redundant;
 extern int flag_not_overriding;
 extern int flag_static_local_jdk1_1;
 
+/* When non zero, call a library routine to do integer divisions. */
+extern int flag_use_divide_subroutine;
+
 /* The Java .class file that provides main_class;  the main input file. */
 extern struct JCF *current_jcf;
 
@@ -283,6 +286,10 @@ extern tree soft_monitorexit_node;
 extern tree soft_lookupinterfacemethod_node;
 extern tree soft_fmod_node;
 extern tree soft_exceptioninfo_call_node;
+extern tree soft_idiv_node;
+extern tree soft_irem_node;
+extern tree soft_ldiv_node;
+extern tree soft_lrem_node;
 
 extern tree access_flags_type_node;
 
@@ -544,6 +551,7 @@ extern tree invoke_build_dtable PROTO ((int, tree));
 extern tree build_field_ref PROTO ((tree, tree, tree));
 extern void pushdecl_force_head PROTO ((tree));
 extern tree build_java_binop PROTO ((enum tree_code, tree, tree, tree));
+extern tree build_java_soft_divmod PROTO ((enum tree_code, tree, tree, tree));
 extern tree binary_numeric_promotion PROTO ((tree, tree, tree *, tree *));
 extern tree build_java_arrayaccess PROTO ((tree, tree, tree));
 extern tree build_newarray PROTO ((int, tree));

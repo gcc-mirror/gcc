@@ -9411,6 +9411,12 @@ patch_binop (node, wfl_op1, wfl_op2)
       if (code == RDIV_EXPR && TREE_CODE (prom_type) == INTEGER_TYPE)
 	TREE_SET_CODE (node, TRUNC_DIV_EXPR);
 
+      if (TREE_CODE (prom_type) == INTEGER_TYPE
+	  && flag_use_divide_subroutine
+	  && ! flag_emit_class_files
+	  && (code == RDIV_EXPR || code == TRUNC_MOD_EXPR))
+	return build_java_soft_divmod (TREE_CODE (node), prom_type, op1, op2);
+ 
       /* This one is more complicated. FLOATs are processed by a
 	 function call to soft_fmod. Duplicate the value of the
 	 COMPOUND_ASSIGN_P flag. */
