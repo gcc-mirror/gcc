@@ -1,3 +1,11 @@
+2000-08-22  J. David Anglin  <dave@hiauly1.hia.nrc.ca>
+
+	* vax.h (ASM_SPEC): Pass `-J' to assembler.
+	* x-vax-gcc: New file for bootstrapping with gcc.
+ 	* x-vax: Use X_CFLAGS rather than X_CPPFLAGS to pass `-J'.
+	* configure.in: Use x-vax-gcc with gcc.
+	* configure: Rebuilt.
+
 Tue Aug 22 21:21:05 2000  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 	* toplev.c (rest_of_compilation): Rebuild label notes after
