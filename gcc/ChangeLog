@@ -1,3 +1,8 @@
+2004-04-08  Ian Lance Taylor  <ian@wasabisystems.com>
+
+	* config/rs6000/host-darwin.c (darwin_rs6000_gt_pch_use_address):
+	Return 1 if file was successfully mapped.
+
 2004-04-08  Geoffrey Keating  <geoffk@apple.com>
 
 	PR pch/13419
