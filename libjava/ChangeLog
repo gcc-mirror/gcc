@@ -1,3 +1,20 @@
+2000-02-10  Andrew Haley  <aph@cygnus.com>
+
+	* interpret.cc: Don't include fdlibm.h.
+	Replace #if with #ifdef throughout.
+	Declare extern __ieee754_fmod.
+	(continue1): Remove op_getfield, op_getstatic, op_putfield,
+	op_putstatic insns.
+	* resolve.cc (_Jv_PrepareClass): Use imeth as method pointer.
+	Search class hierarchy for superclass vtable.
+
+	* java/lang/natClassLoader.cc (_Jv_UnregisterClass): Don't fall
+	off the end of a pointer list.
+
+	* java/lang/natThread.cc (stop): Don't abort, throw an exception
+	instead.
+	(suspend): Ditto.
+	
 2000-02-09  Tom Tromey  <tromey@cygnus.com>
 
 	* java/lang/natRuntime.cc (_load): Call add_library.

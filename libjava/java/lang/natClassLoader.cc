@@ -368,12 +368,15 @@ _Jv_UnregisterClass (jclass the_class)
     }
 
   _Jv_LoaderInfo **info = &(initiated_classes[hash]);
-  for ( ; *info; info = &((*info)->next))
+  for ( ; ; info = &((*info)->next))
     {
-      while ((*info)->klass == the_class)
+      while (*info && (*info)->klass == the_class)
 	{
 	  *info = (*info)->next;
 	}
+
+      if (*info == NULL)
+	break;
     }
 
   _Jv_MonitorExit (&ClassClass);

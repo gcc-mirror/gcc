@@ -19,6 +19,7 @@ details.  */
 #include <java/lang/Thread.h>
 #include <java/lang/ThreadGroup.h>
 #include <java/lang/IllegalArgumentException.h>
+#include <java/lang/UnsupportedOperationException.h>
 #include <java/lang/IllegalThreadStateException.h>
 #include <java/lang/InterruptedException.h>
 #include <java/lang/NullPointerException.h>
@@ -306,14 +307,16 @@ java::lang::Thread::start (void)
 void
 java::lang::Thread::stop (java::lang::Throwable *)
 {
-  JvFail ("java::lang::Thread::stop unimplemented");
+  _Jv_Throw (new UnsupportedOperationException
+	     (JvNewStringLatin1 ("java::lang::Thread::stop unimplemented")));
 }
 
 void
 java::lang::Thread::suspend (void)
 {
   checkAccess ();
-  JvFail ("java::lang::Thread::suspend unimplemented");
+  _Jv_Throw (new UnsupportedOperationException 
+	     (JvNewStringLatin1 ("java::lang::Thread::suspend unimplemented")));
 }
 
 void

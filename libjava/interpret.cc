@@ -17,7 +17,7 @@ details.  */
 #include <jvm.h>
 #include <java-cpool.h>
 #include <java-interp.h>
-#include <java/lang/fdlibm.h>
+// #include <java/lang/fdlibm.h>
 #include <java/lang/System.h>
 #include <java/lang/String.h>
 #include <java/lang/Integer.h>
@@ -56,15 +56,17 @@ static void throw_internal_error (char *msg)
   __attribute__ ((__noreturn__));
 static void throw_incompatible_class_change_error (jstring msg)
   __attribute__ ((__noreturn__));
-#if !HANDLE_SEGV
+#ifndef HANDLE_SEGV
 static void throw_null_pointer_exception ()
   __attribute__ ((__noreturn__));
 #endif
-#if !HANDLE_FPE
+#ifndef HANDLE_FPE
 static void throw_arithmetic_exception ()
   __attribute__ ((__noreturn__));
 #endif
 
+
+extern "C" double __ieee754_fmod __P((double,double));
 
 static inline void dupx (_Jv_word *sp, int n, int x)
 {
@@ -177,14 +179,14 @@ static jint get4(unsigned char* loc) {
 }
 
 
-#if HANDLE_SEGV
+#ifdef HANDLE_SEGV
 #define NULLCHECK(X) 
 #else
 #define NULLCHECK(X) \
   do { if ((X)==NULL) throw_null_pointer_exception (); } while (0)
 #endif
 
-#if HANDLE_FPE
+#ifdef HANDLE_FPE
 #define ZEROCHECK(X)
 #else
 #define ZEROCHECK(X) \
@@ -620,32 +622,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
     INSN_LABEL(ifnonnull),
     INSN_LABEL(goto_w),
     INSN_LABEL(jsr_w),
-
-    INSN_LABEL(putfield_1),
-    INSN_LABEL(putfield_2),
-    INSN_LABEL(putfield_4),
-    INSN_LABEL(putfield_8),
-    INSN_LABEL(putfield_a),
-
-    INSN_LABEL(putstatic_1),
-    INSN_LABEL(putstatic_2),
-    INSN_LABEL(putstatic_4),
-    INSN_LABEL(putstatic_8),
-    INSN_LABEL(putstatic_a),
-
-    INSN_LABEL(getfield_1),
-    INSN_LABEL(getfield_2s),
-    INSN_LABEL(getfield_2u),
-    INSN_LABEL(getfield_4),
-    INSN_LABEL(getfield_8),
-    INSN_LABEL(getfield_a),
-
-    INSN_LABEL(getstatic_1),
-    INSN_LABEL(getstatic_2s),
-    INSN_LABEL(getstatic_2u),
-    INSN_LABEL(getstatic_4),
-    INSN_LABEL(getstatic_8),
-    INSN_LABEL(getstatic_a),
   };
 
 #define SAVE_PC   inv->pc = pc-1
@@ -665,7 +641,9 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 
 #ifdef  INLINE_SWITCH
 
-#define NEXT_INSN GOTO_INSN(*pc++)
+#define NEXT_INSN do { GOTO_INSN(*pc++); } while (0)
+
+
   NEXT_INSN;
 #else
 
@@ -688,28 +666,8 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
       LOADI (get1u (pc++));
       NEXT_INSN;
 
-     insn_getfield_4:		// 0xd8
-      SAVE_PC;
-      {
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	PUSHI (*(jint*) ((char*)obj + field_offset));
-      }
-      NEXT_INSN;
-
      insn_iload_1:		// 0x1b
       LOADI (1);
-      NEXT_INSN;
-
-     insn_getfield_a:		// 0xda
-      SAVE_PC;
-      {
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	PUSHA(*(jobject*) ((char*)obj + field_offset));
-      }
       NEXT_INSN;
 
      insn_invokevirtual:	// 0xb6
@@ -1973,7 +1931,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
      insn_getstatic:
       SAVE_PC;
       {
-	unsigned char *base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -1989,38 +1946,34 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	    switch (type->size_in_bytes)
 	      {
 	      case 1:
-		*base_pc = op_getstatic_1;
-		break;
+		PUSHI (*(jbyte*) (field->u.addr));
 
 	      case 2:
 		if (type == JvPrimClass (char))
-		  *base_pc = op_getstatic_2u;
+		  PUSHI(*(jchar*) (field->u.addr));
 		else
-		  *base_pc = op_getstatic_2s;
+		  PUSHI(*(jshort*) (field->u.addr));
 		break;
 
 	      case 4:
-		*base_pc = op_getstatic_4;
+		PUSHI(*(jint*) (field->u.addr));
 		break;
 
 	      case 8:
-		*base_pc = op_getstatic_8;
+		PUSHL(*(jlong*) (field->u.addr));
 		break;
 	      }
 	  }
 	else
 	  {
-	    *base_pc = op_getstatic_a;
+	    PUSHA(*(jobject*) (field->u.addr));
 	  }
-
-	pc = base_pc;
       }
       NEXT_INSN;
 
      insn_getfield:
       SAVE_PC;
       {
-	unsigned char *base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -2030,50 +1983,47 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	    (JvNewStringLatin1 ("field is static"));
 
 	jclass type = field->type;
+	jint field_offset = field->u.boffset;
+	if (field_offset > 0xffff)
+	  JvThrow (new java::lang::VirtualMachineError);
+
+	jobject obj   = POPA();
+	NULLCHECK(obj);
 
 	if (type->isPrimitive ())
 	  {
 	    switch (type->size_in_bytes)
 	      {
 	      case 1:
-		*base_pc = op_getfield_1;
+		PUSHI (*(jbyte*) ((char*)obj + field_offset));
 		break;
 
 	      case 2:
 		if (type == JvPrimClass (char))
-		  *base_pc = op_getfield_2u;
+		  PUSHI (*(jchar*) ((char*)obj + field_offset));
 		else
-		  *base_pc = op_getfield_2s;
+		  PUSHI (*(jshort*) ((char*)obj + field_offset));
 		break;
 
 	      case 4:
-		*base_pc = op_getfield_4;
+		PUSHI (*(jint*) ((char*)obj + field_offset));
 		break;
 
 	      case 8:
-		*base_pc = op_getfield_8;
+		PUSHL(*(jlong*) ((char*)obj + field_offset));
 		break;
 	      }
 	  }
 	else
 	  {
-	    *base_pc = op_getfield_a;
+	    PUSHA(*(jobject*) ((char*)obj + field_offset));
 	  }
-
-	if (field->u.boffset > 0xffff)
-	  JvThrow (new java::lang::VirtualMachineError);
-
-	base_pc[1] = (field->u.boffset>>8) & 0xff;
-	base_pc[2] = field->u.boffset & 0xff;
-
-	pc = base_pc;
       }
       NEXT_INSN;
 
      insn_putstatic:
       SAVE_PC;
       {
-	unsigned char* base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -2085,37 +2035,44 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  throw_incompatible_class_change_error 
 	    (JvNewStringLatin1 ("field no longer static"));
 
-	/* if this is patented, then maybe we could install
-	   a function in the constant pool, to do the right thing */
-
 	if (type->isPrimitive ())
 	  {
 	    switch (type->size_in_bytes) 
 	      {
 	      case 1:
-		*base_pc = op_putstatic_1;
-		break;
+		{
+		  jint value = POPI();
+		  *(jbyte*) (field->u.addr) = value;
+		  break;
+		}
 
 	      case 2:
-		*base_pc = op_putstatic_2;
-		break;
+		{
+		  jint value = POPI();
+		  *(jchar*) (field->u.addr) = value;
+		  break;
+		}
 
 	      case 4:
-		*base_pc = op_putstatic_4;
-		break;
+		{
+		  jint value = POPI();
+		  *(jint*) (field->u.addr) = value;
+		  break;
+		}
 
 	      case 8:
-		*base_pc = op_putstatic_8;
-		break;
+		{
+		  jlong value = POPL();
+		  *(jlong*) (field->u.addr) = value;
+		  break;
+		}
 	      }
 	  }
 	else
 	  {
-	    *base_pc = op_putstatic_a;
+	    jobject value = POPA();
+	    *(jobject*) (field->u.addr) = value;
 	  }
-
-	// do the instruction again!
-	pc = base_pc;
       }
       NEXT_INSN;
 
@@ -2123,7 +2080,6 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
      insn_putfield:
       SAVE_PC;
       {
-	unsigned char* base_pc = pc-1;
 	jint fieldref_index = get2u (pc); pc += 2;
 	_Jv_ResolvePoolEntry (defining_class, fieldref_index);
 	_Jv_Field *field = pool_data[fieldref_index].field;
@@ -2134,229 +2090,58 @@ void _Jv_InterpMethod::continue1 (_Jv_InterpMethodInvocation *inv)
 	  throw_incompatible_class_change_error 
 	    (JvNewStringLatin1 ("field is static"));
 
+	jint field_offset = field->u.boffset;
+	if (field_offset > 0xffff)
+	  JvThrow (new java::lang::VirtualMachineError);
+
 	if (type->isPrimitive ())
 	  {
 	    switch (type->size_in_bytes) 
 	      {
 	      case 1:
-		*base_pc = op_putfield_1;
-		break;
+		{
+		  jint    value = POPI();
+		  jobject obj   = POPA();
+		  NULLCHECK(obj);
+		  *(jbyte*) ((char*)obj + field_offset) = value;
+		  break;
+		}
 
 	      case 2:
-		*base_pc = op_putfield_2;
-		break;
+		{
+		  jint    value = POPI();
+		  jobject obj   = POPA();
+		  NULLCHECK(obj);
+		  *(jchar*) ((char*)obj + field_offset) = value;
+		  break;
+		}
 
 	      case 4:
-		*base_pc = op_putfield_4;
-		break;
+		{
+		  jint    value = POPI();
+		  jobject obj   = POPA();
+		  NULLCHECK(obj);
+		  *(jint*) ((char*)obj + field_offset) = value;
+		  break;
+		}
 
 	      case 8:
-		*base_pc = op_putfield_8;
-		break;
+		{
+		  jlong   value = POPL();
+		  jobject obj   = POPA();
+		  NULLCHECK(obj);
+		  *(jlong*) ((char*)obj + field_offset) = value;
+		  break;
+		}
 	      }
 	  }
 	else
 	  {
-	    *base_pc = op_putfield_a;
+	    jobject value = POPA();
+	    jobject obj   = POPA();
+	    NULLCHECK(obj);
+	    *(jobject*) ((char*)obj + field_offset) = value;
 	  }
-
-	if (field->u.boffset > 0xffff)
-	  JvThrow (new java::lang::VirtualMachineError);
-
-	base_pc[1] = (field->u.boffset>>8) & 0xff;
-	base_pc[2] = field->u.boffset & 0xff;
-
-	// do the instruction again!
-	pc = base_pc;
-      }
-      NEXT_INSN;
-
-
-     insn_getfield_1:
-      SAVE_PC;
-      {
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	PUSHI (*(jbyte*) ((char*)obj + field_offset));
-      }
-      NEXT_INSN;
-
-     insn_getfield_2s:
-      SAVE_PC;
-      {
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	PUSHI (*(jshort*) ((char*)obj + field_offset));
-      }
-      NEXT_INSN;
-
-     insn_getfield_2u:
-      SAVE_PC;
-      {
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	PUSHI (*(jchar*) ((char*)obj + field_offset));
-      }
-      NEXT_INSN;
-
-     insn_getfield_8:
-      SAVE_PC;
-      {
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	PUSHL(*(jlong*) ((char*)obj + field_offset));
-      }
-      NEXT_INSN;
-
-     insn_getstatic_1:
-      {
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	PUSHI (*(jbyte*) (field->u.addr));
-      }
-      NEXT_INSN;
-
-     insn_getstatic_2s:
-      {
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	PUSHI(*(jshort*) (field->u.addr));
-      }
-      NEXT_INSN;
-
-     insn_getstatic_2u:
-      {
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	PUSHI(*(jchar*) (field->u.addr));
-      }
-      NEXT_INSN;
-
-     insn_getstatic_4:
-      {
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	PUSHI(*(jint*) (field->u.addr));
-      }
-      NEXT_INSN;
-
-     insn_getstatic_8:
-      {
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	PUSHL(*(jlong*) (field->u.addr));
-      }
-      NEXT_INSN;
-
-     insn_getstatic_a:
-      {
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	PUSHA(*(jobject*) (field->u.addr));
-      }
-      NEXT_INSN;
-
-     insn_putfield_1:
-      SAVE_PC;
-      {
-	jint    value = POPI();
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	*(jbyte*) ((char*)obj + field_offset) = value;
-      }
-      NEXT_INSN;
-
-     insn_putfield_2:
-      SAVE_PC;
-      {
-	jint    value = POPI();
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	*(jchar*) ((char*)obj + field_offset) = value;
-      }
-      NEXT_INSN;
-
-     insn_putfield_4:
-      SAVE_PC;
-      {
-	jint    value = POPI();
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	*(jint*) ((char*)obj + field_offset) = value;
-      }
-      NEXT_INSN;
-
-     insn_putfield_8:
-      SAVE_PC;
-      {
-	jlong   value = POPL();
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	*(jlong*) ((char*)obj + field_offset) = value;
-      }
-      NEXT_INSN;
-
-     insn_putfield_a:
-      SAVE_PC;
-      {
-	jobject value = POPA();
-	jobject obj   = POPA();
-	NULLCHECK(obj);
-	jint field_offset = get2u (pc); pc += 2;
-	*(jobject*) ((char*)obj + field_offset) = value;
-      }
-      NEXT_INSN;
-
-     insn_putstatic_1:
-      {
-	jint    value = POPI();
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	*(jbyte*) (field->u.addr) = value;
-      }
-      NEXT_INSN;
-
-     insn_putstatic_2:
-      {
-	jint    value = POPI();
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	*(jchar*) (field->u.addr) = value;
-      }
-      NEXT_INSN;
-
-     insn_putstatic_4:
-      {
-	jint    value = POPI();
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	*(jint*) (field->u.addr) = value;
-      }
-      NEXT_INSN;
-
-     insn_putstatic_8:
-      {
-	jlong    value = POPL();
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	*(jlong*) (field->u.addr) = value;
-      }
-      NEXT_INSN;
-
-     insn_putstatic_a:
-      {
-	jobject value = POPA();
-	jint fieldref_index = get2u (pc); pc += 2;
-	_Jv_Field *field = pool_data[fieldref_index].field;
-	*(jobject*) (field->u.addr) = value;
       }
       NEXT_INSN;
 
@@ -2641,7 +2426,7 @@ throw_incompatible_class_change_error (jstring msg)
   JvThrow (new java::lang::IncompatibleClassChangeError (msg));
 }
 
-#if !HANDLE_SEGV
+#ifndef HANDLE_SEGV
 static java::lang::NullPointerException *null_pointer_exc;
 static void 
 throw_null_pointer_exception ()
@@ -2653,7 +2438,7 @@ throw_null_pointer_exception ()
 }
 #endif
 
-#if !HANDLE_FPE
+#ifndef HANDLE_FPE
 static java::lang::ArithmeticException *arithmetic_exc;
 static void 
 throw_arithmetic_exception ()
