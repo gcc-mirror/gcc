@@ -2435,6 +2435,7 @@ base_class:
 
 base_class.1:
 	  typename_sub
+		{ $$ = TYPE_MAIN_DECL ($1); }
 	| nonnested_type
 	| SIGOF '(' expr ')'
 		{
