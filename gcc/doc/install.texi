@@ -1494,6 +1494,9 @@ To get a list of the possible @file{*.exp} files, pipe the
 output of @samp{make check} into a file and look at the
 @samp{Running @dots{}  .exp} lines.
 
+The Java runtime tests can be executed via @samp{make check}
+in the @file{@var{target}/libjava/testsuite} directory in
+the build tree.
 
 @section Additional testing for Java Class Libraries
 
