@@ -1,3 +1,7 @@
+2000-11-07  DJ Delorie  <dj@redhat.com>
+
+	* testsuite/gcc.dg/20000614-1.c: Add return so that test can pass.
+
 2000-11-07  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (expand_builtin_strpbrk): New function.
