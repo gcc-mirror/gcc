@@ -1,5 +1,25 @@
 2001-08-17  Richard Henderson  <rth@redhat.com>
 
+	* varasm.c (text_section): Allow TEXT_SECTION to override the
+	printing of TEXT_SECTION_ASM_OP.
+	* dwarf2out.c (TEXT_SECTION_NAME): Rename from TEXT_SECTION.
+	(DATA_SECTION, BSS_SECTION): Remove.
+	* dwarfout.c (TEXT_SECTION_NAME, DATA_SECTION_NAME, DATA1_SECTION_NAME,
+	RODATA_SECTION_NAME, RODATA1_SECTION_NAME, BSS_SECTION_NAME):
+	Rename from s/_NAME//.
+	* config/mips/mips.h (TARGET_FILE_SWITCHING): Add !TARGET_MIPS16.
+	(ASM_DECLARE_FUNCTION_NAME): Move file switching ...
+	(TEXT_SECTION): ... here.  New.
+	* config/mips/elf.h (TEXT_SECTION): New; no file switching.
+	* config/mips/elf64.h, config/mips/netbsd.h: Likewise.
+	* config/mips/openbsd.h: Likewise.
+	* config/mips/mips.c (mips_asm_file_start): Tidy file switching test.
+	(mips_asm_file_end): Likewise test.
+	(mips_output_function_epilogue): Likewise.  Switch back to data
+	section after emitting the function.
+
+2001-08-17  Richard Henderson  <rth@redhat.com>
+
 	* dwarf2out.c (dwarf2out_init): Don't emit .debug_loc label here.
 	(dwarf2out_finish): Do it here.  Emit .debug_loc before .debug_info.
 

@@ -3647,14 +3647,8 @@ static char *gen_internal_sym 		PARAMS ((const char *));
 #endif
 
 /* Standard ELF section names for compiled code and data.  */
-#ifndef TEXT_SECTION
-#define TEXT_SECTION		".text"
-#endif
-#ifndef DATA_SECTION
-#define DATA_SECTION		".data"
-#endif
-#ifndef BSS_SECTION
-#define BSS_SECTION		".bss"
+#ifndef TEXT_SECTION_NAME
+#define TEXT_SECTION_NAME	".text"
 #endif
 
 /* Labels we insert at beginning sections we can reference instead of
@@ -11688,7 +11682,7 @@ dwarf2out_init (main_input_filename)
   if (DWARF2_GENERATE_TEXT_SECTION_LABEL)
     ASM_GENERATE_INTERNAL_LABEL (text_section_label, TEXT_SECTION_LABEL, 0);
   else
-    strcpy (text_section_label, stripattributes (TEXT_SECTION));
+    strcpy (text_section_label, stripattributes (TEXT_SECTION_NAME));
   ASM_GENERATE_INTERNAL_LABEL (debug_info_section_label,
 			       DEBUG_INFO_SECTION_LABEL, 0);
   ASM_GENERATE_INTERNAL_LABEL (debug_line_section_label,

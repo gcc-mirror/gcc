@@ -205,6 +205,19 @@ do {									 \
 #undef TARGET_ASM_NAMED_SECTION
 #define TARGET_ASM_NAMED_SECTION  default_elf_asm_named_section
 
+/* Not having TARGET_GAS here seems a mistake.  If we actually need to
+   be prepared for file switching, then we need a custom
+   TARGET_ASM_NAMED_SECTION too.  */
+
+#undef TEXT_SECTION
+#define TEXT_SECTION()
+do {
+  if (TARGET_FILE_SWITCHING)
+    abort ();
+  fputs (TEXT_SECTION_ASM_OP, asm_out_file);
+  fputc ('\n', asm_out_file);
+} while (0)
+
 /* Since gas and gld are standard on NetBSD, we don't need these */
 #undef ASM_FINAL_SPEC
 #undef STARTFILE_SPEC

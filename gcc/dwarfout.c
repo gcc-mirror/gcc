@@ -1006,23 +1006,23 @@ static void retry_incomplete_types	PARAMS ((void));
 #ifndef DEBUG_ARANGES_SECTION
 #define DEBUG_ARANGES_SECTION	".debug_aranges"
 #endif
-#ifndef TEXT_SECTION
-#define TEXT_SECTION		".text"
+#ifndef TEXT_SECTION_NAME
+#define TEXT_SECTION_NAME	".text"
 #endif
-#ifndef DATA_SECTION
-#define DATA_SECTION		".data"
+#ifndef DATA_SECTION_NAME
+#define DATA_SECTION_NAME	".data"
 #endif
-#ifndef DATA1_SECTION
-#define DATA1_SECTION		".data1"
+#ifndef DATA1_SECTION_NAME
+#define DATA1_SECTION_NAME	".data1"
 #endif
-#ifndef RODATA_SECTION
-#define RODATA_SECTION		".rodata"
+#ifndef RODATA_SECTION_NAME
+#define RODATA_SECTION_NAME	".rodata"
 #endif
-#ifndef RODATA1_SECTION
-#define RODATA1_SECTION		".rodata1"
+#ifndef RODATA1_SECTION_NAME
+#define RODATA1_SECTION_NAME	".rodata1"
 #endif
-#ifndef BSS_SECTION
-#define BSS_SECTION		".bss"
+#ifndef BSS_SECTION_NAME
+#define BSS_SECTION_NAME	".bss"
 #endif
 
 /* Definitions of defaults for formats and names of various special
@@ -6326,14 +6326,14 @@ dwarfout_init (main_input_filename)
   /* Output a starting label for the .text section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, TEXT_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, TEXT_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a starting label for the .data section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, DATA_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
@@ -6341,7 +6341,7 @@ dwarfout_init (main_input_filename)
   /* Output a starting label for the .data1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, DATA1_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 #endif
@@ -6349,7 +6349,7 @@ dwarfout_init (main_input_filename)
   /* Output a starting label for the .rodata section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
@@ -6357,7 +6357,7 @@ dwarfout_init (main_input_filename)
   /* Output a starting label for the .rodata1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA1_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 #endif
@@ -6365,7 +6365,7 @@ dwarfout_init (main_input_filename)
   /* Output a starting label for the .bss section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, BSS_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, BSS_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, BSS_BEGIN_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
@@ -6523,14 +6523,14 @@ dwarfout_finish (main_input_filename)
   /* Output a terminator label for the .text section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, TEXT_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, TEXT_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, TEXT_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
   /* Output a terminator label for the .data section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, DATA_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
@@ -6538,7 +6538,7 @@ dwarfout_finish (main_input_filename)
   /* Output a terminator label for the .data1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, DATA1_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, DATA1_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 #endif
@@ -6546,7 +6546,7 @@ dwarfout_finish (main_input_filename)
   /* Output a terminator label for the .rodata section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
@@ -6554,7 +6554,7 @@ dwarfout_finish (main_input_filename)
   /* Output a terminator label for the .rodata1 section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, RODATA1_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, RODATA1_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 #endif
@@ -6562,7 +6562,7 @@ dwarfout_finish (main_input_filename)
   /* Output a terminator label for the .bss section.  */
 
   fputc ('\n', asm_out_file);
-  ASM_OUTPUT_PUSH_SECTION (asm_out_file, BSS_SECTION);
+  ASM_OUTPUT_PUSH_SECTION (asm_out_file, BSS_SECTION_NAME);
   ASM_OUTPUT_LABEL (asm_out_file, BSS_END_LABEL);
   ASM_OUTPUT_POP_SECTION (asm_out_file);
 
