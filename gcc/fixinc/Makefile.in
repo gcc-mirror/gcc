@@ -70,13 +70,13 @@ HDR = server.h gnu-regex.h fixlib.h machname.h
 TARGETS = fixincl
 
 all : $(TARGETS)
-gen : fixincl.x
+gen : $(srcdir)/fixincl.x
 
 fixincl: $(OBJ) $(LIBERTY)
 	$(CC) $(FIXINC_DEFS) $(LDFLAGS) -o $@ $(OBJ) $(LIBERTY)
 
 $(OBJ)      : $(HDR)
-fixincl.o   : fixincl.x fixincl.c
+fixincl.o   : $(srcdir)/fixincl.x fixincl.c
 fixtests.o  : fixtests.c
 fixfixes.o  : fixfixes.c
 server.o    : server.c
@@ -85,16 +85,16 @@ gnu-regex.o : gnu-regex.c
 fixlib.o    : fixlib.c
 
 #  'machname.h' is built in the build directory.
-#  'fixincl.x' in the source dir.
+#  '$(srcdir)/fixincl.x' in the source dir.
 #
 machname.h: ../specs
 	$(SHELL) $(srcdir)/genfixes $@
 
-fixincl.x: fixincl.tpl inclhack.def
+$(srcdir)/fixincl.x: fixincl.tpl inclhack.def
 	cd $(srcdir) ; $(SHELL) ./genfixes $@
 
 clean:
-	rm -f *.o $(TARGETS) fixincl.x machname.h *~
+	rm -f *.o $(TARGETS) $(srcdir)/fixincl.x machname.h *~
 
 #  Build the executable and copy up into gcc dir.
 #  We still copy the script because we still have alternative scripts.
