@@ -1,3 +1,7 @@
+2000-06-03  Richard Henderson  <rth@cygnus.com>
+
+	* gcc.c-torture/execute/20000603-1.c: New.
+
 2000-06-02  Zack Weinberg  <zack@wolery.cumb.org>
 
 	* gcc.dg/noreturn-1.c (foo7, foo8): Revert previous change.
