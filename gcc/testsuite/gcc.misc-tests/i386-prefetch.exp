@@ -16,7 +16,9 @@
 
 # Test that the correct data prefetch instructions (SSE or 3DNow! variant,
 # or none) are used for various i386 cpu-type and instruction set
-# extension options for __builtin_prefetch.
+# extension options for __builtin_prefetch.  When using -mtune, specify
+# the minimum supported architecture in case the compiler was configured
+# with a different default.
 
 # Failure reports do not include the compile option that was used; that
 # information can be seen in the compile line in the log file.
@@ -24,14 +26,14 @@
 # Do not generate prefetch instructions for the following options.
 
 set PREFETCH_NONE [list \
-	{ -mtune=i386 } \
-	{ -mtune=i486 } \
-	{ -mtune=i586 } \
-	{ -mtune=i686 } \
-	{ -mtune=pentium2 } \
-	{ -mtune=k6 } \
-	{ -mtune=k6-2 } \
-	{ -mtune=k6-3 } \
+	{ -march=i386 -mtune=i386 } \
+	{ -march=i386 -mtune=i486 } \
+	{ -march=i386 -mtune=i586 } \
+	{ -march=i386 -mtune=i686 } \
+	{ -march=i386 -mtune=pentium2 } \
+	{ -march=i386 -mtune=k6 } \
+	{ -march=i386 -mtune=k6-2 } \
+	{ -march=i386 -mtune=k6-3 } \
 	{ -march=i386 } \
 	{ -march=i486 } \
 	{ -march=i586 } \
@@ -44,10 +46,10 @@ set PREFETCH_NONE [list \
 # instructions as nops.
 
 set PREFETCH_SSE [list \
-	{ -mtune=pentium3 } \
-	{ -mtune=pentium4 } \
-	{ -mtune=athlon } \
-	{ -mtune=athlon-4 } \
+	{ -march=i386 -mtune=pentium3 } \
+	{ -march=i386 -mtune=pentium4 } \
+	{ -march=i386 -mtune=athlon } \
+	{ -march=i386 -mtune=athlon-4 } \
 	{ -march=pentium3 } \
 	{ -march=pentium4 } ]
 

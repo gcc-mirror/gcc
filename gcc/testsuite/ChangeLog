@@ -1,3 +1,9 @@
+2003-08-04  Janis Johnson  <janis187@us.ibm.com>
+
+	PR target/11739
+	* gcc.misc-tests/i386-prefetch.exp: Use -march=i386 when specifying
+	a value for -mtune.
+
 2003-08-04  Roger Sayle  <roger@eyesopen.com>
 
 	PR middle-end/11771
