@@ -1,3 +1,8 @@
+2004-09-02  Paul Brook  <paul@codesourcery.com>
+
+	* decl2.c (determine_visibility): Only check data visibility
+	for VAR_DECLS.
+
 2004-08-31  Mark Mitchell  <mark@codesourcery.com>
 
 	* cp-tree.h (DECL_CONSTRUCTION_VTABLE_P): New macro.
@@ -5,7 +10,7 @@
 	* decl2.c (determine_visibility): Honor 
 	TARGET_CXX_EXPORT_CLASS_DATA.
 
- 	* class.c (key_method): Rename to ...
+	* class.c (key_method): Rename to ...
 	(determine_key_method): ... this.
 	(finish_struct_1): Adjust accordingly.
 	* cp-tree.h (key_method): Declare.

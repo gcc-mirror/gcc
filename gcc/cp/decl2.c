@@ -1655,7 +1655,8 @@ determine_visibility (tree decl)
      the visibility of their containing class.  */
   if (class_type)
     {
-      if (targetm.cxx.export_class_data ()
+      if (TREE_CODE (decl) == VAR_DECL
+	  && targetm.cxx.export_class_data ()
 	  && (DECL_TINFO_P (decl)
 	      || (DECL_VTABLE_OR_VTT_P (decl)
 		  /* Construction virtual tables are not emitted
