@@ -1,3 +1,8 @@
+2004-06-25  Bernardo Innocenti  <bernie@develer.com>
+
+	* config/m68k/m68k.h: Restore valid comment removed by mistake with
+	the recent m68k comments cleanup.
+
 2004-06-24  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* c-gimplify.c (gimplify_for_stmt): Use gimplify_and_add.
