@@ -311,7 +311,7 @@ for combo in ${combinations}; do
   if [ -n "${todirnames}" ]; then
     dirout=`echo ${combo} | sed ${todirnames}`
   else
-    dirout=${combo}
+    dirout=`echo ${combo} | sed -e 's/=/-/g'`
   fi
   # Remove the leading and trailing slashes.
   dirout=`echo ${dirout} | sed -e 's|^/||' -e 's|/$||g'`
