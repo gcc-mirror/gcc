@@ -1,3 +1,7 @@
+2001-01-04  Joseph S. Myers  <jsm28@cam.ac.uk>
+
+	* gcc.c-torture/compile/20001222-1.x: Remove.
+
 Thu Jan  4 13:54:11 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* gcc.c-torture/execute/built-in-setjmp.c: New.
