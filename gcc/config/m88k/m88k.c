@@ -2555,7 +2555,7 @@ m88k_builtin_saveregs (arglist)
 	 change_address (addr, Pmode,
 			 plus_constant (XEXP (addr, 0),
 					fixed * UNITS_PER_WORD)),
-	 8 - fixed);
+	 8 - fixed, (8 - fixed) * UNITS_PER_WORD);
 
   /* Return the address of the va_list constructor, but don't put it in a
      register.  This fails when not optimizing and produces worse code when

@@ -3252,7 +3252,7 @@ hppa_builtin_saveregs (arglist)
 		       gen_rtx (MEM, BLKmode,
 				plus_constant
 				(current_function_internal_arg_pointer, -16)),
-		       4); 
+		       4, 4 * UNITS_PER_WORD); 
   return copy_to_reg (expand_binop (Pmode, add_optab,
 				    current_function_internal_arg_pointer,
 				    offset, 0, 0, OPTAB_LIB_WIDEN));

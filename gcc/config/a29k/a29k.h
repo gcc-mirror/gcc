@@ -877,7 +877,7 @@ extern struct rtx_def *a29k_get_reloaded_address ();
 	move_block_from_reg						\
 	  (R_AR (0) + first_reg_offset,					\
 	   gen_rtx (MEM, BLKmode, virtual_incoming_args_rtx),		\
-	   16 - first_reg_offset);					\
+	   16 - first_reg_offset, (16 - first_reg_offset) * UNITS_PER_WORD); \
       PRETEND_SIZE = (16 - first_reg_offset) * UNITS_PER_WORD;		\
     }									\
 }

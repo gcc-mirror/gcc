@@ -687,7 +687,7 @@ struct rt_cargs {int gregs, fregs; };
 	   gen_rtx (MEM, BLKmode,					\
 		    plus_constant (virtual_incoming_args_rtx,		\
 				   first_reg_offset * 4)), 		\
-	   4 - first_reg_offset);					\
+	   4 - first_reg_offset, (4 - first_reg_offset) * UNITS_PER_WORD); \
       PRETEND_SIZE = (4 - first_reg_offset) * UNITS_PER_WORD;		\
     }									\
 }
