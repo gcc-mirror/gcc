@@ -317,6 +317,8 @@ static int push_reload		PROTO((rtx, rtx, rtx *, rtx *, enum reg_class,
 				       int, int, int, enum reload_type));
 static void push_replacement	PROTO((rtx *, int, enum machine_mode));
 static void combine_reloads	PROTO((void));
+static int find_reusable_reload	PROTO((rtx *, rtx, enum reg_class,
+				       enum reload_type, int, int));
 static rtx find_dummy_reload	PROTO((rtx, rtx, rtx *, rtx *,
 				       enum machine_mode, enum machine_mode,
 				       enum reg_class, int, int));
@@ -744,6 +746,96 @@ find_valid_class (m1, n)
   return best_class;
 }
 
+/* Return the number of a previously made reload that can be combined with
+   a new one, or n_reloads if none of the existing reloads can be used.
+   OUT, CLASS, TYPE and OPNUM are the same arguments as passed to
+   push_reload, they determine the kind of the new reload that we try to
+   combine.  P_IN points to the corresponding value of IN, which can be
+   modified by this function.
+   DONT_SHARE is nonzero if we can't share any input-only reload for IN.  */
+static int
+find_reusable_reload (p_in, out, class, type, opnum, dont_share)
+     rtx *p_in, out;
+     enum reg_class class;
+     enum reload_type type;
+     int opnum, dont_share;
+{
+  rtx in = *p_in;
+  int i;
+  /* We can't merge two reloads if the output of either one is
+     earlyclobbered.  */
+
+  if (earlyclobber_operand_p (out))
+    return n_reloads;
+
+  /* We can use an existing reload if the class is right
+     and at least one of IN and OUT is a match
+     and the other is at worst neutral.
+     (A zero compared against anything is neutral.) 
+
+     If SMALL_REGISTER_CLASSES, don't use existing reloads unless they are
+     for the same thing since that can cause us to need more reload registers
+     than we otherwise would.  */
+   
+  for (i = 0; i < n_reloads; i++)
+    if ((reg_class_subset_p (class, reload_reg_class[i])
+	 || reg_class_subset_p (reload_reg_class[i], class))
+	/* If the existing reload has a register, it must fit our class.  */
+	&& (reload_reg_rtx[i] == 0
+	    || TEST_HARD_REG_BIT (reg_class_contents[(int) class],
+				  true_regnum (reload_reg_rtx[i])))
+	&& ((in != 0 && MATCHES (reload_in[i], in) && ! dont_share
+	     && (out == 0 || reload_out[i] == 0 || MATCHES (reload_out[i], out)))
+	    ||
+	    (out != 0 && MATCHES (reload_out[i], out)
+	     && (in == 0 || reload_in[i] == 0 || MATCHES (reload_in[i], in))))
+	&& (reload_out[i] == 0 || ! earlyclobber_operand_p (reload_out[i]))
+	&& (reg_class_size[(int) class] == 1 || SMALL_REGISTER_CLASSES)
+	    && MERGABLE_RELOADS (type, reload_when_needed[i],
+				 opnum, reload_opnum[i]))
+      return i;
+
+  /* Reloading a plain reg for input can match a reload to postincrement
+     that reg, since the postincrement's value is the right value.
+     Likewise, it can match a preincrement reload, since we regard
+     the preincrementation as happening before any ref in this insn
+     to that register.  */
+  for (i = 0; i < n_reloads; i++)
+    if ((reg_class_subset_p (class, reload_reg_class[i])
+	 || reg_class_subset_p (reload_reg_class[i], class))
+	/* If the existing reload has a register, it must fit our
+	   class.  */
+	&& (reload_reg_rtx[i] == 0
+	    || TEST_HARD_REG_BIT (reg_class_contents[(int) class],
+				  true_regnum (reload_reg_rtx[i])))
+	&& out == 0 && reload_out[i] == 0 && reload_in[i] != 0
+	&& ((GET_CODE (in) == REG
+	     && (GET_CODE (reload_in[i]) == POST_INC
+		 || GET_CODE (reload_in[i]) == POST_DEC
+		 || GET_CODE (reload_in[i]) == PRE_INC
+		 || GET_CODE (reload_in[i]) == PRE_DEC)
+	     && MATCHES (XEXP (reload_in[i], 0), in))
+	    ||
+	    (GET_CODE (reload_in[i]) == REG
+	     && (GET_CODE (in) == POST_INC
+		 || GET_CODE (in) == POST_DEC
+		 || GET_CODE (in) == PRE_INC
+		 || GET_CODE (in) == PRE_DEC)
+	     && MATCHES (XEXP (in, 0), reload_in[i])))
+	&& (reload_out[i] == 0 || ! earlyclobber_operand_p (reload_out[i]))
+	&& (reg_class_size[(int) class] == 1 || SMALL_REGISTER_CLASSES)
+	&& MERGABLE_RELOADS (type, reload_when_needed[i],
+			     opnum, reload_opnum[i]))
+      {
+	/* Make sure reload_in ultimately has the increment,
+	   not the plain register.  */
+	if (GET_CODE (in) == REG)
+	  *p_in = reload_in[i];
+	return i;
+      }
+  return n_reloads;
+}
+
 /* Record one reload that needs to be performed.
    IN is an rtx saying where the data are to be found before this instruction.
    OUT says where they must be stored after the instruction.
@@ -780,7 +872,7 @@ find_valid_class (m1, n)
 static int
 push_reload (in, out, inloc, outloc, class,
 	     inmode, outmode, strict_low, optional, opnum, type)
-     register rtx in, out;
+     rtx in, out;
      rtx *inloc, *outloc;
      enum reg_class class;
      enum machine_mode inmode, outmode;
@@ -1179,69 +1271,7 @@ push_reload (in, out, inloc, outloc, class,
       && (optional == 0 || type != RELOAD_FOR_OUTPUT))
     abort ();
 
-  /* We can use an existing reload if the class is right
-     and at least one of IN and OUT is a match
-     and the other is at worst neutral.
-     (A zero compared against anything is neutral.) 
-
-     If SMALL_REGISTER_CLASSES, don't use existing reloads unless they are
-     for the same thing since that can cause us to need more reload registers
-     than we otherwise would.  */
-
-  for (i = 0; i < n_reloads; i++)
-    if ((reg_class_subset_p (class, reload_reg_class[i])
-	 || reg_class_subset_p (reload_reg_class[i], class))
-	/* If the existing reload has a register, it must fit our class.  */
-	&& (reload_reg_rtx[i] == 0
-	    || TEST_HARD_REG_BIT (reg_class_contents[(int) class],
-				  true_regnum (reload_reg_rtx[i])))
-	&& ((in != 0 && MATCHES (reload_in[i], in) && ! dont_share
-	     && (out == 0 || reload_out[i] == 0 || MATCHES (reload_out[i], out)))
-	    ||
-	    (out != 0 && MATCHES (reload_out[i], out)
-	     && (in == 0 || reload_in[i] == 0 || MATCHES (reload_in[i], in))))
-	&& (reg_class_size[(int) class] == 1 || SMALL_REGISTER_CLASSES)
-	&& MERGABLE_RELOADS (type, reload_when_needed[i],
-			     opnum, reload_opnum[i]))
-      break;
-
-  /* Reloading a plain reg for input can match a reload to postincrement
-     that reg, since the postincrement's value is the right value.
-     Likewise, it can match a preincrement reload, since we regard
-     the preincrementation as happening before any ref in this insn
-     to that register.  */
-  if (i == n_reloads)
-    for (i = 0; i < n_reloads; i++)
-      if ((reg_class_subset_p (class, reload_reg_class[i])
-	   || reg_class_subset_p (reload_reg_class[i], class))
-	  /* If the existing reload has a register, it must fit our class.  */
-	  && (reload_reg_rtx[i] == 0
-	      || TEST_HARD_REG_BIT (reg_class_contents[(int) class],
-				    true_regnum (reload_reg_rtx[i])))
-	  && out == 0 && reload_out[i] == 0 && reload_in[i] != 0
-	  && ((GET_CODE (in) == REG
-	       && (GET_CODE (reload_in[i]) == POST_INC
-		   || GET_CODE (reload_in[i]) == POST_DEC
-		   || GET_CODE (reload_in[i]) == PRE_INC
-		   || GET_CODE (reload_in[i]) == PRE_DEC)
-	       && MATCHES (XEXP (reload_in[i], 0), in))
-	      ||
-	      (GET_CODE (reload_in[i]) == REG
-	       && (GET_CODE (in) == POST_INC
-		   || GET_CODE (in) == POST_DEC
-		   || GET_CODE (in) == PRE_INC
-		   || GET_CODE (in) == PRE_DEC)
-	       && MATCHES (XEXP (in, 0), reload_in[i])))
-	  && (reg_class_size[(int) class] == 1 || SMALL_REGISTER_CLASSES)
-	  && MERGABLE_RELOADS (type, reload_when_needed[i],
-			       opnum, reload_opnum[i]))
-	{
-	  /* Make sure reload_in ultimately has the increment,
-	     not the plain register.  */
-	  if (GET_CODE (in) == REG)
-	    in = reload_in[i];
-	  break;
-	}
+  i = find_reusable_reload (&in, out, class, type, opnum, dont_share);
 
   if (i == n_reloads)
     {
