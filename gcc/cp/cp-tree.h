@@ -2316,6 +2316,12 @@ struct lang_decl GTY(())
 #define ENUM_TI_ARGS(NODE)			\
   TI_ARGS (ENUM_TEMPLATE_INFO (NODE))
 
+/* For a template instantiation TYPE, returns the TYPE corresponding
+   to the primary template.  */
+#define CLASSTYPE_PRIMARY_TEMPLATE_TYPE(TYPE)				\
+  TREE_TYPE (DECL_TEMPLATE_RESULT (DECL_PRIMARY_TEMPLATE		\
+				   (CLASSTYPE_TI_TEMPLATE ((TYPE)))))
+
 /* Like DECL_TI_TEMPLATE, but for an ENUMERAL_, RECORD_, or UNION_TYPE.  */
 #define TYPE_TI_TEMPLATE(NODE)			\
   (TI_TEMPLATE (TYPE_TEMPLATE_INFO (NODE)))
