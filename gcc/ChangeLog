@@ -1,3 +1,8 @@
+2001-02-13  Alexandre Oliva  <aoliva@redhat.com>
+
+	* combine.c (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD): New macro.
+	(try_combine): Use it.
+
 Tue Feb 13 11:37:06 CET 2001  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (SSE_CLASS_P, MMX_CLASS_P, MAYBE_FLOAT_CLASS_P,

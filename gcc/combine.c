@@ -146,6 +146,12 @@ static int max_uid_cuid;
 #define INSN_CUID(INSN) \
 (INSN_UID (INSN) > max_uid_cuid ? insn_cuid (INSN) : uid_cuid[INSN_UID (INSN)])
 
+/* In case BITS_PER_WORD == HOST_BITS_PER_WIDE_INT, shifting by
+   BITS_PER_WORD would invoke undefined behavior.  Work around it.  */
+
+#define UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD(val) \
+  (((unsigned HOST_WIDE_INT)(val) << (BITS_PER_WORD - 1)) << 1)
+
 /* Maximum register number, which is the size of the tables below.  */
 
 static unsigned int combine_max_regno;
@@ -1667,7 +1673,7 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  if (HOST_BITS_PER_WIDE_INT < BITS_PER_WORD)
 	    abort ();
 
-	  lo &= ~(((unsigned HOST_WIDE_INT)1 << BITS_PER_WORD) - 1);
+	  lo &= ~(UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1);
 	  lo |= INTVAL (SET_SRC (PATTERN (i3)));
 	}
       else if (HOST_BITS_PER_WIDE_INT == BITS_PER_WORD)
@@ -1677,9 +1683,10 @@ try_combine (i3, i2, i1, new_direct_jump_p)
 	  int sign = -(int) ((unsigned HOST_WIDE_INT) lo
 			     >> (HOST_BITS_PER_WIDE_INT - 1));
 
-	  lo &= ~((((unsigned HOST_WIDE_INT)1 << BITS_PER_WORD) - 1)
-		  << BITS_PER_WORD);
-	  lo |= INTVAL (SET_SRC (PATTERN (i3))) << BITS_PER_WORD;
+	  lo &= ~ (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD
+		   (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD (1) - 1));
+	  lo |= (UWIDE_SHIFT_LEFT_BY_BITS_PER_WORD
+		 (INTVAL (SET_SRC (PATTERN (i3)))));
 	  if (hi == sign)
 	    hi = lo < 0 ? -1 : 0;
 	}
