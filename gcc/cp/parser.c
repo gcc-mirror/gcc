@@ -8101,6 +8101,7 @@ cp_parser_template_argument (cp_parser* parser)
   tree argument;
   bool template_p;
   bool address_p;
+  bool maybe_type_id = false;
   cp_token *token;
   cp_id_kind idk;
   tree qualifying_class;
@@ -8117,13 +8118,35 @@ cp_parser_template_argument (cp_parser* parser)
      Therefore, we try a type-id first.  */
   cp_parser_parse_tentatively (parser);
   argument = cp_parser_type_id (parser);
-  /* If the next token isn't a `,' or a `>', then this argument wasn't
-     really finished.  */
-  if (!cp_parser_next_token_ends_template_argument_p (parser))
-    cp_parser_error (parser, "expected template-argument");
-  /* If that worked, we're done.  */
-  if (cp_parser_parse_definitely (parser))
-    return argument;
+  /* If there was no error parsing the type-id but the next token is a '>>',
+     we probably found a typo for '> >'. But there are type-id which are 
+     also valid expressions. For instance:
+
+     struct X { int operator >> (int); };
+     template <int V> struct Foo {};
+     Foo<X () >> 5> r;
+
+     Here 'X()' is a valid type-id of a function type, but the user just
+     wanted to write the expression "X() >> 5". Thus, we remember that we
+     found a valid type-id, but we still try to parse the argument as an
+     expression to see what happens.  */
+  if (!cp_parser_error_occurred (parser)
+      && cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
+    {
+      maybe_type_id = true;
+      cp_parser_abort_tentative_parse (parser);
+    }
+  else
+    {
+      /* If the next token isn't a `,' or a `>', then this argument wasn't
+      really finished. This means that the argument is not a valid
+      type-id.  */
+      if (!cp_parser_next_token_ends_template_argument_p (parser))
+	cp_parser_error (parser, "expected template-argument");
+      /* If that worked, we're done.  */
+      if (cp_parser_parse_definitely (parser))
+	return argument;
+    }
   /* We're still not sure what the argument will be.  */
   cp_parser_parse_tentatively (parser);
   /* Try a template.  */
@@ -8238,12 +8261,27 @@ cp_parser_template_argument (cp_parser* parser)
       cp_parser_error (parser, "invalid non-type template argument");
       return error_mark_node;
     }
-  /* The argument must be a constant-expression.  */
+  /* If the argument wasn't successfully parsed as a type-id followed
+     by '>>', the argument can only be a constant expression now.  
+     Otherwise, we try parsing the constant-expression tentatively,
+     because the argument could really be a type-id.  */
+  if (maybe_type_id)
+    cp_parser_parse_tentatively (parser);
   argument = cp_parser_constant_expression (parser, 
 					    /*allow_non_constant_p=*/false,
 					    /*non_constant_p=*/NULL);
-  /* If it's non-dependent, simplify it.  */
-  return cp_parser_fold_non_dependent_expr (argument);
+  argument = cp_parser_fold_non_dependent_expr (argument);
+  if (!maybe_type_id)
+    return argument;
+  if (!cp_parser_next_token_ends_template_argument_p (parser))
+    cp_parser_error (parser, "expected template-argument");
+  if (cp_parser_parse_definitely (parser))
+    return argument;
+  /* We did our best to parse the argument as a non type-id, but that
+     was the only alternative that matched (albeit with a '>' after
+     it). We can assume it's just a typo from the user, and a 
+     diagnostic will then be issued.  */
+  return cp_parser_type_id (parser);
 }
 
 /* Parse an explicit-instantiation.
@@ -14177,8 +14215,31 @@ cp_parser_enclosed_template_argument_list (cp_parser* parser)
     arguments = NULL_TREE;
   else
     arguments = cp_parser_template_argument_list (parser);
-  /* Look for the `>' that ends the template-argument-list.  */
-  cp_parser_require (parser, CPP_GREATER, "`>'");
+  /* Look for the `>' that ends the template-argument-list. If we find
+     a '>>' instead, it's probably just a typo.  */
+  if (cp_lexer_next_token_is (parser->lexer, CPP_RSHIFT))
+    {
+      if (!saved_greater_than_is_operator_p)
+	{
+	  /* If we're in a nested template argument list, the '>>' has to be
+	    a typo for '> >'. We emit the error message, but we continue
+	    parsing and we push a '>' as next token, so that the argument
+	    list will be parsed correctly..  */
+	  cp_token* token;
+	  error ("`>>' should be `> >' within a nested template argument list");
+	  token = cp_lexer_peek_token (parser->lexer);
+	  token->type = CPP_GREATER;
+	}
+      else
+	{
+	  /* If this is not a nested template argument list, the '>>' is
+	    a typo for '>'. Emit an error message and continue.  */
+	  error ("spurious `>>', use `>' to terminate a template argument list");
+	  cp_lexer_consume_token (parser->lexer);
+	}
+    }
+  else
+    cp_parser_require (parser, CPP_GREATER, "`>'");
   /* The `>' token might be a greater-than operator again now.  */
   parser->greater_than_is_operator_p 
     = saved_greater_than_is_operator_p;
@@ -14618,7 +14679,9 @@ cp_parser_next_token_starts_class_definition_p (cp_parser *parser)
 }
 
 /* Returns TRUE iff the next token is the "," or ">" ending a
-   template-argument.  */
+   template-argument. ">>" is also accepted (after the full
+   argument was parsed) because it's probably a typo for "> >",
+   and there is a specific diagnostic for this.  */
 
 static bool
 cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
@@ -14626,7 +14689,8 @@ cp_parser_next_token_ends_template_argument_p (cp_parser *parser)
   cp_token *token;
 
   token = cp_lexer_peek_token (parser->lexer);
-  return (token->type == CPP_COMMA || token->type == CPP_GREATER);
+  return (token->type == CPP_COMMA || token->type == CPP_GREATER 
+	  || token->type == CPP_RSHIFT);
 }
  
 /* Returns the kind of tag indicated by TOKEN, if it is a class-key,
