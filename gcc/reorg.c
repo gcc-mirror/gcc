@@ -1,5 +1,5 @@
 /* Perform instruction reorganizations for delay slot filling.
-   Copyright (C) 1992 Free Software Foundation, Inc.
+   Copyright (C) 1992, 1993 Free Software Foundation, Inc.
    Contributed by Richard Kenner (kenner@nyu.edu).
    Hacked by Michael Tiemann (tiemann@cygnus.com).
 
@@ -1337,7 +1337,8 @@ mostly_true_jump (jump_insn, condition)
   /* Predict backward branches usually take, forward branches usually not.  If
      we don't know whether this is forward or backward, assume the branch
      will be taken, since most are.  */
-  return (INSN_UID (jump_insn) > max_uid || INSN_UID (target_label) > max_uid
+  return (target_label == 0 || INSN_UID (jump_insn) > max_uid
+	  || INSN_UID (target_label) > max_uid
 	  || (uid_to_ruid[INSN_UID (jump_insn)]
 	      > uid_to_ruid[INSN_UID (target_label)]));;
 }
