@@ -1,3 +1,7 @@
+2002-03-12  Neil Booth  <neil@daikokuya.demon.co.uk>
+
+	* c-lex.h (position_after_whitespace): Remove.
+
 2002-03-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-lex.c (cb_ident, c_lex): Remove unnecessary cast.
