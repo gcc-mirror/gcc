@@ -148,7 +148,7 @@ public class JLabel extends JComponent implements Accessible, SwingConstants
     {	return text;    }
 
     public String getUIClassID()
-    {	return "JLabel";    }
+    {	return "LabelUI";    }
 
     public int getVerticalAlignment()
     {

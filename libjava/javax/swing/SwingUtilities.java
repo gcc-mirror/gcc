@@ -95,7 +95,9 @@ public class SwingUtilities implements SwingConstants
   /**
    * Calculates the portion of the component's bounds which is inside the
    * component's border insets. This area is usually the area a component
-   * should confine its painting to.
+   * should confine its painting to. The coordinates are returned in terms
+   * of the <em>component's</em> coordinate system, where (0,0) is the
+   * upper left corner of the component's bounds.
    *
    * @param c The component to measure the bounds of
    * @param r A Rectangle to store the return value in, or
@@ -108,7 +110,8 @@ public class SwingUtilities implements SwingConstants
    */
   public static Rectangle calculateInnerArea(JComponent c, Rectangle r)
   {
-    return calculateInsetArea(c.getBounds(), c.getInsets(), r);
+    Rectangle b = getLocalBounds(c);
+    return calculateInsetArea(b, c.getInsets(), r);
   }
 
   /**
@@ -123,7 +126,7 @@ public class SwingUtilities implements SwingConstants
   public static Rectangle getLocalBounds(Component aComponent)
   {
     Rectangle bounds = aComponent.getBounds();
-    return new Rectangle(0, 0, bounds.x, bounds.y);
+    return new Rectangle(0, 0, bounds.width, bounds.height);
   }
 
   /**
@@ -460,6 +463,7 @@ public class SwingUtilities implements SwingConstants
       ((JComponent)comp).updateUI();
   }
 
+
   /**
    * <p>Layout a "compound label" consisting of a text string and an icon
    * which is to be placed near the rendered text. Once the text and icon
@@ -472,9 +476,10 @@ public class SwingUtilities implements SwingConstants
    *
    * <p>The position values control where the text is placed relative to
    * the icon. The horizontal position value should be one of the constants
-   * <code>LEFT</code>, <code>RIGHT</code> or <code>CENTER</code>. The
-   * vertical position value should be one fo the constants
-   * <code>TOP</code>, <code>BOTTOM</code>, <code>CENTER</code>.</p>
+   * <code>LEADING</code>, <code>TRAILING</code>, <code>LEFT</code>,
+   * <code>RIGHT</code> or <code>CENTER</code>. The vertical position value
+   * should be one fo the constants <code>TOP</code>, <code>BOTTOM</code>
+   * or <code>CENTER</code>.</p>
    *
    * <p>The text-icon gap value controls the number of pixels between the
    * icon and the text.</p>
@@ -488,12 +493,12 @@ public class SwingUtilities implements SwingConstants
    * <code>CENTER</code>.</p>
    *
    * <p>If the <code>LEADING</code> or <code>TRAILING</code> constants are
-   * given for horizontal alignment, they are interpreted relative to the
-   * provided component's orientation property, a constant in the {@link
-   * java.awt.ComponentOrientation} class. For example, if the component's
-   * orientation is <code>LEFT_TO_RIGHT</code>, then the
-   * <code>LEADING</code> alignment is a synonym for <code>LEFT</code> and
-   * the <code>TRAILING</code> alignment is a synonym for
+   * given for horizontal alignment or horizontal text position, they are
+   * interpreted relative to the provided component's orientation property,
+   * a constant in the {@link java.awt.ComponentOrientation} class. For
+   * example, if the component's orientation is <code>LEFT_TO_RIGHT</code>,
+   * then the <code>LEADING</code> value is a synonym for <code>LEFT</code>
+   * and the <code>TRAILING</code> value is a synonym for
    * <code>RIGHT</code></p>
    *
    * <p>If the text and icon are equal to or larger than the view
@@ -523,6 +528,7 @@ public class SwingUtilities implements SwingConstants
    * @return The string of characters, possibly truncated with an elipsis,
    * which is laid out in this label
    */
+
   public static String layoutCompoundLabel(JComponent c, 
                                            FontMetrics fm,
                                            String text, 
@@ -537,6 +543,119 @@ public class SwingUtilities implements SwingConstants
                                            int textIconGap)
   {
 
+    // Fix up the orientation-based horizontal positions.
+
+    if (horizontalTextPosition == LEADING)
+      {
+        if (c.getComponentOrientation() == ComponentOrientation.RIGHT_TO_LEFT)
+          horizontalTextPosition = RIGHT;
+        else
+          horizontalTextPosition = LEFT;
+      }
+    else if (horizontalTextPosition == TRAILING)
+      {
+        if (c.getComponentOrientation() == ComponentOrientation.RIGHT_TO_LEFT)
+          horizontalTextPosition = LEFT;
+        else
+          horizontalTextPosition = RIGHT;
+      }
+
+    // Fix up the orientation-based alignments.
+
+    if (horizontalAlignment == LEADING)
+      {
+        if (c.getComponentOrientation() == ComponentOrientation.RIGHT_TO_LEFT)
+          horizontalAlignment = RIGHT;
+        else
+          horizontalAlignment = LEFT;
+      }
+    else if (horizontalAlignment == TRAILING)
+      {
+        if (c.getComponentOrientation() == ComponentOrientation.RIGHT_TO_LEFT)
+          horizontalAlignment = LEFT;
+        else
+          horizontalAlignment = RIGHT;
+      }
+    
+    return layoutCompoundLabel(fm, text, icon,
+                               verticalAlignment,
+                               horizontalAlignment,
+                               verticalTextPosition,
+                               horizontalTextPosition,
+                               viewR, iconR, textR, textIconGap);
+  }
+
+  /**
+   * <p>Layout a "compound label" consisting of a text string and an icon
+   * which is to be placed near the rendered text. Once the text and icon
+   * are laid out, the text rectangle and icon rectangle parameters are
+   * altered to store the calculated positions.</p>
+   *
+   * <p>The size of the text is calculated from the provided font metrics
+   * object.  This object should be the metrics of the font you intend to
+   * paint the label with.</p>
+   *
+   * <p>The position values control where the text is placed relative to
+   * the icon. The horizontal position value should be one of the constants
+   * <code>LEFT</code>, <code>RIGHT</code> or <code>CENTER</code>. The
+   * vertical position value should be one fo the constants
+   * <code>TOP</code>, <code>BOTTOM</code> or <code>CENTER</code>.</p>
+   *
+   * <p>The text-icon gap value controls the number of pixels between the
+   * icon and the text.</p>
+   *
+   * <p>The alignment values control where the text and icon are placed, as
+   * a combined unit, within the view rectangle. The horizontal alignment
+   * value should be one of the constants <code>LEFT</code>, <code>RIGHT</code> or
+   * <code>CENTER</code>. The vertical alignment valus should be one of the
+   * constants <code>TOP</code>, <code>BOTTOM</code> or
+   * <code>CENTER</code>.</p>
+   *
+   * <p>If the text and icon are equal to or larger than the view
+   * rectangle, the horizontal and vertical alignment values have no
+   * affect.</p>
+   *
+   * <p>Note that this method does <em>not</em> know how to deal with
+   * horizontal alignments or positions given as <code>LEADING</code> or
+   * <code>TRAILING</code> values. Use the other overloaded variant of this
+   * method if you wish to use such values.
+   *
+   * @param fm The font metrics used to measure the text
+   * @param text The text to place in the compound label
+   * @param icon The icon to place next to the text
+   * @param verticalAlignment The vertical alignment of the label relative
+   * to its component
+   * @param horizontalAlignment The horizontal alignment of the label
+   * relative to its component
+   * @param verticalTextPosition The vertical position of the label's text
+   * relative to its icon
+   * @param horizontalTextPosition The horizontal position of the label's
+   * text relative to its icon
+   * @param viewR The view rectangle, specifying the area which layout is
+   * constrained to
+   * @param iconR A rectangle which is modified to hold the laid-out
+   * position of the icon
+   * @param textR A rectangle which is modified to hold the laid-out
+   * position of the text
+   * @param textIconGap The distance between text and icon
+   *
+   * @return The string of characters, possibly truncated with an elipsis,
+   * which is laid out in this label
+   */
+
+  public static String layoutCompoundLabel(FontMetrics fm,
+                                           String text,
+                                           Icon icon,
+                                           int verticalAlignment,
+                                           int horizontalAlignment,
+                                           int verticalTextPosition,
+                                           int horizontalTextPosition,
+                                           Rectangle viewR,
+                                           Rectangle iconR,
+                                           Rectangle textR,
+                                           int textIconGap)
+  {
+
     // Work out basic height and width.
 
     if (icon == null)
@@ -545,7 +664,7 @@ public class SwingUtilities implements SwingConstants
         iconR.width = 0;
         iconR.height = 0;
       }
-      else
+    else
       {
         iconR.width = icon.getIconWidth();
         iconR.height = icon.getIconWidth();
@@ -589,23 +708,6 @@ public class SwingUtilities implements SwingConstants
         textR.y = centerLine - textR.height/2;
         iconR.y = centerLine - iconR.height/2;
         break;
-      }
-
-    // Fix up the orientation-based alignments.
-
-    if (horizontalAlignment == LEADING)
-      {
-        if (c.getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT)
-          horizontalAlignment = LEFT;
-        else if (c.getComponentOrientation() == ComponentOrientation.RIGHT_TO_LEFT)
-          horizontalAlignment = RIGHT;
-      }
-    else if (horizontalAlignment == TRAILING)
-      {
-        if (c.getComponentOrientation() == ComponentOrientation.LEFT_TO_RIGHT)
-          horizontalAlignment = RIGHT;
-        else if (c.getComponentOrientation() == ComponentOrientation.RIGHT_TO_LEFT)
-          horizontalAlignment = LEFT;
       }
 
     // The two rectangles are laid out correctly now, but only assuming

@@ -161,7 +161,7 @@ public class JOptionPane extends JComponent
     {	return val;    }
 
     public String getUIClassID()
-    {	return "JOptionPane";    }
+    {	return "OptionPaneUI";    }
 
 
     public void setUI(OptionPaneUI ui) {

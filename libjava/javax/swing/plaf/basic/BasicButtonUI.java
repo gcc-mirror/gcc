@@ -47,14 +47,20 @@ import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.event.FocusListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.AbstractButton;
+import javax.swing.ButtonModel;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
+import javax.swing.event.MouseInputListener;
 import javax.swing.plaf.ButtonUI;
 import javax.swing.plaf.ComponentUI;
 
@@ -62,21 +68,11 @@ public class BasicButtonUI extends ButtonUI
 {
   /** A constant used to pad out elements in the button's layout and
       preferred size calculations. */
-    int gap = 3;
+  int defaultTextIconGap = 3;
 
-  /** The color that text will be painted when the button is enabled */
-  Color textColor;
-
-  /** The color that text will be painted when the button is disabled */
-  Color disabledTextColor;
-
-  /** The color that the button's background will be painted when the
-      button is pressed. */
-    Color pressedBackgroundColor;
-
-  /** The color that the button's background will be painted when the
-      button is not pressed. */
-  Color normalBackgroundColor;
+  /** A constant added to the defaultTextIconGap to adjust the text
+      within this particular button. */
+  int defaultTextShiftOffset = 0;
 
   /**
    * Factory method to create an instance of BasicButtonUI for a given
@@ -86,125 +82,65 @@ public class BasicButtonUI extends ButtonUI
    *
    * @return A new UI capable of drawing the component
    */
-    public static ComponentUI createUI(final JComponent c) 
-    {
-	return new BasicButtonUI();
-    }
-
-  /**
-   * Helper class which listens to a button's focus events and disarms the
-   * button's model when focus is lost.
-   */
-  private static class FocusUIListener extends FocusAdapter
+  public static ComponentUI createUI(final JComponent c) 
   {
-    /** Button to listen to focus events from */
-    AbstractButton button;
-
-    /**
-     * Creates a new FocusUIListener object.
-     *
-     * @param b The button to listen to
-     */
-    FocusUIListener(AbstractButton b)
-    {
-      button = b;
-    }
-    
-    /**
-     * Called when the button loses focus.
-     *
-     * @param event The loss of focus event.
-     */
-    public void focusLost(FocusEvent event)
-    {
-      // System.err.println("ButtonUI :: lost focus -- disarming");
-      button.getModel().setArmed(false);
-    }
+    return new BasicButtonUI();
   }
 
-  /**
-   * A helper class which interprets mouse events as 
-   * state changes to the button's underlying model.
-   */
-  private static class ButtonUIListener extends MouseAdapter
+  public int getDefaultTextIconGap(AbstractButton b)
   {
-    /** The button to change the model of */
-    AbstractButton button;
+    return defaultTextIconGap;
+  }
 
-    /**
-     * Creates a new ButtonUIListener object.
-     *
-     * @param b The button to change the model of
-     */
-    public ButtonUIListener(AbstractButton b)
-    {
-      button = b;
-    }
+  protected void installDefaults(AbstractButton b)
+  {
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    b.setForeground(defaults.getColor("Button.foreground"));
+    b.setBackground(defaults.getColor("Button.background"));
+    b.setMargin(defaults.getInsets("Button.margin"));
+    b.setBorder(defaults.getBorder("Button.border"));
+  }
 
-    /**
-     * Accept a mouse press event and arm the button's model.
-     *
-     * @param e The mouse press event to accept
-     */
-    public void mousePressed(MouseEvent e)
-    {
-      // System.err.println("ButtonUI :: mouse pressed");
-      if ((e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
-        {
-          // System.err.println("ButtonUI :: arming");
-          button.getModel().setArmed(true);
-        }
-    }
+  protected void uninstallDefaults(AbstractButton b)
+  {
+    b.setForeground(null);
+    b.setBackground(null);
+    b.setBorder(null);
+    b.setMargin(null);
+  }
 
-    /**
-     * Accept a mouse enter event and set the button's model's
-     * "rollover" property to <code>true</code>. If the button's
-     * model is currently armed and the mouse button is not held
-     * down, this enter event will also disarm the model.
-     *
-     * @param e The mouse enter event to accept
-     */
-    public void mouseEntered(MouseEvent e)
-    {
-      // System.err.println("ButtonUI :: mouse entered");
-      // System.err.println("ButtonUI :: rolling over");
-      button.getModel().setRollover(true);
-      if (button.getModel().isArmed() 
-          && (e.getModifiers() & InputEvent.BUTTON1_MASK) == 0)
-        {
-          // System.err.println("ButtonUI :: no button pressed -- disarming");
-          button.getModel().setArmed(false);
-        }
-    }
+  protected BasicButtonListener listener;
 
-    /**
-     * Accept a mouse exit event and set the button's model's
-     * "rollover" property to <code>false</code>.
-     *
-     * @param e The mouse exit event to accept
-     */
-    public void mouseExited(MouseEvent e)
-    {
-      // System.err.println("ButtonUI :: mouse exited");
-      button.getModel().setRollover(false);
-    }
+  protected BasicButtonListener createButtonListener(AbstractButton b)
+  {
+    return new BasicButtonListener();
+  }
 
-    /**
-     * Accept a mouse release event and set the button's model's
-     * "pressed" property to <code>true</code>, if the model
-     * is armed. If the model is not armed, ignore the event.
-     *
-     * @param e The mouse release event to accept
-     */
-    public void mouseReleased(MouseEvent e)
-    {
-      // System.err.println("ButtonUI :: mouse released");
-      if (button.getModel().isArmed()
-          && (e.getModifiers() & InputEvent.BUTTON1_MASK) != 0)
-        {
-          button.getModel().setPressed(true);
-        }
-    }
+  public void installListeners(AbstractButton b)
+  {
+    listener = createButtonListener(b);
+    b.addChangeListener(listener);
+    b.addPropertyChangeListener(listener);
+    b.addFocusListener(listener);    
+    b.addMouseListener(listener);
+    b.addMouseMotionListener(listener);
+  }
+
+  public void uninstallListeners(AbstractButton b)
+  {
+    b.removeChangeListener(listener);
+    b.removePropertyChangeListener(listener);
+    b.removeFocusListener(listener);    
+    b.removeMouseListener(listener);
+    b.removeMouseMotionListener(listener);
+  }
+
+  protected void installKeyboardActions(AbstractButton b)
+  {
+  }
+
+  protected void uninstallKeyboardActions(AbstractButton b)
+  {
   }
 
   /**
@@ -215,22 +151,16 @@ public class BasicButtonUI extends ButtonUI
    *
    * @param c The component to install the UI into
    */
-    public void installUI(final JComponent c) 
-    {
-	super.installUI(c);
-
-	textColor                = new Color(0,0,0);
-	disabledTextColor        = new Color(130, 130, 130);
-	pressedBackgroundColor   = new Color(150,150,150);
-	pressedBackgroundColor   = new Color(150,150,150);
-	normalBackgroundColor    = new Color(192,192,192);
-
-    // this tells the border (if we have one) how to paint.
-    c.setBackground(normalBackgroundColor);
-    ((AbstractButton)c).setMargin (new Insets(10,10,10,10));
-
-    c.addMouseListener(new ButtonUIListener((AbstractButton) c));
-    c.addFocusListener(new FocusUIListener((AbstractButton) c));
+  public void installUI(final JComponent c) 
+  {
+    super.installUI(c);
+    if (c instanceof AbstractButton)
+      {
+        AbstractButton b = (AbstractButton) c;
+        installDefaults(b);
+        installListeners(b);
+        installKeyboardActions(b);
+      }
   }
 
   /**
@@ -241,13 +171,45 @@ public class BasicButtonUI extends ButtonUI
    *
    * @return The preferred dimensions of the component
    */
-    public Dimension getPreferredSize(JComponent c) 
-    {
-	AbstractButton b = (AbstractButton)c;
-	Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b, gap);
-	return d;
-    }
-    
+  public Dimension getPreferredSize(JComponent c) 
+  {
+    AbstractButton b = (AbstractButton)c;
+    Dimension d = 
+      BasicGraphicsUtils.getPreferredButtonSize
+      (b, defaultTextIconGap + defaultTextShiftOffset);
+    return d;
+  }
+
+  static private Icon currentIcon(AbstractButton b)
+  {
+    Icon i = b.getIcon();
+    ButtonModel model = b.getModel();
+
+    if (model.isPressed() && b.getPressedIcon() != null)
+      i = b.getPressedIcon();
+
+    else if (model.isRollover())
+      {
+        if (b.isSelected() && b.getRolloverSelectedIcon() != null)
+          i = b.getRolloverSelectedIcon();
+        else if (b.getRolloverIcon() != null)
+          i = b.getRolloverIcon();
+      }    
+
+    else if (b.isSelected())
+      {
+        if (b.isEnabled() && b.getSelectedIcon() != null)
+          i = b.getSelectedIcon();
+        else if (b.getDisabledSelectedIcon() != null)
+          i = b.getDisabledSelectedIcon();
+      }
+
+    else if (! b.isEnabled() && b.getDisabledIcon() != null)
+      i = b.getDisabledIcon();
+
+    return i;
+  }
+
   /**
    * Paint the component, which is an {@link AbstractButton}, according to 
    * its current state.
@@ -255,52 +217,42 @@ public class BasicButtonUI extends ButtonUI
    * @param g The graphics context to paint with
    * @param c The component to paint the state of
    */
-    public void paint(Graphics g, JComponent c)
-    {      
-	AbstractButton b = (AbstractButton) c;
+  public void paint(Graphics g, JComponent c)
+  {      
+    AbstractButton b = (AbstractButton) c;
 
-	Rectangle tr = new Rectangle();
-	Rectangle ir = new Rectangle();
-	Rectangle vr = new Rectangle();
+    Rectangle tr = new Rectangle();
+    Rectangle ir = new Rectangle();
+    Rectangle vr = new Rectangle();
     Rectangle br = new Rectangle();
 
-        Font f = c.getFont();
+    Font f = c.getFont();
 
-        g.setFont(f);
+    g.setFont(f);
 
-        FontMetrics fm = g.getFontMetrics(f);
-
-    Insets border = b.getInsets();
-    Insets margin = b.getMargin();
-
-    br.x = border.left;
-    br.y = border.top;
-    br.width = b.getWidth() - (border.right + border.left);
-    br.height = b.getHeight() - (border.top + border.bottom);
-
-    vr.x = br.x + margin.left;
-    vr.y = br.y + margin.top;
-    vr.width = br.width - (margin.right + margin.left);
-    vr.height = br.height - (margin.top + margin.bottom);
-
-    String text = SwingUtilities.layoutCompoundLabel(c, fm, b.getText(),
-							 b.getIcon(),
-							 b.getVerticalAlignment(), 
-							 b.getHorizontalAlignment(),
-							 b.getVerticalTextPosition(), 
-							 b.getHorizontalTextPosition(),
-                                                     vr, ir, tr, gap);
-
-    if ((b.getModel().isRollover() && b.getModel().isArmed()) 
-        || b.getModel().isSelected())
+    SwingUtilities.calculateInnerArea(b, br);
+    SwingUtilities.calculateInsetArea(br, b.getMargin(), vr);    
+    String text = SwingUtilities.layoutCompoundLabel(c, g.getFontMetrics(f), 
+                                                     b.getText(),
+                                                     currentIcon(b),
+                                                     b.getVerticalAlignment(), 
+                                                     b.getHorizontalAlignment(),
+                                                     b.getVerticalTextPosition(), 
+                                                     b.getHorizontalTextPosition(),
+                                                     vr, ir, tr, 
+                                                     defaultTextIconGap 
+                                                     + defaultTextShiftOffset);
+    
+    if ((b.getModel().isArmed() && b.getModel().isPressed()) 
+        || b.isSelected())
       paintButtonPressed(g, br, c);
-	else
+    else
       paintButtonNormal(g, br, c);
 	
-	paintIcon(g, c, ir);
-	paintText(g, c, tr, b.getText());
-	paintFocus(g, c, vr, tr, ir);
-    }
+    paintIcon(g, c, ir);
+    paintText(g, c, tr, b.getText());
+    paintFocus(g, c, vr, tr, ir);
+  }
 
   /**
    * Paint any focus decoration this {@link JComponent} might have.  The
@@ -322,7 +274,7 @@ public class BasicButtonUI extends ButtonUI
   {
     AbstractButton b = (AbstractButton) c;
     if (b.hasFocus() && b.isFocusPainted())
-    {
+      {
         Graphics2D g2 = (Graphics2D) g;
         Stroke saved_stroke = g2.getStroke();
         Color saved_color = g2.getColor();
@@ -340,7 +292,7 @@ public class BasicButtonUI extends ButtonUI
         g2.setStroke(saved_stroke);
         g2.setColor(saved_color);
       }
-    }
+  }
 
   /**
    * Paint the icon for this component. Depending on the state of the
@@ -352,15 +304,17 @@ public class BasicButtonUI extends ButtonUI
    * @param iconRect Rectangle in which the icon should be painted
    */
   protected void paintIcon(Graphics g, JComponent c, Rectangle iconRect)
-    {
-	AbstractButton b = (AbstractButton) c;
-	if (b.getIcon() != null)
-	    {
-		int x = iconRect.x;
-		int y = iconRect.y;
-		b.getIcon().paintIcon(c, g, x, y);
-	    }
-    }
+  {
+    AbstractButton b = (AbstractButton) c;
+    Icon i = currentIcon(b);
+
+    if (i != null)
+      {
+        int x = iconRect.x;
+        int y = iconRect.y;
+        i.paintIcon(c, g, x, y);
+      }
+  }
 
   /**
    * Paints the background area of an {@link AbstractButton} in the pressed
@@ -372,12 +326,13 @@ public class BasicButtonUI extends ButtonUI
    * @param b The component to paint the state of
    */
   protected void paintButtonPressed(Graphics g, Rectangle area, JComponent b)
-    {
-	Dimension size = b.getSize();
-	
-	g.setColor(pressedBackgroundColor);
-    g.fillRect(area.x, area.y, area.width, area.height);
-    }
+  {
+    if (((AbstractButton)b).isContentAreaFilled())
+      {
+        g.setColor(b.getBackground().darker());
+        g.fillRect(area.x, area.y, area.width, area.height);
+      }
+  }
     
   /**
    * Paints the background area of an {@link AbstractButton} in the normal,
@@ -389,11 +344,13 @@ public class BasicButtonUI extends ButtonUI
    * @param b The component to paint the state of
    */
   protected void paintButtonNormal(Graphics g, Rectangle area, JComponent b)
-    {
-	Dimension size = b.getSize();
-	g.setColor(normalBackgroundColor);
-    g.fillRect(area.x, area.y, area.width, area.height);
-    }
+  {
+    if (((AbstractButton)b).isContentAreaFilled())
+      {
+        g.setColor(b.getBackground());
+        g.fillRect(area.x, area.y, area.width, area.height);
+      }
+  }
     
   /**
    * Paints the "text" property of an {@link AbstractButton}, using the
@@ -405,15 +362,14 @@ public class BasicButtonUI extends ButtonUI
    * @param text The text to paint
    */
   protected void paintText(Graphics g, JComponent c, Rectangle textRect,
-			     String text) 
-    {	
-	Font f = c.getFont();
-        g.setFont(f);
-        FontMetrics fm = g.getFontMetrics(f);
-	g.setColor(c.isEnabled() ? textColor : disabledTextColor);
-    BasicGraphicsUtils.drawString(g, text, 
-				      0,
-				      textRect.x, 
+                           String text) 
+  {	
+    Font f = c.getFont();
+    g.setFont(f);
+    FontMetrics fm = g.getFontMetrics(f);
+    g.setColor(c.getForeground());
+    BasicGraphicsUtils.drawString(g, text, 0,
+                                  textRect.x, 
                                   textRect.y + fm.getAscent());
-    } 
+  } 
 }

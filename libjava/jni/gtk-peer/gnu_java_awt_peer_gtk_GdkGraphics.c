@@ -316,12 +316,24 @@ JNIEXPORT void JNICALL Java_gnu_java_awt_peer_gtk_GdkGraphics_clearRect
   (JNIEnv *env, jobject obj, jint x, jint y, jint width, jint height)
 {
   struct graphics *g;
+  GdkGCValues saved;
 
   g = (struct graphics *) NSA_GET_PTR (env, obj);
 
   gdk_threads_enter ();
-  gdk_window_clear_area ((GdkWindow *)g->drawable, 
-			 x + g->x_offset, y + g->y_offset, width, height);
+  if (GDK_IS_WINDOW (g->drawable))
+    {
+      gdk_window_clear_area ((GdkWindow *)g->drawable, 
+			     x + g->x_offset, y + g->y_offset, width, height);
+    }
+  else
+    {
+      gdk_gc_get_values (g->gc, &saved);
+      gdk_gc_set_foreground (g->gc, &(saved.background));
+      gdk_draw_rectangle (g->drawable, g->gc, TRUE, 
+			  x + g->x_offset, y + g->y_offset, width, height);
+      gdk_gc_set_foreground (g->gc, &(saved.foreground));
+    }
   gdk_threads_leave ();
 }
 

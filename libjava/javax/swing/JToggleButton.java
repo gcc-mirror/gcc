@@ -44,66 +44,83 @@ import javax.swing.plaf.ButtonUI;
 
 public class JToggleButton extends AbstractButton implements Accessible
 {
-    public JToggleButton()
-    {
-	this(null, null);
-    }
-    public JToggleButton(Action a)
-    {
-	this();
-	setAction(a);
-    }
 
-    public JToggleButton(Icon icon)
-    { 
-	this(null, icon);
-    }    
-  
-    public JToggleButton(String text)
+  public class ToggleButtonModel extends DefaultButtonModel
+  {
+    public void setPressed(boolean b)  
     {
-	this(text, null);
-    }
+      if (! isEnabled())
+        return;
       
-    public JToggleButton(String text, Icon icon)
-    {
-	this(text, icon, false);
+      super.setPressed(b);
+      
+      // setPressed(false) == mouse release on us,
+      // if we were armed, we flip the selected state.
+      if (!b && isArmed())
+        setSelected(! isSelected());
     }
+  }
 
-    public JToggleButton (String text, Icon icon, boolean selected) 
-    {
-	super(text, icon);
 
-        // Create the model
-        setModel(new ToggleButtonModel());
-	
-        model.setSelected(selected);
-    }
+  public JToggleButton()
+  {
+    this(null, null);
+  }
+  public JToggleButton(Action a)
+  {
+    this();
+    setAction(a);
+  }
+
+  public JToggleButton(Icon icon)
+  { 
+    this(null, icon);
+  }    
+  
+  public JToggleButton(String text)
+  {
+    this(text, null);
+  }
+      
+  public JToggleButton(String text, Icon icon)
+  {
+    this(text, icon, false);
+  }
+
+  public JToggleButton (String text, Icon icon, boolean selected) 
+  {
+    super(text, icon);
+
+    hori_align = LEADING;
+    setModel(new ToggleButtonModel());	
+    model.setSelected(selected);
+  }
 
 
     
-    public AccessibleContext getAccessibleContext()
-    {
-	//Gets the AccessibleContext associated with this JToggleButton. 
-	return null;
-    }
+  public AccessibleContext getAccessibleContext()
+  {
+    //Gets the AccessibleContext associated with this JToggleButton. 
+    return null;
+  }
   
-    public String getUIClassID()
-    {
-	//Returns a string that specifies the name of the L&F class that renders this component.  
-	return "JToggleButton";
-    }
+  public String getUIClassID()
+  {
+    //Returns a string that specifies the name of the L&F class that renders this component.  
+    return "ToggleButtonUI";
+  }
   
-    protected  String paramString()
-    {
-	return "JToggleButton";
-    }
+  protected  String paramString()
+  {
+    return "JToggleButton";
+  }
   
   
-    public void updateUI()
-    {	
-	ButtonUI b = (ButtonUI)UIManager.getUI(this);
-	setUI(b);
-    }
+  public void updateUI()
+  {	
+    ButtonUI b = (ButtonUI)UIManager.getUI(this);
+    setUI(b);
+  }
 }
 
 

@@ -102,7 +102,7 @@ public class JPasswordField extends JTextField {
 	/**
 	 * uiClassID
 	 */
-	private static final String uiClassID = "PasswordFIeldUI";
+	private static final String uiClassID = "PasswordFieldUI";
 
 	/**
 	 * echoChar.  Default is 0

@@ -137,7 +137,7 @@ public class JEditorPane extends JTextComponent
     { return super.getText();    }
     
     public String getUIClassID()
-    {    return "JEditorPane";  }
+    {    return "EditorPaneUI";  }
 
     public boolean isFocusCycleRoot()
     { return focus_root;    }

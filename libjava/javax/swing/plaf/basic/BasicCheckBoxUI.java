@@ -38,82 +38,28 @@ exception statement from your version. */
 
 package javax.swing.plaf.basic;
 
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Rectangle;
-import javax.swing.AbstractButton;
+import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.ComponentUI;
 
 public class BasicCheckBoxUI extends BasicRadioButtonUI
 {  
-    public static ComponentUI createUI(final JComponent c)  {
-	return new BasicCheckBoxUI();
-    }
+  
+  public static ComponentUI createUI(final JComponent c)  {
+    return new BasicCheckBoxUI();
+  }
 
-    
-    public void installUI(final JComponent c)  {
-	super.installUI(c);
-    }
-    
-    public Dimension getPreferredSize(JComponent c) 
-    {
-	AbstractButton b = (AbstractButton)c;
-	Dimension d = BasicGraphicsUtils.getPreferredButtonSize(b, gap);
-	//System.out.println("^^^^^^^^^^^^^^^^^^^^^^   BASIC-PREF="+d + ",T="+b.text);
-	return d;
-    }
-    
-    protected void paintFocus(Graphics g, 
-			      JComponent c,
-			      Rectangle vr,
-			      Rectangle tr,
-			      Rectangle ir)
-    {
-    }
-
-    protected void paintIcon(Graphics g, 
-			     JComponent c, 
-			     Rectangle iconRect)
-    {
-    }
-
-    protected void paintButtonPressed(Graphics g,
-				      JComponent b)
-    {
-	Dimension size = b.getSize();
-	
-	g.setColor(pressedBackgroundColor);
-	g.fillRect(1,1,size.width-2, size.height-2);                
-
-    }
-    
-    protected void paintButtonNormal(Graphics g,
-				     JComponent b)
-    {
-	Dimension size = b.getSize();
-	
-	g.setColor(normalBackgroundColor);
-	g.fillRect(1,1,size.width-2, size.height-2);                
-
-    }
-    protected void paintText(Graphics g,
-			     JComponent c,
-			     Rectangle textRect,
-			     String text) 
-    {
-	//        AbstractButton b = (AbstractButton) c;
-	
-	//	System.out.println("drawing string: " + text + ", at:" + textRect);
-	
-	g.setColor(textColor);
-	BasicGraphicsUtils.drawString(g,
-				      text, 
-				      0,
-				      textRect.x, 
-				      textRect.y);
-    } 
+  public Icon getDefaultIcon()
+  {
+    UIDefaults defaults = UIManager.getLookAndFeelDefaults();
+    return defaults.getIcon("CheckBox.icon");
+  }
+  
+  public void installUI(final JComponent c)  {
+    super.installUI(c);
+  }  
 }
 
 

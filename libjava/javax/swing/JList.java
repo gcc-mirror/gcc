@@ -212,7 +212,7 @@ public class JList extends JComponent implements Accessible, Scrollable
 
     public String getUIClassID()
     {
-	return "JList";
+	return "ListUI";
     }
 
 

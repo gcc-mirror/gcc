@@ -102,7 +102,7 @@ public class JTabbedPane extends JComponent implements Accessible, SwingConstant
     }
     
     public String getUIClassID()
-    {	return "JTabbedPane";    }
+    {	return "TabbedPaneUI";    }
 
 
     public void setUI(TabbedPaneUI ui) {

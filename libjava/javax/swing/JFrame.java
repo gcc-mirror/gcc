@@ -38,6 +38,7 @@ exception statement from your version. */
 
 package javax.swing;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -105,6 +106,7 @@ public class JFrame extends Frame
     protected  void frameInit()
     {
       super.setLayout(new BorderLayout(1, 1));
+      enableEvents(AWTEvent.WINDOW_EVENT_MASK);
       getRootPane(); // will do set/create
     }
   
@@ -201,9 +203,7 @@ public class JFrame extends Frame
 
     protected  void processWindowEvent(WindowEvent e)
     {
-	//	System.out.println("PROCESS_WIN_EV-1: " + e);
 	super.processWindowEvent(e); 
-	//	System.out.println("PROCESS_WIN_EV-2: " + e);
 	switch (e.getID())
 	    {
 	    case WindowEvent.WINDOW_CLOSING:
@@ -212,13 +212,11 @@ public class JFrame extends Frame
 			{
 			case EXIT_ON_CLOSE:
 			    {
-				System.out.println("user requested exit on close");
 				System.exit(1);
 				break;
 			    }
 			case DISPOSE_ON_CLOSE:
 			    {
-				System.out.println("user requested dispose on close");
 				dispose();
 				break;
 			    }

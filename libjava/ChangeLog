@@ -1,3 +1,90 @@
+2004-02-09  Graydon Hoare  <graydon@redhat.com>
+
+	* javax/swing/ToggleButtonModel.java: Remove dead class.
+	* javax/swing/plaf/basic/BasicDefaults.java: Remove dead class.
+	* javax/swing/plaf/basic/BasicButtonListener.java: New class.
+	* javax/swing/plaf/basic/BasicRootPaneUI.java: New class.
+	* Makefile.am: Update for new and removed files.
+	* Makefile.in: Regenerate.
+
+	* gnu/java/awt/peer/gtk/GdkGraphics2D.java: Initialize default hints.
+	* javax/swing/AbstractButton.java 
+	(AbstractButton): Initialize fields correctly in ctor.
+	* javax/swing/JCheckbox.java 
+	(JCheckBox): Override painting flags.
+	* javax/swing/DefaultButtonModel.java: Conform to sun.
+	* javax/swing/JComponent.java (paint): Fill with background color
+	if available.
+	(processComponentKeyEvent)
+	(processFocusEvent)
+	(processKeyEvent)
+	(processMouseMotionEvent): Remove event-consuming empty methods.
+	(getUIClassID): Return "ComponentUI" not "JComponent"
+	* javax/swing/JFrame.java: Remove some debugging chatter.
+	(JFrame): Subscribe to window events.
+	* javax/swing/JRadioButton.java 
+	(JRadioButton): Override painting flags.
+	* javax/swing/JRootPane.java 
+	(JRootPane): Set background from UIDefaults.
+	* javax/swing/JToggleButton.java 
+	(ToggleButtonModel): New inner class.
+	(JToggleButton): Override layout alighment.
+	* javax/swing/SwingUtilities.java:
+	(getLocalBounds): Return width and height, not x and y.
+	(calculateInnerArea): Use local bounds, not bounds.
+	(layoutCompoundLabel): Provide overridden form.
+	(layoutCompoundLabel): Correct bugs.
+	* javax/swing/UIDefaults.java: Correct comment.
+	* javax/swing/plaf/basic/BasicButtonUI.java: 
+	Move most logic into defaults, external listener.
+	(paintIcon): Implement icon painting.
+	(paint): Fix state painting to conform to changes in model.
+	* javax/swing/plaf/basic/BasicCheckBoxUI.java:
+	Remove most dead/wrong methods.
+	(getDefaultIcon): Return defaults.getIcon("CheckBox.icon").
+	* javax/swing/plaf/basic/BasicIconFactory.java:
+	(DummyIcon): New class.
+	(getMenuItemCheckIcon)
+	(getMenuItemArrowIcon) 
+	(getMenuArrowIcon)
+	(getCheckBoxMenuItemIcon)
+	(getRadioButtonMenuItemIcon)
+	(createEmptyFrameIcon): Return DummyIcons, not null.
+	(getCheckBoxIcon): Implement an icon that looks like sun's.
+	(getRadioButtonIcon): Implement an icon that looks like sun's.
+	* javax/swing/plaf/basic/BasicLookAndFeel.java 
+	(initComponentDefaults): Fix impossible values, add some missing.
+	* javax/swing/plaf/basic/BasicPanelUI.java (gap): Remove field.
+	* javax/swing/plaf/basic/BasicRadioButtonUI.java:
+	Remove most dead/wrong methods.
+	(icon): New field.
+	(getDefaultIcon): New method.
+	* javax/swing/plaf/basic/BasicToggleButtonUI.java:
+	Remove most dead/wrong methods.
+	* javax/swing/plaf/metal/MetalLookAndFeel.java
+	(getDefaults): Return super.getDefaults(), not BasicDefaults.
+	* jni/gtk-peer/gnu_java_awt_peer_gtk_GdkGraphics.c
+	(Java_gnu_java_awt_peer_gtk_GdkGraphics_clearRect):
+	Implement "clearing" as drawing, when on pixmap drawables.
+
+	* javax/swing/JButton.java (getUIClassID): 
+	* javax/swing/JCheckBox.java (getUIClassID):
+	* javax/swing/JEditorPane.java (getUIClassID):
+	* javax/swing/JLabel.java (getUIClassID): 
+	* javax/swing/JList.java (getUIClassID): 
+	* javax/swing/JOptionPane.java (getUIClassID): 
+	* javax/swing/JPanel.java (getUIClassID): 
+	* javax/swing/JPasswordField.java (uiClassID): 
+	* javax/swing/JRadioButton.java (getUIClassID): 
+	* javax/swing/JRootPane.java (getUIClassID): 
+	* javax/swing/JScrollPane.java (getUIClassID): 
+	* javax/swing/JTabbedPane.java (getUIClassID): 
+	* javax/swing/JToggleButton.java (getUIClassID): 
+	* javax/swing/JTree.java (getUIClassID): 
+	* javax/swing/JViewport.java (getUIClassID): 
+	* javax/swing/text/JTextComponent.java (getUIClassID):
+	Return "fooUI" not "Jfoo"
+
 2004-02-11  Michael Koch  <konqueror@gmx.de>
 
 	* java/net/DatagramSocket.java

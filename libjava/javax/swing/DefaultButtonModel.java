@@ -55,15 +55,23 @@ import javax.swing.event.EventListenerList;
  * button. The concrete button type holding this state may be a a "toggle"
  * button (checkbox, radio button) or a "push" button (menu button, button).
  * 
- * Any change to the model's properties will trigger the firing of a
- * ChangeEvent.
+ * If the model is disabled, only the "selected" property can be changed.
+ * An attempt to change the "armed", "rollover" or "pressed" properties 
+ * while the model is disabled will be blocked.
  *
- * Any change to the "pressed" property will trigger the firing of an
- * ItemEvent in addition to ChangeEvent.
+ * Any successful (non-blocked) change to the model's properties will
+ * trigger the firing of a ChangeEvent.
  *
- * Any change which causes the enabled, armed and pressed properties to
- * simultaneously become <code>true</code> will trigger the firing of an
- * ActionEvent in addition to the ChangeEvent.
+ * Any change to the "selected" property will trigger the firing of an
+ * ItemEvent in addition to ChangeEvent. This is true whether the model is
+ * enabled or not.
+ *
+ * One other state change is special: the transition from "enabled, armed
+ * and pressd" to "enabled, armed and not-pressed". This is considered the
+ * "trailing edge" of a successful mouse click, and therefore fires an 
+ * ActionEvent in addition to a ChangeEvent.
+ *
+ * In all other respects this class is just a container of boolean flags.
  *
  * @author Graydon Hoare (graydon&064;redhat.com)
  */
@@ -80,9 +88,9 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    be pressed or selected unless they are enabled. */
   static int ENABLED = 2;
 
-  /** State constant indicating that the button has been fully
-   pressed. This usually happens when a user has released the mouse over a
-   previously "armed" button. */
+  /** State constant indicating that the user is holding down the button.
+   When this transitions from true to false, an ActionEvent may be fired,
+   depending on the value of the "armed" property.*/
   static int PRESSED = 4;
 
   /** State constant indicating that the mouse is currently positioned over
@@ -108,8 +116,8 @@ public class DefaultButtonModel implements ButtonModel, Serializable
 
   /** The group this model belongs to. Only one button in a group may be
       selected at any given time. */
-    ButtonGroup group;
-
+  ButtonGroup group;
+  
   /** The key code (one of {@link java.awt.event.KeyEvent} VK_*) used to
       press this button via a keyboard interface. */
   int mnemonic;
@@ -120,7 +128,8 @@ public class DefaultButtonModel implements ButtonModel, Serializable
 
   public DefaultButtonModel()
   {
-    stateMask = 0;
+    stateMask = ENABLED;
+    mnemonic = java.awt.event.KeyEvent.VK_UNDEFINED;
     listenerList = new EventListenerList();    
     changeEvent = new ChangeEvent(this);
   }
@@ -143,10 +152,10 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * @param l The listener to add
    */
   public void addActionListener(ActionListener l)
-	    {
+  {
     listenerList.add(ActionListener.class, l);
-    }
-
+  }
+  
   /**
    * Remove an ActionListener to the model. Usually only called to
    * unsubscribe an AbstractButton's listener to the model.
@@ -262,12 +271,14 @@ public class DefaultButtonModel implements ButtonModel, Serializable
     if (oldstate == newstate)
       return;
 
+    if ((stateflag != SELECTED) 
+        && (stateflag != ENABLED)
+        && (stateMask & ENABLED) == 0)
+      return;
+
     stateMask = newstate;
 
     fireStateChanged(changeEvent);
-
-    if ((newstate & ENABLED) == 0)
-      return;
 
     if ((oldstate & SELECTED) == 0
         && (newstate & SELECTED) == SELECTED)
@@ -278,27 +289,26 @@ public class DefaultButtonModel implements ButtonModel, Serializable
              && (newstate & SELECTED) == 0)
       fireItemStateChanged(new ItemEvent(this, ItemEvent.ITEM_STATE_CHANGED, 
                                          null, ItemEvent.DESELECTED));
-
-    else if ((newstate & ARMED) == ARMED
-             && (newstate & PRESSED) == PRESSED)
-	    {
+    
+    else if (((oldstate & ARMED) == ARMED && (oldstate & PRESSED) == PRESSED)
+             &&
+             ((newstate & ARMED) == ARMED && (newstate & PRESSED) == 0))
+      {
         fireActionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED,
                                             actionCommand));
-        stateMask = stateMask & ~(PRESSED | ARMED);
-	    }
-    
+      }
     }
-
+  
   /**
    * Get the value of the model's "armed" property.
    * 
    * @return The current "armed" property 
    */
   public boolean isArmed()
-	    {
+  {
     return (stateMask & ARMED) == ARMED;
-    }
-
+  }
+  
   /**
    * Set the value of the model's "armed" property.
    *
@@ -396,7 +406,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * @return The current "mnemonic" property
    */
   public int getMnemonic()
-    { 
+  { 
     return mnemonic;
   }
 
@@ -406,14 +416,14 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * @param key The new "mnemonic" property
    */
   public void setMnemonic(int key)
-	    {
+  {
     if (mnemonic != key)
-		    {
+      {
         mnemonic = key;
         fireStateChanged(changeEvent);
-		    }
+      }
   }
-
+  
   /**
    * Set the value of the model's "actionCommand" property. This property
    * is used as the "command" property of the {@link ActionEvent} fired
@@ -422,14 +432,14 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * @param s The new "actionCommand" property.
    */
   public void setActionCommand(String s)
-		    {
+  {
     if (actionCommand != s)
       {
         actionCommand = s;
         fireStateChanged(changeEvent);
-		    }
-	    } 
-
+      }
+  } 
+  
   /**
    * Set the value of the model's "actionCommand" property. This property
    * is used as the "command" property of the {@link ActionEvent} fired
@@ -438,7 +448,7 @@ public class DefaultButtonModel implements ButtonModel, Serializable
    * @return The current "actionCommand" property
    */
   public String getActionCommand()
-	    {
+  {
     return actionCommand;
   }
 
@@ -456,6 +466,6 @@ public class DefaultButtonModel implements ButtonModel, Serializable
       {
         group = g;
         fireStateChanged(changeEvent);
-	    }
-    }
+      }
+  }
 }
