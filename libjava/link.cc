@@ -18,6 +18,7 @@ details.  */
 #include <jvm.h>
 #include <gcj/cni.h>
 #include <string.h>
+#include <limits.h>
 #include <java-cpool.h>
 #include <execution.h>
 #include <java/lang/Class.h>
