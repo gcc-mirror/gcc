@@ -1,3 +1,13 @@
+Tue Mar 11 22:48:03 CET 2003  Jan Hubicka  <jh@suse.cz>
+
+	* cselib.c (cselib_invalidate_mem_1): Move too ...
+	(cselib_invalidate_mem): ... here; use new list
+	(dummy_val, first_containing_mem): New static variables.
+	(clear_table): Initialize first_containing_mem.
+	(discard_useless_values):  Compact the containing_mem list.
+	(add_mem_for_addr): Add to the list.
+	* cselib.h (cselib_val): Add next_containing_mem.
+
 2003-03-11  Aldy Hernandez  <aldyh@redhat.com>
 
         * config/rs6000/rs6000.c (rs6000_override_options): Disable string

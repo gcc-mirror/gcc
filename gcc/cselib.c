@@ -63,7 +63,6 @@ static cselib_val *cselib_lookup_mem	PARAMS ((rtx, int));
 static void cselib_invalidate_regno	PARAMS ((unsigned int,
 						 enum machine_mode));
 static int cselib_mem_conflict_p	PARAMS ((rtx, rtx));
-static int cselib_invalidate_mem_1	PARAMS ((void **, void *));
 static void cselib_invalidate_mem	PARAMS ((rtx));
 static void cselib_invalidate_rtx	PARAMS ((rtx, rtx, void *));
 static void cselib_record_set		PARAMS ((rtx, cselib_val *,
@@ -128,6 +127,15 @@ static GTY((deletable (""))) struct elt_loc_list *empty_elt_loc_lists;
 /* Set by discard_useless_locs if it deleted the last location of any
    value.  */
 static int values_became_useless;
+
+/* Used as stop element of the containing_mem list so we can check
+   presence in the list by checking the next pointer.  */
+static cselib_val dummy_val;
+
+/* Used to list all values that contain memory reference. 
+   May or may not contain the useless values - the list is compacted
+   each time memory is invalidated.  */
+static cselib_val *first_containing_mem = &dummy_val;
 
 
 /* Allocate a struct elt_list and fill in its two elements with the
@@ -237,6 +245,8 @@ clear_table (clear_all)
   n_useless_values = 0;
 
   next_unknown_value = 0;
+
+  first_containing_mem = &dummy_val;
 }
 
 /* The equality test for our hash table.  The first argument ENTRY is a table
@@ -371,6 +381,7 @@ discard_useless_values (x, info)
 static void
 remove_useless_values ()
 {
+  cselib_val **p, *v;
   /* First pass: eliminate locations that reference the value.  That in
      turn can make more values useless.  */
   do
@@ -382,6 +393,15 @@ remove_useless_values ()
 
   /* Second pass: actually remove the values.  */
   htab_traverse (hash_table, discard_useless_values, 0);
+
+  p = &first_containing_mem;
+  for (v = *p; v != &dummy_val; v = v->next_containing_mem)
+    if (v->locs)
+      {
+	*p = v;
+	p = &(*p)->next_containing_mem;
+      }
+  *p = &dummy_val;
 
   if (n_useless_values != 0)
     abort ();
@@ -706,6 +726,7 @@ new_cselib_val (value, mode)
   CSELIB_VAL_PTR (e->u.val_rtx) = e;
   e->addr_list = 0;
   e->locs = 0;
+  e->next_containing_mem = 0;
   return e;
 }
 
@@ -730,6 +751,11 @@ add_mem_for_addr (addr_elt, mem_elt, x)
   mem_elt->locs
     = new_elt_loc_list (mem_elt->locs,
 			replace_equiv_address_nv (x, addr_elt->u.val_rtx));
+  if (mem_elt->next_containing_mem == NULL)
+    {
+      mem_elt->next_containing_mem = first_containing_mem;
+      first_containing_mem = mem_elt;
+    }
 }
 
 /* Subroutine of cselib_lookup.  Return a value for X, which is a MEM rtx.
@@ -1078,59 +1104,6 @@ cselib_mem_conflict_p (mem_base, val)
   return 0;
 }
 
-/* For the value found in SLOT, walk its locations to determine if any overlap
-   INFO (which is a MEM rtx).  */
-
-static int
-cselib_invalidate_mem_1 (slot, info)
-     void **slot;
-     void *info;
-{
-  cselib_val *v = (cselib_val *) *slot;
-  rtx mem_rtx = (rtx) info;
-  struct elt_loc_list **p = &v->locs;
-  int had_locs = v->locs != 0;
-
-  while (*p)
-    {
-      rtx x = (*p)->loc;
-      cselib_val *addr;
-      struct elt_list **mem_chain;
-
-      /* MEMs may occur in locations only at the top level; below
-	 that every MEM or REG is substituted by its VALUE.  */
-      if (GET_CODE (x) != MEM
-	  || ! cselib_mem_conflict_p (mem_rtx, x))
-	{
-	  p = &(*p)->next;
-	  continue;
-	}
-
-      /* This one overlaps.  */
-      /* We must have a mapping from this MEM's address to the
-	 value (E).  Remove that, too.  */
-      addr = cselib_lookup (XEXP (x, 0), VOIDmode, 0);
-      mem_chain = &addr->addr_list;
-      for (;;)
-	{
-	  if ((*mem_chain)->elt == v)
-	    {
-	      unchain_one_elt_list (mem_chain);
-	      break;
-	    }
-
-	  mem_chain = &(*mem_chain)->next;
-	}
-
-      unchain_one_elt_loc_list (p);
-    }
-
-  if (had_locs && v->locs == 0)
-    n_useless_values++;
-
-  return 1;
-}
-
 /* Invalidate any locations in the table which are changed because of a
    store to MEM_RTX.  If this is called because of a non-const call
    instruction, MEM_RTX is (mem:BLK const0_rtx).  */
@@ -1139,7 +1112,67 @@ static void
 cselib_invalidate_mem (mem_rtx)
      rtx mem_rtx;
 {
-  htab_traverse (hash_table, cselib_invalidate_mem_1, mem_rtx);
+  cselib_val **vp, *v, *next;
+
+  vp = &first_containing_mem;
+  for (v = *vp; v != &dummy_val; v = next)
+    {
+      bool has_mem = false;
+      struct elt_loc_list **p = &v->locs;
+      int had_locs = v->locs != 0;
+
+      while (*p)
+	{
+	  rtx x = (*p)->loc;
+	  cselib_val *addr;
+	  struct elt_list **mem_chain;
+
+	  /* MEMs may occur in locations only at the top level; below
+	     that every MEM or REG is substituted by its VALUE.  */
+	  if (GET_CODE (x) != MEM)
+	    {
+	      p = &(*p)->next;
+	      continue;
+	    }
+	  if (! cselib_mem_conflict_p (mem_rtx, x))
+	    {
+	      has_mem = true;
+	      p = &(*p)->next;
+	      continue;
+	    }
+
+	  /* This one overlaps.  */
+	  /* We must have a mapping from this MEM's address to the
+	     value (E).  Remove that, too.  */
+	  addr = cselib_lookup (XEXP (x, 0), VOIDmode, 0);
+	  mem_chain = &addr->addr_list;
+	  for (;;)
+	    {
+	      if ((*mem_chain)->elt == v)
+		{
+		  unchain_one_elt_list (mem_chain);
+		  break;
+		}
+
+	      mem_chain = &(*mem_chain)->next;
+	    }
+
+	  unchain_one_elt_loc_list (p);
+	}
+
+      if (had_locs && v->locs == 0)
+	n_useless_values++;
+
+      next = v->next_containing_mem;
+      if (has_mem)
+	{
+	  *vp = v;
+	  vp = &(*vp)->next_containing_mem;
+	}
+      else
+	v->next_containing_mem = NULL;
+    }
+  *vp = &dummy_val;
 }
 
 /* Invalidate DEST, which is being assigned to or clobbered.  The second and
