@@ -1,3 +1,7 @@
+2004-09-23  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* cfgexpand.c, config/s390/tpf-eh.c: Fix comment typos.
+
 2004-09-22  Eric Christopher  <echristo@redhat.com>
 
 	* builtins.c (simplify_builtin_va_start): Remove.
