@@ -40,6 +40,7 @@ Boston, MA 02111-1307, USA.  */
 
 #include "demangle.h"
 #include "obstack.h"
+#include "gansidecl.h"
 
 #ifndef errno
 extern int errno;
@@ -60,21 +61,8 @@ char *strerror();
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 
-#if !defined (__STDC__) && !defined (const)
-#define const
-#endif
-
 #ifdef USG
 #define vfork fork
-#endif
-
-/* Add prototype support.  */
-#ifndef PROTO
-#if defined (USE_PROTOTYPES) ? USE_PROTOTYPES : defined (__STDC__)
-#define PROTO(ARGS) ARGS
-#else
-#define PROTO(ARGS) ()
-#endif
 #endif
 
 #ifndef R_OK
@@ -96,13 +84,7 @@ char *strerror();
 #define WEXITSTATUS(S) (((S) & 0xff00) >> 8)
 #endif
 
-/* On MSDOS, write temp files in current dir
-   because there's no place else we can expect to use.  */
-#ifdef __MSDOS__
-#ifndef P_tmpdir
-#define P_tmpdir "./"
-#endif
-#endif
+extern char *choose_temp_base ();
 
 /* On certain systems, we have code that works by scanning the object file
    directly.  But this code uses system-specific header files and library
@@ -296,7 +278,6 @@ void collect_execute		PROTO((char *, char **, char *));
 void dump_file			PROTO((char *));
 static void handler		PROTO((int));
 static int is_ctor_dtor		PROTO((char *));
-static void choose_temp_base	PROTO((void));
 static int is_in_prefix_list	PROTO((struct path_prefix *, char *, int));
 static char *find_a_file	PROTO((struct path_prefix *, char *));
 static void add_prefix		PROTO((struct path_prefix *, char *));
@@ -624,42 +605,6 @@ is_ctor_dtor (s)
 	}
     }
   return 0;
-}
-
-
-/* Compute a string to use as the base of all temporary file names.
-   It is substituted for %g.  */
-
-static void
-choose_temp_base ()
-{
-  char *base = getenv ("TMPDIR");
-  int len;
-
-  if (base == (char *)0)
-    {
-#ifdef P_tmpdir
-      if (access (P_tmpdir, R_OK | W_OK) == 0)
-	base = P_tmpdir;
-#endif
-      if (base == (char *)0)
-	{
-	  if (access ("/usr/tmp", R_OK | W_OK) == 0)
-	    base = "/usr/tmp/";
-	  else
-	    base = "/tmp/";
-	}
-    }
-
-  len = strlen (base);
-  temp_filename = xmalloc (len + sizeof("/ccXXXXXX") + 1);
-  strcpy (temp_filename, base);
-  if (len > 0 && temp_filename[len-1] != '/')
-    temp_filename[len++] = '/';
-  strcpy (temp_filename + len, "ccXXXXXX");
-
-  mktemp (temp_filename);
-  temp_filename_length = strlen (temp_filename);
 }
 
 /* Routine to add variables to the environment.  */
@@ -1200,7 +1145,8 @@ main (argc, argv)
   *ld1++ = *ld2++ = ld_file_name;
 
   /* Make temp file names. */
-  choose_temp_base ();
+  temp_filename = choose_temp_base ();
+  temp_filename_length = strlen (temp_filename);
   c_file = xcalloc (temp_filename_length + sizeof (".c"), 1);
   o_file = xcalloc (temp_filename_length + sizeof (".o"), 1);
   export_file = xmalloc (temp_filename_length + sizeof (".x"));
