@@ -1,3 +1,19 @@
+2000-05-17  Tom Tromey  <tromey@cygnus.com>
+
+	* libjava.mauve/mauve.exp (test_mauve): Call `prune_warnings'.
+	(test_mauve_sim): Likewise.
+	(test_mauve): Redirect stderr in system call.
+	(test_mauve_sim): Likewise.
+	* lib/libjava.exp (test_libjava_from_source): Call
+	`prune_warnings'.
+	(test_libjava_from_javac): Likewise.
+	(bytecompile_file): Redirect stderr in system call.
+	* lib/libjava.exp (libjava_find_program): New proc.
+	(find_jvscan): Use it.
+	(find_gcjh): New proc.
+
+	* libjava.compile/compile.exp: Use "", not $options.
+
 2000-05-16  Tom Tromey  <tromey@cygnus.com>
 
 	* libjava.lang/instance.out: New file.

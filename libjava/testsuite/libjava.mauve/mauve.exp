@@ -1,4 +1,4 @@
-# Copyright (C) 1998, 1999 Free Software Foundation.
+# Copyright (C) 1998, 1999, 2000 Free Software Foundation.
 # Written by Tom Tromey <tromey@cygnus.com>.
 # Incorporate Mauve into libjava's DejaGNU test suite framework.
 
@@ -90,7 +90,9 @@ proc test_mauve {} {
     # before they're installed.
     set env(GCJ) "$GCJ_UNDER_TEST -B$objdir/../ -I$objdir/../libgcj.zip"
 
-  if {[catch {system "$env(MAUVEDIR)/configure --with-gcj"} msg]} then {
+  if {[catch {
+    system "$env(MAUVEDIR)/configure --with-gcj 2>@ stdout"
+  } msg]} then {
     fail "Mauve configure"
     verbose "configure failed with $msg"
     return
@@ -105,7 +107,9 @@ proc test_mauve {} {
   puts -nonewline $fd $c
   close $fd
 
-  if {[catch {system "make KEYS=libgcj classes.stamp"} msg]} then {
+  if {[catch {
+    system "make KEYS=libgcj classes.stamp 2>&1"
+  } msg]} then {
     fail "Mauve build"
     verbose "build failed with $msg"
     return
@@ -132,7 +136,9 @@ proc test_mauve {} {
   foreach base {DejaGNUTestHarness gnu/testlet/SimpleTestHarness gnu/testlet/TestHarness gnu/testlet/Testlet gnu/testlet/ResourceNotFoundException gnu/testlet/config} {
     set file $base.class
     set obj $base.o
-    if {[target_compile [pwd]/$file $obj object $compile_args] != ""} then {
+    set x [prune_warnings \
+	     [target_compile [pwd]/$file $obj object $compile_args]]
+    if {$x != ""} then {
       fail "Compile $obj"
       set ok 0
     } else {
@@ -155,8 +161,9 @@ proc test_mauve {} {
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
 	set srcfile [file rootname $obj].class
-	if {[target_compile [pwd]/$srcfile $obj object $compile_args]
-	    != ""} then {
+	set x [prune_warnings \
+		 [target_compile [pwd]/$srcfile $obj object $compile_args]]
+	if {$x != ""} then {
 	  fail "Compile $obj for $class"
 	  set ok 0
 	  break
@@ -168,8 +175,9 @@ proc test_mauve {} {
       continue
     }
 
-    if {[target_compile [concat $uses($file) $objlist] \
-	   $Executable executable $link_args] != ""} then {
+    set x [prune_warnings [target_compile [concat $uses($file) $objlist] \
+			     $Executable executable $link_args]]
+    if {$x != ""} then {
       fail "Link for $class"
       continue
     }
@@ -223,7 +231,9 @@ proc test_mauve_sim {} {
   set full_srcdir [pwd]
   cd $here/mauve-build
 
-  if {[catch {system "$env(MAUVEDIR)/configure --with-gcj"} msg]} then {
+  if {[catch {
+    system "$env(MAUVEDIR)/configure --with-gcj 2>&1"
+  } msg]} then {
     fail "Mauve configure"
     verbose "configure failed with $msg"
     return
@@ -238,7 +248,9 @@ proc test_mauve_sim {} {
   puts -nonewline $fd $c
   close $fd
 
-  if {[catch {system "make KEYS=libgcj classes.stamp"} msg]} then {
+  if {[catch {
+    system "make KEYS=libgcj classes.stamp 2>&1"
+  } msg]} then {
     fail "Mauve build"
     verbose "build failed with $msg"
     return
@@ -260,7 +272,9 @@ proc test_mauve_sim {} {
 		  gnu/testlet/config} {
     set file $base.class
     set obj $base.o
-    if {[target_compile [pwd]/$file $obj object $compile_args] != ""} then {
+    set x [prune_warnings \
+	     [target_compile [pwd]/$file $obj object $compile_args]]
+    if {$x != ""} then {
       fail "Compile $obj"
       set ok 0
     } else {
@@ -286,8 +300,9 @@ proc test_mauve_sim {} {
       if {! [file exists $obj]} then {
 	verbose "compiling $obj for test of $class"
 	set srcfile [file rootname $obj].class
-	if {[target_compile [pwd]/$srcfile $obj object $compile_args]
-	    != ""} then {
+	set x [prune_warnings \
+		 [target_compile [pwd]/$srcfile $obj object $compile_args]]
+	if {$x != ""} then {
 	  fail "Compile $obj for $class"
 	  set ok 0
 	  break
@@ -320,15 +335,17 @@ proc test_mauve_sim {} {
 	return
     }
 
-    if {[target_compile gnu/testlet/DejaGNUTestHarness.class \
-	    gnu/testlet/DejaGNUTestHarness.o object $compile_args]
-      != ""} then {
+    set x [prune_warnings \
+	     [target_compile gnu/testlet/DejaGNUTestHarness.class \
+		gnu/testlet/DejaGNUTestHarness.o object $compile_args]]
+    if {$x != ""} then {
 	fail "Compile DejaGNUTestHarness.java"
 	continue
       }
 
-    if {[target_compile [concat $uses($file) $objlist] \
-	   $Executable executable $link_args] != ""} then {
+    set x [prune_warnings [target_compile [concat $uses($file) $objlist] \
+			     $Executable executable $link_args]]
+    if {$x != ""} then {
       fail "Link for $class"
       continue
     }
