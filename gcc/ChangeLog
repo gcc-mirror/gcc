@@ -1,3 +1,9 @@
+2000-11-07  Philip Blundell  <philb@gnu.org>
+
+	* configure.in (arm*-*-linuxaout*): Obsolete, deleted.
+	* config/arm/linux-aout.h: Likewise.
+	* configure: Regenerate.
+
 2000-11-07  Philipp Thomas  <pthomas@suse.de>
 
 	* ABOUT-GCC-NLS: Remove the patch for gettext as it has been
