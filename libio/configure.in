@@ -63,6 +63,7 @@ case "${target}" in
   *-netware*)    frags=netware.mt ;;
   *-dgux*)	 frags=dgux.mt ;;
   *vxworks*)     frags="vxworks.mt" ;;
+  *-beos*)	 frags="beos.mt mtsafe.mt" ;;
   *)             frags=${target_cpu}.mt ;;
 esac
 
