@@ -195,8 +195,8 @@ override_options ()
     if (! strcmp (ix86_cpu_string, processor_target_table[j].name))
       {
 	ix86_cpu = processor_target_table[j].processor;
-	if (i > j)
-	  error ("-mcpu=%s does not support -misa=%s", ix86_cpu_string, ix86_isa_string);
+	if (i > j && (int)ix86_isa >= (int)PROCESSOR_PENTIUMPRO)
+	  error ("-mcpu=%s does not support -march=%s", ix86_cpu_string, ix86_isa_string);
 
 	target_flags |= processor_target_table[j].target_enable;
 	target_flags &= ~processor_target_table[j].target_disable;
@@ -218,7 +218,7 @@ override_options ()
 	fatal ("-mregparm=%d is not between 0 and %d", i386_regparm, REGPARM_MAX);
     }
 
-  def_align = (TARGET_386_ALIGNMENT) ? 2 : 4;
+  def_align = (TARGET_386) ? 2 : 4;
 
   /* Validate -malign-loops= value, or provide default */
   if (i386_align_loops_string)
@@ -1681,7 +1681,7 @@ function_epilogue (file, size)
     {
       /* If not an i386, mov & pop is faster than "leave". */
 
-      if (TARGET_LEAVE)
+      if (TARGET_USE_LEAVE)
 	output_asm_insn ("leave", xops);
       else
 	{
@@ -3309,4 +3309,187 @@ assign_386_stack_local (mode, n)
       = assign_stack_local (mode, GET_MODE_SIZE (mode), 0);
 
   return i386_stack_locals[(int) mode][n];
+}
+
+/* Output the approprate insns for doing strlen if not just doing repnz; scasb
+
+   operands[0] = result, initialized with the startaddress
+   operands[1] = alignment of the address.
+   operands[2] = scratch register, initialized with the startaddress when
+   		 not aligned, otherwise undefined
+
+   This is just the body. It needs the initialisations mentioned above and
+   some address computing at the end.  These things are done in i386.md.  */
+
+char *
+output_strlen_unroll (operands)
+     rtx operands[];
+{
+  rtx xops[18];
+
+  xops[0] = operands[0];		/* Result */
+  /*        operands[1];                 * Alignment */
+  xops[1] = operands[2];		/* Scratch */
+  xops[2] = GEN_INT (0);
+  xops[3] = GEN_INT (2);
+  xops[4] = GEN_INT (3);
+  xops[5] = GEN_INT (4);
+  /* xops[6] = gen_label_rtx ();	 * label when aligned to 3-byte */
+  /* xops[7] = gen_label_rtx ();	 * label when aligned to 2-byte */
+  xops[8] = gen_label_rtx ();		/* label of main loop */
+  if(TARGET_USE_Q_REG && QI_REG_P (xops[1]))
+    xops[9] = gen_label_rtx ();		/* pentium optimisation */
+  xops[10] = gen_label_rtx ();		/* end label 2 */
+  xops[11] = gen_label_rtx ();		/* end label 1 */
+  xops[12] = gen_label_rtx ();		/* end label */
+  /* xops[13]				 * Temporary used */
+  xops[14] = GEN_INT (0xff);
+  xops[15] = GEN_INT (0xff00);
+  xops[16] = GEN_INT (0xff0000);
+  xops[17] = GEN_INT (0xff000000);
+
+    /* Loop to check 1..3 bytes for null to get an aligned pointer */
+
+    /* is there a known alignment and is it less then 4 */
+  if (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) < 4)
+    {
+	/* is there a known alignment and is it not 2 */
+      if (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 2)
+	{
+	  xops[6] = gen_label_rtx ();	/* label when aligned to 3-byte */
+	  xops[7] = gen_label_rtx ();	/* label when aligned to 2-byte */
+
+	    /* leave just the 3 lower bits */
+	    /* if this is a q-register, then the high part is used later */
+	    /* therefore user andl rather than andb */
+	  output_asm_insn (AS2 (and%L1,%4,%1), xops);
+	    /* is aligned to 4-byte adress when zero */
+	  output_asm_insn (AS1 (je,%l8), xops);
+	    /* side-effect even Parity when %eax == 3 */
+	  output_asm_insn (AS1 (jp,%6), xops);
+
+	    /* is it aligned to 2 bytes ? */
+	  if (QI_REG_P (xops[1]))
+	    output_asm_insn (AS2 (cmp%L1,%3,%1), xops);
+	  else
+	    output_asm_insn (AS2 (cmp%L1,%3,%1), xops);
+	  output_asm_insn (AS1 (je,%7), xops);
+	}
+      else
+        {
+            /* since the alignment is 2, we have to check 2 or 0 bytes */
+
+	    /* check if is aligned to 4 - byte */
+	  output_asm_insn (AS2 (and%L1,%3,%1), xops);
+	    /* is aligned to 4-byte adress when zero */
+	  output_asm_insn (AS1 (je,%l8), xops);
+        }
+
+      xops[13] = gen_rtx (MEM, QImode, xops[0]);
+	/* now, compare the bytes */
+	/* compare with the high part of a q-reg gives shorter code */
+      if (QI_REG_P (xops[1]))
+        {
+            /* compare the first n unaligned byte on a byte per byte basis */
+          output_asm_insn (AS2 (cmp%B1,%h1,%13), xops);
+            /* when zero we reached the end */
+          output_asm_insn (AS1 (je,%l12), xops);
+            /* increment the address */
+          output_asm_insn (AS1 (inc%L0,%0), xops);
+
+	    /* not needed with an alignment of 2 */
+	  if (GET_CODE (operands[1]) != CONST_INT || INTVAL (operands[1]) != 2)
+	    {
+	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[7]));
+	      output_asm_insn (AS2 (cmp%B1,%h1,%13), xops);
+	      output_asm_insn (AS1 (je,%l12), xops);
+	      output_asm_insn (AS1 (inc%L0,%0), xops);
+
+	      ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[6]));
+	    }
+          output_asm_insn (AS2 (cmp%B1,%h1,%13), xops);
+        }
+      else
+        {
+          output_asm_insn (AS2 (cmp%B13,%2,%13), xops);
+          output_asm_insn (AS1 (je,%l12), xops);
+          output_asm_insn (AS1 (inc%L0,%0), xops);
+
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[7]));
+          output_asm_insn (AS2 (cmp%B13,%2,%13), xops);
+          output_asm_insn (AS1 (je,%l12), xops);
+          output_asm_insn (AS1 (inc%L0,%0), xops);
+
+	  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[6]));
+          output_asm_insn (AS2 (cmp%B13,%2,%13), xops);
+        }
+      output_asm_insn (AS1 (je,%l12), xops);
+      output_asm_insn (AS1 (inc%L0,%0), xops);
+    }
+
+    /* Generate loop to check 4 bytes at a time */
+    /* IMHO it is not a good idea to align this loop.  It gives only */
+    /* huge programms, but does not help to speed up */
+  /* ASM_OUTPUT_LOOP_ALIGN (asm_out_file); */
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[8]));
+
+  xops[13] = gen_rtx (MEM, SImode, xops[0]);
+  output_asm_insn (AS2 (mov%L1,%13,%1), xops);
+
+  if (QI_REG_P (xops[1]))
+    {
+	/* on i586 it is faster to compare the hi- and lo- part */
+	/* as a kind of lookahead.  If xoring both is zero, then one */
+	/* of both *could* be zero, otherwith none of both is zero */
+	/* this saves one instruction, on i486 this is slower */
+	/* testet with P-90, i486DX2-66, AMD486DX2-66 */
+      if(TARGET_PENTIUM)
+        {
+	  output_asm_insn (AS2 (test%B1,%h1,%b1), xops);
+	  output_asm_insn (AS1 (jne,%l9), xops);
+        }
+
+	/* check first byte */
+      output_asm_insn (AS2 (test%B1,%b1,%b1), xops);
+      output_asm_insn (AS1 (je,%l12), xops);
+
+	/* check second byte */
+      output_asm_insn (AS2 (test%B1,%h1,%h1), xops);
+      output_asm_insn (AS1 (je,%l11), xops);
+
+      if(TARGET_PENTIUM)
+          ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[9]));
+    }
+  else
+    {
+	/* check first byte */
+      output_asm_insn (AS2 (test%L1,%14,%1), xops);
+      output_asm_insn (AS1 (je,%l12), xops);
+
+	/* check second byte */
+      output_asm_insn (AS2 (test%L1,%15,%1), xops);
+      output_asm_insn (AS1 (je,%l11), xops);
+    }
+
+    /* check third byte */
+  output_asm_insn (AS2 (test%L1,%16,%1), xops);
+  output_asm_insn (AS1 (je,%l10), xops);
+  
+    /* check fourth byte and increment address */
+  output_asm_insn (AS2 (add%L0,%5,%0), xops);
+  output_asm_insn (AS2 (test%L1,%17,%1), xops);
+  output_asm_insn (AS1 (jne,%l8), xops);
+
+    /* now generate fixups when the compare stops within a 4-byte word */
+  output_asm_insn (AS2 (sub%L0,%4,%0), xops);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[10]));
+  output_asm_insn (AS1 (inc%L0,%0), xops);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[11]));
+  output_asm_insn (AS1 (inc%L0,%0), xops);
+
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, "L", CODE_LABEL_NUMBER (xops[12]));
+
+  RET;
 }
