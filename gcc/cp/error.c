@@ -782,10 +782,13 @@ dump_decl (t, v)
 
     case CONST_DECL:
       if ((TREE_TYPE (t) != NULL_TREE && NEXT_CODE (t) == ENUMERAL_TYPE)
-	  || TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_CONST_PARM)
+	  || (DECL_INITIAL (t) &&
+	      TREE_CODE (DECL_INITIAL (t)) == TEMPLATE_CONST_PARM))
 	goto general;
-      else
+      else if (DECL_INITIAL (t))
 	dump_expr (DECL_INITIAL (t), 0);
+      else
+	OB_PUTS ("enumerator");
       break;
 
     case USING_DECL:
@@ -1363,29 +1366,33 @@ dump_expr (t, nop)
       }
 
     case TEMPLATE_CONST_PARM:
-      if (current_template_parms)
-	{
-	  int i;
-	  int l = list_length (current_template_parms);
-	  tree parms = current_template_parms;
-	  tree r;
+      {
+	int l = current_template_parms ? 
+	  list_length (current_template_parms) : 0;
 
-	  for (i = 0; i < l - TEMPLATE_CONST_LEVEL (t); ++i)
-	    {
-	      parms = TREE_CHAIN (parms);
-	      my_friendly_assert (parms != NULL_TREE, 0);
-	    }
-
-	  r = TREE_VEC_ELT (TREE_VALUE (parms),
-			    TEMPLATE_CONST_IDX (t));
-	  dump_decl (TREE_VALUE (r), -1);
-	}
-      else
-	{
-	  OB_PUTS ("<tparm ");
-	  OB_PUTI (TEMPLATE_CONST_IDX (t));
-	  OB_PUTS (">");
-	}
+	if (l >= TEMPLATE_CONST_LEVEL (t))
+	  {
+	    int i;
+	    tree parms = current_template_parms;
+	    tree r;
+	    
+	    for (i = 0; i < l - TEMPLATE_CONST_LEVEL (t); ++i)
+	      {
+		parms = TREE_CHAIN (parms);
+		my_friendly_assert (parms != NULL_TREE, 0);
+	      }
+	    
+	    r = TREE_VEC_ELT (TREE_VALUE (parms),
+			      TEMPLATE_CONST_IDX (t));
+	    dump_decl (TREE_VALUE (r), -1);
+	  }
+	else
+	  {
+	    OB_PUTS ("<tparm ");
+	    OB_PUTI (TEMPLATE_CONST_IDX (t));
+	    OB_PUTS (">");
+	  }
+      }
       break;
 
     case IDENTIFIER_NODE:

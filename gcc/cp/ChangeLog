@@ -1,3 +1,8 @@
+Tue Sep  9 17:57:25 1997  Mark Mitchell  <mmitchell@usa.net>
+
+	* error.c (dump_decl): Avoid crashing when presented with a
+	uninitialized constant, as can occur with a template parameter.
+
 1997-09-09  Brendan Kehoe  <brendan@lisa.cygnus.com>
 
 	* typeck.c (build_indirect_ref): Heed FLAG_VOLATILE similar to
