@@ -3618,6 +3618,7 @@ reload_as_needed (first, live_known)
   rtx after_call = 0;
 
   bzero (spill_reg_rtx, sizeof spill_reg_rtx);
+  bzero (spill_reg_store, sizeof spill_reg_store);
   reg_last_reload_reg = (rtx *) alloca (max_regno * sizeof (rtx));
   bzero (reg_last_reload_reg, max_regno * sizeof (rtx));
   reg_has_output_reload = (char *) alloca (max_regno);
@@ -5630,12 +5631,11 @@ emit_reload_insns (insn)
 	  if (optimize && GET_CODE (oldequiv) == REG
 	      && REGNO (oldequiv) < FIRST_PSEUDO_REGISTER
 	      && spill_reg_order[REGNO (oldequiv)] >= 0
-	      && spill_reg_store[reload_spill_index[REGNO (oldequiv)]] != 0
+	      && spill_reg_store[spill_reg_order[REGNO (oldequiv)]] != 0
 	      && find_reg_note (insn, REG_DEAD, reload_in[j])
 	      /* This is unsafe if operand occurs more than once in current
 		 insn.  Perhaps some occurrences weren't reloaded.  */
-	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1
-	      && spill_reg_store[spill_reg_order[REGNO (oldequiv)]] != 0)
+	      && count_occurrences (PATTERN (insn), reload_in[j]) == 1)
 	    delete_output_reload
 	      (insn, j, spill_reg_store[spill_reg_order[REGNO (oldequiv)]]);
 
