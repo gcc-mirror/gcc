@@ -1,3 +1,9 @@
+2004-09-15  Andrew Pinski  <apinski@apple.com>
+
+	PR rtl-opt/17427
+	* gcse.c (process_insert_insn): insn_invalid_p has side effects.
+	Move it out of gcc_assert.
+
 2004-09-15  Joseph S. Myers  <jsm@polyomino.org.uk>
 
 	* attribs.c, builtins.c, c-format.c, c-pch.c, coverage.c,

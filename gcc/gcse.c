@@ -4006,7 +4006,8 @@ process_insert_insn (struct expr *expr)
     {
       rtx insn = emit_insn (gen_rtx_SET (VOIDmode, reg, exp));
 
-      gcc_assert (!insn_invalid_p (insn));
+      if (insn_invalid_p (insn))
+	gcc_unreachable ();
     }
   
 
