@@ -1275,18 +1275,19 @@ dwarfout.o : dwarfout.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf.h flags.h \
 dwarf2out.o : dwarf2out.c $(CONFIG_H) $(TREE_H) $(RTL_H) dwarf2.h flags.h \
    insn-config.h reload.h output.h defaults.h hard-reg-set.h regs.h expr.h
 xcoffout.o : xcoffout.c $(CONFIG_H) $(TREE_H) $(RTL_H) xcoffout.h flags.h
-emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h \
-   function.h regs.h insn-config.h insn-codes.h real.h expr.h bytecode.h \
-   bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h bc-opname.h
+emit-rtl.o : emit-rtl.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h except.h \
+   function.h regs.h insn-config.h recog.h real.h expr.h obstack.h \
+   bytecode.h bc-opcode.h bc-typecd.h bc-typecd.def bc-optab.h bc-emit.h \
+   bc-opname.h
 real.o : real.c $(CONFIG_H) $(TREE_H)
 getpwd.o : getpwd.c $(CONFIG_H)
 
 integrate.o : integrate.c $(CONFIG_H) $(RTL_H) $(TREE_H) flags.h integrate.h \
    insn-flags.h insn-config.h insn-codes.h expr.h real.h regs.h function.h \
-   bytecode.h
+   bytecode.h output.h recog.h except.h
 
 jump.o : jump.c $(CONFIG_H) $(RTL_H) flags.h hard-reg-set.h regs.h \
-   insn-config.h insn-flags.h insn-codes.h expr.h real.h
+   insn-config.h insn-flags.h recog.h expr.h real.h except.h
 stupid.o : stupid.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h
 
 cse.o : cse.c $(CONFIG_H) $(RTL_H) regs.h hard-reg-set.h flags.h real.h \
@@ -1295,8 +1296,8 @@ profile.o : profile.c $(CONFIG_H) $(RTL_H) flags.h insn-flags.h gcov-io.h \
    tree.h output.h
 loop.o : loop.c $(CONFIG_H) $(RTL_H) flags.h loop.h insn-config.h \
    insn-flags.h insn-codes.h regs.h hard-reg-set.h recog.h expr.h real.h
-unroll.o : unroll.c $(CONFIG_H) $(RTL_H) insn-config.h insn-codes.h \
-   integrate.h regs.h flags.h expr.h loop.h
+unroll.o : unroll.c $(CONFIG_H) $(RTL_H) insn-config.h integrate.h regs.h \
+   recog.h flags.h expr.h loop.h
 flow.o : flow.c $(CONFIG_H) $(RTL_H) flags.h insn-config.h \
    $(BASIC_BLOCK_H) regs.h hard-reg-set.h output.h
 combine.o : combine.c $(CONFIG_H) $(RTL_H) flags.h  \
