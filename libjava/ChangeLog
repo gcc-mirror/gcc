@@ -1,3 +1,19 @@
+2004-07-17  Jeroen Frijters  <jeroen@frijters.net>
+
+	* java/net/DatagramPacket.java (setAddress): Removed check for
+	null address.
+
+2004-07-17  Michael Koch  <konqueror@gmx.de>
+
+	* java/net/DatagramSocket.java
+	(getLocalAddress): Check if socket is bound or not.
+	* java/net/Socket.java
+	(getLocalAddrss): Check if socket is bound or not.
+	(getPort): Return -1 when not connected. Dont check getImpl() for
+	null.
+	(setReuseAddress): Check if socket is closed.
+	(isConnected): Check if getImpl() returns null.
+
 2004-07-17  Mark Wielaard  <mark@klomp.org>
 
 	* java/awt/event/InvocationEvent.java (dispatch): Synchronize

@@ -278,9 +278,6 @@ public final class DatagramPacket
    */
   public synchronized void setAddress(InetAddress address)
   {
-    if (address == null)
-      throw new NullPointerException("Null address");
-
     this.address = address;
   }
 
