@@ -912,6 +912,9 @@ cleanup:
    multiple times in order to guarantee that the symbol table ends up
    in the proper state.  */
 
+static match match_simple_forall (void);
+static match match_simple_where (void);
+
 match
 gfc_match_if (gfc_statement * if_type)
 {
@@ -1025,6 +1028,7 @@ gfc_match_if (gfc_statement * if_type)
   gfc_clear_error ();
 
   match ("allocate", gfc_match_allocate, ST_ALLOCATE)
+    match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
     match ("backspace", gfc_match_backspace, ST_BACKSPACE)
     match ("call", gfc_match_call, ST_CALL)
     match ("close", gfc_match_close, ST_CLOSE)
@@ -1033,7 +1037,7 @@ gfc_match_if (gfc_statement * if_type)
     match ("deallocate", gfc_match_deallocate, ST_DEALLOCATE)
     match ("end file", gfc_match_endfile, ST_END_FILE)
     match ("exit", gfc_match_exit, ST_EXIT)
-    match ("assign", gfc_match_assign, ST_LABEL_ASSIGNMENT)
+    match ("forall", match_simple_forall, ST_FORALL)
     match ("go to", gfc_match_goto, ST_GOTO)
     match ("inquire", gfc_match_inquire, ST_INQUIRE)
     match ("nullify", gfc_match_nullify, ST_NULLIFY)
@@ -1043,8 +1047,8 @@ gfc_match_if (gfc_statement * if_type)
     match ("read", gfc_match_read, ST_READ)
     match ("return", gfc_match_return, ST_RETURN)
     match ("rewind", gfc_match_rewind, ST_REWIND)
-    match ("pause", gfc_match_stop, ST_PAUSE)
     match ("stop", gfc_match_stop, ST_STOP)
+    match ("where", match_simple_where, ST_WHERE)
     match ("write", gfc_match_write, ST_WRITE)
 
   /* All else has failed, so give up.  See if any of the matchers has
@@ -3170,6 +3174,51 @@ cleanup:
 
 /********************* WHERE subroutines ********************/
 
+/* Match the rest of a simple WHERE statement that follows an IF statement.  
+ */
+
+static match
+match_simple_where (void)
+{
+  gfc_expr *expr;
+  gfc_code *c;
+  match m;
+
+  m = gfc_match (" ( %e )", &expr);
+  if (m != MATCH_YES)
+    return m;
+
+  m = gfc_match_assignment ();
+  if (m == MATCH_NO)
+    goto syntax;
+  if (m == MATCH_ERROR)
+    goto cleanup;
+
+  if (gfc_match_eos () != MATCH_YES)
+    goto syntax;
+
+  c = gfc_get_code ();
+
+  c->op = EXEC_WHERE;
+  c->expr = expr;
+  c->next = gfc_get_code ();
+
+  *c->next = new_st;
+  gfc_clear_new_st ();
+
+  new_st.op = EXEC_WHERE;
+  new_st.block = c;
+
+  return MATCH_YES;
+
+syntax:
+  gfc_syntax_error (ST_WHERE);
+
+cleanup:
+  gfc_free_expr (expr);
+  return MATCH_ERROR;
+}
+
 /* Match a WHERE statement.  */
 
 match
@@ -3374,27 +3423,21 @@ cleanup:
 }
 
 
-/* Match a FORALL statement.  */
+/* Match the header of a FORALL statement.  */
 
-match
-gfc_match_forall (gfc_statement * st)
+static match
+match_forall_header (gfc_forall_iterator ** phead, gfc_expr ** mask)
 {
   gfc_forall_iterator *head, *tail, *new;
-  gfc_expr *mask;
-  gfc_code *c;
-  match m0, m;
+  match m;
+
+  gfc_gobble_whitespace ();
 
   head = tail = NULL;
-  mask = NULL;
-  c = NULL;
+  *mask = NULL;
 
-  m0 = gfc_match_label ();
-  if (m0 == MATCH_ERROR)
-    return MATCH_ERROR;
-
-  m = gfc_match (" forall (");
-  if (m != MATCH_YES)
-    return m;
+  if (gfc_match_char ('(') != MATCH_YES)
+    return MATCH_NO;
 
   m = match_forall_iterator (&new);
   if (m == MATCH_ERROR)
@@ -3419,8 +3462,9 @@ gfc_match_forall (gfc_statement * st)
 	  continue;
 	}
 
-      /* Have to have a mask expression.  */
-      m = gfc_match_expr (&mask);
+      /* Have to have a mask expression */
+
+      m = gfc_match_expr (mask);
       if (m == MATCH_NO)
 	goto syntax;
       if (m == MATCH_ERROR)
@@ -3430,6 +3474,111 @@ gfc_match_forall (gfc_statement * st)
     }
 
   if (gfc_match_char (')') == MATCH_NO)
+    goto syntax;
+
+  *phead = head;
+  return MATCH_YES;
+
+syntax:
+  gfc_syntax_error (ST_FORALL);
+
+cleanup:
+  gfc_free_expr (*mask);
+  gfc_free_forall_iterator (head);
+
+  return MATCH_ERROR;
+}
+
+/* Match the rest of a simple FORALL statement that follows an IF statement. 
+ */
+
+static match
+match_simple_forall (void)
+{
+  gfc_forall_iterator *head;
+  gfc_expr *mask;
+  gfc_code *c;
+  match m;
+
+  mask = NULL;
+  head = NULL;
+  c = NULL;
+
+  m = match_forall_header (&head, &mask);
+
+  if (m == MATCH_NO)
+    goto syntax;
+  if (m != MATCH_YES)
+    goto cleanup;
+
+  m = gfc_match_assignment ();
+
+  if (m == MATCH_ERROR)
+    goto cleanup;
+  if (m == MATCH_NO)
+    {
+      m = gfc_match_pointer_assignment ();
+      if (m == MATCH_ERROR)
+	goto cleanup;
+      if (m == MATCH_NO)
+	goto syntax;
+    }
+
+  c = gfc_get_code ();
+  *c = new_st;
+  c->loc = gfc_current_locus;
+
+  if (gfc_match_eos () != MATCH_YES)
+    goto syntax;
+
+  gfc_clear_new_st ();
+  new_st.op = EXEC_FORALL;
+  new_st.expr = mask;
+  new_st.ext.forall_iterator = head;
+  new_st.block = gfc_get_code ();
+
+  new_st.block->op = EXEC_FORALL;
+  new_st.block->next = c;
+
+  return MATCH_YES;
+
+syntax:
+  gfc_syntax_error (ST_FORALL);
+
+cleanup:
+  gfc_free_forall_iterator (head);
+  gfc_free_expr (mask);
+
+  return MATCH_ERROR;
+}
+
+
+/* Match a FORALL statement.  */
+
+match
+gfc_match_forall (gfc_statement * st)
+{
+  gfc_forall_iterator *head;
+  gfc_expr *mask;
+  gfc_code *c;
+  match m0, m;
+
+  head = NULL;
+  mask = NULL;
+  c = NULL;
+
+  m0 = gfc_match_label ();
+  if (m0 == MATCH_ERROR)
+    return MATCH_ERROR;
+
+  m = gfc_match (" forall");
+  if (m != MATCH_YES)
+    return m;
+
+  m = match_forall_header (&head, &mask);
+  if (m == MATCH_ERROR)
+    goto cleanup;
+  if (m == MATCH_NO)
     goto syntax;
 
   if (gfc_match_eos () == MATCH_YES)

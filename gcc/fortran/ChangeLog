@@ -1,3 +1,14 @@
+2004-08-19  Tobias Schlueter  <tobias.schlueter@physik.uni-muenchen.de>
+ 	(Port from g95)
+
+ 	PR fortran/17074
+	* match.c (match_simple_forall, match_simple_where): Forward-declare.
+	(gfc_match_if): Order statement list alphabetically, add WHERE and
+		FORALL, remove double PAUSE.
+	(gfc_match_simple_where, match_forall_header,
+ 	gfc_match_simple_forall): New functions.
+	(gfc_match_forall): Use match_forall_header.
+	
 2004-08-19  Paul Brook  <paul@codesourcery.com>
 
 	PR fortran/17091
