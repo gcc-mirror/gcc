@@ -1,3 +1,9 @@
+Mon May 10 20:34:10 1999  Jim Wilson  <wilson@cygnus.com>
+
+	* config/mips/elf.h (UNIQUE_SECTION_P): Undef.
+	* config/mips/elf64.h (UNIQUE_SECTION_P): Undef.
+	* config/mips/mips.h (UNIQUE_SECTION_P): Define to 0.
+
 1999-05-10 18:21 -0400  Zack Weinberg  <zack@rabi.columbia.edu>
 
 	* cppfiles.c (initialize_input_buffer): New function.
