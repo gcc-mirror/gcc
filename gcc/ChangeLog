@@ -1,3 +1,8 @@
+2003-08-29  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	* config.gcc: Narrow unsupported target match to avoid clobbering
+	i?86-sequent-sysv4*.
+
 2003-08-29  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* builtins.c (mathfn_built_in): Handle new math builtins.
