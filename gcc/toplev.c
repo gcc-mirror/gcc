@@ -5521,7 +5521,7 @@ print_switch_values (file, pos, max, indent, sep, term)
 
 void
 debug_start_source_file (filename)
-     register char *filename;
+     register char *filename ATTRIBUTE_UNUSED;
 {
 #ifdef DBX_DEBUGGING_INFO
   if (write_symbols == DBX_DEBUG)

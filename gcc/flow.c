@@ -4268,8 +4268,10 @@ print_rtl_with_bb (outf, rtx_first)
       int i;
       enum bb_state { NOT_IN_BB, IN_ONE_BB, IN_MULTIPLE_BB };
       int max_uid = get_max_uid ();
-      basic_block *start = alloca (max_uid * sizeof (basic_block));
-      basic_block *end = alloca (max_uid * sizeof (basic_block));
+      basic_block *start = (basic_block *)
+	alloca (max_uid * sizeof (basic_block));
+      basic_block *end = (basic_block *)
+	alloca (max_uid * sizeof (basic_block));
       enum bb_state *in_bb_p = (enum bb_state *)
 	alloca (max_uid * sizeof (enum bb_state));
 

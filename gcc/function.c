@@ -4028,7 +4028,9 @@ assign_parms (fndecl, second_time)
   /* This is a dummy PARM_DECL that we used for the function result if 
      the function returns a structure.  */
   tree function_result_decl = 0;
+#ifdef SETUP_INCOMING_VARARGS
   int varargs_setup = 0;
+#endif
   rtx conversion_insns = 0;
 
   /* Nonzero if the last arg is named `__builtin_va_alist',
@@ -6451,7 +6453,7 @@ contains (insn, vec)
 
 void
 thread_prologue_and_epilogue_insns (f)
-     rtx f;
+     rtx f ATTRIBUTE_UNUSED;
 {
   int insertted = 0;
 

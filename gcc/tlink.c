@@ -76,6 +76,38 @@ typedef struct demangled_hash_entry
 
 static struct hash_table symbol_table;
 
+static struct hash_entry * symbol_hash_newfunc PARAMS ((struct hash_entry *,
+							struct hash_table *,
+							hash_table_key));
+static struct symbol_hash_entry * symbol_hash_lookup PARAMS ((const char *,
+							      boolean));
+static struct hash_entry * file_hash_newfunc PARAMS ((struct hash_entry *,
+						      struct hash_table *,
+						      hash_table_key));
+static struct file_hash_entry * file_hash_lookup PARAMS ((const char *));
+static struct hash_entry * demangled_hash_newfunc PARAMS ((struct hash_entry *,
+							   struct hash_table *,
+							   hash_table_key));
+static struct demangled_hash_entry *
+  demangled_hash_lookup PARAMS ((const char *, boolean));
+static void symbol_push PARAMS ((symbol *));
+static symbol * symbol_pop PARAMS ((void));
+static void file_push PARAMS ((file *));
+static file * file_pop PARAMS ((void));
+static void tlink_init PARAMS ((void));
+static int tlink_execute PARAMS ((char *, char **, char *));
+static char * frob_extension PARAMS ((char *, const char *));
+static char * obstack_fgets PARAMS ((FILE *, struct obstack *));
+static char * tfgets PARAMS ((FILE *));
+static char * pfgets PARAMS ((FILE *));
+static void freadsym PARAMS ((FILE *, file *, int));
+static void read_repo_file PARAMS ((file *));
+static void maybe_tweak PARAMS ((char *, file *));
+static int recompile_files PARAMS ((void));
+static int read_repo_files PARAMS ((char **));
+static void demangle_new_symbols PARAMS ((void));
+static int scan_linker_output PARAMS ((const char *));
+
 /* Create a new entry for the symbol hash table.
    Passed to hash_table_init.  */
 
@@ -83,7 +115,7 @@ static struct hash_entry *
 symbol_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
      struct hash_table *table;
-     const char *string;
+     hash_table_key string;
 {
   struct symbol_hash_entry *ret = (struct symbol_hash_entry *) entry;
   if (ret == NULL)
@@ -94,8 +126,7 @@ symbol_hash_newfunc (entry, table, string)
 	return NULL;
     }
   ret = ((struct symbol_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, 
-		       (hash_table_key) string));
+     	 hash_newfunc ((struct hash_entry *) ret, table, string));
   ret->file = NULL;
   ret->chosen = 0;
   ret->tweaking = 0;
@@ -124,7 +155,7 @@ static struct hash_entry *
 file_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
      struct hash_table *table;
-     const char *string;
+     hash_table_key string;
 {
    struct file_hash_entry *ret = (struct file_hash_entry *) entry;
   if (ret == NULL)
@@ -135,8 +166,7 @@ file_hash_newfunc (entry, table, string)
 	return NULL;
     }
   ret = ((struct file_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, 
-		       (hash_table_key) string));
+     	 hash_newfunc ((struct hash_entry *) ret, table, string));
   ret->args = NULL;
   ret->dir = NULL;
   ret->main = NULL;
@@ -164,7 +194,7 @@ static struct hash_entry *
 demangled_hash_newfunc (entry, table, string)
      struct hash_entry *entry;
      struct hash_table *table;
-     const char *string;
+     hash_table_key string;
 {
   struct demangled_hash_entry *ret = (struct demangled_hash_entry *) entry;
   if (ret == NULL)
@@ -175,8 +205,7 @@ demangled_hash_newfunc (entry, table, string)
 	return NULL;
     }
   ret = ((struct demangled_hash_entry *)
-     	 hash_newfunc ((struct hash_entry *) ret, table, 
-		       (hash_table_key) string));
+     	 hash_newfunc ((struct hash_entry *) ret, table, string));
   ret->mangled = NULL;
   return (struct hash_entry *) ret;
 }
@@ -309,7 +338,8 @@ tlink_execute (prog, argv, redir)
 
 static char *
 frob_extension (s, ext)
-     char *s, *ext;
+     char *s;
+     const char *ext;
 {
   char *p = rindex (s, '/');
   if (! p)
@@ -578,7 +608,7 @@ demangle_new_symbols ()
 
 static int
 scan_linker_output (fname)
-     char *fname;
+     const char *fname;
 {
   FILE *stream = fopen (fname, "r");
   char *line;

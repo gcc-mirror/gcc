@@ -983,7 +983,7 @@ update_equiv_regs ()
    but needs to be there because this function is called from note_stores.  */
 static void
 no_equiv (reg, store)
-     rtx reg, store;
+     rtx reg, store ATTRIBUTE_UNUSED;
 {
   int regno;
   rtx list;
