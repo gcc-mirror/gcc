@@ -2832,7 +2832,9 @@ main (argc, argv, envp)
 
   signal (SIGFPE, float_signal);
 
+#ifdef SIGPIPE
   signal (SIGPIPE, pipe_closed);
+#endif
 
   decl_printable_name = decl_name;
   lang_expand_expr = (struct rtx_def *(*)()) do_abort;
