@@ -151,6 +151,8 @@ static void aof_file_start (void);
 static void aof_file_end (void);
 #endif
 static rtx arm_struct_value_rtx (tree, int);
+static void arm_setup_incoming_varargs (CUMULATIVE_ARGS *, enum machine_mode,
+					tree, int *, int);
 
 
 /* Initialize the GCC target structure.  */
@@ -241,6 +243,9 @@ static rtx arm_struct_value_rtx (tree, int);
 
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX arm_struct_value_rtx
+
+#undef  TARGET_SETUP_INCOMING_VARARGS
+#define TARGET_SETUP_INCOMING_VARARGS arm_setup_incoming_varargs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13349,4 +13354,23 @@ arm_struct_value_rtx (tree fntype ATTRIBUTE_UNUSED,
      is passed to a function.  */
   return gen_rtx_REG (Pmode, ARG_REGISTER (1));
 #endif
+}
+
+/* Worker function for TARGET_SETUP_INCOMING_VARARGS.
+
+   On the ARM, PRETEND_SIZE is set in order to have the prologue push the last
+   named arg and all anonymous args onto the stack.
+   XXX I know the prologue shouldn't be pushing registers, but it is faster
+   that way.  */
+
+static void
+arm_setup_incoming_varargs (CUMULATIVE_ARGS *cum,
+			    enum machine_mode mode ATTRIBUTE_UNUSED,
+			    tree type ATTRIBUTE_UNUSED,
+			    int *pretend_size,
+			    int second_time ATTRIBUTE_UNUSED)
+{
+  cfun->machine->uses_anonymous_args = 1;
+  if (cum->nregs < NUM_ARG_REGS)
+    *pretend_size = (NUM_ARG_REGS - cum->nregs) * UNITS_PER_WORD;
 }
