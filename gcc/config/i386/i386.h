@@ -1430,7 +1430,7 @@ do { union { float f; long l;} tem;			\
 #define TARGET_VT 013
 #define TARGET_FF 014
 #define TARGET_CR 015
-
+
 /* Print operand X (an rtx) in assembler syntax to file FILE.
    CODE is a letter or dot (`z' in `%z0') or 0 if no letter was specified.
    The CODE z takes the size of operand from the following digit, and
@@ -1449,9 +1449,51 @@ do { union { float f; long l;} tem;			\
 #define PRINT_OPERAND_PUNCT_VALID_P(CODE)				\
   ((CODE) == '*')
 
+/* Print the name of a register based on its machine mode and number.
+   If CODE is 'w', pretend the mode is HImode.
+   If CODE is 'b', pretend the mode is QImode.
+   If CODE is 'k', pretend the mode is SImode.
+   If CODE is 'h', pretend the reg is the `high' byte register.
+   If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op. */
+
+extern char *hi_reg_name[];
+extern char *qi_reg_name[];
+extern char *qi_high_reg_name[];
+
+#define PRINT_REG(X, CODE, FILE) \
+  do { if (REGNO (X) == ARG_POINTER_REGNUM)		\
+	 abort ();					\
+       fprintf (FILE, "%s", RP);			\
+       switch ((CODE == 'w' ? 2 			\
+		: CODE == 'b' ? 1			\
+		: CODE == 'k' ? 4			\
+		: CODE == 'y' ? 3			\
+		: CODE == 'h' ? 0			\
+		: GET_MODE_SIZE (GET_MODE (X))))	\
+	 {						\
+	 case 3:					\
+	   if (STACK_TOP_P (X))				\
+	     {						\
+	       fputs ("st(0)", FILE);			\
+	       break;					\
+	     }						\
+	 case 4:					\
+	 case 8:					\
+	   if (!FP_REG_P (X)) fputs ("e", FILE);	\
+	 case 2:					\
+	   fputs (hi_reg_name[REGNO (X)], FILE);	\
+	   break;					\
+	 case 1:					\
+	   fputs (qi_reg_name[REGNO (X)], FILE);	\
+	   break;					\
+	 case 0:					\
+	   fputs (qi_high_reg_name[REGNO (X)], FILE);	\
+	   break;					\
+	 }						\
+     } while (0)
+
 #define PRINT_OPERAND(FILE, X, CODE)  \
   print_operand (FILE, X, CODE)
-
 
 #define PRINT_OPERAND_ADDRESS(FILE, ADDR)  \
   print_operand_address (FILE, ADDR)
