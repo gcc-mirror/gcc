@@ -1,3 +1,11 @@
+Fri Nov 27 13:10:32 1998  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* fini.c: Rename variable `spaces' to `xspaces' to avoid
+	conflicting with function `spaces' from libiberty.
+
+	* g77spec.c: Don't prototype libiberty functions.
+	* malloc.c: Likewise.
+
 1998-11-20  Dave Love  <d.love@dl.ac.uk>
 
 	* g77.texi: Assorted minor changes.
