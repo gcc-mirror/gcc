@@ -2944,6 +2944,10 @@ pointer_diff (op0, op1)
 
   op0 = build_binary_op (MINUS_EXPR, convert (restype, op0),
 			 convert (restype, op1), 1);
+  /* This generates an error if op1 is pointer to incomplete type.  */
+  if (TYPE_SIZE (TREE_TYPE (TREE_TYPE (op1))) == 0)
+    error ("arithmetic on pointer to an incomplete type");
+  /* This generates an error if op0 is pointer to incomplete type.  */
   op1 = c_size_in_bytes (target_type);
 
   /* Divide by the size, in easiest possible way.  */
