@@ -48,5 +48,10 @@ INCLUDES = \
 	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
 ## Build support utilities.
+## Only build this as native, as need to find startup files and libc to link.
+if GLIBCPP_BUILD_ABI_CHECK
 noinst_PROGRAMS = abi_check
+else
+noinst_PROGRAMS = 
+endif
 abi_check_SOURCES = abi_check.cc

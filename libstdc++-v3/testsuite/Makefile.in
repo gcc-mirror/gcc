@@ -159,13 +159,13 @@ INCLUDES = \
 	-nostdinc++ \
 	@GLIBCPP_INCLUDES@ @LIBSUPCXX_INCLUDES@ @TOPLEVEL_INCLUDES@ 
 
-
-noinst_PROGRAMS = abi_check
+@GLIBCPP_BUILD_ABI_CHECK_TRUE@noinst_PROGRAMS = @GLIBCPP_BUILD_ABI_CHECK_TRUE@abi_check
+@GLIBCPP_BUILD_ABI_CHECK_FALSE@noinst_PROGRAMS = 
 abi_check_SOURCES = abi_check.cc
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-noinst_PROGRAMS =  abi_check$(EXEEXT)
+@GLIBCPP_BUILD_ABI_CHECK_FALSE@noinst_PROGRAMS = 
 PROGRAMS =  $(noinst_PROGRAMS)
 
 
