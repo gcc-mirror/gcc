@@ -66,7 +66,7 @@ gen_stdcall_suffix (decl)
 
 /* Cover function for UNIQUE_SECTION.  */
 
-tree
+void
 i386_pe_unique_section (decl, reloc)
      tree decl;
      int reloc;
@@ -89,5 +89,5 @@ i386_pe_unique_section (decl, reloc)
   string = alloca (len + 1);
   sprintf (string, "%s%s", prefix, name);
 
-  return build_string (len, string);
+  DECL_SECTION_NAME (decl) = build_string (len, string);
 }
