@@ -622,7 +622,9 @@ SYSLIBS = @GNAT_LIBEXC@
 HOST_LIBS = $(BUILD_LIBIBERTY)
 
 HOST_RTL = $(BUILD_PREFIX)rtl.o read-rtl.o $(BUILD_PREFIX)bitmap.o \
-		$(BUILD_PREFIX)ggc-none.o gensupport.o
+		$(BUILD_PREFIX)ggc-none.o
+HOST_SUPPORT = gensupport.o insn-conditions.o
+HOST_EARLY_SUPPORT = gensupport.o dummy-conditions.o
 
 HOST_PRINT = $(BUILD_PREFIX)print-rtl.o
 HOST_ERRORS = $(BUILD_PREFIX)errors.o
@@ -742,29 +744,20 @@ OBJS = alias.o bb-reorder.o bitmap.o builtins.o caller-save.o calls.o	   \
 
 BACKEND = main.o libbackend.a
 
-# GEN files are listed separately, so they can be built before doing parallel
-#  makes for cc1 or cc1plus.  Otherwise sequent parallel make attempts to load
-#  them before rtl.o is compiled.
-GEN= genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
- genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext)   \
- genconfig$(build_exeext) genpeep$(build_exeext) gengenrtl$(build_exeext)    \
- gencheck$(build_exeext) genpreds$(build_exeext) genconstants$(build_exeext) \
- gengtype$(build_exeext)
-
 # Files to be copied away after each stage in building.
 STAGESTUFF = *$(objext) insn-flags.h insn-config.h insn-codes.h \
  insn-output.c insn-recog.c insn-emit.c insn-extract.c insn-peep.c \
  insn-attr.h insn-attrtab.c insn-opinit.c insn-constants.h tm-preds.h \
- tree-check.h \
+ tree-check.h insn-conditions.c \
  s-flags s-config s-codes s-mlib s-under s-genrtl s-gtype gtyp-gen.h \
- s-output s-recog s-emit s-extract s-peep s-check \
+ s-output s-recog s-emit s-extract s-peep s-check s-conditions \
  s-attr s-attrtab s-opinit s-preds s-constants s-crt0 \
  genemit$(build_exeext) genoutput$(build_exeext) genrecog$(build_exeext) \
  genextract$(build_exeext) genflags$(build_exeext) gencodes$(build_exeext) \
  genconfig$(build_exeext) genpeep$(build_exeext) genattrtab$(build_exeext) \
  genattr$(build_exeext) genopinit$(build_exeext) gengenrtl$(build_exeext) \
  gencheck$(build_exeext) genpreds$(build_exeext) genconstants$(build_exeext) \
- gengtype$(build_exeext) \
+ gengtype$(build_exeext) genconditions$(build_exeext) \
  genrtl.c genrtl.h gt-*.h gtype-*.h gtype-desc.c \
  xgcc$(exeext) cpp$(exeext) cc1$(exeext) $(EXTRA_PASSES) \
  $(EXTRA_PARTS) $(EXTRA_PROGRAMS) gcc-cross$(exeext) cc1obj$(exeext) \
@@ -1698,6 +1691,21 @@ s-config : $(md_file) genconfig$(build_exeext) $(srcdir)/move-if-change
 	$(SHELL) $(srcdir)/move-if-change tmp-config.h insn-config.h
 	$(STAMP) s-config
 
+insn-conditions.c: s-conditions ; @true
+s-conditions : $(md_file) genconditions$(build_exeext) $(srcdir)/move-if-change
+	./genconditions$(build_exeext) $(md_file) > tmp-conditions.c
+	$(SHELL) $(srcdir)/move-if-change tmp-conditions.c insn-conditions.c
+	$(STAMP) s-conditions
+
+insn-conditions.o : insn-conditions.c $(GCONFIG_H) $(SYSTEM_H) $(RTL_H) \
+  $(TM_P_H) $(REGS_H) function.h $(RECOG_H) real.h output.h flags.h \
+  hard-reg-set.h resource.h toplev.h reload.h gensupport.h insn-constants.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) insn-conditions.c
+
+dummy-conditions.o : dummy-conditions.c $(GCONFIG_H) $(SYSTEM_H) gensupport.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+	    $(srcdir)/dummy-conditions.c $(OUTPUT_OPTION)
+
 insn-flags.h: s-flags ; @true
 s-flags : $(md_file) genflags$(build_exeext) $(srcdir)/move-if-change
 	./genflags$(build_exeext) $(md_file) > tmp-flags.h
@@ -1904,88 +1912,109 @@ read-rtl.o: read-rtl.c $(HCONFIG_H) $(SYSTEM_H) $(RTL_H) \
 gensupport.o: gensupport.c $(RTL_H) $(OBSTACK_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gensupport.c $(OUTPUT_OPTION)
 
-genconfig$(build_exeext) : genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genconfig$(build_exeext) : genconfig.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	  genconfig.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	  genconfig.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genconfig.o : genconfig.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconfig.c $(OUTPUT_OPTION)
 
-genflags$(build_exeext) : genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genflags$(build_exeext) : genflags.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genflags.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genflags.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genflags.o : genflags.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genflags.c $(OUTPUT_OPTION)
 
-gencodes$(build_exeext) : gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+gencodes$(build_exeext) : gencodes.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 gencodes.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 gencodes.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 gencodes.o : gencodes.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/gencodes.c $(OUTPUT_OPTION)
 
-genconstants$(build_exeext) : genconstants.o $(HOST_RTL) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genconstants$(build_exeext) : genconstants.o $(HOST_RTL) $(HOST_EARLY_SUPPORT) \
+  $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genconstants.o $(HOST_RTL) $(HOST_ERRORS) $(HOST_LIBS)
+	 genconstants.o $(HOST_EARLY_SUPPORT) $(HOST_RTL) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genconstants.o : genconstants.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genconstants.c $(OUTPUT_OPTION)
 
-genemit$(build_exeext) : genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genemit$(build_exeext) : genemit.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genemit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genemit.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genemit.o : genemit.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genemit.c $(OUTPUT_OPTION)
 
-genopinit$(build_exeext) : genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genopinit$(build_exeext) : genopinit.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genopinit.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genopinit.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genopinit.o : genopinit.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genopinit.c $(OUTPUT_OPTION)
 
-genrecog$(build_exeext) : genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genrecog$(build_exeext) : genrecog.o $(HOST_RTL) $(HOST_SUPPORT) \
+    $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genrecog.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genrecog.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genrecog.o : genrecog.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genrecog.c $(OUTPUT_OPTION)
 
-genextract$(build_exeext) : genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genextract$(build_exeext) : genextract.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genextract.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genextract.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genextract.o : genextract.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) insn-config.h errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genextract.c $(OUTPUT_OPTION)
 
-genpeep$(build_exeext) : genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genpeep$(build_exeext) : genpeep.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genpeep.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genpeep.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genpeep.o : genpeep.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genpeep.c $(OUTPUT_OPTION)
 
-genattr$(build_exeext) : genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genattr$(build_exeext) : genattr.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genattr.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genattr.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genattr.o : genattr.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h gensupport.h
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genattr.c $(OUTPUT_OPTION)
 
 genattrtab$(build_exeext) : genattrtab.o genautomata.o \
-  $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) $(HOST_LIBDEPS)
+  $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) \
+  $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
 	 genattrtab.o genautomata.o \
-	 $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_VARRAY) \
-	 $(HOST_LIBS) -lm
+	 $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) $(HOST_ERRORS) \
+	 $(HOST_VARRAY) $(HOST_LIBS) -lm
 
 genattrtab.o : genattrtab.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h $(GGC_H) gensupport.h genattrtab.h
@@ -1995,9 +2024,11 @@ genautomata.o : genautomata.c $(RTL_H) $(OBSTACK_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h varray.h genattrtab.h $(HASHTAB_H)
 	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) $(srcdir)/genautomata.c $(OUTPUT_OPTION)
 
-genoutput$(build_exeext) : genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
+genoutput$(build_exeext) : genoutput.o $(HOST_RTL) $(HOST_SUPPORT) \
+  $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBDEPS)
 	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
-	 genoutput.o $(HOST_RTL) $(HOST_PRINT) $(HOST_ERRORS) $(HOST_LIBS)
+	 genoutput.o $(HOST_RTL) $(HOST_SUPPORT) $(HOST_PRINT) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
 
 genoutput.o : genoutput.c $(RTL_H) $(HCONFIG_H) \
   $(SYSTEM_H) errors.h gensupport.h
@@ -2051,6 +2082,16 @@ $(srcdir)/gengtype-yacc.c: $(srcdir)/gengtype-yacc.y
 	(cd $(srcdir) && \
 	 $(BISON) $(BISONFLAGS) -d -o gengtype-yacc.c gengtype-yacc.y || \
 	 ( rm -f $@ && false ) )
+
+genconditions$(build_exeext) : genconditions.o $(HOST_EARLY_SUPPORT) \
+  $(HOST_RTL) $(HOST_ERRORS) $(HOST_LIBDEPS)
+	$(HOST_CC) $(HOST_CFLAGS) $(HOST_LDFLAGS) -o $@ \
+	 genconditions.o $(HOST_EARLY_SUPPORT) $(HOST_RTL) \
+	    $(HOST_ERRORS) $(HOST_LIBS)
+
+genconditions.o : genconditions.c $(RTL_H) $(HCONFIG_H) $(SYSTEM_H) errors.h
+	$(HOST_CC) -c $(HOST_CFLAGS) $(HOST_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/genconditions.c $(OUTPUT_OPTION)
 
 #
 # Compile the libraries to be used by gen*.

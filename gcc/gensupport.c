@@ -23,11 +23,14 @@
 #include "rtl.h"
 #include "obstack.h"
 #include "errors.h"
+#include "hashtab.h"
 #include "gensupport.h"
 
 
 /* In case some macros used by files we include need it, define this here.  */
 int target_flags;
+
+int insn_elision = 1;
 
 static struct obstack obstack;
 struct obstack *rtl_obstack = &obstack;
@@ -38,6 +41,8 @@ static int errors;
 static int predicable_default;
 static const char *predicable_true;
 static const char *predicable_false;
+
+static htab_t condition_table;
 
 static char *base_dir = NULL;
 
@@ -950,6 +955,7 @@ init_md_reader (filename)
 {
   FILE *input_file;
   int c;
+  size_t i;
   char *lastsl;
 
   lastsl = strrchr (filename, '/');
@@ -963,6 +969,14 @@ init_md_reader (filename)
       perror (filename);
       return FATAL_EXIT_CODE;
     }
+
+  /* Initialize the table of insn conditions.  */
+  condition_table = htab_create (n_insn_conditions,
+				 hash_c_test, cmp_c_test, NULL);
+
+  for (i = 0; i < n_insn_conditions; i++)
+    *(htab_find_slot (condition_table, (PTR) &insn_conditions[i], INSERT))
+      = (PTR) &insn_conditions[i];
 
   obstack_init (rtl_obstack);
   errors = 0;
@@ -1002,6 +1016,8 @@ read_md_rtx (lineno, seqnr)
   struct queue_elem **queue, *elem;
   rtx desc;
 
+ discard:
+
   /* Read all patterns from a given queue before moving on to the next.  */
   if (define_attr_queue != NULL)
     queue = &define_attr_queue;
@@ -1021,14 +1037,29 @@ read_md_rtx (lineno, seqnr)
 
   free (elem);
 
+  /* Discard insn patterns which we know can never match (because
+     their C test is provably always false).  If insn_elision is
+     false, our caller needs to see all the patterns.  Note that the
+     elided patterns are never counted by the sequence numbering; it
+     it is the caller's responsibility, when insn_elision is false, not
+     to use elided pattern numbers for anything.  */
   switch (GET_CODE (desc))
     {
     case DEFINE_INSN:
     case DEFINE_EXPAND:
+      if (maybe_eval_c_test (XSTR (desc, 2)) != 0)
+	sequence_num++;
+      else if (insn_elision)
+	goto discard;
+      break;
+
     case DEFINE_SPLIT:
     case DEFINE_PEEPHOLE:
     case DEFINE_PEEPHOLE2:
-      sequence_num++;
+      if (maybe_eval_c_test (XSTR (desc, 1)) != 0)
+	sequence_num++;
+      else if (insn_elision)
+	    goto discard;
       break;
 
     default:
@@ -1036,6 +1067,73 @@ read_md_rtx (lineno, seqnr)
     }
 
   return desc;
+}
+
+/* Helper functions for insn elision.  */
+
+/* Compute a hash function of a c_test structure, which is keyed
+   by its ->expr field.  */
+hashval_t
+hash_c_test (x)
+     const PTR x;
+{
+  const struct c_test *a = (const struct c_test *) x;
+  const unsigned char *base, *s = (const unsigned char *) a->expr;
+  hashval_t hash;
+  unsigned char c;
+  unsigned int len;
+
+  base = s;
+  hash = 0;
+
+  while ((c = *s++) != '\0')
+    {
+      hash += c + (c << 17);
+      hash ^= hash >> 2;
+    }
+
+  len = s - base;
+  hash += len + (len << 17);
+  hash ^= hash >> 2;
+
+  return hash;
+}
+
+/* Compare two c_test expression structures.  */
+int
+cmp_c_test (x, y)
+     const PTR x;
+     const PTR y;
+{
+  const struct c_test *a = (const struct c_test *) x;
+  const struct c_test *b = (const struct c_test *) y;
+
+  return !strcmp (a->expr, b->expr);
+}
+
+/* Given a string representing a C test expression, look it up in the
+   condition_table and report whether or not its value is known
+   at compile time.  Returns a tristate: 1 for known true, 0 for
+   known false, -1 for unknown.  */
+int
+maybe_eval_c_test (expr)
+     const char *expr;
+{
+  const struct c_test *test;
+  struct c_test dummy;
+
+  if (expr[0] == 0)
+    return 1;
+
+  if (insn_elision_unavailable)
+    return -1;
+
+  dummy.expr = expr;
+  test = (const struct c_test *) htab_find (condition_table, &dummy);
+  if (!test)
+    abort ();
+
+  return test->value;
 }
 
 /* Given a string, return the number of comma-separated elements in it.

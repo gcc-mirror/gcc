@@ -28,18 +28,26 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
 #include "errors.h"
 #include "gensupport.h"
 
-static void gen_insn PARAMS ((const char *, int));
+static void gen_insn PARAMS ((rtx, int));
 
 static void
-gen_insn (name, code)
-     const char *name;
+gen_insn (insn, code)
+     rtx insn;
      int code;
 {
+  const char *name = XSTR (insn, 0);
+  int truth = maybe_eval_c_test (XSTR (insn, 2));
+
   /* Don't mention instructions whose names are the null string
      or begin with '*'.  They are in the machine description just
      to be recognized.  */
   if (name[0] != 0 && name[0] != '*')
-    printf ("  CODE_FOR_%s = %d,\n", name, code);
+    {
+      if (truth == 0)
+	printf ("#define CODE_FOR_%s CODE_FOR_nothing\n", name);
+      else
+	printf ("  CODE_FOR_%s = %d,\n", name, code);
+    }
 }
 
 extern int main PARAMS ((int, char **));
@@ -52,6 +60,10 @@ main (argc, argv)
   rtx desc;
 
   progname = "gencodes";
+
+  /* We need to see all the possibilities.  Elided insns may have
+     direct references to CODE_FOR_xxx in C code.  */
+  insn_elision = 0;
 
   if (argc <= 1)
     fatal ("no input file name");
@@ -80,10 +92,10 @@ enum insn_code {");
 	break;
 
       if (GET_CODE (desc) == DEFINE_INSN || GET_CODE (desc) == DEFINE_EXPAND)
-	gen_insn (XSTR (desc, 0), insn_code_number);
+	gen_insn (desc, insn_code_number);
     }
 
-  puts ("CODE_FOR_nothing\n\
+  puts ("  CODE_FOR_nothing\n\
 };\n\
 \n\
 #endif /* GCC_INSN_CODES_H */");

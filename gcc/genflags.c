@@ -124,14 +124,18 @@ gen_macro (name, real, expect)
   printf ("(%c))\n", i + 'A');
 }
 
-/* Print out prototype information for a function.  */
+/* Print out prototype information for a generator function.  If the
+   insn pattern has been elided, print out a dummy generator that
+   does nothing.  */
 
 static void
 gen_proto (insn)
      rtx insn;
 {
   int num = num_operands (insn);
+  int i;
   const char *name = XSTR (insn, 0);
+  int truth = maybe_eval_c_test (XSTR (insn, 2));
 
   /* Many md files don't refer to the last two operands passed to the
      call patterns.  This means their generator functions will be two
@@ -152,19 +156,41 @@ gen_proto (insn)
 	gen_macro (name, num, 5);
     }
 
-  printf ("extern struct rtx_def *gen_%-*s PARAMS ((", max_id_len, name);
+  if (truth != 0)
+    printf ("extern rtx        gen_%-*s PARAMS ((", max_id_len, name);
+  else
+    printf ("static inline rtx gen_%-*s PARAMS ((", max_id_len, name);
 
   if (num == 0)
-    printf ("void");
+    fputs ("void", stdout);
   else
     {
-      while (num-- > 1)
-	printf ("struct rtx_def *, ");
-
-      printf ("struct rtx_def *");
+      for (i = 1; i < num; i++)
+	fputs ("rtx, ", stdout);
+      
+      fputs ("rtx", stdout);
     }
 
-  printf ("));\n");
+  puts ("));");
+
+  /* Some back ends want to take the address of generator functions,
+     so we cannot simply use #define for these dummy definitions.  */
+  if (truth == 0)
+    {
+      printf ("static inline rtx\ngen_%s", name);
+      if (num > 0)
+	{
+	  putchar ('(');
+	  for (i = 0; i < num-1; i++)
+	    printf ("%c, ", 'a' + i);
+	  printf ("%c)\n", 'a' + i);
+	  for (i = 0; i < num; i++)
+	    printf ("     rtx %c ATTRIBUTE_UNUSED;\n", 'a' + i);
+	}
+      else
+	puts ("()");
+      puts ("{\n  return 0;\n}");
+    }
 
 }
 
@@ -175,6 +201,7 @@ gen_insn (insn)
   const char *name = XSTR (insn, 0);
   const char *p;
   int len;
+  int truth = maybe_eval_c_test (XSTR (insn, 2));
 
   /* Don't mention instructions whose names are the null string
      or begin with '*'.  They are in the machine description just
@@ -187,22 +214,23 @@ gen_insn (insn)
   if (len > max_id_len)
     max_id_len = len;
 
-  printf ("#define HAVE_%s ", name);
-  if (strlen (XSTR (insn, 2)) == 0)
-    printf ("1\n");
+  if (truth == 0)
+    /* emit nothing */;
+  else if (truth == 1)
+    printf ("#define HAVE_%s 1\n", name);
   else
     {
       /* Write the macro definition, putting \'s at the end of each line,
 	 if more than one.  */
-      printf ("(");
+      printf ("#define HAVE_%s (", name);
       for (p = XSTR (insn, 2); *p; p++)
 	{
 	  if (IS_VSPACE (*p))
-	    printf (" \\\n");
+	    fputs (" \\\n", stdout);
 	  else
-	    printf ("%c", *p);
+	    putchar (*p);
 	}
-      printf (")\n");
+      fputs (")\n", stdout);
     }
 
   obstack_grow (&obstack, &insn, sizeof (rtx));
@@ -222,6 +250,10 @@ main (argc, argv)
 
   progname = "genflags";
   obstack_init (&obstack);
+
+  /* We need to see all the possibilities.  Elided insns may have
+     direct calls to their generators in C code.  */
+  insn_elision = 0;
 
   if (argc <= 1)
     fatal ("no input file name");
@@ -252,7 +284,6 @@ main (argc, argv)
   obstack_grow (&obstack, &dummy, sizeof (rtx));
   insns = (rtx *) obstack_finish (&obstack);
 
-  printf ("struct rtx_def;\n");
   for (insn_ptr = insns; *insn_ptr; insn_ptr++)
     gen_proto (*insn_ptr);
 

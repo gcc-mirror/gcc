@@ -1,7 +1,38 @@
+2002-07-29  Zack Weinberg  <zack@codesourcery.com>
+
+	* gensupport.c: Include hashtab.h.
+	(insn_elision, condition_table, hash_c_test, cmp_c_test,
+	maybe_eval_c_test): New routines and data structures to
+	support insn elision.
+	(init_md_reader): Read and initialize the condition_table.
+	(read_md_rtx): Discard insn patterns whose C test is provably
+	always false.
+	* gensupport.h: Declare new functions and data structures.
+
+	* genconditions.c, dummy-conditions.c: New files.
+	* Makefile.in: Build genconditions; run it to construct
+	insn-conditions.c; build that and link it into most gen*
+	programs.
+	(HOST_SUPPORT, HOST_EARLY_SUPPORT): New variables.
+	(GEN): Delete, unused.
+	(STAGESTUFF): Update.
+
+	* gencodes.c: (gen_insn): #define CODE_FOR_xxx equal to
+	CODE_FOR_nothing for all elided patterns.
+	(main): Tweaked to support this.
+	* genflags.c (gen_proto): Emit a static inline generator
+	function here for all elided patterns, which simply returns
+	NULL_RTX.
+	(gen_insn): Do not define HAVE_xxx for elided patterns.
+	(main): Tweaked to support this.  No need to forward-declare
+	struct rtx_def.
+	* genrecog.c: Do not bother emitting the C test if it's known
+	to be true at compile time.
+
 2002-07-29  Mike Stump  <mrs@apple.com>
 
-	* config.gcc (target_gtfiles): Initialize, as otherwise cross compilers hosted on
-	powerpc-apple-darwin6.0 won't even build.
+	* config.gcc (target_gtfiles): Initialize, as otherwise cross 
+	compilers hosted on powerpc-apple-darwin6.0 won't even build.
 
 2002-07-29  Richard Earnshaw  <rearnsha@arm.com>
 
