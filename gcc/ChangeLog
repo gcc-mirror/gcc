@@ -204,12 +204,6 @@ Fri Oct 29 15:25:07 1999  Arnaud Charlet  <charlet@ACT-Europe.FR>
 	* dwarf2out.c (dwarf2out_do_frame): Check -funwind_tables.
 	(dwarf2out_frame_finish): Likewise.
 
-Fri Oct 29 06:32:44 1999  Geoffrey Keating  <geoffk@cygnus.com>
-
-	* flow.c (propagate_block): When the last reference to a label
- 	before an ADDR_VEC is deleted because the reference is a dead
- 	store, delete the ADDR_VEC.
-
 Fri Oct 29 07:44:26 1999  Vasco Pedro  <vp@di.fct.unl.pt>
 
 	* fold-const.c (merge_ranges): In not in0, but in1, handle
