@@ -1,5 +1,7 @@
 Sun Oct 31 01:53:30 1999  Jeffrey A Law  (law@cygnus.com)
 
+	* fr30.h (EXTRA_CC_NAMES): Remove obsolete macro.
+
 	* cccp.c (macroexpand): Avoid out of range accesses for omitted
 	arguments.
 
