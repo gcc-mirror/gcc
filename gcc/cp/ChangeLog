@@ -1,5 +1,9 @@
 1998-10-28  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* init.c (build_delete): Reset TYPE_HAS_DESTRUCTOR here.
+	* decl.c (finish_function): Not here.
+	(start_function): Do set DECL_INITIAL.
+	
 	* pt.c (push_template_decl_real): Complain about default template
 	args for enclosing classes.
 

@@ -12516,6 +12516,10 @@ start_function (declspecs, declarator, attrs, pre_parsed_p)
       && TREE_CODE (TREE_TYPE (fntype)) == VOID_TYPE)
     cp_warning ("`operator=' should return a reference to `*this'");
 
+  /* Make the init_value nonzero so pushdecl knows this is not tentative.
+     error_mark_node is replaced below (in poplevel) with the BLOCK.  */
+  DECL_INITIAL (decl1) = error_mark_node;
+
 #ifdef SET_DEFAULT_DECL_ATTRIBUTES
   SET_DEFAULT_DECL_ATTRIBUTES (decl1, attrs);
 #endif
@@ -13074,7 +13078,8 @@ finish_function (lineno, call_poplevel, nested)
 	     pointer to represent the type of our base class.  */
 
 	  /* This side-effect makes call to `build_delete' generate the
-	     code we have to have at the end of this destructor.  */
+	     code we have to have at the end of this destructor.
+	     `build_delete' will set the flag again.  */
 	  TYPE_HAS_DESTRUCTOR (current_class_type) = 0;
 
 	  /* These are two cases where we cannot delegate deletion.  */
@@ -13132,8 +13137,6 @@ finish_function (lineno, call_poplevel, nested)
 	      if (cond != integer_one_node)
 		expand_end_cond ();
 	    }
-
-	  TYPE_HAS_DESTRUCTOR (current_class_type) = 1;
 
 	  virtual_size = c_sizeof (current_class_type);
 
