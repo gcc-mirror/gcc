@@ -3865,7 +3865,12 @@ relax_delay_slots (first)
 	  /* If this jump goes to another unconditional jump, thread it, but
 	     don't convert a jump into a RETURN here.  */
 	  trial = follow_jumps (target_label);
-	  trial = prev_label (next_active_insn (trial));
+	  /* We use next_real_insn instead of next_active_insn, so that
+	     the special USE insns emitted by reorg won't be ignored.
+	     If they are ignored, then they will get deleted if target_label
+	     is now unreachable, and that would cause mark_target_live_regs
+	     to fail.  */
+	  trial = prev_label (next_real_insn (trial));
 	  if (trial == 0 && target_label != 0)
 	    trial = find_end_label ();
 
