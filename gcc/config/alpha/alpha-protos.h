@@ -159,13 +159,13 @@ extern void alpha_emit_xfloating_cvt PARAMS ((enum rtx_code, rtx[]));
 #endif
 
 extern rtx alpha_need_linkage PARAMS ((const char *, int));
+extern rtx alpha_use_linkage PARAMS ((rtx, tree, int, int));
 
 #if TARGET_ABI_OPEN_VMS
 #ifdef HAVE_MACHINE_MODES
 extern enum avms_arg_type alpha_arg_type PARAMS ((enum machine_mode));
 #endif
 extern rtx alpha_arg_info_reg_val PARAMS ((CUMULATIVE_ARGS));
-extern void alpha_write_linkage PARAMS ((FILE *));
 #endif /* TARGET_ABI_OPEN_VMS */
 
 extern rtx unicosmk_add_call_info_word PARAMS ((rtx));

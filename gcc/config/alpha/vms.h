@@ -300,8 +300,6 @@ extern void literals_section	PARAMS ((void));
 #define ASM_OUTPUT_ADDR_VEC_ELT(FILE, VALUE) \
   fprintf (FILE, "\t.quad $L%d\n", (VALUE))
 
-#define ASM_FILE_END(FILE) alpha_write_linkage (FILE);
-
 #undef CASE_VECTOR_MODE
 #define CASE_VECTOR_MODE DImode
 #undef CASE_VECTOR_PC_RELATIVE

@@ -4429,11 +4429,9 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[1]);
   if (GET_CODE (operands[0]) == SYMBOL_REF)
     {
-      rtx linkage = alpha_need_linkage (XSTR (operands[0], 0), 0);
+      alpha_need_linkage (XSTR (operands[0], 0), 0);
 
-      emit_move_insn (gen_rtx_REG (Pmode, 26), gen_rtx_MEM (Pmode, linkage));
-      operands[2]
-	= validize_mem (gen_rtx_MEM (Pmode, plus_constant (linkage, 8)));
+      operands[2] = const0_rtx;
     }
   else
     {
@@ -4531,11 +4529,9 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   emit_move_insn (gen_rtx_REG (DImode, 25), operands[2]);
   if (GET_CODE (operands[1]) == SYMBOL_REF)
     {
-      rtx linkage = alpha_need_linkage (XSTR (operands[1], 0), 0);
+      alpha_need_linkage (XSTR (operands[1], 0), 0);
 
-      emit_move_insn (gen_rtx_REG (Pmode, 26), gen_rtx_MEM (Pmode, linkage));
-      operands[3]
-	= validize_mem (gen_rtx_MEM (Pmode, plus_constant (linkage, 8)));
+      operands[3] = const0_rtx;
     }
   else
     {
@@ -4720,17 +4716,31 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,12")])
 
+; GAS relies on the order and position of instructions output below in order
+; to generate relocs for VMS link to potentially optimize the call.
+; Please do not molest.
 (define_insn "*call_vms_1"
   [(call (mem:DI (match_operand:DI 0 "call_operand" "r,s"))
 	 (match_operand 1 "" ""))
-   (use (match_operand:DI 2 "nonimmediate_operand" "r,m"))
+   (use (match_operand:DI 2 "nonmemory_operand" "r,n"))
    (use (reg:DI 25))
    (use (reg:DI 26))
    (clobber (reg:DI 27))]
   "TARGET_ABI_OPEN_VMS"
-  "@
-   mov %2,$27\;jsr $26,0\;ldq $27,0($29)
-   ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)"
+  "*
+{
+  switch (which_alternative)
+    {
+    case 0:
+   	return \"mov %2,$27\;jsr $26,0\;ldq $27,0($29)\";
+    case 1:
+	operands [2] = alpha_use_linkage (operands [0], cfun->decl, 1, 0);
+	operands [3] = alpha_use_linkage (operands [0], cfun->decl, 0, 0);
+   	return \"ldq $26,%3\;ldq $27,%2\;jsr $26,%0\;ldq $27,0($29)\";
+    default:
+      abort();
+    }
+}"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
 
@@ -7896,18 +7906,32 @@ fadd,fmul,fcpys,fdiv,fsqrt,misc,mvi,ftoi,itof,multi,none"
   [(set_attr "type" "jsr")
    (set_attr "length" "*,*,12")])
 
+; GAS relies on the order and position of instructions output below in order
+; to generate relocs for VMS link to potentially optimize the call.
+; Please do not molest.
 (define_insn "*call_value_vms_1"
   [(set (match_operand 0 "" "")
 	(call (mem:DI (match_operand:DI 1 "call_operand" "r,s"))
 	      (match_operand 2 "" "")))
-   (use (match_operand:DI 3 "nonimmediate_operand" "r,m"))
+   (use (match_operand:DI 3 "nonmemory_operand" "r,n"))
    (use (reg:DI 25))
    (use (reg:DI 26))
    (clobber (reg:DI 27))]
   "TARGET_ABI_OPEN_VMS"
-  "@
-   mov %3,$27\;jsr $26,0\;ldq $27,0($29)
-   ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)"
+  "*
+{
+  switch (which_alternative)
+    {
+    case 0:
+   	return \"mov %3,$27\;jsr $26,0\;ldq $27,0($29)\";
+    case 1:
+	operands [3] = alpha_use_linkage (operands [1], cfun->decl, 1, 0);
+	operands [4] = alpha_use_linkage (operands [1], cfun->decl, 0, 0);
+   	return \"ldq $26,%4\;ldq $27,%3\;jsr $26,%1\;ldq $27,0($29)\";
+    default:
+      abort();
+    }
+}"
   [(set_attr "type" "jsr")
    (set_attr "length" "12,16")])
 
