@@ -4987,7 +4987,6 @@ CIX, and MAX instruction sets.  The default is to use the instruction sets
 supported by the CPU type specified via @samp{-mcpu=} option or that
 of the CPU on which GNU CC was built if none was specified.
 
-@item -mcpu=@var{cpu type}
 @item -mcpu=@var{cpu_type}
 Set the instruction set, register set, and instruction scheduling
 parameters for machine type @var{cpu_type}.  You can specify either the
