@@ -459,9 +459,6 @@ gen_expand (expand)
     printf ("  rtx operand%d;\n", i);
   for (; i <= max_scratch_opno; i++)
     printf ("  rtx operand%d;\n", i);
-  if (operands > 0 || max_dup_opno >= 0 || max_scratch_opno >= 0)
-    printf ("  rtx operands[%d];\n",
-	    MAX (operands, MAX (max_scratch_opno, max_dup_opno) + 1));
   printf ("  rtx _val = 0;\n");
   printf ("  start_sequence ();\n");
 
@@ -473,9 +470,13 @@ gen_expand (expand)
      So copy the operand values there before executing it.  */
   if (XSTR (expand, 3) && *XSTR (expand, 3))
     {
+      printf ("  {\n");
+      if (operands > 0 || max_dup_opno >= 0 || max_scratch_opno >= 0)
+	printf ("    rtx operands[%d];\n",
+	    MAX (operands, MAX (max_scratch_opno, max_dup_opno) + 1));
       /* Output code to copy the arguments into `operands'.  */
       for (i = 0; i < operands; i++)
-	printf ("  operands[%d] = operand%d;\n", i, i);
+	printf ("    operands[%d] = operand%d;\n", i, i);
 
       /* Output the special code to be executed before the sequence
 	 is generated.  */
@@ -486,12 +487,13 @@ gen_expand (expand)
       if (XVEC (expand, 1) != 0)
 	{
 	  for (i = 0; i < operands; i++)
-	    printf ("  operand%d = operands[%d];\n", i, i);
+	    printf ("    operand%d = operands[%d];\n", i, i);
 	  for (; i <= max_dup_opno; i++)
-	    printf ("  operand%d = operands[%d];\n", i, i);
+	    printf ("    operand%d = operands[%d];\n", i, i);
 	  for (; i <= max_scratch_opno; i++)
-	    printf ("  operand%d = operands[%d];\n", i, i);
+	    printf ("    operand%d = operands[%d];\n", i, i);
 	}
+      printf ("  }\n");
     }
 
   /* Output code to construct the rtl for the instruction bodies.
@@ -815,7 +817,6 @@ from the machine description file `md'.  */\n\n");
   printf ("#include \"resource.h\"\n");
   printf ("#include \"reload.h\"\n\n");
   printf ("extern rtx recog_operand[];\n");
-  printf ("#define operands emit_operand\n\n");
   printf ("#define FAIL return (end_sequence (), _val)\n");
   printf ("#define DONE return (_val = gen_sequence (), end_sequence (), _val)\n");
 

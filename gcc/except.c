@@ -1907,7 +1907,7 @@ expand_rethrow (label)
   else
     if (flag_new_exceptions)
       {
-	rtx insn, val;
+	rtx insn;
 	int region;
 	if (label == NULL_RTX)
 	  label = last_rethrow_symbol;

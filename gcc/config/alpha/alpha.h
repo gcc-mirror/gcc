@@ -2549,6 +2549,8 @@ extern int call_operand ();
 extern int reg_or_cint_operand ();
 extern int hard_fp_register_operand ();
 extern int reg_not_elim_operand ();
+extern int normal_memory_operand ();
+extern int reg_no_subreg_operand ();
 extern void alpha_set_memflags ();
 extern int aligned_memory_operand ();
 extern void get_aligned_mem ();
