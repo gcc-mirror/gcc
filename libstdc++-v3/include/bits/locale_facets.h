@@ -1212,88 +1212,6 @@ namespace std
     };
 
 
-  template<typename _CharT, typename _InIter>
-    class money_get : public locale::facet
-    {
-    public:
-      typedef _CharT        char_type;
-      typedef _InIter       iter_type;
-      typedef basic_string<_CharT> string_type;
-
-      static locale::id id;
-
-      explicit 
-      money_get(size_t __refs = 0) : locale::facet(__refs) { }
-
-      iter_type 
-      get(iter_type __s, iter_type __end, bool __intl,
-	  ios_base& __f, ios_base::iostate& __err, long double& __units) const
-      { return do_get(__s, __end, __intl, __f, __err, __units); }
-
-      iter_type 
-      get(iter_type __s, iter_type __end, bool __intl, ios_base& __f, 
-	   ios_base::iostate& __err, string_type& __digits) const
-      { return do_get(__s, __end, __intl, __f, __err, __digits); }
-
-    protected:
-      virtual 
-      ~money_get() { }
-
-      virtual iter_type 
-      do_get(iter_type __s, iter_type /*__end*/, bool /*__intl*/,
-             ios_base& /*__io*/, ios_base::iostate& /*__err*/,
-             long double& /*__units*/) const
-      { return __s; }
-
-      virtual iter_type 
-      do_get(iter_type __s, iter_type /*__end*/, bool /*__intl*/,
-             ios_base& /*__io*/, ios_base::iostate& /*__err*/,
-             string_type& /*__digits*/) const
-      { return __s; }
-    };
-
-  template<typename _CharT, typename _InIter>
-    locale::id money_get<_CharT, _InIter>::id;
-
-  template<typename _CharT, typename _OutIter>
-    class money_put : public locale::facet
-    {
-    public:
-      typedef _CharT              char_type;
-      typedef _OutIter            iter_type;
-      typedef basic_string<_CharT> string_type;
-
-      static locale::id id;
-
-      explicit 
-      money_put(size_t __refs = 0) : locale::facet(__refs) { }
-
-      iter_type 
-      put(iter_type __s, bool __intl, ios_base& __f,
-	  char_type __fill, long double __units) const
-      { return this->do_put(__s, __intl, __f, __fill, __units); }
-
-      iter_type 
-      put(iter_type __s, bool __intl, ios_base& __f,
-	  char_type __fill, const string_type& __digits) const
-      { return this->do_put(__s, __intl, __f, __fill, __digits); }
-
-    protected:
-      virtual 
-      ~money_put() { }
-
-      virtual iter_type
-      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
-	     long double __units) const;
-
-      virtual iter_type
-      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
-	     const string_type& __digits) const;
-    };
-
-  template<typename _CharT, typename _OutIter>
-    locale::id money_put<_CharT, _OutIter>::id;
-
   struct money_base
   {
     enum part { none, space, symbol, sign, value };
@@ -1476,6 +1394,86 @@ namespace std
 
   template<typename _CharT, bool _Intl>
     const bool moneypunct_byname<_CharT, _Intl>::intl;
+
+  template<typename _CharT, typename _InIter>
+    class money_get : public locale::facet
+    {
+    public:
+      typedef _CharT        		char_type;
+      typedef _InIter       		iter_type;
+      typedef basic_string<_CharT> 	string_type;
+
+      static locale::id id;
+
+      explicit 
+      money_get(size_t __refs = 0) : locale::facet(__refs) { }
+
+      iter_type 
+      get(iter_type __s, iter_type __end, bool __intl,
+	  ios_base& __f, ios_base::iostate& __err, long double& __units) const
+      { return this->do_get(__s, __end, __intl, __f, __err, __units); }
+
+      iter_type 
+      get(iter_type __s, iter_type __end, bool __intl, ios_base& __f, 
+	  ios_base::iostate& __err, string_type& __digits) const
+      { return this->do_get(__s, __end, __intl, __f, __err, __digits); }
+
+    protected:
+      virtual 
+      ~money_get() { }
+
+      virtual iter_type 
+      do_get(iter_type __s, iter_type __end, bool __intl,
+             ios_base& __io, ios_base::iostate& __err,
+             long double& __units) const;
+
+      virtual iter_type 
+      do_get(iter_type __s, iter_type __end, bool __intl,
+             ios_base& __io, ios_base::iostate& __err,
+             string_type& __digits) const;
+    };
+
+  template<typename _CharT, typename _InIter>
+    locale::id money_get<_CharT, _InIter>::id;
+
+  template<typename _CharT, typename _OutIter>
+    class money_put : public locale::facet
+    {
+    public:
+      typedef _CharT              	char_type;
+      typedef _OutIter            	iter_type;
+      typedef basic_string<_CharT>	string_type;
+
+      static locale::id id;
+
+      explicit 
+      money_put(size_t __refs = 0) : locale::facet(__refs) { }
+
+      iter_type 
+      put(iter_type __s, bool __intl, ios_base& __f,
+	  char_type __fill, long double __units) const
+      { return this->do_put(__s, __intl, __f, __fill, __units); }
+
+      iter_type 
+      put(iter_type __s, bool __intl, ios_base& __f,
+	  char_type __fill, const string_type& __digits) const
+      { return this->do_put(__s, __intl, __f, __fill, __digits); }
+
+    protected:
+      virtual 
+      ~money_put() { }
+
+      virtual iter_type
+      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	     long double __units) const;
+
+      virtual iter_type
+      do_put(iter_type __s, bool __intl, ios_base& __io, char_type __fill,
+	     const string_type& __digits) const;
+    };
+
+  template<typename _CharT, typename _OutIter>
+    locale::id money_put<_CharT, _OutIter>::id;
 
 
   struct messages_base

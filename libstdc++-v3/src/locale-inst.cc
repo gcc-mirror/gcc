@@ -264,6 +264,10 @@ namespace std
     __group_digits<char>(char*, char, char const*, char const*, 
 			 char const*, char const*);
 
+  template
+    bool
+    __verify_grouping<char>(const basic_string<char>&, basic_string<char>&);
+
   template 
     ostreambuf_iter
     __output_integer<char, ostreambuf_iter, unsigned long>
@@ -298,6 +302,10 @@ namespace std
     wchar_t*
     __group_digits<wchar_t>(wchar_t*, wchar_t, char const*, char const*, 
 			    wchar_t const*, wchar_t const*);
+  template
+    bool
+    __verify_grouping<wchar_t>(const basic_string<wchar_t>&, 
+			       basic_string<wchar_t>&);
 
   template 
     wostreambuf_iter

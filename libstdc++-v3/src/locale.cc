@@ -646,28 +646,7 @@ namespace std
           // Add the ending grouping
           __grp += static_cast<char>(__sep_pos);
 
-          // __grp is parsed L to R
-          // 1,222,444 == __grp of "/1/3/3"
-          // __fmt->_M_grouping is parsed R to L
-          // 1,222,444 == __fmt->_M_grouping of "/3" == "/3/3/3"
-          int __i = 0;
-          int __j = 0;
-          const int __len = __fmt->_M_grouping.size();
-          int __n = __grp.size();
-          bool __test = true;
-
-          // Parsed number groupings have to match the
-          // numpunct::grouping string exactly, starting at the
-          // right-most point of the parsed sequence of elements ...
-          while (__test && __i < __n - 1)
-            for (__j = 0; __test && __j < __len && __i < __n - 1; ++__j,++__i)
-              __test &= __fmt->_M_grouping[__j] == __grp[__n - __i - 1];
-          // ... but the last parsed grouping can be <= numpunct
-          // grouping.
-          __j == __len ? __j = 0 : __j;
-          __test &= __fmt->_M_grouping[__j] >= __grp[__n - __i - 1];
-
-          if (!__test)
+          if (!__verify_grouping(__fmt->_M_grouping, __grp))
             {
               __err |= ios_base::failbit;
               __xtrc[__pos] = '\0';
