@@ -1,3 +1,8 @@
+2001-05-03  Mo DeJong  <mdejong@redhat.com>
+
+        * lex.c (java_new_lexer): Call iconv_close on temp handle used to
+	check for byte swap.
+
 2001-05-02  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
 
 	* decl.c: NULL_PTR -> NULL.
