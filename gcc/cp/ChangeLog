@@ -11,6 +11,14 @@
 
 2002-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/5661
+	* cp-tree.h (variably_modified_type_p): New function.
+	(grokdeclarator) Tighten check for variably modified types as
+	fields.
+	* pt.c (convert_template_argument): Do not allow variably modified
+	types as template arguments.
+	* tree.c (variably_modified_type_p): New function.	
+
 	* NEWS: Document removal of "new X = ..." extension.
 	* class.c (initialize_array): Set TREE_HAS_CONSTRUCTOR on
 	brace-enclosed initializers.

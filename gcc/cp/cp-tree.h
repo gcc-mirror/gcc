@@ -4179,6 +4179,7 @@ extern tree cxx_unsave_expr_now			PARAMS ((tree));
 extern tree cxx_maybe_build_cleanup		PARAMS ((tree));
 extern void init_tree			        PARAMS ((void));
 extern int pod_type_p				PARAMS ((tree));
+extern bool variably_modified_type_p            (tree);
 extern int zero_init_p				PARAMS ((tree));
 extern tree canonical_type_variant              PARAMS ((tree));
 extern void unshare_base_binfos			PARAMS ((tree));

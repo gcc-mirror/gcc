@@ -1,5 +1,9 @@
 2002-10-11  Mark Mitchell  <mark@codesourcery.com>
 
+	PR c++/5661
+	* g++.dg/ext/vlm1.C: New test.
+	* g++.dg/ext/vlm2.C: Likewise.
+	
 	* g++.dg/init/array1.C: Remove invalid braces.
 	* g++.dg/init/brace1.C: New test.
 	* g++.dg/init/copy2.C: Likewise.
