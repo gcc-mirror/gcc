@@ -1,3 +1,20 @@
+2003-03-29  Eric Blake  <ebb9@email.byu.edu>
+	    Tom Tromey  <tromey@redhat.com>
+
+	* java/lang/natString.cc (hashCode): Use cachedHashCode.
+	(init()): Removed.
+	(charAt): Put index in exception.
+	(contentEquals): New method.
+	Include StringBuffer.h.
+	* java/lang/String.java (cachedHashCode): New field.
+	(String()): Follow classpath implementation.
+	(init()): Removed.
+	(contentEquals): Declare.
+	(subSequence): Don't declare IndexOutIfBoundsException in throws
+	clause.
+	(matches, replaceFirst, replaceAll, split): New methods from
+	Classpath.
+
 2003-03-29  Tom Tromey  <tromey@redhat.com>
 
 	* java/lang/String.java: Reordered to follow Classpath; merged in
