@@ -10,6 +10,32 @@
 
 2002-12-30  Mark Mitchell  <mark@codesourcery.com>
 
+	* parse.y: Remove.
+	* spew.c: Likewise.
+	* Make-lang.in (gt-cp-spew.h): Remove.
+	* cp-tree.h (do_pending_lang_change): Remove.
+	(do_identifier): Change prototype.
+	(finish_id_expr): Remove.
+	* decl.c (lookup_name_real): Remove yylex variable.
+	* decl2.c (build_expr_from_tree): Adjust call to do_identifier.
+	* lex.c (init_cpp_parse): Remove.
+	(reduce_cmp): Likewise.
+	(token_cmp): Likewise.
+	(yychar): Likewise.
+	(lastiddecl): Likewise.
+	(token_count): Likewise.
+	(reduce_count): Likewise.
+	(yyhook): Likewise.
+	(print_parse_statistics): Likewise.
+	(do_pending_lang_change): Likewise.
+	(do_identifier): Remove parsing parameter.
+	* lex.h (lastiddecl): Remove.
+	(looking_for_typename): Remove.
+	(looking_for_template): Likewise.
+	(pending_lang_change): Likewise.
+	(yylex): Likewise.
+	* semantics.c (finish_id_expr): Remove.
+	
 	* decl.c (grokdeclarator): Diagnost "extern thread" and "static
 	thread" correctly.
 

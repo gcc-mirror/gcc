@@ -64,20 +64,4 @@ typedef unsigned long RID_BIT_TYPE;	/* assumed at least 32 bits */
 #define RIDBIT_RESET_ALL(V) do { (V) = 0; } while (0)
 #endif
 
-/* the declaration found for the last IDENTIFIER token read in.
-   yylex must look this up to detect typedefs, which get token type TYPENAME,
-   so it is left around in case the identifier is not a typedef but is
-   used in a context which makes it a reference to a variable.  */
-extern GTY(()) tree lastiddecl;
-
-/* Back-door communication channel to the lexer.  */
-extern int looking_for_typename;
-extern int looking_for_template;
-
-/* Pending language change.
-   Positive is push count, negative is pop count.  */
-extern int pending_lang_change;
-
-extern int yylex PARAMS ((void));
-
 #endif /* ! GCC_CP_LEX_H */

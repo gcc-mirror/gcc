@@ -6081,7 +6081,6 @@ lookup_name_real (tree name,
 {
   tree t;
   tree val = NULL_TREE;
-  int yylex = 0;
   int val_is_implicit_typename = 0;
 
   /* Conversion operators are handled specially because ordinary
@@ -6144,7 +6143,7 @@ lookup_name_real (tree name,
       if (binding
 	  && (!val || !IMPLICIT_TYPENAME_TYPE_DECL_P (binding)))
 	{
-	  if (val_is_implicit_typename && !yylex)
+	  if (val_is_implicit_typename)
 	    warn_about_implicit_typename_lookup (val, binding);
 	  val = binding;
 	  val_is_implicit_typename
@@ -6160,7 +6159,7 @@ lookup_name_real (tree name,
       t = unqualified_namespace_lookup (name, flags, 0);
       if (t)
 	{
-	  if (val_is_implicit_typename && !yylex)
+	  if (val_is_implicit_typename)
 	    warn_about_implicit_typename_lookup (val, t);
 	  val = t;
 	}

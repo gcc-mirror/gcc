@@ -47,7 +47,6 @@ Boston, MA 02111-1307, USA.  */
 #endif
 
 static int interface_strcmp PARAMS ((const char *));
-static int *init_cpp_parse PARAMS ((void));
 static void init_cp_pragma PARAMS ((void));
 
 static tree parse_strconst_pragma PARAMS ((const char *, int));
@@ -57,12 +56,6 @@ static void handle_pragma_interface PARAMS ((cpp_reader *));
 static void handle_pragma_implementation PARAMS ((cpp_reader *));
 static void handle_pragma_java_exceptions PARAMS ((cpp_reader *));
 
-#ifdef GATHER_STATISTICS
-#ifdef REDUCE_LENGTH
-static int reduce_cmp PARAMS ((int *, int *));
-static int token_cmp PARAMS ((int *, int *));
-#endif
-#endif
 static int is_global PARAMS ((tree));
 static void init_operators PARAMS ((void));
 static void copy_lang_type PARAMS ((tree));
@@ -75,18 +68,6 @@ static void copy_lang_type PARAMS ((tree));
 #endif
 
 #include "cpplib.h"
-
-extern int yychar;		/*  the lookahead symbol		*/
-
-/* the declaration found for the last IDENTIFIER token read in.  yylex
-   must look this up to detect typedefs, which get token type
-   tTYPENAME, so it is left around in case the identifier is not a
-   typedef but is used in a context which makes it a reference to a
-   variable.  */
-tree lastiddecl;
-
-/* Array for holding counts of the numbers of tokens seen.  */
-extern int *token_count;
 
 /* Functions and data structures for #pragma interface.
 
@@ -200,20 +181,6 @@ void
 cxx_finish ()
 {
   c_common_finish ();
-}
-
-static int *
-init_cpp_parse ()
-{
-#ifdef GATHER_STATISTICS
-#ifdef REDUCE_LENGTH
-  reduce_count = (int *) xcalloc (sizeof (int), (REDUCE_LENGTH + 1));
-  reduce_count += 1;
-  token_count = (int *) xcalloc (sizeof (int), (TOKEN_LENGTH + 1));
-  token_count += 1;
-#endif
-#endif
-  return token_count;
 }
 
 /* A mapping from tree codes to operator name information.  */
@@ -492,7 +459,6 @@ cxx_init (filename)
   TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
   ridpointers[RID_NULL] = null_node;
 
-  token_count = init_cpp_parse ();
   interface_unknown = 1;
 
   filename = c_common_init (filename);
@@ -506,92 +472,6 @@ cxx_init (filename)
   return filename;
 }
 
-#if defined(GATHER_STATISTICS) && defined(REDUCE_LENGTH)
-static int *reduce_count;
-#endif
-
-int *token_count;
-
-#if 0
-#define REDUCE_LENGTH ARRAY_SIZE (yyr2)
-#define TOKEN_LENGTH (256 + ARRAY_SIZE (yytname))
-#endif
-
-#ifdef GATHER_STATISTICS
-#ifdef REDUCE_LENGTH
-void
-yyhook (yyn)
-     int yyn;
-{
-  reduce_count[yyn] += 1;
-}
-
-static int
-reduce_cmp (p, q)
-     int *p, *q;
-{
-  return reduce_count[*q] - reduce_count[*p];
-}
-
-static int
-token_cmp (p, q)
-     int *p, *q;
-{
-  return token_count[*q] - token_count[*p];
-}
-#endif
-#endif
-
-void
-print_parse_statistics ()
-{
-#ifdef GATHER_STATISTICS
-#ifdef REDUCE_LENGTH
-#if YYDEBUG != 0
-  int i;
-  int maxlen = REDUCE_LENGTH;
-  unsigned *sorted;
-
-  if (reduce_count[-1] == 0)
-    return;
-
-  if (TOKEN_LENGTH > REDUCE_LENGTH)
-    maxlen = TOKEN_LENGTH;
-  sorted = (unsigned *) alloca (sizeof (int) * maxlen);
-
-  for (i = 0; i < TOKEN_LENGTH; i++)
-    sorted[i] = i;
-  qsort (sorted, TOKEN_LENGTH, sizeof (int), token_cmp);
-  for (i = 0; i < TOKEN_LENGTH; i++)
-    {
-      int idx = sorted[i];
-      if (token_count[idx] == 0)
-	break;
-      if (token_count[idx] < token_count[-1])
-	break;
-      fprintf (stderr, "token %d, `%s', count = %d\n",
-	       idx, yytname[YYTRANSLATE (idx)], token_count[idx]);
-    }
-  fprintf (stderr, "\n");
-  for (i = 0; i < REDUCE_LENGTH; i++)
-    sorted[i] = i;
-  qsort (sorted, REDUCE_LENGTH, sizeof (int), reduce_cmp);
-  for (i = 0; i < REDUCE_LENGTH; i++)
-    {
-      int idx = sorted[i];
-      if (reduce_count[idx] == 0)
-	break;
-      if (reduce_count[idx] < reduce_count[-1])
-	break;
-      fprintf (stderr, "rule %d, line %d, count = %d\n",
-	       idx, yyrline[idx], reduce_count[idx]);
-    }
-  fprintf (stderr, "\n");
-#endif
-#endif
-#endif
-}
-
 /* Helper function to load global variables with interface
    information.  */
 
@@ -819,15 +699,6 @@ handle_pragma_java_exceptions (dfile)
   choose_personality_routine (lang_java);
 }
 
-void
-do_pending_lang_change ()
-{
-  for (; pending_lang_change > 0; --pending_lang_change)
-    push_lang_context (lang_name_c);
-  for (; pending_lang_change < 0; ++pending_lang_change)
-    pop_lang_context ();
-}
-
 /* Return true if d is in a global scope.  */
 
 static int
@@ -884,21 +755,13 @@ unqualified_name_lookup_error (tree name)
 }
 
 tree
-do_identifier (token, parsing, args)
+do_identifier (token, args)
      register tree token;
-     int parsing;
      tree args;
 {
   register tree id;
-  int lexing = (parsing == 1 || parsing == 3);
 
-  if (! lexing)
-    id = lookup_name (token, 0);
-  else
-    id = lastiddecl;
-
-  if (lexing && id && TREE_DEPRECATED (id))
-    warn_deprecated_use (id);
+  id = lookup_name (token, 0);
 
   /* Do Koenig lookup if appropriate (inside templates we build lookup
      expressions instead).
@@ -909,11 +772,6 @@ do_identifier (token, parsing, args)
 
   if (args && !current_template_parms && (!id || is_global (id)))
     id = lookup_arg_dependent (token, id, args);
-
-  /* Remember that this name has been used in the class definition, as per
-     [class.scope0] */
-  if (id && parsing && parsing != 3)
-    maybe_note_name_used_in_class (token, id);
 
   if (id == error_mark_node)
     {

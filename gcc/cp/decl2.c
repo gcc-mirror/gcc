@@ -2940,7 +2940,7 @@ build_expr_from_tree (t)
   switch (TREE_CODE (t))
     {
     case IDENTIFIER_NODE:
-      return do_identifier (t, 0, NULL_TREE);
+      return do_identifier (t, NULL_TREE);
 
     case LOOKUP_EXPR:
       if (LOOKUP_EXPR_GLOBAL (t))
@@ -2950,7 +2950,7 @@ build_expr_from_tree (t)
 	}
       else
 	{
-	  t = do_identifier (TREE_OPERAND (t, 0), 0, NULL_TREE);
+	  t = do_identifier (TREE_OPERAND (t, 0), NULL_TREE);
 	  if (TREE_CODE (t) == ALIAS_DECL)
 	    t = DECL_INITIAL (t);
 	  return t;
@@ -3186,7 +3186,7 @@ build_expr_from_tree (t)
                   || !lookup_member (current_class_type, id, 0, 0)))
             {
               /* Do Koenig lookup if there are no class members.  */
-              name = do_identifier (id, 0, args);
+              name = do_identifier (id, args);
             }
           else if (TREE_CODE (name) == TEMPLATE_ID_EXPR
 		   || ! really_overloaded_fn (name))
