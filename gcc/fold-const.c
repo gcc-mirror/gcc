@@ -2551,6 +2551,8 @@ range_test (jcode, type, lo_code, hi_code, var, lo_cst, hi_cst)
     {
       utype = unsigned_type (utype);
       var = convert (utype, var);
+      lo_cst = convert (utype, lo_cst);
+      hi_cst = convert (utype, hi_cst);
     }
 
   return fold (convert (type,
