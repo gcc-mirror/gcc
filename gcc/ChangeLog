@@ -1,3 +1,8 @@
+Thu Oct 10 17:05:22 CEST 2002  Jan Hubicka  <jh@suse.cz>
+
+	PR target/7723
+	* i386.c (ix86_expand_vector_move): Do not generate const0->mem moves.
+
 2002-10-09  Zack Weinberg  <zack@codesourcery.com>
 
 	PR c/7353
