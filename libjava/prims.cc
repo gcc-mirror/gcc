@@ -12,6 +12,7 @@ details.  */
 
 #ifdef WIN32
 #include <windows.h>
+#undef STRICT
 #endif /* WIN32 */
 
 #ifdef WIN32
