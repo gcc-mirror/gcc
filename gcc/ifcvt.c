@@ -602,6 +602,7 @@ struct noce_if_info
 };
 
 static rtx noce_emit_store_flag (struct noce_if_info *, rtx, int, int);
+static int noce_try_move (struct noce_if_info *);
 static int noce_try_store_flag (struct noce_if_info *);
 static int noce_try_addcc (struct noce_if_info *);
 static int noce_try_store_flag_constants (struct noce_if_info *);
@@ -674,7 +675,9 @@ noce_emit_store_flag (struct noce_if_info *if_info, rtx x, int reversep,
 			   || code == GEU || code == GTU), normalize);
 }
 
-/* Emit instruction to move an rtx into STRICT_LOW_PART.  */
+/* Emit instruction to move an rtx, possibly into STRICT_LOW_PART.
+   X is the destination/target and Y is the value to copy.  */
+
 static void
 noce_emit_move_insn (rtx x, rtx y)
 {
@@ -695,6 +698,49 @@ noce_emit_move_insn (rtx x, rtx y)
   bitpos = SUBREG_BYTE (outer) * BITS_PER_UNIT;
   store_bit_field (inner, GET_MODE_BITSIZE (outmode), bitpos, outmode, y,
 		   GET_MODE_BITSIZE (inmode));
+}
+
+/* Convert "if (a != b) x = a; else x = b" into "x = a" and
+   "if (a == b) x = a; else x = b" into "x = b".  */
+
+static int
+noce_try_move (struct noce_if_info *if_info)
+{
+  rtx cond = if_info->cond;
+  enum rtx_code code = GET_CODE (cond);
+  rtx y, seq;
+
+  if (code != NE && code != EQ)
+    return FALSE;
+
+  /* This optimization isn't valid if either A or B could be a NaN
+     or a signed zero.  */
+  if (HONOR_NANS (GET_MODE (if_info->x))
+      || HONOR_SIGNED_ZEROS (GET_MODE (if_info->x)))
+    return FALSE;
+
+  /* Check whether the operands of the comparison are A and in
+     either order.  */
+  if ((rtx_equal_p (if_info->a, XEXP (cond, 0))
+       && rtx_equal_p (if_info->b, XEXP (cond, 1)))
+      || (rtx_equal_p (if_info->a, XEXP (cond, 1))
+	  && rtx_equal_p (if_info->b, XEXP (cond, 0))))
+    {
+      y = (code == EQ) ? if_info->a : if_info->b;
+
+      /* Avoid generating the move if the source is the destination.  */
+      if (! rtx_equal_p (if_info->x, y))
+	{
+	  start_sequence ();
+	  noce_emit_move_insn (if_info->x, y);
+	  seq = get_insns ();
+	  end_sequence ();
+	  emit_insn_before_setloc (seq, if_info->jump,
+				   INSN_LOCATOR (if_info->insn_a));
+	}
+      return TRUE;
+    }
+  return FALSE;
 }
 
 /* Convert "if (test) x = 1; else x = 0".
@@ -1894,6 +1940,8 @@ noce_process_if_block (struct ce_if_block * ce_info)
       goto success;
     }
 
+  if (noce_try_move (&if_info))
+    goto success;
   if (noce_try_store_flag (&if_info))
     goto success;
   if (noce_try_minmax (&if_info))

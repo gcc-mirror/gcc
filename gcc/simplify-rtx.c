@@ -2821,18 +2821,33 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
       if (GET_CODE (op0) == CONST_INT)
 	return op0 != const0_rtx ? op1 : op2;
 
-      /* Convert a == b ? b : a to "a".  */
-      if (GET_CODE (op0) == NE && ! side_effects_p (op0)
-	  && !HONOR_NANS (mode)
-	  && rtx_equal_p (XEXP (op0, 0), op1)
-	  && rtx_equal_p (XEXP (op0, 1), op2))
+      /* Convert c ? a : a into "a".  */
+      if (rtx_equal_p (op1, op2) && ! side_effects_p (op0))
 	return op1;
-      else if (GET_CODE (op0) == EQ && ! side_effects_p (op0)
-	  && !HONOR_NANS (mode)
-	  && rtx_equal_p (XEXP (op0, 1), op1)
-	  && rtx_equal_p (XEXP (op0, 0), op2))
+
+      /* Convert a != b ? a : b into "a".  */
+      if (GET_CODE (op0) == NE
+	  && ! side_effects_p (op0)
+	  && ! HONOR_NANS (mode)
+	  && ! HONOR_SIGNED_ZEROS (mode)
+	  && ((rtx_equal_p (XEXP (op0, 0), op1)
+	       && rtx_equal_p (XEXP (op0, 1), op2))
+	      || (rtx_equal_p (XEXP (op0, 0), op2)
+		  && rtx_equal_p (XEXP (op0, 1), op1))))
+	return op1;
+
+      /* Convert a == b ? a : b into "b".  */
+      if (GET_CODE (op0) == EQ
+	  && ! side_effects_p (op0)
+	  && ! HONOR_NANS (mode)
+	  && ! HONOR_SIGNED_ZEROS (mode)
+	  && ((rtx_equal_p (XEXP (op0, 0), op1)
+	       && rtx_equal_p (XEXP (op0, 1), op2))
+	      || (rtx_equal_p (XEXP (op0, 0), op2)
+		  && rtx_equal_p (XEXP (op0, 1), op1))))
 	return op2;
-      else if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && ! side_effects_p (op0))
+
+      if (GET_RTX_CLASS (GET_CODE (op0)) == '<' && ! side_effects_p (op0))
 	{
 	  enum machine_mode cmp_mode = (GET_MODE (XEXP (op0, 0)) == VOIDmode
 					? GET_MODE (XEXP (op0, 1))
@@ -2874,6 +2889,7 @@ simplify_ternary_operation (enum rtx_code code, enum machine_mode mode,
 	    }
 	}
       break;
+
     case VEC_MERGE:
       if (GET_MODE (op0) != mode
 	  || GET_MODE (op1) != mode
@@ -3286,7 +3302,7 @@ simplify_subreg (enum machine_mode outermode, rtx op,
      of real and imaginary part.  */
   if (GET_CODE (op) == CONCAT)
     {
-      int is_realpart = byte < GET_MODE_UNIT_SIZE (innermode);
+      int is_realpart = byte < (unsigned int) GET_MODE_UNIT_SIZE (innermode);
       rtx part = is_realpart ? XEXP (op, 0) : XEXP (op, 1);
       unsigned int final_offset;
       rtx res;
