@@ -1,3 +1,8 @@
+2004-03-18  Kazu Hirata  <kazu@cs.umass.edu>
+
+	* system.h (MD_ASM_CLOBBERS): Move to "Old target macros that
+	have moved to the target hooks structure".
+
 2004-03-18  James E Wilson  <wilson@specifixinc.com>
 
 	* config/mips/mips.md (type): Split move into arith and fmove.  Split
