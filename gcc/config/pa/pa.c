@@ -342,7 +342,7 @@ override_options ()
     }
 }
 
-void
+static void
 pa_init_builtins ()
 {
 #ifdef DONT_HAVE_FPUTC_UNLOCKED
