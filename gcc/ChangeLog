@@ -19,8 +19,7 @@
 	output file.  Three or more non-option args is an error.
 	Clean up.
 	* gcc.c (default_compilers): Pass -$ to the preprocessor.
-	* cp/lang-specs.h, ch/lang-specs.h, f/lang-specs.h,
-	objc/lang-specs.h: Likewise.
+	* objc/lang-specs.h: Likewise.
 
 Mon May 10 12:59:20 1999  Jeffrey A Law  (law@cygnus.com)
 
