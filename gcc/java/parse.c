@@ -6567,6 +6567,13 @@ end_class_declaration (resume)
   POP_CPC ();
   if (resume && no_error_occured)
     java_parser_context_resume ();
+
+  /* We're ending a class declaration, this is a good time to reset
+     the interface cout. Note that might have been already done in
+     create_interface, but if at that time an inner class was being
+     dealt with, the interface count was reset in a context created
+     for the sake of handling inner classes declaration. */
+  ctxp->interface_number = 0;
 }
 
 static void

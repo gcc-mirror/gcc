@@ -1,3 +1,8 @@
+Mon Apr 24 14:59:36 2000  Alexandre Petit-Bianco  <apbianco@cygnus.com>
+
+	* parse.y (end_class_declaration): Reset the interface number
+ 	counter.
+
 2000-04-24  Alexandre Petit-Bianco  <apbianco@cygnus.com>
 
         * parse.y (source_start_java_method): Deleted unecessary code.
