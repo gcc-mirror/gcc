@@ -93,6 +93,7 @@ static alias_set_entry get_alias_set_entry PROTO((int));
 static rtx fixed_scalar_and_varying_struct_p PROTO((rtx, rtx, int (*)(rtx)));
 static int aliases_everything_p         PROTO((rtx));
 static int write_dependence_p           PROTO((rtx, rtx, int));
+static int nonlocal_reference_p         PROTO((rtx));
 
 /* Set up all info needed to perform alias analysis on memory references.  */
 
