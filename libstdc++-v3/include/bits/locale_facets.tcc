@@ -188,8 +188,7 @@ namespace std
 	      && (!__lc->_M_use_grouping
 		  || !__traits_type::eq(__c, __lc->_M_thousands_sep)))
 	    {
-	      __xtrc += __plus ? _S_atoms_in[_S_iplus]
-		               : _S_atoms_in[_S_iminus];
+	      __xtrc += __plus ? '+' : '-';
 	      ++__beg;
 	    }
 	}
@@ -206,7 +205,7 @@ namespace std
 	    {
 	      if (!__found_mantissa)
 		{
-		  __xtrc += _S_atoms_in[_S_izero];
+		  __xtrc += '0';
 		  __found_mantissa = true;
 		}
 	      ++__beg;
@@ -223,6 +222,7 @@ namespace std
 	__found_grouping.reserve(32);
       int __sep_pos = 0;
       bool __e;
+      const char_type* __lit_zero = __lit + _S_izero;
       const char_type* __q;
       while (__beg != __end)
         {
@@ -267,7 +267,7 @@ namespace std
 	      else
 		break;
 	    }
-          else if (__q = __traits_type::find(__lit + _S_izero, 10, __c))
+          else if (__q = __traits_type::find(__lit_zero, 10, __c))
 	    {
 	      __xtrc += _S_atoms_in[__q - __lit];
 	      __found_mantissa = true;
@@ -279,7 +279,9 @@ namespace std
 		   && __found_mantissa && !__found_sci)
 	    {
 	      // Scientific notation.
-	      __xtrc += __e ? _S_atoms_in[_S_ie] : _S_atoms_in[_S_iE];
+	      if (__found_grouping.size() && !__found_dec)
+		__found_grouping += static_cast<char>(__sep_pos);
+	      __xtrc += __e ? 'e' : 'E';
 	      __found_sci = true;
 
 	      // Remove optional plus or minus sign, if they exist.
@@ -289,8 +291,7 @@ namespace std
 							__lit[_S_iplus]);
 		  if (__plus || __traits_type::eq(*__beg, __lit[_S_iminus]))
 		    {
-		      __xtrc += __plus ? _S_atoms_in[_S_iplus]
-			               : _S_atoms_in[_S_iminus];
+		      __xtrc += __plus ? '+' : '-';
 		      ++__beg;
 		    }
 		}
@@ -304,8 +305,8 @@ namespace std
       // match, then get very very upset, and set failbit.
       if (__found_grouping.size())
         {
-          // Add the ending grouping if a decimal wasn't found.
-	  if (!__found_dec)
+          // Add the ending grouping if a decimal or 'e'/'E' wasn't found.
+	  if (!__found_dec && !__found_sci)
 	    __found_grouping += static_cast<char>(__sep_pos);
 
           if (!std::__verify_grouping(__lc->_M_grouping, __lc->_M_grouping_size,
