@@ -1,6 +1,6 @@
 /* YACC parser for C syntax and for Objective C.  -*-c-*-
-   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996,
-   1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 1987, 1988, 1989, 1992, 1993, 1994, 1995, 1996, 1997,
+   1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2001,7 +2001,7 @@ stmts_and_decls:
 	| lineno_stmt_decl_or_labels_ending_decl
 	| lineno_stmt_decl_or_labels_ending_label
 		{
-		  pedwarn ("deprecated use of label at end of compound statement");
+		  error ("label at end of compound statement");
 		}
 	| lineno_stmt_decl_or_labels_ending_error
 	;

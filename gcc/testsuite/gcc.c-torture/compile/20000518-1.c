@@ -6,7 +6,7 @@ extern __inline__ void test()
 
 	callit1(&&l1);
 
-l1:
+l1:;
 
 }
 

@@ -40,7 +40,7 @@ f (int ch, char *fp, char *ap)
     nosign:
       if (_uquad != 0 || prec != 0);
       break;
-    default:
+    default:;
     }
     if ((f & 0x100) == 0) {
     } else {
@@ -64,5 +64,5 @@ f (int ch, char *fp, char *ap)
     }
   }
 
- error:
+ error:;
 }
