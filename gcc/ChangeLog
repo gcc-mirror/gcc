@@ -1,5 +1,14 @@
 Wed Nov  3 14:51:59 1999  Mark P. Mitchell  <mark@codesourcery.com>
 
+	* gcse.c (struct null_pointer_info): New type.
+	(get_bitmap_width): New function.
+	(current_block): Remove.
+	(nonnull_local): Likewise.
+	(nonnull_killed): Likewise.
+	(invalidate_nonnull_info): Take a null_pointer_info as input.
+	(delete_null_pointer_checks_1): New function.
+	(delete_null_pointer_checks): Use it.
+
 	* haifa-sched.c (find_rgns): Replace uses of alloca with xmalloc.
 	(split_edges): Likewise.
 	(schedule_block): Likewise.
