@@ -51,6 +51,13 @@ enum tree_code {
 extern char tree_code_type[MAX_TREE_CODES];
 #define TREE_CODE_CLASS(CODE)	tree_code_type[(int) (CODE)]
 
+/* Returns non-zero iff CLASS is the tree-code class of an
+   expression.  */
+
+#define IS_EXPR_CODE_CLASS(CLASS) \
+  (CLASS == '<' || CLASS == '1' || CLASS == '2' || CLASS == '3' \
+   || CLASS == 'e')
+
 /* Number of argument-words in each kind of tree-node.  */
 
 extern int tree_code_length[MAX_TREE_CODES];
