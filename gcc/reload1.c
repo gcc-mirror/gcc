@@ -5308,8 +5308,18 @@ choose_reload_regs (chain)
 
 		  i = REGNO (last_reg) + word;
 		  last_class = REGNO_REG_CLASS (i);
-		  if ((GET_MODE_SIZE (GET_MODE (last_reg))
+		  if (
+#ifdef CLASS_CANNOT_CHANGE_SIZE
+		      (TEST_HARD_REG_BIT
+		       (reg_class_contents[CLASS_CANNOT_CHANGE_SIZE], i)
+		       ? (GET_MODE_SIZE (GET_MODE (last_reg))
+			  == GET_MODE_SIZE (mode) + word * UNITS_PER_WORD)
+		       : (GET_MODE_SIZE (GET_MODE (last_reg))
+			  >= GET_MODE_SIZE (mode) + word * UNITS_PER_WORD))
+#else
+		      (GET_MODE_SIZE (GET_MODE (last_reg))
 		       >= GET_MODE_SIZE (mode) + word * UNITS_PER_WORD)
+#endif
 		      && reg_reloaded_contents[i] == regno
 		      && TEST_HARD_REG_BIT (reg_reloaded_valid, i)
 		      && HARD_REGNO_MODE_OK (i, rld[r].mode)
