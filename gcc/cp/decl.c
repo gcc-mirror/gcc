@@ -4564,7 +4564,6 @@ init_decl_processing ()
      Declare _exit just to mark it as volatile.  */
   if (! flag_no_builtin && !flag_no_nonansi_builtin)
     {
-#if 0				/* Why is this disabled? (jason 8/9/94) */
       temp = builtin_function ("alloca",
 			       build_function_type (ptr_type_node,
 						    tree_cons (NULL_TREE,
@@ -4573,7 +4572,6 @@ init_decl_processing ()
 			       BUILT_IN_ALLOCA, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
-#endif
       temp = builtin_function ("ffs", int_ftype_int, BUILT_IN_FFS, NULL_PTR);
       /* Suppress error if redefined as a non-function.  */
       DECL_BUILT_IN_NONANSI (temp) = 1;
@@ -4987,7 +4985,7 @@ init_decl_processing ()
 		 NOT_BUILT_IN);
 
   abort_fndecl
-    = define_function ("abort",
+    = define_function ("__pure_virtual",
 		       build_function_type (void_type_node, void_list_node),
 		       NOT_BUILT_IN, 0, 0);
 

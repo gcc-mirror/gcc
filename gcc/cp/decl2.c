@@ -331,6 +331,9 @@ int flag_huge_objects;
    definitions.  */
 int flag_conserve_space;
 
+/* Nonzero if we want to obey access control semantics.  */
+int flag_access_control = 1;
+
 /* Table of language-dependent -f options.
    STRING is the option name.  VARIABLE is the address of the variable.
    ON_VALUE is the value to store in VARIABLE
@@ -372,6 +375,7 @@ static struct { char *string; int *variable; int on_value;} lang_f_options[] =
   {"conserve-space", &flag_conserve_space, 1},
   {"vtable-thunks", &flag_vtable_thunks, 1},
   {"short-temps", &flag_short_temps, 1},
+  {"access-control", &flag_access_control, 1},
   {"nonansi-builtins", &flag_no_nonansi_builtin, 0}
 };
 

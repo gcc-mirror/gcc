@@ -1,3 +1,27 @@
+Sun Oct 23 13:19:55 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * decl2.c: Declare flag_access_control.
+        (struct lang_f_options): Add access-control.
+        * expr.c (cplus_expand_expr, NEW_EXPR): Unset flag_access_control
+        for the call to expand_aggr_init to copy the object out of the
+        pcc_struct_return slot.
+        * search.c (compute_access): if (!flag_access_control) return
+        access_public.
+
+Fri Oct 21 00:32:54 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * decl.c (init_decl_processing): Use __pure_virtual for abort_fndecl
+        instead of abort, since the OSF/1 dynamic linker doesn't like to see
+        relocation entries for abort.
+
+        * tree.c (array_type_nelts_total): Use sizetype, not
+        integer_type_node.
+        (array_type_nelts_top): Ditto.
+
+Mon Oct 17 18:03:15 1994  Jason Merrill  (jason@phydeaux.cygnus.com)
+
+        * decl.c (init_decl_processing): Make alloca a builtin.
+
 Mon Oct 17 15:56:11 1994  Mike Stump  <mrs@cygnus.com>
 
 	* except.c (expand_start_catch_block): Make sure the false label

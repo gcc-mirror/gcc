@@ -148,9 +148,16 @@ cplus_expand_expr (exp, target, tmode, modifier)
 	  {
 	    if (pcc_struct_return)
 	      {
+		extern int flag_access_control;
+		int old_ac = flag_access_control;
+
 		tree init = build (RTL_EXPR, type, 0, return_target);
 		TREE_ADDRESSABLE (init) = 1;
+
+		flag_access_control = 0;
 		expand_aggr_init (slot, init, 0);
+		flag_access_control = old_ac;
+
 		if (TYPE_NEEDS_DESTRUCTOR (type))
 		  {
 		    init = build (RTL_EXPR, build_reference_type (type), 0,
