@@ -1,4 +1,4 @@
-2000-10-11  Kenneth Block <kenneth.block@compaq.com>
+2000-11-15  Kenneth Block  <kenneth.block@compaq.com>
 
 	* demangle.h: Add gnat and java demangle styles.
 
