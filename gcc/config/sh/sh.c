@@ -4598,7 +4598,8 @@ split_branches (rtx first)
 	    next = next_active_insn (insn);
 
 	    if ((GET_CODE (next) == JUMP_INSN
-		 || GET_CODE (next = next_active_insn (next)) == JUMP_INSN)
+		 || ((next = next_active_insn (next))
+		     && GET_CODE (next) == JUMP_INSN))
 		&& GET_CODE (PATTERN (next)) == SET
 		&& recog_memoized (next) == CODE_FOR_jump_compact
 		&& ((INSN_ADDRESSES
@@ -9726,6 +9727,9 @@ sh_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 
   if (optimize > 0 && flag_schedule_insns_after_reload)
     {
+      if (! basic_block_info)
+	init_flow ();
+      rtl_register_cfg_hooks ();
       find_basic_blocks (insns, max_reg_num (), dump_file);
       life_analysis (dump_file, PROP_FINAL);
 
