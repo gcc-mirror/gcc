@@ -1,3 +1,7 @@
+2002-03-12  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* mn10200.h (PTRDIFF_TYPE): Change it to a signed type.
+
 2002-03-11  Richard Henderson  <rth@redhat.com>
 
 	* toplev.c (rest_of_compilation): Call purge_all_dead_edges
