@@ -2366,7 +2366,7 @@ find_final_overrider (t, binfo, fn)
 {
   find_final_overrider_data ffod;
 
-  /* Getting this right is a little tricky.  This is legal:
+  /* Getting this right is a little tricky.  This is valid:
 
        struct S { virtual void f (); };
        struct T { virtual void f (); };
@@ -6389,7 +6389,7 @@ maybe_note_name_used_in_class (name, decl)
 }
 
 /* Note that NAME was declared (as DECL) in the current class.  Check
-   to see that the declaration is legal.  */
+   to see that the declaration is valid.  */
 
 void
 note_name_declared_in_class (name, decl)

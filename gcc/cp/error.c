@@ -1063,7 +1063,7 @@ dump_template_decl (t, flags)
         dump_function_decl (t, flags | TFF_TEMPLATE_NAME);
         break;
       default:
-        /* This case can occur with some illegal code.  */
+        /* This case can occur with some invalid code.  */
         dump_type (TREE_TYPE (t),
                    (flags & ~TFF_CLASS_KEY_OR_ENUM) | TFF_TEMPLATE_NAME
                    | (flags & TFF_DECL_SPECIFIERS ? TFF_CLASS_KEY_OR_ENUM : 0));

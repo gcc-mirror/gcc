@@ -4826,7 +4826,7 @@ handle_class_head (tag_kind, scope, id, attributes, defn_p, new_type_p)
 	push_scope (context);
 
       if (TREE_CODE (TREE_TYPE (decl)) == RECORD_TYPE)
-	/* It is legal to define a class with a different class key,
+	/* It is valid to define a class with a different class key,
 	   and this changes the default member access.  */
 	CLASSTYPE_DECLARED_CLASS (TREE_TYPE (decl))
 	  = (tag_kind == class_type);
