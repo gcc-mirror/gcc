@@ -1863,7 +1863,6 @@ stormy16_output_shift (mode, code, x, size_r, temp)
 
   r0 = reg_names [REGNO (x)];
   r1 = reg_names [REGNO (x) + 1];
-  rt = reg_names [REGNO (temp)];
 
   /* For shifts of size 1, we can use the rotate instructions.  */
   if (size == 1)
@@ -1928,6 +1927,7 @@ stormy16_output_shift (mode, code, x, size_r, temp)
 
   /* For the rest, we have to do more work.  In particular, we
      need a temporary.  */
+  rt = reg_names [REGNO (temp)];
   switch (code)
     {
     case ASHIFT:
