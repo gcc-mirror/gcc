@@ -363,6 +363,7 @@ convert_memory_address (to_mode, x)
 
     case SUBREG:
       if (POINTERS_EXTEND_UNSIGNED >= 0
+	  && (SUBREG_PROMOTED_VAR_P (x) || REG_POINTER (SUBREG_REG (x)))
 	  && GET_MODE (SUBREG_REG (x)) == to_mode)
 	return SUBREG_REG (x);
       break;
