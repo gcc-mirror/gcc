@@ -116,4 +116,27 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 # define HOST_WIDEST_INT_PRINT_DOUBLE_HEX     "0x%llx%016llx"
 #endif
 
+/* Define HOST_WIDEST_FAST_INT to the widest integer type supported
+   efficiently in hardware.  (That is, the widest integer type that fits
+   in a hardware register.)  Normally this is "long" but on some hosts it
+   should be "long long" or "__int64".  This is no convenient way to
+   autodect this, so such systems must set a flag in config.host; see there
+   for details.  */
+
+#ifdef USE_LONG_LONG_FOR_WIDEST_FAST_INT
+#  ifdef HAVE_LONG_LONG
+#    define HOST_WIDEST_FAST_INT long long
+#    define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER_LONGLONG
+#  elif defined (HAVE___INT64)
+#    define HOST_WIDEST_FAST_INT __int64
+#    define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER___INT64
+#  else
+#    error "Your host said it wantted to use long long or __int64 but neither"
+#    error "exist"
+#  endif
+#else
+#  define HOST_WIDEST_FAST_INT long
+#  define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER_LONG
+#endif
+
 #endif /* ! GCC_HWINT_H */

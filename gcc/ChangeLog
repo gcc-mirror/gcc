@@ -1,3 +1,27 @@
+2004-08-30  Andrew Pinski  <apinski@apple.com>
+
+	PR rtl-opt/13987
+	* config.host (use_long_long_for_widest_fast_int): New, default is 
+	off.
+	(ia64-*-hpux*): Enable use_long_long_for_widest_fast_int.
+	* configure.ac: If use_long_long_for_widest_fast_int, then
+	define USE_LONG_LONG_FOR_WIDEST_FAST_INT.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* hwint.h (HOST_WIDEST_FAST_INT, HOST_BITS_PER_WIDEST_FAST_INT):
+	New: widest integer type supported efficiently in hardware for the
+	host.
+	* sbitmap.h (SBITMAP_ELT_BITS): Define based on
+	HOST_BITS_PER_WIDEST_FAST_INT.
+	(SBITMAP_ELT_TYPE): Define based on HOST_WIDEST_FAST_INT.
+	* hard-reg-set.h (HARD_REG_ELT_TYPE): Define based on 
+	HOST_WIDEST_FAST_INT
+	instead of HOST_WIDE_INT.
+	(HARD_REG_SET_LONGS): Likewise.
+	(UHOST_BITS_PER_WIDE_INT): Likewise.
+	Change the checks for the fast cases to be based on
+	HOST_BITS_PER_WIDES_FAST_INT instead of HOST_BITS_PER_WIDE_INT.
+
 2004-08-30  Steven Bosscher  <stevenb@suse.de>
 
 	* cfgcleanup.c (merge_memattrs): Look at the value of MEM_SIZE,

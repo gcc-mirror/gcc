@@ -52,6 +52,10 @@
 #
 #  host_can_use_collect2 Set to yes normally; to no if the host cannot
 #			link or otherwise use collect2
+#  use_long_long_for_widest_fast_int Set this to 'yes' if 'long long'
+#			(or '__int64') is wider than 'long' but still
+#			efficeiently supported by the host hardware.
+#			Only affects compile speed.  Default is 'no'.
 
 # When setting any of these variables, check to see if a corresponding
 # variable is present in config.build; if so, you will likely want to 
@@ -66,6 +70,7 @@ host_extra_objs=
 host_extra_gcc_objs=
 out_host_hook_obj=host-default.o
 host_can_use_collect2=yes
+use_long_long_for_widest_fast_int=no
 
 # Unsupported hosts list.  Generally, only include hosts known to fail here,
 # since we allow hosts not listed to be supported generically.
@@ -171,5 +176,8 @@ case ${host} in
   *-*-linux*)
     out_host_hook_obj=host-linux.o
     host_xmake_file=x-linux
+    ;;
+  ia64-*-hpux*)
+    use_long_long_for_widest_fast_int=yes
     ;;
 esac
