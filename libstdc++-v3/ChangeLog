@@ -1,3 +1,8 @@
+2001-12-03  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* src/string-inst.cc (string::_Rep::_S_terminal): Add static data
+	member instantiations.
+
 2001-12-03  Steve Ellcey  <sje@cup.hp.com>
 
         * libstdc++-v3/configure.in: Add support for hpux cross compiles,
