@@ -1,3 +1,103 @@
+2003-11-04  Richard Sandiford  <rsandifo@redhat.com>
+
+	* config/mips/mips-protos.h (mips_global_pic_constant_p): Delete.
+	(mips_delegitimize_address): Delete.
+	(mips_gotoff_global, mips_load_got_page): Declare.
+	(mips_load_got_global, mips_rewrite_small_data): Declare.
+
+	* config/mips/mips.h (FIND_BASE_TERM): Remove definition.
+	(DANGEROUS_FOR_LA25_P): Use global_got_operand.
+	(PREDICATE_CODES): Add global_got_operand, local_got_operand and
+	small_data_pattern.  Remove CONST from const_arith_operand's entry.
+
+	* config/mips/mips.c (UNSPEC_ADDRESS_P, CONST_GP_P): New macros.
+	(UNSPEC_ADDRESS, UNSPEC_ADDRESS_TYPE): Likewise.
+	(mips_constant_type): Delete.
+	(mips_symbol_type): Add SYMBOL_GOTOFF_PAGE, SYMBOL_GOTOFF_GLOBAL,
+	SYMBOL_GOTOFF_CALL and SYMBOL_GOTOFF_LOADGP.
+	(NUM_SYMBOL_TYPES): New macro.
+	(mips_address_type): Remove ADDRESS_INVALID.
+	(machine_function): Add has_gp_insn_p.
+	(mips_constant_info): Delete.
+	(mips_address_info): Add the address type as an extra field.  Replace
+	the c field with symbol_type.
+	(mips_split_p, mips_lo_relocs, mips_hi_relocs): New arrays.
+	(TARGET_DELEGITIMIZE_ADDRESS): Remove definition.
+	(mips_reloc_offset_ok_p, mips_classify_constant): Delete.
+	(mips_split_const, mips_symbolic_constant_p): New functions.
+	(mips_symbolic_address_p): Take the symbol type and mode as arguments.
+	(mips_classify_address): Return true if the address is valid, storing
+	its type in INFO.  Use mips_symbolic_constant_p.  Use mips_lo_relocs[]
+	to test whether a LO_SUM address is allowed.
+	(mips_symbol_insns): Return 0 for general mips16 symbols.
+	Reorder SYMBOL_GOT_GLOBAL case to match mips_symbol_type definition.
+	Handle the new SYMBOL_GOTOFF_*s.
+	(mips_address_insns): Update call to mips_classify_address.
+	(mips_const_insns): Be more fussy about HIGH constants.  Remove use
+	of mips_classify_constant.  Be more accurate about CONSTs.
+	(mips_global_pic_constant_p): Delete.
+	(const_arith_operand): Only accept CONST_INTs.
+	(call_insn_operand): Remove call to mips_classify_constant.
+	Let mips_symbolic_constant_p check for invalid offsets.
+	(move_operand): Check for general_operands first.  Only accept symbolic
+	constants if they satisfy mips_symbolic_constant_p and cannot be split.
+	(symbolic_constant): Use mips_symbolic_constant_p.
+	(global_got_operand, local_got_operand): New predicates.
+	(stack_operand): Update call to mips_classify_address.
+	(mips_legitimate_address_p): Likewise.
+	(mips_reloc, mips_lui_reloc): Delete.
+	(mips_force_temporary): Only use the given temporary if no_new_pseudos.
+	Use emit_move_insn.
+	(mips_split_symbol, mips_unspec_address): New functions.
+	(mips_unspec_offset_high): New function.
+	(mips_load_got): Replace reloc argument with a symbol_type.
+	Use mips_unspec_address to create the address and put it in a
+	LO_SUM with the base register.
+	(mips_load_got16, mips_load_got32): Delete.
+	(mips_emit_high, mips_legitimize_symbol): Delete.
+	(mips_gotoff_global): New function.
+	(mips_load_got_page, mips_load_got_global): New functions.
+	(mips_legitimize_symbol): Inline handling of LO_SUM splits.
+	(mips_legitimize_const_move): Likewise.  Remove HIGH handling.
+	Inline code to handle constants plus invalid offsets.  Use
+	mips_split_symbol to legitimize constant pool addresses.
+	(mips_delegitimize_address): Delete.
+	(mips_rtx_costs): Give legitimate symbolic constants and CONST_DOUBLEs
+	a cost of 1 insn.  Give the rest a cost of CONSTANT_POOL_ADDRESS.
+	(mips_subword): Pass memrefs through mips_rewrite_small_data.
+	(mips_output_move): Remove use of mips_classify_constant.
+	(mips_expand_call): Use mips_unspec_offset_high to calculate the
+	high part of the GOT address for calls to global functions.
+	(override_options): Initialize mips_split_p[], mips_lo_relocs[]
+	and mips_hi_relocs[].
+	(print_operand): Use print_operand_reloc to handle '%h' and '%R'.
+	Remove use of mips_classify_constant.
+	(mips_reloc_string): Delete.
+	(print_operand_reloc): New function.
+	(print_operand_address): Update call to mips_classify_address.
+	(mips_rewrite_small_data_p, small_data_pattern_1): New functions.
+	(small_data_pattern): New predicate.
+	(mips_rewrite_small_data_1, mips_rewrite_small_data): New functions.
+	(mips_function_has_gp_insn): New function.
+	(mips_global_pointer): Use it.
+	(mips_gp_insn): Delete.
+	(mips_expand_prologue): When compiling for n32/n64 abicalls, use a
+	single loadgp pattern to initialize $gp.  Pass it the offset of _gp
+	from the start of the current function.
+	(mips16_gp_pseudo_reg): Revert last patch.
+
+	* config/mips/mips.md (RELOC_*): Delete.
+	(UNSPEC_LOADGP, UNSPEC_FIRST_ADDRESS): New constants.
+	(got): New insn attribute.
+	(type): Set to "load" if got == load.
+	(length): Set to 4 if got == load, 8 if got == xgot_high.
+	(lui[sd]i): Delete.
+	(*xgot_hi[sd]i, *xgot_lo[sd]i): New patterns.
+	(*got_disp[sd]i, *got_page[sd]i): Likewise.
+	(*low[sd]i): Change constraints to "d".  Add a new define_split to
+	rewrite small data constants into LO_SUMs.
+	(loadgp): New insns.
+
 2003-11-04  Rainer Orth  <ro@TechFak.Uni-Bielefeld.DE>
 
 	* config/mips/_tilib.c: Use _ABI* in _MIPS_SIM tests.
