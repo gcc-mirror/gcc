@@ -419,6 +419,7 @@ in the following sections.
 -mbigtable  -mfmovd  -mhitachi  -mnomacsave
 -misize  -mpadstruct  -mspace
 -mprefergot
+-musermode
 
 @emph{System V Options}
 -Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}
@@ -6722,6 +6723,12 @@ Optimize for space instead of speed.  Implied by @code{-Os}.
 @item -mprefergot
 When generating position-independent code, emit function calls using
 the Global Offset Table instead of the Procedure Linkage Table.
+
+@item -musermode
+Generate a library function call to invalidate instruction cache
+entries, after fixing up a trampoline.  This library function call
+doesn't assume it can write to the whole memory address space.  This
+is the default when the target is @code{sh-*-linux*}.
 @end table
 
 @node System V Options

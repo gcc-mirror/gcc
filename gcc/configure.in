@@ -3358,6 +3358,16 @@ changequote([,])dnl
 		tm_file="sh/sh.h sh/rtems.h"
 		float_format=sh
 		;;
+	sh-*-linux*)
+		tm_file="sh/sh.h sh/elf.h sh/linux.h"
+		tmake_file="sh/t-sh sh/t-elf sh/t-linux"
+		xmake_file=x-linux
+		gas=yes gnu_ld=yes
+ 		if test x$enable_threads = xyes; then
+ 			thread_file='posix'
+ 		fi
+		float_format=sh
+		;;
 	sh-*-*)
 		float_format=sh
 		;;

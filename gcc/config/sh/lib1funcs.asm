@@ -42,6 +42,10 @@ Boston, MA 02111-1307, USA.  */
 #define LOCAL(X) L_##X
 #endif
 
+#ifdef __linux__
+#define GLOBAL(X) __##X
+#endif
+
 #ifndef GLOBAL
 #define GLOBAL(X) ___##X
 #endif
@@ -903,7 +907,7 @@ GLOBAL(sdivsi3_i4):
 #ifdef L_sdivsi3
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
    sh3e code.  */
-#if ! defined(__SH4__) && ! defined (__SH4_SINGLE__)
+#if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
 !!
 !! Steve Chamberlain
 !! sac@cygnus.com
@@ -1105,7 +1109,7 @@ L1:
 #ifdef L_udivsi3
 /* __SH4_SINGLE_ONLY__ keeps this part for link compatibility with
    sh3e code.  */
-#if ! defined(__SH4__) && ! defined (__SH4_SINGLE__)
+#if (! defined(__SH4__) && ! defined (__SH4_SINGLE__)) || defined (__linux__)
 !!
 !! Steve Chamberlain
 !! sac@cygnus.com
@@ -1207,3 +1211,25 @@ LOCAL(set_fpscr_L1):
 #endif /* ELF */
 #endif /* SH3E / SH4 */
 #endif /* L_set_fpscr */
+#ifdef L_ic_invalidate
+#if defined(__SH4_SINGLE__) || defined(__SH4__) || defined(__SH4_SINGLE_ONLY__)
+	.global GLOBAL(ic_invalidate)
+GLOBAL(ic_invalidate):
+	ocbwb	@r4
+	mova	0f,r0
+	mov.w	1f,r1
+	sub	r0,r4
+	and	r1,r4
+	add	#4,r4
+	braf	r4
+	nop
+1:
+	.short	0x1fe0
+	nop
+0:
+	.rept	2048
+	rts
+	nop
+	.endr
+#endif /* SH4 */
+#endif /* L_ic_invalidate */
