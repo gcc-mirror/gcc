@@ -1,6 +1,4 @@
-// 2000-06-29 bkoz
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,32 +17,27 @@
 // USA.
 
 // 27.6.1.3 unformatted input functions
-// NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// DR 60 -- tellg does not effect calls to gcount
 
 #include <istream>
-#include <fstream>
+#include <sstream>
 #include <testsuite_hooks.h>
 
-// fstreams
-void test04(void)
+void test01()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
-  std::istream::pos_type pos01, pos02;
-  const char str_lit01[] = "istream_seeks-1.txt";
-  std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);
- 
-  // libstdc++/6414
-  if01.seekg(0, std::ios_base::beg);
-  pos01 = if01.tellg();
-  if01.peek();
-  pos02 = if01.tellg();
-  VERIFY( pos02 == pos01 );
+
+  wistringstream ist(L"three sides live");
+  ist.ignore(4);
+  int count1 = ist.gcount();
+  ist.tellg();
+  int count2 = ist.gcount();
+  VERIFY( count1 == count2 );
 }
 
 int main()
 {
-  test04();
+  test01();
   return 0;
 }

@@ -1,6 +1,4 @@
-// 2000-06-29 bkoz
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,33 +16,36 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
-// 27.6.1.3 unformatted input functions
-// NB: ostream has a particular "seeks" category. Adopt this for istreams too.
-// @require@ %-*.tst %-*.txt
-// @diff@ %-*.tst %-*.txt
+// As a special exception, you may use this file as part of a free software
+// library without restriction.  Specifically, if other files instantiate
+// templates or use macros or inline functions from this file, or you compile
+// this file and link it with other files to produce an executable, this
+// file does not by itself cause the resulting executable to be covered by
+// the GNU General Public License.  This exception does not however
+// invalidate any other reasons why the executable file might be covered by
+// the GNU General Public License.
+
+// 27.6.1.1.2 class basic_istream::sentry
 
 #include <istream>
-#include <fstream>
+#include <sstream>
 #include <testsuite_hooks.h>
 
-// fstreams
-void test04(void)
+// libstdc++/9562
+void
+test03()
 {
   bool test __attribute__((unused)) = true;
-  std::istream::pos_type pos01, pos02;
-  const char str_lit01[] = "istream_seeks-1.txt";
-  std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);
- 
-  // libstdc++/6414
-  if01.seekg(0, std::ios_base::beg);
-  pos01 = if01.tellg();
-  if01.peek();
-  pos02 = if01.tellg();
-  VERIFY( pos02 == pos01 );
+
+  std::wstringbuf strbuf01;
+  std::wistream strm1(&strbuf01);
+  const std::wistream::sentry sentry1(strm1);
+
+  VERIFY( bool(sentry1) == false );
 }
 
-int main()
+int main() 
 {
-  test04();
+  test03();
   return 0;
 }

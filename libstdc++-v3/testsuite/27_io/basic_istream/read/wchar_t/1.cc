@@ -1,6 +1,4 @@
-// 1999-08-11 bkoz
-
-// Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,7 +18,7 @@
 
 // 27.6.1.3 unformatted input functions
 
-#include <cstring> // for strncmp,...
+#include <cwchar> // for wcsncmp,...
 #include <istream>
 #include <sstream>
 #include <testsuite_hooks.h>
@@ -29,20 +27,20 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  const std::string str_02("soul eyes: john coltrane quartet");
+  const std::wstring str_02(L"soul eyes: john coltrane quartet");
 
-  std::stringbuf isbuf_03(str_02, std::ios_base::in);
-  std::stringbuf isbuf_04(str_02, std::ios_base::in);
+  std::wstringbuf isbuf_03(str_02, std::ios_base::in);
+  std::wstringbuf isbuf_04(str_02, std::ios_base::in);
 
-  std::istream is_00(NULL);
-  std::istream is_03(&isbuf_03);
-  std::istream is_04(&isbuf_04);
+  std::wistream is_00(NULL);
+  std::wistream is_03(&isbuf_03);
+  std::wistream is_04(&isbuf_04);
   std::ios_base::iostate state1, state2, statefail, stateeof;
   statefail = std::ios_base::failbit;
   stateeof = std::ios_base::eofbit;
 
   // istream& read(char_type* s, streamsize n)
-  char carray[60] = "";
+  wchar_t carray[60] = L"";
   state1 = is_04.rdstate();
   is_04.read(carray, 0);
   state2 = is_04.rdstate();
@@ -52,8 +50,8 @@ test01()
   is_04.read(carray, 9);
   state2 = is_04.rdstate();
   VERIFY( state1 == state2 );
-  VERIFY( !std::strncmp(carray, "soul eyes", 9) );
-  VERIFY( is_04.peek() == ':' );
+  VERIFY( !std::wcsncmp(carray, L"soul eyes", 9) );
+  VERIFY( is_04.peek() == L':' );
 
   state1 = is_03.rdstate();
   is_03.read(carray, 60);
@@ -61,7 +59,7 @@ test01()
   VERIFY( state1 != state2 );
   VERIFY( static_cast<bool>(state2 & stateeof) ); 
   VERIFY( static_cast<bool>(state2 & statefail) ); 
-  VERIFY( !std::strncmp(carray, "soul eyes: john coltrane quartet", 35) );
+  VERIFY( !std::wcsncmp(carray, L"soul eyes: john coltrane quartet", 35) );
 }
 
 int 

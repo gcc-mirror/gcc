@@ -1,6 +1,4 @@
-// 2000-06-29 bkoz
-
-// Copyright (C) 2000, 2001, 2002, 2003, 2004 Free Software Foundation
+// Copyright (C) 2004 Free Software Foundation
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,8 +16,11 @@
 // Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307,
 // USA.
 
+// The ARM simulator does not provide support for "fstat", which
+// causes "in_avail" to return an incorrect value.
+// { dg-do run { xfail arm*-*-elf arm*-*-eabi } }
+
 // 27.6.1.3 unformatted input functions
-// NB: ostream has a particular "seeks" category. Adopt this for istreams too.
 // @require@ %-*.tst %-*.txt
 // @diff@ %-*.tst %-*.txt
 
@@ -27,24 +28,33 @@
 #include <fstream>
 #include <testsuite_hooks.h>
 
-// fstreams
-void test04(void)
+// libstdc++/6746   
+void test13()
 {
+  using namespace std;
   bool test __attribute__((unused)) = true;
-  std::istream::pos_type pos01, pos02;
-  const char str_lit01[] = "istream_seeks-1.txt";
-  std::ifstream if01(str_lit01, std::ios_base::in | std::ios_base::out);
- 
-  // libstdc++/6414
-  if01.seekg(0, std::ios_base::beg);
-  pos01 = if01.tellg();
-  if01.peek();
-  pos02 = if01.tellg();
-  VERIFY( pos02 == pos01 );
+  streamsize sum = 0;
+  wifstream ifs("wistream_unformatted-1.tst");
+      
+  // test01
+  size_t i = ifs.rdbuf()->in_avail();
+  VERIFY( i != 0 );
+    
+  // test02
+  streamsize extracted;
+  do
+    {
+      wchar_t buf[1024];
+      extracted = ifs.readsome(buf, sizeof(buf) / sizeof(wchar_t));
+      sum += extracted;
+    }
+  while (ifs.good() && extracted);
+  VERIFY( sum != 0 );  
 }
-
-int main()
+ 
+int 
+main()
 {
-  test04();
+  test13();
   return 0;
 }
