@@ -137,6 +137,7 @@ static tree fold_not_const (tree, tree);
 static tree fold_relational_const (enum tree_code, tree, tree, tree);
 static tree fold_relational_hi_lo (enum tree_code *, const tree,
                                    tree *, tree *);
+static bool tree_expr_nonzero_p (tree);
 
 /* We know that A1 + B1 = SUM1, using 2's complement arithmetic and ignoring
    overflow.  Suppose A, B and SUM have the same respective signs as A1, B1,
@@ -8638,9 +8639,14 @@ fold (tree expr)
 	    return t1;
 	}
 
-      /* Both ARG0 and ARG1 are known to be constants at this point.  */
+      if ((code == EQ_EXPR || code == NE_EXPR)
+	  && !TREE_SIDE_EFFECTS (arg0)
+	  && integer_zerop (arg1)
+	  && tree_expr_nonzero_p (arg0))
+	return constant_boolean_node (code==NE_EXPR, type);
+
       t1 = fold_relational_const (code, type, arg0, arg1);
-      return (t1 == NULL_TREE ? t : t1);
+      return t1 == NULL_TREE ? t : t1;
 
     case UNORDERED_EXPR:
     case ORDERED_EXPR:
@@ -8678,6 +8684,16 @@ fold (tree expr)
 	       : integer_one_node;
 	  return omit_one_operand (type, t1, arg0);
 	}
+
+      /* Simplify unordered comparison of something with itself.  */
+      if ((code == UNLE_EXPR || code == UNGE_EXPR || code == UNEQ_EXPR)
+	  && operand_equal_p (arg0, arg1, 0))
+	return constant_boolean_node (1, type);
+
+      if (code == LTGT_EXPR
+	  && !flag_trapping_math
+	  && operand_equal_p (arg0, arg1, 0))
+	return constant_boolean_node (0, type);
 
       /* Fold (double)float1 CMP (double)float2 into float1 CMP float2.  */
       {
@@ -10394,9 +10410,11 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 
   if (TREE_CODE (op0) == REAL_CST && TREE_CODE (op1) == REAL_CST)
     {
+      const REAL_VALUE_TYPE *c0 = TREE_REAL_CST_PTR (op0);
+      const REAL_VALUE_TYPE *c1 = TREE_REAL_CST_PTR (op1);
+
       /* Handle the cases where either operand is a NaN.  */
-      if (REAL_VALUE_ISNAN (TREE_REAL_CST (op0))
-          || REAL_VALUE_ISNAN (TREE_REAL_CST (op1)))
+      if (real_isnan (c0) || real_isnan (c1))
 	{
 	  switch (code)
 	    {
@@ -10432,37 +10450,7 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	  return constant_boolean_node (result, type);
 	}
 
-      /* From here on we're sure there are no NaNs.  */
-      switch (code)
-	{
-	case ORDERED_EXPR:
-	  return constant_boolean_node (true, type);
-
-	case UNORDERED_EXPR:
-	  return constant_boolean_node (false, type);
-
-	case UNLT_EXPR:
-	  code = LT_EXPR;
-	  break;
-	case UNLE_EXPR:
-	  code = LE_EXPR;
-	  break;
-	case UNGT_EXPR:
-	  code = GT_EXPR;
-	  break;
-	case UNGE_EXPR:
-	  code = GE_EXPR;
-	  break;
-	case UNEQ_EXPR:
-	  code = EQ_EXPR;
-	  break;
-	case LTGT_EXPR:
-	  code = NE_EXPR;
-	  break;
-
-	default:
-	  break;
-	}
+      return constant_boolean_node (real_compare (code, c0, c1), type);
     }
 
   /* From here on we only handle LT, LE, GT, GE, EQ and NE.
@@ -10502,21 +10490,6 @@ fold_relational_const (enum tree_code code, tree type, tree op0, tree op1)
 	result = INT_CST_LT_UNSIGNED (op0, op1);
       else
 	result = INT_CST_LT (op0, op1);
-    }
-
-  else if (code == EQ_EXPR && !TREE_SIDE_EFFECTS (op0)
-           && integer_zerop (op1) && tree_expr_nonzero_p (op0))
-    result = 0;
-
-  /* Two real constants can be compared explicitly.  */
-  else if (TREE_CODE (op0) == REAL_CST && TREE_CODE (op1) == REAL_CST)
-    {
-      if (code == EQ_EXPR)
-	result = REAL_VALUES_EQUAL (TREE_REAL_CST (op0),
-				    TREE_REAL_CST (op1));
-      else
-	result = REAL_VALUES_LESS (TREE_REAL_CST (op0),
-				   TREE_REAL_CST (op1));
     }
   else
     return NULL_TREE;
