@@ -1,5 +1,7 @@
 2004-01-12  Ian Lance Taylor  <ian@wasabisystems.com>
 
+	* demangle.h: If ANSI_PROTOTYPES is defined, include <stddef.h>.
+
 	* demangle.h (enum demangle_component_type): Define.
 	(struct demangle_operator_info): Declare.
 	(struct demangle_builtin_type_info): Declare.
