@@ -1,3 +1,8 @@
+2001-07-27  Gerald Pfeifer  <pfeifer@dbai.tuwien.ac.at>
+
+	* doc/install.texi (Configuration): Properly link the host
+	specific instructions also when generating HTML.
+
 Fri Jul 27 00:33:35 EDT 2001  John Wehle  (john@feith.com)
 
         * flow.c (redirect_edge_and_branch_force): Test
