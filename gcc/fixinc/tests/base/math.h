@@ -25,6 +25,7 @@ struct exception;
 #else
 
 #endif
+
  /* This is a comment
                          and it ends here. */
 #endif  /* BROKEN_CABS_CHECK */
