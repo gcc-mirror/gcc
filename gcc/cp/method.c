@@ -536,7 +536,6 @@ do_build_copy_constructor (fndecl)
       int n_bases = CLASSTYPE_N_BASECLASSES (current_class_type);
       tree binfos = TYPE_BINFO_BASETYPES (current_class_type);
       tree member_init_list = NULL_TREE;
-      tree base_init_list = NULL_TREE;
       int cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
 
@@ -550,10 +549,12 @@ do_build_copy_constructor (fndecl)
 	{
 	  tree binfo = TREE_VALUE (t);
 	  
-	  base_init_list = tree_cons (binfo,
-				      build_base_path (PLUS_EXPR, parm,
-						       binfo, 1),
-				      base_init_list);
+	  member_init_list 
+	    = tree_cons (binfo,
+			 build_tree_list (NULL_TREE,
+					  build_base_path (PLUS_EXPR, parm,
+							   binfo, 1)),
+			 member_init_list);
 	}
 
       for (i = 0; i < n_bases; ++i)
@@ -562,10 +563,12 @@ do_build_copy_constructor (fndecl)
 	  if (TREE_VIA_VIRTUAL (binfo))
 	    continue; 
 
-	  base_init_list = tree_cons (binfo,
-				      build_base_path (PLUS_EXPR, parm,
-						       binfo, 1),
-				      base_init_list);
+	  member_init_list 
+	    = tree_cons (binfo,
+			 build_tree_list (NULL_TREE,
+					  build_base_path (PLUS_EXPR, parm,
+							   binfo, 1)),
+			 member_init_list);
 	}
 
       for (; fields; fields = TREE_CHAIN (fields))
@@ -609,9 +612,7 @@ do_build_copy_constructor (fndecl)
 	  member_init_list
 	    = tree_cons (field, init, member_init_list);
 	}
-      member_init_list = nreverse (member_init_list);
-      base_init_list = nreverse (base_init_list);
-      emit_base_init (member_init_list, base_init_list);
+      finish_mem_initializers (member_init_list);
     }
 }
 

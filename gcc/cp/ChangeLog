@@ -1,3 +1,29 @@
+2002-10-02  Mark Mitchell  <mark@codesourcery.com>
+
+	PR c++/7188.
+	* cp-tree.def (CTOR_INITIALIZER): Use one slot, not two.
+	* cp-tree.h (emit_base_init): Rename to ....
+	(emit_mem_initializers): ... this.
+	(expand_member_init): Change prototype.
+	* init.c (perform_member_init): Compute explicit, rather than
+	requiring it as a parameter.
+	(sort_member_init): Rename to ...
+	(sort_mem_initializers): ... this.  Process bases and data members
+	together.
+	(sort_base_init): Remove.
+	(emit_base_init): Rename to ...
+	(emit_mem_initializers): ... this.
+	(expand_aggr_vbase_init_1): Remove.
+	(construct_virtual_bases): Rename to ...
+	(construct_virtual_base): ... this.
+	(expand_member_init): Rework handling of base initializers.
+	* method.c (do_build_copy_constructor): Use
+	finish_mem_initializers.
+	* parse.y (member_init): Adjust calls to expand_member_init.
+	* pt.c (tsubst_expr): Simplify CTOR_INITIALIZER case.
+	(tsubst_initializer_list): Use expand_member_init.
+	* semantics.c (finish_mem_intiailizers): Simplify.
+	
 2002-10-02  Roger Sayle  <roger@eyesopen.com>
 
 	PR optimization/6627

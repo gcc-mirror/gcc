@@ -7,6 +7,6 @@ public:
 };
 
 class D : public B {
-  int member;
+  int member;		                // WARNING - reordered
   D() : member(0), B(member) { }	// WARNING - reordered
 };
