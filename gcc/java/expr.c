@@ -763,8 +763,8 @@ build_java_arrayaccess (tree array, tree type, tree index)
        * Note this is equivalent to and more efficient than:
        * INDEX < 0 || INDEX >= LEN && throw ... */
       tree test;
-      tree len = build_java_array_length_access (array);
-      TREE_TYPE (len) = unsigned_int_type_node;
+      tree len = convert (unsigned_int_type_node,
+			  build_java_array_length_access (array));
       test = fold (build2 (GE_EXPR, boolean_type_node, 
 			   convert (unsigned_int_type_node, index),
 			   len));
