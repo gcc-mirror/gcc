@@ -334,6 +334,7 @@ AM_MAKEFLAGS = \
 	"PICFLAG=$(PICFLAG)" \
 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
 	"SHELL=$(SHELL)" \
+	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
 	"exec_prefix=$(exec_prefix)" \
 	"infodir=$(infodir)" \
 	"libdir=$(libdir)" \

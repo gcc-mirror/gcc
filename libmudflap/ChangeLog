@@ -1,3 +1,8 @@
+2004-05-21  Frank Ch. Eigler  <fche@redhat.com>
+
+	* Makefile.am (AM_MAKEFLAGS): Pass RUNTESTFLAGS.
+	* Makefile.in: Ditto.
+
 2004-05-18  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	* acinclude.m4 (lt_cv_deplibs_check_method): Use pass_all on sh*.
