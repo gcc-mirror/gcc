@@ -12001,6 +12001,9 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
 {
   tree initializer;
 
+  /* Assume the expression is constant.  */
+  *non_constant_p = false;
+
   /* If it is not a `{', then we are looking at an
      assignment-expression.  */
   if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
