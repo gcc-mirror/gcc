@@ -1,12 +1,12 @@
-# British English messages for GNU GCC
-# Copyright 1998 Free Software Foundation, Inc.
+# British English messages for GNU CC
+# Copyright (C) 1998 Free Software Foundation, Inc.
 # Paul Eggert <eggert@twinsun.com>, 1998.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: cc 2.8.1.19980813\n"
 "POT-Creation-Date: 1998-07-26 00:33-0700\n"
-"PO-Revision-Date: 1998-07-26 00:33-0700\n"
+"PO-Revision-Date: 1998-09-27 21:34-0700\n"
 "Last-Translator: Paul Eggert <eggert@twinsun.com>\n"
 "Language-Team: English <en@li.org>\n"
 "MIME-Version: 1.0\n"
