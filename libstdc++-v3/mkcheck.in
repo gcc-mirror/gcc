@@ -358,6 +358,7 @@ mv ${RESULTS_FILE}.tmp $RESULTS_FILE
 if [ $TEST_TIME_START -lt $TEST_TIME_END ]; then
     TEST_TIME=$[ $TEST_TIME_END - $TEST_TIME_START ]
     echo "testrun == $TEST_TIME"
+    echo "testrun == $TEST_TIME" >> $RESULTS_FILE
 fi
 
 exit 0
