@@ -1,5 +1,14 @@
 2001-09-10  Benjamin Kosnik  <bkoz@redhat.com>
 
+	* configure.in: Fix cross compiling math routines. Correct
+	comments for cross compiling and limits. Add floating point math
+	routines found in newlib.
+	* configure: Regenerate.
+	* acconfig.h: Add macros.
+	* config.h.in: Regenerate.
+	
+2001-09-10  Benjamin Kosnik  <bkoz@redhat.com>
+
 	* config/locale/moneypunct_members_generic.cc
 	(money_base::_S_construct_pattern): Remove unused parameters.
 
