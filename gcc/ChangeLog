@@ -1,3 +1,7 @@
+2000-10-09  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	* config/elfos.h (UNIQUE_SECTION): Apply STRIP_NAME_ENCODING on name.
+
 2000-10-09  Richard Henderson  <rth@cygnus.com>
 
 	* Makefile.in (LANG_LIB2FUNCS): Remove.
