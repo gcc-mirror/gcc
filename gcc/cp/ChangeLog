@@ -1,5 +1,7 @@
 Fri Apr  3 02:22:59 1998  Jason Merrill  <jason@yorick.cygnus.com>
 
+	* decl.c (cplus_expand_expr_stmt): Strip unused INDIRECT_REFs.
+
 	Re-implement allocation of base class subobjects.
 	* tree.c (unshare_base_binfos): New fn.
 	(layout_basetypes): Use it.  Now handles offsets of both virtual and

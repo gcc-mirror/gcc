@@ -12886,6 +12886,12 @@ cplus_expand_expr_stmt (exp)
 	 libg++ to miscompile, and tString to core dump.  */
       exp = build1 (CLEANUP_POINT_EXPR, TREE_TYPE (exp), exp);
 #endif
+
+      /* Strip unused implicit INDIRECT_REFs of references.  */
+      if (TREE_CODE (exp) == INDIRECT_REF
+	  && TREE_CODE (TREE_TYPE (TREE_OPERAND (exp, 0))) == REFERENCE_TYPE)
+	exp = TREE_OPERAND (exp, 0);
+
       /* If we don't do this, we end up down inside expand_expr
 	 trying to do TYPE_MODE on the ERROR_MARK, and really
 	 go outside the bounds of the type.  */
