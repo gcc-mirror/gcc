@@ -5233,7 +5233,7 @@ jump_over_one_insn_p (insn, dest)
 		      : dest);
   int jump_addr = INSN_ADDRESSES (INSN_UID (insn));
   int dest_addr = INSN_ADDRESSES (uid);
-  return dest_addr - jump_addr == 2;
+  return dest_addr - jump_addr == get_attr_length (insn) + 1;
 }
 
 /* Returns 1 if a value of mode MODE can be stored starting with hard
@@ -5450,4 +5450,77 @@ avr_peep2_scratch_safe (scratch)
 	}
     }
   return 1;
+}
+
+/* Output a branch that tests a single bit of a register (QI, HI or SImode)
+   or memory location in the I/O space (QImode only).
+
+   Operand 0: comparison operator (must be EQ or NE, compare bit to zero).
+   Operand 1: register operand to test, or CONST_INT memory address.
+   Operand 2: bit number (for QImode operand) or mask (HImode, SImode).
+   Operand 3: label to jump to if the test is true.  */
+
+const char *
+avr_out_sbxx_branch (insn, operands)
+     rtx insn;
+     rtx operands[];
+{
+  enum rtx_code comp = GET_CODE (operands[0]);
+  int long_jump = (get_attr_length (insn) >= 4);
+  int reverse = long_jump || jump_over_one_insn_p (insn, operands[3]);
+
+  if (comp == GE)
+    comp = EQ;
+  else if (comp == LT)
+    comp = NE;
+
+  if (reverse)
+    comp = reverse_condition (comp);
+
+  if (GET_CODE (operands[1]) == CONST_INT)
+    {
+      if (INTVAL (operands[1]) < 0x40)
+	{
+	  if (comp == EQ)
+	    output_asm_insn (AS2 (sbis,%1-0x20,%2), operands);
+	  else
+	    output_asm_insn (AS2 (sbic,%1-0x20,%2), operands);
+	}
+      else
+	{
+	  output_asm_insn (AS2 (in,__tmp_reg__,%1-0x20), operands);
+	  if (comp == EQ)
+	    output_asm_insn (AS2 (sbrs,__tmp_reg__,%2), operands);
+	  else
+	    output_asm_insn (AS2 (sbrc,__tmp_reg__,%2), operands);
+	}
+    }
+  else  /* GET_CODE (operands[1]) == REG */
+    {
+      if (GET_MODE (operands[1]) == QImode)
+	{
+	  if (comp == EQ)
+	    output_asm_insn (AS2 (sbrs,%1,%2), operands);
+	  else
+	    output_asm_insn (AS2 (sbrc,%1,%2), operands);
+	}
+      else  /* HImode or SImode */
+	{
+	  static char buf[] = "sbrc %A1,0";
+	  int bit_nr = exact_log2 (INTVAL (operands[2])
+				   & GET_MODE_MASK (GET_MODE (operands[1])));
+
+	  buf[3] = (comp == EQ) ? 's' : 'c';
+	  buf[6] = 'A' + (bit_nr >> 3);
+	  buf[9] = '0' + (bit_nr & 7);
+	  output_asm_insn (buf, operands);
+	}
+    }
+
+  if (long_jump)
+    return (AS1 (rjmp,_PC_+4) CR_TAB
+	    AS1 (jmp,%3));
+  if (!reverse)
+    return AS1 (rjmp,%3);
+  return "";
 }
