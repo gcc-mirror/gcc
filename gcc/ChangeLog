@@ -1,3 +1,12 @@
+2001-02-25  Richard Henderson  <rth@redhat.com>
+
+	* ifcvt.c (struct noce_if_info): Add test_bb.
+	(noce_get_alt_condition): New.
+	(noce_try_minmax, noce_try_abs): New.
+	(noce_operand_ok): New.
+	(noce_process_if_block): Use them.
+	* rtlanal.c (may_trap_p): NEG and ABS can never trap.
+
 Sun Feb 25 14:26:17 2001  Christopher Faylor <cgf@cygnus.com>
 
 	* config/i386/cygwin.h (CPP_SPEC): Add missing space before w32api
@@ -19,18 +28,18 @@ Sun Feb 25 08:34:23 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 2001-02-25  Neil Booth  <neil@daikokuya.demon.co.uk>
 
-        * cppinit.c (builtin_array): Update.
-        (init_builtins): Flag builtins to warn if redefined or
-        undefined.  Define __GXX_WEAK as a normal macro.
-        * cpplib.c (do_undef): Warn if flagged NODE_WARN.
-        * cpplib.h (NODE_WARN): New flag.
-        * cppmacro.c (builtin_macro): Remove handling of __GXX_WEAK__.
-        Handle __STDC__ as a builtin only on Solaris.
-        (warn_of_redefinition): Renamed from check_macro_definition.
-        Reverse sense of test.  Always warn if NODE_WARN.
-        (_cpp_create_definition): Use warn_of_redefinition.  Flag
-        any macro beginning with "__STDC_" to require a mandatory
-        warning if redefined or undefined.
+	* cppinit.c (builtin_array): Update.
+	(init_builtins): Flag builtins to warn if redefined or
+	undefined.  Define __GXX_WEAK as a normal macro.
+	* cpplib.c (do_undef): Warn if flagged NODE_WARN.
+	* cpplib.h (NODE_WARN): New flag.
+	* cppmacro.c (builtin_macro): Remove handling of __GXX_WEAK__.
+	Handle __STDC__ as a builtin only on Solaris.
+	(warn_of_redefinition): Renamed from check_macro_definition.
+	Reverse sense of test.  Always warn if NODE_WARN.
+	(_cpp_create_definition): Use warn_of_redefinition.  Flag
+	any macro beginning with "__STDC_" to require a mandatory
+	warning if redefined or undefined.
 
 2001-02-24  Zack Weinberg  <zackw@stanford.edu>
 
