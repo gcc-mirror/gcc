@@ -1514,7 +1514,7 @@ __bb_exit_func (void)
 			 (ptr->functions[i]) ? ptr->functions[i] : "<none>");
 
 	      if (line_p)
-		fprintf (file, " line= %*d", line_len, ptr->line_nums[i]);
+		fprintf (file, " line= %*ld", line_len, ptr->line_nums[i]);
 
 	      if (file_p)
 		fprintf (file, " file= %s",
