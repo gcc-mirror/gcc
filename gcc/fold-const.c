@@ -1931,8 +1931,7 @@ fold_convert (tree type, tree arg)
 	  return fold_convert (type, tem);
 	}
       if (TREE_CODE (orig) == VECTOR_TYPE
-	  && GET_MODE_SIZE (TYPE_MODE (type))
-	     == GET_MODE_SIZE (TYPE_MODE (orig)))
+	  && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)))
 	return fold (build1 (NOP_EXPR, type, arg));
     }
   else if (TREE_CODE (type) == REAL_TYPE)
@@ -1991,12 +1990,10 @@ fold_convert (tree type, tree arg)
   else if (TREE_CODE (type) == VECTOR_TYPE)
     {
       if ((INTEGRAL_TYPE_P (orig) || POINTER_TYPE_P (orig))
-	  && GET_MODE_SIZE (TYPE_MODE (type))
-	     == GET_MODE_SIZE (TYPE_MODE (orig)))
+	  && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)))
 	return fold (build1 (NOP_EXPR, type, arg));
       if (TREE_CODE (orig) == VECTOR_TYPE
-	  && GET_MODE_SIZE (TYPE_MODE (type))
-	     == GET_MODE_SIZE (TYPE_MODE (orig)))
+	  && tree_int_cst_equal (TYPE_SIZE (type), TYPE_SIZE (orig)))
 	return fold (build1 (NOP_EXPR, type, arg));
     }
   else if (VOID_TYPE_P (type))

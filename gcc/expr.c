@@ -4268,8 +4268,7 @@ count_type_elements (tree type)
       return 2;
 
     case VECTOR_TYPE:
-      /* ??? This is broke.  We should encode the vector width in the tree.  */
-      return GET_MODE_NUNITS (TYPE_MODE (type));
+      return TYPE_VECTOR_SUBPARTS (type);
 
     case INTEGER_TYPE:
     case REAL_TYPE:
@@ -4554,8 +4553,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 				   get_alias_set (TREE_TYPE (field)));
 	}
     }
-  else if (TREE_CODE (type) == ARRAY_TYPE
-	   || TREE_CODE (type) == VECTOR_TYPE)
+
+  else if (TREE_CODE (type) == ARRAY_TYPE)
     {
       tree elt;
       int i;
@@ -4565,39 +4564,8 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       int const_bounds_p;
       HOST_WIDE_INT minelt = 0;
       HOST_WIDE_INT maxelt = 0;
-      int icode = 0;
-      rtx *vector = NULL;
-      int elt_size = 0;
-      unsigned n_elts = 0;
 
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	domain = TYPE_DOMAIN (type);
-      else
-	/* Vectors do not have domains; look up the domain of
-	   the array embedded in the debug representation type.
-	   FIXME Would probably be more efficient to treat vectors
-	   separately from arrays.  */
-	{
-	  domain = TYPE_DEBUG_REPRESENTATION_TYPE (type);
-	  domain = TYPE_DOMAIN (TREE_TYPE (TYPE_FIELDS (domain)));
-	  if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))
-	    {
-	      enum machine_mode mode = GET_MODE (target);
-
-	      icode = (int) vec_init_optab->handlers[mode].insn_code;
-	      if (icode != CODE_FOR_nothing)
-		{
-		  unsigned int i;
-
-		  elt_size = GET_MODE_SIZE (GET_MODE_INNER (mode));
-		  n_elts = (GET_MODE_SIZE (mode) / elt_size);
-		  vector = alloca (n_elts);
-		  for (i = 0; i < n_elts; i++)
-		    vector [i] = CONST0_RTX (GET_MODE_INNER (mode));
-		}
-	    }
-	}
-
+      domain = TYPE_DOMAIN (type);
       const_bounds_p = (TYPE_MIN_VALUE (domain)
 			&& TYPE_MAX_VALUE (domain)
 			&& host_integerp (TYPE_MIN_VALUE (domain), 0)
@@ -4613,7 +4581,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
       /* If the constructor has fewer elements than the array,
          clear the whole array first.  Similarly if this is
          static constructor of a non-BLKmode object.  */
-      if (cleared || (REG_P (target) && TREE_STATIC (exp)))
+      if (cleared)
+	need_to_clear = 0;
+      else if (REG_P (target) && TREE_STATIC (exp))
 	need_to_clear = 1;
       else
 	{
@@ -4660,18 +4630,16 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    need_to_clear = 1;
 	}
 
-      if (need_to_clear && size > 0 && !vector)
+      if (need_to_clear && size > 0)
 	{
-	  if (! cleared)
-	    {
-	      if (REG_P (target))
-		emit_move_insn (target,  CONST0_RTX (GET_MODE (target)));
-	      else
-		clear_storage (target, GEN_INT (size));
-	    }
+	  if (REG_P (target))
+	    emit_move_insn (target,  CONST0_RTX (GET_MODE (target)));
+	  else
+	    clear_storage (target, GEN_INT (size));
 	  cleared = 1;
 	}
-      else if (REG_P (target))
+
+      if (!cleared && REG_P (target))
 	/* Inform later passes that the old value is dead.  */
 	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
 
@@ -4709,9 +4677,6 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	      rtx index_r, pos_rtx;
 	      HOST_WIDE_INT lo, hi, count;
 	      tree position;
-
-	      if (vector)
-		abort ();
 
 	      /* If the range is constant and "small", unroll the loop.  */
 	      if (const_bounds_p
@@ -4807,16 +4772,13 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 	    {
 	      tree position;
 
-	      if (vector)
-		abort ();
-
 	      if (index == 0)
 		index = ssize_int (1);
 
 	      if (minelt)
-		index = convert (ssizetype,
-				 fold (build (MINUS_EXPR, index,
-					      TYPE_MIN_VALUE (domain))));
+		index = fold_convert (ssizetype,
+				      fold (build (MINUS_EXPR, index,
+						   TYPE_MIN_VALUE (domain))));
 
 	      position = size_binop (MULT_EXPR, index,
 				     convert (ssizetype,
@@ -4826,16 +4788,6 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 					highest_pow2_factor (position));
 	      xtarget = adjust_address (xtarget, mode, 0);
 	      store_expr (value, xtarget, 0);
-	    }
-	  else if (vector)
-	    {
-	      int pos;
-
-	      if (index != 0)
-		pos = tree_low_cst (index, 0) - minelt;
-	      else
-		pos = i;
-	      vector[pos] = expand_expr (value, NULL_RTX, VOIDmode, 0);
 	    }
 	  else
 	    {
@@ -4856,12 +4808,128 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size)
 				       type, cleared, get_alias_set (elttype));
 	    }
 	}
-      if (vector)
+    }
+
+  else if (TREE_CODE (type) == VECTOR_TYPE)
+    {
+      tree elt;
+      int i;
+      int need_to_clear;
+      int icode = 0;
+      tree elttype = TREE_TYPE (type);
+      int elt_size = tree_low_cst (TYPE_SIZE (elttype), 1);
+      enum machine_mode eltmode = TYPE_MODE (elttype);
+      HOST_WIDE_INT bitsize;
+      HOST_WIDE_INT bitpos;
+      rtx *vector = NULL;
+      unsigned n_elts;
+
+      if (eltmode == BLKmode)
+	abort ();
+
+      n_elts = TYPE_VECTOR_SUBPARTS (type);
+      if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))
 	{
-	  emit_insn (GEN_FCN (icode) (target,
-				      gen_rtx_PARALLEL (GET_MODE (target),
-						        gen_rtvec_v (n_elts, vector))));
+	  enum machine_mode mode = GET_MODE (target);
+	  
+	  icode = (int) vec_init_optab->handlers[mode].insn_code;
+	  if (icode != CODE_FOR_nothing)
+	    {
+	      unsigned int i;
+	      
+	      vector = alloca (n_elts);
+	      for (i = 0; i < n_elts; i++)
+		vector [i] = CONST0_RTX (GET_MODE_INNER (mode));
+	    }
 	}
+
+      /* If the constructor has fewer elements than the vector,
+         clear the whole array first.  Similarly if this is
+         static constructor of a non-BLKmode object.  */
+      if (cleared)
+	need_to_clear = 0;
+      else if (REG_P (target) && TREE_STATIC (exp))
+	need_to_clear = 1;
+      else
+	{
+	  unsigned HOST_WIDE_INT count = 0, zero_count = 0;
+
+	  for (elt = CONSTRUCTOR_ELTS (exp);
+	       elt != NULL_TREE;
+	       elt = TREE_CHAIN (elt))
+	    {
+	      int n_elts_here =
+		tree_low_cst (
+		  int_const_binop (TRUNC_DIV_EXPR,
+				   TYPE_SIZE (TREE_TYPE (TREE_VALUE (elt))),
+				   TYPE_SIZE (elttype), 0), 1);
+
+	      count += n_elts_here;
+	      if (mostly_zeros_p (TREE_VALUE (elt)))
+	        zero_count += n_elts_here;
+	    }
+
+	  /* Clear the entire vector first if there are any missing elements,
+	     or if the incidence of zero elements is >= 75%.  */
+	  need_to_clear = (count < n_elts || 4 * zero_count >= 3 * count);
+	}
+
+      if (need_to_clear && size > 0 && !vector)
+	{
+	  if (REG_P (target))
+	    emit_move_insn (target,  CONST0_RTX (GET_MODE (target)));
+	  else
+	    clear_storage (target, GEN_INT (size));
+	  cleared = 1;
+	}
+
+      if (!cleared && REG_P (target))
+	/* Inform later passes that the old value is dead.  */
+	emit_insn (gen_rtx_CLOBBER (VOIDmode, target));
+
+      /* Store each element of the constructor into the corresponding
+	 element of TARGET, determined by counting the elements.  */
+      for (elt = CONSTRUCTOR_ELTS (exp), i = 0;
+	   elt;
+	   elt = TREE_CHAIN (elt), i += bitsize / elt_size)
+	{
+	  tree value = TREE_VALUE (elt);
+	  tree index = TREE_PURPOSE (elt);
+	  HOST_WIDE_INT eltpos;
+
+	  bitsize = tree_low_cst (TYPE_SIZE (TREE_TYPE (value)), 1);
+	  if (cleared && initializer_zerop (value))
+	    continue;
+
+	  if (index != 0)
+	    eltpos = tree_low_cst (index, 1);
+	  else
+	    eltpos = i;
+
+	  if (vector)
+	    {
+	      /* Vector CONSTRUCTORs should only be built from smaller
+		 vectors in the case of BLKmode vectors.  */
+	      if (TREE_CODE (TREE_TYPE (value)) == VECTOR_TYPE)
+		abort ();
+	      vector[eltpos] = expand_expr (value, NULL_RTX, VOIDmode, 0);
+	    }
+	  else
+	    {
+	      enum machine_mode value_mode =
+		TREE_CODE (TREE_TYPE (value)) == VECTOR_TYPE
+		  ? TYPE_MODE (TREE_TYPE (value))
+		  : eltmode;
+	      bitpos = eltpos * elt_size;
+	      store_constructor_field (target, bitsize, bitpos, value_mode, value,
+				       type, cleared, get_alias_set (elttype));
+	    }
+	}
+
+      if (vector)
+	emit_insn (GEN_FCN (icode) (target,
+				    gen_rtx_PARALLEL (GET_MODE (target),
+						      gen_rtvec_v (n_elts, vector))));
     }
 
   /* Set constructor assignments.  */
@@ -6430,7 +6498,13 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       return temp;
 
     case VECTOR_CST:
-      return const_vector_from_tree (exp);
+      if (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp))) == MODE_VECTOR_INT
+	  || GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (exp))) == MODE_VECTOR_FLOAT)
+	return const_vector_from_tree (exp);
+      else 
+	return expand_expr (build1 (CONSTRUCTOR, TREE_TYPE (exp),
+				    TREE_VECTOR_CST_ELTS (exp)),
+			    ignore ? const0_rtx : target, tmode, modifier);
 
     case CONST_DECL:
       return expand_expr (DECL_INITIAL (exp), target, VOIDmode, modifier);
