@@ -1,3 +1,7 @@
+2002-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* class.c (layout_virtual_bases): Do all dsize computation on trees.
+
 2002-04-14  Jason Merrill  <jason@redhat.com>
 
 	* typeck.c (get_member_function_from_ptrfunc): Don't do
