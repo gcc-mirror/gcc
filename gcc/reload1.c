@@ -4658,6 +4658,10 @@ reload_reg_free_before_p (regno, opnum, type)
 	 the first place, since we know that it was allocated.  */
 
     case RELOAD_FOR_OUTPUT_ADDRESS:
+      /* Earlier reloads include RELOAD_FOR_INPADDR_ADDRESS reloads.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_outaddr_addr[opnum], regno))
+	return 0;
+      /* ... fall through ...  */
     case RELOAD_FOR_OUTADDR_ADDRESS:
       /* Earlier reloads are for earlier outputs or their addresses,
 	 any RELOAD_FOR_INSN reloads, any inputs or their addresses, or any
@@ -4738,6 +4742,10 @@ reload_reg_free_before_p (regno, opnum, type)
       return ! TEST_HARD_REG_BIT (reload_reg_used_in_other_addr, regno);
 
     case RELOAD_FOR_INPUT_ADDRESS:
+      /* Earlier reloads include RELOAD_FOR_INPADDR_ADDRESS reloads.  */
+      if (TEST_HARD_REG_BIT (reload_reg_used_in_inpaddr_addr[opnum], regno))
+	return 0;
+      /* ... fall through ...  */
     case RELOAD_FOR_INPADDR_ADDRESS:
       /* Similarly, all we have to check is for use in earlier inputs'
 	 addresses.  */
