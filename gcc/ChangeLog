@@ -1,3 +1,7 @@
+Sat Apr 25 22:11:38 PDT 1998 Jeff Law  (law@cygnus.com)
+
+	* version.c: Bump for snapshot.
+
 Sat Apr 25 17:17:15 1998  Jeffrey A Law  (law@cygnus.com)
 
 	* fold-const.c (fold_convert): Fix typo.
