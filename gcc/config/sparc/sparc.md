@@ -2945,7 +2945,7 @@
   "std %3,%2")
  
 ;; Optimize the case of following a reg-reg move with a test
-;; of reg just moved.  Don't allow floating point regs for operand 1.
+;; of reg just moved.  Don't allow floating point regs for operand 0 or 1.
 ;; This can result from a float to fix conversion.
 
 (define_peephole
@@ -2956,7 +2956,7 @@
 		    (const_int 0)))]
   "(rtx_equal_p (operands[2], operands[0])
     || rtx_equal_p (operands[2], operands[1]))
-   && ! FP_REG_P (operands[1])"
+   && ! FP_REG_P (operands[0]) && ! FP_REG_P (operands[1])"
   "orcc %1,%%g0,%0")
 
 ;; Do {sign,zero}-extended compares somewhat more efficiently.
