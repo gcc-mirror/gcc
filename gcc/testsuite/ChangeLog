@@ -1,3 +1,8 @@
+2002-11-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/3663
+	* g++.dg/template/access7.C: New test.
+
 2002-12-18  Nick Clifton  <nickc@redhat.com>
 
 	* lib/g++.exp (g++_include_flags): Only invoke testsuite_flags if
