@@ -1141,7 +1141,9 @@ regclass (f, nregs, dump)
 	  register int class;
 	  register struct costs *p = &costs[i];
 
-	  if (!REG_N_REFS (i))
+	  /* In non-optimizing compilation REG_N_REFS is not initialized
+	     yet.  */
+	  if (optimize && !REG_N_REFS (i))
 	    continue;
 
 	  for (class = (int) ALL_REGS - 1; class > 0; class--)
