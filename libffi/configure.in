@@ -9,6 +9,29 @@ AC_MSG_WARN(then use the most recent one - libffi-1.20.)
 AC_MSG_WARN(***********************************************************)
 AC_MSG_WARN(***********************************************************)
 
+dnl Default to --enable-multilib
+AC_ARG_ENABLE(multilib,
+[  --enable-multilib       build many library versions (default)],
+[case "${enableval}" in
+  yes) multilib=yes ;;
+  no)  multilib=no ;;
+  *)   AC_MSG_ERROR(bad value ${enableval} for multilib option) ;;
+ esac], [multilib=yes])dnl
+
+dnl We may get other options which we don't document:
+dnl --with-target-subdir, --with-multisrctop, --with-multisubdir
+
+if test "${srcdir}" = "."; then
+  if test "${with_target_subdir}" != "."; then
+    libffi_basedir="${srcdir}/${with_multisrctop}.."
+  else
+    libffi_basedir="${srcdir}/${with_multisrctop}"
+  fi
+else
+  libffi_basedir="${srcdir}"
+fi
+AC_SUBST(libffi_basedir)
+
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE(libffi,2.00-beta,no-define)
@@ -80,7 +103,27 @@ AC_ARG_ENABLE(purify-safety,
 
 AM_CONDITIONAL(USE_LIBDIR, test -z "$with_cross_host")
 
-AC_OUTPUT(include/Makefile include/ffi.h Makefile,, 
+if test "${multilib}" = "yes"; then
+  multilib_arg="--enable-multilib"
+else
+  multilib_arg=
+fi
+
+AC_OUTPUT(include/Makefile include/ffi.h Makefile,
+[
+if test -n "$CONFIG_FILES"; then
+   ac_file=Makefile . ${libffi_basedir}/../config-ml.in
+fi
+],
+srcdir=${srcdir}
+host=${host}
+target=${target}
+with_multisubdir=${with_multisubdir}
+ac_configure_args="${multilib_arg} ${ac_configure_args}"
+CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
+libffi_basedir=${libffi_basedir}
+CC="${CC}"
+DEFS="$DEFS"
 test ! -d include && mkdir include
 test ! -f include/fficonfig.h && cp fficonfig.h include/fficonfig.h
 if cmp -s fficonfig.h include/fficonfig.h 2>/dev/null; then 
