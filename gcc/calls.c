@@ -600,34 +600,33 @@ expand_call (exp, target, ignore)
       is_const = 0;
 
 #ifdef PCC_STATIC_STRUCT_RETURN
-      if (flag_pcc_struct_return)
-	{
-	  pcc_struct_value = 1;
-	  is_integrable = 0;  /* Easier than making that case work right.  */
-	}
-      else
-#endif
-	{
-	  struct_value_size = int_size_in_bytes (TREE_TYPE (exp));
+      {
+	pcc_struct_value = 1;
+	is_integrable = 0;  /* Easier than making that case work right.  */
+      }
+#else /* not PCC_STATIC_STRUCT_RETURN */
+      {
+	struct_value_size = int_size_in_bytes (TREE_TYPE (exp));
 
-	  if (struct_value_size < 0)
-	    abort ();
+	if (struct_value_size < 0)
+	  abort ();
 
-	  if (target && GET_CODE (target) == MEM)
-	    structure_value_addr = XEXP (target, 0);
-	  else
-	    {
-	      /* Assign a temporary on the stack to hold the value.  */
+	if (target && GET_CODE (target) == MEM)
+	  structure_value_addr = XEXP (target, 0);
+	else
+	  {
+	    /* Assign a temporary on the stack to hold the value.  */
 
-	      /* For variable-sized objects, we must be called with a target
-		 specified.  If we were to allocate space on the stack here,
-		 we would have no way of knowing when to free it.  */
+	    /* For variable-sized objects, we must be called with a target
+	       specified.  If we were to allocate space on the stack here,
+	       we would have no way of knowing when to free it.  */
 
-	      structure_value_addr
-		= XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
-	      target = 0;
-	    }
-	}
+	    structure_value_addr
+	      = XEXP (assign_stack_temp (BLKmode, struct_value_size, 1), 0);
+	    target = 0;
+	  }
+      }
+#endif /* not PCC_STATIC_STRUCT_RETURN */
     }
 
   /* If called function is inline, try to integrate it.  */
