@@ -4,6 +4,18 @@
 	* Makefile.in, configure.in: Sync with binutils, entries
 	follow...
 
+2002-04-07  Andrew Cagney  <ac131313@redhat.com>
+
+	* Makefile.in (do-tar-bz2): Delete rule.  Replace with ...
+	(do-tar, do-bz2): New rules.
+	(taz): Update.  Replace do-tar-bz2 with do-tar and do-bz2.
+	(gdb-tar): New rule.
+	(gdb-taz): Rewrite.  Use gdb-tar and do-bz2.
+	(insight_dejagnu.tar): New rule.
+	(insight.tar): New rule.
+	(gdb+dejagnu.tar): New rule.
+	(gdb.tar): New rule.
+
 2002-02-01  Mo DeJong  <supermo@bayarea.net>
 
 	* Makefile.in: Add all-tix to deps for all-snavigator
