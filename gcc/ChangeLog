@@ -1,3 +1,7 @@
+Tue Oct  7 12:57:26 1997  Jim Wilson  <wilson@cygnus.com>
+
+	* dwarf2out.c (output_call_frame_info): Remove last change.
+
 1997-10-04  Andreas Schwab  <schwab@issan.informatik.uni-dortmund.de>
 
 	* frame.c (__frame_state_for): Execute the FDE insns until the
