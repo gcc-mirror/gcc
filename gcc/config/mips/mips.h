@@ -2311,7 +2311,7 @@ extern enum reg_class mips_char_to_class[256];
    memory and loading that memory location into a register of CLASS2.
 
    Do not define this macro if its value would always be zero.  */
-
+#if 0
 #define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
   ((!TARGET_DEBUG_H_MODE						\
     && GET_MODE_CLASS (MODE) == MODE_INT				\
@@ -2320,7 +2320,7 @@ extern enum reg_class mips_char_to_class[256];
    || (TARGET_FLOAT64 && !TARGET_64BIT && (MODE) == DFmode		\
        && ((GR_REG_CLASS_P (CLASS1) && CLASS2 == FP_REGS)		\
 	   || (GR_REG_CLASS_P (CLASS2) && CLASS1 == FP_REGS))))
-
+#endif
 /* The HI and LO registers can only be reloaded via the general
    registers.  Condition code registers can only be loaded to the
    general registers, and from the floating point registers.  */
@@ -4485,8 +4485,11 @@ while (0)
 	    (SIZE));							\
       }									\
     else								\
-      mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u\n",	\
+      {									\
+	mips_declare_object (STREAM, NAME, "\n\t.comm\t", ",%u",	\
 	  (SIZE));							\
+	fprintf ((STREAM), "%u\n", ((unsigned)(ALIGN) / BITS_PER_UNIT));\
+      }									\
   } while (0)
 
 
