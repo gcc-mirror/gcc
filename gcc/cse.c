@@ -6724,7 +6724,11 @@ cse_insn (insn, in_libcall_block)
 
 	  else if (constant_pool_entries_cost
 		   && CONSTANT_P (trial)
-		   && (src_folded == 0 || GET_CODE (src_folded) != MEM)
+		   && ! (GET_CODE (trial) == CONST
+			 && GET_CODE (XEXP (trial, 0)) == TRUNCATE)
+		   && (src_folded == 0
+		       || (GET_CODE (src_folded) != MEM
+			   && ! src_folded_force_flag))
 		   && GET_MODE_CLASS (mode) != MODE_CC)
 	    {
 	      src_folded_force_flag = 1;
