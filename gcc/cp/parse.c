@@ -7623,11 +7623,11 @@ case 738:
     break;}
 case 739:
 #line 3277 "parse.y"
-{ begin_switch_stmt (); ;
+{ yyval.ttype = begin_switch_stmt (); ;
     break;}
 case 740:
 #line 3279 "parse.y"
-{ yyval.ttype = finish_switch_cond (yyvsp[-1].ttype); ;
+{ finish_switch_cond (yyvsp[-1].ttype, yyvsp[-3].ttype); ;
     break;}
 case 741:
 #line 3281 "parse.y"

@@ -1,5 +1,17 @@
 1999-09-09  Mark Mitchell  <mark@codesourcery.com>
 
+	* cp-tree.h (begin_switch_stmt): Adjust prototype.
+	(finish_switch_cond): Likewise.
+	* parse.y (simple_stmt): Adjust accordingly.
+	* parse.c: Regenerated.
+	* pt.c (tsubst_expr): Adjust accordingly.
+	* semantics.c (expand_cond): New function.
+	(FINISH_COND): New macro.
+	(begin_switch_stmt): Build the SWITCH_STMT here.
+	(finish_switch_stmt_cond): Not here.
+	(expand_stmt): Adjust calls to begin_switch_stmt and
+	finish_switch_cond.  Use expand_cond throughout.
+
 	* dump.c (dequeue_and_dump): Dump types for constants.
 	Describe DECL_ARG_TYPE more intuitively.
 	Handle ARRAY_REF.
