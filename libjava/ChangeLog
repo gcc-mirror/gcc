@@ -1,3 +1,16 @@
+2005-02-14  Thomas Fitzsimmons  <fitzsim@redhat.com>
+
+	* jawt.c: New file.
+	* include/jawt.h: Likewise.
+	* include/jawt_md.h: Likewise.
+	* include/Makefile.am (tool_include__HEADERS): Add jawt.h and
+	jawt_md.h files.
+	* include/Makefile.in: Regenerate.
+	* jni/classpath/classpath_jawt.h: Likewise.
+	* jni/gtk-peer/gtk_jawt.c: Likewise.
+	* Makefile.am: Build libjawt.so.
+	* Makefile.in: Regenerate.
+
 2005-02-14  Tom Tromey  <tromey@redhat.com>
 
 	* testsuite/libjava.lang/PR19921.java: Use correct class name.
