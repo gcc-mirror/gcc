@@ -1,3 +1,9 @@
+2003-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/12761
+	* ada/Make-lang.in: Move default definitions of X_ADA_CFLAGS,
+	T_ADA_CFLAGS, X_ADAFLAGS, T_ADAFLAGS from here to master Makefile.in.
+
 2003-10-30  Kelley Cook  <kcook@gcc.gnu.org>
 
 	* adadecode.c, adaint.c, argv.c, aux-io.c, cal.c, cio.c, cstreams.c,

@@ -1,3 +1,9 @@
+2003-10-31  Nathanael Nerode  <neroden@gcc.gnu.org>
+
+	PR ada/12761
+	* Makefile.in: Move default definitions of X_ADA_CFLAGS,
+	T_ADA_CFLAGS, X_ADAFLAGS, T_ADAFLAGS from ada/Make-lang.in to here.
+
 2003-10-30  Richard Henderson  <rth@redhat.com>
 
 	* c-objc-common.c (c_tree_printer): Handle types correctly.
