@@ -2414,7 +2414,8 @@ eligible_for_epilogue_delay (trial, slot)
   src = SET_SRC (pat);
 
   /* This matches "*return_[qhs]i" or even "*return_di" on TARGET_ARCH64.  */
-  if (arith_operand (src, GET_MODE (src)))
+  if (GET_MODE_CLASS (GET_MODE (src)) != MODE_FLOAT
+      && arith_operand (src, GET_MODE (src)))
     {
       if (TARGET_ARCH64)
         return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
@@ -2423,7 +2424,8 @@ eligible_for_epilogue_delay (trial, slot)
     }
 
   /* This matches "*return_di".  */
-  else if (arith_double_operand (src, GET_MODE (src)))
+  else if (GET_MODE_CLASS (GET_MODE (src)) != MODE_FLOAT
+	   && arith_double_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
 
   /* This matches "*return_sf_no_fpu".  */
@@ -2520,7 +2522,8 @@ eligible_for_sibcall_delay (trial)
 
   src = SET_SRC (pat);
 
-  if (arith_operand (src, GET_MODE (src)))
+  if (GET_MODE_CLASS (GET_MODE (src)) != MODE_FLOAT
+      && arith_operand (src, GET_MODE (src)))
     {
       if (TARGET_ARCH64)
         return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
@@ -2528,7 +2531,8 @@ eligible_for_sibcall_delay (trial)
         return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (SImode);
     }
 
-  else if (arith_double_operand (src, GET_MODE (src)))
+  else if (GET_MODE_CLASS (GET_MODE (src)) != MODE_FLOAT
+	   && arith_double_operand (src, GET_MODE (src)))
     return GET_MODE_SIZE (GET_MODE (src)) <= GET_MODE_SIZE (DImode);
 
   else if (! TARGET_FPU && restore_operand (SET_DEST (pat), SFmode)
