@@ -94,11 +94,18 @@ sinhf(float x)
 }
 #endif
 
+#ifndef _GLIBCPP_HAVE_SQRTF
+float
+sqrtf(float x)
+{
+  return (float) sqrt(x);
+}
+
 #ifndef _GLIBCPP_HAVE_TANF
 float
 tanf(float x)
 {
-  return (float) tanf(x);
+  return (float) tan(x);
 }
 #endif
 
