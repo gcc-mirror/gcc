@@ -1,3 +1,8 @@
+2003-02-09  Wolfgang Bangerth  <bangerth@ticam.utexas.edu>
+
+	* doc/install.texi: Squeeze and streamline section on
+	testing and regression checking.
+
 Sun Feb  9 13:33:34 CET 2003  Jan Hubicka  <jh@suse.cz>
 
 	* i386.md (ahi?v*3): Set third operand type to TImode.
