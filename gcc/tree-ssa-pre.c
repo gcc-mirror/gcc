@@ -306,6 +306,7 @@ static alloc_pool value_set_node_pool;
 static alloc_pool binary_node_pool;
 static alloc_pool unary_node_pool;
 static alloc_pool reference_node_pool;
+static struct obstack grand_bitmap_obstack;
 
 /* Set of blocks with statements that have had its EH information
    cleaned up.  */
@@ -468,7 +469,7 @@ value_insert_into_set_bitmap (value_set_t set, tree v)
 
   if (set->values == NULL)
     {
-      set->values = BITMAP_GGC_ALLOC ();
+      set->values = BITMAP_OBSTACK_ALLOC (&grand_bitmap_obstack);
       bitmap_clear (set->values);
     }
 
@@ -482,8 +483,8 @@ static bitmap_set_t
 bitmap_set_new (void)
 {
   bitmap_set_t ret = pool_alloc (bitmap_set_pool);
-  ret->expressions = BITMAP_GGC_ALLOC ();
-  ret->values = BITMAP_GGC_ALLOC ();
+  ret->expressions = BITMAP_OBSTACK_ALLOC (&grand_bitmap_obstack);
+  ret->values = BITMAP_OBSTACK_ALLOC (&grand_bitmap_obstack);
   bitmap_clear (ret->expressions);
   bitmap_clear (ret->values);
   return ret;
@@ -1944,6 +1945,7 @@ init_pre (void)
   FOR_ALL_BB (bb)
     bb->aux = xcalloc (1, sizeof (struct bb_value_sets));
 
+  gcc_obstack_init (&grand_bitmap_obstack);
   phi_translate_table = htab_create (511, expr_pred_trans_hash,
 				     expr_pred_trans_eq, free);
   value_set_pool = create_alloc_pool ("Value sets",
@@ -1980,6 +1982,7 @@ fini_pre (void)
 {
   basic_block bb;
 
+  obstack_free (&grand_bitmap_obstack, NULL);
   free_alloc_pool (value_set_pool);
   free_alloc_pool (bitmap_set_pool);
   free_alloc_pool (value_set_node_pool);
