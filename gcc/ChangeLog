@@ -1,3 +1,9 @@
+Sat Nov 16 02:54:29 CET 2002  Jan Hubicka  <jh@suse.cz>
+
+	* jump.c (tablejump_p): New.
+	* cfgcleanup.c (try_optimize_cfg): Do not merge blocks across tablejump.
+	* rtl.h (tablejump_p): Declare.
+
 2002-11-16  Graham Stott  <graham.stott@btinternet.com>
 
 	* flow.c (life_analysis): Update LABEL_NUSES before purging
