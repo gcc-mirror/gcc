@@ -1,6 +1,26 @@
+2002-02-07  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/crtn.asm: Cleanup #ifdefs.
+
+2002-02-07  Eric Christopher  <echristo@redhat.com>
+
+	* config/mips/crti.asm: Add changes for mips16. mips16 uses
+	register 7 as RA instead of $31.
+	* config/mips/crtn.asm: Ditto.
+	* config/mips/mips.c (mips_move_2words): Add case for
+	TARGET_MIPS16 when HOST_BITS_PER_WIDE_INT >= 64.
+	(compute_frame_size): Fix typo.
+	(save_restore_insns): Ditto.  Make documentation about using
+	register $7 as return register more precise.
+	(mips_expand_epilogue): Fix comment. Add code to work around not
+	being able to add to the stack pointer directly.
+	* config/mips/mips.h (EH_RETURN_DATA_REGNO): Change register number
+	to 2 for TARGET_MIPS16 as we need 6 and 7 as clobbers in the
+	epilogue.
+
 2002-02-07  Tom Rix  <trix@redhat.com>
 
-	* config/rs6000/rs6000.c (reg_or_aligned_short_operand): New. For 
+	* config/rs6000/rs6000.c (reg_or_aligned_short_operand): New. For
 	immediates in ldu and stdu DS opcode field.
 	* config/rs6000/rs6000.md (movdi_update, movdi_update1): Use.
 	* config/rs6000/rs6000-protos.h: Add reg_or_aligned_short_operand.
@@ -285,7 +305,7 @@ Mon Feb	 4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 	(set_reg_plus_d): Likewise.
 	(hppa_expand_prologue): Likewise.
 	(hppa_expand_epilogue): Likewise.
-	
+
 2002-02-04  John David Anglin  <dave@hiauly1.hia.nrc.ca>
 
 	* unwind-dw2-fde-glibc.c: Define _GNU_SOURCE if not defined.
@@ -330,7 +350,7 @@ Mon Feb	 4 19:23:19 2002  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* config/arm/arm.c (arm_hard_regno_mode_ok): Allow any value in
 	any geenral register.
-	
+
 2001-02-04  Bernd Schmidt  <bernds@redhat.com>
 
 	* cfgrtl.c (force_nonfallthru_and_redirect): Don't try to redirect
