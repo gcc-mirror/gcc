@@ -83,7 +83,7 @@ extern int errno;
 #endif
 
 #ifdef XCOFF_DEBUGGING_INFO
-#include "xcoff.h"
+#include "xcoffout.h"
 #endif
 
 #ifndef ASM_STABS_OP
@@ -135,7 +135,7 @@ char *getpwd ();
 #define FORCE_TEXT
 #endif
 
-#if defined (USG) || defined (MIPS)
+#if defined (USG) || defined (NO_STAB_H)
 #include "gstab.h"  /* If doing DBX on sysV, use our own stab.h.  */
 #else
 #include <stab.h>  /* On BSD, use the system's stab.h.  */
@@ -681,6 +681,7 @@ dbxout_type_methods (type)
   /* C++: put out the method names and their parameter lists */
   tree ctor_name;
   tree methods = TYPE_METHODS (type);
+  tree type_encoding;
   register tree fndecl;
   register tree last;
   register int type_identifier_length;
@@ -689,7 +690,28 @@ dbxout_type_methods (type)
     return;
 
   ctor_name = DECL_NAME (TYPE_NAME (type));
+
+  /* C++: Template classes break some assumptions made by this code about
+     the class names, constructor names, and encodings for assembler
+     label names.  For now, disable output of dbx info for them.  */
+  {
+    char *ptr = IDENTIFIER_POINTER (ctor_name);
+    /* Avoid strchr or index since those names aren't universal.  */
+    while (*ptr && *ptr != '<') ptr++;
+    if (*ptr != 0)
+      {
+	static int warned;
+	if (!warned)
+	  {
+	    warned = 1;
+	    warning ("dbx info for template class methods not yet supported");
+	  }
+	return;
+      }
+  }
+
   type_identifier_length = IDENTIFIER_LENGTH (ctor_name);
+
   if (TREE_CODE (methods) == FUNCTION_DECL)
     fndecl = methods;
   else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
@@ -987,8 +1009,11 @@ dbxout_type (type, full)
 
 	/* Output a structure type.  */
 	if ((TYPE_NAME (type) != 0
+#if 0 /* Tiemann says this creates output tha "confuses GDB".
+	 Too bad the info is so vague.  Hope this doesn't lose.  */
 	     && ! (TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 		   && DECL_IGNORED_P (TYPE_NAME (type)))
+#endif
 	     && !full)
 	    || TYPE_SIZE (type) == 0)
 	  {
@@ -1001,7 +1026,7 @@ dbxout_type (type, full)
 	       and let the definition come when the name is defined.  */
 	    fprintf (asmfile, (TREE_CODE (type) == RECORD_TYPE) ? "xs" : "xu");
 	    CHARS (3);
-#if 0				/* This assertion is legitimately false in C++.  */
+#if 0 /* This assertion is legitimately false in C++.  */
 	    /* We shouldn't be outputting a reference to a type before its
 	       definition unless the type has a tag name.
 	       A typedef name without a tag name should be impossible.  */
