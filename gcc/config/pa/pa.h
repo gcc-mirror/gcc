@@ -1355,7 +1355,7 @@ extern struct rtx_def *hppa_va_arg();
 			    XEXP (OP, 0))		\
        && !(GET_CODE (XEXP (OP, 0)) == PLUS		\
 	    && (GET_CODE (XEXP (XEXP (OP, 0), 0)) == MULT\
-		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))
+		|| GET_CODE (XEXP (XEXP (OP, 0), 1)) == MULT)))\
    : ((C) == 'S' ?					\
       (GET_CODE (OP) == CONST_INT && INTVAL (OP) == 31) : 0))))
 
