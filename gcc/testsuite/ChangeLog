@@ -1,3 +1,8 @@
+2005-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/19666
+	* gcc/testsuite/g++.dg/other/ptrmem6.C: New test.
+
 2005-02-10  Mark Mitchell  <mark@codesourcery.com>
 
 	PR c++/19755
