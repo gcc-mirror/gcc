@@ -1,3 +1,13 @@
+2003-11-18  Kriang Lerdsuwanakij  <lerdsuwa@users.sourceforge.net>
+
+	PR c++/12932
+	* class.c (currently_open_derived_class): Check if
+	current_class_type is NULL_TREE.
+	* semantics.c (finish_call_expr): Check if
+	currently_open_derived_class returns NULL_TREE.
+	* cp-tree.h (DERIVED_FROM_P): Add parenthesis around PARENT
+	parameter.
+
 2003-11-17  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_new_1): Preevaluate placement args.
