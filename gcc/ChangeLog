@@ -1,3 +1,7 @@
+2001-03-29  Richard Henderson  <rth@redhat.com>
+
+	* libgcc2.c [L__main]: Include unwind-dw2-fde.h instead of frame.h.
+
 2001-03-28  Matthew Hiller  <hiller@redhat.com>
 
 	* config/mn10300/mn10300.md (cmpsi): Fix first alternative's
