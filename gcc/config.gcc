@@ -975,6 +975,8 @@ i[34567]86-*-solaris2*)
 	tmake_file="t-sol2 i386/t-sol2 t-svr4"
 	c_target_objs="sol2-c.o"
 	cxx_target_objs="sol2-c.o"
+	extra_objs="sol2.o"
+	tm_p_file="${tm_p_file} sol2-protos.h"
 	if test x$gnu_ld = xyes; then
 		tmake_file="$tmake_file t-slibgcc-elf-ver"
 	else
@@ -1861,6 +1863,8 @@ sparc64-*-solaris2* | sparcv9-*-solaris2*)
 	fi
 	c_target_objs="sol2-c.o"
 	cxx_target_objs="sol2-c.o"
+	extra_objs="sol2.o"
+	tm_p_file="${tm_p_file} sol2-protos.h"
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  no:*:*) ;;
@@ -1900,6 +1904,8 @@ sparc-*-solaris2*)
 	esac
 	c_target_objs="sol2-c.o"
 	cxx_target_objs="sol2-c.o"
+	extra_objs="sol2.o"
+	tm_p_file="${tm_p_file} sol2-protos.h"
 	extra_parts="crt1.o crti.o crtn.o gcrt1.o gmon.o crtbegin.o crtend.o"
 	case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
 	  no:*:*) ;;

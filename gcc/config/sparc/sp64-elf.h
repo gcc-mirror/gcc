@@ -126,3 +126,13 @@ crtbegin.o%s \
 /* Don't include Solaris-specific format checks.  */
 #undef TARGET_N_FORMAT_TYPES
 #undef TARGET_FORMAT_TYPES
+
+/* Don't include Solaris-specific .init / .fini support.  */
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
+  do								\
+    {								\
+      if (!flag_inhibit_size_directive)				\
+	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
+    }								\
+  while (0)

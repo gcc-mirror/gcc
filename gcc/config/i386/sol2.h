@@ -79,3 +79,12 @@ Boston, MA 02111-1307, USA.  */
 	fprintf ((FILE), "\n");				\
       }							\
   } while (0)
+
+/* Solaris-specific #pragmas are implemented on top of attributes.  Hook in
+   the bits from config/sol2.c.  */
+#define SUBTARGET_INSERT_ATTRIBUTES solaris_insert_attributes
+#define SUBTARGET_ATTRIBUTE_TABLE SOLARIS_ATTRIBUTE_TABLE
+
+/* Output a simple call for .init/.fini.  */
+#define ASM_OUTPUT_CALL(FILE, NAME)			\
+  fprintf (FILE, "\tcall\t%s\n", NAME)

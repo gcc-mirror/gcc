@@ -1,3 +1,35 @@
+2004-07-25  Daniel Jacobowitz  <dan@debian.org>
+
+	* config.gcc (i[34567]86-*-solaris2*, sparc64-*-solaris2*)
+	(sparc-*-solaris2*): Include sol2.o and sol2-protos.h.
+	* config/sol2-c.c: Include "tm.h", "tm_p.h", "toplev.h",
+	"cpplib.h", "c-pragma.h", "c-common.h".
+	(solaris_pragma_align, solaris_pragma_init, solaris_pragma_fini)
+	(solaris_register_pragmas): New functions.
+	* config/sol2-protos.h: New file.
+	* config/sol2.c: New file.
+	* config/sol2.h (SOLARIS_ATTRIBUTE_TABLE, ASM_DECLARE_FUNCTION_SIZE)
+	(REGISTER_TARGET_PRAGMAS): New macros.
+	(solaris_pending_aligns, solaris_pending_inits)
+	(solaris_pending_finis): New variables.
+	* config/t-sol2 (sol2-c.o): Update dependencies.
+	(sol2.o): New rule.
+	* config/i386/i386.c (TARGET_INSERT_ATTRIBUTES): Define in terms of
+	SUBTARGET_INSERT_ATTRIBUTES.
+	(ix86_attribute_table): Include SUBTARGET_ATTRIBUTE_TABLE.
+	* config/i386/sol2.h (SUBTARGET_INSERT_ATTRIBUTES)
+	(SUBTARGET_ATTRIBUTE_TABLE, ASM_OUTPUT_CALL): Define.
+	* config/sparc/elf.h (ASM_DECLARE_FUNCTION_SIZE): Redefine.
+	* config/sparc/sp64-elf.h (ASM_DECLARE_FUNCTION_SIZE): Redefine.
+	* config/sparc/sol2.h (SUBTARGET_INSERT_ATTRIBUTES)
+	(SUBTARGET_ATTRIBUTE_TABLE, ASM_OUTPUT_CALL): Define.
+	* config/sparc/sparc.c (sparc_attribute_table): New.
+	(TARGET_INSERT_ATTRIBUTES): Define in terms of
+	SUBTARGET_INSERT_ATTRIBUTES.
+	(TARGET_ATTRIBUTE_TABLE): Define if SUBTARGET_ATTRIBUTE_TABLE
+	is defined.
+	* doc/extend.texi (Solaris Pragmas): New section.
+
 2004-07-25  Bernardo Innocenti  <bernie@develer.com>
 
 	* c-common.c: Rename all identifiers named `class' to `cl'.

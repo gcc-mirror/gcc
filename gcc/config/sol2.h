@@ -1,6 +1,6 @@
 /* Operating system specific defines to be used when targeting GCC for any
    Solaris 2 system.
-   Copyright 2002, 2003 Free Software Foundation, Inc.
+   Copyright 2002, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -206,5 +206,31 @@ __enable_execute_stack (void *addr)					\
   }									\
 }
 
+/* Support Solaris-specific format checking for cmn_err.  */
 #define TARGET_N_FORMAT_TYPES 1
 #define TARGET_FORMAT_TYPES solaris_format_types
+
+/* #pragma init and #pragma fini are implemented on top of init and
+   fini attributes.  */
+#define SOLARIS_ATTRIBUTE_TABLE						\
+  { "init",      0, 0, true,  false,  false, NULL },			\
+  { "fini",      0, 0, true,  false,  false, NULL }
+
+/* This is how to declare the size of a function.  For Solaris, we output
+   any .init or .fini entries here.  */
+#undef ASM_DECLARE_FUNCTION_SIZE
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL)		\
+  do								\
+    {								\
+      if (!flag_inhibit_size_directive)				\
+	ASM_OUTPUT_MEASURED_SIZE (FILE, FNAME);			\
+      solaris_output_init_fini (FILE, DECL);			\
+    }								\
+  while (0)
+
+/* Register the Solaris-specific #pragma directives.  */
+#define REGISTER_TARGET_PRAGMAS() solaris_register_pragmas ()
+
+extern GTY(()) tree solaris_pending_aligns;
+extern GTY(()) tree solaris_pending_inits;
+extern GTY(()) tree solaris_pending_finis;

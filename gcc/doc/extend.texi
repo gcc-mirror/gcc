@@ -6847,6 +6847,7 @@ for further explanation.
 * ARM Pragmas::
 * RS/6000 and PowerPC Pragmas::
 * Darwin Pragmas::
+* Solaris Pragmas::
 * Symbol-Renaming Pragmas::
 @end menu
 
@@ -6929,6 +6930,37 @@ This pragma declares variables to be possibly unused.  GCC will not
 produce warnings for the listed variables.  The effect is similar to
 that of the @code{unused} attribute, except that this pragma may appear
 anywhere within the variables' scopes.
+@end table
+
+@node Solaris Pragmas
+@subsection Solaris Pragmas
+
+The Solaris target supports @code{#pragma redefine_extname}
+(@pxref{Symbol-Renaming Pragmas}).  It also supports additional
+@code{#pragma} directives for compatibility with the system compiler.
+
+@table @code
+@item align @var{alignment} (@var{variable} [, @var{variable}]...)
+@cindex pragma, align
+
+Increase the minimum alignment of each @var{variable} to @var{alignment}.
+This is the same as GCC's @code{aligned} attribute @pxref{Variable
+Attributes}).
+
+@item fini (@var{function} [, @var{function}]...)
+@cindex pragma, fini
+
+This pragma causes each listed @var{function} to be called after
+main, or during shared module unloading, by adding a call to the
+@code{.fini} section.
+
+@item init (@var{function} [, @var{function}]...)
+@cindex pragma, init
+
+This pragma causes each listed @var{function} to be called during
+initialization (before @code{main}) or during shared module loading, by
+adding a call to the @code{.init} section.
+
 @end table
 
 @node Symbol-Renaming Pragmas

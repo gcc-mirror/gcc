@@ -334,6 +334,9 @@ static bool sparc_strict_argument_naming (CUMULATIVE_ARGS *);
 static tree sparc_gimplify_va_arg (tree, tree, tree *, tree *);
 static bool sparc_pass_by_reference (CUMULATIVE_ARGS *,
 				     enum machine_mode, tree, bool);
+#ifdef SUBTARGET_ATTRIBUTE_TABLE
+const struct attribute_spec sparc_attribute_table[];
+#endif
 
 /* Option handling.  */
 
@@ -449,6 +452,16 @@ enum processor_type sparc_cpu;
 
 #undef TARGET_LATE_RTL_PROLOGUE_EPILOGUE
 #define TARGET_LATE_RTL_PROLOGUE_EPILOGUE true
+
+#ifdef SUBTARGET_INSERT_ATTRIBUTES
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES SUBTARGET_INSERT_ATTRIBUTES
+#endif
+
+#ifdef SUBTARGET_ATTRIBUTE_TABLE
+#undef TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE sparc_attribute_table
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -685,6 +698,16 @@ sparc_override_options (void)
       break;
     };
 }
+
+#ifdef SUBTARGET_ATTRIBUTE_TABLE
+/* Table of valid machine attributes.  */
+const struct attribute_spec sparc_attribute_table[] =
+{
+  /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler } */
+  SUBTARGET_ATTRIBUTE_TABLE,
+  { NULL,        0, 0, false, false, false, NULL }
+};
+#endif
 
 /* Miscellaneous utilities.  */
 
