@@ -387,7 +387,7 @@ public final class Connection extends HttpURLConnection
   {
     if (connected)
       throw new ProtocolException
-	("You cannot get an outputstream for an existing http connection");
+	("You cannot get an output stream for an existing http connection");
 
     if (!doOutput)
       throw new ProtocolException
