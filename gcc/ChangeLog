@@ -1,3 +1,9 @@
+2000-01-28  Zack Weinberg  <zack@wolery.cumb.org>
+
+	* configure.in: Make --enable-cpplib the default.
+	* configure: Regenerate.
+	* gcc.dg/990119-1.c: No longer expected to fail.
+
 2000-01-28  Bernd Schmidt  <bernds@cygnus.co.uk>
 
 	* jump.c (jump_optimize_1): Delete an optimization that is also done
