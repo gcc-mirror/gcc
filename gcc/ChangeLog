@@ -1,3 +1,9 @@
+Wed Jul  7 01:13:31 1999  Jason Merrill  <jason@yorick.cygnus.com>
+
+	* dwarf2out.c (gen_struct_or_union_type_die): Only remember types
+	on the permanent_obstack.
+	* dwarfout.c (output_type): Likewise.
+
 Fri Jul  2 03:05:13 1999  Jeffrey A Law  (law@cygnus.com)
 
 	* dwarfout.c (field_byte_offset): Correctly compute the object's
