@@ -954,7 +954,13 @@ struct tree_block
 /* In an INTEGER_TYPE, it means the type represents a size.  We use this
    both for validity checking and to permit optimziations that are unsafe
    for other types.  */
-#define TYPE_IS_SIZETYPE(NODE) (TYPE_CHECK (NODE)->type.no_force_blk_flag)
+#define TYPE_IS_SIZETYPE(NODE) \
+  (INTEGER_TYPE_CHECK (NODE)->type.no_force_blk_flag)
+
+/* In a FUNCTION_TYPE, indicates that the function returns with the stack
+   pointer depressed.  */
+#define TYPE_RETURNS_STACK_DEPRESSED(NODE) \
+  (FUNCTION_TYPE_CHECK(NODE)->type.no_force_blk_flag)
 
 /* Nonzero in a type considered volatile as a whole.  */
 #define TYPE_VOLATILE(NODE) ((NODE)->common.volatile_flag)
@@ -2811,6 +2817,7 @@ extern int drop_through_at_end_p	PARAMS ((void));
 extern void expand_start_target_temps	PARAMS ((void));
 extern void expand_end_target_temps	PARAMS ((void));
 extern void expand_elseif		PARAMS ((tree));
+extern void save_stack_pointer		PARAMS ((void));
 extern void expand_decl			PARAMS ((tree));
 extern int expand_decl_cleanup		PARAMS ((tree, tree));
 extern void expand_anon_union_decl	PARAMS ((tree, tree, tree));

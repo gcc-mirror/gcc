@@ -4402,7 +4402,8 @@ extract_muldiv (t, c, code, wide_type)
 	   || TREE_CODE_CLASS (TREE_CODE (op0)) == '2'
 	   || TREE_CODE_CLASS (TREE_CODE (op0)) == 'e')
 	  && TREE_UNSIGNED (TREE_TYPE (op0))
-	  && ! TYPE_IS_SIZETYPE (TREE_TYPE (op0))
+	  && ! (TREE_CODE (TREE_TYPE (op0)) == INTEGER_TYPE
+		&& TYPE_IS_SIZETYPE (TREE_TYPE (op0)))
 	  && (GET_MODE_SIZE (TYPE_MODE (ctype))
               > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))))
 	break;
@@ -4527,7 +4528,7 @@ extract_muldiv (t, c, code, wide_type)
 	 the operation since it will change the result if the original
 	 computation overflowed.  */
       if (TREE_UNSIGNED (ctype)
-	  && ! TYPE_IS_SIZETYPE (ctype)
+	  && ! (TREE_CODE (ctype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (ctype))
 	  && ctype != type)
 	break;
 
@@ -4591,7 +4592,7 @@ extract_muldiv (t, c, code, wide_type)
 	 this since it will change the result if the original computation
 	 overflowed.  */
       if ((! TREE_UNSIGNED (ctype)
-	   || TYPE_IS_SIZETYPE (ctype))
+	   || (TREE_CODE (ctype) == INTEGER_TYPE && TYPE_IS_SIZETYPE (ctype)))
 	  && ((code == MULT_EXPR && tcode == EXACT_DIV_EXPR)
 	      || (tcode == MULT_EXPR
 		  && code != TRUNC_MOD_EXPR && code != CEIL_MOD_EXPR

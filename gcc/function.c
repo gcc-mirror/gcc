@@ -294,6 +294,9 @@ static void emit_return_into_block PARAMS ((basic_block, rtx));
 static void put_addressof_into_stack PARAMS ((rtx, struct hash_table *));
 static boolean purge_addressof_1 PARAMS ((rtx *, rtx, int, int,
 					  struct hash_table *));
+#ifdef HAVE_epilogue
+static void keep_stack_depressed PARAMS ((rtx));
+#endif
 static int is_addressof		PARAMS ((rtx *, void *));
 static struct hash_entry *insns_for_mem_newfunc PARAMS ((struct hash_entry *,
 							 struct hash_table *,
@@ -6808,6 +6811,68 @@ emit_return_into_block (bb, line_note)
 }
 #endif /* HAVE_return */
 
+#ifdef HAVE_epilogue
+
+/* Modify SEQ, a SEQUENCE that is part of the epilogue, to no modifications
+   to the stack pointer.  */
+
+static void
+keep_stack_depressed (seq)
+     rtx seq;
+{
+  int i;
+  rtx sp_from_reg = 0;
+  int sp_modified_unknown = 0;
+
+  /* If the epilogue is just a single instruction, it's OK as is */
+
+  if (GET_CODE (seq) != SEQUENCE) return;
+
+  /* Scan all insns in SEQ looking for ones that modified the stack
+     pointer.  Record if it modified the stack pointer by copying it
+     from the frame pointer or if it modified it in some other way.
+     Then modify any subsequent stack pointer references to take that
+     into account.  We start by only allowing SP to be copied from a
+     register (presumably FP) and then be subsequently referenced.  */
+
+  for (i = 0; i < XVECLEN (seq, 0); i++)
+    {
+      rtx insn = XVECEXP (seq, 0, i);
+
+      if (GET_RTX_CLASS (GET_CODE (insn)) != 'i')
+	continue;
+
+      if (reg_set_p (stack_pointer_rtx, insn))
+	{
+	  rtx set = single_set (insn);
+
+	  /* If SP is set as a side-effect, we can't support this.  */
+	  if (set == 0)
+	    abort ();
+
+	  if (GET_CODE (SET_SRC (set)) == REG)
+	    sp_from_reg = SET_SRC (set);
+	  else
+	    sp_modified_unknown = 1;
+
+	  /* Don't allow the SP modification to happen.  */
+	  PUT_CODE (insn, NOTE);
+	  NOTE_LINE_NUMBER (insn) = NOTE_INSN_DELETED;
+	  NOTE_SOURCE_FILE (insn) = 0;
+	}
+      else if (reg_referenced_p (stack_pointer_rtx, PATTERN (insn)))
+	{
+	  if (sp_modified_unknown)
+	    abort ();
+
+	  else if (sp_from_reg != 0)
+	    PATTERN (insn)
+	      = replace_rtx (PATTERN (insn), stack_pointer_rtx, sp_from_reg);
+	}
+    }
+}
+#endif
+
 /* Generate the prologue and epilogue RTL if the machine supports it.  Thread
    this into place with notes indicating where the prologue ends and where
    the epilogue begins.  Update the basic block information when possible.  */
@@ -6990,6 +7055,12 @@ thread_prologue_and_epilogue_insns (f)
       epilogue_end = emit_note (NULL, NOTE_INSN_EPILOGUE_BEG);
 
       seq = gen_epilogue ();
+
+      /* If this function returns with the stack depressed, massage
+	 the epilogue to actually do that.  */
+      if (TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (current_function_decl)))
+	keep_stack_depressed (seq);
+
       emit_jump_insn (seq);
 
       /* Retain a map of the epilogue insns.  */

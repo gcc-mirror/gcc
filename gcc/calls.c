@@ -184,6 +184,9 @@ static int calls_function_1	PARAMS ((tree, int));
 /* Nonzero if this is a call to "pure" function (like const function,
    but may read memory.  */
 #define ECF_PURE		512
+/* Nonzero if this is a call to a function that returns with the stack
+   pointer depressed.  */
+#define ECF_SP_DEPRESSED	1024
 
 static void emit_call_1		PARAMS ((rtx, tree, tree, HOST_WIDE_INT,
 					 HOST_WIDE_INT, HOST_WIDE_INT, rtx,
@@ -277,6 +280,9 @@ calls_function_1 (exp, which)
     {
     case CALL_EXPR:
       if (which == 0)
+	return 1;
+      else if (TYPE_RETURNS_STACK_DEPRESSED
+	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (exp, 0)))))
 	return 1;
       else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	       && (TREE_CODE (TREE_OPERAND (TREE_OPERAND (exp, 0), 0))
@@ -428,8 +434,8 @@ prepare_call_address (funexp, fndecl, call_fusage, reg_parm_seen)
    We restore `inhibit_defer_pop' to that value.
 
    CALL_FUSAGE is either empty or an EXPR_LIST of USE expressions that
-   denote registers used by the called function.  */
-
+   denote registers used by the called function.   */
+  
 static void
 emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	     struct_value_size, next_arg_reg, valreg, old_inhibit_defer_pop,
@@ -495,7 +501,7 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
    even if the call has no arguments to pop.  */
 #if defined (HAVE_call) && defined (HAVE_call_value)
   if (HAVE_call && HAVE_call_value && HAVE_call_pop && HAVE_call_value_pop
-      && n_popped > 0)
+      && n_popped > 0 && ! (ecf_flags & ECF_SP_DEPRESSED))
 #else
   if (HAVE_call_pop && HAVE_call_value_pop)
 #endif
@@ -624,10 +630,10 @@ emit_call_1 (funexp, fndecl, funtype, stack_size, rounded_stack_size,
 	 If returning from the subroutine does pop the args, indicate that the
 	 stack pointer will be changed.  */
 
-      if (rounded_stack_size != 0)
+      if (rounded_stack_size != 0 && ! (ecf_flags & ECF_SP_DEPRESSED))
 	{
 	  if (flag_defer_pop && inhibit_defer_pop == 0
-	      && !(ecf_flags & (ECF_CONST | ECF_PURE)))
+	      && ! (ecf_flags & (ECF_CONST | ECF_PURE)))
 	    pending_stack_adjust += rounded_stack_size;
 	  else
 	    adjust_stack (rounded_stack_size_rtx);
@@ -756,6 +762,7 @@ special_function_p (fndecl, flags)
 }
 
 /* Return nonzero when tree represent call to longjmp.  */
+
 int
 setjmp_call_p (fndecl)
      tree fndecl;
@@ -764,11 +771,13 @@ setjmp_call_p (fndecl)
 }
 
 /* Detect flags (function attributes) from the function type node.  */
+
 static int
 flags_from_decl_or_type (exp)
      tree exp;
 {
   int flags = 0;
+
   /* ??? We can't set IS_MALLOC for function types?  */
   if (DECL_P (exp))
     {
@@ -784,7 +793,7 @@ flags_from_decl_or_type (exp)
 	flags |= ECF_NOTHROW;
     }
 
-  if (TREE_READONLY (exp) && !TREE_THIS_VOLATILE (exp))
+  if (TREE_READONLY (exp) && ! TREE_THIS_VOLATILE (exp))
     flags |= ECF_CONST;
 
   if (TREE_THIS_VOLATILE (exp))
@@ -2131,7 +2140,7 @@ expand_call (exp, target, ignore)
   int old_inhibit_defer_pop = inhibit_defer_pop;
   int old_stack_allocated;
   rtx call_fusage;
-  register tree p;
+  register tree p = TREE_OPERAND (exp, 0);
   register int i;
   /* The alignment of the stack, in bits.  */
   HOST_WIDE_INT preferred_stack_boundary;
@@ -2183,9 +2192,13 @@ expand_call (exp, target, ignore)
   /* If we don't have specific function to call, see if we have a 
      attributes set in the type.  */
   else
+    flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+
+  /* Mark if the function returns with the stack pointer depressed.  */
+  if (TYPE_RETURNS_STACK_DEPRESSED (TREE_TYPE (TREE_TYPE (p))))
     {
-      p = TREE_OPERAND (exp, 0);
-      flags |= flags_from_decl_or_type (TREE_TYPE (TREE_TYPE (p)));
+      flags |= ECF_SP_DEPRESSED;
+      flags &= ~ (ECF_PURE | ECF_CONST);
     }
 
 #ifdef REG_PARM_STACK_SPACE
@@ -3271,7 +3284,7 @@ expand_call (exp, target, ignore)
       /* If size of args is variable or this was a constructor call for a stack
 	 argument, restore saved stack-pointer value.  */
 
-      if (old_stack_level)
+      if (old_stack_level && ! (flags & ECF_SP_DEPRESSED))
 	{
 	  emit_stack_restore (SAVE_BLOCK, old_stack_level, NULL_RTX);
 	  pending_stack_adjust = old_pending_adj;
@@ -3411,6 +3424,17 @@ expand_call (exp, target, ignore)
     emit_insns (normal_call_insns);
 
   currently_expanding_call--;
+
+  /* If this function returns with the stack pointer depressed, ensure
+     this block saves and restores the stack pointer, show it was
+     changed, and adjust for any outgoing arg space.  */
+  if (flags & ECF_SP_DEPRESSED)
+    {
+      clear_pending_stack_adjust ();
+      emit_insn (gen_rtx (CLOBBER, VOIDmode, stack_pointer_rtx));
+      emit_move_insn (virtual_stack_dynamic_rtx, stack_pointer_rtx);
+      save_stack_pointer ();
+    }
 
   return target;
 }
