@@ -76,7 +76,6 @@ static void dump_prediction (FILE *, enum br_predictor, int, basic_block, int);
 static void estimate_loops_at_level (struct loop *loop);
 static void propagate_freq (struct loop *);
 static void estimate_bb_frequencies (struct loops *);
-static int counts_to_freqs (void);
 static void predict_paths_leading_to (basic_block, int *, enum br_predictor, enum prediction);
 static bool last_basic_block_p (basic_block);
 static void compute_function_frequency (void);
@@ -1705,7 +1704,7 @@ estimate_loops_at_level (struct loop *first_loop)
 /* Convert counts measured by profile driven feedback to frequencies.
    Return nonzero iff there was any nonzero execution count.  */
 
-static int
+int
 counts_to_freqs (void)
 {
   gcov_type count_max, true_count_max = 0;
