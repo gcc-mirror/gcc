@@ -248,13 +248,13 @@ proc libstdc++-dg-test { prog do_what extra_tool_flags } {
 }
 
 # True if the library supports wchar_t.
-set libstdc++_wchar_t 0
+set v3-wchar_t 0
 
 # True if the library supports threads.
-set libstdc++_threads 0
+set v3-threads 0
 
 # A string naming object files to be linked into all tests.
-set libstdc++_test_objs ""
+set v3-test_objs ""
 
 # Called from libstdc++-dg-test above.  Calls back into system's
 # target_compile to actually do the work.
@@ -265,7 +265,7 @@ proc v3_target_compile { source dest type options } {
     global cxxflags
     global includes
     global blddir
-    global libstdc++_test_objs
+    global v3-test_objs
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
         lappend options "libs=${gluefile}"
@@ -279,7 +279,7 @@ proc v3_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $includes]
     # Link the support objects into executables.
     if { $type == "executable" } {
-	set cxx_final [concat $cxx_final ${libstdc++_test_objs}]
+	set cxx_final [concat $cxx_final ${v3-test_objs}]
     }
 
     lappend options "compiler=$cxx_final"
@@ -288,18 +288,18 @@ proc v3_target_compile { source dest type options } {
 }
 
 # Build the support objects linked in with the libstdc++ tests.  In
-# addition, set libstdc++_wchar_t, libstdc++_threads, and libstdc++_test_objs
+# addition, set v3-wchar_t, v3-threads, and v3-test_objs
 # appropriately.
-proc libstdc++_build_support {} {
+proc v3-build_support {} {
     global srcdir
-    global libstdc++_wchar_t
-    global libstdc++_threads
-    global libstdc++_test_objs
+    global v3-wchar_t
+    global v3-threads
+    global v3-test_objs
 
     # Figure out whether or not the library supports certain features.
-    set libstdc++_wchar_t 0
-    set libstdc++_threads 0
-    set libstdc++_test_objs ""
+    set v3-wchar_t 0
+    set v3-threads 0
+    set v3-test_objs ""
 
     set config_src "config.cc"
     set f [open $config_src "w"]
@@ -310,10 +310,10 @@ proc libstdc++_build_support {} {
     foreach l $preprocessed {
 	if { [string first "_GLIBCXX_USE_WCHAR_T" $l] != -1 } {
 	    verbose -log "wchar_t support detected"
-	    set libstdc++_wchar_t 1
+	    set v3-wchar_t 1
 	} elseif { [string first "_GLIBCXX_HAVE_GTHR_DEFAULT" $l] != -1 } {
 	    verbose -log "thread support detected"
-	    set libstdc++_threads 1
+	    set v3-threads 1
 	}
     }
 
@@ -327,6 +327,6 @@ proc libstdc++_build_support {} {
 	     != "" } {
 	    error "could not compile $f"
 	}
-	append libstdc++_test_objs "$object_file "
+	append v3-test_objs "$object_file "
     }
 }

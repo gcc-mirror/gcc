@@ -22,7 +22,7 @@
 dg-init
 
 # Build the support objects.
-libstdc++_build_support
+v3-build_support
 
 # Find directories that might have tests.
 set subdirs [glob "$srcdir/\[0-9\]\[0-9\]*"]
@@ -51,8 +51,8 @@ foreach s $subdirs {
 	# 4. thread tests, if not supported. 
 	if { [string first _xin $t] == -1
 	     && [string first performance $t] == -1
-	     && (${libstdc++_wchar_t} || [string first wchar_t $t] == -1) 
-             && (${libstdc++_threads} || [string first thread $t] == -1) } {
+	     && (${v3-wchar_t} || [string first wchar_t $t] == -1) 
+             && (${v3-threads} || [string first thread $t] == -1) } {
 	    lappend tests $t
 	}
     }
