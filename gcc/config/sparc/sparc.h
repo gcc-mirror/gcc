@@ -358,6 +358,11 @@ Unrecognized value in TARGET_CPU_DEFAULT.
   SUBTARGET_EXTRA_SPECS
 
 #define SUBTARGET_EXTRA_SPECS
+
+/* Because libgcc can generate references back to libc (via .umul etc.) we have
+   to list libc again after the second libgcc.  */
+#define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G %L"
+
 
 #ifdef SPARC_BI_ARCH
 #define NO_BUILTIN_PTRDIFF_TYPE
