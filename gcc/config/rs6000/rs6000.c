@@ -1109,7 +1109,7 @@ call_operand (op, mode)
 
 
 /* Return 1 if the operand is a SYMBOL_REF for a function known to be in
-   this file.  */
+   this file and the function is not weakly defined. */
 
 int
 current_file_function_operand (op, mode)
@@ -1118,7 +1118,8 @@ current_file_function_operand (op, mode)
 {
   return (GET_CODE (op) == SYMBOL_REF
 	  && (SYMBOL_REF_FLAG (op)
-	      || op == XEXP (DECL_RTL (current_function_decl), 0)));
+	      || (op == XEXP (DECL_RTL (current_function_decl), 0)
+	          && !DECL_WEAK (current_function_decl))));
 }
 
 
@@ -5644,7 +5645,8 @@ rs6000_encode_section_info (decl)
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       rtx sym_ref = XEXP (DECL_RTL (decl), 0);
-      if (TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
+      if ((TREE_ASM_WRITTEN (decl) || ! TREE_PUBLIC (decl))
+          && !DECL_WEAK (decl))
 	SYMBOL_REF_FLAG (sym_ref) = 1;
 
       if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_NT)

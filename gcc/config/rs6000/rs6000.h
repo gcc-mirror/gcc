@@ -2529,11 +2529,12 @@ extern int rs6000_trunc_used;
 /* If we are referencing a function that is static or is known to be
    in this file, make the SYMBOL_REF special.  We can use this to indicate
    that we can branch to this function without emitting a no-op after the
-   call.  */
+   call.  Do not set this flag if the function is weakly defined. */
 
 #define ENCODE_SECTION_INFO(DECL)  \
   if (TREE_CODE (DECL) == FUNCTION_DECL			\
-      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL))) \
+      && (TREE_ASM_WRITTEN (DECL) || ! TREE_PUBLIC (DECL)) \
+      && !DECL_WEAK (DECL)) \
     SYMBOL_REF_FLAG (XEXP (DECL_RTL (DECL), 0)) = 1;
 
 /* Indicate that jump tables go in the text section.  */
