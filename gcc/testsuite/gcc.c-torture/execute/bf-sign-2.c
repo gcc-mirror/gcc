@@ -15,8 +15,8 @@
 
 struct X {
   unsigned int	     u3:3;
-	   long int  s31:31;
-	   long int  s32:32;
+    signed long int  s31:31;
+    signed long int  s32:32;
   unsigned long int  u31:31;
   unsigned long int  u32:32;
   unsigned long long ull3 :3;
