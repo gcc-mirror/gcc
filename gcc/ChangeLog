@@ -7,6 +7,8 @@ Thu May 14 08:41:46 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
 Thu May 14 02:17:17 1998  J"orn Rennecke <amylaar@cygnus.co.uk>
 
+	* loop.c (scan_loop): Don't call move_moveables for optimize_size.
+
 	* reload1.c (merge_assigned_reloads):  When merging, reset
 	reload_spill_index for the eliminated reload.
 

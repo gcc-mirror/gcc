@@ -1063,10 +1063,14 @@ scan_loop (loop_start, end, nregs, unroll_p)
   combine_movables (movables, nregs);
 	
   /* Now consider each movable insn to decide whether it is worth moving.
-     Store 0 in n_times_set for each reg that is moved.  */
+     Store 0 in n_times_set for each reg that is moved.
 
-  move_movables (movables, threshold,
-		 insn_count, loop_start, end, nregs);
+     Generally this increases code size, so do not move moveables when
+     optimizing for code size.  */
+
+  if (! optimize_size)
+    move_movables (movables, threshold,
+		   insn_count, loop_start, end, nregs);
 
   /* Now candidates that still are negative are those not moved.
      Change n_times_set to indicate that those are not actually invariant.  */
