@@ -435,17 +435,17 @@ while (0)
 
 enum reg_class
 { NO_REGS, GENERAL_REGS, FLOAT_REG0, LONG_FLOAT_REG0, FLOAT_REGS,
-  FP_REGS, GEN_AND_FP_REGS, FRAME_POINTER_REG, STACK_POINTER_REG,
-  GEN_AND_MEM_REGS, ALL_REGS, LIM_REG_CLASSES };
+  LONG_REGS, FP_REGS, GEN_AND_FP_REGS, FRAME_POINTER_REG,
+  STACK_POINTER_REG, GEN_AND_MEM_REGS, ALL_REGS, LIM_REG_CLASSES };
 
 #define N_REG_CLASSES (int) LIM_REG_CLASSES
 
 /* Give names of register classes as strings for dump file.   */
 
-#define REG_CLASS_NAMES \
+#define REG_CLASS_NAMES							    \
  {"NO_REGS", "GENERAL_REGS", "FLOAT_REG0", "LONG_FLOAT_REG0", "FLOAT_REGS", \
-  "FP_REGS", "GEN_AND_FP_REGS", "FRAME_POINTER_REG", "STACK_POINTER_REG", \
-  "GEN_AND_MEM_REGS", "ALL_REGS" }
+  "LONG_REGS", "FP_REGS", "GEN_AND_FP_REGS", "FRAME_POINTER_REG", 	    \
+  "STACK_POINTER_REG", "GEN_AND_MEM_REGS", "ALL_REGS" }
 
 /* Define which registers fit in which classes.
    This is an initializer for a vector of HARD_REG_SET
@@ -457,6 +457,7 @@ enum reg_class
 	 {0x100},		/* FLOAT_REG0 */	\
 	 {0x300},		/* LONG_FLOAT_REG0 */	\
 	 {0xff00},		/* FLOAT_REGS */	\
+         {0xff0000},            /* LONG_REGS */         \
          {0xffff00},		/* FP_REGS */		\
          {0xffffff},		/* GEN_AND_FP_REGS */	\
          {0x1000000},		/* FRAME_POINTER_REG */	\
@@ -468,6 +469,13 @@ enum reg_class
 #define SUBSET_P(CLASS1, CLASS2)			\
    ((ns32k_reg_class_contents[CLASS1][0]		\
      & ~ns32k_reg_class_contents[CLASS2][0]) == 0)
+
+
+/* LONG_REGS are registers which can only hold double precision floats
+ * and can only be accessable by long float instructions.
+ */
+#define CANNOT_CHANGE_MODE_CLASS(FROM, TO) \
+  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) ? LONG_REGS : NO_REGS)
 
 /* The same information, inverted:
    Return the class number of the smallest class containing
@@ -1052,7 +1060,6 @@ __transfer_from_trampoline ()		\
   else if (GET_CODE (xfooy) == PRE_DEC)					\
     {									\
       if (REGNO (XEXP (xfooy, 0)) == STACK_POINTER_REGNUM) goto ADDR;	\
-      else abort ();							\
     }									\
 }
 
@@ -1122,6 +1129,11 @@ __transfer_from_trampoline ()		\
    
    We have a smart movstrsi insn */
 #define MOVE_RATIO 0
+
+#define STORE_RATIO (optimize_size ? 3 : 15)
+#define STORE_BY_PIECES_P(SIZE, ALIGN) \
+  (move_by_pieces_ninsns (SIZE, ALIGN) < (unsigned int) STORE_RATIO)
+
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
