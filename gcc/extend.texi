@@ -3062,7 +3062,7 @@ instruction.)  In addition, GCC will not reschedule instructions
 across a volatile @code{asm} instruction.  For example:
 
 @example
-(volatile int *)addr = foo;
+*(volatile int *)addr = foo;
 asm volatile ("eieio" : : );
 @end example
 
