@@ -6282,37 +6282,22 @@ gen_subprogram_die (decl, context_die)
      (if it has one - it may be just a declaration).  */
   outer_scope = DECL_INITIAL (decl);
 
+  /* Note that here, `outer_scope' is a pointer to the outermost BLOCK
+     node created to represent a function. This outermost BLOCK actually
+     represents the outermost binding contour for the function, i.e. the
+     contour in which the function's formal parameters and labels get
+     declared. Curiously, it appears that the front end doesn't actually
+     put the PARM_DECL nodes for the current function onto the BLOCK_VARS
+     list for this outer scope.  (They are strung off of the DECL_ARGUMENTS
+     list for the function instead.) The BLOCK_VARS list for the
+     `outer_scope' does provide us with a list of the LABEL_DECL nodes for
+     the function however, and we output DWARF info for those in
+     decls_for_scope.  Just within the `outer_scope' there will be a BLOCK
+     node representing the function's outermost pair of curly braces, and
+     any blocks used for the base and member initializers of a C++
+     constructor function.  */
   if (outer_scope && TREE_CODE (outer_scope) != ERROR_MARK)
-    {
-      /* Note that here, `outer_scope' is a pointer to the outermost BLOCK
-         node created to represent a function. This outermost BLOCK actually
-         represents the outermost binding contour for the function, i.e. the
-         contour in which the function's formal parameters and labels get
-         declared. Curiously, it appears that the front end doesn't actually
-         put the PARM_DECL nodes for the current function onto the BLOCK_VARS 
-         list for this outer scope.  (They are strung off of the
-         DECL_ARGUMENTS list for the function instead.) The BLOCK_VARS list
-         for the `outer_scope' does provide us with a list of the LABEL_DECL
-         nodes for the function however, and we output DWARF info for those
-         here. Just within the `outer_scope' there will be another BLOCK node
-         representing the function's outermost pair of curly braces.  We
-         musn't generate a lexical_block DIE for this outermost pair of curly
-         braces because that is not really an independent scope according to
-         ANSI C rules.  Rather, it is the same scope in which the parameters
-         were declared.  */
-      for (label = BLOCK_VARS (outer_scope);
-	   label;
-	   label = TREE_CHAIN (label))
-	{
-	  gen_decl_die (label, subr_die);
-	}
-
-      /* Note here that `BLOCK_SUBBLOCKS (outer_scope)' points to a list of
-         BLOCK nodes which is always only one element long. That one element
-         represents the outermost pair of curley braces for the function
-         body.  */
-      decls_for_scope (BLOCK_SUBBLOCKS (outer_scope), subr_die);
-    }
+    decls_for_scope (outer_scope, subr_die, 0);
 }
 
 /* Generate a DIE to represent a declared data object.  */
@@ -6418,9 +6403,10 @@ gen_label_die (decl, context_die)
 
 /* Generate a DIE for a lexical block.  */
 static void
-gen_lexical_block_die (stmt, context_die)
+gen_lexical_block_die (stmt, context_die, depth)
      register tree stmt;
      register dw_die_ref context_die;
+     int depth;
 {
   register dw_die_ref stmt_die = new_die (DW_TAG_lexical_block, context_die);
   char label[MAX_ARTIFICIAL_LABEL_BYTES];
@@ -6431,27 +6417,28 @@ gen_lexical_block_die (stmt, context_die)
       sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
       add_AT_lbl_id (stmt_die, DW_AT_high_pc, label);
     }
-  decls_for_scope (stmt, stmt_die);
+  decls_for_scope (stmt, stmt_die, depth);
 }
 
 /* Generate a DIE for an inlined subprogram.  */
 static void
-gen_inlined_subroutine_die (stmt, context_die)
+gen_inlined_subroutine_die (stmt, context_die, depth)
      register tree stmt;
      register dw_die_ref context_die;
+     int depth;
 {
-  register dw_die_ref subr_die = new_die (DW_TAG_inlined_subroutine,
-					  context_die);
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-  add_abstract_origin_attribute (subr_die, block_ultimate_origin (stmt));
   if (!BLOCK_ABSTRACT (stmt))
     {
+      register dw_die_ref subr_die = new_die (DW_TAG_inlined_subroutine,
+					  context_die);
+      char label[MAX_ARTIFICIAL_LABEL_BYTES];
+      add_abstract_origin_attribute (subr_die, block_ultimate_origin (stmt));
       sprintf (label, BLOCK_BEGIN_LABEL_FMT, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_low_pc, label);
       sprintf (label, BLOCK_END_LABEL_FMT, next_block_number);
       add_AT_lbl_id (subr_die, DW_AT_high_pc, label);
+      decls_for_scope (stmt, subr_die, depth);
     }
-  decls_for_scope (stmt, subr_die);
 }
 
 /* Generate a DIE for a field in a record, or structure.  */
@@ -6921,9 +6908,10 @@ gen_tagged_type_instantiation_die (type, context_die)
 /* Generate a DW_TAG_lexical_block DIE followed by DIEs to represent all of the
    things which are local to the given block.  */
 static void
-gen_block_die (stmt, context_die)
+gen_block_die (stmt, context_die, depth)
      register tree stmt;
      register dw_die_ref context_die;
+     int depth;
 {
   register int must_output_die = 0;
   register tree origin;
@@ -6963,7 +6951,7 @@ gen_block_die (stmt, context_die)
          rules.  So we check here to make sure that this block does not
          represent a "body block inlining" before trying to set the
          `must_output_die' flag.  */
-      if (origin == NULL || !is_body_block (origin))
+      if (! is_body_block (origin ? origin : stmt))
 	{
 	  /* Determine if this block directly contains any "significant"
 	     local declarations which we will need to output DIEs for.  */
@@ -7002,23 +6990,24 @@ gen_block_die (stmt, context_die)
     {
       if (origin_code == FUNCTION_DECL)
 	{
-	  gen_inlined_subroutine_die (stmt, context_die);
+	  gen_inlined_subroutine_die (stmt, context_die, depth);
 	}
       else
 	{
-	  gen_lexical_block_die (stmt, context_die);
+	  gen_lexical_block_die (stmt, context_die, depth);
 	}
     }
   else
-    decls_for_scope (stmt, context_die);
+    decls_for_scope (stmt, context_die, depth);
 }
 
 /* Generate all of the decls declared within a given scope and (recursively)
    all of it's sub-blocks.  */
 static void
-decls_for_scope (stmt, context_die)
+decls_for_scope (stmt, context_die, depth)
      register tree stmt;
      register dw_die_ref context_die;
+     int depth;
 {
   register tree decl;
   register tree subblocks;
@@ -7027,7 +7016,7 @@ decls_for_scope (stmt, context_die)
     {
       return;
     }
-  if (!BLOCK_ABSTRACT (stmt))
+  if (!BLOCK_ABSTRACT (stmt) && depth > 0)
     {
       next_block_number++;
     }
@@ -7047,7 +7036,7 @@ decls_for_scope (stmt, context_die)
        subblocks != NULL;
        subblocks = BLOCK_CHAIN (subblocks))
     {
-      gen_block_die (subblocks, context_die);
+      gen_block_die (subblocks, context_die, depth + 1);
     }
 }
 
