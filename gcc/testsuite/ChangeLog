@@ -1,3 +1,9 @@
+2004-11-06  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
+	* gcc.c-torture/compile/simd-5.c: Do not XFAIL on SPARC 64-bit.
+	* gcc.c-torture/execute/20020227-1.x: Likewise.
+	* gcc.c-torture/execute/simd-5.x: Remove.
+
 2004-11-06  Andrew Pinski  <pinskia@physics.uc.edu>
 
 	PR rtl-optimization/17933
