@@ -225,10 +225,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define ASM_FILE_START(FILE) \
 output_file_directive ((FILE), main_input_filename)
 
-/* Don't try to define `gcc_compiled.' since the assembler might not
-   accept symbols with periods and GDB doesn't run on this machine anyway.  */
+/* The sysV68 assembler does not accept dots in labels.
+   Let's use percent instead  */
 
-#define ASM_IDENTIFY_GCC(FILE)
+#define ASM_IDENTIFY_GCC(FILE)        fputs("gcc2_compiled%:\n", FILE)
 
 /* Names to predefine in the preprocessor for this target machine.  */
 /* ihnp4!lmayk!lgm@eddie.mit.edu says mc68000 and m68k should not be here,
