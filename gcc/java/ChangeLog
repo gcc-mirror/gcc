@@ -1,3 +1,8 @@
+2005-03-11  Tom Tromey  <tromey@redhat.com>
+
+	* gcj.texi (Invoking gcj-dbtool): Document 'gcj-dbtool -p'.
+	(libgcj Runtime Properties): Document the default .db.
+
 2005-03-10  Ranjit Mathew  <rmathew@hotmail.com>
 
 	PR java/20312

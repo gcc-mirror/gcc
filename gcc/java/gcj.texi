@@ -991,7 +991,7 @@ Each time a class is initialized, print a short message on standard error.
 gcj-dbtool @option{OPTION} @var{DBFILE} [@option{MORE}] @dots{}
 
 gcj-dbtool [@option{-n}] [@option{-a}] [@option{-f}]
-  [@option{-t}] [@option{-l}]
+  [@option{-t}] [@option{-l}] [@option{-p}]
   [@option{-v}] [@option{--version}] [@option{--help}]
 
 @c man end
@@ -1042,6 +1042,10 @@ Test a database.
 
 @item -l @var{DBFILE}
 List the contents of a database.
+
+@item -p
+Print the name of the default database.  If there is no default
+database, this prints a blank line.
 
 @item --help
 Print a help message, then exit.
@@ -2531,7 +2535,8 @@ be set to a directory that is writable by any other user.
 This is a sequence of file names, each referring to a file created by
 @command{gcj-dbtool}.  These files will be used by @code{libgcj} to
 find shared libraries corresponding to classes that are loaded from
-bytecode.
+bytecode.  @code{libgcj} often has a built-in default database; it
+can be queried using @code{gcj-dbtool -p}.
 
 @end table
 
