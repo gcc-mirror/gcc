@@ -562,7 +562,30 @@ htab_collisions (htab)
   return (double) htab->collisions / (double) htab->searches;
 }
 
-/* Hash P as a null-terminated string.  */
+/* Hash P as a null-terminated string.
+
+   Copied from gcc/hashtable.c.  Zack had the following to say with respect
+   to applicability, though note that unlike hashtable.c, this hash table
+   implementation re-hashes rather than chain buckets.
+
+   http://gcc.gnu.org/ml/gcc-patches/2001-08/msg01021.html
+   From: Zack Weinberg <zackw@panix.com>
+   Date: Fri, 17 Aug 2001 02:15:56 -0400
+
+   I got it by extracting all the identifiers from all the source code
+   I had lying around in mid-1999, and testing many recurrences of
+   the form "H_n = H_{n-1} * K + c_n * L + M" where K, L, M were either
+   prime numbers or the appropriate identity.  This was the best one.
+   I don't remember exactly what constituted "best", except I was
+   looking at bucket-length distributions mostly.
+   
+   So it should be very good at hashing identifiers, but might not be
+   as good at arbitrary strings.
+   
+   I'll add that it thoroughly trounces the hash functions recommended
+   for this use at http://burtleburtle.net/bob/hash/index.html, both
+   on speed and bucket distribution.  I haven't tried it against the
+   function they just started using for Perl's hashes.  */
 
 hashval_t
 htab_hash_string (p)
