@@ -28,6 +28,7 @@
 // the GNU General Public License.
 
 #include <bits/c++config.h>
+#include <cxxabi.h>
 #include "unwind-cxx.h"
 
 #if _GLIBCXX_HOSTED
@@ -48,7 +49,7 @@
 #endif
 
 extern "C" void
-__cxa_pure_virtual (void)
+__cxxabiv1::__cxa_pure_virtual (void)
 {
   writestr ("pure virtual method called\n");
   std::terminate ();

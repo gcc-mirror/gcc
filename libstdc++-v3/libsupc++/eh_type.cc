@@ -29,6 +29,7 @@
 
 
 #include <typeinfo>
+#include <cxxabi.h>
 #include "unwind-cxx.h"
 
 namespace __cxxabiv1

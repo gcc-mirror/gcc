@@ -35,7 +35,7 @@ using namespace __cxxabiv1;
 
 
 extern "C" void *
-__cxa_begin_catch (void *exc_obj_in) throw()
+__cxxabiv1::__cxa_begin_catch (void *exc_obj_in) throw()
 {
   _Unwind_Exception *exceptionObject
     = reinterpret_cast <_Unwind_Exception *>(exc_obj_in);
@@ -82,7 +82,7 @@ __cxa_begin_catch (void *exc_obj_in) throw()
 
 
 extern "C" void
-__cxa_end_catch ()
+__cxxabiv1::__cxa_end_catch ()
 {
   __cxa_eh_globals *globals = __cxa_get_globals_fast ();
   __cxa_exception *header = globals->caughtExceptions;

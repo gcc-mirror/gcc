@@ -37,6 +37,8 @@
 #ifndef __EXCEPTION__
 #define __EXCEPTION__
 
+#pragma GCC visibility push(default)
+
 extern "C++" {
 
 namespace std 
@@ -116,5 +118,7 @@ namespace __gnu_cxx
 } // namespace __gnu_cxx
   
 } // extern "C++"
+
+#pragma GCC visibility pop
 
 #endif

@@ -41,6 +41,8 @@
 #include <cstddef>
 #include <exception>
 
+#pragma GCC visibility push(default)
+
 extern "C++" {
 
 namespace std 
@@ -97,5 +99,7 @@ inline void  operator delete  (void*, void*) throw() { }
 inline void  operator delete[](void*, void*) throw() { }
 //@}
 } // extern "C++"
+
+#pragma GCC visibility pop
 
 #endif

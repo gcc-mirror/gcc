@@ -31,7 +31,6 @@
 #include <bits/c++config.h>
 #include "unwind-cxx.h"
 
-
 using namespace __cxxabiv1;
 
 
@@ -56,7 +55,8 @@ __gxx_exception_cleanup (_Unwind_Reason_Code code, _Unwind_Exception *exc)
 
 
 extern "C" void
-__cxa_throw (void *obj, std::type_info *tinfo, void (*dest) (void *))
+__cxxabiv1::__cxa_throw (void *obj, std::type_info *tinfo, 
+			 void (*dest) (void *))
 {
   __cxa_exception *header = __get_exception_header_from_obj (obj);
   header->exceptionType = tinfo;
@@ -81,7 +81,7 @@ __cxa_throw (void *obj, std::type_info *tinfo, void (*dest) (void *))
 }
 
 extern "C" void
-__cxa_rethrow ()
+__cxxabiv1::__cxa_rethrow ()
 {
   __cxa_eh_globals *globals = __cxa_get_globals ();
   __cxa_exception *header = globals->caughtExceptions;

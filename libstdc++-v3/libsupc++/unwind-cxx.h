@@ -40,6 +40,8 @@
 #include <cstddef>
 #include "unwind.h"
 
+#pragma GCC visibility push(default)
+
 namespace __cxxabiv1
 {
 
@@ -167,5 +169,7 @@ __get_exception_header_from_ue (_Unwind_Exception *exc)
 }
 
 } /* namespace __cxxabiv1 */
+
+#pragma GCC visibility pop
 
 #endif // _UNWIND_CXX_H
