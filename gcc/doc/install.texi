@@ -2081,6 +2081,10 @@ Digital UNIX 4.0D and 5.1,
 GNU/Linux (i386),
 HP-UX 10.20, 11.00, and 11.11, and
 Solaris/SPARC 2.5.1, 2.6, 2.7, 8, and 9,
+
+@item
+@uref{http://www.openpkg.org/,,OpenPKG} offers binaries for quite a
+number of platforms.
 @end itemize
 
 In addition to those specific offerings, you can get a binary
