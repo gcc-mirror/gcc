@@ -1,3 +1,20 @@
+2002-04-19  David S. Miller  <davem@redhat.com>
+
+	* include/dwarf2-signal.h (SIGNAL_HANDLER): Name siginfo_t pointer
+	arg.
+	(MAKE_THROW_FRAME): Define for 32-bit and 64-bit sparc.
+	(INIT_SEGV, INIT_FPE): Use direct __libc_sigaction installation
+	on Sparc too.
+	* include/sparc-signal.h (FLUSH_REGISTER_WINDOWS): Define properly
+	for 64-bit sparc.
+	(MAKE_THROW_FRAME): Use long for sp/retaddr so 64-bit works.
+	* sysdeps/sparc/locks.h: New file.
+	* configure.in (SIGNAL_HANDLER): Set to include/sparc-signal.h
+	on all sparc Solaris configurations.  Set to
+	include/dwarf2-signal.h on sparc Linux.
+	* configure: Regenerate
+	* configure.host (can_unwind_signal): sparc*-linux* can do it now.
+
 2002-04-19  Hans Boehm <Hans_Boehm@hp.com>
 
 	* configure: Rebuilt.

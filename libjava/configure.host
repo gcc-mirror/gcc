@@ -125,6 +125,7 @@ case "${host}" in
   i[34567]86*-linux* | \
   powerpc*-linux* | \
   alpha*-linux* | \
+  sparc*-linux* | \
   ia64-*)
   	can_unwind_signal=yes
 	;;
