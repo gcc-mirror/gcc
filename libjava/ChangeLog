@@ -1,3 +1,8 @@
+2002-04-29  Adam King <aking@dreammechanics.com>
+
+	* java/io/natFileDescriptorWin32.cc (open): Move file pointer to end
+	of file in APPEND mode.
+
 2002-04-25  David S. Miller  <davem@redhat.com>
 
 	PR target/6422
