@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  TMS320C[34]x
-   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2003
+   Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2003, 2004
    Free Software Foundation, Inc.
 
    Contributed by Michael Hayes (m.hayes@elec.canterbury.ac.nz)

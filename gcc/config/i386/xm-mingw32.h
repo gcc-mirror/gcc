@@ -1,6 +1,6 @@
 /* Configuration for GCC for hosting on Windows32.
    using GNU tools and the Windows32 API Library.
-   Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003 Free Software
+   Copyright (C) 1997, 1998, 1999, 2001, 2002, 2003, 2004 Free Software
    Foundation, Inc.
 
 This file is part of GCC.
