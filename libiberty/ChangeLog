@@ -1,3 +1,10 @@
+Fri Oct 15 01:47:51 1999  Vladimir Makarov  <vmakarov@loony.cygnus.com>
+
+	* Makefile.in (CFILES): Add hashtab.c
+	(REQUIRED_OFILES): Add hashtab.o
+	(hashtab.o): Add dependencies.
+	* hashtab.c: New file
+
 Wed Oct 13 01:16:47 1999  Mumit Khan  <khan@xraylith.wisc.edu>
 
 	* basename.c (DIR_SEPARATOR): New macro.
