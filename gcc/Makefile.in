@@ -1276,7 +1276,7 @@ BI_OBJ=bi-parser.o bi-lexer.o bi-reverse.o
 
 
 bc-emit.o : bc-emit.c $(CONFIG_H) $(RTL_H) real.h $(BYTECODE_H) \
-		bc-opcode.h bc-typecd.h bc-typecd.def bi-run.h bytetypes.h
+	 bc-arity.h bc-opcode.h bc-typecd.h bc-typecd.def bi-run.h bytetypes.h
 bc-optab.o : bc-optab.c $(CONFIG_H) $(REAL_H) $(BYTECODE_H) \
 		bc-opcode.h bc-typecd.h bc-typecd.def
 
@@ -1330,13 +1330,13 @@ stamp-bcarity : $(srcdir)/bytecode.def bi-arity $(srcdir)/move-if-change
 
 bc-opcode.h: stamp-bcopcode ; @true
 stamp-bcopcode : $(srcdir)/bytecode.def bi-opcode $(srcdir)/move-if-change
-	./bi-opcode < $(srcdir)/bytecode.def >tmp-bc-opcode.h
-	$(srcdir)/move-if-change tmp-bc-opcode.h bc-opcode.h
+	./bi-opcode < $(srcdir)/bytecode.def >tmp-bcopcd.h
+	$(srcdir)/move-if-change tmp-bcopcd.h bc-opcode.h
 
 bc-opname.h: stamp-bcopname ; @true
 stamp-bcopname : $(srcdir)/bytecode.def bi-opname $(srcdir)/move-if-change
-	./bi-opname < $(srcdir)/bytecode.def >tmp-bc-opname.h
-	$(srcdir)/move-if-change tmp-bc-opname.h bc-opname.h
+	./bi-opname < $(srcdir)/bytecode.def >tmp-bcopnm.h
+	$(srcdir)/move-if-change tmp-bcopnm.h bc-opname.h
 
 bytecode.mostlyclean:
 	-rm -f bc-arity.h bc-opcode.h bc-opname.h
