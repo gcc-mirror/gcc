@@ -1,5 +1,5 @@
 /* Subroutines for assembler code output on the DSP1610.
-   Copyright (C) 1994, 1995, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1997, 1998 Free Software Foundation, Inc.
    Contributed by Michael Collison (collison@world.std.com).
 
 This file is part of GNU CC.
@@ -2223,4 +2223,10 @@ output_block_move (operands)
 
   fprintf (asm_out_file, "\t}\n");
   return "";
+}
+
+void
+dsp16xx_invalid_register_for_compare ()
+{
+  fatal ("Invalid register for compare");
 }

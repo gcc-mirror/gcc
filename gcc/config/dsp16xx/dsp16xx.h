@@ -1978,3 +1978,5 @@ const_section ()                                                   \
 /* Define this so gcc does not output a call to __main, since we
    are not currently supporting c++. */
 #define INIT_SECTION_ASM_OP  1
+
+void dsp16xx_invalid_register_for_compare ();
