@@ -782,6 +782,17 @@ c_alignof (type)
 
   return size_int (TYPE_ALIGN (type) / BITS_PER_UNIT);
 }
+
+/* Print a warning if a constant expression had overflow in folding.
+   This doesn't really work--it is waiting for changes in fold.  */
+
+void
+constant_expression_warning (value)
+     tree value;
+{
+  if (TREE_CODE (value) == NON_LVALUE_EXPR && TREE_CONSTANT_OVERFLOW (value))
+    pedwarn ("overflow in constant expression");
+}
 
 /* Implement the __alignof keyword: Return the minimum required
    alignment of EXPR, measured in bytes.  For VAR_DECL's and
@@ -3013,7 +3024,7 @@ build_unary_op (code, xarg, noconvert)
 	  return error_mark_node;
 
 	/* Report a read-only lvalue.  */
-	if (TYPE_READONLY (TREE_TYPE (arg)))
+	if (TREE_READONLY (arg))
 	  readonly_warning (arg, 
 			    ((code == PREINCREMENT_EXPR
 			      || code == POSTINCREMENT_EXPR)
@@ -4202,6 +4213,9 @@ store_init_value (decl, init)
 	}
     }
 #endif
+
+  /* ANSI wants warnings about out-of-range constant initializers.  */
+  constant_expression_warning (value);
 
   DECL_INITIAL (decl) = value;
 }
