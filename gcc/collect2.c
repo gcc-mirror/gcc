@@ -1182,16 +1182,18 @@ main (argc, argv)
 	p = q;
       }
 
-#ifdef LD_INIT_SWITCH
   /* Tell the linker that we have initializer and finalizer functions.  */
   if (shared_obj)
     {
+#ifdef LD_INIT_SWITCH
       *ld2++ = LD_INIT_SWITCH;
       *ld2++ = "_GLOBAL__DI";
+#endif
+#ifdef LD_FINI_SWITCH
       *ld2++ = LD_FINI_SWITCH;
       *ld2++ = "_GLOBAL__DD";
-    }
 #endif
+    }
 
   *c_ptr++ = c_file;
   *c_ptr = *ld1 = *ld2 = (char *)0;
@@ -1777,13 +1779,17 @@ scan_prog_file (prog_name, which_pass)
 	case 3:
 	  if (which_pass != PASS_LIB)
 	    fatal ("init function found in object %s", prog_name);
+#ifndef LD_INIT_SWITCH
 	  add_to_list (&constructors, name);
+#endif
 	  break;
 
 	case 4:
 	  if (which_pass != PASS_LIB)
-	    fatal ("init function found in object %s", prog_name);
+	    fatal ("fini function found in object %s", prog_name);
+#ifndef LD_FINI_SWITCH
 	  add_to_list (&destructors, name);
+#endif
 	  break;
 
 	default:		/* not a constructor or destructor */
