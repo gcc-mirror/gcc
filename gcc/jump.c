@@ -480,9 +480,12 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 				remove_death (dreg, trial);
 				break;
 			      }
-
-			/* Deleting insn could lose a death-note for SREG.  */
-			if ((trial = find_regno_note (insn, REG_DEAD, sreg)))
+#ifdef PRESERVE_DEATH_INFO_REGNO_P
+			/* Deleting insn could lose a death-note for SREG
+			   so don't do it if final needs accurate
+			   death-notes.  */
+			if (PRESERVE_DEATH_INFO_REGNO_P (sreg)
+			    && (trial = find_regno_note (insn, REG_DEAD, sreg)))
 			  {
 			    /* Change this into a USE so that we won't emit
 			       code for it, but still can keep the note.  */
@@ -494,6 +497,7 @@ jump_optimize (f, cross_jump, noop_moves, after_regscan)
 			    XEXP (trial, 1) = NULL_RTX;
 			  }
 			else
+#endif
 			  delete_insn (insn);
 		      }
 		  }
