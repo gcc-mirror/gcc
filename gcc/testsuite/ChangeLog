@@ -20,6 +20,9 @@
 
 2004-08-03  Mark Mitchell  <mark@codesourcery.com>
 
+	* g++.dg/ext/visibility/assign1.C: New test.
+	* g++.dg/ext/visibility/new1.C: Likewise.
+
 	* gcc.dg/symbian1.c: New test.
 	* gcc.dg/symbian2.c: Likewise.
 
