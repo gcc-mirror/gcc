@@ -1,3 +1,8 @@
+1999-05-28  Kaveh R. Ghazi  <ghazi@caip.rutgers.edu>
+
+	* putenv.c: Include ansidecl.h to define `const'.
+	* setenv.c: Likewise.
+
 Wed May 26 03:58:20 1999  "Melissa O'Neill" <oneill@cs.sfu.ca>
 
 	* Makefile.in (CFILES): Add putenv.c and setenv.c.
