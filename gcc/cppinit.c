@@ -163,7 +163,7 @@ cpp_create_reader (enum c_lang lang, hash_table *table)
 
   /* Initialize the line map.  Start at logical line 1, so we can use
      a line number of zero for special states.  */
-  init_line_maps (&pfile->line_maps);
+  linemap_init (&pfile->line_maps);
 
   /* Initialize lexer state.  */
   pfile->state.save_comments = ! CPP_OPTION (pfile, discard_comments);
@@ -252,7 +252,7 @@ cpp_destroy (cpp_reader *pfile)
       free (context);
     }
 
-  free_line_maps (&pfile->line_maps);
+  linemap_free (&pfile->line_maps);
   free (pfile);
 }
 

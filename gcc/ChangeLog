@@ -1,3 +1,17 @@
+2003-07-22  Zack Weinberg  <zack@codesourcery.com>
+
+	* hashtable.c (approx_sqrt): Make static.
+	* hashtable.h: Don't prototype approx_sqrt.
+	* line-map.c (init_line_maps): Rename linemap_init.
+	(free_line_maps): Rename linemap_free.
+	(add_line_map): Rename linemap_add.
+	(lookup_line): Rename linemap_lookup.
+	(print_containing_files): Rename linemap_print_containing_files.
+	* linemap.h: Update to match.
+
+	* cpperror.c, cppinit.c, cpplib.c, cppmacro.c: Update calls to
+	linemap routines to use new names.
+
 2003-07-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* c-common.c (handle_packed_attribute): Don't pack a struct via a
@@ -77,7 +91,7 @@ Tue Jul 22 00:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-07-17  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
-        PR optimization/11536
+	PR optimization/11536
 	* unroll.c (loop_iterations): Do not replace a register holding
 	the final value by its equivalent before the loop if it is not
 	invariant.
@@ -93,7 +107,7 @@ Tue Jul 22 00:42:12 CEST 2003  Jan Hubicka  <jh@suse.cz>
 
 2003-07-20  Lisa M. Goldstein  <opus@gnu.org>
 
-        * doc/invoke.texi: Fixes to style, grammar and diction.
+	* doc/invoke.texi: Fixes to style, grammar and diction.
 
 2003-07-20  Roger Sayle  <roger@eyesopen.com>
 

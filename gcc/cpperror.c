@@ -44,8 +44,8 @@ print_location (cpp_reader *pfile, unsigned int line, unsigned int col)
     {
       const struct line_map *map;
 
-      map = lookup_line (&pfile->line_maps, line);
-      print_containing_files (&pfile->line_maps, map);
+      map = linemap_lookup (&pfile->line_maps, line);
+      linemap_print_containing_files (&pfile->line_maps, map);
 
       line = SOURCE_LINE (map, line);
       if (col == 0)
