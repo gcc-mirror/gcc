@@ -2,6 +2,19 @@ New in libgcj X.XX:
 
 * libgcj now includes a bytecode interpreter.
 
+* Support for specifying java system properties, both compiled in to the
+application and at runtime via an environment variable.
+
+* Complete JDK 1.1 reflection support, including invocation.
+
+* Support for setjmp/longjmp (sjlj) exception handling has been added, as an
+alternative to the existing range-table based mechanism.
+
+* Throwable.printStackTrace() has been implemented.
+
+* Runtime.loadLibrary() has been implemented, and Class.forName() can now
+dynamically load shared objects in order to find a requested class.
+
 New in libgcj 2.95:
 
 * First public release
