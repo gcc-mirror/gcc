@@ -361,7 +361,10 @@ decide_peel_completely (loops, loop, flags)
 
   /* Check for simple loops.  */
   if (!loop->has_desc)
-    loop->simple = simple_loop_p (loops, loop, &loop->desc);
+    {
+      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->has_desc = 1;
+    }
 
   /* Check number of iterations.  */
   if (!loop->simple || !loop->desc.const_iter)
@@ -485,7 +488,10 @@ decide_unroll_constant_iterations (loops, loop, flags)
 
   /* Check for simple loops.  */
   if (!loop->has_desc)
-    loop->simple = simple_loop_p (loops, loop, &loop->desc);
+    {
+      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->has_desc = 1;
+    }
 
   /* Check number of iterations.  */
   if (!loop->simple || !loop->desc.const_iter)
@@ -694,7 +700,10 @@ decide_unroll_runtime_iterations (loops, loop, flags)
 
   /* Check for simple loops.  */
   if (!loop->has_desc)
-    loop->simple = simple_loop_p (loops, loop, &loop->desc);
+    {
+      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->has_desc = 1;
+    }
 
   /* Check simpleness.  */
   if (!loop->simple)
@@ -991,7 +1000,10 @@ decide_peel_simple (loops, loop, flags)
 
   /* Check for simple loops.  */
   if (!loop->has_desc)
-    loop->simple = simple_loop_p (loops, loop, &loop->desc);
+    {
+      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->has_desc = 1;
+    }
 
   /* Check number of iterations.  */
   if (loop->simple && loop->desc.const_iter)
@@ -1113,7 +1125,10 @@ decide_unroll_stupid (loops, loop, flags)
 
   /* Check for simple loops.  */
   if (!loop->has_desc)
-    loop->simple = simple_loop_p (loops, loop, &loop->desc);
+    {
+      loop->simple = simple_loop_p (loops, loop, &loop->desc);
+      loop->has_desc = 1;
+    }
 
   /* Check simpleness.  */
   if (loop->simple)
