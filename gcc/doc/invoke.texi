@@ -7190,12 +7190,25 @@ system.
 FSF GCC on Darwin does not create ``fat'' object files; it will create
 an object file for the single architecture that it was built to
 target.  Apple's GCC on Darwin does create ``fat'' files if multiple
-@option{-arch} options are used.
+@option{-arch} options are used; it does so by running the compiler or
+linker multiple times and joining the results together with
+@file{lipo}.
 
-The subtype of the file created (@var{ppc7400} or @var{ppc970} or
-@var{i686}) is determined by the flag that specifies the ISA
-that GCC is targetting, @option{-mcpu} or @option{-march}.  The
+The subtype of the file created (like @samp{ppc7400} or @samp{ppc970} or
+@samp{i686}) is determined by the flags that specify the ISA
+that GCC is targetting, like @option{-mcpu} or @option{-march}.  The
 @option{-force_cpusubtype_ALL} option can be used to override this.
+
+The Darwin tools vary in their behaviour when presented with an ISA
+mismatch.  The assembler, @file{as}, will only permit instructions to
+be used that are valid for the subtype of the file it is generating,
+so you cannot put 64-bit instructions in an @samp{ppc750} object file.
+The linker for shared libraries, @file{/usr/bin/libtool}, will fail
+and print an error if asked to create a shared library with a less
+restrictive subtype than its input files (for instance, trying to put
+a @samp{ppc970} object file in a @samp{ppc7400} library).  The linker
+for executables, @file{ld}, will quietly give the executable the most
+restrictive subtype of any of its input files.
 
 @table @gcctabopt
 @item -F@var{dir}
