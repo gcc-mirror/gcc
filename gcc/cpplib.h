@@ -160,7 +160,6 @@ struct cpp_string
 #define PASTE_LEFT	(1 << 4) /* If on LHS of a ## operator.  */
 #define PASTED		(1 << 5) /* The result of a ## operator.  */
 #define NAMED_OP	(1 << 6) /* C++ named operators, also "defined".  */
-#define VOID_REST	(1 << 7) /* When a rest arg gets zero actual args.  */
 
 /* A preprocessing token.  This has been carefully packed and should
    occupy 16 bytes on 32-bit hosts and 24 bytes on 64-bit hosts.  */

@@ -1,3 +1,14 @@
+Tue 26-Sep-2000 00:16:22 BST  Neil Booth  <neilb@earthling.net>
+
+        * cpplex.c (parse_args): Don't set VOID_REST flag.
+	(CONTEXT_VARARGS): New flag.
+	(maybe_paste_with_next): Set context earlier in loop.  Use
+	it.  Do varargs test with CONTEXT_VARARGS flag.
+	(push_arg_context): Set CONTEXT_VARARGS flag if we're
+	pushing an argument context for a varargs argument.
+	* cpplib.h (VOID_REST): Delete.
+	* gcc.dg/cpp/vararg1.c: Add test case.   
+
 2000-09-25  Branko Cibej  <branko.cibej@hermes.si>
 
         * flags.h:  Declare warning flag warn_system_headers.
