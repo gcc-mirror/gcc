@@ -1724,7 +1724,7 @@ output_clean_symbol_name (file, name)
   /* Make it look like a valid identifier for an assembler.  */
   clean_symbol_name (id);
   
-  fputs (name, file);
+  fputs (id, file);
   free (id);
 }
 
