@@ -1,3 +1,8 @@
+Thu May 21 23:09:50 1998  Jeffrey A Law  (law@cygnus.com)
+
+	* alias.c (rtx_equal_for_memref_p): Handle SCRATCH as a memory
+	address.
+
 Thu May 21 20:18:13 1998  Martin von Loewis  <loewis@informatik.hu-berlin.de>
 
 	* Makefile.in (TREE_H): Add tree-check.h.

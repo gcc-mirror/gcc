@@ -467,6 +467,10 @@ rtx_equal_for_memref_p (x, y)
 	    return 0;
 	  break;
 
+	/* This can happen for an asm which clobbers memory.  */
+	case '0':
+	  break;
+
 	  /* It is believed that rtx's at this level will never
 	     contain anything but integers and other rtx's,
 	     except for within LABEL_REFs and SYMBOL_REFs.  */
