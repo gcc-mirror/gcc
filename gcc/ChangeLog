@@ -1,5 +1,7 @@
 2003-06-16  Nathanael Nerode  <neroden@gcc.gnu.org>
 
+	* config/sparc/sysv4.h: Remove target-independent comment;
+	replace "GNU CC" with "GCC".
 	* config/vxworks.h: Replace "GNU compiler" with "GCC".
 	* config/sparc/aout.h, config/sparc/biarch64.h, config/sparc/elf.h,
 	config/sparc/freebsd.h, config/sparc/linux.h, config/sparc/linux64.h,
