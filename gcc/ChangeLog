@@ -1,3 +1,35 @@
+2003-10-31  Andreas Jaeger  <aj@suse.de>, 
+            Zack Weinberg  <zack@codesourcery.com>            
+
+
+        * crtstuff.c (__register_frame_info, __register_frame_info_bases)
+        (__deregister_frame_info, __deregister_frame_info_bases):
+        Constify void * argument.
+        * unwind-dw2-fde.h (struct fde_vector): 
+        Constify 'orig_data' and 'array' fields.
+        (__register_frame_info, __register_frame_info_bases)
+        (__deregister_frame_info, __deregister_frame_info_bases):
+        Constify void * argument.
+        (get_cie, next_fde, _Unwind_Find_FDE): Constify arguments,
+        return values, and casts of type fde *, struct dwarf_fde *,
+        and struct dwarf_cie *.
+        * unwind-dw2-fde.c (__register_frame_info, __register_frame_info_bases)
+        (__deregister_frame_info, __deregister_frame_info_bases):
+        Constify void * argument.
+        (get_cie_encoding, ): Constify struct dwarf_cie * argument.
+        (get_fde_encoding, fde_unencoded_compare, fde_single_encoding_compare)
+        (fde_mixed_encoding_compare, fde_compare_t, start_fde_sort, fde_insert)
+        fde_split, SWAP, frame_downheap, frame_heapsort)
+        (classify_object_over_fdes, add_fdes, linear_search_fdes,
+        binary_search_unencoded_fdes, binary_search_single_encoding_fdes,
+        binary_search_mixed_encoding_fdes, search_object, _Unwind_Find_FDE):
+        Constify arguments, local variables, return values, and casts
+        of type fde *, fde **, struct dwarf_fde *, and struct dwarf_cie *.
+        Use const pointer types in sizeof expressions, for clarity.
+        * unwind-dw2-fde-glibc.c 
+        (_Unwind_find_registered_FDE, _Unwind_find_FDE): Constify return value.
+        (struct unw_eh_callback_data): Constify 'ret' field.
+
 2003-10-31  Fariborz Jahanian  <fjahanian@apple.com>
 	    David Edelsohn  <edelsohn@gnu.org>
 
