@@ -1,5 +1,10 @@
 2002-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
 
+	* gcc.c-torture/compile/20021123-2.c: New test.
+	* gcc.c-torture/compile/20021123-3.c: New test.
+
+2002-11-23  Eric Botcazou  <ebotcazou@libertysurf.fr>
+
 	* gcc.c-torture/compile/20021123-1.c: New test.
 
 2002-11-22  Eric Botcazou  <ebotcazou@libertysurf.fr>
