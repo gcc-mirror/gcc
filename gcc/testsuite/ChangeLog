@@ -1,3 +1,9 @@
+2004-11-30  Ira Rosen  <irar@il.ibm.com>
+	    Dorit Naishlos  <dorit@il.ibm.com>
+
+	PR tree-opt/18607
+	* gcc.dg/vect/vect-89.c: New test.
+
 2004-11-30  James A. Morrison  <phython@gcc.gnu.org>
 
 	* gcc.dg/pr18596-1.c: New test.
