@@ -251,12 +251,21 @@ extern enum alpha_fp_trap_mode alpha_fptm;
      N_("Emit 16-bit relocations to the small data areas")},		\
     {"large-data", -MASK_SMALL_DATA,					\
      N_("Emit 32-bit relocations to the small data areas")},		\
-    {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT, ""} }
+    {"", TARGET_DEFAULT | TARGET_CPU_DEFAULT				\
+	 | TARGET_DEFAULT_EXPLICIT_RELOCS, ""} }
 
 #define TARGET_DEFAULT MASK_FP|MASK_FPREGS
 
 #ifndef TARGET_CPU_DEFAULT
 #define TARGET_CPU_DEFAULT 0
+#endif
+
+#ifndef TARGET_DEFAULT_EXPLICIT_RELOCS
+#ifdef HAVE_AS_EXPLICIT_RELOCS
+#define TARGET_DEFAULT_EXPLICIT_RELOCS MASK_EXPLICIT_RELOCS
+#else
+#define TARGET_DEFAULT_EXPLICIT_RELOCS 0
+#endif
 #endif
 
 /* This macro is similar to `TARGET_SWITCHES' but defines names of

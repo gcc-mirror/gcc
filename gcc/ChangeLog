@@ -1,3 +1,10 @@
+2001-12-15  Richard Henderson  <rth@redhat.com>
+
+	* config/alpha/alpha.h (TARGET_SWITCHES): Turn on
+	MASK_EXPLICIT_RELOCS if the assembler supports it.
+	* configure.in (HAVE_AS_EXPLICIT_RELOCS): New.
+	* configure, config.in: Rebuild.
+	
 Sat Dec 15 17:53:03 2001  Richard Kenner  <kenner@vlsi1.ultra.nyu.edu>
 
 	* calls.c (emit_call_1): If ECF_SP_DEPRESSED, pretend have adjusted
